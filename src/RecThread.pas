@@ -201,10 +201,10 @@ begin
 
         end;
 
-        FStatusStr := 'Загрузка рекламы завершена';
-        Synchronize(UpdateProgress);
-
       end;
+
+      FStatusStr := 'Загрузка рекламы завершена';
+      Synchronize(UpdateProgress);
 
     finally
       FSOAP.Free;
