@@ -4,10 +4,32 @@
 <ChangeLog>
  <ProductName>AnalitF</ProductName>
  <Description>Клиентское приложения для работы с базой АналитФАРМАЦИЯ</Description>
- <LastVersion>3.0.16.75</LastVersion>
 
  <Version>
-  <Number>3.0.16.75</Number>
+  <VersionNumber>
+   <Major>3</Major>
+   <Minor>0</Minor>
+   <Release>19</Release>
+   <Build>76</Build>
+  </VersionNumber>
+  <Date>2005.03.21</Date>
+  <Notes>Последний билд, в котором исполняемый файл поставляется как самодостаточное приложение.</Notes>
+
+  <Improvement>Название "Реклама" изменено на "Информационный блок".</Improvement>
+
+  <Bug>Если в архиве информационного блока содержалось более одного файла, то распаковка не происходила.</Bug>
+
+  <Improvement>При переводе заявок из "Отправленных" в "Текущие" производится сброс выделения в таблице.</Improvement>
+
+ </Version>
+
+ <Version>
+  <VersionNumber>
+   <Major>3</Major>
+   <Minor>0</Minor>
+   <Release>16</Release>
+   <Build>75</Build>
+  </VersionNumber>
   <Date>2005.03.14</Date>
   <Notes>Обновлен механизм скачивания рекламы</Notes>
 
@@ -39,7 +61,12 @@
  </Version>
 
  <Version>
-  <Number>3.0.5.65</Number>
+  <VersionNumber>
+   <Major>3</Major>
+   <Minor>0</Minor>
+   <Release>5</Release>
+   <Build>65</Build>
+  </VersionNumber>
   <Date>2005.02.22</Date>
 
   <Bug>Введена задержка после установки Dial-Up соединения. Это связано с проблемами соединения на плохих линиях связи.</Bug>
@@ -54,7 +81,12 @@
  </Version>
 
  <Version>
-  <Number>3.0.4.54</Number>
+  <VersionNumber>
+   <Major>3</Major>
+   <Minor>0</Minor>
+   <Release>4</Release>
+   <Build>54</Build>
+  </VersionNumber>
   <Date>2005.02.14</Date>
 
   <New>Убрал таймаут при получении данных и отправки подтверждения серверу.</New>
