@@ -395,13 +395,16 @@ object MainForm: TMainForm
         end
         object N2: TMenuItem
           Caption = '-'
+          Visible = False
         end
         object itmLinkExternal: TMenuItem
           Caption = #1055#1088#1080#1089#1086#1077#1076#1080#1085#1080#1090#1100' '#1074#1085#1077#1096#1085#1080#1077' '#1090#1072#1073#1083#1080#1094#1099
+          Visible = False
           OnClick = itmLinkExternalClick
         end
         object itmUnlinkExternal: TMenuItem
           Caption = #1054#1090#1089#1086#1077#1076#1080#1085#1080#1090#1100' '#1074#1085#1077#1096#1085#1080#1077' '#1090#1072#1073#1083#1080#1094#1099
+          Visible = False
           OnClick = itmUnlinkExternalClick
         end
         object N6: TMenuItem
@@ -409,6 +412,7 @@ object MainForm: TMainForm
         end
         object itmClearDatabase: TMenuItem
           Caption = #1054#1095#1080#1089#1090#1080#1090#1100' '#1073#1072#1079#1091
+          Visible = False
           OnClick = itmClearDatabaseClick
         end
         object itmImport: TMenuItem
