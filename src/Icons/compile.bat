@@ -1,0 +1,1 @@
+brcc32 -fo..\Icons.RES Icons.rc 
