@@ -2,15 +2,18 @@ unit SOAPThroughHTTP;
 
 interface
 
-uses IdHTTP, IdIntercept, SysUtils, StrUtils, Classes;
+uses IdHTTP, IdIntercept, SysUtils, StrUtils, Classes, IdException, WinSock;
 
 const
 	INVOKE_RESPONSE	= 'Invoke Response';
 
 type
 
+TOnConnectError = procedure (AMessage : String) of object;
+
 TSOAP = class( TObject)
-	constructor Create( AURL, AUserName, APassword: string; AHTTP: TIdHTTP = nil);
+
+	constructor Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP = nil);
 	destructor Destroy; override;
 
 	function Invoke( AMethodName: string; AParams, AValues: array of string): string;
@@ -21,6 +24,7 @@ private
 	FResponse: string;
 	FURL: string;
 	FConcat: boolean;
+  FOnError : TOnConnectError;
 
 	{ √руппа полей, использующихс€ дл€ временного хранени€ }
 	{ настроек AHTTP, дл€ их восстановлени€ в деструкторе  }
@@ -36,8 +40,9 @@ implementation
 
 { TSOAP }
 
-constructor TSOAP.Create( AURL, AUserName, APassword: string; AHTTP: TIdHTTP);
+constructor TSOAP.Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP);
 begin
+  FOnError := AOnError;
 	if Assigned( AHTTP) then
 	begin
 		FExternalHTTP := True;
@@ -58,7 +63,7 @@ begin
 	FIntercept := TIdConnectionIntercept.Create( nil);
 	FIntercept.OnReceive := OnReceive;
 	FHTTP.Intercept := FIntercept;
-	FHTTP.HTTPOptions := [];
+//	FHTTP.HTTPOptions := [];
 	FHTTP.Request.BasicAuthentication := True;
 	FHTTP.Request.Host := ExtractHost( AURL);
 	FHTTP.Request.Password := APassword;
@@ -99,6 +104,8 @@ var
 	FullURL: string;
 	start, stop: integer;
 	ExceptMessage: string;
+  ErrorCount : Integer;
+  PostSuccess : Boolean;
 begin
 	if High( AParams) <> High( AValues) then
 		raise Exception.Create( 'Ќесовпадает количество параметров и значений');
@@ -117,7 +124,36 @@ begin
 	FResponse := '';
 	FConcat := True;
 	try
-		FHTTP.Post( FullURL, list);
+    ErrorCount := 0;
+    PostSuccess := False;
+    repeat
+      try
+        FHTTP.Post( FullURL, list);
+        PostSuccess := True;
+      except
+        on E : EIdSocketError do begin
+          if (ErrorCount < 10) and
+            ((e.LastError = WSAECONNRESET) or (e.LastError = WSAETIMEDOUT)
+              or (e.LastError = WSAENETUNREACH) or (e.LastError = WSAECONNREFUSED))
+          then begin
+            if FHTTP.Connected then
+            try
+              FHTTP.Disconnect;
+            except
+              on E : Exception do
+                if Assigned(FOnError) then
+                  FOnError('Error on Disconnect : ' + e.Message);
+            end;
+            if Assigned(FOnError) then
+              FOnError('Reconnect on error : ' + e.Message);
+            Inc(ErrorCount);
+            Sleep(100);
+          end
+          else
+            raise;
+        end;
+      end;
+    until (PostSuccess);
 	except
 		on E: Exception do
 		begin
