@@ -2,10 +2,12 @@ unit AlphaUtils;
 
 interface
 
-uses Windows, Types, Controls, Classes, Graphics;
+uses Windows, Types, Controls, Classes, Graphics, CommCtrl, Consts;
 
 function Set32BPP: boolean;
 function GetImageListAlpha( Owner: TComponent; ResPath: string; BaseIndex: integer; WH: integer): TImageList;
+procedure ConvertTo32BitImageList(const ImageList: TImageList);
+procedure LoadToImageList(const ImageList: TImageList; ResPath: String; BaseIndex: Integer);
 
 implementation
 
@@ -79,6 +81,53 @@ begin
 			MakeIntResource( BaseIndex + count));
 	end;
 
+end;
+
+procedure ConvertTo32BitImageList(const ImageList: TImageList);
+const
+  Mask: array[Boolean] of Longint = (0, ILC_MASK);
+var
+  TemporyImageList: TImageList;
+begin
+  if Assigned(ImageList) then
+  begin
+    TemporyImageList := TImageList.Create(nil);
+    try
+      TemporyImageList.Assign(ImageList);
+      with ImageList do
+      begin
+        ImageList.Handle := ImageList_Create(Width, Height, ILC_COLOR32 or Mask[Masked], 0, AllocBy);
+        if not ImageList.HandleAllocated then
+        begin
+          raise EInvalidOperation.Create(SInvalidImageList);
+        end;
+      end;
+      ImageList.AddImages(TemporyImageList);
+    finally
+      TemporyImageList.Free;
+    end;
+  end;
+end;
+
+procedure LoadToImageList(const ImageList: TImageList; ResPath: String; BaseIndex: Integer);
+var
+	icon: TIcon;
+	count: integer;
+	hi: HICON;
+begin
+  ImageList.Clear;
+  ConvertTo32BitImageList(ImageList);
+	count := 0;
+  BaseIndex := 100;
+	hi := LoadIcon( GetModuleHandle( PChar(ResPath) ), MakeIntResource( BaseIndex + count));
+	while ( hi <> 0) and ( count < 100) do
+	begin
+		icon := TIcon.Create;
+		icon.Handle := hi;
+    ImageList.AddIcon( icon );
+		inc( count);
+		hi := LoadIcon( GetModuleHandle( PChar(ResPath) ), MakeIntResource( BaseIndex + count));
+	end;
 end;
 
 end.
