@@ -136,7 +136,7 @@ begin
 
    	ReclameURL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
 		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
-    FStatusStr := 'Запрос рекламы...';
+    FStatusStr := 'Запрос информационного блока...';
     Synchronize(UpdateProgress);
     FSOAP := TSOAP.Create(ReclameURL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		  DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTPReclame);
@@ -184,6 +184,11 @@ begin
           if Terminated then Abort;
           UnZip := TVCLUnZip.Create(nil);
           try
+            UnZip.DoAll := True;
+            UnZip.IncompleteZipMode := izAssumeBad;
+            UnZip.OverwriteMode := Always;
+            UnZip.RecreateDirs := True;
+            UnZip.ReplaceReadOnly := True;
             UnZip.ZipName := ZipFileName;
             UnZip.DestDir := ExePath + SDirReclame;
             UnZip.UnZip;
@@ -201,10 +206,14 @@ begin
 
         end;
 
+        FStatusStr := 'Загрузка информационного блока завершена';
+        Synchronize(UpdateProgress);
+      end
+      else begin
+        FStatusStr := 'Информационный блок не обновлен';
+        Synchronize(UpdateProgress);
       end;
 
-      FStatusStr := 'Загрузка рекламы завершена';
-      Synchronize(UpdateProgress);
 
     finally
       FSOAP.Free;
