@@ -250,7 +250,6 @@ begin
     if dbgOrdersH.SelectedRows.Count > 0 then
       if MessageBox( 'Удалить выбранные заявки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
         dbgOrdersH.SelectedRows.Delete;
-        //adsOrdersH.Delete;
         MainForm.SetOrdersInfo;
       end;
 	end;
@@ -422,13 +421,14 @@ begin
         end;
       end;
 
+      dbgOrdersH.SelectedRows.Clear;
+
       //если не нашли что-то, то выводим сообщение
       if Strings.Count > 0 then ShowNotFound(Strings);
 
     finally
       Strings.Free;
     end;
-    adsOrdersH.Next;
   end;
 
 
@@ -458,7 +458,6 @@ begin
         adsOrdersH.Post;
       end;
     end;
-    adsOrdersH.Next;
     SetParameters;
   end;
 end;
