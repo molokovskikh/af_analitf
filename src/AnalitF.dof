@@ -92,32 +92,28 @@ ExeDescription=
 [Directories]
 OutputDir=.\bin
 UnitOutputDir=.\unit
-PackageDLLOutputDir=
-PackageDCPOutputDir=
+PackageDLLOutputDir=.\bin
+PackageDCPOutputDir=.\unit
 SearchPath=
-Packages=vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;dclOfficeXP;RxCtl7;RxBDE7;RxDB7;EhLib70;Tough;FR7;ARas7;VclZip6
+Packages=vcl;rtl;vclx;dbrtl;vcldb;VclSmp;vclie;adortl;RxCtl7;RxBDE7;RxDB7;EhLib70;bdertl;FR7;tee;VclZip6;ADBGrid7;ARas7;Tough;vclactnband
 Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=
+RunParams=/extend
 HostApplication=
 Launcher=
 UseLauncher=0
 DebugCWD=
 RemoteHost=jaroslav
 RemotePath=q:\AnalitF.exe
-[Language]
-ActiveLang=
-ProjectLang=$00000419
-RootDir=
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=3
 MinorVer=0
-Release=5
-Build=66
+Release=16
+Build=76
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +124,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=
-FileVersion=3.0.5.66
+FileVersion=3.0.16.76
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2005
 LegalTrademarks=Инфорум
@@ -136,16 +132,49 @@ OriginalFilename=AnalitF.exe
 ProductName=АналитФАРМАЦИЯ
 ProductVersion=1.0.0.0
 Comments=
+[Excluded Packages]
+C:\Program Files\Borland\Delphi7\Bin\dclmid70.bpl=Borland MyBase DataAccess Components
+c:\program files\borland\delphi7\Bin\dclocx70.bpl=Borland Sample Imported ActiveX Controls
+c:\program files\borland\delphi7\Bin\dclite70.bpl=Borland Integrated Translation Environment
+C:\Program Files\Borland\Delphi7\Bin\dbx70.bpl=Borland SQL Explorer UI Package
+C:\Program Files\Borland\Delphi7\Bin\dclclxstd70.bpl=Borland CLX Standard Components
+c:\program files\borland\delphi7\Bin\dclsmpedit70.bpl=Borland Editor Script Enhancements
+c:\program files\borland\delphi7\Bin\applet70.bpl=Borland Control Panel Applet Package
+c:\program files\borland\delphi7\Bin\dclemacsedit70.bpl=Borland Editor Emacs Enhancements
+c:\program files\borland\delphi7\Bin\dclmlwiz70.bpl=Borland Markup Language Wizards
+c:\program files\borland\delphi7\Bin\dcl31w70.bpl=Delphi 1.0 Compatibility Components
+c:\program files\borland\delphi7\Bin\dclofficexp70.bpl=Microsoft Office XP Sample Automation Server Wrapper Components
+c:\program files\borland\delphi7\Projects\Bpl\ZCommon7.bpl=Zeos Common Routines
+c:\program files\borland\delphi7\Projects\Bpl\ZDbware7.bpl=Zeos Dbware Components
+c:\program files\borland\delphi7\Projects\Bpl\ZMySql7.bpl=Zeos MySQL Components
+c:\program files\borland\delphi7\Projects\Bpl\VKDBF7.bpl=VK DBF 1.0.6
+c:\program files\borland\delphi7\Bin\dclsoap70.bpl=Borland SOAP Components
+C:\Program Files\Borland\Delphi7\Bin\dclnet70.bpl=Borland Internet Components
+c:\program files\borland\delphi7\Bin\dclmcn70.bpl=Borland DataSnap Connection Components
+c:\program files\borland\delphi7\Bin\dcldbx70.bpl=Borland dbExpress Components
+c:\program files\borland\delphi7\Bin\dcldbxcds70.bpl=Borland SimpleDataset Component (DBX)
+c:\program files\borland\delphi7\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+C:\Program Files\Borland\Delphi7\Bin\dclbde70.bpl=Borland BDE DB Components
+c:\program files\borland\delphi7\Bin\dclwbm70.bpl=Borland InternetExpress Components
+c:\program files\borland\delphi7\Bin\dclwebsnap70.bpl=Borland WebSnap Components
+c:\program files\borland\delphi7\Bin\DCLIB70.bpl=InterBase Data Access Components
+c:\program files\borland\delphi7\Bin\dcltee70.bpl=TeeChart Components
+c:\program files\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
+C:\WINDOWS\system32\ibevnt70.bpl=Borland Interbase Event Alerter Component
+c:\program files\borland\delphi7\Bin\dclshlctrls70.bpl=Shell Control Property and Component Editors
+c:\program files\borland\delphi7\Bin\dclclxdb70.bpl=Borland CLX Database Components
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
-[HistoryLists\hlSearchPath]
-Count=1
-Item0=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit
 [HistoryLists\hlOutputDirectorry]
-Count=2
+Count=1
 Item0=.\bin
-Item1=q:\
+[HistoryLists\hlBPLOutput]
+Count=1
+Item0=.\bin
+[HistoryLists\hlDCPOutput]
+Count=1
+Item0=.\unit

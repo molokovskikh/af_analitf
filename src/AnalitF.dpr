@@ -39,7 +39,6 @@ uses
   Exclusive in 'Exclusive.pas' {ExclusiveForm},
   Wait in 'Wait.pas' {WaitForm},
   AlphaUtils in 'AlphaUtils.pas',
-  ImgList in 'ImgList.pas',
   About in 'About.pas' {AboutForm},
   Waiting in 'Waiting.pas' {WaitingForm},
   CompactThread in 'CompactThread.pas',
