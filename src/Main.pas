@@ -219,8 +219,8 @@ begin
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
-var
-	il32: TImageList;
+//var
+//	il32: TImageList;
 begin
 	ExchangeOnly := False;
 	Caption := Application.Title;
@@ -231,6 +231,13 @@ begin
 	JustRun := True;
 	CheckNewDll;
 	LoadIntegrDLL;
+  if FindCmdLineSwitch('extend') then begin
+    N2.Visible := True;
+    N6.Visible := True;
+    itmLinkExternal.Visible := True;
+    itmUnlinkExternal.Visible := True;
+    itmClearDatabase.Visible := True;
+  end;
   //Если библиотека внешних заказов существует, то отображаем пункт меню
   //Check  IsExternalOrdersDLLPresent
   itmExternalOrders.Visible := IsExternalOrdersDLLPresent;
@@ -239,10 +246,9 @@ begin
 	CS := TCriticalSection.Create;
 	if Set32BPP then
 	begin
-		il32 := GetImageListAlpha( Self, Application.ExeName, 100, 32);
-//		il16 := GetImageListAlpha( Self, Application.ExeName, 200, 15);
-		ToolBar.Images := il32;
-//		MainMenu.Images := il16;
+//		il32 := GetImageListAlpha( Self, Application.ExeName, 100, 32);
+//		ToolBar.Images := il32;
+    LoadToImageList(ImageList, Application.ExeName, 100);
 	end;
 end;
 
