@@ -7,7 +7,7 @@ uses
   StdCtrls, ExtCtrls, ComCtrls, ARas, InvokeRegistry, StrUtils, ComObj,
   VCLUnZip, Rio, SOAPHTTPClient, Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
-  ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze;
+  ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock;
 
 type
   TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate);
@@ -46,6 +46,8 @@ type
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
+      const AStatusText: String);
   private
     FStatusPosition: Integer;
 	  ExchangeActions: TExchangeActions;
@@ -157,7 +159,15 @@ begin
 		end;
 		ExchangeForm.ExchangeActions := AExchangeActions;
 		AssignFile( ExchangeForm.LogFile, ExePath + 'Exchange.log');
-		Rewrite( ExchangeForm.LogFile); //создаем лог-файл
+    if FileExists(ExePath + 'Exchange.log') then
+  		Append( ExchangeForm.LogFile) //будем добавлять лог-файл
+    else
+  		Rewrite( ExchangeForm.LogFile); //создаем лог-файл
+    WriteLn(ExchangeForm.LogFile);
+    WriteLn(ExchangeForm.LogFile);
+    WriteLn(ExchangeForm.LogFile);
+    WriteLn(ExchangeForm.LogFile, '---------------------------');
+    WriteLn(ExchangeForm.LogFile, 'Сессия начата в ' + DateTimeToStr(Now));
 		try
 			ExchangeForm.Timer.Enabled := True;
 			Result := ExchangeForm.ShowModal = mrOk;
@@ -170,7 +180,11 @@ begin
 		except
 			on E: Exception do ShowMessage( E.Message);
 		end;
+    WriteLn(ExchangeForm.LogFile, 'Сессия окончена в ' + DateTimeToStr(Now));
+    WriteLn(ExchangeForm.LogFile, '---------------------------');
 		CloseFile( ExchangeForm.LogFile);
+    if ( eaGetPrice in AExchangeActions) and Result then
+      DeleteFile(ExePath + 'Exchange.log')
         finally
 		ExchangeForm.Free;
 	end;
@@ -629,11 +643,18 @@ procedure TExchangeForm.FormCreate(Sender: TObject);
 begin
   ExternalOrdersCount := 0;
   ExternalOrdersLog := TStringList.Create;
+  HTTP.ConnectTimeout := -2;
 end;
 
 procedure TExchangeForm.FormDestroy(Sender: TObject);
 begin
   ExternalOrdersLog.Free;
+end;
+
+procedure TExchangeForm.HTTPStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: String);
+begin
+  WriteLn(LogFile, DateTimeToStr(Now) + '  IdStatus : ' + AStatusText);
 end;
 
 end.

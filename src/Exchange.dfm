@@ -234,8 +234,9 @@ object ExchangeForm: TExchangeForm
     Top = 32
   end
   object HTTP: TIdHTTP
+    OnStatus = HTTPStatus
     MaxLineAction = maException
-    ReadTimeout = 60000
+    ReadTimeout = 0
     RecvBufferSize = 1024
     SendBufferSize = 1024
     OnWork = HTTPWork
@@ -245,6 +246,7 @@ object ExchangeForm: TExchangeForm
     ProxyParams.ProxyPort = 3128
     ProxyParams.ProxyServer = 'proxy.adc.analit.net'
     ProxyParams.ProxyUsername = 'runer'
+    Request.Connection = 'keep-alive'
     Request.ContentLength = -1
     Request.ContentRangeEnd = 0
     Request.ContentRangeStart = 0
@@ -252,7 +254,7 @@ object ExchangeForm: TExchangeForm
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = True
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    HTTPOptions = [hoForceEncodeParams]
+    HTTPOptions = [hoKeepOrigProtocol, hoForceEncodeParams]
     Left = 360
   end
   object HTTPReclame: TIdHTTP
