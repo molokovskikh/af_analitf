@@ -19,7 +19,6 @@ type
     Timer: TTimer;
     ProgressBar: TProgressBar;
     Ras: TARas;
-    HTTPRIO: THTTPRIO;
     UnZip: TVCLUnZip;
     TotalProgress: TProgressBar;
     Image1: TImage;
@@ -32,6 +31,9 @@ type
     Timer1: TTimer;
     HTTP: TIdHTTP;
     HTTPReclame: TIdHTTP;
+    gbReclame: TGroupBox;
+    ReclameBar: TProgressBar;
+    lReclameStatus: TLabel;
     procedure RasStateChange(Sender: TObject; State: Integer;
       StateStr: String);
     procedure TimerTimer(Sender: TObject);
@@ -48,6 +50,9 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
       const AStatusText: String);
+    procedure HTTPWorkBegin(Sender: TObject; AWorkMode: TWorkMode;
+      const AWorkCountMax: Integer);
+    procedure HTTPWorkEnd(Sender: TObject; AWorkMode: TWorkMode);
   private
     FStatusPosition: Integer;
 	  ExchangeActions: TExchangeActions;
@@ -96,7 +101,7 @@ function RunExchange(AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
-  Exclusive, CompactThread, ShowLog, ExternalOrders;
+  Exclusive, CompactThread, ShowLog, ExternalOrders, DB;
 
 {$R *.DFM}
 
@@ -185,7 +190,7 @@ begin
 		CloseFile( ExchangeForm.LogFile);
     if ( eaGetPrice in AExchangeActions) and Result then
       DeleteFile(ExePath + 'Exchange.log')
-        finally
+  finally
 		ExchangeForm.Free;
 	end;
 
@@ -262,6 +267,8 @@ var
 	Order, CurOrder, SynonymCode, SynonymFirmCrCode, Quantity, E: Integer;
 	Code, CodeCr: Variant;
 	Strings: TStrings;
+//  FilterStr : String;
+//  LocateRes : Boolean;
 
 	procedure SetOrder( Order: integer);
 	begin
@@ -318,15 +325,16 @@ begin
 			end;
 			Order := DM.adsSelect3.FieldByName( 'Order').AsInteger;
 			CurOrder := 0;
-			Code := DM.adsSelect3.FieldByName( 'Code').AsString;
-			if Code = '' then Code := Null;
-			CodeCr := DM.adsSelect3.FieldByName( 'CodeCr').AsString;
-			if CodeCr = '' then CodeCr := Null;
+			Code := DM.adsSelect3.FieldByName( 'Code').AsVariant;
+      if Code = '' then Code := Null;
+			CodeCr := DM.adsSelect3.FieldByName( 'CodeCr').AsVariant;
+      if CodeCr = '' then CodeCr := Null;
 			SynonymCode := DM.adsSelect3.FieldByName( 'SynonymCode').AsInteger;
 			SynonymFirmCrCode := DM.adsSelect3.FieldByName( 'SynonymFirmCrCode').AsInteger;
 
 			if DM.adsCore.Locate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
-				VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), []) then
+				  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [])
+      then
 			begin
 				Val( DM.adsCore.FieldByName( 'Quantity').AsString, Quantity, E);
 				if E <> 0 then Quantity := 0;
@@ -366,7 +374,7 @@ begin
 	end;
 
 	{ если не нашли что-то, то выводим сообщение }
-	if Strings.Count > 0 then ShowNotFound( Strings);
+	if (Strings.Count > 0) and (Length(Strings.Text) > 0) then ShowNotFound( Strings);
 
 	finally
 		Strings.Free;
@@ -477,13 +485,16 @@ end;
 procedure TExchangeForm.btnCancelClick(Sender: TObject);
 begin
 	DoStop := True;
-	try
-		ExThread.CriticalError := True;
-		ExThread.ErrorMessage := 'Отмена операции';
-		HTTP.Disconnect;
-		Ras.Disconnect;
-	except
-	end;
+  if ExThread.DownloadReclame then
+    ExThread.StopReclame
+  else
+    try
+      ExThread.CriticalError := True;
+      ExThread.ErrorMessage := 'Операция отменена';
+      HTTP.Disconnect;
+      Ras.Disconnect;
+    except
+    end;
 end;
 
 procedure TExchangeForm.SetRasParams;
@@ -601,6 +612,7 @@ begin
         FStatusStr := 'Загрузка данных   (' +
 				FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
 				FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
+//        WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWork : ' + FStatusStr);
       end;
 		end;
 	end;
@@ -644,6 +656,7 @@ begin
   ExternalOrdersCount := 0;
   ExternalOrdersLog := TStringList.Create;
   HTTP.ConnectTimeout := -2;
+  HTTPReclame.ConnectTimeout := -2;
 end;
 
 procedure TExchangeForm.FormDestroy(Sender: TObject);
@@ -655,6 +668,17 @@ procedure TExchangeForm.HTTPStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: String);
 begin
   WriteLn(LogFile, DateTimeToStr(Now) + '  IdStatus : ' + AStatusText);
+end;
+
+procedure TExchangeForm.HTTPWorkBegin(Sender: TObject;
+  AWorkMode: TWorkMode; const AWorkCountMax: Integer);
+begin
+  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkBegin : ' + IntToStr(AWorkCountMax));
+end;
+
+procedure TExchangeForm.HTTPWorkEnd(Sender: TObject; AWorkMode: TWorkMode);
+begin
+  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkEnd');
 end;
 
 end.

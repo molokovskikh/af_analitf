@@ -5,7 +5,7 @@ object ExchangeForm: TExchangeForm
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = #1054#1073#1084#1077#1085' '#1076#1072#1085#1085#1099#1084#1080
-  ClientHeight = 263
+  ClientHeight = 332
   ClientWidth = 401
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -137,7 +137,7 @@ object ExchangeForm: TExchangeForm
   end
   object btnCancel: TButton
     Left = 163
-    Top = 229
+    Top = 301
     Width = 75
     Height = 25
     Cancel = True
@@ -197,6 +197,27 @@ object ExchangeForm: TExchangeForm
       TabOrder = 0
     end
   end
+  object gbReclame: TGroupBox
+    Left = 8
+    Top = 224
+    Width = 385
+    Height = 65
+    Caption = ' '#1056#1077#1082#1083#1072#1084#1072' '
+    TabOrder = 3
+    object lReclameStatus: TLabel
+      Left = 8
+      Top = 16
+      Width = 3
+      Height = 13
+    end
+    object ReclameBar: TProgressBar
+      Left = 8
+      Top = 40
+      Width = 369
+      Height = 16
+      TabOrder = 0
+    end
+  end
   object Timer: TTimer
     Enabled = False
     Interval = 500
@@ -206,14 +227,6 @@ object ExchangeForm: TExchangeForm
   object Ras: TARas
     OnStateChange = RasStateChange
     Left = 328
-  end
-  object HTTPRIO: THTTPRIO
-    HTTPWebNode.Agent = 'Borland SOAP 1.2'
-    HTTPWebNode.UseUTF8InHeader = False
-    HTTPWebNode.InvokeOptions = [soIgnoreInvalidCerts, soAutoCheckAccessPointViaUDDI]
-    Converter.Options = [soSendMultiRefObj, soTryAllSchema, soRootRefNodesToBody, soCacheMimeResponse, soUTF8EncodeXML]
-    Left = 328
-    Top = 32
   end
   object UnZip: TVCLUnZip
     RecreateDirs = True
@@ -236,10 +249,11 @@ object ExchangeForm: TExchangeForm
   object HTTP: TIdHTTP
     OnStatus = HTTPStatus
     MaxLineAction = maException
-    ReadTimeout = 0
     RecvBufferSize = 1024
     SendBufferSize = 1024
     OnWork = HTTPWork
+    OnWorkBegin = HTTPWorkBegin
+    OnWorkEnd = HTTPWorkEnd
     AllowCookies = True
     ProxyParams.BasicAuthentication = True
     ProxyParams.ProxyPassword = 'zcxvcb'
@@ -259,7 +273,6 @@ object ExchangeForm: TExchangeForm
   end
   object HTTPReclame: TIdHTTP
     MaxLineAction = maException
-    ReadTimeout = 0
     RecvBufferSize = 1024
     SendBufferSize = 1024
     AllowCookies = True
