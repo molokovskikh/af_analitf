@@ -29,8 +29,11 @@ TUpdateTable = (
 TUpdateTables = set of TUpdateTable;
 
 TExchangeThread = class( TThread)
+ public
 	Terminated, CriticalError: boolean;
 	ErrorMessage: string;
+  DownloadReclame : Boolean;
+  procedure StopReclame;
 private
 	StatusText: string;
 	Progress: integer;
@@ -69,6 +72,7 @@ private
 	function StringToCodes( AStr: string): string;
 	function RusError( AStr: string): string;
   procedure OnConnectError (AMessage : String);
+  procedure OnReclameTerminate(Sender: TObject);
 protected
 	procedure Execute; override;
 end;
@@ -156,13 +160,6 @@ begin
 				Synchronize( SetTotalProgress);
 			end;
 
-			{ Дожидаемся завершения работы потока, скачивающего рекламу }
-			if eaGetPrice in ExchangeForm.ExchangeActs then
-			begin
-				if not RecThread.Terminated then RecThread.WaitFor;
-				RecThread.Free;
-			end;
-
 			{ Распаковка файлов }
 			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
 				( eaImportOnly in ExchangeForm.ExchangeActs) then UnpackFiles;
@@ -171,12 +168,11 @@ begin
 			if eaGetPrice in ExchangeForm.ExchangeActs then CommitExchange;
 
 			{ Отключение }
-			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
-				( eaSendOrders in ExchangeForm.ExchangeActs) then
-			begin
-				HTTPDisconnect;
-				RasDisconnect;
-			end;
+			if eaGetPrice in ExchangeForm.ExchangeActs then
+				if not RecThread.RecTerminated then
+          RecThread.OnTerminate := OnReclameTerminate
+        else
+          OnReclameTerminate(nil);
 
 			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
 				( eaImportOnly in ExchangeForm.ExchangeActs) then
@@ -196,7 +192,20 @@ begin
 				ImportData;
 				DM.ResetExclusive;
 				MainForm.Timer.Enabled := True;
+      	StatusText := 'Обоновление завершено';
+     	  Synchronize( SetStatus);
 			end;
+
+			{ Дожидаемся завершения работы потока, скачивающего рекламу }
+			if eaGetPrice in ExchangeForm.ExchangeActs then
+			begin
+        DownloadReclame := True;
+				if not RecThread.RecTerminated then RecThread.WaitFor;
+				RecThread.Free;
+			end;
+      TotalProgress := 100;
+      Synchronize( SetTotalProgress);
+
 		except //в случае ошибки показываем сообщение
 			on E: Exception do
 			begin
@@ -207,6 +216,7 @@ begin
 				Synchronize( SetTotalProgress);
 				try
 					HTTPDisconnect;
+          StopReclame;
 					RecThread.Free;
 				except
 				end;
@@ -232,22 +242,19 @@ procedure TExchangeThread.HTTPConnect;
 var
 	URL: string;
   TmpStr : String;
-  I : Integer;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
 	URL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
 		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
 	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
-  for I := 1 to 5 do
-    try
-      TmpStr := ExchangeForm.HTTP.Get('http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString));
-      WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Attemtp #' + IntToStr(I) + '  Success');
-      Break;
-    except
-      on E : Exception do
-        WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Attemtp #' + IntToStr(I) + '  Error=' + E.Message);
-    end;
+  try
+    TmpStr := ExchangeForm.HTTP.Get('http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString));
+    WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Test connect Success');
+  except
+    on E : Exception do
+      WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Test connect Error=' + E.Message);
+  end;
 end;
 
 procedure TExchangeThread.GetReclame;
@@ -258,7 +265,8 @@ end;
 
 procedure TExchangeThread.QueryData;
 var
-	Res: string;
+	Res: TStrings;
+  Error : String;
 begin
 	{ запрашиваем данные }
 	StatusText := 'Запрос данных';
@@ -270,18 +278,18 @@ begin
 			MainForm.VerInfo.FileVersion, DM.adtProvider.FieldByName( 'MDBVersion').AsString,
 			IntToHex( GetCopyID, 8)]);
 		{ QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
-		while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
+//		while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
 		{ проверяем отсутствие ошибки при удаленном запросе }
-		Res := Utf8ToAnsi( ExchangeForm.QueryResults.Values[ 'Error']);
-		if Res <> '' then
-			raise Exception.Create( Utf8ToAnsi( ExchangeForm.QueryResults.Values[ 'Error'])
-				+ #13 + #10 + Utf8ToAnsi( ExchangeForm.QueryResults.Values[ 'Desc']));
-		ServerAddition := Utf8ToAnsi( ExchangeForm.QueryResults.Values[ 'Addition']);
+		Error := Utf8ToAnsi( Res.Values[ 'Error']);
+		if Error <> '' then
+			raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
+				+ #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+		ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
 		{ получаем имя удаленного файла }
-		HostFileName := ExchangeForm.QueryResults.Values[ 'URL'];
+		HostFileName := Res.Values[ 'URL'];
 		NewZip := True;
-		if ExchangeForm.QueryResults.Values[ 'New'] <> '' then
-			NewZip := StrToBool( UpperCase( ExchangeForm.QueryResults.Values[ 'New']));
+		if Res.Values[ 'New'] <> '' then
+			NewZip := StrToBool( UpperCase( Res.Values[ 'New']));
 		if HostFileName = '' then
 			raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
 				#10#13 + 'Повторите запрос через несколько минут.');
@@ -299,9 +307,6 @@ begin
 end;
 
 procedure TExchangeThread.DoExchange;
-var
-  ErrorCount : Integer;
-  PostSuccess : Boolean;
 begin
 	//загрузка прайс-листа
 	if eaGetPrice in ExchangeForm.ExchangeActs then
@@ -324,39 +329,14 @@ begin
 			ExchangeForm.HTTP.Request.ContentRangeStart := FileStream.Position;
       try
         ExchangeForm.ShowStatusText := True;
-        ErrorCount := 0;
-        PostSuccess := False;
-        repeat
-          try
-            ExchangeForm.HTTP.Get( HostFileName, FileStream);
-            PostSuccess := True;
-          except
-            on E : EIdSocketError do begin
-              if (ErrorCount < 10) and
-                ((e.LastError = WSAECONNRESET) or (e.LastError = WSAETIMEDOUT)
-                  or (e.LastError = WSAENETUNREACH) or (e.LastError = WSAECONNREFUSED))
-              then begin
-                if ExchangeForm.HTTP.Connected then
-                try
-                  ExchangeForm.HTTP.Disconnect;
-                except
-                  on E : Exception do
-                    Writeln(ExchangeForm.LogFile, 'Error on Disconnect : ' + e.Message);
-                end;
-                Writeln(ExchangeForm.LogFile, 'Reconnect on error : ' + e.Message);
-                Inc(ErrorCount);
-                Sleep(100);
-              end
-              else
-                raise;
-            end;
-          end;
-        until (PostSuccess);
+//            ExchangeForm.HTTP.Get( 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString), FileStream);
+        ExchangeForm.HTTP.Get( HostFileName, FileStream);
+        Writeln(ExchangeForm.LogFile, 'Recieve file : ' + IntToStr(FileStream.Size));
       finally
         ExchangeForm.ShowStatusText := False;
       end;
 			Synchronize( ExchangeForm.CheckStop);
-			ExchangeForm.QueryResults.Clear;
+//			ExchangeForm.QueryResults.Clear;
 		finally
 			FileStream.Free;
 		end;
@@ -368,7 +348,7 @@ end;
 
 procedure TExchangeThread.CommitExchange;
 var
-	Res: string;
+	Res: TStrings;
   FS : TFileStream;
   LogStr : String;
   Len : Integer;
@@ -387,15 +367,11 @@ begin
   except
     LogStr := '';
   end;
-//	try
-		Res := SOAP.Invoke( 'MaxSynonymCode', ['Log'], [LogStr]);
-//	except
-//		on E: Exception do Windows.MessageBox( 0, PChar( 'Exception : ' + E.Message),
-//			'Ошибка', MB_OK or MB_ICONERROR);
-//	end;
-//	Windows.MessageBox( 0, PChar( 'CommitExchange result : ' + Res), 'Информация',
-//		MB_OK or MB_ICONINFORMATION);
-	ExchangeDateTime := FromXMLToDateTime( Res);
+
+//  Res := SOAP.Invoke( 'MaxSynonymCode', ['Log'], [LogStr]);
+	Res := SOAP.Invoke( 'MaxSynonymCodeV2', ['Log'], [LogStr]);
+
+	ExchangeDateTime := FromXMLToDateTime( Res.Text);
 	DM.adtParams.Edit;
 	DM.adtParams.FieldByName( 'LastDateTime').AsDateTime := ExchangeDateTime;
 	DM.adtParams.Post;
@@ -405,7 +381,8 @@ procedure TExchangeThread.DoSendOrders;
 var
 	params, values: array of string;
 	i: integer;
-	Res: string;
+	Res: TStrings;
+  ResError : String;
 	ServerOrderId: integer;
 	OldDS: Char;
   ExternalRes : Boolean;
@@ -518,16 +495,15 @@ begin
 
 		try
 			Res := Soap.Invoke( 'PostOrder1', params, values);
-			ExchangeForm.QueryResults.Clear;
+//			ExchangeForm.QueryResults.Clear;
 			// QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем
-			while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
+//			while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
 			// проверяем отсутствие ошибки при удаленном запросе
-			Res := Utf8ToAnsi( ExchangeForm.QueryResults.Values[ 'Error']);
-			if Res <> '' then
-				raise Exception.Create( Utf8ToAnsi( ExchangeForm.QueryResults.Values[ 'Error'])
-					+ #13 + #10 + Utf8ToAnsi( ExchangeForm.QueryResults.Values[ 'Desc']));
+			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
+			if ResError <> '' then
+				raise Exception.Create( ResError + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
 			try
-				ServerOrderId := StrToInt( ExchangeForm.QueryResults.Values[ 'OrderId']);
+				ServerOrderId := StrToInt( Res.Values[ 'OrderId']);
 			except
 				ServerOrderId := 0;
 			end;
@@ -557,7 +533,7 @@ begin
 		end;
 	end;
 	Synchronize( MainForm.SetOrdersInfo);
-	ExchangeForm.QueryResults.Clear;
+//	ExchangeForm.QueryResults.Clear;
 	DM.adsOrdersH.Close;
 	DM.adsOrders.Close;
 end;
@@ -997,7 +973,7 @@ begin
 	CommandText := 'EXECUTE SynonymDeleteFormHeaders'; Execute;
 	Progress := 60;
 	Synchronize( SetProgress);
-	TotalProgress := 85;
+	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
 
 	{ Блок интеграции прайс листов }
@@ -1034,7 +1010,7 @@ begin
 		DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean;
 	DM.adtParams.Post;
 
-	TotalProgress := 90;
+	TotalProgress := 80;
 	Synchronize( SetTotalProgress);
 
 	{ Добавляем забракованые препараты }
@@ -1055,14 +1031,14 @@ begin
 	Execute;
 	Progress := 90;
 	Synchronize( SetProgress);
-	TotalProgress := 95;
+	TotalProgress := 85;
 	Synchronize( SetTotalProgress);
 	CommandText := 'EXECUTE MinPricesSetPriceCode ' +
 		BoolToStr( DM.adtClients.FieldByName( 'LeadFromBasic').AsInteger = 1);
 	Execute;
 	Progress := 100;
 	Synchronize( SetProgress);
-	TotalProgress := 100;
+	TotalProgress := 90;
 	Synchronize( SetTotalProgress);
     end;
   finally
@@ -1077,6 +1053,7 @@ begin
 		DM.adtParams.FieldByName( 'LastDateTime').AsDateTime;
 	DM.adtParams.Post;
 	Synchronize( MainForm.SetUpdateDateTime);
+	Synchronize( EnableCancel);
 	//DeleteFilesByMask(ExePath+SDirIn+'\*.*');
 end;
 
@@ -1157,6 +1134,25 @@ end;
 procedure TExchangeThread.OnConnectError(AMessage: String);
 begin
   WriteLn(ExchangeForm.LogFile, AMessage);
+end;
+
+procedure TExchangeThread.OnReclameTerminate(Sender: TObject);
+begin
+  if ( eaGetPrice in ExchangeForm.ExchangeActs) or
+    ( eaSendOrders in ExchangeForm.ExchangeActs) then
+  begin
+    HTTPDisconnect;
+    RasDisconnect;
+  end;
+end;
+
+procedure TExchangeThread.StopReclame;
+begin
+  RecThread.Terminate;
+  try
+    ExchangeForm.HTTPReclame.Disconnect;
+  except
+  end;
 end;
 
 end.
