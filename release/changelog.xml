@@ -4,10 +4,10 @@
 <ChangeLog>
  <ProductName>AnalitF</ProductName>
  <Description> лиентское приложени€ дл€ работы с базой јналит‘ј–ћј÷»я</Description>
- <LastVersion>3.0.x.xx</LastVersion>
+ <LastVersion>3.0.16.75</LastVersion>
 
  <Version>
-  <Number>3.0.x.xx</Number>
+  <Number>3.0.16.75</Number>
   <Date>2005.03.14</Date>
   <Notes>ќбновлен механизм скачивани€ рекламы</Notes>
 
