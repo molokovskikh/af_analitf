@@ -1,0 +1,9 @@
+SELECT FullCode, Form
+FROM [Catalog]
+WHERE ShortCode=AShortCode
+ORDER BY Form;
+
+SELECT DISTINCT Catalog.FullCode, Catalog.Form
+FROM [Catalog] INNER JOIN Core ON Catalog.FullCode = Core.FullCode
+WHERE Catalog.ShortCode=AShortCode
+ORDER BY Catalog.Form;

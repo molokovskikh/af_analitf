@@ -1,0 +1,9 @@
+SELECT DISTINCT ShortCode AS AShortCode, Name
+FROM [Catalog]
+WHERE Not NewWares
+ORDER BY Name;
+
+
+SELECT DISTINCT Catalog.ShortCode AS AShortCode, Catalog.Name
+FROM [Catalog] INNER JOIN Core ON Catalog.FullCode = Core.FullCode
+ORDER BY Catalog.Name;
