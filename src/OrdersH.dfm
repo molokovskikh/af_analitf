@@ -76,7 +76,7 @@ inherited OrdersHForm: TOrdersHForm
           FooterFont.Height = -11
           FooterFont.Name = 'MS Sans Serif'
           FooterFont.Style = []
-          Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+          Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
           OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
           ReadOnly = True
           TabOrder = 0
