@@ -4,7 +4,8 @@ interface
 
 uses
 	Classes, SysUtils, Windows, XSBuiltIns, StrUtils, ComObj, Variants,
-	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX;
+	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
+  IdException, WinSock;
 
 type
 
@@ -61,18 +62,21 @@ private
 	procedure CheckNewExe;
 	procedure CheckNewMDB;
 	procedure CheckNewFRF;
+
 	procedure ImportFromExternalMDB;
 	function GetXMLDateTime( ADateTime: TDateTime): string;
 	function FromXMLToDateTime( AStr: string): TDateTime;
 	function StringToCodes( AStr: string): string;
 	function RusError( AStr: string): string;
+  procedure OnConnectError (AMessage : String);
 protected
 	procedure Execute; override;
 end;
 
 implementation
 
-uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders;
+uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
+  DB;
 
 { TExchangeThread }
 
@@ -128,6 +132,7 @@ begin
 				begin
 					CriticalError := True;
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					DoSendOrders;
 					CriticalError := False;
 				end;
@@ -138,11 +143,13 @@ begin
 					GetReclame;
 //					ExchangeForm.HTTP.ReadTimeout := 1000000; // 1000 секунд на запрос
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					QueryData;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
 //					ExchangeForm.HTTP.ReadTimeout := 60000; // 60 секунд на получение
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					DoExchange;
 				end;
 				TotalProgress := 40;
@@ -210,7 +217,8 @@ begin
 				//if ExchangeForm.DoStop then Abort;
 				//обрабатываем ошибку
 				Writeln( ExchangeForm.LogFile, LastStatus + ':' + CRLF + E.Message); //пишем в лог
-				if ErrorMessage = '' then ErrorMessage := RusError( E.Message);
+				if ErrorMessage = '' then
+          ErrorMessage := RusError( E.Message);
 			end;
 		end;
 	except
@@ -223,12 +231,23 @@ end;
 procedure TExchangeThread.HTTPConnect;
 var
 	URL: string;
+  TmpStr : String;
+  I : Integer;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
 	URL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
 		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
 	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
-		DM.adtParams.FieldByName( 'HTTPPass').AsString, ExchangeForm.HTTP);
+		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
+  for I := 1 to 5 do
+    try
+      TmpStr := ExchangeForm.HTTP.Get('http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString));
+      WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Attemtp #' + IntToStr(I) + '  Success');
+      Break;
+    except
+      on E : Exception do
+        WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Attemtp #' + IntToStr(I) + '  Error=' + E.Message);
+    end;
 end;
 
 procedure TExchangeThread.GetReclame;
@@ -280,6 +299,9 @@ begin
 end;
 
 procedure TExchangeThread.DoExchange;
+var
+  ErrorCount : Integer;
+  PostSuccess : Boolean;
 begin
 	//загрузка прайс-листа
 	if eaGetPrice in ExchangeForm.ExchangeActs then
@@ -302,7 +324,34 @@ begin
 			ExchangeForm.HTTP.Request.ContentRangeStart := FileStream.Position;
       try
         ExchangeForm.ShowStatusText := True;
-        ExchangeForm.HTTP.Get( HostFileName, FileStream);
+        ErrorCount := 0;
+        PostSuccess := False;
+        repeat
+          try
+            ExchangeForm.HTTP.Get( HostFileName, FileStream);
+            PostSuccess := True;
+          except
+            on E : EIdSocketError do begin
+              if (ErrorCount < 10) and
+                ((e.LastError = WSAECONNRESET) or (e.LastError = WSAETIMEDOUT)
+                  or (e.LastError = WSAENETUNREACH) or (e.LastError = WSAECONNREFUSED))
+              then begin
+                if ExchangeForm.HTTP.Connected then
+                try
+                  ExchangeForm.HTTP.Disconnect;
+                except
+                  on E : Exception do
+                    Writeln(ExchangeForm.LogFile, 'Error on Disconnect : ' + e.Message);
+                end;
+                Writeln(ExchangeForm.LogFile, 'Reconnect on error : ' + e.Message);
+                Inc(ErrorCount);
+                Sleep(100);
+              end
+              else
+                raise;
+            end;
+          end;
+        until (PostSuccess);
       finally
         ExchangeForm.ShowStatusText := False;
       end;
@@ -320,13 +369,30 @@ end;
 procedure TExchangeThread.CommitExchange;
 var
 	Res: string;
+  FS : TFileStream;
+  LogStr : String;
+  Len : Integer;
 begin
-	try
-		Res := SOAP.Invoke( 'MaxSynonymCode', [], []);
-	except
-		on E: Exception do Windows.MessageBox( 0, PChar( 'Exception : ' + E.Message),
-			'Ошибка', MB_OK or MB_ICONERROR);
-	end;
+  try
+    Flush(ExchangeForm.LogFile);
+    FS := TFileStream.Create(ExePath + 'Exchange.log', fmOpenRead or fmShareDenyNone);
+    try
+      Len := Integer(FS.Size);
+      SetLength(LogStr, Len);
+      FS.Read(Pointer(LogStr)^, Len);
+      LogStr := StringReplace(LogStr, #13#10, 'CRLN', [rfReplaceAll]);
+    finally
+      FS.Free;
+    end;
+  except
+    LogStr := '';
+  end;
+//	try
+		Res := SOAP.Invoke( 'MaxSynonymCode', ['Log'], [LogStr]);
+//	except
+//		on E: Exception do Windows.MessageBox( 0, PChar( 'Exception : ' + E.Message),
+//			'Ошибка', MB_OK or MB_ICONERROR);
+//	end;
 //	Windows.MessageBox( 0, PChar( 'CommitExchange result : ' + Res), 'Информация',
 //		MB_OK or MB_ICONINFORMATION);
 	ExchangeDateTime := FromXMLToDateTime( Res);
@@ -365,6 +431,9 @@ begin
 			DM.adsOrdersH.FieldByName( 'OrderId').Value;
                 DM.adsOrders.Open;
 
+    WriteLn(ExchangeForm.LogFile,
+      'Отправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
+      '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
 		SetLength( params, 6 + DM.adsOrders.RecordCount * 11);
 		SetLength( values, 6 + DM.adsOrders.RecordCount * 11);
 
@@ -494,9 +563,17 @@ begin
 end;
 
 procedure TExchangeThread.RasConnect;
+var
+  RasTimeout : Integer;
 begin
-	if DM.adtParams.FieldByName( 'RasConnect').AsBoolean then
+	if DM.adtParams.FieldByName( 'RasConnect').AsBoolean then begin
 			Synchronize( ExchangeForm.Ras.Connect);
+      RasTimeout := DM.adtParams.FieldByName( 'RasSleep').AsInteger;
+      if RasTimeout > 0 then begin
+        Writeln(ExchangeForm.LogFile, DateTimeToStr(Now) + '  Sleep = ' + IntToStr(RasTimeout));
+        Sleep(RasTimeout * 1000);
+      end;
+  end;
 	Synchronize( ExchangeForm.CheckStop);
 end;
 
@@ -1049,32 +1126,37 @@ begin
 	begin
 		result :=
 			'Соединение разорвано из-за превышения времени ожидания ответа сервера.' +
-			#10#13 + 'Повторите запрос через несколько минут.';
+			#10#13 + 'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
 		exit;
 	end;
 	if ( Pos( 'connection timeout', AnsiLowerCase( AStr)) > 0) or
 		( Pos( 'timed out', AnsiLowerCase( AStr)) > 0) then
 	begin
 		result := 'Превышения времени ожидания подключения к серверу.' +
-			#10#13 + 'Повторите запрос через несколько минут.';
+			#10#13 + 'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
 		exit;
 	end;
 	if Pos( 'reset by peer', AnsiLowerCase( AStr)) > 0 then
 	begin
 		result := 'Соединение разорвано.' + #10#13 +
-			'Повторите запрос через несколько минут.';
+			'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
 		exit;
 	end;
 	if Pos( 'connection refused', AnsiLowerCase( AStr)) > 0 then
 	begin
-		result := 'Не удалось установить соединение.';
+		result := 'Не удалось установить соединение.'#13#10#13#10 + AStr;
 		exit;
 	end;
 	if Pos( 'host not found', AnsiLowerCase( AStr)) > 0 then
 	begin
-		result := 'Сервер не найден.';
+		result := 'Сервер не найден.'#13#10#13#10 + AStr;
 		exit;
 	end;
+end;
+
+procedure TExchangeThread.OnConnectError(AMessage: String);
+begin
+  WriteLn(ExchangeForm.LogFile, AMessage);
 end;
 
 end.
