@@ -113,25 +113,48 @@ implementation
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID;
 
 procedure TDM.DMCreate(Sender: TObject);
+var
+  LDBFileName : String;
+  DBCompress : Boolean;
 begin
 	MainConnection.ConnectionString :=
 		SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
 			ExePath + DatabaseName);
 
+
+  if ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
+  then begin
+    MessageBox( Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]),
+      MB_ICONERROR or MB_OK);
+    ExitProcess(6);
+  end;
+
+  LDBFileName := ChangeFileExt(ExeName, '.ldb');
+  DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
+
+
 	DM.MainConnection.Mode := cmRead;
-	try
-		CheckRestrictToRun;
-	finally
-		MainConnection.Close;
-		DM.MainConnection.Mode := cmReadWrite;
-	end;
+  try
+    try
+      CheckRestrictToRun;
+    finally
+      MainConnection.Close;
+      DM.MainConnection.Mode := cmReadWrite;
+    end;
+  except
+    on E : Exception do begin
+  		MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
+			  MB_ICONERROR or MB_OK);
+      ExitProcess(5);
+    end;
+  end;
 
 	MainConnection.Open;
 	{ устанавливаем текущие записи в Clients и Users }
 	if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
 		then adtClients.First;
   //Проверяем, что работа с программой была завершена корректно
-  if GetStarted then
+  if DBCompress then
   begin
 		MessageBox(
       'Последний сеанс работы с программой не был корректно завершен. '+
@@ -214,7 +237,7 @@ begin
 	begin
 		MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
 			MB_ICONWARNING or MB_OK);
-		Application.Terminate;
+    ExitProcess(1);
 	end;
 
 	if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
@@ -222,7 +245,7 @@ begin
 		MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
 			'Запуск программы невозможен.', [ MaxUsers]),
 			MB_ICONWARNING or MB_OK);
-		Application.Terminate;
+    ExitProcess(2);
 	end;
 
 	if list.Count > 1 then
@@ -233,7 +256,7 @@ begin
 		MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
 			'монопольного доступ к базе данных. Запуск программы невозможен.', [ CompName]),
 			MB_ICONWARNING or MB_OK);
-		Application.Terminate;
+    ExitProcess(3);
 	end;
 end;
 
