@@ -64,6 +64,9 @@ type
     btnRasActions: TBitBtn;
     lblTip: TLabel;
     imgTip: TImage;
+    Label9: TLabel;
+    dbeRasSleep: TDBEdit;
+    udRasSleep: TUpDown;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
@@ -79,6 +82,8 @@ type
     procedure lblServerLinkClick(Sender: TObject);
     procedure tshAuthShow(Sender: TObject);
     procedure btnRasActionsClick(Sender: TObject);
+    procedure udRasSleepClick(Sender: TObject; Button: TUDBtnType);
+    procedure dbeRasSleepChange(Sender: TObject);
   private
     procedure GetEntries;
     procedure DisableRemoteAccess;
@@ -291,6 +296,19 @@ begin
 	dbeConnectPause.Enabled := True;
 	lblTip.Visible := False;
 	imgTip.Visible := False;
+end;
+
+procedure TConfigForm.udRasSleepClick(Sender: TObject; Button: TUDBtnType);
+begin
+  dbeRasSleep.Field.AsInteger := udRasSleep.Position;
+end;
+
+procedure TConfigForm.dbeRasSleepChange(Sender: TObject);
+var
+  V, E: Integer;
+begin
+  Val(dbeRasSleep.Text,V,E);
+  udRasSleep.Position:=V;
 end;
 
 end.

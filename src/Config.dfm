@@ -104,7 +104,7 @@ object ConfigForm: TConfigForm
       ImageIndex = 2
       object lblTip: TLabel
         Left = 53
-        Top = 233
+        Top = 248
         Width = 328
         Height = 46
         AutoSize = False
@@ -115,7 +115,7 @@ object ConfigForm: TConfigForm
       end
       object imgTip: TImage
         Left = 8
-        Top = 236
+        Top = 251
         Width = 32
         Height = 32
         AutoSize = True
@@ -5185,7 +5185,7 @@ object ConfigForm: TConfigForm
         Left = 8
         Top = 8
         Width = 377
-        Height = 209
+        Height = 238
         Caption = ' '#1059#1076#1072#1083#1077#1085#1085#1086#1077' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1077' '
         TabOrder = 0
         object Label12: TLabel
@@ -5208,6 +5208,13 @@ object ConfigForm: TConfigForm
           Width = 119
           Height = 13
           Caption = #1059#1076#1072#1083#1077#1085#1085#1086#1077' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1077
+        end
+        object Label9: TLabel
+          Left = 16
+          Top = 208
+          Width = 243
+          Height = 13
+          Caption = #1047#1072#1076#1077#1088#1078#1082#1072' '#1087#1086#1089#1083#1077' '#1091#1089#1090#1072#1085#1086#1074#1082#1080' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103', '#1089#1077#1082#1091#1085#1076
         end
         object dbcbRasConnect: TDBCheckBox
           Left = 8
@@ -5254,7 +5261,7 @@ object ConfigForm: TConfigForm
         end
         object gbAutoDial: TGroupBox
           Left = 8
-          Top = 132
+          Top = 127
           Width = 361
           Height = 69
           Caption = ' '#1040#1074#1090#1086#1076#1086#1079#1074#1086#1085' '
@@ -5323,6 +5330,26 @@ object ConfigForm: TConfigForm
           Caption = #1044#1077#1081#1089#1090#1074#1080#1077
           TabOrder = 5
           OnClick = btnRasActionsClick
+        end
+        object dbeRasSleep: TDBEdit
+          Left = 280
+          Top = 203
+          Width = 41
+          Height = 21
+          DataField = 'RasSleep'
+          DataSource = DM.dsParams
+          TabOrder = 6
+          OnChange = dbeRasSleepChange
+        end
+        object udRasSleep: TUpDown
+          Left = 321
+          Top = 203
+          Width = 15
+          Height = 21
+          Min = 1
+          Position = 10
+          TabOrder = 7
+          OnClick = udRasSleepClick
         end
       end
     end
