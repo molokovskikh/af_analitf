@@ -194,6 +194,7 @@ begin
     Parameters.ParamByName('ARegionCode').Value:=RegionCode;
     Open;
     try
+{
       ColumnByNameT(dbgCore,'Code').Visible:=FieldByName('Code').AsInteger>0;
       ColumnByNameT(dbgCore,'SynonymFirm').Visible:=FieldByName('SynonymFirm').AsInteger>0;
       ColumnByNameT(dbgCore,'Volume').Visible:=FieldByName('Volume').AsInteger>0;
@@ -201,6 +202,7 @@ begin
       ColumnByNameT(dbgCore,'Note').Visible:=FieldByName('Note').AsInteger>0;
       ColumnByNameT(dbgCore,'Period').Visible:=FieldByName('Period').AsInteger>0;
       ColumnByNameT(dbgCore,'Quantity').Visible:=FieldByName('Quantity').AsInteger>0;
+}      
     finally
       Close;
     end;
