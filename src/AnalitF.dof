@@ -25,7 +25,7 @@ U=0
 V=1
 W=0
 X=1
-Y=1
+Y=2
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -95,10 +95,10 @@ UnitOutputDir=.\unit
 PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
 SearchPath=
-Packages=vcl;rtl;vclx;dbrtl;vcldb;VclSmp;vclie;adortl;RxCtl7;RxBDE7;RxDB7;EhLib70;bdertl;FR7;tee;VclZip6;ARas7;Tough;Indy70
+Packages=vcl;rtl;dbrtl;vcldb;VclSmp;adortl;EhLib70;Tough;FR7;Indy70
 Conditionals=
 DebugSourceDirs=
-UsePackages=0
+UsePackages=1
 [Parameters]
 RunParams=/extend
 HostApplication=
@@ -107,13 +107,17 @@ UseLauncher=0
 DebugCWD=
 RemoteHost=jaroslav
 RemotePath=q:\AnalitF.exe
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=3
 MinorVer=0
-Release=19
-Build=77
+Release=35
+Build=81
 Debug=0
 PreRelease=0
 Special=0
@@ -124,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=3.0.19.77
+FileVersion=3.0.35.81
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2005
 LegalTrademarks=Инфорум
@@ -132,41 +136,12 @@ OriginalFilename=AnalitF.exe
 ProductName=АналитФАРМАЦИЯ
 ProductVersion=1.0.0.0
 Comments=
-[Excluded Packages]
-c:\program files\borland\delphi7\Bin\dcl31w70.bpl=Delphi 1.0 Compatibility Components
-c:\program files\borland\delphi7\Bin\dclact70.bpl=Borland ActionBar Components
-C:\Program Files\Borland\Delphi7\Bin\dclmid70.bpl=Borland MyBase DataAccess Components
-c:\program files\borland\delphi7\Bin\dclocx70.bpl=Borland Sample Imported ActiveX Controls
-c:\program files\borland\delphi7\Bin\dclite70.bpl=Borland Integrated Translation Environment
-C:\Program Files\Borland\Delphi7\Bin\dbx70.bpl=Borland SQL Explorer UI Package
-C:\Program Files\Borland\Delphi7\Bin\dclclxstd70.bpl=Borland CLX Standard Components
-c:\program files\borland\delphi7\Bin\dclsmpedit70.bpl=Borland Editor Script Enhancements
-c:\program files\borland\delphi7\Bin\applet70.bpl=Borland Control Panel Applet Package
-c:\program files\borland\delphi7\Bin\dclemacsedit70.bpl=Borland Editor Emacs Enhancements
-c:\program files\borland\delphi7\Bin\dclmlwiz70.bpl=Borland Markup Language Wizards
-c:\program files\borland\delphi7\Bin\dclofficexp70.bpl=Microsoft Office XP Sample Automation Server Wrapper Components
-c:\program files\borland\delphi7\Projects\Bpl\ZCommon7.bpl=Zeos Common Routines
-c:\program files\borland\delphi7\Projects\Bpl\ZDbware7.bpl=Zeos Dbware Components
-c:\program files\borland\delphi7\Projects\Bpl\ZMySql7.bpl=Zeos MySQL Components
-c:\program files\borland\delphi7\Projects\Bpl\VKDBF7.bpl=VK DBF 1.0.6
-c:\program files\borland\delphi7\Bin\dclsoap70.bpl=Borland SOAP Components
-C:\Program Files\Borland\Delphi7\Bin\dclnet70.bpl=Borland Internet Components
-c:\program files\borland\delphi7\Bin\dclmcn70.bpl=Borland DataSnap Connection Components
-c:\program files\borland\delphi7\Bin\dcldbx70.bpl=Borland dbExpress Components
-c:\program files\borland\delphi7\Bin\dcldbxcds70.bpl=Borland SimpleDataset Component (DBX)
-c:\program files\borland\delphi7\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
-C:\Program Files\Borland\Delphi7\Bin\dclbde70.bpl=Borland BDE DB Components
-c:\program files\borland\delphi7\Bin\dclwbm70.bpl=Borland InternetExpress Components
-c:\program files\borland\delphi7\Bin\dclwebsnap70.bpl=Borland WebSnap Components
-c:\program files\borland\delphi7\Bin\DCLIB70.bpl=InterBase Data Access Components
-c:\program files\borland\delphi7\Bin\dcltee70.bpl=TeeChart Components
-c:\program files\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
-C:\WINDOWS\system32\ibevnt70.bpl=Borland Interbase Event Alerter Component
-c:\program files\borland\delphi7\Bin\dclshlctrls70.bpl=Shell Control Property and Component Editors
-c:\program files\borland\delphi7\Bin\dclclxdb70.bpl=Borland CLX Database Components
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit

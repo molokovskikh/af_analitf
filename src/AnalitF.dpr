@@ -1,5 +1,7 @@
 program AnalitF;
 
+{%ToDo 'AnalitF.todo'}
+
 uses
   Forms,
   SysUtils,
@@ -43,7 +45,8 @@ uses
   Waiting in 'Waiting.pas' {WaitingForm},
   CompactThread in 'CompactThread.pas',
   ExternalOrders in 'ExternalOrders.pas',
-  ShowLog in 'ShowLog.pas' {frmShowLog};
+  ShowLog in 'ShowLog.pas' {frmShowLog},
+  WayBillList in 'WayBillList.pas' {WayBillListForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}
