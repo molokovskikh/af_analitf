@@ -37,12 +37,14 @@ type
     adsSummaryPriceName: TWideStringField;
     adsSummaryRegionName: TWideStringField;
     adsSummaryJunk: TBooleanField;
-    dbgSummary: TToughDBGrid;
     Panel1: TPanel;
     Bevel1: TBevel;
-    WebBrowser1: TWebBrowser;
     adsSummaryAwait: TBooleanField;
+    pClient: TPanel;
+    pWebBrowser: TPanel;
     Bevel2: TBevel;
+    WebBrowser1: TWebBrowser;
+    dbgSummary: TToughDBGrid;
     procedure adsSummaryCalcFields(DataSet: TDataSet);
     procedure adsSummaryAfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
@@ -53,6 +55,8 @@ type
       var CanInput: Boolean);
     procedure adsSummaryBeforePost(DataSet: TDataSet);
     procedure FormDestroy(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure adsSummaryAfterScroll(DataSet: TDataSet);
   private
     procedure SummaryShow;
     procedure SummaryHShow;
@@ -202,6 +206,24 @@ begin
 		raise;
 	end;
 	inherited;
+end;
+
+procedure TSummaryForm.FormResize(Sender: TObject);
+begin
+  adsSummaryAfterScroll(adsSummary);
+end;
+
+procedure TSummaryForm.adsSummaryAfterScroll(DataSet: TDataSet);
+//var
+//  C : Integer;
+begin
+{
+  C := dbgSummary.Canvas.TextHeight('Wg') + 2;
+  if (adsSummary.RecordCount > 0) and ((adsSummary.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
+    pWebBrowser.Visible := False
+  else
+    pWebBrowser.Visible := True;
+}    
 end;
 
 end.
