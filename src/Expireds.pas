@@ -16,7 +16,6 @@ type
     dsExpireds: TDataSource;
     lblRecordCount: TLabel;
     adsOrdersH: TADODataSet;
-    dbgExpireds: TToughDBGrid;
     Panel1: TPanel;
     plOverCost: TPanel;
     adsOrdersShowFormSummary: TADODataSet;
@@ -67,8 +66,11 @@ type
     adsExpiredsOrdersHRegionName: TWideStringField;
     adsExpiredsOrdersSynonym: TWideStringField;
     adsExpiredsOrdersSynonymFirm: TWideStringField;
-    WebBrowser1: TWebBrowser;
+    pClient: TPanel;
+    pWebBrowser: TPanel;
     Bevel2: TBevel;
+    WebBrowser1: TWebBrowser;
+    dbgExpireds: TToughDBGrid;
     procedure adsExpiredsCalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsExpiredsBeforePost(DataSet: TDataSet);
@@ -80,6 +82,8 @@ type
     procedure adsExpiredsBeforeClose(DataSet: TDataSet);
     procedure adsExpiredsAfterOpen(DataSet: TDataSet);
     procedure adsExpiredsAfterPost(DataSet: TDataSet);
+    procedure adsExpiredsAfterScroll(DataSet: TDataSet);
+    procedure FormResize(Sender: TObject);
   private
     ClientId: Integer;
     UseExcess: Boolean;
@@ -262,6 +266,24 @@ end;
 procedure TExpiredsForm.adsExpiredsAfterPost(DataSet: TDataSet);
 begin
 	MainForm.SetOrdersInfo;
+end;
+
+procedure TExpiredsForm.adsExpiredsAfterScroll(DataSet: TDataSet);
+//var
+//  C : Integer;
+begin
+{
+  C := dbgExpireds.Canvas.TextHeight('Wg') + 2;
+  if (adsExpireds.RecordCount > 0) and ((adsExpireds.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
+    pWebBrowser.Visible := False
+  else
+    pWebBrowser.Visible := True;
+}    
+end;
+
+procedure TExpiredsForm.FormResize(Sender: TObject);
+begin
+  adsExpiredsAfterScroll(adsExpireds);
 end;
 
 end.
