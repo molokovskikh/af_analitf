@@ -7,6 +7,7 @@ inherited NamesFormsForm: TNamesFormsForm
   OldCreateOrder = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object pnlBottom: TPanel
@@ -18,25 +19,11 @@ inherited NamesFormsForm: TNamesFormsForm
     BevelOuter = bvNone
     TabOrder = 0
     object chkUseForms: TCheckBox
-      Left = 217
+      Left = 9
       Top = 7
       Width = 205
       Height = 17
       Action = actUseForms
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 1
-    end
-    object chkNewWares: TCheckBox
-      Left = 13
-      Top = 7
-      Width = 199
-      Height = 17
-      Action = actNewWares
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -106,7 +93,7 @@ inherited NamesFormsForm: TNamesFormsForm
           Width = 136
         end>
     end
-    object Panel1: TPanel
+    object pClient: TPanel
       Left = 269
       Top = 0
       Width = 418
@@ -114,19 +101,11 @@ inherited NamesFormsForm: TNamesFormsForm
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      object Bevel1: TBevel
-        Left = 0
-        Top = 231
-        Width = 418
-        Height = 4
-        Align = alBottom
-        Shape = bsTopLine
-      end
       object dbgForms: TToughDBGrid
         Left = 0
         Top = 0
         Width = 418
-        Height = 231
+        Height = 232
         Align = alClient
         AutoFitColWidths = True
         DataSource = dsForms
@@ -163,20 +142,37 @@ inherited NamesFormsForm: TNamesFormsForm
             Width = 203
           end>
       end
-      object WebBrowser1: TWebBrowser
-        Tag = 2
+      object pWebBrowser: TPanel
         Left = 0
-        Top = 235
+        Top = 232
         Width = 418
-        Height = 184
+        Height = 187
         Align = alBottom
+        BevelOuter = bvNone
         TabOrder = 1
-        ControlData = {
-          4C000000342B0000041300000000000000000000000000000000000000000000
-          000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126208000000000000004C0000000114020000000000C000000000000046
-          8000000000000000000000000000000000000000000000000000000000000000
-          00000000000000000100000000000000000000000000000000000000}
+        object Bevel1: TBevel
+          Left = 0
+          Top = 0
+          Width = 418
+          Height = 4
+          Align = alTop
+          Shape = bsTopLine
+        end
+        object WebBrowser1: TWebBrowser
+          Tag = 2
+          Left = 0
+          Top = 4
+          Width = 418
+          Height = 183
+          Align = alClient
+          TabOrder = 0
+          ControlData = {
+            4C000000342B0000EA1200000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
       end
     end
   end
@@ -189,6 +185,7 @@ inherited NamesFormsForm: TNamesFormsForm
     Connection = DM.MainConnection
     CursorType = ctStatic
     LockType = ltReadOnly
+    AfterScroll = adsFormsAfterScroll
     CommandText = 'SELECT * FROM CatalogShowByForm'
     DataSource = dsNames
     Parameters = <

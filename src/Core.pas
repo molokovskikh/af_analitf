@@ -30,10 +30,9 @@ type
     adsOrdersShowFormSummary: TADODataSet;
     dsOrdersShowFormSummary: TDataSource;
     adsOrdersShowFormSummaryPriceAvg: TBCDField;
-    Panel1: TPanel;
+    pBottom: TPanel;
     dbgHistory: TToughDBGrid;
-    dbgCore: TToughDBGrid;
-    Panel2: TPanel;
+    pTop: TPanel;
     lblName: TLabel;
     adsFirmsInfo: TADODataSet;
     dsFirmsInfo: TDataSource;
@@ -99,11 +98,14 @@ type
     cbEnabled: TComboBox;
     adsOrdersAwait: TBooleanField;
     adsOrdersJunk: TBooleanField;
-    WebBrowser1: TWebBrowser;
     ActionList: TActionList;
     actFlipCore: TAction;
-    Bevel1: TBevel;
     adsCoreFirmCode: TAutoIncField;
+    pCenter: TPanel;
+    pWebBrowser: TPanel;
+    Bevel1: TBevel;
+    WebBrowser1: TWebBrowser;
+    dbgCore: TToughDBGrid;
     procedure adsCoreCalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforePost(DataSet: TDataSet);
@@ -127,6 +129,8 @@ type
     procedure dbgHistoryGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure actFlipCoreExecute(Sender: TObject);
+    procedure adsCoreAfterScroll(DataSet: TDataSet);
+    procedure FormResize(Sender: TObject);
   private
     RegionCodeStr, RegionPriceRet: string;
     RecInfos: array of Double;
@@ -526,7 +530,7 @@ begin
 	if OrdersH = nil then
 	begin
 		OrdersHForm := TOrdersHForm.Create( Application);
-		OrdersHForm.Show;
+//		OrdersHForm.Show;
 	end
 	else
 	begin
@@ -608,6 +612,22 @@ begin
 		CoreFirmForm.adsCore.Locate( 'SynonymCode;SynonymFirmCrCode',
 			VarArrayOf([ SynonymCode, SynonymFirmCrCode]), []);
 	end;
+end;
+
+procedure TCoreForm.adsCoreAfterScroll(DataSet: TDataSet);
+var
+  C : Integer;
+begin
+  C := dbgCore.Canvas.TextHeight('Wg') + 2;
+  if (adsCore.RecordCount > 0) and ((adsCore.RecordCount*C)/(pCenter.Height-pWebBrowser.Height) > 13/10) then
+    pWebBrowser.Visible := False
+  else
+    pWebBrowser.Visible := True;
+end;
+
+procedure TCoreForm.FormResize(Sender: TObject);
+begin
+  adsCoreAfterScroll(adsCore);
 end;
 
 end.

@@ -1,7 +1,6 @@
 object CoreForm: TCoreForm
   Left = 205
   Top = 138
-  ActiveControl = dbgCore
   Align = alClient
   BorderIcons = []
   BorderStyle = bsNone
@@ -14,16 +13,9 @@ object CoreForm: TCoreForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnHide = FormHide
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object Bevel1: TBevel
-    Left = 0
-    Top = 251
-    Width = 792
-    Height = 4
-    Align = alBottom
-    Shape = bsTopLine
-  end
   object plOverCost: TPanel
     Left = 248
     Top = 192
@@ -36,173 +28,10 @@ object CoreForm: TCoreForm
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 2
     Visible = False
   end
-  object dbgCore: TToughDBGrid
-    Left = 0
-    Top = 29
-    Width = 792
-    Height = 222
-    Align = alClient
-    AutoFitColWidths = True
-    DataSource = dsCore
-    Flat = True
-    FooterColor = clWindow
-    FooterFont.Charset = DEFAULT_CHARSET
-    FooterFont.Color = clWindowText
-    FooterFont.Height = -11
-    FooterFont.Name = 'MS Sans Serif'
-    FooterFont.Style = []
-    Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
-    OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
-    ReadOnly = True
-    TabOrder = 1
-    TitleFont.Charset = DEFAULT_CHARSET
-    TitleFont.Color = clWindowText
-    TitleFont.Height = -11
-    TitleFont.Name = 'MS Sans Serif'
-    TitleFont.Style = []
-    OnGetCellParams = dbgCoreGetCellParams
-    OnKeyDown = dbgCoreKeyDown
-    OnKeyPress = dbgCoreKeyPress
-    InputField = 'Order'
-    SearchPosition = spTop
-    OnCanInput = dbgCoreCanInput
-    Columns = <
-      item
-        EditButtons = <>
-        FieldName = 'Synonym'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
-        Width = 196
-      end
-      item
-        EditButtons = <>
-        FieldName = 'SynonymFirm'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
-        Width = 85
-      end
-      item
-        EditButtons = <>
-        FieldName = 'Volume'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
-        Width = 63
-      end
-      item
-        EditButtons = <>
-        FieldName = 'Note'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
-        Width = 69
-      end
-      item
-        Alignment = taCenter
-        EditButtons = <>
-        FieldName = 'Period'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
-        Width = 85
-      end
-      item
-        EditButtons = <>
-        FieldName = 'PriceName'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
-        Width = 85
-      end
-      item
-        EditButtons = <>
-        FieldName = 'RegionName'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1056#1077#1075#1080#1086#1085
-        Width = 72
-      end
-      item
-        Alignment = taCenter
-        Checkboxes = False
-        EditButtons = <>
-        FieldName = 'Storage'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1057#1082#1083#1072#1076
-        Width = 37
-      end
-      item
-        DisplayFormat = 'dd.mm.yyyy hh:nn'
-        EditButtons = <>
-        FieldName = 'DatePrice'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
-        Width = 103
-      end
-      item
-        EditButtons = <>
-        FieldName = 'BaseCost'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1062#1077#1085#1072
-        Width = 55
-      end
-      item
-        EditButtons = <>
-        FieldName = 'PriceDelta'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1056#1072#1079#1085#1080#1094#1072', %'
-      end
-      item
-        EditButtons = <>
-        FieldName = 'PriceRet'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
-        Width = 62
-      end
-      item
-        Alignment = taRightJustify
-        EditButtons = <>
-        FieldName = 'Quantity'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
-        Width = 68
-      end
-      item
-        Color = 16775406
-        EditButtons = <>
-        FieldName = 'Order'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1047#1072#1082#1072#1079
-        Width = 47
-      end
-      item
-        Color = 16775406
-        EditButtons = <>
-        FieldName = 'SumOrder'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1057#1091#1084#1084#1072
-        Width = 70
-      end>
-  end
-  object Panel1: TPanel
+  object pBottom: TPanel
     Left = 0
     Top = 348
     Width = 792
@@ -375,14 +204,14 @@ object CoreForm: TCoreForm
       end
     end
   end
-  object Panel2: TPanel
+  object pTop: TPanel
     Left = 0
     Top = 0
     Width = 792
     Height = 29
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 1
     DesignSize = (
       792
       29)
@@ -430,20 +259,210 @@ object CoreForm: TCoreForm
         #1053#1077#1086#1089#1085#1086#1074#1085#1099#1077)
     end
   end
-  object WebBrowser1: TWebBrowser
-    Tag = 3
+  object pCenter: TPanel
     Left = 0
-    Top = 255
+    Top = 29
     Width = 792
-    Height = 93
-    Align = alBottom
-    TabOrder = 4
-    ControlData = {
-      4C000000DB5100009D0900000000000000000000000000000000000000000000
-      000000004C000000000000000000000001000000E0D057007335CF11AE690800
-      2B2E126208000000000000004C0000000114020000000000C000000000000046
-      8000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000100000000000000000000000000000000000000}
+    Height = 319
+    Align = alClient
+    BevelOuter = bvNone
+    TabOrder = 3
+    object pWebBrowser: TPanel
+      Tag = 84
+      Left = 0
+      Top = 235
+      Width = 792
+      Height = 84
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 0
+      object Bevel1: TBevel
+        Left = 0
+        Top = 0
+        Width = 792
+        Height = 4
+        Align = alTop
+        Shape = bsTopLine
+      end
+      object WebBrowser1: TWebBrowser
+        Tag = 3
+        Left = 0
+        Top = 4
+        Width = 792
+        Height = 80
+        Align = alClient
+        TabOrder = 0
+        ControlData = {
+          4C000000DB510000450800000000000000000000000000000000000000000000
+          000000004C000000000000000000000001000000E0D057007335CF11AE690800
+          2B2E126208000000000000004C0000000114020000000000C000000000000046
+          8000000000000000000000000000000000000000000000000000000000000000
+          00000000000000000100000000000000000000000000000000000000}
+      end
+    end
+    object dbgCore: TToughDBGrid
+      Left = 0
+      Top = 0
+      Width = 792
+      Height = 235
+      Align = alClient
+      AutoFitColWidths = True
+      DataSource = dsCore
+      Flat = True
+      FooterColor = clWindow
+      FooterFont.Charset = DEFAULT_CHARSET
+      FooterFont.Color = clWindowText
+      FooterFont.Height = -11
+      FooterFont.Name = 'MS Sans Serif'
+      FooterFont.Style = []
+      Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+      OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+      ReadOnly = True
+      TabOrder = 1
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -11
+      TitleFont.Name = 'MS Sans Serif'
+      TitleFont.Style = []
+      OnGetCellParams = dbgCoreGetCellParams
+      OnKeyDown = dbgCoreKeyDown
+      OnKeyPress = dbgCoreKeyPress
+      InputField = 'Order'
+      SearchPosition = spTop
+      OnCanInput = dbgCoreCanInput
+      Columns = <
+        item
+          EditButtons = <>
+          FieldName = 'Synonym'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
+          Width = 196
+        end
+        item
+          EditButtons = <>
+          FieldName = 'SynonymFirm'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
+          Width = 85
+        end
+        item
+          EditButtons = <>
+          FieldName = 'Volume'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
+          Width = 63
+        end
+        item
+          EditButtons = <>
+          FieldName = 'Note'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
+          Width = 69
+        end
+        item
+          Alignment = taCenter
+          EditButtons = <>
+          FieldName = 'Period'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
+          Width = 85
+        end
+        item
+          EditButtons = <>
+          FieldName = 'PriceName'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
+          Width = 85
+        end
+        item
+          EditButtons = <>
+          FieldName = 'RegionName'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1056#1077#1075#1080#1086#1085
+          Width = 72
+        end
+        item
+          Alignment = taCenter
+          Checkboxes = False
+          EditButtons = <>
+          FieldName = 'Storage'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1057#1082#1083#1072#1076
+          Width = 37
+        end
+        item
+          DisplayFormat = 'dd.mm.yyyy hh:nn'
+          EditButtons = <>
+          FieldName = 'DatePrice'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
+          Width = 103
+        end
+        item
+          EditButtons = <>
+          FieldName = 'BaseCost'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1062#1077#1085#1072
+          Width = 55
+        end
+        item
+          EditButtons = <>
+          FieldName = 'PriceDelta'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1056#1072#1079#1085#1080#1094#1072', %'
+        end
+        item
+          EditButtons = <>
+          FieldName = 'PriceRet'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
+          Width = 62
+        end
+        item
+          Alignment = taRightJustify
+          EditButtons = <>
+          FieldName = 'Quantity'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
+          Width = 68
+        end
+        item
+          Color = 16775406
+          EditButtons = <>
+          FieldName = 'Order'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1047#1072#1082#1072#1079
+          Width = 47
+        end
+        item
+          Color = 16775406
+          EditButtons = <>
+          FieldName = 'SumOrder'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1057#1091#1084#1084#1072
+          Width = 70
+        end>
+    end
   end
   object dsCore: TDataSource
     DataSet = adsCore
@@ -635,6 +654,7 @@ object CoreForm: TCoreForm
     BeforeEdit = adsCoreBeforeEdit
     BeforePost = adsCoreBeforePost
     AfterPost = adsCoreAfterPost
+    AfterScroll = adsCoreAfterScroll
     OnCalcFields = adsCoreCalcFields
     CommandText = 'SELECT * FROM CoreShowByName'
     Parameters = <

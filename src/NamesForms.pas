@@ -16,7 +16,6 @@ type
     Splitter1: TSplitter;
     pnlBottom: TPanel;
     chkUseForms: TCheckBox;
-    chkNewWares: TCheckBox;
     dsNames: TDataSource;
     adsForms: TADODataSet;
     dsForms: TDataSource;
@@ -27,9 +26,10 @@ type
     pnlTop: TPanel;
     dbgNames: TToughDBGrid;
     dbgForms: TToughDBGrid;
-    Panel1: TPanel;
-    WebBrowser1: TWebBrowser;
+    pClient: TPanel;
+    pWebBrowser: TPanel;
     Bevel1: TBevel;
+    WebBrowser1: TWebBrowser;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -44,6 +44,8 @@ type
     procedure dbgNamesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgFormsExit(Sender: TObject);
+    procedure adsFormsAfterScroll(DataSet: TDataSet);
+    procedure FormResize(Sender: TObject);
   private
     procedure SetNamesParams;
     procedure SetFormsParams;
@@ -203,6 +205,22 @@ begin
 	adsNames.CommandText := NamesSql + SQLOrderBy;
 	SetNamesParams;
 	SetFormsParams;
+end;
+
+procedure TNamesFormsForm.adsFormsAfterScroll(DataSet: TDataSet);
+var
+  C : Integer;
+begin
+  C := dbgForms.Canvas.TextHeight('Wg') + 2;
+  if (adsForms.RecordCount > 0) and ((adsForms.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
+    pWebBrowser.Visible := False
+  else
+    pWebBrowser.Visible := True;
+end;
+
+procedure TNamesFormsForm.FormResize(Sender: TObject);
+begin
+  adsFormsAfterScroll(adsForms);
 end;
 
 end.
