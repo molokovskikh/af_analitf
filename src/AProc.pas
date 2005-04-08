@@ -12,6 +12,8 @@ const
   SConnectRAS='RAS'; SConnectPROXY='PROXY'; SConnectNONE='NONE';
   SDirDocs='Docs';
   SDirIn='In';
+  SDirExe='Exe';
+  SDirExports = 'Exports';
   SDirReclame='Reclame';
   SHTTPPrefix='http://';
   CRLF=#13#10;
