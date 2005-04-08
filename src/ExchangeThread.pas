@@ -3,9 +3,9 @@ unit ExchangeThread;
 interface
 
 uses
-	Classes, SysUtils, Windows, XSBuiltIns, StrUtils, ComObj, Variants,
+	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns, 
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
-  IdException, WinSock;
+  IdException, WinSock, RxVerInf;
 
 type
 
@@ -24,7 +24,9 @@ TUpdateTable = (
 	utSynonym,
 	utSynonymFirmCr,
 	utRejects,
-	utRegistry);
+	utRegistry,
+  utWayBillHead,
+  utWayBillList);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -73,6 +75,7 @@ private
 	function RusError( AStr: string): string;
   procedure OnConnectError (AMessage : String);
   procedure OnReclameTerminate(Sender: TObject);
+  function  GetLibraryVersion : TStrings;
 protected
 	procedure Execute; override;
 end;
@@ -267,16 +270,42 @@ procedure TExchangeThread.QueryData;
 var
 	Res: TStrings;
   Error : String;
+  ParamNames, ParamValues : array of String;
+  I : Integer;
 begin
 	{ запрашиваем данные }
 	StatusText := 'Запрос данных';
 	Synchronize( SetStatus);
 	try
+    Res := GetLibraryVersion;
+    try
+      SetLength(ParamNames, 5 + Res.Count);
+      SetLength(ParamValues, 5 + Res.Count);
+      ParamNames[0]  := 'AccessTime';
+      ParamValues[0] := GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
+      ParamNames[1]  := 'GetEtalonData';
+      ParamValues[1] := BoolToStr( eaGetFullData in ExchangeForm.ExchangeActs, True);
+      ParamNames[2]  := 'ExeVersion';
+      ParamValues[2] := MainForm.VerInfo.FileVersion;
+      ParamNames[3]  := 'MDBVersion';
+      ParamValues[3] := DM.adtProvider.FieldByName( 'MDBVersion').AsString;
+      ParamNames[4]  := 'UniqueID';
+      ParamValues[4] := IntToHex( GetCopyID, 8);
+      for I := 0 to Res.Count-1 do begin
+        ParamNames[5+i] := Res.Names[i];
+        ParamValues[5+i] := Res.Values[ParamNames[5+i]];
+      end;
+    finally
+      Res.Free;
+    end;
+{
 		Res := SOAP.Invoke( 'GetUserData', [ 'AccessTime', 'GetEtalonData', 'ExeVersion', 'MDBVersion', 'UniqueID'],
 			[GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime),
 			BoolToStr( eaGetFullData in ExchangeForm.ExchangeActs, True),
 			MainForm.VerInfo.FileVersion, DM.adtProvider.FieldByName( 'MDBVersion').AsString,
 			IntToHex( GetCopyID, 8)]);
+}      
+		Res := SOAP.Invoke( 'GetUserData', ParamNames, ParamValues);
 		{ QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
 //		while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
 		{ проверяем отсутствие ошибки при удаленном запросе }
@@ -374,6 +403,10 @@ begin
 	ExchangeDateTime := FromXMLToDateTime( Res.Text);
 	DM.adtParams.Edit;
 	DM.adtParams.FieldByName( 'LastDateTime').AsDateTime := ExchangeDateTime;
+  if DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
+    DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := False;
+    MainForm.EnableByHTTPName;
+  end;
 	DM.adtParams.Post;
 end;
 
@@ -569,7 +602,7 @@ end;
 
 procedure TExchangeThread.UnpackFiles;
 var
-	SR: TSearchRec;
+	SR, ExportsSR: TSearchRec;
 begin
 	if FindFirst( ExePath + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
 	try
@@ -598,13 +631,30 @@ begin
 		SysUtils.FindClose( SR);
 		ExchangeForm.UnZip.ZipName := '';
 	end;
+
+  //Обрабатываем папку Exports
+  if DirectoryExists(ExePath + SDirIn + '\' + SDirExports) then begin
+    if FindFirst( ExePath + SDirIn + '\' + SDirExports + '\*.*', faAnyFile, ExportsSR) = 0 then
+    try
+      repeat
+        if (ExportsSR.Name <> '.') and (ExportsSR.Name <> '..') then
+          MoveFileEx(
+            PChar(ExePath + SDirIn + '\' + SDirExports + '\' + ExportsSR.Name),
+            PChar(ExePath + SDirExports + '\' + ExportsSR.Name),
+            MOVEFILE_REPLACE_EXISTING);
+      until (FindNext( ExportsSR ) <> 0)
+    finally
+      SysUtils.FindClose( ExportsSR );
+    end;
+    RemoveDir(ExePath + SDirIn + '\' + SDirExports);
+  end;
 end;
 
 procedure TExchangeThread.CheckNewExe;
 var
 	EraserDll: TResourceStream;
 begin
-	if not SysUtils.FileExists( ExePath + SDirIn + '\AnalitF.exe') then exit;
+	if not SysUtils.DirectoryExists( ExePath + SDirIn + '\' + SDirExe) then exit;
 
 	Windows.MessageBox( 0, 'Получена новая версия программы. Сейчас будет выполнено обновление',
 		'Внимание', MB_OK or MB_ICONWARNING);
@@ -615,8 +665,8 @@ begin
 		EraserDll.Free;
 	end;
 
-	ShellExecute( 0, nil, 'rundll32.exe', PChar( ' Eraser.dll,Erase -i "' +
-		ExePath + 'AnalitF.exe" "' + ExePath + SDirIn + '\AnalitF.exe"'),
+	ShellExecute( 0, nil, 'rundll32.exe', PChar( ' Eraser.dll,Erase -i ' + IntToStr(GetCurrentProcessId) + ' "' +
+		ExePath + ExeName + '" "' + ExePath + SDirIn + '\' + SDirExe + '"'),
 		nil, SW_SHOWNORMAL);
 	raise Exception.Create( 'Terminate');
 end;
@@ -791,6 +841,8 @@ begin
 	if Tables.IndexOf( 'EXTSYNONYMFIRMCR')>=0 then UpdateTables := UpdateTables + [utSynonymFirmCr];
 	if Tables.IndexOf( 'EXTREJECTS')>=0 then UpdateTables := UpdateTables + [utRejects];
 	if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
+	if Tables.IndexOf( 'EXTWAYBILLHEAD')>=0 then UpdateTables := UpdateTables + [utWayBillHead];
+	if Tables.IndexOf( 'EXTWAYBILLLIST')>=0 then UpdateTables := UpdateTables + [utWayBillList];
     //обновляем таблицы
     {
     Таблица               DELETE  INSERT  UPDATE
@@ -805,6 +857,8 @@ begin
     Section                 +       +       +
     Synonym                         +
     SynonymFirmCr                   +
+    WayBillHead                     +
+    WayBillList                     +
     }
 
 	Progress := 5;
@@ -963,6 +1017,14 @@ begin
 	end;
 	if utCore in UpdateTables then begin
 	  CommandText:='EXECUTE CoreInsert'; Execute;
+	end;
+	//WayBillHead
+	if utWayBillHead in UpdateTables then begin
+	  CommandText:='EXECUTE WayBillHeadInsert'; Execute;
+	end;
+	//WayBillList
+	if utWayBillList in UpdateTables then begin
+	  CommandText:='EXECUTE WayBillListInsert'; Execute;
 	end;
 
 	Progress := 40;
@@ -1152,6 +1214,46 @@ begin
   try
     ExchangeForm.HTTPReclame.Disconnect;
   except
+  end;
+end;
+
+function TExchangeThread.GetLibraryVersion: TStrings;
+var
+  DirPath : String;
+
+  procedure FindVersions(Mask : String; Res : TStrings);
+  var
+    sr : TSearchRec;
+    RxVer : TVersionInfo;
+  begin
+    if SysUtils.FindFirst(Mask, faAnyFile, sr) = 0 then
+    begin
+      repeat
+        if (sr.Name <> '.') and (sr.Name <> '..') then begin
+          try
+            RxVer := TVersionInfo.Create(DirPath + sr.Name);
+            try
+              Result.Add(sr.Name + '=' + RxVer.FileVersion);
+            finally
+              RxVer.Free;
+            end;
+          except
+          end;
+        end;
+      until SysUtils.FindNext(sr) <> 0;
+      SysUtils.FindClose(sr);
+    end;
+  end;
+
+begin
+  Result := TStringList.Create;
+  try
+    DirPath := ExtractFilePath(ParamStr(0));
+    FindVersions(DirPath + '*.bpl', Result);
+    FindVersions(DirPath + '*.dll', Result);
+  except
+    Result.Free;
+    raise;
   end;
 end;
 
