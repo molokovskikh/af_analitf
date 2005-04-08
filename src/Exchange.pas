@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, ComCtrls, ARas, InvokeRegistry, StrUtils, ComObj,
-  VCLUnZip, Rio, SOAPHTTPClient, Variants, IdBaseComponent, IdComponent,
+  StdCtrls, ExtCtrls, ComCtrls, ARas, StrUtils, ComObj,
+  VCLUnZip, Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock;
 
@@ -673,7 +673,7 @@ end;
 procedure TExchangeForm.HTTPWorkBegin(Sender: TObject;
   AWorkMode: TWorkMode; const AWorkCountMax: Integer);
 begin
-  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkBegin : ' + IntToStr(AWorkCountMax));
+  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkBegin (' + HTTP.URL.URI + '): ' + IntToStr(AWorkCountMax));
 end;
 
 procedure TExchangeForm.HTTPWorkEnd(Sender: TObject; AWorkMode: TWorkMode);
