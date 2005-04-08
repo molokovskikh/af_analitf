@@ -1,6 +1,6 @@
 object ConfigForm: TConfigForm
-  Left = 365
-  Top = 183
+  Left = 456
+  Top = 244
   BorderStyle = bsDialog
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072
   ClientHeight = 361
@@ -13,6 +13,7 @@ object ConfigForm: TConfigForm
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
+  OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 13
   object btnOk: TButton
@@ -40,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshConnect
+    ActivePage = tshAuth
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5235,7 +5236,7 @@ object ConfigForm: TConfigForm
           Height = 21
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5425,6 +5426,7 @@ object ConfigForm: TConfigForm
           DataField = 'HTTPName'
           DataSource = DM.dsParams
           TabOrder = 0
+          OnChange = dbeHTTPNameChange
         end
         object dbeHTTPPass: TDBEdit
           Left = 184

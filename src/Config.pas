@@ -84,7 +84,11 @@ type
     procedure btnRasActionsClick(Sender: TObject);
     procedure udRasSleepClick(Sender: TObject; Button: TUDBtnType);
     procedure dbeRasSleepChange(Sender: TObject);
+    procedure dbeHTTPNameChange(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
+    HTTPNameChanged : Boolean;
+    OldHTTPName : String;
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
@@ -100,7 +104,7 @@ implementation
 
 {$R *.DFM}
 
-uses DBProc, AProc, DModule, Client, Main;
+uses DBProc, AProc, DModule, Client, Main, DB;
 
 function ShowConfig( Auth: boolean = False): boolean;
 var
@@ -109,6 +113,8 @@ begin
   MainForm.FreeChildForms; //вид дочерних форм зависит от параметров
   Result:=False;
   with TConfigForm.Create(Application) do try
+    HTTPNameChanged := False;
+    OldHTTPName := dbeHTTPName.Field.AsString;
 	if Auth then PageControl.ActivePageIndex := 2
 		else PageControl.ActivePageIndex := 0;
 
@@ -129,6 +135,12 @@ begin
       Result:=ShowModal=mrOk;
       if Result then begin
         DM.adtParams.FieldByName('RasEntry').AsString:=cbRas.Items[cbRas.ItemIndex];
+        if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
+          DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
+          MainForm.DisableByHTTPName;
+          DM.adcUpdate.CommandText := 'EXECUTE OrdersHDeleteNotClosedAll';
+          DM.adcUpdate.Execute;
+        end;
         DM.adtParams.Post;
         DM.MainConnection.CommitTrans;
       end
@@ -309,6 +321,20 @@ var
 begin
   Val(dbeRasSleep.Text,V,E);
   udRasSleep.Position:=V;
+end;
+
+procedure TConfigForm.dbeHTTPNameChange(Sender: TObject);
+begin
+  HTTPNameChanged := True;
+end;
+
+procedure TConfigForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
+    if MessageBox('»зменение имени авторизации удалит все неотправленные заказы. ѕродолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
+      CanClose := False;
+  end;
 end;
 
 end.
