@@ -14,7 +14,7 @@ object WaitingForm: TWaitingForm
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
-  Position = poMainFormCenter
+  Position = poDesktopCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
