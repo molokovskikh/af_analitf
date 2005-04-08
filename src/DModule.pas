@@ -170,6 +170,7 @@ begin
 	frReport.Title := Application.Title;
 	{ проверяем и если надо создаем нужные каталоги }
 	if not DirectoryExists( ExePath + SDirDocs) then CreateDir( ExePath + SDirDocs);
+	if not DirectoryExists( ExePath + SDirExports) then CreateDir( ExePath + SDirExports);
 	if not DirectoryExists( ExePath + SDirIn) then CreateDir( ExePath + SDirIn);
 	if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
 	MainForm.SetUpdateDateTime;
@@ -183,6 +184,8 @@ begin
 		RunExchange([ eaGetPrice]);
 		Application.Terminate;
 	end;
+  if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
+    MainForm.DisableByHTTPName;
 end;
 
 procedure TDM.DataModuleDestroy(Sender: TObject);

@@ -2,21 +2,21 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 126
-  Top = 183
+  Left = 158
+  Top = 337
   Height = 422
   Width = 721
   object MainConnection: TADOConnection
     ConnectionString = 
-      'Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=D:\An' +
-      'alitF\AnalitF.mdb;Persist Security Info=False;Jet OLEDB:Registry' +
-      ' Path="";Jet OLEDB:Database Password=commonpas;Jet OLEDB:Engine ' +
-      'Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partia' +
-      'l Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New ' +
-      'Database Password="";Jet OLEDB:Create System Database=False;Jet ' +
-      'OLEDB:Encrypt Database=False;Jet OLEDB:Don'#39't Copy Locale on Comp' +
-      'act=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLE' +
-      'DB:SFP=False'
+      'Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=Anali' +
+      'tF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Je' +
+      't OLEDB:Database Password=commonpas;Jet OLEDB:Engine Type=5;Jet ' +
+      'OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=' +
+      '2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Pa' +
+      'ssword="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encry' +
+      'pt Database=False;Jet OLEDB:Don'#39't Copy Locale on Compact=False;J' +
+      'et OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=Fals' +
+      'e'
     IsolationLevel = ilReadCommitted
     KeepConnection = False
     LoginPrompt = False
