@@ -167,7 +167,6 @@ TMainForm = class(TForm)
     procedure itmAboutClick(Sender: TObject);
     procedure itmExternalOrdersClick(Sender: TObject);
 private
-//	FActionLists: TList;
 	JustRun: boolean;
 
 	procedure CheckNewDll;
@@ -196,6 +195,10 @@ public
 	procedure SetUpdateDateTime;
 	procedure SetOrdersInfo;
 	procedure UpdateReclame;
+  //Отключить все действия, связанные с изменением имени авторизации
+  procedure DisableByHTTPName;
+  //Включить все действия, связанные с изменением имени авторизации
+  procedure EnableByHTTPName;
 end;
 
 var
@@ -230,7 +233,7 @@ begin
 	EnableFilterIndex := 0;
 	JustRun := True;
 	CheckNewDll;
-	LoadIntegrDLL;
+//	LoadIntegrDLL;
   if FindCmdLineSwitch('extend') then begin
     N2.Visible := True;
     N6.Visible := True;
@@ -345,7 +348,8 @@ var
 	i: Integer;
 begin
 	for i := ControlCount - 1 downto 0 do
-		if Controls[ i] is TChildForm then Controls[ i].Free;
+		if Controls[ i] is TChildForm then
+      Controls[ i].Free;
 	ActiveChild := nil;
 	Caption := Application.Title;
 	SetOrdersInfo;
@@ -640,9 +644,15 @@ end;
 procedure TMainForm.Label1MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
+  try
 	if not EditDummy.Focused and
+    Assigned(ActiveControl) and
 		not ActiveControl.Focused and
 		not ActiveControl.ClassNameIs( 'TWebBrowser') then EditDummy.SetFocus;
+  except
+    on E : Exception do
+      ShowMessage('Error : ' + E.Message);
+  end;
 end;
 
 procedure TMainForm.edDummyKeyDown(Sender: TObject; var Key: Word;
@@ -714,6 +724,32 @@ begin
   finally
     DM.adtParams.Open;
   end;
+end;
+
+procedure TMainForm.DisableByHTTPName;
+begin
+  actSendOrders.Enabled := False;
+  actOrderAll.Enabled := False;
+  actSale.Enabled := False;
+  actOrderPrice.Enabled := False;
+  actOrderSummary.Enabled := False;
+  actRegistry.Enabled := False;
+  actDefectives.Enabled := False;
+  actNormatives.Enabled := False;
+  actClosedOrders.Enabled := False;
+end;
+
+procedure TMainForm.EnableByHTTPName;
+begin
+  actSendOrders.Enabled := True;
+  actOrderAll.Enabled := True;
+  actSale.Enabled := True;
+  actOrderPrice.Enabled := True;
+  actOrderSummary.Enabled := True;
+  actRegistry.Enabled := True;
+  actDefectives.Enabled := True;
+  actNormatives.Enabled := True;
+  actClosedOrders.Enabled := True;
 end;
 
 end.
