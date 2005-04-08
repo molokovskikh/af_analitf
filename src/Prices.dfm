@@ -152,6 +152,9 @@ inherited PricesForm: TPricesForm
       Align = alRight
       Caption = ' '#1048#1085#1092#1086#1088#1084#1072#1094#1080#1103' '
       TabOrder = 0
+      DesignSize = (
+        256
+        512)
       object dbtPhones: TDBText
         Left = 72
         Top = 37
@@ -326,6 +329,7 @@ inherited PricesForm: TPricesForm
         DataField = 'PriceInfo'
         DataSource = dsPrices
         ReadOnly = True
+        ScrollBars = ssVertical
         TabOrder = 0
       end
       object DBMemo2: TDBMemo
@@ -340,13 +344,15 @@ inherited PricesForm: TPricesForm
         DataField = 'ContactInfo'
         DataSource = dsPrices
         ReadOnly = True
+        ScrollBars = ssVertical
         TabOrder = 1
       end
       object DBMemo3: TDBMemo
         Left = 6
         Top = 361
         Width = 243
-        Height = 115
+        Height = 136
+        Anchors = [akLeft, akTop, akBottom]
         BevelInner = bvNone
         BevelOuter = bvNone
         BorderStyle = bsNone
@@ -354,6 +360,7 @@ inherited PricesForm: TPricesForm
         DataField = 'OperativeInfo'
         DataSource = dsPrices
         ReadOnly = True
+        ScrollBars = ssVertical
         TabOrder = 2
       end
     end
