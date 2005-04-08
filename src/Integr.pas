@@ -27,6 +27,7 @@ var
 	IntegrTotalWellPrices: TIntegrTotalWellPrices;
 
 function LoadIntegrDLL: boolean;
+procedure UnLoadIntegrDLL;
 function IsIntegrDLLPresent: boolean;
 
 implementation
@@ -58,4 +59,19 @@ begin
 	result := hDLL <> 0;
 end;
 
+procedure UnLoadIntegrDLL;
+begin
+  if hDLL <> 0 then begin
+    FreeLibrary(hDLL);
+		IntegrConfig := nil;
+		IntegrThreading := nil;
+		IntegrTotalWellPrices := nil;
+    hDLL := 0;
+  end;
+end;
+
+initialization
+  LoadIntegrDLL;
+finalization
+  UnLoadIntegrDLL;
 end.
