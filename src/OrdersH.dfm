@@ -1,10 +1,9 @@
 inherited OrdersHForm: TOrdersHForm
-  Left = 205
-  Top = 154
-  ActiveControl = dbgOrdersH
+  Left = 219
+  Top = 211
   Caption = #1047#1072#1082#1072#1079#1099
   ClientHeight = 487
-  ClientWidth = 801
+  ClientWidth = 792
   OldCreateOrder = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -13,7 +12,7 @@ inherited OrdersHForm: TOrdersHForm
   object TabControl: TTabControl
     Left = 0
     Top = 39
-    Width = 801
+    Width = 792
     Height = 448
     Align = alClient
     TabOrder = 0
@@ -22,203 +21,29 @@ inherited OrdersHForm: TOrdersHForm
       #1054#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1077)
     TabIndex = 0
     OnChange = TabControlChange
-    object Panel5: TPanel
+    object pTabSheet: TPanel
       Left = 4
       Top = 24
-      Width = 793
+      Width = 784
       Height = 420
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      object Panel2: TPanel
+      object pBottom: TPanel
+        Tag = 146
         Left = 0
-        Top = 0
-        Width = 492
-        Height = 274
-        Align = alClient
-        BevelOuter = bvNone
-        TabOrder = 0
-        object ToughDBGrid1: TToughDBGrid
-          Left = 112
-          Top = 224
-          Width = 185
-          Height = 57
-          Flat = True
-          FooterColor = clWindow
-          FooterFont.Charset = DEFAULT_CHARSET
-          FooterFont.Color = clWindowText
-          FooterFont.Height = -11
-          FooterFont.Name = 'MS Sans Serif'
-          FooterFont.Style = []
-          Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
-          OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
-          TabOrder = 1
-          TitleFont.Charset = DEFAULT_CHARSET
-          TitleFont.Color = clWindowText
-          TitleFont.Height = -11
-          TitleFont.Name = 'MS Sans Serif'
-          TitleFont.Style = []
-          SearchPosition = spBottom
-        end
-        object dbgOrdersH: TToughDBGrid
-          Left = 0
-          Top = 0
-          Width = 492
-          Height = 274
-          Align = alClient
-          AllowedOperations = [alopUpdateEh]
-          AutoFitColWidths = True
-          DataSource = dsOrdersH
-          Flat = True
-          FooterColor = clWindow
-          FooterFont.Charset = DEFAULT_CHARSET
-          FooterFont.Color = clWindowText
-          FooterFont.Height = -11
-          FooterFont.Name = 'MS Sans Serif'
-          FooterFont.Style = []
-          Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
-          OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
-          ReadOnly = True
-          TabOrder = 0
-          TitleFont.Charset = DEFAULT_CHARSET
-          TitleFont.Color = clWindowText
-          TitleFont.Height = -11
-          TitleFont.Name = 'MS Sans Serif'
-          TitleFont.Style = []
-          OnDblClick = dbgOrdersHDblClick
-          OnExit = dbgOrdersHExit
-          OnGetCellParams = dbgOrdersHGetCellParams
-          OnKeyDown = dbgOrdersHKeyDown
-          OnKeyPress = dbgOrdersHKeyPress
-          SearchPosition = spBottom
-          OnSortChange = dbgOrdersHSortChange
-          Columns = <
-            item
-              EditButtons = <>
-              FieldName = 'SendDate'
-              Footers = <>
-              Title.Caption = #1054#1090#1087#1088#1072#1074#1083#1077#1085#1086
-              Title.TitleButton = True
-              Width = 70
-            end
-            item
-              EditButtons = <>
-              FieldName = 'OrderDate'
-              Footers = <>
-              MinWidth = 5
-              Title.Caption = #1057#1086#1079#1076#1072#1085#1086
-              Title.TitleButton = True
-              Width = 60
-            end
-            item
-              EditButtons = <>
-              FieldName = 'PriceName'
-              Footers = <>
-              MinWidth = 5
-              Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
-              Title.TitleButton = True
-              Width = 72
-            end
-            item
-              EditButtons = <>
-              FieldName = 'RegionName'
-              Footers = <>
-              MinWidth = 5
-              Title.Caption = #1056#1077#1075#1080#1086#1085
-              Title.TitleButton = True
-              Width = 68
-            end
-            item
-              EditButtons = <>
-              FieldName = 'Positions'
-              Footers = <>
-              MinWidth = 5
-              Title.Caption = #1055#1086#1079#1080#1094#1080#1081
-              Title.TitleButton = True
-              Width = 53
-            end
-            item
-              EditButtons = <>
-              FieldName = 'SumOrder'
-              Footers = <>
-              MinWidth = 5
-              Title.Caption = #1057#1091#1084#1084#1072
-              Title.TitleButton = True
-              Width = 60
-            end
-            item
-              Checkboxes = True
-              EditButtons = <>
-              FieldName = 'Send'
-              Footers = <>
-              MinWidth = 5
-              Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
-              Title.TitleButton = True
-              Width = 60
-            end>
-        end
-      end
-      object Panel1: TPanel
-        Left = 492
-        Top = 0
-        Width = 301
-        Height = 274
-        Align = alRight
-        BevelOuter = bvNone
-        TabOrder = 1
-        object gbMessage: TGroupBox
-          Left = 7
-          Top = 0
-          Width = 291
-          Height = 131
-          Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1091' '
-          TabOrder = 0
-          object dbmMessage: TDBMemo
-            Left = 7
-            Top = 19
-            Width = 278
-            Height = 104
-            DataField = 'Message'
-            DataSource = dsOrdersH
-            MaxLength = 100
-            ScrollBars = ssVertical
-            TabOrder = 0
-          end
-        end
-        object gbComments: TGroupBox
-          Left = 6
-          Top = 135
-          Width = 292
-          Height = 131
-          Caption = ' '#1051#1080#1095#1085#1099#1077' '#1082#1086#1084#1084#1077#1085#1090#1072#1088#1080#1080' '
-          TabOrder = 1
-          object dbmComments: TDBMemo
-            Left = 7
-            Top = 19
-            Width = 279
-            Height = 104
-            DataField = 'Comments'
-            DataSource = dsOrdersH
-            MaxLength = 100
-            ScrollBars = ssVertical
-            TabOrder = 0
-          end
-        end
-      end
-      object Panel3: TPanel
-        Left = 0
-        Top = 274
-        Width = 793
-        Height = 146
+        Top = 384
+        Width = 784
+        Height = 36
         Align = alBottom
         BevelOuter = bvNone
-        TabOrder = 2
+        TabOrder = 0
         DesignSize = (
-          793
-          146)
+          784
+          36)
         object btnMoveSend: TButton
           Left = 3
-          Top = 114
+          Top = 4
           Width = 150
           Height = 27
           Anchors = [akLeft, akBottom]
@@ -228,7 +53,7 @@ inherited OrdersHForm: TOrdersHForm
         end
         object btnDelete: TButton
           Left = 163
-          Top = 114
+          Top = 4
           Width = 150
           Height = 27
           Anchors = [akLeft, akBottom]
@@ -236,18 +61,213 @@ inherited OrdersHForm: TOrdersHForm
           TabOrder = 1
           OnClick = btnDeleteClick
         end
-        object Panel6: TPanel
+        object btnWayBillList: TButton
+          Left = 328
+          Top = 4
+          Width = 150
+          Height = 27
+          Anchors = [akLeft, akBottom]
+          Caption = #1053#1072#1082#1083#1072#1076#1085#1072#1103
+          TabOrder = 2
+          OnClick = btnWayBillListClick
+        end
+      end
+      object pClient: TPanel
+        Left = 0
+        Top = 0
+        Width = 784
+        Height = 384
+        Align = alClient
+        BevelOuter = bvNone
+        TabOrder = 1
+        object pGrid: TPanel
           Left = 0
           Top = 0
-          Width = 793
+          Width = 483
+          Height = 278
+          Align = alClient
+          BevelOuter = bvNone
+          TabOrder = 0
+          object ToughDBGrid1: TToughDBGrid
+            Left = 112
+            Top = 224
+            Width = 185
+            Height = 57
+            Flat = True
+            FooterColor = clWindow
+            FooterFont.Charset = DEFAULT_CHARSET
+            FooterFont.Color = clWindowText
+            FooterFont.Height = -11
+            FooterFont.Name = 'MS Sans Serif'
+            FooterFont.Style = []
+            Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
+            TabOrder = 1
+            TitleFont.Charset = DEFAULT_CHARSET
+            TitleFont.Color = clWindowText
+            TitleFont.Height = -11
+            TitleFont.Name = 'MS Sans Serif'
+            TitleFont.Style = []
+            SearchPosition = spBottom
+          end
+          object dbgOrdersH: TToughDBGrid
+            Left = 0
+            Top = 0
+            Width = 483
+            Height = 278
+            Align = alClient
+            AllowedOperations = [alopUpdateEh]
+            AutoFitColWidths = True
+            DataSource = dsOrdersH
+            Flat = True
+            FooterColor = clWindow
+            FooterFont.Charset = DEFAULT_CHARSET
+            FooterFont.Color = clWindowText
+            FooterFont.Height = -11
+            FooterFont.Name = 'MS Sans Serif'
+            FooterFont.Style = []
+            Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
+            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
+            ReadOnly = True
+            TabOrder = 0
+            TitleFont.Charset = DEFAULT_CHARSET
+            TitleFont.Color = clWindowText
+            TitleFont.Height = -11
+            TitleFont.Name = 'MS Sans Serif'
+            TitleFont.Style = []
+            OnDblClick = dbgOrdersHDblClick
+            OnExit = dbgOrdersHExit
+            OnGetCellParams = dbgOrdersHGetCellParams
+            OnKeyDown = dbgOrdersHKeyDown
+            OnKeyPress = dbgOrdersHKeyPress
+            SearchPosition = spBottom
+            OnSortChange = dbgOrdersHSortChange
+            Columns = <
+              item
+                EditButtons = <>
+                FieldName = 'SendDate'
+                Footers = <>
+                Title.Caption = #1054#1090#1087#1088#1072#1074#1083#1077#1085#1086
+                Title.TitleButton = True
+                Width = 70
+              end
+              item
+                EditButtons = <>
+                FieldName = 'OrderDate'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1057#1086#1079#1076#1072#1085#1086
+                Title.TitleButton = True
+                Width = 60
+              end
+              item
+                EditButtons = <>
+                FieldName = 'PriceName'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
+                Title.TitleButton = True
+                Width = 72
+              end
+              item
+                EditButtons = <>
+                FieldName = 'RegionName'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1056#1077#1075#1080#1086#1085
+                Title.TitleButton = True
+                Width = 68
+              end
+              item
+                EditButtons = <>
+                FieldName = 'Positions'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1055#1086#1079#1080#1094#1080#1081
+                Title.TitleButton = True
+                Width = 53
+              end
+              item
+                EditButtons = <>
+                FieldName = 'SumOrder'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1057#1091#1084#1084#1072
+                Title.TitleButton = True
+                Width = 60
+              end
+              item
+                Checkboxes = True
+                EditButtons = <>
+                FieldName = 'Send'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
+                Title.TitleButton = True
+                Width = 60
+              end>
+          end
+        end
+        object pRight: TPanel
+          Left = 483
+          Top = 0
+          Width = 301
+          Height = 278
+          Align = alRight
+          BevelOuter = bvNone
+          TabOrder = 1
+          object gbMessage: TGroupBox
+            Left = 7
+            Top = 0
+            Width = 291
+            Height = 131
+            Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1091' '
+            TabOrder = 0
+            object dbmMessage: TDBMemo
+              Left = 7
+              Top = 19
+              Width = 278
+              Height = 104
+              DataField = 'Message'
+              DataSource = dsOrdersH
+              MaxLength = 100
+              ScrollBars = ssVertical
+              TabOrder = 0
+            end
+          end
+          object gbComments: TGroupBox
+            Left = 6
+            Top = 135
+            Width = 292
+            Height = 131
+            Caption = ' '#1051#1080#1095#1085#1099#1077' '#1082#1086#1084#1084#1077#1085#1090#1072#1088#1080#1080' '
+            TabOrder = 1
+            object dbmComments: TDBMemo
+              Left = 7
+              Top = 19
+              Width = 279
+              Height = 104
+              DataField = 'Comments'
+              DataSource = dsOrdersH
+              MaxLength = 100
+              ScrollBars = ssVertical
+              TabOrder = 0
+            end
+          end
+        end
+        object pWebBrowser: TPanel
+          Tag = 106
+          Left = 0
+          Top = 278
+          Width = 784
           Height = 106
-          Align = alTop
+          Align = alBottom
           BevelOuter = bvNone
           TabOrder = 2
           object Bevel2: TBevel
             Left = 0
             Top = 0
-            Width = 793
+            Width = 784
             Height = 4
             Align = alTop
             Shape = bsTopLine
@@ -256,12 +276,12 @@ inherited OrdersHForm: TOrdersHForm
             Tag = 5
             Left = 0
             Top = 4
-            Width = 793
+            Width = 784
             Height = 102
             Align = alClient
             TabOrder = 0
             ControlData = {
-              4C000000F55100008B0A00000000000000000000000000000000000000000000
+              4C000000075100008B0A00000000000000000000000000000000000000000000
               000000004C000000000000000000000001000000E0D057007335CF11AE690800
               2B2E126208000000000000004C0000000114020000000000C000000000000046
               8000000000000000000000000000000000000000000000000000000000000000
@@ -271,10 +291,10 @@ inherited OrdersHForm: TOrdersHForm
       end
     end
   end
-  object Panel4: TPanel
+  object pTop: TPanel
     Left = 0
     Top = 0
-    Width = 801
+    Width = 792
     Height = 39
     Align = alTop
     BevelOuter = bvNone
@@ -308,7 +328,7 @@ inherited OrdersHForm: TOrdersHForm
     object Bevel1: TBevel
       Left = 0
       Top = 0
-      Width = 801
+      Width = 792
       Height = 39
       Align = alClient
       Shape = bsBottomLine
@@ -455,6 +475,9 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHComments: TWideStringField
       FieldName = 'Comments'
       Size = 100
+    end
+    object adsOrdersHServerOrderId: TIntegerField
+      FieldName = 'ServerOrderId'
     end
   end
   object dsOrdersH: TDataSource
@@ -668,5 +691,60 @@ inherited OrdersHForm: TOrdersHForm
       Precision = 19
       Calculated = True
     end
+  end
+  object adsWayBillHead: TADODataSet
+    Connection = DM.MainConnection
+    CursorType = ctStatic
+    CommandText = 'select * from WayBillHeadShowCurrent'
+    Parameters = <
+      item
+        Name = '[AServerOrderID]'
+        Attributes = [paNullable]
+        DataType = ftWideString
+        NumericScale = 255
+        Precision = 255
+        Size = 510
+        Value = Null
+      end>
+    Left = 284
+    Top = 103
+    object adsWayBillHeadServerID: TIntegerField
+      FieldName = 'ServerID'
+    end
+    object adsWayBillHeadServerOrderID: TIntegerField
+      FieldName = 'ServerOrderID'
+    end
+    object adsWayBillHeadWriteTime: TDateTimeField
+      FieldName = 'WriteTime'
+    end
+    object adsWayBillHeadClientID: TIntegerField
+      FieldName = 'ClientID'
+    end
+    object adsWayBillHeadPriceCode: TIntegerField
+      FieldName = 'PriceCode'
+    end
+    object adsWayBillHeadRegionCode: TIntegerField
+      FieldName = 'RegionCode'
+    end
+    object adsWayBillHeadPriceName: TWideStringField
+      FieldName = 'PriceName'
+      Size = 100
+    end
+    object adsWayBillHeadRegionName: TWideStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsWayBillHeadFirmComment: TWideStringField
+      FieldName = 'FirmComment'
+      Size = 100
+    end
+    object adsWayBillHeadRowCount: TSmallintField
+      FieldName = 'RowCount'
+    end
+  end
+  object dsWayBillHead: TDataSource
+    DataSet = adsWayBillHead
+    Left = 284
+    Top = 143
   end
 end

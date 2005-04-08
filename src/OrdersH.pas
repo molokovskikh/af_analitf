@@ -27,16 +27,9 @@ type
     btnDelete: TButton;
     btnMoveSend: TButton;
     adsOrdersHSend: TBooleanField;
-    dbmMessage: TDBMemo;
-    dbmComments: TDBMemo;
     adsOrdersHPriceCode: TIntegerField;
     adsOrdersHRegionCode: TIntegerField;
-    dbgOrdersH: TToughDBGrid;
-    Panel1: TPanel;
-    Panel2: TPanel;
-    Panel3: TPanel;
-    gbMessage: TGroupBox;
-    gbComments: TGroupBox;
+    pBottom: TPanel;
     adsOrdersHDatePrice: TDateTimeField;
     adsOrdersHSupportPhone: TWideStringField;
     adsCore: TADODataSet;
@@ -87,19 +80,41 @@ type
     adsCoreSumOrder: TBCDField;
     adsOrdersHSendDate: TDateTimeField;
     adsCoreLeaderPriceName: TWideStringField;
-    Panel4: TPanel;
+    pTop: TPanel;
     Label7: TLabel;
     Label8: TLabel;
     dtpDateFrom: TDateTimePicker;
     dtpDateTo: TDateTimePicker;
     Bevel1: TBevel;
-    Panel5: TPanel;
-    ToughDBGrid1: TToughDBGrid;
-    WebBrowser1: TWebBrowser;
-    Panel6: TPanel;
-    Bevel2: TBevel;
+    pTabSheet: TPanel;
     adsOrdersHMessage: TWideStringField;
     adsOrdersHComments: TWideStringField;
+    adsWayBillHead: TADODataSet;
+    dsWayBillHead: TDataSource;
+    adsWayBillHeadServerID: TIntegerField;
+    adsWayBillHeadServerOrderID: TIntegerField;
+    adsWayBillHeadWriteTime: TDateTimeField;
+    adsWayBillHeadClientID: TIntegerField;
+    adsWayBillHeadPriceCode: TIntegerField;
+    adsWayBillHeadRegionCode: TIntegerField;
+    adsWayBillHeadPriceName: TWideStringField;
+    adsWayBillHeadRegionName: TWideStringField;
+    adsWayBillHeadFirmComment: TWideStringField;
+    adsWayBillHeadRowCount: TSmallintField;
+    btnWayBillList: TButton;
+    adsOrdersHServerOrderId: TIntegerField;
+    pClient: TPanel;
+    pGrid: TPanel;
+    ToughDBGrid1: TToughDBGrid;
+    dbgOrdersH: TToughDBGrid;
+    pRight: TPanel;
+    gbMessage: TGroupBox;
+    dbmMessage: TDBMemo;
+    gbComments: TGroupBox;
+    dbmComments: TDBMemo;
+    pWebBrowser: TPanel;
+    Bevel2: TBevel;
+    WebBrowser1: TWebBrowser;
     procedure adsOrdersHBeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -116,6 +131,7 @@ type
     procedure dbgOrdersHGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dtpDateCloseUp(Sender: TObject);
+    procedure btnWayBillListClick(Sender: TObject);
   private
     procedure SetParameters;
     procedure MoveToPrice;
@@ -132,7 +148,7 @@ procedure ShowOrdersH;
 
 implementation
 
-uses DModule, Main, AProc, Orders, NotFound, DBProc, Core;
+uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList;
 
 {$R *.dfm}
 
@@ -149,6 +165,7 @@ begin
 	inherited;
 	PrintEnabled := True;
 	OrdersForm := TOrdersForm.Create( Application);
+  WayBillListForm := TWayBillListForm.Create(Application);
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, False) then dbgOrdersH.LoadFromRegistry( Reg);
@@ -203,6 +220,7 @@ begin
 				' OrdersHShow1 ', ' OrdersHShow ', []);
 			adsOrdersH.Parameters.ParamByName( 'AClosed').Value := False;
 			btnMoveSend.Caption := 'Перевести в отправленные';
+      btnWayBillList.Visible := False;
 			PrintEnabled := True;
 		end;
 		1: begin
@@ -211,6 +229,7 @@ begin
 				' OrdersHShow ', ' OrdersHShow1 ', []);
 			adsOrdersH.Parameters.ParamByName( 'AClosed').Value := True;
 			btnMoveSend.Caption := 'Вернуть в текущие';
+      btnWayBillList.Visible := True;
 			PrintEnabled := False;
 		end;
 	end;
@@ -578,6 +597,18 @@ begin
 	finally
 		adsOrdersH.BookMark := Mark;
 		adsOrdersH.EnableControls;
+	end;
+end;
+
+procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);
+begin
+	if not adsOrdersH.IsEmpty then
+	begin
+    adsWayBillHead.Parameters.ParamByName('[AServerOrderId]').Value := adsOrdersH.FieldByName('ServerOrderID').Value;
+    if adsWayBillHead.Active then adsWayBillHead.Requery else adsWayBillHead.Open;
+    if not adsWayBillHead.IsEmpty then begin
+      WayBillListForm.ShowForm(adsWayBillHeadServerID.Value);
+    end;
 	end;
 end;
 
