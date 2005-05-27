@@ -3,7 +3,7 @@ unit ExchangeThread;
 interface
 
 uses
-	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns, 
+	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf;
 
@@ -76,6 +76,10 @@ private
   procedure OnConnectError (AMessage : String);
   procedure OnReclameTerminate(Sender: TObject);
   function  GetLibraryVersion : TStrings;
+  procedure GetWinVersion(var ANumber, ADesc : String);
+  procedure GetJETMDACVersions(var AJETVersion, AJETDesc, AMDACVersion, AMDACDesc : String);
+  function GetLibraryVersionByName(AName: String): String;
+  function GetLibraryVersionFromPath(AName: String): String;
 protected
 	procedure Execute; override;
 end;
@@ -83,7 +87,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB;
+  DB, U_FolderMacros;
 
 { TExchangeThread }
 
@@ -171,11 +175,14 @@ begin
 			if eaGetPrice in ExchangeForm.ExchangeActs then CommitExchange;
 
 			{ Отключение }
-			if eaGetPrice in ExchangeForm.ExchangeActs then
-				if not RecThread.RecTerminated then
-          RecThread.OnTerminate := OnReclameTerminate
-        else
-          OnReclameTerminate(nil);
+      if ( eaSendOrders in ExchangeForm.ExchangeActs) then
+        OnReclameTerminate(nil)
+      else
+        if eaGetPrice in ExchangeForm.ExchangeActs then
+          if not RecThread.RecTerminated then
+            RecThread.OnTerminate := OnReclameTerminate
+          else
+            OnReclameTerminate(nil);
 
 			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
 				( eaImportOnly in ExchangeForm.ExchangeActs) then
@@ -267,11 +274,15 @@ begin
 end;
 
 procedure TExchangeThread.QueryData;
+const
+  StaticParamCount : Integer = 11;
 var
 	Res: TStrings;
   Error : String;
   ParamNames, ParamValues : array of String;
   I : Integer;
+  WinNumber, WinDesc : String;
+  AJETVersion, AJETDesc, AMDACVersion, AMDACDesc : String;
 begin
 	{ запрашиваем данные }
 	StatusText := 'Запрос данных';
@@ -279,8 +290,8 @@ begin
 	try
     Res := GetLibraryVersion;
     try
-      SetLength(ParamNames, 5 + Res.Count);
-      SetLength(ParamValues, 5 + Res.Count);
+      SetLength(ParamNames, StaticParamCount + Res.Count);
+      SetLength(ParamValues, StaticParamCount + Res.Count);
       ParamNames[0]  := 'AccessTime';
       ParamValues[0] := GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
       ParamNames[1]  := 'GetEtalonData';
@@ -291,9 +302,27 @@ begin
       ParamValues[3] := DM.adtProvider.FieldByName( 'MDBVersion').AsString;
       ParamNames[4]  := 'UniqueID';
       ParamValues[4] := IntToHex( GetCopyID, 8);
+
+      GetWinVersion(WinNumber, WinDesc);
+      ParamNames[5]  := 'WINVersion';
+      ParamValues[5] := WinNumber;
+      ParamNames[6]  := 'WINDesc';
+      ParamValues[6] := WinDesc;
+      
+      GetJETMDACVersions(AJETVersion, AJETDesc, AMDACVersion, AMDACDesc);
+      ParamNames[7]  := 'JETVersion';
+      ParamValues[7] := AJETVersion;
+      ParamNames[8]  := 'JETDesc';
+      ParamValues[8] := AJETDesc;
+      
+      ParamNames[9]  := 'MDACVersion';
+      ParamValues[9] := AMDACVersion;
+      ParamNames[10]  := 'MDACDesc';
+      ParamValues[10] := AMDACDesc;
+      
       for I := 0 to Res.Count-1 do begin
-        ParamNames[5+i] := Res.Names[i];
-        ParamValues[5+i] := Res.Values[ParamNames[5+i]];
+        ParamNames[StaticParamCount+i] := Res.Names[i];
+        ParamValues[StaticParamCount+i] := Res.Values[ParamNames[StaticParamCount+i]];
       end;
     finally
       Res.Free;
@@ -1255,6 +1284,159 @@ begin
     Result.Free;
     raise;
   end;
+end;
+
+procedure TExchangeThread.GetWinVersion(var ANumber, ADesc: String);
+var
+  OSVersionInfo: TOSVersionInfo;
+begin
+  OSVersionInfo.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
+  if GetVersionEx(OSVersionInfo) then
+    with OSVersionInfo do
+    begin
+      if dwPlatformId = VER_PLATFORM_WIN32_WINDOWS then
+        dwBuildNumber := dwBuildNumber and $FFFF
+      else
+        dwBuildNumber := dwBuildNumber;
+      ANumber := Format('%d.%d.%d_%d', [dwMajorVersion, dwMinorVersion, dwBuildNumber, dwPlatformId]);
+      ADesc := szCSDVersion;
+    end
+  else begin
+    ANumber := '';
+    ADesc := '';
+  end;
+end;
+
+procedure TExchangeThread.GetJETMDACVersions(var AJETVersion, AJETDesc,
+  AMDACVersion, AMDACDesc: String);
+const
+  JETVersions : array[0..8, 0..1] of String = (
+    ('4.0.2927.4', 'Пакет обновления 3 (SP3)'),
+    ('4.0.3714.7', 'Пакет обновления 4 (SP4)'),
+    ('4.0.4431.1', 'Пакет обновления 5 (SP5)'),
+    ('4.0.4431.3', 'Пакет обновления 5 (SP5)'),
+    ('4.0.6218.0', 'Пакет обновления 6 (SP6)'),
+    ('4.0.6807.0', 'Пакет обновления 6 (SP6), поставляется только с Windows Server 2003'),
+    ('4.0.7328.0', 'Пакет обновления 7 (SP7)'),
+    ('4.0.8015.0', 'Пакет обновления 8 (SP8)'),
+    ('4.0.8618.0', 'Пакет обновления 8 (SP8) c бюллетенем по безопасности MS04-014')
+  );
+
+  MDACVersions : array[0..13, 0..1] of String = (
+    ('2.10.4202.0', 'MDAC 2.1 SP2'),
+    ('2.50.4403.6', 'MDAC 2.5'),
+    ('2.51.5303.2', 'MDAC 2.5 SP1'),
+    ('2.52.6019.0', 'MDAC 2.5 SP2'),
+    ('2.53.6200.0', 'MDAC 2.5 SP3'),
+    ('2.60.6526.0', 'MDAC 2.6 RTM'),
+    ('2.61.7326.0', 'MDAC 2.6 SP1'),
+    ('2.62.7926.0', 'MDAC 2.6 SP2'),
+    ('2.62.7400.0', 'MDAC 2.6 SP2 Refresh'),
+    ('2.70.7713.0', 'MDAC 2.7 RTM'),
+    ('2.70.9001.0', 'MDAC 2.7 Refresh'),
+    ('2.71.9030.0', 'MDAC 2.7 SP1'),
+    ('2.80.1022.0', 'MDAC 2.8 RTM'),
+    ('2.81.1117.0', 'MDAC 2.8 SP1 on Windows XP SP2')
+  );
+
+var
+  I : Integer;
+  Found : Boolean;
+begin
+  AJETVersion := '';
+  AJETDesc := '';
+  AMDACVersion := '';
+  AMDACDesc := '';
+  try
+  AJETVersion := GetLibraryVersionByName('Msjet40.dll');
+  if Length(AJETVersion) = 0 then
+    AJETVersion := 'JET не установлен'
+  else begin
+    if AnsiCompareStr(AJETVersion, JETVersions[0, 0]) < 0 then begin
+      AJETVersion := AJETVersion;
+      AJETDesc := 'Ниже чем ' + JETVersions[0, 1];
+    end
+    else
+      if AnsiCompareStr(AJETVersion, JETVersions[8, 0]) > 0 then begin
+        AJETVersion := AJETVersion;
+        AJETDesc := 'Выше чем ' + JETVersions[8, 1];
+      end
+      else begin
+        Found := False;
+        for I := 0 to 8 do
+          if AnsiCompareStr(AJETVersion, JETVersions[i, 0]) = 0 then begin
+            Found := True;
+            AJETVersion := AJETVersion;
+            AJETDesc := JETVersions[i, 1];
+            Break;
+          end;
+        if not Found then begin
+          AJETVersion := AJETVersion;
+          AJETDesc := 'Версия не установлена';
+        end;
+      end;
+  end;
+
+  //Проверить MDDAC с помощью MSDASQL.DLL
+  AMDACVersion := GetLibraryVersionFromPath(ReplaceMacros('$(COMMONFILES)\system\ole db\') + 'MSDASQL.DLL');
+  if Length(AMDACVersion) = 0 then
+    AMDACVersion := 'MDAC не установлен'
+  else begin
+    if AnsiCompareStr(AMDACVersion, MDACVersions[0, 0]) < 0 then begin
+      AMDACDesc := 'Ниже чем ' + MDACVersions[0, 1];
+    end
+    else
+      if AnsiCompareStr(AMDACVersion, MDACVersions[High(MDACVersions), 0]) > 0 then begin
+        AMDACDesc := 'Выше чем ' + MDACVersions[High(MDACVersions), 1];
+      end
+      else begin
+        Found := False;
+        for I := 0 to High(MDACVersions) do
+          if AnsiCompareStr(AMDACVersion, MDACVersions[i, 0]) = 0 then begin
+            Found := True;
+            AMDACDesc := MDACVersions[i, 1];
+            Break;
+          end;
+        if not Found then begin
+          AMDACDesc := 'Версия не установлена';
+        end;
+      end;
+  end;
+  except
+  end;
+end;
+
+function TExchangeThread.GetLibraryVersionByName(AName: String): String;
+var
+  hLib : THandle;
+  FileName : String;
+begin
+  Result := '';
+  hLib := LoadLibraryEx(PChar(AName), 0, 0);
+  if hLib <> 0 then begin
+    try
+      FileName := GetModuleName(hLib);
+      Result := GetLibraryVersionFromPath(FileName);
+    finally
+      FreeLibrary(hLib);
+    end;
+  end;
+end;
+
+function TExchangeThread.GetLibraryVersionFromPath(AName: String): String;
+var
+  RxVer : TVersionInfo;
+begin
+  if FileExists(AName) then begin
+    RxVer := TVersionInfo.Create(AName);
+    try
+      Result := LongVersionToString(RxVer.FileLongVersion);
+    finally
+      RxVer.Free;
+    end;
+  end
+  else
+    Result := '';
 end;
 
 end.
