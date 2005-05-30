@@ -174,6 +174,8 @@ private
 	function CheckUnsendOrders: boolean;
   procedure OnAppEx(Sender: TObject; E: Exception);
   procedure OnMainAppEx(Sender: TObject; E: Exception);
+  function  GetActionLists : TList;
+  procedure SetActionLists(AValue : TList);
 public
 	CurrentUser: string;	// »м€ текущего пользовател€
 	ActiveChild: TChildForm;
@@ -187,7 +189,7 @@ public
 	CS: TCriticalSection;
 
 	//дл€ TChildForm нужен FActionLists, который в базовом классе €вл€етс€ protected
-	property ActionLists: TList read FActionLists write FActionLists;
+	property ActionLists: TList read GetActionLists write SetActionLists;
 	property StatusText: string write SetStatusText;
 
 	//создание экземпл€ра класса FormClass - наследника TChildForm
@@ -785,6 +787,17 @@ begin
     Tracer.TR('OnMainAppExShow', 'AppEx : ' + E.Message);
     Application.ShowException(E);
   end;
+end;
+
+function TMainForm.GetActionLists: TList;
+begin
+  Result := FActionLists;
+end;
+
+procedure TMainForm.SetActionLists(AValue: TList);
+begin
+  if AValue <> FActionLists then
+    FActionLists := AValue;
 end;
 
 end.

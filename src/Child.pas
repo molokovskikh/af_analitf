@@ -9,9 +9,10 @@ uses
 type
   TChildForm = class(TForm)
   private
-    FActionLists: TList;
     procedure AddActionList(ActionList: TCustomActionList);
     procedure RemoveActionList(ActionList: TCustomActionList);
+    function  GetActionLists : TList;
+    procedure SetActionLists(AValue : TList);
   protected
     PrevForm: TChildForm;
 
@@ -28,7 +29,8 @@ type
     procedure ShowForm; virtual;
     procedure Print( APreview: boolean = False); virtual;
   published
-    property ActionLists: TList read FActionLists write FActionLists;
+    //Вытаскивае FActionList у класса TForm
+    property ActionLists: TList read GetActionLists write SetActionLists;
   end;
 
   TChildFormClass=class of TChildForm;
@@ -165,6 +167,17 @@ begin
 		if Self.Components[ i].ClassNameIs( 'TToughDBGrid') then
 				TToughDBGrid( Self.Components[ i]).OnMouseMove :=
 					MainForm.Label1MouseMove;
+end;
+
+procedure TChildForm.SetActionLists(AValue: TList);
+begin
+  if AValue <> FActionLists then
+    FActionLists := AValue;
+end;
+
+function TChildForm.GetActionLists: TList;
+begin
+  Result := FActionLists;
 end;
 
 end.
