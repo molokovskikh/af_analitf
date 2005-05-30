@@ -92,6 +92,7 @@ type
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
+    procedure OnAppEx(Sender: TObject; E: Exception);
   public
   end;
 
@@ -104,15 +105,20 @@ implementation
 
 {$R *.DFM}
 
-uses DBProc, AProc, DModule, Client, Main, DB;
+uses DBProc, AProc, DModule, Client, Main, DB, LU_Tracer;
 
 function ShowConfig( Auth: boolean = False): boolean;
 var
 	IsRasPresent: boolean;
+  Step : String;
+  OldExep : TExceptionEvent;
 begin
   MainForm.FreeChildForms; //вид дочерних форм зависит от параметров
   Result:=False;
   with TConfigForm.Create(Application) do try
+    OldExep := Application.OnException;
+    try
+      Application.OnException := OnAppEx;
     HTTPNameChanged := False;
     OldHTTPName := dbeHTTPName.Field.AsString;
 	if Auth then PageControl.ActivePageIndex := 2
@@ -152,6 +158,11 @@ begin
       DM.MainConnection.RollbackTrans;
       raise;
     end;
+
+    finally
+      Application.OnException := OldExep;
+    end;
+
   finally
     Free;
   end;
@@ -335,6 +346,15 @@ begin
     if MessageBox('»зменение имени авторизации удалит все неотправленные заказы. ѕродолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
       CanClose := False;
   end;
+end;
+
+procedure TConfigForm.OnAppEx(Sender: TObject; E: Exception);
+begin
+  if Assigned(Sender) then
+    Tracer.TR('Config', 'Sender = ' + Sender.ClassName)
+  else
+    Tracer.TR('Config', 'Sender = nil');
+  Tracer.TR('Config', 'AppEx : ' + E.Message);
 end;
 
 end.

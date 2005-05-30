@@ -172,6 +172,8 @@ private
 	procedure CheckNewDll;
 	procedure SetStatusText(Value: string);
 	function CheckUnsendOrders: boolean;
+  procedure OnAppEx(Sender: TObject; E: Exception);
+  procedure OnMainAppEx(Sender: TObject; E: Exception);
 public
 	CurrentUser: string;	// Имя текущего пользователя
 	ActiveChild: TChildForm;
@@ -212,7 +214,7 @@ uses
 	DModule, AProc, Config, DBProc, NamesForms, Prices,
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm, Integr,
-	Exclusive, Wait, AlphaUtils, About, ExternalOrders, CompactThread;
+	Exclusive, Wait, AlphaUtils, About, ExternalOrders, CompactThread, LU_Tracer;
 
 {$R *.DFM}
 
@@ -225,6 +227,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 //var
 //	il32: TImageList;
 begin
+  Application.OnException := OnMainAppEx;
 	ExchangeOnly := False;
 	Caption := Application.Title;
 	VersionInformation( Application.ExeName, VerInfo);
@@ -368,8 +371,16 @@ begin
 end;
 
 procedure TMainForm.actConfigExecute(Sender: TObject);
+var
+  OldExep : TExceptionEvent;
 begin
-	ShowConfig;
+  OldExep := Application.OnException;
+  try
+    Application.OnException := OnAppEx;
+  	ShowConfig;
+  finally
+    Application.OnException := OldExep;
+  end;
 end;
 
 procedure TMainForm.actCompactExecute(Sender: TObject);
@@ -750,6 +761,30 @@ begin
   actDefectives.Enabled := True;
   actNormatives.Enabled := True;
   actClosedOrders.Enabled := True;
+end;
+
+procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
+begin
+  if Assigned(Sender) then
+    Tracer.TR('MainForm.OnAppEx', 'Sender = ' + Sender.ClassName)
+  else
+    Tracer.TR('MainForm.OnAppEx', 'Sender = nil');
+  Tracer.TR('MainForm.OnAppEx', 'AppEx : ' + E.Message);
+end;
+
+procedure TMainForm.OnMainAppEx(Sender: TObject; E: Exception);
+begin
+  if E is EAccessViolation then begin
+    if Assigned(Sender) then
+      Tracer.TR('OnMainAppEx', 'Sender = ' + Sender.ClassName)
+    else
+      Tracer.TR('OnMainAppEx', 'Sender = nil');
+    Tracer.TR('OnMainAppEx', 'AppEx : ' + E.Message);
+  end
+  else begin
+    Tracer.TR('OnMainAppExShow', 'AppEx : ' + E.Message);
+    Application.ShowException(E);
+  end;
 end;
 
 end.
