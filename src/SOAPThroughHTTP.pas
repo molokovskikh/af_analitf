@@ -41,6 +41,9 @@ end;
 
 implementation
 
+uses
+  AProc;
+
 { TSOAP }
 
 constructor TSOAP.Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP);
@@ -152,8 +155,9 @@ begin
 	start := PosEx( '>', FResponse, Pos( 'xmlns', FResponse)) + 1;
 	stop := PosEx( '</', FResponse, start);
 	TmpResult := Copy( FResponse, start, stop - start);
-  TmpResult := StringReplace(TmpResult, ';', #13#10, []);
-  FQueryResults.Text := TmpResult;
+  FQueryResults.Clear;
+  { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
+  while TmpResult <> '' do FQueryResults.Add( GetNextWord( TmpResult, ';'));
   Result := FQueryResults;
 end;
 
