@@ -121,6 +121,11 @@ begin
 		SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
 			ExePath + DatabaseName);
 
+  if not FileExists(ExePath + DatabaseName) then begin
+    MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
+      MB_ICONERROR or MB_OK);
+    ExitProcess(7);
+  end;
 
   if ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
   then begin
