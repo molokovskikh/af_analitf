@@ -71,7 +71,6 @@ begin
 	inherited;
 	with DM.adtParams do
 	begin
-		actNewWares.Checked := FieldByName( 'NewWares').AsBoolean;
 		if not DM.adtParams.FieldByName( 'OperateForms').AsBoolean then
 		begin
 			actUseForms.Checked := True;
@@ -100,7 +99,6 @@ begin
 	with DM.adtParams do
 	begin
 		Edit;
-		FieldByName( 'NewWares').AsBoolean := actNewWares.Checked;
 		FieldByName( 'UseForms').AsBoolean := actUseForms.Checked;
 		Post;
 	end;
@@ -126,7 +124,6 @@ end;
 procedure TNamesFormsForm.SetNamesParams;
 begin
   with adsNames do begin
-    Parameters.ParamByName('NewWares').Value:=actNewWares.Checked;
     Screen.Cursor:=crHourglass;
     try
       if Active then Requery else Open;

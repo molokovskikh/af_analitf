@@ -227,16 +227,7 @@ inherited NamesFormsForm: TNamesFormsForm
     CursorType = ctStatic
     LockType = ltReadOnly
     CommandText = 'SELECT * FROM CatalogShowByName'
-    Parameters = <
-      item
-        Name = 'NewWares'
-        Attributes = [paNullable]
-        DataType = ftBoolean
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = False
-      end>
+    Parameters = <>
     Prepared = True
     Left = 80
     Top = 120
