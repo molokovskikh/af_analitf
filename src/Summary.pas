@@ -45,6 +45,8 @@ type
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     dbgSummary: TToughDBGrid;
+    adsSummaryOrdersCoreId: TIntegerField;
+    adsSummaryOrdersOrderId: TIntegerField;
     procedure adsSummaryCalcFields(DataSet: TDataSet);
     procedure adsSummaryAfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
@@ -57,6 +59,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure adsSummaryAfterScroll(DataSet: TDataSet);
+    procedure dbgSummaryKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     procedure SummaryShow;
     procedure SummaryHShow;
@@ -224,6 +228,24 @@ begin
   else
     pWebBrowser.Visible := True;
 }    
+end;
+
+procedure TSummaryForm.dbgSummaryKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Shift = []) and (Key = VK_DELETE) then begin
+    if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
+      DM.adcUpdate.CommandText :=
+        'delete from Orders where OrderID = ' +
+          IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
+          ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
+      DM.adcUpdate.Execute;
+      adsSummary.Requery();
+      Key := 0;
+    end;
+  end
+  else
+    inherited;
 end;
 
 end.

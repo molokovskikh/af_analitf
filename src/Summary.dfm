@@ -153,6 +153,7 @@ inherited SummaryForm: TSummaryForm
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
       OnGetCellParams = dbgSummaryGetCellParams
+      OnKeyDown = dbgSummaryKeyDown
       SearchField = 'Synonym'
       InputField = 'Order'
       SearchPosition = spBottom
@@ -352,6 +353,14 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryAwait: TBooleanField
       FieldName = 'Await'
+    end
+    object adsSummaryOrdersCoreId: TIntegerField
+      FieldName = 'OrdersCoreId'
+      Visible = False
+    end
+    object adsSummaryOrdersOrderId: TIntegerField
+      FieldName = 'OrdersOrderId'
+      Visible = False
     end
   end
   object dsSummary: TDataSource
