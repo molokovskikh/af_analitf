@@ -434,6 +434,7 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHSend: TBooleanField
       AutoGenerateValue = arDefault
       FieldName = 'Send'
+      OnChange = adsOrdersHSendChange
       DisplayValues = '+;'
     end
     object adsOrdersHOrderDate: TDateTimeField
@@ -746,5 +747,12 @@ inherited OrdersHForm: TOrdersHForm
     DataSet = adsWayBillHead
     Left = 284
     Top = 143
+  end
+  object tmOrderDateChange: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmOrderDateChangeTimer
+    Left = 60
+    Top = 191
   end
 end

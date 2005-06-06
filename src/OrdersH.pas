@@ -115,6 +115,7 @@ type
     pWebBrowser: TPanel;
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
+    tmOrderDateChange: TTimer;
     procedure adsOrdersHBeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -132,6 +133,8 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure btnWayBillListClick(Sender: TObject);
+    procedure adsOrdersHSendChange(Sender: TField);
+    procedure tmOrderDateChangeTimer(Sender: TObject);
   private
     procedure SetParameters;
     procedure MoveToPrice;
@@ -468,13 +471,18 @@ begin
       adsOrdersH.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
       if adsOrdersH.FieldByName( 'Send').AsBoolean then
       begin
-        adsOrdersH.Edit;
-        adsOrdersH.FieldByName( 'Send').AsBoolean := False;
-        adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
-        DM.adcUpdate.CommandText := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
-          adsOrdersH.FieldByName( 'OrderId').AsString;
-        DM.adcUpdate.Execute;
-        adsOrdersH.Post;
+        adsOrdersHSend.OnChange := nil;
+        try
+          adsOrdersH.Edit;
+          adsOrdersH.FieldByName( 'Send').AsBoolean := False;
+          adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
+          DM.adcUpdate.CommandText := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
+            adsOrdersH.FieldByName( 'OrderId').AsString;
+          DM.adcUpdate.Execute;
+          adsOrdersH.Post;
+        finally
+          adsOrdersHSend.OnChange := adsOrdersHSendChange;
+        end;
       end;
     end;
     SetParameters;
@@ -610,6 +618,22 @@ begin
       WayBillListForm.ShowForm(adsWayBillHeadServerID.Value);
     end;
 	end;
+end;
+
+procedure TOrdersHForm.adsOrdersHSendChange(Sender: TField);
+begin
+  //По-другому решить проблему не удалось. Запускаю таймер, чтобы он в главной нити
+  //произвел сохранение dataset
+  tmOrderDateChange.Enabled := True;
+end;
+
+procedure TOrdersHForm.tmOrderDateChangeTimer(Sender: TObject);
+begin
+  try
+    SoftPost( adsOrdersH);
+  finally
+    tmOrderDateChange.Enabled := False;
+  end;
 end;
 
 end.
