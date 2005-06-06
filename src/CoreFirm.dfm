@@ -66,6 +66,7 @@ object CoreFirmForm: TCoreFirmForm
     InputField = 'Order'
     SearchPosition = spTop
     ForceRus = True
+    FindInterval = 2500
     OnSortChange = dbgCoreSortChange
     OnCanInput = dbgCoreCanInput
     Columns = <
