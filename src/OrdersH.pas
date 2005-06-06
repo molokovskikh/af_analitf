@@ -223,6 +223,7 @@ begin
 				' OrdersHShow1 ', ' OrdersHShow ', []);
 			adsOrdersH.Parameters.ParamByName( 'AClosed').Value := False;
 			btnMoveSend.Caption := 'Перевести в отправленные';
+      btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
 			PrintEnabled := True;
 		end;
@@ -232,6 +233,7 @@ begin
 				' OrdersHShow ', ' OrdersHShow1 ', []);
 			adsOrdersH.Parameters.ParamByName( 'AClosed').Value := True;
 			btnMoveSend.Caption := 'Вернуть в текущие';
+      btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
 			PrintEnabled := False;
 		end;
