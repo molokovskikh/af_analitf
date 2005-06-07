@@ -517,10 +517,12 @@ begin
 		HTTP.ProxyParams.ProxyPort := DM.adtParams.FieldByName( 'ProxyPort').AsInteger;
 		HTTP.ProxyParams.ProxyUsername := DM.adtParams.FieldByName( 'ProxyUser').AsString;
 		HTTP.ProxyParams.ProxyPassword := DM.adtParams.FieldByName( 'ProxyPass').AsString;
+    HTTP.Request.ProxyConnection := 'keep-alive';
 		HTTPReclame.ProxyParams.ProxyServer := DM.adtParams.FieldByName( 'ProxyName').AsString;
 		HTTPReclame.ProxyParams.ProxyPort := DM.adtParams.FieldByName( 'ProxyPort').AsInteger;
 		HTTPReclame.ProxyParams.ProxyUsername := DM.adtParams.FieldByName( 'ProxyUser').AsString;
 		HTTPReclame.ProxyParams.ProxyPassword := DM.adtParams.FieldByName( 'ProxyPass').AsString;
+    HTTPReclame.Request.ProxyConnection := 'keep-alive';
 	end
 	else
 	begin
@@ -528,10 +530,12 @@ begin
 		HTTP.ProxyParams.ProxyPort := 0;
 		HTTP.ProxyParams.ProxyUsername := '';
 		HTTP.ProxyParams.ProxyPassword := '';
+    HTTP.Request.ProxyConnection := '';
 		HTTPReclame.ProxyParams.ProxyServer := '';
 		HTTPReclame.ProxyParams.ProxyPort := 0;
 		HTTPReclame.ProxyParams.ProxyUsername := '';
 		HTTPReclame.ProxyParams.ProxyPassword := '';
+    HTTPReclame.Request.ProxyConnection := '';
 	end;
 	HTTP.Request.Username := DM.adtParams.FieldByName( 'HTTPName').AsString;
 	HTTP.Request.Password := DM.adtParams.FieldByName( 'HTTPPass').AsString;

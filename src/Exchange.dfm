@@ -281,6 +281,7 @@ object ExchangeForm: TExchangeForm
     ProxyParams.ProxyPort = 3128
     ProxyParams.ProxyServer = 'proxy.adc.analit.net'
     ProxyParams.ProxyUsername = 'runer'
+    Request.Connection = 'keep-alive'
     Request.ContentLength = -1
     Request.ContentRangeEnd = 0
     Request.ContentRangeStart = 0
