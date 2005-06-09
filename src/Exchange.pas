@@ -426,7 +426,14 @@ begin
 		if ExThread.ErrorMessage <> '' then
 		begin
 			if ( ConnectNumber < ConnectCount) and not ExThread.CriticalError then PauseAfterError
-				else break;
+				else begin
+          //Разрываем DialUp в случае ошибки
+          try
+            Ras.Disconnect;
+          except
+          end;
+          break;
+        end;
 		end
 		else break;
 	end;

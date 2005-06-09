@@ -230,7 +230,9 @@ begin
 					RecThread.Free;
 				except
 				end;
-				RasDisconnect;
+        //если это сокетная ошибка, то не рвем DialUp
+        if not (E is EIdException) then
+          RasDisconnect;
 				StatusText := '';
 				Synchronize( SetStatus);
 				//обрабатываем Отмену
