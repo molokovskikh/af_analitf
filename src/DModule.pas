@@ -187,6 +187,9 @@ begin
 	MainForm.SetUpdateDateTime;
 	Application.HintPause := 0;
 
+  DeleteFilesByMask(ExePath + SDirIn + '\*.zip', False);
+  DeleteFilesByMask(ExePath + SDirIn + '\*.zi_', False);
+
 	{ Запуск с ключем -e (Получение данных и выход)}
 	if ( AnsiLowerCase( ParamStr( 1)) = '-e') or
 		( AnsiLowerCase( ParamStr( 1)) = '/e') then
