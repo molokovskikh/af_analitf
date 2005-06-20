@@ -135,6 +135,7 @@ type
     procedure btnWayBillListClick(Sender: TObject);
     procedure adsOrdersHSendChange(Sender: TField);
     procedure tmOrderDateChangeTimer(Sender: TObject);
+    procedure adsOrdersHBeforePost(DataSet: TDataSet);
   private
     procedure SetParameters;
     procedure MoveToPrice;
@@ -636,6 +637,11 @@ begin
   finally
     tmOrderDateChange.Enabled := False;
   end;
+end;
+
+procedure TOrdersHForm.adsOrdersHBeforePost(DataSet: TDataSet);
+begin
+  if adsOrdersHOrderId.IsNull then Abort; 
 end;
 
 end.

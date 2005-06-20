@@ -363,6 +363,7 @@ inherited OrdersHForm: TOrdersHForm
   object adsOrdersH: TADODataSet
     Connection = DM.MainConnection
     CursorType = ctStatic
+    BeforePost = adsOrdersHBeforePost
     AfterPost = adsOrdersHAfterPost
     BeforeDelete = adsOrdersHBeforeDelete
     CommandText = 
