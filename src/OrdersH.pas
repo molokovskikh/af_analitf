@@ -641,6 +641,7 @@ end;
 
 procedure TOrdersHForm.adsOrdersHBeforePost(DataSet: TDataSet);
 begin
+  //Здесь не нужный комментарий
   if adsOrdersHOrderId.IsNull then Abort; 
 end;
 
