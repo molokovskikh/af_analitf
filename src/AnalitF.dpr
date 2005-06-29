@@ -46,7 +46,8 @@ uses
   CompactThread in 'CompactThread.pas',
   ExternalOrders in 'ExternalOrders.pas',
   ShowLog in 'ShowLog.pas' {frmShowLog},
-  WayBillList in 'WayBillList.pas' {WayBillListForm};
+  WayBillList in 'WayBillList.pas' {WayBillListForm},
+  U_FolderMacros in 'U_FolderMacros.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
