@@ -420,7 +420,6 @@ begin
       Len := Integer(FS.Size);
       SetLength(LogStr, Len);
       FS.Read(Pointer(LogStr)^, Len);
-      LogStr := StringReplace(LogStr, #13#10, 'CRLN', [rfReplaceAll]);
     finally
       FS.Free;
     end;
