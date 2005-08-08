@@ -110,7 +110,6 @@ uses DBProc, AProc, DModule, Client, Main, DB, LU_Tracer;
 function ShowConfig( Auth: boolean = False): boolean;
 var
 	IsRasPresent: boolean;
-  Step : String;
   OldExep : TExceptionEvent;
 begin
   MainForm.FreeChildForms; //вид дочерних форм зависит от параметров
