@@ -94,7 +94,7 @@ OutputDir=.\bin
 UnitOutputDir=.\unit
 PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
-SearchPath=
+SearchPath=$(DELPHI)\Indy\lib;
 Packages=vcl;rtl;dbrtl;vcldb;adortl;VclSmp;EhLib70;Tough;FR7;Indy70
 Conditionals=
 DebugSourceDirs=
@@ -140,8 +140,9 @@ Comments=
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=1
-Item0=$(DELPHI)\Lib\Debug
+Count=2
+Item0=$(DELPHI)\Indy\lib;
+Item1=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit

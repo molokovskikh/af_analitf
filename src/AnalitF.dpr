@@ -47,7 +47,8 @@ uses
   ExternalOrders in 'ExternalOrders.pas',
   ShowLog in 'ShowLog.pas' {frmShowLog},
   WayBillList in 'WayBillList.pas' {WayBillListForm},
-  U_FolderMacros in 'U_FolderMacros.pas';
+  U_FolderMacros in 'U_FolderMacros.pas',
+  LU_Tracer in 'common\LU_Tracer.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
