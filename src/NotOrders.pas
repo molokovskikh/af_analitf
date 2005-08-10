@@ -48,14 +48,14 @@ var
 begin
 	result := True;
 	DM.adsSelect.Close;
-	DM.adsSelect.CommandText := 'SELECT OH.*, PRD.MinReq from OrdersHShow AS OH ' +
-		'LEFT JOIN PricesRegionalData AS PRD ' +
-		'ON (OH.PriceCode=PRD.PriceCode AND OH.RegionCode=PRD.RegionCode) ' +
-		'WHERE OH.SumOrder<PRD.MinReq AND Send';
-	DM.adsSelect.Parameters.ParamByName( 'AClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsSelect.Parameters.ParamByName( 'AClosed').Value := False;
-	DM.adsSelect.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	DM.adsSelect.SQLs.SelectSQL.Text :=
+'SELECT OH.*, PRD.MinReq '+
+'FROM OrdersHShow(:ClientID, :Closed, :TimeZoneBias) OH ' +
+'LEFT JOIN PricesRegionalData PRD ON (OH.PriceCode=PRD.PriceCode AND OH.RegionCode=PRD.RegionCode) '+
+'WHERE OH.SumOrder<PRD.MinReq AND Send = 1';
+	DM.adsSelect.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	DM.adsSelect.ParamByName( 'AClosed').Value := False;
+	DM.adsSelect.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	DM.adsSelect.Open;
 	Strings := TStringList.Create;
 	if not DM.adsSelect.IsEmpty then

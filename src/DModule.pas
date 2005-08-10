@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Db, ADODB, ADOInt, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
   FR_DBSet, FR_DCtrl, FR_ADODB, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, FR_OLE,
-  frRtfExp, frexpimg, frOLEExl, FR_E_HTML2, FR_E_TXT, FR_Rich, CompactThread;
+  frRtfExp, frexpimg, frOLEExl, FR_E_HTML2, FR_E_TXT, FR_Rich, CompactThread,
+  FIBDatabase, pFIBDatabase, FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery;
 
 const
   HistoryMaxRec=5;
@@ -21,18 +22,18 @@ type
 
   TDM = class(TDataModule)
     MainConnection: TADOConnection;
-    adtParams: TADOTable;
-    adtProvider: TADOTable;
-    adcUpdate: TADOCommand;
-    adsSelect: TADODataSet;
+    adtParams2: TADOTable;
+    adtProvider2: TADOTable;
+    adcUpdate2: TADOCommand;
+    adsSelect_OLD: TADODataSet;
     frReport: TfrReport;
     dsParams: TDataSource;
     dsAnalit: TDataSource;
     dsClients: TDataSource;
-    adtTablesUpdates: TADOTable;
+    adtTablesUpdates2: TADOTable;
     dsTablesUpdates: TDataSource;
     Ras: TARas;
-    adsSelect2: TADODataSet;
+    adsSelect2_OLD: TADODataSet;
     frOLEObject: TfrOLEObject;
     frRichObject: TfrRichObject;
     frCheckBoxObject: TfrCheckBoxObject;
@@ -47,14 +48,29 @@ type
     frJPEGExport: TfrJPEGExport;
     frTIFFExport: TfrTIFFExport;
     frRtfAdvExport: TfrRtfAdvExport;
-    adsOrders: TADODataSet;
-    adsSelect3: TADODataSet;
-    adsCore: TADODataSet;
-    adtReclame: TADOTable;
-    adtClients: TADOTable;
+    adsOrders1: TADODataSet;
+    adsSelect3_OLD: TADODataSet;
+    adsCore1: TADODataSet;
+    adtReclame2: TADOTable;
+    adtClients2: TADOTable;
     dsReclame: TDataSource;
-    adtFlags: TADOTable;
-    adsOrdersH: TADODataSet;
+    adtFlags2: TADOTable;
+    adsOrdersH1: TADODataSet;
+    MainConnection1: TpFIBDatabase;
+    DefTran: TpFIBTransaction;
+    adtParams: TpFIBDataSet;
+    adtProvider: TpFIBDataSet;
+    adtReclame: TpFIBDataSet;
+    adtClients: TpFIBDataSet;
+    adtTablesUpdates: TpFIBDataSet;
+    adtFlags: TpFIBDataSet;
+    adcUpdate: TpFIBQuery;
+    adsSelect: TpFIBDataSet;
+    adsSelect2: TpFIBDataSet;
+    adsSelect3: TpFIBDataSet;
+    adsCore: TpFIBDataSet;
+    adsOrdersH: TpFIBDataSet;
+    adsOrders: TpFIBDataSet;
     procedure DMCreate(Sender: TObject);
     procedure MainConnectionAfterConnect(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
@@ -63,6 +79,7 @@ type
     procedure adtClientsAfterPost(DataSet: TDataSet);
     procedure adtClientsBeforeDelete(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
+    procedure MainConnection1AfterConnect(Sender: TObject);
   private
 	ClientInserted: Boolean;
 	procedure CheckRestrictToRun;
@@ -123,9 +140,11 @@ begin
   //Проверка версий
   VersionValid;
 
+{
 	MainConnection.ConnectionString :=
 		SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
 			ExePath + DatabaseName);
+}      
 
   if not FileExists(ExePath + DatabaseName) then begin
     MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
@@ -144,13 +163,13 @@ begin
   DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
 
 
-	DM.MainConnection.Mode := cmRead;
+//	DM.MainConnection.Mode := cmRead;
   try
     try
       CheckRestrictToRun;
     finally
       MainConnection.Close;
-      DM.MainConnection.Mode := cmReadWrite;
+//      DM.MainConnection.Mode := cmReadWrite;
     end;
   except
     on E : Exception do begin
@@ -282,6 +301,7 @@ var
 	WasConnected: boolean;
 begin
 	result := '';
+{
 	WasConnected := MainConnection.Connected;
 	MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
 		JET_SCHEMA_USERROSTER, adsSelect);
@@ -289,6 +309,7 @@ begin
 		result := adsSelect.FieldByName( 'COMPUTER_NAME').AsString;
 	adsSelect.Close;
 	if not WasConnected then MainConnection.Close;
+}  
 end;
 
 function TDM.DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
@@ -296,6 +317,7 @@ var
 	WasConnected: boolean;
 begin
 	result := TStringList.Create;
+{
 	WasConnected := MainConnection.Connected;
 	MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
 		JET_SCHEMA_USERROSTER, adsSelect);
@@ -315,6 +337,7 @@ begin
 	MainForm.CS.Leave;
 	adsSelect.Close;
 	if not WasConnected then MainConnection.Close;
+}  
 end;
 
 procedure TDM.CompactDataBase(NewPassword: string='');
@@ -324,6 +347,7 @@ var
   ok: boolean;
 begin
   ok := False;
+{
   NewPassword:=Trim(NewPassword);
   if NewPassword='' then NewPassword:=GetConnectionProperty(
     MainConnection.ConnectionString,'Jet OLEDB:Database Password');
@@ -357,10 +381,12 @@ begin
 		adtParams.Post;
 	end;
   end;
+}  
 end;
 
 procedure TDM.ClearPassword( ADatasource: string);
 begin
+{
 	if MainConnection.Connected then MainConnection.Close;
 	MainConnection.Mode := cmShareExclusive;
 	MainConnection.ConnectionString := SetConnectionProperty(
@@ -375,14 +401,17 @@ begin
 	end;
 	MainConnection.Close;
 	MainConnection.Mode := cmReadWrite;
+}  
 end;
 
 procedure TDM.OpenDatabase( ADatasource: string);
 begin
 	if MainConnection.Connected then MainConnection.Close;
+{
 	MainConnection.ConnectionString :=
 		SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
 			ADatasource);
+}      
 	MainConnection.Open;
 end;
 
@@ -432,13 +461,13 @@ end;
 
 procedure TDM.adtParamsAfterOpen(DataSet: TDataSet);
 begin
-  adtParams.Properties['Update Criteria'].Value:=adCriteriaAllCols;
+//  adtParams.Properties['Update Criteria'].Value:=adCriteriaAllCols;
 end;
 
 procedure TDM.adtClientsAfterOpen(DataSet: TDataSet);
 begin
-  adtClients.Properties['Update Criteria'].Value:=adCriteriaKey;
-  adtClients.Properties['Update Resync'].Value:=adResyncAll;
+//  adtClients.Properties['Update Criteria'].Value:=adCriteriaKey;
+//  adtClients.Properties['Update Resync'].Value:=adResyncAll;
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
 	then adtClients.First;
 //  MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
@@ -462,11 +491,11 @@ end;
 
 procedure TDM.adtClientsAfterPost(DataSet: TDataSet);
 begin
-  if ClientInserted then with adcUpdate do begin
-    CommandText:=Format('EXECUTE ClientFirmInsert %d',
-      [adtClients.FieldByName('Id').AsInteger]);
-    Execute;
-  end;
+  if ClientInserted then
+    with adcUpdate do begin
+      SQL.Text:=Format('EXECUTE ClientFirmInsert %d', [adtClients.FieldByName('Id').AsInteger]);
+      adcUpdate.ExecProc;
+    end;
   ClientInserted:=False
 end;
 
@@ -476,6 +505,7 @@ var
   Table, Catalog: Variant;
   SR: TSearchRec;
 begin
+{
   if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
     Screen.Cursor:=crHourglass;
     try
@@ -501,6 +531,7 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
+}  
 end;
 
 // подключает таблицы из старого MDB
@@ -509,6 +540,7 @@ var
 	Table, Catalog: Variant;
 	i: integer;
 begin
+{
 	Catalog := CreateOleObject( 'ADOX.Catalog');
         Catalog.ActiveConnection := MainConnection.ConnectionObject;
 
@@ -531,6 +563,7 @@ begin
 	finally
 		Catalog := Unassigned;
 	end;
+  }
 end;
 
 //отключает все подключенные внешние таблицы
@@ -539,6 +572,7 @@ var
   I: Integer;
   Catalog: Variant;
 begin
+{
   Screen.Cursor:=crHourglass;
   try
     Catalog:=CreateOleObject('ADOX.Catalog');
@@ -553,38 +587,48 @@ begin
   finally
     Screen.Cursor:=crDefault;
   end;
+  }
 end;
 
 procedure TDM.ClearDatabase;
 begin
   Screen.Cursor:=crHourglass;
+  with adcUpdate do
+    try
+     SQL.Text:='EXECUTE MinPricesDelete';
+     ExecProc;
+    except
+    end;
+
+
   with adcUpdate do try
-    MainForm.StatusText:='Очищается MinPrices';
-    CommandText:='EXECUTE MinPricesDelete'; Execute;
-    CommandText:='EXECUTE OrdersSetCoreNull'; Execute;
-    CommandText:='EXECUTE OrdersHDeleteNotClosedAll'; Execute;
+//    MainForm.StatusText:='Очищается MinPrices';
+    SQL.Text:='EXECUTE MinPricesDelete';
+    ExecProc;
+    SQL.Text:='EXECUTE OrdersSetCoreNull'; ExecProc;
+    SQL.Text:='EXECUTE OrdersHDeleteNotClosedAll'; ExecProc;
     MainForm.StatusText:='Очищается Core';
-    CommandText:='EXECUTE CoreDeleteAll'; Execute;
+    SQL.Text:='EXECUTE CoreDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается CatalogCurrency';
-    CommandText:='EXECUTE CatalogCurrencyDelete'; Execute;
+    SQL.Text:='EXECUTE CatalogCurrencyDelete'; ExecProc;
     MainForm.StatusText:='Очищается Catalog';
-    CommandText:='EXECUTE CatalogDelete'; Execute;
+    SQL.Text:='EXECUTE CatalogDelete'; ExecProc;
     MainForm.StatusText:='Очищается PricesRegionalData';
-    CommandText:='EXECUTE PricesRegionalDataDeleteAll'; Execute;
+    SQL.Text:='EXECUTE PricesRegionalDataDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается PricesData';
-    CommandText:='EXECUTE PricesDataDeleteAll'; Execute;
+    SQL.Text:='EXECUTE PricesDataDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается RegionalData';
-    CommandText:='EXECUTE RegionalDataDeleteAll'; Execute;
+    SQL.Text:='EXECUTE RegionalDataDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается ClientsDataN';
-    CommandText:='EXECUTE ClientsDataNDeleteAll'; Execute;
+    SQL.Text:='EXECUTE ClientsDataNDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается Synonym';
-    CommandText:='EXECUTE SynonymDeleteAll'; Execute;
+    SQL.Text:='EXECUTE SynonymDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается SynonymFirmCr';
-    CommandText:='EXECUTE SynonymFirmCrDeleteAll'; Execute;
+    SQL.Text:='EXECUTE SynonymFirmCrDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается Defectives';
-    CommandText:='EXECUTE DefectivesDeleteAll'; Execute;
+    SQL.Text:='EXECUTE DefectivesDeleteAll'; ExecProc;
     MainForm.StatusText:='Очищается Registry';
-    CommandText:='EXECUTE RegistryDelete'; Execute;
+    SQL.Text:='EXECUTE RegistryDelete'; ExecProc;
   finally
     Screen.Cursor:=crDefault;
     MainForm.StatusText:='';
@@ -597,7 +641,7 @@ var
   NRecs: Integer;
 begin
   with adsSelect do begin
-    CommandText:=Format('SELECT OrderId FROM OrdersH WHERE ClientId=%d And PriceCode=%d And RegionCode=%d And Not Closed',
+    SelectSQL.Text:=Format('SELECT OrderId FROM OrdersH WHERE ClientId=%d And PriceCode=%d And RegionCode=%d And Not Closed',
       [ClientId, PriceCode, RegionCode]);
     Open;
     try
@@ -609,9 +653,9 @@ begin
   end;
   if NRecs=0 then begin
     if CreateIfNotExists then with adcUpdate do begin
-      CommandText:=Format('INSERT INTO OrdersH (ClientId,PriceCode,RegionCode) VALUES (%d,%d,%d)',
+      SQL.Text:=Format('INSERT INTO OrdersH (ClientId,PriceCode,RegionCode) VALUES (%d,%d,%d)',
         [ClientId, PriceCode, RegionCode]);
-      Execute;
+      ExecQuery;
       Result:=GetCurrentOrderId(ClientId,PriceCode,RegionCode,False);
       if Result=0 then raise Exception.Create('Не удается создать заголовок заказа');
     end
@@ -627,8 +671,8 @@ begin
   Screen.Cursor:=crHourglass;
   try
     with adcUpdate do begin
-      CommandText:='EXECUTE OrdersDeleteEmpty'; Execute;
-      CommandText:='EXECUTE OrdersHDeleteEmpty'; Execute;
+      SqL.Text:='EXECUTE OrdersDeleteEmpty'; ExecProc;
+      SQL.Text:='EXECUTE OrdersHDeleteEmpty'; ExecProc;
     end;
   finally
     Screen.Cursor:=crDefault;
@@ -927,6 +971,19 @@ begin
     MessageBox(Format('На данном компьютере версии JET и MDAC не соответствуют минимальным требованиям.'#13#10'JET : %s'#13#10'MDAC : %s', [AJETVersion, AMDACVersion]), MB_ICONERROR);
     ExitProcess(0);
   end;
+end;
+
+procedure TDM.MainConnection1AfterConnect(Sender: TObject);
+begin
+	//открываем таблицы с параметрами
+	adtParams.Open;
+	adtProvider.Open;
+	adtReclame.Open;
+	adtClients.Open;
+	try
+		adtFlags.Open;
+	except
+	end;
 end;
 
 end.

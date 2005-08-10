@@ -100,9 +100,9 @@ begin
 	begin
     adsOrders.Delete;
     if adsOrders.RecordCount = 0 then begin
-      DM.adcUpdate.CommandText := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHOrderId.AsString;
+      DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHOrderId.AsString;
       OrdersHForm.adsOrdersH.Close;
-      DM.adcUpdate.Execute;
+      DM.adcUpdate.ExecQuery;
       OrdersHForm.adsOrdersH.Open;
       MainForm.SetOrdersInfo;
       PrevForm.ShowForm;

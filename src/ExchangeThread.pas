@@ -453,11 +453,11 @@ var
   ExtErrorMessage : String;
 begin
  	DM.adsOrdersH.Close;
-	DM.adsOrdersH.Parameters.ParamByName( 'AClientId').Value :=
+	DM.adsOrdersH.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsOrdersH.Parameters.ParamByName( 'AClosed').Value := False;
-	DM.adsOrdersH.Parameters.ParamByName( 'ASend').Value := True;
-	DM.adsOrdersH.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	DM.adsOrdersH.ParamByName( 'AClosed').Value := False;
+	DM.adsOrdersH.ParamByName( 'ASend').Value := True;
+	DM.adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	DM.adsOrdersH.Open;
 	if not DM.adsOrdersH.Eof then
 	begin
@@ -467,7 +467,7 @@ begin
 	while not DM.adsOrdersH.Eof do
 	begin
                 DM.adsOrders.Close;
-		DM.adsOrders.Parameters.ParamByName( 'AOrderId').Value :=
+		DM.adsOrders.ParamByName( 'AOrderId').Value :=
 			DM.adsOrdersH.FieldByName( 'OrderId').Value;
                 DM.adsOrders.Open;
 
@@ -523,6 +523,7 @@ begin
 			DM.adsOrders.Next;
 		end;
 
+{
     if IsExternalOrdersDLLPresent then
       if ExternalOrdersPriceIsProtek(DM.MainConnection, DM.adsOrdersH.FieldByName( 'OrderId').AsInteger)
       then begin
@@ -555,6 +556,7 @@ begin
           end;
         end;
       end;
+}      
 
 		try
 			Res := Soap.Invoke( 'PostOrder1', params, values);
@@ -734,7 +736,7 @@ begin
 	DM.adtClients.DisableControls;
 	tl := TStringList.Create;
 	try
-		DM.MainConnection.GetTableNames( tl);
+		DM.MainConnection.GetTableNames( tl, false);
 		DM.ClearPassword( ExePath + DatabaseName);
 		DM.OpenDatabase( ExePath + SDirIn + '\' + DatabaseName);
 		DM.UnLinkExternalTables;
@@ -777,6 +779,7 @@ var
 	Catalog: Variant;
 	i, j, qnum: integer;
 begin
+{
 	Catalog := CreateOleObject( 'ADOX.Catalog');
         Catalog.ActiveConnection := DM.MainConnection.ConnectionObject;
 	try
@@ -819,6 +822,7 @@ begin
 		Progress := 0;
 		Synchronize( SetProgress);
 	end;
+}  
 end;
 
 procedure TExchangeThread.ImportData;
@@ -847,6 +851,7 @@ begin
 	Tables := TStringList.Create;
 	try
 		//определ€ем список обновл€емых таблиц
+{
 		Catalog := CreateOleObject( 'ADOX.Catalog');
 		try
 			Catalog.ActiveConnection := DM.MainConnection.ConnectionObject;
@@ -856,6 +861,7 @@ begin
 		finally
 			Catalog := Unassigned;
 		end;
+}    
 	if Tables.IndexOf( 'EXTCATALOG') >= 0 then UpdateTables:=UpdateTables+[utCatalog];
 	if Tables.IndexOf( 'EXTCATDEL') >= 0 then UpdateTables:=UpdateTables+[utCatDel];
 	if Tables.IndexOf( 'EXTCATALOGCURRENCY') >= 0 then UpdateTables:=UpdateTables+[utCatalogCurrency];
@@ -898,46 +904,46 @@ begin
 
    with DM.adcUpdate do begin
 	//удал€ем минимальные цены
-	CommandText:='EXECUTE MinPricesDelete'; Execute;
+	SQL.Text:='EXECUTE MinPricesDelete'; Execute;
 	//удал€ем из таблиц ненужные данные
 	//CatalogCurrency
 	if utCatalogCurrency in UpdateTables then begin
-	  CommandText:='EXECUTE CatalogCurrencyDelete'; Execute;
+	  SQL.Text:='EXECUTE CatalogCurrencyDelete'; Execute;
 	end;
 	//PricesRegionalData
 	if utPricesRegionalData in UpdateTables then begin
-	  CommandText:='EXECUTE PricesRegionalDataDelete'; Execute;
+	  SQL.Text:='EXECUTE PricesRegionalDataDelete'; Execute;
 	end;
 	//PricesData
 	if utPricesRegionalData in UpdateTables then begin
-	  CommandText:='EXECUTE PricesDataDelete'; Execute;
+	  SQL.Text:='EXECUTE PricesDataDelete'; Execute;
 	end;
 	//RegionalData
 	if utPricesRegionalData in UpdateTables then begin
-	  CommandText:='EXECUTE RegionalDataDelete'; Execute;
+	  SQL.Text:='EXECUTE RegionalDataDelete'; Execute;
 	end;
 	//ClientsDataN
 	if utPricesRegionalData in UpdateTables then begin
-	  CommandText:='EXECUTE ClientsDataNDelete'; Execute;
+	  SQL.Text:='EXECUTE ClientsDataNDelete'; Execute;
 	end;
 	//Core
 	if utCore in UpdateTables then begin
-	  CommandText:='EXECUTE CoreDeleteNewPrices'; Execute;
+	  SQL.Text:='EXECUTE CoreDeleteNewPrices'; Execute;
 	end;
 	if utCore in UpdateTables then begin
-	  CommandText:='EXECUTE CoreDeleteOldPrices'; Execute;
+	  SQL.Text:='EXECUTE CoreDeleteOldPrices'; Execute;
 	end;
 	//Clients
 	if utClients in UpdateTables then begin
-	  CommandText:='EXECUTE ClientsDelete'; Execute;
+	  SQL.Text:='EXECUTE ClientsDelete'; Execute;
 	end;
 	//Regions
 	if utRegions in UpdateTables then begin
-	  CommandText:='EXECUTE RegionsDelete'; Execute;
+	  SQL.Text:='EXECUTE RegionsDelete'; Execute;
 	end;
 	// Registry
 	if utRegistry in UpdateTables then begin
-	  CommandText:='EXECUTE RegistryDelete'; Execute;
+	  SQL.Text:='EXECUTE RegistryDelete'; Execute;
 	end;
 
 	Progress := 10;
@@ -946,21 +952,21 @@ begin
 	//добавл€ем в таблицы новые данные и измен€ем имеющиес€
 	//измен€ем и добавл€ем Section (надо сделать до изменени€ Catalog)
 	if utSection in UpdateTables then begin
-	  CommandText:='EXECUTE TmpSectionDelete'; Execute;
-	  CommandText:='EXECUTE TmpSectionInsert'; Execute;
-	  CommandText:='EXECUTE SectionUpdate'; Execute;
-	  CommandText:='EXECUTE TmpSectionDelete'; Execute;
-	  CommandText:='EXECUTE SectionInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpSectionDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpSectionInsert'; Execute;
+	  SQL.Text:='EXECUTE SectionUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpSectionDelete'; Execute;
+	  SQL.Text:='EXECUTE SectionInsert'; Execute;
 	end;
 	//Catalog
 	if utCatalog in UpdateTables then begin
-	  CommandText:='EXECUTE TmpCatalogDelete'; Execute;
-	  CommandText:='EXECUTE TmpCatalogInsert'; Execute;
-	  CommandText:='EXECUTE CatalogUpdate'; Execute;
-	  CommandText:='EXECUTE TmpCatalogDelete'; Execute;
-	  CommandText:='EXECUTE CatalogInsert'; Execute;
-	  CommandText:='EXECUTE CatalogSetFormNotNull'; Execute;
-          CommandText:='EXECUTE CatalogDeleteHide'; Execute;
+	  SQL.Text:='EXECUTE TmpCatalogDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpCatalogInsert'; Execute;
+	  SQL.Text:='EXECUTE CatalogUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpCatalogDelete'; Execute;
+	  SQL.Text:='EXECUTE CatalogInsert'; Execute;
+	  SQL.Text:='EXECUTE CatalogSetFormNotNull'; Execute;
+          SQL.Text:='EXECUTE CatalogDeleteHide'; Execute;
 	end;
 
 	Progress := 20;
@@ -970,63 +976,63 @@ begin
 
 	//удал€ем из Section (можно сделать только после изменени€ Catalog)
 	if utSection in UpdateTables then begin
-	  CommandText:='EXECUTE SectionDelete'; Execute;
+	  SQL.Text:='EXECUTE SectionDelete'; Execute;
 	end;
 	//CatalogCurrency
 	if utCatalogCurrency in UpdateTables then begin
-	  CommandText:='EXECUTE TmpCatalogCurrencyDelete'; Execute;
-	  CommandText:='EXECUTE TmpCatalogCurrencyInsert'; Execute;
-	  CommandText:='EXECUTE CatalogCurrencyUpdate'; Execute;
-	  CommandText:='EXECUTE TmpCatalogCurrencyDelete'; Execute;
-	  CommandText:='EXECUTE CatalogCurrencyInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpCatalogCurrencyDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpCatalogCurrencyInsert'; Execute;
+	  SQL.Text:='EXECUTE CatalogCurrencyUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpCatalogCurrencyDelete'; Execute;
+	  SQL.Text:='EXECUTE CatalogCurrencyInsert'; Execute;
 	end;
 	//Regions
 	if utRegions in UpdateTables then begin
-	  CommandText:='EXECUTE TmpRegionsDelete'; Execute;
-	  CommandText:='EXECUTE TmpRegionsInsert'; Execute;
-	  CommandText:='EXECUTE RegionsUpdate'; Execute;
-	  CommandText:='EXECUTE TmpRegionsDelete'; Execute;
-	  CommandText:='EXECUTE RegionsInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpRegionsDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpRegionsInsert'; Execute;
+	  SQL.Text:='EXECUTE RegionsUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpRegionsDelete'; Execute;
+	  SQL.Text:='EXECUTE RegionsInsert'; Execute;
 	end;
 	//Clients
 	if utClients in UpdateTables then begin
-	  CommandText:='EXECUTE TmpClientsDelete'; Execute;
-	  CommandText:='EXECUTE TmpClientsInsert'; Execute;
-	  CommandText:='EXECUTE ClientsUpdate'; Execute;
-	  CommandText:='EXECUTE TmpClientsDelete'; Execute;
-	  CommandText:='EXECUTE ClientsInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpClientsDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpClientsInsert'; Execute;
+	  SQL.Text:='EXECUTE ClientsUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpClientsDelete'; Execute;
+	  SQL.Text:='EXECUTE ClientsInsert'; Execute;
 	end;
 	//ClientsDataN
 	if utClientsDataN in UpdateTables then begin
-	  CommandText:='EXECUTE TmpClientsDataNDelete'; Execute;
-	  CommandText:='EXECUTE TmpClientsDataNInsert'; Execute;
-	  CommandText:='EXECUTE ClientsDataNUpdate'; Execute;
-	  CommandText:='EXECUTE TmpClientsDataNDelete'; Execute;
-	  CommandText:='EXECUTE ClientsDataNInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpClientsDataNDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpClientsDataNInsert'; Execute;
+	  SQL.Text:='EXECUTE ClientsDataNUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpClientsDataNDelete'; Execute;
+	  SQL.Text:='EXECUTE ClientsDataNInsert'; Execute;
 	end;
 	//RegionalData
 	if utRegionalData in UpdateTables then begin
-	  CommandText:='EXECUTE TmpRegionalDataDelete'; Execute;
-	  CommandText:='EXECUTE TmpRegionalDataInsert'; Execute;
-	  CommandText:='EXECUTE RegionalDataUpdate'; Execute;
-	  CommandText:='EXECUTE TmpRegionalDataDelete'; Execute;
-	  CommandText:='EXECUTE RegionalDataInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpRegionalDataDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpRegionalDataInsert'; Execute;
+	  SQL.Text:='EXECUTE RegionalDataUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpRegionalDataDelete'; Execute;
+	  SQL.Text:='EXECUTE RegionalDataInsert'; Execute;
 	end;
 	//PricesData
 	if utPricesData in UpdateTables then begin
-	  CommandText:='EXECUTE TmpPricesDataDelete'; Execute;
-	  CommandText:='EXECUTE TmpPricesDataInsert'; Execute;
-	  CommandText:='EXECUTE PricesDataUpdate'; Execute;
-	  CommandText:='EXECUTE TmpPricesDataDelete'; Execute;
-	  CommandText:='EXECUTE PricesDataInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpPricesDataDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpPricesDataInsert'; Execute;
+	  SQL.Text:='EXECUTE PricesDataUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpPricesDataDelete'; Execute;
+	  SQL.Text:='EXECUTE PricesDataInsert'; Execute;
 	end;
 	//PricesRegionalData
 	if utPricesData in UpdateTables then begin
-	  CommandText:='EXECUTE TmpPricesRegionalDataDelete'; Execute;
-	  CommandText:='EXECUTE TmpPricesRegionalDataInsert'; Execute;
-	  CommandText:='EXECUTE PricesRegionalDataUpdate'; Execute;
-	  CommandText:='EXECUTE TmpPricesRegionalDataDelete'; Execute;
-	  CommandText:='EXECUTE PricesRegionalDataInsert'; Execute;
+	  SQL.Text:='EXECUTE TmpPricesRegionalDataDelete'; Execute;
+	  SQL.Text:='EXECUTE TmpPricesRegionalDataInsert'; Execute;
+	  SQL.Text:='EXECUTE PricesRegionalDataUpdate'; Execute;
+	  SQL.Text:='EXECUTE TmpPricesRegionalDataDelete'; Execute;
+	  SQL.Text:='EXECUTE PricesRegionalDataInsert'; Execute;
 	end;
 
 	Progress := 30;
@@ -1034,41 +1040,42 @@ begin
 
 	//Synonym
 	if utSynonym in UpdateTables then begin
-	  CommandText:='EXECUTE SynonymInsert'; Execute;
-	  //CommandText:='EXECUTE SynonymInsertUnfounded'; Execute;
+	  SQL.Text:='EXECUTE SynonymInsert'; Execute;
+	  //SQL.Text:='EXECUTE SynonymInsertUnfounded'; Execute;
 	end;
 	//SynonymFirmCr
 	if utSynonymFirmCr in UpdateTables then begin
-	  CommandText:='EXECUTE SynonymFirmCrInsert'; Execute;
+	  SQL.Text:='EXECUTE SynonymFirmCrInsert'; Execute;
 	end;
 	//Core
 	if utCore in UpdateTables then begin
-	  CommandText:='EXECUTE CoreDeleteOldPrices'; Execute;
+	  SQL.Text:='EXECUTE CoreDeleteOldPrices'; Execute;
 	end;
 	if utCore in UpdateTables then begin
-	  CommandText:='EXECUTE CoreInsert'; Execute;
+	  SQL.Text:='EXECUTE CoreInsert'; Execute;
 	end;
 	//WayBillHead
 	if utWayBillHead in UpdateTables then begin
-	  CommandText:='EXECUTE WayBillHeadInsert'; Execute;
+	  SQL.Text:='EXECUTE WayBillHeadInsert'; Execute;
 	end;
 	//WayBillList
 	if utWayBillList in UpdateTables then begin
-	  CommandText:='EXECUTE WayBillListInsert'; Execute;
+	  SQL.Text:='EXECUTE WayBillListInsert'; Execute;
 	end;
 
 	Progress := 40;
 	Synchronize( SetProgress);
-	CommandText := 'EXECUTE CoreDeleteFormHeaders'; Execute;
+	SQL.Text := 'EXECUTE CoreDeleteFormHeaders'; Execute;
 	Progress := 50;
 	Synchronize( SetProgress);
-	CommandText := 'EXECUTE SynonymDeleteFormHeaders'; Execute;
+	SQL.Text := 'EXECUTE SynonymDeleteFormHeaders'; Execute;
 	Progress := 60;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
 
 	{ Ѕлок интеграции прайс листов }
+{
 	if IsIntegrDLLPresent then
 	begin
 		IntegrTotalWellPrices( DM.MainConnection,
@@ -1083,16 +1090,17 @@ begin
 				'ќшибка', MB_OK or MB_ICONERROR);
 		end;
 	end;
+}  
 
 	StatusText := '»мпорт данных';
 	Synchronize( SetStatus);
 
 	if DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean then
 	begin
-		CommandText := 'EXECUTE SynonymInsertFormHeaders'; Execute;
+		SQL.Text := 'EXECUTE SynonymInsertFormHeaders'; Execute;
 		Progress := 70;
 		Synchronize( SetProgress);
-		CommandText := 'EXECUTE CoreInsertFormHeaders'; Execute;
+		SQL.Text := 'EXECUTE CoreInsertFormHeaders'; Execute;
 		Progress := 80;
 		Synchronize( SetProgress);
 	end;
@@ -1108,24 +1116,24 @@ begin
 	{ ƒобавл€ем забракованые препараты }
 	if utRejects in UpdateTables then
 	begin
-		CommandText:='EXECUTE DefectivesInsert'; Execute;
+		SQL.Text:='EXECUTE DefectivesInsert'; Execute;
 	end;
 	{ ƒобавл€ем реестр }
 	if utRegistry in UpdateTables then
 	begin
-		CommandText := 'EXECUTE RegistryInsert'; Execute;
+		SQL.Text := 'EXECUTE RegistryInsert'; Execute;
 	end;
 
-	DM.adtClients.Requery;
+	DM.adtClients.Refresh;
 	//проставл€ем мин. цены и лидеров
-	CommandText := 'EXECUTE MinPricesInsert ' +
+	SQL.Text := 'EXECUTE MinPricesInsert ' +
 		BoolToStr( DM.adtClients.FieldByName( 'LeadFromBasic').AsInteger = 1);
 	Execute;
 	Progress := 90;
 	Synchronize( SetProgress);
 	TotalProgress := 85;
 	Synchronize( SetTotalProgress);
-	CommandText := 'EXECUTE MinPricesSetPriceCode ' +
+	SQL.Text := 'EXECUTE MinPricesSetPriceCode ' +
 		BoolToStr( DM.adtClients.FieldByName( 'LeadFromBasic').AsInteger = 1);
 	Execute;
 	Progress := 100;

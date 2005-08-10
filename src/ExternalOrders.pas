@@ -122,10 +122,13 @@ var
   ExtErrorMessage : String;
 begin
   try
+    ExternalRes := False;
+{
     ExternalRes := ExternalOrdersRun(
       Application.Handle,
       DM.MainConnection,
       ErrorStr);
+}      
 
     if not ExternalRes then begin
       SetLength(ExtErrorMessage, StrLen(ErrorStr));

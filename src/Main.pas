@@ -490,7 +490,7 @@ begin
 	ExAct := [ eaGetPrice];
 
 	{ Проверяем каталог на наличие записей }
-	DM.adsSelect.CommandText := 'SELECT COUNT(*) AS CatNum FROM [Catalog]';
+	DM.adsSelect.SelectSQL.Text := 'SELECT COUNT(*) AS CatNum FROM [Catalog]';
 	try
 		DM.adsSelect.Open;
 		CatNum := DM.adsSelect.FieldByName( 'CatNum').AsInteger;
@@ -568,8 +568,8 @@ end;
 procedure TMainForm.SetOrdersInfo;
 begin
 	DM.adsSelect.Close;
-	DM.adsSelect.CommandText := 'SELECT * FROM OrdersInfo2';
-	DM.adsSelect.Parameters.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	DM.adsSelect.SelectSQL.Text := 'SELECT * FROM OrdersInfo2';
+	DM.adsSelect.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	DM.adsSelect.Open;
 	try
 		StatusBar.Panels[ 0].Text := Format( 'Заказов : %d',
@@ -692,7 +692,7 @@ begin
 	{ Проверка на запрос на монопольный доступ }
 	CS.Enter;
 	try
-		DM.adtFlags.Requery;
+		DM.adtFlags.RefreshSQL;
 		ExID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
 	except
 		ExID := '';

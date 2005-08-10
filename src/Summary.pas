@@ -235,11 +235,11 @@ procedure TSummaryForm.dbgSummaryKeyDown(Sender: TObject; var Key: Word;
 begin
   if (Shift = []) and (Key = VK_DELETE) then begin
     if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
-      DM.adcUpdate.CommandText :=
+      DM.adcUpdate.SQL.Text :=
         'delete from Orders where OrderID = ' +
           IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
           ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
-      DM.adcUpdate.Execute;
+      DM.adcUpdate.ExecQuery;
       adsSummary.Requery();
       Key := 0;
     end;

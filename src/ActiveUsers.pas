@@ -67,6 +67,8 @@ begin
       Catalog:=Unassigned;
     end;}
     //читаем с помощью User Roster
+    {
+    TODO: Работа с подключенными пользователями
     DM.MainConnection.OpenSchema(siProviderSpecific,EmptyParam,
       JET_SCHEMA_USERROSTER,DM.adsSelect);
     with DM.adsSelect do try
@@ -81,6 +83,7 @@ begin
     finally
       Close;
     end;
+    }
     if ListView.Items.Count>0 then ListView.ItemIndex:=0;
     ShowModal;
   finally

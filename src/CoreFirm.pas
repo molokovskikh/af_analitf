@@ -133,7 +133,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, Core;
+  NamesForms, Core, pFIBQuery;
 
 {$R *.DFM}
 
@@ -358,9 +358,10 @@ begin
   try
     with DM.adcUpdate do begin
       //удаляем сохраненную заявку (если есть)
-      CommandText:=Format( 'EXECUTE OrdersHDeleteNotClosed %d, %d, %d',
+      //TODO: Проверить наличие процедуры
+      SQL.Text:=Format( 'EXECUTE OrdersHDeleteNotClosed %d, %d, %d',
         [DM.adtClients.FieldByName('ClientId').AsInteger,PriceCode,RegionCode]);
-      Execute;
+      ExecQuery;
     end;
   finally
     adsCore.EnableControls;

@@ -281,7 +281,7 @@ var
 
 begin
  	DM.adsSelect3.Close;
- 	DM.adsSelect3.CommandText := 'SELECT Id, CoreId, PriceCode, RegionCode, Code, CodeCr, ' +
+ 	DM.adsSelect3.SelectSQL.Text := 'SELECT Id, CoreId, PriceCode, RegionCode, Code, CodeCr, ' +
 		'Price, SynonymCode, SynonymFirmCrCode, Synonym, SynonymFirm, Order, PriceName ' +
 		'FROM Orders ' +
 		'INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND NOT OrdersH.Closed) ' +
@@ -300,13 +300,13 @@ begin
 	while not DM.adsSelect3.Eof do
 	begin
 		DM.adsCore.Close;
-		DM.adsCore.Parameters.ParamByName( 'RetailForcount').Value :=
+		DM.adsCore.ParamByName( 'RetailForcount').Value :=
 			DM.adtClients.FieldByName( 'Forcount').Value;
-		DM.adsCore.Parameters.ParamByName( 'AClientId').Value :=
+		DM.adsCore.ParamByName( 'AClientId').Value :=
 			DM.adtClients.FieldByName('ClientId').Value;
-		DM.adsCore.Parameters.ParamByName( 'APriceCode').Value :=
+		DM.adsCore.ParamByName( 'APriceCode').Value :=
 			DM.adsSelect3.FieldByName( 'PriceCode').Value;
-		DM.adsCore.Parameters.ParamByName( 'ARegionCode').Value :=
+		DM.adsCore.ParamByName( 'ARegionCode').Value :=
 			DM.adsSelect3.FieldByName( 'RegionCode').Value;
 		Screen.Cursor := crHourglass;
 		try

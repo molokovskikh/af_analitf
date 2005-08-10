@@ -151,7 +151,7 @@ var
 implementation
 
 uses Main, AProc, DModule, NamesForms, Constant, OrdersH, DBProc, CoreFirm,
-  Prices;
+  Prices, pFIBDataSet;
 
 {$R *.DFM}
 
@@ -323,8 +323,9 @@ try
   //вычисл€ем розничную цену PriceRet
   if adsCoreFirmCode.AsInteger=RegisterId then begin
     with DM.adsSelect do begin
-      CommandText:='SELECT '+RegionPriceRet+' FROM Regions WHERE Id='+RegionCodeStr;
-      Parameters.ParamByName('Price').Value:=adsCoreBaseCost.Value;
+      //TODO:ѕосмотреть сюда
+      SelectSQL.Text:='SELECT '+RegionPriceRet+' FROM Regions WHERE Id='+RegionCodeStr;
+      ParamByName('Price').Value:=adsCoreBaseCost.Value;
       Open;
       try
         if not IsEmpty then

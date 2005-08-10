@@ -152,7 +152,8 @@ procedure ShowOrdersH;
 
 implementation
 
-uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList;
+uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList,
+  pFIBDataSet;
 
 {$R *.dfm}
 
@@ -362,10 +363,10 @@ begin
         //находим OrderId
         OrderId:=0;
         with DM.adsSelect do begin
-          CommandText:='SELECT OrderId FROM OrdersHShowCurrent';
-          Parameters.ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-          Parameters.ParamByName('APriceCode').Value:=adsOrdersHPriceCode.Value;
-          Parameters.ParamByName('ARegionCode').Value:=adsOrdersHRegionCode.Value;
+          SelectSQL.Text:='SELECT OrderId FROM OrdersHShowCurrent';
+          ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+          ParamByName('APriceCode').Value:=adsOrdersHPriceCode.Value;
+          ParamByName('ARegionCode').Value:=adsOrdersHRegionCode.Value;
           Open;
           try
             if not IsEmpty then OrderId:=Fields[0].AsInteger;
@@ -479,9 +480,9 @@ begin
           adsOrdersH.Edit;
           adsOrdersH.FieldByName( 'Send').AsBoolean := False;
           adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
-          DM.adcUpdate.CommandText := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
+          DM.adcUpdate.SQL.Text := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
             adsOrdersH.FieldByName( 'OrderId').AsString;
-          DM.adcUpdate.Execute;
+          DM.adcUpdate.ExecQuery;
           adsOrdersH.Post;
         finally
           adsOrdersHSend.OnChange := adsOrdersHSendChange;

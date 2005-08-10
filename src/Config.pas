@@ -134,7 +134,7 @@ begin
     end;
     if IsRasPresent then EnableRemoteAccess
     	else DisableRemoteAccess;
-    DM.MainConnection.BeginTrans;
+//    DM.MainConnection.BeginTrans;
     try
       DM.adtParams.Edit;
       Result:=ShowModal=mrOk;
@@ -143,18 +143,18 @@ begin
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
-          DM.adcUpdate.CommandText := 'EXECUTE OrdersHDeleteNotClosedAll';
-          DM.adcUpdate.Execute;
+          DM.adcUpdate.SQL.Text := 'EXECUTE OrdersHDeleteNotClosedAll';
+          DM.adcUpdate.ExecQuery;
         end;
         DM.adtParams.Post;
-        DM.MainConnection.CommitTrans;
+      //  DM.MainConnection.CommitTrans;
       end
       else begin
         DM.adtParams.Cancel;
-        DM.MainConnection.RollbackTrans;
+//        DM.MainConnection.RollbackTrans;
       end;
     except
-      DM.MainConnection.RollbackTrans;
+//      DM.MainConnection.RollbackTrans;
       raise;
     end;
 

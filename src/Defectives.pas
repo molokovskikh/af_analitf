@@ -71,7 +71,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main;
+  Main, pFIBDataSet;
 
 procedure TDefectivesForm.FormCreate(Sender: TObject);
 var
@@ -170,7 +170,7 @@ var
 begin
   //если нет ни одной пометки - печатаем все
   with DM.adsSelect do begin
-    CommandText:='SELECT Count(*) FROM Defectives WHERE Check';
+    SelectSQL.Text:='SELECT Count(*) FROM Defectives WHERE Check';
     Open;
     try
       ShowAll:=Fields[0].AsInteger=0;
