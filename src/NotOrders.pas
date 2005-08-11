@@ -50,7 +50,7 @@ begin
 	DM.adsSelect.Close;
 	DM.adsSelect.SQLs.SelectSQL.Text :=
 'SELECT OH.*, PRD.MinReq '+
-'FROM OrdersHShow(:ClientID, :Closed, :TimeZoneBias) OH ' +
+'FROM OrdersHShow(:AClientID, :AClosed, :TimeZoneBias) OH ' +
 'LEFT JOIN PricesRegionalData PRD ON (OH.PriceCode=PRD.PriceCode AND OH.RegionCode=PRD.RegionCode) '+
 'WHERE OH.SumOrder<PRD.MinReq AND Send = 1';
 	DM.adsSelect.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;

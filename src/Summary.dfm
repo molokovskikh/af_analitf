@@ -264,14 +264,13 @@ inherited SummaryForm: TSummaryForm
         end>
     end
   end
-  object adsSummary: TADODataSet
+  object adsSummary2: TADODataSet
     AutoCalcFields = False
-    Connection = DM.MainConnection
     CursorLocation = clUseServer
-    BeforePost = adsSummaryBeforePost
-    AfterPost = adsSummaryAfterPost
-    AfterScroll = adsSummaryAfterScroll
-    OnCalcFields = adsSummaryCalcFields
+    BeforePost = adsSummary2BeforePost
+    AfterPost = adsSummary2AfterPost
+    AfterScroll = adsSummary2AfterScroll
+    OnCalcFields = adsSummary2CalcFields
     CommandText = 'SELECT * FROM SummaryShow'
     Parameters = <
       item
@@ -293,82 +292,82 @@ inherited SummaryForm: TSummaryForm
         Value = 1
       end>
     Prepared = True
-    Left = 304
-    Top = 88
-    object adsSummarySynonym: TWideStringField
+    Left = 296
+    Top = 56
+    object adsSummary2Synonym: TWideStringField
       FieldName = 'Synonym'
       Size = 255
     end
-    object adsSummarySynonymFirm: TWideStringField
+    object adsSummary2SynonymFirm: TWideStringField
       FieldName = 'SynonymFirm'
       Size = 255
     end
-    object adsSummaryPriceName: TWideStringField
+    object adsSummary2PriceName: TWideStringField
       FieldName = 'PriceName'
       Size = 25
     end
-    object adsSummaryRegionName: TWideStringField
+    object adsSummary2RegionName: TWideStringField
       FieldName = 'RegionName'
       Size = 25
     end
-    object adsSummaryVolume: TWideStringField
+    object adsSummary2Volume: TWideStringField
       FieldName = 'Volume'
       Size = 15
     end
-    object adsSummaryNote: TWideStringField
+    object adsSummary2Note: TWideStringField
       FieldName = 'Note'
       Size = 50
     end
-    object adsSummaryPeriod: TWideStringField
+    object adsSummary2Period: TWideStringField
       FieldName = 'Period'
     end
-    object adsSummaryJunk: TBooleanField
+    object adsSummary2Junk: TBooleanField
       FieldName = 'Junk'
     end
-    object adsSummaryBaseCost: TBCDField
+    object adsSummary2BaseCost: TBCDField
       FieldName = 'BaseCost'
       DisplayFormat = '0.00;;'#39#39
       currency = True
       Precision = 19
     end
-    object adsSummaryPriceRet: TFloatField
+    object adsSummary2PriceRet: TFloatField
       FieldName = 'PriceRet'
       ReadOnly = True
       DisplayFormat = '0.00;;'#39#39
       currency = True
     end
-    object adsSummaryQuantity: TWideStringField
+    object adsSummary2Quantity: TWideStringField
       FieldName = 'Quantity'
       Size = 15
     end
-    object adsSummaryOrder: TIntegerField
+    object adsSummary2Order: TIntegerField
       FieldName = 'Order'
       DisplayFormat = '#'
     end
-    object adsSummarySumOrder: TCurrencyField
+    object adsSummary2SumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsSummaryAwait: TBooleanField
+    object adsSummary2Await: TBooleanField
       FieldName = 'Await'
     end
-    object adsSummaryOrdersCoreId: TIntegerField
+    object adsSummary2OrdersCoreId: TIntegerField
       FieldName = 'OrdersCoreId'
       Visible = False
     end
-    object adsSummaryOrdersOrderId: TIntegerField
+    object adsSummary2OrdersOrderId: TIntegerField
       FieldName = 'OrdersOrderId'
       Visible = False
     end
   end
   object dsSummary: TDataSource
     DataSet = adsSummary
-    Left = 304
+    Left = 296
     Top = 136
   end
-  object adsSummaryH: TADODataSet
+  object adsSummaryH2: TADODataSet
     Connection = DM.MainConnection
     CursorType = ctStatic
     CommandText = 'SELECT * FROM SummaryHShow'
@@ -385,10 +384,10 @@ inherited SummaryForm: TSummaryForm
     Prepared = True
     Left = 432
     Top = 88
-    object adsSummaryHCountOrder: TIntegerField
+    object adsSummaryH2CountOrder: TIntegerField
       FieldName = 'CountOrder'
     end
-    object adsSummaryHSumOrder: TBCDField
+    object adsSummaryH2SumOrder: TBCDField
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Precision = 19
@@ -397,12 +396,127 @@ inherited SummaryForm: TSummaryForm
   object dsSummaryH: TDataSource
     DataSet = adsSummaryH
     Left = 432
-    Top = 136
+    Top = 168
   end
   object frdsSummary: TfrDBDataSet
     DataSource = dsSummary
     OpenDataSource = False
     Left = 304
     Top = 184
+  end
+  object adsSummary: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    VOLUME,'
+      '    QUANTITY,'
+      '    NOTE,'
+      '    PERIOD,'
+      '    JUNK,'
+      '    AWAIT,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    BASECOST,'
+      '    PRICENAME,'
+      '    REGIONNAME,'
+      '    PRICERET,'
+      '    ORDERCOUNT,'
+      '    ORDERSCOREID,'
+      '    ORDERSORDERID'
+      'FROM'
+      '    SUMMARYSHOW(:ACLIENTID,'
+      '    :RETAILFORCOUNT) ')
+    AfterPost = adsSummary2AfterPost
+    AfterScroll = adsSummary2AfterScroll
+    BeforePost = adsSummary2BeforePost
+    OnCalcFields = adsSummary2CalcFields
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 296
+    Top = 96
+    object adsSummaryVOLUME: TFIBStringField
+      FieldName = 'VOLUME'
+      Size = 15
+      EmptyStrToNull = False
+    end
+    object adsSummaryQUANTITY: TFIBStringField
+      FieldName = 'QUANTITY'
+      Size = 15
+      EmptyStrToNull = False
+    end
+    object adsSummaryNOTE: TFIBStringField
+      FieldName = 'NOTE'
+      Size = 50
+      EmptyStrToNull = False
+    end
+    object adsSummaryPERIOD: TFIBStringField
+      FieldName = 'PERIOD'
+      EmptyStrToNull = False
+    end
+    object adsSummaryJUNK: TFIBIntegerField
+      FieldName = 'JUNK'
+    end
+    object adsSummaryAWAIT: TFIBIntegerField
+      FieldName = 'AWAIT'
+    end
+    object adsSummarySYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsSummarySYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsSummaryBASECOST: TFIBBCDField
+      FieldName = 'BASECOST'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsSummaryPRICENAME: TFIBStringField
+      FieldName = 'PRICENAME'
+      Size = 70
+      EmptyStrToNull = False
+    end
+    object adsSummaryREGIONNAME: TFIBStringField
+      FieldName = 'REGIONNAME'
+      Size = 25
+      EmptyStrToNull = False
+    end
+    object adsSummaryPRICERET: TFIBBCDField
+      FieldName = 'PRICERET'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsSummaryORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsSummaryORDERSCOREID: TFIBBCDField
+      FieldName = 'ORDERSCOREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSummaryORDERSORDERID: TFIBBCDField
+      FieldName = 'ORDERSORDERID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSummarySumOrder: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrder'
+      Calculated = True
+    end
+  end
+  object adsSummaryH: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    COUNTORDER,'
+      '    SUMORDER'
+      'FROM'
+      '    SUMMARYHSHOW(:ACLIENTID) ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 432
+    Top = 128
   end
 end

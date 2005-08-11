@@ -6,59 +6,78 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB, ADODB, ADOInt,
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
-  ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw;
+  ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
+  pFIBDataSet;
 
 const
-	SummarySql	= 'SELECT * FROM SummaryShow ORDER BY ';
+	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :RETAILFORCOUNT)  ORDER BY ';
 
 type
   TSummaryForm = class(TChildForm)
-    adsSummary: TADODataSet;
+    adsSummary2: TADODataSet;
     dsSummary: TDataSource;
-    adsSummaryH: TADODataSet;
+    adsSummaryH2: TADODataSet;
     Label1: TLabel;
     dsSummaryH: TDataSource;
     Label2: TLabel;
     dbtCountOrder: TDBText;
     dbtSumOrder: TDBText;
-    adsSummaryHCountOrder: TIntegerField;
-    adsSummaryHSumOrder: TBCDField;
-    adsSummarySynonym: TWideStringField;
-    adsSummarySynonymFirm: TWideStringField;
-    adsSummaryVolume: TWideStringField;
-    adsSummaryNote: TWideStringField;
-    adsSummaryPeriod: TWideStringField;
-    adsSummaryBaseCost: TBCDField;
-    adsSummaryPriceRet: TFloatField;
-    adsSummaryQuantity: TWideStringField;
-    adsSummaryOrder: TIntegerField;
-    adsSummarySumOrder: TCurrencyField;
+    adsSummaryH2CountOrder: TIntegerField;
+    adsSummaryH2SumOrder: TBCDField;
+    adsSummary2Synonym: TWideStringField;
+    adsSummary2SynonymFirm: TWideStringField;
+    adsSummary2Volume: TWideStringField;
+    adsSummary2Note: TWideStringField;
+    adsSummary2Period: TWideStringField;
+    adsSummary2BaseCost: TBCDField;
+    adsSummary2PriceRet: TFloatField;
+    adsSummary2Quantity: TWideStringField;
+    adsSummary2Order: TIntegerField;
+    adsSummary2SumOrder: TCurrencyField;
     frdsSummary: TfrDBDataSet;
-    adsSummaryPriceName: TWideStringField;
-    adsSummaryRegionName: TWideStringField;
-    adsSummaryJunk: TBooleanField;
+    adsSummary2PriceName: TWideStringField;
+    adsSummary2RegionName: TWideStringField;
+    adsSummary2Junk: TBooleanField;
     Panel1: TPanel;
     Bevel1: TBevel;
-    adsSummaryAwait: TBooleanField;
+    adsSummary2Await: TBooleanField;
     pClient: TPanel;
     pWebBrowser: TPanel;
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     dbgSummary: TToughDBGrid;
-    adsSummaryOrdersCoreId: TIntegerField;
-    adsSummaryOrdersOrderId: TIntegerField;
-    procedure adsSummaryCalcFields(DataSet: TDataSet);
-    procedure adsSummaryAfterPost(DataSet: TDataSet);
+    adsSummary2OrdersCoreId: TIntegerField;
+    adsSummary2OrdersOrderId: TIntegerField;
+    adsSummary: TpFIBDataSet;
+    adsSummaryVOLUME: TFIBStringField;
+    adsSummaryQUANTITY: TFIBStringField;
+    adsSummaryNOTE: TFIBStringField;
+    adsSummaryPERIOD: TFIBStringField;
+    adsSummaryJUNK: TFIBIntegerField;
+    adsSummaryAWAIT: TFIBIntegerField;
+    adsSummarySYNONYMNAME: TFIBStringField;
+    adsSummarySYNONYMFIRM: TFIBStringField;
+    adsSummaryBASECOST: TFIBBCDField;
+    adsSummaryPRICENAME: TFIBStringField;
+    adsSummaryREGIONNAME: TFIBStringField;
+    adsSummaryPRICERET: TFIBBCDField;
+    adsSummaryORDERCOUNT: TFIBIntegerField;
+    adsSummaryORDERSCOREID: TFIBBCDField;
+    adsSummaryORDERSORDERID: TFIBBCDField;
+    adsSummarySumOrder: TCurrencyField;
+    adsSummaryH: TpFIBDataSet;
+    procedure adsSummary2CalcFields(DataSet: TDataSet);
+    procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgSummarySortChange(Sender: TObject; SQLOrderBy: String);
     procedure dbgSummaryCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
-    procedure adsSummaryBeforePost(DataSet: TDataSet);
+    procedure adsSummary2BeforePost(DataSet: TDataSet);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure adsSummaryAfterScroll(DataSet: TDataSet);
+    procedure adsSummary2AfterScroll(DataSet: TDataSet);
     procedure dbgSummaryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
@@ -91,9 +110,9 @@ var
 begin
 	inherited;
 	PrintEnabled := True;
-	adsSummary.Parameters.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummary.Parameters.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
-	adsSummaryH.Parameters.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsSummary.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
+	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, False) then dbgSummary.LoadFromRegistry( Reg);
@@ -123,7 +142,7 @@ procedure TSummaryForm.SummaryShow;
 begin
 	Screen.Cursor := crHourglass;
 	try
-		with adsSummary do if Active then Requery else Open;
+		with adsSummary do if Active then CloseOpen(True) else Open;
 	finally
 		Screen.Cursor := crDefault;
 	end;
@@ -133,23 +152,23 @@ procedure TSummaryForm.SummaryHShow;
 begin
 	Screen.Cursor := crHourglass;
 	try
-		with adsSummaryH do if Active then Requery else Open;
+		with adsSummaryH do if Active then CloseOpen(True) else Open;
 	finally
 		Screen.Cursor := crDefault;
 	end;
 end;
 
-procedure TSummaryForm.adsSummaryCalcFields(DataSet: TDataSet);
+procedure TSummaryForm.adsSummary2CalcFields(DataSet: TDataSet);
 begin
 	//вычисл€ем сумму по позиции
 	adsSummarySumOrder.AsFloat := adsSummaryBaseCost.AsCurrency *
-		adsSummaryOrder.AsInteger;
+		adsSummaryORDERCOUNT.AsInteger;
 end;
 
-procedure TSummaryForm.adsSummaryAfterPost(DataSet: TDataSet);
+procedure TSummaryForm.adsSummary2AfterPost(DataSet: TDataSet);
 begin
 	SummaryHShow;
-	if adsSummaryOrder.AsInteger = 0 then SummaryShow;
+	if adsSummaryORDERCOUNT.AsInteger = 0 then SummaryShow;
 	MainForm.SetOrdersInfo;
 end;
 
@@ -175,10 +194,10 @@ begin
         adsSummary.DisableControls;
 	Screen.Cursor := crHourglass;
 	adsSummary.Close;
-	adsSummary.CommandText := SummarySql + SQLOrderBy;
-	adsSummary.Parameters.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummary.Parameters.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
-	adsSummaryH.Parameters.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsSummary.SelectSQL.Text := SummarySql + SQLOrderBy;
+	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsSummary.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
+	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	try
 		adsSummary.Open;
 	finally
@@ -194,7 +213,7 @@ begin
 //
 end;
 
-procedure TSummaryForm.adsSummaryBeforePost(DataSet: TDataSet);
+procedure TSummaryForm.adsSummary2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
 begin
@@ -202,9 +221,9 @@ begin
 		{ провер€ем заказ на соответствие наличию товара на складе }
 		Val( adsSummaryQuantity.AsString, Quantity, E);
 		if E<>0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsSummaryOrder.AsInteger > Quantity) and
+		if ( Quantity > 0) and ( adsSummaryORDERCOUNT.AsInteger > Quantity) and
 			( MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
-			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsSummaryOrder.AsInteger := Quantity;
+			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsSummaryORDERCOUNT.AsInteger := Quantity;
 	except
 		adsSummary.Cancel;
 		raise;
@@ -214,10 +233,10 @@ end;
 
 procedure TSummaryForm.FormResize(Sender: TObject);
 begin
-  adsSummaryAfterScroll(adsSummary);
+  adsSummary2AfterScroll(adsSummary);
 end;
 
-procedure TSummaryForm.adsSummaryAfterScroll(DataSet: TDataSet);
+procedure TSummaryForm.adsSummary2AfterScroll(DataSet: TDataSet);
 //var
 //  C : Integer;
 begin
@@ -240,7 +259,7 @@ begin
           IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
           ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
       DM.adcUpdate.ExecQuery;
-      adsSummary.Requery();
+      adsSummary.CloseOpen(True);
       Key := 0;
     end;
   end

@@ -85,7 +85,7 @@ type
 	procedure CheckRestrictToRun;
   public
   	function DatabaseOpenedBy: string;
-	function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
+    function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
     procedure CompactDataBase(NewPassword: string='');
     procedure ClearPassword( ADatasource: string);
     procedure OpenDatabase( ADatasource: string);
@@ -100,24 +100,23 @@ type
     function GetCurrentOrderId(ClientId, PriceCode, RegionCode: Integer;
       CreateIfNotExists: Boolean=True): Integer;
     procedure DeleteEmptyOrders;
-	procedure SetImportStage( AValue: integer);
-	function GetImportStage: integer;
-	procedure BackupDatabase( APath: string);
-	procedure RestoreDatabase( APath: string);
-	function IsBackuped( APath: string): boolean;
-	procedure ClearBackup( APath: string);
-	function Unpacked: boolean;
-
-	procedure SetExclusive;
-	procedure ResetExclusive;
-	procedure SetCumulative;
-	procedure ResetCumulative;
-	function GetCumulative: boolean;
-	procedure SetStarted;
-	procedure ResetStarted;
-	function GetStarted: Boolean;
-  //Это временное решение, потом все равно перепишу
-  procedure VersionValid;
+    procedure SetImportStage( AValue: integer);
+    function GetImportStage: integer;
+    procedure BackupDatabase( APath: string);
+    procedure RestoreDatabase( APath: string);
+    function IsBackuped( APath: string): boolean;
+    procedure ClearBackup( APath: string);
+    function Unpacked: boolean;
+    procedure SetExclusive;
+    procedure ResetExclusive;
+    procedure SetCumulative;
+    procedure ResetCumulative;
+    function GetCumulative: boolean;
+    procedure SetStarted;
+    procedure ResetStarted;
+    function GetStarted: Boolean;
+    //Это временное решение, потом все равно перепишу
+    procedure VersionValid;
     {function OrderToArchiv(ClientId: Integer=0; PriceCode: Integer=0;
       RegionCode: Integer=0): Boolean;}
   end;
@@ -146,6 +145,12 @@ begin
 			ExePath + DatabaseName);
 }      
 
+{
+}  
+  MainConnection1.DBName := ChangeFileExt(ExeName,'.fdb');
+  MainConnection1.LibraryName := 'gds32.dll';
+  MainConnection1.Open;
+
   if not FileExists(ExePath + DatabaseName) then begin
     MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
       MB_ICONERROR or MB_OK);
@@ -166,7 +171,8 @@ begin
 //	DM.MainConnection.Mode := cmRead;
   try
     try
-      CheckRestrictToRun;
+      //TODO: Переписать данную процедуру
+      //CheckRestrictToRun;
     finally
       MainConnection.Close;
 //      DM.MainConnection.Mode := cmReadWrite;
@@ -237,6 +243,7 @@ end;
 procedure TDM.MainConnectionAfterConnect(Sender: TObject);
 begin
 	//открываем таблицы с параметрами
+{
 	adtParams.Open;
 	adtProvider.Open;
 	adtReclame.Open;
@@ -245,6 +252,7 @@ begin
 		adtFlags.Open;
 	except
 	end;
+}  
 end;
 
 procedure TDM.ClientChanged;
@@ -493,7 +501,7 @@ procedure TDM.adtClientsAfterPost(DataSet: TDataSet);
 begin
   if ClientInserted then
     with adcUpdate do begin
-      SQL.Text:=Format('EXECUTE ClientFirmInsert %d', [adtClients.FieldByName('Id').AsInteger]);
+      SQL.Text:=Format('EXECUTE PROCEDURE ClientFirmInsert %d', [adtClients.FieldByName('Id').AsInteger]);
       adcUpdate.ExecProc;
     end;
   ClientInserted:=False
@@ -504,6 +512,8 @@ procedure TDM.LinkExternalTables;
 var
   Table, Catalog: Variant;
   SR: TSearchRec;
+  FileName,
+  ShortName : String;
 begin
 {
   if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
@@ -531,7 +541,21 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
-}  
+}
+  if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
+    Screen.Cursor:=crHourglass;
+    try
+      repeat
+        FileName := ExePath+SDirIn+ '\' + SR.Name;
+        ShortName := ChangeFileExt(SR.Name,'');
+        adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
+        adcUpdate.ParamByName('PATH').Value := FileName;
+        adcUpdate.ExecQuery;
+      until FindNext(SR)<>0;
+    finally
+      Screen.Cursor:=crDefault;
+    end;
+  end;
 end;
 
 // подключает таблицы из старого MDB
@@ -571,6 +595,7 @@ procedure TDM.UnLinkExternalTables;
 var
   I: Integer;
   Catalog: Variant;
+  TN : TStringList;
 begin
 {
   Screen.Cursor:=crHourglass;
@@ -588,47 +613,56 @@ begin
     Screen.Cursor:=crDefault;
   end;
   }
+  Screen.Cursor:=crHourglass;
+  try
+    TN := TStringList.Create;
+    try
+      MainConnection1.GetTableNames(TN, False);
+      for I:=TN.Count-1 downto 0 do
+        if Pos('EXT', UpperCase(TN[i])) = 1 then
+        begin
+          adcUpdate.SQL.Text := 'drop table ' + TN[i];
+          adcUpdate.ExecQuery;
+        end;
+    finally
+      TN.Free;
+    end;
+  finally
+    Screen.Cursor:=crDefault;
+  end;
 end;
 
 procedure TDM.ClearDatabase;
 begin
   Screen.Cursor:=crHourglass;
-  with adcUpdate do
-    try
-     SQL.Text:='EXECUTE MinPricesDelete';
-     ExecProc;
-    except
-    end;
-
-
   with adcUpdate do try
 //    MainForm.StatusText:='Очищается MinPrices';
-    SQL.Text:='EXECUTE MinPricesDelete';
-    ExecProc;
-    SQL.Text:='EXECUTE OrdersSetCoreNull'; ExecProc;
-    SQL.Text:='EXECUTE OrdersHDeleteNotClosedAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE MinPricesDelete';
+    ExecQuery;
+    SQL.Text:='EXECUTE PROCEDURE OrdersSetCoreNull'; ExecQuery;
+    SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteNotClosedAll'; ExecQuery;
     MainForm.StatusText:='Очищается Core';
-    SQL.Text:='EXECUTE CoreDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE CoreDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается CatalogCurrency';
-    SQL.Text:='EXECUTE CatalogCurrencyDelete'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyDelete'; ExecQuery;
     MainForm.StatusText:='Очищается Catalog';
-    SQL.Text:='EXECUTE CatalogDelete'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE CatalogDelete'; ExecQuery;
     MainForm.StatusText:='Очищается PricesRegionalData';
-    SQL.Text:='EXECUTE PricesRegionalDataDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается PricesData';
-    SQL.Text:='EXECUTE PricesDataDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE PricesDataDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается RegionalData';
-    SQL.Text:='EXECUTE RegionalDataDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE RegionalDataDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается ClientsDataN';
-    SQL.Text:='EXECUTE ClientsDataNDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE ClientsDataNDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается Synonym';
-    SQL.Text:='EXECUTE SynonymDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE SynonymDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается SynonymFirmCr';
-    SQL.Text:='EXECUTE SynonymFirmCrDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE SynonymFirmCrDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается Defectives';
-    SQL.Text:='EXECUTE DefectivesDeleteAll'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE DefectivesDeleteAll'; ExecQuery;
     MainForm.StatusText:='Очищается Registry';
-    SQL.Text:='EXECUTE RegistryDelete'; ExecProc;
+    SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
   finally
     Screen.Cursor:=crDefault;
     MainForm.StatusText:='';
@@ -641,7 +675,7 @@ var
   NRecs: Integer;
 begin
   with adsSelect do begin
-    SelectSQL.Text:=Format('SELECT OrderId FROM OrdersH WHERE ClientId=%d And PriceCode=%d And RegionCode=%d And Not Closed',
+    SelectSQL.Text:=Format('SELECT OrderId FROM OrdersH WHERE ClientId=%d And PriceCode=%d And RegionCode=%d And Closed = 0',
       [ClientId, PriceCode, RegionCode]);
     Open;
     try
@@ -671,8 +705,8 @@ begin
   Screen.Cursor:=crHourglass;
   try
     with adcUpdate do begin
-      SqL.Text:='EXECUTE OrdersDeleteEmpty'; ExecProc;
-      SQL.Text:='EXECUTE OrdersHDeleteEmpty'; ExecProc;
+      SqL.Text:='EXECUTE PROCEDURE OrdersDeleteEmpty'; ExecQuery;
+      SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteEmpty'; ExecQuery;
     end;
   finally
     Screen.Cursor:=crDefault;
@@ -976,12 +1010,12 @@ end;
 procedure TDM.MainConnection1AfterConnect(Sender: TObject);
 begin
 	//открываем таблицы с параметрами
-	adtParams.Open;
-	adtProvider.Open;
-	adtReclame.Open;
-	adtClients.Open;
+	adtParams.CloseOpen(True);
+	adtProvider.CloseOpen(True);
+	adtReclame.CloseOpen(True);
+	adtClients.CloseOpen(True);
 	try
-		adtFlags.Open;
+		adtFlags.CloseOpen(True);
 	except
 	end;
 end;

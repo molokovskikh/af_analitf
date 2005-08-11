@@ -213,48 +213,105 @@ inherited RegistersForm: TRegistersForm
   end
   object dsRegistry: TDataSource
     DataSet = adsRegistry
-    Left = 200
-    Top = 144
+    Left = 96
+    Top = 192
   end
-  object adsRegistry: TADODataSet
-    Connection = DM.MainConnection
+  object adsRegistry2: TADODataSet
     CommandText = 'SELECT * FROM Registry'
     Parameters = <>
-    Left = 200
-    Top = 96
-    object adsRegistryId: TAutoIncField
+    Left = 96
+    Top = 88
+    object adsRegistry2Id: TAutoIncField
       FieldName = 'Id'
       ReadOnly = True
     end
-    object adsRegistryName: TWideStringField
+    object adsRegistry2Name: TWideStringField
       FieldName = 'Name'
       Size = 150
     end
-    object adsRegistryForm: TWideStringField
+    object adsRegistry2Form: TWideStringField
       FieldName = 'Form'
       Size = 250
     end
-    object adsRegistryProducer: TWideStringField
+    object adsRegistry2Producer: TWideStringField
       FieldName = 'Producer'
       Size = 150
     end
-    object adsRegistryBox: TWideStringField
+    object adsRegistry2Box: TWideStringField
       FieldName = 'Box'
       Size = 10
     end
-    object adsRegistryPrice: TBCDField
+    object adsRegistry2Price: TBCDField
       FieldName = 'Price'
       DisplayFormat = '0.00;;'#39#39
       Precision = 19
     end
-    object adsRegistryCurrency: TWideStringField
+    object adsRegistry2Currency: TWideStringField
       FieldName = 'Curr'
       Size = 10
     end
-    object adsRegistryPriceRub: TBCDField
+    object adsRegistry2PriceRub: TBCDField
       FieldName = 'PriceRub'
       DisplayFormat = '0.00;;'#39#39
       Precision = 19
+    end
+  end
+  object adsRegistry: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    ID,'
+      '    NAME,'
+      '    FORM,'
+      '    PRODUCER,'
+      '    BOX,'
+      '    PRICE,'
+      '    CURR,'
+      '    PRICERUB'
+      'FROM'
+      '    REGISTRY ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 96
+    Top = 136
+    object adsRegistryID: TFIBBCDField
+      FieldName = 'ID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsRegistryNAME: TFIBStringField
+      FieldName = 'NAME'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsRegistryFORM: TFIBStringField
+      FieldName = 'FORM'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsRegistryPRODUCER: TFIBStringField
+      FieldName = 'PRODUCER'
+      Size = 150
+      EmptyStrToNull = False
+    end
+    object adsRegistryBOX: TFIBStringField
+      FieldName = 'BOX'
+      Size = 10
+      EmptyStrToNull = False
+    end
+    object adsRegistryPRICE: TFIBBCDField
+      FieldName = 'PRICE'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsRegistryCURR: TFIBStringField
+      FieldName = 'CURR'
+      Size = 10
+      EmptyStrToNull = False
+    end
+    object adsRegistryPRICERUB: TFIBBCDField
+      FieldName = 'PRICERUB'
+      Size = 4
+      RoundByScale = True
     end
   end
 end

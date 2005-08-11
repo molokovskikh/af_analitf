@@ -7,7 +7,7 @@ uses
   ComCtrls, Menus, ExtCtrls, DBCtrls, DB, Child, Placemnt,
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, ProVersion, DBGridEh, ADODB, DateUtils, ToughDBGrid,
-  OleCtrls, SHDocVw, AppEvnts, SyncObjs;
+  OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet;
 
 type
 
@@ -105,7 +105,7 @@ TMainForm = class(TForm)
     actReceiveAll: TAction;
     actIntegr: TAction;
     N3: TMenuItem;
-    adsOrdersH: TADODataSet;
+    adsOrdersH2: TADODataSet;
     actPreview: TAction;
     N4: TMenuItem;
     actFind: TAction;
@@ -121,6 +121,7 @@ TMainForm = class(TForm)
     actHome: TAction;
     itmExternalOrders: TMenuItem;
     itmExternal: TMenuItem;
+    adsOrdersH: TpFIBDataSet;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -490,7 +491,7 @@ begin
 	ExAct := [ eaGetPrice];
 
 	{ ѕровер€ем каталог на наличие записей }
-	DM.adsSelect.SelectSQL.Text := 'SELECT COUNT(*) AS CatNum FROM [Catalog]';
+	DM.adsSelect.SelectSQL.Text := 'SELECT COUNT(*) AS CatNum FROM Catalogs';
 	try
 		DM.adsSelect.Open;
 		CatNum := DM.adsSelect.FieldByName( 'CatNum').AsInteger;
@@ -568,7 +569,7 @@ end;
 procedure TMainForm.SetOrdersInfo;
 begin
 	DM.adsSelect.Close;
-	DM.adsSelect.SelectSQL.Text := 'SELECT * FROM OrdersInfo2';
+	DM.adsSelect.SelectSQL.Text := 'SELECT * FROM ORDERSINFO2(:ACLIENTID)';
 	DM.adsSelect.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	DM.adsSelect.Open;
 	try
@@ -605,11 +606,11 @@ end;
 function TMainForm.CheckUnsendOrders: boolean;
 begin
 	result := False;
-	adsOrdersH.Parameters.ParamByName( 'AClientId').Value :=
+	adsOrdersH.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
-	adsOrdersH.Parameters.ParamByName( 'AClosed').Value := False;
-	adsOrdersH.Parameters.ParamByName( 'ASend').Value := True;
-	adsOrdersH.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	adsOrdersH.ParamByName( 'AClosed').Value := False;
+	adsOrdersH.ParamByName( 'ASend').Value := True;
+	adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	try
 		adsOrdersH.Open;
 		if adsOrdersH.RecordCount > 0 then result := True;
@@ -692,7 +693,7 @@ begin
 	{ ѕроверка на запрос на монопольный доступ }
 	CS.Enter;
 	try
-		DM.adtFlags.RefreshSQL;
+		DM.adtFlags.CloseOpen(True);
 		ExID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
 	except
 		ExID := '';

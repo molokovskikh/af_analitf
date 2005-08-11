@@ -350,7 +350,7 @@ inherited DefectivesForm: TDefectivesForm
   object dsDefectives: TDataSource
     DataSet = adsDefectives
     Left = 176
-    Top = 160
+    Top = 200
   end
   object ActionList: TActionList
     Left = 504
@@ -361,7 +361,7 @@ inherited DefectivesForm: TDefectivesForm
       OnExecute = actCheckExecute
     end
   end
-  object adcUncheckAll: TADOCommand
+  object adcUncheckAll2: TADOCommand
     CommandText = 'UPDATE Defectives SET [Check]=False WHERE [Check]'
     Connection = DM.MainConnection
     Prepared = True
@@ -370,12 +370,11 @@ inherited DefectivesForm: TDefectivesForm
     Top = 112
   end
   object frdsPrint: TfrDBDataSet
-    DataSet = adsPrint
-    Left = 248
-    Top = 160
+    DataSet = adsPrint2
+    Left = 280
+    Top = 208
   end
-  object adsPrint: TADODataSet
-    Connection = DM.MainConnection
+  object adsPrint2: TADODataSet
     CursorType = ctStatic
     CommandText = 
       'SELECT * FROM Defectives'#13#10'WHERE LetterDate BETWEEN DateFrom And ' +
@@ -412,10 +411,9 @@ inherited DefectivesForm: TDefectivesForm
     Left = 248
     Top = 112
   end
-  object adsDefectives: TADODataSet
-    Connection = DM.MainConnection
+  object adsDefectives2: TADODataSet
     CursorType = ctStatic
-    AfterOpen = adsDefectivesAfterOpen
+    AfterOpen = adsDefectives2AfterOpen
     CommandText = 
       'SELECT * FROM Defectives'#13#10'WHERE LetterDate BETWEEN DateFrom And ' +
       'DateTo'
@@ -441,5 +439,35 @@ inherited DefectivesForm: TDefectivesForm
     Prepared = True
     Left = 176
     Top = 112
+  end
+  object adsDefectives: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT * FROM Defectives'
+      'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
+    AfterOpen = adsDefectives2AfterOpen
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 176
+    Top = 160
+    oFetchAll = True
+  end
+  object adsPrint: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT * FROM Defectives'
+      'WHERE '
+      '  LetterDate BETWEEN :DateFrom And :DateTo '
+      'AND (CheckPrint = 1 Or :ShowAll = 1)')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 248
+    Top = 160
+  end
+  object adcUncheckAll: TpFIBQuery
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    SQL.Strings = (
+      'UPDATE Defectives SET CheckPrint=0 WHERE CheckPrint=1')
+    Left = 320
+    Top = 160
   end
 end

@@ -7,6 +7,7 @@ object DM: TDM
   Height = 627
   Width = 859
   object MainConnection: TADOConnection
+    Connected = True
     ConnectionString = 
       'Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=Anali' +
       'tF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Je' +
@@ -336,7 +337,6 @@ object DM: TDM
     Top = 112
   end
   object MainConnection1: TpFIBDatabase
-    Connected = True
     DBName = 'C:\Program Files\Firebird\ANALITF.FDB'
     DBParams.Strings = (
       'lc_ctype=WIN1251'
@@ -352,7 +352,6 @@ object DM: TDM
     Top = 168
   end
   object DefTran: TpFIBTransaction
-    Active = True
     DefaultDatabase = MainConnection1
     TimeoutAction = TARollback
     Left = 88
@@ -399,6 +398,11 @@ object DM: TDM
       '    HTTPNAMECHANGED = :HTTPNAMECHANGED'
       'WHERE'
       '    ID = :OLD_ID'
+      '    ')
+    RefreshSQL.Strings = (
+      'select * from Params where(  ID = 0'
+      '     ) and (     PARAMS.ID = :OLD_ID'
+      '     )'
       '    ')
     SelectSQL.Strings = (
       'select * from Params where ID = 0')
@@ -738,7 +742,7 @@ object DM: TDM
       '    :ACLOSED,'
       '    :TIMEZONEBIAS) '
       'where'
-      '  Send = :Send')
+      '  Send = :ASend')
     Transaction = DefTran
     Database = MainConnection1
     Left = 64

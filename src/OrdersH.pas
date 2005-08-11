@@ -6,80 +6,80 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, DB, ADODB, RXDBCtrl, Buttons, ADOInt,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
-  FR_DSet, FR_DBSet, OleCtrls, SHDocVw;
+  FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet;
 
 const
-	OrdersHSql =	'SELECT * FROM OrdersHShow WHERE OrderDate BETWEEN DateFrom AND ' +
-				' DateTo ORDER BY ';
+	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
+				' :DateTo ORDER BY ';
 
 type
   TOrdersHForm = class(TChildForm)
-    adsOrdersH: TADODataSet;
+    adsOrdersH2: TADODataSet;
     dsOrdersH: TDataSource;
-    adsOrdersHOrderDate: TDateTimeField;
-    adsOrdersHClosed: TBooleanField;
-    adsOrdersHPositions: TIntegerField;
-    adsOrdersHSumOrder: TBCDField;
-    adsOrdersHOrderId: TAutoIncField;
-    adsOrdersHPriceName: TWideStringField;
-    adsOrdersHRegionName: TWideStringField;
+    adsOrdersH2OrderDate: TDateTimeField;
+    adsOrdersH2Closed: TBooleanField;
+    adsOrdersH2Positions: TIntegerField;
+    adsOrdersH2SumOrder: TBCDField;
+    adsOrdersH2OrderId: TAutoIncField;
+    adsOrdersH2PriceName: TWideStringField;
+    adsOrdersH2RegionName: TWideStringField;
     TabControl: TTabControl;
     btnDelete: TButton;
     btnMoveSend: TButton;
-    adsOrdersHSend: TBooleanField;
-    adsOrdersHPriceCode: TIntegerField;
-    adsOrdersHRegionCode: TIntegerField;
+    adsOrdersH2Send: TBooleanField;
+    adsOrdersH2PriceCode: TIntegerField;
+    adsOrdersH2RegionCode: TIntegerField;
     pBottom: TPanel;
-    adsOrdersHDatePrice: TDateTimeField;
-    adsOrdersHSupportPhone: TWideStringField;
-    adsCore: TADODataSet;
-    adsCoreCoreId: TAutoIncField;
-    adsCoreFullCode: TIntegerField;
-    adsCoreShortCode: TIntegerField;
-    adsCoreCodeFirmCr: TIntegerField;
-    adsCoreSynonymCode: TIntegerField;
-    adsCoreSynonymFirmCrCode: TIntegerField;
-    adsCoreCode: TWideStringField;
-    adsCoreCodeCr: TWideStringField;
-    adsCoreVolume: TWideStringField;
-    adsCoreDoc: TWideStringField;
-    adsCoreNote: TWideStringField;
-    adsCorePeriod: TWideStringField;
-    adsCoreAwait: TBooleanField;
-    adsCoreJunk: TBooleanField;
-    adsCoreBaseCost: TBCDField;
-    adsCoreQuantity: TWideStringField;
-    adsCoreSynonym: TWideStringField;
-    adsCoreSynonymFirm: TWideStringField;
-    adsCoreMinPrice: TBCDField;
-    adsCoreLeaderFirmCode: TIntegerField;
-    adsCoreLeaderRegionCode: TIntegerField;
-    adsCoreLeaderRegionName: TWideStringField;
-    adsCoreOrdersCoreId: TIntegerField;
-    adsCoreOrdersOrderId: TIntegerField;
-    adsCoreOrdersClientId: TSmallintField;
-    adsCoreOrdersFullCode: TIntegerField;
-    adsCoreOrdersCodeFirmCr: TIntegerField;
-    adsCoreOrdersSynonymCode: TIntegerField;
-    adsCoreOrdersSynonymFirmCrCode: TIntegerField;
-    adsCoreOrdersCode: TWideStringField;
-    adsCoreOrdersCodeCr: TWideStringField;
-    adsCoreOrder: TIntegerField;
-    adsCoreOrdersSynonym: TWideStringField;
-    adsCoreOrdersSynonymFirm: TWideStringField;
-    adsCoreOrdersPrice: TBCDField;
-    adsCoreOrdersJunk: TBooleanField;
-    adsCoreOrdersAwait: TBooleanField;
-    adsCoreOrdersHOrderId: TAutoIncField;
-    adsCoreOrdersHClientId: TSmallintField;
-    adsCoreOrdersHPriceCode: TIntegerField;
-    adsCoreOrdersHRegionCode: TIntegerField;
-    adsCoreOrdersHPriceName: TWideStringField;
-    adsCoreOrdersHRegionName: TWideStringField;
-    adsCorePriceRet: TFloatField;
-    adsCoreSumOrder: TBCDField;
-    adsOrdersHSendDate: TDateTimeField;
-    adsCoreLeaderPriceName: TWideStringField;
+    adsOrdersH2DatePrice: TDateTimeField;
+    adsOrdersH2SupportPhone: TWideStringField;
+    adsCore2: TADODataSet;
+    adsCore2CoreId: TAutoIncField;
+    adsCore2FullCode: TIntegerField;
+    adsCore2ShortCode: TIntegerField;
+    adsCore2CodeFirmCr: TIntegerField;
+    adsCore2SynonymCode: TIntegerField;
+    adsCore2SynonymFirmCrCode: TIntegerField;
+    adsCore2Code: TWideStringField;
+    adsCore2CodeCr: TWideStringField;
+    adsCore2Volume: TWideStringField;
+    adsCore2Doc: TWideStringField;
+    adsCore2Note: TWideStringField;
+    adsCore2Period: TWideStringField;
+    adsCore2Await: TBooleanField;
+    adsCore2Junk: TBooleanField;
+    adsCore2BaseCost: TBCDField;
+    adsCore2Quantity: TWideStringField;
+    adsCore2Synonym: TWideStringField;
+    adsCore2SynonymFirm: TWideStringField;
+    adsCore2MinPrice: TBCDField;
+    adsCore2LeaderFirmCode: TIntegerField;
+    adsCore2LeaderRegionCode: TIntegerField;
+    adsCore2LeaderRegionName: TWideStringField;
+    adsCore2OrdersCoreId: TIntegerField;
+    adsCore2OrdersOrderId: TIntegerField;
+    adsCore2OrdersClientId: TSmallintField;
+    adsCore2OrdersFullCode: TIntegerField;
+    adsCore2OrdersCodeFirmCr: TIntegerField;
+    adsCore2OrdersSynonymCode: TIntegerField;
+    adsCore2OrdersSynonymFirmCrCode: TIntegerField;
+    adsCore2OrdersCode: TWideStringField;
+    adsCore2OrdersCodeCr: TWideStringField;
+    adsCore2Order: TIntegerField;
+    adsCore2OrdersSynonym: TWideStringField;
+    adsCore2OrdersSynonymFirm: TWideStringField;
+    adsCore2OrdersPrice: TBCDField;
+    adsCore2OrdersJunk: TBooleanField;
+    adsCore2OrdersAwait: TBooleanField;
+    adsCore2OrdersHOrderId: TAutoIncField;
+    adsCore2OrdersHClientId: TSmallintField;
+    adsCore2OrdersHPriceCode: TIntegerField;
+    adsCore2OrdersHRegionCode: TIntegerField;
+    adsCore2OrdersHPriceName: TWideStringField;
+    adsCore2OrdersHRegionName: TWideStringField;
+    adsCore2PriceRet: TFloatField;
+    adsCore2SumOrder: TBCDField;
+    adsOrdersH2SendDate: TDateTimeField;
+    adsCore2LeaderPriceName: TWideStringField;
     pTop: TPanel;
     Label7: TLabel;
     Label8: TLabel;
@@ -87,22 +87,22 @@ type
     dtpDateTo: TDateTimePicker;
     Bevel1: TBevel;
     pTabSheet: TPanel;
-    adsOrdersHMessage: TWideStringField;
-    adsOrdersHComments: TWideStringField;
-    adsWayBillHead: TADODataSet;
+    adsOrdersH2Message: TWideStringField;
+    adsOrdersH2Comments: TWideStringField;
+    adsWayBillHead2: TADODataSet;
     dsWayBillHead: TDataSource;
-    adsWayBillHeadServerID: TIntegerField;
-    adsWayBillHeadServerOrderID: TIntegerField;
-    adsWayBillHeadWriteTime: TDateTimeField;
-    adsWayBillHeadClientID: TIntegerField;
-    adsWayBillHeadPriceCode: TIntegerField;
-    adsWayBillHeadRegionCode: TIntegerField;
-    adsWayBillHeadPriceName: TWideStringField;
-    adsWayBillHeadRegionName: TWideStringField;
-    adsWayBillHeadFirmComment: TWideStringField;
-    adsWayBillHeadRowCount: TSmallintField;
+    adsWayBillHead2ServerID: TIntegerField;
+    adsWayBillHead2ServerOrderID: TIntegerField;
+    adsWayBillHead2WriteTime: TDateTimeField;
+    adsWayBillHead2ClientID: TIntegerField;
+    adsWayBillHead2PriceCode: TIntegerField;
+    adsWayBillHead2RegionCode: TIntegerField;
+    adsWayBillHead2PriceName: TWideStringField;
+    adsWayBillHead2RegionName: TWideStringField;
+    adsWayBillHead2FirmComment: TWideStringField;
+    adsWayBillHead2RowCount: TSmallintField;
     btnWayBillList: TButton;
-    adsOrdersHServerOrderId: TIntegerField;
+    adsOrdersH2ServerOrderId: TIntegerField;
     pClient: TPanel;
     pGrid: TPanel;
     ToughDBGrid1: TToughDBGrid;
@@ -116,7 +116,36 @@ type
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     tmOrderDateChange: TTimer;
-    procedure adsOrdersHBeforeDelete(DataSet: TDataSet);
+    adsOrdersH: TpFIBDataSet;
+    adsCore: TpFIBDataSet;
+    adsWayBillHead: TpFIBDataSet;
+    adsOrdersHORDERID: TFIBBCDField;
+    adsOrdersHSERVERORDERID: TFIBBCDField;
+    adsOrdersHDATEPRICE: TFIBDateTimeField;
+    adsOrdersHPRICECODE: TFIBBCDField;
+    adsOrdersHREGIONCODE: TFIBBCDField;
+    adsOrdersHORDERDATE: TFIBDateTimeField;
+    adsOrdersHSENDDATE: TFIBDateTimeField;
+    adsOrdersHCLOSED: TFIBIntegerField;
+    adsOrdersHSEND: TFIBIntegerField;
+    adsOrdersHPRICENAME: TFIBStringField;
+    adsOrdersHREGIONNAME: TFIBStringField;
+    adsOrdersHPOSITIONS: TFIBIntegerField;
+    adsOrdersHSUMORDER: TFIBIntegerField;
+    adsOrdersHSUPPORTPHONE: TFIBStringField;
+    adsOrdersHMESSAGETO: TFIBStringField;
+    adsOrdersHCOMMENTS: TFIBStringField;
+    adsWayBillHeadSERVERID: TFIBBCDField;
+    adsWayBillHeadSERVERORDERID: TFIBBCDField;
+    adsWayBillHeadWRITETIME: TFIBDateTimeField;
+    adsWayBillHeadCLIENTID: TFIBBCDField;
+    adsWayBillHeadPRICECODE: TFIBBCDField;
+    adsWayBillHeadREGIONCODE: TFIBBCDField;
+    adsWayBillHeadPRICENAME: TFIBStringField;
+    adsWayBillHeadREGIONNAME: TFIBStringField;
+    adsWayBillHeadFIRMCOMMENT: TFIBStringField;
+    adsWayBillHeadROWCOUNT: TFIBIntegerField;
+    procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -127,15 +156,15 @@ type
     procedure dbgOrdersHExit(Sender: TObject);
     procedure dbgOrdersHSortChange(Sender: TObject; SQLOrderBy: String);
     procedure dbgOrdersHDblClick(Sender: TObject);
-    procedure adsOrdersHAfterPost(DataSet: TDataSet);
+    procedure adsOrdersH2AfterPost(DataSet: TDataSet);
     procedure dbgOrdersHKeyPress(Sender: TObject; var Key: Char);
     procedure dbgOrdersHGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure btnWayBillListClick(Sender: TObject);
-    procedure adsOrdersHSendChange(Sender: TField);
+    procedure adsOrdersH2SendChange(Sender: TField);
     procedure tmOrderDateChangeTimer(Sender: TObject);
-    procedure adsOrdersHBeforePost(DataSet: TDataSet);
+    procedure adsOrdersH2BeforePost(DataSet: TDataSet);
   private
     procedure SetParameters;
     procedure MoveToPrice;
@@ -152,8 +181,7 @@ procedure ShowOrdersH;
 
 implementation
 
-uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList,
-  pFIBDataSet;
+uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList;
 
 {$R *.dfm}
 
@@ -176,7 +204,7 @@ begin
 		+ Self.ClassName, False) then dbgOrdersH.LoadFromRegistry( Reg);
 	Reg.Free;
 
-	adsOrdersH.CommandText := OrdersHSql + 'SendDate DESC';
+	adsOrdersH.SelectSQL.Text := OrdersHSql + 'SendDate DESC';
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
 	Day := DayOf( Date);
@@ -187,14 +215,14 @@ begin
 	TabControl.TabIndex := 0;
 	Screen.Cursor := crHourglass;
 	try
-		adsOrdersH.Parameters.ParamByName('AClientId').Value:=
+		adsOrdersH.ParamByName('AClientId').Value:=
 			DM.adtClients.FieldByName('ClientId').Value;
-		adsOrdersH.Parameters.ParamByName( 'DateFrom').DataType := ftDate;
-		adsOrdersH.Parameters.ParamByName( 'DateTo').DataType := ftDate;
-                adsOrdersH.Parameters.ParamByName('DateFrom').Value:=dtpDateFrom.Date;
+//		adsOrdersH.ParamByName( 'DateFrom').DataType := ftDate;
+//		adsOrdersH.ParamByName( 'DateTo').DataType := ftDate;
+    adsOrdersH.ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
 		dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-		adsOrdersH.Parameters.ParamByName('DateTo').Value:=dtpDateTo.Date;
-		adsOrdersH.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+		adsOrdersH.ParamByName('DateTo').AsDate:=dtpDateTo.Date;
+		adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 		SetParameters;
 	finally
 		Screen.Cursor := crDefault;
@@ -221,9 +249,9 @@ begin
 	case TabControl.TabIndex of
 		0: begin
 			adsOrdersH.Close;
-			adsOrdersH.CommandText := StringReplace( adsOrdersH.CommandText,
+			adsOrdersH.SelectSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
 				' OrdersHShow1 ', ' OrdersHShow ', []);
-			adsOrdersH.Parameters.ParamByName( 'AClosed').Value := False;
+			adsOrdersH.ParamByName( 'AClosed').Value := False;
 			btnMoveSend.Caption := 'Перевести в отправленные';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
@@ -231,9 +259,9 @@ begin
 		end;
 		1: begin
 			adsOrdersH.Close;
-			adsOrdersH.CommandText := StringReplace( adsOrdersH.CommandText,
+			adsOrdersH.SelectSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
 				' OrdersHShow ', ' OrdersHShow1 ', []);
-			adsOrdersH.Parameters.ParamByName( 'AClosed').Value := True;
+			adsOrdersH.ParamByName( 'AClosed').Value := True;
 			btnMoveSend.Caption := 'Вернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
@@ -241,19 +269,19 @@ begin
 		end;
 	end;
 
-	adsOrdersH.Parameters.ParamByName( 'AClientId').Value :=
+	adsOrdersH.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
-	adsOrdersH.Parameters.ParamByName( 'DateFrom').DataType := ftDate;
-	adsOrdersH.Parameters.ParamByName( 'DateTo').DataType := ftDate;
-	adsOrdersH.Parameters.ParamByName( 'DateFrom').Value := dtpDateFrom.Date;
+//	adsOrdersH.ParamByName( 'DateFrom').DataType := ftDate;
+//	adsOrdersH.ParamByName( 'DateTo').DataType := ftDate;
+	adsOrdersH.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
 	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	adsOrdersH.Parameters.ParamByName( 'DateTo').Value := dtpDateTo.Date;
-	adsOrdersH.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	adsOrdersH.ParamByName( 'DateTo').AsDate := dtpDateTo.Date;
+	adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
-	if adsOrdersH.Active then adsOrdersH.Requery else adsOrdersH.Open;
+	if adsOrdersH.Active then adsOrdersH.CloseOpen(True) else adsOrdersH.Open;
 	//свойства надо переназначать и после Resync
-	adsOrdersH.Properties[ 'Update Criteria'].Value := adCriteriaKey;
-	adsOrdersH.Properties[ 'Unique Table'].Value := 'OrdersH';
+//	adsOrdersH.Properties[ 'Update Criteria'].Value := adCriteriaKey;
+//	adsOrdersH.Properties[ 'Unique Table'].Value := 'OrdersH';
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
@@ -283,7 +311,7 @@ begin
 		else dbgOrdersH.ReadOnly := False;
 end;
 
-procedure TOrdersHForm.adsOrdersHBeforeDelete(DataSet: TDataSet);
+procedure TOrdersHForm.adsOrdersH2BeforeDelete(DataSet: TDataSet);
 begin
 //	if MessageBox( 'Удалить заявку?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then abort;
 end;
@@ -376,10 +404,10 @@ begin
         end;
 
         with adsCore do begin
-          Parameters.ParamByName( 'RetailForcount').Value:=DM.adtClients.FieldByName( 'Forcount').Value;
-          Parameters.ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-          Parameters.ParamByName( 'APriceCode').Value:=adsOrdersHPriceCode.Value;
-          Parameters.ParamByName( 'ARegionCode').Value:=adsOrdersHRegionCode.Value;
+          ParamByName( 'RetailForcount').Value:=DM.adtClients.FieldByName( 'Forcount').Value;
+          ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+          ParamByName( 'APriceCode').Value:=adsOrdersHPriceCode.Value;
+          ParamByName( 'ARegionCode').Value:=adsOrdersHRegionCode.Value;
           Screen.Cursor:=crHourglass;
           try
             Open;
@@ -389,7 +417,7 @@ begin
             OrdersForm.SetParams( adsOrdersHOrderId.AsInteger);
             { переписываем позиции в текущий прайс-лист }
             while not OrdersForm.adsOrders.Eof do begin
-              Order:=OrdersForm.adsOrdersOrder.AsInteger;
+              Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
               Code := OrdersForm.adsOrdersCode.AsVariant;
               if Code = '' then Code := Null;
               CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
@@ -423,19 +451,19 @@ begin
               { если все еще не разбросали, то пишем сообщение }
               if Order > 0 then
               begin
-                if ( OrdersForm.adsOrdersOrder.AsInteger - Order) > 0 then
+                if ( OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
                 begin
                   Strings.Append( Format( '%s : %s - %s : %d вместо %d',
                     [adsOrdersHPriceName.AsString,
-                    OrdersForm.adsOrdersSynonym.AsString,
+                    OrdersForm.adsOrdersSYNONYMNAME.AsString,
                     OrdersForm.adsOrdersSynonymFirm.AsString,
-                    OrdersForm.adsOrdersOrder.AsInteger - Order,
-                    OrdersForm.adsOrdersOrder.AsInteger]));
+                    OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
+                    OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
                 end
                 else
                   Strings.Append( Format( '%s : %s - %s : предложение не найдено',
                     [adsOrdersHPriceName.AsString,
-                    OrdersForm.adsOrdersSynonym.AsString,
+                    OrdersForm.adsOrdersSYNONYMNAME.AsString,
                     OrdersForm.adsOrdersSynonymFirm.AsString]));
               end;
               OrdersForm.adsOrders.Next;
@@ -485,7 +513,7 @@ begin
           DM.adcUpdate.ExecQuery;
           adsOrdersH.Post;
         finally
-          adsOrdersHSend.OnChange := adsOrdersHSendChange;
+          adsOrdersHSend.OnChange := adsOrdersH2SendChange;
         end;
       end;
     end;
@@ -525,7 +553,7 @@ procedure TOrdersHForm.dbgOrdersHSortChange(Sender: TObject;
   SQLOrderBy: String);
 begin
 	adsOrdersH.Close;
-	adsOrdersH.CommandText := OrdersHSql + SqlOrderBy;
+	adsOrdersH.SelectSQL.Text := OrdersHSql + SqlOrderBy;
 	SetParameters;
 end;
 
@@ -535,7 +563,7 @@ begin
 	if not adsOrdersH.Isempty then OrdersForm.ShowForm( adsOrdersHOrderId.AsInteger);
 end;
 
-procedure TOrdersHForm.adsOrdersHAfterPost(DataSet: TDataSet);
+procedure TOrdersHForm.adsOrdersH2AfterPost(DataSet: TDataSet);
 begin
 	MainForm.SetOrdersInfo;
 end;
@@ -564,14 +592,14 @@ end;
 procedure TOrdersHForm.SetDateInterval;
 begin
   with adsOrdersH do begin
-	adsOrdersH.Parameters.ParamByName( 'DateFrom').DataType := ftDate;
-	adsOrdersH.Parameters.ParamByName( 'DateTo').DataType := ftDate;
-	Parameters.ParamByName('DateFrom').Value:=dtpDateFrom.Date;
+//	ParamByName( 'DateFrom').DataType := ftDate;
+//	ParamByName( 'DateTo').DataType := ftDate;
+	ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
 	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	Parameters.ParamByName('DateTo').Value := dtpDateTo.Date;
+	ParamByName('DateTo').AsDate := dtpDateTo.Date;
     Screen.Cursor:=crHourglass;
     try
-      if Active then Requery else Open;
+      if Active then CloseOpen(True) else Open;
     finally
       Screen.Cursor:=crDefault;
     end;
@@ -616,15 +644,15 @@ procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);
 begin
 	if not adsOrdersH.IsEmpty then
 	begin
-    adsWayBillHead.Parameters.ParamByName('[AServerOrderId]').Value := adsOrdersH.FieldByName('ServerOrderID').Value;
-    if adsWayBillHead.Active then adsWayBillHead.Requery else adsWayBillHead.Open;
+    adsWayBillHead.ParamByName('AServerOrderId').Value := adsOrdersH.FieldByName('ServerOrderID').Value;
+    if adsWayBillHead.Active then adsWayBillHead.CloseOpen(True) else adsWayBillHead.Open;
     if not adsWayBillHead.IsEmpty then begin
       WayBillListForm.ShowForm(adsWayBillHeadServerID.Value);
     end;
 	end;
 end;
 
-procedure TOrdersHForm.adsOrdersHSendChange(Sender: TField);
+procedure TOrdersHForm.adsOrdersH2SendChange(Sender: TField);
 begin
   //По-другому решить проблему не удалось. Запускаю таймер, чтобы он в главной нити
   //произвел сохранение dataset
@@ -640,7 +668,7 @@ begin
   end;
 end;
 
-procedure TOrdersHForm.adsOrdersHBeforePost(DataSet: TDataSet);
+procedure TOrdersHForm.adsOrdersH2BeforePost(DataSet: TDataSet);
 begin
   //Здесь не нужный комментарий
   if adsOrdersHOrderId.IsNull then Abort; 

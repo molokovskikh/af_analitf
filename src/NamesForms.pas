@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, ADODB, StdCtrls, ExtCtrls, Grids, DBGrids,
-  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw;
+  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
+  pFIBDataSet;
 
 const
 	NamesSql =	'SELECT * FROM CatalogShowByName ORDER BY ';
@@ -17,12 +18,12 @@ type
     pnlBottom: TPanel;
     chkUseForms: TCheckBox;
     dsNames: TDataSource;
-    adsForms: TADODataSet;
+    adsForms2: TADODataSet;
     dsForms: TDataSource;
     ActionList: TActionList;
     actNewWares: TAction;
     actUseForms: TAction;
-    adsNames: TADODataSet;
+    adsNames2: TADODataSet;
     pnlTop: TPanel;
     dbgNames: TToughDBGrid;
     dbgForms: TToughDBGrid;
@@ -30,6 +31,8 @@ type
     pWebBrowser: TPanel;
     Bevel1: TBevel;
     WebBrowser1: TWebBrowser;
+    adsNames: TpFIBDataSet;
+    adsForms: TpFIBDataSet;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -44,7 +47,7 @@ type
     procedure dbgNamesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgFormsExit(Sender: TObject);
-    procedure adsFormsAfterScroll(DataSet: TDataSet);
+    procedure adsForms2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
   private
     procedure SetNamesParams;
@@ -126,7 +129,7 @@ begin
   with adsNames do begin
     Screen.Cursor:=crHourglass;
     try
-      if Active then Requery else Open;
+      if Active then CloseOpen(True) else Open;
     finally
       Screen.Cursor := crDefault;
     end;
@@ -137,7 +140,7 @@ end;
 procedure TNamesFormsForm.SetFormsParams;
 begin
 	dbgForms.Enabled := actUseForms.Checked;
-	if not adsForms.Active then adsForms.Open;
+//	if not adsForms.Active then adsForms.Open;
 end;
 
 procedure TNamesFormsForm.dbgNamesKeyDown(Sender: TObject; var Key: Word;
@@ -199,12 +202,12 @@ procedure TNamesFormsForm.dbgNamesSortChange(Sender: TObject;
 begin
 	inherited;
 	adsNames.Close;
-	adsNames.CommandText := NamesSql + SQLOrderBy;
+	adsNames.SelectSQL.Text := NamesSql + SQLOrderBy;
 	SetNamesParams;
 	SetFormsParams;
 end;
 
-procedure TNamesFormsForm.adsFormsAfterScroll(DataSet: TDataSet);
+procedure TNamesFormsForm.adsForms2AfterScroll(DataSet: TDataSet);
 var
   C : Integer;
 begin
@@ -217,7 +220,7 @@ end;
 
 procedure TNamesFormsForm.FormResize(Sender: TObject);
 begin
-  adsFormsAfterScroll(adsForms);
+  adsForms2AfterScroll(adsForms);
 end;
 
 end.

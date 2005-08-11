@@ -399,12 +399,11 @@ inherited PricesForm: TPricesForm
       OnExecute = actOnlyLeadersExecute
     end
   end
-  object adsPrices: TADODataSet
-    Connection = DM.MainConnection
+  object adsPrices2: TADODataSet
     CursorType = ctStatic
     LockType = ltReadOnly
-    AfterOpen = adsPricesAfterOpen
-    AfterScroll = adsPricesAfterScroll
+    AfterOpen = adsPrices2AfterOpen
+    AfterScroll = adsPrices2AfterScroll
     CommandText = 'SELECT * FROM PricesShow'
     Parameters = <
       item
@@ -428,87 +427,200 @@ inherited PricesForm: TPricesForm
     Prepared = True
     Left = 96
     Top = 112
-    object adsPricesPriceCode: TIntegerField
+    object adsPrices2PriceCode: TIntegerField
       FieldName = 'PriceCode'
     end
-    object adsPricesPriceName: TWideStringField
+    object adsPrices2PriceName: TWideStringField
       FieldName = 'PriceName'
       Size = 25
     end
-    object adsPricesDatePrice: TDateTimeField
+    object adsPrices2DatePrice: TDateTimeField
       FieldName = 'DatePrice'
     end
-    object adsPricesUpCost: TFloatField
+    object adsPrices2UpCost: TFloatField
       FieldName = 'UpCost'
     end
-    object adsPricesPriceInfo: TMemoField
+    object adsPrices2PriceInfo: TMemoField
       FieldName = 'PriceInfo'
       BlobType = ftMemo
     end
-    object adsPricesFirmCode: TIntegerField
+    object adsPrices2FirmCode: TIntegerField
       FieldName = 'FirmCode'
     end
-    object adsPricesFullName: TWideStringField
+    object adsPrices2FullName: TWideStringField
       FieldName = 'FullName'
       Size = 40
     end
-    object adsPricesStorage: TBooleanField
+    object adsPrices2Storage: TBooleanField
       Alignment = taCenter
       FieldName = 'Storage'
       DisplayValues = '+;'
     end
-    object adsPricesAdminMail: TWideStringField
+    object adsPrices2AdminMail: TWideStringField
       FieldName = 'AdminMail'
       Size = 100
     end
-    object adsPricesSupportPhone: TWideStringField
+    object adsPrices2SupportPhone: TWideStringField
       FieldName = 'SupportPhone'
     end
-    object adsPricesContactInfo: TMemoField
+    object adsPrices2ContactInfo: TMemoField
       FieldName = 'ContactInfo'
       BlobType = ftMemo
     end
-    object adsPricesOperativeInfo: TMemoField
+    object adsPrices2OperativeInfo: TMemoField
       FieldName = 'OperativeInfo'
       BlobType = ftMemo
     end
-    object adsPricesEnabled: TBooleanField
+    object adsPrices2Enabled: TBooleanField
       FieldName = 'Enabled'
     end
-    object adsPricesRegionCode: TIntegerField
+    object adsPrices2RegionCode: TIntegerField
       FieldName = 'RegionCode'
     end
-    object adsPricesRegionName: TWideStringField
+    object adsPrices2RegionName: TWideStringField
       FieldName = 'RegionName'
       Size = 25
     end
-    object adsPricesPositions: TIntegerField
+    object adsPrices2Positions: TIntegerField
       FieldName = 'Positions'
       DisplayFormat = '#'
     end
-    object adsPricesSumOrder: TBCDField
+    object adsPrices2SumOrder: TBCDField
       DisplayWidth = 11
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       currency = True
       Precision = 19
     end
-    object adsPricesPriceSize: TIntegerField
+    object adsPrices2PriceSize: TIntegerField
       FieldName = 'PriceSize'
       DisplayFormat = '#'
     end
-    object adsPricesMinReq: TIntegerField
+    object adsPrices2MinReq: TIntegerField
       FieldName = 'MinReq'
     end
   end
   object dsPrices: TDataSource
     DataSet = adsPrices
     Left = 96
-    Top = 160
+    Top = 216
   end
-  object adsClientsData: TADODataSet
+  object adsClientsData2: TADODataSet
     Parameters = <>
     Left = 208
     Top = 160
+  end
+  object adsPrices: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    PRICECODE,'
+      '    PRICENAME,'
+      '    DATEPRICE,'
+      '    UPCOST,'
+      '    MINREQ,'
+      '    ENABLED,'
+      '    PRICEINFO,'
+      '    FIRMCODE,'
+      '    FULLNAME,'
+      '    STORAGE,'
+      '    ADMINMAIL,'
+      '    SUPPORTPHONE,'
+      '    CONTACTINFO,'
+      '    OPERATIVEINFO,'
+      '    REGIONCODE,'
+      '    REGIONNAME,'
+      '    POSITIONS,'
+      '    SUMORDER,'
+      '    PRICESIZE'
+      'FROM'
+      '    PRICESSHOW(:ACLIENTID,'
+      '    :TIMEZONEBIAS) ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 96
+    Top = 152
+    object adsPricesPRICECODE: TFIBBCDField
+      FieldName = 'PRICECODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsPricesPRICENAME: TFIBStringField
+      FieldName = 'PRICENAME'
+      Size = 70
+      EmptyStrToNull = False
+    end
+    object adsPricesDATEPRICE: TFIBDateTimeField
+      FieldName = 'DATEPRICE'
+    end
+    object adsPricesUPCOST: TFIBBCDField
+      FieldName = 'UPCOST'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsPricesMINREQ: TFIBIntegerField
+      FieldName = 'MINREQ'
+    end
+    object adsPricesENABLED: TFIBIntegerField
+      FieldName = 'ENABLED'
+    end
+    object adsPricesPRICEINFO: TFIBBlobField
+      FieldName = 'PRICEINFO'
+      Size = 8
+    end
+    object adsPricesFIRMCODE: TFIBBCDField
+      FieldName = 'FIRMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsPricesFULLNAME: TFIBStringField
+      FieldName = 'FULLNAME'
+      Size = 40
+      EmptyStrToNull = False
+    end
+    object adsPricesSTORAGE: TFIBIntegerField
+      FieldName = 'STORAGE'
+    end
+    object adsPricesADMINMAIL: TFIBStringField
+      FieldName = 'ADMINMAIL'
+      Size = 35
+      EmptyStrToNull = False
+    end
+    object adsPricesSUPPORTPHONE: TFIBStringField
+      FieldName = 'SUPPORTPHONE'
+      EmptyStrToNull = False
+    end
+    object adsPricesCONTACTINFO: TFIBBlobField
+      FieldName = 'CONTACTINFO'
+      Size = 8
+    end
+    object adsPricesOPERATIVEINFO: TFIBBlobField
+      FieldName = 'OPERATIVEINFO'
+      Size = 8
+    end
+    object adsPricesREGIONCODE: TFIBBCDField
+      FieldName = 'REGIONCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsPricesREGIONNAME: TFIBStringField
+      FieldName = 'REGIONNAME'
+      Size = 25
+      EmptyStrToNull = False
+    end
+    object adsPricesPOSITIONS: TFIBIntegerField
+      FieldName = 'POSITIONS'
+    end
+    object adsPricesSUMORDER: TFIBIntegerField
+      FieldName = 'SUMORDER'
+    end
+    object adsPricesPRICESIZE: TFIBIntegerField
+      FieldName = 'PRICESIZE'
+    end
+  end
+  object adsClientsData: TpFIBDataSet
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 208
+    Top = 200
   end
 end

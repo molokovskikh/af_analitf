@@ -91,7 +91,7 @@ begin
 	if DM.MainConnection.Connected then
 	begin
 		MainForm.CS.Enter;
-		DM.adtFlags.Refresh;
+		DM.adtFlags.CloseOpen(True);
 		if DM.adtFlags.FieldByName( 'ExclusiveID').AsString = '' then
 		begin
 			MainForm.CS.Leave;

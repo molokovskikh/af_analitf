@@ -6,83 +6,130 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, ADODB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
-  SHDocVw;
+  SHDocVw, FIBDataSet, pFIBDataSet;
 
 const
-	ExpiredSql	= 'SELECT * FROM ExpiredsShow ORDER BY ';
+	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID, :RETAILFORCOUNT) ORDER BY ';
 
 type
   TExpiredsForm = class(TChildForm)
     dsExpireds: TDataSource;
     lblRecordCount: TLabel;
-    adsOrdersH: TADODataSet;
+    adsOrdersH2: TADODataSet;
     Panel1: TPanel;
     plOverCost: TPanel;
-    adsOrdersShowFormSummary: TADODataSet;
-    adsOrdersShowFormSummaryPriceAvg: TBCDField;
+    adsOrdersShowFormSummary2: TADODataSet;
+    adsOrdersShowFormSummary2PriceAvg: TBCDField;
     Timer: TTimer;
     Bevel1: TBevel;
-    adsExpireds: TADODataSet;
-    adsExpiredsCoreId: TIntegerField;
-    adsExpiredsPriceCode: TIntegerField;
-    adsExpiredsRegionCode: TIntegerField;
-    adsExpiredsFullCode: TIntegerField;
-    adsExpiredsCodeFirmCr: TIntegerField;
-    adsExpiredsSynonymCode: TIntegerField;
-    adsExpiredsSynonymFirmCrCode: TIntegerField;
-    adsExpiredsCode: TWideStringField;
-    adsExpiredsCodeCr: TWideStringField;
-    adsExpiredsOrder: TIntegerField;
-    adsExpiredsNote: TWideStringField;
-    adsExpiredsAwait: TBooleanField;
-    adsExpiredsPeriod: TWideStringField;
-    adsExpiredsVolume: TWideStringField;
-    adsExpiredsBaseCost: TBCDField;
-    adsExpiredsQuantity: TWideStringField;
-    adsExpiredsSynonym: TWideStringField;
-    adsExpiredsSynonymFirm: TWideStringField;
-    adsExpiredsPriceName: TWideStringField;
-    adsExpiredsRegionName: TWideStringField;
-    adsExpiredsDatePrice: TDateTimeField;
-    adsExpiredsPriceRet: TFloatField;
-    adsExpiredsSumOrder: TCurrencyField;
-    adsExpiredsOrdersCoreId: TIntegerField;
-    adsExpiredsOrdersOrderId: TIntegerField;
-    adsExpiredsOrdersClientId: TSmallintField;
-    adsExpiredsOrdersFullCode: TIntegerField;
-    adsExpiredsOrdersCodeFirmCr: TIntegerField;
-    adsExpiredsOrdersSynonymCode: TIntegerField;
-    adsExpiredsOrdersSynonymFirmCrCode: TIntegerField;
-    adsExpiredsOrdersCode: TWideStringField;
-    adsExpiredsOrdersCodeCr: TWideStringField;
-    adsExpiredsOrdersPrice: TBCDField;
-    adsExpiredsOrdersJunk: TBooleanField;
-    adsExpiredsOrdersAwait: TBooleanField;
-    adsExpiredsOrdersHOrderId: TAutoIncField;
-    adsExpiredsOrdersHClientId: TSmallintField;
-    adsExpiredsOrdersHPriceCode: TIntegerField;
-    adsExpiredsOrdersHRegionCode: TIntegerField;
-    adsExpiredsOrdersHPriceName: TWideStringField;
-    adsExpiredsOrdersHRegionName: TWideStringField;
-    adsExpiredsOrdersSynonym: TWideStringField;
-    adsExpiredsOrdersSynonymFirm: TWideStringField;
+    adsExpireds2: TADODataSet;
+    adsExpireds2CoreId: TIntegerField;
+    adsExpireds2PriceCode: TIntegerField;
+    adsExpireds2RegionCode: TIntegerField;
+    adsExpireds2FullCode: TIntegerField;
+    adsExpireds2CodeFirmCr: TIntegerField;
+    adsExpireds2SynonymCode: TIntegerField;
+    adsExpireds2SynonymFirmCrCode: TIntegerField;
+    adsExpireds2Code: TWideStringField;
+    adsExpireds2CodeCr: TWideStringField;
+    adsExpireds2Order: TIntegerField;
+    adsExpireds2Note: TWideStringField;
+    adsExpireds2Await: TBooleanField;
+    adsExpireds2Period: TWideStringField;
+    adsExpireds2Volume: TWideStringField;
+    adsExpireds2BaseCost: TBCDField;
+    adsExpireds2Quantity: TWideStringField;
+    adsExpireds2Synonym: TWideStringField;
+    adsExpireds2SynonymFirm: TWideStringField;
+    adsExpireds2PriceName: TWideStringField;
+    adsExpireds2RegionName: TWideStringField;
+    adsExpireds2DatePrice: TDateTimeField;
+    adsExpireds2PriceRet: TFloatField;
+    adsExpireds2SumOrder: TCurrencyField;
+    adsExpireds2OrdersCoreId: TIntegerField;
+    adsExpireds2OrdersOrderId: TIntegerField;
+    adsExpireds2OrdersClientId: TSmallintField;
+    adsExpireds2OrdersFullCode: TIntegerField;
+    adsExpireds2OrdersCodeFirmCr: TIntegerField;
+    adsExpireds2OrdersSynonymCode: TIntegerField;
+    adsExpireds2OrdersSynonymFirmCrCode: TIntegerField;
+    adsExpireds2OrdersCode: TWideStringField;
+    adsExpireds2OrdersCodeCr: TWideStringField;
+    adsExpireds2OrdersPrice: TBCDField;
+    adsExpireds2OrdersJunk: TBooleanField;
+    adsExpireds2OrdersAwait: TBooleanField;
+    adsExpireds2OrdersHOrderId: TAutoIncField;
+    adsExpireds2OrdersHClientId: TSmallintField;
+    adsExpireds2OrdersHPriceCode: TIntegerField;
+    adsExpireds2OrdersHRegionCode: TIntegerField;
+    adsExpireds2OrdersHPriceName: TWideStringField;
+    adsExpireds2OrdersHRegionName: TWideStringField;
+    adsExpireds2OrdersSynonym: TWideStringField;
+    adsExpireds2OrdersSynonymFirm: TWideStringField;
     pClient: TPanel;
     pWebBrowser: TPanel;
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     dbgExpireds: TToughDBGrid;
-    procedure adsExpiredsCalcFields(DataSet: TDataSet);
+    adsExpireds: TpFIBDataSet;
+    adsExpiredsCOREID: TFIBBCDField;
+    adsExpiredsPRICECODE: TFIBBCDField;
+    adsExpiredsREGIONCODE: TFIBBCDField;
+    adsExpiredsFULLCODE: TFIBBCDField;
+    adsExpiredsCODEFIRMCR: TFIBBCDField;
+    adsExpiredsSYNONYMCODE: TFIBBCDField;
+    adsExpiredsSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsExpiredsCODE: TFIBStringField;
+    adsExpiredsCODECR: TFIBStringField;
+    adsExpiredsNOTE: TFIBStringField;
+    adsExpiredsPERIOD: TFIBStringField;
+    adsExpiredsVOLUME: TFIBStringField;
+    adsExpiredsBASECOST: TFIBBCDField;
+    adsExpiredsQUANTITY: TFIBStringField;
+    adsExpiredsSYNONYMNAME: TFIBStringField;
+    adsExpiredsSYNONYMFIRM: TFIBStringField;
+    adsExpiredsAWAIT: TFIBIntegerField;
+    adsExpiredsPRICENAME: TFIBStringField;
+    adsExpiredsDATEPRICE: TFIBDateTimeField;
+    adsExpiredsREGIONNAME: TFIBStringField;
+    adsExpiredsORDERSCOREID: TFIBBCDField;
+    adsExpiredsORDERSORDERID: TFIBBCDField;
+    adsExpiredsORDERSCLIENTID: TFIBBCDField;
+    adsExpiredsORDERSFULLCODE: TFIBBCDField;
+    adsExpiredsORDERSCODEFIRMCR: TFIBBCDField;
+    adsExpiredsORDERSSYNONYMCODE: TFIBBCDField;
+    adsExpiredsORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsExpiredsORDERSCODE: TFIBStringField;
+    adsExpiredsORDERSCODECR: TFIBStringField;
+    adsExpiredsORDERSSYNONYM: TFIBStringField;
+    adsExpiredsORDERSSYNONYMFIRM: TFIBStringField;
+    adsExpiredsORDERCOUNT: TFIBIntegerField;
+    adsExpiredsORDERSPRICE: TFIBBCDField;
+    adsExpiredsORDERSJUNK: TFIBIntegerField;
+    adsExpiredsORDERSAWAIT: TFIBIntegerField;
+    adsExpiredsORDERSHORDERID: TFIBBCDField;
+    adsExpiredsORDERSHCLIENTID: TFIBBCDField;
+    adsExpiredsORDERSHPRICECODE: TFIBBCDField;
+    adsExpiredsORDERSHREGIONCODE: TFIBBCDField;
+    adsExpiredsORDERSHPRICENAME: TFIBStringField;
+    adsExpiredsORDERSHREGIONNAME: TFIBStringField;
+    adsExpiredsPRICERET: TFIBBCDField;
+    adsExpiredsSumOrder: TCurrencyField;
+    adsOrdersH: TpFIBDataSet;
+    adsOrdersShowFormSummary: TpFIBDataSet;
+    adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
+    procedure adsExpireds2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
-    procedure adsExpiredsBeforePost(DataSet: TDataSet);
+    procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
     procedure FormDestroy(Sender: TObject);
     procedure dbgExpiredsSortChange(Sender: TObject; SQLOrderBy: String);
     procedure TimerTimer(Sender: TObject);
-    procedure adsExpiredsBeforeClose(DataSet: TDataSet);
-    procedure adsExpiredsAfterOpen(DataSet: TDataSet);
-    procedure adsExpiredsAfterPost(DataSet: TDataSet);
-    procedure adsExpiredsAfterScroll(DataSet: TDataSet);
+    procedure adsExpireds2BeforeClose(DataSet: TDataSet);
+    procedure adsExpireds2AfterOpen(DataSet: TDataSet);
+    procedure adsExpireds2AfterPost(DataSet: TDataSet);
+    procedure adsExpireds2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
   private
     ClientId: Integer;
@@ -108,10 +155,10 @@ begin
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-	adsOrdersShowFormSummary.Parameters.ParamByName('AClientId').Value := ClientId;
-	adsExpireds.Parameters.ParamByName( 'AClientId').Value := ClientId;
-	adsExpireds.Parameters.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
-	adsExpireds.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
+	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
+	adsExpireds.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
+	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try
 		adsExpireds.Open;
@@ -137,13 +184,13 @@ begin
 	Reg.Free;
 end;
 
-procedure TExpiredsForm.adsExpiredsCalcFields(DataSet: TDataSet);
+procedure TExpiredsForm.adsExpireds2CalcFields(DataSet: TDataSet);
 begin
 	//вычисляем сумму заказа
-	adsExpiredsSumOrder.AsCurrency:=adsExpiredsBaseCost.AsCurrency*adsExpiredsOrder.AsInteger;
+	adsExpiredsSumOrder.AsCurrency:=adsExpiredsBaseCost.AsCurrency*adsExpiredsORDERCOUNT.AsInteger;
 end;
 
-procedure TExpiredsForm.adsExpiredsBeforePost(DataSet: TDataSet);
+procedure TExpiredsForm.adsExpireds2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
 	PriceAvg: Double;
@@ -152,12 +199,12 @@ begin
 		{ проверяем заказ на соответствие наличию товара на складе }
 		Val( adsExpiredsQuantity.AsString, Quantity, E);
 		if E <> 0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsExpiredsOrder.AsInteger > Quantity)and
+		if ( Quantity > 0) and ( adsExpiredsORDERCOUNT.AsInteger > Quantity)and
 			(MessageBox('Заказ превышает остаток на складе. Продолжить?',
-			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsOrder.AsInteger := Quantity;
+			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsORDERCOUNT.AsInteger := Quantity;
 
 		{ проверяем на превышение цены }
-		if UseExcess and ( adsExpiredsOrder.AsInteger > 0) then
+		if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) then
 		begin
 			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
 			if ( PriceAvg > 0) and ( adsExpiredsBaseCost.AsCurrency>PriceAvg*(1+Excess/100)) then
@@ -179,10 +226,10 @@ end;
 //нужна для поиска текущего OrdersH.OrderId при вводе заказа
 procedure TExpiredsForm.RefreshOrdersH;
 begin
-	adsOrdersH.Parameters.ParamByName( 'AClientId').Value := ClientId;
-	adsOrdersH.Parameters.ParamByName( 'APriceCode').Value := adsExpiredsPriceCode.AsInteger;
-	adsOrdersH.Parameters.ParamByName( 'ARegionCode').Value := adsExpiredsRegionCode.AsInteger;
-	if adsOrdersH.Active then adsOrdersH.Requery else adsOrdersH.Open;
+	adsOrdersH.ParamByName( 'AClientId').Value := ClientId;
+	adsOrdersH.ParamByName( 'APriceCode').Value := adsExpiredsPriceCode.AsInteger;
+	adsOrdersH.ParamByName( 'ARegionCode').Value := adsExpiredsRegionCode.AsInteger;
+	if adsOrdersH.Active then adsOrdersH.CloseOpen(True) else adsOrdersH.Open;
 end;
 
 procedure TExpiredsForm.dbgExpiredsCanInput(Sender: TObject;
@@ -222,7 +269,7 @@ begin
     adsExpiredsOrdersPrice.AsCurrency:=adsExpiredsBaseCost.AsCurrency;
     adsExpiredsOrdersJunk.AsBoolean:=True;
     adsExpiredsOrdersAwait.AsBoolean := adsExpiredsAwait.AsBoolean;
-    adsExpiredsOrdersSynonym.AsString := adsExpiredsSynonym.AsString;
+    adsExpiredsOrdersSynonym.AsString := adsExpiredsSYNONYMNAME.AsString;
     adsExpiredsOrdersSynonymFirm.AsString := adsExpiredsSynonymFirm.AsString;
     adsExpireds.Post;
     if adsOrdersH.IsEmpty then RefreshOrdersH;
@@ -233,11 +280,11 @@ procedure TExpiredsForm.dbgExpiredsSortChange(Sender: TObject;
   SQLOrderBy: String);
 begin
 	adsExpireds.Close;
-	adsExpireds.CommandText := ExpiredSql + SQLOrderBy;
+	adsExpireds.SelectSQL.Text := ExpiredSql + SQLOrderBy;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsExpireds.Parameters.ParamByName( 'AClientId').Value := ClientId;
-	adsExpireds.Parameters.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
-	adsExpireds.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
+	adsExpireds.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
+	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try
 		adsExpireds.Open;
@@ -246,12 +293,12 @@ begin
 	end;
 end;
 
-procedure TExpiredsForm.adsExpiredsAfterOpen(DataSet: TDataSet);
+procedure TExpiredsForm.adsExpireds2AfterOpen(DataSet: TDataSet);
 begin
 	adsOrdersShowFormSummary.Open;
 end;
 
-procedure TExpiredsForm.adsExpiredsBeforeClose(DataSet: TDataSet);
+procedure TExpiredsForm.adsExpireds2BeforeClose(DataSet: TDataSet);
 begin
 	adsOrdersShowFormSummary.Close;
 end;
@@ -263,12 +310,12 @@ begin
 	plOverCost.SendToBack;
 end;
 
-procedure TExpiredsForm.adsExpiredsAfterPost(DataSet: TDataSet);
+procedure TExpiredsForm.adsExpireds2AfterPost(DataSet: TDataSet);
 begin
 	MainForm.SetOrdersInfo;
 end;
 
-procedure TExpiredsForm.adsExpiredsAfterScroll(DataSet: TDataSet);
+procedure TExpiredsForm.adsExpireds2AfterScroll(DataSet: TDataSet);
 //var
 //  C : Integer;
 begin
@@ -283,7 +330,7 @@ end;
 
 procedure TExpiredsForm.FormResize(Sender: TObject);
 begin
-  adsExpiredsAfterScroll(adsExpireds);
+  adsExpireds2AfterScroll(adsExpireds);
 end;
 
 end.

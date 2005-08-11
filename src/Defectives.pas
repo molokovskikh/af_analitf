@@ -6,10 +6,11 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DModule, DB, ADODB, Grids, DBGrids, RXDBCtrl,
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
-  FR_DBSet, DateUtils, AdoInt, DBGridEh, ToughDBGrid, Registry, ExtCtrls;
+  FR_DBSet, DateUtils, AdoInt, DBGridEh, ToughDBGrid, Registry, ExtCtrls,
+  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery;
 
 const
-	DefectSql	= 'SELECT * FROM Defectives WHERE LetterDate BETWEEN DateFrom And DateTo ORDER BY ';
+	DefectSql	= 'SELECT * FROM Defectives WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
 
 type
   //типы сортировки информации
@@ -32,21 +33,24 @@ type
     ActionList: TActionList;
     btnCheck: TButton;
     btnUnCheckAll: TButton;
-    adcUncheckAll: TADOCommand;
+    adcUncheckAll2: TADOCommand;
     actCheck: TAction;
     frdsPrint: TfrDBDataSet;
-    adsPrint: TADODataSet;
-    adsDefectives: TADODataSet;
+    adsPrint2: TADODataSet;
+    adsDefectives2: TADODataSet;
     dbgDefectives: TToughDBGrid;
     Panel1: TPanel;
     Label7: TLabel;
     Label8: TLabel;
     Panel2: TPanel;
     Bevel1: TBevel;
+    adsDefectives: TpFIBDataSet;
+    adsPrint: TpFIBDataSet;
+    adcUncheckAll: TpFIBQuery;
     procedure FormCreate(Sender: TObject);
     procedure btnUnCheckAllClick(Sender: TObject);
     procedure actCheckExecute(Sender: TObject);
-    procedure adsDefectivesAfterOpen(DataSet: TDataSet);
+    procedure adsDefectives2AfterOpen(DataSet: TDataSet);
     procedure dbgDefectivesGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure FormDestroy(Sender: TObject);
@@ -71,7 +75,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, pFIBDataSet;
+  Main;
 
 procedure TDefectivesForm.FormCreate(Sender: TObject);
 var
@@ -86,8 +90,8 @@ begin
 	IncAMonth( Year, Month, Day, -3);
 	dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
 	dtpDateTo.Date:=Date;
-	BaseQuery:=adsDefectives.CommandText;
-	PrintQuery:=adsPrint.CommandText;
+	BaseQuery:=adsDefectives.SelectSQL.Text;
+	PrintQuery:=adsPrint.SelectSQL.Text;
 	OrderField:='LetterDate';
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
@@ -111,11 +115,11 @@ end;
 procedure TDefectivesForm.SetDateInterval;
 begin
   with adsDefectives do begin
-    Parameters.ParamByName('DateFrom').Value:=dtpDateFrom.Date;
-    Parameters.ParamByName('DateTo').Value:=dtpDateTo.Date;
+    ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
+    ParamByName('DateTo').AsDate:=dtpDateTo.Date;
     Screen.Cursor:=crHourglass;
     try
-      if Active then Requery else Open;
+      if Active then CloseOpen(True) else Open;
     finally
       Screen.Cursor:=crDefault;
     end;
@@ -126,9 +130,9 @@ procedure TDefectivesForm.SetOrderField(Value: string);
 begin
   with adsDefectives do begin
     Close;
-    CommandText:=BaseQuery+' ORDER BY '+Value;
-    Parameters.ParamByName('DateFrom').DataType:=ftDate;
-    Parameters.ParamByName('DateTo').DataType:=ftDate;
+    SelectSQL.Text:=BaseQuery+' ORDER BY '+Value;
+    //ParamByName('DateFrom').DataType:=ftDate;
+    //ParamByName('DateTo').DataType:=ftDate;
     SetDateInterval;
   end;
   FOrderField:=AnsiUpperCase(Trim(Value));
@@ -140,10 +144,10 @@ var
 begin
   Screen.Cursor:=crHourglass;
   try
-    adcUncheckAll.Execute;
+    adcUncheckAll.ExecQuery;
     with adsDefectives do begin
       Mark:=Bookmark;
-      if Active then Requery;
+      if Active then CloseOpen(True);
       Bookmark:=Mark;
     end;
   finally
@@ -157,7 +161,7 @@ begin
   with adsDefectives do
     if Active and ( adsDefectives.FieldByName( 'Name').AsString <> '') then begin
       Edit;
-      FieldByName('Check').AsBoolean:=not FieldByName('Check').AsBoolean;
+      FieldByName('CheckPrint').AsBoolean:=not FieldByName('CheckPrint').AsBoolean;
       Post;
     end;
   dbgDefectives.SetFocus;
@@ -170,7 +174,7 @@ var
 begin
   //если нет ни одной пометки - печатаем все
   with DM.adsSelect do begin
-    SelectSQL.Text:='SELECT Count(*) FROM Defectives WHERE Check';
+    SelectSQL.Text:='SELECT Count(*) FROM Defectives WHERE CheckPrint = 1';
     Open;
     try
       ShowAll:=Fields[0].AsInteger=0;
@@ -179,13 +183,13 @@ begin
     end;
   end;
   with adsPrint do begin
-    CommandText:=PrintQuery+' ORDER BY '+OrderField;
-    Parameters.ParamByName('DateFrom').DataType:=ftDate;
-    Parameters.ParamByName('DateTo').DataType:=ftDate;
-    Parameters.ParamByName('ShowAll').DataType:=ftBoolean;
-    Parameters.ParamByName('DateFrom').Value:=adsDefectives.Parameters.ParamByName('DateFrom').Value;
-    Parameters.ParamByName('DateTo').Value:=adsDefectives.Parameters.ParamByName('DateTo').Value;
-    Parameters.ParamByName('ShowAll').Value:=ShowAll;
+    SelectSQL.Text:=PrintQuery+' ORDER BY '+OrderField;
+    //ParamByName('DateFrom').DataType:=ftDate;
+    //ParamByName('DateTo').DataType:=ftDate;
+    //ParamByName('ShowAll').DataType:=ftBoolean;
+    ParamByName('DateFrom').AsDate := adsDefectives.ParamByName('DateFrom').AsDate;
+    ParamByName('DateTo').AsDate:=adsDefectives.ParamByName('DateTo').AsDate;
+    ParamByName('ShowAll').Value:=ShowAll;
     Open;
     try
       DM.ShowFastReport('Defectives.frf', nil, APreview);
@@ -195,16 +199,16 @@ begin
   end;
 end;
 
-procedure TDefectivesForm.adsDefectivesAfterOpen(DataSet: TDataSet);
+procedure TDefectivesForm.adsDefectives2AfterOpen(DataSet: TDataSet);
 begin
-	adsDefectives.Properties['Update Criteria'].Value:=adCriteriaKey;
+//	adsDefectives.Properties['Update Criteria'].Value:=adCriteriaKey;
 end;
 
 procedure TDefectivesForm.dbgDefectivesGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	if adsDefectives.FieldByName( 'Check').AsBoolean then Background := clSilver;
+	if adsDefectives.FieldByName( 'CheckPrint').AsBoolean then Background := clSilver;
 end;
 
 procedure TDefectivesForm.dbgDefectivesSortChange(Sender: TObject;
@@ -214,12 +218,12 @@ begin
 	Screen.Cursor := crHourglass;
 	try
 		adsDefectives.Close;
-		adsDefectives.CommandText := DefectSql + SQLOrderBy;
+		adsDefectives.SelectSQL.Text := DefectSql + SQLOrderBy;
 		OrderField := SQLOrderBy;
-		adsDefectives.Parameters.ParamByName( 'DateFrom').DataType := ftDate;
-		adsDefectives.Parameters.ParamByName( 'DateTo').DataType := ftDate;
-                adsDefectives.Parameters.ParamByName( 'DateFrom').Value := dtpDateFrom.Date;
-		adsDefectives.Parameters.ParamByName( 'DateTo').Value := dtpDateTo.Date;
+//		adsDefectives.ParamByName( 'DateFrom').DataType := ftDate;
+//		adsDefectives.ParamByName( 'DateTo').DataType := ftDate;
+    adsDefectives.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
+		adsDefectives.ParamByName( 'DateTo').AsDate := dtpDateTo.Date;
 		adsDefectives.Open;
 	finally
 		adsDefectives.EnableControls;

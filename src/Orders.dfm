@@ -252,8 +252,7 @@ inherited OrdersForm: TOrdersForm
         Title.TitleButton = True
       end>
   end
-  object adsOrders: TADODataSet
-    Connection = DM.MainConnection
+  object adsOrders2: TADODataSet
     CursorType = ctStatic
     CommandText = 'SELECT * FROM OrdersShow'
     Parameters = <
@@ -268,62 +267,158 @@ inherited OrdersForm: TOrdersForm
       end>
     Left = 144
     Top = 144
-    object adsOrdersOrderId: TIntegerField
+    object adsOrders2OrderId: TIntegerField
       FieldName = 'OrderId'
     end
-    object adsOrdersFullCode: TIntegerField
+    object adsOrders2FullCode: TIntegerField
       FieldName = 'FullCode'
     end
-    object adsOrdersCode: TWideStringField
+    object adsOrders2Code: TWideStringField
       FieldName = 'Code'
     end
-    object adsOrdersCodeCr: TWideStringField
+    object adsOrders2CodeCr: TWideStringField
       FieldName = 'CodeCr'
     end
-    object adsOrdersSynonymCode: TIntegerField
+    object adsOrders2SynonymCode: TIntegerField
       FieldName = 'SynonymCode'
     end
-    object adsOrdersSynonym: TWideStringField
+    object adsOrders2Synonym: TWideStringField
       FieldName = 'Synonym'
       Size = 255
     end
-    object adsOrdersSynonymFirmCrCode: TIntegerField
+    object adsOrders2SynonymFirmCrCode: TIntegerField
       FieldName = 'SynonymFirmCrCode'
     end
-    object adsOrdersSynonymFirm: TWideStringField
+    object adsOrders2SynonymFirm: TWideStringField
       FieldName = 'SynonymFirm'
       Size = 255
     end
-    object adsOrdersPrice: TBCDField
+    object adsOrders2Price: TBCDField
       FieldName = 'Price'
       DisplayFormat = '0.00;;'#39#39
       Precision = 19
     end
-    object adsOrdersJunk: TBooleanField
+    object adsOrders2Junk: TBooleanField
       FieldName = 'Junk'
     end
-    object adsOrdersOrder: TIntegerField
+    object adsOrders2Order: TIntegerField
       FieldName = 'Order'
       DisplayFormat = '#'
     end
-    object adsOrdersSumOrder: TBCDField
+    object adsOrders2SumOrder: TBCDField
       FieldName = 'SumOrder'
       ReadOnly = True
       DisplayFormat = '0.00;;'#39#39
       Precision = 19
     end
-    object adsOrdersAwait: TBooleanField
+    object adsOrders2Await: TBooleanField
       FieldName = 'Await'
     end
   end
   object dsOrders: TDataSource
     DataSet = adsOrders
     Left = 144
-    Top = 192
+    Top = 256
   end
   object frdsOrders: TfrDBDataSet
     DataSource = dsOrders
     Left = 144
-    Top = 240
+    Top = 288
+  end
+  object adsOrders: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    ORDERID,'
+      '    CLIENTID,'
+      '    COREID,'
+      '    FULLCODE,'
+      '    CODEFIRMCR,'
+      '    SYNONYMCODE,'
+      '    SYNONYMFIRMCRCODE,'
+      '    CODE,'
+      '    CODECR,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    PRICE,'
+      '    AWAIT,'
+      '    JUNK,'
+      '    ORDERCOUNT,'
+      '    SUMORDER'
+      'FROM'
+      '    ORDERSSHOW(:AORDERID) ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 144
+    Top = 184
+    object adsOrdersORDERID: TFIBBCDField
+      FieldName = 'ORDERID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCLIENTID: TFIBBCDField
+      FieldName = 'CLIENTID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCOREID: TFIBBCDField
+      FieldName = 'COREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCODEFIRMCR: TFIBBCDField
+      FieldName = 'CODEFIRMCR'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersSYNONYMCODE: TFIBBCDField
+      FieldName = 'SYNONYMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField
+      FieldName = 'SYNONYMFIRMCRCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCODE: TFIBStringField
+      FieldName = 'CODE'
+      EmptyStrToNull = False
+    end
+    object adsOrdersCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      EmptyStrToNull = False
+    end
+    object adsOrdersSYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsOrdersSYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsOrdersPRICE: TFIBBCDField
+      FieldName = 'PRICE'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsOrdersAWAIT: TFIBIntegerField
+      FieldName = 'AWAIT'
+    end
+    object adsOrdersJUNK: TFIBIntegerField
+      FieldName = 'JUNK'
+    end
+    object adsOrdersORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsOrdersSUMORDER: TFIBIntegerField
+      FieldName = 'SUMORDER'
+    end
   end
 end

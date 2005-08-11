@@ -282,10 +282,10 @@ var
 begin
  	DM.adsSelect3.Close;
  	DM.adsSelect3.SelectSQL.Text := 'SELECT Id, CoreId, PriceCode, RegionCode, Code, CodeCr, ' +
-		'Price, SynonymCode, SynonymFirmCrCode, Synonym, SynonymFirm, Order, PriceName ' +
+		'Price, SynonymCode, SynonymFirmCrCode, SynonymName, SynonymFirm, OrderCount, PriceName ' +
 		'FROM Orders ' +
-		'INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND NOT OrdersH.Closed) ' +
-		'WHERE (Order>0)';
+		'INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND OrdersH.Closed = 0) ' +
+		'WHERE (OrderCount>0)';
  	DM.adsSelect3.Open;
 	if DM.adsSelect3.IsEmpty then
 	begin

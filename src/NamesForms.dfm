@@ -179,13 +179,12 @@ inherited NamesFormsForm: TNamesFormsForm
   object dsNames: TDataSource
     DataSet = adsNames
     Left = 80
-    Top = 168
+    Top = 208
   end
-  object adsForms: TADODataSet
-    Connection = DM.MainConnection
+  object adsForms2: TADODataSet
     CursorType = ctStatic
     LockType = ltReadOnly
-    AfterScroll = adsFormsAfterScroll
+    AfterScroll = adsForms2AfterScroll
     CommandText = 'SELECT * FROM CatalogShowByForm'
     DataSource = dsNames
     Parameters = <
@@ -198,13 +197,13 @@ inherited NamesFormsForm: TNamesFormsForm
         Value = 25
       end>
     Prepared = True
-    Left = 440
-    Top = 120
+    Left = 432
+    Top = 104
   end
   object dsForms: TDataSource
     DataSet = adsForms
     Left = 440
-    Top = 168
+    Top = 192
   end
   object ActionList: TActionList
     Left = 512
@@ -222,8 +221,7 @@ inherited NamesFormsForm: TNamesFormsForm
       OnExecute = actUseFormsExecute
     end
   end
-  object adsNames: TADODataSet
-    Connection = DM.MainConnection
+  object adsNames2: TADODataSet
     CursorType = ctStatic
     LockType = ltReadOnly
     CommandText = 'SELECT * FROM CatalogShowByName'
@@ -231,5 +229,32 @@ inherited NamesFormsForm: TNamesFormsForm
     Prepared = True
     Left = 80
     Top = 120
+  end
+  object adsNames: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    ASHORTCODE,'
+      '    NAME'
+      'FROM'
+      '    CATALOGSHOWBYNAME ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 80
+    Top = 160
+    oFetchAll = True
+  end
+  object adsForms: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '*'
+      'FROM'
+      '    CATALOGSHOWBYFORM(:ASHORTCODE) ')
+    DataSource = dsNames
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 437
+    Top = 152
+    dcForceOpen = True
+    oFetchAll = True
   end
 end

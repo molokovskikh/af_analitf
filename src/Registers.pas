@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, ADODB, DB,
-  Placemnt, StdCtrls, DBCtrls, DBGridEh, ToughDBGrid, ExtCtrls, Registry;
+  Placemnt, StdCtrls, DBCtrls, DBGridEh, ToughDBGrid, ExtCtrls, Registry,
+  FIBDataSet, pFIBDataSet;
 
 const
 	RegistrySql	= 'SELECT * FROM Registry ORDER BY ';
@@ -16,21 +17,30 @@ type
     dbtName: TDBText;
     dbtBox: TDBText;
     dbtProducer: TDBText;
-    adsRegistry: TADODataSet;
-    adsRegistryId: TAutoIncField;
-    adsRegistryName: TWideStringField;
-    adsRegistryForm: TWideStringField;
-    adsRegistryProducer: TWideStringField;
-    adsRegistryBox: TWideStringField;
-    adsRegistryPrice: TBCDField;
-    adsRegistryCurrency: TWideStringField;
-    adsRegistryPriceRub: TBCDField;
+    adsRegistry2: TADODataSet;
+    adsRegistry2Id: TAutoIncField;
+    adsRegistry2Name: TWideStringField;
+    adsRegistry2Form: TWideStringField;
+    adsRegistry2Producer: TWideStringField;
+    adsRegistry2Box: TWideStringField;
+    adsRegistry2Price: TBCDField;
+    adsRegistry2Currency: TWideStringField;
+    adsRegistry2PriceRub: TBCDField;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Panel1: TPanel;
     dbgRegistry: TToughDBGrid;
     Bevel1: TBevel;
+    adsRegistry: TpFIBDataSet;
+    adsRegistryID: TFIBBCDField;
+    adsRegistryNAME: TFIBStringField;
+    adsRegistryFORM: TFIBStringField;
+    adsRegistryPRODUCER: TFIBStringField;
+    adsRegistryBOX: TFIBStringField;
+    adsRegistryPRICE: TFIBBCDField;
+    adsRegistryCURR: TFIBStringField;
+    adsRegistryPRICERUB: TFIBBCDField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure dbgRegistrySortChange(Sender: TObject; SQLOrderBy: String);
@@ -85,7 +95,7 @@ begin
 	Screen.Cursor := crHourglass;
 	try
 		adsRegistry.Close;
-		adsRegistry.CommandText := RegistrySql + SQLOrderBy;
+		adsRegistry.SelectSQL.Text := RegistrySql + SQLOrderBy;
 		adsRegistry.Open;
 	finally
 		adsRegistry.EnableControls;

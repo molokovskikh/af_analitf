@@ -5,19 +5,20 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB, ADODB, DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
-  Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls;
+  Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
+  pFIBDataSet;
 
 type
   TOrdersForm = class(TChildForm)
-    adsOrders: TADODataSet;
+    adsOrders2: TADODataSet;
     dsOrders: TDataSource;
     Label1: TLabel;
     dbtId: TDBText;
     Label2: TLabel;
     dbtOrderDate: TDBText;
-    adsOrdersPrice: TBCDField;
-    adsOrdersOrder: TIntegerField;
-    adsOrdersSumOrder: TBCDField;
+    adsOrders2Price: TBCDField;
+    adsOrders2Order: TIntegerField;
+    adsOrders2SumOrder: TBCDField;
     lblRecordCount: TLabel;
     lblSum: TLabel;
     dbtPositions: TDBText;
@@ -27,18 +28,35 @@ type
     dbtPriceName: TDBText;
     Label5: TLabel;
     dbtRegionName: TDBText;
-    adsOrdersOrderId: TIntegerField;
-    adsOrdersFullCode: TIntegerField;
-    adsOrdersSynonymCode: TIntegerField;
-    adsOrdersSynonymFirmCrCode: TIntegerField;
-    adsOrdersCode: TWideStringField;
-    adsOrdersSynonym: TWideStringField;
-    adsOrdersSynonymFirm: TWideStringField;
-    adsOrdersJunk: TBooleanField;
+    adsOrders2OrderId: TIntegerField;
+    adsOrders2FullCode: TIntegerField;
+    adsOrders2SynonymCode: TIntegerField;
+    adsOrders2SynonymFirmCrCode: TIntegerField;
+    adsOrders2Code: TWideStringField;
+    adsOrders2Synonym: TWideStringField;
+    adsOrders2SynonymFirm: TWideStringField;
+    adsOrders2Junk: TBooleanField;
     Panel1: TPanel;
     dbgOrders: TToughDBGrid;
-    adsOrdersCodeCr: TWideStringField;
-    adsOrdersAwait: TBooleanField;
+    adsOrders2CodeCr: TWideStringField;
+    adsOrders2Await: TBooleanField;
+    adsOrders: TpFIBDataSet;
+    adsOrdersORDERID: TFIBBCDField;
+    adsOrdersCLIENTID: TFIBBCDField;
+    adsOrdersCOREID: TFIBBCDField;
+    adsOrdersFULLCODE: TFIBBCDField;
+    adsOrdersCODEFIRMCR: TFIBBCDField;
+    adsOrdersSYNONYMCODE: TFIBBCDField;
+    adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsOrdersCODE: TFIBStringField;
+    adsOrdersCODECR: TFIBStringField;
+    adsOrdersSYNONYMNAME: TFIBStringField;
+    adsOrdersSYNONYMFIRM: TFIBStringField;
+    adsOrdersPRICE: TFIBBCDField;
+    adsOrdersAWAIT: TFIBIntegerField;
+    adsOrdersJUNK: TFIBIntegerField;
+    adsOrdersORDERCOUNT: TFIBIntegerField;
+    adsOrdersSUMORDER: TFIBIntegerField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -69,8 +87,8 @@ end;
 procedure TOrdersForm.SetParams(AOrderId: Integer);
 begin
   with adsOrders do begin
-    Parameters.ParamByName('AOrderId').Value:=AOrderId;
-    if Active then Requery else Open;
+    ParamByName('AOrderId').Value:=AOrderId;
+    if Active then CloseOpen(True) else Open;
   end;
 end;
 
@@ -108,7 +126,7 @@ begin
       PrevForm.ShowForm;
     end
     else begin
-      OrdersHForm.adsOrdersH.Requery;
+      OrdersHForm.adsOrdersH.CloseOpen(True);
       MainForm.SetOrdersInfo;
     end;
 

@@ -6,10 +6,11 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   RXDBCtrl, Grids, DBGrids, ComCtrls, Db, StrUtils, Child, ADODB,
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants, ADOInt,
-  Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw;
+  Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
+  FIBDataSet, pFIBDataSet;
 
 const
-	CoreSql =	'SELECT * FROM CoreShowByFirm ORDER BY ';
+	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :RETAILFORCOUNT, :ACLIENTID) ORDER BY ';
 
 type
   TFilter=( filAll, filOrder, filLeader);
@@ -27,72 +28,123 @@ type
     cbFilter: TComboBox;
     lblOrderLabel: TLabel;
     btnDeleteOrder: TSpeedButton;
-    adsOrdersH: TADODataSet;
+    adsOrdersH2: TADODataSet;
     btnFormHistory: TSpeedButton;
-    adsCountFields: TADODataSet;
+    adsCountFields2: TADODataSet;
     lblFirmPrice: TLabel;
     Panel1: TPanel;
     Panel2: TPanel;
     dbgCore: TToughDBGrid;
-    adsOrdersShowFormSummary: TADODataSet;
-    adsOrdersShowFormSummaryPriceAvg: TBCDField;
+    adsOrdersShowFormSummary2: TADODataSet;
+    adsOrdersShowFormSummary2PriceAvg: TBCDField;
     plOverCost: TPanel;
     Timer: TTimer;
-    adsCore: TADODataSet;
-    adsCoreCoreId: TAutoIncField;
-    adsCoreFullCode: TIntegerField;
-    adsCoreShortCode: TIntegerField;
-    adsCoreCodeFirmCr: TIntegerField;
-    adsCoreSynonymCode: TIntegerField;
-    adsCoreSynonymFirmCrCode: TIntegerField;
-    adsCoreCode: TWideStringField;
-    adsCoreCodeCr: TWideStringField;
-    adsCoreVolume: TWideStringField;
-    adsCoreDoc: TWideStringField;
-    adsCoreNote: TWideStringField;
-    adsCorePeriod: TWideStringField;
-    adsCoreAwait: TBooleanField;
-    adsCoreJunk: TBooleanField;
-    adsCoreBaseCost: TBCDField;
-    adsCoreQuantity: TWideStringField;
-    adsCoreSynonym: TWideStringField;
-    adsCoreSynonymFirm: TWideStringField;
-    adsCoreMinPrice: TBCDField;
-    adsCoreLeaderFirmCode: TIntegerField;
-    adsCoreLeaderRegionCode: TIntegerField;
-    adsCoreLeaderRegionName: TWideStringField;
-    adsCoreOrdersCoreId: TIntegerField;
-    adsCoreOrdersOrderId: TIntegerField;
-    adsCoreOrdersClientId: TSmallintField;
-    adsCoreOrdersFullCode: TIntegerField;
-    adsCoreOrdersCodeFirmCr: TIntegerField;
-    adsCoreOrdersSynonymCode: TIntegerField;
-    adsCoreOrdersSynonymFirmCrCode: TIntegerField;
-    adsCoreOrdersCode: TWideStringField;
-    adsCoreOrdersCodeCr: TWideStringField;
-    adsCoreOrder: TIntegerField;
-    adsCoreOrdersSynonym: TWideStringField;
-    adsCoreOrdersSynonymFirm: TWideStringField;
-    adsCoreOrdersPrice: TBCDField;
-    adsCoreOrdersJunk: TBooleanField;
-    adsCoreOrdersAwait: TBooleanField;
-    adsCoreOrdersHOrderId: TAutoIncField;
-    adsCoreOrdersHClientId: TSmallintField;
-    adsCoreOrdersHPriceCode: TIntegerField;
-    adsCoreOrdersHRegionCode: TIntegerField;
-    adsCoreOrdersHPriceName: TWideStringField;
-    adsCoreOrdersHRegionName: TWideStringField;
-    adsCorePriceRet: TFloatField;
-    adsCoreSumOrder: TBCDField;
+    adsCore2: TADODataSet;
+    adsCore2CoreId: TAutoIncField;
+    adsCore2FullCode: TIntegerField;
+    adsCore2ShortCode: TIntegerField;
+    adsCore2CodeFirmCr: TIntegerField;
+    adsCore2SynonymCode: TIntegerField;
+    adsCore2SynonymFirmCrCode: TIntegerField;
+    adsCore2Code: TWideStringField;
+    adsCore2CodeCr: TWideStringField;
+    adsCore2Volume: TWideStringField;
+    adsCore2Doc: TWideStringField;
+    adsCore2Note: TWideStringField;
+    adsCore2Period: TWideStringField;
+    adsCore2Await: TBooleanField;
+    adsCore2Junk: TBooleanField;
+    adsCore2BaseCost: TBCDField;
+    adsCore2Quantity: TWideStringField;
+    adsCore2Synonym: TWideStringField;
+    adsCore2SynonymFirm: TWideStringField;
+    adsCore2MinPrice: TBCDField;
+    adsCore2LeaderFirmCode: TIntegerField;
+    adsCore2LeaderRegionCode: TIntegerField;
+    adsCore2LeaderRegionName: TWideStringField;
+    adsCore2OrdersCoreId: TIntegerField;
+    adsCore2OrdersOrderId: TIntegerField;
+    adsCore2OrdersClientId: TSmallintField;
+    adsCore2OrdersFullCode: TIntegerField;
+    adsCore2OrdersCodeFirmCr: TIntegerField;
+    adsCore2OrdersSynonymCode: TIntegerField;
+    adsCore2OrdersSynonymFirmCrCode: TIntegerField;
+    adsCore2OrdersCode: TWideStringField;
+    adsCore2OrdersCodeCr: TWideStringField;
+    adsCore2Order: TIntegerField;
+    adsCore2OrdersSynonym: TWideStringField;
+    adsCore2OrdersSynonymFirm: TWideStringField;
+    adsCore2OrdersPrice: TBCDField;
+    adsCore2OrdersJunk: TBooleanField;
+    adsCore2OrdersAwait: TBooleanField;
+    adsCore2OrdersHOrderId: TAutoIncField;
+    adsCore2OrdersHClientId: TSmallintField;
+    adsCore2OrdersHPriceCode: TIntegerField;
+    adsCore2OrdersHRegionCode: TIntegerField;
+    adsCore2OrdersHPriceName: TWideStringField;
+    adsCore2OrdersHRegionName: TWideStringField;
+    adsCore2PriceRet: TFloatField;
+    adsCore2SumOrder: TBCDField;
     Bevel1: TBevel;
-    adsCoreLeaderPriceName: TWideStringField;
+    adsCore2LeaderPriceName: TWideStringField;
     actFlipCore: TAction;
+    adsCore: TpFIBDataSet;
+    adsCoreCOREID: TFIBBCDField;
+    adsCoreFULLCODE: TFIBBCDField;
+    adsCoreSHORTCODE: TFIBBCDField;
+    adsCoreCODEFIRMCR: TFIBBCDField;
+    adsCoreSYNONYMCODE: TFIBBCDField;
+    adsCoreSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreCODE: TFIBStringField;
+    adsCoreCODECR: TFIBStringField;
+    adsCoreVOLUME: TFIBStringField;
+    adsCoreDOC: TFIBStringField;
+    adsCoreNOTE: TFIBStringField;
+    adsCorePERIOD: TFIBStringField;
+    adsCoreAWAIT: TFIBIntegerField;
+    adsCoreJUNK: TFIBIntegerField;
+    adsCoreBASECOST: TFIBBCDField;
+    adsCoreQUANTITY: TFIBStringField;
+    adsCoreSYNONYMNAME: TFIBStringField;
+    adsCoreSYNONYMFIRM: TFIBStringField;
+    adsCoreMINPRICE: TFIBIntegerField;
+    adsCoreLEADERPRICECODE: TFIBBCDField;
+    adsCoreLEADERREGIONCODE: TFIBBCDField;
+    adsCoreLEADERREGIONNAME: TFIBStringField;
+    adsCoreLEADERPRICENAME: TFIBStringField;
+    adsCoreORDERSCOREID: TFIBBCDField;
+    adsCoreORDERSORDERID: TFIBBCDField;
+    adsCoreORDERSCLIENTID: TFIBBCDField;
+    adsCoreORDERSFULLCODE: TFIBBCDField;
+    adsCoreORDERSCODEFIRMCR: TFIBBCDField;
+    adsCoreORDERSSYNONYMCODE: TFIBBCDField;
+    adsCoreORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreORDERSCODE: TFIBStringField;
+    adsCoreORDERSCODECR: TFIBStringField;
+    adsCoreORDERCOUNT: TFIBIntegerField;
+    adsCoreORDERSSYNONYM: TFIBStringField;
+    adsCoreORDERSSYNONYMFIRM: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBBCDField;
+    adsCoreORDERSJUNK: TFIBIntegerField;
+    adsCoreORDERSAWAIT: TFIBIntegerField;
+    adsCoreORDERSHORDERID: TFIBBCDField;
+    adsCoreORDERSHCLIENTID: TFIBBCDField;
+    adsCoreORDERSHPRICECODE: TFIBBCDField;
+    adsCoreORDERSHREGIONCODE: TFIBBCDField;
+    adsCoreORDERSHPRICENAME: TFIBStringField;
+    adsCoreORDERSHREGIONNAME: TFIBStringField;
+    adsCorePRICERET: TFIBBCDField;
+    adsCoreSumOrder: TCurrencyField;
+    adsCountFields: TpFIBDataSet;
+    adsOrdersH: TpFIBDataSet;
+    adsOrdersShowFormSummary: TpFIBDataSet;
+    adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
-    procedure adsCoreBeforePost(DataSet: TDataSet);
-    procedure adsCoreAfterPost(DataSet: TDataSet);
-    procedure adsCoreBeforeEdit(DataSet: TDataSet);
-    procedure adsCoreCalcFields(DataSet: TDataSet);
+    procedure adsCore2BeforePost(DataSet: TDataSet);
+    procedure adsCore2AfterPost(DataSet: TDataSet);
+    procedure adsCore2BeforeEdit(DataSet: TDataSet);
+    procedure adsCore2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure actFilterAllExecute(Sender: TObject);
     procedure actFilterOrderExecute(Sender: TObject);
@@ -106,8 +158,8 @@ type
     procedure dbgCoreCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
     procedure dbgCoreSortChange(Sender: TObject; SQLOrderBy: String);
-    procedure adsCoreAfterOpen(DataSet: TDataSet);
-    procedure adsCoreBeforeClose(DataSet: TDataSet);
+    procedure adsCore2AfterOpen(DataSet: TDataSet);
+    procedure adsCore2BeforeClose(DataSet: TDataSet);
     procedure TimerTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
   private
@@ -146,7 +198,7 @@ begin
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsOrdersShowFormSummary.Parameters.ParamByName('AClientId').Value := ClientId;
+	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, False) then dbgCore.LoadFromRegistry( Reg);
@@ -172,13 +224,13 @@ begin
   RegionCode:=ARegionCode;
   adsOrdersShowFormSummary.DataSource := nil;
   with adsCore do begin
-    Parameters.ParamByName( 'RetailForcount').Value:=DM.adtClients.FieldByName( 'Forcount').Value;
-    Parameters.ParamByName( 'APriceCode').Value:=PriceCode;
-    Parameters.ParamByName( 'ARegionCode').Value:=RegionCode;
-    Parameters.ParamByName( 'AClientId').Value:=ClientId;
+    ParamByName( 'RetailForcount').Value:=DM.adtClients.FieldByName( 'Forcount').Value;
+    ParamByName( 'APriceCode').Value:=PriceCode;
+    ParamByName( 'ARegionCode').Value:=RegionCode;
+    ParamByName( 'AClientId').Value:=ClientId;
     Screen.Cursor:=crHourglass;
     try
-      if Active then Requery else Open;
+      if Active then CloseOpen(True) else Open;
     finally
       Screen.Cursor:=crDefault;
     end;
@@ -190,8 +242,8 @@ begin
   end;
   //определяем, какие колонки прайс-листа фирмы показывать (не показываем пустые)
   with adsCountFields do begin
-    Parameters.ParamByName('APriceCode').Value:=PriceCode;
-    Parameters.ParamByName('ARegionCode').Value:=RegionCode;
+    ParamByName('APriceCode').Value:=PriceCode;
+    ParamByName('ARegionCode').Value:=RegionCode;
     Open;
     try
 {
@@ -223,10 +275,10 @@ begin
   inherited ShowForm;
 end;
 
-procedure TCoreFirmForm.adsCoreCalcFields(DataSet: TDataSet);
+procedure TCoreFirmForm.adsCore2CalcFields(DataSet: TDataSet);
 begin
 	adsCoreSumOrder.AsCurrency :=
-		adsCoreBaseCost.AsCurrency * adsCoreOrder.AsInteger;
+		adsCoreBaseCost.AsCurrency * adsCoreORDERCOUNT.AsInteger;
 end;
 
 procedure TCoreFirmForm.SetFilter(Filter: TFilter);
@@ -235,7 +287,7 @@ var
 begin
   case Filter of
     filAll: St:= '';
-    filOrder: St:= 'Order > 0';
+    filOrder: St:= 'OrderCount > 0';
     filLeader: St:=Format( 'LeaderPriceCode = %d AND LeaderRegionCode = %d',
     	[PriceCode, RegionCode]);
   end;
@@ -276,19 +328,19 @@ end;
 procedure TCoreFirmForm.RefreshOrdersH;
 begin
   with adsOrdersH do begin
-    Parameters.ParamByName('AClientId').Value:=ClientId;
-    Parameters.ParamByName('APriceCode').Value:=PriceCode;
-    Parameters.ParamByName('ARegionCode').Value:=RegionCode;
-    if Active then Requery else Open;
+    ParamByName('AClientId').Value:=ClientId;
+    ParamByName('APriceCode').Value:=PriceCode;
+    ParamByName('ARegionCode').Value:=RegionCode;
+    if Active then CloseOpen(True) else Open;
   end;
 end;
 
-procedure TCoreFirmForm.adsCoreBeforeEdit(DataSet: TDataSet);
+procedure TCoreFirmForm.adsCore2BeforeEdit(DataSet: TDataSet);
 begin
-  OldOrder:=adsCoreOrder.AsInteger;
+  OldOrder:=adsCoreORDERCOUNT.AsInteger;
 end;
 
-procedure TCoreFirmForm.adsCoreBeforePost(DataSet: TDataSet);
+procedure TCoreFirmForm.adsCore2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
 	PriceAvg: Double;
@@ -297,12 +349,12 @@ begin
 		{ проверяем заказ на соответствие наличию товара на складе }
 		Val( adsCoreQuantity.AsString, Quantity, E);
 		if E <> 0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsCoreOrder.AsInteger > Quantity) and
+		if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
 			( MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
-			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsCoreOrder.AsInteger := Quantity;
+			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
 		{ проверяем на превышение цены }
-		if UseExcess and ( adsCoreOrder.AsInteger>0) then
+		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
 			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
 			if ( PriceAvg > 0) and ( adsCoreBaseCost.AsCurrency>PriceAvg*(1+Excess/100)) then
@@ -320,10 +372,10 @@ begin
 	end;
 end;
 
-procedure TCoreFirmForm.adsCoreAfterPost(DataSet: TDataSet);
+procedure TCoreFirmForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
-	OrderCount := OrderCount + Iif( adsCoreOrder.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsCoreOrder.AsInteger - OldOrder) * adsCoreBaseCost.AsCurrency;
+	OrderCount := OrderCount + Iif( adsCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
+	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreBaseCost.AsCurrency;
 	SetOrderLabel;
 	MainForm.SetOrdersInfo;
 end;
@@ -365,8 +417,8 @@ begin
     end;
   finally
     adsCore.EnableControls;
-    adsCore.Requery;
-    adsOrdersH.Requery;
+    adsCore.CloseOpen(True);
+    adsOrdersH.CloseOpen(True);
     Screen.Cursor:=crDefault;
     MainForm.SetOrdersInfo;
   end;
@@ -378,7 +430,7 @@ procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	//данный прайс-лидер
-	if ( adsCoreLeaderFirmCode.AsInteger = PriceCode) and
+	if ( adsCoreLEADERPRICECODE.AsInteger = PriceCode) and
         	( adsCoreLeaderRegionCode.AsInteger = RegionCode) and
 		(( Column.FieldName = 'LeaderRegionName') or ( Column.FieldName = 'LeaderPriceName')) then
 			Background := LEADER_CLR;
@@ -402,9 +454,9 @@ end;
 procedure TCoreFirmForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
-	CanInput := ( adsCore.Parameters.ParamByName( 'ARegionCode').Value and
+	CanInput := ( adsCore.ParamByName( 'ARegionCode').Value and
 		DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
-		adsCore.Parameters.ParamByName( 'ARegionCode').Value;
+		adsCore.ParamByName( 'ARegionCode').Value;
 	if not CanInput then Exit;
 	{ создаем записи из Orders и OrdersH, если их нет }
   if adsCoreOrdersOrderId.IsNull then begin //нет соответствующей записи в Orders
@@ -435,7 +487,7 @@ begin
     adsCoreOrdersPrice.AsCurrency:=adsCoreBaseCost.AsCurrency;
     adsCoreOrdersJunk.AsBoolean:=adsCoreJunk.AsBoolean;
     adsCoreOrdersAwait.AsBoolean := adsCoreAwait.AsBoolean;
-    adsCoreOrdersSynonym.AsString := adsCoreSynonym.AsString;
+    adsCoreOrdersSynonym.AsString := adsCoreSYNONYMNAME.AsString;
     adsCoreOrdersSynonymFirm.AsString := adsCoreSynonymFirm.AsString;
     adsCore.Post;
     if adsOrdersH.IsEmpty then RefreshOrdersH;
@@ -447,11 +499,11 @@ procedure TCoreFirmForm.dbgCoreSortChange(Sender: TObject;
 begin
 	adsCore.DisableControls;
 	adsCore.Close;
-	adsCore.CommandText := CoreSql + SQLOrderBy;
-	adsCore.Parameters.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
-	adsCore.Parameters.ParamByName( 'APriceCode').Value := PriceCode;
-	adsCore.Parameters.ParamByName( 'ARegionCode').Value := RegionCode;
-	adsCore.Parameters.ParamByName( 'AClientId').Value := ClientId;
+	adsCore.SelectSQL.Text := CoreSql + SQLOrderBy;
+	adsCore.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
+	adsCore.ParamByName( 'APriceCode').Value := PriceCode;
+	adsCore.ParamByName( 'ARegionCode').Value := RegionCode;
+	adsCore.ParamByName( 'AClientId').Value := ClientId;
 	Screen.Cursor := crHourglass;
 	try
 		adsCore.Open;
@@ -461,14 +513,14 @@ begin
 	end;
 end;
 
-procedure TCoreFirmForm.adsCoreAfterOpen(DataSet: TDataSet);
+procedure TCoreFirmForm.adsCore2AfterOpen(DataSet: TDataSet);
 begin
-	adsOrdersShowFormSummary.Open;
+//	adsOrdersShowFormSummary.Open;
 end;
 
-procedure TCoreFirmForm.adsCoreBeforeClose(DataSet: TDataSet);
+procedure TCoreFirmForm.adsCore2BeforeClose(DataSet: TDataSet);
 begin
-	adsOrdersShowFormSummary.Close;
+//	adsOrdersShowFormSummary.Close;
 end;
 
 procedure TCoreFirmForm.TimerTimer(Sender: TObject);

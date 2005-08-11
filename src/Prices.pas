@@ -6,10 +6,10 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, ADODB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  Registry, DBGridEhImpExp;
+  Registry, DBGridEhImpExp, FIBDataSet, pFIBDataSet;
 
 const
-	PricesSql =	'SELECT * FROM PricesShow ORDER BY ';
+	PricesSql =	'SELECT * FROM PRICESSHOW(:ACLIENTID, :TIMEZONEBIAS) ORDER BY ';
 
 type
   TPricesForm = class(TChildForm)
@@ -21,33 +21,33 @@ type
     cbOnlyLeaders: TCheckBox;
     ActionList: TActionList;
     actOnlyLeaders: TAction;
-    adsPrices: TADODataSet;
+    adsPrices2: TADODataSet;
     dsPrices: TDataSource;
     dbtMinOrder: TDBText;
-    adsPricesFullName: TWideStringField;
+    adsPrices2FullName: TWideStringField;
     actCurrentOrders: TAction;
-    adsPricesPositions: TIntegerField;
-    adsPricesStorage: TBooleanField;
-    adsPricesAdminMail: TWideStringField;
-    adsPricesSupportPhone: TWideStringField;
-    adsPricesContactInfo: TMemoField;
-    adsPricesOperativeInfo: TMemoField;
-    adsPricesEnabled: TBooleanField;
-    adsPricesPriceCode: TIntegerField;
-    adsPricesPriceName: TWideStringField;
-    adsPricesDatePrice: TDateTimeField;
-    adsPricesFirmCode: TIntegerField;
-    adsPricesRegionCode: TIntegerField;
-    adsPricesRegionName: TWideStringField;
-    adsClientsData: TADODataSet;
+    adsPrices2Positions: TIntegerField;
+    adsPrices2Storage: TBooleanField;
+    adsPrices2AdminMail: TWideStringField;
+    adsPrices2SupportPhone: TWideStringField;
+    adsPrices2ContactInfo: TMemoField;
+    adsPrices2OperativeInfo: TMemoField;
+    adsPrices2Enabled: TBooleanField;
+    adsPrices2PriceCode: TIntegerField;
+    adsPrices2PriceName: TWideStringField;
+    adsPrices2DatePrice: TDateTimeField;
+    adsPrices2FirmCode: TIntegerField;
+    adsPrices2RegionCode: TIntegerField;
+    adsPrices2RegionName: TWideStringField;
+    adsClientsData2: TADODataSet;
     Label4: TLabel;
-    adsPricesSumOrder: TBCDField;
-    adsPricesPriceSize: TIntegerField;
-    adsPricesUpCost: TFloatField;
-    adsPricesPriceInfo: TMemoField;
+    adsPrices2SumOrder: TBCDField;
+    adsPrices2PriceSize: TIntegerField;
+    adsPrices2UpCost: TFloatField;
+    adsPrices2PriceInfo: TMemoField;
     Panel1: TPanel;
     Panel2: TPanel;
-    adsPricesMinReq: TIntegerField;
+    adsPrices2MinReq: TIntegerField;
     Label3: TLabel;
     Label5: TLabel;
     GroupBox1: TGroupBox;
@@ -61,6 +61,27 @@ type
     Bevel3: TBevel;
     Panel3: TPanel;
     lblPriceCount: TLabel;
+    adsPrices: TpFIBDataSet;
+    adsPricesPRICECODE: TFIBBCDField;
+    adsPricesPRICENAME: TFIBStringField;
+    adsPricesDATEPRICE: TFIBDateTimeField;
+    adsPricesUPCOST: TFIBBCDField;
+    adsPricesMINREQ: TFIBIntegerField;
+    adsPricesENABLED: TFIBIntegerField;
+    adsPricesPRICEINFO: TFIBBlobField;
+    adsPricesFIRMCODE: TFIBBCDField;
+    adsPricesFULLNAME: TFIBStringField;
+    adsPricesSTORAGE: TFIBIntegerField;
+    adsPricesADMINMAIL: TFIBStringField;
+    adsPricesSUPPORTPHONE: TFIBStringField;
+    adsPricesCONTACTINFO: TFIBBlobField;
+    adsPricesOPERATIVEINFO: TFIBBlobField;
+    adsPricesREGIONCODE: TFIBBCDField;
+    adsPricesREGIONNAME: TFIBStringField;
+    adsPricesPOSITIONS: TFIBIntegerField;
+    adsPricesSUMORDER: TFIBIntegerField;
+    adsPricesPRICESIZE: TFIBIntegerField;
+    adsClientsData: TpFIBDataSet;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -71,8 +92,8 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgPricesDblClick(Sender: TObject);
     procedure dbgPricesSortChange(Sender: TObject; SQLOrderBy: String);
-    procedure adsPricesAfterScroll(DataSet: TDataSet);
-    procedure adsPricesAfterOpen(DataSet: TDataSet);
+    procedure adsPrices2AfterScroll(DataSet: TDataSet);
+    procedure adsPrices2AfterOpen(DataSet: TDataSet);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -138,12 +159,12 @@ procedure TPricesForm.ShowForm;
 begin
   //открываем список фирм
   with adsPrices do begin
-    Parameters.ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+    ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
     Screen.Cursor:=crHourglass;
     try
       if Active then begin
         GetLastPrice;
-        Requery;
+        CloseOpen(True);
       end
       else
         Open;
@@ -154,7 +175,7 @@ begin
   end;
   //открываем список прайс-листов - регионов
   with adsPrices do begin
-    Parameters.ParamByName('TimeZoneBias').Value:=TimeZoneBias;
+    ParamByName('TimeZoneBias').Value:=TimeZoneBias;
     Open;
   end;
   inherited;
@@ -213,13 +234,13 @@ procedure TPricesForm.dbgPricesSortChange(Sender: TObject;
   SQLOrderBy: String);
 begin
 	adsPrices.Close;
-	adsPrices.CommandText := PricesSql + SQLOrderBy;
-	adsPrices.Parameters.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsPrices.Parameters.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	adsPrices.SelectSQL.Text := PricesSql + SQLOrderBy;
+	adsPrices.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsPrices.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	adsPrices.Open;
 end;
 
-procedure TPricesForm.adsPricesAfterScroll(DataSet: TDataSet);
+procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
 begin
 	inherited;
 	if DBMemo2.Lines.Count > 8 then DBMemo2.ScrollBars := ssVertical
@@ -228,7 +249,7 @@ begin
 		else DBMemo3.ScrollBars := ssNone;
 end;
 
-procedure TPricesForm.adsPricesAfterOpen(DataSet: TDataSet);
+procedure TPricesForm.adsPrices2AfterOpen(DataSet: TDataSet);
 begin
 	lblPriceCount.Caption := 'Всего прайс-листов : ' + IntToStr( DataSet.RecordCount);
 end;

@@ -646,8 +646,7 @@ object MainForm: TMainForm
       OnUpdate = actHomeUpdate
     end
   end
-  object adsOrdersH: TADODataSet
-    Connection = DM.MainConnection
+  object adsOrdersH2: TADODataSet
     CursorType = ctStatic
     LockType = ltReadOnly
     CommandText = 'SELECT * FROM OrdersHShow WHERE Send=ASend'
@@ -3356,5 +3355,35 @@ object MainForm: TMainForm
       FC0007FFFFFFFFFF00000003FC00FFFFFF001FFFFFFFFFFF00000007FF80FFFF
       FFFFFFFFFFFFFFFF0000001FFFC1FFFF00000000000000000000000000000000
       000000000000}
+  end
+  object adsOrdersH: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    ORDERID,'
+      '    SERVERORDERID,'
+      '    DATEPRICE,'
+      '    PRICECODE,'
+      '    REGIONCODE,'
+      '    ORDERDATE,'
+      '    SENDDATE,'
+      '    CLOSED,'
+      '    SEND,'
+      '    PRICENAME,'
+      '    REGIONNAME,'
+      '    POSITIONS,'
+      '    SUMORDER,'
+      '    SUPPORTPHONE,'
+      '    MESSAGETO,'
+      '    COMMENTS'
+      'FROM'
+      '    ORDERSHSHOW(:ACLIENTID,'
+      '    :ACLOSED,'
+      '    :TIMEZONEBIAS) '
+      'where'
+      '  Send = :ASend')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 192
+    Top = 272
   end
 end

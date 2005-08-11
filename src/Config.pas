@@ -143,7 +143,7 @@ begin
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
-          DM.adcUpdate.SQL.Text := 'EXECUTE OrdersHDeleteNotClosedAll';
+          DM.adcUpdate.SQL.Text := 'EXECUTE PROCEDURE OrdersHDeleteNotClosedAll';
           DM.adcUpdate.ExecQuery;
         end;
         DM.adtParams.Post;
@@ -166,8 +166,8 @@ begin
     Free;
   end;
   //если RollBack - надо освежить
-  DM.adtParams.Refresh;
-  DM.adtClients.Refresh;
+  DM.adtParams.CloseOpen(True);
+  DM.adtClients.CloseOpen(True);
   DM.ClientChanged;
 end;
 
