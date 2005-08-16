@@ -205,13 +205,13 @@ inherited OrdersForm: TOrdersForm
     TitleFont.Style = []
     OnGetCellParams = dbgOrdersGetCellParams
     OnKeyDown = dbgOrdersKeyDown
-    SearchField = 'Orders.Synonym'
+    SearchField = 'SynonymName'
     SearchPosition = spBottom
     ForceRus = True
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'Synonym'
+        FieldName = 'SYNONYMNAME'
         Footers = <>
         Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
         Title.TitleButton = True
@@ -219,7 +219,7 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'SynonymFirm'
+        FieldName = 'SYNONYMFIRM'
         Footers = <>
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Title.TitleButton = True
@@ -227,7 +227,7 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'Price'
+        FieldName = 'PRICE'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -239,14 +239,14 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'Order'
+        FieldName = 'ORDERCOUNT'
         Footers = <>
         Title.Caption = #1047#1072#1082#1072#1079
         Title.TitleButton = True
       end
       item
         EditButtons = <>
-        FieldName = 'SumOrder'
+        FieldName = 'SUMORDER'
         Footers = <>
         Title.Caption = #1057#1091#1084#1084#1072
         Title.TitleButton = True
@@ -326,6 +326,41 @@ inherited OrdersForm: TOrdersForm
     Top = 288
   end
   object adsOrders: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'update'
+      '  orders'
+      'set'
+      '  ordercount = :ordercount'
+      'where'
+      '  orderid = :orderid'
+      'and coreid = :coreid')
+    DeleteSQL.Strings = (
+      'delete from orders'
+      'where'
+      '  orderid = :orderid'
+      'and coreid = :coreid')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '    ORDERID,'
+      '    CLIENTID,'
+      '    COREID,'
+      '    FULLCODE,'
+      '    CODEFIRMCR,'
+      '    SYNONYMCODE,'
+      '    SYNONYMFIRMCRCODE,'
+      '    CODE,'
+      '    CODECR,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    PRICE,'
+      '    AWAIT,'
+      '    JUNK,'
+      '    ORDERCOUNT,'
+      '    SUMORDER'
+      'FROM'
+      '    ORDERSSHOW(:AORDERID)'
+      'where'
+      '  COREID = :COREID ')
     SelectSQL.Strings = (
       'SELECT'
       '    ORDERID,'
@@ -348,8 +383,10 @@ inherited OrdersForm: TOrdersForm
       '    ORDERSSHOW(:AORDERID) ')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
     Left = 144
     Top = 184
+    oFetchAll = True
     object adsOrdersORDERID: TFIBBCDField
       FieldName = 'ORDERID'
       Size = 0
@@ -405,6 +442,7 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersPRICE: TFIBBCDField
       FieldName = 'PRICE'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
@@ -416,9 +454,11 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
+      DisplayFormat = '#'
     end
     object adsOrdersSUMORDER: TFIBIntegerField
       FieldName = 'SUMORDER'
+      DisplayFormat = '0.00;;'#39#39
     end
   end
 end

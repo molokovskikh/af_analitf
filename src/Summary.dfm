@@ -154,8 +154,8 @@ inherited SummaryForm: TSummaryForm
       TitleFont.Style = []
       OnGetCellParams = dbgSummaryGetCellParams
       OnKeyDown = dbgSummaryKeyDown
-      SearchField = 'Synonym'
-      InputField = 'Order'
+      SearchField = 'SynonymName'
+      InputField = 'OrderCount'
       SearchPosition = spBottom
       ForceRus = True
       OnSortChange = dbgSummarySortChange
@@ -163,7 +163,7 @@ inherited SummaryForm: TSummaryForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'Synonym'
+          FieldName = 'SYNONYMNAME'
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
@@ -171,7 +171,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'SynonymFirm'
+          FieldName = 'SYNONYMFIRM'
           Footers = <>
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
           Title.TitleButton = True
@@ -180,7 +180,7 @@ inherited SummaryForm: TSummaryForm
         item
           Alignment = taRightJustify
           EditButtons = <>
-          FieldName = 'Volume'
+          FieldName = 'VOLUME'
           Footers = <>
           Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
           Title.TitleButton = True
@@ -188,7 +188,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'Note'
+          FieldName = 'NOTE'
           Footers = <>
           Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
           Title.TitleButton = True
@@ -196,7 +196,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'Period'
+          FieldName = 'PERIOD'
           Footers = <>
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
           Title.TitleButton = True
@@ -204,7 +204,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'PriceName'
+          FieldName = 'PRICENAME'
           Footers = <>
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.TitleButton = True
@@ -212,7 +212,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'RegionName'
+          FieldName = 'REGIONNAME'
           Footers = <>
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
@@ -220,7 +220,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'BaseCost'
+          FieldName = 'BASECOST'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -233,7 +233,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'PriceRet'
+          FieldName = 'PRICERET'
           Footers = <>
           Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
           Title.TitleButton = True
@@ -242,7 +242,7 @@ inherited SummaryForm: TSummaryForm
         item
           Alignment = taRightJustify
           EditButtons = <>
-          FieldName = 'Quantity'
+          FieldName = 'QUANTITY'
           Footers = <>
           Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
           Title.TitleButton = True
@@ -251,7 +251,7 @@ inherited SummaryForm: TSummaryForm
         item
           Color = 16775406
           EditButtons = <>
-          FieldName = 'Order'
+          FieldName = 'ORDERCOUNT'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
         end
@@ -368,7 +368,6 @@ inherited SummaryForm: TSummaryForm
     Top = 136
   end
   object adsSummaryH2: TADODataSet
-    Connection = DM.MainConnection
     CursorType = ctStatic
     CommandText = 'SELECT * FROM SummaryHShow'
     Parameters = <
@@ -405,6 +404,42 @@ inherited SummaryForm: TSummaryForm
     Top = 184
   end
   object adsSummary: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'update'
+      '  orders'
+      'set'
+      '  ORDERCOUNT = :ORDERCOUNT'
+      'where'
+      '   COREID = :ORDERSCOREID'
+      'and ORDERID = :ORDERSORDERID')
+    DeleteSQL.Strings = (
+      'delete from'
+      '  orders'
+      'where'
+      '   COREID = :ORDERSCOREID'
+      'and ORDERID = :ORDERSORDERID')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '    VOLUME,'
+      '    QUANTITY,'
+      '    NOTE,'
+      '    PERIOD,'
+      '    JUNK,'
+      '    AWAIT,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    BASECOST,'
+      '    PRICENAME,'
+      '    REGIONNAME,'
+      '    PRICERET,'
+      '    ORDERCOUNT,'
+      '    ORDERSCOREID,'
+      '    ORDERSORDERID'
+      'FROM'
+      '    SUMMARYSHOW(:ACLIENTID,'
+      '    :RETAILFORCOUNT) '
+      'where'
+      '  ORDERSCOREID = :ORDERSCOREID')
     SelectSQL.Strings = (
       'SELECT'
       '    VOLUME,'
@@ -431,8 +466,10 @@ inherited SummaryForm: TSummaryForm
     OnCalcFields = adsSummary2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
     Left = 296
     Top = 96
+    oFetchAll = True
     object adsSummaryVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
@@ -470,6 +507,7 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryBASECOST: TFIBBCDField
       FieldName = 'BASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
@@ -485,11 +523,13 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryPRICERET: TFIBBCDField
       FieldName = 'PRICERET'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
     object adsSummaryORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
+      DisplayFormat = '#'
     end
     object adsSummaryORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
@@ -504,6 +544,7 @@ inherited SummaryForm: TSummaryForm
     object adsSummarySumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
   end

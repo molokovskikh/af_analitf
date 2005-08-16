@@ -101,7 +101,7 @@ object FormsHistoryForm: TFormsHistoryForm
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'SynonymFirm'
+        FieldName = 'SYNONYMFIRM'
         Footers = <>
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Width = 149
@@ -115,21 +115,21 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         EditButtons = <>
-        FieldName = 'PriceName'
+        FieldName = 'PRICENAME'
         Footers = <>
         Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
         Width = 109
       end
       item
         EditButtons = <>
-        FieldName = 'RegionName'
+        FieldName = 'REGIONNAME'
         Footers = <>
         Title.Caption = #1056#1077#1075#1080#1086#1085
         Width = 94
       end
       item
         EditButtons = <>
-        FieldName = 'OrderDate'
+        FieldName = 'ORDERDATE'
         Footers = <>
         Title.Caption = #1044#1072#1090#1072
         Width = 85
@@ -143,7 +143,7 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         EditButtons = <>
-        FieldName = 'Price'
+        FieldName = 'PRICE'
         Footers = <>
         Title.Caption = #1062#1077#1085#1072
         Width = 82
@@ -163,15 +163,14 @@ object FormsHistoryForm: TFormsHistoryForm
   object dsOrders: TDataSource
     DataSet = adsOrders
     Left = 112
-    Top = 152
+    Top = 200
   end
   object dsWareData: TDataSource
     DataSet = adsWareData
     Left = 208
-    Top = 152
+    Top = 192
   end
-  object adsOrders: TADODataSet
-    Connection = DM.MainConnection
+  object adsOrders2: TADODataSet
     CursorType = ctStatic
     LockType = ltReadOnly
     CommandText = 'SELECT * FROM OrdersShowByForm'
@@ -197,9 +196,8 @@ object FormsHistoryForm: TFormsHistoryForm
     Left = 112
     Top = 104
   end
-  object adsWareData: TADODataSet
+  object adsWareData2: TADODataSet
     AutoCalcFields = False
-    Connection = DM.MainConnection
     CursorType = ctStatic
     CommandText = 'SELECT * FROM GetWareData'
     Parameters = <
@@ -223,19 +221,98 @@ object FormsHistoryForm: TFormsHistoryForm
       end>
     Left = 208
     Top = 104
-    object adsWareDataName: TWideStringField
+    object adsWareData2Name: TWideStringField
       FieldName = 'Name'
       Size = 255
     end
-    object adsWareDataForm: TWideStringField
+    object adsWareData2Form: TWideStringField
       FieldName = 'Form'
       Size = 255
     end
-    object adsWareDataPriceAvg: TBCDField
+    object adsWareData2PriceAvg: TBCDField
       FieldName = 'PriceAvg'
       DisplayFormat = '0.00;;'#39#39
       currency = True
       Precision = 19
     end
+  end
+  object adsOrders: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    FULLCODE,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    ORDERCOUNT,'
+      '    PRICE,'
+      '    ORDERDATE,'
+      '    PRICENAME,'
+      '    REGIONNAME,'
+      '    AWAIT,'
+      '    JUNK'
+      'FROM'
+      '    ORDERSSHOWBYFORM(:AFULLCODE,'
+      '    :ACLIENTID) ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 112
+    Top = 152
+    oFetchAll = True
+    object adsOrdersFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersSYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsOrdersSYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsOrdersORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsOrdersPRICE: TFIBBCDField
+      FieldName = 'PRICE'
+      DisplayFormat = '0,00;;'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsOrdersORDERDATE: TFIBDateTimeField
+      FieldName = 'ORDERDATE'
+    end
+    object adsOrdersPRICENAME: TFIBStringField
+      FieldName = 'PRICENAME'
+      Size = 70
+      EmptyStrToNull = False
+    end
+    object adsOrdersREGIONNAME: TFIBStringField
+      FieldName = 'REGIONNAME'
+      Size = 25
+      EmptyStrToNull = False
+    end
+    object adsOrdersAWAIT: TFIBIntegerField
+      FieldName = 'AWAIT'
+    end
+    object adsOrdersJUNK: TFIBIntegerField
+      FieldName = 'JUNK'
+    end
+  end
+  object adsWareData: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    NAME,'
+      '    FORM,'
+      '    PRICEAVG'
+      'FROM'
+      '    GETWAREDATA(:AFULLCODE,'
+      '    :ACLIENTID) ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    Left = 208
+    Top = 152
   end
 end

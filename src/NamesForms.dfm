@@ -32,6 +32,20 @@ inherited NamesFormsForm: TNamesFormsForm
       ParentFont = False
       TabOrder = 0
     end
+    object cbShowAll: TCheckBox
+      Left = 224
+      Top = 8
+      Width = 193
+      Height = 17
+      Action = actShowAll
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 1
+    end
   end
   object pnlTop: TPanel
     Left = 0
@@ -220,6 +234,11 @@ inherited NamesFormsForm: TNamesFormsForm
       ShortCut = 115
       OnExecute = actUseFormsExecute
     end
+    object actShowAll: TAction
+      Caption = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1074#1077#1089#1100' '#1082#1072#1090#1072#1083#1086#1075
+      Hint = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1074#1077#1089#1100' '#1082#1072#1090#1072#1083#1086#1075
+      OnExecute = actShowAllExecute
+    end
   end
   object adsNames2: TADODataSet
     CursorType = ctStatic
@@ -236,19 +255,18 @@ inherited NamesFormsForm: TNamesFormsForm
       '    ASHORTCODE,'
       '    NAME'
       'FROM'
-      '    CATALOGSHOWBYNAME ')
+      '    CATALOGSHOWBYNAME(:SHOWALL) ')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     Left = 80
     Top = 160
-    oFetchAll = True
   end
   object adsForms: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '*'
       'FROM'
-      '    CATALOGSHOWBYFORM(:ASHORTCODE) ')
+      '    CATALOGSHOWBYFORM(:ASHORTCODE, :SHOWAll) ')
     DataSource = dsNames
     Transaction = DM.DefTran
     Database = DM.MainConnection1

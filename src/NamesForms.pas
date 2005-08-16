@@ -33,6 +33,8 @@ type
     WebBrowser1: TWebBrowser;
     adsNames: TpFIBDataSet;
     adsForms: TpFIBDataSet;
+    cbShowAll: TCheckBox;
+    actShowAll: TAction;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -49,6 +51,7 @@ type
     procedure dbgFormsExit(Sender: TObject);
     procedure adsForms2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
+    procedure actShowAllExecute(Sender: TObject);
   private
     procedure SetNamesParams;
     procedure SetFormsParams;
@@ -84,6 +87,7 @@ begin
 			actUseForms.Checked := FieldByName( 'UseForms').AsBoolean;
 			actUseForms.Enabled := True;
 		end;
+  	actShowAll.Checked := FieldByName( 'ShowAllCatalog').AsBoolean;
 	end;
 	SetNamesParams;
 	SetFormsParams;
@@ -103,6 +107,7 @@ begin
 	begin
 		Edit;
 		FieldByName( 'UseForms').AsBoolean := actUseForms.Checked;
+		FieldByName( 'ShowAllCatalog').AsBoolean := actShowAll.Checked;
 		Post;
 	end;
 end;
@@ -129,6 +134,8 @@ begin
   with adsNames do begin
     Screen.Cursor:=crHourglass;
     try
+      ParamByName('ShowAll').Value := actShowAll.Checked;
+      adsForms.ParamByName('ShowAll').Value := actShowAll.Checked;
       if Active then CloseOpen(True) else Open;
     finally
       Screen.Cursor := crDefault;
@@ -221,6 +228,14 @@ end;
 procedure TNamesFormsForm.FormResize(Sender: TObject);
 begin
   adsForms2AfterScroll(adsForms);
+end;
+
+procedure TNamesFormsForm.actShowAllExecute(Sender: TObject);
+begin
+	if not dbgNames.CanFocus then exit;
+	actShowAll.Checked := not actShowAll.Checked;
+  SetNamesParams;
+	dbgNames.SetFocus;
 end;
 
 end.

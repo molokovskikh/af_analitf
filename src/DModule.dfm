@@ -6,8 +6,7 @@ object DM: TDM
   Top = 249
   Height = 627
   Width = 859
-  object MainConnection: TADOConnection
-    Connected = True
+  object MainConnection2: TADOConnection
     ConnectionString = 
       'Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=Anali' +
       'tF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Je' +
@@ -23,12 +22,11 @@ object DM: TDM
     LoginPrompt = False
     Mode = cmReadWrite
     Provider = 'Microsoft.Jet.OLEDB.4.0'
-    AfterConnect = MainConnectionAfterConnect
     Left = 32
     Top = 8
   end
   object adtParams2: TADOTable
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     AfterOpen = adtParamsAfterOpen
     IndexName = 'PrimaryKey'
@@ -37,7 +35,7 @@ object DM: TDM
     Top = 8
   end
   object adtProvider2: TADOTable
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     TableName = 'Provider'
     Left = 152
@@ -45,13 +43,13 @@ object DM: TDM
   end
   object adcUpdate2: TADOCommand
     CommandTimeout = 60
-    Connection = MainConnection
+    Connection = MainConnection2
     Parameters = <>
     Left = 528
     Top = 8
   end
   object adsSelect_OLD: TADODataSet
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     LockType = ltReadOnly
     Parameters = <
@@ -87,7 +85,7 @@ object DM: TDM
     Top = 272
   end
   object adtTablesUpdates2: TADOTable
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     LockType = ltReadOnly
     IndexName = 'PrimaryKey'
@@ -106,7 +104,7 @@ object DM: TDM
     Top = 544
   end
   object adsSelect2_OLD: TADODataSet
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     LockType = ltReadOnly
     Parameters = <>
@@ -192,7 +190,7 @@ object DM: TDM
     Top = 488
   end
   object adsOrders1: TADODataSet
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     CommandText = 'SELECT * FROM OrdersShow'
     Parameters = <
@@ -210,7 +208,7 @@ object DM: TDM
     Top = 112
   end
   object adsSelect3_OLD: TADODataSet
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     Parameters = <>
     Left = 764
@@ -218,7 +216,7 @@ object DM: TDM
   end
   object adsCore1: TADODataSet
     AutoCalcFields = False
-    Connection = MainConnection
+    Connection = MainConnection2
     CommandText = 'SELECT * FROM CoreShowByFirm'
     Parameters = <
       item
@@ -262,14 +260,14 @@ object DM: TDM
     Top = 116
   end
   object adtReclame2: TADOTable
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     TableName = 'Reclame'
     Left = 224
     Top = 8
   end
   object adtClients2: TADOTable
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     AfterOpen = adtClientsAfterOpen
     AfterInsert = adtClientsAfterInsert
@@ -286,13 +284,13 @@ object DM: TDM
     Top = 272
   end
   object adtFlags2: TADOTable
-    Connection = MainConnection
+    Connection = MainConnection2
     TableName = 'Flags'
     Left = 448
     Top = 8
   end
   object adsOrdersH1: TADODataSet
-    Connection = MainConnection
+    Connection = MainConnection2
     CursorType = ctStatic
     CommandText = 'SELECT * FROM OrdersHShow WHERE Send=ASend'
     Parameters = <
@@ -337,7 +335,7 @@ object DM: TDM
     Top = 112
   end
   object MainConnection1: TpFIBDatabase
-    DBName = 'C:\Program Files\Firebird\ANALITF.FDB'
+    DBName = 'C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\bin\ANALITF.FDB'
     DBParams.Strings = (
       'lc_ctype=WIN1251'
       'password=masterkey'
@@ -345,6 +343,7 @@ object DM: TDM
     DefaultTransaction = DefTran
     SQLDialect = 3
     Timeout = 0
+    DesignDBOptions = []
     LibraryName = 'fbclient.dll'
     WaitForRestoreConnect = 0
     AfterConnect = MainConnection1AfterConnect
@@ -395,7 +394,8 @@ object DM: TDM
       '    EXTERNALORDERSPATH = :EXTERNALORDERSPATH,'
       '    EXTERNALORDERSCREATE = :EXTERNALORDERSCREATE,'
       '    RASSLEEP = :RASSLEEP,'
-      '    HTTPNAMECHANGED = :HTTPNAMECHANGED'
+      '    HTTPNAMECHANGED = :HTTPNAMECHANGED,'
+      '    SHOWALLCATALOG = :SHOWALLCATALOG'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')
@@ -552,6 +552,67 @@ object DM: TDM
     AutoCommit = True
     Left = 280
     Top = 216
+    oFetchAll = True
+    object adtClientsCLIENTID: TFIBBCDField
+      FieldName = 'CLIENTID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adtClientsNAME: TFIBStringField
+      FieldName = 'NAME'
+      Size = 50
+      EmptyStrToNull = False
+    end
+    object adtClientsREGIONCODE: TFIBBCDField
+      FieldName = 'REGIONCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adtClientsADDRESS: TFIBStringField
+      FieldName = 'ADDRESS'
+      Size = 100
+      EmptyStrToNull = False
+    end
+    object adtClientsPHONE: TFIBStringField
+      FieldName = 'PHONE'
+      EmptyStrToNull = False
+    end
+    object adtClientsFORCOUNT: TFIBIntegerField
+      FieldName = 'FORCOUNT'
+    end
+    object adtClientsEMAIL: TFIBStringField
+      FieldName = 'EMAIL'
+      Size = 30
+      EmptyStrToNull = False
+    end
+    object adtClientsMAXUSERS: TFIBIntegerField
+      FieldName = 'MAXUSERS'
+    end
+    object adtClientsUSEEXCESS: TFIBBooleanField
+      FieldName = 'USEEXCESS'
+    end
+    object adtClientsEXCESS: TFIBIntegerField
+      FieldName = 'EXCESS'
+    end
+    object adtClientsDELTAMODE: TFIBSmallIntField
+      FieldName = 'DELTAMODE'
+    end
+    object adtClientsONLYLEADERS: TFIBBooleanField
+      FieldName = 'ONLYLEADERS'
+    end
+    object adtClientsREQMASK: TFIBBCDField
+      FieldName = 'REQMASK'
+      Size = 0
+      RoundByScale = True
+    end
+    object adtClientsTECHSUPPORT: TFIBStringField
+      FieldName = 'TECHSUPPORT'
+      Size = 255
+      EmptyStrToNull = False
+    end
+    object adtClientsLEADFROMBASIC: TFIBSmallIntField
+      FieldName = 'LEADFROMBASIC'
+    end
   end
   object adtTablesUpdates: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -604,12 +665,14 @@ object DM: TDM
       '    COMPUTERNAME = :COMPUTERNAME,'
       '    EXCLUSIVEID = :EXCLUSIVEID'
       'WHERE'
+      '    ID = :OLD_ID'
       '    ')
     DeleteSQL.Strings = (
       'DELETE FROM'
       '    FLAGS'
       'WHERE'
-      '        ')
+      '        ID = :OLD_ID'
+      '    ')
     InsertSQL.Strings = (
       'INSERT INTO FLAGS('
       '    COMPUTERNAME,'
@@ -621,18 +684,25 @@ object DM: TDM
       ')')
     RefreshSQL.Strings = (
       'SELECT'
+      '    id,'
       '    COMPUTERNAME,'
       '    EXCLUSIVEID'
       'FROM'
-      '    FLAGS ')
+      '    FLAGS '
+      'where '
+      '  ID = 0')
     SelectSQL.Strings = (
       'SELECT'
+      '    id,'
       '    COMPUTERNAME,'
       '    EXCLUSIVEID'
       'FROM'
-      '    FLAGS ')
+      '    FLAGS '
+      'where'
+      '  ID = 0')
     Transaction = DefTran
     Database = MainConnection1
+    AutoCommit = True
     Left = 448
     Top = 216
   end
@@ -655,8 +725,16 @@ object DM: TDM
     Top = 216
   end
   object adsSelect3: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'update'
+      '  orders'
+      'set'
+      '  COREID = :NEW_COREID'
+      'where'
+      '  ID = :OLD_ID')
     Transaction = DefTran
     Database = MainConnection1
+    AutoCommit = True
     Left = 728
     Top = 216
   end
@@ -717,8 +795,18 @@ object DM: TDM
     Database = MainConnection1
     Left = 240
     Top = 344
+    oFetchAll = True
   end
   object adsOrdersH: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'update ordersh'
+      'set'
+      '  SERVERORDERID = :SERVERORDERID,'
+      '  SENDDATE = :SENDDATE,'
+      '  CLOSED = :CLOSED,'
+      '  SEND = :SEND'
+      'where'
+      '  orderid = :orderid')
     SelectSQL.Strings = (
       'SELECT'
       '    ORDERID,'
@@ -745,10 +833,19 @@ object DM: TDM
       '  Send = :ASend')
     Transaction = DefTran
     Database = MainConnection1
+    AutoCommit = True
     Left = 64
     Top = 344
+    oFetchAll = True
   end
   object adsOrders: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'update orders'
+      'set'
+      '  coreid = :new_coreid '
+      'where'
+      '    orderid = :orderid'
+      'and coreid = :old_coreid')
     SelectSQL.Strings = (
       'SELECT'
       '    ORDERID,'
@@ -771,7 +868,40 @@ object DM: TDM
       '    ORDERSSHOW(:AORDERID) ')
     Transaction = DefTran
     Database = MainConnection1
+    AutoCommit = True
     Left = 144
     Top = 344
+    oFetchAll = True
+  end
+  object BackService: TpFIBBackupService
+    LoginPrompt = False
+    LibraryName = 'fbclient.dll'
+    BlockingFactor = 0
+    Options = [NoGarbageCollection]
+    Left = 368
+    Top = 384
+  end
+  object RestService: TpFIBRestoreService
+    LoginPrompt = False
+    LibraryName = 'fbclient.dll'
+    PageSize = 4096
+    PageBuffers = 3000
+    Options = [Replace, CreateNewDB, UseAllSpace]
+    Left = 432
+    Top = 384
+  end
+  object ConfigService: TpFIBConfigService
+    LoginPrompt = False
+    LibraryName = 'fbclient.dll'
+    Left = 504
+    Top = 384
+  end
+  object ValidService: TpFIBValidationService
+    LoginPrompt = False
+    LibraryName = 'fbclient.dll'
+    Options = [SweepDB]
+    GlobalAction = CommitGlobal
+    Left = 576
+    Top = 384
   end
 end

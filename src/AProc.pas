@@ -500,7 +500,7 @@ initialization
   //инициализация глобальных переменных
   ExePath:=IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))); //путь к программе
   ExeName:=ExtractFileName(ParamStr(0)); //наименование EXE-шника (без пути)
-  DatabaseName:=ChangeFileExt(ExeName,'.mdb');
+  DatabaseName:=ChangeFileExt(ExeName,'.fdb');
   TempPath:=GetTempDir;
   IniFile:=TIniFile.Create(GetDefaultIniName);
   //локальные установки для экспорта

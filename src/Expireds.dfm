@@ -90,8 +90,8 @@ inherited ExpiredsForm: TExpiredsForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
-      SearchField = 'Synonym'
-      InputField = 'Order'
+      SearchField = 'SynonymName'
+      InputField = 'OrderCount'
       SearchPosition = spTop
       ForceRus = True
       OnSortChange = dbgExpiredsSortChange
@@ -99,7 +99,7 @@ inherited ExpiredsForm: TExpiredsForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'Synonym'
+          FieldName = 'SYNONYMNAME'
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
@@ -191,7 +191,7 @@ inherited ExpiredsForm: TExpiredsForm
         item
           Color = 16775406
           EditButtons = <>
-          FieldName = 'Order'
+          FieldName = 'ORDERCOUNT'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
         end
@@ -517,6 +517,20 @@ inherited ExpiredsForm: TExpiredsForm
     end
   end
   object adsExpireds: TpFIBDataSet
+    UpdateSQL.Strings = (
+      
+        'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
+        'id, :PRICECODE, :REGIONCODE, :new_ORDERSORDERID, :new_COREID, :N' +
+        'EW_ORDERCOUNT)')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '*'
+      'FROM'
+      '    EXPIREDSSHOW(:TIMEZONEBIAS,'
+      '    :ACLIENTID,'
+      '    :RETAILFORCOUNT)'
+      'where'
+      '  COREID = :COREID ')
     SelectSQL.Strings = (
       'SELECT'
       '*'
@@ -532,6 +546,7 @@ inherited ExpiredsForm: TExpiredsForm
     OnCalcFields = adsExpireds2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
     Left = 128
     Top = 112
     object adsExpiredsCOREID: TFIBBCDField
@@ -593,6 +608,7 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsBASECOST: TFIBBCDField
       FieldName = 'BASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
@@ -685,6 +701,7 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsORDERSPRICE: TFIBBCDField
       FieldName = 'ORDERSPRICE'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
@@ -726,12 +743,14 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsPRICERET: TFIBBCDField
       FieldName = 'PRICERET'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
     object adsExpiredsSumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
   end

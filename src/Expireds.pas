@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, ADODB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
-  SHDocVw, FIBDataSet, pFIBDataSet;
+  SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor;
 
 const
 	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID, :RETAILFORCOUNT) ORDER BY ';
@@ -240,6 +240,7 @@ begin
 	if not CanInput then exit;
 
 	//создаем записи из Orders и OrdersH, если их нет
+{
   if adsExpiredsOrdersOrderId.IsNull then begin //нет соответствующей записи в Orders
     RefreshOrdersH;
     if adsOrdersH.IsEmpty then begin //нет заголовка заказа из OrdersH
@@ -274,6 +275,7 @@ begin
     adsExpireds.Post;
     if adsOrdersH.IsEmpty then RefreshOrdersH;
   end;
+  }
 end;
 
 procedure TExpiredsForm.dbgExpiredsSortChange(Sender: TObject;
@@ -295,12 +297,12 @@ end;
 
 procedure TExpiredsForm.adsExpireds2AfterOpen(DataSet: TDataSet);
 begin
-	adsOrdersShowFormSummary.Open;
+//	adsOrdersShowFormSummary.Open;
 end;
 
 procedure TExpiredsForm.adsExpireds2BeforeClose(DataSet: TDataSet);
 begin
-	adsOrdersShowFormSummary.Close;
+//	adsOrdersShowFormSummary.Close;
 end;
 
 procedure TExpiredsForm.TimerTimer(Sender: TObject);

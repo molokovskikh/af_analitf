@@ -7,7 +7,8 @@ uses
   Db, ADODB, ADOInt, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
   FR_DBSet, FR_DCtrl, FR_ADODB, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, FR_OLE,
   frRtfExp, frexpimg, frOLEExl, FR_E_HTML2, FR_E_TXT, FR_Rich, CompactThread,
-  FIBDatabase, pFIBDatabase, FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery;
+  FIBDatabase, pFIBDatabase, FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery,
+  IB_Services, FIB, IB_ErrorCodes;
 
 const
   HistoryMaxRec=5;
@@ -21,7 +22,7 @@ type
   TPriceDeltaMode =( pdmPrev, pdmMin, pdmMinEnabled);
 
   TDM = class(TDataModule)
-    MainConnection: TADOConnection;
+    MainConnection2: TADOConnection;
     adtParams2: TADOTable;
     adtProvider2: TADOTable;
     adcUpdate2: TADOCommand;
@@ -71,8 +72,26 @@ type
     adsCore: TpFIBDataSet;
     adsOrdersH: TpFIBDataSet;
     adsOrders: TpFIBDataSet;
+    BackService: TpFIBBackupService;
+    RestService: TpFIBRestoreService;
+    ConfigService: TpFIBConfigService;
+    ValidService: TpFIBValidationService;
+    adtClientsCLIENTID: TFIBBCDField;
+    adtClientsNAME: TFIBStringField;
+    adtClientsREGIONCODE: TFIBBCDField;
+    adtClientsADDRESS: TFIBStringField;
+    adtClientsPHONE: TFIBStringField;
+    adtClientsFORCOUNT: TFIBIntegerField;
+    adtClientsEMAIL: TFIBStringField;
+    adtClientsMAXUSERS: TFIBIntegerField;
+    adtClientsUSEEXCESS: TFIBBooleanField;
+    adtClientsEXCESS: TFIBIntegerField;
+    adtClientsDELTAMODE: TFIBSmallIntField;
+    adtClientsONLYLEADERS: TFIBBooleanField;
+    adtClientsREQMASK: TFIBBCDField;
+    adtClientsTECHSUPPORT: TFIBStringField;
+    adtClientsLEADFROMBASIC: TFIBSmallIntField;
     procedure DMCreate(Sender: TObject);
-    procedure MainConnectionAfterConnect(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
@@ -119,6 +138,7 @@ type
     procedure VersionValid;
     {function OrderToArchiv(ClientId: Integer=0; PriceCode: Integer=0;
       RegionCode: Integer=0): Boolean;}
+    procedure SweepDB;
   end;
 
 var
@@ -129,7 +149,7 @@ implementation
 {$R *.DFM}
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
-     U_FolderMacros;
+     U_FolderMacros, LU_Tracer, LU_MutexSystem;
 
 procedure TDM.DMCreate(Sender: TObject);
 var
@@ -137,7 +157,7 @@ var
   DBCompress : Boolean;
 begin
   //Проверка версий
-  VersionValid;
+//  VersionValid;
 
 {
 	MainConnection.ConnectionString :=
@@ -145,11 +165,8 @@ begin
 			ExePath + DatabaseName);
 }      
 
-{
-}  
-  MainConnection1.DBName := ChangeFileExt(ExeName,'.fdb');
-  MainConnection1.LibraryName := 'gds32.dll';
-  MainConnection1.Open;
+  MainConnection1.DBName := ExePath + DatabaseName;
+//  MainConnection1.LibraryName := 'gds32.dll';
 
   if not FileExists(ExePath + DatabaseName) then begin
     MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
@@ -168,14 +185,12 @@ begin
   DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
 
 
-//	DM.MainConnection.Mode := cmRead;
   try
     try
       //TODO: Переписать данную процедуру
-      //CheckRestrictToRun;
+      CheckRestrictToRun;
     finally
-      MainConnection.Close;
-//      DM.MainConnection.Mode := cmReadWrite;
+      MainConnection1.Close;
     end;
   except
     on E : Exception do begin
@@ -185,7 +200,7 @@ begin
     end;
   end;
 
-	MainConnection.Open;
+	MainConnection1.Open;
 	{ устанавливаем текущие записи в Clients и Users }
 	if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
 		then adtClients.First;
@@ -194,10 +209,10 @@ begin
   begin
 		MessageBox(
       'Последний сеанс работы с программой не был корректно завершен. '+
-        'Сейчас будет произведено сжатие и восстановление базы данных.');
+        'Сейчас будет произведено сжатие базы данных.');
   	MainForm.FreeChildForms;
     RunCompactDataBase;
-		MessageBox( 'Сжатие и восстановление базы данных завершено.');
+		MessageBox( 'Сжатие базы данных завершено.');
   end;
   SetStarted;
 	//MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
@@ -229,7 +244,7 @@ end;
 
 procedure TDM.DataModuleDestroy(Sender: TObject);
 begin
-	if not MainConnection.Connected then exit;
+	if not MainConnection1.Connected then exit;
 
 	try
 		adtParams.Edit;
@@ -238,21 +253,6 @@ begin
 	except
 	end;
   ResetStarted;
-end;
-
-procedure TDM.MainConnectionAfterConnect(Sender: TObject);
-begin
-	//открываем таблицы с параметрами
-{
-	adtParams.Open;
-	adtProvider.Open;
-	adtReclame.Open;
-	adtClients.Open;
-	try
-		adtFlags.Open;
-	except
-	end;
-}  
 end;
 
 procedure TDM.ClientChanged;
@@ -270,6 +270,7 @@ var
 	ExID, CompName: string;
 	MaxUsers: integer;
 begin
+{
 	DM.MainConnection.Open;
 	MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
 	list := DM.DatabaseOpenedList( ExID, CompName);
@@ -295,12 +296,42 @@ begin
 	if list.Count > 1 then
 	begin
 		if ( ExID = IntToHex( GetUniqueID( Application.ExeName,
-			''{MainForm.VerInfo.FileVersion}), 8)) or ( ExID = '') then exit;
+			''), 8)) or ( ExID = '') then exit;
 
 		MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
 			'монопольного доступ к базе данных. Запуск программы невозможен.', [ CompName]),
 			MB_ICONWARNING or MB_OK);
     ExitProcess(3);
+	end;
+}
+	if not IsOneStart then begin
+		MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
+			MB_ICONWARNING or MB_OK);
+    ExitProcess(1);
+	end;
+
+  try
+	DM.MainConnection1.Open;
+  except
+    on E : EFIBError do begin
+      if E.IBErrorCode = isc_network_error then
+        raise Exception.Create('Программа не работает с базой данных, находящейся на сетевом диске.')
+      else
+        raise;
+    end;
+  end;
+  try
+    MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
+    list := DM.MainConnection1.UserNames;
+  finally
+    DM.MainConnection1.Close;
+  end;
+	if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
+	begin
+		MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
+			'Запуск программы невозможен.', [ MaxUsers]),
+			MB_ICONWARNING or MB_OK);
+    ExitProcess(2);
 	end;
 end;
 
@@ -353,8 +384,85 @@ var
   JetEngine: OleVariant;
   TempName: string;
   ok: boolean;
+  FBR : TpFIBBackupRestoreService;
 begin
   ok := False;
+  //TODO: Процедура не до конца готова
+  Tracer.TR('BackupRestore', 'Start');
+  MainConnection1.Close;
+  try
+    try
+      with ConfigService do
+      begin
+        ServerName := '';
+        DatabaseName := MainConnection1.DBName;
+        Params.Clear;
+        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        Active := True;
+        try
+          Tracer.TR('BackupRestore', 'Try shutdown database');
+          ShutdownDatabase(Forced, 0);
+          Tracer.TR('BackupRestore', 'Shutdown complete');
+        finally
+          Active := False;
+        end;
+      end;
+      with BackService do
+      begin
+        ServerName := '';
+        Params.Clear;
+        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        Active := True;
+        try
+          Verbose := True;
+          DatabaseName := MainConnection1.DBName;
+          BackupFile.Clear;
+          BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
+
+          ServiceStart;
+          While not Eof do
+            Tracer.TR('Backup', GetNextLine);
+        finally
+          Active := False;
+        end;
+      end;
+      with RestService do
+      begin
+        ServerName := '';
+        Params.Clear;
+        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        Active := True;
+        try
+          Verbose := True;
+          DatabaseName.Clear;
+          DatabaseName.Add(MainConnection1.DBName);
+          BackupFile.Clear;
+          BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
+          ServiceStart;
+          While not Eof do
+            Tracer.TR('Restore', GetNextLine);
+        finally
+          Active := False;
+        end;
+      end;
+      ok := True;
+    except
+      on E : Exception do
+        Tracer.TR('BackupRestore', 'Error : ' + E.Message);
+    end;
+  finally
+    Tracer.TR('BackupRestore', 'Stop');
+    MainConnection1.Open;
+  end;
+	if ok then
+	begin
+		adtParams.Edit;
+		adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
+		adtParams.Post;
+	end;
 {
   NewPassword:=Trim(NewPassword);
   if NewPassword='' then NewPassword:=GetConnectionProperty(
@@ -414,13 +522,13 @@ end;
 
 procedure TDM.OpenDatabase( ADatasource: string);
 begin
-	if MainConnection.Connected then MainConnection.Close;
+	if MainConnection1.Connected then MainConnection1.Close;
 {
 	MainConnection.ConnectionString :=
 		SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
 			ADatasource);
-}      
-	MainConnection.Open;
+}
+	MainConnection1.Open;
 end;
 
 //загружает отчет и выводит на экран или печатает; если указан DataSet, то
@@ -636,7 +744,7 @@ procedure TDM.ClearDatabase;
 begin
   Screen.Cursor:=crHourglass;
   with adcUpdate do try
-//    MainForm.StatusText:='Очищается MinPrices';
+    MainForm.StatusText:='Очищается MinPrices';
     SQL.Text:='EXECUTE PROCEDURE MinPricesDelete';
     ExecQuery;
     SQL.Text:='EXECUTE PROCEDURE OrdersSetCoreNull'; ExecQuery;
@@ -733,7 +841,7 @@ end;
 
 procedure TDM.BackupDatabase( APath: string);
 begin
-	MainConnection.Close;
+	MainConnection1.Close;
 	Windows.CopyFile( PChar( APath + DatabaseName),
 		PChar( APath + ChangeFileExt( DatabaseName, '.bak')), False);
 end;
@@ -1018,6 +1126,32 @@ begin
 		adtFlags.CloseOpen(True);
 	except
 	end;
+end;
+
+procedure TDM.SweepDB;
+begin
+  MainConnection1.Close;
+  try
+    with ValidService do
+    begin
+      ServerName := '';
+      DatabaseName := MainConnection1.DBName;
+      Params.Clear;
+      Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+      Params.Add('password=' + MainConnection1.ConnectParams.Password);
+      Active := True;
+      try
+        Tracer.TR('Sweep', 'Try sweep DB');
+        ServiceStart;
+        While not Eof do
+          Tracer.TR('Sweep', GetNextLine);
+      finally
+        Active := False;
+      end;
+    end;
+  finally
+    MainConnection1.Open;
+  end;
 end;
 
 end.

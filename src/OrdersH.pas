@@ -12,6 +12,9 @@ const
 	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
 				' :DateTo ORDER BY ';
 
+	ROrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
+				' :DateTo where ORDERID = :OLD_ORDERID ';
+
 type
   TOrdersHForm = class(TChildForm)
     adsOrdersH2: TADODataSet;
@@ -126,8 +129,6 @@ type
     adsOrdersHREGIONCODE: TFIBBCDField;
     adsOrdersHORDERDATE: TFIBDateTimeField;
     adsOrdersHSENDDATE: TFIBDateTimeField;
-    adsOrdersHCLOSED: TFIBIntegerField;
-    adsOrdersHSEND: TFIBIntegerField;
     adsOrdersHPRICENAME: TFIBStringField;
     adsOrdersHREGIONNAME: TFIBStringField;
     adsOrdersHPOSITIONS: TFIBIntegerField;
@@ -145,6 +146,8 @@ type
     adsWayBillHeadREGIONNAME: TFIBStringField;
     adsWayBillHeadFIRMCOMMENT: TFIBStringField;
     adsWayBillHeadROWCOUNT: TFIBIntegerField;
+    adsOrdersHSEND: TFIBBooleanField;
+    adsOrdersHCLOSED: TFIBBooleanField;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -205,6 +208,7 @@ begin
 	Reg.Free;
 
 	adsOrdersH.SelectSQL.Text := OrdersHSql + 'SendDate DESC';
+  adsOrdersH.RefreshSQL.Text := ROrdersHSql;
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
 	Day := DayOf( Date);
@@ -251,6 +255,8 @@ begin
 			adsOrdersH.Close;
 			adsOrdersH.SelectSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
 				' OrdersHShow1 ', ' OrdersHShow ', []);
+			adsOrdersH.RefreshSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
+				' OrdersHShow1 ', ' OrdersHShow ', []);
 			adsOrdersH.ParamByName( 'AClosed').Value := False;
 			btnMoveSend.Caption := 'Перевести в отправленные';
       btnMoveSend.Visible := False;
@@ -260,6 +266,8 @@ begin
 		1: begin
 			adsOrdersH.Close;
 			adsOrdersH.SelectSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
+				' OrdersHShow ', ' OrdersHShow1 ', []);
+			adsOrdersH.RefreshSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
 				' OrdersHShow ', ' OrdersHShow1 ', []);
 			adsOrdersH.ParamByName( 'AClosed').Value := True;
 			btnMoveSend.Caption := 'Вернуть в текущие';
@@ -275,7 +283,7 @@ begin
 //	adsOrdersH.ParamByName( 'DateTo').DataType := ftDate;
 	adsOrdersH.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
 	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	adsOrdersH.ParamByName( 'DateTo').AsDate := dtpDateTo.Date;
+	adsOrdersH.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
 	adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
 	if adsOrdersH.Active then adsOrdersH.CloseOpen(True) else adsOrdersH.Open;
@@ -328,8 +336,8 @@ end;
 
 procedure TOrdersHForm.MoveToPrice;
 var
-	Order, CurOrder, SynonymCode, Quantity, E, OrderId: Integer;
-	Code, CodeCr, SynonymFirmCrCode: Variant;
+	Order, CurOrder, Quantity, E, OrderId: Integer;
+	Code, CodeCr, SynonymFirmCrCode, SynonymCode: Variant;
   I : Integer;
 	Strings: TStrings;
 
@@ -337,6 +345,7 @@ var
   begin
     //создаем записи из Orders и OrdersH, если их нет
     with adsCore do begin
+{
       if FieldByName('OrdersOrderId').IsNull then begin //нет соответствующей записи в Orders
         if OrderId = 0 then begin //нет заголовка заказа из OrdersH
           //добавляем запись в OrdersH
@@ -367,8 +376,9 @@ var
         FieldByName( 'OrdersPrice').AsCurrency:=FieldByName('BaseCost').AsCurrency;
         Post;
       end;
+}      
       Edit;
-      FieldByName( 'Order').AsInteger := Order;
+      FieldByName( 'OrderCount').AsInteger := Order;
       Post;
     end;
   end;
@@ -391,7 +401,7 @@ begin
         //находим OrderId
         OrderId:=0;
         with DM.adsSelect do begin
-          SelectSQL.Text:='SELECT OrderId FROM OrdersHShowCurrent';
+          SelectSQL.Text:='SELECT OrderId FROM OrdersHShowCurrent(:AClientID, :APriceCode, :ARegionCode)';
           ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
           ParamByName('APriceCode').Value:=adsOrdersHPriceCode.Value;
           ParamByName('ARegionCode').Value:=adsOrdersHRegionCode.Value;
@@ -419,9 +429,9 @@ begin
             while not OrdersForm.adsOrders.Eof do begin
               Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
               Code := OrdersForm.adsOrdersCode.AsVariant;
-              if Code = '' then Code := Null;
+              //if Code = '' then Code := Null;
               CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
-              if CodeCr = '' then CodeCr := Null;
+              //if CodeCr = '' then CodeCr := Null;
               SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
               SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
               //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
@@ -435,12 +445,12 @@ begin
                   Val(FieldByName( 'Quantity').AsString,Quantity,E);
                   if E <> 0 then Quantity := 0;
                   if Quantity > 0 then
-                    CurOrder := Min( Order, Quantity - FieldByName('Order').AsInteger)
+                    CurOrder := Min( Order, Quantity - FieldByName('OrderCount').AsInteger)
                   else
                     CurOrder := Order;
                   if CurOrder < 0 then CurOrder := 0;
                   Order := Order - CurOrder;
-                  if CurOrder > 0 then SetOrder( FieldByName( 'Order').AsInteger + CurOrder);
+                  if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
                   Next;
                 until ( Order = 0) or Eof or ( FieldByName( 'Code').AsString <> Code) or
                       ( FieldByName( 'CodeCr').AsString <> CodeCr) or

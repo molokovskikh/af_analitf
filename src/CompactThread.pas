@@ -24,7 +24,7 @@ var
 begin
   CompactThread := TCompactThread.Create(True);
   CompactThread.FreeOnTerminate := True;
-  ShowWaiting('Производится сжатие и восстановление базы данных. Подождите...',
+  ShowWaiting('Производится сжатие базы данных. Подождите...',
     CompactThread);
 end;
 

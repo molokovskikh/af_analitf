@@ -179,8 +179,9 @@ begin
       ExternalOrdersCount := ExchangeForm.ExternalOrdersCount;
       ExternalOrdersErrorCount := ExchangeForm.ExternalOrdersLog.Count;
       ExternalOrdersLog := ExchangeForm.ExternalOrdersLog.Text;
-			DM.MainConnection.Close;
-			DM.MainConnection.Open;
+			DM.MainConnection1.Close;
+      Sleep(500);
+			DM.MainConnection1.Open;
 //		finally
 		except
 			on E: Exception do ShowMessage( E.Message);
@@ -257,15 +258,15 @@ begin
       Application.ProcessMessages;
       RunCompactDatabase;
     end;
-		MessageBox( 'Сжатие и восстановление базы данных завершено');
+		MessageBox( 'Сжатие базы данных завершено');
 	end;
 end;
 
 { Восстанавливаем заказы после обновления }
 procedure TryToRepareOrders;
 var
-	Order, CurOrder, SynonymCode, SynonymFirmCrCode, Quantity, E: Integer;
-	Code, CodeCr: Variant;
+	Order, CurOrder, Quantity, E: Integer;
+	Code, CodeCr, SynonymCode, SynonymFirmCrCode: Variant;
 	Strings: TStrings;
 //  FilterStr : String;
 //  LocateRes : Boolean;
@@ -273,20 +274,22 @@ var
 	procedure SetOrder( Order: integer);
 	begin
 		DM.adsSelect3.Edit;
-		DM.adsSelect3.FieldByName( 'Order').AsInteger := Order;
-		if Order = 0 then DM.adsSelect3.FieldByName( 'CoreId').Value := Null
-			else DM.adsSelect3.FieldByName( 'CoreId').Value := DM.adsCore.FieldByName( 'CoreId').Value;
+		DM.adsSelect3.FieldByName( 'OrderCount').AsInteger := Order;
+		if Order = 0 then
+      DM.adsSelect3.FieldByName( 'CoreId').Value := Null
+    else
+      DM.adsSelect3.FieldByName( 'CoreId').Value := DM.adsCore.FieldByName( 'CoreId').Value;
 		DM.adsSelect3.Post;
 	end;
 
 begin
- 	DM.adsSelect3.Close;
+// 	DM.adsSelect3.Close;
  	DM.adsSelect3.SelectSQL.Text := 'SELECT Id, CoreId, PriceCode, RegionCode, Code, CodeCr, ' +
 		'Price, SynonymCode, SynonymFirmCrCode, SynonymName, SynonymFirm, OrderCount, PriceName ' +
 		'FROM Orders ' +
 		'INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND OrdersH.Closed = 0) ' +
 		'WHERE (OrderCount>0)';
- 	DM.adsSelect3.Open;
+ 	DM.adsSelect3.CloseOpen(True);
 	if DM.adsSelect3.IsEmpty then
 	begin
 	 	DM.adsSelect3.Close;
@@ -323,12 +326,12 @@ begin
 				DM.adsSelect3.Next;
 				continue;
 			end;
-			Order := DM.adsSelect3.FieldByName( 'Order').AsInteger;
+			Order := DM.adsSelect3.FieldByName( 'OrderCount').AsInteger;
 			CurOrder := 0;
 			Code := DM.adsSelect3.FieldByName( 'Code').AsVariant;
-      if Code = '' then Code := Null;
+      //if Code = '' then Code := Null;
 			CodeCr := DM.adsSelect3.FieldByName( 'CodeCr').AsVariant;
-      if CodeCr = '' then CodeCr := Null;
+      //if CodeCr = '' then CodeCr := Null;
 			SynonymCode := DM.adsSelect3.FieldByName( 'SynonymCode').AsInteger;
 			SynonymFirmCrCode := DM.adsSelect3.FieldByName( 'SynonymFirmCrCode').AsInteger;
 
@@ -447,7 +450,7 @@ begin
 	{ Требуется завершение программы }
 	if Assigned( ExThread) and ( ErrMsg = 'Terminate') then
 	begin
-		DM.MainConnection.Close;
+		DM.MainConnection1.Close;
 		Application.Terminate;
 	end;
 

@@ -441,12 +441,26 @@ inherited DefectivesForm: TDefectivesForm
     Top = 112
   end
   object adsDefectives: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'UPDATE DEFECTIVES'
+      'SET '
+      '    CHECKPRINT = :CHECKPRINT'
+      'WHERE'
+      '    ID = :OLD_ID'
+      '    ')
+    RefreshSQL.Strings = (
+      'SELECT * FROM Defectives'
+      'WHERE(  LetterDate BETWEEN :DateFrom And :DateTo'
+      '     ) and (     DEFECTIVES.ID = :OLD_ID'
+      '     )'
+      '    ')
     SelectSQL.Strings = (
       'SELECT * FROM Defectives'
       'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
     AfterOpen = adsDefectives2AfterOpen
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
     Left = 176
     Top = 160
     oFetchAll = True

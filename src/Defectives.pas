@@ -145,6 +145,7 @@ begin
   Screen.Cursor:=crHourglass;
   try
     adcUncheckAll.ExecQuery;
+    adcUncheckAll.Transaction.CommitRetaining;
     with adsDefectives do begin
       Mark:=Bookmark;
       if Active then CloseOpen(True);

@@ -80,7 +80,7 @@ inherited PricesForm: TPricesForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'PriceName'
+          FieldName = 'PRICENAME'
           Footers = <>
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.TitleButton = True
@@ -88,7 +88,7 @@ inherited PricesForm: TPricesForm
         end
         item
           EditButtons = <>
-          FieldName = 'RegionName'
+          FieldName = 'REGIONNAME'
           Footers = <>
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
@@ -97,7 +97,7 @@ inherited PricesForm: TPricesForm
         item
           Checkboxes = False
           EditButtons = <>
-          FieldName = 'Storage'
+          FieldName = 'STORAGE'
           Footers = <>
           Title.Caption = #1057#1082#1083#1072#1076
           Title.TitleButton = True
@@ -106,7 +106,7 @@ inherited PricesForm: TPricesForm
         item
           Alignment = taCenter
           EditButtons = <>
-          FieldName = 'UpCost'
+          FieldName = 'UPCOST'
           Footers = <>
           Title.Caption = '%'
           Title.TitleButton = True
@@ -114,21 +114,21 @@ inherited PricesForm: TPricesForm
         end
         item
           EditButtons = <>
-          FieldName = 'PriceSize'
+          FieldName = 'PRICESIZE'
           Footers = <>
           Title.Caption = #1055#1086#1079#1080#1094#1080#1081
           Title.TitleButton = True
         end
         item
           EditButtons = <>
-          FieldName = 'Positions'
+          FieldName = 'POSITIONS'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
           Title.TitleButton = True
         end
         item
           EditButtons = <>
-          FieldName = 'SumOrder'
+          FieldName = 'SUMORDER'
           Footers = <>
           Title.Caption = #1057#1091#1084#1084#1072
           Title.TitleButton = True
@@ -137,7 +137,7 @@ inherited PricesForm: TPricesForm
           Alignment = taCenter
           DisplayFormat = 'dd.mm.yyyy hh:nn'
           EditButtons = <>
-          FieldName = 'DatePrice'
+          FieldName = 'DATEPRICE'
           Footers = <>
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
           Title.TitleButton = True
@@ -535,6 +535,8 @@ inherited PricesForm: TPricesForm
       'FROM'
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
+    AfterOpen = adsPrices2AfterOpen
+    AfterScroll = adsPrices2AfterScroll
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     Left = 96
@@ -578,7 +580,9 @@ inherited PricesForm: TPricesForm
       EmptyStrToNull = False
     end
     object adsPricesSTORAGE: TFIBIntegerField
+      Alignment = taCenter
       FieldName = 'STORAGE'
+      OnGetText = adsPricesSTORAGEGetText
     end
     object adsPricesADMINMAIL: TFIBStringField
       FieldName = 'ADMINMAIL'

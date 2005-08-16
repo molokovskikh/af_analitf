@@ -552,6 +552,7 @@ object MainForm: TMainForm
     object actPrint: TAction
       Category = 'Actions'
       Caption = #1055#1077#1095#1072#1090#1100
+      Enabled = False
       Hint = #1055#1077#1095#1072#1090#1100
       ImageIndex = 7
       ShortCut = 16464

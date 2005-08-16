@@ -8,7 +8,7 @@ uses
   StdCtrls, Buttons, DBCtrls, FR_Class, FR_DSet, FR_DBSet,
   Child, ADODB, RXDBCtrl, Variants, AdoInt, Math, DBGridEh,
   ToughDBGrid, Registry, OleCtrls, SHDocVw, ActnList, FIBDataSet,
-  pFIBDataSet;
+  pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor;
 
 const
 	ALL_REGIONS	= 'Все регионы';
@@ -124,15 +124,11 @@ type
     adsCoreNOTE: TFIBStringField;
     adsCoreBASECOST: TFIBBCDField;
     adsCoreQUANTITY: TFIBStringField;
-    adsCoreAWAIT: TFIBIntegerField;
-    adsCoreJUNK: TFIBIntegerField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
     adsCoreDATEPRICE: TFIBDateTimeField;
     adsCorePRICENAME: TFIBStringField;
-    adsCorePRICEENABLED: TFIBIntegerField;
     adsCoreFIRMCODE: TFIBBCDField;
-    adsCoreSTORAGE: TFIBIntegerField;
     adsCoreREGIONNAME: TFIBStringField;
     adsCoreORDERSCOREID: TFIBBCDField;
     adsCoreORDERSORDERID: TFIBBCDField;
@@ -147,8 +143,6 @@ type
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
     adsCoreORDERSPRICE: TFIBBCDField;
-    adsCoreORDERSJUNK: TFIBIntegerField;
-    adsCoreORDERSAWAIT: TFIBIntegerField;
     adsCoreORDERSHORDERID: TFIBBCDField;
     adsCoreORDERSHCLIENTID: TFIBBCDField;
     adsCoreORDERSHPRICECODE: TFIBBCDField;
@@ -174,6 +168,12 @@ type
     adsOrdersShowFormSummary: TpFIBDataSet;
     adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
     adsFirmsInfo: TpFIBDataSet;
+    adsCoreSTORAGE: TFIBBooleanField;
+    adsCoreAWAIT: TFIBBooleanField;
+    adsCoreJUNK: TFIBBooleanField;
+    adsCorePRICEENABLED: TFIBBooleanField;
+    adsCoreORDERSJUNK: TFIBBooleanField;
+    adsCoreORDERSAWAIT: TFIBBooleanField;
     procedure adsCore2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -199,6 +199,8 @@ type
     procedure actFlipCoreExecute(Sender: TObject);
     procedure adsCore2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
+    procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
+      DisplayText: Boolean);
   private
     RegionCodeStr, RegionPriceRet: string;
     RecInfos: array of Double;
@@ -475,8 +477,9 @@ begin
 	CanInput := ( adsCoreSynonymCode.AsInteger >= 0) and
 		(( adsCoreRegionCode.AsInteger and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
 			adsCoreRegionCode.AsInteger);
-	if not CanInput then exit;
+	//if not CanInput then exit;
 
+{
 	// создаем записи из Orders и OrdersH, если их нет
 	if adsCoreOrdersOrderId.IsNull then // нет соответствующей записи в Orders
 	begin
@@ -491,7 +494,7 @@ begin
 			adsCoreOrdersHPriceName.AsString := adsCorePriceName.AsString;
 			adsCoreOrdersHRegionName.AsString := adsCoreRegionName.AsString;
 			adsCore.Post; // на этот момент уже имеем OrdersHOrderId (автоинкремент)
-                end;
+    end;
 
 		//добавляем запись в Orders
 		adsCore.Edit;
@@ -514,6 +517,7 @@ begin
 		adsCore.Post;
 		if adsOrdersH.IsEmpty then RefreshOrdersH;
 	end;
+}
 end;
 
 //переоткрывает заголовок для текущего заказа
@@ -697,6 +701,12 @@ end;
 procedure TCoreForm.FormResize(Sender: TObject);
 begin
   adsCore2AfterScroll(adsCore);
+end;
+
+procedure TCoreForm.adsCoreSTORAGEGetText(Sender: TField; var Text: String;
+  DisplayText: Boolean);
+begin
+  text := Iif(Sender.AsBoolean, '+', '');
 end;
 
 end.

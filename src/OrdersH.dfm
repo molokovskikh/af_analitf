@@ -145,7 +145,7 @@ inherited OrdersHForm: TOrdersHForm
             Columns = <
               item
                 EditButtons = <>
-                FieldName = 'SendDate'
+                FieldName = 'SENDDATE'
                 Footers = <>
                 Title.Caption = #1054#1090#1087#1088#1072#1074#1083#1077#1085#1086
                 Title.TitleButton = True
@@ -153,7 +153,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'OrderDate'
+                FieldName = 'ORDERDATE'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1057#1086#1079#1076#1072#1085#1086
@@ -162,7 +162,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'PriceName'
+                FieldName = 'PRICENAME'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
@@ -171,7 +171,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'RegionName'
+                FieldName = 'REGIONNAME'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1056#1077#1075#1080#1086#1085
@@ -180,7 +180,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'Positions'
+                FieldName = 'POSITIONS'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1055#1086#1079#1080#1094#1080#1081
@@ -189,7 +189,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'SumOrder'
+                FieldName = 'SUMORDER'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1057#1091#1084#1084#1072
@@ -199,7 +199,7 @@ inherited OrdersHForm: TOrdersHForm
               item
                 Checkboxes = True
                 EditButtons = <>
-                FieldName = 'Send'
+                FieldName = 'SEND'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
@@ -754,6 +754,46 @@ inherited OrdersHForm: TOrdersHForm
     Top = 223
   end
   object adsOrdersH: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'update ordersh'
+      'set'
+      '  SEND = :SEND,'
+      '  CLOSED = :CLOSED,'
+      '  MESSAGETO = :MESSAGETO,'
+      '  COMMENTS = :COMMENTS'
+      'where'
+      '  orderid = :old_ORDERID')
+    DeleteSQL.Strings = (
+      'delete from'
+      '  ordersh'
+      'where'
+      '  orderid = :orderid')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '    ORDERID,'
+      '    SERVERORDERID,'
+      '    DATEPRICE,'
+      '    PRICECODE,'
+      '    REGIONCODE,'
+      '    ORDERDATE,'
+      '    SENDDATE,'
+      '    CLOSED,'
+      '    SEND,'
+      '    PRICENAME,'
+      '    REGIONNAME,'
+      '    POSITIONS,'
+      '    SUMORDER,'
+      '    SUPPORTPHONE,'
+      '    MESSAGETO,'
+      '    COMMENTS'
+      'FROM'
+      '    ORDERSHSHOW (:ACLIENTID,'
+      '    :ACLOSED,'
+      '    :TIMEZONEBIAS)'
+      'WHERE(  OrderDate BETWEEN :DateFrom AND :DateTo'
+      '     ) and ( ORDERID = :OLD_ORDERID'
+      '     )'
+      '     ')
     SelectSQL.Strings = (
       'SELECT'
       '    ORDERID,'
@@ -773,7 +813,7 @@ inherited OrdersHForm: TOrdersHForm
       '    MESSAGETO,'
       '    COMMENTS'
       'FROM'
-      '    ORDERSHSHOW(:ACLIENTID,'
+      '    ORDERSHSHOW (:ACLIENTID,'
       '    :ACLOSED,'
       '    :TIMEZONEBIAS)'
       'WHERE OrderDate BETWEEN :DateFrom AND :DateTo ')
@@ -782,6 +822,7 @@ inherited OrdersHForm: TOrdersHForm
     BeforePost = adsOrdersH2BeforePost
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
     Left = 68
     Top = 119
     object adsOrdersHORDERID: TFIBBCDField
@@ -813,11 +854,12 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHSENDDATE: TFIBDateTimeField
       FieldName = 'SENDDATE'
     end
-    object adsOrdersHCLOSED: TFIBIntegerField
+    object adsOrdersHCLOSED: TFIBBooleanField
       FieldName = 'CLOSED'
     end
-    object adsOrdersHSEND: TFIBIntegerField
+    object adsOrdersHSEND: TFIBBooleanField
       FieldName = 'SEND'
+      OnChange = adsOrdersH2SendChange
     end
     object adsOrdersHPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
@@ -851,6 +893,69 @@ inherited OrdersHForm: TOrdersHForm
     end
   end
   object adsCore: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'execute procedure updateordercount('
+      '  :new_ORDERSHORDERID, '
+      '  :Aclientid, '
+      '  :APRICECODE, '
+      '  :AREGIONCODE, '
+      '  :new_ORDERSORDERID, '
+      '  :new_COREID, '
+      '  :NEW_ORDERCOUNT)')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '    COREID,'
+      '    FULLCODE,'
+      '    SHORTCODE,'
+      '    CODEFIRMCR,'
+      '    SYNONYMCODE,'
+      '    SYNONYMFIRMCRCODE,'
+      '    CODE,'
+      '    CODECR,'
+      '    VOLUME,'
+      '    DOC,'
+      '    NOTE,'
+      '    PERIOD,'
+      '    AWAIT,'
+      '    JUNK,'
+      '    BASECOST,'
+      '    QUANTITY,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    MINPRICE,'
+      '    LEADERPRICECODE,'
+      '    LEADERREGIONCODE,'
+      '    LEADERREGIONNAME,'
+      '    LEADERPRICENAME,'
+      '    ORDERSCOREID,'
+      '    ORDERSORDERID,'
+      '    ORDERSCLIENTID,'
+      '    ORDERSFULLCODE,'
+      '    ORDERSCODEFIRMCR,'
+      '    ORDERSSYNONYMCODE,'
+      '    ORDERSSYNONYMFIRMCRCODE,'
+      '    ORDERSCODE,'
+      '    ORDERSCODECR,'
+      '    ORDERCOUNT,'
+      '    ORDERSSYNONYM,'
+      '    ORDERSSYNONYMFIRM,'
+      '    ORDERSPRICE,'
+      '    ORDERSJUNK,'
+      '    ORDERSAWAIT,'
+      '    ORDERSHORDERID,'
+      '    ORDERSHCLIENTID,'
+      '    ORDERSHPRICECODE,'
+      '    ORDERSHREGIONCODE,'
+      '    ORDERSHPRICENAME,'
+      '    ORDERSHREGIONNAME,'
+      '    PRICERET'
+      'FROM'
+      '    CORESHOWBYFIRM(:APRICECODE,'
+      '    :AREGIONCODE,'
+      '    :RETAILFORCOUNT,'
+      '    :ACLIENTID) '
+      'where'
+      '  CoreID = :OLD_COREID')
     SelectSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -905,6 +1010,7 @@ inherited OrdersHForm: TOrdersHForm
       '    :ACLIENTID) ')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
     Left = 188
     Top = 119
   end

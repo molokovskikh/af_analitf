@@ -291,7 +291,7 @@ begin
 
 	UpdateReclame;
 	Timer.Enabled := True;
-	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString; 
+	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
 
 	{ Снятие запроса на экс. доступ после аварии }
 	CS.Enter;
@@ -325,9 +325,9 @@ begin
 		MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
 		if DM.IsBackuped( ExePath) then
 		begin
-			DM.MainConnection.Close;
+			DM.MainConnection1.Close;
 			DM.RestoreDatabase( ExePath);
-			DM.MainConnection.Open;
+			DM.MainConnection1.Open;
 		end;
 		{ Автоматический импорт }
 		RunExchange([ eaImportOnly]);
@@ -388,12 +388,12 @@ end;
 
 procedure TMainForm.actCompactExecute(Sender: TObject);
 begin
-	if MessageBox( 'Сжатие и восстановление базы данных достаточно длительный процесс' + #13 +
+	if MessageBox( 'Сжатие базы данных достаточно длительный процесс' + #13 +
 		'и должен проводиться монопольно. Продолжить?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then exit;
 	FreeChildForms;
 	Application.ProcessMessages;
   RunCompactDatabase;
-	MessageBox( 'Сжатие и восстановление базы данных завершено');
+	MessageBox( 'Сжатие базы данных завершено');
 end;
 
 procedure TMainForm.actOrderAllExecute(Sender: TObject);
@@ -540,6 +540,7 @@ begin
 	FreeChildForms;
 	Application.ProcessMessages;
 	DM.ClearDatabase;
+  DM.MainConnection1.DefaultTransaction.CommitRetaining;
 	MessageBox( 'Очистка базы завершена');
 end;
 
@@ -626,7 +627,7 @@ end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-	if not DM.MainConnection.Connected then exit;
+	if not DM.MainConnection1.Connected then exit;
 	if CheckUnsendOrders then
 	begin
 		if MessageBox( 'Обнаружены неотправленные заказы. ' +
@@ -679,16 +680,24 @@ procedure TMainForm.actIntegrExecute(Sender: TObject);
 begin
 	if not IsIntegrDLLPresent then exit;
 
+{
+  TODO:Восстановить работу интеграции
 	IntegrConfig( DM.MainConnection,
 		DM.adtClients.FieldByName( 'RegionCode').AsInteger,
 		Self.Handle);
+}
 end;
 
 procedure TMainForm.TimerTimer(Sender: TObject);
 var
 	ExID: string;
 begin
-	if not DM.MainConnection.Connected then exit;
+	if not DM.MainConnection1.Connected then exit;
+
+  if not DM.MainConnection1.DefaultTransaction.Active then begin
+    DM.MainConnection1.DefaultTransaction.StartTransaction;
+    DM.MainConnection1.AfterConnect(nil);
+  end;
 
 	{ Проверка на запрос на монопольный доступ }
 	CS.Enter;
@@ -734,7 +743,8 @@ begin
 
   DM.adtParams.Close;
   try
-    ExternalOrdersConfig( DM.MainConnection, Self.Handle);
+    //TODO:Восстановить работу интеграции
+    //ExternalOrdersConfig( DM.MainConnection, Self.Handle);
   finally
     DM.adtParams.Open;
   end;

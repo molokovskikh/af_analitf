@@ -48,7 +48,8 @@ uses
   ShowLog in 'ShowLog.pas' {frmShowLog},
   WayBillList in 'WayBillList.pas' {WayBillListForm},
   U_FolderMacros in 'U_FolderMacros.pas',
-  LU_Tracer in 'common\LU_Tracer.pas';
+  LU_Tracer in 'common\LU_Tracer.pas',
+  LU_MutexSystem in 'common\LU_MutexSystem.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

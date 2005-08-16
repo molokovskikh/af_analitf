@@ -62,8 +62,8 @@ object CoreFirmForm: TCoreFirmForm
     TitleFont.Style = []
     OnGetCellParams = dbgCoreGetCellParams
     OnKeyDown = dbgCoreKeyDown
-    SearchField = 'Synonym'
-    InputField = 'Order'
+    SearchField = 'SynonymName'
+    InputField = 'OrderCount'
     SearchPosition = spTop
     ForceRus = True
     FindInterval = 2500
@@ -72,7 +72,7 @@ object CoreFirmForm: TCoreFirmForm
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'Code'
+        FieldName = 'CODE'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1050#1086#1076
@@ -81,7 +81,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'Synonym'
+        FieldName = 'SYNONYMNAME'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
@@ -90,7 +90,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'SynonymFirm'
+        FieldName = 'SYNONYMFIRM'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
@@ -117,7 +117,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'Note'
+        FieldName = 'NOTE'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
@@ -191,7 +191,7 @@ object CoreFirmForm: TCoreFirmForm
       item
         Color = 16775406
         EditButtons = <>
-        FieldName = 'Order'
+        FieldName = 'ORDERCOUNT'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1047#1072#1082#1072#1079
@@ -674,6 +674,11 @@ object CoreFirmForm: TCoreFirmForm
     end
   end
   object adsCore: TpFIBDataSet
+    UpdateSQL.Strings = (
+      
+        'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
+        'id, :APRICECODE, :AREGIONCODE, :new_ORDERSORDERID, :new_COREID, ' +
+        ':NEW_ORDERCOUNT)')
     RefreshSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -725,7 +730,9 @@ object CoreFirmForm: TCoreFirmForm
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
       '    :RETAILFORCOUNT,'
-      '    :ACLIENTID) ')
+      '    :ACLIENTID) '
+      'where'
+      '  CoreID = :OLD_COREID')
     SelectSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -786,6 +793,7 @@ object CoreFirmForm: TCoreFirmForm
     OnCalcFields = adsCore2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
     Left = 88
     Top = 112
     oFetchAll = True
@@ -853,6 +861,7 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreBASECOST: TFIBBCDField
       FieldName = 'BASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
@@ -873,6 +882,7 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreMINPRICE: TFIBIntegerField
       FieldName = 'MINPRICE'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreLEADERPRICECODE: TFIBBCDField
       FieldName = 'LEADERPRICECODE'
@@ -939,6 +949,7 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
+      DisplayFormat = '#'
     end
     object adsCoreORDERSSYNONYM: TFIBStringField
       FieldName = 'ORDERSSYNONYM'
@@ -993,12 +1004,14 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCorePRICERET: TFIBBCDField
       FieldName = 'PRICERET'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
     object adsCoreSumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
   end

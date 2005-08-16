@@ -185,7 +185,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, Core, pFIBQuery;
+  NamesForms, Core, pFIBQuery, FIBQuery;
 
 {$R *.DFM}
 
@@ -411,9 +411,13 @@ begin
     with DM.adcUpdate do begin
       //удаляем сохраненную заявку (если есть)
       //TODO: Проверить наличие процедуры
-      SQL.Text:=Format( 'EXECUTE OrdersHDeleteNotClosed %d, %d, %d',
+      SQL.Text:=Format( 'EXECUTE PROCEDURE OrdersHDeleteNotClosed(:ACLIENTID, :APRICECODE, :AREGIONCODE)',
         [DM.adtClients.FieldByName('ClientId').AsInteger,PriceCode,RegionCode]);
+      ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
+      ParamByName('APRICECODE').Value := PriceCode;
+      ParamByName('AREGIONCODE').Value := RegionCode;
       ExecQuery;
+      Transaction.CommitRetaining;
     end;
   finally
     adsCore.EnableControls;
@@ -459,6 +463,7 @@ begin
 		adsCore.ParamByName( 'ARegionCode').Value;
 	if not CanInput then Exit;
 	{ создаем записи из Orders и OrdersH, если их нет }
+{
   if adsCoreOrdersOrderId.IsNull then begin //нет соответствующей записи в Orders
     if adsOrdersH.IsEmpty then begin //нет заголовка заказа из OrdersH
       //добавляем запись в OrdersH
@@ -492,6 +497,7 @@ begin
     adsCore.Post;
     if adsOrdersH.IsEmpty then RefreshOrdersH;
   end;
+}  
 end;
 
 procedure TCoreFirmForm.dbgCoreSortChange(Sender: TObject;

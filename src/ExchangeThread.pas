@@ -5,7 +5,7 @@ interface
 uses
 	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
-  IdException, WinSock, RxVerInf;
+  IdException, WinSock, RxVerInf, pFIBQuery;
 
 type
 
@@ -45,6 +45,7 @@ private
 	NewZip: boolean;
 	FileStream: TFileStream;
 	RecThread: TReclameThread;
+  StartExec : TDateTime;
 
 	procedure SetStatus;
 	procedure SetProgress;
@@ -80,6 +81,8 @@ private
   procedure GetJETMDACVersions(var AJETVersion, AJETDesc, AMDACVersion, AMDACDesc : String);
   function GetLibraryVersionByName(AName: String): String;
   function GetLibraryVersionFromPath(AName: String): String;
+  procedure adcUpdateBeforeExecute(Sender: TObject);
+  procedure adcUpdateAfterExecute(Sender: TObject);
 protected
 	procedure Execute; override;
 end;
@@ -87,7 +90,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB, U_FolderMacros;
+  DB, U_FolderMacros, LU_Tracer, FIBQuery;
 
 { TExchangeThread }
 
@@ -261,7 +264,7 @@ begin
 	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
   try
-    TmpStr := ExchangeForm.HTTP.Get('http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString));
+//    TmpStr := ExchangeForm.HTTP.Get('http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString));
     WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Test connect Success');
   except
     on E : Exception do
@@ -466,16 +469,16 @@ begin
 	end;
 	while not DM.adsOrdersH.Eof do
 	begin
-                DM.adsOrders.Close;
+    DM.adsOrders.Close;
 		DM.adsOrders.ParamByName( 'AOrderId').Value :=
-			DM.adsOrdersH.FieldByName( 'OrderId').Value;
-                DM.adsOrders.Open;
+      DM.adsOrdersH.FieldByName( 'OrderId').Value;
+    DM.adsOrders.Open;
 
     WriteLn(ExchangeForm.LogFile,
       'Отправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
       '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
-		SetLength( params, 6 + DM.adsOrders.RecordCount * 11);
-		SetLength( values, 6 + DM.adsOrders.RecordCount * 11);
+		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * 11);
+		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * 11);
 
 		params[ 0] := 'ClientCode';
 		params[ 1] := 'PriceCode';
@@ -487,10 +490,10 @@ begin
 		values[ 1] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
 		values[ 2] := DM.adsOrdersH.FieldByName( 'RegionCode').AsString;
 		values[ 3] := GetXMLDateTime( DM.adsOrdersH.FieldByName( 'DatePrice').AsDateTime);
-		values[ 4] := StringToCodes( DM.adsOrdersH.FieldByName( 'Message').AsString);
-		values[ 5] := IntToStr( DM.adsOrders.RecordCount);
+		values[ 4] := StringToCodes( DM.adsOrdersH.FieldByName( 'MessageTO').AsString);
+		values[ 5] := IntToStr( DM.adsOrders.RecordCountFromSrv);
 
-		for i := 0 to DM.adsOrders.RecordCount - 1 do
+		for i := 0 to DM.adsOrders.RecordCountFromSrv - 1 do
 		begin
 			params[ i * 11 + 6] := 'FullCode';
 			params[ i * 11 + 7] := 'OrderId';
@@ -510,7 +513,7 @@ begin
 			values[ i * 11 + 10] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
 			values[ i * 11 + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
 			values[ i * 11 + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
-			values[ i * 11 + 13] := DM.adsOrders.FieldByName( 'Order').AsString;
+			values[ i * 11 + 13] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
 			values[ i * 11 + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
 			values[ i * 11 + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
                         OldDS := DecimalSeparator;
@@ -519,7 +522,7 @@ begin
                         DecimalSeparator := OldDS;
 			DM.adsOrders.Edit;
 			DM.adsOrders.FieldByName( 'CoreId').AsVariant := Null;
-                        DM.adsOrders.Post;
+      DM.adsOrders.Post;
 			DM.adsOrders.Next;
 		end;
 
@@ -712,6 +715,7 @@ begin
 		StatusText := 'Очистка таблиц';
 		Synchronize( SetStatus);
 		DM.ClearDatabase;
+    DM.MainConnection1.DefaultTransaction.CommitRetaining;
 		StatusText := 'Сжатие базы';
 		Synchronize( SetStatus);
 		DM.CompactDatabase;
@@ -735,6 +739,7 @@ begin
 	Synchronize( DisableCancel);
 	DM.adtClients.DisableControls;
 	tl := TStringList.Create;
+{
 	try
 		DM.MainConnection.GetTableNames( tl, false);
 		DM.ClearPassword( ExePath + DatabaseName);
@@ -753,6 +758,7 @@ begin
                 tl.Free;
 		Synchronize( EnableCancel);
 	end;
+}  
 	DM.ClearBackup( ExePath + SDirIn + '\');
 end;
 
@@ -886,7 +892,7 @@ begin
 	if Tables.IndexOf( 'EXTSYNONYM') >= 0 then UpdateTables := UpdateTables + [utSynonym];
 	if Tables.IndexOf( 'EXTSYNONYMFIRMCR')>=0 then UpdateTables := UpdateTables + [utSynonymFirmCr];
 	if Tables.IndexOf( 'EXTREJECTS')>=0 then UpdateTables := UpdateTables + [utRejects];
-	if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
+//	if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
 	if Tables.IndexOf( 'EXTWAYBILLHEAD')>=0 then UpdateTables := UpdateTables + [utWayBillHead];
 	if Tables.IndexOf( 'EXTWAYBILLLIST')>=0 then UpdateTables := UpdateTables + [utWayBillList];
     //обновляем таблицы
@@ -912,7 +918,8 @@ begin
 
    DM.MainConnection1.DefaultTransaction.StartTransaction;
    try
-
+   DM.adcUpdate.BeforeExecute := adcUpdateBeforeExecute;
+   DM.adcUpdate.AfterExecute := adcUpdateAfterExecute;
    with DM.adcUpdate do begin
 	//удаляем минимальные цены
 	SQL.Text:='EXECUTE PROCEDURE MinPricesDelete'; ExecQuery;
@@ -956,6 +963,41 @@ begin
 	if utRegistry in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
 	end;
+
+  DM.MainConnection1.CommitRetaining;
+  
+	SQL.Text := 'select count(*) from MinPrices where PriceCode is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from pricesregionaldata where regioncode is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from PricesData where PriceFiledate is null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from RegionalData where regioncode is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from ClientsDataN where fullname is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from Core where Fullcode is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from Clients where regioncode is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from regions where regionname is not null';
+	ExecQuery;
+  Close;
+  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+
+  //Чистим мусор после обновления.
+//  DM.SweepDB;
+  if not (eaGetFullData in ExchangeForm.ExchangeActs) then
+    DM.CompactDataBase();
+
+  DM.MainConnection1.StartTransaction;
 
 	Progress := 10;
 	Synchronize( SetProgress);
@@ -1150,11 +1192,25 @@ begin
 	SQL.Text := 'EXECUTE PROCEDURE MinPricesSetPriceCode(' +
 		DM.adtClients.FieldByName( 'LeadFromBasic').AsString + ')';
 	ExecQuery;
+  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+  //DM.MainConnection1.DefaultTransaction.StartTransaction;
+	SQL.Text := 'EXECUTE PROCEDURE UPDATEALLINDICES';
+	ExecQuery;
+  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+	SQL.Text := 'select count(*) from MinPrices where Pricecode is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from Core where FullCode is not null';
+	ExecQuery;
+  Close;
+	SQL.Text := 'select count(*) from PricesData where PriceFileDate is not null';
+	ExecQuery;
+  Close;
 	Progress := 100;
 	Synchronize( SetProgress);
 	TotalProgress := 90;
 	Synchronize( SetTotalProgress);
-  DM.MainConnection1.DefaultTransaction.Commit;
+  DM.MainConnection1.DefaultTransaction.CommitRetaining;
     end;
 
   except
@@ -1162,10 +1218,15 @@ begin
     raise;
   end;
   finally
+  DM.adcUpdate.BeforeExecute := nil;
+  DM.adcUpdate.AfterExecute := nil;
 	Tables.Free;
   end;
 
-  Dm.MainConnection1.DefaultTransaction.Active := True;
+  DM.MainConnection1.Close;
+  DM.MainConnection1.Open;
+  if not DM.MainConnection1.DefaultTransaction.Active then
+    Dm.MainConnection1.DefaultTransaction.StartTransaction;
 	DM.UnLinkExternalTables;
 	DM.ClearBackup( ExePath);
   Dm.MainConnection1.AfterConnect(nil);
@@ -1468,6 +1529,23 @@ begin
   end
   else
     Result := '';
+end;
+
+procedure TExchangeThread.adcUpdateBeforeExecute(Sender: TObject);
+begin
+  Tracer.TR('Import', 'Exec : ' + TpFIBQuery(Sender).SQL.Text);
+  StartExec := Now;
+end;
+
+procedure TExchangeThread.adcUpdateAfterExecute(Sender: TObject);
+var
+  StopExec : TDateTime;
+  Secs : Int64;
+begin
+  StopExec := Now;
+  Secs := SecondsBetween(StopExec, StartExec);
+  if Secs > 3 then
+    Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
 end;
 
 end.

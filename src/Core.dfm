@@ -9,6 +9,7 @@ object CoreForm: TCoreForm
   ClientWidth = 792
   Color = clBtnFace
   ParentFont = True
+  KeyPreview = True
   OldCreateOrder = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -327,7 +328,7 @@ object CoreForm: TCoreForm
       OnGetCellParams = dbgCoreGetCellParams
       OnKeyDown = dbgCoreKeyDown
       OnKeyPress = dbgCoreKeyPress
-      InputField = 'Order'
+      InputField = 'OrderCount'
       SearchPosition = spTop
       OnCanInput = dbgCoreCanInput
       Columns = <
@@ -447,7 +448,7 @@ object CoreForm: TCoreForm
         item
           Color = 16775406
           EditButtons = <>
-          FieldName = 'Order'
+          FieldName = 'ORDERCOUNT'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1047#1072#1082#1072#1079
@@ -624,7 +625,7 @@ object CoreForm: TCoreForm
       'gionalData'
     MasterFields = 'FirmCode;RegionCode'
     Parameters = <>
-    Left = 568
+    Left = 584
     Top = 384
   end
   object dsFirmsInfo: TDataSource
@@ -898,6 +899,68 @@ object CoreForm: TCoreForm
     end
   end
   object adsCore: TpFIBDataSet
+    UpdateSQL.Strings = (
+      
+        'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
+        'id, :new_PRICECODE, :new_REGIONCODE, :new_ORDERSORDERID, :new_CO' +
+        'REID, :NEW_ORDERCOUNT)')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '    COREID,'
+      '    PRICECODE,'
+      '    REGIONCODE,'
+      '    FULLCODE,'
+      '    SHORTCODE,'
+      '    CODEFIRMCR,'
+      '    SYNONYMCODE,'
+      '    SYNONYMFIRMCRCODE,'
+      '    CODE,'
+      '    CODECR,'
+      '    PERIOD,'
+      '    SALE,'
+      '    VOLUME,'
+      '    NOTE,'
+      '    BASECOST,'
+      '    QUANTITY,'
+      '    AWAIT,'
+      '    JUNK,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    DATEPRICE,'
+      '    PRICENAME,'
+      '    PRICEENABLED,'
+      '    FIRMCODE,'
+      '    STORAGE,'
+      '    REGIONNAME,'
+      '    ORDERSCOREID,'
+      '    ORDERSORDERID,'
+      '    ORDERSCLIENTID,'
+      '    ORDERSFULLCODE,'
+      '    ORDERSCODEFIRMCR,'
+      '    ORDERSSYNONYMCODE,'
+      '    ORDERSSYNONYMFIRMCRCODE,'
+      '    ORDERSCODE,'
+      '    ORDERSCODECR,'
+      '    ORDERCOUNT,'
+      '    ORDERSSYNONYM,'
+      '    ORDERSSYNONYMFIRM,'
+      '    ORDERSPRICE,'
+      '    ORDERSJUNK,'
+      '    ORDERSAWAIT,'
+      '    ORDERSHORDERID,'
+      '    ORDERSHCLIENTID,'
+      '    ORDERSHPRICECODE,'
+      '    ORDERSHREGIONCODE,'
+      '    ORDERSHPRICENAME,'
+      '    ORDERSHREGIONNAME'
+      'FROM'
+      '    CORESHOWBYNAME(:ACLIENTID,'
+      '    :TIMEZONEBIAS,'
+      '    :PARENTCODE,'
+      '    :SHOWREGISTER,'
+      '    :REGISTERID) '
+      'where'
+      '  COREID = :OLD_COREID')
     SelectSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -962,8 +1025,11 @@ object CoreForm: TCoreForm
     OnCalcFields = adsCore2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AutoCommit = True
+    RefreshTransactionKind = tkUpdateTransaction
     Left = 64
     Top = 133
+    oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
@@ -1031,6 +1097,7 @@ object CoreForm: TCoreForm
     end
     object adsCoreBASECOST: TFIBBCDField
       FieldName = 'BASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Size = 4
       RoundByScale = True
     end
@@ -1039,11 +1106,13 @@ object CoreForm: TCoreForm
       Size = 15
       EmptyStrToNull = False
     end
-    object adsCoreAWAIT: TFIBIntegerField
+    object adsCoreAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
+      DisplayValues = '+;'
     end
-    object adsCoreJUNK: TFIBIntegerField
+    object adsCoreJUNK: TFIBBooleanField
       FieldName = 'JUNK'
+      DisplayValues = '+;'
     end
     object adsCoreSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
@@ -1063,16 +1132,19 @@ object CoreForm: TCoreForm
       Size = 70
       EmptyStrToNull = False
     end
-    object adsCorePRICEENABLED: TFIBIntegerField
-      FieldName = 'PRICEENABLED'
-    end
     object adsCoreFIRMCODE: TFIBBCDField
       FieldName = 'FIRMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreSTORAGE: TFIBIntegerField
+    object adsCorePRICEENABLED: TFIBBooleanField
+      FieldName = 'PRICEENABLED'
+      DisplayValues = '+;'
+    end
+    object adsCoreSTORAGE: TFIBBooleanField
       FieldName = 'STORAGE'
+      OnGetText = adsCoreSTORAGEGetText
+      DisplayValues = '+;Fail'
     end
     object adsCoreREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
@@ -1124,6 +1196,7 @@ object CoreForm: TCoreForm
     end
     object adsCoreORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
+      DisplayFormat = '#'
     end
     object adsCoreORDERSSYNONYM: TFIBStringField
       FieldName = 'ORDERSSYNONYM'
@@ -1140,11 +1213,13 @@ object CoreForm: TCoreForm
       Size = 4
       RoundByScale = True
     end
-    object adsCoreORDERSJUNK: TFIBIntegerField
+    object adsCoreORDERSJUNK: TFIBBooleanField
       FieldName = 'ORDERSJUNK'
+      DisplayValues = '+;'
     end
-    object adsCoreORDERSAWAIT: TFIBIntegerField
+    object adsCoreORDERSAWAIT: TFIBBooleanField
       FieldName = 'ORDERSAWAIT'
+      DisplayValues = '+;'
     end
     object adsCoreORDERSHORDERID: TFIBBCDField
       FieldName = 'ORDERSHORDERID'
@@ -1179,16 +1254,19 @@ object CoreForm: TCoreForm
     object adsCoreSumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCorePriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCorePriceDelta: TFloatField
       FieldKind = fkCalculated
       FieldName = 'PriceDelta'
+      DisplayFormat = '0.0;;'#39#39
       Calculated = True
     end
   end

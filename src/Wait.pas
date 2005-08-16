@@ -88,7 +88,7 @@ end;
 procedure TWaitForm.TimerTimer(Sender: TObject);
 begin
 	Timer.Enabled := False;
-	if DM.MainConnection.Connected then
+	if DM.MainConnection1.Connected then
 	begin
 		MainForm.CS.Enter;
 		DM.adtFlags.CloseOpen(True);

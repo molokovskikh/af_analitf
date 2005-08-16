@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, ADODB, DBGridEh,
-  ToughDBGrid;
+  ToughDBGrid, FIBDataSet, pFIBDataSet;
 
 type
   TFormsHistoryForm = class(TForm)
@@ -17,11 +17,23 @@ type
     Label1: TLabel;
     dbtPriceAvg: TDBText;
     Grid: TToughDBGrid;
-    adsOrders: TADODataSet;
-    adsWareData: TADODataSet;
-    adsWareDataName: TWideStringField;
-    adsWareDataForm: TWideStringField;
-    adsWareDataPriceAvg: TBCDField;
+    adsOrders2: TADODataSet;
+    adsWareData2: TADODataSet;
+    adsWareData2Name: TWideStringField;
+    adsWareData2Form: TWideStringField;
+    adsWareData2PriceAvg: TBCDField;
+    adsOrders: TpFIBDataSet;
+    adsOrdersFULLCODE: TFIBBCDField;
+    adsOrdersSYNONYMNAME: TFIBStringField;
+    adsOrdersSYNONYMFIRM: TFIBStringField;
+    adsOrdersORDERCOUNT: TFIBIntegerField;
+    adsOrdersPRICE: TFIBBCDField;
+    adsOrdersORDERDATE: TFIBDateTimeField;
+    adsOrdersPRICENAME: TFIBStringField;
+    adsOrdersREGIONNAME: TFIBStringField;
+    adsOrdersAWAIT: TFIBIntegerField;
+    adsOrdersJUNK: TFIBIntegerField;
+    adsWareData: TpFIBDataSet;
   private
     { Private declarations }
   public
@@ -42,13 +54,13 @@ begin
     Screen.Cursor:=crHourglass;
     try
       with adsWareData do begin
-        Parameters.ParamByName('AFullCode').Value:=FullCode;
-        Parameters.ParamByName('AClientId').Value:=ClientId;
+        ParamByName('AFullCode').Value:=FullCode;
+        ParamByName('AClientId').Value:=ClientId;
         Open;
       end;
       with adsOrders do begin
-        Parameters.ParamByName('AFullCode').Value:=FullCode;
-        Parameters.ParamByName('AClientId').Value:=ClientId;
+        ParamByName('AFullCode').Value:=FullCode;
+        ParamByName('AClientId').Value:=ClientId;
         Open;
       end;
     finally

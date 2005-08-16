@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, ADODB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  Registry, DBGridEhImpExp, FIBDataSet, pFIBDataSet;
+  Registry, DBGridEhImpExp, FIBDataSet, pFIBDataSet, FIBQuery;
 
 const
 	PricesSql =	'SELECT * FROM PRICESSHOW(:ACLIENTID, :TIMEZONEBIAS) ORDER BY ';
@@ -94,6 +94,8 @@ type
     procedure dbgPricesSortChange(Sender: TObject; SQLOrderBy: String);
     procedure adsPrices2AfterScroll(DataSet: TDataSet);
     procedure adsPrices2AfterOpen(DataSet: TDataSet);
+    procedure adsPricesSTORAGEGetText(Sender: TField; var Text: String;
+      DisplayText: Boolean);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -160,6 +162,7 @@ begin
   //открываем список фирм
   with adsPrices do begin
     ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+    ParamByName('TimeZoneBias').Value:=TimeZoneBias;
     Screen.Cursor:=crHourglass;
     try
       if Active then begin
@@ -176,7 +179,7 @@ begin
   //открываем список прайс-листов - регионов
   with adsPrices do begin
     ParamByName('TimeZoneBias').Value:=TimeZoneBias;
-    Open;
+//    Open;
   end;
   inherited;
 end;
@@ -251,7 +254,13 @@ end;
 
 procedure TPricesForm.adsPrices2AfterOpen(DataSet: TDataSet);
 begin
-	lblPriceCount.Caption := '¬сего прайс-листов : ' + IntToStr( DataSet.RecordCount);
+	lblPriceCount.Caption := '¬сего прайс-листов : ' + IntToStr( adsPrices.RecordCountFromSrv);
+end;
+
+procedure TPricesForm.adsPricesSTORAGEGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+begin
+  text := Iif(Sender.AsBoolean, '+', '');
 end;
 
 end.
