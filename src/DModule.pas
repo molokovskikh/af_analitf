@@ -8,7 +8,7 @@ uses
   FR_DBSet, FR_DCtrl, FR_ADODB, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, FR_OLE,
   frRtfExp, frexpimg, frOLEExl, FR_E_HTML2, FR_E_TXT, FR_Rich, CompactThread,
   FIBDatabase, pFIBDatabase, FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery,
-  IB_Services, FIB, IB_ErrorCodes;
+  IB_Services, FIB, IB_ErrorCodes, Math;
 
 const
   HistoryMaxRec=5;
@@ -269,6 +269,11 @@ var
 	list: TStringList;
 //	ExID, CompName: string;
 	MaxUsers: integer;
+  FreeAvail,
+  Total,
+  TotalFree,
+  DBFileSize : Int64;
+
 begin
 {
 	DM.MainConnection.Open;
@@ -289,7 +294,7 @@ begin
 }
 	if not IsOneStart then begin
 		MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
-			MB_ICONWARNING or MB_OK);
+			MB_ICONERROR or MB_OK);
     ExitProcess(1);
 	end;
 
@@ -300,10 +305,28 @@ begin
       if E.IBErrorCode = isc_network_error then
         raise Exception.Create('Не возможен запуск программы с сетевого диска. Пожалуйста, используйте локальный диск.')
       else
-        //Не удается открыть базу данных программы. Пожалуйста, выполните проверку жесткого диска на наличие ошибок.
-        raise;
+        raise Exception.CreateFmt('Не удается открыть базу данных программы. ' +
+          'Пожалуйста, выполните проверку жесткого диска на наличие ошибок.'#13#10#13#10'Сообщение об ошибке:'#13#10'%s',
+          [E.Message]);
     end;
   end;
+
+  if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
+    DBFileSize := GetFileSize(MainConnection1.DBName);
+    DBFileSize := Max(2*DBFileSize, 200*1024*1024);
+    if DBFileSize > FreeAvail then begin
+      MessageBox( Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %d байт.', [ DBFileSize ]),
+        MB_ICONERROR or MB_OK);
+      ExitProcess(2);
+    end;
+  end
+  else begin
+		MessageBox( Format( 'Не удается получить количество свободного места на диске.' +
+			#13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]),
+			MB_ICONERROR or MB_OK);
+    ExitProcess(2);
+  end;
+  
   try
     MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
     list := DM.MainConnection1.UserNames;
@@ -314,7 +337,7 @@ begin
 	begin
 		MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
 			'Запуск программы невозможен.', [ MaxUsers]),
-			MB_ICONWARNING or MB_OK);
+			MB_ICONERROR or MB_OK);
     ExitProcess(2);
 	end;
 
