@@ -8,7 +8,7 @@ uses
   FR_DBSet, FR_DCtrl, FR_ADODB, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, FR_OLE,
   frRtfExp, frexpimg, frOLEExl, FR_E_HTML2, FR_E_TXT, FR_Rich, CompactThread,
   FIBDatabase, pFIBDatabase, FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery,
-  IB_Services, FIB, IB_ErrorCodes, Math;
+  IB_Services, FIB, IB_ErrorCodes, Math, IdIcmpClient;
 
 const
   HistoryMaxRec=5;
@@ -140,6 +140,8 @@ type
       RegionCode: Integer=0): Boolean;}
     procedure SweepDB;
     procedure SetSweepInterval;
+    function GetDisplayColors : Integer;
+    function TCPPresent : Boolean;
   end;
 
 var
@@ -297,6 +299,18 @@ begin
 			MB_ICONERROR or MB_OK);
     ExitProcess(1);
 	end;
+
+  if GetDisplayColors < 16 then begin
+		MessageBox( 'Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.',
+			MB_ICONERROR or MB_OK);
+    ExitProcess(1);
+  end;
+
+  if not TCPPresent then begin
+		MessageBox( 'Не возможен запуск программы без установленного протокола TCP/IP.',
+			MB_ICONERROR or MB_OK);
+    ExitProcess(1);
+  end;
 
   try
 	DM.MainConnection1.Open;
@@ -1187,6 +1201,33 @@ begin
     finally
       Active := False;
     end;
+  end;
+end;
+
+function TDM.GetDisplayColors: Integer;
+var
+  tHDC: hdc;
+begin
+  tHDC := GetDC(0);
+  result := GetDeviceCaps(tHDC, BITSPIXEL);
+  ReleaseDC(0, tHDC);
+end;
+
+function TDM.TCPPresent: Boolean;
+var
+  idPing : TIdIcmpClient;
+begin
+  try
+    idPing := TIdIcmpClient.Create(nil);
+    try
+      idPing.Host := 'localhost';
+      idPing.Ping();
+      Result := idPing.ReplyStatus.ReplyStatusType = rsEcho;
+    finally
+      idPing.Free;
+    end;
+  except
+    Result := False;
   end;
 end;
 
