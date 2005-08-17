@@ -3319,8 +3319,8 @@ begin
 RegionCode char(20),
 SupportPhone char(20),
 AdminMail char(50),
-ContactInfo char(5),
-OperativeInfo char(5),
+ContactInfo char(255),
+OperativeInfo char(255),
 NL Char(2));
 ';
 end
