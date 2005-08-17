@@ -494,6 +494,7 @@ object MainForm: TMainForm
       Category = 'Actions'
       Caption = #1055#1088#1077#1076#1074#1072#1088#1080#1090#1077#1083#1100#1085#1099#1081' '#1087#1088#1086#1089#1084#1086#1090#1088'...'
       Hint = #1055#1088#1077#1076#1074#1072#1088#1080#1090#1077#1083#1100#1085#1099#1081' '#1087#1088#1086#1089#1084#1086#1090#1088
+      Visible = False
       OnExecute = actPreviewExecute
       OnUpdate = actPreviewUpdate
     end
@@ -556,6 +557,7 @@ object MainForm: TMainForm
       Hint = #1055#1077#1095#1072#1090#1100
       ImageIndex = 7
       ShortCut = 16464
+      Visible = False
       OnExecute = actPrintExecute
       OnUpdate = actPrintUpdate
     end

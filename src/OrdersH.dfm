@@ -68,6 +68,7 @@ inherited OrdersHForm: TOrdersHForm
           Height = 27
           Anchors = [akLeft, akBottom]
           Caption = #1053#1072#1082#1083#1072#1076#1085#1072#1103
+          Enabled = False
           TabOrder = 2
           OnClick = btnWayBillListClick
         end

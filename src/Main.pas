@@ -295,12 +295,15 @@ begin
 
 	{ Снятие запроса на экс. доступ после аварии }
 	CS.Enter;
-	try
-		if DM.adtFlags.FieldByName( 'ExclusiveID').AsString = IntToHex(	GetUniqueID(
-			Application.ExeName, ''{MainForm.VerInfo.FileVersion}), 8) then DM.ResetExclusive;
-	except
-	end;
-	CS.Leave;
+  try
+	  try
+		  if DM.adtFlags.FieldByName( 'ExclusiveID').AsString = IntToHex(	GetUniqueID(
+			  Application.ExeName, ''{MainForm.VerInfo.FileVersion}), 8) then DM.ResetExclusive;
+   	except
+	  end;
+  finally
+  	CS.Leave;
+  end;
 
 	{ Логин пустой }
 	if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
@@ -701,19 +704,21 @@ begin
 
 	{ Проверка на запрос на монопольный доступ }
 	CS.Enter;
-	try
-		DM.adtFlags.CloseOpen(True);
-		ExID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
-	except
-		ExID := '';
-	end;
+  try
+    try
+      DM.adtFlags.CloseOpen(True);
+      ExID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
+    except
+      ExID := '';
+    end;
+  finally
+		CS.Leave;
+  end;
 	if ( ExID <> IntToHex( GetUniqueID( Application.ExeName,
 		''{MainForm.VerInfo.FileVersion}), 8)) and ( ExID <> '') then
 	begin
-		CS.Leave;
 		ShowWait;
-	end
-	else CS.Leave;
+	end;
 end;
 
 procedure TMainForm.actHomeExecute(Sender: TObject);

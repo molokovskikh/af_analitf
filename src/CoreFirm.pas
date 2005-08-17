@@ -230,7 +230,7 @@ begin
     ParamByName( 'AClientId').Value:=ClientId;
     Screen.Cursor:=crHourglass;
     try
-      if Active then CloseOpen(True) else Open;
+      if Active then CloseOpen(False) else Open;
     finally
       Screen.Cursor:=crDefault;
     end;

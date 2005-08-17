@@ -74,8 +74,11 @@ begin
 	MainForm.itmSystem.Enabled := False;
 
 	MainForm.CS.Enter;
-	ComputerName := Copy( DM.adtFlags.FieldByName( 'ComputerName').AsString, 1, 9);
-	MainForm.CS.Leave;
+  try
+  	ComputerName := Copy( DM.adtFlags.FieldByName( 'ComputerName').AsString, 1, 9);
+  finally
+  	MainForm.CS.Leave;
+  end;
 	Counter := WAIT_COUNT;
 	Label1.Caption := Format( LABEL_TEXT, [ ComputerName, Counter]);
 end;
@@ -86,15 +89,21 @@ begin
 end;
 
 procedure TWaitForm.TimerTimer(Sender: TObject);
+var
+  FExID : String;
 begin
 	Timer.Enabled := False;
 	if DM.MainConnection1.Connected then
 	begin
 		MainForm.CS.Enter;
-		DM.adtFlags.CloseOpen(True);
-		if DM.adtFlags.FieldByName( 'ExclusiveID').AsString = '' then
-		begin
+    try
+   		DM.adtFlags.CloseOpen(True);
+      FExID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
+    finally
 			MainForm.CS.Leave;
+    end;
+		if FExID = '' then
+		begin
 			MainForm.actSendOrders.OnUpdate := MainForm.actSendOrdersUpdate;
 			MainForm.actReceive.Enabled := True;
 			MainForm.actReceiveAll.Enabled := True;
@@ -104,8 +113,7 @@ begin
 			MainForm.Timer.Enabled := True;
 			Close;
 			exit;
-		end
-		else MainForm.CS.Leave;
+		end;
 	end;
 
 	MainForm.actReceive.Enabled := False;

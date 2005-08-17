@@ -100,8 +100,8 @@ type
     procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnection1AfterConnect(Sender: TObject);
   private
-	ClientInserted: Boolean;
-	procedure CheckRestrictToRun;
+	  ClientInserted: Boolean;
+    procedure CheckRestrictToRun;
   public
   	function DatabaseOpenedBy: string;
     function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
@@ -139,6 +139,7 @@ type
     {function OrderToArchiv(ClientId: Integer=0; PriceCode: Integer=0;
       RegionCode: Integer=0): Boolean;}
     procedure SweepDB;
+    procedure SetSweepInterval;
   end;
 
 var
@@ -266,8 +267,7 @@ end;
 procedure TDM.CheckRestrictToRun;
 var
 	list: TStringList;
-	i, c: integer;
-	ExID, CompName: string;
+//	ExID, CompName: string;
 	MaxUsers: integer;
 begin
 {
@@ -275,23 +275,6 @@ begin
 	MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
 	list := DM.DatabaseOpenedList( ExID, CompName);
 	DM.MainConnection.Close;
-	c := 0;
-	for i := 0 to list.Count - 1 do
-		if list[ i] = GetComputerName_ then inc( c);
-	if c > 1 then
-	begin
-		MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
-			MB_ICONWARNING or MB_OK);
-    ExitProcess(1);
-	end;
-
-	if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
-	begin
-		MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
-			'Запуск программы невозможен.', [ MaxUsers]),
-			MB_ICONWARNING or MB_OK);
-    ExitProcess(2);
-	end;
 
 	if list.Count > 1 then
 	begin
@@ -315,8 +298,9 @@ begin
   except
     on E : EFIBError do begin
       if E.IBErrorCode = isc_network_error then
-        raise Exception.Create('Программа не работает с базой данных, находящейся на сетевом диске.')
+        raise Exception.Create('Не возможен запуск программы с сетевого диска. Пожалуйста, используйте локальный диск.')
       else
+        //Не удается открыть базу данных программы. Пожалуйста, выполните проверку жесткого диска на наличие ошибок.
         raise;
     end;
   end;
@@ -333,6 +317,9 @@ begin
 			MB_ICONWARNING or MB_OK);
     ExitProcess(2);
 	end;
+
+  //Устанавливаем интервал для сбора мусора
+  SetSweepInterval;
 end;
 
 function TDM.DatabaseOpenedBy: string;
@@ -880,29 +867,35 @@ procedure TDM.ResetExclusive;
 begin
 	{ Снятие запроса на монопольный доступ }
 	MainForm.CS.Enter;
-	try
-		adtFlags.Edit;
-		adtFlags.FieldByName( 'ComputerName').AsString := '';
-		adtFlags.FieldByName( 'ExclusiveID').AsString := '';
-		adtFlags.Post;
-	except
-	end;
-	MainForm.CS.Leave;
+  try
+    try
+      adtFlags.Edit;
+      adtFlags.FieldByName( 'ComputerName').AsString := '';
+      adtFlags.FieldByName( 'ExclusiveID').AsString := '';
+      adtFlags.Post;
+    except
+    end;
+  finally
+  	MainForm.CS.Leave;
+  end;
 end;
 
 procedure TDM.SetExclusive;
 begin
 	{ Установка запроса на монопольный доступ }
 	MainForm.CS.Enter;
-	try
-		adtFlags.Edit;
-		adtFlags.FieldByName( 'ComputerName').AsString := GetComputerName_;
-		adtFlags.FieldByName( 'ExclusiveID').AsString := IntToHex(
-			GetUniqueID( Application.ExeName, ''{MainForm.VerInfo.FileVersion}), 8);
-		adtFlags.Post;
-	except
-	end;
-	MainForm.CS.Leave;
+  try
+    try
+      adtFlags.Edit;
+      adtFlags.FieldByName( 'ComputerName').AsString := GetComputerName_;
+      adtFlags.FieldByName( 'ExclusiveID').AsString := IntToHex(
+        GetUniqueID( Application.ExeName, ''{MainForm.VerInfo.FileVersion}), 8);
+      adtFlags.Post;
+    except
+    end;
+  finally
+  	MainForm.CS.Leave;
+  end;
 end;
 
 function TDM.GetCumulative: boolean;
@@ -1151,6 +1144,26 @@ begin
     end;
   finally
     MainConnection1.Open;
+  end;
+end;
+
+procedure TDM.SetSweepInterval;
+begin
+  with ConfigService do
+  begin
+    ServerName := '';
+    DatabaseName := MainConnection1.DBName;
+    Params.Clear;
+    Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+    Params.Add('password=' + MainConnection1.ConnectParams.Password);
+    Active := True;
+    try
+      Tracer.TR('Config', 'Set sweep interval');
+      SetSweepInterval(0);
+      Tracer.TR('Config', 'Set sweep interval complete');
+    finally
+      Active := False;
+    end;
   end;
 end;
 

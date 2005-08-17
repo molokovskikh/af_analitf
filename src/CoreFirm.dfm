@@ -796,7 +796,6 @@ object CoreFirmForm: TCoreFirmForm
     AutoCommit = True
     Left = 88
     Top = 112
-    oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
@@ -1074,7 +1073,6 @@ object CoreFirmForm: TCoreFirmForm
     Left = 200
     Top = 264
     WaitEndMasterScroll = True
-    dcForceOpen = True
     object adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField
       FieldName = 'PRICEAVG'
     end
