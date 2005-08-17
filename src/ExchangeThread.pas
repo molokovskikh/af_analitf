@@ -5,7 +5,7 @@ interface
 uses
 	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
-  IdException, WinSock, RxVerInf, pFIBQuery;
+  IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase;
 
 type
 
@@ -46,6 +46,7 @@ private
 	FileStream: TFileStream;
 	RecThread: TReclameThread;
   StartExec : TDateTime;
+  AbsentPriceCodeSL : TStringList;
 
 	procedure SetStatus;
 	procedure SetProgress;
@@ -68,6 +69,7 @@ private
 	procedure CheckNewExe;
 	procedure CheckNewMDB;
 	procedure CheckNewFRF;
+  procedure GetAbsentPriceCode;
 
 	procedure ImportFromExternalMDB;
 	function GetXMLDateTime( ADateTime: TDateTime): string;
@@ -85,12 +87,14 @@ private
   procedure adcUpdateAfterExecute(Sender: TObject);
 protected
 	procedure Execute; override;
+public
+  destructor Destroy; override;
 end;
 
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB, U_FolderMacros, LU_Tracer, FIBQuery;
+  DB, U_FolderMacros, LU_Tracer, FIBQuery, FIBDatabase;
 
 { TExchangeThread }
 
@@ -415,6 +419,8 @@ var
   FS : TFileStream;
   LogStr : String;
   Len : Integer;
+	params, values: array of string;
+  I : Integer;
 begin
   try
     Flush(ExchangeForm.LogFile);
@@ -430,8 +436,30 @@ begin
     LogStr := '';
   end;
 
+  Synchronize(GetAbsentPriceCode);
+
+  if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
+    SetLength(params, AbsentPriceCodeSL.Count + 1);
+    SetLength(values, AbsentPriceCodeSL.Count + 1);
+    for I := 0 to AbsentPriceCodeSL.Count-1 do begin
+      params[i]:= 'PriceCode';
+      values[i]:= AbsentPriceCodeSL[i];
+    end;
+    params[AbsentPriceCodeSL.Count]:= 'Log';
+    values[AbsentPriceCodeSL.Count]:= LogStr;
+  end
+  else begin
+    SetLength(params, 2);
+    SetLength(values, 2);
+    params[0]:= 'PriceCode';
+    values[0]:= 'NULL';
+    params[1]:= 'Log';
+    values[1]:= LogStr;
+  end;
+
 //  Res := SOAP.Invoke( 'MaxSynonymCode', ['Log'], [LogStr]);
-	Res := SOAP.Invoke( 'MaxSynonymCodeV2', ['Log'], [LogStr]);
+//	Res := SOAP.Invoke( 'MaxSynonymCodeV2', ['Log'], [LogStr]);
+	Res := SOAP.Invoke( 'MaxSynonymCodeV2', params, values);
 
 	ExchangeDateTime := FromXMLToDateTime( Res.Text);
 	DM.adtParams.Edit;
@@ -1546,6 +1574,39 @@ begin
   Secs := SecondsBetween(StopExec, StartExec);
   if Secs > 3 then
     Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+end;
+
+destructor TExchangeThread.Destroy;
+begin
+  if Assigned(AbsentPriceCodeSL) then
+    AbsentPriceCodeSL.Free;
+  inherited;
+end;
+
+procedure TExchangeThread.GetAbsentPriceCode;
+var
+  I : Integer;
+begin
+  try
+    Tracer.TR('test', 'Before');
+    DM.t.ExecQuery;
+    try
+      Tracer.TR('test', 'In');
+      if DM.t.RecordCount > 0 then begin
+        AbsentPriceCodeSL := TStringList.Create;
+        while not DM.t.Eof do begin
+          AbsentPriceCodeSL.Add(DM.t.FieldByName('PRICECODE').AsString);
+          DM.t.Next;
+        end;
+      end;
+    finally
+      DM.t.Close;
+      Tracer.TR('test', 'After');
+    end;
+  except
+    on E : Exception do
+      Tracer.TR('test', E.Message);
+  end;
 end;
 
 end.

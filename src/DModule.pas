@@ -91,6 +91,7 @@ type
     adtClientsREQMASK: TFIBBCDField;
     adtClientsTECHSUPPORT: TFIBStringField;
     adtClientsLEADFROMBASIC: TFIBSmallIntField;
+    t: TpFIBQuery;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
@@ -324,6 +325,19 @@ begin
           [E.Message]);
     end;
   end;
+  try
+    MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
+    list := DM.MainConnection1.UserNames;
+  finally
+    DM.MainConnection1.Close;
+  end;
+	if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
+	begin
+		MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
+			'Запуск программы невозможен.', [ MaxUsers]),
+			MB_ICONERROR or MB_OK);
+    ExitProcess(2);
+	end;
 
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
     DBFileSize := GetFileSize(MainConnection1.DBName);
@@ -340,21 +354,6 @@ begin
 			MB_ICONERROR or MB_OK);
     ExitProcess(2);
   end;
-  
-  try
-    MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
-    list := DM.MainConnection1.UserNames;
-  finally
-    DM.MainConnection1.Close;
-  end;
-	if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
-	begin
-		MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
-			'Запуск программы невозможен.', [ MaxUsers]),
-			MB_ICONERROR or MB_OK);
-    ExitProcess(2);
-	end;
-
   //Устанавливаем интервал для сбора мусора
   SetSweepInterval;
 end;

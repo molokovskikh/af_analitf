@@ -904,4 +904,23 @@ object DM: TDM
     Left = 576
     Top = 384
   end
+  object t: TpFIBQuery
+    Transaction = DefTran
+    Database = MainConnection1
+    SQL.Strings = (
+      'select distinct c.Pricecode'
+      '    from'
+      '      core c'
+      '      left join synonyms s on s.synonymcode = c.synonymcode'
+      
+        '      left join synonymfirmcr sfc on sfc.synonymfirmcrcode = c.s' +
+        'ynonymfirmcrcode'
+      '    where'
+      '           c.synonymcode > 0'
+      
+        '       and ((s.synonymcode is null) or (sfc.synonymfirmcrcode is' +
+        ' null))')
+    Left = 648
+    Top = 344
+  end
 end
