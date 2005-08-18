@@ -15,11 +15,17 @@ const
   //макс. кол-во писем доставаемых с сервера
   RegisterId=59; //код реестра в справочнике фирм
 
+
 type
   //способ вычисления разницы в цены от другого поставщика
   //pdmPrev - от предыдущего Поставщика, pdmMin - от Поставщика с min ценой,
   //pdmMinEnabled - от Основн.Пост. с min ценой
   TPriceDeltaMode =( pdmPrev, pdmMin, pdmMinEnabled);
+
+  //exit codes - Коды ошибок выхода из программы
+  TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
+    ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
+    ecGetFreeDiskSpace);
 
   TDM = class(TDataModule)
     MainConnection2: TADOConnection;
@@ -101,16 +107,18 @@ type
     procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnection1AfterConnect(Sender: TObject);
   private
-	  ClientInserted: Boolean;
+    ClientInserted: Boolean;
+    //Требуется ли подтверждение обмена
+    FNeedCommitExchange : Boolean;
     procedure CheckRestrictToRun;
   public
-  	function DatabaseOpenedBy: string;
+    function DatabaseOpenedBy: string;
     function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
     procedure CompactDataBase(NewPassword: string='');
     procedure ClearPassword( ADatasource: string);
     procedure OpenDatabase( ADatasource: string);
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
-	APreview: boolean = False; PrintDlg: boolean = True);
+  APreview: boolean = False; PrintDlg: boolean = True);
     procedure ClientChanged;
     function GetTablesUpdatesInfo(ParamTableName: string): string;
     procedure LinkExternalTables;
@@ -143,6 +151,9 @@ type
     procedure SetSweepInterval;
     function GetDisplayColors : Integer;
     function TCPPresent : Boolean;
+    function NeedCommitExchange : Boolean;
+    procedure SetNeedCommitExchange;
+    procedure ResetNeedCommitExchange;
   end;
 
 var
@@ -160,13 +171,14 @@ var
   LDBFileName : String;
   DBCompress : Boolean;
 begin
+  ResetNeedCommitExchange;
   //Проверка версий
 //  VersionValid;
 
 {
-	MainConnection.ConnectionString :=
-		SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
-			ExePath + DatabaseName);
+  MainConnection.ConnectionString :=
+    SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
+      ExePath + DatabaseName);
 }      
 
   MainConnection1.DBName := ExePath + DatabaseName;
@@ -175,19 +187,18 @@ begin
   if not FileExists(ExePath + DatabaseName) then begin
     MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
       MB_ICONERROR or MB_OK);
-    ExitProcess(7);
+    Halt( Integer(ecDBFileNotExists) );
   end;
 
   if ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
   then begin
     MessageBox( Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]),
       MB_ICONERROR or MB_OK);
-    ExitProcess(6);
+    Halt( Integer(ecDBFileReadOnly) );
   end;
 
   LDBFileName := ChangeFileExt(ExeName, '.ldb');
   DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
-
 
   try
     try
@@ -198,80 +209,80 @@ begin
     end;
   except
     on E : Exception do begin
-  		MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
-			  MB_ICONERROR or MB_OK);
-      ExitProcess(5);
+      MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
+        MB_ICONERROR or MB_OK);
+      Halt( Integer(ecDBFileError) );
     end;
   end;
 
-	MainConnection1.Open;
-	{ устанавливаем текущие записи в Clients и Users }
-	if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
-		then adtClients.First;
+  MainConnection1.Open;
+  { устанавливаем текущие записи в Clients и Users }
+  if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
+    then adtClients.First;
   //Проверяем, что работа с программой была завершена корректно
   if DBCompress then
   begin
-		MessageBox(
+    MessageBox(
       'Последний сеанс работы с программой не был корректно завершен. '+
         'Сейчас будет произведено сжатие базы данных.');
-  	MainForm.FreeChildForms;
+    MainForm.FreeChildForms;
     RunCompactDataBase;
-		MessageBox( 'Сжатие базы данных завершено.');
+    MessageBox( 'Сжатие базы данных завершено.');
   end;
   SetStarted;
-	//MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
-	ClientChanged;
-	{ устанавливаем параметры печати }
-	frReport.Title := Application.Title;
-	{ проверяем и если надо создаем нужные каталоги }
-	if not DirectoryExists( ExePath + SDirDocs) then CreateDir( ExePath + SDirDocs);
-	if not DirectoryExists( ExePath + SDirExports) then CreateDir( ExePath + SDirExports);
-	if not DirectoryExists( ExePath + SDirIn) then CreateDir( ExePath + SDirIn);
-	if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
-	MainForm.SetUpdateDateTime;
-	Application.HintPause := 0;
+  //MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
+  ClientChanged;
+  { устанавливаем параметры печати }
+  frReport.Title := Application.Title;
+  { проверяем и если надо создаем нужные каталоги }
+  if not DirectoryExists( ExePath + SDirDocs) then CreateDir( ExePath + SDirDocs);
+  if not DirectoryExists( ExePath + SDirExports) then CreateDir( ExePath + SDirExports);
+  if not DirectoryExists( ExePath + SDirIn) then CreateDir( ExePath + SDirIn);
+  if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
+  MainForm.SetUpdateDateTime;
+  Application.HintPause := 0;
 
   DeleteFilesByMask(ExePath + SDirIn + '\*.zip', False);
   DeleteFilesByMask(ExePath + SDirIn + '\*.zi_', False);
 
-	{ Запуск с ключем -e (Получение данных и выход)}
-	if ( AnsiLowerCase( ParamStr( 1)) = '-e') or
-		( AnsiLowerCase( ParamStr( 1)) = '/e') then
-	begin
-		MainForm.ExchangeOnly := True;
-		RunExchange([ eaGetPrice]);
-		Application.Terminate;
-	end;
+  { Запуск с ключем -e (Получение данных и выход)}
+  if ( AnsiLowerCase( ParamStr( 1)) = '-e') or
+    ( AnsiLowerCase( ParamStr( 1)) = '/e') then
+  begin
+    MainForm.ExchangeOnly := True;
+    RunExchange([ eaGetPrice]);
+    Application.Terminate;
+  end;
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
     MainForm.DisableByHTTPName;
 end;
 
 procedure TDM.DataModuleDestroy(Sender: TObject);
 begin
-	if not MainConnection1.Connected then exit;
+  if not MainConnection1.Connected then exit;
 
-	try
-		adtParams.Edit;
-		adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-		adtParams.Post;
-	except
-	end;
+  try
+    adtParams.Edit;
+    adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+    adtParams.Post;
+  except
+  end;
   ResetStarted;
 end;
 
 procedure TDM.ClientChanged;
 begin
-	MainForm.FreeChildForms;
-	MainForm.dblcbClients.KeyValue := adtClients.FieldByName( 'ClientId').Value;
-	MainForm.SetOrdersInfo;
+  MainForm.FreeChildForms;
+  MainForm.dblcbClients.KeyValue := adtClients.FieldByName( 'ClientId').Value;
+  MainForm.SetOrdersInfo;
 end;
 
 { Проверки на невозможность запуска программы }
 procedure TDM.CheckRestrictToRun;
 var
-	list: TStringList;
-//	ExID, CompName: string;
-	MaxUsers: integer;
+  list: TStringList;
+//  ExID, CompName: string;
+  MaxUsers: integer;
   FreeAvail,
   Total,
   TotalFree,
@@ -279,42 +290,42 @@ var
 
 begin
 {
-	DM.MainConnection.Open;
-	MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
-	list := DM.DatabaseOpenedList( ExID, CompName);
-	DM.MainConnection.Close;
+  DM.MainConnection.Open;
+  MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
+  list := DM.DatabaseOpenedList( ExID, CompName);
+  DM.MainConnection.Close;
 
-	if list.Count > 1 then
-	begin
-		if ( ExID = IntToHex( GetUniqueID( Application.ExeName,
-			''), 8)) or ( ExID = '') then exit;
+  if list.Count > 1 then
+  begin
+    if ( ExID = IntToHex( GetUniqueID( Application.ExeName,
+      ''), 8)) or ( ExID = '') then exit;
 
-		MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
-			'монопольного доступ к базе данных. Запуск программы невозможен.', [ CompName]),
-			MB_ICONWARNING or MB_OK);
+    MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
+      'монопольного доступ к базе данных. Запуск программы невозможен.', [ CompName]),
+      MB_ICONWARNING or MB_OK);
     ExitProcess(3);
-	end;
+  end;
 }
-	if not IsOneStart then begin
-		MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
-			MB_ICONERROR or MB_OK);
-    ExitProcess(1);
-	end;
+  if not IsOneStart then begin
+    MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
+      MB_ICONERROR or MB_OK);
+    Halt( Integer(ecDoubleStart) );
+  end;
 
   if GetDisplayColors < 16 then begin
-		MessageBox( 'Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.',
-			MB_ICONERROR or MB_OK);
-    ExitProcess(1);
+    MessageBox( 'Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.',
+      MB_ICONERROR or MB_OK);
+    Halt( Integer(ecColor) );
   end;
 
   if not TCPPresent then begin
-		MessageBox( 'Не возможен запуск программы без установленного протокола TCP/IP.',
-			MB_ICONERROR or MB_OK);
-    ExitProcess(1);
+    MessageBox( 'Не возможен запуск программы без установленного протокола TCP/IP.',
+      MB_ICONERROR or MB_OK);
+    Halt( Integer(ecTCPNotExists) );
   end;
 
   try
-	DM.MainConnection1.Open;
+  DM.MainConnection1.Open;
   except
     on E : EFIBError do begin
       if E.IBErrorCode = isc_network_error then
@@ -331,13 +342,13 @@ begin
   finally
     DM.MainConnection1.Close;
   end;
-	if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
-	begin
-		MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
-			'Запуск программы невозможен.', [ MaxUsers]),
-			MB_ICONERROR or MB_OK);
-    ExitProcess(2);
-	end;
+  if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
+  begin
+    MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
+      'Запуск программы невозможен.', [ MaxUsers]),
+      MB_ICONERROR or MB_OK);
+    Halt( Integer(ecUserLimit) );
+  end;
 
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
     DBFileSize := GetFileSize(MainConnection1.DBName);
@@ -345,14 +356,14 @@ begin
     if DBFileSize > FreeAvail then begin
       MessageBox( Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %d байт.', [ DBFileSize ]),
         MB_ICONERROR or MB_OK);
-      ExitProcess(2);
+      Halt( Integer(ecFreeDiskSpace) );
     end;
   end
   else begin
-		MessageBox( Format( 'Не удается получить количество свободного места на диске.' +
-			#13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]),
-			MB_ICONERROR or MB_OK);
-    ExitProcess(2);
+    MessageBox( Format( 'Не удается получить количество свободного места на диске.' +
+      #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]),
+      MB_ICONERROR or MB_OK);
+    Halt( Integer(ecGetFreeDiskSpace) );
   end;
   //Устанавливаем интервал для сбора мусора
   SetSweepInterval;
@@ -360,45 +371,45 @@ end;
 
 function TDM.DatabaseOpenedBy: string;
 var
-	WasConnected: boolean;
+  WasConnected: boolean;
 begin
-	result := '';
+  result := '';
 {
-	WasConnected := MainConnection.Connected;
-	MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
-		JET_SCHEMA_USERROSTER, adsSelect);
-	if adsSelect.RecordCount > 1 then
-		result := adsSelect.FieldByName( 'COMPUTER_NAME').AsString;
-	adsSelect.Close;
-	if not WasConnected then MainConnection.Close;
+  WasConnected := MainConnection.Connected;
+  MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
+    JET_SCHEMA_USERROSTER, adsSelect);
+  if adsSelect.RecordCount > 1 then
+    result := adsSelect.FieldByName( 'COMPUTER_NAME').AsString;
+  adsSelect.Close;
+  if not WasConnected then MainConnection.Close;
 }  
 end;
 
 function TDM.DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
 var
-	WasConnected: boolean;
+  WasConnected: boolean;
 begin
-	result := TStringList.Create;
+  result := TStringList.Create;
 {
-	WasConnected := MainConnection.Connected;
-	MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
-		JET_SCHEMA_USERROSTER, adsSelect);
-	while not adsSelect.Eof do
-	begin
-		result.Add( adsSelect.FieldByName( 'COMPUTER_NAME').AsString);
-		adsSelect.Next;
-	end;
-	MainForm.CS.Enter;
-	try
-		ExclusiveID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
-		ComputerName := DM.adtFlags.FieldByName( 'ComputerName').AsString;
-	except
-		ExclusiveID := '';
-		ComputerName := '';
-	end;
-	MainForm.CS.Leave;
-	adsSelect.Close;
-	if not WasConnected then MainConnection.Close;
+  WasConnected := MainConnection.Connected;
+  MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
+    JET_SCHEMA_USERROSTER, adsSelect);
+  while not adsSelect.Eof do
+  begin
+    result.Add( adsSelect.FieldByName( 'COMPUTER_NAME').AsString);
+    adsSelect.Next;
+  end;
+  MainForm.CS.Enter;
+  try
+    ExclusiveID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
+    ComputerName := DM.adtFlags.FieldByName( 'ComputerName').AsString;
+  except
+    ExclusiveID := '';
+    ComputerName := '';
+  end;
+  MainForm.CS.Leave;
+  adsSelect.Close;
+  if not WasConnected then MainConnection.Close;
 }  
 end;
 
@@ -480,12 +491,12 @@ begin
     Tracer.TR('BackupRestore', 'Stop');
     MainConnection1.Open;
   end;
-	if ok then
-	begin
-		adtParams.Edit;
-		adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
-		adtParams.Post;
-	end;
+  if ok then
+  begin
+    adtParams.Edit;
+    adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
+    adtParams.Post;
+  end;
 {
   NewPassword:=Trim(NewPassword);
   if NewPassword='' then NewPassword:=GetConnectionProperty(
@@ -513,12 +524,12 @@ begin
     MainConnection.Open;
     Screen.Cursor:=crDefault;
     MainForm.StatusText:='';
-	if ok then
-	begin
-		adtParams.Edit;
-		adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
-		adtParams.Post;
-	end;
+  if ok then
+  begin
+    adtParams.Edit;
+    adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
+    adtParams.Post;
+  end;
   end;
 }  
 end;
@@ -526,38 +537,38 @@ end;
 procedure TDM.ClearPassword( ADatasource: string);
 begin
 {
-	if MainConnection.Connected then MainConnection.Close;
-	MainConnection.Mode := cmShareExclusive;
-	MainConnection.ConnectionString := SetConnectionProperty(
-		MainConnection.ConnectionString, 'Data Source', ADataSource);
-	MainConnection.Open;
-	adcUpdate.CommandText := 'ALTER DATABASE PASSWORD NULL ' +
-		GetConnectionProperty( MainConnection.ConnectionString,
-		'Jet OLEDB:Database Password');
-	try
-		adcUpdate.Execute;
-	except
-	end;
-	MainConnection.Close;
-	MainConnection.Mode := cmReadWrite;
+  if MainConnection.Connected then MainConnection.Close;
+  MainConnection.Mode := cmShareExclusive;
+  MainConnection.ConnectionString := SetConnectionProperty(
+    MainConnection.ConnectionString, 'Data Source', ADataSource);
+  MainConnection.Open;
+  adcUpdate.CommandText := 'ALTER DATABASE PASSWORD NULL ' +
+    GetConnectionProperty( MainConnection.ConnectionString,
+    'Jet OLEDB:Database Password');
+  try
+    adcUpdate.Execute;
+  except
+  end;
+  MainConnection.Close;
+  MainConnection.Mode := cmReadWrite;
 }  
 end;
 
 procedure TDM.OpenDatabase( ADatasource: string);
 begin
-	if MainConnection1.Connected then MainConnection1.Close;
+  if MainConnection1.Connected then MainConnection1.Close;
 {
-	MainConnection.ConnectionString :=
-		SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
-			ADatasource);
+  MainConnection.ConnectionString :=
+    SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
+      ADatasource);
 }
-	MainConnection1.Open;
+  MainConnection1.Open;
 end;
 
 //загружает отчет и выводит на экран или печатает; если указан DataSet, то
 //блокируется визуальное перемещение по нему и происходит возврат на первичную запись
 procedure TDM.ShowFastReport(FileName: string; DataSet: TDataSet = nil;
-	APreview: boolean = False; PrintDlg: boolean = True);
+  APreview: boolean = False; PrintDlg: boolean = True);
 var
   Mark: TBookmarkStr;
 begin
@@ -579,8 +590,10 @@ begin
 
     if not APreview then begin
       frReport.PrepareReport;
-	if PrintDlg then frReport.PrintPreparedReportDlg
-		else frReport.PrintPreparedReport( '', 1, False, frAll);
+      if PrintDlg then
+        frReport.PrintPreparedReportDlg
+      else
+        frReport.PrintPreparedReport( '', 1, False, frAll);
     end
     else
       frReport.ShowReport;
@@ -608,7 +621,7 @@ begin
 //  adtClients.Properties['Update Criteria'].Value:=adCriteriaKey;
 //  adtClients.Properties['Update Resync'].Value:=adResyncAll;
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
-	then adtClients.First;
+  then adtClients.First;
 //  MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
   ClientChanged;
 end;
@@ -692,32 +705,32 @@ end;
 // подключает таблицы из старого MDB
 procedure TDM.LinkExternalMDB( ATablesList: TStringList);
 var
-	Table, Catalog: Variant;
-	i: integer;
+  Table, Catalog: Variant;
+  i: integer;
 begin
 {
-	Catalog := CreateOleObject( 'ADOX.Catalog');
+  Catalog := CreateOleObject( 'ADOX.Catalog');
         Catalog.ActiveConnection := MainConnection.ConnectionObject;
 
-	try
-		for i := 0 to ATablesList.Count - 1 do
-		begin
-			if Pos( 'Tmp', ATablesList[ i]) = 1 then continue;
-			Table := CreateOleObject( 'ADOX.Table');
-			Table.ParentCatalog := Catalog;
-			Table.Name := 'Old' + ATablesList[ i];
-			Table.Properties( 'Jet OLEDB:Create Link') := True;
-			Table.Properties( 'Jet OLEDB:Link Datasource') := ExePath + DatabaseName;
-			Table.Properties( 'Jet OLEDB:Remote Table Name') := ATablesList[ i];
-			try
-				Catalog.Tables.Append( Table);
-			except
-			end;
-			Table := Unassigned;
-		end;
-	finally
-		Catalog := Unassigned;
-	end;
+  try
+    for i := 0 to ATablesList.Count - 1 do
+    begin
+      if Pos( 'Tmp', ATablesList[ i]) = 1 then continue;
+      Table := CreateOleObject( 'ADOX.Table');
+      Table.ParentCatalog := Catalog;
+      Table.Name := 'Old' + ATablesList[ i];
+      Table.Properties( 'Jet OLEDB:Create Link') := True;
+      Table.Properties( 'Jet OLEDB:Link Datasource') := ExePath + DatabaseName;
+      Table.Properties( 'Jet OLEDB:Remote Table Name') := ATablesList[ i];
+      try
+        Catalog.Tables.Append( Table);
+      except
+      end;
+      Table := Unassigned;
+    end;
+  finally
+    Catalog := Unassigned;
+  end;
   }
 end;
 
@@ -852,57 +865,57 @@ end;
 { Запомнить последнюю успешную стадию импорта }
 procedure TDM.SetImportStage( AValue: integer);
 begin
-	DM.adtParams.Edit;
-	DM.adtParams.FieldByName( 'ImportStage').AsInteger := AValue;
-	DM.adtParams.Post;
+  DM.adtParams.Edit;
+  DM.adtParams.FieldByName( 'ImportStage').AsInteger := AValue;
+  DM.adtParams.Post;
 end;
 
 function TDM.GetImportStage: integer;
 begin
-	result := DM.adtParams.FieldByName( 'ImportStage').AsInteger;
+  result := DM.adtParams.FieldByName( 'ImportStage').AsInteger;
 end;
 
 procedure TDM.BackupDatabase( APath: string);
 begin
-	MainConnection1.Close;
-	Windows.CopyFile( PChar( APath + DatabaseName),
-		PChar( APath + ChangeFileExt( DatabaseName, '.bak')), False);
+  MainConnection1.Close;
+  Windows.CopyFile( PChar( APath + DatabaseName),
+    PChar( APath + ChangeFileExt( DatabaseName, '.bak')), False);
 end;
 
 function TDM.IsBackuped( APath: string): boolean;
 begin
-	result := FileExists( APath + ChangeFileExt( DatabaseName, '.bak'));
+  result := FileExists( APath + ChangeFileExt( DatabaseName, '.bak'));
 end;
 
 procedure TDM.RestoreDatabase( APath: string);
 begin
-	Windows.DeleteFile( PChar( APath + ChangeFileExt( DatabaseName, '.ldb')));
-	MoveFile_( APath + ChangeFileExt( DatabaseName, '.bak'),
-		APath + DatabaseName);
+  Windows.DeleteFile( PChar( APath + ChangeFileExt( DatabaseName, '.ldb')));
+  MoveFile_( APath + ChangeFileExt( DatabaseName, '.bak'),
+    APath + DatabaseName);
 end;
 
 procedure TDM.ClearBackup( APath: string);
 begin
-	Windows.DeleteFile( PChar( APath + ChangeFileExt( DatabaseName, '.bak')));
+  Windows.DeleteFile( PChar( APath + ChangeFileExt( DatabaseName, '.bak')));
 end;
 
 function TDM.Unpacked: boolean;
 var
-	SR: TSearchRec;
+  SR: TSearchRec;
 begin
-	result := FindFirst( ExePath + SDirIn + '\*.zi_', faAnyFile, SR) <> 0;
-	if not result then
-	begin
-		MoveFile_( ExePath + SDirIn + '\' + SR.Name,
-			ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zip'));
-	end;
-	FindClose( SR);
+  result := FindFirst( ExePath + SDirIn + '\*.zi_', faAnyFile, SR) <> 0;
+  if not result then
+  begin
+    MoveFile_( ExePath + SDirIn + '\' + SR.Name,
+      ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zip'));
+  end;
+  FindClose( SR);
 end;
 
 procedure TDM.ResetExclusive;
 begin
-	{ Снятие запроса на монопольный доступ }
-	MainForm.CS.Enter;
+  { Снятие запроса на монопольный доступ }
+  MainForm.CS.Enter;
   try
     try
       adtFlags.Edit;
@@ -912,14 +925,14 @@ begin
     except
     end;
   finally
-  	MainForm.CS.Leave;
+    MainForm.CS.Leave;
   end;
 end;
 
 procedure TDM.SetExclusive;
 begin
-	{ Установка запроса на монопольный доступ }
-	MainForm.CS.Enter;
+  { Установка запроса на монопольный доступ }
+  MainForm.CS.Enter;
   try
     try
       adtFlags.Edit;
@@ -930,66 +943,66 @@ begin
     except
     end;
   finally
-  	MainForm.CS.Leave;
+    MainForm.CS.Leave;
   end;
 end;
 
 function TDM.GetCumulative: boolean;
 begin
-	try
-		result := adtParams.FieldByName( 'Cumulative').AsBoolean;
-	except
-		result := False;
-	end;
+  try
+    result := adtParams.FieldByName( 'Cumulative').AsBoolean;
+  except
+    result := False;
+  end;
 end;
 
 procedure TDM.ResetCumulative;
 begin
-	try
-		adtParams.Edit;
-		adtParams.FieldByName( 'Cumulative').AsBoolean := False;
-		adtParams.Post;
-	except
-	end;
+  try
+    adtParams.Edit;
+    adtParams.FieldByName( 'Cumulative').AsBoolean := False;
+    adtParams.Post;
+  except
+  end;
 end;
 
 procedure TDM.SetCumulative;
 begin
-	try
-		adtParams.Edit;
-		adtParams.FieldByName( 'Cumulative').AsBoolean := True;
-		adtParams.Post;
-	except
-	end;
+  try
+    adtParams.Edit;
+    adtParams.FieldByName( 'Cumulative').AsBoolean := True;
+    adtParams.Post;
+  except
+  end;
 end;
 
 function TDM.GetStarted: Boolean;
 begin
-	try
-		result := adtParams.FieldByName( 'Started').AsBoolean;
-	except
-		result := False;
-	end;
+  try
+    result := adtParams.FieldByName( 'Started').AsBoolean;
+  except
+    result := False;
+  end;
 end;
 
 procedure TDM.ResetStarted;
 begin
-	try
-		adtParams.Edit;
-		adtParams.FieldByName( 'Started').AsBoolean := False;
-		adtParams.Post;
-	except
-	end;
+  try
+    adtParams.Edit;
+    adtParams.FieldByName( 'Started').AsBoolean := False;
+    adtParams.Post;
+  except
+  end;
 end;
 
 procedure TDM.SetStarted;
 begin
-	try
-		adtParams.Edit;
-		adtParams.FieldByName( 'Started').AsBoolean := True;
-		adtParams.Post;
-	except
-	end;
+  try
+    adtParams.Edit;
+    adtParams.FieldByName( 'Started').AsBoolean := True;
+    adtParams.Post;
+  except
+  end;
 end;
 
 procedure TDM.VersionValid;
@@ -1146,15 +1159,15 @@ end;
 
 procedure TDM.MainConnection1AfterConnect(Sender: TObject);
 begin
-	//открываем таблицы с параметрами
-	adtParams.CloseOpen(True);
-	adtProvider.CloseOpen(True);
-	adtReclame.CloseOpen(True);
-	adtClients.CloseOpen(True);
-	try
-		adtFlags.CloseOpen(True);
-	except
-	end;
+  //открываем таблицы с параметрами
+  adtParams.CloseOpen(True);
+  adtProvider.CloseOpen(True);
+  adtReclame.CloseOpen(True);
+  adtClients.CloseOpen(True);
+  try
+    adtFlags.CloseOpen(True);
+  except
+  end;
 end;
 
 procedure TDM.SweepDB;
@@ -1228,6 +1241,21 @@ begin
   except
     Result := False;
   end;
+end;
+
+function TDM.NeedCommitExchange: Boolean;
+begin
+  Result := FNeedCommitExchange;
+end;
+
+procedure TDM.ResetNeedCommitExchange;
+begin
+  FNeedCommitExchange := False;
+end;
+
+procedure TDM.SetNeedCommitExchange;
+begin
+  FNeedCommitExchange := True;
 end;
 
 end.

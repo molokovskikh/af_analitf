@@ -150,6 +150,9 @@ begin
 		exit;
 	end;
 
+  if (eaGetFullData in AExchangeActions) then
+    DM.ResetNeedCommitExchange;
+
 	//выводим форму и начинаем обмен данными
 	ExchangeForm := TExchangeForm.Create( Application);
 //	hMenuHandle := GetSystemMenu( ExchangeForm.Handle, False);

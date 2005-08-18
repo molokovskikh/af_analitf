@@ -156,7 +156,7 @@ begin
 				end;
 				TotalProgress := 20;
 				Synchronize( SetTotalProgress);
-				if eaGetPrice in ExchangeForm.ExchangeActs then
+				if (eaGetPrice in ExchangeForm.ExchangeActs) and not DM.NeedCommitExchange then
 				begin
 					GetReclame;
 //					ExchangeForm.HTTP.ReadTimeout := 1000000; // 1000 секунд на запрос
@@ -186,7 +186,7 @@ begin
         OnReclameTerminate(nil)
       else
         if eaGetPrice in ExchangeForm.ExchangeActs then
-          if not RecThread.RecTerminated then
+          if Assigned(RecThread) and not RecThread.RecTerminated then
             RecThread.OnTerminate := OnReclameTerminate
           else
             OnReclameTerminate(nil);
@@ -217,8 +217,10 @@ begin
 			if eaGetPrice in ExchangeForm.ExchangeActs then
 			begin
         DownloadReclame := True;
-				if not RecThread.RecTerminated then RecThread.WaitFor;
-				RecThread.Free;
+        if Assigned(RecThread) then begin
+          if not RecThread.RecTerminated then RecThread.WaitFor;
+          RecThread.Free;
+        end;
 			end;
       TotalProgress := 100;
       Synchronize( SetTotalProgress);
@@ -422,6 +424,8 @@ var
 	params, values: array of string;
   I : Integer;
 begin
+  DM.SetNeedCommitExchange;
+
   try
     Flush(ExchangeForm.LogFile);
     FS := TFileStream.Create(ExePath + 'Exchange.log', fmOpenRead or fmShareDenyNone);
@@ -469,6 +473,7 @@ begin
     MainForm.EnableByHTTPName;
   end;
 	DM.adtParams.Post;
+  DM.ResetNeedCommitExchange;
 end;
 
 procedure TExchangeThread.DoSendOrders;
@@ -1219,6 +1224,8 @@ begin
 	Synchronize( SetTotalProgress);
 	SQL.Text := 'EXECUTE PROCEDURE MinPricesSetPriceCode(' +
 		DM.adtClients.FieldByName( 'LeadFromBasic').AsString + ')';
+	ExecQuery;
+	SQL.Text := 'EXECUTE PROCEDURE SETPRICESIZE';
 	ExecQuery;
   DM.MainConnection1.DefaultTransaction.CommitRetaining;
   //DM.MainConnection1.DefaultTransaction.StartTransaction;
