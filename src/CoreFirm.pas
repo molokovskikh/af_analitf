@@ -111,6 +111,7 @@ type
     procedure adsCore2BeforeClose(DataSet: TDataSet);
     procedure TimerTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
+    procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
     OrderSum: Double;
@@ -521,6 +522,15 @@ begin
 		CoreForm.adsCore.Locate( 'SynonymCode;SynonymFirmCrCode;PriceCode;RegionCode',
 			VarArrayOf([ SynonymCode, SynonymFirmCrCode, lPriceCode, lRegionCode]), []);
 	end;
+end;
+
+procedure TCoreFirmForm.dbgCoreKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (KEY in ['0'..'9']) and dbgCore.InSearch then begin
+		SendMessage( dbgCore.Handle, WM_KEYDOWN, VK_ESCAPE, 0);
+		SendMessage( dbgCore.Handle, WM_CHAR, Ord( Key), 0);
+  end;
+  inherited;
 end;
 
 end.

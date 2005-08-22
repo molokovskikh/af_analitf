@@ -62,6 +62,7 @@ object CoreFirmForm: TCoreFirmForm
     TitleFont.Style = []
     OnGetCellParams = dbgCoreGetCellParams
     OnKeyDown = dbgCoreKeyDown
+    OnKeyPress = dbgCoreKeyPress
     SearchField = 'SynonymName'
     InputField = 'OrderCount'
     SearchPosition = spTop
