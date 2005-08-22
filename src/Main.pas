@@ -121,6 +121,8 @@ TMainForm = class(TForm)
     itmExternalOrders: TMenuItem;
     itmExternal: TMenuItem;
     adsOrdersH: TpFIBDataSet;
+    ToolButton8: TToolButton;
+    actWayBill: TAction;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
