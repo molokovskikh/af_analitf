@@ -473,6 +473,9 @@ begin
     MainForm.EnableByHTTPName;
   end;
 	DM.adtParams.Post;
+	CloseFile( ExchangeForm.LogFile);
+  SysUtils.DeleteFile(ExePath + 'Exchange.log');
+  Rewrite( ExchangeForm.LogFile); //סמחהאול כמד-פאיכ
   DM.ResetNeedCommitExchange;
 end;
 

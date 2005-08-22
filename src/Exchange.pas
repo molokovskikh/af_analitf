@@ -192,8 +192,6 @@ begin
     WriteLn(ExchangeForm.LogFile, 'Сессия окончена в ' + DateTimeToStr(Now));
     WriteLn(ExchangeForm.LogFile, '---------------------------');
 		CloseFile( ExchangeForm.LogFile);
-    if ( eaGetPrice in AExchangeActions) and Result then
-      DeleteFile(ExePath + 'Exchange.log')
   finally
 		ExchangeForm.Free;
 	end;
