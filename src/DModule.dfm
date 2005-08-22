@@ -212,10 +212,22 @@ object DM: TDM
     Top = 216
   end
   object adtReclame: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'UPDATE RECLAME'
+      'SET '
+      '    UPDATEDATETIME = :UPDATEDATETIME'
+      'WHERE'
+      '    RECLAMEURL = :RECLAMEURL'
+      '    ')
     SelectSQL.Strings = (
-      'select * from Reclame')
+      'SELECT'
+      '    RECLAMEURL,'
+      '    UPDATEDATETIME'
+      'FROM'
+      '    RECLAME ')
     Transaction = DefTran
     Database = MainConnection1
+    AutoCommit = True
     Left = 200
     Top = 216
   end

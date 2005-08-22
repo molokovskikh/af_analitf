@@ -18,6 +18,7 @@ type
     AWorkMode: TWorkMode;
 	  const AWorkCount: Integer);
    procedure OnConnectError(AMessage : String);
+   procedure UpdateReclameTable;
    protected
     procedure Execute; override;
   end;
@@ -196,14 +197,11 @@ begin
             SysUtils.DeleteFile(ZipFileName);
             UnZip.Free;
           end;
-          
+
           if Terminated then Abort;
           FSOAP.Invoke('ReclameComplete', [], []);
-          
-          DM.adtReclame.Edit;
-          DM.adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := Now;
-          DM.adtReclame.Post;
 
+          Synchronize(UpdateReclameTable);
         end;
 
         FStatusStr := 'Загрузка информационного блока завершена';
@@ -287,6 +285,13 @@ procedure TReclameThread.UpdateProgress;
 begin
   ExchangeForm.lReclameStatus.Caption := FStatusStr;
   ExchangeForm.ReclameBar.Position := FStatusPosition;
+end;
+
+procedure TReclameThread.UpdateReclameTable;
+begin
+  DM.adtReclame.Edit;
+  DM.adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := Now;
+  DM.adtReclame.Post;
 end;
 
 end.
