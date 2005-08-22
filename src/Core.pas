@@ -165,7 +165,7 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
-	PrintEnabled:=True;
+	PrintEnabled:=False;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;

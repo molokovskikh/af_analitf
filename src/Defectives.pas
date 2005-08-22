@@ -80,7 +80,7 @@ var
 	Year, Month, Day: Word;
 begin
 	inherited;
-	PrintEnabled:=True;
+	PrintEnabled:=False;
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
 	Day := DayOf( Date);

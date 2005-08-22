@@ -124,7 +124,7 @@ var
 	Year, Month, Day: Word;
 begin
 	inherited;
-	PrintEnabled := True;
+	PrintEnabled := False;
 	OrdersForm := TOrdersForm.Create( Application);
   WayBillListForm := TWayBillListForm.Create(Application);
 	Reg := TRegistry.Create;
@@ -186,7 +186,7 @@ begin
 			btnMoveSend.Caption := 'Перевести в отправленные';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
-			PrintEnabled := True;
+			//PrintEnabled := True;
 		end;
 		1: begin
 			adsOrdersH.Close;
@@ -198,7 +198,7 @@ begin
 			btnMoveSend.Caption := 'Вернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
-			PrintEnabled := False;
+			//PrintEnabled := False;
 		end;
 	end;
 
@@ -218,6 +218,8 @@ begin
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
+  PrintEnabled := TabControl.TabIndex = 1;
+  OrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
 	if adsOrdersH.RecordCount = 0 then dbgOrdersH.ReadOnly := True
 		else dbgOrdersH.ReadOnly := False;

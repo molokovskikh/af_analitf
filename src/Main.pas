@@ -566,7 +566,8 @@ end;
 procedure TMainForm.actSaveUpdate(Sender: TObject);
 begin
 	actSave.Enabled := ( Screen.ActiveControl <> nil) and
-		 ( Screen.ActiveControl is TCustomDBGridEh);
+		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
+     and ActiveChild.PrintEnabled;
 end;
 
 procedure TMainForm.SetOrdersInfo;

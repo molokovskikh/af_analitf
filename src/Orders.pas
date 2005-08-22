@@ -65,7 +65,7 @@ uses OrdersH, DModule, Constant, Main;
 
 procedure TOrdersForm.ShowForm(AOrderId: Integer);
 begin
-  PrintEnabled:=True;
+  //PrintEnabled:=False;
   SetParams(AOrderId);
   inherited ShowForm;
 end;

@@ -89,7 +89,7 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
-	PrintEnabled := True;
+	PrintEnabled := False;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	adsSummary.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
