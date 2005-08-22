@@ -5,6 +5,9 @@ program AnalitF;
 uses
   Forms,
   SysUtils,
+  Windows,
+  ActiveX,
+  SHDocVw,
   Main in 'Main.pas' {MainForm},
   DModule in 'DModule.pas' {DM: TDataModule},
   AProc in 'AProc.pas',
@@ -56,7 +59,22 @@ uses
 {$R Progress.RES}
 {$R Icons.RES}
 
+var
+  B : TWebBrowser;
+
 begin
+  try
+    CoInitialize(nil);
+    try
+      B := TWebBrowser.Create(nil);
+      B.Free;
+    finally
+      CoUninitialize;
+    end;
+  except
+    MessageBox( 'ƒл€ запуска приложени€ необходим установленный Internet Explorer 4.0 или выше.', MB_ICONERROR or MB_OK);
+    Halt( Integer(ecIE40) );
+  end;
   Application.Initialize;
   Application.Title := 'јналит‘ј–ћј÷»я';
   Application.CreateForm(TMainForm, MainForm);

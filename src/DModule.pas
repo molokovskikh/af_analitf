@@ -26,7 +26,7 @@ type
   //exit codes - Коды ошибок выхода из программы
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
-    ecGetFreeDiskSpace);
+    ecGetFreeDiskSpace, ecIE40);
 
   TDM = class(TDataModule)
     frReport: TfrReport;
@@ -303,7 +303,7 @@ begin
   end;
 
   if not TCPPresent then begin
-    MessageBox( 'Не возможен запуск программы без установленного протокола TCP/IP.',
+    MessageBox( 'Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.',
       MB_ICONERROR or MB_OK);
     Halt( Integer(ecTCPNotExists) );
   end;
