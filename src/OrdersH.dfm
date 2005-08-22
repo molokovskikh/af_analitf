@@ -42,23 +42,23 @@ inherited OrdersHForm: TOrdersHForm
           784
           36)
         object btnMoveSend: TButton
-          Left = 3
-          Top = 4
-          Width = 150
-          Height = 27
-          Anchors = [akLeft, akBottom]
-          Caption = #1055#1077#1088#1077#1074#1077#1089#1090#1080' '#1074' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1077
-          TabOrder = 0
-          OnClick = btnMoveSendClick
-        end
-        object btnDelete: TButton
           Left = 163
           Top = 4
           Width = 150
           Height = 27
           Anchors = [akLeft, akBottom]
-          Caption = #1059#1076#1072#1083#1080#1090#1100
+          Caption = #1055#1077#1088#1077#1074#1077#1089#1090#1080' '#1074' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1077
           TabOrder = 1
+          OnClick = btnMoveSendClick
+        end
+        object btnDelete: TButton
+          Left = 3
+          Top = 4
+          Width = 150
+          Height = 27
+          Anchors = [akLeft, akBottom]
+          Caption = #1059#1076#1072#1083#1080#1090#1100
+          TabOrder = 0
           OnClick = btnDeleteClick
         end
         object btnWayBillList: TButton
