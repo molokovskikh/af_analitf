@@ -218,6 +218,7 @@ begin
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
+  dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
 	if adsOrdersH.RecordCount = 0 then dbgOrdersH.ReadOnly := True
 		else dbgOrdersH.ReadOnly := False;
 end;
