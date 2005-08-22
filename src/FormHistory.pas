@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, ADODB, DBGridEh,
+  Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, DBGridEh,
   ToughDBGrid, FIBDataSet, pFIBDataSet;
 
 type
@@ -17,11 +17,6 @@ type
     Label1: TLabel;
     dbtPriceAvg: TDBText;
     Grid: TToughDBGrid;
-    adsOrders2: TADODataSet;
-    adsWareData2: TADODataSet;
-    adsWareData2Name: TWideStringField;
-    adsWareData2Form: TWideStringField;
-    adsWareData2PriceAvg: TBCDField;
     adsOrders: TpFIBDataSet;
     adsOrdersFULLCODE: TFIBBCDField;
     adsOrdersSYNONYMNAME: TFIBStringField;

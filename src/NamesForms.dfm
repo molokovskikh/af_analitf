@@ -195,25 +195,6 @@ inherited NamesFormsForm: TNamesFormsForm
     Left = 80
     Top = 208
   end
-  object adsForms2: TADODataSet
-    CursorType = ctStatic
-    LockType = ltReadOnly
-    AfterScroll = adsForms2AfterScroll
-    CommandText = 'SELECT * FROM CatalogShowByForm'
-    DataSource = dsNames
-    Parameters = <
-      item
-        Name = 'AShortCode'
-        Attributes = [paNullable]
-        DataType = ftInteger
-        NumericScale = 255
-        Precision = 255
-        Value = 25
-      end>
-    Prepared = True
-    Left = 432
-    Top = 104
-  end
   object dsForms: TDataSource
     DataSet = adsForms
     Left = 440
@@ -239,15 +220,6 @@ inherited NamesFormsForm: TNamesFormsForm
       Hint = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1074#1077#1089#1100' '#1082#1072#1090#1072#1083#1086#1075
       OnExecute = actShowAllExecute
     end
-  end
-  object adsNames2: TADODataSet
-    CursorType = ctStatic
-    LockType = ltReadOnly
-    CommandText = 'SELECT * FROM CatalogShowByName'
-    Parameters = <>
-    Prepared = True
-    Left = 80
-    Top = 120
   end
   object adsNames: TpFIBDataSet
     SelectSQL.Strings = (

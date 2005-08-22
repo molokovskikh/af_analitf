@@ -4,21 +4,17 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, DB, ADODB, DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
+  Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
   pFIBDataSet;
 
 type
   TOrdersForm = class(TChildForm)
-    adsOrders2: TADODataSet;
     dsOrders: TDataSource;
     Label1: TLabel;
     dbtId: TDBText;
     Label2: TLabel;
     dbtOrderDate: TDBText;
-    adsOrders2Price: TBCDField;
-    adsOrders2Order: TIntegerField;
-    adsOrders2SumOrder: TBCDField;
     lblRecordCount: TLabel;
     lblSum: TLabel;
     dbtPositions: TDBText;
@@ -28,18 +24,8 @@ type
     dbtPriceName: TDBText;
     Label5: TLabel;
     dbtRegionName: TDBText;
-    adsOrders2OrderId: TIntegerField;
-    adsOrders2FullCode: TIntegerField;
-    adsOrders2SynonymCode: TIntegerField;
-    adsOrders2SynonymFirmCrCode: TIntegerField;
-    adsOrders2Code: TWideStringField;
-    adsOrders2Synonym: TWideStringField;
-    adsOrders2SynonymFirm: TWideStringField;
-    adsOrders2Junk: TBooleanField;
     Panel1: TPanel;
     dbgOrders: TToughDBGrid;
-    adsOrders2CodeCr: TWideStringField;
-    adsOrders2Await: TBooleanField;
     adsOrders: TpFIBDataSet;
     adsOrdersORDERID: TFIBBCDField;
     adsOrdersCLIENTID: TFIBBCDField;

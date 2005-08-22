@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Grids, DBGrids, RXDBCtrl, ADODB, DB,
+  Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   Placemnt, StdCtrls, DBCtrls, DBGridEh, ToughDBGrid, ExtCtrls, Registry,
   FIBDataSet, pFIBDataSet;
 
@@ -17,15 +17,6 @@ type
     dbtName: TDBText;
     dbtBox: TDBText;
     dbtProducer: TDBText;
-    adsRegistry2: TADODataSet;
-    adsRegistry2Id: TAutoIncField;
-    adsRegistry2Name: TWideStringField;
-    adsRegistry2Form: TWideStringField;
-    adsRegistry2Producer: TWideStringField;
-    adsRegistry2Box: TWideStringField;
-    adsRegistry2Price: TBCDField;
-    adsRegistry2Currency: TWideStringField;
-    adsRegistry2PriceRub: TBCDField;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;

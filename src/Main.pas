@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, Menus, ExtCtrls, DBCtrls, DB, Child, Placemnt,
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
-  XPStyleActnCtrls, ActnMenus, ProVersion, DBGridEh, ADODB, DateUtils, ToughDBGrid,
+  XPStyleActnCtrls, ActnMenus, ProVersion, DBGridEh, DateUtils, ToughDBGrid,
   OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet;
 
 type
@@ -105,7 +105,6 @@ TMainForm = class(TForm)
     actReceiveAll: TAction;
     actIntegr: TAction;
     N3: TMenuItem;
-    adsOrdersH2: TADODataSet;
     actPreview: TAction;
     N4: TMenuItem;
     actFind: TAction;

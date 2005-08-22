@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Placemnt, DB, ADODB, StdCtrls, ExtCtrls, Grids, DBGrids,
+  Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet;
 
@@ -18,12 +18,10 @@ type
     pnlBottom: TPanel;
     chkUseForms: TCheckBox;
     dsNames: TDataSource;
-    adsForms2: TADODataSet;
     dsForms: TDataSource;
     ActionList: TActionList;
     actNewWares: TAction;
     actUseForms: TAction;
-    adsNames2: TADODataSet;
     pnlTop: TPanel;
     dbgNames: TToughDBGrid;
     dbgForms: TToughDBGrid;

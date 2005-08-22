@@ -2,29 +2,37 @@ unit Integr;
 
 interface
 
-uses ADODB, StdCtrls, ComCtrls, Windows;
+uses {ADODB,} StdCtrls, ComCtrls, Windows;
 
-type
+//type
 
 { Вызывает форму настройки сервиса импорта прайс-файлов }
 { HomeRegionCode - код  региона, в котором находится активный пользователь, }
 { AHandle := Application.Handle }
+{
 TIntegrConfig = procedure( ADOConnection: TADOConnection;
 	HomeRegionCode: integer; AHandle: THandle);
+  }
 
+{
 TIntegrThreading = procedure( AHandle: THandle; ADOConnection: TADOConnection;
 	HomeRegionCode: integer; inStStatus: TLabel; inProgressBar: TProgressBar;
 	inTotalProgressBar: TProgressBar; Async: boolean = False);
+}
 
 { OutCount будет содержать количество прайс-листов, которые подвергнуться импорту }
+{
 TIntegrTotalWellPrices = procedure( ADOConnection: TADOConnection;
 	HomeRegionCode: integer; var OutCount: Word);
+}  
 
 var
 	hDLL: THandle;
+  {
 	IntegrConfig: TIntegrConfig;
 	IntegrThreading: TIntegrThreading;
 	IntegrTotalWellPrices: TIntegrTotalWellPrices;
+}
 
 function LoadIntegrDLL: boolean;
 procedure UnLoadIntegrDLL;
@@ -39,12 +47,16 @@ begin
 		hDLL := LoadLibrary( 'Integr.dll');
 		if hDLL <> 0 then
 		begin
+{
 			@IntegrConfig := GetProcAddress( hDLL, 'IntegrConfig');
 			@IntegrThreading := GetProcAddress( hDLL, 'IntegrThreading');
 			@IntegrTotalWellPrices := GetProcAddress( hDLL, 'IntegrTotalWellPrices');
 
+
 			if ( Addr( IntegrConfig) = nil) or ( Addr( IntegrThreading) = nil) or
 				( Addr( IntegrTotalWellPrices) = nil) then result := False;
+}
+      result := False;
 		end
 		else
 			result := False;
@@ -63,9 +75,11 @@ procedure UnLoadIntegrDLL;
 begin
   if hDLL <> 0 then begin
     FreeLibrary(hDLL);
+{
 		IntegrConfig := nil;
 		IntegrThreading := nil;
 		IntegrTotalWellPrices := nil;
+}    
     hDLL := 0;
   end;
 end;

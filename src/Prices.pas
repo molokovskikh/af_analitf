@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
-  ActnList, DB, ADODB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
+  ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
   Registry, DBGridEhImpExp, FIBDataSet, pFIBDataSet, FIBQuery;
 
 const
@@ -21,33 +21,12 @@ type
     cbOnlyLeaders: TCheckBox;
     ActionList: TActionList;
     actOnlyLeaders: TAction;
-    adsPrices2: TADODataSet;
     dsPrices: TDataSource;
     dbtMinOrder: TDBText;
-    adsPrices2FullName: TWideStringField;
     actCurrentOrders: TAction;
-    adsPrices2Positions: TIntegerField;
-    adsPrices2Storage: TBooleanField;
-    adsPrices2AdminMail: TWideStringField;
-    adsPrices2SupportPhone: TWideStringField;
-    adsPrices2ContactInfo: TMemoField;
-    adsPrices2OperativeInfo: TMemoField;
-    adsPrices2Enabled: TBooleanField;
-    adsPrices2PriceCode: TIntegerField;
-    adsPrices2PriceName: TWideStringField;
-    adsPrices2DatePrice: TDateTimeField;
-    adsPrices2FirmCode: TIntegerField;
-    adsPrices2RegionCode: TIntegerField;
-    adsPrices2RegionName: TWideStringField;
-    adsClientsData2: TADODataSet;
     Label4: TLabel;
-    adsPrices2SumOrder: TBCDField;
-    adsPrices2PriceSize: TIntegerField;
-    adsPrices2UpCost: TFloatField;
-    adsPrices2PriceInfo: TMemoField;
     Panel1: TPanel;
     Panel2: TPanel;
-    adsPrices2MinReq: TIntegerField;
     Label3: TLabel;
     Label5: TLabel;
     GroupBox1: TGroupBox;

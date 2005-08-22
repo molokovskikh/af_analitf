@@ -1,6 +1,6 @@
 object MainForm: TMainForm
-  Left = 253
-  Top = 281
+  Left = 224
+  Top = 138
   AutoScroll = False
   Caption = 'MainForm'
   ClientHeight = 554
@@ -648,51 +648,6 @@ object MainForm: TMainForm
       OnExecute = actHomeExecute
       OnUpdate = actHomeUpdate
     end
-  end
-  object adsOrdersH2: TADODataSet
-    CursorType = ctStatic
-    LockType = ltReadOnly
-    CommandText = 'SELECT * FROM OrdersHShow WHERE Send=ASend'
-    Parameters = <
-      item
-        Name = 'AClientId'
-        Attributes = [paNullable]
-        DataType = ftWideString
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = Null
-      end
-      item
-        Name = 'TimeZoneBias'
-        Attributes = [paNullable]
-        DataType = ftWideString
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = Null
-      end
-      item
-        Name = 'AClosed'
-        Attributes = [paNullable]
-        DataType = ftWideString
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = Null
-      end
-      item
-        Name = 'ASend'
-        Attributes = [paNullable]
-        DataType = ftWideString
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = Null
-      end>
-    Prepared = True
-    Left = 192
-    Top = 224
   end
   object AppEvents: TApplicationEvents
     OnIdle = AppEventsIdle

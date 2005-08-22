@@ -26,7 +26,7 @@ procedure ShowActiveUsers;
 
 implementation
 
-uses DModule, AProc, ADODB, ADOInt, Constant;
+uses DModule, AProc, Constant;
 
 {$R *.dfm}
 

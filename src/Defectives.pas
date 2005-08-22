@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, DModule, DB, ADODB, Grids, DBGrids, RXDBCtrl,
+  Dialogs, Child, DModule, DB, Grids, DBGrids, RXDBCtrl,
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
-  FR_DBSet, DateUtils, AdoInt, DBGridEh, ToughDBGrid, Registry, ExtCtrls,
+  FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, Registry, ExtCtrls,
   FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery;
 
 const
@@ -33,11 +33,8 @@ type
     ActionList: TActionList;
     btnCheck: TButton;
     btnUnCheckAll: TButton;
-    adcUncheckAll2: TADOCommand;
     actCheck: TAction;
     frdsPrint: TfrDBDataSet;
-    adsPrint2: TADODataSet;
-    adsDefectives2: TADODataSet;
     dbgDefectives: TToughDBGrid;
     Panel1: TPanel;
     Label7: TLabel;

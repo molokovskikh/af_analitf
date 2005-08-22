@@ -123,8 +123,8 @@ begin
 	DM.DeleteEmptyOrders;
 
   //Очистили директорию перед отправкой заказов
-  if IsExternalOrdersDLLPresent then
-    ExternalOrdersClearTempDirectory;
+//  if IsExternalOrdersDLLPresent then
+//    ExternalOrdersClearTempDirectory;
 
 	if DM.GetCumulative then AExchangeActions := AExchangeActions + [ eaGetFullData, eaSendOrders]
 		else if eaGetFullData in AExchangeActions then {DM.SetCumulative};

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Grids, DBGrids, DB, ADODB, RXDBCtrl, Buttons, ADOInt,
+  Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons, 
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet;
 
@@ -17,72 +17,11 @@ const
 
 type
   TOrdersHForm = class(TChildForm)
-    adsOrdersH2: TADODataSet;
     dsOrdersH: TDataSource;
-    adsOrdersH2OrderDate: TDateTimeField;
-    adsOrdersH2Closed: TBooleanField;
-    adsOrdersH2Positions: TIntegerField;
-    adsOrdersH2SumOrder: TBCDField;
-    adsOrdersH2OrderId: TAutoIncField;
-    adsOrdersH2PriceName: TWideStringField;
-    adsOrdersH2RegionName: TWideStringField;
     TabControl: TTabControl;
     btnDelete: TButton;
     btnMoveSend: TButton;
-    adsOrdersH2Send: TBooleanField;
-    adsOrdersH2PriceCode: TIntegerField;
-    adsOrdersH2RegionCode: TIntegerField;
     pBottom: TPanel;
-    adsOrdersH2DatePrice: TDateTimeField;
-    adsOrdersH2SupportPhone: TWideStringField;
-    adsCore2: TADODataSet;
-    adsCore2CoreId: TAutoIncField;
-    adsCore2FullCode: TIntegerField;
-    adsCore2ShortCode: TIntegerField;
-    adsCore2CodeFirmCr: TIntegerField;
-    adsCore2SynonymCode: TIntegerField;
-    adsCore2SynonymFirmCrCode: TIntegerField;
-    adsCore2Code: TWideStringField;
-    adsCore2CodeCr: TWideStringField;
-    adsCore2Volume: TWideStringField;
-    adsCore2Doc: TWideStringField;
-    adsCore2Note: TWideStringField;
-    adsCore2Period: TWideStringField;
-    adsCore2Await: TBooleanField;
-    adsCore2Junk: TBooleanField;
-    adsCore2BaseCost: TBCDField;
-    adsCore2Quantity: TWideStringField;
-    adsCore2Synonym: TWideStringField;
-    adsCore2SynonymFirm: TWideStringField;
-    adsCore2MinPrice: TBCDField;
-    adsCore2LeaderFirmCode: TIntegerField;
-    adsCore2LeaderRegionCode: TIntegerField;
-    adsCore2LeaderRegionName: TWideStringField;
-    adsCore2OrdersCoreId: TIntegerField;
-    adsCore2OrdersOrderId: TIntegerField;
-    adsCore2OrdersClientId: TSmallintField;
-    adsCore2OrdersFullCode: TIntegerField;
-    adsCore2OrdersCodeFirmCr: TIntegerField;
-    adsCore2OrdersSynonymCode: TIntegerField;
-    adsCore2OrdersSynonymFirmCrCode: TIntegerField;
-    adsCore2OrdersCode: TWideStringField;
-    adsCore2OrdersCodeCr: TWideStringField;
-    adsCore2Order: TIntegerField;
-    adsCore2OrdersSynonym: TWideStringField;
-    adsCore2OrdersSynonymFirm: TWideStringField;
-    adsCore2OrdersPrice: TBCDField;
-    adsCore2OrdersJunk: TBooleanField;
-    adsCore2OrdersAwait: TBooleanField;
-    adsCore2OrdersHOrderId: TAutoIncField;
-    adsCore2OrdersHClientId: TSmallintField;
-    adsCore2OrdersHPriceCode: TIntegerField;
-    adsCore2OrdersHRegionCode: TIntegerField;
-    adsCore2OrdersHPriceName: TWideStringField;
-    adsCore2OrdersHRegionName: TWideStringField;
-    adsCore2PriceRet: TFloatField;
-    adsCore2SumOrder: TBCDField;
-    adsOrdersH2SendDate: TDateTimeField;
-    adsCore2LeaderPriceName: TWideStringField;
     pTop: TPanel;
     Label7: TLabel;
     Label8: TLabel;
@@ -90,22 +29,8 @@ type
     dtpDateTo: TDateTimePicker;
     Bevel1: TBevel;
     pTabSheet: TPanel;
-    adsOrdersH2Message: TWideStringField;
-    adsOrdersH2Comments: TWideStringField;
-    adsWayBillHead2: TADODataSet;
     dsWayBillHead: TDataSource;
-    adsWayBillHead2ServerID: TIntegerField;
-    adsWayBillHead2ServerOrderID: TIntegerField;
-    adsWayBillHead2WriteTime: TDateTimeField;
-    adsWayBillHead2ClientID: TIntegerField;
-    adsWayBillHead2PriceCode: TIntegerField;
-    adsWayBillHead2RegionCode: TIntegerField;
-    adsWayBillHead2PriceName: TWideStringField;
-    adsWayBillHead2RegionName: TWideStringField;
-    adsWayBillHead2FirmComment: TWideStringField;
-    adsWayBillHead2RowCount: TSmallintField;
     btnWayBillList: TButton;
-    adsOrdersH2ServerOrderId: TIntegerField;
     pClient: TPanel;
     pGrid: TPanel;
     ToughDBGrid1: TToughDBGrid;

@@ -4,17 +4,18 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  Db, ADODB, ADOInt, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
-  FR_DBSet, FR_DCtrl, FR_ADODB, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, FR_OLE,
-  frRtfExp, frexpimg, frOLEExl, FR_E_HTML2, FR_E_TXT, FR_Rich, CompactThread,
-  FIBDatabase, pFIBDatabase, FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery,
-  IB_Services, FIB, IB_ErrorCodes, Math, IdIcmpClient;
+  Db, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
+  FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, IB_Services,
+  FIBQuery, pFIBQuery, FIBDataSet, pFIBDataSet, FIBDatabase, pFIBDatabase,
+  frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,  
+  CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient;
 
 const
   HistoryMaxRec=5;
   //макс. кол-во писем доставаемых с сервера
   RegisterId=59; //код реестра в справочнике фирм
 
+//Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=AnalitF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Jet OLEDB:Database Password=commonpas;Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False
 
 type
   //способ вычисления разницы в цены от другого поставщика
@@ -28,20 +29,12 @@ type
     ecGetFreeDiskSpace);
 
   TDM = class(TDataModule)
-    MainConnection2: TADOConnection;
-    adtParams2: TADOTable;
-    adtProvider2: TADOTable;
-    adcUpdate2: TADOCommand;
-    adsSelect_OLD: TADODataSet;
     frReport: TfrReport;
     dsParams: TDataSource;
     dsAnalit: TDataSource;
     dsClients: TDataSource;
-    adtTablesUpdates2: TADOTable;
     dsTablesUpdates: TDataSource;
     Ras: TARas;
-    adsSelect2_OLD: TADODataSet;
-    frOLEObject: TfrOLEObject;
     frRichObject: TfrRichObject;
     frCheckBoxObject: TfrCheckBoxObject;
     frShapeObject: TfrShapeObject;
@@ -50,19 +43,11 @@ type
     frTextExport: TfrTextExport;
     frDialogControls: TfrDialogControls;
     frHTML2Export: TfrHTML2Export;
-    frOLEExcelExport: TfrOLEExcelExport;
     frBMPExport: TfrBMPExport;
     frJPEGExport: TfrJPEGExport;
     frTIFFExport: TfrTIFFExport;
     frRtfAdvExport: TfrRtfAdvExport;
-    adsOrders1: TADODataSet;
-    adsSelect3_OLD: TADODataSet;
-    adsCore1: TADODataSet;
-    adtReclame2: TADOTable;
-    adtClients2: TADOTable;
     dsReclame: TDataSource;
-    adtFlags2: TADOTable;
-    adsOrdersH1: TADODataSet;
     MainConnection1: TpFIBDatabase;
     DefTran: TpFIBTransaction;
     adtParams: TpFIBDataSet;
@@ -73,7 +58,6 @@ type
     adtFlags: TpFIBDataSet;
     adcUpdate: TpFIBQuery;
     adsSelect: TpFIBDataSet;
-    adsSelect2: TpFIBDataSet;
     adsSelect3: TpFIBDataSet;
     adsCore: TpFIBDataSet;
     adsOrdersH: TpFIBDataSet;

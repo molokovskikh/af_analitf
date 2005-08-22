@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, Grids, DBGrids, ComCtrls, Db, StrUtils,
   StdCtrls, Buttons, DBCtrls, FR_Class, FR_DSet, FR_DBSet,
-  Child, ADODB, RXDBCtrl, Variants, AdoInt, Math, DBGridEh,
+  Child, RXDBCtrl, Variants, Math, DBGridEh,
   ToughDBGrid, Registry, OleCtrls, SHDocVw, ActnList, FIBDataSet,
   pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor;
 
@@ -20,22 +20,12 @@ type
     lblPriceAvg: TLabel;
     frdsCore: TfrDBDataSet;
     dsOrders: TDataSource;
-    adsOrders2: TADODataSet;
     dbtPriceAvg: TDBText;
-    adsOrders2Synonym: TWideStringField;
-    adsOrders2SynonymFirm: TWideStringField;
-    adsOrders2Order: TIntegerField;
-    adsOrders2Price: TBCDField;
-    adsOrders2OrderDate: TDateTimeField;
-    adsOrdersH2: TADODataSet;
-    adsOrdersShowFormSummary2: TADODataSet;
     dsOrdersShowFormSummary: TDataSource;
-    adsOrdersShowFormSummary2PriceAvg: TBCDField;
     pBottom: TPanel;
     dbgHistory: TToughDBGrid;
     pTop: TPanel;
     lblName: TLabel;
-    adsFirmsInfo2: TADODataSet;
     dsFirmsInfo: TDataSource;
     dbmContactInfo: TDBMemo;
     lblSupportPhone: TLabel;
@@ -43,65 +33,10 @@ type
     gbFirmInfo: TGroupBox;
     plOverCost: TPanel;
     Timer: TTimer;
-    adsCore2: TADODataSet;
-    adsCore2CoreId: TAutoIncField;
-    adsCore2PriceCode: TIntegerField;
-    adsCore2RegionCode: TIntegerField;
-    adsCore2AFullCode: TIntegerField;
-    adsCore2ShortCode: TIntegerField;
-    adsCore2CodeFirmCr: TIntegerField;
-    adsCore2SynonymCode: TIntegerField;
-    adsCore2SynonymFirmCrCode: TIntegerField;
-    adsCore2Code: TWideStringField;
-    adsCore2CodeCr: TWideStringField;
-    adsCore2Period: TWideStringField;
-    adsCore2Sale: TSmallintField;
-    adsCore2Volume: TWideStringField;
-    adsCore2Note: TWideStringField;
-    adsCore2BaseCost: TBCDField;
-    adsCore2Quantity: TWideStringField;
-    adsCore2Await: TBooleanField;
-    adsCore2Junk: TBooleanField;
-    adsCore2Synonym: TWideStringField;
-    adsCore2SynonymFirm: TWideStringField;
-    adsCore2DatePrice: TDateTimeField;
-    adsCore2PriceEnabled: TBooleanField;
-    adsCore2PriceName: TWideStringField;
-    adsCore2Storage: TBooleanField;
-    adsCore2RegionName: TWideStringField;
-    adsCore2OrdersCoreId: TIntegerField;
-    adsCore2OrdersOrderId: TIntegerField;
-    adsCore2OrdersClientId: TSmallintField;
-    adsCore2OrdersFullCode: TIntegerField;
-    adsCore2OrdersCodeFirmCr: TIntegerField;
-    adsCore2OrdersSynonymCode: TIntegerField;
-    adsCore2OrdersSynonymFirmCrCode: TIntegerField;
-    adsCore2OrdersCode: TWideStringField;
-    adsCore2OrdersCodeCr: TWideStringField;
-    adsCore2Order: TIntegerField;
-    adsCore2OrdersSynonym: TWideStringField;
-    adsCore2OrdersSynonymFirm: TWideStringField;
-    adsCore2OrdersPrice: TBCDField;
-    adsCore2OrdersJunk: TBooleanField;
-    adsCore2OrdersAwait: TBooleanField;
-    adsCore2OrdersHOrderId: TAutoIncField;
-    adsCore2OrdersHClientId: TSmallintField;
-    adsCore2OrdersHPriceCode: TIntegerField;
-    adsCore2OrdersHRegionCode: TIntegerField;
-    adsCore2OrdersHPriceName: TWideStringField;
-    adsCore2OrdersHRegionName: TWideStringField;
-    adsCore2SumOrder: TCurrencyField;
-    adsCore2PriceRet: TCurrencyField;
-    adsCore2PriceDelta: TFloatField;
     cbFilter: TComboBox;
-    adsRegions2: TADODataSet;
-    adsOrders2PriceName: TWideStringField;
     cbEnabled: TComboBox;
-    adsOrders2Await: TBooleanField;
-    adsOrders2Junk: TBooleanField;
     ActionList: TActionList;
     actFlipCore: TAction;
-    adsCore2FirmCode: TAutoIncField;
     pCenter: TPanel;
     pWebBrowser: TPanel;
     Bevel1: TBevel;

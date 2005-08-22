@@ -4,27 +4,14 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Grids, DBGridEh, ToughDBGrid, ExtCtrls, DB, ADODB,
-  DBCtrls, StdCtrls;
+  Dialogs, Child, Grids, DBGridEh, ToughDBGrid, ExtCtrls, DB, 
+  DBCtrls, StdCtrls, FIBDataSet, pFIBDataSet;
 
 type
   TWayBillListForm = class(TChildForm)
     pHeader: TPanel;
     dbgWBL: TToughDBGrid;
-    adsWBL: TADODataSet;
     dsWBL: TDataSource;
-    adsWBLServerID: TIntegerField;
-    adsWBLServerWayBillID: TIntegerField;
-    adsWBLFullCode: TIntegerField;
-    adsWBLCodeFirmCr: TIntegerField;
-    adsWBLSynonymCode: TIntegerField;
-    adsWBLSynonymFirmCrCode: TIntegerField;
-    adsWBLSynonym: TWideStringField;
-    adsWBLSynonymFirm: TWideStringField;
-    adsWBLCode: TWideStringField;
-    adsWBLCodeCr: TWideStringField;
-    adsWBLQuantity: TIntegerField;
-    adsWBLCost: TBCDField;
     Label1: TLabel;
     dbtID: TDBText;
     Label2: TLabel;
@@ -35,6 +22,7 @@ type
     dbtRowCount: TDBText;
     gbComment: TGroupBox;
     dbmComment: TDBMemo;
+    adsWBL: TpFIBDataSet;
     procedure dbgWBLKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
@@ -59,8 +47,8 @@ uses
 
 procedure TWayBillListForm.SetParams(AServerWayBillId: Integer);
 begin
-  adsWBL.Parameters.ParamByName('[AWayBillId]').Value := AServerWayBillId;
-  if adsWBL.Active then adsWBL.Requery() else adsWBL.Open;
+  adsWBL.ParamByName('AWayBillId').Value := AServerWayBillId;
+  if adsWBL.Active then adsWBL.CloseOpen(False) else adsWBL.Open;
 end;
 
 procedure TWayBillListForm.ShowForm(AServerWayBillId: Integer);

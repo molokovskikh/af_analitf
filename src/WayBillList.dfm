@@ -250,66 +250,30 @@ inherited WayBillListForm: TWayBillListForm
         Title.Caption = #1062#1077#1085#1072
       end>
   end
-  object adsWBL: TADODataSet
-    Connection = DM.MainConnection
-    CursorType = ctStatic
-    CommandText = 'select * from WayBillListShow'
-    Parameters = <
-      item
-        Name = '[AWayBillID]'
-        Attributes = [paNullable]
-        DataType = ftInteger
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = 667601
-      end>
-    Left = 96
-    Top = 96
-    object adsWBLServerID: TIntegerField
-      FieldName = 'ServerID'
-    end
-    object adsWBLServerWayBillID: TIntegerField
-      FieldName = 'ServerWayBillID'
-    end
-    object adsWBLFullCode: TIntegerField
-      FieldName = 'FullCode'
-    end
-    object adsWBLCodeFirmCr: TIntegerField
-      FieldName = 'CodeFirmCr'
-    end
-    object adsWBLSynonymCode: TIntegerField
-      FieldName = 'SynonymCode'
-    end
-    object adsWBLSynonymFirmCrCode: TIntegerField
-      FieldName = 'SynonymFirmCrCode'
-    end
-    object adsWBLSynonym: TWideStringField
-      FieldName = 'Synonym'
-      Size = 255
-    end
-    object adsWBLSynonymFirm: TWideStringField
-      FieldName = 'SynonymFirm'
-      Size = 50
-    end
-    object adsWBLCode: TWideStringField
-      FieldName = 'Code'
-      Size = 50
-    end
-    object adsWBLCodeCr: TWideStringField
-      FieldName = 'CodeCr'
-      Size = 50
-    end
-    object adsWBLQuantity: TIntegerField
-      FieldName = 'Quantity'
-    end
-    object adsWBLCost: TBCDField
-      FieldName = 'Cost'
-      Precision = 19
-    end
-  end
   object dsWBL: TDataSource
     DataSet = adsWBL
+    Left = 96
+    Top = 208
+  end
+  object adsWBL: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    SERVERID,'
+      '    SERVERWAYBILLID,'
+      '    FULLCODE,'
+      '    CODEFIRMCR,'
+      '    SYNONYMCODE,'
+      '    SYNONYMFIRMCRCODE,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    CODE,'
+      '    CODECR,'
+      '    QUANTITY,'
+      '    COST'
+      'FROM'
+      '    WAYBILLLISTSHOW(:AWAYBILLID) ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
     Left = 96
     Top = 152
   end

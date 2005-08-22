@@ -252,69 +252,6 @@ inherited OrdersForm: TOrdersForm
         Title.TitleButton = True
       end>
   end
-  object adsOrders2: TADODataSet
-    CursorType = ctStatic
-    CommandText = 'SELECT * FROM OrdersShow'
-    Parameters = <
-      item
-        Name = 'AOrderId'
-        Attributes = [paNullable]
-        DataType = ftInteger
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = 40
-      end>
-    Left = 144
-    Top = 144
-    object adsOrders2OrderId: TIntegerField
-      FieldName = 'OrderId'
-    end
-    object adsOrders2FullCode: TIntegerField
-      FieldName = 'FullCode'
-    end
-    object adsOrders2Code: TWideStringField
-      FieldName = 'Code'
-    end
-    object adsOrders2CodeCr: TWideStringField
-      FieldName = 'CodeCr'
-    end
-    object adsOrders2SynonymCode: TIntegerField
-      FieldName = 'SynonymCode'
-    end
-    object adsOrders2Synonym: TWideStringField
-      FieldName = 'Synonym'
-      Size = 255
-    end
-    object adsOrders2SynonymFirmCrCode: TIntegerField
-      FieldName = 'SynonymFirmCrCode'
-    end
-    object adsOrders2SynonymFirm: TWideStringField
-      FieldName = 'SynonymFirm'
-      Size = 255
-    end
-    object adsOrders2Price: TBCDField
-      FieldName = 'Price'
-      DisplayFormat = '0.00;;'#39#39
-      Precision = 19
-    end
-    object adsOrders2Junk: TBooleanField
-      FieldName = 'Junk'
-    end
-    object adsOrders2Order: TIntegerField
-      FieldName = 'Order'
-      DisplayFormat = '#'
-    end
-    object adsOrders2SumOrder: TBCDField
-      FieldName = 'SumOrder'
-      ReadOnly = True
-      DisplayFormat = '0.00;;'#39#39
-      Precision = 19
-    end
-    object adsOrders2Await: TBooleanField
-      FieldName = 'Await'
-    end
-  end
   object dsOrders: TDataSource
     DataSet = adsOrders
     Left = 144

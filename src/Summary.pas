@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB, ADODB, ADOInt,
+  Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB, 
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet;
@@ -14,40 +14,20 @@ const
 
 type
   TSummaryForm = class(TChildForm)
-    adsSummary2: TADODataSet;
     dsSummary: TDataSource;
-    adsSummaryH2: TADODataSet;
     Label1: TLabel;
     dsSummaryH: TDataSource;
     Label2: TLabel;
     dbtCountOrder: TDBText;
     dbtSumOrder: TDBText;
-    adsSummaryH2CountOrder: TIntegerField;
-    adsSummaryH2SumOrder: TBCDField;
-    adsSummary2Synonym: TWideStringField;
-    adsSummary2SynonymFirm: TWideStringField;
-    adsSummary2Volume: TWideStringField;
-    adsSummary2Note: TWideStringField;
-    adsSummary2Period: TWideStringField;
-    adsSummary2BaseCost: TBCDField;
-    adsSummary2PriceRet: TFloatField;
-    adsSummary2Quantity: TWideStringField;
-    adsSummary2Order: TIntegerField;
-    adsSummary2SumOrder: TCurrencyField;
     frdsSummary: TfrDBDataSet;
-    adsSummary2PriceName: TWideStringField;
-    adsSummary2RegionName: TWideStringField;
-    adsSummary2Junk: TBooleanField;
     Panel1: TPanel;
     Bevel1: TBevel;
-    adsSummary2Await: TBooleanField;
     pClient: TPanel;
     pWebBrowser: TPanel;
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     dbgSummary: TToughDBGrid;
-    adsSummary2OrdersCoreId: TIntegerField;
-    adsSummary2OrdersOrderId: TIntegerField;
     adsSummary: TpFIBDataSet;
     adsSummaryVOLUME: TFIBStringField;
     adsSummaryQUANTITY: TFIBStringField;

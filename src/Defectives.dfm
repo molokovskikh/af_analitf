@@ -361,84 +361,9 @@ inherited DefectivesForm: TDefectivesForm
       OnExecute = actCheckExecute
     end
   end
-  object adcUncheckAll2: TADOCommand
-    CommandText = 'UPDATE Defectives SET [Check]=False WHERE [Check]'
-    Connection = DM.MainConnection
-    Prepared = True
-    Parameters = <>
-    Left = 320
-    Top = 112
-  end
   object frdsPrint: TfrDBDataSet
-    DataSet = adsPrint2
     Left = 280
     Top = 208
-  end
-  object adsPrint2: TADODataSet
-    CursorType = ctStatic
-    CommandText = 
-      'SELECT * FROM Defectives'#13#10'WHERE LetterDate BETWEEN DateFrom And ' +
-      'DateTo AND (Check Or ShowAll)'
-    Parameters = <
-      item
-        Name = 'DateFrom'
-        Attributes = [paNullable]
-        DataType = ftDateTime
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = 36526d
-      end
-      item
-        Name = 'DateTo'
-        Attributes = [paNullable]
-        DataType = ftDateTime
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = 37986d
-      end
-      item
-        Name = 'ShowAll'
-        Attributes = [paNullable]
-        DataType = ftBoolean
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = True
-      end>
-    Prepared = True
-    Left = 248
-    Top = 112
-  end
-  object adsDefectives2: TADODataSet
-    CursorType = ctStatic
-    AfterOpen = adsDefectives2AfterOpen
-    CommandText = 
-      'SELECT * FROM Defectives'#13#10'WHERE LetterDate BETWEEN DateFrom And ' +
-      'DateTo'
-    Parameters = <
-      item
-        Name = 'DateFrom'
-        Attributes = [paNullable]
-        DataType = ftDateTime
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = 36892d
-      end
-      item
-        Name = 'DateTo'
-        Attributes = [paNullable]
-        DataType = ftDateTime
-        NumericScale = 255
-        Precision = 255
-        Size = 510
-        Value = 37986d
-      end>
-    Prepared = True
-    Left = 176
-    Top = 112
   end
   object adsDefectives: TpFIBDataSet
     UpdateSQL.Strings = (

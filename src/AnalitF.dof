@@ -94,10 +94,10 @@ OutputDir=.\bin
 UnitOutputDir=.\unit
 PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
-SearchPath=$(DELPHI)\Indy\lib;
-Packages=vcl;rtl;dbrtl;vcldb;adortl;VclSmp;EhLib70;Tough;FR7;Indy70;vclactnband;vclx;visualclx;visualdbclx
+SearchPath=$(DELPHI)\Indy\lib
+Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;Indy70;vclactnband;vclx;visualclx;visualdbclx
 Conditionals=
-DebugSourceDirs=C:\Program Files\Borland\Delphi7\Indy\
+DebugSourceDirs=
 UsePackages=1
 [Parameters]
 RunParams=/extend
@@ -105,8 +105,9 @@ HostApplication=
 Launcher=
 UseLauncher=0
 DebugCWD=
-RemoteHost=jaroslav
-RemotePath=q:\AnalitF.exe
+RemoteHost=vtest
+RemotePath=C:\FBAnalitF_PRE\AnalitF.exe
+RemoteDebug=1
 [Language]
 ActiveLang=
 ProjectLang=
@@ -117,7 +118,7 @@ AutoIncBuild=1
 MajorVer=3
 MinorVer=0
 Release=52
-Build=142
+Build=150
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +129,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=3.0.52.142
+FileVersion=3.0.52.150
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2005
 LegalTrademarks=Инфорум
@@ -136,13 +137,20 @@ OriginalFilename=AnalitF.exe
 ProductName=АналитФАРМАЦИЯ
 ProductVersion=1.0.0.0
 Comments=
+[Excluded Packages]
+c:\program files\borland\delphi7\Bin\dclado70.bpl=Borland ADO DB Components
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=C:\Program Files\Borland\Delphi7\Indy\
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=2
-Item0=$(DELPHI)\Indy\lib;
-Item1=$(DELPHI)\Lib\Debug
+Count=4
+Item0=$(DELPHI)\Indy\lib
+Item1=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
+Item2=$(DELPHI)\Indy\lib;
+Item3=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit

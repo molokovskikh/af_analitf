@@ -66,7 +66,7 @@ inherited RegistersForm: TRegistersForm
       item
         Alignment = taRightJustify
         EditButtons = <>
-        FieldName = 'Box'
+        FieldName = 'BOX'
         Footers = <>
         Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
         Title.TitleButton = True
@@ -74,7 +74,7 @@ inherited RegistersForm: TRegistersForm
       end
       item
         EditButtons = <>
-        FieldName = 'Price'
+        FieldName = 'PRICE'
         Footers = <>
         Title.Caption = #1062#1077#1085#1072' '#1074' '#1074#1072#1083'.'
         Title.TitleButton = True
@@ -215,46 +215,6 @@ inherited RegistersForm: TRegistersForm
     DataSet = adsRegistry
     Left = 96
     Top = 192
-  end
-  object adsRegistry2: TADODataSet
-    CommandText = 'SELECT * FROM Registry'
-    Parameters = <>
-    Left = 96
-    Top = 88
-    object adsRegistry2Id: TAutoIncField
-      FieldName = 'Id'
-      ReadOnly = True
-    end
-    object adsRegistry2Name: TWideStringField
-      FieldName = 'Name'
-      Size = 150
-    end
-    object adsRegistry2Form: TWideStringField
-      FieldName = 'Form'
-      Size = 250
-    end
-    object adsRegistry2Producer: TWideStringField
-      FieldName = 'Producer'
-      Size = 150
-    end
-    object adsRegistry2Box: TWideStringField
-      FieldName = 'Box'
-      Size = 10
-    end
-    object adsRegistry2Price: TBCDField
-      FieldName = 'Price'
-      DisplayFormat = '0.00;;'#39#39
-      Precision = 19
-    end
-    object adsRegistry2Currency: TWideStringField
-      FieldName = 'Curr'
-      Size = 10
-    end
-    object adsRegistry2PriceRub: TBCDField
-      FieldName = 'PriceRub'
-      DisplayFormat = '0.00;;'#39#39
-      Precision = 19
-    end
   end
   object adsRegistry: TpFIBDataSet
     SelectSQL.Strings = (

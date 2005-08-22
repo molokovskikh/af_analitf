@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Grids, RXDBCtrl, DModule, DB, ADODB, AProc,
+  Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
   SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor;
 
@@ -15,57 +15,10 @@ type
   TExpiredsForm = class(TChildForm)
     dsExpireds: TDataSource;
     lblRecordCount: TLabel;
-    adsOrdersH2: TADODataSet;
     Panel1: TPanel;
     plOverCost: TPanel;
-    adsOrdersShowFormSummary2: TADODataSet;
-    adsOrdersShowFormSummary2PriceAvg: TBCDField;
     Timer: TTimer;
     Bevel1: TBevel;
-    adsExpireds2: TADODataSet;
-    adsExpireds2CoreId: TIntegerField;
-    adsExpireds2PriceCode: TIntegerField;
-    adsExpireds2RegionCode: TIntegerField;
-    adsExpireds2FullCode: TIntegerField;
-    adsExpireds2CodeFirmCr: TIntegerField;
-    adsExpireds2SynonymCode: TIntegerField;
-    adsExpireds2SynonymFirmCrCode: TIntegerField;
-    adsExpireds2Code: TWideStringField;
-    adsExpireds2CodeCr: TWideStringField;
-    adsExpireds2Order: TIntegerField;
-    adsExpireds2Note: TWideStringField;
-    adsExpireds2Await: TBooleanField;
-    adsExpireds2Period: TWideStringField;
-    adsExpireds2Volume: TWideStringField;
-    adsExpireds2BaseCost: TBCDField;
-    adsExpireds2Quantity: TWideStringField;
-    adsExpireds2Synonym: TWideStringField;
-    adsExpireds2SynonymFirm: TWideStringField;
-    adsExpireds2PriceName: TWideStringField;
-    adsExpireds2RegionName: TWideStringField;
-    adsExpireds2DatePrice: TDateTimeField;
-    adsExpireds2PriceRet: TFloatField;
-    adsExpireds2SumOrder: TCurrencyField;
-    adsExpireds2OrdersCoreId: TIntegerField;
-    adsExpireds2OrdersOrderId: TIntegerField;
-    adsExpireds2OrdersClientId: TSmallintField;
-    adsExpireds2OrdersFullCode: TIntegerField;
-    adsExpireds2OrdersCodeFirmCr: TIntegerField;
-    adsExpireds2OrdersSynonymCode: TIntegerField;
-    adsExpireds2OrdersSynonymFirmCrCode: TIntegerField;
-    adsExpireds2OrdersCode: TWideStringField;
-    adsExpireds2OrdersCodeCr: TWideStringField;
-    adsExpireds2OrdersPrice: TBCDField;
-    adsExpireds2OrdersJunk: TBooleanField;
-    adsExpireds2OrdersAwait: TBooleanField;
-    adsExpireds2OrdersHOrderId: TAutoIncField;
-    adsExpireds2OrdersHClientId: TSmallintField;
-    adsExpireds2OrdersHPriceCode: TIntegerField;
-    adsExpireds2OrdersHRegionCode: TIntegerField;
-    adsExpireds2OrdersHPriceName: TWideStringField;
-    adsExpireds2OrdersHRegionName: TWideStringField;
-    adsExpireds2OrdersSynonym: TWideStringField;
-    adsExpireds2OrdersSynonymFirm: TWideStringField;
     pClient: TPanel;
     pWebBrowser: TPanel;
     Bevel2: TBevel;
@@ -146,7 +99,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, ADOInt;
+  Main;
 
 procedure TExpiredsForm.FormCreate(Sender: TObject);
 var
