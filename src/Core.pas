@@ -544,7 +544,7 @@ begin
 	begin
 		OrdersHForm := OrdersH;
 		OrdersHForm.Show;
-		OrdersH.adsOrdersH.CloseOpen(True);
+		OrdersH.adsOrdersHForm.CloseOpen(True);
 	end;
 	MainForm.ActiveChild := OrdersHForm;
 	MainForm.ActiveControl := OrdersHForm.ActiveControl;

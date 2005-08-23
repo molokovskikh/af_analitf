@@ -363,7 +363,7 @@ inherited OrdersHForm: TOrdersHForm
     end
   end
   object dsOrdersH: TDataSource
-    DataSet = adsOrdersH
+    DataSet = adsOrdersHForm
     Left = 72
     Top = 176
   end
@@ -379,7 +379,7 @@ inherited OrdersHForm: TOrdersHForm
     Left = 76
     Top = 223
   end
-  object adsOrdersH: TpFIBDataSet
+  object adsOrdersHForm: TpFIBDataSet
     UpdateSQL.Strings = (
       'update ordersh'
       'set'
@@ -416,9 +416,8 @@ inherited OrdersHForm: TOrdersHForm
       '    ORDERSHSHOW (:ACLIENTID,'
       '    :ACLOSED,'
       '    :TIMEZONEBIAS)'
-      'WHERE(  OrderDate BETWEEN :DateFrom AND :DateTo'
-      '     ) and ( ORDERID = :OLD_ORDERID'
-      '     )'
+      'WHERE'
+      '(ORDERID = :OLD_ORDERID)'
       '     ')
     SelectSQL.Strings = (
       'SELECT'
@@ -451,68 +450,69 @@ inherited OrdersHForm: TOrdersHForm
     AutoCommit = True
     Left = 68
     Top = 119
-    object adsOrdersHORDERID: TFIBBCDField
+    oFetchAll = True
+    object adsOrdersHFormORDERID: TFIBBCDField
       FieldName = 'ORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHSERVERORDERID: TFIBBCDField
+    object adsOrdersHFormSERVERORDERID: TFIBBCDField
       FieldName = 'SERVERORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHDATEPRICE: TFIBDateTimeField
+    object adsOrdersHFormDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
     end
-    object adsOrdersHPRICECODE: TFIBBCDField
+    object adsOrdersHFormPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHREGIONCODE: TFIBBCDField
+    object adsOrdersHFormREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHORDERDATE: TFIBDateTimeField
+    object adsOrdersHFormORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
     end
-    object adsOrdersHSENDDATE: TFIBDateTimeField
+    object adsOrdersHFormSENDDATE: TFIBDateTimeField
       FieldName = 'SENDDATE'
     end
-    object adsOrdersHCLOSED: TFIBBooleanField
+    object adsOrdersHFormCLOSED: TFIBBooleanField
       FieldName = 'CLOSED'
     end
-    object adsOrdersHSEND: TFIBBooleanField
+    object adsOrdersHFormSEND: TFIBBooleanField
       FieldName = 'SEND'
       OnChange = adsOrdersH2SendChange
     end
-    object adsOrdersHPRICENAME: TFIBStringField
+    object adsOrdersHFormPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = False
     end
-    object adsOrdersHREGIONNAME: TFIBStringField
+    object adsOrdersHFormREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = False
     end
-    object adsOrdersHPOSITIONS: TFIBIntegerField
+    object adsOrdersHFormPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
-    object adsOrdersHSUMORDER: TFIBIntegerField
+    object adsOrdersHFormSUMORDER: TFIBIntegerField
       FieldName = 'SUMORDER'
     end
-    object adsOrdersHSUPPORTPHONE: TFIBStringField
+    object adsOrdersHFormSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
       EmptyStrToNull = False
     end
-    object adsOrdersHMESSAGETO: TFIBStringField
+    object adsOrdersHFormMESSAGETO: TFIBStringField
       FieldName = 'MESSAGETO'
       Size = 100
       EmptyStrToNull = False
     end
-    object adsOrdersHCOMMENTS: TFIBStringField
+    object adsOrdersHFormCOMMENTS: TFIBStringField
       FieldName = 'COMMENTS'
       Size = 100
       EmptyStrToNull = False

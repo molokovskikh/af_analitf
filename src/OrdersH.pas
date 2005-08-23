@@ -6,14 +6,14 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons, 
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
-  FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet;
+  FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
+  FIBSQLMonitor;
 
 const
 	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
 				' :DateTo ORDER BY ';
 
-	ROrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
-				' :DateTo where ORDERID = :OLD_ORDERID ';
+	ROrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE ORDERID = :ORDERID';
 
 type
   TOrdersHForm = class(TChildForm)
@@ -44,23 +44,23 @@ type
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     tmOrderDateChange: TTimer;
-    adsOrdersH: TpFIBDataSet;
+    adsOrdersHForm: TpFIBDataSet;
     adsCore: TpFIBDataSet;
     adsWayBillHead: TpFIBDataSet;
-    adsOrdersHORDERID: TFIBBCDField;
-    adsOrdersHSERVERORDERID: TFIBBCDField;
-    adsOrdersHDATEPRICE: TFIBDateTimeField;
-    adsOrdersHPRICECODE: TFIBBCDField;
-    adsOrdersHREGIONCODE: TFIBBCDField;
-    adsOrdersHORDERDATE: TFIBDateTimeField;
-    adsOrdersHSENDDATE: TFIBDateTimeField;
-    adsOrdersHPRICENAME: TFIBStringField;
-    adsOrdersHREGIONNAME: TFIBStringField;
-    adsOrdersHPOSITIONS: TFIBIntegerField;
-    adsOrdersHSUMORDER: TFIBIntegerField;
-    adsOrdersHSUPPORTPHONE: TFIBStringField;
-    adsOrdersHMESSAGETO: TFIBStringField;
-    adsOrdersHCOMMENTS: TFIBStringField;
+    adsOrdersHFormORDERID: TFIBBCDField;
+    adsOrdersHFormSERVERORDERID: TFIBBCDField;
+    adsOrdersHFormDATEPRICE: TFIBDateTimeField;
+    adsOrdersHFormPRICECODE: TFIBBCDField;
+    adsOrdersHFormREGIONCODE: TFIBBCDField;
+    adsOrdersHFormORDERDATE: TFIBDateTimeField;
+    adsOrdersHFormSENDDATE: TFIBDateTimeField;
+    adsOrdersHFormPRICENAME: TFIBStringField;
+    adsOrdersHFormREGIONNAME: TFIBStringField;
+    adsOrdersHFormPOSITIONS: TFIBIntegerField;
+    adsOrdersHFormSUMORDER: TFIBIntegerField;
+    adsOrdersHFormSUPPORTPHONE: TFIBStringField;
+    adsOrdersHFormMESSAGETO: TFIBStringField;
+    adsOrdersHFormCOMMENTS: TFIBStringField;
     adsWayBillHeadSERVERID: TFIBBCDField;
     adsWayBillHeadSERVERORDERID: TFIBBCDField;
     adsWayBillHeadWRITETIME: TFIBDateTimeField;
@@ -71,8 +71,8 @@ type
     adsWayBillHeadREGIONNAME: TFIBStringField;
     adsWayBillHeadFIRMCOMMENT: TFIBStringField;
     adsWayBillHeadROWCOUNT: TFIBIntegerField;
-    adsOrdersHSEND: TFIBBooleanField;
-    adsOrdersHCLOSED: TFIBBooleanField;
+    adsOrdersHFormSEND: TFIBBooleanField;
+    adsOrdersHFormCLOSED: TFIBBooleanField;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -132,8 +132,10 @@ begin
 		+ Self.ClassName, False) then dbgOrdersH.LoadFromRegistry( Reg);
 	Reg.Free;
 
-	adsOrdersH.SelectSQL.Text := OrdersHSql + 'SendDate DESC';
-  adsOrdersH.RefreshSQL.Text := ROrdersHSql;
+	adsOrdersHForm.SelectSQL.Text := OrdersHSql + 'SendDate DESC';
+  adsOrdersHForm.RefreshSQL.Text := ROrdersHSql;
+  adsOrdersHForm.Prepare;
+
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
 	Day := DayOf( Date);
@@ -144,14 +146,12 @@ begin
 	TabControl.TabIndex := 0;
 	Screen.Cursor := crHourglass;
 	try
-		adsOrdersH.ParamByName('AClientId').Value:=
+		adsOrdersHForm.ParamByName('AClientId').Value:=
 			DM.adtClients.FieldByName('ClientId').Value;
-//		adsOrdersH.ParamByName( 'DateFrom').DataType := ftDate;
-//		adsOrdersH.ParamByName( 'DateTo').DataType := ftDate;
-    adsOrdersH.ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
+    adsOrdersHForm.ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
 		dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-		adsOrdersH.ParamByName('DateTo').AsDate:=dtpDateTo.Date;
-		adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+		adsOrdersHForm.ParamByName('DateTo').AsDate:=dtpDateTo.Date;
+		adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 		SetParameters;
 	finally
 		Screen.Cursor := crDefault;
@@ -164,7 +164,7 @@ procedure TOrdersHForm.FormDestroy(Sender: TObject);
 var
 	Reg: TRegistry;
 begin
-	SoftPost(adsOrdersH);
+	SoftPost(adsOrdersHForm);
 	Reg := TRegistry.Create;
 	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, True);
@@ -174,27 +174,27 @@ end;
 
 procedure TOrdersHForm.SetParameters;
 begin
-	SoftPost( adsOrdersH);
+	SoftPost( adsOrdersHForm);
 	case TabControl.TabIndex of
 		0: begin
-			adsOrdersH.Close;
-			adsOrdersH.SelectSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
+			adsOrdersHForm.Close;
+			adsOrdersHForm.SelectSQL.Text := StringReplace( adsOrdersHForm.SelectSQL.Text,
 				' OrdersHShow1 ', ' OrdersHShow ', []);
-			adsOrdersH.RefreshSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
+			adsOrdersHForm.RefreshSQL.Text := StringReplace( adsOrdersHForm.RefreshSQL.Text,
 				' OrdersHShow1 ', ' OrdersHShow ', []);
-			adsOrdersH.ParamByName( 'AClosed').Value := False;
+			adsOrdersHForm.ParamByName( 'AClosed').Value := False;
 			btnMoveSend.Caption := 'ѕеревести в отправленные';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
 			//PrintEnabled := True;
 		end;
 		1: begin
-			adsOrdersH.Close;
-			adsOrdersH.SelectSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
+			adsOrdersHForm.Close;
+			adsOrdersHForm.SelectSQL.Text := StringReplace( adsOrdersHForm.SelectSQL.Text,
 				' OrdersHShow ', ' OrdersHShow1 ', []);
-			adsOrdersH.RefreshSQL.Text := StringReplace( adsOrdersH.SelectSQL.Text,
+			adsOrdersHForm.RefreshSQL.Text := StringReplace( adsOrdersHForm.RefreshSQL.Text,
 				' OrdersHShow ', ' OrdersHShow1 ', []);
-			adsOrdersH.ParamByName( 'AClosed').Value := True;
+			adsOrdersHForm.ParamByName( 'AClosed').Value := True;
 			btnMoveSend.Caption := '¬ернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
@@ -202,26 +202,24 @@ begin
 		end;
 	end;
 
-	adsOrdersH.ParamByName( 'AClientId').Value :=
+	adsOrdersHForm.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
-//	adsOrdersH.ParamByName( 'DateFrom').DataType := ftDate;
-//	adsOrdersH.ParamByName( 'DateTo').DataType := ftDate;
-	adsOrdersH.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
+	adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
 	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	adsOrdersH.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
-	adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+	adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
-	if adsOrdersH.Active then adsOrdersH.CloseOpen(True) else adsOrdersH.Open;
-	//свойства надо переназначать и после Resync
-//	adsOrdersH.Properties[ 'Update Criteria'].Value := adCriteriaKey;
-//	adsOrdersH.Properties[ 'Unique Table'].Value := 'OrdersH';
+  adsOrdersHForm.Close;
+  adsOrdersHForm.Prepare;
+  adsOrdersHForm.Open;
+  
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := TabControl.TabIndex = 1;
   OrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
-	if adsOrdersH.RecordCount = 0 then dbgOrdersH.ReadOnly := True
+	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True
 		else dbgOrdersH.ReadOnly := False;
 end;
 
@@ -233,7 +231,7 @@ end;
 procedure TOrdersHForm.btnDeleteClick(Sender: TObject);
 begin
 	dbgOrdersH.SetFocus;
-	if not adsOrdersH.IsEmpty then
+	if not adsOrdersHForm.IsEmpty then
 	begin
     if (dbgOrdersH.SelectedRows.Count = 0) and (not dbgOrdersH.SelectedRows.CurrentRowSelected) then
       dbgOrdersH.SelectedRows.CurrentRowSelected := True;
@@ -243,7 +241,7 @@ begin
         MainForm.SetOrdersInfo;
       end;
 	end;
-	if adsOrdersH.RecordCount = 0 then dbgOrdersH.ReadOnly := True
+	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True
 		else dbgOrdersH.ReadOnly := False;
 end;
 
@@ -312,7 +310,7 @@ var
   end;
 
 begin
-  if adsOrdersH.IsEmpty or ( TabControl.TabIndex<>1) then Exit;
+  if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>1) then Exit;
 
   if MessageBox( '¬ернуть выбранные за€вки в работу?',MB_ICONQUESTION+MB_OKCANCEL)<>IDOK then exit;
 
@@ -324,15 +322,15 @@ begin
     try
       for I := dbgOrdersH.SelectedRows.Count-1 downto 0 do
       begin
-        adsOrdersH.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
+        adsOrdersHForm.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
 
         //находим OrderId
         OrderId:=0;
         with DM.adsSelect do begin
           SelectSQL.Text:='SELECT OrderId FROM OrdersHShowCurrent(:AClientID, :APriceCode, :ARegionCode)';
           ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-          ParamByName('APriceCode').Value:=adsOrdersHPriceCode.Value;
-          ParamByName('ARegionCode').Value:=adsOrdersHRegionCode.Value;
+          ParamByName('APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
+          ParamByName('ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
           Open;
           try
             if not IsEmpty then OrderId:=Fields[0].AsInteger;
@@ -344,15 +342,15 @@ begin
         with adsCore do begin
           ParamByName( 'RetailForcount').Value:=DM.adtClients.FieldByName( 'Forcount').Value;
           ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-          ParamByName( 'APriceCode').Value:=adsOrdersHPriceCode.Value;
-          ParamByName( 'ARegionCode').Value:=adsOrdersHRegionCode.Value;
+          ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
+          ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
           Screen.Cursor:=crHourglass;
           try
             Open;
             { провер€ем наличие прайс-листа }
             if IsEmpty then raise Exception.Create( 'ƒанный прайс-лист не найден');
             { открываем сохраненный заказ }
-            OrdersForm.SetParams( adsOrdersHOrderId.AsInteger);
+            OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
             { переписываем позиции в текущий прайс-лист }
             while not OrdersForm.adsOrders.Eof do begin
               Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
@@ -392,7 +390,7 @@ begin
                 if ( OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
                 begin
                   Strings.Append( Format( '%s : %s - %s : %d вместо %d',
-                    [adsOrdersHPriceName.AsString,
+                    [adsOrdersHFormPRICENAME.AsString,
                     OrdersForm.adsOrdersSYNONYMNAME.AsString,
                     OrdersForm.adsOrdersSynonymFirm.AsString,
                     OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
@@ -400,7 +398,7 @@ begin
                 end
                 else
                   Strings.Append( Format( '%s : %s - %s : предложение не найдено',
-                    [adsOrdersHPriceName.AsString,
+                    [adsOrdersHFormPRICENAME.AsString,
                     OrdersForm.adsOrdersSYNONYMNAME.AsString,
                     OrdersForm.adsOrdersSynonymFirm.AsString]));
               end;
@@ -430,7 +428,7 @@ procedure TOrdersHForm.SendOrders;
 var
   I : Integer;
 begin
-	if adsOrdersH.IsEmpty or ( TabControl.TabIndex<>0) then Exit;
+	if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>0) then Exit;
 
   if (dbgOrdersH.SelectedRows.Count = 0) and (not dbgOrdersH.SelectedRows.CurrentRowSelected) then
     dbgOrdersH.SelectedRows.CurrentRowSelected := True;
@@ -438,20 +436,20 @@ begin
   if dbgOrdersH.SelectedRows.Count > 0 then begin
     for I := dbgOrdersH.SelectedRows.Count-1 downto 0 do
     begin
-      adsOrdersH.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
-      if adsOrdersH.FieldByName( 'Send').AsBoolean then
+      adsOrdersHForm.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
+      if adsOrdersHForm.FieldByName( 'Send').AsBoolean then
       begin
-        adsOrdersHSend.OnChange := nil;
+        adsOrdersHFormSEND.OnChange := nil;
         try
-          adsOrdersH.Edit;
-          adsOrdersH.FieldByName( 'Send').AsBoolean := False;
-          adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
+          adsOrdersHForm.Edit;
+          adsOrdersHForm.FieldByName( 'Send').AsBoolean := False;
+          adsOrdersHForm.FieldByName( 'Closed').AsBoolean := True;
           DM.adcUpdate.SQL.Text := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
-            adsOrdersH.FieldByName( 'OrderId').AsString;
+            adsOrdersHForm.FieldByName( 'OrderId').AsString;
           DM.adcUpdate.ExecQuery;
-          adsOrdersH.Post;
+          adsOrdersHForm.Post;
         finally
-          adsOrdersHSend.OnChange := adsOrdersH2SendChange;
+          adsOrdersHFormSEND.OnChange := adsOrdersH2SendChange;
         end;
       end;
     end;
@@ -464,8 +462,8 @@ procedure TOrdersHForm.dbgOrdersHKeyDown(Sender: TObject; var Key: Word;
 begin
 	if Key = VK_RETURN then
 	begin
-		SoftPost( adsOrdersH);
-		if not adsOrdersH.Isempty then OrdersForm.ShowForm( adsOrdersHOrderId.AsInteger);
+		SoftPost( adsOrdersHForm);
+		if not adsOrdersHForm.Isempty then OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
 	end;
 	if ( Key = VK_ESCAPE) and ( Self.PrevForm <> nil) and
 		( Self.PrevForm is TCoreForm) then
@@ -474,9 +472,9 @@ begin
 		MainForm.ActiveChild := Self.PrevForm;
 		MainForm.ActiveControl := Self.PrevForm.ActiveControl;
 	end;
-	if ( Key = VK_DELETE) and not ( adsOrdersH.IsEmpty) then
+	if ( Key = VK_DELETE) and not ( adsOrdersHForm.IsEmpty) then
 	begin
-//		adsOrdersH.Delete;
+//		adsOrdersHForm.Delete;
     btnDeleteClick(nil);
 		MainForm.SetOrdersInfo;
 	end;
@@ -484,21 +482,21 @@ end;
 
 procedure TOrdersHForm.dbgOrdersHExit(Sender: TObject);
 begin
-	SoftPost( adsOrdersH);
+	SoftPost( adsOrdersHForm);
 end;
 
 procedure TOrdersHForm.dbgOrdersHSortChange(Sender: TObject;
   SQLOrderBy: String);
 begin
-	adsOrdersH.Close;
-	adsOrdersH.SelectSQL.Text := OrdersHSql + SqlOrderBy;
+	adsOrdersHForm.Close;
+	adsOrdersHForm.SelectSQL.Text := OrdersHSql + SqlOrderBy;
 	SetParameters;
 end;
 
 procedure TOrdersHForm.dbgOrdersHDblClick(Sender: TObject);
 begin
-	SoftPost( adsOrdersH);
-	if not adsOrdersH.Isempty then OrdersForm.ShowForm( adsOrdersHOrderId.AsInteger);
+	SoftPost( adsOrdersHForm);
+	if not adsOrdersHForm.Isempty then OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
 end;
 
 procedure TOrdersHForm.adsOrdersH2AfterPost(DataSet: TDataSet);
@@ -509,7 +507,7 @@ end;
 procedure TOrdersHForm.dbgOrdersHKeyPress(Sender: TObject; var Key: Char);
 begin
 	if ( TabControl.TabIndex = 0) and ( Ord( Key) > 32) and
-		not adsOrdersH.IsEmpty then
+		not adsOrdersHForm.IsEmpty then
 	begin
 		dbmMessage.SetFocus;
 		SendMessage( GetFocus, WM_CHAR, Ord( Key), 0);
@@ -529,7 +527,7 @@ end;
 
 procedure TOrdersHForm.SetDateInterval;
 begin
-  with adsOrdersH do begin
+  with adsOrdersHForm do begin
 //	ParamByName( 'DateFrom').DataType := ftDate;
 //	ParamByName( 'DateTo').DataType := ftDate;
 	ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
@@ -554,35 +552,35 @@ procedure TOrdersHForm.Print(APreview: boolean);
 var
 	Mark: TBookmarkStr;
 begin
-	if not adsOrdersH.Active or adsOrdersH.IsEmpty then exit;
+	if not adsOrdersHForm.Active or adsOrdersHForm.IsEmpty then exit;
 
-	Mark := adsOrdersH.Bookmark;
-	adsOrdersH.DisableControls;
+	Mark := adsOrdersHForm.Bookmark;
+	adsOrdersHForm.DisableControls;
 	try
-		adsOrdersH.First;
-		OrdersForm.SetParams( adsOrdersHOrderId.AsInteger);
+		adsOrdersHForm.First;
+		OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
 
 		if APreview then DM.ShowFastReport( 'Orders.frf', nil, APreview)
 		else
 		begin
-			while not adsOrdersH.Eof do
+			while not adsOrdersHForm.Eof do
 			begin
 				DM.ShowFastReport( 'Orders.frf', nil, APreview, False);
-				adsOrdersH.Next;
-				OrdersForm.SetParams( adsOrdersHOrderId.AsInteger);
+				adsOrdersHForm.Next;
+				OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
 			end;
 		end;
 	finally
-		adsOrdersH.BookMark := Mark;
-		adsOrdersH.EnableControls;
+		adsOrdersHForm.BookMark := Mark;
+		adsOrdersHForm.EnableControls;
 	end;
 end;
 
 procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);
 begin
-	if not adsOrdersH.IsEmpty then
+	if not adsOrdersHForm.IsEmpty then
 	begin
-    adsWayBillHead.ParamByName('AServerOrderId').Value := adsOrdersH.FieldByName('ServerOrderID').Value;
+    adsWayBillHead.ParamByName('AServerOrderId').Value := adsOrdersHForm.FieldByName('ServerOrderID').Value;
     if adsWayBillHead.Active then adsWayBillHead.CloseOpen(True) else adsWayBillHead.Open;
     if not adsWayBillHead.IsEmpty then begin
       WayBillListForm.ShowForm(adsWayBillHeadServerID.Value);
@@ -600,7 +598,7 @@ end;
 procedure TOrdersHForm.tmOrderDateChangeTimer(Sender: TObject);
 begin
   try
-    SoftPost( adsOrdersH);
+    SoftPost( adsOrdersHForm);
   finally
     tmOrderDateChange.Enabled := False;
   end;
@@ -609,7 +607,7 @@ end;
 procedure TOrdersHForm.adsOrdersH2BeforePost(DataSet: TDataSet);
 begin
   //«десь не нужный комментарий
-  if adsOrdersHOrderId.IsNull then Abort; 
+  if adsOrdersHFormORDERID.IsNull then Abort; 
 end;
 
 end.
