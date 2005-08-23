@@ -19,6 +19,7 @@ type
 	  const AWorkCount: Integer);
    procedure OnConnectError(AMessage : String);
    procedure UpdateReclameTable;
+   procedure Log(SybSystem, MessageText : String);
    protected
     procedure Execute; override;
   end;
@@ -142,9 +143,11 @@ begin
     FSOAP := TSOAP.Create(ReclameURL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		  DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTPReclame);
     try
+      Log('Reclame', 'Запущен процесс для получения информационного блока');
       Res := FSOAP.Invoke('GetReclame', [], []);
       //Если в ответ что-то пришло, то скачиваем рекламу
       if Length(Res.Text) > 0 then begin
+        Log('Reclame', 'Получена ссылка на архив с информационным блоком');
         ReclameURL := Res.Values['URL'];
         NewReclame := StrToBoolDef(UpperCase(Res.Values['New']), True);
 
@@ -172,8 +175,10 @@ begin
             if Terminated then Abort;
             ExchangeForm.HTTPReclame.Request.ContentRangeStart := FileStream.Position;
             ExchangeForm.HTTPReclame.OnWork := HTTPReclameWork;
+            Log('Reclame', 'Пытаемся скачать архив с информационным блоком...');
             try
               ExchangeForm.HTTPReclame.Get( ReclameURL, FileStream);
+              Log('Reclame', 'Архив с информационным блоком успешно скачан');
             finally
               ExchangeForm.HTTPReclame.OnWork := nil;
             end;
@@ -184,6 +189,7 @@ begin
 
           if Terminated then Abort;
           UnZip := TVCLUnZip.Create(nil);
+          Log('Reclame', 'Пытаемся распаковать архив с информационным блоком...');
           try
             UnZip.DoAll := True;
             UnZip.IncompleteZipMode := izAssumeBad;
@@ -193,13 +199,16 @@ begin
             UnZip.ZipName := ZipFileName;
             UnZip.DestDir := ExePath + SDirReclame;
             UnZip.UnZip;
+            Log('Reclame', 'Архив с информационным блоком успешно распакован');
           finally
             SysUtils.DeleteFile(ZipFileName);
             UnZip.Free;
           end;
 
           if Terminated then Abort;
+          Log('Reclame', 'Пытаемся подтвердить архив с информационным блоком...');
           FSOAP.Invoke('ReclameComplete', [], []);
+          Log('Reclame', 'Архив с информационным блоком успешно подтвержден');
 
           Synchronize(UpdateReclameTable);
         end;
@@ -208,12 +217,14 @@ begin
         Synchronize(UpdateProgress);
       end
       else begin
+        Log('Reclame', 'Информационный блок не обновлен');
         FStatusStr := 'Информационный блок не обновлен';
         Synchronize(UpdateProgress);
       end;
 
 
     finally
+      Log('Reclame', 'Процесс обновления информационного блока завершен');
       FSOAP.Free;
     end;
 
@@ -274,6 +285,14 @@ begin
 	end;
 
   Synchronize(UpdateProgress);
+end;
+
+procedure TReclameThread.Log(SybSystem, MessageText: String);
+begin
+  try
+     WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + '  ' + SybSystem + '  ' + MessageText);
+  except
+  end;
 end;
 
 procedure TReclameThread.OnConnectError(AMessage: String);
