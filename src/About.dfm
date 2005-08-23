@@ -5655,7 +5655,7 @@ object AboutForm: TAboutForm
   end
   object Label2: TLabel
     Left = 56
-    Top = 171
+    Top = 155
     Width = 46
     Height = 13
     Caption = #1042#1077#1088#1089#1080#1103' : '
@@ -5711,6 +5711,13 @@ object AboutForm: TAboutForm
     Font.Style = [fsUnderline]
     ParentFont = False
     OnClick = Label4Click
+  end
+  object lIndent: TLabel
+    Left = 56
+    Top = 171
+    Width = 90
+    Height = 13
+    Caption = #1048#1076#1077#1085#1090#1080#1092#1080#1082#1072#1094#1080#1103' : '
   end
   object BitBtn2: TBitBtn
     Left = 136

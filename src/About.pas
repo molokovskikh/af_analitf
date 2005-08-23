@@ -18,6 +18,7 @@ type
     Label3: TLabel;
     BitBtn2: TBitBtn;
     Label4: TLabel;
+    lIndent: TLabel;
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
@@ -33,7 +34,7 @@ var
 
 implementation
 
-uses DModule, Main;
+uses DModule, Main, DB;
 
 {$R *.dfm}
 
@@ -48,7 +49,9 @@ begin
 	Label1.Caption := Application.Title;
 	Label2.Caption := 'Версия : ' + MainForm.VerInfo.FileVersion +
 		' (' + DM.adtProvider.FieldByName( 'MDBVersion').AsString + ')';
-	Label4.Caption := MainForm.VerInfo.LegalCopyright; 
+	lIndent.Caption := 'Идентификация : ' + DM.adtClients.FieldByName('ClientID').AsString +
+    ' (' + DM.adtClients.FieldByName('Name').AsString + ')';
+	Label4.Caption := MainForm.VerInfo.LegalCopyright;
 end;
 
 procedure TAboutForm.Label4Click(Sender: TObject);
