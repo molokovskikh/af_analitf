@@ -43,14 +43,19 @@ begin
    MaxTracePosition := 1024 * 1024;
    FSuffix := 'TR';
    CS := TCriticalSection.Create;
-   if not FileExists ( getFTName ) then
-    begin
-     FT := TFileStream.Create ( getFTName , fmCreate );
-     FT.Free;
-    end;
-   FT := TFileStream.Create ( getFTName , fmOpenWrite or fmShareDenyWrite );
-   //Здесь надо искать строку -END-  
-   FT.Seek ( 0 , soFromEnd );
+   if FindCmdLineSwitch('extend') then begin
+     if not FileExists ( getFTName ) then
+      begin
+       FT := TFileStream.Create ( getFTName , fmCreate );
+       FT.Free;
+      end;
+     FT := TFileStream.Create ( getFTName , fmOpenWrite or fmShareDenyWrite );
+     //Здесь надо искать строку -END-
+     FT.Seek ( 0 , soFromEnd );
+   end
+   else
+     FT := NIL;
+
    TR ( 'Tracer' , 'Start' );
   except
    FT := NIL;
