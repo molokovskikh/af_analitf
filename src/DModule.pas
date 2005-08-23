@@ -171,14 +171,14 @@ begin
   if not FileExists(ExePath + DatabaseName) then begin
     MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
       MB_ICONERROR or MB_OK);
-    Halt( Integer(ecDBFileNotExists) );
+    ExitProcess( Integer(ecDBFileNotExists) );
   end;
 
   if ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
   then begin
     MessageBox( Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]),
       MB_ICONERROR or MB_OK);
-    Halt( Integer(ecDBFileReadOnly) );
+    ExitProcess( Integer(ecDBFileReadOnly) );
   end;
 
   LDBFileName := ChangeFileExt(ExeName, '.ldb');
@@ -195,7 +195,7 @@ begin
     on E : Exception do begin
       MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
         MB_ICONERROR or MB_OK);
-      Halt( Integer(ecDBFileError) );
+      ExitProcess( Integer(ecDBFileError) );
     end;
   end;
 
@@ -293,19 +293,19 @@ begin
   if not IsOneStart then begin
     MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
       MB_ICONERROR or MB_OK);
-    Halt( Integer(ecDoubleStart) );
+    ExitProcess( Integer(ecDoubleStart) );
   end;
 
   if GetDisplayColors < 16 then begin
     MessageBox( 'Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.',
       MB_ICONERROR or MB_OK);
-    Halt( Integer(ecColor) );
+    ExitProcess( Integer(ecColor) );
   end;
 
   if not TCPPresent then begin
     MessageBox( 'Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.',
       MB_ICONERROR or MB_OK);
-    Halt( Integer(ecTCPNotExists) );
+    ExitProcess( Integer(ecTCPNotExists) );
   end;
 
   try
@@ -331,7 +331,7 @@ begin
     MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
       'Запуск программы невозможен.', [ MaxUsers]),
       MB_ICONERROR or MB_OK);
-    Halt( Integer(ecUserLimit) );
+    ExitProcess( Integer(ecUserLimit) );
   end;
 
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
@@ -340,14 +340,14 @@ begin
     if DBFileSize > FreeAvail then begin
       MessageBox( Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %d байт.', [ DBFileSize ]),
         MB_ICONERROR or MB_OK);
-      Halt( Integer(ecFreeDiskSpace) );
+      ExitProcess( Integer(ecFreeDiskSpace) );
     end;
   end
   else begin
     MessageBox( Format( 'Не удается получить количество свободного места на диске.' +
       #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]),
       MB_ICONERROR or MB_OK);
-    Halt( Integer(ecGetFreeDiskSpace) );
+    ExitProcess( Integer(ecGetFreeDiskSpace) );
   end;
   //Устанавливаем интервал для сбора мусора
   SetSweepInterval;

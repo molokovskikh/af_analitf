@@ -73,7 +73,7 @@ begin
     end;
   except
     MessageBox( 'ƒл€ запуска приложени€ необходим установленный Internet Explorer 4.0 или выше.', MB_ICONERROR or MB_OK);
-    Halt( Integer(ecIE40) );
+    ExitProcess( Integer(ecIE40) );
   end;
   Application.Initialize;
   Application.Title := 'јналит‘ј–ћј÷»я';
