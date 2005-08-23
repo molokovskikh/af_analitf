@@ -262,20 +262,12 @@ end;
 procedure TExchangeThread.HTTPConnect;
 var
 	URL: string;
-  TmpStr : String;
 begin
 	{ создаем экземпл€р класса TSOAP дл€ работы с SOAP через HTTP вручную }
 	URL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
 		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
 	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
-  try
-//    TmpStr := ExchangeForm.HTTP.Get('http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString));
-    WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Test connect Success');
-  except
-    on E : Exception do
-      WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + ' Test connect Error=' + E.Message);
-  end;
 end;
 
 procedure TExchangeThread.GetReclame;
