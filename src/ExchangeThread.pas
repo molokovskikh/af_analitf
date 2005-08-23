@@ -448,7 +448,7 @@ begin
     SetLength(params, 2);
     SetLength(values, 2);
     params[0]:= 'PriceCode';
-    values[0]:= 'NULL';
+    values[0]:= '0';
     params[1]:= 'Log';
     values[1]:= LogStr;
   end;
