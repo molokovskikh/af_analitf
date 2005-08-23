@@ -518,7 +518,8 @@ object DM: TDM
       'update'
       '  orders'
       'set'
-      '  COREID = :NEW_COREID'
+      '  COREID = :NEW_COREID,'
+      '  Price = :NEW_PRICE'
       'where'
       '  ID = :OLD_ID')
     Transaction = DefTran

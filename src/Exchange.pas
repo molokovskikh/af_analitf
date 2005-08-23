@@ -267,7 +267,7 @@ end;
 procedure TryToRepareOrders;
 var
 	Order, CurOrder, Quantity, E: Integer;
-	Code, CodeCr, SynonymCode, SynonymFirmCrCode: Variant;
+	Code, CodeCr, SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
 	Strings: TStrings;
 //  FilterStr : String;
 //  LocateRes : Boolean;
@@ -278,15 +278,17 @@ var
 		DM.adsSelect3.FieldByName( 'OrderCount').AsInteger := Order;
 		if Order = 0 then
       DM.adsSelect3.FieldByName( 'CoreId').Value := Null
-    else
+    else begin
       DM.adsSelect3.FieldByName( 'CoreId').Value := DM.adsCore.FieldByName( 'CoreId').Value;
+      DM.adsSelect3.FieldByName( 'Price').Value := DM.adsCore.FieldByName( 'BASECOST').Value;
+    end;
 		DM.adsSelect3.Post;
 	end;
 
 begin
 // 	DM.adsSelect3.Close;
  	DM.adsSelect3.SelectSQL.Text := 'SELECT Id, CoreId, PriceCode, RegionCode, Code, CodeCr, ' +
-		'Price, SynonymCode, SynonymFirmCrCode, SynonymName, SynonymFirm, OrderCount, PriceName ' +
+		'Price, SynonymCode, SynonymFirmCrCode, SynonymName, SynonymFirm, Junk, Await, OrderCount, PriceName ' +
 		'FROM Orders ' +
 		'INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND OrdersH.Closed = 0) ' +
 		'WHERE (OrderCount>0)';
@@ -335,9 +337,11 @@ begin
       //if CodeCr = '' then CodeCr := Null;
 			SynonymCode := DM.adsSelect3.FieldByName( 'SynonymCode').AsInteger;
 			SynonymFirmCrCode := DM.adsSelect3.FieldByName( 'SynonymFirmCrCode').AsInteger;
+      JUNK := DM.adsSelect3.FieldByName( 'JUNK').AsInteger;
+      AWAIT := DM.adsSelect3.FieldByName( 'AWAIT').AsInteger;
 
-			if DM.adsCore.Locate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
-				  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [])
+			if DM.adsCore.Locate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode;Junk;Await',
+				  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode, JUNK, AWAIT]), [])
       then
 			begin
 				Val( DM.adsCore.FieldByName( 'Quantity').AsString, Quantity, E);
