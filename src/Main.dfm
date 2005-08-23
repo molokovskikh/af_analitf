@@ -656,9 +656,9 @@ object MainForm: TMainForm
     object actWayBill: TAction
       Category = 'Order'
       Caption = #1053#1072#1082#1083#1072#1076#1085#1099#1077
-      Enabled = False
       Hint = #1053#1072#1082#1083#1072#1076#1085#1099#1077
       ImageIndex = 15
+      OnUpdate = actWayBillUpdate
     end
   end
   object AppEvents: TApplicationEvents

@@ -168,6 +168,7 @@ TMainForm = class(TForm)
     procedure actHomeUpdate(Sender: TObject);
     procedure itmAboutClick(Sender: TObject);
     procedure itmExternalOrdersClick(Sender: TObject);
+    procedure actWayBillUpdate(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -816,6 +817,11 @@ procedure TMainForm.SetActionLists(AValue: TList);
 begin
   if AValue <> FActionLists then
     FActionLists := AValue;
+end;
+
+procedure TMainForm.actWayBillUpdate(Sender: TObject);
+begin
+  TAction(Sender).Enabled := False;
 end;
 
 end.
