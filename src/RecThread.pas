@@ -222,13 +222,14 @@ begin
         Synchronize(UpdateProgress);
       end;
 
-
-    finally
       Log('Reclame', 'Процесс обновления информационного блока завершен');
+    finally
       FSOAP.Free;
     end;
 
   except
+    on E : Exception do
+      Log('Reclame', 'Процесс обновления информационного блока завершился с ошибкой : ' + E.Message);
   end;
 {
 }
