@@ -455,7 +455,8 @@ begin
 
 //  Res := SOAP.Invoke( 'MaxSynonymCode', ['Log'], [LogStr]);
 //	Res := SOAP.Invoke( 'MaxSynonymCodeV2', ['Log'], [LogStr]);
-	Res := SOAP.Invoke( 'MaxSynonymCodeV2', params, values);
+//	Res := SOAP.Invoke( 'MaxSynonymCodeV2', params, values);
+	Res := SOAP.Invoke( 'MaxSynonymCodeV3', params, values);
 
 	ExchangeDateTime := FromXMLToDateTime( Res.Text);
 	DM.adtParams.Edit;
