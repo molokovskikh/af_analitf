@@ -161,10 +161,10 @@ procedure TSummaryForm.dbgSummaryGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	if adsSummaryJunk.AsBoolean and (( Column.FieldName = 'Period')or
-		( Column.FieldName = 'BaseCost')) then Background := JUNK_CLR;
+	if adsSummaryJunk.AsBoolean and (( Column.FieldName = 'PERIOD')or
+		( Column.FieldName = 'BASECOST')) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsSummaryAwait.AsBoolean and ( Column.FieldName = 'Synonym') then
+	if adsSummaryAwait.AsBoolean and ( Column.FieldName = 'SYNONYMNAME') then
 		Background := AWAIT_CLR;
 end;
 

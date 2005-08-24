@@ -88,10 +88,10 @@ procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	{ если уцененный товар, изменяем цвет }
-	if adsOrdersJunk.AsBoolean and ( Column.FieldName = 'Price') then
+	if adsOrdersJunk.AsBoolean and ( Column.FieldName = 'PRICE') then
 		Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsOrdersAwait.AsBoolean and ( Column.FieldName = 'Synonym') then
+	if adsOrdersAwait.AsBoolean and ( Column.FieldName = 'SYNONYMNAME') then
 		Background := AWAIT_CLR;
 end;
 

@@ -386,13 +386,13 @@ begin
 	//данный прайс-лидер
 	if ( adsCoreLEADERPRICECODE.AsInteger = PriceCode) and
         	( adsCoreLeaderRegionCode.AsInteger = RegionCode) and
-		(( Column.FieldName = 'LeaderRegionName') or ( Column.FieldName = 'LeaderPriceName')) then
+		(( Column.FieldName = 'LEADERREGIONNAME') or ( Column.FieldName = 'LEADERPRICENAME')) then
 			Background := LEADER_CLR;
 	//уцененный товар
-	if adsCoreJunk.AsBoolean and (( Column.FieldName = 'Period') or
-		( Column.FieldName = 'BaseCost')) then Background := JUNK_CLR;
+	if adsCoreJunk.AsBoolean and (( Column.FieldName = 'PERIOD') or
+		( Column.FieldName = 'BASECOST')) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsCoreAwait.AsBoolean and ( Column.FieldName = 'Synonym') then
+	if adsCoreAwait.AsBoolean and ( Column.FieldName = 'SYNONYMNAME') then
 		Background := AWAIT_CLR;
 end;
 
