@@ -322,7 +322,7 @@ begin
 			begin
 				Strings.Append( Format( '%s : %s - %s : прайс-лист отсутствует',
 					[ DM.adsSelect3.FieldByName( 'PriceName').AsString,
-					DM.adsSelect3.FieldByName( 'Synonym').AsString,
+					DM.adsSelect3.FieldByName( 'SynonymName').AsString,
 					DM.adsSelect3.FieldByName( 'SynonymFirm').AsString]));
 				DM.adsCore.Close;
 				SetOrder( 0);
@@ -359,7 +359,7 @@ begin
 				begin
 					Strings.Append( Format( '%s : %s - %s : %d вместо %d (старая цена : %s)',
 						[ DM.adsSelect3.FieldByName( 'PriceName').AsString,
-						DM.adsSelect3.FieldByName( 'Synonym').AsString,
+						DM.adsSelect3.FieldByName( 'SynonymName').AsString,
 						DM.adsSelect3.FieldByName( 'SynonymFirm').AsString,
 						CurOrder,
 						Order,
@@ -369,7 +369,7 @@ begin
 				begin
 					Strings.Append( Format( '%s : %s - %s : предложение отсутствует (старая цена : %s)',
 						[ DM.adsSelect3.FieldByName( 'PriceName').AsString,
-						DM.adsSelect3.FieldByName( 'Synonym').AsString,
+						DM.adsSelect3.FieldByName( 'SynonymName').AsString,
 						DM.adsSelect3.FieldByName( 'SynonymFirm').AsString,
 						DM.adsSelect3.FieldByName( 'Price').AsString]));
 				end;
