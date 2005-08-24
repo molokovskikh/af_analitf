@@ -1211,9 +1211,15 @@ end;
 
 function TDM.TCPPresent: Boolean;
 var
-  idPing : TIdIcmpClient;
+//  idPing : TIdIcmpClient;
+  hWS : THandle;
 begin
   try
+    hWS := LoadLibrary('ws2_32.dll');
+    Result := hWS <> 0;
+    if Result then
+      FreeLibrary(hWS);
+      {
     idPing := TIdIcmpClient.Create(nil);
     try
       idPing.Host := 'localhost';
@@ -1222,6 +1228,7 @@ begin
     finally
       idPing.Free;
     end;
+    }
   except
     Result := False;
   end;
