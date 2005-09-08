@@ -230,6 +230,8 @@ begin
 		Screen.Cursor := crHourglass;
 		try
 			if Active then CloseOpen(True) else Open;
+      if not adsCore.Sorted then
+        DoSort(['FullCode', 'BaseCost'], [True, True]);
 		finally
 			Screen.Cursor := crDefault;
 		end;

@@ -637,6 +637,7 @@ object CoreForm: TCoreForm
     RefreshTransactionKind = tkUpdateTransaction
     Left = 64
     Top = 133
+    oPersistentSorting = True
     oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
