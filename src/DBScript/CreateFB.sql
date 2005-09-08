@@ -2222,6 +2222,7 @@ begin
       SELECT CATALOGS.FullCode, CATALOGS.Form
       FROM CATALOGS
       WHERE CATALOGS.ShortCode=:AShortCode
+      order by CATALOGS.Form
       into  :FullCode,   :Form
       do
        suspend;
@@ -2232,6 +2233,7 @@ begin
       FROM CATALOGS
       WHERE CATALOGS.ShortCode=:AShortCode
         and exists(select * from core where core.fullcode = CATALOGS.FullCode)
+      order by CATALOGS.Form
       into  :FullCode,   :Form
       do
        suspend;
@@ -2906,7 +2908,6 @@ FROM
     LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId
 WHERE (Core.FullCode=:ParentCode)
 And (:ShowRegister = 1 Or (ClientsDataN.FirmCode<>:RegisterId))
-ORDER BY Core.FullCode, Core.SynonymCode,  Core.BaseCost
 into CoreId,
     :PriceCode,
     :RegionCode,
@@ -3079,7 +3080,6 @@ FROM
     LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId
 WHERE (Core.ShortCode=:ParentCode)
 And (:ShowRegister = 1 Or (ClientsDataN.FirmCode<>:RegisterId))
-ORDER BY Core.FullCode, Core.SynonymCode, Core.BaseCost
 into :CoreId,
     :PriceCode,
     :RegionCode,
