@@ -579,7 +579,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
       '    :RETAILFORCOUNT,'
-      '    :ACLIENTID) '
+      '    :ACLIENTID,'
+      '    :APRICENAME) '
       'where'
       '  CoreID = :OLD_COREID')
     SelectSQL.Strings = (
@@ -633,7 +634,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
       '    :RETAILFORCOUNT,'
-      '    :ACLIENTID) ')
+      '    :ACLIENTID,'
+      '    :APRICENAME) ')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     AutoCommit = True

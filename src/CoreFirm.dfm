@@ -412,7 +412,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
       '    :RETAILFORCOUNT,'
-      '    :ACLIENTID) '
+      '    :ACLIENTID,'
+      '    :APRICENAME) '
       'where'
       '  CoreID = :OLD_COREID')
     SelectSQL.Strings = (

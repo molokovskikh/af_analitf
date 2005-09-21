@@ -344,6 +344,7 @@ begin
           ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
           ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
           ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
+          ParamByName( 'APriceName').Value:=adsOrdersHFormPRICENAME.Value;
           Screen.Cursor:=crHourglass;
           try
             Open;
