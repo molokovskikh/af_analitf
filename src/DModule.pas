@@ -59,6 +59,7 @@ type
     adtFlags: TpFIBDataSet;
     adcUpdate: TpFIBQuery;
     adsSelect: TpFIBDataSet;
+    adsSelect2: TpFIBDataSet;
     adsSelect3: TpFIBDataSet;
     adsCore: TpFIBDataSet;
     adsOrdersH: TpFIBDataSet;

@@ -580,7 +580,8 @@ object DM: TDM
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
       '    :RETAILFORCOUNT,'
-      '    :ACLIENTID) ')
+      '    :ACLIENTID,'
+      '    :APRICENAME) ')
     Transaction = DefTran
     Database = MainConnection1
     Left = 240

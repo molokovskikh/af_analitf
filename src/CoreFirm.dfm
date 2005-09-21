@@ -466,7 +466,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
       '    :RETAILFORCOUNT,'
-      '    :ACLIENTID) ')
+      '    :ACLIENTID,'
+      '    :APRICENAME) ')
     AfterOpen = adsCore2AfterOpen
     AfterPost = adsCore2AfterPost
     BeforeClose = adsCore2BeforeClose
@@ -561,9 +562,10 @@ object CoreFirmForm: TCoreFirmForm
       Size = 250
       EmptyStrToNull = False
     end
-    object adsCoreMINPRICE: TFIBIntegerField
+    object adsCoreMINPRICE: TFIBBCDField
       FieldName = 'MINPRICE'
-      DisplayFormat = '0.00;;'#39#39
+      Size = 2
+      RoundByScale = True
     end
     object adsCoreLEADERPRICECODE: TFIBBCDField
       FieldName = 'LEADERPRICECODE'

@@ -314,6 +314,8 @@ begin
 			DM.adsSelect3.FieldByName( 'PriceCode').Value;
 		DM.adsCore.ParamByName( 'ARegionCode').Value :=
 			DM.adsSelect3.FieldByName( 'RegionCode').Value;
+		DM.adsCore.ParamByName( 'APRICENAME').Value :=
+			DM.adsSelect3.FieldByName( 'PriceName').Value;
 		Screen.Cursor := crHourglass;
 		try
 			DM.adsCore.Open;

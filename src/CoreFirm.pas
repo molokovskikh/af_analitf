@@ -7,10 +7,10 @@ uses
   RXDBCtrl, Grids, DBGrids, ComCtrls, Db, StrUtils, Child, 
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants, 
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
-  FIBDataSet, pFIBDataSet;
+  FIBDataSet, pFIBDataSet, FIBSQLMonitor;
 
 const
-	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :RETAILFORCOUNT, :ACLIENTID) ORDER BY ';
+	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :RETAILFORCOUNT, :ACLIENTID, :APRICENAME) ORDER BY ';
 
 type
   TFilter=( filAll, filOrder, filLeader);
@@ -56,7 +56,6 @@ type
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
-    adsCoreMINPRICE: TFIBIntegerField;
     adsCoreLEADERPRICECODE: TFIBBCDField;
     adsCoreLEADERREGIONCODE: TFIBBCDField;
     adsCoreLEADERREGIONNAME: TFIBStringField;
@@ -88,6 +87,7 @@ type
     adsOrdersH: TpFIBDataSet;
     adsOrdersShowFormSummary: TpFIBDataSet;
     adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
+    adsCoreMINPRICE: TFIBBCDField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -178,6 +178,7 @@ begin
     ParamByName( 'APriceCode').Value:=PriceCode;
     ParamByName( 'ARegionCode').Value:=RegionCode;
     ParamByName( 'AClientId').Value:=ClientId;
+    ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
     Screen.Cursor:=crHourglass;
     try
       if Active then CloseOpen(False) else Open;
@@ -196,7 +197,6 @@ begin
     ParamByName('ARegionCode').Value:=RegionCode;
     Open;
     try
-{
       ColumnByNameT(dbgCore,'Code').Visible:=FieldByName('Code').AsInteger>0;
       ColumnByNameT(dbgCore,'SynonymFirm').Visible:=FieldByName('SynonymFirm').AsInteger>0;
       ColumnByNameT(dbgCore,'Volume').Visible:=FieldByName('Volume').AsInteger>0;
@@ -204,13 +204,12 @@ begin
       ColumnByNameT(dbgCore,'Note').Visible:=FieldByName('Note').AsInteger>0;
       ColumnByNameT(dbgCore,'Period').Visible:=FieldByName('Period').AsInteger>0;
       ColumnByNameT(dbgCore,'Quantity').Visible:=FieldByName('Quantity').AsInteger>0;
-}      
     finally
       Close;
     end;
   end;
   //подсчитываем сумму заявки и количество записей
-  SetFilter(filOrder);
+//  SetFilter(filOrder);
   OrderCalc;
   SetOrderLabel;
   if OnlyLeaders then
@@ -334,9 +333,26 @@ procedure TCoreFirmForm.OrderCalc;
 var
 	V: array [ 0..1] of Variant;
 begin
+  DM.adsSelect2.Close;
+  DM.adsSelect2.SelectSQL.Text := 'select * from ORDERSINFO3(:AClientID, :APriceCode, :ARegionCode)';
+  DM.adsSelect2.ParamByName( 'APriceCode').Value:=PriceCode;
+  DM.adsSelect2.ParamByName( 'ARegionCode').Value:=RegionCode;
+  DM.adsSelect2.ParamByName( 'AClientId').Value:=ClientId;
+  DM.adsSelect2.Open;
+  if not DM.adsSelect2.IsEmpty and not DM.adsSelect2.FieldByName('SumOrder').IsNull then begin
+    OrderCount := DM.adsSelect2.FieldByName('Positions').AsInteger;
+    OrderSum := DM.adsSelect2.FieldByName('SumOrder').Value;
+  end
+  else begin
+    OrderCount := 0;
+    OrderSum := 0;
+  end;
+  DM.adsSelect2.Close;
+{
 	DataSetCalc( adsCore,[ 'COUNT', 'SUM(SumOrder)'], V);
 	OrderCount := V[ 0];
 	OrderSum :=V[ 1];
+}  
 end;
 
 procedure TCoreFirmForm.SetOrderLabel;
