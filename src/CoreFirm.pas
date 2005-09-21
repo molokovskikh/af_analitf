@@ -281,7 +281,7 @@ begin
     ParamByName('AClientId').Value:=ClientId;
     ParamByName('APriceCode').Value:=PriceCode;
     ParamByName('ARegionCode').Value:=RegionCode;
-    if Active then CloseOpen(True) else Open;
+//    if Active then CloseOpen(True) else Open;
   end;
 end;
 
@@ -372,7 +372,7 @@ begin
   finally
     adsCore.EnableControls;
     adsCore.CloseOpen(True);
-    adsOrdersH.CloseOpen(True);
+//    adsOrdersH.CloseOpen(True);
     Screen.Cursor:=crDefault;
     MainForm.SetOrdersInfo;
   end;

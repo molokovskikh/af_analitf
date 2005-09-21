@@ -7,8 +7,9 @@ uses
   Db, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
   FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, IB_Services,
   FIBQuery, pFIBQuery, FIBDataSet, pFIBDataSet, FIBDatabase, pFIBDatabase,
-  frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,  
-  CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient;
+  frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
+  CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
+  U_TINFIBInputDelimitedStream{, Cipher, rc_rndcrypt, rc_codecs};
 
 const
   HistoryMaxRec=5;
@@ -138,6 +139,8 @@ type
     function NeedCommitExchange : Boolean;
     procedure SetNeedCommitExchange;
     procedure ResetNeedCommitExchange;
+    function DecodeCryptS(S : String) : String;
+    function EncodeCryptS(S : String) : String;
   end;
 
 var
@@ -638,38 +641,16 @@ end;
 //подключает в качестве внешних текстовые таблицы из папки In
 procedure TDM.LinkExternalTables;
 var
-  Table, Catalog: Variant;
   SR: TSearchRec;
   FileName,
   ShortName : String;
+  up : TpFIBDataSet;
+  Files : TStringList;
+  Tables : TStringList;
+  I : Integer;
+  InDelimitedFile : TFIBInputDelimitedFile;
 begin
 {
-  if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
-    Screen.Cursor:=crHourglass;
-    try
-      Catalog:=CreateOleObject('ADOX.Catalog');
-      try
-        Catalog.ActiveConnection:=MainConnection.ConnectionObject;
-        repeat
-          Table:=CreateOleObject('ADOX.Table');
-          Table.ParentCatalog:=Catalog;
-          Table.Name:='Ext'+ChangeFileExt(SR.Name,'');
-          Table.Properties('Jet OLEDB:Create Link'):=True;
-          Table.Properties('Jet OLEDB:Link Datasource'):=ExePath+SDirIn;
-          Table.Properties('Jet OLEDB:Link Provider String'):='TEXT';
-          Table.Properties('Jet OLEDB:Remote Table Name'):=SR.Name;
-          Catalog.Tables.Append(Table);
-          Table:=Unassigned;
-        until FindNext(SR)<>0;
-      finally
-        Table:=Unassigned;
-        Catalog:=Unassigned;
-      end;
-    finally
-      Screen.Cursor:=crDefault;
-    end;
-  end;
-}
   if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
     Screen.Cursor:=crHourglass;
     try
@@ -684,6 +665,170 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
+}
+  if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
+    Screen.Cursor:=crHourglass;
+    Files := TStringList.Create;
+    Tables := TStringList.Create;
+    try
+      //Сначала создали внешние таблицы
+      repeat
+        FileName := ExePath+SDirIn+ '\' + SR.Name;
+        ShortName := ChangeFileExt(SR.Name,'');
+        adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
+        adcUpdate.ParamByName('PATH').Value := FileName;
+        Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
+        adcUpdate.ExecQuery;
+        Files.Add(FileName);
+        Tables.Add('EXT' + UpperCase(ShortName));
+      until FindNext(SR)<>0;
+      FindClose(SR);
+
+      DefTran.CommitRetaining;
+
+      //Потом наполнили их данными
+      up := TpFIBDataSet.Create(nil);
+      try
+        up.Database := MainConnection1;
+        up.Transaction := DefTran;
+
+        InDelimitedFile := TFIBInputDelimitedFile.Create;
+        try
+          InDelimitedFile.SkipTitles := False;
+          InDelimitedFile.ReadBlanksAsNull := False;
+          InDelimitedFile.ColDelimiter := Chr(159);
+          InDelimitedFile.RowDelimiter := Chr(161);
+
+
+          for I := 0 to Files.Count-1 do begin
+            if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM') then begin
+              up.SelectSQL.Text := 'select * from ' + Tables[i];
+              up.Prepare;
+              up.Open;
+              up.AutoUpdateOptions.UpdateTableName := Tables[i];
+              up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
+              Tracer.TR(Tables[i], up.InsertSQL.Text);
+              up.Close;
+              up.SelectSQL.Text := up.InsertSQL.Text;
+              InDelimitedFile.Filename := Files[i];
+              up.BatchInput(InDelimitedFile);
+            end;
+          end;
+
+        finally
+          InDelimitedFile.Free;
+        end;
+
+      finally
+        up.Free;
+      end;
+
+      DefTran.CommitRetaining;
+
+    finally
+      Files.Free;
+      Tables.Free;
+      Screen.Cursor:=crDefault;
+    end;
+  end;
+
+
+//Версия с шифрованием архива
+{
+  if FindFirst(ExePath+SDirIn+'\*.zip',faAnyFile,SR)=0 then begin
+    Screen.Cursor:=crHourglass;
+    Files := TStringList.Create;
+    Tables := TStringList.Create;
+    Indecies := TStringList.Create;
+    UnZip := TVCLUnZip.Create(nil);
+    try
+      UnZip.ZipName := ExePath+SDirIn+ '\' + SR.Name;
+      UnZip.ReadZip;
+      for I := 0 to UnZip.Count-1 do begin
+        if (pos('\', UnZip.Filename[i]) = 0) and (pos('.txt', UnZip.Filename[i]) > 0) then begin
+          FileName := ExePath+SDirIn+ '\' + UnZip.Filename[i];
+          ShortName := ChangeFileExt(UnZip.Filename[i],'');
+          adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
+          adcUpdate.ParamByName('PATH').Value := FileName;
+          Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
+          adcUpdate.ExecQuery;
+          Files.Add(FileName);
+          Tables.Add('EXT' + UpperCase(ShortName));
+          Indecies.Add(IntToStr(i));
+        end;
+      end;
+
+//      repeat
+//        FileName := ExePath+SDirIn+ '\' + SR.Name;
+//        ShortName := ChangeFileExt(SR.Name,'');
+//        adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
+//        adcUpdate.ParamByName('PATH').Value := FileName;
+//        Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
+//        adcUpdate.ExecQuery;
+//        Files.Add(FileName);
+//        Tables.Add('EXT' + UpperCase(ShortName));
+//      until FindNext(SR)<>0;
+
+      FindClose(SR);
+
+      DefTran.CommitRetaining;
+
+
+      up := TpFIBDataSet.Create(nil);
+      try
+        up.Database := MainConnection1;
+        up.Transaction := DefTran;
+
+        InDelimitedFile := TINFIBInputDelimitedStream.Create;
+        MS := TMemoryStream.Create;
+        try
+          InDelimitedFile.SkipTitles := False;
+          InDelimitedFile.ReadBlanksAsNull := False;
+          InDelimitedFile.ColDelimiter := Chr(159);
+          InDelimitedFile.RowDelimiter := Chr(161);
+
+          UnZip.Password := '12345678';
+
+          for I := 0 to Files.Count-1 do begin
+            if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM') then begin
+              MS.Size := UnZip.UnCompressedSize[StrToInt(Indecies[i])];
+              MS.Clear;
+              UnZip.UnZipToStreamByIndex(MS, StrToInt(Indecies[i]));
+              up.SelectSQL.Text := 'select * from ' + Tables[i];
+              up.Prepare;
+              up.Open;
+              up.AutoUpdateOptions.UpdateTableName := Tables[i];
+              up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
+              Tracer.TR(Tables[i], up.InsertSQL.Text);
+              up.Close;
+              up.SelectSQL.Text := up.InsertSQL.Text;
+              InDelimitedFile.Filename := Files[i];
+              InDelimitedFile.Stream := MS;
+              MS.Seek(0, soFromBeginning);
+              up.BatchInput(InDelimitedFile);
+            end;
+          end;
+
+        finally
+          InDelimitedFile.Free;
+          MS.Free;
+        end;
+
+      finally
+        up.Free;
+      end;
+
+      DefTran.CommitRetaining;
+
+    finally
+      UnZip.Free;
+      Indecies.Free;
+      Files.Free;
+      Tables.Free;
+      Screen.Cursor:=crDefault;
+    end;
+  end;
+}  
 end;
 
 // подключает таблицы из старого MDB
@@ -752,6 +897,7 @@ begin
           adcUpdate.SQL.Text := 'drop table ' + TN[i];
           adcUpdate.ExecQuery;
         end;
+      DefTran.CommitRetaining;
     finally
       TN.Free;
     end;
@@ -765,7 +911,7 @@ begin
   Screen.Cursor:=crHourglass;
   with adcUpdate do try
     MainForm.StatusText:='Очищается MinPrices';
-    SQL.Text:='EXECUTE PROCEDURE MinPricesDelete';
+    SQL.Text:='EXECUTE PROCEDURE MinPricesDeleteALL';
     ExecQuery;
     SQL.Text:='EXECUTE PROCEDURE OrdersSetCoreNull'; ExecQuery;
     SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteNotClosedAll'; ExecQuery;
@@ -1247,6 +1393,16 @@ end;
 procedure TDM.SetNeedCommitExchange;
 begin
   FNeedCommitExchange := True;
+end;
+
+function TDM.DecodeCryptS(S: String): String;
+begin
+  Result := '';//DeCryptString(rc_Decode(S), '12345678');
+end;
+
+function TDM.EncodeCryptS(S: String): String;
+begin
+  Result := '';//EnCryptString(S, '12345678');
 end;
 
 end.

@@ -5,7 +5,8 @@ interface
 uses
 	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
-  IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase;
+  IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
+  FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip;
 
 type
 
@@ -48,6 +49,8 @@ private
   StartExec : TDateTime;
   AbsentPriceCodeSL : TStringList;
 
+  upB : TpFIBQuery; 
+
 	procedure SetStatus;
 	procedure SetProgress;
 	procedure SetTotalProgress;
@@ -70,6 +73,9 @@ private
 	procedure CheckNewMDB;
 	procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
+
+  procedure UpdateFromFile(FileName, InsertSQL : String; OnBatching : TOnBatching = nil);
+  procedure OnSynonymBatching(BatchOperation: TBatchOperation; RecNumber: integer; var BatchAction: TBatchAction);
 
 	procedure ImportFromExternalMDB;
 	function GetXMLDateTime( ADateTime: TDateTime): string;
@@ -94,7 +100,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB, U_FolderMacros, LU_Tracer, FIBQuery, FIBDatabase;
+  DB, U_FolderMacros, LU_Tracer, FIBDatabase;
 
 { TExchangeThread }
 
@@ -1019,13 +1025,16 @@ begin
 	SQL.Text := 'select count(*) from regions where regionname is not null';
 	ExecQuery;
   Close;
-  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+//  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+  DM.MainConnection1.Commit;
+  DM.MainConnection1.Close;
 
   //Чистим мусор после обновления.
 //  DM.SweepDB;
-  if not (eaGetFullData in ExchangeForm.ExchangeActs) then
-    DM.CompactDataBase();
+//  if not (eaGetFullData in ExchangeForm.ExchangeActs) then
+//    DM.CompactDataBase();
 
+  DM.MainConnection1.Open;
   DM.MainConnection1.StartTransaction;
 
 	Progress := 10;
@@ -1125,6 +1134,12 @@ begin
 	//Synonym
 	if utSynonym in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE SynonymInsert'; ExecQuery;
+    UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
+'INSERT INTO Synonyms ' +
+'(Synonymcode, Synonymname, fullcode, shortcode, pricecode) '+
+'SELECT :Synonymcode, :Synonymname, :fullcode, :shortcode, :pricecode '+
+'FROM rdb$database '+
+'WHERE Not Exists(SELECT SynonymCode FROM Synonyms WHERE SynonymCode=:Synonymcode)');
 	  //SQL.Text:='EXECUTE PROCEDURE SynonymInsertUnfounded'; ExecQuery;
 	end;
 	//SynonymFirmCr
@@ -1137,6 +1152,36 @@ begin
 	end;
 	if utCore in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE CoreInsert'; ExecQuery;
+	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_FULLCODE'; ExecQuery;
+	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_PRICECODE'; ExecQuery;
+	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_REGIONCODE'; ExecQuery;
+	  SQL.Text:='alter table core DROP CONSTRAINT PK_CORE'; ExecQuery;
+	  SQL.Text:='drop index FK_CORE_SYNONYMCODE'; ExecQuery;
+	  SQL.Text:='drop index FK_CORE_SYNONYMFIRMCRCODE'; ExecQuery;
+	  SQL.Text:='drop index IDX_CORE_FULLCODE_BASECOST'; ExecQuery;
+	  SQL.Text:='drop index IDX_CORE_JUNK'; ExecQuery;
+	  SQL.Text:='drop index IDX_CORE_SHORTCODE'; ExecQuery;
+    DM.MainConnection1.Commit;
+
+    DM.MainConnection1.Close;
+    DM.MainConnection1.Open;
+//	  SQL.Text:='alter index PK_CORE inactive'; ExecQuery;
+    UpdateFromFile(ExePath+SDirIn+'\Core.txt',
+'INSERT INTO Core '+
+'(Pricecode, RegionCode, FullCode, ShortCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
+'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, BaseCost)' +
+'values (:Pricecode, :RegionCode, :FullCode, :ShortCode, :CodeFirmCr, :SynonymCode, ' +
+':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
+':Note, :Period, :Doc, :BaseCost)');
+	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; ExecQuery;
+	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
+	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
+	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; ExecQuery;
+	  SQL.Text:='CREATE INDEX IDX_CORE_FULLCODE_BASECOST ON CORE (FULLCODE, BASECOST)'; ExecQuery;
+	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (FULLCODE, JUNK)'; ExecQuery;
+	  SQL.Text:='CREATE INDEX IDX_CORE_SHORTCODE ON CORE (SHORTCODE)'; ExecQuery;
+	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; ExecQuery;
+	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; ExecQuery;
 	end;
 	//WayBillHead
 	if utWayBillHead in UpdateTables then begin
@@ -1175,6 +1220,11 @@ begin
 		end;
 	end;
 }
+
+  DM.MainConnection1.Commit;
+
+  DM.MainConnection1.Close;
+  DM.MainConnection1.Open;
 
 	StatusText := 'Импорт данных';
 	Synchronize( SetStatus);
@@ -1227,7 +1277,11 @@ begin
   //DM.MainConnection1.DefaultTransaction.StartTransaction;
 	SQL.Text := 'EXECUTE PROCEDURE UPDATEALLINDICES';
 	ExecQuery;
-  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+//  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+  DM.MainConnection1.Commit;
+
+  DM.MainConnection1.Close;
+  DM.MainConnection1.Open;
 	SQL.Text := 'select count(*) from MinPrices where Pricecode is not null';
 	ExecQuery;
   Close;
@@ -1609,6 +1663,50 @@ begin
   except
     on E : Exception do
       Tracer.TR('test', E.Message);
+  end;
+end;
+
+procedure TExchangeThread.UpdateFromFile(FileName, InsertSQL: String; OnBatching : TOnBatching = nil);
+var
+  up : TpFIBQuery;
+  InDelimitedFile : TFIBInputDelimitedFile;
+begin
+  up := TpFIBQuery.Create(nil);
+  try
+    up.Database := DM.MainConnection1;
+    up.Transaction := DM.DefTran;
+    upB := up;
+
+    InDelimitedFile := TFIBInputDelimitedFile.Create;
+    try
+      InDelimitedFile.SkipTitles := False;
+      InDelimitedFile.ReadBlanksAsNull := False;
+      InDelimitedFile.ColDelimiter := Chr(159);
+      InDelimitedFile.RowDelimiter := Chr(161);
+
+      up.SQL.Text := InsertSQL;
+      InDelimitedFile.Filename := FileName;
+      up.OnBatching := OnBatching;
+
+      up.BatchInput(InDelimitedFile);
+
+    finally
+      InDelimitedFile.Free;
+    end;
+
+  finally
+    upB := nil;
+    up.Free;
+  end;
+end;
+
+procedure TExchangeThread.OnSynonymBatching(
+  BatchOperation: TBatchOperation; RecNumber: integer;
+  var BatchAction: TBatchAction);
+begin
+  if Assigned(upB) then begin
+    upB.Params.ParamByName('SynonymName').Data^.sqltype := SQL_TEXT;
+    upB.Params.ParamByName('SynonymName').Data^.sqllen := 255;
   end;
 end;
 
