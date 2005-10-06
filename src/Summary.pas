@@ -10,7 +10,7 @@ uses
   pFIBDataSet;
 
 const
-	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :RETAILFORCOUNT)  ORDER BY ';
+	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
 
 type
   TSummaryForm = class(TChildForm)
@@ -37,15 +37,20 @@ type
     adsSummaryAWAIT: TFIBIntegerField;
     adsSummarySYNONYMNAME: TFIBStringField;
     adsSummarySYNONYMFIRM: TFIBStringField;
-    adsSummaryBASECOST: TFIBBCDField;
     adsSummaryPRICENAME: TFIBStringField;
     adsSummaryREGIONNAME: TFIBStringField;
-    adsSummaryPRICERET: TFIBBCDField;
     adsSummaryORDERCOUNT: TFIBIntegerField;
     adsSummaryORDERSCOREID: TFIBBCDField;
     adsSummaryORDERSORDERID: TFIBBCDField;
     adsSummarySumOrder: TCurrencyField;
     adsSummaryH: TpFIBDataSet;
+    adsSummaryCryptSYNONYMNAME: TStringField;
+    adsSummaryCryptSYNONYMFIRM: TStringField;
+    adsSummaryCryptBASECOST: TCurrencyField;
+    adsSummaryCODE: TFIBStringField;
+    adsSummaryCODECR: TFIBStringField;
+    adsSummaryBASECOST: TFIBStringField;
+    adsSummaryPriceRet: TCurrencyField;
     procedure adsSummary2CalcFields(DataSet: TDataSet);
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
@@ -91,7 +96,6 @@ begin
 	inherited;
 	PrintEnabled := False;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummary.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
@@ -139,10 +143,18 @@ begin
 end;
 
 procedure TSummaryForm.adsSummary2CalcFields(DataSet: TDataSet);
+var
+  S : String;
 begin
 	//вычисляем сумму по позиции
-	adsSummarySumOrder.AsFloat := adsSummaryBaseCost.AsCurrency *
-		adsSummaryORDERCOUNT.AsInteger;
+  try
+    adsSummaryCryptSYNONYMNAME.AsString := DM.D_S(adsSummarySYNONYMNAME.AsString);
+    adsSummaryCryptSYNONYMFIRM.AsString := DM.D_S(adsSummarySYNONYMFIRM.AsString);
+    S := DM.D_B(adsSummaryCODE.AsString, adsSummaryCODECR.AsString);
+    adsSummaryCryptBASECOST.AsString := S;
+    adsSummarySumOrder.AsFloat := StrToFloat(S) * adsSummaryORDERCOUNT.AsInteger;
+  except
+  end;
 end;
 
 procedure TSummaryForm.adsSummary2AfterPost(DataSet: TDataSet);
@@ -161,10 +173,10 @@ procedure TSummaryForm.dbgSummaryGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	if adsSummaryJunk.AsBoolean and (( Column.FieldName = 'PERIOD')or
-		( Column.FieldName = 'BASECOST')) then Background := JUNK_CLR;
+	if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or
+		( Column.Field = adsSummaryCryptBASECOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsSummaryAwait.AsBoolean and ( Column.FieldName = 'SYNONYMNAME') then
+	if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummaryCryptSYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 
@@ -176,7 +188,6 @@ begin
 	adsSummary.Close;
 	adsSummary.SelectSQL.Text := SummarySql + SQLOrderBy;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummary.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	try
 		adsSummary.Open;
@@ -234,11 +245,18 @@ procedure TSummaryForm.dbgSummaryKeyDown(Sender: TObject; var Key: Word;
 begin
   if (Shift = []) and (Key = VK_DELETE) then begin
     if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
-      DM.adcUpdate.SQL.Text :=
-        'delete from Orders where OrderID = ' +
-          IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
-          ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
-      DM.adcUpdate.ExecQuery;
+      DM.adcUpdate.Transaction.StartTransaction;
+      try
+        DM.adcUpdate.SQL.Text :=
+          'delete from Orders where OrderID = ' +
+            IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
+            ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
+        DM.adcUpdate.ExecQuery;
+        DM.adcUpdate.Transaction.Commit;
+      except
+        DM.adcUpdate.Transaction.Rollback;
+        raise;
+      end;
       adsSummary.CloseOpen(True);
       Key := 0;
     end;

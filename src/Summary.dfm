@@ -154,7 +154,7 @@ inherited SummaryForm: TSummaryForm
       TitleFont.Style = []
       OnGetCellParams = dbgSummaryGetCellParams
       OnKeyDown = dbgSummaryKeyDown
-      SearchField = 'SynonymName'
+      SearchField = 'CryptSynonymName'
       InputField = 'OrderCount'
       SearchPosition = spBottom
       ForceRus = True
@@ -163,7 +163,7 @@ inherited SummaryForm: TSummaryForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'SYNONYMNAME'
+          FieldName = 'CryptSYNONYMNAME'
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
@@ -171,7 +171,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'SYNONYMFIRM'
+          FieldName = 'CryptSYNONYMFIRM'
           Footers = <>
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
           Title.TitleButton = True
@@ -220,7 +220,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'BASECOST'
+          FieldName = 'CryptBASECOST'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -233,7 +233,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'PRICERET'
+          FieldName = 'PriceRet'
           Footers = <>
           Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
           Title.TitleButton = True
@@ -325,24 +325,25 @@ inherited SummaryForm: TSummaryForm
       '    PERIOD,'
       '    JUNK,'
       '    AWAIT,'
+      '    CODE,'
+      '    CODECR,'
       '    SYNONYMNAME,'
       '    SYNONYMFIRM,'
       '    BASECOST,'
       '    PRICENAME,'
       '    REGIONNAME,'
-      '    PRICERET,'
       '    ORDERCOUNT,'
       '    ORDERSCOREID,'
       '    ORDERSORDERID'
       'FROM'
-      '    SUMMARYSHOW(:ACLIENTID,'
-      '    :RETAILFORCOUNT) ')
+      '    SUMMARYSHOW(:ACLIENTID) ')
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
     BeforePost = adsSummary2BeforePost
     OnCalcFields = adsSummary2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 296
     Top = 96
@@ -382,12 +383,6 @@ inherited SummaryForm: TSummaryForm
       Size = 250
       EmptyStrToNull = False
     end
-    object adsSummaryBASECOST: TFIBBCDField
-      FieldName = 'BASECOST'
-      DisplayFormat = '0.00;;'#39#39
-      Size = 4
-      RoundByScale = True
-    end
     object adsSummaryPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
@@ -397,12 +392,6 @@ inherited SummaryForm: TSummaryForm
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = False
-    end
-    object adsSummaryPRICERET: TFIBBCDField
-      FieldName = 'PRICERET'
-      DisplayFormat = '0.00;;'#39#39
-      Size = 4
-      RoundByScale = True
     end
     object adsSummaryORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
@@ -422,6 +411,43 @@ inherited SummaryForm: TSummaryForm
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
+    object adsSummaryCryptSYNONYMNAME: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMNAME'
+      Size = 250
+      Calculated = True
+    end
+    object adsSummaryCryptSYNONYMFIRM: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMFIRM'
+      Size = 250
+      Calculated = True
+    end
+    object adsSummaryCryptBASECOST: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptBASECOST'
+      Calculated = True
+    end
+    object adsSummaryCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsSummaryCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsSummaryBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 48
+      EmptyStrToNull = False
+    end
+    object adsSummaryPriceRet: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'PriceRet'
       Calculated = True
     end
   end

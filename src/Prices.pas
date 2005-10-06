@@ -58,9 +58,9 @@ type
     adsPricesREGIONCODE: TFIBBCDField;
     adsPricesREGIONNAME: TFIBStringField;
     adsPricesPOSITIONS: TFIBIntegerField;
-    adsPricesSUMORDER: TFIBIntegerField;
     adsPricesPRICESIZE: TFIBIntegerField;
     adsClientsData: TpFIBDataSet;
+    adsPricesSUMORDER: TFIBBCDField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
