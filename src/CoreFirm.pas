@@ -4,13 +4,14 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  RXDBCtrl, Grids, DBGrids, ComCtrls, Db, StrUtils, Child, 
-  FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants, 
+  RXDBCtrl, Grids, DBGrids, ComCtrls, Db, StrUtils, Child,
+  FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
-  FIBDataSet, pFIBDataSet, FIBSQLMonitor;
+  FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
+  DBTables, MemTable, RxMemDS, pFIBQuery;
 
 const
-	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :RETAILFORCOUNT, :ACLIENTID, :APRICENAME) ORDER BY ';
+	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID, :APRICENAME) ORDER BY ';
 
 type
   TFilter=( filAll, filOrder, filLeader);
@@ -52,7 +53,6 @@ type
     adsCorePERIOD: TFIBStringField;
     adsCoreAWAIT: TFIBIntegerField;
     adsCoreJUNK: TFIBIntegerField;
-    adsCoreBASECOST: TFIBBCDField;
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
@@ -72,7 +72,6 @@ type
     adsCoreORDERCOUNT: TFIBIntegerField;
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBBCDField;
     adsCoreORDERSJUNK: TFIBIntegerField;
     adsCoreORDERSAWAIT: TFIBIntegerField;
     adsCoreORDERSHORDERID: TFIBBCDField;
@@ -81,13 +80,79 @@ type
     adsCoreORDERSHREGIONCODE: TFIBBCDField;
     adsCoreORDERSHPRICENAME: TFIBStringField;
     adsCoreORDERSHREGIONNAME: TFIBStringField;
-    adsCorePRICERET: TFIBBCDField;
     adsCoreSumOrder: TCurrencyField;
     adsCountFields: TpFIBDataSet;
     adsOrdersH: TpFIBDataSet;
     adsOrdersShowFormSummary: TpFIBDataSet;
     adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
     adsCoreMINPRICE: TFIBBCDField;
+    adsCoreCryptSYNONYMNAME: TStringField;
+    adsCoreCryptSYNONYMFIRM: TStringField;
+    adsCoreCryptBASECOST: TCurrencyField;
+    adsCorePriceRet: TCurrencyField;
+    adsCoreCryptCODE: TStringField;
+    adsCoreCryptCODECR: TStringField;
+    adsCoreCryptORDERSSYNONYM: TStringField;
+    adsCoreCryptORDERSSYNONYMFIRM: TStringField;
+    adsCoreCryptORDERSCODE: TStringField;
+    adsCoreCryptORDERSCODECR: TStringField;
+    adsCoreBASECOST: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
+    mdCore: TRxMemoryData;
+    dsmdCode: TDataSource;
+    mdCoreCOREID: TBCDField;
+    mdCoreFULLCODE: TBCDField;
+    mdCoreSHORTCODE: TBCDField;
+    mdCoreCODEFIRMCR: TBCDField;
+    mdCoreSYNONYMCODE: TBCDField;
+    mdCoreSYNONYMFIRMCRCODE: TBCDField;
+    mdCoreCODE: TStringField;
+    mdCoreCODECR: TStringField;
+    mdCoreVOLUME: TStringField;
+    mdCoreDOC: TStringField;
+    mdCoreNOTE: TStringField;
+    mdCorePERIOD: TStringField;
+    mdCoreAWAIT: TIntegerField;
+    mdCoreJUNK: TIntegerField;
+    mdCoreBASECOST: TStringField;
+    mdCoreQUANTITY: TStringField;
+    mdCoreSYNONYMNAME: TStringField;
+    mdCoreSYNONYMFIRM: TStringField;
+    mdCoreMINPRICE: TBCDField;
+    mdCoreLEADERPRICECODE: TBCDField;
+    mdCoreLEADERREGIONCODE: TBCDField;
+    mdCoreLEADERREGIONNAME: TStringField;
+    mdCoreLEADERPRICENAME: TStringField;
+    mdCoreORDERSCOREID: TBCDField;
+    mdCoreORDERSORDERID: TBCDField;
+    mdCoreORDERSCLIENTID: TBCDField;
+    mdCoreORDERSFULLCODE: TBCDField;
+    mdCoreORDERSCODEFIRMCR: TBCDField;
+    mdCoreORDERSSYNONYMCODE: TBCDField;
+    mdCoreORDERSSYNONYMFIRMCRCODE: TBCDField;
+    mdCoreORDERSCODE: TStringField;
+    mdCoreORDERSCODECR: TStringField;
+    mdCoreORDERCOUNT: TIntegerField;
+    mdCoreORDERSSYNONYM: TStringField;
+    mdCoreORDERSSYNONYMFIRM: TStringField;
+    mdCoreORDERSPRICE: TStringField;
+    mdCoreORDERSJUNK: TIntegerField;
+    mdCoreORDERSAWAIT: TIntegerField;
+    mdCoreORDERSHORDERID: TBCDField;
+    mdCoreORDERSHCLIENTID: TBCDField;
+    mdCoreORDERSHPRICECODE: TBCDField;
+    mdCoreORDERSHREGIONCODE: TBCDField;
+    mdCoreORDERSHPRICENAME: TStringField;
+    mdCoreORDERSHREGIONNAME: TStringField;
+    mdCoreCryptSYNONYMNAME: TStringField;
+    mdCoreSumOrder: TCurrencyField;
+    mdCorePriceRet: TCurrencyField;
+    mdCoreCryptCODE: TStringField;
+    mdCoreCryptSYNONYMFIRM: TStringField;
+    mdCoreCryptBASECOST: TCurrencyField;
+    qCore: TpFIBQuery;
+    qCoreUpdate: TpFIBQuery;
+    qCoreRefresh: TpFIBQuery;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -112,21 +177,29 @@ type
     procedure TimerTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
+    procedure mdCoreCalcFields(DataSet: TDataSet);
+    procedure mdCoreBeforeEdit(DataSet: TDataSet);
+    procedure mdCoreAfterPost(DataSet: TDataSet);
+    procedure mdCoreBeforePost(DataSet: TDataSet);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
     OrderSum: Double;
 
     UseExcess: Boolean;
     Excess: Integer;
+    SN : TStringList;
 
     procedure OrderCalc;
     procedure SetOrderLabel;
     procedure SetFilter(Filter: TFilter);
     procedure RefreshOrdersH;
+    procedure OrderCountFilterRecord(DataSet: TDataSet; var Accept: Boolean);
+    procedure LeaderFilterRecord(DataSet: TDataSet; var Accept: Boolean);
   public
     procedure ShowForm(APriceCode, ARegionCode: Integer;
       OnlyLeaders: Boolean=False); reintroduce;
     procedure Print( APreview: boolean = False); override;
+    procedure RefreshAllCore;
   end;
 
 var
@@ -135,7 +208,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, Core, pFIBQuery, FIBQuery;
+  NamesForms, Core;
 
 {$R *.DFM}
 
@@ -144,6 +217,7 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+  SN := TStringList.Create;
 	PrintEnabled := False;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
@@ -164,41 +238,42 @@ begin
 	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, True);
 	dbgCore.SaveToRegistry( Reg);
+  SN.Free;
 	Reg.Free;
 end;
 
 procedure TCoreFirmForm.ShowForm(APriceCode, ARegionCode: Integer;
   OnlyLeaders: Boolean=False);
+var
+  S : String;
+  F : TFormatSettings;
+  I : Integer;
+  Syn : TStringField;
 begin
   PriceCode:=APriceCode;
   RegionCode:=ARegionCode;
   adsOrdersShowFormSummary.DataSource := nil;
   with adsCore do begin
-    ParamByName( 'RetailForcount').Value:=DM.adtClients.FieldByName( 'Forcount').Value;
     ParamByName( 'APriceCode').Value:=PriceCode;
     ParamByName( 'ARegionCode').Value:=RegionCode;
     ParamByName( 'AClientId').Value:=ClientId;
     ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
-    Screen.Cursor:=crHourglass;
-    try
-      if Active then CloseOpen(False) else Open;
-    finally
-      Screen.Cursor:=crDefault;
-    end;
   end;
+  RefreshAllCore;
   SetFilter(filAll);
   if adsCore.RecordCount=0 then begin
     MessageBox('¬ыбранный прайс-лист отсутствует',MB_ICONWARNING);
     Abort;
   end;
   //определ€ем, какие колонки прайс-листа фирмы показывать (не показываем пустые)
+{
   with adsCountFields do begin
     ParamByName('APriceCode').Value:=PriceCode;
     ParamByName('ARegionCode').Value:=RegionCode;
     Open;
     try
-      ColumnByNameT(dbgCore,'Code').Visible:=FieldByName('Code').AsInteger>0;
-      ColumnByNameT(dbgCore,'SynonymFirm').Visible:=FieldByName('SynonymFirm').AsInteger>0;
+//      ColumnByNameT(dbgCore,'Code').Visible:=FieldByName('Code').AsInteger>0;
+//      ColumnByNameT(dbgCore,'SynonymFirm').Visible:=FieldByName('SynonymFirm').AsInteger>0;
       ColumnByNameT(dbgCore,'Volume').Visible:=FieldByName('Volume').AsInteger>0;
       ColumnByNameT(dbgCore,'Doc').Visible:=FieldByName('Doc').AsInteger>0;
       ColumnByNameT(dbgCore,'Note').Visible:=FieldByName('Note').AsInteger>0;
@@ -208,40 +283,63 @@ begin
       Close;
     end;
   end;
+}  
   //подсчитываем сумму за€вки и количество записей
-//  SetFilter(filOrder);
+{
+  SetFilter(filOrder);
   OrderCalc;
   SetOrderLabel;
   if OnlyLeaders then
     SetFilter(filLeader)
   else
     SetFilter(filAll);
+}    
   lblFirmPrice.Caption := Format( 'ѕрайс-лист %s, регион %s',[
     PricesForm.adsPrices.FieldByName('PriceName').AsString,
     PricesForm.adsPrices.FieldByName('RegionName').AsString]);
   RefreshOrdersH;
   adsOrdersShowFormSummary.DataSource := dsCore;
+//  dbgCore.DataSource := dsmdCode;
   inherited ShowForm;
 end;
 
 procedure TCoreFirmForm.adsCore2CalcFields(DataSet: TDataSet);
+var
+  S : String;
 begin
-	adsCoreSumOrder.AsCurrency :=
-		adsCoreBaseCost.AsCurrency * adsCoreORDERCOUNT.AsInteger;
+  try
+    adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
+    adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
+    S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
+    adsCoreCryptBASECOST.AsString := S;
+    adsCoreCryptCODE.AsString := DM.D_C(adsCoreCODE.AsString);
+    adsCoreSumOrder.AsCurrency := StrToFloat(S) * adsCoreORDERCOUNT.AsInteger;
+  except
+    adsCoreSumOrder.AsCurrency := 0;
+  end;
 end;
 
 procedure TCoreFirmForm.SetFilter(Filter: TFilter);
 var
   St: string;
+  FP : TFilterRecordEvent;
 begin
+{
   case Filter of
     filAll: St:= '';
     filOrder: St:= 'OrderCount > 0';
     filLeader: St:=Format( 'LeaderPriceCode = %d AND LeaderRegionCode = %d',
     	[PriceCode, RegionCode]);
   end;
-  DBProc.SetFilter(adsCore,St);
-  lblRecordCount.Caption:=Format( 'ѕозиций : %d', [adsCore.RecordCount]);
+}  
+  case Filter of
+    filAll: FP := nil;
+    filOrder: FP := OrderCountFilterRecord;
+    filLeader: FP := LeaderFilterRecord;
+  end;
+//  DBProc.SetFilter(adsCore,St);
+  DBProc.SetFilterProc(mdCore, FP);
+  lblRecordCount.Caption:=Format( 'ѕозиций : %d', [mdCore.RecordCount]);
   cbFilter.ItemIndex := Integer(Filter);
 end;
 
@@ -303,6 +401,8 @@ begin
 			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
 		{ провер€ем на превышение цены }
+{
+    TODO: Ќе забыть включить
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
 			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
@@ -315,7 +415,8 @@ begin
 				Timer.Enabled := True;
 			end;
 		end;
-        except
+}
+  except
 		adsCore.Cancel;
 		raise;
 	end;
@@ -324,7 +425,7 @@ end;
 procedure TCoreFirmForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreBaseCost.AsCurrency;
+	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreCryptBASECOST.AsCurrency;
 	SetOrderLabel;
 	MainForm.SetOrdersInfo;
 end;
@@ -333,6 +434,7 @@ procedure TCoreFirmForm.OrderCalc;
 var
 	V: array [ 0..1] of Variant;
 begin
+{
   DM.adsSelect2.Close;
   DM.adsSelect2.SelectSQL.Text := 'select * from ORDERSINFO3(:AClientID, :APriceCode, :ARegionCode)';
   DM.adsSelect2.ParamByName( 'APriceCode').Value:=PriceCode;
@@ -348,11 +450,12 @@ begin
     OrderSum := 0;
   end;
   DM.adsSelect2.Close;
+}  
 {
-	DataSetCalc( adsCore,[ 'COUNT', 'SUM(SumOrder)'], V);
+}  
+	DataSetCalc( mdCore,[ 'COUNT', 'SUM(SumOrder)'], V);
 	OrderCount := V[ 0];
 	OrderSum :=V[ 1];
-}  
 end;
 
 procedure TCoreFirmForm.SetOrderLabel;
@@ -374,20 +477,26 @@ begin
   adsCore.DisableControls;
   Screen.Cursor:=crHourGlass;
   try
-    with DM.adcUpdate do begin
-      //удал€ем сохраненную за€вку (если есть)
-      //TODO: ѕроверить наличие процедуры
-      SQL.Text:=Format( 'EXECUTE PROCEDURE OrdersHDeleteNotClosed(:ACLIENTID, :APRICECODE, :AREGIONCODE)',
-        [DM.adtClients.FieldByName('ClientId').AsInteger,PriceCode,RegionCode]);
-      ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
-      ParamByName('APRICECODE').Value := PriceCode;
-      ParamByName('AREGIONCODE').Value := RegionCode;
-      ExecQuery;
-      Transaction.CommitRetaining;
+    DM.adcUpdate.Transaction.StartTransaction;
+    try
+      with DM.adcUpdate do begin
+        //удал€ем сохраненную за€вку (если есть)
+        SQL.Text:=Format( 'EXECUTE PROCEDURE OrdersHDeleteNotClosed(:ACLIENTID, :APRICECODE, :AREGIONCODE)',
+          [DM.adtClients.FieldByName('ClientId').AsInteger,PriceCode,RegionCode]);
+        ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
+        ParamByName('APRICECODE').Value := PriceCode;
+        ParamByName('AREGIONCODE').Value := RegionCode;
+        ExecQuery;
+      end;
+      DM.adcUpdate.Transaction.Commit;
+    except
+      DM.adcUpdate.Transaction.Rollback;
+      raise;
     end;
   finally
     adsCore.EnableControls;
-    adsCore.CloseOpen(True);
+//    adsCore.CloseOpen(True);
+    RefreshAllCore;
 //    adsOrdersH.CloseOpen(True);
     Screen.Cursor:=crDefault;
     MainForm.SetOrdersInfo;
@@ -400,15 +509,15 @@ procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	//данный прайс-лидер
-	if ( adsCoreLEADERPRICECODE.AsInteger = PriceCode) and
+	if ( mdCoreLEADERPRICECODE.AsInteger = PriceCode) and
         	( adsCoreLeaderRegionCode.AsInteger = RegionCode) and
-		(( Column.FieldName = 'LEADERREGIONNAME') or ( Column.FieldName = 'LEADERPRICENAME')) then
+		(( Column.Field = mdCoreLEADERREGIONNAME) or ( Column.Field = mdCoreLEADERPRICENAME)) then
 			Background := LEADER_CLR;
 	//уцененный товар
-	if adsCoreJunk.AsBoolean and (( Column.FieldName = 'PERIOD') or
-		( Column.FieldName = 'BASECOST')) then Background := JUNK_CLR;
+	if (mdCoreJunk.Value = 1) and (( Column.Field = mdCorePERIOD) or
+		( Column.Field = mdCoreCryptBASECOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выдел€ем зеленым
-	if adsCoreAwait.AsBoolean and ( Column.FieldName = 'SYNONYMNAME') then
+	if (mdCoreAwait.Value = 1) and ( Column.Field = mdCoreCryptSYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 
@@ -424,9 +533,8 @@ end;
 procedure TCoreFirmForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
-	CanInput := ( adsCore.ParamByName( 'ARegionCode').Value and
-		DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
-		adsCore.ParamByName( 'ARegionCode').Value;
+	CanInput := ( RegionCode and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
+		RegionCode;
 	if not CanInput then Exit;
 	{ создаем записи из Orders и OrdersH, если их нет }
 {
@@ -469,10 +577,10 @@ end;
 procedure TCoreFirmForm.dbgCoreSortChange(Sender: TObject;
   SQLOrderBy: String);
 begin
+{
 	adsCore.DisableControls;
 	adsCore.Close;
 	adsCore.SelectSQL.Text := CoreSql + SQLOrderBy;
-	adsCore.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
 	adsCore.ParamByName( 'APriceCode').Value := PriceCode;
 	adsCore.ParamByName( 'ARegionCode').Value := RegionCode;
 	adsCore.ParamByName( 'AClientId').Value := ClientId;
@@ -483,6 +591,7 @@ begin
 		adsCore.EnableControls;
 		Screen.Cursor := crDefault;
 	end;
+}  
 end;
 
 procedure TCoreFirmForm.adsCore2AfterOpen(DataSet: TDataSet);
@@ -547,6 +656,118 @@ begin
 		SendMessage( dbgCore.Handle, WM_CHAR, Ord( Key), 0);
   end;
   inherited;
+end;
+
+procedure TCoreFirmForm.OrderCountFilterRecord(DataSet: TDataSet;
+  var Accept: Boolean);
+begin
+  Accept := not mdCoreORDERCOUNT.IsNull and (mdCoreORDERCOUNT.AsInteger > 0);
+end;
+
+procedure TCoreFirmForm.LeaderFilterRecord(DataSet: TDataSet;
+  var Accept: Boolean);
+begin
+  Accept := (mdCoreLEADERPRICECODE.AsVariant = PriceCode) and (mdCoreLEADERREGIONCODE.AsVariant = RegionCode);
+end;
+
+procedure TCoreFirmForm.RefreshAllCore;
+begin
+  Screen.Cursor:=crHourglass;
+  mdCore.BeforePost := nil;
+  try
+    adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
+    adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
+    adsCore.ParamByName( 'AClientId').Value:=ClientId;
+    adsCore.ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
+    if adsCore.Active then adsCore.CloseOpen(False) else adsCore.Open;
+//      qCore.SQL.Text := adsCore.SelectSQL.Text;
+
+    qCore.ParamByName( 'APriceCode').Value:=PriceCode;
+    qCore.ParamByName( 'ARegionCode').Value:=RegionCode;
+    qCore.ParamByName( 'AClientId').Value:=ClientId;
+    qCore.ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
+//    mdCore.Capacity := adsCore.RecordCountFromSrv;
+//    DM.LoadDataSetFromFIBQuery(mdCore, qCore);
+  finally
+    mdCore.BeforePost := mdCoreBeforePost;
+    Screen.Cursor:=crDefault;
+  end;
+end;
+
+procedure TCoreFirmForm.mdCoreCalcFields(DataSet: TDataSet);
+begin
+  try
+    mdCoreSumOrder.AsCurrency :=
+      mdCoreCryptBASECOST.AsCurrency * mdCoreORDERCOUNT.AsInteger;
+  except
+    mdCoreSumOrder.AsCurrency := 0;
+  end;
+end;
+
+procedure TCoreFirmForm.mdCoreBeforeEdit(DataSet: TDataSet);
+begin
+  OldOrder:=adsCoreORDERCOUNT.AsInteger;
+end;
+
+procedure TCoreFirmForm.mdCoreAfterPost(DataSet: TDataSet);
+begin
+	OrderCount := OrderCount + Iif( mdCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
+	OrderSum := OrderSum + ( mdCoreORDERCOUNT.AsInteger - OldOrder) * mdCoreCryptBASECOST.AsCurrency;
+	SetOrderLabel;
+	MainForm.SetOrdersInfo;
+end;
+
+procedure TCoreFirmForm.mdCoreBeforePost(DataSet: TDataSet);
+var
+	Quantity, E: Integer;
+	PriceAvg: Double;
+begin
+	try
+		{ провер€ем заказ на соответствие наличию товара на складе }
+		Val( mdCoreQuantity.AsString, Quantity, E);
+		if E <> 0 then Quantity := 0;
+		if ( Quantity > 0) and ( mdCoreORDERCOUNT.AsInteger > Quantity) and
+			( MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
+			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then mdCoreORDERCOUNT.AsInteger := Quantity;
+      
+    DM.UpTran.StartTransaction;
+    try
+      qCoreUpdate.ParamByName('new_ORDERSHORDERID').Value := mdCoreORDERSHORDERID.AsVariant;
+      qCoreUpdate.ParamByName('Aclientid').Value := ClientId;
+      qCoreUpdate.ParamByName('APRICECODE').Value := PriceCode;
+      qCoreUpdate.ParamByName('AREGIONCODE').Value := RegionCode;
+      qCoreUpdate.ParamByName('new_ORDERSORDERID').Value := mdCoreORDERSORDERID.AsVariant;
+      qCoreUpdate.ParamByName('new_COREID').Value := mdCoreCOREID.AsVariant;
+      qCoreUpdate.ParamByName('NEW_ORDERCOUNT').Value := mdCoreORDERCOUNT.AsVariant;
+      qCoreUpdate.ExecQuery;
+      DM.UpTran.Commit;
+    except
+      DM.UpTran.Rollback;
+      raise;
+    end;
+
+    qCoreRefresh.ParamByName('OLD_COREID').Value := mdCoreCOREID.AsVariant;
+    DM.UpdateDataSetFromFIBQuery(mdCore, qCoreRefresh);
+
+		{ провер€ем на превышение цены }
+{
+		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
+		begin
+			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
+			if ( PriceAvg > 0) and ( adsCoreBaseCost.AsCurrency>PriceAvg*(1+Excess/100)) then
+			begin
+				plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
+				plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
+				plOverCost.BringToFront;
+				plOverCost.Show;
+				Timer.Enabled := True;
+			end;
+		end;
+}    
+  except
+		mdCore.Cancel;
+		raise;
+	end;
 end;
 
 end.

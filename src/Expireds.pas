@@ -9,7 +9,7 @@ uses
   SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor;
 
 const
-	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID, :RETAILFORCOUNT) ORDER BY ';
+	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID) ORDER BY ';
 
 type
   TExpiredsForm = class(TChildForm)
@@ -25,6 +25,13 @@ type
     WebBrowser1: TWebBrowser;
     dbgExpireds: TToughDBGrid;
     adsExpireds: TpFIBDataSet;
+    adsExpiredsSumOrder: TCurrencyField;
+    adsOrdersH: TpFIBDataSet;
+    adsOrdersShowFormSummary: TpFIBDataSet;
+    adsExpiredsPriceRet: TCurrencyField;
+    adsExpiredsCryptSYNONYMNAME: TStringField;
+    adsExpiredsCryptSYNONYMFIRM: TStringField;
+    adsExpiredsCryptBASECOST: TCurrencyField;
     adsExpiredsCOREID: TFIBBCDField;
     adsExpiredsPRICECODE: TFIBBCDField;
     adsExpiredsREGIONCODE: TFIBBCDField;
@@ -37,7 +44,7 @@ type
     adsExpiredsNOTE: TFIBStringField;
     adsExpiredsPERIOD: TFIBStringField;
     adsExpiredsVOLUME: TFIBStringField;
-    adsExpiredsBASECOST: TFIBBCDField;
+    adsExpiredsBASECOST: TFIBStringField;
     adsExpiredsQUANTITY: TFIBStringField;
     adsExpiredsSYNONYMNAME: TFIBStringField;
     adsExpiredsSYNONYMFIRM: TFIBStringField;
@@ -57,7 +64,7 @@ type
     adsExpiredsORDERSSYNONYM: TFIBStringField;
     adsExpiredsORDERSSYNONYMFIRM: TFIBStringField;
     adsExpiredsORDERCOUNT: TFIBIntegerField;
-    adsExpiredsORDERSPRICE: TFIBBCDField;
+    adsExpiredsORDERSPRICE: TFIBStringField;
     adsExpiredsORDERSJUNK: TFIBIntegerField;
     adsExpiredsORDERSAWAIT: TFIBIntegerField;
     adsExpiredsORDERSHORDERID: TFIBBCDField;
@@ -66,11 +73,7 @@ type
     adsExpiredsORDERSHREGIONCODE: TFIBBCDField;
     adsExpiredsORDERSHPRICENAME: TFIBStringField;
     adsExpiredsORDERSHREGIONNAME: TFIBStringField;
-    adsExpiredsPRICERET: TFIBBCDField;
-    adsExpiredsSumOrder: TCurrencyField;
-    adsOrdersH: TpFIBDataSet;
-    adsOrdersShowFormSummary: TpFIBDataSet;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
+    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     procedure adsExpireds2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
@@ -110,7 +113,6 @@ begin
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
 	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
-	adsExpireds.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
 	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try
@@ -138,9 +140,18 @@ begin
 end;
 
 procedure TExpiredsForm.adsExpireds2CalcFields(DataSet: TDataSet);
+var
+  S : String;
 begin
-	//вычисляем сумму заказа
-	adsExpiredsSumOrder.AsCurrency:=adsExpiredsBaseCost.AsCurrency*adsExpiredsORDERCOUNT.AsInteger;
+  try
+    adsExpiredsCryptSYNONYMNAME.AsString := DM.D_S(adsExpiredsSYNONYMNAME.AsString);
+    adsExpiredsCryptSYNONYMFIRM.AsString := DM.D_S(adsExpiredsSYNONYMFIRM.AsString);
+    S := DM.D_B(adsExpiredsCODE.AsString, adsExpiredsCODECR.AsString);
+    adsExpiredsCryptBASECOST.AsString := S;
+	  //вычисляем сумму заказа
+  	adsExpiredsSumOrder.AsCurrency:=StrToFloat(S) * adsExpiredsORDERCOUNT.AsInteger;
+  except
+  end;
 end;
 
 procedure TExpiredsForm.adsExpireds2BeforePost(DataSet: TDataSet);
@@ -157,6 +168,8 @@ begin
 			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsORDERCOUNT.AsInteger := Quantity;
 
 		{ проверяем на превышение цены }
+{
+    TODO: Не забыть включить
 		if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) then
 		begin
 			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
@@ -169,7 +182,8 @@ begin
 				Timer.Enabled := True;
 			end;
 		end;
-        except
+}
+  except
 		adsExpireds.Cancel;
 		raise;
 	end;
@@ -238,7 +252,6 @@ begin
 	adsExpireds.SelectSQL.Text := ExpiredSql + SQLOrderBy;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
-	adsExpireds.ParamByName( 'RetailForcount').Value := DM.adtClients.FieldByName( 'Forcount').Value;
 	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try

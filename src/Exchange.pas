@@ -275,23 +275,25 @@ var
 	procedure SetOrder( Order: integer);
 	begin
 		DM.adsSelect3.Edit;
-		DM.adsSelect3.FieldByName( 'OrderCount').AsInteger := Order;
+		DM.adsSelect3ORDERCOUNT.AsInteger := Order;
 		if Order = 0 then
-      DM.adsSelect3.FieldByName( 'CoreId').Value := Null
+      DM.adsSelect3COREID.Value := Null
     else begin
-      DM.adsSelect3.FieldByName( 'CoreId').Value := DM.adsCore.FieldByName( 'CoreId').Value;
-      DM.adsSelect3.FieldByName( 'Price').Value := DM.adsCore.FieldByName( 'BASECOST').Value;
+      DM.adsSelect3COREID.Value := DM.adsCoreCOREID.Value;
+      DM.adsSelect3PRICE.Value := DM.adsCoreBASECOST.Value;
     end;
 		DM.adsSelect3.Post;
 	end;
 
 begin
 // 	DM.adsSelect3.Close;
+{
  	DM.adsSelect3.SelectSQL.Text := 'SELECT Id, CoreId, PriceCode, RegionCode, Code, CodeCr, ' +
 		'Price, SynonymCode, SynonymFirmCrCode, SynonymName, SynonymFirm, Junk, Await, OrderCount, PriceName ' +
 		'FROM Orders ' +
 		'INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND OrdersH.Closed = 0) ' +
 		'WHERE (OrderCount>0)';
+}    
  	DM.adsSelect3.CloseOpen(True);
 	if DM.adsSelect3.IsEmpty then
 	begin
@@ -306,8 +308,6 @@ begin
 	while not DM.adsSelect3.Eof do
 	begin
 		DM.adsCore.Close;
-		DM.adsCore.ParamByName( 'RetailForcount').Value :=
-			DM.adtClients.FieldByName( 'Forcount').Value;
 		DM.adsCore.ParamByName( 'AClientId').Value :=
 			DM.adtClients.FieldByName('ClientId').Value;
 		DM.adsCore.ParamByName( 'APriceCode').Value :=
@@ -323,30 +323,30 @@ begin
 			if DM.adsCore.IsEmpty then
 			begin
 				Strings.Append( Format( '%s : %s - %s : прайс-лист отсутствует',
-					[ DM.adsSelect3.FieldByName( 'PriceName').AsString,
-					DM.adsSelect3.FieldByName( 'SynonymName').AsString,
-					DM.adsSelect3.FieldByName( 'SynonymFirm').AsString]));
+					[ DM.adsSelect3PRICENAME.AsString,
+					DM.adsSelect3CryptSYNONYMNAME.AsString,
+					DM.adsSelect3CryptSYNONYMFIRM.AsString]));
 				DM.adsCore.Close;
 				SetOrder( 0);
 				DM.adsSelect3.Next;
 				continue;
 			end;
-			Order := DM.adsSelect3.FieldByName( 'OrderCount').AsInteger;
+			Order := DM.adsSelect3ORDERCOUNT.AsInteger;
 			CurOrder := 0;
-			Code := DM.adsSelect3.FieldByName( 'Code').AsVariant;
+			Code := DM.adsSelect3CODE.AsVariant;
       //if Code = '' then Code := Null;
-			CodeCr := DM.adsSelect3.FieldByName( 'CodeCr').AsVariant;
+			CodeCr := DM.adsSelect3CODECR.AsVariant;
       //if CodeCr = '' then CodeCr := Null;
-			SynonymCode := DM.adsSelect3.FieldByName( 'SynonymCode').AsInteger;
-			SynonymFirmCrCode := DM.adsSelect3.FieldByName( 'SynonymFirmCrCode').AsInteger;
-      JUNK := DM.adsSelect3.FieldByName( 'JUNK').AsInteger;
-      AWAIT := DM.adsSelect3.FieldByName( 'AWAIT').AsInteger;
+			SynonymCode := DM.adsSelect3SYNONYMCODE.AsInteger;
+			SynonymFirmCrCode := DM.adsSelect3SYNONYMFIRMCRCODE.AsInteger;
+      JUNK := DM.adsSelect3JUNK.AsInteger;
+      AWAIT := DM.adsSelect3AWAIT.AsInteger;
 
 			if DM.adsCore.Locate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode;Junk;Await',
 				  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode, JUNK, AWAIT]), [])
       then
 			begin
-				Val( DM.adsCore.FieldByName( 'Quantity').AsString, Quantity, E);
+				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);
 				if E <> 0 then Quantity := 0;
 				if Quantity > 0 then
 					CurOrder := Min( Order, Quantity)
@@ -360,26 +360,26 @@ begin
 				if CurOrder > 0 then
 				begin
 					Strings.Append( Format( '%s : %s - %s : %d вместо %d (старая цена : %s)',
-						[ DM.adsSelect3.FieldByName( 'PriceName').AsString,
-						DM.adsSelect3.FieldByName( 'SynonymName').AsString,
-						DM.adsSelect3.FieldByName( 'SynonymFirm').AsString,
+						[ DM.adsSelect3PRICENAME.AsString,
+						DM.adsSelect3CryptSYNONYMNAME.AsString,
+						DM.adsSelect3CryptSYNONYMFIRM.AsString,
 						CurOrder,
 						Order,
-						DM.adsSelect3.FieldByName( 'Price').AsString]));
+						DM.adsSelect3CryptPRICE.AsString]));
 				end
 				else
 				begin
 					Strings.Append( Format( '%s : %s - %s : предложение отсутствует (старая цена : %s)',
-						[ DM.adsSelect3.FieldByName( 'PriceName').AsString,
-						DM.adsSelect3.FieldByName( 'SynonymName').AsString,
-						DM.adsSelect3.FieldByName( 'SynonymFirm').AsString,
-						DM.adsSelect3.FieldByName( 'Price').AsString]));
+						[ DM.adsSelect3PRICENAME.AsString,
+						DM.adsSelect3CryptSYNONYMNAME.AsString,
+						DM.adsSelect3CryptSYNONYMFIRM.AsString,
+						DM.adsSelect3CryptPRICE.AsString]));
 				end;
 			end;
 			DM.adsSelect3.Next;
 		finally
 			DM.adsCore.Close;
-		        Screen.Cursor := crDefault;
+      Screen.Cursor := crDefault;
 		end;
 	end;
 
@@ -389,7 +389,7 @@ begin
 	finally
 		Strings.Free;
 		DM.adsSelect3.Close;
-        end;
+  end;
 end;
 
 

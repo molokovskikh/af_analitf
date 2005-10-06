@@ -27,6 +27,10 @@ type
     Panel1: TPanel;
     dbgOrders: TToughDBGrid;
     adsOrders: TpFIBDataSet;
+    adsOrdersCryptSYNONYMNAME: TStringField;
+    adsOrdersCryptSYNONYMFIRM: TStringField;
+    adsOrdersCryptPRICE: TCurrencyField;
+    adsOrdersCryptSUMORDER: TCurrencyField;
     adsOrdersORDERID: TFIBBCDField;
     adsOrdersCLIENTID: TFIBBCDField;
     adsOrdersCOREID: TFIBBCDField;
@@ -38,15 +42,16 @@ type
     adsOrdersCODECR: TFIBStringField;
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersPRICE: TFIBBCDField;
+    adsOrdersPRICE: TFIBStringField;
     adsOrdersAWAIT: TFIBIntegerField;
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
-    adsOrdersSUMORDER: TFIBIntegerField;
+    adsOrdersSUMORDER: TFIBBCDField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure adsOrdersCalcFields(DataSet: TDataSet);
   private
   public
     procedure ShowForm(AOrderId: Integer); reintroduce;
@@ -88,10 +93,10 @@ procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	{ если уцененный товар, изменяем цвет }
-	if adsOrdersJunk.AsBoolean and ( Column.FieldName = 'PRICE') then
+	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersCryptPRICE) then
 		Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsOrdersAwait.AsBoolean and ( Column.FieldName = 'SYNONYMNAME') then
+	if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersCryptSYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 
@@ -104,9 +109,16 @@ begin
 	begin
     adsOrders.Delete;
     if adsOrders.RecordCount = 0 then begin
-      DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
-      OrdersHForm.adsOrdersHForm.Close;
-      DM.adcUpdate.ExecQuery;
+      DM.adcUpdate.Transaction.StartTransaction;
+      try
+        DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
+        OrdersHForm.adsOrdersHForm.Close;
+        DM.adcUpdate.ExecQuery;
+        DM.adcUpdate.Transaction.Commit;
+      except
+        DM.adcUpdate.Transaction.Rollback;
+        raise;
+      end;
       OrdersHForm.adsOrdersHForm.Open;
       MainForm.SetOrdersInfo;
       PrevForm.ShowForm;
@@ -117,6 +129,21 @@ begin
     end;
 
 	end;
+end;
+
+procedure TOrdersForm.adsOrdersCalcFields(DataSet: TDataSet);
+var
+  S : String;
+begin
+  try
+    adsOrdersCryptSYNONYMNAME.AsString := DM.D_S(adsOrdersSYNONYMNAME.AsString);
+    adsOrdersCryptSYNONYMFIRM.AsString := DM.D_S(adsOrdersSYNONYMFIRM.AsString);
+    S := DM.D_B(adsOrdersCODE.AsString, adsOrdersCODECR.AsString);
+    adsOrdersCryptPRICE.AsString := S;
+    adsOrdersCryptSUMORDER.AsCurrency := StrToFloat(S) * adsOrdersORDERCOUNT.AsInteger;
+  except
+
+  end;
 end;
 
 end.

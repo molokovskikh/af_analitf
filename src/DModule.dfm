@@ -118,6 +118,7 @@ object DM: TDM
       'password=masterkey'
       'user_name=sysdba')
     DefaultTransaction = DefTran
+    DefaultUpdateTransaction = UpTran
     SQLDialect = 3
     Timeout = 0
     DesignDBOptions = []
@@ -172,7 +173,10 @@ object DM: TDM
       '    EXTERNALORDERSCREATE = :EXTERNALORDERSCREATE,'
       '    RASSLEEP = :RASSLEEP,'
       '    HTTPNAMECHANGED = :HTTPNAMECHANGED,'
-      '    SHOWALLCATALOG = :SHOWALLCATALOG'
+      '    SHOWALLCATALOG = :SHOWALLCATALOG,'
+      '    SYNPASS = :SYNPASS,'
+      '    CODESPASS = :CODESPASS,'
+      '    BPASS = :BPASS'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')
@@ -186,6 +190,7 @@ object DM: TDM
     AfterOpen = adtParamsAfterOpen
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 48
     Top = 216
@@ -207,6 +212,7 @@ object DM: TDM
       'select * from Provider where ID = 0')
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 112
     Top = 216
@@ -227,6 +233,7 @@ object DM: TDM
       '    RECLAME ')
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 200
     Top = 216
@@ -338,6 +345,7 @@ object DM: TDM
     BeforeDelete = adtClientsBeforeDelete
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 280
     Top = 216
@@ -443,6 +451,7 @@ object DM: TDM
       '    TABLESUPDATES ')
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 360
     Top = 216
@@ -491,12 +500,13 @@ object DM: TDM
       '  ID = 0')
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 448
     Top = 216
   end
   object adcUpdate: TpFIBQuery
-    Transaction = DefTran
+    Transaction = UpTran
     Database = MainConnection1
     Left = 536
     Top = 216
@@ -504,12 +514,14 @@ object DM: TDM
   object adsSelect: TpFIBDataSet
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     Left = 600
     Top = 216
   end
   object adsSelect2: TpFIBDataSet
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     Left = 664
     Top = 216
   end
@@ -522,11 +534,133 @@ object DM: TDM
       '  Price = :NEW_PRICE'
       'where'
       '  ID = :OLD_ID')
+    SelectSQL.Strings = (
+      'SELECT '
+      '  Id, '
+      '  CoreId, '
+      '  PriceCode, '
+      '  RegionCode, '
+      '  Code, '
+      '  CodeCr, '
+      '  Price, '
+      '  SynonymCode, '
+      '  SynonymFirmCrCode, '
+      '  SynonymName, '
+      '  SynonymFirm, '
+      '  Junk, '
+      '  Await, '
+      '  OrderCount, '
+      '  PriceName '
+      'FROM '
+      '  Orders '
+      
+        '  INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND Orde' +
+        'rsH.Closed = 0)'
+      'WHERE '
+      '  (OrderCount>0)'#39)
+    OnCalcFields = adsSelect3CalcFields
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 728
     Top = 216
+    object adsSelect3ID: TFIBBCDField
+      FieldName = 'ID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSelect3COREID: TFIBBCDField
+      FieldName = 'COREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSelect3PRICECODE: TFIBBCDField
+      FieldName = 'PRICECODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSelect3REGIONCODE: TFIBBCDField
+      FieldName = 'REGIONCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSelect3CODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsSelect3CODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsSelect3PRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 48
+      EmptyStrToNull = True
+    end
+    object adsSelect3SYNONYMCODE: TFIBBCDField
+      FieldName = 'SYNONYMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSelect3SYNONYMFIRMCRCODE: TFIBBCDField
+      FieldName = 'SYNONYMFIRMCRCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSelect3SYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsSelect3SYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsSelect3JUNK: TFIBBooleanField
+      FieldName = 'JUNK'
+    end
+    object adsSelect3AWAIT: TFIBBooleanField
+      FieldName = 'AWAIT'
+    end
+    object adsSelect3ORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsSelect3PRICENAME: TFIBStringField
+      FieldName = 'PRICENAME'
+      Size = 70
+      EmptyStrToNull = True
+    end
+    object adsSelect3CryptSYNONYMNAME: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMNAME'
+      Size = 250
+      Calculated = True
+    end
+    object adsSelect3CryptSYNONYMFIRM: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMFIRM'
+      Size = 250
+      Calculated = True
+    end
+    object adsSelect3CryptCODE: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptCODE'
+      Calculated = True
+    end
+    object adsSelect3CryptCODECR: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptCODECR'
+      Calculated = True
+    end
+    object adsSelect3CryptPRICE: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptPRICE'
+      Calculated = True
+    end
   end
   object adsCore: TpFIBDataSet
     SelectSQL.Strings = (
@@ -574,19 +708,226 @@ object DM: TDM
       '    ORDERSHPRICECODE,'
       '    ORDERSHREGIONCODE,'
       '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME,'
-      '    PRICERET'
+      '    ORDERSHREGIONNAME'
       'FROM'
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
-      '    :RETAILFORCOUNT,'
       '    :ACLIENTID,'
       '    :APRICENAME) ')
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     Left = 240
     Top = 344
     oFetchAll = True
+    object adsCoreCOREID: TFIBBCDField
+      FieldName = 'COREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreSHORTCODE: TFIBBCDField
+      FieldName = 'SHORTCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreCODEFIRMCR: TFIBBCDField
+      FieldName = 'CODEFIRMCR'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreSYNONYMCODE: TFIBBCDField
+      FieldName = 'SYNONYMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreSYNONYMFIRMCRCODE: TFIBBCDField
+      FieldName = 'SYNONYMFIRMCRCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsCoreCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsCoreVOLUME: TFIBStringField
+      FieldName = 'VOLUME'
+      Size = 15
+      EmptyStrToNull = True
+    end
+    object adsCoreDOC: TFIBStringField
+      FieldName = 'DOC'
+      EmptyStrToNull = True
+    end
+    object adsCoreNOTE: TFIBStringField
+      FieldName = 'NOTE'
+      Size = 50
+      EmptyStrToNull = True
+    end
+    object adsCorePERIOD: TFIBStringField
+      FieldName = 'PERIOD'
+      EmptyStrToNull = True
+    end
+    object adsCoreAWAIT: TFIBIntegerField
+      FieldName = 'AWAIT'
+    end
+    object adsCoreJUNK: TFIBIntegerField
+      FieldName = 'JUNK'
+    end
+    object adsCoreBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 48
+      EmptyStrToNull = True
+    end
+    object adsCoreQUANTITY: TFIBStringField
+      FieldName = 'QUANTITY'
+      Size = 15
+      EmptyStrToNull = True
+    end
+    object adsCoreSYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsCoreSYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsCoreMINPRICE: TFIBBCDField
+      FieldName = 'MINPRICE'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsCoreLEADERPRICECODE: TFIBBCDField
+      FieldName = 'LEADERPRICECODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreLEADERREGIONCODE: TFIBBCDField
+      FieldName = 'LEADERREGIONCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreLEADERREGIONNAME: TFIBStringField
+      FieldName = 'LEADERREGIONNAME'
+      Size = 25
+      EmptyStrToNull = True
+    end
+    object adsCoreLEADERPRICENAME: TFIBStringField
+      FieldName = 'LEADERPRICENAME'
+      Size = 70
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSCOREID: TFIBBCDField
+      FieldName = 'ORDERSCOREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSORDERID: TFIBBCDField
+      FieldName = 'ORDERSORDERID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSCLIENTID: TFIBBCDField
+      FieldName = 'ORDERSCLIENTID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSFULLCODE: TFIBBCDField
+      FieldName = 'ORDERSFULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSCODEFIRMCR: TFIBBCDField
+      FieldName = 'ORDERSCODEFIRMCR'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSSYNONYMCODE: TFIBBCDField
+      FieldName = 'ORDERSSYNONYMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSSYNONYMFIRMCRCODE: TFIBBCDField
+      FieldName = 'ORDERSSYNONYMFIRMCRCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSCODE: TFIBStringField
+      FieldName = 'ORDERSCODE'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSCODECR: TFIBStringField
+      FieldName = 'ORDERSCODECR'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsCoreORDERSSYNONYM: TFIBStringField
+      FieldName = 'ORDERSSYNONYM'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSSYNONYMFIRM: TFIBStringField
+      FieldName = 'ORDERSSYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSPRICE: TFIBStringField
+      FieldName = 'ORDERSPRICE'
+      Size = 48
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSJUNK: TFIBIntegerField
+      FieldName = 'ORDERSJUNK'
+    end
+    object adsCoreORDERSAWAIT: TFIBIntegerField
+      FieldName = 'ORDERSAWAIT'
+    end
+    object adsCoreORDERSHORDERID: TFIBBCDField
+      FieldName = 'ORDERSHORDERID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSHCLIENTID: TFIBBCDField
+      FieldName = 'ORDERSHCLIENTID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSHPRICECODE: TFIBBCDField
+      FieldName = 'ORDERSHPRICECODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSHREGIONCODE: TFIBBCDField
+      FieldName = 'ORDERSHREGIONCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsCoreORDERSHPRICENAME: TFIBStringField
+      FieldName = 'ORDERSHPRICENAME'
+      Size = 70
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSHREGIONNAME: TFIBStringField
+      FieldName = 'ORDERSHREGIONNAME'
+      Size = 25
+      EmptyStrToNull = True
+    end
   end
   object adsOrdersH: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -624,6 +965,7 @@ object DM: TDM
       '  Send = :ASend')
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 64
     Top = 344
@@ -659,6 +1001,7 @@ object DM: TDM
       '    ORDERSSHOW(:AORDERID) ')
     Transaction = DefTran
     Database = MainConnection1
+    UpdateTransaction = UpTran
     AutoCommit = True
     Left = 144
     Top = 344
@@ -713,5 +1056,11 @@ object DM: TDM
         ' null))')
     Left = 648
     Top = 344
+  end
+  object UpTran: TpFIBTransaction
+    DefaultDatabase = MainConnection1
+    TimeoutAction = TACommit
+    Left = 144
+    Top = 168
   end
 end

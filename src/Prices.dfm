@@ -480,7 +480,7 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesADMINMAIL: TFIBStringField
       FieldName = 'ADMINMAIL'
-      Size = 35
+      Size = 50
       EmptyStrToNull = False
     end
     object adsPricesSUPPORTPHONE: TFIBStringField
@@ -508,11 +508,13 @@ inherited PricesForm: TPricesForm
     object adsPricesPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
-    object adsPricesSUMORDER: TFIBIntegerField
-      FieldName = 'SUMORDER'
-    end
     object adsPricesPRICESIZE: TFIBIntegerField
       FieldName = 'PRICESIZE'
+    end
+    object adsPricesSUMORDER: TFIBBCDField
+      FieldName = 'SUMORDER'
+      Size = 2
+      RoundByScale = True
     end
   end
   object adsClientsData: TpFIBDataSet

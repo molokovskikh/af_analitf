@@ -143,8 +143,15 @@ begin
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
-          DM.adcUpdate.SQL.Text := 'EXECUTE PROCEDURE OrdersHDeleteNotClosedAll';
-          DM.adcUpdate.ExecQuery;
+          DM.adcUpdate.Transaction.StartTransaction;
+          try
+            DM.adcUpdate.SQL.Text := 'EXECUTE PROCEDURE OrdersHDeleteNotClosedAll';
+            DM.adcUpdate.ExecQuery;
+            DM.adcUpdate.Transaction.Commit;
+          except
+            DM.adcUpdate.Transaction.Rollback;
+            raise;
+          end;
         end;
         DM.adtParams.Post;
       //  DM.MainConnection.CommitTrans;

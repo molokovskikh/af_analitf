@@ -47,20 +47,6 @@ type
     adsOrdersHForm: TpFIBDataSet;
     adsCore: TpFIBDataSet;
     adsWayBillHead: TpFIBDataSet;
-    adsOrdersHFormORDERID: TFIBBCDField;
-    adsOrdersHFormSERVERORDERID: TFIBBCDField;
-    adsOrdersHFormDATEPRICE: TFIBDateTimeField;
-    adsOrdersHFormPRICECODE: TFIBBCDField;
-    adsOrdersHFormREGIONCODE: TFIBBCDField;
-    adsOrdersHFormORDERDATE: TFIBDateTimeField;
-    adsOrdersHFormSENDDATE: TFIBDateTimeField;
-    adsOrdersHFormPRICENAME: TFIBStringField;
-    adsOrdersHFormREGIONNAME: TFIBStringField;
-    adsOrdersHFormPOSITIONS: TFIBIntegerField;
-    adsOrdersHFormSUMORDER: TFIBIntegerField;
-    adsOrdersHFormSUPPORTPHONE: TFIBStringField;
-    adsOrdersHFormMESSAGETO: TFIBStringField;
-    adsOrdersHFormCOMMENTS: TFIBStringField;
     adsWayBillHeadSERVERID: TFIBBCDField;
     adsWayBillHeadSERVERORDERID: TFIBBCDField;
     adsWayBillHeadWRITETIME: TFIBDateTimeField;
@@ -71,8 +57,22 @@ type
     adsWayBillHeadREGIONNAME: TFIBStringField;
     adsWayBillHeadFIRMCOMMENT: TFIBStringField;
     adsWayBillHeadROWCOUNT: TFIBIntegerField;
-    adsOrdersHFormSEND: TFIBBooleanField;
-    adsOrdersHFormCLOSED: TFIBBooleanField;
+    adsOrdersHFormORDERID: TFIBBCDField;
+    adsOrdersHFormSERVERORDERID: TFIBBCDField;
+    adsOrdersHFormDATEPRICE: TFIBDateTimeField;
+    adsOrdersHFormPRICECODE: TFIBBCDField;
+    adsOrdersHFormREGIONCODE: TFIBBCDField;
+    adsOrdersHFormORDERDATE: TFIBDateTimeField;
+    adsOrdersHFormSENDDATE: TFIBDateTimeField;
+    adsOrdersHFormCLOSED: TFIBIntegerField;
+    adsOrdersHFormSEND: TFIBIntegerField;
+    adsOrdersHFormPRICENAME: TFIBStringField;
+    adsOrdersHFormREGIONNAME: TFIBStringField;
+    adsOrdersHFormPOSITIONS: TFIBIntegerField;
+    adsOrdersHFormSUMORDER: TFIBBCDField;
+    adsOrdersHFormSUPPORTPHONE: TFIBStringField;
+    adsOrdersHFormMESSAGETO: TFIBStringField;
+    adsOrdersHFormCOMMENTS: TFIBStringField;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -340,7 +340,6 @@ begin
         end;
 
         with adsCore do begin
-          ParamByName( 'RetailForcount').Value:=DM.adtClients.FieldByName( 'Forcount').Value;
           ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
           ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
           ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
@@ -392,16 +391,16 @@ begin
                 begin
                   Strings.Append( Format( '%s : %s - %s : %d вместо %d',
                     [adsOrdersHFormPRICENAME.AsString,
-                    OrdersForm.adsOrdersSYNONYMNAME.AsString,
-                    OrdersForm.adsOrdersSynonymFirm.AsString,
+                    OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
+                    OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString,
                     OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
                     OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
                 end
                 else
                   Strings.Append( Format( '%s : %s - %s : предложение не найдено',
                     [adsOrdersHFormPRICENAME.AsString,
-                    OrdersForm.adsOrdersSYNONYMNAME.AsString,
-                    OrdersForm.adsOrdersSynonymFirm.AsString]));
+                    OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
+                    OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString]));
               end;
               OrdersForm.adsOrders.Next;
             end;
@@ -445,9 +444,16 @@ begin
           adsOrdersHForm.Edit;
           adsOrdersHForm.FieldByName( 'Send').AsBoolean := False;
           adsOrdersHForm.FieldByName( 'Closed').AsBoolean := True;
-          DM.adcUpdate.SQL.Text := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
-            adsOrdersHForm.FieldByName( 'OrderId').AsString;
-          DM.adcUpdate.ExecQuery;
+          DM.adcUpdate.Transaction.StartTransaction;
+          try
+            DM.adcUpdate.SQL.Text := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
+              adsOrdersHForm.FieldByName( 'OrderId').AsString;
+            DM.adcUpdate.ExecQuery;
+            DM.adcUpdate.Transaction.Commit;
+          except
+            DM.adcUpdate.Transaction.Rollback;
+            raise;
+          end;
           adsOrdersHForm.Post;
         finally
           adsOrdersHFormSEND.OnChange := adsOrdersH2SendChange;

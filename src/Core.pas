@@ -57,8 +57,6 @@ type
     adsCoreSALE: TFIBIntegerField;
     adsCoreVOLUME: TFIBStringField;
     adsCoreNOTE: TFIBStringField;
-    adsCoreBASECOST: TFIBBCDField;
-    adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
     adsCoreDATEPRICE: TFIBDateTimeField;
@@ -77,7 +75,6 @@ type
     adsCoreORDERCOUNT: TFIBIntegerField;
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBBCDField;
     adsCoreORDERSHORDERID: TFIBBCDField;
     adsCoreORDERSHCLIENTID: TFIBBCDField;
     adsCoreORDERSHPRICECODE: TFIBBCDField;
@@ -94,14 +91,12 @@ type
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
-    adsOrdersPRICE: TFIBBCDField;
     adsOrdersORDERDATE: TFIBDateTimeField;
     adsOrdersPRICENAME: TFIBStringField;
     adsOrdersREGIONNAME: TFIBStringField;
     adsOrdersAWAIT: TFIBIntegerField;
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersShowFormSummary: TpFIBDataSet;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
     adsFirmsInfo: TpFIBDataSet;
     adsCoreSTORAGE: TFIBBooleanField;
     adsCoreAWAIT: TFIBBooleanField;
@@ -109,6 +104,14 @@ type
     adsCorePRICEENABLED: TFIBBooleanField;
     adsCoreORDERSJUNK: TFIBBooleanField;
     adsCoreORDERSAWAIT: TFIBBooleanField;
+    adsCoreCryptSYNONYMNAME: TStringField;
+    adsCoreCryptSYNONYMFIRM: TStringField;
+    adsCoreCryptBASECOST: TCurrencyField;
+    adsCoreBASECOST: TFIBStringField;
+    adsCoreQUANTITY: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
+    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
+    adsOrdersPRICE: TFIBStringField;
     procedure adsCore2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -231,7 +234,7 @@ begin
 		try
 			if Active then CloseOpen(True) else Open;
       if not adsCore.Sorted then
-        DoSort(['FullCode', 'BaseCost'], [True, True]);
+        DoSort(['FullCode', 'CryptBaseCost'], [True, True]);
 		finally
 			Screen.Cursor := crDefault;
 		end;
@@ -265,6 +268,8 @@ begin
 	PrevPrice := 0;
         I := -1;
 	RecInfos := nil;
+{
+  TODO: Не забыть включить
 	with adsCore do
 	begin
 		SetLength( RecInfos, adsCore.RecordCount);
@@ -298,6 +303,7 @@ begin
 		end;
 		First;
 	end;
+}
 
 	if not adsCore.Locate( 'PriceEnabled', 'True', []) then
 		adsCore.Locate( 'PriceEnabled', 'False', []);
@@ -325,8 +331,12 @@ begin
 end;
 
 procedure TCoreForm.adsCore2CalcFields(DataSet: TDataSet);
+var
+  S : String;
 begin
 try
+{
+  //TODO: Не забыть включить
   //вычисляем розничную цену PriceRet
   if adsCoreFirmCode.AsInteger=RegisterId then begin
     with DM.adsSelect do begin
@@ -344,13 +354,21 @@ try
   end
   else
     adsCorePriceRet.AsCurrency:=RoundTo(adsCoreBaseCost.AsCurrency*RetailForcount,-2);
+}    
+
+ try
+   adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
+   adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
+   S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
+   adsCoreCryptBASECOST.AsString := S;
   //вычисляем сумму заказа по товару SumOrder
-  adsCoreSumOrder.AsCurrency:=adsCoreBaseCost.AsCurrency*adsCoreORDERCOUNT.AsInteger;
+  adsCoreSumOrder.AsCurrency:=StrToFloat(S)*adsCoreORDERCOUNT.AsInteger;
+ except
+ end;
   //вычисляем разницу в цене PriceDelta
   if Length(RecInfos)>0 then
     adsCorePriceDelta.AsFloat:=RecInfos[Abs(adsCore.RecNo)-1];
 except
-	on E: Exception do ShowMessage( 'Check point #2 : ' + E.Message);
 end;
 end;
 
@@ -368,6 +386,8 @@ begin
 			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
 		{ проверяем на превышение цены }
+{
+    //TODO: Не забыть включить
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
 			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
@@ -380,7 +400,8 @@ begin
 				Timer.Enabled := True;
 			end;
 		end;
-        except
+}    
+  except
 		adsCore.Cancel;
 		raise;
 	end;
@@ -510,24 +531,24 @@ begin
 	if adsCoreFirmCode.AsInteger = RegisterId then
 	begin
 		//если это реестр, изменяем цвета
-		if ( Column.FieldName = 'SYNONYMNAME') or ( Column.FieldName = 'SYNONYMFIRM') or
-			( Column.FieldName = 'BASECOST')or
-			( Column.FieldName = 'PriceRet') then Background := REG_CLR;
+		if ( Column.Field = adsCoreCryptSYNONYMNAME) or ( Column.Field = adsCoreCryptSYNONYMFIRM) or
+			( Column.Field = adsCoreCryptBASECOST)or
+			( Column.Field = adsCorePriceRet) then Background := REG_CLR;
         end
 	else
 	begin
 		if not adsCorePriceEnabled.AsBoolean then
 		begin
 			//если фирма недоступна, изменяем цвет
-			if ( Column.FieldName = 'SYNONYMNAME') or ( Column.FieldName = 'SYNONYMFIRM')
+			if ( Column.Field = adsCoreCryptSYNONYMNAME) or ( Column.Field = adsCoreCryptSYNONYMFIRM)
 				then Background := clBtnFace;
 		end;
 
 		//если уцененный товар, изменяем цвет
-		if adsCoreJunk.AsBoolean and (( Column.FieldName = 'PERIOD') or ( Column.FieldName = 'BASECOST')) then
+		if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCryptBASECOST)) then
 			Background := JUNK_CLR;
 		//ожидаемый товар выделяем зеленым
-		if adsCoreAwait.AsBoolean and ( Column.FieldName = 'SYNONYMNAME') then
+		if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreCryptSYNONYMNAME) then
 			Background := AWAIT_CLR;
 	end;
 end;
@@ -597,10 +618,10 @@ procedure TCoreForm.dbgHistoryGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	//если уцененный товар, изменяем цвет
-	if adsOrdersJunk.AsBoolean and ( Column.FieldName = 'PRICE') then
+	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
 		Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsOrdersAwait.AsBoolean and ( Column.FieldName = 'PRICE') then
+	if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersPRICE) then
 		Background := AWAIT_CLR;
 end;
 

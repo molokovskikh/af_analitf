@@ -48,8 +48,11 @@ private
 	RecThread: TReclameThread;
   StartExec : TDateTime;
   AbsentPriceCodeSL : TStringList;
+  ASynPass,
+  ACodesPass,
+  ABPass : String;
 
-  upB : TpFIBQuery; 
+  upB : TpFIBQuery;
 
 	procedure SetStatus;
 	procedure SetProgress;
@@ -62,6 +65,8 @@ private
 	procedure HTTPConnect;
 	procedure GetReclame;
 	procedure QueryData;
+  procedure GetPass;
+  procedure DMSavePass;
 	procedure CommitExchange;
 	procedure DoExchange;
 	procedure DoSendOrders;
@@ -168,6 +173,7 @@ begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					QueryData;
+          GetPass;
 					GetReclame;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
@@ -323,12 +329,12 @@ begin
       ParamValues[7] := AJETVersion;
       ParamNames[8]  := 'JETDesc';
       ParamValues[8] := AJETDesc;
-      
+
       ParamNames[9]  := 'MDACVersion';
       ParamValues[9] := AMDACVersion;
       ParamNames[10]  := 'MDACDesc';
       ParamValues[10] := AMDACDesc;
-      
+
       for I := 0 to Res.Count-1 do begin
         ParamNames[StaticParamCount+i] := Res.Names[i];
         ParamValues[StaticParamCount+i] := Res.Values[ParamNames[StaticParamCount+i]];
@@ -342,7 +348,7 @@ begin
 			BoolToStr( eaGetFullData in ExchangeForm.ExchangeActs, True),
 			MainForm.VerInfo.FileVersion, DM.adtProvider.FieldByName( 'MDBVersion').AsString,
 			IntToHex( GetCopyID, 8)]);
-}      
+}
 		Res := SOAP.Invoke( 'GetUserData', ParamNames, ParamValues);
 		{ QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
 //		while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
@@ -489,6 +495,7 @@ var
   ExternalRes : Boolean;
   ErrorStr : PChar;
   ExtErrorMessage : String;
+  S : String;
 begin
  	DM.adsOrdersH.Close;
 	DM.adsOrdersH.ParamByName( 'AClientId').Value :=
@@ -546,15 +553,26 @@ begin
 			values[ i * 11 + 8] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
 			values[ i * 11 + 9] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
 			values[ i * 11 + 10] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
-			values[ i * 11 + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
-			values[ i * 11 + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
+      try
+   			values[ i * 11 + 11] := DM.D_C( DM.adsOrders.FieldByName( 'Code').AsString );
+      except
+        values[ i * 11 + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
+      end;
+      try
+  			values[ i * 11 + 12] := DM.D_C( DM.adsOrders.FieldByName( 'CodeCr').AsString );
+      except
+        values[ i * 11 + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
+      end;
 			values[ i * 11 + 13] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
 			values[ i * 11 + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
 			values[ i * 11 + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
-                        OldDS := DecimalSeparator;
-			DecimalSeparator := ',';
-			values[ i * 11 + 16] := DM.adsOrders.FieldByName( 'Price').AsString;
-                        DecimalSeparator := OldDS;
+      try
+        S := DM.D_B(DM.adsOrders.FieldByName( 'Code').AsString, DM.adsOrders.FieldByName( 'CodeCr').AsString);
+        S := StringReplace(S, DM.FFS.DecimalSeparator, ',', [rfReplaceAll]);
+        values[ i * 11 + 16] := S;
+      except
+        values[ i * 11 + 16] := '0.0';
+      end;
 			DM.adsOrders.Edit;
 			DM.adsOrders.FieldByName( 'CoreId').AsVariant := Null;
       DM.adsOrders.Post;
@@ -886,15 +904,8 @@ begin
 	Progress := 0;
 	Synchronize( SetProgress);
 	Synchronize( DisableCancel);
-  DM.MainConnection1.DefaultTransaction.StartTransaction;
-  try
 	DM.UnLinkExternalTables;
 	DM.LinkExternalTables;
-  DM.MainConnection1.DefaultTransaction.Commit;
-  except
-    DM.MainConnection1.Rollback;
-    raise;
-  end;
 	// создаем список внешних таблиц
 	Tables := TStringList.Create;
 	try
@@ -951,7 +962,7 @@ begin
 	Progress := 5;
 	Synchronize( SetProgress);
 
-   DM.MainConnection1.DefaultTransaction.StartTransaction;
+   DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
    try
    DM.adcUpdate.BeforeExecute := adcUpdateBeforeExecute;
    DM.adcUpdate.AfterExecute := adcUpdateAfterExecute;
@@ -999,8 +1010,10 @@ begin
 	  SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
 	end;
 
-  DM.MainConnection1.CommitRetaining;
+  DM.MainConnection1.DefaultUpdateTransaction.Commit;
   
+  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
+
 	SQL.Text := 'select count(*) from MinPrices where PriceCode is not null';
 	ExecQuery;
   Close;
@@ -1025,6 +1038,7 @@ begin
 	SQL.Text := 'select count(*) from regions where regionname is not null';
 	ExecQuery;
   Close;
+  DM.MainConnection1.DefaultUpdateTransaction.Commit;
 //  DM.MainConnection1.DefaultTransaction.CommitRetaining;
   DM.MainConnection1.Commit;
   DM.MainConnection1.Close;
@@ -1035,7 +1049,7 @@ begin
 //    DM.CompactDataBase();
 
   DM.MainConnection1.Open;
-  DM.MainConnection1.StartTransaction;
+  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 
 	Progress := 10;
 	Synchronize( SetProgress);
@@ -1158,13 +1172,14 @@ begin
 	  SQL.Text:='alter table core DROP CONSTRAINT PK_CORE'; ExecQuery;
 	  SQL.Text:='drop index FK_CORE_SYNONYMCODE'; ExecQuery;
 	  SQL.Text:='drop index FK_CORE_SYNONYMFIRMCRCODE'; ExecQuery;
-	  SQL.Text:='drop index IDX_CORE_FULLCODE_BASECOST'; ExecQuery;
+//	  SQL.Text:='drop index IDX_CORE_FULLCODE_BASECOST'; ExecQuery;
 	  SQL.Text:='drop index IDX_CORE_JUNK'; ExecQuery;
 	  SQL.Text:='drop index IDX_CORE_SHORTCODE'; ExecQuery;
-    DM.MainConnection1.Commit;
+    DM.MainConnection1.DefaultUpdateTransaction.Commit;
 
     DM.MainConnection1.Close;
     DM.MainConnection1.Open;
+    DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 //	  SQL.Text:='alter index PK_CORE inactive'; ExecQuery;
     UpdateFromFile(ExePath+SDirIn+'\Core.txt',
 'INSERT INTO Core '+
@@ -1177,7 +1192,7 @@ begin
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; ExecQuery;
-	  SQL.Text:='CREATE INDEX IDX_CORE_FULLCODE_BASECOST ON CORE (FULLCODE, BASECOST)'; ExecQuery;
+//	  SQL.Text:='CREATE INDEX IDX_CORE_FULLCODE_BASECOST ON CORE (FULLCODE, BASECOST)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (FULLCODE, JUNK)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX IDX_CORE_SHORTCODE ON CORE (SHORTCODE)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; ExecQuery;
@@ -1221,10 +1236,11 @@ begin
 	end;
 }
 
-  DM.MainConnection1.Commit;
+  DM.MainConnection1.DefaultUpdateTransaction.Commit;
 
   DM.MainConnection1.Close;
   DM.MainConnection1.Open;
+  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 
 	StatusText := 'Импорт данных';
 	Synchronize( SetStatus);
@@ -1240,10 +1256,13 @@ begin
 		Synchronize( SetProgress);
 	end;
 
+  SQL.Text:='update params set OperateForms = OperateFormsSet where ID = 0'; ExecQuery;
+{
 	DM.adtParams.Edit;
 	DM.adtParams.FieldByName( 'OperateForms').AsBoolean :=
 		DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean;
 	DM.adtParams.Post;
+}  
 
 	TotalProgress := 80;
 	Synchronize( SetTotalProgress);
@@ -1273,15 +1292,16 @@ begin
 	ExecQuery;
 	SQL.Text := 'EXECUTE PROCEDURE SETPRICESIZE';
 	ExecQuery;
-  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+  DM.MainConnection1.DefaultUpdateTransaction.CommitRetaining;
   //DM.MainConnection1.DefaultTransaction.StartTransaction;
 	SQL.Text := 'EXECUTE PROCEDURE UPDATEALLINDICES';
 	ExecQuery;
 //  DM.MainConnection1.DefaultTransaction.CommitRetaining;
-  DM.MainConnection1.Commit;
+  DM.MainConnection1.DefaultUpdateTransaction.Commit;
 
   DM.MainConnection1.Close;
   DM.MainConnection1.Open;
+  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 	SQL.Text := 'select count(*) from MinPrices where Pricecode is not null';
 	ExecQuery;
   Close;
@@ -1295,11 +1315,11 @@ begin
 	Synchronize( SetProgress);
 	TotalProgress := 90;
 	Synchronize( SetTotalProgress);
-  DM.MainConnection1.DefaultTransaction.CommitRetaining;
+//  DM.MainConnection1.DefaultTransaction.CommitRetaining;
     end;
 
   except
-    DM.MainConnection1.DefaultTransaction.Rollback;
+//    DM.MainConnection1.DefaultTransaction.Rollback;
     raise;
   end;
   finally
@@ -1674,7 +1694,7 @@ begin
   up := TpFIBQuery.Create(nil);
   try
     up.Database := DM.MainConnection1;
-    up.Transaction := DM.DefTran;
+    up.Transaction := DM.UpTran;
     upB := up;
 
     InDelimitedFile := TFIBInputDelimitedFile.Create;
@@ -1708,6 +1728,22 @@ begin
     upB.Params.ParamByName('SynonymName').Data^.sqltype := SQL_TEXT;
     upB.Params.ParamByName('SynonymName').Data^.sqllen := 255;
   end;
+end;
+
+procedure TExchangeThread.GetPass;
+var
+  Res : TStrings;
+begin
+  Res := SOAP.Invoke( 'GetPasswords', [], []);
+  ASynPass := Res.Values['Synonym'];
+  ACodesPass := Res.Values['Codes'];
+  ABPass := Res.Values['BaseCost'];
+  Synchronize(DMSavePass);
+end;
+
+procedure TExchangeThread.DMSavePass;
+begin
+  DM.SavePass(ASynPass, ACodesPass, ABPass);
 end;
 
 end.

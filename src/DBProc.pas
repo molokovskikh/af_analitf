@@ -14,6 +14,7 @@ function AddAndCondition(OldCondition,NewCondition: string): string;
 procedure DataSetCalc(DataSet: TDataSet; Expressions: array of string;
   var Values: array of Variant);
 procedure SetFilter(DataSet: TDataSet; AFilter: string);
+procedure SetFilterProc(DataSet: TDataSet; AFilterProc: TFilterRecordEvent);
 function GetConnectionProperty(const ConnectionString, PropertyName: string): string;
 function SetConnectionProperty(const ConnectionString, PropertyName,
   PropertyValue: string): string;
@@ -218,6 +219,22 @@ begin
 	finally
 //		SaveDialog.Free;
 	end;
+end;
+
+procedure SetFilterProc(DataSet: TDataSet; AFilterProc: TFilterRecordEvent);
+begin
+  with DataSet do begin
+    DisableControls;
+    Screen.Cursor:=crHourGlass;
+    try
+      Filtered:=False;
+      OnFilterRecord := AFilterProc;
+      if Assigned(OnFilterRecord) then Filtered:=True;
+    finally
+      EnableControls;
+      Screen.Cursor:=crDefault;
+    end;
+  end;
 end;
 
 end.

@@ -9,10 +9,21 @@ uses
   FIBQuery, pFIBQuery, FIBDataSet, pFIBDataSet, FIBDatabase, pFIBDatabase,
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
-  U_TINFIBInputDelimitedStream{, Cipher, rc_rndcrypt, rc_codecs};
+  U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
+  Contnrs;
+
+{
+Криптование
+  Синонимы - все в хексе без %
+  Цена     - все в хексе без %
+  Code, CodeCr - смешанный тип
+
+}
 
 const
   HistoryMaxRec=5;
+  CRYPT = 'Crypt';
+  BasecostSFX : array[0..1] of string = ('BASECOST', 'PRICE');
   //макс. кол-во писем доставаемых с сервера
   RegisterId=59; //код реестра в справочнике фирм
 
@@ -28,6 +39,20 @@ type
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
     ecGetFreeDiskSpace, ecIE40);
+
+  TCryptField = (cfBaseCost, cfSynonym, cfCode, cfPrice);
+
+  TCryptFieldDef = class
+    Exist : Boolean;
+    Crypt : Boolean;
+    CryptType : TCryptField;
+    //Индекс в MemoryData
+    DestIndex : Integer;
+    SourceIndex : Integer;
+    CryptIndex1,
+    CryptIndex2 : Integer;
+    constructor Create;
+  end;
 
   TDM = class(TDataModule)
     frReport: TfrReport;
@@ -84,6 +109,71 @@ type
     adtClientsTECHSUPPORT: TFIBStringField;
     adtClientsLEADFROMBASIC: TFIBSmallIntField;
     t: TpFIBQuery;
+    UpTran: TpFIBTransaction;
+    adsSelect3ID: TFIBBCDField;
+    adsSelect3COREID: TFIBBCDField;
+    adsSelect3PRICECODE: TFIBBCDField;
+    adsSelect3REGIONCODE: TFIBBCDField;
+    adsSelect3CODE: TFIBStringField;
+    adsSelect3CODECR: TFIBStringField;
+    adsSelect3PRICE: TFIBStringField;
+    adsSelect3SYNONYMCODE: TFIBBCDField;
+    adsSelect3SYNONYMFIRMCRCODE: TFIBBCDField;
+    adsSelect3SYNONYMNAME: TFIBStringField;
+    adsSelect3SYNONYMFIRM: TFIBStringField;
+    adsSelect3JUNK: TFIBBooleanField;
+    adsSelect3AWAIT: TFIBBooleanField;
+    adsSelect3ORDERCOUNT: TFIBIntegerField;
+    adsSelect3PRICENAME: TFIBStringField;
+    adsSelect3CryptSYNONYMNAME: TStringField;
+    adsSelect3CryptSYNONYMFIRM: TStringField;
+    adsSelect3CryptCODE: TStringField;
+    adsSelect3CryptCODECR: TStringField;
+    adsSelect3CryptPRICE: TCurrencyField;
+    adsCoreCOREID: TFIBBCDField;
+    adsCoreFULLCODE: TFIBBCDField;
+    adsCoreSHORTCODE: TFIBBCDField;
+    adsCoreCODEFIRMCR: TFIBBCDField;
+    adsCoreSYNONYMCODE: TFIBBCDField;
+    adsCoreSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreCODE: TFIBStringField;
+    adsCoreCODECR: TFIBStringField;
+    adsCoreVOLUME: TFIBStringField;
+    adsCoreDOC: TFIBStringField;
+    adsCoreNOTE: TFIBStringField;
+    adsCorePERIOD: TFIBStringField;
+    adsCoreAWAIT: TFIBIntegerField;
+    adsCoreJUNK: TFIBIntegerField;
+    adsCoreBASECOST: TFIBStringField;
+    adsCoreQUANTITY: TFIBStringField;
+    adsCoreSYNONYMNAME: TFIBStringField;
+    adsCoreSYNONYMFIRM: TFIBStringField;
+    adsCoreMINPRICE: TFIBBCDField;
+    adsCoreLEADERPRICECODE: TFIBBCDField;
+    adsCoreLEADERREGIONCODE: TFIBBCDField;
+    adsCoreLEADERREGIONNAME: TFIBStringField;
+    adsCoreLEADERPRICENAME: TFIBStringField;
+    adsCoreORDERSCOREID: TFIBBCDField;
+    adsCoreORDERSORDERID: TFIBBCDField;
+    adsCoreORDERSCLIENTID: TFIBBCDField;
+    adsCoreORDERSFULLCODE: TFIBBCDField;
+    adsCoreORDERSCODEFIRMCR: TFIBBCDField;
+    adsCoreORDERSSYNONYMCODE: TFIBBCDField;
+    adsCoreORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreORDERSCODE: TFIBStringField;
+    adsCoreORDERSCODECR: TFIBStringField;
+    adsCoreORDERCOUNT: TFIBIntegerField;
+    adsCoreORDERSSYNONYM: TFIBStringField;
+    adsCoreORDERSSYNONYMFIRM: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
+    adsCoreORDERSJUNK: TFIBIntegerField;
+    adsCoreORDERSAWAIT: TFIBIntegerField;
+    adsCoreORDERSHORDERID: TFIBBCDField;
+    adsCoreORDERSHCLIENTID: TFIBBCDField;
+    adsCoreORDERSHPRICECODE: TFIBBCDField;
+    adsCoreORDERSHREGIONCODE: TFIBBCDField;
+    adsCoreORDERSHPRICENAME: TFIBStringField;
+    adsCoreORDERSHREGIONNAME: TFIBStringField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
@@ -92,12 +182,18 @@ type
     procedure adtClientsBeforeDelete(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnection1AfterConnect(Sender: TObject);
+    procedure adsSelect3CalcFields(DataSet: TDataSet);
   private
     ClientInserted: Boolean;
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
+    SynonymPassword,
+    CodesPassword,
+    BaseCostPassword : String;
     procedure CheckRestrictToRun;
+    procedure ReadPasswords;
   public
+    FFS : TFormatSettings;
     function DatabaseOpenedBy: string;
     function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
     procedure CompactDataBase(NewPassword: string='');
@@ -140,8 +236,23 @@ type
     function NeedCommitExchange : Boolean;
     procedure SetNeedCommitExchange;
     procedure ResetNeedCommitExchange;
-    function DecodeCryptS(S : String) : String;
+    //DecodeCryptS
+    function D_C_S(Pass, S : String) : String;
+    //CodeCryptS
+    function C_C_S(Pass, S : String) : String;
+    //DecodeSynonym
+    function D_S(CodeS : String) : String;
+    //DecodeCode
+    function D_C(CodeS : String) : String;
+    //DecodeBasecost
+    function D_B(CodeS1, CodeS2 : String) : String;
     function EncodeCryptS(S : String) : String;
+    //Загружаем датасет из запроса и транлируем шифрованные поля
+    procedure LoadDataSetFromFIBQuery(Dest : TRxMemoryData; Q : TpFIBQuery);
+    procedure UpdateDataSetFromFIBQuery(Dest : TRxMemoryData; Q : TpFIBQuery);
+    function GetSyncFD(Dest : TRxMemoryData; Q : TpFIBQuery) : TObjectList;
+    procedure CopyRecord(Dest : TRxMemoryData; Q : TpFIBQuery; FDs :TObjectList);
+    procedure SavePass(ASyn, ACodes, AB : String);
   end;
 
 var
@@ -160,6 +271,7 @@ var
   DBCompress : Boolean;
 begin
   ResetNeedCommitExchange;
+  GetLocaleFormatSettings(0, FFS);
   //Проверка версий
 //  VersionValid;
 
@@ -167,7 +279,7 @@ begin
   MainConnection.ConnectionString :=
     SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
       ExePath + DatabaseName);
-}      
+}
 
   MainConnection1.DBName := ExePath + DatabaseName;
 //  MainConnection1.LibraryName := 'gds32.dll';
@@ -190,7 +302,6 @@ begin
 
   try
     try
-      //TODO: Переписать данную процедуру
       CheckRestrictToRun;
     finally
       MainConnection1.Close;
@@ -313,7 +424,7 @@ begin
   end;
 
   try
-  DM.MainConnection1.Open;
+    DM.MainConnection1.Open;
   except
     on E : EFIBError do begin
       if E.IBErrorCode = isc_network_error then
@@ -409,7 +520,7 @@ var
   FBR : TpFIBBackupRestoreService;
 begin
   ok := False;
-  //TODO: Процедура не до конца готова
+  //TODO: Процедура не до конца готова. Использовать другое имя для нормального подключения
   Tracer.TR('BackupRestore', 'Start');
   MainConnection1.Close;
   try
@@ -672,59 +783,66 @@ begin
     Files := TStringList.Create;
     Tables := TStringList.Create;
     try
-      //Сначала создали внешние таблицы
-      repeat
-        FileName := ExePath+SDirIn+ '\' + SR.Name;
-        ShortName := ChangeFileExt(SR.Name,'');
-        adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
-        adcUpdate.ParamByName('PATH').Value := FileName;
-        Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
-        adcUpdate.ExecQuery;
-        Files.Add(FileName);
-        Tables.Add('EXT' + UpperCase(ShortName));
-      until FindNext(SR)<>0;
-      FindClose(SR);
-
-      DefTran.CommitRetaining;
-
-      //Потом наполнили их данными
-      up := TpFIBDataSet.Create(nil);
+      UpTran.StartTransaction;
       try
-        up.Database := MainConnection1;
-        up.Transaction := DefTran;
 
-        InDelimitedFile := TFIBInputDelimitedFile.Create;
+        //Сначала создали внешние таблицы
+        repeat
+          FileName := ExePath+SDirIn+ '\' + SR.Name;
+          ShortName := ChangeFileExt(SR.Name,'');
+          adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
+          adcUpdate.ParamByName('PATH').Value := FileName;
+          Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
+          adcUpdate.ExecQuery;
+          Files.Add(FileName);
+          Tables.Add('EXT' + UpperCase(ShortName));
+        until FindNext(SR)<>0;
+        FindClose(SR);
+
+        UpTran.CommitRetaining;
+
+        //Потом наполнили их данными
+        up := TpFIBDataSet.Create(nil);
         try
-          InDelimitedFile.SkipTitles := False;
-          InDelimitedFile.ReadBlanksAsNull := False;
-          InDelimitedFile.ColDelimiter := Chr(159);
-          InDelimitedFile.RowDelimiter := Chr(161);
+          up.Database := MainConnection1;
+          up.Transaction := UpTran;
+
+          InDelimitedFile := TFIBInputDelimitedFile.Create;
+          try
+            InDelimitedFile.SkipTitles := False;
+            InDelimitedFile.ReadBlanksAsNull := False;
+            InDelimitedFile.ColDelimiter := Chr(159);
+            InDelimitedFile.RowDelimiter := Chr(161);
 
 
-          for I := 0 to Files.Count-1 do begin
-            if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM') then begin
-              up.SelectSQL.Text := 'select * from ' + Tables[i];
-              up.Prepare;
-              up.Open;
-              up.AutoUpdateOptions.UpdateTableName := Tables[i];
-              up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
-              Tracer.TR(Tables[i], up.InsertSQL.Text);
-              up.Close;
-              up.SelectSQL.Text := up.InsertSQL.Text;
-              InDelimitedFile.Filename := Files[i];
-              up.BatchInput(InDelimitedFile);
+            for I := 0 to Files.Count-1 do begin
+              if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM') then begin
+                up.SelectSQL.Text := 'select * from ' + Tables[i];
+                up.Prepare;
+                up.Open;
+                up.AutoUpdateOptions.UpdateTableName := Tables[i];
+                up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
+                Tracer.TR(Tables[i], up.InsertSQL.Text);
+                up.Close;
+                up.SelectSQL.Text := up.InsertSQL.Text;
+                InDelimitedFile.Filename := Files[i];
+                up.BatchInput(InDelimitedFile);
+              end;
             end;
+
+          finally
+            InDelimitedFile.Free;
           end;
 
         finally
-          InDelimitedFile.Free;
+          up.Free;
         end;
 
-      finally
-        up.Free;
+        UpTran.Commit;
+      except
+        UpTran.Rollback;
+        raise;
       end;
-
-      DefTran.CommitRetaining;
 
     finally
       Files.Free;
@@ -892,13 +1010,19 @@ begin
     TN := TStringList.Create;
     try
       MainConnection1.GetTableNames(TN, False);
-      for I:=TN.Count-1 downto 0 do
-        if Pos('EXT', UpperCase(TN[i])) = 1 then
-        begin
-          adcUpdate.SQL.Text := 'drop table ' + TN[i];
-          adcUpdate.ExecQuery;
-        end;
-      DefTran.CommitRetaining;
+      DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
+      try
+        for I:=TN.Count-1 downto 0 do
+          if Pos('EXT', UpperCase(TN[i])) = 1 then
+          begin
+            adcUpdate.SQL.Text := 'drop table ' + TN[i];
+            adcUpdate.ExecQuery;
+          end;
+        DM.MainConnection1.DefaultUpdateTransaction.Commit;
+      except
+        DM.MainConnection1.DefaultUpdateTransaction.Rollback;
+        raise;
+      end;
     finally
       TN.Free;
     end;
@@ -911,33 +1035,42 @@ procedure TDM.ClearDatabase;
 begin
   Screen.Cursor:=crHourglass;
   with adcUpdate do try
-    MainForm.StatusText:='Очищается MinPrices';
-    SQL.Text:='EXECUTE PROCEDURE MinPricesDeleteALL';
-    ExecQuery;
-    SQL.Text:='EXECUTE PROCEDURE OrdersSetCoreNull'; ExecQuery;
-    SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteNotClosedAll'; ExecQuery;
-    MainForm.StatusText:='Очищается Core';
-    SQL.Text:='EXECUTE PROCEDURE CoreDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается CatalogCurrency';
-    SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyDelete'; ExecQuery;
-    MainForm.StatusText:='Очищается Catalog';
-    SQL.Text:='EXECUTE PROCEDURE CatalogDelete'; ExecQuery;
-    MainForm.StatusText:='Очищается PricesRegionalData';
-    SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается PricesData';
-    SQL.Text:='EXECUTE PROCEDURE PricesDataDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается RegionalData';
-    SQL.Text:='EXECUTE PROCEDURE RegionalDataDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается ClientsDataN';
-    SQL.Text:='EXECUTE PROCEDURE ClientsDataNDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается Synonym';
-    SQL.Text:='EXECUTE PROCEDURE SynonymDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается SynonymFirmCr';
-    SQL.Text:='EXECUTE PROCEDURE SynonymFirmCrDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается Defectives';
-    SQL.Text:='EXECUTE PROCEDURE DefectivesDeleteAll'; ExecQuery;
-    MainForm.StatusText:='Очищается Registry';
-    SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
+    UpTran.StartTransaction;
+    try
+
+      MainForm.StatusText:='Очищается MinPrices';
+      SQL.Text:='EXECUTE PROCEDURE MinPricesDeleteALL';
+      ExecQuery;
+      SQL.Text:='EXECUTE PROCEDURE OrdersSetCoreNull'; ExecQuery;
+      SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteNotClosedAll'; ExecQuery;
+      MainForm.StatusText:='Очищается Core';
+      SQL.Text:='EXECUTE PROCEDURE CoreDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается CatalogCurrency';
+      SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyDelete'; ExecQuery;
+      MainForm.StatusText:='Очищается Catalog';
+      SQL.Text:='EXECUTE PROCEDURE CatalogDelete'; ExecQuery;
+      MainForm.StatusText:='Очищается PricesRegionalData';
+      SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается PricesData';
+      SQL.Text:='EXECUTE PROCEDURE PricesDataDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается RegionalData';
+      SQL.Text:='EXECUTE PROCEDURE RegionalDataDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается ClientsDataN';
+      SQL.Text:='EXECUTE PROCEDURE ClientsDataNDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается Synonym';
+      SQL.Text:='EXECUTE PROCEDURE SynonymDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается SynonymFirmCr';
+      SQL.Text:='EXECUTE PROCEDURE SynonymFirmCrDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается Defectives';
+      SQL.Text:='EXECUTE PROCEDURE DefectivesDeleteAll'; ExecQuery;
+      MainForm.StatusText:='Очищается Registry';
+      SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
+
+      UpTran.Commit;
+    except
+      UpTran.Rollback;
+      raise;
+    end;
   finally
     Screen.Cursor:=crDefault;
     MainForm.StatusText:='';
@@ -979,9 +1112,16 @@ procedure TDM.DeleteEmptyOrders;
 begin
   Screen.Cursor:=crHourglass;
   try
-    with adcUpdate do begin
-      SqL.Text:='EXECUTE PROCEDURE OrdersDeleteEmpty'; ExecQuery;
-      SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteEmpty'; ExecQuery;
+    UpTran.StartTransaction;
+    try
+      with adcUpdate do begin
+        SqL.Text:='EXECUTE PROCEDURE OrdersDeleteEmpty'; ExecQuery;
+        SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteEmpty'; ExecQuery;
+      end;
+      UpTran.Commit;
+    except
+      UpTran.Rollback;
+      raise;
     end;
   finally
     Screen.Cursor:=crDefault;
@@ -1295,6 +1435,7 @@ begin
   adtProvider.CloseOpen(True);
   adtReclame.CloseOpen(True);
   adtClients.CloseOpen(True);
+  ReadPasswords;
   try
     adtFlags.CloseOpen(True);
   except
@@ -1396,14 +1537,274 @@ begin
   FNeedCommitExchange := True;
 end;
 
-function TDM.DecodeCryptS(S: String): String;
+function TDM.D_C_S(Pass, S: String): String;
 begin
-  Result := '';//DeCryptString(rc_Decode(S), '12345678');
+  Result := DeCryptString(S, Pass);
 end;
 
 function TDM.EncodeCryptS(S: String): String;
 begin
   Result := '';//EnCryptString(S, '12345678');
+end;
+
+procedure TDM.ReadPasswords;
+var
+  PassPass : String;
+begin
+  PassPass := in_Encode('1234567890123456');
+try
+  SynonymPassword := in_Encode( D_C_S(PassPass, in_Decode(adtParams.FieldByName('SYNPASS').AsString) ) );
+  CodesPassword := in_Encode( D_C_S(PassPass, in_Decode(adtParams.FieldByName('CODESPASS').AsString) ) );
+  BasecostPassword := in_Encode( D_C_S(PassPass, in_Decode(adtParams.FieldByName('BPASS').AsString) ) );
+except
+  SynonymPassword := '';
+  CodesPassword := '';
+  BasecostPassword := '';
+end;
+
+{
+  SynonymPassword := in_Encode('Test1234Test1234');
+  CodesPassword := in_Encode('Test4321Test4321');
+  BasecostPassword := in_Encode('Test3412Test3412');
+}
+end;
+
+function TDM.D_S(CodeS: String): String;
+begin
+  if (Length(CodeS) > 1) and (CodeS[1] = ' ') then
+    Result := D_C_S(SynonymPassword, in_Decode( Copy(CodeS, 2, Length(CodeS)) ))
+  else
+    Result := CodeS;
+end;
+
+function TDM.D_C(CodeS: String): String;
+begin
+  CodeS := Copy(CodeS, 1, Length(CodeS)-16);
+  if Length(CodeS) >= 16 then
+    Result := D_C_S(CodesPassword, rc_Decode(CodeS))
+  else
+    Result := CodeS;
+end;
+
+function TDM.D_B(CodeS1, CodeS2: String): String;
+var
+  tmp : String;
+begin
+  tmp := in_Decode( RightStr(CodeS1, 16) + RightStr(CodeS2, 16) );
+  if Length(tmp) > 1 then begin
+    Result := D_C_S(BaseCostPassword, tmp);
+    Result := Trim(Result);
+    Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
+  end
+  else
+    Result := '';
+end;
+
+procedure TDM.LoadDataSetFromFIBQuery(Dest: TRxMemoryData; Q: TpFIBQuery);
+var
+  FD : TObjectList;
+begin
+  try
+    Dest.DisableControls;
+    try
+      Dest.Close;
+      Dest.Filtered := False;
+      if not Dest.Active then Dest.Open;
+      Dest.CheckBrowseMode;
+      try
+        Q.ExecQuery;
+
+        FD := GetSyncFD(Dest, Q);
+        try
+          while not Q.EOF do begin
+            Dest.Append;
+            CopyRecord(Dest, Q, FD);
+            Dest.Post;
+            Q.Next;
+          end;
+        finally
+          FD.Free;
+        end;
+
+      finally
+        Dest.First;
+      end;
+    finally
+      Dest.EnableControls;
+    end;
+  finally
+    Q.Close;
+  end;
+end;
+
+function TDM.GetSyncFD(Dest: TRxMemoryData; Q: TpFIBQuery): TObjectList;
+var
+  I : Integer;
+  DestF : TField;
+  CT : TCryptField;
+  FD : TCryptFieldDef;
+  SourIndex : Integer;
+  SourceFieldName : String;
+  Crt1, Crt2 : Integer;
+begin
+  Result := TObjectList.Create(True);
+  try
+    for I := 0 to Dest.FieldList.Count-1 do begin
+      DestF := Dest.FieldList.Fields[i];
+      if Pos(CRYPT, DestF.FieldName) = 1 then begin
+        CT := TCryptField(DestF.Tag);
+        SourceFieldName := Copy(DestF.FieldName, Length(CRYPT)+1, Length(DestF.FieldName));
+        FD := TCryptFieldDef.Create;
+        FD.Crypt := True;
+        FD.CryptType := CT;
+        FD.DestIndex := I;
+        FD.Exist := True;
+        case CT of
+          cfBaseCost, cfPrice :
+            begin
+              if CT = cfBaseCost then
+                SourceFieldName := LeftStr(SourceFieldName, Length(SourceFieldName) - Length(BasecostSFX[0]))
+              else
+                SourceFieldName := LeftStr(SourceFieldName, Length(SourceFieldName) - Length(BasecostSFX[1]));
+              Crt1 := Dest.FieldList.IndexOf(SourceFieldName + 'CODE');
+              if Crt1 > -1 then begin
+                FD.CryptIndex1 := Crt1;
+                Crt2 := Dest.FieldList.IndexOf(SourceFieldName + 'CODECR');
+                if Crt2 > -1 then
+                  FD.CryptIndex2 := Crt2
+                else
+                  FD.Exist := False;
+              end
+              else
+                FD.Exist := False;
+            end;
+          cfSynonym, cfCode :
+            begin
+              SourIndex := Dest.FieldList.IndexOf(SourceFieldName);
+              if SourIndex > -1 then
+                FD.CryptIndex1 := SourIndex
+              else
+                FD.Exist := False;
+            end;
+        end;
+        Result.Add(FD);
+      end
+      else begin
+        if Q.FieldExist(DestF.FieldName, SourIndex) then begin
+          FD := TCryptFieldDef.Create;
+          FD.Exist := True;
+          FD.SourceIndex := SourIndex;
+          FD.DestIndex := i;
+          Result.Add(FD);
+        end;
+      end;
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
+{ TCryptFieldDef }
+
+constructor TCryptFieldDef.Create;
+begin
+  Exist := False;
+  Crypt := False;
+  DestIndex := -1;
+  SourceIndex := -1;
+  CryptIndex1 := -1;
+  CryptIndex2 := -1;
+end;
+
+procedure TDM.CopyRecord(Dest: TRxMemoryData; Q: TpFIBQuery;
+  FDs: TObjectList);
+var
+  I : Integer;
+  FD : TCryptFieldDef;
+  S : String;
+begin
+  for I := 0 to FDs.Count-1 do begin
+    FD := TCryptFieldDef(FDs[i]);
+    if FD.Exist then
+      if FD.Crypt then begin
+        case FD.CryptType of
+          cfBaseCost, cfPrice :
+            begin
+//              S := D_B(Dest.FieldList[FD.CryptIndex1].AsString, Dest.FieldList[FD.CryptIndex2].AsString);
+//              S := StringReplace(S, '.', FFS.DecimalSeparator, [rfReplaceAll]);
+//              Dest.FieldList[FD.DestIndex].AsString := S;
+            end;
+          cfSynonym :
+            begin
+//              S := D_S(Dest.FieldList[FD.CryptIndex1].AsString);
+//              Dest.FieldList[FD.DestIndex].AsString := S;
+            end;
+          cfCode :
+            begin
+//              S := D_C(Dest.FieldList[FD.CryptIndex1].AsString);
+//              Dest.FieldList[FD.DestIndex].AsString := S;
+            end;
+        end;
+      end
+      else
+        Dest.FieldList[FD.DestIndex].Value := Q.Fields[FD.SourceIndex].Value;
+  end;
+end;
+
+procedure TDM.UpdateDataSetFromFIBQuery(Dest: TRxMemoryData;
+  Q: TpFIBQuery);
+var
+  FD : TObjectList;
+begin
+  try
+    Q.ExecQuery;
+    FD := GetSyncFD(Dest, Q);
+    try
+      if not Q.EOF then begin
+        CopyRecord(Dest, Q, FD);
+      end;
+    finally
+      FD.Free;
+    end;
+  finally
+    Q.Close;
+  end;
+end;
+
+function TDM.C_C_S(Pass, S: String): String;
+begin
+  Result := EnCryptString(S, Pass);
+end;
+
+procedure TDM.SavePass(ASyn, ACodes, AB: String);
+var
+  PassPass : String;
+begin
+  PassPass := in_Encode('1234567890123456');
+  SynonymPassword := ASyn;
+  CodesPassword := ACodes;
+  BaseCostPassword := AB;
+  adtParams.Edit;
+  adtParams.FieldByName('SYNPASS').AsString := in_Encode( C_C_S(PassPass, in_Decode(SynonymPassword)) );
+  adtParams.FieldByName('CODESPASS').AsString := in_Encode( C_C_S(PassPass, in_Decode(CodesPassword)) );
+  adtParams.FieldByName('BPASS').AsString := in_Encode( C_C_S(PassPass, in_Decode(BaseCostPassword)) );
+  adtParams.Post;
+end;
+
+procedure TDM.adsSelect3CalcFields(DataSet: TDataSet);
+var
+  S : String;
+begin
+  try
+    adsSelect3CryptSYNONYMNAME.AsString := DM.D_S(adsSelect3SYNONYMNAME.AsString);
+    adsSelect3CryptSYNONYMFIRM.AsString := DM.D_S(adsSelect3SYNONYMFIRM.AsString);
+    adsSelect3CryptCODE.AsString := DM.D_C(adsSelect3CODE.AsString);
+    adsSelect3CryptCODECR.AsString := DM.D_C(adsSelect3CODE.AsString);
+    S := DM.D_B(adsSelect3CODE.AsString, adsSelect3CODECR.AsString);
+    adsSelect3CryptPRICE.AsString := S;
+  except
+  end;
 end;
 
 end.

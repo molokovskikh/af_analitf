@@ -447,6 +447,7 @@ inherited OrdersHForm: TOrdersHForm
     BeforePost = adsOrdersH2BeforePost
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 68
     Top = 119
@@ -480,12 +481,11 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormSENDDATE: TFIBDateTimeField
       FieldName = 'SENDDATE'
     end
-    object adsOrdersHFormCLOSED: TFIBBooleanField
+    object adsOrdersHFormCLOSED: TFIBIntegerField
       FieldName = 'CLOSED'
     end
-    object adsOrdersHFormSEND: TFIBBooleanField
+    object adsOrdersHFormSEND: TFIBIntegerField
       FieldName = 'SEND'
-      OnChange = adsOrdersH2SendChange
     end
     object adsOrdersHFormPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
@@ -500,8 +500,10 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
-    object adsOrdersHFormSUMORDER: TFIBIntegerField
+    object adsOrdersHFormSUMORDER: TFIBBCDField
       FieldName = 'SUMORDER'
+      Size = 2
+      RoundByScale = True
     end
     object adsOrdersHFormSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
@@ -573,12 +575,10 @@ inherited OrdersHForm: TOrdersHForm
       '    ORDERSHPRICECODE,'
       '    ORDERSHREGIONCODE,'
       '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME,'
-      '    PRICERET'
+      '    ORDERSHREGIONNAME'
       'FROM'
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
-      '    :RETAILFORCOUNT,'
       '    :ACLIENTID,'
       '    :APRICENAME) '
       'where'
@@ -628,16 +628,15 @@ inherited OrdersHForm: TOrdersHForm
       '    ORDERSHPRICECODE,'
       '    ORDERSHREGIONCODE,'
       '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME,'
-      '    PRICERET'
+      '    ORDERSHREGIONNAME'
       'FROM'
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
-      '    :RETAILFORCOUNT,'
       '    :ACLIENTID,'
       '    :APRICENAME) ')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 188
     Top = 119

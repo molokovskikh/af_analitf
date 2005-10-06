@@ -53,7 +53,11 @@ uses
   U_FolderMacros in 'U_FolderMacros.pas',
   LU_Tracer in 'common\LU_Tracer.pas',
   LU_MutexSystem in 'common\LU_MutexSystem.pas',
-  U_TINFIBInputDelimitedStream in 'U_TINFIBInputDelimitedStream.pas';
+  U_TINFIBInputDelimitedStream in 'U_TINFIBInputDelimitedStream.pas',
+  inforoomapi in 'RC_RND\inforoomapi.pas',
+  hlpcodecs in 'RC_RND\hlpcodecs.pas',
+  incrt in 'RC_RND\incrt.pas',
+  inforoomalg in 'RC_RND\inforoomalg.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

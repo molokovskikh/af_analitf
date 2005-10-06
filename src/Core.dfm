@@ -334,7 +334,7 @@ object CoreForm: TCoreForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'SYNONYMNAME'
+          FieldName = 'CryptSYNONYMNAME'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
@@ -342,7 +342,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'SYNONYMFIRM'
+          FieldName = 'CryptSYNONYMFIRM'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
@@ -410,7 +410,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'BASECOST'
+          FieldName = 'CryptBASECOST'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -633,6 +633,7 @@ object CoreForm: TCoreForm
     OnCalcFields = adsCore2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
     AutoCommit = True
     RefreshTransactionKind = tkUpdateTransaction
     Left = 64
@@ -681,10 +682,12 @@ object CoreForm: TCoreForm
     end
     object adsCoreCODE: TFIBStringField
       FieldName = 'CODE'
+      Size = 84
       EmptyStrToNull = False
     end
     object adsCoreCODECR: TFIBStringField
       FieldName = 'CODECR'
+      Size = 84
       EmptyStrToNull = False
     end
     object adsCorePERIOD: TFIBStringField
@@ -702,17 +705,6 @@ object CoreForm: TCoreForm
     object adsCoreNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
-      EmptyStrToNull = False
-    end
-    object adsCoreBASECOST: TFIBBCDField
-      FieldName = 'BASECOST'
-      DisplayFormat = '0.00;;'#39#39
-      Size = 4
-      RoundByScale = True
-    end
-    object adsCoreQUANTITY: TFIBStringField
-      FieldName = 'QUANTITY'
-      Size = 15
       EmptyStrToNull = False
     end
     object adsCoreAWAIT: TFIBBooleanField
@@ -797,10 +789,12 @@ object CoreForm: TCoreForm
     end
     object adsCoreORDERSCODE: TFIBStringField
       FieldName = 'ORDERSCODE'
+      Size = 84
       EmptyStrToNull = False
     end
     object adsCoreORDERSCODECR: TFIBStringField
       FieldName = 'ORDERSCODECR'
+      Size = 84
       EmptyStrToNull = False
     end
     object adsCoreORDERCOUNT: TFIBIntegerField
@@ -816,11 +810,6 @@ object CoreForm: TCoreForm
       FieldName = 'ORDERSSYNONYMFIRM'
       Size = 250
       EmptyStrToNull = False
-    end
-    object adsCoreORDERSPRICE: TFIBBCDField
-      FieldName = 'ORDERSPRICE'
-      Size = 4
-      RoundByScale = True
     end
     object adsCoreORDERSJUNK: TFIBBooleanField
       FieldName = 'ORDERSJUNK'
@@ -878,6 +867,38 @@ object CoreForm: TCoreForm
       DisplayFormat = '0.0;;'#39#39
       Calculated = True
     end
+    object adsCoreCryptSYNONYMNAME: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMNAME'
+      Size = 250
+      Calculated = True
+    end
+    object adsCoreCryptSYNONYMFIRM: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMFIRM'
+      Size = 250
+      Calculated = True
+    end
+    object adsCoreCryptBASECOST: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptBASECOST'
+      Calculated = True
+    end
+    object adsCoreBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 48
+      EmptyStrToNull = False
+    end
+    object adsCoreQUANTITY: TFIBStringField
+      FieldName = 'QUANTITY'
+      Size = 15
+      EmptyStrToNull = False
+    end
+    object adsCoreORDERSPRICE: TFIBStringField
+      FieldName = 'ORDERSPRICE'
+      Size = 48
+      EmptyStrToNull = False
+    end
   end
   object adsRegions: TpFIBDataSet
     SelectSQL.Strings = (
@@ -916,6 +937,8 @@ object CoreForm: TCoreForm
     SelectSQL.Strings = (
       'SELECT'
       '    FULLCODE,'
+      '    CODE,'
+      '    CODECR,'
       '    SYNONYMNAME,'
       '    SYNONYMFIRM,'
       '    ORDERCOUNT,'
@@ -926,7 +949,7 @@ object CoreForm: TCoreForm
       '    AWAIT,'
       '    JUNK'
       'FROM'
-      '    ORDERSSHOWBYFORM(:FULLCODE,'
+      '    ORDERSSHOWBYFORM(:AFULLCODE,'
       '    :ACLIENTID) ')
     DataSource = dsCore
     Transaction = DM.DefTran
@@ -953,11 +976,6 @@ object CoreForm: TCoreForm
     object adsOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsOrdersPRICE: TFIBBCDField
-      FieldName = 'PRICE'
-      Size = 4
-      RoundByScale = True
-    end
     object adsOrdersORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
     end
@@ -977,6 +995,11 @@ object CoreForm: TCoreForm
     object adsOrdersJUNK: TFIBIntegerField
       FieldName = 'JUNK'
     end
+    object adsOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 48
+      EmptyStrToNull = False
+    end
   end
   object adsOrdersShowFormSummary: TpFIBDataSet
     SelectSQL.Strings = (
@@ -989,8 +1012,10 @@ object CoreForm: TCoreForm
     Database = DM.MainConnection1
     Left = 344
     Top = 396
-    object adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField
+    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
       FieldName = 'PRICEAVG'
+      Size = 2
+      RoundByScale = True
     end
   end
   object adsFirmsInfo: TpFIBDataSet
