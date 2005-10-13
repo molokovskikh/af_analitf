@@ -136,8 +136,8 @@ begin
     end;
 }
 
-   	ReclameURL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
+   	ReclameURL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
+		':80/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
     FStatusStr := 'Запрос информационного блока...';
     Synchronize(UpdateProgress);
     FSOAP := TSOAP.Create(ReclameURL, DM.adtParams.FieldByName( 'HTTPName').AsString,
