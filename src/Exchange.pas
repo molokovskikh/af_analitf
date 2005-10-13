@@ -7,7 +7,8 @@ uses
   StdCtrls, ExtCtrls, ComCtrls, ARas, StrUtils, ComObj,
   VCLUnZip, Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
-  ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock;
+  ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
+  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL;
 
 type
   TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate);
@@ -34,6 +35,8 @@ type
     gbReclame: TGroupBox;
     ReclameBar: TProgressBar;
     lReclameStatus: TLabel;
+    sslMain: TIdSSLIOHandlerSocket;
+    sslReclame: TIdSSLIOHandlerSocket;
     procedure RasStateChange(Sender: TObject; State: Integer;
       StateStr: String);
     procedure TimerTimer(Sender: TObject);

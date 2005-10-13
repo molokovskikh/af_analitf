@@ -248,6 +248,7 @@ object ExchangeForm: TExchangeForm
   end
   object HTTP: TIdHTTP
     OnStatus = HTTPStatus
+    IOHandler = sslMain
     MaxLineAction = maException
     RecvBufferSize = 1024
     SendBufferSize = 1024
@@ -272,6 +273,7 @@ object ExchangeForm: TExchangeForm
     Left = 360
   end
   object HTTPReclame: TIdHTTP
+    IOHandler = sslReclame
     MaxLineAction = maException
     RecvBufferSize = 1024
     SendBufferSize = 1024
@@ -291,5 +293,21 @@ object ExchangeForm: TExchangeForm
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
     HTTPOptions = [hoForceEncodeParams]
     Left = 264
+  end
+  object sslMain: TIdSSLIOHandlerSocket
+    SSLOptions.Method = sslvSSLv3
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 336
+    Top = 40
+  end
+  object sslReclame: TIdSSLIOHandlerSocket
+    SSLOptions.Method = sslvSSLv3
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 248
+    Top = 40
   end
 end
