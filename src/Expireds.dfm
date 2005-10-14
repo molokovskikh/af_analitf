@@ -261,8 +261,7 @@ inherited ExpiredsForm: TExpiredsForm
       '*'
       'FROM'
       '    EXPIREDSSHOW(:TIMEZONEBIAS,'
-      '    :ACLIENTID,'
-      '    :RETAILFORCOUNT)'
+      '    :ACLIENTID)'
       'where'
       '  COREID = :COREID ')
     SelectSQL.Strings = (

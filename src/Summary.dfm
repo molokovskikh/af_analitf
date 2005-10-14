@@ -308,13 +308,11 @@ inherited SummaryForm: TSummaryForm
       '    BASECOST,'
       '    PRICENAME,'
       '    REGIONNAME,'
-      '    PRICERET,'
       '    ORDERCOUNT,'
       '    ORDERSCOREID,'
       '    ORDERSORDERID'
       'FROM'
-      '    SUMMARYSHOW(:ACLIENTID,'
-      '    :RETAILFORCOUNT) '
+      '    SUMMARYSHOW(:ACLIENTID) '
       'where'
       '  ORDERSCOREID = :ORDERSCOREID')
     SelectSQL.Strings = (
