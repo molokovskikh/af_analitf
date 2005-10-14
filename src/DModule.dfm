@@ -8,7 +8,7 @@ object DM: TDM
   Width = 859
   object frReport: TfrReport
     InitialZoom = pzPageWidth
-    PreviewButtons = [pbZoom, pbSave, pbPrint, pbFind, pbExit]
+    PreviewButtons = [pbZoom, pbPrint, pbFind, pbExit]
     RebuildPrinter = False
     Left = 16
     Top = 488
