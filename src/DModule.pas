@@ -386,7 +386,10 @@ var
   Total,
   TotalFree,
   DBFileSize : Int64;
-
+  DBErrorMess : String;
+  N : Integer;
+  OldDBFileName,
+  ErrFileName : String;
 begin
 {
   DM.MainConnection.Open;
@@ -429,10 +432,66 @@ begin
     on E : EFIBError do begin
       if E.IBErrorCode = isc_network_error then
         raise Exception.Create('Не возможен запуск программы с сетевого диска. Пожалуйста, используйте локальный диск.')
-      else
-        raise Exception.CreateFmt('Не удается открыть базу данных программы. ' +
-          'Пожалуйста, выполните проверку жесткого диска на наличие ошибок.'#13#10#13#10'Сообщение об ошибке:'#13#10'%s',
-          [E.Message]);
+      else begin
+        {
+        Здесь мы должны сделать:
+        1. Закрыть соединение, если открыто
+        2. Запомнить код ошибки при открытии
+        3. Переименовать в ошибочную базу данных
+        4. Скопировать из эталонной базы данных
+        5. Открыть эталонную базу данных
+        }
+        DBErrorMess := Format('Не удается открыть базу данных программы.'#13#10 +
+          'Код SQL       : %d'#13#10 +
+          'Сообщение SQL : %s'#13#10 +
+          'Код IB        : %d'#13#10 +
+          'Сообщение IB  : %s',
+          [E.SQLCode, E.SQLMessage, E.IBErrorCode, E.IBMessage]
+        );
+        //Может быть пользователь не захочет производить восстановление?
+        if MessageBox(DBErrorMess + #13#10#13#10 + 'Произвести восстановление из эталонной копии?', MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = IDYES then
+        begin
+          //Возможно проблема в каком-то запросе и сама база данных открылась, поэтому закрываем ее.
+          if DM.MainConnection1.Connected then
+            try
+              DM.MainConnection1.Close;
+            except
+            end;
+
+          //Формируем имя ошибочного файла
+          ErrFileName := ChangeFileExt(ParamStr(0), '.e');
+          N := 0;
+          while (FileExists(ErrFileName + IntToHex(N, 2)) and (N <= 255)) do Inc(N);
+
+          if N > 255 then
+            //Слишком много ошибочный файлов
+            raise Exception.Create('Удалите старые ошибочные файлы базы данных.')
+          else begin
+            ErrFileName := ErrFileName + IntToHex(N, 2);
+            OldDBFileName := ChangeFileExt(ParamStr(0), '.fdb');
+
+            if not Windows.MoveFile(PChar(OldDBFileName), PChar(ErrFileName)) then
+              raise Exception.CreateFmt('Не удалось переименовать в ошибочный файл %s : %s',
+                [ErrFileName, SysErrorMessage(GetLastError)]);
+
+            if not Windows.CopyFile(PChar(OldDBFileName + '.etl'), PChar(OldDBFileName), True) then
+              raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
+                [SysErrorMessage(GetLastError)]);
+                
+            try
+              MainConnection1.Open;
+            except
+              on E : Exception do
+                raise Exception.CreateFmt('Не удалось восстановить базу данных из эталонной копии. '#13#10 +
+                  'Сообщение об ошибке : %s'#13#10 + 'Пожалуйста, обратитесь в службу поддержки.',
+                  [E.Message]);
+            end;
+          end;
+        end
+        else
+          raise Exception.Create(DBErrorMess + #13#10#13#10 +
+            'Пожалуйста, выполните проверку жесткого диска на наличие ошибок.');
+      end;
     end;
   end;
   try
