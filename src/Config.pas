@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Grids, DBGrids, ComCtrls, DBCtrls, Mask, Menus, DBGridEh, ShellAPI,
-  Buttons, ExtCtrls;
+  Buttons, ExtCtrls, ToughDBGrid;
 
 type
   TConfigForm = class(TForm)
@@ -53,7 +53,6 @@ type
     tshOther: TTabSheet;
     DBCheckBox1: TDBCheckBox;
     DBCheckBox2: TDBCheckBox;
-    DBGridEh1: TDBGridEh;
     lblServerLink: TLabel;
     gbHTTP: TGroupBox;
     Label1: TLabel;
@@ -67,6 +66,9 @@ type
     Label9: TLabel;
     dbeRasSleep: TDBEdit;
     udRasSleep: TUpDown;
+    tdbgRetailMargins: TToughDBGrid;
+    btnAddRetail: TButton;
+    btnDelRetail: TButton;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
@@ -86,9 +88,14 @@ type
     procedure dbeRasSleepChange(Sender: TObject);
     procedure dbeHTTPNameChange(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure btnAddRetailClick(Sender: TObject);
+    procedure btnDelRetailClick(Sender: TObject);
+    procedure tdbgRetailMarginsGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
   private
     HTTPNameChanged : Boolean;
     OldHTTPName : String;
+    PrevLimit : Variant;
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
@@ -154,10 +161,13 @@ begin
           end;
         end;
         DM.adtParams.Post;
+        DM.adsRetailMargins.ApplyUpdates;
+        DM.LoadRetailMargins;
       //  DM.MainConnection.CommitTrans;
       end
       else begin
         DM.adtParams.Cancel;
+        DM.adsRetailMargins.CancelUpdates;
 //        DM.MainConnection.RollbackTrans;
       end;
     except
@@ -175,6 +185,7 @@ begin
   //если RollBack - надо освежить
   DM.adtParams.CloseOpen(True);
   DM.adtClients.CloseOpen(True);
+  DM.adsRetailMargins.CloseOpen(True);
   DM.ClientChanged;
 end;
 
@@ -347,10 +358,36 @@ end;
 
 procedure TConfigForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
+var
+  Res : Boolean;
+  PrevRight : Currency;
 begin
-  if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
-    if MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
-      CanClose := False;
+  if (ModalResult = mrOK) then begin
+    if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
+      if MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
+        CanClose := False;
+    end;
+    if CanClose then begin
+    DM.adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
+    if DM.adsRetailMargins.RecordCount > 0 then begin
+      DM.adsRetailMargins.First;
+      Res := DM.adsRetailMarginsLEFTLIMIT.AsCurrency <= DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
+      PrevRight := DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
+      DM.adsRetailMargins.Next;
+      while not DM.adsRetailMargins.Eof and Res do begin
+        Res := PrevRight <= DM.adsRetailMarginsLEFTLIMIT.AsCurrency;
+        if Res then
+          Res := DM.adsRetailMarginsLEFTLIMIT.AsCurrency <= DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
+        DM.adsRetailMargins.Next;
+      end;
+      if not Res then begin
+        CanClose := False;
+        PageControl.ActivePage := tshClients;
+        tdbgRetailMargins.SetFocus;
+        MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
+      end;
+    end;
+    end;
   end;
 end;
 
@@ -361,6 +398,53 @@ begin
   else
     Tracer.TR('Config', 'Sender = nil');
   Tracer.TR('Config', 'AppEx : ' + E.Message);
+end;
+
+procedure TConfigForm.btnAddRetailClick(Sender: TObject);
+begin
+  DM.adsRetailMargins.Append;
+end;
+
+procedure TConfigForm.btnDelRetailClick(Sender: TObject);
+begin
+  if not DM.adsRetailMargins.IsEmpty then
+    DM.adsRetailMargins.Delete;
+end;
+
+procedure TConfigForm.tdbgRetailMarginsGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+var
+  V1, V2 : Variant;
+begin
+  if (DM.adsRetailMarginsLEFTLIMIT.AsCurrency > DM.adsRetailMarginsRIGHTLIMIT.AsCurrency) and
+    ((Column.Field = DM.adsRetailMarginsLEFTLIMIT) or (Column.Field = DM.adsRetailMarginsRIGHTLIMIT))
+  then
+    Background := clRed;
+
+  if (DM.adsRetailMargins.RecNo = 1) then
+    PrevLimit := DM.adsRetailMarginsRIGHTLIMIT.AsVariant;
+
+  if (DM.adsRetailMargins.RecNo > 1)
+    and (PrevLimit > DM.adsRetailMarginsLEFTLIMIT.Value)
+    and (Column.Field = DM.adsRetailMarginsLEFTLIMIT)
+  then
+    Background := clOlive;
+
+{
+  else begin
+    DM.adsRetailMargins.RecordFieldValue()
+    if (DM.adsRetailMargins.RecNo < DM.adsRetailMargins.RecordCount) then begin
+      V1 := DM.adsRetailMargins.RecordFieldValue(DM.adsRetailMarginsLEFTLIMIT, DM.adsRetailMargins.RecNo+1);
+      V2 := DM.adsRetailMarginsRIGHTLIMIT.Value;
+      if (DM.adsRetailMargins.RecNo < DM.adsRetailMargins.RecordCount)
+        and (V1 < V2)
+        and (Column.Field = DM.adsRetailMarginsRIGHTLIMIT)
+      then
+        Background := clOlive;
+    end;
+  end;
+}  
 end;
 
 end.

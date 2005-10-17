@@ -191,6 +191,7 @@ type
     procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnection1AfterConnect(Sender: TObject);
     procedure adsSelect3CalcFields(DataSet: TDataSet);
+    procedure adsRetailMarginsLEFTLIMITChange(Sender: TField);
   private
     ClientInserted: Boolean;
     //Требуется ли подтверждение обмена
@@ -1909,6 +1910,11 @@ begin
     Inc(I);
     adsRetailMargins.Next;
   end;
+end;
+
+procedure TDM.adsRetailMarginsLEFTLIMITChange(Sender: TField);
+begin
+  adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
 end;
 
 end.

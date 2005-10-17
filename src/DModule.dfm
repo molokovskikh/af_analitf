@@ -1123,18 +1123,23 @@ object DM: TDM
     end
     object adsRetailMarginsLEFTLIMIT: TFIBBCDField
       FieldName = 'LEFTLIMIT'
+      Required = True
+      OnChange = adsRetailMarginsLEFTLIMITChange
       DisplayFormat = '0.00;;'
       Size = 4
       RoundByScale = True
     end
     object adsRetailMarginsRIGHTLIMIT: TFIBBCDField
       FieldName = 'RIGHTLIMIT'
+      Required = True
+      OnChange = adsRetailMarginsLEFTLIMITChange
       DisplayFormat = '0.00;;'
       Size = 4
       RoundByScale = True
     end
     object adsRetailMarginsRETAIL: TFIBIntegerField
       FieldName = 'RETAIL'
+      Required = True
       MaxValue = 100
     end
   end

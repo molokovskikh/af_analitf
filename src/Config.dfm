@@ -45,24 +45,29 @@ object ConfigForm: TConfigForm
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
-      Caption = #1050#1083#1080#1077#1085#1090#1099
+      Caption = #1056#1086#1079#1085'. '#1085#1072#1094'.'
       ImageIndex = 1
+      DesignSize = (
+        393
+        293)
       object btnClientsEdit: TButton
-        Left = 8
-        Top = 264
+        Left = 304
+        Top = 256
         Width = 75
         Height = 25
         Caption = #1048#1079#1084#1077#1085#1080#1090#1100
         TabOrder = 0
+        Visible = False
         OnClick = btnClientsEditClick
       end
-      object DBGridEh1: TDBGridEh
+      object tdbgRetailMargins: TToughDBGrid
         Left = 8
         Top = 8
-        Width = 377
-        Height = 249
+        Width = 289
+        Height = 273
+        Anchors = [akLeft, akTop, akRight, akBottom]
         AutoFitColWidths = True
-        DataSource = DM.dsClients
+        DataSource = DM.dsRetailMargins
         Flat = True
         FooterColor = clWindow
         FooterFont.Charset = DEFAULT_CHARSET
@@ -70,34 +75,58 @@ object ConfigForm: TConfigForm
         FooterFont.Height = -11
         FooterFont.Name = 'MS Sans Serif'
         FooterFont.Style = []
-        Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit]
-        ReadOnly = True
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+        OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
         TabOrder = 1
         TitleFont.Charset = DEFAULT_CHARSET
         TitleFont.Color = clWindowText
         TitleFont.Height = -11
         TitleFont.Name = 'MS Sans Serif'
         TitleFont.Style = []
+        OnGetCellParams = tdbgRetailMarginsGetCellParams
+        SearchPosition = spBottom
         Columns = <
           item
+            DisplayFormat = '0.00;;'
             EditButtons = <>
-            FieldName = 'CLIENTID'
+            FieldName = 'LEFTLIMIT'
             Footers = <>
-            Title.Caption = #1050#1086#1076
+            Title.Caption = #1051#1077#1074#1072#1103' '#1075#1088#1072#1085#1080#1094#1072
+            Width = 80
+          end
+          item
+            DisplayFormat = '0.00;;'
+            EditButtons = <>
+            FieldName = 'RIGHTLIMIT'
+            Footers = <>
+            Title.Caption = #1055#1088#1072#1074#1072#1103' '#1075#1088#1072#1085#1080#1094#1072
+            Width = 80
           end
           item
             EditButtons = <>
-            FieldName = 'NAME'
+            FieldName = 'RETAIL'
             Footers = <>
-            Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
-            Width = 226
-          end
-          item
-            EditButtons = <>
-            FieldName = 'FORCOUNT'
-            Footers = <>
-            Title.Caption = #1056#1086#1079#1085'. '#1085#1072#1094'.'
+            Title.Caption = #1053#1072#1094#1077#1085#1082#1072' (%)'
+            Width = 70
           end>
+      end
+      object btnAddRetail: TButton
+        Left = 304
+        Top = 8
+        Width = 75
+        Height = 25
+        Caption = #1044#1086#1073#1072#1074#1080#1090#1100
+        TabOrder = 2
+        OnClick = btnAddRetailClick
+      end
+      object btnDelRetail: TButton
+        Left = 304
+        Top = 48
+        Width = 75
+        Height = 25
+        Caption = #1059#1076#1072#1083#1080#1090#1100
+        TabOrder = 3
+        OnClick = btnDelRetailClick
       end
     end
     object tshConnect: TTabSheet
@@ -5236,7 +5265,7 @@ object ConfigForm: TConfigForm
           Height = 21
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
