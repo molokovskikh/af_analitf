@@ -54,6 +54,8 @@ type
     constructor Create;
   end;
 
+  TRetMass = array[1..3] of Variant;
+
   TDM = class(TDataModule)
     frReport: TfrReport;
     dsParams: TDataSource;
@@ -174,6 +176,12 @@ type
     adsCoreORDERSHREGIONCODE: TFIBBCDField;
     adsCoreORDERSHPRICENAME: TFIBStringField;
     adsCoreORDERSHREGIONNAME: TFIBStringField;
+    adsRetailMargins: TpFIBDataSet;
+    adsRetailMarginsID: TFIBBCDField;
+    adsRetailMarginsLEFTLIMIT: TFIBBCDField;
+    adsRetailMarginsRIGHTLIMIT: TFIBBCDField;
+    adsRetailMarginsRETAIL: TFIBIntegerField;
+    dsRetailMargins: TDataSource;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
@@ -190,6 +198,7 @@ type
     SynonymPassword,
     CodesPassword,
     BaseCostPassword : String;
+    FRetMargins : array of TRetMass;
     procedure CheckRestrictToRun;
     procedure ReadPasswords;
   public
@@ -253,6 +262,8 @@ type
     function GetSyncFD(Dest : TRxMemoryData; Q : TpFIBQuery) : TObjectList;
     procedure CopyRecord(Dest : TRxMemoryData; Q : TpFIBQuery; FDs :TObjectList);
     procedure SavePass(ASyn, ACodes, AB : String);
+    procedure LoadRetailMargins;
+    function GetPriceRet(BaseCost : Currency) : Currency;
   end;
 
 var
@@ -1494,6 +1505,8 @@ begin
   adtProvider.CloseOpen(True);
   adtReclame.CloseOpen(True);
   adtClients.CloseOpen(True);
+  adsRetailMargins.CloseOpen(True);
+  LoadRetailMargins;
   ReadPasswords;
   try
     adtFlags.CloseOpen(True);
@@ -1863,6 +1876,38 @@ begin
     S := DM.D_B(adsSelect3CODE.AsString, adsSelect3CODECR.AsString);
     adsSelect3CryptPRICE.AsString := S;
   except
+  end;
+end;
+
+function TDM.GetPriceRet(BaseCost: Currency): Currency;
+var
+  I, Ret : Integer;
+begin
+  Ret := 0;
+  I := 0;
+  while (I < Length(FRetMargins)) and (BaseCost >= FRetMargins[i][1]) do begin
+    if (FRetMargins[i][1] <= BaseCost) and (BaseCost <= FRetMargins[i][2]) then begin
+      Ret := FRetMargins[i][3];
+      Break;
+    end;
+    Inc(I);
+  end;
+  Result := (1 + Ret/100)*BaseCost;
+end;
+
+procedure TDM.LoadRetailMargins;
+var
+  I : Integer;
+begin
+  SetLength(FRetMargins, adsRetailMargins.RecordCount);
+  adsRetailMargins.First;
+  I := 0;
+  while not adsRetailMargins.Eof do begin
+    FRetMargins[i][1] := adsRetailMarginsLEFTLIMIT.AsCurrency;
+    FRetMargins[i][2] := adsRetailMarginsRIGHTLIMIT.AsCurrency;
+    FRetMargins[i][3] := adsRetailMarginsRETAIL.Value;
+    Inc(I);
+    adsRetailMargins.Next;
   end;
 end;
 

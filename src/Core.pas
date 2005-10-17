@@ -333,6 +333,7 @@ end;
 procedure TCoreForm.adsCore2CalcFields(DataSet: TDataSet);
 var
   S : String;
+  C : Currency;
 begin
 try
 {
@@ -360,9 +361,11 @@ try
    adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
    adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
    S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
-   adsCoreCryptBASECOST.AsString := S;
+   C := StrToCurr(S);
+   adsCoreCryptBASECOST.AsCurrency := C;
+   adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
   //вычисляем сумму заказа по товару SumOrder
-  adsCoreSumOrder.AsCurrency:=StrToFloat(S)*adsCoreORDERCOUNT.AsInteger;
+  adsCoreSumOrder.AsCurrency:=C*adsCoreORDERCOUNT.AsInteger;
  except
  end;
   //вычисляем разницу в цене PriceDelta

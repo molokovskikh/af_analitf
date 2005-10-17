@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 149
-  Top = 111
+  Left = 305
+  Top = 135
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -1062,5 +1062,85 @@ object DM: TDM
     TimeoutAction = TACommit
     Left = 144
     Top = 168
+  end
+  object adsRetailMargins: TpFIBDataSet
+    CachedUpdates = True
+    UpdateSQL.Strings = (
+      'UPDATE RETAILMARGINS'
+      'SET '
+      '    LEFTLIMIT = :LEFTLIMIT,'
+      '    RIGHTLIMIT = :RIGHTLIMIT,'
+      '    RETAIL = :RETAIL'
+      'WHERE'
+      '    ID = :OLD_ID'
+      '    ')
+    DeleteSQL.Strings = (
+      'DELETE FROM'
+      '    RETAILMARGINS'
+      'WHERE'
+      '        ID = :OLD_ID'
+      '    ')
+    InsertSQL.Strings = (
+      'INSERT INTO RETAILMARGINS('
+      '    LEFTLIMIT,'
+      '    RIGHTLIMIT,'
+      '    RETAIL'
+      ')'
+      'VALUES('
+      '    :LEFTLIMIT,'
+      '    :RIGHTLIMIT,'
+      '    :RETAIL'
+      ')')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '    ID,'
+      '    LEFTLIMIT,'
+      '    RIGHTLIMIT,'
+      '    RETAIL'
+      'FROM'
+      '    RETAILMARGINS'
+      ' WHERE '
+      '        RETAILMARGINS.ID = :OLD_ID'
+      '    ')
+    SelectSQL.Strings = (
+      'SELECT'
+      '    ID,'
+      '    LEFTLIMIT,'
+      '    RIGHTLIMIT,'
+      '    RETAIL'
+      'FROM'
+      '    RETAILMARGINS'
+      'order by LEFTLIMIT ')
+    Transaction = DefTran
+    Database = MainConnection1
+    UpdateTransaction = UpTran
+    Left = 128
+    Top = 400
+    object adsRetailMarginsID: TFIBBCDField
+      FieldName = 'ID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsRetailMarginsLEFTLIMIT: TFIBBCDField
+      FieldName = 'LEFTLIMIT'
+      DisplayFormat = '0.00;;'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsRetailMarginsRIGHTLIMIT: TFIBBCDField
+      FieldName = 'RIGHTLIMIT'
+      DisplayFormat = '0.00;;'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsRetailMarginsRETAIL: TFIBIntegerField
+      FieldName = 'RETAIL'
+      MaxValue = 100
+    end
+  end
+  object dsRetailMargins: TDataSource
+    DataSet = adsRetailMargins
+    Left = 192
+    Top = 400
   end
 end

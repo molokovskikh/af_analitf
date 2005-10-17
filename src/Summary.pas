@@ -145,14 +145,17 @@ end;
 procedure TSummaryForm.adsSummary2CalcFields(DataSet: TDataSet);
 var
   S : String;
+  C : Currency;
 begin
 	//вычисляем сумму по позиции
   try
     adsSummaryCryptSYNONYMNAME.AsString := DM.D_S(adsSummarySYNONYMNAME.AsString);
     adsSummaryCryptSYNONYMFIRM.AsString := DM.D_S(adsSummarySYNONYMFIRM.AsString);
     S := DM.D_B(adsSummaryCODE.AsString, adsSummaryCODECR.AsString);
-    adsSummaryCryptBASECOST.AsString := S;
-    adsSummarySumOrder.AsFloat := StrToFloat(S) * adsSummaryORDERCOUNT.AsInteger;
+    C := StrToCurr(S);
+    adsSummaryCryptBASECOST.AsCurrency := C;
+    adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(C);
+    adsSummarySumOrder.AsCurrency := C * adsSummaryORDERCOUNT.AsInteger;
   except
   end;
 end;

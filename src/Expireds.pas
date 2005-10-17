@@ -142,14 +142,17 @@ end;
 procedure TExpiredsForm.adsExpireds2CalcFields(DataSet: TDataSet);
 var
   S : String;
+  C : Currency;
 begin
   try
     adsExpiredsCryptSYNONYMNAME.AsString := DM.D_S(adsExpiredsSYNONYMNAME.AsString);
     adsExpiredsCryptSYNONYMFIRM.AsString := DM.D_S(adsExpiredsSYNONYMFIRM.AsString);
     S := DM.D_B(adsExpiredsCODE.AsString, adsExpiredsCODECR.AsString);
-    adsExpiredsCryptBASECOST.AsString := S;
+    C := StrToCurr(S);
+    adsExpiredsCryptBASECOST.AsCurrency := C;
+    adsExpiredsPriceRet.AsCurrency := DM.GetPriceRet(C);
 	  //вычисляем сумму заказа
-  	adsExpiredsSumOrder.AsCurrency:=StrToFloat(S) * adsExpiredsORDERCOUNT.AsInteger;
+  	adsExpiredsSumOrder.AsCurrency:=C * adsExpiredsORDERCOUNT.AsInteger;
   except
   end;
 end;

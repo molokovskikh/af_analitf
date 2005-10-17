@@ -3,7 +3,8 @@ unit Client;
 interface
 
 uses
-  Windows, Classes, Forms, Controls, DBCtrls, StdCtrls, Mask, ExtCtrls;
+  Windows, Classes, Forms, Controls, DBCtrls, StdCtrls, Mask, ExtCtrls,
+  Grids, DBGridEh, ToughDBGrid, Menus;
 
 type
   TClientForm = class(TForm)
@@ -12,8 +13,8 @@ type
     Label5: TLabel;
     dbeForcount: TDBEdit;
     Bevel1: TBevel;
-    procedure btnOkClick(Sender: TObject);
-    procedure btnCancelClick(Sender: TObject);
+    ToughDBGrid1: TToughDBGrid;
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
   public
     { Public declarations }
@@ -23,30 +24,50 @@ function ShowClient: Boolean;
 
 implementation
 
-uses DModule;
+uses DModule, AProc;
 
 {$R *.DFM}
 
 function ShowClient: Boolean;
 begin
   with TClientForm.Create(Application) do try
-    DM.adtClients.Edit;
     Result:=ShowModal=mrOk;
+    if Result then begin
+      DM.adsRetailMargins.ApplyUpdates;
+      DM.LoadRetailMargins;
+    end
+    else
+      DM.adsRetailMargins.CancelUpdates;
   finally
     Free;
   end;
 end;
 
-procedure TClientForm.btnOkClick(Sender: TObject);
+procedure TClientForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+var
+  Res : Boolean;
+  PrevRight : Currency;
 begin
-  DM.adtClients.Post;
-  ModalResult:=mrOk;
-end;
-
-procedure TClientForm.btnCancelClick(Sender: TObject);
-begin
-  DM.adtClients.Cancel;
-  ModalResult:=mrCancel;
+  if ModalResult = mrOK then begin
+    DM.adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
+    if DM.adsRetailMargins.RecordCount > 0 then begin
+      DM.adsRetailMargins.First;
+      Res := DM.adsRetailMarginsLEFTLIMIT.AsCurrency <= DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
+      PrevRight := DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
+      DM.adsRetailMargins.Next;
+      while not DM.adsRetailMargins.Eof and Res do begin
+        Res := PrevRight <= DM.adsRetailMarginsLEFTLIMIT.AsCurrency;
+        if Res then
+          Res := DM.adsRetailMarginsLEFTLIMIT.AsCurrency <= DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
+        DM.adsRetailMargins.Next;
+      end;
+      if not Res then begin
+        CanClose := False;
+        MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
+      end;
+    end;
+  end;
 end;
 
 end.
