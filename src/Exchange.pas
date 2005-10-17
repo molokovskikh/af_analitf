@@ -697,7 +697,7 @@ end;
 procedure TExchangeForm.HTTPWorkBegin(Sender: TObject;
   AWorkMode: TWorkMode; const AWorkCountMax: Integer);
 begin
-  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkBegin (' + HTTP.URL.URI + '): ' + IntToStr(AWorkCountMax));
+  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkBegin : ' + IntToStr(AWorkCountMax));
 end;
 
 procedure TExchangeForm.HTTPWorkEnd(Sender: TObject; AWorkMode: TWorkMode);
