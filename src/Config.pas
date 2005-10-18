@@ -69,6 +69,10 @@ type
     tdbgRetailMargins: TToughDBGrid;
     btnAddRetail: TButton;
     btnDelRetail: TButton;
+    lLR: TLabel;
+    lLRInfo: TLabel;
+    lPN: TLabel;
+    lPNInfo: TLabel;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);

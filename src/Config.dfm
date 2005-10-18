@@ -50,6 +50,38 @@ object ConfigForm: TConfigForm
       DesignSize = (
         393
         293)
+      object lLR: TLabel
+        Left = 304
+        Top = 88
+        Width = 30
+        Height = 13
+        AutoSize = False
+        Color = clRed
+        ParentColor = False
+      end
+      object lLRInfo: TLabel
+        Left = 304
+        Top = 108
+        Width = 82
+        Height = 26
+        Caption = #1051#1077#1074#1072#1103' '#1075#1088#1072#1085#1080#1094#1072#13#10#1084#1077#1085#1100#1096#1077' '#1087#1088#1072#1074#1086#1081'.'
+      end
+      object lPN: TLabel
+        Left = 304
+        Top = 160
+        Width = 30
+        Height = 13
+        AutoSize = False
+        Color = clOlive
+        ParentColor = False
+      end
+      object lPNInfo: TLabel
+        Left = 304
+        Top = 176
+        Width = 76
+        Height = 39
+        Caption = #1048#1085#1090#1077#1088#1074#1072#1083#1099' '#13#10#1087#1077#1088#1077#1089#1077#1082#1072#1102#1090#1089#1103' '#13#10#1089' '#1076#1088#1091#1075' '#1076#1088#1091#1075#1086#1084'.'
+      end
       object btnClientsEdit: TButton
         Left = 304
         Top = 256
