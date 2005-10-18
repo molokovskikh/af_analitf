@@ -131,6 +131,11 @@ object DM: TDM
   object DefTran: TpFIBTransaction
     DefaultDatabase = MainConnection1
     TimeoutAction = TARollback
+    TRParams.Strings = (
+      'read'
+      'read_committed'
+      'rec_version')
+    TPBMode = tpbDefault
     Left = 88
     Top = 168
   end
