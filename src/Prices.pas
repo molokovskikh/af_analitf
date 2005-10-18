@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  Registry, DBGridEhImpExp, FIBDataSet, pFIBDataSet, FIBQuery;
+  Registry, DBGridEhImpExp, FIBDataSet, pFIBDataSet, FIBQuery, Menus;
 
 const
 	PricesSql =	'SELECT * FROM PRICESSHOW(:ACLIENTID, :TIMEZONEBIAS) ORDER BY ';
@@ -70,14 +70,15 @@ type
     procedure dbgPricesGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgPricesDblClick(Sender: TObject);
-    procedure dbgPricesSortChange(Sender: TObject; SQLOrderBy: String);
     procedure adsPrices2AfterScroll(DataSet: TDataSet);
     procedure adsPrices2AfterOpen(DataSet: TDataSet);
     procedure adsPricesSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
+    procedure dbgPricesSortMarkingChanged(Sender: TObject);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
+    procedure ProcessPrice;
   public
     procedure ShowForm; override;
   end;
@@ -188,18 +189,22 @@ begin
 end;
 
 procedure TPricesForm.dbgPricesDblClick(Sender: TObject);
+var
+  C : TGridCoord;
+  P : TPoint;
 begin
 	inherited;
-	if adsPricesFirmCode.AsInteger=RegisterId then MainForm.actRegistry.Execute
-		else CoreFirmForm.ShowForm(adsPrices.FieldByName( 'PriceCode').AsInteger,
-			adsPrices.FieldByName( 'RegionCode').AsInteger, actOnlyLeaders.Checked);
+  p := dbgPrices.ScreenToClient(Mouse.CursorPos);
+  C := dbgPrices.MouseCoord(p.X, p.Y);
+  if C.Y > 0 then
+    ProcessPrice;
 end;
 
 procedure TPricesForm.dbgPricesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	inherited;
-	if Key = VK_RETURN then dbgPricesDblClick( Sender);
+	if Key = VK_RETURN then ProcessPrice;
 end;
 
 procedure TPricesForm.dbgPricesGetCellParams(Sender: TObject;
@@ -210,16 +215,6 @@ begin
 	if not adsPricesEnabled.AsBoolean and ( Column.Field = adsPricesPriceName) then
 		BackGround := clBtnFace;
 	if adsPricesPositions.AsInteger > 0 then AFont.Style := [fsBold];
-end;
-
-procedure TPricesForm.dbgPricesSortChange(Sender: TObject;
-  SQLOrderBy: String);
-begin
-	adsPrices.Close;
-	adsPrices.SelectSQL.Text := PricesSql + SQLOrderBy;
-	adsPrices.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsPrices.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	adsPrices.Open;
 end;
 
 procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
@@ -241,5 +236,29 @@ procedure TPricesForm.adsPricesSTORAGEGetText(Sender: TField;
 begin
   text := Iif(Sender.AsBoolean, '+', '');
 end;
+
+procedure TPricesForm.ProcessPrice;
+begin
+	if adsPricesFirmCode.AsInteger=RegisterId then
+    MainForm.actRegistry.Execute
+  else
+    if not adsPricesPRICECODE.IsNull then
+      CoreFirmForm.ShowForm(adsPrices.FieldByName( 'PriceCode').AsInteger,
+	     	adsPrices.FieldByName( 'RegionCode').AsInteger, actOnlyLeaders.Checked);
+end;
+
+procedure TPricesForm.dbgPricesSortMarkingChanged(Sender: TObject);
+begin
+{
+	adsPrices.Close;
+	adsPrices.SelectSQL.Text := PricesSql + SQLOrderBy;
+	adsPrices.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsPrices.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	adsPrices.Open;
+}
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+
 
 end.

@@ -171,7 +171,6 @@ type
       Shift: TShiftState);
     procedure dbgCoreCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
-    procedure dbgCoreSortChange(Sender: TObject; SQLOrderBy: String);
     procedure adsCore2AfterOpen(DataSet: TDataSet);
     procedure adsCore2BeforeClose(DataSet: TDataSet);
     procedure TimerTimer(Sender: TObject);
@@ -181,6 +180,7 @@ type
     procedure mdCoreBeforeEdit(DataSet: TDataSet);
     procedure mdCoreAfterPost(DataSet: TDataSet);
     procedure mdCoreBeforePost(DataSet: TDataSet);
+    procedure dbgCoreSortMarkingChanged(Sender: TObject);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
     OrderSum: Double;
@@ -574,27 +574,7 @@ begin
     adsCore.Post;
     if adsOrdersH.IsEmpty then RefreshOrdersH;
   end;
-}  
-end;
-
-procedure TCoreFirmForm.dbgCoreSortChange(Sender: TObject;
-  SQLOrderBy: String);
-begin
-{
-	adsCore.DisableControls;
-	adsCore.Close;
-	adsCore.SelectSQL.Text := CoreSql + SQLOrderBy;
-	adsCore.ParamByName( 'APriceCode').Value := PriceCode;
-	adsCore.ParamByName( 'ARegionCode').Value := RegionCode;
-	adsCore.ParamByName( 'AClientId').Value := ClientId;
-	Screen.Cursor := crHourglass;
-	try
-		adsCore.Open;
-	finally
-		adsCore.EnableControls;
-		Screen.Cursor := crDefault;
-	end;
-}  
+}
 end;
 
 procedure TCoreFirmForm.adsCore2AfterOpen(DataSet: TDataSet);
@@ -766,11 +746,31 @@ begin
 				Timer.Enabled := True;
 			end;
 		end;
-}    
+}
   except
 		mdCore.Cancel;
 		raise;
 	end;
+end;
+
+procedure TCoreFirmForm.dbgCoreSortMarkingChanged(Sender: TObject);
+begin
+{
+	adsCore.DisableControls;
+	adsCore.Close;
+	adsCore.SelectSQL.Text := CoreSql + SQLOrderBy;
+	adsCore.ParamByName( 'APriceCode').Value := PriceCode;
+	adsCore.ParamByName( 'ARegionCode').Value := RegionCode;
+	adsCore.ParamByName( 'AClientId').Value := ClientId;
+	Screen.Cursor := crHourglass;
+	try
+		adsCore.Open;
+	finally
+		adsCore.EnableControls;
+		Screen.Cursor := crDefault;
+	end;
+}
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

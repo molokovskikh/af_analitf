@@ -7,7 +7,7 @@ uses
   Dialogs, Child, DModule, DB, Grids, DBGrids, RXDBCtrl,
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
   FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, Registry, ExtCtrls,
-  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery;
+  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery, DBProc;
 
 const
 	DefectSql	= 'SELECT * FROM Defectives WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
@@ -51,8 +51,8 @@ type
     procedure dbgDefectivesGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure FormDestroy(Sender: TObject);
-    procedure dbgDefectivesSortChange(Sender: TObject; SQLOrderBy: String);
     procedure dtpDateCloseUp(Sender: TObject);
+    procedure dbgDefectivesSortMarkingChanged(Sender: TObject);
   private
     FOrderField: string;
     BaseQuery, PrintQuery: string;
@@ -209,9 +209,15 @@ begin
 	if adsDefectives.FieldByName( 'CheckPrint').AsBoolean then Background := clSilver;
 end;
 
-procedure TDefectivesForm.dbgDefectivesSortChange(Sender: TObject;
-  SQLOrderBy: String);
+procedure TDefectivesForm.dtpDateCloseUp(Sender: TObject);
 begin
+	SetDateInterval;
+	dbgDefectives.SetFocus;
+end;
+
+procedure TDefectivesForm.dbgDefectivesSortMarkingChanged(Sender: TObject);
+begin
+{
 	adsDefectives.DisableControls;
 	Screen.Cursor := crHourglass;
 	try
@@ -227,12 +233,8 @@ begin
 		adsDefectives.EnableControls;
 		Screen.Cursor := crDefault;
 	end;
-end;
-
-procedure TDefectivesForm.dtpDateCloseUp(Sender: TObject);
-begin
-	SetDateInterval;
-	dbgDefectives.SetFocus;
+}
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

@@ -82,7 +82,6 @@ type
     procedure dbgOrdersHKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgOrdersHExit(Sender: TObject);
-    procedure dbgOrdersHSortChange(Sender: TObject; SQLOrderBy: String);
     procedure dbgOrdersHDblClick(Sender: TObject);
     procedure adsOrdersH2AfterPost(DataSet: TDataSet);
     procedure dbgOrdersHKeyPress(Sender: TObject; var Key: Char);
@@ -93,6 +92,7 @@ type
     procedure adsOrdersH2SendChange(Sender: TField);
     procedure tmOrderDateChangeTimer(Sender: TObject);
     procedure adsOrdersH2BeforePost(DataSet: TDataSet);
+    procedure dbgOrdersHSortMarkingChanged(Sender: TObject);
   private
     procedure SetParameters;
     procedure MoveToPrice;
@@ -492,14 +492,6 @@ begin
 	SoftPost( adsOrdersHForm);
 end;
 
-procedure TOrdersHForm.dbgOrdersHSortChange(Sender: TObject;
-  SQLOrderBy: String);
-begin
-	adsOrdersHForm.Close;
-	adsOrdersHForm.SelectSQL.Text := OrdersHSql + SqlOrderBy;
-	SetParameters;
-end;
-
 procedure TOrdersHForm.dbgOrdersHDblClick(Sender: TObject);
 begin
 	SoftPost( adsOrdersHForm);
@@ -615,6 +607,16 @@ procedure TOrdersHForm.adsOrdersH2BeforePost(DataSet: TDataSet);
 begin
   //Здесь не нужный комментарий
   if adsOrdersHFormORDERID.IsNull then Abort; 
+end;
+
+procedure TOrdersHForm.dbgOrdersHSortMarkingChanged(Sender: TObject);
+begin
+{
+	adsOrdersHForm.Close;
+	adsOrdersHForm.SelectSQL.Text := OrdersHSql + SqlOrderBy;
+	SetParameters;
+}
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

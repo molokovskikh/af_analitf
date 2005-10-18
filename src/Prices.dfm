@@ -73,10 +73,10 @@ inherited PricesForm: TPricesForm
       OnDblClick = dbgPricesDblClick
       OnGetCellParams = dbgPricesGetCellParams
       OnKeyDown = dbgPricesKeyDown
+      OnSortMarkingChanged = dbgPricesSortMarkingChanged
       SearchField = 'PriceName'
       SearchPosition = spBottom
       ForceRus = True
-      OnSortChange = dbgPricesSortChange
       Columns = <
         item
           EditButtons = <>

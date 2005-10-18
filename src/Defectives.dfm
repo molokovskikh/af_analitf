@@ -196,10 +196,10 @@ inherited DefectivesForm: TDefectivesForm
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
     OnGetCellParams = dbgDefectivesGetCellParams
+    OnSortMarkingChanged = dbgDefectivesSortMarkingChanged
     SearchField = 'Name'
     SearchPosition = spBottom
     ForceRus = True
-    OnSortChange = dbgDefectivesSortChange
     Columns = <
       item
         EditButtons = <>

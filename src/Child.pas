@@ -124,6 +124,9 @@ begin
   MainForm.ActiveChild:=Self;
   if Caption <> '' then
     MainForm.Caption := Application.Title + ' - ' + Caption;
+  for I := 0 to Self.ComponentCount-1 do
+    if (Self.Components[i] is TToughDBGrid) and Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged ) then
+      TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
   Show;
   if Parent<>nil then
     for I:=0 to Parent.ControlCount-1 do

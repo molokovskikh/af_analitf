@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
-  pFIBDataSet;
+  pFIBDataSet, DBProc;
 
 type
   TOrdersForm = class(TChildForm)
@@ -52,6 +52,7 @@ type
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure adsOrdersCalcFields(DataSet: TDataSet);
+    procedure dbgOrdersSortMarkingChanged(Sender: TObject);
   private
   public
     procedure ShowForm(AOrderId: Integer); reintroduce;
@@ -144,6 +145,11 @@ begin
   except
 
   end;
+end;
+
+procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
+begin
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

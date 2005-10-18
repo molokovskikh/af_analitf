@@ -63,12 +63,12 @@ object CoreFirmForm: TCoreFirmForm
     OnGetCellParams = dbgCoreGetCellParams
     OnKeyDown = dbgCoreKeyDown
     OnKeyPress = dbgCoreKeyPress
+    OnSortMarkingChanged = dbgCoreSortMarkingChanged
     SearchField = 'CryptSynonymName'
     InputField = 'OrderCount'
     SearchPosition = spTop
     ForceRus = True
     FindInterval = 2500
-    OnSortChange = dbgCoreSortChange
     OnCanInput = dbgCoreCanInput
     Columns = <
       item

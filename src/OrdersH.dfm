@@ -142,8 +142,8 @@ inherited OrdersHForm: TOrdersHForm
             OnGetCellParams = dbgOrdersHGetCellParams
             OnKeyDown = dbgOrdersHKeyDown
             OnKeyPress = dbgOrdersHKeyPress
+            OnSortMarkingChanged = dbgOrdersHSortMarkingChanged
             SearchPosition = spBottom
-            OnSortChange = dbgOrdersHSortChange
             Columns = <
               item
                 EditButtons = <>

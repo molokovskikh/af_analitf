@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGridEh, ToughDBGrid, ExtCtrls, DB, 
-  DBCtrls, StdCtrls, FIBDataSet, pFIBDataSet;
+  DBCtrls, StdCtrls, FIBDataSet, pFIBDataSet, DBProc;
 
 type
   TWayBillListForm = class(TChildForm)
@@ -25,6 +25,7 @@ type
     adsWBL: TpFIBDataSet;
     procedure dbgWBLKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure dbgWBLSortMarkingChanged(Sender: TObject);
   private
     { Private declarations }
   public
@@ -62,6 +63,11 @@ procedure TWayBillListForm.dbgWBLKeyDown(Sender: TObject; var Key: Word;
 begin
   inherited;
 	if Key = VK_ESCAPE then PrevForm.ShowForm;
+end;
+
+procedure TWayBillListForm.dbgWBLSortMarkingChanged(Sender: TObject);
+begin
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

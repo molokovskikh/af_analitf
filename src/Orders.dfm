@@ -205,6 +205,7 @@ inherited OrdersForm: TOrdersForm
     TitleFont.Style = []
     OnGetCellParams = dbgOrdersGetCellParams
     OnKeyDown = dbgOrdersKeyDown
+    OnSortMarkingChanged = dbgOrdersSortMarkingChanged
     SearchField = 'CryptSynonymName'
     SearchPosition = spBottom
     ForceRus = True

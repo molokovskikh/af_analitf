@@ -173,6 +173,7 @@ inherited WayBillListForm: TWayBillListForm
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
     OnKeyDown = dbgWBLKeyDown
+    OnSortMarkingChanged = dbgWBLSortMarkingChanged
     SearchPosition = spBottom
     ForceRus = True
     Columns = <

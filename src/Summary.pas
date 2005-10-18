@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB, 
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet;
+  pFIBDataSet, DBProc;
 
 const
 	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
@@ -56,7 +56,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
-    procedure dbgSummarySortChange(Sender: TObject; SQLOrderBy: String);
     procedure dbgSummaryCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
     procedure adsSummary2BeforePost(DataSet: TDataSet);
@@ -65,6 +64,7 @@ type
     procedure adsSummary2AfterScroll(DataSet: TDataSet);
     procedure dbgSummaryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure dbgSummarySortMarkingChanged(Sender: TObject);
   private
     procedure SummaryShow;
     procedure SummaryHShow;
@@ -183,23 +183,6 @@ begin
 		Background := AWAIT_CLR;
 end;
 
-procedure TSummaryForm.dbgSummarySortChange(Sender: TObject;
-  SQLOrderBy: String);
-begin
-        adsSummary.DisableControls;
-	Screen.Cursor := crHourglass;
-	adsSummary.Close;
-	adsSummary.SelectSQL.Text := SummarySql + SQLOrderBy;
-	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	try
-		adsSummary.Open;
-	finally
-		Screen.Cursor := crDefault;
-		adsSummary.EnableControls;
-	end;
-end;
-
 procedure TSummaryForm.dbgSummaryCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
@@ -266,6 +249,25 @@ begin
   end
   else
     inherited;
+end;
+
+procedure TSummaryForm.dbgSummarySortMarkingChanged(Sender: TObject);
+begin
+{
+  adsSummary.DisableControls;
+	Screen.Cursor := crHourglass;
+	adsSummary.Close;
+	adsSummary.SelectSQL.Text := SummarySql + SQLOrderBy;
+	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	try
+		adsSummary.Open;
+	finally
+		Screen.Cursor := crDefault;
+		adsSummary.EnableControls;
+	end;
+}
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

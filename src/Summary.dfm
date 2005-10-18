@@ -154,11 +154,11 @@ inherited SummaryForm: TSummaryForm
       TitleFont.Style = []
       OnGetCellParams = dbgSummaryGetCellParams
       OnKeyDown = dbgSummaryKeyDown
+      OnSortMarkingChanged = dbgSummarySortMarkingChanged
       SearchField = 'CryptSynonymName'
       InputField = 'OrderCount'
       SearchPosition = spBottom
       ForceRus = True
-      OnSortChange = dbgSummarySortChange
       OnCanInput = dbgSummaryCanInput
       Columns = <
         item

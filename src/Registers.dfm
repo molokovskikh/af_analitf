@@ -34,14 +34,14 @@ inherited RegistersForm: TRegistersForm
     TitleFont.Height = -11
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
+    OnSortMarkingChanged = dbgRegistrySortMarkingChanged
     SearchField = 'Name'
     SearchPosition = spTop
     ForceRus = True
-    OnSortChange = dbgRegistrySortChange
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'Name'
+        FieldName = 'NAME'
         Footers = <>
         Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
         Title.TitleButton = True
@@ -49,7 +49,7 @@ inherited RegistersForm: TRegistersForm
       end
       item
         EditButtons = <>
-        FieldName = 'Form'
+        FieldName = 'FORM'
         Footers = <>
         Title.Caption = #1060#1086#1088#1084#1072' '#1074#1099#1087#1091#1089#1082#1072
         Title.TitleButton = True
@@ -57,7 +57,7 @@ inherited RegistersForm: TRegistersForm
       end
       item
         EditButtons = <>
-        FieldName = 'Producer'
+        FieldName = 'PRODUCER'
         Footers = <>
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Title.TitleButton = True

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
-  SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor;
+  SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc;
 
 const
 	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID) ORDER BY ';
@@ -80,13 +80,13 @@ type
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
     procedure FormDestroy(Sender: TObject);
-    procedure dbgExpiredsSortChange(Sender: TObject; SQLOrderBy: String);
     procedure TimerTimer(Sender: TObject);
     procedure adsExpireds2BeforeClose(DataSet: TDataSet);
     procedure adsExpireds2AfterOpen(DataSet: TDataSet);
     procedure adsExpireds2AfterPost(DataSet: TDataSet);
     procedure adsExpireds2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
+    procedure dbgExpiredsSortMarkingChanged(Sender: TObject);
   private
     ClientId: Integer;
     UseExcess: Boolean;
@@ -248,22 +248,6 @@ begin
   }
 end;
 
-procedure TExpiredsForm.dbgExpiredsSortChange(Sender: TObject;
-  SQLOrderBy: String);
-begin
-	adsExpireds.Close;
-	adsExpireds.SelectSQL.Text := ExpiredSql + SQLOrderBy;
-	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
-	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	Screen.Cursor := crHourGlass;
-	try
-		adsExpireds.Open;
-	finally
-		Screen.Cursor := crDefault;
-	end;
-end;
-
 procedure TExpiredsForm.adsExpireds2AfterOpen(DataSet: TDataSet);
 begin
 //	adsOrdersShowFormSummary.Open;
@@ -302,6 +286,24 @@ end;
 procedure TExpiredsForm.FormResize(Sender: TObject);
 begin
   adsExpireds2AfterScroll(adsExpireds);
+end;
+
+procedure TExpiredsForm.dbgExpiredsSortMarkingChanged(Sender: TObject);
+begin
+{
+	adsExpireds.Close;
+	adsExpireds.SelectSQL.Text := ExpiredSql + SQLOrderBy;
+	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
+	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
+	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	Screen.Cursor := crHourGlass;
+	try
+		adsExpireds.Open;
+	finally
+		Screen.Cursor := crDefault;
+	end;
+}
+  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.
