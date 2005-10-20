@@ -8,7 +8,7 @@ uses
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
   FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
-  RxMemDS, pFIBQuery;
+  pFIBQuery, lU_TSGHashTable, U_CryptIndex;
 
 const
 	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID, :APRICENAME) ORDER BY ';
@@ -39,6 +39,19 @@ type
     Bevel1: TBevel;
     actFlipCore: TAction;
     adsCore: TpFIBDataSet;
+    adsCoreSumOrder: TCurrencyField;
+    adsCountFields: TpFIBDataSet;
+    adsOrdersH: TpFIBDataSet;
+    adsOrdersShowFormSummary: TpFIBDataSet;
+    adsCoreCryptSYNONYMNAME: TStringField;
+    adsCoreCryptSYNONYMFIRM: TStringField;
+    adsCoreCryptBASECOST: TCurrencyField;
+    adsCorePriceRet: TCurrencyField;
+    adsCoreCryptCODE: TStringField;
+    adsCoreCryptCODECR: TStringField;
+    qCore: TpFIBQuery;
+    qCoreUpdate: TpFIBQuery;
+    qCoreRefresh: TpFIBQuery;
     adsCoreCOREID: TFIBBCDField;
     adsCoreFULLCODE: TFIBBCDField;
     adsCoreSHORTCODE: TFIBBCDField;
@@ -53,9 +66,11 @@ type
     adsCorePERIOD: TFIBStringField;
     adsCoreAWAIT: TFIBIntegerField;
     adsCoreJUNK: TFIBIntegerField;
+    adsCoreBASECOST: TFIBStringField;
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
+    adsCoreMINPRICE: TFIBBCDField;
     adsCoreLEADERPRICECODE: TFIBBCDField;
     adsCoreLEADERREGIONCODE: TFIBBCDField;
     adsCoreLEADERREGIONNAME: TFIBStringField;
@@ -72,6 +87,7 @@ type
     adsCoreORDERCOUNT: TFIBIntegerField;
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
     adsCoreORDERSJUNK: TFIBIntegerField;
     adsCoreORDERSAWAIT: TFIBIntegerField;
     adsCoreORDERSHORDERID: TFIBBCDField;
@@ -80,79 +96,7 @@ type
     adsCoreORDERSHREGIONCODE: TFIBBCDField;
     adsCoreORDERSHPRICENAME: TFIBStringField;
     adsCoreORDERSHREGIONNAME: TFIBStringField;
-    adsCoreSumOrder: TCurrencyField;
-    adsCountFields: TpFIBDataSet;
-    adsOrdersH: TpFIBDataSet;
-    adsOrdersShowFormSummary: TpFIBDataSet;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField;
-    adsCoreMINPRICE: TFIBBCDField;
-    adsCoreCryptSYNONYMNAME: TStringField;
-    adsCoreCryptSYNONYMFIRM: TStringField;
-    adsCoreCryptBASECOST: TCurrencyField;
-    adsCorePriceRet: TCurrencyField;
-    adsCoreCryptCODE: TStringField;
-    adsCoreCryptCODECR: TStringField;
-    adsCoreCryptORDERSSYNONYM: TStringField;
-    adsCoreCryptORDERSSYNONYMFIRM: TStringField;
-    adsCoreCryptORDERSCODE: TStringField;
-    adsCoreCryptORDERSCODECR: TStringField;
-    adsCoreBASECOST: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBStringField;
-    mdCore: TRxMemoryData;
-    dsmdCode: TDataSource;
-    mdCoreCOREID: TBCDField;
-    mdCoreFULLCODE: TBCDField;
-    mdCoreSHORTCODE: TBCDField;
-    mdCoreCODEFIRMCR: TBCDField;
-    mdCoreSYNONYMCODE: TBCDField;
-    mdCoreSYNONYMFIRMCRCODE: TBCDField;
-    mdCoreCODE: TStringField;
-    mdCoreCODECR: TStringField;
-    mdCoreVOLUME: TStringField;
-    mdCoreDOC: TStringField;
-    mdCoreNOTE: TStringField;
-    mdCorePERIOD: TStringField;
-    mdCoreAWAIT: TIntegerField;
-    mdCoreJUNK: TIntegerField;
-    mdCoreBASECOST: TStringField;
-    mdCoreQUANTITY: TStringField;
-    mdCoreSYNONYMNAME: TStringField;
-    mdCoreSYNONYMFIRM: TStringField;
-    mdCoreMINPRICE: TBCDField;
-    mdCoreLEADERPRICECODE: TBCDField;
-    mdCoreLEADERREGIONCODE: TBCDField;
-    mdCoreLEADERREGIONNAME: TStringField;
-    mdCoreLEADERPRICENAME: TStringField;
-    mdCoreORDERSCOREID: TBCDField;
-    mdCoreORDERSORDERID: TBCDField;
-    mdCoreORDERSCLIENTID: TBCDField;
-    mdCoreORDERSFULLCODE: TBCDField;
-    mdCoreORDERSCODEFIRMCR: TBCDField;
-    mdCoreORDERSSYNONYMCODE: TBCDField;
-    mdCoreORDERSSYNONYMFIRMCRCODE: TBCDField;
-    mdCoreORDERSCODE: TStringField;
-    mdCoreORDERSCODECR: TStringField;
-    mdCoreORDERCOUNT: TIntegerField;
-    mdCoreORDERSSYNONYM: TStringField;
-    mdCoreORDERSSYNONYMFIRM: TStringField;
-    mdCoreORDERSPRICE: TStringField;
-    mdCoreORDERSJUNK: TIntegerField;
-    mdCoreORDERSAWAIT: TIntegerField;
-    mdCoreORDERSHORDERID: TBCDField;
-    mdCoreORDERSHCLIENTID: TBCDField;
-    mdCoreORDERSHPRICECODE: TBCDField;
-    mdCoreORDERSHREGIONCODE: TBCDField;
-    mdCoreORDERSHPRICENAME: TStringField;
-    mdCoreORDERSHREGIONNAME: TStringField;
-    mdCoreCryptSYNONYMNAME: TStringField;
-    mdCoreSumOrder: TCurrencyField;
-    mdCorePriceRet: TCurrencyField;
-    mdCoreCryptCODE: TStringField;
-    mdCoreCryptSYNONYMFIRM: TStringField;
-    mdCoreCryptBASECOST: TCurrencyField;
-    qCore: TpFIBQuery;
-    qCoreUpdate: TpFIBQuery;
-    qCoreRefresh: TpFIBQuery;
+    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -176,11 +120,9 @@ type
     procedure TimerTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
-    procedure mdCoreCalcFields(DataSet: TDataSet);
-    procedure mdCoreBeforeEdit(DataSet: TDataSet);
-    procedure mdCoreAfterPost(DataSet: TDataSet);
-    procedure mdCoreBeforePost(DataSet: TDataSet);
     procedure dbgCoreSortMarkingChanged(Sender: TObject);
+    procedure adsCoreAfterFetchRecord(FromQuery: TFIBQuery;
+      RecordNumber: Integer; var StopFetching: Boolean);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
     OrderSum: Double;
@@ -188,6 +130,11 @@ type
     UseExcess: Boolean;
     Excess: Integer;
     SN : TStringList;
+
+    F : TSGHashTable;
+    SL : TStringList;
+
+    CI : TINCryptIndex;
 
     procedure OrderCalc;
     procedure SetOrderLabel;
@@ -217,7 +164,12 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+  F := TSGHashTable.Create(20000);
+  SL := TStringList.Create;
+  SL.Capacity := 20000;
+  SL.Sorted := True;
   SN := TStringList.Create;
+  CI := TINCryptIndex.Create(adsCore);
 	PrintEnabled := False;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
@@ -240,6 +192,8 @@ begin
 	dbgCore.SaveToRegistry( Reg);
   SN.Free;
 	Reg.Free;
+  F.Free;
+  CI.Free;
 end;
 
 procedure TCoreFirmForm.ShowForm(APriceCode, ARegionCode: Integer;
@@ -267,6 +221,7 @@ begin
   end;
   //определ€ем, какие колонки прайс-листа фирмы показывать (не показываем пустые)
 {
+}  
   with adsCountFields do begin
     ParamByName('APriceCode').Value:=PriceCode;
     ParamByName('ARegionCode').Value:=RegionCode;
@@ -283,9 +238,9 @@ begin
       Close;
     end;
   end;
-}  
   //подсчитываем сумму за€вки и количество записей
 {
+}    
   SetFilter(filOrder);
   OrderCalc;
   SetOrderLabel;
@@ -293,7 +248,6 @@ begin
     SetFilter(filLeader)
   else
     SetFilter(filAll);
-}    
   lblFirmPrice.Caption := Format( 'ѕрайс-лист %s, регион %s',[
     PricesForm.adsPrices.FieldByName('PriceName').AsString,
     PricesForm.adsPrices.FieldByName('RegionName').AsString]);
@@ -309,14 +263,24 @@ var
   C : Currency;
 begin
   try
+//    Tracer.TR('adsCore', 'Calc : ' + DataSet.Fields[0].AsString);
+//    N := PN(F.FindItem(adsCoreCOREID.AsString));
+    CI.GetCalcFields;
+{
+    N := TN( SL.Objects[SL.IndexOf(adsCoreCOREID.AsString)] );
+    if Assigned(N) then
+      adsCoreCryptBASECOST.AsCurrency := N.A;
     adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
     adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
+}
+{
     S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
     C := StrToCurr(S);
     adsCoreCryptBASECOST.AsCurrency := C;
     adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
     adsCoreCryptCODE.AsString := DM.D_C(adsCoreCODE.AsString);
-    adsCoreSumOrder.AsCurrency := C * adsCoreORDERCOUNT.AsInteger;
+}
+    adsCoreSumOrder.AsCurrency := adsCoreCryptBASECOST.AsCurrency * adsCoreORDERCOUNT.AsInteger;
   except
     adsCoreSumOrder.AsCurrency := 0;
   end;
@@ -341,8 +305,9 @@ begin
     filLeader: FP := LeaderFilterRecord;
   end;
 //  DBProc.SetFilter(adsCore,St);
-  DBProc.SetFilterProc(mdCore, FP);
-  lblRecordCount.Caption:=Format( 'ѕозиций : %d', [mdCore.RecordCount]);
+//  DBProc.SetFilterProc(mdCore, FP);
+  DBProc.SetFilterProc(adsCore, FP);
+  lblRecordCount.Caption:=Format( 'ѕозиций : %d', [adsCore.RecordCount]);
   cbFilter.ItemIndex := Integer(Filter);
 end;
 
@@ -456,7 +421,7 @@ begin
 }  
 {
 }  
-	DataSetCalc( mdCore,[ 'COUNT', 'SUM(SumOrder)'], V);
+	DataSetCalc( adsCore,[ 'COUNT', 'SUM(SumOrder)'], V);
 	OrderCount := V[ 0];
 	OrderSum :=V[ 1];
 end;
@@ -512,15 +477,15 @@ procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	//данный прайс-лидер
-	if ( mdCoreLEADERPRICECODE.AsInteger = PriceCode) and
+	if ( adsCoreLEADERPRICECODE.AsInteger = PriceCode) and
         	( adsCoreLeaderRegionCode.AsInteger = RegionCode) and
-		(( Column.Field = mdCoreLEADERREGIONNAME) or ( Column.Field = mdCoreLEADERPRICENAME)) then
+		(( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME)) then
 			Background := LEADER_CLR;
 	//уцененный товар
-	if (mdCoreJunk.Value = 1) and (( Column.Field = mdCorePERIOD) or
-		( Column.Field = mdCoreCryptBASECOST)) then Background := JUNK_CLR;
+	if (adsCoreJunk.Value = 1) and (( Column.Field = adsCorePERIOD) or
+		( Column.Field = adsCoreCryptBASECOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выдел€ем зеленым
-	if (mdCoreAwait.Value = 1) and ( Column.Field = mdCoreCryptSYNONYMNAME) then
+	if (adsCoreAwait.Value = 1) and ( Column.Field = adsCoreCryptSYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 
@@ -644,25 +609,30 @@ end;
 procedure TCoreFirmForm.OrderCountFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
-  Accept := not mdCoreORDERCOUNT.IsNull and (mdCoreORDERCOUNT.AsInteger > 0);
+  Accept := not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0);
 end;
 
 procedure TCoreFirmForm.LeaderFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
-  Accept := (mdCoreLEADERPRICECODE.AsVariant = PriceCode) and (mdCoreLEADERREGIONCODE.AsVariant = RegionCode);
+  Accept := (adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode);
 end;
 
 procedure TCoreFirmForm.RefreshAllCore;
 begin
   Screen.Cursor:=crHourglass;
-  mdCore.BeforePost := nil;
   try
     adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'AClientId').Value:=ClientId;
     adsCore.ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
-    if adsCore.Active then adsCore.CloseOpen(False) else adsCore.Open;
+    try
+      CI.Clear;
+      adsCore.AfterFetchRecord := adsCoreAfterFetchRecord;
+      if adsCore.Active then adsCore.CloseOpen(True) else adsCore.Open;
+    finally
+      adsCore.AfterFetchRecord := nil;
+    end;
 //      qCore.SQL.Text := adsCore.SelectSQL.Text;
 
     qCore.ParamByName( 'APriceCode').Value:=PriceCode;
@@ -672,85 +642,8 @@ begin
 //    mdCore.Capacity := adsCore.RecordCountFromSrv;
 //    DM.LoadDataSetFromFIBQuery(mdCore, qCore);
   finally
-    mdCore.BeforePost := mdCoreBeforePost;
     Screen.Cursor:=crDefault;
   end;
-end;
-
-procedure TCoreFirmForm.mdCoreCalcFields(DataSet: TDataSet);
-begin
-  try
-    mdCoreSumOrder.AsCurrency :=
-      mdCoreCryptBASECOST.AsCurrency * mdCoreORDERCOUNT.AsInteger;
-  except
-    mdCoreSumOrder.AsCurrency := 0;
-  end;
-end;
-
-procedure TCoreFirmForm.mdCoreBeforeEdit(DataSet: TDataSet);
-begin
-  OldOrder:=adsCoreORDERCOUNT.AsInteger;
-end;
-
-procedure TCoreFirmForm.mdCoreAfterPost(DataSet: TDataSet);
-begin
-	OrderCount := OrderCount + Iif( mdCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( mdCoreORDERCOUNT.AsInteger - OldOrder) * mdCoreCryptBASECOST.AsCurrency;
-	SetOrderLabel;
-	MainForm.SetOrdersInfo;
-end;
-
-procedure TCoreFirmForm.mdCoreBeforePost(DataSet: TDataSet);
-var
-	Quantity, E: Integer;
-	PriceAvg: Double;
-begin
-	try
-		{ провер€ем заказ на соответствие наличию товара на складе }
-		Val( mdCoreQuantity.AsString, Quantity, E);
-		if E <> 0 then Quantity := 0;
-		if ( Quantity > 0) and ( mdCoreORDERCOUNT.AsInteger > Quantity) and
-			( MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
-			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then mdCoreORDERCOUNT.AsInteger := Quantity;
-      
-    DM.UpTran.StartTransaction;
-    try
-      qCoreUpdate.ParamByName('new_ORDERSHORDERID').Value := mdCoreORDERSHORDERID.AsVariant;
-      qCoreUpdate.ParamByName('Aclientid').Value := ClientId;
-      qCoreUpdate.ParamByName('APRICECODE').Value := PriceCode;
-      qCoreUpdate.ParamByName('AREGIONCODE').Value := RegionCode;
-      qCoreUpdate.ParamByName('new_ORDERSORDERID').Value := mdCoreORDERSORDERID.AsVariant;
-      qCoreUpdate.ParamByName('new_COREID').Value := mdCoreCOREID.AsVariant;
-      qCoreUpdate.ParamByName('NEW_ORDERCOUNT').Value := mdCoreORDERCOUNT.AsVariant;
-      qCoreUpdate.ExecQuery;
-      DM.UpTran.Commit;
-    except
-      DM.UpTran.Rollback;
-      raise;
-    end;
-
-    qCoreRefresh.ParamByName('OLD_COREID').Value := mdCoreCOREID.AsVariant;
-    DM.UpdateDataSetFromFIBQuery(mdCore, qCoreRefresh);
-
-		{ провер€ем на превышение цены }
-{
-		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
-		begin
-			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
-			if ( PriceAvg > 0) and ( adsCoreBaseCost.AsCurrency>PriceAvg*(1+Excess/100)) then
-			begin
-				plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-				plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-				plOverCost.BringToFront;
-				plOverCost.Show;
-				Timer.Enabled := True;
-			end;
-		end;
-}
-  except
-		mdCore.Cancel;
-		raise;
-	end;
 end;
 
 procedure TCoreFirmForm.dbgCoreSortMarkingChanged(Sender: TObject);
@@ -771,6 +664,12 @@ begin
 	end;
 }
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TCoreFirmForm.adsCoreAfterFetchRecord(FromQuery: TFIBQuery;
+  RecordNumber: Integer; var StopFetching: Boolean);
+begin
+  CI.FetchRecord(FromQuery);
 end;
 
 end.

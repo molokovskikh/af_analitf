@@ -57,7 +57,9 @@ uses
   inforoomapi in 'RC_RND\inforoomapi.pas',
   hlpcodecs in 'RC_RND\hlpcodecs.pas',
   incrt in 'RC_RND\incrt.pas',
-  inforoomalg in 'RC_RND\inforoomalg.pas';
+  inforoomalg in 'RC_RND\inforoomalg.pas',
+  LU_TSGHashTable in 'common\LU_TSGHashTable.pas',
+  U_CryptIndex in 'U_CryptIndex.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

@@ -268,8 +268,6 @@ begin
 	PrevPrice := 0;
         I := -1;
 	RecInfos := nil;
-{
-  TODO: Не забыть включить
 	with adsCore do
 	begin
 		SetLength( RecInfos, adsCore.RecordCount);
@@ -289,21 +287,20 @@ begin
 			else
 				D := PrevPrice;
 			end;
-			if ( D = 0) or ( adsCoreBaseCost.AsCurrency = 0) then
+			if ( D = 0) or ( adsCoreCryptBASECOST.AsCurrency = 0) then
 				RecInfos[ I] := 0
 			else
-				RecInfos[ I] := RoundTo(( adsCoreBaseCost.AsCurrency - D)/D*100,-1);
+				RecInfos[ I] := RoundTo(( adsCoreCryptBASECOST.AsCurrency - D)/D*100,-1);
 			if adsCoreSynonymCode.AsInteger >= 0 then
 			begin
-				if adsCoreBaseCost.AsCurrency > 0 then PrevPrice := adsCoreBaseCost.AsCurrency;
+				if adsCoreCryptBASECOST.AsCurrency > 0 then PrevPrice := adsCoreCryptBASECOST.AsCurrency;
 				if ( FirstPrice=0) and (( DeltaMode <> 2) or adsCorePriceEnabled.AsBoolean) then
-					FirstPrice := adsCoreBaseCost.AsCurrency;
+					FirstPrice := adsCoreCryptBASECOST.AsCurrency;
 			end;
 			Next;
 		end;
 		First;
 	end;
-}
 
 	if not adsCore.Locate( 'PriceEnabled', 'True', []) then
 		adsCore.Locate( 'PriceEnabled', 'False', []);

@@ -10,7 +10,7 @@ uses
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs;
+  Contnrs, U_CryptIndex;
 
 {
 Криптование
@@ -22,8 +22,6 @@ uses
 
 const
   HistoryMaxRec=5;
-  CRYPT = 'Crypt';
-  BasecostSFX : array[0..1] of string = ('BASECOST', 'PRICE');
   //макс. кол-во писем доставаемых с сервера
   RegisterId=59; //код реестра в справочнике фирм
 
@@ -39,20 +37,6 @@ type
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
     ecGetFreeDiskSpace, ecIE40);
-
-  TCryptField = (cfBaseCost, cfSynonym, cfCode, cfPrice);
-
-  TCryptFieldDef = class
-    Exist : Boolean;
-    Crypt : Boolean;
-    CryptType : TCryptField;
-    //Индекс в MemoryData
-    DestIndex : Integer;
-    SourceIndex : Integer;
-    CryptIndex1,
-    CryptIndex2 : Integer;
-    constructor Create;
-  end;
 
   TRetMass = array[1..3] of Variant;
 
@@ -246,6 +230,8 @@ type
     function NeedCommitExchange : Boolean;
     procedure SetNeedCommitExchange;
     procedure ResetNeedCommitExchange;
+{
+}    
     //DecodeCryptS
     function D_C_S(Pass, S : String) : String;
     //CodeCryptS
@@ -256,12 +242,6 @@ type
     function D_C(CodeS : String) : String;
     //DecodeBasecost
     function D_B(CodeS1, CodeS2 : String) : String;
-    function EncodeCryptS(S : String) : String;
-    //Загружаем датасет из запроса и транлируем шифрованные поля
-    procedure LoadDataSetFromFIBQuery(Dest : TRxMemoryData; Q : TpFIBQuery);
-    procedure UpdateDataSetFromFIBQuery(Dest : TRxMemoryData; Q : TpFIBQuery);
-    function GetSyncFD(Dest : TRxMemoryData; Q : TpFIBQuery) : TObjectList;
-    procedure CopyRecord(Dest : TRxMemoryData; Q : TpFIBQuery; FDs :TObjectList);
     procedure SavePass(ASyn, ACodes, AB : String);
     procedure LoadRetailMargins;
     function GetPriceRet(BaseCost : Currency) : Currency;
@@ -1615,11 +1595,6 @@ begin
   Result := DeCryptString(S, Pass);
 end;
 
-function TDM.EncodeCryptS(S: String): String;
-begin
-  Result := '';//EnCryptString(S, '12345678');
-end;
-
 procedure TDM.ReadPasswords;
 var
   PassPass : String;
@@ -1671,178 +1646,6 @@ begin
   end
   else
     Result := '';
-end;
-
-procedure TDM.LoadDataSetFromFIBQuery(Dest: TRxMemoryData; Q: TpFIBQuery);
-var
-  FD : TObjectList;
-begin
-  try
-    Dest.DisableControls;
-    try
-      Dest.Close;
-      Dest.Filtered := False;
-      if not Dest.Active then Dest.Open;
-      Dest.CheckBrowseMode;
-      try
-        Q.ExecQuery;
-
-        FD := GetSyncFD(Dest, Q);
-        try
-          while not Q.EOF do begin
-            Dest.Append;
-            CopyRecord(Dest, Q, FD);
-            Dest.Post;
-            Q.Next;
-          end;
-        finally
-          FD.Free;
-        end;
-
-      finally
-        Dest.First;
-      end;
-    finally
-      Dest.EnableControls;
-    end;
-  finally
-    Q.Close;
-  end;
-end;
-
-function TDM.GetSyncFD(Dest: TRxMemoryData; Q: TpFIBQuery): TObjectList;
-var
-  I : Integer;
-  DestF : TField;
-  CT : TCryptField;
-  FD : TCryptFieldDef;
-  SourIndex : Integer;
-  SourceFieldName : String;
-  Crt1, Crt2 : Integer;
-begin
-  Result := TObjectList.Create(True);
-  try
-    for I := 0 to Dest.FieldList.Count-1 do begin
-      DestF := Dest.FieldList.Fields[i];
-      if Pos(CRYPT, DestF.FieldName) = 1 then begin
-        CT := TCryptField(DestF.Tag);
-        SourceFieldName := Copy(DestF.FieldName, Length(CRYPT)+1, Length(DestF.FieldName));
-        FD := TCryptFieldDef.Create;
-        FD.Crypt := True;
-        FD.CryptType := CT;
-        FD.DestIndex := I;
-        FD.Exist := True;
-        case CT of
-          cfBaseCost, cfPrice :
-            begin
-              if CT = cfBaseCost then
-                SourceFieldName := LeftStr(SourceFieldName, Length(SourceFieldName) - Length(BasecostSFX[0]))
-              else
-                SourceFieldName := LeftStr(SourceFieldName, Length(SourceFieldName) - Length(BasecostSFX[1]));
-              Crt1 := Dest.FieldList.IndexOf(SourceFieldName + 'CODE');
-              if Crt1 > -1 then begin
-                FD.CryptIndex1 := Crt1;
-                Crt2 := Dest.FieldList.IndexOf(SourceFieldName + 'CODECR');
-                if Crt2 > -1 then
-                  FD.CryptIndex2 := Crt2
-                else
-                  FD.Exist := False;
-              end
-              else
-                FD.Exist := False;
-            end;
-          cfSynonym, cfCode :
-            begin
-              SourIndex := Dest.FieldList.IndexOf(SourceFieldName);
-              if SourIndex > -1 then
-                FD.CryptIndex1 := SourIndex
-              else
-                FD.Exist := False;
-            end;
-        end;
-        Result.Add(FD);
-      end
-      else begin
-        if Q.FieldExist(DestF.FieldName, SourIndex) then begin
-          FD := TCryptFieldDef.Create;
-          FD.Exist := True;
-          FD.SourceIndex := SourIndex;
-          FD.DestIndex := i;
-          Result.Add(FD);
-        end;
-      end;
-    end;
-  except
-    Result.Free;
-    raise;
-  end;
-end;
-
-{ TCryptFieldDef }
-
-constructor TCryptFieldDef.Create;
-begin
-  Exist := False;
-  Crypt := False;
-  DestIndex := -1;
-  SourceIndex := -1;
-  CryptIndex1 := -1;
-  CryptIndex2 := -1;
-end;
-
-procedure TDM.CopyRecord(Dest: TRxMemoryData; Q: TpFIBQuery;
-  FDs: TObjectList);
-var
-  I : Integer;
-  FD : TCryptFieldDef;
-  S : String;
-begin
-  for I := 0 to FDs.Count-1 do begin
-    FD := TCryptFieldDef(FDs[i]);
-    if FD.Exist then
-      if FD.Crypt then begin
-        case FD.CryptType of
-          cfBaseCost, cfPrice :
-            begin
-//              S := D_B(Dest.FieldList[FD.CryptIndex1].AsString, Dest.FieldList[FD.CryptIndex2].AsString);
-//              S := StringReplace(S, '.', FFS.DecimalSeparator, [rfReplaceAll]);
-//              Dest.FieldList[FD.DestIndex].AsString := S;
-            end;
-          cfSynonym :
-            begin
-//              S := D_S(Dest.FieldList[FD.CryptIndex1].AsString);
-//              Dest.FieldList[FD.DestIndex].AsString := S;
-            end;
-          cfCode :
-            begin
-//              S := D_C(Dest.FieldList[FD.CryptIndex1].AsString);
-//              Dest.FieldList[FD.DestIndex].AsString := S;
-            end;
-        end;
-      end
-      else
-        Dest.FieldList[FD.DestIndex].Value := Q.Fields[FD.SourceIndex].Value;
-  end;
-end;
-
-procedure TDM.UpdateDataSetFromFIBQuery(Dest: TRxMemoryData;
-  Q: TpFIBQuery);
-var
-  FD : TObjectList;
-begin
-  try
-    Q.ExecQuery;
-    FD := GetSyncFD(Dest, Q);
-    try
-      if not Q.EOF then begin
-        CopyRecord(Dest, Q, FD);
-      end;
-    finally
-      FD.Free;
-    end;
-  finally
-    Q.Close;
-  end;
 end;
 
 function TDM.C_C_S(Pass, S: String): String;

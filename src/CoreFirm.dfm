@@ -159,7 +159,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'PriceRet'
+        FieldName = 'CryptPriceRet'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
@@ -474,9 +474,12 @@ object CoreFirmForm: TCoreFirmForm
     OnCalcFields = adsCore2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AfterFetchRecord = adsCoreAfterFetchRecord
+    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 88
     Top = 112
+    oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
@@ -540,6 +543,11 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreJUNK: TFIBIntegerField
       FieldName = 'JUNK'
+    end
+    object adsCoreBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 48
+      EmptyStrToNull = False
     end
     object adsCoreQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
@@ -640,6 +648,11 @@ object CoreFirmForm: TCoreFirmForm
       Size = 250
       EmptyStrToNull = False
     end
+    object adsCoreORDERSPRICE: TFIBStringField
+      FieldName = 'ORDERSPRICE'
+      Size = 48
+      EmptyStrToNull = False
+    end
     object adsCoreORDERSJUNK: TFIBIntegerField
       FieldName = 'ORDERSJUNK'
     end
@@ -683,12 +696,14 @@ object CoreFirmForm: TCoreFirmForm
       Calculated = True
     end
     object adsCoreCryptSYNONYMNAME: TStringField
+      Tag = 1
       FieldKind = fkCalculated
       FieldName = 'CryptSYNONYMNAME'
       Size = 250
       Calculated = True
     end
     object adsCoreCryptSYNONYMFIRM: TStringField
+      Tag = 1
       FieldKind = fkCalculated
       FieldName = 'CryptSYNONYMFIRM'
       Size = 250
@@ -701,50 +716,23 @@ object CoreFirmForm: TCoreFirmForm
       Calculated = True
     end
     object adsCorePriceRet: TCurrencyField
+      Tag = 4
       FieldKind = fkCalculated
-      FieldName = 'PriceRet'
+      FieldName = 'CryptPriceRet'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCoreCryptCODE: TStringField
+      Tag = 2
       FieldKind = fkCalculated
       FieldName = 'CryptCODE'
       Calculated = True
     end
     object adsCoreCryptCODECR: TStringField
+      Tag = 2
       FieldKind = fkCalculated
       FieldName = 'CryptCODECR'
       Calculated = True
-    end
-    object adsCoreCryptORDERSSYNONYM: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptORDERSSYNONYM'
-      Calculated = True
-    end
-    object adsCoreCryptORDERSSYNONYMFIRM: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptORDERSSYNONYMFIRM'
-      Calculated = True
-    end
-    object adsCoreCryptORDERSCODE: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptORDERSCODE'
-      Calculated = True
-    end
-    object adsCoreCryptORDERSCODECR: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptORDERSCODECR'
-      Calculated = True
-    end
-    object adsCoreBASECOST: TFIBStringField
-      FieldName = 'BASECOST'
-      Size = 48
-      EmptyStrToNull = False
-    end
-    object adsCoreORDERSPRICE: TFIBStringField
-      FieldName = 'ORDERSPRICE'
-      Size = 48
-      EmptyStrToNull = False
     end
   end
   object adsCountFields: TpFIBDataSet
@@ -806,8 +794,10 @@ object CoreFirmForm: TCoreFirmForm
     Left = 200
     Top = 264
     WaitEndMasterScroll = True
-    object adsOrdersShowFormSummaryPRICEAVG: TFIBIntegerField
+    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
       FieldName = 'PRICEAVG'
+      Size = 2
+      RoundByScale = True
     end
   end
   object Timer: TTimer
@@ -816,430 +806,6 @@ object CoreFirmForm: TCoreFirmForm
     OnTimer = TimerTimer
     Left = 640
     Top = 216
-  end
-  object mdCore: TRxMemoryData
-    FieldDefs = <
-      item
-        Name = 'COREID'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'FULLCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'SHORTCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'CODEFIRMCR'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'SYNONYMCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'SYNONYMFIRMCRCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'CODE'
-        DataType = ftString
-        Size = 84
-      end
-      item
-        Name = 'CODECR'
-        DataType = ftString
-        Size = 84
-      end
-      item
-        Name = 'VOLUME'
-        DataType = ftString
-        Size = 15
-      end
-      item
-        Name = 'DOC'
-        DataType = ftString
-        Size = 20
-      end
-      item
-        Name = 'NOTE'
-        DataType = ftString
-        Size = 50
-      end
-      item
-        Name = 'PERIOD'
-        DataType = ftString
-        Size = 20
-      end
-      item
-        Name = 'AWAIT'
-        DataType = ftInteger
-      end
-      item
-        Name = 'JUNK'
-        DataType = ftInteger
-      end
-      item
-        Name = 'BASECOST'
-        DataType = ftString
-        Size = 48
-      end
-      item
-        Name = 'QUANTITY'
-        DataType = ftString
-        Size = 15
-      end
-      item
-        Name = 'SYNONYMNAME'
-        DataType = ftString
-        Size = 250
-      end
-      item
-        Name = 'SYNONYMFIRM'
-        DataType = ftString
-        Size = 250
-      end
-      item
-        Name = 'MINPRICE'
-        DataType = ftBCD
-        Size = 2
-      end
-      item
-        Name = 'LEADERPRICECODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'LEADERREGIONCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'LEADERREGIONNAME'
-        DataType = ftString
-        Size = 25
-      end
-      item
-        Name = 'LEADERPRICENAME'
-        DataType = ftString
-        Size = 70
-      end
-      item
-        Name = 'ORDERSCOREID'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSORDERID'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSCLIENTID'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSFULLCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSCODEFIRMCR'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSSYNONYMCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSSYNONYMFIRMCRCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSCODE'
-        DataType = ftString
-        Size = 84
-      end
-      item
-        Name = 'ORDERSCODECR'
-        DataType = ftString
-        Size = 84
-      end
-      item
-        Name = 'ORDERCOUNT'
-        DataType = ftInteger
-      end
-      item
-        Name = 'ORDERSSYNONYM'
-        DataType = ftString
-        Size = 250
-      end
-      item
-        Name = 'ORDERSSYNONYMFIRM'
-        DataType = ftString
-        Size = 250
-      end
-      item
-        Name = 'ORDERSPRICE'
-        DataType = ftString
-        Size = 48
-      end
-      item
-        Name = 'ORDERSJUNK'
-        DataType = ftInteger
-      end
-      item
-        Name = 'ORDERSAWAIT'
-        DataType = ftInteger
-      end
-      item
-        Name = 'ORDERSHORDERID'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSHCLIENTID'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSHPRICECODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSHREGIONCODE'
-        DataType = ftBCD
-        Size = 4
-      end
-      item
-        Name = 'ORDERSHPRICENAME'
-        DataType = ftString
-        Size = 70
-      end
-      item
-        Name = 'ORDERSHREGIONNAME'
-        DataType = ftString
-        Size = 25
-      end>
-    BeforeEdit = mdCoreBeforeEdit
-    BeforePost = mdCoreBeforePost
-    AfterPost = mdCoreAfterPost
-    OnCalcFields = mdCoreCalcFields
-    Left = 264
-    Top = 208
-    object mdCoreCOREID: TBCDField
-      FieldName = 'COREID'
-      Size = 0
-    end
-    object mdCoreFULLCODE: TBCDField
-      FieldName = 'FULLCODE'
-      Size = 0
-    end
-    object mdCoreSHORTCODE: TBCDField
-      FieldName = 'SHORTCODE'
-      Size = 0
-    end
-    object mdCoreCODEFIRMCR: TBCDField
-      FieldName = 'CODEFIRMCR'
-      Size = 0
-    end
-    object mdCoreSYNONYMCODE: TBCDField
-      FieldName = 'SYNONYMCODE'
-      Size = 0
-    end
-    object mdCoreSYNONYMFIRMCRCODE: TBCDField
-      FieldName = 'SYNONYMFIRMCRCODE'
-      Size = 0
-    end
-    object mdCoreCODE: TStringField
-      FieldName = 'CODE'
-      Size = 84
-    end
-    object mdCoreCODECR: TStringField
-      FieldName = 'CODECR'
-      Size = 84
-    end
-    object mdCoreVOLUME: TStringField
-      FieldName = 'VOLUME'
-      Size = 15
-    end
-    object mdCoreDOC: TStringField
-      FieldName = 'DOC'
-    end
-    object mdCoreNOTE: TStringField
-      FieldName = 'NOTE'
-      Size = 50
-    end
-    object mdCorePERIOD: TStringField
-      FieldName = 'PERIOD'
-    end
-    object mdCoreAWAIT: TIntegerField
-      FieldName = 'AWAIT'
-    end
-    object mdCoreJUNK: TIntegerField
-      FieldName = 'JUNK'
-    end
-    object mdCoreBASECOST: TStringField
-      FieldName = 'BASECOST'
-      Size = 48
-    end
-    object mdCoreQUANTITY: TStringField
-      FieldName = 'QUANTITY'
-      Size = 15
-    end
-    object mdCoreSYNONYMNAME: TStringField
-      FieldName = 'SYNONYMNAME'
-      Size = 250
-    end
-    object mdCoreSYNONYMFIRM: TStringField
-      FieldName = 'SYNONYMFIRM'
-      Size = 250
-    end
-    object mdCoreMINPRICE: TBCDField
-      FieldName = 'MINPRICE'
-      Size = 2
-    end
-    object mdCoreLEADERPRICECODE: TBCDField
-      FieldName = 'LEADERPRICECODE'
-      Size = 0
-    end
-    object mdCoreLEADERREGIONCODE: TBCDField
-      FieldName = 'LEADERREGIONCODE'
-      Size = 0
-    end
-    object mdCoreLEADERREGIONNAME: TStringField
-      FieldName = 'LEADERREGIONNAME'
-      Size = 25
-    end
-    object mdCoreLEADERPRICENAME: TStringField
-      FieldName = 'LEADERPRICENAME'
-      Size = 70
-    end
-    object mdCoreORDERSCOREID: TBCDField
-      FieldName = 'ORDERSCOREID'
-      Size = 0
-    end
-    object mdCoreORDERSORDERID: TBCDField
-      FieldName = 'ORDERSORDERID'
-      Size = 0
-    end
-    object mdCoreORDERSCLIENTID: TBCDField
-      FieldName = 'ORDERSCLIENTID'
-      Size = 0
-    end
-    object mdCoreORDERSFULLCODE: TBCDField
-      FieldName = 'ORDERSFULLCODE'
-      Size = 0
-    end
-    object mdCoreORDERSCODEFIRMCR: TBCDField
-      FieldName = 'ORDERSCODEFIRMCR'
-      Size = 0
-    end
-    object mdCoreORDERSSYNONYMCODE: TBCDField
-      FieldName = 'ORDERSSYNONYMCODE'
-      Size = 0
-    end
-    object mdCoreORDERSSYNONYMFIRMCRCODE: TBCDField
-      FieldName = 'ORDERSSYNONYMFIRMCRCODE'
-      Size = 0
-    end
-    object mdCoreORDERSCODE: TStringField
-      FieldName = 'ORDERSCODE'
-      Size = 84
-    end
-    object mdCoreORDERSCODECR: TStringField
-      FieldName = 'ORDERSCODECR'
-      Size = 84
-    end
-    object mdCoreORDERCOUNT: TIntegerField
-      FieldName = 'ORDERCOUNT'
-    end
-    object mdCoreORDERSSYNONYM: TStringField
-      FieldName = 'ORDERSSYNONYM'
-      Size = 250
-    end
-    object mdCoreORDERSSYNONYMFIRM: TStringField
-      FieldName = 'ORDERSSYNONYMFIRM'
-      Size = 250
-    end
-    object mdCoreORDERSPRICE: TStringField
-      FieldName = 'ORDERSPRICE'
-      Size = 48
-    end
-    object mdCoreORDERSJUNK: TIntegerField
-      FieldName = 'ORDERSJUNK'
-    end
-    object mdCoreORDERSAWAIT: TIntegerField
-      FieldName = 'ORDERSAWAIT'
-    end
-    object mdCoreORDERSHORDERID: TBCDField
-      FieldName = 'ORDERSHORDERID'
-      Size = 0
-    end
-    object mdCoreORDERSHCLIENTID: TBCDField
-      FieldName = 'ORDERSHCLIENTID'
-      Size = 0
-    end
-    object mdCoreORDERSHPRICECODE: TBCDField
-      FieldName = 'ORDERSHPRICECODE'
-      Size = 0
-    end
-    object mdCoreORDERSHREGIONCODE: TBCDField
-      FieldName = 'ORDERSHREGIONCODE'
-      Size = 0
-    end
-    object mdCoreORDERSHPRICENAME: TStringField
-      FieldName = 'ORDERSHPRICENAME'
-      Size = 70
-    end
-    object mdCoreORDERSHREGIONNAME: TStringField
-      FieldName = 'ORDERSHREGIONNAME'
-      Size = 25
-    end
-    object mdCoreSumOrder: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'SumOrder'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
-    end
-    object mdCorePriceRet: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'PriceRet'
-      Calculated = True
-    end
-    object mdCoreCryptCODE: TStringField
-      Tag = 2
-      FieldName = 'CryptCODE'
-    end
-    object mdCoreCryptSYNONYMNAME: TStringField
-      Tag = 1
-      FieldName = 'CryptSYNONYMNAME'
-    end
-    object mdCoreCryptSYNONYMFIRM: TStringField
-      Tag = 1
-      FieldName = 'CryptSYNONYMFIRM'
-    end
-    object mdCoreCryptBASECOST: TCurrencyField
-      FieldName = 'CryptBASECOST'
-    end
-  end
-  object dsmdCode: TDataSource
-    DataSet = mdCore
-    Left = 304
-    Top = 248
   end
   object qCore: TpFIBQuery
     Transaction = DM.DefTran

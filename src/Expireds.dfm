@@ -322,6 +322,7 @@ inherited ExpiredsForm: TExpiredsForm
     AutoCommit = True
     Left = 128
     Top = 112
+    oFetchAll = True
     object adsExpiredsCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
@@ -523,17 +524,20 @@ inherited ExpiredsForm: TExpiredsForm
       Calculated = True
     end
     object adsExpiredsPriceRet: TCurrencyField
+      Tag = 4
       FieldKind = fkCalculated
-      FieldName = 'PriceRet'
+      FieldName = 'CryptPriceRet'
       Calculated = True
     end
     object adsExpiredsCryptSYNONYMNAME: TStringField
+      Tag = 1
       FieldKind = fkCalculated
       FieldName = 'CryptSYNONYMNAME'
       Size = 250
       Calculated = True
     end
     object adsExpiredsCryptSYNONYMFIRM: TStringField
+      Tag = 1
       FieldKind = fkCalculated
       FieldName = 'CryptSYNONYMFIRM'
       Size = 250
