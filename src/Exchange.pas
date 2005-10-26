@@ -89,7 +89,7 @@ type
     property ExchangeActs: TExchangeActions read ExchangeActions write ExchangeActions;
     property AppHandle: HWND read GetAppHandle;
     procedure CheckStop;
-	procedure PauseAfterError;
+   	function PauseAfterError : TModalResult;
   end;
 
 var
@@ -397,12 +397,12 @@ end;
 
 
 //пауза после ошибки
-procedure TExchangeForm.PauseAfterError;
+function TExchangeForm.PauseAfterError : TModalResult;
 begin
 	RetryForm := TRetryForm.Create( Application);
 	RetryForm.lblError.Caption := ExThread.ErrorMessage;
 	RetryForm.Seconds := ConnectPause;
-	RetryForm.ShowModal;
+	Result := RetryForm.ShowModal;
 	RetryForm.Close;
 	RetryForm.Free;
 end;
@@ -438,15 +438,20 @@ begin
 
 		if ExThread.ErrorMessage <> '' then
 		begin
-			if ( ConnectNumber < ConnectCount) and not ExThread.CriticalError then PauseAfterError
-				else begin
-          //Разрываем DialUp в случае ошибки
-          try
-            Ras.Disconnect;
-          except
-          end;
+			if ( ConnectNumber < ConnectCount) and not ExThread.CriticalError then begin
+        if PauseAfterError = mrCancel then begin
+          btnCancel.Click;
           break;
         end;
+      end
+      else begin
+        //Разрываем DialUp в случае ошибки
+        try
+          Ras.Disconnect;
+        except
+        end;
+        break;
+      end;
 		end
 		else break;
 	end;

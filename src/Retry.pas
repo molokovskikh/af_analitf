@@ -13,10 +13,12 @@ type
     lblError: TLabel;
     Image1: TImage;
     Timer: TTimer;
+    btnCancel: TButton;
     procedure btnRetryClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure btnCancelClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -60,6 +62,11 @@ begin
 	end;
 	lblRetry.Caption := Format( 'Повторная попытка через %d секунд', [ Seconds]);
 	dec( Seconds);
+end;
+
+procedure TRetryForm.btnCancelClick(Sender: TObject);
+begin
+	Timer.Enabled := False;
 end;
 
 end.

@@ -5,7 +5,7 @@ object RetryForm: TRetryForm
   BorderStyle = bsDialog
   Caption = #1055#1086#1074#1090#1086#1088#1085#1072#1103' '#1087#1086#1087#1099#1090#1082#1072
   ClientHeight = 127
-  ClientWidth = 357
+  ClientWidth = 444
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -28,7 +28,7 @@ object RetryForm: TRetryForm
   object lblError: TLabel
     Left = 64
     Top = 16
-    Width = 281
+    Width = 369
     Height = 49
     AutoSize = False
     Caption = 'lblError'
@@ -120,6 +120,17 @@ object RetryForm: TRetryForm
     ModalResult = 1
     TabOrder = 0
     OnClick = btnRetryClick
+  end
+  object btnCancel: TButton
+    Left = 360
+    Top = 93
+    Width = 75
+    Height = 25
+    Cancel = True
+    Caption = #1054#1090#1084#1077#1085#1072
+    ModalResult = 2
+    TabOrder = 1
+    OnClick = btnCancelClick
   end
   object Timer: TTimer
     Enabled = False
