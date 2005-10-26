@@ -305,8 +305,8 @@ begin
 	try
     Res := GetLibraryVersion;
     try
-      SetLength(ParamNames, StaticParamCount + Res.Count);
-      SetLength(ParamValues, StaticParamCount + Res.Count);
+      SetLength(ParamNames, StaticParamCount + Res.Count*2);
+      SetLength(ParamValues, StaticParamCount + Res.Count*2);
       ParamNames[0]  := 'AccessTime';
       ParamValues[0] := GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
       ParamNames[1]  := 'GetEtalonData';
@@ -336,8 +336,10 @@ begin
       ParamValues[10] := AMDACDesc;
 
       for I := 0 to Res.Count-1 do begin
-        ParamNames[StaticParamCount+i] := Res.Names[i];
-        ParamValues[StaticParamCount+i] := Res.Values[ParamNames[StaticParamCount+i]];
+        ParamNames[StaticParamCount+i*2] := 'LibraryName';
+        ParamValues[StaticParamCount+i*2] := Res.Names[i];
+        ParamNames[StaticParamCount+i*2+1] := 'LibraryVersion';
+        ParamValues[StaticParamCount+i*2+1] := Res.Values[Res.Names[i]];
       end;
     finally
       Res.Free;
