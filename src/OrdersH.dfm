@@ -190,15 +190,6 @@ inherited OrdersHForm: TOrdersHForm
                 Width = 53
               end
               item
-                EditButtons = <>
-                FieldName = 'SUMORDER'
-                Footers = <>
-                MinWidth = 5
-                Title.Caption = #1057#1091#1084#1084#1072
-                Title.TitleButton = True
-                Width = 60
-              end
-              item
                 Checkboxes = True
                 EditButtons = <>
                 FieldName = 'SEND'
@@ -206,6 +197,16 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
                 Title.TitleButton = True
+                Width = 60
+              end
+              item
+                EditButtons = <>
+                FieldName = 'SumOrder1'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1057#1091#1084#1084#1072
+                Title.TitleButton = True
+                Visible = False
                 Width = 60
               end>
           end
@@ -500,11 +501,6 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
-    object adsOrdersHFormSUMORDER: TFIBBCDField
-      FieldName = 'SUMORDER'
-      Size = 2
-      RoundByScale = True
-    end
     object adsOrdersHFormSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
       EmptyStrToNull = False
@@ -518,6 +514,12 @@ inherited OrdersHForm: TOrdersHForm
       FieldName = 'COMMENTS'
       Size = 100
       EmptyStrToNull = False
+    end
+    object adsOrdersHFormSumOrder1: TFIBBCDField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrder1'
+      RoundByScale = True
+      Calculated = True
     end
   end
   object adsCore: TpFIBDataSet

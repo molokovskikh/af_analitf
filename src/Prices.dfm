@@ -127,13 +127,6 @@ inherited PricesForm: TPricesForm
           Title.TitleButton = True
         end
         item
-          EditButtons = <>
-          FieldName = 'SUMORDER'
-          Footers = <>
-          Title.Caption = #1057#1091#1084#1084#1072
-          Title.TitleButton = True
-        end
-        item
           Alignment = taCenter
           DisplayFormat = 'dd.mm.yyyy hh:nn'
           EditButtons = <>
@@ -142,6 +135,14 @@ inherited PricesForm: TPricesForm
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
           Title.TitleButton = True
           Width = 104
+        end
+        item
+          EditButtons = <>
+          FieldName = 'SumOrder1'
+          Footers = <>
+          Title.Caption = #1057#1091#1084#1084#1072
+          Title.TitleButton = True
+          Visible = False
         end>
     end
     object GroupBox1: TGroupBox
@@ -511,10 +512,10 @@ inherited PricesForm: TPricesForm
     object adsPricesPRICESIZE: TFIBIntegerField
       FieldName = 'PRICESIZE'
     end
-    object adsPricesSUMORDER: TFIBBCDField
-      FieldName = 'SUMORDER'
-      Size = 2
-      RoundByScale = True
+    object adsPricesSumOrder1: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrder1'
+      Calculated = True
     end
   end
   object adsClientsData: TpFIBDataSet

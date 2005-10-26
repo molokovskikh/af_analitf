@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  Registry, DBGridEhImpExp, FIBDataSet, pFIBDataSet, FIBQuery, Menus;
+  Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus;
 
 const
 	PricesSql =	'SELECT * FROM PRICESSHOW(:ACLIENTID, :TIMEZONEBIAS) ORDER BY ';
@@ -60,7 +60,7 @@ type
     adsPricesPOSITIONS: TFIBIntegerField;
     adsPricesPRICESIZE: TFIBIntegerField;
     adsClientsData: TpFIBDataSet;
-    adsPricesSUMORDER: TFIBBCDField;
+    adsPricesSumOrder1: TCurrencyField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -258,7 +258,5 @@ begin
 }
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
-
-
 
 end.

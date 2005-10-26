@@ -47,6 +47,7 @@ type
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
     adsOrdersSUMORDER: TFIBBCDField;
+    lSumOrder: TLabel;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -77,10 +78,14 @@ begin
 end;
 
 procedure TOrdersForm.SetParams(AOrderId: Integer);
+var
+	V: array[0..0] of Variant;
 begin
   with adsOrders do begin
     ParamByName('AOrderId').Value:=AOrderId;
     if Active then CloseOpen(True) else Open;
+  	DataSetCalc( adsOrders,['SUM(CryptSUMORDER)'], V);
+    lSumOrder.Caption := V[0];
   end;
 end;
 

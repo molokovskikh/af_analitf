@@ -69,10 +69,10 @@ type
     adsOrdersHFormPRICENAME: TFIBStringField;
     adsOrdersHFormREGIONNAME: TFIBStringField;
     adsOrdersHFormPOSITIONS: TFIBIntegerField;
-    adsOrdersHFormSUMORDER: TFIBBCDField;
     adsOrdersHFormSUPPORTPHONE: TFIBStringField;
     adsOrdersHFormMESSAGETO: TFIBStringField;
     adsOrdersHFormCOMMENTS: TFIBStringField;
+    adsOrdersHFormSumOrder1: TFIBBCDField;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

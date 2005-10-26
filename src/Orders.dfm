@@ -125,11 +125,11 @@ inherited OrdersForm: TOrdersForm
       ParentFont = False
     end
     object dbtSumOrder: TDBText
-      Left = 192
+      Left = 674
       Top = 29
       Width = 81
       Height = 13
-      DataField = 'SumOrder'
+      DataField = 'SumOrder1'
       DataSource = OrdersHForm.dsOrdersH
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -137,6 +137,7 @@ inherited OrdersForm: TOrdersForm
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
+      Visible = False
     end
     object Label4: TLabel
       Left = 275
@@ -171,6 +172,19 @@ inherited OrdersForm: TOrdersForm
       Height = 13
       DataField = 'RegionName'
       DataSource = OrdersHForm.dsOrdersH
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lSumOrder: TLabel
+      Left = 192
+      Top = 29
+      Width = 59
+      Height = 13
+      Caption = 'lSumOrder'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11

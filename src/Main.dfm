@@ -282,7 +282,6 @@ object MainForm: TMainForm
         Width = 100
       end
       item
-        Text = #1057#1091#1084#1084#1072' :'
         Width = 120
       end
       item

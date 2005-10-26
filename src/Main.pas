@@ -588,8 +588,8 @@ begin
 			 [ DM.adsSelect.FieldByName( 'OrdersCount').AsInteger]);
 		StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',
 			 [ DM.adsSelect.FieldByName( 'Positions').AsInteger]);
-		StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',
-			 [ DM.adsSelect.FieldByName( 'SumOrder').AsFloat]);
+//		StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',
+//			 [ DM.adsSelect.FieldByName( 'SumOrder').AsFloat]);
 	finally
 		DM.adsSelect.Close;
 	end;
@@ -617,17 +617,19 @@ end;
 function TMainForm.CheckUnsendOrders: boolean;
 begin
 	result := False;
-	adsOrdersH.ParamByName( 'AClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').Value;
-	adsOrdersH.ParamByName( 'AClosed').Value := False;
-	adsOrdersH.ParamByName( 'ASend').Value := True;
-	adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	try
-		adsOrdersH.Open;
-		if adsOrdersH.RecordCount > 0 then result := True;
-	finally
-		adsOrdersH.Close;
-	end;
+  if DM.MainConnection1.Connected then begin
+    adsOrdersH.ParamByName( 'AClientId').Value :=
+      DM.adtClients.FieldByName( 'ClientId').Value;
+    adsOrdersH.ParamByName( 'AClosed').Value := False;
+    adsOrdersH.ParamByName( 'ASend').Value := True;
+    adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+    try
+      adsOrdersH.Open;
+      if adsOrdersH.RecordCount > 0 then result := True;
+    finally
+      adsOrdersH.Close;
+    end;
+  end;
 end;
 
 procedure TMainForm.actSendOrdersUpdate(Sender: TObject);
