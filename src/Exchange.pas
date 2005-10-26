@@ -77,6 +77,8 @@ type
     DoStop: Boolean;
     QueryResults: TStrings;
 
+    //Текст ошибки, которая произошла
+  	ErrMsg: string;
     //Переменные для работы внешних заказов
     ExternalOrdersCount : Integer;
     ExternalOrdersLog : TStringList;
@@ -182,6 +184,8 @@ begin
 		try
 			ExchangeForm.Timer.Enabled := True;
 			Result := ExchangeForm.ShowModal = mrOk;
+      if not Result then
+        AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
       ExternalOrdersCount := ExchangeForm.ExternalOrdersCount;
       ExternalOrdersErrorCount := ExchangeForm.ExternalOrdersLog.Count;
       ExternalOrdersLog := ExchangeForm.ExternalOrdersLog.Text;
@@ -410,7 +414,6 @@ end;
 procedure TExchangeForm.TimerTimer(Sender: TObject);
 var
 	ConnectNumber: Integer;
-	ErrMsg: string;
 begin
 	//здесь производим те действия, которые могут быть отменены
 	StartTime := Now;
@@ -480,7 +483,7 @@ begin
 	begin
 		ModalResult := mrAbort;
 		ExThread.Free;
-		raise Exception.Create( ErrMsg);
+//		raise Exception.Create( ErrMsg);
 	end
 	else
 	begin
