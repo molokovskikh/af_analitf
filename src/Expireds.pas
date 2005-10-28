@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
   SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, U_CryptIndex,
-  FIBQuery;
+  FIBQuery, Constant;
 
 const
 	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID) ORDER BY ';
@@ -90,6 +90,8 @@ type
     procedure dbgExpiredsSortMarkingChanged(Sender: TObject);
     procedure adsExpiredsAfterFetchRecord(FromQuery: TFIBQuery;
       RecordNumber: Integer; var StopFetching: Boolean);
+    procedure dbgExpiredsGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
   private
     ClientId: Integer;
     UseExcess: Boolean;
@@ -322,6 +324,15 @@ procedure TExpiredsForm.adsExpiredsAfterFetchRecord(FromQuery: TFIBQuery;
   RecordNumber: Integer; var StopFetching: Boolean);
 begin
   CI.FetchRecord(FromQuery);
+end;
+
+procedure TExpiredsForm.dbgExpiredsGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+	//уцененный товар
+	if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCryptBASECOST))
+  then Background := JUNK_CLR;
 end;
 
 end.

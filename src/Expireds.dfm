@@ -90,6 +90,7 @@ inherited ExpiredsForm: TExpiredsForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
+      OnGetCellParams = dbgExpiredsGetCellParams
       OnSortMarkingChanged = dbgExpiredsSortMarkingChanged
       SearchField = 'CryptSynonymName'
       InputField = 'OrderCount'
