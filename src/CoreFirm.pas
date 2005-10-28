@@ -360,6 +360,7 @@ end;
 procedure TCoreFirmForm.adsCore2BeforeEdit(DataSet: TDataSet);
 begin
   OldOrder:=adsCoreORDERCOUNT.AsInteger;
+  DM.SetOldOrderCount(OldOrder);
 end;
 
 procedure TCoreFirmForm.adsCore2BeforePost(DataSet: TDataSet);
@@ -401,6 +402,7 @@ procedure TCoreFirmForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
 	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreCryptBASECOST.AsCurrency;
+  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency);
 	SetOrderLabel;
 	MainForm.SetOrdersInfo;
 end;

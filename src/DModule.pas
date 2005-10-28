@@ -184,6 +184,7 @@ type
     procedure adsSelect3CalcFields(DataSet: TDataSet);
     procedure adsRetailMarginsLEFTLIMITChange(Sender: TField);
     procedure adsSumOrdersCalcFields(DataSet: TDataSet);
+    procedure adtClientsAfterScroll(DataSet: TDataSet);
   private
     ClientInserted: Boolean;
     //Требуется ли подтверждение обмена
@@ -192,6 +193,8 @@ type
     CodesPassword,
     BaseCostPassword : String;
     FRetMargins : array of TRetMass;
+    OldOrderCount : Integer;
+    AllSumOrder : Currency;
     procedure CheckRestrictToRun;
     procedure ReadPasswords;
   public
@@ -253,6 +256,11 @@ type
     procedure SavePass(ASyn, ACodes, AB : String);
     procedure LoadRetailMargins;
     function GetPriceRet(BaseCost : Currency) : Currency;
+
+    procedure InitAllSumOrder;
+    procedure SetOldOrderCount(AOldOrderCount : Integer);
+    procedure SetNewOrderCount(ANewOrderCount : Integer; ABaseCost : Currency);
+    function GetAllSumOrder : Currency;
   end;
 
 var
@@ -780,6 +788,7 @@ begin
 //  adtClients.Properties['Update Resync'].Value:=adResyncAll;
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
   then adtClients.First;
+  InitAllSumOrder;
 //  MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
   ClientChanged;
 end;
@@ -1742,6 +1751,43 @@ begin
   end;
   adsSumOrdersCryptPRICE.AsCurrency := StrToCurr(S);
   adsSumOrdersSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersORDERCOUNT.AsInteger;
+end;
+
+function TDM.GetAllSumOrder: Currency;
+begin
+  Result := AllSumOrder;
+end;
+
+procedure TDM.SetNewOrderCount(ANewOrderCount: Integer;
+  ABaseCost: Currency);
+begin
+  AllSumOrder := AllSumOrder + ( ANewOrderCount - OldOrderCount) * ABaseCost;
+end;
+
+procedure TDM.SetOldOrderCount(AOldOrderCount: Integer);
+begin
+  OldOrderCount := AOldOrderCount;
+end;
+
+procedure TDM.InitAllSumOrder;
+begin
+  DM.adsSumOrders.Close;
+	DM.adsSumOrders.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  DM.adsSumOrders.Open;
+  try
+    AllSumOrder := 0;
+    while not DM.adsSumOrders.Eof do begin
+      AllSumOrder := AllSumOrder + DM.adsSumOrdersSumOrders.AsCurrency;
+      DM.adsSumOrders.Next;
+    end;
+  finally
+    DM.adsSumOrders.Close;
+  end;
+end;
+
+procedure TDM.adtClientsAfterScroll(DataSet: TDataSet);
+begin
+  InitAllSumOrder;
 end;
 
 end.

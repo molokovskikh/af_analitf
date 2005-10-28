@@ -427,6 +427,7 @@ end;
 procedure TCoreForm.adsCore2BeforeEdit(DataSet: TDataSet);
 begin
 	if adsCoreFirmCode.AsInteger = RegisterId then Abort;
+  DM.SetOldOrderCount(adsCoreORDERCOUNT.AsInteger);
 end;
 
 procedure TCoreForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
@@ -582,6 +583,7 @@ end;
 
 procedure TCoreForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
+  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency);
 	MainForm.SetOrdersInfo;
 end;
 

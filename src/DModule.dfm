@@ -347,6 +347,7 @@ object DM: TDM
     AfterInsert = adtClientsAfterInsert
     AfterOpen = adtClientsAfterOpen
     AfterPost = adtClientsAfterPost
+    AfterScroll = adtClientsAfterScroll
     BeforeDelete = adtClientsBeforeDelete
     Transaction = DefTran
     Database = MainConnection1
