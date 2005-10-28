@@ -92,6 +92,7 @@ type
       RecordNumber: Integer; var StopFetching: Boolean);
     procedure dbgExpiredsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure adsExpiredsBeforeEdit(DataSet: TDataSet);
   private
     ClientId: Integer;
     UseExcess: Boolean;
@@ -281,6 +282,7 @@ end;
 
 procedure TExpiredsForm.adsExpireds2AfterPost(DataSet: TDataSet);
 begin
+  DM.SetNewOrderCount(adsExpiredsORDERCOUNT.AsInteger, adsExpiredsCryptBASECOST.AsCurrency);
 	MainForm.SetOrdersInfo;
 end;
 
@@ -333,6 +335,11 @@ begin
 	//уцененный товар
 	if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCryptBASECOST))
   then Background := JUNK_CLR;
+end;
+
+procedure TExpiredsForm.adsExpiredsBeforeEdit(DataSet: TDataSet);
+begin
+  DM.SetOldOrderCount(adsExpiredsORDERCOUNT.AsInteger);
 end;
 
 end.

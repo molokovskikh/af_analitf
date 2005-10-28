@@ -483,6 +483,7 @@ begin
 	begin
 //		adsOrdersHForm.Delete;
     btnDeleteClick(nil);
+    DM.InitAllSumOrder;
 		MainForm.SetOrdersInfo;
 	end;
 end;

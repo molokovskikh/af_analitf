@@ -54,6 +54,8 @@ type
       Shift: TShiftState);
     procedure adsOrdersCalcFields(DataSet: TDataSet);
     procedure dbgOrdersSortMarkingChanged(Sender: TObject);
+    procedure adsOrdersBeforeEdit(DataSet: TDataSet);
+    procedure adsOrdersAfterPost(DataSet: TDataSet);
   private
   public
     procedure ShowForm(AOrderId: Integer); reintroduce;
@@ -113,6 +115,8 @@ begin
 	if Key = VK_ESCAPE then PrevForm.ShowForm;
 	if ( Key = VK_DELETE) and not ( adsOrders.IsEmpty) then
 	begin
+    DM.SetOldOrderCount(adsOrdersORDERCOUNT.AsInteger);
+    DM.SetNewOrderCount(0, adsOrdersCryptPRICE.AsCurrency);
     adsOrders.Delete;
     if adsOrders.RecordCount = 0 then begin
       DM.adcUpdate.Transaction.StartTransaction;
@@ -155,6 +159,16 @@ end;
 procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
 begin
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TOrdersForm.adsOrdersBeforeEdit(DataSet: TDataSet);
+begin
+  DM.SetOldOrderCount(adsOrdersORDERCOUNT.AsInteger);
+end;
+
+procedure TOrdersForm.adsOrdersAfterPost(DataSet: TDataSet);
+begin
+  DM.SetNewOrderCount(adsOrdersORDERCOUNT.AsInteger, adsOrdersCryptPRICE.AsCurrency);
 end;
 
 end.

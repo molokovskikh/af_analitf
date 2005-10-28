@@ -337,6 +337,8 @@ inherited SummaryForm: TSummaryForm
       '    SUMMARYSHOW(:ACLIENTID) ')
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
+    BeforeDelete = adsSummaryBeforeDelete
+    BeforeEdit = adsSummaryBeforeEdit
     BeforePost = adsSummary2BeforePost
     OnCalcFields = adsSummary2CalcFields
     Transaction = DM.DefTran

@@ -333,6 +333,8 @@ inherited OrdersForm: TOrdersForm
       '    SUMORDER'
       'FROM'
       '    ORDERSSHOW(:AORDERID) ')
+    AfterPost = adsOrdersAfterPost
+    BeforeEdit = adsOrdersBeforeEdit
     OnCalcFields = adsOrdersCalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1

@@ -595,19 +595,7 @@ begin
 	finally
 		DM.adsSelect.Close;
 	end;
-  DM.adsSumOrders.Close;
-	DM.adsSumOrders.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-  DM.adsSumOrders.Open;
-  try
-    C := 0;
-    while not DM.adsSumOrders.Eof do begin
-      C := C + DM.adsSumOrdersSumOrders.AsCurrency;
-      DM.adsSumOrders.Next;
-    end;
-		StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',	[C]);
-  finally
-    DM.adsSumOrders.Close;
-  end;
+  StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',	[DM.GetAllSumOrder]);
 end;
 
 procedure TMainForm.dblcbClientsCloseUp(Sender: TObject);

@@ -65,6 +65,8 @@ type
     procedure dbgSummaryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgSummarySortMarkingChanged(Sender: TObject);
+    procedure adsSummaryBeforeEdit(DataSet: TDataSet);
+    procedure adsSummaryBeforeDelete(DataSet: TDataSet);
   private
     procedure SummaryShow;
     procedure SummaryHShow;
@@ -162,6 +164,7 @@ end;
 
 procedure TSummaryForm.adsSummary2AfterPost(DataSet: TDataSet);
 begin
+  DM.SetNewOrderCount(adsSummaryORDERCOUNT.AsInteger, adsSummaryCryptBASECOST.AsCurrency);
 	SummaryHShow;
 	if adsSummaryORDERCOUNT.AsInteger = 0 then SummaryShow;
 	MainForm.SetOrdersInfo;
@@ -268,6 +271,17 @@ begin
 	end;
 }
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TSummaryForm.adsSummaryBeforeEdit(DataSet: TDataSet);
+begin
+  DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
+end;
+
+procedure TSummaryForm.adsSummaryBeforeDelete(DataSet: TDataSet);
+begin
+  DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
+  DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency);
 end;
 
 end.

@@ -315,6 +315,7 @@ inherited ExpiredsForm: TExpiredsForm
     AfterPost = adsExpireds2AfterPost
     AfterScroll = adsExpireds2AfterScroll
     BeforeClose = adsExpireds2BeforeClose
+    BeforeEdit = adsExpiredsBeforeEdit
     BeforePost = adsExpireds2BeforePost
     OnCalcFields = adsExpireds2CalcFields
     Transaction = DM.DefTran
