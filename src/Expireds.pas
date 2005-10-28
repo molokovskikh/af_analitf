@@ -166,7 +166,7 @@ begin
     adsExpiredsPriceRet.AsCurrency := DM.GetPriceRet(C);
 }    
 	  //вычисляем сумму заказа
-  	adsExpiredsSumOrder.AsCurrency:=C * adsExpiredsORDERCOUNT.AsInteger;
+  	adsExpiredsSumOrder.AsCurrency:= adsExpiredsCryptBASECOST.AsCurrency * adsExpiredsORDERCOUNT.AsInteger;
   except
   end;
 end;

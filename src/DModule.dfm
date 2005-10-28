@@ -1153,4 +1153,53 @@ object DM: TDM
     Left = 192
     Top = 400
   end
+  object adsSumOrders: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '  Orders.code,'
+      '  Orders.codecr,'
+      '  Orders.price,'
+      '  Orders.ordercount'
+      'FROM'
+      'ordersh oh'
+      'inner join orders ol on ol.orderid = oh.orderid'
+      'WHERE'
+      '    (oh.ClientId=:AClientId)'
+      'and (oh.Closed <> 1)'
+      'AND (ol.OrderCount > 0)')
+    OnCalcFields = adsSumOrdersCalcFields
+    Transaction = DefTran
+    Database = MainConnection1
+    UpdateTransaction = UpTran
+    Left = 616
+    Top = 272
+    object adsSumOrdersCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsSumOrdersCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsSumOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 48
+      EmptyStrToNull = False
+    end
+    object adsSumOrdersORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsSumOrdersCryptPRICE: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptPRICE'
+      Calculated = True
+    end
+    object adsSumOrdersSumOrders: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrders'
+      Calculated = True
+    end
+  end
 end

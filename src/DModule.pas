@@ -166,6 +166,13 @@ type
     adsRetailMarginsRIGHTLIMIT: TFIBBCDField;
     adsRetailMarginsRETAIL: TFIBIntegerField;
     dsRetailMargins: TDataSource;
+    adsSumOrders: TpFIBDataSet;
+    adsSumOrdersCODE: TFIBStringField;
+    adsSumOrdersCODECR: TFIBStringField;
+    adsSumOrdersPRICE: TFIBStringField;
+    adsSumOrdersORDERCOUNT: TFIBIntegerField;
+    adsSumOrdersCryptPRICE: TCurrencyField;
+    adsSumOrdersSumOrders: TCurrencyField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
@@ -176,6 +183,7 @@ type
     procedure MainConnection1AfterConnect(Sender: TObject);
     procedure adsSelect3CalcFields(DataSet: TDataSet);
     procedure adsRetailMarginsLEFTLIMITChange(Sender: TField);
+    procedure adsSumOrdersCalcFields(DataSet: TDataSet);
   private
     ClientInserted: Boolean;
     //Требуется ли подтверждение обмена
@@ -1485,12 +1493,12 @@ procedure TDM.MainConnection1AfterConnect(Sender: TObject);
 begin
   //открываем таблицы с параметрами
   adtParams.CloseOpen(True);
+  ReadPasswords;
   adtProvider.CloseOpen(True);
   adtReclame.CloseOpen(True);
   adtClients.CloseOpen(True);
   adsRetailMargins.CloseOpen(True);
   LoadRetailMargins;
-  ReadPasswords;
   try
     adtFlags.CloseOpen(True);
   except
@@ -1720,6 +1728,20 @@ end;
 procedure TDM.adsRetailMarginsLEFTLIMITChange(Sender: TField);
 begin
   adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
+end;
+
+procedure TDM.adsSumOrdersCalcFields(DataSet: TDataSet);
+var
+  S : String;
+begin
+  try
+    S := D_B(adsSumOrdersCODE.AsString, adsSumOrdersCODECR.AsString);
+  except
+    on E : Exception do
+      raise EINCryptException.Create('PRICE', E.Message);
+  end;
+  adsSumOrdersCryptPRICE.AsCurrency := StrToCurr(S);
+  adsSumOrdersSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersORDERCOUNT.AsInteger;
 end;
 
 end.

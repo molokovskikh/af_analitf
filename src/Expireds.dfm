@@ -176,7 +176,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'PriceRet'
+          FieldName = 'CryptPriceRet'
           Footers = <>
           Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
           Title.TitleButton = True
