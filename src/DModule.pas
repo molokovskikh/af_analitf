@@ -867,7 +867,9 @@ begin
 
 
             for I := 0 to Files.Count-1 do begin
-              if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM') and (Tables[i] <> 'EXTREGISTRY') then begin
+              if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM')
+                and (Tables[i] <> 'EXTREGISTRY') and (Tables[i] <> 'EXTMINPRICES')
+              then begin
                 up.SelectSQL.Text := 'select * from ' + Tables[i];
                 up.Prepare;
                 up.Open;

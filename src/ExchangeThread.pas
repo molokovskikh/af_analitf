@@ -27,7 +27,8 @@ TUpdateTable = (
 	utRejects,
 	utRegistry,
   utWayBillHead,
-  utWayBillList);
+  utWayBillList,
+  utMinPrices);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -943,6 +944,7 @@ begin
 //	if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
 	if Tables.IndexOf( 'EXTWAYBILLHEAD')>=0 then UpdateTables := UpdateTables + [utWayBillHead];
 	if Tables.IndexOf( 'EXTWAYBILLLIST')>=0 then UpdateTables := UpdateTables + [utWayBillList];
+	if Tables.IndexOf( 'EXTMINPRICES')>=0 then UpdateTables := UpdateTables + [utMinPrices];
     //обновляем таблицы
     {
     Таблица               DELETE  INSERT  UPDATE
@@ -1167,7 +1169,7 @@ begin
 	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteOldPrices'; ExecQuery;
 	end;
 	if utCore in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE CoreInsert'; ExecQuery;
+//	  SQL.Text:='EXECUTE PROCEDURE CoreInsert'; ExecQuery;
 	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_FULLCODE'; ExecQuery;
 	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_PRICECODE'; ExecQuery;
 	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_REGIONCODE'; ExecQuery;
@@ -1175,8 +1177,9 @@ begin
 	  SQL.Text:='drop index FK_CORE_SYNONYMCODE'; ExecQuery;
 	  SQL.Text:='drop index FK_CORE_SYNONYMFIRMCRCODE'; ExecQuery;
 //	  SQL.Text:='drop index IDX_CORE_FULLCODE_BASECOST'; ExecQuery;
+	  SQL.Text:='drop index IDX_CORE_SERVERCOREID'; ExecQuery;
 	  SQL.Text:='drop index IDX_CORE_JUNK'; ExecQuery;
-	  SQL.Text:='drop index IDX_CORE_SHORTCODE'; ExecQuery;
+//	  SQL.Text:='drop index IDX_CORE_SHORTCODE'; ExecQuery;
     DM.MainConnection1.DefaultUpdateTransaction.Commit;
 
     DM.MainConnection1.Close;
@@ -1185,18 +1188,19 @@ begin
 //	  SQL.Text:='alter index PK_CORE inactive'; ExecQuery;
     UpdateFromFile(ExePath+SDirIn+'\Core.txt',
 'INSERT INTO Core '+
-'(Pricecode, RegionCode, FullCode, ShortCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
-'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, BaseCost)' +
-'values (:Pricecode, :RegionCode, :FullCode, :ShortCode, :CodeFirmCr, :SynonymCode, ' +
+'(Pricecode, RegionCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
+'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, BaseCost, ServerCOREID)' +
+'values (:Pricecode, :RegionCode, :FullCode, :CodeFirmCr, :SynonymCode, ' +
 ':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
-':Note, :Period, :Doc, :BaseCost)');
+':Note, :Period, :Doc, :BaseCost, :ServerCOREID)');
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; ExecQuery;
 //	  SQL.Text:='CREATE INDEX IDX_CORE_FULLCODE_BASECOST ON CORE (FULLCODE, BASECOST)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (FULLCODE, JUNK)'; ExecQuery;
-	  SQL.Text:='CREATE INDEX IDX_CORE_SHORTCODE ON CORE (SHORTCODE)'; ExecQuery;
+	  SQL.Text:='CREATE INDEX IDX_CORE_SERVERCOREID ON CORE (SERVERCOREID)'; ExecQuery;
+//	  SQL.Text:='CREATE INDEX IDX_CORE_SHORTCODE ON CORE (SHORTCODE)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; ExecQuery;
 	end;
@@ -1285,6 +1289,11 @@ begin
 	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert(' +
 		DM.adtClients.FieldByName( 'LeadFromBasic').AsString + ')';
 	ExecQuery;
+	if utMinPrices in UpdateTables then
+	begin
+    UpdateFromFile(ExePath+SDirIn+'\MinPrices.txt',
+      'update minprices set servercoreid = :servercoreid where fullcode = :fullcode and regioncode = :regioncode');
+  end;
 	Progress := 90;
 	Synchronize( SetProgress);
 	TotalProgress := 85;

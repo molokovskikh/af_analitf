@@ -97,6 +97,10 @@ type
     adsCoreORDERSHPRICENAME: TFIBStringField;
     adsCoreORDERSHREGIONNAME: TFIBStringField;
     adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
+    adsCoreLEADERCODE: TFIBStringField;
+    adsCoreLEADERCODECR: TFIBStringField;
+    adsCoreLEADERPRICE: TFIBStringField;
+    adsCoreCryptLEADERPRICE: TCurrencyField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -123,6 +127,8 @@ type
     procedure dbgCoreSortMarkingChanged(Sender: TObject);
     procedure adsCoreAfterFetchRecord(FromQuery: TFIBQuery;
       RecordNumber: Integer; var StopFetching: Boolean);
+    procedure adsCoreLEADERPRICENAMEGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
     OrderSum: Double;
@@ -253,6 +259,7 @@ begin
     PricesForm.adsPrices.FieldByName('RegionName').AsString]);
   RefreshOrdersH;
   adsOrdersShowFormSummary.DataSource := dsCore;
+  adsCore.First;
 //  dbgCore.DataSource := dsmdCode;
   inherited ShowForm;
 end;
@@ -477,9 +484,12 @@ procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	//данный прайс-лидер
-	if ( adsCoreLEADERPRICECODE.AsInteger = PriceCode) and
-        	( adsCoreLeaderRegionCode.AsInteger = RegionCode) and
-		(( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME)) then
+	if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and	( adsCoreLeaderRegionCode.AsInteger = RegionCode))
+     or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01)
+     )
+    and
+		(( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME))
+  then
 			Background := LEADER_CLR;
 	//уцененный товар
 	if (adsCoreJunk.Value = 1) and (( Column.Field = adsCorePERIOD) or
@@ -615,7 +625,8 @@ end;
 procedure TCoreFirmForm.LeaderFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
-  Accept := (adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode);
+  Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+    or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01);
 end;
 
 procedure TCoreFirmForm.RefreshAllCore;
@@ -670,6 +681,15 @@ procedure TCoreFirmForm.adsCoreAfterFetchRecord(FromQuery: TFIBQuery;
   RecordNumber: Integer; var StopFetching: Boolean);
 begin
   CI.FetchRecord(FromQuery);
+end;
+
+procedure TCoreFirmForm.adsCoreLEADERPRICENAMEGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+begin
+  if (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01) then
+    Text := PricesForm.adsPrices.FieldByName('PriceName').AsString
+  else
+    Text := Sender.AsString;
 end;
 
 end.

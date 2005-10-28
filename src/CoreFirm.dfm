@@ -167,7 +167,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'MINPRICE'
+        FieldName = 'CryptLEADERPRICE'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1052#1080#1085'. '#1094#1077#1085#1072
@@ -386,6 +386,9 @@ object CoreFirmForm: TCoreFirmForm
       '    LEADERREGIONCODE,'
       '    LEADERREGIONNAME,'
       '    LEADERPRICENAME,'
+      '    LEADERCODE,'
+      '    LEADERCODECR,'
+      '    LEADERPRICE,'
       '    ORDERSCOREID,'
       '    ORDERSORDERID,'
       '    ORDERSCLIENTID,'
@@ -413,7 +416,7 @@ object CoreFirmForm: TCoreFirmForm
       '    :ACLIENTID,'
       '    :APRICENAME) '
       'where'
-      '  CoreID = :OLD_COREID')
+      '  COREID = :COREID   ')
     SelectSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -439,6 +442,9 @@ object CoreFirmForm: TCoreFirmForm
       '    LEADERREGIONCODE,'
       '    LEADERREGIONNAME,'
       '    LEADERPRICENAME,'
+      '    LEADERCODE,'
+      '    LEADERCODECR,'
+      '    LEADERPRICE,'
       '    ORDERSCOREID,'
       '    ORDERSORDERID,'
       '    ORDERSCLIENTID,'
@@ -586,7 +592,23 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreLEADERPRICENAME: TFIBStringField
       FieldName = 'LEADERPRICENAME'
+      OnGetText = adsCoreLEADERPRICENAMEGetText
       Size = 70
+      EmptyStrToNull = False
+    end
+    object adsCoreLEADERCODE: TFIBStringField
+      FieldName = 'LEADERCODE'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsCoreLEADERCODECR: TFIBStringField
+      FieldName = 'LEADERCODECR'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsCoreLEADERPRICE: TFIBStringField
+      FieldName = 'LEADERPRICE'
+      Size = 48
       EmptyStrToNull = False
     end
     object adsCoreORDERSCOREID: TFIBBCDField
@@ -732,6 +754,12 @@ object CoreFirmForm: TCoreFirmForm
       Tag = 2
       FieldKind = fkCalculated
       FieldName = 'CryptCODECR'
+      Calculated = True
+    end
+    object adsCoreCryptLEADERPRICE: TCurrencyField
+      Tag = 3
+      FieldKind = fkCalculated
+      FieldName = 'CryptLEADERPRICE'
       Calculated = True
     end
   end
