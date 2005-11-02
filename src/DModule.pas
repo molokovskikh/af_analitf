@@ -10,7 +10,7 @@ uses
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs, U_CryptIndex;
+  Contnrs, U_CryptIndex, SevenZip;
 
 {
 Криптование
@@ -36,7 +36,7 @@ type
   //exit codes - Коды ошибок выхода из программы
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
-    ecGetFreeDiskSpace, ecIE40);
+    ecGetFreeDiskSpace, ecIE40, ecSevenZip);
 
   TRetMass = array[1..3] of Variant;
 
@@ -432,6 +432,12 @@ begin
     MessageBox( 'Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.',
       MB_ICONERROR or MB_OK);
     ExitProcess( Integer(ecTCPNotExists) );
+  end;
+
+  if not LoadSevenZipDLL then begin
+    MessageBox( 'Не найдена библиотека 7-zip32.dll, необходимая для работы программы.',
+      MB_ICONERROR or MB_OK);
+    ExitProcess( Integer(ecSevenZip) );
   end;
 
   try

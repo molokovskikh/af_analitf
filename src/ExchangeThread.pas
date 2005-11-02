@@ -6,7 +6,7 @@ uses
 	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
-  FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip;
+  FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip;
 
 type
 
@@ -694,6 +694,7 @@ end;
 procedure TExchangeThread.UnpackFiles;
 var
 	SR, ExportsSR: TSearchRec;
+  SevenZipRes : Integer;
 begin
 	if FindFirst( ExePath + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
 	try
@@ -704,16 +705,50 @@ begin
 			{ Если это архив с рекламой }
 			if ( SR.Name[ 1] = 'r') and ( SR.Size > 0) then
 			begin
+{
 				ExchangeForm.UnZip.DestDir := ExePath + SDirReclame;
 				ExchangeForm.UnZip.UnZip;
-				DeleteFileA( ExchangeForm.UnZip.ZipName);
+}        
+
+        SevenZipRes := SevenZipExtractArchive(
+          0,
+          ExePath + SDirIn + '\' + SR.Name,
+          '*.*',
+          True,
+          '',
+          True,
+          ExePath + SDirReclame,
+          False,
+          nil);
+
+        if SevenZipRes <> 0 then
+          raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
+
+				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
 			end
                 	{ Если это данные }
 			else
 			begin
+{
 				ExchangeForm.UnZip.DestDir := ExePath + SDirIn;
 				ExchangeForm.UnZip.UnZip;
 				DeleteFileA( ExchangeForm.UnZip.ZipName);
+				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'));
+}
+        SevenZipRes := SevenZipExtractArchive(
+          0,
+          ExePath + SDirIn + '\' + SR.Name,
+          '*.*',
+          True,
+          '',
+          True,
+          ExePath + SDirIn,
+          False,
+          nil);
+        if SevenZipRes <> 0 then
+          raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
+
+				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
 				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'));
 			end;
 			Synchronize( ExchangeForm.CheckStop);
@@ -1757,4 +1792,7 @@ begin
   DM.SavePass(ASynPass, ACodesPass, ABPass);
 end;
 
+initialization
+finalization
+  UnloadSevenZipDLL;
 end.
