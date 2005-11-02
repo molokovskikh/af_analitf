@@ -179,9 +179,7 @@ object DM: TDM
       '    RASSLEEP = :RASSLEEP,'
       '    HTTPNAMECHANGED = :HTTPNAMECHANGED,'
       '    SHOWALLCATALOG = :SHOWALLCATALOG,'
-      '    SYNPASS = :SYNPASS,'
-      '    CODESPASS = :CODESPASS,'
-      '    BPASS = :BPASS'
+      '    CDS = :CDS'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')

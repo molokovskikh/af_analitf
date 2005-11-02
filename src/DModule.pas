@@ -1626,20 +1626,17 @@ var
 begin
   PassPass := in_Encode('1234567890123456');
 try
-  SynonymPassword := in_Encode( D_C_S(PassPass, in_Decode(adtParams.FieldByName('SYNPASS').AsString) ) );
-  CodesPassword := in_Encode( D_C_S(PassPass, in_Decode(adtParams.FieldByName('CODESPASS').AsString) ) );
-  BasecostPassword := in_Encode( D_C_S(PassPass, in_Decode(adtParams.FieldByName('BPASS').AsString) ) );
+  SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 32);
+  CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 33, 32);
+  BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 32);
+  SynonymPassword := in_Encode( D_C_S(PassPass, in_Decode(SynonymPassword) ) );
+  CodesPassword := in_Encode( D_C_S(PassPass, in_Decode(CodesPassword) ) );
+  BasecostPassword := in_Encode( D_C_S(PassPass, in_Decode(BasecostPassword) ) );
 except
   SynonymPassword := '';
   CodesPassword := '';
   BasecostPassword := '';
 end;
-
-{
-  SynonymPassword := in_Encode('Test1234Test1234');
-  CodesPassword := in_Encode('Test4321Test4321');
-  BasecostPassword := in_Encode('Test3412Test3412');
-}
 end;
 
 function TDM.D_S(CodeS: String): String;
@@ -1687,9 +1684,10 @@ begin
   CodesPassword := ACodes;
   BaseCostPassword := AB;
   adtParams.Edit;
-  adtParams.FieldByName('SYNPASS').AsString := in_Encode( C_C_S(PassPass, in_Decode(SynonymPassword)) );
-  adtParams.FieldByName('CODESPASS').AsString := in_Encode( C_C_S(PassPass, in_Decode(CodesPassword)) );
-  adtParams.FieldByName('BPASS').AsString := in_Encode( C_C_S(PassPass, in_Decode(BaseCostPassword)) );
+  adtParams.FieldByName('CDS').AsString :=
+    in_Encode( C_C_S(PassPass, in_Decode(SynonymPassword)) ) +
+    in_Encode( C_C_S(PassPass, in_Decode(CodesPassword)) ) +
+    in_Encode( C_C_S(PassPass, in_Decode(BaseCostPassword)) );
   adtParams.Post;
 end;
 
