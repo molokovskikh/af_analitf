@@ -18,17 +18,22 @@ type
     dbtPriceAvg: TDBText;
     Grid: TToughDBGrid;
     adsOrders: TpFIBDataSet;
+    adsWareData: TpFIBDataSet;
     adsOrdersFULLCODE: TFIBBCDField;
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
-    adsOrdersPRICE: TFIBBCDField;
+    adsOrdersCODE: TFIBStringField;
+    adsOrdersCODECR: TFIBStringField;
+    adsOrdersPRICE: TFIBStringField;
     adsOrdersORDERDATE: TFIBDateTimeField;
     adsOrdersPRICENAME: TFIBStringField;
     adsOrdersREGIONNAME: TFIBStringField;
     adsOrdersAWAIT: TFIBIntegerField;
     adsOrdersJUNK: TFIBIntegerField;
-    adsWareData: TpFIBDataSet;
+    adsOrdersCryptPRICE: TCurrencyField;
+    lPriceAvg: TLabel;
+    procedure adsOrdersCalcFields(DataSet: TDataSet);
   private
     { Private declarations }
   public
@@ -44,20 +49,41 @@ uses DModule;
 {$R *.dfm}
 
 procedure ShowFormHistory(FullCode, ClientId: Integer);
+var
+  Avr : Currency;
+  Count : Integer;
 begin
   with TFormsHistoryForm.Create(Application) do try
     Screen.Cursor:=crHourglass;
     try
+{
       with adsWareData do begin
         ParamByName('AFullCode').Value:=FullCode;
         ParamByName('AClientId').Value:=ClientId;
         Open;
       end;
+}
       with adsOrders do begin
         ParamByName('AFullCode').Value:=FullCode;
         ParamByName('AClientId').Value:=ClientId;
         Open;
       end;
+      Count := 0;
+      Avr := 0;
+      while not adsOrders.Eof do
+      begin
+        if (Now - adsOrdersORDERDATE.Value < 183) then begin
+          Avr := Avr + adsOrdersCryptPRICE.Value;
+          Inc(Count);
+          adsOrders.Next;
+        end
+        else
+          Break;
+      end;
+      adsOrders.First;
+      if Count > 0 then
+        Avr := Avr / Count;
+      lPriceAvg.Caption := FloatToStrF(Avr, ffCurrency, 15, 2);
     finally
       Screen.Cursor:=crDefault;
     end;
@@ -65,6 +91,16 @@ begin
   finally
     Free;
   end;
+end;
+
+procedure TFormsHistoryForm.adsOrdersCalcFields(DataSet: TDataSet);
+var
+  S : String;
+  C : Currency;
+begin
+  S := DM.D_B(adsOrdersCODE.AsString, adsOrdersCODECR.AsString);
+  C := StrToCurr(S);
+  adsOrdersCryptPRICE.AsCurrency := C;
 end;
 
 end.

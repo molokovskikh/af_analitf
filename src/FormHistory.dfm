@@ -60,13 +60,27 @@ object FormsHistoryForm: TFormsHistoryForm
     ParentFont = False
   end
   object dbtPriceAvg: TDBText
-    Left = 363
+    Left = 523
     Top = 358
     Width = 70
     Height = 13
     AutoSize = True
     DataField = 'PriceAvg'
     DataSource = dsWareData
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+    Visible = False
+  end
+  object lPriceAvg: TLabel
+    Left = 363
+    Top = 358
+    Width = 55
+    Height = 13
+    Caption = 'lPriceAvg'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -128,6 +142,7 @@ object FormsHistoryForm: TFormsHistoryForm
         Width = 94
       end
       item
+        DisplayFormat = 'dd.mm.yyyy hh:nn'
         EditButtons = <>
         FieldName = 'ORDERDATE'
         Footers = <>
@@ -136,14 +151,14 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         EditButtons = <>
-        FieldName = 'Order'
+        FieldName = 'ORDERCOUNT'
         Footers = <>
         Title.Caption = #1047#1072#1082#1072#1079
         Width = 57
       end
       item
         EditButtons = <>
-        FieldName = 'PRICE'
+        FieldName = 'CryptPRICE'
         Footers = <>
         Title.Caption = #1062#1077#1085#1072
         Width = 82
@@ -177,6 +192,8 @@ object FormsHistoryForm: TFormsHistoryForm
       '    SYNONYMNAME,'
       '    SYNONYMFIRM,'
       '    ORDERCOUNT,'
+      '    CODE,'
+      '    CODECR,'
       '    PRICE,'
       '    ORDERDATE,'
       '    PRICENAME,'
@@ -186,6 +203,7 @@ object FormsHistoryForm: TFormsHistoryForm
       'FROM'
       '    ORDERSSHOWBYFORM(:AFULLCODE,'
       '    :ACLIENTID) ')
+    OnCalcFields = adsOrdersCalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     Left = 112
@@ -209,11 +227,20 @@ object FormsHistoryForm: TFormsHistoryForm
     object adsOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsOrdersPRICE: TFIBBCDField
+    object adsOrdersCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsOrdersCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
-      DisplayFormat = '0,00;;'
-      Size = 4
-      RoundByScale = True
+      Size = 48
+      EmptyStrToNull = False
     end
     object adsOrdersORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
@@ -233,6 +260,11 @@ object FormsHistoryForm: TFormsHistoryForm
     end
     object adsOrdersJUNK: TFIBIntegerField
       FieldName = 'JUNK'
+    end
+    object adsOrdersCryptPRICE: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptPRICE'
+      Calculated = True
     end
   end
   object adsWareData: TpFIBDataSet
