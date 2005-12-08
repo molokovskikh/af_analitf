@@ -64,8 +64,6 @@ type
     adsOrdersHFormREGIONCODE: TFIBBCDField;
     adsOrdersHFormORDERDATE: TFIBDateTimeField;
     adsOrdersHFormSENDDATE: TFIBDateTimeField;
-    adsOrdersHFormCLOSED: TFIBIntegerField;
-    adsOrdersHFormSEND: TFIBIntegerField;
     adsOrdersHFormPRICENAME: TFIBStringField;
     adsOrdersHFormREGIONNAME: TFIBStringField;
     adsOrdersHFormPOSITIONS: TFIBIntegerField;
@@ -73,6 +71,8 @@ type
     adsOrdersHFormMESSAGETO: TFIBStringField;
     adsOrdersHFormCOMMENTS: TFIBStringField;
     adsOrdersHFormSumOrder1: TFIBBCDField;
+    adsOrdersHFormSEND: TFIBBooleanField;
+    adsOrdersHFormCLOSED: TFIBBooleanField;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

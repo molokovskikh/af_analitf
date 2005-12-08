@@ -482,11 +482,12 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormSENDDATE: TFIBDateTimeField
       FieldName = 'SENDDATE'
     end
-    object adsOrdersHFormCLOSED: TFIBIntegerField
+    object adsOrdersHFormCLOSED: TFIBBooleanField
       FieldName = 'CLOSED'
     end
-    object adsOrdersHFormSEND: TFIBIntegerField
+    object adsOrdersHFormSEND: TFIBBooleanField
       FieldName = 'SEND'
+      OnChange = adsOrdersH2SendChange
     end
     object adsOrdersHFormPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
