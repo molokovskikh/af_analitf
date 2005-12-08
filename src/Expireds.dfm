@@ -1,6 +1,7 @@
 inherited ExpiredsForm: TExpiredsForm
   Left = 327
   Top = 229
+  ActiveControl = dbgExpireds
   Caption = #1055#1088#1077#1087#1072#1088#1072#1090#1099' '#1089' '#1080#1089#1090#1077#1082#1072#1102#1097#1080#1084#1080' '#1089#1088#1086#1082#1072#1084#1080' '#1075#1086#1076#1085#1086#1089#1090#1080
   ClientHeight = 462
   ClientWidth = 613

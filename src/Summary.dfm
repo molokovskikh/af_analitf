@@ -1,6 +1,7 @@
 inherited SummaryForm: TSummaryForm
   Left = 296
   Top = 232
+  ActiveControl = dbgSummary
   Caption = #1057#1074#1086#1076#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 465
   OldCreateOrder = True
