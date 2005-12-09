@@ -240,6 +240,7 @@ inherited DefectivesForm: TDefectivesForm
       end
       item
         Alignment = taCenter
+        DisplayFormat = 'dd.mm.yyyy hh:nn'
         EditButtons = <>
         FieldName = 'LetterDate'
         Footers = <>

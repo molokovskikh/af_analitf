@@ -146,6 +146,7 @@ inherited OrdersHForm: TOrdersHForm
             SearchPosition = spBottom
             Columns = <
               item
+                DisplayFormat = 'dd.mm.yyyy hh:nn'
                 EditButtons = <>
                 FieldName = 'SENDDATE'
                 Footers = <>
@@ -154,6 +155,7 @@ inherited OrdersHForm: TOrdersHForm
                 Width = 70
               end
               item
+                DisplayFormat = 'dd.mm.yyyy hh:nn'
                 EditButtons = <>
                 FieldName = 'ORDERDATE'
                 Footers = <>
