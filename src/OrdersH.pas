@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons, 
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
-  FIBSQLMonitor;
+  FIBSQLMonitor, FIBQuery;
 
 const
 	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
@@ -16,6 +16,11 @@ const
 	ROrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE ORDERID = :ORDERID';
 
 type
+  TSumOrder = class
+    Sum : Currency;
+    constructor Create(ASum : Currency);
+  end;
+
   TOrdersHForm = class(TChildForm)
     dsOrdersH: TDataSource;
     TabControl: TTabControl;
@@ -70,7 +75,7 @@ type
     adsOrdersHFormSUPPORTPHONE: TFIBStringField;
     adsOrdersHFormMESSAGETO: TFIBStringField;
     adsOrdersHFormCOMMENTS: TFIBStringField;
-    adsOrdersHFormSumOrder1: TFIBBCDField;
+    adsOrdersHFormSumOrder: TFIBBCDField;
     adsOrdersHFormSEND: TFIBBooleanField;
     adsOrdersHFormCLOSED: TFIBBooleanField;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
@@ -93,11 +98,17 @@ type
     procedure tmOrderDateChangeTimer(Sender: TObject);
     procedure adsOrdersH2BeforePost(DataSet: TDataSet);
     procedure dbgOrdersHSortMarkingChanged(Sender: TObject);
+    procedure adsOrdersHFormCalcFields(DataSet: TDataSet);
+    procedure adsOrdersHFormAfterFetchRecord(FromQuery: TFIBQuery;
+      RecordNumber: Integer; var StopFetching: Boolean);
   private
+    FSumOrders : TStringList;
     procedure SetParameters;
     procedure MoveToPrice;
     procedure SendOrders;
     procedure SetDateInterval;
+    procedure ClearSumOrders;
+    procedure OrderEnter;
   public
 	procedure Print( APreview: boolean = False); override;
   end;
@@ -124,6 +135,8 @@ var
 	Year, Month, Day: Word;
 begin
 	inherited;
+  FSumOrders := TStringList.Create;
+  FSumOrders.Sorted := True;
 	PrintEnabled := True;
 	OrdersForm := TOrdersForm.Create( Application);
   WayBillListForm := TWayBillListForm.Create(Application);
@@ -170,6 +183,8 @@ begin
 		+ Self.ClassName, True);
 	dbgOrdersH.SaveToRegistry( Reg);
 	Reg.Free;
+  ClearSumOrders;
+  FSumOrders.Free;
 end;
 
 procedure TOrdersHForm.SetParameters;
@@ -210,9 +225,11 @@ begin
 	adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
   adsOrdersHForm.Close;
+  ClearSumOrders;
+
   adsOrdersHForm.Prepare;
   adsOrdersHForm.Open;
-  
+
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
@@ -470,7 +487,7 @@ begin
 	if Key = VK_RETURN then
 	begin
 		SoftPost( adsOrdersHForm);
-		if not adsOrdersHForm.Isempty then OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
+		if not adsOrdersHForm.Isempty then OrderEnter;
 	end;
 	if ( Key = VK_ESCAPE) and ( Self.PrevForm <> nil) and
 		( Self.PrevForm is TCoreForm) then
@@ -496,7 +513,7 @@ end;
 procedure TOrdersHForm.dbgOrdersHDblClick(Sender: TObject);
 begin
 	SoftPost( adsOrdersHForm);
-	if not adsOrdersHForm.Isempty then OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
+	if not adsOrdersHForm.Isempty then OrderEnter;
 end;
 
 procedure TOrdersHForm.adsOrdersH2AfterPost(DataSet: TDataSet);
@@ -618,6 +635,45 @@ begin
 	SetParameters;
 }
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TOrdersHForm.adsOrdersHFormCalcFields(DataSet: TDataSet);
+begin
+  adsOrdersHFormSumOrder.AsCurrency :=
+    TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum;
+end;
+
+procedure TOrdersHForm.ClearSumOrders;
+var
+  I : Integer;
+begin
+  for I := 0 to FSumOrders.Count-1 do
+    FSumOrders.Objects[i].Free;
+  FSumOrders.Clear;
+end;
+
+{ TSumOrder }
+
+constructor TSumOrder.Create(ASum: Currency);
+begin
+  Sum := ASum;
+end;
+
+procedure TOrdersHForm.adsOrdersHFormAfterFetchRecord(FromQuery: TFIBQuery;
+  RecordNumber: Integer; var StopFetching: Boolean);
+var
+  F : TFIBXSQLVAR;
+begin
+  F := FromQuery.FldByName[adsOrdersHFormORDERID.FieldName];
+  OrdersForm.SetParams(F.AsInteger);
+  FSumOrders.AddObject( F.AsString, TSumOrder.Create(StrToCurr(OrdersForm.lSumOrder.Caption)));
+end;
+
+procedure TOrdersHForm.OrderEnter;
+begin
+  OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
+  TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
+    StrToCurr(OrdersForm.lSumOrder.Caption);
 end;
 
 end.

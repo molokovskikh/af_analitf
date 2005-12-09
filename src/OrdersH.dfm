@@ -1,6 +1,6 @@
 inherited OrdersHForm: TOrdersHForm
-  Left = 219
-  Top = 211
+  Left = 196
+  Top = 189
   ActiveControl = dbgOrdersH
   Caption = #1047#1072#1082#1072#1079#1099
   ClientHeight = 487
@@ -201,7 +201,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'SumOrder1'
+                FieldName = 'SumOrder'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1057#1091#1084#1084#1072
@@ -446,8 +446,10 @@ inherited OrdersHForm: TOrdersHForm
     AfterPost = adsOrdersH2AfterPost
     BeforeDelete = adsOrdersH2BeforeDelete
     BeforePost = adsOrdersH2BeforePost
+    OnCalcFields = adsOrdersHFormCalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    AfterFetchRecord = adsOrdersHFormAfterFetchRecord
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 68
@@ -516,9 +518,10 @@ inherited OrdersHForm: TOrdersHForm
       Size = 100
       EmptyStrToNull = False
     end
-    object adsOrdersHFormSumOrder1: TFIBBCDField
+    object adsOrdersHFormSumOrder: TFIBBCDField
       FieldKind = fkCalculated
-      FieldName = 'SumOrder1'
+      FieldName = 'SumOrder'
+      Size = 2
       RoundByScale = True
       Calculated = True
     end
