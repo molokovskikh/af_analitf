@@ -114,6 +114,8 @@ begin
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, False) then dbgPrices.LoadFromRegistry( Reg);
+  if dbgPrices.SortMarkedColumns.Count = 0 then
+    dbgPrices.Columns[0].Title.SortMarker := smUpEh;
 	Reg.Free;
 	ShowForm;
 end;

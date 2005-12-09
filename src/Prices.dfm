@@ -83,6 +83,8 @@ inherited PricesForm: TPricesForm
           FieldName = 'PRICENAME'
           Footers = <>
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
+          Title.SortIndex = 1
+          Title.SortMarker = smUpEh
           Title.TitleButton = True
           Width = 86
         end

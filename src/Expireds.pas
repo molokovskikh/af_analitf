@@ -135,6 +135,8 @@ begin
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\' +
 		Self.ClassName, False) then dbgExpireds.LoadFromRegistry( Reg);
+  if dbgExpireds.SortMarkedColumns.Count = 0 then
+    dbgExpireds.Columns[0].Title.SortMarker := smUpEh;
 	Reg.Free;
 	ShowForm;
 end;

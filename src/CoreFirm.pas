@@ -184,6 +184,8 @@ begin
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, False) then dbgCore.LoadFromRegistry( Reg);
+  if dbgCore.SortMarkedColumns.Count = 0 then
+    dbgCore.Columns[1].Title.SortMarker := smUpEh;
 	Reg.Free;
 end;
 
