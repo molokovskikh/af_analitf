@@ -1740,7 +1740,7 @@ end;
 
 procedure TDM.adsRetailMarginsLEFTLIMITChange(Sender: TField);
 begin
-  adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
+//  adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
 end;
 
 procedure TDM.adsSumOrdersCalcFields(DataSet: TDataSet);

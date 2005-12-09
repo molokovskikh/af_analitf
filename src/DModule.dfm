@@ -1118,6 +1118,7 @@ object DM: TDM
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
+    AutoCommit = True
     Left = 128
     Top = 400
     object adsRetailMarginsID: TFIBBCDField

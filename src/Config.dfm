@@ -68,7 +68,7 @@ object ConfigForm: TConfigForm
       end
       object lPN: TLabel
         Left = 304
-        Top = 160
+        Top = 152
         Width = 30
         Height = 13
         AutoSize = False
@@ -77,20 +77,26 @@ object ConfigForm: TConfigForm
       end
       object lPNInfo: TLabel
         Left = 304
-        Top = 176
+        Top = 168
         Width = 76
         Height = 39
         Caption = #1048#1085#1090#1077#1088#1074#1072#1083#1099' '#13#10#1087#1077#1088#1077#1089#1077#1082#1072#1102#1090#1089#1103' '#13#10#1089' '#1076#1088#1091#1075' '#1076#1088#1091#1075#1086#1084'.'
       end
-      object btnClientsEdit: TButton
+      object lRaz: TLabel
         Left = 304
-        Top = 256
-        Width = 75
-        Height = 25
-        Caption = #1048#1079#1084#1077#1085#1080#1090#1100
-        TabOrder = 0
-        Visible = False
-        OnClick = btnClientsEditClick
+        Top = 224
+        Width = 30
+        Height = 13
+        AutoSize = False
+        Color = clMaroon
+        ParentColor = False
+      end
+      object lRazInfo: TLabel
+        Left = 304
+        Top = 240
+        Width = 86
+        Height = 39
+        Caption = #1048#1084#1077#1077#1090#1089#1103' '#1088#1072#1079#1088#1099#1074#13#10#1084#1077#1078#1076#1091' '#13#10#1080#1085#1090#1077#1088#1074#1072#1083#1072#1084#1080'.'
       end
       object tdbgRetailMargins: TToughDBGrid
         Left = 8
@@ -99,7 +105,7 @@ object ConfigForm: TConfigForm
         Height = 273
         Anchors = [akLeft, akTop, akRight, akBottom]
         AutoFitColWidths = True
-        DataSource = DM.dsRetailMargins
+        DataSource = dsRetail
         Flat = True
         FooterColor = clWindow
         FooterFont.Charset = DEFAULT_CHARSET
@@ -159,6 +165,16 @@ object ConfigForm: TConfigForm
         Caption = #1059#1076#1072#1083#1080#1090#1100
         TabOrder = 3
         OnClick = btnDelRetailClick
+      end
+      object btnClientsEdit: TButton
+        Left = 208
+        Top = 240
+        Width = 75
+        Height = 25
+        Caption = #1048#1079#1084#1077#1085#1080#1090#1100
+        TabOrder = 0
+        Visible = False
+        OnClick = btnClientsEditClick
       end
     end
     object tshConnect: TTabSheet
@@ -5649,5 +5665,44 @@ object ConfigForm: TConfigForm
       Caption = '&'#1055#1077#1088#1077#1080#1084#1077#1085#1086#1074#1072#1090#1100
       OnClick = itmRasEditNameClick
     end
+  end
+  object mdRetail: TRxMemoryData
+    FieldDefs = <
+      item
+        Name = 'ID'
+        DataType = ftInteger
+      end
+      item
+        Name = 'LEFTLIMIT'
+        DataType = ftCurrency
+      end
+      item
+        Name = 'RIGHTLIMIT'
+        DataType = ftCurrency
+      end
+      item
+        Name = 'RETAIL'
+        DataType = ftInteger
+      end>
+    AfterPost = mdRetailAfterPost
+    Left = 68
+    Top = 208
+    object mdRetailID: TIntegerField
+      FieldName = 'ID'
+    end
+    object mdRetailLEFTLIMIT: TCurrencyField
+      FieldName = 'LEFTLIMIT'
+    end
+    object mdRetailRIGHTLIMIT: TCurrencyField
+      FieldName = 'RIGHTLIMIT'
+    end
+    object mdRetailRETAIL: TIntegerField
+      FieldName = 'RETAIL'
+    end
+  end
+  object dsRetail: TDataSource
+    DataSet = mdRetail
+    Left = 100
+    Top = 216
   end
 end

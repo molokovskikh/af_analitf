@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Grids, DBGrids, ComCtrls, DBCtrls, Mask, Menus, DBGridEh, ShellAPI,
-  Buttons, ExtCtrls, ToughDBGrid;
+  Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule;
 
 type
   TConfigForm = class(TForm)
@@ -73,6 +73,14 @@ type
     lLRInfo: TLabel;
     lPN: TLabel;
     lPNInfo: TLabel;
+    mdRetail: TRxMemoryData;
+    mdRetailID: TIntegerField;
+    mdRetailLEFTLIMIT: TCurrencyField;
+    mdRetailRIGHTLIMIT: TCurrencyField;
+    dsRetail: TDataSource;
+    mdRetailRETAIL: TIntegerField;
+    lRaz: TLabel;
+    lRazInfo: TLabel;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
@@ -96,14 +104,17 @@ type
     procedure btnDelRetailClick(Sender: TObject);
     procedure tdbgRetailMarginsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure mdRetailAfterPost(DataSet: TDataSet);
   private
     HTTPNameChanged : Boolean;
     OldHTTPName : String;
-    PrevLimit : Variant;
+    FRXRetMargins : array of TRetMass;
+    RetMarginsChanges : Boolean;
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
     procedure OnAppEx(Sender: TObject; E: Exception);
+    procedure RXLoadRetailMargins;
   public
   end;
 
@@ -116,7 +127,7 @@ implementation
 
 {$R *.DFM}
 
-uses DBProc, AProc, DModule, Client, Main, DB, LU_Tracer;
+uses DBProc, AProc, Client, Main, LU_Tracer;
 
 function ShowConfig( Auth: boolean = False): boolean;
 var
@@ -148,6 +159,9 @@ begin
 //    DM.MainConnection.BeginTrans;
     try
       DM.adtParams.Edit;
+      mdRetail.LoadFromDataSet(DM.adsRetailMargins, 0, lmAppend);
+      RXLoadRetailMargins;
+      RetMarginsChanges := False;
       Result:=ShowModal=mrOk;
       if Result then begin
         DM.adtParams.FieldByName('RasEntry').AsString:=cbRas.Items[cbRas.ItemIndex];
@@ -165,6 +179,9 @@ begin
           end;
         end;
         DM.adtParams.Post;
+        while not DM.adsRetailMargins.IsEmpty do
+          DM.adsRetailMargins.Delete;
+        mdRetail.SaveToDataSet(DM.adsRetailMargins, 0);
         DM.adsRetailMargins.ApplyUpdates;
         DM.LoadRetailMargins;
       //  DM.MainConnection.CommitTrans;
@@ -371,26 +388,26 @@ begin
       if MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
         CanClose := False;
     end;
-    if CanClose then begin
-    DM.adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
-    if DM.adsRetailMargins.RecordCount > 0 then begin
-      DM.adsRetailMargins.First;
-      Res := DM.adsRetailMarginsLEFTLIMIT.AsCurrency <= DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
-      PrevRight := DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
-      DM.adsRetailMargins.Next;
-      while not DM.adsRetailMargins.Eof and Res do begin
-        Res := PrevRight <= DM.adsRetailMarginsLEFTLIMIT.AsCurrency;
-        if Res then
-          Res := DM.adsRetailMarginsLEFTLIMIT.AsCurrency <= DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
-        DM.adsRetailMargins.Next;
+    if CanClose and RetMarginsChanges then begin
+      mdRetail.SortOnFields(mdRetailLEFTLIMIT.FieldName);
+      if mdRetail.RecordCount > 0 then begin
+        mdRetail.First;
+        Res := mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency;
+        PrevRight := mdRetailRIGHTLIMIT.AsCurrency;
+        mdRetail.Next;
+        while not mdRetail.Eof and Res do begin
+          Res := PrevRight <= mdRetailLEFTLIMIT.AsCurrency;
+          if Res then
+            Res := mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency;
+          mdRetail.Next;
+        end;
+        if not Res then begin
+          CanClose := False;
+          PageControl.ActivePage := tshClients;
+          tdbgRetailMargins.SetFocus;
+          MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
+        end;
       end;
-      if not Res then begin
-        CanClose := False;
-        PageControl.ActivePage := tshClients;
-        tdbgRetailMargins.SetFocus;
-        MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
-      end;
-    end;
     end;
   end;
 end;
@@ -406,49 +423,71 @@ end;
 
 procedure TConfigForm.btnAddRetailClick(Sender: TObject);
 begin
-  DM.adsRetailMargins.Append;
+//  DM.adsRetailMargins.Append;
+  mdRetail.Append;
 end;
 
 procedure TConfigForm.btnDelRetailClick(Sender: TObject);
 begin
-  if not DM.adsRetailMargins.IsEmpty then
-    DM.adsRetailMargins.Delete;
+//  if not DM.adsRetailMargins.IsEmpty then
+//    DM.adsRetailMargins.Delete;
+  if not mdRetail.IsEmpty then
+    mdRetail.Delete;
 end;
 
 procedure TConfigForm.tdbgRetailMarginsGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
-var
-  V1, V2 : Variant;
 begin
-  if (DM.adsRetailMarginsLEFTLIMIT.AsCurrency > DM.adsRetailMarginsRIGHTLIMIT.AsCurrency) and
-    ((Column.Field = DM.adsRetailMarginsLEFTLIMIT) or (Column.Field = DM.adsRetailMarginsRIGHTLIMIT))
+  if (mdRetailLEFTLIMIT.AsCurrency > mdRetailRIGHTLIMIT.AsCurrency) and
+    ((Column.Field = mdRetailLEFTLIMIT) or (Column.Field = mdRetailLEFTLIMIT))
   then
-    Background := clRed;
+    Background := lLR.Color;
 
-  if (DM.adsRetailMargins.RecNo = 1) then
-    PrevLimit := DM.adsRetailMarginsRIGHTLIMIT.AsVariant;
+//  if (mdRetail.RecNo = 1) then
+//    PrevLimit := mdRetailRIGHTLIMIT.AsVariant;
 
-  if (DM.adsRetailMargins.RecNo > 1)
-    and (PrevLimit > DM.adsRetailMarginsLEFTLIMIT.Value)
-    and (Column.Field = DM.adsRetailMarginsLEFTLIMIT)
-  then
-    Background := clOlive;
-
-{
-  else begin
-    DM.adsRetailMargins.RecordFieldValue()
-    if (DM.adsRetailMargins.RecNo < DM.adsRetailMargins.RecordCount) then begin
-      V1 := DM.adsRetailMargins.RecordFieldValue(DM.adsRetailMarginsLEFTLIMIT, DM.adsRetailMargins.RecNo+1);
-      V2 := DM.adsRetailMarginsRIGHTLIMIT.Value;
-      if (DM.adsRetailMargins.RecNo < DM.adsRetailMargins.RecordCount)
-        and (V1 < V2)
-        and (Column.Field = DM.adsRetailMarginsRIGHTLIMIT)
+  if (mdRetail.RecNo > 1) and (Length(FRXRetMargins) >= mdRetail.RecNo-1)
+  then begin
+    if (FRXRetMargins[mdRetail.RecNo-2][2] > mdRetailLEFTLIMIT.Value)
+      and (Column.Field = mdRetailLEFTLIMIT)
+    then
+      Background := lPN.Color
+    else
+      if (FRXRetMargins[mdRetail.RecNo-2][2] <> mdRetailLEFTLIMIT.Value)
+        and (Column.Field = mdRetailLEFTLIMIT)
       then
-        Background := clOlive;
-    end;
+        Background := lRaz.Color
   end;
-}  
+end;
+
+procedure TConfigForm.mdRetailAfterPost(DataSet: TDataSet);
+begin
+  mdRetail.SortOnFields(mdRetailLEFTLIMIT.FieldName);
+  RXLoadRetailMargins;
+  RetMarginsChanges := True;
+end;
+
+procedure TConfigForm.RXLoadRetailMargins;
+var
+  I : Integer;
+  C : Integer;
+begin
+  SetLength(FRXRetMargins, mdRetail.RecordCount);
+  C := mdRetail.RecNo;
+  try
+    mdRetail.First;
+    I := 0;
+    while not mdRetail.Eof do begin
+      FRXRetMargins[i][1] := mdRetailLEFTLIMIT.AsCurrency;
+      FRXRetMargins[i][2] := mdRetailRIGHTLIMIT.AsCurrency;
+      FRXRetMargins[i][3] := mdRetailRETAIL.Value;
+      Inc(I);
+      mdRetail.Next;
+    end;
+  finally
+    mdRetail.RecNo := C;
+  end;
 end;
 
 end.
