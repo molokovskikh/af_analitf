@@ -387,6 +387,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1056#1077#1075#1080#1086#1085
+          Visible = False
           Width = 72
         end
         item
@@ -397,6 +398,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1057#1082#1083#1072#1076
+          Visible = False
           Width = 37
         end
         item
@@ -427,6 +429,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1056#1072#1079#1085#1080#1094#1072', %'
+          Visible = False
         end
         item
           EditButtons = <>

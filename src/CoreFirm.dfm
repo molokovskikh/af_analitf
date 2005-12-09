@@ -113,7 +113,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'DOC'
         Footers = <>
         MinWidth = 5
-        Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
+        Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
         Title.TitleButton = True
       end
       item
