@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
-  pFIBDataSet, DBProc;
+  pFIBDataSet, DBProc, AProc;
 
 type
   TOrdersForm = class(TChildForm)
@@ -57,6 +57,9 @@ type
     procedure adsOrdersBeforeEdit(DataSet: TDataSet);
     procedure adsOrdersAfterPost(DataSet: TDataSet);
   private
+    OldOrder, OrderCount: Integer;
+    OrderSum: Double;
+    procedure SetOrderLabel;
   public
     procedure ShowForm(AOrderId: Integer); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -87,7 +90,10 @@ begin
     ParamByName('AOrderId').Value:=AOrderId;
     if Active then CloseOpen(True) else Open;
   	DataSetCalc( adsOrders,['SUM(CryptSUMORDER)'], V);
-    lSumOrder.Caption := V[0];
+  	OrderCount := adsOrders.RecordCount;
+  	OrderSum := V[0];
+    SetOrderLabel;
+//    lSumOrder.Caption := V[0];
   end;
 end;
 
@@ -115,8 +121,12 @@ begin
 	if Key = VK_ESCAPE then PrevForm.ShowForm;
 	if ( Key = VK_DELETE) and not ( adsOrders.IsEmpty) then
 	begin
+    OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsOrdersORDERCOUNT.AsInteger = 0, 0, 1);
+    OrderSum := OrderSum + ( 0 - adsOrdersORDERCOUNT.AsInteger) * adsOrdersCryptPRICE.AsCurrency;
     DM.SetOldOrderCount(adsOrdersORDERCOUNT.AsInteger);
     DM.SetNewOrderCount(0, adsOrdersCryptPRICE.AsCurrency);
+    SetOrderLabel;
+    MainForm.SetOrdersInfo;
     adsOrders.Delete;
     if adsOrders.RecordCount = 0 then begin
       DM.adcUpdate.Transaction.StartTransaction;
@@ -163,12 +173,22 @@ end;
 
 procedure TOrdersForm.adsOrdersBeforeEdit(DataSet: TDataSet);
 begin
+  OldOrder:=adsOrdersORDERCOUNT.AsInteger;
   DM.SetOldOrderCount(adsOrdersORDERCOUNT.AsInteger);
 end;
 
 procedure TOrdersForm.adsOrdersAfterPost(DataSet: TDataSet);
 begin
+	OrderCount := OrderCount + Iif( adsOrdersORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
+	OrderSum := OrderSum + ( adsOrdersORDERCOUNT.AsInteger - OldOrder) * adsOrdersCryptPRICE.AsCurrency;
   DM.SetNewOrderCount(adsOrdersORDERCOUNT.AsInteger, adsOrdersCryptPRICE.AsCurrency);
+  SetOrderLabel;
+	MainForm.SetOrdersInfo;
+end;
+
+procedure TOrdersForm.SetOrderLabel;
+begin
+  lSumOrder.Caption := Format('%0.2f', [OrderSum]);
 end;
 
 end.

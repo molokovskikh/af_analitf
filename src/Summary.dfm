@@ -21,6 +21,14 @@ inherited SummaryForm: TSummaryForm
     DesignSize = (
       684
       33)
+    object Bevel1: TBevel
+      Left = 0
+      Top = 0
+      Width = 684
+      Height = 33
+      Align = alClient
+      Shape = bsTopLine
+    end
     object dbtCountOrder: TDBText
       Left = 76
       Top = 11
@@ -65,7 +73,7 @@ inherited SummaryForm: TSummaryForm
       ParentFont = False
     end
     object dbtSumOrder: TDBText
-      Left = 188
+      Left = 324
       Top = 11
       Width = 81
       Height = 17
@@ -78,14 +86,20 @@ inherited SummaryForm: TSummaryForm
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
+      Visible = False
     end
-    object Bevel1: TBevel
-      Left = 0
-      Top = 0
-      Width = 684
-      Height = 33
-      Align = alClient
-      Shape = bsTopLine
+    object lSumOrder: TLabel
+      Left = 192
+      Top = 11
+      Width = 59
+      Height = 13
+      Caption = 'lSumOrder'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
     end
   end
   object pClient: TPanel
