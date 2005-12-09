@@ -568,6 +568,7 @@ object MainForm: TMainForm
       Caption = #1043#1086#1089'. '#1088#1077#1077#1089#1090#1088' '#1094#1077#1085
       Hint = #1043#1086#1089#1091#1076#1072#1088#1089#1090#1074#1077#1085#1085#1099#1081' '#1088#1077#1077#1089#1090#1088' '#1094#1077#1085
       ImageIndex = 12
+      Visible = False
       OnExecute = actRegistryExecute
     end
     object actDefectives: TAction

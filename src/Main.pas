@@ -774,7 +774,7 @@ begin
   actSale.Enabled := False;
   actOrderPrice.Enabled := False;
   actOrderSummary.Enabled := False;
-  actRegistry.Enabled := False;
+//  actRegistry.Enabled := False;
   actDefectives.Enabled := False;
   actNormatives.Enabled := False;
   actClosedOrders.Enabled := False;
@@ -787,7 +787,7 @@ begin
   actSale.Enabled := True;
   actOrderPrice.Enabled := True;
   actOrderSummary.Enabled := True;
-  actRegistry.Enabled := True;
+//  actRegistry.Enabled := True;
   actDefectives.Enabled := True;
   actNormatives.Enabled := True;
   actClosedOrders.Enabled := True;

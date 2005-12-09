@@ -240,7 +240,7 @@ end;
 procedure TPricesForm.ProcessPrice;
 begin
 	if adsPricesFirmCode.AsInteger=RegisterId then
-    MainForm.actRegistry.Execute
+    //MainForm.actRegistry.Execute
   else
     if not adsPricesPRICECODE.IsNull then
       CoreFirmForm.ShowForm(adsPrices.FieldByName( 'PriceCode').AsInteger,
