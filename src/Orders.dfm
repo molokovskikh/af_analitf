@@ -1,6 +1,6 @@
 inherited OrdersForm: TOrdersForm
-  Left = 276
-  Top = 204
+  Left = 223
+  Top = 182
   ActiveControl = dbgOrders
   Caption = #1040#1088#1093#1080#1074#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 443
@@ -129,7 +129,7 @@ inherited OrdersForm: TOrdersForm
       Top = 29
       Width = 81
       Height = 13
-      DataField = 'SumOrder1'
+      DataField = 'PRICENAME'
       DataSource = OrdersHForm.dsOrdersH
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
