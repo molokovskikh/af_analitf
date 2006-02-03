@@ -2,48 +2,41 @@ unit ExternalOrders;
 
 interface
 
-uses Windows, SysUtils, ADODB, StdCtrls, ComCtrls, Classes, Forms, ActiveX, Dialogs;
+uses Windows, SysUtils, StdCtrls, ComCtrls, Classes, Forms, ActiveX, Dialogs,
+     pFIBDatabase;
 
-//type
+type
 
 { Вызывает форму настройки сервиса интеграции с  Протек}
 {   AHandle := Application.Handle }
-{
 TExternalOrdersConfig = procedure(
-  ADOConnection: TADOConnection;
+  Connection: TpFIBDatabase;
 	AHandle: THandle);
-  }
 
 {Отправка заказов внешней программе}
 {  OrderID - заказ, который нужно обработать}
 {  Если функция возвращает True, то заказ можно помещать как отправленный}
-{
 TExternalOrdersThreading = function(
   AHandle: THandle;
-  ADOConnection: TADOConnection;
+  Connection: TpFIBDatabase;
   OrderID : Integer;
 	inStStatus: TLabel;
   inProgressBar: TProgressBar;
 	inTotalProgressBar: TProgressBar;
   var ErrorStr : PChar) : Boolean;
-  }
 
 {Проверка того, что заказ является внешним}
-{
 TExternalOrdersPriceIsProtek = function(
-  AConnection : TADOConnection;
+  Connection: TpFIBDatabase;
   AOrderId : Integer) : Boolean;
-  }
 
 {Запуск программы "Протек" для обработки заказов}
-{
 TExternalOrdersRun = function(
   AHandle: THandle;
-  ADOConnection: TADOConnection;
+  Connection: TpFIBDatabase;
   var ErrorStr : PChar) : Boolean;
-  }
 
-//TExternalOrdersClearTempDirectory = procedure;
+TExternalOrdersClearTempDirectory = procedure;
 
 procedure LoadExternalOrdersDLL;
 procedure UnLoadExternalOrdersDLL;
@@ -51,14 +44,12 @@ function IsExternalOrdersDLLPresent: Boolean;
 
 procedure RunExternalOrders;
 
-{
 var
   ExternalOrdersConfig        : TExternalOrdersConfig = nil;
   ExternalOrdersThreading     : TExternalOrdersThreading = nil;
   ExternalOrdersPriceIsProtek : TExternalOrdersPriceIsProtek = nil;
   ExternalOrdersRun           : TExternalOrdersRun = nil;
   ExternalOrdersClearTempDirectory : TExternalOrdersClearTempDirectory = nil;
-  }
 
 implementation
 
@@ -81,13 +72,11 @@ begin
   hExternalOrdersDLL := LoadLibrary( 'ExternalOrders.dll');
   if hExternalOrdersDLL <> 0 then
     try
-    {
       @ExternalOrdersConfig        := GetProcAddress( hExternalOrdersDLL, 'ExternalOrdersConfig');
       @ExternalOrdersThreading     := GetProcAddress( hExternalOrdersDLL, 'ExternalOrdersThreading');
       @ExternalOrdersPriceIsProtek := GetProcAddress( hExternalOrdersDLL, 'ExternalOrdersPriceIsProtek');
       @ExternalOrdersRun           := GetProcAddress( hExternalOrdersDLL, 'ExternalOrdersRun');
       @ExternalOrdersClearTempDirectory := GetProcAddress( hExternalOrdersDLL, 'ExternalOrdersClearTempDirectory');
-}      
     except
     end;
 end;
@@ -95,26 +84,22 @@ end;
 procedure UnLoadExternalOrdersDLL;
 begin
   FreeLibrary(hExternalOrdersDLL);
-  {
   ExternalOrdersConfig := nil;
   ExternalOrdersThreading := nil;
   ExternalOrdersPriceIsProtek := nil;
   ExternalOrdersRun := nil;
   ExternalOrdersClearTempDirectory := nil;
-}  
   hExternalOrdersDLL := 0;
 end;
 
 function IsExternalOrdersDLLPresent: Boolean;
 begin
 	Result := (hExternalOrdersDLL <> 0)
-  {
     and (Assigned(ExternalOrdersConfig))
     and (Assigned(ExternalOrdersThreading))
     and (Assigned(ExternalOrdersPriceIsProtek))
     and (Assigned(ExternalOrdersRun))
     and (Assigned(ExternalOrdersClearTempDirectory));
-}    
 end;
 
 procedure RunExternalOrders;
@@ -138,13 +123,10 @@ var
   ExtErrorMessage : String;
 begin
   try
-    ExternalRes := False;
-{
     ExternalRes := ExternalOrdersRun(
       Application.Handle,
-      DM.MainConnection,
+      DM.MainConnection1,
       ErrorStr);
-}      
 
     if not ExternalRes then begin
       SetLength(ExtErrorMessage, StrLen(ErrorStr));

@@ -760,8 +760,7 @@ begin
 
   DM.adtParams.Close;
   try
-    //TODO:Восстановить работу интеграции
-    //ExternalOrdersConfig( DM.MainConnection, Self.Handle);
+    ExternalOrdersConfig( DM.MainConnection1, Self.Handle);
   finally
     DM.adtParams.Open;
   end;

@@ -582,15 +582,14 @@ begin
 			DM.adsOrders.Next;
 		end;
 
-{
     if IsExternalOrdersDLLPresent then
-      if ExternalOrdersPriceIsProtek(DM.MainConnection, DM.adsOrdersH.FieldByName( 'OrderId').AsInteger)
+      if ExternalOrdersPriceIsProtek(DM.MainConnection1, DM.adsOrdersH.FieldByName( 'OrderId').AsInteger)
       then begin
         Inc(ExchangeForm.ExternalOrdersCount);
         try
           ExternalRes := ExternalOrdersThreading(
             ExchangeForm.AppHandle,
-            DM.MainConnection,
+            DM.MainConnection1,
             DM.adsOrdersH.FieldByName( 'OrderId').AsInteger,
             nil,
             nil,
@@ -615,7 +614,6 @@ begin
           end;
         end;
       end;
-}      
 
 		try
 			Res := Soap.Invoke( 'PostOrder1', params, values);
