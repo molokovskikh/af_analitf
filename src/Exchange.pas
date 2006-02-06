@@ -182,6 +182,7 @@ begin
     WriteLn(ExchangeForm.LogFile, '---------------------------');
     WriteLn(ExchangeForm.LogFile, 'Сессия начата в ' + DateTimeToStr(Now));
 		try
+      DM.ResetReclame;
 			ExchangeForm.Timer.Enabled := True;
 			Result := ExchangeForm.ShowModal = mrOk;
       if not Result then
@@ -192,7 +193,7 @@ begin
 			DM.MainConnection1.Close;
       Sleep(500);
 			DM.MainConnection1.Open;
-//		finally
+      DM.UpdateReclame;
 		except
 			on E: Exception do ShowMessage( E.Message);
 		end;

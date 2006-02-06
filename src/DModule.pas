@@ -195,6 +195,7 @@ type
     FRetMargins : array of TRetMass;
     OldOrderCount : Integer;
     AllSumOrder : Currency;
+    UpdateReclameDT : TDateTime;
     procedure CheckRestrictToRun;
     procedure ReadPasswords;
   public
@@ -241,8 +242,13 @@ type
     function NeedCommitExchange : Boolean;
     procedure SetNeedCommitExchange;
     procedure ResetNeedCommitExchange;
+
+    //Эти процедуры нужны для того, чтобы корректно применять дату обновления рекламы
+    procedure ResetReclame;
+    procedure SetReclame;
+    procedure UpdateReclame;
 {
-}    
+}
     //DecodeCryptS
     function D_C_S(Pass, S : String) : String;
     //CodeCryptS
@@ -1792,6 +1798,25 @@ end;
 procedure TDM.adtClientsAfterScroll(DataSet: TDataSet);
 begin
   InitAllSumOrder;
+end;
+
+procedure TDM.ResetReclame;
+begin
+  UpdateReclameDT := 0;
+end;
+
+procedure TDM.SetReclame;
+begin
+  UpdateReclameDT := Now();
+end;
+
+procedure TDM.UpdateReclame;
+begin
+  if (UpdateReclameDT > 1) then begin
+    adtReclame.Edit;
+    adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := UpdateReclameDT;
+    adtReclame.Post;
+  end;
 end;
 
 end.

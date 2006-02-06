@@ -26,7 +26,7 @@ type
 
 implementation
 
-uses Exchange, DModule, AProc, VCLUnZip;
+uses Exchange, DModule, AProc, VCLUnZip, SevenZip;
 
 procedure TReclameThread.ClearProgress;
 begin
@@ -47,97 +47,14 @@ var
   NewReclame : Boolean;
   ZipFileName : String;
   UnZip       : TVCLUnZip;
+  SevenZipRes : Integer;
 begin
 	RecTerminated := False;
   Synchronize(ClearProgress);
 	RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
-
-{
-	ReclameURL := StringReplace( DM.adtReclame.FieldByName( 'ReclameURL').AsString, '#',
-		RegionCode, [rfReplaceAll, rfIgnoreCase]);
-	try
-		if ExchangeForm.HTTPReclame.Host = '' then exit;
- 		ExchangeForm.HTTPReclame.Head( ReclameURL);
-		if ExchangeForm.HTTPReclame.Response.LastModified <=
-			DM.adtReclame.FieldByName( 'UpdateDateTime').AsDateTime then
-		begin
-			Terminated := True;
-			exit;
-		end;
-	except
-	end;
-
-	FileStream := TFileStream.Create( ExePath + SDirIn + '\r' + RegionCode + '.zip',
-		fmCreate or fmOpenWrite);
-	try
-    ExchangeForm.HTTPReclame.OnWork := HTTPReclameWork;
-    try
-      ExchangeForm.HTTPReclame.Get( ReclameURL, FileStream);
-    finally
-      ExchangeForm.HTTPReclame.OnWork := nil;
-    end;
-		DM.adtReclame.Edit;
-		DM.adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := Now;
-		DM.adtReclame.Post;
-	except
-	end;
-	if FileStream.Size = 0 then
-	begin
-		FileStream.Free;
-		DeleteFile( ExePath + SDirIn + '\r' + RegionCode + '.zip');
-	end
-	else
-		FileStream.Free;
-}
-
-
-
   try
-{
    	ReclameURL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx/GetReclame';
- 		Res := ExchangeForm.HTTPReclame.Get(ReclameURL);
-    TmpPos := Pos('URL=', Res);
-    if TmpPos > 0 then begin
-      Res := Copy(Res, TmpPos + 4, Length(Res));
-      TmpPos := Pos(';Size=', Res);
-      if TmpPos > 5  then begin
-        ReclameURL := Copy(Res, 1, TmpPos-1);
-        Res := Copy(Res, TmpPos + 6, Length(Res));
-        FileSize := StrToIntDef(Res, 0);
-
-        if FileSize > 0 then begin
-          FileStream := TFileStream.Create( ExePath + SDirIn + '\r' + RegionCode + '.zip',
-            fmCreate or fmOpenWrite);
-          try
-
-            ExchangeForm.HTTPReclame.OnWork := HTTPReclameWork;
-            try
-              ExchangeForm.HTTPReclame.Get( ReclameURL, FileStream);
-            finally
-              ExchangeForm.HTTPReclame.OnWork := nil;
-            end;
-
-            DM.adtReclame.Edit;
-            DM.adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := Now;
-            DM.adtReclame.Post;
-          except
-          end;
-          if FileStream.Size = 0 then
-          begin
-            FileStream.Free;
-            DeleteFile( ExePath + SDirIn + '\r' + RegionCode + '.zip');
-          end
-          else
-            FileStream.Free;
-        end;
-
-      end;
-    end;
-}
-
-   	ReclameURL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		':80/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
+		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
     FStatusStr := 'Запрос информационного блока...';
     Synchronize(UpdateProgress);
     FSOAP := TSOAP.Create(ReclameURL, DM.adtParams.FieldByName( 'HTTPName').AsString,
@@ -191,18 +108,26 @@ begin
           UnZip := TVCLUnZip.Create(nil);
           Log('Reclame', 'Пытаемся распаковать архив с информационным блоком...');
           try
-            UnZip.DoAll := True;
-            UnZip.IncompleteZipMode := izAssumeBad;
-            UnZip.OverwriteMode := Always;
-            UnZip.RecreateDirs := True;
-            UnZip.ReplaceReadOnly := True;
-            UnZip.ZipName := ZipFileName;
-            UnZip.DestDir := ExePath + SDirReclame;
-            UnZip.UnZip;
+            SevenZipRes := SevenZipExtractArchive(
+              0,
+              ExePath + SDirReclame + '\r' + RegionCode + '.zip',
+              '*.*',
+              True,
+              '',
+              True,
+              ExePath + SDirReclame,
+              False,
+              nil);
+
+            if SevenZipRes <> 0 then
+              raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d',
+                [ExePath + SDirReclame + '\r' + RegionCode + '.zip',
+                SevenZipRes]);
+
             Log('Reclame', 'Архив с информационным блоком успешно распакован');
           finally
-            SysUtils.DeleteFile(ZipFileName);
             UnZip.Free;
+            SysUtils.DeleteFile(ZipFileName);
           end;
 
           if Terminated then Abort;
@@ -228,11 +153,12 @@ begin
     end;
 
   except
-    on E : Exception do
+    on E : Exception do begin
+      FStatusStr := 'Ошибка при получении информационного блока';
+      Synchronize(UpdateProgress);
       Log('Reclame', 'Процесс обновления информационного блока завершился с ошибкой : ' + E.Message);
+    end;
   end;
-{
-}
 	RecTerminated := True;
 end;
 
@@ -289,11 +215,18 @@ begin
 end;
 
 procedure TReclameThread.Log(SybSystem, MessageText: String);
+var
+  Res : Boolean;
 begin
-  try
-     WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + '  ' + SybSystem + '  ' + MessageText);
-  except
-  end;
+  Res := False;
+  repeat
+    try
+       WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + '  ' + SybSystem + '  ' + MessageText);
+       Res := True;
+    except
+      Sleep(700);
+    end;
+  until Res;
 end;
 
 procedure TReclameThread.OnConnectError(AMessage: String);
@@ -309,9 +242,7 @@ end;
 
 procedure TReclameThread.UpdateReclameTable;
 begin
-  DM.adtReclame.Edit;
-  DM.adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := Now;
-  DM.adtReclame.Post;
+  DM.SetReclame;
 end;
 
 end.
