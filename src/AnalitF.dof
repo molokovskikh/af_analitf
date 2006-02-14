@@ -117,7 +117,7 @@ AutoIncBuild=1
 MajorVer=4
 MinorVer=0
 Release=1
-Build=219
+Build=221
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.0.1.219
+FileVersion=4.0.1.221
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2005
 LegalTrademarks=Инфорум
@@ -136,8 +136,6 @@ OriginalFilename=AnalitF.exe
 ProductName=АналитФАРМАЦИЯ
 ProductVersion=1.0.0.0
 Comments=
-[Excluded Packages]
-c:\program files\borland\delphi7\Bin\dclado70.bpl=Borland ADO DB Components
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=C:\Program Files\Borland\Delphi7\Indy\
@@ -146,12 +144,12 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=6
-Item0=$(DELPHI)\Indy\lib;
-Item1=$(DELPHI)\Indy\lib;C:\Program Files\Borland\Delphi7\RXLib\Units;
-Item2=$(DELPHI)\Indy\lib
-Item3=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib
-Item4=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
-Item5=$(DELPHI)\Lib\Debug
+Item0=$(DELPHI)\Lib\Debug
+Item1=$(DELPHI)\Indy\lib;
+Item2=$(DELPHI)\Indy\lib;C:\Program Files\Borland\Delphi7\RXLib\Units;
+Item3=$(DELPHI)\Indy\lib
+Item4=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib
+Item5=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit

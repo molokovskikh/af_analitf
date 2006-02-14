@@ -170,6 +170,8 @@ TMainForm = class(TForm)
     procedure itmAboutClick(Sender: TObject);
     procedure itmExternalOrdersClick(Sender: TObject);
     procedure actWayBillUpdate(Sender: TObject);
+    procedure dblcbClientsMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
 private
 	JustRun: boolean;
 
@@ -675,10 +677,13 @@ procedure TMainForm.Label1MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
   try
+{
+  Удалено, т.к. ошибку в потерей фокуса ВОЗМОЖНО УСТРАНИЛ.
 	if not EditDummy.Focused and
     Assigned(ActiveControl) and
 		not ActiveControl.Focused and
 		not ActiveControl.ClassNameIs( 'TWebBrowser') then EditDummy.SetFocus;
+}    
   except
     on E : Exception do
       ShowMessage('Error : ' + E.Message);
@@ -833,6 +838,14 @@ end;
 procedure TMainForm.actWayBillUpdate(Sender: TObject);
 begin
   TAction(Sender).Enabled := False;
+end;
+
+procedure TMainForm.dblcbClientsMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  //Это необходимо для того, чтобы устанавливался фокус.
+  //Иногда это не происходит из-за того, что фокус был на компоненте WebBrowser
+  dblcbClients.SetFocus;
 end;
 
 end.
