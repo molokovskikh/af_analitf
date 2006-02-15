@@ -15,15 +15,9 @@ const
 type
   TExpiredsForm = class(TChildForm)
     dsExpireds: TDataSource;
-    lblRecordCount: TLabel;
-    Panel1: TPanel;
     plOverCost: TPanel;
     Timer: TTimer;
-    Bevel1: TBevel;
     pClient: TPanel;
-    pWebBrowser: TPanel;
-    Bevel2: TBevel;
-    WebBrowser1: TWebBrowser;
     dbgExpireds: TToughDBGrid;
     adsExpireds: TpFIBDataSet;
     adsExpiredsSumOrder: TCurrencyField;
@@ -75,6 +69,12 @@ type
     adsExpiredsORDERSHPRICENAME: TFIBStringField;
     adsExpiredsORDERSHREGIONNAME: TFIBStringField;
     adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
+    pRecordCount: TPanel;
+    lblRecordCount: TLabel;
+    Bevel1: TBevel;
+    pWebBrowser: TPanel;
+    Bevel2: TBevel;
+    WebBrowser1: TWebBrowser;
     procedure adsExpireds2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);

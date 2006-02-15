@@ -10,139 +10,14 @@ inherited SummaryForm: TSummaryForm
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel1: TPanel
-    Left = 0
-    Top = 432
-    Width = 684
-    Height = 33
-    Align = alBottom
-    BevelOuter = bvNone
-    TabOrder = 0
-    DesignSize = (
-      684
-      33)
-    object Bevel1: TBevel
-      Left = 0
-      Top = 0
-      Width = 684
-      Height = 33
-      Align = alClient
-      Shape = bsTopLine
-    end
-    object dbtCountOrder: TDBText
-      Left = 76
-      Top = 11
-      Width = 41
-      Height = 17
-      Anchors = [akLeft, akBottom]
-      DataField = 'CountOrder'
-      DataSource = dsSummaryH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label1: TLabel
-      Left = 12
-      Top = 11
-      Width = 56
-      Height = 13
-      Anchors = [akLeft, akBottom]
-      Caption = #1055#1086#1079#1080#1094#1080#1081':'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label2: TLabel
-      Left = 124
-      Top = 11
-      Width = 60
-      Height = 13
-      Anchors = [akLeft, akBottom]
-      Caption = #1085#1072' '#1089#1091#1084#1084#1091':'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtSumOrder: TDBText
-      Left = 324
-      Top = 11
-      Width = 81
-      Height = 17
-      Anchors = [akLeft, akBottom]
-      DataField = 'SumOrder'
-      DataSource = dsSummaryH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
-    object lSumOrder: TLabel
-      Left = 192
-      Top = 11
-      Width = 59
-      Height = 13
-      Caption = 'lSumOrder'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-  end
   object pClient: TPanel
     Left = 0
     Top = 0
     Width = 684
-    Height = 432
+    Height = 267
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 1
-    object pWebBrowser: TPanel
-      Tag = 200
-      Left = 0
-      Top = 234
-      Width = 684
-      Height = 198
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 0
-      object Bevel2: TBevel
-        Left = 0
-        Top = 0
-        Width = 684
-        Height = 4
-        Align = alTop
-        Shape = bsTopLine
-      end
-      object WebBrowser1: TWebBrowser
-        Tag = 6
-        Left = 0
-        Top = 4
-        Width = 684
-        Height = 194
-        Align = alClient
-        TabOrder = 0
-        ControlData = {
-          4C000000B24600000D1400000000000000000000000000000000000000000000
-          000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126208000000000000004C0000000114020000000000C000000000000046
-          8000000000000000000000000000000000000000000000000000000000000000
-          00000000000000000100000000000000000000000000000000000000}
-      end
-    end
+    TabOrder = 0
     object dbgSummary: TToughDBGrid
       Left = 0
       Top = 0
@@ -161,7 +36,7 @@ inherited SummaryForm: TSummaryForm
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
       OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
       ReadOnly = True
-      TabOrder = 1
+      TabOrder = 0
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
       TitleFont.Height = -11
@@ -277,6 +152,140 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1057#1091#1084#1084#1072
         end>
+    end
+    object pStatus: TPanel
+      Left = 0
+      Top = 234
+      Width = 684
+      Height = 33
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 1
+      DesignSize = (
+        684
+        33)
+      object Bevel1: TBevel
+        Left = 0
+        Top = 0
+        Width = 684
+        Height = 33
+        Align = alClient
+        Shape = bsTopLine
+      end
+      object dbtCountOrder: TDBText
+        Left = 172
+        Top = 11
+        Width = 41
+        Height = 17
+        Anchors = [akLeft, akBottom]
+        DataField = 'CountOrder'
+        DataSource = dsSummaryH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label1: TLabel
+        Left = 108
+        Top = 11
+        Width = 56
+        Height = 13
+        Anchors = [akLeft, akBottom]
+        Caption = #1055#1086#1079#1080#1094#1080#1081':'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label2: TLabel
+        Left = 220
+        Top = 11
+        Width = 60
+        Height = 13
+        Anchors = [akLeft, akBottom]
+        Caption = #1085#1072' '#1089#1091#1084#1084#1091':'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtSumOrder: TDBText
+        Left = 460
+        Top = 11
+        Width = 81
+        Height = 17
+        Anchors = [akLeft, akBottom]
+        DataField = 'SumOrder'
+        DataSource = dsSummaryH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Visible = False
+      end
+      object lSumOrder: TLabel
+        Left = 288
+        Top = 11
+        Width = 59
+        Height = 13
+        Caption = 'lSumOrder'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object btnDelete: TButton
+        Left = 8
+        Top = 5
+        Width = 75
+        Height = 25
+        Caption = #1059#1076#1072#1083#1080#1090#1100
+        TabOrder = 0
+        OnClick = btnDeleteClick
+      end
+    end
+  end
+  object pWebBrowser: TPanel
+    Tag = 200
+    Left = 0
+    Top = 267
+    Width = 684
+    Height = 198
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 1
+    object Bevel2: TBevel
+      Left = 0
+      Top = 0
+      Width = 684
+      Height = 4
+      Align = alTop
+      Shape = bsTopLine
+    end
+    object WebBrowser1: TWebBrowser
+      Tag = 6
+      Left = 0
+      Top = 4
+      Width = 684
+      Height = 194
+      Align = alClient
+      TabOrder = 0
+      ControlData = {
+        4C000000B24600000D1400000000000000000000000000000000000000000000
+        000000004C000000000000000000000001000000E0D057007335CF11AE690800
+        2B2E126208000000000000004C0000000114020000000000C000000000000046
+        8000000000000000000000000000000000000000000000000000000000000000
+        00000000000000000100000000000000000000000000000000000000}
     end
   end
   object dsSummary: TDataSource

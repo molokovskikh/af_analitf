@@ -23,50 +23,17 @@ inherited ExpiredsForm: TExpiredsForm
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 1
+    TabOrder = 0
     Visible = False
   end
   object pClient: TPanel
     Left = 0
     Top = 0
     Width = 613
-    Height = 433
+    Height = 253
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 2
-    object pWebBrowser: TPanel
-      Tag = 209
-      Left = 0
-      Top = 224
-      Width = 613
-      Height = 209
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 0
-      object Bevel2: TBevel
-        Left = 0
-        Top = 0
-        Width = 613
-        Height = 4
-        Align = alTop
-        Shape = bsTopLine
-      end
-      object WebBrowser1: TWebBrowser
-        Tag = 4
-        Left = 0
-        Top = 4
-        Width = 613
-        Height = 205
-        Align = alClient
-        TabOrder = 0
-        ControlData = {
-          4C0000005B3F0000301500000000000000000000000000000000000000000000
-          000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126208000000000000004C0000000114020000000000C000000000000046
-          8000000000000000000000000000000000000000000000000000000000000000
-          00000000000000000100000000000000000000000000000000000000}
-      end
-    end
+    TabOrder = 1
     object dbgExpireds: TToughDBGrid
       Left = 0
       Top = 0
@@ -85,7 +52,7 @@ inherited ExpiredsForm: TExpiredsForm
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
       OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
       ReadOnly = True
-      TabOrder = 1
+      TabOrder = 0
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
       TitleFont.Height = -11
@@ -205,39 +172,72 @@ inherited ExpiredsForm: TExpiredsForm
           Title.Caption = #1057#1091#1084#1084#1072
         end>
     end
+    object pRecordCount: TPanel
+      Left = 0
+      Top = 224
+      Width = 613
+      Height = 29
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 1
+      DesignSize = (
+        613
+        29)
+      object lblRecordCount: TLabel
+        Left = 12
+        Top = 8
+        Width = 80
+        Height = 13
+        Anchors = [akLeft, akBottom]
+        Caption = #1055#1086#1079#1080#1094#1080#1081' : %d'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Bevel1: TBevel
+        Left = 0
+        Top = 0
+        Width = 613
+        Height = 29
+        Align = alClient
+        Shape = bsTopLine
+      end
+    end
   end
-  object Panel1: TPanel
+  object pWebBrowser: TPanel
+    Tag = 209
     Left = 0
-    Top = 433
+    Top = 253
     Width = 613
-    Height = 29
+    Height = 209
     Align = alBottom
     BevelOuter = bvNone
-    TabOrder = 0
-    DesignSize = (
-      613
-      29)
-    object lblRecordCount: TLabel
-      Left = 12
-      Top = 8
-      Width = 80
-      Height = 13
-      Anchors = [akLeft, akBottom]
-      Caption = #1055#1086#1079#1080#1094#1080#1081' : %d'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Bevel1: TBevel
+    TabOrder = 2
+    object Bevel2: TBevel
       Left = 0
       Top = 0
       Width = 613
-      Height = 29
-      Align = alClient
+      Height = 4
+      Align = alTop
       Shape = bsTopLine
+    end
+    object WebBrowser1: TWebBrowser
+      Tag = 4
+      Left = 0
+      Top = 4
+      Width = 613
+      Height = 205
+      Align = alClient
+      TabOrder = 0
+      ControlData = {
+        4C0000005B3F0000301500000000000000000000000000000000000000000000
+        000000004C000000000000000000000001000000E0D057007335CF11AE690800
+        2B2E126208000000000000004C0000000114020000000000C000000000000046
+        8000000000000000000000000000000000000000000000000000000000000000
+        00000000000000000100000000000000000000000000000000000000}
     end
   end
   object dsExpireds: TDataSource
@@ -478,6 +478,7 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
+      DisplayFormat = '#'
     end
     object adsExpiredsORDERSPRICE: TFIBStringField
       FieldName = 'ORDERSPRICE'

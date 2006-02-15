@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB, 
+  Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet, DBProc;
@@ -15,18 +15,9 @@ const
 type
   TSummaryForm = class(TChildForm)
     dsSummary: TDataSource;
-    Label1: TLabel;
     dsSummaryH: TDataSource;
-    Label2: TLabel;
-    dbtCountOrder: TDBText;
-    dbtSumOrder: TDBText;
     frdsSummary: TfrDBDataSet;
-    Panel1: TPanel;
-    Bevel1: TBevel;
     pClient: TPanel;
-    pWebBrowser: TPanel;
-    Bevel2: TBevel;
-    WebBrowser1: TWebBrowser;
     dbgSummary: TToughDBGrid;
     adsSummary: TpFIBDataSet;
     adsSummaryVOLUME: TFIBStringField;
@@ -51,7 +42,17 @@ type
     adsSummaryCODECR: TFIBStringField;
     adsSummaryBASECOST: TFIBStringField;
     adsSummaryPriceRet: TCurrencyField;
+    pStatus: TPanel;
+    Bevel1: TBevel;
+    dbtCountOrder: TDBText;
+    Label1: TLabel;
+    Label2: TLabel;
+    dbtSumOrder: TDBText;
     lSumOrder: TLabel;
+    pWebBrowser: TPanel;
+    Bevel2: TBevel;
+    WebBrowser1: TWebBrowser;
+    btnDelete: TButton;
     procedure adsSummary2CalcFields(DataSet: TDataSet);
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
@@ -68,11 +69,13 @@ type
     procedure dbgSummarySortMarkingChanged(Sender: TObject);
     procedure adsSummaryBeforeEdit(DataSet: TDataSet);
     procedure adsSummaryBeforeDelete(DataSet: TDataSet);
+    procedure btnDeleteClick(Sender: TObject);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
     procedure SummaryShow;
     procedure SummaryHShow;
+    procedure DeleteOrder;
   public
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; reintroduce;
@@ -239,35 +242,15 @@ begin
     pWebBrowser.Visible := False
   else
     pWebBrowser.Visible := True;
-}    
+}
 end;
 
 procedure TSummaryForm.dbgSummaryKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (Shift = []) and (Key = VK_DELETE) then begin
-    if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
-      OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
-      OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCryptBASECOST.AsCurrency;
-      SetOrderLabel;
-      DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-      DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency);
-      DM.adcUpdate.Transaction.StartTransaction;
-      try
-        DM.adcUpdate.SQL.Text :=
-          'delete from Orders where OrderID = ' +
-            IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
-            ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
-        DM.adcUpdate.ExecQuery;
-        DM.adcUpdate.Transaction.Commit;
-      except
-        DM.adcUpdate.Transaction.Rollback;
-        raise;
-      end;
-      adsSummary.CloseOpen(True);
-    	MainForm.SetOrdersInfo;
-      Key := 0;
-    end;
+  if (Shift = []) and (Key = VK_DELETE) and (not adsSummary.IsEmpty) then begin
+    Key := 0;
+    DeleteOrder;
   end
   else
     inherited;
@@ -307,6 +290,38 @@ end;
 procedure TSummaryForm.SetOrderLabel;
 begin
   lSumOrder.Caption := Format('%0.2f', [OrderSum]);
+end;
+
+procedure TSummaryForm.DeleteOrder;
+begin
+  if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
+    OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
+    OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCryptBASECOST.AsCurrency;
+    SetOrderLabel;
+    DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
+    DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency);
+    DM.adcUpdate.Transaction.StartTransaction;
+    try
+      DM.adcUpdate.SQL.Text :=
+        'delete from Orders where OrderID = ' +
+          IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
+          ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
+      DM.adcUpdate.ExecQuery;
+      DM.adcUpdate.Transaction.Commit;
+    except
+      DM.adcUpdate.Transaction.Rollback;
+      raise;
+    end;
+    adsSummary.CloseOpen(True);
+    MainForm.SetOrdersInfo;
+  end;
+end;
+
+procedure TSummaryForm.btnDeleteClick(Sender: TObject);
+begin
+  dbgSummary.SetFocus;
+  if (not adsSummary.IsEmpty) then
+    DeleteOrder;
 end;
 
 end.
