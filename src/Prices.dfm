@@ -52,6 +52,7 @@ inherited PricesForm: TPricesForm
       Width = 534
       Height = 512
       Align = alClient
+      AllowedOperations = [alopUpdateEh]
       AutoFitColWidths = True
       DataSource = dsPrices
       Flat = True
@@ -61,9 +62,8 @@ inherited PricesForm: TPricesForm
       FooterFont.Height = -11
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
-      Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
-      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
-      ReadOnly = True
+      Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
       TabOrder = 1
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
@@ -71,17 +71,17 @@ inherited PricesForm: TPricesForm
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
       OnDblClick = dbgPricesDblClick
+      OnExit = dbgPricesExit
       OnGetCellParams = dbgPricesGetCellParams
       OnKeyDown = dbgPricesKeyDown
       OnSortMarkingChanged = dbgPricesSortMarkingChanged
-      SearchField = 'PriceName'
       SearchPosition = spBottom
-      ForceRus = True
       Columns = <
         item
           EditButtons = <>
           FieldName = 'PRICENAME'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.SortIndex = 1
           Title.SortMarker = smUpEh
@@ -92,6 +92,7 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'REGIONNAME'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
           Width = 98
@@ -101,12 +102,22 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'STORAGE'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1057#1082#1083#1072#1076
           Title.TitleButton = True
           Width = 39
         end
         item
+          Checkboxes = True
+          EditButtons = <>
+          FieldName = 'INJOB'
+          Footers = <>
+          Title.Caption = #1042' '#1088#1072#1073#1086#1090#1077
+        end
+        item
           Alignment = taCenter
+          AlwaysShowEditButton = True
+          ButtonStyle = cbsEllipsis
           EditButtons = <>
           FieldName = 'UPCOST'
           Footers = <>
@@ -118,6 +129,7 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'PRICESIZE'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1055#1086#1079#1080#1094#1080#1081
           Title.TitleButton = True
         end
@@ -125,6 +137,7 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'POSITIONS'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1047#1072#1082#1072#1079
           Title.TitleButton = True
         end
@@ -134,6 +147,7 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'DATEPRICE'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
           Title.TitleButton = True
           Width = 104
@@ -142,6 +156,7 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'SumOrder1'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1057#1091#1084#1084#1072
           Title.TitleButton = True
           Visible = False
@@ -408,6 +423,39 @@ inherited PricesForm: TPricesForm
     Top = 216
   end
   object adsPrices: TpFIBDataSet
+    UpdateSQL.Strings = (
+      
+        'update pricesregionaldata set INJOB = :NEW_INJOB, UPCOST = :NEW_' +
+        'UPCOST where PriceCode = :OLD_PRICECODE and RegionCode = :OLD_Re' +
+        'gionCODE')
+    RefreshSQL.Strings = (
+      'SELECT'
+      '    PRICECODE,'
+      '    PRICENAME,'
+      '    DATEPRICE,'
+      '    UPCOST,'
+      '    MINREQ,'
+      '    ENABLED,'
+      '    PRICEINFO,'
+      '    FIRMCODE,'
+      '    FULLNAME,'
+      '    STORAGE,'
+      '    ADMINMAIL,'
+      '    SUPPORTPHONE,'
+      '    CONTACTINFO,'
+      '    OPERATIVEINFO,'
+      '    REGIONCODE,'
+      '    REGIONNAME,'
+      '    POSITIONS,'
+      '    SUMORDER,'
+      '    PRICESIZE,'
+      '    INJOB'
+      'FROM'
+      '    PRICESSHOW(:ACLIENTID,'
+      '    :TIMEZONEBIAS) '
+      'where'
+      '  PRICECODE = :OLD_PRICECODE'
+      'and REGIONCODE = :OLD_REGIONCODE')
     SelectSQL.Strings = (
       'SELECT'
       '    PRICECODE,'
@@ -428,7 +476,8 @@ inherited PricesForm: TPricesForm
       '    REGIONNAME,'
       '    POSITIONS,'
       '    SUMORDER,'
-      '    PRICESIZE'
+      '    PRICESIZE,'
+      '    INJOB'
       'FROM'
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
@@ -436,6 +485,8 @@ inherited PricesForm: TPricesForm
     AfterScroll = adsPrices2AfterScroll
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
+    AutoCommit = True
     Left = 96
     Top = 152
     object adsPricesPRICECODE: TFIBBCDField
@@ -453,6 +504,7 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesUPCOST: TFIBBCDField
       FieldName = 'UPCOST'
+      DisplayFormat = '0.000;;'
       Size = 4
       RoundByScale = True
     end
@@ -518,6 +570,9 @@ inherited PricesForm: TPricesForm
       FieldKind = fkCalculated
       FieldName = 'SumOrder1'
       Calculated = True
+    end
+    object adsPricesINJOB: TFIBBooleanField
+      FieldName = 'INJOB'
     end
   end
   object adsClientsData: TpFIBDataSet

@@ -61,6 +61,7 @@ type
     adsPricesPRICESIZE: TFIBIntegerField;
     adsClientsData: TpFIBDataSet;
     adsPricesSumOrder1: TCurrencyField;
+    adsPricesINJOB: TFIBBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -75,6 +76,7 @@ type
     procedure adsPricesSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
     procedure dbgPricesSortMarkingChanged(Sender: TObject);
+    procedure dbgPricesExit(Sender: TObject);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -125,6 +127,7 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+  SoftPost(adsPrices);
 	if not DM.adtClients.IsEmpty then
 	begin
 		DM.adtClients.Edit;
@@ -198,15 +201,20 @@ begin
 	inherited;
   p := dbgPrices.ScreenToClient(Mouse.CursorPos);
   C := dbgPrices.MouseCoord(p.X, p.Y);
-  if C.Y > 0 then
+  if C.Y > 0 then begin
     ProcessPrice;
+  end;
 end;
 
 procedure TPricesForm.dbgPricesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	inherited;
-	if Key = VK_RETURN then ProcessPrice;
+	if Key = VK_RETURN then
+    if (adsPrices.State in [dsEdit, dsInsert]) and (dbgPrices.SelectedField = adsPricesUPCOST) then
+      adsPrices.Post
+    else
+      ProcessPrice;
 end;
 
 procedure TPricesForm.dbgPricesGetCellParams(Sender: TObject;
@@ -241,10 +249,11 @@ end;
 
 procedure TPricesForm.ProcessPrice;
 begin
+  SoftPost(adsPrices);
 	if adsPricesFirmCode.AsInteger=RegisterId then
     //MainForm.actRegistry.Execute
   else
-    if not adsPricesPRICECODE.IsNull then
+    if not adsPricesPRICECODE.IsNull and adsPricesINJOB.Value then
       CoreFirmForm.ShowForm(adsPrices.FieldByName( 'PriceCode').AsInteger,
 	     	adsPrices.FieldByName( 'RegionCode').AsInteger, actOnlyLeaders.Checked);
 end;
@@ -259,6 +268,11 @@ begin
 	adsPrices.Open;
 }
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TPricesForm.dbgPricesExit(Sender: TObject);
+begin
+  SoftPost(adsPrices);
 end;
 
 end.

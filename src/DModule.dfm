@@ -1202,4 +1202,37 @@ object DM: TDM
       Calculated = True
     end
   end
+  object adsPrices: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    PRICECODE,'
+      '    PRICENAME,'
+      '    DATEPRICE,'
+      '    UPCOST,'
+      '    MINREQ,'
+      '    ENABLED,'
+      '    PRICEINFO,'
+      '    FIRMCODE,'
+      '    FULLNAME,'
+      '    STORAGE,'
+      '    ADMINMAIL,'
+      '    SUPPORTPHONE,'
+      '    CONTACTINFO,'
+      '    OPERATIVEINFO,'
+      '    REGIONCODE,'
+      '    REGIONNAME,'
+      '    POSITIONS,'
+      '    SUMORDER,'
+      '    PRICESIZE,'
+      '    INJOB'
+      'FROM'
+      '    PRICESSHOW(:ACLIENTID,'
+      '    :TIMEZONEBIAS) ')
+    Transaction = DefTran
+    Database = MainConnection1
+    UpdateTransaction = UpTran
+    AutoCommit = True
+    Left = 304
+    Top = 344
+  end
 end

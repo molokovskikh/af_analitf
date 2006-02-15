@@ -67,6 +67,7 @@ private
 	procedure GetReclame;
 	procedure QueryData;
   procedure GetPass;
+  procedure PriceDataSettings;
   procedure DMSavePass;
 	procedure CommitExchange;
 	procedure DoExchange;
@@ -106,7 +107,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB, U_FolderMacros, LU_Tracer, FIBDatabase;
+  DB, U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet;
 
 { TExchangeThread }
 
@@ -158,6 +159,15 @@ begin
 				HTTPConnect;
 				TotalProgress := 10;
 				Synchronize( SetTotalProgress);
+				if ([eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> []) then
+        begin
+					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+					PriceDataSettings;
+        end;
+				TotalProgress := 15;
+				Synchronize( SetTotalProgress);
+
 				if eaSendOrders in ExchangeForm.ExchangeActs then
 				begin
 					CriticalError := True;
@@ -574,7 +584,7 @@ begin
         S := StringReplace(S, DM.FFS.DecimalSeparator, ',', [rfReplaceAll]);
         values[ i * 11 + 16] := S;
       except
-        values[ i * 11 + 16] := '0.0';
+        values[ i * 11 + 16] := '0,0';
       end;
 			DM.adsOrders.Edit;
 			DM.adsOrders.FieldByName( 'CoreId').AsVariant := Null;
@@ -1709,10 +1719,10 @@ var
   I : Integer;
 begin
   try
-    Tracer.TR('test', 'Before');
+    //Tracer.TR('test', 'Before');
     DM.t.ExecQuery;
     try
-      Tracer.TR('test', 'In');
+      //Tracer.TR('test', 'In');
       if DM.t.RecordCount > 0 then begin
         AbsentPriceCodeSL := TStringList.Create;
         while not DM.t.Eof do begin
@@ -1722,11 +1732,11 @@ begin
       end;
     finally
       DM.t.Close;
-      Tracer.TR('test', 'After');
+      //Tracer.TR('test', 'After');
     end;
   except
     on E : Exception do
-      Tracer.TR('test', E.Message);
+      //Tracer.TR('test', E.Message);
   end;
 end;
 
@@ -1777,17 +1787,70 @@ end;
 procedure TExchangeThread.GetPass;
 var
   Res : TStrings;
+  Error : String;
 begin
-  Res := SOAP.Invoke( 'GetPasswords', [], []);
+  CriticalError := True;
+  Res := SOAP.Invoke( 'GetPasswords', ['UniqueID'], [IntToHex( GetCopyID, 8)]);
+  Error := Utf8ToAnsi( Res.Values[ 'Error']);
+  if Error <> '' then
+    raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
   ASynPass := Res.Values['Synonym'];
   ACodesPass := Res.Values['Codes'];
   ABPass := Res.Values['BaseCost'];
   Synchronize(DMSavePass);
+  CriticalError := False;
 end;
 
 procedure TExchangeThread.DMSavePass;
 begin
   DM.SavePass(ASynPass, ACodesPass, ABPass);
+end;
+
+procedure TExchangeThread.PriceDataSettings;
+const
+  StaticParamCount : Integer = 1;
+var
+	Res: TStrings;
+  Error : String;
+  ParamNames, ParamValues : array of String;
+  I : Integer;
+begin
+  CriticalError := True;
+ 	DM.adsPrices.Close;
+	DM.adsPrices.ParamByName( 'AClientId').Value :=
+		DM.adtClients.FieldByName( 'ClientId').Value;
+	DM.adsPrices.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	DM.adsPrices.Open;
+	if not DM.adsPrices.Eof then
+	begin
+		StatusText := 'Отправка настроек прайс-листов';
+		Synchronize( SetStatus);
+    SetLength(ParamNames, StaticParamCount + DM.adsPrices.RecordCountFromSrv*4);
+    SetLength(ParamValues, StaticParamCount + DM.adsPrices.RecordCountFromSrv*4);
+    ParamNames[0] := 'UniqueID';
+    ParamValues[0] := IntToHex( GetCopyID, 8);
+	end;
+  I := 0;
+  while not DM.adsPrices.Eof do begin
+    //PriceCodes As Int32(), ByVal RegionCodes As Int32(), ByVal INJobs As Boolean(), ByVal UpCosts
+    ParamNames[StaticParamCount+i*4] := 'PriceCodes';
+    ParamValues[StaticParamCount+i*4] := DM.adsPrices.FieldByName('PriceCode').AsString;
+    ParamNames[StaticParamCount+i*4+1] := 'RegionCodes';
+    ParamValues[StaticParamCount+i*4+1] := DM.adsPrices.FieldByName('RegionCode').AsString;
+    ParamNames[StaticParamCount+i*4+2] := 'INJobs';
+    ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsPrices.FieldByName('INJob').AsBoolean, True);
+    ParamNames[StaticParamCount+i*4+3] := 'UpCosts';
+    ParamValues[StaticParamCount+i*4+3] :=
+      StringReplace(DM.adsPrices.FieldByName('UPCOST').AsString, DM.FFS.DecimalSeparator, ',', [rfReplaceAll]);
+    DM.adsPrices.Next;
+    Inc(i);
+  end;
+  DM.adsPrices.Close;
+  Res := SOAP.Invoke( 'PostPriceDataSettings', ParamNames, ParamValues);
+  Error := Utf8ToAnsi( Res.Values[ 'Error']);
+  if Error <> '' then
+    raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+  CriticalError := False;
 end;
 
 initialization

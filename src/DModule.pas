@@ -173,6 +173,7 @@ type
     adsSumOrdersORDERCOUNT: TFIBIntegerField;
     adsSumOrdersCryptPRICE: TCurrencyField;
     adsSumOrdersSumOrders: TCurrencyField;
+    adsPrices: TpFIBDataSet;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
