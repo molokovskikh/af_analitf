@@ -945,26 +945,30 @@ object DM: TDM
       '  orderid = :orderid')
     SelectSQL.Strings = (
       'SELECT'
-      '    ORDERID,'
-      '    SERVERORDERID,'
-      '    DATEPRICE,'
-      '    PRICECODE,'
-      '    REGIONCODE,'
-      '    ORDERDATE,'
-      '    SENDDATE,'
-      '    CLOSED,'
-      '    SEND,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    POSITIONS,'
-      '    SUMORDER,'
-      '    SUPPORTPHONE,'
-      '    MESSAGETO,'
-      '    COMMENTS'
+      '    OH.ORDERID,'
+      '    OH.SERVERORDERID,'
+      '    OH.DATEPRICE,'
+      '    OH.PRICECODE,'
+      '    OH.REGIONCODE,'
+      '    OH.ORDERDATE,'
+      '    OH.SENDDATE,'
+      '    OH.CLOSED,'
+      '    OH.SEND,'
+      '    OH.PRICENAME,'
+      '    OH.REGIONNAME,'
+      '    OH.POSITIONS,'
+      '    OH.SUMORDER,'
+      '    OH.SUPPORTPHONE,'
+      '    OH.MESSAGETO,'
+      '    OH.COMMENTS,'
+      '    PRD.MinReq'
       'FROM'
       '    ORDERSHSHOW(:ACLIENTID,'
       '    :ACLOSED,'
-      '    :TIMEZONEBIAS) '
+      '    :TIMEZONEBIAS) OH'
+      
+        '    LEFT JOIN PricesRegionalData PRD ON (OH.PriceCode=PRD.PriceC' +
+        'ode AND OH.RegionCode=PRD.RegionCode)  '
       'where'
       '  Send = :ASend')
     Transaction = DefTran
@@ -1003,6 +1007,7 @@ object DM: TDM
       '    SUMORDER'
       'FROM'
       '    ORDERSSHOW(:AORDERID) ')
+    OnCalcFields = adsOrdersCalcFields
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
@@ -1010,6 +1015,85 @@ object DM: TDM
     Left = 144
     Top = 344
     oFetchAll = True
+    object adsOrdersCryptSUMORDER: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSUMORDER'
+      Calculated = True
+    end
+    object adsOrdersORDERID: TFIBBCDField
+      FieldName = 'ORDERID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCLIENTID: TFIBBCDField
+      FieldName = 'CLIENTID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCOREID: TFIBBCDField
+      FieldName = 'COREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCODEFIRMCR: TFIBBCDField
+      FieldName = 'CODEFIRMCR'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersSYNONYMCODE: TFIBBCDField
+      FieldName = 'SYNONYMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField
+      FieldName = 'SYNONYMFIRMCRCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsOrdersCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsOrdersSYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsOrdersSYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 48
+      EmptyStrToNull = False
+    end
+    object adsOrdersAWAIT: TFIBIntegerField
+      FieldName = 'AWAIT'
+    end
+    object adsOrdersJUNK: TFIBIntegerField
+      FieldName = 'JUNK'
+    end
+    object adsOrdersORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsOrdersSUMORDER: TFIBBCDField
+      FieldName = 'SUMORDER'
+      Size = 2
+      RoundByScale = True
+    end
   end
   object BackService: TpFIBBackupService
     LoginPrompt = False

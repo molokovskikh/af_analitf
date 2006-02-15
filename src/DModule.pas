@@ -174,6 +174,23 @@ type
     adsSumOrdersCryptPRICE: TCurrencyField;
     adsSumOrdersSumOrders: TCurrencyField;
     adsPrices: TpFIBDataSet;
+    adsOrdersCryptSUMORDER: TCurrencyField;
+    adsOrdersORDERID: TFIBBCDField;
+    adsOrdersCLIENTID: TFIBBCDField;
+    adsOrdersCOREID: TFIBBCDField;
+    adsOrdersFULLCODE: TFIBBCDField;
+    adsOrdersCODEFIRMCR: TFIBBCDField;
+    adsOrdersSYNONYMCODE: TFIBBCDField;
+    adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsOrdersCODE: TFIBStringField;
+    adsOrdersCODECR: TFIBStringField;
+    adsOrdersSYNONYMNAME: TFIBStringField;
+    adsOrdersSYNONYMFIRM: TFIBStringField;
+    adsOrdersPRICE: TFIBStringField;
+    adsOrdersAWAIT: TFIBIntegerField;
+    adsOrdersJUNK: TFIBIntegerField;
+    adsOrdersORDERCOUNT: TFIBIntegerField;
+    adsOrdersSUMORDER: TFIBBCDField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
@@ -186,6 +203,7 @@ type
     procedure adsRetailMarginsLEFTLIMITChange(Sender: TField);
     procedure adsSumOrdersCalcFields(DataSet: TDataSet);
     procedure adtClientsAfterScroll(DataSet: TDataSet);
+    procedure adsOrdersCalcFields(DataSet: TDataSet);
   private
     ClientInserted: Boolean;
     //Требуется ли подтверждение обмена
@@ -268,6 +286,7 @@ type
     procedure SetOldOrderCount(AOldOrderCount : Integer);
     procedure SetNewOrderCount(ANewOrderCount : Integer; ABaseCost : Currency);
     function GetAllSumOrder : Currency;
+    function GetSumOrder (AOrderID : Integer) : Currency;
   end;
 
 var
@@ -1817,6 +1836,33 @@ begin
     adtReclame.Edit;
     adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := UpdateReclameDT;
     adtReclame.Post;
+  end;
+end;
+
+procedure TDM.adsOrdersCalcFields(DataSet: TDataSet);
+var
+  S : String;
+begin
+  try
+    S := DM.D_B(adsOrders.FieldByName('CODE').AsString, adsOrders.FieldByName('CODECR').AsString);
+    adsOrdersCryptSUMORDER.AsCurrency := StrToFloat(S) * adsOrders.FieldByName('ORDERCOUNT').AsInteger;
+  except
+  end;
+end;
+
+function TDM.GetSumOrder(AOrderID: Integer): Currency;
+var
+	V: array[0..0] of Variant;
+begin
+  try
+    with adsOrders do begin
+      ParamByName('AOrderId').Value:=AOrderId;
+      if Active then CloseOpen(True) else Open;
+    end;
+    DataSetCalc(adsOrders, ['SUM(CryptSUMORDER)'], V);
+    Result := V[0];
+  finally
+    adsOrders.Close;
   end;
 end;
 
