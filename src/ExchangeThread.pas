@@ -508,6 +508,7 @@ var
   ExternalRes : Boolean;
   ErrorStr : PChar;
   ExtErrorMessage : String;
+  SumOrder : Currency;
   S : String;
 begin
  	DM.adsOrdersH.Close;
@@ -524,6 +525,11 @@ begin
 	end;
 	while not DM.adsOrdersH.Eof do
 	begin
+    SumOrder := DM.GetSumOrder(DM.adsOrdersH.FieldByName( 'OrderId').Value);
+    if SumOrder < DM.adsOrdersH.FieldByName( 'MinReq').AsCurrency then begin
+      DM.adsOrdersH.Next;
+      continue;
+    end;
     DM.adsOrders.Close;
 		DM.adsOrders.ParamByName( 'AOrderId').Value :=
       DM.adsOrdersH.FieldByName( 'OrderId').Value;
