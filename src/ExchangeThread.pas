@@ -532,8 +532,8 @@ begin
     WriteLn(ExchangeForm.LogFile,
       'Отправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
       '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
-		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * 11);
-		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * 11);
+		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * 11 + 1);
+		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * 11 + 1);
 
 		params[ 0] := 'ClientCode';
 		params[ 1] := 'PriceCode';
@@ -626,6 +626,9 @@ begin
       end;
 
 		try
+      //Передаем уникальный идентификатор
+      params[ 6 + DM.adsOrders.RecordCountFromSrv * 11 ] := 'UniqueID';
+      values[ 6 + DM.adsOrders.RecordCountFromSrv * 11 ] := IntToHex( GetCopyID, 8);
 			Res := Soap.Invoke( 'PostOrder1', params, values);
 //			ExchangeForm.QueryResults.Clear;
 			// QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем
