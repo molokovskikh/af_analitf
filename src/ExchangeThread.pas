@@ -159,7 +159,7 @@ begin
 				HTTPConnect;
 				TotalProgress := 10;
 				Synchronize( SetTotalProgress);
-				if ([eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> []) then
+				if ([eaImportOnly, eaGetFullData, eaMDBUpdate] * ExchangeForm.ExchangeActs = []) then
         begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
