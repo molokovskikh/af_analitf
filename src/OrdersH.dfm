@@ -235,7 +235,6 @@ inherited OrdersHForm: TOrdersHForm
               Height = 104
               DataField = 'MESSAGETO'
               DataSource = dsOrdersH
-              MaxLength = 100
               ScrollBars = ssVertical
               TabOrder = 0
             end
@@ -254,7 +253,6 @@ inherited OrdersHForm: TOrdersHForm
               Height = 104
               DataField = 'Comments'
               DataSource = dsOrdersH
-              MaxLength = 100
               ScrollBars = ssVertical
               TabOrder = 0
             end
@@ -510,22 +508,22 @@ inherited OrdersHForm: TOrdersHForm
       FieldName = 'SUPPORTPHONE'
       EmptyStrToNull = False
     end
-    object adsOrdersHFormMESSAGETO: TFIBStringField
-      FieldName = 'MESSAGETO'
-      Size = 100
-      EmptyStrToNull = False
-    end
-    object adsOrdersHFormCOMMENTS: TFIBStringField
-      FieldName = 'COMMENTS'
-      Size = 100
-      EmptyStrToNull = False
-    end
     object adsOrdersHFormSumOrder: TFIBBCDField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       Size = 2
       RoundByScale = True
       Calculated = True
+    end
+    object adsOrdersHFormMESSAGETO: TFIBMemoField
+      FieldName = 'MESSAGETO'
+      BlobType = ftMemo
+      Size = 8
+    end
+    object adsOrdersHFormCOMMENTS: TFIBMemoField
+      FieldName = 'COMMENTS'
+      BlobType = ftMemo
+      Size = 8
     end
   end
   object adsCore: TpFIBDataSet

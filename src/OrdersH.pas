@@ -73,11 +73,11 @@ type
     adsOrdersHFormREGIONNAME: TFIBStringField;
     adsOrdersHFormPOSITIONS: TFIBIntegerField;
     adsOrdersHFormSUPPORTPHONE: TFIBStringField;
-    adsOrdersHFormMESSAGETO: TFIBStringField;
-    adsOrdersHFormCOMMENTS: TFIBStringField;
     adsOrdersHFormSumOrder: TFIBBCDField;
     adsOrdersHFormSEND: TFIBBooleanField;
     adsOrdersHFormCLOSED: TFIBBooleanField;
+    adsOrdersHFormMESSAGETO: TFIBMemoField;
+    adsOrdersHFormCOMMENTS: TFIBMemoField;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -177,7 +177,12 @@ procedure TOrdersHForm.FormDestroy(Sender: TObject);
 var
 	Reg: TRegistry;
 begin
-	SoftPost(adsOrdersHForm);
+  try
+    //Здесь возникает ошибка с AccessViolation в FBPlus.
+    //Возможно эта моя ошибка, но я пока не могу ее исправить
+	  SoftPost(adsOrdersHForm);
+  except
+  end;
 	Reg := TRegistry.Create;
 	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, True);
