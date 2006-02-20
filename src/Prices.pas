@@ -62,6 +62,7 @@ type
     adsClientsData: TpFIBDataSet;
     adsPricesSumOrder1: TCurrencyField;
     adsPricesINJOB: TFIBBooleanField;
+    adsPricesALLOWCOSTCORR: TFIBIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -77,6 +78,8 @@ type
       DisplayText: Boolean);
     procedure dbgPricesSortMarkingChanged(Sender: TObject);
     procedure dbgPricesExit(Sender: TObject);
+    procedure adsPricesBeforePost(DataSet: TDataSet);
+    procedure adsPricesAfterPost(DataSet: TDataSet);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -273,6 +276,18 @@ end;
 procedure TPricesForm.dbgPricesExit(Sender: TObject);
 begin
   SoftPost(adsPrices);
+end;
+
+procedure TPricesForm.adsPricesBeforePost(DataSet: TDataSet);
+begin
+  inherited;
+  if adsPricesALLOWCOSTCORR.AsInteger = 0 then
+    adsPricesUPCOST.Value := adsPricesUPCOST.OldValue; 
+end;
+
+procedure TPricesForm.adsPricesAfterPost(DataSet: TDataSet);
+begin
+  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
 end;
 
 end.

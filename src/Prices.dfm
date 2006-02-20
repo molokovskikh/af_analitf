@@ -477,12 +477,15 @@ inherited PricesForm: TPricesForm
       '    POSITIONS,'
       '    SUMORDER,'
       '    PRICESIZE,'
-      '    INJOB'
+      '    INJOB,'
+      '    ALLOWCOSTCORR'
       'FROM'
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
     AfterOpen = adsPrices2AfterOpen
+    AfterPost = adsPricesAfterPost
     AfterScroll = adsPrices2AfterScroll
+    BeforePost = adsPricesBeforePost
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
@@ -573,6 +576,9 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesINJOB: TFIBBooleanField
       FieldName = 'INJOB'
+    end
+    object adsPricesALLOWCOSTCORR: TFIBIntegerField
+      FieldName = 'ALLOWCOSTCORR'
     end
   end
   object adsClientsData: TpFIBDataSet
