@@ -285,7 +285,7 @@ var
 		DM.adsSelect3.Edit;
 		DM.adsSelect3ORDERCOUNT.AsInteger := Order;
 		if Order = 0 then
-      DM.adsSelect3COREID.Value := Null
+      DM.adsSelect3COREID.Clear
     else begin
       DM.adsSelect3COREID.Value := DM.adsCoreCOREID.Value;
       DM.adsSelect3PRICE.Value := DM.adsCoreBASECOST.Value;
