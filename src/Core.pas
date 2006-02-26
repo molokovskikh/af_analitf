@@ -648,14 +648,16 @@ begin
 end;
 
 procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
-var
-  C : Integer;
+//var
+//  C : Integer;
 begin
+{
   C := dbgCore.Canvas.TextHeight('Wg') + 2;
   if (adsCore.RecordCount > 0) and ((adsCore.RecordCount*C)/(pCenter.Height-pWebBrowser.Height) > 13/10) then
     pWebBrowser.Visible := False
   else
     pWebBrowser.Visible := True;
+}
 end;
 
 procedure TCoreForm.FormResize(Sender: TObject);

@@ -82,41 +82,27 @@ inherited OrdersHForm: TOrdersHForm
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 1
+        object bevClient: TBevel
+          Left = 0
+          Top = 274
+          Width = 784
+          Height = 4
+          Align = alBottom
+          Shape = bsTopLine
+        end
         object pGrid: TPanel
           Left = 0
           Top = 0
           Width = 483
-          Height = 278
+          Height = 274
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 0
-          object ToughDBGrid1: TToughDBGrid
-            Left = 112
-            Top = 224
-            Width = 185
-            Height = 57
-            Flat = True
-            FooterColor = clWindow
-            FooterFont.Charset = DEFAULT_CHARSET
-            FooterFont.Color = clWindowText
-            FooterFont.Height = -11
-            FooterFont.Name = 'MS Sans Serif'
-            FooterFont.Style = []
-            Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
-            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
-            TabOrder = 1
-            TitleFont.Charset = DEFAULT_CHARSET
-            TitleFont.Color = clWindowText
-            TitleFont.Height = -11
-            TitleFont.Name = 'MS Sans Serif'
-            TitleFont.Style = []
-            SearchPosition = spBottom
-          end
           object dbgOrdersH: TToughDBGrid
             Left = 0
             Top = 0
             Width = 483
-            Height = 278
+            Height = 274
             Align = alClient
             AllowedOperations = [alopUpdateEh]
             AutoFitColWidths = True
@@ -217,7 +203,7 @@ inherited OrdersHForm: TOrdersHForm
           Left = 483
           Top = 0
           Width = 301
-          Height = 278
+          Height = 274
           Align = alRight
           BevelOuter = bvNone
           TabOrder = 1
@@ -267,6 +253,7 @@ inherited OrdersHForm: TOrdersHForm
           Align = alBottom
           BevelOuter = bvNone
           TabOrder = 2
+          Visible = False
           object Bevel2: TBevel
             Left = 0
             Top = 0

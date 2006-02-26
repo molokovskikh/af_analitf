@@ -38,7 +38,6 @@ type
     btnWayBillList: TButton;
     pClient: TPanel;
     pGrid: TPanel;
-    ToughDBGrid1: TToughDBGrid;
     dbgOrdersH: TToughDBGrid;
     pRight: TPanel;
     gbMessage: TGroupBox;
@@ -78,6 +77,7 @@ type
     adsOrdersHFormCLOSED: TFIBBooleanField;
     adsOrdersHFormMESSAGETO: TFIBMemoField;
     adsOrdersHFormCOMMENTS: TFIBMemoField;
+    bevClient: TBevel;
     procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

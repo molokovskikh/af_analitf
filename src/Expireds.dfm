@@ -216,6 +216,7 @@ inherited ExpiredsForm: TExpiredsForm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
+    Visible = False
     object Bevel2: TBevel
       Left = 0
       Top = 0

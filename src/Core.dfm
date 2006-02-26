@@ -277,6 +277,7 @@ object CoreForm: TCoreForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
+      Visible = False
       object Bevel1: TBevel
         Left = 0
         Top = 0

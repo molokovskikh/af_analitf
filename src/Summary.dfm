@@ -264,6 +264,7 @@ inherited SummaryForm: TSummaryForm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
+    Visible = False
     object Bevel2: TBevel
       Left = 0
       Top = 0
