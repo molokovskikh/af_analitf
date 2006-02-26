@@ -1319,4 +1319,142 @@ object DM: TDM
     Left = 304
     Top = 344
   end
+  object adsAllOrders: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'UPDATE ORDERS'
+      'SET '
+      '    CODE = :CODE,'
+      '    CODECR = :CODECR,'
+      '    SYNONYMNAME = :SYNONYMNAME,'
+      '    SYNONYMFIRM = :SYNONYMFIRM,'
+      '    PRICE = :PRICE'
+      'WHERE'
+      '    ID = :OLD_ID'
+      '    ')
+    SelectSQL.Strings = (
+      'SELECT'
+      '    ID,'
+      '    ORDERID,'
+      '    CLIENTID,'
+      '    COREID,'
+      '    FULLCODE,'
+      '    CODEFIRMCR,'
+      '    SYNONYMCODE,'
+      '    SYNONYMFIRMCRCODE,'
+      '    CODE,'
+      '    CODECR,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    PRICE,'
+      '    AWAIT,'
+      '    JUNK,'
+      '    ORDERCOUNT'
+      'FROM'
+      '    ORDERS ')
+    OnCalcFields = adsAllOrdersCalcFields
+    Transaction = DefTran
+    Database = MainConnection1
+    UpdateTransaction = UpTran
+    Left = 688
+    Top = 272
+    object adsAllOrdersID: TFIBBCDField
+      FieldName = 'ID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersORDERID: TFIBBCDField
+      FieldName = 'ORDERID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersCLIENTID: TFIBBCDField
+      FieldName = 'CLIENTID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersCOREID: TFIBBCDField
+      FieldName = 'COREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersCODEFIRMCR: TFIBBCDField
+      FieldName = 'CODEFIRMCR'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersSYNONYMCODE: TFIBBCDField
+      FieldName = 'SYNONYMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersSYNONYMFIRMCRCODE: TFIBBCDField
+      FieldName = 'SYNONYMFIRMCRCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsAllOrdersCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsAllOrdersCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = False
+    end
+    object adsAllOrdersSYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsAllOrdersSYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = False
+    end
+    object adsAllOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 48
+      EmptyStrToNull = False
+    end
+    object adsAllOrdersAWAIT: TFIBBooleanField
+      FieldName = 'AWAIT'
+    end
+    object adsAllOrdersJUNK: TFIBBooleanField
+      FieldName = 'JUNK'
+    end
+    object adsAllOrdersORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsAllOrdersCryptSYNONYMNAME: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMNAME'
+      Calculated = True
+    end
+    object adsAllOrdersCryptSYNONYMFIRM: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptSYNONYMFIRM'
+      Calculated = True
+    end
+    object adsAllOrdersCryptCODE: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptCODE'
+      Calculated = True
+    end
+    object adsAllOrdersCryptCODECR: TStringField
+      FieldKind = fkCalculated
+      FieldName = 'CryptCODECR'
+      Calculated = True
+    end
+    object adsAllOrdersCryptPRICE: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptPRICE'
+      Calculated = True
+    end
+  end
 end

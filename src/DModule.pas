@@ -191,6 +191,28 @@ type
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
     adsOrdersSUMORDER: TFIBBCDField;
+    adsAllOrders: TpFIBDataSet;
+    adsAllOrdersID: TFIBBCDField;
+    adsAllOrdersORDERID: TFIBBCDField;
+    adsAllOrdersCLIENTID: TFIBBCDField;
+    adsAllOrdersCOREID: TFIBBCDField;
+    adsAllOrdersFULLCODE: TFIBBCDField;
+    adsAllOrdersCODEFIRMCR: TFIBBCDField;
+    adsAllOrdersSYNONYMCODE: TFIBBCDField;
+    adsAllOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsAllOrdersCODE: TFIBStringField;
+    adsAllOrdersCODECR: TFIBStringField;
+    adsAllOrdersSYNONYMNAME: TFIBStringField;
+    adsAllOrdersSYNONYMFIRM: TFIBStringField;
+    adsAllOrdersPRICE: TFIBStringField;
+    adsAllOrdersAWAIT: TFIBBooleanField;
+    adsAllOrdersJUNK: TFIBBooleanField;
+    adsAllOrdersORDERCOUNT: TFIBIntegerField;
+    adsAllOrdersCryptSYNONYMNAME: TStringField;
+    adsAllOrdersCryptSYNONYMFIRM: TStringField;
+    adsAllOrdersCryptCODE: TStringField;
+    adsAllOrdersCryptCODECR: TStringField;
+    adsAllOrdersCryptPRICE: TCurrencyField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterInsert(DataSet: TDataSet);
     procedure adtParamsAfterOpen(DataSet: TDataSet);
@@ -204,6 +226,7 @@ type
     procedure adsSumOrdersCalcFields(DataSet: TDataSet);
     procedure adtClientsAfterScroll(DataSet: TDataSet);
     procedure adsOrdersCalcFields(DataSet: TDataSet);
+    procedure adsAllOrdersCalcFields(DataSet: TDataSet);
   private
     ClientInserted: Boolean;
     //Требуется ли подтверждение обмена
@@ -279,6 +302,7 @@ type
     //DecodeBasecost
     function D_B(CodeS1, CodeS2 : String) : String;
     procedure SavePass(ASyn, ACodes, AB : String);
+    procedure testSavePass;
     procedure LoadRetailMargins;
     function GetPriceRet(BaseCost : Currency) : Currency;
 
@@ -1704,8 +1728,82 @@ end;
 procedure TDM.SavePass(ASyn, ACodes, AB: String);
 var
   PassPass : String;
+  SynName,
+  SynFirm,
+  Code,
+  CodeCr,
+  Price : String;
+  C : Integer;
 begin
   PassPass := in_Encode('1234567890123456');
+  if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
+    try
+      Tracer.TR('SavePass', 'Starting Transaction');
+      UpTran.StartTransaction;
+      Tracer.TR('SavePass', 'Transaction started');
+      if adsAllOrders.Active then
+        adsAllOrders.Close;
+      try
+        adsAllOrders.Open;
+        Tracer.TR('SavePass', 'Open');
+        C := 0;
+        while not adsAllOrders.Eof do begin
+          if C < 2 then
+            Tracer.TR('SavePass', 'Start Encrypt');
+          SynName := adsAllOrdersCryptSYNONYMNAME.AsString;
+          SynFirm := adsAllOrdersCryptSYNONYMFIRM.AsString;
+          Code := adsAllOrdersCryptCode.AsString;
+          CodeCr := adsAllOrdersCryptCODECR.AsString;
+          Price := adsAllOrdersCryptPRICE.AsString;
+
+          if (Length(adsAllOrdersSYNONYMNAME.AsString) > 1) and (adsAllOrdersSYNONYMNAME.AsString[1] = ' ') then
+            adsAllOrdersSYNONYMNAME.AsString := ' ' + in_Encode( C_C_S(ASyn, SynName) );
+
+          if (Length(adsAllOrdersSYNONYMFIRM.AsString) > 1) and (adsAllOrdersSYNONYMFIRM.AsString[1] = ' ') then
+            adsAllOrdersSYNONYMFIRM.AsString := ' ' + in_Encode( C_C_S(ASyn, SynFirm) );
+
+          Price := in_Encode( C_C_S(AB, Price) );
+
+          adsAllOrders.Edit;
+
+          if Length(Code) > 0 then
+            adsAllOrdersCODE.AsString := rc_Encode( C_C_S(ACodes, Code) ) +  Copy(Price, 1, 16)
+          else
+            adsAllOrdersCODE.AsString := Copy(Price, 1, 16);
+
+          if Length(CodeCr) > 0 then
+            adsAllOrdersCODECR.AsString := rc_Encode( C_C_S(ACodes, CodeCr) ) +  Copy(Price, 17, 16)
+          else
+            adsAllOrdersCODECR.AsString := Copy(Price, 17, 16);
+
+          adsAllOrdersPRICE.AsString := rc_Encode( C_C_S(AB, D_C_S(BaseCostPassword, rc_Decode(adsAllOrdersPRICE.AsString))) );
+
+          if C < 2 then
+            Tracer.TR('SavePass', 'Before Post');
+          adsAllOrders.Post;
+
+          if C < 2 then
+            Tracer.TR('SavePass', 'Before Next');
+
+          adsAllOrders.Next;
+
+          if C < 2 then
+            Tracer.TR('SavePass', 'After Next');
+
+          inc(C);
+        end;
+      finally
+        adsAllOrders.Close;
+        Tracer.TR('SavePass', 'After Close');
+      end;
+      UpTran.Commit;
+      Tracer.TR('SavePass', 'After Commit');
+    except
+      on E : Exception do begin
+        Tracer.TR('SavePass', 'Error : ' + E.Message);
+        UpTran.Rollback;
+      end;
+    end;
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
   BaseCostPassword := AB;
@@ -1864,6 +1962,29 @@ begin
   finally
     adsOrders.Close;
   end;
+end;
+
+procedure TDM.adsAllOrdersCalcFields(DataSet: TDataSet);
+var
+  S : String;
+  C : Currency;
+begin
+  try
+
+    adsAllOrdersCryptSYNONYMNAME.AsString := D_S(adsAllOrdersSYNONYMNAME.AsString);
+    adsAllOrdersCryptSYNONYMFIRM.AsString := D_S(adsAllOrdersSYNONYMFIRM.AsString);
+    S := D_B(adsAllOrdersCODE.AsString, adsAllOrdersCODECR.AsString);
+    C := StrToCurr(S);
+    adsAllOrdersCryptPRICE.AsCurrency := C;
+    adsAllOrdersCryptCODE.AsString := D_C(adsAllOrdersCODE.AsString);
+    adsAllOrdersCryptCODECR.AsString := D_C(adsAllOrdersCODECR.AsString);
+  except
+  end;
+end;
+
+procedure TDM.testSavePass;
+begin
+  SavePass(SynonymPassword, CodesPassword, BaseCostPassword);
 end;
 
 end.
