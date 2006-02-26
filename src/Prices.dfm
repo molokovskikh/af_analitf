@@ -124,6 +124,7 @@ inherited PricesForm: TPricesForm
           Title.Caption = '%'
           Title.TitleButton = True
           Width = 37
+          OnGetCellParams = dbgPricesColumns4GetCellParams
         end
         item
           EditButtons = <>

@@ -80,6 +80,8 @@ type
     procedure dbgPricesExit(Sender: TObject);
     procedure adsPricesBeforePost(DataSet: TDataSet);
     procedure adsPricesAfterPost(DataSet: TDataSet);
+    procedure dbgPricesColumns4GetCellParams(Sender: TObject;
+      EditMode: Boolean; Params: TColCellParamsEh);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -288,6 +290,15 @@ end;
 procedure TPricesForm.adsPricesAfterPost(DataSet: TDataSet);
 begin
   AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+end;
+
+procedure TPricesForm.dbgPricesColumns4GetCellParams(Sender: TObject;
+  EditMode: Boolean; Params: TColCellParamsEh);
+begin
+  if not adsPricesALLOWCOSTCORR.AsBoolean then begin
+    Params.Background := clBtnFace;
+    Params.ReadOnly := True;
+  end;
 end;
 
 end.
