@@ -125,7 +125,7 @@ object DM: TDM
     LibraryName = 'fbclient.dll'
     WaitForRestoreConnect = 0
     AfterConnect = MainConnection1AfterConnect
-    Left = 32
+    Left = 40
     Top = 168
   end
   object DefTran: TpFIBTransaction
@@ -961,7 +961,8 @@ object DM: TDM
       '    OH.SUPPORTPHONE,'
       '    OH.MESSAGETO,'
       '    OH.COMMENTS,'
-      '    PRD.MinReq'
+      '    PRD.MinReq,'
+      '    PRD.ControlMinReq'
       'FROM'
       '    ORDERSHSHOW(:ACLIENTID,'
       '    :ACLOSED,'

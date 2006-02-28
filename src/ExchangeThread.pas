@@ -504,6 +504,7 @@ var
 	Res: TStrings;
   ResError : String;
 	ServerOrderId: integer;
+  SendError : Boolean;
 	OldDS: Char;
   ExternalRes : Boolean;
   ErrorStr : PChar;
@@ -525,11 +526,14 @@ begin
 	end;
 	while not DM.adsOrdersH.Eof do
 	begin
+{
     SumOrder := DM.GetSumOrder(DM.adsOrdersH.FieldByName( 'OrderId').Value);
     if SumOrder < DM.adsOrdersH.FieldByName( 'MinReq').AsCurrency then begin
       DM.adsOrdersH.Next;
       continue;
     end;
+}    
+    SendError := False;
     DM.adsOrders.Close;
 		DM.adsOrders.ParamByName( 'AOrderId').Value :=
       DM.adsOrdersH.FieldByName( 'OrderId').Value;
@@ -641,13 +645,29 @@ begin
 //			while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
 			// проверяем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
-			if ResError <> '' then
-				raise Exception.Create( ResError + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-			try
-				ServerOrderId := StrToInt( Res.Values[ 'OrderId']);
-			except
-				ServerOrderId := 0;
-			end;
+			if ResError <> '' then begin
+        SendError := True;
+        ExchangeForm.SendOrdersLog.Add(
+          Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : %s',
+            [DM.adsOrdersH.FieldByName( 'PriceName').AsString,
+             DM.adsOrdersH.FieldByName( 'RegionName').AsString,
+            ResError])
+        );
+				//raise Exception.Create( ResError + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+      end;
+      if not SendError then
+        try
+          ServerOrderId := StrToInt( Res.Values[ 'OrderId']);
+        except
+          ServerOrderId := 0;
+          SendError := True;
+          ExchangeForm.SendOrdersLog.Add(
+            Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : Не удалось конвертировать строку "%s"',
+              [DM.adsOrdersH.FieldByName( 'PriceName').AsString,
+               DM.adsOrdersH.FieldByName( 'RegionName').AsString,
+               Res.Values[ 'OrderId']])
+          );
+        end;
 		except
 			DM.adsOrdersH.Close;
 			DM.adsOrders.Close;
@@ -657,14 +677,16 @@ begin
 
 		try
 			DM.adsOrders.Close;
-			DM.adsOrdersH.Edit;
-			{ Заказ был отправлен, а не переведен }
-			DM.adsOrdersH.FieldByName( 'Send').AsBoolean := True;
-			DM.adsOrdersH.FieldByName( 'SendDate').AsDateTime := Now;
-			{ Закрываем заказ }
-			DM.adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
-			DM.adsOrdersH.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
-			DM.adsOrdersH.Post;
+      if not SendError then begin
+        DM.adsOrdersH.Edit;
+        { Заказ был отправлен, а не переведен }
+        DM.adsOrdersH.FieldByName( 'Send').AsBoolean := True;
+        DM.adsOrdersH.FieldByName( 'SendDate').AsDateTime := Now;
+        { Закрываем заказ }
+        DM.adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
+        DM.adsOrdersH.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
+        DM.adsOrdersH.Post;
+      end;
 			DM.adsOrdersH.Next;
 		except
 			DM.adsOrdersH.Close;

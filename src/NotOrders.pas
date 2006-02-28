@@ -50,7 +50,7 @@ begin
 	result := True;
 	DM.adsSelect.Close;
 	DM.adsSelect.SQLs.SelectSQL.Text :=
-'SELECT OH.*, PRD.MinReq '+
+'SELECT OH.*, PRD.MinReq, PRD.ControlMinReq '+
 'FROM OrdersHShow(:AClientID, :AClosed, :TimeZoneBias) OH ' +
 'LEFT JOIN PricesRegionalData PRD ON (OH.PriceCode=PRD.PriceCode AND OH.RegionCode=PRD.RegionCode) '+
 'WHERE Send = 1';
@@ -61,13 +61,15 @@ begin
 	Strings := TStringList.Create;
   while not DM.adsSelect.Eof do
   begin
-    C := DM.GetSumOrder(DM.adsSelect.FieldByName( 'OrderID').AsInteger);
-    if C < DM.adsSelect.FieldByName( 'MinReq').AsCurrency then
-      Strings.Append( Format( '%s (%s) : минимальный заказ %s - заказано %m',
-        [ DM.adsSelect.FieldByName( 'PriceName').AsString,
-        DM.adsSelect.FieldByName( 'RegionName').AsString,
-        DM.adsSelect.FieldByName( 'MinReq').AsString,
-        C]));
+    if ((DM.adsSelect.FieldByName('ControlMinReq').AsBoolean)) then begin
+      C := DM.GetSumOrder(DM.adsSelect.FieldByName( 'OrderID').AsInteger);
+      if (C < DM.adsSelect.FieldByName( 'MinReq').AsCurrency) then
+        Strings.Append( Format( '%s (%s) : минимальный заказ %s - заказано %m',
+          [ DM.adsSelect.FieldByName( 'PriceName').AsString,
+          DM.adsSelect.FieldByName( 'RegionName').AsString,
+          DM.adsSelect.FieldByName( 'MinReq').AsString,
+          C]));
+    end;
     DM.adsSelect.Next;
   end;
   if Strings.Count > 0 then

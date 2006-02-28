@@ -82,6 +82,7 @@ type
     //Переменные для работы внешних заказов
     ExternalOrdersCount : Integer;
     ExternalOrdersLog : TStringList;
+    SendOrdersLog : TStringList;
 
     //Показывать ли статусный текст о состоянии скаченного файла
     ShowStatusText : Boolean;
@@ -116,6 +117,7 @@ var
   ExternalOrdersCount,
   ExternalOrdersErrorCount : Integer;
   ExternalOrdersLog   : String;
+  SendOrdersLog   : String;
 //	hMenuHandle: HMENU;
 begin
 	MainForm.FreeChildForms;
@@ -124,6 +126,7 @@ begin
   ExternalOrdersCount := 0;
   ExternalOrdersErrorCount := 0;
   ExternalOrdersLog := '';
+  SendOrdersLog := '';
 	if AExchangeActions = [] then exit;
 	DM.DeleteEmptyOrders;
 
@@ -190,6 +193,7 @@ begin
       ExternalOrdersCount := ExchangeForm.ExternalOrdersCount;
       ExternalOrdersErrorCount := ExchangeForm.ExternalOrdersLog.Count;
       ExternalOrdersLog := ExchangeForm.ExternalOrdersLog.Text;
+      SendOrdersLog := ExchangeForm.SendOrdersLog.Text;
 			DM.MainConnection1.Close;
       Sleep(500);
 			DM.MainConnection1.Open;
@@ -226,6 +230,15 @@ begin
 	if Result and ( AExchangeActions = [ eaSendOrders]) then Windows.MessageBox( Application.Handle,
 			'Отправка заказов завершена успешно.', 'Информация',
 			MB_OK or MB_ICONINFORMATION);
+
+	if Result and ( AExchangeActions = [ eaSendOrders]) and (Length(SendOrdersLog) > 0)
+  then
+    if MessageBox(
+        'Во время отправки заказов возникли ошибки. ' +
+            'Желаете посмотреть журнал ошибок?',
+        MB_ICONWARNING or MB_YESNO) = IDYES
+    then
+      ShowNotSended(SendOrdersLog);
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) and (ExternalOrdersCount > 0)
      and (Length(ExternalOrdersLog) > 0)
@@ -688,6 +701,7 @@ procedure TExchangeForm.FormCreate(Sender: TObject);
 begin
   ExternalOrdersCount := 0;
   ExternalOrdersLog := TStringList.Create;
+  SendOrdersLog := TStringList.Create;
   HTTP.ConnectTimeout := -2;
   HTTPReclame.ConnectTimeout := -2;
 end;
@@ -695,6 +709,7 @@ end;
 procedure TExchangeForm.FormDestroy(Sender: TObject);
 begin
   ExternalOrdersLog.Free;
+  SendOrdersLog.Free;
 end;
 
 procedure TExchangeForm.HTTPStatus(ASender: TObject;
