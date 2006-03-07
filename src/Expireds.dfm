@@ -326,6 +326,7 @@ inherited ExpiredsForm: TExpiredsForm
     AutoCommit = True
     Left = 128
     Top = 112
+    oCacheCalcFields = True
     oFetchAll = True
     object adsExpiredsCOREID: TFIBBCDField
       FieldName = 'COREID'
@@ -365,46 +366,46 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsPERIOD: TFIBStringField
       FieldName = 'PERIOD'
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
@@ -412,7 +413,7 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
@@ -420,7 +421,7 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
@@ -460,22 +461,22 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsORDERSCODE: TFIBStringField
       FieldName = 'ORDERSCODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsORDERSCODECR: TFIBStringField
       FieldName = 'ORDERSCODECR'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsORDERSSYNONYM: TFIBStringField
       FieldName = 'ORDERSSYNONYM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsORDERSSYNONYMFIRM: TFIBStringField
       FieldName = 'ORDERSSYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
@@ -484,7 +485,7 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsORDERSPRICE: TFIBStringField
       FieldName = 'ORDERSPRICE'
       Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsORDERSJUNK: TFIBIntegerField
       FieldName = 'ORDERSJUNK'
@@ -515,12 +516,12 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsORDERSHPRICENAME: TFIBStringField
       FieldName = 'ORDERSHPRICENAME'
       Size = 70
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsORDERSHREGIONNAME: TFIBStringField
       FieldName = 'ORDERSHREGIONNAME'
       Size = 25
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsExpiredsSumOrder: TCurrencyField
       FieldKind = fkCalculated
@@ -566,6 +567,7 @@ inherited ExpiredsForm: TExpiredsForm
     Database = DM.MainConnection1
     Left = 232
     Top = 136
+    oCacheCalcFields = True
   end
   object adsOrdersShowFormSummary: TpFIBDataSet
     SelectSQL.Strings = (
@@ -574,13 +576,14 @@ inherited ExpiredsForm: TExpiredsForm
       'FROM'
       '    ORDERSSHOWFORMSUMMARY(:FULLCODE,'
       '    :ACLIENTID) ')
-    DataSource = dsExpireds
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    DataSource = dsExpireds
     Left = 312
     Top = 152
     WaitEndMasterScroll = True
     dcForceOpen = True
+    oCacheCalcFields = True
     object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
       FieldName = 'PRICEAVG'
       Size = 2

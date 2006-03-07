@@ -580,8 +580,6 @@ begin
 end;
 
 procedure TMainForm.SetOrdersInfo;
-var
-  C : Currency;
 begin
 	DM.adsSelect.Close;
 	DM.adsSelect.SelectSQL.Text := 'SELECT * FROM ORDERSINFO2(:ACLIENTID)';

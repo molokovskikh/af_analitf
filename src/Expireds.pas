@@ -88,8 +88,6 @@ type
     procedure adsExpireds2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
     procedure dbgExpiredsSortMarkingChanged(Sender: TObject);
-    procedure adsExpiredsAfterFetchRecord(FromQuery: TFIBQuery;
-      RecordNumber: Integer; var StopFetching: Boolean);
     procedure dbgExpiredsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure adsExpiredsBeforeEdit(DataSet: TDataSet);
@@ -97,8 +95,6 @@ type
     ClientId: Integer;
     UseExcess: Boolean;
     Excess: Integer;
-
-    CI : TINCryptIndex;
 
     procedure RefreshOrdersH;
   public
@@ -116,7 +112,6 @@ procedure TExpiredsForm.FormCreate(Sender: TObject);
 var
 	Reg: TRegistry;
 begin
-  CI := TINCryptIndex.Create(adsExpireds);
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
@@ -125,10 +120,10 @@ begin
 	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try
-    adsExpireds.AfterFetchRecord := adsExpiredsAfterFetchRecord;
+    //adsExpireds.AfterFetchRecord := adsExpiredsAfterFetchRecord;
 		adsExpireds.Open;
 	finally
-    adsExpireds.AfterFetchRecord := nil;
+    //adsExpireds.AfterFetchRecord := nil;
 		Screen.Cursor := crDefault;
 	end;
 	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCount]);
@@ -150,7 +145,6 @@ begin
 		+ Self.ClassName, True);
 	dbgExpireds.SaveToRegistry( Reg);
 	Reg.Free;
-  CI.Free;
 end;
 
 procedure TExpiredsForm.adsExpireds2CalcFields(DataSet: TDataSet);
@@ -159,15 +153,12 @@ var
   C : Currency;
 begin
   try
-    CI.GetCalcFields;
-{
     adsExpiredsCryptSYNONYMNAME.AsString := DM.D_S(adsExpiredsSYNONYMNAME.AsString);
     adsExpiredsCryptSYNONYMFIRM.AsString := DM.D_S(adsExpiredsSYNONYMFIRM.AsString);
     S := DM.D_B(adsExpiredsCODE.AsString, adsExpiredsCODECR.AsString);
     C := StrToCurr(S);
     adsExpiredsCryptBASECOST.AsCurrency := C;
     adsExpiredsPriceRet.AsCurrency := DM.GetPriceRet(C);
-}    
 	  //вычисляем сумму заказа
   	adsExpiredsSumOrder.AsCurrency:= adsExpiredsCryptBASECOST.AsCurrency * adsExpiredsORDERCOUNT.AsInteger;
   except
@@ -177,7 +168,7 @@ end;
 procedure TExpiredsForm.adsExpireds2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
-	PriceAvg: Double;
+	//PriceAvg: Double;
 begin
 	try
 		{ проверяем заказ на соответствие наличию товара на складе }
@@ -298,7 +289,7 @@ begin
     pWebBrowser.Visible := False
   else
     pWebBrowser.Visible := True;
-}    
+}
 end;
 
 procedure TExpiredsForm.FormResize(Sender: TObject);
@@ -308,26 +299,7 @@ end;
 
 procedure TExpiredsForm.dbgExpiredsSortMarkingChanged(Sender: TObject);
 begin
-{
-	adsExpireds.Close;
-	adsExpireds.SelectSQL.Text := ExpiredSql + SQLOrderBy;
-	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
-	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	Screen.Cursor := crHourGlass;
-	try
-		adsExpireds.Open;
-	finally
-		Screen.Cursor := crDefault;
-	end;
-}
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
-end;
-
-procedure TExpiredsForm.adsExpiredsAfterFetchRecord(FromQuery: TFIBQuery;
-  RecordNumber: Integer; var StopFetching: Boolean);
-begin
-  CI.FetchRecord(FromQuery);
 end;
 
 procedure TExpiredsForm.dbgExpiredsGetCellParams(Sender: TObject;

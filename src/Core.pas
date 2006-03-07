@@ -140,7 +140,7 @@ type
     procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
   private
-    RegionCodeStr, RegionPriceRet: string;
+    RegionCodeStr: string;
     RecInfos: array of Double;
     UseExcess, CurrentUseForms: Boolean;
     DeltaMode, Excess, ClientId: Integer;
@@ -375,7 +375,7 @@ end;
 procedure TCoreForm.adsCore2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
-	PriceAvg: Double;
+	//PriceAvg: Double;
 begin
 	try
 		{ проверяем заказ на соответствие наличию товара на складе }

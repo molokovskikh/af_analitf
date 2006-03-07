@@ -87,10 +87,12 @@ var
   I, Count: Integer;
   Types: array of TExpressionType;
   FieldNames: array of string;
+  FieldIndexes: array of Integer;
 begin
   //первичная обработка и формализация выражений
   SetLength(Types,Length(Expressions));
   SetLength(FieldNames,Length(Expressions));
+  SetLength(FieldIndexes,Length(Expressions));
   for I:=Low(Expressions) to High(Expressions) do Values[I]:=0;
   if not DataSet.Active then Exit;
   for I:=Low(Expressions) to High(Expressions) do begin
@@ -99,20 +101,24 @@ begin
     else if Copy(Expressions[I],1,3)='SUM' then begin
       Types[I]:=expSum;
       FieldNames[I]:=Copy(Expressions[I],5,Length(Expressions[I])-5);
+      FieldIndexes[I]:=DataSet.Fields.FindField(FieldNames[I]).Index;
     end
     else if Copy(Expressions[I],1,3)='AVG' then begin
       Types[I]:=expAvg;
       FieldNames[I]:=Copy(Expressions[I],5,Length(Expressions[I])-5);
+      FieldIndexes[I]:=DataSet.Fields.FindField(FieldNames[I]).Index;
     end
     else if Copy(Expressions[I],1,3)='MIN' then begin
       Types[I]:=expMin;
       FieldNames[I]:=Copy(Expressions[I],5,Length(Expressions[I])-5);
-      Values[I]:=DataSet.FieldByName(FieldNames[I]).AsFloat;
+      FieldIndexes[I]:=DataSet.Fields.FindField(FieldNames[I]).Index;
+      Values[I]:=DataSet.Fields[FieldIndexes[I]].AsFloat;
     end
     else if Copy(Expressions[I],1,3)='MAX' then begin
       Types[I]:=expMax;
       FieldNames[I]:=Copy(Expressions[I],5,Length(Expressions[I])-5);
-      Values[I]:=DataSet.FieldByName(FieldNames[I]).AsFloat;
+      FieldIndexes[I]:=DataSet.Fields.FindField(FieldNames[I]).Index;
+      Values[I]:=DataSet.Fields[FieldIndexes[I]].AsFloat;
     end
     else Types[I]:=expNull;
   end;
@@ -127,11 +133,11 @@ begin
         Inc(Count);
         for I:=Low(Expressions) to High(Expressions) do
           case Types[I] of
-            expSum, expAvg: Values[I]:=Values[I]+FieldByName(FieldNames[I]).AsFloat;
-            expMin: if Values[I]<FieldByName(FieldNames[I]).AsFloat then
-              Values[I]:=FieldByName(FieldNames[I]).AsFloat;
-            expMax: if Values[I]<FieldByName(FieldNames[I]).AsFloat then
-              Values[I]:=FieldByName(FieldNames[I]).AsFloat;
+            expSum, expAvg: Values[I]:=Values[I]+ Fields[FieldIndexes[I]].AsFloat;
+            expMin: if Values[I]<Fields[FieldIndexes[I]].AsFloat then
+              Values[I]:=Fields[FieldIndexes[I]].AsFloat;
+            expMax: if Values[I]<Fields[FieldIndexes[I]].AsFloat then
+              Values[I]:=Fields[FieldIndexes[I]].AsFloat;
           end;
         Next;
       end;

@@ -265,13 +265,6 @@ end;
 
 procedure TPricesForm.dbgPricesSortMarkingChanged(Sender: TObject);
 begin
-{
-	adsPrices.Close;
-	adsPrices.SelectSQL.Text := PricesSql + SQLOrderBy;
-	adsPrices.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsPrices.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	adsPrices.Open;
-}
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
@@ -283,8 +276,9 @@ end;
 procedure TPricesForm.adsPricesBeforePost(DataSet: TDataSet);
 begin
   inherited;
+  //TODO : Переделать на Value после перехода на FIB 6.4 (E5912)
   if adsPricesALLOWCOSTCORR.AsInteger = 0 then
-    adsPricesUPCOST.Value := adsPricesUPCOST.OldValue; 
+    adsPricesUPCOST.AsCurrency := adsPricesUPCOST.OldValue;
 end;
 
 procedure TPricesForm.adsPricesAfterPost(DataSet: TDataSet);

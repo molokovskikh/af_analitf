@@ -592,8 +592,8 @@ begin
 end;
 
 function TDM.DatabaseOpenedBy: string;
-var
-  WasConnected: boolean;
+//var
+//  WasConnected: boolean;
 begin
   result := '';
 {
@@ -608,8 +608,8 @@ begin
 end;
 
 function TDM.DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
-var
-  WasConnected: boolean;
+//var
+//  WasConnected: boolean;
 begin
   result := TStringList.Create;
 {
@@ -637,10 +637,7 @@ end;
 
 procedure TDM.CompactDataBase(NewPassword: string='');
 var
-  JetEngine: OleVariant;
-  TempName: string;
   ok: boolean;
-  FBR : TpFIBBackupRestoreService;
 begin
   ok := False;
   //TODO: Процедура не до конца готова. Использовать другое имя для нормального подключения
@@ -719,41 +716,6 @@ begin
     adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
     adtParams.Post;
   end;
-{
-  NewPassword:=Trim(NewPassword);
-  if NewPassword='' then NewPassword:=GetConnectionProperty(
-    MainConnection.ConnectionString,'Jet OLEDB:Database Password');
-  TempName:=GetTempDir+'New.mdb';
-  if FileExists(TempName) then AProc.DeleteFileA(TempName,True);
-  MainConnection.Close;
-  Screen.Cursor:=crHourglass;
-  MainForm.StatusText:='Сжатие и восстановление базы данных';
-  try
-    JetEngine:=CreateOleObject('JRO.JetEngine');
-    try
-      JetEngine.CompactDatabase(MainConnection.ConnectionString,
-        Format('Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s',
-        [TempName,NewPassword]));
-      MainConnection.ConnectionString:=SetConnectionProperty(MainConnection.ConnectionString,
-        'Jet OLEDB:Database Password',NewPassword);
-      ok := True;
-    finally
-      JetEngine:=Unassigned;
-    end;
-    Aproc.MoveFileA(TempName,GetConnectionProperty(MainConnection.ConnectionString,
-      'Data Source'),True,True);
-  finally
-    MainConnection.Open;
-    Screen.Cursor:=crDefault;
-    MainForm.StatusText:='';
-  if ok then
-  begin
-    adtParams.Edit;
-    adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
-    adtParams.Post;
-  end;
-  end;
-}  
 end;
 
 procedure TDM.ClearPassword( ADatasource: string);
@@ -1078,9 +1040,9 @@ end;
 
 // подключает таблицы из старого MDB
 procedure TDM.LinkExternalMDB( ATablesList: TStringList);
-var
-  Table, Catalog: Variant;
-  i: integer;
+//var
+//  Table, Catalog: Variant;
+//  i: integer;
 begin
 {
   Catalog := CreateOleObject( 'ADOX.Catalog');
@@ -1112,7 +1074,7 @@ end;
 procedure TDM.UnLinkExternalTables;
 var
   I: Integer;
-  Catalog: Variant;
+//  Catalog: Variant;
   TN : TStringList;
 begin
 {

@@ -82,8 +82,7 @@ private
   procedure GetAbsentPriceCode;
 
   procedure UpdateFromFile(FileName, InsertSQL : String; OnBatching : TOnBatching = nil);
-  procedure OnSynonymBatching(BatchOperation: TBatchOperation; RecNumber: integer; var BatchAction: TBatchAction);
-
+  
 	procedure ImportFromExternalMDB;
 	function GetXMLDateTime( ADateTime: TDateTime): string;
 	function FromXMLToDateTime( AStr: string): TDateTime;
@@ -505,11 +504,9 @@ var
   ResError : String;
 	ServerOrderId: integer;
   SendError : Boolean;
-	OldDS: Char;
   ExternalRes : Boolean;
   ErrorStr : PChar;
   ExtErrorMessage : String;
-  SumOrder : Currency;
   S : String;
 begin
  	DM.adsOrdersH.Close;
@@ -526,13 +523,6 @@ begin
 	end;
 	while not DM.adsOrdersH.Eof do
 	begin
-{
-    SumOrder := DM.GetSumOrder(DM.adsOrdersH.FieldByName( 'OrderId').Value);
-    if SumOrder < DM.adsOrdersH.FieldByName( 'MinReq').AsCurrency then begin
-      DM.adsOrdersH.Next;
-      continue;
-    end;
-}    
     SendError := False;
     DM.adsOrders.Close;
 		DM.adsOrders.ParamByName( 'AOrderId').Value :=
@@ -591,10 +581,10 @@ begin
 			values[ i * 11 + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
       try
         S := DM.D_B(DM.adsOrders.FieldByName( 'Code').AsString, DM.adsOrders.FieldByName( 'CodeCr').AsString);
-        S := StringReplace(S, DM.FFS.DecimalSeparator, ',', [rfReplaceAll]);
+        S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
         values[ i * 11 + 16] := S;
       except
-        values[ i * 11 + 16] := '0,0';
+        values[ i * 11 + 16] := '0.0';
       end;
 			DM.adsOrders.Edit;
 			DM.adsOrders.FieldByName( 'CoreId').AsVariant := Null;
@@ -635,6 +625,7 @@ begin
         end;
       end;
 
+    ServerOrderId := 0;
 		try
       //Передаем уникальный идентификатор
       params[ 6 + DM.adsOrders.RecordCountFromSrv * 11 ] := 'UniqueID';
@@ -837,8 +828,6 @@ begin
 end;
 
 procedure TExchangeThread.CheckNewMDB;
-var
-	tl: TStringList;
 begin
 	if eaGetFullData in ExchangeForm.ExchangeActs then
 	begin
@@ -868,8 +857,8 @@ begin
 	Synchronize( SetStatus);
 	Synchronize( DisableCancel);
 	DM.adtClients.DisableControls;
-	tl := TStringList.Create;
 {
+	tl := TStringList.Create;
 	try
 		DM.MainConnection.GetTableNames( tl, false);
 		DM.ClearPassword( ExePath + DatabaseName);
@@ -911,9 +900,11 @@ end;
 procedure TExchangeThread.ImportFromExternalMDB;
 const
 	IMPORT_COUNT	= 20;
+{
 var
 	Catalog: Variant;
 	i, j, qnum: integer;
+}  
 begin
 {
 	Catalog := CreateOleObject( 'ADOX.Catalog');
@@ -963,11 +954,11 @@ end;
 
 procedure TExchangeThread.ImportData;
 var
-	I: Integer;
-	Catalog: Variant;
+//	I: Integer;
+//	Catalog: Variant;
 	Tables: TStrings;
 	UpdateTables: TUpdateTables;
-	IntegrCount: Word;
+//	IntegrCount: Word;
 begin
 	StatusText := 'Резервное копирование данных';
 	Synchronize( SetStatus);
@@ -1746,8 +1737,6 @@ begin
 end;
 
 procedure TExchangeThread.GetAbsentPriceCode;
-var
-  I : Integer;
 begin
   try
     //Tracer.TR('test', 'Before');
@@ -1802,16 +1791,6 @@ begin
   finally
     upB := nil;
     up.Free;
-  end;
-end;
-
-procedure TExchangeThread.OnSynonymBatching(
-  BatchOperation: TBatchOperation; RecNumber: integer;
-  var BatchAction: TBatchAction);
-begin
-  if Assigned(upB) then begin
-    upB.Params.ParamByName('SynonymName').Data^.sqltype := SQL_TEXT;
-    upB.Params.ParamByName('SynonymName').Data^.sqllen := 255;
   end;
 end;
 

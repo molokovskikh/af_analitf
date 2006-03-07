@@ -197,6 +197,7 @@ object DM: TDM
     AutoCommit = True
     Left = 48
     Top = 216
+    oCacheCalcFields = True
   end
   object adtProvider: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -219,6 +220,7 @@ object DM: TDM
     AutoCommit = True
     Left = 112
     Top = 216
+    oCacheCalcFields = True
   end
   object adtReclame: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -240,6 +242,7 @@ object DM: TDM
     AutoCommit = True
     Left = 200
     Top = 216
+    oCacheCalcFields = True
   end
   object adtClients: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -353,6 +356,7 @@ object DM: TDM
     AutoCommit = True
     Left = 280
     Top = 216
+    oCacheCalcFields = True
     oFetchAll = True
     object adtClientsCLIENTID: TFIBBCDField
       FieldName = 'CLIENTID'
@@ -362,7 +366,7 @@ object DM: TDM
     object adtClientsNAME: TFIBStringField
       FieldName = 'NAME'
       Size = 50
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adtClientsREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
@@ -372,11 +376,11 @@ object DM: TDM
     object adtClientsADDRESS: TFIBStringField
       FieldName = 'ADDRESS'
       Size = 100
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adtClientsPHONE: TFIBStringField
       FieldName = 'PHONE'
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adtClientsFORCOUNT: TFIBIntegerField
       FieldName = 'FORCOUNT'
@@ -384,7 +388,7 @@ object DM: TDM
     object adtClientsEMAIL: TFIBStringField
       FieldName = 'EMAIL'
       Size = 30
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adtClientsMAXUSERS: TFIBIntegerField
       FieldName = 'MAXUSERS'
@@ -409,7 +413,7 @@ object DM: TDM
     object adtClientsTECHSUPPORT: TFIBStringField
       FieldName = 'TECHSUPPORT'
       Size = 255
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adtClientsLEADFROMBASIC: TFIBSmallIntField
       FieldName = 'LEADFROMBASIC'
@@ -459,6 +463,7 @@ object DM: TDM
     AutoCommit = True
     Left = 360
     Top = 216
+    oCacheCalcFields = True
   end
   object adtFlags: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -508,6 +513,7 @@ object DM: TDM
     AutoCommit = True
     Left = 448
     Top = 216
+    oCacheCalcFields = True
   end
   object adcUpdate: TpFIBQuery
     Transaction = UpTran
@@ -521,6 +527,7 @@ object DM: TDM
     UpdateTransaction = UpTran
     Left = 600
     Top = 216
+    oCacheCalcFields = True
   end
   object adsSelect2: TpFIBDataSet
     Transaction = DefTran
@@ -528,6 +535,7 @@ object DM: TDM
     UpdateTransaction = UpTran
     Left = 664
     Top = 216
+    oCacheCalcFields = True
   end
   object adsSelect3: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -569,6 +577,7 @@ object DM: TDM
     AutoCommit = True
     Left = 728
     Top = 216
+    oCacheCalcFields = True
     object adsSelect3ID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
@@ -723,6 +732,7 @@ object DM: TDM
     UpdateTransaction = UpTran
     Left = 240
     Top = 344
+    oCacheCalcFields = True
     oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
@@ -978,6 +988,7 @@ object DM: TDM
     AutoCommit = True
     Left = 64
     Top = 344
+    oCacheCalcFields = True
     oFetchAll = True
   end
   object adsOrders: TpFIBDataSet
@@ -1015,6 +1026,7 @@ object DM: TDM
     AutoCommit = True
     Left = 144
     Top = 344
+    oCacheCalcFields = True
     oFetchAll = True
     object adsOrdersCryptSUMORDER: TCurrencyField
       FieldKind = fkCalculated
@@ -1059,27 +1071,27 @@ object DM: TDM
     object adsOrdersCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
@@ -1206,6 +1218,7 @@ object DM: TDM
     AutoCommit = True
     Left = 128
     Top = 400
+    oCacheCalcFields = True
     object adsRetailMarginsID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
@@ -1258,20 +1271,21 @@ object DM: TDM
     UpdateTransaction = UpTran
     Left = 616
     Top = 272
+    oCacheCalcFields = True
     object adsSumOrdersCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSumOrdersCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSumOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSumOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
@@ -1319,6 +1333,7 @@ object DM: TDM
     AutoCommit = True
     Left = 304
     Top = 344
+    oCacheCalcFields = True
   end
   object adsAllOrders: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -1358,6 +1373,7 @@ object DM: TDM
     UpdateTransaction = UpTran
     Left = 688
     Top = 272
+    oCacheCalcFields = True
     object adsAllOrdersID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
@@ -1401,27 +1417,27 @@ object DM: TDM
     object adsAllOrdersCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsAllOrdersCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsAllOrdersSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsAllOrdersSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsAllOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsAllOrdersAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'

@@ -300,8 +300,8 @@ var
 		if Order = 0 then
       DM.adsSelect3COREID.Clear
     else begin
-      DM.adsSelect3COREID.Value := DM.adsCoreCOREID.Value;
-      DM.adsSelect3PRICE.Value := DM.adsCoreBASECOST.Value;
+      DM.adsSelect3COREID.AsInt64 := DM.adsCoreCOREID.Value;
+      DM.adsSelect3PRICE.AsString := DM.adsCoreBASECOST.Value;
     end;
 		DM.adsSelect3.Post;
 	end;
