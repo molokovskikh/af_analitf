@@ -778,7 +778,6 @@ begin
   actOrderSummary.Enabled := False;
 //  actRegistry.Enabled := False;
   actDefectives.Enabled := False;
-  actNormatives.Enabled := False;
   actClosedOrders.Enabled := False;
 end;
 
@@ -791,7 +790,6 @@ begin
   actOrderSummary.Enabled := True;
 //  actRegistry.Enabled := True;
   actDefectives.Enabled := True;
-  actNormatives.Enabled := True;
   actClosedOrders.Enabled := True;
 end;
 

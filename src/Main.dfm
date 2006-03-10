@@ -204,7 +204,6 @@ object MainForm: TMainForm
         Top = 0
         Action = actNormatives
         ImageIndex = 11
-        Visible = False
       end
       object ToolButton9: TToolButton
         Left = 591
@@ -585,6 +584,7 @@ object MainForm: TMainForm
       Enabled = False
       Hint = #1047#1072#1082#1086#1085#1086#1076#1072#1090#1077#1083#1100#1085#1099#1077' '#1072#1082#1090#1099
       ImageIndex = 16
+      Visible = False
       OnExecute = actNormativesExecute
     end
     object actClosedOrders: TAction
@@ -3354,5 +3354,6 @@ object MainForm: TMainForm
     Database = DM.MainConnection1
     Left = 192
     Top = 272
+    oCacheCalcFields = True
   end
 end
