@@ -232,6 +232,7 @@ inherited NamesFormsForm: TNamesFormsForm
     Database = DM.MainConnection1
     Left = 80
     Top = 160
+    oCacheCalcFields = True
   end
   object adsForms: TpFIBDataSet
     SelectSQL.Strings = (
@@ -239,12 +240,12 @@ inherited NamesFormsForm: TNamesFormsForm
       '*'
       'FROM'
       '    CATALOGSHOWBYFORM(:ASHORTCODE, :SHOWAll) ')
-    DataSource = dsNames
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    DataSource = dsNames
     Left = 437
     Top = 152
     dcForceOpen = True
-    oFetchAll = True
+    oCacheCalcFields = True
   end
 end

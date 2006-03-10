@@ -327,7 +327,6 @@ inherited ExpiredsForm: TExpiredsForm
     Left = 128
     Top = 112
     oCacheCalcFields = True
-    oFetchAll = True
     object adsExpiredsCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0

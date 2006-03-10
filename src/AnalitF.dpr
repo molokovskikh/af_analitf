@@ -60,7 +60,8 @@ uses
   inforoomalg in 'RC_RND\inforoomalg.pas',
   LU_TSGHashTable in 'common\LU_TSGHashTable.pas',
   U_CryptIndex in 'U_CryptIndex.pas',
-  SevenZip in 'common\SevenZip.pas';
+  SevenZip in 'common\SevenZip.pas',
+  SQLWaiting in 'SQLWaiting.pas' {frmSQLWaiting};
 
 {$R *.RES}
 {$R EraserDLL.RES}

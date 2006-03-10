@@ -8,7 +8,7 @@ uses
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
   FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
-  pFIBQuery, lU_TSGHashTable, U_CryptIndex;
+  pFIBQuery, lU_TSGHashTable, U_CryptIndex, SQLWaiting;
 
 const
 	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID, :APRICENAME) ORDER BY ';
@@ -217,8 +217,9 @@ begin
     PricesForm.adsPrices.FieldByName('PriceName').AsString,
     PricesForm.adsPrices.FieldByName('RegionName').AsString]);
   RefreshOrdersH;
-  adsOrdersShowFormSummary.DataSource := dsCore;
+  //adsOrdersShowFormSummary.DataSource := dsCore;
   adsCore.First;
+  Application.ProcessMessages;
   inherited ShowForm;
 end;
 
@@ -561,7 +562,8 @@ begin
     adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'AClientId').Value:=ClientId;
     adsCore.ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
-    if adsCore.Active then adsCore.CloseOpen(True) else adsCore.Open;
+    ShowSQLWaiting(adsCore);
+    //if adsCore.Active then adsCore.CloseOpen(True) else adsCore.Open;
   finally
     Screen.Cursor:=crDefault;
   end;
