@@ -205,23 +205,6 @@ begin
     MessageBox('Выбранный прайс-лист отсутствует',MB_ICONWARNING);
     Abort;
   end;
-  //определяем, какие колонки прайс-листа фирмы показывать (не показываем пустые)
-  with adsCountFields do begin
-    ParamByName('APriceCode').Value:=PriceCode;
-    ParamByName('ARegionCode').Value:=RegionCode;
-    Open;
-    try
-      ColumnByNameT(dbgCore,'CryptCODE').Visible:=FieldByName('CODE').AsInteger>0;
-      ColumnByNameT(dbgCore,'CryptSYNONYMFIRM').Visible:=FieldByName('SYNONYMFIRM').AsInteger>0;
-      ColumnByNameT(dbgCore,'Volume').Visible:=FieldByName('Volume').AsInteger>0;
-      ColumnByNameT(dbgCore,'Doc').Visible:=FieldByName('Doc').AsInteger>0;
-      ColumnByNameT(dbgCore,'Note').Visible:=FieldByName('Note').AsInteger>0;
-      ColumnByNameT(dbgCore,'Period').Visible:=FieldByName('Period').AsInteger>0;
-      ColumnByNameT(dbgCore,'Quantity').Visible:=FieldByName('Quantity').AsInteger>0;
-    finally
-      Close;
-    end;
-  end;
   //подсчитываем сумму заявки и количество записей
   SetFilter(filOrder);
   OrderCalc;
