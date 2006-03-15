@@ -8,7 +8,7 @@ uses
   VCLUnZip, Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
-  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL;
+  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet;
 
 type
   TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate);
@@ -288,7 +288,8 @@ end;
 procedure TryToRepareOrders;
 var
 	Order, CurOrder, Quantity, E: Integer;
-	Code, CodeCr, SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
+	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
+  Code, CodeCr : String;
 	Strings: TStrings;
 //  FilterStr : String;
 //  LocateRes : Boolean;
@@ -301,6 +302,8 @@ var
       DM.adsSelect3COREID.Clear
     else begin
       DM.adsSelect3COREID.AsInt64 := DM.adsCoreCOREID.Value;
+      DM.adsSelect3CODE.Value := DM.adsCoreCODE.Value;
+      DM.adsSelect3CODECR.Value := DM.adsCoreCODECR.Value;
       DM.adsSelect3PRICE.AsString := DM.adsCoreBASECOST.Value;
     end;
 		DM.adsSelect3.Post;
@@ -354,17 +357,19 @@ begin
 			end;
 			Order := DM.adsSelect3ORDERCOUNT.AsInteger;
 			CurOrder := 0;
-			Code := DM.adsSelect3CODE.AsVariant;
+			Code := DM.adsSelect3CODE.Value;
+      Code := Copy(Code, 1, Length(Code)-16);
       //if Code = '' then Code := Null;
-			CodeCr := DM.adsSelect3CODECR.AsVariant;
+			CodeCr := DM.adsSelect3CODECR.Value;
+      CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
       //if CodeCr = '' then CodeCr := Null;
 			SynonymCode := DM.adsSelect3SYNONYMCODE.AsInteger;
 			SynonymFirmCrCode := DM.adsSelect3SYNONYMFIRMCRCODE.AsInteger;
       JUNK := DM.adsSelect3JUNK.AsInteger;
       AWAIT := DM.adsSelect3AWAIT.AsInteger;
 
-			if DM.adsCore.Locate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode;Junk;Await',
-				  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode, JUNK, AWAIT]), [])
+			if DM.adsCore.ExtLocate( 'SynonymCode;SynonymFirmCrCode;Junk;Await;Code;CodeCr',
+				  VarArrayOf([ SynonymCode, SynonymFirmCrCode, JUNK, AWAIT, Code, CodeCr]), [eloPartialKey])
       then
 			begin
 				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);

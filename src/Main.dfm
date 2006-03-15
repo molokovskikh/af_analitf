@@ -257,6 +257,7 @@ object MainForm: TMainForm
         Height = 21
         Hint = #1050#1083#1080#1077#1085#1090
         DataField = 'ClientId'
+        DataSource = DM.dsParams
         KeyField = 'ClientId'
         ListField = 'Name'
         ListSource = DM.dsClients

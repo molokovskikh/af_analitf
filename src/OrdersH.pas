@@ -285,7 +285,8 @@ end;
 procedure TOrdersHForm.MoveToPrice;
 var
 	Order, CurOrder, Quantity, E, OrderId: Integer;
-	Code, CodeCr, SynonymFirmCrCode, SynonymCode: Variant;
+	SynonymFirmCrCode, SynonymCode: Variant;
+  Code, CodeCr : String;
   I : Integer;
 	Strings: TStrings;
 
@@ -377,16 +378,18 @@ begin
             while not OrdersForm.adsOrders.Eof do begin
               Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
               Code := OrdersForm.adsOrdersCode.AsVariant;
-              //if Code = '' then Code := Null;
+              Code := Copy(Code, 1, Length(Code)-16);
+            //if Code = '' then Code := Null;
               CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
+              CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
               //if CodeCr = '' then CodeCr := Null;
               SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
               SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
               //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
 
               { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
-              if Locate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
-                  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [])
+              if ExtLocate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
+                  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey])
               then
               begin
                 repeat
@@ -399,11 +402,8 @@ begin
                   if CurOrder < 0 then CurOrder := 0;
                   Order := Order - CurOrder;
                   if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
-                  Next;
-                until ( Order = 0) or Eof or ( FieldByName( 'Code').AsString <> Code) or
-                      ( FieldByName( 'CodeCr').AsString <> CodeCr) or
-                      ( FieldByName( 'SynonymCode').AsInteger <> SynonymCode) or
-                      ( FieldByName( 'SynonymFirmCrCode').AsInteger <> SynonymFirmCrCode);
+                until ( Order = 0) or (not ExtLocateNext( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
+                  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey]));
               end;
 
               { если все еще не разбросали, то пишем сообщение }

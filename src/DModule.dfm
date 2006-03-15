@@ -540,7 +540,9 @@ object DM: TDM
       '  orders'
       'set'
       '  COREID = :NEW_COREID,'
-      '  Price = :NEW_PRICE'
+      '  Price = :NEW_PRICE,'
+      '  CODE = :NEW_CODE,'
+      '  CODECR = :NEW_CODECR'
       'where'
       '  ID = :OLD_ID')
     SelectSQL.Strings = (
