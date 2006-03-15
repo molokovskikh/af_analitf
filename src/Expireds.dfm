@@ -264,9 +264,7 @@ inherited ExpiredsForm: TExpiredsForm
       '*'
       'FROM'
       '    EXPIREDSSHOW(:TIMEZONEBIAS,'
-      '    :ACLIENTID)'
-      'where'
-      '  COREID = :COREID ')
+      '    :ACLIENTID, :COREID)')
     SelectSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -312,11 +310,9 @@ inherited ExpiredsForm: TExpiredsForm
       '    ORDERSHREGIONNAME'
       'FROM'
       '    EXPIREDSSHOW(:TIMEZONEBIAS,'
-      '    :ACLIENTID) ')
-    AfterOpen = adsExpireds2AfterOpen
+      '    :ACLIENTID, null) ')
     AfterPost = adsExpireds2AfterPost
     AfterScroll = adsExpireds2AfterScroll
-    BeforeClose = adsExpireds2BeforeClose
     BeforeEdit = adsExpiredsBeforeEdit
     BeforePost = adsExpireds2BeforePost
     OnCalcFields = adsExpireds2CalcFields
@@ -573,8 +569,10 @@ inherited ExpiredsForm: TExpiredsForm
       'SELECT'
       '    *'
       'FROM'
-      '    ORDERSSHOWFORMSUMMARY(:FULLCODE,'
-      '    :ACLIENTID) ')
+      '   PriceAVG'
+      'where'
+      '  ClientCode = :ACLIENTID'
+      'and FullCode = :FullCode')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     DataSource = dsExpireds
@@ -583,8 +581,8 @@ inherited ExpiredsForm: TExpiredsForm
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
-      FieldName = 'PRICEAVG'
+    object adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField
+      FieldName = 'ORDERPRICEAVG'
       Size = 2
       RoundByScale = True
     end

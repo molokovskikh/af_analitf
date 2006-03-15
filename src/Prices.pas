@@ -97,7 +97,7 @@ procedure ShowPrices;
 
 implementation
 
-uses Main, DModule, AProc, DBProc, CoreFirm;
+uses Main, DModule, AProc, DBProc, CoreFirm, StrUtils;
 
 {$R *.dfm}
 
@@ -135,9 +135,6 @@ begin
   SoftPost(adsPrices);
 	if not DM.adtClients.IsEmpty then
 	begin
-		DM.adtClients.Edit;
-		DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean := actOnlyLeaders.Checked;
-		DM.adtClients.Post;
 		GetLastPrice;
 	end;
 	Reg := TRegistry.Create;
@@ -166,11 +163,6 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
-  //открываем список прайс-листов - регионов
-  with adsPrices do begin
-    ParamByName('TimeZoneBias').Value:=TimeZoneBias;
-//    Open;
-  end;
   inherited;
 end;
 
@@ -190,6 +182,9 @@ end;
 procedure TPricesForm.actOnlyLeadersExecute(Sender: TObject);
 begin
 	actOnlyLeaders.Checked:=not actOnlyLeaders.Checked;
+  DM.adtClients.Edit;
+  DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean := actOnlyLeaders.Checked;
+  DM.adtClients.Post;
 	dbgPrices.SetFocus;
 end;
 

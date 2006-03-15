@@ -214,21 +214,15 @@ type
     adsAllOrdersCryptCODECR: TStringField;
     adsAllOrdersCryptPRICE: TCurrencyField;
     procedure DMCreate(Sender: TObject);
-    procedure adtClientsAfterInsert(DataSet: TDataSet);
-    procedure adtParamsAfterOpen(DataSet: TDataSet);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
-    procedure adtClientsAfterPost(DataSet: TDataSet);
-    procedure adtClientsBeforeDelete(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnection1AfterConnect(Sender: TObject);
     procedure adsSelect3CalcFields(DataSet: TDataSet);
     procedure adsRetailMarginsLEFTLIMITChange(Sender: TField);
     procedure adsSumOrdersCalcFields(DataSet: TDataSet);
-    procedure adtClientsAfterScroll(DataSet: TDataSet);
     procedure adsOrdersCalcFields(DataSet: TDataSet);
     procedure adsAllOrdersCalcFields(DataSet: TDataSet);
   private
-    ClientInserted: Boolean;
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
     SynonymPassword,
@@ -430,8 +424,9 @@ end;
 procedure TDM.ClientChanged;
 begin
   MainForm.FreeChildForms;
-  MainForm.dblcbClients.KeyValue := adtClients.FieldByName( 'ClientId').Value;
   MainForm.SetOrdersInfo;
+  DoPost(adtParams, True);
+  InitAllSumOrder;
 end;
 
 { Проверки на невозможность запуска программы }
@@ -789,25 +784,16 @@ begin
   end;
 end;
 
-procedure TDM.adtClientsAfterInsert(DataSet: TDataSet);
-begin
-  ClientInserted:=True;
-  adtClients.Post;
-end;
-
-procedure TDM.adtParamsAfterOpen(DataSet: TDataSet);
-begin
-//  adtParams.Properties['Update Criteria'].Value:=adCriteriaAllCols;
-end;
-
 procedure TDM.adtClientsAfterOpen(DataSet: TDataSet);
 begin
-//  adtClients.Properties['Update Criteria'].Value:=adCriteriaKey;
-//  adtClients.Properties['Update Resync'].Value:=adResyncAll;
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
-  then adtClients.First;
-  InitAllSumOrder;
-//  MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
+  then begin
+    adtClients.First;
+    adtParams.Edit;
+    adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+    adtParams.Post;
+  end;
+  //MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
   ClientChanged;
 end;
 
@@ -824,16 +810,6 @@ begin
       Close;
     end;
   end;
-end;
-
-procedure TDM.adtClientsAfterPost(DataSet: TDataSet);
-begin
-  if ClientInserted then
-    with adcUpdate do begin
-      SQL.Text:=Format('EXECUTE PROCEDURE ClientFirmInsert %d', [adtClients.FieldByName('Id').AsInteger]);
-      adcUpdate.ExecProc;
-    end;
-  ClientInserted:=False
 end;
 
 //подключает в качестве внешних текстовые таблицы из папки In
@@ -904,6 +880,7 @@ begin
             for I := 0 to Files.Count-1 do begin
               if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM')
                 and (Tables[i] <> 'EXTREGISTRY') and (Tables[i] <> 'EXTMINPRICES')
+                and (Tables[i] <> 'EXTPRICEAVG')
               then begin
                 up.SelectSQL.Text := 'select * from ' + Tables[i];
                 up.Prepare;
@@ -1214,11 +1191,6 @@ begin
   finally
     Screen.Cursor:=crDefault;
   end;
-end;
-
-procedure TDM.adtClientsBeforeDelete(DataSet: TDataSet);
-begin
-  if MessageBox( 'Удалить данного клиента?',MB_ICONWARNING+MB_OKCANCEL)<>IDOK then Abort;
 end;
 
 { Запомнить последнюю успешную стадию импорта }
@@ -1873,11 +1845,6 @@ begin
   finally
     DM.adsSumOrders.Close;
   end;
-end;
-
-procedure TDM.adtClientsAfterScroll(DataSet: TDataSet);
-begin
-  InitAllSumOrder;
 end;
 
 procedure TDM.ResetReclame;

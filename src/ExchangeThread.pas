@@ -28,7 +28,8 @@ TUpdateTable = (
 	utRegistry,
   utWayBillHead,
   utWayBillList,
-  utMinPrices);
+  utMinPrices,
+  utPriceAVG);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -82,7 +83,7 @@ private
   procedure GetAbsentPriceCode;
 
   procedure UpdateFromFile(FileName, InsertSQL : String; OnBatching : TOnBatching = nil);
-  
+
 	procedure ImportFromExternalMDB;
 	function GetXMLDateTime( ADateTime: TDateTime): string;
 	function FromXMLToDateTime( AStr: string): TDateTime;
@@ -1010,6 +1011,7 @@ begin
 	if Tables.IndexOf( 'EXTWAYBILLHEAD')>=0 then UpdateTables := UpdateTables + [utWayBillHead];
 	if Tables.IndexOf( 'EXTWAYBILLLIST')>=0 then UpdateTables := UpdateTables + [utWayBillList];
 	if Tables.IndexOf( 'EXTMINPRICES')>=0 then UpdateTables := UpdateTables + [utMinPrices];
+	if Tables.IndexOf( 'EXTPRICEAVG')>=0 then UpdateTables := UpdateTables + [utPriceAVG];
     //обновляем таблицы
     {
     Таблица               DELETE  INSERT  UPDATE
@@ -1063,6 +1065,12 @@ begin
 	if utCore in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteNewPrices'; ExecQuery;
 	end;
+	//Synonym
+	if (utSynonym in UpdateTables) and (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+	  SQL.Text:='DROP INDEX IDX_PRICECODE'; ExecQuery;
+	  SQL.Text:='ALTER TABLE SYNONYMS DROP CONSTRAINT FK_SYNONYMS_FULLCODE'; ExecQuery;
+	  SQL.Text:='ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS'; ExecQuery;
+	end;
 	if utCore in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteOldPrices'; ExecQuery;
 	end;
@@ -1078,9 +1086,17 @@ begin
 	if utRegistry in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
 	end;
+	// PriceAVG
+	if utPriceAVG in UpdateTables then begin
+    try
+     	SQL.Text := 'drop table PriceAVG;';	ExecQuery;
+    except
+    end;
+   	SQL.Text := 'CREATE TABLE PRICEAVG (CLIENTCODE FB_ID, FULLCODE FB_ID, ORDERPRICEAVG NUMERIC(15,2))';	ExecQuery;
+	end;
 
   DM.MainConnection1.DefaultUpdateTransaction.Commit;
-  
+
   DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 
 	SQL.Text := 'select count(*) from MinPrices where PriceCode is not null';
@@ -1216,14 +1232,25 @@ begin
 
 	//Synonym
 	if utSynonym in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE SynonymInsert'; ExecQuery;
-    UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
-'INSERT INTO Synonyms ' +
-'(Synonymcode, Synonymname, fullcode, shortcode, pricecode) '+
-'SELECT :Synonymcode, :Synonymname, :fullcode, :shortcode, :pricecode '+
-'FROM rdb$database '+
-'WHERE Not Exists(SELECT SynonymCode FROM Synonyms WHERE SynonymCode=:Synonymcode)');
+	  //SQL.Text:='EXECUTE PROCEDURE SynonymInsert'; ExecQuery;
 	  //SQL.Text:='EXECUTE PROCEDURE SynonymInsertUnfounded'; ExecQuery;
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+      UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
+        'INSERT INTO Synonyms ' +
+        '(Synonymcode, Synonymname, fullcode, shortcode, pricecode) '+
+        'values (:Synonymcode, :Synonymname, :fullcode, :shortcode, :pricecode )');
+  	  SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT PK_SYNONYMS PRIMARY KEY (SYNONYMCODE)'; ExecQuery;
+  	  SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT FK_SYNONYMS_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
+  	  SQL.Text:='CREATE INDEX IDX_PRICECODE ON SYNONYMS (PRICECODE)'; ExecQuery;
+    end
+    else begin
+      UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
+        'INSERT INTO Synonyms ' +
+        '(Synonymcode, Synonymname, fullcode, shortcode, pricecode) '+
+        'SELECT :Synonymcode, :Synonymname, :fullcode, :shortcode, :pricecode '+
+        'FROM rdb$database '+
+        'WHERE Not Exists(SELECT SynonymCode FROM Synonyms WHERE SynonymCode=:Synonymcode)');
+    end;
 	end;
 	//SynonymFirmCr
 	if utSynonymFirmCr in UpdateTables then begin
@@ -1358,6 +1385,13 @@ begin
 	begin
     UpdateFromFile(ExePath+SDirIn+'\MinPrices.txt',
       'update minprices set servercoreid = :servercoreid where fullcode = :fullcode and regioncode = :regioncode');
+  end;
+
+	if utPriceAVG in UpdateTables then
+	begin
+    UpdateFromFile(ExePath+SDirIn+'\PriceAVG.txt',
+      'insert into PriceAVG (ClientCode, fullcode, OrderPriceAVG) values (:ClientCode, :fullcode, :OrderPriceAVG)');
+   	SQL.Text := 'ALTER TABLE PRICEAVG ADD CONSTRAINT PK_PRICEAVG PRIMARY KEY (CLIENTCODE, FULLCODE)';	ExecQuery;
   end;
 	Progress := 90;
 	Synchronize( SetProgress);
@@ -1764,6 +1798,8 @@ procedure TExchangeThread.UpdateFromFile(FileName, InsertSQL: String; OnBatching
 var
   up : TpFIBQuery;
   InDelimitedFile : TFIBInputDelimitedFile;
+  StopExec : TDateTime;
+  Secs : Int64;
 begin
   up := TpFIBQuery.Create(nil);
   try
@@ -1782,7 +1818,16 @@ begin
       InDelimitedFile.Filename := FileName;
       up.OnBatching := OnBatching;
 
-      up.BatchInput(InDelimitedFile);
+      Tracer.TR('Import', 'Exec : ' + InsertSQL);
+      StartExec := Now;
+      try
+        up.BatchInput(InDelimitedFile);
+      finally
+        StopExec := Now;
+        Secs := SecondsBetween(StopExec, StartExec);
+        if Secs > 3 then
+          Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+      end;
 
     finally
       InDelimitedFile.Free;

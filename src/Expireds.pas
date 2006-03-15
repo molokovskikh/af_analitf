@@ -68,13 +68,13 @@ type
     adsExpiredsORDERSHREGIONCODE: TFIBBCDField;
     adsExpiredsORDERSHPRICENAME: TFIBStringField;
     adsExpiredsORDERSHREGIONNAME: TFIBStringField;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     pRecordCount: TPanel;
     lblRecordCount: TLabel;
     Bevel1: TBevel;
     pWebBrowser: TPanel;
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
+    adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
     procedure adsExpireds2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
@@ -82,8 +82,6 @@ type
       var CanInput: Boolean);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
-    procedure adsExpireds2BeforeClose(DataSet: TDataSet);
-    procedure adsExpireds2AfterOpen(DataSet: TDataSet);
     procedure adsExpireds2AfterPost(DataSet: TDataSet);
     procedure adsExpireds2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
@@ -120,10 +118,8 @@ begin
 	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try
-    //adsExpireds.AfterFetchRecord := adsExpiredsAfterFetchRecord;
 		adsExpireds.Open;
 	finally
-    //adsExpireds.AfterFetchRecord := nil;
 		Screen.Cursor := crDefault;
 	end;
 	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCount]);
@@ -168,7 +164,7 @@ end;
 procedure TExpiredsForm.adsExpireds2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
-	//PriceAvg: Double;
+	PriceAvg: Double;
 begin
 	try
 		{ проверяем заказ на соответствие наличию товара на складе }
@@ -179,12 +175,10 @@ begin
 			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsORDERCOUNT.AsInteger := Quantity;
 
 		{ проверяем на превышение цены }
-{
-    TODO: Не забыть включить
 		if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) then
 		begin
-			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
-			if ( PriceAvg > 0) and ( adsExpiredsBaseCost.AsCurrency>PriceAvg*(1+Excess/100)) then
+			PriceAvg := adsOrdersShowFormSummaryORDERPRICEAVG.AsCurrency;
+			if ( PriceAvg > 0) and ( adsExpiredsCryptBASECOST.AsCurrency>PriceAvg*(1+Excess/100)) then
 			begin
 				plOverCost.Top := ( dbgExpireds.Height - plOverCost.Height) div 2;
 				plOverCost.Left := ( dbgExpireds.Width - plOverCost.Width) div 2;
@@ -193,7 +187,6 @@ begin
 				Timer.Enabled := True;
 			end;
 		end;
-}
   except
 		adsExpireds.Cancel;
 		raise;
@@ -254,16 +247,6 @@ begin
     if adsOrdersH.IsEmpty then RefreshOrdersH;
   end;
   }
-end;
-
-procedure TExpiredsForm.adsExpireds2AfterOpen(DataSet: TDataSet);
-begin
-//	adsOrdersShowFormSummary.Open;
-end;
-
-procedure TExpiredsForm.adsExpireds2BeforeClose(DataSet: TDataSet);
-begin
-//	adsOrdersShowFormSummary.Close;
 end;
 
 procedure TExpiredsForm.TimerTimer(Sender: TObject);

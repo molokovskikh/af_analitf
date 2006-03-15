@@ -110,13 +110,15 @@ type
     adsCoreBASECOST: TFIBStringField;
     adsCoreQUANTITY: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     adsOrdersPRICE: TFIBStringField;
+    adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
+    adsOrdersCODE: TFIBStringField;
+    adsOrdersCODECR: TFIBStringField;
+    adsOrdersCryptPRICE: TCurrencyField;
+    adsOrdersCryptSYNONYMFIRM: TStringField;
     procedure adsCore2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
-    procedure adsCore2AfterOpen(DataSet: TDataSet);
-    procedure adsCore2BeforeClose(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
     procedure adsCore2SynonymGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
@@ -139,6 +141,7 @@ type
     procedure FormResize(Sender: TObject);
     procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
+    procedure adsOrdersCalcFields(DataSet: TDataSet);
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
@@ -306,6 +309,8 @@ begin
 		adsCore.Locate( 'PriceEnabled', 'False', []);
 	adsOrders.DataSource := dsCore;
 	adsOrdersShowFormSummary.DataSource := dsCore;
+//  adsOrders.Open;
+//	adsOrdersShowFormSummary.Open;
 	lblName.Caption := AName + ' ' + AForm;
 
 	adsFirmsInfo.Open;
@@ -332,50 +337,29 @@ var
   S : String;
   C : Currency;
 begin
-try
-{
-  //TODO: Ќе забыть включить
-  //вычисл€ем розничную цену PriceRet
-  if adsCoreFirmCode.AsInteger=RegisterId then begin
-    with DM.adsSelect do begin
-      //TODO:ѕосмотреть сюда
-      SelectSQL.Text:='SELECT '+RegionPriceRet+' FROM Regions WHERE Id='+RegionCodeStr;
-      ParamByName('Price').Value:=adsCoreBaseCost.Value;
-      Open;
-      try
-        if not IsEmpty then
-          adsCorePriceRet.AsCurrency:=Fields[0].AsCurrency;
-      finally
-        Close;
-      end;
-    end;
-  end
-  else
-    adsCorePriceRet.AsCurrency:=RoundTo(adsCoreBaseCost.AsCurrency*RetailForcount,-2);
-}    
-
- try
-   adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
-   adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
-   S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
-   C := StrToCurr(S);
-   adsCoreCryptBASECOST.AsCurrency := C;
-   adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
-  //вычисл€ем сумму заказа по товару SumOrder
-  adsCoreSumOrder.AsCurrency:=C*adsCoreORDERCOUNT.AsInteger;
- except
- end;
-  //вычисл€ем разницу в цене PriceDelta
-  if Length(RecInfos)>0 then
-    adsCorePriceDelta.AsFloat:=RecInfos[Abs(adsCore.RecNo)-1];
-except
-end;
+  try
+    adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
+    adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
+    S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
+    C := StrToCurr(S);
+    adsCoreCryptBASECOST.AsCurrency := C;
+    adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
+    //вычисл€ем сумму заказа по товару SumOrder
+    adsCoreSumOrder.AsCurrency:=C*adsCoreORDERCOUNT.AsInteger;
+  except
+  end;
+  try
+    //вычисл€ем разницу в цене PriceDelta
+    if Length(RecInfos)>0 then
+      adsCorePriceDelta.AsFloat:=RecInfos[Abs(adsCore.RecNo)-1];
+  except
+  end;
 end;
 
 procedure TCoreForm.adsCore2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
-	//PriceAvg: Double;
+	PriceAvg: Double;
 begin
 	try
 		{ провер€ем заказ на соответствие наличию товара на складе }
@@ -386,12 +370,10 @@ begin
 			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
 		{ провер€ем на превышение цены }
-{
-    //TODO: Ќе забыть включить
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
-			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
-			if ( PriceAvg > 0) and ( adsCoreBaseCost.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
+			PriceAvg := adsOrdersShowFormSummaryORDERPRICEAVG.AsCurrency;
+			if ( PriceAvg > 0) and ( adsCoreCryptBASECOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
 			begin
 				plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
 				plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
@@ -400,7 +382,6 @@ begin
 				Timer.Enabled := True;
 			end;
 		end;
-}    
   except
 		adsCore.Cancel;
 		raise;
@@ -410,18 +391,6 @@ end;
 procedure TCoreForm.Print( APreview: boolean = False);
 begin
 	DM.ShowFastReport( 'Core.frf', adsCore, APreview);
-end;
-
-procedure TCoreForm.adsCore2AfterOpen(DataSet: TDataSet);
-begin
-//	adsOrders.Open;
-//	adsOrdersShowFormSummary.Open;
-end;
-
-procedure TCoreForm.adsCore2BeforeClose(DataSet: TDataSet);
-begin
-//	adsOrders.Close;
-//	adsOrdersShowFormSummary.Close;
 end;
 
 procedure TCoreForm.adsCore2BeforeEdit(DataSet: TDataSet);
@@ -669,6 +638,20 @@ procedure TCoreForm.adsCoreSTORAGEGetText(Sender: TField; var Text: String;
   DisplayText: Boolean);
 begin
   text := Iif(Sender.AsBoolean, '+', '');
+end;
+
+procedure TCoreForm.adsOrdersCalcFields(DataSet: TDataSet);
+var
+  S : String;
+  C : Currency;
+begin
+  try
+    adsOrdersCryptSYNONYMFIRM.AsString := DM.D_S(adsOrdersSYNONYMFIRM.AsString);
+    S := DM.D_B(adsOrdersCODE.AsString, adsOrdersCODECR.AsString);
+    C := StrToCurr(S);
+    adsOrdersCryptPRICE.AsCurrency := C;
+  except
+  end;
 end;
 
 end.

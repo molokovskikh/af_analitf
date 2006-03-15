@@ -590,8 +590,6 @@ begin
 			 [ DM.adsSelect.FieldByName( 'OrdersCount').AsInteger]);
 		StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',
 			 [ DM.adsSelect.FieldByName( 'Positions').AsInteger]);
-//		StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',
-//			 [ DM.adsSelect.FieldByName( 'SumOrder').AsFloat]);
 	finally
 		DM.adsSelect.Close;
 	end;
@@ -681,7 +679,7 @@ begin
     Assigned(ActiveControl) and
 		not ActiveControl.Focused and
 		not ActiveControl.ClassNameIs( 'TWebBrowser') then EditDummy.SetFocus;
-}    
+}
   except
     on E : Exception do
       ShowMessage('Error : ' + E.Message);

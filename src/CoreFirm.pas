@@ -96,11 +96,12 @@ type
     adsCoreORDERSHREGIONCODE: TFIBBCDField;
     adsCoreORDERSHPRICENAME: TFIBStringField;
     adsCoreORDERSHREGIONNAME: TFIBStringField;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     adsCoreLEADERCODE: TFIBStringField;
     adsCoreLEADERCODECR: TFIBStringField;
     adsCoreLEADERPRICE: TFIBStringField;
     adsCoreCryptLEADERPRICE: TCurrencyField;
+    adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
+    adsOrdersShowFormSummaryFULLCODE: TFIBBCDField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -119,8 +120,6 @@ type
       Shift: TShiftState);
     procedure dbgCoreCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
-    procedure adsCore2AfterOpen(DataSet: TDataSet);
-    procedure adsCore2BeforeClose(DataSet: TDataSet);
     procedure TimerTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
@@ -184,7 +183,7 @@ begin
 	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, True);
 	dbgCore.SaveToRegistry( Reg);
-	Reg.Free;
+	Reg.Free;  
 end;
 
 procedure TCoreFirmForm.ShowForm(APriceCode, ARegionCode: Integer;
@@ -192,7 +191,6 @@ procedure TCoreFirmForm.ShowForm(APriceCode, ARegionCode: Integer;
 begin
   PriceCode:=APriceCode;
   RegionCode:=ARegionCode;
-  adsOrdersShowFormSummary.DataSource := nil;
   with adsCore do begin
     ParamByName( 'APriceCode').Value:=PriceCode;
     ParamByName( 'ARegionCode').Value:=RegionCode;
@@ -217,7 +215,8 @@ begin
     PricesForm.adsPrices.FieldByName('PriceName').AsString,
     PricesForm.adsPrices.FieldByName('RegionName').AsString]);
   RefreshOrdersH;
-  //adsOrdersShowFormSummary.DataSource := dsCore;
+  if not adsOrdersShowFormSummary.Active then
+    adsOrdersShowFormSummary.Open;
   adsCore.First;
   Application.ProcessMessages;
   inherited ShowForm;
@@ -308,7 +307,7 @@ end;
 procedure TCoreFirmForm.adsCore2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
-	//PriceAvg: Double;
+	PriceAvg: Double;
 begin
 	try
 		{ проверяем заказ на соответствие наличию товара на складе }
@@ -319,12 +318,12 @@ begin
 			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
 		{ проверяем на превышение цены }
-{
-    TODO: Не забыть включить
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
-			PriceAvg := adsOrdersShowFormSummaryPriceAvg.AsCurrency;
-			if ( PriceAvg > 0) and ( adsCoreBaseCost.AsCurrency>PriceAvg*(1+Excess/100)) then
+      if (adsOrdersShowFormSummary.Locate('FULLCODE', adsCoreFULLCODE.AsVariant, [])) then
+      begin
+			PriceAvg := adsOrdersShowFormSummaryORDERPRICEAVG.AsCurrency;
+			if ( PriceAvg > 0) and ( adsCoreCryptBASECOST.AsCurrency>PriceAvg*(1+Excess/100)) then
 			begin
 				plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
 				plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
@@ -332,8 +331,8 @@ begin
 				plOverCost.Show;
 				Timer.Enabled := True;
 			end;
+      end;
 		end;
-}
   except
 		adsCore.Cancel;
 		raise;
@@ -395,7 +394,6 @@ begin
     end;
   finally
     adsCore.EnableControls;
-//    adsCore.CloseOpen(True);
     RefreshAllCore;
 //    adsOrdersH.CloseOpen(True);
     Screen.Cursor:=crDefault;
@@ -475,16 +473,6 @@ begin
     if adsOrdersH.IsEmpty then RefreshOrdersH;
   end;
 }
-end;
-
-procedure TCoreFirmForm.adsCore2AfterOpen(DataSet: TDataSet);
-begin
-//	adsOrdersShowFormSummary.Open;
-end;
-
-procedure TCoreFirmForm.adsCore2BeforeClose(DataSet: TDataSet);
-begin
-//	adsOrdersShowFormSummary.Close;
 end;
 
 procedure TCoreFirmForm.TimerTimer(Sender: TObject);

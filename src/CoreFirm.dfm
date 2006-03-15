@@ -471,10 +471,7 @@ object CoreFirmForm: TCoreFirmForm
       '    :AREGIONCODE,'
       '    :ACLIENTID,'
       '    :APRICENAME) ')
-    AutoCalcFields = False
-    AfterOpen = adsCore2AfterOpen
     AfterPost = adsCore2AfterPost
-    BeforeClose = adsCore2BeforeClose
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
     OnCalcFields = adsCore2CalcFields
@@ -814,20 +811,26 @@ object CoreFirmForm: TCoreFirmForm
   object adsOrdersShowFormSummary: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
-      '    PRICEAVG'
+      '    *'
       'FROM'
-      '    ORDERSSHOWFORMSUMMARY(:FULLCODE,'
-      '    :ACLIENTID) ')
+      '   PriceAVG'
+      'where'
+      '  ClientCode = :ACLIENTID')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
-    DataSource = dsCore
     Left = 200
     Top = 264
     WaitEndMasterScroll = True
+    dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
-      FieldName = 'PRICEAVG'
+    object adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField
+      FieldName = 'ORDERPRICEAVG'
       Size = 2
+      RoundByScale = True
+    end
+    object adsOrdersShowFormSummaryFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
       RoundByScale = True
     end
   end

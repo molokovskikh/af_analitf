@@ -190,7 +190,6 @@ object DM: TDM
       '    ')
     SelectSQL.Strings = (
       'select * from Params where ID = 0')
-    AfterOpen = adtParamsAfterOpen
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
@@ -325,7 +324,8 @@ object DM: TDM
       '    LEADFROMBASIC'
       'FROM'
       '    CLIENTS'
-      '    ')
+      'where'
+      '  Clientid = :OLD_ClientID')
     SelectSQL.Strings = (
       'SELECT'
       '    CLIENTID,'
@@ -345,11 +345,8 @@ object DM: TDM
       '    LEADFROMBASIC'
       'FROM'
       '    CLIENTS ')
-    AfterInsert = adtClientsAfterInsert
     AfterOpen = adtClientsAfterOpen
-    AfterPost = adtClientsAfterPost
-    AfterScroll = adtClientsAfterScroll
-    BeforeDelete = adtClientsBeforeDelete
+    AllowedUpdateKinds = [ukModify]
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
