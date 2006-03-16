@@ -107,9 +107,18 @@ function RunExchange(AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
-  Exclusive, CompactThread, ShowLog, ExternalOrders, DB;
+  Exclusive, CompactThread, ShowLog, ExternalOrders, DB, SQLWaiting;
 
 {$R *.DFM}
+type
+  TInternalRepareOrders = class
+   public
+    Strings : TStrings;
+    procedure RepareOrders;
+    procedure InternalRepareOrders;
+  end;
+
+
 
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 var
@@ -287,134 +296,13 @@ end;
 { Восстанавливаем заказы после обновления }
 procedure TryToRepareOrders;
 var
-	Order, CurOrder, Quantity, E: Integer;
-	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
-  Code, CodeCr : String;
-	Strings: TStrings;
-//  FilterStr : String;
-//  LocateRes : Boolean;
-
-	procedure SetOrder( Order: integer);
-	begin
-		DM.adsSelect3.Edit;
-		DM.adsSelect3ORDERCOUNT.AsInteger := Order;
-		if Order = 0 then
-      DM.adsSelect3COREID.Clear
-    else begin
-      DM.adsSelect3COREID.AsInt64 := DM.adsCoreCOREID.Value;
-      DM.adsSelect3CODE.Value := DM.adsCoreCODE.Value;
-      DM.adsSelect3CODECR.Value := DM.adsCoreCODECR.Value;
-      DM.adsSelect3PRICE.AsString := DM.adsCoreBASECOST.Value;
-    end;
-		DM.adsSelect3.Post;
-	end;
-
+  t : TInternalRepareOrders;
 begin
-// 	DM.adsSelect3.Close;
-{
- 	DM.adsSelect3.SelectSQL.Text := 'SELECT Id, CoreId, PriceCode, RegionCode, Code, CodeCr, ' +
-		'Price, SynonymCode, SynonymFirmCrCode, SynonymName, SynonymFirm, Junk, Await, OrderCount, PriceName ' +
-		'FROM Orders ' +
-		'INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND OrdersH.Closed = 0) ' +
-		'WHERE (OrderCount>0)';
-}    
- 	DM.adsSelect3.CloseOpen(True);
-	if DM.adsSelect3.IsEmpty then
-	begin
-	 	DM.adsSelect3.Close;
-		exit;
-	end;
-
-	Strings := TStringList.Create;
-
-	try
-
-	while not DM.adsSelect3.Eof do
-	begin
-		DM.adsCore.Close;
-		DM.adsCore.ParamByName( 'AClientId').Value :=
-			DM.adtClients.FieldByName('ClientId').Value;
-		DM.adsCore.ParamByName( 'APriceCode').Value :=
-			DM.adsSelect3.FieldByName( 'PriceCode').Value;
-		DM.adsCore.ParamByName( 'ARegionCode').Value :=
-			DM.adsSelect3.FieldByName( 'RegionCode').Value;
-		DM.adsCore.ParamByName( 'APRICENAME').Value :=
-			DM.adsSelect3.FieldByName( 'PriceName').Value;
-		Screen.Cursor := crHourglass;
-		try
-			DM.adsCore.Open;
-			{ проверяем наличие прайс-листа }
-			if DM.adsCore.IsEmpty then
-			begin
-				Strings.Append( Format( '%s : %s - %s : прайс-лист отсутствует',
-					[ DM.adsSelect3PRICENAME.AsString,
-					DM.adsSelect3CryptSYNONYMNAME.AsString,
-					DM.adsSelect3CryptSYNONYMFIRM.AsString]));
-				DM.adsCore.Close;
-				SetOrder( 0);
-				DM.adsSelect3.Next;
-				continue;
-			end;
-			Order := DM.adsSelect3ORDERCOUNT.AsInteger;
-			CurOrder := 0;
-			Code := DM.adsSelect3CODE.Value;
-      Code := Copy(Code, 1, Length(Code)-16);
-      //if Code = '' then Code := Null;
-			CodeCr := DM.adsSelect3CODECR.Value;
-      CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
-      //if CodeCr = '' then CodeCr := Null;
-			SynonymCode := DM.adsSelect3SYNONYMCODE.AsInteger;
-			SynonymFirmCrCode := DM.adsSelect3SYNONYMFIRMCRCODE.AsInteger;
-      JUNK := DM.adsSelect3JUNK.AsInteger;
-      AWAIT := DM.adsSelect3AWAIT.AsInteger;
-
-			if DM.adsCore.ExtLocate( 'SynonymCode;SynonymFirmCrCode;Junk;Await;Code;CodeCr',
-				  VarArrayOf([ SynonymCode, SynonymFirmCrCode, JUNK, AWAIT, Code, CodeCr]), [eloPartialKey])
-      then
-			begin
-				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);
-				if E <> 0 then Quantity := 0;
-				if Quantity > 0 then
-					CurOrder := Min( Order, Quantity)
-				else CurOrder := Order;
-			end;
-			SetOrder( CurOrder);
-
-			{ Если все еще не разбросали, то пишем сообщение }
-			if ( Order - CurOrder) > 0 then
-			begin
-				if CurOrder > 0 then
-				begin
-					Strings.Append( Format( '%s : %s - %s : %d вместо %d (старая цена : %s)',
-						[ DM.adsSelect3PRICENAME.AsString,
-						DM.adsSelect3CryptSYNONYMNAME.AsString,
-						DM.adsSelect3CryptSYNONYMFIRM.AsString,
-						CurOrder,
-						Order,
-						DM.adsSelect3CryptPRICE.AsString]));
-				end
-				else
-				begin
-					Strings.Append( Format( '%s : %s - %s : предложение отсутствует (старая цена : %s)',
-						[ DM.adsSelect3PRICENAME.AsString,
-						DM.adsSelect3CryptSYNONYMNAME.AsString,
-						DM.adsSelect3CryptSYNONYMFIRM.AsString,
-						DM.adsSelect3CryptPRICE.AsString]));
-				end;
-			end;
-			DM.adsSelect3.Next;
-		finally
-			DM.adsCore.Close;
-      Screen.Cursor := crDefault;
-		end;
-	end;
-
-	{ если не нашли что-то, то выводим сообщение }
-	if (Strings.Count > 0) and (Length(Strings.Text) > 0) then ShowNotFound( Strings);
-
-	finally
-		Strings.Free;
-		DM.adsSelect3.Close;
+  t := TInternalRepareOrders.Create;
+  try
+    t.RepareOrders;
+  finally
+    t.Free;
   end;
 end;
 
@@ -732,6 +620,138 @@ end;
 procedure TExchangeForm.HTTPWorkEnd(Sender: TObject; AWorkMode: TWorkMode);
 begin
   WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkEnd');
+end;
+
+{ TInternalRepareOrders }
+
+procedure TInternalRepareOrders.InternalRepareOrders;
+var
+	Order, CurOrder, Quantity, E: Integer;
+	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
+  Code, CodeCr : String;
+
+	procedure SetOrder( Order: integer);
+	begin
+		DM.adsSelect3.Edit;
+		DM.adsSelect3ORDERCOUNT.AsInteger := Order;
+		if Order = 0 then
+      DM.adsSelect3COREID.Clear
+    else begin
+      DM.adsSelect3COREID.AsInt64 := DM.adsCoreCOREID.Value;
+      DM.adsSelect3CODE.Value := DM.adsCoreCODE.Value;
+      DM.adsSelect3CODECR.Value := DM.adsCoreCODECR.Value;
+      DM.adsSelect3PRICE.AsString := DM.adsCoreBASECOST.Value;
+    end;
+		DM.adsSelect3.Post;
+	end;
+
+begin
+	while not DM.adsSelect3.Eof do
+	begin
+    Application.ProcessMessages;
+		DM.adsCore.Close;
+		DM.adsCore.ParamByName( 'AClientId').Value :=
+			DM.adtClients.FieldByName('ClientId').Value;
+		DM.adsCore.ParamByName( 'APriceCode').Value :=
+			DM.adsSelect3.FieldByName( 'PriceCode').Value;
+		DM.adsCore.ParamByName( 'ARegionCode').Value :=
+			DM.adsSelect3.FieldByName( 'RegionCode').Value;
+		DM.adsCore.ParamByName( 'APRICENAME').Value :=
+			DM.adsSelect3.FieldByName( 'PriceName').Value;
+		Screen.Cursor := crHourglass;
+		try
+			DM.adsCore.Open;
+      Application.ProcessMessages;
+			{ проверяем наличие прайс-листа }
+			if DM.adsCore.IsEmpty then
+			begin
+				Strings.Append( Format( '%s : %s - %s : прайс-лист отсутствует',
+					[ DM.adsSelect3PRICENAME.AsString,
+					DM.adsSelect3CryptSYNONYMNAME.AsString,
+					DM.adsSelect3CryptSYNONYMFIRM.AsString]));
+				DM.adsCore.Close;
+				SetOrder( 0);
+				DM.adsSelect3.Next;
+				continue;
+			end;
+			Order := DM.adsSelect3ORDERCOUNT.AsInteger;
+			CurOrder := 0;
+			Code := DM.adsSelect3CODE.Value;
+      Code := Copy(Code, 1, Length(Code)-16);
+      //if Code = '' then Code := Null;
+			CodeCr := DM.adsSelect3CODECR.Value;
+      CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
+      //if CodeCr = '' then CodeCr := Null;
+			SynonymCode := DM.adsSelect3SYNONYMCODE.AsInteger;
+			SynonymFirmCrCode := DM.adsSelect3SYNONYMFIRMCRCODE.AsInteger;
+      JUNK := DM.adsSelect3JUNK.AsInteger;
+      AWAIT := DM.adsSelect3AWAIT.AsInteger;
+
+			if DM.adsCore.ExtLocate( 'SynonymCode;SynonymFirmCrCode;Junk;Await;Code;CodeCr',
+				  VarArrayOf([ SynonymCode, SynonymFirmCrCode, JUNK, AWAIT, Code, CodeCr]), [eloPartialKey])
+      then
+			begin
+				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);
+				if E <> 0 then Quantity := 0;
+				if Quantity > 0 then
+					CurOrder := Min( Order, Quantity)
+				else CurOrder := Order;
+			end;
+			SetOrder( CurOrder);
+
+			{ Если все еще не разбросали, то пишем сообщение }
+			if ( Order - CurOrder) > 0 then
+			begin
+				if CurOrder > 0 then
+				begin
+					Strings.Append( Format( '%s : %s - %s : %d вместо %d (старая цена : %s)',
+						[ DM.adsSelect3PRICENAME.AsString,
+						DM.adsSelect3CryptSYNONYMNAME.AsString,
+						DM.adsSelect3CryptSYNONYMFIRM.AsString,
+						CurOrder,
+						Order,
+						DM.adsSelect3CryptPRICE.AsString]));
+				end
+				else
+				begin
+					Strings.Append( Format( '%s : %s - %s : предложение отсутствует (старая цена : %s)',
+						[ DM.adsSelect3PRICENAME.AsString,
+						DM.adsSelect3CryptSYNONYMNAME.AsString,
+						DM.adsSelect3CryptSYNONYMFIRM.AsString,
+						DM.adsSelect3CryptPRICE.AsString]));
+				end;
+			end;
+      Application.ProcessMessages;
+			DM.adsSelect3.Next;
+		finally
+			DM.adsCore.Close;
+      Screen.Cursor := crDefault;
+		end;
+	end;
+end;
+
+procedure TInternalRepareOrders.RepareOrders;
+begin
+ 	DM.adsSelect3.CloseOpen(True);
+	if DM.adsSelect3.IsEmpty then
+	begin
+	 	DM.adsSelect3.Close;
+		exit;
+	end;
+
+	Strings := TStringList.Create;
+
+	try
+
+    ShowSQLWaiting(InternalRepareOrders, 'Происходит восстановление заказов');
+    
+  	{ если не нашли что-то, то выводим сообщение }
+	  if (Strings.Count > 0) and (Length(Strings.Text) > 0) then ShowNotFound( Strings);
+
+	finally
+		Strings.Free;
+		DM.adsSelect3.Close;
+  end;
 end;
 
 end.

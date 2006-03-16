@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons, 
+  Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
-  FIBSQLMonitor, FIBQuery;
+  FIBSQLMonitor, FIBQuery, SQLWaiting;
 
 const
 	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
@@ -103,8 +103,10 @@ type
       RecordNumber: Integer; var StopFetching: Boolean);
   private
     FSumOrders : TStringList;
+    Strings: TStrings;
     procedure SetParameters;
     procedure MoveToPrice;
+    procedure InternalMoveToPrice;
     procedure SendOrders;
     procedure SetDateInterval;
     procedure ClearSumOrders;
@@ -283,55 +285,6 @@ begin
 end;
 
 procedure TOrdersHForm.MoveToPrice;
-var
-	Order, CurOrder, Quantity, E, OrderId: Integer;
-	SynonymFirmCrCode, SynonymCode: Variant;
-  Code, CodeCr : String;
-  I : Integer;
-	Strings: TStrings;
-
-  procedure SetOrder( Order: Integer);
-  begin
-    //создаем записи из Orders и OrdersH, если их нет
-    with adsCore do begin
-{
-      if FieldByName('OrdersOrderId').IsNull then begin //нет соответствующей записи в Orders
-        if OrderId = 0 then begin //нет заголовка заказа из OrdersH
-          //добавляем запись в OrdersH
-          Edit;
-          FieldByName('OrdersHClientId').AsInteger:=DM.adtClients.FieldByName('ClientId').AsInteger;
-          FieldByName('OrdersHPriceCode').AsInteger:=adsOrdersHPriceCode.AsInteger;
-          FieldByName('OrdersHRegionCode').AsInteger:=adsOrdersHRegionCode.AsInteger;
-          FieldByName('OrdersHPriceName').AsString:=adsOrdersHPriceName.AsString;
-          FieldByName('OrdersHRegionName').AsString:=adsOrdersHRegionName.AsString;
-          Post; //на этот момент уже имеем OrdersHOrderId (автоинкремент)
-          OrderId:=FieldByName('OrdersHOrderId').AsInteger;
-        end;
-        //добавляем запись в Orders
-        Edit;
-        FieldByName( 'OrdersOrderId').AsInteger:=OrderId;
-        FieldByName( 'OrdersClientId').AsInteger:=DM.adtClients.FieldByName('ClientId').AsInteger;
-        FieldByName( 'OrdersFullCode').AsInteger:=FieldByName('FullCode').AsInteger;
-        FieldByName( 'OrdersCodeFirmCr').AsInteger:=FieldByName('CodeFirmCr').AsInteger;
-        FieldByName( 'OrdersCoreId').AsInteger:=FieldByName('CoreId').AsInteger;
-        FieldByName( 'OrdersSynonymCode').AsInteger:=FieldByName('SynonymCode').AsInteger;
-        FieldByName( 'OrdersSynonymFirmCrCode').AsInteger:=FieldByName('SynonymFirmCrCode').AsInteger;
-        FieldByName( 'OrdersCode').AsString:=FieldByName('Code').AsString;
-        FieldByName( 'OrdersCodeCr').AsString:=FieldByName('CodeCr').AsString;
-        FieldByName( 'OrdersSynonym').AsString := FieldByName( 'Synonym').AsString;
-        FieldByName( 'OrdersSynonymFirm').AsString := FieldByName( 'SynonymFirm').AsString;
-        FieldByName( 'OrdersAwait').AsBoolean := FieldByName( 'Await').AsBoolean;
-        FieldByName( 'OrdersJunk').AsBoolean := FieldByName( 'Junk').AsBoolean;
-        FieldByName( 'OrdersPrice').AsCurrency:=FieldByName('BaseCost').AsCurrency;
-        Post;
-      end;
-}      
-      Edit;
-      FieldByName( 'OrderCount').AsInteger := Order;
-      Post;
-    end;
-  end;
-
 begin
   if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>1) then Exit;
 
@@ -343,97 +296,7 @@ begin
   if dbgOrdersH.SelectedRows.Count > 0 then begin
     Strings:=TStringList.Create;
     try
-      for I := dbgOrdersH.SelectedRows.Count-1 downto 0 do
-      begin
-        adsOrdersHForm.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
-
-        //находим OrderId
-        OrderId:=0;
-        with DM.adsSelect do begin
-          SelectSQL.Text:='SELECT OrderId FROM OrdersHShowCurrent(:AClientID, :APriceCode, :ARegionCode)';
-          ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-          ParamByName('APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
-          ParamByName('ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
-          Open;
-          try
-            if not IsEmpty then OrderId:=Fields[0].AsInteger;
-          finally
-            Close;
-          end;
-        end;
-
-        with adsCore do begin
-          ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-          ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
-          ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
-          ParamByName( 'APriceName').Value:=adsOrdersHFormPRICENAME.Value;
-          Screen.Cursor:=crHourglass;
-          try
-            Open;
-            { проверяем наличие прайс-листа }
-            if IsEmpty then raise Exception.Create( 'Данный прайс-лист не найден');
-            { открываем сохраненный заказ }
-            OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
-            { переписываем позиции в текущий прайс-лист }
-            while not OrdersForm.adsOrders.Eof do begin
-              Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
-              Code := OrdersForm.adsOrdersCode.AsVariant;
-              Code := Copy(Code, 1, Length(Code)-16);
-            //if Code = '' then Code := Null;
-              CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
-              CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
-              //if CodeCr = '' then CodeCr := Null;
-              SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
-              SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
-              //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
-
-              { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
-              if ExtLocate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
-                  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey])
-              then
-              begin
-                repeat
-                  Val(FieldByName( 'Quantity').AsString,Quantity,E);
-                  if E <> 0 then Quantity := 0;
-                  if Quantity > 0 then
-                    CurOrder := Min( Order, Quantity - FieldByName('OrderCount').AsInteger)
-                  else
-                    CurOrder := Order;
-                  if CurOrder < 0 then CurOrder := 0;
-                  Order := Order - CurOrder;
-                  if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
-                until ( Order = 0) or (not ExtLocateNext( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
-                  VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey]));
-              end;
-
-              { если все еще не разбросали, то пишем сообщение }
-              if Order > 0 then
-              begin
-                if ( OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
-                begin
-                  Strings.Append( Format( '%s : %s - %s : %d вместо %d',
-                    [adsOrdersHFormPRICENAME.AsString,
-                    OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
-                    OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString,
-                    OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
-                    OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
-                end
-                else
-                  Strings.Append( Format( '%s : %s - %s : предложение не найдено',
-                    [adsOrdersHFormPRICENAME.AsString,
-                    OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
-                    OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString]));
-              end;
-              OrdersForm.adsOrders.Next;
-            end;
-          finally
-            Close;
-            Screen.Cursor:=crDefault;
-          end;
-        end;
-      end;
-
-      dbgOrdersH.SelectedRows.Clear;
+      ShowSQLWaiting(InternalMoveToPrice, 'Происходит восстановление заявок');
 
       //если не нашли что-то, то выводим сообщение
       if Strings.Count > 0 then ShowNotFound(Strings);
@@ -442,8 +305,6 @@ begin
       Strings.Free;
     end;
   end;
-
-
 end;
 
 procedure TOrdersHForm.SendOrders;
@@ -679,6 +540,122 @@ begin
   OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
   TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
     StrToCurr(OrdersForm.lSumOrder.Caption);
+end;
+
+procedure TOrdersHForm.InternalMoveToPrice;
+var
+	Order, CurOrder, Quantity, E, OrderId: Integer;
+	SynonymFirmCrCode, SynonymCode: Variant;
+  Code, CodeCr : String;
+  I : Integer;
+
+  procedure SetOrder( Order: Integer);
+  begin
+    with adsCore do begin
+      Edit;
+      FieldByName( 'OrderCount').AsInteger := Order;
+      Post;
+    end;
+  end;
+
+begin
+  for I := dbgOrdersH.SelectedRows.Count-1 downto 0 do
+  begin
+    adsOrdersHForm.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
+
+    //находим OrderId
+    OrderId:=0;
+    with DM.adsSelect do begin
+      SelectSQL.Text:='SELECT OrderId FROM OrdersHShowCurrent(:AClientID, :APriceCode, :ARegionCode)';
+      ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+      ParamByName('APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
+      ParamByName('ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
+      Application.ProcessMessages;
+      Open;
+      try
+        if not IsEmpty then OrderId:=Fields[0].AsInteger;
+      finally
+        Close;
+      end;
+      Application.ProcessMessages;
+    end;
+
+    with adsCore do begin
+      ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+      ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
+      ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
+      ParamByName( 'APriceName').Value:=adsOrdersHFormPRICENAME.Value;
+      Screen.Cursor:=crHourglass;
+      try
+        Application.ProcessMessages;
+        Open;
+        { проверяем наличие прайс-листа }
+        if IsEmpty then raise Exception.Create( 'Данный прайс-лист не найден');
+        { открываем сохраненный заказ }
+        OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
+        Application.ProcessMessages;
+        { переписываем позиции в текущий прайс-лист }
+        while not OrdersForm.adsOrders.Eof do begin
+          Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
+          Code := OrdersForm.adsOrdersCode.AsVariant;
+          Code := Copy(Code, 1, Length(Code)-16);
+        //if Code = '' then Code := Null;
+          CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
+          CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
+          //if CodeCr = '' then CodeCr := Null;
+          SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
+          SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
+          //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
+
+          { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
+          if ExtLocate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
+              VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey])
+          then
+          begin
+            repeat
+              Application.ProcessMessages;
+              Val(FieldByName( 'Quantity').AsString,Quantity,E);
+              if E <> 0 then Quantity := 0;
+              if Quantity > 0 then
+                CurOrder := Min( Order, Quantity - FieldByName('OrderCount').AsInteger)
+              else
+                CurOrder := Order;
+              if CurOrder < 0 then CurOrder := 0;
+              Order := Order - CurOrder;
+              if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
+            until ( Order = 0) or (not ExtLocateNext( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
+              VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey]));
+          end;
+
+          { если все еще не разбросали, то пишем сообщение }
+          if Order > 0 then
+          begin
+            if ( OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
+            begin
+              Strings.Append( Format( '%s : %s - %s : %d вместо %d',
+                [adsOrdersHFormPRICENAME.AsString,
+                OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
+                OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString,
+                OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
+                OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
+            end
+            else
+              Strings.Append( Format( '%s : %s - %s : предложение не найдено',
+                [adsOrdersHFormPRICENAME.AsString,
+                OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
+                OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString]));
+          end;
+          Application.ProcessMessages;
+          OrdersForm.adsOrders.Next;
+        end;
+      finally
+        Close;
+        Screen.Cursor:=crDefault;
+      end;
+    end;
+  end;
+
+  dbgOrdersH.SelectedRows.Clear;
 end;
 
 end.
