@@ -125,8 +125,12 @@ begin
   if Caption <> '' then
     MainForm.Caption := Application.Title + ' - ' + Caption;
   for I := 0 to Self.ComponentCount-1 do
-    if (Self.Components[i] is TToughDBGrid) and Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged ) then
+    if (Self.Components[i] is TToughDBGrid) and Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
+    then begin
       TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
+      if Assigned(TToughDBGrid(Self.Components[i]).DataSource) and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet) then
+        TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
+    end;
   Show;
   if Parent<>nil then
     for I:=0 to Parent.ControlCount-1 do
