@@ -53,7 +53,7 @@ begin
   Synchronize(ClearProgress);
 	RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
   try
-   	ReclameURL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
+   	ReclameURL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
 		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
     FStatusStr := 'Запрос информационного блока...';
     Synchronize(UpdateProgress);
