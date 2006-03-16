@@ -2,7 +2,7 @@ unit SOAPThroughHTTP;
 
 interface
 
-uses IdHTTP, IdIntercept, SysUtils, StrUtils, Classes, IdException, WinSock;
+uses IdHTTP, IdIntercept, SysUtils, StrUtils, Classes, IdException, WinSock, IdURI;
 
 const
 	INVOKE_RESPONSE	= 'Invoke Response';
@@ -92,13 +92,14 @@ end;
 
 function TSOAP.ExtractHost( AURL: string): string;
 var
-	start, stop: integer;
+  u : TIdURI;
 begin
-	if Pos( 'http://', AnsiLowerCase( AURL)) > 0 then
-		start := Pos( 'http://', AnsiLowerCase( AURL)) + 7
-	else start := 1;
-	stop := PosEx( '/', AnsiLowerCase( AURL), start);
-	result := Copy( AURL, start, stop - start);
+  u := TIdURI.Create(AURL);
+  try
+    Result := u.Host;
+  finally
+    u.Free;
+  end;
 end;
 
 {
