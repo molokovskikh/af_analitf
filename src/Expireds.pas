@@ -130,6 +130,7 @@ begin
     dbgExpireds.Columns[0].Title.SortMarker := smUpEh;
 	Reg.Free;
 	ShowForm;
+  adsExpireds.First;
 end;
 
 procedure TExpiredsForm.FormDestroy(Sender: TObject);

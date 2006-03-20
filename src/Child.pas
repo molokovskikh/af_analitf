@@ -128,8 +128,13 @@ begin
     if (Self.Components[i] is TToughDBGrid) and Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
     then begin
       TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
-      if Assigned(TToughDBGrid(Self.Components[i]).DataSource) and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet) then
+{
+      if Assigned(TToughDBGrid(Self.Components[i]).DataSource)
+        and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
+        and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
+      then
         TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
+}        
     end;
   Show;
   if Parent<>nil then
