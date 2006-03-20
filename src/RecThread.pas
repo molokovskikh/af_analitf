@@ -2,7 +2,8 @@ unit RecThread;
 
 interface
 
-uses Classes, SysUtils, IdException, WinSock, IdComponent, IdHTTP, Math, SOAPThroughHTTP;
+uses Classes, SysUtils, IdException, WinSock, IdComponent, IdHTTP, Math, SOAPThroughHTTP,
+  IdStackConsts, StrUtils, SyncObjs;
 
 type
   TReclameThread = class(TThread)
@@ -24,9 +25,12 @@ type
     procedure Execute; override;
   end;
 
+var
+  SZCS : TCriticalSection;
+
 implementation
 
-uses Exchange, DModule, AProc, VCLUnZip, SevenZip;
+uses Exchange, DModule, AProc, SevenZip;
 
 procedure TReclameThread.ClearProgress;
 begin
@@ -37,6 +41,8 @@ begin
 end;
 
 procedure TReclameThread.Execute;
+const
+  FReconnectCount = 10;
 var
 	FileStream: TFileStream;
 	ReclameURL: string;
@@ -46,8 +52,10 @@ var
 //  FileSize  : Integer;
   NewReclame : Boolean;
   ZipFileName : String;
-  UnZip       : TVCLUnZip;
   SevenZipRes : Integer;
+  OldReconnectCount : Integer;
+  ErrorCount : Integer;
+  PostSuccess : Boolean;
 begin
 	RecTerminated := False;
   Synchronize(ClearProgress);
@@ -78,11 +86,6 @@ begin
               FileStream := TFileStream.Create( ZipFileName, fmOpenReadWrite)
             else
               FileStream := TFileStream.Create( ZipFileName, fmCreate);
-
-            if FileStream.Size > 1024 then
-              FileStream.Seek( -1024, soFromEnd)
-            else
-              FileStream.Seek( 0, soFromEnd);
           end
           else
             FileStream := TFileStream.Create( ZipFileName, fmCreate);
@@ -90,13 +93,65 @@ begin
           try
 
             if Terminated then Abort;
-            ExchangeForm.HTTPReclame.Request.ContentRangeStart := FileStream.Position;
+            
+            OldReconnectCount := ExchangeForm.HTTPReclame.ReconnectCount;
+            ExchangeForm.HTTPReclame.ReconnectCount := 0;
             ExchangeForm.HTTPReclame.OnWork := HTTPReclameWork;
             Log('Reclame', 'Пытаемся скачать архив с информационным блоком...');
             try
-              ExchangeForm.HTTPReclame.Get( ReclameURL, FileStream);
-              Log('Reclame', 'Архив с информационным блоком успешно скачан');
+
+              ErrorCount := 0;
+              PostSuccess := False;
+              repeat
+                if Terminated then Abort;
+                try
+
+                  if FileStream.Size > 1024 then
+                    FileStream.Seek( -1024, soFromEnd)
+                  else
+                    FileStream.Seek( 0, soFromEnd);
+
+                  ExchangeForm.HTTPReclame.Get( ReclameURL +
+                    IfThen(FileStream.Position > 0, '?RangeStart=' + IntToStr(FileStream.Position), ''),
+                    FileStream);
+                  Log('Reclame', 'Архив с информационным блоком успешно скачан');
+                  PostSuccess := True;
+                  
+                except
+                  on E : EIdConnClosedGracefully do begin
+                    if (ErrorCount < FReconnectCount) then begin
+                      if ExchangeForm.HTTPReclame.Connected then
+                      try
+                        ExchangeForm.HTTPReclame.Disconnect;
+                      except
+                      end;
+                      Inc(ErrorCount);
+                      Sleep(100);
+                    end
+                    else
+                      raise;
+                  end;
+                  on E : EIdSocketError do begin
+                    if (ErrorCount < FReconnectCount) and
+                      ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
+                        or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
+                    then begin
+                      if ExchangeForm.HTTPReclame.Connected then
+                      try
+                        ExchangeForm.HTTPReclame.Disconnect;
+                      except
+                      end;
+                      Inc(ErrorCount);
+                      Sleep(100);
+                    end
+                    else
+                      raise;
+                  end;
+                end;
+              until (PostSuccess);
+
             finally
+              ExchangeForm.HTTPReclame.ReconnectCount := OldReconnectCount;
               ExchangeForm.HTTPReclame.OnWork := nil;
             end;
 
@@ -105,9 +160,10 @@ begin
           end;
 
           if Terminated then Abort;
-          UnZip := TVCLUnZip.Create(nil);
           Log('Reclame', 'Пытаемся распаковать архив с информационным блоком...');
           try
+            SevenZipRes := 0;
+{
             SevenZipRes := SevenZipExtractArchive(
               0,
               ExePath + SDirReclame + '\r' + RegionCode + '.zip',
@@ -118,6 +174,7 @@ begin
               ExePath + SDirReclame,
               False,
               nil);
+}              
 
             if SevenZipRes <> 0 then
               raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d',
@@ -126,7 +183,6 @@ begin
 
             Log('Reclame', 'Архив с информационным блоком успешно распакован');
           finally
-            UnZip.Free;
             SysUtils.DeleteFile(ZipFileName);
           end;
 
@@ -245,4 +301,8 @@ begin
   DM.SetReclame;
 end;
 
+initialization
+  SZCS := TCriticalSection.Create;
+finalization
+  SZCS.Free;;
 end.

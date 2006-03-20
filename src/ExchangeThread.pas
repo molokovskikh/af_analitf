@@ -6,7 +6,8 @@ uses
 	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
-  FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip;
+  FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
+  IdStackConsts;
 
 type
 
@@ -379,7 +380,7 @@ begin
 		if HostFileName = '' then
 			raise Exception.Create( 'ѕри выполнении вашего запроса произошла ошибка.' +
 				#10#13 + 'ѕовторите запрос через несколько минут.');
-		LocalFileName := ExePath + SDirIn + '\' + ExtractFileName( AnsiReplaceStr( HostFileName, '/', '\'));
+		LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
 	except
 		on E: Exception do
 		begin
@@ -393,6 +394,12 @@ begin
 end;
 
 procedure TExchangeThread.DoExchange;
+const
+  FReconnectCount = 10;
+var
+  OldReconnectCount : Integer;
+  ErrorCount : Integer;
+  PostSuccess : Boolean;
 begin
 	//загрузка прайс-листа
 	if eaGetPrice in ExchangeForm.ExchangeActs then
@@ -405,24 +412,76 @@ begin
 				FileStream := TFileStream.Create( LocalFileName, fmOpenReadWrite)
 			else
 				FileStream := TFileStream.Create( LocalFileName, fmCreate);
-			if FileStream.Size > 1024 then FileStream.Seek( -1024, soFromEnd)
-				else FileStream.Seek( 0, soFromEnd);
+			if FileStream.Size > 1024 then
+        FileStream.Seek( -1024, soFromEnd)
+      else
+        FileStream.Seek( 0, soFromEnd);
 		end
 		else
 			FileStream := TFileStream.Create( LocalFileName, fmCreate);
 
 		try
-			ExchangeForm.HTTP.Request.ContentRangeStart := FileStream.Position;
+      ExchangeForm.ShowStatusText := True;
+      OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
+      ExchangeForm.HTTP.ReconnectCount := 0;
+
       try
-        ExchangeForm.ShowStatusText := True;
-//            ExchangeForm.HTTP.Get( 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString), FileStream);
-        ExchangeForm.HTTP.Get( HostFileName, FileStream);
-        Writeln(ExchangeForm.LogFile, 'Recieve file : ' + IntToStr(FileStream.Size));
+
+        ErrorCount := 0;
+        PostSuccess := False;
+        repeat
+          try
+
+            if FileStream.Size > 1024 then
+              FileStream.Seek( -1024, soFromEnd)
+            else
+              FileStream.Seek( 0, soFromEnd);
+
+            ExchangeForm.HTTP.Get( HostFileName +
+              IfThen(FileStream.Position > 0, '?RangeStart=' + IntToStr(FileStream.Position), ''),
+              FileStream);
+            Writeln(ExchangeForm.LogFile, 'Recieve file : ' + IntToStr(FileStream.Size));
+            PostSuccess := True;
+
+          except
+            on E : EIdConnClosedGracefully do begin
+              if (ErrorCount < FReconnectCount) then begin
+                if ExchangeForm.HTTP.Connected then
+                try
+                  ExchangeForm.HTTP.Disconnect;
+                except
+                end;
+                Inc(ErrorCount);
+                Sleep(100);
+              end
+              else
+                raise;
+            end;
+            on E : EIdSocketError do begin
+              if (ErrorCount < FReconnectCount) and
+                ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
+                  or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
+              then begin
+                if ExchangeForm.HTTP.Connected then
+                try
+                  ExchangeForm.HTTP.Disconnect;
+                except
+                end;
+                Inc(ErrorCount);
+                Sleep(100);
+              end
+              else
+                raise;
+            end;
+          end;
+        until (PostSuccess);
+
       finally
+        ExchangeForm.HTTP.ReconnectCount := OldReconnectCount;
         ExchangeForm.ShowStatusText := False;
       end;
+
 			Synchronize( ExchangeForm.CheckStop);
-//			ExchangeForm.QueryResults.Clear;
 		finally
 			FileStream.Free;
 		end;
