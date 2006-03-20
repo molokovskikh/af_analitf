@@ -798,7 +798,6 @@ begin
 {
 				ExchangeForm.UnZip.DestDir := ExePath + SDirReclame;
 				ExchangeForm.UnZip.UnZip;
-}        
 
         SevenZipRes := SevenZipExtractArchive(
           0,
@@ -815,6 +814,7 @@ begin
           raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
 
 				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
+}        
 			end
                 	{ Если это данные }
 			else
@@ -825,18 +825,23 @@ begin
 				DeleteFileA( ExchangeForm.UnZip.ZipName);
 				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'));
 }
-        SevenZipRes := SevenZipExtractArchive(
-          0,
-          ExePath + SDirIn + '\' + SR.Name,
-          '*.*',
-          True,
-          '',
-          True,
-          ExePath + SDirIn,
-          False,
-          nil);
-        if SevenZipRes <> 0 then
-          raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
+        SZCS.Enter;
+        try
+          SevenZipRes := SevenZipExtractArchive(
+            0,
+            ExePath + SDirIn + '\' + SR.Name,
+            '*.*',
+            True,
+            '',
+            True,
+            ExePath + SDirIn,
+            False,
+            nil);
+          if SevenZipRes <> 0 then
+            raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
+        finally
+          SZCS.Leave;
+        end;
 
 				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
 				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'));

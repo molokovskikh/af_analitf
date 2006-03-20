@@ -161,9 +161,8 @@ begin
 
           if Terminated then Abort;
           Log('Reclame', 'Пытаемся распаковать архив с информационным блоком...');
+          SZCS.Enter;
           try
-            SevenZipRes := 0;
-{
             SevenZipRes := SevenZipExtractArchive(
               0,
               ExePath + SDirReclame + '\r' + RegionCode + '.zip',
@@ -174,17 +173,16 @@ begin
               ExePath + SDirReclame,
               False,
               nil);
-}              
 
             if SevenZipRes <> 0 then
               raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d',
                 [ExePath + SDirReclame + '\r' + RegionCode + '.zip',
                 SevenZipRes]);
-
-            Log('Reclame', 'Архив с информационным блоком успешно распакован');
           finally
+            SZCS.Leave;
             SysUtils.DeleteFile(ZipFileName);
           end;
+          Log('Reclame', 'Архив с информационным блоком успешно распакован');
 
           if Terminated then Abort;
           Log('Reclame', 'Пытаемся подтвердить архив с информационным блоком...');
