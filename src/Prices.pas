@@ -63,6 +63,7 @@ type
     adsPricesSumOrder1: TCurrencyField;
     adsPricesINJOB: TFIBBooleanField;
     adsPricesALLOWCOSTCORR: TFIBIntegerField;
+    Memo1: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -79,9 +80,12 @@ type
     procedure dbgPricesSortMarkingChanged(Sender: TObject);
     procedure dbgPricesExit(Sender: TObject);
     procedure adsPricesBeforePost(DataSet: TDataSet);
-    procedure adsPricesAfterPost(DataSet: TDataSet);
     procedure dbgPricesColumns4GetCellParams(Sender: TObject;
       EditMode: Boolean; Params: TColCellParamsEh);
+    procedure adsPricesINJOBChange(Sender: TField);
+    procedure dbgPricesColumns4UpdateData(Sender: TObject;
+      var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+    procedure adsPricesUPCOSTChange(Sender: TField);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -276,11 +280,6 @@ begin
     adsPricesUPCOST.AsCurrency := adsPricesUPCOST.OldValue;
 end;
 
-procedure TPricesForm.adsPricesAfterPost(DataSet: TDataSet);
-begin
-  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
-end;
-
 procedure TPricesForm.dbgPricesColumns4GetCellParams(Sender: TObject;
   EditMode: Boolean; Params: TColCellParamsEh);
 begin
@@ -288,6 +287,29 @@ begin
     Params.Background := clBtnFace;
     Params.ReadOnly := True;
   end;
+end;
+
+procedure TPricesForm.adsPricesINJOBChange(Sender: TField);
+begin
+  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+end;
+
+procedure TPricesForm.dbgPricesColumns4UpdateData(Sender: TObject;
+  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+var
+  d : Currency;
+begin
+  inherited;
+  try
+    d := StrToCurr(Text);
+  except
+    Text := adsPricesUPCOST.AsString;
+  end;
+end;
+
+procedure TPricesForm.adsPricesUPCOSTChange(Sender: TField);
+begin
+  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
 end;
 
 end.

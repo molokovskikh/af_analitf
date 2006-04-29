@@ -126,6 +126,7 @@ inherited PricesForm: TPricesForm
           Visible = False
           Width = 37
           OnGetCellParams = dbgPricesColumns4GetCellParams
+          OnUpdateData = dbgPricesColumns4UpdateData
         end
         item
           EditButtons = <>
@@ -406,6 +407,15 @@ inherited PricesForm: TPricesForm
         ParentFont = False
       end
     end
+    object Memo1: TMemo
+      Left = 192
+      Top = 288
+      Width = 185
+      Height = 89
+      Lines.Strings = (
+        'Memo1')
+      TabOrder = 3
+    end
   end
   object ActionList: TActionList
     Left = 208
@@ -485,7 +495,6 @@ inherited PricesForm: TPricesForm
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
     AfterOpen = adsPrices2AfterOpen
-    AfterPost = adsPricesAfterPost
     AfterScroll = adsPrices2AfterScroll
     BeforePost = adsPricesBeforePost
     Transaction = DM.DefTran
@@ -510,6 +519,7 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesUPCOST: TFIBBCDField
       FieldName = 'UPCOST'
+      OnChange = adsPricesUPCOSTChange
       DisplayFormat = '0.000;;'
       Size = 4
       RoundByScale = True
@@ -579,6 +589,7 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesINJOB: TFIBBooleanField
       FieldName = 'INJOB'
+      OnChange = adsPricesINJOBChange
     end
     object adsPricesALLOWCOSTCORR: TFIBIntegerField
       FieldName = 'ALLOWCOSTCORR'
