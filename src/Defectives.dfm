@@ -386,9 +386,11 @@ inherited DefectivesForm: TDefectivesForm
     AfterOpen = adsDefectives2AfterOpen
     Transaction = DM.DefTran
     Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 176
     Top = 160
+    oCacheCalcFields = True
     oFetchAll = True
   end
   object adsPrint: TpFIBDataSet
@@ -401,13 +403,16 @@ inherited DefectivesForm: TDefectivesForm
     Database = DM.MainConnection1
     Left = 248
     Top = 160
+    oCacheCalcFields = True
   end
   object adcUncheckAll: TpFIBQuery
-    Transaction = DM.DefTran
+    Transaction = DM.UpTran
     Database = DM.MainConnection1
     SQL.Strings = (
       'UPDATE Defectives SET CheckPrint=0 WHERE CheckPrint=1')
     Left = 320
     Top = 160
+    qoAutoCommit = True
+    qoStartTransaction = True
   end
 end
