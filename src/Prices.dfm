@@ -123,6 +123,7 @@ inherited PricesForm: TPricesForm
           Footers = <>
           Title.Caption = '%'
           Title.TitleButton = True
+          Visible = False
           Width = 37
           OnGetCellParams = dbgPricesColumns4GetCellParams
         end
@@ -493,6 +494,7 @@ inherited PricesForm: TPricesForm
     AutoCommit = True
     Left = 96
     Top = 152
+    oCacheCalcFields = True
     object adsPricesPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
@@ -501,7 +503,7 @@ inherited PricesForm: TPricesForm
     object adsPricesPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsPricesDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
@@ -530,7 +532,7 @@ inherited PricesForm: TPricesForm
     object adsPricesFULLNAME: TFIBStringField
       FieldName = 'FULLNAME'
       Size = 40
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsPricesSTORAGE: TFIBIntegerField
       Alignment = taCenter
@@ -540,11 +542,11 @@ inherited PricesForm: TPricesForm
     object adsPricesADMINMAIL: TFIBStringField
       FieldName = 'ADMINMAIL'
       Size = 50
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsPricesSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsPricesCONTACTINFO: TFIBBlobField
       FieldName = 'CONTACTINFO'
@@ -562,7 +564,7 @@ inherited PricesForm: TPricesForm
     object adsPricesREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsPricesPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
@@ -587,5 +589,6 @@ inherited PricesForm: TPricesForm
     Database = DM.MainConnection1
     Left = 208
     Top = 200
+    oCacheCalcFields = True
   end
 end
