@@ -235,6 +235,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 //var
 //	il32: TImageList;
 begin
+  FormPlacement.Active := False;
   Application.OnException := OnMainAppEx;
 	ExchangeOnly := False;
 	Caption := Application.Title;
@@ -293,6 +294,10 @@ begin
   //Бывает только в том случае, если происходит сжатие базы данных
   if not Active then exit;
 	JustRun := False;
+
+  //Производим восстановление
+  FormPlacement.Active := True;
+  Self.WindowState := wsMaximized;
 
 	UpdateReclame;
 	Timer.Enabled := True;
