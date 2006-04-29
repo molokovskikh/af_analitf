@@ -103,7 +103,7 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
-	PrintEnabled := False;
+	PrintEnabled := True;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	Reg := TRegistry.Create;
