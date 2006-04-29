@@ -184,9 +184,9 @@ begin
 //					ExchangeForm.HTTP.ReadTimeout := 1000000; // 1000 секунд на запрос
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+					GetReclame;
 					QueryData;
           GetPass;
-					GetReclame;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
 //					ExchangeForm.HTTP.ReadTimeout := 60000; // 60 секунд на получение

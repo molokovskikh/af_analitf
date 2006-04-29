@@ -56,11 +56,18 @@ var
   OldReconnectCount : Integer;
   ErrorCount : Integer;
   PostSuccess : Boolean;
+  SleepCount : Integer;
 begin
 	RecTerminated := False;
   Synchronize(ClearProgress);
 	RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
   try
+    SleepCount := 0;
+    while not Terminated and (SleepCount < 30) do begin
+      Sleep(500);
+      Inc(SleepCount);
+    end;
+    if Terminated then exit;
    	ReclameURL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
 		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
     FStatusStr := 'Запрос информационного блока...';
