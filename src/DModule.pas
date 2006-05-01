@@ -10,7 +10,7 @@ uses
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs, U_CryptIndex, SevenZip;
+  Contnrs, U_CryptIndex, SevenZip, infvercls;
 
 {
 Криптование
@@ -24,6 +24,8 @@ const
   HistoryMaxRec=5;
   //макс. кол-во писем доставаемых с сервера
   RegisterId=59; //код реестра в справочнике фирм
+  //Строка для шифрации паролей
+  PassPassW = 'shkjw' + #10 + 'hudg' + #9 + 'cdsjg';
 
 //Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=AnalitF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Jet OLEDB:Database Password=commonpas;Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False
 
@@ -232,6 +234,9 @@ type
     OldOrderCount : Integer;
     AllSumOrder : Currency;
     UpdateReclameDT : TDateTime;
+    SynC,
+    CodeC,
+    BasecostC : TINFCrypt;
     procedure CheckRestrictToRun;
     procedure ReadPasswords;
   public
@@ -309,6 +314,7 @@ type
 
 var
   DM: TDM;
+  PassC : TINFCrypt;
 
 implementation
 
@@ -322,6 +328,10 @@ var
   LDBFileName : String;
   DBCompress : Boolean;
 begin
+  SynC := TINFCrypt.Create('', 300);
+  CodeC := TINFCrypt.Create('', 60);
+  BasecostC := TINFCrypt.Create('', 50);
+
   ResetNeedCommitExchange;
   GetLocaleFormatSettings(0, FFS);
   //Проверка версий
@@ -1605,28 +1615,41 @@ begin
 end;
 
 procedure TDM.ReadPasswords;
-var
-  PassPass : String;
+//var
+//  PassPass : String;
 begin
-  PassPass := in_Encode('1234567890123456');
+ // PassPass := in_Encode('1234567890123456');
 try
-  SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 32);
-  CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 33, 32);
-  BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 32);
+  SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
+  CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
+  BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
+{
   SynonymPassword := in_Encode( D_C_S(PassPass, in_Decode(SynonymPassword) ) );
   CodesPassword := in_Encode( D_C_S(PassPass, in_Decode(CodesPassword) ) );
   BasecostPassword := in_Encode( D_C_S(PassPass, in_Decode(BasecostPassword) ) );
+}  
+  SynonymPassword := PassC.DecodeHex(SynonymPassword);
+  CodesPassword := PassC.DecodeHex(CodesPassword);
+  BasecostPassword := PassC.DecodeHex(BasecostPassword);
 except
   SynonymPassword := '';
   CodesPassword := '';
   BasecostPassword := '';
 end;
+  SynC.UpdateKey(SynonymPassword);
+  CodeC.UpdateKey(CodesPassword);
+  BasecostC.UpdateKey(BasecostPassword);
+{
+  SynC := TINFCrypt.Create(SynonymPassword, 300);
+  CodeC := TINFCrypt.Create(CodesPassword, 60);
+  BasecostC := TINFCrypt.Create(BasecostPassword, 50);
+  }
 end;
 
 function TDM.D_S(CodeS: String): String;
 begin
   if (Length(CodeS) > 1) and (CodeS[1] = ' ') then
-    Result := D_C_S(SynonymPassword, in_Decode( Copy(CodeS, 2, Length(CodeS)) ))
+    Result := SynC.DecodeMix(Copy(CodeS, 2, Length(CodeS)))
   else
     Result := CodeS;
 end;
@@ -1635,7 +1658,7 @@ function TDM.D_C(CodeS: String): String;
 begin
   CodeS := Copy(CodeS, 1, Length(CodeS)-16);
   if Length(CodeS) >= 16 then
-    Result := D_C_S(CodesPassword, rc_Decode(CodeS))
+    Result := CodeC.DecodeMix(CodeS)
   else
     Result := CodeS;
 end;
@@ -1644,10 +1667,20 @@ function TDM.D_B(CodeS1, CodeS2: String): String;
 var
   tmp : String;
 begin
+{
   tmp := in_Decode( RightStr(CodeS1, 16) + RightStr(CodeS2, 16) );
   if Length(tmp) > 1 then begin
     Result := D_C_S(BaseCostPassword, tmp);
     Result := Trim(Result);
+    Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
+  end
+  else
+    Result := '';
+}    
+
+  tmp := RightStr(CodeS1, 16) + RightStr(CodeS2, 16);
+  if Length(tmp) > 1 then begin
+    Result := BasecostC.DecodeHex(tmp);
     Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
   end
   else
@@ -1661,7 +1694,7 @@ end;
 
 procedure TDM.SavePass(ASyn, ACodes, AB: String);
 var
-  PassPass : String;
+//  PassPass : String;
   SynName,
   SynFirm,
   Code,
@@ -1669,7 +1702,9 @@ var
   Price : String;
   C : Integer;
 begin
-  PassPass := in_Encode('1234567890123456');
+//  PassPass := in_Encode('1234567890123456');
+{
+  TODO: Закомментировал перешифрацию заказов
   if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
     try
       Tracer.TR('SavePass', 'Starting Transaction');
@@ -1738,14 +1773,34 @@ begin
         UpTran.Rollback;
       end;
     end;
+}
+
+{
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
   BaseCostPassword := AB;
+}
+  //TODO: Возможно разбор будет после получения паролей
+  SetString(SynonymPassword, nil, INFDataLen);
+  HexToBin(PChar(ASyn), PChar(SynonymPassword), INFDataLen);
+  SetString(CodesPassword, nil, INFDataLen);
+  HexToBin(PChar(ACodes), PChar(CodesPassword), INFDataLen);
+  SetString(BaseCostPassword, nil, INFDataLen);
+  HexToBin(PChar(AB), PChar(BaseCostPassword), INFDataLen);
+  SynC.UpdateKey(SynonymPassword);
+  CodeC.UpdateKey(CodesPassword);
+  BasecostC.UpdateKey(BasecostPassword);
   adtParams.Edit;
+{
   adtParams.FieldByName('CDS').AsString :=
     in_Encode( C_C_S(PassPass, in_Decode(SynonymPassword)) ) +
     in_Encode( C_C_S(PassPass, in_Decode(CodesPassword)) ) +
     in_Encode( C_C_S(PassPass, in_Decode(BaseCostPassword)) );
+}    
+  adtParams.FieldByName('CDS').AsString :=
+    PassC.EncodeHex(SynonymPassword) +
+    PassC.EncodeHex(CodesPassword) +
+    PassC.EncodeHex(BaseCostPassword);
   adtParams.Post;
 end;
 
@@ -1916,4 +1971,8 @@ begin
   SavePass(SynonymPassword, CodesPassword, BaseCostPassword);
 end;
 
+initialization
+  PassC := TINFCrypt.Create(PassPassW, 48);
+finalization
+  PassC.Free;
 end.

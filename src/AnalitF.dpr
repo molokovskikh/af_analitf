@@ -61,7 +61,9 @@ uses
   LU_TSGHashTable in 'common\LU_TSGHashTable.pas',
   U_CryptIndex in 'U_CryptIndex.pas',
   SevenZip in 'common\SevenZip.pas',
-  SQLWaiting in 'SQLWaiting.pas' {frmSQLWaiting};
+  SQLWaiting in 'SQLWaiting.pas' {frmSQLWaiting},
+  infver in 'RC_RND\infver.pas',
+  infvercls in 'RC_RND\infvercls.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
