@@ -420,6 +420,13 @@ begin
 		else
 			FileStream := TFileStream.Create( LocalFileName, fmCreate);
 
+    try
+      if AnsiStartsText('https', HostFileName) then
+        HostFileName := StringReplace(HostFileName, 'https', 'http', [rfIgnoreCase]);
+      ExchangeForm.HTTP.Disconnect;
+    except
+    end;
+
 		try
       ExchangeForm.ShowStatusText := True;
       OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
@@ -483,6 +490,11 @@ begin
 
 			Synchronize( ExchangeForm.CheckStop);
 		finally
+      try
+        ExchangeForm.HTTP.Disconnect;
+      except
+      end;
+
 			FileStream.Free;
 		end;
 		Windows.CopyFile( PChar( LocalFileName),
