@@ -7,7 +7,7 @@ uses
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
-  IdStackConsts;
+  IdStackConsts, infvercls;
 
 type
 
@@ -1913,9 +1913,12 @@ begin
   Error := Utf8ToAnsi( Res.Values[ 'Error']);
   if Error <> '' then
     raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-  ASynPass := Res.Values['Synonym'];
-  ACodesPass := Res.Values['Codes'];
-  ABPass := Res.Values['BaseCost'];
+  SetString(ASynPass, nil, INFDataLen);
+  HexToBin(PChar(Res.Values['Synonym']), PChar(ASynPass), INFDataLen);
+  SetString(ACodesPass, nil, INFDataLen);
+  HexToBin(PChar(Res.Values['Codes']), PChar(ACodesPass), INFDataLen);
+  SetString(ABPass, nil, INFDataLen);
+  HexToBin(PChar(Res.Values['BaseCost']), PChar(ABPass), INFDataLen);
   Synchronize(DMSavePass);
   CriticalError := False;
 end;

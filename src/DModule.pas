@@ -291,9 +291,9 @@ type
 {
 }
     //DecodeCryptS
-    function D_C_S(Pass, S : String) : String;
+    //function D_C_S(Pass, S : String) : String;
     //CodeCryptS
-    function C_C_S(Pass, S : String) : String;
+    //function C_C_S(Pass, S : String) : String;
     //DecodeSynonym
     function D_S(CodeS : String) : String;
     //DecodeCode
@@ -1609,10 +1609,12 @@ begin
   FNeedCommitExchange := True;
 end;
 
+{
 function TDM.D_C_S(Pass, S: String): String;
 begin
   Result := DeCryptString(S, Pass);
 end;
+}
 
 procedure TDM.ReadPasswords;
 //var
@@ -1687,38 +1689,35 @@ begin
     Result := '';
 end;
 
+{
 function TDM.C_C_S(Pass, S: String): String;
 begin
   Result := EnCryptString(S, Pass);
 end;
+}
 
 procedure TDM.SavePass(ASyn, ACodes, AB: String);
 var
-//  PassPass : String;
   SynName,
   SynFirm,
   Code,
   CodeCr,
   Price : String;
-  C : Integer;
+  tmps,
+  tmpc,
+  tmpb : TINFCrypt;
 begin
-//  PassPass := in_Encode('1234567890123456');
-{
-  TODO: Закомментировал перешифрацию заказов
   if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
     try
-      Tracer.TR('SavePass', 'Starting Transaction');
       UpTran.StartTransaction;
-      Tracer.TR('SavePass', 'Transaction started');
       if adsAllOrders.Active then
         adsAllOrders.Close;
+      tmps := TINFCrypt.Create(ASyn, 300);
+      tmpc := TINFCrypt.Create(ACodes, 60);
+      tmpb := TINFCrypt.Create(AB, 50);
       try
         adsAllOrders.Open;
-        Tracer.TR('SavePass', 'Open');
-        C := 0;
         while not adsAllOrders.Eof do begin
-          if C < 2 then
-            Tracer.TR('SavePass', 'Start Encrypt');
           SynName := adsAllOrdersCryptSYNONYMNAME.AsString;
           SynFirm := adsAllOrdersCryptSYNONYMFIRM.AsString;
           Code := adsAllOrdersCryptCode.AsString;
@@ -1726,67 +1725,48 @@ begin
           Price := adsAllOrdersCryptPRICE.AsString;
 
           if (Length(adsAllOrdersSYNONYMNAME.AsString) > 1) and (adsAllOrdersSYNONYMNAME.AsString[1] = ' ') then
-            adsAllOrdersSYNONYMNAME.AsString := ' ' + in_Encode( C_C_S(ASyn, SynName) );
+            adsAllOrdersSYNONYMNAME.AsString := ' ' + tmps.EncodeMix(SynName);
 
           if (Length(adsAllOrdersSYNONYMFIRM.AsString) > 1) and (adsAllOrdersSYNONYMFIRM.AsString[1] = ' ') then
-            adsAllOrdersSYNONYMFIRM.AsString := ' ' + in_Encode( C_C_S(ASyn, SynFirm) );
+            adsAllOrdersSYNONYMFIRM.AsString := ' ' + tmps.EncodeMix( SynFirm );
 
-          Price := in_Encode( C_C_S(AB, Price) );
+          Price := tmpb.EncodeHex(Price);
 
           adsAllOrders.Edit;
 
           if Length(Code) > 0 then
-            adsAllOrdersCODE.AsString := rc_Encode( C_C_S(ACodes, Code) ) +  Copy(Price, 1, 16)
+            adsAllOrdersCODE.AsString := tmpc.EncodeMix(Code) +  Copy(Price, 1, 16)
           else
             adsAllOrdersCODE.AsString := Copy(Price, 1, 16);
 
           if Length(CodeCr) > 0 then
-            adsAllOrdersCODECR.AsString := rc_Encode( C_C_S(ACodes, CodeCr) ) +  Copy(Price, 17, 16)
+            adsAllOrdersCODECR.AsString := tmpc.EncodeMix(CodeCr) +  Copy(Price, 17, 16)
           else
             adsAllOrdersCODECR.AsString := Copy(Price, 17, 16);
 
-          adsAllOrdersPRICE.AsString := rc_Encode( C_C_S(AB, D_C_S(BaseCostPassword, rc_Decode(adsAllOrdersPRICE.AsString))) );
+          adsAllOrdersPRICE.AsString := tmpb.EncodeMix( BasecostC.DecodeMix(adsAllOrdersPRICE.AsString) );
 
-          if C < 2 then
-            Tracer.TR('SavePass', 'Before Post');
           adsAllOrders.Post;
 
-          if C < 2 then
-            Tracer.TR('SavePass', 'Before Next');
-
           adsAllOrders.Next;
-
-          if C < 2 then
-            Tracer.TR('SavePass', 'After Next');
-
-          inc(C);
         end;
       finally
         adsAllOrders.Close;
-        Tracer.TR('SavePass', 'After Close');
+        tmps.Free;
+        tmpc.Free;
+        tmpb.Free;
       end;
       UpTran.Commit;
-      Tracer.TR('SavePass', 'After Commit');
     except
       on E : Exception do begin
         Tracer.TR('SavePass', 'Error : ' + E.Message);
         UpTran.Rollback;
       end;
     end;
-}
 
-{
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
   BaseCostPassword := AB;
-}
-  //TODO: Возможно разбор будет после получения паролей
-  SetString(SynonymPassword, nil, INFDataLen);
-  HexToBin(PChar(ASyn), PChar(SynonymPassword), INFDataLen);
-  SetString(CodesPassword, nil, INFDataLen);
-  HexToBin(PChar(ACodes), PChar(CodesPassword), INFDataLen);
-  SetString(BaseCostPassword, nil, INFDataLen);
-  HexToBin(PChar(AB), PChar(BaseCostPassword), INFDataLen);
   SynC.UpdateKey(SynonymPassword);
   CodeC.UpdateKey(CodesPassword);
   BasecostC.UpdateKey(BasecostPassword);
