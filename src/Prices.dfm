@@ -1,5 +1,5 @@
 inherited PricesForm: TPricesForm
-  Left = 253
+  Left = 226
   Top = 134
   ActiveControl = dbgPrices
   Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090#1099' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1086#1074
@@ -407,15 +407,6 @@ inherited PricesForm: TPricesForm
         ParentFont = False
       end
     end
-    object Memo1: TMemo
-      Left = 192
-      Top = 288
-      Width = 185
-      Height = 89
-      Lines.Strings = (
-        'Memo1')
-      TabOrder = 3
-    end
   end
   object ActionList: TActionList
     Left = 208
@@ -494,6 +485,7 @@ inherited PricesForm: TPricesForm
       'FROM'
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
+    AfterEdit = adsPricesAfterEdit
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
     BeforePost = adsPricesBeforePost
@@ -601,5 +593,12 @@ inherited PricesForm: TPricesForm
     Left = 208
     Top = 200
     oCacheCalcFields = True
+  end
+  object tmStopEdit: TTimer
+    Enabled = False
+    Interval = 3000
+    OnTimer = tmStopEditTimer
+    Left = 288
+    Top = 272
   end
 end

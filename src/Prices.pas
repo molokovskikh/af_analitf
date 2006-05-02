@@ -63,7 +63,7 @@ type
     adsPricesSumOrder1: TCurrencyField;
     adsPricesINJOB: TFIBBooleanField;
     adsPricesALLOWCOSTCORR: TFIBIntegerField;
-    Memo1: TMemo;
+    tmStopEdit: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -86,6 +86,8 @@ type
     procedure dbgPricesColumns4UpdateData(Sender: TObject;
       var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure adsPricesUPCOSTChange(Sender: TField);
+    procedure tmStopEditTimer(Sender: TObject);
+    procedure adsPricesAfterEdit(DataSet: TDataSet);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -214,11 +216,17 @@ procedure TPricesForm.dbgPricesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	inherited;
-	if Key = VK_RETURN then
+	if Key = VK_RETURN then begin
     if (adsPrices.State in [dsEdit, dsInsert]) and (dbgPrices.SelectedField = adsPricesUPCOST) then
       adsPrices.Post
     else
       ProcessPrice;
+  end
+  else
+    if dbgPrices.EditorMode then begin
+      tmStopEdit.Enabled := False;
+      tmStopEdit.Enabled := True;
+    end;
 end;
 
 procedure TPricesForm.dbgPricesGetCellParams(Sender: TObject;
@@ -310,6 +318,19 @@ end;
 procedure TPricesForm.adsPricesUPCOSTChange(Sender: TField);
 begin
   AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+end;
+
+procedure TPricesForm.tmStopEditTimer(Sender: TObject);
+begin
+  tmStopEdit.Enabled := False;
+  SoftPost(adsPrices);
+  dbgPrices.EditorMode := False;
+end;
+
+procedure TPricesForm.adsPricesAfterEdit(DataSet: TDataSet);
+begin
+  tmStopEdit.Enabled := False;
+  tmStopEdit.Enabled := True;
 end;
 
 end.
