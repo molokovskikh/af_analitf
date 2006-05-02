@@ -217,14 +217,18 @@ procedure TPricesForm.dbgPricesKeyDown(Sender: TObject; var Key: Word;
 begin
 	inherited;
 	if Key = VK_RETURN then begin
-    if (adsPrices.State in [dsEdit, dsInsert]) and (dbgPrices.SelectedField = adsPricesUPCOST) then
-      adsPrices.Post
+    if (adsPrices.State in [dsEdit, dsInsert]) and (dbgPrices.SelectedField = adsPricesUPCOST) then begin
+      tmStopEdit.Enabled := False;
+      adsPrices.Post;
+      AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+    end
     else
       ProcessPrice;
   end
   else
     if dbgPrices.EditorMode then begin
       tmStopEdit.Enabled := False;
+      tmStopEdit.Interval := 3000;
       tmStopEdit.Enabled := True;
     end;
 end;
@@ -299,7 +303,9 @@ end;
 
 procedure TPricesForm.adsPricesINJOBChange(Sender: TField);
 begin
-  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+  tmStopEdit.Enabled := False;
+  tmStopEdit.Interval := 500;
+  tmStopEdit.Enabled := True;
 end;
 
 procedure TPricesForm.dbgPricesColumns4UpdateData(Sender: TObject;
@@ -307,7 +313,6 @@ procedure TPricesForm.dbgPricesColumns4UpdateData(Sender: TObject;
 var
   d : Currency;
 begin
-  inherited;
   try
     d := StrToCurr(Text);
   except
@@ -317,20 +322,26 @@ end;
 
 procedure TPricesForm.adsPricesUPCOSTChange(Sender: TField);
 begin
-  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+//  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+  tmStopEdit.Enabled := False;
+  tmStopEdit.Interval := 500;
+  tmStopEdit.Enabled := True;
 end;
 
 procedure TPricesForm.tmStopEditTimer(Sender: TObject);
 begin
   tmStopEdit.Enabled := False;
+  if adsPrices.State in [dsEdit, dsInsert] then
+    AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+  if dbgPrices.EditorMode then
+    dbgPrices.EditorMode := False;
   SoftPost(adsPrices);
-  dbgPrices.EditorMode := False;
 end;
 
 procedure TPricesForm.adsPricesAfterEdit(DataSet: TDataSet);
 begin
-  tmStopEdit.Enabled := False;
-  tmStopEdit.Enabled := True;
+//  tmStopEdit.Enabled := False;
+//  tmStopEdit.Enabled := True;
 end;
 
 end.
