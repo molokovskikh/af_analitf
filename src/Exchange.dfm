@@ -267,7 +267,6 @@ object ExchangeForm: TExchangeForm
     Request.ContentRangeStart = 0
     Request.ContentType = 'text/html'
     Request.Accept = 'text/html, */*'
-    Request.AcceptEncoding = 'gzip, deflate'
     Request.BasicAuthentication = True
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
     HTTPOptions = [hoKeepOrigProtocol, hoForceEncodeParams]

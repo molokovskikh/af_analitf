@@ -117,7 +117,7 @@ AutoIncBuild=1
 MajorVer=4
 MinorVer=0
 Release=33
-Build=273
+Build=274
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.0.33.273
+FileVersion=4.0.33.274
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2005
 LegalTrademarks=Инфорум
