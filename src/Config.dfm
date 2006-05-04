@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshClients
+    ActivePage = tshAuth
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5454,11 +5454,12 @@ object ConfigForm: TConfigForm
           Width = 37
           Height = 13
           Caption = #1057#1077#1088#1074#1080#1089
+          Visible = False
         end
         object dbeHTTPHost: TDBEdit
           Left = 8
           Top = 33
-          Width = 217
+          Width = 361
           Height = 21
           DataField = 'HTTPHost'
           DataSource = DM.dsParams
@@ -5472,6 +5473,7 @@ object ConfigForm: TConfigForm
           DataField = 'ServiceName'
           DataSource = DM.dsParams
           TabOrder = 1
+          Visible = False
         end
       end
       object gbAccount: TGroupBox

@@ -253,6 +253,8 @@ type
     function GetCatalogsCount : Integer;
   public
     FFS : TFormatSettings;
+    SerBeg,
+    SerEnd : String;
     function DatabaseOpenedBy: string;
     function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
     procedure CompactDataBase(NewPassword: string='');
@@ -344,6 +346,9 @@ var
   LDBFileName : String;
   DBCompress : Boolean;
 begin
+  SerBeg := 'prg';
+  SerEnd := 'data';
+
   SynC := TINFCrypt.Create('', 300);
   CodeC := TINFCrypt.Create('', 60);
   BasecostC := TINFCrypt.Create('', 50);
