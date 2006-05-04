@@ -68,7 +68,7 @@ begin
       Inc(SleepCount);
     end;
     if Terminated then exit;
-   	ReclameURL := 'http://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
+   	ReclameURL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
 		'/' + DM.adtParams.FieldByName( 'ServiceName').AsString + '/code.asmx';
     FStatusStr := 'Запрос информационного блока...';
     Synchronize(UpdateProgress);
@@ -98,9 +98,16 @@ begin
             FileStream := TFileStream.Create( ZipFileName, fmCreate);
 
           try
+            if AnsiStartsText('https', ReclameURL) then
+              ReclameURL := StringReplace(ReclameURL, 'https', 'http', [rfIgnoreCase]);
+            ExchangeForm.HTTPReclame.Disconnect;
+          except
+          end;
+          
+          try
 
             if Terminated then Abort;
-            
+
             OldReconnectCount := ExchangeForm.HTTPReclame.ReconnectCount;
             ExchangeForm.HTTPReclame.ReconnectCount := 0;
             ExchangeForm.HTTPReclame.OnWork := HTTPReclameWork;
@@ -163,6 +170,11 @@ begin
             end;
 
           finally
+            try
+              ExchangeForm.HTTPReclame.Disconnect;
+            except
+            end;
+            
             FileStream.Free;
           end;
 

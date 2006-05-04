@@ -273,6 +273,7 @@ object ExchangeForm: TExchangeForm
     Left = 360
   end
   object HTTPReclame: TIdHTTP
+    IOHandler = sslReclame
     MaxLineAction = maException
     RecvBufferSize = 1024
     SendBufferSize = 1024
