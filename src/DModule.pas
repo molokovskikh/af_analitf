@@ -346,8 +346,8 @@ var
   LDBFileName : String;
   DBCompress : Boolean;
 begin
-  SerBeg := 'prg';
-  SerEnd := 'data';
+  SerBeg := 'Hgrysjh';
+  SerEnd := 'uirft34';
 
   SynC := TINFCrypt.Create('', 300);
   CodeC := TINFCrypt.Create('', 60);

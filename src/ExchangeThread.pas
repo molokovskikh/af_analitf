@@ -297,7 +297,7 @@ var
 begin
 	{ создаем экземпл€р класса TSOAP дл€ работы с SOAP через HTTP вручную }
 	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.SerBeg + DM.SerEnd + Chr(50) + Chr(55) + Chr(57) + '/code.asmx';
+		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
 end;
