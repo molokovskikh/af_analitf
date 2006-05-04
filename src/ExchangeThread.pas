@@ -9,6 +9,9 @@ uses
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
   IdStackConsts, infvercls;
 
+const
+  UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
+
 type
 
 TUpdateTable = (
@@ -56,6 +59,8 @@ private
   ABPass : String;
 
   upB : TpFIBQuery;
+  //Будем обновляться из-за того, что дата обновления не совпала
+  UpdateByUpdate : Boolean;
 
 	procedure SetStatus;
 	procedure SetProgress;
@@ -185,7 +190,10 @@ begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					GetReclame;
+          UpdateByUpdate := False;
 					QueryData;
+          if UpdateByUpdate then
+            QueryData;
           GetPass;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
@@ -368,19 +376,26 @@ begin
 //		while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
 		{ проверяем отсутствие ошибки при удаленном запросе }
 		Error := Utf8ToAnsi( Res.Values[ 'Error']);
-		if Error <> '' then
-			raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
-				+ #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-		ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
-		{ получаем имя удаленного файла }
-		HostFileName := Res.Values[ 'URL'];
-		NewZip := True;
-		if Res.Values[ 'New'] <> '' then
-			NewZip := StrToBool( UpperCase( Res.Values[ 'New']));
-		if HostFileName = '' then
-			raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
-				#10#13 + 'Повторите запрос через несколько минут.');
-		LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
+    //Если получили специфичное сообщение об ошибке, что
+    if (Error <> '') and AnsiStartsText(UpadateErrorText, Utf8ToAnsi( Res.Values[ 'Desc'])) then begin
+      UpdateByUpdate := True;
+      ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
+    end
+    else begin
+      if Error <> '' then
+        raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
+          + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+      ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
+      { получаем имя удаленного файла }
+      HostFileName := Res.Values[ 'URL'];
+      NewZip := True;
+      if Res.Values[ 'New'] <> '' then
+        NewZip := StrToBool( UpperCase( Res.Values[ 'New']));
+      if HostFileName = '' then
+        raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+          #10#13 + 'Повторите запрос через несколько минут.');
+      LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
+    end;
 	except
 		on E: Exception do
 		begin

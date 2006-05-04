@@ -18,6 +18,11 @@ uses
   Цена     - все в хексе без %
   Code, CodeCr - смешанный тип
 
+пароль для виртуальной цены: 4 слева от синонимов, 4 справа от цены, средние 8 из кодов
+set VirtualCostsPasswordParam=concat(left(SynonymsPasswordParam, 4), right(CostsPasswordParam, 4),
+                                  mid(CodesPasswordParam, 5, 8));
+
+
 }
 
 const
@@ -25,7 +30,7 @@ const
   //макс. кол-во писем доставаемых с сервера
   RegisterId=59; //код реестра в справочнике фирм
   //Строка для шифрации паролей
-  PassPassW = 'shkjw' + #10 + 'hudg' + #9 + 'cdsjg';
+  PassPassW = 'sh' + #90 + 'kjw' + #10 + 'h';
 
 //Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=AnalitF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Jet OLEDB:Database Password=commonpas;Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False
 
@@ -38,7 +43,7 @@ type
   //exit codes - Коды ошибок выхода из программы
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
-    ecGetFreeDiskSpace, ecIE40, ecSevenZip);
+    ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN);
 
   TRetMass = array[1..3] of Variant;
 
@@ -229,16 +234,23 @@ type
     FNeedCommitExchange : Boolean;
     SynonymPassword,
     CodesPassword,
-    BaseCostPassword : String;
+    BaseCostPassword,
+    VirtualBaseCostPassword,
+    DBUIN : String;
+    NeedUpdateByCheckUIN : Boolean;
+    FGetCatalogsCount : Integer;
     FRetMargins : array of TRetMass;
     OldOrderCount : Integer;
     AllSumOrder : Currency;
     UpdateReclameDT : TDateTime;
     SynC,
     CodeC,
-    BasecostC : TINFCrypt;
+    BasecostC,
+    VBasecostC : TINFCrypt;
     procedure CheckRestrictToRun;
     procedure ReadPasswords;
+    function CheckCopyIDFromDB : Boolean;
+    function GetCatalogsCount : Integer;
   public
     FFS : TFormatSettings;
     function DatabaseOpenedBy: string;
@@ -323,6 +335,10 @@ implementation
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      U_FolderMacros, LU_Tracer, LU_MutexSystem;
 
+var
+  ch, p : String;
+  I : Integer;
+
 procedure TDM.DMCreate(Sender: TObject);
 var
   LDBFileName : String;
@@ -331,6 +347,7 @@ begin
   SynC := TINFCrypt.Create('', 300);
   CodeC := TINFCrypt.Create('', 60);
   BasecostC := TINFCrypt.Create('', 50);
+  VBasecostC := TINFCrypt.Create('', 50);
 
   ResetNeedCommitExchange;
   GetLocaleFormatSettings(0, FFS);
@@ -406,6 +423,10 @@ begin
   DeleteFilesByMask(ExePath + SDirIn + '\*.zip', False);
   DeleteFilesByMask(ExePath + SDirIn + '\*.zi_', False);
 
+  if NeedUpdateByCheckUIN then begin
+    if not RunExchange([ eaGetPrice]) then
+      ExitProcess( Integer(ecNotCheckUIN) );
+  end;
   { Запуск с ключем -e (Получение данных и выход)}
   if ( AnsiLowerCase( ParamStr( 1)) = '-e') or
     ( AnsiLowerCase( ParamStr( 1)) = '/e') then
@@ -565,6 +586,7 @@ begin
   end;
   try
     MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
+    FGetCatalogsCount := GetCatalogsCount;
     list := DM.MainConnection1.UserNames;
   finally
     DM.MainConnection1.Close;
@@ -591,6 +613,23 @@ begin
       #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]),
       MB_ICONERROR or MB_OK);
     ExitProcess( Integer(ecGetFreeDiskSpace) );
+  end;
+
+  NeedUpdateByCheckUIN := not CheckCopyIDFromDB;
+  if NeedUpdateByCheckUIN then begin
+    try
+      DM.MainConnection1.Open;
+      try
+        adtParams.Edit;
+        adtParams.FieldByName('CDS').AsString := '';
+        adtParams.Post;
+      finally
+        DM.MainConnection1.Close;
+      end;
+    except
+    end;
+    MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
+      MB_ICONERROR or MB_OK);
   end;
   //Устанавливаем интервал для сбора мусора
   SetSweepInterval;
@@ -1617,35 +1656,32 @@ end;
 }
 
 procedure TDM.ReadPasswords;
-//var
-//  PassPass : String;
 begin
- // PassPass := in_Encode('1234567890123456');
 try
   SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
   CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
   BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
-{
-  SynonymPassword := in_Encode( D_C_S(PassPass, in_Decode(SynonymPassword) ) );
-  CodesPassword := in_Encode( D_C_S(PassPass, in_Decode(CodesPassword) ) );
-  BasecostPassword := in_Encode( D_C_S(PassPass, in_Decode(BasecostPassword) ) );
-}  
+  DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
   SynonymPassword := PassC.DecodeHex(SynonymPassword);
   CodesPassword := PassC.DecodeHex(CodesPassword);
   BasecostPassword := PassC.DecodeHex(BasecostPassword);
+  DBUIN := PassC.DecodeHex(DBUIN);
 except
   SynonymPassword := '';
   CodesPassword := '';
   BasecostPassword := '';
+  DBUIN := '';
 end;
+{
+пароль для виртуальной цены: 4 слева от синонимов, 4 справа от цены, средние 8 из кодов
+set VirtualCostsPasswordParam=concat(left(SynonymsPasswordParam, 4), right(CostsPasswordParam, 4),
+                                  mid(CodesPasswordParam, 5, 8));
+}
+  VirtualBaseCostPassword := LeftStr(SynonymPassword, 4) + RightStr(BasecostPassword, 4) + Copy(CodesPassword, 5, 8);
   SynC.UpdateKey(SynonymPassword);
   CodeC.UpdateKey(CodesPassword);
   BasecostC.UpdateKey(BasecostPassword);
-{
-  SynC := TINFCrypt.Create(SynonymPassword, 300);
-  CodeC := TINFCrypt.Create(CodesPassword, 60);
-  BasecostC := TINFCrypt.Create(BasecostPassword, 50);
-  }
+  VBasecostC.UpdateKey(VirtualBaseCostPassword);
 end;
 
 function TDM.D_S(CodeS: String): String;
@@ -1669,17 +1705,6 @@ function TDM.D_B(CodeS1, CodeS2: String): String;
 var
   tmp : String;
 begin
-{
-  tmp := in_Decode( RightStr(CodeS1, 16) + RightStr(CodeS2, 16) );
-  if Length(tmp) > 1 then begin
-    Result := D_C_S(BaseCostPassword, tmp);
-    Result := Trim(Result);
-    Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
-  end
-  else
-    Result := '';
-}    
-
   tmp := RightStr(CodeS1, 16) + RightStr(CodeS2, 16);
   if Length(tmp) > 1 then begin
     Result := BasecostC.DecodeHex(tmp);
@@ -1705,7 +1730,8 @@ var
   Price : String;
   tmps,
   tmpc,
-  tmpb : TINFCrypt;
+  tmpb,
+  tmpvb : TINFCrypt;
 begin
   if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
     try
@@ -1715,6 +1741,7 @@ begin
       tmps := TINFCrypt.Create(ASyn, 300);
       tmpc := TINFCrypt.Create(ACodes, 60);
       tmpb := TINFCrypt.Create(AB, 50);
+      tmpvb := TINFCrypt.Create(LeftStr(ASyn, 4) + RightStr(AB, 4) + Copy(ACodes, 5, 8), 50);
       try
         adsAllOrders.Open;
         while not adsAllOrders.Eof do begin
@@ -1744,7 +1771,7 @@ begin
           else
             adsAllOrdersCODECR.AsString := Copy(Price, 17, 16);
 
-          adsAllOrdersPRICE.AsString := tmpb.EncodeMix( BasecostC.DecodeMix(adsAllOrdersPRICE.AsString) );
+          adsAllOrdersPRICE.AsString := tmpvb.EncodeMix( VBasecostC.DecodeMix(adsAllOrdersPRICE.AsString) );
 
           adsAllOrders.Post;
 
@@ -1755,6 +1782,7 @@ begin
         tmps.Free;
         tmpc.Free;
         tmpb.Free;
+        tmpvb.Free;
       end;
       UpTran.Commit;
     except
@@ -1767,20 +1795,17 @@ begin
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
   BaseCostPassword := AB;
+  VirtualBaseCostPassword := LeftStr(SynonymPassword, 4) + RightStr(BasecostPassword, 4) + Copy(CodesPassword, 5, 8);
   SynC.UpdateKey(SynonymPassword);
   CodeC.UpdateKey(CodesPassword);
   BasecostC.UpdateKey(BasecostPassword);
+  VBasecostC.UpdateKey(VirtualBaseCostPassword);
   adtParams.Edit;
-{
-  adtParams.FieldByName('CDS').AsString :=
-    in_Encode( C_C_S(PassPass, in_Decode(SynonymPassword)) ) +
-    in_Encode( C_C_S(PassPass, in_Decode(CodesPassword)) ) +
-    in_Encode( C_C_S(PassPass, in_Decode(BaseCostPassword)) );
-}    
   adtParams.FieldByName('CDS').AsString :=
     PassC.EncodeHex(SynonymPassword) +
     PassC.EncodeHex(CodesPassword) +
-    PassC.EncodeHex(BaseCostPassword);
+    PassC.EncodeHex(BaseCostPassword) +
+    PassC.EncodeHex(IntToHex(GetCopyID, 8));
   adtParams.Post;
 end;
 
@@ -1951,8 +1976,42 @@ begin
   SavePass(SynonymPassword, CodesPassword, BaseCostPassword);
 end;
 
+function TDM.CheckCopyIDFromDB: Boolean;
+begin
+  Result := DBUIN = IntToHex(GetCopyID, 8);
+  if not Result then begin
+    Result := (DBUIN = '') and (FGetCatalogsCount = 0);
+  end;
+end;
+
+function TDM.GetCatalogsCount: Integer;
+begin
+  try
+    DM.adsSelect.Close;
+  except
+  end;
+	DM.adsSelect.SelectSQL.Text := 'SELECT COUNT(*) AS CatNum FROM Catalogs';
+	try
+		DM.adsSelect.Open;
+    try
+  		Result := DM.adsSelect.FieldByName( 'CatNum').AsInteger;
+    finally
+      try
+        DM.adsSelect.Close;
+      except
+      end;
+    end;
+	except
+		Result := 0;
+	end;
+end;
+
 initialization
-  PassC := TINFCrypt.Create(PassPassW, 48);
+  ch := IntToHex(GetCopyID, 8);
+  p := '';
+  for I := 1 to Length(ch) do
+    p := p + ch[i] + PassPassW[i];
+  PassC := TINFCrypt.Create(p, 48);
 finalization
   PassC.Free;
 end.
