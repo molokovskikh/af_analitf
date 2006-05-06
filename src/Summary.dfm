@@ -1,6 +1,6 @@
 inherited SummaryForm: TSummaryForm
-  Left = 296
-  Top = 232
+  Left = 264
+  Top = 230
   ActiveControl = dbgSummary
   Caption = #1057#1074#1086#1076#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 465
@@ -20,9 +20,9 @@ inherited SummaryForm: TSummaryForm
     TabOrder = 0
     object dbgSummary: TToughDBGrid
       Left = 0
-      Top = 0
+      Top = 52
       Width = 684
-      Height = 234
+      Height = 182
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -173,7 +173,7 @@ inherited SummaryForm: TSummaryForm
         Shape = bsTopLine
       end
       object dbtCountOrder: TDBText
-        Left = 172
+        Left = 412
         Top = 11
         Width = 41
         Height = 17
@@ -186,6 +186,7 @@ inherited SummaryForm: TSummaryForm
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
+        Visible = False
       end
       object Label1: TLabel
         Left = 108
@@ -244,6 +245,19 @@ inherited SummaryForm: TSummaryForm
         Font.Style = [fsBold]
         ParentFont = False
       end
+      object lPosCount: TLabel
+        Left = 168
+        Top = 11
+        Width = 58
+        Height = 13
+        Caption = 'lPosCount'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object btnDelete: TButton
         Left = 8
         Top = 5
@@ -252,6 +266,115 @@ inherited SummaryForm: TSummaryForm
         Caption = #1059#1076#1072#1083#1080#1090#1100
         TabOrder = 0
         OnClick = btnDeleteClick
+      end
+    end
+    object pTopSettings: TPanel
+      Left = 0
+      Top = 0
+      Width = 684
+      Height = 52
+      Align = alTop
+      BevelOuter = bvNone
+      PopupMenu = pmSelectedPrices
+      TabOrder = 2
+      object Label7: TLabel
+        Left = 10
+        Top = 19
+        Width = 107
+        Height = 13
+        Caption = #1042#1099#1074#1077#1089#1090#1080' '#1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object Label8: TLabel
+        Left = 215
+        Top = 19
+        Width = 12
+        Height = 13
+        Caption = #1087#1086
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+      end
+      object bvSettings: TBevel
+        Left = 0
+        Top = 49
+        Width = 684
+        Height = 3
+        Align = alBottom
+        Shape = bsBottomLine
+      end
+      object dtpDateFrom: TDateTimePicker
+        Left = 127
+        Top = 15
+        Width = 81
+        Height = 21
+        Date = 36526.631636412040000000
+        Time = 36526.631636412040000000
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        OnCloseUp = dtpDateCloseUp
+      end
+      object dtpDateTo: TDateTimePicker
+        Left = 234
+        Top = 15
+        Width = 81
+        Height = 21
+        Date = 0.631934409720997800
+        Time = 0.631934409720997800
+        TabOrder = 1
+        OnCloseUp = dtpDateCloseUp
+      end
+      object rgSummaryType: TRadioGroup
+        Left = 328
+        Top = 0
+        Width = 185
+        Height = 48
+        Caption = ' '#1048#1089#1090#1086#1095#1085#1080#1082' '
+        Items.Strings = (
+          #1042#1099#1073#1080#1088#1072#1090#1100' '#1080#1079' '#1090#1077#1082#1091#1097#1080#1093
+          #1042#1099#1073#1080#1088#1072#1090#1100' '#1080#1079' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1093)
+        TabOrder = 2
+        OnClick = rgSummaryTypeClick
+      end
+      object gbSelectedPrices: TGroupBox
+        Left = 520
+        Top = 0
+        Width = 165
+        Height = 48
+        Caption = ' '#1042#1099#1073#1088#1072#1085#1085#1099#1077' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1080' '
+        TabOrder = 3
+        object clbSelectedPrices: TCheckListBox
+          Left = 2
+          Top = 15
+          Width = 161
+          Height = 31
+          OnClickCheck = clbSelectedPricesClickCheck
+          Align = alClient
+          ItemHeight = 13
+          TabOrder = 0
+        end
+        object btnExpand: TButton
+          Left = 141
+          Top = 2
+          Width = 19
+          Height = 14
+          Caption = '>>'
+          TabOrder = 1
+          OnClick = btnExpandClick
+        end
       end
     end
   end
@@ -359,7 +482,7 @@ inherited SummaryForm: TSummaryForm
       '    ORDERSCOREID,'
       '    ORDERSORDERID'
       'FROM'
-      '    SUMMARYSHOW(:ACLIENTID) ')
+      '    SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ')
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
     BeforeDelete = adsSummaryBeforeDelete
@@ -372,25 +495,25 @@ inherited SummaryForm: TSummaryForm
     AutoCommit = True
     Left = 296
     Top = 96
-    oFetchAll = True
+    oCacheCalcFields = True
     object adsSummaryVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryPERIOD: TFIBStringField
       FieldName = 'PERIOD'
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryJUNK: TFIBIntegerField
       FieldName = 'JUNK'
@@ -401,22 +524,22 @@ inherited SummaryForm: TSummaryForm
     object adsSummarySYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummarySYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
@@ -458,17 +581,17 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsSummaryPriceRet: TCurrencyField
       FieldKind = fkCalculated
@@ -487,5 +610,10 @@ inherited SummaryForm: TSummaryForm
     Database = DM.MainConnection1
     Left = 432
     Top = 128
+    oCacheCalcFields = True
+  end
+  object pmSelectedPrices: TPopupMenu
+    Left = 536
+    Top = 24
   end
 end
