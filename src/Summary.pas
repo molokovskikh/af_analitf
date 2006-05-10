@@ -61,10 +61,8 @@ type
     dtpDateTo: TDateTimePicker;
     rgSummaryType: TRadioGroup;
     lPosCount: TLabel;
-    gbSelectedPrices: TGroupBox;
-    clbSelectedPrices: TCheckListBox;
-    btnExpand: TButton;
     pmSelectedPrices: TPopupMenu;
+    ds: TMenuItem;
     procedure adsSummary2CalcFields(DataSet: TDataSet);
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
@@ -84,8 +82,6 @@ type
     procedure btnDeleteClick(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure rgSummaryTypeClick(Sender: TObject);
-    procedure clbSelectedPricesClickCheck(Sender: TObject);
-    procedure btnExpandClick(Sender: TObject);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
@@ -93,6 +89,7 @@ type
     procedure SummaryHShow;
     procedure DeleteOrder;
     procedure SetDateInterval;
+    procedure OnSPClick(Sender: TObject);
   public
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; reintroduce;
@@ -141,7 +138,6 @@ begin
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, False) then dbgSummary.LoadFromRegistry( Reg);
 	Reg.Free;
-  clbSelectedPrices.Clear;
   pmSelectedPrices.Items.Clear;
   for I := 0 to SelectedPrices.Count-1 do begin
     sp := TSelectPrice(SelectedPrices.Objects[i]);
@@ -150,9 +146,9 @@ begin
     mi.Caption := sp.PriceName;
     mi.Checked := sp.Selected;
     mi.Tag := Integer(sp);
+    //mi.AutoCheck := True;
+    mi.OnClick := OnSPClick;
     pmSelectedPrices.Items.Add(mi);
-    clbSelectedPrices.Items.AddObject(sp.PriceName, sp);
-    clbSelectedPrices.Checked[i] := sp.Selected;
   end;
 	ShowForm;
 end;
@@ -408,31 +404,15 @@ begin
   end;
 end;
 
-procedure TSummaryForm.clbSelectedPricesClickCheck(Sender: TObject);
+procedure TSummaryForm.OnSPClick(Sender: TObject);
 var
   sp : TSelectPrice;
 begin
-  if clbSelectedPrices.ItemIndex > -1 then begin
-    sp := TSelectPrice(clbSelectedPrices.Items.Objects[clbSelectedPrices.ItemIndex]);
-    sp.Selected := clbSelectedPrices.Checked[clbSelectedPrices.ItemIndex];
-    SummaryShow;
-    dbgSummary.SetFocus;
-  end;
-end;
-
-procedure TSummaryForm.btnExpandClick(Sender: TObject);
-begin
-  if btnExpand.Caption = '>>' then begin
-    btnExpand.Caption := '<<';
-    gbSelectedPrices.Height := 250;
-    gbSelectedPrices.BringToFront;
-    clbSelectedPrices.SetFocus;
-  end
-  else begin
-    btnExpand.Caption := '>>';
-    gbSelectedPrices.Height := 48;
-    dbgSummary.SetFocus;
-  end;
+  TMenuItem(Sender).Checked := not TMenuItem(Sender).Checked;
+  sp := TSelectPrice(TMenuItem(Sender).Tag);
+  sp.Selected := TMenuItem(Sender).Checked;
+  SummaryShow;
+  pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
 end;
 
 initialization

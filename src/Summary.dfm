@@ -349,33 +349,6 @@ inherited SummaryForm: TSummaryForm
         TabOrder = 2
         OnClick = rgSummaryTypeClick
       end
-      object gbSelectedPrices: TGroupBox
-        Left = 520
-        Top = 0
-        Width = 165
-        Height = 48
-        Caption = ' '#1042#1099#1073#1088#1072#1085#1085#1099#1077' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1080' '
-        TabOrder = 3
-        object clbSelectedPrices: TCheckListBox
-          Left = 2
-          Top = 15
-          Width = 161
-          Height = 31
-          OnClickCheck = clbSelectedPricesClickCheck
-          Align = alClient
-          ItemHeight = 13
-          TabOrder = 0
-        end
-        object btnExpand: TButton
-          Left = 141
-          Top = 2
-          Width = 19
-          Height = 14
-          Caption = '>>'
-          TabOrder = 1
-          OnClick = btnExpandClick
-        end
-      end
     end
   end
   object pWebBrowser: TPanel
@@ -613,7 +586,10 @@ inherited SummaryForm: TSummaryForm
     oCacheCalcFields = True
   end
   object pmSelectedPrices: TPopupMenu
-    Left = 536
-    Top = 24
+    Left = 520
+    Top = 8
+    object ds: TMenuItem
+      AutoCheck = True
+    end
   end
 end
