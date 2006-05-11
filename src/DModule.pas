@@ -47,6 +47,15 @@ type
 
   TRetMass = array[1..3] of Variant;
 
+  TSelectPrice = class
+    PriceCode :Integer;
+    Selected : Boolean;
+    PriceName : String;
+    constructor Create(APriceCode :Integer;
+    ASelected : Boolean;
+    APriceName : String);
+  end;
+
   TDM = class(TDataModule)
     frReport: TfrReport;
     dsParams: TDataSource;
@@ -220,6 +229,26 @@ type
     adsAllOrdersCryptCODE: TStringField;
     adsAllOrdersCryptCODECR: TStringField;
     adsAllOrdersCryptPRICE: TCurrencyField;
+    adsPricesPRICECODE: TFIBBCDField;
+    adsPricesPRICENAME: TFIBStringField;
+    adsPricesDATEPRICE: TFIBDateTimeField;
+    adsPricesUPCOST: TFIBBCDField;
+    adsPricesMINREQ: TFIBIntegerField;
+    adsPricesENABLED: TFIBIntegerField;
+    adsPricesPRICEINFO: TFIBMemoField;
+    adsPricesFIRMCODE: TFIBBCDField;
+    adsPricesFULLNAME: TFIBStringField;
+    adsPricesSTORAGE: TFIBIntegerField;
+    adsPricesADMINMAIL: TFIBStringField;
+    adsPricesSUPPORTPHONE: TFIBStringField;
+    adsPricesCONTACTINFO: TFIBMemoField;
+    adsPricesOPERATIVEINFO: TFIBMemoField;
+    adsPricesREGIONCODE: TFIBBCDField;
+    adsPricesREGIONNAME: TFIBStringField;
+    adsPricesPOSITIONS: TFIBIntegerField;
+    adsPricesSUMORDER: TFIBBCDField;
+    adsPricesPRICESIZE: TFIBIntegerField;
+    adsPricesINJOB: TFIBIntegerField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -251,6 +280,7 @@ type
     procedure ReadPasswords;
     function CheckCopyIDFromDB : Boolean;
     function GetCatalogsCount : Integer;
+    procedure LoadSelectedPrices;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -329,6 +359,11 @@ type
 var
   DM: TDM;
   PassC : TINFCrypt;
+  SelectedPrices : TStringList;
+
+procedure ClearSelectedPrices;
+
+function GetSelectedPricesSQL : String;
 
 implementation
 
@@ -340,6 +375,33 @@ uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
 var
   ch, p : String;
   I : Integer;
+
+procedure ClearSelectedPrices;
+var
+  I : Integer;
+begin
+  for I := 0 to SelectedPrices.Count-1 do
+    SelectedPrices.Objects[i].Free;
+  SelectedPrices.Clear;
+end;
+
+function GetSelectedPricesSQL : String;
+var
+  I : Integer;
+  sp : TSelectPrice;
+begin
+  Result := '';
+  for I := 0 to SelectedPrices.Count-1 do begin
+    sp := TSelectPrice(SelectedPrices.Objects[i]);
+    if sp.Selected then
+      if Result = '' then
+        Result := IntToStr(sp.PriceCode)
+      else
+        Result := Result + ', ' + IntToStr(sp.PriceCode);
+  end;
+  if Result = '' then
+    Result := '-1';
+end;
 
 procedure TDM.DMCreate(Sender: TObject);
 var
@@ -1552,6 +1614,7 @@ begin
   adtClients.CloseOpen(True);
   adsRetailMargins.CloseOpen(True);
   LoadRetailMargins;
+  LoadSelectedPrices;
   try
     adtFlags.CloseOpen(True);
   except
@@ -2011,12 +2074,42 @@ begin
 	end;
 end;
 
+{ TSelectPrice }
+
+constructor TSelectPrice.Create(APriceCode: Integer; ASelected: Boolean;
+  APriceName: String);
+begin
+  PriceCode := APriceCode;
+  Selected := ASelected;
+  PriceName := APriceName;
+end;
+
+procedure TDM.LoadSelectedPrices;
+begin
+  ClearSelectedPrices;
+  if adsPrices.Active then
+    adsPrices.Close;
+  adsPrices.Open;
+  try
+    adsPrices.DoSort(['PRICENAME'], [True]);
+    adsPrices.First;
+    while not adsPrices.Eof do begin
+      SelectedPrices.AddObject(adsPricesPRICECODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, True, adsPricesPRICENAME.Value));
+      adsPrices.Next;
+    end;
+  finally
+    adsPrices.Close;
+  end;
+end;
+
 initialization
   ch := IntToHex(GetCopyID, 8);
   p := '';
   for I := 1 to Length(ch) do
     p := p + ch[i] + PassPassW[i];
   PassC := TINFCrypt.Create(p, 48);
+  SelectedPrices := TStringList.Create;
 finalization
   PassC.Free;
+  SelectedPrices.Free;
 end.

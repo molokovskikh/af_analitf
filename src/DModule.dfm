@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 305
-  Top = 135
+  Left = 165
+  Top = 111
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -1333,6 +1333,91 @@ object DM: TDM
     Left = 304
     Top = 344
     oCacheCalcFields = True
+    object adsPricesPRICECODE: TFIBBCDField
+      FieldName = 'PRICECODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsPricesPRICENAME: TFIBStringField
+      FieldName = 'PRICENAME'
+      Size = 70
+      EmptyStrToNull = True
+    end
+    object adsPricesDATEPRICE: TFIBDateTimeField
+      FieldName = 'DATEPRICE'
+    end
+    object adsPricesUPCOST: TFIBBCDField
+      FieldName = 'UPCOST'
+      Size = 4
+      RoundByScale = True
+    end
+    object adsPricesMINREQ: TFIBIntegerField
+      FieldName = 'MINREQ'
+    end
+    object adsPricesENABLED: TFIBIntegerField
+      FieldName = 'ENABLED'
+    end
+    object adsPricesPRICEINFO: TFIBMemoField
+      FieldName = 'PRICEINFO'
+      BlobType = ftMemo
+      Size = 8
+    end
+    object adsPricesFIRMCODE: TFIBBCDField
+      FieldName = 'FIRMCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsPricesFULLNAME: TFIBStringField
+      FieldName = 'FULLNAME'
+      Size = 40
+      EmptyStrToNull = True
+    end
+    object adsPricesSTORAGE: TFIBIntegerField
+      FieldName = 'STORAGE'
+    end
+    object adsPricesADMINMAIL: TFIBStringField
+      FieldName = 'ADMINMAIL'
+      Size = 50
+      EmptyStrToNull = True
+    end
+    object adsPricesSUPPORTPHONE: TFIBStringField
+      FieldName = 'SUPPORTPHONE'
+      EmptyStrToNull = True
+    end
+    object adsPricesCONTACTINFO: TFIBMemoField
+      FieldName = 'CONTACTINFO'
+      BlobType = ftMemo
+      Size = 8
+    end
+    object adsPricesOPERATIVEINFO: TFIBMemoField
+      FieldName = 'OPERATIVEINFO'
+      BlobType = ftMemo
+      Size = 8
+    end
+    object adsPricesREGIONCODE: TFIBBCDField
+      FieldName = 'REGIONCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsPricesREGIONNAME: TFIBStringField
+      FieldName = 'REGIONNAME'
+      Size = 25
+      EmptyStrToNull = True
+    end
+    object adsPricesPOSITIONS: TFIBIntegerField
+      FieldName = 'POSITIONS'
+    end
+    object adsPricesSUMORDER: TFIBBCDField
+      FieldName = 'SUMORDER'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsPricesPRICESIZE: TFIBIntegerField
+      FieldName = 'PRICESIZE'
+    end
+    object adsPricesINJOB: TFIBIntegerField
+      FieldName = 'INJOB'
+    end
   end
   object adsAllOrders: TpFIBDataSet
     UpdateSQL.Strings = (

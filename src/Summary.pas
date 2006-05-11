@@ -62,7 +62,10 @@ type
     rgSummaryType: TRadioGroup;
     lPosCount: TLabel;
     pmSelectedPrices: TPopupMenu;
-    ds: TMenuItem;
+    miSelectedAll: TMenuItem;
+    btnSelectPrices: TBitBtn;
+    miUnselectedAll: TMenuItem;
+    miSeparator: TMenuItem;
     procedure adsSummary2CalcFields(DataSet: TDataSet);
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
@@ -82,6 +85,9 @@ type
     procedure btnDeleteClick(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure rgSummaryTypeClick(Sender: TObject);
+    procedure btnSelectPricesClick(Sender: TObject);
+    procedure miSelectedAllClick(Sender: TObject);
+    procedure miUnselectedAllClick(Sender: TObject);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
@@ -90,6 +96,7 @@ type
     procedure DeleteOrder;
     procedure SetDateInterval;
     procedure OnSPClick(Sender: TObject);
+    procedure ChangeSelected(ASelected : Boolean);
   public
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; reintroduce;
@@ -138,7 +145,6 @@ begin
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
 		+ Self.ClassName, False) then dbgSummary.LoadFromRegistry( Reg);
 	Reg.Free;
-  pmSelectedPrices.Items.Clear;
   for I := 0 to SelectedPrices.Count-1 do begin
     sp := TSelectPrice(SelectedPrices.Objects[i]);
     mi := TMenuItem.Create(pmSelectedPrices);
@@ -146,7 +152,6 @@ begin
     mi.Caption := sp.PriceName;
     mi.Checked := sp.Selected;
     mi.Tag := Integer(sp);
-    //mi.AutoCheck := True;
     mi.OnClick := OnSPClick;
     pmSelectedPrices.Items.Add(mi);
   end;
@@ -413,6 +418,33 @@ begin
   sp.Selected := TMenuItem(Sender).Checked;
   SummaryShow;
   pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
+end;
+
+procedure TSummaryForm.btnSelectPricesClick(Sender: TObject);
+begin
+  pmSelectedPrices.Popup(btnSelectPrices.ClientOrigin.X, btnSelectPrices.ClientOrigin.Y + btnSelectPrices.Height);
+end;
+
+procedure TSummaryForm.miSelectedAllClick(Sender: TObject);
+begin
+  ChangeSelected(True);
+end;
+
+procedure TSummaryForm.ChangeSelected(ASelected: Boolean);
+var
+  I : Integer;
+begin
+  for I := 3 to pmSelectedPrices.Items.Count-1 do begin
+    pmSelectedPrices.Items.Items[i].Checked := ASelected;
+    TSelectPrice(TMenuItem(pmSelectedPrices.Items.Items[i]).Tag).Selected := ASelected;
+  end;
+  SummaryShow;
+  pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
+end;
+
+procedure TSummaryForm.miUnselectedAllClick(Sender: TObject);
+begin
+  ChangeSelected(False);
 end;
 
 initialization

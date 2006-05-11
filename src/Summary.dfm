@@ -275,7 +275,6 @@ inherited SummaryForm: TSummaryForm
       Height = 52
       Align = alTop
       BevelOuter = bvNone
-      PopupMenu = pmSelectedPrices
       TabOrder = 2
       object Label7: TLabel
         Left = 10
@@ -348,6 +347,24 @@ inherited SummaryForm: TSummaryForm
           #1042#1099#1073#1080#1088#1072#1090#1100' '#1080#1079' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1093)
         TabOrder = 2
         OnClick = rgSummaryTypeClick
+      end
+      object btnSelectPrices: TBitBtn
+        Left = 528
+        Top = 13
+        Width = 105
+        Height = 25
+        Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090#1099
+        TabOrder = 3
+        OnClick = btnSelectPricesClick
+        Glyph.Data = {
+          A6000000424DA600000000000000760000002800000009000000060000000100
+          0400000000003000000000000000000000001000000010000000000000000000
+          80000080000000808000800000008000800080800000C0C0C000808080000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
+          0000333303333000000033300033300000003300000330000000300000003000
+          00003333333330000000}
+        Layout = blGlyphRight
+        Spacing = 10
       end
     end
   end
@@ -586,10 +603,19 @@ inherited SummaryForm: TSummaryForm
     oCacheCalcFields = True
   end
   object pmSelectedPrices: TPopupMenu
-    Left = 520
+    AutoPopup = False
+    Left = 640
     Top = 8
-    object ds: TMenuItem
-      AutoCheck = True
+    object miSelectedAll: TMenuItem
+      Caption = #1042#1099#1073#1088#1072#1090#1100' '#1074#1089#1077#1093
+      OnClick = miSelectedAllClick
+    end
+    object miUnselectedAll: TMenuItem
+      Caption = #1048#1089#1082#1083#1102#1095#1080#1090#1100' '#1074#1089#1077#1093
+      OnClick = miUnselectedAllClick
+    end
+    object miSeparator: TMenuItem
+      Caption = '-'
     end
   end
 end
