@@ -69,7 +69,6 @@ inherited OrdersHForm: TOrdersHForm
           Height = 27
           Anchors = [akLeft, akBottom]
           Caption = #1053#1072#1082#1083#1072#1076#1085#1072#1103
-          Enabled = False
           TabOrder = 2
           OnClick = btnWayBillListClick
         end
@@ -441,6 +440,7 @@ inherited OrdersHForm: TOrdersHForm
     AutoCommit = True
     Left = 68
     Top = 119
+    oCacheCalcFields = True
     oFetchAll = True
     object adsOrdersHFormORDERID: TFIBBCDField
       FieldName = 'ORDERID'
@@ -481,19 +481,19 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersHFormREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersHFormPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
     object adsOrdersHFormSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersHFormSumOrder: TFIBBCDField
       FieldKind = fkCalculated
@@ -633,6 +633,7 @@ inherited OrdersHForm: TOrdersHForm
     AutoCommit = True
     Left = 188
     Top = 119
+    oCacheCalcFields = True
   end
   object adsWayBillHead: TpFIBDataSet
     SelectSQL.Strings = (
@@ -653,6 +654,7 @@ inherited OrdersHForm: TOrdersHForm
     Database = DM.MainConnection1
     Left = 284
     Top = 144
+    oCacheCalcFields = True
     object adsWayBillHeadSERVERID: TFIBBCDField
       FieldName = 'SERVERID'
       Size = 0
@@ -684,17 +686,17 @@ inherited OrdersHForm: TOrdersHForm
     object adsWayBillHeadPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsWayBillHeadREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsWayBillHeadFIRMCOMMENT: TFIBStringField
       FieldName = 'FIRMCOMMENT'
       Size = 100
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsWayBillHeadROWCOUNT: TFIBIntegerField
       FieldName = 'ROWCOUNT'

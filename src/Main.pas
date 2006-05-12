@@ -8,7 +8,7 @@ uses
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, ProVersion, DBGridEh, DateUtils, ToughDBGrid,
   OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet, U_CryptIndex,
-  Consts;
+  Consts, ShellAPI;
 
 type
 
@@ -173,6 +173,7 @@ TMainForm = class(TForm)
     procedure actWayBillUpdate(Sender: TObject);
     procedure dblcbClientsMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure actWayBillExecute(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -837,7 +838,7 @@ end;
 
 procedure TMainForm.actWayBillUpdate(Sender: TObject);
 begin
-  TAction(Sender).Enabled := False;
+  TAction(Sender).Enabled := True;
 end;
 
 procedure TMainForm.dblcbClientsMouseDown(Sender: TObject;
@@ -846,6 +847,12 @@ begin
   //Это необходимо для того, чтобы устанавливался фокус.
   //Иногда это не происходит из-за того, что фокус был на компоненте WebBrowser
   dblcbClients.SetFocus;
+end;
+
+procedure TMainForm.actWayBillExecute(Sender: TObject);
+begin
+	ShellExecute( 0, 'Open', PChar(ExePath + SDirExports + '\'),
+		nil, nil, SW_SHOWDEFAULT);
 end;
 
 end.

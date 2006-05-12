@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
-  FIBSQLMonitor, FIBQuery, SQLWaiting;
+  FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI;
 
 const
 	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
@@ -461,6 +461,10 @@ end;
 
 procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);
 begin
+	ShellExecute( 0, 'Open', PChar(ExePath + SDirExports + '\'),
+		nil, nil, SW_SHOWDEFAULT);
+{
+
 	if not adsOrdersHForm.IsEmpty then
 	begin
     adsWayBillHead.ParamByName('AServerOrderId').Value := adsOrdersHForm.FieldByName('ServerOrderID').Value;
@@ -469,6 +473,7 @@ begin
       WayBillListForm.ShowForm(adsWayBillHeadServerID.Value);
     end;
 	end;
+}  
 end;
 
 procedure TOrdersHForm.adsOrdersH2SendChange(Sender: TField);

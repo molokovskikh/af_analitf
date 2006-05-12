@@ -659,6 +659,7 @@ object MainForm: TMainForm
       Caption = #1053#1072#1082#1083#1072#1076#1085#1099#1077
       Hint = #1053#1072#1082#1083#1072#1076#1085#1099#1077
       ImageIndex = 15
+      OnExecute = actWayBillExecute
       OnUpdate = actWayBillUpdate
     end
   end
