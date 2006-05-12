@@ -4,7 +4,7 @@ object MainForm: TMainForm
   AutoScroll = False
   Caption = 'MainForm'
   ClientHeight = 554
-  ClientWidth = 792
+  ClientWidth = 863
   Color = clBtnFace
   Constraints.MinHeight = 600
   Constraints.MinWidth = 800
@@ -33,12 +33,12 @@ object MainForm: TMainForm
     Tag = 1
     Left = 0
     Top = 42
-    Width = 792
+    Width = 863
     Height = 493
     Align = alClient
     TabOrder = 0
     ControlData = {
-      4C000000DB510000F43200000000000000000000000000000000000000000000
+      4C00000032590000F43200000000000000000000000000000000000000000000
       000000004C000000000000000000000001000000E0D057007335CF11AE690800
       2B2E126201000000000000004C0000000114020000000000C000000000000046
       8000000000000000000000000000000000000000000000000000000000000000
@@ -47,25 +47,18 @@ object MainForm: TMainForm
   object CoolBar1: TCoolBar
     Left = 0
     Top = 0
-    Width = 792
+    Width = 863
     Height = 42
     AutoSize = True
     BandBorderStyle = bsNone
+    BandMaximize = bmNone
     Bands = <
       item
         Control = ToolBar
         HorizontalOnly = True
         ImageIndex = -1
         MinHeight = 38
-        Width = 783
-      end
-      item
-        Break = False
-        Control = Panel1
-        HorizontalOnly = True
-        ImageIndex = -1
-        MinHeight = 32
-        Width = 9
+        Width = 863
       end>
     Color = clBtnFace
     EdgeBorders = [ebTop, ebBottom]
@@ -75,7 +68,7 @@ object MainForm: TMainForm
     object ToolBar: TToolBar
       Left = 9
       Top = 0
-      Width = 770
+      Width = 850
       Height = 38
       ButtonHeight = 38
       ButtonWidth = 39
@@ -224,54 +217,62 @@ object MainForm: TMainForm
         Action = actConfig
         ImageIndex = 12
       end
-    end
-    object Panel1: TPanel
-      Left = 792
-      Top = 3
-      Width = 0
-      Height = 32
-      Alignment = taRightJustify
-      BevelOuter = bvNone
-      ParentBackground = True
-      TabOrder = 1
-      object Label1: TLabel
-        Left = 0
+      object ToolButton6: TToolButton
+        Left = 677
         Top = 0
-        Width = 0
-        Height = 32
-        Align = alClient
-        Layout = tlCenter
-        OnMouseMove = Label1MouseMove
+        Width = 8
+        Caption = 'ToolButton6'
+        ImageIndex = 13
+        Style = tbsSeparator
       end
-      object EditDummy: TEdit
-        Left = 87
-        Top = 6
-        Width = 2
-        Height = 21
-        TabOrder = 1
-      end
-      object dblcbClients: TDBLookupComboBox
-        Left = 7
-        Top = 6
-        Width = 136
-        Height = 21
-        Hint = #1050#1083#1080#1077#1085#1090
-        DataField = 'ClientId'
-        DataSource = DM.dsParams
-        KeyField = 'ClientId'
-        ListField = 'Name'
-        ListSource = DM.dsClients
+      object Panel1: TPanel
+        Left = 685
+        Top = 0
+        Width = 779
+        Height = 38
+        Alignment = taRightJustify
+        BevelOuter = bvNone
+        ParentBackground = True
         TabOrder = 0
-        OnCloseUp = dblcbClientsCloseUp
-        OnMouseDown = dblcbClientsMouseDown
-        OnMouseMove = Label1MouseMove
+        object Label1: TLabel
+          Left = 0
+          Top = 0
+          Width = 779
+          Height = 38
+          Align = alClient
+          Layout = tlCenter
+          OnMouseMove = Label1MouseMove
+        end
+        object EditDummy: TEdit
+          Left = 87
+          Top = 9
+          Width = 2
+          Height = 21
+          TabOrder = 1
+        end
+        object dblcbClients: TDBLookupComboBox
+          Left = 7
+          Top = 9
+          Width = 136
+          Height = 21
+          Hint = #1050#1083#1080#1077#1085#1090
+          DataField = 'ClientId'
+          DataSource = DM.dsParams
+          KeyField = 'ClientId'
+          ListField = 'Name'
+          ListSource = DM.dsClients
+          TabOrder = 0
+          OnCloseUp = dblcbClientsCloseUp
+          OnMouseDown = dblcbClientsMouseDown
+          OnMouseMove = Label1MouseMove
+        end
       end
     end
   end
   object StatusBar: TStatusBar
     Left = 0
     Top = 535
-    Width = 792
+    Width = 863
     Height = 19
     Panels = <
       item

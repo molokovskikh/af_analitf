@@ -124,6 +124,7 @@ TMainForm = class(TForm)
     adsOrdersH: TpFIBDataSet;
     ToolButton8: TToolButton;
     actWayBill: TAction;
+    ToolButton6: TToolButton;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
