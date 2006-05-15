@@ -47,7 +47,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btnUnCheckAllClick(Sender: TObject);
     procedure actCheckExecute(Sender: TObject);
-    procedure adsDefectives2AfterOpen(DataSet: TDataSet);
     procedure dbgDefectivesGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure FormDestroy(Sender: TObject);
@@ -80,7 +79,7 @@ var
 	Year, Month, Day: Word;
 begin
 	inherited;
-	PrintEnabled:=False;
+	PrintEnabled:=True;
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
 	Day := DayOf( Date);
@@ -196,11 +195,6 @@ begin
   end;
 end;
 
-procedure TDefectivesForm.adsDefectives2AfterOpen(DataSet: TDataSet);
-begin
-//	adsDefectives.Properties['Update Criteria'].Value:=adCriteriaKey;
-end;
-
 procedure TDefectivesForm.dbgDefectivesGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
@@ -216,23 +210,6 @@ end;
 
 procedure TDefectivesForm.dbgDefectivesSortMarkingChanged(Sender: TObject);
 begin
-{
-	adsDefectives.DisableControls;
-	Screen.Cursor := crHourglass;
-	try
-		adsDefectives.Close;
-		adsDefectives.SelectSQL.Text := DefectSql + SQLOrderBy;
-		OrderField := SQLOrderBy;
-//		adsDefectives.ParamByName( 'DateFrom').DataType := ftDate;
-//		adsDefectives.ParamByName( 'DateTo').DataType := ftDate;
-    adsDefectives.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
-		adsDefectives.ParamByName( 'DateTo').AsDate := dtpDateTo.Date;
-		adsDefectives.Open;
-	finally
-		adsDefectives.EnableControls;
-		Screen.Cursor := crDefault;
-	end;
-}
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 

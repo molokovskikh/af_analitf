@@ -363,6 +363,7 @@ inherited DefectivesForm: TDefectivesForm
     end
   end
   object frdsPrint: TfrDBDataSet
+    DataSet = adsPrint
     Left = 280
     Top = 208
   end
@@ -383,7 +384,6 @@ inherited DefectivesForm: TDefectivesForm
     SelectSQL.Strings = (
       'SELECT * FROM Defectives'
       'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
-    AfterOpen = adsDefectives2AfterOpen
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
