@@ -105,6 +105,7 @@ type
     procedure tdbgRetailMarginsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure mdRetailAfterPost(DataSet: TDataSet);
+    procedure mdRetailBeforePost(DataSet: TDataSet);
   private
     HTTPNameChanged : Boolean;
     OldHTTPName : String;
@@ -393,13 +394,15 @@ begin
       mdRetail.SortOnFields(mdRetailLEFTLIMIT.FieldName);
       if mdRetail.RecordCount > 0 then begin
         mdRetail.First;
-        Res := mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency;
+        Res := (not mdRetailLEFTLIMIT.IsNull) and (not mdRetailRIGHTLIMIT.IsNull) and (not mdRetailRETAIL.IsNull) and
+              (mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency);
         PrevRight := mdRetailRIGHTLIMIT.AsCurrency;
         mdRetail.Next;
         while not mdRetail.Eof and Res do begin
           Res := PrevRight <= mdRetailLEFTLIMIT.AsCurrency;
           if Res then
-            Res := mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency;
+            Res := (not mdRetailLEFTLIMIT.IsNull) and (not mdRetailRIGHTLIMIT.IsNull) and (not mdRetailRETAIL.IsNull) and
+                  (mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency);
           mdRetail.Next;
         end;
         if not Res then begin
@@ -489,6 +492,12 @@ begin
   finally
     mdRetail.RecNo := C;
   end;
+end;
+
+procedure TConfigForm.mdRetailBeforePost(DataSet: TDataSet);
+begin
+  if (mdRetailLEFTLIMIT.IsNull) or (mdRetailRIGHTLIMIT.IsNull) or (mdRetailRETAIL.IsNull) then
+    Abort;
 end;
 
 end.

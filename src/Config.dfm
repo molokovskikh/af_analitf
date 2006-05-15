@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshAuth
+    ActivePage = tshClients
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -141,6 +141,7 @@ object ConfigForm: TConfigForm
             Width = 80
           end
           item
+            DisplayFormat = '0.00;;'
             EditButtons = <>
             FieldName = 'RETAIL'
             Footers = <>
@@ -5686,6 +5687,7 @@ object ConfigForm: TConfigForm
         Name = 'RETAIL'
         DataType = ftInteger
       end>
+    BeforePost = mdRetailBeforePost
     AfterPost = mdRetailAfterPost
     Left = 68
     Top = 208
@@ -5694,12 +5696,15 @@ object ConfigForm: TConfigForm
     end
     object mdRetailLEFTLIMIT: TCurrencyField
       FieldName = 'LEFTLIMIT'
+      Required = True
     end
     object mdRetailRIGHTLIMIT: TCurrencyField
       FieldName = 'RIGHTLIMIT'
+      Required = True
     end
     object mdRetailRETAIL: TIntegerField
       FieldName = 'RETAIL'
+      Required = True
     end
   end
   object dsRetail: TDataSource
