@@ -508,7 +508,6 @@ object MainForm: TMainForm
       Caption = #1050#1086#1085#1092#1080#1075#1091#1088#1072#1094#1080#1103
       Hint = #1050#1086#1085#1092#1080#1075#1091#1088#1072#1094#1080#1103
       ImageIndex = 4
-      ShortCut = 16451
       OnExecute = actConfigExecute
     end
     object actOrderAll: TAction
