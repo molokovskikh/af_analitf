@@ -255,7 +255,7 @@ begin
     filLeader: FP := LeaderFilterRecord;
   end;
   DBProc.SetFilterProc(adsCore, FP);
-  lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.RecordCount]);
+  lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.VisibleRecordCount]);
   cbFilter.ItemIndex := Integer(Filter);
 end;
 
