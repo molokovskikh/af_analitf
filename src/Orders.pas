@@ -119,7 +119,7 @@ procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
 begin
 	inherited;
 	if Key = VK_ESCAPE then PrevForm.ShowForm;
-	if ( Key = VK_DELETE) and not ( adsOrders.IsEmpty) then
+	if ( Key = VK_DELETE) and not ( adsOrders.IsEmpty) and (OrdersHForm.TabControl.TabIndex = 0) then
 	begin
     OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsOrdersORDERCOUNT.AsInteger = 0, 0, 1);
     OrderSum := OrderSum + ( 0 - adsOrdersORDERCOUNT.AsInteger) * adsOrdersCryptPRICE.AsCurrency;

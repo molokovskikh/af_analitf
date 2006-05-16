@@ -342,6 +342,7 @@ inherited OrdersForm: TOrdersForm
     AutoCommit = True
     Left = 144
     Top = 184
+    oCacheCalcFields = True
     oFetchAll = True
     object adsOrdersCryptSYNONYMNAME: TStringField
       FieldKind = fkCalculated
@@ -403,27 +404,27 @@ inherited OrdersForm: TOrdersForm
     object adsOrdersCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
