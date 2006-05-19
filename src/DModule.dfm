@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 165
-  Top = 111
+  Left = 262
+  Top = 195
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -116,7 +116,8 @@ object DM: TDM
     DBParams.Strings = (
       'lc_ctype=WIN1251'
       'password=masterkey'
-      'user_name=sysdba')
+      'user_name=sysdba'
+      'sweep_interval=0')
     DefaultTransaction = DefTran
     DefaultUpdateTransaction = UpTran
     SQLDialect = 3

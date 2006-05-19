@@ -321,7 +321,6 @@ type
     {function OrderToArchiv(ClientId: Integer=0; PriceCode: Integer=0;
       RegionCode: Integer=0): Boolean;}
     procedure SweepDB;
-    procedure SetSweepInterval;
     function GetDisplayColors : Integer;
     function TCPPresent : Boolean;
     function NeedCommitExchange : Boolean;
@@ -698,8 +697,6 @@ begin
     MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
   end;
-  //Устанавливаем интервал для сбора мусора
-  SetSweepInterval;
 end;
 
 function TDM.DatabaseOpenedBy: string;
@@ -1644,26 +1641,6 @@ begin
     end;
   finally
     MainConnection1.Open;
-  end;
-end;
-
-procedure TDM.SetSweepInterval;
-begin
-  with ConfigService do
-  begin
-    ServerName := '';
-    DatabaseName := MainConnection1.DBName;
-    Params.Clear;
-    Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-    Params.Add('password=' + MainConnection1.ConnectParams.Password);
-    Active := True;
-    try
-      Tracer.TR('Config', 'Set sweep interval');
-      SetSweepInterval(0);
-      Tracer.TR('Config', 'Set sweep interval complete');
-    finally
-      Active := False;
-    end;
   end;
 end;
 
