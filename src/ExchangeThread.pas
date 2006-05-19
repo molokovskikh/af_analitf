@@ -1965,40 +1965,55 @@ var
   I : Integer;
 begin
   CriticalError := True;
- 	DM.adsPrices.Close;
-	DM.adsPrices.ParamByName( 'AClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsPrices.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	DM.adsPrices.Open;
-	if not DM.adsPrices.Eof then
+  if DM.adsSelect.Active then
+   	DM.adsSelect.Close;
+  DM.adsSelect.SelectSQL.Text := 'select prd.pricecode, prd.regioncode, prd.injob, prd.upcost ' +
+    'from pricesregionaldata prd inner join pricesregionaldataup prdu on prdu.PriceCode = prd.PriceCode and prdu.RegionCode = prd.regioncode';
+	DM.adsSelect.Open;
+  //Отправляем настройки только в том случае, если есть что отправлять
+	if not DM.adsSelect.Eof then
 	begin
 		StatusText := 'Отправка настроек прайс-листов';
 		Synchronize( SetStatus);
-    SetLength(ParamNames, StaticParamCount + DM.adsPrices.RecordCountFromSrv*4);
-    SetLength(ParamValues, StaticParamCount + DM.adsPrices.RecordCountFromSrv*4);
+    SetLength(ParamNames, StaticParamCount + DM.adsSelect.RecordCountFromSrv*4);
+    SetLength(ParamValues, StaticParamCount + DM.adsSelect.RecordCountFromSrv*4);
     ParamNames[0] := 'UniqueID';
     ParamValues[0] := IntToHex( GetCopyID, 8);
-	end;
-  I := 0;
-  while not DM.adsPrices.Eof do begin
-    //PriceCodes As Int32(), ByVal RegionCodes As Int32(), ByVal INJobs As Boolean(), ByVal UpCosts
-    ParamNames[StaticParamCount+i*4] := 'PriceCodes';
-    ParamValues[StaticParamCount+i*4] := DM.adsPrices.FieldByName('PriceCode').AsString;
-    ParamNames[StaticParamCount+i*4+1] := 'RegionCodes';
-    ParamValues[StaticParamCount+i*4+1] := DM.adsPrices.FieldByName('RegionCode').AsString;
-    ParamNames[StaticParamCount+i*4+2] := 'INJobs';
-    ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsPrices.FieldByName('INJob').AsBoolean, True);
-    ParamNames[StaticParamCount+i*4+3] := 'UpCosts';
-    ParamValues[StaticParamCount+i*4+3] :=
-      StringReplace(DM.adsPrices.FieldByName('UPCOST').AsString, DM.FFS.DecimalSeparator, ',', [rfReplaceAll]);
-    DM.adsPrices.Next;
-    Inc(i);
-  end;
-  DM.adsPrices.Close;
-  Res := SOAP.Invoke( 'PostPriceDataSettings', ParamNames, ParamValues);
-  Error := Utf8ToAnsi( Res.Values[ 'Error']);
-  if Error <> '' then
-    raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+    I := 0;
+    while not DM.adsSelect.Eof do begin
+      //PriceCodes As Int32(), ByVal RegionCodes As Int32(), ByVal INJobs As Boolean(), ByVal UpCosts
+      ParamNames[StaticParamCount+i*4] := 'PriceCodes';
+      ParamValues[StaticParamCount+i*4] := DM.adsSelect.FieldByName('PriceCode').AsString;
+      ParamNames[StaticParamCount+i*4+1] := 'RegionCodes';
+      ParamValues[StaticParamCount+i*4+1] := DM.adsSelect.FieldByName('RegionCode').AsString;
+      ParamNames[StaticParamCount+i*4+2] := 'INJobs';
+      ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsSelect.FieldByName('INJob').AsBoolean, True);
+      ParamNames[StaticParamCount+i*4+3] := 'UpCosts';
+      ParamValues[StaticParamCount+i*4+3] :=
+        StringReplace(DM.adsSelect.FieldByName('UPCOST').AsString, DM.FFS.DecimalSeparator, ',', [rfReplaceAll]);
+      DM.adsSelect.Next;
+      Inc(i);
+    end;
+    DM.adsSelect.Close;
+    Res := SOAP.Invoke( 'PostPriceDataSettings', ParamNames, ParamValues);
+    Error := Utf8ToAnsi( Res.Values[ 'Error']);
+    if Error <> '' then
+      raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+    DM.adcUpdate.Transaction.StartTransaction;
+    try
+      with DM.adcUpdate do begin
+        //удаляем признак того, что настройки прайс-листов были изменены
+        SQL.Text := 'delete from pricesregionaldataup';
+        ExecQuery;
+      end;
+      DM.adcUpdate.Transaction.Commit;
+    except
+      DM.adcUpdate.Transaction.Rollback;
+      raise;
+    end;
+	end
+  else
+    DM.adsSelect.Close;
   CriticalError := False;
 end;
 

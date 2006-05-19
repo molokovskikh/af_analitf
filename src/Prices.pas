@@ -83,8 +83,6 @@ type
     procedure dbgPricesColumns4GetCellParams(Sender: TObject;
       EditMode: Boolean; Params: TColCellParamsEh);
     procedure adsPricesINJOBChange(Sender: TField);
-    procedure dbgPricesColumns4UpdateData(Sender: TObject;
-      var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure adsPricesUPCOSTChange(Sender: TField);
     procedure tmStopEditTimer(Sender: TObject);
     procedure adsPricesAfterEdit(DataSet: TDataSet);
@@ -306,18 +304,6 @@ begin
   tmStopEdit.Enabled := False;
   tmStopEdit.Interval := 500;
   tmStopEdit.Enabled := True;
-end;
-
-procedure TPricesForm.dbgPricesColumns4UpdateData(Sender: TObject;
-  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
-var
-  d : Currency;
-begin
-  try
-    d := StrToCurr(Text);
-  except
-    Text := adsPricesUPCOST.AsString;
-  end;
 end;
 
 procedure TPricesForm.adsPricesUPCOSTChange(Sender: TField);

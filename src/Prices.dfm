@@ -118,6 +118,7 @@ inherited PricesForm: TPricesForm
           Alignment = taCenter
           AlwaysShowEditButton = True
           ButtonStyle = cbsEllipsis
+          DisplayFormat = '0.00;;'
           EditButtons = <>
           FieldName = 'UPCOST'
           Footers = <>
@@ -126,7 +127,6 @@ inherited PricesForm: TPricesForm
           Visible = False
           Width = 37
           OnGetCellParams = dbgPricesColumns4GetCellParams
-          OnUpdateData = dbgPricesColumns4UpdateData
         end
         item
           EditButtons = <>
@@ -428,9 +428,8 @@ inherited PricesForm: TPricesForm
   object adsPrices: TpFIBDataSet
     UpdateSQL.Strings = (
       
-        'update pricesregionaldata set INJOB = :NEW_INJOB, UPCOST = :NEW_' +
-        'UPCOST where PriceCode = :OLD_PRICECODE and RegionCode = :OLD_Re' +
-        'gionCODE')
+        'execute procedure updateupcost(:OLD_PRICECODE, :OLD_RegionCODE, ' +
+        ':NEW_INJOB, :NEW_UPCOST)')
     RefreshSQL.Strings = (
       'SELECT'
       '    PRICECODE,'
