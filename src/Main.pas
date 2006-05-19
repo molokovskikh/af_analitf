@@ -811,18 +811,29 @@ procedure TMainForm.OnMainAppEx(Sender: TObject; E: Exception);
 var
   S, Mess : String;
 begin
-  if E is EINCryptException then
-    AProc.MessageBox(E.Message, MB_ICONERROR)
-  else begin
+  if ExchangeOnly then begin
     if E.Message <> SCannotFocus then begin
-      S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
-      Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
-        '%s'#13#10'%s'#13#10#13#10 +
-        'Завершить работу программы?', [S, E.Message]);
-      if AProc.MessageBox(Mess, MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = ID_YES then
-        ExitProcess(100);
+      if Assigned(Sender) then
+        Tracer.TR('MainForm.OnMainAppEx', 'Sender = ' + Sender.ClassName)
+      else
+        Tracer.TR('MainForm.OnMainAppEx', 'Sender = nil');
+      Tracer.TR('MainForm.OnMainAppEx', 'OnMainAppEx : ' + E.Message);
+      ExitProcess(100);
     end;
-  end;
+  end
+  else
+    if E is EINCryptException then
+      AProc.MessageBox(E.Message, MB_ICONERROR)
+    else begin
+      if E.Message <> SCannotFocus then begin
+        S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
+        Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
+          '%s'#13#10'%s'#13#10#13#10 +
+          'Завершить работу программы?', [S, E.Message]);
+        if AProc.MessageBox(Mess, MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = ID_YES then
+          ExitProcess(100);
+      end;
+    end;
 end;
 
 function TMainForm.GetActionLists: TList;

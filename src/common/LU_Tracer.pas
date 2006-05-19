@@ -43,7 +43,7 @@ begin
    MaxTracePosition := 1024 * 1024;
    FSuffix := 'TR';
    CS := TCriticalSection.Create;
-   if FindCmdLineSwitch('extend') then begin
+   if FindCmdLineSwitch('extend') or FindCmdLineSwitch('e') or FindCmdLineSwitch('i') then begin
      if not FileExists ( getFTName ) then
       begin
        FT := TFileStream.Create ( getFTName , fmCreate );
