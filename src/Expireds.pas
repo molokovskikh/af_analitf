@@ -122,7 +122,7 @@ begin
 	finally
 		Screen.Cursor := crDefault;
 	end;
-	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCount]);
+	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCountFromSrv]);
 	Reg := TRegistry.Create;
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\' +
 		Self.ClassName, False) then dbgExpireds.LoadFromRegistry( Reg);
