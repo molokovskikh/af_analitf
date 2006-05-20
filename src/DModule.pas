@@ -10,7 +10,7 @@ uses
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs, U_CryptIndex, SevenZip, infvercls;
+  Contnrs, U_CryptIndex, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders;
 
 {
 Криптование
@@ -31,6 +31,28 @@ const
   RegisterId=59; //код реестра в справочнике фирм
   //Строка для шифрации паролей
   PassPassW = 'sh' + #90 + 'kjw' + #10 + 'h';
+  //Список критических библиотек
+  CriticalLibraryHashes : array[0..16] of array[0..4] of string =
+  (
+      ('dbrtl70.bpl', '0650B08C', '583E1038', '5F35A236', '6DD703FA'),
+      ('designide70.bpl', 'F16F1849', 'E4827C1D', 'C4FD04B9', '968D63F9'),
+      ('EhLib70.bpl', 'E53BE3AC', 'CE944324', '98157AE5', '06FCE3DC'),
+      ('FIBPlus7.bpl', '463E2DF6', 'A7AA8DD9', '70C1811C', 'FE34045F'),
+      ('fr7.bpl', 'F7516F76', '2191B5F2', '43975BC8', '5602F31A'),
+      ('Indy70.bpl', '1E271033', 'BD6CE031', '6F82664D', '1111221B'),
+      ('rtl70.bpl', 'E4E90D2F', 'C6C35486', '68351583', '3D4ECB44'),
+      ('tee70.bpl', '0AADB9CB', '5EE4338D', '61BA4EA3', 'A9E6098C'),
+      ('Tough.bpl', '37966797', '9CAA7250', 'C997EE7D', 'A95EE59A'),
+      ('vcl70.bpl', 'DCBC1726', '16A4CA76', '7D5C8162', '2D7512E7'),
+      ('vclactnband70.bpl', '86913722', '1C217FB1', 'C86C8AA3', '3132DDFC'),
+      ('vcldb70.bpl', 'EAC7B8AE', '4E416522', '6E16BA01', '4FDC98D7'),
+//      ('vclie70.bpl', '463BB658', '6C74C812', '33C92380', 'CAC85ED6'),
+      ('vcljpg70.bpl', '334355C1', '34EDB2AE', '88BC6505', '9AB7B17E'),
+      ('vclsmp70.bpl', 'D7B49DA9', '80884F53', 'C3D78E1E', '853B02E4'),
+      ('vclx70.bpl', 'E12C66FF', 'D510C787', '31D5400E', 'DDECD8C8'),
+      ('libeay32.dll', '66CB9170', 'A505A6E0', '39877EEC', '976C7931'),
+      ('ssleay32.dll', 'ECDEB2FD', '0ED62E52', '20592768', '0F98E2E3')
+  );
 
 //Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=AnalitF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Jet OLEDB:Database Password=commonpas;Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False
 
@@ -43,7 +65,7 @@ type
   //exit codes - Коды ошибок выхода из программы
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
-    ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN);
+    ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN, ecSSLOpen, ecNotChechHashes);
 
   TRetMass = array[1..3] of Variant;
 
@@ -266,7 +288,10 @@ type
     BaseCostPassword,
     VirtualBaseCostPassword,
     DBUIN : String;
+    //Требуется обновления из-за того, что некорректный UIN
     NeedUpdateByCheckUIN : Boolean;
+    //Требуется обновления из-за того, что некорректные Hash'и компонент
+    NeedUpdateByCheckHashes : Boolean;
     FGetCatalogsCount : Integer;
     FRetMargins : array of TRetMass;
     OldOrderCount : Integer;
@@ -281,6 +306,8 @@ type
     function CheckCopyIDFromDB : Boolean;
     function GetCatalogsCount : Integer;
     procedure LoadSelectedPrices;
+    function CheckCriticalLibrary : Boolean;
+    function GetFileHash(AFileName : String) : String;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -493,6 +520,12 @@ begin
     if not RunExchange([ eaGetPrice]) then
       ExitProcess( Integer(ecNotCheckUIN) );
   end;
+
+  if NeedUpdateByCheckHashes then begin
+    if not RunExchange([ eaGetPrice]) then
+      ExitProcess( Integer(ecNotChechHashes) );
+  end;
+  
   { Запуск с ключем -e (Получение данных и выход)}
   if ( AnsiLowerCase( ParamStr( 1)) = '-e') or
     ( AnsiLowerCase( ParamStr( 1)) = '/e') then
@@ -580,6 +613,12 @@ begin
     MessageBox( 'Не найдена библиотека 7-zip32.dll, необходимая для работы программы.',
       MB_ICONERROR or MB_OK);
     ExitProcess( Integer(ecSevenZip) );
+  end;
+
+  if not IdSSLOpenSSLHeaders.Load then begin
+    MessageBox( 'Не найдены библиотеки libeay32.dll и ssleay32.dll, необходимые для работы программы.',
+      MB_ICONERROR or MB_OK);
+    ExitProcess( Integer(ecSSLOpen) );
   end;
 
   try
@@ -697,6 +736,11 @@ begin
     MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
   end;
+
+  NeedUpdateByCheckHashes := not CheckCriticalLibrary;
+  if NeedUpdateByCheckHashes then
+    MessageBox( 'Ошибка проверки подлинности компонент программы. Необходимо выполнить обновление данных.',
+      MB_ICONERROR or MB_OK);
 end;
 
 function TDM.DatabaseOpenedBy: string;
@@ -2076,6 +2120,44 @@ begin
     end;
   finally
     adsPrices.Close;
+  end;
+end;
+
+function TDM.CheckCriticalLibrary: Boolean;
+var
+  I : Integer;
+  libname, libfilename, hash, caclhash : String;
+begin
+  Result := True;
+  for I := low(CriticalLibraryHashes) to High(CriticalLibraryHashes) do begin
+    libname := CriticalLibraryHashes[i][0];
+    hash := CriticalLibraryHashes[i][1] + CriticalLibraryHashes[i][2] + CriticalLibraryHashes[i][3] + CriticalLibraryHashes[i][4];
+    libfilename := GetModuleName(GetModuleHandle(PChar(libname)));
+    caclhash := GetFileHash(libfilename);
+    if caclhash <> hash then begin
+      Result := False;
+      exit;
+    end;
+  end;
+end;
+
+function TDM.GetFileHash(AFileName: String): String;
+var
+  md5 : TIdHashMessageDigest5;
+  fs : TFileStream;
+begin
+  md5 := TIdHashMessageDigest5.Create;
+  try
+
+    fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
+    try
+      Result := md5.AsHex( md5.HashValue(fs) );
+    finally
+      fs.Free;
+    end;
+
+  finally
+    md5.Free;
   end;
 end;
 

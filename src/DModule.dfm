@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 262
-  Top = 195
+  Left = 164
+  Top = 96
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -103,6 +103,8 @@ object DM: TDM
   end
   object frRtfAdvExport: TfrRtfAdvExport
     ShowDialog = False
+    OpenAfterExport = True
+    Wysiwyg = True
     Left = 576
     Top = 488
   end
