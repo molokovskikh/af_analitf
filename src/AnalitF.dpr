@@ -83,7 +83,7 @@ begin
       CoUninitialize;
     end;
   except
-    MessageBox( 'Для запуска приложения необходим установленный Internet Explorer 4.0 или выше.', MB_ICONERROR or MB_OK);
+    MessageBox( 'Для запуска приложения необходим установленный Internet Explorer 4.0 или выше.', MB_ICONSTOP or MB_OK);
     ExitProcess( Integer(ecIE40) );
   end;
   Application.Initialize;

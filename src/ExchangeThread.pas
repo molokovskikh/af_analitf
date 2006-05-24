@@ -7,7 +7,7 @@ uses
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
-  IdStackConsts, infvercls;
+  IdStackConsts, infvercls, Contnrs, IdHashMessageDigest;
 
 const
   UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
@@ -36,6 +36,12 @@ TUpdateTable = (
   utPriceAVG);
 
 TUpdateTables = set of TUpdateTable;
+
+TFileUpdateInfo = class
+ public
+  FileName, Version, MD5 : String;
+  constructor Create(AFileName, AVersion, AMD5 : String);
+end;
 
 TExchangeThread = class( TThread)
  public
@@ -90,20 +96,19 @@ private
 
   procedure UpdateFromFile(FileName, InsertSQL : String; OnBatching : TOnBatching = nil);
 
-	procedure ImportFromExternalMDB;
 	function GetXMLDateTime( ADateTime: TDateTime): string;
 	function FromXMLToDateTime( AStr: string): TDateTime;
 	function StringToCodes( AStr: string): string;
 	function RusError( AStr: string): string;
   procedure OnConnectError (AMessage : String);
   procedure OnReclameTerminate(Sender: TObject);
-  function  GetLibraryVersion : TStrings;
+  function  GetLibraryVersion : TObjectList;
   procedure GetWinVersion(var ANumber, ADesc : String);
-  procedure GetJETMDACVersions(var AJETVersion, AJETDesc, AMDACVersion, AMDACDesc : String);
   function GetLibraryVersionByName(AName: String): String;
   function GetLibraryVersionFromPath(AName: String): String;
   procedure adcUpdateBeforeExecute(Sender: TObject);
   procedure adcUpdateAfterExecute(Sender: TObject);
+  function GetFileHash(AFileName: String): String;
 protected
 	procedure Execute; override;
 public
@@ -296,8 +301,10 @@ var
 	URL: string;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
+  //TODO: В релизе надо подменить название службы с "PrgDataTest" на правильное
 	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+//		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+		'/' + 'PrgDataTest' + '/code.asmx';
 	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
 end;
@@ -310,23 +317,24 @@ end;
 
 procedure TExchangeThread.QueryData;
 const
-  StaticParamCount : Integer = 11;
+  StaticParamCount : Integer = 7;
 var
 	Res: TStrings;
+	LibVersions: TObjectList;
   Error : String;
   ParamNames, ParamValues : array of String;
   I : Integer;
   WinNumber, WinDesc : String;
-  AJETVersion, AJETDesc, AMDACVersion, AMDACDesc : String;
+  fi : TFileUpdateInfo;
 begin
 	{ запрашиваем данные }
 	StatusText := 'Запрос данных';
 	Synchronize( SetStatus);
 	try
-    Res := GetLibraryVersion;
+    LibVersions := GetLibraryVersion;
     try
-      SetLength(ParamNames, StaticParamCount + Res.Count*2);
-      SetLength(ParamValues, StaticParamCount + Res.Count*2);
+      SetLength(ParamNames, StaticParamCount + LibVersions.Count*3);
+      SetLength(ParamValues, StaticParamCount + LibVersions.Count*3);
       ParamNames[0]  := 'AccessTime';
       ParamValues[0] := GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
       ParamNames[1]  := 'GetEtalonData';
@@ -343,26 +351,18 @@ begin
       ParamValues[5] := WinNumber;
       ParamNames[6]  := 'WINDesc';
       ParamValues[6] := WinDesc;
-      
-      GetJETMDACVersions(AJETVersion, AJETDesc, AMDACVersion, AMDACDesc);
-      ParamNames[7]  := 'JETVersion';
-      ParamValues[7] := AJETVersion;
-      ParamNames[8]  := 'JETDesc';
-      ParamValues[8] := AJETDesc;
 
-      ParamNames[9]  := 'MDACVersion';
-      ParamValues[9] := AMDACVersion;
-      ParamNames[10]  := 'MDACDesc';
-      ParamValues[10] := AMDACDesc;
-
-      for I := 0 to Res.Count-1 do begin
-        ParamNames[StaticParamCount+i*2] := 'LibraryName';
-        ParamValues[StaticParamCount+i*2] := Res.Names[i];
-        ParamNames[StaticParamCount+i*2+1] := 'LibraryVersion';
-        ParamValues[StaticParamCount+i*2+1] := Res.Values[Res.Names[i]];
+      for I := 0 to LibVersions.Count-1 do begin
+        fi := TFileUpdateInfo(LibVersions[i]);
+        ParamNames[StaticParamCount+i*3] := 'LibraryName';
+        ParamValues[StaticParamCount+i*3] := fi.FileName;
+        ParamNames[StaticParamCount+i*3+1] := 'LibraryVersion';
+        ParamValues[StaticParamCount+i*3+1] := fi.Version;
+        ParamNames[StaticParamCount+i*3+2] := 'LibraryHash';
+        ParamValues[StaticParamCount+i*3+2] := fi.MD5;
       end;
     finally
-      Res.Free;
+      LibVersions.Free;
     end;
 {
 		Res := SOAP.Invoke( 'GetUserData', [ 'AccessTime', 'GetEtalonData', 'ExeVersion', 'MDBVersion', 'UniqueID'],
@@ -904,8 +904,7 @@ var
 begin
 	if not SysUtils.DirectoryExists( ExePath + SDirIn + '\' + SDirExe) then exit;
 
-	Windows.MessageBox( 0, 'Получена новая версия программы. Сейчас будет выполнено обновление',
-		'Внимание', MB_OK or MB_ICONWARNING);
+	MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
 	EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
 	try
 		EraserDll.SaveToFile( 'Eraser.dll');
@@ -913,7 +912,7 @@ begin
 		EraserDll.Free;
 	end;
 
-	ShellExecute( 0, nil, 'rundll32.exe', PChar( ' Eraser.dll,Erase -i ' + IntToStr(GetCurrentProcessId) + ' "' +
+	ShellExecute( 0, nil, 'rundll32.exe', PChar( ' Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
 		ExePath + ExeName + '" "' + ExePath + SDirIn + '\' + SDirExe + '"'),
 		nil, SW_SHOWNORMAL);
 	raise Exception.Create( 'Terminate');
@@ -931,46 +930,6 @@ begin
 		Synchronize( SetStatus);
 		DM.CompactDatabase;
 	end;
-
-	if not SysUtils.FileExists( ExePath + SDirIn + '\' + DatabaseName) then exit;
-
-	if DM.IsBackuped( ExePath + SDirIn + '\') then
-		DM.RestoreDatabase( ExePath + SDirIn + '\');
-	StatusText := 'Резервное копирование данных';
-	Synchronize( SetStatus);
-	DM.BackupDatabase( ExePath + SDirIn + '\');
-
-	Windows.MessageBox( 0, 'Сейчас будет выполнено обновление базы данных' + #10#13 +
-		'Это достаточно длительный процесс. Пожалуйста дождитесь его окончания.' + #10#13 +
-		'Не закрывайте программу и не выключайте компьютер.',
-		'Внимание', MB_OK or MB_ICONWARNING);
-
-	StatusText := 'Перенос данных';
-	Synchronize( SetStatus);
-	Synchronize( DisableCancel);
-	DM.adtClients.DisableControls;
-{
-	tl := TStringList.Create;
-	try
-		DM.MainConnection.GetTableNames( tl, false);
-		DM.ClearPassword( ExePath + DatabaseName);
-		DM.OpenDatabase( ExePath + SDirIn + '\' + DatabaseName);
-		DM.UnLinkExternalTables;
-		DM.LinkExternalMDB( tl);
-		ImportFromExternalMDB;
-		DM.UnLinkExternalTables;
-		DM.MainConnection.Close;
-//		DM.RestoreDatabase( ExePath + SDirIn + '\');
-		MoveFile_( ExePath + SDirIn + '\' + DatabaseName,
-			ExePath + DatabaseName);
-	finally
-		MainForm.StatusText := '';
-		DM.adtClients.EnableControls;
-                tl.Free;
-		Synchronize( EnableCancel);
-	end;
-}  
-	DM.ClearBackup( ExePath + SDirIn + '\');
 end;
 
 procedure TExchangeThread.CheckNewFRF;
@@ -987,61 +946,6 @@ begin
 			end;
         	until FindNext( SR) <> 0;
 	end;
-end;
-
-procedure TExchangeThread.ImportFromExternalMDB;
-const
-	IMPORT_COUNT	= 20;
-{
-var
-	Catalog: Variant;
-	i, j, qnum: integer;
-}  
-begin
-{
-	Catalog := CreateOleObject( 'ADOX.Catalog');
-        Catalog.ActiveConnection := DM.MainConnection.ConnectionObject;
-	try
-		for i := 1 to IMPORT_COUNT do
-		begin
-			if ( IMPORT_COUNT div i) = 2 then
-			begin
-				TotalProgress := 55;
-				Synchronize( SetTotalProgress);
-			end;
-			Progress := Round( i / IMPORT_COUNT * 100);
-			Synchronize( SetProgress);
-			for j := 0 to Catalog.Procedures.Count - 1 do
-			begin
-				if not TryStrToInt( Copy( Catalog.Procedures.Item[ j].Name,
-					Length( Catalog.Procedures.Item[ j].Name) - 1, 2), qnum) then continue;
-				if ( Pos( 'Import', Catalog.Procedures.Item[ j].Name) = 1) and
-					( qnum = i) then
-				begin
-					MainForm.StatusText := 'Перенос ' + Copy( Catalog.Procedures.Item[ j].Name,
-						7, Length( Catalog.Procedures.Item[ j].Name) - 8);
-					DM.adcUpdate.CommandText := 'EXECUTE ' + Catalog.Procedures.Item[ j].Name;
-					try
-						DM.adcUpdate.Execute;
-					except
-						if Pos( 'Registry', Catalog.Procedures.Item[ j].Name) = 7 then
-						begin
-							DM.adcUpdate.CommandText := 'EXECUTE ImportRegistryComp';
-							DM.adcUpdate.Execute;
-						end
-						else raise;
-					end;
-				end;
-			end;
-		end;
-	finally
-		Catalog := Unassigned;
-		TotalProgress := 60;
-		Synchronize( SetTotalProgress);
-		Progress := 0;
-		Synchronize( SetProgress);
-	end;
-}  
 end;
 
 procedure TExchangeThread.ImportData;
@@ -1644,28 +1548,34 @@ begin
   end;
 end;
 
-function TExchangeThread.GetLibraryVersion: TStrings;
+function TExchangeThread.GetLibraryVersion: TObjectList;
 var
   DirPath : String;
 
-  procedure FindVersions(Mask : String; Res : TStrings);
+  function IsExeFile(Name : String) : Boolean;
+  begin
+    Result := AnsiEndsText('.exe', Name) or AnsiEndsText('.bpl', Name) or AnsiEndsText('.dll', Name); 
+  end;
+
+  procedure FindVersionsEx(StartDir : String; Res : TObjectList);
   var
     sr : TSearchRec;
-    RxVer : TVersionInfo;
+    FName, FVersion, FHash : String;
   begin
-    if SysUtils.FindFirst(Mask, faAnyFile, sr) = 0 then
+    if SysUtils.FindFirst(StartDir + '*.*', faAnyFile, sr) = 0 then
     begin
       repeat
         if (sr.Name <> '.') and (sr.Name <> '..') then begin
-          try
-            RxVer := TVersionInfo.Create(DirPath + sr.Name);
-            try
-              Result.Add(sr.Name + '=' + RxVer.FileVersion);
-            finally
-              RxVer.Free;
+          if sr.Attr and faDirectory > 0 then begin
+            FindVersionsEx(StartDir + sr.Name + '\', Res);
+          end
+          else
+            if IsExeFile(sr.Name) then begin
+              FName := sr.Name;
+              FVersion := GetLibraryVersionFromPath(StartDir + sr.Name);
+              FHash := GetFileHash(StartDir + sr.Name);
+              Res.Add(TFileUpdateInfo.Create(FName, FVersion, FHash));
             end;
-          except
-          end;
         end;
       until SysUtils.FindNext(sr) <> 0;
       SysUtils.FindClose(sr);
@@ -1673,11 +1583,10 @@ var
   end;
 
 begin
-  Result := TStringList.Create;
+  Result := TObjectList.Create(True);
   try
     DirPath := ExtractFilePath(ParamStr(0));
-    FindVersions(DirPath + '*.bpl', Result);
-    FindVersions(DirPath + '*.dll', Result);
+    FindVersionsEx(DirPath, Result);
   except
     Result.Free;
     raise;
@@ -1705,105 +1614,6 @@ begin
   end;
 end;
 
-procedure TExchangeThread.GetJETMDACVersions(var AJETVersion, AJETDesc,
-  AMDACVersion, AMDACDesc: String);
-const
-  JETVersions : array[0..8, 0..1] of String = (
-    ('4.0.2927.4', 'Пакет обновления 3 (SP3)'),
-    ('4.0.3714.7', 'Пакет обновления 4 (SP4)'),
-    ('4.0.4431.1', 'Пакет обновления 5 (SP5)'),
-    ('4.0.4431.3', 'Пакет обновления 5 (SP5)'),
-    ('4.0.6218.0', 'Пакет обновления 6 (SP6)'),
-    ('4.0.6807.0', 'Пакет обновления 6 (SP6), поставляется только с Windows Server 2003'),
-    ('4.0.7328.0', 'Пакет обновления 7 (SP7)'),
-    ('4.0.8015.0', 'Пакет обновления 8 (SP8)'),
-    ('4.0.8618.0', 'Пакет обновления 8 (SP8) c бюллетенем по безопасности MS04-014')
-  );
-
-  MDACVersions : array[0..13, 0..1] of String = (
-    ('2.10.4202.0', 'MDAC 2.1 SP2'),
-    ('2.50.4403.6', 'MDAC 2.5'),
-    ('2.51.5303.2', 'MDAC 2.5 SP1'),
-    ('2.52.6019.0', 'MDAC 2.5 SP2'),
-    ('2.53.6200.0', 'MDAC 2.5 SP3'),
-    ('2.60.6526.0', 'MDAC 2.6 RTM'),
-    ('2.61.7326.0', 'MDAC 2.6 SP1'),
-    ('2.62.7926.0', 'MDAC 2.6 SP2'),
-    ('2.62.7400.0', 'MDAC 2.6 SP2 Refresh'),
-    ('2.70.7713.0', 'MDAC 2.7 RTM'),
-    ('2.70.9001.0', 'MDAC 2.7 Refresh'),
-    ('2.71.9030.0', 'MDAC 2.7 SP1'),
-    ('2.80.1022.0', 'MDAC 2.8 RTM'),
-    ('2.81.1117.0', 'MDAC 2.8 SP1 on Windows XP SP2')
-  );
-
-var
-  I : Integer;
-  Found : Boolean;
-begin
-  AJETVersion := '';
-  AJETDesc := '';
-  AMDACVersion := '';
-  AMDACDesc := '';
-  try
-  AJETVersion := GetLibraryVersionByName('Msjet40.dll');
-  if Length(AJETVersion) = 0 then
-    AJETVersion := 'JET не установлен'
-  else begin
-    if AnsiCompareStr(AJETVersion, JETVersions[0, 0]) < 0 then begin
-      AJETVersion := AJETVersion;
-      AJETDesc := 'Ниже чем ' + JETVersions[0, 1];
-    end
-    else
-      if AnsiCompareStr(AJETVersion, JETVersions[8, 0]) > 0 then begin
-        AJETVersion := AJETVersion;
-        AJETDesc := 'Выше чем ' + JETVersions[8, 1];
-      end
-      else begin
-        Found := False;
-        for I := 0 to 8 do
-          if AnsiCompareStr(AJETVersion, JETVersions[i, 0]) = 0 then begin
-            Found := True;
-            AJETVersion := AJETVersion;
-            AJETDesc := JETVersions[i, 1];
-            Break;
-          end;
-        if not Found then begin
-          AJETVersion := AJETVersion;
-          AJETDesc := 'Версия не установлена';
-        end;
-      end;
-  end;
-
-  //Проверить MDDAC с помощью MSDASQL.DLL
-  AMDACVersion := GetLibraryVersionFromPath(ReplaceMacros('$(COMMONFILES)\system\ole db\') + 'MSDASQL.DLL');
-  if Length(AMDACVersion) = 0 then
-    AMDACVersion := 'MDAC не установлен'
-  else begin
-    if AnsiCompareStr(AMDACVersion, MDACVersions[0, 0]) < 0 then begin
-      AMDACDesc := 'Ниже чем ' + MDACVersions[0, 1];
-    end
-    else
-      if AnsiCompareStr(AMDACVersion, MDACVersions[High(MDACVersions), 0]) > 0 then begin
-        AMDACDesc := 'Выше чем ' + MDACVersions[High(MDACVersions), 1];
-      end
-      else begin
-        Found := False;
-        for I := 0 to High(MDACVersions) do
-          if AnsiCompareStr(AMDACVersion, MDACVersions[i, 0]) = 0 then begin
-            Found := True;
-            AMDACDesc := MDACVersions[i, 1];
-            Break;
-          end;
-        if not Found then begin
-          AMDACDesc := 'Версия не установлена';
-        end;
-      end;
-  end;
-  except
-  end;
-end;
-
 function TExchangeThread.GetLibraryVersionByName(AName: String): String;
 var
   hLib : THandle;
@@ -1826,11 +1636,15 @@ var
   RxVer : TVersionInfo;
 begin
   if FileExists(AName) then begin
-    RxVer := TVersionInfo.Create(AName);
     try
-      Result := LongVersionToString(RxVer.FileLongVersion);
-    finally
-      RxVer.Free;
+      RxVer := TVersionInfo.Create(AName);
+      try
+        Result := LongVersionToString(RxVer.FileLongVersion);
+      finally
+        RxVer.Free;
+      end;
+    except
+      Result := '';
     end;
   end
   else
@@ -2015,6 +1829,39 @@ begin
   else
     DM.adsSelect.Close;
   CriticalError := False;
+end;
+
+function TExchangeThread.GetFileHash(AFileName: String): String;
+var
+  md5 : TIdHashMessageDigest5;
+  fs : TFileStream;
+begin
+  try
+    md5 := TIdHashMessageDigest5.Create;
+    try
+
+      fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
+      try
+        Result := md5.AsHex( md5.HashValue(fs) );
+      finally
+        fs.Free;
+      end;
+
+    finally
+      md5.Free;
+    end;
+  except
+    Result := '';
+  end;
+end;
+
+{ TFileUpdateInfo }
+
+constructor TFileUpdateInfo.Create(AFileName, AVersion, AMD5: String);
+begin
+  FileName := AFileName;
+  Version := AVersion;
+  MD5 := AMD5;
 end;
 
 initialization

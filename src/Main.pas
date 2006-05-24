@@ -811,7 +811,7 @@ procedure TMainForm.OnMainAppEx(Sender: TObject; E: Exception);
 var
   S, Mess : String;
 begin
-  if ExchangeOnly then begin
+  if SilentMode then begin
     if E.Message <> SCannotFocus then begin
       if Assigned(Sender) then
         Tracer.TR('MainForm.OnMainAppEx', 'Sender = ' + Sender.ClassName)

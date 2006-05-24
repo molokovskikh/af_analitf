@@ -308,8 +308,7 @@ end;
 procedure TConfigForm.DBCheckBox2MouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-	Windows.MessageBox( Self.Handle, 'Изменения вступят в силу после получения данных',
-		'Внимание', MB_OK or MB_ICONWARNING);
+  MessageBox('Изменения вступят в силу после получения данных', MB_OK or MB_ICONWARNING);
 end;
 
 procedure TConfigForm.lblServerLinkClick(Sender: TObject);

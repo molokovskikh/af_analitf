@@ -343,8 +343,6 @@ type
     procedure SetStarted;
     procedure ResetStarted;
     function GetStarted: Boolean;
-    //Это временное решение, потом все равно перепишу
-    procedure VersionValid;
     {function OrderToArchiv(ClientId: Integer=0; PriceCode: Integer=0;
       RegionCode: Integer=0): Boolean;}
     procedure SweepDB;
@@ -444,8 +442,6 @@ begin
 
   ResetNeedCommitExchange;
   GetLocaleFormatSettings(0, FFS);
-  //Проверка версий
-//  VersionValid;
 
 {
   MainConnection.ConnectionString :=
@@ -527,13 +523,20 @@ begin
   end;
   
   { Запуск с ключем -e (Получение данных и выход)}
-  if ( AnsiLowerCase( ParamStr( 1)) = '-e') or
-    ( AnsiLowerCase( ParamStr( 1)) = '/e') then
+  if FindCmdLineSwitch('e') then
   begin
     MainForm.ExchangeOnly := True;
     RunExchange([ eaGetPrice]);
     Application.Terminate;
   end;
+  //"Безмолвное импортирование" - производится в том случае, если
+  if FindCmdLineSwitch('si') then
+  begin
+    MainForm.ExchangeOnly := True;
+    RunExchange([ eaImportOnly]);
+    Application.Terminate;
+  end;
+
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
     MainForm.DisableByHTTPName;
 end;
@@ -1490,158 +1493,6 @@ begin
     adtParams.FieldByName( 'Started').AsBoolean := True;
     adtParams.Post;
   except
-  end;
-end;
-
-procedure TDM.VersionValid;
-
-function GetLibraryVersionFromPath(AName: String): String;
-var
-  RxVer : TVersionInfo;
-begin
-  if FileExists(AName) then begin
-    RxVer := TVersionInfo.Create(AName);
-    try
-      Result := LongVersionToString(RxVer.FileLongVersion);
-    finally
-      RxVer.Free;
-    end;
-  end
-  else
-    Result := '';
-end;
-
-function GetLibraryVersionByName(AName: String): String;
-var
-  hLib : THandle;
-  FileName : String;
-begin
-  Result := '';
-  hLib := LoadLibraryEx(PChar(AName), 0, 0);
-  if hLib <> 0 then begin
-    try
-      FileName := GetModuleName(hLib);
-      Result := GetLibraryVersionFromPath(FileName);
-    finally
-      FreeLibrary(hLib);
-    end;
-  end;
-end;
-
-procedure GetJETMDACVersions(var AJETVersion, AJETDesc,
-  AMDACVersion, AMDACDesc: String);
-const
-  JETVersions : array[0..8, 0..1] of String = (
-    ('4.0.2927.4', 'Пакет обновления 3 (SP3)'),
-    ('4.0.3714.7', 'Пакет обновления 4 (SP4)'),
-    ('4.0.4431.1', 'Пакет обновления 5 (SP5)'),
-    ('4.0.4431.3', 'Пакет обновления 5 (SP5)'),
-    ('4.0.6218.0', 'Пакет обновления 6 (SP6)'),
-    ('4.0.6807.0', 'Пакет обновления 6 (SP6), поставляется только с Windows Server 2003'),
-    ('4.0.7328.0', 'Пакет обновления 7 (SP7)'),
-    ('4.0.8015.0', 'Пакет обновления 8 (SP8)'),
-    ('4.0.8618.0', 'Пакет обновления 8 (SP8) c бюллетенем по безопасности MS04-014')
-  );
-
-  MDACVersions : array[0..13, 0..1] of String = (
-    ('2.10.4202.0', 'MDAC 2.1 SP2'),
-    ('2.50.4403.6', 'MDAC 2.5'),
-    ('2.51.5303.2', 'MDAC 2.5 SP1'),
-    ('2.52.6019.0', 'MDAC 2.5 SP2'),
-    ('2.53.6200.0', 'MDAC 2.5 SP3'),
-    ('2.60.6526.0', 'MDAC 2.6 RTM'),
-    ('2.61.7326.0', 'MDAC 2.6 SP1'),
-    ('2.62.7926.0', 'MDAC 2.6 SP2'),
-    ('2.62.7400.0', 'MDAC 2.6 SP2 Refresh'),
-    ('2.70.7713.0', 'MDAC 2.7 RTM'),
-    ('2.70.9001.0', 'MDAC 2.7 Refresh'),
-    ('2.71.9030.0', 'MDAC 2.7 SP1'),
-    ('2.80.1022.0', 'MDAC 2.8 RTM'),
-    ('2.81.1117.0', 'MDAC 2.8 SP1 on Windows XP SP2')
-  );
-
-var
-  I : Integer;
-  Found : Boolean;
-begin
-  AJETVersion := '';
-  AJETDesc := '';
-  AMDACVersion := '';
-  AMDACDesc := '';
-  try
-  AJETVersion := GetLibraryVersionByName('Msjet40.dll');
-  if Length(AJETVersion) = 0 then
-    AJETVersion := 'JET не установлен'
-  else begin
-    if AnsiCompareStr(AJETVersion, JETVersions[0, 0]) < 0 then begin
-      AJETVersion := AJETVersion;
-      AJETDesc := 'Ниже чем ' + JETVersions[0, 1];
-    end
-    else
-      if AnsiCompareStr(AJETVersion, JETVersions[8, 0]) > 0 then begin
-        AJETVersion := AJETVersion;
-        AJETDesc := 'Выше чем ' + JETVersions[8, 1];
-      end
-      else begin
-        Found := False;
-        for I := 0 to 8 do
-          if AnsiCompareStr(AJETVersion, JETVersions[i, 0]) = 0 then begin
-            Found := True;
-            AJETVersion := AJETVersion;
-            AJETDesc := JETVersions[i, 1];
-            Break;
-          end;
-        if not Found then begin
-          AJETVersion := AJETVersion;
-          AJETDesc := 'Версия не установлена';
-        end;
-      end;
-  end;
-
-  //Проверить MDDAC с помощью MSDASQL.DLL
-  AMDACVersion := GetLibraryVersionFromPath(ReplaceMacros('$(COMMONFILES)\system\ole db\') + 'MSDASQL.DLL');
-  if Length(AMDACVersion) = 0 then
-    AMDACVersion := 'MDAC не установлен'
-  else begin
-    if AnsiCompareStr(AMDACVersion, MDACVersions[0, 0]) < 0 then begin
-      AMDACDesc := 'Ниже чем ' + MDACVersions[0, 1];
-    end
-    else
-      if AnsiCompareStr(AMDACVersion, MDACVersions[High(MDACVersions), 0]) > 0 then begin
-        AMDACDesc := 'Выше чем ' + MDACVersions[High(MDACVersions), 1];
-      end
-      else begin
-        Found := False;
-        for I := 0 to High(MDACVersions) do
-          if AnsiCompareStr(AMDACVersion, MDACVersions[i, 0]) = 0 then begin
-            Found := True;
-            AMDACDesc := MDACVersions[i, 1];
-            Break;
-          end;
-        if not Found then begin
-          AMDACDesc := 'Версия не установлена';
-        end;
-      end;
-  end;
-  except
-  end;
-end;
-
-var
-  AJETVersion, AJETDesc, AMDACVersion, AMDACDesc: String;
-  UserJETVer, UserMDACVer, EtalonJETVer, EtalonMDACVer : TLongVersion;
-begin
-  GetJETMDACVersions(AJETVersion, AJETDesc, AMDACVersion, AMDACDesc);
-  UserJETVer := StringToLongVersion(AJETVersion);
-  UserMDACVer := StringToLongVersion(AMDACVersion);
-  EtalonJETVer := StringToLongVersion('4.0.8015.0');
-  EtalonMDACVer := StringToLongVersion('2.53.6200.0');
-  if (UserJETVer.MS >= EtalonJETVer.MS) and (UserJETVer.LS >= EtalonJETVer.LS)
-    and (UserMDACVer.MS >= EtalonMDACVer.MS) //and (UserMDACVer.LS >= EtalonMDACVer.LS)
-  then
-  else begin
-    MessageBox(Format('На данном компьютере версии JET и MDAC не соответствуют минимальным требованиям.'#13#10'JET : %s'#13#10'MDAC : %s', [AJETVersion, AMDACVersion]), MB_ICONERROR);
-    ExitProcess(0);
   end;
 end;
 

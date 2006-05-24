@@ -4,7 +4,7 @@ interface
 
 uses SysUtils, Controls, Windows, Forms, StrUtils, Classes, Math, DBGrids,
   ComCtrls, Messages, ShellApi, IniFiles, AppUtils, IdFTP, DateUtils, ToughDBGrid,
-	DbGridEh;
+	DbGridEh, LU_Tracer;
 
 const
   WM_AFTERRETRIEVEMAIL=WM_USER+100; //сообщение о получении сообщений. с сервера
@@ -29,6 +29,8 @@ var
 procedure FocusNextControl(Sender: TWinControl);
 function FocusFirstControl(Sender: TWinControl): Boolean;
 function MessageBox(MesStr: string; Icon: Cardinal=MB_ICONINFORMATION): Integer;
+function MessageBoxEx(MesStr, Caption: string; Icon: Cardinal=MB_ICONINFORMATION): Integer;
+function SilentMode : Boolean;
 function GetNextWord(var S: string; Delimiter: Char): string;
 function RoundFloat(Value: Extended; Decimal: Integer): Extended;
 function Iif(X: Boolean; Y,Z: Variant): Variant;
@@ -63,6 +65,9 @@ procedure MoveFile_( ASource, ADest: string);
 function SimpleHash( AStr: string): string;
 
 implementation
+
+var
+  FSilentMode : Boolean;
 
 //процедура передает фокус следующему элементу окна в порядке TabOrder
 procedure FocusNextControl(Sender: TWinControl);
@@ -112,7 +117,6 @@ end;
 function MessageBox(MesStr: string; Icon: Cardinal=MB_ICONINFORMATION): Integer;
 var
   CapStr: string;
-  H: HWND;
 begin
   if (Icon and MB_ICONINFORMATION)=MB_ICONINFORMATION then
     CapStr:='Информация'
@@ -122,8 +126,31 @@ begin
     CapStr:='Запрос'
   else if (Icon and MB_ICONSTOP)=MB_ICONSTOP then
     CapStr:='Ошибка';
-  if Screen.ActiveForm=nil then H:=0 else H:=Screen.ActiveForm.Handle;
-	Result:=Windows.MessageBox(H,PChar(MesStr),PChar(CapStr),Icon);
+  Result := MessageBoxEx(MesStr, CapStr,Icon);
+end;
+
+//Позволяет задавать заголовок сообщения
+function MessageBoxEx(MesStr, Caption: string; Icon: Cardinal=MB_ICONINFORMATION): Integer;
+var
+  H: HWND;
+begin
+  if SilentMode then begin
+    Tracer.TR(Caption, MesStr);
+    if ((Icon and MB_YESNO) > 0) or ((Icon and MB_YESNOCANCEL) > 0) then
+      Result := ID_YES
+    else
+      Result := ID_OK;
+  end
+  else begin
+    if Screen.ActiveForm=nil then H:=0 else H:=Screen.ActiveForm.Handle;
+    Result := Windows.MessageBox(H, PChar(MesStr), PChar(Caption), Icon);
+  end;
+end;
+
+//Режим с "молчанием", т.е. гасим все сообщения
+function SilentMode : Boolean;
+begin
+  Result := FSilentMode;
 end;
 
 //возвращает следующее слово из строки, усекает строку на это слово
@@ -497,6 +524,8 @@ end;
   end;}
 
 initialization
+  //Если запускаем программу для обмена (е) или импортирования (se)
+  FSilentMode := FindCmdLineSwitch('e') or FindCmdLineSwitch('si');
   //инициализация глобальных переменных
   ExePath:=IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))); //путь к программе
   ExeName:=ExtractFileName(ParamStr(0)); //наименование EXE-шника (без пути)

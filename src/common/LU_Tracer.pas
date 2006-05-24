@@ -14,6 +14,7 @@ type
    FSuffix          : string;
    CS : TCriticalSection;
    FT : TFileStream;
+   FFTName : String;
    function getFTName : string;
    procedure DoSwitch;
   public
@@ -22,7 +23,7 @@ type
    //не резать.
    //Suffix - Суффикс имени
    //файла трассировки.
-   constructor Create ( Suffix : string; AMaxSize : integer );overload;
+   constructor Create ( FTName, Suffix : string; AMaxSize : integer );overload;
    destructor  Destroy;override;
    procedure   TR ( ASubSystem,AMessage : string );
  end;
@@ -43,7 +44,8 @@ begin
    MaxTracePosition := 1024 * 1024;
    FSuffix := 'TR';
    CS := TCriticalSection.Create;
-   if FindCmdLineSwitch('extend') or FindCmdLineSwitch('e') or FindCmdLineSwitch('i') then begin
+   if FindCmdLineSwitch('extend') or FindCmdLineSwitch('e') or FindCmdLineSwitch('i') or FindCmdLineSwitch('si')
+   then begin
      if not FileExists ( getFTName ) then
       begin
        FT := TFileStream.Create ( getFTName , fmCreate );
@@ -62,10 +64,11 @@ begin
  end;
 end;
 
-constructor TTracer.Create(Suffix: string; AMaxSize: integer);
+constructor TTracer.Create(FTName, Suffix: string; AMaxSize: integer);
 begin
  try
    MaxTracePosition := AMaxSize;
+   FFTName := FTName;
    FSuffix := Suffix;
    CS := TCriticalSection.Create;
    if not FileExists ( getFTName ) then
@@ -106,7 +109,10 @@ end;
 
 function TTracer.getFTName: string;
 begin
- Result := ParamStr ( 0 ) + '.' + FSuffix;
+  if FFTName = '' then
+    Result := ParamStr ( 0 ) + '.' + FSuffix
+  else
+    Result := FFTName + '.' + FSuffix;
 end;
 
 procedure TTracer.TR(ASubSystem, AMessage: string);

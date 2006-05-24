@@ -161,9 +161,8 @@ begin
 		(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime <>
 		DM.adtParams.FieldByName( 'LastDateTime').AsDateTime) then
 	begin
-		Windows.MessageBox( Application.Handle,
-			'Предыдущая операция импорта данных не была завершена.' + #10#13 +
-			'Обратитесь в АК "Инфорум"', 'Внимание', MB_OK or MB_ICONWARNING);
+    MessageBox('Предыдущая операция импорта данных не была завершена.' + #10#13 +
+			'Обратитесь в АК "Инфорум"', MB_OK or MB_ICONWARNING);
 		exit;
 	end;
 
@@ -208,7 +207,7 @@ begin
 			DM.MainConnection1.Open;
       DM.UpdateReclame;
 		except
-			on E: Exception do ShowMessage( E.Message);
+			on E: Exception do MessageBox(E.Message, MB_ICONSTOP);
 		end;
     WriteLn(ExchangeForm.LogFile, 'Сессия окончена в ' + DateTimeToStr(Now));
     WriteLn(ExchangeForm.LogFile, '---------------------------');
