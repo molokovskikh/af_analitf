@@ -109,6 +109,9 @@ private
   procedure adcUpdateBeforeExecute(Sender: TObject);
   procedure adcUpdateAfterExecute(Sender: TObject);
   function GetFileHash(AFileName: String): String;
+  //"Молчаливое" выполнение запроса изменения метаданных.
+  //Не вызывает исключение в случае ошибки -607
+  procedure SilentExecute(q : TpFIBQuery; SQL : String);
 protected
 	procedure Execute; override;
 public
@@ -118,7 +121,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB, U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet;
+  DB, U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, FIB;
 
 { TExchangeThread }
 
@@ -1062,9 +1065,9 @@ begin
 	end;
 	//Synonym
 	if (utSynonym in UpdateTables) and (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-	  SQL.Text:='DROP INDEX IDX_PRICECODE'; ExecQuery;
-	  SQL.Text:='ALTER TABLE SYNONYMS DROP CONSTRAINT FK_SYNONYMS_FULLCODE'; ExecQuery;
-	  SQL.Text:='ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS'; ExecQuery;
+    SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_PRICECODE');
+    SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT FK_SYNONYMS_FULLCODE');
+    SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS');
 	end;
 	if utCore in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteOldPrices'; ExecQuery;
@@ -1256,23 +1259,19 @@ begin
 	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteOldPrices'; ExecQuery;
 	end;
 	if utCore in UpdateTables then begin
-//	  SQL.Text:='EXECUTE PROCEDURE CoreInsert'; ExecQuery;
-	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_FULLCODE'; ExecQuery;
-	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_PRICECODE'; ExecQuery;
-	  SQL.Text:='alter table core DROP CONSTRAINT FK_CORE_REGIONCODE'; ExecQuery;
-	  SQL.Text:='alter table core DROP CONSTRAINT PK_CORE'; ExecQuery;
-	  SQL.Text:='drop index FK_CORE_SYNONYMCODE'; ExecQuery;
-	  SQL.Text:='drop index FK_CORE_SYNONYMFIRMCRCODE'; ExecQuery;
-//	  SQL.Text:='drop index IDX_CORE_FULLCODE_BASECOST'; ExecQuery;
-	  SQL.Text:='drop index IDX_CORE_SERVERCOREID'; ExecQuery;
-	  SQL.Text:='drop index IDX_CORE_JUNK'; ExecQuery;
-//	  SQL.Text:='drop index IDX_CORE_SHORTCODE'; ExecQuery;
+    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_FULLCODE');
+    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_PRICECODE');
+    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_REGIONCODE');
+    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT PK_CORE');
+    SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMCODE');
+    SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMFIRMCRCODE');
+    SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_SERVERCOREID');
+    SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_JUNK');
     DM.MainConnection1.DefaultUpdateTransaction.Commit;
 
     DM.MainConnection1.Close;
     DM.MainConnection1.Open;
     DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
-//	  SQL.Text:='alter index PK_CORE inactive'; ExecQuery;
     UpdateFromFile(ExePath+SDirIn+'\Core.txt',
 'INSERT INTO Core '+
 '(Pricecode, RegionCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
@@ -1284,10 +1283,8 @@ begin
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; ExecQuery;
-//	  SQL.Text:='CREATE INDEX IDX_CORE_FULLCODE_BASECOST ON CORE (FULLCODE, BASECOST)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (FULLCODE, JUNK)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX IDX_CORE_SERVERCOREID ON CORE (SERVERCOREID)'; ExecQuery;
-//	  SQL.Text:='CREATE INDEX IDX_CORE_SHORTCODE ON CORE (SHORTCODE)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; ExecQuery;
 	end;
@@ -1852,6 +1849,19 @@ begin
     end;
   except
     Result := '';
+  end;
+end;
+
+procedure TExchangeThread.SilentExecute(q: TpFIBQuery; SQL: String);
+begin
+  try
+    q.SQL.Text := SQL;
+    q.ExecQuery;
+  except
+    on E : EFIBInterBaseError do begin
+      if e.SQLCode <> -607 then
+        raise;
+    end;
   end;
 end;
 
