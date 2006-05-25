@@ -266,7 +266,7 @@ procedure TSummaryForm.dbgSummaryCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
 	inherited;
-//
+  CanInput := LastSymmaryType = 0;
 end;
 
 procedure TSummaryForm.adsSummary2BeforePost(DataSet: TDataSet);
@@ -355,27 +355,28 @@ end;
 
 procedure TSummaryForm.DeleteOrder;
 begin
-  if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
-    OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
-    OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCryptBASECOST.AsCurrency;
-    SetOrderLabel;
-    DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-    DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency);
-    DM.adcUpdate.Transaction.StartTransaction;
-    try
-      DM.adcUpdate.SQL.Text :=
-        'delete from Orders where OrderID = ' +
-          IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
-          ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
-      DM.adcUpdate.ExecQuery;
-      DM.adcUpdate.Transaction.Commit;
-    except
-      DM.adcUpdate.Transaction.Rollback;
-      raise;
+  if LastSymmaryType = 0 then
+    if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
+      OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
+      OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCryptBASECOST.AsCurrency;
+      SetOrderLabel;
+      DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
+      DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency);
+      DM.adcUpdate.Transaction.StartTransaction;
+      try
+        DM.adcUpdate.SQL.Text :=
+          'delete from Orders where OrderID = ' +
+            IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
+            ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
+        DM.adcUpdate.ExecQuery;
+        DM.adcUpdate.Transaction.Commit;
+      except
+        DM.adcUpdate.Transaction.Rollback;
+        raise;
+      end;
+      adsSummary.CloseOpen(True);
+      MainForm.SetOrdersInfo;
     end;
-    adsSummary.CloseOpen(True);
-    MainForm.SetOrdersInfo;
-  end;
 end;
 
 procedure TSummaryForm.btnDeleteClick(Sender: TObject);

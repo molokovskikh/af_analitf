@@ -450,7 +450,7 @@ inherited SummaryForm: TSummaryForm
       '    ORDERSCOREID,'
       '    ORDERSORDERID'
       'FROM'
-      '    SUMMARYSHOW(:ACLIENTID) '
+      '    SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) '
       'where'
       '  ORDERSCOREID = :ORDERSCOREID')
     SelectSQL.Strings = (
