@@ -313,6 +313,11 @@ end;
 procedure TExchangeThread.GetReclame;
 begin
 	RecThread := TReclameThread.Create( True);
+	RecThread.RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
+  RecThread.ReclameURL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
+		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+  RecThread.HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
+  RecThread.HTTPPass := DM.adtParams.FieldByName( 'HTTPPass').AsString;
 	RecThread.Resume;
 end;
 

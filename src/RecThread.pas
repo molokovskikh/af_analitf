@@ -23,6 +23,11 @@ type
    procedure Log(SybSystem, MessageText : String);
    protected
     procedure Execute; override;
+   public
+  	RegionCode: string;
+    ReclameURL: string;
+    HTTPName,
+    HTTPPass : String;
   end;
 
 var
@@ -45,8 +50,6 @@ const
   FReconnectCount = 10;
 var
 	FileStream: TFileStream;
-	ReclameURL: string;
-	RegionCode: string;
   Res       : TStrings;
 //  TmpPos    : Integer;
 //  FileSize  : Integer;
@@ -60,7 +63,6 @@ var
 begin
 	RecTerminated := False;
   Synchronize(ClearProgress);
-	RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
   try
     SleepCount := 0;
     while not Terminated and (SleepCount < 30) do begin
@@ -68,12 +70,9 @@ begin
       Inc(SleepCount);
     end;
     if Terminated then exit;
-   	ReclameURL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
     FStatusStr := 'Запрос информационного блока...';
     Synchronize(UpdateProgress);
-    FSOAP := TSOAP.Create(ReclameURL, DM.adtParams.FieldByName( 'HTTPName').AsString,
-		  DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTPReclame);
+    FSOAP := TSOAP.Create(ReclameURL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTPReclame);
     try
       Log('Reclame', 'Запущен процесс для получения информационного блока');
       Res := FSOAP.Invoke('GetReclame', [], []);
