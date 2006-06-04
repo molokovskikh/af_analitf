@@ -143,8 +143,8 @@ begin
   if IsExternalOrdersDLLPresent then
     ExternalOrdersClearTempDirectory;
 
-	if DM.GetCumulative then AExchangeActions := AExchangeActions + [ eaGetFullData, eaSendOrders]
-		else if eaGetFullData in AExchangeActions then {DM.SetCumulative};
+	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions) then
+    AExchangeActions := AExchangeActions + [ eaGetFullData, eaSendOrders];
 
 	if ( eaSendOrders in AExchangeActions) and
 		not ( eaGetPrice in AExchangeActions) and ( DM.DatabaseOpenedBy <> '') then

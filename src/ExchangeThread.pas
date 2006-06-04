@@ -304,10 +304,8 @@ var
 	URL: string;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
-  //TODO: В релизе надо подменить название службы с "PrgDataTest" на правильное
 	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-//		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
-		'/' + 'PrgDataTest' + '/code.asmx';
+		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
 		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
 end;
