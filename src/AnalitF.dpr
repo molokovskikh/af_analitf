@@ -63,7 +63,10 @@ uses
   SevenZip in 'common\SevenZip.pas',
   SQLWaiting in 'SQLWaiting.pas' {frmSQLWaiting},
   infver in 'RC_RND\infver.pas',
-  infvercls in 'RC_RND\infvercls.pas';
+  infvercls in 'RC_RND\infvercls.pas',
+  NtlmMsgs in 'NTLM\NtlmMsgs.pas',
+  DADAuthenticationNTLM in 'NTLM\DADAuthenticationNTLM.pas',
+  Encryption in 'NTLM\Encryption.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

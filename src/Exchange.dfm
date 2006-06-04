@@ -255,7 +255,9 @@ object ExchangeForm: TExchangeForm
     OnWork = HTTPWork
     OnWorkBegin = HTTPWorkBegin
     OnWorkEnd = HTTPWorkEnd
+    AuthRetries = 6
     AllowCookies = True
+    HandleRedirects = True
     ProxyParams.BasicAuthentication = True
     ProxyParams.ProxyPassword = 'zcxvcb'
     ProxyParams.ProxyPort = 3128
@@ -269,7 +271,7 @@ object ExchangeForm: TExchangeForm
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = True
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    HTTPOptions = [hoKeepOrigProtocol, hoForceEncodeParams]
+    HTTPOptions = [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams]
     Left = 360
   end
   object HTTPReclame: TIdHTTP
@@ -277,7 +279,9 @@ object ExchangeForm: TExchangeForm
     MaxLineAction = maException
     RecvBufferSize = 1024
     SendBufferSize = 1024
+    AuthRetries = 6
     AllowCookies = True
+    HandleRedirects = True
     ProxyParams.BasicAuthentication = True
     ProxyParams.ProxyPassword = 'zcxvcb'
     ProxyParams.ProxyPort = 3128
@@ -291,7 +295,7 @@ object ExchangeForm: TExchangeForm
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = True
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    HTTPOptions = [hoForceEncodeParams]
+    HTTPOptions = [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams]
     Left = 264
   end
   object sslMain: TIdSSLIOHandlerSocket

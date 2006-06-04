@@ -7,7 +7,8 @@ uses
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
-  IdStackConsts, infvercls, Contnrs, IdHashMessageDigest;
+  IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
+  DADAuthenticationNTLM, IdHTTP;
 
 const
   UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
@@ -50,6 +51,9 @@ TExchangeThread = class( TThread)
   DownloadReclame : Boolean;
   procedure StopReclame;
 private
+  URL : String;
+  HTTPName,
+  HTTPPass : String;
 	StatusText: string;
 	Progress: integer;
 	TotalProgress: integer;
@@ -300,22 +304,21 @@ begin
 end;
 
 procedure TExchangeThread.HTTPConnect;
-var
-	URL: string;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
 	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
-	SOAP := TSOAP.Create( URL, DM.adtParams.FieldByName( 'HTTPName').AsString,
-		DM.adtParams.FieldByName( 'HTTPPass').AsString, OnConnectError, ExchangeForm.HTTP);
+//		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+		'/' + 'PrgDataTest' + '/code.asmx';
+  HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
+  HTTPPass := DM.adtParams.FieldByName( 'HTTPPass').AsString;
+	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
 end;
 
 procedure TExchangeThread.GetReclame;
 begin
 	RecThread := TReclameThread.Create( True);
 	RecThread.RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
-  RecThread.ReclameURL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+  RecThread.ReclameURL := URL;
   RecThread.HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   RecThread.HTTPPass := DM.adtParams.FieldByName( 'HTTPPass').AsString;
 	RecThread.Resume;
@@ -452,6 +455,10 @@ begin
       ExchangeForm.ShowStatusText := True;
       OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
       ExchangeForm.HTTP.ReconnectCount := 0;
+      ExchangeForm.HTTP.Request.BasicAuthentication := False;
+      ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
+      if not AnsiStartsText('analit\', HTTPName) then
+        ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
 
       try
 
@@ -506,6 +513,13 @@ begin
 
       finally
         ExchangeForm.HTTP.ReconnectCount := OldReconnectCount;
+        ExchangeForm.HTTP.Request.Username := HTTPName;
+        ExchangeForm.HTTP.Request.BasicAuthentication := True;
+        try
+          ExchangeForm.HTTP.Request.Authentication.Free;
+        except
+        end;
+        ExchangeForm.HTTP.Request.Authentication := nil;
         ExchangeForm.ShowStatusText := False;
       end;
 
