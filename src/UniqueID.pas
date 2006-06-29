@@ -6,6 +6,9 @@ uses Windows, SysUtils;
 
 function GetUniqueID( APath, AVersion: string): longint;
 
+//Получить уникальный идентификатор относильно пути
+function GetPathID( APath : string): Longint;
+
 implementation
 
 uses CRC32Unit;
@@ -27,6 +30,14 @@ begin
 
 	InVal := APath + AVersion + IntToHex( SerialNum, 8);
 	result := CalcCRC32( PChar( InVal), Length( InVal));
+end;
+
+function GetPathID( APath : string): Longint;
+var
+	InVal: string;
+begin
+	InVal := APath;
+	Result := CalcCRC32( PChar( InVal), Length( InVal));
 end;
 
 end.

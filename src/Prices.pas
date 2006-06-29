@@ -123,7 +123,7 @@ begin
 	CoreFirmForm := TCoreFirmForm.Create( Application);
 	actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgPrices.LoadFromRegistry( Reg);
   if dbgPrices.SortMarkedColumns.Count = 0 then
     dbgPrices.Columns[0].Title.SortMarker := smUpEh;
@@ -142,7 +142,7 @@ begin
 		GetLastPrice;
 	end;
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgPrices.SaveToRegistry( Reg);
 	Reg.Free;

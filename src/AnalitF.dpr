@@ -7,6 +7,7 @@ uses
   SysUtils,
   Windows,
   ActiveX,
+  Registry,
   SHDocVw,
   Main in 'Main.pas' {MainForm},
   DModule in 'DModule.pas' {DM: TDataModule},
@@ -76,6 +77,25 @@ uses
 var
   B : TWebBrowser;
 
+  procedure CopyRegSettings;
+  var
+    R : TRegistry;
+  begin
+    R := TRegistry.Create;
+    try
+      R.RootKey := HKEY_CURRENT_USER;
+      if R.KeyExists('Software\Inforoom\AnalitF\' + IntToHex(GetCopyID, 8)) and not R.KeyExists('Software\Inforoom\AnalitF\' + GetPathCopyID) then
+      begin
+        //TODO: Должно работать всегда, но надо будет специально проверить на Win95, Win98, WinNT
+        R.MoveKey('Software\Inforoom\AnalitF\' + IntToHex(GetCopyID, 8), 'Software\Inforoom\AnalitF\' + GetPathCopyID, False);
+        //Если работаем на WinNT, то будем делать рекурсию
+        //if (GetVersion() < $80000000) then
+      end;
+    finally
+      R.Free;
+    end;
+  end;
+
 begin
   try
     CoInitialize(nil);
@@ -89,11 +109,15 @@ begin
     MessageBox( 'Для запуска приложения необходим установленный Internet Explorer 4.0 или выше.', MB_ICONSTOP or MB_OK);
     ExitProcess( Integer(ecIE40) );
   end;
+  //Производим попытку скопировать настройки в реестре из старой копии программы 
+  try
+    CopyRegSettings;
+  except
+  end;
   Application.Initialize;
   Application.Title := 'АналитФАРМАЦИЯ';
   Application.CreateForm(TMainForm, MainForm);
-  MainForm.FormPlacement.IniFileName := 'Software\Inforoom\AnalitF\' +
-	IntToHex( GetCopyID, 8) + '\';
+  MainForm.FormPlacement.IniFileName := 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\';
   Application.CreateForm(TDM, DM);
   Application.Run;
 end.

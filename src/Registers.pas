@@ -62,7 +62,7 @@ begin
   end;
 //  txtTablesUpdates.Caption:=DM.GetTablesUpdatesInfo('Registry');
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgRegistry.LoadFromRegistry( Reg);
 	Reg.Free;
   ShowForm;
@@ -73,7 +73,7 @@ var
 	Reg: TRegistry;
 begin
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgRegistry.SaveToRegistry( Reg);
 	Reg.Free;

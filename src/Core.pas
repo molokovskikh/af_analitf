@@ -183,7 +183,7 @@ begin
 	adsOrdersShowFormSummary.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then
 		dbgCore.LoadFromRegistry( Reg);
 	Reg.Free;
@@ -194,7 +194,7 @@ var
 	Reg: TRegistry;
 begin
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgCore.SaveToRegistry( Reg);
 	Reg.Free;

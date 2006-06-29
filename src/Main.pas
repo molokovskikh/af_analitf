@@ -218,6 +218,9 @@ var
 
 function GetCopyID: LongInt;
 
+//Получить идентификатор установки программы относительно пути, чтобы сохранять настройки программы в реестре
+function GetPathCopyID: String;
+
 implementation
 
 uses
@@ -232,6 +235,12 @@ function GetCopyID: LongInt;
 begin
 	result := GetUniqueID( Application.ExeName, ''{MainForm.VerInfo.FileVersion});
 end;
+
+function GetPathCopyID: String;
+begin
+  Result := IntToHex( GetPathID(Application.ExeName), 8 );
+end;
+
 
 procedure TMainForm.FormCreate(Sender: TObject);
 //var

@@ -142,7 +142,7 @@ begin
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgSummary.LoadFromRegistry( Reg);
 	Reg.Free;
   for I := 0 to SelectedPrices.Count-1 do begin
@@ -163,7 +163,7 @@ var
 	Reg: TRegistry;
 begin
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgSummary.SaveToRegistry( Reg);
 	Reg.Free;

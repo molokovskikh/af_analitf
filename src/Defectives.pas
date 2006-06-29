@@ -90,7 +90,7 @@ begin
 	PrintQuery:=adsPrint.SelectSQL.Text;
 	OrderField:='LetterDate';
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgDefectives.LoadFromRegistry( Reg);
 	Reg.Free;
 //	txtTablesUpdates.Caption:=DM.GetTablesUpdatesInfo('DefectiveArticles');
@@ -102,7 +102,7 @@ var
 	Reg: TRegistry;
 begin
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgDefectives.SaveToRegistry( Reg);
 	Reg.Free;

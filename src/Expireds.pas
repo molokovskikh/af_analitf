@@ -124,7 +124,7 @@ begin
 	end;
 	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCountFromSrv]);
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\' +
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' +
 		Self.ClassName, False) then dbgExpireds.LoadFromRegistry( Reg);
   if dbgExpireds.SortMarkedColumns.Count = 0 then
     dbgExpireds.Columns[0].Title.SortMarker := smUpEh;
@@ -138,7 +138,7 @@ var
 	Reg: TRegistry;
 begin
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgExpireds.SaveToRegistry( Reg);
 	Reg.Free;

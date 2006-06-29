@@ -143,7 +143,7 @@ begin
 	OrdersForm := TOrdersForm.Create( Application);
   WayBillListForm := TWayBillListForm.Create(Application);
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgOrdersH.LoadFromRegistry( Reg);
 	Reg.Free;
 
@@ -186,7 +186,7 @@ begin
   except
   end;
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgOrdersH.SaveToRegistry( Reg);
 	Reg.Free;

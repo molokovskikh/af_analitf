@@ -167,7 +167,7 @@ begin
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
 	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgCore.LoadFromRegistry( Reg);
   if dbgCore.SortMarkedColumns.Count = 0 then
     dbgCore.Columns[1].Title.SortMarker := smUpEh;
@@ -180,7 +180,7 @@ var
 begin
 	inherited;
 	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + IntToHex( GetCopyID, 8) + '\'
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, True);
 	dbgCore.SaveToRegistry( Reg);
 	Reg.Free;  
