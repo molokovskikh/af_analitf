@@ -71,9 +71,10 @@ type
 
   TSelectPrice = class
     PriceCode :Integer;
+    RegionCode : Integer;
     Selected : Boolean;
     PriceName : String;
-    constructor Create(APriceCode :Integer;
+    constructor Create(APriceCode, ARegionCode :Integer;
     ASelected : Boolean;
     APriceName : String);
   end;
@@ -413,18 +414,27 @@ function GetSelectedPricesSQL : String;
 var
   I : Integer;
   sp : TSelectPrice;
+  SelectedCount : Integer;
 begin
   Result := '';
+  SelectedCount := 0;
   for I := 0 to SelectedPrices.Count-1 do begin
     sp := TSelectPrice(SelectedPrices.Objects[i]);
-    if sp.Selected then
+    if sp.Selected then begin
+      Inc(SelectedCount);
       if Result = '' then
-        Result := IntToStr(sp.PriceCode)
+        Result := Format('((PriceCode = %d) and (RegionCode = %d))', [sp.PriceCode, sp.RegionCode])
       else
-        Result := Result + ', ' + IntToStr(sp.PriceCode);
+        Result := Result + ' or ' + Format('((PriceCode = %d) and (RegionCode = %d))', [sp.PriceCode, sp.RegionCode]);
+    end;
   end;
-  if Result = '' then
-    Result := '-1';
+  if SelectedCount = 0 then
+    Result := ' where PriceCode = -1'
+  else
+    if SelectedCount = SelectedPrices.Count then
+      Result := ''
+    else
+      Result := ' where ' + Result;
 end;
 
 procedure TDM.DMCreate(Sender: TObject);
@@ -1948,10 +1958,11 @@ end;
 
 { TSelectPrice }
 
-constructor TSelectPrice.Create(APriceCode: Integer; ASelected: Boolean;
+constructor TSelectPrice.Create(APriceCode, ARegionCode: Integer; ASelected: Boolean;
   APriceName: String);
 begin
   PriceCode := APriceCode;
+  RegionCode := ARegionCode;
   Selected := ASelected;
   PriceName := APriceName;
 end;
@@ -1966,7 +1977,7 @@ begin
     adsPrices.DoSort(['PRICENAME'], [True]);
     adsPrices.First;
     while not adsPrices.Eof do begin
-      SelectedPrices.AddObject(adsPricesPRICECODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, True, adsPricesPRICENAME.Value));
+      SelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
       adsPrices.Next;
     end;
   finally

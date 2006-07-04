@@ -148,7 +148,7 @@ begin
   for I := 0 to SelectedPrices.Count-1 do begin
     sp := TSelectPrice(SelectedPrices.Objects[i]);
     mi := TMenuItem.Create(pmSelectedPrices);
-    mi.Name := 'sl' + IntToStr(sp.PriceCode);
+    mi.Name := 'sl' + SelectedPrices[i];
     mi.Caption := sp.PriceName;
     mi.Checked := sp.Selected;
     mi.Tag := Integer(sp);
@@ -186,13 +186,13 @@ begin
       adsSummary.Close;
     if LastSymmaryType = 0 then begin
       adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ' +
-        ' where PriceCode in (' + GetSelectedPricesSQL + ')';
+        GetSelectedPricesSQL;
       dbgSummary.InputField := 'OrderCount';
       btnDelete.Enabled := True;
     end
     else begin
       adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOWSEND(:ACLIENTID, :ADATEFROM, :ADATETO) ' +
-        ' where PriceCode in (' + GetSelectedPricesSQL + ')';
+        GetSelectedPricesSQL;
       dbgSummary.InputField := '';
       btnDelete.Enabled := False;
     end;
