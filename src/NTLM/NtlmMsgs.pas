@@ -87,6 +87,9 @@ type
 
 implementation
 
+uses
+  IdHash, IdHashMessageDigest;
+
 { TNTLM }
 function TNTLM.GetMensaje1(AHost, ADomain: String): String;
 var
@@ -206,18 +209,33 @@ var
   PassHash: String;
   Context: PMD4Ctx;
   Encryption: IEncryption;
+  md4 : TIdHashMessageDigest4;
+
+  function HashAsString(const AValue: T4x4LongWordRecord): string;
+  var
+    P: PChar;
+    i: Integer;
+  Begin
+    P:=PChar(@AValue);
+    SetString(Result,NIL,16);//32
+    for i:=0 to 15 do begin
+      Result[i+1]:=(P[i]);
+    end;//for
+  end;
+
 begin
   Encryption := TEncryption.Create;
 
   Pass := Unicode( APassword );
   with Encryption do
   begin
-    GetMem( Context, SizeOf( TMD4Ctx ) );
-    MDInit( Context );
-    MDUpdate( Context, PChar(Pass), Length( Pass ) );
-    PassHash := MDFinal( Context );
-    PassHash := PassHash + #0#0#0#0#0;
-    FreeMem(Context, SizeOf(TMD4Ctx));
+  
+    md4 := TIdHashMessageDigest4.Create;
+    try
+      PassHash := HashAsString( md4.HashValue(Pass) ) + #0#0#0#0#0;
+    finally
+      md4.Free;
+    end;
 
     Result := Encryption.DesEcbEncrypt( Copy( PassHash, 1, 7 ), ANonce );
     Result := Result + Encryption.DesEcbEncrypt( Copy( PassHash, 8, 7 ), ANonce );
