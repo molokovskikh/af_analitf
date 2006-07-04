@@ -1818,7 +1818,7 @@ begin
       ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsSelect.FieldByName('INJob').AsBoolean, True);
       ParamNames[StaticParamCount+i*4+3] := 'UpCosts';
       ParamValues[StaticParamCount+i*4+3] :=
-        StringReplace(DM.adsSelect.FieldByName('UPCOST').AsString, DM.FFS.DecimalSeparator, ',', [rfReplaceAll]);
+        StringReplace(DM.adsSelect.FieldByName('UPCOST').AsString, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
       DM.adsSelect.Next;
       Inc(i);
     end;
