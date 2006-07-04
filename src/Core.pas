@@ -469,9 +469,12 @@ begin
 		if Self.PrevForm is TNamesFormsForm then
 		begin
 			Self.PrevForm.ShowForm;
-			if TNamesFormsForm( Self.PrevForm).actUseForms.Checked then
-				TNamesFormsForm( Self.PrevForm).dbgForms.SetFocus
-			else TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
+      if TNamesFormsForm( Self.PrevForm).actNewSearch.Checked then
+         TNamesFormsForm( Self.PrevForm).dbgCatalog.SetFocus
+      else
+        if TNamesFormsForm( Self.PrevForm).actUseForms.Checked then
+          TNamesFormsForm( Self.PrevForm).dbgForms.SetFocus
+        else TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
 		end;
 	end;
 end;
@@ -484,7 +487,12 @@ begin
 		if Self.PrevForm is TNamesFormsForm then
 		begin
 			Self.PrevForm.ShowForm;
-			TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
+      if TNamesFormsForm( Self.PrevForm).actNewSearch.Checked then begin
+        TNamesFormsForm( Self.PrevForm).dbgCatalog.SetFocus;
+        TNamesFormsForm( Self.PrevForm).eSearch.Text := '';
+      end
+      else
+  			TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
 			SendMessage( GetFocus, WM_CHAR, Ord( Key), 0);
 		end;
 	end;

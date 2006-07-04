@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet;
+  pFIBDataSet, Registry, ForceRus;
 
 const
 	NamesSql =	'SELECT * FROM CatalogShowByName ORDER BY ';
@@ -22,17 +22,31 @@ type
     ActionList: TActionList;
     actNewWares: TAction;
     actUseForms: TAction;
-    pnlTop: TPanel;
+    pnlTopOld: TPanel;
     dbgNames: TToughDBGrid;
     dbgForms: TToughDBGrid;
     pClient: TPanel;
-    pWebBrowser: TPanel;
-    Bevel1: TBevel;
-    WebBrowser1: TWebBrowser;
     adsNames: TpFIBDataSet;
     adsForms: TpFIBDataSet;
     cbShowAll: TCheckBox;
     actShowAll: TAction;
+    pnlTop: TPanel;
+    pWebBrowser: TPanel;
+    Bevel1: TBevel;
+    WebBrowser1: TWebBrowser;
+    pWebBrowserCatalog: TPanel;
+    Bevel2: TBevel;
+    WebBrowser2: TWebBrowser;
+    dbgCatalog: TToughDBGrid;
+    cbNewSearch: TCheckBox;
+    adsCatalog: TpFIBDataSet;
+    dsCatalog: TDataSource;
+    tmrShowCatalog: TTimer;
+    pnlSearch: TPanel;
+    eSearch: TEdit;
+    btnSearch: TButton;
+    tmrSearch: TTimer;
+    actNewSearch: TAction;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -50,9 +64,23 @@ type
     procedure adsForms2AfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
     procedure actShowAllExecute(Sender: TObject);
+    procedure tmrShowCatalogTimer(Sender: TObject);
+    procedure dbgCatalogKeyPress(Sender: TObject; var Key: Char);
+    procedure tmrSearchTimer(Sender: TObject);
+    procedure eSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure dbgCatalogKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure dbgCatalogDblClick(Sender: TObject);
+    procedure eSearchKeyPress(Sender: TObject; var Key: Char);
+    procedure actNewSearchExecute(Sender: TObject);
   private
+    fr : TForceRus;
     procedure SetNamesParams;
     procedure SetFormsParams;
+    procedure SetCatalog;
+    procedure AddKeyToSearch(Key : Char);
+    procedure SetGrids;
   public
 	procedure ShowForm; override;
   end;
@@ -71,8 +99,21 @@ begin
 end;
 
 procedure TNamesFormsForm.FormCreate(Sender: TObject);
+var
+	Reg: TRegistry;
 begin
 	inherited;
+
+  fr := TForceRus.Create;
+
+  //Читаем настройки из реестра
+	Reg := TRegistry.Create;
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
+  actNewSearch.Checked := True;
+  if Reg.ValueExists('NewSearch') then
+    actNewSearch.Checked := Reg.ReadBool('NewSearch');
+	Reg.Free;
+
 	with DM.adtParams do
 	begin
 		if not DM.adtParams.FieldByName( 'OperateForms').AsBoolean then
@@ -87,9 +128,11 @@ begin
 		end;
   	actShowAll.Checked := FieldByName( 'ShowAllCatalog').AsBoolean;
 	end;
-	SetNamesParams;
-	SetFormsParams;
+
 	CoreForm := TCoreForm.Create(Application);
+
+  SetGrids;
+
 	ShowForm;
 end;
 
@@ -99,8 +142,15 @@ begin
 end;
 
 procedure TNamesFormsForm.FormDestroy(Sender: TObject);
+var
+	Reg: TRegistry;
 begin
 	inherited;
+  fr.Free;
+	Reg := TRegistry.Create;
+	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
+  Reg.WriteBool('NewSearch', actNewSearch.Checked);
+	Reg.Free;
 	with DM.adtParams do
 	begin
 		Edit;
@@ -134,7 +184,7 @@ begin
     try
       ParamByName('ShowAll').Value := actShowAll.Checked;
       adsForms.ParamByName('ShowAll').Value := actShowAll.Checked;
-      if Active then CloseOpen(True) else Open;
+      if Active then CloseOpen(False) else Open;
     finally
       Screen.Cursor := crDefault;
     end;
@@ -225,15 +275,149 @@ end;
 
 procedure TNamesFormsForm.FormResize(Sender: TObject);
 begin
-  adsForms2AfterScroll(adsForms);
+  if not actNewSearch.Checked then
+    adsForms2AfterScroll(adsForms);
 end;
 
 procedure TNamesFormsForm.actShowAllExecute(Sender: TObject);
 begin
-	if not dbgNames.CanFocus then exit;
+  if actNewSearch.Checked then begin
+  	if not dbgCatalog.CanFocus then exit;
+  end
+  else
+  	if not dbgNames.CanFocus then exit;
+
 	actShowAll.Checked := not actShowAll.Checked;
-  SetNamesParams;
-	dbgNames.SetFocus;
+
+  if actNewSearch.Checked then begin
+    if Length(eSearch.Text) > 0 then
+      tmrSearchTimer(nil)
+    else
+      SetCatalog;
+  end
+  else
+    SetNamesParams;
+
+  if actNewSearch.Checked then
+    dbgCatalog.SetFocus
+  else
+  	dbgNames.SetFocus;
+end;
+
+procedure TNamesFormsForm.SetCatalog;
+begin
+  tmrSearch.Enabled := False;
+  eSearch.Text := '';
+  with adsCatalog do begin
+    Screen.Cursor:=crHourglass;
+    try
+      if Active then Close;
+      SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form FROM CATALOGS';
+      if not actShowAll.Checked then
+        SelectSQL.Text := SelectSQL.Text + ' where exists(select * from core c where c.fullcode = catalogs.fullcode)';
+      Open;
+    finally
+      Screen.Cursor := crDefault;
+    end;
+  end;
+end;
+
+procedure TNamesFormsForm.tmrShowCatalogTimer(Sender: TObject);
+begin
+  try
+    if actNewSearch.Checked then
+      dbgCatalog.SetFocus
+    else
+      dbgNames.SetFocus;
+    tmrShowCatalog.Enabled := False;
+  except
+  end;
+end;
+
+procedure TNamesFormsForm.dbgCatalogKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  AddKeyToSearch(Key);
+end;
+
+procedure TNamesFormsForm.AddKeyToSearch(Key: Char);
+begin
+  if Ord(Key) >= 32 then begin
+    tmrSearch.Enabled := False;
+    if not eSearch.Focused then
+      eSearch.Text := eSearch.Text + fr.DoIt(Key);
+    tmrSearch.Enabled := True;
+  end;
+end;
+
+procedure TNamesFormsForm.tmrSearchTimer(Sender: TObject);
+begin
+  tmrSearch.Enabled := False;
+  adsCatalog.Close;
+  adsCatalog.SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form ' +
+    'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
+  if not actShowAll.Checked then
+    adsCatalog.SelectSQL.Text := adsCatalog.SelectSQL.Text + ' and exists(select * from core c where c.fullcode = catalogs.fullcode)';
+  adsCatalog.ParamByName('LikeParam').AsString := '%' + eSearch.Text + '%';
+  adsCatalog.Open;
+  dbgCatalog.SetFocus;
+end;
+
+procedure TNamesFormsForm.eSearchKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    tmrSearchTimer(nil);
+  end
+  else
+    if Key = VK_ESCAPE then
+      SetCatalog;
+end;
+
+procedure TNamesFormsForm.dbgCatalogKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    dbgCatalogDblClick(nil)
+  else
+    if Key = VK_ESCAPE then
+      SetCatalog;
+end;
+
+procedure TNamesFormsForm.dbgCatalogDblClick(Sender: TObject);
+begin
+	CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+		adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
+		True);
+end;
+
+procedure TNamesFormsForm.eSearchKeyPress(Sender: TObject; var Key: Char);
+begin
+  tmrSearch.Enabled := False;
+  AddKeyToSearch(Key);
+  //Если мы что-то нажали в элементе, то должны на это отреагировать
+  tmrSearch.Enabled := True;
+end;
+
+procedure TNamesFormsForm.SetGrids;
+begin
+  actUseForms.Visible := not actNewSearch.Checked;
+  if actNewSearch.Checked then begin
+    pnlTop.BringToFront;
+    SetCatalog;
+  end
+  else begin
+    pnlTopOld.BringToFront;
+    SetNamesParams;
+    SetFormsParams;
+  end;
+  tmrShowCatalog.Enabled := True;
+end;
+
+procedure TNamesFormsForm.actNewSearchExecute(Sender: TObject);
+begin
+	actNewSearch.Checked := not actNewSearch.Checked;
+  SetGrids;
 end;
 
 end.
