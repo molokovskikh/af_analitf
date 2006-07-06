@@ -19,6 +19,7 @@ type
     TM : TThreadMethod;
     OldFetch : TOnFetchRecord;
     Opened : Boolean;
+    FetchCount : Integer;
     procedure NewFetch(FromQuery:TFIBQuery;RecordNumber:integer;var StopFetching:boolean);
   public
     { Public declarations }
@@ -71,7 +72,9 @@ end;
 procedure TfrmSQLWaiting.NewFetch(FromQuery: TFIBQuery;
   RecordNumber: integer; var StopFetching: boolean);
 begin
-  Application.ProcessMessages;
+  Inc(FetchCount);
+  if FetchCount mod 200 = 0 then
+    Application.ProcessMessages;
   if Assigned(OldFetch) then
     OldFetch(FromQuery, RecordNumber, StopFetching);
 end;
@@ -80,6 +83,7 @@ procedure TfrmSQLWaiting.tmFillTimer(Sender: TObject);
 begin
   tmFill.Enabled := False;
   try
+    FetchCount := 0;
     if Assigned(ds) then
       if ds.Active then ds.CloseOpen(True) else ds.Open;
     if Assigned(TM) then

@@ -361,62 +361,6 @@ object CoreFirmForm: TCoreFirmForm
         'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
         'id, :APRICECODE, :AREGIONCODE, :new_ORDERSORDERID, :new_COREID, ' +
         ':NEW_ORDERCOUNT)')
-    RefreshSQL.Strings = (
-      'SELECT'
-      '    COREID,'
-      '    FULLCODE,'
-      '    SHORTCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    VOLUME,'
-      '    DOC,'
-      '    NOTE,'
-      '    PERIOD,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    BASECOST,'
-      '    QUANTITY,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    MINPRICE,'
-      '    LEADERPRICECODE,'
-      '    LEADERREGIONCODE,'
-      '    LEADERREGIONNAME,'
-      '    LEADERPRICENAME,'
-      '    LEADERCODE,'
-      '    LEADERCODECR,'
-      '    LEADERPRICE,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID,'
-      '    ORDERSCLIENTID,'
-      '    ORDERSFULLCODE,'
-      '    ORDERSCODEFIRMCR,'
-      '    ORDERSSYNONYMCODE,'
-      '    ORDERSSYNONYMFIRMCRCODE,'
-      '    ORDERSCODE,'
-      '    ORDERSCODECR,'
-      '    ORDERCOUNT,'
-      '    ORDERSSYNONYM,'
-      '    ORDERSSYNONYMFIRM,'
-      '    ORDERSPRICE,'
-      '    ORDERSJUNK,'
-      '    ORDERSAWAIT,'
-      '    ORDERSHORDERID,'
-      '    ORDERSHCLIENTID,'
-      '    ORDERSHPRICECODE,'
-      '    ORDERSHREGIONCODE,'
-      '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME'
-      'FROM'
-      '    CORESHOWBYFIRM(:APRICECODE,'
-      '    :AREGIONCODE,'
-      '    :ACLIENTID,'
-      '    :APRICENAME) '
-      'where'
-      '  COREID = :COREID   ')
     SelectSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -481,7 +425,7 @@ object CoreFirmForm: TCoreFirmForm
     AutoCommit = True
     Left = 88
     Top = 112
-    oCacheCalcFields = True
+    oRefreshAfterPost = False
     oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
