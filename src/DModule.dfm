@@ -105,6 +105,7 @@ object DM: TDM
     ShowDialog = False
     OpenAfterExport = True
     Wysiwyg = True
+    Creator = 'FastReport http://www.fast-report.com'
     Left = 576
     Top = 488
   end
@@ -545,7 +546,8 @@ object DM: TDM
       '  COREID = :NEW_COREID,'
       '  Price = :NEW_PRICE,'
       '  CODE = :NEW_CODE,'
-      '  CODECR = :NEW_CODECR'
+      '  CODECR = :NEW_CODECR,'
+      '  ORDERCOUNT = :ORDERCOUNT'
       'where'
       '  ID = :OLD_ID')
     SelectSQL.Strings = (
@@ -680,62 +682,85 @@ object DM: TDM
   object adsCore: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
-      '    COREID,'
-      '    FULLCODE,'
-      '    SHORTCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    VOLUME,'
-      '    DOC,'
-      '    NOTE,'
-      '    PERIOD,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    BASECOST,'
-      '    QUANTITY,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    MINPRICE,'
-      '    LEADERPRICECODE,'
-      '    LEADERREGIONCODE,'
-      '    LEADERREGIONNAME,'
-      '    LEADERPRICENAME,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID,'
-      '    ORDERSCLIENTID,'
-      '    ORDERSFULLCODE,'
-      '    ORDERSCODEFIRMCR,'
-      '    ORDERSSYNONYMCODE,'
-      '    ORDERSSYNONYMFIRMCRCODE,'
-      '    ORDERSCODE,'
-      '    ORDERSCODECR,'
-      '    ORDERCOUNT,'
-      '    ORDERSSYNONYM,'
-      '    ORDERSSYNONYMFIRM,'
-      '    ORDERSPRICE,'
-      '    ORDERSJUNK,'
-      '    ORDERSAWAIT,'
-      '    ORDERSHORDERID,'
-      '    ORDERSHCLIENTID,'
-      '    ORDERSHPRICECODE,'
-      '    ORDERSHREGIONCODE,'
-      '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME'
+      '    CCore.CoreId AS CoreId,'
+      '    CCore.FullCode,'
+      '    catalogs.shortcode,'
+      '    CCore.CodeFirmCr,'
+      '    CCore.SynonymCode,'
+      '    CCore.SynonymFirmCrCode,'
+      '    CCore.Code,'
+      '    CCore.CodeCr,'
+      '    CCore.Volume,'
+      '    CCore.Doc,'
+      '    CCore.Note,'
+      '    CCore.Period,'
+      '    CCore.Await,'
+      '    CCore.Junk,'
+      '    CCore.BaseCost,'
+      '    CCore.Quantity,'
+      
+        '    coalesce(Synonyms.SynonymName, catalogs.name || '#39' '#39' || catal' +
+        'ogs.form) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    MinPrices.MinPrice,'
+      '    PricesData.PriceCode AS LeaderPriceCode,'
+      '    MinPrices.RegionCode AS LeaderRegionCode,'
+      '    Regions.RegionName AS LeaderRegionName,'
+      '    PricesData.PriceName AS LeaderPriceName,'
+      '    LCore.code as LeaderCODE,'
+      '    LCore.codecr as LeaderCODECR,'
+      '    LCore.basecost as LeaderPRICE,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    osbc.FullCode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersH.OrderId AS OrdersHOrderId,'
+      '    OrdersH.ClientId AS OrdersHClientId,'
+      '    OrdersH.PriceCode AS OrdersHPriceCode,'
+      '    OrdersH.RegionCode AS OrdersHRegionCode,'
+      '    OrdersH.PriceName AS OrdersHPriceName,'
+      '    OrdersH.RegionName AS OrdersHRegionName'
       'FROM'
-      '    CORESHOWBYFIRM(:APRICECODE,'
-      '    :AREGIONCODE,'
-      '    :ACLIENTID,'
-      '    :APRICENAME) ')
+      '    Core CCore'
+      '    left join catalogs on catalogs.fullcode = CCore.fullcode'
+      
+        '    LEFT JOIN MinPrices ON CCore.FullCode=MinPrices.FullCode and' +
+        ' minprices.regioncode = :aregioncode'
+      
+        '    left join Core LCore on LCore.servercoreid = minprices.serve' +
+        'rcoreid'
+      '    LEFT JOIN PricesData ON PricesData.PriceCode=LCore.pricecode'
+      '    LEFT JOIN Regions ON MinPrices.RegionCode=Regions.RegionCode'
+      '    LEFT JOIN SynonymFirmCr'
+      '    ON CCore.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode'
+      '    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode'
+      
+        '    LEFT JOIN OrdersShowByClient(:AClientId) osbc ON CCore.CoreI' +
+        'd=osbc.CoreId'
+      '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
+      
+        'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +
+        'onCode)'
+      'and  CCore.SYNONYMCODE = :SYNONYMCODE'
+      'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE'
+      'and CCore.AWAIT = :AWAIT'
+      'and CCore.JUNK = :JUNK')
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
     Left = 240
     Top = 344
-    oCacheCalcFields = True
-    oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
@@ -794,12 +819,6 @@ object DM: TDM
       FieldName = 'PERIOD'
       EmptyStrToNull = True
     end
-    object adsCoreAWAIT: TFIBIntegerField
-      FieldName = 'AWAIT'
-    end
-    object adsCoreJUNK: TFIBIntegerField
-      FieldName = 'JUNK'
-    end
     object adsCoreBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 48
@@ -812,7 +831,7 @@ object DM: TDM
     end
     object adsCoreSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
-      Size = 250
+      Size = 501
       EmptyStrToNull = True
     end
     object adsCoreSYNONYMFIRM: TFIBStringField
@@ -822,7 +841,7 @@ object DM: TDM
     end
     object adsCoreMINPRICE: TFIBBCDField
       FieldName = 'MINPRICE'
-      Size = 2
+      Size = 4
       RoundByScale = True
     end
     object adsCoreLEADERPRICECODE: TFIBBCDField
@@ -908,12 +927,6 @@ object DM: TDM
       Size = 48
       EmptyStrToNull = True
     end
-    object adsCoreORDERSJUNK: TFIBIntegerField
-      FieldName = 'ORDERSJUNK'
-    end
-    object adsCoreORDERSAWAIT: TFIBIntegerField
-      FieldName = 'ORDERSAWAIT'
-    end
     object adsCoreORDERSHORDERID: TFIBBCDField
       FieldName = 'ORDERSHORDERID'
       Size = 0
@@ -943,6 +956,18 @@ object DM: TDM
       FieldName = 'ORDERSHREGIONNAME'
       Size = 25
       EmptyStrToNull = True
+    end
+    object adsCoreAWAIT: TFIBBooleanField
+      FieldName = 'AWAIT'
+    end
+    object adsCoreJUNK: TFIBBooleanField
+      FieldName = 'JUNK'
+    end
+    object adsCoreORDERSJUNK: TFIBIntegerField
+      FieldName = 'ORDERSJUNK'
+    end
+    object adsCoreORDERSAWAIT: TFIBIntegerField
+      FieldName = 'ORDERSAWAIT'
     end
   end
   object adsOrdersH: TpFIBDataSet

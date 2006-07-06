@@ -648,31 +648,11 @@ begin
 	while not DM.adsSelect3.Eof do
 	begin
     Application.ProcessMessages;
-		DM.adsCore.Close;
-		DM.adsCore.ParamByName( 'AClientId').Value :=
-			DM.adtClients.FieldByName('ClientId').Value;
-		DM.adsCore.ParamByName( 'APriceCode').Value :=
-			DM.adsSelect3.FieldByName( 'PriceCode').Value;
-		DM.adsCore.ParamByName( 'ARegionCode').Value :=
-			DM.adsSelect3.FieldByName( 'RegionCode').Value;
-		DM.adsCore.ParamByName( 'APRICENAME').Value :=
-			DM.adsSelect3.FieldByName( 'PriceName').Value;
+    if DM.adsCore.Active then
+  		DM.adsCore.Close;
 		Screen.Cursor := crHourglass;
 		try
-			DM.adsCore.Open;
-      Application.ProcessMessages;
-			{ проверяем наличие прайс-листа }
-			if DM.adsCore.IsEmpty then
-			begin
-				Strings.Append( Format( '%s : %s - %s : прайс-лист отсутствует',
-					[ DM.adsSelect3PRICENAME.AsString,
-					DM.adsSelect3CryptSYNONYMNAME.AsString,
-					DM.adsSelect3CryptSYNONYMFIRM.AsString]));
-				DM.adsCore.Close;
-				SetOrder( 0);
-				DM.adsSelect3.Next;
-				continue;
-			end;
+      //Получаем данные, восстанавливаемой позиции
 			Order := DM.adsSelect3ORDERCOUNT.AsInteger;
 			CurOrder := 0;
 			Code := DM.adsSelect3CODE.Value;
@@ -686,8 +666,32 @@ begin
       JUNK := DM.adsSelect3JUNK.AsInteger;
       AWAIT := DM.adsSelect3AWAIT.AsInteger;
 
-			if DM.adsCore.ExtLocate( 'SynonymCode;SynonymFirmCrCode;Junk;Await;Code;CodeCr',
-				  VarArrayOf([ SynonymCode, SynonymFirmCrCode, JUNK, AWAIT, Code, CodeCr]), [eloPartialKey])
+      DM.adsCore.ParamByName( 'AClientId').Value :=
+        DM.adtClients.FieldByName('ClientId').Value;
+      DM.adsCore.ParamByName( 'APriceCode').Value :=
+        DM.adsSelect3.FieldByName( 'PriceCode').Value;
+      DM.adsCore.ParamByName( 'ARegionCode').Value :=
+        DM.adsSelect3.FieldByName( 'RegionCode').Value;
+      DM.adsCore.ParamByName( 'SynonymCode').Value := SynonymCode;
+      DM.adsCore.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
+      DM.adsCore.ParamByName( 'JUNK').Value := JUNK;
+      DM.adsCore.ParamByName( 'AWAIT').Value := AWAIT;
+			DM.adsCore.Open;
+			{ проверяем наличие прайс-листа }
+			if DM.adsCore.IsEmpty then
+			begin
+				Strings.Append( Format( '%s : %s - %s : позиция отсутствует',
+					[ DM.adsSelect3PRICENAME.AsString,
+					DM.adsSelect3CryptSYNONYMNAME.AsString,
+					DM.adsSelect3CryptSYNONYMFIRM.AsString]));
+				DM.adsCore.Close;
+				SetOrder( 0);
+				DM.adsSelect3.Next;
+				continue;
+			end;
+
+			if DM.adsCore.ExtLocate( 'Code;CodeCr',
+				  VarArrayOf([Code, CodeCr]), [eloPartialKey])
       then
 			begin
 				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);
@@ -720,7 +724,6 @@ begin
 						DM.adsSelect3CryptPRICE.AsString]));
 				end;
 			end;
-      Application.ProcessMessages;
 			DM.adsSelect3.Next;
 		finally
 			DM.adsCore.Close;
@@ -731,7 +734,8 @@ end;
 
 procedure TInternalRepareOrders.RepareOrders;
 begin
- 	DM.adsSelect3.CloseOpen(True);
+ 	DM.adsSelect3.CloseOpen(False);
+
 	if DM.adsSelect3.IsEmpty then
 	begin
 	 	DM.adsSelect3.Close;
@@ -742,8 +746,8 @@ begin
 
 	try
 
-    ShowSQLWaiting(InternalRepareOrders, 'Происходит восстановление заказов');
-    
+    ShowSQLWaiting(InternalRepareOrders, 'Происходит пересчет заказов');
+
   	{ если не нашли что-то, то выводим сообщение }
 	  if (Strings.Count > 0) and (Length(Strings.Text) > 0) then ShowNotFound( Strings);
 

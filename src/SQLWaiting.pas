@@ -79,12 +79,15 @@ end;
 procedure TfrmSQLWaiting.tmFillTimer(Sender: TObject);
 begin
   tmFill.Enabled := False;
-  if Assigned(ds) then
-    if ds.Active then ds.CloseOpen(True) else ds.Open;
-  if Assigned(TM) then
-    TM;
-  Opened := True;
-  Close;
+  try
+    if Assigned(ds) then
+      if ds.Active then ds.CloseOpen(True) else ds.Open;
+    if Assigned(TM) then
+      TM;
+  finally
+    Opened := True;
+    Close;
+  end;
 end;
 
 end.

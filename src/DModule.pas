@@ -167,8 +167,6 @@ type
     adsCoreDOC: TFIBStringField;
     adsCoreNOTE: TFIBStringField;
     adsCorePERIOD: TFIBStringField;
-    adsCoreAWAIT: TFIBIntegerField;
-    adsCoreJUNK: TFIBIntegerField;
     adsCoreBASECOST: TFIBStringField;
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
@@ -191,8 +189,6 @@ type
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
-    adsCoreORDERSJUNK: TFIBIntegerField;
-    adsCoreORDERSAWAIT: TFIBIntegerField;
     adsCoreORDERSHORDERID: TFIBBCDField;
     adsCoreORDERSHCLIENTID: TFIBBCDField;
     adsCoreORDERSHPRICECODE: TFIBBCDField;
@@ -272,6 +268,10 @@ type
     adsPricesSUMORDER: TFIBBCDField;
     adsPricesPRICESIZE: TFIBIntegerField;
     adsPricesINJOB: TFIBIntegerField;
+    adsCoreAWAIT: TFIBBooleanField;
+    adsCoreJUNK: TFIBBooleanField;
+    adsCoreORDERSJUNK: TFIBIntegerField;
+    adsCoreORDERSAWAIT: TFIBIntegerField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);

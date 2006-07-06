@@ -262,6 +262,7 @@ begin
     if dbgOrdersH.SelectedRows.Count > 0 then
       if MessageBox( 'Удалить выбранные заявки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
         dbgOrdersH.SelectedRows.Delete;
+        DM.InitAllSumOrder;
         MainForm.SetOrdersInfo;
       end;
 	end;
@@ -549,7 +550,7 @@ end;
 
 procedure TOrdersHForm.InternalMoveToPrice;
 var
-	Order, CurOrder, Quantity, E, OrderId: Integer;
+	Order, CurOrder, Quantity, E: Integer;
 	SynonymFirmCrCode, SynonymCode: Variant;
   Code, CodeCr : String;
   I : Integer;
@@ -568,97 +569,99 @@ begin
   begin
     adsOrdersHForm.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
 
-    //находим OrderId
-    OrderId:=0;
     with DM.adsSelect do begin
-      SelectSQL.Text:='SELECT OrderId FROM OrdersHShowCurrent(:AClientID, :APriceCode, :ARegionCode)';
-      ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+      SelectSQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :APriceCode and RegionCode = :ARegionCode';
       ParamByName('APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
       ParamByName('ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
-      Application.ProcessMessages;
       Open;
       try
-        if not IsEmpty then OrderId:=Fields[0].AsInteger;
+        { проверяем наличие прайс-листа }
+        if IsEmpty then
+          raise Exception.Create( 'Данный прайс-лист не найден');
       finally
         Close;
       end;
       Application.ProcessMessages;
     end;
 
-    with adsCore do begin
-      ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-      ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
-      ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
-      ParamByName( 'APriceName').Value:=adsOrdersHFormPRICENAME.Value;
-      Screen.Cursor:=crHourglass;
-      try
-        Application.ProcessMessages;
-        Open;
-        { проверяем наличие прайс-листа }
-        if IsEmpty then raise Exception.Create( 'Данный прайс-лист не найден');
-        { открываем сохраненный заказ }
-        OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
-        Application.ProcessMessages;
-        { переписываем позиции в текущий прайс-лист }
-        while not OrdersForm.adsOrders.Eof do begin
-          Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
-          Code := OrdersForm.adsOrdersCode.AsVariant;
-          Code := Copy(Code, 1, Length(Code)-16);
-        //if Code = '' then Code := Null;
-          CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
-          CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
-          //if CodeCr = '' then CodeCr := Null;
-          SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
-          SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
-          //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
+    Screen.Cursor:=crHourglass;
+    try
+      { открываем сохраненный заказ }
+      OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
+      Application.ProcessMessages;
+      { переписываем позиции в текущий прайс-лист }
+      while not OrdersForm.adsOrders.Eof do begin
+        Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
+        Code := OrdersForm.adsOrdersCode.AsVariant;
+        Code := Copy(Code, 1, Length(Code)-16);
+      //if Code = '' then Code := Null;
+        CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
+        CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
+        //if CodeCr = '' then CodeCr := Null;
+        SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
+        SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
+        //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
 
-          { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
-          if ExtLocate( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
-              VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey])
-          then
-          begin
-            repeat
-              Application.ProcessMessages;
-              Val(FieldByName( 'Quantity').AsString,Quantity,E);
-              if E <> 0 then Quantity := 0;
-              if Quantity > 0 then
-                CurOrder := Min( Order, Quantity - FieldByName('OrderCount').AsInteger)
-              else
-                CurOrder := Order;
-              if CurOrder < 0 then CurOrder := 0;
-              Order := Order - CurOrder;
-              if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
-            until ( Order = 0) or (not ExtLocateNext( 'Code;CodeCr;SynonymCode;SynonymFirmCrCode',
-              VarArrayOf([ Code, CodeCr, SynonymCode, SynonymFirmCrCode]), [eloPartialKey]));
-          end;
-
-          { если все еще не разбросали, то пишем сообщение }
-          if Order > 0 then
-          begin
-            if ( OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
+        with adsCore do begin
+          ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+          ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
+          ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
+          ParamByName( 'SynonymCode').Value:=SynonymCode;
+          ParamByName( 'SynonymFirmCrCode').Value:=SynonymFirmCrCode;
+          Open;
+          FetchAll;
+          try
+            { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
+            if ExtLocate( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [eloPartialKey])
+            then
             begin
-              Strings.Append( Format( '%s : %s - %s : %d вместо %d',
-                [adsOrdersHFormPRICENAME.AsString,
-                OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
-                OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString,
-                OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
-                OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
-            end
-            else
-              Strings.Append( Format( '%s : %s - %s : предложение не найдено',
-                [adsOrdersHFormPRICENAME.AsString,
-                OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
-                OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString]));
+              repeat
+                Val(FieldByName( 'Quantity').AsString,Quantity,E);
+                if E <> 0 then Quantity := 0;
+                if Quantity > 0 then
+                  CurOrder := Min( Order, Quantity - FieldByName('OrderCount').AsInteger)
+                else
+                  CurOrder := Order;
+                if CurOrder < 0 then CurOrder := 0;
+                Order := Order - CurOrder;
+                if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
+              until ( Order = 0) or (not ExtLocateNext( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [eloPartialKey]));
+            end;
+
+            { если все еще не разбросали, то пишем сообщение }
+            if Order > 0 then
+            begin
+              if ( OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
+              begin
+                Strings.Append( Format( '%s : %s - %s : %d вместо %d',
+                  [adsOrdersHFormPRICENAME.AsString,
+                  OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
+                  OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString,
+                  OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
+                  OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
+              end
+              else
+                Strings.Append( Format( '%s : %s - %s : предложение не найдено',
+                  [adsOrdersHFormPRICENAME.AsString,
+                  OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
+                  OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString]));
+            end;
+
+          finally
+            Close;
           end;
-          Application.ProcessMessages;
-          OrdersForm.adsOrders.Next;
         end;
-      finally
-        Close;
-        Screen.Cursor:=crDefault;
+
+        OrdersForm.adsOrders.Next;
+        Application.ProcessMessages;
       end;
+    finally
+      Screen.Cursor:=crDefault;
     end;
   end;
+
+  DM.InitAllSumOrder;
+  MainForm.SetOrdersInfo;
 
   dbgOrdersH.SelectedRows.Clear;
 end;
