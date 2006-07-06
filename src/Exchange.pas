@@ -41,8 +41,6 @@ type
       StateStr: String);
     procedure TimerTimer(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
-    procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode;
-      const AWorkCount: Integer);
     procedure UnZipBadCRC(Sender: TObject; CalcCRC, StoredCRC,
       FileIndex: Integer);
     procedure UnZipInCompleteZip(Sender: TObject;
@@ -53,9 +51,6 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
       const AStatusText: String);
-    procedure HTTPWorkBegin(Sender: TObject; AWorkMode: TWorkMode;
-      const AWorkCountMax: Integer);
-    procedure HTTPWorkEnd(Sender: TObject; AWorkMode: TWorkMode);
   private
     FStatusPosition: Integer;
 	  ExchangeActions: TExchangeActions;
@@ -83,9 +78,6 @@ type
     ExternalOrdersCount : Integer;
     ExternalOrdersLog : TStringList;
     SendOrdersLog : TStringList;
-
-    //Показывать ли статусный текст о состоянии скаченного файла
-    ShowStatusText : Boolean;
 
     property StatusText: string read GetStatusText write SetStatusText;
     property StatusPosition: Integer write SetStatusPosition;
@@ -323,7 +315,6 @@ var
 begin
 	//здесь производим те действия, которые могут быть отменены
 	StartTime := Now;
-  ShowStatusText := False;
   FStatusStr := '';
 	Timer1.Enabled := True;
 	Timer.Enabled := False;
@@ -510,54 +501,6 @@ begin
 	end;
 end;
 
-procedure TExchangeForm.HTTPWork(Sender: TObject; AWorkMode: TWorkMode;
-	const AWorkCount: Integer);
-var
-	Total, Current: real;
-	TSuffix, CSuffix: string;
-begin
-	if HTTP.Response.ContentLength = 0 then StatusPosition := 0
-	else
-	begin
-		StatusPosition := Round(( HTTP.Response.ContentRangeStart+Cardinal(AWorkCount))/
-			( HTTP.Response.ContentRangeStart+Cardinal(HTTP.Response.ContentLength))*100);
-
-		TSuffix := 'Кб';
-		CSuffix := 'Кб';
-
-		Total := RoundTo(( HTTP.Response.ContentRangeStart +
-			Cardinal( HTTP.Response.ContentLength)) / 1024, -2);
-		Current := RoundTo((HTTP.Response.ContentRangeStart +
-			Cardinal( AWorkCount)) / 1024, -2);
-
-		if Total <> Current then
-		begin
-			if Total > 1000 then
-			begin
-				Total := RoundTo( Total / 1024, -2);
-				TSuffix := 'Мб';
-			end;
-			if Current > 1000 then
-			begin
-				Current := RoundTo( Current / 1024, -2);
-				CSuffix := 'Мб';
-			end;
-
-			if FStatusPosition > 0 then
-      begin
-//        ShowStatusText := True;
-//        stStatus.Caption := 'Загрузка данных   (' +
-        FStatusStr := 'Загрузка данных   (' +
-				FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
-				FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
-//        WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWork : ' + FStatusStr);
-      end;
-		end;
-	end;
-
-	if DoStop then Abort;
-end;
-
 procedure TExchangeForm.UnZipBadCRC(Sender: TObject; CalcCRC, StoredCRC,
   FileIndex: Integer);
 begin
@@ -580,13 +523,6 @@ end;
 procedure TExchangeForm.Timer1Timer(Sender: TObject);
 begin
 	lblElapsed.Caption := TimeToStr( Now - StartTime);
-
-  if ShowStatusText then
-  begin
-    //Вывели статусный текст на экран и сбросили флаг, чтобы еще раз не выводить
-//    ShowStatusText := False;
-    stStatus.Caption := FStatusStr;
-  end;
 end;
 
 procedure TExchangeForm.FormCreate(Sender: TObject);
@@ -608,17 +544,6 @@ procedure TExchangeForm.HTTPStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: String);
 begin
   WriteLn(LogFile, DateTimeToStr(Now) + '  IdStatus : ' + AStatusText);
-end;
-
-procedure TExchangeForm.HTTPWorkBegin(Sender: TObject;
-  AWorkMode: TWorkMode; const AWorkCountMax: Integer);
-begin
-  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkBegin : ' + IntToStr(AWorkCountMax));
-end;
-
-procedure TExchangeForm.HTTPWorkEnd(Sender: TObject; AWorkMode: TWorkMode);
-begin
-  WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWorkEnd');
 end;
 
 { TInternalRepareOrders }

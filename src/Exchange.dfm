@@ -252,9 +252,6 @@ object ExchangeForm: TExchangeForm
     MaxLineAction = maException
     RecvBufferSize = 1024
     SendBufferSize = 1024
-    OnWork = HTTPWork
-    OnWorkBegin = HTTPWorkBegin
-    OnWorkEnd = HTTPWorkEnd
     AuthRetries = 6
     AllowCookies = True
     HandleRedirects = True

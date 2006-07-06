@@ -8,7 +8,7 @@ uses
   IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdHTTP;
+  DADAuthenticationNTLM, IdComponent, IdHTTP;
 
 const
   UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
@@ -51,9 +51,6 @@ TExchangeThread = class( TThread)
   DownloadReclame : Boolean;
   procedure StopReclame;
 private
-  URL : String;
-  HTTPName,
-  HTTPPass : String;
 	StatusText: string;
 	Progress: integer;
 	TotalProgress: integer;
@@ -67,12 +64,17 @@ private
   ASynPass,
   ACodesPass,
   ABPass : String;
+  URL : String;
+  HTTPName,
+  HTTPPass : String;
+  StartDownPosition : Integer;
 
   upB : TpFIBQuery;
   //Будем обновляться из-за того, что дата обновления не совпала
   UpdateByUpdate : Boolean;
 
 	procedure SetStatus;
+  procedure SetDownStatus;
 	procedure SetProgress;
 	procedure SetTotalProgress;
 	procedure DisableCancel;
@@ -116,6 +118,7 @@ private
   //"Молчаливое" выполнение запроса изменения метаданных.
   //Не вызывает исключение в случае ошибки -607
   procedure SilentExecute(q : TpFIBQuery; SQL : String);
+  procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; const AWorkCount: Integer);
 protected
 	procedure Execute; override;
 public
@@ -125,7 +128,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB, U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, FIB;
+  DB, U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, FIB, Math;
 
 { TExchangeThread }
 
@@ -319,8 +322,8 @@ begin
 	RecThread := TReclameThread.Create( True);
 	RecThread.RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
   RecThread.ReclameURL := URL;
-  RecThread.HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
-  RecThread.HTTPPass := DM.adtParams.FieldByName( 'HTTPPass').AsString;
+  RecThread.HTTPName := HTTPName;
+  RecThread.HTTPPass := HTTPPass;
 	RecThread.Resume;
 end;
 
@@ -452,13 +455,15 @@ begin
     end;
 
 		try
-      ExchangeForm.ShowStatusText := True;
       OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
+      ExchangeForm.HTTP.OnWork := HTTPWork;
       ExchangeForm.HTTP.ReconnectCount := 0;
       ExchangeForm.HTTP.Request.BasicAuthentication := False;
       ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
       if not AnsiStartsText('analit\', HTTPName) then
         ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
+      Progress := 0;
+      Synchronize( SetProgress );
 
       try
 
@@ -471,6 +476,8 @@ begin
               FileStream.Seek( -1024, soFromEnd)
             else
               FileStream.Seek( 0, soFromEnd);
+
+            StartDownPosition := FileStream.Position;
 
             ExchangeForm.HTTP.Get( HostFileName +
               IfThen(FileStream.Position > 0, '?RangeStart=' + IntToStr(FileStream.Position), ''),
@@ -513,6 +520,7 @@ begin
 
       finally
         ExchangeForm.HTTP.ReconnectCount := OldReconnectCount;
+        ExchangeForm.HTTP.OnWork := nil;
         ExchangeForm.HTTP.Request.Username := HTTPName;
         ExchangeForm.HTTP.Request.BasicAuthentication := True;
         try
@@ -520,7 +528,6 @@ begin
         except
         end;
         ExchangeForm.HTTP.Request.Authentication := nil;
-        ExchangeForm.ShowStatusText := False;
       end;
 
 			Synchronize( ExchangeForm.CheckStop);
@@ -1880,6 +1887,60 @@ begin
         raise;
     end;
   end;
+end;
+
+procedure TExchangeThread.HTTPWork(Sender: TObject; AWorkMode: TWorkMode;
+  const AWorkCount: Integer);
+var
+	Total, Current: real;
+	TSuffix, CSuffix: string;
+  inHTTP : TidHTTP;
+  INFileSize : Integer;
+  ProgressPosition : Integer;
+begin
+  inHTTP := TidHTTP(Sender);
+
+  if inHTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then
+	begin
+    INFileSize := StrToInt(inHTTP.Response.RawHeaders.Values['INFileSize']);
+
+		ProgressPosition := Round( ((StartDownPosition+AWorkCount)/INFileSize) *100);
+
+		TSuffix := 'Кб';
+		CSuffix := 'Кб';
+
+		Total := RoundTo(INFileSize/1024, -2);
+		Current := RoundTo((StartDownPosition +	AWorkCount) / 1024, -2);
+
+    if Total > 1000 then
+    begin
+      Total := RoundTo( Total / 1024, -2);
+      TSuffix := 'Мб';
+    end;
+    if Current > 1000 then
+    begin
+      Current := RoundTo( Current / 1024, -2);
+      CSuffix := 'Мб';
+    end;
+
+    if (ProgressPosition > 0) and ((ProgressPosition - Progress > 5) or (ProgressPosition > 97)) then
+    begin
+      Progress := ProgressPosition;
+      Synchronize( SetProgress );
+      StatusText := 'Загрузка данных   (' +
+        FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
+        FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
+      Synchronize( SetDownStatus );
+    end;
+	end;
+
+	if CriticalError then
+    Abort;
+end;
+
+procedure TExchangeThread.SetDownStatus;
+begin
+  ExchangeForm.stStatus.Caption := StatusText; 
 end;
 
 { TFileUpdateInfo }

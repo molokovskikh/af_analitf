@@ -13,6 +13,7 @@ type
    FStatusPosition : Integer;
    FStatusStr : String;
    FSOAP : TSOAP;
+   StartDownPosition : Integer;
    procedure ClearProgress;
    procedure UpdateProgress;
    procedure HTTPReclameWork(Sender: TObject;
@@ -128,6 +129,7 @@ begin
                   else
                     FileStream.Seek( 0, soFromEnd);
 
+                  StartDownPosition := FileStream.Position;
                   ExchangeForm.HTTPReclame.Get( ReclameURL +
                     IfThen(FileStream.Position > 0, '?RangeStart=' + IntToStr(FileStream.Position), ''),
                     FileStream);
@@ -251,50 +253,45 @@ var
 	Total, Current: real;
 	TSuffix, CSuffix: string;
   HTTP : TIdHTTP;
+  INFileSize : Integer;
+  ProgressPosition : Integer;
 begin
   if Terminated then Abort;
 
   HTTP := TIdHTTP(Sender);
-	if HTTP.Response.ContentLength = 0 then FStatusPosition := 0
-	else
+	if HTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then 
 	begin
-		FStatusPosition := Round(( HTTP.Response.ContentRangeStart+Cardinal(AWorkCount))/
-			( HTTP.Response.ContentRangeStart+Cardinal(HTTP.Response.ContentLength))*100);
+    INFileSize := StrToInt(HTTP.Response.RawHeaders.Values['INFileSize']);
+
+		ProgressPosition := Round( ((StartDownPosition+AWorkCount)/INFileSize) *100);
 
 		TSuffix := 'Кб';
 		CSuffix := 'Кб';
 
-		Total := RoundTo(( HTTP.Response.ContentRangeStart +
-			Cardinal( HTTP.Response.ContentLength)) / 1024, -2);
-		Current := RoundTo((HTTP.Response.ContentRangeStart +
-			Cardinal( AWorkCount)) / 1024, -2);
+		Total := RoundTo(INFileSize/ 1024, -2);
+		Current := RoundTo((StartDownPosition +	AWorkCount) / 1024, -2);
 
-		if Total <> Current then
-		begin
-			if Total > 1000 then
-			begin
-				Total := RoundTo( Total / 1024, -2);
-				TSuffix := 'Мб';
-			end;
-			if Current > 1000 then
-			begin
-				Current := RoundTo( Current / 1024, -2);
-				CSuffix := 'Мб';
-			end;
+    if Total > 1000 then
+    begin
+      Total := RoundTo( Total / 1024, -2);
+      TSuffix := 'Мб';
+    end;
+    if Current > 1000 then
+    begin
+      Current := RoundTo( Current / 1024, -2);
+      CSuffix := 'Мб';
+    end;
 
-			if FStatusPosition > 0 then
-      begin
-//        ShowStatusText := True;
-//        stStatus.Caption := 'Загрузка данных   (' +
-        FStatusStr := 'Загрузка данных   (' +
-				FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
-				FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
-//        WriteLn(LogFile, DateTimeToStr(Now) + '  HTTPWork : ' + FStatusStr);
-      end;
-		end;
+    if (ProgressPosition > 0) and ((ProgressPosition - FStatusPosition > 5) or (ProgressPosition > 97)) then
+    begin
+      FStatusStr := 'Загрузка данных   (' +
+        FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
+        FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
+      FStatusPosition := ProgressPosition;
+      Synchronize(UpdateProgress);
+    end;
 	end;
 
-  Synchronize(UpdateProgress);
 end;
 
 procedure TReclameThread.Log(SybSystem, MessageText: String);
