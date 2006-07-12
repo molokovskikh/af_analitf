@@ -91,6 +91,7 @@ type
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
+    SelectedPrices : TStringList;
     procedure SummaryShow;
     procedure SummaryHShow;
     procedure DeleteOrder;
@@ -145,6 +146,7 @@ begin
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgSummary.LoadFromRegistry( Reg);
 	Reg.Free;
+  SelectedPrices := SummarySelectedPrices;
   for I := 0 to SelectedPrices.Count-1 do begin
     sp := TSelectPrice(SelectedPrices.Objects[i]);
     mi := TMenuItem.Create(pmSelectedPrices);
@@ -179,23 +181,25 @@ end;
 procedure TSummaryForm.SummaryShow;
 var
 	V: array[0..0] of Variant;
+  FilterSQL : String;
 begin
 	Screen.Cursor := crHourglass;
 	try
     if adsSummary.Active then
       adsSummary.Close;
+    FilterSQL := GetSelectedPricesSQL(SelectedPrices);
     if LastSymmaryType = 0 then begin
-      adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ' +
-        GetSelectedPricesSQL;
+      adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ';
       dbgSummary.InputField := 'OrderCount';
       btnDelete.Enabled := True;
     end
     else begin
-      adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOWSEND(:ACLIENTID, :ADATEFROM, :ADATETO) ' +
-        GetSelectedPricesSQL;
+      adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOWSEND(:ACLIENTID, :ADATEFROM, :ADATETO) ';
       dbgSummary.InputField := '';
       btnDelete.Enabled := False;
     end;
+    if Length(FilterSQL) > 0 then
+      adsSummary.SelectSQL.Text := adsSummary.SelectSQL.Text + ' where ' + FilterSQL;
     adsSummary.Open;
     DataSetCalc( adsSummary,['SUM(SUMORDER)'], V);
     OrderCount := adsSummary.RecordCount;

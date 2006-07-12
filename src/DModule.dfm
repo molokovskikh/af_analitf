@@ -761,6 +761,7 @@ object DM: TDM
     UpdateTransaction = UpTran
     Left = 240
     Top = 344
+    oCacheCalcFields = True
     object adsCoreCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0

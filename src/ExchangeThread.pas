@@ -1090,6 +1090,7 @@ begin
 	//Synonym
 	if (utSynonym in UpdateTables) and (eaGetFullData in ExchangeForm.ExchangeActs) then begin
     SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_PRICECODE');
+    SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_SYNONYMNAME');
     SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT FK_SYNONYMS_FULLCODE');
     SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS');
 	end;
@@ -1264,6 +1265,7 @@ begin
   	  SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT PK_SYNONYMS PRIMARY KEY (SYNONYMCODE)'; ExecQuery;
   	  SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT FK_SYNONYMS_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
   	  SQL.Text:='CREATE INDEX IDX_PRICECODE ON SYNONYMS (PRICECODE)'; ExecQuery;
+  	  SQL.Text:='CREATE INDEX IDX_SYNONYMNAME ON SYNONYMS (SYNONYMNAME)'; ExecQuery;
     end
     else begin
       UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',

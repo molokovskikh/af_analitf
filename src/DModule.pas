@@ -384,11 +384,12 @@ type
 var
   DM: TDM;
   PassC : TINFCrypt;
-  SelectedPrices : TStringList;
+  SummarySelectedPrices,
+  SynonymSelectedPrices : TStringList;
 
-procedure ClearSelectedPrices;
+procedure ClearSelectedPrices(SelectedPrices : TStringList);
 
-function GetSelectedPricesSQL : String;
+function GetSelectedPricesSQL(SelectedPrices : TStringList; Suffix : String = '') : String;
 
 implementation
 
@@ -401,7 +402,7 @@ var
   ch, p : String;
   I : Integer;
 
-procedure ClearSelectedPrices;
+procedure ClearSelectedPrices(SelectedPrices : TStringList);
 var
   I : Integer;
 begin
@@ -410,7 +411,7 @@ begin
   SelectedPrices.Clear;
 end;
 
-function GetSelectedPricesSQL : String;
+function GetSelectedPricesSQL(SelectedPrices : TStringList; Suffix : String = '') : String;
 var
   I : Integer;
   sp : TSelectPrice;
@@ -423,18 +424,18 @@ begin
     if sp.Selected then begin
       Inc(SelectedCount);
       if Result = '' then
-        Result := Format('((PriceCode = %d) and (RegionCode = %d))', [sp.PriceCode, sp.RegionCode])
+        Result := Format('((' + Suffix + 'PriceCode = %d) and (' + Suffix + 'RegionCode = %d))', [sp.PriceCode, sp.RegionCode])
       else
-        Result := Result + ' or ' + Format('((PriceCode = %d) and (RegionCode = %d))', [sp.PriceCode, sp.RegionCode]);
+        Result := Result + ' or ' + Format('((' + Suffix + 'PriceCode = %d) and (' + Suffix + 'RegionCode = %d))', [sp.PriceCode, sp.RegionCode]);
     end;
   end;
   if SelectedCount = 0 then
-    Result := ' where PriceCode = -1'
+    Result := ' (' + Suffix + 'PriceCode = -1)'
   else
     if SelectedCount = SelectedPrices.Count then
       Result := ''
     else
-      Result := ' where ' + Result;
+      Result := ' ' + Result;
 end;
 
 procedure TDM.DMCreate(Sender: TObject);
@@ -1969,7 +1970,8 @@ end;
 
 procedure TDM.LoadSelectedPrices;
 begin
-  ClearSelectedPrices;
+  ClearSelectedPrices(SummarySelectedPrices);
+  ClearSelectedPrices(SynonymSelectedPrices);
   if adsPrices.Active then
     adsPrices.Close;
   adsPrices.Open;
@@ -1977,7 +1979,8 @@ begin
     adsPrices.DoSort(['PRICENAME'], [True]);
     adsPrices.First;
     while not adsPrices.Eof do begin
-      SelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
+      SummarySelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
+      SynonymSelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
       adsPrices.Next;
     end;
   finally
@@ -2029,8 +2032,12 @@ initialization
   for I := 1 to Length(ch) do
     p := p + ch[i] + PassPassW[i];
   PassC := TINFCrypt.Create(p, 48);
-  SelectedPrices := TStringList.Create;
+  SummarySelectedPrices := TStringList.Create;
+  SynonymSelectedPrices := TStringList.Create;
 finalization
   PassC.Free;
-  SelectedPrices.Free;
+  ClearSelectedPrices(SummarySelectedPrices);
+  ClearSelectedPrices(SynonymSelectedPrices);
+  SummarySelectedPrices.Free;
+  SynonymSelectedPrices.Free;
 end.

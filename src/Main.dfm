@@ -134,26 +134,32 @@ object MainForm: TMainForm
         Action = actOrderAll
         ImageIndex = 4
       end
-      object btnExpireds: TToolButton
+      object ToolButton7: TToolButton
         Left = 263
+        Top = 0
+        Action = actSynonymSearch
+        ImageIndex = 4
+      end
+      object btnExpireds: TToolButton
+        Left = 302
         Top = 0
         Action = actSale
         ImageIndex = 5
       end
       object btnOrderPrice: TToolButton
-        Left = 302
+        Left = 341
         Top = 0
         Action = actOrderPrice
         ImageIndex = 6
       end
       object btnOrderSummary: TToolButton
-        Left = 341
+        Left = 380
         Top = 0
         Action = actOrderSummary
         ImageIndex = 7
       end
       object ToolButton3: TToolButton
-        Left = 380
+        Left = 419
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
@@ -161,18 +167,18 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnClosedOrders: TToolButton
-        Left = 388
+        Left = 427
         Top = 0
         Action = actClosedOrders
         ImageIndex = 8
       end
       object ToolButton8: TToolButton
-        Left = 427
+        Left = 466
         Top = 0
         Action = actWayBill
       end
       object ToolButton4: TToolButton
-        Left = 466
+        Left = 505
         Top = 0
         Width = 8
         Caption = 'ToolButton4'
@@ -180,26 +186,26 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnOrderRegister: TToolButton
-        Left = 474
+        Left = 513
         Top = 0
         Action = actRegistry
         Caption = #1043#1086#1089#1091#1076#1072#1088#1089#1090#1074#1077#1085#1085#1099#1081' '#1088#1077#1077#1089#1090#1088' '#1094#1077#1085
         ImageIndex = 9
       end
       object btnDefectives: TToolButton
-        Left = 513
+        Left = 552
         Top = 0
         Action = actDefectives
         ImageIndex = 10
       end
       object btnNormatives: TToolButton
-        Left = 552
+        Left = 591
         Top = 0
         Action = actNormatives
         ImageIndex = 11
       end
       object ToolButton9: TToolButton
-        Left = 591
+        Left = 630
         Top = 0
         Width = 8
         Caption = 'ToolButton9'
@@ -207,18 +213,18 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnHome: TToolButton
-        Left = 599
+        Left = 638
         Top = 0
         Action = actHome
       end
       object btnConfig: TToolButton
-        Left = 638
+        Left = 677
         Top = 0
         Action = actConfig
         ImageIndex = 12
       end
       object ToolButton6: TToolButton
-        Left = 677
+        Left = 716
         Top = 0
         Width = 8
         Caption = 'ToolButton6'
@@ -226,7 +232,7 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object Panel1: TPanel
-        Left = 685
+        Left = 724
         Top = 0
         Width = 779
         Height = 38
@@ -660,6 +666,12 @@ object MainForm: TMainForm
       ImageIndex = 15
       OnExecute = actWayBillExecute
       OnUpdate = actWayBillUpdate
+    end
+    object actSynonymSearch: TAction
+      Category = 'Order'
+      Caption = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
+      Hint = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
+      OnExecute = actSynonymSearchExecute
     end
   end
   object AppEvents: TApplicationEvents

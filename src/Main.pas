@@ -125,6 +125,8 @@ TMainForm = class(TForm)
     ToolButton8: TToolButton;
     actWayBill: TAction;
     ToolButton6: TToolButton;
+    ToolButton7: TToolButton;
+    actSynonymSearch: TAction;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -174,6 +176,7 @@ TMainForm = class(TForm)
     procedure dblcbClientsMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure actWayBillExecute(Sender: TObject);
+    procedure actSynonymSearchExecute(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -227,7 +230,8 @@ uses
 	DModule, AProc, Config, DBProc, NamesForms, Prices,
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm, Integr,
-	Exclusive, Wait, AlphaUtils, About, ExternalOrders, CompactThread, LU_Tracer;
+	Exclusive, Wait, AlphaUtils, About, ExternalOrders, CompactThread, LU_Tracer,
+  SynonymSearch;
 
 {$R *.DFM}
 
@@ -873,6 +877,11 @@ procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirExports + '\'),
 		nil, nil, SW_SHOWDEFAULT);
+end;
+
+procedure TMainForm.actSynonymSearchExecute(Sender: TObject);
+begin
+	ShowSynonymSearch;
 end;
 
 end.

@@ -67,7 +67,8 @@ uses
   infvercls in 'RC_RND\infvercls.pas',
   NtlmMsgs in 'NTLM\NtlmMsgs.pas',
   DADAuthenticationNTLM in 'NTLM\DADAuthenticationNTLM.pas',
-  Encryption in 'NTLM\Encryption.pas';
+  Encryption in 'NTLM\Encryption.pas',
+  SynonymSearch in 'SynonymSearch.pas' {SynonymSearchForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}
