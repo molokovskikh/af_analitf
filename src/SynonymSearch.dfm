@@ -1,4 +1,6 @@
 inherited SynonymSearchForm: TSynonymSearchForm
+  Left = 260
+  Top = 130
   ActiveControl = dbgCore
   Caption = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
   ClientHeight = 573
@@ -37,10 +39,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object lFilter: TLabel
       Left = 554
       Top = 8
-      Width = 105
+      Width = 99
       Height = 13
       Anchors = [akTop, akRight]
-      Caption = '('#1060#1080#1083#1100#1090#1077#1088' '#1087#1088#1080#1084#1077#1085#1077#1085')'
+      Caption = '('#1060#1080#1083#1100#1090#1088' '#1087#1088#1080#1084#1077#1085#1077#1085')'
       Visible = False
     end
     object eSearch: TEdit
@@ -96,7 +98,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 0
     Top = 37
     Width = 792
-    Height = 536
+    Height = 405
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
@@ -104,7 +106,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 536
+      Height = 405
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -265,6 +267,120 @@ inherited SynonymSearchForm: TSynonymSearchForm
           Title.Caption = #1057#1091#1084#1084#1072
           Width = 70
         end>
+    end
+  end
+  object pBottom: TPanel
+    Left = 0
+    Top = 442
+    Width = 792
+    Height = 131
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 3
+    object gbPrevOrders: TGroupBox
+      Left = 0
+      Top = 0
+      Width = 792
+      Height = 131
+      Align = alClient
+      Caption = ' '#1055#1088#1077#1076#1099#1076#1091#1097#1080#1077' '#1079#1072#1082#1072#1079#1099' '
+      TabOrder = 0
+      DesignSize = (
+        792
+        131)
+      object lblPriceAvg: TLabel
+        Left = 8
+        Top = 110
+        Width = 244
+        Height = 13
+        Caption = #1057#1088#1077#1076#1085#1103#1103' '#1094#1077#1085#1072' '#1087#1086' '#1087#1088#1077#1076#1099#1076#1091#1097#1080#1084' '#1079#1072#1082#1072#1079#1072#1084' :'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtPriceAvg: TDBText
+        Left = 258
+        Top = 110
+        Width = 70
+        Height = 13
+        AutoSize = True
+        DataField = 'ORDERPRICEAVG'
+        DataSource = dsOrdersShowFormSummary
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbgHistory: TToughDBGrid
+        Left = 2
+        Top = 15
+        Width = 788
+        Height = 90
+        Anchors = [akLeft, akTop, akRight]
+        AutoFitColWidths = True
+        DataSource = dsOrders
+        Flat = True
+        FooterColor = clWindow
+        FooterFont.Charset = DEFAULT_CHARSET
+        FooterFont.Color = clWindowText
+        FooterFont.Height = -11
+        FooterFont.Name = 'MS Sans Serif'
+        FooterFont.Style = []
+        Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+        OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+        ReadOnly = True
+        TabOrder = 0
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'MS Sans Serif'
+        TitleFont.Style = []
+        VertScrollBar.VisibleMode = sbNeverShowEh
+        SearchPosition = spBottom
+        Columns = <
+          item
+            EditButtons = <>
+            FieldName = 'PRICENAME'
+            Footers = <>
+            Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
+            Width = 110
+          end
+          item
+            EditButtons = <>
+            FieldName = 'CryptSYNONYMFIRM'
+            Footers = <>
+            Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
+            Width = 102
+          end
+          item
+            EditButtons = <>
+            FieldName = 'ORDERCOUNT'
+            Footers = <>
+            Title.Caption = #1047#1072#1082#1072#1079
+            Width = 38
+          end
+          item
+            EditButtons = <>
+            FieldName = 'CryptPRICE'
+            Footers = <>
+            Title.Caption = #1062#1077#1085#1072
+            Width = 49
+          end
+          item
+            Alignment = taCenter
+            DisplayFormat = 'dd.mm.yyyy'
+            EditButtons = <>
+            FieldName = 'ORDERDATE'
+            Footers = <>
+            Title.Caption = #1044#1072#1090#1072
+            Width = 68
+          end>
+      end
     end
   end
   object dsCore: TDataSource
@@ -701,8 +817,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'and FullCode = :FullCode')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
-    Left = 232
-    Top = 236
+    Left = 400
+    Top = 476
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
@@ -711,5 +827,101 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Size = 2
       RoundByScale = True
     end
+  end
+  object adsOrders: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '    FULLCODE,'
+      '    CODE,'
+      '    CODECR,'
+      '    SYNONYMNAME,'
+      '    SYNONYMFIRM,'
+      '    ORDERCOUNT,'
+      '    PRICE,'
+      '    ORDERDATE,'
+      '    PRICENAME,'
+      '    REGIONNAME,'
+      '    AWAIT,'
+      '    JUNK'
+      'FROM'
+      '    ORDERSSHOWBYFORM(:FULLCODE,'
+      '    :ACLIENTID) ')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    DataSource = dsCore
+    Left = 192
+    Top = 476
+    WaitEndMasterScroll = True
+    dcForceOpen = True
+    oTrimCharFields = False
+    oCacheCalcFields = True
+    object adsOrdersFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersSYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsOrdersSYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsOrdersORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsOrdersORDERDATE: TFIBDateTimeField
+      FieldName = 'ORDERDATE'
+      DisplayFormat = 'dd.mm.yyyy hh:mm AMPM'
+    end
+    object adsOrdersPRICENAME: TFIBStringField
+      FieldName = 'PRICENAME'
+      Size = 70
+      EmptyStrToNull = True
+    end
+    object adsOrdersREGIONNAME: TFIBStringField
+      FieldName = 'REGIONNAME'
+      Size = 25
+      EmptyStrToNull = True
+    end
+    object adsOrdersAWAIT: TFIBIntegerField
+      FieldName = 'AWAIT'
+    end
+    object adsOrdersJUNK: TFIBIntegerField
+      FieldName = 'JUNK'
+    end
+    object adsOrdersCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsOrdersCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsOrdersCryptPRICE: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptPRICE'
+      Calculated = True
+    end
+    object adsOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
+    end
+  end
+  object dsOrders: TDataSource
+    DataSet = adsOrders
+    Left = 160
+    Top = 496
+  end
+  object dsOrdersShowFormSummary: TDataSource
+    DataSet = adsOrdersShowFormSummary
+    Left = 336
+    Top = 488
   end
 end

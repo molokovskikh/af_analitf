@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB, FIBDataSet, pFIBDataSet, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Registry, Constant,
-  ForceRus, DBGrids, Buttons, Menus, ibase;
+  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -85,6 +85,27 @@ type
     adsCoreDATEPRICE: TFIBDateTimeField;
     adsCoreBASECOST: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
+    pBottom: TPanel;
+    gbPrevOrders: TGroupBox;
+    lblPriceAvg: TLabel;
+    dbtPriceAvg: TDBText;
+    dbgHistory: TToughDBGrid;
+    adsOrders: TpFIBDataSet;
+    adsOrdersFULLCODE: TFIBBCDField;
+    adsOrdersSYNONYMNAME: TFIBStringField;
+    adsOrdersSYNONYMFIRM: TFIBStringField;
+    adsOrdersORDERCOUNT: TFIBIntegerField;
+    adsOrdersORDERDATE: TFIBDateTimeField;
+    adsOrdersPRICENAME: TFIBStringField;
+    adsOrdersREGIONNAME: TFIBStringField;
+    adsOrdersAWAIT: TFIBIntegerField;
+    adsOrdersJUNK: TFIBIntegerField;
+    adsOrdersCODE: TFIBStringField;
+    adsOrdersCODECR: TFIBStringField;
+    adsOrdersCryptPRICE: TCurrencyField;
+    adsOrdersPRICE: TFIBStringField;
+    dsOrders: TDataSource;
+    dsOrdersShowFormSummary: TDataSource;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -109,8 +130,8 @@ type
   private
     { Private declarations }
     fr : TForceRus;
-    UseExcess, CurrentUseForms: Boolean;
-    DeltaMode, Excess, ClientId: Integer;
+    UseExcess: Boolean;
+    DeltaMode, Excess : Integer;
     slColors : TStringList;
     StartSQL : String;
     SelectedPrices : TStringList;
@@ -119,6 +140,7 @@ type
     procedure ChangeSelected(ASelected : Boolean);
     procedure OnSPClick(Sender: TObject);
     procedure ccf(DataSet: TDataSet);
+    procedure ocf(DataSet: TDataSet);
   public
     { Public declarations }
   end;
@@ -151,6 +173,7 @@ begin
   inherited;
   //dbgCore.Columns.State := csDefault;
   adsCore.OnCalcFields := ccf;
+  adsOrders.OnCalcFields := ocf;
   StartSQL := adsCore.SelectSQL.Text; 
   slColors := TStringList.Create;
 
@@ -160,6 +183,8 @@ begin
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
+	adsOrders.ParamByName( 'AClientId').Value :=
+		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsOrdersShowFormSummary.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
@@ -213,6 +238,7 @@ begin
     if adsCore.Active then
       adsCore.Close;
   	adsOrdersShowFormSummary.DataSource := nil;
+  	adsOrders.DataSource := nil;
     adsCore.ParamByName('LikeParam').AsString := '%' + eSearch.Text + '%';
     adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
   	adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
@@ -251,6 +277,7 @@ begin
     finally
       adsCore.EnableControls;
     end;
+    adsOrders.DataSource := dsCore;
   	adsOrdersShowFormSummary.DataSource := dsCore;
     dbgCore.SetFocus;
   end
@@ -465,6 +492,14 @@ procedure TSynonymSearchForm.cbBaseOnlyClick(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
   tmrSearch.Enabled := True;
+end;
+
+procedure TSynonymSearchForm.ocf(DataSet: TDataSet);
+begin
+  try
+    adsOrdersCryptPRICE.AsCurrency := StrToCurr(DM.D_B_N(adsOrdersPRICE.AsString));
+  except
+  end;
 end;
 
 end.
