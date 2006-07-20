@@ -63,7 +63,7 @@ inherited PricesForm: TPricesForm
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
       Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
-      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghIncSearch, dghPreferIncSearch, dghRowHighlight]
       TabOrder = 1
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
