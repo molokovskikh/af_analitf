@@ -127,6 +127,8 @@ type
     procedure miSelectAllClick(Sender: TObject);
     procedure miUnselecAllClick(Sender: TObject);
     procedure cbBaseOnlyClick(Sender: TObject);
+    procedure dbgCoreDrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
   private
     { Private declarations }
     fr : TForceRus;
@@ -135,6 +137,7 @@ type
     slColors : TStringList;
     StartSQL : String;
     SelectedPrices : TStringList;
+    BM : TBitmap;
     procedure AddKeyToSearch(Key : Char);
     procedure SetClear;
     procedure ChangeSelected(ASelected : Boolean);
@@ -153,7 +156,7 @@ procedure ShowSynonymSearch;
 
 implementation
 
-uses DModule, AProc, Main, SQLWaiting;
+uses DModule, AProc, Main, SQLWaiting, AlphaUtils;
 
 {$R *.dfm}
 
@@ -171,7 +174,9 @@ var
   mi :TMenuItem;
 begin
   inherited;
-  //dbgCore.Columns.State := csDefault;
+  
+  BM := TBitmap.Create;
+
   adsCore.OnCalcFields := ccf;
   adsOrders.OnCalcFields := ocf;
   StartSQL := adsCore.SelectSQL.Text; 
@@ -218,6 +223,7 @@ begin
 	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'	+ 'TCoreForm', True);
 	dbgCore.SaveToRegistry( Reg);
 	Reg.Free;
+  BM.Free;
 end;
 
 procedure TSynonymSearchForm.TimerTimer(Sender: TObject);
@@ -500,6 +506,14 @@ begin
     adsOrdersCryptPRICE.AsCurrency := StrToCurr(DM.D_B_N(adsOrdersPRICE.AsString));
   except
   end;
+end;
+
+procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumnEh;
+  State: TGridDrawState);
+begin
+  if Column.Field = adsCoreSYNONYMNAME then
+    ProduceAlphaBlendRect(eSearch.Text, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
 end;
 
 end.

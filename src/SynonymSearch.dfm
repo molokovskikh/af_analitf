@@ -126,6 +126,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
+      OnDrawColumnCell = dbgCoreDrawColumnCell
       OnGetCellParams = dbgCoreGetCellParams
       OnKeyDown = dbgCoreKeyDown
       OnKeyPress = dbgCoreKeyPress

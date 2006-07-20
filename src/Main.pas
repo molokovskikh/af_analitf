@@ -791,6 +791,7 @@ procedure TMainForm.DisableByHTTPName;
 begin
   actSendOrders.Enabled := False;
   actOrderAll.Enabled := False;
+  actSynonymSearch.Enabled := False;
   actSale.Enabled := False;
   actOrderPrice.Enabled := False;
   actOrderSummary.Enabled := False;
@@ -803,6 +804,7 @@ procedure TMainForm.EnableByHTTPName;
 begin
   actSendOrders.Enabled := True;
   actOrderAll.Enabled := True;
+  actSynonymSearch.Enabled := True;
   actSale.Enabled := True;
   actOrderPrice.Enabled := True;
   actOrderSummary.Enabled := True;
