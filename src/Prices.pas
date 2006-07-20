@@ -120,6 +120,7 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+  NeedFirstOnDataSet := False;
 	CoreFirmForm := TCoreFirmForm.Create( Application);
 	actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
 	Reg := TRegistry.Create;

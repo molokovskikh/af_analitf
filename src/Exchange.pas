@@ -552,7 +552,7 @@ procedure TInternalRepareOrders.InternalRepareOrders;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
-  Code, CodeCr : String;
+  Code, CodeCr : Variant;
 
 	procedure SetOrder( Order: integer);
 	begin
@@ -580,11 +580,11 @@ begin
       //Получаем данные, восстанавливаемой позиции
 			Order := DM.adsSelect3ORDERCOUNT.AsInteger;
 			CurOrder := 0;
-			Code := DM.adsSelect3CODE.Value;
-      Code := Copy(Code, 1, Length(Code)-16);
+			Code := DM.adsSelect3CODE.AsVariant;
+      //Code := Copy(Code, 1, Length(Code)-16);
       //if Code = '' then Code := Null;
-			CodeCr := DM.adsSelect3CODECR.Value;
-      CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
+			CodeCr := DM.adsSelect3CODECR.AsVariant;
+      //CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
       //if CodeCr = '' then CodeCr := Null;
 			SynonymCode := DM.adsSelect3SYNONYMCODE.AsInteger;
 			SynonymFirmCrCode := DM.adsSelect3SYNONYMFIRMCRCODE.AsInteger;
@@ -607,16 +607,15 @@ begin
 			begin
 				Strings.Append( Format( '%s : %s - %s : позиция отсутствует',
 					[ DM.adsSelect3PRICENAME.AsString,
-					DM.adsSelect3CryptSYNONYMNAME.AsString,
-					DM.adsSelect3CryptSYNONYMFIRM.AsString]));
+					DM.adsSelect3SYNONYMNAME.AsString,
+					DM.adsSelect3SYNONYMFIRM.AsString]));
 				DM.adsCore.Close;
 				SetOrder( 0);
 				DM.adsSelect3.Next;
 				continue;
 			end;
 
-			if DM.adsCore.ExtLocate( 'Code;CodeCr',
-				  VarArrayOf([Code, CodeCr]), [eloPartialKey])
+			if DM.adsCore.Locate( 'Code;CodeCr', VarArrayOf([Code, CodeCr]), [])
       then
 			begin
 				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);
@@ -634,8 +633,8 @@ begin
 				begin
 					Strings.Append( Format( '%s : %s - %s : %d вместо %d (старая цена : %s)',
 						[ DM.adsSelect3PRICENAME.AsString,
-						DM.adsSelect3CryptSYNONYMNAME.AsString,
-						DM.adsSelect3CryptSYNONYMFIRM.AsString,
+						DM.adsSelect3SYNONYMNAME.AsString,
+						DM.adsSelect3SYNONYMFIRM.AsString,
 						CurOrder,
 						Order,
 						DM.adsSelect3CryptPRICE.AsString]));
@@ -644,8 +643,8 @@ begin
 				begin
 					Strings.Append( Format( '%s : %s - %s : предложение отсутствует (старая цена : %s)',
 						[ DM.adsSelect3PRICENAME.AsString,
-						DM.adsSelect3CryptSYNONYMNAME.AsString,
-						DM.adsSelect3CryptSYNONYMFIRM.AsString,
+						DM.adsSelect3SYNONYMNAME.AsString,
+						DM.adsSelect3SYNONYMFIRM.AsString,
 						DM.adsSelect3CryptPRICE.AsString]));
 				end;
 			end;

@@ -203,12 +203,12 @@ object FormsHistoryForm: TFormsHistoryForm
       'FROM'
       '    ORDERSSHOWBYFORM(:AFULLCODE,'
       '    :ACLIENTID) ')
-    OnCalcFields = adsOrdersCalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     Left = 112
     Top = 152
-    oFetchAll = True
+    oTrimCharFields = False
+    oCacheCalcFields = True
     object adsOrdersFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
@@ -217,12 +217,12 @@ object FormsHistoryForm: TFormsHistoryForm
     object adsOrdersSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
@@ -230,17 +230,12 @@ object FormsHistoryForm: TFormsHistoryForm
     object adsOrdersCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = False
-    end
-    object adsOrdersPRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 48
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
@@ -248,12 +243,12 @@ object FormsHistoryForm: TFormsHistoryForm
     object adsOrdersPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsOrdersAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
@@ -265,6 +260,11 @@ object FormsHistoryForm: TFormsHistoryForm
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
       Calculated = True
+    end
+    object adsOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object adsWareData: TpFIBDataSet
@@ -280,5 +280,6 @@ object FormsHistoryForm: TFormsHistoryForm
     Database = DM.MainConnection1
     Left = 208
     Top = 152
+    oCacheCalcFields = True
   end
 end

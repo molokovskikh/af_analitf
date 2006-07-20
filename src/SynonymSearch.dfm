@@ -124,7 +124,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
-      OnDrawDataCell = dbgCoreDrawDataCell
       OnGetCellParams = dbgCoreGetCellParams
       OnKeyDown = dbgCoreKeyDown
       OnKeyPress = dbgCoreKeyPress
@@ -134,7 +133,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'CryptSYNONYMNAME'
+          FieldName = 'SYNONYMNAME'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
@@ -142,7 +141,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         end
         item
           EditButtons = <>
-          FieldName = 'CryptSYNONYMFIRM'
+          FieldName = 'SYNONYMFIRM'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
@@ -325,14 +324,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'ogs.form) as SynonymName ,'
       ''
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
-      '    null as DatePrice,'
+      '    -- null as DatePrice,'
       ''
-      '--    CASE'
+      '    CASE'
       
-        '--       WHEN (PricesData.DatePrice IS NOT NULL) THEN addminute(' +
-        'PricesData.DatePrice, -:timezonebias)'
-      '--       ELSE null'
-      '--    END AS DatePrice,'
+        '       WHEN (PricesData.DatePrice IS NOT NULL) THEN addminute(Pr' +
+        'icesData.DatePrice, -coalesce(:timezonebias, 0))'
+      '       ELSE null'
+      '    END AS DatePrice,'
       ''
       '    PricesData.PriceName,'
       '    Enabled AS PriceEnabled,'
@@ -384,13 +383,13 @@ inherited SynonymSearchForm: TSynonymSearchForm
     AfterPost = adsCoreAfterPost
     BeforeEdit = adsCoreBeforeEdit
     BeforePost = adsCoreBeforePost
-    OnCalcFields = adsCoreCalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 64
     Top = 133
+    oTrimCharFields = False
     oCacheCalcFields = True
     oRefreshAfterPost = False
     oPersistentSorting = True
@@ -411,18 +410,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldKind = fkCalculated
       FieldName = 'PriceDelta'
       DisplayFormat = '0.0;;'#39#39
-      Calculated = True
-    end
-    object adsCoreCryptSYNONYMNAME: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMNAME'
-      Size = 250
-      Calculated = True
-    end
-    object adsCoreCryptSYNONYMFIRM: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMFIRM'
-      Size = 250
       Calculated = True
     end
     object adsCoreCryptBASECOST: TCurrencyField
@@ -492,11 +479,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Size = 50
       EmptyStrToNull = True
     end
-    object adsCoreBASECOST: TFIBStringField
-      FieldName = 'BASECOST'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsCoreQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
@@ -516,11 +498,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
-      EmptyStrToNull = True
-    end
-    object adsCoreDATEPRICE: TFIBStringField
-      FieldName = 'DATEPRICE'
-      Size = 1
       EmptyStrToNull = True
     end
     object adsCorePRICENAME: TFIBStringField
@@ -602,11 +579,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreORDERSPRICE: TFIBStringField
-      FieldName = 'ORDERSPRICE'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsCoreORDERSJUNK: TFIBBooleanField
       FieldName = 'ORDERSJUNK'
     end
@@ -647,6 +619,19 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
+    end
+    object adsCoreDATEPRICE: TFIBDateTimeField
+      FieldName = 'DATEPRICE'
+    end
+    object adsCoreBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSPRICE: TFIBStringField
+      FieldName = 'ORDERSPRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object adsRegions: TpFIBDataSet

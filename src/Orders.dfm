@@ -220,13 +220,13 @@ inherited OrdersForm: TOrdersForm
     OnGetCellParams = dbgOrdersGetCellParams
     OnKeyDown = dbgOrdersKeyDown
     OnSortMarkingChanged = dbgOrdersSortMarkingChanged
-    SearchField = 'CryptSynonymName'
+    SearchField = 'SynonymName'
     SearchPosition = spBottom
     ForceRus = True
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'CryptSYNONYMNAME'
+        FieldName = 'SYNONYMNAME'
         Footers = <>
         Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
         Title.TitleButton = True
@@ -234,7 +234,7 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptSYNONYMFIRM'
+        FieldName = 'SYNONYMFIRM'
         Footers = <>
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Title.TitleButton = True
@@ -291,28 +291,6 @@ inherited OrdersForm: TOrdersForm
       'where'
       '  orderid = :orderid'
       'and coreid = :coreid')
-    RefreshSQL.Strings = (
-      'SELECT'
-      '    ORDERID,'
-      '    CLIENTID,'
-      '    COREID,'
-      '    FULLCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    PRICE,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    ORDERCOUNT,'
-      '    SUMORDER'
-      'FROM'
-      '    ORDERSSHOW(:AORDERID)'
-      'where'
-      '  COREID = :COREID ')
     SelectSQL.Strings = (
       'SELECT'
       '    ORDERID,'
@@ -335,27 +313,15 @@ inherited OrdersForm: TOrdersForm
       '    ORDERSSHOW(:AORDERID) ')
     AfterPost = adsOrdersAfterPost
     BeforeEdit = adsOrdersBeforeEdit
-    OnCalcFields = adsOrdersCalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 144
     Top = 184
+    oTrimCharFields = False
     oCacheCalcFields = True
-    oFetchAll = True
-    object adsOrdersCryptSYNONYMNAME: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMNAME'
-      Size = 250
-      Calculated = True
-    end
-    object adsOrdersCryptSYNONYMFIRM: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMFIRM'
-      Size = 250
-      Calculated = True
-    end
+    oRefreshAfterPost = False
     object adsOrdersCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
@@ -421,11 +387,6 @@ inherited OrdersForm: TOrdersForm
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersPRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsOrdersAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
     end
@@ -439,6 +400,11 @@ inherited OrdersForm: TOrdersForm
       FieldName = 'SUMORDER'
       Size = 2
       RoundByScale = True
+    end
+    object adsOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
 end

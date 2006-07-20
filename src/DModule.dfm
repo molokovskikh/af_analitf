@@ -574,13 +574,13 @@ object DM: TDM
         'rsH.Closed = 0)'
       'WHERE '
       '  (OrderCount>0)'#39)
-    OnCalcFields = adsSelect3CalcFields
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 728
     Top = 216
+    oTrimCharFields = False
     oCacheCalcFields = True
     object adsSelect3ID: TFIBBCDField
       FieldName = 'ID'
@@ -610,11 +610,6 @@ object DM: TDM
     object adsSelect3CODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = True
-    end
-    object adsSelect3PRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 48
       EmptyStrToNull = True
     end
     object adsSelect3SYNONYMCODE: TFIBBCDField
@@ -651,32 +646,15 @@ object DM: TDM
       Size = 70
       EmptyStrToNull = True
     end
-    object adsSelect3CryptSYNONYMNAME: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMNAME'
-      Size = 250
-      Calculated = True
-    end
-    object adsSelect3CryptSYNONYMFIRM: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMFIRM'
-      Size = 250
-      Calculated = True
-    end
-    object adsSelect3CryptCODE: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptCODE'
-      Calculated = True
-    end
-    object adsSelect3CryptCODECR: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptCODECR'
-      Calculated = True
-    end
     object adsSelect3CryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
       Calculated = True
+    end
+    object adsSelect3PRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object adsCore: TpFIBDataSet
@@ -746,8 +724,8 @@ object DM: TDM
       '    ON CCore.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode'
       '    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode'
       
-        '    LEFT JOIN OrdersShowByClient(:AClientId) osbc ON CCore.CoreI' +
-        'd=osbc.CoreId'
+        '    LEFT JOIN Orders osbc ON osbc.ClientID = :AClientId and CCor' +
+        'e.CoreId=osbc.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       
         'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +
@@ -818,11 +796,6 @@ object DM: TDM
     end
     object adsCorePERIOD: TFIBStringField
       FieldName = 'PERIOD'
-      EmptyStrToNull = True
-    end
-    object adsCoreBASECOST: TFIBStringField
-      FieldName = 'BASECOST'
-      Size = 48
       EmptyStrToNull = True
     end
     object adsCoreQUANTITY: TFIBStringField
@@ -923,11 +896,6 @@ object DM: TDM
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreORDERSPRICE: TFIBStringField
-      FieldName = 'ORDERSPRICE'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsCoreORDERSHORDERID: TFIBBCDField
       FieldName = 'ORDERSHORDERID'
       Size = 0
@@ -964,10 +932,20 @@ object DM: TDM
     object adsCoreJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsCoreORDERSJUNK: TFIBIntegerField
+    object adsCoreBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSPRICE: TFIBStringField
+      FieldName = 'ORDERSPRICE'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSJUNK: TFIBBooleanField
       FieldName = 'ORDERSJUNK'
     end
-    object adsCoreORDERSAWAIT: TFIBIntegerField
+    object adsCoreORDERSAWAIT: TFIBBooleanField
       FieldName = 'ORDERSAWAIT'
     end
   end
@@ -1047,13 +1025,13 @@ object DM: TDM
       '    SUMORDER'
       'FROM'
       '    ORDERSSHOW(:AORDERID) ')
-    OnCalcFields = adsOrdersCalcFields
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 144
     Top = 344
+    oTrimCharFields = False
     oCacheCalcFields = True
     oFetchAll = True
     object adsOrdersCryptSUMORDER: TCurrencyField
@@ -1116,11 +1094,6 @@ object DM: TDM
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersPRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsOrdersAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
     end
@@ -1134,6 +1107,11 @@ object DM: TDM
       FieldName = 'SUMORDER'
       Size = 2
       RoundByScale = True
+    end
+    object adsOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object BackService: TpFIBBackupService
@@ -1293,12 +1271,12 @@ object DM: TDM
       '    (oh.ClientId=:AClientId)'
       'and (oh.Closed <> 1)'
       'AND (ol.OrderCount > 0)')
-    OnCalcFields = adsSumOrdersCalcFields
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
     Left = 616
     Top = 272
+    oTrimCharFields = False
     oCacheCalcFields = True
     object adsSumOrdersCODE: TFIBStringField
       FieldName = 'CODE'
@@ -1308,11 +1286,6 @@ object DM: TDM
     object adsSumOrdersCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
-      EmptyStrToNull = True
-    end
-    object adsSumOrdersPRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 48
       EmptyStrToNull = True
     end
     object adsSumOrdersORDERCOUNT: TFIBIntegerField
@@ -1327,6 +1300,11 @@ object DM: TDM
       FieldKind = fkCalculated
       FieldName = 'SumOrders'
       Calculated = True
+    end
+    object adsSumOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object adsPrices: TpFIBDataSet
@@ -1452,10 +1430,6 @@ object DM: TDM
     UpdateSQL.Strings = (
       'UPDATE ORDERS'
       'SET '
-      '    CODE = :CODE,'
-      '    CODECR = :CODECR,'
-      '    SYNONYMNAME = :SYNONYMNAME,'
-      '    SYNONYMFIRM = :SYNONYMFIRM,'
       '    PRICE = :PRICE'
       'WHERE'
       '    ID = :OLD_ID'
@@ -1480,13 +1454,14 @@ object DM: TDM
       '    ORDERCOUNT'
       'FROM'
       '    ORDERS ')
-    OnCalcFields = adsAllOrdersCalcFields
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
     Left = 688
     Top = 272
+    oTrimCharFields = False
     oCacheCalcFields = True
+    oRefreshAfterPost = False
     object adsAllOrdersID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
@@ -1547,11 +1522,6 @@ object DM: TDM
       Size = 250
       EmptyStrToNull = True
     end
-    object adsAllOrdersPRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsAllOrdersAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
     end
@@ -1561,30 +1531,15 @@ object DM: TDM
     object adsAllOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsAllOrdersCryptSYNONYMNAME: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMNAME'
-      Calculated = True
-    end
-    object adsAllOrdersCryptSYNONYMFIRM: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMFIRM'
-      Calculated = True
-    end
-    object adsAllOrdersCryptCODE: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptCODE'
-      Calculated = True
-    end
-    object adsAllOrdersCryptCODECR: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptCODECR'
-      Calculated = True
-    end
     object adsAllOrdersCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
       Calculated = True
+    end
+    object adsAllOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
 end

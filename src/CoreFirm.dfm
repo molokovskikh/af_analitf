@@ -64,7 +64,7 @@ object CoreFirmForm: TCoreFirmForm
     OnKeyDown = dbgCoreKeyDown
     OnKeyPress = dbgCoreKeyPress
     OnSortMarkingChanged = dbgCoreSortMarkingChanged
-    SearchField = 'CryptSynonymName'
+    SearchField = 'SynonymName'
     InputField = 'OrderCount'
     SearchPosition = spTop
     ForceRus = True
@@ -73,7 +73,7 @@ object CoreFirmForm: TCoreFirmForm
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'CryptCODE'
+        FieldName = 'CODE'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1050#1086#1076
@@ -82,7 +82,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptSYNONYMNAME'
+        FieldName = 'SYNONYMNAME'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
@@ -91,7 +91,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptSYNONYMFIRM'
+        FieldName = 'SYNONYMFIRM'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
@@ -418,13 +418,14 @@ object CoreFirmForm: TCoreFirmForm
     AfterPost = adsCore2AfterPost
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
-    OnCalcFields = adsCore2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 88
     Top = 112
+    oTrimCharFields = False
+    oCacheCalcFields = True
     oRefreshAfterPost = False
     oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
@@ -491,11 +492,6 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreJUNK: TFIBIntegerField
       FieldName = 'JUNK'
     end
-    object adsCoreBASECOST: TFIBStringField
-      FieldName = 'BASECOST'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsCoreQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
@@ -545,11 +541,6 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreLEADERCODECR: TFIBStringField
       FieldName = 'LEADERCODECR'
       Size = 84
-      EmptyStrToNull = True
-    end
-    object adsCoreLEADERPRICE: TFIBStringField
-      FieldName = 'LEADERPRICE'
-      Size = 48
       EmptyStrToNull = True
     end
     object adsCoreORDERSCOREID: TFIBBCDField
@@ -611,11 +602,6 @@ object CoreFirmForm: TCoreFirmForm
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreORDERSPRICE: TFIBStringField
-      FieldName = 'ORDERSPRICE'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsCoreORDERSJUNK: TFIBIntegerField
       FieldName = 'ORDERSJUNK'
     end
@@ -658,20 +644,6 @@ object CoreFirmForm: TCoreFirmForm
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsCoreCryptSYNONYMNAME: TStringField
-      Tag = 1
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMNAME'
-      Size = 250
-      Calculated = True
-    end
-    object adsCoreCryptSYNONYMFIRM: TStringField
-      Tag = 1
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMFIRM'
-      Size = 250
-      Calculated = True
-    end
     object adsCoreCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
@@ -685,23 +657,26 @@ object CoreFirmForm: TCoreFirmForm
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsCoreCryptCODE: TStringField
-      Tag = 2
-      FieldKind = fkCalculated
-      FieldName = 'CryptCODE'
-      Calculated = True
-    end
-    object adsCoreCryptCODECR: TStringField
-      Tag = 2
-      FieldKind = fkCalculated
-      FieldName = 'CryptCODECR'
-      Calculated = True
-    end
     object adsCoreCryptLEADERPRICE: TCurrencyField
       Tag = 3
       FieldKind = fkCalculated
       FieldName = 'CryptLEADERPRICE'
       Calculated = True
+    end
+    object adsCoreBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsCoreLEADERPRICE: TFIBStringField
+      FieldName = 'LEADERPRICE'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsCoreORDERSPRICE: TFIBStringField
+      FieldName = 'ORDERSPRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object adsCountFields: TpFIBDataSet
@@ -784,137 +759,5 @@ object CoreFirmForm: TCoreFirmForm
     OnTimer = TimerTimer
     Left = 640
     Top = 216
-  end
-  object qCore: TpFIBQuery
-    Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    SQL.Strings = (
-      'SELECT'
-      '    COREID,'
-      '    FULLCODE,'
-      '    SHORTCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    VOLUME,'
-      '    DOC,'
-      '    NOTE,'
-      '    PERIOD,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    BASECOST,'
-      '    QUANTITY,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    MINPRICE,'
-      '    LEADERPRICECODE,'
-      '    LEADERREGIONCODE,'
-      '    LEADERREGIONNAME,'
-      '    LEADERPRICENAME,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID,'
-      '    ORDERSCLIENTID,'
-      '    ORDERSFULLCODE,'
-      '    ORDERSCODEFIRMCR,'
-      '    ORDERSSYNONYMCODE,'
-      '    ORDERSSYNONYMFIRMCRCODE,'
-      '    ORDERSCODE,'
-      '    ORDERSCODECR,'
-      '    ORDERCOUNT,'
-      '    ORDERSSYNONYM,'
-      '    ORDERSSYNONYMFIRM,'
-      '    ORDERSPRICE,'
-      '    ORDERSJUNK,'
-      '    ORDERSAWAIT,'
-      '    ORDERSHORDERID,'
-      '    ORDERSHCLIENTID,'
-      '    ORDERSHPRICECODE,'
-      '    ORDERSHREGIONCODE,'
-      '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME'
-      'FROM'
-      '    CORESHOWBYFIRM(:APRICECODE,'
-      '    :AREGIONCODE,'
-      '    :ACLIENTID,'
-      '    :APRICENAME) ')
-    Left = 136
-    Top = 112
-  end
-  object qCoreUpdate: TpFIBQuery
-    Transaction = DM.UpTran
-    Database = DM.MainConnection1
-    SQL.Strings = (
-      'execute procedure '
-      '  updateordercount('
-      '    :new_ORDERSHORDERID, '
-      '    :Aclientid, '
-      '    :APRICECODE, '
-      '    :AREGIONCODE, '
-      '    :new_ORDERSORDERID, '
-      '    :new_COREID, '
-      '    :NEW_ORDERCOUNT)')
-    Left = 136
-    Top = 152
-  end
-  object qCoreRefresh: TpFIBQuery
-    Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    SQL.Strings = (
-      'SELECT'
-      '    COREID,'
-      '    FULLCODE,'
-      '    SHORTCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    VOLUME,'
-      '    DOC,'
-      '    NOTE,'
-      '    PERIOD,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    BASECOST,'
-      '    QUANTITY,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    MINPRICE,'
-      '    LEADERPRICECODE,'
-      '    LEADERREGIONCODE,'
-      '    LEADERREGIONNAME,'
-      '    LEADERPRICENAME,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID,'
-      '    ORDERSCLIENTID,'
-      '    ORDERSFULLCODE,'
-      '    ORDERSCODEFIRMCR,'
-      '    ORDERSSYNONYMCODE,'
-      '    ORDERSSYNONYMFIRMCRCODE,'
-      '    ORDERSCODE,'
-      '    ORDERSCODECR,'
-      '    ORDERCOUNT,'
-      '    ORDERSSYNONYM,'
-      '    ORDERSSYNONYMFIRM,'
-      '    ORDERSPRICE,'
-      '    ORDERSJUNK,'
-      '    ORDERSAWAIT,'
-      '    ORDERSHORDERID,'
-      '    ORDERSHCLIENTID,'
-      '    ORDERSHPRICECODE,'
-      '    ORDERSHREGIONCODE,'
-      '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME'
-      'FROM'
-      '    CORESHOWBYFIRM(:APRICECODE,'
-      '    :AREGIONCODE,'
-      '    :ACLIENTID,'
-      '    :APRICENAME) '
-      'where'
-      '  CoreID = :OLD_COREID')
-    Left = 136
-    Top = 192
   end
 end

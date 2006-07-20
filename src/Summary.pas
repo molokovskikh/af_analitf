@@ -35,12 +35,9 @@ type
     adsSummaryORDERSORDERID: TFIBBCDField;
     adsSummarySumOrder: TCurrencyField;
     adsSummaryH: TpFIBDataSet;
-    adsSummaryCryptSYNONYMNAME: TStringField;
-    adsSummaryCryptSYNONYMFIRM: TStringField;
     adsSummaryCryptBASECOST: TCurrencyField;
     adsSummaryCODE: TFIBStringField;
     adsSummaryCODECR: TFIBStringField;
-    adsSummaryBASECOST: TFIBStringField;
     adsSummaryPriceRet: TCurrencyField;
     pStatus: TPanel;
     Bevel1: TBevel;
@@ -66,7 +63,7 @@ type
     btnSelectPrices: TBitBtn;
     miUnselectedAll: TMenuItem;
     miSeparator: TMenuItem;
-    procedure adsSummary2CalcFields(DataSet: TDataSet);
+    adsSummaryBASECOST: TFIBStringField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -98,6 +95,7 @@ type
     procedure SetDateInterval;
     procedure OnSPClick(Sender: TObject);
     procedure ChangeSelected(ASelected : Boolean);
+    procedure scf(DataSet: TDataSet);
   public
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; reintroduce;
@@ -135,6 +133,7 @@ var
 begin
 	inherited;
 	PrintEnabled := True;
+  adsSummary.OnCalcFields := scf;
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
@@ -221,16 +220,14 @@ begin
 	end;
 end;
 
-procedure TSummaryForm.adsSummary2CalcFields(DataSet: TDataSet);
+procedure TSummaryForm.scf(DataSet: TDataSet);
 var
   S : String;
   C : Currency;
 begin
 	//вычисляем сумму по позиции
   try
-    adsSummaryCryptSYNONYMNAME.AsString := DM.D_S(adsSummarySYNONYMNAME.AsString);
-    adsSummaryCryptSYNONYMFIRM.AsString := DM.D_S(adsSummarySYNONYMFIRM.AsString);
-    S := DM.D_B(adsSummaryCODE.AsString, adsSummaryCODECR.AsString);
+    S := DM.D_B_N(adsSummaryBASECOST.AsString);
     C := StrToCurr(S);
     adsSummaryCryptBASECOST.AsCurrency := C;
     adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(C);
@@ -262,7 +259,7 @@ begin
 	if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or
 		( Column.Field = adsSummaryCryptBASECOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummaryCryptSYNONYMNAME) then
+	if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 

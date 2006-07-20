@@ -26,8 +26,11 @@ type
     procedure PatchNonBrowser;
   public
     PrintEnabled: Boolean;
+    //Требуется вызвать First после сортировки DataSet
+    NeedFirstOnDataSet : Boolean;
     procedure ShowForm; virtual;
     procedure Print( APreview: boolean = False); virtual;
+    constructor Create(AOwner: TComponent); override;
   published
     //Вытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
@@ -128,13 +131,15 @@ begin
     if (Self.Components[i] is TToughDBGrid) and Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
     then begin
       TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
-{
+      TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
+
       if Assigned(TToughDBGrid(Self.Components[i]).DataSource)
         and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
         and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
+        and NeedFirstOnDataSet
       then
         TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
-}        
+
     end;
   Show;
   if Parent<>nil then
@@ -190,6 +195,12 @@ end;
 function TChildForm.GetActionLists: TList;
 begin
   Result := FActionLists;
+end;
+
+constructor TChildForm.Create(AOwner: TComponent);
+begin
+  NeedFirstOnDataSet := True;
+  inherited;
 end;
 
 end.

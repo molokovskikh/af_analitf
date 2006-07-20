@@ -27,8 +27,6 @@ type
     Panel1: TPanel;
     dbgOrders: TToughDBGrid;
     adsOrders: TpFIBDataSet;
-    adsOrdersCryptSYNONYMNAME: TStringField;
-    adsOrdersCryptSYNONYMFIRM: TStringField;
     adsOrdersCryptPRICE: TCurrencyField;
     adsOrdersCryptSUMORDER: TCurrencyField;
     adsOrdersORDERID: TFIBBCDField;
@@ -42,17 +40,16 @@ type
     adsOrdersCODECR: TFIBStringField;
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersPRICE: TFIBStringField;
     adsOrdersAWAIT: TFIBIntegerField;
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
     adsOrdersSUMORDER: TFIBBCDField;
     lSumOrder: TLabel;
+    adsOrdersPRICE: TFIBStringField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure adsOrdersCalcFields(DataSet: TDataSet);
     procedure dbgOrdersSortMarkingChanged(Sender: TObject);
     procedure adsOrdersBeforeEdit(DataSet: TDataSet);
     procedure adsOrdersAfterPost(DataSet: TDataSet);
@@ -60,6 +57,7 @@ type
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
     procedure SetOrderLabel;
+    procedure ocf(DataSet: TDataSet);
   public
     procedure ShowForm(AOrderId: Integer); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -86,6 +84,7 @@ procedure TOrdersForm.SetParams(AOrderId: Integer);
 var
 	V: array[0..0] of Variant;
 begin
+  adsOrders.OnCalcFields := ocf;
   with adsOrders do begin
     ParamByName('AOrderId').Value:=AOrderId;
     if Active then CloseOpen(True) else Open;
@@ -110,7 +109,7 @@ begin
 	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersCryptPRICE) then
 		Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersCryptSYNONYMNAME) then
+	if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 
@@ -151,18 +150,15 @@ begin
 	end;
 end;
 
-procedure TOrdersForm.adsOrdersCalcFields(DataSet: TDataSet);
+procedure TOrdersForm.ocf(DataSet: TDataSet);
 var
   S : String;
 begin
   try
-    adsOrdersCryptSYNONYMNAME.AsString := DM.D_S(adsOrdersSYNONYMNAME.AsString);
-    adsOrdersCryptSYNONYMFIRM.AsString := DM.D_S(adsOrdersSYNONYMFIRM.AsString);
-    S := DM.D_B(adsOrdersCODE.AsString, adsOrdersCODECR.AsString);
+    S := DM.D_B_N(adsOrdersPRICE.AsString);
     adsOrdersCryptPRICE.AsString := S;
-    adsOrdersCryptSUMORDER.AsCurrency := StrToFloat(S) * adsOrdersORDERCOUNT.AsInteger;
+    adsOrdersCryptSUMORDER.AsCurrency := StrToCurr(S) * adsOrdersORDERCOUNT.AsInteger;
   except
-
   end;
 end;
 

@@ -25,7 +25,6 @@ type
     adsOrdersORDERCOUNT: TFIBIntegerField;
     adsOrdersCODE: TFIBStringField;
     adsOrdersCODECR: TFIBStringField;
-    adsOrdersPRICE: TFIBStringField;
     adsOrdersORDERDATE: TFIBDateTimeField;
     adsOrdersPRICENAME: TFIBStringField;
     adsOrdersREGIONNAME: TFIBStringField;
@@ -33,9 +32,10 @@ type
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersCryptPRICE: TCurrencyField;
     lPriceAvg: TLabel;
-    procedure adsOrdersCalcFields(DataSet: TDataSet);
+    adsOrdersPRICE: TFIBStringField;
   private
     { Private declarations }
+    procedure ocf(DataSet: TDataSet);
   public
     { Public declarations }
   end;
@@ -63,6 +63,7 @@ begin
         Open;
       end;
 }
+      adsOrders.OnCalcFields := ocf;
       with adsOrders do begin
         ParamByName('AFullCode').Value:=FullCode;
         ParamByName('AClientId').Value:=ClientId;
@@ -93,14 +94,12 @@ begin
   end;
 end;
 
-procedure TFormsHistoryForm.adsOrdersCalcFields(DataSet: TDataSet);
-var
-  S : String;
-  C : Currency;
+procedure TFormsHistoryForm.ocf(DataSet: TDataSet);
 begin
-  S := DM.D_B(adsOrdersCODE.AsString, adsOrdersCODECR.AsString);
-  C := StrToCurr(S);
-  adsOrdersCryptPRICE.AsCurrency := C;
+  try
+    adsOrdersCryptPRICE.AsCurrency := StrToCurr(DM.D_B_N(adsOrdersPRICE.AsString));
+  except
+  end;
 end;
 
 end.

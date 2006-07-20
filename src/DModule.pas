@@ -141,7 +141,6 @@ type
     adsSelect3REGIONCODE: TFIBBCDField;
     adsSelect3CODE: TFIBStringField;
     adsSelect3CODECR: TFIBStringField;
-    adsSelect3PRICE: TFIBStringField;
     adsSelect3SYNONYMCODE: TFIBBCDField;
     adsSelect3SYNONYMFIRMCRCODE: TFIBBCDField;
     adsSelect3SYNONYMNAME: TFIBStringField;
@@ -150,10 +149,6 @@ type
     adsSelect3AWAIT: TFIBBooleanField;
     adsSelect3ORDERCOUNT: TFIBIntegerField;
     adsSelect3PRICENAME: TFIBStringField;
-    adsSelect3CryptSYNONYMNAME: TStringField;
-    adsSelect3CryptSYNONYMFIRM: TStringField;
-    adsSelect3CryptCODE: TStringField;
-    adsSelect3CryptCODECR: TStringField;
     adsSelect3CryptPRICE: TCurrencyField;
     adsCoreCOREID: TFIBBCDField;
     adsCoreFULLCODE: TFIBBCDField;
@@ -167,7 +162,6 @@ type
     adsCoreDOC: TFIBStringField;
     adsCoreNOTE: TFIBStringField;
     adsCorePERIOD: TFIBStringField;
-    adsCoreBASECOST: TFIBStringField;
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
@@ -188,7 +182,6 @@ type
     adsCoreORDERCOUNT: TFIBIntegerField;
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBStringField;
     adsCoreORDERSHORDERID: TFIBBCDField;
     adsCoreORDERSHCLIENTID: TFIBBCDField;
     adsCoreORDERSHPRICECODE: TFIBBCDField;
@@ -204,7 +197,6 @@ type
     adsSumOrders: TpFIBDataSet;
     adsSumOrdersCODE: TFIBStringField;
     adsSumOrdersCODECR: TFIBStringField;
-    adsSumOrdersPRICE: TFIBStringField;
     adsSumOrdersORDERCOUNT: TFIBIntegerField;
     adsSumOrdersCryptPRICE: TCurrencyField;
     adsSumOrdersSumOrders: TCurrencyField;
@@ -221,7 +213,6 @@ type
     adsOrdersCODECR: TFIBStringField;
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersPRICE: TFIBStringField;
     adsOrdersAWAIT: TFIBIntegerField;
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
@@ -239,14 +230,9 @@ type
     adsAllOrdersCODECR: TFIBStringField;
     adsAllOrdersSYNONYMNAME: TFIBStringField;
     adsAllOrdersSYNONYMFIRM: TFIBStringField;
-    adsAllOrdersPRICE: TFIBStringField;
     adsAllOrdersAWAIT: TFIBBooleanField;
     adsAllOrdersJUNK: TFIBBooleanField;
     adsAllOrdersORDERCOUNT: TFIBIntegerField;
-    adsAllOrdersCryptSYNONYMNAME: TStringField;
-    adsAllOrdersCryptSYNONYMFIRM: TStringField;
-    adsAllOrdersCryptCODE: TStringField;
-    adsAllOrdersCryptCODECR: TStringField;
     adsAllOrdersCryptPRICE: TCurrencyField;
     adsPricesPRICECODE: TFIBBCDField;
     adsPricesPRICENAME: TFIBStringField;
@@ -270,17 +256,19 @@ type
     adsPricesINJOB: TFIBIntegerField;
     adsCoreAWAIT: TFIBBooleanField;
     adsCoreJUNK: TFIBBooleanField;
-    adsCoreORDERSJUNK: TFIBIntegerField;
-    adsCoreORDERSAWAIT: TFIBIntegerField;
+    adsSelect3PRICE: TFIBStringField;
+    adsCoreBASECOST: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
+    adsOrdersPRICE: TFIBStringField;
+    adsSumOrdersPRICE: TFIBStringField;
+    adsAllOrdersPRICE: TFIBStringField;
+    adsCoreORDERSJUNK: TFIBBooleanField;
+    adsCoreORDERSAWAIT: TFIBBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnection1AfterConnect(Sender: TObject);
-    procedure adsSelect3CalcFields(DataSet: TDataSet);
     procedure adsRetailMarginsLEFTLIMITChange(Sender: TField);
-    procedure adsSumOrdersCalcFields(DataSet: TDataSet);
-    procedure adsOrdersCalcFields(DataSet: TDataSet);
-    procedure adsAllOrdersCalcFields(DataSet: TDataSet);
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
@@ -309,6 +297,9 @@ type
     procedure LoadSelectedPrices;
     function CheckCriticalLibrary : Boolean;
     function GetFileHash(AFileName : String) : String;
+    procedure s3cf(DataSet: TDataSet);
+    procedure ocf(DataSet: TDataSet);
+    procedure socf(DataSet: TDataSet);
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -369,6 +360,7 @@ type
     function D_C(CodeS : String) : String;
     //DecodeBasecost
     function D_B(CodeS1, CodeS2 : String) : String;
+    function D_B_N(BaseC: String) : String;
     procedure SavePass(ASyn, ACodes, AB : String);
     procedure testSavePass;
     procedure LoadRetailMargins;
@@ -445,6 +437,10 @@ var
 begin
   SerBeg := 'Hgrysjh';
   SerEnd := 'uirft34';
+
+  adsSelect3.OnCalcFields := s3cf;
+  adsOrders.OnCalcFields := ocf;
+  adsSumOrders.OnCalcFields := socf;
 
   SynC := TINFCrypt.Create('', 300);
   CodeC := TINFCrypt.Create('', 60);
@@ -995,22 +991,6 @@ var
   I : Integer;
   InDelimitedFile : TFIBInputDelimitedFile;
 begin
-{
-  if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
-    Screen.Cursor:=crHourglass;
-    try
-      repeat
-        FileName := ExePath+SDirIn+ '\' + SR.Name;
-        ShortName := ChangeFileExt(SR.Name,'');
-        adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
-        adcUpdate.ParamByName('PATH').Value := FileName;
-        adcUpdate.ExecQuery;
-      until FindNext(SR)<>0;
-    finally
-      Screen.Cursor:=crDefault;
-    end;
-  end;
-}
   if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
     Screen.Cursor:=crHourglass;
     Files := TStringList.Create;
@@ -1043,7 +1023,7 @@ begin
           InDelimitedFile := TFIBInputDelimitedFile.Create;
           try
             InDelimitedFile.SkipTitles := False;
-            InDelimitedFile.ReadBlanksAsNull := False;
+            InDelimitedFile.ReadBlanksAsNull := True;
             InDelimitedFile.ColDelimiter := Chr(159);
             InDelimitedFile.RowDelimiter := Chr(161);
 
@@ -1086,104 +1066,6 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
-
-
-//Версия с шифрованием архива
-{
-  if FindFirst(ExePath+SDirIn+'\*.zip',faAnyFile,SR)=0 then begin
-    Screen.Cursor:=crHourglass;
-    Files := TStringList.Create;
-    Tables := TStringList.Create;
-    Indecies := TStringList.Create;
-    UnZip := TVCLUnZip.Create(nil);
-    try
-      UnZip.ZipName := ExePath+SDirIn+ '\' + SR.Name;
-      UnZip.ReadZip;
-      for I := 0 to UnZip.Count-1 do begin
-        if (pos('\', UnZip.Filename[i]) = 0) and (pos('.txt', UnZip.Filename[i]) > 0) then begin
-          FileName := ExePath+SDirIn+ '\' + UnZip.Filename[i];
-          ShortName := ChangeFileExt(UnZip.Filename[i],'');
-          adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
-          adcUpdate.ParamByName('PATH').Value := FileName;
-          Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
-          adcUpdate.ExecQuery;
-          Files.Add(FileName);
-          Tables.Add('EXT' + UpperCase(ShortName));
-          Indecies.Add(IntToStr(i));
-        end;
-      end;
-
-//      repeat
-//        FileName := ExePath+SDirIn+ '\' + SR.Name;
-//        ShortName := ChangeFileExt(SR.Name,'');
-//        adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
-//        adcUpdate.ParamByName('PATH').Value := FileName;
-//        Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
-//        adcUpdate.ExecQuery;
-//        Files.Add(FileName);
-//        Tables.Add('EXT' + UpperCase(ShortName));
-//      until FindNext(SR)<>0;
-
-      FindClose(SR);
-
-      DefTran.CommitRetaining;
-
-
-      up := TpFIBDataSet.Create(nil);
-      try
-        up.Database := MainConnection1;
-        up.Transaction := DefTran;
-
-        InDelimitedFile := TINFIBInputDelimitedStream.Create;
-        MS := TMemoryStream.Create;
-        try
-          InDelimitedFile.SkipTitles := False;
-          InDelimitedFile.ReadBlanksAsNull := False;
-          InDelimitedFile.ColDelimiter := Chr(159);
-          InDelimitedFile.RowDelimiter := Chr(161);
-
-          UnZip.Password := '12345678';
-
-          for I := 0 to Files.Count-1 do begin
-            if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM') then begin
-              MS.Size := UnZip.UnCompressedSize[StrToInt(Indecies[i])];
-              MS.Clear;
-              UnZip.UnZipToStreamByIndex(MS, StrToInt(Indecies[i]));
-              up.SelectSQL.Text := 'select * from ' + Tables[i];
-              up.Prepare;
-              up.Open;
-              up.AutoUpdateOptions.UpdateTableName := Tables[i];
-              up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
-              Tracer.TR(Tables[i], up.InsertSQL.Text);
-              up.Close;
-              up.SelectSQL.Text := up.InsertSQL.Text;
-              InDelimitedFile.Filename := Files[i];
-              InDelimitedFile.Stream := MS;
-              MS.Seek(0, soFromBeginning);
-              up.BatchInput(InDelimitedFile);
-            end;
-          end;
-
-        finally
-          InDelimitedFile.Free;
-          MS.Free;
-        end;
-
-      finally
-        up.Free;
-      end;
-
-      DefTran.CommitRetaining;
-
-    finally
-      UnZip.Free;
-      Indecies.Free;
-      Files.Free;
-      Tables.Free;
-      Screen.Cursor:=crDefault;
-    end;
-  end;
-}  
 end;
 
 // подключает таблицы из старого MDB
@@ -1696,33 +1578,19 @@ begin
       try
         adsAllOrders.Open;
         while not adsAllOrders.Eof do begin
-          SynName := adsAllOrdersCryptSYNONYMNAME.AsString;
-          SynFirm := adsAllOrdersCryptSYNONYMFIRM.AsString;
-          Code := adsAllOrdersCryptCode.AsString;
-          CodeCr := adsAllOrdersCryptCODECR.AsString;
-          Price := adsAllOrdersCryptPRICE.AsString;
 
-          if (Length(adsAllOrdersSYNONYMNAME.AsString) > 1) and (adsAllOrdersSYNONYMNAME.AsString[1] = ' ') then
-            adsAllOrdersSYNONYMNAME.AsString := ' ' + tmps.EncodeMix(SynName);
+          Price := D_B_N(adsAllOrdersPRICE.AsString);
 
-          if (Length(adsAllOrdersSYNONYMFIRM.AsString) > 1) and (adsAllOrdersSYNONYMFIRM.AsString[1] = ' ') then
-            adsAllOrdersSYNONYMFIRM.AsString := ' ' + tmps.EncodeMix( SynFirm );
+          Price := tmpb.EncodeMix( Price );
 
-          Price := tmpb.EncodeHex(Price);
+          if Length(Price) > 2 then
+            Price := chr(random(110) + 32) + Price[1] + chr(random(110) + 32) + Copy(Price, 2, Length(Price))
+          else
+            Price := '';
 
           adsAllOrders.Edit;
 
-          if Length(Code) > 0 then
-            adsAllOrdersCODE.AsString := tmpc.EncodeMix(Code) +  Copy(Price, 1, 16)
-          else
-            adsAllOrdersCODE.AsString := Copy(Price, 1, 16);
-
-          if Length(CodeCr) > 0 then
-            adsAllOrdersCODECR.AsString := tmpc.EncodeMix(CodeCr) +  Copy(Price, 17, 16)
-          else
-            adsAllOrdersCODECR.AsString := Copy(Price, 17, 16);
-
-          adsAllOrdersPRICE.AsString := tmpvb.EncodeMix( VBasecostC.DecodeMix(adsAllOrdersPRICE.AsString) );
+          adsAllOrdersPRICE.AsString := Price;
 
           adsAllOrders.Post;
 
@@ -1760,17 +1628,10 @@ begin
   adtParams.Post;
 end;
 
-procedure TDM.adsSelect3CalcFields(DataSet: TDataSet);
-var
-  S : String;
+procedure TDM.s3cf(DataSet: TDataSet);
 begin
   try
-    adsSelect3CryptSYNONYMNAME.AsString := DM.D_S(adsSelect3SYNONYMNAME.AsString);
-    adsSelect3CryptSYNONYMFIRM.AsString := DM.D_S(adsSelect3SYNONYMFIRM.AsString);
-    adsSelect3CryptCODE.AsString := DM.D_C(adsSelect3CODE.AsString);
-    adsSelect3CryptCODECR.AsString := DM.D_C(adsSelect3CODE.AsString);
-    S := DM.D_B(adsSelect3CODE.AsString, adsSelect3CODECR.AsString);
-    adsSelect3CryptPRICE.AsString := S;
+    adsSelect3CryptPRICE.AsCurrency := StrToFloat(DM.D_B_N(adsSelect3PRICE.AsString));
   except
   end;
 end;
@@ -1812,12 +1673,12 @@ begin
 //  adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
 end;
 
-procedure TDM.adsSumOrdersCalcFields(DataSet: TDataSet);
+procedure TDM.socf(DataSet: TDataSet);
 var
   S : String;
 begin
   try
-    S := D_B(adsSumOrdersCODE.AsString, adsSumOrdersCODECR.AsString);
+    S := D_B_N(adsSumOrdersPRICE.AsString);
   except
     on E : Exception do
       raise EINCryptException.Create('PRICE', E.Message);
@@ -1877,12 +1738,12 @@ begin
   end;
 end;
 
-procedure TDM.adsOrdersCalcFields(DataSet: TDataSet);
+procedure TDM.ocf(DataSet: TDataSet);
 var
   S : String;
 begin
   try
-    S := DM.D_B(adsOrders.FieldByName('CODE').AsString, adsOrders.FieldByName('CODECR').AsString);
+    S := DM.D_B_N(adsOrders.FieldByName('PRICE').AsString);
     adsOrdersCryptSUMORDER.AsCurrency := StrToFloat(S) * adsOrders.FieldByName('ORDERCOUNT').AsInteger;
   except
   end;
@@ -1901,24 +1762,6 @@ begin
     Result := V[0];
   finally
     adsOrders.Close;
-  end;
-end;
-
-procedure TDM.adsAllOrdersCalcFields(DataSet: TDataSet);
-var
-  S : String;
-  C : Currency;
-begin
-  try
-
-    adsAllOrdersCryptSYNONYMNAME.AsString := D_S(adsAllOrdersSYNONYMNAME.AsString);
-    adsAllOrdersCryptSYNONYMFIRM.AsString := D_S(adsAllOrdersSYNONYMFIRM.AsString);
-    S := D_B(adsAllOrdersCODE.AsString, adsAllOrdersCODECR.AsString);
-    C := StrToCurr(S);
-    adsAllOrdersCryptPRICE.AsCurrency := C;
-    adsAllOrdersCryptCODE.AsString := D_C(adsAllOrdersCODE.AsString);
-    adsAllOrdersCryptCODECR.AsString := D_C(adsAllOrdersCODECR.AsString);
-  except
   end;
 end;
 
@@ -2024,6 +1867,23 @@ begin
   finally
     md5.Free;
   end;
+end;
+
+function TDM.D_B_N(BaseC: String): String;
+var
+  tmp : String;
+begin
+  if Length(BaseC) > 3 then begin
+    tmp := BaseC[2] + Copy(BaseC, 4, Length(BaseC));
+    if Length(tmp) > 1 then begin
+      Result := BasecostC.DecodeMix(tmp);
+      Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
+    end
+    else
+      Result := '';
+  end
+  else
+    Result := '';
 end;
 
 initialization

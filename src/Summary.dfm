@@ -45,7 +45,7 @@ inherited SummaryForm: TSummaryForm
       OnGetCellParams = dbgSummaryGetCellParams
       OnKeyDown = dbgSummaryKeyDown
       OnSortMarkingChanged = dbgSummarySortMarkingChanged
-      SearchField = 'CryptSynonymName'
+      SearchField = 'SynonymName'
       InputField = 'OrderCount'
       SearchPosition = spBottom
       ForceRus = True
@@ -53,7 +53,7 @@ inherited SummaryForm: TSummaryForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'CryptSYNONYMNAME'
+          FieldName = 'SYNONYMNAME'
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
@@ -61,7 +61,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'CryptSYNONYMFIRM'
+          FieldName = 'SYNONYMFIRM'
           Footers = <>
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
           Title.TitleButton = True
@@ -433,26 +433,6 @@ inherited SummaryForm: TSummaryForm
       'where'
       '   COREID = :ORDERSCOREID'
       'and ORDERID = :ORDERSORDERID')
-    RefreshSQL.Strings = (
-      'SELECT'
-      '    VOLUME,'
-      '    QUANTITY,'
-      '    NOTE,'
-      '    PERIOD,'
-      '    JUNK,'
-      '    AWAIT,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    BASECOST,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    ORDERCOUNT,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID'
-      'FROM'
-      '    SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) '
-      'where'
-      '  ORDERSCOREID = :ORDERSCOREID')
     SelectSQL.Strings = (
       'SELECT'
       '    VOLUME,'
@@ -478,14 +458,15 @@ inherited SummaryForm: TSummaryForm
     BeforeDelete = adsSummaryBeforeDelete
     BeforeEdit = adsSummaryBeforeEdit
     BeforePost = adsSummary2BeforePost
-    OnCalcFields = adsSummary2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 296
     Top = 96
+    oTrimCharFields = False
     oCacheCalcFields = True
+    oRefreshAfterPost = False
     object adsSummaryVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
@@ -551,18 +532,6 @@ inherited SummaryForm: TSummaryForm
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsSummaryCryptSYNONYMNAME: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMNAME'
-      Size = 250
-      Calculated = True
-    end
-    object adsSummaryCryptSYNONYMFIRM: TStringField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMFIRM'
-      Size = 250
-      Calculated = True
-    end
     object adsSummaryCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
@@ -578,15 +547,15 @@ inherited SummaryForm: TSummaryForm
       Size = 84
       EmptyStrToNull = True
     end
-    object adsSummaryBASECOST: TFIBStringField
-      FieldName = 'BASECOST'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsSummaryPriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
       Calculated = True
+    end
+    object adsSummaryBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object adsSummaryH: TpFIBDataSet

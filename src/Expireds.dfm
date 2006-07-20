@@ -60,7 +60,7 @@ inherited ExpiredsForm: TExpiredsForm
       TitleFont.Style = []
       OnGetCellParams = dbgExpiredsGetCellParams
       OnSortMarkingChanged = dbgExpiredsSortMarkingChanged
-      SearchField = 'CryptSynonymName'
+      SearchField = 'SynonymName'
       InputField = 'OrderCount'
       SearchPosition = spTop
       ForceRus = True
@@ -68,7 +68,7 @@ inherited ExpiredsForm: TExpiredsForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'CryptSYNONYMNAME'
+          FieldName = 'SYNONYMNAME'
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
@@ -76,7 +76,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'CryptSYNONYMFIRM'
+          FieldName = 'SYNONYMFIRM'
           Footers = <>
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
           Title.TitleButton = True
@@ -259,12 +259,6 @@ inherited ExpiredsForm: TExpiredsForm
         'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
         'id, :PRICECODE, :REGIONCODE, :new_ORDERSORDERID, :new_COREID, :N' +
         'EW_ORDERCOUNT)')
-    RefreshSQL.Strings = (
-      'SELECT'
-      '*'
-      'FROM'
-      '    EXPIREDSSHOW(:TIMEZONEBIAS,'
-      '    :ACLIENTID, :COREID)')
     SelectSQL.Strings = (
       'SELECT'
       '    COREID,'
@@ -315,14 +309,15 @@ inherited ExpiredsForm: TExpiredsForm
     AfterScroll = adsExpireds2AfterScroll
     BeforeEdit = adsExpiredsBeforeEdit
     BeforePost = adsExpireds2BeforePost
-    OnCalcFields = adsExpireds2CalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 128
     Top = 112
+    oTrimCharFields = False
     oCacheCalcFields = True
+    oRefreshAfterPost = False
     object adsExpiredsCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
@@ -380,11 +375,6 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
-      EmptyStrToNull = True
-    end
-    object adsExpiredsBASECOST: TFIBStringField
-      FieldName = 'BASECOST'
-      Size = 48
       EmptyStrToNull = True
     end
     object adsExpiredsQUANTITY: TFIBStringField
@@ -477,11 +467,6 @@ inherited ExpiredsForm: TExpiredsForm
       FieldName = 'ORDERCOUNT'
       DisplayFormat = '#'
     end
-    object adsExpiredsORDERSPRICE: TFIBStringField
-      FieldName = 'ORDERSPRICE'
-      Size = 48
-      EmptyStrToNull = True
-    end
     object adsExpiredsORDERSJUNK: TFIBIntegerField
       FieldName = 'ORDERSJUNK'
     end
@@ -530,24 +515,20 @@ inherited ExpiredsForm: TExpiredsForm
       FieldName = 'CryptPriceRet'
       Calculated = True
     end
-    object adsExpiredsCryptSYNONYMNAME: TStringField
-      Tag = 1
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMNAME'
-      Size = 250
-      Calculated = True
-    end
-    object adsExpiredsCryptSYNONYMFIRM: TStringField
-      Tag = 1
-      FieldKind = fkCalculated
-      FieldName = 'CryptSYNONYMFIRM'
-      Size = 250
-      Calculated = True
-    end
     object adsExpiredsCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
       Calculated = True
+    end
+    object adsExpiredsBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsExpiredsORDERSPRICE: TFIBStringField
+      FieldName = 'ORDERSPRICE'
+      Size = 60
+      EmptyStrToNull = True
     end
   end
   object adsOrdersH: TpFIBDataSet

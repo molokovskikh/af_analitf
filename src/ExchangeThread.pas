@@ -694,7 +694,7 @@ begin
 			values[ i * 11 + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
 			values[ i * 11 + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
       try
-        S := DM.D_B(DM.adsOrders.FieldByName( 'Code').AsString, DM.adsOrders.FieldByName( 'CodeCr').AsString);
+        S := DM.D_B_N(DM.adsOrders.FieldByName( 'PRICE').AsString);
         S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
         values[ i * 11 + 16] := S;
       except
@@ -1738,7 +1738,7 @@ begin
     InDelimitedFile := TFIBInputDelimitedFile.Create;
     try
       InDelimitedFile.SkipTitles := False;
-      InDelimitedFile.ReadBlanksAsNull := False;
+      InDelimitedFile.ReadBlanksAsNull := True;
       InDelimitedFile.ColDelimiter := Chr(159);
       InDelimitedFile.RowDelimiter := Chr(161);
 

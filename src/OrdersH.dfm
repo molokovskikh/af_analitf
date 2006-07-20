@@ -589,8 +589,8 @@ inherited OrdersHForm: TOrdersHForm
       '    ON CCore.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode'
       '    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode'
       
-        '    LEFT JOIN OrdersShowByClient(:AClientId) osbc ON CCore.CoreI' +
-        'd=osbc.CoreId'
+        '    LEFT JOIN Orders osbc ON osbc.ClientId = :AClientId and CCor' +
+        'e.CoreId=osbc.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       
         'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +

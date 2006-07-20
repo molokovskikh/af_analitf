@@ -274,6 +274,7 @@ inherited NamesFormsForm: TNamesFormsForm
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
       OnDblClick = dbgCatalogDblClick
+      OnDrawColumnCell = dbgCatalogDrawColumnCell
       OnKeyDown = dbgCatalogKeyDown
       OnKeyPress = dbgCatalogKeyPress
       SearchPosition = spBottom

@@ -24,8 +24,6 @@ type
     adsOrdersH: TpFIBDataSet;
     adsOrdersShowFormSummary: TpFIBDataSet;
     adsExpiredsPriceRet: TCurrencyField;
-    adsExpiredsCryptSYNONYMNAME: TStringField;
-    adsExpiredsCryptSYNONYMFIRM: TStringField;
     adsExpiredsCryptBASECOST: TCurrencyField;
     adsExpiredsCOREID: TFIBBCDField;
     adsExpiredsPRICECODE: TFIBBCDField;
@@ -39,7 +37,6 @@ type
     adsExpiredsNOTE: TFIBStringField;
     adsExpiredsPERIOD: TFIBStringField;
     adsExpiredsVOLUME: TFIBStringField;
-    adsExpiredsBASECOST: TFIBStringField;
     adsExpiredsQUANTITY: TFIBStringField;
     adsExpiredsSYNONYMNAME: TFIBStringField;
     adsExpiredsSYNONYMFIRM: TFIBStringField;
@@ -59,7 +56,6 @@ type
     adsExpiredsORDERSSYNONYM: TFIBStringField;
     adsExpiredsORDERSSYNONYMFIRM: TFIBStringField;
     adsExpiredsORDERCOUNT: TFIBIntegerField;
-    adsExpiredsORDERSPRICE: TFIBStringField;
     adsExpiredsORDERSJUNK: TFIBIntegerField;
     adsExpiredsORDERSAWAIT: TFIBIntegerField;
     adsExpiredsORDERSHORDERID: TFIBBCDField;
@@ -75,7 +71,8 @@ type
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
-    procedure adsExpireds2CalcFields(DataSet: TDataSet);
+    adsExpiredsBASECOST: TFIBStringField;
+    adsExpiredsORDERSPRICE: TFIBStringField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -95,6 +92,7 @@ type
     Excess: Integer;
 
     procedure RefreshOrdersH;
+    procedure ecf(DataSet: TDataSet);
   public
     { Public declarations }
   end;
@@ -110,6 +108,7 @@ procedure TExpiredsForm.FormCreate(Sender: TObject);
 var
 	Reg: TRegistry;
 begin
+  adsExpireds.OnCalcFields := ecf;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
@@ -144,20 +143,18 @@ begin
 	Reg.Free;
 end;
 
-procedure TExpiredsForm.adsExpireds2CalcFields(DataSet: TDataSet);
+procedure TExpiredsForm.ecf(DataSet: TDataSet);
 var
   S : String;
   C : Currency;
 begin
   try
-    adsExpiredsCryptSYNONYMNAME.AsString := DM.D_S(adsExpiredsSYNONYMNAME.AsString);
-    adsExpiredsCryptSYNONYMFIRM.AsString := DM.D_S(adsExpiredsSYNONYMFIRM.AsString);
-    S := DM.D_B(adsExpiredsCODE.AsString, adsExpiredsCODECR.AsString);
+    S := DM.D_B_N(adsExpiredsBASECOST.AsString);
     C := StrToCurr(S);
     adsExpiredsCryptBASECOST.AsCurrency := C;
     adsExpiredsPriceRet.AsCurrency := DM.GetPriceRet(C);
 	  //вычисляем сумму заказа
-  	adsExpiredsSumOrder.AsCurrency:= adsExpiredsCryptBASECOST.AsCurrency * adsExpiredsORDERCOUNT.AsInteger;
+  	adsExpiredsSumOrder.AsCurrency:= C * adsExpiredsORDERCOUNT.AsInteger;
   except
   end;
 end;

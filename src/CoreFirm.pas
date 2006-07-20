@@ -43,15 +43,8 @@ type
     adsCountFields: TpFIBDataSet;
     adsOrdersH: TpFIBDataSet;
     adsOrdersShowFormSummary: TpFIBDataSet;
-    adsCoreCryptSYNONYMNAME: TStringField;
-    adsCoreCryptSYNONYMFIRM: TStringField;
     adsCoreCryptBASECOST: TCurrencyField;
     adsCorePriceRet: TCurrencyField;
-    adsCoreCryptCODE: TStringField;
-    adsCoreCryptCODECR: TStringField;
-    qCore: TpFIBQuery;
-    qCoreUpdate: TpFIBQuery;
-    qCoreRefresh: TpFIBQuery;
     adsCoreCOREID: TFIBBCDField;
     adsCoreFULLCODE: TFIBBCDField;
     adsCoreSHORTCODE: TFIBBCDField;
@@ -66,7 +59,6 @@ type
     adsCorePERIOD: TFIBStringField;
     adsCoreAWAIT: TFIBIntegerField;
     adsCoreJUNK: TFIBIntegerField;
-    adsCoreBASECOST: TFIBStringField;
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
@@ -87,7 +79,6 @@ type
     adsCoreORDERCOUNT: TFIBIntegerField;
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBStringField;
     adsCoreORDERSJUNK: TFIBIntegerField;
     adsCoreORDERSAWAIT: TFIBIntegerField;
     adsCoreORDERSHORDERID: TFIBBCDField;
@@ -98,16 +89,17 @@ type
     adsCoreORDERSHREGIONNAME: TFIBStringField;
     adsCoreLEADERCODE: TFIBStringField;
     adsCoreLEADERCODECR: TFIBStringField;
-    adsCoreLEADERPRICE: TFIBStringField;
     adsCoreCryptLEADERPRICE: TCurrencyField;
     adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
     adsOrdersShowFormSummaryFULLCODE: TFIBBCDField;
+    adsCoreBASECOST: TFIBStringField;
+    adsCoreLEADERPRICE: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2AfterPost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
-    procedure adsCore2CalcFields(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure actFilterAllExecute(Sender: TObject);
     procedure actFilterOrderExecute(Sender: TObject);
@@ -139,6 +131,7 @@ type
     procedure RefreshOrdersH;
     procedure OrderCountFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure LeaderFilterRecord(DataSet: TDataSet; var Accept: Boolean);
+    procedure ccf(DataSet: TDataSet);
   public
     procedure ShowForm(APriceCode, ARegionCode: Integer;
       OnlyLeaders: Boolean=False); reintroduce;
@@ -161,6 +154,7 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+  adsCore.OnCalcFields := ccf;
 	PrintEnabled := False;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
@@ -222,21 +216,18 @@ begin
   inherited ShowForm;
 end;
 
-procedure TCoreFirmForm.adsCore2CalcFields(DataSet: TDataSet);
+procedure TCoreFirmForm.ccf(DataSet: TDataSet);
 var
   S : String;
   C : Currency;
 begin
   try
-    adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
-    adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
-    S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
+    S := DM.D_B_N(adsCoreBASECOST.AsString);
     C := StrToCurr(S);
     adsCoreCryptBASECOST.AsCurrency := C;
     adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
-    adsCoreCryptCODE.AsString := DM.D_C(adsCoreCODE.AsString);
     adsCoreSumOrder.AsCurrency := adsCoreCryptBASECOST.AsCurrency * adsCoreORDERCOUNT.AsInteger;
-    S := DM.D_B(adsCoreLEADERCODE.AsString, adsCoreLEADERCODECR.AsString);
+    S := DM.D_B_N(adsCoreLEADERPRICE.AsString);
     C := StrToCurr(S);
     adsCoreCryptLEADERPRICE.AsCurrency := C;
   except
@@ -418,7 +409,7 @@ begin
 	if (adsCoreJunk.Value = 1) and (( Column.Field = adsCorePERIOD) or
 		( Column.Field = adsCoreCryptBASECOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if (adsCoreAwait.Value = 1) and ( Column.Field = adsCoreCryptSYNONYMNAME) then
+	if (adsCoreAwait.Value = 1) and ( Column.Field = adsCoreSYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 
@@ -498,23 +489,32 @@ begin
 
 	with TNamesFormsForm( MainForm.ActiveChild) do
 	begin
-		adsNames.Locate( 'AShortCode', ShortCode, []);
+    if actNewSearch.Checked then begin
+      SetCatalog;
+      adsCatalog.Locate('FullCode', FullCode, []);
+      CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+        adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
+        True, True);
+    end
+    else begin
+      adsNames.Locate( 'AShortCode', ShortCode, []);
 
-		if not actUseForms.Checked then
-			CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-				adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked);
-		if actUseForms.Checked and ( adsForms.RecordCount < 2) then
-			CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-				adsNames.FieldByName( 'Name').AsString,
-				adsForms.FieldByName( 'Form').AsString, False);
-		if actUseForms.Checked and ( adsForms.RecordCount > 1) then
-		begin
-			adsForms.Locate( 'FullCode', FullCode, []);
-			CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
-				adsNames.FieldByName( 'Name').AsString,
-				adsForms.FieldByName( 'Form').AsString,
-				actUseForms.Checked);
-		end;
+      if not actUseForms.Checked then
+        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
+      if actUseForms.Checked and ( adsForms.RecordCount < 2) then
+        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString,
+          adsForms.FieldByName( 'Form').AsString, False, False);
+      if actUseForms.Checked and ( adsForms.RecordCount > 1) then
+      begin
+        adsForms.Locate( 'FullCode', FullCode, []);
+        CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString,
+          adsForms.FieldByName( 'Form').AsString,
+          actUseForms.Checked, False);
+      end;
+    end;
 		CoreForm.adsCore.Locate( 'SynonymCode;SynonymFirmCrCode;PriceCode;RegionCode',
 			VarArrayOf([ SynonymCode, SynonymFirmCrCode, lPriceCode, lRegionCode]), []);
 	end;

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB, FIBDataSet, pFIBDataSet, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Registry, Constant,
-  ForceRus, DBGrids, Buttons, Menus;
+  ForceRus, DBGrids, Buttons, Menus, ibase;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -23,8 +23,6 @@ type
     adsCoreSumOrder: TCurrencyField;
     adsCorePriceRet: TCurrencyField;
     adsCorePriceDelta: TFloatField;
-    adsCoreCryptSYNONYMNAME: TStringField;
-    adsCoreCryptSYNONYMFIRM: TStringField;
     adsCoreCryptBASECOST: TCurrencyField;
     adsRegions: TpFIBDataSet;
     adsOrdersH: TpFIBDataSet;
@@ -44,13 +42,11 @@ type
     adsCoreSALE: TFIBIntegerField;
     adsCoreVOLUME: TFIBStringField;
     adsCoreNOTE: TFIBStringField;
-    adsCoreBASECOST: TFIBStringField;
     adsCoreQUANTITY: TFIBStringField;
     adsCoreAWAIT: TFIBBooleanField;
     adsCoreJUNK: TFIBBooleanField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
-    adsCoreDATEPRICE: TFIBStringField;
     adsCorePRICENAME: TFIBStringField;
     adsCorePRICEENABLED: TFIBBooleanField;
     adsCoreFIRMCODE: TFIBBCDField;
@@ -68,7 +64,6 @@ type
     adsCoreORDERCOUNT: TFIBIntegerField;
     adsCoreORDERSSYNONYM: TFIBStringField;
     adsCoreORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBStringField;
     adsCoreORDERSJUNK: TFIBBooleanField;
     adsCoreORDERSAWAIT: TFIBBooleanField;
     adsCoreORDERSHORDERID: TFIBBCDField;
@@ -87,11 +82,13 @@ type
     lFilter: TLabel;
     adsOrdersShowFormSummary: TpFIBDataSet;
     adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
+    adsCoreDATEPRICE: TFIBDateTimeField;
+    adsCoreBASECOST: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
-    procedure adsCoreCalcFields(DataSet: TDataSet);
     procedure adsCoreBeforePost(DataSet: TDataSet);
     procedure adsCoreBeforeEdit(DataSet: TDataSet);
     procedure adsCoreAfterPost(DataSet: TDataSet);
@@ -105,8 +102,6 @@ type
     procedure dbgCoreKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
-    procedure dbgCoreDrawDataCell(Sender: TObject; const Rect: TRect;
-      Field: TField; State: TGridDrawState);
     procedure btnSelectPricesClick(Sender: TObject);
     procedure miSelectAllClick(Sender: TObject);
     procedure miUnselecAllClick(Sender: TObject);
@@ -123,6 +118,7 @@ type
     procedure SetClear;
     procedure ChangeSelected(ASelected : Boolean);
     procedure OnSPClick(Sender: TObject);
+    procedure ccf(DataSet: TDataSet);
   public
     { Public declarations }
   end;
@@ -154,6 +150,7 @@ var
 begin
   inherited;
   //dbgCore.Columns.State := csDefault;
+  adsCore.OnCalcFields := ccf;
   StartSQL := adsCore.SelectSQL.Text; 
   slColors := TStringList.Create;
 
@@ -213,11 +210,12 @@ var
 begin
   tmrSearch.Enabled := False;
   if Length(eSearch.Text) > 2 then begin
-  	adsOrdersShowFormSummary.DataSource := nil;
     if adsCore.Active then
       adsCore.Close;
+  	adsOrdersShowFormSummary.DataSource := nil;
     adsCore.ParamByName('LikeParam').AsString := '%' + eSearch.Text + '%';
     adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
+  	adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
     FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PRD.');
     adsCore.SelectSQL.Text := StartSQL;
     lFilter.Visible := Length(FilterSQL) > 0;
@@ -261,15 +259,13 @@ begin
       SetClear;
 end;
 
-procedure TSynonymSearchForm.adsCoreCalcFields(DataSet: TDataSet);
+procedure TSynonymSearchForm.ccf(DataSet: TDataSet);
 var
   S : String;
   C : Currency;
 begin
   try
-    adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
-    adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
-    S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
+    S := DM.D_B_N(adsCoreBASECOST.AsString);
     C := StrToCurr(S);
     adsCoreCryptBASECOST.AsCurrency := C;
     adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
@@ -335,37 +331,39 @@ procedure TSynonymSearchForm.dbgCoreGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	if adsCoreSynonymCode.AsInteger < 0 then
-	begin
-		Background := $00fff1d8;
-                AFont.Style := [fsBold];
-	end
-	else
-	if adsCoreFirmCode.AsInteger = RegisterId then
-	begin
-		//если это реестр, изменяем цвета
-		if ( Column.Field = adsCoreCryptSYNONYMNAME) or ( Column.Field = adsCoreCryptSYNONYMFIRM) or
-			( Column.Field = adsCoreCryptBASECOST)or
-			( Column.Field = adsCorePriceRet) then Background := REG_CLR;
-        end
-	else
-	begin
-    if not adsCore.IsEmpty then
-      Background := TColor(slColors.Objects[ slColors.IndexOf(adsCoreFULLCODE.AsString)]); 
-		if not adsCorePriceEnabled.AsBoolean then
-		begin
-			//если фирма недоступна, изменяем цвет
-			if ( Column.Field = adsCoreCryptSYNONYMNAME) or ( Column.Field = adsCoreCryptSYNONYMFIRM)
-				then Background := clBtnFace;
-		end;
+  if adsCore.Active then begin
+    if adsCoreSynonymCode.AsInteger < 0 then
+    begin
+      Background := $00fff1d8;
+                  AFont.Style := [fsBold];
+    end
+    else
+    if adsCoreFirmCode.AsInteger = RegisterId then
+    begin
+      //если это реестр, изменяем цвета
+      if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM) or
+        ( Column.Field = adsCoreCryptBASECOST)or
+        ( Column.Field = adsCorePriceRet) then Background := REG_CLR;
+          end
+    else
+    begin
+      if not adsCore.IsEmpty then
+        Background := TColor(slColors.Objects[ slColors.IndexOf(adsCoreFULLCODE.AsString)]); 
+      if not adsCorePriceEnabled.AsBoolean then
+      begin
+        //если фирма недоступна, изменяем цвет
+        if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
+          then Background := clBtnFace;
+      end;
 
-		//если уцененный товар, изменяем цвет
-		if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCryptBASECOST)) then
-			Background := JUNK_CLR;
-		//ожидаемый товар выделяем зеленым
-		if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreCryptSYNONYMNAME) then
-			Background := AWAIT_CLR;
-	end;
+      //если уцененный товар, изменяем цвет
+      if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCryptBASECOST)) then
+        Background := JUNK_CLR;
+      //ожидаемый товар выделяем зеленым
+      if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
+        Background := AWAIT_CLR;
+    end;
+  end;
 end;
 
 procedure TSynonymSearchForm.eSearchKeyDown(Sender: TObject; var Key: Word;
@@ -409,7 +407,8 @@ procedure TSynonymSearchForm.SetClear;
 begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
-  adsCore.Close;
+  if adsCore.Active then
+    adsCore.Close;
 end;
 
 procedure TSynonymSearchForm.dbgCoreKeyPress(Sender: TObject;
@@ -419,14 +418,6 @@ begin
 		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
 	begin
     AddKeyToSearch(Key);
-  end;
-end;
-
-procedure TSynonymSearchForm.dbgCoreDrawDataCell(Sender: TObject;
-  const Rect: TRect; Field: TField; State: TGridDrawState);
-begin
-  if Field = adsCoreCryptSYNONYMNAME then begin
-    dbgCore.Canvas.FillRect(Rect);
   end;
 end;
 

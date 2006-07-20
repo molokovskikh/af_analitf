@@ -552,7 +552,7 @@ procedure TOrdersHForm.InternalMoveToPrice;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymFirmCrCode, SynonymCode: Variant;
-  Code, CodeCr : String;
+  Code, CodeCr : Variant;
   I : Integer;
 
   procedure SetOrder( Order: Integer);
@@ -593,10 +593,10 @@ begin
       while not OrdersForm.adsOrders.Eof do begin
         Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
         Code := OrdersForm.adsOrdersCode.AsVariant;
-        Code := Copy(Code, 1, Length(Code)-16);
+        //Code := Copy(Code, 1, Length(Code)-16);
       //if Code = '' then Code := Null;
         CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
-        CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
+        //CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
         //if CodeCr = '' then CodeCr := Null;
         SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
         SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
@@ -612,7 +612,7 @@ begin
           FetchAll;
           try
             { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
-            if ExtLocate( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [eloPartialKey])
+            if Locate( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [])
             then
             begin
               repeat
@@ -635,16 +635,16 @@ begin
               begin
                 Strings.Append( Format( '%s : %s - %s : %d вместо %d',
                   [adsOrdersHFormPRICENAME.AsString,
-                  OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
-                  OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString,
+                  OrdersForm.adsOrdersSYNONYMNAME.AsString,
+                  OrdersForm.adsOrdersSYNONYMFIRM.AsString,
                   OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
                   OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
               end
               else
                 Strings.Append( Format( '%s : %s - %s : предложение не найдено',
                   [adsOrdersHFormPRICENAME.AsString,
-                  OrdersForm.adsOrdersCryptSYNONYMNAME.AsString,
-                  OrdersForm.adsOrdersCryptSYNONYMFIRM.AsString]));
+                  OrdersForm.adsOrdersSYNONYMNAME.AsString,
+                  OrdersForm.adsOrdersSYNONYMFIRM.AsString]));
             end;
 
           finally

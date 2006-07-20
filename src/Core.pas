@@ -104,19 +104,15 @@ type
     adsCorePRICEENABLED: TFIBBooleanField;
     adsCoreORDERSJUNK: TFIBBooleanField;
     adsCoreORDERSAWAIT: TFIBBooleanField;
-    adsCoreCryptSYNONYMNAME: TStringField;
-    adsCoreCryptSYNONYMFIRM: TStringField;
     adsCoreCryptBASECOST: TCurrencyField;
-    adsCoreBASECOST: TFIBStringField;
     adsCoreQUANTITY: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBStringField;
-    adsOrdersPRICE: TFIBStringField;
     adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
     adsOrdersCODE: TFIBStringField;
     adsOrdersCODECR: TFIBStringField;
     adsOrdersCryptPRICE: TCurrencyField;
-    adsOrdersCryptSYNONYMFIRM: TStringField;
-    procedure adsCore2CalcFields(DataSet: TDataSet);
+    adsCoreBASECOST: TFIBStringField;
+    adsCoreORDERSPRICE: TFIBStringField;
+    adsOrdersPRICE: TFIBStringField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -141,7 +137,6 @@ type
     procedure FormResize(Sender: TObject);
     procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
-    procedure adsOrdersCalcFields(DataSet: TDataSet);
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
@@ -150,8 +145,10 @@ type
     RetailForcount: Double;
 
     procedure RefreshOrdersH;
+    procedure ccf(DataSet: TDataSet);
+    procedure ocf(DataSet: TDataSet);
   public
-    procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms: Boolean); reintroduce;
+    procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
     procedure ShowOrdersH;
   end;
@@ -171,7 +168,9 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
-	PrintEnabled:=False;
+	PrintEnabled := False;
+  adsCore.OnCalcFields := ccf;
+  adsOrders.OnCalcFields := ocf;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
@@ -200,7 +199,7 @@ begin
 	Reg.Free;
 end;
 
-procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms: Boolean);
+procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean);
 var
 	I: Integer;
 	FirstPrice, PrevPrice, D: Currency;
@@ -271,11 +270,11 @@ begin
 	//готовим значени€ дл€ колонки "–азница"
 	FirstPrice := 0;
 	PrevPrice := 0;
-        I := -1;
+  I := -1;
 	RecInfos := nil;
 	with adsCore do
 	begin
-		SetLength( RecInfos, adsCore.RecordCount);
+		SetLength( RecInfos, adsCore.RecordCountFromSrv);
 		First;
 		while not Eof do
 		begin
@@ -302,6 +301,7 @@ begin
 				if ( FirstPrice=0) and (( DeltaMode <> 2) or adsCorePriceEnabled.AsBoolean) then
 					FirstPrice := adsCoreCryptBASECOST.AsCurrency;
 			end;
+      RefreshClientFields(True);
 			Next;
 		end;
 		First;
@@ -320,6 +320,9 @@ begin
 	inherited ShowForm; // д.б. перед MainForm.actPrint.OnExecute
 	//готовим печать
 	frVariables[ 'UseForms'] := UseForms;
+	frVariables[ 'NewSearch'] := NewSearch;
+	frVariables[ 'CatalogName'] := AName;
+	frVariables[ 'CatalogForm'] := AForm;
 	cbFilterSelect( nil);
 end;
 
@@ -334,15 +337,13 @@ begin
 	else Text := Sender.AsString;
 end;
 
-procedure TCoreForm.adsCore2CalcFields(DataSet: TDataSet);
+procedure TCoreForm.ccf(DataSet: TDataSet);
 var
   S : String;
   C : Currency;
 begin
   try
-    adsCoreCryptSYNONYMNAME.AsString := DM.D_S(adsCoreSYNONYMNAME.AsString);
-    adsCoreCryptSYNONYMFIRM.AsString := DM.D_S(adsCoreSYNONYMFIRM.AsString);
-    S := DM.D_B(adsCoreCODE.AsString, adsCoreCODECR.AsString);
+    S := DM.D_B_N(adsCoreBASECOST.AsString);
     C := StrToCurr(S);
     adsCoreCryptBASECOST.AsCurrency := C;
     adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
@@ -511,7 +512,7 @@ begin
 	if adsCoreFirmCode.AsInteger = RegisterId then
 	begin
 		//если это реестр, измен€ем цвета
-		if ( Column.Field = adsCoreCryptSYNONYMNAME) or ( Column.Field = adsCoreCryptSYNONYMFIRM) or
+		if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM) or
 			( Column.Field = adsCoreCryptBASECOST)or
 			( Column.Field = adsCorePriceRet) then Background := REG_CLR;
         end
@@ -520,7 +521,7 @@ begin
 		if not adsCorePriceEnabled.AsBoolean then
 		begin
 			//если фирма недоступна, измен€ем цвет
-			if ( Column.Field = adsCoreCryptSYNONYMNAME) or ( Column.Field = adsCoreCryptSYNONYMFIRM)
+			if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
 				then Background := clBtnFace;
 		end;
 
@@ -528,7 +529,7 @@ begin
 		if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCryptBASECOST)) then
 			Background := JUNK_CLR;
 		//ожидаемый товар выдел€ем зеленым
-		if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreCryptSYNONYMNAME) then
+		if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
 			Background := AWAIT_CLR;
 	end;
 end;
@@ -650,16 +651,10 @@ begin
   text := Iif(Sender.AsBoolean, '+', '');
 end;
 
-procedure TCoreForm.adsOrdersCalcFields(DataSet: TDataSet);
-var
-  S : String;
-  C : Currency;
+procedure TCoreForm.ocf(DataSet: TDataSet);
 begin
   try
-    adsOrdersCryptSYNONYMFIRM.AsString := DM.D_S(adsOrdersSYNONYMFIRM.AsString);
-    S := DM.D_B(adsOrdersCODE.AsString, adsOrdersCODECR.AsString);
-    C := StrToCurr(S);
-    adsOrdersCryptPRICE.AsCurrency := C;
+    adsOrdersCryptPRICE.AsCurrency := StrToCurr(DM.D_B_N(adsOrdersPRICE.AsString));
   except
   end;
 end;
