@@ -117,6 +117,7 @@ begin
   end;
   Application.Initialize;
   Application.Title := '¿Ì‡ÎËÚ‘¿–Ã¿÷»ﬂ';
+  Application.HintHidePause := 10*60*1000;
   Application.CreateForm(TMainForm, MainForm);
   MainForm.FormPlacement.IniFileName := 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\';
   Application.CreateForm(TDM, DM);
