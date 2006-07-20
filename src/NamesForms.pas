@@ -76,6 +76,12 @@ type
     procedure actNewSearchExecute(Sender: TObject);
     procedure dbgCatalogDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
+    procedure dbgNamesGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure dbgFormsGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure dbgCatalogGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -328,9 +334,9 @@ begin
     Screen.Cursor:=crHourglass;
     try
       if Active then Close;
-      SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form FROM CATALOGS';
+      SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS FROM CATALOGS';
       if not actShowAll.Checked then
-        SelectSQL.Text := SelectSQL.Text + ' where exists(select * from core c where c.fullcode = catalogs.fullcode)';
+        SelectSQL.Text := SelectSQL.Text + ' where CATALOGS.COREEXISTS = 1';
       Open;
     finally
       Screen.Cursor := crDefault;
@@ -370,10 +376,10 @@ procedure TNamesFormsForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
   adsCatalog.Close;
-  adsCatalog.SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form ' +
+  adsCatalog.SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS ' +
     'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
   if not actShowAll.Checked then
-    adsCatalog.SelectSQL.Text := adsCatalog.SelectSQL.Text + ' and exists(select * from core c where c.fullcode = catalogs.fullcode)';
+    adsCatalog.SelectSQL.Text := adsCatalog.SelectSQL.Text + ' and CATALOGS.COREEXISTS = 1';
   adsCatalog.ParamByName('LikeParam').AsString := '%' + eSearch.Text + '%';
   adsCatalog.Open;
   dbgCatalog.SetFocus;
@@ -515,6 +521,31 @@ begin
   end;
 
   Canvas.Draw(Rect.Left, Rect.Top, BM);
+end;
+
+procedure TNamesFormsForm.dbgNamesGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if not adsNames.IsEmpty and (adsNames.FieldByName('COREEXISTS').AsInteger = 0) then
+    Background := clSilver;
+end;
+
+procedure TNamesFormsForm.dbgFormsGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if not adsForms.IsEmpty and (adsForms.FieldByName('COREEXISTS').AsInteger = 0) then
+    Background := clSilver;
+end;
+
+procedure TNamesFormsForm.dbgCatalogGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if not adsCatalog.IsEmpty then
+   if (adsCatalog.FieldByName('COREEXISTS').AsInteger = 0) then
+     Background := clSilver;
 end;
 
 end.

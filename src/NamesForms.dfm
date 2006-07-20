@@ -105,6 +105,7 @@ inherited NamesFormsForm: TNamesFormsForm
       TitleFont.Style = []
       OnDblClick = dbgNamesDblClick
       OnEnter = dbgNamesEnter
+      OnGetCellParams = dbgNamesGetCellParams
       OnKeyDown = dbgNamesKeyDown
       SearchField = 'Name'
       SearchPosition = spBottom
@@ -155,6 +156,7 @@ inherited NamesFormsForm: TNamesFormsForm
         OnDblClick = dbgFormsDblClick
         OnEnter = dbgFormsEnter
         OnExit = dbgFormsExit
+        OnGetCellParams = dbgFormsGetCellParams
         OnKeyDown = dbgFormsKeyDown
         SearchField = 'Form'
         SearchPosition = spBottom
@@ -275,6 +277,7 @@ inherited NamesFormsForm: TNamesFormsForm
       TitleFont.Style = []
       OnDblClick = dbgCatalogDblClick
       OnDrawColumnCell = dbgCatalogDrawColumnCell
+      OnGetCellParams = dbgCatalogGetCellParams
       OnKeyDown = dbgCatalogKeyDown
       OnKeyPress = dbgCatalogKeyPress
       SearchPosition = spBottom
@@ -368,7 +371,8 @@ inherited NamesFormsForm: TNamesFormsForm
     SelectSQL.Strings = (
       'SELECT'
       '    ASHORTCODE,'
-      '    NAME'
+      '    NAME,'
+      '    coreexists'
       'FROM'
       '    CATALOGSHOWBYNAME(:SHOWALL) ')
     Transaction = DM.DefTran
