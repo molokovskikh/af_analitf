@@ -1331,10 +1331,6 @@ begin
 	SQL.Text := 'EXECUTE PROCEDURE SynonymDeleteFormHeaders'; ExecQuery;
 	Progress := 60;
 	Synchronize( SetProgress);
-	SQL.Text := 'update catalogs set CoreExists = 0'; ExecQuery;
-	SQL.Text := 'update catalogs set CoreExists = 1 where exists(select * from core c where c.Fullcode = catalogs.fullcode)'; ExecQuery;
-	Progress := 65;
-	Synchronize( SetProgress);
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
 
@@ -1365,6 +1361,10 @@ begin
 	StatusText := 'Импорт данных';
 	Synchronize( SetStatus);
 
+	SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; ExecQuery;
+	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c where c.Fullcode = catalogs.fullcode)'; ExecQuery;
+	Progress := 65;
+	Synchronize( SetProgress);
   DM.adtParams.CloseOpen(True);
 	if DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean then
 	begin
