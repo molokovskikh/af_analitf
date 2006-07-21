@@ -187,6 +187,9 @@ private
   procedure OnMainAppEx(Sender: TObject; E: Exception);
   function  GetActionLists : TList;
   procedure SetActionLists(AValue : TList);
+  function  OldOrders : Boolean;
+  procedure DeleteOldOrders;
+  procedure LogCriticalError(Error : String);
 public
 	CurrentUser: string;	// Имя текущего пользователя
 	ActiveChild: TChildForm;
@@ -661,6 +664,11 @@ end;
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
 	if not DM.MainConnection1.Connected then exit;
+  if OldOrders then
+    if (not DM.adtParams.FieldByName('CONFIRMDELETEOLDORDERS').AsBoolean) or
+       (MessageBox('Обнаружены устаревшие заказы. Удалить их?', MB_ICONQUESTION or MB_YESNO) = IDYES)
+    then
+      DeleteOldOrders;
 	if CheckUnsendOrders then
 	begin
 		if MessageBox( 'Обнаружены неотправленные заказы. ' +
@@ -842,6 +850,7 @@ begin
     else begin
       if E.Message <> SCannotFocus then begin
         S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
+        LogCriticalError(S + ' ' + E.Message);
         Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
           '%s'#13#10'%s'#13#10#13#10 +
           'Завершить работу программы?', [S, E.Message]);
@@ -884,6 +893,51 @@ end;
 procedure TMainForm.actSynonymSearchExecute(Sender: TObject);
 begin
 	ShowSynonymSearch;
+end;
+
+function TMainForm.OldOrders: Boolean;
+begin
+	DM.adsSelect.Close;
+	DM.adsSelect.SelectSQL.Text := 'SELECT * FROM ORDERSH where (Closed = 1) and (orderdate < :MinOrderDate)';
+  DM.adsSelect.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+	DM.adsSelect.Open;
+	try
+    Result := not DM.adsSelect.IsEmpty;
+	finally
+		DM.adsSelect.Close;
+	end;
+end;
+
+procedure TMainForm.DeleteOldOrders;
+begin
+  DM.adcUpdate.Transaction.StartTransaction;
+  try
+    DM.adcUpdate.SQL.Text := 'delete FROM ORDERSH where (Closed = 1) and (orderdate < :MinOrderDate)';
+    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+    DM.adcUpdate.ExecQuery;
+    DM.adcUpdate.Transaction.Commit;
+  except
+    DM.adcUpdate.Transaction.Rollback;
+    raise;
+  end;
+end;
+
+procedure TMainForm.LogCriticalError(Error: String);
+var
+  ELog : TextFile;
+begin
+  try
+		AssignFile( ELog, ExePath + 'Exchange.log');
+    if FileExists(ExePath + 'Exchange.log') then
+  		Append( ELog) //будем добавлять лог-файл
+    else
+  		Rewrite( ELog); //создаем лог-файл
+    Writeln(ELog);
+    Writeln(ELog);
+    Writeln(ELog, DateTimeToStr(Now) + '  CriticalError : ' + Error);
+    CloseFile(ELog);
+  except
+  end;
 end;
 
 end.

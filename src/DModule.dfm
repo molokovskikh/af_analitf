@@ -183,7 +183,9 @@ object DM: TDM
       '    RASSLEEP = :RASSLEEP,'
       '    HTTPNAMECHANGED = :HTTPNAMECHANGED,'
       '    SHOWALLCATALOG = :SHOWALLCATALOG,'
-      '    CDS = :CDS'
+      '    CDS = :CDS,'
+      '    ORDERSHISTORYDAYCOUNT = :ORDERSHISTORYDAYCOUNT,'
+      '    CONFIRMDELETEOLDORDERS = :CONFIRMDELETEOLDORDERS'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')
@@ -200,6 +202,7 @@ object DM: TDM
     AutoCommit = True
     Left = 48
     Top = 216
+    oTrimCharFields = False
     oCacheCalcFields = True
   end
   object adtProvider: TpFIBDataSet

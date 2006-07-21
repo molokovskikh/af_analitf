@@ -81,6 +81,13 @@ type
     mdRetailRETAIL: TIntegerField;
     lRaz: TLabel;
     lRazInfo: TLabel;
+    eHTTPPass: TEdit;
+    gbDeleteHistory: TGroupBox;
+    Label11: TLabel;
+    dbeHistoryDayCount: TDBEdit;
+    udHistoryDayCount: TUpDown;
+    Label16: TLabel;
+    dbcbConfirmDeleteOldOrders: TDBCheckBox;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
@@ -106,8 +113,11 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure mdRetailAfterPost(DataSet: TDataSet);
     procedure mdRetailBeforePost(DataSet: TDataSet);
+    procedure dbeHistoryDayCountChange(Sender: TObject);
+    procedure udHistoryDayCountClick(Sender: TObject; Button: TUDBtnType);
+    procedure eHTTPPassChange(Sender: TObject);
   private
-    HTTPNameChanged : Boolean;
+    HTTPNameChanged, HTTPPassChanged : Boolean;
     OldHTTPName : String;
     FRXRetMargins : array of TRetMass;
     RetMarginsChanges : Boolean;
@@ -134,6 +144,7 @@ function ShowConfig( Auth: boolean = False): boolean;
 var
 	IsRasPresent: boolean;
   OldExep : TExceptionEvent;
+  HTTPPass : String;
 begin
   MainForm.FreeChildForms; //вид дочерних форм зависит от параметров
   Result:=False;
@@ -141,31 +152,38 @@ begin
     OldExep := Application.OnException;
     try
       Application.OnException := OnAppEx;
-    HTTPNameChanged := False;
-    OldHTTPName := dbeHTTPName.Field.AsString;
-	if Auth then PageControl.ActivePageIndex := 2
-		else PageControl.ActivePageIndex := 0;
+      HTTPNameChanged := False;
+      OldHTTPName := dbeHTTPName.Field.AsString;
+      if Auth then
+        PageControl.ActivePageIndex := 2
+      else
+        PageControl.ActivePageIndex := 0;
 
-    //читаем параметры соединения
-    IsRasPresent := True;
-    try
-	GetEntries;
-	DM.Ras.Entry:=DM.adtParams.FieldByName('RasEntry').AsString;
-	cbRas.ItemIndex:=DM.Ras.GetEntryIndex;
-    except
-	IsRasPresent := False;
-    end;
-    if IsRasPresent then EnableRemoteAccess
-    	else DisableRemoteAccess;
-//    DM.MainConnection.BeginTrans;
-    try
+      //читаем параметры соединения
+      IsRasPresent := True;
+      try
+	      GetEntries;
+        DM.Ras.Entry:=DM.adtParams.FieldByName('RasEntry').AsString;
+        cbRas.ItemIndex:=DM.Ras.GetEntryIndex;
+      except
+	      IsRasPresent := False;
+      end;
+      if IsRasPresent then
+        EnableRemoteAccess
+    	else
+        DisableRemoteAccess;
+      HTTPPass := DM.D_HP(DM.adtParams.FieldByName('HTTPPass').AsString);
+      eHTTPPass.Text := StringOfChar('*', Length(HTTPPass));
+      HTTPPassChanged := False;
       DM.adtParams.Edit;
       mdRetail.LoadFromDataSet(DM.adsRetailMargins, 0, lmAppend);
       RXLoadRetailMargins;
       RetMarginsChanges := False;
-      Result:=ShowModal=mrOk;
+      Result := ShowModal=mrOk;
       if Result then begin
-        DM.adtParams.FieldByName('RasEntry').AsString:=cbRas.Items[cbRas.ItemIndex];
+        DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
+        if HTTPPassChanged then
+          DM.adtParams.FieldByName('HTTPPass').AsString := DM.E_HP(eHTTPPass.Text);
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
@@ -185,17 +203,11 @@ begin
         mdRetail.SaveToDataSet(DM.adsRetailMargins, 0);
         DM.adsRetailMargins.ApplyUpdates;
         DM.LoadRetailMargins;
-      //  DM.MainConnection.CommitTrans;
       end
       else begin
         DM.adtParams.Cancel;
         DM.adsRetailMargins.CancelUpdates;
-//        DM.MainConnection.RollbackTrans;
       end;
-    except
-//      DM.MainConnection.RollbackTrans;
-      raise;
-    end;
 
     finally
       Application.OnException := OldExep;
@@ -497,6 +509,25 @@ procedure TConfigForm.mdRetailBeforePost(DataSet: TDataSet);
 begin
   if (mdRetailLEFTLIMIT.IsNull) or (mdRetailRIGHTLIMIT.IsNull) or (mdRetailRETAIL.IsNull) then
     Abort;
+end;
+
+procedure TConfigForm.dbeHistoryDayCountChange(Sender: TObject);
+var
+  V, E: Integer;
+begin
+  Val(dbeHistoryDayCount.Text,V,E);
+  udHistoryDayCount.Position:=V;
+end;
+
+procedure TConfigForm.udHistoryDayCountClick(Sender: TObject;
+  Button: TUDBtnType);
+begin
+  dbeHistoryDayCount.Field.AsInteger := udHistoryDayCount.Position;
+end;
+
+procedure TConfigForm.eHTTPPassChange(Sender: TObject);
+begin
+  HTTPPassChanged := True;
 end;
 
 end.

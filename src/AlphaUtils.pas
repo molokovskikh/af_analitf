@@ -216,7 +216,7 @@ begin
       PreTextWidth := Canvas.TextWidth( Copy(DisplayText, 1, TextPos-1) );
       SearchTextWidth := Canvas.TextWidth( Copy(DisplayText, TextPos, SearchLen) );
       R := Classes.Rect(R.Left + PreTextWidth, R.Top, R.Left + PreTextWidth + SearchTextWidth + 1, R.Bottom);
-      AlphaBlendRect(Canvas, R, clSkyBlue, BM);
+      AlphaBlendRect(Canvas, R, $24FDFD, BM);
     end;
   end;
 end;

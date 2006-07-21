@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshAuth
+    ActivePage = tshOther
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5317,7 +5317,7 @@ object ConfigForm: TConfigForm
           Height = 21
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5517,9 +5517,19 @@ object ConfigForm: TConfigForm
           Width = 185
           Height = 21
           DataField = 'HTTPPass'
-          DataSource = DM.dsParams
           PasswordChar = '*'
           TabOrder = 1
+          Visible = False
+        end
+        object eHTTPPass: TEdit
+          Left = 184
+          Top = 37
+          Width = 185
+          Height = 21
+          PasswordChar = '*'
+          TabOrder = 2
+          Text = 'eHTTPPass'
+          OnChange = eHTTPPassChange
         end
       end
     end
@@ -5639,7 +5649,7 @@ object ConfigForm: TConfigForm
       end
       object DBCheckBox1: TDBCheckBox
         Left = 8
-        Top = 30
+        Top = 246
         Width = 233
         Height = 17
         Caption = #1055#1086#1082#1072#1079#1099#1074#1072#1090#1100' '#1088#1077#1077#1089#1090#1088' '#1074' '#1089#1087#1080#1089#1082#1077' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
@@ -5649,6 +5659,64 @@ object ConfigForm: TConfigForm
         ValueChecked = 'True'
         ValueUnchecked = 'False'
         Visible = False
+      end
+      object gbDeleteHistory: TGroupBox
+        Left = 8
+        Top = 32
+        Width = 377
+        Height = 73
+        Caption = ' '#1040#1074#1090#1086#1084#1072#1090#1080#1095#1077#1089#1082#1086#1077' '#1091#1076#1072#1083#1077#1085#1080#1077' '#1091#1089#1090#1072#1088#1077#1074#1096#1080#1093' '#1079#1072#1082#1072#1079#1086#1074' '
+        TabOrder = 2
+        object Label11: TLabel
+          Left = 8
+          Top = 24
+          Width = 205
+          Height = 13
+          Caption = #1054#1095#1080#1097#1072#1090#1100' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1077' '#1079#1072#1082#1072#1079#1099' '#1089#1090#1072#1088#1096#1077' '
+        end
+        object Label16: TLabel
+          Left = 288
+          Top = 24
+          Width = 24
+          Height = 13
+          Caption = #1076#1085#1077#1081
+        end
+        object dbeHistoryDayCount: TDBEdit
+          Left = 224
+          Top = 16
+          Width = 41
+          Height = 21
+          DataField = 'ORDERSHISTORYDAYCOUNT'
+          DataSource = DM.dsParams
+          TabOrder = 0
+          OnChange = dbeHistoryDayCountChange
+        end
+        object udHistoryDayCount: TUpDown
+          Left = 265
+          Top = 16
+          Width = 15
+          Height = 21
+          Min = 7
+          Max = 365
+          Position = 10
+          TabOrder = 1
+          OnClick = udHistoryDayCountClick
+        end
+        object dbcbConfirmDeleteOldOrders: TDBCheckBox
+          Left = 8
+          Top = 48
+          Width = 257
+          Height = 17
+          Hint = #1041#1091#1076#1077#1090' '#1083#1080' '#1074#1099#1074#1086#1076#1080#1090#1089#1103' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1089' '#1087#1086#1076#1090#1074#1077#1088#1078#1076#1077#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1080#1103' '#1079#1072#1082#1072#1079#1086#1074'.'
+          Caption = #1055#1086#1076#1090#1074#1077#1088#1078#1076#1072#1090#1100' '#1091#1076#1072#1083#1077#1085#1080#1077' '#1091#1089#1090#1072#1088#1077#1074#1096#1080#1093' '#1079#1072#1082#1072#1079#1086#1074
+          DataField = 'CONFIRMDELETEOLDORDERS'
+          DataSource = DM.dsParams
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 2
+          ValueChecked = 'True'
+          ValueUnchecked = 'False'
+        end
       end
     end
   end

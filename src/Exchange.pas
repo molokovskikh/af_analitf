@@ -463,10 +463,8 @@ begin
     HTTPReclame.Request.ProxyConnection := '';
 	end;
 	HTTP.Request.Username := DM.adtParams.FieldByName( 'HTTPName').AsString;
-	HTTP.Request.Password := DM.adtParams.FieldByName( 'HTTPPass').AsString;
 	HTTP.Port := DM.adtParams.FieldByName( 'HTTPPort').AsInteger;
 	HTTPReclame.Request.Username := DM.adtParams.FieldByName( 'HTTPName').AsString;
-	HTTPReclame.Request.Password := DM.adtParams.FieldByName( 'HTTPPass').AsString;
 	HTTPReclame.Port := DM.adtParams.FieldByName( 'HTTPPort').AsInteger;
 	HTTP.Host := ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString);
 	if not DM.adtReclame.IsEmpty then HTTPReclame.Host :=

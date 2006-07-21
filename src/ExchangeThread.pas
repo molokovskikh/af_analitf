@@ -313,7 +313,7 @@ begin
 //		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 		'/' + 'PrgDataTest' + '/code.asmx';
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
-  HTTPPass := DM.adtParams.FieldByName( 'HTTPPass').AsString;
+  HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
 end;
 
@@ -1330,6 +1330,10 @@ begin
 	Synchronize( SetProgress);
 	SQL.Text := 'EXECUTE PROCEDURE SynonymDeleteFormHeaders'; ExecQuery;
 	Progress := 60;
+	Synchronize( SetProgress);
+	SQL.Text := 'update catalogs set CoreExists = 0'; ExecQuery;
+	SQL.Text := 'update catalogs set CoreExists = 1 where exists(select * from core c where c.Fullcode = catalogs.fullcode)'; ExecQuery;
+	Progress := 65;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);

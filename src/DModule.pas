@@ -287,6 +287,7 @@ type
     AllSumOrder : Currency;
     UpdateReclameDT : TDateTime;
     SynC,
+    HTTPC,
     CodeC,
     BasecostC,
     VBasecostC : TINFCrypt;
@@ -361,6 +362,8 @@ type
     //DecodeBasecost
     function D_B(CodeS1, CodeS2 : String) : String;
     function D_B_N(BaseC: String) : String;
+    function D_HP(HTTPPassC: String) : String;
+    function E_HP(HTTPPass: String) : String;
     procedure SavePass(ASyn, ACodes, AB : String);
     procedure testSavePass;
     procedure LoadRetailMargins;
@@ -434,9 +437,13 @@ procedure TDM.DMCreate(Sender: TObject);
 var
   LDBFileName : String;
   DBCompress : Boolean;
+  HTTPS,
+  HTTPE : String;
 begin
   SerBeg := 'Hgrysjh';
   SerEnd := 'uirft34';
+  HTTPS := 'rkhgjsdk';
+  HTTPE := 'fhhjfgfh';
 
   adsSelect3.OnCalcFields := s3cf;
   adsOrders.OnCalcFields := ocf;
@@ -446,6 +453,7 @@ begin
   CodeC := TINFCrypt.Create('', 60);
   BasecostC := TINFCrypt.Create('', 50);
   VBasecostC := TINFCrypt.Create('', 50);
+  HTTPC := TINFCrypt.Create(HTTPS + HTTPE, 255);
 
   ResetNeedCommitExchange;
   GetLocaleFormatSettings(0, FFS);
@@ -1882,6 +1890,32 @@ begin
     else
       Result := '';
   end
+  else
+    Result := '';
+end;
+
+function TDM.D_HP(HTTPPassC: String): String;
+var
+  tmp : String;
+begin
+  if Length(HTTPPassC) > 3 then begin
+    tmp := HTTPPassC[2] + Copy(HTTPPassC, 4, Length(HTTPPassC));
+    if Length(tmp) > 1 then begin
+      Result := HTTPC.DecodeMix(tmp);
+    end
+    else
+      Result := '';
+  end
+  else
+    Result := '';
+end;
+
+function TDM.E_HP(HTTPPass: String): String;
+begin
+  Result := HTTPC.EncodeMix( HTTPPass );
+
+  if Length(Result) > 2 then
+    Result := chr(random(110) + 32) + Result[1] + chr(random(110) + 32) + Copy(Result, 2, Length(Result))
   else
     Result := '';
 end;
