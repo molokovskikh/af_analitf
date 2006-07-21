@@ -12,6 +12,12 @@ uses
 
 const
   UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
+  //Критические сообщения об ошибках при отправке заказов
+  SendOrdersErrorTexts : array[0..3] of string =
+  ('Доступ запрещен.',
+   'Программа была зарегистрирована на другом компьютере.',
+   'Отправка заказов для данного клиента запрещена.',
+   'Отправка заказов завершилась неудачно.');
 
 type
 
@@ -745,20 +751,20 @@ begin
       params[ 6 + DM.adsOrders.RecordCountFromSrv * 11 ] := 'UniqueID';
       values[ 6 + DM.adsOrders.RecordCountFromSrv * 11 ] := IntToHex( GetCopyID, 8);
 			Res := Soap.Invoke( 'PostOrder1', params, values);
-//			ExchangeForm.QueryResults.Clear;
-			// QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем
-//			while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
 			// проверяем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
 			if ResError <> '' then begin
-        SendError := True;
-        ExchangeForm.SendOrdersLog.Add(
-          Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : %s',
-            [DM.adsOrdersH.FieldByName( 'PriceName').AsString,
-             DM.adsOrdersH.FieldByName( 'RegionName').AsString,
-            ResError])
-        );
-				//raise Exception.Create( ResError + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+        if AnsiIndexText(ResError, SendOrdersErrorTexts) = -1 then begin
+          SendError := True;
+          ExchangeForm.SendOrdersLog.Add(
+            Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : %s',
+              [DM.adsOrdersH.FieldByName( 'PriceName').AsString,
+               DM.adsOrdersH.FieldByName( 'RegionName').AsString,
+              ResError])
+          );
+        end
+        else
+				  raise Exception.Create( ResError + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
       end;
       if not SendError then
         try
