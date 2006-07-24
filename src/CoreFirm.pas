@@ -8,7 +8,7 @@ uses
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
   FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
-  pFIBQuery, lU_TSGHashTable, U_CryptIndex, SQLWaiting;
+  pFIBQuery, lU_TSGHashTable, U_CryptIndex, SQLWaiting, ForceRus;
 
 const
 	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID, :APRICENAME) ORDER BY ';
@@ -95,6 +95,10 @@ type
     adsCoreBASECOST: TFIBStringField;
     adsCoreLEADERPRICE: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
+    pTop: TPanel;
+    eSearch: TEdit;
+    btnSearch: TButton;
+    tmrSearch: TTimer;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -118,20 +122,34 @@ type
     procedure dbgCoreSortMarkingChanged(Sender: TObject);
     procedure adsCoreLEADERPRICENAMEGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
+    procedure tmrSearchTimer(Sender: TObject);
+    procedure dbgCoreDrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
+    procedure eSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure eSearchKeyPress(Sender: TObject; var Key: Char);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
     OrderSum: Double;
 
     UseExcess: Boolean;
     Excess: Integer;
+    InternalSearchText : String;
 
+    BM : TBitmap;
+    
+    fr : TForceRus;
+    
     procedure OrderCalc;
     procedure SetOrderLabel;
     procedure SetFilter(Filter: TFilter);
     procedure RefreshOrdersH;
+    procedure AllFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure OrderCountFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure LeaderFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure ccf(DataSet: TDataSet);
+    procedure SetClear;
+    procedure AddKeyToSearch(Key : Char);
   public
     procedure ShowForm(APriceCode, ARegionCode: Integer;
       OnlyLeaders: Boolean=False); reintroduce;
@@ -145,7 +163,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, Core;
+  NamesForms, Core, AlphaUtils;
 
 {$R *.DFM}
 
@@ -154,6 +172,12 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+
+  BM := TBitmap.Create;
+  
+  fr := TForceRus.Create;
+  
+  InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
 	PrintEnabled := False;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
@@ -178,6 +202,8 @@ begin
 		+ Self.ClassName, True);
 	dbgCore.SaveToRegistry( Reg);
 	Reg.Free;  
+  fr.Free;
+  BM.Free;
 end;
 
 procedure TCoreFirmForm.ShowForm(APriceCode, ARegionCode: Integer;
@@ -241,7 +267,17 @@ var
 begin
   FP := nil;
   case Filter of
-    filAll: FP := nil;
+    filAll:
+      begin
+        if Length(InternalSearchText) > 0 then
+          FP := AllFilterRecord
+        else begin
+          FP := nil;
+          tmrSearch.Enabled := False;
+          eSearch.Text := '';
+          InternalSearchText := '';
+        end;
+      end;
     filOrder: FP := OrderCountFilterRecord;
     filLeader: FP := LeaderFilterRecord;
   end;
@@ -418,8 +454,11 @@ procedure TCoreFirmForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
 begin
 	inherited;
 	if ( Key = VK_RETURN) then btnFormHistoryClick( nil);
-	if (( Key = VK_ESCAPE) and not TToughDBGrid( Sender).InSearch) then
-		Self.PrevForm.ShowForm;
+  if Key = VK_ESCAPE then
+    if Length(InternalSearchText) > 0 then
+      SetClear
+    else
+  		Self.PrevForm.ShowForm;
 end;
 
 procedure TCoreFirmForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
@@ -522,24 +561,36 @@ end;
 
 procedure TCoreFirmForm.dbgCoreKeyPress(Sender: TObject; var Key: Char);
 begin
-  if (KEY in ['0'..'9']) and dbgCore.InSearch then begin
-		SendMessage( dbgCore.Handle, WM_KEYDOWN, VK_ESCAPE, 0);
-		SendMessage( dbgCore.Handle, WM_CHAR, Ord( Key), 0);
+	if ( Key > #32) and not ( Key in
+		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+	begin
+    AddKeyToSearch(Key);
   end;
-  inherited;
 end;
 
 procedure TCoreFirmForm.OrderCountFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
-  Accept := not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0);
+  if Length(InternalSearchText) > 0 then
+    Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText)
+      and not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0)
+  else
+    Accept := not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0);
 end;
 
 procedure TCoreFirmForm.LeaderFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
-  Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
-    or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01);
+  if Length(InternalSearchText) > 0 then
+    Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText)
+    and
+    (
+     ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+      or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01)
+    )
+  else
+    Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+      or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01);
 end;
 
 procedure TCoreFirmForm.RefreshAllCore;
@@ -569,6 +620,84 @@ begin
     Text := PricesForm.adsPrices.FieldByName('PriceName').AsString
   else
     Text := Sender.AsString;
+end;
+
+procedure TCoreFirmForm.tmrSearchTimer(Sender: TObject);
+begin
+  tmrSearch.Enabled := False;
+  if Length(eSearch.Text) > 2 then begin
+    InternalSearchText := eSearch.Text;
+    if not Assigned(adsCore.OnFilterRecord) then begin
+      adsCore.OnFilterRecord := AllFilterRecord;
+      adsCore.Filtered := True;
+    end
+    else
+      DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+    lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.VisibleRecordCount]);
+  end
+  else
+    if Length(eSearch.Text) = 0 then
+      SetClear;
+end;
+
+procedure TCoreFirmForm.AllFilterRecord(DataSet: TDataSet;
+  var Accept: Boolean);
+begin
+  Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText);
+end;
+
+procedure TCoreFirmForm.SetClear;
+var
+  p : TFilterRecordEvent;
+begin
+  tmrSearch.Enabled := False;
+  eSearch.Text := '';
+  InternalSearchText := '';
+  p := AllFilterRecord;
+  if @adsCore.OnFilterRecord = @p then begin
+    adsCore.Filtered := False;
+    adsCore.OnFilterRecord := nil;
+  end
+  else
+    DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+  lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.VisibleRecordCount]);
+end;
+
+procedure TCoreFirmForm.dbgCoreDrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumnEh;
+  State: TGridDrawState);
+begin
+  if Column.Field = adsCoreSYNONYMNAME then
+    ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
+end;
+
+procedure TCoreFirmForm.eSearchKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    tmrSearchTimer(nil);
+  end
+  else
+    if Key = VK_ESCAPE then
+      SetClear;
+end;
+
+procedure TCoreFirmForm.eSearchKeyPress(Sender: TObject; var Key: Char);
+begin
+  tmrSearch.Enabled := False;
+  AddKeyToSearch(Key);
+  //Если мы что-то нажали в элементе, то должны на это отреагировать
+  tmrSearch.Enabled := True;
+end;
+
+procedure TCoreFirmForm.AddKeyToSearch(Key: Char);
+begin
+  if Ord(Key) >= 32 then begin
+    tmrSearch.Enabled := False;
+    if not eSearch.Focused then
+      eSearch.Text := eSearch.Text + fr.DoIt(Key);
+    tmrSearch.Enabled := True;
+  end;
 end;
 
 end.

@@ -38,9 +38,9 @@ object CoreFirmForm: TCoreFirmForm
   end
   object dbgCore: TToughDBGrid
     Left = 0
-    Top = 29
+    Top = 65
     Width = 768
-    Height = 484
+    Height = 448
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsCore
@@ -60,11 +60,11 @@ object CoreFirmForm: TCoreFirmForm
     TitleFont.Height = -11
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
+    OnDrawColumnCell = dbgCoreDrawColumnCell
     OnGetCellParams = dbgCoreGetCellParams
     OnKeyDown = dbgCoreKeyDown
     OnKeyPress = dbgCoreKeyPress
     OnSortMarkingChanged = dbgCoreSortMarkingChanged
-    SearchField = 'SynonymName'
     InputField = 'OrderCount'
     SearchPosition = spTop
     ForceRus = True
@@ -262,13 +262,13 @@ object CoreFirmForm: TCoreFirmForm
     Left = 0
     Top = 0
     Width = 768
-    Height = 29
+    Height = 65
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
       768
-      29)
+      65)
     object lblRecordCount: TLabel
       Left = 486
       Top = 8
@@ -311,6 +311,38 @@ object CoreFirmForm: TCoreFirmForm
         #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090' (F4)'
         #1047#1072#1082#1072#1079' (F5)'
         #1051#1091#1095#1096#1080#1077' '#1087#1088#1077#1076#1083#1086#1078#1077#1085#1080#1103' (F6)')
+    end
+    object pTop: TPanel
+      Left = 0
+      Top = 28
+      Width = 768
+      Height = 37
+      Align = alBottom
+      BevelOuter = bvLowered
+      TabOrder = 1
+      DesignSize = (
+        768
+        37)
+      object eSearch: TEdit
+        Left = 26
+        Top = 8
+        Width = 615
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+        OnKeyDown = eSearchKeyDown
+        OnKeyPress = eSearchKeyPress
+      end
+      object btnSearch: TButton
+        Left = 660
+        Top = 4
+        Width = 75
+        Height = 25
+        Anchors = [akTop, akRight]
+        Caption = #1055#1086#1080#1089#1082
+        TabOrder = 1
+        OnClick = tmrSearchTimer
+      end
     end
   end
   object dsCore: TDataSource
@@ -415,6 +447,7 @@ object CoreFirmForm: TCoreFirmForm
       '    :AREGIONCODE,'
       '    :ACLIENTID,'
       '    :APRICENAME) ')
+    FilterOptions = [foCaseInsensitive]
     AfterPost = adsCore2AfterPost
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
@@ -759,5 +792,11 @@ object CoreFirmForm: TCoreFirmForm
     OnTimer = TimerTimer
     Left = 640
     Top = 216
+  end
+  object tmrSearch: TTimer
+    Enabled = False
+    OnTimer = tmrSearchTimer
+    Left = 472
+    Top = 213
   end
 end

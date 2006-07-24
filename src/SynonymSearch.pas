@@ -432,8 +432,12 @@ end;
 procedure TSynonymSearchForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_ESCAPE then
-    SetClear;
+  if Key = VK_RETURN then begin
+    tmrSearchTimer(nil);
+  end
+  else
+    if Key = VK_ESCAPE then
+      SetClear;
 end;
 
 procedure TSynonymSearchForm.SetClear;
