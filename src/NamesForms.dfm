@@ -94,7 +94,7 @@ inherited NamesFormsForm: TNamesFormsForm
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
-      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
+      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghRowHighlight]
       ParentFont = False
       ReadOnly = True
       TabOrder = 0
@@ -110,7 +110,6 @@ inherited NamesFormsForm: TNamesFormsForm
       SearchField = 'Name'
       SearchPosition = spBottom
       ForceRus = True
-      OnSortChange = dbgNamesSortChange
       Columns = <
         item
           EditButtons = <>
@@ -145,7 +144,7 @@ inherited NamesFormsForm: TNamesFormsForm
         FooterFont.Name = 'MS Sans Serif'
         FooterFont.Style = []
         Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit]
-        OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
+        OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghRowHighlight]
         ReadOnly = True
         TabOrder = 0
         TitleFont.Charset = DEFAULT_CHARSET
@@ -266,7 +265,7 @@ inherited NamesFormsForm: TNamesFormsForm
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
-      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghRowHighlight]
       ParentFont = False
       ReadOnly = True
       TabOrder = 1

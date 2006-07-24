@@ -8,10 +8,6 @@ uses
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet, Registry, ForceRus;
 
-const
-	NamesSql =	'SELECT * FROM CatalogShowByName ORDER BY ';
-	FormsSql =	'SELECT * FROM CatalogShowByForm ORDER BY ';
-
 type
   TNamesFormsForm = class(TChildForm)
     Splitter1: TSplitter;
@@ -57,7 +53,6 @@ type
       Shift: TShiftState);
     procedure dbgNamesDblClick(Sender: TObject);
     procedure dbgFormsDblClick(Sender: TObject);
-    procedure dbgNamesSortChange(Sender: TObject; SQLOrderBy: String);
     procedure dbgNamesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgFormsExit(Sender: TObject);
@@ -264,16 +259,6 @@ begin
 	inherited;
         if Key = VK_RETURN then dbgFormsDblClick( Sender);
 	if ( Key = VK_ESCAPE) or ( Key = VK_SPACE) then dbgNames.SetFocus;
-end;
-
-procedure TNamesFormsForm.dbgNamesSortChange(Sender: TObject;
-  SQLOrderBy: String);
-begin
-	inherited;
-	adsNames.Close;
-	adsNames.SelectSQL.Text := NamesSql + SQLOrderBy;
-	SetNamesParams;
-	SetFormsParams;
 end;
 
 procedure TNamesFormsForm.adsForms2AfterScroll(DataSet: TDataSet);
