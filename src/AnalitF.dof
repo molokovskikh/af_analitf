@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=4
 MinorVer=0
-Release=84
-Build=360
+Release=85
+Build=362
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.0.84.360
+FileVersion=4.0.85.362
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2005
 LegalTrademarks=Инфорум
@@ -154,8 +154,9 @@ Item5=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
 Count=1
 Item0=.\unit
 [HistoryLists\hlOutputDirectorry]
-Count=1
+Count=2
 Item0=.\bin
+Item1=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre359Test_UIN\
 [HistoryLists\hlBPLOutput]
 Count=1
 Item0=.\bin

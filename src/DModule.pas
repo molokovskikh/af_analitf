@@ -391,7 +391,7 @@ implementation
 {$R *.DFM}
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
-     U_FolderMacros, LU_Tracer, LU_MutexSystem;
+     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config;
 
 var
   ch, p : String;
@@ -740,19 +740,23 @@ begin
 
   NeedUpdateByCheckUIN := not CheckCopyIDFromDB;
   if NeedUpdateByCheckUIN then begin
+    DM.MainConnection1.Open;
     try
-      DM.MainConnection1.Open;
-      try
-        adtParams.Edit;
-        adtParams.FieldByName('CDS').AsString := '';
-        adtParams.Post;
-      finally
-        DM.MainConnection1.Close;
-      end;
-    except
+      adtParams.Edit;
+      adtParams.FieldByName('CDS').AsString := '';
+      adtParams.Post;
+    finally
+      DM.MainConnection1.Close;
     end;
     MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
+    DM.MainConnection1.Open;
+    try
+      if (Trim( adtParams.FieldByName( 'HTTPName').AsString) = '') then
+        ShowConfig( True );
+    finally
+      DM.MainConnection1.Close;
+    end;
   end;
 
   NeedUpdateByCheckHashes := not CheckCriticalLibrary;
@@ -1683,12 +1687,10 @@ var
 begin
   try
     S := D_B_N(adsSumOrdersPRICE.AsString);
+    adsSumOrdersCryptPRICE.AsCurrency := StrToCurr(S);
+    adsSumOrdersSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersORDERCOUNT.AsInteger;
   except
-    on E : Exception do
-      raise EINCryptException.Create('PRICE', E.Message);
   end;
-  adsSumOrdersCryptPRICE.AsCurrency := StrToCurr(S);
-  adsSumOrdersSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersORDERCOUNT.AsInteger;
 end;
 
 function TDM.GetAllSumOrder: Currency;

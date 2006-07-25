@@ -1339,6 +1339,8 @@ begin
 	Progress := 50;
 	Synchronize( SetProgress);
 	SQL.Text := 'EXECUTE PROCEDURE SynonymDeleteFormHeaders'; ExecQuery;
+	//проставляем мин. цены и лидеров
+	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert(0)';	ExecQuery;
 	Progress := 60;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
@@ -1410,9 +1412,6 @@ begin
 
 	DM.adtClients.CloseOpen(True);
 	//проставляем мин. цены и лидеров
-	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert(' +
-		DM.adtClients.FieldByName( 'LeadFromBasic').AsString + ')';
-	ExecQuery;
 	if utMinPrices in UpdateTables then
 	begin
     UpdateFromFile(ExePath+SDirIn+'\MinPrices.txt',
