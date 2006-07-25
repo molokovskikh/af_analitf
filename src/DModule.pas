@@ -37,7 +37,7 @@ const
       ('dbrtl70.bpl', '0650B08C', '583E1038', '5F35A236', '6DD703FA'),
       ('designide70.bpl', 'F16F1849', 'E4827C1D', 'C4FD04B9', '968D63F9'),
       ('EhLib70.bpl', 'E53BE3AC', 'CE944324', '98157AE5', '06FCE3DC'),
-      ('FIBPlus7.bpl', '463E2DF6', 'A7AA8DD9', '70C1811C', 'FE34045F'),
+      ('FIBPlus7.bpl', '6AA9BB91', 'BF7ADC50', '57E8F180', '558F8608'),
       ('fr7.bpl', 'F7516F76', '2191B5F2', '43975BC8', '5602F31A'),
       ('Indy70.bpl', '1E271033', 'BD6CE031', '6F82664D', '1111221B'),
       ('rtl70.bpl', 'E4E90D2F', 'C6C35486', '68351583', '3D4ECB44'),
@@ -440,8 +440,8 @@ var
   HTTPS,
   HTTPE : String;
 begin
-  SerBeg := 'Hgrysjh';
-  SerEnd := 'uirft34';
+  SerBeg := 'Yhr39j';
+  SerEnd := 'sleio';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
@@ -536,7 +536,7 @@ begin
     if not RunExchange([ eaGetPrice]) then
       ExitProcess( Integer(ecNotChechHashes) );
   end;
-  
+
   { Запуск с ключем -e (Получение данных и выход)}
   if FindCmdLineSwitch('e') then
   begin
@@ -1564,10 +1564,6 @@ end;
 
 procedure TDM.SavePass(ASyn, ACodes, AB: String);
 var
-  SynName,
-  SynFirm,
-  Code,
-  CodeCr,
   Price : String;
   tmps,
   tmpc,

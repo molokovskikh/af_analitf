@@ -111,7 +111,6 @@ var
 procedure ShowPrices;
 begin
 	PricesForm := TPricesForm( MainForm.ShowChildForm( TPricesForm));
-	PricesForm.dbgPrices.SetFocus;
 	PricesForm.ShowForm;
 end;
 
@@ -129,7 +128,6 @@ begin
   if dbgPrices.SortMarkedColumns.Count = 0 then
     dbgPrices.Columns[0].Title.SortMarker := smUpEh;
 	Reg.Free;
-	ShowForm;
 end;
 
 procedure TPricesForm.FormDestroy(Sender: TObject);

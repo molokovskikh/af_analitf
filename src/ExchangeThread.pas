@@ -177,6 +177,8 @@ begin
 	TotalProgress := 0;
 	Synchronize( SetTotalProgress);
 	try
+    CoInitialize(nil);
+    try
 		ErrorMessage := '';
 		try
 			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
@@ -305,6 +307,9 @@ begin
           ErrorMessage := RusError( E.Message);
 			end;
 		end;
+    finally
+      CoUninitialize;
+    end;
 	except
 		on E: Exception do ErrorMessage := E.Message;
 	end;
@@ -316,8 +321,7 @@ procedure TExchangeThread.HTTPConnect;
 begin
 	{ создаем экземпл€р класса TSOAP дл€ работы с SOAP через HTTP вручную }
 	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-//		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
-		'/' + 'PrgDataTest' + '/code.asmx';
+		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
