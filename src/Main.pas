@@ -7,8 +7,7 @@ uses
   ComCtrls, Menus, ExtCtrls, DBCtrls, DB, Child, Placemnt,
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, ProVersion, DBGridEh, DateUtils, ToughDBGrid,
-  OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet, U_CryptIndex,
-  Consts, ShellAPI;
+  OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet, Consts, ShellAPI;
 
 type
 
@@ -844,20 +843,17 @@ begin
       ExitProcess(100);
     end;
   end
-  else
-    if E is EINCryptException then
-      AProc.MessageBox(E.Message, MB_ICONERROR)
-    else begin
-      if E.Message <> SCannotFocus then begin
-        S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
-        LogCriticalError(S + ' ' + E.Message);
-        Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
-          '%s'#13#10'%s'#13#10#13#10 +
-          'Завершить работу программы?', [S, E.Message]);
-        if AProc.MessageBox(Mess, MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = ID_YES then
-          ExitProcess(100);
-      end;
+  else begin
+    if E.Message <> SCannotFocus then begin
+      S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
+      LogCriticalError(S + ' ' + E.Message);
+      Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
+        '%s'#13#10'%s'#13#10#13#10 +
+        'Завершить работу программы?', [S, E.Message]);
+      if AProc.MessageBox(Mess, MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = ID_YES then
+        ExitProcess(100);
     end;
+  end;
 end;
 
 function TMainForm.GetActionLists: TList;

@@ -107,7 +107,6 @@ UseLauncher=0
 DebugCWD=
 RemoteHost=tester
 RemotePath=C:\Release359\AnalitF.exe
-RemoteDebug=1
 [Language]
 ActiveLang=
 ProjectLang=
@@ -117,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=4
 MinorVer=0
-Release=86
-Build=373
+Release=87
+Build=375
 Debug=0
 PreRelease=0
 Special=0
@@ -129,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.0.86.373
+FileVersion=4.0.87.375
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2005
 LegalTrademarks=Инфорум

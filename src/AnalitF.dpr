@@ -60,7 +60,6 @@ uses
   incrt in 'RC_RND\incrt.pas',
   inforoomalg in 'RC_RND\inforoomalg.pas',
   LU_TSGHashTable in 'common\LU_TSGHashTable.pas',
-  U_CryptIndex in 'U_CryptIndex.pas',
   SevenZip in 'common\SevenZip.pas',
   SQLWaiting in 'SQLWaiting.pas' {frmSQLWaiting},
   infver in 'RC_RND\infver.pas',

@@ -692,16 +692,8 @@ begin
 			values[ i * 11 + 8] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
 			values[ i * 11 + 9] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
 			values[ i * 11 + 10] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
-      try
-   			values[ i * 11 + 11] := DM.D_C( DM.adsOrders.FieldByName( 'Code').AsString );
-      except
-        values[ i * 11 + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
-      end;
-      try
-  			values[ i * 11 + 12] := DM.D_C( DM.adsOrders.FieldByName( 'CodeCr').AsString );
-      except
-        values[ i * 11 + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
-      end;
+      values[ i * 11 + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
+      values[ i * 11 + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
 			values[ i * 11 + 13] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
 			values[ i * 11 + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
 			values[ i * 11 + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);

@@ -10,7 +10,7 @@ uses
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs, U_CryptIndex, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders;
+  Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders;
 
 {
 Криптование
@@ -349,18 +349,6 @@ type
     procedure ResetReclame;
     procedure SetReclame;
     procedure UpdateReclame;
-{
-}
-    //DecodeCryptS
-    //function D_C_S(Pass, S : String) : String;
-    //CodeCryptS
-    //function C_C_S(Pass, S : String) : String;
-    //DecodeSynonym
-    function D_S(CodeS : String) : String;
-    //DecodeCode
-    function D_C(CodeS : String) : String;
-    //DecodeBasecost
-    function D_B(CodeS1, CodeS2 : String) : String;
     function D_B_N(BaseC: String) : String;
     function D_HP(HTTPPassC: String) : String;
     function E_HP(HTTPPass: String) : String;
@@ -1493,13 +1481,6 @@ begin
   FNeedCommitExchange := True;
 end;
 
-{
-function TDM.D_C_S(Pass, S: String): String;
-begin
-  Result := DeCryptString(S, Pass);
-end;
-}
-
 procedure TDM.ReadPasswords;
 begin
 try
@@ -1528,43 +1509,6 @@ set VirtualCostsPasswordParam=concat(left(SynonymsPasswordParam, 4), right(Costs
   BasecostC.UpdateKey(BasecostPassword);
   VBasecostC.UpdateKey(VirtualBaseCostPassword);
 end;
-
-function TDM.D_S(CodeS: String): String;
-begin
-  if (Length(CodeS) > 1) and (CodeS[1] = ' ') then
-    Result := SynC.DecodeMix(Copy(CodeS, 2, Length(CodeS)))
-  else
-    Result := CodeS;
-end;
-
-function TDM.D_C(CodeS: String): String;
-begin
-  CodeS := Copy(CodeS, 1, Length(CodeS)-16);
-  if Length(CodeS) >= 16 then
-    Result := CodeC.DecodeMix(CodeS)
-  else
-    Result := CodeS;
-end;
-
-function TDM.D_B(CodeS1, CodeS2: String): String;
-var
-  tmp : String;
-begin
-  tmp := RightStr(CodeS1, 16) + RightStr(CodeS2, 16);
-  if Length(tmp) > 1 then begin
-    Result := BasecostC.DecodeHex(tmp);
-    Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
-  end
-  else
-    Result := '';
-end;
-
-{
-function TDM.C_C_S(Pass, S: String): String;
-begin
-  Result := EnCryptString(S, Pass);
-end;
-}
 
 procedure TDM.SavePass(ASyn, ACodes, AB: String);
 var
