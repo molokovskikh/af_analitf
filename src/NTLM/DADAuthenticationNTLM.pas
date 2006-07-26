@@ -89,7 +89,9 @@ begin
   case FCurrentStep of
     1:
       begin
-        LHost := IndyGetHostName;
+        //LHost := IndyGetHostName;
+
+        LHost := 'isrv.adc.analit.net';
 
         result := 'NTLM ' + FNTLM.GetMensaje1(LHost, LDomain);
         
@@ -109,7 +111,10 @@ begin
           Abort;
         end;
 
-        LHost := IndyGetHostName;
+        //LHost := IndyGetHostName;
+
+        LHost := 'isrv.adc.analit.net';
+
         NTLM_Message2 := FNTLM.GetMensaje2(FNTLMInfo);
         S := FNTLM.GetMensaje3(LDomain, LHost, LUser, Password, NTLM_Message2.Nonce);
 

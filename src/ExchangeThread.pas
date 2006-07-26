@@ -468,10 +468,10 @@ begin
       OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
       ExchangeForm.HTTP.OnWork := HTTPWork;
       ExchangeForm.HTTP.ReconnectCount := 0;
-      ExchangeForm.HTTP.Request.BasicAuthentication := False;
-      ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
-      if not AnsiStartsText('analit\', HTTPName) then
-        ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
+      ExchangeForm.HTTP.Request.BasicAuthentication := True;
+      //ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
+//      if not AnsiStartsText('analit\', HTTPName) then
+//        ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
       Progress := 0;
       Synchronize( SetProgress );
 
@@ -533,11 +533,13 @@ begin
         ExchangeForm.HTTP.OnWork := nil;
         ExchangeForm.HTTP.Request.Username := HTTPName;
         ExchangeForm.HTTP.Request.BasicAuthentication := True;
+{
         try
           ExchangeForm.HTTP.Request.Authentication.Free;
         except
         end;
         ExchangeForm.HTTP.Request.Authentication := nil;
+}        
       end;
 
 			Synchronize( ExchangeForm.CheckStop);
