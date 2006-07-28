@@ -14,6 +14,8 @@
 113 ICON "Search_32.ico"
 114 ICON "Home 2_32.ico"
 115 ICON "WayBill_32.ico"
+116 ICON "View Doc_32.ico"
+117 ICON "Clipboard_32.ico"
 
 200 ICON "Document_32.ico"
 201 ICON "Compose Email_32.ico"
