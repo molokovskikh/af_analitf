@@ -126,6 +126,7 @@ TMainForm = class(TForm)
     ToolButton6: TToolButton;
     ToolButton7: TToolButton;
     actSynonymSearch: TAction;
+    ToolButton10: TToolButton;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);

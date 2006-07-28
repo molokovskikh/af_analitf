@@ -131,6 +131,7 @@ object MainForm: TMainForm
       object btnOrderAll: TToolButton
         Left = 224
         Top = 0
+        Hint = #1055#1086#1080#1089#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074' '#1074' '#1082#1072#1090#1072#1083#1086#1075#1077
         Action = actOrderAll
         ImageIndex = 4
       end
@@ -140,45 +141,34 @@ object MainForm: TMainForm
         Action = actSynonymSearch
         ImageIndex = 16
       end
-      object btnExpireds: TToolButton
-        Left = 302
-        Top = 0
-        Action = actSale
-        ImageIndex = 5
-      end
       object btnOrderPrice: TToolButton
-        Left = 341
+        Left = 302
         Top = 0
         Action = actOrderPrice
         ImageIndex = 6
       end
-      object btnOrderSummary: TToolButton
-        Left = 380
-        Top = 0
-        Action = actOrderSummary
-        ImageIndex = 17
-      end
       object ToolButton3: TToolButton
-        Left = 419
+        Left = 341
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
         ImageIndex = 20
         Style = tbsSeparator
       end
+      object btnOrderSummary: TToolButton
+        Left = 349
+        Top = 0
+        Action = actOrderSummary
+        ImageIndex = 17
+      end
       object btnClosedOrders: TToolButton
-        Left = 427
+        Left = 388
         Top = 0
         Action = actClosedOrders
         ImageIndex = 8
       end
-      object ToolButton8: TToolButton
-        Left = 466
-        Top = 0
-        Action = actWayBill
-      end
       object ToolButton4: TToolButton
-        Left = 505
+        Left = 427
         Top = 0
         Width = 8
         Caption = 'ToolButton4'
@@ -186,26 +176,45 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnOrderRegister: TToolButton
-        Left = 513
+        Left = 435
         Top = 0
         Action = actRegistry
         Caption = #1043#1086#1089#1091#1076#1072#1088#1089#1090#1074#1077#1085#1085#1099#1081' '#1088#1077#1077#1089#1090#1088' '#1094#1077#1085
         ImageIndex = 9
       end
+      object btnExpireds: TToolButton
+        Left = 474
+        Top = 0
+        Action = actSale
+        ImageIndex = 5
+      end
       object btnDefectives: TToolButton
-        Left = 552
+        Left = 513
         Top = 0
         Action = actDefectives
         ImageIndex = 10
       end
       object btnNormatives: TToolButton
-        Left = 591
+        Left = 552
         Top = 0
         Action = actNormatives
         ImageIndex = 11
       end
+      object ToolButton10: TToolButton
+        Left = 591
+        Top = 0
+        Width = 8
+        Caption = 'ToolButton10'
+        ImageIndex = 14
+        Style = tbsSeparator
+      end
+      object ToolButton8: TToolButton
+        Left = 599
+        Top = 0
+        Action = actWayBill
+      end
       object ToolButton9: TToolButton
-        Left = 630
+        Left = 638
         Top = 0
         Width = 8
         Caption = 'ToolButton9'
@@ -213,18 +222,18 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnHome: TToolButton
-        Left = 638
+        Left = 646
         Top = 0
         Action = actHome
       end
       object btnConfig: TToolButton
-        Left = 677
+        Left = 685
         Top = 0
         Action = actConfig
         ImageIndex = 12
       end
       object ToolButton6: TToolButton
-        Left = 716
+        Left = 724
         Top = 0
         Width = 8
         Caption = 'ToolButton6'
@@ -232,7 +241,7 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object Panel1: TPanel
-        Left = 724
+        Left = 732
         Top = 0
         Width = 779
         Height = 38
@@ -519,7 +528,7 @@ object MainForm: TMainForm
     object actOrderAll: TAction
       Category = 'Order'
       Caption = 'C'#1087#1080#1089#1086#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
-      Hint = #1055#1086#1083#1085#1099#1081' '#1089#1087#1080#1089#1086#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
+      Hint = #1055#1086#1080#1089#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074' '#1074' '#1082#1072#1090#1072#1083#1086#1075#1077' (F8)'
       ImageIndex = 9
       ShortCut = 119
       OnExecute = actOrderAllExecute
@@ -648,6 +657,7 @@ object MainForm: TMainForm
       Category = 'Actions'
       Caption = #1053#1072#1081#1090#1080'...'
       Hint = #1053#1072#1081#1090#1080' (Ctrl+F)'
+      Visible = False
       OnExecute = actFindExecute
       OnUpdate = actFindUpdate
     end
@@ -692,7 +702,7 @@ object MainForm: TMainForm
     Left = 256
     Top = 160
     Bitmap = {
-      494C010112001300040020002000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010112001300040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000080000000A000000001002000000000000040
       0100000000000000000000000000000000000000000000000000000000000000
       000000000000FAFAFAFFE0E0E0FFCECECEFFD7D7D7FFE6E6E6FFF5F5F5FFFBFB
@@ -3336,7 +3346,8 @@ object MainForm: TMainForm
       F00000FFF000000700000001E00003FFF00001FFFF80000700000001E0003FFF
       F80003FFFFFE000700000003E000FFFFFC0003FFFFFFF00F00000003F800FFFF
       FC0007FFFFFFFFFF00000003FC00FFFFFF001FFFFFFFFFFF00000007FF80FFFF
-      FFFFFFFFFFFFFFFF0000001FFFC1FFFF}
+      FFFFFFFFFFFFFFFF0000001FFFC1FFFF00000000000000000000000000000000
+      000000000000}
   end
   object adsOrdersH: TpFIBDataSet
     SelectSQL.Strings = (
