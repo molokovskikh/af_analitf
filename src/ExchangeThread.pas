@@ -841,8 +841,12 @@ end;
 
 procedure TExchangeThread.UnpackFiles;
 var
-	SR, ExportsSR: TSearchRec;
+	SR, DeleteSR, ExportsSR: TSearchRec;
   SevenZipRes : Integer;
+  I : Integer;
+  DeletedText, NewImportFileName : String;
+  FoundDeletedText : Boolean;
+  FoundIndex : Integer;
 begin
 	if FindFirst( ExePath + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
 	try
@@ -872,7 +876,7 @@ begin
           raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
 
 				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
-}        
+}
 			end
                 	{ Если это данные }
 			else
@@ -911,16 +915,49 @@ begin
 		ExchangeForm.UnZip.ZipName := '';
 	end;
 
+  //Переименовываем файлы с кодом клиента в файлы без код клиента
+  if FindFirst( ExePath + SDirIn + '\*.txt', faAnyFile, DeleteSR) = 0 then
+  try
+
+    repeat
+      if (DeleteSR.Name <> '.') and (DeleteSR.Name <> '..')
+      then begin
+
+        FoundDeletedText := False;
+        FoundIndex := -1;
+        for I := Length(DeleteSR.Name)-4 downto 1 do
+          if not (DeleteSR.Name[i] in ['0'..'9']) then begin
+            FoundDeletedText := True;
+            FoundIndex := I;
+            Break;
+          end;
+
+        if (FoundDeletedText) and (FoundIndex < Length(DeleteSR.Name)-4) then begin
+          DeletedText := Copy(DeleteSR.Name, FoundIndex + 1, Length(DeleteSR.Name));
+          NewImportFileName := StringReplace(DeleteSR.Name, DeletedText, '.txt', []);
+          MoveFileA(
+            ExePath + SDirIn + '\' + DeleteSR.Name,
+            ExePath + SDirIn + '\' + NewImportFileName, True);
+        end;
+
+      end;
+    until (FindNext( DeleteSR ) <> 0)
+    
+  finally
+    SysUtils.FindClose( DeleteSR );
+  end;
+
+
   //Обрабатываем папку Exports
   if DirectoryExists(ExePath + SDirIn + '\' + SDirExports) then begin
     if FindFirst( ExePath + SDirIn + '\' + SDirExports + '\*.*', faAnyFile, ExportsSR) = 0 then
     try
       repeat
         if (ExportsSR.Name <> '.') and (ExportsSR.Name <> '..') then
-          MoveFileEx(
-            PChar(ExePath + SDirIn + '\' + SDirExports + '\' + ExportsSR.Name),
-            PChar(ExePath + SDirExports + '\' + ExportsSR.Name),
-            MOVEFILE_REPLACE_EXISTING);
+          MoveFileA(
+            ExePath + SDirIn + '\' + SDirExports + '\' + ExportsSR.Name,
+            ExePath + SDirExports + '\' + ExportsSR.Name,
+            True);
       until (FindNext( ExportsSR ) <> 0)
     finally
       SysUtils.FindClose( ExportsSR );
@@ -1908,6 +1945,10 @@ var
   ProgressPosition : Integer;
 begin
   inHTTP := TidHTTP(Sender);
+
+//  Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
+
+//	Writeln( ExchangeForm.LogFile, 'Main.HTTPWork   WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
 
   if inHTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then
 	begin
