@@ -122,13 +122,6 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         EditButtons = <>
-        FieldName = 'FirmName'
-        Footers = <>
-        Title.Caption = #1055#1086#1089#1090#1072#1074#1097#1080#1082
-        Width = 109
-      end
-      item
-        EditButtons = <>
         FieldName = 'PRICENAME'
         Footers = <>
         Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090

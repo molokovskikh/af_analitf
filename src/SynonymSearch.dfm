@@ -353,7 +353,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
           end
           item
             EditButtons = <>
-            FieldName = 'CryptSYNONYMFIRM'
+            FieldName = 'SYNONYMFIRM'
             Footers = <>
             Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
             Width = 102
