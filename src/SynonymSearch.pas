@@ -355,7 +355,7 @@ end;
 procedure TSynonymSearchForm.dbgCoreCanInput(Sender: TObject;
   Value: Integer; var CanInput: Boolean);
 begin
-	CanInput := ( adsCoreSynonymCode.AsInteger >= 0) and
+	CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
 		(( adsCoreRegionCode.AsInteger and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
 			adsCoreRegionCode.AsInteger);
 end;
