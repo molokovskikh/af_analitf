@@ -59,21 +59,6 @@ inherited DefectivesForm: TDefectivesForm
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object dbtReason: TDBText
-      Left = 8
-      Top = 56
-      Width = 62
-      Height = 13
-      AutoSize = True
-      DataField = 'Reason'
-      DataSource = dsDefectives
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
     object dbtLetterNumber: TDBText
       Left = 108
       Top = 22
@@ -170,6 +155,27 @@ inherited DefectivesForm: TDefectivesForm
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object dbmReason: TDBMemo
+      Left = 8
+      Top = 56
+      Width = 817
+      Height = 19
+      Anchors = [akLeft, akTop, akRight]
+      BevelInner = bvNone
+      BevelOuter = bvNone
+      BorderStyle = bsNone
+      Color = clBtnFace
+      DataField = 'REASON'
+      DataSource = dsDefectives
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ScrollBars = ssVertical
+      TabOrder = 0
+    end
   end
   object dbgDefectives: TToughDBGrid
     Left = 0
@@ -179,6 +185,7 @@ inherited DefectivesForm: TDefectivesForm
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsDefectives
+    DrawMemoText = True
     Flat = True
     FooterColor = clWindow
     FooterFont.Charset = DEFAULT_CHARSET

@@ -27,7 +27,6 @@ type
     dbtLetterDate: TDBText;
     Label4: TLabel;
     dbtLaboratory: TDBText;
-    dbtReason: TDBText;
     dtpDateFrom: TDateTimePicker;
     dtpDateTo: TDateTimePicker;
     ActionList: TActionList;
@@ -44,6 +43,7 @@ type
     adsDefectives: TpFIBDataSet;
     adsPrint: TpFIBDataSet;
     adcUncheckAll: TpFIBQuery;
+    dbmReason: TDBMemo;
     procedure FormCreate(Sender: TObject);
     procedure btnUnCheckAllClick(Sender: TObject);
     procedure actCheckExecute(Sender: TObject);
