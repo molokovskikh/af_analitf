@@ -325,11 +325,13 @@ inherited OrdersForm: TOrdersForm
     object adsOrdersCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsOrdersCryptSUMORDER: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptSUMORDER'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsOrdersORDERID: TFIBBCDField

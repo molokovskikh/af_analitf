@@ -532,6 +532,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCoreCOREID: TFIBBCDField

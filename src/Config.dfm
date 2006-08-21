@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshOther
+    ActivePage = tshClients
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -128,7 +128,6 @@ object ConfigForm: TConfigForm
         SearchPosition = spBottom
         Columns = <
           item
-            DisplayFormat = '0.00;;'
             EditButtons = <>
             FieldName = 'LEFTLIMIT'
             Footers = <>
@@ -136,7 +135,6 @@ object ConfigForm: TConfigForm
             Width = 80
           end
           item
-            DisplayFormat = '0.00;;'
             EditButtons = <>
             FieldName = 'RIGHTLIMIT'
             Footers = <>
@@ -5768,10 +5766,12 @@ object ConfigForm: TConfigForm
     object mdRetailLEFTLIMIT: TCurrencyField
       FieldName = 'LEFTLIMIT'
       Required = True
+      DisplayFormat = '0.00;;'#39#39
     end
     object mdRetailRIGHTLIMIT: TCurrencyField
       FieldName = 'RIGHTLIMIT'
       Required = True
+      DisplayFormat = '0.00;;'#39#39
     end
     object mdRetailRETAIL: TIntegerField
       FieldName = 'RETAIL'

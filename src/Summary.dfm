@@ -535,6 +535,7 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsSummaryCODE: TFIBStringField
@@ -550,6 +551,7 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryPriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsSummaryBASECOST: TFIBStringField

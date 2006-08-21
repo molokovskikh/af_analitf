@@ -582,6 +582,7 @@ object CoreForm: TCoreForm
     Left = 64
     Top = 133
     oTrimCharFields = False
+    oCacheCalcFields = True
     oRefreshAfterPost = False
     oPersistentSorting = True
     oFetchAll = True
@@ -815,6 +816,7 @@ object CoreForm: TCoreForm
     object adsCoreCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCoreQUANTITY: TFIBStringField
@@ -946,6 +948,7 @@ object CoreForm: TCoreForm
     object adsOrdersCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsOrdersPRICE: TFIBStringField

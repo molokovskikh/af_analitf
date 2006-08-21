@@ -259,6 +259,7 @@ object FormsHistoryForm: TFormsHistoryForm
     object adsOrdersCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsOrdersPRICE: TFIBStringField

@@ -498,6 +498,7 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormSumOrder: TFIBBCDField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
       Size = 2
       RoundByScale = True
       Calculated = True

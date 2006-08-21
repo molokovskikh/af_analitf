@@ -694,6 +694,7 @@ object CoreFirmForm: TCoreFirmForm
       Tag = 3
       FieldKind = fkCalculated
       FieldName = 'CryptLEADERPRICE'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCoreBASECOST: TFIBStringField

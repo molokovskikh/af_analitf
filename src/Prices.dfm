@@ -576,6 +576,7 @@ inherited PricesForm: TPricesForm
     object adsPricesSumOrder1: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder1'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsPricesINJOB: TFIBBooleanField

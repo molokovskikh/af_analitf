@@ -169,6 +169,7 @@ var
 begin
 	inherited;
 	PrintEnabled := False;
+  NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
   adsOrders.OnCalcFields := ocf;
 	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;

@@ -513,11 +513,13 @@ inherited ExpiredsForm: TExpiredsForm
       Tag = 4
       FieldKind = fkCalculated
       FieldName = 'CryptPriceRet'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsExpiredsCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsExpiredsBASECOST: TFIBStringField

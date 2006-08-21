@@ -137,6 +137,7 @@ var
 	Year, Month, Day: Word;
 begin
 	inherited;
+  NeedFirstOnDataSet := False;
   FSumOrders := TStringList.Create;
   FSumOrders.Sorted := True;
 	PrintEnabled := True;
