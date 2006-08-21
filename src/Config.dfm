@@ -142,7 +142,6 @@ object ConfigForm: TConfigForm
             Width = 80
           end
           item
-            DisplayFormat = '0.00;;'
             EditButtons = <>
             FieldName = 'RETAIL'
             Footers = <>
@@ -5766,12 +5765,12 @@ object ConfigForm: TConfigForm
     object mdRetailLEFTLIMIT: TCurrencyField
       FieldName = 'LEFTLIMIT'
       Required = True
-      DisplayFormat = '0.00;;'#39#39
+      DisplayFormat = '0.00;;'
     end
     object mdRetailRIGHTLIMIT: TCurrencyField
       FieldName = 'RIGHTLIMIT'
       Required = True
-      DisplayFormat = '0.00;;'#39#39
+      DisplayFormat = '0.00;;'
     end
     object mdRetailRETAIL: TIntegerField
       FieldName = 'RETAIL'

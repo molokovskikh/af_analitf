@@ -401,7 +401,10 @@ begin
         CanClose := False;
     end;
     if CanClose and RetMarginsChanges then begin
-      SoftPost(mdRetail);
+      try
+        SoftPost(mdRetail);
+      except
+      end;
       mdRetail.SortOnFields(mdRetailLEFTLIMIT.FieldName);
       if mdRetail.RecordCount > 0 then begin
         mdRetail.First;
