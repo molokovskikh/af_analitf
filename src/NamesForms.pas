@@ -84,6 +84,8 @@ type
     procedure SetFormsParams;
     procedure AddKeyToSearch(Key : Char);
     procedure SetGrids;
+  protected
+    procedure DoShow; override;
   public
     procedure ShowForm; override;
     procedure SetCatalog;
@@ -204,7 +206,6 @@ end;
 procedure TNamesFormsForm.SetFormsParams;
 begin
 	dbgForms.Enabled := actUseForms.Checked;
-//	if not adsForms.Active then adsForms.Open;
 end;
 
 procedure TNamesFormsForm.dbgNamesKeyDown(Sender: TObject; var Key: Word;
@@ -449,6 +450,12 @@ begin
   if not adsCatalog.IsEmpty then
    if (adsCatalog.FieldByName('COREEXISTS').AsInteger = 0) then
      Background := clSilver;
+end;
+
+procedure TNamesFormsForm.DoShow;
+begin
+  inherited;
+  tmrShowCatalog.Enabled := True;
 end;
 
 end.
