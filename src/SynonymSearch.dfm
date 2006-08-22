@@ -33,24 +33,19 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    DesignSize = (
-      792
-      37)
     object lFilter: TLabel
       Left = 554
       Top = 8
       Width = 99
       Height = 13
-      Anchors = [akTop, akRight]
       Caption = '('#1060#1080#1083#1100#1090#1088' '#1087#1088#1080#1084#1077#1085#1077#1085')'
       Visible = False
     end
     object eSearch: TEdit
-      Left = 26
+      Left = 25
       Top = 8
-      Width = 319
+      Width = 320
       Height = 21
-      Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       OnKeyDown = eSearchKeyDown
       OnKeyPress = eSearchKeyPress
@@ -60,7 +55,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Top = 4
       Width = 75
       Height = 25
-      Anchors = [akTop, akRight]
       Caption = #1055#1086#1080#1089#1082
       TabOrder = 1
       OnClick = tmrSearchTimer
@@ -70,7 +64,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Top = 8
       Width = 113
       Height = 17
-      Anchors = [akTop, akRight]
       Caption = #1058#1086#1083#1100#1082#1086' '#1086#1089#1085#1086#1074#1085#1099#1077
       TabOrder = 2
       OnClick = cbBaseOnlyClick
@@ -80,7 +73,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Top = 4
       Width = 105
       Height = 25
-      Anchors = [akTop, akRight]
       Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090#1099
       TabOrder = 3
       OnClick = btnSelectPricesClick

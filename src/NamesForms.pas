@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, Registry, ForceRus;
+  pFIBDataSet, Registry, ForceRus, StrUtils;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -80,6 +80,7 @@ type
   private
     fr : TForceRus;
     BM : TBitmap;
+    InternalSearchText : String;
     procedure SetNamesParams;
     procedure SetFormsParams;
     procedure AddKeyToSearch(Key : Char);
@@ -112,6 +113,8 @@ begin
 
   BM := TBitmap.Create;
 
+  InternalSearchText := '';
+  
   NeedFirstOnDataSet := False;
 
   fr := TForceRus.Create;
@@ -290,7 +293,7 @@ begin
 	actShowAll.Checked := not actShowAll.Checked;
 
   if actNewSearch.Checked then begin
-    if Length(eSearch.Text) > 0 then
+    if Length(InternalSearchText) > 0 then
       tmrSearchTimer(nil)
     else
       SetCatalog;
@@ -308,6 +311,7 @@ procedure TNamesFormsForm.SetCatalog;
 begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
+  InternalSearchText := '';
   with adsCatalog do begin
     Screen.Cursor:=crHourglass;
     try
@@ -353,12 +357,14 @@ end;
 procedure TNamesFormsForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
+  InternalSearchText := LeftStr(eSearch.Text, 50);
+  eSearch.Text := '';
   adsCatalog.Close;
   adsCatalog.SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS ' +
     'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
   if not actShowAll.Checked then
     adsCatalog.SelectSQL.Text := adsCatalog.SelectSQL.Text + ' and CATALOGS.COREEXISTS = 1';
-  adsCatalog.ParamByName('LikeParam').AsString := '%' + eSearch.Text + '%';
+  adsCatalog.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
   adsCatalog.Open;
   dbgCatalog.SetFocus;
 end;
@@ -424,7 +430,7 @@ procedure TNamesFormsForm.dbgCatalogDrawColumnCell(Sender: TObject;
   const Rect: TRect; DataCol: Integer; Column: TColumnEh;
   State: TGridDrawState);
 begin
-  ProduceAlphaBlendRect(eSearch.Text, Column.Field.DisplayText, dbgCatalog.Canvas, Rect, BM);
+  ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCatalog.Canvas, Rect, BM);
 end;
 
 procedure TNamesFormsForm.dbgNamesGetCellParams(Sender: TObject;

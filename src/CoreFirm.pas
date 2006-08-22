@@ -626,7 +626,7 @@ procedure TCoreFirmForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
   if Length(eSearch.Text) > 2 then begin
-    InternalSearchText := eSearch.Text;
+    InternalSearchText := LeftStr(eSearch.Text, 50);
     if not Assigned(adsCore.OnFilterRecord) then begin
       adsCore.OnFilterRecord := AllFilterRecord;
       adsCore.Filtered := True;
@@ -634,6 +634,7 @@ begin
     else
       DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
     lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.VisibleRecordCount]);
+    eSearch.Text := '';
   end
   else
     if Length(eSearch.Text) = 0 then

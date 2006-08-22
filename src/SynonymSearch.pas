@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB, FIBDataSet, pFIBDataSet, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Registry, Constant,
-  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls;
+  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls, StrUtils;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -138,6 +138,7 @@ type
     StartSQL : String;
     SelectedPrices : TStringList;
     BM : TBitmap;
+    InternalSearchText : String;
     procedure AddKeyToSearch(Key : Char);
     procedure SetClear;
     procedure ChangeSelected(ASelected : Boolean);
@@ -175,6 +176,7 @@ var
 begin
   inherited;
   
+  InternalSearchText := '';
   BM := TBitmap.Create;
 
   adsCore.OnCalcFields := ccf;
@@ -241,11 +243,12 @@ var
 begin
   tmrSearch.Enabled := False;
   if Length(eSearch.Text) > 2 then begin
+    InternalSearchText := LeftStr(eSearch.Text, 50);
     if adsCore.Active then
       adsCore.Close;
   	adsOrdersShowFormSummary.DataSource := nil;
   	adsOrders.DataSource := nil;
-    adsCore.ParamByName('LikeParam').AsString := '%' + eSearch.Text + '%';
+    adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
     adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
   	adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
     FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PRD.');
@@ -286,6 +289,7 @@ begin
     adsOrders.DataSource := dsCore;
   	adsOrdersShowFormSummary.DataSource := dsCore;
     dbgCore.SetFocus;
+    eSearch.Text := '';
   end
   else
     if Length(eSearch.Text) = 0 then
@@ -444,6 +448,7 @@ procedure TSynonymSearchForm.SetClear;
 begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
+  InternalSearchText := '';
   if adsCore.Active then
     adsCore.Close;
 end;
@@ -517,7 +522,7 @@ procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;
   State: TGridDrawState);
 begin
   if Column.Field = adsCoreSYNONYMNAME then
-    ProduceAlphaBlendRect(eSearch.Text, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
+    ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
 end;
 
 end.

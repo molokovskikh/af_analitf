@@ -320,25 +320,20 @@ object CoreFirmForm: TCoreFirmForm
       Align = alBottom
       BevelOuter = bvLowered
       TabOrder = 1
-      DesignSize = (
-        768
-        37)
       object eSearch: TEdit
-        Left = 26
+        Left = 25
         Top = 8
-        Width = 615
+        Width = 320
         Height = 21
-        Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
         OnKeyDown = eSearchKeyDown
         OnKeyPress = eSearchKeyPress
       end
       object btnSearch: TButton
-        Left = 660
+        Left = 356
         Top = 4
         Width = 75
         Height = 25
-        Anchors = [akTop, akRight]
         Caption = #1055#1086#1080#1089#1082
         TabOrder = 1
         OnClick = tmrSearchTimer
@@ -458,7 +453,6 @@ object CoreFirmForm: TCoreFirmForm
     Left = 88
     Top = 112
     oTrimCharFields = False
-    oCacheCalcFields = True
     oRefreshAfterPost = False
     oFetchAll = True
     object adsCoreCOREID: TFIBBCDField

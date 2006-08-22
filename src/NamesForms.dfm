@@ -306,25 +306,20 @@ inherited NamesFormsForm: TNamesFormsForm
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
-      DesignSize = (
-        687
-        41)
       object eSearch: TEdit
-        Left = 194
+        Left = 25
         Top = 10
-        Width = 300
+        Width = 320
         Height = 21
-        Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
         OnKeyDown = eSearchKeyDown
         OnKeyPress = eSearchKeyPress
       end
       object btnSearch: TButton
-        Left = 520
+        Left = 360
         Top = 8
         Width = 75
         Height = 25
-        Anchors = [akTop, akRight]
         Caption = #1055#1086#1080#1089#1082
         TabOrder = 1
         OnClick = tmrSearchTimer
