@@ -5,10 +5,10 @@ interface
 uses
 	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
-  IdException, WinSock, RxVerInf, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
+  IdException, WinSock, RxVerInf, DB, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdComponent, IdHTTP;
+  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB;
 
 const
   UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
@@ -106,7 +106,11 @@ private
 	procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
-  procedure UpdateFromFile(FileName, InsertSQL : String; OnBatching : TOnBatching = nil);
+  procedure UpdateFromFile(
+    FileName,
+    InsertSQL : String;
+    OnBatching : TOnBatching = nil;
+    OnExecuteError : TFIBQueryErrorEvent = nil);
 
 	function GetXMLDateTime( ADateTime: TDateTime): string;
 	function FromXMLToDateTime( AStr: string): TDateTime;
@@ -125,6 +129,8 @@ private
   //Не вызывает исключение в случае ошибки -607
   procedure SilentExecute(q : TpFIBQuery; SQL : String);
   procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; const AWorkCount: Integer);
+  procedure ThreadOnBatching(BatchOperation:TBatchOperation;RecNumber:integer;var BatchAction:TBatchAction);
+  procedure ThreadOnExecuteError(pFIBQuery:TpFIBQuery; E:EFIBError; var Action:TDataAction);
 protected
 	procedure Execute; override;
 public
@@ -134,7 +140,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  DB, U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, FIB, Math;
+  U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math;
 
 { TExchangeThread }
 
@@ -321,7 +327,8 @@ procedure TExchangeThread.HTTPConnect;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
 	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+//		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+		'/' + 'PrgData' + '/code.asmx';
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
@@ -1766,7 +1773,10 @@ begin
   end;
 end;
 
-procedure TExchangeThread.UpdateFromFile(FileName, InsertSQL: String; OnBatching : TOnBatching = nil);
+procedure TExchangeThread.UpdateFromFile(
+  FileName, InsertSQL: String;
+  OnBatching : TOnBatching = nil;
+  OnExecuteError : TFIBQueryErrorEvent = nil);
 var
   up : TpFIBQuery;
   InDelimitedFile : TFIBInputDelimitedFile;
@@ -1789,6 +1799,7 @@ begin
       up.SQL.Text := InsertSQL;
       InDelimitedFile.Filename := FileName;
       up.OnBatching := OnBatching;
+      up.OnExecuteError := OnExecuteError;
 
       Tracer.TR('Import', 'Exec : ' + InsertSQL);
       StartExec := Now;
@@ -1991,6 +2002,18 @@ end;
 procedure TExchangeThread.SetDownStatus;
 begin
   ExchangeForm.stStatus.Caption := StatusText; 
+end;
+
+procedure TExchangeThread.ThreadOnBatching(BatchOperation: TBatchOperation;
+  RecNumber: integer; var BatchAction: TBatchAction);
+begin
+  //
+end;
+
+procedure TExchangeThread.ThreadOnExecuteError(pFIBQuery: TpFIBQuery;
+  E: EFIBError; var Action: TDataAction);
+begin
+//  Tracer.TR('ThreadOnExecuteError', e.Message);
 end;
 
 { TFileUpdateInfo }
