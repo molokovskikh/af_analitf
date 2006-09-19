@@ -113,6 +113,10 @@ type
     adsCoreBASECOST: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
     adsOrdersPRICE: TFIBStringField;
+    adsCoreDOC: TFIBStringField;
+    adsCoreREGISTRYCOST: TFIBFloatField;
+    adsCoreVITALLYIMPORTANT: TFIBIntegerField;
+    adsCoreREQUESTRATIO: TFIBIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -142,7 +146,6 @@ type
     RecInfos: array of Double;
     UseExcess, CurrentUseForms: Boolean;
     DeltaMode, Excess, ClientId: Integer;
-    RetailForcount: Double;
 
     procedure RefreshOrdersH;
     procedure ccf(DataSet: TDataSet);
@@ -172,10 +175,9 @@ begin
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
   adsOrders.OnCalcFields := ocf;
-	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
+  UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
-	RetailForcount := 1 + DM.adtClients.FieldByName( 'Forcount').AsFloat / 100;
 	RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
 
 	adsOrders.ParamByName( 'AClientId').Value :=
@@ -409,47 +411,6 @@ begin
 	CanInput := ( adsCoreSynonymCode.AsInteger >= 0) and
 		(( adsCoreRegionCode.AsInteger and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
 			adsCoreRegionCode.AsInteger);
-	//if not CanInput then exit;
-
-{
-	// создаем записи из Orders и OrdersH, если их нет
-	if adsCoreOrdersOrderId.IsNull then // нет соответствующей записи в Orders
-	begin
-		RefreshOrdersH;
-		if adsOrdersH.IsEmpty then // нет заголовка заказа из OrdersH
-		begin
-			// добавляем запись в OrdersH
-			adsCore.Edit;
-			adsCoreOrdersHClientId.AsInteger := ClientId;
-			adsCoreOrdersHPriceCode.AsInteger := adsCorePriceCode.AsInteger;
-			adsCoreOrdersHRegionCode.AsInteger := adsCoreRegionCode.AsInteger;
-			adsCoreOrdersHPriceName.AsString := adsCorePriceName.AsString;
-			adsCoreOrdersHRegionName.AsString := adsCoreRegionName.AsString;
-			adsCore.Post; // на этот момент уже имеем OrdersHOrderId (автоинкремент)
-    end;
-
-		//добавляем запись в Orders
-		adsCore.Edit;
-		if adsOrdersH.IsEmpty then adsCoreOrdersOrderId.AsInteger :=
-			adsCoreOrdersHOrderId.AsInteger
-		else adsCoreOrdersOrderId.AsInteger := adsOrdersH.FieldByName( 'OrderId').AsInteger;
-		adsCoreOrdersClientId.AsInteger := ClientId;
-		adsCoreOrdersFullCode.AsInteger := adsCoreFullCode.AsInteger;
-		adsCoreOrdersCodeFirmCr.AsInteger := adsCoreCodeFirmCr.AsInteger;
-		adsCoreOrdersCoreId.AsInteger := adsCoreCoreId.AsInteger;
-		adsCoreOrdersSynonymCode.AsInteger := adsCoreSynonymCode.AsInteger;
-		adsCoreOrdersSynonymFirmCrCode.AsInteger := adsCoreSynonymFirmCrCode.AsInteger;
-		adsCoreOrdersCode.AsString := adsCoreCode.AsString;
-		adsCoreOrdersCodeCr.AsString := adsCoreCodeCr.AsString;
-		adsCoreOrdersPrice.AsCurrency := adsCoreBaseCost.AsCurrency;
-		adsCoreOrdersJunk.AsBoolean := adsCoreJunk.AsBoolean;
-		adsCoreOrdersAwait.AsBoolean := adsCoreAwait.AsBoolean;
-		adsCoreOrdersSynonym.AsString := adsCoreSYNONYMNAME.AsString;
-		adsCoreOrdersSynonymFirm.AsString := adsCoreSynonymFirm.AsString;
-		adsCore.Post;
-		if adsOrdersH.IsEmpty then RefreshOrdersH;
-	end;
-}
 end;
 
 //переоткрывает заголовок для текущего заказа
@@ -519,6 +480,8 @@ begin
         end
 	else
 	begin
+    if adsCoreVITALLYIMPORTANT.AsBoolean then
+      AFont.Color := VITALLYIMPORTANT_CLR;
 		if not adsCorePriceEnabled.AsBoolean then
 		begin
 			//если фирма недоступна, изменяем цвет

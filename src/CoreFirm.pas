@@ -99,6 +99,9 @@ type
     eSearch: TEdit;
     btnSearch: TButton;
     tmrSearch: TTimer;
+    adsCoreREGISTRYCOST: TFIBFloatField;
+    adsCoreVITALLYIMPORTANT: TFIBIntegerField;
+    adsCoreREQUESTRATIO: TFIBIntegerField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -180,7 +183,7 @@ begin
   InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
 	PrintEnabled := False;
-	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
+  UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
@@ -433,6 +436,9 @@ procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
+  if adsCoreVITALLYIMPORTANT.AsBoolean then
+    AFont.Color := VITALLYIMPORTANT_CLR;
+
 	//данный прайс-лидер
 	if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and	( adsCoreLeaderRegionCode.AsInteger = RegionCode))
      or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01)

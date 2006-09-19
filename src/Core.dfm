@@ -366,6 +366,13 @@ object CoreForm: TCoreForm
           Width = 69
         end
         item
+          EditButtons = <>
+          FieldName = 'DOC'
+          Footers = <>
+          Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
+          Visible = False
+        end
+        item
           Alignment = taCenter
           EditButtons = <>
           FieldName = 'PERIOD'
@@ -392,17 +399,6 @@ object CoreForm: TCoreForm
           Width = 72
         end
         item
-          Alignment = taCenter
-          Checkboxes = False
-          EditButtons = <>
-          FieldName = 'STORAGE'
-          Footers = <>
-          MinWidth = 5
-          Title.Caption = #1057#1082#1083#1072#1076
-          Visible = False
-          Width = 37
-        end
-        item
           DisplayFormat = 'dd.mm.yyyy hh:nn'
           EditButtons = <>
           FieldName = 'DATEPRICE'
@@ -410,6 +406,18 @@ object CoreForm: TCoreForm
           MinWidth = 5
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
           Width = 103
+        end
+        item
+          EditButtons = <>
+          FieldName = 'REGISTRYCOST'
+          Footers = <>
+          Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+        end
+        item
+          EditButtons = <>
+          FieldName = 'REQUESTRATIO'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
         end
         item
           EditButtons = <>
@@ -518,53 +526,7 @@ object CoreForm: TCoreForm
         'REID, :NEW_ORDERCOUNT)')
     SelectSQL.Strings = (
       'SELECT'
-      '    COREID,'
-      '    PRICECODE,'
-      '    REGIONCODE,'
-      '    FULLCODE,'
-      '    SHORTCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    PERIOD,'
-      '    SALE,'
-      '    VOLUME,'
-      '    NOTE,'
-      '    BASECOST,'
-      '    QUANTITY,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    DATEPRICE,'
-      '    PRICENAME,'
-      '    PRICEENABLED,'
-      '    FIRMCODE,'
-      '    STORAGE,'
-      '    REGIONNAME,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID,'
-      '    ORDERSCLIENTID,'
-      '    ORDERSFULLCODE,'
-      '    ORDERSCODEFIRMCR,'
-      '    ORDERSSYNONYMCODE,'
-      '    ORDERSSYNONYMFIRMCRCODE,'
-      '    ORDERSCODE,'
-      '    ORDERSCODECR,'
-      '    ORDERCOUNT,'
-      '    ORDERSSYNONYM,'
-      '    ORDERSSYNONYMFIRM,'
-      '    ORDERSPRICE,'
-      '    ORDERSJUNK,'
-      '    ORDERSAWAIT,'
-      '    ORDERSHORDERID,'
-      '    ORDERSHCLIENTID,'
-      '    ORDERSHPRICECODE,'
-      '    ORDERSHREGIONCODE,'
-      '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME'
+      '*'
       'FROM'
       '    CORESHOWBYNAME(:ACLIENT,'
       '    :TIMEZONEBIAS,'
@@ -833,6 +795,21 @@ object CoreForm: TCoreForm
       FieldName = 'ORDERSPRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsCoreDOC: TFIBStringField
+      FieldName = 'DOC'
+      EmptyStrToNull = True
+    end
+    object adsCoreREGISTRYCOST: TFIBFloatField
+      FieldName = 'REGISTRYCOST'
+      DisplayFormat = '#'
+    end
+    object adsCoreVITALLYIMPORTANT: TFIBIntegerField
+      FieldName = 'VITALLYIMPORTANT'
+    end
+    object adsCoreREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+      DisplayFormat = '#'
     end
   end
   object adsRegions: TpFIBDataSet

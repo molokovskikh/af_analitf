@@ -10,7 +10,8 @@ uses
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders;
+  Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
+  pFIBProps;
 
 {
 Криптование
@@ -65,7 +66,8 @@ type
   //exit codes - Коды ошибок выхода из программы
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
-    ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN, ecSSLOpen, ecNotChechHashes);
+    ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN, ecSSLOpen, ecNotChechHashes,
+    ecDBUpdateError);
 
   TRetMass = array[1..3] of Variant;
 
@@ -118,21 +120,6 @@ type
     RestService: TpFIBRestoreService;
     ConfigService: TpFIBConfigService;
     ValidService: TpFIBValidationService;
-    adtClientsCLIENTID: TFIBBCDField;
-    adtClientsNAME: TFIBStringField;
-    adtClientsREGIONCODE: TFIBBCDField;
-    adtClientsADDRESS: TFIBStringField;
-    adtClientsPHONE: TFIBStringField;
-    adtClientsFORCOUNT: TFIBIntegerField;
-    adtClientsEMAIL: TFIBStringField;
-    adtClientsMAXUSERS: TFIBIntegerField;
-    adtClientsUSEEXCESS: TFIBBooleanField;
-    adtClientsEXCESS: TFIBIntegerField;
-    adtClientsDELTAMODE: TFIBSmallIntField;
-    adtClientsONLYLEADERS: TFIBBooleanField;
-    adtClientsREQMASK: TFIBBCDField;
-    adtClientsTECHSUPPORT: TFIBStringField;
-    adtClientsLEADFROMBASIC: TFIBSmallIntField;
     t: TpFIBQuery;
     UpTran: TpFIBTransaction;
     adsSelect3ID: TFIBBCDField;
@@ -264,6 +251,22 @@ type
     adsAllOrdersPRICE: TFIBStringField;
     adsCoreORDERSJUNK: TFIBBooleanField;
     adsCoreORDERSAWAIT: TFIBBooleanField;
+    adsOrderCore: TpFIBDataSet;
+    adsOrderCorePRICECODE: TFIBBCDField;
+    adsOrderCoreBASECOST: TFIBStringField;
+    adsOrderCoreCryptBASECOST: TCurrencyField;
+    adsOrderCorePRICEENABLED: TFIBIntegerField;
+    adsOrderCoreJUNK: TFIBIntegerField;
+    adtClientsCLIENTID: TFIBBCDField;
+    adtClientsNAME: TFIBStringField;
+    adtClientsREGIONCODE: TFIBBCDField;
+    adtClientsEXCESS: TFIBIntegerField;
+    adtClientsDELTAMODE: TFIBSmallIntField;
+    adtClientsMAXUSERS: TFIBIntegerField;
+    adtClientsREQMASK: TFIBBCDField;
+    adtClientsTECHSUPPORT: TFIBStringField;
+    adtClientsCALCULATELEADER: TFIBBooleanField;
+    adtClientsONLYLEADERS: TFIBBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -301,6 +304,25 @@ type
     procedure s3cf(DataSet: TDataSet);
     procedure ocf(DataSet: TDataSet);
     procedure socf(DataSet: TDataSet);
+    procedure occf(DataSet: TDataSet);
+    //Проверяем версию базы и обновляем ее в случае необходимости
+    procedure UpdateDB;
+    //Проверяем и обновляем определенный файл
+    procedure UpdateDBFile(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String);
+    function GetLastEtalonFileName : String;
+    procedure OnScriptParseError(
+      Sender: TObject;
+      Error: string;
+      SQLText: string;
+      LineIndex: Integer);
+    procedure OnScriptExecuteError(
+      Sender: TObject;
+      Error: string;
+      SQLText: string;
+      LineIndex: Integer;
+      var Ignore: Boolean);
+    //Обновление определенных данных в таблице
+    procedure UpdateDBFileData(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -350,6 +372,9 @@ type
     procedure SetReclame;
     procedure UpdateReclame;
     function D_B_N(BaseC: String) : String;
+    function E_B_N(c : TINFCrypt; BaseCost: String) : String;
+    function D_B_N_OLD(c : TINFCrypt; BaseC: String) : String;
+    function E_B_N_OLD(c : TINFCrypt; BaseCost: String) : String;
     function D_HP(HTTPPassC: String) : String;
     function E_HP(HTTPPass: String) : String;
     procedure SavePass(ASyn, ACodes, AB : String);
@@ -379,7 +404,7 @@ implementation
 {$R *.DFM}
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
-     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config;
+     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config, U_UpdateDBThread;
 
 var
   ch, p : String;
@@ -428,14 +453,15 @@ var
   HTTPS,
   HTTPE : String;
 begin
-  SerBeg := 'Yhr39j';
-  SerEnd := 'sleio';
+  SerBeg := 'Th48s';
+  SerEnd := 'lndgf';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
   adsSelect3.OnCalcFields := s3cf;
   adsOrders.OnCalcFields := ocf;
   adsSumOrders.OnCalcFields := socf;
+  adsOrderCore.OnCalcFields := occf;
 
   SynC := TINFCrypt.Create('', 300);
   CodeC := TINFCrypt.Create('', 60);
@@ -446,14 +472,7 @@ begin
   ResetNeedCommitExchange;
   GetLocaleFormatSettings(0, FFS);
 
-{
-  MainConnection.ConnectionString :=
-    SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
-      ExePath + DatabaseName);
-}
-
   MainConnection1.DBName := ExePath + DatabaseName;
-//  MainConnection1.LibraryName := 'gds32.dll';
 
   if not FileExists(ExePath + DatabaseName) then begin
     MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
@@ -470,6 +489,9 @@ begin
 
   LDBFileName := ChangeFileExt(ExeName, '.ldb');
   DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
+
+  //Делаем проверки на необходимость обновить базу в любом случае
+  UpdateDB;
 
   try
     try
@@ -532,7 +554,7 @@ begin
     RunExchange([ eaGetPrice]);
     Application.Terminate;
   end;
-  //"Безмолвное импортирование" - производится в том случае, если
+  //"Безмолвное импортирование" - производится в том случае, если была получена новая версия программы при
   if FindCmdLineSwitch('si') then
   begin
     MainForm.ExchangeOnly := True;
@@ -578,6 +600,7 @@ var
   DBErrorMess : String;
   N : Integer;
   OldDBFileName,
+  EtalonDBFileName,
   ErrFileName : String;
 begin
 {
@@ -675,10 +698,15 @@ begin
               raise Exception.CreateFmt('Не удалось переименовать в ошибочный файл %s : %s',
                 [ErrFileName, SysErrorMessage(GetLastError)]);
 
-            if not Windows.CopyFile(PChar(OldDBFileName + '.etl'), PChar(OldDBFileName), True) then
-              raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
-                [SysErrorMessage(GetLastError)]);
-                
+            EtalonDBFileName := GetLastEtalonFileName;
+
+            if Length(EtalonDBFileName) = 0 then
+              raise Exception.Create('Не найден файл с эталонной копией.')
+            else
+              if not Windows.CopyFile(PChar(EtalonDBFileName), PChar(OldDBFileName), True) then
+                raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
+                  [SysErrorMessage(GetLastError)]);
+
             try
               MainConnection1.Open;
             except
@@ -981,6 +1009,11 @@ end;
 
 //подключает в качестве внешних текстовые таблицы из папки In
 procedure TDM.LinkExternalTables;
+const
+  ExcludeExtTables : array[0..9] of string =
+  ('EXTCORE', 'EXTSYNONYM', 'EXTREGISTRY', 'EXTMINPRICES', 'EXTPRICEAVG',
+   'EXTCATALOGFARMGROUPS', 'EXTCATALOG', 'EXTCATDEL', 'EXTCATFARMGROUPSDEL',
+   'EXTCATALOGNAMES');
 var
   SR: TSearchRec;
   FileName,
@@ -990,6 +1023,19 @@ var
   Tables : TStringList;
   I : Integer;
   InDelimitedFile : TFIBInputDelimitedFile;
+
+  function NeedImport(TableName : String) : Boolean;
+  var
+    I : Integer;
+  begin
+    for I := Low(ExcludeExtTables) to High(ExcludeExtTables) do
+      if ExcludeExtTables[i] = TableName then begin
+        Result := False;
+        Exit;
+      end;
+    Result := True;
+  end;
+
 begin
   if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
     Screen.Cursor:=crHourglass;
@@ -1029,10 +1075,7 @@ begin
 
 
             for I := 0 to Files.Count-1 do begin
-              if (Tables[i] <> 'EXTCORE') and (Tables[i] <> 'EXTSYNONYM')
-                and (Tables[i] <> 'EXTREGISTRY') and (Tables[i] <> 'EXTMINPRICES')
-                and (Tables[i] <> 'EXTPRICEAVG')
-              then begin
+              if NeedImport(Tables[i]) then begin
                 up.SelectSQL.Text := 'select * from ' + Tables[i];
                 up.Prepare;
                 up.Open;
@@ -1167,6 +1210,10 @@ begin
       SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyDelete'; ExecQuery;
       MainForm.StatusText:='Очищается Catalog';
       SQL.Text:='EXECUTE PROCEDURE CatalogDelete'; ExecQuery;
+      MainForm.StatusText:='Очищается CatalogNames';
+      SQL.Text:='EXECUTE PROCEDURE CatalogNamesDelete'; ExecQuery;
+      MainForm.StatusText:='Очищается CatalogFarmGroups';
+      SQL.Text:='EXECUTE PROCEDURE CatalogFarmGroupsDelete'; ExecQuery;
       MainForm.StatusText:='Очищается PricesRegionalData';
       SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataDeleteAll'; ExecQuery;
       MainForm.StatusText:='Очищается PricesData';
@@ -1279,8 +1326,31 @@ begin
 end;
 
 procedure TDM.ClearBackup( APath: string);
+var
+  MoveRes : Boolean;
+  BackupFileName,
+  TemplateEtlName,
+  NewEtlName : String;
+  N : Integer;
 begin
-  Windows.DeleteFile( PChar( APath + ChangeFileExt( DatabaseName, '.bak')));
+  BackupFileName := APath + ChangeFileExt( DatabaseName, '.bak');
+  TemplateEtlName := APath + DatabaseName + '.etl';
+  NewEtlName := TemplateEtlName;
+  N := 0;
+  repeat
+    Windows.DeleteFile(PChar(NewEtlName));
+    MoveRes := Windows.MoveFile(PChar(BackupFileName), PChar(NewEtlName));
+    if not MoveRes then begin
+      if N <= 255 then begin
+        NewEtlName := TemplateEtlName + '.e' + IntToHex(N, 2);
+        Inc(N);
+      end
+      else
+        Break;
+    end;
+  until MoveRes;
+  if not MoveRes then
+    Windows.DeleteFile( PChar( BackupFileName ) );
 end;
 
 function TDM.Unpacked: boolean;
@@ -1533,12 +1603,7 @@ begin
 
           Price := D_B_N(adsAllOrdersPRICE.AsString);
 
-          Price := tmpb.EncodeMix( Price );
-
-          if Length(Price) > 2 then
-            Price := chr(random(110) + 32) + Price[1] + chr(random(110) + 32) + Copy(Price, 2, Length(Price))
-          else
-            Price := '';
+          Price := E_B_N(tmpb, Price);
 
           adsAllOrders.Edit;
 
@@ -1822,9 +1887,12 @@ end;
 function TDM.D_B_N(BaseC: String): String;
 var
   tmp : String;
+  Len : Integer;
 begin
-  if Length(BaseC) > 3 then begin
-    tmp := BaseC[2] + Copy(BaseC, 4, Length(BaseC));
+  Len := Length(BaseC);
+  if Len > 6 then begin
+
+    tmp := BaseC[1] + Copy(BaseC, 3, Len-6) + Copy(BaseC, Len-2, 3);
     if Length(tmp) > 1 then begin
       Result := BasecostC.DecodeMix(tmp);
       Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
@@ -1860,6 +1928,305 @@ begin
     Result := chr(random(110) + 32) + Result[1] + chr(random(110) + 32) + Copy(Result, 2, Length(Result))
   else
     Result := '';
+end;
+
+procedure TDM.occf(DataSet: TDataSet);
+var
+  S : String;
+begin
+  try
+    S := D_B_N(adsOrderCoreBASECOST.AsString);
+    adsOrderCoreCryptBASECOST.AsCurrency := StrToCurr(S);
+  except
+  end;
+end;
+
+procedure TDM.UpdateDB;
+var
+  dbCon : TpFIBDatabase;
+  trMain : TpFIBTransaction;
+  DBVersion : Variant;
+  EtlName : String;
+begin
+  try
+    dbCon := TpFIBDatabase.Create(nil);
+    try
+
+      trMain := TpFIBTransaction.Create(nil);
+      try
+        dbCon.DBName := MainConnection1.DBName;
+        dbCon.DBParams.Text := MainConnection1.DBParams.Text;
+        dbCon.LibraryName := MainConnection1.LibraryName;
+        dbCon.SQLDialect := MainConnection1.SQLDialect;
+        trMain.DefaultDatabase := dbCon;
+        dbCon.DefaultTransaction := trMain;
+        dbCon.DefaultUpdateTransaction := trMain;
+        dbCon.Open;
+        DBVersion := dbCon.QueryValue('select mdbversion from provider where id = 0', 0);
+        dbCon.Close;
+
+        if DBVersion = 35 then begin
+          etlname := GetLastEtalonFileName;
+          if Length(etlname) > 0 then
+            RunUpdateDBFile(dbCon, trMain, etlname, UpdateDBFile);
+            //UpdateDBFile(dbCon, trMain, etlname);
+          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, UpdateDBFile);
+          //UpdateDBFile(dbCon, trMain, MainConnection1.DBName);
+          DBVersion := 35
+        end;
+
+      finally
+        trMain.Free;
+      end;
+
+    finally
+      dbCon.Free;
+    end;
+  except
+    on E : Exception do begin
+      LogCriticalError('Ошибка при обновлении базы данных : ' + E.Message);
+      MessageBox( 'Ошибка при обновлении базы данных : ' + E.Message, MB_ICONERROR or MB_OK);
+      ExitProcess( Integer(ecDBUpdateError) );
+    end;
+  end;
+end;
+
+procedure TDM.UpdateDBFile(dbCon: TpFIBDatabase; trMain: TpFIBTransaction;
+  FileName: String);
+var
+ FIBScript : TpFIBScript;
+ CompareScript: TResourceStream;
+
+begin
+  dbCon.DBName := FileName;
+  dbCon.Open;
+  try
+    FIBScript := TpFIBScript.Create(nil);
+    FIBScript.Database := dbCon;
+    FIBScript.Transaction := trMain;
+    FIBScript.SQLDialect := dbCon.SQLDialect;
+
+    try
+
+      CompareScript := TResourceStream.Create( hInstance, 'COMPARESCRIPT', RT_RCDATA);
+      try
+        FIBScript.Script.LoadFromStream(CompareScript);
+      finally
+        try CompareScript.Free; except end;
+      end;
+
+      trMain.StartTransaction;
+
+      FIBScript.OnParseError := OnScriptParseError;
+      try
+        FIBScript.ValidateScript;
+      finally
+        FIBScript.OnParseError := nil;
+      end;
+
+      FIBScript.OnExecuteError := OnScriptExecuteError;
+      try
+        FIBScript.ExecuteScript;
+      finally
+        FIBScript.OnExecuteError := nil;
+      end;
+
+      trMain.Commit;
+
+      UpdateDBFileData(dbCon, trMain);
+
+    finally
+      try FIBScript.Free; except  end;
+    end;
+
+  finally
+    try dbCon.Close; except end;
+  end;
+end;
+
+function TDM.GetLastEtalonFileName: String;
+var
+  CurrFileName,
+  FindFileName,
+  TemplateName : String;
+  FindFileAge,
+  CurrFileAge : Integer;
+	EtlSR: TSearchRec;
+begin
+  TemplateName := ChangeFileExt(ParamStr(0), '.fdb') + '.etl';
+  CurrFileName := TemplateName;
+  CurrFileAge := FileAge(CurrFileName);
+
+  if FindFirst( TemplateName + '.e*', faAnyFile, EtlSR) = 0 then
+  try
+
+    repeat
+      if (EtlSR.Name <> '.') and (EtlSR.Name <> '..')
+      then begin
+        FindFileName := ExePath + EtlSR.Name;
+        FindFileAge := FileAge(FindFileName);
+        if FindFileAge > CurrFileAge then begin
+          CurrFileName := FindFileName;
+          CurrFileAge := FindFileAge;
+        end;
+      end;
+    until (FindNext( EtlSR ) <> 0)
+
+  finally
+    SysUtils.FindClose( EtlSR );
+  end;
+
+  if not AnsiSameText(TemplateName, CurrFileName) then begin
+    if Windows.DeleteFile( PChar( TemplateName ) ) then
+      if Windows.MoveFile(PChar(CurrFileName), PChar( TemplateName )) then begin
+        DeleteFilesByMask(TemplateName + '.e*', False);
+        Result := TemplateName;
+      end
+      else
+        Result := CurrFileName
+    else
+      Result := CurrFileName;
+  end
+  else begin
+    if CurrFileAge = -1 then
+      Result := ''
+    else
+      Result := TemplateName;
+  end;
+end;
+
+procedure TDM.OnScriptParseError(Sender: TObject; Error, SQLText: string;
+  LineIndex: Integer);
+begin
+  raise Exception.CreateFmt('Ошибка при разборе скрипта: %s'#13#10'SQL: %s'#13#10'Номер строки: %d', [Error, SQLText, LineIndex]);
+end;
+
+procedure TDM.OnScriptExecuteError(Sender: TObject; Error, SQLText: string;
+  LineIndex: Integer; var Ignore: Boolean);
+begin
+  raise Exception.CreateFmt('Ошибка при выполнении скрипта: %s'#13#10'SQL: %s'#13#10'Номер строки: %d', [Error, SQLText, LineIndex]);
+end;
+
+function TDM.D_B_N_OLD(c : TINFCrypt; BaseC: String): String;
+var
+  tmp : String;
+begin
+  if Length(BaseC) > 3 then begin
+    tmp := BaseC[2] + Copy(BaseC, 4, Length(BaseC));
+    if Length(tmp) > 1 then begin
+      Result := c.DecodeMix(tmp);
+      Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
+    end
+    else
+      Result := '';
+  end
+  else
+    Result := '';
+end;
+
+function TDM.E_B_N_OLD(c : TINFCrypt; BaseCost: String): String;
+begin
+  Result := StringReplace(BaseCost, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
+  Result := c.EncodeMix( Result );
+
+  if Length(Result) > 2 then
+    Result := chr(random(110) + 32) + Result[1] + chr(random(110) + 32) + Copy(Result, 2, Length(Result))
+  else
+    Result := '';
+end;
+
+function TDM.E_B_N(c: TINFCrypt; BaseCost: String): String;
+var
+  Len : Integer;
+begin
+  Result := StringReplace(BaseCost, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
+  Result := c.EncodeMix( Result );
+
+  Len := Length(Result);
+
+  if Length(Result) > 3 then
+    Result := Result[1] + chr(random(110) + 32) + Copy(Result, 2, Len-4)+ chr(random(110) + 32) + Copy(Result, Len-2, 3)
+  else
+    Result := '';
+end;
+
+procedure TDM.UpdateDBFileData(dbCon: TpFIBDatabase;
+  trMain: TpFIBTransaction);
+var
+  adsAllOrdersUpdate : TpFIBDataSet;
+  CDS,
+  BaseCostPass,
+  Price : String;
+  bc : TINFCrypt;
+  AllCount,
+  CryptErrorCount : Integer;
+begin
+  adsAllOrdersUpdate := TpFIBDataSet.Create(nil);
+
+  try
+    adsAllOrdersUpdate.Database := dbCon;
+    adsAllOrdersUpdate.Transaction := trMain;
+    adsAllOrdersUpdate.UpdateTransaction := trMain;
+    adsAllOrdersUpdate.SelectSQL.Text := adsAllOrders.SelectSQL.Text;
+    adsAllOrdersUpdate.UpdateSQL.Text := adsAllOrders.UpdateSQL.Text;
+    adsAllOrdersUpdate.Options := adsAllOrdersUpdate.Options - [poTrimCharFields];
+
+    trMain.StartTransaction;
+
+    try
+      CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
+      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
+      if Length(CDS) = 0 then
+        Exit;
+      BaseCostPass := PassC.DecodeHex(Copy(CDS, 129, 64));
+      if Length(BaseCostPass) = 0 then
+        raise Exception.Create('Нет необходимой информации.');
+    except
+      on E : Exception do
+       raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
+    end;
+
+    bc := TINFCrypt.Create(BaseCostPass, 50);
+    try
+
+      CryptErrorCount := 0;
+
+      adsAllOrdersUpdate.Open;
+
+      while not adsAllOrdersUpdate.Eof do begin
+
+        try
+          Price := D_B_N_OLD(bc, adsAllOrdersUpdate.FieldByName('PRICE').AsString);
+
+          Price := E_B_N(bc, Price);
+          
+          adsAllOrdersUpdate.Edit;
+          adsAllOrdersUpdate.FieldByName('PRICE').AsString := Price;
+          adsAllOrdersUpdate.Post;
+        except
+          on E : Exception do
+            Inc(CryptErrorCount)
+        end;
+
+        adsAllOrdersUpdate.Next;
+      end;
+
+      AllCount := adsAllOrdersUpdate.RecordCount;
+
+      adsAllOrdersUpdate.Close;
+
+      if CryptErrorCount > 0 then
+        AProc.LogCriticalError('Количество нерасшифрованных позиций в заказах : ' + IntToStr(CryptErrorCount) + ' Всего позиций : ' + IntToStr(AllCount));
+
+    finally
+      try bc.Free except end;
+    end;
+
+    trMain.Commit;
+
+  finally
+    try adsAllOrdersUpdate.Free; except end;
+  end;
 end;
 
 initialization

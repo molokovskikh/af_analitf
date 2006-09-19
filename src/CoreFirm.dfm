@@ -73,15 +73,6 @@ object CoreFirmForm: TCoreFirmForm
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'CODE'
-        Footers = <>
-        MinWidth = 5
-        Title.Caption = #1050#1086#1076
-        Title.TitleButton = True
-        Width = 70
-      end
-      item
-        EditButtons = <>
         FieldName = 'SYNONYMNAME'
         Footers = <>
         MinWidth = 5
@@ -113,8 +104,9 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'DOC'
         Footers = <>
         MinWidth = 5
-        Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+        Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
         Title.TitleButton = True
+        Visible = False
       end
       item
         EditButtons = <>
@@ -134,6 +126,18 @@ object CoreFirmForm: TCoreFirmForm
         Title.Caption = #1057#1088#1086#1082'. '#1075#1086#1076#1085'.'
         Title.TitleButton = True
         Width = 77
+      end
+      item
+        EditButtons = <>
+        FieldName = 'REGISTRYCOST'
+        Footers = <>
+        Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+      end
+      item
+        EditButtons = <>
+        FieldName = 'REQUESTRATIO'
+        Footers = <>
+        Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
       end
       item
         EditButtons = <>
@@ -390,53 +394,7 @@ object CoreFirmForm: TCoreFirmForm
         ':NEW_ORDERCOUNT)')
     SelectSQL.Strings = (
       'SELECT'
-      '    COREID,'
-      '    FULLCODE,'
-      '    SHORTCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    VOLUME,'
-      '    DOC,'
-      '    NOTE,'
-      '    PERIOD,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    BASECOST,'
-      '    QUANTITY,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    MINPRICE,'
-      '    LEADERPRICECODE,'
-      '    LEADERREGIONCODE,'
-      '    LEADERREGIONNAME,'
-      '    LEADERPRICENAME,'
-      '    LEADERCODE,'
-      '    LEADERCODECR,'
-      '    LEADERPRICE,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID,'
-      '    ORDERSCLIENTID,'
-      '    ORDERSFULLCODE,'
-      '    ORDERSCODEFIRMCR,'
-      '    ORDERSSYNONYMCODE,'
-      '    ORDERSSYNONYMFIRMCRCODE,'
-      '    ORDERSCODE,'
-      '    ORDERSCODECR,'
-      '    ORDERCOUNT,'
-      '    ORDERSSYNONYM,'
-      '    ORDERSSYNONYMFIRM,'
-      '    ORDERSPRICE,'
-      '    ORDERSJUNK,'
-      '    ORDERSAWAIT,'
-      '    ORDERSHORDERID,'
-      '    ORDERSHCLIENTID,'
-      '    ORDERSHPRICECODE,'
-      '    ORDERSHREGIONCODE,'
-      '    ORDERSHPRICENAME,'
-      '    ORDERSHREGIONNAME'
+      '*'
       'FROM'
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
@@ -453,6 +411,7 @@ object CoreFirmForm: TCoreFirmForm
     Left = 88
     Top = 112
     oTrimCharFields = False
+    oCacheCalcFields = True
     oRefreshAfterPost = False
     oFetchAll = True
     object adsCoreCOREID: TFIBBCDField
@@ -705,6 +664,17 @@ object CoreFirmForm: TCoreFirmForm
       FieldName = 'ORDERSPRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsCoreREGISTRYCOST: TFIBFloatField
+      FieldName = 'REGISTRYCOST'
+      DisplayFormat = '#'
+    end
+    object adsCoreVITALLYIMPORTANT: TFIBIntegerField
+      FieldName = 'VITALLYIMPORTANT'
+    end
+    object adsCoreREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+      DisplayFormat = '#'
     end
   end
   object adsCountFields: TpFIBDataSet

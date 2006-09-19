@@ -11,7 +11,6 @@ type
     btnOk: TButton;
     btnCancel: TButton;
     Label5: TLabel;
-    dbeForcount: TDBEdit;
     Bevel1: TBevel;
     ToughDBGrid1: TToughDBGrid;
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);

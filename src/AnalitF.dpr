@@ -67,12 +67,14 @@ uses
   NtlmMsgs in 'NTLM\NtlmMsgs.pas',
   DADAuthenticationNTLM in 'NTLM\DADAuthenticationNTLM.pas',
   Encryption in 'NTLM\Encryption.pas',
-  SynonymSearch in 'SynonymSearch.pas' {SynonymSearchForm};
+  SynonymSearch in 'SynonymSearch.pas' {SynonymSearchForm},
+  U_UpdateDBThread in 'U_UpdateDBThread.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
 {$R Progress.RES}
 {$R Icons.RES}
+{$R CompareScript.RES}
 
 var
   B : TWebBrowser;

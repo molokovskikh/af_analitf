@@ -44,7 +44,7 @@ object ClientForm: TClientForm
     Caption = '&'#1054#1050
     Default = True
     ModalResult = 1
-    TabOrder = 1
+    TabOrder = 0
   end
   object btnCancel: TButton
     Left = 112
@@ -55,17 +55,7 @@ object ClientForm: TClientForm
     Cancel = True
     Caption = #1054'&'#1090#1084#1077#1085#1072
     ModalResult = 2
-    TabOrder = 2
-  end
-  object dbeForcount: TDBEdit
-    Left = 130
-    Top = 37
-    Width = 97
-    Height = 21
-    DataField = 'Forcount'
-    DataSource = DM.dsClients
-    TabOrder = 0
-    Visible = False
+    TabOrder = 1
   end
   object ToughDBGrid1: TToughDBGrid
     Left = 8
@@ -84,7 +74,7 @@ object ClientForm: TClientForm
     FooterFont.Style = []
     Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
     OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
-    TabOrder = 3
+    TabOrder = 2
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
     TitleFont.Height = -11

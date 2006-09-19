@@ -63,6 +63,8 @@ procedure UrlLink(Address: string);
 function ExtractURL(const URL: string): string;
 procedure MoveFile_( ASource, ADest: string);
 function SimpleHash( AStr: string): string;
+procedure LogCriticalError(Error : String);
+
 
 implementation
 
@@ -500,6 +502,25 @@ begin
 	end;
 	result := IntToHex( h, 8);
 end;
+
+procedure LogCriticalError(Error: String);
+var
+  ELog : TextFile;
+begin
+  try
+		AssignFile( ELog, ExePath + 'Exchange.log');
+    if FileExists(ExePath + 'Exchange.log') then
+  		Append( ELog) //будем добавлять лог-файл
+    else
+  		Rewrite( ELog); //создаем лог-файл
+    Writeln(ELog);
+    Writeln(ELog);
+    Writeln(ELog, DateTimeToStr(Now) + '  CriticalError : ' + Error);
+    CloseFile(ELog);
+  except
+  end;
+end;
+
 
   {procedure XMLTableToStrings(XML: string; TableName: string; Strings: TStrings);
     procedure ProcessNode(Node: IXMLNode);

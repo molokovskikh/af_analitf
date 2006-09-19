@@ -73,10 +73,40 @@ var
               end;
             end;
 
+            //Пытаемся установить атрибуты файла
+            Result := False;
+            for I := 1 to 20 do begin
+              if Windows.SetFileAttributes(PChar(OutDir + sr.Name), FILE_ATTRIBUTE_NORMAL) then begin
+                Result := True;
+                break;
+              end;
+              Sleep(500);
+            end;
+            if not Result then begin
+              trLog.TR('Eraser', 'Не получилось установить атрибуты файла ' + sr.Name + ': ' +
+                SysErrorMessage(GetLastError()));
+              Exit;
+            end;
+
+            //Пытаемся удалить файл
+            Result := False;
+            for I := 1 to 20 do begin
+              if Windows.DeleteFile(PChar(OutDir + sr.Name)) then begin
+                Result := True;
+                break;
+              end;
+              Sleep(500);
+            end;
+            if not Result then begin
+              trLog.TR('Eraser', 'Не получилось удалить файл ' + sr.Name + ': ' +
+                SysErrorMessage(GetLastError()));
+              Exit;
+            end;
+
             //Пытаемся обновить файл
             Result := False;
             for I := 1 to 20 do begin
-              if Windows.MoveFileEx(PChar(InDir +  sr.Name), PChar(OutDir + sr.Name), MOVEFILE_REPLACE_EXISTING) then begin
+              if Windows.MoveFile(PChar(InDir +  sr.Name), PChar(OutDir + sr.Name)) then begin
                 Result := True;
                 break;
               end;
@@ -133,6 +163,9 @@ begin
         if not ClearDir(ExePath + BackDir, True) then
           trLog.TR('Eraser', 'Не получилось удалить директорию ' + BackDir
             + ': ' + SysErrorMessage(GetLastError()));
+
+      //Спим несколько секунд, чтобы система смогла удалить директорию
+      Sleep(5000);
 
       //Создаем директорию для Backup
       if not DirectoryExists(ExePath + BackDir) then

@@ -189,7 +189,6 @@ private
   procedure SetActionLists(AValue : TList);
   function  OldOrders : Boolean;
   procedure DeleteOldOrders;
-  procedure LogCriticalError(Error : String);
 public
 	CurrentUser: string;	// Имя текущего пользователя
 	ActiveChild: TChildForm;
@@ -341,9 +340,8 @@ begin
 		ShowConfig( True);
 	end;
 
-	{ Запуск с ключем -i (импорт данных) }
-	if ( AnsiLowerCase( ParamStr( 1)) = '-i') or
-		( AnsiLowerCase( ParamStr( 1)) = '/i') then
+	{ Запуск с ключем -i (импорт данных) при получении новой версии программы}
+	if FindCmdLineSwitch('i') then
 	begin
 		RunExchange([ eaImportOnly]);
 		exit;
@@ -847,7 +845,7 @@ begin
   else begin
     if E.Message <> SCannotFocus then begin
       S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
-      LogCriticalError(S + ' ' + E.Message);
+      AProc.LogCriticalError(S + ' ' + E.Message);
       Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
         '%s'#13#10'%s'#13#10#13#10 +
         'Завершить работу программы?', [S, E.Message]);
@@ -916,24 +914,6 @@ begin
   except
     DM.adcUpdate.Transaction.Rollback;
     raise;
-  end;
-end;
-
-procedure TMainForm.LogCriticalError(Error: String);
-var
-  ELog : TextFile;
-begin
-  try
-		AssignFile( ELog, ExePath + 'Exchange.log');
-    if FileExists(ExePath + 'Exchange.log') then
-  		Append( ELog) //будем добавлять лог-файл
-    else
-  		Rewrite( ELog); //создаем лог-файл
-    Writeln(ELog);
-    Writeln(ELog);
-    Writeln(ELog, DateTimeToStr(Now) + '  CriticalError : ' + Error);
-    CloseFile(ELog);
-  except
   end;
 end;
 

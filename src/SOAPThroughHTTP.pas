@@ -144,8 +144,9 @@ begin
 		on E: Exception do
 		begin
 			if ( Pos( #$D#$A#$D#$A, FResponse) > 0) then begin
-				ExceptMessage := Copy( FResponse,
-				Pos( #$D#$A#$D#$A, FResponse) + 4, Length( FResponse));
+				ExceptMessage := Copy( FResponse, Pos( #$D#$A#$D#$A, FResponse) + 4, Length( FResponse));
+        if Length(ExceptMessage) = 0 then
+          ExceptMessage := e.ClassName + ': ' + e.Message;
   			raise Exception.Create( ExceptMessage);
       end
 			else

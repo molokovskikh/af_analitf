@@ -40,7 +40,10 @@ TUpdateTable = (
   utWayBillHead,
   utWayBillList,
   utMinPrices,
-  utPriceAVG);
+  utPriceAVG,
+  utCatalogFarmGroups,
+  utCatFarmGroupsDEL,
+  utCatalogNames);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -140,7 +143,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math;
+  U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc;
 
 { TExchangeThread }
 
@@ -311,6 +314,8 @@ begin
 				Writeln( ExchangeForm.LogFile, LastStatus + ':' + CRLF + E.Message); //пишем в лог
 				if ErrorMessage = '' then
           ErrorMessage := RusError( E.Message);
+				if ErrorMessage = '' then
+          ErrorMessage := E.ClassName + ': ' + E.Message;
 			end;
 		end;
     finally
@@ -327,8 +332,7 @@ procedure TExchangeThread.HTTPConnect;
 begin
 	{ создаем экземпл€р класса TSOAP дл€ работы с SOAP через HTTP вручную }
 	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-//		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
-		'/' + 'PrgData' + '/code.asmx';
+		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
@@ -630,6 +634,8 @@ begin
 end;
 
 procedure TExchangeThread.DoSendOrders;
+const
+  OrderParamCount : Integer = 15;
 var
 	params, values: array of string;
 	i: integer;
@@ -665,8 +671,8 @@ begin
     WriteLn(ExchangeForm.LogFile,
       'ќтправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
       '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
-		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * 11 + 1);
-		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * 11 + 1);
+		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1);
+		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1);
 
 		params[ 0] := 'ClientCode';
 		params[ 1] := 'PriceCode';
@@ -683,34 +689,94 @@ begin
 
 		for i := 0 to DM.adsOrders.RecordCountFromSrv - 1 do
 		begin
-			params[ i * 11 + 6] := 'FullCode';
-			params[ i * 11 + 7] := 'OrderId';
-			params[ i * 11 + 8] := 'CodeFirmCr';
-			params[ i * 11 + 9] := 'SynonymCode';
-			params[ i * 11 + 10] := 'SynonymFirmCrCode';
-			params[ i * 11 + 11] := 'Code';
-			params[ i * 11 + 12] := 'CodeCr';
-			params[ i * 11 + 13] := 'Quantity';
-			params[ i * 11 + 14] := 'Junk';
-			params[ i * 11 + 15] := 'Await';
-			params[ i * 11 + 16] := 'Cost';
-			values[ i * 11 + 6] := DM.adsOrders.FieldByName( 'FullCode').AsString;
-			values[ i * 11 + 7] := DM.adsOrders.FieldByName( 'OrderId').AsString;
-			values[ i * 11 + 8] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
-			values[ i * 11 + 9] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
-			values[ i * 11 + 10] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
-      values[ i * 11 + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
-      values[ i * 11 + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
-			values[ i * 11 + 13] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
-			values[ i * 11 + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
-			values[ i * 11 + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
+			params[ i * OrderParamCount + 6] := 'FullCode';
+			params[ i * OrderParamCount + 7] := 'OrderId';
+			params[ i * OrderParamCount + 8] := 'CodeFirmCr';
+			params[ i * OrderParamCount + 9] := 'SynonymCode';
+			params[ i * OrderParamCount + 10] := 'SynonymFirmCrCode';
+			params[ i * OrderParamCount + 11] := 'Code';
+			params[ i * OrderParamCount + 12] := 'CodeCr';
+			params[ i * OrderParamCount + 13] := 'Quantity';
+			params[ i * OrderParamCount + 14] := 'Junk';
+			params[ i * OrderParamCount + 15] := 'Await';
+			params[ i * OrderParamCount + 16] := 'Cost';
+			values[ i * OrderParamCount + 6] := DM.adsOrders.FieldByName( 'FullCode').AsString;
+			values[ i * OrderParamCount + 7] := DM.adsOrders.FieldByName( 'OrderId').AsString;
+			values[ i * OrderParamCount + 8] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
+			values[ i * OrderParamCount + 9] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
+			values[ i * OrderParamCount + 10] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
+      values[ i * OrderParamCount + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
+      values[ i * OrderParamCount + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
+			values[ i * OrderParamCount + 13] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
+			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
+			values[ i * OrderParamCount + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
       try
         S := DM.D_B_N(DM.adsOrders.FieldByName( 'PRICE').AsString);
         S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-        values[ i * 11 + 16] := S;
+        values[ i * OrderParamCount + 16] := S;
       except
-        values[ i * 11 + 16] := '0.0';
+        values[ i * OrderParamCount + 16] := '0.0';
       end;
+
+			params[ i * OrderParamCount + 17] := 'MinCost';
+			params[ i * OrderParamCount + 18] := 'MinPriceCode';
+			params[ i * OrderParamCount + 19] := 'LeaderMinCost';
+			params[ i * OrderParamCount + 20] := 'LeaderMinPriceCode';
+
+      //≈сли выставлено поле - рассчитывать лидеров,
+      if DM.adtClientsCALCULATELEADER.Value then begin
+      
+        if DM.adsOrderCore.Active then
+          DM.adsOrderCore.Close();
+
+        DM.adsOrderCore.ParamByName( 'RegisterId').Value := RegisterId;
+        DM.adsOrderCore.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+        DM.adsOrderCore.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+        DM.adsOrderCore.ParamByName( 'ParentCode').Value := DM.adsOrders.FieldByName( 'FullCode').Value;
+        DM.adsOrderCore.ParamByName( 'ShowRegister').Value := False;
+        DM.adsOrderCore.Open;
+        DM.adsOrderCore.FetchAll;
+        DM.adsOrderCore.DoSort(['CryptBaseCost'], [True]);
+        DM.adsOrderCore.DoSort(['CryptBaseCost'], [True]);
+
+        //¬ыбираем минимального из всех прайсов
+        DBProc.SetFilter(DM.adsOrderCore, 'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString);
+
+        DM.adsOrderCore.First;
+
+        try
+          S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
+          S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
+          values[ i * OrderParamCount + 17] := S;
+        except
+          values[ i * OrderParamCount + 17] := '0.0';
+        end;
+        values[ i * OrderParamCount + 18] := DM.adsOrderCorePRICECODE.AsString;
+
+        //¬ыбираем минимального из основных прайсов
+        DBProc.SetFilter(DM.adsOrderCore, 'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString + ' and PriceEnabled = True');
+
+        DM.adsOrderCore.First;
+        
+        //¬ основных прайс-листах может не быть предложений
+        if not DM.adsOrderCore.IsEmpty then begin
+          try
+            S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
+            S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
+            values[ i * OrderParamCount + 19] := S;
+          except
+            values[ i * OrderParamCount + 19] := '0.0';
+          end;
+          values[ i * OrderParamCount + 20] := DM.adsOrderCorePRICECODE.AsString;
+        end
+        else begin
+          values[ i * OrderParamCount + 19] := '';
+          values[ i * OrderParamCount + 20] := '';
+        end;
+
+        DM.adsOrderCore.Close;
+      end;
+
 			DM.adsOrders.Edit;
 			DM.adsOrders.FieldByName( 'CoreId').AsVariant := Null;
       DM.adsOrders.Post;
@@ -753,8 +819,8 @@ begin
     ServerOrderId := 0;
 		try
       //ѕередаем уникальный идентификатор
-      params[ 6 + DM.adsOrders.RecordCountFromSrv * 11 ] := 'UniqueID';
-      values[ 6 + DM.adsOrders.RecordCountFromSrv * 11 ] := IntToHex( GetCopyID, 8);
+      params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount ] := 'UniqueID';
+      values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount ] := IntToHex( GetCopyID, 8);
 			Res := Soap.Invoke( 'PostOrder1', params, values);
 			// провер€ем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
@@ -1049,17 +1115,6 @@ begin
 	Tables := TStringList.Create;
 	try
 		//определ€ем список обновл€емых таблиц
-{
-		Catalog := CreateOleObject( 'ADOX.Catalog');
-		try
-			Catalog.ActiveConnection := DM.MainConnection.ConnectionObject;
-			for I := Catalog.Tables.Count - 1 downto 0 do
-				if Catalog.Tables.Item[ I].Type = 'LINK' then
-					Tables.Add(UpperCase(Catalog.Tables.Item[I].Name));
-		finally
-			Catalog := Unassigned;
-		end;
-}
   DM.MainConnection1.GetTableNames(Tables, False);
   UpdateTables := [];
 
@@ -1073,15 +1128,20 @@ begin
 	if Tables.IndexOf( 'EXTPRICESREGIONALDATA') >= 0 then UpdateTables:=UpdateTables+[utPricesRegionalData];
 	if Tables.IndexOf( 'EXTCORE') >= 0 then UpdateTables:=UpdateTables+[utCore];
 	if Tables.IndexOf( 'EXTREGIONS') >= 0 then UpdateTables:=UpdateTables+[utRegions];
-	if Tables.IndexOf( 'EXTSECTION') >= 0 then UpdateTables:=UpdateTables+[utSection];
+//if Tables.IndexOf( 'EXTSECTION') >= 0 then UpdateTables:=UpdateTables+[utSection];
 	if Tables.IndexOf( 'EXTSYNONYM') >= 0 then UpdateTables := UpdateTables + [utSynonym];
 	if Tables.IndexOf( 'EXTSYNONYMFIRMCR')>=0 then UpdateTables := UpdateTables + [utSynonymFirmCr];
 	if Tables.IndexOf( 'EXTREJECTS')>=0 then UpdateTables := UpdateTables + [utRejects];
-//	if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
+//if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
 	if Tables.IndexOf( 'EXTWAYBILLHEAD')>=0 then UpdateTables := UpdateTables + [utWayBillHead];
 	if Tables.IndexOf( 'EXTWAYBILLLIST')>=0 then UpdateTables := UpdateTables + [utWayBillList];
 	if Tables.IndexOf( 'EXTMINPRICES')>=0 then UpdateTables := UpdateTables + [utMinPrices];
 	if Tables.IndexOf( 'EXTPRICEAVG')>=0 then UpdateTables := UpdateTables + [utPriceAVG];
+	if Tables.IndexOf( 'EXTCATALOGFARMGROUPS')>=0 then UpdateTables := UpdateTables + [utCatalogFarmGroups];
+	if Tables.IndexOf( 'EXTCATFARMGROUPSDEL')>=0 then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
+	if Tables.IndexOf( 'EXTCATALOGNAMES')>=0 then UpdateTables := UpdateTables + [utCatalogNames];
+
+
     //обновл€ем таблицы
     {
     “аблица               DELETE  INSERT  UPDATE
@@ -1098,6 +1158,8 @@ begin
     SynonymFirmCr                   +
     WayBillHead                     +
     WayBillList                     +
+    CatalogFarmGroups       +       +       +
+    CatalogNames                    +       +
     }
 
 	Progress := 5;
@@ -1211,24 +1273,54 @@ begin
 	Synchronize( SetProgress);
 
 	//добавл€ем в таблицы новые данные и измен€ем имеющиес€
-	//измен€ем и добавл€ем Section (надо сделать до изменени€ Catalog)
-	if utSection in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpSectionDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpSectionInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE SectionUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpSectionDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE SectionInsert'; ExecQuery;
+	//CatalogNames
+	if utCatalogNames in UpdateTables then begin
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+      UpdateFromFile(ExePath+SDirIn+'\CatalogNames.txt',
+        'INSERT INTO catalognames ' +
+        '(ID, NAME, LATINNAME, Description) '+
+        'values ( :ID, :NAME, :LATINNAME, :Description)');
+    end
+    else begin
+      UpdateFromFile(ExePath+SDirIn+'\CatalogNames.txt',
+        'EXECUTE PROCEDURE CATALOGNAMES_IU(:ID, :NAME, :LATINNAME, :DESCRIPTION)');
+    end;
 	end;
 	//Catalog
 	if utCatalog in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpCatalogDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpCatalogInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE CatalogUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpCatalogDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE CatalogInsert'; ExecQuery;
+
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+      UpdateFromFile(ExePath+SDirIn+'\Catalog.txt',
+        'INSERT INTO catalogs ' +
+        '(FULLCODE, SHORTCODE, NAME, FORM, VITALLYIMPORTANT, NEEDCOLD, FRAGILE) '+
+        'values ( :FULLCODE, :SHORTCODE, :NAME, :FORM, :VITALLYIMPORTANT, :NEEDCOLD, :FRAGILE)');
+    end
+    else begin
+      //catalogs_iu
+      UpdateFromFile(ExePath+SDirIn+'\Catalog.txt',
+        'EXECUTE PROCEDURE catalogs_iu(:FULLCODE, :SHORTCODE, :NAME, :FORM, :VITALLYIMPORTANT, :NEEDCOLD, :FRAGILE)');
+      if utCatDel in UpdateTables then begin
+        UpdateFromFile(ExePath+SDirIn+'\CatDel.txt',
+          'delete from catalogs where (fullcode = :fullcode)');
+      end;
+    end;
 	  SQL.Text:='EXECUTE PROCEDURE CatalogSetFormNotNull'; ExecQuery;
-   	if utCatDel in UpdateTables then begin
-      SQL.Text:='EXECUTE PROCEDURE CatalogDeleteHide'; ExecQuery;
+	end;
+	//CatalogFarmGroups
+	if utCatalogFarmGroups in UpdateTables then begin
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+      UpdateFromFile(ExePath+SDirIn+'\CatalogFarmGroups.txt',
+        'INSERT INTO catalogfarmgroups ' +
+        '(ID, Name, Description, ParentID, GroupType) '+
+        'values ( :ID, :Name, :Description, :ParentID, :GroupType )');
+    end
+    else begin
+      UpdateFromFile(ExePath+SDirIn+'\CatalogFarmGroups.txt',
+        'EXECUTE PROCEDURE catalogfarmgroups_iu(:ID, :NAME, :DESCRIPTION, :PARENTID, :GROUPTYPE)');
+      if utCatFarmGroupsDel in UpdateTables then begin
+        UpdateFromFile(ExePath+SDirIn+'\CatFarmGroupsDel.txt',
+          'delete from catalogfarmgroups where (ID = :ID)');
+      end;
     end;
 	end;
 
@@ -1259,11 +1351,8 @@ begin
 	end;
 	//Clients
 	if utClients in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpClientsDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpClientsInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE ClientsUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpClientsDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE ClientsInsert'; ExecQuery;
+    UpdateFromFile(ExePath+SDirIn+'\Clients.txt',
+        'EXECUTE PROCEDURE CLIENTS_IU(:CLIENTID, :NAME, :REGIONCODE, :EXCESS, :DELTAMODE, :MAXUSERS, :REQMASK, :TECHSUPPORT, :CALCULATELEADER)');
 	end;
 	//ClientsDataN
 	if utClientsDataN in UpdateTables then begin
@@ -1303,8 +1392,6 @@ begin
 
 	//Synonym
 	if utSynonym in UpdateTables then begin
-	  //SQL.Text:='EXECUTE PROCEDURE SynonymInsert'; ExecQuery;
-	  //SQL.Text:='EXECUTE PROCEDURE SynonymInsertUnfounded'; ExecQuery;
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
       UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
         'INSERT INTO Synonyms ' +
@@ -1349,10 +1436,10 @@ begin
     UpdateFromFile(ExePath+SDirIn+'\Core.txt',
 'INSERT INTO Core '+
 '(Pricecode, RegionCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
-'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, BaseCost, ServerCOREID)' +
+'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, RegistryCost, VitallyImportant, RequestRatio, BaseCost, ServerCOREID)' +
 'values (:Pricecode, :RegionCode, :FullCode, :CodeFirmCr, :SynonymCode, ' +
 ':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
-':Note, :Period, :Doc, :BaseCost, :ServerCOREID)');
+':Note, :Period, :Doc, :RegistryCost, :VitallyImportant, :RequestRatio, :BaseCost, :ServerCOREID)');
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
@@ -1378,7 +1465,7 @@ begin
 	Synchronize( SetProgress);
 	SQL.Text := 'EXECUTE PROCEDURE SynonymDeleteFormHeaders'; ExecQuery;
 	//проставл€ем мин. цены и лидеров
-	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert(0)';	ExecQuery;
+	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert';	ExecQuery;
 	Progress := 60;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
@@ -1418,7 +1505,6 @@ begin
   DM.adtParams.CloseOpen(True);
 	if DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean then
 	begin
-		SQL.Text := 'EXECUTE PROCEDURE SynonymInsertFormHeaders'; ExecQuery;
 		Progress := 70;
 		Synchronize( SetProgress);
 		SQL.Text := 'EXECUTE PROCEDURE CoreInsertFormHeaders'; ExecQuery;
@@ -1427,12 +1513,6 @@ begin
 	end;
 
   SQL.Text:='update params set OperateForms = OperateFormsSet where ID = 0'; ExecQuery;
-{
-	DM.adtParams.Edit;
-	DM.adtParams.FieldByName( 'OperateForms').AsBoolean :=
-		DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean;
-	DM.adtParams.Post;
-}  
 
 	TotalProgress := 80;
 	Synchronize( SetTotalProgress);
@@ -1466,9 +1546,6 @@ begin
 	Synchronize( SetProgress);
 	TotalProgress := 85;
 	Synchronize( SetTotalProgress);
-	SQL.Text := 'EXECUTE PROCEDURE MinPricesSetPriceCode(' +
-		DM.adtClients.FieldByName( 'LeadFromBasic').AsString + ')';
-	ExecQuery;
 	SQL.Text := 'EXECUTE PROCEDURE SETPRICESIZE';
 	ExecQuery;
   DM.MainConnection1.DefaultUpdateTransaction.CommitRetaining;
@@ -1521,7 +1598,6 @@ begin
 	DM.adtParams.Post;
 	Synchronize( MainForm.SetUpdateDateTime);
 	Synchronize( EnableCancel);
-	//DeleteFilesByMask(ExePath+SDirIn+'\*.*');
 end;
 
 function TExchangeThread.GetXMLDateTime( ADateTime: TDateTime): string;

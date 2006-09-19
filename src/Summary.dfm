@@ -86,6 +86,13 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
+          FieldName = 'DOC'
+          Footers = <>
+          Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
+          Visible = False
+        end
+        item
+          EditButtons = <>
           FieldName = 'PERIOD'
           Footers = <>
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
@@ -107,6 +114,18 @@ inherited SummaryForm: TSummaryForm
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
           Width = 67
+        end
+        item
+          EditButtons = <>
+          FieldName = 'REGISTRYCOST'
+          Footers = <>
+          Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+        end
+        item
+          EditButtons = <>
+          FieldName = 'REQUESTRATIO'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
         end
         item
           EditButtons = <>
@@ -435,22 +454,7 @@ inherited SummaryForm: TSummaryForm
       'and ORDERID = :ORDERSORDERID')
     SelectSQL.Strings = (
       'SELECT'
-      '    VOLUME,'
-      '    QUANTITY,'
-      '    NOTE,'
-      '    PERIOD,'
-      '    JUNK,'
-      '    AWAIT,'
-      '    CODE,'
-      '    CODECR,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    BASECOST,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    ORDERCOUNT,'
-      '    ORDERSCOREID,'
-      '    ORDERSORDERID'
+      '*'
       'FROM'
       '    SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ')
     AfterPost = adsSummary2AfterPost
@@ -558,6 +562,21 @@ inherited SummaryForm: TSummaryForm
       FieldName = 'BASECOST'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsSummaryDOC: TFIBStringField
+      FieldName = 'DOC'
+      EmptyStrToNull = True
+    end
+    object adsSummaryREGISTRYCOST: TFIBFloatField
+      FieldName = 'REGISTRYCOST'
+      DisplayFormat = '#'
+    end
+    object adsSummaryVITALLYIMPORTANT: TFIBIntegerField
+      FieldName = 'VITALLYIMPORTANT'
+    end
+    object adsSummaryREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+      DisplayFormat = '#'
     end
   end
   object adsSummaryH: TpFIBDataSet

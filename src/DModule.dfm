@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 164
-  Top = 96
+  Left = 197
+  Top = 199
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -254,104 +254,79 @@ object DM: TDM
     UpdateSQL.Strings = (
       'UPDATE CLIENTS'
       'SET '
-      '    NAME = :NAME,'
-      '    REGIONCODE = :REGIONCODE,'
-      '    ADDRESS = :ADDRESS,'
-      '    PHONE = :PHONE,'
-      '    FORCOUNT = :FORCOUNT,'
-      '    EMAIL = :EMAIL,'
-      '    MAXUSERS = :MAXUSERS,'
-      '    USEEXCESS = :USEEXCESS,'
-      '    EXCESS = :EXCESS,'
-      '    DELTAMODE = :DELTAMODE,'
-      '    ONLYLEADERS = :ONLYLEADERS,'
-      '    REQMASK = :REQMASK,'
-      '    TECHSUPPORT = :TECHSUPPORT,'
-      '    LEADFROMBASIC = :LEADFROMBASIC'
+      ' NAME = :NAME,'
+      ' REGIONCODE = :REGIONCODE,'
+      ' EXCESS = :EXCESS,'
+      ' DELTAMODE = :DELTAMODE,'
+      ' MAXUSERS = :MAXUSERS,'
+      ' REQMASK = :REQMASK,'
+      ' TECHSUPPORT = :TECHSUPPORT,'
+      ' CALCULATELEADER = :CALCULATELEADER,'
+      ' ONLYLEADERS = :ONLYLEADERS'
       'WHERE'
-      '    CLIENTID = :OLD_CLIENTID'
-      '    ')
+      ' CLIENTID = :OLD_CLIENTID'
+      ' ')
     DeleteSQL.Strings = (
       'DELETE FROM'
-      '    CLIENTS'
+      ' CLIENTS'
       'WHERE'
-      '        CLIENTID = :OLD_CLIENTID'
-      '    ')
+      '  CLIENTID = :OLD_CLIENTID'
+      ' ')
     InsertSQL.Strings = (
       'INSERT INTO CLIENTS('
-      '    CLIENTID,'
-      '    NAME,'
-      '    REGIONCODE,'
-      '    ADDRESS,'
-      '    PHONE,'
-      '    FORCOUNT,'
-      '    EMAIL,'
-      '    MAXUSERS,'
-      '    USEEXCESS,'
-      '    EXCESS,'
-      '    DELTAMODE,'
-      '    ONLYLEADERS,'
-      '    REQMASK,'
-      '    TECHSUPPORT,'
-      '    LEADFROMBASIC'
+      ' NAME,'
+      ' REGIONCODE,'
+      ' EXCESS,'
+      ' DELTAMODE,'
+      ' MAXUSERS,'
+      ' REQMASK,'
+      ' TECHSUPPORT,'
+      ' CALCULATELEADER,'
+      ' ONLYLEADERS'
       ')'
       'VALUES('
-      '    :CLIENTID,'
-      '    :NAME,'
-      '    :REGIONCODE,'
-      '    :ADDRESS,'
-      '    :PHONE,'
-      '    :FORCOUNT,'
-      '    :EMAIL,'
-      '    :MAXUSERS,'
-      '    :USEEXCESS,'
-      '    :EXCESS,'
-      '    :DELTAMODE,'
-      '    :ONLYLEADERS,'
-      '    :REQMASK,'
-      '    :TECHSUPPORT,'
-      '    :LEADFROMBASIC'
+      ' :NAME,'
+      ' :REGIONCODE,'
+      ' :EXCESS,'
+      ' :DELTAMODE,'
+      ' :MAXUSERS,'
+      ' :REQMASK,'
+      ' :TECHSUPPORT,'
+      ' :CALCULATELEADER,'
+      ' :ONLYLEADERS'
       ')')
     RefreshSQL.Strings = (
       'SELECT'
-      '    CLIENTID,'
-      '    NAME,'
-      '    REGIONCODE,'
-      '    ADDRESS,'
-      '    PHONE,'
-      '    FORCOUNT,'
-      '    EMAIL,'
-      '    MAXUSERS,'
-      '    USEEXCESS,'
-      '    EXCESS,'
-      '    DELTAMODE,'
-      '    ONLYLEADERS,'
-      '    REQMASK,'
-      '    TECHSUPPORT,'
-      '    LEADFROMBASIC'
+      ' CLIENTID,'
+      ' NAME,'
+      ' REGIONCODE,'
+      ' EXCESS,'
+      ' DELTAMODE,'
+      ' MAXUSERS,'
+      ' REQMASK,'
+      ' TECHSUPPORT,'
+      ' CALCULATELEADER,'
+      ' ONLYLEADERS'
       'FROM'
-      '    CLIENTS'
-      'where'
-      '  Clientid = :OLD_ClientID')
+      ' CLIENTS '
+      ''
+      ' WHERE '
+      '  CLIENTS.CLIENTID = :OLD_CLIENTID'
+      ' ')
     SelectSQL.Strings = (
       'SELECT'
-      '    CLIENTID,'
-      '    NAME,'
-      '    REGIONCODE,'
-      '    ADDRESS,'
-      '    PHONE,'
-      '    FORCOUNT,'
-      '    EMAIL,'
-      '    MAXUSERS,'
-      '    USEEXCESS,'
-      '    EXCESS,'
-      '    DELTAMODE,'
-      '    ONLYLEADERS,'
-      '    REQMASK,'
-      '    TECHSUPPORT,'
-      '    LEADFROMBASIC'
+      ' CLIENTID,'
+      ' NAME,'
+      ' REGIONCODE,'
+      ' EXCESS,'
+      ' DELTAMODE,'
+      ' MAXUSERS,'
+      ' REQMASK,'
+      ' TECHSUPPORT,'
+      ' CALCULATELEADER,'
+      ' ONLYLEADERS'
       'FROM'
-      '    CLIENTS ')
+      ' CLIENTS ')
     AfterOpen = adtClientsAfterOpen
     AllowedUpdateKinds = [ukModify]
     Transaction = DefTran
@@ -377,37 +352,14 @@ object DM: TDM
       Size = 0
       RoundByScale = True
     end
-    object adtClientsADDRESS: TFIBStringField
-      FieldName = 'ADDRESS'
-      Size = 100
-      EmptyStrToNull = True
-    end
-    object adtClientsPHONE: TFIBStringField
-      FieldName = 'PHONE'
-      EmptyStrToNull = True
-    end
-    object adtClientsFORCOUNT: TFIBIntegerField
-      FieldName = 'FORCOUNT'
-    end
-    object adtClientsEMAIL: TFIBStringField
-      FieldName = 'EMAIL'
-      Size = 30
-      EmptyStrToNull = True
-    end
-    object adtClientsMAXUSERS: TFIBIntegerField
-      FieldName = 'MAXUSERS'
-    end
-    object adtClientsUSEEXCESS: TFIBBooleanField
-      FieldName = 'USEEXCESS'
-    end
     object adtClientsEXCESS: TFIBIntegerField
       FieldName = 'EXCESS'
     end
     object adtClientsDELTAMODE: TFIBSmallIntField
       FieldName = 'DELTAMODE'
     end
-    object adtClientsONLYLEADERS: TFIBBooleanField
-      FieldName = 'ONLYLEADERS'
+    object adtClientsMAXUSERS: TFIBIntegerField
+      FieldName = 'MAXUSERS'
     end
     object adtClientsREQMASK: TFIBBCDField
       FieldName = 'REQMASK'
@@ -419,8 +371,11 @@ object DM: TDM
       Size = 255
       EmptyStrToNull = True
     end
-    object adtClientsLEADFROMBASIC: TFIBSmallIntField
-      FieldName = 'LEADFROMBASIC'
+    object adtClientsCALCULATELEADER: TFIBBooleanField
+      FieldName = 'CALCULATELEADER'
+    end
+    object adtClientsONLYLEADERS: TFIBBooleanField
+      FieldName = 'ONLYLEADERS'
     end
   end
   object adtTablesUpdates: TpFIBDataSet
@@ -1543,6 +1498,39 @@ object DM: TDM
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+  end
+  object adsOrderCore: TpFIBDataSet
+    SelectSQL.Strings = (
+      
+        'SELECT * FROM CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTC' +
+        'ODE, :SHOWREGISTER, :REGISTERID)')
+    Transaction = DefTran
+    Database = MainConnection1
+    UpdateTransaction = UpTran
+    Left = 272
+    Top = 392
+    oCacheCalcFields = True
+    object adsOrderCorePRICECODE: TFIBBCDField
+      FieldName = 'PRICECODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrderCoreBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsOrderCoreCryptBASECOST: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptBASECOST'
+      Calculated = True
+    end
+    object adsOrderCorePRICEENABLED: TFIBIntegerField
+      FieldName = 'PRICEENABLED'
+    end
+    object adsOrderCoreJUNK: TFIBIntegerField
+      FieldName = 'JUNK'
     end
   end
 end

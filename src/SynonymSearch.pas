@@ -106,6 +106,10 @@ type
     adsOrdersPRICE: TFIBStringField;
     dsOrders: TDataSource;
     dsOrdersShowFormSummary: TDataSource;
+    adsCoreDOC: TFIBStringField;
+    adsCoreREGISTRYCOST: TFIBFloatField;
+    adsCoreVITALLYIMPORTANT: TFIBBooleanField;
+    adsCoreREQUESTRATIO: TFIBIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -186,7 +190,6 @@ begin
 
   fr := TForceRus.Create;
 
-	//UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
@@ -385,7 +388,11 @@ begin
     else
     begin
       if not adsCore.IsEmpty then
-        Background := TColor(slColors.Objects[ slColors.IndexOf(adsCoreFULLCODE.AsString)]); 
+        Background := TColor(slColors.Objects[ slColors.IndexOf(adsCoreFULLCODE.AsString)]);
+
+      if adsCoreVITALLYIMPORTANT.AsBoolean then
+        AFont.Color := VITALLYIMPORTANT_CLR;
+
       if not adsCorePriceEnabled.AsBoolean then
       begin
         //если фирма недоступна, изменяем цвет

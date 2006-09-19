@@ -64,6 +64,10 @@ type
     miUnselectedAll: TMenuItem;
     miSeparator: TMenuItem;
     adsSummaryBASECOST: TFIBStringField;
+    adsSummaryDOC: TFIBStringField;
+    adsSummaryREGISTRYCOST: TFIBFloatField;
+    adsSummaryVITALLYIMPORTANT: TFIBIntegerField;
+    adsSummaryREQUESTRATIO: TFIBIntegerField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -256,6 +260,9 @@ procedure TSummaryForm.dbgSummaryGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
+  if adsSummaryVITALLYIMPORTANT.AsBoolean then
+    AFont.Color := VITALLYIMPORTANT_CLR;
+
 	if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or
 		( Column.Field = adsSummaryCryptBASECOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым

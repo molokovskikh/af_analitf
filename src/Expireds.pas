@@ -72,6 +72,10 @@ type
     adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
     adsExpiredsBASECOST: TFIBStringField;
     adsExpiredsORDERSPRICE: TFIBStringField;
+    adsExpiredsDOC: TFIBStringField;
+    adsExpiredsREGISTRYCOST: TFIBFloatField;
+    adsExpiredsVITALLYIMPORTANT: TFIBIntegerField;
+    adsExpiredsREQUESTRATIO: TFIBIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -109,7 +113,7 @@ var
 begin
   adsExpireds.OnCalcFields := ecf;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	UseExcess := DM.adtClients.FieldByName( 'UseExcess').AsBoolean;
+  UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
 	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
@@ -286,6 +290,9 @@ procedure TExpiredsForm.dbgExpiredsGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
+  if adsExpiredsVITALLYIMPORTANT.AsBoolean then
+    AFont.Color := VITALLYIMPORTANT_CLR;
+
 	//уцененный товар
 	if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCryptBASECOST))
   then Background := JUNK_CLR;
