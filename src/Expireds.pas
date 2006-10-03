@@ -111,6 +111,11 @@ procedure TExpiredsForm.FormCreate(Sender: TObject);
 var
 	Reg: TRegistry;
 begin
+  dsCheckVolume := adsExpireds;
+  dgCheckVolume := dbgExpireds;
+  fOrder := adsExpiredsORDERCOUNT;
+  fVolume := adsExpiredsREQUESTRATIO;
+  inherited;
   adsExpireds.OnCalcFields := ecf;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   UseExcess := True;

@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=4
 MinorVer=0
-Release=105
-Build=414
+Release=110
+Build=417
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.0.105.414
+FileVersion=4.0.110.417
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2006
 LegalTrademarks=Инфорум
@@ -154,11 +154,13 @@ Item5=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
 Count=1
 Item0=.\unit
 [HistoryLists\hlOutputDirectorry]
-Count=4
+Count=6
 Item0=.\bin
-Item1=C:\TEMP\From485\AnalitFnewTest\
-Item2=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre376Test\
-Item3=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre359Test_UIN\
+Item1=C:\TEMP\FromEMK\AnalitF_401\
+Item2=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre374Test1\
+Item3=C:\TEMP\From485\AnalitFnewTest\
+Item4=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre376Test\
+Item5=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre359Test_UIN\
 [HistoryLists\hlBPLOutput]
 Count=1
 Item0=.\bin

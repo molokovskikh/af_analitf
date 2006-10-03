@@ -6,12 +6,11 @@ inherited ExpiredsForm: TExpiredsForm
   ClientHeight = 462
   ClientWidth = 613
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object plOverCost: TPanel
+  object plOverCost: TPanel [0]
     Left = 176
     Top = 176
     Width = 305
@@ -26,7 +25,7 @@ inherited ExpiredsForm: TExpiredsForm
     TabOrder = 0
     Visible = False
   end
-  object pClient: TPanel
+  object pClient: TPanel [1]
     Left = 0
     Top = 0
     Width = 613
@@ -226,7 +225,7 @@ inherited ExpiredsForm: TExpiredsForm
       end
     end
   end
-  object pWebBrowser: TPanel
+  object pWebBrowser: TPanel [2]
     Tag = 209
     Left = 0
     Top = 253

@@ -6,11 +6,10 @@ inherited OrdersHForm: TOrdersHForm
   ClientHeight = 487
   ClientWidth = 792
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object TabControl: TTabControl
+  object TabControl: TTabControl [0]
     Left = 0
     Top = 39
     Width = 792
@@ -280,7 +279,7 @@ inherited OrdersHForm: TOrdersHForm
       end
     end
   end
-  object pTop: TPanel
+  object pTop: TPanel [1]
     Left = 0
     Top = 0
     Width = 792
@@ -574,7 +573,8 @@ inherited OrdersHForm: TOrdersHForm
       '    OrdersH.PriceCode AS OrdersHPriceCode,'
       '    OrdersH.RegionCode AS OrdersHRegionCode,'
       '    OrdersH.PriceName AS OrdersHPriceName,'
-      '    OrdersH.RegionName AS OrdersHRegionName'
+      '    OrdersH.RegionName AS OrdersHRegionName,'
+      '    CCore.RequestRatio'
       'FROM'
       '    Core CCore'
       '    left join catalogs on catalogs.fullcode = CCore.fullcode'

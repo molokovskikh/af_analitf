@@ -620,7 +620,10 @@ begin
 				if E <> 0 then Quantity := 0;
 				if Quantity > 0 then
 					CurOrder := Min( Order, Quantity)
-				else CurOrder := Order;
+				else
+          CurOrder := Order;
+        if not DM.adsCoreREQUESTRATIO.IsNull and (DM.adsCoreREQUESTRATIO.AsInteger > 0) then
+          CurOrder := CurOrder - (CurOrder mod DM.adsCoreREQUESTRATIO.AsInteger);
 			end;
 			SetOrder( CurOrder);
 

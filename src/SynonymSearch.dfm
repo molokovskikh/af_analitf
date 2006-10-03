@@ -6,11 +6,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
   ClientHeight = 573
   ClientWidth = 792
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object plOverCost: TPanel
+  object plOverCost: TPanel [0]
     Left = 248
     Top = 192
     Width = 305
@@ -25,7 +24,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     TabOrder = 0
     Visible = False
   end
-  object pTop: TPanel
+  object pTop: TPanel [1]
     Left = 0
     Top = 0
     Width = 792
@@ -86,7 +85,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Layout = blGlyphRight
     end
   end
-  object pCenter: TPanel
+  object pCenter: TPanel [2]
     Left = 0
     Top = 37
     Width = 792
@@ -281,7 +280,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         end>
     end
   end
-  object pBottom: TPanel
+  object pBottom: TPanel [3]
     Left = 0
     Top = 442
     Width = 792
@@ -701,6 +700,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     end
     object adsCoreORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
+      DisplayFormat = '#'
     end
     object adsCoreORDERSSYNONYM: TFIBStringField
       FieldName = 'ORDERSSYNONYM'

@@ -10,6 +10,14 @@ object ChildForm: TChildForm
   Color = clBtnFace
   ParentFont = True
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object tCheckVolume: TTimer
+    Enabled = False
+    Interval = 750
+    OnTimer = tCheckVolumeTimer
+    Left = 112
+    Top = 56
+  end
 end

@@ -4,10 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, SHDocVw, ToughDBGrid;
+  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc;
 
 type
   TChildForm = class(TForm)
+    tCheckVolume: TTimer;
+    procedure FormCreate(Sender: TObject);
+    procedure tCheckVolumeTimer(Sender: TObject);
   private
     procedure AddActionList(ActionList: TCustomActionList);
     procedure RemoveActionList(ActionList: TCustomActionList);
@@ -15,7 +18,15 @@ type
     procedure SetActionLists(AValue : TList);
   protected
     PrevForm: TChildForm;
-
+    dsCheckVolume : TDataSet;
+    dgCheckVolume : TToughDBGrid;
+    fOrder        : TField;
+    fVolume       : TField;
+    OldAfterPost : TDataSetNotifyEvent;
+    OldBeforePost : TDataSetNotifyEvent;
+    OldBeforeScroll : TDataSetNotifyEvent;
+    OldExit : TNotifyEvent;
+    
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Loaded; override;
     procedure Notification(AComponent: TComponent;
@@ -24,6 +35,15 @@ type
     procedure DoShow; override;
     procedure UpdateReclame;
     procedure PatchNonBrowser;
+    //Проверяем, что заказ сделан кратно Volume
+    function  CheckVolume : Boolean; 
+    //очищаем созданный заказ
+    procedure ClearOrder;
+    procedure ShowVolumeMessage;
+    procedure NewAfterPost(DataSet : TDataSet);
+    procedure NewBeforePost(DataSet: TDataSet);
+    procedure NewBeforeScroll(DataSet : TDataSet);
+    procedure NewExit(Sender : TObject);
   public
     PrintEnabled: Boolean;
     //Требуется вызвать First после сортировки DataSet
@@ -201,6 +221,83 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
   inherited;
+end;
+
+function TChildForm.CheckVolume: Boolean;
+begin
+  if not fVolume.IsNull and (fVolume.AsInteger > 0 ) then
+    Result := (fOrder.AsInteger mod fVolume.AsInteger = 0)
+  else
+    Result := True;
+end;
+
+procedure TChildForm.ClearOrder;
+begin
+  SoftEdit(dsCheckVolume);
+  fOrder.AsInteger := fOrder.AsInteger - (fOrder.AsInteger mod fVolume.AsInteger);
+  dsCheckVolume.Post;
+end;
+
+procedure TChildForm.ShowVolumeMessage;
+begin
+  tCheckVolume.Enabled := False;
+  if (dsCheckVolume.RecordCount > 0) and not CheckVolume then begin
+    AProc.MessageBox(
+      Format('Заказ "%s" не кратен минимальному отпуску "%s"!', [fOrder.AsString, fVolume.AsString]),
+      MB_ICONWARNING);
+    ClearOrder;
+    Abort;
+  end;
+end;
+
+procedure TChildForm.tCheckVolumeTimer(Sender: TObject);
+begin
+  ShowVolumeMessage;
+end;
+
+procedure TChildForm.FormCreate(Sender: TObject);
+begin
+  if Assigned(dsCheckVolume) and Assigned(dgCheckVolume) and Assigned(fOrder)
+     and Assigned(fVolume)
+  then begin
+    OldAfterPost := dsCheckVolume.AfterPost;
+    dsCheckVolume.AfterPost := NewAfterPost;
+    OldBeforeScroll := dsCheckVolume.BeforeScroll;
+    dsCheckVolume.BeforeScroll := NewBeforeScroll;
+    OldBeforePost := dsCheckVolume.BeforePost;
+    dsCheckVolume.BeforePost := NewBeforePost;
+    OldExit := dgCheckVolume.OnExit;
+    dgCheckVolume.OnExit := NewExit;
+  end;
+end;
+
+procedure TChildForm.NewAfterPost(DataSet: TDataSet);
+begin
+  tCheckVolume.Enabled := False;
+  tCheckVolume.Enabled := True;
+  if Assigned(OldAfterPost) then
+    OldAfterPost(DataSet);
+end;
+
+procedure TChildForm.NewBeforeScroll(DataSet: TDataSet);
+begin
+  ShowVolumeMessage;
+  if Assigned(OldBeforeScroll) then
+    OldBeforeScroll(DataSet);
+end;
+
+procedure TChildForm.NewExit(Sender: TObject);
+begin
+  ShowVolumeMessage;
+  if Assigned(OldExit) then
+    OldExit(Sender);
+end;
+
+procedure TChildForm.NewBeforePost(DataSet: TDataSet);
+begin
+  tCheckVolume.Enabled := False;
+  if Assigned(OldBeforePost) then
+    OldBeforePost(DataSet);
 end;
 
 end.

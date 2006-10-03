@@ -178,6 +178,10 @@ var
   sp : TSelectPrice;
   mi :TMenuItem;
 begin
+  dsCheckVolume := adsCore;
+  dgCheckVolume := dbgCore;
+  fOrder := adsCoreORDERCOUNT;
+  fVolume := adsCoreREQUESTRATIO;
   inherited;
   
   InternalSearchText := '';

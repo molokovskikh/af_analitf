@@ -647,6 +647,7 @@ var
   ErrorStr : PChar;
   ExtErrorMessage : String;
   S : String;
+  TmpOrderCost, TmpMinCost : String; 
 begin
  	DM.adsOrdersH.Close;
 	DM.adsOrdersH.ParamByName( 'AClientId').Value :=
@@ -712,10 +713,16 @@ begin
 			values[ i * OrderParamCount + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
       try
         S := DM.D_B_N(DM.adsOrders.FieldByName( 'PRICE').AsString);
+        TmpOrderCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
         S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
         values[ i * OrderParamCount + 16] := S;
       except
-        values[ i * OrderParamCount + 16] := '0.0';
+        on E : Exception do begin
+          WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке цены : ' + E.Message
+            + '  Строка : "' + DM.adsOrders.FieldByName( 'PRICE').AsString + '"');
+          raise Exception.CreateFmt('При отправке заказа для "%s" невозможно сформировать цену по позиции "%s".',
+            [DM.adsOrdersH.FieldByName( 'PriceName').AsString, DM.adsOrders.FieldByName('SYNONYMNAME').AsString]);
+        end;
       end;
 
 			params[ i * OrderParamCount + 17] := 'MinCost';
@@ -725,7 +732,7 @@ begin
 
       //Если выставлено поле - рассчитывать лидеров,
       if DM.adtClientsCALCULATELEADER.Value then begin
-      
+
         if DM.adsOrderCore.Active then
           DM.adsOrderCore.Close();
 
@@ -740,34 +747,65 @@ begin
         DM.adsOrderCore.DoSort(['CryptBaseCost'], [True]);
 
         //Выбираем минимального из всех прайсов
-        DBProc.SetFilter(DM.adsOrderCore, 'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString);
+        DBProc.SetFilter(DM.adsOrderCore,
+          'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString +
+          ' and CodeFirmCr = ' + DM.adsOrders.FieldByName( 'CodeFirmCr').AsString);
 
         DM.adsOrderCore.First;
 
         try
           S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
+          TmpMinCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
           S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
           values[ i * OrderParamCount + 17] := S;
+          values[ i * OrderParamCount + 18] := DM.adsOrderCorePRICECODE.AsString;
+
+          //Если минимальная цена совпадает с ценой заказа, то минимальный прайс-лист - прайс-лист заказа
+          if (TmpMinCost <> '') and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
+          then begin
+            values[ i * OrderParamCount + 18] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
+          end;
         except
-          values[ i * OrderParamCount + 17] := '0.0';
+          on E : Exception do begin
+            WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке минимальной цены : ' + E.Message
+              + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
+            values[ i * OrderParamCount + 17] := '';
+            values[ i * OrderParamCount + 18] := '';
+          end;
         end;
-        values[ i * OrderParamCount + 18] := DM.adsOrderCorePRICECODE.AsString;
 
         //Выбираем минимального из основных прайсов
-        DBProc.SetFilter(DM.adsOrderCore, 'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString + ' and PriceEnabled = True');
+        DBProc.SetFilter(DM.adsOrderCore,
+          'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString +
+          ' and CodeFirmCr = ' + DM.adsOrders.FieldByName( 'CodeFirmCr').AsString +
+          ' and PriceEnabled = True');
 
         DM.adsOrderCore.First;
-        
+
         //В основных прайс-листах может не быть предложений
         if not DM.adsOrderCore.IsEmpty then begin
           try
             S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
+            TmpMinCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
             S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
             values[ i * OrderParamCount + 19] := S;
+            values[ i * OrderParamCount + 20] := DM.adsOrderCorePRICECODE.AsString;
+
+            //Если минимальная цена лидеров совпадает с ценой заказа и прайс-лист тоже лидер, то минимальный прайс-лист - прайс-лист заказа
+            if (TmpMinCost <> '')
+              and (DM.adsOrdersH.FieldByName( 'PriceEnabled').AsBoolean)
+              and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
+            then begin
+              values[ i * OrderParamCount + 20] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
+            end;
           except
-            values[ i * OrderParamCount + 19] := '0.0';
+            on E : Exception do begin
+              WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
+                + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
+              values[ i * OrderParamCount + 19] := '';
+              values[ i * OrderParamCount + 20] := '';
+            end;
           end;
-          values[ i * OrderParamCount + 20] := DM.adsOrderCorePRICECODE.AsString;
         end
         else begin
           values[ i * OrderParamCount + 19] := '';
@@ -1015,7 +1053,7 @@ begin
 
       end;
     until (FindNext( DeleteSR ) <> 0)
-    
+
   finally
     SysUtils.FindClose( DeleteSR );
   end;
@@ -1076,16 +1114,26 @@ end;
 procedure TExchangeThread.CheckNewFRF;
 var
 	SR: TSearchRec;
+  SourceFile,
+  DestFile : String;
 begin
 	if FindFirst( ExePath + SDirIn + '\*.frf', faAnyFile, SR) = 0 then
 	begin
-	        repeat
+	  repeat
 			if ( SR.Attr and faDirectory) = faDirectory then continue;
 			try
-				MoveFile_( ExePath + SDirIn + '\' + SR.Name, ExePath + '\' + SR.Name);
+        SourceFile := ExePath + SDirIn + '\' + SR.Name;
+        DestFile := ExePath + '\' + SR.Name;
+        if FileExists(DestFile) then begin
+          Windows.SetFileAttributes(PChar(DestFile), FILE_ATTRIBUTE_NORMAL);
+          Windows.DeleteFile(PChar(DestFile));
+          Sleep(500);
+        end;
+        Windows.MoveFile(PChar(SourceFile), PChar(DestFile))
 			except
 			end;
-        	until FindNext( SR) <> 0;
+    until FindNext( SR) <> 0;
+    SysUtils.FindClose(SR);
 	end;
 end;
 
@@ -1441,7 +1489,7 @@ begin
 ':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
 ':Note, :Period, :Doc, :RegistryCost, :VitallyImportant, :RequestRatio, :BaseCost, :ServerCOREID)');
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; ExecQuery;
-	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
+    SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (FULLCODE, JUNK)'; ExecQuery;

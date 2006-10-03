@@ -5,12 +5,11 @@ inherited SummaryForm: TSummaryForm
   Caption = #1057#1074#1086#1076#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 465
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object pClient: TPanel
+  object pClient: TPanel [0]
     Left = 0
     Top = 0
     Width = 684
@@ -387,7 +386,7 @@ inherited SummaryForm: TSummaryForm
       end
     end
   end
-  object pWebBrowser: TPanel
+  object pWebBrowser: TPanel [1]
     Tag = 200
     Left = 0
     Top = 267

@@ -170,6 +170,10 @@ procedure TCoreForm.FormCreate(Sender: TObject);
 var
 	Reg: TRegistry;
 begin
+  dsCheckVolume := adsCore;
+  dgCheckVolume := dbgCore;
+  fOrder := adsCoreORDERCOUNT;
+  fVolume := adsCoreREQUESTRATIO;
 	inherited;
 	PrintEnabled := False;
   NeedFirstOnDataSet := False;

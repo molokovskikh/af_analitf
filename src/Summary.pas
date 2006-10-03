@@ -135,7 +135,11 @@ var
   sp : TSelectPrice;
   mi :TMenuItem;
 begin
-	inherited;
+  dsCheckVolume := adsSummary;
+  dgCheckVolume := dbgSummary;
+  fOrder := adsSummaryORDERCOUNT;
+  fVolume := adsSummaryREQUESTRATIO;
+  inherited;
 	PrintEnabled := True;
   adsSummary.OnCalcFields := scf;
   dtpDateFrom.DateTime := LastDateFrom;

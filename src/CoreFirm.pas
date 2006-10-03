@@ -174,7 +174,12 @@ procedure TCoreFirmForm.FormCreate(Sender: TObject);
 var
 	Reg: TRegistry;
 begin
-	inherited;
+  dsCheckVolume := adsCore;
+  dgCheckVolume := dbgCore;
+  fOrder := adsCoreORDERCOUNT;
+  fVolume := adsCoreREQUESTRATIO;
+  
+  inherited;
 
   BM := TBitmap.Create;
   

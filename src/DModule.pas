@@ -267,6 +267,8 @@ type
     adtClientsTECHSUPPORT: TFIBStringField;
     adtClientsCALCULATELEADER: TFIBBooleanField;
     adtClientsONLYLEADERS: TFIBBooleanField;
+    adsOrderCoreCODEFIRMCR: TFIBBCDField;
+    adsCoreREQUESTRATIO: TFIBIntegerField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);

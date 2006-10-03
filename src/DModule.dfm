@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 197
-  Top = 199
+  Left = 165
+  Top = 111
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -666,7 +666,8 @@ object DM: TDM
       '    OrdersH.PriceCode AS OrdersHPriceCode,'
       '    OrdersH.RegionCode AS OrdersHRegionCode,'
       '    OrdersH.PriceName AS OrdersHPriceName,'
-      '    OrdersH.RegionName AS OrdersHRegionName'
+      '    OrdersH.RegionName AS OrdersHRegionName,'
+      '    CCore.RequestRatio'
       'FROM'
       '    Core CCore'
       '    left join catalogs on catalogs.fullcode = CCore.fullcode'
@@ -906,6 +907,9 @@ object DM: TDM
     object adsCoreORDERSAWAIT: TFIBBooleanField
       FieldName = 'ORDERSAWAIT'
     end
+    object adsCoreREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+    end
   end
   object adsOrdersH: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -936,7 +940,8 @@ object DM: TDM
       '    OH.MESSAGETO,'
       '    OH.COMMENTS,'
       '    PRD.MinReq,'
-      '    PRD.ControlMinReq'
+      '    PRD.ControlMinReq,'
+      '    PRD.Enabled as PriceEnabled'
       'FROM'
       '    ORDERSHSHOW(:ACLIENTID,'
       '    :ACLOSED,'
@@ -1510,6 +1515,7 @@ object DM: TDM
     UpdateTransaction = UpTran
     Left = 272
     Top = 392
+    oTrimCharFields = False
     oCacheCalcFields = True
     object adsOrderCorePRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
@@ -1531,6 +1537,11 @@ object DM: TDM
     end
     object adsOrderCoreJUNK: TFIBIntegerField
       FieldName = 'JUNK'
+    end
+    object adsOrderCoreCODEFIRMCR: TFIBBCDField
+      FieldName = 'CODEFIRMCR'
+      Size = 0
+      RoundByScale = True
     end
   end
 end

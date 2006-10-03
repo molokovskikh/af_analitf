@@ -623,6 +623,8 @@ begin
                   CurOrder := Min( Order, Quantity - FieldByName('OrderCount').AsInteger)
                 else
                   CurOrder := Order;
+                if not FieldByName( 'RequestRatio').IsNull and (FieldByName( 'RequestRatio').AsInteger > 0) then
+                  CurOrder := CurOrder - (CurOrder mod FieldByName( 'RequestRatio').AsInteger);
                 if CurOrder < 0 then CurOrder := 0;
                 Order := Order - CurOrder;
                 if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
