@@ -592,12 +592,10 @@ end;
 
 procedure TMainForm.actSaveUpdate(Sender: TObject);
 begin
-	actSave.Enabled := False;
-{
+	actSave.Enabled :=
   ( Screen.ActiveControl <> nil) and
 		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
-     and ActiveChild.PrintEnabled;
-}     
+     and ActiveChild.SaveEnabled;
 end;
 
 procedure TMainForm.SetOrdersInfo;
@@ -881,7 +879,7 @@ end;
 
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
-	ShellExecute( 0, 'Open', PChar(ExePath + SDirExports + '\'),
+	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
 		nil, nil, SW_SHOWDEFAULT);
 end;
 

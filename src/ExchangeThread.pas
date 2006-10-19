@@ -8,7 +8,7 @@ uses
   IdException, WinSock, RxVerInf, DB, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB;
+  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil;
 
 const
   UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
@@ -647,7 +647,7 @@ var
   ErrorStr : PChar;
   ExtErrorMessage : String;
   S : String;
-  TmpOrderCost, TmpMinCost : String; 
+  TmpOrderCost, TmpMinCost : String;
 begin
  	DM.adsOrdersH.Close;
 	DM.adsOrdersH.ParamByName( 'AClientId').Value :=
@@ -1060,20 +1060,20 @@ begin
 
 
   //Обрабатываем папку Exports
-  if DirectoryExists(ExePath + SDirIn + '\' + SDirExports) then begin
-    if FindFirst( ExePath + SDirIn + '\' + SDirExports + '\*.*', faAnyFile, ExportsSR) = 0 then
+  if DirectoryExists(ExePath + SDirIn + '\' + SDirWaybills) then begin
+    if FindFirst( ExePath + SDirIn + '\' + SDirWaybills + '\*.*', faAnyFile, ExportsSR) = 0 then
     try
       repeat
         if (ExportsSR.Name <> '.') and (ExportsSR.Name <> '..') then
           MoveFileA(
-            ExePath + SDirIn + '\' + SDirExports + '\' + ExportsSR.Name,
-            ExePath + SDirExports + '\' + ExportsSR.Name,
+            ExePath + SDirIn + '\' + SDirWaybills + '\' + ExportsSR.Name,
+            ExePath + SDirWaybills + '\' + ExportsSR.Name,
             True);
       until (FindNext( ExportsSR ) <> 0)
     finally
       SysUtils.FindClose( ExportsSR );
     end;
-    RemoveDir(ExePath + SDirIn + '\' + SDirExports);
+    RemoveDir(ExePath + SDirIn + '\' + SDirWaybills);
   end;
 end;
 
@@ -1183,7 +1183,8 @@ begin
 //if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
 	if Tables.IndexOf( 'EXTWAYBILLHEAD')>=0 then UpdateTables := UpdateTables + [utWayBillHead];
 	if Tables.IndexOf( 'EXTWAYBILLLIST')>=0 then UpdateTables := UpdateTables + [utWayBillList];
-	if Tables.IndexOf( 'EXTMINPRICES')>=0 then UpdateTables := UpdateTables + [utMinPrices];
+  //Удаляем минимальные цены, если есть обновления в Core
+	if (Tables.IndexOf( 'EXTMINPRICES')>=0) and (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
 	if Tables.IndexOf( 'EXTPRICEAVG')>=0 then UpdateTables := UpdateTables + [utPriceAVG];
 	if Tables.IndexOf( 'EXTCATALOGFARMGROUPS')>=0 then UpdateTables := UpdateTables + [utCatalogFarmGroups];
 	if Tables.IndexOf( 'EXTCATFARMGROUPSDEL')>=0 then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
@@ -1218,8 +1219,12 @@ begin
    DM.adcUpdate.BeforeExecute := adcUpdateBeforeExecute;
    DM.adcUpdate.AfterExecute := adcUpdateAfterExecute;
    with DM.adcUpdate do begin
-	//удаляем минимальные цены
-	SQL.Text:='EXECUTE PROCEDURE MinPricesDelete'; ExecQuery;
+
+  //Удаляем минимальные цены, если есть обновления в Core
+  if (utMinPrices in UpdateTables) then begin
+  	//удаляем минимальные цены
+	  SQL.Text:='EXECUTE PROCEDURE MinPricesDelete'; ExecQuery;
+  end;
 	//удаляем из таблиц ненужные данные
 	//CatalogCurrency
 	if utCatalogCurrency in UpdateTables then begin

@@ -56,7 +56,7 @@ var
           end
           else begin
 
-            //Пытаемся сделать резервную копию обновляемого файла
+            //Пытаемся сделать резервную копию обновляемого файла и после этого удаляем файл
             if FileExists(OutDir + sr.Name) then begin
               Result := False;
               for I := 1 to 20 do begin
@@ -71,37 +71,38 @@ var
                   SysErrorMessage(GetLastError()));
                 Exit;
               end;
+
+              //Пытаемся установить атрибуты файла
+              Result := False;
+              for I := 1 to 20 do begin
+                if Windows.SetFileAttributes(PChar(OutDir + sr.Name), FILE_ATTRIBUTE_NORMAL) then begin
+                  Result := True;
+                  break;
+                end;
+                Sleep(500);
+              end;
+              if not Result then begin
+                trLog.TR('Eraser', 'Не получилось установить атрибуты файла ' + sr.Name + ': ' +
+                  SysErrorMessage(GetLastError()));
+                Exit;
+              end;
+
+              //Пытаемся удалить файл
+              Result := False;
+              for I := 1 to 20 do begin
+                if Windows.DeleteFile(PChar(OutDir + sr.Name)) then begin
+                  Result := True;
+                  break;
+                end;
+                Sleep(500);
+              end;
+              if not Result then begin
+                trLog.TR('Eraser', 'Не получилось удалить файл ' + sr.Name + ': ' +
+                  SysErrorMessage(GetLastError()));
+                Exit;
+              end;
             end;
 
-            //Пытаемся установить атрибуты файла
-            Result := False;
-            for I := 1 to 20 do begin
-              if Windows.SetFileAttributes(PChar(OutDir + sr.Name), FILE_ATTRIBUTE_NORMAL) then begin
-                Result := True;
-                break;
-              end;
-              Sleep(500);
-            end;
-            if not Result then begin
-              trLog.TR('Eraser', 'Не получилось установить атрибуты файла ' + sr.Name + ': ' +
-                SysErrorMessage(GetLastError()));
-              Exit;
-            end;
-
-            //Пытаемся удалить файл
-            Result := False;
-            for I := 1 to 20 do begin
-              if Windows.DeleteFile(PChar(OutDir + sr.Name)) then begin
-                Result := True;
-                break;
-              end;
-              Sleep(500);
-            end;
-            if not Result then begin
-              trLog.TR('Eraser', 'Не получилось удалить файл ' + sr.Name + ': ' +
-                SysErrorMessage(GetLastError()));
-              Exit;
-            end;
 
             //Пытаемся обновить файл
             Result := False;

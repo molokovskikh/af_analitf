@@ -46,6 +46,8 @@ type
     procedure NewExit(Sender : TObject);
   public
     PrintEnabled: Boolean;
+    //Разрешено сохранять отображаемую таблицу
+    SaveEnabled: Boolean;
     //Требуется вызвать First после сортировки DataSet
     NeedFirstOnDataSet : Boolean;
     procedure ShowForm; virtual;

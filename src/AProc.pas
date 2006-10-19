@@ -13,7 +13,7 @@ const
   SDirDocs='Docs';
   SDirIn='In';
   SDirExe='Exe';
-  SDirExports = 'Exports';
+  SDirWaybills = 'Waybills';
   SDirReclame='Reclame';
   SHTTPPrefix='http://';
   CRLF=#13#10;
@@ -330,7 +330,10 @@ end;
 
 procedure MoveFileA(Source, Destination: string; Overwrite: Boolean=True; RaiseException: Boolean=True);
 begin
-  if Overwrite then DeleteFileA(Destination,False);
+  if Overwrite and FileExists(Destination) then begin
+    SetFileAttributes(PChar(Destination), FILE_ATTRIBUTE_NORMAL);
+    DeleteFileA(Destination,False);
+  end;
   if not Windows.MoveFile(PChar(Source),PChar(Destination)) and RaiseException then
     RaiseLastOSErrorA;
 end;

@@ -530,7 +530,7 @@ begin
   frReport.Title := Application.Title;
   { проверяем и если надо создаем нужные каталоги }
   if not DirectoryExists( ExePath + SDirDocs) then CreateDir( ExePath + SDirDocs);
-  if not DirectoryExists( ExePath + SDirExports) then CreateDir( ExePath + SDirExports);
+  if not DirectoryExists( ExePath + SDirWaybills) then CreateDir( ExePath + SDirWaybills);
   if not DirectoryExists( ExePath + SDirIn) then CreateDir( ExePath + SDirIn);
   if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
   MainForm.SetUpdateDateTime;

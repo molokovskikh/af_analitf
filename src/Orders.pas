@@ -76,6 +76,7 @@ uses OrdersH, DModule, Constant, Main;
 procedure TOrdersForm.ShowForm(AOrderId: Integer);
 begin
   //PrintEnabled:=False;
+  SaveEnabled := OrdersHForm.TabControl.TabIndex = 1;
   SetParams(AOrderId);
   inherited ShowForm;
 end;
