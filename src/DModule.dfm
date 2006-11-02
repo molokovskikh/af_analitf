@@ -1393,7 +1393,9 @@ object DM: TDM
     UpdateSQL.Strings = (
       'UPDATE ORDERS'
       'SET '
-      '    PRICE = :PRICE'
+      '    PRICE = :PRICE,'
+      '    CODE = :CODE,'
+      '    CODECR = :CODECR'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')

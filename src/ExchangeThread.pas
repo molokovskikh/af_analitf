@@ -821,6 +821,8 @@ begin
 			DM.adsOrders.Next;
 		end;
 
+{
+    Блокирую обработку заказов, которые могут отправляться внешними программами
     if IsExternalOrdersDLLPresent then
       if ExternalOrdersPriceIsProtek(DM.MainConnection1, DM.adsOrdersH.FieldByName( 'OrderId').AsInteger)
       then begin
@@ -853,6 +855,7 @@ begin
           end;
         end;
       end;
+}      
 
     ServerOrderId := 0;
 		try

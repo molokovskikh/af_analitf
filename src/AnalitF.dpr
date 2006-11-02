@@ -74,7 +74,8 @@ uses
 {$R EraserDLL.RES}
 {$R Progress.RES}
 {$R Icons.RES}
-{$R CompareScript.RES}
+{$R CompareScript35.RES}
+{$R CompareScript29.RES}
 
 var
   B : TWebBrowser;
