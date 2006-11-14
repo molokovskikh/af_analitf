@@ -377,7 +377,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
           end
           item
             EditButtons = <>
-            FieldName = 'CryptPRICE'
+            FieldName = 'SENDPRICE'
             Footers = <>
             Title.Caption = #1062#1077#1085#1072
             Width = 49
@@ -819,6 +819,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
   end
   object tmrSearch: TTimer
     Enabled = False
+    Interval = 2000
     OnTimer = tmrSearchTimer
     Left = 472
     Top = 213
@@ -874,7 +875,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    PRICENAME,'
       '    REGIONNAME,'
       '    AWAIT,'
-      '    JUNK'
+      '    JUNK,'
+      '    sendprice'
       'FROM'
       '    ORDERSSHOWBYFORM(:FULLCODE,'
       '    :ACLIENTID) ')
@@ -935,15 +937,15 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersCryptPRICE: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptPRICE'
-      Calculated = True
-    end
     object adsOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsOrdersSENDPRICE: TFIBBCDField
+      FieldName = 'SENDPRICE'
+      Size = 2
+      RoundByScale = True
     end
   end
   object dsOrders: TDataSource

@@ -208,7 +208,7 @@ object MainForm: TMainForm
         ImageIndex = 14
         Style = tbsSeparator
       end
-      object ToolButton8: TToolButton
+      object tbWaybill: TToolButton
         Left = 599
         Top = 0
         Action = actWayBill
@@ -494,6 +494,7 @@ object MainForm: TMainForm
       Category = 'Actions'
       Caption = #1055#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
       Hint = #1055#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
+      OnExecute = actReceiveTicketsExecute
     end
     object actHelpContent: TAction
       Category = 'Help'

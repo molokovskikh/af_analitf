@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc;
+  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids;
 
 type
   TChildForm = class(TForm)
@@ -62,7 +62,7 @@ type
 
 implementation
 
-uses Main, AProc;
+uses Main, AProc, DBGridEh;
 
 {$R *.DFM}
 
@@ -150,18 +150,20 @@ begin
   if Caption <> '' then
     MainForm.Caption := Application.Title + ' - ' + Caption;
   for I := 0 to Self.ComponentCount-1 do
-    if (Self.Components[i] is TToughDBGrid) and Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
+    if (Self.Components[i] is TToughDBGrid)
     then begin
-      TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
-      TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
+      TToughDBGrid(Self.Components[i]).Options := TToughDBGrid(Self.Components[i]).Options + [dgRowLines];
+      if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged ) then begin
+        TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
+        TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
 
-      if Assigned(TToughDBGrid(Self.Components[i]).DataSource)
-        and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
-        and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
-        and NeedFirstOnDataSet
-      then
-        TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
-
+        if Assigned(TToughDBGrid(Self.Components[i]).DataSource)
+          and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
+          and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
+          and NeedFirstOnDataSet
+        then
+          TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
+      end;
     end;
   Show;
   if Parent<>nil then

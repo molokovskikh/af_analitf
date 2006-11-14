@@ -67,7 +67,7 @@ type
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
     ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN, ecSSLOpen, ecNotChechHashes,
-    ecDBUpdateError);
+    ecDBUpdateError, ecDiffDBVersion);
 
   TRetMass = array[1..3] of Variant;
 
@@ -200,10 +200,7 @@ type
     adsOrdersCODECR: TFIBStringField;
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersAWAIT: TFIBIntegerField;
-    adsOrdersJUNK: TFIBIntegerField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
-    adsOrdersSUMORDER: TFIBBCDField;
     adsAllOrders: TpFIBDataSet;
     adsAllOrdersID: TFIBBCDField;
     adsAllOrdersORDERID: TFIBBCDField;
@@ -269,6 +266,10 @@ type
     adtClientsONLYLEADERS: TFIBBooleanField;
     adsOrderCoreCODEFIRMCR: TFIBBCDField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
+    adsOrdersSENDPRICE: TFIBBCDField;
+    adsOrdersAWAIT: TFIBBooleanField;
+    adsOrdersJUNK: TFIBBooleanField;
+    adsOrdersID: TFIBBCDField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -286,6 +287,8 @@ type
     NeedUpdateByCheckUIN : Boolean;
     //Требуется обновления из-за того, что некорректные Hash'и компонент
     NeedUpdateByCheckHashes : Boolean;
+    //Требуется импорт после восстановления из эталонной копии
+    NeedImportAfterRecovery : Boolean;
     FGetCatalogsCount : Integer;
     FRetMargins : array of TRetMass;
     OldOrderCount : Integer;
@@ -327,6 +330,7 @@ type
     //Обновление определенных данных в таблице
     procedure UpdateDBFileDataFor35(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor29(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+    procedure UpdateDBFileDataFor36(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -376,6 +380,7 @@ type
     procedure SetReclame;
     procedure UpdateReclame;
     function D_B_N(BaseC: String) : String;
+    function D_B_N_C(c : TINFCrypt; BaseC: String) : String;
     function E_B_N(c : TINFCrypt; BaseCost: String) : String;
     function D_B_N_OLD(c : TINFCrypt; BaseC: String) : String;
     function E_B_N_OLD(c : TINFCrypt; BaseCost: String) : String;
@@ -388,7 +393,10 @@ type
     procedure SavePass(ASyn, ACodes, AB : String);
     procedure testSavePass;
     procedure LoadRetailMargins;
+    //Получить розничную цену товара в зависимости от наценки
     function GetPriceRet(BaseCost : Currency) : Currency;
+    //Получить розничную наценку товара
+    function GetRetUpCost(BaseCost : Currency) : Integer;
 
     procedure InitAllSumOrder;
     procedure SetOldOrderCount(AOldOrderCount : Integer);
@@ -461,8 +469,8 @@ var
   HTTPS,
   HTTPE : String;
 begin
-  SerBeg := 'Th48s';
-  SerEnd := 'lndgf';
+  SerBeg := 'Yteji';
+  SerEnd := 'lk3p5';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
@@ -482,23 +490,17 @@ begin
 
   MainConnection1.DBName := ExePath + DatabaseName;
 
-  if not FileExists(ExePath + DatabaseName) then begin
-    MessageBox( Format( 'Файл базы данных %s не существует.', [ ExePath + DatabaseName ]),
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecDBFileNotExists) );
-  end;
-
-  if ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
-  then begin
-    MessageBox( Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]),
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecDBFileReadOnly) );
-  end;
-
   if not IsOneStart then begin
     MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
       MB_ICONERROR or MB_OK);
     ExitProcess( Integer(ecDoubleStart) );
+  end;
+
+  if FileExists(ExePath + DatabaseName) and ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
+  then begin
+    MessageBox( Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]),
+      MB_ICONERROR or MB_OK);
+    ExitProcess( Integer(ecDBFileReadOnly) );
   end;
 
   //Делаем проверку файла базы данных и в случае проблем производим восстановление из эталонной копии
@@ -578,6 +580,12 @@ begin
     MainForm.ExchangeOnly := True;
     RunExchange([ eaImportOnly]);
     Application.Terminate;
+  end;
+
+  //Необходимо выполнить импорт, после восстановления из эталонной копии
+  if NeedImportAfterRecovery then begin
+    RunCompactDatabase;
+    RunExchange([ eaImportOnly ]);
   end;
 
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
@@ -1589,19 +1597,8 @@ begin
 end;
 
 function TDM.GetPriceRet(BaseCost: Currency): Currency;
-var
-  I, Ret : Integer;
 begin
-  Ret := 0;
-  I := 0;
-  while (I < Length(FRetMargins)) and (BaseCost >= FRetMargins[i][1]) do begin
-    if (FRetMargins[i][1] <= BaseCost) and (BaseCost <= FRetMargins[i][2]) then begin
-      Ret := FRetMargins[i][3];
-      Break;
-    end;
-    Inc(I);
-  end;
-  Result := (1 + Ret/100)*BaseCost;
+  Result := (1 + GetRetUpCost(BaseCost)/100)*BaseCost;
 end;
 
 procedure TDM.LoadRetailMargins;
@@ -1820,10 +1817,14 @@ begin
 end;
 
 function TDM.D_B_N(BaseC: String): String;
+{
 var
   tmp : String;
   Len : Integer;
+}  
 begin
+  result := D_B_N_C(BasecostC, BaseC);
+{
   Len := Length(BaseC);
   if Len > 6 then begin
 
@@ -1837,6 +1838,7 @@ begin
   end
   else
     Result := '';
+}    
 end;
 
 function TDM.D_HP(HTTPPassC: String): String;
@@ -1883,6 +1885,7 @@ var
   DBVersion : Integer;
   EtlName : String;
 begin
+  DBVersion := 0;
   try
     dbCon := TpFIBDatabase.Create(nil);
     try
@@ -1917,6 +1920,14 @@ begin
           DBVersion := 36;
         end;
 
+        if DBVersion = 36 then begin
+          etlname := GetLastEtalonFileName;
+          if Length(etlname) > 0 then
+            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
+          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
+          DBVersion := 37;
+        end;
+
       finally
         trMain.Free;
       end;
@@ -1930,6 +1941,11 @@ begin
       MessageBox( 'Ошибка при обновлении базы данных : ' + E.Message, MB_ICONERROR or MB_OK);
       ExitProcess( Integer(ecDBUpdateError) );
     end;
+  end;
+
+  if DBVersion <> CURRENT_DB_VERSION then begin
+    MessageBox( Format('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]), MB_ICONERROR or MB_OK);
+    ExitProcess( Integer(ecDiffDBVersion) );
   end;
 end;
 
@@ -2117,8 +2133,8 @@ begin
     adsAllOrdersUpdate.Database := dbCon;
     adsAllOrdersUpdate.Transaction := trMain;
     adsAllOrdersUpdate.UpdateTransaction := trMain;
-    adsAllOrdersUpdate.SelectSQL.Text := adsAllOrders.SelectSQL.Text;
-    adsAllOrdersUpdate.UpdateSQL.Text := adsAllOrders.UpdateSQL.Text;
+    adsAllOrdersUpdate.SelectSQL.Text := 'SELECT ORDERS.* FROM ORDERS';
+    adsAllOrdersUpdate.UpdateSQL.Text := 'UPDATE ORDERS SET PRICE = :PRICE, CODE = :CODE, CODECR = :CODECR WHERE ID = :OLD_ID';
     adsAllOrdersUpdate.Options := adsAllOrdersUpdate.Options - [poTrimCharFields];
 
     trMain.StartTransaction;
@@ -2188,6 +2204,7 @@ var
   EtalonDBFileName,
   ErrFileName : String;
 begin
+  NeedImportAfterRecovery := False;
   dbCon := TpFIBDatabase.Create(nil);
   try
     try
@@ -2221,55 +2238,52 @@ begin
               'Сообщение IB  : %s',
               [EFIB.SQLCode, EFIB.SQLMessage, EFIB.IBErrorCode, EFIB.IBMessage]
             );
-            //Может быть пользователь не захочет производить восстановление?
-            if MessageBox(DBErrorMess + #13#10#13#10 + 'Произвести восстановление из эталонной копии?', MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = IDYES then
-            begin
-              //Возможно проблема в каком-то запросе и сама база данных открылась, поэтому закрываем ее.
-              if dbCon.Connected then
-                try
-                  dbCon.Close;
-                except
-                end;
+            AProc.LogCriticalError(DBErrorMess);
+            MessageBox(DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.', MB_ICONERROR or MB_OK);
+            //Возможно проблема в каком-то запросе и сама база данных открылась, поэтому закрываем ее.
+            if dbCon.Connected then
+              try
+                dbCon.Close;
+              except
+              end;
 
-              //Формируем имя ошибочного файла
-              ErrFileName := ChangeFileExt(ParamStr(0), '.e');
-              N := 0;
-              while (FileExists(ErrFileName + IntToHex(N, 2)) and (N <= 255)) do Inc(N);
+            //Формируем имя ошибочного файла
+            ErrFileName := ChangeFileExt(ParamStr(0), '.e');
+            N := 0;
+            while (FileExists(ErrFileName + IntToHex(N, 2)) and (N <= 255)) do Inc(N);
 
-              if N > 255 then
-                //Слишком много ошибочный файлов
-                raise Exception.Create('Удалите старые ошибочные файлы базы данных.')
-              else begin
-                ErrFileName := ErrFileName + IntToHex(N, 2);
-                OldDBFileName := ChangeFileExt(ParamStr(0), '.fdb');
+            if N > 255 then
+              //Слишком много ошибочный файлов
+              raise Exception.Create('Удалите старые ошибочные файлы базы данных.')
+            else begin
+              ErrFileName := ErrFileName + IntToHex(N, 2);
+              OldDBFileName := ChangeFileExt(ParamStr(0), '.fdb');
 
+              if FileExists(OldDBFileName) then
                 if not Windows.MoveFile(PChar(OldDBFileName), PChar(ErrFileName)) then
                   raise Exception.CreateFmt('Не удалось переименовать в ошибочный файл %s : %s',
                     [ErrFileName, SysErrorMessage(GetLastError)]);
 
-                EtalonDBFileName := GetLastEtalonFileName;
+              EtalonDBFileName := GetLastEtalonFileName;
 
-                if Length(EtalonDBFileName) = 0 then
-                  raise Exception.Create('Не найден файл с эталонной копией.')
-                else
-                  if not Windows.CopyFile(PChar(EtalonDBFileName), PChar(OldDBFileName), True) then
-                    raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
-                      [SysErrorMessage(GetLastError)]);
+              if Length(EtalonDBFileName) = 0 then
+                raise Exception.Create('Не найден файл с эталонной копией.')
+              else
+                if not Windows.CopyFile(PChar(EtalonDBFileName), PChar(OldDBFileName), True) then
+                  raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
+                    [SysErrorMessage(GetLastError)]);
 
-                try
-                  dbCon.Open;
-                  dbCon.Close;
-                except
-                  on E : Exception do
-                    raise Exception.CreateFmt('Не удалось восстановить базу данных из эталонной копии. '#13#10 +
-                      'Сообщение об ошибке : %s'#13#10 + 'Пожалуйста, обратитесь в службу поддержки.',
-                      [E.Message]);
-                end;
+              try
+                dbCon.Open;
+                dbCon.Close;
+                NeedImportAfterRecovery := True;
+              except
+                on E : Exception do
+                  raise Exception.CreateFmt('Не удалось восстановить базу данных из эталонной копии. '#13#10 +
+                    'Сообщение об ошибке : %s'#13#10 + 'Пожалуйста, обратитесь в службу поддержки.',
+                    [E.Message]);
               end;
-            end
-            else
-              raise Exception.Create(DBErrorMess + #13#10#13#10 +
-                'Пожалуйста, выполните проверку жесткого диска на наличие ошибок.');
+            end;
           end;
 
         except
@@ -2280,6 +2294,8 @@ begin
           end;
         end
       end;
+
+      //Если произошла какая-то другая ошибка, то отображаем ее
       on E : Exception do begin
         MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
           MB_ICONERROR or MB_OK);
@@ -2339,8 +2355,8 @@ begin
     adsAllOrdersUpdate.Database := dbCon;
     adsAllOrdersUpdate.Transaction := trMain;
     adsAllOrdersUpdate.UpdateTransaction := trMain;
-    adsAllOrdersUpdate.SelectSQL.Text := adsAllOrders.SelectSQL.Text;
-    adsAllOrdersUpdate.UpdateSQL.Text := adsAllOrders.UpdateSQL.Text;
+    adsAllOrdersUpdate.SelectSQL.Text := 'SELECT ORDERS.* FROM ORDERS';
+    adsAllOrdersUpdate.UpdateSQL.Text := 'UPDATE ORDERS SET PRICE = :PRICE, CODE = :CODE, CODECR = :CODECR WHERE ID = :OLD_ID';
     adsAllOrdersUpdate.Options := adsAllOrdersUpdate.Options - [poTrimCharFields];
 
     trMain.StartTransaction;
@@ -2430,6 +2446,147 @@ begin
   if Length(tmp) > 1 then begin
     Result := c.DecodeHex(tmp);
     Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
+  end
+  else
+    Result := '';
+end;
+
+function TDM.GetRetUpCost(BaseCost: Currency): Integer;
+var
+  I, Ret : Integer;
+begin
+  Ret := 0;
+  I := 0;
+  while (I < Length(FRetMargins)) and (BaseCost >= FRetMargins[i][1]) do begin
+    if (FRetMargins[i][1] <= BaseCost) and (BaseCost <= FRetMargins[i][2]) then begin
+      Ret := FRetMargins[i][3];
+      Break;
+    end;
+    Inc(I);
+  end;
+  Result := Ret;
+end;
+
+procedure TDM.UpdateDBFileDataFor36(dbCon: TpFIBDatabase;
+  trMain: TpFIBTransaction);
+var
+  adsAllOrdersUpdate : TpFIBDataSet;
+  CDS,
+  BaseCostPass,
+  SynonymPass,
+  CodesPass,
+  oldDBUIN,
+  newCDS,
+  Price : String;
+  pc,
+  bc : TINFCrypt;
+  AllCount,
+  CryptErrorCount : Integer;
+  p, ch : String;
+  I : Integer;
+begin
+  adsAllOrdersUpdate := TpFIBDataSet.Create(nil);
+
+  try
+    adsAllOrdersUpdate.Database := dbCon;
+    adsAllOrdersUpdate.Transaction := trMain;
+    adsAllOrdersUpdate.UpdateTransaction := trMain;
+    adsAllOrdersUpdate.SelectSQL.Text := 'SELECT ORDERS.* FROM ORDERS, ordersh where ordersh.orderid = orders.orderid and ordersh.closed = 1';
+    adsAllOrdersUpdate.UpdateSQL.Text := 'UPDATE ORDERS SET SENDPRICE = :SENDPRICE WHERE ID = :OLD_ID';
+    adsAllOrdersUpdate.Options := adsAllOrdersUpdate.Options - [poTrimCharFields];
+
+    trMain.StartTransaction;
+
+    try
+      CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
+      ch := IntToHex(GetOld427UniqueID(Application.ExeName, ''), 8);
+      p := '';
+      for I := 1 to Length(ch) do
+        p := p + ch[i] + PassPassW[i];
+      pc := TINFCrypt.Create(p, 48);
+      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
+      if Length(CDS) = 0 then
+        Exit;
+      SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
+      CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
+      BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
+      oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
+
+      if Length(BaseCostPass) = 0 then
+        raise Exception.Create('Нет необходимой информации.');
+      if Length(oldDBUIN) = 0 then
+        raise Exception.Create('Нет необходимой информации 2.');
+      if oldDBUIN <> ch then
+        raise Exception.Create('Не совпадает DBUIN в обновляемой базе данных.');
+
+      //Обновляем значение CDS в базе с новым CopyID
+      newCDS :=
+        PassC.EncodeHex(SynonymPass) +
+        PassC.EncodeHex(CodesPass) +
+        PassC.EncodeHex(BaseCostPass) +
+        PassC.EncodeHex(IntToHex(GetCopyID, 8));
+      dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
+    except
+      on E : Exception do
+       raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
+    end;
+
+    bc := TINFCrypt.Create(BaseCostPass, 50);
+    try
+
+      CryptErrorCount := 0;
+
+      adsAllOrdersUpdate.Open;
+
+      while not adsAllOrdersUpdate.Eof do begin
+
+        try
+          Price := D_B_N_C(bc, adsAllOrdersUpdate.FieldByName('PRICE').AsString);
+
+          adsAllOrdersUpdate.Edit;
+          adsAllOrdersUpdate.FieldByName('SENDPRICE').AsCurrency := StrToCurr( Price );
+          adsAllOrdersUpdate.Post;
+        except
+          on E : Exception do
+            Inc(CryptErrorCount)
+        end;
+
+        adsAllOrdersUpdate.Next;
+      end;
+
+      AllCount := adsAllOrdersUpdate.RecordCount;
+
+      adsAllOrdersUpdate.Close;
+
+      if CryptErrorCount > 0 then
+        AProc.LogCriticalError('Количество нерасшифрованных позиций в заказах : ' + IntToStr(CryptErrorCount) + ' Всего позиций : ' + IntToStr(AllCount));
+
+    finally
+      try bc.Free except end;
+    end;
+
+    trMain.Commit;
+
+  finally
+    try adsAllOrdersUpdate.Free; except end;
+  end;
+end;
+
+function TDM.D_B_N_C(c: TINFCrypt; BaseC: String): String;
+var
+  tmp : String;
+  Len : Integer;
+begin
+  Len := Length(BaseC);
+  if Len > 6 then begin
+
+    tmp := BaseC[1] + Copy(BaseC, 3, Len-6) + Copy(BaseC, Len-2, 3);
+    if Length(tmp) > 1 then begin
+      Result := c.DecodeMix(tmp);
+      Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
+    end
+    else
+      Result := '';
   end
   else
     Result := '';

@@ -8,7 +8,7 @@ inherited OrdersForm: TOrdersForm
   OldCreateOrder = True
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel1: TPanel
+  object Panel1: TPanel [0]
     Left = 0
     Top = 0
     Width = 793
@@ -193,7 +193,7 @@ inherited OrdersForm: TOrdersForm
       ParentFont = False
     end
   end
-  object dbgOrders: TToughDBGrid
+  object dbgOrders: TToughDBGrid [1]
     Left = 0
     Top = 51
     Width = 793
@@ -292,25 +292,29 @@ inherited OrdersForm: TOrdersForm
       '  orderid = :orderid'
       'and coreid = :coreid')
     SelectSQL.Strings = (
-      'SELECT'
-      '    ORDERID,'
-      '    CLIENTID,'
-      '    COREID,'
-      '    FULLCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    PRICE,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    ORDERCOUNT,'
-      '    SUMORDER'
-      'FROM'
-      '    ORDERSSHOW(:AORDERID) ')
+      'SELECT Orders.OrderId,'
+      '    Orders.ClientId,'
+      '    Orders.CoreId,'
+      '    Orders.fullcode,'
+      '    Orders.codefirmcr,'
+      '    Orders.synonymcode,'
+      '    Orders.synonymfirmcrcode,'
+      '    Orders.code,'
+      '    Orders.codecr,'
+      '    Orders.synonymname,'
+      '    Orders.synonymfirm,'
+      '    Orders.price,'
+      '    Orders.await,'
+      '    Orders.junk,'
+      '    Orders.ordercount,'
+      '    Orders.SendPrice*Orders.OrderCount AS SumOrder,'
+      '    Orders.SendPrice'
+      'FROM '
+      '  Orders'
+      'WHERE '
+      '    (Orders.OrderId=:AOrderId)'
+      'AND (OrderCount>0)'
+      'ORDER BY SynonymName, SynonymFirm')
     AfterPost = adsOrdersAfterPost
     BeforeEdit = adsOrdersBeforeEdit
     Transaction = DM.DefTran
@@ -389,24 +393,29 @@ inherited OrdersForm: TOrdersForm
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersAWAIT: TFIBIntegerField
-      FieldName = 'AWAIT'
-    end
-    object adsOrdersJUNK: TFIBIntegerField
-      FieldName = 'JUNK'
-    end
     object adsOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
+    end
+    object adsOrdersPRICE: TFIBStringField
+      FieldName = 'PRICE'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsOrdersAWAIT: TFIBBooleanField
+      FieldName = 'AWAIT'
+    end
+    object adsOrdersJUNK: TFIBBooleanField
+      FieldName = 'JUNK'
     end
     object adsOrdersSUMORDER: TFIBBCDField
       FieldName = 'SUMORDER'
       Size = 2
       RoundByScale = True
     end
-    object adsOrdersPRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 60
-      EmptyStrToNull = True
+    object adsOrdersSENDPRICE: TFIBBCDField
+      FieldName = 'SENDPRICE'
+      Size = 2
+      RoundByScale = True
     end
   end
 end

@@ -126,7 +126,7 @@ object CoreForm: TCoreForm
           end
           item
             EditButtons = <>
-            FieldName = 'CryptPRICE'
+            FieldName = 'SENDPRICE'
             Footers = <>
             Title.Caption = #1062#1077#1085#1072
             Width = 49
@@ -145,13 +145,13 @@ object CoreForm: TCoreForm
     object gbFirmInfo: TGroupBox
       Left = 482
       Top = 0
-      Width = 310
+      Width = 222
       Height = 131
       Align = alClient
-      Caption = ' '#1048#1085#1092#1086#1088#1084#1072#1094#1080#1103' '#1086' '#1092#1080#1088#1084#1077' '
+      Caption = ' '#1048#1085#1092#1086#1088#1084#1072#1094#1080#1103' '#1086' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1077' '
       TabOrder = 1
       DesignSize = (
-        310
+        222
         131)
       object lblSupportPhone: TLabel
         Left = 6
@@ -184,7 +184,7 @@ object CoreForm: TCoreForm
       object dbmContactInfo: TDBMemo
         Left = 6
         Top = 32
-        Width = 301
+        Width = 213
         Height = 93
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelInner = bvNone
@@ -202,6 +202,35 @@ object CoreForm: TCoreForm
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 0
+      end
+    end
+    object gbRetUpCost: TGroupBox
+      Left = 704
+      Top = 0
+      Width = 88
+      Height = 131
+      Align = alRight
+      Caption = ' '#1053#1072#1094#1077#1085#1082#1072' '
+      TabOrder = 2
+      object seRetUpCost: TSpinEdit
+        Left = 8
+        Top = 16
+        Width = 73
+        Height = 22
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 0
+        Value = 0
+        OnChange = seRetUpCostChange
+      end
+      object eRetUpCost: TEdit
+        Left = 8
+        Top = 48
+        Width = 73
+        Height = 21
+        Color = clBtnFace
+        ReadOnly = True
+        TabOrder = 1
       end
     end
   end
@@ -861,7 +890,8 @@ object CoreForm: TCoreForm
       '    PRICENAME,'
       '    REGIONNAME,'
       '    AWAIT,'
-      '    JUNK'
+      '    JUNK,'
+      '    sendprice'
       'FROM'
       '    ORDERSSHOWBYFORM(:FULLCODE,'
       '    :ACLIENTID) ')
@@ -922,16 +952,15 @@ object CoreForm: TCoreForm
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersCryptPRICE: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptPRICE'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
-    end
     object adsOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsOrdersSENDPRICE: TFIBBCDField
+      FieldName = 'SENDPRICE'
+      Size = 2
+      RoundByScale = True
     end
   end
   object adsOrdersShowFormSummary: TpFIBDataSet

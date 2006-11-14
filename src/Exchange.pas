@@ -11,7 +11,7 @@ uses
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet;
 
 type
-  TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate);
+  TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate, eaGetWaybills);
 
   TExchangeActions=set of TExchangeAction;
 
@@ -138,8 +138,11 @@ begin
 	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions) then
     AExchangeActions := AExchangeActions + [ eaGetFullData, eaSendOrders];
 
-	if ( eaSendOrders in AExchangeActions) and
-		not ( eaGetPrice in AExchangeActions) and ( DM.DatabaseOpenedBy <> '') then
+  //TODO: надо подумать, что здесь происходит
+	if ( eaSendOrders in AExchangeActions)
+    and not ( [eaGetPrice, eaGetWaybills] * AExchangeActions <> [])
+    and ( DM.DatabaseOpenedBy <> '')
+  then
 		if not ShowExclusive then
 		begin
 			DM.ResetExclusive;
@@ -199,7 +202,8 @@ begin
 			DM.MainConnection1.Open;
       DM.UpdateReclame;
 		except
-			on E: Exception do MessageBox(E.Message, MB_ICONSTOP);
+			on E: Exception do
+        MessageBox(Copy(E.Message, 1, 1024), MB_ICONSTOP);
 		end;
     WriteLn(ExchangeForm.LogFile, 'Сессия окончена в ' + DateTimeToStr(Now));
     WriteLn(ExchangeForm.LogFile, '---------------------------');
@@ -225,6 +229,11 @@ begin
 	if Result and (( eaGetPrice in AExchangeActions) or
 		( eaImportOnly in AExchangeActions)) then Windows.MessageBox( Application.Handle,
 			'Обновление завершено успешно.', 'Информация',
+			MB_OK or MB_ICONINFORMATION);
+
+	if Result and (eaGetWaybills in AExchangeActions) then
+    Windows.MessageBox( Application.Handle,
+			'Получение накладных завершено успешно.', 'Информация',
 			MB_OK or MB_ICONINFORMATION);
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) then Windows.MessageBox( Application.Handle,

@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 165
-  Top = 111
+  Left = 186
+  Top = 125
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -954,44 +954,49 @@ object DM: TDM
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
-    AutoCommit = True
     Left = 64
     Top = 344
     oCacheCalcFields = True
     oFetchAll = True
   end
   object adsOrders: TpFIBDataSet
+    CachedUpdates = True
     UpdateSQL.Strings = (
       'update orders'
       'set'
-      '  coreid = :new_coreid '
+      '  coreid = :new_coreid,'
+      '  sendprice = :new_sendprice '
       'where'
-      '    orderid = :orderid'
-      'and coreid = :old_coreid')
+      '  id = :old_id')
     SelectSQL.Strings = (
-      'SELECT'
-      '    ORDERID,'
-      '    CLIENTID,'
-      '    COREID,'
-      '    FULLCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    PRICE,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    ORDERCOUNT,'
-      '    SUMORDER'
-      'FROM'
-      '    ORDERSSHOW(:AORDERID) ')
+      'SELECT '
+      '    Orders.id,'
+      '    Orders.OrderId,'
+      '    Orders.ClientId,'
+      '    Orders.CoreId,'
+      '    Orders.fullcode,'
+      '    Orders.codefirmcr,'
+      '    Orders.synonymcode,'
+      '    Orders.synonymfirmcrcode,'
+      '    Orders.code,'
+      '    Orders.codecr,'
+      '    Orders.synonymname,'
+      '    Orders.synonymfirm,'
+      '    Orders.price,'
+      '    Orders.await,'
+      '    Orders.junk,'
+      '    Orders.ordercount,'
+      '    0*Orders.OrderCount AS SumOrder,'
+      '    Orders.SendPrice'
+      'FROM '
+      '  Orders'
+      'WHERE '
+      '    (Orders.OrderId=:AOrderId) '
+      'AND (Orders.OrderCount>0)'
+      'ORDER BY SynonymName, SynonymFirm')
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
-    AutoCommit = True
     Left = 144
     Top = 344
     oTrimCharFields = False
@@ -1057,24 +1062,29 @@ object DM: TDM
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersAWAIT: TFIBIntegerField
-      FieldName = 'AWAIT'
-    end
-    object adsOrdersJUNK: TFIBIntegerField
-      FieldName = 'JUNK'
-    end
     object adsOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
-    end
-    object adsOrdersSUMORDER: TFIBBCDField
-      FieldName = 'SUMORDER'
-      Size = 2
-      RoundByScale = True
     end
     object adsOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsOrdersSENDPRICE: TFIBBCDField
+      FieldName = 'SENDPRICE'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsOrdersAWAIT: TFIBBooleanField
+      FieldName = 'AWAIT'
+    end
+    object adsOrdersJUNK: TFIBBooleanField
+      FieldName = 'JUNK'
+    end
+    object adsOrdersID: TFIBBCDField
+      FieldName = 'ID'
+      Size = 0
+      RoundByScale = True
     end
   end
   object BackService: TpFIBBackupService
@@ -1401,24 +1411,28 @@ object DM: TDM
       '    ')
     SelectSQL.Strings = (
       'SELECT'
-      '    ID,'
-      '    ORDERID,'
-      '    CLIENTID,'
-      '    COREID,'
-      '    FULLCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    CODE,'
-      '    CODECR,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    PRICE,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    ORDERCOUNT'
+      '    ORDERS.ID,'
+      '    ORDERS.ORDERID,'
+      '    ORDERS.CLIENTID,'
+      '    ORDERS.COREID,'
+      '    ORDERS.FULLCODE,'
+      '    ORDERS.CODEFIRMCR,'
+      '    ORDERS.SYNONYMCODE,'
+      '    ORDERS.SYNONYMFIRMCRCODE,'
+      '    ORDERS.CODE,'
+      '    ORDERS.CODECR,'
+      '    ORDERS.SYNONYMNAME,'
+      '    ORDERS.SYNONYMFIRM,'
+      '    ORDERS.PRICE,'
+      '    ORDERS.AWAIT,'
+      '    ORDERS.JUNK,'
+      '    ORDERS.ORDERCOUNT'
       'FROM'
-      '    ORDERS ')
+      '    ORDERS,'
+      '    ordersh'
+      'where'
+      '    ordersh.orderid = orders.orderid'
+      'and ordersh.closed <> 1')
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran

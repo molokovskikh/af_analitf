@@ -190,8 +190,8 @@ begin
     try
 		ErrorMessage := '';
 		try
-			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
-				( eaSendOrders in ExchangeForm.ExchangeActs) then
+			if ( [eaGetPrice, eaSendOrders, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+      then
 			begin
 				RasConnect;
 				HTTPConnect;
@@ -216,12 +216,16 @@ begin
 				end;
 				TotalProgress := 20;
 				Synchronize( SetTotalProgress);
-				if (eaGetPrice in ExchangeForm.ExchangeActs) and not DM.NeedCommitExchange then
+				if ([eaGetPrice, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+           and not DM.NeedCommitExchange
+        then
 				begin
-//					ExchangeForm.HTTP.ReadTimeout := 1000000; // 1000 секунд на запрос
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-					GetReclame;
+
+          //Запускаем рекламу только тогда, когда получаем обновление данных, но не накладные
+          if eaGetPrice in ExchangeForm.ExchangeActs then
+            GetReclame;
           UpdateByUpdate := False;
 					QueryData;
           if UpdateByUpdate then
@@ -229,7 +233,6 @@ begin
           GetPass;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
-//					ExchangeForm.HTTP.ReadTimeout := 60000; // 60 секунд на получение
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					DoExchange;
@@ -239,24 +242,26 @@ begin
 			end;
 
 			{ Распаковка файлов }
-			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
-				( eaImportOnly in ExchangeForm.ExchangeActs) then UnpackFiles;
+			if ( [eaGetPrice, eaImportOnly, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+      then UnpackFiles;
 
 			{ Поддтверждение обмена }
-			if eaGetPrice in ExchangeForm.ExchangeActs then CommitExchange;
+			if [eaGetPrice, eaGetWaybills] * ExchangeForm.ExchangeActs <> []
+      then
+        CommitExchange;
 
 			{ Отключение }
-      if ( eaSendOrders in ExchangeForm.ExchangeActs) then
+      if ( [eaSendOrders, eaGetWaybills] * ExchangeForm.ExchangeActs <> []) then
         OnReclameTerminate(nil)
       else
-        if eaGetPrice in ExchangeForm.ExchangeActs then
+        if ([eaGetPrice] * ExchangeForm.ExchangeActs <> [])
+        then
           if Assigned(RecThread) and not RecThread.RecTerminated then
             RecThread.OnTerminate := OnReclameTerminate
           else
             OnReclameTerminate(nil);
 
-			if ( eaGetPrice in ExchangeForm.ExchangeActs) or
-				( eaImportOnly in ExchangeForm.ExchangeActs) then
+			if ( [eaGetPrice, eaImportOnly] * ExchangeForm.ExchangeActs <> []) then
 			begin
 				TotalProgress := 50;
 				Synchronize( SetTotalProgress);
@@ -278,8 +283,8 @@ begin
 			end;
 
 			{ Дожидаемся завершения работы потока, скачивающего рекламу }
-			if eaGetPrice in ExchangeForm.ExchangeActs then
-			begin
+			if ( [eaGetPrice] * ExchangeForm.ExchangeActs <> [])
+      then begin
         DownloadReclame := True;
         if Assigned(RecThread) then begin
           if not RecThread.RecTerminated then RecThread.WaitFor;
@@ -350,7 +355,7 @@ end;
 
 procedure TExchangeThread.QueryData;
 const
-  StaticParamCount : Integer = 7;
+  StaticParamCount : Integer = 8;
 var
 	Res: TStrings;
 	LibVersions: TObjectList;
@@ -384,6 +389,8 @@ begin
       ParamValues[5] := WinNumber;
       ParamNames[6]  := 'WINDesc';
       ParamValues[6] := WinDesc;
+      ParamNames[7]  := 'WaybillsOnly';
+      ParamValues[7] := BoolToStr( eaGetWaybills in ExchangeForm.ExchangeActs, True);
 
       for I := 0 to LibVersions.Count-1 do begin
         fi := TFileUpdateInfo(LibVersions[i]);
@@ -450,8 +457,8 @@ var
   PostSuccess : Boolean;
 begin
 	//загрузка прайс-листа
-	if eaGetPrice in ExchangeForm.ExchangeActs then
-	begin
+	if ( [eaGetPrice, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+  then begin
 		StatusText := 'Загрузка данных';
 		Synchronize( SetStatus);
 		if not NewZip then
@@ -577,60 +584,70 @@ var
 	params, values: array of string;
   I : Integer;
 begin
-  DM.SetNeedCommitExchange;
+  LogStr := '';
+  params := nil;
+  values := nil;
+  
+  if (eaGetPrice in ExchangeForm.ExchangeActs) then begin
+    DM.SetNeedCommitExchange;
 
-  try
-    Flush(ExchangeForm.LogFile);
-    FS := TFileStream.Create(ExePath + 'Exchange.log', fmOpenRead or fmShareDenyNone);
     try
-      Len := Integer(FS.Size);
-      SetLength(LogStr, Len);
-      FS.Read(Pointer(LogStr)^, Len);
-    finally
-      FS.Free;
+      Flush(ExchangeForm.LogFile);
+      FS := TFileStream.Create(ExePath + 'Exchange.log', fmOpenRead or fmShareDenyNone);
+      try
+        Len := Integer(FS.Size);
+        SetLength(LogStr, Len);
+        FS.Read(Pointer(LogStr)^, Len);
+      finally
+        FS.Free;
+      end;
+    except
+      LogStr := '';
     end;
-  except
-    LogStr := '';
+
+    Synchronize(GetAbsentPriceCode);
+
+    if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
+      SetLength(params, AbsentPriceCodeSL.Count + 2);
+      SetLength(values, AbsentPriceCodeSL.Count + 2);
+      for I := 0 to AbsentPriceCodeSL.Count-1 do begin
+        params[i]:= 'PriceCode';
+        values[i]:= AbsentPriceCodeSL[i];
+      end;
+      params[AbsentPriceCodeSL.Count]:= 'Log';
+      values[AbsentPriceCodeSL.Count]:= LogStr;
+      params[AbsentPriceCodeSL.Count + 1]:= 'WaybillsOnly';
+      values[AbsentPriceCodeSL.Count + 1]:= BoolToStr( False, True);
+    end;
   end;
 
-  Synchronize(GetAbsentPriceCode);
-
-  if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
-    SetLength(params, AbsentPriceCodeSL.Count + 1);
-    SetLength(values, AbsentPriceCodeSL.Count + 1);
-    for I := 0 to AbsentPriceCodeSL.Count-1 do begin
-      params[i]:= 'PriceCode';
-      values[i]:= AbsentPriceCodeSL[i];
-    end;
-    params[AbsentPriceCodeSL.Count]:= 'Log';
-    values[AbsentPriceCodeSL.Count]:= LogStr;
-  end
-  else begin
-    SetLength(params, 2);
-    SetLength(values, 2);
+  if length(params) = 0 then begin
+    SetLength(params, 3);
+    SetLength(values, 3);
     params[0]:= 'PriceCode';
     values[0]:= '0';
     params[1]:= 'Log';
     values[1]:= LogStr;
+    params[2]:= 'WaybillsOnly';
+    values[2]:= BoolToStr( eaGetWaybills in ExchangeForm.ExchangeActs, True);
   end;
 
-//  Res := SOAP.Invoke( 'MaxSynonymCode', ['Log'], [LogStr]);
-//	Res := SOAP.Invoke( 'MaxSynonymCodeV2', ['Log'], [LogStr]);
-//	Res := SOAP.Invoke( 'MaxSynonymCodeV2', params, values);
 	Res := SOAP.Invoke( 'MaxSynonymCodeV3', params, values);
 
-	ExchangeDateTime := FromXMLToDateTime( Res.Text);
-	DM.adtParams.Edit;
-	DM.adtParams.FieldByName( 'LastDateTime').AsDateTime := ExchangeDateTime;
-  if DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
-    DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := False;
-    MainForm.EnableByHTTPName;
+  if (eaGetPrice in ExchangeForm.ExchangeActs) then begin
+    ExchangeDateTime := FromXMLToDateTime( Res.Text);
+    DM.adtParams.Edit;
+    DM.adtParams.FieldByName( 'LastDateTime').AsDateTime := ExchangeDateTime;
+    if DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
+      DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := False;
+      MainForm.EnableByHTTPName;
+    end;
+    DM.adtParams.Post;
+    CloseFile( ExchangeForm.LogFile);
+    SysUtils.DeleteFile(ExePath + 'Exchange.log');
+    Rewrite( ExchangeForm.LogFile); //создаем лог-файл
+    DM.ResetNeedCommitExchange;
   end;
-	DM.adtParams.Post;
-	CloseFile( ExchangeForm.LogFile);
-  SysUtils.DeleteFile(ExePath + 'Exchange.log');
-  Rewrite( ExchangeForm.LogFile); //создаем лог-файл
-  DM.ResetNeedCommitExchange;
 end;
 
 procedure TExchangeThread.DoSendOrders;
@@ -654,7 +671,7 @@ begin
 		DM.adtClients.FieldByName( 'ClientId').Value;
 	DM.adsOrdersH.ParamByName( 'AClosed').Value := False;
 	DM.adsOrdersH.ParamByName( 'ASend').Value := True;
-	DM.adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+	DM.adsOrdersH.ParamByName( 'TimeZoneBias').Value := 0;
 	DM.adsOrdersH.Open;
 	if not DM.adsOrdersH.Eof then
 	begin
@@ -817,6 +834,7 @@ begin
 
 			DM.adsOrders.Edit;
 			DM.adsOrders.FieldByName( 'CoreId').AsVariant := Null;
+			DM.adsOrders.FieldByName( 'SendPrice').AsCurrency := StrToCurr(TmpOrderCost);
       DM.adsOrders.Post;
 			DM.adsOrders.Next;
 		end;
@@ -899,17 +917,28 @@ begin
 		end;
 
 		try
-			DM.adsOrders.Close;
       if not SendError then begin
-        DM.adsOrdersH.Edit;
-        { Заказ был отправлен, а не переведен }
-        DM.adsOrdersH.FieldByName( 'Send').AsBoolean := True;
-        DM.adsOrdersH.FieldByName( 'SendDate').AsDateTime := Now;
-        { Закрываем заказ }
-        DM.adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
-        DM.adsOrdersH.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
-        DM.adsOrdersH.Post;
-      end;
+        DM.UpTran.StartTransaction;
+        try
+          DM.adsOrders.ApplyUpdates;
+          DM.adsOrdersH.Edit;
+          { Заказ был отправлен, а не переведен }
+          DM.adsOrdersH.FieldByName( 'Send').AsBoolean := True;
+          DM.adsOrdersH.FieldByName( 'SendDate').AsDateTime := Now;
+          { Закрываем заказ }
+          DM.adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
+          DM.adsOrdersH.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
+          DM.adsOrdersH.Post;
+          DM.UpTran.Commit;
+        except
+          try
+            DM.UpTran.Rollback; except end;
+            raise;
+        end;
+      end
+      else
+        DM.adsOrders.CancelUpdates;
+			DM.adsOrders.Close;
 			DM.adsOrdersH.Next;
 		except
 			DM.adsOrdersH.Close;
@@ -1062,7 +1091,7 @@ begin
   end;
 
 
-  //Обрабатываем папку Exports
+  //Обрабатываем папку Waybills
   if DirectoryExists(ExePath + SDirIn + '\' + SDirWaybills) then begin
     if FindFirst( ExePath + SDirIn + '\' + SDirWaybills + '\*.*', faAnyFile, ExportsSR) = 0 then
     try
@@ -1737,9 +1766,8 @@ end;
 
 procedure TExchangeThread.OnReclameTerminate(Sender: TObject);
 begin
-  if ( eaGetPrice in ExchangeForm.ExchangeActs) or
-    ( eaSendOrders in ExchangeForm.ExchangeActs) then
-  begin
+  if ( [eaGetPrice, eaSendOrders, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+  then begin
     HTTPDisconnect;
     RasDisconnect;
   end;

@@ -102,7 +102,6 @@ type
     adsOrdersJUNK: TFIBIntegerField;
     adsOrdersCODE: TFIBStringField;
     adsOrdersCODECR: TFIBStringField;
-    adsOrdersCryptPRICE: TCurrencyField;
     adsOrdersPRICE: TFIBStringField;
     dsOrders: TDataSource;
     dsOrdersShowFormSummary: TDataSource;
@@ -110,6 +109,7 @@ type
     adsCoreREGISTRYCOST: TFIBFloatField;
     adsCoreVITALLYIMPORTANT: TFIBBooleanField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
+    adsOrdersSENDPRICE: TFIBBCDField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -148,7 +148,6 @@ type
     procedure ChangeSelected(ASelected : Boolean);
     procedure OnSPClick(Sender: TObject);
     procedure ccf(DataSet: TDataSet);
-    procedure ocf(DataSet: TDataSet);
   public
     { Public declarations }
   end;
@@ -188,7 +187,6 @@ begin
   BM := TBitmap.Create;
 
   adsCore.OnCalcFields := ccf;
-  adsOrders.OnCalcFields := ocf;
   StartSQL := adsCore.SelectSQL.Text; 
   slColors := TStringList.Create;
 
@@ -518,14 +516,6 @@ procedure TSynonymSearchForm.cbBaseOnlyClick(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
   tmrSearch.Enabled := True;
-end;
-
-procedure TSynonymSearchForm.ocf(DataSet: TDataSet);
-begin
-  try
-    adsOrdersCryptPRICE.AsCurrency := StrToCurr(DM.D_B_N(adsOrdersPRICE.AsString));
-  except
-  end;
 end;
 
 procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;

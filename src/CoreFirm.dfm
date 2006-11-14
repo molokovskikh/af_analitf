@@ -760,6 +760,7 @@ object CoreFirmForm: TCoreFirmForm
   end
   object tmrSearch: TTimer
     Enabled = False
+    Interval = 2000
     OnTimer = tmrSearchTimer
     Left = 472
     Top = 213

@@ -4,12 +4,11 @@ inherited NamesFormsForm: TNamesFormsForm
   Caption = #1057#1087#1080#1089#1086#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
   ClientWidth = 687
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object pnlBottom: TPanel
+  object pnlBottom: TPanel [0]
     Left = 0
     Top = 419
     Width = 687
@@ -60,7 +59,7 @@ inherited NamesFormsForm: TNamesFormsForm
       TabOrder = 2
     end
   end
-  object pnlTopOld: TPanel
+  object pnlTopOld: TPanel [1]
     Left = 0
     Top = 0
     Width = 687
@@ -204,7 +203,7 @@ inherited NamesFormsForm: TNamesFormsForm
       end
     end
   end
-  object pnlTop: TPanel
+  object pnlTop: TPanel [2]
     Left = 0
     Top = 0
     Width = 687

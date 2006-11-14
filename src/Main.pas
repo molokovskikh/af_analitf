@@ -121,7 +121,7 @@ TMainForm = class(TForm)
     itmExternalOrders: TMenuItem;
     itmExternal: TMenuItem;
     adsOrdersH: TpFIBDataSet;
-    ToolButton8: TToolButton;
+    tbWaybill: TToolButton;
     actWayBill: TAction;
     ToolButton6: TToolButton;
     ToolButton7: TToolButton;
@@ -177,6 +177,7 @@ TMainForm = class(TForm)
       Shift: TShiftState; X, Y: Integer);
     procedure actWayBillExecute(Sender: TObject);
     procedure actSynonymSearchExecute(Sender: TObject);
+    procedure actReceiveTicketsExecute(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -233,7 +234,7 @@ uses
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm, Integr,
 	Exclusive, Wait, AlphaUtils, About, ExternalOrders, CompactThread, LU_Tracer,
-  SynonymSearch;
+  SynonymSearch, U_frmOldOrdersDelete;
 
 {$R *.DFM}
 
@@ -358,6 +359,8 @@ begin
 			DM.RestoreDatabase( ExePath);
 			DM.MainConnection1.Open;
 		end;
+    //Производим сжатие базы данных для очищения от ошибок
+    RunCompactDatabase;
 		{ Автоматический импорт }
 		RunExchange([ eaImportOnly]);
 	end;
@@ -601,7 +604,7 @@ end;
 procedure TMainForm.SetOrdersInfo;
 begin
 	DM.adsSelect.Close;
-	DM.adsSelect.SelectSQL.Text := 'SELECT * FROM ORDERSINFO2(:ACLIENTID)';
+	DM.adsSelect.SelectSQL.Text := 'SELECT * FROM ORDERSINFOMAIN(:ACLIENTID)';
 	DM.adsSelect.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	DM.adsSelect.Open;
 	try
@@ -660,11 +663,13 @@ end;
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
 	if not DM.MainConnection1.Connected then exit;
+
   if OldOrders then
     if (not DM.adtParams.FieldByName('CONFIRMDELETEOLDORDERS').AsBoolean) or
-       (MessageBox('Обнаружены устаревшие заказы. Удалить их?', MB_ICONQUESTION or MB_YESNO) = IDYES)
+       ConfirmDeleteOldOrders
     then
       DeleteOldOrders;
+
 	if CheckUnsendOrders then
 	begin
 		if MessageBox( 'Обнаружены неотправленные заказы. ' +
@@ -879,6 +884,9 @@ end;
 
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
+  if (MessageBox( 'Получить свежие накладные?', MB_ICONQUESTION or MB_YESNO) = IDYES)
+  then
+  	RunExchange( [eaGetWaybills] );
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
 		nil, nil, SW_SHOWDEFAULT);
 end;
@@ -913,6 +921,11 @@ begin
     DM.adcUpdate.Transaction.Rollback;
     raise;
   end;
+end;
+
+procedure TMainForm.actReceiveTicketsExecute(Sender: TObject);
+begin
+	RunExchange( [eaGetWaybills] );
 end;
 
 end.

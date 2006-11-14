@@ -332,7 +332,8 @@ begin
     if actNewSearch.Checked then
       dbgCatalog.SetFocus
     else
-      dbgNames.SetFocus;
+      if not dbgForms.Focused then
+        dbgNames.SetFocus;
     tmrShowCatalog.Enabled := False;
   except
   end;

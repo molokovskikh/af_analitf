@@ -1,5 +1,5 @@
 inherited SummaryForm: TSummaryForm
-  Left = 264
+  Left = 324
   Top = 230
   ActiveControl = dbgSummary
   Caption = #1057#1074#1086#1076#1085#1099#1081' '#1079#1072#1082#1072#1079
@@ -295,11 +295,11 @@ inherited SummaryForm: TSummaryForm
       BevelOuter = bvNone
       TabOrder = 2
       object Label7: TLabel
-        Left = 10
-        Top = 19
-        Width = 107
+        Left = 186
+        Top = 27
+        Width = 60
         Height = 13
-        Caption = #1042#1099#1074#1077#1089#1090#1080' '#1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
+        Caption = #1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -308,8 +308,8 @@ inherited SummaryForm: TSummaryForm
         ParentFont = False
       end
       object Label8: TLabel
-        Left = 215
-        Top = 19
+        Left = 343
+        Top = 27
         Width = 12
         Height = 13
         Caption = #1087#1086
@@ -329,12 +329,13 @@ inherited SummaryForm: TSummaryForm
         Shape = bsBottomLine
       end
       object dtpDateFrom: TDateTimePicker
-        Left = 127
-        Top = 15
+        Left = 255
+        Top = 23
         Width = 81
         Height = 21
         Date = 36526.631636412040000000
         Time = 36526.631636412040000000
+        Enabled = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -345,17 +346,18 @@ inherited SummaryForm: TSummaryForm
         OnCloseUp = dtpDateCloseUp
       end
       object dtpDateTo: TDateTimePicker
-        Left = 234
-        Top = 15
+        Left = 362
+        Top = 23
         Width = 81
         Height = 21
         Date = 0.631934409720997800
         Time = 0.631934409720997800
+        Enabled = False
         TabOrder = 1
         OnCloseUp = dtpDateCloseUp
       end
       object rgSummaryType: TRadioGroup
-        Left = 328
+        Left = 0
         Top = 0
         Width = 185
         Height = 48
@@ -367,7 +369,7 @@ inherited SummaryForm: TSummaryForm
         OnClick = rgSummaryTypeClick
       end
       object btnSelectPrices: TBitBtn
-        Left = 528
+        Left = 456
         Top = 13
         Width = 105
         Height = 25
@@ -452,10 +454,51 @@ inherited SummaryForm: TSummaryForm
       '   COREID = :ORDERSCOREID'
       'and ORDERID = :ORDERSORDERID')
     SelectSQL.Strings = (
-      'SELECT'
-      '*'
+      'SELECT Core.Volume,'
+      '    Core.Quantity,'
+      '    Core.Note,'
+      '    Core.Period,'
+      '    Core.Junk,'
+      '    Core.Await,'
+      '    Core.CODE,'
+      '    Core.CODECR,'
+      
+        '    coalesce(Synonyms.SynonymName, catalogs.name || '#39' '#39' || catal' +
+        'ogs.form) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    Core.BaseCost,'
+      '    PricesData.PriceName,'
+      '    Regions.RegionName,'
+      '    Orders.OrderCount,'
+      '    Orders.CoreId AS OrdersCoreId,'
+      '    Orders.OrderId AS OrdersOrderId,'
+      '    pricesdata.pricecode,'
+      '    Regions.regioncode,'
+      '    core.doc,'
+      '    core.registrycost,'
+      '    core.vitallyimportant,'
+      '    core.requestratio'
       'FROM'
-      '    SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ')
+      '    PricesData,'
+      '    Regions,'
+      '    Core,'
+      '    OrdersH,'
+      '    catalogs, '
+      '    Orders'
+      
+        '    left join Synonyms on Orders.SynonymCode=Synonyms.SynonymCod' +
+        'e'
+      
+        '    LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymF' +
+        'irmCr.SynonymFirmCrCode'
+      'WHERE'
+      '    OrdersH.ClientId = :AClientId'
+      'and Orders.OrderId=OrdersH.OrderId'
+      'and Orders.OrderCount>0'
+      'and Core.CoreId=Orders.CoreId'
+      'and catalogs.fullcode = orders.fullcode'
+      'and PricesData.PriceCode = OrdersH.PriceCode'
+      'and Regions.RegionCode = OrdersH.RegionCode')
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
     BeforeDelete = adsSummaryBeforeDelete
@@ -470,6 +513,24 @@ inherited SummaryForm: TSummaryForm
     oTrimCharFields = False
     oCacheCalcFields = True
     oRefreshAfterPost = False
+    object adsSummarySumOrder: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
+    object adsSummaryCryptBASECOST: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptBASECOST'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
+    object adsSummaryPriceRet: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'PriceRet'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
     object adsSummaryVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
@@ -489,20 +550,35 @@ inherited SummaryForm: TSummaryForm
       FieldName = 'PERIOD'
       EmptyStrToNull = True
     end
-    object adsSummaryJUNK: TFIBIntegerField
+    object adsSummaryJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsSummaryAWAIT: TFIBIntegerField
+    object adsSummaryAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
+    end
+    object adsSummaryCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsSummaryCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = True
     end
     object adsSummarySYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
-      Size = 250
+      Size = 501
       EmptyStrToNull = True
     end
     object adsSummarySYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
+      EmptyStrToNull = True
+    end
+    object adsSummaryBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
       EmptyStrToNull = True
     end
     object adsSummaryPRICENAME: TFIBStringField
@@ -517,7 +593,6 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
-      DisplayFormat = '#'
     end
     object adsSummaryORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
@@ -529,38 +604,15 @@ inherited SummaryForm: TSummaryForm
       Size = 0
       RoundByScale = True
     end
-    object adsSummarySumOrder: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'SumOrder'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
+    object adsSummaryPRICECODE: TFIBBCDField
+      FieldName = 'PRICECODE'
+      Size = 0
+      RoundByScale = True
     end
-    object adsSummaryCryptBASECOST: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptBASECOST'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
-    end
-    object adsSummaryCODE: TFIBStringField
-      FieldName = 'CODE'
-      Size = 84
-      EmptyStrToNull = True
-    end
-    object adsSummaryCODECR: TFIBStringField
-      FieldName = 'CODECR'
-      Size = 84
-      EmptyStrToNull = True
-    end
-    object adsSummaryPriceRet: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'PriceRet'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
-    end
-    object adsSummaryBASECOST: TFIBStringField
-      FieldName = 'BASECOST'
-      Size = 60
-      EmptyStrToNull = True
+    object adsSummaryREGIONCODE: TFIBBCDField
+      FieldName = 'REGIONCODE'
+      Size = 0
+      RoundByScale = True
     end
     object adsSummaryDOC: TFIBStringField
       FieldName = 'DOC'
@@ -568,14 +620,12 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryREGISTRYCOST: TFIBFloatField
       FieldName = 'REGISTRYCOST'
-      DisplayFormat = '#'
     end
-    object adsSummaryVITALLYIMPORTANT: TFIBIntegerField
+    object adsSummaryVITALLYIMPORTANT: TFIBBooleanField
       FieldName = 'VITALLYIMPORTANT'
     end
     object adsSummaryREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
-      DisplayFormat = '#'
     end
   end
   object adsSummaryH: TpFIBDataSet
@@ -605,6 +655,212 @@ inherited SummaryForm: TSummaryForm
     end
     object miSeparator: TMenuItem
       Caption = '-'
+    end
+  end
+  object adsCurrentSummary: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT Core.Volume,'
+      '    Core.Quantity,'
+      '    Core.Note,'
+      '    Core.Period,'
+      '    Core.Junk,'
+      '    Core.Await,'
+      '    Core.CODE,'
+      '    Core.CODECR,'
+      
+        '    coalesce(Synonyms.SynonymName, catalogs.name || '#39' '#39' || catal' +
+        'ogs.form) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    Core.BaseCost,'
+      '    PricesData.PriceName,'
+      '    Regions.RegionName,'
+      '    Orders.OrderCount,'
+      '    Orders.CoreId AS OrdersCoreId,'
+      '    Orders.OrderId AS OrdersOrderId,'
+      '    pricesdata.pricecode,'
+      '    Regions.regioncode,'
+      '    core.doc,'
+      '    core.registrycost,'
+      '    core.vitallyimportant,'
+      '    core.requestratio'
+      'FROM'
+      '    PricesData,'
+      '    Regions,'
+      '    Core,'
+      '    OrdersH,'
+      '    catalogs, '
+      '    Orders'
+      
+        '    left join Synonyms on Orders.SynonymCode=Synonyms.SynonymCod' +
+        'e'
+      
+        '    LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymF' +
+        'irmCr.SynonymFirmCrCode'
+      'WHERE'
+      '    OrdersH.ClientId = :AClientId'
+      'and Orders.OrderId=OrdersH.OrderId'
+      'and Orders.OrderCount>0'
+      'and Core.CoreId=Orders.CoreId'
+      'and catalogs.fullcode = orders.fullcode'
+      'and PricesData.PriceCode = OrdersH.PriceCode'
+      'and Regions.RegionCode = OrdersH.RegionCode')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
+    Left = 96
+    Top = 112
+    oCacheCalcFields = True
+  end
+  object adsSendSummary: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT '
+      '    cast('#39#39' as varchar(15)) as Volume,'
+      '    cast('#39#39' as varchar(15)) as Quantity,'
+      '    cast('#39#39' as varchar(50)) as Note,'
+      '    cast('#39#39' as varchar(20)) as Period,'
+      '    Orders.Junk,'
+      '    Orders.Await,'
+      '    Orders.CODE,'
+      '    Orders.CODECR,'
+      
+        '    coalesce(Synonyms.SynonymName, catalogs.name || '#39' '#39' || catal' +
+        'ogs.form) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    Orders.Price as BaseCost,'
+      '    PricesData.PriceName,'
+      '    Regions.RegionName,'
+      '    Orders.OrderCount,'
+      '    Orders.CoreId AS OrdersCoreId,'
+      '    Orders.OrderId AS OrdersOrderId,'
+      '    PricesData.pricecode,'
+      '    Regions.regioncode,'
+      '    cast('#39#39' as varchar(20)) as doc,'
+      '    cast(0.0 as numeric(8,2)) as registrycost,'
+      '    0 as vitallyimportant,'
+      '    0 as requestratio'
+      'FROM'
+      '    PricesData,'
+      '    Regions,'
+      '    OrdersH,'
+      '    catalogs, '
+      '    Orders'
+      
+        '    left join Synonyms on Orders.SynonymCode=Synonyms.SynonymCod' +
+        'e'
+      
+        '    LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymF' +
+        'irmCr.SynonymFirmCrCode'
+      'WHERE'
+      '    OrdersH.ClientId = :AClientId'
+      'and Orders.OrderId=OrdersH.OrderId'
+      'and Orders.OrderCount>0'
+      'and Orders.CoreId is null'
+      'and catalogs.fullcode = orders.fullcode'
+      'and PricesData.PriceCode = OrdersH.PriceCode'
+      'and Regions.RegionCode = OrdersH.RegionCode'
+      'and ordersh.senddate >= :datefrom'
+      'and ordersh.senddate <= :dateTo')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
+    Left = 144
+    Top = 112
+    oCacheCalcFields = True
+    object adsSendSummaryVOLUME: TFIBStringField
+      FieldName = 'VOLUME'
+      Size = 15
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryQUANTITY: TFIBStringField
+      FieldName = 'QUANTITY'
+      Size = 15
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryNOTE: TFIBStringField
+      FieldName = 'NOTE'
+      Size = 50
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryPERIOD: TFIBStringField
+      FieldName = 'PERIOD'
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryJUNK: TFIBBooleanField
+      FieldName = 'JUNK'
+    end
+    object adsSendSummaryAWAIT: TFIBBooleanField
+      FieldName = 'AWAIT'
+    end
+    object adsSendSummaryCODE: TFIBStringField
+      FieldName = 'CODE'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryCODECR: TFIBStringField
+      FieldName = 'CODECR'
+      Size = 84
+      EmptyStrToNull = True
+    end
+    object adsSendSummarySYNONYMNAME: TFIBStringField
+      FieldName = 'SYNONYMNAME'
+      Size = 501
+      EmptyStrToNull = True
+    end
+    object adsSendSummarySYNONYMFIRM: TFIBStringField
+      FieldName = 'SYNONYMFIRM'
+      Size = 250
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryBASECOST: TFIBStringField
+      FieldName = 'BASECOST'
+      Size = 60
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryPRICENAME: TFIBStringField
+      FieldName = 'PRICENAME'
+      Size = 70
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryREGIONNAME: TFIBStringField
+      FieldName = 'REGIONNAME'
+      Size = 25
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERCOUNT'
+    end
+    object adsSendSummaryORDERSCOREID: TFIBBCDField
+      FieldName = 'ORDERSCOREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSendSummaryORDERSORDERID: TFIBBCDField
+      FieldName = 'ORDERSORDERID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSendSummaryPRICECODE: TFIBBCDField
+      FieldName = 'PRICECODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSendSummaryREGIONCODE: TFIBBCDField
+      FieldName = 'REGIONCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSendSummaryDOC: TFIBStringField
+      FieldName = 'DOC'
+      EmptyStrToNull = True
+    end
+    object adsSendSummaryVITALLYIMPORTANT: TFIBIntegerField
+      FieldName = 'VITALLYIMPORTANT'
+    end
+    object adsSendSummaryREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+    end
+    object adsSendSummaryREGISTRYCOST: TFIBFloatField
+      FieldName = 'REGISTRYCOST'
     end
   end
 end

@@ -40,12 +40,13 @@ type
     adsOrdersCODECR: TFIBStringField;
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersAWAIT: TFIBIntegerField;
-    adsOrdersJUNK: TFIBIntegerField;
     adsOrdersORDERCOUNT: TFIBIntegerField;
-    adsOrdersSUMORDER: TFIBBCDField;
     lSumOrder: TLabel;
     adsOrdersPRICE: TFIBStringField;
+    adsOrdersAWAIT: TFIBBooleanField;
+    adsOrdersJUNK: TFIBBooleanField;
+    adsOrdersSUMORDER: TFIBBCDField;
+    adsOrdersSENDPRICE: TFIBBCDField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -84,12 +85,26 @@ end;
 procedure TOrdersForm.SetParams(AOrderId: Integer);
 var
 	V: array[0..0] of Variant;
+  Closed : Variant;
 begin
-  adsOrders.OnCalcFields := ocf;
+  Closed := DM.MainConnection1.QueryValue('select Closed from ordersh where orderid = ' + IntToStr(AOrderId), 0);
+  if Closed = 0 then begin
+    adsOrders.OnCalcFields := ocf;
+    dbgOrders.Columns[2].FieldName := 'CryptPRICE';
+    dbgOrders.Columns[4].FieldName := 'CryptSUMORDER';
+  end
+  else begin
+    adsOrders.OnCalcFields := nil;
+    dbgOrders.Columns[2].FieldName := 'SENDPRICE';
+    dbgOrders.Columns[4].FieldName := 'SUMORDER';
+  end;
   with adsOrders do begin
     ParamByName('AOrderId').Value:=AOrderId;
     if Active then CloseOpen(True) else Open;
-  	DataSetCalc( adsOrders,['SUM(CryptSUMORDER)'], V);
+    if Closed = 0 then
+    	DataSetCalc( adsOrders,['SUM(CryptSUMORDER)'], V)
+    else
+    	DataSetCalc( adsOrders,['SUM(SUMORDER)'], V);
   	OrderCount := adsOrders.RecordCount;
   	OrderSum := V[0];
     SetOrderLabel;

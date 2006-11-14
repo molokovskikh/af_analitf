@@ -30,12 +30,11 @@ type
     adsOrdersREGIONNAME: TFIBStringField;
     adsOrdersAWAIT: TFIBIntegerField;
     adsOrdersJUNK: TFIBIntegerField;
-    adsOrdersCryptPRICE: TCurrencyField;
     lPriceAvg: TLabel;
     adsOrdersPRICE: TFIBStringField;
+    adsOrdersSENDPRICE: TFIBBCDField;
   private
     { Private declarations }
-    procedure ocf(DataSet: TDataSet);
   public
     { Public declarations }
   end;
@@ -63,7 +62,6 @@ begin
         Open;
       end;
 }
-      adsOrders.OnCalcFields := ocf;
       with adsOrders do begin
         ParamByName('AFullCode').Value:=FullCode;
         ParamByName('AClientId').Value:=ClientId;
@@ -74,7 +72,7 @@ begin
       while not adsOrders.Eof do
       begin
         if (Now - adsOrdersORDERDATE.Value < 183) then begin
-          Avr := Avr + adsOrdersCryptPRICE.Value;
+          Avr := Avr + adsOrdersSENDPRICE.Value;
           Inc(Count);
           adsOrders.Next;
         end
@@ -91,14 +89,6 @@ begin
     ShowModal;
   finally
     Free;
-  end;
-end;
-
-procedure TFormsHistoryForm.ocf(DataSet: TDataSet);
-begin
-  try
-    adsOrdersCryptPRICE.AsCurrency := StrToCurr(DM.D_B_N(adsOrdersPRICE.AsString));
-  except
   end;
 end;
 

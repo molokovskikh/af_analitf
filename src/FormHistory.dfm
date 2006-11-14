@@ -151,7 +151,7 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptPRICE'
+        FieldName = 'SENDPRICE'
         Footers = <>
         Title.Caption = #1062#1077#1085#1072
         Width = 82
@@ -192,7 +192,8 @@ object FormsHistoryForm: TFormsHistoryForm
       '    PRICENAME,'
       '    REGIONNAME,'
       '    AWAIT,'
-      '    JUNK'
+      '    JUNK,'
+      '    sendprice'
       'FROM'
       '    ORDERSSHOWBYFORM(:AFULLCODE,'
       '    :ACLIENTID) ')
@@ -249,16 +250,15 @@ object FormsHistoryForm: TFormsHistoryForm
     object adsOrdersJUNK: TFIBIntegerField
       FieldName = 'JUNK'
     end
-    object adsOrdersCryptPRICE: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptPRICE'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
-    end
     object adsOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsOrdersSENDPRICE: TFIBBCDField
+      FieldName = 'SENDPRICE'
+      Size = 2
+      RoundByScale = True
     end
   end
   object adsWareData: TpFIBDataSet

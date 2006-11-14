@@ -20,24 +20,9 @@ type
     pClient: TPanel;
     dbgSummary: TToughDBGrid;
     adsSummary: TpFIBDataSet;
-    adsSummaryVOLUME: TFIBStringField;
-    adsSummaryQUANTITY: TFIBStringField;
-    adsSummaryNOTE: TFIBStringField;
-    adsSummaryPERIOD: TFIBStringField;
-    adsSummaryJUNK: TFIBIntegerField;
-    adsSummaryAWAIT: TFIBIntegerField;
-    adsSummarySYNONYMNAME: TFIBStringField;
-    adsSummarySYNONYMFIRM: TFIBStringField;
-    adsSummaryPRICENAME: TFIBStringField;
-    adsSummaryREGIONNAME: TFIBStringField;
-    adsSummaryORDERCOUNT: TFIBIntegerField;
-    adsSummaryORDERSCOREID: TFIBBCDField;
-    adsSummaryORDERSORDERID: TFIBBCDField;
     adsSummarySumOrder: TCurrencyField;
     adsSummaryH: TpFIBDataSet;
     adsSummaryCryptBASECOST: TCurrencyField;
-    adsSummaryCODE: TFIBStringField;
-    adsSummaryCODECR: TFIBStringField;
     adsSummaryPriceRet: TCurrencyField;
     pStatus: TPanel;
     Bevel1: TBevel;
@@ -63,11 +48,52 @@ type
     btnSelectPrices: TBitBtn;
     miUnselectedAll: TMenuItem;
     miSeparator: TMenuItem;
+    adsCurrentSummary: TpFIBDataSet;
+    adsSendSummary: TpFIBDataSet;
+    adsSummaryVOLUME: TFIBStringField;
+    adsSummaryQUANTITY: TFIBStringField;
+    adsSummaryNOTE: TFIBStringField;
+    adsSummaryPERIOD: TFIBStringField;
+    adsSummaryJUNK: TFIBBooleanField;
+    adsSummaryAWAIT: TFIBBooleanField;
+    adsSummaryCODE: TFIBStringField;
+    adsSummaryCODECR: TFIBStringField;
+    adsSummarySYNONYMNAME: TFIBStringField;
+    adsSummarySYNONYMFIRM: TFIBStringField;
     adsSummaryBASECOST: TFIBStringField;
+    adsSummaryPRICENAME: TFIBStringField;
+    adsSummaryREGIONNAME: TFIBStringField;
+    adsSummaryORDERCOUNT: TFIBIntegerField;
+    adsSummaryORDERSCOREID: TFIBBCDField;
+    adsSummaryORDERSORDERID: TFIBBCDField;
+    adsSummaryPRICECODE: TFIBBCDField;
+    adsSummaryREGIONCODE: TFIBBCDField;
     adsSummaryDOC: TFIBStringField;
     adsSummaryREGISTRYCOST: TFIBFloatField;
-    adsSummaryVITALLYIMPORTANT: TFIBIntegerField;
+    adsSummaryVITALLYIMPORTANT: TFIBBooleanField;
     adsSummaryREQUESTRATIO: TFIBIntegerField;
+    adsSendSummaryVOLUME: TFIBStringField;
+    adsSendSummaryQUANTITY: TFIBStringField;
+    adsSendSummaryNOTE: TFIBStringField;
+    adsSendSummaryPERIOD: TFIBStringField;
+    adsSendSummaryJUNK: TFIBBooleanField;
+    adsSendSummaryAWAIT: TFIBBooleanField;
+    adsSendSummaryCODE: TFIBStringField;
+    adsSendSummaryCODECR: TFIBStringField;
+    adsSendSummarySYNONYMNAME: TFIBStringField;
+    adsSendSummarySYNONYMFIRM: TFIBStringField;
+    adsSendSummaryBASECOST: TFIBStringField;
+    adsSendSummaryPRICENAME: TFIBStringField;
+    adsSendSummaryREGIONNAME: TFIBStringField;
+    adsSendSummaryORDERCOUNT: TFIBIntegerField;
+    adsSendSummaryORDERSCOREID: TFIBBCDField;
+    adsSendSummaryORDERSORDERID: TFIBBCDField;
+    adsSendSummaryPRICECODE: TFIBBCDField;
+    adsSendSummaryREGIONCODE: TFIBBCDField;
+    adsSendSummaryDOC: TFIBStringField;
+    adsSendSummaryVITALLYIMPORTANT: TFIBIntegerField;
+    adsSendSummaryREQUESTRATIO: TFIBIntegerField;
+    adsSendSummaryREGISTRYCOST: TFIBFloatField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -145,8 +171,8 @@ begin
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummary.ParamByName( 'ADATEFROM').Value := LastDateFrom;
-	adsSummary.ParamByName( 'ADATETO').Value := LastDateTo;
+//	adsSummary.ParamByName( 'ADATEFROM').Value := LastDateFrom;
+//	adsSummary.ParamByName( 'ADATETO').Value := LastDateTo;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
 	Reg := TRegistry.Create;
@@ -194,19 +220,23 @@ begin
 	try
     if adsSummary.Active then
       adsSummary.Close;
-    FilterSQL := GetSelectedPricesSQL(SelectedPrices);
+    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersH.');
     if LastSymmaryType = 0 then begin
-      adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ';
+      //adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ';
+      adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
       dbgSummary.InputField := 'OrderCount';
       btnDelete.Enabled := True;
     end
     else begin
-      adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOWSEND(:ACLIENTID, :ADATEFROM, :ADATETO) ';
+      //adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOWSEND(:ACLIENTID, :ADATEFROM, :ADATETO) ';
+      adsSummary.SelectSQL.Text := adsSendSummary.SelectSQL.Text;
+      adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
+      adsSummary.ParamByName( 'DATETO').Value := LastDateTo;
       dbgSummary.InputField := '';
       btnDelete.Enabled := False;
     end;
     if Length(FilterSQL) > 0 then
-      adsSummary.SelectSQL.Text := adsSummary.SelectSQL.Text + ' where ' + FilterSQL;
+      adsSummary.SelectSQL.Text := adsSummary.SelectSQL.Text + ' and ( ' + FilterSQL + ' )';
     adsSummary.Open;
     DataSetCalc( adsSummary,['SUM(SUMORDER)'], V);
     OrderCount := adsSummary.RecordCount;
@@ -408,8 +438,8 @@ procedure TSummaryForm.SetDateInterval;
 begin
   LastDateFrom := dtpDateFrom.Date;
   LastDateTo := dtpDateTo.Date;
-	adsSummary.ParamByName( 'ADATEFROM').Value := LastDateFrom;
-	adsSummary.ParamByName( 'ADATETO').Value := LastDateTo;
+	adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
+	adsSummary.ParamByName( 'DATETO').Value := LastDateTo;
   SummaryShow;
 end;
 
@@ -417,6 +447,8 @@ procedure TSummaryForm.rgSummaryTypeClick(Sender: TObject);
 begin
   if rgSummaryType.ItemIndex <> LastSymmaryType then begin
     LastSymmaryType := rgSummaryType.ItemIndex;
+    dtpDateFrom.Enabled := LastSymmaryType = 1;
+    dtpDateTo.Enabled := dtpDateFrom.Enabled;
     SummaryShow;
     dbgSummary.SetFocus;
   end;

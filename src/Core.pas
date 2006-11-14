@@ -8,7 +8,7 @@ uses
   StdCtrls, Buttons, DBCtrls, FR_Class, FR_DSet, FR_DBSet,
   Child, RXDBCtrl, Variants, Math, DBGridEh,
   ToughDBGrid, Registry, OleCtrls, SHDocVw, ActnList, FIBDataSet,
-  pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor;
+  pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor, Spin;
 
 const
 	ALL_REGIONS	= 'Все регионы';
@@ -109,7 +109,6 @@ type
     adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
     adsOrdersCODE: TFIBStringField;
     adsOrdersCODECR: TFIBStringField;
-    adsOrdersCryptPRICE: TCurrencyField;
     adsCoreBASECOST: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
     adsOrdersPRICE: TFIBStringField;
@@ -117,6 +116,10 @@ type
     adsCoreREGISTRYCOST: TFIBFloatField;
     adsCoreVITALLYIMPORTANT: TFIBIntegerField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
+    gbRetUpCost: TGroupBox;
+    seRetUpCost: TSpinEdit;
+    eRetUpCost: TEdit;
+    adsOrdersSENDPRICE: TFIBBCDField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -141,6 +144,7 @@ type
     procedure FormResize(Sender: TObject);
     procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
+    procedure seRetUpCostChange(Sender: TObject);
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
@@ -149,7 +153,6 @@ type
 
     procedure RefreshOrdersH;
     procedure ccf(DataSet: TDataSet);
-    procedure ocf(DataSet: TDataSet);
   public
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -178,7 +181,6 @@ begin
 	PrintEnabled := False;
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
-  adsOrders.OnCalcFields := ocf;
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
@@ -599,6 +601,10 @@ procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
 //var
 //  C : Integer;
 begin
+  if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
+    seRetUpCost.Value := DM.GetRetUpCost(adsCoreCryptBASECOST.AsCurrency);
+    seRetUpCostChange(seRetUpCost);
+  end;
 {
   C := dbgCore.Canvas.TextHeight('Wg') + 2;
   if (adsCore.RecordCount > 0) and ((adsCore.RecordCount*C)/(pCenter.Height-pWebBrowser.Height) > 13/10) then
@@ -619,12 +625,12 @@ begin
   text := Iif(Sender.AsBoolean, '+', '');
 end;
 
-procedure TCoreForm.ocf(DataSet: TDataSet);
+procedure TCoreForm.seRetUpCostChange(Sender: TObject);
 begin
-  try
-    adsOrdersCryptPRICE.AsCurrency := StrToCurr(DM.D_B_N(adsOrdersPRICE.AsString));
-  except
-  end;
+  if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then
+    eRetUpCost.Text := CurrToStrF((1 + seRetUpCost.Value/100) * adsCoreCryptBASECOST.AsCurrency, ffCurrency, 2)
+  else
+    eRetUpCost.Text := '';
 end;
 
 end.
