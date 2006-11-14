@@ -4,10 +4,19 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs;
+  Dialogs, StdCtrls, ExtCtrls;
 
 type
   TfrmSendLetter = class(TForm)
+    leSubject: TLabeledEdit;
+    lBody: TLabel;
+    mBody: TMemo;
+    cbAddLogs: TCheckBox;
+    lbFiles: TListBox;
+    btnAddFile: TButton;
+    btnDelFile: TButton;
+    btnSend: TButton;
+    btnCancel: TButton;
   private
     { Private declarations }
   public
