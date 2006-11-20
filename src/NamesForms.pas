@@ -122,7 +122,7 @@ begin
   //Читаем настройки из реестра
 	Reg := TRegistry.Create;
 	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
-  actNewSearch.Checked := True;
+  actNewSearch.Checked := False;
   if Reg.ValueExists('NewSearch') then
     actNewSearch.Checked := Reg.ReadBool('NewSearch');
 	Reg.Free;

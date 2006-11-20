@@ -18,12 +18,6 @@ uses
   Синонимы - все в хексе без %
   Цена     - все в хексе без %
   Code, CodeCr - смешанный тип
-
-пароль для виртуальной цены: 4 слева от синонимов, 4 справа от цены, средние 8 из кодов
-set VirtualCostsPasswordParam=concat(left(SynonymsPasswordParam, 4), right(CostsPasswordParam, 4),
-                                  mid(CodesPasswordParam, 5, 8));
-
-
 }
 
 const
@@ -281,7 +275,6 @@ type
     SynonymPassword,
     CodesPassword,
     BaseCostPassword,
-    VirtualBaseCostPassword,
     DBUIN : String;
     //Требуется обновления из-за того, что некорректный UIN
     NeedUpdateByCheckUIN : Boolean;
@@ -297,8 +290,7 @@ type
     SynC,
     HTTPC,
     CodeC,
-    BasecostC,
-    VBasecostC : TINFCrypt;
+    BasecostC : TINFCrypt;
     procedure CheckRestrictToRun;
     procedure CheckDBFile;
     procedure ReadPasswords;
@@ -331,10 +323,12 @@ type
     procedure UpdateDBFileDataFor35(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor29(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor36(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+    procedure UpdateDBFileDataFor37(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
   public
     FFS : TFormatSettings;
     SerBeg,
     SerEnd : String;
+    SaveGridMask : Integer;
     function DatabaseOpenedBy: string;
     function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
     procedure CompactDataBase(NewPassword: string='');
@@ -390,8 +384,7 @@ type
     function D_29_B_OLD(c : TINFCrypt; CodeS1, CodeS2 : String) : String;
     function D_HP(HTTPPassC: String) : String;
     function E_HP(HTTPPass: String) : String;
-    procedure SavePass(ASyn, ACodes, AB : String);
-    procedure testSavePass;
+    procedure SavePass(ASyn, ACodes, AB, ASGM : String);
     procedure LoadRetailMargins;
     //Получить розничную цену товара в зависимости от наценки
     function GetPriceRet(BaseCost : Currency) : Currency;
@@ -469,8 +462,8 @@ var
   HTTPS,
   HTTPE : String;
 begin
-  SerBeg := 'Yteji';
-  SerEnd := 'lk3p5';
+  SerBeg := '2AFF';
+  SerEnd := '674C';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
@@ -482,7 +475,6 @@ begin
   SynC := TINFCrypt.Create('', 300);
   CodeC := TINFCrypt.Create('', 60);
   BasecostC := TINFCrypt.Create('', 50);
-  VBasecostC := TINFCrypt.Create('', 50);
   HTTPC := TINFCrypt.Create(HTTPS + HTTPE, 255);
 
   ResetNeedCommitExchange;
@@ -1495,6 +1487,8 @@ begin
 end;
 
 procedure TDM.ReadPasswords;
+var
+  SaveGridMaskStr : String;
 begin
 try
   SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
@@ -1505,25 +1499,21 @@ try
   CodesPassword := PassC.DecodeHex(CodesPassword);
   BasecostPassword := PassC.DecodeHex(BasecostPassword);
   DBUIN := PassC.DecodeHex(DBUIN);
+  SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
+  DBUIN := Copy(DBUIN, 1, 8);
+  SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
 except
   SynonymPassword := '';
   CodesPassword := '';
   BasecostPassword := '';
   DBUIN := '';
 end;
-{
-пароль для виртуальной цены: 4 слева от синонимов, 4 справа от цены, средние 8 из кодов
-set VirtualCostsPasswordParam=concat(left(SynonymsPasswordParam, 4), right(CostsPasswordParam, 4),
-                                  mid(CodesPasswordParam, 5, 8));
-}
-  VirtualBaseCostPassword := LeftStr(SynonymPassword, 4) + RightStr(BasecostPassword, 4) + Copy(CodesPassword, 5, 8);
   SynC.UpdateKey(SynonymPassword);
   CodeC.UpdateKey(CodesPassword);
   BasecostC.UpdateKey(BasecostPassword);
-  VBasecostC.UpdateKey(VirtualBaseCostPassword);
 end;
 
-procedure TDM.SavePass(ASyn, ACodes, AB: String);
+procedure TDM.SavePass(ASyn, ACodes, AB, ASGM: String);
 var
   Price : String;
   tmps,
@@ -1574,17 +1564,15 @@ begin
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
   BaseCostPassword := AB;
-  VirtualBaseCostPassword := LeftStr(SynonymPassword, 4) + RightStr(BasecostPassword, 4) + Copy(CodesPassword, 5, 8);
   SynC.UpdateKey(SynonymPassword);
   CodeC.UpdateKey(CodesPassword);
   BasecostC.UpdateKey(BasecostPassword);
-  VBasecostC.UpdateKey(VirtualBaseCostPassword);
   adtParams.Edit;
   adtParams.FieldByName('CDS').AsString :=
     PassC.EncodeHex(SynonymPassword) +
     PassC.EncodeHex(CodesPassword) +
     PassC.EncodeHex(BaseCostPassword) +
-    PassC.EncodeHex(IntToHex(GetCopyID, 8));
+    PassC.EncodeHex(IntToHex(GetCopyID, 8) + ASGM);
   adtParams.Post;
 end;
 
@@ -1710,11 +1698,6 @@ begin
   finally
     adsOrders.Close;
   end;
-end;
-
-procedure TDM.testSavePass;
-begin
-  SavePass(SynonymPassword, CodesPassword, BaseCostPassword);
 end;
 
 function TDM.CheckCopyIDFromDB: Boolean;
@@ -1926,6 +1909,14 @@ begin
             RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
           RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
           DBVersion := 37;
+        end;
+
+        if DBVersion = 37 then begin
+          etlname := GetLastEtalonFileName;
+          if Length(etlname) > 0 then
+            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
+          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
+          DBVersion := 38;
         end;
 
       finally
@@ -2590,6 +2581,48 @@ begin
   end
   else
     Result := '';
+end;
+
+procedure TDM.UpdateDBFileDataFor37(dbCon: TpFIBDatabase;
+  trMain: TpFIBTransaction);
+var
+  CDS,
+  BaseCostPass,
+  SynonymPass,
+  CodesPass,
+  oldDBUIN,
+  newCDS : String;
+begin
+  trMain.StartTransaction;
+
+  try
+    CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
+    //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
+    if Length(CDS) = 0 then
+      Exit;
+    SynonymPass := PassC.DecodeHex(Copy(CDS, 1, 64));
+    CodesPass := PassC.DecodeHex(Copy(CDS, 65, 64));
+    BaseCostPass := PassC.DecodeHex(Copy(CDS, 129, 64));
+    oldDBUIN := PassC.DecodeHex(Copy(CDS, 193, 32));
+
+    if Length(BaseCostPass) = 0 then
+      raise Exception.Create('Нет необходимой информации.');
+    if Length(oldDBUIN) = 0 then
+      raise Exception.Create('Нет необходимой информации 2.');
+
+    //Обновляем значение CDS в базе с новым CopyID
+    newCDS :=
+      PassC.EncodeHex(SynonymPass) +
+      PassC.EncodeHex(CodesPass) +
+      PassC.EncodeHex(BaseCostPass) +
+      PassC.EncodeHex(oldDBUIN + '0000001');
+    dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
+  except
+    on E : Exception do
+     raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
+  end;
+
+  trMain.Commit;
 end;
 
 initialization

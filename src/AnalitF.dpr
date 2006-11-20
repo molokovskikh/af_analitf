@@ -69,7 +69,10 @@ uses
   Encryption in 'NTLM\Encryption.pas',
   SynonymSearch in 'SynonymSearch.pas' {SynonymSearchForm},
   U_UpdateDBThread in 'U_UpdateDBThread.pas',
-  U_frmOldOrdersDelete in 'U_frmOldOrdersDelete.pas' {frmOldOrdersDelete};
+  U_frmOldOrdersDelete in 'U_frmOldOrdersDelete.pas' {frmOldOrdersDelete},
+  U_frmSendLetter in 'U_frmSendLetter.pas' {frmSendLetter},
+  U_SXConversions in 'common\U_SXConversions.pas',
+  U_SGXMLGeneral in 'common\U_SGXMLGeneral.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
@@ -78,6 +81,7 @@ uses
 {$R CompareScript35.RES}
 {$R CompareScript29.RES}
 {$R CompareScript36.RES}
+{$R CompareScript37.RES}
 
 var
   B : TWebBrowser;

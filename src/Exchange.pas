@@ -11,7 +11,7 @@ uses
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet;
 
 type
-  TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate, eaGetWaybills);
+  TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate, eaGetWaybills, eaSendLetter);
 
   TExchangeActions=set of TExchangeAction;
 
@@ -234,6 +234,11 @@ begin
 	if Result and (eaGetWaybills in AExchangeActions) then
     Windows.MessageBox( Application.Handle,
 			'Получение накладных завершено успешно.', 'Информация',
+			MB_OK or MB_ICONINFORMATION);
+
+	if Result and (eaSendLetter in AExchangeActions) then
+    Windows.MessageBox( Application.Handle,
+			'Письмо успешно отправлено.', 'Информация',
 			MB_OK or MB_ICONINFORMATION);
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) then Windows.MessageBox( Application.Handle,

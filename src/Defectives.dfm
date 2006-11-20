@@ -6,11 +6,10 @@ inherited DefectivesForm: TDefectivesForm
   ClientHeight = 498
   ClientWidth = 831
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel2: TPanel
+  object Panel2: TPanel [0]
     Left = 0
     Top = 421
     Width = 831
@@ -177,7 +176,8 @@ inherited DefectivesForm: TDefectivesForm
       TabOrder = 0
     end
   end
-  object dbgDefectives: TToughDBGrid
+  object dbgDefectives: TToughDBGrid [1]
+    Tag = 8192
     Left = 0
     Top = 39
     Width = 831
@@ -271,7 +271,7 @@ inherited DefectivesForm: TDefectivesForm
         Title.TitleButton = True
       end>
   end
-  object Panel1: TPanel
+  object Panel1: TPanel [2]
     Left = 0
     Top = 0
     Width = 831

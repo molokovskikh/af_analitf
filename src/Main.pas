@@ -127,6 +127,8 @@ TMainForm = class(TForm)
     ToolButton7: TToolButton;
     actSynonymSearch: TAction;
     ToolButton10: TToolButton;
+    actSendLetter: TAction;
+    miSendLetter: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -172,12 +174,12 @@ TMainForm = class(TForm)
     procedure actHomeUpdate(Sender: TObject);
     procedure itmAboutClick(Sender: TObject);
     procedure itmExternalOrdersClick(Sender: TObject);
-    procedure actWayBillUpdate(Sender: TObject);
     procedure dblcbClientsMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure actWayBillExecute(Sender: TObject);
     procedure actSynonymSearchExecute(Sender: TObject);
     procedure actReceiveTicketsExecute(Sender: TObject);
+    procedure actSendLetterExecute(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -234,7 +236,7 @@ uses
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm, Integr,
 	Exclusive, Wait, AlphaUtils, About, ExternalOrders, CompactThread, LU_Tracer,
-  SynonymSearch, U_frmOldOrdersDelete;
+  SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter;
 
 {$R *.DFM}
 
@@ -598,7 +600,8 @@ begin
 	actSave.Enabled :=
   ( Screen.ActiveControl <> nil) and
 		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
-     and ActiveChild.SaveEnabled;
+     and ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
+     //and ActiveChild.SaveEnabled;
 end;
 
 procedure TMainForm.SetOrdersInfo;
@@ -807,6 +810,7 @@ begin
 //  actRegistry.Enabled := False;
   actDefectives.Enabled := False;
   actClosedOrders.Enabled := False;
+  actWayBill.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -820,6 +824,7 @@ begin
 //  actRegistry.Enabled := True;
   actDefectives.Enabled := True;
   actClosedOrders.Enabled := True;
+  actWayBill.Enabled := True;
 end;
 
 procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
@@ -867,11 +872,6 @@ procedure TMainForm.SetActionLists(AValue: TList);
 begin
   if AValue <> FActionLists then
     FActionLists := AValue;
-end;
-
-procedure TMainForm.actWayBillUpdate(Sender: TObject);
-begin
-  TAction(Sender).Enabled := True;
 end;
 
 procedure TMainForm.dblcbClientsMouseDown(Sender: TObject;
@@ -926,6 +926,26 @@ end;
 procedure TMainForm.actReceiveTicketsExecute(Sender: TObject);
 begin
 	RunExchange( [eaGetWaybills] );
+end;
+
+procedure TMainForm.actSendLetterExecute(Sender: TObject);
+var
+  Sended : Boolean;
+begin
+  frmSendLetter := TfrmSendLetter.Create(Application);
+  try
+
+    repeat
+      if frmSendLetter.ShowModal = mrOk then
+        Sended := RunExchange([eaSendLetter])
+      else
+        Sended := True;
+    until Sended;
+
+  finally
+    frmSendLetter.Free;
+  end;
+
 end;
 
 end.

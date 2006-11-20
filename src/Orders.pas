@@ -70,13 +70,14 @@ var
 
 implementation
 
-uses OrdersH, DModule, Constant, Main;
+uses OrdersH, DModule, Constant, Main, Math;
 
 {$R *.dfm}
 
 procedure TOrdersForm.ShowForm(AOrderId: Integer);
 begin
   //PrintEnabled:=False;
+  dbgOrders.Tag := IfThen(OrdersHForm.TabControl.TabIndex = 1, 1, 2);
   SaveEnabled := OrdersHForm.TabControl.TabIndex = 1;
   SetParams(AOrderId);
   inherited ShowForm;

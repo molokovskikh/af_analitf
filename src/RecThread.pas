@@ -110,10 +110,11 @@ begin
 
             OldReconnectCount := ExchangeForm.HTTPReclame.ReconnectCount;
             ExchangeForm.HTTPReclame.ReconnectCount := 0;
-            ExchangeForm.HTTPReclame.Request.BasicAuthentication := True;
-            //ExchangeForm.HTTPReclame.Request.Authentication := TDADNTLMAuthentication.Create;
-//            if not AnsiStartsText('analit\', HTTPName) then
-//              ExchangeForm.HTTPReclame.Request.Username := 'ANALIT\' + HTTPName;
+//            ExchangeForm.HTTPReclame.Request.BasicAuthentication := True;
+            ExchangeForm.HTTPReclame.Request.BasicAuthentication := False;
+            ExchangeForm.HTTPReclame.Request.Authentication := TDADNTLMAuthentication.Create;
+            if not AnsiStartsText('analit\', HTTPName) then
+              ExchangeForm.HTTPReclame.Request.Username := 'ANALIT\' + HTTPName;
             ExchangeForm.HTTPReclame.OnWork := HTTPReclameWork;
             Log('Reclame', 'ѕытаемс€ скачать архив с информационным блоком...');
             try
@@ -173,12 +174,12 @@ begin
               ExchangeForm.HTTPReclame.ReconnectCount := OldReconnectCount;
               ExchangeForm.HTTPReclame.Request.Username := HTTPName;
               ExchangeForm.HTTPReclame.Request.BasicAuthentication := True;
-{
               try
                 ExchangeForm.HTTPReclame.Request.Authentication.Free;
               except
               end;
               ExchangeForm.HTTPReclame.Request.Authentication := nil;
+{
 }              
               ExchangeForm.HTTPReclame.OnWork := nil;
             end;

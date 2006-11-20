@@ -400,6 +400,9 @@ object MainForm: TMainForm
       object itmConfig: TMenuItem
         Action = actConfig
       end
+      object miSendLetter: TMenuItem
+        Action = actSendLetter
+      end
       object itmCompact: TMenuItem
         Action = actCompact
       end
@@ -625,6 +628,7 @@ object MainForm: TMainForm
       Caption = #1040#1082#1090#1080#1074#1085#1099#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
       Hint = #1040#1082#1090#1080#1074#1085#1099#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
       ImageIndex = 20
+      Visible = False
       OnExecute = actActiveUsersExecute
     end
     object actSave: TAction
@@ -676,13 +680,17 @@ object MainForm: TMainForm
       Hint = #1053#1072#1082#1083#1072#1076#1085#1099#1077
       ImageIndex = 15
       OnExecute = actWayBillExecute
-      OnUpdate = actWayBillUpdate
     end
     object actSynonymSearch: TAction
       Category = 'Order'
       Caption = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
       Hint = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
       OnExecute = actSynonymSearchExecute
+    end
+    object actSendLetter: TAction
+      Category = 'Service'
+      Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100' '#1087#1080#1089#1100#1084#1086' '#1074' '#1040#1050' "'#1048#1085#1092#1086#1088#1091#1084'"'
+      OnExecute = actSendLetterExecute
     end
   end
   object AppEvents: TApplicationEvents

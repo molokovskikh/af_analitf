@@ -94,6 +94,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     BevelOuter = bvNone
     TabOrder = 2
     object dbgCore: TToughDBGrid
+      Tag = 32
       Left = 0
       Top = 0
       Width = 792
@@ -819,7 +820,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
   end
   object tmrSearch: TTimer
     Enabled = False
-    Interval = 2000
+    Interval = 5000
     OnTimer = tmrSearchTimer
     Left = 472
     Top = 213

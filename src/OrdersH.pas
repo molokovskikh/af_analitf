@@ -209,6 +209,7 @@ begin
 			btnMoveSend.Caption := 'Перевести в отправленные';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
+      dbgOrdersH.Tag := 1024;
 			//PrintEnabled := True;
 		end;
 		1: begin
@@ -221,6 +222,7 @@ begin
 			btnMoveSend.Caption := 'Вернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
+      dbgOrdersH.Tag := 2048;
 			//PrintEnabled := False;
 		end;
 	end;

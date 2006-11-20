@@ -6,124 +6,39 @@ uses
   Classes,
   StrUtils,
   LU_Tracer in '..\common\LU_Tracer.pas',
-  FileUtil;
+  FileUtil,
+  Waiting in 'Waiting.pas' {WaitingForm};
 
 const
   BackDir = 'UpdateBackup';
 
 {$R *.res}
 
-procedure Erase; stdcall;
-var
-  trLog : TTracer;
-
-  function UpdateFiles(InDir, OutDir, BackDir : String) : Boolean;
-  var
-    SR : TSearchRec;
-    I : Integer;
-  begin
-    Result := True;
-    if FindFirst(InDir + '*.*', faAnyFile, sr) = 0 then
-    begin
-      repeat
-        if (sr.Name <> '.') and (sr.Name <> '..') then
-
-          //Если мы встретили директорию
-          if (sr.Attr and faDirectory > 0) then begin
-
-            //Пытаемся создать директорию в результирующей директории
-            if not DirectoryExists(OutDir + sr.Name) then
-              if not CreateDir(OutDir + sr.Name) then begin
-                Result := False;
-                trLog.TR('Eraser', 'Не получилось создать директорию ' + OutDir + sr.Name + ': ' +
-                  SysErrorMessage(GetLastError()));
-                Exit;
-              end;
-
-            //Пытаемся создать директорию в Backup-директории
-            if not DirectoryExists(BackDir + sr.Name) then
-              if not CreateDir(BackDir + sr.Name) then begin
-                Result := False;
-                trLog.TR('Eraser', 'Не получилось создать директорию ' + BackDir + sr.Name + ': ' +
-                  SysErrorMessage(GetLastError()));
-                Exit;
-              end;
-
-            //Запускаем процесс обновления для вложенных директорий
-            Result := UpdateFiles(InDir + sr.Name + '\', OutDir + sr.Name + '\', BackDir + sr.Name + '\');
-            if not Result then
-              Exit;
-          end
-          else begin
-
-            //Пытаемся сделать резервную копию обновляемого файла и после этого удаляем файл
-            if FileExists(OutDir + sr.Name) then begin
-              Result := False;
-              for I := 1 to 20 do begin
-                if Windows.CopyFile(PChar(OutDir +  sr.Name), PChar(BackDir + sr.Name + '.bak'), false) then begin
-                  Result := True;
-                  break;
-                end;
-                Sleep(500);
-              end;
-              if not Result then begin
-                trLog.TR('Eraser', 'Не получилось сделать копию файла ' + sr.Name + ': ' +
-                  SysErrorMessage(GetLastError()));
-                Exit;
-              end;
-
-              //Пытаемся установить атрибуты файла
-              Result := False;
-              for I := 1 to 20 do begin
-                if Windows.SetFileAttributes(PChar(OutDir + sr.Name), FILE_ATTRIBUTE_NORMAL) then begin
-                  Result := True;
-                  break;
-                end;
-                Sleep(500);
-              end;
-              if not Result then begin
-                trLog.TR('Eraser', 'Не получилось установить атрибуты файла ' + sr.Name + ': ' +
-                  SysErrorMessage(GetLastError()));
-                Exit;
-              end;
-
-              //Пытаемся удалить файл
-              Result := False;
-              for I := 1 to 20 do begin
-                if Windows.DeleteFile(PChar(OutDir + sr.Name)) then begin
-                  Result := True;
-                  break;
-                end;
-                Sleep(500);
-              end;
-              if not Result then begin
-                trLog.TR('Eraser', 'Не получилось удалить файл ' + sr.Name + ': ' +
-                  SysErrorMessage(GetLastError()));
-                Exit;
-              end;
-            end;
-
-
-            //Пытаемся обновить файл
-            Result := False;
-            for I := 1 to 20 do begin
-              if Windows.MoveFile(PChar(InDir +  sr.Name), PChar(OutDir + sr.Name)) then begin
-                Result := True;
-                break;
-              end;
-              Sleep(500);
-            end;
-            if not Result then begin
-              trLog.TR('Eraser', 'Не получилось перезаписать файл ' + sr.Name + ': ' +
-                SysErrorMessage(GetLastError()));
-              Exit;
-            end;
-          end;
-      until FindNext(sr) <> 0;
-      FindClose(sr);
-    end;
+type
+  TUpdateExeThread = class(TThread)
+   private
+    trLog : TTracer;
+    function UpdateFiles(InDir, OutDir, BackDir : String) : Boolean;
+   protected
+    procedure Execute; override;
   end;
 
+procedure Erase; stdcall;
+begin
+  try
+
+    ShowWaiting('Внимание! Происходит обновление программы. Пожалуйста, подождите...', TUpdateExeThread.Create(True));
+
+  except
+  end;
+ 	FreeLibrary( GetModuleHandle(nil) );
+end;
+
+exports Erase;
+
+{ TUpdateExeThread }
+
+procedure TUpdateExeThread.Execute;
 var
 	SI: TStartupInfo;
 	PI: TProcessInformation;
@@ -133,24 +48,24 @@ var
   ExePath,
   InDir,
   Switch : String;
-  
 begin
   try
-
     trLog := TTracer.Create(ChangeFileExt(ParamStr(ParamCount-1), 'up'), 'log', 0);
     try
 
       //Ждем, пока вызвавший процесс не закончит работу
       if TryStrToInt64(ParamStr(ParamCount-2), PH64) then begin
-        PH := OpenProcess(SYNCHRONIZE, FALSE, PH64);
+        PH := OpenProcess(Windows.SYNCHRONIZE, FALSE, PH64);
         if PH <> 0 then begin
           WaitForSingleObject(PH, 60000);
           CloseHandle(PH);
-        end;
+        end
+        else
+          Sleep(10000);
       end;
 
       //Читаем параметры вызова
-      //Директория с обнолениями (без слеша)
+      //Директория с обновлениями (без слеша)
       InDir := ParamStr(ParamCount);
       //имя файла для запуска
       ExeName := ParamStr(ParamCount-1);
@@ -198,13 +113,117 @@ begin
     finally
       trLog.Free;
     end;
-
   except
   end;
- 	FreeLibrary( GetModuleHandle(nil) );
 end;
 
-exports Erase;
+function TUpdateExeThread.UpdateFiles(InDir, OutDir, BackDir : String) : Boolean;
+var
+  SR : TSearchRec;
+  I : Integer;
+begin
+  Result := True;
+  if FindFirst(InDir + '*.*', faAnyFile, sr) = 0 then
+  begin
+    repeat
+      if (sr.Name <> '.') and (sr.Name <> '..') then
+
+        //Если мы встретили директорию
+        if (sr.Attr and faDirectory > 0) then begin
+
+          //Пытаемся создать директорию в результирующей директории
+          if not DirectoryExists(OutDir + sr.Name) then
+            if not CreateDir(OutDir + sr.Name) then begin
+              Result := False;
+              trLog.TR('Eraser', 'Не получилось создать директорию ' + OutDir + sr.Name + ': ' +
+                SysErrorMessage(GetLastError()));
+              Exit;
+            end;
+
+          //Пытаемся создать директорию в Backup-директории
+          if not DirectoryExists(BackDir + sr.Name) then
+            if not CreateDir(BackDir + sr.Name) then begin
+              Result := False;
+              trLog.TR('Eraser', 'Не получилось создать директорию ' + BackDir + sr.Name + ': ' +
+                SysErrorMessage(GetLastError()));
+              Exit;
+            end;
+
+          //Запускаем процесс обновления для вложенных директорий
+          Result := UpdateFiles(InDir + sr.Name + '\', OutDir + sr.Name + '\', BackDir + sr.Name + '\');
+          if not Result then
+            Exit;
+        end
+        else begin
+
+          //Пытаемся сделать резервную копию обновляемого файла и после этого удаляем файл
+          if FileExists(OutDir + sr.Name) then begin
+            Result := False;
+            for I := 1 to 20 do begin
+              if Windows.CopyFile(PChar(OutDir +  sr.Name), PChar(BackDir + sr.Name + '.bak'), false) then begin
+                Result := True;
+                break;
+              end;
+              Sleep(500);
+            end;
+            if not Result then begin
+              trLog.TR('Eraser', 'Не получилось сделать копию файла ' + sr.Name + ': ' +
+                SysErrorMessage(GetLastError()));
+              Exit;
+            end;
+
+            //Пытаемся установить атрибуты файла
+            Result := False;
+            for I := 1 to 20 do begin
+              if Windows.SetFileAttributes(PChar(OutDir + sr.Name), FILE_ATTRIBUTE_NORMAL) then begin
+                Result := True;
+                break;
+              end;
+              Sleep(500);
+            end;
+            if not Result then begin
+              trLog.TR('Eraser', 'Не получилось установить атрибуты файла ' + sr.Name + ': ' +
+                SysErrorMessage(GetLastError()));
+              Exit;
+            end;
+
+            //Пытаемся удалить файл
+            Result := False;
+            for I := 1 to 20 do begin
+              if Windows.DeleteFile(PChar(OutDir + sr.Name)) then begin
+                Result := True;
+                break;
+              end;
+              Sleep(500);
+            end;
+            if not Result then begin
+              trLog.TR('Eraser', 'Не получилось удалить файл ' + sr.Name + ': ' +
+                SysErrorMessage(GetLastError()));
+              Exit;
+            end;
+          end;
+
+
+          //Пытаемся обновить файл
+          Result := False;
+          for I := 1 to 20 do begin
+            if Windows.MoveFile(PChar(InDir +  sr.Name), PChar(OutDir + sr.Name)) then begin
+              Result := True;
+              break;
+            end;
+            Sleep(500);
+          end;
+          if not Result then begin
+            trLog.TR('Eraser', 'Не получилось перезаписать файл ' + sr.Name + ': ' +
+              SysErrorMessage(GetLastError()));
+            Exit;
+          end;
+        end;
+    until FindNext(sr) <> 0;
+    FindClose(sr);
+  end;
+end;
+
 
 begin
 end.

@@ -72,7 +72,8 @@ private
   AbsentPriceCodeSL : TStringList;
   ASynPass,
   ACodesPass,
-  ABPass : String;
+  ABPass,
+  ASaveGridMask : String;
   URL : String;
   HTTPName,
   HTTPPass : String;
@@ -99,6 +100,7 @@ private
   procedure DMSavePass;
 	procedure CommitExchange;
 	procedure DoExchange;
+	procedure DoSendLetter;
 	procedure DoSendOrders;
 	procedure HTTPDisconnect;
 	procedure RasDisconnect;
@@ -143,7 +145,8 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
-  U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc;
+  U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
+  IdCoderMIME, U_SXConversions;
 
 { TExchangeThread }
 
@@ -190,14 +193,14 @@ begin
     try
 		ErrorMessage := '';
 		try
-			if ( [eaGetPrice, eaSendOrders, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
       then
 			begin
 				RasConnect;
 				HTTPConnect;
 				TotalProgress := 10;
 				Synchronize( SetTotalProgress);
-				if ([eaImportOnly, eaGetFullData, eaMDBUpdate] * ExchangeForm.ExchangeActs = []) then
+				if ([eaImportOnly, eaGetFullData, eaMDBUpdate, eaSendLetter] * ExchangeForm.ExchangeActs = []) then
         begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
@@ -212,6 +215,14 @@ begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					DoSendOrders;
+					CriticalError := False;
+				end;
+				if eaSendLetter in ExchangeForm.ExchangeActs then
+				begin
+					CriticalError := True;
+					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+					DoSendLetter;
 					CriticalError := False;
 				end;
 				TotalProgress := 20;
@@ -251,7 +262,7 @@ begin
         CommitExchange;
 
 			{ Отключение }
-      if ( [eaSendOrders, eaGetWaybills] * ExchangeForm.ExchangeActs <> []) then
+      if ( [eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> []) then
         OnReclameTerminate(nil)
       else
         if ([eaGetPrice] * ExchangeForm.ExchangeActs <> [])
@@ -486,10 +497,11 @@ begin
       OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
       ExchangeForm.HTTP.OnWork := HTTPWork;
       ExchangeForm.HTTP.ReconnectCount := 0;
-      ExchangeForm.HTTP.Request.BasicAuthentication := True;
-      //ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
-//      if not AnsiStartsText('analit\', HTTPName) then
-//        ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
+//      ExchangeForm.HTTP.Request.BasicAuthentication := True;
+      ExchangeForm.HTTP.Request.BasicAuthentication := False;
+      ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
+      if not AnsiStartsText('analit\', HTTPName) then
+        ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
       Progress := 0;
       Synchronize( SetProgress );
 
@@ -551,13 +563,13 @@ begin
         ExchangeForm.HTTP.OnWork := nil;
         ExchangeForm.HTTP.Request.Username := HTTPName;
         ExchangeForm.HTTP.Request.BasicAuthentication := True;
-{
         try
           ExchangeForm.HTTP.Request.Authentication.Free;
         except
         end;
         ExchangeForm.HTTP.Request.Authentication := nil;
-}        
+{
+}
       end;
 
 			Synchronize( ExchangeForm.CheckStop);
@@ -587,7 +599,7 @@ begin
   LogStr := '';
   params := nil;
   values := nil;
-  
+
   if (eaGetPrice in ExchangeForm.ExchangeActs) then begin
     DM.SetNeedCommitExchange;
 
@@ -660,9 +672,11 @@ var
   ResError : String;
 	ServerOrderId: integer;
   SendError : Boolean;
+{
   ExternalRes : Boolean;
   ErrorStr : PChar;
   ExtErrorMessage : String;
+}  
   S : String;
   TmpOrderCost, TmpMinCost : String;
 begin
@@ -833,7 +847,8 @@ begin
       end;
 
 			DM.adsOrders.Edit;
-			DM.adsOrders.FieldByName( 'CoreId').AsVariant := Null;
+			DM.adsOrders.FieldByName( 'PRICE').Clear;
+			DM.adsOrders.FieldByName( 'CoreId').Clear;
 			DM.adsOrders.FieldByName( 'SendPrice').AsCurrency := StrToCurr(TmpOrderCost);
       DM.adsOrders.Post;
 			DM.adsOrders.Next;
@@ -1766,7 +1781,7 @@ end;
 
 procedure TExchangeThread.OnReclameTerminate(Sender: TObject);
 begin
-  if ( [eaGetPrice, eaSendOrders, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+  if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
   then begin
     HTTPDisconnect;
     RasDisconnect;
@@ -1998,13 +2013,17 @@ begin
   HexToBin(PChar(Res.Values['Codes']), PChar(ACodesPass), INFDataLen);
   SetString(ABPass, nil, INFDataLen);
   HexToBin(PChar(Res.Values['BaseCost']), PChar(ABPass), INFDataLen);
+  if Length(Res.Values['SaveGridMask']) = 7 then
+    ASaveGridMask := Res.Values['SaveGridMask']
+  else
+    ASaveGridMask := '0000000';
   Synchronize(DMSavePass);
   CriticalError := False;
 end;
 
 procedure TExchangeThread.DMSavePass;
 begin
-  DM.SavePass(ASynPass, ACodesPass, ABPass);
+  DM.SavePass(ASynPass, ACodesPass, ABPass, ASaveGridMask);
 end;
 
 procedure TExchangeThread.PriceDataSettings;
@@ -2174,6 +2193,157 @@ procedure TExchangeThread.ThreadOnExecuteError(pFIBQuery: TpFIBQuery;
   E: EFIBError; var Action: TDataAction);
 begin
 //  Tracer.TR('ThreadOnExecuteError', e.Message);
+end;
+
+procedure TExchangeThread.DoSendLetter;
+const
+  TempSendDir = 'AFSend';
+var
+  Attachs, slLetter : TStringList;
+  start,
+  stop : Integer;
+  SevenZipRes : Integer;
+  FS : TFileStream;
+  S,
+  bs : String;
+  LE : TIdEncoderMIME;
+  ss : TStringStream;
+  OldAccept,
+  OldConnection,
+  OldContentType : String;
+
+  procedure AddFile(FileName : String);
+  begin
+    if Attachs.IndexOf(FileName) = -1 then
+      Attachs.Add(FileName);
+  end;
+
+  procedure CopyingFiles;
+  var
+    I : Integer;
+  begin
+    Attachs.AddStrings(frmSendLetter.lbFiles.Items);
+    if frmSendLetter.cbAddLogs.Checked then begin
+      AddFile(ExeName + '.TR');
+      AddFile(ExeName + '.old.TR');
+      AddFile(ExePath + 'Exchange.log');
+      AddFile(ExePath + 'AnalitFup.log');
+    end;
+
+    for I := 0 to Attachs.Count-1 do
+      if FileExists(Attachs[i]) then
+        if not Windows.CopyFile(PChar(Attachs[i]), PChar(GetTempDir + TempSendDir + '\' +ExtractFileName(Attachs[i])), false) then
+          raise Exception.Create('Не удалось скопировать файл: ' + Attachs[i] + #13#10'Причина: ' + SysErrorMessage(GetLastError));
+  end;
+
+  procedure ArchiveAttach;
+  begin
+    SZCS.Enter;
+    try
+      SevenZipRes := SevenZipCreateArchive(
+        0,
+        GetTempDir + TempSendDir + '\Attach.7z',
+        GetTempDir + TempSendDir,
+        '*.*',
+        9,
+        false,
+        false,
+        '',
+        false,
+        nil);
+      if SevenZipRes <> 0 then
+        raise Exception.CreateFmt('Не удалось заархивировать отправляемые файлы. Код ошибки %d', [SevenZipRes]);
+    finally
+      SZCS.Leave;
+    end;
+  end;
+
+  procedure EncodeToBase64;
+  begin
+    LE := TIdEncoderMIME.Create(nil);
+    try
+      FS := TFileStream.Create(GetTempDir + TempSendDir + '\Attach.7z', fmOpenReadWrite);
+      try
+        bs := le.Encode(FS, ((FS.Size div 3) + 1) * 3);
+      finally
+        FS.Free;
+      end;
+    finally
+      LE.Free;
+    end;
+  end;
+
+  procedure FormatSoapMessage;
+  begin
+    slLetter.Add('<?xml version="1.0" encoding="windows-1251"?>');
+    slLetter.Add('<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">');
+    slLetter.Add('  <soap:Body>');
+    slLetter.Add('    <SendLetter xmlns="IOS.Service">');
+    slLetter.Add('      <subject>' + SXReplaceXML(frmSendLetter.leSubject.Text) + '</subject>');
+    slLetter.Add('      <body>' + SXReplaceXML(frmSendLetter.mBody.Text) + '</body>');
+    slLetter.Add(Concat('      <attachment>', bs, '</attachment>'));
+    slLetter.Add('    </SendLetter>');
+    slLetter.Add('  </soap:Body>');
+    slLetter.Add('</soap:Envelope>');
+    slLetter.Add('');
+    slLetter.Add('');
+  end;
+
+begin
+  StatusText := 'Отправка письма';
+	Synchronize( SetStatus);
+
+  if DirectoryExists(GetTempDir + TempSendDir) then
+    if not ClearDir(GetTempDir + TempSendDir, True) then
+      raise Exception.Create('Не получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
+
+  if not CreateDir(GetTempDir + TempSendDir) then
+    raise Exception.Create('Не получилось создать временную директорию: ' + GetTempDir + TempSendDir);
+
+  Attachs := TStringList.Create;
+  Attachs.CaseSensitive := False;
+  slLetter := TStringList.Create;
+  try
+
+    //Формируем список файлов
+    CopyingFiles;
+
+    ArchiveAttach;
+
+    EncodeToBase64;
+
+    FormatSoapMessage;
+
+    ss := TStringStream.Create(slLetter.Text);
+    try
+      ss.Position := 0;
+      OldAccept := ExchangeForm.HTTP.Request.Accept;
+      OldConnection := ExchangeForm.HTTP.Request.Connection;
+      OldContentType := ExchangeForm.HTTP.Request.ContentType;
+      ExchangeForm.HTTP.Request.Accept := '';
+      ExchangeForm.HTTP.Request.Connection := '';
+      ExchangeForm.HTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendLetter"';
+
+      S := ExchangeForm.HTTP.Post(URL, ss);
+     	start := PosEx( '>', S, Pos( 'SendLetterResult', S)) + 1;
+    	stop := PosEx( '</', S, start);
+	    S := Copy( S, start, stop - start);
+      if AnsiStartsText('Error=', S) then
+        raise Exception.Create(Utf8ToAnsi( Copy(S, 7, Length(S)) ));
+        
+    finally
+      ExchangeForm.HTTP.Request.Accept := OldAccept;
+      ExchangeForm.HTTP.Request.Connection := OldConnection;
+      ExchangeForm.HTTP.Request.ContentType := OldContentType;
+      ss.Free;
+    end;
+
+  finally
+    Attachs.Free;
+    slLetter.Free;
+  end;
+
+  ClearDir(GetTempDir + TempSendDir, True);
 end;
 
 { TFileUpdateInfo }

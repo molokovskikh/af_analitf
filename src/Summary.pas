@@ -36,11 +36,7 @@ type
     WebBrowser1: TWebBrowser;
     btnDelete: TButton;
     pTopSettings: TPanel;
-    Label7: TLabel;
-    Label8: TLabel;
     bvSettings: TBevel;
-    dtpDateFrom: TDateTimePicker;
-    dtpDateTo: TDateTimePicker;
     rgSummaryType: TRadioGroup;
     lPosCount: TLabel;
     pmSelectedPrices: TPopupMenu;
@@ -94,6 +90,9 @@ type
     adsSendSummaryVITALLYIMPORTANT: TFIBIntegerField;
     adsSendSummaryREQUESTRATIO: TFIBIntegerField;
     adsSendSummaryREGISTRYCOST: TFIBFloatField;
+    dtpDateFrom: TDateTimePicker;
+    dtpDateTo: TDateTimePicker;
+    adsSummarySENDPRICE: TFIBBCDField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -225,6 +224,7 @@ begin
       //adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ';
       adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
       dbgSummary.InputField := 'OrderCount';
+      dbgSummary.Tag := 256;
       btnDelete.Enabled := True;
     end
     else begin
@@ -233,6 +233,7 @@ begin
       adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
       adsSummary.ParamByName( 'DATETO').Value := LastDateTo;
       dbgSummary.InputField := '';
+      dbgSummary.Tag := 512;
       btnDelete.Enabled := False;
     end;
     if Length(FilterSQL) > 0 then
@@ -265,9 +266,15 @@ var
 begin
 	//вычисляем сумму по позиции
   try
-    S := DM.D_B_N(adsSummaryBASECOST.AsString);
-    C := StrToCurr(S);
-    adsSummaryCryptBASECOST.AsCurrency := C;
+    if adsSummarySENDPRICE.IsNull then begin
+      S := DM.D_B_N(adsSummaryBASECOST.AsString);
+      C := StrToCurr(S);
+      adsSummaryCryptBASECOST.AsCurrency := C;
+    end
+    else begin
+      C := adsSummarySENDPRICE.AsCurrency;
+      adsSummaryCryptBASECOST.AsCurrency := C;
+    end;
     adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(C);
     adsSummarySumOrder.AsCurrency := C * adsSummaryORDERCOUNT.AsInteger;
   except

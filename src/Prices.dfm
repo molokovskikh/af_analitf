@@ -6,11 +6,10 @@ inherited PricesForm: TPricesForm
   ClientHeight = 571
   ClientWidth = 790
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel1: TPanel
+  object Panel1: TPanel [0]
     Left = 0
     Top = 541
     Width = 790
@@ -38,7 +37,7 @@ inherited PricesForm: TPricesForm
       TabOrder = 0
     end
   end
-  object Panel2: TPanel
+  object Panel2: TPanel [1]
     Left = 0
     Top = 0
     Width = 790
@@ -47,6 +46,7 @@ inherited PricesForm: TPricesForm
     BevelOuter = bvNone
     TabOrder = 1
     object dbgPrices: TToughDBGrid
+      Tag = 64
       Left = 0
       Top = 29
       Width = 534

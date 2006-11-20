@@ -332,6 +332,7 @@ object CoreForm: TCoreForm
       end
     end
     object dbgCore: TToughDBGrid
+      Tag = 16384
       Left = 0
       Top = 0
       Width = 792

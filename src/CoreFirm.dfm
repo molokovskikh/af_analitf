@@ -37,6 +37,7 @@ object CoreFirmForm: TCoreFirmForm
     Visible = False
   end
   object dbgCore: TToughDBGrid
+    Tag = 128
     Left = 0
     Top = 65
     Width = 768
@@ -760,7 +761,7 @@ object CoreFirmForm: TCoreFirmForm
   end
   object tmrSearch: TTimer
     Enabled = False
-    Interval = 2000
+    Interval = 2500
     OnTimer = tmrSearchTimer
     Left = 472
     Top = 213

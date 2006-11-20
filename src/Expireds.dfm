@@ -34,6 +34,7 @@ inherited ExpiredsForm: TExpiredsForm
     BevelOuter = bvNone
     TabOrder = 1
     object dbgExpireds: TToughDBGrid
+      Tag = 4096
       Left = 0
       Top = 0
       Width = 613

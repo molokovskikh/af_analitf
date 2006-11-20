@@ -73,6 +73,7 @@ inherited NamesFormsForm: TNamesFormsForm
       Height = 419
     end
     object dbgNames: TToughDBGrid
+      Tag = 4
       Left = 0
       Top = 0
       Width = 266
@@ -128,6 +129,7 @@ inherited NamesFormsForm: TNamesFormsForm
       BevelOuter = bvNone
       TabOrder = 1
       object dbgForms: TToughDBGrid
+        Tag = 8
         Left = 0
         Top = 0
         Width = 418
@@ -244,6 +246,7 @@ inherited NamesFormsForm: TNamesFormsForm
       end
     end
     object dbgCatalog: TToughDBGrid
+      Tag = 16
       Left = 0
       Top = 41
       Width = 687
@@ -410,6 +413,7 @@ inherited NamesFormsForm: TNamesFormsForm
   end
   object tmrSearch: TTimer
     Enabled = False
+    Interval = 5000
     OnTimer = tmrSearchTimer
     Left = 304
     Top = 184

@@ -294,32 +294,6 @@ inherited SummaryForm: TSummaryForm
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 2
-      object Label7: TLabel
-        Left = 186
-        Top = 27
-        Width = 60
-        Height = 13
-        Caption = #1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
-      end
-      object Label8: TLabel
-        Left = 343
-        Top = 27
-        Width = 12
-        Height = 13
-        Caption = #1087#1086
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
-      end
       object bvSettings: TBevel
         Left = 0
         Top = 49
@@ -328,8 +302,40 @@ inherited SummaryForm: TSummaryForm
         Align = alBottom
         Shape = bsBottomLine
       end
+      object rgSummaryType: TRadioGroup
+        Left = 0
+        Top = 0
+        Width = 433
+        Height = 48
+        Caption = ' '#1048#1089#1090#1086#1095#1085#1080#1082' '
+        Items.Strings = (
+          #1042#1099#1073#1080#1088#1072#1090#1100' '#1080#1079' '#1090#1077#1082#1091#1097#1080#1093
+          
+            #1042#1099#1073#1080#1088#1072#1090#1100' '#1080#1079' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1093' '#1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089'                            ' +
+            '    '#1087#1086)
+        TabOrder = 0
+        OnClick = rgSummaryTypeClick
+      end
+      object btnSelectPrices: TBitBtn
+        Left = 456
+        Top = 13
+        Width = 105
+        Height = 25
+        Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090#1099
+        TabOrder = 1
+        OnClick = btnSelectPricesClick
+        Glyph.Data = {
+          A6000000424DA600000000000000760000002800000009000000060000000100
+          0400000000003000000000000000000000001000000010000000000000000000
+          80000080000000808000800000008000800080800000C0C0C000808080000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
+          0000333303333000000033300033300000003300000330000000300000003000
+          00003333333330000000}
+        Layout = blGlyphRight
+        Spacing = 10
+      end
       object dtpDateFrom: TDateTimePicker
-        Left = 255
+        Left = 234
         Top = 23
         Width = 81
         Height = 21
@@ -342,49 +348,19 @@ inherited SummaryForm: TSummaryForm
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         ParentFont = False
-        TabOrder = 0
+        TabOrder = 2
         OnCloseUp = dtpDateCloseUp
       end
       object dtpDateTo: TDateTimePicker
-        Left = 362
+        Left = 346
         Top = 23
         Width = 81
         Height = 21
         Date = 0.631934409720997800
         Time = 0.631934409720997800
         Enabled = False
-        TabOrder = 1
-        OnCloseUp = dtpDateCloseUp
-      end
-      object rgSummaryType: TRadioGroup
-        Left = 0
-        Top = 0
-        Width = 185
-        Height = 48
-        Caption = ' '#1048#1089#1090#1086#1095#1085#1080#1082' '
-        Items.Strings = (
-          #1042#1099#1073#1080#1088#1072#1090#1100' '#1080#1079' '#1090#1077#1082#1091#1097#1080#1093
-          #1042#1099#1073#1080#1088#1072#1090#1100' '#1080#1079' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1093)
-        TabOrder = 2
-        OnClick = rgSummaryTypeClick
-      end
-      object btnSelectPrices: TBitBtn
-        Left = 456
-        Top = 13
-        Width = 105
-        Height = 25
-        Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090#1099
         TabOrder = 3
-        OnClick = btnSelectPricesClick
-        Glyph.Data = {
-          A6000000424DA600000000000000760000002800000009000000060000000100
-          0400000000003000000000000000000000001000000010000000000000000000
-          80000080000000808000800000008000800080800000C0C0C000808080000000
-          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
-          0000333303333000000033300033300000003300000330000000300000003000
-          00003333333330000000}
-        Layout = blGlyphRight
-        Spacing = 10
+        OnCloseUp = dtpDateCloseUp
       end
     end
   end
@@ -477,7 +453,8 @@ inherited SummaryForm: TSummaryForm
       '    core.doc,'
       '    core.registrycost,'
       '    core.vitallyimportant,'
-      '    core.requestratio'
+      '    core.requestratio,'
+      '    Orders.SendPrice'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -627,6 +604,11 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
     end
+    object adsSummarySENDPRICE: TFIBBCDField
+      FieldName = 'SENDPRICE'
+      Size = 2
+      RoundByScale = True
+    end
   end
   object adsSummaryH: TpFIBDataSet
     SelectSQL.Strings = (
@@ -682,7 +664,8 @@ inherited SummaryForm: TSummaryForm
       '    core.doc,'
       '    core.registrycost,'
       '    core.vitallyimportant,'
-      '    core.requestratio'
+      '    core.requestratio,'
+      '    Orders.SendPrice'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -737,7 +720,8 @@ inherited SummaryForm: TSummaryForm
       '    cast('#39#39' as varchar(20)) as doc,'
       '    cast(0.0 as numeric(8,2)) as registrycost,'
       '    0 as vitallyimportant,'
-      '    0 as requestratio'
+      '    0 as requestratio,'
+      '    Orders.SendPrice'
       'FROM'
       '    PricesData,'
       '    Regions,'
