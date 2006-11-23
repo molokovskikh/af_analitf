@@ -88,6 +88,7 @@ type
     udHistoryDayCount: TUpDown;
     Label16: TLabel;
     dbcbConfirmDeleteOldOrders: TDBCheckBox;
+    dbchbNTLM: TDBCheckBox;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);

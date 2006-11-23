@@ -77,6 +77,8 @@ private
   URL : String;
   HTTPName,
   HTTPPass : String;
+  UseNTLM  : Boolean;
+  NTLMAuth : Integer;
   StartDownPosition : Integer;
 
   upB : TpFIBQuery;
@@ -134,6 +136,7 @@ private
   //Не вызывает исключение в случае ошибки -607
   procedure SilentExecute(q : TpFIBQuery; SQL : String);
   procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; const AWorkCount: Integer);
+  procedure HTTPWorkBegin(Sender: TObject; AWorkMode: TWorkMode; const AWorkCountMax: Integer);
   procedure ThreadOnBatching(BatchOperation:TBatchOperation;RecNumber:integer;var BatchAction:TBatchAction);
   procedure ThreadOnExecuteError(pFIBQuery:TpFIBQuery; E:EFIBError; var Action:TDataAction);
 protected
@@ -351,6 +354,7 @@ begin
 		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
+  UseNTLM  := DM.adtParams.FieldByName( 'USENTLM').AsBoolean;
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
 end;
 
@@ -361,6 +365,7 @@ begin
   RecThread.ReclameURL := URL;
   RecThread.HTTPName := HTTPName;
   RecThread.HTTPPass := HTTPPass;
+  RecThread.UseNTLM  := UseNTLM;
 	RecThread.Resume;
 end;
 
@@ -496,12 +501,16 @@ begin
 		try
       OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
       ExchangeForm.HTTP.OnWork := HTTPWork;
+      ExchangeForm.HTTP.OnWorkBegin := HTTPWorkBegin;
       ExchangeForm.HTTP.ReconnectCount := 0;
-//      ExchangeForm.HTTP.Request.BasicAuthentication := True;
-      ExchangeForm.HTTP.Request.BasicAuthentication := False;
-      ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
-      if not AnsiStartsText('analit\', HTTPName) then
-        ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
+      if UseNTLM then begin
+        ExchangeForm.HTTP.Request.BasicAuthentication := False;
+        ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
+        if not AnsiStartsText('analit\', HTTPName) then
+          ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
+      end
+      else
+        ExchangeForm.HTTP.Request.BasicAuthentication := True;
       Progress := 0;
       Synchronize( SetProgress );
 
@@ -561,15 +570,16 @@ begin
       finally
         ExchangeForm.HTTP.ReconnectCount := OldReconnectCount;
         ExchangeForm.HTTP.OnWork := nil;
-        ExchangeForm.HTTP.Request.Username := HTTPName;
-        ExchangeForm.HTTP.Request.BasicAuthentication := True;
-        try
-          ExchangeForm.HTTP.Request.Authentication.Free;
-        except
+        ExchangeForm.HTTP.OnWorkBegin := nil;
+        if UseNTLM then begin
+          ExchangeForm.HTTP.Request.Username := HTTPName;
+          ExchangeForm.HTTP.Request.BasicAuthentication := True;
+          try
+            ExchangeForm.HTTP.Request.Authentication.Free;
+          except
+          end;
+          ExchangeForm.HTTP.Request.Authentication := nil;
         end;
-        ExchangeForm.HTTP.Request.Authentication := nil;
-{
-}
       end;
 
 			Synchronize( ExchangeForm.CheckStop);
@@ -2136,7 +2146,14 @@ var
 begin
   inHTTP := TidHTTP(Sender);
 
-//  Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
+  if UseNTLM and Assigned(inHTTP.Response) and Assigned(inHTTP.Response.RawHeaders)
+     and  (NTLMAuth < 3) //(Pos('NTLM', inHTTP.Response.RawHeaders.Text) > 0)
+  then begin
+    Inc(NTLMAuth); 
+    Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount));
+    Tracer.TR('Main.HTTPWork', 'Request.RawHeaders : ' + inHTTP.Request.RawHeaders.Text);
+    Tracer.TR('Main.HTTPWork', 'Response.RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
+  end;
 
 //	Writeln( ExchangeForm.LogFile, 'Main.HTTPWork   WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
 
@@ -2344,6 +2361,12 @@ begin
   end;
 
   ClearDir(GetTempDir + TempSendDir, True);
+end;
+
+procedure TExchangeThread.HTTPWorkBegin(Sender: TObject;
+  AWorkMode: TWorkMode; const AWorkCountMax: Integer);
+begin
+  NTLMAuth := 0;
 end;
 
 { TFileUpdateInfo }

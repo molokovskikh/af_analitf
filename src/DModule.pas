@@ -1919,6 +1919,14 @@ begin
           DBVersion := 38;
         end;
 
+        if DBVersion = 38 then begin
+          etlname := GetLastEtalonFileName;
+          if Length(etlname) > 0 then
+            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
+          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+          DBVersion := 39;
+        end;
+
       finally
         trMain.Free;
       end;

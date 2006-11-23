@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshClients
+    ActivePage = tshOther
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5714,6 +5714,18 @@ object ConfigForm: TConfigForm
           ValueChecked = 'True'
           ValueUnchecked = 'False'
         end
+      end
+      object dbchbNTLM: TDBCheckBox
+        Left = 8
+        Top = 112
+        Width = 241
+        Height = 17
+        Caption = #1048#1089#1087#1086#1083#1100#1079#1086#1074#1072#1090#1100' NTLM-'#1072#1074#1090#1086#1088#1080#1079#1072#1094#1080#1102
+        DataField = 'USENTLM'
+        DataSource = DM.dsParams
+        TabOrder = 3
+        ValueChecked = 'True'
+        ValueUnchecked = 'False'
       end
     end
   end
