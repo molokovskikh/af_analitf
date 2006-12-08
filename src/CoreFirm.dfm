@@ -73,6 +73,13 @@ object CoreFirmForm: TCoreFirmForm
     Columns = <
       item
         EditButtons = <>
+        FieldName = 'CODE'
+        Footers = <>
+        Title.Caption = #1050#1086#1076
+        Width = 26
+      end
+      item
+        EditButtons = <>
         FieldName = 'SYNONYMNAME'
         Footers = <>
         MinWidth = 5
@@ -212,7 +219,7 @@ object CoreFirmForm: TCoreFirmForm
         Footers = <>
         MinWidth = 5
         Title.Caption = #1047#1072#1082#1072#1079
-        Width = 55
+        Width = 42
       end
       item
         Color = 16775406
@@ -221,7 +228,7 @@ object CoreFirmForm: TCoreFirmForm
         Footers = <>
         MinWidth = 5
         Title.Caption = #1057#1091#1084#1084#1072
-        Width = 55
+        Width = 48
       end>
   end
   object Panel1: TPanel
