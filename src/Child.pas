@@ -50,7 +50,7 @@ type
     SaveEnabled: Boolean;
     //Требуется вызвать First после сортировки DataSet
     NeedFirstOnDataSet : Boolean;
-    procedure ShowForm; virtual;
+    procedure ShowForm; overload; virtual;
     procedure Print( APreview: boolean = False); virtual;
     constructor Create(AOwner: TComponent); override;
   published
@@ -153,15 +153,19 @@ begin
     if (Self.Components[i] is TToughDBGrid)
     then begin
       TToughDBGrid(Self.Components[i]).Options := TToughDBGrid(Self.Components[i]).Options + [dgRowLines];
-      if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged ) then begin
+      TToughDBGrid(Self.Components[i]).Font.Size := 10;
+      TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
+      TToughDBGrid(Self.Components[i]).GridLineColors.BrightColor := clDkGray;
+
+      if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
+         and Assigned(TToughDBGrid(Self.Components[i]).DataSource)
+         and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
+         and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
+      then begin
         TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
         TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
 
-        if Assigned(TToughDBGrid(Self.Components[i]).DataSource)
-          and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
-          and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
-          and NeedFirstOnDataSet
-        then
+        if NeedFirstOnDataSet then
           TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
       end;
     end;

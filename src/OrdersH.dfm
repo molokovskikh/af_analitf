@@ -1,9 +1,9 @@
 inherited OrdersHForm: TOrdersHForm
-  Left = 196
-  Top = 189
+  Left = 280
+  Top = 299
   ActiveControl = dbgOrdersH
   Caption = #1047#1072#1082#1072#1079#1099
-  ClientHeight = 487
+  ClientHeight = 573
   ClientWidth = 792
   OldCreateOrder = True
   OnDestroy = FormDestroy
@@ -13,7 +13,7 @@ inherited OrdersHForm: TOrdersHForm
     Left = 0
     Top = 39
     Width = 792
-    Height = 448
+    Height = 534
     Align = alClient
     TabOrder = 0
     Tabs.Strings = (
@@ -25,14 +25,14 @@ inherited OrdersHForm: TOrdersHForm
       Left = 4
       Top = 24
       Width = 784
-      Height = 420
+      Height = 506
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
       object pBottom: TPanel
         Tag = 146
         Left = 0
-        Top = 384
+        Top = 470
         Width = 784
         Height = 36
         Align = alBottom
@@ -76,13 +76,13 @@ inherited OrdersHForm: TOrdersHForm
         Left = 0
         Top = 0
         Width = 784
-        Height = 384
+        Height = 470
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 1
         object bevClient: TBevel
           Left = 0
-          Top = 274
+          Top = 360
           Width = 784
           Height = 4
           Align = alBottom
@@ -92,7 +92,7 @@ inherited OrdersHForm: TOrdersHForm
           Left = 0
           Top = 0
           Width = 483
-          Height = 274
+          Height = 360
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 0
@@ -100,7 +100,7 @@ inherited OrdersHForm: TOrdersHForm
             Left = 0
             Top = 0
             Width = 483
-            Height = 274
+            Height = 360
             Align = alClient
             AllowedOperations = [alopUpdateEh]
             AutoFitColWidths = True
@@ -192,7 +192,6 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1057#1091#1084#1084#1072
                 Title.TitleButton = True
-                Visible = False
                 Width = 60
               end>
           end
@@ -201,7 +200,7 @@ inherited OrdersHForm: TOrdersHForm
           Left = 483
           Top = 0
           Width = 301
-          Height = 274
+          Height = 360
           Align = alRight
           BevelOuter = bvNone
           TabOrder = 1
@@ -245,7 +244,7 @@ inherited OrdersHForm: TOrdersHForm
         object pWebBrowser: TPanel
           Tag = 106
           Left = 0
-          Top = 278
+          Top = 364
           Width = 784
           Height = 106
           Align = alBottom
@@ -429,7 +428,6 @@ inherited OrdersHForm: TOrdersHForm
       '    :TIMEZONEBIAS)'
       'WHERE OrderDate BETWEEN :DateFrom AND :DateTo ')
     AfterPost = adsOrdersH2AfterPost
-    BeforeDelete = adsOrdersH2BeforeDelete
     BeforePost = adsOrdersH2BeforePost
     OnCalcFields = adsOrdersHFormCalcFields
     Transaction = DM.DefTran
@@ -583,15 +581,16 @@ inherited OrdersHForm: TOrdersHForm
         ' minprices.regioncode = :aregioncode'
       
         '    left join Core LCore on LCore.servercoreid = minprices.serve' +
-        'rcoreid'
+        'rcoreid and LCore.RegionCode = minprices.regioncode'
       '    LEFT JOIN PricesData ON PricesData.PriceCode=LCore.pricecode'
       '    LEFT JOIN Regions ON MinPrices.RegionCode=Regions.RegionCode'
-      '    LEFT JOIN SynonymFirmCr'
-      '    ON CCore.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON CCore.SynonymFirmCrCode=SynonymFi' +
+        'rmCr.SynonymFirmCrCode'
       '    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode'
       
-        '    LEFT JOIN Orders osbc ON osbc.ClientId = :AClientId and CCor' +
-        'e.CoreId=osbc.CoreId'
+        '    LEFT JOIN Orders osbc ON osbc.ClientId = :AClientId and osbc' +
+        '.CoreId=CCore.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       
         'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +

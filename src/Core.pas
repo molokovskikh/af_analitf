@@ -8,7 +8,8 @@ uses
   StdCtrls, Buttons, DBCtrls, FR_Class, FR_DSet, FR_DBSet,
   Child, RXDBCtrl, Variants, Math, DBGridEh,
   ToughDBGrid, Registry, OleCtrls, SHDocVw, ActnList, FIBDataSet,
-  pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor, Spin;
+  pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor, Spin,
+  GridsEh, pFIBProps;
 
 const
 	ALL_REGIONS	= '¬се регионы';
@@ -116,10 +117,13 @@ type
     adsCoreREGISTRYCOST: TFIBFloatField;
     adsCoreVITALLYIMPORTANT: TFIBIntegerField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
+    adsOrdersSENDPRICE: TFIBBCDField;
+    pRight: TPanel;
     gbRetUpCost: TGroupBox;
     seRetUpCost: TSpinEdit;
     eRetUpCost: TEdit;
-    adsOrdersSENDPRICE: TFIBBCDField;
+    gbSum: TGroupBox;
+    lCurrentSumma: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -153,6 +157,7 @@ type
 
     procedure RefreshOrdersH;
     procedure ccf(DataSet: TDataSet);
+    procedure RefreshCurrentSumma;
   public
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -166,6 +171,11 @@ implementation
 
 uses Main, AProc, DModule, NamesForms, Constant, OrdersH, DBProc, CoreFirm,
   Prices;
+
+var
+  UserSetRetUpCost : Boolean;
+  RetUpCostValue   : Integer;
+
 
 {$R *.DFM}
 
@@ -214,6 +224,9 @@ var
 	FirstPrice, PrevPrice, D: Currency;
 	OrdersH: TOrdersHForm;
 begin
+  //≈сли в прошлый раз пользователь изменил наценку, то выставл€ем ее
+  if UserSetRetUpCost then
+    seRetUpCost.Value := RetUpCostValue;
 	OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
 	if OrdersH <> nil then OrdersH.Free;
 	SetLength( RecInfos, 0);
@@ -243,15 +256,17 @@ begin
 			DM.adtParams.FieldByName( 'ShowRegister').AsBoolean;
 		Screen.Cursor := crHourglass;
 		try
-			if Active then CloseOpen(True) else Open;
+			if Active then Close;
+      adsCore.Options := adsCore.Options - [poCacheCalcFields]; 
+      Open;
+      FetchAll;
       if not adsCore.Sorted then begin
-        DoSort(['FullCode', 'CryptBaseCost'], [True, True]);
         DoSort(['FullCode', 'CryptBaseCost'], [True, True]);
       end;
 		finally
 			Screen.Cursor := crDefault;
 		end;
-        end;
+  end;
 
 	{ проверка непустоты }
 	if adsCore.RecordCount = 0 then
@@ -533,8 +548,9 @@ end;
 
 procedure TCoreForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
-  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency);
+  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency, adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
 	MainForm.SetOrdersInfo;
+  RefreshCurrentSumma;
 end;
 
 procedure TCoreForm.cbFilterSelect(Sender: TObject);
@@ -580,18 +596,21 @@ end;
 procedure TCoreForm.actFlipCoreExecute(Sender: TObject);
 var
 	SynonymCode, SynonymFirmCrCode, PriceCode, RegionCode: integer;
+  PriceName, RegionName : String;
 begin
 	if MainFOrm.ActiveChild <> Self then exit;
 	SynonymCode := adsCoreSynonymCode.AsInteger;
 	SynonymFirmCrCode := adsCoreSynonymFirmCrCode.AsInteger;
 	PriceCode := adsCorePriceCode.AsInteger;
 	RegionCode := adsCoreRegionCode.AsInteger;
+  PriceName := adsCorePRICENAME.AsString;
+  RegionName := adsCoreREGIONNAME.AsString;
 	ShowPrices;
 
 	with TPricesForm( MainForm.ActiveChild) do
 	begin
 		adsPrices.Locate( 'PriceCode;RegionCode', VarArrayOf([ PriceCode, RegionCode]), []);
-		CoreFirmForm.ShowForm( PriceCode, RegionCode, actOnlyLeaders.Checked);
+		CoreFirmForm.ShowForm( PriceCode, RegionCode, PriceName, RegionName, actOnlyLeaders.Checked);
 		CoreFirmForm.adsCore.Locate( 'SynonymCode;SynonymFirmCrCode',
 			VarArrayOf([ SynonymCode, SynonymFirmCrCode]), []);
 	end;
@@ -602,9 +621,12 @@ procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
 //  C : Integer;
 begin
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
-    seRetUpCost.Value := DM.GetRetUpCost(adsCoreCryptBASECOST.AsCurrency);
+    //≈сли пользователь не измен€л сам наценку, то примен€ем текущую наценку
+    if not UserSetRetUpCost then
+      seRetUpCost.Value := DM.GetRetUpCost(adsCoreCryptBASECOST.AsCurrency);
     seRetUpCostChange(seRetUpCost);
   end;
+  RefreshCurrentSumma;
 {
   C := dbgCore.Canvas.TextHeight('Wg') + 2;
   if (adsCore.RecordCount > 0) and ((adsCore.RecordCount*C)/(pCenter.Height-pWebBrowser.Height) > 13/10) then
@@ -627,10 +649,38 @@ end;
 
 procedure TCoreForm.seRetUpCostChange(Sender: TObject);
 begin
+  UserSetRetUpCost := True;
+  RetUpCostValue   := seRetUpCost.Value;
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then
     eRetUpCost.Text := CurrToStrF((1 + seRetUpCost.Value/100) * adsCoreCryptBASECOST.AsCurrency, ffCurrency, 2)
   else
     eRetUpCost.Text := '';
 end;
 
+procedure TCoreForm.RefreshCurrentSumma;
+var
+  COI : TOrderInfo;
+begin
+  if not adsCore.IsEmpty then begin
+    COI := DM.FindOrderInfo(adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
+    if COI.Summ > 0 then
+    begin
+      lCurrentSumma.Caption := CurrToStr(COI.Summ);
+      if not adsFirmsInfo.IsEmpty and not adsFirmsInfo.FieldByName('MinReq').IsNull
+        and (adsFirmsInfo.FieldByName('MinReq').AsCurrency > COI.Summ)
+      then
+        lCurrentSumma.Font.Color := clRed
+      else
+        lCurrentSumma.Font.Color := clGreen;
+    end
+    else
+      lCurrentSumma.Caption := '';
+  end
+  else begin
+    lCurrentSumma.Caption := '';
+  end;
+end;
+
+initialization
+  UserSetRetUpCost := False;
 end.

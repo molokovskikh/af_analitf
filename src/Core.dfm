@@ -1,11 +1,11 @@
 object CoreForm: TCoreForm
-  Left = 205
-  Top = 138
+  Left = 256
+  Top = 184
   Align = alClient
   BorderIcons = []
   BorderStyle = bsNone
   Caption = #1057#1074#1086#1076#1085#1099#1081' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090
-  ClientHeight = 479
+  ClientHeight = 573
   ClientWidth = 792
   Color = clBtnFace
   ParentFont = True
@@ -34,7 +34,7 @@ object CoreForm: TCoreForm
   end
   object pBottom: TPanel
     Left = 0
-    Top = 348
+    Top = 442
     Width = 792
     Height = 131
     Align = alBottom
@@ -204,33 +204,63 @@ object CoreForm: TCoreForm
         TabOrder = 0
       end
     end
-    object gbRetUpCost: TGroupBox
+    object pRight: TPanel
       Left = 704
       Top = 0
       Width = 88
       Height = 131
       Align = alRight
-      Caption = ' '#1053#1072#1094#1077#1085#1082#1072' '
       TabOrder = 2
-      object seRetUpCost: TSpinEdit
-        Left = 8
-        Top = 16
-        Width = 73
-        Height = 22
-        MaxValue = 0
-        MinValue = 0
+      object gbRetUpCost: TGroupBox
+        Left = 1
+        Top = 1
+        Width = 86
+        Height = 80
+        Align = alClient
+        Caption = ' '#1053#1072#1094#1077#1085#1082#1072' '
         TabOrder = 0
-        Value = 0
-        OnChange = seRetUpCostChange
+        object seRetUpCost: TSpinEdit
+          Left = 8
+          Top = 16
+          Width = 73
+          Height = 22
+          MaxValue = 0
+          MinValue = 0
+          TabOrder = 0
+          Value = 0
+          OnChange = seRetUpCostChange
+        end
+        object eRetUpCost: TEdit
+          Left = 8
+          Top = 48
+          Width = 73
+          Height = 21
+          Color = clBtnFace
+          ReadOnly = True
+          TabOrder = 1
+        end
       end
-      object eRetUpCost: TEdit
-        Left = 8
-        Top = 48
-        Width = 73
-        Height = 21
-        Color = clBtnFace
-        ReadOnly = True
+      object gbSum: TGroupBox
+        Left = 1
+        Top = 81
+        Width = 86
+        Height = 49
+        Align = alBottom
+        Caption = ' '#1057#1091#1084#1084#1072' '
         TabOrder = 1
+        DesignSize = (
+          86
+          49)
+        object lCurrentSumma: TLabel
+          Left = 2
+          Top = 18
+          Width = 82
+          Height = 13
+          Alignment = taCenter
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'lCurrentSumma'
+        end
       end
     end
   end
@@ -293,14 +323,14 @@ object CoreForm: TCoreForm
     Left = 0
     Top = 29
     Width = 792
-    Height = 319
+    Height = 413
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
     object pWebBrowser: TPanel
       Tag = 84
       Left = 0
-      Top = 235
+      Top = 329
       Width = 792
       Height = 84
       Align = alBottom
@@ -336,7 +366,7 @@ object CoreForm: TCoreForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 235
+      Height = 329
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -369,7 +399,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
-          Width = 196
+          Width = 177
         end
         item
           EditButtons = <>
@@ -377,7 +407,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
-          Width = 85
+          Width = 89
         end
         item
           EditButtons = <>
@@ -385,7 +415,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
-          Width = 63
+          Width = 33
         end
         item
           EditButtons = <>
@@ -393,7 +423,8 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
-          Width = 69
+          Visible = False
+          Width = 48
         end
         item
           EditButtons = <>
@@ -409,7 +440,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
-          Width = 85
+          Width = 56
         end
         item
           EditButtons = <>
@@ -417,7 +448,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
-          Width = 85
+          Width = 74
         end
         item
           EditButtons = <>
@@ -435,19 +466,32 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
-          Width = 103
-        end
-        item
-          EditButtons = <>
-          FieldName = 'REGISTRYCOST'
-          Footers = <>
-          Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+          Width = 87
         end
         item
           EditButtons = <>
           FieldName = 'REQUESTRATIO'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
+          Visible = False
+          Width = 61
+        end
+        item
+          EditButtons = <>
+          FieldName = 'PriceDelta'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1056#1072#1079#1085#1080#1094#1072', %'
+          Visible = False
+          Width = 26
+        end
+        item
+          EditButtons = <>
+          FieldName = 'REGISTRYCOST'
+          Footers = <>
+          Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+          Visible = False
+          Width = 46
         end
         item
           EditButtons = <>
@@ -460,23 +504,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1062#1077#1085#1072
-          Width = 55
-        end
-        item
-          EditButtons = <>
-          FieldName = 'PriceDelta'
-          Footers = <>
-          MinWidth = 5
-          Title.Caption = #1056#1072#1079#1085#1080#1094#1072', %'
-          Visible = False
-        end
-        item
-          EditButtons = <>
-          FieldName = 'PriceRet'
-          Footers = <>
-          MinWidth = 5
-          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
-          Width = 62
+          Width = 59
         end
         item
           Alignment = taRightJustify
@@ -485,7 +513,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
-          Width = 68
+          Width = 39
         end
         item
           Color = 16775406
@@ -494,7 +522,15 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1047#1072#1082#1072#1079
-          Width = 47
+          Width = 34
+        end
+        item
+          EditButtons = <>
+          FieldName = 'PriceRet'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
+          Width = 48
         end
         item
           Color = 16775406
@@ -503,7 +539,7 @@ object CoreForm: TCoreForm
           Footers = <>
           MinWidth = 5
           Title.Caption = #1057#1091#1084#1084#1072
-          Width = 70
+          Width = 51
         end>
     end
   end
@@ -988,12 +1024,20 @@ object CoreForm: TCoreForm
   end
   object adsFirmsInfo: TpFIBDataSet
     SelectSQL.Strings = (
-      
-        'SELECT FirmCode, RegionCode, SupportPhone, OperativeInfo FROM Re' +
-        'gionalData'
+      'SELECT '
+      '  RegionalData.FirmCode, '
+      '  RegionalData.RegionCode, '
+      '  RegionalData.SupportPhone, '
+      '  RegionalData.OperativeInfo,'
+      '  PricesRegionalData.MinReq '
+      'FROM '
+      '  RegionalData,'
+      '  PricesRegionalData'
       'where'
-      '  FirmCode = :FirmCode'
-      'and RegionCode = :RegionCode')
+      '    RegionalData.FirmCode = :FirmCode'
+      'and RegionalData.RegionCode = :RegionCode'
+      'and PricesRegionalData.RegionCode = RegionalData.RegionCode'
+      'and PricesRegionalData.PriceCode = :PriceCode')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     DataSource = dsCore

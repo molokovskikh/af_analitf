@@ -8,7 +8,7 @@ uses
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
   FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
-  pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus;
+  pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, pFIBProps;
 
 const
 	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID, :APRICENAME) ORDER BY ';
@@ -102,6 +102,7 @@ type
     adsCoreREGISTRYCOST: TFIBFloatField;
     adsCoreVITALLYIMPORTANT: TFIBIntegerField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
+    adsCoreWithLike: TpFIBDataSet;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -131,8 +132,11 @@ type
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
+    procedure eSearchEnter(Sender: TObject);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
+    PriceName,
+    RegionName : String;
     OrderSum: Double;
 
     UseExcess: Boolean;
@@ -140,9 +144,9 @@ type
     InternalSearchText : String;
 
     BM : TBitmap;
-    
+
     fr : TForceRus;
-    
+
     procedure OrderCalc;
     procedure SetOrderLabel;
     procedure SetFilter(Filter: TFilter);
@@ -155,7 +159,9 @@ type
     procedure AddKeyToSearch(Key : Char);
   public
     procedure ShowForm(APriceCode, ARegionCode: Integer;
-      OnlyLeaders: Boolean=False); reintroduce;
+      APriceName, ARegionName : String;
+      OnlyLeaders: Boolean=False;
+      FromOrders : Boolean = False); reintroduce;
     procedure Print( APreview: boolean = False); override;
     procedure RefreshAllCore;
   end;
@@ -166,7 +172,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, Core, AlphaUtils;
+  NamesForms, Core, AlphaUtils, Orders;
 
 {$R *.DFM}
 
@@ -178,7 +184,7 @@ begin
   dgCheckVolume := dbgCore;
   fOrder := adsCoreORDERCOUNT;
   fVolume := adsCoreREQUESTRATIO;
-  
+
   inherited;
 
   BM := TBitmap.Create;
@@ -196,7 +202,7 @@ begin
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgCore.LoadFromRegistry( Reg);
   if dbgCore.SortMarkedColumns.Count = 0 then
-    dbgCore.Columns[1].Title.SortMarker := smUpEh;
+    dbgCore.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
 	Reg.Free;
 end;
 
@@ -215,37 +221,37 @@ begin
 end;
 
 procedure TCoreFirmForm.ShowForm(APriceCode, ARegionCode: Integer;
-  OnlyLeaders: Boolean=False);
+  APriceName, ARegionName : String; OnlyLeaders: Boolean=False; FromOrders : Boolean = False);
 begin
   PriceCode:=APriceCode;
   RegionCode:=ARegionCode;
-  with adsCore do begin
-    ParamByName( 'APriceCode').Value:=PriceCode;
-    ParamByName( 'ARegionCode').Value:=RegionCode;
-    ParamByName( 'AClientId').Value:=ClientId;
-    ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
-  end;
-  RefreshAllCore;
-  SetFilter(filAll);
-  if adsCore.RecordCount=0 then begin
-    MessageBox('Выбранный прайс-лист отсутствует',MB_ICONWARNING);
-    Abort;
+  PriceName := APriceName;
+  RegionName := ARegionName;
+  //Если пришли сюда из заказа
+  if FromOrders then begin
+    dbgCore.InputField := '';
+  end
+  else begin
+    dbgCore.InputField := 'OrderCount';
+    RefreshAllCore;
+    SetFilter(filAll);
+    if adsCore.RecordCount=0 then begin
+      MessageBox('Выбранный прайс-лист отсутствует',MB_ICONWARNING);
+      Abort;
+    end;
+    if OnlyLeaders then
+      SetFilter(filLeader)
+    else
+      SetFilter(filAll);
   end;
   //подсчитываем сумму заявки и количество записей
-  SetFilter(filOrder);
   OrderCalc;
   SetOrderLabel;
-  if OnlyLeaders then
-    SetFilter(filLeader)
-  else
-    SetFilter(filAll);
   lblFirmPrice.Caption := Format( 'Прайс-лист %s, регион %s',[
-    PricesForm.adsPrices.FieldByName('PriceName').AsString,
-    PricesForm.adsPrices.FieldByName('RegionName').AsString]);
-  RefreshOrdersH;
+    PriceName,
+    RegionName]);
   if not adsOrdersShowFormSummary.Active then
     adsOrdersShowFormSummary.Open;
-  adsCore.First;
   Application.ProcessMessages;
   inherited ShowForm;
 end;
@@ -322,14 +328,13 @@ begin
 end;
 
 //переоткрывает заголовок для текущего заказа
-//нужна для печати и для поиска текущего OrdersH.OrderId при вводе заказа
+//нужна для печати. Не удалять, т.к. сломается печать прайс-листа
 procedure TCoreFirmForm.RefreshOrdersH;
 begin
   with adsOrdersH do begin
     ParamByName('AClientId').Value:=ClientId;
     ParamByName('APriceCode').Value:=PriceCode;
     ParamByName('ARegionCode').Value:=RegionCode;
-//    if Active then CloseOpen(True) else Open;
   end;
 end;
 
@@ -378,18 +383,18 @@ procedure TCoreFirmForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
 	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreCryptBASECOST.AsCurrency;
-  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency);
+  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency, PriceCode, RegionCode);
 	SetOrderLabel;
 	MainForm.SetOrdersInfo;
 end;
 
 procedure TCoreFirmForm.OrderCalc;
-var
-	V: array [ 0..1] of Variant;
 begin
-	DataSetCalc( adsCore,[ 'COUNT', 'SUM(SumOrder)'], V);
-	OrderCount := V[ 0];
-	OrderSum :=V[ 1];
+  OrderCount := DM.MainConnection1.QueryValue('SELECT count(*) FROM Orders, ordersh WHERE ' +
+    'ordersh.PriceCode = :PriceCode and ordersh.regioncode = :RegionCode ' +
+    'and Orders.OrderId = ordersh.orderid and ordersh.closed = 0 ' +
+    'AND Orders.OrderCount>0', 0, [PriceCode, RegionCode]);
+	OrderSum :=DM.FindOrderInfo(PriceCode, RegionCode).Summ;
 end;
 
 procedure TCoreFirmForm.SetOrderLabel;
@@ -430,11 +435,19 @@ begin
   finally
     adsCore.EnableControls;
     RefreshAllCore;
-//    adsOrdersH.CloseOpen(True);
     Screen.Cursor:=crDefault;
+    OrderCount := 0;
+    OrderSum := 0;
+  	SetOrderLabel;
+    DM.InitAllSumOrder;
     MainForm.SetOrdersInfo;
   end;
   dbgCore.SetFocus;
+  //Если мы пришли сюда из формы заказа, то возвращаться туда нет смысла
+  if Self.PrevForm is TOrdersForm then begin
+    Self.PrevForm := nil;
+    Close;
+  end;
 end;
 
 procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
@@ -464,12 +477,24 @@ procedure TCoreFirmForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	inherited;
-	if ( Key = VK_RETURN) then btnFormHistoryClick( nil);
-  if Key = VK_ESCAPE then
-    if Length(InternalSearchText) > 0 then
-      SetClear
+	if ( Key = VK_RETURN) then
+    if tmrSearch.Enabled then
+      tmrSearchTimer(nil)
     else
-  		Self.PrevForm.ShowForm;
+      btnFormHistoryClick( nil);
+  if Key = VK_ESCAPE then
+    if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
+      tmrSearch.Enabled := False;
+      Self.PrevForm.ShowForm
+    end
+    else
+      if tmrSearch.Enabled or (Length(InternalSearchText) > 0) then
+        SetClear
+      else
+        if Assigned(Self.PrevForm) then
+          Self.PrevForm.ShowForm
+        else
+          Close;
 end;
 
 procedure TCoreFirmForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
@@ -478,42 +503,6 @@ begin
 	CanInput := ( RegionCode and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
 		RegionCode;
 	if not CanInput then Exit;
-	{ создаем записи из Orders и OrdersH, если их нет }
-{
-  if adsCoreOrdersOrderId.IsNull then begin //нет соответствующей записи в Orders
-    if adsOrdersH.IsEmpty then begin //нет заголовка заказа из OrdersH
-      //добавляем запись в OrdersH
-      adsCore.Edit;
-      adsCoreOrdersHClientId.AsInteger:=ClientId;
-      adsCoreOrdersHPriceCode.AsInteger:=PriceCode;
-      adsCoreOrdersHRegionCode.AsInteger:=RegionCode;
-      adsCoreOrdersHPriceName.AsString:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
-      adsCoreOrdersHRegionName.AsString:=PricesForm.adsPrices.FieldByName('RegionName').AsString;
-      adsCore.Post; //на этот момент уже имеем OrdersHOrderId (автоинкремент)
-    end;
-    //добавляем запись в Orders
-    adsCore.Edit;
-    if adsOrdersH.IsEmpty then
-      adsCoreOrdersOrderId.AsInteger:=adsCoreOrdersHOrderId.AsInteger
-    else
-      adsCoreOrdersOrderId.AsInteger:=adsOrdersH.FieldByName('OrderId').AsInteger;
-    adsCoreOrdersClientId.AsInteger := ClientId;
-    adsCoreOrdersFullCode.AsInteger:=adsCoreFullCode.AsInteger;
-    adsCoreOrdersCodeFirmCr.AsInteger := adsCoreCodeFirmCr.AsInteger;
-    adsCoreOrdersCoreId.AsInteger:=adsCoreCoreId.AsInteger;
-    adsCoreOrdersSynonymCode.AsInteger:=adsCoreSynonymCode.AsInteger;
-    adsCoreOrdersSynonymFirmCrCode.AsInteger:=adsCoreSynonymFirmCrCode.AsInteger;
-    adsCoreOrdersCode.AsString:=adsCoreCode.AsString;
-    adsCoreOrdersCodeCr.AsString := adsCoreCodeCr.AsString;
-    adsCoreOrdersPrice.AsCurrency:=adsCoreBaseCost.AsCurrency;
-    adsCoreOrdersJunk.AsBoolean:=adsCoreJunk.AsBoolean;
-    adsCoreOrdersAwait.AsBoolean := adsCoreAwait.AsBoolean;
-    adsCoreOrdersSynonym.AsString := adsCoreSYNONYMNAME.AsString;
-    adsCoreOrdersSynonymFirm.AsString := adsCoreSynonymFirm.AsString;
-    adsCore.Post;
-    if adsOrdersH.IsEmpty then RefreshOrdersH;
-  end;
-}
 end;
 
 procedure TCoreFirmForm.TimerTimer(Sender: TObject);
@@ -529,6 +518,7 @@ var
 	SynonymCode, SynonymFirmCrCode: integer;
 begin
 	if MainForm.ActiveChild <> Self then exit;
+  if Self.PrevForm is TOrdersForm then exit;
 	FullCode := adsCoreFullCode.AsInteger;
 	ShortCode := adsCoreShortCode.AsInteger;
 	SynonymCode := adsCoreSynonymCode.AsInteger;
@@ -611,9 +601,8 @@ begin
     adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'AClientId').Value:=ClientId;
-    adsCore.ParamByName( 'APriceName').Value:=PricesForm.adsPrices.FieldByName('PriceName').AsString;
+    adsCore.ParamByName( 'APriceName').Value:=PriceName;
     ShowSQLWaiting(adsCore);
-    //if adsCore.Active then adsCore.CloseOpen(True) else adsCore.Open;
   finally
     Screen.Cursor:=crDefault;
   end;
@@ -628,7 +617,7 @@ procedure TCoreFirmForm.adsCoreLEADERPRICENAMEGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
 begin
   if (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01) then
-    Text := PricesForm.adsPrices.FieldByName('PriceName').AsString
+    Text := PriceName
   else
     Text := Sender.AsString;
 end;
@@ -638,6 +627,13 @@ begin
   tmrSearch.Enabled := False;
   if Length(eSearch.Text) > 2 then begin
     InternalSearchText := LeftStr(eSearch.Text, 50);
+    if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
+      adsCore.Close;
+      adsCore.SelectSQL.Text := adsCoreWithLike.SelectSQL.Text;
+      adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
+      RefreshAllCore;
+      dbgCore.InputField := 'OrderCount';
+    end;
     if not Assigned(adsCore.OnFilterRecord) then begin
       adsCore.OnFilterRecord := AllFilterRecord;
       adsCore.Filtered := True;
@@ -707,9 +703,14 @@ begin
   if Ord(Key) >= 32 then begin
     tmrSearch.Enabled := False;
     if not eSearch.Focused then
-      eSearch.Text := eSearch.Text + fr.DoIt(Key);
+      eSearch.Text := eSearch.Text + Key;
     tmrSearch.Enabled := True;
   end;
+end;
+
+procedure TCoreFirmForm.eSearchEnter(Sender: TObject);
+begin
+  dbgCore.SetFocus;
 end;
 
 end.

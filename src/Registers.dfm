@@ -1,16 +1,15 @@
 inherited RegistersForm: TRegistersForm
-  Left = 303
-  Top = 157
+  Left = 379
+  Top = 209
   ActiveControl = dbgRegistry
   Caption = #1043#1086#1089#1091#1076#1072#1088#1089#1090#1074#1077#1085#1085#1099#1081' '#1088#1077#1077#1089#1090#1088' '#1094#1077#1085
   ClientHeight = 448
   ClientWidth = 633
   OldCreateOrder = True
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object dbgRegistry: TToughDBGrid
+  object dbgRegistry: TToughDBGrid [0]
     Left = 0
     Top = 0
     Width = 633
@@ -81,7 +80,7 @@ inherited RegistersForm: TRegistersForm
       end
       item
         EditButtons = <>
-        FieldName = 'Curr'
+        FieldName = 'CURR'
         Footers = <>
         Title.Caption = #1042#1072#1083#1102#1090#1072
         Title.TitleButton = True
@@ -89,7 +88,7 @@ inherited RegistersForm: TRegistersForm
       end
       item
         EditButtons = <>
-        FieldName = 'PriceRub'
+        FieldName = 'PRICERUB'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -101,7 +100,7 @@ inherited RegistersForm: TRegistersForm
         Width = 62
       end>
   end
-  object Panel1: TPanel
+  object Panel1: TPanel [1]
     Left = 0
     Top = 384
     Width = 633
@@ -233,6 +232,7 @@ inherited RegistersForm: TRegistersForm
     Database = DM.MainConnection1
     Left = 96
     Top = 136
+    oCacheCalcFields = True
     object adsRegistryID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
@@ -241,22 +241,22 @@ inherited RegistersForm: TRegistersForm
     object adsRegistryNAME: TFIBStringField
       FieldName = 'NAME'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsRegistryFORM: TFIBStringField
       FieldName = 'FORM'
       Size = 250
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsRegistryPRODUCER: TFIBStringField
       FieldName = 'PRODUCER'
       Size = 150
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsRegistryBOX: TFIBStringField
       FieldName = 'BOX'
       Size = 10
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsRegistryPRICE: TFIBBCDField
       FieldName = 'PRICE'
@@ -266,7 +266,7 @@ inherited RegistersForm: TRegistersForm
     object adsRegistryCURR: TFIBStringField
       FieldName = 'CURR'
       Size = 10
-      EmptyStrToNull = False
+      EmptyStrToNull = True
     end
     object adsRegistryPRICERUB: TFIBBCDField
       FieldName = 'PRICERUB'

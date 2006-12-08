@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
-  FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI;
+  FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps;
 
 const
 	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
@@ -78,7 +78,6 @@ type
     adsOrdersHFormMESSAGETO: TFIBMemoField;
     adsOrdersHFormCOMMENTS: TFIBMemoField;
     bevClient: TBevel;
-    procedure adsOrdersH2BeforeDelete(DataSet: TDataSet);
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -112,7 +111,8 @@ type
     procedure ClearSumOrders;
     procedure OrderEnter;
   public
-	procedure Print( APreview: boolean = False); override;
+    procedure Print( APreview: boolean = False); override;
+    procedure ShowForm; override;
   end;
 
 var
@@ -136,6 +136,7 @@ var
 	Reg: TRegistry;
 	Year, Month, Day: Word;
 begin
+  adsOrdersHForm.Options := adsOrdersHForm.Options - [poCacheCalcFields];
 	inherited;
   NeedFirstOnDataSet := False;
   FSumOrders := TStringList.Create;
@@ -181,7 +182,7 @@ var
 	Reg: TRegistry;
 begin
   try
-    //Здесь возникает ошибка с AccessViolation в FBPlus.
+    //TODO: ___ Здесь возникает ошибка с AccessViolation в FBPlus.
     //Возможно эта моя ошибка, но я пока не могу ее исправить
 	  SoftPost(adsOrdersHForm);
   except
@@ -210,7 +211,7 @@ begin
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
       dbgOrdersH.Tag := 1024;
-			//PrintEnabled := True;
+      dbgOrdersH.FieldColumns['SEND'].ReadOnly := False;
 		end;
 		1: begin
 			adsOrdersHForm.Close;
@@ -223,7 +224,7 @@ begin
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
       dbgOrdersH.Tag := 2048;
-			//PrintEnabled := False;
+      dbgOrdersH.FieldColumns['SEND'].ReadOnly := True;
 		end;
 	end;
 
@@ -243,7 +244,6 @@ begin
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
-  //PrintEnabled := TabControl.TabIndex = 1;
   OrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
 	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True
@@ -271,11 +271,6 @@ begin
 	end;
 	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True
 		else dbgOrdersH.ReadOnly := False;
-end;
-
-procedure TOrdersHForm.adsOrdersH2BeforeDelete(DataSet: TDataSet);
-begin
-//	if MessageBox( 'Удалить заявку?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then abort;
 end;
 
 procedure TOrdersHForm.btnMoveSendClick(Sender: TObject);
@@ -368,7 +363,6 @@ begin
 	end;
 	if ( Key = VK_DELETE) and not ( adsOrdersHForm.IsEmpty) then
 	begin
-//		adsOrdersHForm.Delete;
     btnDeleteClick(nil);
     DM.InitAllSumOrder;
 		MainForm.SetOrdersInfo;
@@ -415,8 +409,6 @@ end;
 procedure TOrdersHForm.SetDateInterval;
 begin
   with adsOrdersHForm do begin
-//	ParamByName( 'DateFrom').DataType := ftDate;
-//	ParamByName( 'DateTo').DataType := ftDate;
 	ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
 	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
 	ParamByName('DateTo').AsDate := dtpDateTo.Date;
@@ -452,7 +444,9 @@ begin
 		begin
 			while not adsOrdersHForm.Eof do
 			begin
-				DM.ShowFastReport( 'Orders.frf', nil, APreview, False);
+        //Если заказ закрыт или не закрыт и разрешен к отправке
+        if adsOrdersHFormCLOSED.Value or (adsOrdersHFormSEND.Value) then
+				  DM.ShowFastReport( 'Orders.frf', nil, APreview, False);
 				adsOrdersHForm.Next;
 				OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
 			end;
@@ -467,17 +461,6 @@ procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);
 begin
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
 		nil, nil, SW_SHOWDEFAULT);
-{
-
-	if not adsOrdersHForm.IsEmpty then
-	begin
-    adsWayBillHead.ParamByName('AServerOrderId').Value := adsOrdersHForm.FieldByName('ServerOrderID').Value;
-    if adsWayBillHead.Active then adsWayBillHead.CloseOpen(True) else adsWayBillHead.Open;
-    if not adsWayBillHead.IsEmpty then begin
-      WayBillListForm.ShowForm(adsWayBillHeadServerID.Value);
-    end;
-	end;
-}  
 end;
 
 procedure TOrdersHForm.adsOrdersH2SendChange(Sender: TField);
@@ -504,11 +487,6 @@ end;
 
 procedure TOrdersHForm.dbgOrdersHSortMarkingChanged(Sender: TObject);
 begin
-{
-	adsOrdersHForm.Close;
-	adsOrdersHForm.SelectSQL.Text := OrdersHSql + SqlOrderBy;
-	SetParameters;
-}
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
@@ -538,17 +516,30 @@ procedure TOrdersHForm.adsOrdersHFormAfterFetchRecord(FromQuery: TFIBQuery;
   RecordNumber: Integer; var StopFetching: Boolean);
 var
   F : TFIBXSQLVAR;
+  SumOrder : Currency;
 begin
   F := FromQuery.FldByName[adsOrdersHFormORDERID.FieldName];
-  OrdersForm.SetParams(F.AsInteger);
-  FSumOrders.AddObject( F.AsString, TSumOrder.Create(StrToCurr(OrdersForm.lSumOrder.Caption)));
+  //Если заказ текущий, то данные берем из общего кеша
+  if not FromQuery.FldByName[adsOrdersHFormCLOSED.FieldName].AsBoolean then
+    FSumOrders.AddObject( F.AsString,
+      TSumOrder.Create(
+        DM.FindOrderInfo(
+          FromQuery.FldByName[adsOrdersHFormPRICECODE.FieldName].AsInteger,
+          FromQuery.FldByName[adsOrdersHFormREGIONCODE.FieldName].AsInteger).Summ))
+  else begin
+    //Если заказ архивный, то берем из базы
+    try
+      SumOrder := DM.MainConnection1.QueryValue('SELECT Sum(Orders.sendprice*Orders.OrderCount) SumOrder FROM Orders WHERE Orders.OrderId = :OrderId AND Orders.OrderCount>0', 0, [F.AsString]);
+    except
+      SumOrder := 0;
+    end;
+    FSumOrders.AddObject( F.AsString, TSumOrder.Create(SumOrder));
+  end;
 end;
 
 procedure TOrdersHForm.OrderEnter;
 begin
   OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
-  TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
-    StrToCurr(OrdersForm.lSumOrder.Caption);
 end;
 
 procedure TOrdersHForm.InternalMoveToPrice;
@@ -557,6 +548,7 @@ var
 	SynonymFirmCrCode, SynonymCode: Variant;
   Code, CodeCr : Variant;
   I : Integer;
+  RecCountSRV : Integer;
 
   procedure SetOrder( Order: Integer);
   begin
@@ -613,6 +605,7 @@ begin
           ParamByName( 'SynonymFirmCrCode').Value:=SynonymFirmCrCode;
           Open;
           FetchAll;
+          RecCountSRV := adsCore.RecordCountFromSrv;
           try
             { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
             if Locate( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [])
@@ -630,7 +623,7 @@ begin
                 if CurOrder < 0 then CurOrder := 0;
                 Order := Order - CurOrder;
                 if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
-              until ( Order = 0) or (not ExtLocateNext( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [eloPartialKey]));
+              until ( Order = 0) or (not LocateNext( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [])) or (RecCountSRV = adsCore.RecordCount);
             end;
 
             { если все еще не разбросали, то пишем сообщение }
@@ -669,6 +662,19 @@ begin
   MainForm.SetOrdersInfo;
 
   dbgOrdersH.SelectedRows.Clear;
+end;
+
+procedure TOrdersHForm.ShowForm;
+begin
+  inherited;
+  if Assigned(PrevForm) and (PrevForm is TOrdersForm) then begin
+    //Если мы производим возврат из окна "Архивный заказ", то надо обновить сумму
+    if not adsOrdersHFormCLOSED.AsBoolean then begin
+      TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
+        DM.FindOrderInfo(adsOrdersHFormPRICECODE.AsInteger, adsOrdersHFormREGIONCODE.AsInteger).Summ;
+      adsOrdersHForm.RefreshClientFields();
+    end;
+  end;
 end;
 
 end.

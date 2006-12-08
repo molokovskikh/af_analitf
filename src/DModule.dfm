@@ -2,8 +2,8 @@ object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
-  Left = 186
-  Top = 125
+  Left = 206
+  Top = 148
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -532,7 +532,7 @@ object DM: TDM
         '  INNER JOIN OrdersH ON (OrdersH.OrderId=Orders.OrderId AND Orde' +
         'rsH.Closed = 0)'
       'WHERE '
-      '  (OrderCount>0)'#39)
+      '  (OrderCount>0)')
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
@@ -677,15 +677,16 @@ object DM: TDM
         ' minprices.regioncode = :aregioncode'
       
         '    left join Core LCore on LCore.servercoreid = minprices.serve' +
-        'rcoreid'
+        'rcoreid and LCore.RegionCode = minprices.regioncode'
       '    LEFT JOIN PricesData ON PricesData.PriceCode=LCore.pricecode'
       '    LEFT JOIN Regions ON MinPrices.RegionCode=Regions.RegionCode'
-      '    LEFT JOIN SynonymFirmCr'
-      '    ON CCore.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON CCore.SynonymFirmCrCode=SynonymFi' +
+        'rmCr.SynonymFirmCrCode'
       '    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode'
       
-        '    LEFT JOIN Orders osbc ON osbc.ClientID = :AClientId and CCor' +
-        'e.CoreId=osbc.CoreId'
+        '    LEFT JOIN Orders osbc ON osbc.ClientID = :AClientId and osbc' +
+        '.CoreId=CCore.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       
         'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +

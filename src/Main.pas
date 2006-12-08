@@ -729,7 +729,7 @@ begin
 	if not IsIntegrDLLPresent then exit;
 
 {
-  TODO:Восстановить работу интеграции
+  TODO: ___ Восстановить работу интеграции
 	IntegrConfig( DM.MainConnection,
 		DM.adtClients.FieldByName( 'RegionCode').AsInteger,
 		Self.Handle);

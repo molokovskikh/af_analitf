@@ -1,6 +1,6 @@
 object ExchangeForm: TExchangeForm
-  Left = 382
-  Top = 246
+  Left = 478
+  Top = 328
   ActiveControl = btnCancel
   BorderIcons = []
   BorderStyle = bsDialog
@@ -227,18 +227,6 @@ object ExchangeForm: TExchangeForm
   object Ras: TARas
     OnStateChange = RasStateChange
     Left = 328
-  end
-  object UnZip: TVCLUnZip
-    RecreateDirs = True
-    OverwriteMode = Always
-    DoAll = True
-    IncompleteZipMode = izAssumeBad
-    ReplaceReadOnly = True
-    OnTotalPercentDone = UnZipTotalPercentDone
-    OnBadCRC = UnZipBadCRC
-    OnInCompleteZip = UnZipInCompleteZip
-    Left = 360
-    Top = 32
   end
   object Timer1: TTimer
     Enabled = False

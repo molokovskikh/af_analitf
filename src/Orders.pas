@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
-  pFIBDataSet, DBProc, AProc;
+  pFIBDataSet, DBProc, AProc, GridsEh;
 
 type
   TOrdersForm = class(TChildForm)
@@ -47,6 +47,8 @@ type
     adsOrdersJUNK: TFIBBooleanField;
     adsOrdersSUMORDER: TFIBBCDField;
     adsOrdersSENDPRICE: TFIBBCDField;
+    adsOrdersREQUESTRATIO: TFIBIntegerField;
+    tmrCheckOrderCount: TTimer;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -54,13 +56,23 @@ type
     procedure dbgOrdersSortMarkingChanged(Sender: TObject);
     procedure adsOrdersBeforeEdit(DataSet: TDataSet);
     procedure adsOrdersAfterPost(DataSet: TDataSet);
+    procedure dbgOrdersCanInput(Sender: TObject; Value: Integer;
+      var CanInput: Boolean);
+    procedure FormCreate(Sender: TObject);
+    procedure dbgOrdersKeyPress(Sender: TObject; var Key: Char);
+    procedure tmrCheckOrderCountTimer(Sender: TObject);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
+    ParentOrdersHForm : TChildForm;
+    OrderID,
+    PriceCode, RegionCode : Integer;
+    PriceName, RegionName : String;
     procedure SetOrderLabel;
     procedure ocf(DataSet: TDataSet);
   public
-    procedure ShowForm(AOrderId: Integer); reintroduce;
+    procedure ShowForm(AOrderId: Integer); overload; //reintroduce;
+    procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
     procedure SetParams(AOrderId: Integer);
   end;
@@ -70,7 +82,7 @@ var
 
 implementation
 
-uses OrdersH, DModule, Constant, Main, Math;
+uses OrdersH, DModule, Constant, Main, Math, CoreFirm;
 
 {$R *.dfm}
 
@@ -79,6 +91,12 @@ begin
   //PrintEnabled:=False;
   dbgOrders.Tag := IfThen(OrdersHForm.TabControl.TabIndex = 1, 1, 2);
   SaveEnabled := OrdersHForm.TabControl.TabIndex = 1;
+  ParentOrdersHForm := OrdersHForm;
+  PriceCode := OrdersHForm.adsOrdersHFormPRICECODE.AsInteger;
+  RegionCode := OrdersHForm.adsOrdersHFormREGIONCODE.AsInteger;
+  PriceName := OrdersHForm.adsOrdersHFormPRICENAME.AsString;
+  RegionName := OrdersHForm.adsOrdersHFormREGIONNAME.AsString;
+  OrderID := AOrderId;
   SetParams(AOrderId);
   inherited ShowForm;
 end;
@@ -93,11 +111,15 @@ begin
     adsOrders.OnCalcFields := ocf;
     dbgOrders.Columns[2].FieldName := 'CryptPRICE';
     dbgOrders.Columns[4].FieldName := 'CryptSUMORDER';
+    dbgOrders.SearchField := '';
+    dbgOrders.ForceRus := False;
   end
   else begin
     adsOrders.OnCalcFields := nil;
     dbgOrders.Columns[2].FieldName := 'SENDPRICE';
     dbgOrders.Columns[4].FieldName := 'SUMORDER';
+    dbgOrders.SearchField := 'SynonymName';
+    dbgOrders.ForceRus := True;
   end;
   with adsOrders do begin
     ParamByName('AOrderId').Value:=AOrderId;
@@ -109,7 +131,6 @@ begin
   	OrderCount := adsOrders.RecordCount;
   	OrderSum := V[0];
     SetOrderLabel;
-//    lSumOrder.Caption := V[0];
   end;
 end;
 
@@ -133,38 +154,11 @@ end;
 procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	inherited;
-	if Key = VK_ESCAPE then PrevForm.ShowForm;
-	if ( Key = VK_DELETE) and not ( adsOrders.IsEmpty) and (OrdersHForm.TabControl.TabIndex = 0) then
-	begin
-    OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsOrdersORDERCOUNT.AsInteger = 0, 0, 1);
-    OrderSum := OrderSum + ( 0 - adsOrdersORDERCOUNT.AsInteger) * adsOrdersCryptPRICE.AsCurrency;
-    DM.SetOldOrderCount(adsOrdersORDERCOUNT.AsInteger);
-    DM.SetNewOrderCount(0, adsOrdersCryptPRICE.AsCurrency);
-    SetOrderLabel;
-    MainForm.SetOrdersInfo;
-    adsOrders.Delete;
-    if adsOrders.RecordCount = 0 then begin
-      DM.adcUpdate.Transaction.StartTransaction;
-      try
-        DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
-        OrdersHForm.adsOrdersHForm.Close;
-        DM.adcUpdate.ExecQuery;
-        DM.adcUpdate.Transaction.Commit;
-      except
-        DM.adcUpdate.Transaction.Rollback;
-        raise;
-      end;
-      OrdersHForm.adsOrdersHForm.Open;
-      MainForm.SetOrdersInfo;
+	if Key = VK_ESCAPE then
+    if Assigned(ParentOrdersHForm) then
+      ParentOrdersHForm.ShowForm
+    else
       PrevForm.ShowForm;
-    end
-    else begin
-      OrdersHForm.adsOrdersHForm.CloseOpen(True);
-      MainForm.SetOrdersInfo;
-    end;
-
-	end;
 end;
 
 procedure TOrdersForm.ocf(DataSet: TDataSet);
@@ -194,14 +188,85 @@ procedure TOrdersForm.adsOrdersAfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsOrdersORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
 	OrderSum := OrderSum + ( adsOrdersORDERCOUNT.AsInteger - OldOrder) * adsOrdersCryptPRICE.AsCurrency;
-  DM.SetNewOrderCount(adsOrdersORDERCOUNT.AsInteger, adsOrdersCryptPRICE.AsCurrency);
+  DM.SetNewOrderCount(adsOrdersORDERCOUNT.AsInteger, adsOrdersCryptPRICE.AsCurrency, OrdersHForm.adsOrdersHFormPRICECODE.AsInteger, OrdersHForm.adsOrdersHFormREGIONCODE.AsInteger);
   SetOrderLabel;
 	MainForm.SetOrdersInfo;
+  //Если удалили позицию из заказа, то запускаем таймер на удаление этой позиции из DataSet
+  if (adsOrdersORDERCOUNT.AsInteger = 0) then
+    tmrCheckOrderCount.Enabled := True;
 end;
 
 procedure TOrdersForm.SetOrderLabel;
 begin
   lSumOrder.Caption := Format('%0.2f', [OrderSum]);
+end;
+
+procedure TOrdersForm.dbgOrdersCanInput(Sender: TObject; Value: Integer;
+  var CanInput: Boolean);
+begin
+  inherited;
+  CanInput := OrdersHForm.TabControl.TabIndex = 0;
+end;
+
+procedure TOrdersForm.FormCreate(Sender: TObject);
+begin
+  dsCheckVolume := adsOrders;
+  dgCheckVolume := dbgOrders;
+  fOrder := adsOrdersORDERCOUNT;
+  fVolume := adsOrdersREQUESTRATIO;
+  inherited;
+end;
+
+procedure TOrdersForm.dbgOrdersKeyPress(Sender: TObject; var Key: Char);
+var
+  _CoreFirmForm : TCoreFirmForm;
+begin
+	if ( Key > #32) and not ( Key in
+		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+	begin
+    _CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
+    if not Assigned(_CoreFirmForm) then
+      _CoreFirmForm := TCoreFirmForm.Create(Application);
+    _CoreFirmForm.ShowForm(PriceCode, RegionCode, PriceName, RegionName, False, True);
+    _CoreFirmForm.dbgCore.SetFocus;
+    _CoreFirmForm.eSearch.Text := '';
+    SendMessage(GetFocus, WM_CHAR, Ord( Key), 0);
+	end;
+end;
+
+procedure TOrdersForm.ShowForm;
+begin
+  inherited;
+  //Если мы производим возврат и формы "Заявка поставщику", то надо обновить данные
+  if Assigned(PrevForm) and (PrevForm is TCoreFirmForm) then
+    SetParams(OrderID);
+end;
+
+procedure TOrdersForm.tmrCheckOrderCountTimer(Sender: TObject);
+begin
+  tmrCheckOrderCount.Enabled := False;
+  SetOrderLabel;
+  MainForm.SetOrdersInfo;
+  adsOrders.Delete;
+  if adsOrders.RecordCount = 0 then begin
+    DM.adcUpdate.Transaction.StartTransaction;
+    try
+      DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
+      OrdersHForm.adsOrdersHForm.Close;
+      DM.adcUpdate.ExecQuery;
+      DM.adcUpdate.Transaction.Commit;
+    except
+      DM.adcUpdate.Transaction.Rollback;
+      raise;
+    end;
+    OrdersHForm.adsOrdersHForm.Open;
+    MainForm.SetOrdersInfo;
+    PrevForm.ShowForm;
+  end
+  else begin
+    OrdersHForm.adsOrdersHForm.CloseOpen(True);
+    MainForm.SetOrdersInfo;
+  end;
 end;
 
 end.

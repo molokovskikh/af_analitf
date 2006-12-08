@@ -1,29 +1,29 @@
 inherited DefectivesForm: TDefectivesForm
-  Left = 209
-  Top = 158
+  Left = 307
+  Top = 159
   ActiveControl = dbgDefectives
   Caption = #1047#1072#1073#1088#1072#1082#1086#1074#1072#1085#1085#1099#1077' '#1087#1088#1077#1087#1072#1088#1072#1090#1099
-  ClientHeight = 498
-  ClientWidth = 831
+  ClientHeight = 573
+  ClientWidth = 792
   OldCreateOrder = True
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object Panel2: TPanel [0]
     Left = 0
-    Top = 421
-    Width = 831
+    Top = 496
+    Width = 792
     Height = 77
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
     DesignSize = (
-      831
+      792
       77)
     object Bevel1: TBevel
       Left = 0
       Top = 0
-      Width = 831
+      Width = 792
       Height = 77
       Align = alClient
       Shape = bsTopLine
@@ -157,7 +157,7 @@ inherited DefectivesForm: TDefectivesForm
     object dbmReason: TDBMemo
       Left = 8
       Top = 56
-      Width = 817
+      Width = 778
       Height = 19
       Anchors = [akLeft, akTop, akRight]
       BevelInner = bvNone
@@ -180,8 +180,8 @@ inherited DefectivesForm: TDefectivesForm
     Tag = 8192
     Left = 0
     Top = 39
-    Width = 831
-    Height = 382
+    Width = 792
+    Height = 457
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsDefectives
@@ -214,6 +214,7 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1058#1086#1074#1072#1088
         Title.TitleButton = True
+        Width = 189
       end
       item
         EditButtons = <>
@@ -221,7 +222,7 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Title.TitleButton = True
-        Width = 103
+        Width = 86
       end
       item
         EditButtons = <>
@@ -229,6 +230,7 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1057#1090#1088#1072#1085#1072
         Title.TitleButton = True
+        Width = 50
       end
       item
         EditButtons = <>
@@ -236,6 +238,7 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1057#1077#1088#1080#1103
         Title.TitleButton = True
+        Width = 86
       end
       item
         EditButtons = <>
@@ -243,7 +246,7 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1053#1086#1084#1077#1088' '#1087#1080#1089#1100#1084#1072
         Title.TitleButton = True
-        Width = 94
+        Width = 62
       end
       item
         Alignment = taCenter
@@ -253,7 +256,7 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1044#1072#1090#1072' '#1087#1080#1089#1100#1084#1072
         Title.TitleButton = True
-        Width = 81
+        Width = 88
       end
       item
         EditButtons = <>
@@ -261,7 +264,7 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1051#1072#1073#1086#1088#1072#1090#1086#1088#1080#1103
         Title.TitleButton = True
-        Width = 78
+        Width = 81
       end
       item
         EditButtons = <>
@@ -269,18 +272,19 @@ inherited DefectivesForm: TDefectivesForm
         Footers = <>
         Title.Caption = #1055#1088#1080#1095#1080#1085#1072
         Title.TitleButton = True
+        Width = 135
       end>
   end
   object Panel1: TPanel [2]
     Left = 0
     Top = 0
-    Width = 831
+    Width = 792
     Height = 39
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
-      831
+      792
       39)
     object Label7: TLabel
       Left = 10
@@ -309,7 +313,7 @@ inherited DefectivesForm: TDefectivesForm
       ParentFont = False
     end
     object btnCheck: TButton
-      Left = 599
+      Left = 560
       Top = 7
       Width = 107
       Height = 25
@@ -319,7 +323,7 @@ inherited DefectivesForm: TDefectivesForm
       TabOrder = 0
     end
     object btnUnCheckAll: TButton
-      Left = 719
+      Left = 680
       Top = 7
       Width = 107
       Height = 25

@@ -1,6 +1,6 @@
 inherited OrdersForm: TOrdersForm
-  Left = 223
-  Top = 182
+  Left = 279
+  Top = 243
   ActiveControl = dbgOrders
   Caption = #1040#1088#1093#1080#1074#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 443
@@ -219,10 +219,13 @@ inherited OrdersForm: TOrdersForm
     TitleFont.Style = []
     OnGetCellParams = dbgOrdersGetCellParams
     OnKeyDown = dbgOrdersKeyDown
+    OnKeyPress = dbgOrdersKeyPress
     OnSortMarkingChanged = dbgOrdersSortMarkingChanged
     SearchField = 'SynonymName'
+    InputField = 'OrderCount'
     SearchPosition = spBottom
     ForceRus = True
+    OnCanInput = dbgOrdersCanInput
     Columns = <
       item
         EditButtons = <>
@@ -308,9 +311,11 @@ inherited OrdersForm: TOrdersForm
       '    Orders.junk,'
       '    Orders.ordercount,'
       '    Orders.SendPrice*Orders.OrderCount AS SumOrder,'
-      '    Orders.SendPrice'
+      '    Orders.SendPrice,'
+      '    core.requestratio'
       'FROM '
       '  Orders'
+      '  left join core on core.coreid = orders.coreid'
       'WHERE '
       '    (Orders.OrderId=:AOrderId)'
       'AND (OrderCount>0)'
@@ -417,5 +422,15 @@ inherited OrdersForm: TOrdersForm
       Size = 2
       RoundByScale = True
     end
+    object adsOrdersREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+    end
+  end
+  object tmrCheckOrderCount: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrCheckOrderCountTimer
+    Left = 264
+    Top = 136
   end
 end

@@ -3,12 +3,12 @@ unit ExchangeThread;
 interface
 
 uses
-	Classes, SysUtils, Windows, StrUtils, ComObj, Variants, XSBuiltIns,
+	Classes, SysUtils, Windows, StrUtils, ComObj, Variants,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf, DB, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
-  FIBQuery, ibase, U_TINFIBInputDelimitedStream, VCLUnZip, SevenZip,
+  FIBQuery, ibase, U_TINFIBInputDelimitedStream, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil;
+  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps;
 
 const
   UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
@@ -782,9 +782,9 @@ begin
         DM.adsOrderCore.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
         DM.adsOrderCore.ParamByName( 'ParentCode').Value := DM.adsOrders.FieldByName( 'FullCode').Value;
         DM.adsOrderCore.ParamByName( 'ShowRegister').Value := False;
+        DM.adsOrderCore.Options := DM.adsOrderCore.Options - [poCacheCalcFields];
         DM.adsOrderCore.Open;
         DM.adsOrderCore.FetchAll;
-        DM.adsOrderCore.DoSort(['CryptBaseCost'], [True]);
         DM.adsOrderCore.DoSort(['CryptBaseCost'], [True]);
 
         //Выбираем минимального из всех прайсов
@@ -1021,40 +1021,16 @@ begin
 		StatusText := 'Распаковка данных';
 		Synchronize( SetStatus);
 		repeat
-			ExchangeForm.UnZip.ZipName := ExePath + SDirIn + '\' + SR.Name;
 			{ Если это архив с рекламой }
 			if ( SR.Name[ 1] = 'r') and ( SR.Size > 0) then
 			begin
 {
-				ExchangeForm.UnZip.DestDir := ExePath + SDirReclame;
-				ExchangeForm.UnZip.UnZip;
-
-        SevenZipRes := SevenZipExtractArchive(
-          0,
-          ExePath + SDirIn + '\' + SR.Name,
-          '*.*',
-          True,
-          '',
-          True,
-          ExePath + SDirReclame,
-          False,
-          nil);
-
-        if SevenZipRes <> 0 then
-          raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
-
-				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
+        Это делается в нитке с рекламой
 }
 			end
                 	{ Если это данные }
 			else
 			begin
-{
-				ExchangeForm.UnZip.DestDir := ExePath + SDirIn;
-				ExchangeForm.UnZip.UnZip;
-				DeleteFileA( ExchangeForm.UnZip.ZipName);
-				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'));
-}
         SZCS.Enter;
         try
           SevenZipRes := SevenZipExtractArchive(
@@ -1080,7 +1056,6 @@ begin
 		until FindNext( SR) <> 0;
 	finally
 		SysUtils.FindClose( SR);
-		ExchangeForm.UnZip.ZipName := '';
 	end;
 
   //Переименовываем файлы с кодом клиента в файлы без код клиента
@@ -1711,17 +1686,13 @@ begin
 end;
 
 function TExchangeThread.GetXMLDateTime( ADateTime: TDateTime): string;
-var
-	DateTime: TXSDateTime;
 begin
-	DateTime := TXSDateTime.Create;
-	DateTime.AsDateTime := ADateTime;
-	result := IntToStr( YearOf( DateTime.AsDateTime)) + '-' +
-		IntToStr( MonthOf( DateTime.AsDateTime)) + '-' +
-		IntToStr( DayOf( DateTime.AsDateTime)) + ' ' +
-		IntToStr( HourOf( DateTime.AsDateTime)) + ':' +
-		IntToStr( MinuteOf( DateTime.AsDateTime)) + ':' +
-		IntToStr( SecondOf( DateTime.AsDateTime)) {+ '.0000000'};
+	result := IntToStr( YearOf( ADateTime)) + '-' +
+		IntToStr( MonthOf( ADateTime)) + '-' +
+		IntToStr( DayOf( ADateTime)) + ' ' +
+		IntToStr( HourOf( ADateTime)) + ':' +
+		IntToStr( MinuteOf( ADateTime)) + ':' +
+		IntToStr( SecondOf( ADateTime)) {+ '.0000000'};
 end;
 
 function TExchangeThread.FromXMLToDateTime( AStr: string): TDateTime;

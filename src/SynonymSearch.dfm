@@ -1,6 +1,6 @@
 inherited SynonymSearchForm: TSynonymSearchForm
-  Left = 260
-  Top = 130
+  Left = 280
+  Top = 173
   ActiveControl = dbgCore
   Caption = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
   ClientHeight = 573
@@ -33,7 +33,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     BevelOuter = bvNone
     TabOrder = 1
     object lFilter: TLabel
-      Left = 554
+      Left = 442
       Top = 8
       Width = 99
       Height = 13
@@ -41,25 +41,27 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Visible = False
     end
     object eSearch: TEdit
-      Left = 25
+      Left = 1
       Top = 8
       Width = 320
       Height = 21
       TabOrder = 0
+      OnEnter = eSearchEnter
       OnKeyDown = eSearchKeyDown
       OnKeyPress = eSearchKeyPress
     end
     object btnSearch: TButton
-      Left = 356
+      Left = 204
       Top = 4
       Width = 75
       Height = 25
       Caption = #1055#1086#1080#1089#1082
       TabOrder = 1
+      Visible = False
       OnClick = tmrSearchTimer
     end
     object cbBaseOnly: TCheckBox
-      Left = 672
+      Left = 560
       Top = 8
       Width = 113
       Height = 17
@@ -68,7 +70,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       OnClick = cbBaseOnlyClick
     end
     object btnSelectPrices: TBitBtn
-      Left = 444
+      Left = 332
       Top = 4
       Width = 105
       Height = 25

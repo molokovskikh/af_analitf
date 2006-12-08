@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
-  SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, FIBQuery, Constant;
+  SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, FIBQuery, Constant,
+  GridsEh;
 
 const
 	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID) ORDER BY ';
@@ -134,7 +135,7 @@ begin
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' +
 		Self.ClassName, False) then dbgExpireds.LoadFromRegistry( Reg);
   if dbgExpireds.SortMarkedColumns.Count = 0 then
-    dbgExpireds.Columns[0].Title.SortMarker := smUpEh;
+    dbgExpireds.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
 	Reg.Free;
 	ShowForm;
   adsExpireds.First;
@@ -264,7 +265,7 @@ end;
 
 procedure TExpiredsForm.adsExpireds2AfterPost(DataSet: TDataSet);
 begin
-  DM.SetNewOrderCount(adsExpiredsORDERCOUNT.AsInteger, adsExpiredsCryptBASECOST.AsCurrency);
+  DM.SetNewOrderCount(adsExpiredsORDERCOUNT.AsInteger, adsExpiredsCryptBASECOST.AsCurrency, adsExpiredsPRICECODE.AsInteger, adsExpiredsREGIONCODE.AsInteger);
 	MainForm.SetOrdersInfo;
 end;
 

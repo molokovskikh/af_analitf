@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, Registry, ForceRus, StrUtils;
+  pFIBDataSet, Registry, ForceRus, StrUtils, GridsEh;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -43,6 +43,8 @@ type
     btnSearch: TButton;
     tmrSearch: TTimer;
     actNewSearch: TAction;
+    cbSearchInBegin: TCheckBox;
+    actSearchInBegin: TAction;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -77,6 +79,8 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgCatalogGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure eSearchEnter(Sender: TObject);
+    procedure actSearchInBeginExecute(Sender: TObject);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -99,6 +103,9 @@ implementation
 uses DModule, AProc, Core, Main, Types, AlphaUtils;
 
 {$R *.dfm}
+
+var
+  SearchInBegin : Boolean;
 
 procedure ShowOrderAll;
 begin
@@ -309,6 +316,11 @@ end;
 
 procedure TNamesFormsForm.SetCatalog;
 begin
+  actSearchInBegin.Checked := SearchInBegin;
+  if SearchInBegin then
+    dbgCatalog.SearchField := 'Name'
+  else
+    dbgCatalog.SearchField := '';
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
@@ -342,7 +354,8 @@ end;
 procedure TNamesFormsForm.dbgCatalogKeyPress(Sender: TObject;
   var Key: Char);
 begin
-  AddKeyToSearch(Key);
+  if not SearchInBegin then
+    AddKeyToSearch(Key);
 end;
 
 procedure TNamesFormsForm.AddKeyToSearch(Key: Char);
@@ -350,7 +363,7 @@ begin
   if Ord(Key) >= 32 then begin
     tmrSearch.Enabled := False;
     if not eSearch.Focused then
-      eSearch.Text := eSearch.Text + fr.DoIt(Key);
+      eSearch.Text := eSearch.Text + Key;
     tmrSearch.Enabled := True;
   end;
 end;
@@ -365,7 +378,7 @@ begin
     'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
   if not actShowAll.Checked then
     adsCatalog.SelectSQL.Text := adsCatalog.SelectSQL.Text + ' and CATALOGS.COREEXISTS = 1';
-  adsCatalog.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
+  adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
   adsCatalog.Open;
   dbgCatalog.SetFocus;
 end;
@@ -384,8 +397,12 @@ end;
 procedure TNamesFormsForm.dbgCatalogKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_RETURN then
-    dbgCatalogDblClick(nil)
+  if Key = VK_RETURN then begin
+    if tmrSearch.Enabled then
+      tmrSearchTimer(nil)
+    else
+      dbgCatalogDblClick(nil)
+  end
   else
     if Key = VK_ESCAPE then
       SetCatalog;
@@ -465,4 +482,22 @@ begin
   tmrShowCatalog.Enabled := True;
 end;
 
+procedure TNamesFormsForm.eSearchEnter(Sender: TObject);
+begin
+  dbgCatalog.SetFocus;
+end;
+
+procedure TNamesFormsForm.actSearchInBeginExecute(Sender: TObject);
+begin
+  actSearchInBegin.Checked := not actSearchInBegin.Checked;
+  SearchInBegin := actSearchInBegin.Checked;
+  dbgCatalog.SetFocus;
+  if SearchInBegin then
+    dbgCatalog.SearchField := 'Name'
+  else
+    dbgCatalog.SearchField := '';
+end;
+
+initialization
+  SearchInBegin := False;
 end.

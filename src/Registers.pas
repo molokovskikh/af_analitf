@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   Placemnt, StdCtrls, DBCtrls, DBGridEh, ToughDBGrid, ExtCtrls, Registry,
-  FIBDataSet, pFIBDataSet, DBProc;
+  FIBDataSet, pFIBDataSet, DBProc, GridsEh;
 
 const
 	RegistrySql	= 'SELECT * FROM Registry ORDER BY ';
@@ -81,18 +81,6 @@ end;
 
 procedure TRegistersForm.dbgRegistrySortMarkingChanged(Sender: TObject);
 begin
-{
-	adsRegistry.DisableControls;
-	Screen.Cursor := crHourglass;
-	try
-		adsRegistry.Close;
-		adsRegistry.SelectSQL.Text := RegistrySql + SQLOrderBy;
-		adsRegistry.Open;
-	finally
-		adsRegistry.EnableControls;
-		Screen.Cursor := crDefault;
-	end;
-}
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 

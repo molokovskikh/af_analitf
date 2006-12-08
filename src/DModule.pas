@@ -31,13 +31,13 @@ const
   (
       ('dbrtl70.bpl', '0650B08C', '583E1038', '5F35A236', '6DD703FA'),
       ('designide70.bpl', 'F16F1849', 'E4827C1D', 'C4FD04B9', '968D63F9'),
-      ('EhLib70.bpl', 'E53BE3AC', 'CE944324', '98157AE5', '06FCE3DC'),
-      ('FIBPlus7.bpl', '6AA9BB91', 'BF7ADC50', '57E8F180', '558F8608'),
+      ('EhLib70.bpl', '10FCCB4D', '5DE0A836', 'CCBC83EC', 'B5A52ACC'),
+      ('FIBPlus7.bpl', '93C1BA38', '07A95850', '3E51729A', '30003797'),
       ('fr7.bpl', 'F7516F76', '2191B5F2', '43975BC8', '5602F31A'),
       ('Indy70.bpl', '1E271033', 'BD6CE031', '6F82664D', '1111221B'),
       ('rtl70.bpl', 'E4E90D2F', 'C6C35486', '68351583', '3D4ECB44'),
       ('tee70.bpl', '0AADB9CB', '5EE4338D', '61BA4EA3', 'A9E6098C'),
-      ('Tough.bpl', '37966797', '9CAA7250', 'C997EE7D', 'A95EE59A'),
+      ('Tough.bpl', '37D3BB15', '2C5BB401', 'BFEC91D6', '5AA3C24B'),
       ('vcl70.bpl', 'DCBC1726', '16A4CA76', '7D5C8162', '2D7512E7'),
       ('vclactnband70.bpl', '86913722', '1C217FB1', 'C86C8AA3', '3132DDFC'),
       ('vcldb70.bpl', 'EAC7B8AE', '4E416522', '6E16BA01', '4FDC98D7'),
@@ -73,6 +73,13 @@ type
     constructor Create(APriceCode, ARegionCode :Integer;
     ASelected : Boolean;
     APriceName : String);
+  end;
+
+  TOrderInfo = class
+    PriceCode,
+    RegionCode : Integer;
+    Summ : Currency;
+    constructor Create(APriceCode, ARegionCode : Integer);
   end;
 
   TDM = class(TDataModule)
@@ -291,6 +298,7 @@ type
     HTTPC,
     CodeC,
     BasecostC : TINFCrypt;
+    OrdersInfo : TStringList;
     procedure CheckRestrictToRun;
     procedure CheckDBFile;
     procedure ReadPasswords;
@@ -324,6 +332,8 @@ type
     procedure UpdateDBFileDataFor29(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor36(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor37(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+    //Установить галочку отправить для текущих заказов
+    procedure SetSendToNotClosedOrders;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -393,9 +403,10 @@ type
 
     procedure InitAllSumOrder;
     procedure SetOldOrderCount(AOldOrderCount : Integer);
-    procedure SetNewOrderCount(ANewOrderCount : Integer; ABaseCost : Currency);
+    procedure SetNewOrderCount(ANewOrderCount : Integer; ABaseCost : Currency; APriceCode, ARegionCode : Integer);
     function GetAllSumOrder : Currency;
     function GetSumOrder (AOrderID : Integer) : Currency;
+    function FindOrderInfo (APriceCode, ARegionCode : Integer) : TOrderInfo;
   end;
 
 var
@@ -466,6 +477,9 @@ begin
   SerEnd := '674C';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
+
+  OrdersInfo := TStringList.Create;
+  OrdersInfo.Sorted := True;
 
   adsSelect3.OnCalcFields := s3cf;
   adsOrders.OnCalcFields := ocf;
@@ -548,6 +562,8 @@ begin
 
   DeleteFilesByMask(ExePath + SDirIn + '\*.zip', False);
   DeleteFilesByMask(ExePath + SDirIn + '\*.zi_', False);
+
+  SetSendToNotClosedOrders;
 
   if NeedUpdateByCheckUIN then begin
     if not RunExchange([ eaGetPrice]) then
@@ -765,7 +781,7 @@ var
   ok: boolean;
 begin
   ok := False;
-  //TODO: Процедура не до конца готова. Использовать другое имя для нормального подключения
+  //TODO: ___ Процедура не до конца готова. Использовать другое имя для нормального подключения
   Tracer.TR('BackupRestore', 'Start');
   MainConnection1.Close;
   try
@@ -1628,9 +1644,13 @@ begin
 end;
 
 procedure TDM.SetNewOrderCount(ANewOrderCount: Integer;
-  ABaseCost: Currency);
+  ABaseCost: Currency; APriceCode, ARegionCode : Integer);
+var
+  CurrOI : TOrderInfo;
 begin
+  CurrOI := FindOrderInfo(APriceCode, ARegionCode);
   AllSumOrder := AllSumOrder + ( ANewOrderCount - OldOrderCount) * ABaseCost;
+  CurrOI.Summ := CurrOI.Summ + ( ANewOrderCount - OldOrderCount) * ABaseCost;
 end;
 
 procedure TDM.SetOldOrderCount(AOldOrderCount: Integer);
@@ -1639,18 +1659,41 @@ begin
 end;
 
 procedure TDM.InitAllSumOrder;
+var
+  CurrOrderInfo : TOrderInfo;
 begin
-  DM.adsSumOrders.Close;
-	DM.adsSumOrders.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-  DM.adsSumOrders.Open;
+  //Очищаем данные по заказам
+  ClearSelectedPrices(OrdersInfo);
+  AllSumOrder := 0;
+ 	adsOrdersH.Close;
+  //Получаем информацию о текущих отправляемых заказах
+	adsOrdersH.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+	adsOrdersH.ParamByName( 'AClosed').Value := False;
+	adsOrdersH.ParamByName( 'ASend').Value := True;
+	adsOrdersH.ParamByName( 'TimeZoneBias').Value := 0;
+	adsOrdersH.Open;
   try
-    AllSumOrder := 0;
-    while not DM.adsSumOrders.Eof do begin
-      AllSumOrder := AllSumOrder + DM.adsSumOrdersSumOrders.AsCurrency;
-      DM.adsSumOrders.Next;
-    end;
+  while not adsOrdersH.Eof do begin
+    CurrOrderInfo := FindOrderInfo(adsOrdersH.FieldByName('PriceCode').AsInteger, adsOrdersH.FieldByName('RegionCode').AsInteger);
+    CurrOrderInfo.Summ := GetSumOrder(adsOrdersH.FieldByName('OrderID').AsInteger);
+    AllSumOrder := AllSumOrder + CurrOrderInfo.Summ;
+    adsOrdersH.Next;
+  end;
   finally
-    DM.adsSumOrders.Close;
+   	adsOrdersH.Close;
+  end;
+
+	adsOrdersH.ParamByName( 'ASend').Value := False;
+	adsOrdersH.Open;
+  try
+  while not adsOrdersH.Eof do begin
+    CurrOrderInfo := FindOrderInfo(adsOrdersH.FieldByName('PriceCode').AsInteger, adsOrdersH.FieldByName('RegionCode').AsInteger);
+    CurrOrderInfo.Summ := GetSumOrder(adsOrdersH.FieldByName('OrderID').AsInteger);
+    AllSumOrder := AllSumOrder + CurrOrderInfo.Summ;
+    adsOrdersH.Next;
+  end;
+  finally
+   	adsOrdersH.Close;
   end;
 end;
 
@@ -2631,6 +2674,42 @@ begin
   end;
 
   trMain.Commit;
+end;
+
+procedure TDM.SetSendToNotClosedOrders;
+begin
+  adcUpdate.Transaction.StartTransaction;
+  try
+    adcUpdate.SQL.Text := 'update ORDERSH set Send = 1 where (Closed = 0)';
+    adcUpdate.ExecQuery;
+    adcUpdate.Transaction.Commit;
+  except
+    adcUpdate.Transaction.Rollback;
+    raise;
+  end;
+end;
+
+{ TOrderInfo }
+
+constructor TOrderInfo.Create(APriceCode, ARegionCode : Integer);
+begin
+  Summ := 0;
+  PriceCode := APriceCode;
+  RegionCode := ARegionCode;
+end;
+
+function TDM.FindOrderInfo(APriceCode, ARegionCode: Integer): TOrderInfo;
+var
+  Index : Integer;
+  OrderIDStr : String;
+begin
+  OrderIDStr := IntToStr(APriceCode) + '_' + IntToStr(ARegionCode);
+  if OrdersInfo.Find(OrderIDStr, Index) then
+    Result := TOrderInfo(OrdersInfo.Objects[Index])
+  else begin
+    Result := TOrderInfo.Create(APriceCode, ARegionCode);
+    OrdersInfo.AddObject(OrderIDStr, Result);
+  end;
 end;
 
 initialization

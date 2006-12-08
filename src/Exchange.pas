@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, ComCtrls, ARas, StrUtils, ComObj,
-  VCLUnZip, Variants, IdBaseComponent, IdComponent,
+  Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet;
@@ -20,7 +20,6 @@ type
     Timer: TTimer;
     ProgressBar: TProgressBar;
     Ras: TARas;
-    UnZip: TVCLUnZip;
     TotalProgress: TProgressBar;
     Image1: TImage;
     Label1: TLabel;
@@ -41,11 +40,6 @@ type
       StateStr: String);
     procedure TimerTimer(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
-    procedure UnZipBadCRC(Sender: TObject; CalcCRC, StoredCRC,
-      FileIndex: Integer);
-    procedure UnZipInCompleteZip(Sender: TObject;
-      var IncompleteMode: TIncompleteZipMode);
-    procedure UnZipTotalPercentDone(Sender: TObject; Percent: Integer);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -138,7 +132,7 @@ begin
 	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions) then
     AExchangeActions := AExchangeActions + [ eaGetFullData, eaSendOrders];
 
-  //TODO: надо подумать, что здесь происходит
+  //TODO: ___ надо подумать, что здесь происходит
 	if ( eaSendOrders in AExchangeActions)
     and not ( [eaGetPrice, eaGetWaybills] * AExchangeActions <> [])
     and ( DM.DatabaseOpenedBy <> '')
@@ -511,25 +505,6 @@ begin
 		ProgressBar.Position := Value;
 		Application.ProcessMessages;
 	end;
-end;
-
-procedure TExchangeForm.UnZipBadCRC(Sender: TObject; CalcCRC, StoredCRC,
-  FileIndex: Integer);
-begin
-	if not DoStop then raise Exception.Create( 'Ќеверна€ контрольна€ сумма архива');
-end;
-
-procedure TExchangeForm.UnZipInCompleteZip(Sender: TObject;
-  var IncompleteMode: TIncompleteZipMode);
-begin
-	if not DoStop then raise Exception.Create( 'Ќеверный формат архива');
-end;
-
-procedure TExchangeForm.UnZipTotalPercentDone(Sender: TObject;
-  Percent: Integer);
-begin
-	if DoStop then UnZip.CancelTheOperation
-		else StatusPosition := Percent;
 end;
 
 procedure TExchangeForm.Timer1Timer(Sender: TObject);

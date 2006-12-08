@@ -7,7 +7,7 @@ uses
   Dialogs, Child, DModule, DB, Grids, DBGrids, RXDBCtrl,
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
   FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, Registry, ExtCtrls,
-  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery, DBProc;
+  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery, DBProc, GridsEh;
 
 const
 	DefectSql	= 'SELECT * FROM Defectives WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';

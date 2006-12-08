@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB, FIBDataSet, pFIBDataSet, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Registry, Constant,
-  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls, StrUtils;
+  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls, StrUtils, GridsEh;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -133,6 +133,7 @@ type
     procedure cbBaseOnlyClick(Sender: TObject);
     procedure dbgCoreDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
+    procedure eSearchEnter(Sender: TObject);
   private
     { Private declarations }
     fr : TForceRus;
@@ -160,7 +161,8 @@ procedure ShowSynonymSearch;
 
 implementation
 
-uses DModule, AProc, Main, SQLWaiting, AlphaUtils;
+uses
+  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps;
 
 {$R *.dfm}
 
@@ -253,6 +255,7 @@ begin
       adsCore.Close;
   	adsOrdersShowFormSummary.DataSource := nil;
   	adsOrders.DataSource := nil;
+    adsCore.Options := adsCore.Options - [poCacheCalcFields];
     adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
     adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
   	adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
@@ -267,7 +270,6 @@ begin
     ShowSQLWaiting(adsCore);
 
     if not adsCore.Sorted then begin
-      adsCore.DoSort(['FullCode', 'CryptBaseCost'], [True, True]);
       adsCore.DoSort(['FullCode', 'CryptBaseCost'], [True, True]);
       adsCore.First;
     end;
@@ -357,7 +359,7 @@ end;
 
 procedure TSynonymSearchForm.adsCoreAfterPost(DataSet: TDataSet);
 begin
-  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency);
+  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency, adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
 	MainForm.SetOrdersInfo;
 end;
 
@@ -437,7 +439,7 @@ begin
   if Ord(Key) >= 32 then begin
     tmrSearch.Enabled := False;
     if not eSearch.Focused then
-      eSearch.Text := eSearch.Text + fr.DoIt(Key);
+      eSearch.Text := eSearch.Text + Key;
     tmrSearch.Enabled := True;
   end;
 end;
@@ -524,6 +526,11 @@ procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;
 begin
   if Column.Field = adsCoreSYNONYMNAME then
     ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
+end;
+
+procedure TSynonymSearchForm.eSearchEnter(Sender: TObject);
+begin
+  dbgCore.SetFocus;
 end;
 
 end.

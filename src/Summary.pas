@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus;
+  pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh;
 
 const
 	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
@@ -127,7 +127,7 @@ type
     procedure scf(DataSet: TDataSet);
   public
     procedure Print( APreview: boolean = False); override;
-    procedure ShowForm; reintroduce;
+    procedure ShowForm; override;
     procedure SetOrderLabel;
   end;
 
@@ -285,7 +285,7 @@ procedure TSummaryForm.adsSummary2AfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
 	OrderSum := OrderSum + ( adsSummaryORDERCOUNT.AsInteger - OldOrder) * adsSummaryCryptBASECOST.AsCurrency;
-  DM.SetNewOrderCount(adsSummaryORDERCOUNT.AsInteger, adsSummaryCryptBASECOST.AsCurrency);
+  DM.SetNewOrderCount(adsSummaryORDERCOUNT.AsInteger, adsSummaryCryptBASECOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
   SetOrderLabel;
 	SummaryHShow;
 	if adsSummaryORDERCOUNT.AsInteger = 0 then SummaryShow;
@@ -367,20 +367,6 @@ end;
 
 procedure TSummaryForm.dbgSummarySortMarkingChanged(Sender: TObject);
 begin
-{
-  adsSummary.DisableControls;
-	Screen.Cursor := crHourglass;
-	adsSummary.Close;
-	adsSummary.SelectSQL.Text := SummarySql + SQLOrderBy;
-	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	try
-		adsSummary.Open;
-	finally
-		Screen.Cursor := crDefault;
-		adsSummary.EnableControls;
-	end;
-}
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
@@ -393,7 +379,7 @@ end;
 procedure TSummaryForm.adsSummaryBeforeDelete(DataSet: TDataSet);
 begin
   DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-  DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency);
+  DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
 end;
 
 procedure TSummaryForm.SetOrderLabel;
@@ -410,7 +396,7 @@ begin
       OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCryptBASECOST.AsCurrency;
       SetOrderLabel;
       DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-      DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency);
+      DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
       DM.adcUpdate.Transaction.StartTransaction;
       try
         DM.adcUpdate.SQL.Text :=

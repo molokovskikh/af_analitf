@@ -1,6 +1,6 @@
 inherited NamesFormsForm: TNamesFormsForm
-  Left = 288
-  Top = 198
+  Left = 360
+  Top = 264
   Caption = #1057#1087#1080#1089#1086#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
   ClientWidth = 687
   OldCreateOrder = True
@@ -309,22 +309,32 @@ inherited NamesFormsForm: TNamesFormsForm
       BevelOuter = bvNone
       TabOrder = 0
       object eSearch: TEdit
-        Left = 25
+        Left = 1
         Top = 10
         Width = 320
         Height = 21
         TabOrder = 0
+        OnEnter = eSearchEnter
         OnKeyDown = eSearchKeyDown
         OnKeyPress = eSearchKeyPress
       end
       object btnSearch: TButton
-        Left = 360
+        Left = 520
         Top = 8
         Width = 75
         Height = 25
         Caption = #1055#1086#1080#1089#1082
         TabOrder = 1
+        Visible = False
         OnClick = tmrSearchTimer
+      end
+      object cbSearchInBegin: TCheckBox
+        Left = 336
+        Top = 12
+        Width = 145
+        Height = 17
+        Action = actSearchInBegin
+        TabOrder = 2
       end
     end
   end
@@ -361,6 +371,10 @@ inherited NamesFormsForm: TNamesFormsForm
     object actNewSearch: TAction
       Caption = #1053#1086#1074#1099#1081' '#1087#1086#1080#1089#1082
       OnExecute = actNewSearchExecute
+    end
+    object actSearchInBegin: TAction
+      Caption = #1048#1089#1082#1072#1090#1100' '#1074' '#1085#1072#1095#1072#1083#1077' '#1089#1083#1086#1074#1072
+      OnExecute = actSearchInBeginExecute
     end
   end
   object adsNames: TpFIBDataSet

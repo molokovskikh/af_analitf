@@ -97,7 +97,7 @@ var
       R.RootKey := HKEY_CURRENT_USER;
       if R.KeyExists('Software\Inforoom\AnalitF\' + IntToHex(GetCopyID, 8)) and not R.KeyExists('Software\Inforoom\AnalitF\' + GetPathCopyID) then
       begin
-        //TODO: Должно работать всегда, но надо будет специально проверить на Win95, Win98, WinNT
+        //TODO: ___ Должно работать всегда, но надо будет специально проверить на Win95, Win98, WinNT
         R.MoveKey('Software\Inforoom\AnalitF\' + IntToHex(GetCopyID, 8), 'Software\Inforoom\AnalitF\' + GetPathCopyID, False);
         //Если работаем на WinNT, то будем делать рекурсию
         //if (GetVersion() < $80000000) then

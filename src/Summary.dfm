@@ -1,9 +1,10 @@
 inherited SummaryForm: TSummaryForm
-  Left = 324
-  Top = 230
+  Left = 350
+  Top = 185
   ActiveControl = dbgSummary
   Caption = #1057#1074#1086#1076#1085#1099#1081' '#1079#1072#1082#1072#1079
-  ClientHeight = 465
+  ClientHeight = 573
+  ClientWidth = 792
   OldCreateOrder = True
   OnDestroy = FormDestroy
   OnResize = FormResize
@@ -12,16 +13,16 @@ inherited SummaryForm: TSummaryForm
   object pClient: TPanel [0]
     Left = 0
     Top = 0
-    Width = 684
-    Height = 267
+    Width = 792
+    Height = 375
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object dbgSummary: TToughDBGrid
       Left = 0
       Top = 52
-      Width = 684
-      Height = 182
+      Width = 792
+      Height = 290
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -56,7 +57,7 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
-          Width = 87
+          Width = 225
         end
         item
           EditButtons = <>
@@ -64,7 +65,7 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
           Title.TitleButton = True
-          Width = 87
+          Width = 140
         end
         item
           Alignment = taRightJustify
@@ -73,7 +74,8 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
           Title.TitleButton = True
-          Width = 70
+          Visible = False
+          Width = 64
         end
         item
           EditButtons = <>
@@ -81,7 +83,8 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
           Title.TitleButton = True
-          Width = 49
+          Visible = False
+          Width = 45
         end
         item
           EditButtons = <>
@@ -96,7 +99,7 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
           Title.TitleButton = True
-          Width = 56
+          Width = 61
         end
         item
           EditButtons = <>
@@ -104,7 +107,7 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.TitleButton = True
-          Width = 52
+          Width = 82
         end
         item
           EditButtons = <>
@@ -112,19 +115,24 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
-          Width = 67
+          Visible = False
+          Width = 62
         end
         item
           EditButtons = <>
           FieldName = 'REGISTRYCOST'
           Footers = <>
           Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+          Visible = False
+          Width = 58
         end
         item
           EditButtons = <>
           FieldName = 'REQUESTRATIO'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
+          Visible = False
+          Width = 59
         end
         item
           EditButtons = <>
@@ -137,7 +145,7 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1062#1077#1085#1072
           Title.TitleButton = True
-          Width = 46
+          Width = 67
         end
         item
           EditButtons = <>
@@ -145,7 +153,7 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
           Title.TitleButton = True
-          Width = 47
+          Width = 62
         end
         item
           Alignment = taRightJustify
@@ -154,7 +162,7 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
           Title.TitleButton = True
-          Width = 42
+          Width = 43
         end
         item
           Color = 16775406
@@ -162,6 +170,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'ORDERCOUNT'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
+          Width = 44
         end
         item
           Color = 16775406
@@ -169,23 +178,24 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'SumOrder'
           Footers = <>
           Title.Caption = #1057#1091#1084#1084#1072
+          Width = 58
         end>
     end
     object pStatus: TPanel
       Left = 0
-      Top = 234
-      Width = 684
+      Top = 342
+      Width = 792
       Height = 33
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 1
       DesignSize = (
-        684
+        792
         33)
       object Bevel1: TBevel
         Left = 0
         Top = 0
-        Width = 684
+        Width = 792
         Height = 33
         Align = alClient
         Shape = bsTopLine
@@ -289,7 +299,7 @@ inherited SummaryForm: TSummaryForm
     object pTopSettings: TPanel
       Left = 0
       Top = 0
-      Width = 684
+      Width = 792
       Height = 52
       Align = alTop
       BevelOuter = bvNone
@@ -297,7 +307,7 @@ inherited SummaryForm: TSummaryForm
       object bvSettings: TBevel
         Left = 0
         Top = 49
-        Width = 684
+        Width = 792
         Height = 3
         Align = alBottom
         Shape = bsBottomLine
@@ -367,8 +377,8 @@ inherited SummaryForm: TSummaryForm
   object pWebBrowser: TPanel [1]
     Tag = 200
     Left = 0
-    Top = 267
-    Width = 684
+    Top = 375
+    Width = 792
     Height = 198
     Align = alBottom
     BevelOuter = bvNone
@@ -377,7 +387,7 @@ inherited SummaryForm: TSummaryForm
     object Bevel2: TBevel
       Left = 0
       Top = 0
-      Width = 684
+      Width = 792
       Height = 4
       Align = alTop
       Shape = bsTopLine
@@ -386,12 +396,12 @@ inherited SummaryForm: TSummaryForm
       Tag = 6
       Left = 0
       Top = 4
-      Width = 684
+      Width = 792
       Height = 194
       Align = alClient
       TabOrder = 0
       ControlData = {
-        4C000000B24600000D1400000000000000000000000000000000000000000000
+        4C000000DB5100000D1400000000000000000000000000000000000000000000
         000000004C000000000000000000000001000000E0D057007335CF11AE690800
         2B2E126208000000000000004C0000000114020000000000C000000000000046
         8000000000000000000000000000000000000000000000000000000000000000

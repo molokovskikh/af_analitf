@@ -1,14 +1,14 @@
 object CoreFirmForm: TCoreFirmForm
-  Left = 256
-  Top = 152
+  Left = 310
+  Top = 203
   ActiveControl = dbgCore
   Align = alClient
   Anchors = [akTop, akBottom]
   BorderIcons = []
   BorderStyle = bsNone
   Caption = #1047#1072#1103#1074#1082#1072' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1091
-  ClientHeight = 551
-  ClientWidth = 768
+  ClientHeight = 573
+  ClientWidth = 792
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,8 +40,8 @@ object CoreFirmForm: TCoreFirmForm
     Tag = 128
     Left = 0
     Top = 65
-    Width = 768
-    Height = 448
+    Width = 792
+    Height = 470
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsCore
@@ -68,7 +68,6 @@ object CoreFirmForm: TCoreFirmForm
     OnSortMarkingChanged = dbgCoreSortMarkingChanged
     InputField = 'OrderCount'
     SearchPosition = spTop
-    ForceRus = True
     FindInterval = 2500
     OnCanInput = dbgCoreCanInput
     Columns = <
@@ -79,7 +78,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
         Title.TitleButton = True
-        Width = 117
+        Width = 218
       end
       item
         EditButtons = <>
@@ -88,7 +87,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Title.TitleButton = True
-        Width = 92
+        Width = 69
       end
       item
         Alignment = taRightJustify
@@ -98,7 +97,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
         Title.TitleButton = True
-        Width = 87
+        Width = 36
       end
       item
         EditButtons = <>
@@ -116,7 +115,8 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
         Title.TitleButton = True
-        Width = 118
+        Visible = False
+        Width = 56
       end
       item
         Alignment = taCenter
@@ -126,19 +126,23 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1057#1088#1086#1082'. '#1075#1086#1076#1085'.'
         Title.TitleButton = True
-        Width = 77
+        Width = 58
       end
       item
         EditButtons = <>
         FieldName = 'REGISTRYCOST'
         Footers = <>
         Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+        Visible = False
+        Width = 31
       end
       item
         EditButtons = <>
         FieldName = 'REQUESTRATIO'
         Footers = <>
         Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
+        Visible = False
+        Width = 67
       end
       item
         EditButtons = <>
@@ -152,6 +156,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1062#1077#1085#1072
         Title.TitleButton = True
+        Width = 59
       end
       item
         Alignment = taRightJustify
@@ -161,6 +166,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
         Title.TitleButton = True
+        Width = 39
       end
       item
         EditButtons = <>
@@ -169,6 +175,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
         Title.TitleButton = True
+        Width = 51
       end
       item
         EditButtons = <>
@@ -177,6 +184,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1052#1080#1085'. '#1094#1077#1085#1072
         Title.TitleButton = True
+        Width = 51
       end
       item
         EditButtons = <>
@@ -185,6 +193,7 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1055#1088#1072#1081#1089' - '#1083#1080#1076#1077#1088
         Title.TitleButton = True
+        Width = 70
       end
       item
         EditButtons = <>
@@ -193,6 +202,8 @@ object CoreFirmForm: TCoreFirmForm
         MinWidth = 5
         Title.Caption = #1056#1077#1075#1080#1086#1085' - '#1083#1080#1076#1077#1088
         Title.TitleButton = True
+        Visible = False
+        Width = 70
       end
       item
         Color = 16775406
@@ -201,6 +212,7 @@ object CoreFirmForm: TCoreFirmForm
         Footers = <>
         MinWidth = 5
         Title.Caption = #1047#1072#1082#1072#1079
+        Width = 55
       end
       item
         Color = 16775406
@@ -209,23 +221,24 @@ object CoreFirmForm: TCoreFirmForm
         Footers = <>
         MinWidth = 5
         Title.Caption = #1057#1091#1084#1084#1072
+        Width = 55
       end>
   end
   object Panel1: TPanel
     Left = 0
-    Top = 513
-    Width = 768
+    Top = 535
+    Width = 792
     Height = 38
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
     DesignSize = (
-      768
+      792
       38)
     object Bevel1: TBevel
       Left = 0
       Top = 0
-      Width = 768
+      Width = 792
       Height = 38
       Align = alClient
       Shape = bsTopLine
@@ -266,16 +279,16 @@ object CoreFirmForm: TCoreFirmForm
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 768
+    Width = 792
     Height = 65
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
-      768
+      792
       65)
     object lblRecordCount: TLabel
-      Left = 486
+      Left = 510
       Top = 8
       Width = 60
       Height = 13
@@ -302,7 +315,7 @@ object CoreFirmForm: TCoreFirmForm
       ParentFont = False
     end
     object cbFilter: TComboBox
-      Left = 605
+      Left = 629
       Top = 4
       Width = 161
       Height = 21
@@ -320,17 +333,18 @@ object CoreFirmForm: TCoreFirmForm
     object pTop: TPanel
       Left = 0
       Top = 28
-      Width = 768
+      Width = 792
       Height = 37
       Align = alBottom
       BevelOuter = bvLowered
       TabOrder = 1
       object eSearch: TEdit
-        Left = 25
+        Left = 1
         Top = 8
         Width = 320
         Height = 21
         TabOrder = 0
+        OnEnter = eSearchEnter
         OnKeyDown = eSearchKeyDown
         OnKeyPress = eSearchKeyPress
       end
@@ -341,6 +355,7 @@ object CoreFirmForm: TCoreFirmForm
         Height = 25
         Caption = #1055#1086#1080#1089#1082
         TabOrder = 1
+        Visible = False
         OnClick = tmrSearchTimer
       end
     end
@@ -765,5 +780,22 @@ object CoreFirmForm: TCoreFirmForm
     OnTimer = tmrSearchTimer
     Left = 472
     Top = 213
+  end
+  object adsCoreWithLike: TpFIBDataSet
+    SelectSQL.Strings = (
+      'SELECT'
+      '*'
+      'FROM'
+      '    CORESHOWBYFIRM(:APRICECODE,'
+      '    :AREGIONCODE,'
+      '    :ACLIENTID,'
+      '    :APRICENAME) '
+      'where'
+      '  upper(SynonymName) like upper(:LikeParam)')
+    Transaction = DM.DefTran
+    Database = DM.MainConnection1
+    UpdateTransaction = DM.UpTran
+    Left = 144
+    Top = 112
   end
 end

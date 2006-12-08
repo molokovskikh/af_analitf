@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus;
+  Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh;
 
 const
 	PricesSql =	'SELECT * FROM PRICESSHOW(:ACLIENTID, :TIMEZONEBIAS) ORDER BY ';
@@ -24,16 +24,13 @@ type
     dsPrices: TDataSource;
     dbtMinOrder: TDBText;
     actCurrentOrders: TAction;
-    Label4: TLabel;
     Panel1: TPanel;
     Panel2: TPanel;
     Label3: TLabel;
     Label5: TLabel;
     GroupBox1: TGroupBox;
     dbgPrices: TToughDBGrid;
-    DBMemo1: TDBMemo;
     DBMemo2: TDBMemo;
-    Bevel1: TBevel;
     Bevel2: TBevel;
     Label6: TLabel;
     DBMemo3: TDBMemo;
@@ -86,6 +83,7 @@ type
     procedure adsPricesUPCOSTChange(Sender: TField);
     procedure tmStopEditTimer(Sender: TObject);
     procedure adsPricesAfterEdit(DataSet: TDataSet);
+    procedure adsPricesCalcFields(DataSet: TDataSet);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -126,7 +124,7 @@ begin
 	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
 		+ Self.ClassName, False) then dbgPrices.LoadFromRegistry( Reg);
   if dbgPrices.SortMarkedColumns.Count = 0 then
-    dbgPrices.Columns[0].Title.SortMarker := smUpEh;
+    dbgPrices.FieldColumns['PRICENAME'].Title.SortMarker := smUpEh;
 	Reg.Free;
 end;
 
@@ -161,25 +159,31 @@ begin
       end
       else
         Open;
-      SetLastPrice;
     finally
       Screen.Cursor:=crDefault;
     end;
   end;
+  //«десь производитс€ сортировка датасета
   inherited;
+  //ѕосле этого мы выставл€ем позицию на последний используемый прайс
+  SetLastPrice;
 end;
 
 procedure TPricesForm.GetLastPrice;
 begin
-	LastPriceCode := adsPricesPriceCode.AsInteger;
-	LastRegionCode := adsPricesRegionCode.AsInteger;
+  LastPriceCode := adsPricesPriceCode.AsInteger;
+  LastRegionCode := adsPricesRegionCode.AsInteger;
 end;
 
 procedure TPricesForm.SetLastPrice;
 begin
 	if not adsPrices.IsEmpty then
-		adsPrices.Locate( 'PriceCode;RegionCode',
-		VarArrayOf([ LastPriceCode, LastRegionCode]),[]);
+    //≈сли был первый запуск, то устанавливаем в начало списка
+    if LastPriceCode = -1 then
+      adsPrices.First
+    else
+  		adsPrices.Locate( 'PriceCode;RegionCode',
+        VarArrayOf([ LastPriceCode, LastRegionCode]),[]);
 end;
 
 procedure TPricesForm.actOnlyLeadersExecute(Sender: TObject);
@@ -198,7 +202,7 @@ end;
 
 procedure TPricesForm.dbgPricesDblClick(Sender: TObject);
 var
-  C : TGridCoord;
+  C : GridsEh.TGridCoord;
   P : TPoint;
 begin
 	inherited;
@@ -267,8 +271,12 @@ begin
     //MainForm.actRegistry.Execute
   else
     if not adsPricesPRICECODE.IsNull and adsPricesINJOB.Value then
-      CoreFirmForm.ShowForm(adsPrices.FieldByName( 'PriceCode').AsInteger,
-	     	adsPrices.FieldByName( 'RegionCode').AsInteger, actOnlyLeaders.Checked);
+      CoreFirmForm.ShowForm(
+        adsPricesPRICECODE.AsInteger,
+	     	adsPricesREGIONCODE.AsInteger,
+        adsPricesPRICENAME.AsString,
+        adsPricesREGIONNAME.AsString,
+        actOnlyLeaders.Checked);
 end;
 
 procedure TPricesForm.dbgPricesSortMarkingChanged(Sender: TObject);
@@ -284,7 +292,7 @@ end;
 procedure TPricesForm.adsPricesBeforePost(DataSet: TDataSet);
 begin
   inherited;
-  //TODO : ѕеределать на Value после перехода на FIB 6.4 (E5912)
+  //TODO: ___ ѕеределать на Value после перехода на FIB 6.4 (E5912)
   if adsPricesALLOWCOSTCORR.AsInteger = 0 then
     adsPricesUPCOST.AsCurrency := adsPricesUPCOST.OldValue;
 end;
@@ -329,4 +337,15 @@ begin
 //  tmStopEdit.Enabled := True;
 end;
 
+procedure TPricesForm.adsPricesCalcFields(DataSet: TDataSet);
+begin
+  if adsPricesPOSITIONS.AsInteger > 0 then
+    adsPricesSumOrder1.AsCurrency := DM.FindOrderInfo(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger).Summ
+  else
+    adsPricesSumOrder1.AsCurrency := 0;
+end;
+
+initialization
+  LastPriceCode := -1;
+  LastRegionCode := -1;
 end.
