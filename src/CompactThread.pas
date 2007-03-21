@@ -24,8 +24,13 @@ var
 begin
   CompactThread := TCompactThread.Create(True);
   CompactThread.FreeOnTerminate := True;
-  ShowWaiting('Производится сжатие базы данных. Подождите...',
-    CompactThread);
+  DM.MainConnection1.Close;
+  try
+    ShowWaiting('Производится сжатие базы данных. Подождите...',
+      CompactThread);
+  finally
+    DM.MainConnection1.Open;
+  end;
 end;
 
 { TCompactThread }

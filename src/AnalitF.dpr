@@ -83,6 +83,8 @@ uses
 {$R CompareScript36.RES}
 {$R CompareScript37.RES}
 {$R CompareScript38.RES}
+{$R CompareScript39.RES}
+{$R LastScript.RES}
 
 
 var
@@ -117,8 +119,7 @@ begin
       CoUninitialize;
     end;
   except
-    MessageBox( 'Для запуска приложения необходим установленный Internet Explorer 4.0 или выше.', MB_ICONSTOP or MB_OK);
-    ExitProcess( Integer(ecIE40) );
+    LogExitError('Для запуска приложения необходим установленный Internet Explorer 4.0 или выше.', Integer(ecIE40));
   end;
   //Производим попытку скопировать настройки в реестре из старой копии программы 
   try

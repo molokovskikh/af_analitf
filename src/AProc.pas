@@ -64,6 +64,7 @@ function ExtractURL(const URL: string): string;
 procedure MoveFile_( ASource, ADest: string);
 function SimpleHash( AStr: string): string;
 procedure LogCriticalError(Error : String);
+procedure LogExitError(Error : String; ExitCode : Integer; ShowErrorMessage : Boolean = True);
 
 
 implementation
@@ -524,6 +525,13 @@ begin
   end;
 end;
 
+procedure LogExitError(Error : String; ExitCode : Integer; ShowErrorMessage : Boolean = True);
+begin
+  LogCriticalError(Error);
+  if ShowErrorMessage then
+    MessageBox(Error, MB_ICONERROR or MB_OK);
+  ExitProcess( ExitCode );
+end;
 
   {procedure XMLTableToStrings(XML: string; TableName: string; Strings: TStrings);
     procedure ProcessNode(Node: IXMLNode);
