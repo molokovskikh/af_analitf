@@ -181,7 +181,7 @@ var
 
 procedure TCoreForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
@@ -200,22 +200,28 @@ begin
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsOrdersShowFormSummary.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, False) then
-		dbgCore.LoadFromRegistry( Reg);
-	Reg.Free;
+
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    then
+      dbgCore.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
 end;
 
 procedure TCoreForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, True);
-	dbgCore.SaveToRegistry( Reg);
-	Reg.Free;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
+    dbgCore.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean);

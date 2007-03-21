@@ -178,7 +178,7 @@ uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
 
 procedure TCoreFirmForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
@@ -198,24 +198,30 @@ begin
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, False) then dbgCore.LoadFromRegistry( Reg);
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    then
+      dbgCore.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
   if dbgCore.SortMarkedColumns.Count = 0 then
     dbgCore.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
-	Reg.Free;
 end;
 
 procedure TCoreFirmForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
 	inherited;
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, True);
-	dbgCore.SaveToRegistry( Reg);
-	Reg.Free;  
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
+    dbgCore.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
   fr.Free;
   BM.Free;
 end;

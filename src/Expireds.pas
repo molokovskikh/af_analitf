@@ -110,7 +110,7 @@ uses
 
 procedure TExpiredsForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
   dsCheckVolume := adsExpireds;
   dgCheckVolume := dbgExpireds;
@@ -131,25 +131,31 @@ begin
 		Screen.Cursor := crDefault;
 	end;
 	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCountFromSrv]);
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' +
-		Self.ClassName, False) then dbgExpireds.LoadFromRegistry( Reg);
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    then
+      dbgExpireds.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
   if dbgExpireds.SortMarkedColumns.Count = 0 then
     dbgExpireds.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
-	Reg.Free;
 	ShowForm;
   adsExpireds.First;
 end;
 
 procedure TExpiredsForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, True);
-	dbgExpireds.SaveToRegistry( Reg);
-	Reg.Free;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
+    dbgExpireds.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TExpiredsForm.ecf(DataSet: TDataSet);

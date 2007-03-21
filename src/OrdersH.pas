@@ -133,7 +133,7 @@ end;
 
 procedure TOrdersHForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 	Year, Month, Day: Word;
 begin
   adsOrdersHForm.Options := adsOrdersHForm.Options - [poCacheCalcFields];
@@ -144,10 +144,14 @@ begin
 	PrintEnabled := True;
 	OrdersForm := TOrdersForm.Create( Application);
   WayBillListForm := TWayBillListForm.Create(Application);
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, False) then dbgOrdersH.LoadFromRegistry( Reg);
-	Reg.Free;
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    then
+      dbgOrdersH.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
 
 	adsOrdersHForm.SelectSQL.Text := OrdersHSql + 'SendDate DESC';
   adsOrdersHForm.RefreshSQL.Text := ROrdersHSql;
@@ -179,7 +183,7 @@ end;
 
 procedure TOrdersHForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
   try
     //TODO: ___ Здесь возникает ошибка с AccessViolation в FBPlus.
@@ -187,11 +191,13 @@ begin
 	  SoftPost(adsOrdersHForm);
   except
   end;
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, True);
-	dbgOrdersH.SaveToRegistry( Reg);
-	Reg.Free;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
+    dbgOrdersH.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
   ClearSumOrders;
   FSumOrders.Free;
 end;

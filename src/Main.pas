@@ -346,13 +346,18 @@ begin
 	{ Запуск с ключем -i (импорт данных) при получении новой версии программы}
 	if FindCmdLineSwitch('i') then
 	begin
-		RunExchange([ eaImportOnly]);
+    //Производим только в том случае, если не была создана "чистая" база
+    if not DM.CreateClearDatabase then
+  		RunExchange([ eaImportOnly]);
 		exit;
 	end;
 
 	{ Если операция импорта не была завершена }
 	if DM.IsBackuped( ExePath) or
-		DM.IsBackuped( ExePath + SDirIn + '\') or not DM.Unpacked then
+     DM.IsBackuped( ExePath + SDirIn + '\') or
+     not DM.Unpacked or
+     DM.NeedImportAfterRecovery
+  then
 	begin
 		MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
 		if DM.IsBackuped( ExePath) then

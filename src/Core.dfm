@@ -507,6 +507,14 @@ object CoreForm: TCoreForm
           Width = 59
         end
         item
+          EditButtons = <>
+          FieldName = 'PriceRet'
+          Footers = <>
+          MinWidth = 5
+          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
+          Width = 48
+        end
+        item
           Alignment = taRightJustify
           EditButtons = <>
           FieldName = 'QUANTITY'
@@ -523,14 +531,6 @@ object CoreForm: TCoreForm
           MinWidth = 5
           Title.Caption = #1047#1072#1082#1072#1079
           Width = 34
-        end
-        item
-          EditButtons = <>
-          FieldName = 'PriceRet'
-          Footers = <>
-          MinWidth = 5
-          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
-          Width = 48
         end
         item
           Color = 16775406

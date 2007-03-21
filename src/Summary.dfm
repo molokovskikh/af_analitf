@@ -75,7 +75,6 @@ inherited SummaryForm: TSummaryForm
           Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
           Title.TitleButton = True
           Visible = False
-          Width = 64
         end
         item
           EditButtons = <>

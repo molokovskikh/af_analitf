@@ -114,23 +114,27 @@ end;
 
 procedure TPricesForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
 	inherited;
   NeedFirstOnDataSet := False;
 	CoreFirmForm := TCoreFirmForm.Create( Application);
 	actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, False) then dbgPrices.LoadFromRegistry( Reg);
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    then
+      dbgPrices.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
   if dbgPrices.SortMarkedColumns.Count = 0 then
     dbgPrices.FieldColumns['PRICENAME'].Title.SortMarker := smUpEh;
-	Reg.Free;
 end;
 
 procedure TPricesForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
 	inherited;
   SoftPost(adsPrices);
@@ -138,11 +142,13 @@ begin
 	begin
 		GetLastPrice;
 	end;
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, True);
-	dbgPrices.SaveToRegistry( Reg);
-	Reg.Free;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
+    dbgPrices.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TPricesForm.ShowForm;

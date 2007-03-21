@@ -75,7 +75,7 @@ uses
 
 procedure TDefectivesForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 	Year, Month, Day: Word;
 begin
 	inherited;
@@ -89,23 +89,29 @@ begin
 	BaseQuery:=adsDefectives.SelectSQL.Text;
 	PrintQuery:=adsPrint.SelectSQL.Text;
 	OrderField:='LetterDate';
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, False) then dbgDefectives.LoadFromRegistry( Reg);
-	Reg.Free;
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    then
+      dbgDefectives.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
 //	txtTablesUpdates.Caption:=DM.GetTablesUpdatesInfo('DefectiveArticles');
 	ShowForm;
 end;
 
 procedure TDefectivesForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, True);
-	dbgDefectives.SaveToRegistry( Reg);
-	Reg.Free;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
+    dbgDefectives.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TDefectivesForm.SetDateInterval;

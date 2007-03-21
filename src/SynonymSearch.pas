@@ -174,7 +174,7 @@ end;
 
 procedure TSynonymSearchForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
   I : Integer;
   sp : TSelectPrice;
   mi :TMenuItem;
@@ -202,10 +202,14 @@ begin
 	adsOrdersShowFormSummary.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'TCoreForm', False) then
-		dbgCore.LoadFromRegistry( Reg);
-	Reg.Free;
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'TCoreForm', False)
+    then
+      dbgCore.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
 
   SelectedPrices := SynonymSelectedPrices;
   for I := 0 to SelectedPrices.Count-1 do begin
@@ -224,14 +228,17 @@ end;
 
 procedure TSynonymSearchForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
   slColors.Free;
   fr.Free;
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'	+ 'TCoreForm', True);
-	dbgCore.SaveToRegistry( Reg);
-	Reg.Free;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'TCoreForm', True);
+    dbgCore.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
   BM.Free;
 end;
 

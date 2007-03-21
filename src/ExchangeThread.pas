@@ -1139,7 +1139,12 @@ begin
     DM.MainConnection1.DefaultTransaction.CommitRetaining;
 		StatusText := '—жатие базы';
 		Synchronize( SetStatus);
-		DM.CompactDatabase;
+    DM.MainConnection1.Close;
+    try
+      DM.CompactDatabase;
+    finally
+      DM.MainConnection1.Open;
+    end;
 	end;
 end;
 

@@ -49,7 +49,7 @@ uses
 
 procedure TRegistersForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
   inherited;
   with adsRegistry do begin
@@ -61,22 +61,28 @@ begin
     end;
   end;
 //  txtTablesUpdates.Caption:=DM.GetTablesUpdatesInfo('Registry');
-	Reg := TRegistry.Create;
-	if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, False) then dbgRegistry.LoadFromRegistry( Reg);
-	Reg.Free;
+	Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    then
+      dbgRegistry.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+  finally
+  	Reg.Free;
+  end;
   ShowForm;
 end;
 
 procedure TRegistersForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegistry;
+	Reg: TRegIniFile;
 begin
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\'
-		+ Self.ClassName, True);
-	dbgRegistry.SaveToRegistry( Reg);
-	Reg.Free;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
+    dbgRegistry.SaveColumnsLayout(Reg);
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TRegistersForm.dbgRegistrySortMarkingChanged(Sender: TObject);

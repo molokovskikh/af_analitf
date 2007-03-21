@@ -17,7 +17,8 @@ procedure RunUpdateDBFile(
   FileName : String;
   OldDBVersion : Integer;
   AOnUpdateDBFile : TOnUpdateDBFile;
-  AOnUpdateDBFileData : TOnUpdateDBFileData);
+  AOnUpdateDBFileData : TOnUpdateDBFileData;
+  ShowCaption : String = 'Происходит обновление базы данных. Подождите...');
 
 implementation
 
@@ -58,7 +59,8 @@ procedure RunUpdateDBFile(
   FileName : String;
   OldDBVersion : Integer;
   AOnUpdateDBFile : TOnUpdateDBFile;
-  AOnUpdateDBFileData : TOnUpdateDBFileData);
+  AOnUpdateDBFileData : TOnUpdateDBFileData;
+  ShowCaption : String = 'Происходит обновление базы данных. Подождите...');
 var
   RunT : TRunUpdateDBFile;
   Error : String;
@@ -73,7 +75,7 @@ begin
     RunT.FileName := FileName;
     RunT.OldDBVersion := OldDBVersion;
     RunT.FreeOnTerminate := False;
-    ShowWaiting('Происходит обновление базы данных. Подождите...', RunT);
+    ShowWaiting(ShowCaption, RunT);
     Error := RunT.ErrorStr;
   finally
     RunT.Free;

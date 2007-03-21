@@ -114,7 +114,6 @@ inherited ExpiredsForm: TExpiredsForm
           Footers = <>
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
           Title.TitleButton = True
-          Width = 64
         end
         item
           EditButtons = <>

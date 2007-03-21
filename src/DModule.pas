@@ -11,7 +11,7 @@ uses
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
-  pFIBProps, U_UpdateDBThread;
+  pFIBProps, U_UpdateDBThread, pFIBExtract;
 
 {
 Криптование
@@ -288,7 +288,9 @@ type
     //Требуется обновления из-за того, что некорректные Hash'и компонент
     NeedUpdateByCheckHashes : Boolean;
     //Требуется импорт после восстановления из эталонной копии
-    NeedImportAfterRecovery : Boolean;
+    FNeedImportAfterRecovery : Boolean;
+    //Была создана "чистая" база данных
+    FCreateClearDatabase     : Boolean;
     FGetCatalogsCount : Integer;
     FRetMargins : array of TRetMass;
     OldOrderCount : Integer;
@@ -313,6 +315,8 @@ type
     procedure occf(DataSet: TDataSet);
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
+    //Проверяем наличие всех объектов в базе данных
+    procedure CheckDBObjects(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
     procedure UpdateDBFile(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     function GetLastEtalonFileName : String;
@@ -334,6 +338,11 @@ type
     procedure UpdateDBFileDataFor37(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
+    function GetLastCreateScript : String;
+    function GetFullLastCreateScript : String;
+    procedure CreateClearDatabaseFromScript;
+    //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
+    procedure RecoverDatabase(E : Exception);
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -407,6 +416,8 @@ type
     function GetAllSumOrder : Currency;
     function GetSumOrder (AOrderID : Integer) : Currency;
     function FindOrderInfo (APriceCode, ARegionCode : Integer) : TOrderInfo;
+    property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
+    property CreateClearDatabase : Boolean read FCreateClearDatabase;
   end;
 
 var
@@ -496,28 +507,34 @@ begin
 
   MainConnection1.DBName := ExePath + DatabaseName;
 
-  if not IsOneStart then begin
-    MessageBox( 'Запуск двух копий программы на одном компьютере невозможен.',
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecDoubleStart) );
-  end;
+  if not IsOneStart then
+    LogExitError('Запуск двух копий программы на одном компьютере невозможен.', Integer(ecDoubleStart));
+
+  AProc.LogCriticalError('Программа запущена.');
+
+  //TODO: здесь надо корректно работать с путями в файлу базы данных, чтобы корректно работало в сетевой версии
+  FNeedImportAfterRecovery := False;
+  FCreateClearDatabase     := False;
+  if IsBackuped(ExePath) then
+    try
+      if FileExists(MainConnection1.DBName) then
+        AProc.DeleteFileA(MainConnection1.DBName);
+      AProc.MoveFileA(ChangeFileExt(ParamStr(0), '.bak'), MainConnection1.DBName);
+      FNeedImportAfterRecovery := True;
+    except
+      on E : Exception do
+        LogExitError(Format( 'Не возможно переместить AnalitF.bak в AnalitF.fdb : %s ', [ E.Message ]), Integer(ecDBFileError));
+    end;
 
   if FileExists(ExePath + DatabaseName) and ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
-  then begin
-    MessageBox( Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]),
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecDBFileReadOnly) );
-  end;
+  then
+    LogExitError(Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]), Integer(ecDBFileReadOnly));
 
   //Делаем проверку файла базы данных и в случае проблем производим восстановление из эталонной копии
   CheckDBFile;
 
   LDBFileName := ChangeFileExt(ExeName, '.ldb');
   DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
-
-
-  //Делаем проверки на необходимость обновить базу в любом случае
-  UpdateDB;
 
   try
     try
@@ -526,11 +543,8 @@ begin
       MainConnection1.Close;
     end;
   except
-    on E : Exception do begin
-      MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
-        MB_ICONERROR or MB_OK);
-      ExitProcess( Integer(ecDBFileError) );
-    end;
+    on E : Exception do
+      LogExitError(Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]), Integer(ecDBFileError));
   end;
 
   MainConnection1.Open;
@@ -567,33 +581,32 @@ begin
 
   if NeedUpdateByCheckUIN then begin
     if not RunExchange([ eaGetPrice]) then
+      LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
       ExitProcess( Integer(ecNotCheckUIN) );
   end;
 
   if NeedUpdateByCheckHashes then begin
     if not RunExchange([ eaGetPrice]) then
-      ExitProcess( Integer(ecNotChechHashes) );
+      LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
   end;
 
   { Запуск с ключем -e (Получение данных и выход)}
   if FindCmdLineSwitch('e') then
   begin
     MainForm.ExchangeOnly := True;
-    RunExchange([ eaGetPrice]);
+    //Производим только в том случае, если не была создана "чистая" база
+    if not CreateClearDatabase then
+      RunExchange([ eaGetPrice]);
     Application.Terminate;
   end;
   //"Безмолвное импортирование" - производится в том случае, если была получена новая версия программы при
   if FindCmdLineSwitch('si') then
   begin
     MainForm.ExchangeOnly := True;
-    RunExchange([ eaImportOnly]);
+    //Производим только в том случае, если не была создана "чистая" база
+    if not CreateClearDatabase then
+      RunExchange([ eaImportOnly]);
     Application.Terminate;
-  end;
-
-  //Необходимо выполнить импорт, после восстановления из эталонной копии
-  if NeedImportAfterRecovery then begin
-    RunCompactDatabase;
-    RunExchange([ eaImportOnly ]);
   end;
 
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
@@ -602,6 +615,7 @@ end;
 
 procedure TDM.DataModuleDestroy(Sender: TObject);
 begin
+  AProc.LogCriticalError('Попытка закрыть программу.');
   if not MainConnection1.Connected then exit;
 
   try
@@ -609,8 +623,11 @@ begin
     adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
     adtParams.Post;
   except
+    on E : Exception do
+      AProc.LogCriticalError('Ошибка при изменении ClientId: ' + E.Message);
   end;
   ResetStarted;
+  AProc.LogCriticalError('Программа закрыта.');
 end;
 
 procedure TDM.ClientChanged;
@@ -649,29 +666,17 @@ begin
     ExitProcess(3);
   end;
 }
-  if GetDisplayColors < 16 then begin
-    MessageBox( 'Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.',
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecColor) );
-  end;
+  if GetDisplayColors < 16 then
+    LogExitError('Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.', Integer(ecColor));
 
-  if not TCPPresent then begin
-    MessageBox( 'Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.',
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecTCPNotExists) );
-  end;
+  if not TCPPresent then
+    LogExitError('Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.', Integer(ecTCPNotExists));
 
-  if not LoadSevenZipDLL then begin
-    MessageBox( 'Не найдена библиотека 7-zip32.dll, необходимая для работы программы.',
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecSevenZip) );
-  end;
+  if not LoadSevenZipDLL then
+    LogExitError('Не найдена библиотека 7-zip32.dll, необходимая для работы программы.', Integer(ecSevenZip));
 
-  if not IdSSLOpenSSLHeaders.Load then begin
-    MessageBox( 'Не найдены библиотеки libeay32.dll и ssleay32.dll, необходимые для работы программы.',
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecSSLOpen) );
-  end;
+  if not IdSSLOpenSSLHeaders.Load then
+    LogExitError('Не найдены библиотеки libeay32.dll и ssleay32.dll, необходимые для работы программы.', Integer(ecSSLOpen));
 
   DM.MainConnection1.Open;
   try
@@ -681,29 +686,20 @@ begin
   finally
     DM.MainConnection1.Close;
   end;
-  if ( MaxUsers > 0) and ( list.Count > MaxUsers) then
-  begin
-    MessageBox( Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
-      'Запуск программы невозможен.', [ MaxUsers]),
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecUserLimit) );
-  end;
+  if ( MaxUsers > 0) and ( list.Count > MaxUsers)
+  then
+    LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
+      'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
 
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
     DBFileSize := GetFileSize(MainConnection1.DBName);
     DBFileSize := Max(2*DBFileSize, 200*1024*1024);
-    if DBFileSize > FreeAvail then begin
-      MessageBox( Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %d байт.', [ DBFileSize ]),
-        MB_ICONERROR or MB_OK);
-      ExitProcess( Integer(ecFreeDiskSpace) );
-    end;
+    if DBFileSize > FreeAvail then
+      LogExitError(Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %d байт.', [ DBFileSize ]), Integer(ecFreeDiskSpace));
   end
-  else begin
-    MessageBox( Format( 'Не удается получить количество свободного места на диске.' +
-      #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]),
-      MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecGetFreeDiskSpace) );
-  end;
+  else
+    LogExitError(Format( 'Не удается получить количество свободного места на диске.' +
+      #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
 
   NeedUpdateByCheckUIN := not CheckCopyIDFromDB;
   if NeedUpdateByCheckUIN then begin
@@ -779,11 +775,11 @@ end;
 procedure TDM.CompactDataBase(NewPassword: string='');
 var
   ok: boolean;
+  dbc : TpFIBDatabase;
 begin
   ok := False;
   //TODO: ___ Процедура не до конца готова. Использовать другое имя для нормального подключения
   Tracer.TR('BackupRestore', 'Start');
-  MainConnection1.Close;
   try
     try
       with ConfigService do
@@ -842,6 +838,22 @@ begin
           Active := False;
         end;
       end;
+      with ConfigService do
+      begin
+        ServerName := '';
+        DatabaseName := MainConnection1.DBName;
+        Params.Clear;
+        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        Active := True;
+        try
+          Tracer.TR('BackupRestore', 'Try BringDatabaseOnline');
+          BringDatabaseOnline;
+          Tracer.TR('BackupRestore', 'BringDatabaseOnline complete');
+        finally
+          Active := False;
+        end;
+      end;
       ok := True;
     except
       on E : Exception do
@@ -849,13 +861,24 @@ begin
     end;
   finally
     Tracer.TR('BackupRestore', 'Stop');
-    MainConnection1.Open;
   end;
   if ok then
   begin
-    adtParams.Edit;
-    adtParams.FieldByName( 'LastCompact').AsDateTime := Now;
-    adtParams.Post;
+
+    dbc := TpFIBDatabase.Create(nil);
+    try
+      dbc.DBName := MainConnection1.DBName;
+      dbc.DBParams.Text := MainConnection1.DBParams.Text;
+      dbc.LibraryName := MainConnection1.LibraryName;
+      dbc.SQLDialect := MainConnection1.SQLDialect;
+
+      dbc.Open;
+      dbc.QueryValue('update params set LastCompact = :LastCompact where ID = 0', -1, [Now]);
+      dbc.Close;
+
+    finally
+      dbc.Free;
+    end;
   end;
 end;
 
@@ -1911,83 +1934,83 @@ var
   DBVersion : Integer;
   EtlName : String;
 begin
-  DBVersion := 0;
+  dbCon := TpFIBDatabase.Create(nil);
   try
-    dbCon := TpFIBDatabase.Create(nil);
+
+    trMain := TpFIBTransaction.Create(nil);
     try
+      dbCon.DBName := MainConnection1.DBName;
+      dbCon.DBParams.Text := MainConnection1.DBParams.Text;
+      dbCon.LibraryName := MainConnection1.LibraryName;
+      dbCon.SQLDialect := MainConnection1.SQLDialect;
+      trMain.DefaultDatabase := dbCon;
+      dbCon.DefaultTransaction := trMain;
+      dbCon.DefaultUpdateTransaction := trMain;
+      dbCon.Open;
+      DBVersion := dbCon.QueryValue('select mdbversion from provider where id = 0', 0);
+      dbCon.Close;
 
-      trMain := TpFIBTransaction.Create(nil);
-      try
-        dbCon.DBName := MainConnection1.DBName;
-        dbCon.DBParams.Text := MainConnection1.DBParams.Text;
-        dbCon.LibraryName := MainConnection1.LibraryName;
-        dbCon.SQLDialect := MainConnection1.SQLDialect;
-        trMain.DefaultDatabase := dbCon;
-        dbCon.DefaultTransaction := trMain;
-        dbCon.DefaultUpdateTransaction := trMain;
-        dbCon.Open;
-        DBVersion := dbCon.QueryValue('select mdbversion from provider where id = 0', 0);
-        dbCon.Close;
-
-        if DBVersion = 29 then begin
-          etlname := GetLastEtalonFileName;
-          //Если существует эталонный файл, то обновляем его
-          if Length(etlname) > 0 then
-            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor29);
-          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor29);
-          DBVersion := 36;
-        end;
-
-        if DBVersion = 35 then begin
-          etlname := GetLastEtalonFileName;
-          if Length(etlname) > 0 then
-            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor35);
-          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor35);
-          DBVersion := 36;
-        end;
-
-        if DBVersion = 36 then begin
-          etlname := GetLastEtalonFileName;
-          if Length(etlname) > 0 then
-            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
-          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
-          DBVersion := 37;
-        end;
-
-        if DBVersion = 37 then begin
-          etlname := GetLastEtalonFileName;
-          if Length(etlname) > 0 then
-            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
-          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
-          DBVersion := 38;
-        end;
-
-        if DBVersion = 38 then begin
-          etlname := GetLastEtalonFileName;
-          if Length(etlname) > 0 then
-            RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-          RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
-          DBVersion := 39;
-        end;
-
-      finally
-        trMain.Free;
+      if DBVersion = 29 then begin
+        etlname := GetLastEtalonFileName;
+        //Если существует эталонный файл, то обновляем его
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor29);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor29);
+        DBVersion := 36;
       end;
 
-    finally
-      dbCon.Free;
-    end;
-  except
-    on E : Exception do begin
-      LogCriticalError('Ошибка при обновлении базы данных : ' + E.Message);
-      MessageBox( 'Ошибка при обновлении базы данных : ' + E.Message, MB_ICONERROR or MB_OK);
-      ExitProcess( Integer(ecDBUpdateError) );
-    end;
-  end;
+      if DBVersion = 35 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor35);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor35);
+        DBVersion := 36;
+      end;
 
-  if DBVersion <> CURRENT_DB_VERSION then begin
-    MessageBox( Format('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]), MB_ICONERROR or MB_OK);
-    ExitProcess( Integer(ecDiffDBVersion) );
+      if DBVersion = 36 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
+        DBVersion := 37;
+      end;
+
+      if DBVersion = 37 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
+        DBVersion := 38;
+      end;
+
+      if DBVersion = 38 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        DBVersion := 39;
+      end;
+
+      if DBVersion = 39 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        DBVersion := 40;
+      end;
+
+      if DBVersion <> CURRENT_DB_VERSION then
+        //LogExitError(Format('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]), Integer(ecDiffDBVersion));
+        raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
+      else
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
+
+    finally
+      trMain.Free;
+    end;
+
+  finally
+    dbCon.Free;
   end;
 end;
 
@@ -2237,118 +2260,97 @@ begin
   end;
 end;
 
+{
+        tr := TpFIBTransaction.Create(nil);
+        try
+          tr.DefaultDatabase := dbCon;
+          dbCon.DefaultTransaction := tr;
+
+          exc := TpFIBExtract.Create(nil);
+          try
+            exc.Database := dbCon;
+            exc.Transaction := tr;
+            exc.IncludeSetTerm := False;
+            exc.ExtractOptions := exc.ExtractOptions - [CreateDb];
+            exc.ExtractObject(eoDatabase);
+            exc.Items.SaveToFile('extract.sql');
+          finally
+            exc.Free;
+          end;
+
+        finally
+          tr.Free;
+        end;
+}
+
+
 procedure TDM.CheckDBFile;
 var
-  dbCon : TpFIBDatabase;
-  DBErrorMess : String;
-  N : Integer;
-  OldDBFileName,
-  EtalonDBFileName,
-  ErrFileName : String;
+  OpenSuccess : Boolean;
+  RecoveryCount : Integer;
 begin
-  NeedImportAfterRecovery := False;
-  dbCon := TpFIBDatabase.Create(nil);
+  OpenSuccess := False;
+  RecoveryCount := 0;
   try
+    repeat
     try
 
-        dbCon.DBName := MainConnection1.DBName;
-        dbCon.DBParams.Text := MainConnection1.DBParams.Text;
-        dbCon.LibraryName := MainConnection1.LibraryName;
-        dbCon.SQLDialect := MainConnection1.SQLDialect;
-        dbCon.Open;
-        dbCon.Close;
+      UpdateDB();
+
+      OpenSuccess := True;
 
     except
       on EFIB : EFIBError do begin
-        try
-
-          if EFIB.IBErrorCode = isc_network_error then
-            raise Exception.Create('Не возможен запуск программы с сетевого диска. Пожалуйста, используйте локальный диск.')
-          else begin
-            {
-            Здесь мы должны сделать:
-            1. Закрыть соединение, если открыто
-            2. Запомнить код ошибки при открытии
-            3. Переименовать в ошибочную базу данных
-            4. Скопировать из эталонной базы данных
-            5. Открыть эталонную базу данных
-            }
-            DBErrorMess := Format('Не удается открыть базу данных программы.'#13#10 +
-              'Код SQL       : %d'#13#10 +
-              'Сообщение SQL : %s'#13#10 +
-              'Код IB        : %d'#13#10 +
-              'Сообщение IB  : %s',
-              [EFIB.SQLCode, EFIB.SQLMessage, EFIB.IBErrorCode, EFIB.IBMessage]
-            );
-            AProc.LogCriticalError(DBErrorMess);
-            MessageBox(DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.', MB_ICONERROR or MB_OK);
-            //Возможно проблема в каком-то запросе и сама база данных открылась, поэтому закрываем ее.
-            if dbCon.Connected then
-              try
-                dbCon.Close;
-              except
-              end;
-
-            //Формируем имя ошибочного файла
-            ErrFileName := ChangeFileExt(ParamStr(0), '.e');
-            N := 0;
-            while (FileExists(ErrFileName + IntToHex(N, 2)) and (N <= 255)) do Inc(N);
-
-            if N > 255 then
-              //Слишком много ошибочный файлов
-              raise Exception.Create('Удалите старые ошибочные файлы базы данных.')
-            else begin
-              ErrFileName := ErrFileName + IntToHex(N, 2);
-              OldDBFileName := ChangeFileExt(ParamStr(0), '.fdb');
-
-              if FileExists(OldDBFileName) then
-                if not Windows.MoveFile(PChar(OldDBFileName), PChar(ErrFileName)) then
-                  raise Exception.CreateFmt('Не удалось переименовать в ошибочный файл %s : %s',
-                    [ErrFileName, SysErrorMessage(GetLastError)]);
-
-              EtalonDBFileName := GetLastEtalonFileName;
-
-              if Length(EtalonDBFileName) = 0 then
-                raise Exception.Create('Не найден файл с эталонной копией.')
+        if EFIB.IBErrorCode = isc_network_error then
+          LogExitError('Не возможен запуск программы с сетевого диска. Пожалуйста, используйте локальный диск.', Integer(ecDBFileError))
+        else begin
+          LogCriticalError(Format('Ошибка при открытии (%d): %s'#13#10'StatusVector : %s', [RecoveryCount, EFIB.Message, StatusVectorAsText]));
+          if (RecoveryCount < 2) then begin
+            try
+              //TODO: Здесь надо корректно работать с путями, чтобы работала сетевая версия
+              if (EFIB.IBErrorCode = isc_sys_request) and FileExists(MainConnection1.DBName) then begin
+                LogCriticalError(Format('Ошибка при открытии (CreateFile): %s', [EFIB.Message]));
+                Sleep(1000);
+              end
               else
-                if not Windows.CopyFile(PChar(EtalonDBFileName), PChar(OldDBFileName), True) then
-                  raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
-                    [SysErrorMessage(GetLastError)]);
-
-              try
-                dbCon.Open;
-                dbCon.Close;
-                NeedImportAfterRecovery := True;
-              except
-                on E : Exception do
-                  raise Exception.CreateFmt('Не удалось восстановить базу данных из эталонной копии. '#13#10 +
-                    'Сообщение об ошибке : %s'#13#10 + 'Пожалуйста, обратитесь в службу поддержки.',
-                    [E.Message]);
-              end;
+                RecoverDatabase(EFIB);
+            except
+              on E : Exception do
+                if (RecoveryCount < 1) then
+                  LogCriticalError(Format('Ошибка при восстановлении (%d): %s', [RecoveryCount, E.Message]))
+                else
+                  raise;
             end;
-          end;
-
-        except
-          on E : Exception do begin
-            MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
-              MB_ICONERROR or MB_OK);
-            ExitProcess( Integer(ecDBFileError) );
-          end;
-        end
+            Inc(RecoveryCount);
+          end
+          else
+            raise;
+        end;
       end;
 
-      //Если произошла какая-то другая ошибка, то отображаем ее
       on E : Exception do begin
-        MessageBox( Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]),
-          MB_ICONERROR or MB_OK);
-        ExitProcess( Integer(ecDBFileError) );
+        LogCriticalError(Format('Ошибка при открытии (%d): %s', [RecoveryCount, E.Message]));
+        if (RecoveryCount < 2) then begin
+          try
+            RecoverDatabase(E);
+          except
+            on E : Exception do
+              if (RecoveryCount < 1) then
+                LogCriticalError(Format('Ошибка при восстановлении (%d): %s', [RecoveryCount, E.Message]))
+              else
+                raise;
+          end;
+          Inc(RecoveryCount);
+        end
+        else
+          raise;
       end;
     end;
-  finally
-    try
-      dbCon.Free;
-    except
-    end;
+    until OpenSuccess;
+
+  except
+    on E : Exception do
+      LogExitError(Format( 'Не возможно открыть файл базы данных: %s ', [ E.Message ]), Integer(ecDBFileError));
   end;
 end;
 
@@ -2709,6 +2711,190 @@ begin
   else begin
     Result := TOrderInfo.Create(APriceCode, ARegionCode);
     OrdersInfo.AddObject(OrderIDStr, Result);
+  end;
+end;
+
+function TDM.GetLastCreateScript: String;
+var
+  LastCreateScript : TResourceStream;
+begin
+  LastCreateScript := TResourceStream.Create( hInstance, 'LastScript', RT_RCDATA);
+  try
+    LastCreateScript.Position := 0;
+    SetString(Result, nil, LastCreateScript.Size);
+    LastCreateScript.Read(Result[1], LastCreateScript.Size);
+  finally
+    try LastCreateScript.Free; except end;
+  end;
+end;
+
+function TDM.GetFullLastCreateScript: String;
+begin
+  Result :=
+    'SET SQL DIALECT 3;'#13#10#13#10 +
+    'SET NAMES WIN1251;'#13#10#13#10 +
+    //TODO: Здесь надо указывать корректно файл базы данных в зависимости от того какая версия
+    Format('CREATE DATABASE ''%s'' USER ''SYSDBA'' PASSWORD ''masterkey'' PAGE_SIZE 4096 DEFAULT CHARACTER SET WIN1251;'#13#10#13#10,
+      [ChangeFileExt(ParamStr(0), '.fdb')]);
+  Result := Concat(Result, GetLastCreateScript());
+  Result := Concat(Result,
+    'SET GENERATOR GEN_CORE_ID TO 0;'#13#10#13#10 +
+    'SET GENERATOR GEN_ORDERSH_ID TO 0;'#13#10#13#10 +
+    'SET GENERATOR GEN_ORDERS_ID TO 0;'#13#10#13#10 +
+    'SET GENERATOR GEN_REGISTRY_ID TO 0;'#13#10#13#10 +
+    'SET GENERATOR GEN_RETAILMARGINS_ID TO 1;'#13#10#13#10 +
+    'COMMIT WORK;'#13#10#13#10 +
+    'INSERT INTO FLAGS (ID, COMPUTERNAME, EXCLUSIVEID) VALUES (0, NULL, NULL);'#13#10#13#10 +
+    'COMMIT WORK;'#13#10#13#10 +
+    'INSERT INTO PARAMS (ID, CLIENTID, RASCONNECT, RASENTRY, RASNAME, RASPASS, CONNECTCOUNT, CONNECTPAUSE, PROXYCONNECT, PROXYNAME, PROXYPORT, PROXYUSER, PROXYPASS, SERVICENAME, HTTPHOST, HTTPPORT, HTTPNAME, HTTPPASS, UPDATEDATETIME, LASTDATETIME, FASTPRINT, ' +
+      'SHOWREGISTER, NEWWARES, USEFORMS, OPERATEFORMS, OPERATEFORMSSET, AUTOPRINT, STARTPAGE, LASTCOMPACT, CUMULATIVE, STARTED, EXTERNALORDERSEXE, EXTERNALORDERSPATH, EXTERNALORDERSCREATE, RASSLEEP, HTTPNAMECHANGED, SHOWALLCATALOG, CDS, ORDERSHISTORYDAYCOUNT, ' +
+      'CONFIRMDELETEOLDORDERS, USENTLM) VALUES (0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 1);'#13#10#13#10 +
+    'COMMIT WORK;'#13#10#13#10 +
+    'INSERT INTO PROVIDER (ID, NAME, ADDRESS, PHONES, EMAIL, WEB, MDBVERSION) VALUES (0, ''АК "Инфорум"'', ''Ленинский пр-т, 160 оф.415'', ''4732-206000'', ''farm@analit.net'', ''http://www.analit.net/'', ' + IntToStr(CURRENT_DB_VERSION) +');'#13#10#13#10 +
+    'COMMIT WORK;'#13#10#13#10 +
+    'INSERT INTO RECLAME (RECLAMEURL, UPDATEDATETIME) VALUES (''http://ios.analit.net/results/reclame/r#.zip'', NULL);'#13#10#13#10 +
+    'COMMIT WORK;'#13#10#13#10 +
+    'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (0, 0, 1000000, 30);'#13#10#13#10 +
+    'COMMIT WORK;'#13#10#13#10
+    );
+end;
+
+procedure TDM.CreateClearDatabaseFromScript;
+var
+ FIBScript : TpFIBScript;
+begin
+  FIBScript := TpFIBScript.Create(nil);
+  try
+
+    FIBScript.Script.Text := GetFullLastCreateScript();
+
+    FIBScript.OnExecuteError := OnScriptExecuteError;
+    try
+      FIBScript.ExecuteScript;
+    finally
+      FIBScript.OnExecuteError := nil;
+    end;
+    
+  finally
+    try FIBScript.Free; except  end;
+  end;
+end;
+
+procedure TDM.RecoverDatabase(E: Exception);
+var
+  DBErrorMess : String;
+  N : Integer;
+  OldDBFileName,
+  EtalonDBFileName,
+  ErrFileName : String;
+begin
+  //TODO: Восстановление не корректно будет работать в сетевой версии. НАДО ДУМАТЬ!!!
+  {
+  Здесь мы должны сделать:
+  1. Закрыть соединение, если открыто
+  2. Запомнить код ошибки при открытии
+  3. Переименовать в ошибочную базу данных
+  4. Скопировать из эталонной базы данных
+  5. Открыть эталонную базу данных
+  }
+  DBErrorMess := Format('Не удается открыть базу данных программы.'#13#10 +
+    'Ошибка        : %s'#13#10,
+    [E.Message]
+  );
+  if (E is EFIBError) then
+    DBErrorMess := DBErrorMess +
+      Format(
+        'Код SQL       : %d'#13#10 +
+        'Сообщение SQL : %s'#13#10 +
+        'Код IB        : %d'#13#10 +
+        'Сообщение IB  : %s',
+        [EFIBError(E).SQLCode, EFIBError(E).SQLMessage, EFIBError(E).IBErrorCode, EFIBError(E).IBMessage]
+    );
+
+  //Пытаемся найти эталонной файл базы данных, чтобы определиться с восстановлением или созданием
+  EtalonDBFileName := GetLastEtalonFileName;
+
+  if Length(EtalonDBFileName) = 0 then
+    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.'
+  else
+    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
+
+  //Логируем наши действия и отображаем пользователю
+  AProc.LogCriticalError(DBErrorMess);
+  MessageBox(DBErrorMess, MB_ICONERROR or MB_OK);
+
+  //Формируем имя ошибочного файла
+  ErrFileName := ChangeFileExt(ParamStr(0), '.e');
+  N := 0;
+  while (FileExists(ErrFileName + IntToHex(N, 2)) and (N <= 255)) do Inc(N);
+
+  if N > 255 then begin
+    //Много ошибочных файлов - будем все удалять
+    DeleteFilesByMask(ErrFileName + '*', False);
+    N := 0;
+  end;
+
+  ErrFileName := ErrFileName + IntToHex(N, 2);
+  OldDBFileName := ChangeFileExt(ParamStr(0), '.fdb');
+
+  if FileExists(OldDBFileName) then
+    if not Windows.MoveFile(PChar(OldDBFileName), PChar(ErrFileName)) then
+      raise Exception.CreateFmt('Не удалось переименовать в ошибочный файл %s : %s',
+        [ErrFileName, SysErrorMessage(GetLastError)]);
+
+  if Length(EtalonDBFileName) = 0 then begin
+    CreateClearDatabaseFromScript();
+    FCreateClearDatabase := True;
+    FNeedImportAfterRecovery := False;
+    AProc.LogCriticalError('Произведено создание базы.');
+  end
+  else
+    if Windows.MoveFile(PChar(EtalonDBFileName), PChar(OldDBFileName)) then begin
+      //Значит восстановили из эталона
+      FNeedImportAfterRecovery := True;
+      AProc.LogCriticalError('Произведено копирование из эталонной копии.');
+    end
+    else
+      raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
+        [SysErrorMessage(GetLastError)]);
+end;
+
+procedure TDM.CheckDBObjects(dbCon: TpFIBDatabase;
+  trMain: TpFIBTransaction; FileName: String; OldDBVersion: Integer;
+  AOnUpdateDBFileData: TOnUpdateDBFileData);
+var
+  exc : TpFIBExtract;
+  ExistsScript, RightScript : String;
+begin
+  dbCon.Open;
+  try
+    exc := TpFIBExtract.Create(nil);
+    try
+      exc.Database := dbCon;
+      exc.Transaction := trMain;
+      exc.IncludeSetTerm := False;
+      exc.ExtractOptions := exc.ExtractOptions - [CreateDb];
+      exc.ExtractObject(eoDatabase);
+
+      //Удаляем первые две строки из скрипта
+      exc.Items.Delete(0);
+      exc.Items.Delete(0);
+
+      //exc.Items.SaveToFile('extract.log');
+
+      ExistsScript := Trim(exc.Items.Text);
+    finally
+      exc.Free;
+    end;
+  finally
+    dbCon.Close;
+  end;
+
+  RightScript := Trim(GetLastCreateScript());
+
+  if ExistsScript <> RightScript then begin
+    LogCriticalError('Скрипт с некорректными метаданными:'#13#10 + ExistsScript);
+    raise Exception.Create('База данных содержит некорректные метаданные.');
   end;
 end;
 
