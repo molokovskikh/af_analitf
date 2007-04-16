@@ -133,7 +133,6 @@ type
     procedure cbBaseOnlyClick(Sender: TObject);
     procedure dbgCoreDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
-    procedure eSearchEnter(Sender: TObject);
   private
     { Private declarations }
     fr : TForceRus;
@@ -426,6 +425,7 @@ procedure TSynonymSearchForm.eSearchKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_RETURN then begin
     tmrSearchTimer(nil);
+    dbgCore.SetFocus;
   end
   else
     if Key = VK_ESCAPE then
@@ -438,7 +438,8 @@ begin
   tmrSearch.Enabled := False;
   AddKeyToSearch(Key);
   //Если мы что-то нажали в элементе, то должны на это отреагировать
-  tmrSearch.Enabled := True;
+  if Ord(Key) <> VK_RETURN then
+    tmrSearch.Enabled := True;
 end;
 
 procedure TSynonymSearchForm.AddKeyToSearch(Key: Char);
@@ -533,11 +534,6 @@ procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;
 begin
   if Column.Field = adsCoreSYNONYMNAME then
     ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
-end;
-
-procedure TSynonymSearchForm.eSearchEnter(Sender: TObject);
-begin
-  dbgCore.SetFocus;
 end;
 
 end.

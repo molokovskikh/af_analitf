@@ -351,7 +351,6 @@ object CoreFirmForm: TCoreFirmForm
         Width = 320
         Height = 21
         TabOrder = 0
-        OnEnter = eSearchEnter
         OnKeyDown = eSearchKeyDown
         OnKeyPress = eSearchKeyPress
       end

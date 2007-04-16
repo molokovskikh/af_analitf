@@ -132,7 +132,6 @@ type
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
-    procedure eSearchEnter(Sender: TObject);
   private
     OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
     PriceName,
@@ -690,6 +689,7 @@ procedure TCoreFirmForm.eSearchKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_RETURN then begin
     tmrSearchTimer(nil);
+    dbgCore.SetFocus;
   end
   else
     if Key = VK_ESCAPE then
@@ -701,7 +701,8 @@ begin
   tmrSearch.Enabled := False;
   AddKeyToSearch(Key);
   //Если мы что-то нажали в элементе, то должны на это отреагировать
-  tmrSearch.Enabled := True;
+  if Ord(Key) <> VK_RETURN then
+    tmrSearch.Enabled := True;
 end;
 
 procedure TCoreFirmForm.AddKeyToSearch(Key: Char);
@@ -712,11 +713,6 @@ begin
       eSearch.Text := eSearch.Text + Key;
     tmrSearch.Enabled := True;
   end;
-end;
-
-procedure TCoreFirmForm.eSearchEnter(Sender: TObject);
-begin
-  dbgCore.SetFocus;
 end;
 
 end.

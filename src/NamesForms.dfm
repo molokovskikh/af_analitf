@@ -314,7 +314,6 @@ inherited NamesFormsForm: TNamesFormsForm
         Width = 320
         Height = 21
         TabOrder = 0
-        OnEnter = eSearchEnter
         OnKeyDown = eSearchKeyDown
         OnKeyPress = eSearchKeyPress
       end

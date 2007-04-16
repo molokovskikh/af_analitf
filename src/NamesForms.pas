@@ -79,7 +79,6 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgCatalogGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
-    procedure eSearchEnter(Sender: TObject);
     procedure actSearchInBeginExecute(Sender: TObject);
   private
     fr : TForceRus;
@@ -388,6 +387,7 @@ procedure TNamesFormsForm.eSearchKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_RETURN then begin
     tmrSearchTimer(nil);
+    dbgCatalog.SetFocus;
   end
   else
     if Key = VK_ESCAPE then
@@ -420,7 +420,8 @@ begin
   tmrSearch.Enabled := False;
   AddKeyToSearch(Key);
   //Если мы что-то нажали в элементе, то должны на это отреагировать
-  tmrSearch.Enabled := True;
+  if Ord(Key) <> VK_RETURN then
+    tmrSearch.Enabled := True;
 end;
 
 procedure TNamesFormsForm.SetGrids;
@@ -480,11 +481,6 @@ procedure TNamesFormsForm.DoShow;
 begin
   inherited;
   tmrShowCatalog.Enabled := True;
-end;
-
-procedure TNamesFormsForm.eSearchEnter(Sender: TObject);
-begin
-  dbgCatalog.SetFocus;
 end;
 
 procedure TNamesFormsForm.actSearchInBeginExecute(Sender: TObject);
