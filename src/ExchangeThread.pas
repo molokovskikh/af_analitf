@@ -753,7 +753,10 @@ begin
 			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
 			values[ i * OrderParamCount + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
       try
-        S := DM.D_B_N(DM.adsOrders.FieldByName( 'PRICE').AsString);
+        if Length(DM.adsOrders.FieldByName( 'PRICE').AsString) > 0 then
+          S := DM.D_B_N(DM.adsOrders.FieldByName( 'PRICE').AsString)
+        else
+          S := CurrToStr(0.0);
         TmpOrderCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
         S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
         values[ i * OrderParamCount + 16] := S;
