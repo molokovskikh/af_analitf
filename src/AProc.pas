@@ -65,6 +65,8 @@ procedure MoveFile_( ASource, ADest: string);
 function SimpleHash( AStr: string): string;
 procedure LogCriticalError(Error : String);
 procedure LogExitError(Error : String; ExitCode : Integer; ShowErrorMessage : Boolean = True);
+//Добавляет параметр RangeStart к запросу в случае, если необходима докачка
+function AddRangeStartToURL(AURL : String; Position : Int64) : String;
 
 
 implementation
@@ -533,27 +535,19 @@ begin
   ExitProcess( ExitCode );
 end;
 
-  {procedure XMLTableToStrings(XML: string; TableName: string; Strings: TStrings);
-    procedure ProcessNode(Node: IXMLNode);
-    var
-      I: Integer;
-    begin
-      if (Node.NodeType=ntText)and(Node.ParentNode<>nil)and(Node.ParentNode.ParentNode<>nil)and
-        (AnsiUpperCase(Node.ParentNode.ParentNode.NodeName)=TableName) then
-        Strings.Values[Node.ParentNode.NodeName]:=Node.Text;
-      for I:=0 to Node.ChildNodes.Count-1 do
-        ProcessNode(Node.ChildNodes[I]);
-    end;
-  begin
-    TableName:=AnsiUpperCase(Trim(TableName));
-    Strings.Clear;
-    XMLDocument.LoadFromXML(XML);
-    try
-      ProcessNode(XMLDocument.DocumentElement);
-    finally
-      XMLDocument.Active:=False;
-    end;
-  end;}
+function AddRangeStartToURL(AURL : String; Position : Int64) : String;
+begin
+  Result := AURL;
+  //Выполняем это все, если необходима докачка и URL не пустой
+  if (Position > 0) and (Length(AURL) > 0) then
+    if AnsiContainsText(AURL, '?') then
+      if (AURL[Length(AURL)] in ['&', '?']) then
+        Result := AURL + 'RangeStart=' + IntToStr(Position)
+      else
+        Result := AURL + '&RangeStart=' + IntToStr(Position)
+    else
+      Result := AURL + '?RangeStart=' + IntToStr(Position);
+end;
 
 initialization
   //Если запускаем программу для обмена (е) или импортирования (se)

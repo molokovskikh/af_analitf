@@ -135,8 +135,7 @@ begin
                     FileStream.Seek( 0, soFromEnd);
 
                   StartDownPosition := FileStream.Position;
-                  ExchangeForm.HTTPReclame.Get( ReclameURL +
-                    IfThen(FileStream.Position > 0, '?RangeStart=' + IntToStr(FileStream.Position), ''),
+                  ExchangeForm.HTTPReclame.Get( AddRangeStartToURL(ReclameURL, FileStream.Position),
                     FileStream);
                   Log('Reclame', 'Архив с информационным блоком успешно скачан');
                   PostSuccess := True;

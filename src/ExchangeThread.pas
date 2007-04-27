@@ -528,8 +528,7 @@ begin
 
             StartDownPosition := FileStream.Position;
 
-            ExchangeForm.HTTP.Get( HostFileName +
-              IfThen(FileStream.Position > 0, '?RangeStart=' + IntToStr(FileStream.Position), ''),
+            ExchangeForm.HTTP.Get( AddRangeStartToURL(HostFileName, FileStream.Position),
               FileStream);
             Writeln(ExchangeForm.LogFile, 'Recieve file : ' + IntToStr(FileStream.Size));
             PostSuccess := True;
@@ -1719,7 +1718,6 @@ var
 	i: integer;
 begin
 	Result := '';
-  //TODO: Здесь проблема с тем, что код символа может занимать один символ
 	for i := 1 to Length( Astr) do
     Result := Result + Format('%.3d', [Ord( AStr[i] )]);
 end;
