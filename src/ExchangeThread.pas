@@ -1717,15 +1717,11 @@ end;
 function TExchangeThread.StringToCodes( AStr: string): string;
 var
 	i: integer;
-	code: string;
 begin
-	result := '';
+	Result := '';
+  //TODO: Здесь проблема с тем, что код символа может занимать один символ
 	for i := 1 to Length( Astr) do
-	begin
-		code := IntToStr( Ord( AStr[ i]));
-		if Length( code) = 2 then code := '0' + code;
-		result := result + code;
-	end;
+    Result := Result + Format('%.3d', [Ord( AStr[i] )]);
 end;
 
 function TExchangeThread.RusError( AStr: string): string;
