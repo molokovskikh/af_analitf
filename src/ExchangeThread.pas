@@ -1186,7 +1186,8 @@ var
 begin
 	StatusText := 'Резервное копирование данных';
 	Synchronize( SetStatus);
-	DM.BackupDatabase( ExePath);
+  if not DM.IsBackuped(ExePath) then
+  	DM.BackupDatabase( ExePath);
 	DM.OpenDataBase( ExePath + DatabaseName);
 	TotalProgress := 65;
 	Synchronize( SetTotalProgress);
@@ -1558,7 +1559,7 @@ begin
 	SQL.Text := 'EXECUTE PROCEDURE SynonymDeleteFormHeaders'; ExecQuery;
 	//проставляем мин. цены и лидеров
 	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert';	ExecQuery;
-	Progress := 60;
+  Progress := 60;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
