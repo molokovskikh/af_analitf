@@ -340,7 +340,7 @@ type
     procedure SetSendToNotClosedOrders;
     function GetLastCreateScript : String;
     function GetFullLastCreateScript : String;
-    procedure CreateClearDatabaseFromScript;
+    procedure CreateClearDatabaseFromScript(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //ѕроизводим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
   public
@@ -2759,7 +2759,7 @@ begin
     );
 end;
 
-procedure TDM.CreateClearDatabaseFromScript;
+procedure TDM.CreateClearDatabaseFromScript(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
 var
  FIBScript : TpFIBScript;
 begin
@@ -2843,7 +2843,7 @@ begin
         [ErrFileName, SysErrorMessage(GetLastError)]);
 
   if Length(EtalonDBFileName) = 0 then begin
-    CreateClearDatabaseFromScript();
+    RunUpdateDBFile(nil, nil, '', CURRENT_DB_VERSION, CreateClearDatabaseFromScript, nil, 'ѕроисходит создание базы данных. ѕодождите...');
     FCreateClearDatabase := True;
     FNeedImportAfterRecovery := False;
     AProc.LogCriticalError('ѕроизведено создание базы.');
