@@ -712,8 +712,8 @@ begin
     WriteLn(ExchangeForm.LogFile,
       'Отправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
       '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
-		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1);
-		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1);
+		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2);
+		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2);
 
 		params[ 0] := 'ClientCode';
 		params[ 1] := 'PriceCode';
@@ -907,6 +907,8 @@ begin
       //Передаем уникальный идентификатор
       params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount ] := 'UniqueID';
       values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount ] := IntToHex( GetCopyID, 8);
+      params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1] := 'ClientOrderID';
+      values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1] := DM.adsOrdersH.FieldByName( 'OrderId').AsString;
 			Res := Soap.Invoke( 'PostOrder1', params, values);
 			// проверяем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
