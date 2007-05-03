@@ -1184,6 +1184,8 @@ var
 	UpdateTables: TUpdateTables;
 //	IntegrCount: Word;
 begin
+	Synchronize( ExchangeForm.CheckStop);
+	Synchronize( DisableCancel);
 	StatusText := 'Резервное копирование данных';
 	Synchronize( SetStatus);
   if not DM.IsBackuped(ExePath) then
@@ -1196,7 +1198,6 @@ begin
 	Synchronize( SetStatus);
 	Progress := 0;
 	Synchronize( SetProgress);
-	Synchronize( DisableCancel);
 	DM.UnLinkExternalTables;
 	DM.LinkExternalTables;
 	// создаем список внешних таблиц
