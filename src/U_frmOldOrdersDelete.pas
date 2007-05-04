@@ -12,13 +12,14 @@ type
     btnCancel: TButton;
     Image1: TImage;
     lblMessage: TLabel;
-    procedure FormCreate(Sender: TObject);
   end;
 
 var
   frmOldOrdersDelete: TfrmOldOrdersDelete;
 
 function ConfirmDeleteOldOrders : Boolean;
+
+function ConfirmSendCurrentOrders : Boolean;
 
 implementation
 
@@ -31,17 +32,28 @@ function ConfirmDeleteOldOrders : Boolean;
 begin
   frmOldOrdersDelete := TfrmOldOrdersDelete.Create(Application);
   try
+    frmOldOrdersDelete.btnOK.Caption := 'Удалить';
+    frmOldOrdersDelete.btnCancel.Caption := 'Отмена';
+    frmOldOrdersDelete.lblMessage.Caption := Format(
+      'В архиве заказов обнаружены заказы, сделанные более %d дней назад. Рекомендуется удалить их.',
+      [DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger]);
     Result := frmOldOrdersDelete.ShowModal = mrOk;
   finally
     frmOldOrdersDelete.Free;
   end;
 end;
 
-procedure TfrmOldOrdersDelete.FormCreate(Sender: TObject);
+function ConfirmSendCurrentOrders : Boolean;
 begin
-  lblMessage.Caption := Format(
-    'В архиве заказов обнаружены заказы, сделанные более %d дней назад. Рекомендуется удалить их.',
-    [DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger]);
+  frmOldOrdersDelete := TfrmOldOrdersDelete.Create(Application);
+  try
+    frmOldOrdersDelete.btnOK.Caption := 'Отправить';
+    frmOldOrdersDelete.btnCancel.Caption := 'Удалить';
+    frmOldOrdersDelete.lblMessage.Caption := 'При кумулятивном обновлении текущие неотправленные заказы должны быть отправлены или удалены. Отправить заказы?';
+    Result := frmOldOrdersDelete.ShowModal = mrOk;
+  finally
+    frmOldOrdersDelete.Free;
+  end;
 end;
 
 end.

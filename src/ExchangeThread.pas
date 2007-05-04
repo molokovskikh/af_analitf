@@ -8,10 +8,11 @@ uses
   IdException, WinSock, RxVerInf, DB, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps;
+  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
+  U_frmOldOrdersDelete, IB_ErrorCodes;
 
 const
-  UpadateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
+  UpdateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
   //Критические сообщения об ошибках при отправке заказов
   SendOrdersErrorTexts : array[0..3] of string =
   ('Доступ запрещен.',
@@ -66,6 +67,8 @@ private
 	SOAP: TSOAP;
 	ExchangeDateTime: TDateTime;
 	NewZip: boolean;
+  NeedSendOrders,
+  ImportComplete : Boolean;
 	FileStream: TFileStream;
 	RecThread: TReclameThread;
   StartExec : TDateTime;
@@ -92,6 +95,7 @@ private
 	procedure DisableCancel;
 	procedure EnableCancel;
 	procedure ShowEx;
+	procedure CheckSendCurrentOrders;
 
 	procedure RasConnect;
 	procedure HTTPConnect;
@@ -196,6 +200,9 @@ begin
     try
 		ErrorMessage := '';
 		try
+      ImportComplete := False;
+      repeat
+      try
 			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
       then
 			begin
@@ -214,11 +221,20 @@ begin
 
 				if eaSendOrders in ExchangeForm.ExchangeActs then
 				begin
-					CriticalError := True;
-					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
-					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-					DoSendOrders;
-					CriticalError := False;
+          NeedSendOrders := True;
+
+          //Если производим кумулятивное обновление, то спрашиваем: отправлять ли заказы?
+          if eaGetFullData in ExchangeForm.ExchangeActs then
+            Synchronize(CheckSendCurrentOrders);
+
+          if NeedSendOrders then
+          begin
+            CriticalError := True;
+            ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+            ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+            DoSendOrders;
+            CriticalError := False;
+          end;
 				end;
 				if eaSendLetter in ExchangeForm.ExchangeActs then
 				begin
@@ -295,6 +311,30 @@ begin
       	StatusText := 'Обоновление завершено';
      	  Synchronize( SetStatus);
 			end;
+
+      ImportComplete := True;
+
+      except
+        on EFIB : EFIBError do
+          //Если возникла ошибка нарушения целостности, то сразу же запрашиваем кумулятивное обновление
+          if not (eaGetFullData in ExchangeForm.ExchangeActs) and
+              ((EFIB.SQLCode = sqlcode_foreign_or_create_schema) or (EFIB.SQLCode = sqlcode_unique_violation))
+          then begin
+    				Writeln( ExchangeForm.LogFile, 'Нарушение целостности при импорте:' + CRLF + EFIB.Message); //пишем в лог
+            Progress := 0;
+            Synchronize( SetProgress);
+            StatusText := 'Откат изменений';
+            Synchronize( SetStatus);
+            DM.MainConnection1.Close;
+            DM.RestoreDatabase(ExePath);
+      			DM.MainConnection1.Open;
+            ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetPrice, eaGetFullData, eaSendOrders];
+          end
+          else
+            raise;
+      end;
+
+      until ImportComplete;
 
 			{ Дожидаемся завершения работы потока, скачивающего рекламу }
 			if ( [eaGetPrice] * ExchangeForm.ExchangeActs <> [])
@@ -433,7 +473,7 @@ begin
 		{ проверяем отсутствие ошибки при удаленном запросе }
 		Error := Utf8ToAnsi( Res.Values[ 'Error']);
     //Если получили специфичное сообщение об ошибке, что
-    if (Error <> '') and AnsiStartsText(UpadateErrorText, Utf8ToAnsi( Res.Values[ 'Desc'])) then begin
+    if (Error <> '') and AnsiStartsText(UpdateErrorText, Utf8ToAnsi( Res.Values[ 'Desc'])) then begin
       UpdateByUpdate := True;
       ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
     end
@@ -2344,6 +2384,13 @@ procedure TExchangeThread.HTTPWorkBegin(Sender: TObject;
   AWorkMode: TWorkMode; const AWorkCountMax: Integer);
 begin
   NTLMAuth := 0;
+end;
+
+procedure TExchangeThread.CheckSendCurrentOrders;
+begin
+  NeedSendOrders := MainForm.CheckUnsendOrders;
+  if NeedSendOrders then
+    NeedSendOrders := ConfirmSendCurrentOrders;
 end;
 
 { TFileUpdateInfo }

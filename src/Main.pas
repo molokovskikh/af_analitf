@@ -185,7 +185,6 @@ private
 
 	procedure CheckNewDll;
 	procedure SetStatusText(Value: string);
-	function CheckUnsendOrders: boolean;
   procedure OnAppEx(Sender: TObject; E: Exception);
   procedure OnMainAppEx(Sender: TObject; E: Exception);
   function  GetActionLists : TList;
@@ -219,6 +218,7 @@ public
   procedure DisableByHTTPName;
   //¬ключить все действи€, св€занные с изменением имени авторизации
   procedure EnableByHTTPName;
+	function CheckUnsendOrders: boolean;
 end;
 
 var

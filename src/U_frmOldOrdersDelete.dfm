@@ -13,7 +13,6 @@ object frmOldOrdersDelete: TfrmOldOrdersDelete
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
@@ -775,7 +774,6 @@ object frmOldOrdersDelete: TfrmOldOrdersDelete
     Top = 73
     Width = 75
     Height = 25
-    Caption = #1059#1076#1072#1083#1080#1090#1100
     Default = True
     ModalResult = 1
     TabOrder = 0
@@ -786,7 +784,6 @@ object frmOldOrdersDelete: TfrmOldOrdersDelete
     Width = 75
     Height = 25
     Cancel = True
-    Caption = #1054#1090#1084#1077#1085#1072
     ModalResult = 2
     TabOrder = 1
   end
