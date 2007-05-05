@@ -887,32 +887,6 @@ object CoreForm: TCoreForm
     Top = 173
     oCacheCalcFields = True
   end
-  object adsOrdersH: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    ORDERID,'
-      '    SERVERORDERID,'
-      '    CLIENTID,'
-      '    PRICECODE,'
-      '    REGIONCODE,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    ORDERDATE,'
-      '    SENDDATE,'
-      '    CLOSED,'
-      '    SEND,'
-      '    COMMENTS,'
-      '    MESSAGETO'
-      'FROM'
-      '    ORDERSHSHOWCURRENT(:ACLIENTID,'
-      '    :APRICECODE,'
-      '    :AREGIONCODE) ')
-    Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    Left = 240
-    Top = 173
-    oCacheCalcFields = True
-  end
   object adsOrders: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'

@@ -68,9 +68,7 @@ type
 
     //Текст ошибки, которая произошла
   	ErrMsg: string;
-    //Переменные для работы внешних заказов
-    ExternalOrdersCount : Integer;
-    ExternalOrdersLog : TStringList;
+    //Отображает лог неотправленных заказов
     SendOrdersLog : TStringList;
 
     property StatusText: string read GetStatusText write SetStatusText;
@@ -93,7 +91,7 @@ function RunExchange(AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
-  Exclusive, CompactThread, ShowLog, ExternalOrders, DB, SQLWaiting;
+  Exclusive, CompactThread, DB, SQLWaiting;
 
 {$R *.DFM}
 type
@@ -109,25 +107,15 @@ type
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 var
 	mr: integer;
-  ExternalOrdersCount,
-  ExternalOrdersErrorCount : Integer;
-  ExternalOrdersLog   : String;
   SendOrdersLog   : String;
 //	hMenuHandle: HMENU;
 begin
 	MainForm.FreeChildForms;
 	Result := False;
 	ServerAddition := '';
-  ExternalOrdersCount := 0;
-  ExternalOrdersErrorCount := 0;
-  ExternalOrdersLog := '';
   SendOrdersLog := '';
 	if AExchangeActions = [] then exit;
 	DM.DeleteEmptyOrders;
-
-  //Очистили директорию перед отправкой заказов
-  if IsExternalOrdersDLLPresent then
-    ExternalOrdersClearTempDirectory;
 
 	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions) then
     AExchangeActions := AExchangeActions + [ eaGetFullData, eaSendOrders];
@@ -187,9 +175,6 @@ begin
 			Result := ExchangeForm.ShowModal = mrOk;
       if not Result then
         AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
-      ExternalOrdersCount := ExchangeForm.ExternalOrdersCount;
-      ExternalOrdersErrorCount := ExchangeForm.ExternalOrdersLog.Count;
-      ExternalOrdersLog := ExchangeForm.ExternalOrdersLog.Text;
       SendOrdersLog := ExchangeForm.SendOrdersLog.Text;
 			DM.MainConnection1.Close;
       Sleep(500);
@@ -247,28 +232,6 @@ begin
         MB_ICONWARNING or MB_YESNO) = IDYES
     then
       ShowNotSended(SendOrdersLog);
-
-	if Result and ( AExchangeActions = [ eaSendOrders]) and (ExternalOrdersCount > 0)
-     and (Length(ExternalOrdersLog) > 0)
-  then
-    if MessageBox(
-        'Во время формирования внешних заказов для "Протек" возникли ошибки. ' +
-            'Желаете посмотреть журнал ошибок?',
-        MB_ICONWARNING or MB_YESNO) = IDYES
-    then
-      RunShowLog(ExternalOrdersLog);
-
-	if Result and ( AExchangeActions = [ eaSendOrders]) and (ExternalOrdersCount > 0)
-    and (ExternalOrdersCount > ExternalOrdersErrorCount) and IsExternalOrdersDLLPresent
-  then begin
-    if MessageBox(
-        'Заказы для "Протек" сформированы. ' +
-            'Запустить программу для их отправки сейчас?',
-        MB_ICONINFORMATION or MB_YESNO) = IDYES
-    then begin
-      RunExternalOrders
-    end;
-  end;
 
 	MainForm.UpdateReclame;
 
@@ -514,8 +477,6 @@ end;
 
 procedure TExchangeForm.FormCreate(Sender: TObject);
 begin
-  ExternalOrdersCount := 0;
-  ExternalOrdersLog := TStringList.Create;
   SendOrdersLog := TStringList.Create;
   HTTP.ConnectTimeout := -2;
   HTTPReclame.ConnectTimeout := -2;
@@ -523,7 +484,6 @@ end;
 
 procedure TExchangeForm.FormDestroy(Sender: TObject);
 begin
-  ExternalOrdersLog.Free;
   SendOrdersLog.Free;
 end;
 

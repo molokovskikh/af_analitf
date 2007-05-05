@@ -79,7 +79,6 @@ TMainForm = class(TForm)
     N14: TMenuItem;
     N15: TMenuItem;
     N17: TMenuItem;
-    itmIntegr: TMenuItem;
     Label1: TLabel;
     ActionList: TActionList;
     actReceive: TAction;
@@ -103,7 +102,6 @@ TMainForm = class(TForm)
     actSave: TAction;
     actCloseAll: TAction;
     actReceiveAll: TAction;
-    actIntegr: TAction;
     N3: TMenuItem;
     actPreview: TAction;
     N4: TMenuItem;
@@ -118,8 +116,6 @@ TMainForm = class(TForm)
     itmAbout: TMenuItem;
     btnHome: TToolButton;
     actHome: TAction;
-    itmExternalOrders: TMenuItem;
-    itmExternal: TMenuItem;
     adsOrdersH: TpFIBDataSet;
     tbWaybill: TToolButton;
     actWayBill: TAction;
@@ -167,13 +163,11 @@ TMainForm = class(TForm)
     procedure edDummyKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure AppEventsIdle(Sender: TObject; var Done: Boolean);
-    procedure actIntegrExecute(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actHomeExecute(Sender: TObject);
     procedure actHomeUpdate(Sender: TObject);
     procedure itmAboutClick(Sender: TObject);
-    procedure itmExternalOrdersClick(Sender: TObject);
     procedure dblcbClientsMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure actWayBillExecute(Sender: TObject);
@@ -234,8 +228,8 @@ implementation
 uses
 	DModule, AProc, Config, DBProc, NamesForms, Prices,
 	Defectives, Registers, Summary, OrdersH,
-	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm, Integr,
-	Exclusive, Wait, AlphaUtils, About, ExternalOrders, CompactThread, LU_Tracer,
+	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm, 
+	Exclusive, Wait, AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter;
 
 {$R *.DFM}
@@ -265,7 +259,6 @@ begin
 	EnableFilterIndex := 0;
 	JustRun := True;
 	CheckNewDll;
-//	LoadIntegrDLL;
   if FindCmdLineSwitch('extend') then begin
     N2.Visible := True;
     N6.Visible := True;
@@ -273,18 +266,9 @@ begin
     itmUnlinkExternal.Visible := True;
     itmClearDatabase.Visible := True;
   end;
-  //Если библиотека внешних заказов существует, то отображаем пункт меню
-  //Check  IsExternalOrdersDLLPresent
-  itmExternalOrders.Visible := IsExternalOrdersDLLPresent;
-  itmExternal.Enabled := itmExternalOrders.Visible;
-	actIntegr.Enabled := IsIntegrDLLPresent;
 	CS := TCriticalSection.Create;
 	if Set32BPP then
-	begin
-//		il32 := GetImageListAlpha( Self, Application.ExeName, 100, 32);
-//		ToolBar.Images := il32;
     LoadToImageList(ImageList, Application.ExeName, 100);
-	end;
 end;
 
 procedure TMainForm.CheckNewDll;
@@ -729,18 +713,6 @@ begin
 	if Ord( Key) >= 32 then actOrderAll.Execute;
 end;
 
-procedure TMainForm.actIntegrExecute(Sender: TObject);
-begin
-	if not IsIntegrDLLPresent then exit;
-
-{
-  TODO: ___ Восстановить работу интеграции
-	IntegrConfig( DM.MainConnection,
-		DM.adtClients.FieldByName( 'RegionCode').AsInteger,
-		Self.Handle);
-}
-end;
-
 procedure TMainForm.TimerTimer(Sender: TObject);
 var
 	ExID: string;
@@ -789,19 +761,6 @@ begin
 		ShowModal;
 		Free;
 	end;
-end;
-
-procedure TMainForm.itmExternalOrdersClick(Sender: TObject);
-begin
-  if not IsExternalOrdersDLLPresent then
-    Exit;
-
-  DM.adtParams.Close;
-  try
-    ExternalOrdersConfig( DM.MainConnection1, Self.Handle);
-  finally
-    DM.adtParams.Open;
-  end;
 end;
 
 procedure TMainForm.DisableByHTTPName;

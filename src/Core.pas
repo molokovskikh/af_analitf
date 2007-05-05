@@ -86,7 +86,6 @@ type
     adsCorePriceRet: TCurrencyField;
     adsCorePriceDelta: TFloatField;
     adsRegions: TpFIBDataSet;
-    adsOrdersH: TpFIBDataSet;
     adsOrders: TpFIBDataSet;
     adsOrdersFULLCODE: TFIBBCDField;
     adsOrdersSYNONYMNAME: TFIBStringField;
@@ -155,7 +154,6 @@ type
     UseExcess, CurrentUseForms: Boolean;
     DeltaMode, Excess, ClientId: Integer;
 
-    procedure RefreshOrdersH;
     procedure ccf(DataSet: TDataSet);
     procedure RefreshCurrentSumma;
   public
@@ -438,16 +436,6 @@ begin
 	CanInput := ( adsCoreSynonymCode.AsInteger >= 0) and
 		(( adsCoreRegionCode.AsInteger and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
 			adsCoreRegionCode.AsInteger);
-end;
-
-//переоткрывает заголовок для текущего заказа
-//нужна для поиска текущего OrdersH.OrderId при вводе заказа
-procedure TCoreForm.RefreshOrdersH;
-begin
-	adsOrdersH.ParamByName( 'AClientId').Value := ClientId;
-	adsOrdersH.ParamByName( 'APriceCode').Value := adsCorePriceCode.AsInteger;
-	adsOrdersH.ParamByName( 'ARegionCode').Value := adsCoreRegionCode.AsInteger;
-	if adsOrdersH.Active then adsOrdersH.CloseOpen(True) else adsOrdersH.Open;
 end;
 
 procedure TCoreForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;

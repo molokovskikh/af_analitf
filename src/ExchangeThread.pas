@@ -151,7 +151,7 @@ end;
 
 implementation
 
-uses Exchange, DModule, AProc, Main, Retry, Integr, Exclusive, ExternalOrders,
+uses Exchange, DModule, AProc, Main, Retry, Exclusive, 
   U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
   IdCoderMIME, U_SXConversions;
 
@@ -906,42 +906,6 @@ begin
 			DM.adsOrders.Next;
 		end;
 
-{
-    Блокирую обработку заказов, которые могут отправляться внешними программами
-    if IsExternalOrdersDLLPresent then
-      if ExternalOrdersPriceIsProtek(DM.MainConnection1, DM.adsOrdersH.FieldByName( 'OrderId').AsInteger)
-      then begin
-        Inc(ExchangeForm.ExternalOrdersCount);
-        try
-          ExternalRes := ExternalOrdersThreading(
-            ExchangeForm.AppHandle,
-            DM.MainConnection1,
-            DM.adsOrdersH.FieldByName( 'OrderId').AsInteger,
-            nil,
-            nil,
-            nil,
-            ErrorStr);
-
-          if not ExternalRes then begin
-            SetLength(ExtErrorMessage, StrLen(ErrorStr));
-            StrCopy(PChar(ExtErrorMessage), ErrorStr);
-            CoTaskMemFree(ErrorStr);
-            ExchangeForm.ExternalOrdersLog.Add(
-              'Ошибка во время формирования заказа №' +
-              DM.adsOrdersH.FieldByName( 'OrderId').AsString +
-              ' для "Протек" : ' + ExtErrorMessage)
-          end;
-        except
-          on E : Exception do begin
-            ExchangeForm.ExternalOrdersLog.Add(
-              'Ошибка во время формирования заказа №' +
-              DM.adsOrdersH.FieldByName( 'OrderId').AsString +
-              ' для "Протек" : ' + E.Message)
-          end;
-        end;
-      end;
-}      
-
     ServerOrderId := 0;
 		try
       //Передаем уникальный идентификатор
@@ -1224,7 +1188,6 @@ var
 //	Catalog: Variant;
 	Tables: TStrings;
 	UpdateTables: TUpdateTables;
-//	IntegrCount: Word;
 begin
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
@@ -1606,24 +1569,6 @@ begin
 	Synchronize( SetProgress);
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
-
-	{ Блок интеграции прайс листов }
-{
-	if IsIntegrDLLPresent then
-	begin
-		IntegrTotalWellPrices( DM.MainConnection,
-			DM.adtClients.FieldByName( 'RegionCode').AsInteger,
-			IntegrCount);
-		try
-			if IntegrCount > 0 then IntegrThreading( ExchangeForm.AppHandle,
-				DM.MainConnection, DM.adtClients.FieldByName( 'RegionCode').AsInteger,
-				ExchangeForm.stStatus, ExchangeForm.ProgressBar, nil, False);
-		except
-			on E: Exception do Windows.MessageBox( 0, PChar( E.Message),
-				'Ошибка', MB_OK or MB_ICONERROR);
-		end;
-	end;
-}
 
   DM.MainConnection1.DefaultUpdateTransaction.Commit;
 

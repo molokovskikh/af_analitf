@@ -541,20 +541,6 @@ inherited ExpiredsForm: TExpiredsForm
       DisplayFormat = '#'
     end
   end
-  object adsOrdersH: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      ' *'
-      'FROM'
-      '    ORDERSHSHOWCURRENT(:ACLIENTID,'
-      '    :APRICECODE,'
-      '    :AREGIONCODE) ')
-    Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    Left = 232
-    Top = 136
-    oCacheCalcFields = True
-  end
   object adsOrdersShowFormSummary: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'

@@ -21,7 +21,6 @@ type
     dbgExpireds: TToughDBGrid;
     adsExpireds: TpFIBDataSet;
     adsExpiredsSumOrder: TCurrencyField;
-    adsOrdersH: TpFIBDataSet;
     adsOrdersShowFormSummary: TpFIBDataSet;
     adsExpiredsPriceRet: TCurrencyField;
     adsExpiredsCryptBASECOST: TCurrencyField;
@@ -95,7 +94,6 @@ type
     UseExcess: Boolean;
     Excess: Integer;
 
-    procedure RefreshOrdersH;
     procedure ecf(DataSet: TDataSet);
   public
     { Public declarations }
@@ -206,16 +204,6 @@ begin
 	end;
 end;
 
-//переоткрывает заголовок для текущего заказа
-//нужна для поиска текущего OrdersH.OrderId при вводе заказа
-procedure TExpiredsForm.RefreshOrdersH;
-begin
-	adsOrdersH.ParamByName( 'AClientId').Value := ClientId;
-	adsOrdersH.ParamByName( 'APriceCode').Value := adsExpiredsPriceCode.AsInteger;
-	adsOrdersH.ParamByName( 'ARegionCode').Value := adsExpiredsRegionCode.AsInteger;
-	if adsOrdersH.Active then adsOrdersH.CloseOpen(True) else adsOrdersH.Open;
-end;
-
 procedure TExpiredsForm.dbgExpiredsCanInput(Sender: TObject;
   Value: Integer; var CanInput: Boolean);
 begin
@@ -223,43 +211,6 @@ begin
 		adsExpiredsRegionCode.AsInteger;
 	if not CanInput then exit;
 
-	//создаем записи из Orders и OrdersH, если их нет
-{
-  if adsExpiredsOrdersOrderId.IsNull then begin //нет соответствующей записи в Orders
-    RefreshOrdersH;
-    if adsOrdersH.IsEmpty then begin //нет заголовка заказа из OrdersH
-      //добавляем запись в OrdersH
-      adsExpireds.Edit;
-      adsExpiredsOrdersHClientId.AsInteger:=ClientId;
-      adsExpiredsOrdersHPriceCode.AsInteger:=adsExpiredsPriceCode.AsInteger;
-      adsExpiredsOrdersHRegionCode.AsInteger:=adsExpiredsRegionCode.AsInteger;
-      adsExpiredsOrdersHPriceName.AsString:=adsExpiredsPriceName.AsString;
-      adsExpiredsOrdersHRegionName.AsString:=adsExpiredsRegionName.AsString;
-      adsExpireds.Post; //на этот момент уже имеем OrdersHOrderId (автоинкремент)
-    end;
-    //добавляем запись в Orders
-    adsExpireds.Edit;
-    if adsOrdersH.IsEmpty then
-      adsExpiredsOrdersOrderId.AsInteger:=adsExpiredsOrdersHOrderId.AsInteger
-    else
-      adsExpiredsOrdersOrderId.AsInteger:=adsOrdersH.FieldByName('OrderId').AsInteger;
-    adsExpiredsOrdersClientId.AsInteger := ClientId;
-    adsExpiredsOrdersFullCode.AsInteger:=adsExpiredsFullCode.AsInteger;
-    adsExpiredsOrdersCodeFirmCr.AsInteger := adsExpiredsCodeFirmCr.AsInteger;
-    adsExpiredsOrdersCoreId.AsInteger:=adsExpiredsCoreId.AsInteger;
-    adsExpiredsOrdersSynonymCode.AsInteger:=adsExpiredsSynonymCode.AsInteger;
-    adsExpiredsOrdersSynonymFirmCrCode.AsInteger:=adsExpiredsSynonymFirmCrCode.AsInteger;
-    adsExpiredsOrdersCode.AsString:=adsExpiredsCode.AsString;
-    adsExpiredsOrdersCodeCr.AsString := adsExpiredsCodeCr.AsString;
-    adsExpiredsOrdersPrice.AsCurrency:=adsExpiredsBaseCost.AsCurrency;
-    adsExpiredsOrdersJunk.AsBoolean:=True;
-    adsExpiredsOrdersAwait.AsBoolean := adsExpiredsAwait.AsBoolean;
-    adsExpiredsOrdersSynonym.AsString := adsExpiredsSYNONYMNAME.AsString;
-    adsExpiredsOrdersSynonymFirm.AsString := adsExpiredsSynonymFirm.AsString;
-    adsExpireds.Post;
-    if adsOrdersH.IsEmpty then RefreshOrdersH;
-  end;
-  }
 end;
 
 procedure TExpiredsForm.TimerTimer(Sender: TObject);
