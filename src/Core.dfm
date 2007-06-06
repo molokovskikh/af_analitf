@@ -472,9 +472,23 @@ object CoreForm: TCoreForm
           EditButtons = <>
           FieldName = 'REQUESTRATIO'
           Footers = <>
-          Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
+          Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
           Visible = False
           Width = 61
+        end
+        item
+          EditButtons = <>
+          FieldName = 'ORDERCOST'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+          Visible = False
+        end
+        item
+          EditButtons = <>
+          FieldName = 'MINORDERCOUNT'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1082#1086#1083'-'#1074#1086
+          Visible = False
         end
         item
           EditButtons = <>
@@ -876,6 +890,14 @@ object CoreForm: TCoreForm
     object adsCoreREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
       DisplayFormat = '#'
+    end
+    object adsCoreORDERCOST: TFIBBCDField
+      FieldName = 'ORDERCOST'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsCoreMINORDERCOUNT: TFIBIntegerField
+      FieldName = 'MINORDERCOUNT'
     end
   end
   object adsRegions: TpFIBDataSet

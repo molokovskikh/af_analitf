@@ -123,6 +123,8 @@ type
     eRetUpCost: TEdit;
     gbSum: TGroupBox;
     lCurrentSumma: TLabel;
+    adsCoreORDERCOST: TFIBBCDField;
+    adsCoreMINORDERCOUNT: TFIBIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -185,6 +187,9 @@ begin
   dgCheckVolume := dbgCore;
   fOrder := adsCoreORDERCOUNT;
   fVolume := adsCoreREQUESTRATIO;
+  fOrderCost := adsCoreORDERCOST;
+  fSumOrder := adsCoreSumOrder;
+  fMinOrderCount := adsCoreMINORDERCOUNT;
 	inherited;
 	PrintEnabled := False;
   NeedFirstOnDataSet := False;

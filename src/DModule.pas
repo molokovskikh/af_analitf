@@ -11,7 +11,7 @@ uses
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
-  pFIBProps, U_UpdateDBThread, pFIBExtract;
+  pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase;
 
 {
 Криптование
@@ -153,7 +153,6 @@ type
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
-    adsCoreMINPRICE: TFIBBCDField;
     adsCoreLEADERPRICECODE: TFIBBCDField;
     adsCoreLEADERREGIONCODE: TFIBBCDField;
     adsCoreLEADERREGIONNAME: TFIBStringField;
@@ -271,6 +270,7 @@ type
     adsOrdersAWAIT: TFIBBooleanField;
     adsOrdersJUNK: TFIBBooleanField;
     adsOrdersID: TFIBBCDField;
+    adtReceivedDocs: TpFIBDataSet;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -343,6 +343,9 @@ type
     procedure CreateClearDatabaseFromScript(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
+{$ifdef DEBUG}
+    procedure ExtractDBScript(dbCon : TpFIBDatabase);
+{$endif}
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -409,6 +412,12 @@ type
     function GetPriceRet(BaseCost : Currency) : Currency;
     //Получить розничную наценку товара
     function GetRetUpCost(BaseCost : Currency) : Integer;
+
+    //Обрабатываем папки с документами
+    procedure ProcessDocs;
+    //обрабатываем каждую конкретную папку
+    procedure ProcessDocsDir(DirName : String; MaxFileDate : TDateTime; FileList : TStringList);
+    procedure OpenDocsDir(DirName : String; FileList : TStringList; OpenEachFile : Boolean);
 
     procedure InitAllSumOrder;
     procedure SetOldOrderCount(AOldOrderCount : Integer);
@@ -569,6 +578,7 @@ begin
   { проверяем и если надо создаем нужные каталоги }
   if not DirectoryExists( ExePath + SDirDocs) then CreateDir( ExePath + SDirDocs);
   if not DirectoryExists( ExePath + SDirWaybills) then CreateDir( ExePath + SDirWaybills);
+  if not DirectoryExists( ExePath + SDirRejects) then CreateDir( ExePath + SDirRejects);
   if not DirectoryExists( ExePath + SDirIn) then CreateDir( ExePath + SDirIn);
   if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
   MainForm.SetUpdateDateTime;
@@ -1487,7 +1497,6 @@ end;
 
 function TDM.TCPPresent: Boolean;
 var
-//  idPing : TIdIcmpClient;
   hWS : THandle;
 begin
   try
@@ -1495,16 +1504,6 @@ begin
     Result := hWS <> 0;
     if Result then
       FreeLibrary(hWS);
-      {
-    idPing := TIdIcmpClient.Create(nil);
-    try
-      idPing.Host := 'localhost';
-      idPing.Ping();
-      Result := idPing.ReplyStatus.ReplyStatusType = rsEcho;
-    finally
-      idPing.Free;
-    end;
-    }
   except
     Result := False;
   end;
@@ -1947,6 +1946,9 @@ begin
       dbCon.DefaultTransaction := trMain;
       dbCon.DefaultUpdateTransaction := trMain;
       dbCon.Open;
+{$ifdef DEBUG}
+      ExtractDBScript(dbCon);
+{$endif}
       DBVersion := dbCon.QueryValue('select mdbversion from provider where id = 0', 0);
       dbCon.Close;
 
@@ -1999,11 +2001,20 @@ begin
         DBVersion := 40;
       end;
 
+      if DBVersion = 40 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        DBVersion := 41;
+      end;
+
       if DBVersion <> CURRENT_DB_VERSION then
-        //LogExitError(Format('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]), Integer(ecDiffDBVersion));
         raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
       else
         RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
+{$ifdef not DEBUG}
+{$endif}
 
     finally
       trMain.Free;
@@ -2748,7 +2759,7 @@ begin
     'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO PARAMS (ID, CLIENTID, RASCONNECT, RASENTRY, RASNAME, RASPASS, CONNECTCOUNT, CONNECTPAUSE, PROXYCONNECT, PROXYNAME, PROXYPORT, PROXYUSER, PROXYPASS, SERVICENAME, HTTPHOST, HTTPPORT, HTTPNAME, HTTPPASS, UPDATEDATETIME, LASTDATETIME, FASTPRINT, ' +
       'SHOWREGISTER, NEWWARES, USEFORMS, OPERATEFORMS, OPERATEFORMSSET, AUTOPRINT, STARTPAGE, LASTCOMPACT, CUMULATIVE, STARTED, EXTERNALORDERSEXE, EXTERNALORDERSPATH, EXTERNALORDERSCREATE, RASSLEEP, HTTPNAMECHANGED, SHOWALLCATALOG, CDS, ORDERSHISTORYDAYCOUNT, ' +
-      'CONFIRMDELETEOLDORDERS, USENTLM) VALUES (0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 1);'#13#10#13#10 +
+      'CONFIRMDELETEOLDORDERS, USENTLM, USEOSOPEN) VALUES (0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 1, 1);'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO PROVIDER (ID, NAME, ADDRESS, PHONES, EMAIL, WEB, MDBVERSION) VALUES (0, ''АК "Инфорум"'', ''Ленинский пр-т, 160 оф.415'', ''4732-206000'', ''farm@analit.net'', ''http://www.analit.net/'', ' + IntToStr(CURRENT_DB_VERSION) +');'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
@@ -2897,6 +2908,114 @@ begin
     raise Exception.Create('База данных содержит некорректные метаданные.');
   end;
 end;
+
+procedure TDM.ProcessDocs;
+var
+  //Открыть только директорию с файлами
+  OnlyDirOpen : Boolean;
+  MaxFileDate : TDateTime;
+  DocsFL,
+  WaybillsFL,
+  RejectsFL : TStringList;
+begin
+{
+  1. Если в таблице все пусто, то открываем только папки
+  2. Если не пусто, что выбираем максимальную дату файла
+  3. Открываем Датасет с файлами и пробуем искать, добавляя элементы в список
+  4.
+}
+  adtReceivedDocs.Close;
+  adtReceivedDocs.Open;
+  try
+    DocsFL := TStringList.Create();
+    WaybillsFL := TStringList.Create();
+    RejectsFL := TStringList.Create();
+    try
+      OnlyDirOpen := adtReceivedDocs.RecordCount = 0;
+      if OnlyDirOpen then
+        MaxFileDate := 0
+      else
+        MaxFileDate := IncSecond(adtReceivedDocs.FieldByName('FileDateTime').AsDateTime, - 1);
+
+      ProcessDocsDir(SDirDocs, MaxFileDate, DocsFL);
+      ProcessDocsDir(SDirWaybills, MaxFileDate, WaybillsFL);
+      ProcessDocsDir(SDirRejects, MaxFileDate, RejectsFL);
+
+      OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
+      OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPEN').AsBoolean);
+      OpenDocsDir(SDirRejects, RejectsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPEN').AsBoolean);
+
+    finally
+      DocsFL.Free;
+      WaybillsFL.Free;
+      RejectsFL.Free;
+    end;
+  finally
+    adtReceivedDocs.Close;
+  end;
+end;
+
+procedure TDM.ProcessDocsDir(DirName: String; MaxFileDate : TDateTime; FileList: TStringList);
+var
+  DocsSR: TSearchRec;
+  CurrentFileDate : TDateTime;
+begin
+  if DirectoryExists(ExePath + DirName) then begin
+    if FindFirst( ExePath + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
+    try
+      repeat
+        if (DocsSR.Name <> '.') and (DocsSR.Name <> '..')
+        then begin
+          CurrentFileDate := FileDateToDateTime(DocsSR.Time);
+          if CurrentFileDate > MaxFileDate then
+            if not adtReceivedDocs.Locate('FILENAME', DirName + '\' + DocsSR.Name, [loCaseInsensitive]) then begin
+              adtReceivedDocs.Insert;
+              adtReceivedDocs['FILENAME'] := DirName + '\' + DocsSR.Name;
+              adtReceivedDocs['FILEDATETIME'] := CurrentFileDate;
+              adtReceivedDocs.Post;
+              FileList.Add(ExePath + DirName + '\' + DocsSR.Name);
+            end;
+        end;
+      until (FindNext( DocsSR ) <> 0)
+    finally
+      SysUtils.FindClose( DocsSR );
+    end;
+  end;
+end;
+
+procedure TDM.OpenDocsDir(DirName: String; FileList: TStringList;
+  OpenEachFile: Boolean);
+var
+  I : Integer;
+begin
+  if FileList.Count > 0 then
+    if not OpenEachFile then
+    	ShellExecute( 0, 'Open', PChar(ExePath + DirName + '\'),
+        nil, nil, SW_SHOWDEFAULT)
+    else
+      for I := 0 to FileList.Count-1 do
+      	ShellExecute( 0, 'Open', PChar(FileList[i]),
+          nil, nil, SW_SHOWDEFAULT);
+end;
+
+{$ifdef DEBUG}
+procedure TDM.ExtractDBScript(dbCon: TpFIBDatabase);
+var
+  exc : TpFIBExtract;
+begin
+  exc := TpFIBExtract.Create(nil);
+  try
+    exc.Database := dbCon;
+    exc.Transaction := TpFIBTransaction(dbCon.DefaultTransaction);
+    exc.IncludeSetTerm := False;
+    exc.ExtractOptions := exc.ExtractOptions - [CreateDb];
+    exc.ExtractObject(eoDatabase);
+    exc.Items.SaveToFile('extract.sql');
+  finally
+    exc.Free;
+  end;
+end;
+{$endif}
 
 initialization
   ch := IntToHex(GetCopyID, 8);

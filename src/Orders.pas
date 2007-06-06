@@ -49,6 +49,8 @@ type
     adsOrdersSENDPRICE: TFIBBCDField;
     adsOrdersREQUESTRATIO: TFIBIntegerField;
     tmrCheckOrderCount: TTimer;
+    adsOrdersORDERCOST: TFIBBCDField;
+    adsOrdersMINORDERCOUNT: TFIBIntegerField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -214,6 +216,9 @@ begin
   dgCheckVolume := dbgOrders;
   fOrder := adsOrdersORDERCOUNT;
   fVolume := adsOrdersREQUESTRATIO;
+  fOrderCost := adsOrdersORDERCOST;
+  fSumOrder := adsOrdersCryptSUMORDER;
+  fMinOrderCount := adsOrdersMINORDERCOUNT;
   inherited;
 end;
 
@@ -264,7 +269,7 @@ begin
     PrevForm.ShowForm;
   end
   else begin
-    OrdersHForm.adsOrdersHForm.CloseOpen(True);
+    OrdersHForm.adsOrdersHForm.Refresh;
     MainForm.SetOrdersInfo;
   end;
 end;

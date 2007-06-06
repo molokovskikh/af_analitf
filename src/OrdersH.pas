@@ -523,15 +523,20 @@ procedure TOrdersHForm.adsOrdersHFormAfterFetchRecord(FromQuery: TFIBQuery;
 var
   F : TFIBXSQLVAR;
   SumOrder : Currency;
+  Index : Integer;
 begin
   F := FromQuery.FldByName[adsOrdersHFormORDERID.FieldName];
   //Если заказ текущий, то данные берем из общего кеша
-  if not FromQuery.FldByName[adsOrdersHFormCLOSED.FieldName].AsBoolean then
-    FSumOrders.AddObject( F.AsString,
-      TSumOrder.Create(
-        DM.FindOrderInfo(
-          FromQuery.FldByName[adsOrdersHFormPRICECODE.FieldName].AsInteger,
-          FromQuery.FldByName[adsOrdersHFormREGIONCODE.FieldName].AsInteger).Summ))
+  if not FromQuery.FldByName[adsOrdersHFormCLOSED.FieldName].AsBoolean then begin
+    SumOrder := DM.FindOrderInfo(
+            FromQuery.FldByName[adsOrdersHFormPRICECODE.FieldName].AsInteger,
+            FromQuery.FldByName[adsOrdersHFormREGIONCODE.FieldName].AsInteger).Summ;
+    Index := FSumOrders.IndexOf(F.AsString);
+    if (Index = -1) then
+      FSumOrders.AddObject( F.AsString, TSumOrder.Create(SumOrder) )
+    else
+      TSumOrder(FSumOrders.Objects[Index]).Sum := SumOrder;
+  end
   else begin
     //Если заказ архивный, то берем из базы
     try
@@ -539,7 +544,11 @@ begin
     except
       SumOrder := 0;
     end;
-    FSumOrders.AddObject( F.AsString, TSumOrder.Create(SumOrder));
+    Index := FSumOrders.IndexOf(F.AsString);
+    if (Index = -1) then
+      FSumOrders.AddObject( F.AsString, TSumOrder.Create(SumOrder) )
+    else
+      TSumOrder(FSumOrders.Objects[Index]).Sum := SumOrder;
   end;
 end;
 
@@ -671,13 +680,17 @@ begin
 end;
 
 procedure TOrdersHForm.ShowForm;
+var
+  Index : Integer;
 begin
   inherited;
   if Assigned(PrevForm) and (PrevForm is TOrdersForm) then begin
     //Если мы производим возврат из окна "Архивный заказ", то надо обновить сумму
     if not adsOrdersHFormCLOSED.AsBoolean then begin
-      TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
-        DM.FindOrderInfo(adsOrdersHFormPRICECODE.AsInteger, adsOrdersHFormREGIONCODE.AsInteger).Summ;
+      Index := FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString);
+      if (Index > -1) then
+        TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
+          DM.FindOrderInfo(adsOrdersHFormPRICECODE.AsInteger, adsOrdersHFormREGIONCODE.AsInteger).Summ;
       adsOrdersHForm.RefreshClientFields();
     end;
   end;

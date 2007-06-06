@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Grids, DBGrids, ComCtrls, DBCtrls, Mask, Menus, DBGridEh, ShellAPI,
-  Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule;
+  Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule, GridsEh;
 
 type
   TConfigForm = class(TForm)
@@ -89,6 +89,7 @@ type
     Label16: TLabel;
     dbcbConfirmDeleteOldOrders: TDBCheckBox;
     dbchbNTLM: TDBCheckBox;
+    dbchbUseOSOpen: TDBCheckBox;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);

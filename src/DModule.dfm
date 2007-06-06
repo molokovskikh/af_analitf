@@ -115,7 +115,9 @@ object DM: TDM
     Top = 272
   end
   object MainConnection1: TpFIBDatabase
-    DBName = 'C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\bin\ANALITF.FDB'
+    DBName = 
+      'C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF R 4.2.151.470\src\bin' +
+      '\ANALITF.FDB'
     DBParams.Strings = (
       'lc_ctype=WIN1251'
       'password=masterkey'
@@ -186,7 +188,8 @@ object DM: TDM
       '    CDS = :CDS,'
       '    ORDERSHISTORYDAYCOUNT = :ORDERSHISTORYDAYCOUNT,'
       '    CONFIRMDELETEOLDORDERS = :CONFIRMDELETEOLDORDERS,'
-      '    USENTLM = :USENTLM'
+      '    USENTLM = :USENTLM,'
+      '    USEOSOPEN = :USEOSOPEN'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')
@@ -639,7 +642,6 @@ object DM: TDM
         '    coalesce(Synonyms.SynonymName, catalogs.name || '#39' '#39' || catal' +
         'ogs.form) as SynonymName,'
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
-      '    MinPrices.MinPrice,'
       '    PricesData.PriceCode AS LeaderPriceCode,'
       '    MinPrices.RegionCode AS LeaderRegionCode,'
       '    Regions.RegionName AS LeaderRegionName,'
@@ -773,11 +775,6 @@ object DM: TDM
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
-    end
-    object adsCoreMINPRICE: TFIBBCDField
-      FieldName = 'MINPRICE'
-      Size = 4
-      RoundByScale = True
     end
     object adsCoreLEADERPRICECODE: TFIBBCDField
       FieldName = 'LEADERPRICECODE'
@@ -1561,5 +1558,47 @@ object DM: TDM
       Size = 0
       RoundByScale = True
     end
+  end
+  object adtReceivedDocs: TpFIBDataSet
+    UpdateSQL.Strings = (
+      'UPDATE RECEIVEDDOCS'
+      'SET '
+      '    FILENAME = :FILENAME,'
+      '    FILEDATETIME = :FILEDATETIME'
+      'WHERE'
+      '    ID = :OLD_ID'
+      '    ')
+    DeleteSQL.Strings = (
+      'DELETE FROM'
+      '    RECEIVEDDOCS'
+      'WHERE'
+      '        ID = :OLD_ID'
+      '    ')
+    InsertSQL.Strings = (
+      'INSERT INTO RECEIVEDDOCS('
+      '    FILENAME,'
+      '    FILEDATETIME'
+      ')'
+      'VALUES('
+      '    :FILENAME,'
+      '    :FILEDATETIME'
+      ')')
+    RefreshSQL.Strings = (
+      'select * from Receiveddocs'
+      ''
+      ' WHERE '
+      '        RECEIVEDDOCS.ID = :OLD_ID'
+      '    ')
+    SelectSQL.Strings = (
+      'select * from Receiveddocs'
+      'order by filedatetime desc')
+    Transaction = DefTran
+    Database = MainConnection1
+    UpdateTransaction = UpTran
+    AutoCommit = True
+    Left = 456
+    Top = 280
+    oTrimCharFields = False
+    oCacheCalcFields = True
   end
 end

@@ -93,6 +93,8 @@ type
     dtpDateFrom: TDateTimePicker;
     dtpDateTo: TDateTimePicker;
     adsSummarySENDPRICE: TFIBBCDField;
+    adsSummaryORDERCOST: TFIBBCDField;
+    adsSummaryMINORDERCOUNT: TFIBIntegerField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -164,6 +166,9 @@ begin
   dgCheckVolume := dbgSummary;
   fOrder := adsSummaryORDERCOUNT;
   fVolume := adsSummaryREQUESTRATIO;
+  fOrderCost := adsSummaryORDERCOST;
+  fSumOrder := adsSummarySumOrder;
+  fMinOrderCount := adsSummaryMINORDERCOUNT;
   inherited;
 	PrintEnabled := True;
   adsSummary.OnCalcFields := scf;

@@ -125,6 +125,8 @@ TMainForm = class(TForm)
     ToolButton10: TToolButton;
     actSendLetter: TAction;
     miSendLetter: TMenuItem;
+    tbViewDocs: TToolButton;
+    actViewDocs: TAction;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -174,6 +176,7 @@ TMainForm = class(TForm)
     procedure actSynonymSearchExecute(Sender: TObject);
     procedure actReceiveTicketsExecute(Sender: TObject);
     procedure actSendLetterExecute(Sender: TObject);
+    procedure actViewDocsExecute(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -848,11 +851,7 @@ end;
 
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
-  if (MessageBox( 'Получить свежие накладные?', MB_ICONQUESTION or MB_YESNO) = IDYES)
-  then
-  	RunExchange( [eaGetWaybills] );
-	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
-		nil, nil, SW_SHOWDEFAULT);
+	RunExchange( [eaGetWaybills] );
 end;
 
 procedure TMainForm.actSynonymSearchExecute(Sender: TObject);
@@ -910,6 +909,16 @@ begin
     frmSendLetter.Free;
   end;
 
+end;
+
+procedure TMainForm.actViewDocsExecute(Sender: TObject);
+begin
+	ShellExecute( 0, 'Open', PChar(ExePath + SDirDocs + '\'),
+		nil, nil, SW_SHOWDEFAULT);
+	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
+		nil, nil, SW_SHOWDEFAULT);
+	ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
+		nil, nil, SW_SHOWDEFAULT);
 end;
 
 end.

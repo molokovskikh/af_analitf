@@ -22,6 +22,9 @@ type
     dgCheckVolume : TToughDBGrid;
     fOrder        : TField;
     fVolume       : TField;
+    fOrderCost    : TField;
+    fSumOrder     : TField;
+    fMinOrderCount : TField;
     OldAfterPost : TDataSetNotifyEvent;
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
@@ -36,9 +39,15 @@ type
     procedure UpdateReclame;
     procedure PatchNonBrowser;
     //Проверяем, что заказ сделан кратно Volume
-    function  CheckVolume : Boolean; 
+    function  CheckVolume : Boolean;
+    //Проверяем, что заказ сделан >= OrderCost
+    function  CheckByOrderCost : Boolean;
+    //Проверяем, что заказанное кол-во >= MinOrderCount
+    function  CheckByMinOrderCount : Boolean;
     //очищаем созданный заказ
     procedure ClearOrder;
+    //очищаем созданный заказ
+    procedure ClearOrderByOrderCost;
     procedure ShowVolumeMessage;
     procedure NewAfterPost(DataSet : TDataSet);
     procedure NewBeforePost(DataSet: TDataSet);
@@ -251,9 +260,23 @@ begin
   tCheckVolume.Enabled := False;
   if (dsCheckVolume.RecordCount > 0) and not CheckVolume then begin
     AProc.MessageBox(
-      Format('Заказ "%s" не кратен минимальному отпуску "%s"!', [fOrder.AsString, fVolume.AsString]),
+      Format('Заказ "%s" не кратен минимальному отпуску "%s" по данной позиции!', [fOrder.AsString, fVolume.AsString]),
       MB_ICONWARNING);
     ClearOrder;
+    Abort;
+  end;
+  if (dsCheckVolume.RecordCount > 0) and not CheckByOrderCost then begin
+    AProc.MessageBox(
+      Format('Сумма заказа "%s" меньше минимальной сумме заказа "%s" по данной позиции!', [fSumOrder.AsString, fOrderCost.AsString]),
+      MB_ICONWARNING);
+    ClearOrderByOrderCost;
+    Abort;
+  end;
+  if (dsCheckVolume.RecordCount > 0) and not CheckByMinOrderCount then begin
+    AProc.MessageBox(
+      Format('Заказанное количество "%s" меньше минимального количества "%s" по данной позиции!', [fOrder.AsString, fMinOrderCount.AsString]),
+      MB_ICONWARNING);
+    ClearOrderByOrderCost;
     Abort;
   end;
 end;
@@ -266,7 +289,7 @@ end;
 procedure TChildForm.FormCreate(Sender: TObject);
 begin
   if Assigned(dsCheckVolume) and Assigned(dgCheckVolume) and Assigned(fOrder)
-     and Assigned(fVolume)
+     and Assigned(fVolume) and Assigned(fOrderCost) and Assigned(fSumOrder) and Assigned(fMinOrderCount)
   then begin
     OldAfterPost := dsCheckVolume.AfterPost;
     dsCheckVolume.AfterPost := NewAfterPost;
@@ -306,6 +329,33 @@ begin
   tCheckVolume.Enabled := False;
   if Assigned(OldBeforePost) then
     OldBeforePost(DataSet);
+end;
+
+function TChildForm.CheckByOrderCost: Boolean;
+begin
+  if (not fOrderCost.IsNull) and (fOrderCost.AsCurrency > 0 ) and (not fSumOrder.IsNull)
+     and (fSumOrder.AsCurrency > 0)
+  then
+    Result := (fSumOrder.AsCurrency >= fOrderCost.AsCurrency)
+  else
+    Result := True;
+end;
+
+procedure TChildForm.ClearOrderByOrderCost;
+begin
+  SoftEdit(dsCheckVolume);
+  fOrder.AsInteger := 0;
+  dsCheckVolume.Post;
+end;
+
+function TChildForm.CheckByMinOrderCount: Boolean;
+begin
+  if (not fMinOrderCount.IsNull) and (fMinOrderCount.AsInteger > 0 ) and (not fOrder.IsNull)
+     and (fOrder.AsInteger > 0)
+  then
+    Result := (fOrder.AsInteger >= fMinOrderCount.AsInteger)
+  else
+    Result := True;
 end;
 
 end.

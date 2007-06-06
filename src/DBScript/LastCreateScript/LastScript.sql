@@ -12,6 +12,24 @@ RETURNS TIMESTAMP
 ENTRY_POINT 'addMinute' MODULE_NAME 'fbudf';
 
 
+DECLARE EXTERNAL FUNCTION BIN_AND
+INTEGER, INTEGER
+RETURNS INTEGER BY VALUE 
+ENTRY_POINT 'IB_UDF_bin_and' MODULE_NAME 'ib_udf';
+
+
+DECLARE EXTERNAL FUNCTION BIN_OR
+INTEGER, INTEGER
+RETURNS INTEGER BY VALUE 
+ENTRY_POINT 'IB_UDF_bin_or' MODULE_NAME 'ib_udf';
+
+
+DECLARE EXTERNAL FUNCTION BIN_XOR
+INTEGER, INTEGER
+RETURNS INTEGER BY VALUE 
+ENTRY_POINT 'IB_UDF_bin_xor' MODULE_NAME 'ib_udf';
+
+
 DECLARE EXTERNAL FUNCTION I64ROUND
 NUMERIC(18, 4)
 RETURNS NUMERIC(18, 4)
@@ -176,6 +194,8 @@ CREATE TABLE CORE
   REQUESTRATIO	INTEGER,
   BASECOST	FB_VC60,
   SERVERCOREID	FB_REF,
+  ORDERCOST	NUMERIC(18, 2),
+  MINORDERCOUNT	INTEGER,
 CONSTRAINT PK_CORE PRIMARY KEY (COREID)
 );
 
@@ -211,10 +231,9 @@ CONSTRAINT PK_FLAGS PRIMARY KEY (ID)
 CREATE TABLE MINPRICES 
 (
   FULLCODE	FB_ID,
-  MINPRICE	NUMERIC(18, 4),
-  PRICECODE	FB_REF,
   REGIONCODE	FB_REF,
-  SERVERCOREID	FB_REF
+  SERVERCOREID	FB_REF,
+  SERVERMEMOID	INTEGER
 );
 
 /* Table: ORDERS, Owner: SYSDBA */
@@ -306,6 +325,7 @@ CREATE TABLE PARAMS
   ORDERSHISTORYDAYCOUNT	INTEGER DEFAULT 21 NOT NULL,
   CONFIRMDELETEOLDORDERS	FB_BOOLEAN DEFAULT 1,
   USENTLM	FB_BOOLEAN DEFAULT 1,
+  USEOSOPEN	FB_BOOLEAN DEFAULT 1,
 CONSTRAINT PK_PARAMS PRIMARY KEY (ID)
 );
 
@@ -422,6 +442,16 @@ CREATE TABLE PROVIDER
   WEB	VARCHAR(30) CHARACTER SET WIN1251,
   MDBVERSION	SMALLINT,
 CONSTRAINT PK_PROVIDER PRIMARY KEY (ID)
+);
+
+/* Table: RECEIVEDDOCS, Owner: SYSDBA */
+
+CREATE TABLE RECEIVEDDOCS 
+(
+  ID	FB_ID NOT NULL,
+  FILENAME	FB_VC255 NOT NULL,
+  FILEDATETIME	TIMESTAMP NOT NULL,
+CONSTRAINT PK_RECEIVEDDOCS PRIMARY KEY (ID)
 );
 
 /* Table: RECLAME, Owner: SYSDBA */
@@ -735,6 +765,7 @@ ALTER TABLE WAYBILLLIST ADD CONSTRAINT FK_WAYBILLLIST_SERVERWAYBILLID FOREIGN KE
 CREATE GENERATOR GEN_CORE_ID;
 CREATE GENERATOR GEN_ORDERSH_ID;
 CREATE GENERATOR GEN_ORDERS_ID;
+CREATE GENERATOR GEN_RECEIVEDDOCS_ID;
 CREATE GENERATOR GEN_REGISTRY_ID;
 CREATE GENERATOR GEN_RETAILMARGINS_ID;
 COMMIT WORK;
@@ -925,8 +956,7 @@ CREATE PROCEDURE CORESHOWBYFIRM
 (
   APRICECODE BIGINT,
   AREGIONCODE BIGINT,
-  ACLIENTID BIGINT,
-  APRICENAME VARCHAR(70) CHARACTER SET WIN1251
+  ACLIENTID BIGINT
 )
 RETURNS
 (
@@ -948,7 +978,6 @@ RETURNS
   QUANTITY VARCHAR(15) CHARACTER SET WIN1251,
   SYNONYMNAME VARCHAR(250) CHARACTER SET WIN1251,
   SYNONYMFIRM VARCHAR(250) CHARACTER SET WIN1251,
-  MINPRICE NUMERIC(18, 2),
   LEADERPRICECODE BIGINT,
   LEADERREGIONCODE BIGINT,
   LEADERREGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
@@ -979,7 +1008,9 @@ RETURNS
   ORDERSHREGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 BEGIN EXIT; END ;
@@ -1044,7 +1075,9 @@ RETURNS
   DOC VARCHAR(20) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 BEGIN EXIT; END ;
@@ -1109,7 +1142,9 @@ RETURNS
   DOC VARCHAR(20) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 BEGIN EXIT; END ;
@@ -1307,7 +1342,9 @@ RETURNS
   DOC VARCHAR(20) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 BEGIN EXIT; END ;
@@ -1334,15 +1371,21 @@ RETURNS
 AS
 BEGIN EXIT; END ;
 
-CREATE PROCEDURE MINPRICESDELETE 
-AS
-BEGIN EXIT; END ;
-
 CREATE PROCEDURE MINPRICESDELETEALL 
 AS
 BEGIN EXIT; END ;
 
 CREATE PROCEDURE MINPRICESINSERT 
+AS
+BEGIN EXIT; END ;
+
+CREATE PROCEDURE MINPRICES_IU 
+(
+  SERVERCOREID BIGINT,
+  SERVERMEMOID INTEGER,
+  FULLCODE BIGINT,
+  REGIONCODE BIGINT
+)
 AS
 BEGIN EXIT; END ;
 
@@ -1571,6 +1614,15 @@ AS
 BEGIN EXIT; END ;
 
 CREATE PROCEDURE PARAMSDELETEALL 
+AS
+BEGIN EXIT; END ;
+
+CREATE PROCEDURE PRICEAVG_IU 
+(
+  CLIENTCODE BIGINT,
+  FULLCODE BIGINT,
+  ORDERPRICEAVG NUMERIC(15, 2)
+)
 AS
 BEGIN EXIT; END ;
 
@@ -2490,7 +2542,7 @@ end
 
 ALTER PROCEDURE COREDELETENEWPRICES 
 AS
-DECLARE VARIABLE PRICECODE BIGINT;
+declare variable pricecode bigint;
 begin
 for EXECUTE STATEMENT 'SELECT cast(PriceCode as BIGINT) FROM ExtPricesData where Fresh = ''1'''
 into :pricecode
@@ -2498,6 +2550,13 @@ do
 begin
   delete from core where PriceCode = :PriceCode;
 end
+update
+  minprices
+set
+  servercoreid = null,
+  servermemoid = null
+where
+  not exists(select * from core c where c.servercoreid = minprices.servercoreid);
 end
  ;
 
@@ -2577,8 +2636,7 @@ ALTER PROCEDURE CORESHOWBYFIRM
 (
   APRICECODE BIGINT,
   AREGIONCODE BIGINT,
-  ACLIENTID BIGINT,
-  APRICENAME VARCHAR(70) CHARACTER SET WIN1251
+  ACLIENTID BIGINT
 )
 RETURNS
 (
@@ -2600,7 +2658,6 @@ RETURNS
   QUANTITY VARCHAR(15) CHARACTER SET WIN1251,
   SYNONYMNAME VARCHAR(250) CHARACTER SET WIN1251,
   SYNONYMFIRM VARCHAR(250) CHARACTER SET WIN1251,
-  MINPRICE NUMERIC(18, 2),
   LEADERPRICECODE BIGINT,
   LEADERREGIONCODE BIGINT,
   LEADERREGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
@@ -2631,7 +2688,9 @@ RETURNS
   ORDERSHREGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 begin
@@ -2655,7 +2714,6 @@ SELECT
     CCore.Quantity,
     coalesce(Synonyms.SynonymName, catalogs.name || ' ' || catalogs.form) as SynonymName,
     SynonymFirmCr.SynonymName AS SynonymFirm,
-    MinPrices.MinPrice,
     PricesData.PriceCode AS LeaderPriceCode,
     MinPrices.RegionCode AS LeaderRegionCode,
     Regions.RegionName AS LeaderRegionName,
@@ -2686,14 +2744,16 @@ SELECT
     OrdersH.RegionName AS OrdersHRegionName,
     CCore.registrycost,
     CCore.vitallyimportant,
-    CCore.requestratio
+    CCore.requestratio,
+    CCore.ordercost,
+    CCore.minordercount
 FROM
     Core CCore
-    left join catalogs      on catalogs.fullcode = CCore.fullcode
-    LEFT JOIN MinPrices     ON CCore.FullCode=MinPrices.FullCode and minprices.regioncode = :aregioncode
-    left join Core LCore on LCore.servercoreid = minprices.servercoreid and LCore.RegionCode = minprices.regioncode
-    LEFT JOIN PricesData ON PricesData.PriceCode=LCore.pricecode
-    LEFT JOIN Regions       ON MinPrices.RegionCode=Regions.RegionCode
+    inner join catalogs      on catalogs.fullcode = CCore.fullcode
+    inner JOIN MinPrices     ON MinPrices.FullCode = CCore.FullCode and minprices.regioncode = CCore.regioncode
+    inner join Core LCore on LCore.servercoreid = minprices.servercoreid and LCore.RegionCode = minprices.regioncode
+    inner JOIN PricesData ON PricesData.PriceCode=LCore.pricecode
+    inner JOIN Regions       ON MinPrices.RegionCode=Regions.RegionCode
     LEFT JOIN SynonymFirmCr ON CCore.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
     left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN Orders osbc ON osbc.ClientID = :AClientId and osbc.CoreId = CCore.CoreId
@@ -2717,7 +2777,6 @@ into :CoreId,
     :Quantity,
     :SynonymName,
     :SynonymFirm,
-    :MinPrice,
     :LeaderPriceCode,
     :LeaderRegionCode,
     :LeaderRegionName,
@@ -2748,7 +2807,9 @@ into :CoreId,
     :OrdersHRegionName,
     :registrycost,
     :vitallyimportant,
-    :requestratio
+    :requestratio,
+    :ordercost,
+    :minordercount
 do
   suspend;
 end
@@ -2815,7 +2876,9 @@ RETURNS
   DOC VARCHAR(20) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 begin
@@ -2872,7 +2935,9 @@ FOR SELECT Core.CoreId,
     Core.doc,
     Core.registrycost,
     Core.vitallyimportant,
-    Core.requestratio
+    Core.requestratio,
+    core.ordercost,
+    core.minordercount
 FROM
     Core
     left join catalogs on catalogs.fullcode = core.fullcode
@@ -2937,7 +3002,9 @@ into CoreId,
     :doc,
     :registrycost,
     :vitallyimportant,
-    :requestratio
+    :requestratio,
+    :ordercost,
+    :minordercount
 do
   suspend;
 end
@@ -3004,7 +3071,9 @@ RETURNS
   DOC VARCHAR(20) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 begin
@@ -3061,7 +3130,9 @@ for SELECT Core.CoreId,
     Core.doc,
     Core.registrycost,
     Core.vitallyimportant,
-    Core.requestratio
+    Core.requestratio,
+    core.ordercost,
+    core.minordercount
 FROM
     Catalogs
     INNER JOIN Core ON Core.fullcode =Catalogs.fullcode
@@ -3126,7 +3197,9 @@ into :CoreId,
     :doc,
     :registrycost,
     :vitallyimportant,
-    :requestratio
+    :requestratio,
+    :ordercost,
+    :minordercount
 do
   suspend;
 end
@@ -3577,7 +3650,9 @@ RETURNS
   DOC VARCHAR(20) CHARACTER SET WIN1251,
   REGISTRYCOST NUMERIC(8, 2),
   VITALLYIMPORTANT INTEGER,
-  REQUESTRATIO INTEGER
+  REQUESTRATIO INTEGER,
+  ORDERCOST NUMERIC(18, 2),
+  MINORDERCOUNT INTEGER
 )
 AS
 begin
@@ -3625,7 +3700,9 @@ for SELECT Core.CoreId,
     Core.doc,
     Core.registrycost,
     Core.vitallyimportant,
-    Core.requestratio
+    Core.requestratio,
+    Core.ordercost,
+    Core.minordercount
 FROM
     Core
     left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode
@@ -3683,7 +3760,9 @@ into :CoreId,
     :doc,
     :registrycost,
     :vitallyimportant,
-    :requestratio
+    :requestratio,
+    :ordercost,
+    :minordercount
 do
   suspend;
 end
@@ -3749,18 +3828,6 @@ end
  ;
 
 
-ALTER PROCEDURE MINPRICESDELETE 
-AS
-begin
-update
-  MinPrices
-set
-  minprice = null,
-  pricecode = null;
-end
- ;
-
-
 ALTER PROCEDURE MINPRICESDELETEALL 
 AS
 begin
@@ -3780,6 +3847,45 @@ begin
   where
         c.Synonymcode > 0
     and not exists(select * from minprices m where m.fullcode = c.fullcode and m.regioncode = c.regioncode);
+end
+ ;
+
+
+ALTER PROCEDURE MINPRICES_IU 
+(
+  SERVERCOREID BIGINT,
+  SERVERMEMOID INTEGER,
+  FULLCODE BIGINT,
+  REGIONCODE BIGINT
+)
+AS
+declare variable oldcoreid bigint;
+declare variable oldmemoid integer;
+begin
+  if (exists(select * from minprices where fullcode = :fullcode and regioncode = :regioncode)) then
+  begin
+    select servercoreid, servermemoid from minprices where fullcode = :fullcode and regioncode = :regioncode
+    into
+      :oldcoreid,
+      :oldmemoid;
+    if ((:oldcoreid is null) or (:oldmemoid is null) or (bin_xor(99999900, :oldmemoid) > bin_xor(99999900, :servermemoid)) ) then
+    update minprices
+    set servercoreid = :servercoreid,
+        servermemoid = :servermemoid
+    where
+      fullcode = :fullcode and regioncode = :regioncode;
+  end
+  else
+    insert into minprices (
+        fullcode,
+        regioncode,
+        servercoreid,
+        servermemoid)
+    values (
+        :fullcode,
+        :regioncode,
+        :servercoreid,
+        :servermemoid);
 end
  ;
 
@@ -4359,6 +4465,31 @@ ALTER PROCEDURE PARAMSDELETEALL
 AS
 begin
 DELETE FROM Params;
+end
+ ;
+
+
+ALTER PROCEDURE PRICEAVG_IU 
+(
+  CLIENTCODE BIGINT,
+  FULLCODE BIGINT,
+  ORDERPRICEAVG NUMERIC(15, 2)
+)
+AS
+begin
+  if (exists(select clientcode from priceavg where (clientcode = :clientcode) and  (fullcode = :fullcode))) then
+    update priceavg
+    set orderpriceavg = :orderpriceavg
+    where (clientcode = :clientcode) and (fullcode = :fullcode);
+  else
+    insert into priceavg (
+        clientcode,
+        fullcode,
+        orderpriceavg)
+    values (
+        :clientcode,
+        :fullcode,
+        :orderpriceavg);
 end
  ;
 
@@ -6009,6 +6140,15 @@ AS
 BEGIN
   IF (NEW.ORDERID IS NULL) THEN
     NEW.ORDERID = GEN_ID(GEN_ORDERSH_ID,1);
+END
+ ;
+
+CREATE TRIGGER RECEIVEDDOCS_BI FOR RECEIVEDDOCS 
+ACTIVE BEFORE INSERT POSITION 0
+AS
+BEGIN
+  IF (NEW.ID IS NULL) THEN
+    NEW.ID = GEN_ID(GEN_RECEIVEDDOCS_ID,1);
 END
  ;
 

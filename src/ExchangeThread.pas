@@ -122,6 +122,11 @@ private
     InsertSQL : String;
     OnBatching : TOnBatching = nil;
     OnExecuteError : TFIBQueryErrorEvent = nil);
+  procedure UpdateFromFileByParams(
+    FileName,
+    InsertSQL : String;
+    Names : array of string);
+
 
 	function GetXMLDateTime( ADateTime: TDateTime): string;
 	function FromXMLToDateTime( AStr: string): TDateTime;
@@ -143,6 +148,8 @@ private
   procedure HTTPWorkBegin(Sender: TObject; AWorkMode: TWorkMode; const AWorkCountMax: Integer);
   procedure ThreadOnBatching(BatchOperation:TBatchOperation;RecNumber:integer;var BatchAction:TBatchAction);
   procedure ThreadOnExecuteError(pFIBQuery:TpFIBQuery; E:EFIBError; var Action:TDataAction);
+  //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
+  procedure ExtractDocs(DirName : String);
 protected
 	procedure Execute; override;
 public
@@ -1017,7 +1024,7 @@ end;
 
 procedure TExchangeThread.UnpackFiles;
 var
-	SR, DeleteSR, ExportsSR: TSearchRec;
+	SR, DeleteSR: TSearchRec;
   SevenZipRes : Integer;
   I : Integer;
   DeletedText, NewImportFileName : String;
@@ -1100,21 +1107,11 @@ begin
 
 
   //Обрабатываем папку Waybills
-  if DirectoryExists(ExePath + SDirIn + '\' + SDirWaybills) then begin
-    if FindFirst( ExePath + SDirIn + '\' + SDirWaybills + '\*.*', faAnyFile, ExportsSR) = 0 then
-    try
-      repeat
-        if (ExportsSR.Name <> '.') and (ExportsSR.Name <> '..') then
-          MoveFileA(
-            ExePath + SDirIn + '\' + SDirWaybills + '\' + ExportsSR.Name,
-            ExePath + SDirWaybills + '\' + ExportsSR.Name,
-            True);
-      until (FindNext( ExportsSR ) <> 0)
-    finally
-      SysUtils.FindClose( ExportsSR );
-    end;
-    RemoveDir(ExePath + SDirIn + '\' + SDirWaybills);
-  end;
+  ExtractDocs(SDirWaybills);
+  //Обрабатываем папку Docs
+  ExtractDocs(SDirDocs);
+  //Обрабатываем папку Rejects
+  ExtractDocs(SDirRejects);
 end;
 
 procedure TExchangeThread.CheckNewExe;
@@ -1266,11 +1263,6 @@ begin
    DM.adcUpdate.AfterExecute := adcUpdateAfterExecute;
    with DM.adcUpdate do begin
 
-  //Удаляем минимальные цены, если есть обновления в Core
-  if (utMinPrices in UpdateTables) then begin
-  	//удаляем минимальные цены
-	  SQL.Text:='EXECUTE PROCEDURE MinPricesDelete'; ExecQuery;
-  end;
 	//удаляем из таблиц ненужные данные
 	//CatalogCurrency
 	if utCatalogCurrency in UpdateTables then begin
@@ -1294,6 +1286,7 @@ begin
 	end;
 	//Core
 	if utCore in UpdateTables then begin
+    //Удаление из Core старых прайсов и обновление ServerCoreID в MinPrices
 	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteNewPrices'; ExecQuery;
 	end;
 	//Synonym
@@ -1320,18 +1313,18 @@ begin
 	end;
 	// PriceAVG
 	if utPriceAVG in UpdateTables then begin
-    try
-     	SQL.Text := 'drop table PriceAVG;';	ExecQuery;
-    except
+    //Если производим куммулятивное обновление, то удаляем таблицу средних и заполняем заново
+    if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+      SQL.Text := 'delete from PRICEAVG';	ExecQuery;
+      SilentExecute(DM.adcUpdate, 'ALTER TABLE PRICEAVG DROP CONSTRAINT PK_PRICEAVG');
     end;
-   	SQL.Text := 'CREATE TABLE PRICEAVG (CLIENTCODE FB_ID, FULLCODE FB_ID, ORDERPRICEAVG NUMERIC(15,2))';	ExecQuery;
 	end;
 
   DM.MainConnection1.DefaultUpdateTransaction.Commit;
 
   DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 
-	SQL.Text := 'select count(*) from MinPrices where PriceCode is not null';
+	SQL.Text := 'select count(*) from MinPrices where ServerCoreID is not null';
 	ExecQuery;
   Close;
 	SQL.Text := 'select count(*) from pricesregionaldata where regioncode is not null';
@@ -1535,10 +1528,10 @@ begin
     UpdateFromFile(ExePath+SDirIn+'\Core.txt',
 'INSERT INTO Core '+
 '(Pricecode, RegionCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
-'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, RegistryCost, VitallyImportant, RequestRatio, BaseCost, ServerCOREID)' +
+'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, RegistryCost, VitallyImportant, RequestRatio, BaseCost, ServerCOREID, OrderCost, MinOrderCount)' +
 'values (:Pricecode, :RegionCode, :FullCode, :CodeFirmCr, :SynonymCode, ' +
 ':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
-':Note, :Period, :Doc, :RegistryCost, :VitallyImportant, :RequestRatio, :BaseCost, :ServerCOREID)');
+':Note, :Period, :Doc, :RegistryCost, :VitallyImportant, :RequestRatio, :BaseCost, :ServerCOREID, :OrderCost, :MinOrderCount)');
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; ExecQuery;
     SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
@@ -1613,15 +1606,23 @@ begin
 	//проставляем мин. цены и лидеров
 	if utMinPrices in UpdateTables then
 	begin
-    UpdateFromFile(ExePath+SDirIn+'\MinPrices.txt',
-      'update minprices set servercoreid = :servercoreid where fullcode = :fullcode and regioncode = :regioncode');
+    UpdateFromFileByParams(ExePath+SDirIn+'\MinPrices.txt',
+      'update minprices set servercoreid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servercoreid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then ' + 'coalesce(:servercoreid, servercoreid) ' + ' else servercoreid end, ' +
+      'servermemoid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servermemoid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) ' + 'then coalesce(:servermemoid, servermemoid) else servermemoid end ' +
+      'where fullcode = :fullcode and regioncode = :regioncode',
+      ['servercoreid', 'fullcode', 'regioncode', 'servermemoid']);
   end;
 
 	if utPriceAVG in UpdateTables then
 	begin
-    UpdateFromFile(ExePath+SDirIn+'\PriceAVG.txt',
-      'insert into PriceAVG (ClientCode, fullcode, OrderPriceAVG) values (:ClientCode, :fullcode, :OrderPriceAVG)');
-   	SQL.Text := 'ALTER TABLE PRICEAVG ADD CONSTRAINT PK_PRICEAVG PRIMARY KEY (CLIENTCODE, FULLCODE)';	ExecQuery;
+    //Если производим куммулятивное обновление, то удаляем таблицу средних и заполняем заново
+    if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+      UpdateFromFile(ExePath+SDirIn+'\PriceAVG.txt',
+        'insert into PriceAVG (ClientCode, fullcode, OrderPriceAVG) values (:ClientCode, :fullcode, :OrderPriceAVG)');
+      SQL.Text := 'ALTER TABLE PRICEAVG ADD CONSTRAINT PK_PRICEAVG PRIMARY KEY (CLIENTCODE, FULLCODE)';	ExecQuery;
+    end
+    else
+      UpdateFromFile(ExePath+SDirIn+'\PriceAVG.txt', 'EXECUTE PROCEDURE priceavg_iu(:ClientCode, :fullcode, :OrderPriceAVG)');
   end;
 	Progress := 90;
 	Synchronize( SetProgress);
@@ -1639,7 +1640,7 @@ begin
   DM.MainConnection1.Close;
   DM.MainConnection1.Open;
   DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
-	SQL.Text := 'select count(*) from MinPrices where Pricecode is not null';
+	SQL.Text := 'select count(*) from MinPrices where ServerCoreID is not null';
 	ExecQuery;
   Close;
 	SQL.Text := 'select count(*) from Core where FullCode is not null';
@@ -2165,13 +2166,13 @@ end;
 procedure TExchangeThread.ThreadOnBatching(BatchOperation: TBatchOperation;
   RecNumber: integer; var BatchAction: TBatchAction);
 begin
-  //
+  //Tracer.TR('ThreadOnBatching', 'RecNumber=' + IntToStr(RecNumber));
 end;
 
 procedure TExchangeThread.ThreadOnExecuteError(pFIBQuery: TpFIBQuery;
   E: EFIBError; var Action: TDataAction);
 begin
-//  Tracer.TR('ThreadOnExecuteError', e.Message);
+  //Tracer.TR('ThreadOnExecuteError', e.Message);
 end;
 
 procedure TExchangeThread.DoSendLetter;
@@ -2336,6 +2337,122 @@ begin
   NeedSendOrders := MainForm.CheckUnsendOrders;
   if NeedSendOrders then
     NeedSendOrders := ConfirmSendCurrentOrders;
+end;
+
+procedure TExchangeThread.ExtractDocs(DirName: String);
+var
+  DocsSR: TSearchRec;
+begin
+  if DirectoryExists(ExePath + SDirIn + '\' + DirName) then begin
+    if FindFirst( ExePath + SDirIn + '\' + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
+    try
+      repeat
+        if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then
+          MoveFileA(
+            ExePath + SDirIn + '\' + DirName + '\' + DocsSR.Name,
+            ExePath + DirName + '\' + DocsSR.Name,
+            True);
+      until (FindNext( DocsSR ) <> 0)
+    finally
+      SysUtils.FindClose( DocsSR );
+    end;
+    RemoveDir(ExePath + SDirIn + '\' + DirName);
+  end;
+end;
+
+procedure TExchangeThread.UpdateFromFileByParams(FileName,
+  InsertSQL: String; Names: array of string);
+var
+  up : TpFIBQuery;
+  InDelimitedFile : TFIBInputDelimitedFile;
+  StopExec : TDateTime;
+  Secs : Int64;
+  Col : String;
+  Values : array of Variant;
+  FEOF : Boolean;
+  FEOL : Boolean;
+  CurColumn : Integer;
+  ResultRead : Integer;
+  I : Integer;
+begin
+  up := TpFIBQuery.Create(nil);
+  SetLength(Values, Length(Names));
+  try
+    up.Database := DM.MainConnection1;
+    up.Transaction := DM.UpTran;
+
+    InDelimitedFile := TFIBInputDelimitedFile.Create;
+    try
+      InDelimitedFile.SkipTitles := False;
+      InDelimitedFile.ReadBlanksAsNull := True;
+      InDelimitedFile.ColDelimiter := Chr(159);
+      InDelimitedFile.RowDelimiter := Chr(161);
+
+      up.SQL.Text := InsertSQL;
+      InDelimitedFile.Filename := FileName;
+
+      Tracer.TR('Import', 'Exec : ' + InsertSQL);
+      StartExec := Now;
+      try
+        up.Prepare;
+        InDelimitedFile.ReadyStream;
+        FEOF := False;
+        repeat
+          FEOL := False;
+          CurColumn := 0;
+          for I := 0 to Length(Names)-1 do
+            Values[i] := Unassigned;
+          repeat
+            ResultRead := InDelimitedFile.GetColumn(Col);
+            if ResultRead = 0 then FEOF := True;
+            if ResultRead = 2 then FEOL := True;
+            if (CurColumn < Length(Names)) then
+            try
+              if (Col = '') then
+                Values[CurColumn] := Null
+              else
+                Values[CurColumn] := Col;
+              Inc(CurColumn);
+            except
+              on E: Exception do
+              begin
+                if not (FEOF and (CurColumn = Length(Names))) then
+                  raise;
+              end;
+            end;
+          until FEOL or FEOF;
+          if ((FEOF) and (CurColumn = Length(Names))) or (not FEOF)
+          then begin
+            for I := 0 to Length(Names)-1 do
+              if Values[i] = Null then
+                case up.ParamByName(Names[i]).ServerSQLType of
+                  SQL_TEXT,SQL_VARYING:
+                   if InDelimitedFile.ReadBlanksAsNull then
+                     up.ParamByName(Names[i]).IsNull := True
+                   else
+                    up.ParamByName(Names[i]).AsString := '';
+                else
+                  up.ParamByName(Names[i]).IsNull := True
+                end
+              else
+                up.ParamByName(Names[i]).AsString := Values[i];
+            up.ExecQuery;
+          end;
+        until FEOF;
+      finally
+        StopExec := Now;
+        Secs := SecondsBetween(StopExec, StartExec);
+        if Secs > 3 then
+          Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+      end;
+
+    finally
+      InDelimitedFile.Free;
+    end;
+
+  finally
+    up.Free;
+  end;
 end;
 
 { TFileUpdateInfo }

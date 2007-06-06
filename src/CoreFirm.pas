@@ -11,7 +11,7 @@ uses
   pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, pFIBProps;
 
 const
-	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID, :APRICENAME) ORDER BY ';
+	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID) ORDER BY ';
 
 type
   TFilter=( filAll, filOrder, filLeader);
@@ -62,7 +62,6 @@ type
     adsCoreQUANTITY: TFIBStringField;
     adsCoreSYNONYMNAME: TFIBStringField;
     adsCoreSYNONYMFIRM: TFIBStringField;
-    adsCoreMINPRICE: TFIBBCDField;
     adsCoreLEADERPRICECODE: TFIBBCDField;
     adsCoreLEADERREGIONCODE: TFIBBCDField;
     adsCoreLEADERREGIONNAME: TFIBStringField;
@@ -103,6 +102,8 @@ type
     adsCoreVITALLYIMPORTANT: TFIBIntegerField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
     adsCoreWithLike: TpFIBDataSet;
+    adsCoreORDERCOST: TFIBBCDField;
+    adsCoreMINORDERCOUNT: TFIBIntegerField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -183,6 +184,9 @@ begin
   dgCheckVolume := dbgCore;
   fOrder := adsCoreORDERCOUNT;
   fVolume := adsCoreREQUESTRATIO;
+  fOrderCost := adsCoreORDERCOST;
+  fSumOrder := adsCoreSumOrder;
+  fMinOrderCount := adsCoreMINORDERCOUNT;
 
   inherited;
 
@@ -606,7 +610,6 @@ begin
     adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'AClientId').Value:=ClientId;
-    adsCore.ParamByName( 'APriceName').Value:=PriceName;
     ShowSQLWaiting(adsCore);
   finally
     Screen.Cursor:=crDefault;

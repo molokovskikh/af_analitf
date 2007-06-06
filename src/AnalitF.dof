@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=4
 MinorVer=3
-Release=161
-Build=491
+Release=169
+Build=501
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.3.161.491
+FileVersion=4.3.169.501
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2006
 LegalTrademarks=Инфорум
@@ -163,23 +163,27 @@ Count=3
 Item0=C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src
 Item1=C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src
 Item2=C:\Program Files\Borland\Delphi7\Indy\
+[HistoryLists\hlConditionals]
+Count=1
+Item0=DEBUG
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=12
+Count=13
 Item0=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib
-Item1=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\d7;
-Item2=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;
-Item3=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;
-Item4=..\..\ARas\src;..\..\RXLib\src;
-Item5=..\..\ARas\src;
-Item6=$(DELPHI)\Lib\Debug
-Item7=$(DELPHI)\Indy\lib;
-Item8=$(DELPHI)\Indy\lib;C:\Program Files\Borland\Delphi7\RXLib\Units;
-Item9=$(DELPHI)\Indy\lib
-Item10=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib
-Item11=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
+Item1=..\..\ARas\src;..\..\RXLib\src;
+Item2=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src
+Item3=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\d7;
+Item4=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;
+Item5=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;
+Item6=..\..\ARas\src;
+Item7=$(DELPHI)\Lib\Debug
+Item8=$(DELPHI)\Indy\lib;
+Item9=$(DELPHI)\Indy\lib;C:\Program Files\Borland\Delphi7\RXLib\Units;
+Item10=$(DELPHI)\Indy\lib
+Item11=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib
+Item12=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit

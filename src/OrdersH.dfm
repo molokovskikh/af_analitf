@@ -543,7 +543,6 @@ inherited OrdersHForm: TOrdersHForm
         '    coalesce(Synonyms.SynonymName, catalogs.name || '#39' '#39' || catal' +
         'ogs.form) as SynonymName,'
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
-      '    MinPrices.MinPrice,'
       '    PricesData.PriceCode AS LeaderPriceCode,'
       '    MinPrices.RegionCode AS LeaderRegionCode,'
       '    Regions.RegionName AS LeaderRegionName,'

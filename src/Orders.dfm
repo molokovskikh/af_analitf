@@ -312,7 +312,9 @@ inherited OrdersForm: TOrdersForm
       '    Orders.ordercount,'
       '    Orders.SendPrice*Orders.OrderCount AS SumOrder,'
       '    Orders.SendPrice,'
-      '    core.requestratio'
+      '    core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount'
       'FROM '
       '  Orders'
       '  left join core on core.coreid = orders.coreid'
@@ -424,6 +426,14 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
+    end
+    object adsOrdersORDERCOST: TFIBBCDField
+      FieldName = 'ORDERCOST'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsOrdersMINORDERCOUNT: TFIBIntegerField
+      FieldName = 'MINORDERCOUNT'
     end
   end
   object tmrCheckOrderCount: TTimer

@@ -148,8 +148,6 @@ begin
 
 	//выводим форму и начинаем обмен данными
 	ExchangeForm := TExchangeForm.Create( Application);
-//	hMenuHandle := GetSystemMenu( ExchangeForm.Handle, False);
-//	DeleteMenu( hMenuHandle, SC_CLOSE, MF_BYCOMMAND);
 
 	if not MainForm.Showing then ExchangeForm.Position := poDesktopCenter;
 	try
@@ -232,6 +230,12 @@ begin
         MB_ICONWARNING or MB_YESNO) = IDYES
     then
       ShowNotSended(SendOrdersLog);
+
+  //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
+	if Result and (( eaGetPrice in AExchangeActions) or
+		( eaGetWaybills in AExchangeActions))
+  then
+    DM.ProcessDocs;
 
 	MainForm.UpdateReclame;
 

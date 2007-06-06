@@ -110,6 +110,8 @@ type
     adsCoreVITALLYIMPORTANT: TFIBBooleanField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
     adsOrdersSENDPRICE: TFIBBCDField;
+    adsCoreORDERCOST: TFIBBCDField;
+    adsCoreMINORDERCOUNT: TFIBIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -133,6 +135,8 @@ type
     procedure cbBaseOnlyClick(Sender: TObject);
     procedure dbgCoreDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
+    procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
+      DisplayText: Boolean);
   private
     { Private declarations }
     fr : TForceRus;
@@ -182,6 +186,9 @@ begin
   dgCheckVolume := dbgCore;
   fOrder := adsCoreORDERCOUNT;
   fVolume := adsCoreREQUESTRATIO;
+  fOrderCost := adsCoreORDERCOST;
+  fSumOrder := adsCoreSumOrder;
+  fMinOrderCount := adsCoreMINORDERCOUNT;
   inherited;
   
   InternalSearchText := '';
@@ -534,6 +541,12 @@ procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;
 begin
   if Column.Field = adsCoreSYNONYMNAME then
     ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
+end;
+
+procedure TSynonymSearchForm.adsCoreSTORAGEGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+begin
+  Text := Iif(Sender.AsBoolean, '+', '');
 end;
 
 end.

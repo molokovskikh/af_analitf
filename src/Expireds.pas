@@ -76,6 +76,8 @@ type
     adsExpiredsREGISTRYCOST: TFIBFloatField;
     adsExpiredsVITALLYIMPORTANT: TFIBIntegerField;
     adsExpiredsREQUESTRATIO: TFIBIntegerField;
+    adsExpiredsORDERCOST: TFIBBCDField;
+    adsExpiredsMINORDERCOUNT: TFIBIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -114,6 +116,9 @@ begin
   dgCheckVolume := dbgExpireds;
   fOrder := adsExpiredsORDERCOUNT;
   fVolume := adsExpiredsREQUESTRATIO;
+  fOrderCost := adsExpiredsORDERCOST;
+  fSumOrder := adsExpiredsSumOrder;
+  fMinOrderCount := adsExpiredsMINORDERCOUNT;
   inherited;
   adsExpireds.OnCalcFields := ecf;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;

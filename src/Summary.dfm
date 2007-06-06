@@ -129,9 +129,23 @@ inherited SummaryForm: TSummaryForm
           EditButtons = <>
           FieldName = 'REQUESTRATIO'
           Footers = <>
-          Title.Caption = #1052#1080#1085'. '#1079#1072#1082#1072#1079
+          Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
           Visible = False
           Width = 59
+        end
+        item
+          EditButtons = <>
+          FieldName = 'ORDERCOST'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+          Visible = False
+        end
+        item
+          EditButtons = <>
+          FieldName = 'MINORDERCOUNT'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1082#1086#1083'-'#1074#1086
+          Visible = False
         end
         item
           EditButtons = <>
@@ -463,7 +477,9 @@ inherited SummaryForm: TSummaryForm
       '    core.registrycost,'
       '    core.vitallyimportant,'
       '    core.requestratio,'
-      '    Orders.SendPrice'
+      '    Orders.SendPrice,'
+      '    core.ordercost,'
+      '    core.minordercount'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -618,6 +634,14 @@ inherited SummaryForm: TSummaryForm
       Size = 2
       RoundByScale = True
     end
+    object adsSummaryORDERCOST: TFIBBCDField
+      FieldName = 'ORDERCOST'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsSummaryMINORDERCOUNT: TFIBIntegerField
+      FieldName = 'MINORDERCOUNT'
+    end
   end
   object adsSummaryH: TpFIBDataSet
     SelectSQL.Strings = (
@@ -674,7 +698,9 @@ inherited SummaryForm: TSummaryForm
       '    core.registrycost,'
       '    core.vitallyimportant,'
       '    core.requestratio,'
-      '    Orders.SendPrice'
+      '    Orders.SendPrice,'
+      '    core.ordercost,'
+      '    core.minordercount'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -730,7 +756,9 @@ inherited SummaryForm: TSummaryForm
       '    cast(0.0 as numeric(8,2)) as registrycost,'
       '    0 as vitallyimportant,'
       '    0 as requestratio,'
-      '    Orders.SendPrice'
+      '    Orders.SendPrice,'
+      '    0 as ordercost,'
+      '    0 as minordercount'
       'FROM'
       '    PricesData,'
       '    Regions,'

@@ -14,6 +14,7 @@ const
   SDirIn='In';
   SDirExe='Exe';
   SDirWaybills = 'Waybills';
+  SDirRejects = 'Rejects';
   SDirReclame='Reclame';
   SHTTPPrefix='http://';
   CRLF=#13#10;
