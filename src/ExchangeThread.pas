@@ -48,18 +48,12 @@ TUpdateTable = (
 
 TUpdateTables = set of TUpdateTable;
 
-TFileUpdateInfo = class
- public
-  FileName, Version, MD5 : String;
-  constructor Create(AFileName, AVersion, AMD5 : String);
-end;
-
 TExchangeThread = class( TThread)
  public
 	Terminated, CriticalError: boolean;
 	ErrorMessage: string;
-  DownloadReclame : Boolean;
-  procedure StopReclame;
+  DownloadChildThreads : Boolean;
+  procedure StopChildThreads;
 private
 	StatusText: string;
 	Progress: integer;
@@ -88,6 +82,9 @@ private
   //Будем обновляться из-за того, что дата обновления не совпала
   UpdateByUpdate : Boolean;
 
+  //Список дочерних ниток
+  ChildThreads : TObjectList;
+
 	procedure SetStatus;
   procedure SetDownStatus;
 	procedure SetProgress;
@@ -99,7 +96,7 @@ private
 
 	procedure RasConnect;
 	procedure HTTPConnect;
-	procedure GetReclame;
+	procedure CreateChildThreads;
 	procedure QueryData;
   procedure GetPass;
   procedure PriceDataSettings;
@@ -133,14 +130,11 @@ private
 	function StringToCodes( AStr: string): string;
 	function RusError( AStr: string): string;
   procedure OnConnectError (AMessage : String);
-  procedure OnReclameTerminate(Sender: TObject);
-  function  GetLibraryVersion : TObjectList;
+  procedure OnChildTerminate(Sender: TObject);
+  procedure OnFullChildTerminate(Sender: TObject);
   procedure GetWinVersion(var ANumber, ADesc : String);
-  function GetLibraryVersionByName(AName: String): String;
-  function GetLibraryVersionFromPath(AName: String): String;
   procedure adcUpdateBeforeExecute(Sender: TObject);
   procedure adcUpdateAfterExecute(Sender: TObject);
-  function GetFileHash(AFileName: String): String;
   //"Молчаливое" выполнение запроса изменения метаданных.
   //Не вызывает исключение в случае ошибки -607
   procedure SilentExecute(q : TpFIBQuery; SQL : String);
@@ -160,7 +154,7 @@ implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Exclusive, 
   U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
-  IdCoderMIME, U_SXConversions;
+  U_RecvThread;
 
 { TExchangeThread }
 
@@ -197,7 +191,9 @@ end;
 procedure TExchangeThread.Execute;
 var
 	LastStatus: string;
+  I : Integer;
 begin
+  ChildThreads := TObjectList.Create(False);
 	Terminated := False;
 	CriticalError := False;
 	TotalProgress := 0;
@@ -262,7 +258,7 @@ begin
 
           //Запускаем рекламу только тогда, когда получаем обновление данных, но не накладные
           if eaGetPrice in ExchangeForm.ExchangeActs then
-            GetReclame;
+            CreateChildThreads;
           UpdateByUpdate := False;
 					QueryData;
           if UpdateByUpdate then
@@ -289,14 +285,20 @@ begin
 
 			{ Отключение }
       if ( [eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> []) then
-        OnReclameTerminate(nil)
+        OnFullChildTerminate(nil)
       else
         if ([eaGetPrice] * ExchangeForm.ExchangeActs <> [])
-        then
-          if Assigned(RecThread) and not RecThread.RecTerminated then
-            RecThread.OnTerminate := OnReclameTerminate
+        then begin
+//TODO: Надо сделать корректно с нитками
+          if ChildThreads.Count > 0 then begin
+            for I := ChildThreads.Count-1 downto 0 do
+              TThread(ChildThreads[i]).OnTerminate := OnFullChildTerminate;
+            if ChildThreads.Count = 0 then
+              OnFullChildTerminate(nil);
+          end
           else
-            OnReclameTerminate(nil);
+            OnFullChildTerminate(nil);
+        end;
 
 			if ( [eaGetPrice, eaImportOnly] * ExchangeForm.ExchangeActs <> []) then
 			begin
@@ -346,10 +348,11 @@ begin
 			{ Дожидаемся завершения работы потока, скачивающего рекламу }
 			if ( [eaGetPrice] * ExchangeForm.ExchangeActs <> [])
       then begin
-        DownloadReclame := True;
-        if Assigned(RecThread) then begin
-          if not RecThread.RecTerminated then RecThread.WaitFor;
-          RecThread.Free;
+//TODO: Надо сделать корректно с нитками
+        DownloadChildThreads := True;
+        while ChildThreads.Count > 0 do begin
+          TThread(ChildThreads[0]).WaitFor;
+          ChildThreads.Delete(0);
         end;
 			end;
       TotalProgress := 100;
@@ -365,8 +368,8 @@ begin
 				Synchronize( SetTotalProgress);
 				try
 					HTTPDisconnect;
-          StopReclame;
-					RecThread.Free;
+//TODO: Надо сделать корректно с нитками          
+          StopChildThreads;
 				except
 				end;
         //если это сокетная ошибка, то не рвем DialUp
@@ -405,15 +408,25 @@ begin
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
 end;
 
-procedure TExchangeThread.GetReclame;
+procedure TExchangeThread.CreateChildThreads;
+var
+ T : TThread;
 begin
-	RecThread := TReclameThread.Create( True);
-	RecThread.RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
-  RecThread.ReclameURL := URL;
-  RecThread.HTTPName := HTTPName;
-  RecThread.HTTPPass := HTTPPass;
-  RecThread.UseNTLM  := UseNTLM;
-	RecThread.Resume;
+	T := TReclameThread.Create( True);
+  T.FreeOnTerminate := True;
+	TReclameThread(T).RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
+  TReclameThread(T).ReclameURL := URL;
+  TReclameThread(T).HTTPName := HTTPName;
+  TReclameThread(T).HTTPPass := HTTPPass;
+  TReclameThread(T).UseNTLM  := UseNTLM;
+  T.OnTerminate := OnChildTerminate;
+	TReclameThread(T).Resume;
+  ChildThreads.Add(T);
+  T := TReceiveThread.Create(True);
+  TReceiveThread(T).SetParams(URL, HTTPName, HTTPPass, UseNTLM);
+  T.OnTerminate := OnChildTerminate;
+  T.Resume;
+  ChildThreads.Add(T);
 end;
 
 procedure TExchangeThread.QueryData;
@@ -432,7 +445,7 @@ begin
 	StatusText := 'Запрос данных';
 	Synchronize( SetStatus);
 	try
-    LibVersions := GetLibraryVersion;
+    LibVersions := AProc.GetLibraryVersionFromAppPath;
     try
       SetLength(ParamNames, StaticParamCount + LibVersions.Count*3);
       SetLength(ParamValues, StaticParamCount + LibVersions.Count*3);
@@ -1752,66 +1765,26 @@ begin
   WriteLn(ExchangeForm.LogFile, AMessage);
 end;
 
-procedure TExchangeThread.OnReclameTerminate(Sender: TObject);
+procedure TExchangeThread.OnChildTerminate(Sender: TObject);
 begin
-  if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
-  then begin
-    HTTPDisconnect;
-    RasDisconnect;
-  end;
+  if Assigned(Sender) then
+    ChildThreads.Remove(Sender);
 end;
 
-procedure TExchangeThread.StopReclame;
+procedure TExchangeThread.StopChildThreads;
+var
+  I : Integer;
 begin
-  RecThread.Terminate;
+  for I := 0 to ChildThreads.Count-1 do begin
+    TThread(ChildThreads[i]).Terminate;
+  end;
+  try
+    TReceiveThread(ChildThreads[1]).DisconnectThread;
+  except
+  end;
   try
     ExchangeForm.HTTPReclame.Disconnect;
   except
-  end;
-end;
-
-function TExchangeThread.GetLibraryVersion: TObjectList;
-var
-  DirPath : String;
-
-  function IsExeFile(Name : String) : Boolean;
-  begin
-    Result := AnsiEndsText('.exe', Name) or AnsiEndsText('.bpl', Name) or AnsiEndsText('.dll', Name); 
-  end;
-
-  procedure FindVersionsEx(StartDir : String; Res : TObjectList);
-  var
-    sr : TSearchRec;
-    FName, FVersion, FHash : String;
-  begin
-    if SysUtils.FindFirst(StartDir + '*.*', faAnyFile, sr) = 0 then
-    begin
-      repeat
-        if (sr.Name <> '.') and (sr.Name <> '..') then begin
-          if sr.Attr and faDirectory > 0 then begin
-            FindVersionsEx(StartDir + sr.Name + '\', Res);
-          end
-          else
-            if IsExeFile(sr.Name) then begin
-              FName := sr.Name;
-              FVersion := GetLibraryVersionFromPath(StartDir + sr.Name);
-              FHash := GetFileHash(StartDir + sr.Name);
-              Res.Add(TFileUpdateInfo.Create(FName, FVersion, FHash));
-            end;
-        end;
-      until SysUtils.FindNext(sr) <> 0;
-      SysUtils.FindClose(sr);
-    end;
-  end;
-
-begin
-  Result := TObjectList.Create(True);
-  try
-    DirPath := ExtractFilePath(ParamStr(0));
-    FindVersionsEx(DirPath, Result);
-  except
-    Result.Free;
-    raise;
   end;
 end;
 
@@ -1836,43 +1809,6 @@ begin
   end;
 end;
 
-function TExchangeThread.GetLibraryVersionByName(AName: String): String;
-var
-  hLib : THandle;
-  FileName : String;
-begin
-  Result := '';
-  hLib := LoadLibraryEx(PChar(AName), 0, 0);
-  if hLib <> 0 then begin
-    try
-      FileName := GetModuleName(hLib);
-      Result := GetLibraryVersionFromPath(FileName);
-    finally
-      FreeLibrary(hLib);
-    end;
-  end;
-end;
-
-function TExchangeThread.GetLibraryVersionFromPath(AName: String): String;
-var
-  RxVer : TVersionInfo;
-begin
-  if FileExists(AName) then begin
-    try
-      RxVer := TVersionInfo.Create(AName);
-      try
-        Result := LongVersionToString(RxVer.FileLongVersion);
-      finally
-        RxVer.Free;
-      end;
-    except
-      Result := '';
-    end;
-  end
-  else
-    Result := '';
-end;
-
 procedure TExchangeThread.adcUpdateBeforeExecute(Sender: TObject);
 begin
   Tracer.TR('Import', 'Exec : ' + TpFIBQuery(Sender).SQL.Text);
@@ -1894,6 +1830,8 @@ destructor TExchangeThread.Destroy;
 begin
   if Assigned(AbsentPriceCodeSL) then
     AbsentPriceCodeSL.Free;
+  if Assigned(ChildThreads) then
+    try ChildThreads.Free; except end;
   inherited;
 end;
 
@@ -2061,30 +1999,6 @@ begin
   CriticalError := False;
 end;
 
-function TExchangeThread.GetFileHash(AFileName: String): String;
-var
-  md5 : TIdHashMessageDigest5;
-  fs : TFileStream;
-begin
-  try
-    md5 := TIdHashMessageDigest5.Create;
-    try
-
-      fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
-      try
-        Result := md5.AsHex( md5.HashValue(fs) );
-      finally
-        fs.Free;
-      end;
-
-    finally
-      md5.Free;
-    end;
-  except
-    Result := '';
-  end;
-end;
-
 procedure TExchangeThread.SilentExecute(q: TpFIBQuery; SQL: String);
 begin
   try
@@ -2176,21 +2090,8 @@ begin
 end;
 
 procedure TExchangeThread.DoSendLetter;
-const
-  TempSendDir = 'AFSend';
 var
-  Attachs, slLetter : TStringList;
-  start,
-  stop : Integer;
-  SevenZipRes : Integer;
-  FS : TFileStream;
-  S,
-  bs : String;
-  LE : TIdEncoderMIME;
-  ss : TStringStream;
-  OldAccept,
-  OldConnection,
-  OldContentType : String;
+  Attachs : TStringList;
 
   procedure AddFile(FileName : String);
   begin
@@ -2198,10 +2099,14 @@ var
       Attachs.Add(FileName);
   end;
 
-  procedure CopyingFiles;
-  var
-    I : Integer;
-  begin
+begin
+  StatusText := 'Отправка письма';
+	Synchronize( SetStatus);
+
+  Attachs := TStringList.Create;
+  Attachs.CaseSensitive := False;
+  try
+
     Attachs.AddStrings(frmSendLetter.lbFiles.Items);
     if frmSendLetter.cbAddLogs.Checked then begin
       AddFile(ExeName + '.TR');
@@ -2209,121 +2114,17 @@ var
       AddFile(ExePath + 'Exchange.log');
       AddFile(ExePath + 'AnalitFup.log');
     end;
-
-    for I := 0 to Attachs.Count-1 do
-      if FileExists(Attachs[i]) then
-        if not Windows.CopyFile(PChar(Attachs[i]), PChar(GetTempDir + TempSendDir + '\' +ExtractFileName(Attachs[i])), false) then
-          raise Exception.Create('Не удалось скопировать файл: ' + Attachs[i] + #13#10'Причина: ' + SysErrorMessage(GetLastError));
-  end;
-
-  procedure ArchiveAttach;
-  begin
-    SZCS.Enter;
-    try
-      SevenZipRes := SevenZipCreateArchive(
-        0,
-        GetTempDir + TempSendDir + '\Attach.7z',
-        GetTempDir + TempSendDir,
-        '*.*',
-        9,
-        false,
-        false,
-        '',
-        false,
-        nil);
-      if SevenZipRes <> 0 then
-        raise Exception.CreateFmt('Не удалось заархивировать отправляемые файлы. Код ошибки %d', [SevenZipRes]);
-    finally
-      SZCS.Leave;
-    end;
-  end;
-
-  procedure EncodeToBase64;
-  begin
-    LE := TIdEncoderMIME.Create(nil);
-    try
-      FS := TFileStream.Create(GetTempDir + TempSendDir + '\Attach.7z', fmOpenReadWrite);
-      try
-        bs := le.Encode(FS, ((FS.Size div 3) + 1) * 3);
-      finally
-        FS.Free;
-      end;
-    finally
-      LE.Free;
-    end;
-  end;
-
-  procedure FormatSoapMessage;
-  begin
-    slLetter.Add('<?xml version="1.0" encoding="windows-1251"?>');
-    slLetter.Add('<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">');
-    slLetter.Add('  <soap:Body>');
-    slLetter.Add('    <SendLetter xmlns="IOS.Service">');
-    slLetter.Add('      <subject>' + SXReplaceXML(frmSendLetter.leSubject.Text) + '</subject>');
-    slLetter.Add('      <body>' + SXReplaceXML(frmSendLetter.mBody.Text) + '</body>');
-    slLetter.Add(Concat('      <attachment>', bs, '</attachment>'));
-    slLetter.Add('    </SendLetter>');
-    slLetter.Add('  </soap:Body>');
-    slLetter.Add('</soap:Envelope>');
-    slLetter.Add('');
-    slLetter.Add('');
-  end;
-
-begin
-  StatusText := 'Отправка письма';
-	Synchronize( SetStatus);
-
-  if DirectoryExists(GetTempDir + TempSendDir) then
-    if not ClearDir(GetTempDir + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
-
-  if not CreateDir(GetTempDir + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetTempDir + TempSendDir);
-
-  Attachs := TStringList.Create;
-  Attachs.CaseSensitive := False;
-  slLetter := TStringList.Create;
-  try
-
-    //Формируем список файлов
-    CopyingFiles;
-
-    ArchiveAttach;
-
-    EncodeToBase64;
-
-    FormatSoapMessage;
-
-    ss := TStringStream.Create(slLetter.Text);
-    try
-      ss.Position := 0;
-      OldAccept := ExchangeForm.HTTP.Request.Accept;
-      OldConnection := ExchangeForm.HTTP.Request.Connection;
-      OldContentType := ExchangeForm.HTTP.Request.ContentType;
-      ExchangeForm.HTTP.Request.Accept := '';
-      ExchangeForm.HTTP.Request.Connection := '';
-      ExchangeForm.HTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendLetter"';
-
-      S := ExchangeForm.HTTP.Post(URL, ss);
-     	start := PosEx( '>', S, Pos( 'SendLetterResult', S)) + 1;
-    	stop := PosEx( '</', S, start);
-	    S := Copy( S, start, stop - start);
-      if AnsiStartsText('Error=', S) then
-        raise Exception.Create(Utf8ToAnsi( Copy(S, 7, Length(S)) ));
-        
-    finally
-      ExchangeForm.HTTP.Request.Accept := OldAccept;
-      ExchangeForm.HTTP.Request.Connection := OldConnection;
-      ExchangeForm.HTTP.Request.ContentType := OldContentType;
-      ss.Free;
-    end;
-
+    
+    AProc.InternalDoSendLetter(
+      ExchangeForm.HTTP,
+      URL,
+      'AFSend',
+      Attachs,
+      frmSendLetter.leSubject.Text,
+      frmSendLetter.mBody.Text);
   finally
     Attachs.Free;
-    slLetter.Free;
   end;
-
-  ClearDir(GetTempDir + TempSendDir, True);
 end;
 
 procedure TExchangeThread.HTTPWorkBegin(Sender: TObject;
@@ -2455,13 +2256,15 @@ begin
   end;
 end;
 
-{ TFileUpdateInfo }
-
-constructor TFileUpdateInfo.Create(AFileName, AVersion, AMD5: String);
+procedure TExchangeThread.OnFullChildTerminate(Sender: TObject);
 begin
-  FileName := AFileName;
-  Version := AVersion;
-  MD5 := AMD5;
+  if Assigned(Sender) then
+    ChildThreads.Remove(Sender);
+  if (ChildThreads.Count = 0) and ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
+  then begin
+    HTTPDisconnect;
+    RasDisconnect;
+  end;
 end;
 
 initialization

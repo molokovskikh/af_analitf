@@ -69,7 +69,8 @@ uses
   U_frmOldOrdersDelete in 'U_frmOldOrdersDelete.pas' {frmOldOrdersDelete},
   U_frmSendLetter in 'U_frmSendLetter.pas' {frmSendLetter},
   U_SXConversions in 'common\U_SXConversions.pas',
-  U_SGXMLGeneral in 'common\U_SGXMLGeneral.pas';
+  U_SGXMLGeneral in 'common\U_SGXMLGeneral.pas',
+  U_RecvThread in 'U_RecvThread.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

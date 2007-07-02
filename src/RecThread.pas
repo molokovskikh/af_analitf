@@ -3,7 +3,7 @@ unit RecThread;
 interface
 
 uses Classes, SysUtils, IdException, WinSock, IdComponent, IdHTTP, Math, SOAPThroughHTTP,
-  IdStackConsts, StrUtils, SyncObjs, DADAuthenticationNTLM;
+  IdStackConsts, StrUtils, DADAuthenticationNTLM;
 
 type
   TReclameThread = class(TThread)
@@ -31,9 +31,6 @@ type
     HTTPPass : String;
     UseNTLM  : Boolean;
   end;
-
-var
-  SZCS : TCriticalSection;
 
 implementation
 
@@ -332,7 +329,5 @@ begin
 end;
 
 initialization
-  SZCS := TCriticalSection.Create;
 finalization
-  SZCS.Free;;
 end.

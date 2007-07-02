@@ -221,7 +221,14 @@ end;
 var
 	MainForm: TMainForm;
 
+//Уникальный идентификатор, передаваемый при обновлении
 function GetCopyID: LongInt;
+
+//Уникальный идентификатор с учетом Hash'а приложения
+function GetDBID: LongInt;
+
+//Уникальный идентификатор с учетом Hash'а приложения старой версии
+function GetOldDBID: LongInt;
 
 //Получить идентификатор установки программы относительно пути, чтобы сохранять настройки программы в реестре
 function GetPathCopyID: String;
@@ -231,7 +238,7 @@ implementation
 uses
 	DModule, AProc, Config, DBProc, NamesForms, Prices,
 	Defectives, Registers, Summary, OrdersH,
-	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm, 
+	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm,
 	Exclusive, Wait, AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter;
 
@@ -239,12 +246,23 @@ uses
 
 function GetCopyID: LongInt;
 begin
-	result := GetUniqueID( Application.ExeName, ''{MainForm.VerInfo.FileVersion});
+	result := GetUniqueID( Application.ExeName, '');
 end;
+
+function GetDBID: LongInt;
+begin
+	result := GetUniqueID( Application.ExeName, AProc.GetFileHash(Application.ExeName));
+end;
+
+function GetOldDBID: LongInt;
+begin
+	result := GetUniqueID( Application.ExeName, AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak'));
+end;
+
 
 function GetPathCopyID: String;
 begin
-  Result := IntToHex( GetPathID(Application.ExeName), 8 );
+  Result := IntToHex( GetPathID(Application.ExeName), 8);
 end;
 
 
@@ -314,8 +332,7 @@ begin
 	CS.Enter;
   try
 	  try
-		  if DM.adtFlags.FieldByName( 'ExclusiveID').AsString = IntToHex(	GetUniqueID(
-			  Application.ExeName, ''{MainForm.VerInfo.FileVersion}), 8) then DM.ResetExclusive;
+		  if DM.adtFlags.FieldByName( 'ExclusiveID').AsString = GetExclusiveID() then DM.ResetExclusive;
    	except
 	  end;
   finally
@@ -583,8 +600,18 @@ begin
 end;
 
 procedure TMainForm.actSaveExecute(Sender: TObject);
+var
+  SaveGridFlag : Boolean;
 begin
-	SaveGrid( TCustomDBGridEh( Screen.ActiveControl));
+  if ( Screen.ActiveControl <> nil) and
+		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
+  then begin
+    SaveGridFlag := ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
+    AProc.LogCriticalError('SE.' + TCustomDBGridEh(Screen.ActiveControl).Name + ' : ' + BoolToStr(SaveGridFlag) );
+    if not SaveGridFlag then
+      Exit;
+    SaveGrid( TCustomDBGridEh( Screen.ActiveControl));
+  end;
 end;
 
 procedure TMainForm.actSaveUpdate(Sender: TObject);
@@ -593,7 +620,6 @@ begin
   ( Screen.ActiveControl <> nil) and
 		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
      and ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
-     //and ActiveChild.SaveEnabled;
 end;
 
 procedure TMainForm.SetOrdersInfo;
@@ -739,8 +765,7 @@ begin
   finally
 		CS.Leave;
   end;
-	if ( ExID <> IntToHex( GetUniqueID( Application.ExeName,
-		''{MainForm.VerInfo.FileVersion}), 8)) and ( ExID <> '') then
+	if ( ExID <> GetExclusiveID()) and ( ExID <> '') then
 	begin
 		ShowWait;
 	end;

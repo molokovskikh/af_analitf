@@ -4,7 +4,7 @@ interface
 
 uses SysUtils, Controls, Windows, Forms, StrUtils, Classes, Math, DBGrids,
   ComCtrls, Messages, ShellApi, IniFiles, AppUtils, IdFTP, DateUtils, ToughDBGrid,
-	DbGridEh, LU_Tracer;
+	DbGridEh, LU_Tracer, IdHTTP, SyncObjs, FileUtil, Contnrs, IdSSLOpenSSL;
 
 const
   WM_AFTERRETRIEVEMAIL=WM_USER+100; //сообщение о получении сообщений. с сервера
@@ -16,8 +16,16 @@ const
   SDirWaybills = 'Waybills';
   SDirRejects = 'Rejects';
   SDirReclame='Reclame';
+  SBackDir = 'UpdateBackup';
   SHTTPPrefix='http://';
   CRLF=#13#10;
+
+type
+  TFileUpdateInfo = class
+   public
+    FileName, Version, MD5 : String;
+    constructor Create(AFileName, AVersion, AMD5 : String);
+  end;
 
 var
   ExePath, ExeName, DatabaseName, TempPath: string;
@@ -25,6 +33,7 @@ var
   WordDelimitersA: set of Char;
   ExportFormat: TFormatSettings;
   TimeZoneBias: Integer;
+  SZCS : TCriticalSection;
 
 
 procedure FocusNextControl(Sender: TWinControl);
@@ -68,9 +77,23 @@ procedure LogCriticalError(Error : String);
 procedure LogExitError(Error : String; ExitCode : Integer; ShowErrorMessage : Boolean = True);
 //Добавляет параметр RangeStart к запросу в случае, если необходима докачка
 function AddRangeStartToURL(AURL : String; Position : Int64) : String;
+procedure InternalDoSendLetter(
+  SendIdHTTP : TIdHTTP;    //Компонент для отправки письма
+  SendURL : String;        //URL, по которому происходит доступ
+  TempSendDir : String;    //Временная папка для создания аттачмента
+  Attachs : TStringList;   //Список приложений
+  Subject, Body : String); //Тема письма и тело письма
+function  GetLibraryVersionFromAppPath : TObjectList;
+//устанавливаем параметры для SSL-соединения
+procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocket);
+//Получить для файла Hash MD5
+function GetFileHash(AFileName: String): String;
 
 
 implementation
+
+uses
+  IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest;
 
 var
   FSilentMode : Boolean;
@@ -550,7 +573,248 @@ begin
       Result := AURL + '?RangeStart=' + IntToStr(Position);
 end;
 
+procedure InternalDoSendLetter(
+  SendIdHTTP : TIdHTTP;    //Компонент для отправки письма
+  SendURL : String;        //URL, по которому происходит доступ
+  TempSendDir : String;    //Временная папка для создания аттачмента
+  Attachs : TStringList;   //Список приложений
+  Subject, Body : String); //Тема письма и тело письма
+var
+  slLetter : TStringList;
+  start,
+  stop : Integer;
+  SevenZipRes : Integer;
+  FS : TFileStream;
+  S,
+  bs : String;
+  LE : TIdEncoderMIME;
+  ss : TStringStream;
+  OldAccept,
+  OldConnection,
+  OldContentType : String;
+
+  procedure CopyingFiles;
+  var
+    I : Integer;
+  begin
+    for I := 0 to Attachs.Count-1 do
+      if FileExists(Attachs[i]) then
+        if not Windows.CopyFile(PChar(Attachs[i]), PChar(GetTempDir + TempSendDir + '\' +ExtractFileName(Attachs[i])), false) then
+          raise Exception.Create('Не удалось скопировать файл: ' + Attachs[i] + #13#10'Причина: ' + SysErrorMessage(GetLastError));
+  end;
+
+  procedure ArchiveAttach;
+  begin
+    SZCS.Enter;
+    try
+      SevenZipRes := SevenZipCreateArchive(
+        0,
+        GetTempDir + TempSendDir + '\Attach.7z',
+        GetTempDir + TempSendDir,
+        '*.*',
+        9,
+        false,
+        false,
+        '',
+        false,
+        nil);
+      if SevenZipRes <> 0 then
+        raise Exception.CreateFmt('Не удалось заархивировать отправляемые файлы. Код ошибки %d', [SevenZipRes]);
+    finally
+      SZCS.Leave;
+    end;
+  end;
+
+  procedure EncodeToBase64;
+  begin
+    LE := TIdEncoderMIME.Create(nil);
+    try
+      FS := TFileStream.Create(GetTempDir + TempSendDir + '\Attach.7z', fmOpenReadWrite);
+      try
+        bs := le.Encode(FS, ((FS.Size div 3) + 1) * 3);
+      finally
+        FS.Free;
+      end;
+    finally
+      LE.Free;
+    end;
+  end;
+
+  procedure FormatSoapMessage;
+  begin
+    slLetter.Add('<?xml version="1.0" encoding="windows-1251"?>');
+    slLetter.Add('<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">');
+    slLetter.Add('  <soap:Body>');
+    slLetter.Add('    <SendLetter xmlns="IOS.Service">');
+    slLetter.Add('      <subject>' + SXReplaceXML(Subject) + '</subject>');
+    slLetter.Add('      <body>' + SXReplaceXML(Body) + '</body>');
+    slLetter.Add(Concat('      <attachment>', bs, '</attachment>'));
+    slLetter.Add('    </SendLetter>');
+    slLetter.Add('  </soap:Body>');
+    slLetter.Add('</soap:Envelope>');
+    slLetter.Add('');
+    slLetter.Add('');
+  end;
+
+begin
+  if DirectoryExists(GetTempDir + TempSendDir) then
+    if not ClearDir(GetTempDir + TempSendDir, True) then
+      raise Exception.Create('Не получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
+
+  if not CreateDir(GetTempDir + TempSendDir) then
+    raise Exception.Create('Не получилось создать временную директорию: ' + GetTempDir + TempSendDir);
+
+  slLetter := TStringList.Create;
+  try
+
+    //Формируем список файлов
+    CopyingFiles;
+
+    ArchiveAttach;
+
+    EncodeToBase64;
+
+    FormatSoapMessage;
+
+    ss := TStringStream.Create(slLetter.Text);
+    try
+      ss.Position := 0;
+      OldAccept := SendIdHTTP.Request.Accept;
+      OldConnection := SendIdHTTP.Request.Connection;
+      OldContentType := SendIdHTTP.Request.ContentType;
+      SendIdHTTP.Request.Accept := '';
+      SendIdHTTP.Request.Connection := '';
+      SendIdHTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendLetter"';
+
+      S := SendIdHTTP.Post(SendURL, ss);
+     	start := PosEx( '>', S, Pos( 'SendLetterResult', S)) + 1;
+    	stop := PosEx( '</', S, start);
+	    S := Copy( S, start, stop - start);
+      if AnsiStartsText('Error=', S) then
+        raise Exception.Create(Utf8ToAnsi( Copy(S, 7, Length(S)) ));
+
+    finally
+      SendIdHTTP.Request.Accept := OldAccept;
+      SendIdHTTP.Request.Connection := OldConnection;
+      SendIdHTTP.Request.ContentType := OldContentType;
+      ss.Free;
+    end;
+
+  finally
+    slLetter.Free;
+  end;
+
+  ClearDir(GetTempDir + TempSendDir, True);
+end;
+
+function GetLibraryVersionFromAppPath : TObjectList;
+var
+  DirPath : String;
+
+  function IsExeFile(Name : String) : Boolean;
+  begin
+    Result := AnsiEndsText('.exe', Name) or AnsiEndsText('.bpl', Name) or AnsiEndsText('.dll', Name); 
+  end;
+
+  function GetLibraryVersionFromPath(AName: String): String;
+  var
+    RxVer : TVersionInfo;
+  begin
+    if FileExists(AName) then begin
+      try
+        RxVer := TVersionInfo.Create(AName);
+        try
+          Result := LongVersionToString(RxVer.FileLongVersion);
+        finally
+          RxVer.Free;
+        end;
+      except
+        Result := '';
+      end;
+    end
+    else
+      Result := '';
+  end;
+
+  procedure FindVersionsEx(StartDir : String; Res : TObjectList; RelativePath : String);
+  var
+    sr : TSearchRec;
+    FName, FVersion, FHash : String;
+  begin
+    if SysUtils.FindFirst(StartDir + '*.*', faAnyFile, sr) = 0 then
+    begin
+      repeat
+        if (sr.Name <> '.') and (sr.Name <> '..') then begin
+          if sr.Attr and faDirectory > 0 then begin
+            FindVersionsEx(StartDir + sr.Name + '\', Res, RelativePath + sr.Name + '\');
+          end
+          else
+            if IsExeFile(sr.Name) then begin
+              FName := sr.Name;
+              FVersion := GetLibraryVersionFromPath(StartDir + sr.Name);
+              FHash := GetFileHash(StartDir + sr.Name);
+              Res.Add(TFileUpdateInfo.Create(RelativePath + FName, FVersion, FHash));
+            end;
+        end;
+      until SysUtils.FindNext(sr) <> 0;
+      SysUtils.FindClose(sr);
+    end;
+  end;
+
+begin
+  Result := TObjectList.Create(True);
+  try
+    DirPath := ExtractFilePath(ParamStr(0));
+    FindVersionsEx(DirPath, Result, '');
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
+procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocket);
+begin
+  SSL.SSLOptions.Method := sslvSSLv3;
+  SSL.SSLOptions.Mode := sslmUnassigned;
+  SSL.SSLOptions.VerifyDepth := 0;
+  SSL.SSLOptions.VerifyMode := [];
+end;
+
+function GetFileHash(AFileName: String): String;
+var
+  md5 : TIdHashMessageDigest5;
+  fs : TFileStream;
+begin
+  try
+    md5 := TIdHashMessageDigest5.Create;
+    try
+
+      fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
+      try
+        Result := md5.AsHex( md5.HashValue(fs) );
+      finally
+        fs.Free;
+      end;
+
+    finally
+      md5.Free;
+    end;
+  except
+    Result := '';
+  end;
+end;
+
+{ TFileUpdateInfo }
+
+constructor TFileUpdateInfo.Create(AFileName, AVersion, AMD5: String);
+begin
+  FileName := AFileName;
+  Version := AVersion;
+  MD5 := AMD5;
+end;
+
 initialization
+  SZCS := TCriticalSection.Create;
   //Если запускаем программу для обмена (е) или импортирования (se)
   FSilentMode := FindCmdLineSwitch('e') or FindCmdLineSwitch('si');
   //инициализация глобальных переменных
@@ -580,6 +844,7 @@ initialization
   end;
   TimeZoneBias:=GetTimeZoneBias;
 finalization
+  SZCS.Free;;
   IniFile.Free;
 end.
 

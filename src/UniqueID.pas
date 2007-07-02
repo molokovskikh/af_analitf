@@ -4,18 +4,20 @@ interface
 
 uses Windows, SysUtils;
 
-function GetUniqueID( APath, AVersion: string): longint;
+function GetUniqueID( APath, AFileHash: string): longint;
 
 function GetOld427UniqueID( APath, AVersion: string): longint;
 
 //Получить уникальный идентификатор относильно пути
 function GetPathID( APath : string): Longint;
 
+function GetExclusiveID : String;
+
 implementation
 
 uses CRC32Unit;
 
-function GetUniqueID( APath, AVersion: string): longint;
+function GetUniqueID( APath, AFileHash: string): longint;
 var
 	InVal: string;
 	VolLabel, FileSystemName: array[ 0..MAX_PATH] of Char;
@@ -31,7 +33,7 @@ begin
 	GetVolumeInformation( Drive, VolLabel, DWORD( sizeof( VolLabel)),
 		@SerialNum, NotUsed, VolFlags, FileSystemName, DWORD( sizeof( FileSystemName)));
 
-	InVal := APath + AVersion + IntToHex( SerialNum, 8);
+	InVal := APath + AFileHash + IntToHex( SerialNum, 8);
 	result := CalcCRC32( PChar( InVal), Length( InVal));
 end;
 
@@ -61,6 +63,11 @@ var
 begin
 	InVal := APath;
 	Result := CalcCRC32( PChar( InVal), Length( InVal));
+end;
+
+function GetExclusiveID : String;
+begin
+  Result := IntToHex(GetUniqueID( ParamStr(0), ''), 8);
 end;
 
 end.

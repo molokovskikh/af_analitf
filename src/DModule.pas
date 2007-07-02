@@ -11,7 +11,8 @@ uses
   CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, VCLUnZip,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
-  pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase;
+  pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
+  IdGlobal;
 
 {
 Криптование
@@ -336,6 +337,7 @@ type
     procedure UpdateDBFileDataFor29(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor36(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor37(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+    procedure UpdateDBFileDataFor40(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetLastCreateScript : String;
@@ -427,6 +429,8 @@ type
     function FindOrderInfo (APriceCode, ARegionCode : Integer) : TOrderInfo;
     property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
+    //Установить параметры для компонента TIdHTTP
+    procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
   end;
 
 var
@@ -439,16 +443,16 @@ procedure ClearSelectedPrices(SelectedPrices : TStringList);
 
 function GetSelectedPricesSQL(SelectedPrices : TStringList; Suffix : String = '') : String;
 
+function gcp : String;
+
+function gop : String;
+
 implementation
 
 {$R *.DFM}
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      U_FolderMacros, LU_Tracer, LU_MutexSystem, Config;
-
-var
-  ch, p : String;
-  I : Integer;
 
 procedure ClearSelectedPrices(SelectedPrices : TStringList);
 var
@@ -493,8 +497,8 @@ var
   HTTPS,
   HTTPE : String;
 begin
-  SerBeg := '2AFF';
-  SerEnd := '674C';
+  SerBeg := '8F24';
+  SerEnd := 'BB48';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
@@ -667,8 +671,7 @@ begin
 
   if list.Count > 1 then
   begin
-    if ( ExID = IntToHex( GetUniqueID( Application.ExeName,
-      ''), 8)) or ( ExID = '') then exit;
+    if ( ExID = GetExclusiveID()) or ( ExID = '') then exit;
 
     MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
       'монопольного доступ к базе данных. Запуск программы невозможен.', [ CompName]),
@@ -1527,25 +1530,59 @@ end;
 procedure TDM.ReadPasswords;
 var
   SaveGridMaskStr : String;
+  pc : TINFCrypt;
 begin
-try
-  SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
-  CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
-  BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
-  DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
-  SynonymPassword := PassC.DecodeHex(SynonymPassword);
-  CodesPassword := PassC.DecodeHex(CodesPassword);
-  BasecostPassword := PassC.DecodeHex(BasecostPassword);
-  DBUIN := PassC.DecodeHex(DBUIN);
-  SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
-  DBUIN := Copy(DBUIN, 1, 8);
-  SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
-except
-  SynonymPassword := '';
-  CodesPassword := '';
-  BasecostPassword := '';
-  DBUIN := '';
-end;
+  //Если было произведено обновление программы, то обновляем ключи
+	if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then begin
+    try
+      pc := TINFCrypt.Create(gop, 48);
+      try
+        SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
+        CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
+        BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
+        DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
+        SynonymPassword := pc.DecodeHex(SynonymPassword);
+        CodesPassword := pc.DecodeHex(CodesPassword);
+        BasecostPassword := pc.DecodeHex(BasecostPassword);
+        DBUIN := pc.DecodeHex(DBUIN);
+        SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
+        DBUIN := Copy(DBUIN, 1, 8);
+        SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
+        if DBUIN = IntToHex(GetOldDBID(), 8) then
+          DBUIN := IntToHex(GetDBID(), 8)
+        else
+          DBUIN := '';
+      finally
+        pc.Free;
+      end;
+    except
+      SynonymPassword := '';
+      CodesPassword := '';
+      BasecostPassword := '';
+      DBUIN := '';
+    end;
+  end
+  else begin
+    try
+      SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
+      CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
+      BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
+      DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
+      SynonymPassword := PassC.DecodeHex(SynonymPassword);
+      CodesPassword := PassC.DecodeHex(CodesPassword);
+      BasecostPassword := PassC.DecodeHex(BasecostPassword);
+      DBUIN := PassC.DecodeHex(DBUIN);
+      SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
+      DBUIN := Copy(DBUIN, 1, 8);
+      SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
+    except
+      SynonymPassword := '';
+      CodesPassword := '';
+      BasecostPassword := '';
+      DBUIN := '';
+    end;
+  end;
+
   SynC.UpdateKey(SynonymPassword);
   CodeC.UpdateKey(CodesPassword);
   BasecostC.UpdateKey(BasecostPassword);
@@ -1610,7 +1647,7 @@ begin
     PassC.EncodeHex(SynonymPassword) +
     PassC.EncodeHex(CodesPassword) +
     PassC.EncodeHex(BaseCostPassword) +
-    PassC.EncodeHex(IntToHex(GetCopyID, 8) + ASGM);
+    PassC.EncodeHex(IntToHex(GetDBID(), 8) + ASGM);
   adtParams.Post;
 end;
 
@@ -1767,7 +1804,7 @@ end;
 
 function TDM.CheckCopyIDFromDB: Boolean;
 begin
-  Result := DBUIN = IntToHex(GetCopyID, 8);
+  Result := DBUIN = IntToHex(GetDBID, 8);
   if not Result then begin
     Result := (DBUIN = '') and (FGetCatalogsCount = 0);
   end;
@@ -2004,8 +2041,8 @@ begin
       if DBVersion = 40 then begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor40);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor40);
         DBVersion := 41;
       end;
 
@@ -3017,12 +3054,136 @@ begin
 end;
 {$endif}
 
-initialization
-  ch := IntToHex(GetCopyID, 8);
-  p := '';
+procedure TDM.InternalSetHTTPParams(SetHTTP: TIdHTTP);
+begin
+	// выставляем параметры HTTP-клиента
+	if adtParams.FieldByName( 'ProxyConnect').AsBoolean then
+        begin
+		SetHTTP.ProxyParams.ProxyServer := adtParams.FieldByName( 'ProxyName').AsString;
+		SetHTTP.ProxyParams.ProxyPort := adtParams.FieldByName( 'ProxyPort').AsInteger;
+		SetHTTP.ProxyParams.ProxyUsername := adtParams.FieldByName( 'ProxyUser').AsString;
+		SetHTTP.ProxyParams.ProxyPassword := adtParams.FieldByName( 'ProxyPass').AsString;
+    SetHTTP.Request.ProxyConnection := 'keep-alive';
+	end
+	else
+	begin
+		SetHTTP.ProxyParams.ProxyServer := '';
+		SetHTTP.ProxyParams.ProxyPort := 0;
+		SetHTTP.ProxyParams.ProxyUsername := '';
+		SetHTTP.ProxyParams.ProxyPassword := '';
+    SetHTTP.Request.ProxyConnection := '';
+	end;
+	SetHTTP.Request.Username := adtParams.FieldByName( 'HTTPName').AsString;
+	SetHTTP.Port := adtParams.FieldByName( 'HTTPPort').AsInteger;
+	SetHTTP.Host := ExtractURL( adtParams.FieldByName( 'HTTPHost').AsString);
+  SetHTTP.AllowCookies := True;
+  SetHTTP.HandleRedirects := True;
+  SetHTTP.HTTPOptions := [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams];
+  SetHTTP.MaxLineAction := maException;
+  SetHTTP.RecvBufferSize := 1024;
+  SetHTTP.SendBufferSize := 1024;
+	SetHTTP.ReadTimeout := 0; // Без тайм-аута
+	SetHTTP.ConnectTimeout := -2; // Без тайм-аута
+  SetHTTP.Request.Accept := 'text/html, */*';
+  SetHTTP.Request.BasicAuthentication := True;
+  SetHTTP.Request.Connection := 'keep-alive';
+  SetHTTP.Request.ContentLength := -1;
+  SetHTTP.Request.ContentRangeEnd := 0;
+  SetHTTP.Request.ContentRangeStart := 0;
+  SetHTTP.Request.ContentType := 'text/html';
+  SetHTTP.Request.UserAgent := 'Mozilla/3.0 (compatible; Indy Library)';
+end;
+
+function gcp : String;
+var
+  ch : String;
+  I : Integer;
+begin
+  ch := IntToHex(GetDBID, 8);
+  Result := '';
   for I := 1 to Length(ch) do
-    p := p + ch[i] + PassPassW[i];
-  PassC := TINFCrypt.Create(p, 48);
+    Result := Result + ch[i] + PassPassW[i];
+end;
+
+function gop : String;
+var
+  ch : String;
+  I : Integer;
+begin
+  ch := IntToHex(GetOldDBID, 8);
+  Result := '';
+  for I := 1 to Length(ch) do
+    Result := Result + ch[i] + PassPassW[i];
+end;
+
+procedure TDM.UpdateDBFileDataFor40(dbCon: TpFIBDatabase;
+  trMain: TpFIBTransaction);
+var
+  ch,
+  p,
+  CDS,
+  BaseCostPass,
+  SynonymPass,
+  CodesPass,
+  oldDBUIN,
+  oldSaveGrids,
+  newCDS : String;
+  pc : TINFCrypt;
+  I : Integer;
+begin
+  trMain.StartTransaction;
+
+  try
+    CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
+    //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
+    if Length(CDS) = 0 then
+      Exit;
+    ch := IntToHex(GetCopyID(), 8);
+    p := '';
+    for I := 1 to Length(ch) do
+      p := p + ch[i] + PassPassW[i];
+    pc := TINFCrypt.Create(p, 48);
+    try
+      SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
+      CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
+      BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
+      oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
+      oldSaveGrids := Copy(oldDBUIN, 9, 7);
+      oldDBUIN := Copy(oldDBUIN, 1, 8);
+    finally
+      pc.Free;
+    end;
+
+    if Length(BaseCostPass) = 0 then
+      raise Exception.Create('Нет необходимой информации.');
+    if Length(oldDBUIN) = 0 then
+      raise Exception.Create('Нет необходимой информации 2.');
+    if oldDBUIN <> IntToHex(GetCopyID(), 8) then
+      raise Exception.Create('Не совпадает DBUIN в обновляемой базе данных.');
+
+    pc := TINFCrypt.Create(gop, 48);
+    try
+      newCDS :=
+        pc.EncodeHex(SynonymPass) +
+        pc.EncodeHex(CodesPass) +
+        pc.EncodeHex(BaseCostPass) +
+        pc.EncodeHex(IntToHex(GetOldDBID(), 8) + oldSaveGrids);
+    finally
+      pc.Free;
+    end;
+
+    //Обновляем значение CDS в базе с новым CopyID
+    dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
+  except
+    on E : Exception do
+     raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
+  end;
+
+  trMain.Commit;
+end;
+
+initialization
+  PassC := TINFCrypt.Create(gcp, 48);
   SummarySelectedPrices := TStringList.Create;
   SynonymSelectedPrices := TStringList.Create;
 finalization

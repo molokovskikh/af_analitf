@@ -385,8 +385,8 @@ end;
 procedure TExchangeForm.btnCancelClick(Sender: TObject);
 begin
 	DoStop := True;
-  if ExThread.DownloadReclame then
-    ExThread.StopReclame
+  if ExThread.DownloadChildThreads then
+    ExThread.StopChildThreads
   else
     try
       ExThread.CriticalError := True;
@@ -410,40 +410,8 @@ end;
 
 procedure TExchangeForm.SetHTTPParams;
 begin
-	// выставляем параметры HTTP-клиента
-	if DM.adtParams.FieldByName( 'ProxyConnect').AsBoolean then
-        begin
-		HTTP.ProxyParams.ProxyServer := DM.adtParams.FieldByName( 'ProxyName').AsString;
-		HTTP.ProxyParams.ProxyPort := DM.adtParams.FieldByName( 'ProxyPort').AsInteger;
-		HTTP.ProxyParams.ProxyUsername := DM.adtParams.FieldByName( 'ProxyUser').AsString;
-		HTTP.ProxyParams.ProxyPassword := DM.adtParams.FieldByName( 'ProxyPass').AsString;
-    HTTP.Request.ProxyConnection := 'keep-alive';
-		HTTPReclame.ProxyParams.ProxyServer := DM.adtParams.FieldByName( 'ProxyName').AsString;
-		HTTPReclame.ProxyParams.ProxyPort := DM.adtParams.FieldByName( 'ProxyPort').AsInteger;
-		HTTPReclame.ProxyParams.ProxyUsername := DM.adtParams.FieldByName( 'ProxyUser').AsString;
-		HTTPReclame.ProxyParams.ProxyPassword := DM.adtParams.FieldByName( 'ProxyPass').AsString;
-    HTTPReclame.Request.ProxyConnection := 'keep-alive';
-	end
-	else
-	begin
-		HTTP.ProxyParams.ProxyServer := '';
-		HTTP.ProxyParams.ProxyPort := 0;
-		HTTP.ProxyParams.ProxyUsername := '';
-		HTTP.ProxyParams.ProxyPassword := '';
-    HTTP.Request.ProxyConnection := '';
-		HTTPReclame.ProxyParams.ProxyServer := '';
-		HTTPReclame.ProxyParams.ProxyPort := 0;
-		HTTPReclame.ProxyParams.ProxyUsername := '';
-		HTTPReclame.ProxyParams.ProxyPassword := '';
-    HTTPReclame.Request.ProxyConnection := '';
-	end;
-	HTTP.Request.Username := DM.adtParams.FieldByName( 'HTTPName').AsString;
-	HTTP.Port := DM.adtParams.FieldByName( 'HTTPPort').AsInteger;
-	HTTPReclame.Request.Username := DM.adtParams.FieldByName( 'HTTPName').AsString;
-	HTTPReclame.Port := DM.adtParams.FieldByName( 'HTTPPort').AsInteger;
-	HTTP.Host := ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString);
-	if not DM.adtReclame.IsEmpty then HTTPReclame.Host :=
-		ExtractURL( DM.adtReclame.FieldByName( 'ReclameURL').AsString);
+  DM.InternalSetHTTPParams(HTTP);
+  DM.InternalSetHTTPParams(HTTPReclame);
 end;
 
 function TExchangeForm.GetAppHandle: HWND;

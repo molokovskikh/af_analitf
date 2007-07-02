@@ -17,6 +17,7 @@ TSOAP = class( TObject)
 	destructor Destroy; override;
 
 	function Invoke( AMethodName: string; AParams, AValues: array of string): TStrings;
+	function SimpleInvoke( AMethodName: string; AParams, AValues: array of string): String;
 private
 	FHTTP: TIdHTTP;
 	FIntercept: TIdConnectionIntercept;
@@ -108,6 +109,34 @@ http://ios.analit.net/PrgDataEx/Code.asmx
 
 function TSOAP.Invoke( AMethodName: string; AParams, AValues: array of string): TStrings;
 var
+  TmpResult : String;
+begin
+  TmpResult := SimpleInvoke(AMethodName, AParams, AValues);
+  FQueryResults.Clear;
+  { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
+  while TmpResult <> '' do FQueryResults.Add( GetNextWord( TmpResult, ';'));
+  Result := FQueryResults;
+end;
+
+procedure TSOAP.OnReceive( ASender: TIdConnectionIntercept; AStream: TStream);
+var
+	ss: TStringStream;
+begin
+	ss := TStringStream.Create( '');
+	ss.CopyFrom( AStream, AStream.Size);
+	if FConcat then FResponse := FResponse + ss.DataString;
+	ss.Free;
+end;
+
+procedure TSOAP.OnReconnectError(E: EIdException);
+begin
+  if Assigned(FOnError) then
+    FOnError('Reconnect on error : ' + E.Message);
+end;
+
+function TSOAP.SimpleInvoke(AMethodName: string; AParams,
+  AValues: array of string): String;
+var
 	list: TStringList;
 	i: integer;
 	FullURL: string;
@@ -159,26 +188,7 @@ begin
 	start := PosEx( '>', FResponse, Pos( 'xmlns', FResponse)) + 1;
 	stop := PosEx( '</', FResponse, start);
 	TmpResult := Copy( FResponse, start, stop - start);
-  FQueryResults.Clear;
-  { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
-  while TmpResult <> '' do FQueryResults.Add( GetNextWord( TmpResult, ';'));
-  Result := FQueryResults;
-end;
-
-procedure TSOAP.OnReceive( ASender: TIdConnectionIntercept; AStream: TStream);
-var
-	ss: TStringStream;
-begin
-	ss := TStringStream.Create( '');
-	ss.CopyFrom( AStream, AStream.Size);
-	if FConcat then FResponse := FResponse + ss.DataString;
-	ss.Free;
-end;
-
-procedure TSOAP.OnReconnectError(E: EIdException);
-begin
-  if Assigned(FOnError) then
-    FOnError('Reconnect on error : ' + E.Message);
+  Result := TmpResult;
 end;
 
 end.
