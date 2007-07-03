@@ -596,7 +596,6 @@ begin
   if NeedUpdateByCheckUIN then begin
     if not RunExchange([ eaGetPrice]) then
       LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
-      ExitProcess( Integer(ecNotCheckUIN) );
   end;
 
   if NeedUpdateByCheckHashes then begin
