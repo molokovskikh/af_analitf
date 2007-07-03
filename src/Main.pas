@@ -251,7 +251,13 @@ end;
 
 function GetDBID: LongInt;
 begin
-	result := GetUniqueID( Application.ExeName, AProc.GetFileHash(Application.ExeName));
+	result := GetUniqueID( Application.ExeName,
+{$ifdef DEBUG}
+  'E99E483DDE777778ADEFCB3DCD988BC9'
+{$else}
+  AProc.GetFileHash(Application.ExeName)
+{$ENDIF}
+  );
 end;
 
 function GetOldDBID: LongInt;

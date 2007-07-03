@@ -256,7 +256,7 @@ begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 
-          //Запускаем рекламу только тогда, когда получаем обновление данных, но не накладные
+          //Запускаем дочерние нитки только тогда, когда получаем обновление данных, но не накладные
           if eaGetPrice in ExchangeForm.ExchangeActs then
             CreateChildThreads;
           UpdateByUpdate := False;
@@ -289,7 +289,6 @@ begin
       else
         if ([eaGetPrice] * ExchangeForm.ExchangeActs <> [])
         then begin
-//TODO: Надо сделать корректно с нитками
           if ChildThreads.Count > 0 then begin
             for I := ChildThreads.Count-1 downto 0 do
               TThread(ChildThreads[i]).OnTerminate := OnFullChildTerminate;
@@ -317,7 +316,7 @@ begin
 				ImportData;
 				DM.ResetExclusive;
 				MainForm.Timer.Enabled := True;
-      	StatusText := 'Обоновление завершено';
+      	StatusText := 'Обновление завершено';
      	  Synchronize( SetStatus);
 			end;
 
@@ -348,12 +347,9 @@ begin
 			{ Дожидаемся завершения работы потока, скачивающего рекламу }
 			if ( [eaGetPrice] * ExchangeForm.ExchangeActs <> [])
       then begin
-//TODO: Надо сделать корректно с нитками
         DownloadChildThreads := True;
-        while ChildThreads.Count > 0 do begin
-          TThread(ChildThreads[0]).WaitFor;
-          ChildThreads.Delete(0);
-        end;
+        while ChildThreads.Count > 0 do
+          Sleep(500);
 			end;
       TotalProgress := 100;
       Synchronize( SetTotalProgress);
@@ -368,8 +364,9 @@ begin
 				Synchronize( SetTotalProgress);
 				try
 					HTTPDisconnect;
-//TODO: Надо сделать корректно с нитками          
           StopChildThreads;
+          while ChildThreads.Count > 0 do
+            Sleep(500);
 				except
 				end;
         //если это сокетная ошибка, то не рвем DialUp
@@ -415,15 +412,13 @@ begin
 	T := TReclameThread.Create( True);
   T.FreeOnTerminate := True;
 	TReclameThread(T).RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
-  TReclameThread(T).ReclameURL := URL;
-  TReclameThread(T).HTTPName := HTTPName;
-  TReclameThread(T).HTTPPass := HTTPPass;
-  TReclameThread(T).UseNTLM  := UseNTLM;
+  TReclameThread(T).SetParams(ExchangeForm.HTTPReclame, URL, HTTPName, HTTPPass, UseNTLM);
   T.OnTerminate := OnChildTerminate;
 	TReclameThread(T).Resume;
   ChildThreads.Add(T);
+  
   T := TReceiveThread.Create(True);
-  TReceiveThread(T).SetParams(URL, HTTPName, HTTPPass, UseNTLM);
+  TReceiveThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass, UseNTLM);
   T.OnTerminate := OnChildTerminate;
   T.Resume;
   ChildThreads.Add(T);
@@ -749,6 +744,8 @@ var
   S : String;
   TmpOrderCost, TmpMinCost : String;
 begin
+	Synchronize( ExchangeForm.CheckStop);
+	Synchronize( DisableCancel);
  	DM.adsOrdersH.Close;
 	DM.adsOrdersH.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
@@ -1004,6 +1001,7 @@ begin
 //	ExchangeForm.QueryResults.Clear;
 	DM.adsOrdersH.Close;
 	DM.adsOrders.Close;
+	Synchronize( EnableCancel);
 end;
 
 procedure TExchangeThread.RasConnect;
@@ -1774,17 +1772,16 @@ end;
 procedure TExchangeThread.StopChildThreads;
 var
   I : Integer;
+  S : String;
 begin
-  for I := 0 to ChildThreads.Count-1 do begin
-    TThread(ChildThreads[i]).Terminate;
-  end;
-  try
-    TReceiveThread(ChildThreads[1]).DisconnectThread;
-  except
-  end;
-  try
-    ExchangeForm.HTTPReclame.Disconnect;
-  except
+  for I := ChildThreads.Count-1 downto 0 do begin
+    try
+      TReceiveThread(ChildThreads[i]).Terminate;
+      TReceiveThread(ChildThreads[i]).DisconnectThread;
+    except
+      on E : Exception do
+        S := E.Message;
+    end;
   end;
 end;
 
@@ -2256,7 +2253,7 @@ begin
   end;
 end;
 
-procedure TExchangeThread.OnFullChildTerminate(Sender: TObject);
+procedure TExchangeThread.OnFullChildTerminate(Sender : TObject);
 begin
   if Assigned(Sender) then
     ChildThreads.Remove(Sender);

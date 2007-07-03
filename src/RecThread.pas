@@ -3,33 +3,26 @@ unit RecThread;
 interface
 
 uses Classes, SysUtils, IdException, WinSock, IdComponent, IdHTTP, Math, SOAPThroughHTTP,
-  IdStackConsts, StrUtils, DADAuthenticationNTLM;
+  IdStackConsts, StrUtils, DADAuthenticationNTLM, U_RecvThread;
 
 type
-  TReclameThread = class(TThread)
-	 RecTerminated: boolean;
-  private
+  TReclameThread = class(TReceiveThread)
+    RecTerminated: boolean;
+   private
     { Private declarations }
-   FStatusPosition : Integer;
-   FStatusStr : String;
-   FSOAP : TSOAP;
-   StartDownPosition : Integer;
-   procedure ClearProgress;
-   procedure UpdateProgress;
-   procedure HTTPReclameWork(Sender: TObject;
-    AWorkMode: TWorkMode;
-	  const AWorkCount: Integer);
-   procedure OnConnectError(AMessage : String);
-   procedure UpdateReclameTable;
-   procedure Log(SybSystem, MessageText : String);
+    FStatusPosition : Integer;
+    FStatusStr : String;
+    StartDownPosition : Integer;
+    procedure ClearProgress;
+    procedure UpdateProgress;
+    procedure HTTPReclameWork(Sender: TObject;
+      AWorkMode: TWorkMode;
+	    const AWorkCount: Integer);
+    procedure UpdateReclameTable;
    protected
     procedure Execute; override;
    public
   	RegionCode: string;
-    ReclameURL: string;
-    HTTPName,
-    HTTPPass : String;
-    UseNTLM  : Boolean;
   end;
 
 implementation
@@ -50,8 +43,6 @@ const
 var
 	FileStream: TFileStream;
   Res       : TStrings;
-//  TmpPos    : Integer;
-//  FileSize  : Integer;
   NewReclame : Boolean;
   ZipFileName : String;
   SevenZipRes : Integer;
@@ -71,17 +62,17 @@ begin
     if Terminated then exit;
     FStatusStr := 'Запрос информационного блока...';
     Synchronize(UpdateProgress);
-    FSOAP := TSOAP.Create(ReclameURL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTPReclame);
+    FSOAP := TSOAP.Create(FURL, FHTTPName, FHTTPPass, OnConnectError, ReceiveHTTP);
     try
       Log('Reclame', 'Запущен процесс для получения информационного блока');
       Res := FSOAP.Invoke('GetReclame', [], []);
       //Если в ответ что-то пришло, то скачиваем рекламу
       if Length(Res.Text) > 0 then begin
         Log('Reclame', 'Получена ссылка на архив с информационным блоком');
-        ReclameURL := Res.Values['URL'];
+        FURL := Res.Values['URL'];
         NewReclame := StrToBoolDef(UpperCase(Res.Values['New']), True);
 
-        if Length(ReclameURL) > 0 then begin
+        if Length(FURL) > 0 then begin
 
           ZipFileName := ExePath + SDirReclame + '\r' + RegionCode + '.zip';
 
@@ -96,9 +87,9 @@ begin
             FileStream := TFileStream.Create( ZipFileName, fmCreate);
 
           try
-            if AnsiStartsText('https', ReclameURL) then
-              ReclameURL := StringReplace(ReclameURL, 'https', 'http', [rfIgnoreCase]);
-            ExchangeForm.HTTPReclame.Disconnect;
+            if AnsiStartsText('https', FURL) then
+              FURL := StringReplace(FURL, 'https', 'http', [rfIgnoreCase]);
+            ReceiveHTTP.Disconnect;
           except
           end;
 
@@ -106,17 +97,17 @@ begin
 
             if Terminated then Abort;
 
-            OldReconnectCount := ExchangeForm.HTTPReclame.ReconnectCount;
-            ExchangeForm.HTTPReclame.ReconnectCount := 0;
-            if UseNTLM then begin
-              ExchangeForm.HTTPReclame.Request.BasicAuthentication := False;
-              ExchangeForm.HTTPReclame.Request.Authentication := TDADNTLMAuthentication.Create;
-              if not AnsiStartsText('analit\', HTTPName) then
-                ExchangeForm.HTTPReclame.Request.Username := 'ANALIT\' + HTTPName;
+            OldReconnectCount := ReceiveHTTP.ReconnectCount;
+            ReceiveHTTP.ReconnectCount := 0;
+            if FUseNTLM then begin
+              ReceiveHTTP.Request.BasicAuthentication := False;
+              ReceiveHTTP.Request.Authentication := TDADNTLMAuthentication.Create;
+              if not AnsiStartsText('analit\', FHTTPName) then
+                ReceiveHTTP.Request.Username := 'ANALIT\' + FHTTPName;
             end
             else
-              ExchangeForm.HTTPReclame.Request.BasicAuthentication := True;
-            ExchangeForm.HTTPReclame.OnWork := HTTPReclameWork;
+              ReceiveHTTP.Request.BasicAuthentication := True;
+            ReceiveHTTP.OnWork := HTTPReclameWork;
             Log('Reclame', 'Пытаемся скачать архив с информационным блоком...');
             try
 
@@ -132,7 +123,7 @@ begin
                     FileStream.Seek( 0, soFromEnd);
 
                   StartDownPosition := FileStream.Position;
-                  ExchangeForm.HTTPReclame.Get( AddRangeStartToURL(ReclameURL, FileStream.Position),
+                  ReceiveHTTP.Get( AddRangeStartToURL(FURL, FileStream.Position),
                     FileStream);
                   Log('Reclame', 'Архив с информационным блоком успешно скачан');
                   PostSuccess := True;
@@ -140,9 +131,9 @@ begin
                 except
                   on E : EIdConnClosedGracefully do begin
                     if (ErrorCount < FReconnectCount) then begin
-                      if ExchangeForm.HTTPReclame.Connected then
+                      if ReceiveHTTP.Connected then
                       try
-                        ExchangeForm.HTTPReclame.Disconnect;
+                        ReceiveHTTP.Disconnect;
                       except
                       end;
                       Inc(ErrorCount);
@@ -156,9 +147,9 @@ begin
                       ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
                         or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
                     then begin
-                      if ExchangeForm.HTTPReclame.Connected then
+                      if ReceiveHTTP.Connected then
                       try
-                        ExchangeForm.HTTPReclame.Disconnect;
+                        ReceiveHTTP.Disconnect;
                       except
                       end;
                       Inc(ErrorCount);
@@ -171,22 +162,22 @@ begin
               until (PostSuccess);
 
             finally
-              ExchangeForm.HTTPReclame.ReconnectCount := OldReconnectCount;
-              ExchangeForm.HTTPReclame.OnWork := nil;
-              if UseNTLM then begin
-                ExchangeForm.HTTPReclame.Request.Username := HTTPName;
-                ExchangeForm.HTTPReclame.Request.BasicAuthentication := True;
+              ReceiveHTTP.ReconnectCount := OldReconnectCount;
+              ReceiveHTTP.OnWork := nil;
+              if FUseNTLM then begin
+                ReceiveHTTP.Request.Username := FHTTPName;
+                ReceiveHTTP.Request.BasicAuthentication := True;
                 try
-                  ExchangeForm.HTTPReclame.Request.Authentication.Free;
+                  ReceiveHTTP.Request.Authentication.Free;
                 except
                 end;
-                ExchangeForm.HTTPReclame.Request.Authentication := nil;
+                ReceiveHTTP.Request.Authentication := nil;
               end;
             end;
 
           finally
             try
-              ExchangeForm.HTTPReclame.Disconnect;
+              ReceiveHTTP.Disconnect;
             except
             end;
             
@@ -295,26 +286,6 @@ begin
     end;
 	end;
 
-end;
-
-procedure TReclameThread.Log(SybSystem, MessageText: String);
-var
-  Res : Boolean;
-begin
-  Res := False;
-  repeat
-    try
-       WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + '  ' + SybSystem + '  ' + MessageText);
-       Res := True;
-    except
-      Sleep(700);
-    end;
-  until Res;
-end;
-
-procedure TReclameThread.OnConnectError(AMessage: String);
-begin
-  if Terminated then Abort;
 end;
 
 procedure TReclameThread.UpdateProgress;

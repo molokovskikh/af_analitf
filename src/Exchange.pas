@@ -36,6 +36,8 @@ type
     lReclameStatus: TLabel;
     sslMain: TIdSSLIOHandlerSocket;
     sslReclame: TIdSSLIOHandlerSocket;
+    httpReceive: TIdHTTP;
+    sslReceive: TIdSSLIOHandlerSocket;
     procedure RasStateChange(Sender: TObject; State: Integer;
       StateStr: String);
     procedure TimerTimer(Sender: TObject);
@@ -210,7 +212,7 @@ begin
 
 	if Result and (eaGetWaybills in AExchangeActions) then
     Windows.MessageBox( Application.Handle,
-			'Получение накладных завершено успешно.', 'Информация',
+			'Получение документов завершено успешно.', 'Информация',
 			MB_OK or MB_ICONINFORMATION);
 
 	if Result and (eaSendLetter in AExchangeActions) then
@@ -412,6 +414,10 @@ procedure TExchangeForm.SetHTTPParams;
 begin
   DM.InternalSetHTTPParams(HTTP);
   DM.InternalSetHTTPParams(HTTPReclame);
+  DM.InternalSetHTTPParams(httpReceive);
+  AProc.InternalSetSSLParams(sslMain);
+  AProc.InternalSetSSLParams(sslReclame);
+  AProc.InternalSetSSLParams(sslReceive);
 end;
 
 function TExchangeForm.GetAppHandle: HWND;
@@ -452,6 +458,7 @@ begin
   SendOrdersLog := TStringList.Create;
   HTTP.ConnectTimeout := -2;
   HTTPReclame.ConnectTimeout := -2;
+  httpReceive.ConnectTimeout := -2;
 end;
 
 procedure TExchangeForm.FormDestroy(Sender: TObject);

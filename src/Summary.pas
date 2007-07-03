@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh;
+  pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils;
 
 const
 	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
@@ -175,8 +175,6 @@ begin
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-//	adsSummary.ParamByName( 'ADATEFROM').Value := LastDateFrom;
-//	adsSummary.ParamByName( 'ADATETO').Value := LastDateTo;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
 	Reg := TRegIniFile.Create;
@@ -232,17 +230,15 @@ begin
       adsSummary.Close;
     FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersH.');
     if LastSymmaryType = 0 then begin
-      //adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOW(:ACLIENTID, :ADATEFROM, :ADATETO) ';
       adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
       dbgSummary.InputField := 'OrderCount';
       dbgSummary.Tag := 256;
       btnDelete.Enabled := True;
     end
     else begin
-      //adsSummary.SelectSQL.Text := 'SELECT * FROM SUMMARYSHOWSEND(:ACLIENTID, :ADATEFROM, :ADATETO) ';
       adsSummary.SelectSQL.Text := adsSendSummary.SelectSQL.Text;
       adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
-      adsSummary.ParamByName( 'DATETO').Value := LastDateTo;
+      adsSummary.ParamByName( 'DATETO').Value := IncDay(LastDateTo);
       dbgSummary.InputField := '';
       dbgSummary.Tag := 512;
       btnDelete.Enabled := False;
@@ -254,7 +250,6 @@ begin
     OrderCount := adsSummary.RecordCount;
     OrderSum := V[0];
     SetOrderLabel;
-//		with adsSummary do if Active then CloseOpen(False) else Open;
 	finally
 		Screen.Cursor := crDefault;
 	end;
@@ -442,8 +437,6 @@ procedure TSummaryForm.SetDateInterval;
 begin
   LastDateFrom := dtpDateFrom.Date;
   LastDateTo := dtpDateTo.Date;
-	adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
-	adsSummary.ParamByName( 'DATETO').Value := LastDateTo;
   SummaryShow;
 end;
 
@@ -498,6 +491,6 @@ end;
 
 initialization
   LastDateFrom := Date;
-  LastDateTo := Date + 1;
+  LastDateTo := Date;
   LastSymmaryType := 0;
 end.

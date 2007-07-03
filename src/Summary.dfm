@@ -757,7 +757,7 @@ inherited SummaryForm: TSummaryForm
       '    0 as vitallyimportant,'
       '    0 as requestratio,'
       '    Orders.SendPrice,'
-      '    0 as ordercost,'
+      '    0.0 as ordercost,'
       '    0 as minordercount'
       'FROM'
       '    PricesData,'

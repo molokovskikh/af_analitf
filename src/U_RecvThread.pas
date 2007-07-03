@@ -9,23 +9,21 @@ uses
 type
   TReceiveThread = class(TThread)
    private
+    procedure FillFileList(ASoapResult : String; AFileList : TStringList);
+   protected
     FURL,
     FHTTPName,
     FHTTPPass : String;
     FUseNTLM  : Boolean;
-   FSOAP : TSOAP;
+    FSOAP : TSOAP;
     ReceiveHTTP : TIdHTTP;
-    ReceiveSSL : TIdSSLIOHandlerSocket;
+    procedure Execute; override;
     procedure Log(SybSystem, MessageText : String);
     procedure OnConnectError(AMessage : String);
-    procedure FillFileList(ASoapResult : String; AFileList : TStringList);
-   protected
-    procedure Execute; override;
    public
-    constructor Create(CreateSuspended: Boolean);
-    destructor Destroy; override;
     procedure DisconnectThread;
     procedure SetParams(
+      AHTTP : TIdHTTP;
       AURL,
       AHTTPName,
       AHTTPPass : String;
@@ -36,29 +34,8 @@ implementation
 
 uses
   Exchange;
-  
+
 { TReceiveThread }
-
-constructor TReceiveThread.Create(CreateSuspended: Boolean);
-begin
-  inherited Create(CreateSuspended);
-  FreeOnTerminate := True;
-  ReceiveHTTP := TIdHTTP.Create(nil);
-  ReceiveHTTP.Name := 'httpReceive';
-  ReceiveSSL := TIdSSLIOHandlerSocket.Create(nil);
-  ReceiveSSL.Name := 'sslReceive';
-  DM.InternalSetHTTPParams(ReceiveHTTP);
-  AProc.InternalSetSSLParams(ReceiveSSL);
-  ReceiveHTTP.IOHandler := ReceiveSSL;
-end;
-
-destructor TReceiveThread.Destroy;
-begin
-  ReceiveHTTP.IOHandler := nil;
-  try ReceiveSSL.Free; except end;
-  try ReceiveHTTP.Free; except end;
-  inherited;
-end;
 
 procedure TReceiveThread.Execute;
 var
@@ -78,6 +55,7 @@ begin
       Inc(SleepCount);
     end;
     if Terminated then exit;
+
     FSOAP := TSOAP.Create(FURL, FHTTPName, FHTTPPass, OnConnectError, ReceiveHTTP);
     try
       LibVersions := AProc.GetLibraryVersionFromAppPath;
@@ -97,13 +75,19 @@ begin
         LibVersions.Free;
       end;
 
+      if Terminated then exit;
+
 		  SoapResult := FSOAP.SimpleInvoke('GetInfo', ParamNames, ParamValues);
+
+      if Terminated then exit;
 
       if (Length(SoapResult) > 0) and not Terminated then begin
         FileList := TStringList.Create;
         try
           FillFileList(SoapResult, FileList);
 
+          if Terminated then exit;
+          
           AProc.InternalDoSendLetter(ReceiveHTTP, FURL, 'AFRec', FileList, 'Файлы от клиента', 'Смотри вложение');
 
           for I := 0 to FileList.Count-1 do
@@ -117,6 +101,7 @@ begin
     finally
       FSOAP.Free;
     end;
+
   except
     on E : Exception do begin
       Log('Receive', 'Ошибка : ' + E.Message);
@@ -144,9 +129,12 @@ begin
   until Res;
 end;
 
-procedure TReceiveThread.SetParams(AURL, AHTTPName, AHTTPPass: String;
+procedure TReceiveThread.SetParams(AHTTP : TIdHTTP;
+  AURL, AHTTPName, AHTTPPass: String;
   AUseNTLM: Boolean);
 begin
+  FreeOnTerminate := True;
+  ReceiveHTTP := AHTTP;
   FURL := AURL;
   FHTTPName := AHTTPName;
   FHTTPPass := AHTTPPass;

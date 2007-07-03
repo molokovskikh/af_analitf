@@ -1378,8 +1378,7 @@ begin
     try
       adtFlags.Edit;
       adtFlags.FieldByName( 'ComputerName').AsString := GetComputerName_;
-      adtFlags.FieldByName( 'ExclusiveID').AsString := IntToHex(
-        GetUniqueID( Application.ExeName, ''{MainForm.VerInfo.FileVersion}), 8);
+      adtFlags.FieldByName( 'ExclusiveID').AsString := GetExclusiveID();
       adtFlags.Post;
     except
     end;

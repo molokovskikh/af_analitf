@@ -296,7 +296,40 @@ object ExchangeForm: TExchangeForm
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 0
-    Left = 248
-    Top = 40
+    Left = 264
+    Top = 32
+  end
+  object httpReceive: TIdHTTP
+    IOHandler = sslReceive
+    MaxLineAction = maException
+    RecvBufferSize = 1024
+    SendBufferSize = 1024
+    AuthRetries = 6
+    AllowCookies = True
+    HandleRedirects = True
+    ProxyParams.BasicAuthentication = True
+    ProxyParams.ProxyPassword = 'zcxvcb'
+    ProxyParams.ProxyPort = 3128
+    ProxyParams.ProxyServer = 'proxy.adc.analit.net'
+    ProxyParams.ProxyUsername = 'runer'
+    Request.Connection = 'keep-alive'
+    Request.ContentLength = -1
+    Request.ContentRangeEnd = 0
+    Request.ContentRangeStart = 0
+    Request.ContentType = 'text/html'
+    Request.Accept = 'text/html, */*'
+    Request.BasicAuthentication = True
+    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
+    HTTPOptions = [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams]
+    Left = 304
+    Top = 64
+  end
+  object sslReceive: TIdSSLIOHandlerSocket
+    SSLOptions.Method = sslvSSLv3
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 304
+    Top = 96
   end
 end
