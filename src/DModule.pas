@@ -316,6 +316,8 @@ type
     procedure occf(DataSet: TDataSet);
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
+    //Обновления UIN в базе данных в случае обновления версии программы
+    procedure UpdateDBUIN(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjects(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
@@ -1530,55 +1532,23 @@ var
   SaveGridMaskStr : String;
   pc : TINFCrypt;
 begin
-  //Если было произведено обновление программы, то обновляем ключи
-	if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then begin
-    try
-      pc := TINFCrypt.Create(gop, 48);
-      try
-        SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
-        CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
-        BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
-        DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
-        SynonymPassword := pc.DecodeHex(SynonymPassword);
-        CodesPassword := pc.DecodeHex(CodesPassword);
-        BasecostPassword := pc.DecodeHex(BasecostPassword);
-        DBUIN := pc.DecodeHex(DBUIN);
-        SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
-        DBUIN := Copy(DBUIN, 1, 8);
-        SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
-        if DBUIN = IntToHex(GetOldDBID(), 8) then
-          DBUIN := IntToHex(GetDBID(), 8)
-        else
-          DBUIN := '';
-      finally
-        pc.Free;
-      end;
-    except
-      SynonymPassword := '';
-      CodesPassword := '';
-      BasecostPassword := '';
-      DBUIN := '';
-    end;
-  end
-  else begin
-    try
-      SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
-      CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
-      BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
-      DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
-      SynonymPassword := PassC.DecodeHex(SynonymPassword);
-      CodesPassword := PassC.DecodeHex(CodesPassword);
-      BasecostPassword := PassC.DecodeHex(BasecostPassword);
-      DBUIN := PassC.DecodeHex(DBUIN);
-      SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
-      DBUIN := Copy(DBUIN, 1, 8);
-      SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
-    except
-      SynonymPassword := '';
-      CodesPassword := '';
-      BasecostPassword := '';
-      DBUIN := '';
-    end;
+  try
+    SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
+    CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
+    BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
+    DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
+    SynonymPassword := PassC.DecodeHex(SynonymPassword);
+    CodesPassword := PassC.DecodeHex(CodesPassword);
+    BasecostPassword := PassC.DecodeHex(BasecostPassword);
+    DBUIN := PassC.DecodeHex(DBUIN);
+    SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
+    DBUIN := Copy(DBUIN, 1, 8);
+    SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
+  except
+    SynonymPassword := '';
+    CodesPassword := '';
+    BasecostPassword := '';
+    DBUIN := '';
   end;
 
   SynC.UpdateKey(SynonymPassword);
@@ -2050,6 +2020,10 @@ begin
         RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
 {$ifdef not DEBUG}
 {$endif}
+
+      //Если было произведено обновление программы, то обновляем ключи
+	    if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
+        UpdateDBUIN(dbCon, trMain);
 
     finally
       trMain.Free;
@@ -3178,6 +3152,73 @@ begin
   end;
 
   trMain.Commit;
+end;
+
+procedure TDM.UpdateDBUIN(dbCon: TpFIBDatabase; trMain: TpFIBTransaction);
+var
+  ch,
+  p,
+  CDS,
+  BaseCostPass,
+  SynonymPass,
+  CodesPass,
+  oldDBUIN,
+  oldSaveGrids,
+  newCDS : String;
+  pc : TINFCrypt;
+  I : Integer;
+begin
+  try
+    dbCon.Open();
+    try
+      trMain.StartTransaction;
+
+      CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
+      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
+      if Length(CDS) = 0 then
+        Exit;
+      pc := TINFCrypt.Create(gop, 48);
+      try
+        SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
+        CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
+        BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
+        oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
+        oldSaveGrids := Copy(oldDBUIN, 9, 7);
+        oldDBUIN := Copy(oldDBUIN, 1, 8);
+      finally
+        pc.Free;
+      end;
+
+      if Length(BaseCostPass) = 0 then
+        raise Exception.Create('Нет необходимой информации.');
+      if Length(oldDBUIN) = 0 then
+        raise Exception.Create('Нет необходимой информации 2.');
+      if oldDBUIN <> IntToHex(GetOldDBID(), 8) then
+        raise Exception.Create('Не совпадает DBUIN в обновляемой базе данных.');
+
+      pc := TINFCrypt.Create(gcp, 48);
+      try
+        newCDS :=
+          pc.EncodeHex(SynonymPass) +
+          pc.EncodeHex(CodesPass) +
+          pc.EncodeHex(BaseCostPass) +
+          pc.EncodeHex(IntToHex(GetDBID(), 8) + oldSaveGrids);
+      finally
+        pc.Free;
+      end;
+
+      //Обновляем значение CDS в базе с новым CopyID
+      dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
+
+      trMain.Commit;
+    finally
+      try dbCon.Close(); except end;
+    end;
+  except
+    on E : Exception do begin
+      AProc.LogCriticalError('Ошибка при обновлении UIN : ' + E.Message);
+    end;
+  end;
 end;
 
 initialization
