@@ -153,11 +153,11 @@ begin
 
 	if not MainForm.Showing then ExchangeForm.Position := poDesktopCenter;
 	try
-		if AExchangeActions <> [ eaImportOnly] then
-		begin
-			ExchangeForm.SetRasParams;
-			ExchangeForm.SetHTTPParams;
-		end;
+    //Эти параметры выставляются всегда, раньше не выставлялись при импорте
+    //Сейчас если импорт не пройдет, то будет производиться подключение к серверу, поэтому параметры необходимы
+    ExchangeForm.SetRasParams;
+    ExchangeForm.SetHTTPParams;
+    
 		ExchangeForm.ExchangeActions := AExchangeActions;
 		AssignFile( ExchangeForm.LogFile, ExePath + 'Exchange.log');
     if FileExists(ExePath + 'Exchange.log') then

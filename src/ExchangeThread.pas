@@ -12,7 +12,6 @@ uses
   U_frmOldOrdersDelete, IB_ErrorCodes;
 
 const
-  UpdateErrorText = 'Вероятно, предыдущая операция импорта не была завершена.';
   //Критические сообщения об ошибках при отправке заказов
   SendOrdersErrorTexts : array[0..3] of string =
   ('Доступ запрещен.',
@@ -79,8 +78,6 @@ private
   StartDownPosition : Integer;
 
   upB : TpFIBQuery;
-  //Будем обновляться из-за того, что дата обновления не совпала
-  UpdateByUpdate : Boolean;
 
   //Список дочерних ниток
   ChildThreads : TObjectList;
@@ -97,6 +94,7 @@ private
 	procedure RasConnect;
 	procedure HTTPConnect;
 	procedure CreateChildThreads;
+  procedure CreateChildReceiveThread;
 	procedure QueryData;
   procedure GetPass;
   procedure PriceDataSettings;
@@ -122,12 +120,11 @@ private
   procedure UpdateFromFileByParams(
     FileName,
     InsertSQL : String;
-    Names : array of string);
+    Names : array of string;
+    LogSQL : Boolean = True);
 
 
-	function GetXMLDateTime( ADateTime: TDateTime): string;
 	function FromXMLToDateTime( AStr: string): TDateTime;
-	function StringToCodes( AStr: string): string;
 	function RusError( AStr: string): string;
   procedure OnConnectError (AMessage : String);
   procedure OnChildTerminate(Sender: TObject);
@@ -235,6 +232,8 @@ begin
             CriticalError := True;
             ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
             ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+            //Запускаем нитку на отправку архивных заказов
+            CreateChildReceiveThread;
             DoSendOrders;
             CriticalError := False;
           end;
@@ -259,10 +258,7 @@ begin
           //Запускаем дочерние нитки только тогда, когда получаем обновление данных, но не накладные
           if eaGetPrice in ExchangeForm.ExchangeActs then
             CreateChildThreads;
-          UpdateByUpdate := False;
 					QueryData;
-          if UpdateByUpdate then
-            QueryData;
           GetPass;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
@@ -284,10 +280,10 @@ begin
         CommitExchange;
 
 			{ Отключение }
-      if ( [eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> []) then
+      if ( [eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> []) then
         OnFullChildTerminate(nil)
       else
-        if ([eaGetPrice] * ExchangeForm.ExchangeActs <> [])
+        if ([eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> [])
         then begin
           if ChildThreads.Count > 0 then begin
             for I := ChildThreads.Count-1 downto 0 do
@@ -344,8 +340,8 @@ begin
 
       until ImportComplete;
 
-			{ Дожидаемся завершения работы потока, скачивающего рекламу }
-			if ( [eaGetPrice] * ExchangeForm.ExchangeActs <> [])
+			{ Дожидаемся завершения работы дочерних ниток : рекламы, шпионской нитки }
+			if ( [eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> [])
       then begin
         DownloadChildThreads := True;
         while ChildThreads.Count > 0 do
@@ -416,12 +412,8 @@ begin
   T.OnTerminate := OnChildTerminate;
 	TReclameThread(T).Resume;
   ChildThreads.Add(T);
-  
-  T := TReceiveThread.Create(True);
-  TReceiveThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass, UseNTLM);
-  T.OnTerminate := OnChildTerminate;
-  T.Resume;
-  ChildThreads.Add(T);
+
+  CreateChildReceiveThread;
 end;
 
 procedure TExchangeThread.QueryData;
@@ -475,38 +467,27 @@ begin
     finally
       LibVersions.Free;
     end;
-{
-		Res := SOAP.Invoke( 'GetUserData', [ 'AccessTime', 'GetEtalonData', 'ExeVersion', 'MDBVersion', 'UniqueID'],
-			[GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime),
-			BoolToStr( eaGetFullData in ExchangeForm.ExchangeActs, True),
-			MainForm.VerInfo.FileVersion, DM.adtProvider.FieldByName( 'MDBVersion').AsString,
-			IntToHex( GetCopyID, 8)]);
-}
 		Res := SOAP.Invoke( 'GetUserData', ParamNames, ParamValues);
-		{ QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
-//		while Res <> '' do ExchangeForm.QueryResults.Add( GetNextWord( Res, ';'));
 		{ проверяем отсутствие ошибки при удаленном запросе }
 		Error := Utf8ToAnsi( Res.Values[ 'Error']);
-    //Если получили специфичное сообщение об ошибке, что
-    if (Error <> '') and AnsiStartsText(UpdateErrorText, Utf8ToAnsi( Res.Values[ 'Desc'])) then begin
-      UpdateByUpdate := True;
+    if Error <> '' then
+      raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
+        + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+        
+    //Если получили установленный флаг Cumulative, то делаем куммулятивное обновление
+    if (Length(Res.Values['Cumulative']) > 0) and (StrToBool(Res.Values['Cumulative'])) then
       ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
-    end
-    else begin
-      if Error <> '' then
-        raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
-          + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-      ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
-      { получаем имя удаленного файла }
-      HostFileName := Res.Values[ 'URL'];
-      NewZip := True;
-      if Res.Values[ 'New'] <> '' then
-        NewZip := StrToBool( UpperCase( Res.Values[ 'New']));
-      if HostFileName = '' then
-        raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
-          #10#13 + 'Повторите запрос через несколько минут.');
-      LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
-    end;
+      
+    ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
+    { получаем имя удаленного файла }
+    HostFileName := Res.Values[ 'URL'];
+    NewZip := True;
+    if Res.Values[ 'New'] <> '' then
+      NewZip := StrToBool( UpperCase( Res.Values[ 'New']));
+    if HostFileName = '' then
+      raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+        #10#13 + 'Повторите запрос через несколько минут.');
+    LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
 	except
 		on E: Exception do
 		begin
@@ -728,7 +709,7 @@ end;
 
 procedure TExchangeThread.DoSendOrders;
 const
-  OrderParamCount : Integer = 15;
+  OrderParamCount : Integer = 14;
 var
 	params, values: array of string;
 	i: integer;
@@ -769,8 +750,8 @@ begin
     WriteLn(ExchangeForm.LogFile,
       'Отправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
       '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
-		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2);
-		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2);
+		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 3);
+		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 3);
 
 		params[ 0] := 'ClientCode';
 		params[ 1] := 'PriceCode';
@@ -788,26 +769,24 @@ begin
 		for i := 0 to DM.adsOrders.RecordCountFromSrv - 1 do
 		begin
 			params[ i * OrderParamCount + 6] := 'FullCode';
-			params[ i * OrderParamCount + 7] := 'OrderId';
-			params[ i * OrderParamCount + 8] := 'CodeFirmCr';
-			params[ i * OrderParamCount + 9] := 'SynonymCode';
-			params[ i * OrderParamCount + 10] := 'SynonymFirmCrCode';
-			params[ i * OrderParamCount + 11] := 'Code';
-			params[ i * OrderParamCount + 12] := 'CodeCr';
-			params[ i * OrderParamCount + 13] := 'Quantity';
-			params[ i * OrderParamCount + 14] := 'Junk';
-			params[ i * OrderParamCount + 15] := 'Await';
-			params[ i * OrderParamCount + 16] := 'Cost';
+			params[ i * OrderParamCount + 7] := 'CodeFirmCr';
+			params[ i * OrderParamCount + 8] := 'SynonymCode';
+			params[ i * OrderParamCount + 9] := 'SynonymFirmCrCode';
+			params[ i * OrderParamCount + 10] := 'Code';
+			params[ i * OrderParamCount + 11] := 'CodeCr';
+			params[ i * OrderParamCount + 12] := 'Quantity';
+			params[ i * OrderParamCount + 13] := 'Junk';
+			params[ i * OrderParamCount + 14] := 'Await';
+			params[ i * OrderParamCount + 15] := 'Cost';
 			values[ i * OrderParamCount + 6] := DM.adsOrders.FieldByName( 'FullCode').AsString;
-			values[ i * OrderParamCount + 7] := DM.adsOrders.FieldByName( 'OrderId').AsString;
-			values[ i * OrderParamCount + 8] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
-			values[ i * OrderParamCount + 9] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
-			values[ i * OrderParamCount + 10] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
-      values[ i * OrderParamCount + 11] := DM.adsOrders.FieldByName( 'Code').AsString;
-      values[ i * OrderParamCount + 12] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
-			values[ i * OrderParamCount + 13] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
-			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
-			values[ i * OrderParamCount + 15] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
+			values[ i * OrderParamCount + 7] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
+			values[ i * OrderParamCount + 8] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
+			values[ i * OrderParamCount + 9] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
+      values[ i * OrderParamCount + 10] := DM.adsOrders.FieldByName( 'Code').AsString;
+      values[ i * OrderParamCount + 11] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
+			values[ i * OrderParamCount + 12] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
+			values[ i * OrderParamCount + 13] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
+			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
       try
         if Length(DM.adsOrders.FieldByName( 'PRICE').AsString) > 0 then
           S := DM.D_B_N(DM.adsOrders.FieldByName( 'PRICE').AsString)
@@ -815,7 +794,7 @@ begin
           S := CurrToStr(0.0);
         TmpOrderCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
         S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-        values[ i * OrderParamCount + 16] := S;
+        values[ i * OrderParamCount + 15] := S;
       except
         on E : Exception do begin
           WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке цены : ' + E.Message
@@ -825,10 +804,10 @@ begin
         end;
       end;
 
-			params[ i * OrderParamCount + 17] := 'MinCost';
-			params[ i * OrderParamCount + 18] := 'MinPriceCode';
-			params[ i * OrderParamCount + 19] := 'LeaderMinCost';
-			params[ i * OrderParamCount + 20] := 'LeaderMinPriceCode';
+			params[ i * OrderParamCount + 16] := 'MinCost';
+			params[ i * OrderParamCount + 17] := 'MinPriceCode';
+			params[ i * OrderParamCount + 18] := 'LeaderMinCost';
+			params[ i * OrderParamCount + 19] := 'LeaderMinPriceCode';
 
       //Если выставлено поле - рассчитывать лидеров,
       if DM.adtClientsCALCULATELEADER.Value then begin
@@ -857,20 +836,20 @@ begin
           S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
           TmpMinCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
           S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-          values[ i * OrderParamCount + 17] := S;
-          values[ i * OrderParamCount + 18] := DM.adsOrderCorePRICECODE.AsString;
+          values[ i * OrderParamCount + 16] := S;
+          values[ i * OrderParamCount + 17] := DM.adsOrderCorePRICECODE.AsString;
 
           //Если минимальная цена совпадает с ценой заказа, то минимальный прайс-лист - прайс-лист заказа
           if (TmpMinCost <> '') and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
           then begin
-            values[ i * OrderParamCount + 18] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
+            values[ i * OrderParamCount + 17] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
           end;
         except
           on E : Exception do begin
             WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке минимальной цены : ' + E.Message
               + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
+            values[ i * OrderParamCount + 16] := '';
             values[ i * OrderParamCount + 17] := '';
-            values[ i * OrderParamCount + 18] := '';
           end;
         end;
 
@@ -888,28 +867,28 @@ begin
             S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
             TmpMinCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
             S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-            values[ i * OrderParamCount + 19] := S;
-            values[ i * OrderParamCount + 20] := DM.adsOrderCorePRICECODE.AsString;
+            values[ i * OrderParamCount + 18] := S;
+            values[ i * OrderParamCount + 19] := DM.adsOrderCorePRICECODE.AsString;
 
             //Если минимальная цена лидеров совпадает с ценой заказа и прайс-лист тоже лидер, то минимальный прайс-лист - прайс-лист заказа
             if (TmpMinCost <> '')
               and (DM.adsOrdersH.FieldByName( 'PriceEnabled').AsBoolean)
               and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
             then begin
-              values[ i * OrderParamCount + 20] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
+              values[ i * OrderParamCount + 19] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
             end;
           except
             on E : Exception do begin
               WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
                 + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
+              values[ i * OrderParamCount + 18] := '';
               values[ i * OrderParamCount + 19] := '';
-              values[ i * OrderParamCount + 20] := '';
             end;
           end;
         end
         else begin
+          values[ i * OrderParamCount + 18] := '';
           values[ i * OrderParamCount + 19] := '';
-          values[ i * OrderParamCount + 20] := '';
         end;
 
         DM.adsOrderCore.Close;
@@ -930,7 +909,9 @@ begin
       values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount ] := IntToHex( GetCopyID, 8);
       params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1] := 'ClientOrderID';
       values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1] := DM.adsOrdersH.FieldByName( 'OrderId').AsString;
-			Res := Soap.Invoke( 'PostOrder1', params, values);
+      params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2] := 'ServerOrderId';
+      values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2] := '0';
+			Res := Soap.Invoke( 'PostOrder', params, values);
 			// проверяем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
 			if ResError <> '' then begin
@@ -1621,7 +1602,8 @@ begin
       'update minprices set servercoreid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servercoreid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then ' + 'coalesce(:servercoreid, servercoreid) ' + ' else servercoreid end, ' +
       'servermemoid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servermemoid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) ' + 'then coalesce(:servermemoid, servermemoid) else servermemoid end ' +
       'where fullcode = :fullcode and regioncode = :regioncode',
-      ['servercoreid', 'fullcode', 'regioncode', 'servermemoid']);
+      ['servercoreid', 'fullcode', 'regioncode', 'servermemoid'],
+      False);
   end;
 
 	if utPriceAVG in UpdateTables then
@@ -1693,16 +1675,6 @@ begin
 	Synchronize( EnableCancel);
 end;
 
-function TExchangeThread.GetXMLDateTime( ADateTime: TDateTime): string;
-begin
-	result := IntToStr( YearOf( ADateTime)) + '-' +
-		IntToStr( MonthOf( ADateTime)) + '-' +
-		IntToStr( DayOf( ADateTime)) + ' ' +
-		IntToStr( HourOf( ADateTime)) + ':' +
-		IntToStr( MinuteOf( ADateTime)) + ':' +
-		IntToStr( SecondOf( ADateTime)) {+ '.0000000'};
-end;
-
 function TExchangeThread.FromXMLToDateTime( AStr: string): TDateTime;
 begin
 	result := EncodeDateTime( StrToInt( Copy( AStr, 1, 4)),
@@ -1712,15 +1684,6 @@ begin
 		StrToInt( Copy( AStr, 15, 2)),
 		StrToInt( Copy( AStr, 18, 2)),
 		0);
-end;
-
-function TExchangeThread.StringToCodes( AStr: string): string;
-var
-	i: integer;
-begin
-	Result := '';
-	for i := 1 to Length( Astr) do
-    Result := Result + Format('%.3d', [Ord( AStr[i] )]);
 end;
 
 function TExchangeThread.RusError( AStr: string): string;
@@ -2159,7 +2122,8 @@ begin
 end;
 
 procedure TExchangeThread.UpdateFromFileByParams(FileName,
-  InsertSQL: String; Names: array of string);
+  InsertSQL: String; Names: array of string;
+  LogSQL : Boolean = True);
 var
   up : TpFIBQuery;
   InDelimitedFile : TFIBInputDelimitedFile;
@@ -2189,7 +2153,8 @@ begin
       up.SQL.Text := InsertSQL;
       InDelimitedFile.Filename := FileName;
 
-      Tracer.TR('Import', 'Exec : ' + InsertSQL);
+      if LogSQL then
+        Tracer.TR('Import', 'Exec : ' + InsertSQL);
       StartExec := Now;
       try
         up.Prepare;
@@ -2240,7 +2205,7 @@ begin
       finally
         StopExec := Now;
         Secs := SecondsBetween(StopExec, StartExec);
-        if Secs > 3 then
+        if (Secs > 3) and LogSQL then
           Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
       end;
 
@@ -2262,6 +2227,17 @@ begin
     HTTPDisconnect;
     RasDisconnect;
   end;
+end;
+
+procedure TExchangeThread.CreateChildReceiveThread;
+var
+ T : TThread;
+begin
+  T := TReceiveThread.Create(True);
+  TReceiveThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass, UseNTLM);
+  T.OnTerminate := OnChildTerminate;
+  T.Resume;
+  ChildThreads.Add(T);
 end;
 
 initialization

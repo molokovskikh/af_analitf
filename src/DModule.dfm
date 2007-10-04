@@ -964,6 +964,7 @@ object DM: TDM
       'update orders'
       'set'
       '  coreid = :new_coreid,'
+      '  price = :new_price,'
       '  sendprice = :new_sendprice '
       'where'
       '  id = :old_id')

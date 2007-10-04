@@ -88,6 +88,9 @@ function  GetLibraryVersionFromAppPath : TObjectList;
 procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocket);
 //Получить для файла Hash MD5
 function GetFileHash(AFileName: String): String;
+function StringToCodes( AStr: string): string;
+function GetXMLDateTime( ADateTime: TDateTime): string;
+
 
 
 implementation
@@ -802,6 +805,25 @@ begin
   except
     Result := '';
   end;
+end;
+
+function StringToCodes( AStr: string): string;
+var
+	i: integer;
+begin
+	Result := '';
+	for i := 1 to Length( Astr) do
+    Result := Result + Format('%.3d', [Ord( AStr[i] )]);
+end;
+
+function GetXMLDateTime( ADateTime: TDateTime): string;
+begin
+	result := IntToStr( YearOf( ADateTime)) + '-' +
+		IntToStr( MonthOf( ADateTime)) + '-' +
+		IntToStr( DayOf( ADateTime)) + ' ' +
+		IntToStr( HourOf( ADateTime)) + ':' +
+		IntToStr( MinuteOf( ADateTime)) + ':' +
+		IntToStr( SecondOf( ADateTime));
 end;
 
 { TFileUpdateInfo }
