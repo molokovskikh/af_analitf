@@ -73,8 +73,6 @@ private
   URL : String;
   HTTPName,
   HTTPPass : String;
-  UseNTLM  : Boolean;
-  NTLMAuth : Integer;
   StartDownPosition : Integer;
 
   upB : TpFIBQuery;
@@ -397,18 +395,17 @@ begin
 		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
-  UseNTLM  := DM.adtParams.FieldByName( 'USENTLM').AsBoolean;
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
 end;
 
 procedure TExchangeThread.CreateChildThreads;
 var
- T : TThread;
+  T : TThread;
 begin
 	T := TReclameThread.Create( True);
   T.FreeOnTerminate := True;
 	TReclameThread(T).RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
-  TReclameThread(T).SetParams(ExchangeForm.HTTPReclame, URL, HTTPName, HTTPPass, UseNTLM);
+  TReclameThread(T).SetParams(ExchangeForm.HTTPReclame, URL, HTTPName, HTTPPass);
   T.OnTerminate := OnChildTerminate;
 	TReclameThread(T).Resume;
   ChildThreads.Add(T);
@@ -539,14 +536,8 @@ begin
       ExchangeForm.HTTP.OnWork := HTTPWork;
       ExchangeForm.HTTP.OnWorkBegin := HTTPWorkBegin;
       ExchangeForm.HTTP.ReconnectCount := 0;
-      if UseNTLM then begin
-        ExchangeForm.HTTP.Request.BasicAuthentication := False;
-        ExchangeForm.HTTP.Request.Authentication := TDADNTLMAuthentication.Create;
-        if not AnsiStartsText('analit\', HTTPName) then
-          ExchangeForm.HTTP.Request.Username := 'ANALIT\' + HTTPName;
-      end
-      else
-        ExchangeForm.HTTP.Request.BasicAuthentication := True;
+      ExchangeForm.HTTP.Request.BasicAuthentication := True;
+
       Progress := 0;
       Synchronize( SetProgress );
 
@@ -606,15 +597,6 @@ begin
         ExchangeForm.HTTP.ReconnectCount := OldReconnectCount;
         ExchangeForm.HTTP.OnWork := nil;
         ExchangeForm.HTTP.OnWorkBegin := nil;
-        if UseNTLM then begin
-          ExchangeForm.HTTP.Request.Username := HTTPName;
-          ExchangeForm.HTTP.Request.BasicAuthentication := True;
-          try
-            ExchangeForm.HTTP.Request.Authentication.Free;
-          except
-          end;
-          ExchangeForm.HTTP.Request.Authentication := nil;
-        end;
       end;
 
 			Synchronize( ExchangeForm.CheckStop);
@@ -1983,15 +1965,9 @@ var
 begin
   inHTTP := TidHTTP(Sender);
 
-  if UseNTLM and Assigned(inHTTP.Response) and Assigned(inHTTP.Response.RawHeaders)
-     and  (NTLMAuth < 3) //(Pos('NTLM', inHTTP.Response.RawHeaders.Text) > 0)
-  then begin
-    Inc(NTLMAuth); 
-    Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount));
-    Tracer.TR('Main.HTTPWork', 'Request.RawHeaders : ' + inHTTP.Request.RawHeaders.Text);
-    Tracer.TR('Main.HTTPWork', 'Response.RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
-  end;
-
+//    Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount));
+//    Tracer.TR('Main.HTTPWork', 'Request.RawHeaders : ' + inHTTP.Request.RawHeaders.Text);
+//    Tracer.TR('Main.HTTPWork', 'Response.RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
 //	Writeln( ExchangeForm.LogFile, 'Main.HTTPWork   WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
 
   if inHTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then
@@ -2090,7 +2066,6 @@ end;
 procedure TExchangeThread.HTTPWorkBegin(Sender: TObject;
   AWorkMode: TWorkMode; const AWorkCountMax: Integer);
 begin
-  NTLMAuth := 0;
 end;
 
 procedure TExchangeThread.CheckSendCurrentOrders;
@@ -2231,13 +2206,24 @@ end;
 
 procedure TExchangeThread.CreateChildReceiveThread;
 var
- T : TThread;
+  T : TThread;
+  I : Integer;
+  Find : Boolean;
 begin
-  T := TReceiveThread.Create(True);
-  TReceiveThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass, UseNTLM);
-  T.OnTerminate := OnChildTerminate;
-  T.Resume;
-  ChildThreads.Add(T);
+  Find := False;
+  for I := 0 to ChildThreads.Count -1 do
+    if ChildThreads[i] is TReceiveThread then begin
+      Find := True;
+      Break;
+    end;
+
+  if not Find then begin
+    T := TReceiveThread.Create(True);
+    TReceiveThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass);
+    T.OnTerminate := OnChildTerminate;
+    T.Resume;
+    ChildThreads.Add(T);
+  end;
 end;
 
 initialization

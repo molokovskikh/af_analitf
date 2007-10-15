@@ -99,14 +99,7 @@ begin
 
             OldReconnectCount := ReceiveHTTP.ReconnectCount;
             ReceiveHTTP.ReconnectCount := 0;
-            if FUseNTLM then begin
-              ReceiveHTTP.Request.BasicAuthentication := False;
-              ReceiveHTTP.Request.Authentication := TDADNTLMAuthentication.Create;
-              if not AnsiStartsText('analit\', FHTTPName) then
-                ReceiveHTTP.Request.Username := 'ANALIT\' + FHTTPName;
-            end
-            else
-              ReceiveHTTP.Request.BasicAuthentication := True;
+            ReceiveHTTP.Request.BasicAuthentication := True;
             ReceiveHTTP.OnWork := HTTPReclameWork;
             Log('Reclame', 'ѕытаемс€ скачать архив с информационным блоком...');
             try
@@ -164,15 +157,6 @@ begin
             finally
               ReceiveHTTP.ReconnectCount := OldReconnectCount;
               ReceiveHTTP.OnWork := nil;
-              if FUseNTLM then begin
-                ReceiveHTTP.Request.Username := FHTTPName;
-                ReceiveHTTP.Request.BasicAuthentication := True;
-                try
-                  ReceiveHTTP.Request.Authentication.Free;
-                except
-                end;
-                ReceiveHTTP.Request.Authentication := nil;
-              end;
             end;
 
           finally

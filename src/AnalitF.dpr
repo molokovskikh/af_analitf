@@ -83,6 +83,7 @@ uses
 {$R CompareScript38.RES}
 {$R CompareScript39.RES}
 {$R CompareScript40.RES}
+{$R CompareScript41.RES}
 {$R LastScript.RES}
 
 

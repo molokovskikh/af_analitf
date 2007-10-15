@@ -5314,7 +5314,7 @@ object ConfigForm: TConfigForm
           Height = 21
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5715,25 +5715,25 @@ object ConfigForm: TConfigForm
           ValueUnchecked = 'False'
         end
       end
-      object dbchbNTLM: TDBCheckBox
+      object dbchbUseOSOpenWaybill: TDBCheckBox
         Left = 8
-        Top = 112
-        Width = 241
+        Top = 114
+        Width = 377
         Height = 17
-        Caption = #1048#1089#1087#1086#1083#1100#1079#1086#1074#1072#1090#1100' NTLM-'#1072#1074#1090#1086#1088#1080#1079#1072#1094#1080#1102
-        DataField = 'USENTLM'
+        Caption = #1054#1090#1082#1088#1099#1074#1072#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077' '#1089' '#1087#1086#1084#1086#1097#1100#1102' '#1072#1089#1089#1086#1094#1080#1080#1088#1086#1074#1072#1085#1085#1086#1075#1086' '#1087#1088#1080#1083#1086#1078#1077#1085#1080#1103
+        DataField = 'USEOSOPENWAYBILL'
         DataSource = DM.dsParams
         TabOrder = 3
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end
-      object dbchbUseOSOpen: TDBCheckBox
+      object dbchbUseOSOpenReject: TDBCheckBox
         Left = 8
-        Top = 136
+        Top = 138
         Width = 377
         Height = 17
-        Caption = #1054#1090#1082#1088#1099#1074#1072#1090#1100' '#1076#1086#1082#1091#1084#1077#1085#1090#1099' '#1089' '#1087#1086#1084#1086#1097#1100#1102' '#1072#1089#1089#1086#1094#1080#1080#1088#1086#1074#1072#1085#1085#1086#1075#1086' '#1087#1088#1080#1083#1086#1078#1077#1085#1080#1103
-        DataField = 'USEOSOPEN'
+        Caption = #1054#1090#1082#1088#1099#1074#1072#1090#1100' '#1086#1090#1082#1072#1079#1099' '#1089' '#1087#1086#1084#1086#1097#1100#1102' '#1072#1089#1089#1086#1094#1080#1080#1088#1086#1074#1072#1085#1085#1086#1075#1086' '#1087#1088#1080#1083#1086#1078#1077#1085#1080#1103
+        DataField = 'USEOSOPENREJECT'
         DataSource = DM.dsParams
         TabOrder = 4
         ValueChecked = 'True'

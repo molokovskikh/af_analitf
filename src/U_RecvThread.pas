@@ -14,7 +14,6 @@ type
     FURL,
     FHTTPName,
     FHTTPPass : String;
-    FUseNTLM  : Boolean;
     FSOAP : TSOAP;
     ReceiveHTTP : TIdHTTP;
     procedure Execute; override;
@@ -31,8 +30,7 @@ type
       AHTTP : TIdHTTP;
       AURL,
       AHTTPName,
-      AHTTPPass : String;
-      AUseNTLM  : Boolean);
+      AHTTPPass : String);
   end;
 
 implementation
@@ -98,15 +96,13 @@ begin
 end;
 
 procedure TReceiveThread.SetParams(AHTTP : TIdHTTP;
-  AURL, AHTTPName, AHTTPPass: String;
-  AUseNTLM: Boolean);
+  AURL, AHTTPName, AHTTPPass: String);
 begin
   FreeOnTerminate := True;
   ReceiveHTTP := AHTTP;
   FURL := AURL;
   FHTTPName := AHTTPName;
   FHTTPPass := AHTTPPass;
-  FUseNTLM := AUseNTLM;
 end;
 
 procedure TReceiveThread.OnConnectError(AMessage: String);
@@ -208,6 +204,7 @@ begin
     try
       if Terminated then exit;
       Res := FSOAP.Invoke('GetArchivedOrdersList', [], []);
+      Log('Receive', 'ArchivedList : ' + IntToStr(Res.Count));
       if Terminated then exit;
 
       OrdersList.Clear();
@@ -314,7 +311,9 @@ begin
 			if ResError <> '' then
         Log('Receive', Format('Ошибка при отправке архивного заказа: %s - %s',
           [ResError, Utf8ToAnsi( Res.Values[ 'Desc'])]));
-    end;
+    end
+    else
+      Log('Receive', Format('Архивный заказ с ID %d не найден', [ServerOrderId]));
   finally
     adsOrderData.Close();
   end;
