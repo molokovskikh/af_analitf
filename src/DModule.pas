@@ -601,8 +601,14 @@ begin
   SetSendToNotClosedOrders;
 
   if NeedUpdateByCheckUIN then begin
-    if not RunExchange([ eaGetPrice]) then
-      LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
+    if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime = adtParams.FieldByName( 'LastDateTime').AsDateTime)
+    then begin
+      if not RunExchange([ eaGetPrice]) then
+        LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
+    end
+    else
+      if not RunExchange([eaGetPrice, eaGetFullData, eaSendOrders]) then
+        LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
   end;
 
   if NeedUpdateByCheckHashes then begin
