@@ -115,9 +115,9 @@ RootDir=
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=4
-MinorVer=3
-Release=187
-Build=526
+MinorVer=4
+Release=0
+Build=558
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.3.187.526
+FileVersion=4.4.0.558
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2006
 LegalTrademarks=Инфорум
@@ -155,56 +155,20 @@ c:\program files\borland\delphi7\Bin\dclshlctrls70.bpl=Shell Control Property an
 c:\program files\borland\delphi7\Bin\dclmcn70.bpl=Borland DataSnap Connection Components
 c:\program files\borland\delphi7\Bin\DCLIB70.bpl=InterBase Data Access Components
 c:\program files\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
-[HistoryLists\hlDebugSourcePath]
-Count=3
-Item0=C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src
-Item1=C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src
-Item2=C:\Program Files\Borland\Delphi7\Indy\
-[HistoryLists\hlConditionals]
-Count=1
-Item0=DEBUG
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=20
+Count=3
 Item0=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib
-Item1=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src\Lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\FR_2_55\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src
-Item2=$(DELPHI)\Lib\Debug;..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src\Lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\FR_2_55\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src
-Item3=$(DELPHI)\Lib\Debug;..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src\Lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\FR_2_55\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src\Delphi7
-Item4=$(DELPHI)\Lib\Debug;..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src\Lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\FR_2_55\src\lib
-Item5=$(DELPHI)\Lib\Debug;..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src\Lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src;C:\Work\Analit\VSS\Inforoom\Delphi\EhLib_4_1\src\lib
-Item6=$(DELPHI)\Lib\Debug;..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\Tough\src\Lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src
-Item7=$(DELPHI)\Lib\Debug;..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib
-Item8=..\..\ARas\src;..\..\RXLib\src;
-Item9=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;C:\Work\Analit\VSS\Inforoom\Delphi\FIBPlus_6_4_1\src
-Item10=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\d7;
-Item11=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib;
-Item12=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;
-Item13=..\..\ARas\src;
-Item14=$(DELPHI)\Lib\Debug
-Item15=$(DELPHI)\Indy\lib;
-Item16=$(DELPHI)\Indy\lib;C:\Program Files\Borland\Delphi7\RXLib\Units;
-Item17=$(DELPHI)\Indy\lib
-Item18=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib
-Item19=$(DELPHI)\Lib\Debug;$(DELPHI)\Indy\lib;
+Item1=$(DELPHI)\Indy\lib;
+Item2=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit
 [HistoryLists\hlOutputDirectorry]
-Count=12
+Count=1
 Item0=.\bin
-Item1=C:\TEMP\FromPovetkin\AnalitF416\
-Item2=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre413Test3\
-Item3=C:\TEMP\FromBorisov\AnalitNP1\
-Item4=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre413Test\
-Item5=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF R 4.0.53.313\src\bin\
-Item6=C:\TEMP\2170\AnalitF.Medika\AnalitFTest
-Item7=C:\TEMP\FromEMK\AnalitF_401\
-Item8=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre374Test1\
-Item9=C:\TEMP\From485\AnalitFnewTest\
-Item10=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre376Test\
-Item11=C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF\src\testRelease\ReleasePre359Test_UIN\
 [HistoryLists\hlBPLOutput]
 Count=1
 Item0=.\bin

@@ -43,7 +43,8 @@ TUpdateTable = (
   utPriceAVG,
   utCatalogFarmGroups,
   utCatFarmGroupsDEL,
-  utCatalogNames);
+  utCatalogNames,
+  utProducts);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -74,6 +75,8 @@ private
   HTTPName,
   HTTPPass : String;
   StartDownPosition : Integer;
+  //”никальный идентификатор обновлени€, должен передаватьс€ при подтверждении
+  UpdateId : String;
 
   upB : TpFIBQuery;
 
@@ -424,6 +427,7 @@ var
   I : Integer;
   WinNumber, WinDesc : String;
   fi : TFileUpdateInfo;
+  UpdateIdIndex : Integer;
 begin
 	{ запрашиваем данные }
 	StatusText := '«апрос данных';
@@ -464,17 +468,18 @@ begin
     finally
       LibVersions.Free;
     end;
+    UpdateId := '';
 		Res := SOAP.Invoke( 'GetUserData', ParamNames, ParamValues);
 		{ провер€ем отсутствие ошибки при удаленном запросе }
 		Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
       raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
         + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-        
+
     //≈сли получили установленный флаг Cumulative, то делаем куммул€тивное обновление
     if (Length(Res.Values['Cumulative']) > 0) and (StrToBool(Res.Values['Cumulative'])) then
       ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
-      
+
     ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
     { получаем им€ удаленного файла }
     HostFileName := Res.Values[ 'URL'];
@@ -484,6 +489,22 @@ begin
     if HostFileName = '' then
       raise Exception.Create( 'ѕри выполнении вашего запроса произошла ошибка.' +
         #10#13 + 'ѕовторите запрос через несколько минут.');
+
+    //¬ырезаем из URL параметр ID, чтобы потом передать его при подтверждении
+    UpdateIdIndex := AnsiPos(UpperCase('?Id='), UpperCase(HostFileName));
+    if UpdateIdIndex = 0 then begin
+      WriteLn(ExchangeForm.LogFile, 'Ќе найдена строка "?Id=" в URL : ' + HostFileName);
+      raise Exception.Create( 'ѕри выполнении вашего запроса произошла ошибка.' +
+        #10#13 + 'ѕовторите запрос через несколько минут.');
+    end
+    else begin
+      UpdateId := Copy(HostFileName, UpdateIdIndex + 4, Length(HostFileName));
+      if UpdateId = '' then begin
+        WriteLn(ExchangeForm.LogFile, 'UpdateId - пустой, URL : ' + HostFileName);
+        raise Exception.Create( 'ѕри выполнении вашего запроса произошла ошибка.' +
+          #10#13 + 'ѕовторите запрос через несколько минут.');
+      end;
+    end;
     LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
 	except
 		on E: Exception do
@@ -647,8 +668,8 @@ begin
     Synchronize(GetAbsentPriceCode);
 
     if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
-      SetLength(params, AbsentPriceCodeSL.Count + 2);
-      SetLength(values, AbsentPriceCodeSL.Count + 2);
+      SetLength(params, AbsentPriceCodeSL.Count + 3);
+      SetLength(values, AbsentPriceCodeSL.Count + 3);
       for I := 0 to AbsentPriceCodeSL.Count-1 do begin
         params[i]:= 'PriceCode';
         values[i]:= AbsentPriceCodeSL[i];
@@ -657,21 +678,25 @@ begin
       values[AbsentPriceCodeSL.Count]:= LogStr;
       params[AbsentPriceCodeSL.Count + 1]:= 'WaybillsOnly';
       values[AbsentPriceCodeSL.Count + 1]:= BoolToStr( False, True);
+      params[AbsentPriceCodeSL.Count + 2]:= 'UpdateId';
+      values[AbsentPriceCodeSL.Count + 2]:= UpdateId;
     end;
   end;
 
   if length(params) = 0 then begin
-    SetLength(params, 3);
-    SetLength(values, 3);
+    SetLength(params, 4);
+    SetLength(values, 4);
     params[0]:= 'PriceCode';
     values[0]:= '0';
     params[1]:= 'Log';
     values[1]:= LogStr;
     params[2]:= 'WaybillsOnly';
     values[2]:= BoolToStr( eaGetWaybills in ExchangeForm.ExchangeActs, True);
+    params[3]:= 'UpdateId';
+    values[3]:= UpdateId;
   end;
 
-	Res := SOAP.Invoke( 'MaxSynonymCodeV3', params, values);
+	Res := SOAP.Invoke( 'MaxSynonymCode', params, values);
 
   if (eaGetPrice in ExchangeForm.ExchangeActs) then begin
     ExchangeDateTime := FromXMLToDateTime( Res.Text);
@@ -750,7 +775,7 @@ begin
 
 		for i := 0 to DM.adsOrders.RecordCountFromSrv - 1 do
 		begin
-			params[ i * OrderParamCount + 6] := 'FullCode';
+			params[ i * OrderParamCount + 6] := 'ProductId';
 			params[ i * OrderParamCount + 7] := 'CodeFirmCr';
 			params[ i * OrderParamCount + 8] := 'SynonymCode';
 			params[ i * OrderParamCount + 9] := 'SynonymFirmCrCode';
@@ -760,7 +785,7 @@ begin
 			params[ i * OrderParamCount + 13] := 'Junk';
 			params[ i * OrderParamCount + 14] := 'Await';
 			params[ i * OrderParamCount + 15] := 'Cost';
-			values[ i * OrderParamCount + 6] := DM.adsOrders.FieldByName( 'FullCode').AsString;
+			values[ i * OrderParamCount + 6] := DM.adsOrders.FieldByName( 'Productid').AsString;
 			values[ i * OrderParamCount + 7] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
 			values[ i * OrderParamCount + 8] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
 			values[ i * OrderParamCount + 9] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
@@ -810,7 +835,8 @@ begin
         //¬ыбираем минимального из всех прайсов
         DBProc.SetFilter(DM.adsOrderCore,
           'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString +
-          ' and CodeFirmCr = ' + DM.adsOrders.FieldByName( 'CodeFirmCr').AsString);
+          ' and CodeFirmCr = ' + DM.adsOrders.FieldByName( 'CodeFirmCr').AsString +
+          ' and ProductId = ' + DM.adsOrders.FieldByName( 'ProductId').AsString);
 
         DM.adsOrderCore.First;
 
@@ -839,6 +865,7 @@ begin
         DBProc.SetFilter(DM.adsOrderCore,
           'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString +
           ' and CodeFirmCr = ' + DM.adsOrders.FieldByName( 'CodeFirmCr').AsString +
+          ' and ProductId = ' + DM.adsOrders.FieldByName( 'ProductId').AsString +
           ' and PriceEnabled = True');
 
         DM.adsOrderCore.First;
@@ -893,7 +920,7 @@ begin
       values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1] := DM.adsOrdersH.FieldByName( 'OrderId').AsString;
       params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2] := 'ServerOrderId';
       values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2] := '0';
-			Res := Soap.Invoke( 'PostOrder', params, values);
+			Res := Soap.Invoke( 'PostOrder2', params, values);
 			// провер€ем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
 			if ResError <> '' then begin
@@ -1206,6 +1233,7 @@ begin
 	if Tables.IndexOf( 'EXTCATALOGFARMGROUPS')>=0 then UpdateTables := UpdateTables + [utCatalogFarmGroups];
 	if Tables.IndexOf( 'EXTCATFARMGROUPSDEL')>=0 then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
 	if Tables.IndexOf( 'EXTCATALOGNAMES')>=0 then UpdateTables := UpdateTables + [utCatalogNames];
+	if Tables.IndexOf( 'EXTPRODUCTS')>=0 then UpdateTables := UpdateTables + [utProducts];
 
 
     //обновл€ем таблицы
@@ -1265,9 +1293,7 @@ begin
 	end;
 	//Synonym
 	if (utSynonym in UpdateTables) and (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-    SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_PRICECODE');
     SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_SYNONYMNAME');
-    SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT FK_SYNONYMS_FULLCODE');
     SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS');
 	end;
 	if utCore in UpdateTables then begin
@@ -1284,14 +1310,6 @@ begin
 	// Registry
 	if utRegistry in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
-	end;
-	// PriceAVG
-	if utPriceAVG in UpdateTables then begin
-    //≈сли производим куммул€тивное обновление, то удал€ем таблицу средних и заполн€ем заново
-    if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-      SQL.Text := 'delete from PRICEAVG';	ExecQuery;
-      SilentExecute(DM.adcUpdate, 'ALTER TABLE PRICEAVG DROP CONSTRAINT PK_PRICEAVG');
-    end;
 	end;
 
   DM.MainConnection1.DefaultUpdateTransaction.Commit;
@@ -1313,7 +1331,7 @@ begin
 	SQL.Text := 'select count(*) from ClientsDataN where fullname is not null';
 	ExecQuery;
   Close;
-	SQL.Text := 'select count(*) from Core where Fullcode is not null';
+	SQL.Text := 'select count(*) from Core where ProductId is not null';
 	ExecQuery;
   Close;
 	SQL.Text := 'select count(*) from Clients where regioncode is not null';
@@ -1352,6 +1370,7 @@ begin
         'EXECUTE PROCEDURE CATALOGNAMES_IU(:ID, :NAME, :LATINNAME, :DESCRIPTION)');
     end;
 	end;
+
 	//Catalog
 	if utCatalog in UpdateTables then begin
 
@@ -1372,6 +1391,12 @@ begin
     end;
 	  SQL.Text:='EXECUTE PROCEDURE CatalogSetFormNotNull'; ExecQuery;
 	end;
+
+  if (utProducts in UpdateTables) then begin
+    UpdateFromFile(ExePath+SDirIn+'\Products.txt',
+      'INSERT INTO products (productid, catalogid) values (:productid, :catalogid)');
+  end;
+
 	//CatalogFarmGroups
 	if utCatalogFarmGroups in UpdateTables then begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
@@ -1461,18 +1486,16 @@ begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
       UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
         'INSERT INTO Synonyms ' +
-        '(Synonymcode, Synonymname, fullcode, shortcode, pricecode) '+
-        'values (:Synonymcode, :Synonymname, :fullcode, :shortcode, :pricecode )');
+        '(Synonymcode, Synonymname) '+
+        'values (:Synonymcode, :Synonymname)');
   	  SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT PK_SYNONYMS PRIMARY KEY (SYNONYMCODE)'; ExecQuery;
-  	  SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT FK_SYNONYMS_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
-  	  SQL.Text:='CREATE INDEX IDX_PRICECODE ON SYNONYMS (PRICECODE)'; ExecQuery;
   	  SQL.Text:='CREATE INDEX IDX_SYNONYMNAME ON SYNONYMS (SYNONYMNAME)'; ExecQuery;
     end
     else begin
       UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
         'INSERT INTO Synonyms ' +
-        '(Synonymcode, Synonymname, fullcode, shortcode, pricecode) '+
-        'SELECT :Synonymcode, :Synonymname, :fullcode, :shortcode, :pricecode '+
+        '(Synonymcode, Synonymname) '+
+        'SELECT :Synonymcode, :Synonymname '+
         'FROM rdb$database '+
         'WHERE Not Exists(SELECT SynonymCode FROM Synonyms WHERE SynonymCode=:Synonymcode)');
     end;
@@ -1486,7 +1509,7 @@ begin
 	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteOldPrices'; ExecQuery;
 	end;
 	if utCore in UpdateTables then begin
-    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_FULLCODE');
+    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_ProductId');
     SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_PRICECODE');
     SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_REGIONCODE');
     SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT PK_CORE');
@@ -1501,20 +1524,26 @@ begin
     DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
     UpdateFromFile(ExePath+SDirIn+'\Core.txt',
 'INSERT INTO Core '+
-'(Pricecode, RegionCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
+'(Pricecode, RegionCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
 'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, RegistryCost, VitallyImportant, RequestRatio, BaseCost, ServerCOREID, OrderCost, MinOrderCount)' +
-'values (:Pricecode, :RegionCode, :FullCode, :CodeFirmCr, :SynonymCode, ' +
+'values (:Pricecode, :RegionCode, :ProductId, :CodeFirmCr, :SynonymCode, ' +
 ':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
 ':Note, :Period, :Doc, :RegistryCost, :VitallyImportant, :RequestRatio, :BaseCost, :ServerCOREID, :OrderCost, :MinOrderCount)');
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; ExecQuery;
-    SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
+    SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_ProductId FOREIGN KEY (ProductId) REFERENCES PRODUCTS (ProductId) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
 	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; ExecQuery;
-	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (FULLCODE, JUNK)'; ExecQuery;
+	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (ProductId, JUNK)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX IDX_CORE_SERVERCOREID ON CORE (SERVERCOREID)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; ExecQuery;
 	end;
+  
+  DM.MainConnection1.DefaultUpdateTransaction.Commit;
+
+  DM.MainConnection1.Close;
+  DM.MainConnection1.Open;
+  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 	//WayBillHead
 	if utWayBillHead in UpdateTables then begin
 	  SQL.Text:='EXECUTE PROCEDURE WayBillHeadInsert'; ExecQuery;
@@ -1529,7 +1558,6 @@ begin
 	SQL.Text := 'EXECUTE PROCEDURE CoreDeleteFormHeaders'; ExecQuery;
 	Progress := 50;
 	Synchronize( SetProgress);
-	SQL.Text := 'EXECUTE PROCEDURE SynonymDeleteFormHeaders'; ExecQuery;
 	//проставл€ем мин. цены и лидеров
 	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert';	ExecQuery;
   Progress := 60;
@@ -1547,7 +1575,7 @@ begin
 	Synchronize( SetStatus);
 
 	SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; ExecQuery;
-	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c where c.Fullcode = catalogs.fullcode)'; ExecQuery;
+	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; ExecQuery;
 	Progress := 65;
 	Synchronize( SetProgress);
   DM.adtParams.CloseOpen(True);
@@ -1583,22 +1611,11 @@ begin
     UpdateFromFileByParams(ExePath+SDirIn+'\MinPrices.txt',
       'update minprices set servercoreid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servercoreid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then ' + 'coalesce(:servercoreid, servercoreid) ' + ' else servercoreid end, ' +
       'servermemoid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servermemoid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) ' + 'then coalesce(:servermemoid, servermemoid) else servermemoid end ' +
-      'where fullcode = :fullcode and regioncode = :regioncode',
-      ['servercoreid', 'fullcode', 'regioncode', 'servermemoid'],
+      'where productid = :productid and regioncode = :regioncode',
+      ['servercoreid', 'productid', 'regioncode', 'servermemoid'],
       False);
   end;
 
-	if utPriceAVG in UpdateTables then
-	begin
-    //≈сли производим куммул€тивное обновление, то удал€ем таблицу средних и заполн€ем заново
-    if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-      UpdateFromFile(ExePath+SDirIn+'\PriceAVG.txt',
-        'insert into PriceAVG (ClientCode, fullcode, OrderPriceAVG) values (:ClientCode, :fullcode, :OrderPriceAVG)');
-      SQL.Text := 'ALTER TABLE PRICEAVG ADD CONSTRAINT PK_PRICEAVG PRIMARY KEY (CLIENTCODE, FULLCODE)';	ExecQuery;
-    end
-    else
-      UpdateFromFile(ExePath+SDirIn+'\PriceAVG.txt', 'EXECUTE PROCEDURE priceavg_iu(:ClientCode, :fullcode, :OrderPriceAVG)');
-  end;
 	Progress := 90;
 	Synchronize( SetProgress);
 	TotalProgress := 85;
@@ -1618,7 +1635,7 @@ begin
 	SQL.Text := 'select count(*) from MinPrices where ServerCoreID is not null';
 	ExecQuery;
   Close;
-	SQL.Text := 'select count(*) from Core where FullCode is not null';
+	SQL.Text := 'select count(*) from Core where productid is not null';
 	ExecQuery;
   Close;
 	SQL.Text := 'select count(*) from PricesData where PriceFileDate is not null';

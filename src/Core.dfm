@@ -67,7 +67,7 @@ object CoreForm: TCoreForm
         Width = 70
         Height = 13
         AutoSize = True
-        DataField = 'ORDERPRICEAVG'
+        DataField = 'PRICEAVG'
         DataSource = dsOrdersShowFormSummary
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -899,6 +899,11 @@ object CoreForm: TCoreForm
     object adsCoreMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
+    object adsCorePRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
+      Size = 0
+      RoundByScale = True
+    end
   end
   object adsRegions: TpFIBDataSet
     SelectSQL.Strings = (
@@ -1001,10 +1006,10 @@ object CoreForm: TCoreForm
       'SELECT'
       '    *'
       'FROM'
-      '   PriceAVG'
+      '   ClientAVG'
       'where'
       '  ClientCode = :ACLIENTID'
-      'and FullCode = :FullCode')
+      'and ProductId = :ProductId')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     Left = 344
@@ -1012,8 +1017,8 @@ object CoreForm: TCoreForm
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField
-      FieldName = 'ORDERPRICEAVG'
+    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
+      FieldName = 'PRICEAVG'
       Size = 2
       RoundByScale = True
     end

@@ -568,10 +568,10 @@ inherited ExpiredsForm: TExpiredsForm
       'SELECT'
       '    *'
       'FROM'
-      '   PriceAVG'
+      '   ClientAVG'
       'where'
       '  ClientCode = :ACLIENTID'
-      'and FullCode = :FullCode')
+      'and ProductId = :ProductId')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     DataSource = dsExpireds
@@ -580,8 +580,8 @@ inherited ExpiredsForm: TExpiredsForm
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField
-      FieldName = 'ORDERPRICEAVG'
+    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
+      FieldName = 'PRICEAVG'
       Size = 2
       RoundByScale = True
     end

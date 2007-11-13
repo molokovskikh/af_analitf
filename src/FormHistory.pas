@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, DBGridEh,
-  ToughDBGrid, FIBDataSet, pFIBDataSet;
+  ToughDBGrid, FIBDataSet, pFIBDataSet, GridsEh;
 
 type
   TFormsHistoryForm = class(TForm)
@@ -13,12 +13,10 @@ type
     dbrForm: TDBText;
     btnClose: TButton;
     dsOrders: TDataSource;
-    dsWareData: TDataSource;
     Label1: TLabel;
     dbtPriceAvg: TDBText;
     Grid: TToughDBGrid;
     adsOrders: TpFIBDataSet;
-    adsWareData: TpFIBDataSet;
     adsOrdersFULLCODE: TFIBBCDField;
     adsOrdersSYNONYMNAME: TFIBStringField;
     adsOrdersSYNONYMFIRM: TFIBStringField;
@@ -55,13 +53,6 @@ begin
   with TFormsHistoryForm.Create(Application) do try
     Screen.Cursor:=crHourglass;
     try
-{
-      with adsWareData do begin
-        ParamByName('AFullCode').Value:=FullCode;
-        ParamByName('AClientId').Value:=ClientId;
-        Open;
-      end;
-}
       with adsOrders do begin
         ParamByName('AFullCode').Value:=FullCode;
         ParamByName('AClientId').Value:=ClientId;

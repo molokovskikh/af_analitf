@@ -194,7 +194,7 @@ begin
     adsOrderData.Transaction := DM.MainConnection1.DefaultTransaction;
     adsOrderData.UpdateTransaction := DM.MainConnection1.DefaultUpdateTransaction;
     adsOrderData.SelectSQL.Text := 'SELECT OrdersH.serverorderid, OrdersH.orderid, Orders.orderid, OrdersH.clientid, OrdersH.pricecode, OrdersH.regioncode, null as PriceDate, OrdersH.messageto, ' +
-      'Orders.CoreId, Orders.fullcode, Orders.codefirmcr, Orders.synonymcode, Orders.synonymfirmcrcode, Orders.code, Orders.codecr, Orders.synonymname, Orders.synonymfirm, Orders.price, Orders.await, ' +
+      'Orders.CoreId, Orders.productid, Orders.codefirmcr, Orders.synonymcode, Orders.synonymfirmcrcode, Orders.code, Orders.codecr, Orders.synonymname, Orders.synonymfirm, Orders.price, Orders.await, ' +
       'Orders.junk, Orders.ordercount, Orders.SendPrice*Orders.OrderCount AS SumOrder, Orders.SendPrice,  core.requestratio, core.ordercost, core.minordercount ' +
       'FROM OrdersH inner join Orders on Orders.orderid = ordersh.orderid left join core on core.coreid = orders.coreid ' +
       'WHERE  (ordersh.serverorderid = :AServerOrderId) AND (OrderCount>0) ORDER BY SynonymName, SynonymFirm';
@@ -262,7 +262,7 @@ begin
 
       for i := 0 to adsOrderData.RecordCountFromSrv - 1 do
       begin
-        params[ i * OrderParamCount + 6] := 'FullCode';
+        params[ i * OrderParamCount + 6] := 'ProductId';
         params[ i * OrderParamCount + 7] := 'CodeFirmCr';
         params[ i * OrderParamCount + 8] := 'SynonymCode';
         params[ i * OrderParamCount + 9] := 'SynonymFirmCrCode';
@@ -272,7 +272,7 @@ begin
         params[ i * OrderParamCount + 13] := 'Junk';
         params[ i * OrderParamCount + 14] := 'Await';
         params[ i * OrderParamCount + 15] := 'Cost';
-        values[ i * OrderParamCount + 6] := adsOrderData.FieldByName( 'FullCode').AsString;
+        values[ i * OrderParamCount + 6] := adsOrderData.FieldByName( 'ProductId').AsString;
         values[ i * OrderParamCount + 7] := adsOrderData.FieldByName( 'CodeFirmCr').AsString;
         values[ i * OrderParamCount + 8] := adsOrderData.FieldByName( 'SynonymCode').AsString;
         values[ i * OrderParamCount + 9] := adsOrderData.FieldByName( 'SynonymFirmCrCode').AsString;

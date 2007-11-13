@@ -485,6 +485,7 @@ inherited SummaryForm: TSummaryForm
       '    Regions,'
       '    Core,'
       '    OrdersH,'
+      '    products,'
       '    catalogs, '
       '    Orders'
       
@@ -498,7 +499,8 @@ inherited SummaryForm: TSummaryForm
       'and Orders.OrderId=OrdersH.OrderId'
       'and Orders.OrderCount>0'
       'and Core.CoreId=Orders.CoreId'
-      'and catalogs.fullcode = orders.fullcode'
+      'and products.productid = orders.productid'
+      'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = OrdersH.PriceCode'
       'and Regions.RegionCode = OrdersH.RegionCode')
     AfterPost = adsSummary2AfterPost
@@ -636,7 +638,7 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
-      Size = 2
+      Size = 1
       RoundByScale = True
     end
     object adsSummaryMINORDERCOUNT: TFIBIntegerField
@@ -706,6 +708,7 @@ inherited SummaryForm: TSummaryForm
       '    Regions,'
       '    Core,'
       '    OrdersH,'
+      '    products,'
       '    catalogs, '
       '    Orders'
       
@@ -719,7 +722,8 @@ inherited SummaryForm: TSummaryForm
       'and Orders.OrderId=OrdersH.OrderId'
       'and Orders.OrderCount>0'
       'and Core.CoreId=Orders.CoreId'
-      'and catalogs.fullcode = orders.fullcode'
+      'and products.productid = orders.productid'
+      'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = OrdersH.PriceCode'
       'and Regions.RegionCode = OrdersH.RegionCode')
     Transaction = DM.DefTran
@@ -763,6 +767,7 @@ inherited SummaryForm: TSummaryForm
       '    PricesData,'
       '    Regions,'
       '    OrdersH,'
+      '    products,'
       '    catalogs, '
       '    Orders'
       
@@ -776,7 +781,8 @@ inherited SummaryForm: TSummaryForm
       'and Orders.OrderId=OrdersH.OrderId'
       'and Orders.OrderCount>0'
       'and Orders.CoreId is null'
-      'and catalogs.fullcode = orders.fullcode'
+      'and products.productid = orders.productid'
+      'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = OrdersH.PriceCode'
       'and Regions.RegionCode = OrdersH.RegionCode'
       'and ordersh.senddate >= :datefrom'

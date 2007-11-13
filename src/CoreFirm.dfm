@@ -714,6 +714,11 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
+    object adsCorePRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
+      Size = 0
+      RoundByScale = True
+    end
   end
   object adsCountFields: TpFIBDataSet
     SelectSQL.Strings = (
@@ -768,7 +773,7 @@ object CoreFirmForm: TCoreFirmForm
       'SELECT'
       '    *'
       'FROM'
-      '   PriceAVG'
+      '   ClientAVG'
       'where'
       '  ClientCode = :ACLIENTID')
     Transaction = DM.DefTran
@@ -778,14 +783,14 @@ object CoreFirmForm: TCoreFirmForm
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField
-      FieldName = 'ORDERPRICEAVG'
-      Size = 2
+    object adsOrdersShowFormSummaryPRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
+      Size = 0
       RoundByScale = True
     end
-    object adsOrdersShowFormSummaryFULLCODE: TFIBBCDField
-      FieldName = 'FULLCODE'
-      Size = 0
+    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
+      FieldName = 'PRICEAVG'
+      Size = 2
       RoundByScale = True
     end
   end

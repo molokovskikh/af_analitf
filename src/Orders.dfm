@@ -298,7 +298,8 @@ inherited OrdersForm: TOrdersForm
       'SELECT Orders.OrderId,'
       '    Orders.ClientId,'
       '    Orders.CoreId,'
-      '    Orders.fullcode,'
+      '    products.catalogid as fullcode,'
+      '    orders.productid,'
       '    Orders.codefirmcr,'
       '    Orders.synonymcode,'
       '    Orders.synonymfirmcrcode,'
@@ -317,6 +318,7 @@ inherited OrdersForm: TOrdersForm
       '    core.minordercount'
       'FROM '
       '  Orders'
+      '  left join products on products.productid = orders.productid'
       '  left join core on core.coreid = orders.coreid'
       'WHERE '
       '    (Orders.OrderId=:AOrderId)'
@@ -434,6 +436,11 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
+    end
+    object adsOrdersPRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
+      Size = 0
+      RoundByScale = True
     end
   end
   object tmrCheckOrderCount: TTimer

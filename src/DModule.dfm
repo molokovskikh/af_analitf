@@ -116,8 +116,8 @@ object DM: TDM
   end
   object MainConnection1: TpFIBDatabase
     DBName = 
-      'C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF R 4.2.151.470\src\bin' +
-      '\ANALITF.FDB'
+      'localhost:C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF R 4.2.151.4' +
+      '70\src\bin\ANALITF.FDB'
     DBParams.Strings = (
       'lc_ctype=WIN1251'
       'password=masterkey'
@@ -623,7 +623,7 @@ object DM: TDM
     SelectSQL.Strings = (
       'SELECT'
       '    CCore.CoreId AS CoreId,'
-      '    CCore.FullCode,'
+      '    catalogs.fullcode as FullCode,'
       '    catalogs.shortcode,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
@@ -652,7 +652,7 @@ object DM: TDM
       '    osbc.CoreId AS OrdersCoreId,'
       '    osbc.OrderId AS OrdersOrderId,'
       '    osbc.ClientId AS OrdersClientId,'
-      '    osbc.FullCode AS OrdersFullCode,'
+      '    catalogs.fullcode AS OrdersFullCode,'
       '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
       '    osbc.SynonymCode AS OrdersSynonymCode,'
       '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
@@ -673,10 +673,11 @@ object DM: TDM
       '    CCore.RequestRatio'
       'FROM'
       '    Core CCore'
-      '    left join catalogs on catalogs.fullcode = CCore.fullcode'
+      '    left join products on products.productid = CCore.productid'
+      '    left join catalogs on catalogs.fullcode = products.catalogid'
       
-        '    LEFT JOIN MinPrices ON CCore.FullCode=MinPrices.FullCode and' +
-        ' minprices.regioncode = :aregioncode'
+        '    LEFT JOIN MinPrices ON MinPrices.Productid = CCore.Productid' +
+        ' and minprices.regioncode = :aregioncode'
       
         '    left join Core LCore on LCore.servercoreid = minprices.serve' +
         'rcoreid and LCore.RegionCode = minprices.regioncode'
@@ -974,7 +975,8 @@ object DM: TDM
       '    Orders.OrderId,'
       '    Orders.ClientId,'
       '    Orders.CoreId,'
-      '    Orders.fullcode,'
+      '    products.catalogid as fullcode,'
+      '    Orders.productid,'
       '    Orders.codefirmcr,'
       '    Orders.synonymcode,'
       '    Orders.synonymfirmcrcode,'
@@ -986,10 +988,10 @@ object DM: TDM
       '    Orders.await,'
       '    Orders.junk,'
       '    Orders.ordercount,'
-      '    0*Orders.OrderCount AS SumOrder,'
       '    Orders.SendPrice'
       'FROM '
       '  Orders'
+      '  left join products on products.productid = orders.productid'
       'WHERE '
       '    (Orders.OrderId=:AOrderId) '
       'AND (Orders.OrderCount>0)'
@@ -1019,11 +1021,6 @@ object DM: TDM
     end
     object adsOrdersCOREID: TFIBBCDField
       FieldName = 'COREID'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsOrdersFULLCODE: TFIBBCDField
-      FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
@@ -1083,6 +1080,16 @@ object DM: TDM
     end
     object adsOrdersID: TFIBBCDField
       FieldName = 'ID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersPRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrdersFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
@@ -1415,7 +1422,7 @@ object DM: TDM
       '    ORDERS.ORDERID,'
       '    ORDERS.CLIENTID,'
       '    ORDERS.COREID,'
-      '    ORDERS.FULLCODE,'
+      '    ORDERS.PRODUCTID,'
       '    ORDERS.CODEFIRMCR,'
       '    ORDERS.SYNONYMCODE,'
       '    ORDERS.SYNONYMFIRMCRCODE,'
@@ -1458,11 +1465,6 @@ object DM: TDM
     end
     object adsAllOrdersCOREID: TFIBBCDField
       FieldName = 'COREID'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsAllOrdersFULLCODE: TFIBBCDField
-      FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
@@ -1520,12 +1522,19 @@ object DM: TDM
       Size = 60
       EmptyStrToNull = True
     end
+    object adsAllOrdersPRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
+      Size = 0
+      RoundByScale = True
+    end
   end
   object adsOrderCore: TpFIBDataSet
     SelectSQL.Strings = (
+      'SELECT * '
+      'FROM '
       
-        'SELECT * FROM CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTC' +
-        'ODE, :SHOWREGISTER, :REGISTERID)')
+        'CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SHOWREGI' +
+        'STER, :REGISTERID)')
     Transaction = DefTran
     Database = MainConnection1
     UpdateTransaction = UpTran
@@ -1556,6 +1565,11 @@ object DM: TDM
     end
     object adsOrderCoreCODEFIRMCR: TFIBBCDField
       FieldName = 'CODEFIRMCR'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsOrderCorePRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
       Size = 0
       RoundByScale = True
     end

@@ -193,7 +193,6 @@ type
     adsOrdersORDERID: TFIBBCDField;
     adsOrdersCLIENTID: TFIBBCDField;
     adsOrdersCOREID: TFIBBCDField;
-    adsOrdersFULLCODE: TFIBBCDField;
     adsOrdersCODEFIRMCR: TFIBBCDField;
     adsOrdersSYNONYMCODE: TFIBBCDField;
     adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
@@ -207,7 +206,6 @@ type
     adsAllOrdersORDERID: TFIBBCDField;
     adsAllOrdersCLIENTID: TFIBBCDField;
     adsAllOrdersCOREID: TFIBBCDField;
-    adsAllOrdersFULLCODE: TFIBBCDField;
     adsAllOrdersCODEFIRMCR: TFIBBCDField;
     adsAllOrdersSYNONYMCODE: TFIBBCDField;
     adsAllOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
@@ -272,6 +270,10 @@ type
     adsOrdersJUNK: TFIBBooleanField;
     adsOrdersID: TFIBBCDField;
     adtReceivedDocs: TpFIBDataSet;
+    adsOrdersPRODUCTID: TFIBBCDField;
+    adsOrdersFULLCODE: TFIBBCDField;
+    adsOrderCorePRODUCTID: TFIBBCDField;
+    adsAllOrdersPRODUCTID: TFIBBCDField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -335,11 +337,14 @@ type
       LineIndex: Integer;
       var Ignore: Boolean);
     //Обновление определенных данных в таблице
-    procedure UpdateDBFileDataFor35(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+{$ifdef DEBUG}
     procedure UpdateDBFileDataFor29(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor36(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+    procedure UpdateDBFileDataFor35(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor37(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor40(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+{$endif}
+    procedure UpdateDBFileDataFor42(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetLastCreateScript : String;
@@ -998,10 +1003,10 @@ end;
 //подключает в качестве внешних текстовые таблицы из папки In
 procedure TDM.LinkExternalTables;
 const
-  ExcludeExtTables : array[0..9] of string =
+  ExcludeExtTables : array[0..10] of string =
   ('EXTCORE', 'EXTSYNONYM', 'EXTREGISTRY', 'EXTMINPRICES', 'EXTPRICEAVG',
    'EXTCATALOGFARMGROUPS', 'EXTCATALOG', 'EXTCATDEL', 'EXTCATFARMGROUPSDEL',
-   'EXTCATALOGNAMES');
+   'EXTCATALOGNAMES', 'EXTPRODUCTS');
 var
   SR: TSearchRec;
   FileName,
@@ -1530,7 +1535,6 @@ end;
 procedure TDM.ReadPasswords;
 var
   SaveGridMaskStr : String;
-  pc : TINFCrypt;
 begin
   try
     SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
@@ -1957,77 +1961,32 @@ begin
       DBVersion := dbCon.QueryValue('select mdbversion from provider where id = 0', 0);
       dbCon.Close;
 
-      if DBVersion = 29 then begin
-        etlname := GetLastEtalonFileName;
-        //Если существует эталонный файл, то обновляем его
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor29);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor29);
-        DBVersion := 36;
-      end;
-
-      if DBVersion = 35 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor35);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor35);
-        DBVersion := 36;
-      end;
-
-      if DBVersion = 36 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor36);
-        DBVersion := 37;
-      end;
-
-      if DBVersion = 37 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor37);
-        DBVersion := 38;
-      end;
-
-      if DBVersion = 38 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 39;
-      end;
-
-      if DBVersion = 39 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 40;
-      end;
-
-      if DBVersion = 40 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor40);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor40);
-        DBVersion := 41;
-      end;
-
+      //Эта версия с 515, до нее автообновление не интересно
       if DBVersion = 41 then begin
         etlname := GetLastEtalonFileName;
+        //Если существует эталонный файл, то обновляем его
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
         RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 42;
       end;
-      
+
+      if DBVersion = 42 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor42);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor42);
+        DBVersion := 43;
+      end;
+
       if DBVersion <> CURRENT_DB_VERSION then
         raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
+      //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
+{$ifndef DEBUG}
       else
         RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
-{$ifdef not DEBUG}
-      ;
+{$else}
+        ;
 {$endif}
 
       //Если было произведено обновление программы, то обновляем ключи
@@ -2058,6 +2017,8 @@ begin
     FIBScript.Database := dbCon;
     FIBScript.Transaction := trMain;
     FIBScript.SQLDialect := dbCon.SQLDialect;
+    //Авто-коммит после каждого DDL-запроса
+    FIBScript.AutoDDL := True;
 
     try
 
@@ -2074,8 +2035,6 @@ begin
         try CompareScript.Free; except end;
       end;
 
-      trMain.StartTransaction;
-
       FIBScript.OnParseError := OnScriptParseError;
       try
         FIBScript.ValidateScript;
@@ -2089,8 +2048,6 @@ begin
       finally
         FIBScript.OnExecuteError := nil;
       end;
-
-      trMain.Commit;
 
       if Assigned(AOnUpdateDBFileData) then
         AOnUpdateDBFileData(dbCon, trMain);
@@ -2210,6 +2167,7 @@ begin
     Result := '';
 end;
 
+{$ifdef DEBUG}
 procedure TDM.UpdateDBFileDataFor35(dbCon: TpFIBDatabase;
   trMain: TpFIBTransaction);
 var
@@ -2288,30 +2246,7 @@ begin
     try adsAllOrdersUpdate.Free; except end;
   end;
 end;
-
-{
-        tr := TpFIBTransaction.Create(nil);
-        try
-          tr.DefaultDatabase := dbCon;
-          dbCon.DefaultTransaction := tr;
-
-          exc := TpFIBExtract.Create(nil);
-          try
-            exc.Database := dbCon;
-            exc.Transaction := tr;
-            exc.IncludeSetTerm := False;
-            exc.ExtractOptions := exc.ExtractOptions - [CreateDb];
-            exc.ExtractObject(eoDatabase);
-            exc.Items.SaveToFile('extract.sql');
-          finally
-            exc.Free;
-          end;
-
-        finally
-          tr.Free;
-        end;
-}
-
+{$endif}
 
 procedure TDM.CheckDBFile;
 var
@@ -2383,6 +2318,7 @@ begin
   end;
 end;
 
+{$ifdef DEBUG}
 procedure TDM.UpdateDBFileDataFor29(dbCon: TpFIBDatabase;
   trMain: TpFIBTransaction);
 var
@@ -2501,6 +2437,7 @@ begin
     try adsAllOrdersUpdate.Free; except end;
   end;
 end;
+{$endif}
 
 function TDM.D_29_C_OLD(c : TINFCrypt; CodeS: String): String;
 begin
@@ -2540,6 +2477,7 @@ begin
   Result := Ret;
 end;
 
+{$ifdef DEBUG}
 procedure TDM.UpdateDBFileDataFor36(dbCon: TpFIBDatabase;
   trMain: TpFIBTransaction);
 var
@@ -2644,6 +2582,7 @@ begin
     try adsAllOrdersUpdate.Free; except end;
   end;
 end;
+{$endif}
 
 function TDM.D_B_N_C(c: TINFCrypt; BaseC: String): String;
 var
@@ -2665,6 +2604,7 @@ begin
     Result := '';
 end;
 
+{$ifdef DEBUG}
 procedure TDM.UpdateDBFileDataFor37(dbCon: TpFIBDatabase;
   trMain: TpFIBTransaction);
 var
@@ -2706,6 +2646,8 @@ begin
 
   trMain.Commit;
 end;
+{$endif}
+
 
 procedure TDM.SetSendToNotClosedOrders;
 begin
@@ -3098,6 +3040,7 @@ begin
     Result := Result + ch[i] + PassPassW[i];
 end;
 
+{$ifdef DEBUG}
 procedure TDM.UpdateDBFileDataFor40(dbCon: TpFIBDatabase;
   trMain: TpFIBTransaction);
 var
@@ -3163,11 +3106,10 @@ begin
 
   trMain.Commit;
 end;
+{$endif}
 
 procedure TDM.UpdateDBUIN(dbCon: TpFIBDatabase; trMain: TpFIBTransaction);
 var
-  ch,
-  p,
   CDS,
   BaseCostPass,
   SynonymPass,
@@ -3176,7 +3118,6 @@ var
   oldSaveGrids,
   newCDS : String;
   pc : TINFCrypt;
-  I : Integer;
 begin
   try
     dbCon.Open();
@@ -3229,6 +3170,88 @@ begin
       AProc.LogCriticalError('Ошибка при обновлении UIN : ' + E.Message);
     end;
   end;
+end;
+
+procedure TDM.UpdateDBFileDataFor42(dbCon: TpFIBDatabase;
+  trMain: TpFIBTransaction);
+var
+  CDS,
+  BaseCostPass,
+  SynonymPass,
+  CodesPass,
+  oldDBUIN,
+  oldSaveGrids,
+  newCDS : String;
+  pc : TINFCrypt;
+  p, ch : String;
+  I : Integer;
+begin
+  trMain.StartTransaction;
+
+  try
+    CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
+    //Расчитываем уникальный идентификатор для старого exe (525) по старой формуле
+    ch := IntToHex(GetOld525UniqueID(Application.ExeName,
+{$ifdef DEBUG}
+'E99E483DDE777778ADEFCB3DCD988BC9'
+{$else}
+AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak')
+{$ENDIF}
+      ),
+      8);
+    p := '';
+    for I := 1 to Length(ch) do
+      p := p + ch[i] + PassPassW[i];
+    pc := TINFCrypt.Create(p, 48);
+    try
+      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
+      if Length(CDS) = 0 then
+        Exit;
+      SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
+      CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
+      BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
+      oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
+      oldSaveGrids := Copy(oldDBUIN, 9, 7);
+      oldDBUIN := Copy(oldDBUIN, 1, 8);
+    finally
+      pc.Free;
+    end;
+
+    if Length(BaseCostPass) = 0 then
+      raise Exception.Create('Нет необходимой информации.');
+    if Length(oldDBUIN) = 0 then
+      raise Exception.Create('Нет необходимой информации 2.');
+
+    //Обновляем значение CDS в базе с новым CopyID
+    //Шифруем данные с уникальным идентификатором старого exe (525) по новой формуле
+    pc := TINFCrypt.Create(gop, 48);
+    try
+      newCDS :=
+        pc.EncodeHex(SynonymPass) +
+        pc.EncodeHex(CodesPass) +
+        pc.EncodeHex(BaseCostPass) +
+        pc.EncodeHex(IntToHex(GetOldDBID(), 8) + oldSaveGrids);
+    finally
+      pc.Free;
+    end;
+
+    dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
+  except
+    on E : Exception do
+     raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
+  end;
+
+  trMain.Commit;
+
+  trMain.StartTransaction;
+
+  dbCon.QueryValue('select count(*) from MinPrices where ServerCoreID is not null', 0);
+
+  dbCon.QueryValue('select count(*) from Core where productid is not null', 0);
+
+  dbCon.QueryValue('select count(*) from PricesData where PriceFileDate is not null', 0);
+
+  trMain.Commit;
 end;
 
 initialization

@@ -12,6 +12,12 @@ RETURNS TIMESTAMP
 ENTRY_POINT 'addMinute' MODULE_NAME 'fbudf';
 
 
+DECLARE EXTERNAL FUNCTION ADDMONTH
+TIMESTAMP, INTEGER
+RETURNS TIMESTAMP
+ENTRY_POINT 'addMonth' MODULE_NAME 'fbudf';
+
+
 DECLARE EXTERNAL FUNCTION BIN_AND
 INTEGER, INTEGER
 RETURNS INTEGER BY VALUE 
@@ -175,7 +181,7 @@ CREATE TABLE CORE
   COREID	FB_ID,
   PRICECODE	FB_REF,
   REGIONCODE	FB_REF,
-  FULLCODE	FB_ID,
+  PRODUCTID	FB_ID,
   CODEFIRMCR	FB_REF,
   SYNONYMCODE	FB_REF,
   SYNONYMFIRMCRCODE	FB_REF,
@@ -230,7 +236,7 @@ CONSTRAINT PK_FLAGS PRIMARY KEY (ID)
 
 CREATE TABLE MINPRICES 
 (
-  FULLCODE	FB_ID,
+  PRODUCTID	FB_REF,
   REGIONCODE	FB_REF,
   SERVERCOREID	FB_REF,
   SERVERMEMOID	INTEGER
@@ -244,7 +250,7 @@ CREATE TABLE ORDERS
   ORDERID	FB_ID,
   CLIENTID	FB_ID,
   COREID	FB_REF,
-  FULLCODE	FB_ID,
+  PRODUCTID	FB_ID,
   CODEFIRMCR	FB_REF,
   SYNONYMCODE	FB_REF,
   SYNONYMFIRMCRCODE	FB_REF,
@@ -327,16 +333,6 @@ CREATE TABLE PARAMS
   USEOSOPENWAYBILL	FB_BOOLEAN DEFAULT 0,
   USEOSOPENREJECT	FB_BOOLEAN DEFAULT 1,
 CONSTRAINT PK_PARAMS PRIMARY KEY (ID)
-);
-
-/* Table: PRICEAVG, Owner: SYSDBA */
-
-CREATE TABLE PRICEAVG 
-(
-  CLIENTCODE	FB_ID,
-  FULLCODE	FB_ID,
-  ORDERPRICEAVG	NUMERIC(15, 2),
-CONSTRAINT PK_PRICEAVG PRIMARY KEY (CLIENTCODE, FULLCODE)
 );
 
 /* Table: PRICESDATA, Owner: SYSDBA */
@@ -430,6 +426,15 @@ CREATE TABLE PRICESREGIONALDATAUP
   REGIONCODE	FB_ID
 );
 
+/* Table: PRODUCTS, Owner: SYSDBA */
+
+CREATE TABLE PRODUCTS 
+(
+  PRODUCTID	FB_ID,
+  CATALOGID	FB_ID,
+CONSTRAINT PK_PRODUCTS PRIMARY KEY (PRODUCTID)
+);
+
 /* Table: PROVIDER, Owner: SYSDBA */
 
 CREATE TABLE PROVIDER 
@@ -516,7 +521,6 @@ CREATE TABLE SYNONYMFIRMCR
 (
   SYNONYMFIRMCRCODE	FB_ID,
   SYNONYMNAME	FB_VC250,
-  PRICECODE	FB_REF,
 CONSTRAINT PK_SYNONYMFIRMCR PRIMARY KEY (SYNONYMFIRMCRCODE)
 );
 
@@ -526,9 +530,6 @@ CREATE TABLE SYNONYMS
 (
   SYNONYMCODE	FB_ID,
   SYNONYMNAME	FB_VC250,
-  FULLCODE	FB_REF,
-  SHORTCODE	FB_REF,
-  PRICECODE	FB_REF,
 CONSTRAINT PK_SYNONYMS PRIMARY KEY (SYNONYMCODE)
 );
 
@@ -731,25 +732,26 @@ CREATE INDEX IDX_CATALOG_NAME ON CATALOGS(NAME);
 CREATE INDEX IDX_CATALOG_SHORTCODE ON CATALOGS(SHORTCODE);
 CREATE INDEX FK_CORE_SYNONYMCODE ON CORE(SYNONYMCODE);
 CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE(SYNONYMFIRMCRCODE);
-CREATE INDEX IDX_CORE_JUNK ON CORE(FULLCODE, JUNK);
+CREATE INDEX IDX_CORE_JUNK ON CORE(PRODUCTID, JUNK);
 CREATE INDEX IDX_CORE_SERVERCOREID ON CORE(SERVERCOREID);
 CREATE INDEX IDX_ORDERS_CODEFIRMCR ON ORDERS(CODEFIRMCR);
 CREATE INDEX IDX_ORDERS_COREID ON ORDERS(COREID);
-CREATE INDEX IDX_ORDERS_FULLCODE ON ORDERS(FULLCODE);
 CREATE INDEX IDX_ORDERS_ORDERCOUNT ON ORDERS(ORDERCOUNT);
+CREATE INDEX IDX_ORDERS_PRODUCTID ON ORDERS(PRODUCTID);
 CREATE INDEX IDX_ORDERS_SYNONYMCODE ON ORDERS(SYNONYMCODE);
 CREATE INDEX IDX_ORDERS_SYNONYMFIRMCRCODE ON ORDERS(SYNONYMFIRMCRCODE);
+CREATE INDEX IDX_ORDERSH_ORDERDATE ON ORDERSH(ORDERDATE);
 CREATE INDEX IDX_ORDERSH_PRICECODE ON ORDERSH(PRICECODE);
 CREATE INDEX IDX_ORDERSH_REGIONCODE ON ORDERSH(REGIONCODE);
+CREATE INDEX IDX_ORDERSH_SENDDATE ON ORDERSH(SENDDATE);
 CREATE UNIQUE INDEX IDX_REGIONS_REGIONNAME ON REGIONS(REGIONNAME);
-CREATE INDEX IDX_PRICECODE ON SYNONYMS(PRICECODE);
 CREATE INDEX IDX_SYNONYMNAME ON SYNONYMS(SYNONYMNAME);
 ALTER TABLE CATALOGFARMGROUPS ADD CONSTRAINT FK_CATALOG_FARM_GROUPS_PARENT FOREIGN KEY (PARENTID) REFERENCES CATALOGFARMGROUPS (ID) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE CLIENTS ADD CONSTRAINT FK_CLIENTS_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON DELETE SET NULL;
-ALTER TABLE CORE ADD CONSTRAINT FK_CORE_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRODUCTID FOREIGN KEY (PRODUCTID) REFERENCES PRODUCTS (PRODUCTID) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE;
-ALTER TABLE MINPRICES ADD CONSTRAINT FK_MINPRICES_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE MINPRICES ADD CONSTRAINT FK_MINPRICES_PRODUCTID FOREIGN KEY (PRODUCTID) REFERENCES PRODUCTS (PRODUCTID) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE MINPRICES ADD CONSTRAINT FK_MINPRICES_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ORDERS ADD CONSTRAINT FK_ORDERS_CLIENTID FOREIGN KEY (CLIENTID) REFERENCES CLIENTS (CLIENTID) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ORDERS ADD CONSTRAINT FK_ORDERS_ORDERID FOREIGN KEY (ORDERID) REFERENCES ORDERSH (ORDERID) ON UPDATE CASCADE ON DELETE CASCADE;
@@ -757,9 +759,9 @@ ALTER TABLE ORDERSH ADD CONSTRAINT FK_ORDERSH_CLIENTID FOREIGN KEY (CLIENTID) RE
 ALTER TABLE PRICESDATA ADD CONSTRAINT FK_PRICESDATA_FIRMCODE FOREIGN KEY (FIRMCODE) REFERENCES CLIENTSDATAN (FIRMCODE);
 ALTER TABLE PRICESREGIONALDATA ADD CONSTRAINT FK_PRD_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE;
 ALTER TABLE PRICESREGIONALDATA ADD CONSTRAINT FK_PRICESREGIONALDATA_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE PRODUCTS ADD CONSTRAINT FK_PRODUCTS_CATALOGID FOREIGN KEY (CATALOGID) REFERENCES CATALOGS (FULLCODE) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE REGIONALDATA ADD CONSTRAINT FK_REGIONALDATA_FIRMCODE FOREIGN KEY (FIRMCODE) REFERENCES CLIENTSDATAN (FIRMCODE) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE REGIONALDATA ADD CONSTRAINT FK_REGIONALDATA_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE;
-ALTER TABLE SYNONYMS ADD CONSTRAINT FK_SYNONYMS_FULLCODE FOREIGN KEY (FULLCODE) REFERENCES CATALOGS (FULLCODE) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE WAYBILLLIST ADD CONSTRAINT FK_WAYBILLLIST_SERVERWAYBILLID FOREIGN KEY (SERVERWAYBILLID) REFERENCES WAYBILLHEAD (SERVERID) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE GENERATOR GEN_CORE_ID;
@@ -768,6 +770,30 @@ CREATE GENERATOR GEN_ORDERS_ID;
 CREATE GENERATOR GEN_RECEIVEDDOCS_ID;
 CREATE GENERATOR GEN_REGISTRY_ID;
 CREATE GENERATOR GEN_RETAILMARGINS_ID;
+
+/* View: CLIENTAVG, Owner: SYSDBA */
+
+CREATE VIEW CLIENTAVG (
+  CLIENTCODE, 
+  PRODUCTID, 
+  PRICEAVG
+) AS
+select
+  ordersh.clientid as clientcode,
+  orders.productid,
+  avg(orders.sendprice)
+from
+  ordersh,
+  orders
+where
+    (orders.orderid = ordersh.orderid)
+and (ordersh.orderdate >= addmonth(current_date, -1))
+and (ordersh.closed = 1)
+and (ordersh.send = 1)
+and (orders.ordercount > 0)
+and (orders.sendprice is not null)
+group by ordersh.clientid, orders.productid
+;
 COMMIT WORK;
 SET AUTODDL OFF;
 
@@ -961,6 +987,7 @@ CREATE PROCEDURE CORESHOWBYFIRM
 RETURNS
 (
   COREID BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   SHORTCODE BIGINT,
   CODEFIRMCR BIGINT,
@@ -1028,6 +1055,7 @@ RETURNS
   COREID BIGINT,
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   SHORTCODE BIGINT,
   CODEFIRMCR BIGINT,
@@ -1095,6 +1123,7 @@ RETURNS
   COREID BIGINT,
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   SHORTCODE BIGINT,
   CODEFIRMCR BIGINT,
@@ -1240,6 +1269,13 @@ CREATE PROCEDURE CREATEEXTPRICESREGIONALDATA
 AS
 BEGIN EXIT; END ;
 
+CREATE PROCEDURE CREATEEXTPRODUCTS 
+(
+  PATH VARCHAR(255) CHARACTER SET WIN1251
+)
+AS
+BEGIN EXIT; END ;
+
 CREATE PROCEDURE CREATEEXTREGIONALDATA 
 (
   PATH VARCHAR(255) CHARACTER SET WIN1251
@@ -1301,6 +1337,7 @@ RETURNS
   COREID BIGINT,
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   CODEFIRMCR BIGINT,
   SYNONYMCODE BIGINT,
@@ -1357,35 +1394,11 @@ RETURNS
 AS
 BEGIN EXIT; END ;
 
-CREATE PROCEDURE GETWAREDATA 
-(
-  AFULLCODE BIGINT,
-  ACLIENTID BIGINT
-)
-RETURNS
-(
-  NAME VARCHAR(250) CHARACTER SET WIN1251,
-  FORM VARCHAR(250) CHARACTER SET WIN1251,
-  PRICEAVG NUMERIC(18, 2)
-)
-AS
-BEGIN EXIT; END ;
-
 CREATE PROCEDURE MINPRICESDELETEALL 
 AS
 BEGIN EXIT; END ;
 
 CREATE PROCEDURE MINPRICESINSERT 
-AS
-BEGIN EXIT; END ;
-
-CREATE PROCEDURE MINPRICES_IU 
-(
-  SERVERCOREID BIGINT,
-  SERVERMEMOID INTEGER,
-  FULLCODE BIGINT,
-  REGIONCODE BIGINT
-)
 AS
 BEGIN EXIT; END ;
 
@@ -1526,57 +1539,6 @@ CREATE PROCEDURE ORDERSSETCORENULL
 AS
 BEGIN EXIT; END ;
 
-CREATE PROCEDURE ORDERSSHOW 
-(
-  AORDERID BIGINT
-)
-RETURNS
-(
-  ORDERID BIGINT,
-  CLIENTID BIGINT,
-  COREID BIGINT,
-  FULLCODE BIGINT,
-  CODEFIRMCR BIGINT,
-  SYNONYMCODE BIGINT,
-  SYNONYMFIRMCRCODE BIGINT,
-  CODE VARCHAR(84) CHARACTER SET WIN1251,
-  CODECR VARCHAR(84) CHARACTER SET WIN1251,
-  SYNONYMNAME VARCHAR(250) CHARACTER SET WIN1251,
-  SYNONYMFIRM VARCHAR(250) CHARACTER SET WIN1251,
-  PRICE VARCHAR(60) CHARACTER SET WIN1251,
-  AWAIT INTEGER,
-  JUNK INTEGER,
-  ORDERCOUNT INTEGER,
-  SUMORDER NUMERIC(18, 2)
-)
-AS
-BEGIN EXIT; END ;
-
-CREATE PROCEDURE ORDERSSHOWBYCLIENT 
-(
-  ACLIENTID BIGINT
-)
-RETURNS
-(
-  ORDERID BIGINT,
-  CLIENTID BIGINT,
-  COREID BIGINT,
-  FULLCODE BIGINT,
-  CODEFIRMCR BIGINT,
-  SYNONYMCODE BIGINT,
-  SYNONYMFIRMCRCODE BIGINT,
-  CODE VARCHAR(84) CHARACTER SET WIN1251,
-  CODECR VARCHAR(84) CHARACTER SET WIN1251,
-  SYNONYMNAME VARCHAR(250) CHARACTER SET WIN1251,
-  SYNONYMFIRM VARCHAR(250) CHARACTER SET WIN1251,
-  PRICE VARCHAR(60) CHARACTER SET WIN1251,
-  AWAIT INTEGER,
-  JUNK INTEGER,
-  ORDERCOUNT INTEGER
-)
-AS
-BEGIN EXIT; END ;
-
 CREATE PROCEDURE ORDERSSHOWBYFORM 
 (
   AFULLCODE BIGINT,
@@ -1601,28 +1563,7 @@ RETURNS
 AS
 BEGIN EXIT; END ;
 
-CREATE PROCEDURE ORDERSSHOWFORMSUMMARY 
-(
-  AFULLCODE BIGINT,
-  ACLIENTID BIGINT
-)
-RETURNS
-(
-  PRICEAVG NUMERIC(18, 2)
-)
-AS
-BEGIN EXIT; END ;
-
 CREATE PROCEDURE PARAMSDELETEALL 
-AS
-BEGIN EXIT; END ;
-
-CREATE PROCEDURE PRICEAVG_IU 
-(
-  CLIENTCODE BIGINT,
-  FULLCODE BIGINT,
-  ORDERPRICEAVG NUMERIC(15, 2)
-)
 AS
 BEGIN EXIT; END ;
 
@@ -1819,23 +1760,11 @@ CREATE PROCEDURE SYNONYMDELETEALL
 AS
 BEGIN EXIT; END ;
 
-CREATE PROCEDURE SYNONYMDELETEFORMHEADERS 
-AS
-BEGIN EXIT; END ;
-
 CREATE PROCEDURE SYNONYMFIRMCRDELETEALL 
 AS
 BEGIN EXIT; END ;
 
 CREATE PROCEDURE SYNONYMFIRMCRINSERT 
-AS
-BEGIN EXIT; END ;
-
-CREATE PROCEDURE TESTWAYBILLHEADINSERT 
-AS
-BEGIN EXIT; END ;
-
-CREATE PROCEDURE TESTWAYBILLLISTINSERT 
 AS
 BEGIN EXIT; END ;
 
@@ -2623,11 +2552,25 @@ end
 
 ALTER PROCEDURE COREINSERTFORMHEADERS 
 AS
+declare variable distinctfullcode bigint;
 begin
-INSERT INTO Core ( FullCode, SynonymCode )
-SELECT DISTINCT CATALOGS.FullCode, -CATALOGS.FullCode
-FROM Core INNER JOIN CATALOGS ON Core.FullCode=CATALOGS.FullCode
-where not exists(select * from core c where c.Fullcode = catalogs.fullcode and c.synonymcode = -catalogs.fullcode);
+  for
+    select DISTINCT CATALOGS.FullCode
+    from
+      core
+      inner join products on products.productid = core.productid
+      inner join CATALOGS ON CATALOGS.FullCode = products.catalogid
+    into
+      :DistinctFullCode
+  do
+  begin
+    insert into Core (ProductId, SynonymCode)
+    select first 1 productid, -catalogid
+    from
+      products
+    where
+      products.catalogid = :DistinctFullCode;
+  end
 end
  ;
 
@@ -2641,6 +2584,7 @@ ALTER PROCEDURE CORESHOWBYFIRM
 RETURNS
 (
   COREID BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   SHORTCODE BIGINT,
   CODEFIRMCR BIGINT,
@@ -2697,7 +2641,8 @@ begin
 for
 SELECT
     CCore.CoreId AS CoreId,
-    CCore.FullCode,
+    CCore.productid,
+    catalogs.FullCode,
     catalogs.shortcode,
     CCore.CodeFirmCr,
     CCore.SynonymCode,
@@ -2724,7 +2669,7 @@ SELECT
     osbc.CoreId AS OrdersCoreId,
     osbc.OrderId AS OrdersOrderId,
     osbc.ClientId AS OrdersClientId,
-    osbc.FullCode AS OrdersFullCode,
+    catalogs.FullCode AS OrdersFullCode,
     osbc.CodeFirmCr AS OrdersCodeFirmCr,
     osbc.SynonymCode AS OrdersSynonymCode,
     osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,
@@ -2749,8 +2694,9 @@ SELECT
     CCore.minordercount
 FROM
     Core CCore
-    inner join catalogs      on catalogs.fullcode = CCore.fullcode
-    inner JOIN MinPrices     ON MinPrices.FullCode = CCore.FullCode and minprices.regioncode = CCore.regioncode
+    inner join products on products.productid = CCore.productid
+    inner join catalogs      on catalogs.fullcode = products.catalogid
+    inner JOIN MinPrices     ON MinPrices.productid = CCore.productid and minprices.regioncode = CCore.regioncode
     inner join Core LCore on LCore.servercoreid = minprices.servercoreid and LCore.RegionCode = minprices.regioncode
     inner JOIN PricesData ON PricesData.PriceCode=LCore.pricecode
     inner JOIN Regions       ON MinPrices.RegionCode=Regions.RegionCode
@@ -2760,6 +2706,7 @@ FROM
     LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId
 WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegionCode)
 into :CoreId,
+    :productid,
     :FullCode,
     :ShortCode,
     :CodeFirmCr,
@@ -2829,6 +2776,7 @@ RETURNS
   COREID BIGINT,
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   SHORTCODE BIGINT,
   CODEFIRMCR BIGINT,
@@ -2885,7 +2833,8 @@ begin
 FOR SELECT Core.CoreId,
     Core.PriceCode,
     Core.RegionCode,
-    Core.FullCode AS AFullCode,
+    Core.productid,
+    catalogs.fullcode AS AFullCode,
     catalogs.shortcode,
     Core.CodeFirmCr,
     Core.SynonymCode,
@@ -2914,7 +2863,7 @@ FOR SELECT Core.CoreId,
     osbc.CoreId AS OrdersCoreId,
     osbc.OrderId AS OrdersOrderId,
     osbc.ClientId AS OrdersClientId,
-    osbc.FullCode AS OrdersFullCode,
+    catalogs.fullcode AS OrdersFullCode,
     osbc.CodeFirmCr AS OrdersCodeFirmCr,
     osbc.SynonymCode AS OrdersSynonymCode,
     osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,
@@ -2939,8 +2888,9 @@ FOR SELECT Core.CoreId,
     core.ordercost,
     core.minordercount
 FROM
-    Core
-    left join catalogs on catalogs.fullcode = core.fullcode
+    Catalogs
+    inner join products on products.catalogid = catalogs.fullcode
+    INNER JOIN Core ON Core.productid = products.productid
     left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
     LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode
@@ -2950,11 +2900,12 @@ FROM
     LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode
     LEFT JOIN Orders osbc ON osbc.clientid = :aclientid and osbc.CoreId = Core.CoreId
     LEFT JOIN OrdersH ON OrdersH.OrderId = osbc.OrderId
-WHERE (Core.FullCode=:ParentCode)
+WHERE (Catalogs.FullCode=:ParentCode)
 And (:ShowRegister = 1 Or (ClientsDataN.FirmCode<>:RegisterId))
 into CoreId,
     :PriceCode,
     :RegionCode,
+    :productid,
     :FullCode,
     :ShortCode,
     :CodeFirmCr,
@@ -3024,6 +2975,7 @@ RETURNS
   COREID BIGINT,
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   SHORTCODE BIGINT,
   CODEFIRMCR BIGINT,
@@ -3080,7 +3032,8 @@ begin
 for SELECT Core.CoreId,
     Core.PriceCode,
     Core.RegionCode,
-    Core.FullCode AS AFullCode,
+    Core.productid, 
+    catalogs.fullcode AS AFullCode,
     Catalogs.ShortCode,
     Core.CodeFirmCr,
     Core.SynonymCode,
@@ -3109,7 +3062,7 @@ for SELECT Core.CoreId,
     osbc.CoreId AS OrdersCoreId,
     osbc.OrderId AS OrdersOrderId,
     osbc.ClientId AS OrdersClientId,
-    osbc.FullCode AS OrdersFullCode,
+    catalogs.fullcode AS OrdersFullCode,
     osbc.CodeFirmCr AS OrdersCodeFirmCr,
     osbc.SynonymCode AS OrdersSynonymCode,
     osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,
@@ -3135,7 +3088,8 @@ for SELECT Core.CoreId,
     core.minordercount
 FROM
     Catalogs
-    INNER JOIN Core ON Core.fullcode =Catalogs.fullcode
+    inner join products on products.catalogid = catalogs.fullcode
+    INNER JOIN Core ON Core.productid = products.productid
     LEFT JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
     LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode
@@ -3150,6 +3104,7 @@ And (:ShowRegister = 1 Or (ClientsDataN.FirmCode<>:RegisterId))
 into :CoreId,
     :PriceCode,
     :RegionCode,
+    :ProductId,
     :FullCode,
     :ShortCode,
     :CodeFirmCr,
@@ -3379,7 +3334,10 @@ ALTER PROCEDURE CREATEEXTMINPRICES
 AS
 begin
     execute statement 'Create Table EXTMINPRICES (
-    FULLCODE   FB_ID /* FB_ID = BIGINT NOT NULL */);';
+    PRODUCTID   FB_ID /* FB_ID = BIGINT NOT NULL */,
+    REGIONCODE  fb_ref,
+    SERVERCOREID fb_ref,
+    SERVERMEMOID fb_REF);';
 end
  ;
 
@@ -3486,6 +3444,19 @@ end
  ;
 
 
+ALTER PROCEDURE CREATEEXTPRODUCTS 
+(
+  PATH VARCHAR(255) CHARACTER SET WIN1251
+)
+AS
+begin
+  execute statement 'Create Table EXTPRODUCTS (
+    PRODUCTID   FB_ID /* FB_ID = BIGINT NOT NULL */,
+    CATALOGID  fb_ref);';
+end
+ ;
+
+
 ALTER PROCEDURE CREATEEXTREGIONALDATA 
 (
   PATH VARCHAR(255) CHARACTER SET WIN1251
@@ -3573,8 +3544,7 @@ AS
 begin
   execute statement 'CREATE TABLE ExtSynonymFirmCr (
     SYNONYMFIRMCRCODE  FB_ID /* FB_ID = BIGINT NOT NULL */,
-    SYNONYMNAME        FB_VC255 /* FB_VC255 = VARCHAR(255) */,
-    PRICECODE          FB_REF /* FB_REF = BIGINT */
+    SYNONYMNAME        FB_VC255 /* FB_VC255 = VARCHAR(255) */
 );';
 end
  ;
@@ -3609,6 +3579,7 @@ RETURNS
   COREID BIGINT,
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
+  PRODUCTID BIGINT,
   FULLCODE BIGINT,
   CODEFIRMCR BIGINT,
   SYNONYMCODE BIGINT,
@@ -3659,7 +3630,8 @@ begin
 for SELECT Core.CoreId,
     Core.PriceCode,
     Core.RegionCode,
-    Core.FullCode,
+    Core.productid,
+    catalogs.fullcode,
     Core.CodeFirmCr,
     Core.SynonymCode,
     Core.SynonymFirmCrCode,
@@ -3679,7 +3651,7 @@ for SELECT Core.CoreId,
     osbc.CoreId AS OrdersCoreId,
     osbc.OrderId AS OrdersOrderId,
     osbc.ClientId AS OrdersClientId,
-    osbc.FullCode AS OrdersFullCode,
+    catalogs.fullcode AS OrdersFullCode,
     osbc.CodeFirmCr AS OrdersCodeFirmCr,
     osbc.SynonymCode AS OrdersSynonymCode,
     osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,
@@ -3707,18 +3679,20 @@ FROM
     Core
     left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode
     left JOIN Regions ON Core.RegionCode=Regions.RegionCode
-    left join catalogs on catalogs.fullcode = core.fullcode
+    left join products on products.productid = core.productid
+    left join catalogs on catalogs.fullcode = products.catalogid
     left JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
     LEFT JOIN Orders osbc ON osbc.clientid = :AClientId and osbc.CoreId=Core.CoreId
     LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId
 WHERE
-    (Core.fullcode > 0)
+    (Core.productid > 0)
 and (Core.Junk = 1)
 and ((:ACoreID is not null and Core.coreid = :ACoreID) or (:ACoreID is null))
 into :CoreId,
     :PriceCode,
     :RegionCode,
+    :productid,
     :FullCode,
     :CodeFirmCr,
     :SynonymCode,
@@ -3792,42 +3766,6 @@ end
  ;
 
 
-ALTER PROCEDURE GETWAREDATA 
-(
-  AFULLCODE BIGINT,
-  ACLIENTID BIGINT
-)
-RETURNS
-(
-  NAME VARCHAR(250) CHARACTER SET WIN1251,
-  FORM VARCHAR(250) CHARACTER SET WIN1251,
-  PRICEAVG NUMERIC(18, 2)
-)
-AS
-begin
-for  SELECT
-    CATALOGS.Name,
-    CATALOGS.Form,
-    0 AS PriceAvg
-   FROM
-    (CATALOGS LEFT JOIN OrdersShowByClient(:AClientId) osbc ON CATALOGS.FullCode=osbc.FullCode)
-    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId
-  WHERE
-    (CATALOGS.FullCode=:AFullCode)
-    And ( (OrdersH.Closed = 1) or (OrdersH.Closed Is Null) )
-    And (( ((extract(year from current_date) - extract(year from OrdersH.OrderDate))* 12 + extract(month
-from current_date) - extract(month from OrdersH.OrderDate)) < 6) Or (OrdersH.OrderDate Is Null))
-  GROUP BY CATALOGS.Name, CATALOGS.Form
-  into
-    :Name,
-    :Form,
-    :PriceAvg
-do
-  suspend;
-end
- ;
-
-
 ALTER PROCEDURE MINPRICESDELETEALL 
 AS
 begin
@@ -3839,53 +3777,14 @@ end
 ALTER PROCEDURE MINPRICESINSERT 
 AS
 begin
-  INSERT INTO MinPrices ( FullCode, RegionCode )
+  INSERT INTO MinPrices ( productid, RegionCode )
   select
-    distinct c.fullcode, c.regioncode
+    distinct c.productid, c.regioncode
   from
     core c
   where
         c.Synonymcode > 0
-    and not exists(select * from minprices m where m.fullcode = c.fullcode and m.regioncode = c.regioncode);
-end
- ;
-
-
-ALTER PROCEDURE MINPRICES_IU 
-(
-  SERVERCOREID BIGINT,
-  SERVERMEMOID INTEGER,
-  FULLCODE BIGINT,
-  REGIONCODE BIGINT
-)
-AS
-declare variable oldcoreid bigint;
-declare variable oldmemoid integer;
-begin
-  if (exists(select * from minprices where fullcode = :fullcode and regioncode = :regioncode)) then
-  begin
-    select servercoreid, servermemoid from minprices where fullcode = :fullcode and regioncode = :regioncode
-    into
-      :oldcoreid,
-      :oldmemoid;
-    if ((:oldcoreid is null) or (:oldmemoid is null) or (bin_xor(99999900, :oldmemoid) > bin_xor(99999900, :servermemoid)) ) then
-    update minprices
-    set servercoreid = :servercoreid,
-        servermemoid = :servermemoid
-    where
-      fullcode = :fullcode and regioncode = :regioncode;
-  end
-  else
-    insert into minprices (
-        fullcode,
-        regioncode,
-        servercoreid,
-        servermemoid)
-    values (
-        :fullcode,
-        :regioncode,
-        :servercoreid,
-        :servermemoid);
+    and not exists(select * from minprices m where m.productid = c.productid and m.regioncode = c.regioncode);
 end
  ;
 
@@ -4235,136 +4134,6 @@ end
  ;
 
 
-ALTER PROCEDURE ORDERSSHOW 
-(
-  AORDERID BIGINT
-)
-RETURNS
-(
-  ORDERID BIGINT,
-  CLIENTID BIGINT,
-  COREID BIGINT,
-  FULLCODE BIGINT,
-  CODEFIRMCR BIGINT,
-  SYNONYMCODE BIGINT,
-  SYNONYMFIRMCRCODE BIGINT,
-  CODE VARCHAR(84) CHARACTER SET WIN1251,
-  CODECR VARCHAR(84) CHARACTER SET WIN1251,
-  SYNONYMNAME VARCHAR(250) CHARACTER SET WIN1251,
-  SYNONYMFIRM VARCHAR(250) CHARACTER SET WIN1251,
-  PRICE VARCHAR(60) CHARACTER SET WIN1251,
-  AWAIT INTEGER,
-  JUNK INTEGER,
-  ORDERCOUNT INTEGER,
-  SUMORDER NUMERIC(18, 2)
-)
-AS
-begin
-For SELECT Orders.OrderId,
-    Orders.ClientId,
-    Orders.CoreId,
-    Orders.fullcode,
-    Orders.codefirmcr,
-    Orders.synonymcode,
-    Orders.synonymfirmcrcode,
-    Orders.code,
-    Orders.codecr,
-    Orders.synonymname,
-    Orders.synonymfirm,
-    Orders.price,
-    Orders.await,
-    Orders.junk,
-    Orders.ordercount,
-    0*Orders.OrderCount AS SumOrder
-FROM Orders
-WHERE (Orders.OrderId=:AOrderId AND OrderCount>0)
-ORDER BY SynonymName, SynonymFirm
-into
-    :OrderId,
-    :ClientId,
-    :CoreId,
-    :fullcode,
-    :codefirmcr,
-    :synonymcode,
-    :SynonymFirmCrCode,
-    :code,
-    :codecr,
-    :synonymname,
-    :synonymfirm,
-    :price,
-    :await,
-    :junk,
-    :ordercount,
-    :SumOrder
-do
-  suspend;
-end
- ;
-
-
-ALTER PROCEDURE ORDERSSHOWBYCLIENT 
-(
-  ACLIENTID BIGINT
-)
-RETURNS
-(
-  ORDERID BIGINT,
-  CLIENTID BIGINT,
-  COREID BIGINT,
-  FULLCODE BIGINT,
-  CODEFIRMCR BIGINT,
-  SYNONYMCODE BIGINT,
-  SYNONYMFIRMCRCODE BIGINT,
-  CODE VARCHAR(84) CHARACTER SET WIN1251,
-  CODECR VARCHAR(84) CHARACTER SET WIN1251,
-  SYNONYMNAME VARCHAR(250) CHARACTER SET WIN1251,
-  SYNONYMFIRM VARCHAR(250) CHARACTER SET WIN1251,
-  PRICE VARCHAR(60) CHARACTER SET WIN1251,
-  AWAIT INTEGER,
-  JUNK INTEGER,
-  ORDERCOUNT INTEGER
-)
-AS
-begin
-For SELECT Orders.OrderId,
-    Orders.ClientId,
-    Orders.CoreId,
-    Orders.fullcode,
-    Orders.codefirmcr,
-    Orders.synonymcode,
-    Orders.synonymfirmcrcode,
-    Orders.code,
-    Orders.codecr,
-    Orders.synonymName,
-    Orders.synonymfirm,
-    Orders.price,
-    Orders.await,
-    Orders.junk,
-    Orders.ordercount
-FROM Orders
-WHERE ClientId=:AClientId
-into
-    :OrderId,
-    :ClientId,
-    :CoreId,
-    :fullcode,
-    :codefirmcr,
-    :synonymcode,
-    :SynonymFirmCrCode,
-    :code,
-    :codecr,
-    :synonymName,
-    :synonymfirm,
-    :price,
-    :await,
-    :junk,
-    :ordercount
-do
-  suspend;
-end
- ;
-
-
 ALTER PROCEDURE ORDERSSHOWBYFORM 
 (
   AFULLCODE BIGINT,
@@ -4390,7 +4159,7 @@ AS
 begin
 for SELECT 
     first 20
-    FullCode,
+    products.catalogid as FullCode,
     Code,
     CodeCR,
     SynonymName,
@@ -4405,10 +4174,12 @@ for SELECT
     orders.sendprice
 FROM
   Orders osbc
+  inner join products on products.productid = osbc.productid
   INNER JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId
 WHERE
-    osbc.clientid = :AClientID
-and osbc.OrderCount>0 And FullCode=:AFullCode
+    (osbc.clientid = :AClientID)
+and (osbc.OrderCount > 0)
+and (products.catalogid = :AFullCode)
 And ((OrdersH.Closed = 1) Or (OrdersH.Closed Is Null))
 ORDER BY OrdersH.OrderDate DESC
 into :FullCode,
@@ -4430,66 +4201,10 @@ end
  ;
 
 
-ALTER PROCEDURE ORDERSSHOWFORMSUMMARY 
-(
-  AFULLCODE BIGINT,
-  ACLIENTID BIGINT
-)
-RETURNS
-(
-  PRICEAVG NUMERIC(18, 2)
-)
-AS
-begin
-for SELECT 
-  Avg(0) AS PriceAvg
-FROM Orders INNER JOIN OrdersH ON OrdersH.OrderId=Orders.OrderId
-WHERE Orders.FullCode=:AFullCode
-    And Orders.OrderCount>0
-    And (OrdersH.ClientId=:AClientId) And ( ((extract(year from current_date) - extract(year from OrdersH.OrderDate))* 12 + extract(month
-from current_date) - extract(month from OrdersH.OrderDate)) < 6)
-    AND (OrdersH.Closed = 1 OR
-    (OrdersH.Closed IS NULL) )
-into :PriceAvg
-do
-  suspend;
-when any do
-begin
-  PriceAvg = null;
-end
-end
- ;
-
-
 ALTER PROCEDURE PARAMSDELETEALL 
 AS
 begin
 DELETE FROM Params;
-end
- ;
-
-
-ALTER PROCEDURE PRICEAVG_IU 
-(
-  CLIENTCODE BIGINT,
-  FULLCODE BIGINT,
-  ORDERPRICEAVG NUMERIC(15, 2)
-)
-AS
-begin
-  if (exists(select clientcode from priceavg where (clientcode = :clientcode) and  (fullcode = :fullcode))) then
-    update priceavg
-    set orderpriceavg = :orderpriceavg
-    where (clientcode = :clientcode) and (fullcode = :fullcode);
-  else
-    insert into priceavg (
-        clientcode,
-        fullcode,
-        orderpriceavg)
-    values (
-        :clientcode,
-        :fullcode,
-        :orderpriceavg);
 end
  ;
 
@@ -5327,7 +5042,8 @@ FROM
     Regions,
     Core,
     OrdersH,
-    catalogs, 
+    catalogs,
+    products, 
     Orders
     left join Synonyms on Orders.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
@@ -5336,7 +5052,8 @@ WHERE
 and Orders.OrderId=OrdersH.OrderId
 and Orders.OrderCount>0
 and Core.CoreId=Orders.CoreId
-and catalogs.fullcode = orders.fullcode
+and products.productid = orders.productid
+and catalogs.fullcode = products.catalogid
 and PricesData.PriceCode = OrdersH.PriceCode
 and Regions.RegionCode = OrdersH.RegionCode
 and ordersh.orderdate >= :datefrom
@@ -5428,7 +5145,8 @@ FROM
     PricesData,
     Regions,
     OrdersH,
-    catalogs, 
+    catalogs,
+    products,
     Orders
     left join Synonyms on Orders.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
@@ -5437,7 +5155,8 @@ WHERE
 and Orders.OrderId=OrdersH.OrderId
 and Orders.OrderCount>0
 and Orders.CoreId is null
-and catalogs.fullcode = orders.fullcode
+and products.productid = orders.productid
+and catalogs.fullcode = products.catalogid
 and PricesData.PriceCode = OrdersH.PriceCode
 and Regions.RegionCode = OrdersH.RegionCode
 and ordersh.orderdate >= :datefrom
@@ -5478,15 +5197,6 @@ end
  ;
 
 
-ALTER PROCEDURE SYNONYMDELETEFORMHEADERS 
-AS
-begin
-DELETE FROM Synonyms
-WHERE SynonymCode<0;
-end
- ;
-
-
 ALTER PROCEDURE SYNONYMFIRMCRDELETEALL 
 AS
 begin
@@ -5499,64 +5209,11 @@ ALTER PROCEDURE SYNONYMFIRMCRINSERT
 AS
 begin
 EXECUTE STATEMENT 'INSERT INTO SynonymFirmCr
-(SynonymFirmCrCode, SynonymName, PriceCode)
-SELECT SynonymFirmCrCode, SynonymName, nullif(ltrim(PriceCode), '''')
+(SynonymFirmCrCode, SynonymName)
+SELECT SynonymFirmCrCode, SynonymName
 FROM ExtSynonymFirmCr ESFC
 WHERE Not Exists(SELECT SynonymFirmCrCode
                 FROM SynonymFirmCr WHERE SynonymFirmCrCode=ESFC.SynonymFirmCrCode);';
-end
- ;
-
-
-ALTER PROCEDURE TESTWAYBILLHEADINSERT 
-AS
-begin
-INSERT INTO WayBillHead
-SELECT OrdersH.ServerOrderID AS ServerID,
-    OrdersH.ServerOrderID AS ServerOrderID,
-    Current_Date AS WriteTime,
-    OrdersH.ClientId AS ClientID,
-    OrdersH.PriceCode AS PriceCode,
-    OrdersH.RegionCode AS RegionCode,
-    OrdersH.PriceName AS PriceName,
-    OrdersH.RegionName AS RegionName,
-    Null AS FirmComment,
-    Count(*) AS RowCount
-FROM OrdersH INNER JOIN Orders ON OrdersH.OrderId=Orders.OrderId
-WHERE (OrdersH.ServerOrderID<>0)
-    AND NOT EXISTS(SELECT  WBH.ServerID FROM WayBillHead WBH
-                        WHERE  WBH.ServerID = OrdersH.ServerOrderID)
-GROUP BY OrdersH.ServerOrderID,
-         OrdersH.PriceCode,
-         OrdersH.OrderId,
-         OrdersH.ClientId,
-         OrdersH.RegionCode,
-         OrdersH.PriceName,
-         OrdersH.RegionName;
-end
- ;
-
-
-ALTER PROCEDURE TESTWAYBILLLISTINSERT 
-AS
-begin
-INSERT INTO WayBillList
-SELECT Orders.Id AS ServerID,
-    WBH.ServerID AS ServerWayBillID,
-    Orders.FullCode AS FullCode,
-    Orders.CodeFirmCr AS CodeFirmCr,
-    Orders.SynonymCode AS SynonymCode,
-    Orders.SynonymFirmCrCode AS SynonymFirmCrCode,
-    Orders.SynonymName AS SynonymName, Orders.SynonymFirm AS SynonymFirm,
-    Orders.Code AS Code,
-    Orders.CodeCr AS CodeCr,
-    Orders.OrderCount AS Quantity,
-    Orders.Price AS Cost
-FROM (WayBillHead WBH INNER JOIN OrdersH OrdH
-    ON WBH.ServerOrderID=OrdH.ServerOrderId) INNER JOIN Orders
-    ON OrdH.OrderId=Orders.OrderId
-WHERE NOT EXISTS(SELECT  WBL.ServerID FROM WayBillList WBL
-                WHERE  WBL.ServerID = Orders.ID);
 end
  ;
 
@@ -5880,11 +5537,12 @@ begin
     select orderid from orders where coreid = :coreid and orderid = :orderid into :ordersorderid;
     if (ordersorderid is null) then
     begin
-      INSERT INTO ORDERS(ORDERID, CLIENTID, COREID, FULLCODE, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, PRICE, AWAIT, JUNK, ORDERCOUNT )
-        select :ORDERID, :CLIENTID, :COREID, c.FULLCODE, c.CODEFIRMCR, c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, coalesce(s.SynonymName, catalogs.name || ' ' || catalogs.form) as SynonymName, sf.synonymname, c.basecost, c.AWAIT, c.JUNK, :ORDERCOUNT
+      INSERT INTO ORDERS(ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, PRICE, AWAIT, JUNK, ORDERCOUNT )
+        select :ORDERID, :CLIENTID, :COREID, c.PRODUCTID, c.CODEFIRMCR, c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, coalesce(s.SynonymName, catalogs.name || ' ' || catalogs.form) as SynonymName, sf.synonymname, c.basecost, c.AWAIT, c.JUNK, :ORDERCOUNT
         from
           core c
-          left join catalogs on catalogs.fullcode = c.fullcode
+          left join products p on p.productid = c.productid
+          left join catalogs on catalogs.fullcode = p.catalogid
           left join synonyms s on s.synonymcode = c.synonymcode
           left join synonymfirmcr sf on sf.synonymfirmcrcode = c.synonymfirmcrcode
         where

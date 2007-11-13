@@ -69,7 +69,6 @@ type
     pWebBrowser: TPanel;
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
-    adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
     adsExpiredsBASECOST: TFIBStringField;
     adsExpiredsORDERSPRICE: TFIBStringField;
     adsExpiredsDOC: TFIBStringField;
@@ -78,6 +77,7 @@ type
     adsExpiredsREQUESTRATIO: TFIBIntegerField;
     adsExpiredsORDERCOST: TFIBBCDField;
     adsExpiredsMINORDERCOUNT: TFIBIntegerField;
+    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -193,7 +193,7 @@ begin
 		{ проверяем на превышение цены }
 		if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) then
 		begin
-			PriceAvg := adsOrdersShowFormSummaryORDERPRICEAVG.AsCurrency;
+			PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
 			if ( PriceAvg > 0) and ( adsExpiredsCryptBASECOST.AsCurrency>PriceAvg*(1+Excess/100)) then
 			begin
 				plOverCost.Top := ( dbgExpireds.Height - plOverCost.Height) div 2;

@@ -23,7 +23,6 @@ object FormsHistoryForm: TFormsHistoryForm
     Height = 13
     AutoSize = True
     DataField = 'Name'
-    DataSource = dsWareData
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -38,7 +37,6 @@ object FormsHistoryForm: TFormsHistoryForm
     Height = 13
     AutoSize = True
     DataField = 'Form'
-    DataSource = dsWareData
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -66,7 +64,6 @@ object FormsHistoryForm: TFormsHistoryForm
     Height = 13
     AutoSize = True
     DataField = 'PriceAvg'
-    DataSource = dsWareData
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -173,11 +170,6 @@ object FormsHistoryForm: TFormsHistoryForm
     Left = 112
     Top = 200
   end
-  object dsWareData: TDataSource
-    DataSet = adsWareData
-    Left = 208
-    Top = 192
-  end
   object adsOrders: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
@@ -260,20 +252,5 @@ object FormsHistoryForm: TFormsHistoryForm
       Size = 2
       RoundByScale = True
     end
-  end
-  object adsWareData: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    NAME,'
-      '    FORM,'
-      '    PRICEAVG'
-      'FROM'
-      '    GETWAREDATA(:AFULLCODE,'
-      '    :ACLIENTID) ')
-    Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    Left = 208
-    Top = 152
-    oCacheCalcFields = True
   end
 end

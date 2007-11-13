@@ -524,7 +524,7 @@ inherited OrdersHForm: TOrdersHForm
     SelectSQL.Strings = (
       'SELECT'
       '    CCore.CoreId AS CoreId,'
-      '    CCore.FullCode,'
+      '    catalogs.fullcode as FullCode,'
       '    catalogs.shortcode,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
@@ -553,7 +553,7 @@ inherited OrdersHForm: TOrdersHForm
       '    osbc.CoreId AS OrdersCoreId,'
       '    osbc.OrderId AS OrdersOrderId,'
       '    osbc.ClientId AS OrdersClientId,'
-      '    osbc.FullCode AS OrdersFullCode,'
+      '    catalogs.fullcode AS OrdersFullCode,'
       '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
       '    osbc.SynonymCode AS OrdersSynonymCode,'
       '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
@@ -574,10 +574,11 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.RequestRatio'
       'FROM'
       '    Core CCore'
-      '    left join catalogs on catalogs.fullcode = CCore.fullcode'
+      '    left join products on products.productid = CCore.productid'
+      '    left join catalogs on catalogs.fullcode = products.catalogid'
       
-        '    LEFT JOIN MinPrices ON CCore.FullCode=MinPrices.FullCode and' +
-        ' minprices.regioncode = :aregioncode'
+        '    LEFT JOIN MinPrices ON MinPrices.productid = CCore.productid' +
+        ' and minprices.regioncode = :aregioncode'
       
         '    left join Core LCore on LCore.servercoreid = minprices.serve' +
         'rcoreid and LCore.RegionCode = minprices.regioncode'

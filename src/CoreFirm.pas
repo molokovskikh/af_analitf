@@ -89,8 +89,6 @@ type
     adsCoreLEADERCODE: TFIBStringField;
     adsCoreLEADERCODECR: TFIBStringField;
     adsCoreCryptLEADERPRICE: TCurrencyField;
-    adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField;
-    adsOrdersShowFormSummaryFULLCODE: TFIBBCDField;
     adsCoreBASECOST: TFIBStringField;
     adsCoreLEADERPRICE: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
@@ -104,6 +102,9 @@ type
     adsCoreWithLike: TpFIBDataSet;
     adsCoreORDERCOST: TFIBBCDField;
     adsCoreMINORDERCOUNT: TFIBIntegerField;
+    adsCorePRODUCTID: TFIBBCDField;
+    adsOrdersShowFormSummaryPRODUCTID: TFIBBCDField;
+    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -369,9 +370,9 @@ begin
 		{ проверяем на превышение цены }
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
-      if (adsOrdersShowFormSummary.Locate('FULLCODE', adsCoreFULLCODE.AsVariant, [])) then
+      if (adsOrdersShowFormSummary.Locate('PRODUCTID', adsCorePRODUCTID.AsVariant, [])) then
       begin
-			PriceAvg := adsOrdersShowFormSummaryORDERPRICEAVG.AsCurrency;
+			PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
 			if ( PriceAvg > 0) and ( adsCoreCryptBASECOST.AsCurrency>PriceAvg*(1+Excess/100)) then
 			begin
 				plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;

@@ -51,6 +51,7 @@ type
     tmrCheckOrderCount: TTimer;
     adsOrdersORDERCOST: TFIBBCDField;
     adsOrdersMINORDERCOUNT: TFIBIntegerField;
+    adsOrdersPRODUCTID: TFIBBCDField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

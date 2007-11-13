@@ -332,7 +332,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         Width = 70
         Height = 13
         AutoSize = True
-        DataField = 'ORDERPRICEAVG'
+        DataField = 'PRICEAVG'
         DataSource = dsOrdersShowFormSummary
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -445,7 +445,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.CoreId,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
-      '    Core.FullCode AS FullCode,'
+      '    Core.ProductID,'
+      '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
@@ -482,7 +483,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.CoreId AS OrdersCoreId,'
       '    osbc.OrderId AS OrdersOrderId,'
       '    osbc.ClientId AS OrdersClientId,'
-      '    osbc.FullCode AS OrdersFullCode,'
+      '    catalogs.FullCode AS OrdersFullCode,'
       '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
       '    osbc.SynonymCode AS OrdersSynonymCode,'
       '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
@@ -509,7 +510,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
-      '    left join catalogs on catalogs.fullcode = core.fullcode'
+      '    left join products on products.productid = core.productid'
+      '    left join catalogs on catalogs.fullcode = products.catalogid'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
@@ -806,6 +808,11 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
+    object adsCorePRODUCTID: TFIBBCDField
+      FieldName = 'PRODUCTID'
+      Size = 0
+      RoundByScale = True
+    end
   end
   object adsRegions: TpFIBDataSet
     SelectSQL.Strings = (
@@ -869,10 +876,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'SELECT'
       '    *'
       'FROM'
-      '   PriceAVG'
+      '   ClientAVG'
       'where'
       '  ClientCode = :ACLIENTID'
-      'and FullCode = :FullCode')
+      'and ProductId = :ProductId')
     Transaction = DM.DefTran
     Database = DM.MainConnection1
     Left = 400
@@ -880,8 +887,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryORDERPRICEAVG: TFIBBCDField
-      FieldName = 'ORDERPRICEAVG'
+    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
+      FieldName = 'PRICEAVG'
       Size = 2
       RoundByScale = True
     end
