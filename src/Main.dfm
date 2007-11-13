@@ -629,7 +629,7 @@ object MainForm: TMainForm
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
       Hint = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1090#1077#1082#1091#1097#1091#1102' '#1090#1072#1073#1083#1080#1094#1091
       ImageIndex = 21
-      ShortCut = 16467
+      ShortCut = 16468
       OnExecute = actSaveExecute
       OnUpdate = actSaveUpdate
     end
