@@ -35,8 +35,13 @@ begin
 	Minor := DWORD( HIBYTE( LOWORD( Version)));
 	result := False;
 
-	if (( Version < $80000000) and                 // The OS is a NT family
-		( Major >= 5) and ( Minor >= 1))       // Windows NT 5.1 is an Windows XP version
+	if (
+       ( Version < $80000000) and             // The OS is a NT family
+		   (
+            (( Major = 5) and ( Minor >= 1))  // Windows NT 5.1 is an Windows XP version
+         or (Major >= 6 )                     // Vista and great
+       )
+    )
 		then result := True;
 end;
 
