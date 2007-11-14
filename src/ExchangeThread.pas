@@ -152,7 +152,7 @@ implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Exclusive, 
   U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
-  U_RecvThread;
+  U_RecvThread, Constant;
 
 { TExchangeThread }
 
@@ -791,7 +791,7 @@ begin
 			values[ i * OrderParamCount + 9] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
       values[ i * OrderParamCount + 10] := DM.adsOrders.FieldByName( 'Code').AsString;
       values[ i * OrderParamCount + 11] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
-			values[ i * OrderParamCount + 12] := DM.adsOrders.FieldByName( 'Ordercount').AsString;
+			values[ i * OrderParamCount + 12] := IfThen(DM.adsOrders.FieldByName( 'Ordercount').AsInteger <= MaxOrderCount, DM.adsOrders.FieldByName( 'Ordercount').AsString, IntToStr(MaxOrderCount)) ;
 			values[ i * OrderParamCount + 13] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
 			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
       try

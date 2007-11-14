@@ -16,6 +16,11 @@ const
 
 	JET_SCHEMA_USERROSTER = '{947bb102-5d43-11d1-bdbf-00c04fb92675}';
 
+  //Кол-во заказа, котором отображается предупреждение
+  WarningOrderCount : Integer = 1000;
+  //Максимальное кол-во заказа, которое может принять сервер
+  MaxOrderCount : Integer = 65535;
+
 implementation
 
 end.

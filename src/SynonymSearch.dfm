@@ -9,29 +9,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object plOverCost: TPanel [0]
-    Left = 248
-    Top = 192
-    Width = 305
-    Height = 57
-    Caption = #1055#1088#1077#1074#1099#1096#1077#1085#1080#1077' '#1089#1088#1077#1076#1085#1077#1081' '#1094#1077#1085#1099'!'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clRed
-    Font.Height = -21
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 0
-    Visible = False
-  end
-  object pTop: TPanel [1]
+  object pTop: TPanel [0]
     Left = 0
     Top = 0
     Width = 792
     Height = 37
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 1
+    TabOrder = 0
     object lFilter: TLabel
       Left = 442
       Top = 8
@@ -86,14 +71,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Layout = blGlyphRight
     end
   end
-  object pCenter: TPanel [2]
+  object pCenter: TPanel [1]
     Left = 0
     Top = 37
     Width = 792
     Height = 405
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 1
     object dbgCore: TToughDBGrid
       Tag = 32
       Left = 0
@@ -294,14 +279,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
         end>
     end
   end
-  object pBottom: TPanel [3]
+  object pBottom: TPanel [2]
     Left = 0
     Top = 442
     Width = 792
     Height = 131
     Align = alBottom
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 2
     object gbPrevOrders: TGroupBox
       Left = 0
       Top = 0
@@ -406,6 +391,35 @@ inherited SynonymSearchForm: TSynonymSearchForm
             Width = 68
           end>
       end
+    end
+  end
+  object plOverCost: TPanel [3]
+    Left = 104
+    Top = 232
+    Width = 545
+    Height = 97
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -21
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 3
+    Visible = False
+    DesignSize = (
+      545
+      97)
+    object lWarning: TLabel
+      Left = 1
+      Top = 8
+      Width = 543
+      Height = 81
+      Alignment = taCenter
+      Anchors = [akLeft, akTop, akRight]
+      AutoSize = False
+      Caption = 
+        #1055#1088#1077#1074#1099#1096#1077#1085#1080#1077' '#1089#1088#1077#1076#1085#1077#1081' '#1094#1077#1085#1099'!'#13#10#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1085#1077#1082#1086#1085#1076#1080#1094#1080#1086#1085#1085#1099#1081' '#1087#1088#1077#1087#1072#1088#1072#1090'.'#13#10 +
+        #1042#1085#1080#1084#1072#1085#1080#1077'! '#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1073#1086#1083#1100#1096#1086#1077' '#1082#1086#1083#1080#1095#1077#1089#1090#1074#1086' '#1087#1088#1077#1087#1072#1088#1072#1090#1072'.'
     end
   end
   object dsCore: TDataSource

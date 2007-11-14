@@ -18,11 +18,10 @@ object CoreForm: TCoreForm
   PixelsPerInch = 96
   TextHeight = 13
   object plOverCost: TPanel
-    Left = 248
-    Top = 192
-    Width = 305
-    Height = 57
-    Caption = #1055#1088#1077#1074#1099#1096#1077#1085#1080#1077' '#1089#1088#1077#1076#1085#1077#1081' '#1094#1077#1085#1099'!'
+    Left = 96
+    Top = 104
+    Width = 545
+    Height = 97
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clRed
     Font.Height = -21
@@ -31,6 +30,21 @@ object CoreForm: TCoreForm
     ParentFont = False
     TabOrder = 2
     Visible = False
+    DesignSize = (
+      545
+      97)
+    object lWarning: TLabel
+      Left = 1
+      Top = 8
+      Width = 543
+      Height = 81
+      Alignment = taCenter
+      Anchors = [akLeft, akTop, akRight]
+      AutoSize = False
+      Caption = 
+        #1055#1088#1077#1074#1099#1096#1077#1085#1080#1077' '#1089#1088#1077#1076#1085#1077#1081' '#1094#1077#1085#1099'!'#13#10#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1085#1077#1082#1086#1085#1076#1080#1094#1080#1086#1085#1085#1099#1081' '#1087#1088#1077#1087#1072#1088#1072#1090'.'#13#10 +
+        #1042#1085#1080#1084#1072#1085#1080#1077'! '#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1073#1086#1083#1100#1096#1086#1077' '#1082#1086#1083#1080#1095#1077#1089#1090#1074#1086' '#1087#1088#1077#1087#1072#1088#1072#1090#1072'.'
+    end
   end
   object pBottom: TPanel
     Left = 0
@@ -327,40 +341,6 @@ object CoreForm: TCoreForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
-    object pWebBrowser: TPanel
-      Tag = 84
-      Left = 0
-      Top = 329
-      Width = 792
-      Height = 84
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 0
-      Visible = False
-      object Bevel1: TBevel
-        Left = 0
-        Top = 0
-        Width = 792
-        Height = 4
-        Align = alTop
-        Shape = bsTopLine
-      end
-      object WebBrowser1: TWebBrowser
-        Tag = 3
-        Left = 0
-        Top = 4
-        Width = 792
-        Height = 80
-        Align = alClient
-        TabOrder = 0
-        ControlData = {
-          4C000000DB510000450800000000000000000000000000000000000000000000
-          000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126208000000000000004C0000000114020000000000C000000000000046
-          8000000000000000000000000000000000000000000000000000000000000000
-          00000000000000000100000000000000000000000000000000000000}
-      end
-    end
     object dbgCore: TToughDBGrid
       Tag = 16384
       Left = 0
@@ -379,7 +359,9 @@ object CoreForm: TCoreForm
       FooterFont.Style = []
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
       OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+      ParentShowHint = False
       ReadOnly = True
+      ShowHint = False
       TabOrder = 1
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
@@ -556,6 +538,40 @@ object CoreForm: TCoreForm
           Width = 51
         end>
     end
+    object pWebBrowser: TPanel
+      Tag = 84
+      Left = 0
+      Top = 329
+      Width = 792
+      Height = 84
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 0
+      Visible = False
+      object Bevel1: TBevel
+        Left = 0
+        Top = 0
+        Width = 792
+        Height = 4
+        Align = alTop
+        Shape = bsTopLine
+      end
+      object WebBrowser1: TWebBrowser
+        Tag = 3
+        Left = 0
+        Top = 4
+        Width = 792
+        Height = 80
+        Align = alClient
+        TabOrder = 0
+        ControlData = {
+          4C000000DB510000450800000000000000000000000000000000000000000000
+          000000004C000000000000000000000001000000E0D057007335CF11AE690800
+          2B2E126208000000000000004C0000000114020000000000C000000000000046
+          8000000000000000000000000000000000000000000000000000000000000000
+          00000000000000000100000000000000000000000000000000000000}
+      end
+    end
   end
   object dsCore: TDataSource
     DataSet = adsCore
@@ -591,8 +607,8 @@ object CoreForm: TCoreForm
     Top = 216
   end
   object ActionList: TActionList
-    Left = 352
-    Top = 192
+    Left = 304
+    Top = 248
     object actFlipCore: TAction
       ShortCut = 113
       OnExecute = actFlipCoreExecute

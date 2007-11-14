@@ -101,6 +101,9 @@ type
     actFlipCore: TAction;
     adsSummaryFULLCODE: TFIBBCDField;
     adsSummarySHORTCODE: TFIBBCDField;
+    plOverCost: TPanel;
+    lWarning: TLabel;
+    Timer: TTimer;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -123,6 +126,7 @@ type
     procedure miSelectedAllClick(Sender: TObject);
     procedure miUnselectedAllClick(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
+    procedure TimerTimer(Sender: TObject);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
@@ -147,7 +151,7 @@ procedure ShowSummary;
 
 implementation
 
-uses DModule, Main, AProc, Constant, NamesForms;
+uses DModule, Main, AProc, Constant, NamesForms, RxStrUtils;
 
 var
   LastDateFrom,
@@ -223,6 +227,7 @@ end;
 
 procedure TSummaryForm.ShowForm;
 begin
+  plOverCost.Hide();
 	SummaryShow;
 	SummaryHShow;
 	inherited;
@@ -336,6 +341,8 @@ end;
 procedure TSummaryForm.adsSummary2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
+  PanelCaption : String;
+  PanelHeight : Integer;
 begin
 	try
 		{ проверяем заказ на соответствие наличию товара на складе }
@@ -344,6 +351,29 @@ begin
 		if ( Quantity > 0) and ( adsSummaryORDERCOUNT.AsInteger > Quantity) and
 			( MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
 			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsSummaryORDERCOUNT.AsInteger := Quantity;
+      
+    PanelCaption := '';
+    
+    if (adsSummaryORDERCOUNT.AsInteger > WarningOrderCount) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+      else
+        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+
+    if Length(PanelCaption) > 0 then begin
+      if Timer.Enabled then
+        Timer.OnTimer(nil);
+
+      lWarning.Caption := PanelCaption;
+      PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
+      plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
+
+      plOverCost.Top := ( dbgSummary.Height - plOverCost.Height) div 2;
+      plOverCost.Left := ( dbgSummary.Width - plOverCost.Width) div 2;
+      plOverCost.BringToFront;
+      plOverCost.Show;
+      Timer.Enabled := True;
+    end;
 	except
 		adsSummary.Cancel;
 		raise;
@@ -513,6 +543,13 @@ begin
   CoreId := adsSummaryCOREID.AsInt64;
 
   FlipToCode(FullCode, ShortCode, CoreId);
+end;
+
+procedure TSummaryForm.TimerTimer(Sender: TObject);
+begin
+	Timer.Enabled := False;
+	plOverCost.Hide;
+	plOverCost.SendToBack;
 end;
 
 initialization

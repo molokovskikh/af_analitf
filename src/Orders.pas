@@ -52,6 +52,9 @@ type
     adsOrdersORDERCOST: TFIBBCDField;
     adsOrdersMINORDERCOUNT: TFIBIntegerField;
     adsOrdersPRODUCTID: TFIBBCDField;
+    plOverCost: TPanel;
+    lWarning: TLabel;
+    Timer: TTimer;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -64,6 +67,8 @@ type
     procedure FormCreate(Sender: TObject);
     procedure dbgOrdersKeyPress(Sender: TObject; var Key: Char);
     procedure tmrCheckOrderCountTimer(Sender: TObject);
+    procedure TimerTimer(Sender: TObject);
+    procedure adsOrdersBeforePost(DataSet: TDataSet);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
@@ -85,12 +90,13 @@ var
 
 implementation
 
-uses OrdersH, DModule, Constant, Main, Math, CoreFirm;
+uses OrdersH, DModule, Constant, Main, Math, CoreFirm, RxStrUtils;
 
 {$R *.dfm}
 
 procedure TOrdersForm.ShowForm(AOrderId: Integer);
 begin
+  plOverCost.Hide();
   //PrintEnabled:=False;
   dbgOrders.Tag := IfThen(OrdersHForm.TabControl.TabIndex = 1, 1, 2);
   SaveEnabled := OrdersHForm.TabControl.TabIndex = 1;
@@ -272,6 +278,42 @@ begin
   else begin
     OrdersHForm.adsOrdersHForm.Refresh;
     MainForm.SetOrdersInfo;
+  end;
+end;
+
+procedure TOrdersForm.TimerTimer(Sender: TObject);
+begin
+	Timer.Enabled := False;
+	plOverCost.Hide;
+	plOverCost.SendToBack;
+end;
+
+procedure TOrdersForm.adsOrdersBeforePost(DataSet: TDataSet);
+var
+  PanelCaption : String;
+  PanelHeight : Integer;
+begin
+  PanelCaption := '';
+
+  if (adsOrdersORDERCOUNT.AsInteger > WarningOrderCount) then
+    if Length(PanelCaption) > 0 then
+      PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+    else
+      PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+
+  if Length(PanelCaption) > 0 then begin
+    if Timer.Enabled then
+      Timer.OnTimer(nil);
+
+    lWarning.Caption := PanelCaption;
+    PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
+    plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
+
+    plOverCost.Top := ( dbgOrders.Height - plOverCost.Height) div 2;
+    plOverCost.Left := ( dbgOrders.Width - plOverCost.Width) div 2;
+    plOverCost.BringToFront;
+    plOverCost.Show;
+    Timer.Enabled := True;
   end;
 end;
 

@@ -126,6 +126,7 @@ type
     adsCoreMINORDERCOUNT: TFIBIntegerField;
     adsCorePRODUCTID: TFIBBCDField;
     adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
+    lWarning: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -171,7 +172,7 @@ var
 implementation
 
 uses Main, AProc, DModule, NamesForms, Constant, OrdersH, DBProc, CoreFirm,
-  Prices;
+  Prices, RxStrUtils;
 
 var
   UserSetRetUpCost : Boolean;
@@ -234,6 +235,7 @@ var
 	FirstPrice, PrevPrice, D: Currency;
 	OrdersH: TOrdersHForm;
 begin
+  plOverCost.Hide();
   //≈сли в прошлый раз пользователь изменил наценку, то выставл€ем ее
   if UserSetRetUpCost then
     seRetUpCost.Value := RetUpCostValue;
@@ -397,6 +399,8 @@ procedure TCoreForm.adsCore2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
 	PriceAvg: Double;
+  PanelCaption : String;
+  PanelHeight : Integer;
 begin
 	try
 		{ провер€ем заказ на соответствие наличию товара на складе }
@@ -406,19 +410,45 @@ begin
 			( MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
 			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
+    PanelCaption := '';
+
 		{ провер€ем на превышение цены }
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
 			PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
 			if ( PriceAvg > 0) and ( adsCoreCryptBASECOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
 			begin
-				plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-				plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-				plOverCost.BringToFront;
-				plOverCost.Show;
-				Timer.Enabled := True;
+        PanelCaption := 'ѕревышение средней цены!';
 			end;
 		end;
+
+    if (adsCoreJUNK.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + '¬ы заказали некондиционный препарат.'
+      else
+        PanelCaption := '¬ы заказали некондиционный препарат.';
+
+    if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + '¬нимание! ¬ы заказали большое количество препарата.'
+      else
+        PanelCaption := '¬нимание! ¬ы заказали большое количество препарата.';
+
+    if Length(PanelCaption) > 0 then begin
+      if Timer.Enabled then
+        Timer.OnTimer(nil);
+
+      lWarning.Caption := PanelCaption;
+      PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
+      plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
+      
+      plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
+      plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
+      plOverCost.BringToFront;
+      plOverCost.Show;
+      Timer.Enabled := True;
+    end;
+
   except
 		adsCore.Cancel;
 		raise;

@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses Main, AProc, DBGridEh;
+uses Main, AProc, DBGridEh, Constant;
 
 {$R *.DFM}
 
@@ -258,6 +258,14 @@ end;
 procedure TChildForm.ShowVolumeMessage;
 begin
   tCheckVolume.Enabled := False;
+
+  //Проверка на максимальную сумму заказа, выставляемую сервером
+  if fOrder.AsInteger > MaxOrderCount then begin
+    SoftEdit(dsCheckVolume);
+    fOrder.AsInteger := MaxOrderCount;
+    dsCheckVolume.Post;
+  end;
+
   if (dsCheckVolume.RecordCount > 0) and not CheckVolume then begin
     AProc.MessageBox(
       Format('Заказ "%s" не кратен минимальному отпуску "%s" по данной позиции!', [fOrder.AsString, fVolume.AsString]),
