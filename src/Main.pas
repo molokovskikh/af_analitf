@@ -608,14 +608,24 @@ end;
 procedure TMainForm.actSaveExecute(Sender: TObject);
 var
   SaveGridFlag : Boolean;
+  ParentForm : TForm;
+  DBGirdName : String;
 begin
   if ( Screen.ActiveControl <> nil) and
 		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
   then begin
     SaveGridFlag := ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
-    AProc.LogCriticalError('SE.' + TCustomDBGridEh(Screen.ActiveControl).Name + ' : ' + BoolToStr(SaveGridFlag) );
+
     if not SaveGridFlag then
       Exit;
+      
+    ParentForm := GetParentForm(Screen.ActiveControl);
+    if Assigned(ParentForm) then
+      DBGirdName := ParentForm.Name + '.' + TCustomDBGridEh(Screen.ActiveControl).Name
+    else
+      DBGirdName := TCustomDBGridEh(Screen.ActiveControl).Name;
+    AProc.LogCriticalError('SE.' + DBGirdName + ' : ' + BoolToStr(SaveGridFlag) );
+    
     SaveGrid( TCustomDBGridEh( Screen.ActiveControl));
   end;
 end;
