@@ -453,7 +453,11 @@ inherited SummaryForm: TSummaryForm
       '   COREID = :ORDERSCOREID'
       'and ORDERID = :ORDERSORDERID')
     SelectSQL.Strings = (
-      'SELECT Core.Volume,'
+      'SELECT '
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Core.CoreId,'
+      '    Core.Volume,'
       '    Core.Quantity,'
       '    Core.Note,'
       '    Core.Period,'
@@ -638,11 +642,26 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
-      Size = 1
+      Size = 2
       RoundByScale = True
     end
     object adsSummaryMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
+    end
+    object adsSummaryCOREID: TFIBBCDField
+      FieldName = 'COREID'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSummaryFULLCODE: TFIBBCDField
+      FieldName = 'FULLCODE'
+      Size = 0
+      RoundByScale = True
+    end
+    object adsSummarySHORTCODE: TFIBBCDField
+      FieldName = 'SHORTCODE'
+      Size = 0
+      RoundByScale = True
     end
   end
   object adsSummaryH: TpFIBDataSet
@@ -676,7 +695,11 @@ inherited SummaryForm: TSummaryForm
   end
   object adsCurrentSummary: TpFIBDataSet
     SelectSQL.Strings = (
-      'SELECT Core.Volume,'
+      'SELECT '
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Core.CoreID,'
+      '    Core.Volume,'
       '    Core.Quantity,'
       '    Core.Note,'
       '    Core.Period,'
@@ -736,6 +759,9 @@ inherited SummaryForm: TSummaryForm
   object adsSendSummary: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT '
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Orders.CoreId AS CoreId,'
       '    cast('#39#39' as varchar(15)) as Volume,'
       '    cast('#39#39' as varchar(15)) as Quantity,'
       '    cast('#39#39' as varchar(50)) as Note,'
@@ -888,6 +914,15 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSendSummaryREGISTRYCOST: TFIBFloatField
       FieldName = 'REGISTRYCOST'
+    end
+  end
+  object ActionList: TActionList
+    Left = 352
+    Top = 192
+    object actFlipCore: TAction
+      Caption = 'actFlipCore'
+      ShortCut = 113
+      OnExecute = actFlipCoreExecute
     end
   end
 end

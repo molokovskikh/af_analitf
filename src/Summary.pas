@@ -7,7 +7,8 @@ uses
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils;
+  pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
+  ActnList;
 
 const
 	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
@@ -95,6 +96,11 @@ type
     adsSummarySENDPRICE: TFIBBCDField;
     adsSummaryORDERCOST: TFIBBCDField;
     adsSummaryMINORDERCOUNT: TFIBIntegerField;
+    adsSummaryCOREID: TFIBBCDField;
+    ActionList: TActionList;
+    actFlipCore: TAction;
+    adsSummaryFULLCODE: TFIBBCDField;
+    adsSummarySHORTCODE: TFIBBCDField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -116,6 +122,7 @@ type
     procedure btnSelectPricesClick(Sender: TObject);
     procedure miSelectedAllClick(Sender: TObject);
     procedure miUnselectedAllClick(Sender: TObject);
+    procedure actFlipCoreExecute(Sender: TObject);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
@@ -140,7 +147,7 @@ procedure ShowSummary;
 
 implementation
 
-uses DModule, Main, AProc, Constant;
+uses DModule, Main, AProc, Constant, NamesForms;
 
 var
   LastDateFrom,
@@ -177,6 +184,8 @@ begin
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
+  dtpDateFrom.Enabled := LastSymmaryType = 1;
+  dtpDateTo.Enabled := dtpDateFrom.Enabled;
 	Reg := TRegIniFile.Create;
   try
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
@@ -487,6 +496,23 @@ end;
 procedure TSummaryForm.miUnselectedAllClick(Sender: TObject);
 begin
   ChangeSelected(False);
+end;
+
+procedure TSummaryForm.actFlipCoreExecute(Sender: TObject);
+var
+	FullCode, ShortCode: integer;
+  CoreId : Int64;
+begin
+	if MainForm.ActiveChild <> Self then exit;
+  if adsSummary.IsEmpty then Exit;
+  if LastSymmaryType <> 0 then Exit;
+
+	FullCode := adsSummaryFullCode.AsInteger;
+	ShortCode := adsSummaryShortCode.AsInteger;
+
+  CoreId := adsSummaryCOREID.AsInt64;
+
+  FlipToCode(FullCode, ShortCode, CoreId);
 end;
 
 initialization

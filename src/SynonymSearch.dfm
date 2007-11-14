@@ -432,6 +432,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object actFlipCore: TAction
       Caption = 'actFlipCore'
       ShortCut = 113
+      OnExecute = actFlipCoreExecute
     end
   end
   object adsCore: TpFIBDataSet

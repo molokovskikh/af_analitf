@@ -138,6 +138,7 @@ type
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
+    procedure actFlipCoreExecute(Sender: TObject);
   private
     { Private declarations }
     fr : TForceRus;
@@ -166,7 +167,7 @@ procedure ShowSynonymSearch;
 implementation
 
 uses
-  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps;
+  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms;
 
 {$R *.dfm}
 
@@ -548,6 +549,22 @@ procedure TSynonymSearchForm.adsCoreSTORAGEGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
 begin
   Text := Iif(Sender.AsBoolean, '+', '');
+end;
+
+procedure TSynonymSearchForm.actFlipCoreExecute(Sender: TObject);
+var
+	FullCode, ShortCode: integer;
+  CoreId : Int64;
+begin
+	if MainForm.ActiveChild <> Self then exit;
+  if adsCore.IsEmpty then Exit;
+  
+	FullCode := adsCoreFullCode.AsInteger;
+	ShortCode := adsCoreShortCode.AsInteger;
+
+  CoreId := adsCoreCOREID.AsInt64;
+
+  FlipToCode(FullCode, ShortCode, CoreId);
 end;
 
 end.

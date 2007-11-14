@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
   SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, FIBQuery, Constant,
-  GridsEh;
+  GridsEh, ActnList;
 
 const
 	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID) ORDER BY ';
@@ -78,6 +78,8 @@ type
     adsExpiredsORDERCOST: TFIBBCDField;
     adsExpiredsMINORDERCOUNT: TFIBIntegerField;
     adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
+    ActionList: TActionList;
+    actFlipCore: TAction;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -91,6 +93,7 @@ type
     procedure dbgExpiredsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure adsExpiredsBeforeEdit(DataSet: TDataSet);
+    procedure actFlipCoreExecute(Sender: TObject);
   private
     ClientId: Integer;
     UseExcess: Boolean;
@@ -106,7 +109,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main;
+  Main, NamesForms;
 
 procedure TExpiredsForm.FormCreate(Sender: TObject);
 var
@@ -269,6 +272,22 @@ end;
 procedure TExpiredsForm.adsExpiredsBeforeEdit(DataSet: TDataSet);
 begin
   DM.SetOldOrderCount(adsExpiredsORDERCOUNT.AsInteger);
+end;
+
+procedure TExpiredsForm.actFlipCoreExecute(Sender: TObject);
+var
+	FullCode, ShortCode: integer;
+  CoreId : Int64;
+begin
+	if MainForm.ActiveChild <> Self then exit;
+  if adsExpireds.IsEmpty then Exit;
+
+	FullCode := adsExpiredsFullCode.AsInteger;
+	ShortCode := DM.MainConnection1.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), 0);
+
+  CoreId := adsExpiredsCOREID.AsInt64;
+
+  FlipToCode(FullCode, ShortCode, CoreId);
 end;
 
 end.

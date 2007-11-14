@@ -173,7 +173,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, Core, AlphaUtils, Orders;
+  NamesForms, AlphaUtils, Orders;
 
 {$R *.DFM}
 
@@ -524,50 +524,18 @@ end;
 
 procedure TCoreFirmForm.actFlipCoreExecute(Sender: TObject);
 var
-	FullCode, ShortCode, lPriceCode, lRegionCode: integer;
-	SynonymCode, SynonymFirmCrCode: integer;
+	FullCode, ShortCode: integer;
+  CoreId : Int64;
 begin
 	if MainForm.ActiveChild <> Self then exit;
   if Self.PrevForm is TOrdersForm then exit;
+
 	FullCode := adsCoreFullCode.AsInteger;
 	ShortCode := adsCoreShortCode.AsInteger;
-	SynonymCode := adsCoreSynonymCode.AsInteger;
-	SynonymFirmCrCode := adsCoreSynonymFirmCrCode.AsInteger;
-	lPriceCode := PriceCode;
-	lRegionCode := RegionCode;
-	ShowOrderAll;
 
-	with TNamesFormsForm( MainForm.ActiveChild) do
-	begin
-    if actNewSearch.Checked then begin
-      SetCatalog;
-      adsCatalog.Locate('FullCode', FullCode, []);
-      CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
-        adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
-        True, True);
-    end
-    else begin
-      adsNames.Locate( 'AShortCode', ShortCode, []);
+  CoreId := adsCoreCOREID.AsInt64;
 
-      if not actUseForms.Checked then
-        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-          adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
-      if actUseForms.Checked and ( adsForms.RecordCount < 2) then
-        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-          adsNames.FieldByName( 'Name').AsString,
-          adsForms.FieldByName( 'Form').AsString, False, False);
-      if actUseForms.Checked and ( adsForms.RecordCount > 1) then
-      begin
-        adsForms.Locate( 'FullCode', FullCode, []);
-        CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
-          adsNames.FieldByName( 'Name').AsString,
-          adsForms.FieldByName( 'Form').AsString,
-          actUseForms.Checked, False);
-      end;
-    end;
-		CoreForm.adsCore.Locate( 'SynonymCode;SynonymFirmCrCode;PriceCode;RegionCode',
-			VarArrayOf([ SynonymCode, SynonymFirmCrCode, lPriceCode, lRegionCode]), []);
-	end;
+  FlipToCode(FullCode, ShortCode, CoreId);
 end;
 
 procedure TCoreFirmForm.dbgCoreKeyPress(Sender: TObject; var Key: Char);

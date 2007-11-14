@@ -97,6 +97,8 @@ type
 
 procedure ShowOrderAll;
 
+procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
+
 implementation
 
 uses DModule, AProc, Core, Main, Types, AlphaUtils;
@@ -109,6 +111,42 @@ var
 procedure ShowOrderAll;
 begin
   MainForm.ShowChildForm(TNamesFormsForm);
+end;
+
+procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
+begin
+	ShowOrderAll;
+
+	with TNamesFormsForm( MainForm.ActiveChild) do
+	begin
+    if actNewSearch.Checked then begin
+      SetCatalog;
+      adsCatalog.Locate('FullCode', FullCode, []);
+      CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+        adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
+        True, True);
+    end
+    else begin
+      adsNames.Locate( 'AShortCode', ShortCode, []);
+
+      if not actUseForms.Checked then
+        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
+      if actUseForms.Checked and ( adsForms.RecordCount < 2) then
+        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString,
+          adsForms.FieldByName( 'Form').AsString, False, False);
+      if actUseForms.Checked and ( adsForms.RecordCount > 1) then
+      begin
+        adsForms.Locate( 'FullCode', FullCode, []);
+        CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString,
+          adsForms.FieldByName( 'Form').AsString,
+          actUseForms.Checked, False);
+      end;
+    end;
+		CoreForm.adsCore.Locate( 'CoreId', CoreId, []);
+	end;
 end;
 
 procedure TNamesFormsForm.FormCreate(Sender: TObject);

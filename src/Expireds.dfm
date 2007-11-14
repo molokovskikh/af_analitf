@@ -586,4 +586,13 @@ inherited ExpiredsForm: TExpiredsForm
       RoundByScale = True
     end
   end
+  object ActionList: TActionList
+    Left = 352
+    Top = 192
+    object actFlipCore: TAction
+      Caption = 'actFlipCore'
+      ShortCut = 113
+      OnExecute = actFlipCoreExecute
+    end
+  end
 end

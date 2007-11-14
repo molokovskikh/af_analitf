@@ -595,24 +595,24 @@ end;
 
 procedure TCoreForm.actFlipCoreExecute(Sender: TObject);
 var
-	SynonymCode, SynonymFirmCrCode, PriceCode, RegionCode: integer;
+	PriceCode, RegionCode: integer;
+  CoreId : Int64;
   PriceName, RegionName : String;
 begin
 	if MainFOrm.ActiveChild <> Self then exit;
-	SynonymCode := adsCoreSynonymCode.AsInteger;
-	SynonymFirmCrCode := adsCoreSynonymFirmCrCode.AsInteger;
+
 	PriceCode := adsCorePriceCode.AsInteger;
 	RegionCode := adsCoreRegionCode.AsInteger;
   PriceName := adsCorePRICENAME.AsString;
   RegionName := adsCoreREGIONNAME.AsString;
+  CoreId := adsCoreCOREID.AsInt64;
 	ShowPrices;
 
 	with TPricesForm( MainForm.ActiveChild) do
 	begin
 		adsPrices.Locate( 'PriceCode;RegionCode', VarArrayOf([ PriceCode, RegionCode]), []);
 		CoreFirmForm.ShowForm( PriceCode, RegionCode, PriceName, RegionName, actOnlyLeaders.Checked);
-		CoreFirmForm.adsCore.Locate( 'SynonymCode;SynonymFirmCrCode',
-			VarArrayOf([ SynonymCode, SynonymFirmCrCode]), []);
+    CoreFirmForm.adsCore.Locate('CoreId', CoreId, []);
 	end;
 end;
 
