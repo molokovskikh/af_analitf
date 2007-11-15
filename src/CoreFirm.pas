@@ -174,7 +174,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, AlphaUtils, Orders, RxStrUtils;
+  NamesForms, AlphaUtils, Orders;
 
 {$R *.DFM}
 

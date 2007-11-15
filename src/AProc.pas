@@ -90,7 +90,7 @@ procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocket);
 function GetFileHash(AFileName: String): String;
 function StringToCodes( AStr: string): string;
 function GetXMLDateTime( ADateTime: TDateTime): string;
-
+function WordCount(const S: string; const WordDelims: TSysCharSet): Integer;
 
 
 implementation
@@ -824,6 +824,20 @@ begin
 		IntToStr( HourOf( ADateTime)) + ':' +
 		IntToStr( MinuteOf( ADateTime)) + ':' +
 		IntToStr( SecondOf( ADateTime));
+end;
+
+function WordCount(const S: string; const WordDelims: TSysCharSet): Integer;
+var
+  SLen, I: Cardinal;
+begin
+  Result := 0;
+  I := 1;
+  SLen := Length(S);
+  while I <= SLen do begin
+    while (I <= SLen) and (S[I] in WordDelims) do Inc(I);
+    if I <= SLen then Inc(Result);
+    while (I <= SLen) and not(S[I] in WordDelims) do Inc(I);
+  end;
 end;
 
 { TFileUpdateInfo }

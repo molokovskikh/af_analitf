@@ -110,7 +110,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, NamesForms, RxStrUtils;
+  Main, NamesForms;
 
 procedure TExpiredsForm.FormCreate(Sender: TObject);
 var

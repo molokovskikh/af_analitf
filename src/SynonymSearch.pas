@@ -168,8 +168,7 @@ procedure ShowSynonymSearch;
 implementation
 
 uses
-  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms,
-  RxStrUtils;
+  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms;
 
 {$R *.dfm}
 

@@ -90,7 +90,7 @@ var
 
 implementation
 
-uses OrdersH, DModule, Constant, Main, Math, CoreFirm, RxStrUtils;
+uses OrdersH, DModule, Constant, Main, Math, CoreFirm;
 
 {$R *.dfm}
 

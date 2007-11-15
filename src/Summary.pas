@@ -151,7 +151,7 @@ procedure ShowSummary;
 
 implementation
 
-uses DModule, Main, AProc, Constant, NamesForms, RxStrUtils;
+uses DModule, Main, AProc, Constant, NamesForms;
 
 var
   LastDateFrom,

@@ -172,7 +172,7 @@ var
 implementation
 
 uses Main, AProc, DModule, NamesForms, Constant, OrdersH, DBProc, CoreFirm,
-  Prices, RxStrUtils;
+  Prices;
 
 var
   UserSetRetUpCost : Boolean;
