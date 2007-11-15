@@ -2697,13 +2697,13 @@ FROM
     inner join products on products.productid = CCore.productid
     inner join catalogs      on catalogs.fullcode = products.catalogid
     inner JOIN MinPrices     ON MinPrices.productid = CCore.productid and minprices.regioncode = CCore.regioncode
-    inner join Core LCore on LCore.servercoreid = minprices.servercoreid and LCore.RegionCode = minprices.regioncode
-    inner JOIN PricesData ON PricesData.PriceCode=LCore.pricecode
-    inner JOIN Regions       ON MinPrices.RegionCode=Regions.RegionCode
-    LEFT JOIN SynonymFirmCr ON CCore.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
-    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode
-    LEFT JOIN Orders osbc ON osbc.ClientID = :AClientId and osbc.CoreId = CCore.CoreId
-    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId
+    left join Core LCore on LCore.servercoreid = minprices.servercoreid and LCore.RegionCode = minprices.regioncode
+    left JOIN PricesData ON PricesData.PriceCode=LCore.pricecode
+    left JOIN Regions       ON Regions.RegionCode = MinPrices.RegionCode
+    left JOIN SynonymFirmCr ON SynonymFirmCr.SynonymFirmCrCode = CCore.SynonymFirmCrCode
+    left join synonyms on Synonyms.SynonymCode = CCore.SynonymCode
+    left JOIN Orders osbc ON osbc.ClientID = :AClientId and osbc.CoreId = CCore.CoreId
+    left JOIN OrdersH ON OrdersH.OrderId = osbc.OrderId
 WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegionCode)
 into :CoreId,
     :productid,
@@ -2890,7 +2890,7 @@ FOR SELECT Core.CoreId,
 FROM
     Catalogs
     inner join products on products.catalogid = catalogs.fullcode
-    INNER JOIN Core ON Core.productid = products.productid
+    left JOIN Core ON Core.productid = products.productid
     left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
     LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode
@@ -2901,6 +2901,7 @@ FROM
     LEFT JOIN Orders osbc ON osbc.clientid = :aclientid and osbc.CoreId = Core.CoreId
     LEFT JOIN OrdersH ON OrdersH.OrderId = osbc.OrderId
 WHERE (Catalogs.FullCode=:ParentCode)
+and (Core.coreid is not null)
 And (:ShowRegister = 1 Or (ClientsDataN.FirmCode<>:RegisterId))
 into CoreId,
     :PriceCode,
@@ -3089,7 +3090,7 @@ for SELECT Core.CoreId,
 FROM
     Catalogs
     inner join products on products.catalogid = catalogs.fullcode
-    INNER JOIN Core ON Core.productid = products.productid
+    left JOIN Core ON Core.productid = products.productid
     LEFT JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode
     LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFirmCr.SynonymFirmCrCode
     LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode
@@ -3100,6 +3101,7 @@ FROM
     LEFT JOIN Orders osbc ON osbc.clientid = :aclient and osbc.CoreId = Core.CoreId
     LEFT JOIN OrdersH ON OrdersH.OrderId = osbc.OrderId
 WHERE (Catalogs.ShortCode=:ParentCode)
+and (Core.coreid is not null)
 And (:ShowRegister = 1 Or (ClientsDataN.FirmCode<>:RegisterId))
 into :CoreId,
     :PriceCode,

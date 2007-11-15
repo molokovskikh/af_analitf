@@ -78,6 +78,7 @@ uses
 {$R Icons.RES}
 {$R CompareScript41.RES}
 {$R CompareScript42.RES}
+{$R CompareScript43.RES}
 {$R LastScript.RES}
 
 var
