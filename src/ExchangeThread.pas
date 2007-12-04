@@ -530,6 +530,7 @@ begin
 	if ( [eaGetPrice, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
   then begin
 		StatusText := 'Загрузка данных';
+//    Tracer.TR('DoExchange', 'Загрузка данных');
 		Synchronize( SetStatus);
 		if not NewZip then
 		begin
@@ -1393,8 +1394,15 @@ begin
 	end;
 
   if (utProducts in UpdateTables) then begin
-    UpdateFromFile(ExePath+SDirIn+'\Products.txt',
-      'INSERT INTO products (productid, catalogid) values (:productid, :catalogid)');
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+      UpdateFromFile(ExePath+SDirIn+'\Products.txt',
+        'INSERT INTO products (productid, catalogid) values (:productid, :catalogid)');
+    end
+    else begin
+      //products_iu
+      UpdateFromFile(ExePath+SDirIn+'\Products.txt',
+        'EXECUTE PROCEDURE products_iu(:productid, :catalogid)');
+    end;
   end;
 
 	//CatalogFarmGroups
@@ -1982,9 +1990,10 @@ var
 begin
   inHTTP := TidHTTP(Sender);
 
-//    Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount));
-//    Tracer.TR('Main.HTTPWork', 'Request.RawHeaders : ' + inHTTP.Request.RawHeaders.Text);
-//    Tracer.TR('Main.HTTPWork', 'Response.RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
+//  Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount));
+//  Tracer.TR('Main.HTTPWork', 'Request.RawHeaders : ' + inHTTP.Request.RawHeaders.Text);
+//  Tracer.TR('Main.HTTPWork', 'Response.RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
+  
 //	Writeln( ExchangeForm.LogFile, 'Main.HTTPWork   WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
 
   if inHTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then
@@ -2010,6 +2019,8 @@ begin
       CSuffix := 'Мб';
     end;
 
+//    Tracer.TR('Main.HTTPWork', 'INFileSize : -1');
+
     if (ProgressPosition > 0) and ((ProgressPosition - Progress > 5) or (ProgressPosition > 97)) then
     begin
       Progress := ProgressPosition;
@@ -2017,6 +2028,7 @@ begin
       StatusText := 'Загрузка данных   (' +
         FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
         FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
+//      Tracer.TR('Main.HTTPWork', 'StatusText : ' + StatusText);
       Synchronize( SetDownStatus );
     end;
 	end;

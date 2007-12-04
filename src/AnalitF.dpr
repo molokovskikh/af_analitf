@@ -79,6 +79,7 @@ uses
 {$R CompareScript41.RES}
 {$R CompareScript42.RES}
 {$R CompareScript43.RES}
+{$R CompareScript44.RES}
 {$R LastScript.RES}
 
 var

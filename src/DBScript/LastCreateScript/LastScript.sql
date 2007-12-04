@@ -1632,6 +1632,14 @@ RETURNS
 AS
 BEGIN EXIT; END ;
 
+CREATE PROCEDURE PRODUCTS_IU 
+(
+  PRODUCTID BIGINT,
+  CATALOGID BIGINT
+)
+AS
+BEGIN EXIT; END ;
+
 CREATE PROCEDURE REGIONALDATADELETE 
 AS
 BEGIN EXIT; END ;
@@ -4783,6 +4791,28 @@ begin
   into :Positions, :SumOrder;
   suspend;
 end
+end
+ ;
+
+
+ALTER PROCEDURE PRODUCTS_IU 
+(
+  PRODUCTID BIGINT,
+  CATALOGID BIGINT
+)
+AS
+begin
+  if (exists(select productid from products where (productid = :productid))) then
+    update products
+    set catalogid = :catalogid
+    where (productid = :productid);
+  else
+    insert into products (
+        productid,
+        catalogid)
+    values (
+        :productid,
+        :catalogid);
 end
  ;
 
