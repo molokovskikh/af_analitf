@@ -252,12 +252,11 @@ begin
 		CompactForm.Close;
 		CompactForm.Free;
 		if mr = mrOK then begin
-//      DM.CompactDatabase;
       MainForm.FreeChildForms;
       Application.ProcessMessages;
       RunCompactDatabase;
+      MessageBox( '—жатие базы данных завершено');
     end;
-		MessageBox( '—жатие базы данных завершено');
 	end;
 end;
 
