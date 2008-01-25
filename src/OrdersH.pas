@@ -141,7 +141,7 @@ begin
   NeedFirstOnDataSet := False;
   FSumOrders := TStringList.Create;
   FSumOrders.Sorted := True;
-	PrintEnabled := True;
+	PrintEnabled := False;
 	OrdersForm := TOrdersForm.Create( Application);
   WayBillListForm := TWayBillListForm.Create(Application);
 	Reg := TRegIniFile.Create;
@@ -250,6 +250,7 @@ begin
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
+  PrintEnabled := TabControl.TabIndex = 1;
   OrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
 	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True

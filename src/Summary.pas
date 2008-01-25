@@ -181,13 +181,14 @@ begin
   fSumOrder := adsSummarySumOrder;
   fMinOrderCount := adsSummaryMINORDERCOUNT;
   inherited;
-	PrintEnabled := True;
+	PrintEnabled := False;
   adsSummary.OnCalcFields := scf;
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
+  PrintEnabled := LastSymmaryType = 1;
   dtpDateFrom.Enabled := LastSymmaryType = 1;
   dtpDateTo.Enabled := dtpDateFrom.Enabled;
 	Reg := TRegIniFile.Create;
@@ -483,6 +484,7 @@ procedure TSummaryForm.rgSummaryTypeClick(Sender: TObject);
 begin
   if rgSummaryType.ItemIndex <> LastSymmaryType then begin
     LastSymmaryType := rgSummaryType.ItemIndex;
+    PrintEnabled := LastSymmaryType = 1;
     dtpDateFrom.Enabled := LastSymmaryType = 1;
     dtpDateTo.Enabled := dtpDateFrom.Enabled;
     SummaryShow;

@@ -17,9 +17,9 @@ inherited NamesFormsForm: TNamesFormsForm
     BevelOuter = bvNone
     TabOrder = 0
     object chkUseForms: TCheckBox
-      Left = 321
+      Left = 372
       Top = 7
-      Width = 205
+      Width = 200
       Height = 17
       Action = actUseForms
       Font.Charset = DEFAULT_CHARSET
@@ -31,9 +31,9 @@ inherited NamesFormsForm: TNamesFormsForm
       TabOrder = 0
     end
     object cbShowAll: TCheckBox
-      Left = 128
+      Left = 175
       Top = 8
-      Width = 193
+      Width = 180
       Height = 17
       Action = actShowAll
       Font.Charset = DEFAULT_CHARSET
@@ -47,9 +47,10 @@ inherited NamesFormsForm: TNamesFormsForm
     object cbNewSearch: TCheckBox
       Left = 8
       Top = 8
-      Width = 97
+      Width = 150
       Height = 17
       Action = actNewSearch
+      Caption = #1055#1086#1080#1089#1082' '#1087#1086' '#1074#1093#1086#1078#1076#1077#1085#1080#1102
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11

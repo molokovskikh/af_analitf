@@ -282,6 +282,8 @@ type
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
+    //Код подтверждения обновления, полученный с сервера
+    FServerUpdateId : String;
     SynonymPassword,
     CodesPassword,
     BaseCostPassword,
@@ -397,8 +399,9 @@ type
     function GetDisplayColors : Integer;
     function TCPPresent : Boolean;
     function NeedCommitExchange : Boolean;
-    procedure SetNeedCommitExchange;
+    procedure SetNeedCommitExchange(AServerUpdateId : String);
     procedure ResetNeedCommitExchange;
+    function GetServerUpdateId() : String;
 
     //Эти процедуры нужны для того, чтобы корректно применять дату обновления рекламы
     procedure ResetReclame;
@@ -1531,11 +1534,13 @@ end;
 procedure TDM.ResetNeedCommitExchange;
 begin
   FNeedCommitExchange := False;
+  FServerUpdateId := '';
 end;
 
-procedure TDM.SetNeedCommitExchange;
+procedure TDM.SetNeedCommitExchange(AServerUpdateId : String);
 begin
   FNeedCommitExchange := True;
+  FServerUpdateId := AServerUpdateId;
 end;
 
 procedure TDM.ReadPasswords;
@@ -3274,6 +3279,11 @@ AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName
   dbCon.QueryValue('select count(*) from PricesData where PriceFileDate is not null', 0);
 
   trMain.Commit;
+end;
+
+function TDM.GetServerUpdateId: String;
+begin
+  Result := FServerUpdateId;
 end;
 
 initialization

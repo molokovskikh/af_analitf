@@ -113,11 +113,12 @@ private
 	procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
+  //
   procedure UpdateFromFile(
     FileName,
     InsertSQL : String;
-    OnBatching : TOnBatching = nil;
-    OnExecuteError : TFIBQueryErrorEvent = nil);
+    OnExecuteError : TFIBQueryErrorEvent = nil;
+    OnBatching : TOnBatching = nil);
   procedure UpdateFromFileByParams(
     FileName,
     InsertSQL : String;
@@ -142,6 +143,7 @@ private
   procedure ThreadOnExecuteError(pFIBQuery:TpFIBQuery; E:EFIBError; var Action:TDataAction);
   //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
   procedure ExtractDocs(DirName : String);
+  function  GetUpdateId() : String;
 protected
 	procedure Execute; override;
 public
@@ -310,7 +312,12 @@ begin
 				CheckNewExe;
 				CheckNewFRF;
 				CheckNewMDB;
-				ImportData;
+        try
+          DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
+          ImportData;
+        finally
+          DM.adcUpdate.OnExecuteError := nil;
+        end;
 				DM.ResetExclusive;
 				MainForm.Timer.Enabled := True;
       	StatusText := 'Обновление завершено';
@@ -325,7 +332,15 @@ begin
           if not (eaGetFullData in ExchangeForm.ExchangeActs) and
               ((EFIB.SQLCode = sqlcode_foreign_or_create_schema) or (EFIB.SQLCode = sqlcode_unique_violation))
           then begin
-    				Writeln( ExchangeForm.LogFile, 'Нарушение целостности при импорте:' + CRLF + EFIB.Message); //пишем в лог
+    				Writeln( ExchangeForm.LogFile, 'Нарушение целостности при импорте:' + CRLF +
+              'SQLCode       = ' + IntToStr(EFIB.SQLCode) + CRLF +
+              'IBErrorCode   = ' + IntToStr(EFIB.IBErrorCode) + CRLF +
+              'RaiserName    =  ' + EFIB.RaiserName + CRLF +
+              'SQLMessage    = ' + EFIB.SQLMessage + CRLF +
+              'IBMessage     = ' + EFIB.IBMessage + CRLF +
+              'CustomMessage = ' + EFIB.CustomMessage + CRLF +
+              'Msg           = ' + EFIB.Msg + CRLF +
+              'Message       = ' + EFIB.Message); //пишем в лог
             Progress := 0;
             Synchronize( SetProgress);
             StatusText := 'Откат изменений';
@@ -430,7 +445,7 @@ var
   UpdateIdIndex : Integer;
 begin
 	{ запрашиваем данные }
-	StatusText := 'Запрос данных';
+	StatusText := 'Подготовка данных';
 	Synchronize( SetStatus);
 	try
     LibVersions := AProc.GetLibraryVersionFromAppPath;
@@ -649,8 +664,9 @@ begin
   params := nil;
   values := nil;
 
-  if (eaGetPrice in ExchangeForm.ExchangeActs) then begin
-    DM.SetNeedCommitExchange;
+  if (eaGetPrice in ExchangeForm.ExchangeActs)
+  then begin
+    DM.SetNeedCommitExchange(UpdateId);
 
     try
       Flush(ExchangeForm.LogFile);
@@ -666,21 +682,25 @@ begin
       LogStr := '';
     end;
 
-    Synchronize(GetAbsentPriceCode);
+    //Если не производили кумулятивное обновление, то проверяем наличие синонимов
+    if (not (eaGetFullData in ExchangeForm.ExchangeActs))
+    then begin
+      Synchronize(GetAbsentPriceCode);
 
-    if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
-      SetLength(params, AbsentPriceCodeSL.Count + 3);
-      SetLength(values, AbsentPriceCodeSL.Count + 3);
-      for I := 0 to AbsentPriceCodeSL.Count-1 do begin
-        params[i]:= 'PriceCode';
-        values[i]:= AbsentPriceCodeSL[i];
+      if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
+        SetLength(params, AbsentPriceCodeSL.Count + 3);
+        SetLength(values, AbsentPriceCodeSL.Count + 3);
+        for I := 0 to AbsentPriceCodeSL.Count-1 do begin
+          params[i]:= 'PriceCode';
+          values[i]:= AbsentPriceCodeSL[i];
+        end;
+        params[AbsentPriceCodeSL.Count]:= 'Log';
+        values[AbsentPriceCodeSL.Count]:= LogStr;
+        params[AbsentPriceCodeSL.Count + 1]:= 'WaybillsOnly';
+        values[AbsentPriceCodeSL.Count + 1]:= BoolToStr( False, True);
+        params[AbsentPriceCodeSL.Count + 2]:= 'UpdateId';
+        values[AbsentPriceCodeSL.Count + 2]:= GetUpdateId();
       end;
-      params[AbsentPriceCodeSL.Count]:= 'Log';
-      values[AbsentPriceCodeSL.Count]:= LogStr;
-      params[AbsentPriceCodeSL.Count + 1]:= 'WaybillsOnly';
-      values[AbsentPriceCodeSL.Count + 1]:= BoolToStr( False, True);
-      params[AbsentPriceCodeSL.Count + 2]:= 'UpdateId';
-      values[AbsentPriceCodeSL.Count + 2]:= UpdateId;
     end;
   end;
 
@@ -694,7 +714,7 @@ begin
     params[2]:= 'WaybillsOnly';
     values[2]:= BoolToStr( eaGetWaybills in ExchangeForm.ExchangeActs, True);
     params[3]:= 'UpdateId';
-    values[3]:= UpdateId;
+    values[3]:= GetUpdateId();
   end;
 
 	Res := SOAP.Invoke( 'MaxSynonymCode', params, values);
@@ -1067,7 +1087,8 @@ begin
         end;
 
 				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
-				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'));
+        //Если нет файла ".zi_", то это не является проблемой и импорт может быть осуществлен
+				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'), False);
 			end;
 			Synchronize( ExchangeForm.CheckStop);
 		until FindNext( SR) <> 0;
@@ -1828,8 +1849,8 @@ end;
 
 procedure TExchangeThread.UpdateFromFile(
   FileName, InsertSQL: String;
-  OnBatching : TOnBatching = nil;
-  OnExecuteError : TFIBQueryErrorEvent = nil);
+  OnExecuteError : TFIBQueryErrorEvent = nil;
+  OnBatching : TOnBatching = nil);
 var
   up : TpFIBQuery;
   InDelimitedFile : TFIBInputDelimitedFile;
@@ -1852,7 +1873,10 @@ begin
       up.SQL.Text := InsertSQL;
       InDelimitedFile.Filename := FileName;
       up.OnBatching := OnBatching;
-      up.OnExecuteError := OnExecuteError;
+      if Assigned(OnExecuteError) then
+        up.OnExecuteError := OnExecuteError
+      else
+        up.OnExecuteError := ThreadOnExecuteError;
 
       Tracer.TR('Import', 'Exec : ' + InsertSQL);
       StartExec := Now;
@@ -2050,8 +2074,25 @@ end;
 
 procedure TExchangeThread.ThreadOnExecuteError(pFIBQuery: TpFIBQuery;
   E: EFIBError; var Action: TDataAction);
+var
+  LogText : String;
+  I : Integer;
 begin
-  //Tracer.TR('ThreadOnExecuteError', e.Message);
+  Action := daFail;
+  
+  LogText := 'Query : ' + pFIBQuery.Name + CRLF +
+    ' SQL : ' + pFIBQuery.SQL.Text + CRLF;
+  if pFIBQuery.ParamCount > 0 then begin
+    LogText := LogText + '  Params ( ';
+    for I := 0 to pFIBQuery.ParamCount-1 do
+      LogText := LogText +
+        pFIBQuery.Params.Vars[i].Name + ' : ' + pFIBQuery.Params.Vars[i].AsString + ';';
+    LogText := LogText + ' )';
+  end;
+
+  //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
+  WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + '  ' + LogText);
+  Flush(ExchangeForm.LogFile);
 end;
 
 procedure TExchangeThread.DoSendLetter;
@@ -2253,6 +2294,14 @@ begin
     T.Resume;
     ChildThreads.Add(T);
   end;
+end;
+
+function TExchangeThread.GetUpdateId: String;
+begin
+  if (Length(UpdateId) > 0) then
+    Result := UpdateId
+  else
+    Result := DM.GetServerUpdateId();
 end;
 
 initialization
