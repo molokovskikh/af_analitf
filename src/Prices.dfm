@@ -113,20 +113,6 @@ inherited PricesForm: TPricesForm
           Title.Caption = #1042' '#1088#1072#1073#1086#1090#1077
         end
         item
-          Alignment = taCenter
-          AlwaysShowEditButton = True
-          ButtonStyle = cbsEllipsis
-          DisplayFormat = '0.00;;'
-          EditButtons = <>
-          FieldName = 'UPCOST'
-          Footers = <>
-          Title.Caption = '%'
-          Title.TitleButton = True
-          Visible = False
-          Width = 22
-          OnGetCellParams = dbgPricesColumns4GetCellParams
-        end
-        item
           EditButtons = <>
           FieldName = 'PRICESIZE'
           Footers = <>
@@ -393,13 +379,12 @@ inherited PricesForm: TPricesForm
     UpdateSQL.Strings = (
       
         'execute procedure updateupcost(:OLD_PRICECODE, :OLD_RegionCODE, ' +
-        ':NEW_INJOB, :NEW_UPCOST)')
+        ':NEW_INJOB)')
     RefreshSQL.Strings = (
       'SELECT'
       '    PRICECODE,'
       '    PRICENAME,'
       '    DATEPRICE,'
-      '    UPCOST,'
       '    MINREQ,'
       '    ENABLED,'
       '    PRICEINFO,'
@@ -427,7 +412,6 @@ inherited PricesForm: TPricesForm
       '    PRICECODE,'
       '    PRICENAME,'
       '    DATEPRICE,'
-      '    UPCOST,'
       '    MINREQ,'
       '    ENABLED,'
       '    PRICEINFO,'
@@ -443,15 +427,12 @@ inherited PricesForm: TPricesForm
       '    POSITIONS,'
       '    SUMORDER,'
       '    PRICESIZE,'
-      '    INJOB,'
-      '    ALLOWCOSTCORR'
+      '    INJOB'
       'FROM'
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
-    AfterEdit = adsPricesAfterEdit
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
-    BeforePost = adsPricesBeforePost
     OnCalcFields = adsPricesCalcFields
     Transaction = DM.DefTran
     Database = DM.MainConnection1
@@ -472,13 +453,6 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
-    end
-    object adsPricesUPCOST: TFIBBCDField
-      FieldName = 'UPCOST'
-      OnChange = adsPricesUPCOSTChange
-      DisplayFormat = '0.000;;'
-      Size = 4
-      RoundByScale = True
     end
     object adsPricesMINREQ: TFIBIntegerField
       FieldName = 'MINREQ'
@@ -547,9 +521,6 @@ inherited PricesForm: TPricesForm
     object adsPricesINJOB: TFIBBooleanField
       FieldName = 'INJOB'
       OnChange = adsPricesINJOBChange
-    end
-    object adsPricesALLOWCOSTCORR: TFIBIntegerField
-      FieldName = 'ALLOWCOSTCORR'
     end
   end
   object adsClientsData: TpFIBDataSet

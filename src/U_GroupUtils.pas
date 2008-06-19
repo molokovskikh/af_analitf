@@ -7,10 +7,15 @@ uses
 
 type
   SortGroup = class
+    //Ссылка на каталог
     CatalogId : Integer;
+    //Ссылка на продукт
     ProductId : Integer;
+    //
     Cataloged : Integer;
+    //Форма выпуска
     FormName  : String;
+    //Минимальная цена в группе
     MinCost   : Currency;
 
     constructor Create(
@@ -19,20 +24,46 @@ type
       ACataloged : Integer;
       AFormName  : String;
       AMinCost   : Currency);
+
+    function ToString() : String;
   end;
 
   SortElem = class
+    //Цена
     Cost          : Currency;
+    //Выбранный цвет
     SelectedColor : TColor;
+    //Разница в цене относительно предыдущей позиции (используется в форме Core)
+    PriceDelta    : Currency;
+    //Ссылка на группу
     Group         : SortGroup;
-    constructor Create(ACost : Currency; AGroup : SortGroup);
+    //Находится ли прайс-лист в основной категории
+    IsBaseCategory : Boolean;
+    constructor Create(ACost : Currency; AGroup : SortGroup; AIsBaseCategory : Boolean);
+    function ToString() : String;
   end;
 
+//Отсортировать набор данных в DataSet,
+//CatalogExists - внутри набора есть каталожные записи
+//GroupByProducts - требуется ли группировать по свойствам продуктов
 function GetSortedGroupList(DataSet : TpFIBDataSet; CatalogExists : Boolean; GroupByProducts : Boolean) : TStringList;
 
 implementation
 
-uses Math;
+uses Math, LU_Tracer;
+
+procedure LogListToTrace(List: TStringList);
+var
+  I : Integer;
+  elem : SortElem;
+begin
+  Tracer.TR('LogListToTrace', 'Begin');
+  for I := 0 to List.Count-1 do begin
+    elem := SortElem(List.Objects[i]);
+    Tracer.TR('LogListToTrace', Format('CoreId : %s %s', [List[i], elem.ToString()]));
+  end;
+  Tracer.TR('LogListToTrace', 'End');
+end;
 
 function SortElemCompareByProducts(List: TStringList; Index1, Index2: Integer): Integer;
 var
@@ -44,8 +75,11 @@ begin
   if Result = 0 then begin
     if Elem1.Group.ProductId = Elem2.Group.ProductId then
       Result := Integer(CompareValue(Elem1.Cost, Elem2.Cost))
-    else
+    else begin
       Result := Integer(CompareValue(Elem1.Group.MinCost, Elem2.Group.MinCost));
+      if Result = 0 then
+        Result := Integer(CompareValue(Elem1.Group.ProductId, Elem2.Group.ProductId));
+    end;
   end;
 end;
 
@@ -59,8 +93,11 @@ begin
   if Result = 0 then begin
     if Elem1.Group.CatalogId = Elem2.Group.CatalogId then
       Result := Integer(CompareValue(Elem1.Cost, Elem2.Cost))
-    else
+    else begin
       Result := Integer(CompareValue(Elem1.Group.MinCost, Elem2.Group.MinCost));
+      if Result = 0 then
+        Result := Integer(CompareValue(Elem1.Group.CatalogId, Elem2.Group.CatalogId));
+    end;
   end;
 end;
 
@@ -86,25 +123,10 @@ var
         Result := CurrentGroup;
         Exit;
       end;
-{
-      if GroupByProducts and (CurrentGroup.ProductId = AProductId) then begin
-        Result := CurrentGroup;
-        Exit;
-      end
-      else
-        if not GroupByProducts and (CurrentGroup.CatalogId = ACatalogId) then begin
-          Result := CurrentGroup;
-          Exit;
-        end
-}        
     end;
+
     if Result = nil then begin
       Result := SortGroup.Create(ACatalogId, AProductId, 1, '', AMinCost);
-{
-      if GroupByProducts then
-      else
-        Result := SortGroup.Create(ACatalogId, 0, 1, '', AMinCost);
-}        
       Groups.AddObject(IntToStr(Groups.Count), Result);
     end;
   end;
@@ -122,7 +144,7 @@ var
         DataSet.FBN('SynonymName').AsString,
         -1);
       Groups.AddObject(IntToStr(Groups.Count), CurrentGroup);
-      Result.AddObject(DataSet.FBN('CoreID').AsString, SortElem.Create(-1, CurrentGroup));
+      Result.AddObject(DataSet.FBN('CoreID').AsString, SortElem.Create(-1, CurrentGroup, DataSet.FBN('PriceEnabled').AsBoolean));
     end
     else begin
       CurrentGroup := FindGroup(
@@ -132,7 +154,7 @@ var
       );
       if CurrentGroup.MinCost > DataSet.FBN('CryptBaseCost').AsCurrency then
         CurrentGroup.MinCost := DataSet.FBN('CryptBaseCost').AsCurrency;
-      Result.AddObject(DataSet.FBN('CoreID').AsString, SortElem.Create(DataSet.FBN('CryptBaseCost').AsCurrency, CurrentGroup));
+      Result.AddObject(DataSet.FBN('CoreID').AsString, SortElem.Create(DataSet.FBN('CryptBaseCost').AsCurrency, CurrentGroup, DataSet.FBN('PriceEnabled').AsBoolean));
     end;
   end;
 
@@ -156,11 +178,15 @@ begin
               Break;
             end;
 
+    LogListToTrace(Result);
+
     if GroupByProducts then
       Result.CustomSort(SortElemCompareByProducts)
     else
       Result.CustomSort(SortElemCompareByCatalog);
 
+    LogListToTrace(Result);
+    
     PrevId := 0;
     ColorIndex := -1;
     for I := 0 to Result.Count-1 do begin
@@ -185,10 +211,9 @@ begin
       end;
     end;
   finally
-    //TODO: Это потом надо восстановить
-//    for I := 0 to Groups.Count-1 do
-//      Groups.Objects[i].Free;
-//    Groups.Free;
+    for I := 0 to Groups.Count-1 do
+      Groups.Objects[i].Free;
+    Groups.Free;
   end;
 end;
 
@@ -204,12 +229,25 @@ begin
   MinCost := AMinCost;
 end;
 
+function SortGroup.ToString: String;
+begin
+  Result := Format('CatalogId : %d  ProductId : %d  Cataloged : %d  FormName : "%s"  MinCost : %f',
+    [CatalogId, ProductId, Cataloged, FormName, MinCost]);
+end;
+
 { SortElem }
 
-constructor SortElem.Create(ACost: Currency; AGroup: SortGroup);
+constructor SortElem.Create(ACost: Currency; AGroup: SortGroup; AIsBaseCategory : Boolean);
 begin
+  PriceDelta := 0;
   Cost := ACost;
-  Group := AGroup; 
+  Group := AGroup;
+  IsBaseCategory := AIsBaseCategory;
+end;
+
+function SortElem.ToString: String;
+begin
+  Result := Format('Cost : %f  Group : (%s)', [Cost, Group.ToString()]);
 end;
 
 end.

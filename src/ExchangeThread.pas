@@ -409,8 +409,14 @@ end;
 procedure TExchangeThread.HTTPConnect;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
-	URL := 'https://' + ExtractURL( DM.adtParams.FieldByName( 'HTTPHost').AsString) +
-		'/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+  //Если запущены в расширенном режиме, то урл берется из настройки, если нет, то формируем автоматически
+  //Может быть это не расширширенный режим, а отладочный, запускаемый особым ключом
+{
+  if FindCmdLineSwitch('extend') then
+  	URL := DM.adtParams.FieldByName( 'HTTPHost').AsString + '/code.asmx'
+  else
+}
+  URL := 'https://ios.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
@@ -520,6 +526,7 @@ begin
           #10#13 + 'Повторите запрос через несколько минут.');
       end;
     end;
+    DM.SetServerUpdateId(UpdateId);
     LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
 	except
 		on E: Exception do
@@ -666,7 +673,7 @@ begin
 
   if (eaGetPrice in ExchangeForm.ExchangeActs)
   then begin
-    DM.SetNeedCommitExchange(UpdateId);
+    DM.SetNeedCommitExchange();
 
     try
       Flush(ExchangeForm.LogFile);
@@ -1940,7 +1947,7 @@ begin
   CriticalError := True;
   if DM.adsSelect.Active then
    	DM.adsSelect.Close;
-  DM.adsSelect.SelectSQL.Text := 'select prd.pricecode, prd.regioncode, prd.injob, prd.upcost ' +
+  DM.adsSelect.SelectSQL.Text := 'select prd.pricecode, prd.regioncode, prd.injob ' +
     'from pricesregionaldata prd inner join pricesregionaldataup prdu on prdu.PriceCode = prd.PriceCode and prdu.RegionCode = prd.regioncode';
 	DM.adsSelect.Open;
   //Отправляем настройки только в том случае, если есть что отправлять
@@ -1962,8 +1969,8 @@ begin
       ParamNames[StaticParamCount+i*4+2] := 'INJobs';
       ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsSelect.FieldByName('INJob').AsBoolean, True);
       ParamNames[StaticParamCount+i*4+3] := 'UpCosts';
-      ParamValues[StaticParamCount+i*4+3] :=
-        StringReplace(DM.adsSelect.FieldByName('UPCOST').AsString, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
+      //TODO: Пока здесь передаем 0, потом этот параметр надо удалить 
+      ParamValues[StaticParamCount+i*4+3] := '0.0';
       DM.adsSelect.Next;
       Inc(i);
     end;

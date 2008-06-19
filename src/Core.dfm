@@ -332,6 +332,16 @@ object CoreForm: TCoreForm
         #1054#1089#1085#1086#1074#1085#1099#1077
         #1053#1077#1086#1089#1085#1086#1074#1085#1099#1077)
     end
+    object btnGroupUngroup: TButton
+      Left = 376
+      Top = 3
+      Width = 113
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = #1056#1072#1079#1075#1088#1091#1087#1087#1080#1088#1086#1074#1072#1090#1100
+      TabOrder = 2
+      OnClick = btnGroupUngroupClick
+    end
   end
   object pCenter: TPanel
     Left = 0
@@ -919,6 +929,11 @@ object CoreForm: TCoreForm
       FieldName = 'PRODUCTID'
       Size = 0
       RoundByScale = True
+    end
+    object adsCoreSortOrder: TIntegerField
+      FieldKind = fkCalculated
+      FieldName = 'SortOrder'
+      Calculated = True
     end
   end
   object adsRegions: TpFIBDataSet

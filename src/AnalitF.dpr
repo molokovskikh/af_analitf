@@ -70,7 +70,8 @@ uses
   U_frmSendLetter in 'U_frmSendLetter.pas' {frmSendLetter},
   U_SXConversions in 'common\U_SXConversions.pas',
   U_SGXMLGeneral in 'common\U_SGXMLGeneral.pas',
-  U_RecvThread in 'U_RecvThread.pas';
+  U_RecvThread in 'U_RecvThread.pas',
+  U_GroupUtils in 'U_GroupUtils.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

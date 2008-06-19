@@ -127,6 +127,8 @@ type
     adsCorePRODUCTID: TFIBBCDField;
     adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     lWarning: TLabel;
+    adsCoreSortOrder: TIntegerField;
+    btnGroupUngroup: TButton;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -152,14 +154,20 @@ type
     procedure adsCoreSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
     procedure seRetUpCostChange(Sender: TObject);
+    procedure btnGroupUngroupClick(Sender: TObject);
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
     UseExcess, CurrentUseForms: Boolean;
     DeltaMode, Excess, ClientId: Integer;
+    //—писок сортировки
+    SortList : TStringList;
+    CoreGroupByProducts : Boolean;
 
     procedure ccf(DataSet: TDataSet);
     procedure RefreshCurrentSumma;
+    procedure GroupedCore;
+    procedure UpdatePriceDelta;
   public
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -172,7 +180,7 @@ var
 implementation
 
 uses Main, AProc, DModule, NamesForms, Constant, OrdersH, DBProc, CoreFirm,
-  Prices;
+  Prices, U_GroupUtils;
 
 var
   UserSetRetUpCost : Boolean;
@@ -185,6 +193,7 @@ procedure TCoreForm.FormCreate(Sender: TObject);
 var
 	Reg: TRegIniFile;
 begin
+  SortList := nil;
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
   fOrder := adsCoreORDERCOUNT;
@@ -197,6 +206,11 @@ begin
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
   UseExcess := True;
+  CoreGroupByProducts := DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean;
+  if CoreGroupByProducts then
+    btnGroupUngroup.Caption := '–азгруппировать'
+  else
+    btnGroupUngroup.Caption := '√руппировать';
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
 	RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
@@ -234,6 +248,7 @@ var
 	I: Integer;
 	FirstPrice, PrevPrice, D: Currency;
 	OrdersH: TOrdersHForm;
+  TmpSortList : TStringList;
 begin
   plOverCost.Hide();
   //≈сли в прошлый раз пользователь изменил наценку, то выставл€ем ее
@@ -246,6 +261,10 @@ begin
 	adsOrders.DataSource := nil;
 	adsOrdersShowFormSummary.DataSource := nil;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
+
+  TmpSortList := SortList;
+  SortList := nil;
+  
 	{ готовим запрос в зависимости от того, показываем по наименованию или форме выпуска }
 	with adsCore do
         begin
@@ -261,7 +280,8 @@ begin
 		end;
 		ParamByName( 'ParentCode').Value := AParentCode;
 	end;
-	{ открываем запрос }
+
+ { открываем запрос }
 	with adsCore do
 	begin
 		ParamByName( 'ShowRegister').Value :=
@@ -269,16 +289,36 @@ begin
 		Screen.Cursor := crHourglass;
 		try
 			if Active then Close;
-      adsCore.Options := adsCore.Options - [poCacheCalcFields]; 
+      //adsCore.Options := adsCore.Options - [poCacheCalcFields];
       Open;
-      FetchAll;
-      if not adsCore.Sorted then begin
-        DoSort(['FullCode', 'CryptBaseCost'], [True, True]);
-      end;
+      //FetchAll;
+
 		finally
 			Screen.Cursor := crDefault;
 		end;
   end;
+
+  if Assigned(TmpSortList) then begin
+    for I := 0 to TmpSortList.Count-1 do
+      TmpSortList.Objects[i].Free;
+    TmpSortList.Free;
+  end;
+
+  adsCore.DisableControls;
+  try
+    TmpSortList := GetSortedGroupList(adsCore, True, CoreGroupByProducts);
+  finally
+    adsCore.EnableControls;
+  end;
+
+  SortList := TmpSortList;
+  UpdatePriceDelta;
+
+  //¬торое открытие нужно, чтобы отобразилась сортировка, т.к. она не отображаетс€
+  adsCore.CloseOpen(True);
+
+  adsCore.DoSort(['SortOrder'], [True]);
+  adsCore.First;
 
 	{ проверка непустоты }
 	if adsCore.RecordCount = 0 then
@@ -302,46 +342,6 @@ begin
 	end;
 	cbFilter.ItemIndex := MainForm.RegionFilterIndex;
 	cbEnabled.ItemIndex := MainForm.EnableFilterIndex;
-
-	//готовим значени€ дл€ колонки "–азница"
-	FirstPrice := 0;
-	PrevPrice := 0;
-  I := -1;
-	RecInfos := nil;
-	with adsCore do
-	begin
-		SetLength( RecInfos, adsCore.RecordCountFromSrv);
-		First;
-		while not Eof do
-		begin
-			Inc(I);
-			//переменные, необходимые дл€ расчета разницы в цене
-			if adsCoreSynonymCode.AsInteger<0 then
-			begin //попали на заголовок формы выпуска
-				PrevPrice := 0;
-				FirstPrice := 0;
-			end;
-			//разница в цене от другого поставщика PRICE_DELTA
-			case DeltaMode of
-				1, 2: D := FirstPrice;
-			else
-				D := PrevPrice;
-			end;
-			if ( D = 0) or ( adsCoreCryptBASECOST.AsCurrency = 0) then
-				RecInfos[ I] := 0
-			else
-				RecInfos[ I] := RoundTo(( adsCoreCryptBASECOST.AsCurrency - D)/D*100,-1);
-			if adsCoreSynonymCode.AsInteger >= 0 then
-			begin
-				if adsCoreCryptBASECOST.AsCurrency > 0 then PrevPrice := adsCoreCryptBASECOST.AsCurrency;
-				if ( FirstPrice=0) and (( DeltaMode <> 2) or adsCorePriceEnabled.AsBoolean) then
-					FirstPrice := adsCoreCryptBASECOST.AsCurrency;
-			end;
-      RefreshClientFields(True);
-			Next;
-		end;
-		First;
-	end;
 
 	if not adsCore.Locate( 'PriceEnabled', 'True', []) then
 		adsCore.Locate( 'PriceEnabled', 'False', []);
@@ -377,20 +377,20 @@ procedure TCoreForm.ccf(DataSet: TDataSet);
 var
   S : String;
   C : Currency;
+  elemIndex : Integer;
 begin
   try
+    if Assigned(SortList) then begin
+      elemIndex := SortList.IndexOf(adsCoreCOREID.AsString);
+      adsCoreSortOrder.AsInteger := elemIndex;
+      adsCorePriceDelta.AsCurrency := SortElem(SortList.Objects[elemIndex]).PriceDelta;
+    end;
     S := DM.D_B_N(adsCoreBASECOST.AsString);
     C := StrToCurr(S);
     adsCoreCryptBASECOST.AsCurrency := C;
     adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
     //вычисл€ем сумму заказа по товару SumOrder
     adsCoreSumOrder.AsCurrency:=C*adsCoreORDERCOUNT.AsInteger;
-  except
-  end;
-  try
-    //вычисл€ем разницу в цене PriceDelta
-    if Length(RecInfos)>0 then
-      adsCorePriceDelta.AsFloat:=RecInfos[Abs(adsCore.RecNo)-1];
   except
   end;
 end;
@@ -531,6 +531,9 @@ begin
         end
 	else
 	begin
+    if (not adsCore.IsEmpty) and CoreGroupByProducts and (Assigned(SortList))then
+      Background := SortElem(SortList.Objects[ SortList.IndexOf(adsCoreCOREID.AsString)]).SelectedColor;
+
     if adsCoreVITALLYIMPORTANT.AsBoolean then
       AFont.Color := VITALLYIMPORTANT_CLR;
 		if not adsCorePriceEnabled.AsBoolean then
@@ -708,6 +711,91 @@ begin
   end
   else begin
     lCurrentSumma.Caption := '';
+  end;
+end;
+
+procedure TCoreForm.btnGroupUngroupClick(Sender: TObject);
+begin
+  CoreGroupByProducts := not CoreGroupByProducts;
+  GroupedCore;
+  dbgCore.SetFocus;
+end;
+
+procedure TCoreForm.GroupedCore;
+var
+  TmpSortList : TStringList;
+  I : Integer;
+begin
+  TmpSortList := SortList;
+  SortList := nil;
+
+  if CoreGroupByProducts then
+    btnGroupUngroup.Caption := '–азгруппировать'
+  else
+    btnGroupUngroup.Caption := '√руппировать';
+
+  if Assigned(TmpSortList) then begin
+    for I := 0 to TmpSortList.Count-1 do
+      TmpSortList.Objects[i].Free;
+    TmpSortList.Free;
+  end;
+
+  adsCore.DisableControls;
+  try
+    DBProc.SetFilter( adsCore, '');
+    TmpSortList := GetSortedGroupList(adsCore, True, CoreGroupByProducts);
+  finally
+    adsCore.EnableControls;
+  end;
+
+  SortList := TmpSortList;
+  UpdatePriceDelta;
+
+  //¬торое открытие нужно, чтобы отобразилась сортировка, т.к. она не отображаетс€
+  adsCore.CloseOpen(True);
+
+  cbFilterSelect(nil);
+
+  adsCore.DoSort(['SortOrder'], [True]);
+  adsCore.First;
+
+	if not adsCore.Locate( 'PriceEnabled', 'True', []) then
+		adsCore.Locate( 'PriceEnabled', 'False', []);
+end;
+
+procedure TCoreForm.UpdatePriceDelta;
+var
+	FirstPrice, PrevPrice, D: Currency;
+  I : Integer;
+  elem : SortElem;
+begin
+	FirstPrice := 0;
+	PrevPrice := 0;
+  for I := 0 to SortList.Count-1 do begin
+    elem := SortElem(SortList.Objects[i]);
+    //попали на заголовок формы выпуска
+    if elem.Cost < 0 then begin
+      PrevPrice := 0;
+      FirstPrice := 0;
+    end;
+		//разница в цене от другого поставщика PRICE_DELTA
+    case DeltaMode of
+      1, 2:
+      D := FirstPrice;
+    else
+      D := PrevPrice;
+    end;
+    if ( D = 0) or ( elem.Cost <= 0) then
+      elem.PriceDelta := 0
+    else
+      elem.PriceDelta := RoundTo(( elem.Cost - D)/D*100,-1);
+    if elem.Cost >= 0 then
+    begin
+      if elem.Cost > 0 then
+        PrevPrice := elem.Cost;
+      if ( FirstPrice=0) and (( DeltaMode <> 2) or elem.IsBaseCategory) then
+        FirstPrice := elem.Cost;
+    end;
   end;
 end;
 

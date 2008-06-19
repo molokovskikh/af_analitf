@@ -220,7 +220,6 @@ type
     adsPricesPRICECODE: TFIBBCDField;
     adsPricesPRICENAME: TFIBStringField;
     adsPricesDATEPRICE: TFIBDateTimeField;
-    adsPricesUPCOST: TFIBBCDField;
     adsPricesMINREQ: TFIBIntegerField;
     adsPricesENABLED: TFIBIntegerField;
     adsPricesPRICEINFO: TFIBMemoField;
@@ -399,7 +398,8 @@ type
     function GetDisplayColors : Integer;
     function TCPPresent : Boolean;
     function NeedCommitExchange : Boolean;
-    procedure SetNeedCommitExchange(AServerUpdateId : String);
+    procedure SetNeedCommitExchange();
+    procedure SetServerUpdateId(AServerUpdateId : String);
     procedure ResetNeedCommitExchange;
     function GetServerUpdateId() : String;
 
@@ -1537,10 +1537,9 @@ begin
   FServerUpdateId := '';
 end;
 
-procedure TDM.SetNeedCommitExchange(AServerUpdateId : String);
+procedure TDM.SetNeedCommitExchange();
 begin
   FNeedCommitExchange := True;
-  FServerUpdateId := AServerUpdateId;
 end;
 
 procedure TDM.ReadPasswords;
@@ -2746,10 +2745,10 @@ begin
     'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO PARAMS (ID, CLIENTID, RASCONNECT, RASENTRY, RASNAME, RASPASS, CONNECTCOUNT, CONNECTPAUSE, PROXYCONNECT, PROXYNAME, PROXYPORT, PROXYUSER, PROXYPASS, SERVICENAME, HTTPHOST, HTTPPORT, HTTPNAME, HTTPPASS, UPDATEDATETIME, LASTDATETIME, FASTPRINT, ' +
       'SHOWREGISTER, NEWWARES, USEFORMS, OPERATEFORMS, OPERATEFORMSSET, AUTOPRINT, STARTPAGE, LASTCOMPACT, CUMULATIVE, STARTED, EXTERNALORDERSEXE, EXTERNALORDERSPATH, EXTERNALORDERSCREATE, RASSLEEP, HTTPNAMECHANGED, SHOWALLCATALOG, CDS, ORDERSHISTORYDAYCOUNT, ' +
-      'CONFIRMDELETEOLDORDERS, USEOSOPENWAYBILL, USEOSOPENREJECT) VALUES ' +
-      '(0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 0, 1);'#13#10#13#10 +
+      'CONFIRMDELETEOLDORDERS, USEOSOPENWAYBILL, USEOSOPENREJECT, GROUPBYPRODUCTS) VALUES ' +
+      '(0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 0, 1, 0);'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
-    'INSERT INTO PROVIDER (ID, NAME, ADDRESS, PHONES, EMAIL, WEB, MDBVERSION) VALUES (0, ''АК "Инфорум"'', ''Ленинский пр-т, 160 оф.415'', ''4732-206000'', ''farm@analit.net'', ''http://www.analit.net/'', ' + IntToStr(CURRENT_DB_VERSION) +');'#13#10#13#10 +
+    'INSERT INTO PROVIDER (ID, NAME, ADDRESS, PHONES, EMAIL, WEB, MDBVERSION) VALUES (0, ''АК "Инфорум"'', ''Ленинский пр-т, 160 оф.415'', ''4732-606000'', ''farm@analit.net'', ''http://www.analit.net/'', ' + IntToStr(CURRENT_DB_VERSION) +');'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO RECLAME (RECLAMEURL, UPDATEDATETIME) VALUES (''http://ios.analit.net/results/reclame/r#.zip'', NULL);'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
@@ -3284,6 +3283,11 @@ end;
 function TDM.GetServerUpdateId: String;
 begin
   Result := FServerUpdateId;
+end;
+
+procedure TDM.SetServerUpdateId(AServerUpdateId: String);
+begin
+  FServerUpdateId := AServerUpdateId;
 end;
 
 initialization

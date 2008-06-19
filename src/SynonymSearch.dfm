@@ -828,6 +828,11 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Size = 0
       RoundByScale = True
     end
+    object adsCoreSortOrder: TIntegerField
+      FieldKind = fkCalculated
+      FieldName = 'SortOrder'
+      Calculated = True
+    end
   end
   object adsRegions: TpFIBDataSet
     SelectSQL.Strings = (

@@ -114,6 +114,7 @@ type
     adsCorePRODUCTID: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
+    adsCoreSortOrder: TIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -150,6 +151,8 @@ type
     SelectedPrices : TStringList;
     BM : TBitmap;
     InternalSearchText : String;
+    //Список сортировки 
+    SortList : TStringList;
     procedure AddKeyToSearch(Key : Char);
     procedure SetClear;
     procedure ChangeSelected(ASelected : Boolean);
@@ -168,7 +171,7 @@ procedure ShowSynonymSearch;
 implementation
 
 uses
-  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms;
+  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms, U_GroupUtils;
 
 {$R *.dfm}
 
@@ -185,6 +188,7 @@ var
   sp : TSelectPrice;
   mi :TMenuItem;
 begin
+  SortList := nil;
   plOverCost.Hide();
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
@@ -264,6 +268,8 @@ var
   PrevFullCode: Integer;
   SelectedColor : TColor;
   FilterSQL : String;
+  TmpSortList : TStringList;
+  I : Integer;
 begin
   tmrSearch.Enabled := False;
   if Length(eSearch.Text) > 2 then begin
@@ -286,30 +292,27 @@ begin
 
     ShowSQLWaiting(adsCore);
 
-    if not adsCore.Sorted then begin
-      adsCore.DoSort(['FullCode', 'CryptBaseCost'], [True, True]);
-      adsCore.First;
+    //TODO: Здесь надо очистить массив, чтобы не было утечки памяти
+    TmpSortList := SortList;
+    SortList := nil;
+    if Assigned(TmpSortList) then begin
+      for I := 0 to TmpSortList.Count-1 do
+        TmpSortList.Objects[i].Free;
+      TmpSortList.Free;
     end;
+
     adsCore.DisableControls;
     try
-      PrevFullCode := 0;
-      while not adsCore.Eof do begin
-        if adsCoreFULLCODE.AsInteger <> PrevFullCode then begin
-          case (slColors.Count mod 3) of
-            0 : SelectedColor := clWhite;
-            1 : SelectedColor := clSkyBlue;
-            else
-                SelectedColor := clMoneyGreen;
-          end;
-          slColors.AddObject(IntToStr(adsCoreFULLCODE.AsInteger), TObject(SelectedColor));
-          PrevFullCode := adsCoreFULLCODE.AsInteger;
-        end;
-        adsCore.Next;
-      end;
-      adsCore.First;
+      TmpSortList := GetSortedGroupList(adsCore, False, DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean);
     finally
       adsCore.EnableControls;
     end;
+
+    SortList := TmpSortList;
+
+    adsCore.DoSort(['SortOrder'], [True]);
+    adsCore.First;
+
     adsOrders.DataSource := dsCore;
   	adsOrdersShowFormSummary.DataSource := dsCore;
     dbgCore.SetFocus;
@@ -332,6 +335,8 @@ begin
     adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
     //вычисляем сумму заказа по товару SumOrder
     adsCoreSumOrder.AsCurrency:=C*adsCoreORDERCOUNT.AsInteger;
+    if Assigned(SortList) then
+      adsCoreSortOrder.AsInteger := SortList.IndexOf(adsCoreCOREID.AsString);
   except
   end;
 end;
@@ -435,8 +440,8 @@ begin
           end
     else
     begin
-      if not adsCore.IsEmpty then
-        Background := TColor(slColors.Objects[ slColors.IndexOf(adsCoreFULLCODE.AsString)]);
+      if (not adsCore.IsEmpty) and (Assigned(SortList))then
+        Background := SortElem(SortList.Objects[ SortList.IndexOf(adsCoreCOREID.AsString)]).SelectedColor;
 
       if adsCoreVITALLYIMPORTANT.AsBoolean then
         AFont.Color := VITALLYIMPORTANT_CLR;

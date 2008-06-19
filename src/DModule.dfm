@@ -189,7 +189,8 @@ object DM: TDM
       '    ORDERSHISTORYDAYCOUNT = :ORDERSHISTORYDAYCOUNT,'
       '    CONFIRMDELETEOLDORDERS = :CONFIRMDELETEOLDORDERS,'
       '    USEOSOPENWAYBILL = :USEOSOPENWAYBILL,'
-      '    USEOSOPENREJECT = :USEOSOPENREJECT'
+      '    USEOSOPENREJECT = :USEOSOPENREJECT,'
+      '    GROUPBYPRODUCTS = :GROUPBYPRODUCTS'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')
@@ -1293,7 +1294,6 @@ object DM: TDM
       '    PRICECODE,'
       '    PRICENAME,'
       '    DATEPRICE,'
-      '    UPCOST,'
       '    MINREQ,'
       '    ENABLED,'
       '    PRICEINFO,'
@@ -1332,11 +1332,6 @@ object DM: TDM
     end
     object adsPricesDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
-    end
-    object adsPricesUPCOST: TFIBBCDField
-      FieldName = 'UPCOST'
-      Size = 4
-      RoundByScale = True
     end
     object adsPricesMINREQ: TFIBIntegerField
       FieldName = 'MINREQ'

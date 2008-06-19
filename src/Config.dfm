@@ -5739,6 +5739,18 @@ object ConfigForm: TConfigForm
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end
+      object dbchbGroupByProducts: TDBCheckBox
+        Left = 8
+        Top = 162
+        Width = 377
+        Height = 17
+        Caption = #1043#1088#1091#1087#1087#1080#1088#1086#1074#1072#1090#1100' '#1087#1086' '#1089#1074#1086#1081#1089#1090#1074#1072#1084
+        DataField = 'GROUPBYPRODUCTS'
+        DataSource = DM.dsParams
+        TabOrder = 5
+        ValueChecked = 'True'
+        ValueUnchecked = 'False'
+      end
     end
   end
   object RasMenu: TPopupMenu
@@ -5782,7 +5794,7 @@ object ConfigForm: TConfigForm
     BeforePost = mdRetailBeforePost
     AfterPost = mdRetailAfterPost
     Left = 68
-    Top = 208
+    Top = 224
     object mdRetailID: TIntegerField
       FieldName = 'ID'
     end
@@ -5804,6 +5816,6 @@ object ConfigForm: TConfigForm
   object dsRetail: TDataSource
     DataSet = mdRetail
     Left = 100
-    Top = 216
+    Top = 224
   end
 end

@@ -90,6 +90,7 @@ type
     dbcbConfirmDeleteOldOrders: TDBCheckBox;
     dbchbUseOSOpenWaybill: TDBCheckBox;
     dbchbUseOSOpenReject: TDBCheckBox;
+    dbchbGroupByProducts: TDBCheckBox;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
