@@ -332,6 +332,7 @@ CREATE TABLE PARAMS
   CONFIRMDELETEOLDORDERS	FB_BOOLEAN DEFAULT 1,
   USEOSOPENWAYBILL	FB_BOOLEAN DEFAULT 0,
   USEOSOPENREJECT	FB_BOOLEAN DEFAULT 1,
+  GROUPBYPRODUCTS	FB_BOOLEAN DEFAULT 0,
 CONSTRAINT PK_PARAMS PRIMARY KEY (ID)
 );
 
@@ -409,11 +410,9 @@ CREATE TABLE PRICESREGIONALDATA
   PRICECODE	FB_ID,
   REGIONCODE	FB_ID,
   STORAGE	FB_BOOLEAN,
-  UPCOST	NUMERIC(18, 4),
   MINREQ	INTEGER,
   ENABLED	FB_BOOLEAN,
   INJOB	FB_BOOLEAN,
-  ALLOWCOSTCORR	FB_BOOLEAN,
   CONTROLMINREQ	FB_BOOLEAN,
   PRICESIZE	INTEGER
 );
@@ -661,11 +660,9 @@ CREATE TABLE TMPPRICESREGIONALDATA
   PRICECODE	FB_ID,
   REGIONCODE	FB_ID,
   STORAGE	FB_BOOLEAN,
-  UPCOST	NUMERIC(18, 4),
   MINREQ	INTEGER,
   ENABLED	FB_BOOLEAN,
   INJOB	FB_BOOLEAN,
-  ALLOWCOSTCORR	FB_BOOLEAN,
   CONTROLMINREQ	FB_BOOLEAN
 );
 
@@ -1609,7 +1606,6 @@ RETURNS
   PRICECODE BIGINT,
   PRICENAME VARCHAR(70) CHARACTER SET WIN1251,
   DATEPRICE TIMESTAMP,
-  UPCOST NUMERIC(18, 4),
   MINREQ INTEGER,
   ENABLED INTEGER,
   PRICEINFO BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
@@ -1626,7 +1622,6 @@ RETURNS
   SUMORDER NUMERIC(18, 2),
   PRICESIZE INTEGER,
   INJOB INTEGER,
-  ALLOWCOSTCORR INTEGER,
   CONTROLMINREQ INTEGER
 )
 AS
@@ -1853,8 +1848,7 @@ CREATE PROCEDURE UPDATEUPCOST
 (
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
-  INJOB INTEGER,
-  UPCOST NUMERIC(18, 4)
+  INJOB INTEGER
 )
 AS
 BEGIN EXIT; END ;
@@ -4636,8 +4630,8 @@ ALTER PROCEDURE PRICESREGIONALDATAINSERT
 AS
 begin
 EXECUTE STATEMENT 'INSERT INTO PricesRegionalData
-(PRICECODE, REGIONCODE, STORAGE, UPCOST, MINREQ, ENABLED, INJOB, ALLOWCOSTCORR, CONTROLMINREQ)
-SELECT PriceCode, RegionCode, Storage, UpCost, MinReq, Enabled, InJOB, ALLOWCOSTCORR, CONTROLMINREQ
+(PRICECODE, REGIONCODE, STORAGE, MINREQ, ENABLED, INJOB, CONTROLMINREQ)
+SELECT PriceCode, RegionCode, Storage, MinReq, Enabled, InJOB, CONTROLMINREQ
 FROM ExtPricesRegionalData a
 WHERE NOT Exists(SELECT PriceCode, RegionCode FROM
 PricesRegionalData
@@ -4651,11 +4645,9 @@ ALTER PROCEDURE PRICESREGIONALDATAUPDATE
 AS
 declare variable pricecode bigint;
 declare variable storage integer;
-declare variable upcost numeric(18,4);
 declare variable minreq integer;
 declare variable enabled integer;
 declare variable injob integer;
-declare variable allowcostcorr integer;
 declare variable controlminreq integer;
 declare variable regioncode bigint;
 begin
@@ -4663,11 +4655,9 @@ for select
          PriceCode,
          RegionCode,
          Storage,
-         UpCost,
          MinReq,
          Enabled,
          INJOB,
-         ALLOWCOSTCORR,
          CONTROLMINREQ
 from
   TmpPricesRegionalData TPRD
@@ -4675,21 +4665,17 @@ into
          :PriceCode,
          :RegionCode,
          :Storage,
-         :UpCost,
          :MinReq,
          :Enabled,
          :INJOB,
-         :ALLOWCOSTCORR,
          :CONTROLMINREQ
 do
 UPDATE PricesRegionalData PRD
     SET 
          Storage = :Storage,
-         UpCost = :UpCost,
          MinReq = :MinReq,
          Enabled = :Enabled,
          INJOB = :INJOB,
-         ALLOWCOSTCORR = :ALLOWCOSTCORR,
          CONTROLMINREQ = :CONTROLMINREQ
 where PRD.PriceCode = :PriceCode and PRD.regioncode = :RegionCode;
 end
@@ -4706,7 +4692,6 @@ RETURNS
   PRICECODE BIGINT,
   PRICENAME VARCHAR(70) CHARACTER SET WIN1251,
   DATEPRICE TIMESTAMP,
-  UPCOST NUMERIC(18, 4),
   MINREQ INTEGER,
   ENABLED INTEGER,
   PRICEINFO BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
@@ -4723,7 +4708,6 @@ RETURNS
   SUMORDER NUMERIC(18, 2),
   PRICESIZE INTEGER,
   INJOB INTEGER,
-  ALLOWCOSTCORR INTEGER,
   CONTROLMINREQ INTEGER
 )
 AS
@@ -4731,7 +4715,6 @@ begin
 for SELECT PD.PriceCode,
     PriceName,
     addminute(PD.DatePrice, -:TimeZoneBias) AS DatePrice,
-    PRD.UpCost,
     PRD.MinReq,
     Enabled,
     PriceInfo,
@@ -4746,7 +4729,6 @@ for SELECT PD.PriceCode,
     RegionName,
     prd.pricesize,
     prd.INJOB,
-    prd.ALLOWCOSTCORR,
     prd.CONTROLMINREQ
 FROM (((PricesData PD INNER JOIN PricesRegionalData PRD ON PD.pricecode=PRD.pricecode)
     INNER JOIN Regions R ON PRD.RegionCode=R.RegionCode)
@@ -4758,7 +4740,6 @@ WHERE
 into :PriceCode,
     :PriceName,
     :DatePrice,
-    :UpCost,
     :MinReq,
     :Enabled,
     :PriceInfo,
@@ -4773,7 +4754,6 @@ into :PriceCode,
     :RegionName,
     :pricesize,
     :injob,
-    :ALLOWCOSTCORR,
     :CONTROLMINREQ
 do
 begin
@@ -5471,7 +5451,7 @@ ALTER PROCEDURE TMPPRICESREGIONALDATAINSERT
 AS
 begin
 EXECUTE STATEMENT 'INSERT INTO TmpPricesRegionalData
-SELECT PriceCode, RegionCode, Storage, UpCost, MinReq, Enabled, InJob, ALLOWCOSTCORR, CONTROLMINREQ
+SELECT PriceCode, RegionCode, Storage, MinReq, Enabled, InJob, CONTROLMINREQ
 FROM ExtPricesRegionalData
 WHERE Exists(SELECT PriceCode, RegionCode FROM PricesRegionalData WHERE PriceCode=ExtPricesRegionalData.PriceCode
 AND RegionCode=ExtPricesRegionalData.RegionCode);
@@ -5595,15 +5575,13 @@ ALTER PROCEDURE UPDATEUPCOST
 (
   PRICECODE BIGINT,
   REGIONCODE BIGINT,
-  INJOB INTEGER,
-  UPCOST NUMERIC(18, 4)
+  INJOB INTEGER
 )
 AS
-DECLARE VARIABLE UPPRICECODE BIGINT;
+declare variable uppricecode bigint;
 begin
   update pricesregionaldata set
-    INJOB = :INJOB,
-    UPCOST = :UPCOST
+    INJOB = :INJOB
   where
     PriceCode = :PRICECODE
     and RegionCode = :RegionCODE;
