@@ -292,8 +292,7 @@ end;
 procedure TPricesForm.tmStopEditTimer(Sender: TObject);
 begin
   tmStopEdit.Enabled := False;
-  if adsPrices.State in [dsEdit, dsInsert] then
-    AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
+  AProc.MessageBox('Изменение настроек прайс-листов будет применено при следующем обновлении.', MB_ICONWARNING);
   if dbgPrices.EditorMode then
     dbgPrices.EditorMode := False;
   SoftPost(adsPrices);
