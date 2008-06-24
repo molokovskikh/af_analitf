@@ -126,7 +126,12 @@ begin
   except
   end;
   Application.Initialize;
+  //DSP - дл€ служебного пользовани€
+{$ifdef DSP}
+  Application.Title := 'јналит‘ј–ћј÷»я  ƒл€ служебного пользовани€';
+{$else}
   Application.Title := 'јналит‘ј–ћј÷»я';
+{$endif}
   Application.HintHidePause := 10*60*1000;
   Application.CreateForm(TMainForm, MainForm);
   MainForm.FormPlacement.IniFileName := 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\';

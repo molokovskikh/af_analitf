@@ -157,6 +157,10 @@ begin
       Application.OnException := OnAppEx;
       HTTPNameChanged := False;
       OldHTTPName := dbeHTTPName.Field.AsString;
+{$ifndef DSP}
+      gbHTTP.Visible := False;
+      gbAccount.Top := 8;
+{$endif}
       if Auth then
         PageControl.ActivePageIndex := 2
       else

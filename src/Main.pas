@@ -246,23 +246,33 @@ uses
 
 function GetCopyID: LongInt;
 begin
+{$ifdef DSP}
+  result := StrToInt64('$E99E48');
+{$else}
 	result := GetUniqueID( Application.ExeName, '');
+{$endif}
 end;
 
 function GetDBID: LongInt;
 begin
-	result := GetUniqueID( Application.ExeName,
 {$ifdef DEBUG}
-  'E99E483DDE777778ADEFCB3DCD988BC9'
+ 	result := GetUniqueID( Application.ExeName, 'E99E483DDE777778ADEFCB3DCD988BC9');
 {$else}
-  AProc.GetFileHash(Application.ExeName)
-{$ENDIF}
-  );
+  {$ifdef DSP}
+    result := StrToInt64('$3DDE77');
+  {$else}
+    result := GetUniqueID( Application.ExeName, AProc.GetFileHash(Application.ExeName));
+  {$endif}
+{$endif}
 end;
 
 function GetOldDBID: LongInt;
 begin
-	result := GetUniqueID( Application.ExeName, AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak'));
+{$ifdef DSP}
+  result := StrToInt64('$3DDE77');
+{$else}
+  result := GetUniqueID( Application.ExeName, AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak'));
+{$endif}
 end;
 
 

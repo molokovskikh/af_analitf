@@ -410,14 +410,12 @@ end;
 procedure TExchangeThread.HTTPConnect;
 begin
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
-  //Если запущены в расширенном режиме, то урл берется из настройки, если нет, то формируем автоматически
-  //Может быть это не расширширенный режим, а отладочный, запускаемый особым ключом
-{
-  if FindCmdLineSwitch('extd') then
-  	URL := DM.adtParams.FieldByName( 'HTTPHost').AsString + '/code.asmx'
-  else
-}
+  //Если запущены в DSP (для служебного пользования), то урл берется из настройки, если нет, то формируем автоматически
+{$ifdef DSP}
+  URL := DM.adtParams.FieldByName( 'HTTPHost').AsString + '/code.asmx';
+{$else}
   URL := 'https://ios.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+{$endif}
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
 	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
