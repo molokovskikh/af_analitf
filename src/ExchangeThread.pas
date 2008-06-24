@@ -413,7 +413,7 @@ begin
   //Если запущены в расширенном режиме, то урл берется из настройки, если нет, то формируем автоматически
   //Может быть это не расширширенный режим, а отладочный, запускаемый особым ключом
 {
-  if FindCmdLineSwitch('extend') then
+  if FindCmdLineSwitch('extd') then
   	URL := DM.adtParams.FieldByName( 'HTTPHost').AsString + '/code.asmx'
   else
 }

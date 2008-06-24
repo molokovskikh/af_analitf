@@ -62,7 +62,7 @@ type
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
     ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN, ecSSLOpen, ecNotChechHashes,
-    ecDBUpdateError, ecDiffDBVersion);
+    ecDBUpdateError, ecDiffDBVersion, ecDeleteDBFiles);
 
   TRetMass = array[1..3] of Variant;
 
@@ -462,7 +462,8 @@ implementation
 {$R *.DFM}
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
-     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog;
+     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
+     U_DeleteDBThread;
 
 procedure ClearSelectedPrices(SelectedPrices : TStringList);
 var
@@ -534,6 +535,10 @@ begin
     LogExitError('Запуск двух копий программы на одном компьютере невозможен.', Integer(ecDoubleStart));
 
   WriteExchangeLog('AnalitF', 'Программа запущена.');
+
+  //Удаляем файлы базы данных для переустановки
+  if FindCmdLineSwitch('renew') then
+    RunDeleteDBFiles();
 
   //TODO: здесь надо корректно работать с путями в файлу базы данных, чтобы корректно работало в сетевой версии
   FNeedImportAfterRecovery := False;

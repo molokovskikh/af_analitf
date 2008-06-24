@@ -44,7 +44,7 @@ begin
    MaxTracePosition := 1024 * 1024;
    FSuffix := 'TR';
    CS := TCriticalSection.Create;
-   if FindCmdLineSwitch('extend') or FindCmdLineSwitch('e') or FindCmdLineSwitch('i') or FindCmdLineSwitch('si')
+   if FindCmdLineSwitch('extd') or FindCmdLineSwitch('e') or FindCmdLineSwitch('i') or FindCmdLineSwitch('si')
    then begin
      if not FileExists ( getFTName ) then
       begin

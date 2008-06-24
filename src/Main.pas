@@ -286,7 +286,7 @@ begin
 	EnableFilterIndex := 0;
 	JustRun := True;
 	CheckNewDll;
-  if FindCmdLineSwitch('extend') then begin
+  if FindCmdLineSwitch('extd') then begin
     N2.Visible := True;
     N6.Visible := True;
     itmLinkExternal.Visible := True;
@@ -320,6 +320,8 @@ begin
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
+var
+  I : Integer;
 begin
 	if not JustRun then exit;
   //Бывает только в том случае, если происходит сжатие базы данных
@@ -352,6 +354,16 @@ begin
 			MB_ICONWARNING or MB_OK);
 		ShowConfig( True);
 	end;
+
+  //Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации
+  if FindCmdLineSwitch('renew') then
+  begin
+    for I := 0 to ActionList.ActionCount-1 do
+      if ActionList.Actions[i] <> actConfig then
+        TAction(ActionList.Actions[i]).Enabled := False;
+    itmSystem.Enabled := False;
+    Exit;
+  end;
 
 	{ Запуск с ключем -i (импорт данных) при получении новой версии программы}
 	if FindCmdLineSwitch('i') then
