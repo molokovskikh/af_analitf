@@ -220,9 +220,16 @@ begin
 			'Письмо успешно отправлено.', 'Информация',
 			MB_OK or MB_ICONINFORMATION);
 
-	if Result and ( AExchangeActions = [ eaSendOrders]) then Windows.MessageBox( Application.Handle,
+	if Result and ( AExchangeActions = [ eaSendOrders]) then
+    if (Length(SendOrdersLog) = 0)
+    then
+      Windows.MessageBox( Application.Handle,
 			'Отправка заказов завершена успешно.', 'Информация',
-			MB_OK or MB_ICONINFORMATION);
+			MB_OK or MB_ICONINFORMATION)
+    else
+      Windows.MessageBox( Application.Handle,
+			'Отправка заказов завершена с ошибками.', 'Внимание',
+			MB_OK or MB_ICONWARNING);
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) and (Length(SendOrdersLog) > 0)
   then
