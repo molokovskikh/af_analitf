@@ -190,6 +190,10 @@ begin
 
   SetGrids;
 
+  dbgNames.PopupMenu := nil;
+  dbgForms.PopupMenu := nil;
+  dbgCatalog.PopupMenu := nil;
+
 	ShowForm;
 end;
 
