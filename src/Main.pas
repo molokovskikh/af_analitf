@@ -348,7 +348,7 @@ begin
 	{ Логин пустой }
 	if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
 	begin
-		MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
+		AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
 			MB_ICONWARNING or MB_OK);
 		ShowConfig( True);
 	end;
@@ -369,7 +369,7 @@ begin
      DM.NeedImportAfterRecovery
   then
 	begin
-		MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
+		AProc.MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
 		if DM.IsBackuped( ExePath) then
 		begin
 			DM.MainConnection1.Close;
@@ -386,7 +386,7 @@ begin
 	{ Не обновлялись больше 20 часов }
 	if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) > 20) and
 		( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
-		if MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
+		if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
 			MB_ICONQUESTION or MB_YESNO) = IDYES then actReceiveExecute( nil);
 end;
 
@@ -437,12 +437,12 @@ end;
 
 procedure TMainForm.actCompactExecute(Sender: TObject);
 begin
-	if MessageBox( 'Сжатие базы данных достаточно длительный процесс' + #13 +
+	if AProc.MessageBox( 'Сжатие базы данных достаточно длительный процесс' + #13 +
 		'и должен проводиться монопольно. Продолжить?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then exit;
 	FreeChildForms;
 	Application.ProcessMessages;
   RunCompactDatabase;
-	MessageBox( 'Сжатие базы данных завершено');
+	AProc.MessageBox( 'Сжатие базы данных завершено');
 end;
 
 procedure TMainForm.actOrderAllExecute(Sender: TObject);
@@ -557,7 +557,7 @@ end;
 
 procedure TMainForm.actReceiveAllExecute(Sender: TObject);
 begin
-	if MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
+	if AProc.MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
 		MB_ICONQUESTION or MB_OKCANCEL) = IDOK then
 			RunExchange([ eaGetPrice, eaGetFullData, eaSendOrders]);
 end;
@@ -584,13 +584,13 @@ end;
 
 procedure TMainForm.itmClearDatabaseClick(Sender: TObject);
 begin
-	if MessageBox( 'Действительно очистить базу?',
+	if AProc.MessageBox( 'Действительно очистить базу?',
 		MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then exit;
 	FreeChildForms;
 	Application.ProcessMessages;
 	DM.ClearDatabase;
   DM.MainConnection1.DefaultTransaction.CommitRetaining;
-	MessageBox( 'Очистка базы завершена');
+	AProc.MessageBox( 'Очистка базы завершена');
 end;
 
 procedure TMainForm.itmImportClick(Sender: TObject);
@@ -709,7 +709,7 @@ begin
 
 	if CheckUnsendOrders then
 	begin
-		if MessageBox( 'Обнаружены неотправленные заказы. ' +
+		if AProc.MessageBox( 'Обнаружены неотправленные заказы. ' +
 			'Отправить их сейчас?', MB_ICONQUESTION or MB_YESNO) = IDYES then
 			RunExchange([ eaSendOrders]);
 	end;

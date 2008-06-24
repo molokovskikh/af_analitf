@@ -270,7 +270,7 @@ begin
     if (dbgOrdersH.SelectedRows.Count = 0) and (not dbgOrdersH.SelectedRows.CurrentRowSelected) then
       dbgOrdersH.SelectedRows.CurrentRowSelected := True;
     if dbgOrdersH.SelectedRows.Count > 0 then
-      if MessageBox( 'Удалить выбранные заявки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
+      if AProc.MessageBox( 'Удалить выбранные заявки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
         dbgOrdersH.SelectedRows.Delete;
         DM.InitAllSumOrder;
         MainForm.SetOrdersInfo;
@@ -294,7 +294,7 @@ procedure TOrdersHForm.MoveToPrice;
 begin
   if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>1) then Exit;
 
-  if MessageBox( 'Вернуть выбранные заявки в работу?',MB_ICONQUESTION+MB_OKCANCEL)<>IDOK then exit;
+  if AProc.MessageBox( 'Вернуть выбранные заявки в работу?',MB_ICONQUESTION+MB_OKCANCEL)<>IDOK then exit;
 
   if (dbgOrdersH.SelectedRows.Count = 0) and (not dbgOrdersH.SelectedRows.CurrentRowSelected) then
     dbgOrdersH.SelectedRows.CurrentRowSelected := True;

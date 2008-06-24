@@ -64,7 +64,6 @@ type
     procedure SetRasParams;
     procedure SetHTTPParams;
   public
-    LogFile: TextFile;
     DoStop: Boolean;
     QueryResults: TStrings;
 
@@ -93,7 +92,7 @@ function RunExchange(AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
-  Exclusive, CompactThread, DB, SQLWaiting;
+  Exclusive, CompactThread, DB, SQLWaiting, U_ExchangeLog;
 
 {$R *.DFM}
 type
@@ -140,7 +139,7 @@ begin
 		(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime <>
 		DM.adtParams.FieldByName( 'LastDateTime').AsDateTime) then
 	begin
-    MessageBox('Предыдущая операция импорта данных не была завершена.' + #10#13 +
+    AProc.MessageBox('Предыдущая операция импорта данных не была завершена.' + #10#13 +
 			'Обратитесь в АК "Инфорум"', MB_OK or MB_ICONWARNING);
 		exit;
 	end;
@@ -159,16 +158,11 @@ begin
     ExchangeForm.SetHTTPParams;
     
 		ExchangeForm.ExchangeActions := AExchangeActions;
-		AssignFile( ExchangeForm.LogFile, ExePath + 'Exchange.log');
-    if FileExists(ExePath + 'Exchange.log') then
-  		Append( ExchangeForm.LogFile) //будем добавлять лог-файл
-    else
-  		Rewrite( ExchangeForm.LogFile); //создаем лог-файл
-    WriteLn(ExchangeForm.LogFile);
-    WriteLn(ExchangeForm.LogFile);
-    WriteLn(ExchangeForm.LogFile);
-    WriteLn(ExchangeForm.LogFile, '---------------------------');
-    WriteLn(ExchangeForm.LogFile, 'Сессия начата в ' + DateTimeToStr(Now));
+    WriteExchangeLog('Exchange', '-');
+    WriteExchangeLog('Exchange', '-');
+    WriteExchangeLog('Exchange', '-');
+    WriteExchangeLog('Exchange', '---------------------------');
+    WriteExchangeLog('Exchange', 'Сессия начата');
 		try
       DM.ResetReclame;
 			ExchangeForm.Timer.Enabled := True;
@@ -182,11 +176,10 @@ begin
       DM.UpdateReclame;
 		except
 			on E: Exception do
-        MessageBox(Copy(E.Message, 1, 1024), MB_ICONSTOP);
+        AProc.MessageBox(Copy(E.Message, 1, 1024), MB_ICONSTOP);
 		end;
-    WriteLn(ExchangeForm.LogFile, 'Сессия окончена в ' + DateTimeToStr(Now));
-    WriteLn(ExchangeForm.LogFile, '---------------------------');
-		CloseFile( ExchangeForm.LogFile);
+    WriteExchangeLog('Exchange', 'Сессия окончена');
+    WriteExchangeLog('Exchange', '---------------------------');
   finally
 		ExchangeForm.Free;
 	end;
@@ -201,39 +194,35 @@ begin
 
 	if MainForm.ExchangeOnly then exit;
 
-	if Result and ( Trim( ServerAddition) <> '') then Windows.MessageBox( Application.Handle,
+	if Result and ( Trim( ServerAddition) <> '')
+  then
+    AProc.MessageBoxEx(
 			PChar( ServerAddition), 'Сообщение от АК "Инфорум"',
 			MB_OK or MB_ICONINFORMATION);
 
 	if Result and (( eaGetPrice in AExchangeActions) or
-		( eaImportOnly in AExchangeActions)) then Windows.MessageBox( Application.Handle,
-			'Обновление завершено успешно.', 'Информация',
-			MB_OK or MB_ICONINFORMATION);
+		( eaImportOnly in AExchangeActions))
+  then
+    AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
 
-	if Result and (eaGetWaybills in AExchangeActions) then
-    Windows.MessageBox( Application.Handle,
-			'Получение документов завершено успешно.', 'Информация',
-			MB_OK or MB_ICONINFORMATION);
+	if Result and (eaGetWaybills in AExchangeActions)
+  then
+    AProc.MessageBox('Получение документов завершено успешно.', MB_OK or MB_ICONINFORMATION);
 
-	if Result and (eaSendLetter in AExchangeActions) then
-    Windows.MessageBox( Application.Handle,
-			'Письмо успешно отправлено.', 'Информация',
-			MB_OK or MB_ICONINFORMATION);
+	if Result and (eaSendLetter in AExchangeActions)
+  then
+    AProc.MessageBox('Письмо успешно отправлено.', MB_OK or MB_ICONINFORMATION);
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) then
     if (Length(SendOrdersLog) = 0)
     then
-      Windows.MessageBox( Application.Handle,
-			'Отправка заказов завершена успешно.', 'Информация',
-			MB_OK or MB_ICONINFORMATION)
+      AProc.MessageBox('Отправка заказов завершена успешно.', MB_OK or MB_ICONINFORMATION)
     else
-      Windows.MessageBox( Application.Handle,
-			'Отправка заказов завершена с ошибками.', 'Внимание',
-			MB_OK or MB_ICONWARNING);
+      AProc.MessageBox('Отправка заказов завершена с ошибками.', MB_OK or MB_ICONWARNING);
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) and (Length(SendOrdersLog) > 0)
   then
-    if MessageBox(
+    if AProc.MessageBox(
         'Во время отправки заказов возникли ошибки. ' +
             'Желаете посмотреть журнал ошибок?',
         MB_ICONWARNING or MB_YESNO) = IDYES
@@ -262,7 +251,7 @@ begin
       MainForm.FreeChildForms;
       Application.ProcessMessages;
       RunCompactDatabase;
-      MessageBox( 'Сжатие базы данных завершено');
+      AProc.MessageBox( 'Сжатие базы данных завершено');
     end;
 	end;
 end;
@@ -440,7 +429,8 @@ procedure TExchangeForm.SetStatusText(Value: string);
 begin
 	Value := Trim( Value);
 	stStatus.Caption := Value;
-	if Value <> '' then Writeln( LogFile, Value);
+	if Value <> '' then
+    WriteExchangeLog('Exchange', Value);
 	Application.ProcessMessages;
 end;
 
@@ -475,7 +465,7 @@ end;
 procedure TExchangeForm.HTTPStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: String);
 begin
-  WriteLn(LogFile, DateTimeToStr(Now) + '  IdStatus : ' + AStatusText);
+  WriteExchangeLog('Exchange', 'IdStatus : ' + AStatusText);
 end;
 
 { TInternalRepareOrders }

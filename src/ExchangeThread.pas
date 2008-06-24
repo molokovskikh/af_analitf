@@ -64,7 +64,6 @@ private
   NeedSendOrders,
   ImportComplete : Boolean;
 	FileStream: TFileStream;
-	RecThread: TReclameThread;
   StartExec : TDateTime;
   AbsentPriceCodeSL : TStringList;
   ASynPass,
@@ -152,9 +151,9 @@ end;
 
 implementation
 
-uses Exchange, DModule, AProc, Main, Retry, Exclusive, 
+uses Exchange, DModule, AProc, Main, Retry, Exclusive,
   U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
-  U_RecvThread, Constant;
+  U_RecvThread, Constant, U_ExchangeLog;
 
 { TExchangeThread }
 
@@ -332,7 +331,9 @@ begin
           if not (eaGetFullData in ExchangeForm.ExchangeActs) and
               ((EFIB.SQLCode = sqlcode_foreign_or_create_schema) or (EFIB.SQLCode = sqlcode_unique_violation))
           then begin
-    				Writeln( ExchangeForm.LogFile, 'Нарушение целостности при импорте:' + CRLF +
+            WriteExchangeLog(
+              'Exchange',
+              'Нарушение целостности при импорте:' + CRLF +
               'SQLCode       = ' + IntToStr(EFIB.SQLCode) + CRLF +
               'IBErrorCode   = ' + IntToStr(EFIB.IBErrorCode) + CRLF +
               'RaiserName    =  ' + EFIB.RaiserName + CRLF +
@@ -340,7 +341,7 @@ begin
               'IBMessage     = ' + EFIB.IBMessage + CRLF +
               'CustomMessage = ' + EFIB.CustomMessage + CRLF +
               'Msg           = ' + EFIB.Msg + CRLF +
-              'Message       = ' + EFIB.Message); //пишем в лог
+              'Message       = ' + EFIB.Message);
             Progress := 0;
             Synchronize( SetProgress);
             StatusText := 'Откат изменений';
@@ -389,7 +390,7 @@ begin
 				//обрабатываем Отмену
 				//if ExchangeForm.DoStop then Abort;
 				//обрабатываем ошибку
-				Writeln( ExchangeForm.LogFile, LastStatus + ':' + CRLF + E.Message); //пишем в лог
+        WriteExchangeLog('Exchange', LastStatus + ':' + CRLF + E.Message);
 				if ErrorMessage = '' then
           ErrorMessage := RusError( E.Message);
 				if ErrorMessage = '' then
@@ -514,14 +515,14 @@ begin
     //Вырезаем из URL параметр ID, чтобы потом передать его при подтверждении
     UpdateIdIndex := AnsiPos(UpperCase('?Id='), UpperCase(HostFileName));
     if UpdateIdIndex = 0 then begin
-      WriteLn(ExchangeForm.LogFile, 'Не найдена строка "?Id=" в URL : ' + HostFileName);
+      WriteExchangeLog('Exchange', 'Не найдена строка "?Id=" в URL : ' + HostFileName);
       raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
         #10#13 + 'Повторите запрос через несколько минут.');
     end
     else begin
       UpdateId := Copy(HostFileName, UpdateIdIndex + 4, Length(HostFileName));
       if UpdateId = '' then begin
-        WriteLn(ExchangeForm.LogFile, 'UpdateId - пустой, URL : ' + HostFileName);
+        WriteExchangeLog('Exchange', 'UpdateId - пустой, URL : ' + HostFileName);
         raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
           #10#13 + 'Повторите запрос через несколько минут.');
       end;
@@ -601,7 +602,7 @@ begin
 
             ExchangeForm.HTTP.Get( AddRangeStartToURL(HostFileName, FileStream.Position),
               FileStream);
-            Writeln(ExchangeForm.LogFile, 'Recieve file : ' + IntToStr(FileStream.Size));
+            WriteExchangeLog('Exchange', 'Recieve file : ' + IntToStr(FileStream.Size));
             PostSuccess := True;
 
           except
@@ -676,7 +677,6 @@ begin
     DM.SetNeedCommitExchange();
 
     try
-      Flush(ExchangeForm.LogFile);
       FS := TFileStream.Create(ExePath + 'Exchange.log', fmOpenRead or fmShareDenyNone);
       try
         Len := Integer(FS.Size);
@@ -735,9 +735,9 @@ begin
       MainForm.EnableByHTTPName;
     end;
     DM.adtParams.Post;
-    CloseFile( ExchangeForm.LogFile);
+    FreeExchangeLog();
     SysUtils.DeleteFile(ExePath + 'Exchange.log');
-    Rewrite( ExchangeForm.LogFile); //создаем лог-файл
+    CreateExchangeLog();
     DM.ResetNeedCommitExchange;
   end;
 end;
@@ -782,7 +782,7 @@ begin
       DM.adsOrdersH.FieldByName( 'OrderId').Value;
     DM.adsOrders.Open;
 
-    WriteLn(ExchangeForm.LogFile,
+    WriteExchangeLog('Exchange',
       'Отправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
       '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
 		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 3);
@@ -832,7 +832,7 @@ begin
         values[ i * OrderParamCount + 15] := S;
       except
         on E : Exception do begin
-          WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке цены : ' + E.Message
+          WriteExchangeLog('Exchange', 'Ошибка при расшифровке цены : ' + E.Message
             + '  Строка : "' + DM.adsOrders.FieldByName( 'PRICE').AsString + '"');
           raise Exception.CreateFmt('При отправке заказа для "%s" невозможно сформировать цену по позиции "%s".',
             [DM.adsOrdersH.FieldByName( 'PriceName').AsString, DM.adsOrders.FieldByName('SYNONYMNAME').AsString]);
@@ -882,7 +882,7 @@ begin
           end;
         except
           on E : Exception do begin
-            WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке минимальной цены : ' + E.Message
+            WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены : ' + E.Message
               + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
             values[ i * OrderParamCount + 16] := '';
             values[ i * OrderParamCount + 17] := '';
@@ -916,7 +916,7 @@ begin
             end;
           except
             on E : Exception do begin
-              WriteLn(ExchangeForm.LogFile, 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
+              WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
                 + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
               values[ i * OrderParamCount + 18] := '';
               values[ i * OrderParamCount + 19] := '';
@@ -1030,7 +1030,7 @@ begin
 			Synchronize( ExchangeForm.Ras.Connect);
       RasTimeout := DM.adtParams.FieldByName( 'RasSleep').AsInteger;
       if RasTimeout > 0 then begin
-        Writeln(ExchangeForm.LogFile, DateTimeToStr(Now) + '  Sleep = ' + IntToStr(RasTimeout));
+        WriteExchangeLog('Exchange', 'Sleep = ' + IntToStr(RasTimeout));
         Sleep(RasTimeout * 1000);
       end;
   end;
@@ -1150,7 +1150,7 @@ var
 begin
 	if not SysUtils.DirectoryExists( ExePath + SDirIn + '\' + SDirExe) then exit;
 
-	MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
+	AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
 	EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
 	try
 		EraserDll.SaveToFile( 'Eraser.dll');
@@ -1758,7 +1758,7 @@ end;
 
 procedure TExchangeThread.OnConnectError(AMessage: String);
 begin
-  WriteLn(ExchangeForm.LogFile, AMessage);
+  WriteExchangeLog('Exchange', AMessage);
 end;
 
 procedure TExchangeThread.OnChildTerminate(Sender: TObject);
@@ -2086,7 +2086,7 @@ var
   I : Integer;
 begin
   Action := daFail;
-  
+
   LogText := 'Query : ' + pFIBQuery.Name + CRLF +
     ' SQL : ' + pFIBQuery.SQL.Text + CRLF;
   if pFIBQuery.ParamCount > 0 then begin
@@ -2098,8 +2098,7 @@ begin
   end;
 
   //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
-  WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + '  ' + LogText);
-  Flush(ExchangeForm.LogFile);
+  WriteExchangeLog('Exchange.ThreadOnExecuteError', LogText);
 end;
 
 procedure TExchangeThread.DoSendLetter;

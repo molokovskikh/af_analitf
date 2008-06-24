@@ -71,7 +71,8 @@ uses
   U_SXConversions in 'common\U_SXConversions.pas',
   U_SGXMLGeneral in 'common\U_SGXMLGeneral.pas',
   U_RecvThread in 'U_RecvThread.pas',
-  U_GroupUtils in 'U_GroupUtils.pas';
+  U_GroupUtils in 'U_GroupUtils.pas',
+  U_ExchangeLog in 'U_ExchangeLog.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

@@ -350,7 +350,7 @@ begin
 		Val( adsSummaryQuantity.AsString, Quantity, E);
 		if E<>0 then Quantity := 0;
 		if ( Quantity > 0) and ( adsSummaryORDERCOUNT.AsInteger > Quantity) and
-			( MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
+			( AProc.MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
 			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsSummaryORDERCOUNT.AsInteger := Quantity;
       
     PanelCaption := '';
@@ -437,7 +437,7 @@ end;
 procedure TSummaryForm.DeleteOrder;
 begin
   if LastSymmaryType = 0 then
-    if MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
+    if AProc.MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
       OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
       OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCryptBASECOST.AsCurrency;
       SetOrderLabel;

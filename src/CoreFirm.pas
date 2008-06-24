@@ -248,7 +248,7 @@ begin
     RefreshAllCore;
     SetFilter(filAll);
     if adsCore.RecordCount=0 then begin
-      MessageBox('Выбранный прайс-лист отсутствует',MB_ICONWARNING);
+      AProc.MessageBox('Выбранный прайс-лист отсутствует',MB_ICONWARNING);
       Abort;
     end;
     if OnlyLeaders then
@@ -368,7 +368,7 @@ begin
 		Val( adsCoreQuantity.AsString, Quantity, E);
 		if E <> 0 then Quantity := 0;
 		if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
-			( MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
+			( AProc.MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
 			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
     PanelCaption := '';
@@ -451,7 +451,7 @@ end;
 procedure TCoreFirmForm.actDeleteOrderExecute(Sender: TObject);
 begin
   if not Visible then Exit;
-  if MessageBox( 'Удалить весь заказ по данному прайс-листу?',
+  if AProc.MessageBox( 'Удалить весь заказ по данному прайс-листу?',
     MB_ICONQUESTION or MB_OKCANCEL)<>IDOK then Abort;
   adsCore.DisableControls;
   Screen.Cursor:=crHourGlass;

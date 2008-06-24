@@ -276,7 +276,7 @@ end;
 
 procedure TConfigForm.itmRasDeleteClick(Sender: TObject);
 begin
-  if (cbRas.ItemIndex>=0)and(MessageBox('Удалить удаленное соединение?',
+  if (cbRas.ItemIndex>=0)and(AProc.MessageBox('Удалить удаленное соединение?',
     MB_ICONQUESTION+MB_OKCANCEL)=IDOK) then begin
     DM.Ras.Entry:=cbRas.Items[cbRas.ItemIndex];
     DM.Ras.DeleteEntry;
@@ -323,7 +323,7 @@ end;
 procedure TConfigForm.DBCheckBox2MouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  MessageBox('Изменения вступят в силу после получения данных', MB_OK or MB_ICONWARNING);
+  AProc.MessageBox('Изменения вступят в силу после получения данных', MB_OK or MB_ICONWARNING);
 end;
 
 procedure TConfigForm.lblServerLinkClick(Sender: TObject);
@@ -400,7 +400,7 @@ var
 begin
   if (ModalResult = mrOK) then begin
     if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
-      if MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
+      if AProc.MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
         CanClose := False;
     end;
     if CanClose and RetMarginsChanges then begin
@@ -426,7 +426,7 @@ begin
           CanClose := False;
           PageControl.ActivePage := tshClients;
           tdbgRetailMargins.SetFocus;
-          MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
+          AProc.MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
         end;
       end;
     end;

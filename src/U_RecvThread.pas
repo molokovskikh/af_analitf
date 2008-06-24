@@ -36,7 +36,7 @@ type
 implementation
 
 uses
-  Exchange, FIBDatabase, Main;
+  Exchange, FIBDatabase, Main, U_ExchangeLog;
 
 { TReceiveThread }
 
@@ -87,7 +87,7 @@ begin
   Res := False;
   repeat
     try
-       WriteLn(ExchangeForm.LogFile, DateTimeToStr(Now) + '  ' + SybSystem + '  ' + MessageText);
+       WriteExchangeLog(SybSystem, MessageText);
        Res := True;
     except
       Sleep(700);

@@ -246,7 +246,6 @@ end;
 procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean);
 var
 	I: Integer;
-	FirstPrice, PrevPrice, D: Currency;
 	OrdersH: TOrdersHForm;
   TmpSortList : TStringList;
 begin
@@ -323,7 +322,7 @@ begin
 	{ проверка непустоты }
 	if adsCore.RecordCount = 0 then
 	begin
-		MessageBox( 'Нет предложений', MB_ICONWARNING);
+		AProc.MessageBox( 'Нет предложений', MB_ICONWARNING);
 		Abort;
 	end;
 
@@ -407,7 +406,7 @@ begin
 		Val( adsCoreQuantity.AsString,Quantity,E);
 		if E<>0 then Quantity := 0;
 		if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
-			( MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
+			( AProc.MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
 			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
     PanelCaption := '';

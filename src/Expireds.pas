@@ -194,7 +194,7 @@ begin
 		Val( adsExpiredsQuantity.AsString, Quantity, E);
 		if E <> 0 then Quantity := 0;
 		if ( Quantity > 0) and ( adsExpiredsORDERCOUNT.AsInteger > Quantity)and
-			(MessageBox('Заказ превышает остаток на складе. Продолжить?',
+			(AProc.MessageBox('Заказ превышает остаток на складе. Продолжить?',
 			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsORDERCOUNT.AsInteger := Quantity;
 
     PanelCaption := '';

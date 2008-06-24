@@ -462,7 +462,7 @@ implementation
 {$R *.DFM}
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
-     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config;
+     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog;
 
 procedure ClearSelectedPrices(SelectedPrices : TStringList);
 var
@@ -533,7 +533,7 @@ begin
   if not IsOneStart then
     LogExitError('Запуск двух копий программы на одном компьютере невозможен.', Integer(ecDoubleStart));
 
-  AProc.LogCriticalError('Программа запущена.');
+  WriteExchangeLog('AnalitF', 'Программа запущена.');
 
   //TODO: здесь надо корректно работать с путями в файлу базы данных, чтобы корректно работало в сетевой версии
   FNeedImportAfterRecovery := False;
@@ -577,12 +577,12 @@ begin
   //Проверяем, что работа с программой была завершена корректно
   if DBCompress then
   begin
-    MessageBox(
+    AProc.MessageBox(
       'Последний сеанс работы с программой не был корректно завершен. '+
         'Сейчас будет произведено сжатие базы данных.');
     MainForm.FreeChildForms;
     RunCompactDataBase;
-    MessageBox( 'Сжатие базы данных завершено.');
+    AProc.MessageBox( 'Сжатие базы данных завершено.');
   end;
   SetStarted;
   //MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
@@ -644,7 +644,7 @@ end;
 
 procedure TDM.DataModuleDestroy(Sender: TObject);
 begin
-  AProc.LogCriticalError('Попытка закрыть программу.');
+  WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
   if not MainConnection1.Connected then exit;
 
   try
@@ -656,7 +656,7 @@ begin
       AProc.LogCriticalError('Ошибка при изменении ClientId: ' + E.Message);
   end;
   ResetStarted;
-  AProc.LogCriticalError('Программа закрыта.');
+  WriteExchangeLog('AnalitF', 'Программа закрыта.');
 end;
 
 procedure TDM.ClientChanged;
@@ -688,7 +688,7 @@ begin
   begin
     if ( ExID = GetExclusiveID()) or ( ExID = '') then exit;
 
-    MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
+    AProc.MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
       'монопольного доступ к базе данных. Запуск программы невозможен.', [ CompName]),
       MB_ICONWARNING or MB_OK);
     ExitProcess(3);
@@ -739,7 +739,7 @@ begin
     finally
       DM.MainConnection1.Close;
     end;
-    MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
+    AProc.MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
     DM.MainConnection1.Open;
     try
@@ -752,7 +752,7 @@ begin
 
   NeedUpdateByCheckHashes := not CheckCriticalLibrary;
   if NeedUpdateByCheckHashes then
-    MessageBox( 'Ошибка проверки подлинности компонент программы. Необходимо выполнить обновление данных.',
+    AProc.MessageBox( 'Ошибка проверки подлинности компонент программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
 end;
 
@@ -2827,7 +2827,7 @@ begin
 
   //Логируем наши действия и отображаем пользователю
   AProc.LogCriticalError(DBErrorMess);
-  MessageBox(DBErrorMess, MB_ICONERROR or MB_OK);
+  AProc.MessageBox(DBErrorMess, MB_ICONERROR or MB_OK);
 
   //Формируем имя ошибочного файла
   ErrFileName := ChangeFileExt(ParamStr(0), '.e');
@@ -2852,13 +2852,13 @@ begin
     RunUpdateDBFile(nil, nil, '', CURRENT_DB_VERSION, CreateClearDatabaseFromScript, nil, 'Происходит создание базы данных. Подождите...');
     FCreateClearDatabase := True;
     FNeedImportAfterRecovery := False;
-    AProc.LogCriticalError('Произведено создание базы.');
+    WriteExchangeLog('AnalitF', 'Произведено создание базы.');
   end
   else
     if Windows.MoveFile(PChar(EtalonDBFileName), PChar(OldDBFileName)) then begin
       //Значит восстановили из эталона
       FNeedImportAfterRecovery := True;
-      AProc.LogCriticalError('Произведено копирование из эталонной копии.');
+      WriteExchangeLog('AnalitF', 'Произведено копирование из эталонной копии.');
     end
     else
       raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',

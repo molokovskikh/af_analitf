@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Forms, Controls, DBCtrls, StdCtrls, Mask, ExtCtrls,
-  Grids, DBGridEh, ToughDBGrid, Menus;
+  Grids, DBGridEh, ToughDBGrid, Menus, GridsEh;
 
 type
   TClientForm = class(TForm)
@@ -63,7 +63,7 @@ begin
       end;
       if not Res then begin
         CanClose := False;
-        MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
+        AProc.MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
       end;
     end;
   end;

@@ -4,7 +4,7 @@ interface
 
 uses SysUtils, Controls, Windows, Forms, StrUtils, Classes, Math, DBGrids,
   ComCtrls, Messages, ShellApi, IniFiles, AppUtils, IdFTP, DateUtils, ToughDBGrid,
-	DbGridEh, LU_Tracer, IdHTTP, SyncObjs, FileUtil, Contnrs, IdSSLOpenSSL;
+	DbGridEh, IdHTTP, SyncObjs, FileUtil, Contnrs, IdSSLOpenSSL;
 
 const
   WM_AFTERRETRIEVEMAIL=WM_USER+100; //сообщение о получении сообщений. с сервера
@@ -96,7 +96,8 @@ function WordCount(const S: string; const WordDelims: TSysCharSet): Integer;
 implementation
 
 uses
-  IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest;
+  IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest,
+  U_ExchangeLog;
 
 var
   FSilentMode : Boolean;
@@ -167,7 +168,7 @@ var
   H: HWND;
 begin
   if SilentMode then begin
-    Tracer.TR(Caption, MesStr);
+    WriteExchangeLog(Caption, MesStr);
     if ((Icon and MB_YESNO) > 0) or ((Icon and MB_YESNOCANCEL) > 0) then
       Result := ID_YES
     else
@@ -537,21 +538,8 @@ begin
 end;
 
 procedure LogCriticalError(Error: String);
-var
-  ELog : TextFile;
 begin
-  try
-		AssignFile( ELog, ExePath + 'Exchange.log');
-    if FileExists(ExePath + 'Exchange.log') then
-  		Append( ELog) //будем добавлять лог-файл
-    else
-  		Rewrite( ELog); //создаем лог-файл
-    Writeln(ELog);
-    Writeln(ELog);
-    Writeln(ELog, DateTimeToStr(Now) + '  CriticalError : ' + Error);
-    CloseFile(ELog);
-  except
-  end;
+  WriteExchangeLog('CriticalError', Error);
 end;
 
 procedure LogExitError(Error : String; ExitCode : Integer; ShowErrorMessage : Boolean = True);
