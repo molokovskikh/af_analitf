@@ -204,20 +204,52 @@ begin
           end;
 
 
-          //Пытаемся обновить файл
+          //Пытаемся обновить файл с помощью копирования, а потом удаления исходников,
+          //т.к. в некоторых случаях MoveFile в Vista работает некорректно
           Result := False;
           for I := 1 to 20 do begin
-            if Windows.MoveFile(PChar(InDir +  sr.Name), PChar(OutDir + sr.Name)) then begin
+            if Windows.CopyFile(PChar(InDir +  sr.Name), PChar(OutDir + sr.Name), False) then begin
               Result := True;
               break;
             end;
             Sleep(500);
           end;
           if not Result then begin
-            trLog.TR('Eraser', 'Не получилось перезаписать файл ' + sr.Name + ': ' +
+            trLog.TR('Eraser', 'Не получилось скопировать файл ' + sr.Name + ' в рабочую папку: ' +
               SysErrorMessage(GetLastError()));
             Exit;
           end;
+
+          //Пытаемся установить атрибуты файла в папке In
+          Result := False;
+          for I := 1 to 20 do begin
+            if Windows.SetFileAttributes(PChar(InDir +  sr.Name), FILE_ATTRIBUTE_NORMAL) then begin
+              Result := True;
+              break;
+            end;
+            Sleep(500);
+          end;
+          if not Result then begin
+            trLog.TR('Eraser', 'Не получилось установить атрибуты файла ' + sr.Name + ' в папке In: ' +
+              SysErrorMessage(GetLastError()));
+            Exit;
+          end;
+
+          //Пытаемся удалить файл в папке In
+          Result := False;
+          for I := 1 to 20 do begin
+            if Windows.DeleteFile(PChar(InDir +  sr.Name)) then begin
+              Result := True;
+              break;
+            end;
+            Sleep(500);
+          end;
+          if not Result then begin
+            trLog.TR('Eraser', 'Не получилось удалить файл ' + sr.Name + ' в папке In: ' +
+              SysErrorMessage(GetLastError()));
+            Exit;
+          end;
+          
         end;
     until FindNext(sr) <> 0;
     FindClose(sr);
