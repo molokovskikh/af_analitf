@@ -383,7 +383,6 @@ type
     procedure RestoreDatabase( APath: string);
     function IsBackuped( APath: string): boolean;
     procedure ClearBackup( APath: string);
-    function Unpacked: boolean;
     procedure SetExclusive;
     procedure ResetExclusive;
     procedure SetCumulative;
@@ -545,9 +544,7 @@ begin
   FCreateClearDatabase     := False;
   if IsBackuped(ExePath) then
     try
-      if FileExists(MainConnection1.DBName) then
-        AProc.DeleteFileA(MainConnection1.DBName);
-      AProc.MoveFileA(ChangeFileExt(ParamStr(0), '.bak'), MainConnection1.DBName);
+      AProc.OSMoveFile(ChangeFileExt(ParamStr(0), '.bak'), MainConnection1.DBName);
       FNeedImportAfterRecovery := True;
     except
       on E : Exception do
@@ -1327,9 +1324,7 @@ end;
 
 procedure TDM.RestoreDatabase( APath: string);
 begin
-  Windows.DeleteFile( PChar( APath + ChangeFileExt( DatabaseName, '.ldb')));
-  MoveFile_( APath + ChangeFileExt( DatabaseName, '.bak'),
-    APath + DatabaseName);
+  OSMoveFile(APath + ChangeFileExt( DatabaseName, '.bak'), APath + DatabaseName);
 end;
 
 procedure TDM.ClearBackup( APath: string);
@@ -1358,19 +1353,6 @@ begin
   until MoveRes;
   if not MoveRes then
     Windows.DeleteFile( PChar( BackupFileName ) );
-end;
-
-function TDM.Unpacked: boolean;
-var
-  SR: TSearchRec;
-begin
-  result := FindFirst( ExePath + SDirIn + '\*.zi_', faAnyFile, SR) <> 0;
-  if not result then
-  begin
-    MoveFile_( ExePath + SDirIn + '\' + SR.Name,
-      ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zip'));
-  end;
-  FindClose( SR);
 end;
 
 procedure TDM.ResetExclusive;

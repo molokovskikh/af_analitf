@@ -1091,9 +1091,9 @@ begin
           SZCS.Leave;
         end;
 
-				DeleteFileA( ExePath + SDirIn + '\' + SR.Name);
+				OSDeleteFile( ExePath + SDirIn + '\' + SR.Name);
         //Если нет файла ".zi_", то это не является проблемой и импорт может быть осуществлен
-				DeleteFileA( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'), False);
+				OSDeleteFile( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'), False);
 			end;
 			Synchronize( ExchangeForm.CheckStop);
 		until FindNext( SR) <> 0;
@@ -1121,9 +1121,9 @@ begin
         if (FoundDeletedText) and (FoundIndex < Length(DeleteSR.Name)-4) then begin
           DeletedText := Copy(DeleteSR.Name, FoundIndex + 1, Length(DeleteSR.Name));
           NewImportFileName := StringReplace(DeleteSR.Name, DeletedText, '.txt', []);
-          MoveFileA(
+          OSMoveFile(
             ExePath + SDirIn + '\' + DeleteSR.Name,
-            ExePath + SDirIn + '\' + NewImportFileName, True);
+            ExePath + SDirIn + '\' + NewImportFileName);
         end;
 
       end;
@@ -2158,10 +2158,9 @@ begin
     try
       repeat
         if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then
-          MoveFileA(
+          OSMoveFile(
             ExePath + SDirIn + '\' + DirName + '\' + DocsSR.Name,
-            ExePath + DirName + '\' + DocsSR.Name,
-            True);
+            ExePath + DirName + '\' + DocsSR.Name);
       until (FindNext( DocsSR ) <> 0)
     finally
       SysUtils.FindClose( DocsSR );

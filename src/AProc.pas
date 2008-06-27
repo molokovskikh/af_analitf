@@ -56,9 +56,8 @@ procedure Win32CheckA(RetVal: BOOL);
 function FindChildControlByClass(ParentControl: TWinControl; ClassRef: TControlClass): TControl;
 procedure StringToStrings(Str: string; Strings: TStrings; Delimiter: Char=';');
 function StringsToString(Strings: TStrings; Delimiter: Char=';'): string;
-procedure CopyFileA(Source, Destination: string; Overwrite: Boolean=True; RaiseException: Boolean=True);
-procedure MoveFileA(Source, Destination: string; Overwrite: Boolean=True; RaiseException: Boolean=True);
-procedure DeleteFileA(FileName: string; RaiseException: Boolean=True);
+procedure OSMoveFile(Source, Destination: string);
+procedure OSDeleteFile(FileName: string; RaiseException: Boolean=True);
 function NumberToChars(Val: Integer; Len: Integer=0): string;
 function CharsToNumber(St: string): Integer;
 function StrToProxyType(St: string): TIdFtpProxyType;
@@ -71,7 +70,6 @@ function LocalTimeToUTC(DateTime: TDateTime): TDateTime;
 procedure MailTo(EMail,Subject: string);
 procedure UrlLink(Address: string);
 function ExtractURL(const URL: string): string;
-procedure MoveFile_( ASource, ADest: string);
 function SimpleHash( AStr: string): string;
 procedure LogCriticalError(Error : String);
 procedure LogExitError(Error : String; ExitCode : Integer; ShowErrorMessage : Boolean = True);
@@ -353,26 +351,46 @@ begin
     Result:=Result+Strings[I]+Delimiter;
 end;
 
-procedure CopyFileA(Source, Destination: string; Overwrite: Boolean=True; RaiseException: Boolean=True);
+procedure OSMoveFile(Source, Destination: string);
+var
+  MoveLastError : Cardinal;
+  Ex : EOSError;
 begin
-  if not Windows.CopyFile(PChar(Source),PChar(Destination),not Overwrite) and RaiseException then
-    RaiseLastOSErrorA;
-end;
-
-procedure MoveFileA(Source, Destination: string; Overwrite: Boolean=True; RaiseException: Boolean=True);
-begin
-  if Overwrite and FileExists(Destination) then begin
+  if FileExists(Destination) then begin
     SetFileAttributes(PChar(Destination), FILE_ATTRIBUTE_NORMAL);
-    DeleteFileA(Destination,False);
+    OSDeleteFile(Destination, False);
   end;
-  if not Windows.MoveFile(PChar(Source),PChar(Destination)) and RaiseException then
-    RaiseLastOSErrorA;
+  if not Windows.CopyFile(PChar(Source), PChar(Destination), False) then
+  begin
+    MoveLastError := Windows.GetLastError();
+    if MoveLastError <> Windows.ERROR_SUCCESS then
+    begin
+      Ex := EOSError.CreateFmt('Ошибка при перемещении файла %s в %s: %s',
+        [Source, Destination, SysErrorMessage(MoveLastError)]);
+      Ex.ErrorCode := MoveLastError;
+      raise Ex;
+    end;
+  end;
+  SetFileAttributes(PChar(Source), FILE_ATTRIBUTE_NORMAL);
+  OSDeleteFile(Source, True);
 end;
 
-procedure DeleteFileA(FileName: string; RaiseException: Boolean=True);
+procedure OSDeleteFile(FileName: string; RaiseException: Boolean=True);
+var
+  DeleteLastError : Cardinal;
+  Ex : EOSError;
 begin
   if not Windows.DeleteFile(PChar(FileName)) and RaiseException then
-    RaiseLastOSErrorA;
+  begin
+    DeleteLastError := Windows.GetLastError();
+    if DeleteLastError <> Windows.ERROR_SUCCESS then
+    begin
+      Ex := EOSError.CreateFmt('Ошибка при удалении файла %s: %s',
+        [FileName, SysErrorMessage(DeleteLastError)]);
+      Ex.ErrorCode := DeleteLastError;
+      raise Ex;
+    end;
+  end;
 end;
 
 //преобразует число в более компактную символьную запись с использованием сиволов 0..9, a..z
@@ -452,7 +470,7 @@ begin
   if SysUtils.FindFirst(FileName,faAnyFile-faDirectory,SR)=0 then
     try
       repeat
-        DeleteFileA(Path+SR.Name,RaiseException);
+        OSDeleteFile(Path+SR.Name,RaiseException);
       until FindNext(SR)<>0;
     finally
       SysUtils.FindClose(SR);
@@ -501,26 +519,6 @@ begin
   I:=Pos('/',Result);
   if I>0 then Delete(Result,I,Length(Result));
   Result:=Trim(Result);
-end;
-
-procedure MoveFile_( ASource, ADest: string);
-var
-	le: integer;
-begin
-	if not Windows.CopyFile( PChar( ASource),
-		PChar( ADest), False) then
-	begin
-		le := GetLastError;
-		raise Exception.Create( 'Ошибка при копировании. Код : ' + IntToStr( le) +
-			#10 + #13 + 'Исходный файл : ' + ASource +
-			#10 + #13 + 'Файл приемник : ' + ADest);
-	end;
-	if not Windows.DeleteFile( PChar( ASource)) then
-	begin
-		le := GetLastError;
-		raise Exception.Create( 'Ошибка при удалении. Код : ' + IntToStr( le) +
-			#10 + #13 + 'Файл : ' + ASource);
-	end;
 end;
 
 function SimpleHash( AStr: string): string;

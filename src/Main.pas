@@ -180,7 +180,6 @@ TMainForm = class(TForm)
 private
 	JustRun: boolean;
 
-	procedure CheckNewDll;
 	procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
   procedure OnMainAppEx(Sender: TObject; E: Exception);
@@ -295,7 +294,6 @@ begin
 	RegionFilterIndex := 0;
 	EnableFilterIndex := 0;
 	JustRun := True;
-	CheckNewDll;
   if FindCmdLineSwitch('extd') then begin
     N2.Visible := True;
     N6.Visible := True;
@@ -306,22 +304,6 @@ begin
 	CS := TCriticalSection.Create;
 	if Set32BPP then
     LoadToImageList(ImageList, Application.ExeName, 100);
-end;
-
-procedure TMainForm.CheckNewDll;
-var
-	SR: TSearchRec;
-begin
-	if FindFirst( ExePath + SDirIn + '\*.dll', faAnyFile, SR) = 0 then
-	begin
-	        repeat
-			if ( SR.Attr and faDirectory) = faDirectory then continue;
-			try
-				MoveFile_( ExePath + SDirIn + '\' + SR.Name, ExePath + '\' + SR.Name);
-			except
-			end;
-        	until FindNext( SR) <> 0;
-	end;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -387,7 +369,6 @@ begin
 	{ Если операция импорта не была завершена }
 	if DM.IsBackuped( ExePath) or
      DM.IsBackuped( ExePath + SDirIn + '\') or
-     not DM.Unpacked or
      DM.NeedImportAfterRecovery
   then
 	begin

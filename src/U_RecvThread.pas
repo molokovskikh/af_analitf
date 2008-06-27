@@ -173,7 +173,7 @@ begin
 
       for I := 0 to FileList.Count-1 do
         if Integer(FileList.Objects[i]) = 1 then
-          DeleteFileA(FileList[i], False);
+          OSDeleteFile(FileList[i], False);
     finally
       FileList.Free;
     end;

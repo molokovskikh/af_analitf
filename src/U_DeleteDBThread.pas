@@ -27,7 +27,7 @@ procedure TDeleteDBFiles.DeleteDBFile(DeleteDBFileName: String);
 begin
   try
     if FileExists(DeleteDBFileName) then
-      AProc.DeleteFileA(DeleteDBFileName);
+      AProc.OSDeleteFile(DeleteDBFileName);
   except
     on E : Exception do
       LogExitError(Format( 'Не возможно удалить файл %s : %s ', [DeleteDBFileName, E.Message ]), Integer(ecDeleteDBFiles));
