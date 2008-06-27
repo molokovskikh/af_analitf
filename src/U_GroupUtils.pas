@@ -52,6 +52,7 @@ implementation
 
 uses Math, LU_Tracer;
 
+{
 procedure LogListToTrace(List: TStringList);
 var
   I : Integer;
@@ -64,6 +65,7 @@ begin
   end;
   Tracer.TR('LogListToTrace', 'End');
 end;
+}
 
 function SortElemCompareByProducts(List: TStringList; Index1, Index2: Integer): Integer;
 var
@@ -178,14 +180,14 @@ begin
               Break;
             end;
 
-    LogListToTrace(Result);
+    //LogListToTrace(Result);
 
     if GroupByProducts then
       Result.CustomSort(SortElemCompareByProducts)
     else
       Result.CustomSort(SortElemCompareByCatalog);
 
-    LogListToTrace(Result);
+    //LogListToTrace(Result);
     
     PrevId := 0;
     ColorIndex := -1;
@@ -198,15 +200,15 @@ begin
           CurrId := CurrElem.Group.CatalogId;
 
         if PrevId <> CurrId then begin
-          ColorIndex := (ColorIndex + 1) mod 3;
+          //Здесь 2 - это кол-во цветов
+          ColorIndex := (ColorIndex + 1) mod 2;
           PrevId := CurrId;
         end;
 
         case ColorIndex of
           0 : CurrElem.SelectedColor := clWhite;
-          1 : CurrElem.SelectedColor := clSkyBlue;
           else
-              CurrElem.SelectedColor := clMoneyGreen;
+              CurrElem.SelectedColor := clSkyBlue;
         end;
       end;
     end;
