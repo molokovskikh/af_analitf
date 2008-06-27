@@ -474,25 +474,25 @@ procedure TInternalRepareOrders.InternalRepareOrders;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
-  Code, CodeCr : Variant;
+  Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount : Variant;
 
 	procedure SetOrder( Order: integer);
 	begin
-		DM.adsSelect3.Edit;
-		DM.adsSelect3ORDERCOUNT.AsInteger := Order;
+		DM.adsRepareOrders.Edit;
+		DM.adsRepareOrdersORDERCOUNT.AsInteger := Order;
 		if Order = 0 then
-      DM.adsSelect3COREID.Clear
+      DM.adsRepareOrdersCOREID.Clear
     else begin
-      DM.adsSelect3COREID.AsInt64 := DM.adsCoreCOREID.Value;
-      DM.adsSelect3CODE.Value := DM.adsCoreCODE.Value;
-      DM.adsSelect3CODECR.Value := DM.adsCoreCODECR.Value;
-      DM.adsSelect3PRICE.AsString := DM.adsCoreBASECOST.Value;
+      DM.adsRepareOrdersCOREID.AsInt64 := DM.adsCoreCOREID.Value;
+      DM.adsRepareOrdersCODE.Value := DM.adsCoreCODE.Value;
+      DM.adsRepareOrdersCODECR.Value := DM.adsCoreCODECR.Value;
+      DM.adsRepareOrdersPRICE.AsString := DM.adsCoreBASECOST.Value;
     end;
-		DM.adsSelect3.Post;
+		DM.adsRepareOrders.Post;
 	end;
 
 begin
-	while not DM.adsSelect3.Eof do
+	while not DM.adsRepareOrders.Eof do
 	begin
     Application.ProcessMessages;
     if DM.adsCore.Active then
@@ -500,25 +500,26 @@ begin
 		Screen.Cursor := crHourglass;
 		try
       //Получаем данные, восстанавливаемой позиции
-			Order := DM.adsSelect3ORDERCOUNT.AsInteger;
+			Order := DM.adsRepareOrdersORDERCOUNT.AsInteger;
 			CurOrder := 0;
-			Code := DM.adsSelect3CODE.AsVariant;
-      //Code := Copy(Code, 1, Length(Code)-16);
-      //if Code = '' then Code := Null;
-			CodeCr := DM.adsSelect3CODECR.AsVariant;
-      //CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
-      //if CodeCr = '' then CodeCr := Null;
-			SynonymCode := DM.adsSelect3SYNONYMCODE.AsInteger;
-			SynonymFirmCrCode := DM.adsSelect3SYNONYMFIRMCRCODE.AsInteger;
-      JUNK := DM.adsSelect3JUNK.AsInteger;
-      AWAIT := DM.adsSelect3AWAIT.AsInteger;
+
+			Code := DM.adsRepareOrdersCODE.AsVariant;
+      VitallyImportant := DM.adsRepareOrdersVITALLYIMPORTANT.AsVariant;
+      RequestRatio := DM.adsRepareOrdersREQUESTRATIO.AsVariant;
+      OrderCost := DM.adsRepareOrdersORDERCOST.AsVariant;
+      MinOrderCount := DM.adsRepareOrdersMINORDERCOUNT.AsVariant;
+
+			SynonymCode := DM.adsRepareOrdersSYNONYMCODE.AsInteger;
+			SynonymFirmCrCode := DM.adsRepareOrdersSYNONYMFIRMCRCODE.AsInteger;
+      JUNK := DM.adsRepareOrdersJUNK.AsInteger;
+      AWAIT := DM.adsRepareOrdersAWAIT.AsInteger;
 
       DM.adsCore.ParamByName( 'AClientId').Value :=
         DM.adtClients.FieldByName('ClientId').Value;
       DM.adsCore.ParamByName( 'APriceCode').Value :=
-        DM.adsSelect3.FieldByName( 'PriceCode').Value;
+        DM.adsRepareOrders.FieldByName( 'PriceCode').Value;
       DM.adsCore.ParamByName( 'ARegionCode').Value :=
-        DM.adsSelect3.FieldByName( 'RegionCode').Value;
+        DM.adsRepareOrders.FieldByName( 'RegionCode').Value;
       DM.adsCore.ParamByName( 'SynonymCode').Value := SynonymCode;
       DM.adsCore.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
       DM.adsCore.ParamByName( 'JUNK').Value := JUNK;
@@ -528,16 +529,16 @@ begin
 			if DM.adsCore.IsEmpty then
 			begin
 				Strings.Append( Format( '%s : %s - %s : позиция отсутствует',
-					[ DM.adsSelect3PRICENAME.AsString,
-					DM.adsSelect3SYNONYMNAME.AsString,
-					DM.adsSelect3SYNONYMFIRM.AsString]));
+					[ DM.adsRepareOrdersPRICENAME.AsString,
+					DM.adsRepareOrdersSYNONYMNAME.AsString,
+					DM.adsRepareOrdersSYNONYMFIRM.AsString]));
 				DM.adsCore.Close;
 				SetOrder( 0);
-				DM.adsSelect3.Next;
+				DM.adsRepareOrders.Next;
 				continue;
 			end;
 
-			if DM.adsCore.Locate( 'Code;CodeCr', VarArrayOf([Code, CodeCr]), [])
+			if DM.adsCore.Locate( 'Code;VITALLYIMPORTANT;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount]), [])
       then
 			begin
 				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);
@@ -557,23 +558,23 @@ begin
 				if CurOrder > 0 then
 				begin
 					Strings.Append( Format( '%s : %s - %s : %d вместо %d (старая цена : %s)',
-						[ DM.adsSelect3PRICENAME.AsString,
-						DM.adsSelect3SYNONYMNAME.AsString,
-						DM.adsSelect3SYNONYMFIRM.AsString,
+						[ DM.adsRepareOrdersPRICENAME.AsString,
+						DM.adsRepareOrdersSYNONYMNAME.AsString,
+						DM.adsRepareOrdersSYNONYMFIRM.AsString,
 						CurOrder,
 						Order,
-						DM.adsSelect3CryptPRICE.AsString]));
+						DM.adsRepareOrdersCryptPRICE.AsString]));
 				end
 				else
 				begin
 					Strings.Append( Format( '%s : %s - %s : предложение отсутствует (старая цена : %s)',
-						[ DM.adsSelect3PRICENAME.AsString,
-						DM.adsSelect3SYNONYMNAME.AsString,
-						DM.adsSelect3SYNONYMFIRM.AsString,
-						DM.adsSelect3CryptPRICE.AsString]));
+						[ DM.adsRepareOrdersPRICENAME.AsString,
+						DM.adsRepareOrdersSYNONYMNAME.AsString,
+						DM.adsRepareOrdersSYNONYMFIRM.AsString,
+						DM.adsRepareOrdersCryptPRICE.AsString]));
 				end;
 			end;
-			DM.adsSelect3.Next;
+			DM.adsRepareOrders.Next;
 		finally
 			DM.adsCore.Close;
       Screen.Cursor := crDefault;
@@ -583,11 +584,11 @@ end;
 
 procedure TInternalRepareOrders.RepareOrders;
 begin
- 	DM.adsSelect3.CloseOpen(False);
+ 	DM.adsRepareOrders.CloseOpen(False);
 
-	if DM.adsSelect3.IsEmpty then
+	if DM.adsRepareOrders.IsEmpty then
 	begin
-	 	DM.adsSelect3.Close;
+	 	DM.adsRepareOrders.Close;
 		exit;
 	end;
 
@@ -602,7 +603,7 @@ begin
 
 	finally
 		Strings.Free;
-		DM.adsSelect3.Close;
+		DM.adsRepareOrders.Close;
   end;
 end;
 

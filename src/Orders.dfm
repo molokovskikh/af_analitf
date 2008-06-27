@@ -344,7 +344,11 @@ inherited OrdersForm: TOrdersForm
       '    Orders.SendPrice,'
       '    core.requestratio,'
       '    core.ordercost,'
-      '    core.minordercount'
+      '    core.minordercount,'
+      '    Orders.Vitallyimportant as OrdersVitallyimportant,'
+      '    Orders.requestratio as Ordersrequestratio,'
+      '    Orders.ordercost as Ordersordercost,'
+      '    Orders.minordercount as Ordersminordercount   '
       'FROM '
       '  Orders'
       '  left join products on products.productid = orders.productid'
@@ -471,6 +475,20 @@ inherited OrdersForm: TOrdersForm
       FieldName = 'PRODUCTID'
       Size = 0
       RoundByScale = True
+    end
+    object adsOrdersORDERSVITALLYIMPORTANT: TFIBBooleanField
+      FieldName = 'ORDERSVITALLYIMPORTANT'
+    end
+    object adsOrdersORDERSREQUESTRATIO: TFIBIntegerField
+      FieldName = 'ORDERSREQUESTRATIO'
+    end
+    object adsOrdersORDERSORDERCOST: TFIBBCDField
+      FieldName = 'ORDERSORDERCOST'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsOrdersORDERSMINORDERCOUNT: TFIBIntegerField
+      FieldName = 'ORDERSMINORDERCOUNT'
     end
   end
   object tmrCheckOrderCount: TTimer

@@ -38,7 +38,7 @@ procedure TDeleteDBFiles.Execute;
 begin
   WriteExchangeLog('AnalitF', 'Попытка удалить файлы базы данных для пересоздания базы данных.');
   DeleteDBFile(ChangeFileExt(ParamStr(0), '.bak'));
-  DeleteDBFile(ChangeFileExt(ParamStr(0), '.etl'));
+  DeleteDBFile(ChangeFileExt(ParamStr(0), '.fdb.etl'));
   DeleteDBFile(ChangeFileExt(ParamStr(0), '.fdb'));
   WriteExchangeLog('AnalitF', 'Удаление файлов базы данных завершилось успешно.');
 end;

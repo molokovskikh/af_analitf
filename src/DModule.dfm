@@ -501,7 +501,7 @@ object DM: TDM
     Top = 216
     oCacheCalcFields = True
   end
-  object adsSelect3: TpFIBDataSet
+  object adsRepareOrders: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'
       '  orders'
@@ -529,7 +529,11 @@ object DM: TDM
       '  Junk, '
       '  Await, '
       '  OrderCount, '
-      '  PriceName '
+      '  PriceName,'
+      '  Vitallyimportant,'
+      '  requestratio,'
+      '  ordercost,'
+      '  minordercount '
       'FROM '
       '  Orders '
       
@@ -541,83 +545,97 @@ object DM: TDM
     Database = MainConnection1
     UpdateTransaction = UpTran
     AutoCommit = True
-    Left = 728
+    Left = 752
     Top = 216
     oTrimCharFields = False
     oCacheCalcFields = True
-    object adsSelect3ID: TFIBBCDField
+    object adsRepareOrdersID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
       RoundByScale = True
     end
-    object adsSelect3COREID: TFIBBCDField
+    object adsRepareOrdersCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
       RoundByScale = True
     end
-    object adsSelect3PRICECODE: TFIBBCDField
+    object adsRepareOrdersPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSelect3REGIONCODE: TFIBBCDField
+    object adsRepareOrdersREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSelect3CODE: TFIBStringField
+    object adsRepareOrdersCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsSelect3CODECR: TFIBStringField
+    object adsRepareOrdersCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsSelect3SYNONYMCODE: TFIBBCDField
+    object adsRepareOrdersSYNONYMCODE: TFIBBCDField
       FieldName = 'SYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSelect3SYNONYMFIRMCRCODE: TFIBBCDField
+    object adsRepareOrdersSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'SYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSelect3SYNONYMNAME: TFIBStringField
+    object adsRepareOrdersSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsSelect3SYNONYMFIRM: TFIBStringField
+    object adsRepareOrdersSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsSelect3JUNK: TFIBBooleanField
+    object adsRepareOrdersJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsSelect3AWAIT: TFIBBooleanField
+    object adsRepareOrdersAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
     end
-    object adsSelect3ORDERCOUNT: TFIBIntegerField
+    object adsRepareOrdersORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsSelect3PRICENAME: TFIBStringField
+    object adsRepareOrdersPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsSelect3CryptPRICE: TCurrencyField
+    object adsRepareOrdersCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
       Calculated = True
     end
-    object adsSelect3PRICE: TFIBStringField
+    object adsRepareOrdersPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
+    end
+    object adsRepareOrdersVITALLYIMPORTANT: TFIBBooleanField
+      FieldName = 'VITALLYIMPORTANT'
+    end
+    object adsRepareOrdersREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+    end
+    object adsRepareOrdersORDERCOST: TFIBBCDField
+      FieldName = 'ORDERCOST'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsRepareOrdersMINORDERCOUNT: TFIBIntegerField
+      FieldName = 'MINORDERCOUNT'
     end
   end
   object adsCore: TpFIBDataSet
@@ -671,7 +689,10 @@ object DM: TDM
       '    OrdersH.RegionCode AS OrdersHRegionCode,'
       '    OrdersH.PriceName AS OrdersHPriceName,'
       '    OrdersH.RegionName AS OrdersHRegionName,'
-      '    CCore.RequestRatio'
+      '    CCore.VitallyImportant,'
+      '    CCore.RequestRatio,'
+      '    CCore.OrderCost,'
+      '    CCore.MinOrderCount'
       'FROM'
       '    Core CCore'
       '    left join products on products.productid = CCore.productid'
@@ -910,6 +931,17 @@ object DM: TDM
     end
     object adsCoreREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
+    end
+    object adsCoreVITALLYIMPORTANT: TFIBBooleanField
+      FieldName = 'VITALLYIMPORTANT'
+    end
+    object adsCoreORDERCOST: TFIBBCDField
+      FieldName = 'ORDERCOST'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsCoreMINORDERCOUNT: TFIBIntegerField
+      FieldName = 'MINORDERCOUNT'
     end
   end
   object adsOrdersH: TpFIBDataSet

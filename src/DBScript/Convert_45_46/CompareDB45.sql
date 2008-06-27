@@ -8,6 +8,14 @@ SET AUTODDL ON;
 
 ALTER TABLE PARAMS ADD GROUPBYPRODUCTS FB_BOOLEAN;
 
+ALTER TABLE ORDERS ADD VITALLYIMPORTANT FB_BOOLEAN;
+
+ALTER TABLE ORDERS ADD REQUESTRATIO INTEGER;
+
+ALTER TABLE ORDERS ADD ORDERCOST NUMERIC(18,2);
+
+ALTER TABLE ORDERS ADD MINORDERCOUNT INTEGER;
+
 /* Drop table-fields... */
 /* Empty PRICESREGIONALDATAUPDATE for drop PRICESREGIONALDATA(UPCOST) */
 SET TERM ^ ;
@@ -244,4 +252,66 @@ begin
     insert into pricesregionaldataup values (:PRICECODE, :RegionCODE);
 end
 ^
+
+/* Alter (UPDATEORDERCOUNT) */
+ALTER PROCEDURE UPDATEORDERCOUNT(ORDERID BIGINT,
+CLIENTID BIGINT,
+PRICECODE BIGINT,
+REGIONCODE BIGINT,
+ORDERSORDERID BIGINT,
+COREID BIGINT,
+ORDERCOUNT INTEGER)
+ AS
+begin
+  if (orderid is null) then begin
+    select orderid from ORDERSHSHOWCURRENT(:CLIENTID, :PRICECODE, :REGIONCODE) into :orderid;
+    if (orderid is null) then begin
+      SELECT GEN_ID(GEN_ORDERSH_ID, 1) as NewID FROM RDB$DATABASE into :orderid;
+      insert into ordersh (OrderID, ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate)
+        select :OrderID, :ClientId, :PriceCode, :RegionCode, pd.PriceName, r.RegionName, current_timestamp
+        from
+          pricesdata pd,
+          pricesregionaldata prd,
+          regions r
+        where
+          pd.pricecode = :pricecode
+          and prd.pricecode = pd.pricecode
+          and r.regioncode = prd.regioncode
+          and r.regioncode = :regioncode;
+    end
+  end
+  if (ordersorderid is null ) then begin
+    select orderid from orders where coreid = :coreid and orderid = :orderid into :ordersorderid;
+    if (ordersorderid is null) then
+    begin
+      INSERT INTO ORDERS(ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR,
+               SYNONYMCODE, SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME,
+               SYNONYMFIRM, PRICE, AWAIT, JUNK, ORDERCOUNT,
+               VITALLYIMPORTANT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT )
+        select :ORDERID, :CLIENTID, :COREID, c.PRODUCTID, c.CODEFIRMCR,
+               c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR,
+               coalesce(s.SynonymName, catalogs.name || ' ' || catalogs.form) as SynonymName,
+               sf.synonymname, c.basecost, c.AWAIT, c.JUNK, :ORDERCOUNT,
+               c.VITALLYIMPORTANT, c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT
+        from
+          core c
+          left join products p on p.productid = c.productid
+          left join catalogs on catalogs.fullcode = p.catalogid
+          left join synonyms s on s.synonymcode = c.synonymcode
+          left join synonymfirmcr sf on sf.synonymfirmcrcode = c.synonymfirmcrcode
+        where
+          c.coreid = :coreid;
+    end
+    else begin
+      update orders set ordercount = :ordercount where orderid = :ordersorderid and coreid = :coreid;
+    end
+  end
+  else begin
+    update orders set ordercount = :ordercount where orderid = :ordersorderid and coreid = :coreid;
+  end
+end
+^
+
+
+
 

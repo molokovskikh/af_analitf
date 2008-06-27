@@ -263,6 +263,10 @@ CREATE TABLE ORDERS
   JUNK	FB_BOOLEAN,
   ORDERCOUNT	INTEGER NOT NULL,
   SENDPRICE	NUMERIC(18, 2),
+  VITALLYIMPORTANT	FB_BOOLEAN,
+  REQUESTRATIO	INTEGER,
+  ORDERCOST	NUMERIC(18, 2),
+  MINORDERCOUNT	INTEGER,
 CONSTRAINT PK_ORDERS PRIMARY KEY (ID)
 );
 
@@ -5549,8 +5553,15 @@ begin
     select orderid from orders where coreid = :coreid and orderid = :orderid into :ordersorderid;
     if (ordersorderid is null) then
     begin
-      INSERT INTO ORDERS(ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, PRICE, AWAIT, JUNK, ORDERCOUNT )
-        select :ORDERID, :CLIENTID, :COREID, c.PRODUCTID, c.CODEFIRMCR, c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, coalesce(s.SynonymName, catalogs.name || ' ' || catalogs.form) as SynonymName, sf.synonymname, c.basecost, c.AWAIT, c.JUNK, :ORDERCOUNT
+      INSERT INTO ORDERS(ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR,
+               SYNONYMCODE, SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME,
+               SYNONYMFIRM, PRICE, AWAIT, JUNK, ORDERCOUNT,
+               VITALLYIMPORTANT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT )
+        select :ORDERID, :CLIENTID, :COREID, c.PRODUCTID, c.CODEFIRMCR,
+               c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR,
+               coalesce(s.SynonymName, catalogs.name || ' ' || catalogs.form) as SynonymName,
+               sf.synonymname, c.basecost, c.AWAIT, c.JUNK, :ORDERCOUNT,
+               c.VITALLYIMPORTANT, c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT
         from
           core c
           left join products p on p.productid = c.productid

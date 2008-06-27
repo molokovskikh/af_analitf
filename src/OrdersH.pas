@@ -562,7 +562,7 @@ procedure TOrdersHForm.InternalMoveToPrice;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymFirmCrCode, SynonymCode: Variant;
-  Code, CodeCr : Variant;
+  Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount : Variant;
   I : Integer;
   RecCountSRV : Integer;
 
@@ -603,12 +603,13 @@ begin
       { переписываем позиции в текущий прайс-лист }
       while not OrdersForm.adsOrders.Eof do begin
         Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
+
         Code := OrdersForm.adsOrdersCode.AsVariant;
-        //Code := Copy(Code, 1, Length(Code)-16);
-      //if Code = '' then Code := Null;
-        CodeCr := OrdersForm.adsOrdersCodeCr.AsVariant;
-        //CodeCr := Copy(CodeCr, 1, Length(CodeCr)-16);
-        //if CodeCr = '' then CodeCr := Null;
+        VitallyImportant := OrdersForm.adsOrdersORDERSVITALLYIMPORTANT.AsVariant;
+        RequestRatio := OrdersForm.adsOrdersORDERSREQUESTRATIO.AsVariant;
+        OrderCost := OrdersForm.adsOrdersORDERSORDERCOST.AsVariant;
+        MinOrderCount := OrdersForm.adsOrdersORDERSMINORDERCOUNT.AsVariant;
+
         SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
         SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
         //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
@@ -623,8 +624,8 @@ begin
           FetchAll;
           RecCountSRV := adsCore.RecordCountFromSrv;
           try
-            { пытаемся разбросать заказ по нужным Code, CodeCr, SynonymCode и SynonymFirmCrCode }
-            if Locate( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [])
+            { пытаемся разбросать заказ по нужным Code, SynonymCode и SynonymFirmCrCode }
+            if Locate( 'Code;VITALLYIMPORTANT;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount]), [])
             then
             begin
               repeat
@@ -639,7 +640,7 @@ begin
                 if CurOrder < 0 then CurOrder := 0;
                 Order := Order - CurOrder;
                 if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
-              until ( Order = 0) or (not LocateNext( 'Code;CodeCr', VarArrayOf([ Code, CodeCr]), [])) or (RecCountSRV = adsCore.RecordCount);
+              until ( Order = 0) or (not LocateNext( 'Code;VITALLYIMPORTANT;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount]), [])) or (RecCountSRV = adsCore.RecordCount);
             end;
 
             { если все еще не разбросали, то пишем сообщение }

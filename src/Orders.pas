@@ -55,6 +55,10 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
+    adsOrdersORDERSVITALLYIMPORTANT: TFIBBooleanField;
+    adsOrdersORDERSREQUESTRATIO: TFIBIntegerField;
+    adsOrdersORDERSORDERCOST: TFIBBCDField;
+    adsOrdersORDERSMINORDERCOUNT: TFIBIntegerField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

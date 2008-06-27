@@ -114,7 +114,7 @@ type
     adcUpdate: TpFIBQuery;
     adsSelect: TpFIBDataSet;
     adsSelect2: TpFIBDataSet;
-    adsSelect3: TpFIBDataSet;
+    adsRepareOrders: TpFIBDataSet;
     adsCore: TpFIBDataSet;
     adsOrdersH: TpFIBDataSet;
     adsOrders: TpFIBDataSet;
@@ -124,21 +124,21 @@ type
     ValidService: TpFIBValidationService;
     t: TpFIBQuery;
     UpTran: TpFIBTransaction;
-    adsSelect3ID: TFIBBCDField;
-    adsSelect3COREID: TFIBBCDField;
-    adsSelect3PRICECODE: TFIBBCDField;
-    adsSelect3REGIONCODE: TFIBBCDField;
-    adsSelect3CODE: TFIBStringField;
-    adsSelect3CODECR: TFIBStringField;
-    adsSelect3SYNONYMCODE: TFIBBCDField;
-    adsSelect3SYNONYMFIRMCRCODE: TFIBBCDField;
-    adsSelect3SYNONYMNAME: TFIBStringField;
-    adsSelect3SYNONYMFIRM: TFIBStringField;
-    adsSelect3JUNK: TFIBBooleanField;
-    adsSelect3AWAIT: TFIBBooleanField;
-    adsSelect3ORDERCOUNT: TFIBIntegerField;
-    adsSelect3PRICENAME: TFIBStringField;
-    adsSelect3CryptPRICE: TCurrencyField;
+    adsRepareOrdersID: TFIBBCDField;
+    adsRepareOrdersCOREID: TFIBBCDField;
+    adsRepareOrdersPRICECODE: TFIBBCDField;
+    adsRepareOrdersREGIONCODE: TFIBBCDField;
+    adsRepareOrdersCODE: TFIBStringField;
+    adsRepareOrdersCODECR: TFIBStringField;
+    adsRepareOrdersSYNONYMCODE: TFIBBCDField;
+    adsRepareOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsRepareOrdersSYNONYMNAME: TFIBStringField;
+    adsRepareOrdersSYNONYMFIRM: TFIBStringField;
+    adsRepareOrdersJUNK: TFIBBooleanField;
+    adsRepareOrdersAWAIT: TFIBBooleanField;
+    adsRepareOrdersORDERCOUNT: TFIBIntegerField;
+    adsRepareOrdersPRICENAME: TFIBStringField;
+    adsRepareOrdersCryptPRICE: TCurrencyField;
     adsCoreCOREID: TFIBBCDField;
     adsCoreFULLCODE: TFIBBCDField;
     adsCoreSHORTCODE: TFIBBCDField;
@@ -238,7 +238,7 @@ type
     adsPricesINJOB: TFIBIntegerField;
     adsCoreAWAIT: TFIBBooleanField;
     adsCoreJUNK: TFIBBooleanField;
-    adsSelect3PRICE: TFIBStringField;
+    adsRepareOrdersPRICE: TFIBStringField;
     adsCoreBASECOST: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
     adsOrdersPRICE: TFIBStringField;
@@ -273,6 +273,13 @@ type
     adsOrdersFULLCODE: TFIBBCDField;
     adsOrderCorePRODUCTID: TFIBBCDField;
     adsAllOrdersPRODUCTID: TFIBBCDField;
+    adsRepareOrdersVITALLYIMPORTANT: TFIBBooleanField;
+    adsRepareOrdersREQUESTRATIO: TFIBIntegerField;
+    adsRepareOrdersORDERCOST: TFIBBCDField;
+    adsRepareOrdersMINORDERCOUNT: TFIBIntegerField;
+    adsCoreVITALLYIMPORTANT: TFIBBooleanField;
+    adsCoreORDERCOST: TFIBBCDField;
+    adsCoreMINORDERCOUNT: TFIBIntegerField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -515,7 +522,7 @@ begin
   OrdersInfo := TStringList.Create;
   OrdersInfo.Sorted := True;
 
-  adsSelect3.OnCalcFields := s3cf;
+  adsRepareOrders.OnCalcFields := s3cf;
   adsOrders.OnCalcFields := ocf;
   adsSumOrders.OnCalcFields := socf;
   adsOrderCore.OnCalcFields := occf;
@@ -1623,7 +1630,7 @@ end;
 procedure TDM.s3cf(DataSet: TDataSet);
 begin
   try
-    adsSelect3CryptPRICE.AsCurrency := StrToFloat(DM.D_B_N(adsSelect3PRICE.AsString));
+    adsRepareOrdersCryptPRICE.AsCurrency := StrToFloat(DM.D_B_N(adsRepareOrdersPRICE.AsString));
   except
   end;
 end;
