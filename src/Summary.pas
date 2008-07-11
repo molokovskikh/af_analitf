@@ -188,7 +188,7 @@ begin
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
-  PrintEnabled := LastSymmaryType = 1;
+  PrintEnabled := (LastSymmaryType = 1) or ((2 and DM.SaveGridMask) > 0);
   dtpDateFrom.Enabled := LastSymmaryType = 1;
   dtpDateTo.Enabled := dtpDateFrom.Enabled;
 	Reg := TRegIniFile.Create;
@@ -484,7 +484,7 @@ procedure TSummaryForm.rgSummaryTypeClick(Sender: TObject);
 begin
   if rgSummaryType.ItemIndex <> LastSymmaryType then begin
     LastSymmaryType := rgSummaryType.ItemIndex;
-    PrintEnabled := LastSymmaryType = 1;
+    PrintEnabled := (LastSymmaryType = 1) or ((2 and DM.SaveGridMask) > 0);
     dtpDateFrom.Enabled := LastSymmaryType = 1;
     dtpDateTo.Enabled := dtpDateFrom.Enabled;
     SummaryShow;

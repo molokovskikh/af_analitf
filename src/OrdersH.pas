@@ -250,7 +250,7 @@ begin
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
-  PrintEnabled := TabControl.TabIndex = 1;
+  PrintEnabled := (TabControl.TabIndex = 1) or ((2 and DM.SaveGridMask) > 0);
   OrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
 	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True
