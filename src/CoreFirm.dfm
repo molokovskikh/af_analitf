@@ -829,8 +829,7 @@ object CoreFirmForm: TCoreFirmForm
       'FROM'
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
-      '    :ACLIENTID,'
-      '    :APRICENAME) '
+      '    :ACLIENTID) '
       'where'
       '  upper(SynonymName) like upper(:LikeParam)')
     Transaction = DM.DefTran

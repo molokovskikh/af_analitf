@@ -100,9 +100,44 @@ var
 	LastPriceCode, LastRegionCode: Integer;
 
 procedure ShowPrices;
+var
+  //У клиента всего лишь один прайс-лист, поэтому открываем сразу форму с содержимым прайс-листа
+  IsAlonePrice : Boolean;
+  AlonePriceCode, AloneRegionCode : Integer;
+  AlonePriceName, AloneRegionName : String;
 begin
-	PricesForm := TPricesForm( MainForm.ShowChildForm( TPricesForm));
-	PricesForm.ShowForm;
+  IsAlonePrice := True;
+  if DM.adsPrices.Active then
+    DM.adsPrices.Close;
+  DM.adsPrices.Open;
+  try
+    //Если всего один прайс-лист, он в работе и кол-во позиций больше нуля
+    IsAlonePrice := (DM.adsPrices.RecordCountFromSrv = 1) and
+       (DM.adsPricesINJOB.AsBoolean) and (DM.adsPricesPRICESIZE.AsInteger > 0);
+    if IsAlonePrice then begin
+      AlonePriceCode  := DM.adsPricesPRICECODE.AsInteger;
+      AloneRegionCode := DM.adsPricesREGIONCODE.AsInteger;
+      AlonePriceName  := DM.adsPricesPRICENAME.AsString;
+      AloneRegionName := DM.adsPricesREGIONNAME.AsString;
+    end;
+  finally
+    DM.adsPrices.Close;
+  end;
+
+  if IsAlonePrice then begin
+    MainForm.FreeChildForms;
+    CoreFirmForm := TCoreFirmForm.Create( Application );
+    CoreFirmForm.ShowForm(
+      AlonePriceCode,
+      AloneRegionCode,
+      AlonePriceName,
+      AloneRegionName,
+      False);
+  end
+  else begin
+    PricesForm := TPricesForm( MainForm.ShowChildForm( TPricesForm));
+    PricesForm.ShowForm;
+  end;
 end;
 
 procedure TPricesForm.FormCreate(Sender: TObject);
