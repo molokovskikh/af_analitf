@@ -91,6 +91,7 @@ type
     dbchbUseOSOpenWaybill: TDBCheckBox;
     dbchbUseOSOpenReject: TDBCheckBox;
     dbchbGroupByProducts: TDBCheckBox;
+    dbchbPrintOrdersAfterSend: TDBCheckBox;
     procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);

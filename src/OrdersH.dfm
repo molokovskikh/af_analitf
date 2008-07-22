@@ -1,6 +1,6 @@
 inherited OrdersHForm: TOrdersHForm
   Left = 280
-  Top = 299
+  Top = 172
   ActiveControl = dbgOrdersH
   Caption = #1047#1072#1082#1072#1079#1099
   ClientHeight = 573

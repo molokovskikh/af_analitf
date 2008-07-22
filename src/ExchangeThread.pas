@@ -758,6 +758,7 @@ var
   S : String;
   TmpOrderCost, TmpMinCost : String;
 begin
+  Exchange.SendedOrders.Clear;
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
  	DM.adsOrdersH.Close;
@@ -996,6 +997,8 @@ begin
           DM.adsOrdersH.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
           DM.adsOrdersH.Post;
           DM.UpTran.Commit;
+          //Формируем список успешно отправленных заявок
+          Exchange.SendedOrders.Add(DM.adsOrdersH.FieldByName( 'OrderId').AsString);
         except
           try
             DM.UpTran.Rollback; except end;

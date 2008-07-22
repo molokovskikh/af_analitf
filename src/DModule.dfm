@@ -3,7 +3,7 @@ object DM: TDM
   OnCreate = DMCreate
   OnDestroy = DataModuleDestroy
   Left = 206
-  Top = 148
+  Top = 145
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -131,7 +131,7 @@ object DM: TDM
     LibraryName = 'fbclient.dll'
     WaitForRestoreConnect = 0
     AfterConnect = MainConnection1AfterConnect
-    Left = 40
+    Left = 32
     Top = 168
   end
   object DefTran: TpFIBTransaction
@@ -190,7 +190,8 @@ object DM: TDM
       '    CONFIRMDELETEOLDORDERS = :CONFIRMDELETEOLDORDERS,'
       '    USEOSOPENWAYBILL = :USEOSOPENWAYBILL,'
       '    USEOSOPENREJECT = :USEOSOPENREJECT,'
-      '    GROUPBYPRODUCTS = :GROUPBYPRODUCTS'
+      '    GROUPBYPRODUCTS = :GROUPBYPRODUCTS,'
+      '    PRINTORDERSAFTERSEND = :PRINTORDERSAFTERSEND'
       'WHERE'
       '    ID = :OLD_ID'
       '    ')

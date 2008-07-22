@@ -2007,6 +2007,14 @@ begin
         DBVersion := 46;
       end;
 
+      if DBVersion = 46 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        DBVersion := 47;
+      end;
+
       if DBVersion <> CURRENT_DB_VERSION then
         raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
       //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
@@ -2747,8 +2755,8 @@ begin
     'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO PARAMS (ID, CLIENTID, RASCONNECT, RASENTRY, RASNAME, RASPASS, CONNECTCOUNT, CONNECTPAUSE, PROXYCONNECT, PROXYNAME, PROXYPORT, PROXYUSER, PROXYPASS, SERVICENAME, HTTPHOST, HTTPPORT, HTTPNAME, HTTPPASS, UPDATEDATETIME, LASTDATETIME, FASTPRINT, ' +
       'SHOWREGISTER, NEWWARES, USEFORMS, OPERATEFORMS, OPERATEFORMSSET, AUTOPRINT, STARTPAGE, LASTCOMPACT, CUMULATIVE, STARTED, EXTERNALORDERSEXE, EXTERNALORDERSPATH, EXTERNALORDERSCREATE, RASSLEEP, HTTPNAMECHANGED, SHOWALLCATALOG, CDS, ORDERSHISTORYDAYCOUNT, ' +
-      'CONFIRMDELETEOLDORDERS, USEOSOPENWAYBILL, USEOSOPENREJECT, GROUPBYPRODUCTS) VALUES ' +
-      '(0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 0, 1, 0);'#13#10#13#10 +
+      'CONFIRMDELETEOLDORDERS, USEOSOPENWAYBILL, USEOSOPENREJECT, GROUPBYPRODUCTS, PRINTORDERSAFTERSEND) VALUES ' +
+      '(0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 0, 1, 0, 0);'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO PROVIDER (ID, NAME, ADDRESS, PHONES, EMAIL, WEB, MDBVERSION) VALUES (0, ''АК "Инфорум"'', ''Ленинский пр-т, 160 оф.415'', ''4732-606000'', ''farm@analit.net'', ''http://www.analit.net/'', ' + IntToStr(CURRENT_DB_VERSION) +');'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +

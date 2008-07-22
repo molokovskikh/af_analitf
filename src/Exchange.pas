@@ -85,14 +85,17 @@ var
 	ExThread: TExchangeThread;
 	HostFileName, LocalFileName: string;
 	ServerAddition: string;
+  SendedOrders : TStringList;
 
 procedure TryToRepareOrders;
+procedure PrintOrdersAfterSend;
 function RunExchange(AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 
 implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
-  Exclusive, CompactThread, DB, SQLWaiting, U_ExchangeLog;
+  Exclusive, CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
+  Child;
 
 {$R *.DFM}
 type
@@ -214,11 +217,16 @@ begin
     AProc.MessageBox('Письмо успешно отправлено.', MB_OK or MB_ICONINFORMATION);
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) then
+  begin
     if (Length(SendOrdersLog) = 0)
     then
       AProc.MessageBox('Отправка заказов завершена успешно.', MB_OK or MB_ICONINFORMATION)
     else
       AProc.MessageBox('Отправка заказов завершена с ошибками.', MB_OK or MB_ICONWARNING);
+
+    if (DM.adtParams.FieldByName('PrintOrdersAfterSend').AsBoolean) and (SendedOrders.Count > 0) then
+      PrintOrdersAfterSend;
+  end;
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) and (Length(SendOrdersLog) > 0)
   then
@@ -254,6 +262,27 @@ begin
       AProc.MessageBox( 'Сжатие базы данных завершено');
     end;
 	end;
+end;
+
+//Распечатываем отправленные заказы
+procedure PrintOrdersAfterSend;
+var
+  I : Integer;
+begin
+  OrdersHForm := TOrdersHForm.Create( Application );
+  OrdersHForm.Hide;
+  OrdersHForm.TabControl.TabIndex := 1;
+  OrdersHForm.SetParameters;
+
+  for I := 0 to SendedOrders.Count-1 do begin
+    OrdersHForm.adsOrdersHForm.First;
+    if OrdersHForm.adsOrdersHForm.Locate('OrderId', SendedOrders[i], []) then begin
+      OrdersForm.SetParams( StrToInt(SendedOrders[i]) );
+  	  DM.ShowFastReport( 'Orders.frf', nil, False, True);
+    end;
+  end;
+  
+  MainForm.FreeChildForms;
 end;
 
 { Восстанавливаем заказы после обновления }
@@ -607,4 +636,8 @@ begin
   end;
 end;
 
+initialization
+  SendedOrders := TStringList.Create;
+finalization
+  SendedOrders.Free;
 end.

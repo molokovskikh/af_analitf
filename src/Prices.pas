@@ -106,7 +106,6 @@ var
   AlonePriceCode, AloneRegionCode : Integer;
   AlonePriceName, AloneRegionName : String;
 begin
-  IsAlonePrice := True;
   if DM.adsPrices.Active then
     DM.adsPrices.Close;
   DM.adsPrices.Open;
@@ -119,6 +118,10 @@ begin
       AloneRegionCode := DM.adsPricesREGIONCODE.AsInteger;
       AlonePriceName  := DM.adsPricesPRICENAME.AsString;
       AloneRegionName := DM.adsPricesREGIONNAME.AsString;
+    end
+    else begin
+      AlonePriceCode  := 0;
+      AloneRegionCode := 0;
     end;
   finally
     DM.adsPrices.Close;

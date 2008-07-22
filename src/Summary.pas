@@ -314,8 +314,28 @@ begin
 end;
 
 procedure TSummaryForm.Print( APreview: boolean = False);
+var
+  LastCurrentSQL : String;
 begin
-	DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
+  //Если распечатываем текущий сводный заказ, то сбрасываем фильтр по поставщикам
+  if LastSymmaryType = 0 then begin
+    adsSummary.DisableControls;
+    try
+      LastCurrentSQL := adsSummary.SelectSQL.Text;
+      if adsSummary.Active then
+        adsSummary.Close;
+      adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
+      adsSummary.Open;
+      DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
+      adsSummary.Close;
+      adsSummary.SelectSQL.Text := LastCurrentSQL;
+      adsSummary.Open;
+    finally
+      adsSummary.EnableControls;
+    end;
+  end
+  else
+	  DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
 end;
 
 procedure TSummaryForm.dbgSummaryGetCellParams(Sender: TObject;

@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshAuth
+    ActivePage = tshOther
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5748,6 +5748,18 @@ object ConfigForm: TConfigForm
         DataField = 'GROUPBYPRODUCTS'
         DataSource = DM.dsParams
         TabOrder = 5
+        ValueChecked = 'True'
+        ValueUnchecked = 'False'
+      end
+      object dbchbPrintOrdersAfterSend: TDBCheckBox
+        Left = 8
+        Top = 186
+        Width = 377
+        Height = 17
+        Caption = #1056#1072#1089#1087#1077#1095#1072#1090#1099#1074#1072#1090#1100' '#1079#1072#1082#1072#1079#1099' '#1087#1088#1080' '#1086#1090#1087#1088#1072#1074#1082#1077
+        DataField = 'PRINTORDERSAFTERSEND'
+        DataSource = DM.dsParams
+        TabOrder = 6
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end

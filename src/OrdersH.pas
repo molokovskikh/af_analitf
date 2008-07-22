@@ -103,7 +103,6 @@ type
   private
     FSumOrders : TStringList;
     Strings: TStrings;
-    procedure SetParameters;
     procedure MoveToPrice;
     procedure InternalMoveToPrice;
     procedure SendOrders;
@@ -111,6 +110,7 @@ type
     procedure ClearSumOrders;
     procedure OrderEnter;
   public
+    procedure SetParameters;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
   end;
