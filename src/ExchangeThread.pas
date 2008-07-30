@@ -1646,8 +1646,19 @@ begin
 	if utMinPrices in UpdateTables then
 	begin
     UpdateFromFileByParams(ExePath+SDirIn+'\MinPrices.txt',
-      'update minprices set servercoreid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servercoreid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then ' + 'coalesce(:servercoreid, servercoreid) ' + ' else servercoreid end, ' +
-      'servermemoid = case when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servermemoid, servermemoid) when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) ' + 'then coalesce(:servermemoid, servermemoid) else servermemoid end ' +
+      'update minprices set ' +
+        'servercoreid = '+
+          'case ' +
+            'when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servercoreid, servercoreid) ' +
+            'when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then coalesce(:servercoreid, servercoreid) ' +
+            'else servercoreid ' +
+          'end, ' +
+        'servermemoid = ' +
+          'case ' +
+            'when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servermemoid, servermemoid) ' +
+            'when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then coalesce(:servermemoid, servermemoid) ' +
+            'else servermemoid ' +
+          'end ' +
       'where productid = :productid and regioncode = :regioncode',
       ['servercoreid', 'productid', 'regioncode', 'servermemoid'],
       False);
