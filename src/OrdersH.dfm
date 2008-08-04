@@ -393,7 +393,6 @@ inherited OrdersHForm: TOrdersHForm
       '    PRICENAME,'
       '    REGIONNAME,'
       '    POSITIONS,'
-      '    SUMORDER,'
       '    SUPPORTPHONE,'
       '    MESSAGETO,'
       '    COMMENTS'
@@ -418,7 +417,6 @@ inherited OrdersHForm: TOrdersHForm
       '    PRICENAME,'
       '    REGIONNAME,'
       '    POSITIONS,'
-      '    SUMORDER,'
       '    SUPPORTPHONE,'
       '    MESSAGETO,'
       '    COMMENTS'
@@ -426,7 +424,8 @@ inherited OrdersHForm: TOrdersHForm
       '    ORDERSHSHOW (:ACLIENTID,'
       '    :ACLOSED,'
       '    :TIMEZONEBIAS)'
-      'WHERE OrderDate BETWEEN :DateFrom AND :DateTo ')
+      'WHERE OrderDate BETWEEN :DateFrom AND :DateTo '
+      'order by SendDate DESC')
     AfterPost = adsOrdersH2AfterPost
     BeforePost = adsOrdersH2BeforePost
     OnCalcFields = adsOrdersHFormCalcFields

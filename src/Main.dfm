@@ -3896,7 +3896,6 @@ object MainForm: TMainForm
       '    PRICENAME,'
       '    REGIONNAME,'
       '    POSITIONS,'
-      '    SUMORDER,'
       '    SUPPORTPHONE,'
       '    MESSAGETO,'
       '    COMMENTS'

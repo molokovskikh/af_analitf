@@ -9,12 +9,6 @@ uses
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
   FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps;
 
-const
-	OrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE OrderDate BETWEEN :DateFrom AND ' +
-				' :DateTo ORDER BY ';
-
-	ROrdersHSql =	'SELECT * FROM OrdersHShow (:ACLIENTID, :ACLOSED, :TIMEZONEBIAS) WHERE ORDERID = :ORDERID';
-
 type
   TSumOrder = class
     Sum : Currency;
@@ -153,8 +147,6 @@ begin
   	Reg.Free;
   end;
 
-	adsOrdersHForm.SelectSQL.Text := OrdersHSql + 'SendDate DESC';
-  adsOrdersHForm.RefreshSQL.Text := ROrdersHSql;
   adsOrdersHForm.Prepare;
 
 	Year := YearOf( Date);
@@ -208,10 +200,6 @@ begin
 	case TabControl.TabIndex of
 		0: begin
 			adsOrdersHForm.Close;
-			adsOrdersHForm.SelectSQL.Text := StringReplace( adsOrdersHForm.SelectSQL.Text,
-				' OrdersHShow1 ', ' OrdersHShow ', []);
-			adsOrdersHForm.RefreshSQL.Text := StringReplace( adsOrdersHForm.RefreshSQL.Text,
-				' OrdersHShow1 ', ' OrdersHShow ', []);
 			adsOrdersHForm.ParamByName( 'AClosed').Value := False;
 			btnMoveSend.Caption := 'Перевести в отправленные';
       btnMoveSend.Visible := False;
@@ -221,10 +209,6 @@ begin
 		end;
 		1: begin
 			adsOrdersHForm.Close;
-			adsOrdersHForm.SelectSQL.Text := StringReplace( adsOrdersHForm.SelectSQL.Text,
-				' OrdersHShow ', ' OrdersHShow1 ', []);
-			adsOrdersHForm.RefreshSQL.Text := StringReplace( adsOrdersHForm.RefreshSQL.Text,
-				' OrdersHShow ', ' OrdersHShow1 ', []);
 			adsOrdersHForm.ParamByName( 'AClosed').Value := True;
 			btnMoveSend.Caption := 'Вернуть в текущие';
       btnMoveSend.Visible := True;
@@ -440,28 +424,40 @@ var
 begin
 	if not adsOrdersHForm.Active or adsOrdersHForm.IsEmpty then exit;
 
-	Mark := adsOrdersHForm.Bookmark;
-	adsOrdersHForm.DisableControls;
-	try
-		adsOrdersHForm.First;
-		OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
+  //Если вызван "Предварительный просмотр", то отображаем только текущий заказ,
+  //иначе выводим на печать все заказы из списка
+  if APreview then
+    DM.ShowOrderDetailsReport(
+      adsOrdersHFormORDERID.AsInteger,
+      adsOrdersHFormCLOSED.Value,
+      adsOrdersHFormSEND.Value,
+      APreview)
+  else begin
+    Mark := adsOrdersHForm.Bookmark;
+    adsOrdersHForm.DisableControls;
+    try
+      adsOrdersHForm.First;
 
-		if APreview then DM.ShowFastReport( 'Orders.frf', nil, APreview)
-		else
-		begin
-			while not adsOrdersHForm.Eof do
-			begin
+      while not adsOrdersHForm.Eof do
+      begin
         //Если заказ закрыт или не закрыт и разрешен к отправке
         if adsOrdersHFormCLOSED.Value or (adsOrdersHFormSEND.Value) then
-				  DM.ShowFastReport( 'Orders.frf', nil, APreview, False);
-				adsOrdersHForm.Next;
-				OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
-			end;
-		end;
-	finally
-		adsOrdersHForm.BookMark := Mark;
-		adsOrdersHForm.EnableControls;
-	end;
+        begin
+          DM.ShowOrderDetailsReport(
+            adsOrdersHFormORDERID.AsInteger,
+            adsOrdersHFormCLOSED.Value,
+            adsOrdersHFormSEND.Value,
+            APreview,
+            True);
+        end;
+        adsOrdersHForm.Next;
+      end;
+
+    finally
+      adsOrdersHForm.BookMark := Mark;
+      adsOrdersHForm.EnableControls;
+    end;
+  end;
 end;
 
 procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);

@@ -12,7 +12,7 @@ uses
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
-  IdGlobal;
+  IdGlobal, FR_DSet;
 
 {
 Криптование
@@ -116,8 +116,8 @@ type
     adsSelect2: TpFIBDataSet;
     adsRepareOrders: TpFIBDataSet;
     adsCore: TpFIBDataSet;
-    adsOrdersH: TpFIBDataSet;
-    adsOrders: TpFIBDataSet;
+    adsOrdersHeaders: TpFIBDataSet;
+    adsOrderDetails: TpFIBDataSet;
     BackService: TpFIBBackupService;
     RestService: TpFIBRestoreService;
     ConfigService: TpFIBConfigService;
@@ -189,18 +189,18 @@ type
     adsSumOrdersCryptPRICE: TCurrencyField;
     adsSumOrdersSumOrders: TCurrencyField;
     adsPrices: TpFIBDataSet;
-    adsOrdersCryptSUMORDER: TCurrencyField;
-    adsOrdersORDERID: TFIBBCDField;
-    adsOrdersCLIENTID: TFIBBCDField;
-    adsOrdersCOREID: TFIBBCDField;
-    adsOrdersCODEFIRMCR: TFIBBCDField;
-    adsOrdersSYNONYMCODE: TFIBBCDField;
-    adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsOrdersCODE: TFIBStringField;
-    adsOrdersCODECR: TFIBStringField;
-    adsOrdersSYNONYMNAME: TFIBStringField;
-    adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersORDERCOUNT: TFIBIntegerField;
+    adsOrderDetailsCryptSUMORDER: TCurrencyField;
+    adsOrderDetailsORDERID: TFIBBCDField;
+    adsOrderDetailsCLIENTID: TFIBBCDField;
+    adsOrderDetailsCOREID: TFIBBCDField;
+    adsOrderDetailsCODEFIRMCR: TFIBBCDField;
+    adsOrderDetailsSYNONYMCODE: TFIBBCDField;
+    adsOrderDetailsSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsOrderDetailsCODE: TFIBStringField;
+    adsOrderDetailsCODECR: TFIBStringField;
+    adsOrderDetailsSYNONYMNAME: TFIBStringField;
+    adsOrderDetailsSYNONYMFIRM: TFIBStringField;
+    adsOrderDetailsORDERCOUNT: TFIBIntegerField;
     adsAllOrders: TpFIBDataSet;
     adsAllOrdersID: TFIBBCDField;
     adsAllOrdersORDERID: TFIBBCDField;
@@ -241,7 +241,7 @@ type
     adsRepareOrdersPRICE: TFIBStringField;
     adsCoreBASECOST: TFIBStringField;
     adsCoreORDERSPRICE: TFIBStringField;
-    adsOrdersPRICE: TFIBStringField;
+    adsOrderDetailsPRICE: TFIBStringField;
     adsSumOrdersPRICE: TFIBStringField;
     adsAllOrdersPRICE: TFIBStringField;
     adsCoreORDERSJUNK: TFIBBooleanField;
@@ -264,13 +264,13 @@ type
     adtClientsONLYLEADERS: TFIBBooleanField;
     adsOrderCoreCODEFIRMCR: TFIBBCDField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
-    adsOrdersSENDPRICE: TFIBBCDField;
-    adsOrdersAWAIT: TFIBBooleanField;
-    adsOrdersJUNK: TFIBBooleanField;
-    adsOrdersID: TFIBBCDField;
+    adsOrderDetailsSENDPRICE: TFIBBCDField;
+    adsOrderDetailsAWAIT: TFIBBooleanField;
+    adsOrderDetailsJUNK: TFIBBooleanField;
+    adsOrderDetailsID: TFIBBCDField;
     adtReceivedDocs: TpFIBDataSet;
-    adsOrdersPRODUCTID: TFIBBCDField;
-    adsOrdersFULLCODE: TFIBBCDField;
+    adsOrderDetailsPRODUCTID: TFIBBCDField;
+    adsOrderDetailsFULLCODE: TFIBBCDField;
     adsOrderCorePRODUCTID: TFIBBCDField;
     adsAllOrdersPRODUCTID: TFIBBCDField;
     adsRepareOrdersVITALLYIMPORTANT: TFIBBooleanField;
@@ -280,6 +280,9 @@ type
     adsCoreVITALLYIMPORTANT: TFIBBooleanField;
     adsCoreORDERCOST: TFIBBCDField;
     adsCoreMINORDERCOUNT: TFIBIntegerField;
+    frdsReportOrder: TfrDBDataSet;
+    adsOrderDetailsSUMORDER: TFIBBCDField;
+    adsOrderDetailsCryptPRICE: TCurrencyField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -374,7 +377,13 @@ type
     procedure ClearPassword( ADatasource: string);
     procedure OpenDatabase( ADatasource: string);
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
-  APreview: boolean = False; PrintDlg: boolean = True);
+      APreview: boolean = False; PrintDlg: boolean = True);
+    procedure ShowOrderDetailsReport(
+      OrderId  : Integer;
+      Closed   : Boolean;
+      Send     : Boolean;
+      Preview  : Boolean = False;
+      PrintDlg : Boolean = True);
     procedure ClientChanged;
     function GetTablesUpdatesInfo(ParamTableName: string): string;
     procedure LinkExternalTables;
@@ -523,7 +532,7 @@ begin
   OrdersInfo.Sorted := True;
 
   adsRepareOrders.OnCalcFields := s3cf;
-  adsOrders.OnCalcFields := ocf;
+  adsOrderDetails.OnCalcFields := ocf;
   adsSumOrders.OnCalcFields := socf;
   adsOrderCore.OnCalcFields := occf;
 
@@ -1700,35 +1709,35 @@ begin
   //Очищаем данные по заказам
   ClearSelectedPrices(OrdersInfo);
   AllSumOrder := 0;
- 	adsOrdersH.Close;
+ 	adsOrdersHeaders.Close;
   //Получаем информацию о текущих отправляемых заказах
-	adsOrdersH.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-	adsOrdersH.ParamByName( 'AClosed').Value := False;
-	adsOrdersH.ParamByName( 'ASend').Value := True;
-	adsOrdersH.ParamByName( 'TimeZoneBias').Value := 0;
-	adsOrdersH.Open;
+	adsOrdersHeaders.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+	adsOrdersHeaders.ParamByName( 'AClosed').Value := False;
+	adsOrdersHeaders.ParamByName( 'ASend').Value := True;
+	adsOrdersHeaders.ParamByName( 'TimeZoneBias').Value := 0;
+	adsOrdersHeaders.Open;
   try
-  while not adsOrdersH.Eof do begin
-    CurrOrderInfo := FindOrderInfo(adsOrdersH.FieldByName('PriceCode').AsInteger, adsOrdersH.FieldByName('RegionCode').AsInteger);
-    CurrOrderInfo.Summ := GetSumOrder(adsOrdersH.FieldByName('OrderID').AsInteger);
+  while not adsOrdersHeaders.Eof do begin
+    CurrOrderInfo := FindOrderInfo(adsOrdersHeaders.FieldByName('PriceCode').AsInteger, adsOrdersHeaders.FieldByName('RegionCode').AsInteger);
+    CurrOrderInfo.Summ := GetSumOrder(adsOrdersHeaders.FieldByName('OrderID').AsInteger);
     AllSumOrder := AllSumOrder + CurrOrderInfo.Summ;
-    adsOrdersH.Next;
+    adsOrdersHeaders.Next;
   end;
   finally
-   	adsOrdersH.Close;
+   	adsOrdersHeaders.Close;
   end;
 
-	adsOrdersH.ParamByName( 'ASend').Value := False;
-	adsOrdersH.Open;
+	adsOrdersHeaders.ParamByName( 'ASend').Value := False;
+	adsOrdersHeaders.Open;
   try
-  while not adsOrdersH.Eof do begin
-    CurrOrderInfo := FindOrderInfo(adsOrdersH.FieldByName('PriceCode').AsInteger, adsOrdersH.FieldByName('RegionCode').AsInteger);
-    CurrOrderInfo.Summ := GetSumOrder(adsOrdersH.FieldByName('OrderID').AsInteger);
+  while not adsOrdersHeaders.Eof do begin
+    CurrOrderInfo := FindOrderInfo(adsOrdersHeaders.FieldByName('PriceCode').AsInteger, adsOrdersHeaders.FieldByName('RegionCode').AsInteger);
+    CurrOrderInfo.Summ := GetSumOrder(adsOrdersHeaders.FieldByName('OrderID').AsInteger);
     AllSumOrder := AllSumOrder + CurrOrderInfo.Summ;
-    adsOrdersH.Next;
+    adsOrdersHeaders.Next;
   end;
   finally
-   	adsOrdersH.Close;
+   	adsOrdersHeaders.Close;
   end;
 end;
 
@@ -1756,8 +1765,9 @@ var
   S : String;
 begin
   try
-    S := DM.D_B_N(adsOrders.FieldByName('PRICE').AsString);
-    adsOrdersCryptSUMORDER.AsCurrency := StrToFloat(S) * adsOrders.FieldByName('ORDERCOUNT').AsInteger;
+    S := DM.D_B_N(adsOrderDetails.FieldByName('PRICE').AsString);
+    adsOrderDetailsCryptPRICE.AsString := S;
+    adsOrderDetailsCryptSUMORDER.AsCurrency := StrToCurr(S) * adsOrderDetails.FieldByName('ORDERCOUNT').AsInteger;
   except
   end;
 end;
@@ -1767,14 +1777,14 @@ var
 	V: array[0..0] of Variant;
 begin
   try
-    with adsOrders do begin
+    with adsOrderDetails do begin
       ParamByName('AOrderId').Value:=AOrderId;
       if Active then CloseOpen(True) else Open;
     end;
-    DataSetCalc(adsOrders, ['SUM(CryptSUMORDER)'], V);
+    DataSetCalc(adsOrderDetails, ['SUM(CryptSUMORDER)'], V);
     Result := V[0];
   finally
-    adsOrders.Close;
+    adsOrderDetails.Close;
   end;
 end;
 
@@ -3298,6 +3308,49 @@ end;
 procedure TDM.SetServerUpdateId(AServerUpdateId: String);
 begin
   FServerUpdateId := AServerUpdateId;
+end;
+
+procedure TDM.ShowOrderDetailsReport(OrderId: Integer; Closed, Send,
+  Preview, PrintDlg: Boolean);
+begin
+  if adsOrdersHeaders.Active then
+    adsOrdersHeaders.Close;
+  //Получаем информацию о текущих отправляемых заказах
+	adsOrdersHeaders.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+	adsOrdersHeaders.ParamByName( 'AClosed').Value := Closed;
+	adsOrdersHeaders.ParamByName( 'ASend').Value := Send;
+	adsOrdersHeaders.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
+	adsOrdersHeaders.Open;
+
+  try
+    if adsOrdersHeaders.Locate('OrderId', OrderId, []) then begin
+      if adsOrderDetails.Active then
+        adsOrderDetails.Close();
+
+      adsOrderDetails.ParamByName('AOrderId').Value := OrderId;
+      adsOrderDetails.Open;
+
+      try
+
+        frdsReportOrder.DataSet := adsOrderDetails;
+        //готовим печать
+        frVariables[ 'OrderId'] := adsOrdersHeaders.FieldByName('OrderId').AsVariant;
+        frVariables[ 'DatePrice'] := adsOrdersHeaders.FieldByName('DatePrice').AsVariant;
+        frVariables[ 'OrdersComments'] := adsOrdersHeaders.FieldByName('Comments').AsString;
+        frVariables[ 'SupportPhone'] := adsOrdersHeaders.FieldByName('SupportPhone').AsString;
+        frVariables[ 'OrderDate'] := adsOrdersHeaders.FieldByName('OrderDate').AsVariant;
+        frVariables[ 'PriceName'] := adsOrdersHeaders.FieldByName('PriceName').AsString;
+        frVariables[ 'Closed'] := adsOrdersHeaders.FieldByName('Closed').AsBoolean;
+
+        DM.ShowFastReport( 'Orders.frf', nil, Preview, PrintDlg);
+
+      finally
+        adsOrderDetails.Close;
+      end;
+    end;
+  finally
+    adsOrdersHeaders.Close;
+  end;
 end;
 
 initialization

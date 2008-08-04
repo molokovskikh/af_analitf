@@ -65,7 +65,6 @@ type
     procedure SetHTTPParams;
   public
     DoStop: Boolean;
-    QueryResults: TStrings;
 
     //Текст ошибки, которая произошла
   	ErrMsg: string;
@@ -268,18 +267,18 @@ end;
 procedure PrintOrdersAfterSend;
 var
   I : Integer;
+  FirstPrint : Boolean;
 begin
-  OrdersHForm := TOrdersHForm.Create( Application );
-  OrdersHForm.Hide;
-  OrdersHForm.TabControl.TabIndex := 1;
-  OrdersHForm.SetParameters;
+  FirstPrint := True;
 
   for I := 0 to SendedOrders.Count-1 do begin
-    OrdersHForm.adsOrdersHForm.First;
-    if OrdersHForm.adsOrdersHForm.Locate('OrderId', SendedOrders[i], []) then begin
-      OrdersForm.SetParams( StrToInt(SendedOrders[i]) );
-  	  DM.ShowFastReport( 'Orders.frf', nil, False, True);
-    end;
+    DM.ShowOrderDetailsReport(
+      StrToInt(SendedOrders[i]),
+      True,
+      True,
+      False,
+      FirstPrint);
+    FirstPrint := False;
   end;
   
   MainForm.FreeChildForms;
@@ -325,7 +324,6 @@ begin
 	ConnectPause := DM.adtParams.FieldByName( 'ConnectPause').AsInteger;
 	Caption := 'Обмен данными';
 
-	QueryResults := TStringList.Create;
 	//главный цикл соединения
 	for ConnectNumber := 1 to ConnectCount do
 	begin
@@ -356,12 +354,8 @@ begin
 		end
 		else break;
 	end;
-	QueryResults.Free;
 
-	//очищаем папку In
-//	DeleteFilesByMask( ExePath + SDirIn + '\*.*');
-
-        ErrMsg := ExThread.ErrorMessage;
+  ErrMsg := ExThread.ErrorMessage;
 
 	{ Требуется завершение программы }
 	if Assigned( ExThread) and ( ErrMsg = 'Terminate') then

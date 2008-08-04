@@ -761,31 +761,31 @@ begin
   Exchange.SendedOrders.Clear;
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
- 	DM.adsOrdersH.Close;
-	DM.adsOrdersH.ParamByName( 'AClientId').Value :=
+ 	DM.adsOrdersHeaders.Close;
+	DM.adsOrdersHeaders.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsOrdersH.ParamByName( 'AClosed').Value := False;
-	DM.adsOrdersH.ParamByName( 'ASend').Value := True;
-	DM.adsOrdersH.ParamByName( 'TimeZoneBias').Value := 0;
-	DM.adsOrdersH.Open;
-	if not DM.adsOrdersH.Eof then
+	DM.adsOrdersHeaders.ParamByName( 'AClosed').Value := False;
+	DM.adsOrdersHeaders.ParamByName( 'ASend').Value := True;
+	DM.adsOrdersHeaders.ParamByName( 'TimeZoneBias').Value := 0;
+	DM.adsOrdersHeaders.Open;
+	if not DM.adsOrdersHeaders.Eof then
 	begin
 		StatusText := 'Отправка заказов';
 		Synchronize( SetStatus);
 	end;
-	while not DM.adsOrdersH.Eof do
+	while not DM.adsOrdersHeaders.Eof do
 	begin
     SendError := False;
-    DM.adsOrders.Close;
-		DM.adsOrders.ParamByName( 'AOrderId').Value :=
-      DM.adsOrdersH.FieldByName( 'OrderId').Value;
-    DM.adsOrders.Open;
+    DM.adsOrderDetails.Close;
+		DM.adsOrderDetails.ParamByName( 'AOrderId').Value :=
+      DM.adsOrdersHeaders.FieldByName( 'OrderId').Value;
+    DM.adsOrderDetails.Open;
 
     WriteExchangeLog('Exchange',
-      'Отправка заказа #' + DM.adsOrdersH.FieldByName( 'OrderId').AsString +
-      '  по прайсу ' + DM.adsOrdersH.FieldByName( 'PriceCode').AsString);
-		SetLength( params, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 3);
-		SetLength( values, 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 3);
+      'Отправка заказа #' + DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString +
+      '  по прайсу ' + DM.adsOrdersHeaders.FieldByName( 'PriceCode').AsString);
+		SetLength( params, 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 3);
+		SetLength( values, 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 3);
 
 		params[ 0] := 'ClientCode';
 		params[ 1] := 'PriceCode';
@@ -794,13 +794,13 @@ begin
 		params[ 4] := 'ClientAddition';
 		params[ 5] := 'RowCount';
 		values[ 0] := DM.adtClients.FieldByName( 'ClientId').AsString;
-		values[ 1] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
-		values[ 2] := DM.adsOrdersH.FieldByName( 'RegionCode').AsString;
-		values[ 3] := GetXMLDateTime( DM.adsOrdersH.FieldByName( 'DatePrice').AsDateTime);
-		values[ 4] := StringToCodes( DM.adsOrdersH.FieldByName( 'MessageTO').AsString);
-		values[ 5] := IntToStr( DM.adsOrders.RecordCountFromSrv);
+		values[ 1] := DM.adsOrdersHeaders.FieldByName( 'PriceCode').AsString;
+		values[ 2] := DM.adsOrdersHeaders.FieldByName( 'RegionCode').AsString;
+		values[ 3] := GetXMLDateTime( DM.adsOrdersHeaders.FieldByName( 'DatePrice').AsDateTime);
+		values[ 4] := StringToCodes( DM.adsOrdersHeaders.FieldByName( 'MessageTO').AsString);
+		values[ 5] := IntToStr( DM.adsOrderDetails.RecordCountFromSrv);
 
-		for i := 0 to DM.adsOrders.RecordCountFromSrv - 1 do
+		for i := 0 to DM.adsOrderDetails.RecordCountFromSrv - 1 do
 		begin
 			params[ i * OrderParamCount + 6] := 'ProductId';
 			params[ i * OrderParamCount + 7] := 'CodeFirmCr';
@@ -812,18 +812,18 @@ begin
 			params[ i * OrderParamCount + 13] := 'Junk';
 			params[ i * OrderParamCount + 14] := 'Await';
 			params[ i * OrderParamCount + 15] := 'Cost';
-			values[ i * OrderParamCount + 6] := DM.adsOrders.FieldByName( 'Productid').AsString;
-			values[ i * OrderParamCount + 7] := DM.adsOrders.FieldByName( 'CodeFirmCr').AsString;
-			values[ i * OrderParamCount + 8] := DM.adsOrders.FieldByName( 'SynonymCode').AsString;
-			values[ i * OrderParamCount + 9] := DM.adsOrders.FieldByName( 'SynonymFirmCrCode').AsString;
-      values[ i * OrderParamCount + 10] := DM.adsOrders.FieldByName( 'Code').AsString;
-      values[ i * OrderParamCount + 11] := DM.adsOrders.FieldByName( 'CodeCr').AsString;
-			values[ i * OrderParamCount + 12] := IfThen(DM.adsOrders.FieldByName( 'Ordercount').AsInteger <= MaxOrderCount, DM.adsOrders.FieldByName( 'Ordercount').AsString, IntToStr(MaxOrderCount)) ;
-			values[ i * OrderParamCount + 13] := BoolToStr( DM.adsOrders.FieldByName( 'Junk').AsBoolean, True);
-			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrders.FieldByName( 'Await').AsBoolean, True);
+			values[ i * OrderParamCount + 6] := DM.adsOrderDetails.FieldByName( 'Productid').AsString;
+			values[ i * OrderParamCount + 7] := DM.adsOrderDetails.FieldByName( 'CodeFirmCr').AsString;
+			values[ i * OrderParamCount + 8] := DM.adsOrderDetails.FieldByName( 'SynonymCode').AsString;
+			values[ i * OrderParamCount + 9] := DM.adsOrderDetails.FieldByName( 'SynonymFirmCrCode').AsString;
+      values[ i * OrderParamCount + 10] := DM.adsOrderDetails.FieldByName( 'Code').AsString;
+      values[ i * OrderParamCount + 11] := DM.adsOrderDetails.FieldByName( 'CodeCr').AsString;
+			values[ i * OrderParamCount + 12] := IfThen(DM.adsOrderDetails.FieldByName( 'Ordercount').AsInteger <= MaxOrderCount, DM.adsOrderDetails.FieldByName( 'Ordercount').AsString, IntToStr(MaxOrderCount)) ;
+			values[ i * OrderParamCount + 13] := BoolToStr( DM.adsOrderDetails.FieldByName( 'Junk').AsBoolean, True);
+			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrderDetails.FieldByName( 'Await').AsBoolean, True);
       try
-        if Length(DM.adsOrders.FieldByName( 'PRICE').AsString) > 0 then
-          S := DM.D_B_N(DM.adsOrders.FieldByName( 'PRICE').AsString)
+        if Length(DM.adsOrderDetails.FieldByName( 'PRICE').AsString) > 0 then
+          S := DM.D_B_N(DM.adsOrderDetails.FieldByName( 'PRICE').AsString)
         else
           S := CurrToStr(0.0);
         TmpOrderCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
@@ -832,9 +832,9 @@ begin
       except
         on E : Exception do begin
           WriteExchangeLog('Exchange', 'Ошибка при расшифровке цены : ' + E.Message
-            + '  Строка : "' + DM.adsOrders.FieldByName( 'PRICE').AsString + '"');
+            + '  Строка : "' + DM.adsOrderDetails.FieldByName( 'PRICE').AsString + '"');
           raise Exception.CreateFmt('При отправке заказа для "%s" невозможно сформировать цену по позиции "%s".',
-            [DM.adsOrdersH.FieldByName( 'PriceName').AsString, DM.adsOrders.FieldByName('SYNONYMNAME').AsString]);
+            [DM.adsOrdersHeaders.FieldByName( 'PriceName').AsString, DM.adsOrderDetails.FieldByName('SYNONYMNAME').AsString]);
         end;
       end;
 
@@ -852,7 +852,7 @@ begin
         DM.adsOrderCore.ParamByName( 'RegisterId').Value := RegisterId;
         DM.adsOrderCore.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
         DM.adsOrderCore.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-        DM.adsOrderCore.ParamByName( 'ParentCode').Value := DM.adsOrders.FieldByName( 'FullCode').Value;
+        DM.adsOrderCore.ParamByName( 'ParentCode').Value := DM.adsOrderDetails.FieldByName( 'FullCode').Value;
         DM.adsOrderCore.ParamByName( 'ShowRegister').Value := False;
         DM.adsOrderCore.Options := DM.adsOrderCore.Options - [poCacheCalcFields];
         DM.adsOrderCore.Open;
@@ -861,9 +861,9 @@ begin
 
         //Выбираем минимального из всех прайсов
         DBProc.SetFilter(DM.adsOrderCore,
-          'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString +
-          ' and CodeFirmCr = ' + DM.adsOrders.FieldByName( 'CodeFirmCr').AsString +
-          ' and ProductId = ' + DM.adsOrders.FieldByName( 'ProductId').AsString);
+          'JUNK = ' + DM.adsOrderDetails.FieldByName( 'Junk').AsString +
+          ' and CodeFirmCr = ' + DM.adsOrderDetails.FieldByName( 'CodeFirmCr').AsString +
+          ' and ProductId = ' + DM.adsOrderDetails.FieldByName( 'ProductId').AsString);
 
         DM.adsOrderCore.First;
 
@@ -877,7 +877,7 @@ begin
           //Если минимальная цена совпадает с ценой заказа, то минимальный прайс-лист - прайс-лист заказа
           if (TmpMinCost <> '') and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
           then begin
-            values[ i * OrderParamCount + 17] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
+            values[ i * OrderParamCount + 17] := DM.adsOrdersHeaders.FieldByName( 'PriceCode').AsString;
           end;
         except
           on E : Exception do begin
@@ -890,9 +890,9 @@ begin
 
         //Выбираем минимального из основных прайсов
         DBProc.SetFilter(DM.adsOrderCore,
-          'JUNK = ' + DM.adsOrders.FieldByName( 'Junk').AsString +
-          ' and CodeFirmCr = ' + DM.adsOrders.FieldByName( 'CodeFirmCr').AsString +
-          ' and ProductId = ' + DM.adsOrders.FieldByName( 'ProductId').AsString +
+          'JUNK = ' + DM.adsOrderDetails.FieldByName( 'Junk').AsString +
+          ' and CodeFirmCr = ' + DM.adsOrderDetails.FieldByName( 'CodeFirmCr').AsString +
+          ' and ProductId = ' + DM.adsOrderDetails.FieldByName( 'ProductId').AsString +
           ' and PriceEnabled = True');
 
         DM.adsOrderCore.First;
@@ -908,10 +908,10 @@ begin
 
             //Если минимальная цена лидеров совпадает с ценой заказа и прайс-лист тоже лидер, то минимальный прайс-лист - прайс-лист заказа
             if (TmpMinCost <> '')
-              and (DM.adsOrdersH.FieldByName( 'PriceEnabled').AsBoolean)
+              and (DM.adsOrdersHeaders.FieldByName( 'PriceEnabled').AsBoolean)
               and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
             then begin
-              values[ i * OrderParamCount + 19] := DM.adsOrdersH.FieldByName( 'PriceCode').AsString;
+              values[ i * OrderParamCount + 19] := DM.adsOrdersHeaders.FieldByName( 'PriceCode').AsString;
             end;
           except
             on E : Exception do begin
@@ -930,23 +930,23 @@ begin
         DM.adsOrderCore.Close;
       end;
 
-			DM.adsOrders.Edit;
-			DM.adsOrders.FieldByName( 'PRICE').Clear;
-			DM.adsOrders.FieldByName( 'CoreId').Clear;
-			DM.adsOrders.FieldByName( 'SendPrice').AsCurrency := StrToCurr(TmpOrderCost);
-      DM.adsOrders.Post;
-			DM.adsOrders.Next;
+			DM.adsOrderDetails.Edit;
+			DM.adsOrderDetails.FieldByName( 'PRICE').Clear;
+			DM.adsOrderDetails.FieldByName( 'CoreId').Clear;
+			DM.adsOrderDetails.FieldByName( 'SendPrice').AsCurrency := StrToCurr(TmpOrderCost);
+      DM.adsOrderDetails.Post;
+			DM.adsOrderDetails.Next;
 		end;
 
     ServerOrderId := 0;
 		try
       //Передаем уникальный идентификатор
-      params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount ] := 'UniqueID';
-      values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount ] := IntToHex( GetCopyID, 8);
-      params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1] := 'ClientOrderID';
-      values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 1] := DM.adsOrdersH.FieldByName( 'OrderId').AsString;
-      params[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2] := 'ServerOrderId';
-      values[ 6 + DM.adsOrders.RecordCountFromSrv * OrderParamCount + 2] := '0';
+      params[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount ] := 'UniqueID';
+      values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount ] := IntToHex( GetCopyID, 8);
+      params[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 1] := 'ClientOrderID';
+      values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 1] := DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString;
+      params[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 2] := 'ServerOrderId';
+      values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 2] := '0';
 			Res := Soap.Invoke( 'PostOrder2', params, values);
 			// проверяем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
@@ -955,8 +955,8 @@ begin
           SendError := True;
           ExchangeForm.SendOrdersLog.Add(
             Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : %s',
-              [DM.adsOrdersH.FieldByName( 'PriceName').AsString,
-               DM.adsOrdersH.FieldByName( 'RegionName').AsString,
+              [DM.adsOrdersHeaders.FieldByName( 'PriceName').AsString,
+               DM.adsOrdersHeaders.FieldByName( 'RegionName').AsString,
               ResError])
           );
         end
@@ -971,14 +971,14 @@ begin
           SendError := True;
           ExchangeForm.SendOrdersLog.Add(
             Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : Не удалось конвертировать строку "%s"',
-              [DM.adsOrdersH.FieldByName( 'PriceName').AsString,
-               DM.adsOrdersH.FieldByName( 'RegionName').AsString,
+              [DM.adsOrdersHeaders.FieldByName( 'PriceName').AsString,
+               DM.adsOrdersHeaders.FieldByName( 'RegionName').AsString,
                Res.Values[ 'OrderId']])
           );
         end;
 		except
-			DM.adsOrdersH.Close;
-			DM.adsOrders.Close;
+			DM.adsOrdersHeaders.Close;
+			DM.adsOrderDetails.Close;
 			Synchronize( MainForm.SetOrdersInfo);
 			raise;
 		end;
@@ -987,18 +987,18 @@ begin
       if not SendError then begin
         DM.UpTran.StartTransaction;
         try
-          DM.adsOrders.ApplyUpdates;
-          DM.adsOrdersH.Edit;
+          DM.adsOrderDetails.ApplyUpdates;
+          DM.adsOrdersHeaders.Edit;
           { Заказ был отправлен, а не переведен }
-          DM.adsOrdersH.FieldByName( 'Send').AsBoolean := True;
-          DM.adsOrdersH.FieldByName( 'SendDate').AsDateTime := Now;
+          DM.adsOrdersHeaders.FieldByName( 'Send').AsBoolean := True;
+          DM.adsOrdersHeaders.FieldByName( 'SendDate').AsDateTime := Now;
           { Закрываем заказ }
-          DM.adsOrdersH.FieldByName( 'Closed').AsBoolean := True;
-          DM.adsOrdersH.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
-          DM.adsOrdersH.Post;
+          DM.adsOrdersHeaders.FieldByName( 'Closed').AsBoolean := True;
+          DM.adsOrdersHeaders.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
+          DM.adsOrdersHeaders.Post;
           DM.UpTran.Commit;
           //Формируем список успешно отправленных заявок
-          Exchange.SendedOrders.Add(DM.adsOrdersH.FieldByName( 'OrderId').AsString);
+          Exchange.SendedOrders.Add(DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString);
         except
           try
             DM.UpTran.Rollback; except end;
@@ -1006,20 +1006,19 @@ begin
         end;
       end
       else
-        DM.adsOrders.CancelUpdates;
-			DM.adsOrders.Close;
-			DM.adsOrdersH.Next;
+        DM.adsOrderDetails.CancelUpdates;
+			DM.adsOrderDetails.Close;
+			DM.adsOrdersHeaders.Next;
 		except
-			DM.adsOrdersH.Close;
-			DM.adsOrders.Close;
+			DM.adsOrdersHeaders.Close;
+			DM.adsOrderDetails.Close;
 			Synchronize( MainForm.SetOrdersInfo);
 			raise;
 		end;
 	end;
 	Synchronize( MainForm.SetOrdersInfo);
-//	ExchangeForm.QueryResults.Clear;
-	DM.adsOrdersH.Close;
-	DM.adsOrders.Close;
+	DM.adsOrdersHeaders.Close;
+	DM.adsOrderDetails.Close;
 	Synchronize( EnableCancel);
 end;
 
