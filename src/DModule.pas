@@ -273,7 +273,6 @@ type
     adsOrderDetailsFULLCODE: TFIBBCDField;
     adsOrderCorePRODUCTID: TFIBBCDField;
     adsAllOrdersPRODUCTID: TFIBBCDField;
-    adsRepareOrdersVITALLYIMPORTANT: TFIBBooleanField;
     adsRepareOrdersREQUESTRATIO: TFIBIntegerField;
     adsRepareOrdersORDERCOST: TFIBBCDField;
     adsRepareOrdersMINORDERCOUNT: TFIBIntegerField;
@@ -628,7 +627,7 @@ begin
         LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
     end
     else
-      if not RunExchange([eaGetPrice, eaGetFullData, eaSendOrders]) then
+      if not RunExchange([eaGetPrice, eaGetFullData]) then
         LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
   end;
 
@@ -1220,10 +1219,7 @@ begin
     try
 
       MainForm.StatusText:='Очищается MinPrices';
-      SQL.Text:='EXECUTE PROCEDURE MinPricesDeleteALL';
-      ExecQuery;
-      SQL.Text:='EXECUTE PROCEDURE OrdersSetCoreNull'; ExecQuery;
-      SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteNotClosedAll'; ExecQuery;
+      SQL.Text:='EXECUTE PROCEDURE MinPricesDeleteALL'; ExecQuery;
       MainForm.StatusText:='Очищается Core';
       SQL.Text:='EXECUTE PROCEDURE CoreDeleteAll'; ExecQuery;
       MainForm.StatusText:='Очищается CatalogCurrency';

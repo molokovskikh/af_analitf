@@ -531,7 +531,6 @@ object DM: TDM
       '  Await, '
       '  OrderCount, '
       '  PriceName,'
-      '  Vitallyimportant,'
       '  requestratio,'
       '  ordercost,'
       '  minordercount '
@@ -623,9 +622,6 @@ object DM: TDM
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
-    end
-    object adsRepareOrdersVITALLYIMPORTANT: TFIBBooleanField
-      FieldName = 'VITALLYIMPORTANT'
     end
     object adsRepareOrdersREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'

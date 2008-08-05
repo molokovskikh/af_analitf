@@ -345,7 +345,6 @@ inherited OrdersForm: TOrdersForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
-      '    Orders.Vitallyimportant as OrdersVitallyimportant,'
       '    Orders.requestratio as Ordersrequestratio,'
       '    Orders.ordercost as Ordersordercost,'
       '    Orders.minordercount as Ordersminordercount   '
@@ -475,9 +474,6 @@ inherited OrdersForm: TOrdersForm
       FieldName = 'PRODUCTID'
       Size = 0
       RoundByScale = True
-    end
-    object adsOrdersORDERSVITALLYIMPORTANT: TFIBBooleanField
-      FieldName = 'ORDERSVITALLYIMPORTANT'
     end
     object adsOrdersORDERSREQUESTRATIO: TFIBIntegerField
       FieldName = 'ORDERSREQUESTRATIO'

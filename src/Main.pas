@@ -553,7 +553,7 @@ begin
 	DM.adsSelect.Close;
 
 	{ Если каталог пустой, то обновление будет принудительно кумулятивным }
-	if CatNum = 0 then ExAct := ExAct + [ eaGetFullData, eaSendOrders];
+	if CatNum = 0 then ExAct := ExAct + [eaGetFullData];
 
 	RunExchange( ExAct);
 end;
@@ -562,7 +562,7 @@ procedure TMainForm.actReceiveAllExecute(Sender: TObject);
 begin
 	if AProc.MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
 		MB_ICONQUESTION or MB_OKCANCEL) = IDOK then
-			RunExchange([ eaGetPrice, eaGetFullData, eaSendOrders]);
+			RunExchange([eaGetPrice, eaGetFullData]);
 end;
 
 procedure TMainForm.actExitExecute(Sender: TObject);

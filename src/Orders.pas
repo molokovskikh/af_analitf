@@ -55,7 +55,6 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
-    adsOrdersORDERSVITALLYIMPORTANT: TFIBBooleanField;
     adsOrdersORDERSREQUESTRATIO: TFIBIntegerField;
     adsOrdersORDERSORDERCOST: TFIBBCDField;
     adsOrdersORDERSMINORDERCOUNT: TFIBIntegerField;

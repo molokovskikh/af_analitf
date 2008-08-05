@@ -116,7 +116,7 @@ begin
 	DM.DeleteEmptyOrders;
 
 	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions) then
-    AExchangeActions := AExchangeActions + [ eaGetFullData, eaSendOrders];
+    AExchangeActions := AExchangeActions + [eaGetFullData];
 
   //TODO: ___ надо подумать, что здесь происходит
 	if ( eaSendOrders in AExchangeActions)
@@ -186,7 +186,10 @@ begin
 	if Result then DM.ResetCumulative;
 
 	if (( eaGetPrice in AExchangeActions) or
-		( eaImportOnly in AExchangeActions)) and Result then TryToRepareOrders;
+		  (eaImportOnly in AExchangeActions) or (eaGetFullData in AExchangeActions))
+      and Result
+  then
+    TryToRepareOrders;
 
 	if MainForm.ExchangeOnly then exit;
 
@@ -487,7 +490,7 @@ procedure TInternalRepareOrders.InternalRepareOrders;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
-  Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount : Variant;
+  Code, RequestRatio, OrderCost, MinOrderCount : Variant;
 
 	procedure SetOrder( Order: integer);
 	begin
@@ -517,7 +520,6 @@ begin
 			CurOrder := 0;
 
 			Code := DM.adsRepareOrdersCODE.AsVariant;
-      VitallyImportant := DM.adsRepareOrdersVITALLYIMPORTANT.AsVariant;
       RequestRatio := DM.adsRepareOrdersREQUESTRATIO.AsVariant;
       OrderCost := DM.adsRepareOrdersORDERCOST.AsVariant;
       MinOrderCount := DM.adsRepareOrdersMINORDERCOUNT.AsVariant;
@@ -551,7 +553,7 @@ begin
 				continue;
 			end;
 
-			if DM.adsCore.Locate( 'Code;VITALLYIMPORTANT;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount]), [])
+			if DM.adsCore.Locate( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([Code, RequestRatio, OrderCost, MinOrderCount]), [])
       then
 			begin
 				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);

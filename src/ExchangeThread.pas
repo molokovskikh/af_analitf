@@ -360,7 +360,7 @@ begin
             DM.MainConnection1.Close;
             DM.RestoreDatabase(ExePath);
       			DM.MainConnection1.Open;
-            ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetPrice, eaGetFullData, eaSendOrders];
+            ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetPrice, eaGetFullData];
           end
           else
             raise;

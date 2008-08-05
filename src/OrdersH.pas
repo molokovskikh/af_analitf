@@ -558,7 +558,7 @@ procedure TOrdersHForm.InternalMoveToPrice;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymFirmCrCode, SynonymCode: Variant;
-  Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount : Variant;
+  Code, RequestRatio, OrderCost, MinOrderCount : Variant;
   I : Integer;
   RecCountSRV : Integer;
 
@@ -601,7 +601,6 @@ begin
         Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
 
         Code := OrdersForm.adsOrdersCode.AsVariant;
-        VitallyImportant := OrdersForm.adsOrdersORDERSVITALLYIMPORTANT.AsVariant;
         RequestRatio := OrdersForm.adsOrdersORDERSREQUESTRATIO.AsVariant;
         OrderCost := OrdersForm.adsOrdersORDERSORDERCOST.AsVariant;
         MinOrderCount := OrdersForm.adsOrdersORDERSMINORDERCOUNT.AsVariant;
@@ -621,7 +620,7 @@ begin
           RecCountSRV := adsCore.RecordCountFromSrv;
           try
             { пытаемся разбросать заказ по нужным Code, SynonymCode и SynonymFirmCrCode }
-            if Locate( 'Code;VITALLYIMPORTANT;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount]), [])
+            if Locate( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, RequestRatio, OrderCost, MinOrderCount]), [])
             then
             begin
               repeat
@@ -636,7 +635,7 @@ begin
                 if CurOrder < 0 then CurOrder := 0;
                 Order := Order - CurOrder;
                 if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
-              until ( Order = 0) or (not LocateNext( 'Code;VITALLYIMPORTANT;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, VitallyImportant, RequestRatio, OrderCost, MinOrderCount]), [])) or (RecCountSRV = adsCore.RecordCount);
+              until ( Order = 0) or (not LocateNext( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, RequestRatio, OrderCost, MinOrderCount]), [])) or (RecCountSRV = adsCore.RecordCount);
             end;
 
             { если все еще не разбросали, то пишем сообщение }
