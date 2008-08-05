@@ -8,7 +8,7 @@ uses
   Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
-  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet;
+  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet, Contnrs;
 
 type
   TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate, eaGetWaybills, eaSendLetter);
@@ -44,7 +44,6 @@ type
     procedure btnCancelClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
       const AStatusText: String);
   private
@@ -54,6 +53,9 @@ type
 	  ConnectCount: integer;
 	  ConnectPause: cardinal;
 
+    //Текст ошибки, которая произошла
+	  ErrMsg: string;
+    
     //Содержимое статусного текста
     FStatusStr      : String;
 
@@ -66,11 +68,6 @@ type
   public
     DoStop: Boolean;
 
-    //Текст ошибки, которая произошла
-  	ErrMsg: string;
-    //Отображает лог неотправленных заказов
-    SendOrdersLog : TStringList;
-
     property StatusText: string read GetStatusText write SetStatusText;
     property StatusPosition: Integer write SetStatusPosition;
     property ExchangeActs: TExchangeActions read ExchangeActions write ExchangeActions;
@@ -82,9 +79,7 @@ type
 var
 	ExchangeForm: TExchangeForm;
 	ExThread: TExchangeThread;
-	HostFileName, LocalFileName: string;
-	ServerAddition: string;
-  SendedOrders : TStringList;
+  GlobalExchangeParams : TObjectList;
 
 procedure TryToRepareOrders;
 procedure PrintOrdersAfterSend;
@@ -110,13 +105,13 @@ type
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 var
 	mr: integer;
-  SendOrdersLog   : String;
 //	hMenuHandle: HMENU;
 begin
 	MainForm.FreeChildForms;
 	Result := False;
-	ServerAddition := '';
-  SendOrdersLog := '';
+  if Assigned(GlobalExchangeParams) then
+    FreeAndNil(GlobalExchangeParams);
+  GlobalExchangeParams := nil;
 	if AExchangeActions = [] then exit;
 	DM.DeleteEmptyOrders;
 
@@ -171,7 +166,6 @@ begin
 			Result := ExchangeForm.ShowModal = mrOk;
       if not Result then
         AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
-      SendOrdersLog := ExchangeForm.SendOrdersLog.Text;
 			DM.MainConnection1.Close;
       Sleep(500);
 			DM.MainConnection1.Open;
@@ -196,10 +190,11 @@ begin
 
 	if MainForm.ExchangeOnly then exit;
 
-	if Result and ( Trim( ServerAddition) <> '')
+	if Result and (Trim(TStringValue(GlobalExchangeParams[Integer(epServerAddition)]).Value) <> '')
   then
     AProc.MessageBoxEx(
-			PChar( ServerAddition), 'Сообщение от АК "Инфорум"',
+			TStringValue(GlobalExchangeParams[Integer(epServerAddition)]).Value,
+      'Сообщение от АК "Инфорум"',
 			MB_OK or MB_ICONINFORMATION);
 
 	if Result and (( eaGetPrice in AExchangeActions) or
@@ -217,24 +212,27 @@ begin
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) then
   begin
-    if (Length(SendOrdersLog) = 0)
+    if (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count = 0)
     then
       AProc.MessageBox('Отправка заказов завершена успешно.', MB_OK or MB_ICONINFORMATION)
     else
       AProc.MessageBox('Отправка заказов завершена с ошибками.', MB_OK or MB_ICONWARNING);
 
-    if (DM.adtParams.FieldByName('PrintOrdersAfterSend').AsBoolean) and (SendedOrders.Count > 0) then
+    if (DM.adtParams.FieldByName('PrintOrdersAfterSend').AsBoolean)
+      and (TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count > 0)
+    then
       PrintOrdersAfterSend;
   end;
 
-	if Result and ( AExchangeActions = [ eaSendOrders]) and (Length(SendOrdersLog) > 0)
+	if Result and ( AExchangeActions = [ eaSendOrders])
+    and (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count > 0)
   then
     if AProc.MessageBox(
         'Во время отправки заказов возникли ошибки. ' +
             'Желаете посмотреть журнал ошибок?',
         MB_ICONWARNING or MB_YESNO) = IDYES
     then
-      ShowNotSended(SendOrdersLog);
+      ShowNotSended(TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Text);
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
 	if Result and (( eaGetPrice in AExchangeActions) or
@@ -261,6 +259,8 @@ begin
       AProc.MessageBox( 'Сжатие базы данных завершено');
     end;
 	end;
+  if Assigned(GlobalExchangeParams) then
+    try FreeAndNil(GlobalExchangeParams) except end;
 end;
 
 //Распечатываем отправленные заказы
@@ -271,9 +271,9 @@ var
 begin
   FirstPrint := True;
 
-  for I := 0 to SendedOrders.Count-1 do begin
+  for I := 0 to TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count-1 do begin
     DM.ShowOrderDetailsReport(
-      StrToInt(SendedOrders[i]),
+      StrToInt(TStringList(GlobalExchangeParams[Integer(epSendedOrders)])[i]),
       True,
       True,
       False,
@@ -302,7 +302,7 @@ end;
 function TExchangeForm.PauseAfterError : TModalResult;
 begin
 	RetryForm := TRetryForm.Create( Application);
-	RetryForm.lblError.Caption := ExThread.ErrorMessage;
+	RetryForm.lblError.Caption := TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value;
 	RetryForm.Seconds := ConnectPause;
 	Result := RetryForm.ShowModal;
 	RetryForm.Close;
@@ -328,16 +328,17 @@ begin
 	for ConnectNumber := 1 to ConnectCount do
 	begin
 		ExThread := TExchangeThread.Create( False);
-		while not ExThread.Terminated do
+    GlobalExchangeParams := ExThread.ExchangeParams;
+		while not TBooleanValue(GlobalExchangeParams[Integer(epTerminated)]).Value do
 		begin
 			CheckSynchronize;
 			Application.ProcessMessages;
 			Sleep( 10);
 		end;
 
-		if ExThread.ErrorMessage <> '' then
+		if TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value <> '' then
 		begin
-			if ( ConnectNumber < ConnectCount) and not ExThread.CriticalError then begin
+			if ( ConnectNumber < ConnectCount) and not TBooleanValue(GlobalExchangeParams[Integer(epCriticalError)]).Value then begin
         if PauseAfterError = mrCancel then begin
           btnCancel.Click;
           break;
@@ -355,7 +356,7 @@ begin
 		else break;
 	end;
 
-  ErrMsg := ExThread.ErrorMessage;
+  ErrMsg := TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value;
 
 	{ Требуется завершение программы }
 	if Assigned( ExThread) and ( ErrMsg = 'Terminate') then
@@ -364,23 +365,18 @@ begin
 		Application.Terminate;
 	end;
 
-	{ Отмена действия }
-	if Assigned( ExThread) and ( ErrMsg = 'Cancel') then
-	begin
-		ModalResult := mrCancel;
-		exit;
-	end;
-
 	if Assigned( ExThread) and ( ErrMsg <> '') then
 	begin
+    //Эта ситация происходит когда возникает ошибка или пользователь отменяет действие
 		ModalResult := mrAbort;
-		ExThread.Free;
-//		raise Exception.Create( ErrMsg);
+		if Assigned( ExThread) then
+      FreeAndNil(ExThread);
 	end
 	else
 	begin
 		ModalResult := mrOk;
-		if Assigned( ExThread) then ExThread.Free;
+		if Assigned( ExThread) then
+      FreeAndNil(ExThread);
 	end;
 end;
 
@@ -391,7 +387,7 @@ begin
 	StatusPosition := 0;
 	if DoStop then
 	begin
-		ExThread.Terminated := True;
+		TBooleanValue(GlobalExchangeParams[Integer(epTerminated)]).Value := True;
 		Abort;
 	end;
 end;
@@ -405,12 +401,12 @@ end;
 procedure TExchangeForm.btnCancelClick(Sender: TObject);
 begin
 	DoStop := True;
-  if ExThread.DownloadChildThreads then
+  if TBooleanValue(GlobalExchangeParams[Integer(epDownloadChildThreads)]).Value then
     ExThread.StopChildThreads
   else
     try
-      ExThread.CriticalError := True;
-      ExThread.ErrorMessage := 'Операция отменена';
+      TBooleanValue(GlobalExchangeParams[Integer(epCriticalError)]).Value := True;
+      TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value := 'Операция отменена';
       HTTP.Disconnect;
       Ras.Disconnect;
     except
@@ -474,15 +470,9 @@ end;
 
 procedure TExchangeForm.FormCreate(Sender: TObject);
 begin
-  SendOrdersLog := TStringList.Create;
   HTTP.ConnectTimeout := -2;
   HTTPReclame.ConnectTimeout := -2;
   httpReceive.ConnectTimeout := -2;
-end;
-
-procedure TExchangeForm.FormDestroy(Sender: TObject);
-begin
-  SendOrdersLog.Free;
 end;
 
 procedure TExchangeForm.HTTPStatus(ASender: TObject;
@@ -631,7 +621,7 @@ begin
 end;
 
 initialization
-  SendedOrders := TStringList.Create;
+  ExThread := nil;
+  GlobalExchangeParams := nil;
 finalization
-  SendedOrders.Free;
 end.

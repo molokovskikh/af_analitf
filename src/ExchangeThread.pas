@@ -20,6 +20,19 @@ const
    'Отправка заказов завершилась неудачно.');
 
 type
+  TExchangeParams = (epTerminated, epCriticalError, epErrorMessage,
+                     epDownloadChildThreads, epServerAddition, epSendedOrders,
+                     epSendedOrdersErrorLog);
+
+  TStringValue = class
+    Value : String;
+    constructor Create(AValue : String);
+  end;
+
+  TBooleanValue = class
+    Value : Boolean;
+    constructor Create(AValue : Boolean);
+  end;
 
 TUpdateTable = (
 	utCatalog,
@@ -50,9 +63,7 @@ TUpdateTables = set of TUpdateTable;
 
 TExchangeThread = class( TThread)
  public
-	Terminated, CriticalError: boolean;
-	ErrorMessage: string;
-  DownloadChildThreads : Boolean;
+  ExchangeParams : TObjectList;
   procedure StopChildThreads;
 private
 	StatusText: string;
@@ -77,6 +88,8 @@ private
   //Уникальный идентификатор обновления, должен передаваться при подтверждении
   UpdateId : String;
 
+	HostFileName, LocalFileName: string;
+
   upB : TpFIBQuery;
 
   //Список дочерних ниток
@@ -94,7 +107,7 @@ private
 	procedure RasConnect;
 	procedure HTTPConnect;
 	procedure CreateChildThreads;
-  procedure CreateChildReceiveThread;
+  procedure CreateChildSendArhivedOrdersThread;
 	procedure QueryData;
   procedure GetPass;
   procedure PriceDataSettings;
@@ -146,6 +159,7 @@ private
 protected
 	procedure Execute; override;
 public
+  constructor Create(CreateSuspended: Boolean);
   destructor Destroy; override;
 end;
 
@@ -153,7 +167,7 @@ implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Exclusive,
   U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
-  U_RecvThread, Constant, U_ExchangeLog;
+  U_RecvThread, Constant, U_ExchangeLog, U_SendArchivedOrdersThread;
 
 { TExchangeThread }
 
@@ -193,14 +207,11 @@ var
   I : Integer;
 begin
   ChildThreads := TObjectList.Create(False);
-	Terminated := False;
-	CriticalError := False;
 	TotalProgress := 0;
 	Synchronize( SetTotalProgress);
 	try
     CoInitialize(nil);
     try
-		ErrorMessage := '';
 		try
       ImportComplete := False;
       repeat
@@ -231,22 +242,22 @@ begin
 
           if NeedSendOrders then
           begin
-            CriticalError := True;
+            TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
             ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
             ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
             //Запускаем нитку на отправку архивных заказов
-            CreateChildReceiveThread;
+            CreateChildSendArhivedOrdersThread;
             DoSendOrders;
-            CriticalError := False;
+            TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
           end;
 				end;
 				if eaSendLetter in ExchangeForm.ExchangeActs then
 				begin
-					CriticalError := True;
+					TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					DoSendLetter;
-					CriticalError := False;
+					TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 				end;
 				TotalProgress := 20;
 				Synchronize( SetTotalProgress);
@@ -301,7 +312,7 @@ begin
 			begin
 				TotalProgress := 50;
 				Synchronize( SetTotalProgress);
-				CriticalError := True;
+				TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
 				if DM.DatabaseOpenedBy <> '' then Synchronize( ShowEx)
 					else
 					begin
@@ -360,7 +371,7 @@ begin
 			{ Дожидаемся завершения работы дочерних ниток : рекламы, шпионской нитки }
 			if ( [eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> [])
       then begin
-        DownloadChildThreads := True;
+        TBooleanValue(ExchangeParams[Integer(epDownloadChildThreads)]).Value := True;
         while ChildThreads.Count > 0 do
           Sleep(500);
 			end;
@@ -391,20 +402,20 @@ begin
 				//if ExchangeForm.DoStop then Abort;
 				//обрабатываем ошибку
         WriteExchangeLog('Exchange', LastStatus + ':' + CRLF + E.Message);
-				if ErrorMessage = '' then
-          ErrorMessage := RusError( E.Message);
-				if ErrorMessage = '' then
-          ErrorMessage := E.ClassName + ': ' + E.Message;
+				if TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value = '' then
+          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := RusError( E.Message);
+				if TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value = '' then
+          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.ClassName + ': ' + E.Message;
 			end;
 		end;
     finally
       CoUninitialize;
     end;
 	except
-		on E: Exception do ErrorMessage := E.Message;
+		on E: Exception do TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.Message;
 	end;
 	Synchronize( EnableCancel);
-	Terminated := True;
+	TBooleanValue(ExchangeParams[Integer(epTerminated)]).Value := True;
 end;
 
 procedure TExchangeThread.HTTPConnect;
@@ -433,7 +444,7 @@ begin
 	TReclameThread(T).Resume;
   ChildThreads.Add(T);
 
-  CreateChildReceiveThread;
+  CreateChildSendArhivedOrdersThread;
 end;
 
 procedure TExchangeThread.QueryData;
@@ -500,7 +511,7 @@ begin
     if (Length(Res.Values['Cumulative']) > 0) and (StrToBool(Res.Values['Cumulative'])) then
       ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
 
-    ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
+    TStringValue(ExchangeParams[Integer(epServerAddition)]).Value := Utf8ToAnsi( Res.Values[ 'Addition']);
     { получаем имя удаленного файла }
     HostFileName := Res.Values[ 'URL'];
     NewZip := True;
@@ -530,7 +541,7 @@ begin
 	except
 		on E: Exception do
 		begin
-			CriticalError := True;
+			TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
 			raise;
 		end;
 	end;
@@ -758,7 +769,8 @@ var
   S : String;
   TmpOrderCost, TmpMinCost : String;
 begin
-  Exchange.SendedOrders.Clear;
+  TStringList(ExchangeParams[Integer(epSendedOrders)]).Clear;
+  TStringList(ExchangeParams[Integer(epSendedOrdersErrorLog)]).Clear;
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
  	DM.adsOrdersHeaders.Close;
@@ -953,7 +965,7 @@ begin
 			if ResError <> '' then begin
         if AnsiIndexText(ResError, SendOrdersErrorTexts) = -1 then begin
           SendError := True;
-          ExchangeForm.SendOrdersLog.Add(
+          TStringList(ExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
             Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : %s',
               [DM.adsOrdersHeaders.FieldByName( 'PriceName').AsString,
                DM.adsOrdersHeaders.FieldByName( 'RegionName').AsString,
@@ -969,7 +981,7 @@ begin
         except
           ServerOrderId := 0;
           SendError := True;
-          ExchangeForm.SendOrdersLog.Add(
+          TStringList(ExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
             Format('Заказ по прайс-листу %s (%s) не был отправлен. Причина : Не удалось конвертировать строку "%s"',
               [DM.adsOrdersHeaders.FieldByName( 'PriceName').AsString,
                DM.adsOrdersHeaders.FieldByName( 'RegionName').AsString,
@@ -998,7 +1010,7 @@ begin
           DM.adsOrdersHeaders.Post;
           DM.UpTran.Commit;
           //Формируем список успешно отправленных заявок
-          Exchange.SendedOrders.Add(DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString);
+          TStringList(ExchangeParams[Integer(epSendedOrders)]).Add(DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString);
         except
           try
             DM.UpTran.Rollback; except end;
@@ -1922,7 +1934,7 @@ var
   Res : TStrings;
   Error : String;
 begin
-  CriticalError := True;
+  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
   Res := SOAP.Invoke( 'GetPasswords', ['UniqueID'], [IntToHex( GetCopyID, 8)]);
   Error := Utf8ToAnsi( Res.Values[ 'Error']);
   if Error <> '' then
@@ -1938,7 +1950,7 @@ begin
   else
     ASaveGridMask := '0000000';
   Synchronize(DMSavePass);
-  CriticalError := False;
+  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 end;
 
 procedure TExchangeThread.DMSavePass;
@@ -1955,7 +1967,7 @@ var
   ParamNames, ParamValues : array of String;
   I : Integer;
 begin
-  CriticalError := True;
+  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
   if DM.adsSelect.Active then
    	DM.adsSelect.Close;
   DM.adsSelect.SelectSQL.Text := 'select prd.pricecode, prd.regioncode, prd.injob ' +
@@ -2005,7 +2017,7 @@ begin
 	end
   else
     DM.adsSelect.Close;
-  CriticalError := False;
+  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 end;
 
 procedure TExchangeThread.SilentExecute(q: TpFIBQuery; SQL: String);
@@ -2075,7 +2087,7 @@ begin
     end;
 	end;
 
-	if CriticalError then
+	if TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value then
     Abort;
 end;
 
@@ -2290,7 +2302,7 @@ begin
   end;
 end;
 
-procedure TExchangeThread.CreateChildReceiveThread;
+procedure TExchangeThread.CreateChildSendArhivedOrdersThread;
 var
   T : TThread;
   I : Integer;
@@ -2298,14 +2310,14 @@ var
 begin
   Find := False;
   for I := 0 to ChildThreads.Count -1 do
-    if ChildThreads[i] is TReceiveThread then begin
+    if ChildThreads[i] is TSendArchivedOrdersThread then begin
       Find := True;
       Break;
     end;
 
   if not Find then begin
-    T := TReceiveThread.Create(True);
-    TReceiveThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass);
+    T := TSendArchivedOrdersThread.Create(True);
+    TSendArchivedOrdersThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass);
     T.OnTerminate := OnChildTerminate;
     T.Resume;
     ChildThreads.Add(T);
@@ -2318,6 +2330,40 @@ begin
     Result := UpdateId
   else
     Result := DM.GetServerUpdateId();
+end;
+
+constructor TExchangeThread.Create(CreateSuspended: Boolean);
+begin
+  inherited;
+  ExchangeParams := TObjectList.Create(True);
+  //epTerminated
+  ExchangeParams.Add(TBooleanValue.Create(False));
+  //epCriticalError
+  ExchangeParams.Add(TBooleanValue.Create(False));
+  //epErrorMessage
+  ExchangeParams.Add(TStringValue.Create(''));
+  //epDownloadChildThreads
+  ExchangeParams.Add(TBooleanValue.Create(False));
+  //epServerAddition
+  ExchangeParams.Add(TStringValue.Create(''));
+  //epSendedOrders
+  ExchangeParams.Add(TStringList.Create());
+  //epSendedOrdersErrorLog
+  ExchangeParams.Add(TStringList.Create());
+end;
+
+{ TStringValue }
+
+constructor TStringValue.Create(AValue: String);
+begin
+  Value := AValue;
+end;
+
+{ TBooleanValue }
+
+constructor TBooleanValue.Create(AValue: Boolean);
+begin
+  Value := AValue;
 end;
 
 initialization

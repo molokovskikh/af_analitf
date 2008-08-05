@@ -73,7 +73,8 @@ uses
   U_RecvThread in 'U_RecvThread.pas',
   U_GroupUtils in 'U_GroupUtils.pas',
   U_ExchangeLog in 'U_ExchangeLog.pas',
-  U_DeleteDBThread in 'U_DeleteDBThread.pas';
+  U_DeleteDBThread in 'U_DeleteDBThread.pas',
+  U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
