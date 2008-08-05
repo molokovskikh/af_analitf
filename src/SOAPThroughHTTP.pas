@@ -132,6 +132,8 @@ procedure TSOAP.OnReconnectError(E: EIdException);
 begin
   if Assigned(FOnError) then
     FOnError('Reconnect on error : ' + E.Message);
+  //Происходит переподключение, поэтому сбрасываем переменную FResponse, чтобы она заполнилась корректно
+  FResponse := '';
 end;
 
 function TSOAP.SimpleInvoke(AMethodName: string; AParams,

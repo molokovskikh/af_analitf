@@ -118,8 +118,6 @@ end;
 procedure TTracer.TR(ASubSystem, AMessage: string);
 var
  s  : string;
- sl : TStringList;
- i  : integer;
 begin
  try
    if FT = NIL then exit;
@@ -130,23 +128,10 @@ begin
     begin
      DoSwitch;
     end;
-   sl := TStringList.Create;
-   try
-     sl.Text := AMessage;
-     sl.Strings[0] :=
-        FormatDateTime ( 'yyyy.mm.dd hh.nn.ss.zzz' , Now ) + #9 +
-        ASubSystem + #9 + sl.Strings[0];
-     for i := 1 to sl.Count - 1 do
-      begin
-       sl.Strings[i] :=
-          '                       '#9 +
-          ASubSystem + #9 + sl.Strings[i];
-      end;
-     s := sl.Text;
-    finally
-     sl.Free;
-   end;
-
+    
+   s := FormatDateTime ( 'yyyy.mm.dd hh.nn.ss.zzz' , Now ) + #9 +
+        ASubSystem + #9 + AMessage + #13#10;
+        
    CS.Enter;
    try
      FT.WriteBuffer ( s[1] , Length ( s ) );

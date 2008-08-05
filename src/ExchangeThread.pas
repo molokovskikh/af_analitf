@@ -406,13 +406,18 @@ begin
           TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := RusError( E.Message);
 				if TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value = '' then
           TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.ClassName + ': ' + E.Message;
+        if (E is EIdException) then
+          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value :=
+            'Проверьте подключение к Интернет.'#13#10 +
+            TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value;
 			end;
 		end;
     finally
       CoUninitialize;
     end;
 	except
-		on E: Exception do TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.Message;
+		on E: Exception do
+      TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.Message;
 	end;
 	Synchronize( EnableCancel);
 	TBooleanValue(ExchangeParams[Integer(epTerminated)]).Value := True;

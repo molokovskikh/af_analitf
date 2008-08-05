@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=4
 MinorVer=4
-Release=38
-Build=632
+Release=39
+Build=634
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.4.38.632
+FileVersion=4.4.39.634
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2006
 LegalTrademarks=Инфорум
@@ -164,10 +164,11 @@ Item2=DSP,DEBUG
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=3
+Count=4
 Item0=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src\lib
-Item1=$(DELPHI)\Indy\lib;
-Item2=$(DELPHI)\Lib\Debug
+Item1=..\..\ARas\src;..\..\RXLib\src;..\..\FIBPlusScript\src;..\..\Indy\src
+Item2=$(DELPHI)\Indy\lib;
+Item3=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit
