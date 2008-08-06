@@ -1018,7 +1018,10 @@ object DM: TDM
       '    Orders.junk,'
       '    Orders.ordercount,'
       '    Orders.SendPrice*Orders.OrderCount AS SumOrder,'
-      '    Orders.SendPrice'
+      '    Orders.SendPrice,'
+      '    Orders.RequestRatio,'
+      '    Orders.OrderCost,'
+      '    Orders.MinOrderCount'
       'FROM '
       '  Orders'
       '  left join products on products.productid = orders.productid'
@@ -1132,6 +1135,17 @@ object DM: TDM
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
       Calculated = True
+    end
+    object adsOrderDetailsREQUESTRATIO: TFIBIntegerField
+      FieldName = 'REQUESTRATIO'
+    end
+    object adsOrderDetailsORDERCOST: TFIBBCDField
+      FieldName = 'ORDERCOST'
+      Size = 2
+      RoundByScale = True
+    end
+    object adsOrderDetailsMINORDERCOUNT: TFIBIntegerField
+      FieldName = 'MINORDERCOUNT'
     end
   end
   object BackService: TpFIBBackupService

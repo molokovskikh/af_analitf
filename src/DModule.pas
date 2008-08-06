@@ -282,6 +282,9 @@ type
     frdsReportOrder: TfrDBDataSet;
     adsOrderDetailsSUMORDER: TFIBBCDField;
     adsOrderDetailsCryptPRICE: TCurrencyField;
+    adsOrderDetailsREQUESTRATIO: TFIBIntegerField;
+    adsOrderDetailsORDERCOST: TFIBBCDField;
+    adsOrderDetailsMINORDERCOUNT: TFIBIntegerField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);

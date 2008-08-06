@@ -758,7 +758,7 @@ end;
 
 procedure TExchangeThread.DoSendOrders;
 const
-  OrderParamCount : Integer = 14;
+  OrderParamCount : Integer = 17;
 var
 	params, values: array of string;
 	i: integer;
@@ -859,6 +859,27 @@ begin
 			params[ i * OrderParamCount + 17] := 'MinPriceCode';
 			params[ i * OrderParamCount + 18] := 'LeaderMinCost';
 			params[ i * OrderParamCount + 19] := 'LeaderMinPriceCode';
+
+      params[ i * OrderParamCount + 20] := 'RequestRatio';
+			params[ i * OrderParamCount + 21] := 'OrderCost';
+			params[ i * OrderParamCount + 22] := 'MinOrderCount';
+
+      if DM.adsOrderDetails.FieldByName( 'RequestRatio').IsNull then
+        values[ i * OrderParamCount + 20] := ''
+      else
+        values[ i * OrderParamCount + 20] := DM.adsOrderDetails.FieldByName( 'RequestRatio').AsString;
+
+      if DM.adsOrderDetails.FieldByName( 'OrderCost').IsNull then
+        values[ i * OrderParamCount + 21] := ''
+      else
+        values[ i * OrderParamCount + 21] :=
+          StringReplace(DM.adsOrderDetails.FieldByName( 'OrderCost').AsString, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
+
+      if DM.adsOrderDetails.FieldByName( 'MinOrderCount').IsNull then
+        values[ i * OrderParamCount + 22] := ''
+      else
+        values[ i * OrderParamCount + 22] := DM.adsOrderDetails.FieldByName( 'MinOrderCount').AsString;
+
 
       //≈сли выставлено поле - рассчитывать лидеров,
       if DM.adtClientsCALCULATELEADER.Value then begin
@@ -964,7 +985,7 @@ begin
       values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 1] := DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString;
       params[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 2] := 'ServerOrderId';
       values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 2] := '0';
-			Res := Soap.Invoke( 'PostOrder2', params, values);
+			Res := Soap.Invoke( 'PostOrder', params, values);
 			// провер€ем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
 			if ResError <> '' then begin
