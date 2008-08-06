@@ -55,7 +55,7 @@ object CoreFirmForm: TCoreFirmForm
     Left = 0
     Top = 65
     Width = 792
-    Height = 470
+    Height = 437
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsCore
@@ -391,6 +391,20 @@ object CoreFirmForm: TCoreFirmForm
         TabOrder = 1
         Visible = False
         OnClick = tmrSearchTimer
+      end
+    end
+  end
+  inline frameLegeng1: TframeLegeng
+    Left = 0
+    Top = 502
+    Width = 792
+    Height = 33
+    Align = alBottom
+    TabOrder = 4
+    inherited pLegend: TPanel
+      Width = 792
+      inherited pNotBasicLegend: TPanel
+        Visible = False
       end
     end
   end

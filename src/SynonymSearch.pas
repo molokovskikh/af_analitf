@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB, FIBDataSet, pFIBDataSet, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Registry, Constant,
-  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls, StrUtils, GridsEh;
+  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls, StrUtils, GridsEh,
+  U_frameLegend;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -115,6 +116,7 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     adsCoreSortOrder: TIntegerField;
+    frameLegeng1: TframeLegeng;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);

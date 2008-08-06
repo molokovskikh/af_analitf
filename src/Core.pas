@@ -9,7 +9,7 @@ uses
   Child, RXDBCtrl, Variants, Math, DBGridEh,
   ToughDBGrid, Registry, OleCtrls, SHDocVw, ActnList, FIBDataSet,
   pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor, Spin,
-  GridsEh, pFIBProps;
+  GridsEh, pFIBProps, U_frameLegend;
 
 const
 	ALL_REGIONS	= 'Все регионы';
@@ -129,6 +129,7 @@ type
     lWarning: TLabel;
     adsCoreSortOrder: TIntegerField;
     btnGroupUngroup: TButton;
+    frameLegeng: TframeLegeng;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);

@@ -84,7 +84,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 405
+      Height = 372
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -277,6 +277,20 @@ inherited SynonymSearchForm: TSynonymSearchForm
           Title.Caption = #1057#1091#1084#1084#1072
           Width = 70
         end>
+    end
+    inline frameLegeng1: TframeLegeng
+      Left = 0
+      Top = 372
+      Width = 792
+      Height = 33
+      Align = alBottom
+      TabOrder = 1
+      inherited pLegend: TPanel
+        Width = 792
+        inherited lLeaderLegend: TLabel
+          Visible = False
+        end
+      end
     end
   end
   object pBottom: TPanel [2]

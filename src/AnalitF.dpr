@@ -74,7 +74,8 @@ uses
   U_GroupUtils in 'U_GroupUtils.pas',
   U_ExchangeLog in 'U_ExchangeLog.pas',
   U_DeleteDBThread in 'U_DeleteDBThread.pas',
-  U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas';
+  U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas',
+  U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}

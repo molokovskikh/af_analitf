@@ -226,7 +226,7 @@ inherited OrdersForm: TOrdersForm
     Left = 0
     Top = 51
     Width = 793
-    Height = 392
+    Height = 359
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsOrders
@@ -298,6 +298,25 @@ inherited OrdersForm: TOrdersForm
         Title.Caption = #1057#1091#1084#1084#1072
         Title.TitleButton = True
       end>
+  end
+  inline frameLegeng1: TframeLegeng [3]
+    Left = 0
+    Top = 410
+    Width = 793
+    Height = 33
+    Align = alBottom
+    TabOrder = 3
+    inherited pLegend: TPanel
+      inherited lVitallyImportantLegend: TLabel
+        Visible = False
+      end
+      inherited lLeaderLegend: TLabel
+        Visible = False
+      end
+      inherited pNotBasicLegend: TPanel
+        Visible = False
+      end
+    end
   end
   object dsOrders: TDataSource
     DataSet = adsOrders

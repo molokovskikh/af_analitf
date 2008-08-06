@@ -8,7 +8,8 @@ uses
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
   FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
-  pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, pFIBProps;
+  pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, pFIBProps,
+  U_frameLegend;
 
 const
 	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID) ORDER BY ';
@@ -106,6 +107,7 @@ type
     adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
+    frameLegeng1: TframeLegeng;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
