@@ -72,6 +72,7 @@ type
     adsOrdersHFormMESSAGETO: TFIBMemoField;
     adsOrdersHFormCOMMENTS: TFIBMemoField;
     bevClient: TBevel;
+    adsOrdersHFormMINREQ: TFIBIntegerField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -233,6 +234,7 @@ begin
 
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
+	ColumnByNameT( dbgOrdersH, 'MinReq').Visible := TabControl.TabIndex = 0;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := (TabControl.TabIndex = 1) or ((2 and DM.SaveGridMask) > 0);
   OrdersForm.PrintEnabled := PrintEnabled;
@@ -396,6 +398,10 @@ procedure TOrdersHForm.dbgOrdersHGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
+  if TabControl.TabIndex = 0 then
+    if (Column.Field = adsOrdersHFormMINREQ) and not adsOrdersHFormMINREQ.IsNull and (adsOrdersHFormMINREQ.AsInteger > adsOrdersHFormSumOrder.AsCurrency) then
+      Background := clRed;
+
 	if TabControl.TabIndex = 1 then
 	begin
 		if not Column.Field.DataSet.FieldByName( 'Send').AsBoolean then

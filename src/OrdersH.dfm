@@ -164,7 +164,7 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1056#1077#1075#1080#1086#1085
                 Title.TitleButton = True
-                Width = 68
+                Width = 53
               end
               item
                 EditButtons = <>
@@ -173,7 +173,7 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1055#1086#1079#1080#1094#1080#1081
                 Title.TitleButton = True
-                Width = 53
+                Width = 48
               end
               item
                 Checkboxes = True
@@ -183,7 +183,13 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
                 Title.TitleButton = True
-                Width = 60
+                Width = 56
+              end
+              item
+                EditButtons = <>
+                FieldName = 'MINREQ'
+                Footers = <>
+                Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
               end
               item
                 EditButtons = <>
@@ -192,7 +198,7 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1057#1091#1084#1084#1072
                 Title.TitleButton = True
-                Width = 60
+                Width = 44
               end>
           end
         end
@@ -419,7 +425,8 @@ inherited OrdersHForm: TOrdersHForm
       '    POSITIONS,'
       '    SUPPORTPHONE,'
       '    MESSAGETO,'
-      '    COMMENTS'
+      '    COMMENTS,'
+      '    MinReq'
       'FROM'
       '    ORDERSHSHOW (:ACLIENTID,'
       '    :ACLOSED,'
@@ -508,6 +515,9 @@ inherited OrdersHForm: TOrdersHForm
       FieldName = 'COMMENTS'
       BlobType = ftMemo
       Size = 8
+    end
+    object adsOrdersHFormMINREQ: TFIBIntegerField
+      FieldName = 'MINREQ'
     end
   end
   object adsCore: TpFIBDataSet
