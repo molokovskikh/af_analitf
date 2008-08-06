@@ -366,9 +366,15 @@ begin
 end;
 
 procedure TOrdersHForm.dbgOrdersHDblClick(Sender: TObject);
+var
+  C : GridsEh.TGridCoord;
+  P : TPoint;
 begin
 	SoftPost( adsOrdersHForm);
-	if not adsOrdersHForm.Isempty then OrderEnter;
+  p := dbgOrdersH.ScreenToClient(Mouse.CursorPos);
+  C := dbgOrdersH.MouseCoord(p.X, p.Y);
+  if C.Y > 0 then
+  	if not adsOrdersHForm.Isempty then OrderEnter;
 end;
 
 procedure TOrdersHForm.adsOrdersH2AfterPost(DataSet: TDataSet);

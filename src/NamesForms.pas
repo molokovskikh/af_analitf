@@ -267,16 +267,23 @@ begin
 end;
 
 procedure TNamesFormsForm.dbgNamesDblClick(Sender: TObject);
+var
+  C : GridsEh.TGridCoord;
+  P : TPoint;
 begin
 	inherited;
-	if not actUseForms.Checked then
-		CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-			adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
-	if actUseForms.Checked and ( adsForms.RecordCount < 2) then
-		CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-			adsNames.FieldByName( 'Name').AsString,
-			adsForms.FieldByName( 'Form').AsString, False, False);
-	if actUseForms.Checked and ( adsForms.RecordCount > 1) then dbgForms.SetFocus;
+  p := dbgNames.ScreenToClient(Mouse.CursorPos);
+  C := dbgNames.MouseCoord(p.X, p.Y);
+  if C.Y > 0 then begin
+    if not actUseForms.Checked then
+      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+        adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
+    if actUseForms.Checked and ( adsForms.RecordCount < 2) then
+      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+        adsNames.FieldByName( 'Name').AsString,
+        adsForms.FieldByName( 'Form').AsString, False, False);
+    if actUseForms.Checked and ( adsForms.RecordCount > 1) then dbgForms.SetFocus;
+  end;
 end;
 
 procedure TNamesFormsForm.dbgNamesEnter(Sender: TObject);
@@ -298,11 +305,17 @@ begin
 end;
 
 procedure TNamesFormsForm.dbgFormsDblClick(Sender: TObject);
+var
+  C : GridsEh.TGridCoord;
+  P : TPoint;
 begin
 	inherited;
-	CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
-		adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
-		actUseForms.Checked, False);
+  p := dbgForms.ScreenToClient(Mouse.CursorPos);
+  C := dbgForms.MouseCoord(p.X, p.Y);
+  if C.Y > 0 then
+    CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
+		  adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
+		  actUseForms.Checked, False);
 end;
 
 procedure TNamesFormsForm.dbgFormsKeyDown(Sender: TObject; var Key: Word;
@@ -451,10 +464,16 @@ begin
 end;
 
 procedure TNamesFormsForm.dbgCatalogDblClick(Sender: TObject);
+var
+  C : GridsEh.TGridCoord;
+  P : TPoint;
 begin
-	CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
-		adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
-		True, True);
+  p := dbgCatalog.ScreenToClient(Mouse.CursorPos);
+  C := dbgCatalog.MouseCoord(p.X, p.Y);
+  if C.Y > 0 then
+    CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+		  adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
+		  True, True);
 end;
 
 procedure TNamesFormsForm.eSearchKeyPress(Sender: TObject; var Key: Char);
