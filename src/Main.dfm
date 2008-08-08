@@ -1,10 +1,10 @@
 object MainForm: TMainForm
-  Left = 224
-  Top = 138
+  Left = 74
+  Top = 134
   AutoScroll = False
   Caption = 'MainForm'
   ClientHeight = 554
-  ClientWidth = 863
+  ClientWidth = 1016
   Color = clBtnFace
   Constraints.MinHeight = 600
   Constraints.MinWidth = 800
@@ -33,12 +33,12 @@ object MainForm: TMainForm
     Tag = 1
     Left = 0
     Top = 42
-    Width = 863
+    Width = 1016
     Height = 493
     Align = alClient
     TabOrder = 0
     ControlData = {
-      4C00000032590000F43200000000000000000000000000000000000000000000
+      4C00000002690000F43200000000000000000000000000000000000000000000
       000000004C000000000000000000000001000000E0D057007335CF11AE690800
       2B2E126201000000000000004C0000000114020000000000C000000000000046
       8000000000000000000000000000000000000000000000000000000000000000
@@ -47,7 +47,7 @@ object MainForm: TMainForm
   object CoolBar1: TCoolBar
     Left = 0
     Top = 0
-    Width = 863
+    Width = 1016
     Height = 42
     AutoSize = True
     BandBorderStyle = bsNone
@@ -58,7 +58,7 @@ object MainForm: TMainForm
         HorizontalOnly = True
         ImageIndex = -1
         MinHeight = 38
-        Width = 863
+        Width = 1016
       end>
     Color = clBtnFace
     EdgeBorders = [ebTop, ebBottom]
@@ -68,7 +68,7 @@ object MainForm: TMainForm
     object ToolBar: TToolBar
       Left = 9
       Top = 0
-      Width = 850
+      Width = 1003
       Height = 38
       ButtonHeight = 38
       ButtonWidth = 39
@@ -248,32 +248,40 @@ object MainForm: TMainForm
       object Panel1: TPanel
         Left = 771
         Top = 0
-        Width = 779
+        Width = 322
         Height = 38
         Alignment = taRightJustify
         BevelOuter = bvNone
         ParentBackground = True
         TabOrder = 0
-        object Label1: TLabel
+        OnMouseMove = lCurrentClientMouseMove
+        object lCurrentClient: TLabel
           Left = 0
           Top = 0
-          Width = 779
+          Width = 110
           Height = 38
-          Align = alClient
+          Align = alLeft
+          Caption = ' '#1058#1077#1082#1091#1097#1080#1081' '#1082#1083#1080#1077#1085#1090': '
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
           Layout = tlCenter
-          OnMouseMove = Label1MouseMove
+          OnMouseMove = lCurrentClientMouseMove
         end
         object EditDummy: TEdit
-          Left = 87
+          Left = 117
           Top = 9
           Width = 2
           Height = 21
           TabOrder = 1
         end
         object dblcbClients: TDBLookupComboBox
-          Left = 7
+          Left = 111
           Top = 9
-          Width = 136
+          Width = 198
           Height = 21
           Hint = #1050#1083#1080#1077#1085#1090
           DataField = 'ClientId'
@@ -284,7 +292,7 @@ object MainForm: TMainForm
           TabOrder = 0
           OnCloseUp = dblcbClientsCloseUp
           OnMouseDown = dblcbClientsMouseDown
-          OnMouseMove = Label1MouseMove
+          OnMouseMove = lCurrentClientMouseMove
         end
       end
     end
@@ -292,7 +300,7 @@ object MainForm: TMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 535
-    Width = 863
+    Width = 1016
     Height = 19
     Panels = <
       item

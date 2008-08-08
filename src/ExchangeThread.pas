@@ -766,11 +766,6 @@ var
   ResError : String;
 	ServerOrderId: integer;
   SendError : Boolean;
-{
-  ExternalRes : Boolean;
-  ErrorStr : PChar;
-  ExtErrorMessage : String;
-}  
   S : String;
   TmpOrderCost, TmpMinCost : String;
 begin

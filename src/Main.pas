@@ -79,7 +79,7 @@ TMainForm = class(TForm)
     N14: TMenuItem;
     N15: TMenuItem;
     N17: TMenuItem;
-    Label1: TLabel;
+    lCurrentClient: TLabel;
     ActionList: TActionList;
     actReceive: TAction;
     actReceiveTickets: TAction;
@@ -160,7 +160,7 @@ TMainForm = class(TForm)
     procedure actPreviewUpdate(Sender: TObject);
     procedure actFindExecute(Sender: TObject);
     procedure actFindUpdate(Sender: TObject);
-    procedure Label1MouseMove(Sender: TObject; Shift: TShiftState; X,
+    procedure lCurrentClientMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure edDummyKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -327,6 +327,7 @@ begin
 	UpdateReclame;
 	Timer.Enabled := True;
 	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
+  dblcbClients.Hint := 'Клиент: ' + CurrentUser;
 
 	{ Снятие запроса на экс. доступ после аварии }
 	CS.Enter;
@@ -664,6 +665,7 @@ begin
 	begin
 		DM.ClientChanged;
 		CurrentUser := TDBLookupComboBox( Sender).ListSource.DataSet.FieldByName( 'Name').AsString;
+    dblcbClients.Hint := 'Клиент: ' + CurrentUser;
 	end;
 end;
 
@@ -738,17 +740,15 @@ begin
 			FormatFloat( '00', Browser.Tag) + '.htm');
 end;
 
-procedure TMainForm.Label1MouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TMainForm.lCurrentClientMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
   try
-{
-  Удалено, т.к. ошибку в потерей фокуса ВОЗМОЖНО УСТРАНИЛ.
+  //Этот код нужен, т.к. возникает потеря фокуса в DBLookupComboBox при клике на любом WebBrowser
 	if not EditDummy.Focused and
     Assigned(ActiveControl) and
 		not ActiveControl.Focused and
 		not ActiveControl.ClassNameIs( 'TWebBrowser') then EditDummy.SetFocus;
-}
   except
     on E : Exception do
       ShowMessage('Error : ' + E.Message);

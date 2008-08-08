@@ -43,7 +43,7 @@ end;
 implementation
 
 uses
-  AProc;
+  AProc, U_ExchangeLog;
 
 { TSOAP }
 
@@ -174,6 +174,8 @@ begin
 	except
 		on E: Exception do
 		begin
+      if FindCmdLineSwitch('extd') then
+        WriteExchangeLog('SOAP.Response.Raw', Utf8ToAnsi(FResponse));
 			if ( Pos( #$D#$A#$D#$A, FResponse) > 0) then begin
 				ExceptMessage := Copy( FResponse, Pos( #$D#$A#$D#$A, FResponse) + 4, Length( FResponse));
         if Length(ExceptMessage) = 0 then

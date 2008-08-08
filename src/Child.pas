@@ -220,7 +220,7 @@ begin
 	for i := 0 to Self.ComponentCount - 1 do
 		if Self.Components[ i].ClassNameIs( 'TToughDBGrid') then
 				TToughDBGrid( Self.Components[ i]).OnMouseMove :=
-					MainForm.Label1MouseMove;
+					MainForm.lCurrentClientMouseMove;
 end;
 
 procedure TChildForm.SetActionLists(AValue: TList);
