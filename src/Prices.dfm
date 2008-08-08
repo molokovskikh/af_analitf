@@ -84,7 +84,7 @@ inherited PricesForm: TPricesForm
           ReadOnly = True
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.TitleButton = True
-          Width = 90
+          Width = 75
         end
         item
           EditButtons = <>
@@ -93,7 +93,7 @@ inherited PricesForm: TPricesForm
           ReadOnly = True
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
-          Width = 85
+          Width = 57
         end
         item
           Checkboxes = False
@@ -119,7 +119,7 @@ inherited PricesForm: TPricesForm
           ReadOnly = True
           Title.Caption = #1055#1086#1079#1080#1094#1080#1081
           Title.TitleButton = True
-          Width = 58
+          Width = 50
         end
         item
           EditButtons = <>
@@ -128,15 +128,16 @@ inherited PricesForm: TPricesForm
           ReadOnly = True
           Title.Caption = #1047#1072#1082#1072#1079
           Title.TitleButton = True
-          Width = 58
+          Width = 45
         end
         item
           EditButtons = <>
-          FieldName = 'SumOrder1'
+          FieldName = 'SumOrder'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1057#1091#1084#1084#1072
           Title.TitleButton = True
+          Width = 51
         end
         item
           Alignment = taCenter
@@ -148,6 +149,13 @@ inherited PricesForm: TPricesForm
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
           Title.TitleButton = True
           Width = 95
+        end
+        item
+          EditButtons = <>
+          FieldName = 'SUMBYCURRENTMONTH'
+          Footers = <>
+          Title.Caption = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082'. '#1084#1077#1089#1103#1094
+          Width = 76
         end>
     end
     object GroupBox1: TGroupBox
@@ -425,9 +433,9 @@ inherited PricesForm: TPricesForm
       '    REGIONCODE,'
       '    REGIONNAME,'
       '    POSITIONS,'
-      '    SUMORDER,'
       '    PRICESIZE,'
-      '    INJOB'
+      '    INJOB,'
+      '    SUMBYCURRENTMONTH'
       'FROM'
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
@@ -512,15 +520,20 @@ inherited PricesForm: TPricesForm
     object adsPricesPRICESIZE: TFIBIntegerField
       FieldName = 'PRICESIZE'
     end
-    object adsPricesSumOrder1: TCurrencyField
+    object adsPricesSumOrder: TCurrencyField
       FieldKind = fkCalculated
-      FieldName = 'SumOrder1'
+      FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsPricesINJOB: TFIBBooleanField
       FieldName = 'INJOB'
       OnChange = adsPricesINJOBChange
+    end
+    object adsPricesSUMBYCURRENTMONTH: TFIBBCDField
+      FieldName = 'SUMBYCURRENTMONTH'
+      Size = 2
+      RoundByScale = True
     end
   end
   object adsClientsData: TpFIBDataSet

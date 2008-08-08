@@ -233,7 +233,6 @@ type
     adsPricesREGIONCODE: TFIBBCDField;
     adsPricesREGIONNAME: TFIBStringField;
     adsPricesPOSITIONS: TFIBIntegerField;
-    adsPricesSUMORDER: TFIBBCDField;
     adsPricesPRICESIZE: TFIBIntegerField;
     adsPricesINJOB: TFIBIntegerField;
     adsCoreAWAIT: TFIBBooleanField;

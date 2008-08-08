@@ -73,6 +73,7 @@ type
     adsOrdersHFormCOMMENTS: TFIBMemoField;
     bevClient: TBevel;
     adsOrdersHFormMINREQ: TFIBIntegerField;
+    adsOrdersHFormSUMBYCURRENTMONTH: TFIBBCDField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -235,6 +236,7 @@ begin
 	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
 	ColumnByNameT( dbgOrdersH, 'MinReq').Visible := TabControl.TabIndex = 0;
+	ColumnByNameT( dbgOrdersH, 'SUMBYCURRENTMONTH').Visible := TabControl.TabIndex = 0;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := (TabControl.TabIndex = 1) or ((2 and DM.SaveGridMask) > 0);
   OrdersForm.PrintEnabled := PrintEnabled;

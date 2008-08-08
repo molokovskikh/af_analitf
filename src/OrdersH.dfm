@@ -136,7 +136,7 @@ inherited OrdersHForm: TOrdersHForm
                 Footers = <>
                 Title.Caption = #1054#1090#1087#1088#1072#1074#1083#1077#1085#1086
                 Title.TitleButton = True
-                Width = 70
+                Width = 66
               end
               item
                 DisplayFormat = 'dd.mm.yyyy hh:nn'
@@ -146,7 +146,7 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1057#1086#1079#1076#1072#1085#1086
                 Title.TitleButton = True
-                Width = 60
+                Width = 48
               end
               item
                 EditButtons = <>
@@ -155,7 +155,7 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
                 Title.TitleButton = True
-                Width = 72
+                Width = 65
               end
               item
                 EditButtons = <>
@@ -164,7 +164,7 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1056#1077#1075#1080#1086#1085
                 Title.TitleButton = True
-                Width = 53
+                Width = 42
               end
               item
                 EditButtons = <>
@@ -198,7 +198,14 @@ inherited OrdersHForm: TOrdersHForm
                 MinWidth = 5
                 Title.Caption = #1057#1091#1084#1084#1072
                 Title.TitleButton = True
-                Width = 44
+                Width = 38
+              end
+              item
+                EditButtons = <>
+                FieldName = 'SUMBYCURRENTMONTH'
+                Footers = <>
+                Title.Caption = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082'. '#1084#1077#1089#1103#1094
+                Width = 40
               end>
           end
         end
@@ -353,6 +360,9 @@ inherited OrdersHForm: TOrdersHForm
       OnCloseUp = dtpDateCloseUp
     end
   end
+  inherited tCheckVolume: TTimer
+    Top = 88
+  end
   object dsOrdersH: TDataSource
     DataSet = adsOrdersHForm
     Left = 72
@@ -426,7 +436,8 @@ inherited OrdersHForm: TOrdersHForm
       '    SUPPORTPHONE,'
       '    MESSAGETO,'
       '    COMMENTS,'
-      '    MinReq'
+      '    MinReq,'
+      '    SUMBYCURRENTMONTH'
       'FROM'
       '    ORDERSHSHOW (:ACLIENTID,'
       '    :ACLOSED,'
@@ -518,6 +529,11 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormMINREQ: TFIBIntegerField
       FieldName = 'MINREQ'
+    end
+    object adsOrdersHFormSUMBYCURRENTMONTH: TFIBBCDField
+      FieldName = 'SUMBYCURRENTMONTH'
+      Size = 2
+      RoundByScale = True
     end
   end
   object adsCore: TpFIBDataSet

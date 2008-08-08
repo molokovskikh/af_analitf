@@ -1360,7 +1360,6 @@ object DM: TDM
       '    REGIONCODE,'
       '    REGIONNAME,'
       '    POSITIONS,'
-      '    SUMORDER,'
       '    PRICESIZE,'
       '    INJOB'
       'FROM'
@@ -1441,11 +1440,6 @@ object DM: TDM
     end
     object adsPricesPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
-    end
-    object adsPricesSUMORDER: TFIBBCDField
-      FieldName = 'SUMORDER'
-      Size = 2
-      RoundByScale = True
     end
     object adsPricesPRICESIZE: TFIBIntegerField
       FieldName = 'PRICESIZE'

@@ -56,9 +56,10 @@ type
     adsPricesPOSITIONS: TFIBIntegerField;
     adsPricesPRICESIZE: TFIBIntegerField;
     adsClientsData: TpFIBDataSet;
-    adsPricesSumOrder1: TCurrencyField;
+    adsPricesSumOrder: TCurrencyField;
     adsPricesINJOB: TFIBBooleanField;
     tmStopEdit: TTimer;
+    adsPricesSUMBYCURRENTMONTH: TFIBBCDField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -339,9 +340,9 @@ end;
 procedure TPricesForm.adsPricesCalcFields(DataSet: TDataSet);
 begin
   if adsPricesPOSITIONS.AsInteger > 0 then
-    adsPricesSumOrder1.AsCurrency := DM.FindOrderInfo(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger).Summ
+    adsPricesSumOrder.AsCurrency := DM.FindOrderInfo(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger).Summ
   else
-    adsPricesSumOrder1.AsCurrency := 0;
+    adsPricesSumOrder.AsCurrency := 0;
 end;
 
 initialization
