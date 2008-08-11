@@ -2041,6 +2041,14 @@ begin
         DBVersion := 47;
       end;
 
+      if DBVersion = 47 then begin
+        etlname := GetLastEtalonFileName;
+        if Length(etlname) > 0 then
+          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        DBVersion := 48;
+      end;
+
       if DBVersion <> CURRENT_DB_VERSION then
         raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
       //Если у нас не отладочная версия, то влючаем проверку целостности базы данных

@@ -6,6 +6,12 @@ RETURNS DOUBLE PRECISION BY VALUE
 ENTRY_POINT 'IB_UDF_abs' MODULE_NAME 'ib_udf';
 
 
+DECLARE EXTERNAL FUNCTION ADDDAY
+TIMESTAMP, INTEGER
+RETURNS TIMESTAMP
+ENTRY_POINT 'addDay' MODULE_NAME 'fbudf';
+
+
 DECLARE EXTERNAL FUNCTION ADDMINUTE
 TIMESTAMP, INTEGER
 RETURNS TIMESTAMP
@@ -263,7 +269,6 @@ CREATE TABLE ORDERS
   JUNK	FB_BOOLEAN,
   ORDERCOUNT	INTEGER NOT NULL,
   SENDPRICE	NUMERIC(18, 2),
-  VITALLYIMPORTANT	FB_BOOLEAN,
   REQUESTRATIO	INTEGER,
   ORDERCOST	NUMERIC(18, 2),
   MINORDERCOUNT	INTEGER,
@@ -1449,38 +1454,11 @@ RETURNS
   PRICENAME VARCHAR(70) CHARACTER SET WIN1251,
   REGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
   POSITIONS INTEGER,
-  SUMORDER NUMERIC(18, 2),
   SUPPORTPHONE VARCHAR(20) CHARACTER SET WIN1251,
   MESSAGETO BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
-  COMMENTS BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251
-)
-AS
-BEGIN EXIT; END ;
-
-CREATE PROCEDURE ORDERSHSHOW1 
-(
-  ACLIENTID BIGINT,
-  ACLOSED INTEGER,
-  TIMEZONEBIAS INTEGER
-)
-RETURNS
-(
-  ORDERID BIGINT,
-  SERVERORDERID BIGINT,
-  DATEPRICE TIMESTAMP,
-  PRICECODE BIGINT,
-  REGIONCODE BIGINT,
-  ORDERDATE TIMESTAMP,
-  SENDDATE TIMESTAMP,
-  CLOSED INTEGER,
-  SEND INTEGER,
-  PRICENAME VARCHAR(70) CHARACTER SET WIN1251,
-  REGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
-  POSITIONS INTEGER,
-  SUMORDER NUMERIC(18, 2),
-  SUPPORTPHONE VARCHAR(20) CHARACTER SET WIN1251,
-  MESSAGETO BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
-  COMMENTS BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251
+  COMMENTS BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
+  MINREQ INTEGER,
+  SUMBYCURRENTMONTH NUMERIC(18, 2)
 )
 AS
 BEGIN EXIT; END ;
@@ -1534,10 +1512,6 @@ RETURNS
   POSITIONS INTEGER,
   SUMORDER NUMERIC(18, 2)
 )
-AS
-BEGIN EXIT; END ;
-
-CREATE PROCEDURE ORDERSSETCORENULL 
 AS
 BEGIN EXIT; END ;
 
@@ -1624,10 +1598,10 @@ RETURNS
   REGIONCODE BIGINT,
   REGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
   POSITIONS INTEGER,
-  SUMORDER NUMERIC(18, 2),
   PRICESIZE INTEGER,
   INJOB INTEGER,
-  CONTROLMINREQ INTEGER
+  CONTROLMINREQ INTEGER,
+  SUMBYCURRENTMONTH NUMERIC(18, 2)
 )
 AS
 BEGIN EXIT; END ;
@@ -3870,90 +3844,11 @@ RETURNS
   PRICENAME VARCHAR(70) CHARACTER SET WIN1251,
   REGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
   POSITIONS INTEGER,
-  SUMORDER NUMERIC(18, 2),
   SUPPORTPHONE VARCHAR(20) CHARACTER SET WIN1251,
   MESSAGETO BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
-  COMMENTS BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251
-)
-AS
-begin
-for SELECT OrdersH.OrderId,
-    OrdersH.ServerOrderId,
-    addminute(PricesData.DatePrice, -:timezonebias) AS DatePrice,
-    OrdersH.PriceCode,
-    OrdersH.RegionCode,
-    OrdersH.OrderDate,
-    OrdersH.SendDate,
-    OrdersH.Closed,
-    OrdersH.Send,
-    OrdersH.PriceName,
-    OrdersH.RegionName,
-    SupportPhone,
-    MessageTo,
-    Comments
-FROM ( OrdersH
-    INNER JOIN PricesData ON OrdersH.PriceCode=PricesData.PriceCode)
-    INNER JOIN RegionalData ON (RegionalData.RegionCode=OrdersH.RegionCode)
-    AND (PricesData.FirmCode=RegionalData.FirmCode)
-WHERE OrdersH.ClientId=:AClientId
-     and ((:AClosed = 1 And OrdersH.Closed = 1)
-     or (:AClosed <> 1 And OrdersH.Closed <> 1))
-into :OrderId,
-    :ServerOrderId,
-    :DatePrice,
-    :PriceCode,
-    :RegionCode,
-    :OrderDate,
-    :SendDate,
-    :Closed,
-    :Send,
-    :PriceName,
-    :RegionName,
-    :SupportPhone,
-    :MessageTo,
-    :Comments
-do
-begin
-  SELECT
-    Count(*),
-    Sum(0*Orders.OrderCount)
-  FROM
-    Orders
-  WHERE
-        Orders.OrderId=:OrderId
-    AND Orders.OrderCount>0
-  into :Positions, :SumOrder;
-  if (positions > 0) then
-    suspend;
-end
-end
- ;
-
-
-ALTER PROCEDURE ORDERSHSHOW1 
-(
-  ACLIENTID BIGINT,
-  ACLOSED INTEGER,
-  TIMEZONEBIAS INTEGER
-)
-RETURNS
-(
-  ORDERID BIGINT,
-  SERVERORDERID BIGINT,
-  DATEPRICE TIMESTAMP,
-  PRICECODE BIGINT,
-  REGIONCODE BIGINT,
-  ORDERDATE TIMESTAMP,
-  SENDDATE TIMESTAMP,
-  CLOSED INTEGER,
-  SEND INTEGER,
-  PRICENAME VARCHAR(70) CHARACTER SET WIN1251,
-  REGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
-  POSITIONS INTEGER,
-  SUMORDER NUMERIC(18, 2),
-  SUPPORTPHONE VARCHAR(20) CHARACTER SET WIN1251,
-  MESSAGETO BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
-  COMMENTS BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251
+  COMMENTS BLOB SUB_TYPE TEXT SEGMENT SIZE 80 CHARACTER SET WIN1251,
+  MINREQ INTEGER,
+  SUMBYCURRENTMONTH NUMERIC(18, 2)
 )
 AS
 begin
@@ -3969,16 +3864,19 @@ for SELECT
     OrdersH.Send,
     OrdersH.PriceName,
     OrdersH.RegionName,
-    '' AS SupportPhone,
-    MessageTo,
-    Comments
+    RegionalData.SupportPhone,
+    OrdersH.MessageTo,
+    OrdersH.Comments,
+    pricesregionaldata.minreq
 FROM
-  OrdersH
-  LEFT JOIN PricesData ON OrdersH.PriceCode=PricesData.PriceCode
+   ((OrdersH
+    LEFT JOIN PricesData ON OrdersH.PriceCode=PricesData.PriceCode)
+    left join pricesregionaldata on pricesregionaldata.PriceCode = OrdersH.PriceCode and pricesregionaldata.regioncode = OrdersH.regioncode)
+    LEFT JOIN RegionalData ON (RegionalData.RegionCode=OrdersH.RegionCode) AND (PricesData.FirmCode=RegionalData.FirmCode)
 WHERE
-   OrdersH.ClientId=:AClientId
-   And ((:AClosed = 1 And OrdersH.Closed = 1)
-     Or (:AClosed <> 1 And OrdersH.Closed <> 1))
+    (OrdersH.ClientId = :AClientId)
+and (:AClosed = OrdersH.Closed)
+and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode is not null) and (RegionalData.RegionCode is not null) and (pricesregionaldata.PriceCode is not null)))
 into :OrderId,
     :ServerOrderId,
     :DatePrice,
@@ -3992,18 +3890,35 @@ into :OrderId,
     :RegionName,
     :SupportPhone,
     :MessageTo,
-    :Comments
+    :Comments,
+    :MinReq
 do
 begin
   SELECT
-    Count(*),
-    Sum(0*Orders.OrderCount)
+    Count(*)
   FROM
     Orders
   WHERE
         Orders.OrderId=:OrderId
     AND Orders.OrderCount>0
-  into :Positions, :SumOrder;
+  into :Positions;
+  if (AClosed = 0) then
+  begin
+    select
+      Sum(Orders.SendPrice * Orders.OrderCount)
+    from
+      OrdersH
+      INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId
+    WHERE OrdersH.ClientId=:AClientId
+       AND OrdersH.PriceCode=:PriceCode
+       AND OrdersH.RegionCode=:RegionCode
+       AND OrdersH.Closed = 1
+       AND OrdersH.send = 1
+       AND Orders.OrderCount>0
+    into :sumbycurrentmonth;
+  end
+  else
+    SUMBYCURRENTMONTH = 0;
   if (positions > 0) then
     suspend;
 end
@@ -4130,15 +4045,6 @@ into :OrdersCount,
     :SumOrder
 do
   suspend;
-end
- ;
-
-
-ALTER PROCEDURE ORDERSSETCORENULL 
-AS
-begin
-UPDATE Orders SET CoreId = NULL
-WHERE CoreId IS NOT NULL;
 end
  ;
 
@@ -4710,10 +4616,10 @@ RETURNS
   REGIONCODE BIGINT,
   REGIONNAME VARCHAR(25) CHARACTER SET WIN1251,
   POSITIONS INTEGER,
-  SUMORDER NUMERIC(18, 2),
   PRICESIZE INTEGER,
   INJOB INTEGER,
-  CONTROLMINREQ INTEGER
+  CONTROLMINREQ INTEGER,
+  SUMBYCURRENTMONTH NUMERIC(18, 2)
 )
 AS
 begin
@@ -4763,8 +4669,7 @@ into :PriceCode,
 do
 begin
   SELECT
-    Count(*),
-    Sum(0*Orders.OrderCount) 
+    Count(*)
   FROM
     OrdersH
     INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId
@@ -4773,7 +4678,19 @@ begin
      AND OrdersH.RegionCode=:RegionCode
      AND OrdersH.Closed <> 1
      AND Orders.OrderCount>0
-  into :Positions, :SumOrder;
+  into :Positions;
+  select
+    Sum(Orders.SendPrice * Orders.OrderCount)
+  from
+    OrdersH
+    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId
+  WHERE OrdersH.ClientId=:AClientId
+     AND OrdersH.PriceCode=:PriceCode
+     AND OrdersH.RegionCode=:RegionCode
+     AND OrdersH.Closed = 1
+     AND OrdersH.send = 1
+     AND Orders.OrderCount>0
+  into :sumbycurrentmonth;
   suspend;
 end
 end
@@ -5557,12 +5474,12 @@ begin
       INSERT INTO ORDERS(ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR,
                SYNONYMCODE, SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME,
                SYNONYMFIRM, PRICE, AWAIT, JUNK, ORDERCOUNT,
-               VITALLYIMPORTANT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT )
+               REQUESTRATIO, ORDERCOST, MINORDERCOUNT )
         select :ORDERID, :CLIENTID, :COREID, c.PRODUCTID, c.CODEFIRMCR,
                c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR,
                coalesce(s.SynonymName, catalogs.name || ' ' || catalogs.form) as SynonymName,
                sf.synonymname, c.basecost, c.AWAIT, c.JUNK, :ORDERCOUNT,
-               c.VITALLYIMPORTANT, c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT
+               c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT
         from
           core c
           left join products p on p.productid = c.productid
