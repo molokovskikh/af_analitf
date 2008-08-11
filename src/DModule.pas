@@ -12,7 +12,7 @@ uses
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
-  IdGlobal, FR_DSet;
+  IdGlobal, FR_DSet, Menus;
 
 {
 Криптование
@@ -604,7 +604,6 @@ begin
     AProc.MessageBox( 'Сжатие базы данных завершено.');
   end;
   SetStarted;
-  //MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
   ClientChanged;
   { устанавливаем параметры печати }
   frReport.Title := Application.Title;
@@ -1001,6 +1000,9 @@ begin
 end;
 
 procedure TDM.adtClientsAfterOpen(DataSet: TDataSet);
+var
+  mi :TMenuItem;
+  LastClientId : Integer;
 begin
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
   then begin
@@ -1009,7 +1011,23 @@ begin
     adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
     adtParams.Post;
   end;
-  //MainForm.dblcbClients.KeyValue:=adtClients.FieldByName('ClientId').Value;
+
+  //Заполняем PopupMenu клиентов
+  MainForm.pmClients.Items.Clear;
+  LastClientId := adtClients.FieldByName( 'ClientId').AsInteger;
+  adtClients.First;
+  while not adtClients.Eof do begin
+    mi := TMenuItem.Create(MainForm.pmClients);
+    mi.Name := 'miClient' + adtClients.FieldByName('ClientId').AsString;
+    mi.Caption := adtClients.FieldByName('Name').AsString;
+    mi.Tag := adtClients.FieldByName('ClientId').AsInteger;
+    mi.Checked := LastClientId = adtClients.FieldByName('ClientId').AsInteger;
+    mi.OnClick := MainForm.OnSelectClientClick;
+    MainForm.pmClients.Items.Add(mi);
+    adtClients.Next;
+  end;
+  //Восстанавливаем выбранного клиента
+  adtClients.Locate('ClientId', LastClientId, []);
   ClientChanged;
 end;
 

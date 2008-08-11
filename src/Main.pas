@@ -70,7 +70,7 @@ TMainForm = class(TForm)
     itmReceiveTickets: TMenuItem;
     N5: TMenuItem;
     CoolBar1: TCoolBar;
-    Panel1: TPanel;
+    pSelectClients: TPanel;
     XPManifest1: TXPManifest;
     DownloadMenu: TPopupMenu;
     miReceive: TMenuItem;
@@ -127,6 +127,10 @@ TMainForm = class(TForm)
     miSendLetter: TMenuItem;
     tbViewDocs: TToolButton;
     actViewDocs: TAction;
+    pbSelectClient: TPaintBox;
+    pmClients: TPopupMenu;
+    est11: TMenuItem;
+    est21: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -177,6 +181,9 @@ TMainForm = class(TForm)
     procedure actReceiveTicketsExecute(Sender: TObject);
     procedure actSendLetterExecute(Sender: TObject);
     procedure actViewDocsExecute(Sender: TObject);
+    procedure pbSelectClientPaint(Sender: TObject);
+    procedure pbSelectClientClick(Sender: TObject);
+    procedure FormResize(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -215,6 +222,7 @@ public
   //Включить все действия, связанные с изменением имени авторизации
   procedure EnableByHTTPName;
 	function CheckUnsendOrders: boolean;
+  procedure OnSelectClientClick(Sender: TObject);
 end;
 
 var
@@ -239,7 +247,7 @@ uses
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm,
 	Exclusive, Wait, AlphaUtils, About, CompactThread, LU_Tracer,
-  SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter;
+  SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types;
 
 {$R *.DFM}
 
@@ -328,6 +336,7 @@ begin
 	Timer.Enabled := True;
 	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
   dblcbClients.Hint := 'Клиент: ' + CurrentUser;
+  pbSelectClient.Hint := 'Клиент: ' + CurrentUser;
 
 	{ Снятие запроса на экс. доступ после аварии }
 	CS.Enter;
@@ -963,6 +972,70 @@ begin
 		nil, nil, SW_SHOWDEFAULT);
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
 		nil, nil, SW_SHOWDEFAULT);
+end;
+
+procedure TMainForm.pbSelectClientPaint(Sender: TObject);
+var
+  TmpRect : TRect;
+begin
+  //Рисуем границу по краю и заливаем белым
+  pbSelectClient.Canvas.Brush.Color := clWhite;
+  pbSelectClient.Canvas.Rectangle(pbSelectClient.ClientRect);
+  //рисуем имя клиента
+  TmpRect := pbSelectClient.ClientRect;
+  TmpRect.BottomRight.X := TmpRect.BottomRight.X - 24;
+  Windows.InflateRect(TmpRect, -1, -1);
+  pbSelectClient.Canvas.TextRect(TmpRect, 3, 4, DM.adtClients.FieldByName('Name').AsString);
+  //рисуем кнопку
+  TmpRect := pbSelectClient.ClientRect;
+  TmpRect.TopLeft.X := TmpRect.BottomRight.X - 21;
+  Windows.InflateRect(TmpRect, -1, -1);
+  pbSelectClient.Canvas.Brush.Color := clBtnFace;
+  pbSelectClient.Canvas.Rectangle(TmpRect);
+  //рисуем треугольник на кнопке
+  pbSelectClient.Canvas.MoveTo(TmpRect.TopLeft.X + 5, TmpRect.TopLeft.Y + 7);
+  pbSelectClient.Canvas.LineTo(TmpRect.TopLeft.X + 13, TmpRect.TopLeft.Y + 7);
+  pbSelectClient.Canvas.LineTo(TmpRect.TopLeft.X + 9, TmpRect.TopLeft.Y + 11);
+  pbSelectClient.Canvas.LineTo(TmpRect.TopLeft.X + 5, TmpRect.TopLeft.Y + 7);
+  pbSelectClient.Canvas.Brush.Color := pbSelectClient.Canvas.Pen.Color;
+  pbSelectClient.Canvas.FloodFill(
+    TmpRect.TopLeft.X + 9,
+    TmpRect.TopLeft.Y + 8,
+    pbSelectClient.Canvas.Pixels[TmpRect.TopLeft.X + 9, TmpRect.TopLeft.Y + 8],
+    fsSurface);
+end;
+
+procedure TMainForm.pbSelectClientClick(Sender: TObject);
+begin
+  pmClients.Popup(pbSelectClient.ClientOrigin.X, pbSelectClient.ClientOrigin.Y + pbSelectClient.Height);
+end;
+
+procedure TMainForm.FormResize(Sender: TObject);
+begin
+  //Расчитываем размер панели от размера окна и берем чуть меньше
+  pSelectClients.Width := Self.Width - 20 - pSelectClients.Left;
+end;
+
+procedure TMainForm.OnSelectClientClick(Sender: TObject);
+var
+  mi : TMenuItem;
+  I : Integer;
+begin
+  mi := TMenuItem(Sender);
+  if not mi.Checked and (CurrentUser <> mi.Caption) then
+  begin
+    for I := 0 to pmClients.Items.Count - 1 do
+      pmClients.Items[i].Checked := False;
+    mi.Checked := True;
+    DM.adtClients.Locate('ClientId', mi.Tag, []);
+    DM.adtParams.Edit;
+    DM.adtParams.FieldByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+    DM.adtParams.Post;
+		DM.ClientChanged;
+    CurrentUser := mi.Caption;
+    pbSelectClient.Hint := 'Клиент: ' + CurrentUser;
+    pbSelectClient.Invalidate;
+  end;
 end;
 
 end.

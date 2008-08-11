@@ -60,15 +60,15 @@ begin
       Inc(SleepCount);
     end;
     if Terminated then exit;
-    FStatusStr := 'Запрос информационного блока...';
+    FStatusStr := 'Запрос рекламного блока...';
     Synchronize(UpdateProgress);
     FSOAP := TSOAP.Create(FURL, FHTTPName, FHTTPPass, OnConnectError, ReceiveHTTP);
     try
-      Log('Reclame', 'Запущен процесс для получения информационного блока');
+      Log('Reclame', 'Запущен процесс для получения рекламного блока');
       Res := FSOAP.Invoke('GetReclame', [], []);
       //Если в ответ что-то пришло, то скачиваем рекламу
       if Length(Res.Text) > 0 then begin
-        Log('Reclame', 'Получена ссылка на архив с информационным блоком');
+        Log('Reclame', 'Получена ссылка на архив с рекламным блоком');
         FURL := Res.Values['URL'];
         NewReclame := StrToBoolDef(UpperCase(Res.Values['New']), True);
 
@@ -101,7 +101,7 @@ begin
             ReceiveHTTP.ReconnectCount := 0;
             ReceiveHTTP.Request.BasicAuthentication := True;
             ReceiveHTTP.OnWork := HTTPReclameWork;
-            Log('Reclame', 'Пытаемся скачать архив с информационным блоком...');
+            Log('Reclame', 'Пытаемся скачать архив с рекламным блоком...');
             try
 
               ErrorCount := 0;
@@ -118,7 +118,7 @@ begin
                   StartDownPosition := FileStream.Position;
                   ReceiveHTTP.Get( AddRangeStartToURL(FURL, FileStream.Position),
                     FileStream);
-                  Log('Reclame', 'Архив с информационным блоком успешно скачан');
+                  Log('Reclame', 'Архив с рекламным блоком успешно скачан');
                   PostSuccess := True;
                   
                 except
@@ -169,7 +169,7 @@ begin
           end;
 
           if Terminated then Abort;
-          Log('Reclame', 'Пытаемся распаковать архив с информационным блоком...');
+          Log('Reclame', 'Пытаемся распаковать архив с рекламным блоком...');
           SZCS.Enter;
           try
             SevenZipRes := SevenZipExtractArchive(
@@ -191,35 +191,32 @@ begin
             SZCS.Leave;
             SysUtils.DeleteFile(ZipFileName);
           end;
-          Log('Reclame', 'Архив с информационным блоком успешно распакован');
+          Log('Reclame', 'Архив с рекламным блоком успешно распакован');
 
           if Terminated then Abort;
-          Log('Reclame', 'Пытаемся подтвердить архив с информационным блоком...');
+          Log('Reclame', 'Пытаемся подтвердить архив с рекламным блоком...');
           FSOAP.Invoke('ReclameComplete', [], []);
-          Log('Reclame', 'Архив с информационным блоком успешно подтвержден');
+          Log('Reclame', 'Архив с рекламным блоком успешно подтвержден');
 
           Synchronize(UpdateReclameTable);
         end;
 
-        FStatusStr := 'Загрузка информационного блока завершена';
-        Synchronize(UpdateProgress);
       end
-      else begin
-        Log('Reclame', 'Информационный блок не обновлен');
-        FStatusStr := 'Информационный блок не обновлен';
-        Synchronize(UpdateProgress);
-      end;
+      else
+        Log('Reclame', 'Рекламный блок не обновлен');
 
-      Log('Reclame', 'Процесс обновления информационного блока завершен');
+      FStatusStr := 'Загрузка рекламного блока завершена';
+      Synchronize(UpdateProgress);
+      Log('Reclame', 'Процесс обновления рекламного блока завершен');
     finally
       FSOAP.Free;
     end;
 
   except
     on E : Exception do begin
-      FStatusStr := 'Ошибка при получении информационного блока';
+      FStatusStr := 'Загрузка рекламного блока завершена';
       Synchronize(UpdateProgress);
-      Log('Reclame', 'Процесс обновления информационного блока завершился с ошибкой : ' + E.Message);
+      Log('Reclame', 'Процесс обновления рекламного блока завершился с ошибкой : ' + E.Message);
     end;
   end;
 	RecTerminated := True;

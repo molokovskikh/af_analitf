@@ -201,7 +201,7 @@ object ExchangeForm: TExchangeForm
     Top = 224
     Width = 385
     Height = 65
-    Caption = ' '#1048#1085#1092#1086#1088#1084#1072#1094#1080#1086#1085#1085#1099#1081' '#1073#1083#1086#1082' '
+    Caption = ' '#1056#1077#1082#1083#1072#1084#1085#1099#1081' '#1073#1083#1086#1082' '
     TabOrder = 3
     object lReclameStatus: TLabel
       Left = 8

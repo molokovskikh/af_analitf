@@ -270,21 +270,24 @@ end;
 procedure PrintOrdersAfterSend;
 var
   I : Integer;
-  FirstPrint : Boolean;
+  PrintDialog : TPrintDialog;
 begin
-  FirstPrint := True;
-
-  for I := 0 to TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count-1 do begin
-    DM.ShowOrderDetailsReport(
-      StrToInt(TStringList(GlobalExchangeParams[Integer(epSendedOrders)])[i]),
-      True,
-      True,
-      False,
-      FirstPrint);
-    FirstPrint := False;
-  end;
+  PrintDialog := TPrintDialog.Create(Application);
+  try
   
-  MainForm.FreeChildForms;
+    if PrintDialog.Execute then
+      for I := 0 to TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count-1 do
+        DM.ShowOrderDetailsReport(
+          StrToInt(TStringList(GlobalExchangeParams[Integer(epSendedOrders)])[i]),
+          True,
+          True,
+          False,
+          False);
+
+  finally
+    PrintDialog.Free;
+  end;
+
 end;
 
 { ¬осстанавливаем заказы после обновлени€ }

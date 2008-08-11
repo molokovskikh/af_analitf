@@ -19,6 +19,7 @@ object MainForm: TMainForm
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object edDummy: TEdit
@@ -245,22 +246,25 @@ object MainForm: TMainForm
         ImageIndex = 13
         Style = tbsSeparator
       end
-      object Panel1: TPanel
+      object pSelectClients: TPanel
         Left = 771
         Top = 0
-        Width = 322
+        Width = 230
         Height = 38
         Alignment = taRightJustify
         BevelOuter = bvNone
         ParentBackground = True
         TabOrder = 0
         OnMouseMove = lCurrentClientMouseMove
+        DesignSize = (
+          230
+          38)
         object lCurrentClient: TLabel
           Left = 0
           Top = 0
-          Width = 110
-          Height = 38
-          Align = alLeft
+          Width = 230
+          Height = 13
+          Align = alTop
           Caption = ' '#1058#1077#1082#1091#1097#1080#1081' '#1082#1083#1080#1077#1085#1090': '
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -271,17 +275,30 @@ object MainForm: TMainForm
           Layout = tlCenter
           OnMouseMove = lCurrentClientMouseMove
         end
+        object pbSelectClient: TPaintBox
+          Left = 7
+          Top = 15
+          Width = 210
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          Color = clWhite
+          ParentColor = False
+          OnClick = pbSelectClientClick
+          OnMouseMove = lCurrentClientMouseMove
+          OnPaint = pbSelectClientPaint
+        end
         object EditDummy: TEdit
-          Left = 117
-          Top = 9
+          Left = 3
+          Top = 14
           Width = 2
           Height = 21
+          Color = clBtnFace
           TabOrder = 1
         end
         object dblcbClients: TDBLookupComboBox
-          Left = 111
-          Top = 9
-          Width = 198
+          Left = 143
+          Top = 1
+          Width = 104
           Height = 21
           Hint = #1050#1083#1080#1077#1085#1090
           DataField = 'ClientId'
@@ -290,6 +307,7 @@ object MainForm: TMainForm
           ListField = 'Name'
           ListSource = DM.dsClients
           TabOrder = 0
+          Visible = False
           OnCloseUp = dblcbClientsCloseUp
           OnMouseDown = dblcbClientsMouseDown
           OnMouseMove = lCurrentClientMouseMove
@@ -3918,5 +3936,18 @@ object MainForm: TMainForm
     Left = 192
     Top = 272
     oCacheCalcFields = True
+  end
+  object pmClients: TPopupMenu
+    Left = 328
+    Top = 160
+    object est11: TMenuItem
+      Caption = 
+        'Test1 Test1 Test1 Test1 Test1 Test1Test1 Test1 Test1Test1 Test1 ' +
+        'Test1Test1 Test1 Test1Test1 Test1 Test1Test1 Test1 Test1Test1 Te' +
+        'st1 Test1'
+    end
+    object est21: TMenuItem
+      Caption = 'Test2'
+    end
   end
 end
