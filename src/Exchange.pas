@@ -115,7 +115,11 @@ begin
 	if AExchangeActions = [] then exit;
 	DM.DeleteEmptyOrders;
 
-	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions) then
+  //≈сли мы выставили флаг "ѕолучать кумул€тивное обновление", то при попытки обновлени€ мы будем запрашивать кумул€тивное,
+  //кроме ситуации, когда пользователь делает "»мпортирование данных"
+	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions)
+     and (eaGetPrice in AExchangeActions)
+  then
     AExchangeActions := AExchangeActions + [eaGetFullData];
 
   //TODO: ___ надо подумать, что здесь происходит

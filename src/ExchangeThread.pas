@@ -72,7 +72,6 @@ private
 	SOAP: TSOAP;
 	ExchangeDateTime: TDateTime;
 	NewZip: boolean;
-  NeedSendOrders,
   ImportComplete : Boolean;
 	FileStream: TFileStream;
   StartExec : TDateTime;
@@ -102,7 +101,6 @@ private
 	procedure DisableCancel;
 	procedure EnableCancel;
 	procedure ShowEx;
-	procedure CheckSendCurrentOrders;
 
 	procedure RasConnect;
 	procedure HTTPConnect;
@@ -150,7 +148,6 @@ private
   //Не вызывает исключение в случае ошибки -607
   procedure SilentExecute(q : TpFIBQuery; SQL : String);
   procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; const AWorkCount: Integer);
-  procedure HTTPWorkBegin(Sender: TObject; AWorkMode: TWorkMode; const AWorkCountMax: Integer);
   procedure ThreadOnBatching(BatchOperation:TBatchOperation;RecNumber:integer;var BatchAction:TBatchAction);
   procedure ThreadOnExecuteError(pFIBQuery:TpFIBQuery; E:EFIBError; var Action:TDataAction);
   //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
@@ -234,22 +231,13 @@ begin
 
 				if eaSendOrders in ExchangeForm.ExchangeActs then
 				begin
-          NeedSendOrders := True;
-
-          //Если производим кумулятивное обновление, то спрашиваем: отправлять ли заказы?
-          if eaGetFullData in ExchangeForm.ExchangeActs then
-            Synchronize(CheckSendCurrentOrders);
-
-          if NeedSendOrders then
-          begin
-            TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
-            ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
-            ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-            //Запускаем нитку на отправку архивных заказов
-            CreateChildSendArhivedOrdersThread;
-            DoSendOrders;
-            TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
-          end;
+          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+          //Запускаем нитку на отправку архивных заказов
+          CreateChildSendArhivedOrdersThread;
+          DoSendOrders;
+          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 				end;
 				if eaSendLetter in ExchangeForm.ExchangeActs then
 				begin
@@ -360,6 +348,9 @@ begin
             DM.MainConnection1.Close;
             DM.RestoreDatabase(ExePath);
       			DM.MainConnection1.Open;
+            //Если мы получили ошибку целостности данных, то мы должны выставить флаг "Получить кумулятивное обновление",
+            //чтобы при любом обновлении сразу происходил запрос кумулятивное обновления
+            DM.SetCumulative;
             ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetPrice, eaGetFullData];
           end
           else
@@ -593,7 +584,6 @@ begin
 		try
       OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
       ExchangeForm.HTTP.OnWork := HTTPWork;
-      ExchangeForm.HTTP.OnWorkBegin := HTTPWorkBegin;
       ExchangeForm.HTTP.ReconnectCount := 0;
       ExchangeForm.HTTP.Request.BasicAuthentication := True;
 
@@ -2181,18 +2171,6 @@ begin
   finally
     Attachs.Free;
   end;
-end;
-
-procedure TExchangeThread.HTTPWorkBegin(Sender: TObject;
-  AWorkMode: TWorkMode; const AWorkCountMax: Integer);
-begin
-end;
-
-procedure TExchangeThread.CheckSendCurrentOrders;
-begin
-  NeedSendOrders := MainForm.CheckUnsendOrders;
-  if NeedSendOrders then
-    NeedSendOrders := ConfirmSendCurrentOrders;
 end;
 
 procedure TExchangeThread.ExtractDocs(DirName: String);

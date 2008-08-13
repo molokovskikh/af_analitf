@@ -247,7 +247,7 @@ uses
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm,
 	Exclusive, Wait, AlphaUtils, About, CompactThread, LU_Tracer,
-  SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types;
+  SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog;
 
 {$R *.DFM}
 
@@ -394,6 +394,17 @@ begin
 		{ Автоматический импорт }
 		RunExchange([ eaImportOnly]);
 	end;
+
+  //Если выставлен флаг "Делать кумулятивное обновление", то делаем его
+  //Он может быть выставлен с предыдущего запуска программы или в результате непрошедщего импорта,
+  //который был запущен двумя строками выше
+  if DM.GetCumulative then
+  begin
+    WriteExchangeLog('AnalitF',
+      'Предыдущая операция импорта данных была завершена с нарушением целостности данных,' +
+      'будет произведено кумулятивное обновление.');
+		RunExchange([eaGetPrice, eaGetFullData]);
+  end;
 
 	if ExchangeOnly then exit;
 	{ Не обновлялись больше 20 часов }
