@@ -19,10 +19,19 @@ type
     { Private declarations }
   public
     { Public declarations }
+    constructor Create(AOwner: TComponent); override;
   end;
 
 implementation
 
 {$R *.dfm}
+
+{ TframeLegeng }
+
+constructor TframeLegeng.Create(AOwner: TComponent);
+begin
+  inherited;
+  pNotBasicLegend.ControlStyle := pNotBasicLegend.ControlStyle - [csParentBackground] + [csOpaque];
+end;
 
 end.

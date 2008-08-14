@@ -184,6 +184,7 @@ TMainForm = class(TForm)
     procedure pbSelectClientPaint(Sender: TObject);
     procedure pbSelectClientClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
 private
 	JustRun: boolean;
 
@@ -1047,6 +1048,11 @@ begin
     pbSelectClient.Hint := 'Клиент: ' + CurrentUser;
     pbSelectClient.Invalidate;
   end;
+end;
+
+procedure TMainForm.FormActivate(Sender: TObject);
+begin
+  pSelectClients.ControlStyle := pSelectClients.ControlStyle - [csParentBackground] + [csOpaque] 
 end;
 
 end.

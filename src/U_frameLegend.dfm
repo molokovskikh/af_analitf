@@ -29,6 +29,7 @@ object frameLegeng: TframeLegeng
       Font.Style = []
       ParentColor = False
       ParentFont = False
+      Transparent = False
     end
     object lJunkLegend: TLabel
       Left = 8
@@ -40,6 +41,7 @@ object frameLegeng: TframeLegeng
       Caption = #1059#1094#1077#1085#1077#1085#1085#1099#1077' '#1087#1088#1077#1087#1072#1088#1072#1090#1099
       Color = 6725362
       ParentColor = False
+      Transparent = False
     end
     object lAwaitLegend: TLabel
       Left = 200
@@ -57,6 +59,7 @@ object frameLegeng: TframeLegeng
       Font.Style = []
       ParentColor = False
       ParentFont = False
+      Transparent = False
     end
     object lLeaderLegend: TLabel
       Left = 592
@@ -74,6 +77,7 @@ object frameLegeng: TframeLegeng
       Font.Style = []
       ParentColor = False
       ParentFont = False
+      Transparent = False
     end
     object pNotBasicLegend: TPanel
       Left = 592
@@ -91,6 +95,7 @@ object frameLegeng: TframeLegeng
         Caption = #1053#1077#1086#1089#1085#1086#1074#1085#1086#1081' '#1087#1086#1089#1090#1072#1074#1097#1080#1082
         Color = clBtnFace
         ParentColor = False
+        Transparent = False
       end
     end
   end
