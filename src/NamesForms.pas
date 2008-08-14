@@ -88,6 +88,8 @@ type
     procedure SetFormsParams;
     procedure AddKeyToSearch(Key : Char);
     procedure SetGrids;
+    procedure NamesToCore;
+    procedure FormsToCore;
   protected
     procedure DoShow; override;
   public
@@ -263,7 +265,8 @@ procedure TNamesFormsForm.dbgNamesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	inherited;
-	if Key = VK_RETURN then dbgNamesDblClick( Sender);
+	if Key = VK_RETURN then
+    NamesToCore;
 end;
 
 procedure TNamesFormsForm.dbgNamesDblClick(Sender: TObject);
@@ -274,16 +277,8 @@ begin
 	inherited;
   p := dbgNames.ScreenToClient(Mouse.CursorPos);
   C := dbgNames.MouseCoord(p.X, p.Y);
-  if C.Y > 0 then begin
-    if not actUseForms.Checked then
-      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-        adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
-    if actUseForms.Checked and ( adsForms.RecordCount < 2) then
-      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-        adsNames.FieldByName( 'Name').AsString,
-        adsForms.FieldByName( 'Form').AsString, False, False);
-    if actUseForms.Checked and ( adsForms.RecordCount > 1) then dbgForms.SetFocus;
-  end;
+  if C.Y > 0 then
+    NamesToCore;
 end;
 
 procedure TNamesFormsForm.dbgNamesEnter(Sender: TObject);
@@ -313,16 +308,15 @@ begin
   p := dbgForms.ScreenToClient(Mouse.CursorPos);
   C := dbgForms.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
-    CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
-		  adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
-		  actUseForms.Checked, False);
+    FormsToCore;
 end;
 
 procedure TNamesFormsForm.dbgFormsKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	inherited;
-        if Key = VK_RETURN then dbgFormsDblClick( Sender);
+  if Key = VK_RETURN then
+    FormsToCore;
 	if ( Key = VK_ESCAPE) or ( Key = VK_SPACE) then dbgNames.SetFocus;
 end;
 
@@ -553,6 +547,25 @@ begin
     dbgCatalog.SearchField := 'Name'
   else
     dbgCatalog.SearchField := '';
+end;
+
+procedure TNamesFormsForm.NamesToCore;
+begin
+  if not actUseForms.Checked then
+    CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+      adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
+  if actUseForms.Checked and ( adsForms.RecordCount < 2) then
+    CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+      adsNames.FieldByName( 'Name').AsString,
+      adsForms.FieldByName( 'Form').AsString, False, False);
+  if actUseForms.Checked and ( adsForms.RecordCount > 1) then dbgForms.SetFocus;
+end;
+
+procedure TNamesFormsForm.FormsToCore;
+begin
+  CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
+    adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
+    actUseForms.Checked, False);
 end;
 
 initialization
