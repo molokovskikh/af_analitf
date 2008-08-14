@@ -114,7 +114,9 @@ inherited OrdersHForm: TOrdersHForm
             FooterFont.Style = []
             Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
             OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
+            ParentShowHint = False
             ReadOnly = True
+            ShowHint = True
             TabOrder = 0
             TitleFont.Charset = DEFAULT_CHARSET
             TitleFont.Color = clWindowText
@@ -204,7 +206,8 @@ inherited OrdersHForm: TOrdersHForm
                 EditButtons = <>
                 FieldName = 'SUMBYCURRENTMONTH'
                 Footers = <>
-                Title.Caption = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082'. '#1084#1077#1089#1103#1094
+                Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
+                Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
                 Width = 40
               end>
           end
