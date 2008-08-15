@@ -1073,6 +1073,7 @@ var
   Tables : TStringList;
   I : Integer;
   InDelimitedFile : TFIBInputDelimitedFile;
+  LogText : String;
 
   function NeedImport(TableName : String) : Boolean;
   var
@@ -1123,19 +1124,36 @@ begin
             InDelimitedFile.ColDelimiter := Chr(159);
             InDelimitedFile.RowDelimiter := Chr(161);
 
+            try
+            
+              for I := 0 to Files.Count-1 do begin
+                if NeedImport(Tables[i]) then begin
+                  up.SelectSQL.Text := 'select * from ' + Tables[i];
+                  up.Prepare;
+                  up.Open;
+                  up.AutoUpdateOptions.UpdateTableName := Tables[i];
+                  up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
+                  Tracer.TR(Tables[i], up.InsertSQL.Text);
+                  up.Close;
+                  up.SelectSQL.Text := up.InsertSQL.Text;
+                  InDelimitedFile.Filename := Files[i];
+                  up.BatchInput(InDelimitedFile);
+                end;
+              end;
 
-            for I := 0 to Files.Count-1 do begin
-              if NeedImport(Tables[i]) then begin
-                up.SelectSQL.Text := 'select * from ' + Tables[i];
-                up.Prepare;
-                up.Open;
-                up.AutoUpdateOptions.UpdateTableName := Tables[i];
-                up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
-                Tracer.TR(Tables[i], up.InsertSQL.Text);
-                up.Close;
-                up.SelectSQL.Text := up.InsertSQL.Text;
-                InDelimitedFile.Filename := Files[i];
-                up.BatchInput(InDelimitedFile);
+            except
+              on E : Exception do begin
+                LogText := 'SQL : ' + up.QInsert.SQL.Text + CRLF;
+                if up.QInsert.ParamCount > 0 then begin
+                  LogText := LogText + '  Params ( ';
+                  for I := 0 to up.QInsert.ParamCount-1 do
+                    LogText := LogText +
+                      up.QInsert.Params.Vars[i].Name + ' : ' + up.QInsert.Params.Vars[i].AsString + ';';
+                  LogText := LogText + ' )';
+                end;
+                //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
+                WriteExchangeLog('DModule.LinkExternalTables', LogText);
+                raise;
               end;
             end;
 

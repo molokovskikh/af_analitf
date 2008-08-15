@@ -9,7 +9,7 @@ uses
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
-  U_frmOldOrdersDelete, IB_ErrorCodes;
+  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread;
 
 const
   //Критические сообщения об ошибках при отправке заказов
@@ -89,8 +89,6 @@ private
 
 	HostFileName, LocalFileName: string;
 
-  upB : TpFIBQuery;
-
   //Список дочерних ниток
   ChildThreads : TObjectList;
 
@@ -106,6 +104,7 @@ private
 	procedure HTTPConnect;
 	procedure CreateChildThreads;
   procedure CreateChildSendArhivedOrdersThread;
+  function  ChildThreadClassIsExists(ChildThreadClass : TReceiveThreadClass) : Boolean;
 	procedure QueryData;
   procedure GetPass;
   procedure PriceDataSettings;
@@ -153,6 +152,8 @@ private
   //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
   procedure ExtractDocs(DirName : String);
   function  GetUpdateId() : String;
+  //Отправляем сообщение в tech@analit.net из программы с информацией об ошибке для техподдержки
+  procedure SendLetterWithTechInfo(Subject, Body : String);
 protected
 	procedure Execute; override;
 public
@@ -164,7 +165,7 @@ implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Exclusive,
   U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
-  U_RecvThread, Constant, U_ExchangeLog, U_SendArchivedOrdersThread;
+  Constant, U_ExchangeLog, U_SendArchivedOrdersThread;
 
 { TExchangeThread }
 
@@ -326,21 +327,31 @@ begin
 
       except
         on EFIB : EFIBError do
-          //Если возникла ошибка нарушения целостности, то сразу же запрашиваем кумулятивное обновление
-          if not (eaGetFullData in ExchangeForm.ExchangeActs) and
-              ((EFIB.SQLCode = sqlcode_foreign_or_create_schema) or (EFIB.SQLCode = sqlcode_unique_violation))
+        begin
+          WriteExchangeLog(
+            'Exchange',
+            'Ошибка при импорте данных:' + CRLF +
+            'SQLCode       = ' + IntToStr(EFIB.SQLCode) + CRLF +
+            'IBErrorCode   = ' + IntToStr(EFIB.IBErrorCode) + CRLF +
+            'RaiserName    =  ' + EFIB.RaiserName + CRLF +
+            'SQLMessage    = ' + EFIB.SQLMessage + CRLF +
+            'IBMessage     = ' + EFIB.IBMessage + CRLF +
+            'CustomMessage = ' + EFIB.CustomMessage + CRLF +
+            'Msg           = ' + EFIB.Msg + CRLF +
+            'Message       = ' + EFIB.Message);
+
+          {
+          Если получили ошибку целостности:
+            1. Если не было запроса кумулятивного обновления, то откатываемся и запрашиваем КО
+            2. Если запрос КО уже был, то высылаем данные в АК Инфорум и прерываем обновление
+
+          Если это другая ошибка, то пишем сообщение и прерываем обмен данными
+          }
+
+          if ((EFIB.SQLCode = sqlcode_foreign_or_create_schema) or (EFIB.SQLCode = sqlcode_unique_violation))
           then begin
-            WriteExchangeLog(
-              'Exchange',
-              'Нарушение целостности при импорте:' + CRLF +
-              'SQLCode       = ' + IntToStr(EFIB.SQLCode) + CRLF +
-              'IBErrorCode   = ' + IntToStr(EFIB.IBErrorCode) + CRLF +
-              'RaiserName    =  ' + EFIB.RaiserName + CRLF +
-              'SQLMessage    = ' + EFIB.SQLMessage + CRLF +
-              'IBMessage     = ' + EFIB.IBMessage + CRLF +
-              'CustomMessage = ' + EFIB.CustomMessage + CRLF +
-              'Msg           = ' + EFIB.Msg + CRLF +
-              'Message       = ' + EFIB.Message);
+            WriteExchangeLog('Exchange', 'Нарушение целостности при импорте.');
+
             Progress := 0;
             Synchronize( SetProgress);
             StatusText := 'Откат изменений';
@@ -351,10 +362,32 @@ begin
             //Если мы получили ошибку целостности данных, то мы должны выставить флаг "Получить кумулятивное обновление",
             //чтобы при любом обновлении сразу происходил запрос кумулятивное обновления
             DM.SetCumulative;
-            ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetPrice, eaGetFullData];
+
+            if not (eaGetFullData in ExchangeForm.ExchangeActs) then
+              //Если не было запроса кумулятивного обновления, то выставляем его и запрашиваем КО
+              ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetPrice, eaGetFullData]
+            else begin
+              //Если запрос КО уже был, то отправляем тех. информацию в техподдержку и останавливаем обмен данными
+              SendLetterWithTechInfo(
+                'Ошибка целостности данных после запроса кумулятивного обновления',
+                'У клиента возникла ошибка целостности данных после запроса кумулятивного обновления.');
+              raise Exception.Create(
+                'Ошибка получения обновления.'#13#10 +
+                'Информация об ошибке отправлена в AK Инфорум.'#13#10 +
+                'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+            end;
           end
-          else
-            raise;
+          else begin
+            WriteExchangeLog('Exchange', 'Ошибка базы данных при импорте.');
+            SendLetterWithTechInfo(
+              'Ошибка базы данных при импорте данных',
+              'У клиента возникла ошибка при работе с базой данных при импорте данных.');
+            raise Exception.Create(
+              'Ошибка получения обновления.'#13#10 +
+              'Информация об ошибке отправлена в AK Инфорум.'#13#10 +
+              'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+          end;
+        end;
       end;
 
       until ImportComplete;
@@ -432,13 +465,16 @@ procedure TExchangeThread.CreateChildThreads;
 var
   T : TThread;
 begin
-	T := TReclameThread.Create( True);
-  T.FreeOnTerminate := True;
-	TReclameThread(T).RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
-  TReclameThread(T).SetParams(ExchangeForm.HTTPReclame, URL, HTTPName, HTTPPass);
-  T.OnTerminate := OnChildTerminate;
-	TReclameThread(T).Resume;
-  ChildThreads.Add(T);
+  if not ChildThreadClassIsExists(TReclameThread) then
+  begin
+    T := TReclameThread.Create( True);
+    T.FreeOnTerminate := True;
+    TReclameThread(T).RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
+    TReclameThread(T).SetParams(ExchangeForm.HTTPReclame, URL, HTTPName, HTTPPass);
+    T.OnTerminate := OnChildTerminate;
+    TReclameThread(T).Resume;
+    ChildThreads.Add(T);
+  end;
 
   CreateChildSendArhivedOrdersThread;
 end;
@@ -1902,7 +1938,6 @@ begin
   try
     up.Database := DM.MainConnection1;
     up.Transaction := DM.UpTran;
-    upB := up;
 
     InDelimitedFile := TFIBInputDelimitedFile.Create;
     try
@@ -1935,7 +1970,6 @@ begin
     end;
 
   finally
-    upB := nil;
     up.Free;
   end;
 end;
@@ -2208,6 +2242,7 @@ var
   CurColumn : Integer;
   ResultRead : Integer;
   I : Integer;
+  LogText : String;
 begin
   up := TpFIBQuery.Create(nil);
   SetLength(Values, Length(Names));
@@ -2227,58 +2262,78 @@ begin
 
       if LogSQL then
         Tracer.TR('Import', 'Exec : ' + InsertSQL);
-      StartExec := Now;
       try
-        up.Prepare;
-        InDelimitedFile.ReadyStream;
-        FEOF := False;
-        repeat
-          FEOL := False;
-          CurColumn := 0;
-          for I := 0 to Length(Names)-1 do
-            Values[i] := Unassigned;
+
+        StartExec := Now;
+        try
+          up.Prepare;
+          InDelimitedFile.ReadyStream;
+          FEOF := False;
           repeat
-            ResultRead := InDelimitedFile.GetColumn(Col);
-            if ResultRead = 0 then FEOF := True;
-            if ResultRead = 2 then FEOL := True;
-            if (CurColumn < Length(Names)) then
-            try
-              if (Col = '') then
-                Values[CurColumn] := Null
-              else
-                Values[CurColumn] := Col;
-              Inc(CurColumn);
-            except
-              on E: Exception do
-              begin
-                if not (FEOF and (CurColumn = Length(Names))) then
-                  raise;
-              end;
-            end;
-          until FEOL or FEOF;
-          if ((FEOF) and (CurColumn = Length(Names))) or (not FEOF)
-          then begin
+            FEOL := False;
+            CurColumn := 0;
             for I := 0 to Length(Names)-1 do
-              if Values[i] = Null then
-                case up.ParamByName(Names[i]).ServerSQLType of
-                  SQL_TEXT,SQL_VARYING:
-                   if InDelimitedFile.ReadBlanksAsNull then
-                     up.ParamByName(Names[i]).IsNull := True
-                   else
-                    up.ParamByName(Names[i]).AsString := '';
+              Values[i] := Unassigned;
+            repeat
+              ResultRead := InDelimitedFile.GetColumn(Col);
+              if ResultRead = 0 then FEOF := True;
+              if ResultRead = 2 then FEOL := True;
+              if (CurColumn < Length(Names)) then
+              try
+                if (Col = '') then
+                  Values[CurColumn] := Null
                 else
-                  up.ParamByName(Names[i]).IsNull := True
-                end
-              else
-                up.ParamByName(Names[i]).AsString := Values[i];
-            up.ExecQuery;
+                  Values[CurColumn] := Col;
+                Inc(CurColumn);
+              except
+                on E: Exception do
+                begin
+                  if not (FEOF and (CurColumn = Length(Names))) then
+                    raise;
+                end;
+              end;
+            until FEOL or FEOF;
+            if ((FEOF) and (CurColumn = Length(Names))) or (not FEOF)
+            then begin
+              for I := 0 to Length(Names)-1 do
+                if Values[i] = Null then
+                  case up.ParamByName(Names[i]).ServerSQLType of
+                    SQL_TEXT,SQL_VARYING:
+                     if InDelimitedFile.ReadBlanksAsNull then
+                       up.ParamByName(Names[i]).IsNull := True
+                     else
+                      up.ParamByName(Names[i]).AsString := '';
+                  else
+                    up.ParamByName(Names[i]).IsNull := True
+                  end
+                else
+                  up.ParamByName(Names[i]).AsString := Values[i];
+              up.ExecQuery;
+            end;
+          until FEOF;
+        finally
+          StopExec := Now;
+          Secs := SecondsBetween(StopExec, StartExec);
+          if (Secs > 3) and LogSQL then
+            Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+        end;
+
+      except
+        on E : Exception do
+        begin
+          LogText := 'FileName : ' + FileName + CRLF +
+            ' ErrorMessage : ' + E.Message + CRLF;
+          if up.ParamCount > 0 then begin
+            LogText := LogText + '  Params ( ';
+            for I := 0 to up.ParamCount-1 do
+              LogText := LogText +
+                up.Params.Vars[i].Name + ' : ' + up.Params.Vars[i].AsString + ';';
+            LogText := LogText + ' )';
           end;
-        until FEOF;
-      finally
-        StopExec := Now;
-        Secs := SecondsBetween(StopExec, StartExec);
-        if (Secs > 3) and LogSQL then
-          Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+          //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
+          WriteExchangeLog('Exchange.UpdateFromFileByParams', LogText);
+          raise;
+        end;
       end;
 
     finally
@@ -2304,17 +2359,8 @@ end;
 procedure TExchangeThread.CreateChildSendArhivedOrdersThread;
 var
   T : TThread;
-  I : Integer;
-  Find : Boolean;
 begin
-  Find := False;
-  for I := 0 to ChildThreads.Count -1 do
-    if ChildThreads[i] is TSendArchivedOrdersThread then begin
-      Find := True;
-      Break;
-    end;
-
-  if not Find then begin
+  if not ChildThreadClassIsExists(TSendArchivedOrdersThread) then begin
     T := TSendArchivedOrdersThread.Create(True);
     TSendArchivedOrdersThread(T).SetParams(ExchangeForm.httpReceive, URL, HTTPName, HTTPPass);
     T.OnTerminate := OnChildTerminate;
@@ -2349,6 +2395,67 @@ begin
   ExchangeParams.Add(TStringList.Create());
   //epSendedOrdersErrorLog
   ExchangeParams.Add(TStringList.Create());
+end;
+
+function TExchangeThread.ChildThreadClassIsExists(
+  ChildThreadClass: TReceiveThreadClass): Boolean;
+var
+  I : Integer;
+begin
+  Result := False;
+  for I := 0 to ChildThreads.Count -1 do
+    if ChildThreads[i] is ChildThreadClass then begin
+      Result := True;
+      Break;
+    end;
+end;
+
+procedure TExchangeThread.SendLetterWithTechInfo(Subject, Body: String);
+var
+  Attachs : TStringList;
+  I : Integer;
+
+  procedure AddFile(FileName : String);
+  begin
+    if Attachs.IndexOf(FileName) = -1 then
+      Attachs.Add(FileName);
+  end;
+
+begin
+  try
+    //Не позволяем дочерним ниткам разрывать соединение
+    if ChildThreads.Count > 0 then
+      for I := ChildThreads.Count-1 downto 0 do
+        TThread(ChildThreads[i]).OnTerminate := OnChildTerminate;
+
+    //Производим подключение, если его нет
+    RasConnect;
+    HTTPConnect;
+
+    Attachs := TStringList.Create;
+    Attachs.CaseSensitive := False;
+    try
+
+      AddFile(ExeName + '.TR');
+      AddFile(ExeName + '.old.TR');
+      AddFile(ExePath + 'Exchange.log');
+      AddFile(ExePath + 'AnalitFup.log');
+
+      AProc.InternalDoSendLetter(
+        ExchangeForm.HTTP,
+        URL,
+        'AFTechSend',
+        Attachs,
+        Subject,
+        Body + #13#10 + 'Смотрите вложения.'#13#10 + 'С уважением,'#13#10 + '  AnalitF.exe');
+    finally
+      Attachs.Free;
+    end;
+  except
+    on E : Exception do
+      WriteExchangeLog('Exchange',
+        'При отправке письма с технической информацией произошла ошибка : ' + E.Message);
+  end;
 end;
 
 { TStringValue }

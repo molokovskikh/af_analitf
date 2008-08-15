@@ -2,7 +2,7 @@ object frmSendLetter: TfrmSendLetter
   Left = 423
   Top = 164
   Width = 373
-  Height = 439
+  Height = 432
   Caption = #1055#1080#1089#1100#1084#1086' '#1074' '#1040#1050' "'#1048#1085#1092#1086#1088#1091#1084'"'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -14,12 +14,12 @@ object frmSendLetter: TfrmSendLetter
   Position = poMainFormCenter
   DesignSize = (
     365
-    412)
+    405)
   PixelsPerInch = 96
   TextHeight = 13
   object cbAddLogs: TCheckBox
     Left = 8
-    Top = 236
+    Top = 215
     Width = 348
     Height = 17
     Anchors = [akLeft, akRight, akBottom]
@@ -30,7 +30,7 @@ object frmSendLetter: TfrmSendLetter
   end
   object btnSend: TButton
     Left = 187
-    Top = 381
+    Top = 363
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -41,7 +41,7 @@ object frmSendLetter: TfrmSendLetter
   end
   object btnCancel: TButton
     Left = 275
-    Top = 381
+    Top = 363
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -54,13 +54,13 @@ object frmSendLetter: TfrmSendLetter
     Left = 0
     Top = 0
     Width = 365
-    Height = 233
+    Height = 211
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '
     TabOrder = 0
     DesignSize = (
       365
-      233)
+      211)
     object lBody: TLabel
       Left = 8
       Top = 56
@@ -83,7 +83,7 @@ object frmSendLetter: TfrmSendLetter
       Left = 8
       Top = 72
       Width = 348
-      Height = 156
+      Height = 134
       Anchors = [akLeft, akTop, akRight, akBottom]
       ScrollBars = ssBoth
       TabOrder = 1
@@ -91,7 +91,7 @@ object frmSendLetter: TfrmSendLetter
   end
   object gbAttach: TGroupBox
     Left = 0
-    Top = 256
+    Top = 231
     Width = 365
     Height = 121
     Anchors = [akLeft, akRight, akBottom]

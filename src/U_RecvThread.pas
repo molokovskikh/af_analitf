@@ -6,6 +6,7 @@ uses
   Classes, SysUtils, Windows, IdHTTP, AProc, SOAPThroughHTTP;
 
 type
+  TReceiveThreadClass = class of TReceiveThread;
   TReceiveThread = class(TThread)
    protected
     FURL,
