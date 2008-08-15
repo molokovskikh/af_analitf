@@ -1003,6 +1003,7 @@ procedure TDM.adtClientsAfterOpen(DataSet: TDataSet);
 var
   mi :TMenuItem;
   LastClientId : Integer;
+  MaxClientNameWidth, CurrentClientNameWidth : Integer;
 begin
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
   then begin
@@ -1016,16 +1017,26 @@ begin
   MainForm.pmClients.Items.Clear;
   LastClientId := adtClients.FieldByName( 'ClientId').AsInteger;
   adtClients.First;
+  MaxClientNameWidth := 0;
   while not adtClients.Eof do begin
     mi := TMenuItem.Create(MainForm.pmClients);
     mi.Name := 'miClient' + adtClients.FieldByName('ClientId').AsString;
     mi.Caption := adtClients.FieldByName('Name').AsString;
     mi.Tag := adtClients.FieldByName('ClientId').AsInteger;
     mi.Checked := LastClientId = adtClients.FieldByName('ClientId').AsInteger;
+
+    if (mi.Checked) then
+      MainForm.pbSelectClient.Hint := 'Клиент: ' + adtClients.FieldByName('Name').AsString;
+
     mi.OnClick := MainForm.OnSelectClientClick;
     MainForm.pmClients.Items.Add(mi);
+
+    CurrentClientNameWidth := MainForm.pbSelectClient.Canvas.TextWidth(adtClients.FieldByName('Name').AsString);
+    if CurrentClientNameWidth > MaxClientNameWidth then
+      MaxClientNameWidth := CurrentClientNameWidth;
     adtClients.Next;
   end;
+  MainForm.pbSelectClient.Tag := MaxClientNameWidth;
   //Восстанавливаем выбранного клиента
   adtClients.Locate('ClientId', LastClientId, []);
   ClientChanged;

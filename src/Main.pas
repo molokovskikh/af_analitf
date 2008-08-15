@@ -64,7 +64,6 @@ TMainForm = class(TForm)
     ToolButton4: TToolButton;
     itmFreeChildForms: TMenuItem;
     N2: TMenuItem;
-    dblcbClients: TDBLookupComboBox;
     ToolButton2: TToolButton;
     itmSendOrders: TMenuItem;
     itmReceiveTickets: TMenuItem;
@@ -154,7 +153,6 @@ TMainForm = class(TForm)
     procedure itmImportClick(Sender: TObject);
     procedure actSaveExecute(Sender: TObject);
     procedure actSaveUpdate(Sender: TObject);
-    procedure dblcbClientsCloseUp(Sender: TObject);
     procedure actCloseAllExecute(Sender: TObject);
     procedure actReceiveAllExecute(Sender: TObject);
     procedure actSendOrdersExecute(Sender: TObject);
@@ -174,8 +172,6 @@ TMainForm = class(TForm)
     procedure actHomeExecute(Sender: TObject);
     procedure actHomeUpdate(Sender: TObject);
     procedure itmAboutClick(Sender: TObject);
-    procedure dblcbClientsMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure actWayBillExecute(Sender: TObject);
     procedure actSynonymSearchExecute(Sender: TObject);
     procedure actReceiveTicketsExecute(Sender: TObject);
@@ -324,6 +320,10 @@ procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
 var
   I : Integer;
 begin
+  //Вызываем это для того, чтобы произошла отрисовка pbSelectClient после обновления,
+  //из-за чего может измениться список клиентов
+  FormResize(nil);
+
 	if not JustRun then exit;
   //Бывает только в том случае, если происходит сжатие базы данных
   if not Active then exit;
@@ -336,7 +336,6 @@ begin
 	UpdateReclame;
 	Timer.Enabled := True;
 	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
-  dblcbClients.Hint := 'Клиент: ' + CurrentUser;
   pbSelectClient.Hint := 'Клиент: ' + CurrentUser;
 
 	{ Снятие запроса на экс. доступ после аварии }
@@ -680,16 +679,6 @@ begin
   StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',	[DM.GetAllSumOrder]);
 end;
 
-procedure TMainForm.dblcbClientsCloseUp(Sender: TObject);
-begin
-	if CurrentUser <> TDBLookupComboBox( Sender).ListSource.DataSet.FieldByName( 'Name').AsString then
-	begin
-		DM.ClientChanged;
-		CurrentUser := TDBLookupComboBox( Sender).ListSource.DataSet.FieldByName( 'Name').AsString;
-    dblcbClients.Hint := 'Клиент: ' + CurrentUser;
-	end;
-end;
-
 procedure TMainForm.actCloseAllExecute(Sender: TObject);
 begin
 	FreeChildForms;
@@ -906,14 +895,6 @@ begin
     FActionLists := AValue;
 end;
 
-procedure TMainForm.dblcbClientsMouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  //Это необходимо для того, чтобы устанавливался фокус.
-  //Иногда это не происходит из-за того, что фокус был на компоненте WebBrowser
-  dblcbClients.SetFocus;
-end;
-
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
 	RunExchange( [eaGetWaybills] );
@@ -1023,9 +1004,28 @@ begin
 end;
 
 procedure TMainForm.FormResize(Sender: TObject);
+var
+  PaintBoxWidth, PanelWidth, NewWidth : Integer;
 begin
+  //Расчитываем ширину панели в зависимости от максимальной ширины имени клиента
+  PaintBoxWidth :=
+    pbSelectClient.Tag {максимальная ширина наименования клиента}
+    + 30{на кнопку вниз}
+    + 12{на подгон под ширину PopupMenu}
+    + 20{на зазор между paintbox'ом и панелью};
   //Расчитываем размер панели от размера окна и берем чуть меньше
-  pSelectClients.Width := Self.Width - 20 - pSelectClients.Left;
+  PanelWidth := Self.Width - 20 - pSelectClients.Left;
+
+  //Выставляем минимальное значение
+  if PaintBoxWidth < PanelWidth then
+    NewWidth := PaintBoxWidth
+  else
+    NewWidth := PanelWidth;
+  if NewWidth <> pSelectClients.Width then
+  begin
+    pSelectClients.Width := NewWidth;
+    pbSelectClient.Invalidate;
+  end;
 end;
 
 procedure TMainForm.OnSelectClientClick(Sender: TObject);
@@ -1052,7 +1052,7 @@ end;
 
 procedure TMainForm.FormActivate(Sender: TObject);
 begin
-  pSelectClients.ControlStyle := pSelectClients.ControlStyle - [csParentBackground] + [csOpaque] 
+  pSelectClients.ControlStyle := pSelectClients.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 end.
