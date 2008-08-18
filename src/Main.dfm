@@ -1,6 +1,6 @@
 object MainForm: TMainForm
-  Left = 74
-  Top = 134
+  Left = 78
+  Top = 138
   AutoScroll = False
   Caption = 'MainForm'
   ClientHeight = 554
@@ -82,6 +82,9 @@ object MainForm: TMainForm
       TabOrder = 0
       Transparent = True
       Wrapable = False
+      OnAdvancedCustomDraw = ToolBarAdvancedCustomDraw
+      OnMouseDown = ToolBarMouseDown
+      OnMouseMove = ToolBarMouseMove
       object btnStartExchange: TToolButton
         Left = 0
         Top = 0
@@ -239,63 +242,13 @@ object MainForm: TMainForm
         Action = actConfig
         ImageIndex = 12
       end
-      object ToolButton6: TToolButton
+      object tbLastSeparator: TToolButton
         Left = 763
         Top = 0
         Width = 8
-        Caption = 'ToolButton6'
+        Caption = 'tbLastSeparator'
         ImageIndex = 13
         Style = tbsSeparator
-      end
-      object pSelectClients: TPanel
-        Left = 771
-        Top = 0
-        Width = 230
-        Height = 38
-        Alignment = taRightJustify
-        BevelOuter = bvNone
-        ParentBackground = True
-        TabOrder = 0
-        OnMouseMove = lCurrentClientMouseMove
-        DesignSize = (
-          230
-          38)
-        object lCurrentClient: TLabel
-          Left = 0
-          Top = 0
-          Width = 230
-          Height = 13
-          Align = alTop
-          Caption = ' '#1058#1077#1082#1091#1097#1080#1081' '#1082#1083#1080#1077#1085#1090': '
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-          Layout = tlCenter
-          OnMouseMove = lCurrentClientMouseMove
-        end
-        object pbSelectClient: TPaintBox
-          Left = 7
-          Top = 15
-          Width = 210
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          Color = clWhite
-          ParentColor = False
-          OnClick = pbSelectClientClick
-          OnMouseMove = lCurrentClientMouseMove
-          OnPaint = pbSelectClientPaint
-        end
-        object EditDummy: TEdit
-          Left = 3
-          Top = 14
-          Width = 2
-          Height = 21
-          Color = clBtnFace
-          TabOrder = 0
-        end
       end
     end
   end

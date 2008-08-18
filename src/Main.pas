@@ -69,7 +69,6 @@ TMainForm = class(TForm)
     itmReceiveTickets: TMenuItem;
     N5: TMenuItem;
     CoolBar1: TCoolBar;
-    pSelectClients: TPanel;
     XPManifest1: TXPManifest;
     DownloadMenu: TPopupMenu;
     miReceive: TMenuItem;
@@ -78,7 +77,6 @@ TMainForm = class(TForm)
     N14: TMenuItem;
     N15: TMenuItem;
     N17: TMenuItem;
-    lCurrentClient: TLabel;
     ActionList: TActionList;
     actReceive: TAction;
     actReceiveTickets: TAction;
@@ -107,7 +105,6 @@ TMainForm = class(TForm)
     actFind: TAction;
     tbFind: TToolButton;
     Browser: TWebBrowser;
-    EditDummy: TEdit;
     edDummy: TEdit;
     AppEvents: TApplicationEvents;
     Timer: TTimer;
@@ -118,7 +115,7 @@ TMainForm = class(TForm)
     adsOrdersH: TpFIBDataSet;
     tbWaybill: TToolButton;
     actWayBill: TAction;
-    ToolButton6: TToolButton;
+    tbLastSeparator: TToolButton;
     ToolButton7: TToolButton;
     actSynonymSearch: TAction;
     ToolButton10: TToolButton;
@@ -126,7 +123,6 @@ TMainForm = class(TForm)
     miSendLetter: TMenuItem;
     tbViewDocs: TToolButton;
     actViewDocs: TAction;
-    pbSelectClient: TPaintBox;
     pmClients: TPopupMenu;
     est11: TMenuItem;
     est21: TMenuItem;
@@ -177,10 +173,15 @@ TMainForm = class(TForm)
     procedure actReceiveTicketsExecute(Sender: TObject);
     procedure actSendLetterExecute(Sender: TObject);
     procedure actViewDocsExecute(Sender: TObject);
-    procedure pbSelectClientPaint(Sender: TObject);
-    procedure pbSelectClientClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure ToolBarAdvancedCustomDraw(Sender: TToolBar;
+      const ARect: TRect; Stage: TCustomDrawStage;
+      var DefaultDraw: Boolean);
+    procedure ToolBarMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure ToolBarMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
 private
 	JustRun: boolean;
 
@@ -202,6 +203,11 @@ public
 //	Filter
 
 	CS: TCriticalSection;
+
+  //Максимальная ширина наименования клиента, необходима для отображения
+  MaxClientNameWidth : Integer;
+  //Прямоугольник на ToolBar для отображения контрола выбора клиента
+  ClientNameRect : TRect;
 
 	//для TChildForm нужен FActionLists, который в базовом классе является protected
 	property ActionLists: TList read GetActionLists write SetActionLists;
@@ -336,7 +342,6 @@ begin
 	UpdateReclame;
 	Timer.Enabled := True;
 	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
-  pbSelectClient.Hint := 'Клиент: ' + CurrentUser;
 
 	{ Снятие запроса на экс. доступ после аварии }
 	CS.Enter;
@@ -755,10 +760,13 @@ procedure TMainForm.lCurrentClientMouseMove(Sender: TObject; Shift: TShiftState;
 begin
   try
   //Этот код нужен, т.к. возникает потеря фокуса в DBLookupComboBox при клике на любом WebBrowser
-	if not EditDummy.Focused and
+	if not ToolBar.Focused and
     Assigned(ActiveControl) and
 		not ActiveControl.Focused and
-		not ActiveControl.ClassNameIs( 'TWebBrowser') then EditDummy.SetFocus;
+		not ActiveControl.ClassNameIs( 'TWebBrowser')
+  then begin
+    ToolBar.SetFocus;
+  end;
   except
     on E : Exception do
       ShowMessage('Error : ' + E.Message);
@@ -967,64 +975,29 @@ begin
 		nil, nil, SW_SHOWDEFAULT);
 end;
 
-procedure TMainForm.pbSelectClientPaint(Sender: TObject);
-var
-  TmpRect : TRect;
-begin
-  //Рисуем границу по краю и заливаем белым
-  pbSelectClient.Canvas.Brush.Color := clWhite;
-  pbSelectClient.Canvas.Rectangle(pbSelectClient.ClientRect);
-  //рисуем имя клиента
-  TmpRect := pbSelectClient.ClientRect;
-  TmpRect.BottomRight.X := TmpRect.BottomRight.X - 24;
-  Windows.InflateRect(TmpRect, -1, -1);
-  pbSelectClient.Canvas.TextRect(TmpRect, 3, 4, DM.adtClients.FieldByName('Name').AsString);
-  //рисуем кнопку
-  TmpRect := pbSelectClient.ClientRect;
-  TmpRect.TopLeft.X := TmpRect.BottomRight.X - 21;
-  Windows.InflateRect(TmpRect, -1, -1);
-  pbSelectClient.Canvas.Brush.Color := clBtnFace;
-  pbSelectClient.Canvas.Rectangle(TmpRect);
-  //рисуем треугольник на кнопке
-  pbSelectClient.Canvas.MoveTo(TmpRect.TopLeft.X + 5, TmpRect.TopLeft.Y + 7);
-  pbSelectClient.Canvas.LineTo(TmpRect.TopLeft.X + 13, TmpRect.TopLeft.Y + 7);
-  pbSelectClient.Canvas.LineTo(TmpRect.TopLeft.X + 9, TmpRect.TopLeft.Y + 11);
-  pbSelectClient.Canvas.LineTo(TmpRect.TopLeft.X + 5, TmpRect.TopLeft.Y + 7);
-  pbSelectClient.Canvas.Brush.Color := pbSelectClient.Canvas.Pen.Color;
-  pbSelectClient.Canvas.FloodFill(
-    TmpRect.TopLeft.X + 9,
-    TmpRect.TopLeft.Y + 8,
-    pbSelectClient.Canvas.Pixels[TmpRect.TopLeft.X + 9, TmpRect.TopLeft.Y + 8],
-    fsSurface);
-end;
-
-procedure TMainForm.pbSelectClientClick(Sender: TObject);
-begin
-  pmClients.Popup(pbSelectClient.ClientOrigin.X, pbSelectClient.ClientOrigin.Y + pbSelectClient.Height);
-end;
-
 procedure TMainForm.FormResize(Sender: TObject);
 var
   PaintBoxWidth, PanelWidth, NewWidth : Integer;
 begin
-  //Расчитываем ширину панели в зависимости от максимальной ширины имени клиента
+  //Расчитываем ширину прямоугольника в зависимости от максимальной ширины имени клиента
   PaintBoxWidth :=
-    pbSelectClient.Tag {максимальная ширина наименования клиента}
+    MaxClientNameWidth {максимальная ширина наименования клиента}
     + 30{на кнопку вниз}
-    + 12{на подгон под ширину PopupMenu}
-    + 20{на зазор между paintbox'ом и панелью};
-  //Расчитываем размер панели от размера окна и берем чуть меньше
-  PanelWidth := Self.Width - 20 - pSelectClients.Left;
+    + 12{на подгон под ширину PopupMenu};
+
+  //Расчитываем размер прямоугольника от размера ToolBar и берем чуть меньше
+  PanelWidth := ToolBar.Width - 10 - ClientNameRect.Left;
 
   //Выставляем минимальное значение
   if PaintBoxWidth < PanelWidth then
     NewWidth := PaintBoxWidth
   else
     NewWidth := PanelWidth;
-  if NewWidth <> pSelectClients.Width then
+
+  if NewWidth <> ClientNameRect.Right - ClientNameRect.Left then
   begin
-    pSelectClients.Width := NewWidth;
-    pbSelectClient.Invalidate;
+    ClientNameRect.Right := ClientNameRect.Left + NewWidth;
+    ToolBar.Invalidate;
   end;
 end;
 
@@ -1045,14 +1018,88 @@ begin
     DM.adtParams.Post;
 		DM.ClientChanged;
     CurrentUser := mi.Caption;
-    pbSelectClient.Hint := 'Клиент: ' + CurrentUser;
-    pbSelectClient.Invalidate;
+    ToolBar.Invalidate;
   end;
 end;
 
 procedure TMainForm.FormActivate(Sender: TObject);
 begin
-  pSelectClients.ControlStyle := pSelectClients.ControlStyle - [csParentBackground] + [csOpaque];
+  ClientNameRect := Rect(tbLastSeparator.Left + tbLastSeparator.Width + 7, 15, 10, 15 + 21{Высота контрола});
+end;
+
+procedure TMainForm.ToolBarAdvancedCustomDraw(Sender: TToolBar;
+  const ARect: TRect; Stage: TCustomDrawStage; var DefaultDraw: Boolean);
+var
+  OldBkMode: integer;
+  TmpRect : TRect;
+begin
+  if Stage = cdPrePaint then begin
+
+    //Рисуем метку
+    OldBkMode := Windows.SetBkMode(ToolBar.Canvas.Handle, TRANSPARENT);
+    ToolBar.Canvas.Font.Style := ToolBar.Canvas.Font.Style + [fsBold];
+    ToolBar.Canvas.TextOut(ClientNameRect.Left, 0, 'Текущий клиент:');
+    //TextRect не работает, т.к. рисует фон под надписью
+    //ToolBar.Canvas.TextRect(LabelRect, ClientNameRect.Left, 0, 'Текущий клиент:');
+    Windows.SetBkMode(ToolBar.Canvas.Handle, OldBkMode);
+    ToolBar.Canvas.Font.Style := ToolBar.Canvas.Font.Style - [fsBold];
+
+    //Рисуем границу по краю и заливаем белым
+    ToolBar.Canvas.Brush.Color := clWhite;
+    ToolBar.Canvas.Rectangle(ClientNameRect);
+    //рисуем имя клиента
+    TmpRect := ClientNameRect;
+    TmpRect.BottomRight.X := TmpRect.BottomRight.X - 24;
+    Windows.InflateRect(TmpRect, -1, -1);
+    ToolBar.Canvas.TextRect(TmpRect, TmpRect.Left + 3, TmpRect.Top + 4, DM.adtClients.FieldByName('Name').AsString);
+
+    //рисуем кнопку
+    TmpRect := ClientNameRect;
+    TmpRect.TopLeft.X := TmpRect.BottomRight.X - 21;
+    Windows.InflateRect(TmpRect, -1, -1);
+    ToolBar.Canvas.Brush.Color := clBtnFace;
+    ToolBar.Canvas.Rectangle(TmpRect);
+    //рисуем треугольник на кнопке
+    ToolBar.Canvas.MoveTo(TmpRect.TopLeft.X + 5, TmpRect.TopLeft.Y + 7);
+    ToolBar.Canvas.LineTo(TmpRect.TopLeft.X + 13, TmpRect.TopLeft.Y + 7);
+    ToolBar.Canvas.LineTo(TmpRect.TopLeft.X + 9, TmpRect.TopLeft.Y + 11);
+    ToolBar.Canvas.LineTo(TmpRect.TopLeft.X + 5, TmpRect.TopLeft.Y + 7);
+    ToolBar.Canvas.Brush.Color := ToolBar.Canvas.Pen.Color;
+    ToolBar.Canvas.FloodFill(
+      TmpRect.TopLeft.X + 9,
+      TmpRect.TopLeft.Y + 8,
+      ToolBar.Canvas.Pixels[TmpRect.TopLeft.X + 9, TmpRect.TopLeft.Y + 8],
+      fsSurface);
+
+  end;
+end;
+
+procedure TMainForm.ToolBarMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+var
+  ResultRect : TRect;
+begin
+  if Windows.IntersectRect(ResultRect, ClientNameRect, Rect(X, Y, X+1, Y+1))
+  then begin
+    if Length(ToolBar.Hint) = 0 then
+      ToolBar.Hint := 'Клиент: ' + DM.adtClients.FieldByName( 'Name').AsString;
+  end
+  else
+    if Length(ToolBar.Hint) > 0 then
+      ToolBar.Hint := '';
+end;
+
+procedure TMainForm.ToolBarMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  ResultRect : TRect;
+  ScreenPoint : TPoint;
+begin
+  if (Button = mbLeft) and (Windows.IntersectRect(ResultRect, ClientNameRect, Rect(X, Y, X+1, Y+1))) then
+  begin
+    ScreenPoint := ToolBar.ClientToScreen(Point(ClientNameRect.Left, ClientNameRect.Bottom));
+    pmClients.Popup(ScreenPoint.X, ScreenPoint.Y);
+  end;
 end;
 
 end.
