@@ -1038,16 +1038,22 @@ procedure TMainForm.ToolBarAdvancedCustomDraw(Sender: TToolBar;
 var
   OldBkMode: integer;
   TmpRect : TRect;
+  OldStyle : TBrushStyle;
+  LabelRect : TRect;
 begin
   if Stage = cdPrePaint then begin
 
     //Рисуем метку
-    OldBkMode := Windows.SetBkMode(ToolBar.Canvas.Handle, TRANSPARENT);
+    //Сохраняем предыдущий стиль кисти, чтобы потом его восстановить
+    OldStyle := ToolBar.Canvas.Brush.Style;
+    //Выставляем стиль кисти bsClear, чтобы при рисовании надписи был прозрачный фон
+    ToolBar.Canvas.Brush.Style := bsClear;
     ToolBar.Canvas.Font.Style := ToolBar.Canvas.Font.Style + [fsBold];
-    ToolBar.Canvas.TextOut(ClientNameRect.Left, 0, 'Текущий клиент:');
-    //TextRect не работает, т.к. рисует фон под надписью
-    //ToolBar.Canvas.TextRect(LabelRect, ClientNameRect.Left, 0, 'Текущий клиент:');
-    Windows.SetBkMode(ToolBar.Canvas.Handle, OldBkMode);
+    //Определяем прямоугольник для надписи и производим рисование 
+    LabelRect := Rect(ClientNameRect.Left, 0, ClientNameRect.Right, 13);
+    ToolBar.Canvas.TextRect(LabelRect, ClientNameRect.Left, 0, 'Текущий клиент:');
+    //Восстанавливаем стиль кисти и стиль шрифта
+    ToolBar.Canvas.Brush.Style := OldStyle;
     ToolBar.Canvas.Font.Style := ToolBar.Canvas.Font.Style - [fsBold];
 
     //Рисуем границу по краю и заливаем белым
