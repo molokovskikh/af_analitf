@@ -187,7 +187,10 @@ begin
 	DM.ResetExclusive;
 	MainForm.Timer.Enabled := True;
 
-	if Result then DM.ResetCumulative;
+  //—брасываем флаг кумул€тивного обновлени€, когда сделали успешное обновление
+	if Result and ((eaGetPrice in AExchangeActions) or (eaGetFullData in AExchangeActions))
+  then
+    DM.ResetCumulative;
 
 	if (( eaGetPrice in AExchangeActions) or
 		  (eaImportOnly in AExchangeActions) or (eaGetFullData in AExchangeActions))
