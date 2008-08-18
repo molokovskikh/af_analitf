@@ -1040,6 +1040,7 @@ var
   TmpRect : TRect;
   OldStyle : TBrushStyle;
   LabelRect : TRect;
+  LabelWidth : Integer;
 begin
   if Stage = cdPrePaint then begin
 
@@ -1049,8 +1050,11 @@ begin
     //Выставляем стиль кисти bsClear, чтобы при рисовании надписи был прозрачный фон
     ToolBar.Canvas.Brush.Style := bsClear;
     ToolBar.Canvas.Font.Style := ToolBar.Canvas.Font.Style + [fsBold];
-    //Определяем прямоугольник для надписи и производим рисование 
-    LabelRect := Rect(ClientNameRect.Left, 0, ClientNameRect.Right, 13);
+    LabelWidth := ToolBar.Canvas.TextWidth('Текущий клиент:');
+    if ClientNameRect.Left + LabelWidth > ToolBar.Width then
+      LabelWidth := ToolBar.Width - ClientNameRect.Left - 5;
+    //Определяем прямоугольник для надписи и производим рисование
+    LabelRect := Rect(ClientNameRect.Left, 0, ClientNameRect.Left + LabelWidth, 13);
     ToolBar.Canvas.TextRect(LabelRect, ClientNameRect.Left, 0, 'Текущий клиент:');
     //Восстанавливаем стиль кисти и стиль шрифта
     ToolBar.Canvas.Brush.Style := OldStyle;
