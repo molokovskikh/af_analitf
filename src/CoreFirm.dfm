@@ -394,7 +394,7 @@ object CoreFirmForm: TCoreFirmForm
       end
     end
   end
-  inline frameLegeng1: TframeLegeng
+  inline frameLegeng: TframeLegeng
     Left = 0
     Top = 502
     Width = 792
@@ -403,7 +403,7 @@ object CoreFirmForm: TCoreFirmForm
     TabOrder = 4
     inherited pLegend: TPanel
       Width = 792
-      inherited pNotBasicLegend: TPanel
+      inherited lNotBasicLegend: TLabel
         Visible = False
       end
     end

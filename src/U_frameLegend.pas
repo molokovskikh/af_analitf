@@ -12,9 +12,8 @@ type
     lVitallyImportantLegend: TLabel;
     lJunkLegend: TLabel;
     lAwaitLegend: TLabel;
-    pNotBasicLegend: TPanel;
-    lNotBasicLegend: TLabel;
     lLeaderLegend: TLabel;
+    lNotBasicLegend: TLabel;
   private
     { Private declarations }
   public
@@ -31,7 +30,7 @@ implementation
 constructor TframeLegeng.Create(AOwner: TComponent);
 begin
   inherited;
-  pNotBasicLegend.ControlStyle := pNotBasicLegend.ControlStyle - [csParentBackground] + [csOpaque];
+  pLegend.ControlStyle := pLegend.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 end.

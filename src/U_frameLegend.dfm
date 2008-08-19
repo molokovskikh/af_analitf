@@ -12,6 +12,7 @@ object frameLegeng: TframeLegeng
     Align = alClient
     BevelInner = bvRaised
     BevelOuter = bvLowered
+    Color = clWindow
     TabOrder = 0
     object lVitallyImportantLegend: TLabel
       Left = 392
@@ -21,7 +22,7 @@ object frameLegeng: TframeLegeng
       Alignment = taCenter
       AutoSize = False
       Caption = #1046#1080#1079#1085#1077#1085#1085#1086' '#1074#1072#1078#1085#1099#1077' '#1087#1088#1077#1087#1072#1088#1072#1090#1099
-      Color = clWhite
+      Color = clWindow
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clGreen
       Font.Height = -11
@@ -79,24 +80,17 @@ object frameLegeng: TframeLegeng
       ParentFont = False
       Transparent = False
     end
-    object pNotBasicLegend: TPanel
+    object lNotBasicLegend: TLabel
       Left = 592
-      Top = 5
-      Width = 153
-      Height = 25
-      BorderStyle = bsSingle
-      Color = clWhite
-      TabOrder = 0
-      object lNotBasicLegend: TLabel
-        Left = 13
-        Top = 4
-        Width = 121
-        Height = 13
-        Caption = #1053#1077#1086#1089#1085#1086#1074#1085#1086#1081' '#1087#1086#1089#1090#1072#1074#1097#1080#1082
-        Color = clBtnFace
-        ParentColor = False
-        Transparent = False
-      end
+      Top = 10
+      Width = 180
+      Height = 13
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1053#1077#1086#1089#1085#1086#1074#1085#1086#1081' '#1087#1086#1089#1090#1072#1074#1097#1080#1082
+      Color = clBtnFace
+      ParentColor = False
+      Transparent = False
     end
   end
 end

@@ -116,7 +116,7 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     adsCoreSortOrder: TIntegerField;
-    frameLegeng1: TframeLegeng;
+    frameLegeng: TframeLegeng;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);

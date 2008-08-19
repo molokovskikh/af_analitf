@@ -8,7 +8,7 @@ uses
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
-  ActnList;
+  ActnList, U_frameLegend;
 
 const
 	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
@@ -104,6 +104,7 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
+    frameLegeng: TframeLegeng;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;

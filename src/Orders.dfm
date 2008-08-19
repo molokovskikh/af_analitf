@@ -299,7 +299,7 @@ inherited OrdersForm: TOrdersForm
         Title.TitleButton = True
       end>
   end
-  inline frameLegeng1: TframeLegeng [3]
+  inline frameLegeng: TframeLegeng [3]
     Left = 0
     Top = 410
     Width = 793
@@ -313,7 +313,7 @@ inherited OrdersForm: TOrdersForm
       inherited lLeaderLegend: TLabel
         Visible = False
       end
-      inherited pNotBasicLegend: TPanel
+      inherited lNotBasicLegend: TLabel
         Visible = False
       end
     end

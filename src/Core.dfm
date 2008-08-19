@@ -48,7 +48,7 @@ object CoreForm: TCoreForm
   end
   object pBottom: TPanel
     Left = 0
-    Top = 442
+    Top = 409
     Width = 792
     Height = 131
     Align = alBottom
@@ -347,14 +347,14 @@ object CoreForm: TCoreForm
     Left = 0
     Top = 29
     Width = 792
-    Height = 413
+    Height = 380
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
     object pWebBrowser: TPanel
       Tag = 84
       Left = 0
-      Top = 329
+      Top = 296
       Width = 792
       Height = 84
       Align = alBottom
@@ -582,18 +582,18 @@ object CoreForm: TCoreForm
           Width = 51
         end>
     end
-    inline frameLegeng: TframeLegeng
-      Left = 0
-      Top = 296
+  end
+  inline frameLegeng: TframeLegeng
+    Left = 0
+    Top = 540
+    Width = 792
+    Height = 33
+    Align = alBottom
+    TabOrder = 4
+    inherited pLegend: TPanel
       Width = 792
-      Height = 33
-      Align = alBottom
-      TabOrder = 2
-      inherited pLegend: TPanel
-        Width = 792
-        inherited lLeaderLegend: TLabel
-          Visible = False
-        end
+      inherited lLeaderLegend: TLabel
+        Visible = False
       end
     end
   end

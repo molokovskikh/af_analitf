@@ -107,7 +107,7 @@ type
     adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
-    frameLegeng1: TframeLegeng;
+    frameLegeng: TframeLegeng;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);

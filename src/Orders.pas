@@ -58,7 +58,7 @@ type
     adsOrdersORDERSREQUESTRATIO: TFIBIntegerField;
     adsOrdersORDERSORDERCOST: TFIBBCDField;
     adsOrdersORDERSMINORDERCOUNT: TFIBIntegerField;
-    frameLegeng1: TframeLegeng;
+    frameLegeng: TframeLegeng;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

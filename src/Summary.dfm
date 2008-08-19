@@ -43,7 +43,7 @@ inherited SummaryForm: TSummaryForm
     Left = 0
     Top = 0
     Width = 792
-    Height = 375
+    Height = 342
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -51,7 +51,7 @@ inherited SummaryForm: TSummaryForm
       Left = 0
       Top = 52
       Width = 792
-      Height = 290
+      Height = 257
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -225,7 +225,7 @@ inherited SummaryForm: TSummaryForm
     end
     object pStatus: TPanel
       Left = 0
-      Top = 342
+      Top = 309
       Width = 792
       Height = 33
       Align = alBottom
@@ -419,7 +419,7 @@ inherited SummaryForm: TSummaryForm
   object pWebBrowser: TPanel [2]
     Tag = 200
     Left = 0
-    Top = 375
+    Top = 342
     Width = 792
     Height = 198
     Align = alBottom
@@ -448,6 +448,23 @@ inherited SummaryForm: TSummaryForm
         2B2E126208000000000000004C0000000114020000000000C000000000000046
         8000000000000000000000000000000000000000000000000000000000000000
         00000000000000000100000000000000000000000000000000000000}
+    end
+  end
+  inline frameLegeng: TframeLegeng [3]
+    Left = 0
+    Top = 540
+    Width = 792
+    Height = 33
+    Align = alBottom
+    TabOrder = 3
+    inherited pLegend: TPanel
+      Width = 792
+      inherited lLeaderLegend: TLabel
+        Visible = False
+      end
+      inherited lNotBasicLegend: TLabel
+        Visible = False
+      end
     end
   end
   object dsSummary: TDataSource
