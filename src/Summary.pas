@@ -189,7 +189,8 @@ begin
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
-  PrintEnabled := (LastSymmaryType = 1) or ((2 and DM.SaveGridMask) > 0);
+  PrintEnabled := ((LastSymmaryType = 0) and ((DM.SaveGridMask and PrintCurrentSummaryOrder) > 0))
+               or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
   dtpDateFrom.Enabled := LastSymmaryType = 1;
   dtpDateTo.Enabled := dtpDateFrom.Enabled;
 	Reg := TRegIniFile.Create;
@@ -317,38 +318,24 @@ end;
 procedure TSummaryForm.Print( APreview: boolean = False);
 var
   LastCurrentSQL : String;
-	Reg: TRegIniFile;
 begin
   //Если распечатываем текущий сводный заказ, то сбрасываем фильтр по поставщикам
   if LastSymmaryType = 0 then begin
-    Reg := TRegIniFile.Create();
+    adsSummary.DisableControls;
     try
-      adsSummary.DisableControls;
-      //Сохранили настройки сортировки
-      Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-      dbgSummary.SaveColumnsLayout(Reg);
-      try
-        LastCurrentSQL := adsSummary.SelectSQL.Text;
-        if adsSummary.Active then
-          adsSummary.Close;
-        adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
-        adsSummary.Open;
-        adsSummary.DoSort(['SynonymName'], [True]);
-        DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
+      LastCurrentSQL := adsSummary.SelectSQL.Text;
+      if adsSummary.Active then
         adsSummary.Close;
-        adsSummary.SelectSQL.Text := LastCurrentSQL;
-        adsSummary.Open;
-        //Восстановили настройки сортировки и применили к DataSet
-        if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-        then
-          dbgSummary.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-        dbgSummary.OnSortMarkingChanged(dbgSummary);
-      finally
-        adsSummary.EnableControls;
-      end;
-
+      adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
+      adsSummary.Open;
+      adsSummary.DoSort(['SynonymName'], [True]);
+      DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
+      adsSummary.Close;
+      adsSummary.SelectSQL.Text := LastCurrentSQL;
+      adsSummary.Open;
+      dbgSummary.OnSortMarkingChanged(dbgSummary);
     finally
-      Reg.Free;
+      adsSummary.EnableControls;
     end;
   end
   else
@@ -521,7 +508,8 @@ procedure TSummaryForm.rgSummaryTypeClick(Sender: TObject);
 begin
   if rgSummaryType.ItemIndex <> LastSymmaryType then begin
     LastSymmaryType := rgSummaryType.ItemIndex;
-    PrintEnabled := (LastSymmaryType = 1) or ((2 and DM.SaveGridMask) > 0);
+    PrintEnabled := ((LastSymmaryType = 0) and ((DM.SaveGridMask and PrintCurrentSummaryOrder) > 0))
+                 or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
     dtpDateFrom.Enabled := LastSymmaryType = 1;
     dtpDateTo.Enabled := dtpDateFrom.Enabled;
     SummaryShow;

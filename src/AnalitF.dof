@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=4
 MinorVer=4
-Release=62
-Build=666
+Release=63
+Build=672
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.4.62.666
+FileVersion=4.4.63.672
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2006
 LegalTrademarks=Инфорум
@@ -157,8 +157,8 @@ c:\program files\borland\delphi7\Bin\DCLIB70.bpl=InterBase Data Access Component
 c:\program files\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
 [HistoryLists\hlConditionals]
 Count=3
-Item0=DEBUG
-Item1=DSP,DEBUG
+Item0=DSP,DEBUG
+Item1=DEBUG
 Item2=DSP
 [HistoryLists\hlUnitAliases]
 Count=1

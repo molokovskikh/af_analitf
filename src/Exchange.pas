@@ -228,7 +228,8 @@ begin
     else
       AProc.MessageBox('Отправка заказов завершена с ошибками.', MB_OK or MB_ICONWARNING);
 
-    if (DM.adtParams.FieldByName('PrintOrdersAfterSend').AsBoolean)
+    if ((DM.SaveGridMask and PrintSendedOrder) > 0)
+      and (DM.adtParams.FieldByName('PrintOrdersAfterSend').AsBoolean)
       and (TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count > 0)
     then
       PrintOrdersAfterSend;

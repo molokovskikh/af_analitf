@@ -21,6 +21,22 @@ const
   //Максимальное кол-во заказа, которое может принять сервер
   MaxOrderCount : Integer = 65535;
 
+  //Флаги для разрешения печати различных форм
+  //Печать сводного прайс-листа
+  PrintCombinedPrice = 32768;
+  //Печать прайс-листа поставщика
+  PrintFirmPrice = 65536;
+  //Печать забракованных препаратов
+  PrintDefectives = 131072;
+  //Печать текущего сводного заказа
+  PrintCurrentSummaryOrder = 262144;
+  //Печать отправленного сводного заказа
+  PrintSendedSummaryOrder = 524288;
+  //Печать текущего заказа
+  PrintCurrentOrder = 1048576;
+  //Печать отправленного заказа
+  PrintSendedOrder = 2097152;
+
 implementation
 
 end.

@@ -203,7 +203,7 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
 	inherited;
-	PrintEnabled := False;
+	PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
   UseExcess := True;

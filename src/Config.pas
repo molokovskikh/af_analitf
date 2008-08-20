@@ -142,7 +142,7 @@ implementation
 
 {$R *.DFM}
 
-uses DBProc, AProc, Client, Main, LU_Tracer;
+uses DBProc, AProc, Client, Main, LU_Tracer, Constant;
 
 function ShowConfig( Auth: boolean = False): boolean;
 var
@@ -158,6 +158,7 @@ begin
       Application.OnException := OnAppEx;
       HTTPNameChanged := False;
       OldHTTPName := dbeHTTPName.Field.AsString;
+      dbchbPrintOrdersAfterSend.Enabled := (DM.SaveGridMask and PrintSendedOrder) > 0;
 {$ifndef DSP}
       gbHTTP.Visible := False;
       gbAccount.Top := 8;

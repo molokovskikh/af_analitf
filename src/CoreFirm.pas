@@ -200,7 +200,7 @@ begin
   
   InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
-	PrintEnabled := False;
+	PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
@@ -336,9 +336,24 @@ begin
 end;
 
 procedure TCoreFirmForm.Print( APreview: boolean = False);
+var
+  OldFilterEvent : TFilterRecordEvent;
+  OldFiltered : Boolean;
 begin
   RefreshOrdersH;
-  DM.ShowFastReport('CoreFirm.frf',adsCore, APreview);
+  OldFiltered := adsCore.Filtered;
+  OldFilterEvent := adsCore.OnFilterRecord;
+  adsCore.DisableControls;
+  try
+    adsCore.Filtered := False;
+    adsCore.DoSort(['SynonymName'], [True]);
+    DM.ShowFastReport('CoreFirm.frf', adsCore, APreview);
+    if OldFiltered then
+      DBProc.SetFilterProc(adsCore, OldFilterEvent);
+    dbgCore.OnSortMarkingChanged(dbgCore);
+  finally
+    adsCore.EnableControls;
+  end;
 end;
 
 //переоткрывает заголовок для текущего заказа

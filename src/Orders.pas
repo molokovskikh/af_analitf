@@ -149,7 +149,11 @@ end;
 
 procedure TOrdersForm.Print( APreview: boolean = False);
 begin
-	DM.ShowFastReport( 'Orders.frf', adsOrders, APreview);
+  DM.ShowOrderDetailsReport(
+    OrdersHForm.adsOrdersHFormORDERID.AsInteger,
+    OrdersHForm.adsOrdersHFormCLOSED.Value,
+    OrdersHForm.adsOrdersHFormSEND.Value,
+    APreview);
 end;
 
 procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;

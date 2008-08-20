@@ -118,7 +118,7 @@ procedure ShowOrdersH;
 
 implementation
 
-uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList;
+uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList, Constant;
 
 {$R *.dfm}
 
@@ -238,7 +238,8 @@ begin
 	ColumnByNameT( dbgOrdersH, 'MinReq').Visible := TabControl.TabIndex = 0;
 	ColumnByNameT( dbgOrdersH, 'SUMBYCURRENTMONTH').Visible := TabControl.TabIndex = 0;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
-  PrintEnabled := (TabControl.TabIndex = 1) or ((2 and DM.SaveGridMask) > 0);
+  PrintEnabled := ((TabControl.TabIndex = 0) and ((DM.SaveGridMask and PrintCurrentOrder) > 0))
+               or ((TabControl.TabIndex = 1) and ((DM.SaveGridMask and PrintSendedOrder) > 0));
   OrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
 	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True

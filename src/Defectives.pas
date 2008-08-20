@@ -71,7 +71,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main;
+  Main, Constant;
 
 procedure TDefectivesForm.FormCreate(Sender: TObject);
 var
@@ -79,7 +79,7 @@ var
 	Year, Month, Day: Word;
 begin
 	inherited;
-	PrintEnabled:=True;
+	PrintEnabled := (DM.SaveGridMask and PrintDefectives) > 0;
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
 	Day := DayOf( Date);

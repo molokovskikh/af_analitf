@@ -409,7 +409,6 @@ inherited PricesForm: TPricesForm
       '    REGIONCODE,'
       '    REGIONNAME,'
       '    POSITIONS,'
-      '    SUMORDER,'
       '    PRICESIZE,'
       '    INJOB'
       'FROM'
