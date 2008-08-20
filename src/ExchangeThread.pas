@@ -1270,8 +1270,6 @@ end;
 
 procedure TExchangeThread.ImportData;
 var
-//	I: Integer;
-//	Catalog: Variant;
 	Tables: TStrings;
 	UpdateTables: TUpdateTables;
 begin
@@ -1348,7 +1346,6 @@ begin
 	Synchronize( SetProgress);
 
    DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
-   try
    DM.adcUpdate.BeforeExecute := adcUpdateBeforeExecute;
    DM.adcUpdate.AfterExecute := adcUpdateAfterExecute;
    with DM.adcUpdate do begin
@@ -1400,7 +1397,14 @@ begin
 	  SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
 	end;
 
-  DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  try
+    DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  except
+    on E : Exception do begin
+      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на удаление устаревших данных : ' + E.Message);
+      raise;
+    end;
+  end;
 
   DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
 
@@ -1428,15 +1432,23 @@ begin
 	SQL.Text := 'select count(*) from regions where regionname is not null';
 	ExecQuery;
   Close;
-  DM.MainConnection1.DefaultUpdateTransaction.Commit;
-//  DM.MainConnection1.DefaultTransaction.CommitRetaining;
-  DM.MainConnection1.Commit;
+  try
+    DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  except
+    on E : Exception do begin
+      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на выборку count(*) : ' + E.Message);
+      raise;
+    end;
+  end;
+  try
+    DM.MainConnection1.Commit;
+  except
+    on E : Exception do begin
+      WriteExchangeLog('Exchange.ImportData', 'Ошибка при глобальном Commit на выборку count(*) : ' + E.Message);
+      raise;
+    end;
+  end;
   DM.MainConnection1.Close;
-
-  //Чистим мусор после обновления.
-//  DM.SweepDB;
-//  if not (eaGetFullData in ExchangeForm.ExchangeActs) then
-//    DM.CompactDataBase();
 
   DM.MainConnection1.Open;
   DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
@@ -1612,7 +1624,14 @@ begin
     SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMFIRMCRCODE');
     SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_SERVERCOREID');
     SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_JUNK');
-    DM.MainConnection1.DefaultUpdateTransaction.Commit;
+    try
+      DM.MainConnection1.DefaultUpdateTransaction.Commit;
+    except
+      on E : Exception do begin
+        WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на удаление индексов в Core : ' + E.Message);
+        raise;
+      end;
+    end;
 
     DM.MainConnection1.Close;
     DM.MainConnection1.Open;
@@ -1633,8 +1652,15 @@ begin
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; ExecQuery;
 	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; ExecQuery;
 	end;
-  
-  DM.MainConnection1.DefaultUpdateTransaction.Commit;
+
+  try
+    DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  except
+    on E : Exception do begin
+      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на вставку в Core : ' + E.Message);
+      raise;
+    end;
+  end;
 
   DM.MainConnection1.Close;
   DM.MainConnection1.Open;
@@ -1660,7 +1686,14 @@ begin
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
 
-  DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  try
+    DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  except
+    on E : Exception do begin
+      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на завершающие действия с Core и MinPrices : ' + E.Message);
+      raise;
+    end;
+  end;
 
   DM.MainConnection1.Close;
   DM.MainConnection1.Open;
@@ -1728,12 +1761,24 @@ begin
 	Synchronize( SetTotalProgress);
 	SQL.Text := 'EXECUTE PROCEDURE SETPRICESIZE';
 	ExecQuery;
-  DM.MainConnection1.DefaultUpdateTransaction.CommitRetaining;
-  //DM.MainConnection1.DefaultTransaction.StartTransaction;
+  try
+    DM.MainConnection1.DefaultUpdateTransaction.CommitRetaining;
+  except
+    on E : Exception do begin
+      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на обновление MinPrices : ' + E.Message);
+      raise;
+    end;
+  end;
 	SQL.Text := 'EXECUTE PROCEDURE UPDATEALLINDICES';
 	ExecQuery;
-//  DM.MainConnection1.DefaultTransaction.CommitRetaining;
-  DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  try
+    DM.MainConnection1.DefaultUpdateTransaction.Commit;
+  except
+    on E : Exception do begin
+      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на обновления индексов : ' + E.Message);
+      raise;
+    end;
+  end;
 
   DM.MainConnection1.Close;
   DM.MainConnection1.Open;
@@ -1751,14 +1796,9 @@ begin
 	Synchronize( SetProgress);
 	TotalProgress := 90;
 	Synchronize( SetTotalProgress);
-//  DM.MainConnection1.DefaultTransaction.CommitRetaining;
-    end;
+  end; {with DM.adcUpdate do begin}
 
-  except
-//    DM.MainConnection1.DefaultTransaction.Rollback;
-    raise;
-  end;
-  finally
+  finally {Tables := TStringList.Create}
   DM.adcUpdate.BeforeExecute := nil;
   DM.adcUpdate.AfterExecute := nil;
 	Tables.Free;
