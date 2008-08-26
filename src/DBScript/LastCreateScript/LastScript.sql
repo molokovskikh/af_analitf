@@ -3912,6 +3912,7 @@ begin
     WHERE OrdersH.ClientId=:AClientId
        AND OrdersH.PriceCode=:PriceCode
        AND OrdersH.RegionCode=:RegionCode
+       and ordersh.senddate > addday(current_date, 1-extract(day from current_date))
        AND OrdersH.Closed = 1
        AND OrdersH.send = 1
        AND Orders.OrderCount>0
@@ -4687,6 +4688,7 @@ begin
   WHERE OrdersH.ClientId=:AClientId
      AND OrdersH.PriceCode=:PriceCode
      AND OrdersH.RegionCode=:RegionCode
+     and ordersh.senddate > addday(current_date, 1-extract(day from current_date))
      AND OrdersH.Closed = 1
      AND OrdersH.send = 1
      AND Orders.OrderCount>0
