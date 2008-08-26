@@ -90,6 +90,7 @@ type
     procedure SetGrids;
     procedure NamesToCore;
     procedure FormsToCore;
+    procedure CatalogToCore;
   protected
     procedure DoShow; override;
   public
@@ -450,7 +451,7 @@ begin
     if tmrSearch.Enabled then
       tmrSearchTimer(nil)
     else
-      dbgCatalogDblClick(nil)
+      CatalogToCore;
   end
   else
     if Key = VK_ESCAPE then
@@ -465,9 +466,7 @@ begin
   p := dbgCatalog.ScreenToClient(Mouse.CursorPos);
   C := dbgCatalog.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
-    CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
-		  adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
-		  True, True);
+    CatalogToCore;
 end;
 
 procedure TNamesFormsForm.eSearchKeyPress(Sender: TObject; var Key: Char);
@@ -566,6 +565,13 @@ begin
   CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
     adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
     actUseForms.Checked, False);
+end;
+
+procedure TNamesFormsForm.CatalogToCore;
+begin
+  CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+    adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
+    True, True);
 end;
 
 initialization
