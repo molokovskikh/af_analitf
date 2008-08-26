@@ -1,7 +1,7 @@
 inherited OrdersHForm: TOrdersHForm
   Left = 280
   Top = 172
-  ActiveControl = dbgOrdersH
+  ActiveControl = dbgCurrentOrders
   Caption = #1047#1072#1082#1072#1079#1099
   ClientHeight = 573
   ClientWidth = 792
@@ -96,13 +96,15 @@ inherited OrdersHForm: TOrdersHForm
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 0
-          object dbgOrdersH: TToughDBGrid
+          object dbgCurrentOrders: TToughDBGrid
+            Tag = 1024
             Left = 0
             Top = 0
             Width = 483
             Height = 360
             Align = alClient
             AllowedOperations = [alopUpdateEh]
+            AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]
             AutoFitColWidths = True
             DataSource = dsOrdersH
             Flat = True
@@ -112,8 +114,8 @@ inherited OrdersHForm: TOrdersHForm
             FooterFont.Height = -11
             FooterFont.Name = 'MS Sans Serif'
             FooterFont.Style = []
-            Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
-            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
+            Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
+            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
             ParentShowHint = False
             ReadOnly = True
             ShowHint = True
@@ -123,12 +125,124 @@ inherited OrdersHForm: TOrdersHForm
             TitleFont.Height = -11
             TitleFont.Name = 'MS Sans Serif'
             TitleFont.Style = []
-            OnDblClick = dbgOrdersHDblClick
-            OnExit = dbgOrdersHExit
-            OnGetCellParams = dbgOrdersHGetCellParams
-            OnKeyDown = dbgOrdersHKeyDown
-            OnKeyPress = dbgOrdersHKeyPress
-            OnSortMarkingChanged = dbgOrdersHSortMarkingChanged
+            OnDblClick = dbgCurrentOrdersDblClick
+            OnExit = dbgCurrentOrdersExit
+            OnGetCellParams = dbgCurrentOrdersGetCellParams
+            OnKeyDown = dbgCurrentOrdersKeyDown
+            OnKeyPress = dbgCurrentOrdersKeyPress
+            OnSortMarkingChanged = dbgCurrentOrdersSortMarkingChanged
+            SearchPosition = spBottom
+            Columns = <
+              item
+                DisplayFormat = 'dd.mm.yyyy hh:nn'
+                EditButtons = <>
+                FieldName = 'ORDERDATE'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1057#1086#1079#1076#1072#1085#1086
+                Title.TitleButton = True
+                Width = 48
+              end
+              item
+                EditButtons = <>
+                FieldName = 'PRICENAME'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
+                Title.TitleButton = True
+                Width = 65
+              end
+              item
+                EditButtons = <>
+                FieldName = 'REGIONNAME'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1056#1077#1075#1080#1086#1085
+                Title.TitleButton = True
+                Width = 42
+              end
+              item
+                EditButtons = <>
+                FieldName = 'POSITIONS'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1055#1086#1079#1080#1094#1080#1081
+                Title.TitleButton = True
+                Width = 48
+              end
+              item
+                Checkboxes = True
+                EditButtons = <>
+                FieldName = 'SEND'
+                Footers = <>
+                MinWidth = 5
+                ReadOnly = False
+                Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
+                Title.TitleButton = True
+                Width = 56
+              end
+              item
+                EditButtons = <>
+                FieldName = 'MINREQ'
+                Footers = <>
+                Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+                Title.TitleButton = True
+              end
+              item
+                EditButtons = <>
+                FieldName = 'SumOrder'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1057#1091#1084#1084#1072
+                Title.TitleButton = True
+                Width = 38
+              end
+              item
+                EditButtons = <>
+                FieldName = 'SUMBYCURRENTMONTH'
+                Footers = <>
+                Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
+                Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+                Title.TitleButton = True
+                Width = 40
+              end>
+          end
+          object dbgSendedOrders: TToughDBGrid
+            Tag = 2048
+            Left = 0
+            Top = 0
+            Width = 483
+            Height = 360
+            Align = alClient
+            AllowedOperations = [alopUpdateEh]
+            AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]
+            AutoFitColWidths = True
+            DataSource = dsOrdersH
+            Flat = True
+            FooterColor = clWindow
+            FooterFont.Charset = DEFAULT_CHARSET
+            FooterFont.Color = clWindowText
+            FooterFont.Height = -11
+            FooterFont.Name = 'MS Sans Serif'
+            FooterFont.Style = []
+            Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
+            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+            ParentShowHint = False
+            ReadOnly = True
+            ShowHint = True
+            TabOrder = 1
+            TitleFont.Charset = DEFAULT_CHARSET
+            TitleFont.Color = clWindowText
+            TitleFont.Height = -11
+            TitleFont.Name = 'MS Sans Serif'
+            TitleFont.Style = []
+            Visible = False
+            OnDblClick = dbgCurrentOrdersDblClick
+            OnExit = dbgCurrentOrdersExit
+            OnGetCellParams = dbgCurrentOrdersGetCellParams
+            OnKeyDown = dbgCurrentOrdersKeyDown
+            OnKeyPress = dbgCurrentOrdersKeyPress
+            OnSortMarkingChanged = dbgCurrentOrdersSortMarkingChanged
             SearchPosition = spBottom
             Columns = <
               item
@@ -178,22 +292,6 @@ inherited OrdersHForm: TOrdersHForm
                 Width = 48
               end
               item
-                Checkboxes = True
-                EditButtons = <>
-                FieldName = 'SEND'
-                Footers = <>
-                MinWidth = 5
-                Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
-                Title.TitleButton = True
-                Width = 56
-              end
-              item
-                EditButtons = <>
-                FieldName = 'MINREQ'
-                Footers = <>
-                Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
-              end
-              item
                 EditButtons = <>
                 FieldName = 'SumOrder'
                 Footers = <>
@@ -201,14 +299,6 @@ inherited OrdersHForm: TOrdersHForm
                 Title.Caption = #1057#1091#1084#1084#1072
                 Title.TitleButton = True
                 Width = 38
-              end
-              item
-                EditButtons = <>
-                FieldName = 'SUMBYCURRENTMONTH'
-                Footers = <>
-                Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
-                Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
-                Width = 40
               end>
           end
         end

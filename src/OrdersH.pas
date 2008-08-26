@@ -32,7 +32,7 @@ type
     btnWayBillList: TButton;
     pClient: TPanel;
     pGrid: TPanel;
-    dbgOrdersH: TToughDBGrid;
+    dbgCurrentOrders: TToughDBGrid;
     pRight: TPanel;
     gbMessage: TGroupBox;
     dbmMessage: TDBMemo;
@@ -74,25 +74,26 @@ type
     bevClient: TBevel;
     adsOrdersHFormMINREQ: TFIBIntegerField;
     adsOrdersHFormSUMBYCURRENTMONTH: TFIBBCDField;
+    dbgSendedOrders: TToughDBGrid;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
     procedure TabControlChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure dbgOrdersHKeyDown(Sender: TObject; var Key: Word;
+    procedure dbgCurrentOrdersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure dbgOrdersHExit(Sender: TObject);
-    procedure dbgOrdersHDblClick(Sender: TObject);
+    procedure dbgCurrentOrdersExit(Sender: TObject);
+    procedure dbgCurrentOrdersDblClick(Sender: TObject);
     procedure adsOrdersH2AfterPost(DataSet: TDataSet);
-    procedure dbgOrdersHKeyPress(Sender: TObject; var Key: Char);
-    procedure dbgOrdersHGetCellParams(Sender: TObject; Column: TColumnEh;
+    procedure dbgCurrentOrdersKeyPress(Sender: TObject; var Key: Char);
+    procedure dbgCurrentOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure btnWayBillListClick(Sender: TObject);
     procedure adsOrdersH2SendChange(Sender: TField);
     procedure tmOrderDateChangeTimer(Sender: TObject);
     procedure adsOrdersH2BeforePost(DataSet: TDataSet);
-    procedure dbgOrdersHSortMarkingChanged(Sender: TObject);
+    procedure dbgCurrentOrdersSortMarkingChanged(Sender: TObject);
     procedure adsOrdersHFormCalcFields(DataSet: TDataSet);
     procedure adsOrdersHFormAfterFetchRecord(FromQuery: TFIBQuery;
       RecordNumber: Integer; var StopFetching: Boolean);
@@ -142,9 +143,12 @@ begin
   WayBillListForm := TWayBillListForm.Create(Application);
 	Reg := TRegIniFile.Create;
   try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'CurrentOrders', False)
     then
-      dbgOrdersH.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      dbgCurrentOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'SendedOrders', False)
+    then
+      dbgSendedOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
   finally
   	Reg.Free;
   end;
@@ -187,8 +191,10 @@ begin
   end;
   Reg := TRegIniFile.Create();
   try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgOrdersH.SaveColumnsLayout(Reg);
+    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'CurrentOrders', True);
+    dbgCurrentOrders.SaveColumnsLayout(Reg);
+    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'SendedOrders', True);
+    dbgSendedOrders.SaveColumnsLayout(Reg);
   finally
     Reg.Free;
   end;
@@ -206,8 +212,12 @@ begin
 			btnMoveSend.Caption := 'Перевести в отправленные';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
-      dbgOrdersH.Tag := 1024;
-      dbgOrdersH.FieldColumns['SEND'].ReadOnly := False;
+      dbgCurrentOrders.Visible := True;
+      dbgSendedOrders.Visible := False;
+      //try except необходим, т.к. вызвается когда форма еще не отображена
+      try
+        dbgCurrentOrders.SetFocus;
+      except end;
 		end;
 		1: begin
 			adsOrdersHForm.Close;
@@ -215,8 +225,12 @@ begin
 			btnMoveSend.Caption := 'Вернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
-      dbgOrdersH.Tag := 2048;
-      dbgOrdersH.FieldColumns['SEND'].ReadOnly := True;
+      dbgCurrentOrders.Visible := False;
+      dbgSendedOrders.Visible := True;
+      //try except необходим, т.к. вызвается когда форма еще не отображена
+      try
+        dbgSendedOrders.SetFocus;
+      except end;
 		end;
 	end;
 
@@ -233,17 +247,19 @@ begin
   adsOrdersHForm.Prepare;
   adsOrdersHForm.Open;
 
-	ColumnByNameT( dbgOrdersH, 'Send').Visible := TabControl.TabIndex = 0;
-	ColumnByNameT( dbgOrdersH, 'SendDate').Visible := TabControl.TabIndex = 1;
-	ColumnByNameT( dbgOrdersH, 'MinReq').Visible := TabControl.TabIndex = 0;
-	ColumnByNameT( dbgOrdersH, 'SUMBYCURRENTMONTH').Visible := TabControl.TabIndex = 0;
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := ((TabControl.TabIndex = 0) and ((DM.SaveGridMask and PrintCurrentOrder) > 0))
                or ((TabControl.TabIndex = 1) and ((DM.SaveGridMask and PrintSendedOrder) > 0));
   OrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
-	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True
-		else dbgOrdersH.ReadOnly := False;
+	if adsOrdersHForm.RecordCount = 0 then begin
+    dbgCurrentOrders.ReadOnly := True;
+    dbgSendedOrders.ReadOnly := True;
+  end
+  else begin
+    dbgCurrentOrders.ReadOnly := False;
+    dbgSendedOrders.ReadOnly := False;
+  end;
 end;
 
 procedure TOrdersHForm.TabControlChange(Sender: TObject);
@@ -252,26 +268,45 @@ begin
 end;
 
 procedure TOrdersHForm.btnDeleteClick(Sender: TObject);
+var
+  Grid : TToughDBGrid;
 begin
-	dbgOrdersH.SetFocus;
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Grid := dbgSendedOrders;
+
+  Grid.SetFocus;
 	if not adsOrdersHForm.IsEmpty then
 	begin
-    if (dbgOrdersH.SelectedRows.Count = 0) and (not dbgOrdersH.SelectedRows.CurrentRowSelected) then
-      dbgOrdersH.SelectedRows.CurrentRowSelected := True;
-    if dbgOrdersH.SelectedRows.Count > 0 then
+    if (Grid.SelectedRows.Count = 0) and (not Grid.SelectedRows.CurrentRowSelected) then
+      Grid.SelectedRows.CurrentRowSelected := True;
+    if Grid.SelectedRows.Count > 0 then
       if AProc.MessageBox( 'Удалить выбранные заявки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
-        dbgOrdersH.SelectedRows.Delete;
+        Grid.SelectedRows.Delete;
         DM.InitAllSumOrder;
         MainForm.SetOrdersInfo;
       end;
 	end;
-	if adsOrdersHForm.RecordCount = 0 then dbgOrdersH.ReadOnly := True
-		else dbgOrdersH.ReadOnly := False;
+	if adsOrdersHForm.RecordCount = 0 then begin
+    dbgCurrentOrders.ReadOnly := True;
+    dbgSendedOrders.ReadOnly := True;
+  end
+  else begin
+    dbgCurrentOrders.ReadOnly := False;
+    dbgSendedOrders.ReadOnly := False;
+  end;
 end;
 
 procedure TOrdersHForm.btnMoveSendClick(Sender: TObject);
+var
+  Grid : TToughDBGrid;
 begin
-	dbgOrdersH.SetFocus;
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Grid := dbgSendedOrders;
+	Grid.SetFocus;
 	case TabControl.TabIndex of
 		0: SendOrders;
 		1: MoveToPrice;
@@ -285,10 +320,10 @@ begin
 
   if AProc.MessageBox( 'Вернуть выбранные заявки в работу?',MB_ICONQUESTION+MB_OKCANCEL)<>IDOK then exit;
 
-  if (dbgOrdersH.SelectedRows.Count = 0) and (not dbgOrdersH.SelectedRows.CurrentRowSelected) then
-    dbgOrdersH.SelectedRows.CurrentRowSelected := True;
+  if (dbgSendedOrders.SelectedRows.Count = 0) and (not dbgSendedOrders.SelectedRows.CurrentRowSelected) then
+    dbgSendedOrders.SelectedRows.CurrentRowSelected := True;
 
-  if dbgOrdersH.SelectedRows.Count > 0 then begin
+  if dbgSendedOrders.SelectedRows.Count > 0 then begin
     Strings:=TStringList.Create;
     try
       ShowSQLWaiting(InternalMoveToPrice, 'Происходит восстановление заявок');
@@ -308,13 +343,13 @@ var
 begin
 	if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>0) then Exit;
 
-  if (dbgOrdersH.SelectedRows.Count = 0) and (not dbgOrdersH.SelectedRows.CurrentRowSelected) then
-    dbgOrdersH.SelectedRows.CurrentRowSelected := True;
-    
-  if dbgOrdersH.SelectedRows.Count > 0 then begin
-    for I := dbgOrdersH.SelectedRows.Count-1 downto 0 do
+  if (dbgCurrentOrders.SelectedRows.Count = 0) and (not dbgCurrentOrders.SelectedRows.CurrentRowSelected) then
+    dbgCurrentOrders.SelectedRows.CurrentRowSelected := True;
+
+  if dbgCurrentOrders.SelectedRows.Count > 0 then begin
+    for I := dbgCurrentOrders.SelectedRows.Count-1 downto 0 do
     begin
-      adsOrdersHForm.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
+      adsOrdersHForm.GotoBookmark(Pointer(dbgCurrentOrders.SelectedRows.Items[i]));
       if adsOrdersHForm.FieldByName( 'Send').AsBoolean then
       begin
         adsOrdersHFormSEND.OnChange := nil;
@@ -342,7 +377,7 @@ begin
   end;
 end;
 
-procedure TOrdersHForm.dbgOrdersHKeyDown(Sender: TObject; var Key: Word;
+procedure TOrdersHForm.dbgCurrentOrdersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	if Key = VK_RETURN then
@@ -365,19 +400,19 @@ begin
 	end;
 end;
 
-procedure TOrdersHForm.dbgOrdersHExit(Sender: TObject);
+procedure TOrdersHForm.dbgCurrentOrdersExit(Sender: TObject);
 begin
 	SoftPost( adsOrdersHForm);
 end;
 
-procedure TOrdersHForm.dbgOrdersHDblClick(Sender: TObject);
+procedure TOrdersHForm.dbgCurrentOrdersDblClick(Sender: TObject);
 var
   C : GridsEh.TGridCoord;
   P : TPoint;
 begin
 	SoftPost( adsOrdersHForm);
-  p := dbgOrdersH.ScreenToClient(Mouse.CursorPos);
-  C := dbgOrdersH.MouseCoord(p.X, p.Y);
+  p := TToughDBGrid(Sender).ScreenToClient(Mouse.CursorPos);
+  C := TToughDBGrid(Sender).MouseCoord(p.X, p.Y);
   if C.Y > 0 then
   	if not adsOrdersHForm.Isempty then OrderEnter;
 end;
@@ -387,7 +422,7 @@ begin
 	MainForm.SetOrdersInfo;
 end;
 
-procedure TOrdersHForm.dbgOrdersHKeyPress(Sender: TObject; var Key: Char);
+procedure TOrdersHForm.dbgCurrentOrdersKeyPress(Sender: TObject; var Key: Char);
 begin
 	if ( TabControl.TabIndex = 0) and ( Ord( Key) > 32) and
 		not adsOrdersHForm.IsEmpty then
@@ -397,7 +432,7 @@ begin
 	end;
 end;
 
-procedure TOrdersHForm.dbgOrdersHGetCellParams(Sender: TObject;
+procedure TOrdersHForm.dbgCurrentOrdersGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
@@ -428,9 +463,15 @@ begin
 end;
 
 procedure TOrdersHForm.dtpDateCloseUp(Sender: TObject);
+var
+  Grid : TToughDBGrid;
 begin
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Grid := dbgSendedOrders;
 	SetDateInterval;
-	dbgOrdersH.SetFocus;
+	Grid.SetFocus;
 end;
 
 procedure TOrdersHForm.Print(APreview: boolean);
@@ -503,7 +544,7 @@ begin
   if adsOrdersHFormORDERID.IsNull then Abort; 
 end;
 
-procedure TOrdersHForm.dbgOrdersHSortMarkingChanged(Sender: TObject);
+procedure TOrdersHForm.dbgCurrentOrdersSortMarkingChanged(Sender: TObject);
 begin
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
@@ -587,9 +628,9 @@ var
   end;
 
 begin
-  for I := dbgOrdersH.SelectedRows.Count-1 downto 0 do
+  for I := dbgSendedOrders.SelectedRows.Count-1 downto 0 do
   begin
-    adsOrdersHForm.GotoBookmark(Pointer(dbgOrdersH.SelectedRows.Items[i]));
+    adsOrdersHForm.GotoBookmark(Pointer(dbgSendedOrders.SelectedRows.Items[i]));
 
     with DM.adsSelect do begin
       SelectSQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :APriceCode and RegionCode = :ARegionCode';
@@ -688,7 +729,7 @@ begin
   DM.InitAllSumOrder;
   MainForm.SetOrdersInfo;
 
-  dbgOrdersH.SelectedRows.Clear;
+  dbgSendedOrders.SelectedRows.Clear;
 end;
 
 procedure TOrdersHForm.ShowForm;

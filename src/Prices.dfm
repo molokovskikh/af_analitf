@@ -156,8 +156,10 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'SUMBYCURRENTMONTH'
           Footers = <>
+          ReadOnly = True
           Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
           Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+          Title.TitleButton = True
           Width = 76
         end>
     end
