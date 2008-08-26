@@ -401,7 +401,7 @@ object CoreFirmForm: TCoreFirmForm
     Height = 33
     Align = alBottom
     TabOrder = 4
-    inherited pLegend: TPanel
+    inherited gbLegend: TGroupBox
       Width = 792
       inherited lNotBasicLegend: TLabel
         Visible = False

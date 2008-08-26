@@ -8,12 +8,12 @@ uses
 
 type
   TframeLegeng = class(TFrame)
-    pLegend: TPanel;
+    gbLegend: TGroupBox;
     lVitallyImportantLegend: TLabel;
+    lNotBasicLegend: TLabel;
+    lLeaderLegend: TLabel;
     lJunkLegend: TLabel;
     lAwaitLegend: TLabel;
-    lLeaderLegend: TLabel;
-    lNotBasicLegend: TLabel;
   private
     { Private declarations }
   public
@@ -30,7 +30,8 @@ implementation
 constructor TframeLegeng.Create(AOwner: TComponent);
 begin
   inherited;
-  pLegend.ControlStyle := pLegend.ControlStyle - [csParentBackground] + [csOpaque];
+  gbLegend.ControlStyle := gbLegend.ControlStyle - [csParentBackground] + [csOpaque];
+  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 end.

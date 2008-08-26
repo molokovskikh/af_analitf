@@ -306,14 +306,14 @@ inherited OrdersForm: TOrdersForm
     Height = 33
     Align = alBottom
     TabOrder = 3
-    inherited pLegend: TPanel
+    inherited gbLegend: TGroupBox
       inherited lVitallyImportantLegend: TLabel
         Visible = False
       end
-      inherited lLeaderLegend: TLabel
+      inherited lNotBasicLegend: TLabel
         Visible = False
       end
-      inherited lNotBasicLegend: TLabel
+      inherited lLeaderLegend: TLabel
         Visible = False
       end
     end

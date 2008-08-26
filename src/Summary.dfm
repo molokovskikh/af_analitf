@@ -457,12 +457,12 @@ inherited SummaryForm: TSummaryForm
     Height = 33
     Align = alBottom
     TabOrder = 3
-    inherited pLegend: TPanel
+    inherited gbLegend: TGroupBox
       Width = 792
-      inherited lLeaderLegend: TLabel
+      inherited lNotBasicLegend: TLabel
         Visible = False
       end
-      inherited lNotBasicLegend: TLabel
+      inherited lLeaderLegend: TLabel
         Visible = False
       end
     end
