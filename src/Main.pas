@@ -105,7 +105,6 @@ TMainForm = class(TForm)
     actFind: TAction;
     tbFind: TToolButton;
     Browser: TWebBrowser;
-    edDummy: TEdit;
     AppEvents: TApplicationEvents;
     Timer: TTimer;
     ImageList: TImageList;
@@ -158,10 +157,6 @@ TMainForm = class(TForm)
     procedure actPreviewUpdate(Sender: TObject);
     procedure actFindExecute(Sender: TObject);
     procedure actFindUpdate(Sender: TObject);
-    procedure lCurrentClientMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure edDummyKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure AppEventsIdle(Sender: TObject; var Done: Boolean);
     procedure TimerTimer(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -443,10 +438,6 @@ begin
 	ActiveChild := nil;
 	Caption := Application.Title;
 	SetOrdersInfo;
-	try
-		edDummy.SetFocus;
-	except
-	end;
 end;
 
 procedure TMainForm.imgLogoDblClick(Sender: TObject);
@@ -759,30 +750,6 @@ begin
 		FormatFloat( '00', Browser.Tag) + '.htm') then
 		Browser.Navigate( ExePath + SDirReclame + '\' +
 			FormatFloat( '00', Browser.Tag) + '.htm');
-end;
-
-procedure TMainForm.lCurrentClientMouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);
-begin
-  try
-  //Этот код нужен, т.к. возникает потеря фокуса в DBLookupComboBox при клике на любом WebBrowser
-	if not ToolBar.Focused and
-    Assigned(ActiveControl) and
-		not ActiveControl.Focused and
-		not ActiveControl.ClassNameIs( 'TWebBrowser')
-  then begin
-    ToolBar.SetFocus;
-  end;
-  except
-    on E : Exception do
-      ShowMessage('Error : ' + E.Message);
-  end;
-end;
-
-procedure TMainForm.edDummyKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-	if Ord( Key) >= 32 then actOrderAll.Execute;
 end;
 
 procedure TMainForm.TimerTimer(Sender: TObject);

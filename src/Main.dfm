@@ -23,14 +23,6 @@ object MainForm: TMainForm
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object edDummy: TEdit
-    Left = 112
-    Top = 376
-    Width = 9
-    Height = 21
-    TabOrder = 3
-    OnKeyDown = edDummyKeyDown
-  end
   object Browser: TWebBrowser
     Tag = 1
     Left = 0

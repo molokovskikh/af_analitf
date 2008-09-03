@@ -4,9 +4,25 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids;
+  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs;
 
 type
+  {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
+   чтобы у каждого грида была своя собственная новая WindowProc.
+   Если этого не сделать, то будет возникать ошибка "A call to an OS function failed"
+   Решение приведено на странице: http://www.delphikingdom.com/asp/answer.asp?IDAnswer=34018
+   Проблема связана с тем, что не происходит восстановление фокуса у DB-компонент после того,
+   как пользователь кликает по WebBrowser'у, который установлен на той же форме что и DB-компонент.
+  }
+  TDBComponentWindowProc = class
+   private
+    FFormHandle : THandle;
+    FOldDBGridWndProc: TWndMethod;
+    procedure HackDBGirdWndProc(var Message: TMessage);
+   public
+    constructor Create(AFormHandle : THandle; AOldDBGridWndProc: TWndMethod);
+  end;
+
   TChildForm = class(TForm)
     tCheckVolume: TTimer;
     procedure FormCreate(Sender: TObject);
@@ -29,7 +45,10 @@ type
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
     OldExit : TNotifyEvent;
-    
+
+    DBComponentWindowProcs : TObjectList;
+
+
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Loaded; override;
     procedure Notification(AComponent: TComponent;
@@ -62,6 +81,7 @@ type
     procedure ShowForm; overload; virtual;
     procedure Print( APreview: boolean = False); virtual;
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
   published
     //Вытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
@@ -88,7 +108,6 @@ begin
   //родителем будет главная форма
   Parent:=Application.MainForm;
   UpdateReclame;
-  PatchNonBrowser;
 end;
 
 //для того, чтобы TAction, созданные на дочерней форме работали, надо вставить
@@ -216,11 +235,15 @@ end;
 procedure TChildForm.PatchNonBrowser;
 var
 	i: integer;
+  hack : TDBComponentWindowProc;
 begin
 	for i := 0 to Self.ComponentCount - 1 do
 		if Self.Components[ i].ClassNameIs( 'TToughDBGrid') then
-				TToughDBGrid( Self.Components[ i]).OnMouseMove :=
-					MainForm.lCurrentClientMouseMove;
+    begin
+      hack := TDBComponentWindowProc.Create(Self.Handle, TToughDBGrid( Self.Components[ i]).WindowProc);
+      DBComponentWindowProcs.Add(hack);
+      TToughDBGrid( Self.Components[ i]).WindowProc := hack.HackDBGirdWndProc;
+    end;
 end;
 
 procedure TChildForm.SetActionLists(AValue: TList);
@@ -238,6 +261,8 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
   inherited;
+  DBComponentWindowProcs := TObjectList.Create(True);
+  PatchNonBrowser;
 end;
 
 function TChildForm.CheckVolume: Boolean;
@@ -364,6 +389,29 @@ begin
     Result := (fOrder.AsInteger >= fMinOrderCount.AsInteger)
   else
     Result := True;
+end;
+
+destructor TChildForm.Destroy;
+begin
+  inherited;
+  DBComponentWindowProcs.Free;
+end;
+
+{ TDBComponentWindowProc }
+
+constructor TDBComponentWindowProc.Create(AFormHandle: THandle;
+  AOldDBGridWndProc: TWndMethod);
+begin
+  FFormHandle := AFormHandle;
+  FOldDBGridWndProc := AOldDBGridWndProc;
+end;
+
+procedure TDBComponentWindowProc.HackDBGirdWndProc(var Message: TMessage);
+begin
+  if (Message.Msg = WM_LBUTTONDOWN) or (Message.Msg = WM_RBUTTONDOWN) then
+    Windows.SetFocus(FFormHandle);
+  if Assigned(FOldDBGridWndProc) then
+    FOldDBGridWndProc(Message);
 end;
 
 end.
