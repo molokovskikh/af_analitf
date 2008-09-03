@@ -175,8 +175,12 @@ var
   I: Integer;
 begin
   MainForm.ActiveChild:=Self;
-  if Caption <> '' then
-    MainForm.Caption := Application.Title + ' - ' + Caption;
+  if Caption <> '' then begin
+    if (Length(MainForm.CurrentUser) > 0) then
+      MainForm.Caption := Application.Title + ' - ' + MainForm.CurrentUser + ' - ' + Self.Caption
+    else
+      MainForm.Caption := Application.Title + ' - ' + Self.Caption;
+  end;
   for I := 0 to Self.ComponentCount-1 do
     if (Self.Components[i] is TToughDBGrid)
     then begin
