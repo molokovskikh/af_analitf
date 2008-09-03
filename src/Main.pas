@@ -337,6 +337,10 @@ begin
 	UpdateReclame;
 	Timer.Enabled := True;
 	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
+  if (Length(CurrentUser) > 0) then
+    Self.Caption := Application.Title + ' - ' + CurrentUser
+  else
+    Self.Caption := Application.Title;
 
 	{ Снятие запроса на экс. доступ после аварии }
 	CS.Enter;
@@ -418,6 +422,9 @@ begin
 		( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
 		if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
 			MB_ICONQUESTION or MB_YESNO) = IDYES then actReceiveExecute( nil);
+
+  //Обновляем ToolBar в случае смены клиента после обновления
+  ToolBar.Invalidate;
 end;
 
 procedure TMainForm.SetStatusText( Value: string);
@@ -436,7 +443,10 @@ begin
 		if Controls[ i] is TChildForm then
       Controls[ i].Free;
 	ActiveChild := nil;
-	Caption := Application.Title;
+  if (Length(CurrentUser) > 0) then
+    Self.Caption := Application.Title + ' - ' + CurrentUser
+  else
+    Self.Caption := Application.Title;
 	SetOrdersInfo;
 end;
 
@@ -579,13 +589,21 @@ begin
 	if CatNum = 0 then ExAct := ExAct + [eaGetFullData];
 
 	RunExchange( ExAct);
+
+  //Обновляем ToolBar в случае смены клиента после обновления
+  ToolBar.Invalidate;
 end;
 
 procedure TMainForm.actReceiveAllExecute(Sender: TObject);
 begin
 	if AProc.MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
-		MB_ICONQUESTION or MB_OKCANCEL) = IDOK then
-			RunExchange([eaGetPrice, eaGetFullData]);
+		MB_ICONQUESTION or MB_OKCANCEL) = IDOK
+  then begin
+    RunExchange([eaGetPrice, eaGetFullData]);
+
+    //Обновляем ToolBar в случае смены клиента после обновления
+    ToolBar.Invalidate;
+  end;
 end;
 
 procedure TMainForm.actExitExecute(Sender: TObject);
@@ -991,6 +1009,10 @@ begin
     DM.adtParams.Post;
 		DM.ClientChanged;
     CurrentUser := mi.Caption;
+    if (Assigned(ActiveChild) and (Length(ActiveChild.Caption) > 0)) then
+      Self.Caption := Application.Title + ' - ' + CurrentUser + ' - ' + ActiveChild.Caption
+    else
+      Self.Caption := Application.Title + ' - ' + CurrentUser;
     ToolBar.Invalidate;
   end;
 end;
@@ -1003,7 +1025,6 @@ end;
 procedure TMainForm.ToolBarAdvancedCustomDraw(Sender: TToolBar;
   const ARect: TRect; Stage: TCustomDrawStage; var DefaultDraw: Boolean);
 var
-  OldBkMode: integer;
   TmpRect : TRect;
   OldStyle : TBrushStyle;
   LabelRect : TRect;

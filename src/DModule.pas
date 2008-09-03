@@ -679,6 +679,7 @@ end;
 
 procedure TDM.ClientChanged;
 begin
+  MainForm.CurrentUser := adtClients.FieldByName( 'Name').AsString; 
   MainForm.FreeChildForms;
   MainForm.SetOrdersInfo;
   DoPost(adtParams, True);
