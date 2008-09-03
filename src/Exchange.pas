@@ -187,8 +187,13 @@ begin
 	DM.ResetExclusive;
 	MainForm.Timer.Enabled := True;
 
-  //Сбрасываем флаг кумулятивного обновления, когда сделали успешное обновление
-	if Result and ((eaGetPrice in AExchangeActions) or (eaGetFullData in AExchangeActions))
+  //Сбрасываем флаг кумулятивного обновления, когда сделали успешное обновление,
+  //или импортирование данных. Т.е. либо мы получили обновление, либо скорректировали входные данные,
+  //что смогли их импортировать, либо получили свежую версию после установки новой программы и
+  //импортировали данные после замены exe-файла.  
+	if Result and
+    ((eaGetPrice in AExchangeActions) or (eaGetFullData in AExchangeActions)
+      or (eaImportOnly in AExchangeActions))
   then
     DM.ResetCumulative;
 
