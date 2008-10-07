@@ -662,8 +662,7 @@ begin
         MinOrderCount := OrdersForm.adsOrdersORDERSMINORDERCOUNT.AsVariant;
 
         SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
-        SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsInteger;
-        //if SynonymFirmCrCode = 0 then SynonymFirmCrCode := Null;
+        SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsVariant;
 
         with adsCore do begin
           ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;

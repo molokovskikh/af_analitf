@@ -541,7 +541,7 @@ begin
       MinOrderCount := DM.adsRepareOrdersMINORDERCOUNT.AsVariant;
 
 			SynonymCode := DM.adsRepareOrdersSYNONYMCODE.AsInteger;
-			SynonymFirmCrCode := DM.adsRepareOrdersSYNONYMFIRMCRCODE.AsInteger;
+			SynonymFirmCrCode := DM.adsRepareOrdersSYNONYMFIRMCRCODE.AsVariant;
       JUNK := DM.adsRepareOrdersJUNK.AsInteger;
       AWAIT := DM.adsRepareOrdersAWAIT.AsInteger;
 

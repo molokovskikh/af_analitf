@@ -921,7 +921,7 @@ begin
         //¬ыбираем минимального из всех прайсов
         DBProc.SetFilter(DM.adsOrderCore,
           'JUNK = ' + DM.adsOrderDetails.FieldByName( 'Junk').AsString +
-          ' and CodeFirmCr = ' + DM.adsOrderDetails.FieldByName( 'CodeFirmCr').AsString +
+          ' and CodeFirmCr = ' + IfThen(DM.adsOrderDetails.FieldByName( 'CodeFirmCr').IsNull, 'null', DM.adsOrderDetails.FieldByName( 'CodeFirmCr').AsString) +
           ' and ProductId = ' + DM.adsOrderDetails.FieldByName( 'ProductId').AsString);
 
         DM.adsOrderCore.First;
@@ -950,7 +950,7 @@ begin
         //¬ыбираем минимального из основных прайсов
         DBProc.SetFilter(DM.adsOrderCore,
           'JUNK = ' + DM.adsOrderDetails.FieldByName( 'Junk').AsString +
-          ' and CodeFirmCr = ' + DM.adsOrderDetails.FieldByName( 'CodeFirmCr').AsString +
+          ' and CodeFirmCr = ' + IfThen(DM.adsOrderDetails.FieldByName( 'CodeFirmCr').IsNull, 'null', DM.adsOrderDetails.FieldByName( 'CodeFirmCr').AsString) +
           ' and ProductId = ' + DM.adsOrderDetails.FieldByName( 'ProductId').AsString +
           ' and PriceEnabled = True');
 
