@@ -55,7 +55,7 @@ begin
   Synchronize(ClearProgress);
   try
     SleepCount := 0;
-    while not Terminated and (SleepCount < 30) do begin
+    while not Terminated and (SleepCount < 10) do begin
       Sleep(500);
       Inc(SleepCount);
     end;

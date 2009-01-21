@@ -236,7 +236,7 @@ begin
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
           //Запускаем нитку на отправку архивных заказов
-          CreateChildSendArhivedOrdersThread;
+          //CreateChildSendArhivedOrdersThread;
           DoSendOrders;
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 				end;
@@ -476,7 +476,7 @@ begin
     ChildThreads.Add(T);
   end;
 
-  CreateChildSendArhivedOrdersThread;
+  //CreateChildSendArhivedOrdersThread;
 end;
 
 procedure TExchangeThread.QueryData;

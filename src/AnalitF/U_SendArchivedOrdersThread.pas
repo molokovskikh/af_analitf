@@ -33,7 +33,7 @@ begin
   try
     //∆дем некоторое врем€ пока запустить процесс получени€ данных (15 сек)
     SleepCount := 0;
-    while not Terminated and (SleepCount < 30) do begin
+    while not Terminated and (SleepCount < 10) do begin
       Sleep(500);
       Inc(SleepCount);
     end;
