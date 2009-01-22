@@ -1,6 +1,6 @@
 object ChildForm: TChildForm
   Left = 380
-  Top = 339
+  Top = 324
   Align = alClient
   BorderIcons = []
   BorderStyle = bsNone

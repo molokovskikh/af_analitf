@@ -236,12 +236,7 @@ object ExchangeForm: TExchangeForm
   object HTTP: TIdHTTP
     OnStatus = HTTPStatus
     IOHandler = sslMain
-    MaxLineAction = maException
-    RecvBufferSize = 1024
-    SendBufferSize = 1024
-    AuthRetries = 6
     AllowCookies = True
-    HandleRedirects = True
     ProxyParams.BasicAuthentication = True
     ProxyParams.ProxyPassword = 'zcxvcb'
     ProxyParams.ProxyPort = 3128
@@ -249,23 +244,16 @@ object ExchangeForm: TExchangeForm
     ProxyParams.ProxyUsername = 'runer'
     Request.Connection = 'keep-alive'
     Request.ContentLength = -1
-    Request.ContentRangeEnd = 0
-    Request.ContentRangeStart = 0
     Request.ContentType = 'text/html'
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = True
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    HTTPOptions = [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams]
+    HTTPOptions = [hoForceEncodeParams]
     Left = 360
   end
   object HTTPReclame: TIdHTTP
     IOHandler = sslReclame
-    MaxLineAction = maException
-    RecvBufferSize = 1024
-    SendBufferSize = 1024
-    AuthRetries = 6
     AllowCookies = True
-    HandleRedirects = True
     ProxyParams.BasicAuthentication = True
     ProxyParams.ProxyPassword = 'zcxvcb'
     ProxyParams.ProxyPort = 3128
@@ -273,16 +261,17 @@ object ExchangeForm: TExchangeForm
     ProxyParams.ProxyUsername = 'runer'
     Request.Connection = 'keep-alive'
     Request.ContentLength = -1
-    Request.ContentRangeEnd = 0
-    Request.ContentRangeStart = 0
     Request.ContentType = 'text/html'
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = True
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    HTTPOptions = [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams]
+    HTTPOptions = [hoForceEncodeParams]
     Left = 264
   end
-  object sslMain: TIdSSLIOHandlerSocket
+  object sslMain: TIdSSLIOHandlerSocketOpenSSL
+    MaxLineAction = maException
+    Port = 0
+    DefaultPort = 0
     SSLOptions.Method = sslvSSLv3
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
@@ -290,7 +279,10 @@ object ExchangeForm: TExchangeForm
     Left = 336
     Top = 40
   end
-  object sslReclame: TIdSSLIOHandlerSocket
+  object sslReclame: TIdSSLIOHandlerSocketOpenSSL
+    MaxLineAction = maException
+    Port = 0
+    DefaultPort = 0
     SSLOptions.Method = sslvSSLv3
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
@@ -300,12 +292,7 @@ object ExchangeForm: TExchangeForm
   end
   object httpReceive: TIdHTTP
     IOHandler = sslReceive
-    MaxLineAction = maException
-    RecvBufferSize = 1024
-    SendBufferSize = 1024
-    AuthRetries = 6
     AllowCookies = True
-    HandleRedirects = True
     ProxyParams.BasicAuthentication = True
     ProxyParams.ProxyPassword = 'zcxvcb'
     ProxyParams.ProxyPort = 3128
@@ -313,17 +300,18 @@ object ExchangeForm: TExchangeForm
     ProxyParams.ProxyUsername = 'runer'
     Request.Connection = 'keep-alive'
     Request.ContentLength = -1
-    Request.ContentRangeEnd = 0
-    Request.ContentRangeStart = 0
     Request.ContentType = 'text/html'
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = True
     Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    HTTPOptions = [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams]
+    HTTPOptions = [hoForceEncodeParams]
     Left = 304
     Top = 64
   end
-  object sslReceive: TIdSSLIOHandlerSocket
+  object sslReceive: TIdSSLIOHandlerSocketOpenSSL
+    MaxLineAction = maException
+    Port = 0
+    DefaultPort = 0
     SSLOptions.Method = sslvSSLv3
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []

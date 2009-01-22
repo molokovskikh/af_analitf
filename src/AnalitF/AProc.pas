@@ -83,7 +83,7 @@ procedure InternalDoSendLetter(
   Subject, Body : String); //Тема письма и тело письма
 function  GetLibraryVersionFromAppPath : TObjectList;
 //устанавливаем параметры для SSL-соединения
-procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocket);
+procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocketOpenSSL);
 //Получить для файла Hash MD5
 function GetFileHash(AFileName: String): String;
 function StringToCodes( AStr: string): string;
@@ -95,7 +95,7 @@ implementation
 
 uses
   IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest,
-  U_ExchangeLog;
+  U_ExchangeLog, IdHash;
 
 var
   FSilentMode : Boolean;
@@ -761,7 +761,7 @@ begin
   end;
 end;
 
-procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocket);
+procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocketOpenSSL);
 begin
   SSL.SSLOptions.Method := sslvSSLv3;
   SSL.SSLOptions.Mode := sslmUnassigned;
@@ -780,7 +780,7 @@ begin
 
       fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
       try
-        Result := md5.AsHex( md5.HashValue(fs) );
+        Result := md5.HashStreamAsHex( fs );
       finally
         fs.Free;
       end;

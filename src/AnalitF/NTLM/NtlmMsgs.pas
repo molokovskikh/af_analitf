@@ -88,7 +88,7 @@ type
 implementation
 
 uses
-  IdHash, IdHashMessageDigest;
+  IdGlobal, IdHash, IdHashMessageDigest;
 
 { TNTLM }
 function TNTLM.GetMensaje1(AHost, ADomain: String): String;
@@ -232,7 +232,7 @@ begin
   
     md4 := TIdHashMessageDigest4.Create;
     try
-      PassHash := HashAsString( md4.HashValue(Pass) ) + #0#0#0#0#0;
+      PassHash := BytesToString( md4.HashString(Pass)) + #0#0#0#0#0;
     finally
       md4.Free;
     end;

@@ -172,6 +172,6 @@ begin
 end;
 
 initialization
-  RegisterAuthenticationMethod('NTLM', TDADNTLMAuthentication);    {do not localize}
+  //RegisterAuthenticationMethod('NTLM', TDADNTLMAuthentication);    {do not localize}
 end.
 

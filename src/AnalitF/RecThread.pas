@@ -3,7 +3,7 @@ unit RecThread;
 interface
 
 uses Classes, SysUtils, IdException, WinSock, IdComponent, IdHTTP, Math, SOAPThroughHTTP,
-  IdStackConsts, StrUtils, DADAuthenticationNTLM, U_RecvThread;
+  IdStackConsts, StrUtils, DADAuthenticationNTLM, U_RecvThread, IdStack;
 
 type
   TReclameThread = class(TReceiveThread)
@@ -17,7 +17,7 @@ type
     procedure UpdateProgress;
     procedure HTTPReclameWork(Sender: TObject;
       AWorkMode: TWorkMode;
-	    const AWorkCount: Integer);
+	    AWorkCount: Int64);
     procedure UpdateReclameTable;
    protected
     procedure Execute; override;
@@ -46,7 +46,6 @@ var
   NewReclame : Boolean;
   ZipFileName : String;
   SevenZipRes : Integer;
-  OldReconnectCount : Integer;
   ErrorCount : Integer;
   PostSuccess : Boolean;
   SleepCount : Integer;
@@ -97,8 +96,6 @@ begin
 
             if Terminated then Abort;
 
-            OldReconnectCount := ReceiveHTTP.ReconnectCount;
-            ReceiveHTTP.ReconnectCount := 0;
             ReceiveHTTP.Request.BasicAuthentication := True;
             ReceiveHTTP.OnWork := HTTPReclameWork;
             Log('Reclame', 'ѕытаемс€ скачать архив с рекламным блоком...');
@@ -155,7 +152,6 @@ begin
               until (PostSuccess);
 
             finally
-              ReceiveHTTP.ReconnectCount := OldReconnectCount;
               ReceiveHTTP.OnWork := nil;
             end;
 
@@ -223,7 +219,7 @@ begin
 end;
 
 procedure TReclameThread.HTTPReclameWork(Sender: TObject;
-  AWorkMode: TWorkMode; const AWorkCount: Integer);
+  AWorkMode: TWorkMode; AWorkCount: Int64);
 var
 	Total, Current: real;
 	TSuffix, CSuffix: string;

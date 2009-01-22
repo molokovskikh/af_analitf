@@ -28,14 +28,16 @@ const
   //Строка для шифрации паролей
   PassPassW = 'sh' + #90 + 'kjw' + #10 + 'h';
   //Список критических библиотек
-  CriticalLibraryHashes : array[0..16] of array[0..4] of string =
+  CriticalLibraryHashes : array[0..18] of array[0..4] of string =
   (
       ('dbrtl70.bpl', '0650B08C', '583E1038', '5F35A236', '6DD703FA'),
       ('designide70.bpl', 'F16F1849', 'E4827C1D', 'C4FD04B9', '968D63F9'),
       ('EhLib70.bpl', '10FCCB4D', '5DE0A836', 'CCBC83EC', 'B5A52ACC'),
       ('FIBPlus7.bpl', '93C1BA38', '07A95850', '3E51729A', '30003797'),
       ('fr7.bpl', 'F7516F76', '2191B5F2', '43975BC8', '5602F31A'),
-      ('Indy70.bpl', '1E271033', 'BD6CE031', '6F82664D', '1111221B'),
+      ('IndySystem70.bpl', 'F10B27ED', 'B8E3BE27', '66042960', '8FC2AF12'),
+      ('IndyCore70.bpl', '12A2BB12', 'AEA739A4', '4E08CED3', '771EBF60'),
+      ('IndyProtocols70.bpl', '2941685C', 'B2BFBA12', '7A42BD1C', 'ED939D35'),
       ('rtl70.bpl', 'E4E90D2F', 'C6C35486', '68351583', '3D4ECB44'),
       ('tee70.bpl', '0AADB9CB', '5EE4338D', '61BA4EA3', 'A9E6098C'),
       ('Tough.bpl', '37D3BB15', '2C5BB401', 'BFEC91D6', '5AA3C24B'),
@@ -46,11 +48,9 @@ const
       ('vcljpg70.bpl', '334355C1', '34EDB2AE', '88BC6505', '9AB7B17E'),
       ('vclsmp70.bpl', 'D7B49DA9', '80884F53', 'C3D78E1E', '853B02E4'),
       ('vclx70.bpl', 'E12C66FF', 'D510C787', '31D5400E', 'DDECD8C8'),
-      ('libeay32.dll', '66CB9170', 'A505A6E0', '39877EEC', '976C7931'),
-      ('ssleay32.dll', 'ECDEB2FD', '0ED62E52', '20592768', '0F98E2E3')
+      ('libeay32.dll', '791361C0', '65BF50F4', '309A59E3', '27DBC261'),
+      ('ssleay32.dll', '6E56CDE5', 'CA285535', '3FEDAFE7', 'CABB4B58')
   );
-
-//Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source=AnalitF.mdb;Persist Security Info=False;Jet OLEDB:Registry Path="";Jet OLEDB:Database Password=commonpas;Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False
 
 type
   //способ вычисления разницы в цены от другого поставщика
@@ -1920,7 +1920,7 @@ begin
 
     fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
     try
-      Result := md5.AsHex( md5.HashValue(fs) );
+      Result := md5.HashStreamAsHex(fs);
     finally
       fs.Free;
     end;
@@ -3103,14 +3103,9 @@ begin
     SetHTTP.Request.ProxyConnection := '';
 	end;
 	SetHTTP.Request.Username := adtParams.FieldByName( 'HTTPName').AsString;
-	SetHTTP.Port := adtParams.FieldByName( 'HTTPPort').AsInteger;
-	SetHTTP.Host := ExtractURL( adtParams.FieldByName( 'HTTPHost').AsString);
   SetHTTP.AllowCookies := True;
-  SetHTTP.HandleRedirects := True;
-  SetHTTP.HTTPOptions := [hoInProcessAuth, hoKeepOrigProtocol, hoForceEncodeParams];
-  SetHTTP.MaxLineAction := maException;
-  SetHTTP.RecvBufferSize := 1024;
-  SetHTTP.SendBufferSize := 1024;
+  SetHTTP.HandleRedirects := False;
+  SetHTTP.HTTPOptions := [hoForceEncodeParams];
 	SetHTTP.ReadTimeout := 0; // Без тайм-аута
 	SetHTTP.ConnectTimeout := -2; // Без тайм-аута
   SetHTTP.Request.Accept := 'text/html, */*';

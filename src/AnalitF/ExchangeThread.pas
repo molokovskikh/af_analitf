@@ -9,7 +9,7 @@ uses
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
-  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread;
+  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack;
 
 const
   //Критические сообщения об ошибках при отправке заказов
@@ -146,7 +146,7 @@ private
   //"Молчаливое" выполнение запроса изменения метаданных.
   //Не вызывает исключение в случае ошибки -607
   procedure SilentExecute(q : TpFIBQuery; SQL : String);
-  procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; const AWorkCount: Integer);
+  procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
   procedure ThreadOnBatching(BatchOperation:TBatchOperation;RecNumber:integer;var BatchAction:TBatchAction);
   procedure ThreadOnExecuteError(pFIBQuery:TpFIBQuery; E:EFIBError; var Action:TDataAction);
   //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
@@ -235,8 +235,6 @@ begin
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-          //Запускаем нитку на отправку архивных заказов
-          //CreateChildSendArhivedOrdersThread;
           DoSendOrders;
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 				end;
@@ -476,7 +474,7 @@ begin
     ChildThreads.Add(T);
   end;
 
-  //CreateChildSendArhivedOrdersThread;
+  CreateChildSendArhivedOrdersThread;
 end;
 
 procedure TExchangeThread.QueryData;
@@ -586,7 +584,6 @@ procedure TExchangeThread.DoExchange;
 const
   FReconnectCount = 10;
 var
-  OldReconnectCount : Integer;
   ErrorCount : Integer;
   PostSuccess : Boolean;
 begin
@@ -618,9 +615,7 @@ begin
     end;
 
 		try
-      OldReconnectCount := ExchangeForm.HTTP.ReconnectCount;
       ExchangeForm.HTTP.OnWork := HTTPWork;
-      ExchangeForm.HTTP.ReconnectCount := 0;
       ExchangeForm.HTTP.Request.BasicAuthentication := True;
 
       Progress := 0;
@@ -679,7 +674,6 @@ begin
         until (PostSuccess);
 
       finally
-        ExchangeForm.HTTP.ReconnectCount := OldReconnectCount;
         ExchangeForm.HTTP.OnWork := nil;
         ExchangeForm.HTTP.OnWorkBegin := nil;
       end;
@@ -2119,7 +2113,7 @@ begin
 end;
 
 procedure TExchangeThread.HTTPWork(Sender: TObject; AWorkMode: TWorkMode;
-  const AWorkCount: Integer);
+  AWorkCount: Int64);
 var
 	Total, Current: real;
 	TSuffix, CSuffix: string;

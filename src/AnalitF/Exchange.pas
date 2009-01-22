@@ -8,7 +8,8 @@ uses
   Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
-  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet, Contnrs;
+  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet, Contnrs,
+  IdIOHandlerStack, IdSSL;
 
 type
   TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate, eaGetWaybills, eaSendLetter);
@@ -34,10 +35,10 @@ type
     gbReclame: TGroupBox;
     ReclameBar: TProgressBar;
     lReclameStatus: TLabel;
-    sslMain: TIdSSLIOHandlerSocket;
-    sslReclame: TIdSSLIOHandlerSocket;
+    sslMain: TIdSSLIOHandlerSocketOpenSSL;
+    sslReclame: TIdSSLIOHandlerSocketOpenSSL;
     httpReceive: TIdHTTP;
-    sslReceive: TIdSSLIOHandlerSocket;
+    sslReceive: TIdSSLIOHandlerSocketOpenSSL;
     procedure RasStateChange(Sender: TObject; State: Integer;
       StateStr: String);
     procedure TimerTimer(Sender: TObject);

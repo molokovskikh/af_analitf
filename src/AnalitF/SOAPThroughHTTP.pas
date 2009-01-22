@@ -2,7 +2,8 @@ unit SOAPThroughHTTP;
 
 interface
 
-uses IdHTTP, IdIntercept, SysUtils, StrUtils, Classes, IdException, WinSock, IdURI;
+uses IdHTTP, IdIntercept, SysUtils, StrUtils, Classes, IdException, WinSock, IdURI,
+  IdGlobal, IdStack, IdStackConsts;
 
 const
 	INVOKE_RESPONSE	= 'Invoke Response';
@@ -36,8 +37,10 @@ private
 	FTmpIntercept: TIdConnectionIntercept;
 
 	function ExtractHost( AURL: string): string;
-	procedure OnReceive( ASender: TIdConnectionIntercept; AStream: TStream);
+	procedure OnReceive( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
   procedure OnReconnectError(E : EIdException);
+  //Производим POST несколько раз, если возникают ошибки сети
+  procedure DoPost(AFullURL : String; AList : TStringList);
 end;
 
 implementation
@@ -64,14 +67,12 @@ begin
 	begin
 		FExternalHTTP := False;
 		FHTTP := TIdHTTP.Create( nil);
-		FHTTP.Host := ExtractHost( AURL);
 	end;
 	FURL := AURL;
 	FConcat := False;
 	FIntercept := TIdConnectionIntercept.Create( nil);
 	FIntercept.OnReceive := OnReceive;
 	FHTTP.Intercept := FIntercept;
-//	FHTTP.HTTPOptions := [];
 	FHTTP.Request.BasicAuthentication := True;
 	FHTTP.Request.Host := ExtractHost( AURL);
 	FHTTP.Request.Password := APassword;
@@ -89,6 +90,58 @@ begin
 		FHTTP.HTTPOptions := FHTTPOptions;
 	end;
   FIntercept.Free;
+end;
+
+procedure TSOAP.DoPost(AFullURL: String; AList: TStringList);
+const
+  FReconnectCount = 10;
+var
+  ErrorCount : Integer;
+  PostSuccess : Boolean;
+begin
+  ErrorCount := 0;
+  PostSuccess := False;
+  repeat
+    try
+
+      FHTTP.Post( AFullURL, AList);
+      
+      PostSuccess := True;
+
+    except
+      on E : EIdConnClosedGracefully do begin
+        if (ErrorCount < FReconnectCount) then begin
+          if FHTTP.Connected then
+            try
+              FHTTP.Disconnect;
+            except
+            end;
+          Inc(ErrorCount);
+          OnReconnectError(E);
+          Sleep(100);
+        end
+        else
+          raise;
+      end;
+      on E : EIdSocketError do begin
+        if (ErrorCount < FReconnectCount) and
+          ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
+            or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
+        then begin
+          if FHTTP.Connected then
+            try
+              FHTTP.Disconnect;
+            except
+            end;
+          Inc(ErrorCount);
+          OnReconnectError(E);
+          Sleep(100);
+        end
+        else
+          raise;
+      end;
+    end;
+  until (PostSuccess);
 end;
 
 function TSOAP.ExtractHost( AURL: string): string;
@@ -118,14 +171,15 @@ begin
   Result := FQueryResults;
 end;
 
-procedure TSOAP.OnReceive( ASender: TIdConnectionIntercept; AStream: TStream);
+procedure TSOAP.OnReceive( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
 var
-	ss: TStringStream;
+  RecieveString : String;
 begin
-	ss := TStringStream.Create( '');
-	ss.CopyFrom( AStream, AStream.Size);
-	if FConcat then FResponse := FResponse + ss.DataString;
-	ss.Free;
+  RecieveString := BytesToString(ABuffer);
+{$ifdef DEBUG}
+  WriteExchangeLog('TSOAP.OnReceive:' + FHTTP.Name, RecieveString);
+{$endif}
+	if FConcat then FResponse := FResponse + RecieveString;
 end;
 
 procedure TSOAP.OnReconnectError(E: EIdException);
@@ -164,12 +218,7 @@ begin
 	FConcat := True;
 	try
 
-    FHTTP.OnReconnectError := OnReconnectError;
-    try
-      FHTTP.Post( FullURL, list);
-    finally
-      FHTTP.OnReconnectError := nil;
-    end;
+    DoPost(FullURL, list);
 
 	except
 		on E: Exception do
