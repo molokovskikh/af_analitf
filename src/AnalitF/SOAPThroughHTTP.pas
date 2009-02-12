@@ -177,7 +177,7 @@ var
 begin
   RecieveString := BytesToString(ABuffer);
 {$ifdef DEBUG}
-  WriteExchangeLog('TSOAP.OnReceive:' + FHTTP.Name, RecieveString);
+  //WriteExchangeLog('TSOAP.OnReceive:' + FHTTP.Name, RecieveString);
 {$endif}
 	if FConcat then FResponse := FResponse + RecieveString;
 end;

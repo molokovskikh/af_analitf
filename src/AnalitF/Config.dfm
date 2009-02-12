@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshOther
+    ActivePage = tshAuth
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet

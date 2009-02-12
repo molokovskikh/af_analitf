@@ -1697,7 +1697,20 @@ begin
 	Synchronize( SetStatus);
 
 	SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; ExecQuery;
-	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; ExecQuery;
+{
+Вместо запроса используем хранимую процедуру следующего содержания:
+CREATE OR ALTER PROCEDURE UPDATECOREEXISTS 
+as
+declare variable catalogfullcode bigint;
+begin
+  for select p.catalogid from core c, products p where c.productid = p.productid
+    into :catalogFullCode
+  do
+    update catalogs set CoreExists = 1 where FullCode = :catalogFullCode;
+end^
+}
+	//SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; ExecQuery;
+	SQL.Text := 'EXECUTE PROCEDURE UPDATECOREEXISTS'; ExecQuery;
 	Progress := 65;
 	Synchronize( SetProgress);
   DM.adtParams.CloseOpen(True);
