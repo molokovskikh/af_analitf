@@ -447,10 +447,10 @@ end;
 
 procedure TCoreFirmForm.OrderCalc;
 begin
-  OrderCount := DM.MainConnection1.QueryValue('SELECT count(*) FROM Orders, ordersh WHERE ' +
+  OrderCount := DM.MyConnection.ExecSQL('SELECT count(*) FROM Orders, ordersh WHERE ' +
     'ordersh.PriceCode = :PriceCode and ordersh.regioncode = :RegionCode ' +
     'and Orders.OrderId = ordersh.orderid and ordersh.closed = 0 ' +
-    'AND Orders.OrderCount>0', 0, [PriceCode, RegionCode]);
+    'AND Orders.OrderCount>0', [PriceCode, RegionCode]);
 	OrderSum :=DM.FindOrderInfo(PriceCode, RegionCode).Summ;
 end;
 
@@ -473,21 +473,14 @@ begin
   adsCore.DisableControls;
   Screen.Cursor:=crHourGlass;
   try
-    DM.adcUpdate.Transaction.StartTransaction;
-    try
-      with DM.adcUpdate do begin
-        //удаляем сохраненную заявку (если есть)
-        SQL.Text:=Format( 'EXECUTE PROCEDURE OrdersHDeleteNotClosed(:ACLIENTID, :APRICECODE, :AREGIONCODE)',
-          [DM.adtClients.FieldByName('ClientId').AsInteger,PriceCode,RegionCode]);
-        ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
-        ParamByName('APRICECODE').Value := PriceCode;
-        ParamByName('AREGIONCODE').Value := RegionCode;
-        ExecQuery;
-      end;
-      DM.adcUpdate.Transaction.Commit;
-    except
-      DM.adcUpdate.Transaction.Rollback;
-      raise;
+    with DM.adcUpdate do begin
+      //удаляем сохраненную заявку (если есть)
+      SQL.Text:=Format( 'EXECUTE PROCEDURE OrdersHDeleteNotClosed(:ACLIENTID, :APRICECODE, :AREGIONCODE)',
+        [DM.adtClients.FieldByName('ClientId').AsInteger,PriceCode,RegionCode]);
+      ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
+      ParamByName('APRICECODE').Value := PriceCode;
+      ParamByName('AREGIONCODE').Value := RegionCode;
+      Execute;
     end;
   finally
     adsCore.EnableControls;
@@ -496,7 +489,7 @@ begin
     OrderCount := 0;
     OrderSum := 0;
   	SetOrderLabel;
-    DM.InitAllSumOrder;
+    //DM.InitAllSumOrder;
     MainForm.SetOrdersInfo;
   end;
   dbgCore.SetFocus;

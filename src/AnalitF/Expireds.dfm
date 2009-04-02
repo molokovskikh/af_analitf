@@ -331,7 +331,6 @@ inherited ExpiredsForm: TExpiredsForm
     BeforeEdit = adsExpiredsBeforeEdit
     BeforePost = adsExpireds2BeforePost
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 128
@@ -587,7 +586,6 @@ inherited ExpiredsForm: TExpiredsForm
       '  ClientCode = :ACLIENTID'
       'and ProductId = :ProductId')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     DataSource = dsExpireds
     Left = 312
     Top = 152

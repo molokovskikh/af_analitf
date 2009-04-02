@@ -17,21 +17,16 @@ object DM: TDM
   object dsParams: TDataSource
     DataSet = adtParams
     Left = 48
-    Top = 272
+    Top = 280
   end
   object dsAnalit: TDataSource
-    DataSet = adtProvider
-    Left = 112
+    DataSet = adtParams
+    Left = 120
     Top = 272
   end
   object dsClients: TDataSource
     DataSet = adtClients
     Left = 280
-    Top = 272
-  end
-  object dsTablesUpdates: TDataSource
-    DataSet = adtTablesUpdates
-    Left = 360
     Top = 272
   end
   object Ras: TARas
@@ -109,12 +104,7 @@ object DM: TDM
     Left = 576
     Top = 488
   end
-  object dsReclame: TDataSource
-    DataSet = adtReclame
-    Left = 200
-    Top = 272
-  end
-  object MainConnection1: TpFIBDatabase
+  object MainConnectionOld: TpFIBDatabase
     DBName = 
       'localhost:C:\Work\Analit\VSS\Inforoom\Delphi\AnalitF R 4.2.151.4' +
       '70\src\bin\ANALITF.FDB'
@@ -130,12 +120,12 @@ object DM: TDM
     DesignDBOptions = []
     LibraryName = 'fbclient.dll'
     WaitForRestoreConnect = 0
-    AfterConnect = MainConnection1AfterConnect
+    AfterConnect = MainConnectionOldAfterConnect
     Left = 32
     Top = 168
   end
   object DefTran: TpFIBTransaction
-    DefaultDatabase = MainConnection1
+    DefaultDatabase = MainConnectionOld
     TimeoutAction = TARollback
     TRParams.Strings = (
       'read'
@@ -145,7 +135,7 @@ object DM: TDM
     Left = 88
     Top = 168
   end
-  object adtParams: TpFIBDataSet
+  object adtParamsOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'UPDATE PARAMS'
       'SET '
@@ -203,7 +193,7 @@ object DM: TDM
     SelectSQL.Strings = (
       'select * from Params where ID = 0')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 48
@@ -211,52 +201,7 @@ object DM: TDM
     oTrimCharFields = False
     oCacheCalcFields = True
   end
-  object adtProvider: TpFIBDataSet
-    UpdateSQL.Strings = (
-      'UPDATE PROVIDER'
-      'SET '
-      '    NAME = :NAME,'
-      '    ADDRESS = :ADDRESS,'
-      '    PHONES = :PHONES,'
-      '    EMAIL = :EMAIL,'
-      '    WEB = :WEB,'
-      '    MDBVERSION = :MDBVERSION'
-      'WHERE'
-      '    ID = :OLD_ID'
-      '    ')
-    SelectSQL.Strings = (
-      'select * from Provider where ID = 0')
-    Transaction = DefTran
-    Database = MainConnection1
-    UpdateTransaction = UpTran
-    AutoCommit = True
-    Left = 112
-    Top = 216
-    oCacheCalcFields = True
-  end
-  object adtReclame: TpFIBDataSet
-    UpdateSQL.Strings = (
-      'UPDATE RECLAME'
-      'SET '
-      '    UPDATEDATETIME = :UPDATEDATETIME'
-      'WHERE'
-      '    RECLAMEURL = :RECLAMEURL'
-      '    ')
-    SelectSQL.Strings = (
-      'SELECT'
-      '    RECLAMEURL,'
-      '    UPDATEDATETIME'
-      'FROM'
-      '    RECLAME ')
-    Transaction = DefTran
-    Database = MainConnection1
-    UpdateTransaction = UpTran
-    AutoCommit = True
-    Left = 200
-    Top = 216
-    oCacheCalcFields = True
-  end
-  object adtClients: TpFIBDataSet
+  object adtClientsOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'UPDATE CLIENTS'
       'SET '
@@ -333,162 +278,66 @@ object DM: TDM
       ' ONLYLEADERS'
       'FROM'
       ' CLIENTS ')
-    AfterOpen = adtClientsAfterOpen
+    AfterOpen = adtClientsOldAfterOpen
     AllowedUpdateKinds = [ukModify]
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 280
     Top = 216
     oCacheCalcFields = True
     oFetchAll = True
-    object adtClientsCLIENTID: TFIBBCDField
+    object adtClientsOldCLIENTID: TFIBBCDField
       FieldName = 'CLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adtClientsNAME: TFIBStringField
+    object adtClientsOldNAME: TFIBStringField
       FieldName = 'NAME'
       Size = 50
       EmptyStrToNull = True
     end
-    object adtClientsREGIONCODE: TFIBBCDField
+    object adtClientsOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adtClientsEXCESS: TFIBIntegerField
+    object adtClientsOldEXCESS: TFIBIntegerField
       FieldName = 'EXCESS'
     end
-    object adtClientsDELTAMODE: TFIBSmallIntField
+    object adtClientsOldDELTAMODE: TFIBSmallIntField
       FieldName = 'DELTAMODE'
     end
-    object adtClientsMAXUSERS: TFIBIntegerField
+    object adtClientsOldMAXUSERS: TFIBIntegerField
       FieldName = 'MAXUSERS'
     end
-    object adtClientsREQMASK: TFIBBCDField
+    object adtClientsOldREQMASK: TFIBBCDField
       FieldName = 'REQMASK'
       Size = 0
       RoundByScale = True
     end
-    object adtClientsTECHSUPPORT: TFIBStringField
+    object adtClientsOldTECHSUPPORT: TFIBStringField
       FieldName = 'TECHSUPPORT'
       Size = 255
       EmptyStrToNull = True
     end
-    object adtClientsCALCULATELEADER: TFIBBooleanField
+    object adtClientsOldCALCULATELEADER: TFIBBooleanField
       FieldName = 'CALCULATELEADER'
     end
-    object adtClientsONLYLEADERS: TFIBBooleanField
+    object adtClientsOldONLYLEADERS: TFIBBooleanField
       FieldName = 'ONLYLEADERS'
     end
   end
-  object adtTablesUpdates: TpFIBDataSet
-    UpdateSQL.Strings = (
-      'UPDATE TABLESUPDATES'
-      'SET '
-      '    UPDATEDATE = :UPDATEDATE'
-      'WHERE'
-      '    TABLENAME = :OLD_TABLENAME'
-      '    ')
-    DeleteSQL.Strings = (
-      'DELETE FROM'
-      '    TABLESUPDATES'
-      'WHERE'
-      '        TABLENAME = :OLD_TABLENAME'
-      '    ')
-    InsertSQL.Strings = (
-      'INSERT INTO TABLESUPDATES('
-      '    tablename,'
-      '    UPDATEDATE'
-      ')'
-      'VALUES('
-      '    :tablename'
-      '    :UPDATEDATE'
-      ')')
-    RefreshSQL.Strings = (
-      'SELECT'
-      '    TABLENAME,'
-      '    UPDATEDATE'
-      'FROM'
-      '    TABLESUPDATES '
-      ' WHERE '
-      '        TABLESUPDATES.TABLENAME = :OLD_TABLENAME'
-      '    ')
-    SelectSQL.Strings = (
-      'SELECT'
-      '    TABLENAME,'
-      '    UPDATEDATE'
-      'FROM'
-      '    TABLESUPDATES ')
-    Transaction = DefTran
-    Database = MainConnection1
-    UpdateTransaction = UpTran
-    AutoCommit = True
-    Left = 360
-    Top = 216
-    oCacheCalcFields = True
-  end
-  object adtFlags: TpFIBDataSet
-    UpdateSQL.Strings = (
-      'UPDATE FLAGS'
-      'SET '
-      '    COMPUTERNAME = :COMPUTERNAME,'
-      '    EXCLUSIVEID = :EXCLUSIVEID'
-      'WHERE'
-      '    ID = :OLD_ID'
-      '    ')
-    DeleteSQL.Strings = (
-      'DELETE FROM'
-      '    FLAGS'
-      'WHERE'
-      '        ID = :OLD_ID'
-      '    ')
-    InsertSQL.Strings = (
-      'INSERT INTO FLAGS('
-      '    COMPUTERNAME,'
-      '    EXCLUSIVEID'
-      ')'
-      'VALUES('
-      '    :COMPUTERNAME,'
-      '    :EXCLUSIVEID'
-      ')')
-    RefreshSQL.Strings = (
-      'SELECT'
-      '    id,'
-      '    COMPUTERNAME,'
-      '    EXCLUSIVEID'
-      'FROM'
-      '    FLAGS '
-      'where '
-      '  ID = 0')
-    SelectSQL.Strings = (
-      'SELECT'
-      '    id,'
-      '    COMPUTERNAME,'
-      '    EXCLUSIVEID'
-      'FROM'
-      '    FLAGS '
-      'where'
-      '  ID = 0')
-    Transaction = DefTran
-    Database = MainConnection1
-    UpdateTransaction = UpTran
-    AutoCommit = True
-    Left = 448
-    Top = 216
-    oCacheCalcFields = True
-  end
-  object adcUpdate: TpFIBQuery
+  object adcUpdateOld: TpFIBQuery
     Transaction = UpTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     Left = 536
-    Top = 216
+    Top = 192
   end
-  object adsSelect: TpFIBDataSet
+  object adsSelectOld: TpFIBDataSet
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 600
     Top = 216
@@ -496,7 +345,7 @@ object DM: TDM
   end
   object adsSelect2: TpFIBDataSet
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 664
     Top = 216
@@ -542,7 +391,7 @@ object DM: TDM
       'WHERE '
       '  (OrderCount>0)')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 752
@@ -718,7 +567,7 @@ object DM: TDM
       'and CCore.AWAIT = :AWAIT'
       'and CCore.JUNK = :JUNK')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 240
     Top = 344
@@ -981,7 +830,7 @@ object DM: TDM
       'where'
       '  Send = :ASend')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 48
     Top = 344
@@ -1030,7 +879,7 @@ object DM: TDM
       'AND (Orders.OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 144
     Top = 344
@@ -1181,7 +1030,7 @@ object DM: TDM
   end
   object t: TpFIBQuery
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     SQL.Strings = (
       'select distinct c.Pricecode'
       '    from'
@@ -1199,12 +1048,12 @@ object DM: TDM
     Top = 344
   end
   object UpTran: TpFIBTransaction
-    DefaultDatabase = MainConnection1
+    DefaultDatabase = MainConnectionOld
     TimeoutAction = TACommit
     Left = 144
     Top = 168
   end
-  object adsRetailMargins: TpFIBDataSet
+  object adsRetailMarginsOld: TpFIBDataSet
     CachedUpdates = True
     UpdateSQL.Strings = (
       'UPDATE RETAILMARGINS'
@@ -1253,34 +1102,34 @@ object DM: TDM
       '    RETAILMARGINS'
       'order by LEFTLIMIT ')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 128
     Top = 400
     oCacheCalcFields = True
-    object adsRetailMarginsID: TFIBBCDField
+    object adsRetailMarginsOldID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
       RoundByScale = True
     end
-    object adsRetailMarginsLEFTLIMIT: TFIBBCDField
+    object adsRetailMarginsOldLEFTLIMIT: TFIBBCDField
       FieldName = 'LEFTLIMIT'
       Required = True
-      OnChange = adsRetailMarginsLEFTLIMITChange
+      OnChange = adsRetailMarginsOldLEFTLIMITChange
       DisplayFormat = '0.00;;'
       Size = 4
       RoundByScale = True
     end
-    object adsRetailMarginsRIGHTLIMIT: TFIBBCDField
+    object adsRetailMarginsOldRIGHTLIMIT: TFIBBCDField
       FieldName = 'RIGHTLIMIT'
       Required = True
-      OnChange = adsRetailMarginsLEFTLIMITChange
+      OnChange = adsRetailMarginsOldLEFTLIMITChange
       DisplayFormat = '0.00;;'
       Size = 4
       RoundByScale = True
     end
-    object adsRetailMarginsRETAIL: TFIBIntegerField
+    object adsRetailMarginsOldRETAIL: TFIBIntegerField
       FieldName = 'RETAIL'
       Required = True
       MaxValue = 100
@@ -1288,8 +1137,8 @@ object DM: TDM
   end
   object dsRetailMargins: TDataSource
     DataSet = adsRetailMargins
-    Left = 192
-    Top = 400
+    Left = 128
+    Top = 424
   end
   object adsSumOrders: TpFIBDataSet
     SelectSQL.Strings = (
@@ -1306,7 +1155,7 @@ object DM: TDM
       'and (oh.Closed <> 1)'
       'AND (ol.OrderCount > 0)')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 616
     Top = 272
@@ -1341,7 +1190,7 @@ object DM: TDM
       EmptyStrToNull = True
     end
   end
-  object adsPrices: TpFIBDataSet
+  object adsPricesOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    PRICECODE,'
@@ -1366,85 +1215,85 @@ object DM: TDM
       '    PRICESSHOW(:ACLIENTID,'
       '    :TIMEZONEBIAS) ')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 304
     Top = 344
     oCacheCalcFields = True
-    object adsPricesPRICECODE: TFIBBCDField
+    object adsPricesOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsPricesPRICENAME: TFIBStringField
+    object adsPricesOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsPricesDATEPRICE: TFIBDateTimeField
+    object adsPricesOldDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
     end
-    object adsPricesMINREQ: TFIBIntegerField
+    object adsPricesOldMINREQ: TFIBIntegerField
       FieldName = 'MINREQ'
     end
-    object adsPricesENABLED: TFIBIntegerField
+    object adsPricesOldENABLED: TFIBIntegerField
       FieldName = 'ENABLED'
     end
-    object adsPricesPRICEINFO: TFIBMemoField
+    object adsPricesOldPRICEINFO: TFIBMemoField
       FieldName = 'PRICEINFO'
       BlobType = ftMemo
       Size = 8
     end
-    object adsPricesFIRMCODE: TFIBBCDField
+    object adsPricesOldFIRMCODE: TFIBBCDField
       FieldName = 'FIRMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsPricesFULLNAME: TFIBStringField
+    object adsPricesOldFULLNAME: TFIBStringField
       FieldName = 'FULLNAME'
       Size = 40
       EmptyStrToNull = True
     end
-    object adsPricesSTORAGE: TFIBIntegerField
+    object adsPricesOldSTORAGE: TFIBIntegerField
       FieldName = 'STORAGE'
     end
-    object adsPricesADMINMAIL: TFIBStringField
+    object adsPricesOldADMINMAIL: TFIBStringField
       FieldName = 'ADMINMAIL'
       Size = 50
       EmptyStrToNull = True
     end
-    object adsPricesSUPPORTPHONE: TFIBStringField
+    object adsPricesOldSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
       EmptyStrToNull = True
     end
-    object adsPricesCONTACTINFO: TFIBMemoField
+    object adsPricesOldCONTACTINFO: TFIBMemoField
       FieldName = 'CONTACTINFO'
       BlobType = ftMemo
       Size = 8
     end
-    object adsPricesOPERATIVEINFO: TFIBMemoField
+    object adsPricesOldOPERATIVEINFO: TFIBMemoField
       FieldName = 'OPERATIVEINFO'
       BlobType = ftMemo
       Size = 8
     end
-    object adsPricesREGIONCODE: TFIBBCDField
+    object adsPricesOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsPricesREGIONNAME: TFIBStringField
+    object adsPricesOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsPricesPOSITIONS: TFIBIntegerField
+    object adsPricesOldPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
-    object adsPricesPRICESIZE: TFIBIntegerField
+    object adsPricesOldPRICESIZE: TFIBIntegerField
       FieldName = 'PRICESIZE'
     end
-    object adsPricesINJOB: TFIBIntegerField
+    object adsPricesOldINJOB: TFIBIntegerField
       FieldName = 'INJOB'
     end
   end
@@ -1483,7 +1332,7 @@ object DM: TDM
       '    ordersh.orderid = orders.orderid'
       'and ordersh.closed <> 1')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 688
     Top = 272
@@ -1578,7 +1427,7 @@ object DM: TDM
         'CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SHOWREGI' +
         'STER, :REGISTERID)')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     Left = 272
     Top = 392
@@ -1616,7 +1465,7 @@ object DM: TDM
       RoundByScale = True
     end
   end
-  object adtReceivedDocs: TpFIBDataSet
+  object adtReceivedDocsOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'UPDATE RECEIVEDDOCS'
       'SET '
@@ -1650,7 +1499,7 @@ object DM: TDM
       'select * from Receiveddocs'
       'order by filedatetime desc')
     Transaction = DefTran
-    Database = MainConnection1
+    Database = MainConnectionOld
     UpdateTransaction = UpTran
     AutoCommit = True
     Left = 456
@@ -1662,5 +1511,281 @@ object DM: TDM
     OpenDataSource = False
     Left = 128
     Top = 544
+  end
+  object MyConnection: TMyConnection
+    Database = 'analitf'
+    Options.Charset = 'cp1251'
+    Options.KeepDesignConnected = False
+    Username = 'root'
+    Server = 'localhost'
+    AfterConnect = MainConnectionOldAfterConnect
+    LoginPrompt = False
+    Left = 32
+    Top = 112
+  end
+  object MyEmbConnection: TMyEmbConnection
+    Database = 'AnalitF'
+    Params.Strings = (
+      '--basedir=.'
+      '--datadir=data'
+      '--skip-innodb'
+      '--character_set_server=cp1251'
+      '--character_set_filesystem=cp1251'
+      '--key_buffer_size=32M'
+      '--max_allowed_packet=16777216')
+    Username = 'root'
+    LoginPrompt = False
+    Left = 160
+    Top = 80
+  end
+  object adtParams: TMyTable
+    TableName = 'params'
+    Connection = MyConnection
+    Left = 48
+    Top = 232
+  end
+  object adtClients: TMyQuery
+    Connection = MyConnection
+    SQL.Strings = (
+      'SELECT'
+      ' CLIENTID,'
+      ' NAME,'
+      ' REGIONCODE,'
+      ' EXCESS,'
+      ' DELTAMODE,'
+      ' MAXUSERS,'
+      ' REQMASK,'
+      ' TECHSUPPORT,'
+      ' CALCULATELEADER,'
+      ' ONLYLEADERS'
+      'FROM'
+      ' CLIENTS')
+    Left = 280
+    Top = 240
+    object adtClientsCLIENTID: TLargeintField
+      FieldName = 'CLIENTID'
+    end
+    object adtClientsNAME: TStringField
+      FieldName = 'NAME'
+      Size = 50
+    end
+    object adtClientsREGIONCODE: TLargeintField
+      FieldName = 'REGIONCODE'
+    end
+    object adtClientsEXCESS: TIntegerField
+      FieldName = 'EXCESS'
+    end
+    object adtClientsDELTAMODE: TSmallintField
+      FieldName = 'DELTAMODE'
+    end
+    object adtClientsMAXUSERS: TIntegerField
+      FieldName = 'MAXUSERS'
+    end
+    object adtClientsREQMASK: TLargeintField
+      FieldName = 'REQMASK'
+    end
+    object adtClientsTECHSUPPORT: TStringField
+      FieldName = 'TECHSUPPORT'
+      Size = 255
+    end
+    object adtClientsCALCULATELEADER: TBooleanField
+      FieldName = 'CALCULATELEADER'
+    end
+    object adtClientsONLYLEADERS: TBooleanField
+      FieldName = 'ONLYLEADERS'
+    end
+  end
+  object adsRetailMargins: TMyQuery
+    Connection = MyConnection
+    SQL.Strings = (
+      'SELECT'
+      '    ID,'
+      '    LEFTLIMIT,'
+      '    RIGHTLIMIT,'
+      '    RETAIL'
+      'FROM'
+      '    RETAILMARGINS'
+      'order by LEFTLIMIT')
+    Left = 144
+    Top = 408
+    object adsRetailMarginsID: TLargeintField
+      FieldName = 'ID'
+    end
+    object adsRetailMarginsLEFTLIMIT: TFloatField
+      FieldName = 'LEFTLIMIT'
+    end
+    object adsRetailMarginsRIGHTLIMIT: TFloatField
+      FieldName = 'RIGHTLIMIT'
+    end
+    object adsRetailMarginsRETAIL: TIntegerField
+      FieldName = 'RETAIL'
+    end
+  end
+  object adsPrices: TMyStoredProc
+    StoredProcName = 'PRICESSHOW'
+    Connection = MyConnection
+    SQL.Strings = (
+      'CALL PRICESSHOW(:aclientid, :timezonebias)')
+    Left = 320
+    Top = 344
+    ParamData = <
+      item
+        DataType = ftLargeint
+        Name = 'aclientid'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'timezonebias'
+        ParamType = ptInput
+      end>
+    CommandStoredProcName = 'PRICESSHOW'
+    object adsPricesPriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsPricesPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsPricesDatePrice: TDateTimeField
+      FieldName = 'DatePrice'
+    end
+    object adsPricesMinReq: TIntegerField
+      FieldName = 'MinReq'
+    end
+    object adsPricesEnabled: TBooleanField
+      FieldName = 'Enabled'
+    end
+    object adsPricesPriceInfo: TMemoField
+      FieldName = 'PriceInfo'
+      BlobType = ftMemo
+    end
+    object adsPricesFirmCode: TLargeintField
+      FieldName = 'FirmCode'
+    end
+    object adsPricesFullName: TStringField
+      FieldName = 'FullName'
+      Size = 40
+    end
+    object adsPricesStorage: TBooleanField
+      FieldName = 'Storage'
+    end
+    object adsPricesAdminMail: TStringField
+      FieldName = 'AdminMail'
+      Size = 50
+    end
+    object adsPricesSupportPhone: TStringField
+      FieldName = 'SupportPhone'
+    end
+    object adsPricesContactInfo: TMemoField
+      FieldName = 'ContactInfo'
+      BlobType = ftMemo
+    end
+    object adsPricesOperativeInfo: TMemoField
+      FieldName = 'OperativeInfo'
+      BlobType = ftMemo
+    end
+    object adsPricesRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsPricesRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsPricespricesize: TIntegerField
+      FieldName = 'pricesize'
+    end
+    object adsPricesINJOB: TBooleanField
+      FieldName = 'INJOB'
+    end
+    object adsPricesCONTROLMINREQ: TBooleanField
+      FieldName = 'CONTROLMINREQ'
+    end
+  end
+  object adsSelect: TMyQuery
+    Connection = MyConnection
+    Left = 616
+    Top = 200
+  end
+  object MyConnectionCopy: TMyConnection
+    Database = 'analitf'
+    Options.Charset = 'cp1251'
+    Username = 'root'
+    Server = 'localhost'
+    AfterConnect = MainConnectionOldAfterConnect
+    LoginPrompt = False
+    Left = 288
+    Top = 80
+  end
+  object MyEmbConnectionCopy: TMyEmbConnection
+    Database = 'AnalitF'
+    Options.Charset = 'cp1251'
+    Params.Strings = (
+      '--basedir=.'
+      '--datadir=data'
+      '--skip-innodb'
+      '--character_set_server=cp1251'
+      '--character_set_filesystem=cp1251'
+      '--key_buffer_size=32M'
+      '--max_allowed_packet=16777216')
+    Username = 'root'
+    AfterConnect = MainConnectionOldAfterConnect
+    LoginPrompt = False
+    Left = 120
+    Top = 40
+  end
+  object adcUpdate: TMyQuery
+    Connection = MyConnection
+    Left = 536
+    Top = 232
+  end
+  object MyServerControl: TMyServerControl
+    Connection = MyConnection
+    Left = 88
+    Top = 112
+  end
+  object MySQLMonitor1: TMySQLMonitor
+    TraceFlags = [tfError, tfService]
+    OnSQL = MySQLMonitor1SQL
+    Left = 424
+    Top = 136
+  end
+  object adtReceivedDocs: TMyQuery
+    SQLInsert.Strings = (
+      'INSERT INTO Receiveddocs'
+      '  (FILENAME, FILEDATETIME)'
+      'VALUES'
+      '  (:FILENAME, :FILEDATETIME)')
+    SQLDelete.Strings = (
+      'DELETE FROM Receiveddocs'
+      'WHERE'
+      '  ID = :Old_ID')
+    SQLUpdate.Strings = (
+      'UPDATE Receiveddocs'
+      'SET'
+      '  FILENAME = :FILENAME, FILEDATETIME = :FILEDATETIME'
+      'WHERE'
+      '  ID = :Old_ID')
+    SQLRefresh.Strings = (
+      
+        'SELECT Receiveddocs.FILENAME, Receiveddocs.FILEDATETIME FROM Rec' +
+        'eiveddocs'
+      'WHERE'
+      '  Receiveddocs.ID = :ID')
+    Connection = MyConnection
+    SQL.Strings = (
+      'select * from Receiveddocs'
+      'order by filedatetime desc')
+    Left = 464
+    Top = 304
+  end
+  object MyBackup1: TMyBackup
+    Connection = MyConnection
+    Path = '.\DataBackup'
+    FieldsTerminatedBy = '\t'
+    EscapedBy = '\\'
+    LinesTerminatedBy = '\n'
+    Left = 352
+    Top = 152
   end
 end

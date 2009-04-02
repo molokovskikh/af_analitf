@@ -24,12 +24,12 @@ var
 begin
   CompactThread := TCompactThread.Create(True);
   CompactThread.FreeOnTerminate := True;
-  DM.MainConnection1.Close;
+  DM.MyConnection.Close;
   try
     ShowWaiting('Производится сжатие базы данных. Подождите...',
       CompactThread);
   finally
-    DM.MainConnection1.Open;
+    DM.MyConnection.Open;
   end;
 end;
 

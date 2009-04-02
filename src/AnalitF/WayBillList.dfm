@@ -7,7 +7,7 @@ inherited WayBillListForm: TWayBillListForm
   ClientWidth = 838
   PixelsPerInch = 96
   TextHeight = 13
-  object pHeader: TPanel
+  object pHeader: TPanel [0]
     Left = 0
     Top = 0
     Width = 838
@@ -34,7 +34,6 @@ inherited WayBillListForm: TWayBillListForm
       Width = 41
       Height = 17
       DataField = 'ServerID'
-      DataSource = OrdersHForm.dsWayBillHead
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -87,7 +86,6 @@ inherited WayBillListForm: TWayBillListForm
       Width = 167
       Height = 17
       DataField = 'WriteTime'
-      DataSource = OrdersHForm.dsWayBillHead
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -101,7 +99,6 @@ inherited WayBillListForm: TWayBillListForm
       Width = 153
       Height = 17
       DataField = 'PriceName'
-      DataSource = OrdersHForm.dsWayBillHead
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -115,7 +112,6 @@ inherited WayBillListForm: TWayBillListForm
       Width = 81
       Height = 17
       DataField = 'RowCount'
-      DataSource = OrdersHForm.dsWayBillHead
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -141,14 +137,13 @@ inherited WayBillListForm: TWayBillListForm
         BorderStyle = bsNone
         Color = clBtnFace
         DataField = 'FirmComment'
-        DataSource = OrdersHForm.dsWayBillHead
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 0
       end
     end
   end
-  object dbgWBL: TToughDBGrid
+  object dbgWBL: TToughDBGrid [1]
     Left = 0
     Top = 65
     Width = 838
@@ -274,7 +269,6 @@ inherited WayBillListForm: TWayBillListForm
       'FROM'
       '    WAYBILLLISTSHOW(:AWAYBILLID) ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 96
     Top = 152
   end

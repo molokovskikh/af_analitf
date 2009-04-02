@@ -456,6 +456,8 @@ inherited SummaryForm: TSummaryForm
     Width = 792
     Height = 33
     Align = alBottom
+    Color = clWindow
+    ParentColor = False
     TabOrder = 3
     inherited gbLegend: TGroupBox
       Width = 792
@@ -559,7 +561,6 @@ inherited SummaryForm: TSummaryForm
     BeforeEdit = adsSummaryBeforeEdit
     BeforePost = adsSummary2BeforePost
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 296
@@ -718,7 +719,6 @@ inherited SummaryForm: TSummaryForm
       'FROM'
       '    SUMMARYHSHOW(:ACLIENTID) ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 432
     Top = 128
     oCacheCalcFields = True
@@ -796,7 +796,6 @@ inherited SummaryForm: TSummaryForm
       'and PricesData.PriceCode = OrdersH.PriceCode'
       'and Regions.RegionCode = OrdersH.RegionCode')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     Left = 96
     Top = 112
@@ -860,7 +859,6 @@ inherited SummaryForm: TSummaryForm
       'and ordersh.senddate >= :datefrom'
       'and ordersh.senddate <= :dateTo')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     Left = 144
     Top = 112

@@ -461,11 +461,6 @@ inherited OrdersHForm: TOrdersHForm
     Left = 72
     Top = 176
   end
-  object dsWayBillHead: TDataSource
-    DataSet = adsWayBillHead
-    Left = 284
-    Top = 183
-  end
   object tmOrderDateChange: TTimer
     Enabled = False
     Interval = 500
@@ -541,7 +536,7 @@ inherited OrdersHForm: TOrdersHForm
     BeforePost = adsOrdersH2BeforePost
     OnCalcFields = adsOrdersHFormCalcFields
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     AfterFetchRecord = adsOrdersHFormAfterFetchRecord
     UpdateTransaction = DM.UpTran
     AutoCommit = True
@@ -719,78 +714,11 @@ inherited OrdersHForm: TOrdersHForm
       'and  CCore.SYNONYMCODE = :SYNONYMCODE'
       'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 188
     Top = 119
     oCacheCalcFields = True
-  end
-  object adsWayBillHead: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    SERVERID,'
-      '    SERVERORDERID,'
-      '    WRITETIME,'
-      '    CLIENTID,'
-      '    PRICECODE,'
-      '    REGIONCODE,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    FIRMCOMMENT,'
-      '    ROWCOUNT'
-      'FROM'
-      '    WAYBILLHEADSHOWCURRENT(:ASERVERORDERID) ')
-    Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    Left = 284
-    Top = 144
-    oCacheCalcFields = True
-    object adsWayBillHeadSERVERID: TFIBBCDField
-      FieldName = 'SERVERID'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsWayBillHeadSERVERORDERID: TFIBBCDField
-      FieldName = 'SERVERORDERID'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsWayBillHeadWRITETIME: TFIBDateTimeField
-      FieldName = 'WRITETIME'
-    end
-    object adsWayBillHeadCLIENTID: TFIBBCDField
-      FieldName = 'CLIENTID'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsWayBillHeadPRICECODE: TFIBBCDField
-      FieldName = 'PRICECODE'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsWayBillHeadREGIONCODE: TFIBBCDField
-      FieldName = 'REGIONCODE'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsWayBillHeadPRICENAME: TFIBStringField
-      FieldName = 'PRICENAME'
-      Size = 70
-      EmptyStrToNull = True
-    end
-    object adsWayBillHeadREGIONNAME: TFIBStringField
-      FieldName = 'REGIONNAME'
-      Size = 25
-      EmptyStrToNull = True
-    end
-    object adsWayBillHeadFIRMCOMMENT: TFIBStringField
-      FieldName = 'FIRMCOMMENT'
-      Size = 100
-      EmptyStrToNull = True
-    end
-    object adsWayBillHeadROWCOUNT: TFIBIntegerField
-      FieldName = 'ROWCOUNT'
-    end
   end
 end

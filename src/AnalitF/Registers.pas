@@ -60,7 +60,6 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
-//  txtTablesUpdates.Caption:=DM.GetTablesUpdatesInfo('Registry');
 	Reg := TRegIniFile.Create;
   try
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)

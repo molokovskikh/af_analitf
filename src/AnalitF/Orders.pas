@@ -119,7 +119,8 @@ var
 	V: array[0..0] of Variant;
   Closed : Variant;
 begin
-  Closed := DM.MainConnection1.QueryValue('select Closed from ordersh where orderid = ' + IntToStr(AOrderId), 0);
+//todo: Это надо восстановить
+//  Closed := DM.MainConnection1.QueryValue('select Closed from ordersh where orderid = ' + IntToStr(AOrderId), 0);
   if Closed = 0 then begin
     adsOrders.OnCalcFields := ocf;
     dbgOrders.Columns[2].FieldName := 'CryptPRICE';
@@ -269,16 +270,9 @@ begin
   MainForm.SetOrdersInfo;
   adsOrders.Delete;
   if adsOrders.RecordCount = 0 then begin
-    DM.adcUpdate.Transaction.StartTransaction;
-    try
-      DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
-      OrdersHForm.adsOrdersHForm.Close;
-      DM.adcUpdate.ExecQuery;
-      DM.adcUpdate.Transaction.Commit;
-    except
-      DM.adcUpdate.Transaction.Rollback;
-      raise;
-    end;
+    DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
+    OrdersHForm.adsOrdersHForm.Close;
+    DM.adcUpdate.Execute;
     OrdersHForm.adsOrdersHForm.Open;
     MainForm.SetOrdersInfo;
     PrevForm.ShowForm;

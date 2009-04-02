@@ -447,7 +447,6 @@ inherited PricesForm: TPricesForm
     AfterScroll = adsPrices2AfterScroll
     OnCalcFields = adsPricesCalcFields
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 96
@@ -542,7 +541,6 @@ inherited PricesForm: TPricesForm
   end
   object adsClientsData: TpFIBDataSet
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 208
     Top = 200
     oCacheCalcFields = True

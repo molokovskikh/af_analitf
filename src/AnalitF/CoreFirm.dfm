@@ -400,6 +400,8 @@ object CoreFirmForm: TCoreFirmForm
     Width = 792
     Height = 33
     Align = alBottom
+    Color = clWindow
+    ParentColor = False
     TabOrder = 4
     inherited gbLegend: TGroupBox
       Width = 792
@@ -468,7 +470,6 @@ object CoreFirmForm: TCoreFirmForm
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 88
@@ -763,7 +764,6 @@ object CoreFirmForm: TCoreFirmForm
       '    CORECOUNTPRICEFIELDS(:AREGIONCODE,'
       '    :APRICECODE) ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 208
     Top = 128
     oCacheCalcFields = True
@@ -790,7 +790,6 @@ object CoreFirmForm: TCoreFirmForm
       '    :APRICECODE,'
       '    :AREGIONCODE) ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 280
     Top = 120
     oCacheCalcFields = True
@@ -805,7 +804,6 @@ object CoreFirmForm: TCoreFirmForm
       'where'
       '  ClientCode = :ACLIENTID')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 200
     Top = 264
     WaitEndMasterScroll = True
@@ -847,7 +845,6 @@ object CoreFirmForm: TCoreFirmForm
       'where'
       '  upper(SynonymName) like upper(:LikeParam)')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     Left = 144
     Top = 112

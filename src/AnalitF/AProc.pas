@@ -90,6 +90,9 @@ function StringToCodes( AStr: string): string;
 function GetXMLDateTime( ADateTime: TDateTime): string;
 function WordCount(const S: string; const WordDelims: TSysCharSet): Integer;
 
+//—формировать SQL дл€ загрузки данных их файла с помощью load data
+function GetLoadDataSQL(TableName : String; InputFileName : String; Replace : Boolean = False) : String;
+
 
 implementation
 
@@ -824,6 +827,16 @@ begin
     if I <= SLen then Inc(Result);
     while (I <= SLen) and not(S[I] in WordDelims) do Inc(I);
   end;
+end;
+
+function GetLoadDataSQL(TableName : String; InputFileName : String; Replace : Boolean = False) : String;
+begin
+  InputFileName := StringReplace(InputFileName, '\', '/', [rfReplaceAll]);
+  Result :=
+    'LOAD DATA INFILE ''' + InputFileName + ''' '
+    + IfThen(Replace, ' replace ') +
+    ' INTO TABLE AnalitF.' + TableName + ' FIELDS TERMINATED BY ''' + Chr(159) + '''' +
+    ' OPTIONALLY ENCLOSED BY '''' ESCAPED BY '''' LINES TERMINATED BY ''' + Chr(161) + ''';';
 end;
 
 { TFileUpdateInfo }

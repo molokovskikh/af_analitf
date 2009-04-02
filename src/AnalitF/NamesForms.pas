@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, Registry, ForceRus, StrUtils, GridsEh;
+  pFIBDataSet, Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
+  MyAccess;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -16,14 +17,13 @@ type
     dsNames: TDataSource;
     dsForms: TDataSource;
     ActionList: TActionList;
-    actNewWares: TAction;
     actUseForms: TAction;
     pnlTopOld: TPanel;
     dbgNames: TToughDBGrid;
     dbgForms: TToughDBGrid;
     pClient: TPanel;
-    adsNames: TpFIBDataSet;
-    adsForms: TpFIBDataSet;
+    adsNamesOld: TpFIBDataSet;
+    adsFormsOld: TpFIBDataSet;
     cbShowAll: TCheckBox;
     actShowAll: TAction;
     pnlTop: TPanel;
@@ -35,7 +35,7 @@ type
     WebBrowser2: TWebBrowser;
     dbgCatalog: TToughDBGrid;
     cbNewSearch: TCheckBox;
-    adsCatalog: TpFIBDataSet;
+    adsCatalogOld: TpFIBDataSet;
     dsCatalog: TDataSource;
     tmrShowCatalog: TTimer;
     pnlSearch: TPanel;
@@ -45,10 +45,12 @@ type
     actNewSearch: TAction;
     cbSearchInBegin: TCheckBox;
     actSearchInBegin: TAction;
+    adsNames: TMyStoredProc;
+    adsForms: TMyQuery;
+    adsCatalog: TMyQuery;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure actNewWaresExecute(Sender: TObject);
     procedure dbgNamesEnter(Sender: TObject);
     procedure dbgFormsEnter(Sender: TObject);
     procedure dbgFormsKeyDown(Sender: TObject; var Key: Word;
@@ -225,14 +227,6 @@ begin
   BM.Free;
 end;
 
-procedure TNamesFormsForm.actNewWaresExecute(Sender: TObject);
-begin
-	if not dbgNames.CanFocus then exit;
-	actNewWares.Checked := not actNewWares.Checked;
-	SetNamesParams;
-	dbgNames.SetFocus;
-end;
-
 procedure TNamesFormsForm.actUseFormsExecute(Sender: TObject);
 begin
 	if not dbgNames.CanFocus then exit;
@@ -244,15 +238,20 @@ end;
 //устанавливает параметры показа наименований
 procedure TNamesFormsForm.SetNamesParams;
 begin
-  with adsNames do begin
-    Screen.Cursor:=crHourglass;
-    try
-      ParamByName('ShowAll').Value := actShowAll.Checked;
-      adsForms.ParamByName('ShowAll').Value := actShowAll.Checked;
-      if Active then CloseOpen(False) else Open;
-    finally
-      Screen.Cursor := crDefault;
-    end;
+  Screen.Cursor:=crHourglass;
+  try
+    adsNames.ParamByName('ShowAll').Value := actShowAll.Checked;
+    adsForms.ParamByName('ShowAll').Value := actShowAll.Checked;
+    adsForms.Close;
+    if adsNames.Active then begin
+      adsNames.Close;
+      adsNames.Open;
+    end
+    else
+      adsNames.Open;
+    adsForms.Open;
+  finally
+    Screen.Cursor := crDefault;
   end;
 end;
 
@@ -377,9 +376,9 @@ begin
     Screen.Cursor:=crHourglass;
     try
       if Active then Close;
-      SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS FROM CATALOGS';
+      SQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS FROM CATALOGS';
       if not actShowAll.Checked then
-        SelectSQL.Text := SelectSQL.Text + ' where CATALOGS.COREEXISTS = 1';
+        SQL.Text := SQL.Text + ' where CATALOGS.COREEXISTS = 1';
       Open;
     finally
       Screen.Cursor := crDefault;
@@ -423,10 +422,10 @@ begin
   InternalSearchText := LeftStr(eSearch.Text, 50);
   eSearch.Text := '';
   adsCatalog.Close;
-  adsCatalog.SelectSQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS ' +
+  adsCatalog.SQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS ' +
     'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
   if not actShowAll.Checked then
-    adsCatalog.SelectSQL.Text := adsCatalog.SelectSQL.Text + ' and CATALOGS.COREEXISTS = 1';
+    adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and CATALOGS.COREEXISTS = 1';
   adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
   adsCatalog.Open;
   dbgCatalog.SetFocus;

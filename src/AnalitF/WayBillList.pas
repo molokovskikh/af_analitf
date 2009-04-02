@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGridEh, ToughDBGrid, ExtCtrls, DB, 
-  DBCtrls, StdCtrls, FIBDataSet, pFIBDataSet, DBProc;
+  DBCtrls, StdCtrls, FIBDataSet, pFIBDataSet, DBProc, GridsEh;
 
 type
   TWayBillListForm = class(TChildForm)

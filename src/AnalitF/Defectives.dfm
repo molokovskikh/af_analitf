@@ -396,7 +396,6 @@ inherited DefectivesForm: TDefectivesForm
       'SELECT * FROM Defectives'
       'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 176
@@ -411,14 +410,12 @@ inherited DefectivesForm: TDefectivesForm
       '  LetterDate BETWEEN :DateFrom And :DateTo '
       'AND (CheckPrint = 1 Or :ShowAll = 1)')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 248
     Top = 160
     oCacheCalcFields = True
   end
   object adcUncheckAll: TpFIBQuery
     Transaction = DM.UpTran
-    Database = DM.MainConnection1
     SQL.Strings = (
       'UPDATE Defectives SET CheckPrint=0 WHERE CheckPrint=1')
     Left = 320

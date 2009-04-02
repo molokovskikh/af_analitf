@@ -73,12 +73,16 @@ begin
 	MainForm.actCompact.Enabled := False;
 	MainForm.itmSystem.Enabled := False;
 
+  //todo: восстановить запрос на монопольный доступ потом
+  ComputerName := 'Это заглушка!';
+{
 	MainForm.CS.Enter;
   try
   	ComputerName := Copy( DM.adtFlags.FieldByName( 'ComputerName').AsString, 1, 9);
   finally
   	MainForm.CS.Leave;
   end;
+}
 	Counter := WAIT_COUNT;
 	Label1.Caption := Format( LABEL_TEXT, [ ComputerName, Counter]);
 end;
@@ -93,15 +97,19 @@ var
   FExID : String;
 begin
 	Timer.Enabled := False;
-	if DM.MainConnection1.Connected then
+	if DM.MyConnection.Connected then
 	begin
+  //todo: восстановить запрос на монопольный доступ потом
+{
 		MainForm.CS.Enter;
     try
-   		DM.adtFlags.CloseOpen(True);
+      DM.adtFlags.Close;
+      DM.adtFlags.Open;
       FExID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
     finally
 			MainForm.CS.Leave;
     end;
+}
 		if FExID = '' then
 		begin
 			MainForm.actSendOrders.OnUpdate := MainForm.actSendOrdersUpdate;

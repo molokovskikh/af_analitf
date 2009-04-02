@@ -49,7 +49,7 @@ var
 begin
 	result := True;
 	DM.adsSelect.Close;
-	DM.adsSelect.SQLs.SelectSQL.Text :=
+	DM.adsSelect.SQL.Text :=
 'SELECT OH.*, PRD.MinReq, PRD.ControlMinReq '+
 'FROM OrdersHShow(:AClientID, :AClosed, :TimeZoneBias) OH ' +
 'LEFT JOIN PricesRegionalData PRD ON (OH.PriceCode=PRD.PriceCode AND OH.RegionCode=PRD.RegionCode) '+

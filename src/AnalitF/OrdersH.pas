@@ -28,7 +28,6 @@ type
     dtpDateTo: TDateTimePicker;
     Bevel1: TBevel;
     pTabSheet: TPanel;
-    dsWayBillHead: TDataSource;
     btnWayBillList: TButton;
     pClient: TPanel;
     pGrid: TPanel;
@@ -44,17 +43,6 @@ type
     tmOrderDateChange: TTimer;
     adsOrdersHForm: TpFIBDataSet;
     adsCore: TpFIBDataSet;
-    adsWayBillHead: TpFIBDataSet;
-    adsWayBillHeadSERVERID: TFIBBCDField;
-    adsWayBillHeadSERVERORDERID: TFIBBCDField;
-    adsWayBillHeadWRITETIME: TFIBDateTimeField;
-    adsWayBillHeadCLIENTID: TFIBBCDField;
-    adsWayBillHeadPRICECODE: TFIBBCDField;
-    adsWayBillHeadREGIONCODE: TFIBBCDField;
-    adsWayBillHeadPRICENAME: TFIBStringField;
-    adsWayBillHeadREGIONNAME: TFIBStringField;
-    adsWayBillHeadFIRMCOMMENT: TFIBStringField;
-    adsWayBillHeadROWCOUNT: TFIBIntegerField;
     adsOrdersHFormORDERID: TFIBBCDField;
     adsOrdersHFormSERVERORDERID: TFIBBCDField;
     adsOrdersHFormDATEPRICE: TFIBDateTimeField;
@@ -284,7 +272,7 @@ begin
     if Grid.SelectedRows.Count > 0 then
       if AProc.MessageBox( '”далить выбранные за€вки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
         Grid.SelectedRows.Delete;
-        DM.InitAllSumOrder;
+        //DM.InitAllSumOrder;
         MainForm.SetOrdersInfo;
       end;
 	end;
@@ -357,16 +345,9 @@ begin
           adsOrdersHForm.Edit;
           adsOrdersHForm.FieldByName( 'Send').AsBoolean := False;
           adsOrdersHForm.FieldByName( 'Closed').AsBoolean := True;
-          DM.adcUpdate.Transaction.StartTransaction;
-          try
-            DM.adcUpdate.SQL.Text := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
-              adsOrdersHForm.FieldByName( 'OrderId').AsString;
-            DM.adcUpdate.ExecQuery;
-            DM.adcUpdate.Transaction.Commit;
-          except
-            DM.adcUpdate.Transaction.Rollback;
-            raise;
-          end;
+          DM.adcUpdate.SQL.Text := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
+            adsOrdersHForm.FieldByName( 'OrderId').AsString;
+          DM.adcUpdate.Execute;
           adsOrdersHForm.Post;
         finally
           adsOrdersHFormSEND.OnChange := adsOrdersH2SendChange;
@@ -395,7 +376,7 @@ begin
 	if ( Key = VK_DELETE) and not ( adsOrdersHForm.IsEmpty) then
 	begin
     btnDeleteClick(nil);
-    DM.InitAllSumOrder;
+    //DM.InitAllSumOrder;
 		MainForm.SetOrdersInfo;
 	end;
 end;
@@ -593,7 +574,9 @@ begin
   else begin
     //≈сли заказ архивный, то берем из базы
     try
-      SumOrder := DM.MainConnection1.QueryValue('SELECT Sum(Orders.sendprice*Orders.OrderCount) SumOrder FROM Orders WHERE Orders.OrderId = :OrderId AND Orders.OrderCount>0', 0, [F.AsString]);
+      //todo: Ёто надо восстановить
+      SumOrder := 0;
+      //SumOrder := DM.MainConnection1.QueryValue('SELECT Sum(Orders.sendprice*Orders.OrderCount) SumOrder FROM Orders WHERE Orders.OrderId = :OrderId AND Orders.OrderCount>0', 0, [F.AsString]);
     except
       SumOrder := 0;
     end;
@@ -633,7 +616,7 @@ begin
     adsOrdersHForm.GotoBookmark(Pointer(dbgSendedOrders.SelectedRows.Items[i]));
 
     with DM.adsSelect do begin
-      SelectSQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :APriceCode and RegionCode = :ARegionCode';
+      SQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :APriceCode and RegionCode = :ARegionCode';
       ParamByName('APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
       ParamByName('ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
       Open;
@@ -725,7 +708,7 @@ begin
     end;
   end;
 
-  DM.InitAllSumOrder;
+  //DM.InitAllSumOrder;
   MainForm.SetOrdersInfo;
 
   dbgSendedOrders.SelectedRows.Clear;

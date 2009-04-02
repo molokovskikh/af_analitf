@@ -9,7 +9,7 @@ uses
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
-  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack;
+  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess;
 
 const
   //Критические сообщения об ошибках при отправке заказов
@@ -35,25 +35,19 @@ type
   end;
 
 TUpdateTable = (
-	utCatalog,
+	utCatalogs,
 	utCatDel,
-	utCatalogCurrency,
 	utClients,
-	utClientsDataN,
+	utProviders,
 	utPricesData,
 	utRegionalData,
 	utPricesRegionalData,
 	utCore,
 	utRegions,
-	utSection,
-	utSynonym,
+	utSynonyms,
 	utSynonymFirmCr,
 	utRejects,
-	utRegistry,
-  utWayBillHead,
-  utWayBillList,
   utMinPrices,
-  utPriceAVG,
   utCatalogFarmGroups,
   utCatFarmGroupsDEL,
   utCatalogNames,
@@ -134,6 +128,12 @@ private
     Names : array of string;
     LogSQL : Boolean = True);
 
+  procedure UpdateFromFileByParamsMySQL(
+    FileName,
+    InsertSQL : String;
+    Names : array of string;
+    LogSQL : Boolean = True);
+
 
 	function FromXMLToDateTime( AStr: string): TDateTime;
 	function RusError( AStr: string): string;
@@ -143,6 +143,12 @@ private
   procedure GetWinVersion(var ANumber, ADesc : String);
   procedure adcUpdateBeforeExecute(Sender: TObject);
   procedure adcUpdateAfterExecute(Sender: TObject);
+  procedure adcUpdateBeforeUpdateExecuteMySql(Sender: TCustomMyDataSet;
+    StatementTypes: TStatementTypes; Params: TDAParams);
+  procedure adcUpdateAfterUpdateExecuteMySql(Sender: TCustomMyDataSet;
+    StatementTypes: TStatementTypes; Params: TDAParams);
+
+  procedure InternalExecute;
   //"Молчаливое" выполнение запроса изменения метаданных.
   //Не вызывает исключение в случае ошибки -607
   procedure SilentExecute(q : TpFIBQuery; SQL : String);
@@ -209,6 +215,7 @@ begin
 	Synchronize( SetTotalProgress);
 	try
     CoInitialize(nil);
+    DM.MyConnection.Open;
     try
 		try
       ImportComplete := False;
@@ -310,10 +317,10 @@ begin
 				CheckNewFRF;
 				CheckNewMDB;
         try
-          DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
+          //DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
           ImportData;
         finally
-          DM.adcUpdate.OnExecuteError := nil;
+          //DM.adcUpdate.OnExecuteError := nil;
         end;
 				DM.ResetExclusive;
 				MainForm.Timer.Enabled := True;
@@ -354,9 +361,9 @@ begin
             Synchronize( SetProgress);
             StatusText := 'Откат изменений';
             Synchronize( SetStatus);
-            DM.MainConnection1.Close;
+            DM.MyConnection.Close;
             DM.RestoreDatabase(ExePath);
-      			DM.MainConnection1.Open;
+            DM.MyConnection.Open;
             //Если мы получили ошибку целостности данных, то мы должны выставить флаг "Получить кумулятивное обновление",
             //чтобы при любом обновлении сразу происходил запрос кумулятивное обновления
             DM.SetCumulative;
@@ -435,6 +442,11 @@ begin
 			end;
 		end;
     finally
+      try DM.MyConnection.Close;
+      except
+        on E : Exception do
+          WriteExchangeLog('Exchange', 'Ошибка при закрытии соединения : ' + E.Message);
+      end;
       CoUninitialize;
     end;
 	except
@@ -505,7 +517,7 @@ begin
       ParamNames[2]  := 'ExeVersion';
       ParamValues[2] := MainForm.VerInfo.FileVersion;
       ParamNames[3]  := 'MDBVersion';
-      ParamValues[3] := DM.adtProvider.FieldByName( 'MDBVersion').AsString;
+      ParamValues[3] := DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString;
       ParamNames[4]  := 'UniqueID';
       ParamValues[4] := IntToHex( GetCopyID, 8);
 
@@ -726,7 +738,8 @@ begin
     //Если не производили кумулятивное обновление, то проверяем наличие синонимов
     if (not (eaGetFullData in ExchangeForm.ExchangeActs))
     then begin
-      Synchronize(GetAbsentPriceCode);
+      //todo: надо потом восстановить
+      //Synchronize(GetAbsentPriceCode);
 
       if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
         SetLength(params, AbsentPriceCodeSL.Count + 3);
@@ -897,7 +910,7 @@ begin
 
 
       //Если выставлено поле - рассчитывать лидеров,
-      if DM.adtClientsCALCULATELEADER.Value then begin
+      if DM.adtClientsCALCULATELEADER.AsBoolean then begin
 
         if DM.adsOrderCore.Active then
           DM.adsOrderCore.Close();
@@ -1224,14 +1237,16 @@ begin
 		StatusText := 'Очистка таблиц';
 		Synchronize( SetStatus);
 		DM.ClearDatabase;
-    DM.MainConnection1.DefaultTransaction.CommitRetaining;
+
+    //DM.MainConnection1.DefaultTransaction.CommitRetaining;
+    
 		StatusText := 'Сжатие базы';
 		Synchronize( SetStatus);
-    DM.MainConnection1.Close;
+    DM.MyConnection.Close;
     try
       DM.CompactDatabase;
     finally
-      DM.MainConnection1.Open;
+      DM.MyConnection.Open;
     end;
 	end;
 end;
@@ -1264,15 +1279,19 @@ end;
 
 procedure TExchangeThread.ImportData;
 var
-	Tables: TStrings;
 	UpdateTables: TUpdateTables;
+  deletedPriceCodes : TStringList;
+  I : Integer;
 begin
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
 	StatusText := 'Резервное копирование данных';
 	Synchronize( SetStatus);
+  //todo: Надо сделать backup
+{
   if not DM.IsBackuped(ExePath) then
   	DM.BackupDatabase( ExePath);
+}
 	DM.OpenDataBase( ExePath + DatabaseName);
 	TotalProgress := 65;
 	Synchronize( SetTotalProgress);
@@ -1283,169 +1302,160 @@ begin
 	Synchronize( SetProgress);
 	DM.UnLinkExternalTables;
 	DM.LinkExternalTables;
-	// создаем список внешних таблиц
-	Tables := TStringList.Create;
 	try
-		//определяем список обновляемых таблиц
-  DM.MainConnection1.GetTableNames(Tables, False);
   UpdateTables := [];
 
-	if Tables.IndexOf( 'EXTCATALOG') >= 0 then UpdateTables:=UpdateTables+[utCatalog];
-	if Tables.IndexOf( 'EXTCATDEL') >= 0 then UpdateTables:=UpdateTables+[utCatDel];
-	if Tables.IndexOf( 'EXTCATALOGCURRENCY') >= 0 then UpdateTables:=UpdateTables+[utCatalogCurrency];
-	if Tables.IndexOf( 'EXTCLIENTS') >= 0 then UpdateTables:=UpdateTables+[utClients];
-	if Tables.IndexOf( 'EXTCLIENTSDATAN') >= 0 then UpdateTables:=UpdateTables+[utClientsDataN];
-	if Tables.IndexOf( 'EXTREGIONALDATA') >= 0 then UpdateTables:=UpdateTables+[utRegionalData];
-	if Tables.IndexOf( 'EXTPRICESDATA') >= 0 then UpdateTables:=UpdateTables+[utPricesData];
-	if Tables.IndexOf( 'EXTPRICESREGIONALDATA') >= 0 then UpdateTables:=UpdateTables+[utPricesRegionalData];
-	if Tables.IndexOf( 'EXTCORE') >= 0 then UpdateTables:=UpdateTables+[utCore];
-	if Tables.IndexOf( 'EXTREGIONS') >= 0 then UpdateTables:=UpdateTables+[utRegions];
-//if Tables.IndexOf( 'EXTSECTION') >= 0 then UpdateTables:=UpdateTables+[utSection];
-	if Tables.IndexOf( 'EXTSYNONYM') >= 0 then UpdateTables := UpdateTables + [utSynonym];
-	if Tables.IndexOf( 'EXTSYNONYMFIRMCR')>=0 then UpdateTables := UpdateTables + [utSynonymFirmCr];
-	if Tables.IndexOf( 'EXTREJECTS')>=0 then UpdateTables := UpdateTables + [utRejects];
-//if Tables.IndexOf( 'EXTREGISTRY')>=0 then UpdateTables := UpdateTables + [utRegistry];
-	if Tables.IndexOf( 'EXTWAYBILLHEAD')>=0 then UpdateTables := UpdateTables + [utWayBillHead];
-	if Tables.IndexOf( 'EXTWAYBILLLIST')>=0 then UpdateTables := UpdateTables + [utWayBillList];
+	if (GetFileSize(ExePath+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
+	if (GetFileSize(ExePath+SDirIn+'\CatDel.txt') > 0) then UpdateTables:=UpdateTables+[utCatDel];
+	if (GetFileSize(ExePath+SDirIn+'\Clients.txt') > 0) then UpdateTables:=UpdateTables+[utClients];
+	if (GetFileSize(ExePath+SDirIn+'\Providers.txt') > 0) then UpdateTables:=UpdateTables+[utProviders];
+	if (GetFileSize(ExePath+SDirIn+'\RegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utRegionalData];
+	if (GetFileSize(ExePath+SDirIn+'\PricesData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesData];
+	if (GetFileSize(ExePath+SDirIn+'\PricesRegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesRegionalData];
+	if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables:=UpdateTables+[utCore];
+	if (GetFileSize(ExePath+SDirIn+'\Regions.txt') > 0) then UpdateTables:=UpdateTables+[utRegions];
+	if (GetFileSize(ExePath+SDirIn+'\Synonyms.txt') > 0) then UpdateTables := UpdateTables + [utSynonyms];
+	if (GetFileSize(ExePath+SDirIn+'\SynonymFirmCr.txt') > 0) then UpdateTables := UpdateTables + [utSynonymFirmCr];
+	if (GetFileSize(ExePath+SDirIn+'\Rejects.txt') > 0) then UpdateTables := UpdateTables + [utRejects];
   //Удаляем минимальные цены, если есть обновления в Core
-	if (Tables.IndexOf( 'EXTMINPRICES')>=0) and (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
-	if Tables.IndexOf( 'EXTPRICEAVG')>=0 then UpdateTables := UpdateTables + [utPriceAVG];
-	if Tables.IndexOf( 'EXTCATALOGFARMGROUPS')>=0 then UpdateTables := UpdateTables + [utCatalogFarmGroups];
-	if Tables.IndexOf( 'EXTCATFARMGROUPSDEL')>=0 then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
-	if Tables.IndexOf( 'EXTCATALOGNAMES')>=0 then UpdateTables := UpdateTables + [utCatalogNames];
-	if Tables.IndexOf( 'EXTPRODUCTS')>=0 then UpdateTables := UpdateTables + [utProducts];
+	if (GetFileSize(ExePath+SDirIn+'\MinPrices.txt') > 0) and (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
+	if (GetFileSize(ExePath+SDirIn+'\CatalogFarmGroups.txt') > 0) then UpdateTables := UpdateTables + [utCatalogFarmGroups];
+	if (GetFileSize(ExePath+SDirIn+'\CatFarmGroupsDel.txt') > 0) then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
+	if (GetFileSize(ExePath+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
+	if (GetFileSize(ExePath+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
 
 
     //обновляем таблицы
     {
     Таблица               DELETE  INSERT  UPDATE
     --------------------  ------  ------  ------
-    Catalog                         +       +
-    CatalogCurrency         +       +       +
+    Catalog                 +       +       +
     Clients                 +       +       +
-    ClientsData             +       +       +
+    Providers               +       +       +
     Core                    +       +
     Prices                  +       +       +
     Regions                 +       +       +
-    Section                 +       +       +
     Synonym                         +
     SynonymFirmCr                   +
-    WayBillHead                     +
-    WayBillList                     +
     CatalogFarmGroups       +       +       +
     CatalogNames                    +       +
+    Products                        +       +
+    MinPrices               +       +       +
     }
 
 	Progress := 5;
 	Synchronize( SetProgress);
 
-   DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
-   DM.adcUpdate.BeforeExecute := adcUpdateBeforeExecute;
-   DM.adcUpdate.AfterExecute := adcUpdateAfterExecute;
+   DM.adcUpdate.BeforeUpdateExecute := adcUpdateBeforeUpdateExecuteMySql;
+   DM.adcUpdate.AfterUpdateExecute := adcUpdateAfterUpdateExecuteMySql;
    with DM.adcUpdate do begin
 
-	//удаляем из таблиц ненужные данные
-	//CatalogCurrency
-	if utCatalogCurrency in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyDelete'; ExecQuery;
-	end;
+	//удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
 	//PricesRegionalData
 	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataDelete'; ExecQuery;
+	  SQL.Text:='DELETE FROM PricesRegionalData WHERE NOT Exists(SELECT PriceCode, RegionCode FROM TmpPricesRegionalData  WHERE PriceCode=PricesRegionalData.PriceCode AND RegionCode=PricesRegionalData.RegionCode);';
+    InternalExecute;
 	end;
 	//PricesData
 	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE PricesDataDelete'; ExecQuery;
+	  SQL.Text:='DELETE FROM PricesData WHERE NOT Exists(SELECT FirmCode, PriceCode FROM tmpPricesData WHERE FirmCode=PricesData.FirmCode AND PriceCode=PricesData.PriceCode);';
+    InternalExecute;
 	end;
 	//RegionalData
 	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE RegionalDataDelete'; ExecQuery;
+	  SQL.Text:='DELETE FROM RegionalData WHERE NOT Exists(SELECT FirmCode, RegionCode FROM tmpRegionalData WHERE FirmCode=RegionalData.FirmCode AND RegionCode=RegionalData.RegionCode);';
+    InternalExecute;
 	end;
-	//ClientsDataN
+  //todo: Providers почему здесь связь на utPricesRegionalData
+	//Providers
 	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE ClientsDataNDelete'; ExecQuery;
+	  SQL.Text:='DELETE FROM Providers WHERE NOT Exists(SELECT FirmCode FROM tmpProviders WHERE FirmCode=Providers.FirmCode);';
+    InternalExecute;
 	end;
 	//Core
 	if utCore in UpdateTables then begin
     //Удаление из Core старых прайсов и обновление ServerCoreID в MinPrices
-	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteNewPrices'; ExecQuery;
+    //SELECT cast(PriceCode as BIGINT) FROM ExtPricesData where Fresh = ''1''
+    DM.adcUpdate.SQL.Text := 'SELECT PriceCode FROM tmpPricesData where Fresh = 1;';
+    deletedPriceCodes := TStringList.Create;
+    try
+
+      //получили список обновленных файлов
+      DM.adcUpdate.Open;
+      try
+        while not DM.adcUpdate.Eof do begin
+          deletedPriceCodes.Add(DM.adcUpdate.FieldByName('PriceCode').AsString);
+          DM.adcUpdate.Next;
+        end
+      finally
+        DM.adcUpdate.Close;
+      end;
+
+      DM.adcUpdate.SQL.Text := 'delete from core where PriceCode = :PriceCode;';
+      for I := 0 to deletedPriceCodes.Count-1 do begin
+        DM.adcUpdate.ParamByName('PriceCode').AsString := deletedPriceCodes[i];
+        InternalExecute;
+      end;
+
+    finally
+      deletedPriceCodes.Free;
+    end;
+
+	  SQL.Text:='update minprices set servercoreid = null, servermemoid = null where not exists(select * from core c where c.servercoreid = minprices.servercoreid);';
+    InternalExecute;
 	end;
 	//Synonym
-	if (utSynonym in UpdateTables) and (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-    SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_SYNONYMNAME');
-    SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS');
+	if (utSynonyms in UpdateTables) and (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+    //todo: восстановить SilentExecute
+    //SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_SYNONYMNAME');
+    //SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS');
 	end;
 	if utCore in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteOldPrices'; ExecQuery;
+ 	  SQL.Text:='DELETE FROM Core WHERE PriceCode is not null and NOT Exists(SELECT PriceCode, RegionCode FROM PricesRegionalData WHERE PriceCode=Core.PriceCode AND RegionCode=Core.RegionCode);';
+    InternalExecute;
 	end;
 	//Clients
 	if utClients in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE ClientsDelete'; ExecQuery;
+	  SQL.Text:='DELETE FROM Clients WHERE NOT Exists(SELECT ClientId FROM tmpClients WHERE ClientId=Clients.ClientId);';
+    InternalExecute;
 	end;
 	//Regions
 	if utRegions in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE RegionsDelete'; ExecQuery;
-	end;
-	// Registry
-	if utRegistry in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
+	  SQL.Text:='DELETE FROM Regions WHERE NOT Exists(SELECT RegionCode FROM tmpRegions WHERE RegionCode=Regions.RegionCode);';
+    InternalExecute;
 	end;
 
-  try
-    DM.MainConnection1.DefaultUpdateTransaction.Commit;
-  except
-    on E : Exception do begin
-      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на удаление устаревших данных : ' + E.Message);
-      raise;
-    end;
-  end;
-
-  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
-
+{
+  todo: это было для Firebird, надо посмотреть на MySQL
 	SQL.Text := 'select count(*) from MinPrices where ServerCoreID is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
 	SQL.Text := 'select count(*) from pricesregionaldata where regioncode is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
-	SQL.Text := 'select count(*) from PricesData where PriceFiledate is null';
-	ExecQuery;
+	SQL.Text := 'select count(*) from PricesData where Fresh is null';
+	InternalExecute;
   Close;
 	SQL.Text := 'select count(*) from RegionalData where regioncode is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
-	SQL.Text := 'select count(*) from ClientsDataN where fullname is not null';
-	ExecQuery;
+	SQL.Text := 'select count(*) from Providers where fullname is not null';
+	InternalExecute;
   Close;
 	SQL.Text := 'select count(*) from Core where ProductId is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
 	SQL.Text := 'select count(*) from Clients where regioncode is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
 	SQL.Text := 'select count(*) from regions where regionname is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
-  try
-    DM.MainConnection1.DefaultUpdateTransaction.Commit;
-  except
-    on E : Exception do begin
-      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на выборку count(*) : ' + E.Message);
-      raise;
-    end;
-  end;
-  try
-    DM.MainConnection1.Commit;
-  except
-    on E : Exception do begin
-      WriteExchangeLog('Exchange.ImportData', 'Ошибка при глобальном Commit на выборку count(*) : ' + E.Message);
-      raise;
-    end;
-  end;
-  DM.MainConnection1.Close;
+}
 
-  DM.MainConnection1.Open;
-  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
+  DM.MyConnection.Close;
+
+  DM.MyConnection.Open;
 
 	Progress := 10;
 	Synchronize( SetProgress);
@@ -1454,64 +1464,65 @@ begin
 	//CatalogNames
 	if utCatalogNames in UpdateTables then begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-      UpdateFromFile(ExePath+SDirIn+'\CatalogNames.txt',
-        'INSERT INTO catalognames ' +
-        '(ID, NAME, LATINNAME, Description) '+
-        'values ( :ID, :NAME, :LATINNAME, :Description)');
+      SQL.Text := GetLoadDataSQL('catalognames', ExePath+SDirIn+'\CatalogNames.txt');
+      InternalExecute;
     end
     else begin
-      UpdateFromFile(ExePath+SDirIn+'\CatalogNames.txt',
-        'EXECUTE PROCEDURE CATALOGNAMES_IU(:ID, :NAME, :LATINNAME, :DESCRIPTION)');
+      SQL.Text := GetLoadDataSQL('catalognames', ExePath+SDirIn+'\CatalogNames.txt', true);
+      InternalExecute;
     end;
 	end;
 
 	//Catalog
-	if utCatalog in UpdateTables then begin
+	if utCatalogs in UpdateTables then begin
 
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-      UpdateFromFile(ExePath+SDirIn+'\Catalog.txt',
-        'INSERT INTO catalogs ' +
-        '(FULLCODE, SHORTCODE, NAME, FORM, VITALLYIMPORTANT, NEEDCOLD, FRAGILE) '+
-        'values ( :FULLCODE, :SHORTCODE, :NAME, :FORM, :VITALLYIMPORTANT, :NEEDCOLD, :FRAGILE)');
+      SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt');
+      InternalExecute;
+      WriteExchangeLog('Import', Format('Catalog RowAffected = %d', [RowsAffected]));
     end
     else begin
       //catalogs_iu
-      UpdateFromFile(ExePath+SDirIn+'\Catalog.txt',
-        'EXECUTE PROCEDURE catalogs_iu(:FULLCODE, :SHORTCODE, :NAME, :FORM, :VITALLYIMPORTANT, :NEEDCOLD, :FRAGILE)');
+      SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt', true);
+      InternalExecute;
+      WriteExchangeLog('Import', Format('Catalog RowAffected = %d', [RowsAffected]));
       if utCatDel in UpdateTables then begin
-        UpdateFromFile(ExePath+SDirIn+'\CatDel.txt',
-          'delete from catalogs where (fullcode = :fullcode)');
+        UpdateFromFileByParamsMySQL(
+          ExePath+SDirIn+'\CatDel.txt',
+          'delete from catalogs where (fullcode = :fullcode)',
+          ['fullcode']);
       end;
     end;
-	  SQL.Text:='EXECUTE PROCEDURE CatalogSetFormNotNull'; ExecQuery;
+	  SQL.Text:='UPDATE CATALOGS SET Form = '''' WHERE Form IS Null;';
+    InternalExecute;
 	end;
 
   if (utProducts in UpdateTables) then begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-      UpdateFromFile(ExePath+SDirIn+'\Products.txt',
-        'INSERT INTO products (productid, catalogid) values (:productid, :catalogid)');
+      SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt');
+      InternalExecute;
     end
     else begin
       //products_iu
-      UpdateFromFile(ExePath+SDirIn+'\Products.txt',
-        'EXECUTE PROCEDURE products_iu(:productid, :catalogid)');
+      SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt', true);
+      InternalExecute;
     end;
   end;
 
 	//CatalogFarmGroups
 	if utCatalogFarmGroups in UpdateTables then begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-      UpdateFromFile(ExePath+SDirIn+'\CatalogFarmGroups.txt',
-        'INSERT INTO catalogfarmgroups ' +
-        '(ID, Name, Description, ParentID, GroupType) '+
-        'values ( :ID, :Name, :Description, :ParentID, :GroupType )');
+      SQL.Text := GetLoadDataSQL('CatalogFarmGroups', ExePath+SDirIn+'\CatalogFarmGroups.txt');
+      InternalExecute;
     end
     else begin
-      UpdateFromFile(ExePath+SDirIn+'\CatalogFarmGroups.txt',
-        'EXECUTE PROCEDURE catalogfarmgroups_iu(:ID, :NAME, :DESCRIPTION, :PARENTID, :GROUPTYPE)');
+      SQL.Text := GetLoadDataSQL('CatalogFarmGroups', ExePath+SDirIn+'\CatalogFarmGroups.txt', true);
+      InternalExecute;
       if utCatFarmGroupsDel in UpdateTables then begin
-        UpdateFromFile(ExePath+SDirIn+'\CatFarmGroupsDel.txt',
-          'delete from catalogfarmgroups where (ID = :ID)');
+        UpdateFromFileByParamsMySQL(
+          ExePath+SDirIn+'\CatFarmGroupsDel.txt',
+          'delete from catalogfarmgroups where (ID = :ID)',
+          ['ID']);
       end;
     end;
 	end;
@@ -1521,115 +1532,82 @@ begin
 	TotalProgress := 70;
 	Synchronize( SetTotalProgress);
 
-	//удаляем из Section (можно сделать только после изменения Catalog)
-	if utSection in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE SectionDelete'; ExecQuery;
-	end;
-	//CatalogCurrency
-	if utCatalogCurrency in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpCatalogCurrencyDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpCatalogCurrencyInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpCatalogCurrencyDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyInsert'; ExecQuery;
-	end;
 	//Regions
 	if utRegions in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpRegionsDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpRegionsInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE RegionsUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpRegionsDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE RegionsInsert'; ExecQuery;
+    SQL.Text := GetLoadDataSQL('Regions', ExePath+SDirIn+'\Regions.txt', true);
+    InternalExecute;
 	end;
 	//Clients
 	if utClients in UpdateTables then begin
-    UpdateFromFile(ExePath+SDirIn+'\Clients.txt',
-        'EXECUTE PROCEDURE CLIENTS_IU(:CLIENTID, :NAME, :REGIONCODE, :EXCESS, :DELTAMODE, :MAXUSERS, :REQMASK, :TECHSUPPORT, :CALCULATELEADER)');
+    SQL.Text := GetLoadDataSQL('Clients', ExePath+SDirIn+'\Clients.txt', true);
+    InternalExecute;
 	end;
-	//ClientsDataN
-	if utClientsDataN in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpClientsDataNDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpClientsDataNInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE ClientsDataNUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpClientsDataNDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE ClientsDataNInsert'; ExecQuery;
+	//Providers
+	if utProviders in UpdateTables then begin
+    SQL.Text := GetLoadDataSQL('Providers', ExePath+SDirIn+'\Providers.txt', true);
+    InternalExecute;
 	end;
 	//RegionalData
 	if utRegionalData in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpRegionalDataDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpRegionalDataInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE RegionalDataUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpRegionalDataDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE RegionalDataInsert'; ExecQuery;
+    SQL.Text := GetLoadDataSQL('RegionalData', ExePath+SDirIn+'\RegionalData.txt', true);
+    InternalExecute;
 	end;
 	//PricesData
 	if utPricesData in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpPricesDataDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpPricesDataInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE PricesDataUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpPricesDataDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE PricesDataInsert'; ExecQuery;
+    SQL.Text := GetLoadDataSQL('PricesData', ExePath+SDirIn+'\PricesData.txt', true);
+    InternalExecute;
 	end;
 	//PricesRegionalData
 	if utPricesData in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE TmpPricesRegionalDataDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpPricesRegionalDataInsert'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataUpdate'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE TmpPricesRegionalDataDelete'; ExecQuery;
-	  SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataInsert'; ExecQuery;
+    SQL.Text := GetLoadDataSQL('PricesRegionalData', ExePath+SDirIn+'\PricesRegionalData.txt', true);
+    InternalExecute;
 	end;
 
 	Progress := 30;
 	Synchronize( SetProgress);
 
 	//Synonym
-	if utSynonym in UpdateTables then begin
+	if utSynonyms in UpdateTables then begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-      UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
-        'INSERT INTO Synonyms ' +
-        '(Synonymcode, Synonymname) '+
-        'values (:Synonymcode, :Synonymname)');
-  	  SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT PK_SYNONYMS PRIMARY KEY (SYNONYMCODE)'; ExecQuery;
-  	  SQL.Text:='CREATE INDEX IDX_SYNONYMNAME ON SYNONYMS (SYNONYMNAME)'; ExecQuery;
+      SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt');
+      InternalExecute;
+  	  //SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT PK_SYNONYMS PRIMARY KEY (SYNONYMCODE)'; InternalExecute;
+  	  //SQL.Text:='CREATE INDEX IDX_SYNONYMNAME ON SYNONYMS (SYNONYMNAME)'; InternalExecute;
     end
     else begin
-      UpdateFromFile(ExePath+SDirIn+'\Synonym.txt',
-        'INSERT INTO Synonyms ' +
-        '(Synonymcode, Synonymname) '+
-        'SELECT :Synonymcode, :Synonymname '+
-        'FROM rdb$database '+
-        'WHERE Not Exists(SELECT SynonymCode FROM Synonyms WHERE SynonymCode=:Synonymcode)');
+      SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt', true);
+      InternalExecute;
     end;
 	end;
 	//SynonymFirmCr
 	if utSynonymFirmCr in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE SynonymFirmCrInsert'; ExecQuery;
+    SQL.Text := GetLoadDataSQL('SynonymFirmCr', ExePath+SDirIn+'\SynonymFirmCr.txt', true);
+    InternalExecute;
 	end;
 	//Core
 	if utCore in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE CoreDeleteOldPrices'; ExecQuery;
+    //todo: зачем здесь еще раз вызывается CoreDeleteOldPrices - мне не понятно
+	  SQL.Text:='DELETE FROM Core WHERE PriceCode is not null and NOT Exists(SELECT PriceCode, RegionCode FROM PricesRegionalData WHERE PriceCode=Core.PriceCode AND RegionCode=Core.RegionCode);';
+    InternalExecute;
 	end;
 	if utCore in UpdateTables then begin
-    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_ProductId');
-    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_PRICECODE');
-    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_REGIONCODE');
-    SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT PK_CORE');
-    SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMCODE');
-    SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMFIRMCRCODE');
-    SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_SERVERCOREID');
-    SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_JUNK');
-    try
-      DM.MainConnection1.DefaultUpdateTransaction.Commit;
-    except
-      on E : Exception do begin
-        WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на удаление индексов в Core : ' + E.Message);
-        raise;
-      end;
-    end;
+    //todo: восстановить SilentExecute
+    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_ProductId');
+    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_PRICECODE');
+    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_REGIONCODE');
+    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT PK_CORE');
+    //SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMCODE');
+    //SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMFIRMCRCODE');
+    //SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_SERVERCOREID');
+    //SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_JUNK');
 
-    DM.MainConnection1.Close;
-    DM.MainConnection1.Open;
-    DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
+    DM.MyConnection.Close;
+    DM.MyConnection.Open;
+
+    SQL.Text := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
+    InternalExecute;
+{
+todo: пока не импортируем Core
     UpdateFromFile(ExePath+SDirIn+'\Core.txt',
 'INSERT INTO Core '+
 '(Pricecode, RegionCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
@@ -1637,66 +1615,45 @@ begin
 'values (:Pricecode, :RegionCode, :ProductId, :CodeFirmCr, :SynonymCode, ' +
 ':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
 ':Note, :Period, :Doc, :RegistryCost, :VitallyImportant, :RequestRatio, :BaseCost, :ServerCOREID, :OrderCost, :MinOrderCount)');
-	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; ExecQuery;
-    SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_ProductId FOREIGN KEY (ProductId) REFERENCES PRODUCTS (ProductId) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
-	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; ExecQuery;
-	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; ExecQuery;
-	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (ProductId, JUNK)'; ExecQuery;
-	  SQL.Text:='CREATE INDEX IDX_CORE_SERVERCOREID ON CORE (SERVERCOREID)'; ExecQuery;
-	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; ExecQuery;
-	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; ExecQuery;
+}
+
+{
+	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; InternalExecute;
+    SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_ProductId FOREIGN KEY (ProductId) REFERENCES PRODUCTS (ProductId) ON DELETE CASCADE ON UPDATE CASCADE'; InternalExecute;
+	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; InternalExecute;
+	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; InternalExecute;
+	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (ProductId, JUNK)'; InternalExecute;
+	  SQL.Text:='CREATE INDEX IDX_CORE_SERVERCOREID ON CORE (SERVERCOREID)'; InternalExecute;
+	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; InternalExecute;
+	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; InternalExecute;
+}    
 	end;
 
-  try
-    DM.MainConnection1.DefaultUpdateTransaction.Commit;
-  except
-    on E : Exception do begin
-      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на вставку в Core : ' + E.Message);
-      raise;
-    end;
-  end;
-
-  DM.MainConnection1.Close;
-  DM.MainConnection1.Open;
-  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
-	//WayBillHead
-	if utWayBillHead in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE WayBillHeadInsert'; ExecQuery;
-	end;
-	//WayBillList
-	if utWayBillList in UpdateTables then begin
-	  SQL.Text:='EXECUTE PROCEDURE WayBillListInsert'; ExecQuery;
-	end;
+  DM.MyConnection.Close;
+  DM.MyConnection.Open;
 
 	Progress := 40;
 	Synchronize( SetProgress);
-	SQL.Text := 'EXECUTE PROCEDURE CoreDeleteFormHeaders'; ExecQuery;
+	SQL.Text := 'DELETE FROM Core WHERE SynonymCode<0;'; InternalExecute;
 	Progress := 50;
 	Synchronize( SetProgress);
 	//проставляем мин. цены и лидеров
-	SQL.Text := 'EXECUTE PROCEDURE MinPricesInsert';	ExecQuery;
+	SQL.Text :=
+    'INSERT INTO MinPrices ( productid, RegionCode ) select     distinct c.productid, c.regioncode from core c ' +
+    'where c.Synonymcode > 0 and not exists(select * from minprices m where m.productid = c.productid and m.regioncode = c.regioncode);';
+  InternalExecute;
   Progress := 60;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
 
-  try
-    DM.MainConnection1.DefaultUpdateTransaction.Commit;
-  except
-    on E : Exception do begin
-      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на завершающие действия с Core и MinPrices : ' + E.Message);
-      raise;
-    end;
-  end;
-
-  DM.MainConnection1.Close;
-  DM.MainConnection1.Open;
-  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
+  DM.MyConnection.Close;
+  DM.MyConnection.Open;
 
 	StatusText := 'Импорт данных';
 	Synchronize( SetStatus);
 
-	SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; ExecQuery;
+	SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; InternalExecute;
 {
 Вместо запроса используем хранимую процедуру следующего содержания:
 CREATE OR ALTER PROCEDURE UPDATECOREEXISTS 
@@ -1709,21 +1666,40 @@ begin
     update catalogs set CoreExists = 1 where FullCode = :catalogFullCode;
 end^
 }
-	//SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; ExecQuery;
-	SQL.Text := 'EXECUTE PROCEDURE UPDATECOREEXISTS'; ExecQuery;
+	//SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; InternalExecute;
+	//SQL.Text := 'InternalExecute PROCEDURE UPDATECOREEXISTS'; InternalExecute;
+	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; InternalExecute;
 	Progress := 65;
 	Synchronize( SetProgress);
-  DM.adtParams.CloseOpen(True);
+  DM.adtParams.Close;
+  DM.adtParams.Open;
 	if DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean then
 	begin
 		Progress := 70;
 		Synchronize( SetProgress);
-		SQL.Text := 'EXECUTE PROCEDURE CoreInsertFormHeaders'; ExecQuery;
+    //todo: надо восстановить CoreInsertFormHeaders
+		//SQL.Text := 'EXECUTE PROCEDURE CoreInsertFormHeaders'; InternalExecute;
+		SQL.Text :=
+      'insert into Core (ProductId, SynonymCode) ' +
+      'select products.productid, -products.catalogid ' +
+      'from ' +
+         'products, ' +
+      '(' +
+       'select DISTINCT CATALOGS.FullCode ' +
+         'from ' +
+           'core ' +
+           'inner join products on products.productid = core.productid ' +
+           'inner join CATALOGS ON CATALOGS.FullCode = products.catalogid ' +
+      ') distinctfulcodes ' +
+      'where ' +
+         'products.catalogid = distinctfulcodes.FullCode ' +
+      'group by products.CATALOGID';
+    InternalExecute;
 		Progress := 80;
 		Synchronize( SetProgress);
 	end;
 
-  SQL.Text:='update params set OperateForms = OperateFormsSet where ID = 0'; ExecQuery;
+  SQL.Text:='update params set OperateForms = OperateFormsSet where ID = 0'; InternalExecute;
 
 	TotalProgress := 80;
 	Synchronize( SetTotalProgress);
@@ -1731,18 +1707,16 @@ end^
 	{ Добавляем забракованые препараты }
 	if utRejects in UpdateTables then
 	begin
-		SQL.Text:='EXECUTE PROCEDURE DefectivesInsert'; ExecQuery;
-	end;
-	{ Добавляем реестр }
-	if utRegistry in UpdateTables then
-	begin
-		SQL.Text := 'EXECUTE PROCEDURE RegistryInsert'; ExecQuery;
+    SQL.Text := GetLoadDataSQL('Defectives', ExePath+SDirIn+'\Rejects.txt');
+    InternalExecute;
 	end;
 
-	DM.adtClients.CloseOpen(True);
+  DM.adtClients.Close;
+  DM.adtClients.Open;
 	//проставляем мин. цены и лидеров
 	if utMinPrices in UpdateTables then
 	begin
+  {
     UpdateFromFileByParams(ExePath+SDirIn+'\MinPrices.txt',
       'update minprices set ' +
         'servercoreid = '+
@@ -1760,64 +1734,60 @@ end^
       'where productid = :productid and regioncode = :regioncode',
       ['servercoreid', 'productid', 'regioncode', 'servermemoid'],
       False);
+}      
   end;
 
 	Progress := 90;
 	Synchronize( SetProgress);
 	TotalProgress := 85;
 	Synchronize( SetTotalProgress);
-	SQL.Text := 'EXECUTE PROCEDURE SETPRICESIZE';
-	ExecQuery;
-  try
-    DM.MainConnection1.DefaultUpdateTransaction.CommitRetaining;
-  except
-    on E : Exception do begin
-      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на обновление MinPrices : ' + E.Message);
-      raise;
-    end;
-  end;
-	SQL.Text := 'EXECUTE PROCEDURE UPDATEALLINDICES';
-	ExecQuery;
-  try
-    DM.MainConnection1.DefaultUpdateTransaction.Commit;
-  except
-    on E : Exception do begin
-      WriteExchangeLog('Exchange.ImportData', 'Ошибка при Commit на обновления индексов : ' + E.Message);
-      raise;
-    end;
-  end;
 
-  DM.MainConnection1.Close;
-  DM.MainConnection1.Open;
-  DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
+{
+  todo: восстановить установку SetPriceSize
+	SQL.Text := 'EXECUTE PROCEDURE SETPRICESIZE';
+	InternalExecute;
+}
+  
+{
+	SQL.Text := 'EXECUTE PROCEDURE UPDATEALLINDICES';
+	InternalExecute;
+}
+
+  DM.MyConnection.Close;
+  DM.MyConnection.Open;
+
+{
 	SQL.Text := 'select count(*) from MinPrices where ServerCoreID is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
 	SQL.Text := 'select count(*) from Core where productid is not null';
-	ExecQuery;
+	InternalExecute;
   Close;
-	SQL.Text := 'select count(*) from PricesData where PriceFileDate is not null';
-	ExecQuery;
+	SQL.Text := 'select count(*) from PricesData where Fresh is not null';
+	InternalExecute;
   Close;
+}  
+
 	Progress := 100;
 	Synchronize( SetProgress);
 	TotalProgress := 90;
 	Synchronize( SetTotalProgress);
   end; {with DM.adcUpdate do begin}
 
-  finally {Tables := TStringList.Create}
-  DM.adcUpdate.BeforeExecute := nil;
-  DM.adcUpdate.AfterExecute := nil;
-	Tables.Free;
+  finally
+  DM.adcUpdate.BeforeUpdateExecute := nil;
+  DM.adcUpdate.AfterUpdateExecute := nil;
   end;
 
-  DM.MainConnection1.Close;
-  DM.MainConnection1.Open;
-  if not DM.MainConnection1.DefaultTransaction.Active then
-    Dm.MainConnection1.DefaultTransaction.StartTransaction;
+  DM.MyConnection.Close;
+  DM.MyConnection.Open;
+
 	DM.UnLinkExternalTables;
-	DM.ClearBackup( ExePath);
-  Dm.MainConnection1.AfterConnect(nil);
+
+  //todo: надо потом восстановить
+//	DM.ClearBackup( ExePath);
+
+  Dm.MyConnection.AfterConnect(nil);
 	{ Показываем время обновления }
 	DM.adtParams.Edit;
 	DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=
@@ -1983,7 +1953,7 @@ var
 begin
   up := TpFIBQuery.Create(nil);
   try
-    up.Database := DM.MainConnection1;
+    //up.Database := DM.MainConnection1;
     up.Transaction := DM.UpTran;
 
     InDelimitedFile := TFIBInputDelimitedFile.Create;
@@ -2041,7 +2011,7 @@ begin
     ASaveGridMask := Res.Values['SaveGridMask']
   else
     ASaveGridMask := '0000000';
-  Synchronize(DMSavePass);
+  DMSavePass;
   TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 end;
 
@@ -2062,7 +2032,7 @@ begin
   TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
   if DM.adsSelect.Active then
    	DM.adsSelect.Close;
-  DM.adsSelect.SelectSQL.Text := 'select prd.pricecode, prd.regioncode, prd.injob ' +
+  DM.adsSelect.SQL.Text := 'select prd.pricecode, prd.regioncode, prd.injob ' +
     'from pricesregionaldata prd inner join pricesregionaldataup prdu on prdu.PriceCode = prd.PriceCode and prdu.RegionCode = prd.regioncode';
 	DM.adsSelect.Open;
   //Отправляем настройки только в том случае, если есть что отправлять
@@ -2070,8 +2040,8 @@ begin
 	begin
 		StatusText := 'Отправка настроек прайс-листов';
 		Synchronize( SetStatus);
-    SetLength(ParamNames, StaticParamCount + DM.adsSelect.RecordCountFromSrv*4);
-    SetLength(ParamValues, StaticParamCount + DM.adsSelect.RecordCountFromSrv*4);
+    SetLength(ParamNames, StaticParamCount + DM.adsSelect.RecordCount*4);
+    SetLength(ParamValues, StaticParamCount + DM.adsSelect.RecordCount*4);
     ParamNames[0] := 'UniqueID';
     ParamValues[0] := IntToHex( GetCopyID, 8);
     I := 0;
@@ -2094,16 +2064,16 @@ begin
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
       raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-    DM.adcUpdate.Transaction.StartTransaction;
+    //DM.adcUpdate.Transaction.StartTransaction;
     try
       with DM.adcUpdate do begin
         //удаляем признак того, что настройки прайс-листов были изменены
         SQL.Text := 'delete from pricesregionaldataup';
-        ExecQuery;
+        Execute;
       end;
-      DM.adcUpdate.Transaction.Commit;
+      //DM.adcUpdate.Transaction.Commit;
     except
-      DM.adcUpdate.Transaction.Rollback;
+      //DM.adcUpdate.Transaction.Rollback;
       raise;
     end;
 	end
@@ -2294,7 +2264,7 @@ begin
   up := TpFIBQuery.Create(nil);
   SetLength(Values, Length(Names));
   try
-    up.Database := DM.MainConnection1;
+    //up.Database := DM.MainConnection1;
     up.Transaction := DM.UpTran;
 
     InDelimitedFile := TFIBInputDelimitedFile.Create;
@@ -2502,6 +2472,152 @@ begin
     on E : Exception do
       WriteExchangeLog('Exchange',
         'При отправке письма с технической информацией произошла ошибка : ' + E.Message);
+  end;
+end;
+
+procedure TExchangeThread.UpdateFromFileByParamsMySQL(FileName,
+  InsertSQL: String; Names: array of string; LogSQL: Boolean);
+var
+  up : TMyQuery;
+  InDelimitedFile : TFIBInputDelimitedFile;
+  StopExec : TDateTime;
+  Secs : Int64;
+  Col : String;
+  Values : array of Variant;
+  FEOF : Boolean;
+  FEOL : Boolean;
+  CurColumn : Integer;
+  ResultRead : Integer;
+  I : Integer;
+  LogText : String;
+begin
+  up := TMyQuery.Create(nil);
+  SetLength(Values, Length(Names));
+  try
+    up.Connection := DM.MyConnection;
+
+    InDelimitedFile := TFIBInputDelimitedFile.Create;
+    try
+      InDelimitedFile.SkipTitles := False;
+      InDelimitedFile.ReadBlanksAsNull := True;
+      InDelimitedFile.ColDelimiter := Chr(159);
+      InDelimitedFile.RowDelimiter := Chr(161);
+
+      up.SQL.Text := InsertSQL;
+      InDelimitedFile.Filename := FileName;
+
+      if LogSQL then
+        Tracer.TR('Import', 'Exec : ' + InsertSQL);
+      try
+
+        StartExec := Now;
+        try
+          up.Prepare;
+          InDelimitedFile.ReadyStream;
+          FEOF := False;
+          repeat
+            FEOL := False;
+            CurColumn := 0;
+            for I := 0 to Length(Names)-1 do
+              Values[i] := Unassigned;
+            repeat
+              ResultRead := InDelimitedFile.GetColumn(Col);
+              if ResultRead = 0 then FEOF := True;
+              if ResultRead = 2 then FEOL := True;
+              if (CurColumn < Length(Names)) then
+              try
+                if (Col = '') then
+                  Values[CurColumn] := Null
+                else
+                  Values[CurColumn] := Col;
+                Inc(CurColumn);
+              except
+                on E: Exception do
+                begin
+                  if not (FEOF and (CurColumn = Length(Names))) then
+                    raise;
+                end;
+              end;
+            until FEOL or FEOF;
+            if ((FEOF) and (CurColumn = Length(Names))) or (not FEOF)
+            then begin
+              for I := 0 to Length(Names)-1 do
+                if Values[i] = Null then
+                  up.ParamByName(Names[i]).Clear
+                else
+                  up.ParamByName(Names[i]).AsString := Values[i];
+              up.Execute;
+            end;
+          until FEOF;
+        finally
+          StopExec := Now;
+          Secs := SecondsBetween(StopExec, StartExec);
+          if (Secs > 3) and LogSQL then
+            Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+        end;
+
+      except
+        on E : Exception do
+        begin
+          LogText := 'FileName : ' + FileName + CRLF +
+            ' ErrorMessage : ' + E.Message + CRLF;
+          if up.ParamCount > 0 then begin
+            LogText := LogText + '  Params ( ';
+            for I := 0 to up.ParamCount-1 do
+              LogText := LogText +
+                up.Params.Items[i].Name + ' : ' + up.Params.Items[i].AsString + ';';
+            LogText := LogText + ' )';
+          end;
+          //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
+          WriteExchangeLog('Exchange.UpdateFromFileByParamsMySQL', LogText);
+          raise;
+        end;
+      end;
+
+    finally
+      InDelimitedFile.Free;
+    end;
+
+  finally
+    up.Free;
+  end;
+end;
+
+procedure TExchangeThread.adcUpdateAfterUpdateExecuteMySql(
+  Sender: TCustomMyDataSet; StatementTypes: TStatementTypes;
+  Params: TDAParams);
+var
+  StopExec : TDateTime;
+  Secs : Int64;
+begin
+  StopExec := Now;
+  Secs := SecondsBetween(StopExec, StartExec);
+  if Secs > 3 then
+    Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+end;
+
+procedure TExchangeThread.adcUpdateBeforeUpdateExecuteMySql(
+  Sender: TCustomMyDataSet; StatementTypes: TStatementTypes;
+  Params: TDAParams);
+begin
+  Tracer.TR('Import', 'Exec : ' + TpFIBQuery(Sender).SQL.Text);
+  StartExec := Now;
+end;
+
+procedure TExchangeThread.InternalExecute;
+var
+  StopExec : TDateTime;
+  Secs : Int64;
+begin
+  Tracer.TR('Import', 'Exec : ' + DM.adcUpdate.SQL.Text);
+  StartExec := Now;
+  try
+    DM.adcUpdate.Execute;
+  finally
+    StopExec := Now;
+    Secs := SecondsBetween(StopExec, StartExec);
+    if Secs > 3 then
+      Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
   end;
 end;
 

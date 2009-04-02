@@ -5666,7 +5666,7 @@ object AboutForm: TAboutForm
     Width = 230
     Height = 18
     Alignment = taCenter
-    DataField = 'Name'
+    DataField = 'ProviderName'
     DataSource = DM.dsAnalit
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

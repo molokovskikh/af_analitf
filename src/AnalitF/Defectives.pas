@@ -97,7 +97,6 @@ begin
   finally
   	Reg.Free;
   end;
-//	txtTablesUpdates.Caption:=DM.GetTablesUpdatesInfo('DefectiveArticles');
 	ShowForm;
 end;
 
@@ -176,7 +175,7 @@ var
 begin
   //если нет ни одной пометки - печатаем все
   with DM.adsSelect do begin
-    SelectSQL.Text:='SELECT Count(*) FROM Defectives WHERE CheckPrint = 1';
+    SQL.Text:='SELECT Count(*) FROM Defectives WHERE CheckPrint = 1';
     Open;
     try
       ShowAll:=Fields[0].AsInteger=0;

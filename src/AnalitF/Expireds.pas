@@ -312,7 +312,7 @@ begin
   if adsExpireds.IsEmpty then Exit;
 
 	FullCode := adsExpiredsFullCode.AsInteger;
-	ShortCode := DM.MainConnection1.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), 0);
+	ShortCode := DM.MyConnection.ExecSQL('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), []);
 
   CoreId := adsExpiredsCOREID.AsInt64;
 

@@ -119,28 +119,28 @@ object CoreForm: TCoreForm
         Columns = <
           item
             EditButtons = <>
-            FieldName = 'PRICENAME'
+            FieldName = 'PriceName'
             Footers = <>
             Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
             Width = 110
           end
           item
             EditButtons = <>
-            FieldName = 'SYNONYMFIRM'
+            FieldName = 'SynonymFirm'
             Footers = <>
             Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
             Width = 102
           end
           item
             EditButtons = <>
-            FieldName = 'ORDERCOUNT'
+            FieldName = 'OrderCount'
             Footers = <>
             Title.Caption = #1047#1072#1082#1072#1079
             Width = 38
           end
           item
             EditButtons = <>
-            FieldName = 'SENDPRICE'
+            FieldName = 'sendprice'
             Footers = <>
             Title.Caption = #1062#1077#1085#1072
             Width = 49
@@ -149,7 +149,7 @@ object CoreForm: TCoreForm
             Alignment = taCenter
             DisplayFormat = 'dd.mm.yyyy'
             EditButtons = <>
-            FieldName = 'ORDERDATE'
+            FieldName = 'OrderDate'
             Footers = <>
             Title.Caption = #1044#1072#1090#1072
             Width = 68
@@ -421,7 +421,7 @@ object CoreForm: TCoreForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'SYNONYMNAME'
+          FieldName = 'SynonymName'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
@@ -429,7 +429,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'SYNONYMFIRM'
+          FieldName = 'SynonymFirm'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
@@ -437,7 +437,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'VOLUME'
+          FieldName = 'Volume'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
@@ -445,7 +445,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'NOTE'
+          FieldName = 'Note'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
@@ -454,7 +454,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'DOC'
+          FieldName = 'doc'
           Footers = <>
           Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
           Visible = False
@@ -462,7 +462,7 @@ object CoreForm: TCoreForm
         item
           Alignment = taCenter
           EditButtons = <>
-          FieldName = 'PERIOD'
+          FieldName = 'Period'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
@@ -470,7 +470,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'PRICENAME'
+          FieldName = 'PriceName'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
@@ -478,7 +478,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'REGIONNAME'
+          FieldName = 'RegionName'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1056#1077#1075#1080#1086#1085
@@ -488,7 +488,7 @@ object CoreForm: TCoreForm
         item
           DisplayFormat = 'dd.mm.yyyy hh:nn'
           EditButtons = <>
-          FieldName = 'DATEPRICE'
+          FieldName = 'DatePrice'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
@@ -496,7 +496,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'REQUESTRATIO'
+          FieldName = 'requestratio'
           Footers = <>
           Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
           Visible = False
@@ -504,14 +504,14 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'ORDERCOST'
+          FieldName = 'ordercost'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
           Visible = False
         end
         item
           EditButtons = <>
-          FieldName = 'MINORDERCOUNT'
+          FieldName = 'minordercount'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1082#1086#1083'-'#1074#1086
           Visible = False
@@ -527,7 +527,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'REGISTRYCOST'
+          FieldName = 'registrycost'
           Footers = <>
           Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
           Visible = False
@@ -557,7 +557,7 @@ object CoreForm: TCoreForm
         item
           Alignment = taRightJustify
           EditButtons = <>
-          FieldName = 'QUANTITY'
+          FieldName = 'Quantity'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
@@ -566,7 +566,7 @@ object CoreForm: TCoreForm
         item
           Color = 16775406
           EditButtons = <>
-          FieldName = 'ORDERCOUNT'
+          FieldName = 'OrderCount'
           Footers = <>
           MinWidth = 5
           Title.Caption = #1047#1072#1082#1072#1079
@@ -589,6 +589,8 @@ object CoreForm: TCoreForm
     Width = 792
     Height = 33
     Align = alBottom
+    Color = clWindow
+    ParentColor = False
     TabOrder = 4
     inherited gbLegend: TGroupBox
       Width = 792
@@ -638,7 +640,7 @@ object CoreForm: TCoreForm
       OnExecute = actFlipCoreExecute
     end
   end
-  object adsCore: TpFIBDataSet
+  object adsCoreOld: TpFIBDataSet
     UpdateSQL.Strings = (
       
         'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
@@ -658,7 +660,7 @@ object CoreForm: TCoreForm
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 64
@@ -668,298 +670,298 @@ object CoreForm: TCoreForm
     oRefreshAfterPost = False
     oPersistentSorting = True
     oFetchAll = True
-    object adsCoreCOREID: TFIBBCDField
+    object adsCoreOldCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
       RoundByScale = True
     end
-    object adsCorePRICECODE: TFIBBCDField
+    object adsCoreOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreREGIONCODE: TFIBBCDField
+    object adsCoreOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreFULLCODE: TFIBBCDField
+    object adsCoreOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreSHORTCODE: TFIBBCDField
+    object adsCoreOldSHORTCODE: TFIBBCDField
       FieldName = 'SHORTCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreCODEFIRMCR: TFIBBCDField
+    object adsCoreOldCODEFIRMCR: TFIBBCDField
       FieldName = 'CODEFIRMCR'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreSYNONYMCODE: TFIBBCDField
+    object adsCoreOldSYNONYMCODE: TFIBBCDField
       FieldName = 'SYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsCoreOldSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'SYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreCODE: TFIBStringField
+    object adsCoreOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCoreCODECR: TFIBStringField
+    object adsCoreOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCorePERIOD: TFIBStringField
+    object adsCoreOldPERIOD: TFIBStringField
       FieldName = 'PERIOD'
       EmptyStrToNull = True
     end
-    object adsCoreSALE: TFIBIntegerField
+    object adsCoreOldSALE: TFIBIntegerField
       FieldName = 'SALE'
     end
-    object adsCoreVOLUME: TFIBStringField
+    object adsCoreOldVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsCoreNOTE: TFIBStringField
+    object adsCoreOldNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
       EmptyStrToNull = True
     end
-    object adsCoreAWAIT: TFIBBooleanField
+    object adsCoreOldAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
       DisplayValues = '+;'
     end
-    object adsCoreJUNK: TFIBBooleanField
+    object adsCoreOldJUNK: TFIBBooleanField
       FieldName = 'JUNK'
       DisplayValues = '+;'
     end
-    object adsCoreSYNONYMNAME: TFIBStringField
+    object adsCoreOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreSYNONYMFIRM: TFIBStringField
+    object adsCoreOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreDATEPRICE: TFIBDateTimeField
+    object adsCoreOldDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
     end
-    object adsCorePRICENAME: TFIBStringField
+    object adsCoreOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsCoreFIRMCODE: TFIBBCDField
+    object adsCoreOldFIRMCODE: TFIBBCDField
       FieldName = 'FIRMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCorePRICEENABLED: TFIBBooleanField
+    object adsCoreOldPRICEENABLED: TFIBBooleanField
       FieldName = 'PRICEENABLED'
       DisplayValues = '+;'
     end
-    object adsCoreSTORAGE: TFIBBooleanField
+    object adsCoreOldSTORAGE: TFIBBooleanField
       FieldName = 'STORAGE'
-      OnGetText = adsCoreSTORAGEGetText
+      OnGetText = adsCoreOldSTORAGEGetText
       DisplayValues = '+;Fail'
     end
-    object adsCoreREGIONNAME: TFIBStringField
+    object adsCoreOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsCoreORDERSCOREID: TFIBBCDField
+    object adsCoreOldORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSORDERID: TFIBBCDField
+    object adsCoreOldORDERSORDERID: TFIBBCDField
       FieldName = 'ORDERSORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSCLIENTID: TFIBBCDField
+    object adsCoreOldORDERSCLIENTID: TFIBBCDField
       FieldName = 'ORDERSCLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSFULLCODE: TFIBBCDField
+    object adsCoreOldORDERSFULLCODE: TFIBBCDField
       FieldName = 'ORDERSFULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSCODEFIRMCR: TFIBBCDField
+    object adsCoreOldORDERSCODEFIRMCR: TFIBBCDField
       FieldName = 'ORDERSCODEFIRMCR'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSSYNONYMCODE: TFIBBCDField
+    object adsCoreOldORDERSSYNONYMCODE: TFIBBCDField
       FieldName = 'ORDERSSYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsCoreOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'ORDERSSYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSCODE: TFIBStringField
+    object adsCoreOldORDERSCODE: TFIBStringField
       FieldName = 'ORDERSCODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCoreORDERSCODECR: TFIBStringField
+    object adsCoreOldORDERSCODECR: TFIBStringField
       FieldName = 'ORDERSCODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCoreORDERCOUNT: TFIBIntegerField
+    object adsCoreOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
       DisplayFormat = '#'
     end
-    object adsCoreORDERSSYNONYM: TFIBStringField
+    object adsCoreOldORDERSSYNONYM: TFIBStringField
       FieldName = 'ORDERSSYNONYM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreORDERSSYNONYMFIRM: TFIBStringField
+    object adsCoreOldORDERSSYNONYMFIRM: TFIBStringField
       FieldName = 'ORDERSSYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreORDERSJUNK: TFIBBooleanField
+    object adsCoreOldORDERSJUNK: TFIBBooleanField
       FieldName = 'ORDERSJUNK'
       DisplayValues = '+;'
     end
-    object adsCoreORDERSAWAIT: TFIBBooleanField
+    object adsCoreOldORDERSAWAIT: TFIBBooleanField
       FieldName = 'ORDERSAWAIT'
       DisplayValues = '+;'
     end
-    object adsCoreORDERSHORDERID: TFIBBCDField
+    object adsCoreOldORDERSHORDERID: TFIBBCDField
       FieldName = 'ORDERSHORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSHCLIENTID: TFIBBCDField
+    object adsCoreOldORDERSHCLIENTID: TFIBBCDField
       FieldName = 'ORDERSHCLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSHPRICECODE: TFIBBCDField
+    object adsCoreOldORDERSHPRICECODE: TFIBBCDField
       FieldName = 'ORDERSHPRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSHREGIONCODE: TFIBBCDField
+    object adsCoreOldORDERSHREGIONCODE: TFIBBCDField
       FieldName = 'ORDERSHREGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreORDERSHPRICENAME: TFIBStringField
+    object adsCoreOldORDERSHPRICENAME: TFIBStringField
       FieldName = 'ORDERSHPRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsCoreORDERSHREGIONNAME: TFIBStringField
+    object adsCoreOldORDERSHREGIONNAME: TFIBStringField
       FieldName = 'ORDERSHREGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsCoreSumOrder: TCurrencyField
+    object adsCoreOldSumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsCorePriceRet: TCurrencyField
+    object adsCoreOldPriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsCorePriceDelta: TFloatField
+    object adsCoreOldPriceDelta: TFloatField
       FieldKind = fkCalculated
       FieldName = 'PriceDelta'
       DisplayFormat = '0.0;;'#39#39
       Calculated = True
     end
-    object adsCoreCryptBASECOST: TCurrencyField
+    object adsCoreOldCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsCoreQUANTITY: TFIBStringField
+    object adsCoreOldQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsCoreBASECOST: TFIBStringField
+    object adsCoreOldBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsCoreORDERSPRICE: TFIBStringField
+    object adsCoreOldORDERSPRICE: TFIBStringField
       FieldName = 'ORDERSPRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsCoreDOC: TFIBStringField
+    object adsCoreOldDOC: TFIBStringField
       FieldName = 'DOC'
       EmptyStrToNull = True
     end
-    object adsCoreREGISTRYCOST: TFIBFloatField
+    object adsCoreOldREGISTRYCOST: TFIBFloatField
       FieldName = 'REGISTRYCOST'
       DisplayFormat = '#'
     end
-    object adsCoreVITALLYIMPORTANT: TFIBIntegerField
+    object adsCoreOldVITALLYIMPORTANT: TFIBIntegerField
       FieldName = 'VITALLYIMPORTANT'
     end
-    object adsCoreREQUESTRATIO: TFIBIntegerField
+    object adsCoreOldREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
       DisplayFormat = '#'
     end
-    object adsCoreORDERCOST: TFIBBCDField
+    object adsCoreOldORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
       Size = 2
       RoundByScale = True
     end
-    object adsCoreMINORDERCOUNT: TFIBIntegerField
+    object adsCoreOldMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
-    object adsCorePRODUCTID: TFIBBCDField
+    object adsCoreOldPRODUCTID: TFIBBCDField
       FieldName = 'PRODUCTID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreSortOrder: TIntegerField
+    object adsCoreOldSortOrder: TIntegerField
       FieldKind = fkCalculated
       FieldName = 'SortOrder'
       Calculated = True
     end
   end
-  object adsRegions: TpFIBDataSet
+  object adsRegionsOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT * FROM Regions')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     Left = 152
     Top = 173
     oCacheCalcFields = True
   end
-  object adsOrders: TpFIBDataSet
+  object adsOrdersOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    FULLCODE,'
@@ -979,74 +981,73 @@ object CoreForm: TCoreForm
       '    ORDERSSHOWBYFORM(:FULLCODE,'
       '    :ACLIENTID) ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    DataSource = dsCore
+    Database = DM.MainConnectionOld
     Left = 184
     Top = 388
     WaitEndMasterScroll = True
     dcForceOpen = True
     oTrimCharFields = False
     oCacheCalcFields = True
-    object adsOrdersFULLCODE: TFIBBCDField
+    object adsOrdersOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersSYNONYMNAME: TFIBStringField
+    object adsOrdersOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersSYNONYMFIRM: TFIBStringField
+    object adsOrdersOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersORDERCOUNT: TFIBIntegerField
+    object adsOrdersOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsOrdersORDERDATE: TFIBDateTimeField
+    object adsOrdersOldORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
       DisplayFormat = 'dd.mm.yyyy hh:mm AMPM'
     end
-    object adsOrdersPRICENAME: TFIBStringField
+    object adsOrdersOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsOrdersREGIONNAME: TFIBStringField
+    object adsOrdersOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsOrdersAWAIT: TFIBIntegerField
+    object adsOrdersOldAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
     end
-    object adsOrdersJUNK: TFIBIntegerField
+    object adsOrdersOldJUNK: TFIBIntegerField
       FieldName = 'JUNK'
     end
-    object adsOrdersCODE: TFIBStringField
+    object adsOrdersOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersCODECR: TFIBStringField
+    object adsOrdersOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersPRICE: TFIBStringField
+    object adsOrdersOldPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsOrdersSENDPRICE: TFIBBCDField
+    object adsOrdersOldSENDPRICE: TFIBBCDField
       FieldName = 'SENDPRICE'
       Size = 2
       RoundByScale = True
     end
   end
-  object adsOrdersShowFormSummary: TpFIBDataSet
+  object adsOrdersShowFormSummaryOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    *'
@@ -1056,19 +1057,19 @@ object CoreForm: TCoreForm
       '  ClientCode = :ACLIENTID'
       'and ProductId = :ProductId')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     Left = 344
     Top = 396
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
+    object adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField
       FieldName = 'PRICEAVG'
       Size = 2
       RoundByScale = True
     end
   end
-  object adsFirmsInfo: TpFIBDataSet
+  object adsFirmsInfoOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT '
       '  RegionalData.FirmCode, '
@@ -1085,10 +1086,347 @@ object CoreForm: TCoreForm
       'and PricesRegionalData.RegionCode = RegionalData.RegionCode'
       'and PricesRegionalData.PriceCode = :PriceCode')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    DataSource = dsCore
+    Database = DM.MainConnectionOld
     Left = 626
     Top = 404
     oCacheCalcFields = True
+  end
+  object adsCore: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'call CORESHOWBYNAME(:ACLIENT,'
+      '    :TIMEZONEBIAS,'
+      '    :PARENTCODE,'
+      '    :SHOWREGISTER,'
+      '    :REGISTERID)')
+    Left = 96
+    Top = 141
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ACLIENT'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'TIMEZONEBIAS'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PARENTCODE'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'SHOWREGISTER'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'REGISTERID'
+      end>
+    object adsCoreCoreId: TLargeintField
+      FieldName = 'CoreId'
+    end
+    object adsCorePriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsCoreRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsCoreproductid: TLargeintField
+      FieldName = 'productid'
+    end
+    object adsCoreAFullCode: TLargeintField
+      FieldName = 'AFullCode'
+    end
+    object adsCoreShortCode: TLargeintField
+      FieldName = 'ShortCode'
+    end
+    object adsCoreCodeFirmCr: TLargeintField
+      FieldName = 'CodeFirmCr'
+    end
+    object adsCoreSynonymCode: TLargeintField
+      FieldName = 'SynonymCode'
+    end
+    object adsCoreSynonymFirmCrCode: TLargeintField
+      FieldName = 'SynonymFirmCrCode'
+    end
+    object adsCoreCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsCoreCodeCr: TStringField
+      FieldName = 'CodeCr'
+      Size = 84
+    end
+    object adsCorePeriod: TStringField
+      FieldName = 'Period'
+    end
+    object adsCoreSale: TLargeintField
+      FieldName = 'Sale'
+    end
+    object adsCoreVolume: TStringField
+      FieldName = 'Volume'
+      Size = 15
+    end
+    object adsCoreNote: TStringField
+      FieldName = 'Note'
+      Size = 50
+    end
+    object adsCoreBaseCost: TStringField
+      FieldName = 'BaseCost'
+      Size = 60
+    end
+    object adsCoreQuantity: TStringField
+      FieldName = 'Quantity'
+      Size = 15
+    end
+    object adsCoreAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsCoreJunk: TBooleanField
+      FieldName = 'Junk'
+    end
+    object adsCoreSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 250
+    end
+    object adsCoreSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsCoreDatePrice: TDateTimeField
+      FieldName = 'DatePrice'
+    end
+    object adsCorePriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsCorePriceEnabled: TBooleanField
+      FieldName = 'PriceEnabled'
+    end
+    object adsCoreFirmCode: TLargeintField
+      FieldName = 'FirmCode'
+    end
+    object adsCoreStorage: TIntegerField
+      FieldName = 'Storage'
+    end
+    object adsCoreRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsCoreOrdersCoreId: TLargeintField
+      FieldName = 'OrdersCoreId'
+    end
+    object adsCoreOrdersOrderId: TLargeintField
+      FieldName = 'OrdersOrderId'
+    end
+    object adsCoreOrdersClientId: TLargeintField
+      FieldName = 'OrdersClientId'
+    end
+    object adsCoreOrdersFullCode: TLargeintField
+      FieldName = 'OrdersFullCode'
+    end
+    object adsCoreOrdersCodeFirmCr: TLargeintField
+      FieldName = 'OrdersCodeFirmCr'
+    end
+    object adsCoreOrdersSynonymCode: TLargeintField
+      FieldName = 'OrdersSynonymCode'
+    end
+    object adsCoreOrdersSynonymFirmCrCode: TLargeintField
+      FieldName = 'OrdersSynonymFirmCrCode'
+    end
+    object adsCoreOrdersCode: TStringField
+      FieldName = 'OrdersCode'
+      Size = 84
+    end
+    object adsCoreOrdersCodeCr: TStringField
+      FieldName = 'OrdersCodeCr'
+      Size = 84
+    end
+    object adsCoreOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsCoreOrdersSynonym: TStringField
+      FieldName = 'OrdersSynonym'
+      Size = 250
+    end
+    object adsCoreOrdersSynonymFirm: TStringField
+      FieldName = 'OrdersSynonymFirm'
+      Size = 250
+    end
+    object adsCoreOrdersPrice: TStringField
+      FieldName = 'OrdersPrice'
+      Size = 60
+    end
+    object adsCoreOrdersJunk: TBooleanField
+      FieldName = 'OrdersJunk'
+    end
+    object adsCoreOrdersAwait: TBooleanField
+      FieldName = 'OrdersAwait'
+    end
+    object adsCoreOrdersHOrderId: TLargeintField
+      FieldName = 'OrdersHOrderId'
+    end
+    object adsCoreOrdersHClientId: TLargeintField
+      FieldName = 'OrdersHClientId'
+    end
+    object adsCoreOrdersHPriceCode: TLargeintField
+      FieldName = 'OrdersHPriceCode'
+    end
+    object adsCoreOrdersHRegionCode: TLargeintField
+      FieldName = 'OrdersHRegionCode'
+    end
+    object adsCoreOrdersHPriceName: TStringField
+      FieldName = 'OrdersHPriceName'
+      Size = 70
+    end
+    object adsCoreOrdersHRegionName: TStringField
+      FieldName = 'OrdersHRegionName'
+      Size = 25
+    end
+    object adsCoredoc: TStringField
+      FieldName = 'doc'
+    end
+    object adsCoreregistrycost: TFloatField
+      FieldName = 'registrycost'
+    end
+    object adsCorevitallyimportant: TBooleanField
+      FieldName = 'vitallyimportant'
+    end
+    object adsCorerequestratio: TIntegerField
+      FieldName = 'requestratio'
+    end
+    object adsCoreordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsCoreminordercount: TIntegerField
+      FieldName = 'minordercount'
+    end
+  end
+  object adsRegions: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT * FROM Regions')
+    Left = 144
+    Top = 205
+  end
+  object adsOrders: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'call     ORDERSSHOWBYFORM(:FULLCODE,'
+      '    :ACLIENTID)')
+    MasterSource = dsCore
+    Left = 208
+    Top = 389
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'FULLCODE'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ACLIENTID'
+      end>
+    object adsOrdersFullCode: TLargeintField
+      FieldName = 'FullCode'
+    end
+    object adsOrdersCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsOrdersCodeCR: TStringField
+      FieldName = 'CodeCR'
+      Size = 84
+    end
+    object adsOrdersSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 250
+    end
+    object adsOrdersSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsOrdersOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsOrdersPrice: TStringField
+      FieldName = 'Price'
+      Size = 60
+    end
+    object adsOrdersOrderDate: TDateTimeField
+      FieldName = 'OrderDate'
+    end
+    object adsOrdersPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsOrdersRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsOrdersAwait: TIntegerField
+      FieldName = 'Await'
+    end
+    object adsOrdersJunk: TIntegerField
+      FieldName = 'Junk'
+    end
+    object adsOrderssendprice: TFloatField
+      FieldName = 'sendprice'
+    end
+  end
+  object adsOrdersShowFormSummary: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT'
+      '    *'
+      'FROM'
+      '   ClientAVG'
+      'where'
+      '  ClientCode = :ACLIENTID'
+      'and ProductId = :ProductId')
+    Left = 376
+    Top = 397
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ACLIENTID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ProductId'
+      end>
+  end
+  object adsFirmsInfo: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '  RegionalData.FirmCode, '
+      '  RegionalData.RegionCode, '
+      '  RegionalData.SupportPhone, '
+      '  RegionalData.OperativeInfo,'
+      '  PricesRegionalData.MinReq '
+      'FROM '
+      '  RegionalData,'
+      '  PricesRegionalData'
+      'where'
+      '    RegionalData.FirmCode = :FirmCode'
+      'and RegionalData.RegionCode = :RegionCode'
+      'and PricesRegionalData.RegionCode = RegionalData.RegionCode'
+      'and PricesRegionalData.PriceCode = :PriceCode')
+    MasterSource = dsCore
+    Left = 618
+    Top = 433
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'FirmCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'RegionCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PriceCode'
+      end>
   end
 end

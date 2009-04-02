@@ -351,12 +351,6 @@ inherited NamesFormsForm: TNamesFormsForm
   object ActionList: TActionList
     Left = 512
     Top = 168
-    object actNewWares: TAction
-      Caption = #1053#1086#1074#1099#1077' '#1087#1086#1089#1090#1091#1087#1083#1077#1085#1080#1103' (F3)'
-      Hint = #1053#1086#1074#1099#1077' '#1087#1086#1089#1090#1091#1087#1083#1077#1085#1080#1103
-      ShortCut = 114
-      OnExecute = actNewWaresExecute
-    end
     object actUseForms: TAction
       Caption = #1055#1086#1080#1089#1082' '#1087#1086' '#1092#1086#1088#1084#1077' '#1074#1099#1087#1091#1089#1082#1072' (F4)'
       Hint = #1055#1086#1080#1089#1082' '#1087#1086' '#1092#1086#1088#1084#1077' '#1074#1099#1087#1091#1089#1082#1072
@@ -377,7 +371,7 @@ inherited NamesFormsForm: TNamesFormsForm
       OnExecute = actSearchInBeginExecute
     end
   end
-  object adsNames: TpFIBDataSet
+  object adsNamesOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    ASHORTCODE,'
@@ -386,28 +380,27 @@ inherited NamesFormsForm: TNamesFormsForm
       'FROM'
       '    CATALOGSHOWBYNAME(:SHOWALL) ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     Left = 80
-    Top = 160
+    Top = 168
     oCacheCalcFields = True
   end
-  object adsForms: TpFIBDataSet
+  object adsFormsOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '*'
       'FROM'
       '    CATALOGSHOWBYFORM(:ASHORTCODE, :SHOWAll) ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
-    DataSource = dsNames
+    Database = DM.MainConnectionOld
     Left = 437
     Top = 152
     dcForceOpen = True
     oCacheCalcFields = True
   end
-  object adsCatalog: TpFIBDataSet
+  object adsCatalogOld: TpFIBDataSet
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     UpdateTransaction = DM.UpTran
     Left = 176
     Top = 168
@@ -431,5 +424,42 @@ inherited NamesFormsForm: TNamesFormsForm
     OnTimer = tmrSearchTimer
     Left = 304
     Top = 184
+  end
+  object adsNames: TMyStoredProc
+    StoredProcName = 'CATALOGSHOWBYNAME'
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'CALL CATALOGSHOWBYNAME(:showall)')
+    Left = 96
+    Top = 176
+    ParamData = <
+      item
+        DataType = ftBoolean
+        Name = 'showall'
+        ParamType = ptInput
+      end>
+    CommandStoredProcName = 'CATALOGSHOWBYNAME'
+  end
+  object adsForms: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'CALL CATALOGSHOWBYFORM(:ashortcode, :showall)')
+    MasterSource = dsNames
+    Left = 456
+    Top = 184
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ashortcode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'showall'
+      end>
+  end
+  object adsCatalog: TMyQuery
+    Connection = DM.MyConnection
+    Left = 200
+    Top = 168
   end
 end

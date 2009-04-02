@@ -112,7 +112,7 @@ begin
   DM.adsPrices.Open;
   try
     //Если всего один прайс-лист, он в работе и кол-во позиций больше нуля
-    IsAlonePrice := (DM.adsPrices.RecordCountFromSrv = 1) and
+    IsAlonePrice := (DM.adsPrices.RecordCount = 1) and
        (DM.adsPricesINJOB.AsBoolean) and (DM.adsPricesPRICESIZE.AsInteger > 0);
     if IsAlonePrice then begin
       AlonePriceCode  := DM.adsPricesPRICECODE.AsInteger;

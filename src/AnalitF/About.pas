@@ -48,7 +48,7 @@ procedure TAboutForm.FormCreate(Sender: TObject);
 begin
 	Label1.Caption := Application.Title;
 	Label2.Caption := 'Версия : ' + MainForm.VerInfo.FileVersion +
-		' (' + DM.adtProvider.FieldByName( 'MDBVersion').AsString + ')';
+		' (' + DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString + ')';
 	lIndent.Caption := 'Идентификация : ' + DM.adtClients.FieldByName('ClientID').AsString +
     ' (' + DM.adtClients.FieldByName('Name').AsString + ')';
 	Label4.Caption := MainForm.VerInfo.LegalCopyright;

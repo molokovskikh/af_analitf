@@ -229,7 +229,6 @@ inherited RegistersForm: TRegistersForm
       'FROM'
       '    REGISTRY ')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 96
     Top = 136
     oCacheCalcFields = True

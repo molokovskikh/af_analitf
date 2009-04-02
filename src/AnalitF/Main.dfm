@@ -3836,7 +3836,7 @@ object MainForm: TMainForm
       FFFFFFFFFFFFFFFF0000001FFFC1FFFF00000000000000000000000000000000
       000000000000}
   end
-  object adsOrdersH: TpFIBDataSet
+  object adsOrdersHOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    ORDERID,'
@@ -3861,7 +3861,7 @@ object MainForm: TMainForm
       'where'
       '  Send = :ASend')
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     Left = 192
     Top = 272
     oCacheCalcFields = True
@@ -3878,5 +3878,54 @@ object MainForm: TMainForm
     object est21: TMenuItem
       Caption = 'Test2'
     end
+  end
+  object adsOrdersH: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT'
+      '    OrdersH.OrderId'
+      'FROM'
+      '   ((OrdersH'
+      
+        '    LEFT JOIN PricesData ON OrdersH.PriceCode=PricesData.PriceCo' +
+        'de)'
+      
+        '    left join pricesregionaldata on pricesregionaldata.PriceCode' +
+        ' = OrdersH.PriceCode and pricesregionaldata.regioncode = OrdersH' +
+        '.regioncode)'
+      
+        '    LEFT JOIN RegionalData ON (RegionalData.RegionCode=OrdersH.R' +
+        'egionCode) AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (OrdersH.ClientId = :AClientId)'
+      'and (:AClosed = OrdersH.Closed)'
+      
+        'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
+        ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
+        'cesregionaldata.PriceCode is not null)))'
+      'and (OrdersH.SEND = :ASend)')
+    Left = 240
+    Top = 280
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ACLIENTID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ACLOSED'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ASend'
+      end>
   end
 end

@@ -114,7 +114,9 @@ begin
     FreeAndNil(GlobalExchangeParams);
   GlobalExchangeParams := nil;
 	if AExchangeActions = [] then exit;
-	DM.DeleteEmptyOrders;
+
+  //todo: надо потом восстановить
+//	DM.DeleteEmptyOrders;
 
   //Если мы выставили флаг "Получать кумулятивное обновление", то при попытки обновления мы будем запрашивать кумулятивное,
   //кроме ситуации, когда пользователь делает "Импортирование данных"
@@ -168,12 +170,12 @@ begin
 		try
       DM.ResetReclame;
 			ExchangeForm.Timer.Enabled := True;
+      DM.MyConnection.Close;
 			Result := ExchangeForm.ShowModal = mrOk;
       if not Result then
         AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
-			DM.MainConnection1.Close;
       Sleep(500);
-			DM.MainConnection1.Open;
+      DM.MyConnection.Open;
       DM.UpdateReclame;
 		except
 			on E: Exception do
@@ -311,7 +313,8 @@ var
 begin
   t := TInternalRepareOrders.Create;
   try
-    t.RepareOrders;
+    //todo: надо потом восстановить
+    //t.RepareOrders;
   finally
     t.Free;
   end;
@@ -340,8 +343,6 @@ begin
 	Timer.Enabled := False;
 	DoStop := False;
 
-	ConnectCount := DM.adtParams.FieldByName( 'ConnectCount').AsInteger;
-	ConnectPause := DM.adtParams.FieldByName( 'ConnectPause').AsInteger;
 	Caption := 'Обмен данными';
 
 	//главный цикл соединения
@@ -381,7 +382,7 @@ begin
 	{ Требуется завершение программы }
 	if Assigned( ExThread) and ( ErrMsg = 'Terminate') then
 	begin
-		DM.MainConnection1.Close;
+    DM.MyConnection.Close;
 		Application.Terminate;
 	end;
 
@@ -493,6 +494,8 @@ begin
   HTTP.ConnectTimeout := -2;
   HTTPReclame.ConnectTimeout := -2;
   httpReceive.ConnectTimeout := -2;
+	ConnectCount := DM.adtParams.FieldByName( 'ConnectCount').AsInteger;
+	ConnectPause := DM.adtParams.FieldByName( 'ConnectPause').AsInteger;
 end;
 
 procedure TExchangeForm.HTTPStatus(ASender: TObject;

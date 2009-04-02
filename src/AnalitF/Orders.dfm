@@ -305,6 +305,8 @@ inherited OrdersForm: TOrdersForm
     Width = 793
     Height = 33
     Align = alBottom
+    Color = clWindow
+    ParentColor = False
     TabOrder = 3
     inherited gbLegend: TGroupBox
       inherited lVitallyImportantLegend: TLabel
@@ -379,7 +381,7 @@ inherited OrdersForm: TOrdersForm
     BeforeEdit = adsOrdersBeforeEdit
     BeforePost = adsOrdersBeforePost
     Transaction = DM.DefTran
-    Database = DM.MainConnection1
+    Database = DM.MainConnectionOld
     UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 144

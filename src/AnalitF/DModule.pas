@@ -12,7 +12,8 @@ uses
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
-  IdGlobal, FR_DSet, Menus;
+  IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
+  MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup;
 
 {
 Криптование
@@ -88,7 +89,6 @@ type
     dsParams: TDataSource;
     dsAnalit: TDataSource;
     dsClients: TDataSource;
-    dsTablesUpdates: TDataSource;
     Ras: TARas;
     frRichObject: TfrRichObject;
     frCheckBoxObject: TfrCheckBoxObject;
@@ -102,17 +102,12 @@ type
     frJPEGExport: TfrJPEGExport;
     frTIFFExport: TfrTIFFExport;
     frRtfAdvExport: TfrRtfAdvExport;
-    dsReclame: TDataSource;
-    MainConnection1: TpFIBDatabase;
+    MainConnectionOld: TpFIBDatabase;
     DefTran: TpFIBTransaction;
-    adtParams: TpFIBDataSet;
-    adtProvider: TpFIBDataSet;
-    adtReclame: TpFIBDataSet;
-    adtClients: TpFIBDataSet;
-    adtTablesUpdates: TpFIBDataSet;
-    adtFlags: TpFIBDataSet;
-    adcUpdate: TpFIBQuery;
-    adsSelect: TpFIBDataSet;
+    adtParamsOld: TpFIBDataSet;
+    adtClientsOld: TpFIBDataSet;
+    adcUpdateOld: TpFIBQuery;
+    adsSelectOld: TpFIBDataSet;
     adsSelect2: TpFIBDataSet;
     adsRepareOrders: TpFIBDataSet;
     adsCore: TpFIBDataSet;
@@ -176,11 +171,11 @@ type
     adsCoreORDERSHREGIONCODE: TFIBBCDField;
     adsCoreORDERSHPRICENAME: TFIBStringField;
     adsCoreORDERSHREGIONNAME: TFIBStringField;
-    adsRetailMargins: TpFIBDataSet;
-    adsRetailMarginsID: TFIBBCDField;
-    adsRetailMarginsLEFTLIMIT: TFIBBCDField;
-    adsRetailMarginsRIGHTLIMIT: TFIBBCDField;
-    adsRetailMarginsRETAIL: TFIBIntegerField;
+    adsRetailMarginsOld: TpFIBDataSet;
+    adsRetailMarginsOldID: TFIBBCDField;
+    adsRetailMarginsOldLEFTLIMIT: TFIBBCDField;
+    adsRetailMarginsOldRIGHTLIMIT: TFIBBCDField;
+    adsRetailMarginsOldRETAIL: TFIBIntegerField;
     dsRetailMargins: TDataSource;
     adsSumOrders: TpFIBDataSet;
     adsSumOrdersCODE: TFIBStringField;
@@ -188,7 +183,7 @@ type
     adsSumOrdersORDERCOUNT: TFIBIntegerField;
     adsSumOrdersCryptPRICE: TCurrencyField;
     adsSumOrdersSumOrders: TCurrencyField;
-    adsPrices: TpFIBDataSet;
+    adsPricesOld: TpFIBDataSet;
     adsOrderDetailsCryptSUMORDER: TCurrencyField;
     adsOrderDetailsORDERID: TFIBBCDField;
     adsOrderDetailsCLIENTID: TFIBBCDField;
@@ -217,24 +212,24 @@ type
     adsAllOrdersJUNK: TFIBBooleanField;
     adsAllOrdersORDERCOUNT: TFIBIntegerField;
     adsAllOrdersCryptPRICE: TCurrencyField;
-    adsPricesPRICECODE: TFIBBCDField;
-    adsPricesPRICENAME: TFIBStringField;
-    adsPricesDATEPRICE: TFIBDateTimeField;
-    adsPricesMINREQ: TFIBIntegerField;
-    adsPricesENABLED: TFIBIntegerField;
-    adsPricesPRICEINFO: TFIBMemoField;
-    adsPricesFIRMCODE: TFIBBCDField;
-    adsPricesFULLNAME: TFIBStringField;
-    adsPricesSTORAGE: TFIBIntegerField;
-    adsPricesADMINMAIL: TFIBStringField;
-    adsPricesSUPPORTPHONE: TFIBStringField;
-    adsPricesCONTACTINFO: TFIBMemoField;
-    adsPricesOPERATIVEINFO: TFIBMemoField;
-    adsPricesREGIONCODE: TFIBBCDField;
-    adsPricesREGIONNAME: TFIBStringField;
-    adsPricesPOSITIONS: TFIBIntegerField;
-    adsPricesPRICESIZE: TFIBIntegerField;
-    adsPricesINJOB: TFIBIntegerField;
+    adsPricesOldPRICECODE: TFIBBCDField;
+    adsPricesOldPRICENAME: TFIBStringField;
+    adsPricesOldDATEPRICE: TFIBDateTimeField;
+    adsPricesOldMINREQ: TFIBIntegerField;
+    adsPricesOldENABLED: TFIBIntegerField;
+    adsPricesOldPRICEINFO: TFIBMemoField;
+    adsPricesOldFIRMCODE: TFIBBCDField;
+    adsPricesOldFULLNAME: TFIBStringField;
+    adsPricesOldSTORAGE: TFIBIntegerField;
+    adsPricesOldADMINMAIL: TFIBStringField;
+    adsPricesOldSUPPORTPHONE: TFIBStringField;
+    adsPricesOldCONTACTINFO: TFIBMemoField;
+    adsPricesOldOPERATIVEINFO: TFIBMemoField;
+    adsPricesOldREGIONCODE: TFIBBCDField;
+    adsPricesOldREGIONNAME: TFIBStringField;
+    adsPricesOldPOSITIONS: TFIBIntegerField;
+    adsPricesOldPRICESIZE: TFIBIntegerField;
+    adsPricesOldINJOB: TFIBIntegerField;
     adsCoreAWAIT: TFIBBooleanField;
     adsCoreJUNK: TFIBBooleanField;
     adsRepareOrdersPRICE: TFIBStringField;
@@ -251,23 +246,23 @@ type
     adsOrderCoreCryptBASECOST: TCurrencyField;
     adsOrderCorePRICEENABLED: TFIBIntegerField;
     adsOrderCoreJUNK: TFIBIntegerField;
-    adtClientsCLIENTID: TFIBBCDField;
-    adtClientsNAME: TFIBStringField;
-    adtClientsREGIONCODE: TFIBBCDField;
-    adtClientsEXCESS: TFIBIntegerField;
-    adtClientsDELTAMODE: TFIBSmallIntField;
-    adtClientsMAXUSERS: TFIBIntegerField;
-    adtClientsREQMASK: TFIBBCDField;
-    adtClientsTECHSUPPORT: TFIBStringField;
-    adtClientsCALCULATELEADER: TFIBBooleanField;
-    adtClientsONLYLEADERS: TFIBBooleanField;
+    adtClientsOldCLIENTID: TFIBBCDField;
+    adtClientsOldNAME: TFIBStringField;
+    adtClientsOldREGIONCODE: TFIBBCDField;
+    adtClientsOldEXCESS: TFIBIntegerField;
+    adtClientsOldDELTAMODE: TFIBSmallIntField;
+    adtClientsOldMAXUSERS: TFIBIntegerField;
+    adtClientsOldREQMASK: TFIBBCDField;
+    adtClientsOldTECHSUPPORT: TFIBStringField;
+    adtClientsOldCALCULATELEADER: TFIBBooleanField;
+    adtClientsOldONLYLEADERS: TFIBBooleanField;
     adsOrderCoreCODEFIRMCR: TFIBBCDField;
     adsCoreREQUESTRATIO: TFIBIntegerField;
     adsOrderDetailsSENDPRICE: TFIBBCDField;
     adsOrderDetailsAWAIT: TFIBBooleanField;
     adsOrderDetailsJUNK: TFIBBooleanField;
     adsOrderDetailsID: TFIBBCDField;
-    adtReceivedDocs: TpFIBDataSet;
+    adtReceivedDocsOld: TpFIBDataSet;
     adsOrderDetailsPRODUCTID: TFIBBCDField;
     adsOrderDetailsFULLCODE: TFIBBCDField;
     adsOrderCorePRODUCTID: TFIBBCDField;
@@ -284,11 +279,59 @@ type
     adsOrderDetailsREQUESTRATIO: TFIBIntegerField;
     adsOrderDetailsORDERCOST: TFIBBCDField;
     adsOrderDetailsMINORDERCOUNT: TFIBIntegerField;
+    MyConnection: TMyConnection;
+    MyEmbConnection: TMyEmbConnection;
+    adtParams: TMyTable;
+    adtClients: TMyQuery;
+    adsRetailMargins: TMyQuery;
+    adtClientsCLIENTID: TLargeintField;
+    adtClientsNAME: TStringField;
+    adtClientsREGIONCODE: TLargeintField;
+    adtClientsEXCESS: TIntegerField;
+    adtClientsDELTAMODE: TSmallintField;
+    adtClientsMAXUSERS: TIntegerField;
+    adtClientsREQMASK: TLargeintField;
+    adtClientsTECHSUPPORT: TStringField;
+    adsRetailMarginsID: TLargeintField;
+    adsRetailMarginsLEFTLIMIT: TFloatField;
+    adsRetailMarginsRIGHTLIMIT: TFloatField;
+    adsRetailMarginsRETAIL: TIntegerField;
+    adsPrices: TMyStoredProc;
+    adsSelect: TMyQuery;
+    adsPricesPriceCode: TLargeintField;
+    MyConnectionCopy: TMyConnection;
+    MyEmbConnectionCopy: TMyEmbConnection;
+    adcUpdate: TMyQuery;
+    adtClientsCALCULATELEADER: TBooleanField;
+    adtClientsONLYLEADERS: TBooleanField;
+    adsPricesPriceName: TStringField;
+    adsPricesDatePrice: TDateTimeField;
+    adsPricesMinReq: TIntegerField;
+    adsPricesEnabled: TBooleanField;
+    adsPricesPriceInfo: TMemoField;
+    adsPricesFirmCode: TLargeintField;
+    adsPricesFullName: TStringField;
+    adsPricesStorage: TBooleanField;
+    adsPricesAdminMail: TStringField;
+    adsPricesSupportPhone: TStringField;
+    adsPricesContactInfo: TMemoField;
+    adsPricesOperativeInfo: TMemoField;
+    adsPricesRegionCode: TLargeintField;
+    adsPricesRegionName: TStringField;
+    adsPricespricesize: TIntegerField;
+    adsPricesINJOB: TBooleanField;
+    adsPricesCONTROLMINREQ: TBooleanField;
+    MyServerControl: TMyServerControl;
+    MySQLMonitor1: TMySQLMonitor;
+    adtReceivedDocs: TMyQuery;
+    MyBackup1: TMyBackup;
     procedure DMCreate(Sender: TObject);
-    procedure adtClientsAfterOpen(DataSet: TDataSet);
+    procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
-    procedure MainConnection1AfterConnect(Sender: TObject);
-    procedure adsRetailMarginsLEFTLIMITChange(Sender: TField);
+    procedure MainConnectionOldAfterConnect(Sender: TObject);
+    procedure adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
+    procedure MySQLMonitor1SQL(Sender: TObject; Text: String;
+      Flag: TDATraceFlag);
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
@@ -367,6 +410,9 @@ type
 {$ifdef DEBUG}
     procedure ExtractDBScript(dbCon : TpFIBDatabase);
 {$endif}
+    procedure TestEmbeddedMysql;
+    procedure TestEmbeddedThread;
+    procedure TestEmbeddedBackup;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -386,9 +432,7 @@ type
       Preview  : Boolean = False;
       PrintDlg : Boolean = True);
     procedure ClientChanged;
-    function GetTablesUpdatesInfo(ParamTableName: string): string;
     procedure LinkExternalTables;
-    procedure LinkExternalMDB( ATablesList: TStringList);
     procedure UnLinkExternalTables;
     procedure ClearDatabase;
     function GetCurrentOrderId(ClientId, PriceCode, RegionCode: Integer;
@@ -481,6 +525,222 @@ uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      U_FolderMacros, LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
      U_DeleteDBThread;
 
+type
+  TestMyDBThreadState = (
+    mtsInit,
+    mtsTestParentData,
+    mtsCloseParent,
+    mtsOpenChild,
+    mtsCloseChild,
+    mtsClosingInMain,
+    mtsClosedInMain,
+    mtsOpenParentInChild,
+    mtsCloseParentInChild,
+    mtsStopped);
+
+  TTestMyDBThread = class(TThread)
+   private
+    FEmbConnection : TMyEmbConnection;
+    FParent : TMyEmbConnection;
+   protected
+    procedure Execute; override;
+   public
+    State : TestMyDBThreadState;
+    constructor Create(Parent : TMyEmbConnection);
+    destructor  Destroy; override;
+  end;
+
+constructor TTestMyDBThread.Create(Parent : TMyEmbConnection);
+begin
+  inherited Create(False);
+
+  FreeOnTerminate := True;
+
+  State := mtsInit;
+
+  FParent := Parent;
+  FEmbConnection := TMyEmbConnection.Create(nil);
+  FEmbConnection.Database := Parent.Database;
+  FEmbConnection.Username := Parent.Username;
+  FEmbConnection.DataDir := Parent.DataDir;
+  FEmbConnection.Options := Parent.Options;
+  FEmbConnection.Params.Clear;
+  FEmbConnection.Params.AddStrings(Parent.Params);
+  FEmbConnection.LoginPrompt := False;
+end;
+
+destructor  TTestMyDBThread.Destroy;
+begin
+  FEmbConnection.Free;
+  inherited;
+end;
+
+procedure TTestMyDBThread.Execute;
+var
+  FQuery : TMyQuery;
+begin
+  try
+
+    try
+      State := mtsTestParentData;
+      FQuery := TMyQuery.Create(nil);
+      try
+
+        FQuery.Connection := FParent;
+        
+        try
+          FQuery.SQL.Text := 'select * from analitf.params';
+          FQuery.Open;
+          if FQuery.RecordCount = 1 then
+            WriteExchangeLog('thread.mtsTestParentData', 'Params consists data')
+          else
+            WriteExchangeLog('thread.mtsTestParentData', 'Params - no data');
+          FQuery.Close;
+        except
+          on E : Exception do
+            WriteExchangeLog('thread.ErrorOn_mtsTestParentData_Select', E.Message);
+        end;
+
+        try
+          FQuery.SQL.Text := 'update analitF.params set RasName = "test" where Id = 0';
+          FQuery.Execute;
+        except
+          on E : Exception do
+            WriteExchangeLog('thread.ErrorOn_mtsTestParentData_Update', E.Message);
+        end;
+        
+      finally
+        FQuery.Free;
+      end;
+    except
+      on E : Exception do
+        WriteExchangeLog('thread.ErrorOn_mtsTestParentData', E.Message);
+    end;
+    Sleep(200);
+
+    try
+      State := mtsCloseParent;
+      FParent.Close;
+    except
+      on E : Exception do
+        WriteExchangeLog('thread.ErrorOn_mtsCloseParent', E.Message);
+    end;
+    Sleep(200);
+
+    try
+      State := mtsOpenChild;
+      FEmbConnection.Open;
+    except
+      on E : Exception do
+        WriteExchangeLog('thread.ErrorOn_mtsOpenChild', E.Message);
+    end;
+    Sleep(200);
+
+    try
+      State := mtsCloseChild;
+      if FEmbConnection.Connected then begin
+
+        FQuery := TMyQuery.Create(nil);
+        try
+          FQuery.Connection := FEmbConnection;
+
+          try
+            FQuery.SQL.Text := 'select * from analitf.params';
+            FQuery.Open;
+            if FQuery.RecordCount = 1 then
+              WriteExchangeLog('thread.mtsCloseChild', 'Params consists data')
+            else
+              WriteExchangeLog('thread.mtsCloseChild', 'Params - no data');
+            FQuery.Close;
+          except
+            on E : Exception do
+              WriteExchangeLog('thread.ErrorOn_mtsCloseChild_Select', E.Message);
+          end;
+
+          try
+            FQuery.SQL.Text := 'update analitF.params set RasName = "test" where Id = 0';
+            FQuery.Execute;
+          except
+            on E : Exception do
+              WriteExchangeLog('thread.ErrorOn_mtsCloseChild_Update', E.Message);
+          end;
+
+        finally
+          FQuery.Free;
+        end;
+
+        FEmbConnection.Close;
+      end
+      else
+        WriteExchangeLog('thread.mtsCloseChild', 'Connection not opened');
+    except
+      on E : Exception do
+        WriteExchangeLog('thread.ErrorOn_mtsCloseChild', E.Message);
+    end;
+    Sleep(200);
+
+    State := mtsClosingInMain;
+    while (State <> mtsClosedInMain) do
+      Sleep(500);
+
+    try
+      State := mtsOpenParentInChild;
+      FParent.Open;
+    except
+      on E : Exception do
+        WriteExchangeLog('thread.ErrorOn_mtsOpenParentInChild', E.Message);
+    end;
+    Sleep(200);
+
+    try
+      State := mtsCloseParentInChild;
+      if FParent.Connected then begin
+        FQuery := TMyQuery.Create(nil);
+        try
+          FQuery.Connection := FEmbConnection;
+
+          try
+            FQuery.SQL.Text := 'select * from analitf.params';
+            FQuery.Open;
+            if FQuery.RecordCount = 1 then
+              WriteExchangeLog('thread.mtsCloseParentInChild', 'Params consists data')
+            else
+              WriteExchangeLog('thread.mtsCloseParentInChild', 'Params - no data');
+            FQuery.Close;
+          except
+            on E : Exception do
+              WriteExchangeLog('thread.ErrorOn_mtsCloseParentInChild_Select', E.Message);
+          end;
+
+          try
+            FQuery.SQL.Text := 'update analitF.params set RasName = "test" where Id = 0';
+            FQuery.Execute;
+          except
+            on E : Exception do
+              WriteExchangeLog('thread.ErrorOn_mtsCloseParentInChild_Update', E.Message);
+          end;
+
+        finally
+          FQuery.Free;
+        end;
+
+        FParent.Close;
+      end
+      else
+        WriteExchangeLog('thread.mtsCloseParentInChild', 'Connection not opened');
+    except
+      on E : Exception do
+        WriteExchangeLog('thread.ErrorOn_mtsCloseParentInChild', E.Message);
+    end;
+    Sleep(200);
+
+  except
+    on E : Exception do
+      WriteExchangeLog('TTestMyDBThread.Execute', E.Message);
+  end;
+  State := mtsStopped;
+end;
+
 procedure ClearSelectedPrices(SelectedPrices : TStringList);
 var
   I : Integer;
@@ -545,7 +805,8 @@ begin
   ResetNeedCommitExchange;
   GetLocaleFormatSettings(0, FFS);
 
-  MainConnection1.DBName := ExePath + DatabaseName;
+  //todo: здесь надо проверять существование БД
+  //MainConnection1.DBName := ExePath + DatabaseName;
 
   if not IsOneStart then
     LogExitError('Запуск двух копий программы на одном компьютере невозможен.', Integer(ecDoubleStart));
@@ -553,10 +814,13 @@ begin
   WriteExchangeLog('AnalitF', 'Программа запущена.');
 
   //Удаляем файлы базы данных для переустановки
+  {
   if FindCmdLineSwitch('renew') then
     RunDeleteDBFiles();
+    }
 
   //TODO: здесь надо корректно работать с путями в файлу базы данных, чтобы корректно работало в сетевой версии
+  {
   FNeedImportAfterRecovery := False;
   FCreateClearDatabase     := False;
   if IsBackuped(ExePath) then
@@ -567,13 +831,16 @@ begin
       on E : Exception do
         LogExitError(Format( 'Не возможно переместить AnalitF.bak в AnalitF.fdb : %s ', [ E.Message ]), Integer(ecDBFileError));
     end;
+    }
 
+{
   if FileExists(ExePath + DatabaseName) and ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
   then
     LogExitError(Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]), Integer(ecDBFileReadOnly));
+    }
 
   //Делаем проверку файла базы данных и в случае проблем производим восстановление из эталонной копии
-  CheckDBFile;
+  //CheckDBFile;
 
   LDBFileName := ChangeFileExt(ExeName, '.ldb');
   DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
@@ -582,18 +849,22 @@ begin
     try
       CheckRestrictToRun;
     finally
-      MainConnection1.Close;
+      MyConnection.Close;
     end;
   except
     on E : Exception do
       LogExitError(Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]), Integer(ecDBFileError));
   end;
 
-  MainConnection1.Open;
+  MyConnection.Open;
+
+  //TestEmbeddedMysql();
+
   { устанавливаем текущие записи в Clients и Users }
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
     then adtClients.First;
   //Проверяем, что работа с программой была завершена корректно
+  {
   if DBCompress then
   begin
     AProc.MessageBox(
@@ -603,6 +874,7 @@ begin
     RunCompactDataBase;
     AProc.MessageBox( 'Сжатие базы данных завершено.');
   end;
+  }
   SetStarted;
   ClientChanged;
   { устанавливаем параметры печати }
@@ -619,8 +891,9 @@ begin
   DeleteFilesByMask(ExePath + SDirIn + '\*.zip', False);
   DeleteFilesByMask(ExePath + SDirIn + '\*.zi_', False);
 
-  SetSendToNotClosedOrders;
+  //SetSendToNotClosedOrders;
 
+{
   if NeedUpdateByCheckUIN then begin
     if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime = adtParams.FieldByName( 'LastDateTime').AsDateTime)
     then begin
@@ -636,8 +909,10 @@ begin
     if not RunExchange([ eaGetPrice]) then
       LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
   end;
+  }
 
   { Запуск с ключем -e (Получение данных и выход)}
+  {
   if FindCmdLineSwitch('e') then
   begin
     MainForm.ExchangeOnly := True;
@@ -655,6 +930,7 @@ begin
       RunExchange([ eaImportOnly]);
     Application.Terminate;
   end;
+  }
 
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
     MainForm.DisableByHTTPName;
@@ -663,7 +939,7 @@ end;
 procedure TDM.DataModuleDestroy(Sender: TObject);
 begin
   WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
-  if not MainConnection1.Connected then exit;
+  if not MyConnection.Connected then exit;
 
   try
     adtParams.Edit;
@@ -683,36 +959,18 @@ begin
   MainForm.FreeChildForms;
   MainForm.SetOrdersInfo;
   DoPost(adtParams, True);
-  InitAllSumOrder;
+//  InitAllSumOrder;
 end;
 
 { Проверки на невозможность запуска программы }
 procedure TDM.CheckRestrictToRun;
 var
-  list: TStringList;
-//  ExID, CompName: string;
-  MaxUsers: integer;
+  MaxUsers, ProcessCount: integer;
   FreeAvail,
   Total,
   TotalFree,
   DBFileSize : Int64;
 begin
-{
-  DM.MainConnection.Open;
-  MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
-  list := DM.DatabaseOpenedList( ExID, CompName);
-  DM.MainConnection.Close;
-
-  if list.Count > 1 then
-  begin
-    if ( ExID = GetExclusiveID()) or ( ExID = '') then exit;
-
-    AProc.MessageBox( Format( 'Копия программы на компьютере %s работает в режиме ' + #10 + #13 +
-      'монопольного доступ к базе данных. Запуск программы невозможен.', [ CompName]),
-      MB_ICONWARNING or MB_OK);
-    ExitProcess(3);
-  end;
-}
   if GetDisplayColors < 16 then
     LogExitError('Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.', Integer(ecColor));
 
@@ -725,21 +983,28 @@ begin
   if not IdSSLOpenSSLHeaders.Load then
     LogExitError('Не найдены библиотеки libeay32.dll и ssleay32.dll, необходимые для работы программы.', Integer(ecSSLOpen));
 
-  DM.MainConnection1.Open;
+  DM.MyConnection.Open;
   try
     MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
     FGetCatalogsCount := GetCatalogsCount;
-    list := DM.MainConnection1.UserNames;
+    try
+      MyServerControl.ShowProcessList();
+      ProcessCount := MyServerControl.RecordCount;
+    finally
+      MyServerControl.Close;
+    end;
   finally
-    DM.MainConnection1.Close;
+    DM.MyConnection.Close;
   end;
-  if ( MaxUsers > 0) and ( list.Count > MaxUsers)
+  if ( MaxUsers > 0) and ( ProcessCount > MaxUsers)
   then
     LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
       'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
 
+{
+  todo: надо восстановить это
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
-    DBFileSize := GetFileSize(MainConnection1.DBName);
+    DBFileSize := GetFileSize(MainConnectionOld.DBName);
     DBFileSize := Max(2*DBFileSize, 200*1024*1024);
     if DBFileSize > FreeAvail then
       LogExitError(Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %d байт.', [ DBFileSize ]), Integer(ecFreeDiskSpace));
@@ -747,25 +1012,26 @@ begin
   else
     LogExitError(Format( 'Не удается получить количество свободного места на диске.' +
       #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
+}
 
   NeedUpdateByCheckUIN := not CheckCopyIDFromDB;
   if NeedUpdateByCheckUIN then begin
-    DM.MainConnection1.Open;
+    DM.MyConnection.Open;
     try
       adtParams.Edit;
       adtParams.FieldByName('CDS').AsString := '';
       adtParams.Post;
     finally
-      DM.MainConnection1.Close;
+      DM.MyConnection.Close;
     end;
     AProc.MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
-    DM.MainConnection1.Open;
+    DM.MyConnection.Open;
     try
       if (Trim( adtParams.FieldByName( 'HTTPName').AsString) = '') then
         ShowConfig( True );
     finally
-      DM.MainConnection1.Close;
+      DM.MyConnection.Close;
     end;
   end;
 
@@ -832,10 +1098,10 @@ begin
       with ConfigService do
       begin
         ServerName := '';
-        DatabaseName := MainConnection1.DBName;
+        //DatabaseName := MainConnection1.DBName;
         Params.Clear;
-        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
         Active := True;
         try
           Tracer.TR('BackupRestore', 'Try shutdown database');
@@ -849,14 +1115,14 @@ begin
       begin
         ServerName := '';
         Params.Clear;
-        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
         Active := True;
         try
           Verbose := True;
-          DatabaseName := MainConnection1.DBName;
+          //DatabaseName := MainConnection1.DBName;
           BackupFile.Clear;
-          BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
+          //BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
 
           ServiceStart;
           While not Eof do
@@ -869,15 +1135,15 @@ begin
       begin
         ServerName := '';
         Params.Clear;
-        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
         Active := True;
         try
           Verbose := True;
           DatabaseName.Clear;
-          DatabaseName.Add(MainConnection1.DBName);
+          //DatabaseName.Add(MainConnection1.DBName);
           BackupFile.Clear;
-          BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
+          //BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
           ServiceStart;
           While not Eof do
             Tracer.TR('Restore', GetNextLine);
@@ -888,10 +1154,10 @@ begin
       with ConfigService do
       begin
         ServerName := '';
-        DatabaseName := MainConnection1.DBName;
+        //DatabaseName := MainConnection1.DBName;
         Params.Clear;
-        Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        Params.Add('password=' + MainConnection1.ConnectParams.Password);
+        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
+        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
         Active := True;
         try
           Tracer.TR('BackupRestore', 'Try BringDatabaseOnline');
@@ -914,10 +1180,12 @@ begin
 
     dbc := TpFIBDatabase.Create(nil);
     try
+    {
       dbc.DBName := MainConnection1.DBName;
       dbc.DBParams.Text := MainConnection1.DBParams.Text;
       dbc.LibraryName := MainConnection1.LibraryName;
       dbc.SQLDialect := MainConnection1.SQLDialect;
+      }
 
       dbc.Open;
       dbc.QueryValue('update params set LastCompact = :LastCompact where ID = 0', -1, [Now]);
@@ -951,13 +1219,13 @@ end;
 
 procedure TDM.OpenDatabase( ADatasource: string);
 begin
-  if MainConnection1.Connected then MainConnection1.Close;
+  if MyConnection.Connected then MyConnection.Close;
 {
   MainConnection.ConnectionString :=
     SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
       ADatasource);
 }
-  MainConnection1.Open;
+  MyConnection.Open;
 end;
 
 //загружает отчет и выводит на экран или печатает; если указан DataSet, то
@@ -1000,7 +1268,7 @@ begin
   end;
 end;
 
-procedure TDM.adtClientsAfterOpen(DataSet: TDataSet);
+procedure TDM.adtClientsOldAfterOpen(DataSet: TDataSet);
 var
   mi :TMenuItem;
   LastClientId : Integer;
@@ -1040,26 +1308,11 @@ begin
   ClientChanged;
 end;
 
-//получает информацию об обновлении заданного отношения из TablesUpdates
-function TDM.GetTablesUpdatesInfo(ParamTableName: string): string;
-begin
-  Result:='';
-  with adtTablesUpdates do begin
-    Open;
-    try
-      if Locate('TableName',ParamTableName,[loCaseInsensitive]) then
-        Result:='Данные обновлены : '+FieldByName('UpdateDate').AsString;
-    finally
-      Close;
-    end;
-  end;
-end;
-
 //подключает в качестве внешних текстовые таблицы из папки In
 procedure TDM.LinkExternalTables;
 const
-  ExcludeExtTables : array[0..10] of string =
-  ('EXTCORE', 'EXTSYNONYM', 'EXTREGISTRY', 'EXTMINPRICES', 'EXTPRICEAVG',
+  ExcludeExtTables : array[0..9] of string =
+  ('EXTCORE', 'EXTSYNONYM', 'EXTREGISTRY', 'EXTMINPRICES',
    'EXTCATALOGFARMGROUPS', 'EXTCATALOG', 'EXTCATDEL', 'EXTCATFARMGROUPSDEL',
    'EXTCATALOGNAMES', 'EXTPRODUCTS');
 var
@@ -1091,28 +1344,44 @@ begin
     Files := TStringList.Create;
     Tables := TStringList.Create;
     try
-      UpTran.StartTransaction;
-      try
-
         //Сначала создали внешние таблицы
         repeat
           FileName := ExePath+SDirIn+ '\' + SR.Name;
           ShortName := ChangeFileExt(SR.Name,'');
-          adcUpdate.SQL.Text := 'EXECUTE PROCEDURE CREATEEXT' + ShortName + '(:PATH)';
-          adcUpdate.ParamByName('PATH').Value := FileName;
-          Tracer.TR('CreateExternal', adcUpdate.SQL.Text);
-          adcUpdate.ExecQuery;
-          Files.Add(FileName);
-          Tables.Add('EXT' + UpperCase(ShortName));
+
+          //Проверяем, что существует временная таблица для импорта в базе
+          adcUpdate.SQL.Text := 'select * from information_schema.tables where table_schema = ''analitf'' and table_name = :tablename';
+          adcUpdate.ParamByName('tablename').Value := 'tmp' + ShortName;
+          adcUpdate.Execute;
+          if adcUpdate.RecordCount = 1 then begin
+            adcUpdate.Close;
+
+            adcUpdate.SQL.Text := 'delete from tmp' + ShortName;
+            adcUpdate.Execute;
+
+            Tracer.TR('CreateExternal', ShortName);
+
+            Files.Add(FileName);
+            Tables.Add(UpperCase(ShortName));
+          end
+          else
+            adcUpdate.Close;
         until FindNext(SR)<>0;
         FindClose(SR);
 
-        UpTran.CommitRetaining;
+        for I := 0 to Files.Count-1 do begin
+          if NeedImport(Tables[i]) then begin
+            adcUpdate.SQL.Text := GetLoadDataSQL('tmp' + Tables[i], Files[i]);
+            adcUpdate.Execute;
+          end;
+        end;
 
+{
+      try
         //Потом наполнили их данными
         up := TpFIBDataSet.Create(nil);
         try
-          up.Database := MainConnection1;
+          //up.Database := MainConnection1;
           up.Transaction := UpTran;
 
           InDelimitedFile := TFIBInputDelimitedFile.Create;
@@ -1123,7 +1392,7 @@ begin
             InDelimitedFile.RowDelimiter := Chr(161);
 
             try
-            
+
               for I := 0 to Files.Count-1 do begin
                 if NeedImport(Tables[i]) then begin
                   up.SelectSQL.Text := 'select * from ' + Tables[i];
@@ -1168,6 +1437,7 @@ begin
         UpTran.Rollback;
         raise;
       end;
+}      
 
     finally
       Files.Free;
@@ -1177,38 +1447,6 @@ begin
   end;
 end;
 
-// подключает таблицы из старого MDB
-procedure TDM.LinkExternalMDB( ATablesList: TStringList);
-//var
-//  Table, Catalog: Variant;
-//  i: integer;
-begin
-{
-  Catalog := CreateOleObject( 'ADOX.Catalog');
-        Catalog.ActiveConnection := MainConnection.ConnectionObject;
-
-  try
-    for i := 0 to ATablesList.Count - 1 do
-    begin
-      if Pos( 'Tmp', ATablesList[ i]) = 1 then continue;
-      Table := CreateOleObject( 'ADOX.Table');
-      Table.ParentCatalog := Catalog;
-      Table.Name := 'Old' + ATablesList[ i];
-      Table.Properties( 'Jet OLEDB:Create Link') := True;
-      Table.Properties( 'Jet OLEDB:Link Datasource') := ExePath + DatabaseName;
-      Table.Properties( 'Jet OLEDB:Remote Table Name') := ATablesList[ i];
-      try
-        Catalog.Tables.Append( Table);
-      except
-      end;
-      Table := Unassigned;
-    end;
-  finally
-    Catalog := Unassigned;
-  end;
-  }
-end;
-
 //отключает все подключенные внешние таблицы
 procedure TDM.UnLinkExternalTables;
 var
@@ -1216,6 +1454,7 @@ var
 //  Catalog: Variant;
   TN : TStringList;
 begin
+//todo: здесь надо восстановить или удалить эту процедуру
 {
   Screen.Cursor:=crHourglass;
   try
@@ -1232,6 +1471,8 @@ begin
     Screen.Cursor:=crDefault;
   end;
   }
+
+{
   Screen.Cursor:=crHourglass;
   try
     TN := TStringList.Create;
@@ -1256,49 +1497,43 @@ begin
   finally
     Screen.Cursor:=crDefault;
   end;
+}
 end;
 
 procedure TDM.ClearDatabase;
 begin
   Screen.Cursor:=crHourglass;
   with adcUpdate do try
-    UpTran.StartTransaction;
-    try
 
-      MainForm.StatusText:='Очищается MinPrices';
-      SQL.Text:='EXECUTE PROCEDURE MinPricesDeleteALL'; ExecQuery;
-      MainForm.StatusText:='Очищается Core';
-      SQL.Text:='EXECUTE PROCEDURE CoreDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается CatalogCurrency';
-      SQL.Text:='EXECUTE PROCEDURE CatalogCurrencyDelete'; ExecQuery;
-      MainForm.StatusText:='Очищается Catalog';
-      SQL.Text:='EXECUTE PROCEDURE CatalogDelete'; ExecQuery;
-      MainForm.StatusText:='Очищается CatalogNames';
-      SQL.Text:='EXECUTE PROCEDURE CatalogNamesDelete'; ExecQuery;
-      MainForm.StatusText:='Очищается CatalogFarmGroups';
-      SQL.Text:='EXECUTE PROCEDURE CatalogFarmGroupsDelete'; ExecQuery;
-      MainForm.StatusText:='Очищается PricesRegionalData';
-      SQL.Text:='EXECUTE PROCEDURE PricesRegionalDataDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается PricesData';
-      SQL.Text:='EXECUTE PROCEDURE PricesDataDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается RegionalData';
-      SQL.Text:='EXECUTE PROCEDURE RegionalDataDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается ClientsDataN';
-      SQL.Text:='EXECUTE PROCEDURE ClientsDataNDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается Synonym';
-      SQL.Text:='EXECUTE PROCEDURE SynonymDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается SynonymFirmCr';
-      SQL.Text:='EXECUTE PROCEDURE SynonymFirmCrDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается Defectives';
-      SQL.Text:='EXECUTE PROCEDURE DefectivesDeleteAll'; ExecQuery;
-      MainForm.StatusText:='Очищается Registry';
-      SQL.Text:='EXECUTE PROCEDURE RegistryDelete'; ExecQuery;
+    MainForm.StatusText:='Очищается MinPrices';
+    SQL.Text:='DELETE FROM MinPrices;'; Execute;
+    MainForm.StatusText:='Очищается Core';
+    SQL.Text:='DELETE FROM Core;'; Execute;
+    MainForm.StatusText:='Очищается Catalog';
+    SQL.Text:='DELETE FROM CATALOGS;'; Execute;
+    MainForm.StatusText:='Очищается CatalogNames';
+    SQL.Text:='DELETE FROM catalognames;'; Execute;
+    MainForm.StatusText:='Очищается CatalogFarmGroups';
+    SQL.Text:='delete from CATALOGFARMGROUPS;'; Execute;
+    MainForm.StatusText:='Очищается Products';
+    SQL.Text:='delete from Products;'; Execute;
+    MainForm.StatusText:='Очищается PricesRegionalData';
+    SQL.Text:='DELETE FROM PricesRegionalData;'; Execute;
+    MainForm.StatusText:='Очищается PricesData';
+    SQL.Text:='DELETE FROM PricesData;'; Execute;
+    MainForm.StatusText:='Очищается RegionalData';
+    SQL.Text:='DELETE FROM RegionalData;'; Execute;
+    //CLIENTSDATAN теперь Providers
+    //todo: Providers сделать очистку таблицы
+    MainForm.StatusText:='Очищается Providers';
+    SQL.Text:='DELETE FROM Providers;'; Execute;
+    MainForm.StatusText:='Очищается Synonym';
+    SQL.Text:='DELETE FROM Synonyms;'; Execute;
+    MainForm.StatusText:='Очищается SynonymFirmCr';
+    SQL.Text:='DELETE FROM SynonymFirmCr;'; Execute;
+    MainForm.StatusText:='Очищается Defectives';
+    SQL.Text:='DELETE FROM Defectives;'; Execute;
 
-      UpTran.Commit;
-    except
-      UpTran.Rollback;
-      raise;
-    end;
   finally
     Screen.Cursor:=crDefault;
     MainForm.StatusText:='';
@@ -1311,7 +1546,7 @@ var
   NRecs: Integer;
 begin
   with adsSelect do begin
-    SelectSQL.Text:=Format('SELECT OrderId FROM OrdersH WHERE ClientId=%d And PriceCode=%d And RegionCode=%d And Closed = 0',
+    SQL.Text:=Format('SELECT OrderId FROM OrdersH WHERE ClientId=%d And PriceCode=%d And RegionCode=%d And Closed = 0',
       [ClientId, PriceCode, RegionCode]);
     Open;
     try
@@ -1325,7 +1560,7 @@ begin
     if CreateIfNotExists then with adcUpdate do begin
       SQL.Text:=Format('INSERT INTO OrdersH (ClientId,PriceCode,RegionCode) VALUES (%d,%d,%d)',
         [ClientId, PriceCode, RegionCode]);
-      ExecQuery;
+      Execute;
       Result:=GetCurrentOrderId(ClientId,PriceCode,RegionCode,False);
       if Result=0 then raise Exception.Create('Не удается создать заголовок заказа');
     end
@@ -1343,8 +1578,8 @@ begin
     UpTran.StartTransaction;
     try
       with adcUpdate do begin
-        SqL.Text:='EXECUTE PROCEDURE OrdersDeleteEmpty'; ExecQuery;
-        SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteEmpty'; ExecQuery;
+        SqL.Text:='EXECUTE PROCEDURE OrdersDeleteEmpty'; Execute;
+        SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteEmpty'; Execute;
       end;
       UpTran.Commit;
     except
@@ -1371,7 +1606,7 @@ end;
 
 procedure TDM.BackupDatabase( APath: string);
 begin
-  MainConnection1.Close;
+  MyConnection.Close;
   Windows.CopyFile( PChar( APath + DatabaseName),
     PChar( APath + ChangeFileExt( DatabaseName, '.bak')), False);
 end;
@@ -1417,6 +1652,8 @@ end;
 procedure TDM.ResetExclusive;
 begin
   { Снятие запроса на монопольный доступ }
+//todo: восстановить запрос на монопольный доступ потом
+{
   MainForm.CS.Enter;
   try
     try
@@ -1429,11 +1666,14 @@ begin
   finally
     MainForm.CS.Leave;
   end;
+}  
 end;
 
 procedure TDM.SetExclusive;
 begin
   { Установка запроса на монопольный доступ }
+//todo: восстановить запрос на монопольный доступ потом  
+{
   MainForm.CS.Enter;
   try
     try
@@ -1446,6 +1686,7 @@ begin
   finally
     MainForm.CS.Leave;
   end;
+}
 end;
 
 function TDM.GetCumulative: boolean;
@@ -1506,25 +1747,31 @@ begin
   end;
 end;
 
-procedure TDM.MainConnection1AfterConnect(Sender: TObject);
+procedure TDM.MainConnectionOldAfterConnect(Sender: TObject);
 begin
   //открываем таблицы с параметрами
-  adtParams.CloseOpen(True);
+  adtParams.Close;
+  adtParams.Open;
   ReadPasswords;
-  adtProvider.CloseOpen(True);
-  adtReclame.CloseOpen(True);
-  adtClients.CloseOpen(True);
-  adsRetailMargins.CloseOpen(True);
+  adtClients.Close;
+  adtClients.Open;
+  adsRetailMargins.Close;
+  adsRetailMargins.Open;
   LoadRetailMargins;
   LoadSelectedPrices;
+//todo: восстановить запрос на монопольный доступ потом
+{
   try
-    adtFlags.CloseOpen(True);
+    adtFlags.Close;
+    adtFlags.Open;
   except
   end;
+}
 end;
 
 procedure TDM.SweepDB;
 begin
+{
   MainConnection1.Close;
   try
     with ValidService do
@@ -1547,6 +1794,7 @@ begin
   finally
     MainConnection1.Open;
   end;
+  }
 end;
 
 function TDM.GetDisplayColors: Integer;
@@ -1625,6 +1873,8 @@ var
   tmpvb : TINFCrypt;
 begin
   if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
+{
+todo: надо потом восстановить это
     try
       UpTran.StartTransaction;
       if adsAllOrders.Active then
@@ -1663,6 +1913,7 @@ begin
         UpTran.Rollback;
       end;
     end;
+}
 
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
@@ -1708,7 +1959,7 @@ begin
   end;
 end;
 
-procedure TDM.adsRetailMarginsLEFTLIMITChange(Sender: TField);
+procedure TDM.adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
 begin
 //  adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
 end;
@@ -1797,9 +2048,9 @@ end;
 procedure TDM.UpdateReclame;
 begin
   if (UpdateReclameDT > 1) then begin
-    adtReclame.Edit;
-    adtReclame.FieldByName( 'UpdateDateTime').AsDateTime := UpdateReclameDT;
-    adtReclame.Post;
+    adtParams.Edit;
+    adtParams.FieldByName('ReclameUPDATEDATETIME').AsDateTime := UpdateReclameDT;
+    adtParams.Post;
   end;
 end;
 
@@ -1845,7 +2096,7 @@ begin
     DM.adsSelect.Close;
   except
   end;
-	DM.adsSelect.SelectSQL.Text := 'SELECT COUNT(*) AS CatNum FROM Catalogs';
+	DM.adsSelect.SQL.Text := 'SELECT COUNT(*) AS CatNum FROM Catalogs';
 	try
 		DM.adsSelect.Open;
     try
@@ -1880,7 +2131,7 @@ begin
     adsPrices.Close;
   adsPrices.Open;
   try
-    adsPrices.DoSort(['PRICENAME'], [True]);
+    adsPrices.SetOrderBy('PRICENAME');
     adsPrices.First;
     while not adsPrices.Eof do begin
       SummarySelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
@@ -2004,10 +2255,10 @@ begin
 
     trMain := TpFIBTransaction.Create(nil);
     try
-      dbCon.DBName := MainConnection1.DBName;
-      dbCon.DBParams.Text := MainConnection1.DBParams.Text;
-      dbCon.LibraryName := MainConnection1.LibraryName;
-      dbCon.SQLDialect := MainConnection1.SQLDialect;
+      dbCon.DBName := MainConnectionOld.DBName;
+      dbCon.DBParams.Text := MainConnectionOld.DBParams.Text;
+      dbCon.LibraryName := MainConnectionOld.LibraryName;
+      dbCon.SQLDialect := MainConnectionOld.SQLDialect;
       trMain.DefaultDatabase := dbCon;
       dbCon.DefaultTransaction := trMain;
       dbCon.DefaultUpdateTransaction := trMain;
@@ -2024,7 +2275,7 @@ begin
         //Если существует эталонный файл, то обновляем его
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 42;
       end;
 
@@ -2032,7 +2283,7 @@ begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor42);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor42);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor42);
         DBVersion := 43;
       end;
 
@@ -2040,7 +2291,7 @@ begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 44;
       end;
 
@@ -2048,7 +2299,7 @@ begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 45;
       end;
 
@@ -2056,7 +2307,7 @@ begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 46;
       end;
 
@@ -2064,7 +2315,7 @@ begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 47;
       end;
 
@@ -2072,7 +2323,7 @@ begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 48;
       end;
 
@@ -2080,7 +2331,7 @@ begin
         etlname := GetLastEtalonFileName;
         if Length(etlname) > 0 then
           RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
         DBVersion := 49;
       end;
 
@@ -2089,7 +2340,7 @@ begin
       //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
 {$ifndef DEBUG}
       else
-        RunUpdateDBFile(dbCon, trMain, MainConnection1.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
+        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
 {$else}
         ;
 {$endif}
@@ -2377,7 +2628,7 @@ begin
           if (RecoveryCount < 2) then begin
             try
               //TODO: Здесь надо корректно работать с путями, чтобы работала сетевая версия
-              if (EFIB.IBErrorCode = isc_sys_request) and FileExists(MainConnection1.DBName) then begin
+              if (EFIB.IBErrorCode = isc_sys_request) and FileExists(MainConnectionOld.DBName) then begin
                 LogCriticalError(Format('Ошибка при открытии (CreateFile): %s', [EFIB.Message]));
                 Sleep(1000);
               end
@@ -2756,13 +3007,13 @@ end;
 
 procedure TDM.SetSendToNotClosedOrders;
 begin
-  adcUpdate.Transaction.StartTransaction;
+  //adcUpdate.Transaction.StartTransaction;
   try
     adcUpdate.SQL.Text := 'update ORDERSH set Send = 1 where (Closed = 0)';
-    adcUpdate.ExecQuery;
-    adcUpdate.Transaction.Commit;
+    adcUpdate.Execute;
+    //adcUpdate.Transaction.Commit;
   except
-    adcUpdate.Transaction.Rollback;
+    //adcUpdate.Transaction.Rollback;
     raise;
   end;
 end;
@@ -2820,14 +3071,10 @@ begin
     'SET GENERATOR GEN_REGISTRY_ID TO 0;'#13#10#13#10 +
     'SET GENERATOR GEN_RETAILMARGINS_ID TO 1;'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
-    'INSERT INTO FLAGS (ID, COMPUTERNAME, EXCLUSIVEID) VALUES (0, NULL, NULL);'#13#10#13#10 +
-    'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO PARAMS (ID, CLIENTID, RASCONNECT, RASENTRY, RASNAME, RASPASS, CONNECTCOUNT, CONNECTPAUSE, PROXYCONNECT, PROXYNAME, PROXYPORT, PROXYUSER, PROXYPASS, SERVICENAME, HTTPHOST, HTTPPORT, HTTPNAME, HTTPPASS, UPDATEDATETIME, LASTDATETIME, FASTPRINT, ' +
       'SHOWREGISTER, NEWWARES, USEFORMS, OPERATEFORMS, OPERATEFORMSSET, AUTOPRINT, STARTPAGE, LASTCOMPACT, CUMULATIVE, STARTED, EXTERNALORDERSEXE, EXTERNALORDERSPATH, EXTERNALORDERSCREATE, RASSLEEP, HTTPNAMECHANGED, SHOWALLCATALOG, CDS, ORDERSHISTORYDAYCOUNT, ' +
       'CONFIRMDELETEOLDORDERS, USEOSOPENWAYBILL, USEOSOPENREJECT, GROUPBYPRODUCTS, PRINTORDERSAFTERSEND) VALUES ' +
       '(0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 21, 1, 0, 1, 0, 0);'#13#10#13#10 +
-    'COMMIT WORK;'#13#10#13#10 +
-    'INSERT INTO PROVIDER (ID, NAME, ADDRESS, PHONES, EMAIL, WEB, MDBVERSION) VALUES (0, ''АК "Инфорум"'', ''Ленинский пр-т, 160 оф.415'', ''4732-606000'', ''farm@analit.net'', ''http://www.analit.net/'', ' + IntToStr(CURRENT_DB_VERSION) +');'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
     'INSERT INTO RECLAME (RECLAMEURL, UPDATEDATETIME) VALUES (''http://ios.analit.net/results/reclame/r#.zip'', NULL);'#13#10#13#10 +
     'COMMIT WORK;'#13#10#13#10 +
@@ -3349,7 +3596,7 @@ AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName
 
   dbCon.QueryValue('select count(*) from Core where productid is not null', 0);
 
-  dbCon.QueryValue('select count(*) from PricesData where PriceFileDate is not null', 0);
+  dbCon.QueryValue('select count(*) from PricesData where Fresh is not null', 0);
 
   trMain.Commit;
 end;
@@ -3405,6 +3652,93 @@ begin
   finally
     adsOrdersHeaders.Close;
   end;
+end;
+
+procedure TDM.MySQLMonitor1SQL(Sender: TObject; Text: String;
+  Flag: TDATraceFlag);
+const
+  DATraceFlagNames : array[TDATraceFlag] of string =
+    ('tfQPrepare', 'tfQExecute', 'tfQFetch', 'tfError', 'tfStmt', 'tfConnect',
+     'tfTransact', 'tfBlob', 'tfService', 'tfMisc', 'tfParams');
+begin
+  Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]));
+end;
+
+procedure TDM.TestEmbeddedMysql;
+begin
+  //TestEmbeddedThread();
+
+  //TestEmbeddedBackup();
+end;
+
+procedure TDM.TestEmbeddedThread;
+var
+  testThread : TTestMyDBThread;
+  FQuery : TMyQuery;
+begin
+  if MyConnection.Connected then begin
+    WriteExchangeLog('DBtest', 'start test');
+    MyConnection.Close;
+    MyConnection.Open;
+{$ifdef USEMYSQLEMBEDDED}
+    testThread := TTestMyDBThread.Create(MyConnection);
+{$endif}
+    while (testThread.State <> mtsClosinginMain) do
+      Sleep(500);
+
+    if MyConnection.Connected then begin
+
+      FQuery := TMyQuery.Create(nil);
+      try
+        FQuery.Connection := MyConnection;
+
+        try
+          FQuery.SQL.Text := 'select * from analitf.params';
+          FQuery.Open;
+          if FQuery.RecordCount = 1 then
+            WriteExchangeLog('DBtest.ParentClose', 'Params consists data')
+          else
+            WriteExchangeLog('DBtest.ParentClose', 'Params - no data');
+          FQuery.Close;
+        except
+          on E : Exception do
+            WriteExchangeLog('DBtest.ErrorOn_ParentClose_Select', E.Message);
+        end;
+
+        try
+          FQuery.SQL.Text := 'update analitF.params set RasName = "test" where Id = 0';
+          FQuery.Execute;
+        except
+          on E : Exception do
+            WriteExchangeLog('DBtest.ErrorOn_ParentClose_Update', E.Message);
+        end;
+
+      finally
+        FQuery.Free;
+      end;
+
+      try
+        MyConnection.Close;
+      except
+        on E : Exception do
+          WriteExchangeLog('DBtest.ErrorOnParentClose', E.Message);
+      end;
+    end
+    else
+      WriteExchangeLog('DBtest', 'Connection already closed');
+
+    testThread.State := mtsClosedInMain;
+
+    while (testThread.State <> mtsStopped) do
+      Sleep(500);
+
+    WriteExchangeLog('DBtest', 'stop test');
+  end;
+end;
+
+procedure TDM.TestEmbeddedBackup;
+begin
+  MyBackup1.Backup;
 end;
 
 initialization

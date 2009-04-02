@@ -149,6 +149,8 @@ var
 	IsRasPresent: boolean;
   OldExep : TExceptionEvent;
   HTTPPass : String;
+  NewPass,
+  CryptNewPass : String;
 begin
   MainForm.FreeChildForms; //вид дочерних форм зависит от параметров
   Result:=False;
@@ -181,7 +183,18 @@ begin
         EnableRemoteAccess
     	else
         DisableRemoteAccess;
-      HTTPPass := DM.D_HP(DM.adtParams.FieldByName('HTTPPass').AsString);
+      try
+        HTTPPass := DM.D_HP(DM.adtParams.FieldByName('HTTPPass').AsString);
+      except
+        on E : Exception do begin
+          LogCriticalError(
+            Format(
+              'Ошибка при расшифровке строки "%s" : %s',
+              [DM.adtParams.FieldByName('HTTPPass').AsString,
+              E.Message]));
+          HTTPPass := '123456';
+        end;
+      end;
       eHTTPPass.Text := StringOfChar('*', Length(HTTPPass));
       HTTPPassChanged := False;
       DM.adtParams.Edit;
@@ -191,31 +204,37 @@ begin
       Result := ShowModal=mrOk;
       if Result then begin
         DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
-        if HTTPPassChanged then
-          DM.adtParams.FieldByName('HTTPPass').AsString := DM.E_HP(eHTTPPass.Text);
+        if HTTPPassChanged then begin
+          NewPass := eHTTPPass.Text;
+          CryptNewPass := DM.E_HP(NewPass);
+          DM.adtParams.FieldByName('HTTPPass').AsString := CryptNewPass;
+          LogCriticalError(
+            Format(
+              'Изменился пароль. Пароль: "%s"  Зашифрованный : "%s"  В датасет : "%s"',
+              [NewPass,
+              CryptNewPass,
+              DM.adtParams.FieldByName('HTTPPass').AsString]));
+        end;
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
-          DM.adcUpdate.Transaction.StartTransaction;
-          try
-            DM.adcUpdate.SQL.Text := 'EXECUTE PROCEDURE OrdersHDeleteNotClosedAll';
-            DM.adcUpdate.ExecQuery;
-            DM.adcUpdate.Transaction.Commit;
-          except
-            DM.adcUpdate.Transaction.Rollback;
-            raise;
-          end;
+          // удаляем все неотправленные открытые заявки
+          //todo: надо проверить удаление содержания заявок в Orders
+          DM.adcUpdate.SQL.Text := 'DELETE FROM OrdersH WHERE Closed <> 1;';
+          DM.adcUpdate.Execute;
         end;
         DM.adtParams.Post;
         while not DM.adsRetailMargins.IsEmpty do
           DM.adsRetailMargins.Delete;
-        mdRetail.SaveToDataSet(DM.adsRetailMargins, 0);
-        DM.adsRetailMargins.ApplyUpdates;
+        //todo: надо восстановить
+        //mdRetail.SaveToDataSet(DM.adsRetailMargins, 0);
+        //DM.adsRetailMargins.ApplyUpdates;
         DM.LoadRetailMargins;
       end
       else begin
         DM.adtParams.Cancel;
-        DM.adsRetailMargins.CancelUpdates;
+        //todo: надо восстановить
+        //DM.adsRetailMargins.CancelUpdates;
       end;
 
     finally
@@ -226,9 +245,12 @@ begin
     Free;
   end;
   //если RollBack - надо освежить
-  DM.adtParams.CloseOpen(True);
-  DM.adtClients.CloseOpen(True);
-  DM.adsRetailMargins.CloseOpen(True);
+  DM.adtParams.Close;
+  DM.adtParams.Open;
+  DM.adtClients.Close;
+  DM.adtClients.Open;
+  DM.adsRetailMargins.Close;
+  DM.adsRetailMargins.Open;
   DM.ClientChanged;
 end;
 

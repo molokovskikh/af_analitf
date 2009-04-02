@@ -49,7 +49,8 @@ var
   PrevRight : Currency;
 begin
   if ModalResult = mrOK then begin
-    DM.adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
+    //todo: здесь надо восстановить
+    //DM.adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
     if DM.adsRetailMargins.RecordCount > 0 then begin
       DM.adsRetailMargins.First;
       Res := DM.adsRetailMarginsLEFTLIMIT.AsCurrency <= DM.adsRetailMarginsRIGHTLIMIT.AsCurrency;
