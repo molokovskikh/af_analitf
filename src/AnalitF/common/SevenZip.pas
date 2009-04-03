@@ -325,7 +325,7 @@ type
 	TSevenZipGetCompressedSizeEx    = function( harc : HARC; var lpllSize : TLargeInteger ) : BOOL; stdcall;
 
   // Callback func should return FALSE to cancel the archiving process, else TRUE
-  TSevenZipCallbackProc           = function( hWnd : HWND; uMsg, nState : UINT; var ExInfo : TSevenZipEXTRACTINGINFOEX ) : BOOL; stdcall;
+  TSevenZipCallbackProc           = function( hWnd : HWND; uMsg, nState : UINT; var ExInfo : TSevenZipEXTRACTINGINFOEX ) : BOOL of object;stdcall;
 
   TSevenZipSetOwnerWindow         = function( hwnd : HWND ) : BOOL; stdcall;
 	TSevenZipClearOwnerWindow       = function : BOOL; stdcall;
@@ -371,6 +371,7 @@ function SevenZipExtractArchive( hWnd : HWND; // parent window handle
                                  ShowProgress   : Boolean;     // if true uses dll's internal progress indicator (callback func ignored)
                                  Callback       : TSevenZipCallbackProc = nil ) // optional callback (ShowProgress must be false)
                                  : integer; // 0 = success
+function SevenZipErrNbToMsg(errNb: integer):string;
 
 
 var
@@ -431,7 +432,7 @@ var
   SevenZipGetSubVersion         : TSevenZipGetSubVersion        = nil; 
   SevenZipGetArchiveType        : TSevenZipGetArchiveType       = nil;
   SevenZipSetUnicodeMode        : TSevenZipSetUnicodeMode       = nil;
-
+  LastError : String;
 implementation
 uses classes, sysutils, dialogs;
 
@@ -622,7 +623,10 @@ begin
         Result := SZ_CANCELLED
       else
       if Pos('error:', LowerCase(S7ResultOutput)) > 0 then
+      begin
+        LastError := S7ResultOutput;
         Result := SZ_ERROR
+      end
       else
         Result := SZ_OK;
     except
@@ -658,13 +662,14 @@ var
 begin
   //
   flist := TStringList.Create;
-  flist.CommaText := FileList;
 
   if @Callback <> nil then
     ShowProgress := FALSE;
 
   if FileList = '' then
     FileList := '*.*';
+
+  flist.CommaText := FileList;
 
   try
     if ExtractFullPaths then
@@ -710,7 +715,10 @@ begin
         Result := SZ_CANCELLED
       else
       if Pos('error:', LowerCase(S7ResultOutput)) > 0 then
-        Result := SZ_ERROR
+      begin
+        LastError := S7ResultOutput;
+        Result := SZ_ERROR;
+      end
       else
         Result := SZ_OK;
     except
@@ -722,6 +730,69 @@ begin
 
   finally
     flist.Free;
+  end;
+end;
+
+function SevenZipErrNbToMsg(errNb: integer):string;
+begin
+  case errNb of
+    $8012:Result := 'MAKEDIRECTORY';
+		$8013:Result := 'CANNOT_WRITE';
+		$8014:Result := 'HUFFMAN_CODE';
+		$8015:Result := 'COMMENT_HEADER';
+		$8016:Result := 'HEADER_CRC';
+		$8017:Result := 'HEADER_BROKEN';
+		$8018:Result := 'ARC_FILE_OPEN';
+		$8019:Result := 'NOT_ARC_FILE';
+		$801A:Result := 'CANNOT_READ';
+		$801B:Result := 'FILE_STYLE';
+		$801C:Result := 'COMMAND_NAME';
+		$801D:Result := 'MORE_HEAP_MEMORY';
+		$801E:Result := 'ENOUGH_MEMORY';
+		$801F:Result := 'ALREADY_RUNNING';
+		$8020:Result := 'USER_CANCEL';
+		$8021:Result := 'HARC_ISNOT_OPENED';
+		$8022:Result := 'NOT_SEARCH_MODE';
+		$8023:Result := 'NOT_SUPPORT';
+		$8024:Result := 'TIME_STAMP';
+		$8025:Result := 'TMP_OPEN';
+		$8026:Result := 'LONG_FILE_NAME';
+		$8027:Result := 'ARC_READ_ONLY';
+		$8028:Result := 'SAME_NAME_FILE';
+		$8029:Result := 'NOT_FIND_ARC_FILE';
+		$802A:Result := 'RESPONSE_READ';
+		$802B:Result := 'NOT_FILENAME';
+		$802C:Result := 'TMP_COPY';
+		$802D:Result := 'EOF';
+		$802E:Result := 'ADD_TO_LARC';
+		$802F:Result := 'TMP_BACK_SPACE';
+		$8030:Result := 'SHARING';
+		$8031:Result := 'NOT_FIND_FILE';
+		$8032:Result := 'LOG_FILE';
+		$8033:Result := 'NO_DEVICE';
+		$8034:Result := 'GET_ATTRIBUTES';
+		$8035:Result := 'SET_ATTRIBUTES';
+		$8036:Result := 'GET_INFORMATION';
+		$8037:Result := 'GET_POINT';
+		$8038:Result := 'SET_POINT';
+		$8039:Result := 'CONVERT_TIME';
+		$803a:Result := 'GET_TIME';
+		$803b:Result := 'SET_TIME';
+		$803c:Result := 'CLOSE_FILE';
+		$803d:Result := 'HEAP_MEMORY';
+		$803e:Result := 'HANDLE';
+		$803f:Result := 'TIME_STAMP_RANGE';
+		$8040:Result := 'MAKE_ARCHIVE';
+		$8041:Result := 'NOT_CONFIRM_NAME';
+		$8042:Result := 'UNEXPECTED_EOF';
+		$8043:Result := 'INVALID_END_MARK';
+		$8044:Result := 'INVOLVED_LZH';
+		$8045:Result := 'NO_END_MARK';
+		$8046:Result := 'HDR_INVALID_SIZE';
+		$8047:Result := 'UNKNOWN_LEVEL';
+		$8048:Result := 'BROKEN_DATA';
+  else
+    Result := 'UNKNOWN';
   end;
 end;
 
