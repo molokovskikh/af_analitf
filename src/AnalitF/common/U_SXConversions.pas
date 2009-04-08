@@ -413,7 +413,6 @@ var
   Minus : Boolean;
 }
 begin
-  {TODO : Ќаписать нормальное преобразование вещ. числа.}
   Result := Format(SXFloatTemplate, [E]);
   if DecimalSeparator <> SXDecimalSeparator then begin
     I := Pos(DecimalSeparator, Result);
@@ -482,7 +481,6 @@ function      SXFloatToXML       (E  : Extended)  : String;
 var
   I : Integer;
 begin
-  {TODO : Ќаписать нормальное преобразование вещ. числа.}
   Result := Format(SXFloatXMLTemplate, [E]);
   if DecimalSeparator <> SXDecimalSeparator then begin
     I := Pos(DecimalSeparator, Result);
