@@ -467,18 +467,11 @@ begin
       SetOrderLabel;
       DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
       DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
-      //DM.adcUpdate.Transaction.StartTransaction;
-      try
-        DM.adcUpdate.SQL.Text :=
-          'delete from Orders where OrderID = ' +
-            IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
-            ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
-        DM.adcUpdate.Execute;
-        //DM.adcUpdate.Transaction.Commit;
-      except
-        //DM.adcUpdate.Transaction.Rollback;
-        raise;
-      end;
+      DM.adcUpdate.SQL.Text :=
+        'delete from Orders where OrderID = ' +
+          IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
+          ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
+      DM.adcUpdate.Execute;
       adsSummary.CloseOpen(True);
       MainForm.SetOrdersInfo;
     end;

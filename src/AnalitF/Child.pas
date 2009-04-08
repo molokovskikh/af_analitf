@@ -189,6 +189,8 @@ begin
       TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
       TToughDBGrid(Self.Components[i]).GridLineColors.BrightColor := clDkGray;
 
+{
+      todo: потом восстановить работу с сортировкой
       if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource)
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
@@ -200,6 +202,7 @@ begin
         if NeedFirstOnDataSet then
           TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
       end;
+}
     end;
   Show;
   if Parent<>nil then

@@ -361,9 +361,7 @@ begin
             Synchronize( SetProgress);
             StatusText := 'Откат изменений';
             Synchronize( SetStatus);
-            DM.MyConnection.Close;
-            DM.RestoreDatabase(ExePath);
-            DM.MyConnection.Open;
+            DM.RestoreDatabase;
             //Если мы получили ошибку целостности данных, то мы должны выставить флаг "Получить кумулятивное обновление",
             //чтобы при любом обновлении сразу происходил запрос кумулятивное обновления
             DM.SetCumulative;
@@ -738,8 +736,7 @@ begin
     //Если не производили кумулятивное обновление, то проверяем наличие синонимов
     if (not (eaGetFullData in ExchangeForm.ExchangeActs))
     then begin
-      //todo: надо потом восстановить
-      //Synchronize(GetAbsentPriceCode);
+      GetAbsentPriceCode();
 
       if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
         SetLength(params, AbsentPriceCodeSL.Count + 3);
@@ -829,8 +826,8 @@ begin
     WriteExchangeLog('Exchange',
       'Отправка заказа #' + DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString +
       '  по прайсу ' + DM.adsOrdersHeaders.FieldByName( 'PriceCode').AsString);
-		SetLength( params, 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 3);
-		SetLength( values, 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 3);
+		SetLength( params, 6 + DM.adsOrderDetails.RecordCount * OrderParamCount + 3);
+		SetLength( values, 6 + DM.adsOrderDetails.RecordCount * OrderParamCount + 3);
 
 		params[ 0] := 'ClientCode';
 		params[ 1] := 'PriceCode';
@@ -843,9 +840,9 @@ begin
 		values[ 2] := DM.adsOrdersHeaders.FieldByName( 'RegionCode').AsString;
 		values[ 3] := GetXMLDateTime( DM.adsOrdersHeaders.FieldByName( 'DatePrice').AsDateTime);
 		values[ 4] := StringToCodes( DM.adsOrdersHeaders.FieldByName( 'MessageTO').AsString);
-		values[ 5] := IntToStr( DM.adsOrderDetails.RecordCountFromSrv);
+		values[ 5] := IntToStr( DM.adsOrderDetails.RecordCount);
 
-		for i := 0 to DM.adsOrderDetails.RecordCountFromSrv - 1 do
+		for i := 0 to DM.adsOrderDetails.RecordCount - 1 do
 		begin
 			params[ i * OrderParamCount + 6] := 'ProductId';
 			params[ i * OrderParamCount + 7] := 'CodeFirmCr';
@@ -920,10 +917,9 @@ begin
         DM.adsOrderCore.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
         DM.adsOrderCore.ParamByName( 'ParentCode').Value := DM.adsOrderDetails.FieldByName( 'FullCode').Value;
         DM.adsOrderCore.ParamByName( 'ShowRegister').Value := False;
-        DM.adsOrderCore.Options := DM.adsOrderCore.Options - [poCacheCalcFields];
         DM.adsOrderCore.Open;
         DM.adsOrderCore.FetchAll;
-        DM.adsOrderCore.DoSort(['CryptBaseCost'], [True]);
+        DM.adsOrderCore.IndexFieldNames := 'CryptBaseCost ASC';
 
         //Выбираем минимального из всех прайсов
         DBProc.SetFilter(DM.adsOrderCore,
@@ -997,9 +993,7 @@ begin
       end;
 
 			DM.adsOrderDetails.Edit;
-			DM.adsOrderDetails.FieldByName( 'PRICE').Clear;
 			DM.adsOrderDetails.FieldByName( 'CoreId').Clear;
-			DM.adsOrderDetails.FieldByName( 'SendPrice').AsCurrency := StrToCurr(TmpOrderCost);
       DM.adsOrderDetails.Post;
 			DM.adsOrderDetails.Next;
 		end;
@@ -1007,12 +1001,12 @@ begin
     ServerOrderId := 0;
 		try
       //Передаем уникальный идентификатор
-      params[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount ] := 'UniqueID';
-      values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount ] := IntToHex( GetCopyID, 8);
-      params[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 1] := 'ClientOrderID';
-      values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 1] := DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString;
-      params[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 2] := 'ServerOrderId';
-      values[ 6 + DM.adsOrderDetails.RecordCountFromSrv * OrderParamCount + 2] := '0';
+      params[ 6 + DM.adsOrderDetails.RecordCount * OrderParamCount ] := 'UniqueID';
+      values[ 6 + DM.adsOrderDetails.RecordCount * OrderParamCount ] := IntToHex( GetCopyID, 8);
+      params[ 6 + DM.adsOrderDetails.RecordCount * OrderParamCount + 1] := 'ClientOrderID';
+      values[ 6 + DM.adsOrderDetails.RecordCount * OrderParamCount + 1] := DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString;
+      params[ 6 + DM.adsOrderDetails.RecordCount * OrderParamCount + 2] := 'ServerOrderId';
+      values[ 6 + DM.adsOrderDetails.RecordCount * OrderParamCount + 2] := '0';
 			Res := Soap.Invoke( 'PostOrder', params, values);
 			// проверяем отсутствие ошибки при удаленном запросе
 			ResError := Utf8ToAnsi( Res.Values[ 'Error']);
@@ -1051,25 +1045,17 @@ begin
 
 		try
       if not SendError then begin
-        DM.UpTran.StartTransaction;
-        try
-          DM.adsOrderDetails.ApplyUpdates;
-          DM.adsOrdersHeaders.Edit;
-          { Заказ был отправлен, а не переведен }
-          DM.adsOrdersHeaders.FieldByName( 'Send').AsBoolean := True;
-          DM.adsOrdersHeaders.FieldByName( 'SendDate').AsDateTime := Now;
-          { Закрываем заказ }
-          DM.adsOrdersHeaders.FieldByName( 'Closed').AsBoolean := True;
-          DM.adsOrdersHeaders.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
-          DM.adsOrdersHeaders.Post;
-          DM.UpTran.Commit;
-          //Формируем список успешно отправленных заявок
-          TStringList(ExchangeParams[Integer(epSendedOrders)]).Add(DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString);
-        except
-          try
-            DM.UpTran.Rollback; except end;
-            raise;
-        end;
+        DM.adsOrderDetails.ApplyUpdates;
+        DM.adsOrdersHeaders.Edit;
+        { Заказ был отправлен, а не переведен }
+        DM.adsOrdersHeaders.FieldByName( 'Send').AsBoolean := True;
+        DM.adsOrdersHeaders.FieldByName( 'SendDate').AsDateTime := Now;
+        { Закрываем заказ }
+        DM.adsOrdersHeaders.FieldByName( 'Closed').AsBoolean := True;
+        DM.adsOrdersHeaders.FieldByName( 'ServerOrderId').AsInteger := ServerOrderId;
+        DM.adsOrdersHeaders.Post;
+        //Формируем список успешно отправленных заявок
+        TStringList(ExchangeParams[Integer(epSendedOrders)]).Add(DM.adsOrdersHeaders.FieldByName( 'OrderId').AsString);
       end
       else
         DM.adsOrderDetails.CancelUpdates;
@@ -1238,8 +1224,6 @@ begin
 		Synchronize( SetStatus);
 		DM.ClearDatabase;
 
-    //DM.MainConnection1.DefaultTransaction.CommitRetaining;
-    
 		StatusText := 'Сжатие базы';
 		Synchronize( SetStatus);
     DM.MyConnection.Close;
@@ -1287,12 +1271,9 @@ begin
 	Synchronize( DisableCancel);
 	StatusText := 'Резервное копирование данных';
 	Synchronize( SetStatus);
-  //todo: Надо сделать backup
-{
-  if not DM.IsBackuped(ExePath) then
-  	DM.BackupDatabase( ExePath);
-}
-	DM.OpenDataBase( ExePath + DatabaseName);
+  if not DM.IsBackuped then
+  	DM.BackupDatabase;
+
 	TotalProgress := 65;
 	Synchronize( SetTotalProgress);
 
@@ -1318,7 +1299,7 @@ begin
 	if (GetFileSize(ExePath+SDirIn+'\SynonymFirmCr.txt') > 0) then UpdateTables := UpdateTables + [utSynonymFirmCr];
 	if (GetFileSize(ExePath+SDirIn+'\Rejects.txt') > 0) then UpdateTables := UpdateTables + [utRejects];
   //Удаляем минимальные цены, если есть обновления в Core
-	if (GetFileSize(ExePath+SDirIn+'\MinPrices.txt') > 0) and (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
+	if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
 	if (GetFileSize(ExePath+SDirIn+'\CatalogFarmGroups.txt') > 0) then UpdateTables := UpdateTables + [utCatalogFarmGroups];
 	if (GetFileSize(ExePath+SDirIn+'\CatFarmGroupsDel.txt') > 0) then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
 	if (GetFileSize(ExePath+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
@@ -1401,14 +1382,8 @@ begin
       deletedPriceCodes.Free;
     end;
 
-	  SQL.Text:='update minprices set servercoreid = null, servermemoid = null where not exists(select * from core c where c.servercoreid = minprices.servercoreid);';
+	  SQL.Text:='update minprices set servercoreid = null, MinCost = null, PriceCode = null where not exists(select * from core c where c.servercoreid = minprices.servercoreid);';
     InternalExecute;
-	end;
-	//Synonym
-	if (utSynonyms in UpdateTables) and (eaGetFullData in ExchangeForm.ExchangeActs) then begin
-    //todo: восстановить SilentExecute
-    //SilentExecute(DM.adcUpdate, 'DROP INDEX IDX_SYNONYMNAME');
-    //SilentExecute(DM.adcUpdate, 'ALTER TABLE SYNONYMS DROP CONSTRAINT PK_SYNONYMS');
 	end;
 	if utCore in UpdateTables then begin
  	  SQL.Text:='DELETE FROM Core WHERE PriceCode is not null and NOT Exists(SELECT PriceCode, RegionCode FROM PricesRegionalData WHERE PriceCode=Core.PriceCode AND RegionCode=Core.RegionCode);';
@@ -1424,34 +1399,6 @@ begin
 	  SQL.Text:='DELETE FROM Regions WHERE NOT Exists(SELECT RegionCode FROM tmpRegions WHERE RegionCode=Regions.RegionCode);';
     InternalExecute;
 	end;
-
-{
-  todo: это было для Firebird, надо посмотреть на MySQL
-	SQL.Text := 'select count(*) from MinPrices where ServerCoreID is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from pricesregionaldata where regioncode is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from PricesData where Fresh is null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from RegionalData where regioncode is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from Providers where fullname is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from Core where ProductId is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from Clients where regioncode is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from regions where regionname is not null';
-	InternalExecute;
-  Close;
-}
 
   DM.MyConnection.Close;
 
@@ -1503,7 +1450,6 @@ begin
       InternalExecute;
     end
     else begin
-      //products_iu
       SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt', true);
       InternalExecute;
     end;
@@ -1571,8 +1517,6 @@ begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
       SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt');
       InternalExecute;
-  	  //SQL.Text:='ALTER TABLE SYNONYMS ADD CONSTRAINT PK_SYNONYMS PRIMARY KEY (SYNONYMCODE)'; InternalExecute;
-  	  //SQL.Text:='CREATE INDEX IDX_SYNONYMNAME ON SYNONYMS (SYNONYMNAME)'; InternalExecute;
     end
     else begin
       SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt', true);
@@ -1586,47 +1530,8 @@ begin
 	end;
 	//Core
 	if utCore in UpdateTables then begin
-    //todo: зачем здесь еще раз вызывается CoreDeleteOldPrices - мне не понятно
-	  SQL.Text:='DELETE FROM Core WHERE PriceCode is not null and NOT Exists(SELECT PriceCode, RegionCode FROM PricesRegionalData WHERE PriceCode=Core.PriceCode AND RegionCode=Core.RegionCode);';
-    InternalExecute;
-	end;
-	if utCore in UpdateTables then begin
-    //todo: восстановить SilentExecute
-    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_ProductId');
-    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_PRICECODE');
-    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT FK_CORE_REGIONCODE');
-    //SilentExecute(DM.adcUpdate, 'alter table core DROP CONSTRAINT PK_CORE');
-    //SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMCODE');
-    //SilentExecute(DM.adcUpdate, 'drop index FK_CORE_SYNONYMFIRMCRCODE');
-    //SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_SERVERCOREID');
-    //SilentExecute(DM.adcUpdate, 'drop index IDX_CORE_JUNK');
-
-    DM.MyConnection.Close;
-    DM.MyConnection.Open;
-
     SQL.Text := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
     InternalExecute;
-{
-todo: пока не импортируем Core
-    UpdateFromFile(ExePath+SDirIn+'\Core.txt',
-'INSERT INTO Core '+
-'(Pricecode, RegionCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode,' +
-'Code, CodeCr, Unit, Volume, Junk, Await, Quantity, Note, Period, Doc, RegistryCost, VitallyImportant, RequestRatio, BaseCost, ServerCOREID, OrderCost, MinOrderCount)' +
-'values (:Pricecode, :RegionCode, :ProductId, :CodeFirmCr, :SynonymCode, ' +
-':SynonymFirmCrCode, :Code, :CodeCr, :Unit, :Volume, :Junk, :Await, :Quantity, ' +
-':Note, :Period, :Doc, :RegistryCost, :VitallyImportant, :RequestRatio, :BaseCost, :ServerCOREID, :OrderCost, :MinOrderCount)');
-}
-
-{
-	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT PK_CORE PRIMARY KEY (COREID)'; InternalExecute;
-    SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_ProductId FOREIGN KEY (ProductId) REFERENCES PRODUCTS (ProductId) ON DELETE CASCADE ON UPDATE CASCADE'; InternalExecute;
-	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_PRICECODE FOREIGN KEY (PRICECODE) REFERENCES PRICESDATA (PRICECODE) ON DELETE CASCADE ON UPDATE CASCADE'; InternalExecute;
-	  SQL.Text:='ALTER TABLE CORE ADD CONSTRAINT FK_CORE_REGIONCODE FOREIGN KEY (REGIONCODE) REFERENCES REGIONS (REGIONCODE) ON UPDATE CASCADE'; InternalExecute;
-	  SQL.Text:='CREATE INDEX IDX_CORE_JUNK ON CORE (ProductId, JUNK)'; InternalExecute;
-	  SQL.Text:='CREATE INDEX IDX_CORE_SERVERCOREID ON CORE (SERVERCOREID)'; InternalExecute;
-	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMCODE ON CORE (SYNONYMCODE)'; InternalExecute;
-	  SQL.Text:='CREATE INDEX FK_CORE_SYNONYMFIRMCRCODE ON CORE (SYNONYMFIRMCRCODE)'; InternalExecute;
-}    
 	end;
 
   DM.MyConnection.Close;
@@ -1654,21 +1559,8 @@ todo: пока не импортируем Core
 	Synchronize( SetStatus);
 
 	SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; InternalExecute;
-{
-Вместо запроса используем хранимую процедуру следующего содержания:
-CREATE OR ALTER PROCEDURE UPDATECOREEXISTS 
-as
-declare variable catalogfullcode bigint;
-begin
-  for select p.catalogid from core c, products p where c.productid = p.productid
-    into :catalogFullCode
-  do
-    update catalogs set CoreExists = 1 where FullCode = :catalogFullCode;
-end^
-}
-	//SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; InternalExecute;
-	//SQL.Text := 'InternalExecute PROCEDURE UPDATECOREEXISTS'; InternalExecute;
-	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)'; InternalExecute;
+	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
+  InternalExecute;
 	Progress := 65;
 	Synchronize( SetProgress);
   DM.adtParams.Close;
@@ -1677,8 +1569,6 @@ end^
 	begin
 		Progress := 70;
 		Synchronize( SetProgress);
-    //todo: надо восстановить CoreInsertFormHeaders
-		//SQL.Text := 'EXECUTE PROCEDURE CoreInsertFormHeaders'; InternalExecute;
 		SQL.Text :=
       'insert into Core (ProductId, SynonymCode) ' +
       'select products.productid, -products.catalogid ' +
@@ -1707,7 +1597,7 @@ end^
 	{ Добавляем забракованые препараты }
 	if utRejects in UpdateTables then
 	begin
-    SQL.Text := GetLoadDataSQL('Defectives', ExePath+SDirIn+'\Rejects.txt');
+    SQL.Text := GetLoadDataSQL('Defectives', ExePath+SDirIn+'\Rejects.txt', True);
     InternalExecute;
 	end;
 
@@ -1716,6 +1606,27 @@ end^
 	//проставляем мин. цены и лидеров
 	if utMinPrices in UpdateTables then
 	begin
+{
+    UpdateFromFileByParamsMySQL(ExePath+SDirIn+'\MinPrices.txt',
+''
++'UPDATE minprices '
++'SET    servercoreid = IF((servercoreid IS NULL) '
++'    OR '
++'       ( '
++'              servermemoid IS NULL '
++'       ) '
++'       , ifnull(:servercoreid, servercoreid), IF((99999900 ^ servermemoid) >= (99999900 ^ ifnull(:servermemoid, servermemoid)), ifnull(:servercoreid, servercoreid), servercoreid ) ), '
++'       servermemoid                                                         = IF((servercoreid IS NULL) '
++'    OR '
++'       ( '
++'              servermemoid IS NULL '
++'       ) '
++'       , ifnull(:servermemoid, servermemoid), IF((99999900 ^ servermemoid) >= (99999900 ^ ifnull(:servermemoid, servermemoid)), ifnull(:servermemoid, servermemoid), servermemoid ) ) '
++'WHERE  productid                                                            = :productid '
++'   AND regioncode                                                           = :regioncode',
+     ['servercoreid', 'productid', 'regioncode', 'servermemoid'], True);
+}     
+
   {
     UpdateFromFileByParams(ExePath+SDirIn+'\MinPrices.txt',
       'update minprices set ' +
@@ -1734,7 +1645,7 @@ end^
       'where productid = :productid and regioncode = :regioncode',
       ['servercoreid', 'productid', 'regioncode', 'servermemoid'],
       False);
-}      
+}
   end;
 
 	Progress := 90;
@@ -1742,31 +1653,26 @@ end^
 	TotalProgress := 85;
 	Synchronize( SetTotalProgress);
 
-{
-  todo: восстановить установку SetPriceSize
-	SQL.Text := 'EXECUTE PROCEDURE SETPRICESIZE';
+	SQL.Text := ''
++'UPDATE pricesregionaldata                    , '
++'       ( SELECT  Pricesdata.PriceCode        , '
++'                pricesregionaldata.regioncode, '
++'                COUNT(core.Servercoreid) AS PriceCount '
++'       FROM ( Pricesdata, pricesregionaldata) '
++'                LEFT JOIN core '
++'                ON       core.PriceCode      = Pricesdata.PriceCode '
++'                     AND Core.RegionCode     = pricesregionaldata.RegionCode '
++'       WHERE    pricesregionaldata.pricecode = Pricesdata.pricecode '
++'       GROUP BY Pricesdata.PriceCode, '
++'                pricesregionaldata.RegionCode '
++'       ) PriceSizes '
++'SET    pricesregionaldata.pricesize  = PriceSizes.PriceCount '
++'WHERE  pricesregionaldata.pricecode  = PriceSizes.pricecode '
++'   AND pricesregionaldata.regioncode = PriceSizes.regioncode';
 	InternalExecute;
-}
-  
-{
-	SQL.Text := 'EXECUTE PROCEDURE UPDATEALLINDICES';
-	InternalExecute;
-}
 
   DM.MyConnection.Close;
   DM.MyConnection.Open;
-
-{
-	SQL.Text := 'select count(*) from MinPrices where ServerCoreID is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from Core where productid is not null';
-	InternalExecute;
-  Close;
-	SQL.Text := 'select count(*) from PricesData where Fresh is not null';
-	InternalExecute;
-  Close;
-}  
 
 	Progress := 100;
 	Synchronize( SetProgress);
@@ -1784,8 +1690,8 @@ end^
 
 	DM.UnLinkExternalTables;
 
-  //todo: надо потом восстановить
-//	DM.ClearBackup( ExePath);
+  //todo: надо потом восстановить ClearBackup, чтобы потом можно было восстановить из эталонной копии
+  //DM.ClearBackup( ExePath);
 
   Dm.MyConnection.AfterConnect(nil);
 	{ Показываем время обновления }
@@ -1918,26 +1824,44 @@ begin
 end;
 
 procedure TExchangeThread.GetAbsentPriceCode;
+var
+  absentQuery : TMyQuery;
 begin
   try
-    //Tracer.TR('test', 'Before');
-    DM.t.ExecQuery;
+
+    absentQuery := TMyQuery.Create(nil);
+    absentQuery.Connection := DM.MyConnection;
     try
-      //Tracer.TR('test', 'In');
-      if DM.t.RecordCount > 0 then begin
-        AbsentPriceCodeSL := TStringList.Create;
-        while not DM.t.Eof do begin
-          AbsentPriceCodeSL.Add(DM.t.FieldByName('PRICECODE').AsString);
-          DM.t.Next;
+      absentQuery.SQL.Text := ''
++'SELECT DISTINCT c.Pricecode '
++'FROM    core c '
++'        LEFT JOIN synonyms s '
++'        ON      s.synonymcode = c.synonymcode '
++'        LEFT JOIN synonymfirmcr sfc '
++'        ON      sfc.synonymfirmcrcode = c.synonymfirmcrcode '
++'WHERE (c.synonymcode > 0) '
++'    AND ((s.synonymcode IS NULL) '
++'     OR (sfc.synonymfirmcrcode IS NULL))';
+
+      absentQuery.Open;
+      try
+        if absentQuery.RecordCount > 0 then begin
+          AbsentPriceCodeSL := TStringList.Create;
+          while not absentQuery.Eof do begin
+            AbsentPriceCodeSL.Add(absentQuery.FieldByName('PRICECODE').AsString);
+            absentQuery.Next;
+          end;
         end;
+      finally
+        absentQuery.Close;
       end;
     finally
-      DM.t.Close;
-      //Tracer.TR('test', 'After');
+      absentQuery.Free;
     end;
+
   except
     on E : Exception do
-      //Tracer.TR('test', E.Message);
+      WriteExchangeLog('GetAbsentPriceCode.Error', E.Message);
   end;
 end;
 
@@ -1954,7 +1878,7 @@ begin
   up := TpFIBQuery.Create(nil);
   try
     //up.Database := DM.MainConnection1;
-    up.Transaction := DM.UpTran;
+    //up.Transaction := DM.UpTran;
 
     InDelimitedFile := TFIBInputDelimitedFile.Create;
     try
@@ -2030,55 +1954,52 @@ var
   I : Integer;
 begin
   TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
-  if DM.adsSelect.Active then
-   	DM.adsSelect.Close;
-  DM.adsSelect.SQL.Text := 'select prd.pricecode, prd.regioncode, prd.injob ' +
-    'from pricesregionaldata prd inner join pricesregionaldataup prdu on prdu.PriceCode = prd.PriceCode and prdu.RegionCode = prd.regioncode';
-	DM.adsSelect.Open;
+  if DM.adsQueryValue.Active then
+   	DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := '' +
+      '  select '
+    + ' prd.pricecode, prd.regioncode, prd.injob '
+    + ' from '
+    + '   pricesregionaldata prd '
+    + '   inner join pricesregionaldataup prdu on prdu.PriceCode = prd.PriceCode and prdu.RegionCode = prd.regioncode';
+	DM.adsQueryValue.Open;
   //Отправляем настройки только в том случае, если есть что отправлять
-	if not DM.adsSelect.Eof then
+	if not DM.adsQueryValue.Eof then
 	begin
 		StatusText := 'Отправка настроек прайс-листов';
 		Synchronize( SetStatus);
-    SetLength(ParamNames, StaticParamCount + DM.adsSelect.RecordCount*4);
-    SetLength(ParamValues, StaticParamCount + DM.adsSelect.RecordCount*4);
+    SetLength(ParamNames, StaticParamCount + DM.adsQueryValue.RecordCount*4);
+    SetLength(ParamValues, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     ParamNames[0] := 'UniqueID';
     ParamValues[0] := IntToHex( GetCopyID, 8);
     I := 0;
-    while not DM.adsSelect.Eof do begin
+    while not DM.adsQueryValue.Eof do begin
       //PriceCodes As Int32(), ByVal RegionCodes As Int32(), ByVal INJobs As Boolean(), ByVal UpCosts
       ParamNames[StaticParamCount+i*4] := 'PriceCodes';
-      ParamValues[StaticParamCount+i*4] := DM.adsSelect.FieldByName('PriceCode').AsString;
+      ParamValues[StaticParamCount+i*4] := DM.adsQueryValue.FieldByName('PriceCode').AsString;
       ParamNames[StaticParamCount+i*4+1] := 'RegionCodes';
-      ParamValues[StaticParamCount+i*4+1] := DM.adsSelect.FieldByName('RegionCode').AsString;
+      ParamValues[StaticParamCount+i*4+1] := DM.adsQueryValue.FieldByName('RegionCode').AsString;
       ParamNames[StaticParamCount+i*4+2] := 'INJobs';
-      ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsSelect.FieldByName('INJob').AsBoolean, True);
+      ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsQueryValue.FieldByName('INJob').AsBoolean, True);
       ParamNames[StaticParamCount+i*4+3] := 'UpCosts';
       //TODO: Пока здесь передаем 0, потом этот параметр надо удалить 
       ParamValues[StaticParamCount+i*4+3] := '0.0';
-      DM.adsSelect.Next;
+      DM.adsQueryValue.Next;
       Inc(i);
     end;
-    DM.adsSelect.Close;
+    DM.adsQueryValue.Close;
     Res := SOAP.Invoke( 'PostPriceDataSettings', ParamNames, ParamValues);
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
       raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-    //DM.adcUpdate.Transaction.StartTransaction;
-    try
-      with DM.adcUpdate do begin
-        //удаляем признак того, что настройки прайс-листов были изменены
-        SQL.Text := 'delete from pricesregionaldataup';
-        Execute;
-      end;
-      //DM.adcUpdate.Transaction.Commit;
-    except
-      //DM.adcUpdate.Transaction.Rollback;
-      raise;
+    with DM.adcUpdate do begin
+      //удаляем признак того, что настройки прайс-листов были изменены
+      SQL.Text := 'delete from pricesregionaldataup';
+      Execute;
     end;
 	end
   else
-    DM.adsSelect.Close;
+    DM.adsQueryValue.Close;
   TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 end;
 
@@ -2265,7 +2186,7 @@ begin
   SetLength(Values, Length(Names));
   try
     //up.Database := DM.MainConnection1;
-    up.Transaction := DM.UpTran;
+    //up.Transaction := DM.UpTran;
 
     InDelimitedFile := TFIBInputDelimitedFile.Create;
     try

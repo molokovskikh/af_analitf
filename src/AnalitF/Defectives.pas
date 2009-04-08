@@ -172,17 +172,11 @@ end;
 procedure TDefectivesForm.Print( APreview: boolean = False);
 var
   ShowAll: Boolean;
+  CheckPrintCount : Integer;
 begin
   //если нет ни одной пометки - печатаем все
-  with DM.adsSelect do begin
-    SQL.Text:='SELECT Count(*) FROM Defectives WHERE CheckPrint = 1';
-    Open;
-    try
-      ShowAll:=Fields[0].AsInteger=0;
-    finally
-      Close;
-    end;
-  end;
+  CheckPrintCount := DM.QueryValue('SELECT Count(*) FROM Defectives WHERE CheckPrint = 1', [], []);
+  ShowAll := CheckPrintCount = 0;
   with adsPrint do begin
     SelectSQL.Text:=PrintQuery+' ORDER BY '+OrderField;
     //ParamByName('DateFrom').DataType:=ftDate;

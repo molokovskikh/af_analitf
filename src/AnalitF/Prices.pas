@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh;
+  Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh, MemDS,
+  DBAccess, MyAccess;
 
 const
 	PricesSql =	'SELECT * FROM PRICESSHOW(:ACLIENTID, :TIMEZONEBIAS) ORDER BY ';
@@ -37,29 +38,51 @@ type
     Bevel3: TBevel;
     Panel3: TPanel;
     lblPriceCount: TLabel;
-    adsPrices: TpFIBDataSet;
-    adsPricesPRICECODE: TFIBBCDField;
-    adsPricesPRICENAME: TFIBStringField;
-    adsPricesDATEPRICE: TFIBDateTimeField;
-    adsPricesMINREQ: TFIBIntegerField;
-    adsPricesENABLED: TFIBIntegerField;
-    adsPricesPRICEINFO: TFIBBlobField;
-    adsPricesFIRMCODE: TFIBBCDField;
-    adsPricesFULLNAME: TFIBStringField;
-    adsPricesSTORAGE: TFIBIntegerField;
-    adsPricesADMINMAIL: TFIBStringField;
-    adsPricesSUPPORTPHONE: TFIBStringField;
-    adsPricesCONTACTINFO: TFIBBlobField;
-    adsPricesOPERATIVEINFO: TFIBBlobField;
-    adsPricesREGIONCODE: TFIBBCDField;
-    adsPricesREGIONNAME: TFIBStringField;
-    adsPricesPOSITIONS: TFIBIntegerField;
-    adsPricesPRICESIZE: TFIBIntegerField;
-    adsClientsData: TpFIBDataSet;
-    adsPricesSumOrder: TCurrencyField;
-    adsPricesINJOB: TFIBBooleanField;
+    adsPricesOld: TpFIBDataSet;
+    adsPricesOldPRICECODE: TFIBBCDField;
+    adsPricesOldPRICENAME: TFIBStringField;
+    adsPricesOldDATEPRICE: TFIBDateTimeField;
+    adsPricesOldMINREQ: TFIBIntegerField;
+    adsPricesOldENABLED: TFIBIntegerField;
+    adsPricesOldPRICEINFO: TFIBBlobField;
+    adsPricesOldFIRMCODE: TFIBBCDField;
+    adsPricesOldFULLNAME: TFIBStringField;
+    adsPricesOldSTORAGE: TFIBIntegerField;
+    adsPricesOldADMINMAIL: TFIBStringField;
+    adsPricesOldSUPPORTPHONE: TFIBStringField;
+    adsPricesOldCONTACTINFO: TFIBBlobField;
+    adsPricesOldOPERATIVEINFO: TFIBBlobField;
+    adsPricesOldREGIONCODE: TFIBBCDField;
+    adsPricesOldREGIONNAME: TFIBStringField;
+    adsPricesOldPOSITIONS: TFIBIntegerField;
+    adsPricesOldPRICESIZE: TFIBIntegerField;
+    adsPricesOldSumOrder: TCurrencyField;
+    adsPricesOldINJOB: TFIBBooleanField;
     tmStopEdit: TTimer;
-    adsPricesSUMBYCURRENTMONTH: TFIBBCDField;
+    adsPricesOldSUMBYCURRENTMONTH: TFIBBCDField;
+    adsPrices: TMyQuery;
+    adsPricesPriceCode: TLargeintField;
+    adsPricesPriceName: TStringField;
+    adsPricesUniversalDatePrice: TDateTimeField;
+    adsPricesMinReq: TIntegerField;
+    adsPricesEnabled: TBooleanField;
+    adsPricesPriceInfo: TMemoField;
+    adsPricesFirmCode: TLargeintField;
+    adsPricesFullName: TStringField;
+    adsPricesStorage: TBooleanField;
+    adsPricesAdminMail: TStringField;
+    adsPricesSupportPhone: TStringField;
+    adsPricesContactInfo: TMemoField;
+    adsPricesOperativeInfo: TMemoField;
+    adsPricesRegionCode: TLargeintField;
+    adsPricesRegionName: TStringField;
+    adsPricespricesize: TIntegerField;
+    adsPricesINJOB: TBooleanField;
+    adsPricesCONTROLMINREQ: TBooleanField;
+    adsPricesDatePrice: TDateTimeField;
+    adsPricesPositions: TLargeintField;
+    adsPricessumbycurrentmonth: TFloatField;
+    adsPricesSumOrder: TCurrencyField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -71,13 +94,13 @@ type
     procedure dbgPricesDblClick(Sender: TObject);
     procedure adsPrices2AfterScroll(DataSet: TDataSet);
     procedure adsPrices2AfterOpen(DataSet: TDataSet);
-    procedure adsPricesSTORAGEGetText(Sender: TField; var Text: String;
+    procedure adsPricesOldSTORAGEGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
     procedure dbgPricesSortMarkingChanged(Sender: TObject);
     procedure dbgPricesExit(Sender: TObject);
-    procedure adsPricesINJOBChange(Sender: TField);
+    procedure adsPricesOldINJOBChange(Sender: TField);
     procedure tmStopEditTimer(Sender: TObject);
-    procedure adsPricesCalcFields(DataSet: TDataSet);
+    procedure adsPricesOldCalcFields(DataSet: TDataSet);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -193,7 +216,11 @@ begin
     try
       if Active then begin
         GetLastPrice;
-        CloseOpen(True);
+        Refresh;
+        {
+        Close;
+        Open;
+        }
       end
       else
         Open;
@@ -279,6 +306,7 @@ end;
 procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
 begin
 	inherited;
+  //Реализовать это: http://www.autoaf.ru/faq_delphi.htm
 	if DBMemo2.Lines.Count > 8 then DBMemo2.ScrollBars := ssVertical
 		else DBMemo2.ScrollBars := ssNone;
 	if DBMemo3.Lines.Count > 8 then DBMemo3.ScrollBars := ssVertical
@@ -287,10 +315,10 @@ end;
 
 procedure TPricesForm.adsPrices2AfterOpen(DataSet: TDataSet);
 begin
-	lblPriceCount.Caption := 'Всего прайс-листов : ' + IntToStr( adsPrices.RecordCountFromSrv);
+	lblPriceCount.Caption := 'Всего прайс-листов : ' + IntToStr( adsPrices.RecordCount);
 end;
 
-procedure TPricesForm.adsPricesSTORAGEGetText(Sender: TField;
+procedure TPricesForm.adsPricesOldSTORAGEGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
 begin
   text := Iif(Sender.AsBoolean, '+', '');
@@ -313,7 +341,7 @@ end;
 
 procedure TPricesForm.dbgPricesSortMarkingChanged(Sender: TObject);
 begin
-  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 procedure TPricesForm.dbgPricesExit(Sender: TObject);
@@ -321,7 +349,7 @@ begin
   SoftPost(adsPrices);
 end;
 
-procedure TPricesForm.adsPricesINJOBChange(Sender: TField);
+procedure TPricesForm.adsPricesOldINJOBChange(Sender: TField);
 begin
   tmStopEdit.Enabled := False;
   tmStopEdit.Interval := 500;
@@ -337,7 +365,7 @@ begin
   SoftPost(adsPrices);
 end;
 
-procedure TPricesForm.adsPricesCalcFields(DataSet: TDataSet);
+procedure TPricesForm.adsPricesOldCalcFields(DataSet: TDataSet);
 begin
   if adsPricesPOSITIONS.AsInteger > 0 then
     adsPricesSumOrder.AsCurrency := DM.FindOrderInfo(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger).Summ

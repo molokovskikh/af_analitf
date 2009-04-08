@@ -380,9 +380,7 @@ inherited OrdersForm: TOrdersForm
     AfterPost = adsOrdersAfterPost
     BeforeEdit = adsOrdersBeforeEdit
     BeforePost = adsOrdersBeforePost
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 144
     Top = 184

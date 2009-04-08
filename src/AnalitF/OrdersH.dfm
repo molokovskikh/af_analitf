@@ -535,10 +535,8 @@ inherited OrdersHForm: TOrdersHForm
     AfterPost = adsOrdersH2AfterPost
     BeforePost = adsOrdersH2BeforePost
     OnCalcFields = adsOrdersHFormCalcFields
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     AfterFetchRecord = adsOrdersHFormAfterFetchRecord
-    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 68
     Top = 119
@@ -713,9 +711,7 @@ inherited OrdersHForm: TOrdersHForm
         'onCode)'
       'and  CCore.SYNONYMCODE = :SYNONYMCODE'
       'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 188
     Top = 119

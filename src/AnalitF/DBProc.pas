@@ -3,7 +3,7 @@ unit DBProc;
 interface
 
 uses Windows, Classes, DB, DbGrids, SysUtils, Forms, Controls, ShellAPI,
-	DBGridEh, DBGridEhImpExp, pFIBDataSet, ToughDBGrid;
+	DBGridEh, DBGridEhImpExp, pFIBDataSet, ToughDBGrid, MyAccess;
 
 procedure DoPost(DataSet: TDataSet; SaveChanges: Boolean);
 procedure SoftEdit(DataSet: TDataSet);
@@ -20,6 +20,7 @@ function SetConnectionProperty(const ConnectionString, PropertyName,
   PropertyValue: string): string;
 function SaveGrid(Grid: TCustomDBGridEh): Boolean;
 procedure FIBDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
+procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
 
 implementation
 
@@ -259,6 +260,25 @@ begin
     B[i] := DBGrid.SortMarkedColumns[i].Title.SortMarker = smUpEh;
   end;
   FIBDataSet.DoSortEx(L, B);
+end;
+
+procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
+var
+  MyDacDataSet : TCustomMyDataSet;
+  SortConditions : String;
+  I : Integer;
+begin
+  MyDacDataSet := TCustomMyDataSet(DBGrid.DataSource.DataSet);
+  SortConditions := '';
+
+  for I := 0 to DBGrid.SortMarkedColumns.Count-1 do begin
+    SortConditions := SortConditions + DBGrid.SortMarkedColumns[i].Field.FieldName;
+    if DBGrid.SortMarkedColumns[i].Title.SortMarker = smDownEh then
+      SortConditions := SortConditions + ' DESC';
+    SortConditions := SortConditions + ';';
+  end;
+
+  MyDacDataSet.IndexFieldNames := SortConditions;
 end;
 
 end.

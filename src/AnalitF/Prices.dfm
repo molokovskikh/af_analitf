@@ -81,7 +81,7 @@ inherited PricesForm: TPricesForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'PRICENAME'
+          FieldName = 'PriceName'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
@@ -90,7 +90,7 @@ inherited PricesForm: TPricesForm
         end
         item
           EditButtons = <>
-          FieldName = 'REGIONNAME'
+          FieldName = 'RegionName'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1056#1077#1075#1080#1086#1085
@@ -100,7 +100,7 @@ inherited PricesForm: TPricesForm
         item
           Checkboxes = False
           EditButtons = <>
-          FieldName = 'STORAGE'
+          FieldName = 'Storage'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1057#1082#1083#1072#1076
@@ -116,7 +116,7 @@ inherited PricesForm: TPricesForm
         end
         item
           EditButtons = <>
-          FieldName = 'PRICESIZE'
+          FieldName = 'pricesize'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1055#1086#1079#1080#1094#1080#1081
@@ -125,7 +125,7 @@ inherited PricesForm: TPricesForm
         end
         item
           EditButtons = <>
-          FieldName = 'POSITIONS'
+          FieldName = 'Positions'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1047#1072#1082#1072#1079
@@ -145,7 +145,7 @@ inherited PricesForm: TPricesForm
           Alignment = taCenter
           DisplayFormat = 'dd.mm.yyyy hh:nn'
           EditButtons = <>
-          FieldName = 'DATEPRICE'
+          FieldName = 'DatePrice'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
@@ -154,7 +154,7 @@ inherited PricesForm: TPricesForm
         end
         item
           EditButtons = <>
-          FieldName = 'SUMBYCURRENTMONTH'
+          FieldName = 'sumbycurrentmonth'
           Footers = <>
           ReadOnly = True
           Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
@@ -388,7 +388,7 @@ inherited PricesForm: TPricesForm
     Left = 96
     Top = 216
   end
-  object adsPrices: TpFIBDataSet
+  object adsPricesOld: TpFIBDataSet
     UpdateSQL.Strings = (
       
         'execute procedure updateupcost(:OLD_PRICECODE, :OLD_RegionCODE, ' +
@@ -445,105 +445,98 @@ inherited PricesForm: TPricesForm
       '    :TIMEZONEBIAS) ')
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
-    OnCalcFields = adsPricesCalcFields
-    Transaction = DM.DefTran
-    UpdateTransaction = DM.UpTran
+    OnCalcFields = adsPricesOldCalcFields
+    Database = DM.MainConnectionOld
     AutoCommit = True
     Left = 96
     Top = 152
     oCacheCalcFields = True
-    object adsPricesPRICECODE: TFIBBCDField
+    object adsPricesOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsPricesPRICENAME: TFIBStringField
+    object adsPricesOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsPricesDATEPRICE: TFIBDateTimeField
+    object adsPricesOldDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
     end
-    object adsPricesMINREQ: TFIBIntegerField
+    object adsPricesOldMINREQ: TFIBIntegerField
       FieldName = 'MINREQ'
     end
-    object adsPricesENABLED: TFIBIntegerField
+    object adsPricesOldENABLED: TFIBIntegerField
       FieldName = 'ENABLED'
     end
-    object adsPricesPRICEINFO: TFIBBlobField
+    object adsPricesOldPRICEINFO: TFIBBlobField
       FieldName = 'PRICEINFO'
       Size = 8
     end
-    object adsPricesFIRMCODE: TFIBBCDField
+    object adsPricesOldFIRMCODE: TFIBBCDField
       FieldName = 'FIRMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsPricesFULLNAME: TFIBStringField
+    object adsPricesOldFULLNAME: TFIBStringField
       FieldName = 'FULLNAME'
       Size = 40
       EmptyStrToNull = True
     end
-    object adsPricesSTORAGE: TFIBIntegerField
+    object adsPricesOldSTORAGE: TFIBIntegerField
       Alignment = taCenter
       FieldName = 'STORAGE'
-      OnGetText = adsPricesSTORAGEGetText
+      OnGetText = adsPricesOldSTORAGEGetText
     end
-    object adsPricesADMINMAIL: TFIBStringField
+    object adsPricesOldADMINMAIL: TFIBStringField
       FieldName = 'ADMINMAIL'
       Size = 50
       EmptyStrToNull = True
     end
-    object adsPricesSUPPORTPHONE: TFIBStringField
+    object adsPricesOldSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
       EmptyStrToNull = True
     end
-    object adsPricesCONTACTINFO: TFIBBlobField
+    object adsPricesOldCONTACTINFO: TFIBBlobField
       FieldName = 'CONTACTINFO'
       Size = 8
     end
-    object adsPricesOPERATIVEINFO: TFIBBlobField
+    object adsPricesOldOPERATIVEINFO: TFIBBlobField
       FieldName = 'OPERATIVEINFO'
       Size = 8
     end
-    object adsPricesREGIONCODE: TFIBBCDField
+    object adsPricesOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsPricesREGIONNAME: TFIBStringField
+    object adsPricesOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsPricesPOSITIONS: TFIBIntegerField
+    object adsPricesOldPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
-    object adsPricesPRICESIZE: TFIBIntegerField
+    object adsPricesOldPRICESIZE: TFIBIntegerField
       FieldName = 'PRICESIZE'
     end
-    object adsPricesSumOrder: TCurrencyField
+    object adsPricesOldSumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsPricesINJOB: TFIBBooleanField
+    object adsPricesOldINJOB: TFIBBooleanField
       FieldName = 'INJOB'
-      OnChange = adsPricesINJOBChange
+      OnChange = adsPricesOldINJOBChange
     end
-    object adsPricesSUMBYCURRENTMONTH: TFIBBCDField
+    object adsPricesOldSUMBYCURRENTMONTH: TFIBBCDField
       FieldName = 'SUMBYCURRENTMONTH'
       Size = 2
       RoundByScale = True
     end
-  end
-  object adsClientsData: TpFIBDataSet
-    Transaction = DM.DefTran
-    Left = 208
-    Top = 200
-    oCacheCalcFields = True
   end
   object tmStopEdit: TTimer
     Enabled = False
@@ -551,5 +544,180 @@ inherited PricesForm: TPricesForm
     OnTimer = tmStopEditTimer
     Left = 288
     Top = 272
+  end
+  object adsPrices: TMyQuery
+    SQLUpdate.Strings = (
+      'call updateupcost(:OLD_PRICECODE, :OLD_RegionCODE, :INJOB)')
+    SQLRefresh.Strings = (
+      'SELECT '
+      'pricesshow.*,'
+      
+        'pricesshow.UniversalDatePrice - interval :TimeZoneBias minute AS' +
+        ' DatePrice,'
+      '('
+      '  SELECT'
+      '    Count(*)'
+      '  FROM'
+      '    OrdersH'
+      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
+      '  WHERE OrdersH.ClientId   = :AClientId'
+      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
+      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
+      '     AND OrdersH.Closed <> 1'
+      '     AND Orders.OrderCount > 0'
+      ') as Positions,'
+      '('
+      '  select'
+      '    Sum(Orders.SendPrice * Orders.OrderCount)'
+      '  from'
+      '    OrdersH'
+      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
+      '  WHERE OrdersH.ClientId = :AClientId'
+      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
+      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
+      
+        '     and ordersh.senddate > curdate() + interval (1-day(curdate(' +
+        '))) day'
+      '     AND OrdersH.Closed = 1'
+      '     AND OrdersH.send = 1'
+      '     AND Orders.OrderCount>0'
+      ') as sumbycurrentmonth'
+      'FROM pricesshow'
+      'where'
+      '    PriceCode = :pricecode'
+      'and RegionCode = :regioncode')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      'pricesshow.*,'
+      
+        'pricesshow.UniversalDatePrice - interval :TimeZoneBias minute AS' +
+        ' DatePrice,'
+      '('
+      '  SELECT'
+      '    Count(*)'
+      '  FROM'
+      '    OrdersH'
+      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
+      '  WHERE OrdersH.ClientId   = :AClientId'
+      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
+      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
+      '     AND OrdersH.Closed <> 1'
+      '     AND Orders.OrderCount > 0'
+      ') as Positions,'
+      '('
+      '  select'
+      '    Sum(Orders.SendPrice * Orders.OrderCount)'
+      '  from'
+      '    OrdersH'
+      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
+      '  WHERE OrdersH.ClientId = :AClientId'
+      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
+      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
+      
+        '     and ordersh.senddate > curdate() + interval (1-day(curdate(' +
+        '))) day'
+      '     AND OrdersH.Closed = 1'
+      '     AND OrdersH.send = 1'
+      '     AND Orders.OrderCount>0'
+      ') as sumbycurrentmonth'
+      'FROM pricesshow')
+    AfterOpen = adsPrices2AfterOpen
+    AfterScroll = adsPrices2AfterScroll
+    OnCalcFields = adsPricesOldCalcFields
+    Left = 144
+    Top = 152
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TimeZoneBias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end>
+    object adsPricesPriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsPricesPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsPricesUniversalDatePrice: TDateTimeField
+      FieldName = 'UniversalDatePrice'
+    end
+    object adsPricesMinReq: TIntegerField
+      FieldName = 'MinReq'
+    end
+    object adsPricesEnabled: TBooleanField
+      FieldName = 'Enabled'
+    end
+    object adsPricesPriceInfo: TMemoField
+      FieldName = 'PriceInfo'
+      BlobType = ftMemo
+    end
+    object adsPricesFirmCode: TLargeintField
+      FieldName = 'FirmCode'
+    end
+    object adsPricesFullName: TStringField
+      FieldName = 'FullName'
+      Size = 40
+    end
+    object adsPricesStorage: TBooleanField
+      Alignment = taCenter
+      FieldName = 'Storage'
+      OnGetText = adsPricesOldSTORAGEGetText
+    end
+    object adsPricesAdminMail: TStringField
+      FieldName = 'AdminMail'
+      Size = 50
+    end
+    object adsPricesSupportPhone: TStringField
+      FieldName = 'SupportPhone'
+    end
+    object adsPricesContactInfo: TMemoField
+      FieldName = 'ContactInfo'
+      BlobType = ftMemo
+    end
+    object adsPricesOperativeInfo: TMemoField
+      FieldName = 'OperativeInfo'
+      BlobType = ftMemo
+    end
+    object adsPricesRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsPricesRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsPricespricesize: TIntegerField
+      FieldName = 'pricesize'
+    end
+    object adsPricesINJOB: TBooleanField
+      FieldName = 'INJOB'
+      OnChange = adsPricesOldINJOBChange
+    end
+    object adsPricesCONTROLMINREQ: TBooleanField
+      FieldName = 'CONTROLMINREQ'
+    end
+    object adsPricesDatePrice: TDateTimeField
+      FieldName = 'DatePrice'
+    end
+    object adsPricesPositions: TLargeintField
+      FieldName = 'Positions'
+    end
+    object adsPricessumbycurrentmonth: TFloatField
+      FieldName = 'sumbycurrentmonth'
+    end
+    object adsPricesSumOrder: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
   end
 end

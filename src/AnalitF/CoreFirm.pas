@@ -9,7 +9,7 @@ uses
   Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
   FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
   pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, pFIBProps,
-  U_frameLegend;
+  U_frameLegend, MemDS, DBAccess, MyAccess;
 
 const
 	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID) ORDER BY ';
@@ -38,76 +38,139 @@ type
     Timer: TTimer;
     Bevel1: TBevel;
     actFlipCore: TAction;
-    adsCore: TpFIBDataSet;
-    adsCoreSumOrder: TCurrencyField;
-    adsCountFields: TpFIBDataSet;
-    adsOrdersH: TpFIBDataSet;
-    adsOrdersShowFormSummary: TpFIBDataSet;
-    adsCoreCryptBASECOST: TCurrencyField;
-    adsCorePriceRet: TCurrencyField;
-    adsCoreCOREID: TFIBBCDField;
-    adsCoreFULLCODE: TFIBBCDField;
-    adsCoreSHORTCODE: TFIBBCDField;
-    adsCoreCODEFIRMCR: TFIBBCDField;
-    adsCoreSYNONYMCODE: TFIBBCDField;
-    adsCoreSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreCODE: TFIBStringField;
-    adsCoreCODECR: TFIBStringField;
-    adsCoreVOLUME: TFIBStringField;
-    adsCoreDOC: TFIBStringField;
-    adsCoreNOTE: TFIBStringField;
-    adsCorePERIOD: TFIBStringField;
-    adsCoreAWAIT: TFIBIntegerField;
-    adsCoreJUNK: TFIBIntegerField;
-    adsCoreQUANTITY: TFIBStringField;
-    adsCoreSYNONYMNAME: TFIBStringField;
-    adsCoreSYNONYMFIRM: TFIBStringField;
-    adsCoreLEADERPRICECODE: TFIBBCDField;
-    adsCoreLEADERREGIONCODE: TFIBBCDField;
-    adsCoreLEADERREGIONNAME: TFIBStringField;
-    adsCoreLEADERPRICENAME: TFIBStringField;
-    adsCoreORDERSCOREID: TFIBBCDField;
-    adsCoreORDERSORDERID: TFIBBCDField;
-    adsCoreORDERSCLIENTID: TFIBBCDField;
-    adsCoreORDERSFULLCODE: TFIBBCDField;
-    adsCoreORDERSCODEFIRMCR: TFIBBCDField;
-    adsCoreORDERSSYNONYMCODE: TFIBBCDField;
-    adsCoreORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreORDERSCODE: TFIBStringField;
-    adsCoreORDERSCODECR: TFIBStringField;
-    adsCoreORDERCOUNT: TFIBIntegerField;
-    adsCoreORDERSSYNONYM: TFIBStringField;
-    adsCoreORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreORDERSJUNK: TFIBIntegerField;
-    adsCoreORDERSAWAIT: TFIBIntegerField;
-    adsCoreORDERSHORDERID: TFIBBCDField;
-    adsCoreORDERSHCLIENTID: TFIBBCDField;
-    adsCoreORDERSHPRICECODE: TFIBBCDField;
-    adsCoreORDERSHREGIONCODE: TFIBBCDField;
-    adsCoreORDERSHPRICENAME: TFIBStringField;
-    adsCoreORDERSHREGIONNAME: TFIBStringField;
-    adsCoreLEADERCODE: TFIBStringField;
-    adsCoreLEADERCODECR: TFIBStringField;
-    adsCoreCryptLEADERPRICE: TCurrencyField;
-    adsCoreBASECOST: TFIBStringField;
-    adsCoreLEADERPRICE: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBStringField;
+    adsCoreOld: TpFIBDataSet;
+    adsCoreOldSumOrder: TCurrencyField;
+    adsCountFieldsOld: TpFIBDataSet;
+    adsOrdersHOld: TpFIBDataSet;
+    adsOrdersShowFormSummaryOld: TpFIBDataSet;
+    adsCoreOldCryptBASECOST: TCurrencyField;
+    adsCoreOldPriceRet: TCurrencyField;
+    adsCoreOldCOREID: TFIBBCDField;
+    adsCoreOldFULLCODE: TFIBBCDField;
+    adsCoreOldSHORTCODE: TFIBBCDField;
+    adsCoreOldCODEFIRMCR: TFIBBCDField;
+    adsCoreOldSYNONYMCODE: TFIBBCDField;
+    adsCoreOldSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreOldCODE: TFIBStringField;
+    adsCoreOldCODECR: TFIBStringField;
+    adsCoreOldVOLUME: TFIBStringField;
+    adsCoreOldDOC: TFIBStringField;
+    adsCoreOldNOTE: TFIBStringField;
+    adsCoreOldPERIOD: TFIBStringField;
+    adsCoreOldAWAIT: TFIBIntegerField;
+    adsCoreOldJUNK: TFIBIntegerField;
+    adsCoreOldQUANTITY: TFIBStringField;
+    adsCoreOldSYNONYMNAME: TFIBStringField;
+    adsCoreOldSYNONYMFIRM: TFIBStringField;
+    adsCoreOldLEADERPRICECODE: TFIBBCDField;
+    adsCoreOldLEADERREGIONCODE: TFIBBCDField;
+    adsCoreOldLEADERREGIONNAME: TFIBStringField;
+    adsCoreOldLEADERPRICENAME: TFIBStringField;
+    adsCoreOldORDERSCOREID: TFIBBCDField;
+    adsCoreOldORDERSORDERID: TFIBBCDField;
+    adsCoreOldORDERSCLIENTID: TFIBBCDField;
+    adsCoreOldORDERSFULLCODE: TFIBBCDField;
+    adsCoreOldORDERSCODEFIRMCR: TFIBBCDField;
+    adsCoreOldORDERSSYNONYMCODE: TFIBBCDField;
+    adsCoreOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreOldORDERSCODE: TFIBStringField;
+    adsCoreOldORDERSCODECR: TFIBStringField;
+    adsCoreOldORDERCOUNT: TFIBIntegerField;
+    adsCoreOldORDERSSYNONYM: TFIBStringField;
+    adsCoreOldORDERSSYNONYMFIRM: TFIBStringField;
+    adsCoreOldORDERSJUNK: TFIBIntegerField;
+    adsCoreOldORDERSAWAIT: TFIBIntegerField;
+    adsCoreOldORDERSHORDERID: TFIBBCDField;
+    adsCoreOldORDERSHCLIENTID: TFIBBCDField;
+    adsCoreOldORDERSHPRICECODE: TFIBBCDField;
+    adsCoreOldORDERSHREGIONCODE: TFIBBCDField;
+    adsCoreOldORDERSHPRICENAME: TFIBStringField;
+    adsCoreOldORDERSHREGIONNAME: TFIBStringField;
+    adsCoreOldLEADERCODE: TFIBStringField;
+    adsCoreOldLEADERCODECR: TFIBStringField;
+    adsCoreOldCryptLEADERPRICE: TCurrencyField;
+    adsCoreOldBASECOST: TFIBStringField;
+    adsCoreOldLEADERPRICE: TFIBStringField;
+    adsCoreOldORDERSPRICE: TFIBStringField;
     pTop: TPanel;
     eSearch: TEdit;
     btnSearch: TButton;
     tmrSearch: TTimer;
-    adsCoreREGISTRYCOST: TFIBFloatField;
-    adsCoreVITALLYIMPORTANT: TFIBIntegerField;
-    adsCoreREQUESTRATIO: TFIBIntegerField;
+    adsCoreOldREGISTRYCOST: TFIBFloatField;
+    adsCoreOldVITALLYIMPORTANT: TFIBIntegerField;
+    adsCoreOldREQUESTRATIO: TFIBIntegerField;
     adsCoreWithLike: TpFIBDataSet;
-    adsCoreORDERCOST: TFIBBCDField;
-    adsCoreMINORDERCOUNT: TFIBIntegerField;
-    adsCorePRODUCTID: TFIBBCDField;
-    adsOrdersShowFormSummaryPRODUCTID: TFIBBCDField;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
+    adsCoreOldORDERCOST: TFIBBCDField;
+    adsCoreOldMINORDERCOUNT: TFIBIntegerField;
+    adsCoreOldPRODUCTID: TFIBBCDField;
+    adsOrdersShowFormSummaryOldPRODUCTID: TFIBBCDField;
+    adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
     frameLegeng: TframeLegeng;
+    adsOrdersShowFormSummary: TMyQuery;
+    adsOrdersH: TMyQuery;
+    adsCountFields: TMyQuery;
+    adsCore: TMyQuery;
+    adsCoreCoreId: TLargeintField;
+    adsCoreproductid: TLargeintField;
+    adsCoreFullCode: TLargeintField;
+    adsCoreshortcode: TLargeintField;
+    adsCoreCodeFirmCr: TLargeintField;
+    adsCoreSynonymCode: TLargeintField;
+    adsCoreSynonymFirmCrCode: TLargeintField;
+    adsCoreCode: TStringField;
+    adsCoreCodeCr: TStringField;
+    adsCoreVolume: TStringField;
+    adsCoreDoc: TStringField;
+    adsCoreNote: TStringField;
+    adsCorePeriod: TStringField;
+    adsCoreAwait: TBooleanField;
+    adsCoreJunk: TBooleanField;
+    adsCoreBaseCost: TStringField;
+    adsCoreQuantity: TStringField;
+    adsCoreSynonymName: TStringField;
+    adsCoreSynonymFirm: TStringField;
+    adsCoreLeaderPriceCode: TLargeintField;
+    adsCoreLeaderRegionCode: TLargeintField;
+    adsCoreLeaderRegionName: TStringField;
+    adsCoreLeaderPriceName: TStringField;
+    adsCoreLeaderCODE: TStringField;
+    adsCoreLeaderCODECR: TStringField;
+    adsCoreLeaderPRICE: TStringField;
+    adsCoreOrdersCoreId: TLargeintField;
+    adsCoreOrdersOrderId: TLargeintField;
+    adsCoreOrdersClientId: TLargeintField;
+    adsCoreOrdersFullCode: TLargeintField;
+    adsCoreOrdersCodeFirmCr: TLargeintField;
+    adsCoreOrdersSynonymCode: TLargeintField;
+    adsCoreOrdersSynonymFirmCrCode: TLargeintField;
+    adsCoreOrdersCode: TStringField;
+    adsCoreOrdersCodeCr: TStringField;
+    adsCoreOrderCount: TIntegerField;
+    adsCoreOrdersSynonym: TStringField;
+    adsCoreOrdersSynonymFirm: TStringField;
+    adsCoreOrdersPrice: TStringField;
+    adsCoreOrdersJunk: TBooleanField;
+    adsCoreOrdersAwait: TBooleanField;
+    adsCoreOrdersHOrderId: TLargeintField;
+    adsCoreOrdersHClientId: TLargeintField;
+    adsCoreOrdersHPriceCode: TLargeintField;
+    adsCoreOrdersHRegionCode: TLargeintField;
+    adsCoreOrdersHPriceName: TStringField;
+    adsCoreOrdersHRegionName: TStringField;
+    adsCoreregistrycost: TFloatField;
+    adsCorevitallyimportant: TBooleanField;
+    adsCorerequestratio: TIntegerField;
+    adsCoreordercost: TFloatField;
+    adsCoreminordercount: TIntegerField;
+    adsCoreCryptLEADERPRICE: TCurrencyField;
+    adsCoreCryptPriceRet: TCurrencyField;
+    adsCoreCryptBASECOST: TCurrencyField;
+    adsCoreSumOrder: TCurrencyField;
+    adsOrdersShowFormSummaryCLIENTCODE: TLargeintField;
+    adsOrdersShowFormSummaryPRODUCTID: TLargeintField;
+    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -129,7 +192,7 @@ type
     procedure actFlipCoreExecute(Sender: TObject);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
     procedure dbgCoreSortMarkingChanged(Sender: TObject);
-    procedure adsCoreLEADERPRICENAMEGetText(Sender: TField;
+    procedure adsCoreOldLEADERPRICENAMEGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
     procedure tmrSearchTimer(Sender: TObject);
     procedure dbgCoreDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -279,7 +342,7 @@ begin
     S := DM.D_B_N(adsCoreBASECOST.AsString);
     C := StrToCurr(S);
     adsCoreCryptBASECOST.AsCurrency := C;
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
+    adsCoreCryptPriceRet.AsCurrency := DM.GetPriceRet(C);
     adsCoreSumOrder.AsCurrency := adsCoreCryptBASECOST.AsCurrency * adsCoreORDERCOUNT.AsInteger;
     S := DM.D_B_N(adsCoreLEADERPRICE.AsString);
     C := StrToCurr(S);
@@ -310,7 +373,7 @@ begin
     filLeader: FP := LeaderFilterRecord;
   end;
   DBProc.SetFilterProc(adsCore, FP);
-  lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.VisibleRecordCount]);
+  lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.RecordCount]);
   cbFilter.ItemIndex := Integer(Filter);
 end;
 
@@ -346,7 +409,7 @@ begin
   adsCore.DisableControls;
   try
     adsCore.Filtered := False;
-    adsCore.DoSort(['SynonymName'], [True]);
+    adsCore.IndexFieldNames := 'SynonymName';
     DM.ShowFastReport('CoreFirm.frf', adsCore, APreview);
     if OldFiltered then
       DBProc.SetFilterProc(adsCore, OldFilterEvent);
@@ -447,10 +510,14 @@ end;
 
 procedure TCoreFirmForm.OrderCalc;
 begin
-  OrderCount := DM.MyConnection.ExecSQL('SELECT count(*) FROM Orders, ordersh WHERE ' +
+  OrderCount := DM.QueryValue(
+'SELECT count(*) FROM Orders, ordersh WHERE ' +
     'ordersh.PriceCode = :PriceCode and ordersh.regioncode = :RegionCode ' +
-    'and Orders.OrderId = ordersh.orderid and ordersh.closed = 0 ' +
-    'AND Orders.OrderCount>0', [PriceCode, RegionCode]);
+    ' and ordersh.ClientId = :AClientId ' +
+    ' and Orders.OrderId = ordersh.orderid and ordersh.closed = 0 ' +
+    ' AND Orders.OrderCount>0',
+    ['PriceCode', 'RegionCode', 'AClientId'],
+    [PriceCode, RegionCode, ClientId]);
 	OrderSum :=DM.FindOrderInfo(PriceCode, RegionCode).Summ;
 end;
 
@@ -489,7 +556,7 @@ begin
     OrderCount := 0;
     OrderSum := 0;
   	SetOrderLabel;
-    //DM.InitAllSumOrder;
+    DM.InitAllSumOrder;
     MainForm.SetOrdersInfo;
   end;
   dbgCore.SetFocus;
@@ -516,10 +583,10 @@ begin
   then
 			Background := LEADER_CLR;
 	//уцененный товар
-	if (adsCoreJunk.Value = 1) and (( Column.Field = adsCorePERIOD) or
+	if (adsCoreJunk.AsBoolean) and (( Column.Field = adsCorePERIOD) or
 		( Column.Field = adsCoreCryptBASECOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if (adsCoreAwait.Value = 1) and ( Column.Field = adsCoreSYNONYMNAME) then
+	if (adsCoreAwait.AsBoolean) and ( Column.Field = adsCoreSYNONYMNAME) then
 		Background := AWAIT_CLR;
 end;
 
@@ -573,7 +640,7 @@ begin
 	FullCode := adsCoreFullCode.AsInteger;
 	ShortCode := adsCoreShortCode.AsInteger;
 
-  CoreId := adsCoreCOREID.AsInt64;
+  CoreId := adsCoreCOREID.AsLargeInt;
 
   FlipToCode(FullCode, ShortCode, CoreId);
 end;
@@ -619,7 +686,11 @@ begin
     adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'AClientId').Value:=ClientId;
-    ShowSQLWaiting(adsCore);
+    if adsCore.Active then
+      adsCore.Close;
+    adsCore.Open;
+    //todo: надо восстановить
+    //ShowSQLWaiting(adsCore);
   finally
     Screen.Cursor:=crDefault;
   end;
@@ -630,7 +701,7 @@ begin
   FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TCoreFirmForm.adsCoreLEADERPRICENAMEGetText(Sender: TField;
+procedure TCoreFirmForm.adsCoreOldLEADERPRICENAMEGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
 begin
   if (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01) then
@@ -646,7 +717,7 @@ begin
     InternalSearchText := LeftStr(eSearch.Text, 50);
     if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
       adsCore.Close;
-      adsCore.SelectSQL.Text := adsCoreWithLike.SelectSQL.Text;
+      adsCore.SQL.Text := adsCoreWithLike.SelectSQL.Text;
       adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
       RefreshAllCore;
       dbgCore.InputField := 'OrderCount';
@@ -657,7 +728,7 @@ begin
     end
     else
       DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
-    lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.VisibleRecordCount]);
+    lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.RecordCount]);
     eSearch.Text := '';
   end
   else
@@ -685,7 +756,7 @@ begin
   end
   else
     DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
-  lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.VisibleRecordCount]);
+  lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.RecordCount]);
 end;
 
 procedure TCoreFirmForm.dbgCoreDrawColumnCell(Sender: TObject;

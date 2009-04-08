@@ -366,7 +366,6 @@ begin
 	end;
 
   //Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации
-{
   if FindCmdLineSwitch('renew') then
   begin
     for I := 0 to ActionList.ActionCount-1 do
@@ -375,7 +374,6 @@ begin
     itmSystem.Enabled := False;
     Exit;
   end;
-  }
 
 	{ Запуск с ключем -i (импорт данных) при получении новой версии программы}
   {
@@ -389,34 +387,27 @@ begin
   }
 
 	{ Если операция импорта не была завершена }
-  {
-	if DM.IsBackuped( ExePath) or
-     DM.IsBackuped( ExePath + SDirIn + '\') or
+	if DM.IsBackuped or
      DM.NeedImportAfterRecovery
   then
 	begin
 		AProc.MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
-		if DM.IsBackuped( ExePath) then
-		begin
-			DM.MainConnection1.Close;
-			DM.RestoreDatabase( ExePath);
-			DM.MainConnection1.Open;
-		end;
+		if DM.IsBackuped then
+			DM.RestoreDatabase;
+
     //Производим сжатие базы данных для очищения от ошибок
     RunCompactDatabase;
+    
 		{ Автоматический импорт }
     //Если импорт не прошел, то надо ждать помощи от техподдержки
-    {
 		if not RunExchange([ eaImportOnly])
     then
       Exit;
 	end;
-  }
 
   //Если выставлен флаг "Делать кумулятивное обновление", то делаем его
   //Он может быть выставлен с предыдущего запуска программы или в результате непрошедщего импорта,
   //который был запущен двумя строками выше
-  {
   if DM.GetCumulative then
   begin
     WriteExchangeLog('AnalitF',
@@ -427,16 +418,13 @@ begin
     //либо обновление не помогло и надо ждать помощи от техподдержки
     Exit;
   end;
-  }
 
 	if ExchangeOnly then exit;
 	{ Не обновлялись больше 20 часов }
-  {
 	if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) > 20) and
 		( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
 		if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
 			MB_ICONQUESTION or MB_YESNO) = IDYES then actReceiveExecute( nil);
-      }
 
   //Обновляем ToolBar в случае смены клиента после обновления
   ToolBar.Invalidate;
@@ -591,14 +579,12 @@ begin
 	ExAct := [ eaGetPrice];
 
 	{ Проверяем каталог на наличие записей }
-	DM.adsSelect.SQL.Text := 'SELECT COUNT(*) AS CatNum FROM Catalogs';
+  CatNum := 0;
 	try
-		DM.adsSelect.Open;
-		CatNum := DM.adsSelect.FieldByName( 'CatNum').AsInteger;
+		CatNum := DM.QueryValue('SELECT COUNT(*) AS CatNum FROM Catalogs', [], []);
 	except
 		CatNum := 0;
 	end;
-	DM.adsSelect.Close;
 
 	{ Если каталог пустой, то обновление будет принудительно кумулятивным }
 	if CatNum = 0 then ExAct := ExAct + [eaGetFullData];
@@ -648,7 +634,6 @@ begin
 	FreeChildForms;
 	Application.ProcessMessages;
 	DM.ClearDatabase;
-  //DM.MainConnection1.DefaultTransaction.CommitRetaining;
 	AProc.MessageBox( 'Очистка базы завершена');
 end;
 
@@ -699,17 +684,18 @@ end;
 
 procedure TMainForm.SetOrdersInfo;
 begin
-	DM.adsSelect.Close;
-	DM.adsSelect.SQL.Text := 'call ORDERSINFOMAIN(:ACLIENTID)';
-	DM.adsSelect.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsSelect.Open;
+  if DM.adsQueryValue.Active then
+  	DM.adsQueryValue.Close;
+	DM.adsQueryValue.SQL.Text := 'call ORDERSINFOMAIN(:ACLIENTID)';
+	DM.adsQueryValue.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	DM.adsQueryValue.Open;
 	try
 		StatusBar.Panels[ 0].Text := Format( 'Заказов : %d',
-			 [ DM.adsSelect.FieldByName( 'OrdersCount').AsInteger]);
+			 [ DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger]);
 		StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',
-			 [ DM.adsSelect.FieldByName( 'Positions').AsInteger]);
+			 [ DM.adsQueryValue.FieldByName( 'Positions').AsInteger]);
 	finally
-		DM.adsSelect.Close;
+		DM.adsQueryValue.Close;
 	end;
   StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',	[DM.GetAllSumOrder]);
 end;
@@ -732,7 +718,6 @@ begin
       DM.adtClients.FieldByName( 'ClientId').Value;
     adsOrdersH.ParamByName( 'AClosed').Value := False;
     adsOrdersH.ParamByName( 'ASend').Value := True;
-    //adsOrdersH.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
     try
       adsOrdersH.Open;
       if adsOrdersH.RecordCount > 0 then result := True;
@@ -930,29 +915,30 @@ end;
 
 function TMainForm.OldOrders: Boolean;
 begin
-	DM.adsSelect.Close;
-	DM.adsSelect.SQL.Text := 'SELECT * FROM ORDERSH where (Closed = 1) and (orderdate < :MinOrderDate)';
-  DM.adsSelect.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-	DM.adsSelect.Open;
+  if DM.adsQueryValue.Active then
+  	DM.adsQueryValue.Close;
+	DM.adsQueryValue.Close;
+	DM.adsQueryValue.SQL.Text := 'SELECT * FROM ORDERSH where (Closed = 1) and (orderdate < :MinOrderDate)';
+  DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+	DM.adsQueryValue.Open;
 	try
-    Result := not DM.adsSelect.IsEmpty;
+    Result := not DM.adsQueryValue.IsEmpty;
 	finally
-		DM.adsSelect.Close;
+		DM.adsQueryValue.Close;
 	end;
 end;
 
 procedure TMainForm.DeleteOldOrders;
 begin
-//  DM.adcUpdate.Transaction.StartTransaction;
-  try
-    DM.adcUpdate.SQL.Text := 'delete FROM ORDERSH where (Closed = 1) and (orderdate < :MinOrderDate)';
-    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-    DM.adcUpdate.Execute;
-//    DM.adcUpdate.Transaction.Commit;
-  except
-//    DM.adcUpdate.Transaction.Rollback;
-    raise;
-  end;
+  DM.adcUpdate.SQL.Text := ''
+   + ' delete ORDERSH, orders'
+   + ' FROM ORDERSH, orders '
+   + ' where '
+   + '    (Closed = 1)'
+   + ' and (Orders.OrderId = Ordersh.OrderId)'
+   + ' and (orderdate < :MinOrderDate)';
+  DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+  DM.adcUpdate.Execute;
 end;
 
 procedure TMainForm.actReceiveTicketsExecute(Sender: TObject);

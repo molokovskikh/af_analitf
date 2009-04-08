@@ -34,9 +34,9 @@ begin
 	with TNotOrdersForm.Create( Application) do
 	begin
 		try
-	        	Memo.Lines.Assign( Strings);
+     	Memo.Lines.Assign( Strings);
 			result := ShowModal = mrOK;
-	        finally
+    finally
 			Free;
 		end;
 	end;
@@ -48,34 +48,62 @@ var
   C : Currency;
 begin
 	result := True;
-	DM.adsSelect.Close;
-	DM.adsSelect.SQL.Text :=
-'SELECT OH.*, PRD.MinReq, PRD.ControlMinReq '+
-'FROM OrdersHShow(:AClientID, :AClosed, :TimeZoneBias) OH ' +
-'LEFT JOIN PricesRegionalData PRD ON (OH.PriceCode=PRD.PriceCode AND OH.RegionCode=PRD.RegionCode) '+
-'WHERE Send = 1';
-	DM.adsSelect.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsSelect.ParamByName( 'AClosed').Value := False;
-	DM.adsSelect.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	DM.adsSelect.Open;
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+	DM.adsQueryValue.SQL.Text :='' 
++'SELECT OrdersH.OrderId                 , ' 
++'       OrdersH.PriceName               , ' 
++'       OrdersH.RegionName              , ' 
++'       pricesregionaldata.minreq       , ' 
++'       pricesregionaldata.ControlMinReq, ' 
++'       OrdersPositions.Positions ' 
++'FROM ((OrdersH ' 
++'       INNER JOIN ' 
++'              ( SELECT  Orders.OrderId, ' 
++'                       COUNT(*) AS Positions ' 
++'              FROM     Orders ' 
++'              WHERE    Orders.OrderCount > 0 ' 
++'              GROUP BY Orders.OrderId ' 
++'              ) OrdersPositions     ON OrdersPositions.OrderId = OrdersH.OrderId ' 
++'       LEFT JOIN PricesData         ON OrdersH.PriceCode=PricesData.PriceCode) ' 
++'       LEFT JOIN pricesregionaldata ON pricesregionaldata.PriceCode = OrdersH.PriceCode AND pricesregionaldata.regioncode = OrdersH.regioncode) ' 
++'       LEFT JOIN RegionalData       ON (RegionalData.RegionCode=OrdersH.RegionCode) AND (PricesData.FirmCode=RegionalData.FirmCode) ' 
++'WHERE (OrdersH.ClientId = :AClientId) ' 
++'   AND (OrdersH.Closed = 0) ' 
++'   AND (OrdersH.Send = 1) ' 
++'   AND (PricesData.PriceCode IS NOT NULL) ' 
++'   AND (RegionalData.RegionCode IS NOT NULL) ' 
++'   AND (pricesregionaldata.PriceCode IS NOT NULL) '
++'   AND (OrdersPositions.Positions > 0)';
+	DM.adsQueryValue.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	Strings := TStringList.Create;
-  while not DM.adsSelect.Eof do
-  begin
-    if ((DM.adsSelect.FieldByName('ControlMinReq').AsBoolean)) then begin
-      C := DM.GetSumOrder(DM.adsSelect.FieldByName( 'OrderID').AsInteger);
-      if (C < DM.adsSelect.FieldByName( 'MinReq').AsCurrency) then
-        Strings.Append( Format( '%s (%s) : минимальный заказ %s - заказано %m',
-          [ DM.adsSelect.FieldByName( 'PriceName').AsString,
-          DM.adsSelect.FieldByName( 'RegionName').AsString,
-          DM.adsSelect.FieldByName( 'MinReq').AsString,
-          C]));
+  try
+    DM.adsQueryValue.Open;
+
+    try
+      while not DM.adsQueryValue.Eof do
+      begin
+        if ((DM.adsQueryValue.FieldByName('ControlMinReq').AsBoolean)) then begin
+          C := DM.GetSumOrder(DM.adsQueryValue.FieldByName( 'OrderID').AsInteger);
+          if (C < DM.adsQueryValue.FieldByName( 'MinReq').AsCurrency) then
+            Strings.Append( Format( '%s (%s) : минимальный заказ %s - заказано %m',
+              [ DM.adsQueryValue.FieldByName( 'PriceName').AsString,
+              DM.adsQueryValue.FieldByName( 'RegionName').AsString,
+              DM.adsQueryValue.FieldByName( 'MinReq').AsString,
+              C]));
+        end;
+        DM.adsQueryValue.Next;
+      end;
+    finally
+      DM.adsQueryValue.Close;
     end;
-    DM.adsSelect.Next;
+
+  finally
+	  Strings.Free;
   end;
+
   if Strings.Count > 0 then
     result := ShowNotOrders( Strings);
-	Strings.Free;
-	DM.adsSelect.Close;
 end;
 
 procedure TNotOrdersForm.Button1Click(Sender: TObject);

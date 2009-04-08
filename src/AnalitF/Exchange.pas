@@ -115,8 +115,7 @@ begin
   GlobalExchangeParams := nil;
 	if AExchangeActions = [] then exit;
 
-  //todo: надо потом восстановить
-//	DM.DeleteEmptyOrders;
+	DM.DeleteEmptyOrders;
 
   //Если мы выставили флаг "Получать кумулятивное обновление", то при попытки обновления мы будем запрашивать кумулятивное,
   //кроме ситуации, когда пользователь делает "Импортирование данных"
@@ -313,7 +312,7 @@ var
 begin
   t := TInternalRepareOrders.Create;
   try
-    //todo: надо потом восстановить
+    //todo: надо потом восстановить RepareOrders
     //t.RepareOrders;
   finally
     t.Free;
@@ -519,10 +518,10 @@ var
 		if Order = 0 then
       DM.adsRepareOrdersCOREID.Clear
     else begin
-      DM.adsRepareOrdersCOREID.AsInt64 := DM.adsCoreCOREID.Value;
-      DM.adsRepareOrdersCODE.Value := DM.adsCoreCODE.Value;
-      DM.adsRepareOrdersCODECR.Value := DM.adsCoreCODECR.Value;
-      DM.adsRepareOrdersPRICE.AsString := DM.adsCoreBASECOST.Value;
+      DM.adsRepareOrdersCOREID.AsInt64 := DM.adsCoreRepareCOREID.Value;
+      DM.adsRepareOrdersCODE.Value := DM.adsCoreRepareCODE.Value;
+      DM.adsRepareOrdersCODECR.Value := DM.adsCoreRepareCODECR.Value;
+      DM.adsRepareOrdersPRICE.AsString := DM.adsCoreRepareBASECOST.Value;
     end;
 		DM.adsRepareOrders.Post;
 	end;
@@ -531,8 +530,8 @@ begin
 	while not DM.adsRepareOrders.Eof do
 	begin
     Application.ProcessMessages;
-    if DM.adsCore.Active then
-  		DM.adsCore.Close;
+    if DM.adsCoreRepare.Active then
+  		DM.adsCoreRepare.Close;
 		Screen.Cursor := crHourglass;
 		try
       //Получаем данные, восстанавливаемой позиции
@@ -549,41 +548,41 @@ begin
       JUNK := DM.adsRepareOrdersJUNK.AsInteger;
       AWAIT := DM.adsRepareOrdersAWAIT.AsInteger;
 
-      DM.adsCore.ParamByName( 'AClientId').Value :=
+      DM.adsCoreRepare.ParamByName( 'AClientId').Value :=
         DM.adtClients.FieldByName('ClientId').Value;
-      DM.adsCore.ParamByName( 'APriceCode').Value :=
+      DM.adsCoreRepare.ParamByName( 'APriceCode').Value :=
         DM.adsRepareOrders.FieldByName( 'PriceCode').Value;
-      DM.adsCore.ParamByName( 'ARegionCode').Value :=
+      DM.adsCoreRepare.ParamByName( 'ARegionCode').Value :=
         DM.adsRepareOrders.FieldByName( 'RegionCode').Value;
-      DM.adsCore.ParamByName( 'SynonymCode').Value := SynonymCode;
-      DM.adsCore.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
-      DM.adsCore.ParamByName( 'JUNK').Value := JUNK;
-      DM.adsCore.ParamByName( 'AWAIT').Value := AWAIT;
-			DM.adsCore.Open;
+      DM.adsCoreRepare.ParamByName( 'SynonymCode').Value := SynonymCode;
+      DM.adsCoreRepare.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
+      DM.adsCoreRepare.ParamByName( 'JUNK').Value := JUNK;
+      DM.adsCoreRepare.ParamByName( 'AWAIT').Value := AWAIT;
+			DM.adsCoreRepare.Open;
 			{ проверяем наличие прайс-листа }
-			if DM.adsCore.IsEmpty then
+			if DM.adsCoreRepare.IsEmpty then
 			begin
 				Strings.Append( Format( '%s : %s - %s : позиция отсутствует',
 					[ DM.adsRepareOrdersPRICENAME.AsString,
 					DM.adsRepareOrdersSYNONYMNAME.AsString,
 					DM.adsRepareOrdersSYNONYMFIRM.AsString]));
-				DM.adsCore.Close;
+				DM.adsCoreRepare.Close;
 				SetOrder( 0);
 				DM.adsRepareOrders.Next;
 				continue;
 			end;
 
-			if DM.adsCore.Locate( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([Code, RequestRatio, OrderCost, MinOrderCount]), [])
+			if DM.adsCoreRepare.Locate( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([Code, RequestRatio, OrderCost, MinOrderCount]), [])
       then
 			begin
-				Val( DM.adsCoreQUANTITY.AsString, Quantity, E);
+				Val( DM.adsCoreRepareQUANTITY.AsString, Quantity, E);
 				if E <> 0 then Quantity := 0;
 				if Quantity > 0 then
 					CurOrder := Min( Order, Quantity)
 				else
           CurOrder := Order;
-        if not DM.adsCoreREQUESTRATIO.IsNull and (DM.adsCoreREQUESTRATIO.AsInteger > 0) then
-          CurOrder := CurOrder - (CurOrder mod DM.adsCoreREQUESTRATIO.AsInteger);
+        if not DM.adsCoreRepareREQUESTRATIO.IsNull and (DM.adsCoreRepareREQUESTRATIO.AsInteger > 0) then
+          CurOrder := CurOrder - (CurOrder mod DM.adsCoreRepareREQUESTRATIO.AsInteger);
 			end;
 			SetOrder( CurOrder);
 
@@ -611,7 +610,7 @@ begin
 			end;
 			DM.adsRepareOrders.Next;
 		finally
-			DM.adsCore.Close;
+			DM.adsCoreRepare.Close;
       Screen.Cursor := crDefault;
 		end;
 	end;

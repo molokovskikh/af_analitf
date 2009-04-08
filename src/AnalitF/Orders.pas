@@ -119,8 +119,7 @@ var
 	V: array[0..0] of Variant;
   Closed : Variant;
 begin
-//todo: Это надо восстановить
-//  Closed := DM.MainConnection1.QueryValue('select Closed from ordersh where orderid = ' + IntToStr(AOrderId), 0);
+  Closed := DM.QueryValue('select Closed from ordersh where orderid = ' + IntToStr(AOrderId), [], []);
   if Closed = 0 then begin
     adsOrders.OnCalcFields := ocf;
     dbgOrders.Columns[2].FieldName := 'CryptPRICE';

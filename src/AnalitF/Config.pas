@@ -219,8 +219,11 @@ begin
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
           // удаляем все неотправленные открытые заявки
-          //todo: надо проверить удаление содержания заявок в Orders
-          DM.adcUpdate.SQL.Text := 'DELETE FROM OrdersH WHERE Closed <> 1;';
+          DM.adcUpdate.SQL.Text := ''
+           + ' delete ORDERSH, orders'
+           + ' FROM ORDERSH, orders '
+           + ' where '
+           + '    (Closed = 0)';
           DM.adcUpdate.Execute;
         end;
         DM.adtParams.Post;

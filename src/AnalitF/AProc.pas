@@ -12,6 +12,8 @@ const
   SConnectRAS='RAS'; SConnectPROXY='PROXY'; SConnectNONE='NONE';
   SDirDocs='Docs';
   SDirIn='In';
+  SDirData = 'Data';
+  SDirDataBackup = 'DataBackup';
   SDirExe='Exe';
   SDirWaybills = 'Waybills';
   SDirRejects = 'Rejects';
@@ -57,6 +59,7 @@ function FindChildControlByClass(ParentControl: TWinControl; ClassRef: TControlC
 procedure StringToStrings(Str: string; Strings: TStrings; Delimiter: Char=';');
 function StringsToString(Strings: TStrings; Delimiter: Char=';'): string;
 procedure OSMoveFile(Source, Destination: string);
+procedure OSCopyFile(Source, Destination: string);
 procedure OSDeleteFile(FileName: string; RaiseException: Boolean=True);
 function NumberToChars(Val: Integer; Len: Integer=0): string;
 function CharsToNumber(St: string): Integer;
@@ -92,6 +95,11 @@ function WordCount(const S: string; const WordDelims: TSysCharSet): Integer;
 
 //Сформировать SQL для загрузки данных их файла с помощью load data
 function GetLoadDataSQL(TableName : String; InputFileName : String; Replace : Boolean = False) : String;
+
+procedure CopyDirectories(const fromDir, toDir: String);
+procedure MoveDirectories(const fromDir, toDir: String);
+procedure DeleteDirectory(const Dir : String);
+
 
 
 implementation
@@ -352,6 +360,28 @@ var
 begin
   for I:=0 to Strings.Count-1 do
     Result:=Result+Strings[I]+Delimiter;
+end;
+
+procedure OSCopyFile(Source, Destination: string);
+var
+  CopyLastError : Cardinal;
+  Ex : EOSError;
+begin
+  if FileExists(Destination) then begin
+    SetFileAttributes(PChar(Destination), FILE_ATTRIBUTE_NORMAL);
+    OSDeleteFile(Destination, False);
+  end;
+  if not Windows.CopyFile(PChar(Source), PChar(Destination), False) then
+  begin
+    CopyLastError := Windows.GetLastError();
+    if CopyLastError <> Windows.ERROR_SUCCESS then
+    begin
+      Ex := EOSError.CreateFmt('Ошибка при копировании файла %s в %s: %s',
+        [Source, Destination, SysErrorMessage(CopyLastError)]);
+      Ex.ErrorCode := CopyLastError;
+      raise Ex;
+    end;
+  end;
 end;
 
 procedure OSMoveFile(Source, Destination: string);
@@ -837,6 +867,98 @@ begin
     + IfThen(Replace, ' replace ') +
     ' INTO TABLE AnalitF.' + TableName + ' FIELDS TERMINATED BY ''' + Chr(159) + '''' +
     ' OPTIONALLY ENCLOSED BY '''' ESCAPED BY '''' LINES TERMINATED BY ''' + Chr(161) + ''';';
+end;
+
+procedure CopyDirectories(const fromDir, toDir: String);
+var
+  SR : TSearchRec;
+begin
+  if not DirectoryExists(toDir) then
+    ForceDirectories(toDir);
+
+  if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
+  begin
+    repeat
+      if (sr.Name <> '.') and (sr.Name <> '..') then
+
+        //Если мы встретили директорию
+        if (sr.Attr and faDirectory > 0) then
+          CopyDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
+        else
+          OSCopyFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
+
+    until FindNext(sr) <> 0;
+    SysUtils.FindClose(sr);
+  end;
+end;
+
+procedure MoveDirectories(const fromDir, toDir: String);
+var
+  SR : TSearchRec;
+  DeleteLastError : Cardinal;
+  Ex : EOSError;
+begin
+  if not DirectoryExists(toDir) then
+    ForceDirectories(toDir);
+    
+  if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
+  begin
+    repeat
+      if (sr.Name <> '.') and (sr.Name <> '..') then
+
+        //Если мы встретили директорию
+        if (sr.Attr and faDirectory > 0) then
+          MoveDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
+        else
+          OSMoveFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
+
+    until FindNext(sr) <> 0;
+    SysUtils.FindClose(sr);
+  end;
+
+  if not Windows.RemoveDirectory(PChar(fromDir)) then begin
+    DeleteLastError := Windows.GetLastError();
+    if DeleteLastError <> Windows.ERROR_SUCCESS then
+    begin
+      Ex := EOSError.CreateFmt('Ошибка при перемещении директории %s: %s',
+        [fromDir, SysErrorMessage(DeleteLastError)]);
+      Ex.ErrorCode := DeleteLastError;
+      raise Ex;
+    end;
+  end;
+end;
+
+procedure DeleteDirectory(const Dir : String);
+var
+  SR : TSearchRec;
+  DeleteLastError : Cardinal;
+  Ex : EOSError;
+begin
+  if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
+  begin
+    repeat
+      if (sr.Name <> '.') and (sr.Name <> '..') then
+
+        //Если мы встретили директорию
+        if (sr.Attr and faDirectory > 0) then
+          DeleteDirectory(Dir + '\' + sr.Name)
+        else
+          OSDeleteFile(Dir + '\' + sr.Name);
+
+    until FindNext(sr) <> 0;
+    SysUtils.FindClose(sr);
+  end;
+  
+  if not Windows.RemoveDirectory(PChar(Dir)) then begin
+    DeleteLastError := Windows.GetLastError();
+    if DeleteLastError <> Windows.ERROR_SUCCESS then
+    begin
+      Ex := EOSError.CreateFmt('Ошибка при удалении директории %s: %s',
+        [Dir, SysErrorMessage(DeleteLastError)]);
+      Ex.ErrorCode := DeleteLastError;
+      raise Ex;
+    end;
+  end;
 end;
 
 { TFileUpdateInfo }

@@ -272,7 +272,7 @@ begin
     if Grid.SelectedRows.Count > 0 then
       if AProc.MessageBox( '”далить выбранные за€вки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
         Grid.SelectedRows.Delete;
-        //DM.InitAllSumOrder;
+        DM.InitAllSumOrder;
         MainForm.SetOrdersInfo;
       end;
 	end;
@@ -376,7 +376,7 @@ begin
 	if ( Key = VK_DELETE) and not ( adsOrdersHForm.IsEmpty) then
 	begin
     btnDeleteClick(nil);
-    //DM.InitAllSumOrder;
+    DM.InitAllSumOrder;
 		MainForm.SetOrdersInfo;
 	end;
 end;
@@ -574,9 +574,11 @@ begin
   else begin
     //≈сли заказ архивный, то берем из базы
     try
-      //todo: Ёто надо восстановить
-      SumOrder := 0;
-      //SumOrder := DM.MainConnection1.QueryValue('SELECT Sum(Orders.sendprice*Orders.OrderCount) SumOrder FROM Orders WHERE Orders.OrderId = :OrderId AND Orders.OrderCount>0', 0, [F.AsString]);
+      SumOrder := DM.QueryValue(
+        'SELECT Sum(Orders.sendprice*Orders.OrderCount) SumOrder FROM Orders '
+          + ' WHERE Orders.OrderId = :OrderId AND Orders.OrderCount>0',
+        ['OrderId'],
+        [F.AsString]);
     except
       SumOrder := 0;
     end;
@@ -615,7 +617,9 @@ begin
   begin
     adsOrdersHForm.GotoBookmark(Pointer(dbgSendedOrders.SelectedRows.Items[i]));
 
-    with DM.adsSelect do begin
+    with DM.adsQueryValue do begin
+      if Active then
+        Close;
       SQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :APriceCode and RegionCode = :ARegionCode';
       ParamByName('APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
       ParamByName('ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
@@ -708,7 +712,7 @@ begin
     end;
   end;
 
-  //DM.InitAllSumOrder;
+  DM.InitAllSumOrder;
   MainForm.SetOrdersInfo;
 
   dbgSendedOrders.SelectedRows.Clear;

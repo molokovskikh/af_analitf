@@ -103,22 +103,17 @@ type
     frTIFFExport: TfrTIFFExport;
     frRtfAdvExport: TfrRtfAdvExport;
     MainConnectionOld: TpFIBDatabase;
-    DefTran: TpFIBTransaction;
     adtParamsOld: TpFIBDataSet;
     adtClientsOld: TpFIBDataSet;
     adcUpdateOld: TpFIBQuery;
-    adsSelectOld: TpFIBDataSet;
-    adsSelect2: TpFIBDataSet;
     adsRepareOrders: TpFIBDataSet;
-    adsCore: TpFIBDataSet;
-    adsOrdersHeaders: TpFIBDataSet;
-    adsOrderDetails: TpFIBDataSet;
+    adsCoreRepare: TpFIBDataSet;
+    adsOrdersHeadersOld: TpFIBDataSet;
+    adsOrderDetailsOld: TpFIBDataSet;
     BackService: TpFIBBackupService;
     RestService: TpFIBRestoreService;
     ConfigService: TpFIBConfigService;
     ValidService: TpFIBValidationService;
-    t: TpFIBQuery;
-    UpTran: TpFIBTransaction;
     adsRepareOrdersID: TFIBBCDField;
     adsRepareOrdersCOREID: TFIBBCDField;
     adsRepareOrdersPRICECODE: TFIBBCDField;
@@ -134,84 +129,84 @@ type
     adsRepareOrdersORDERCOUNT: TFIBIntegerField;
     adsRepareOrdersPRICENAME: TFIBStringField;
     adsRepareOrdersCryptPRICE: TCurrencyField;
-    adsCoreCOREID: TFIBBCDField;
-    adsCoreFULLCODE: TFIBBCDField;
-    adsCoreSHORTCODE: TFIBBCDField;
-    adsCoreCODEFIRMCR: TFIBBCDField;
-    adsCoreSYNONYMCODE: TFIBBCDField;
-    adsCoreSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreCODE: TFIBStringField;
-    adsCoreCODECR: TFIBStringField;
-    adsCoreVOLUME: TFIBStringField;
-    adsCoreDOC: TFIBStringField;
-    adsCoreNOTE: TFIBStringField;
-    adsCorePERIOD: TFIBStringField;
-    adsCoreQUANTITY: TFIBStringField;
-    adsCoreSYNONYMNAME: TFIBStringField;
-    adsCoreSYNONYMFIRM: TFIBStringField;
-    adsCoreLEADERPRICECODE: TFIBBCDField;
-    adsCoreLEADERREGIONCODE: TFIBBCDField;
-    adsCoreLEADERREGIONNAME: TFIBStringField;
-    adsCoreLEADERPRICENAME: TFIBStringField;
-    adsCoreORDERSCOREID: TFIBBCDField;
-    adsCoreORDERSORDERID: TFIBBCDField;
-    adsCoreORDERSCLIENTID: TFIBBCDField;
-    adsCoreORDERSFULLCODE: TFIBBCDField;
-    adsCoreORDERSCODEFIRMCR: TFIBBCDField;
-    adsCoreORDERSSYNONYMCODE: TFIBBCDField;
-    adsCoreORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreORDERSCODE: TFIBStringField;
-    adsCoreORDERSCODECR: TFIBStringField;
-    adsCoreORDERCOUNT: TFIBIntegerField;
-    adsCoreORDERSSYNONYM: TFIBStringField;
-    adsCoreORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreORDERSHORDERID: TFIBBCDField;
-    adsCoreORDERSHCLIENTID: TFIBBCDField;
-    adsCoreORDERSHPRICECODE: TFIBBCDField;
-    adsCoreORDERSHREGIONCODE: TFIBBCDField;
-    adsCoreORDERSHPRICENAME: TFIBStringField;
-    adsCoreORDERSHREGIONNAME: TFIBStringField;
+    adsCoreRepareCOREID: TFIBBCDField;
+    adsCoreRepareFULLCODE: TFIBBCDField;
+    adsCoreRepareSHORTCODE: TFIBBCDField;
+    adsCoreRepareCODEFIRMCR: TFIBBCDField;
+    adsCoreRepareSYNONYMCODE: TFIBBCDField;
+    adsCoreRepareSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreRepareCODE: TFIBStringField;
+    adsCoreRepareCODECR: TFIBStringField;
+    adsCoreRepareVOLUME: TFIBStringField;
+    adsCoreRepareDOC: TFIBStringField;
+    adsCoreRepareNOTE: TFIBStringField;
+    adsCoreReparePERIOD: TFIBStringField;
+    adsCoreRepareQUANTITY: TFIBStringField;
+    adsCoreRepareSYNONYMNAME: TFIBStringField;
+    adsCoreRepareSYNONYMFIRM: TFIBStringField;
+    adsCoreRepareLEADERPRICECODE: TFIBBCDField;
+    adsCoreRepareLEADERREGIONCODE: TFIBBCDField;
+    adsCoreRepareLEADERREGIONNAME: TFIBStringField;
+    adsCoreRepareLEADERPRICENAME: TFIBStringField;
+    adsCoreRepareORDERSCOREID: TFIBBCDField;
+    adsCoreRepareORDERSORDERID: TFIBBCDField;
+    adsCoreRepareORDERSCLIENTID: TFIBBCDField;
+    adsCoreRepareORDERSFULLCODE: TFIBBCDField;
+    adsCoreRepareORDERSCODEFIRMCR: TFIBBCDField;
+    adsCoreRepareORDERSSYNONYMCODE: TFIBBCDField;
+    adsCoreRepareORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsCoreRepareORDERSCODE: TFIBStringField;
+    adsCoreRepareORDERSCODECR: TFIBStringField;
+    adsCoreRepareORDERCOUNT: TFIBIntegerField;
+    adsCoreRepareORDERSSYNONYM: TFIBStringField;
+    adsCoreRepareORDERSSYNONYMFIRM: TFIBStringField;
+    adsCoreRepareORDERSHORDERID: TFIBBCDField;
+    adsCoreRepareORDERSHCLIENTID: TFIBBCDField;
+    adsCoreRepareORDERSHPRICECODE: TFIBBCDField;
+    adsCoreRepareORDERSHREGIONCODE: TFIBBCDField;
+    adsCoreRepareORDERSHPRICENAME: TFIBStringField;
+    adsCoreRepareORDERSHREGIONNAME: TFIBStringField;
     adsRetailMarginsOld: TpFIBDataSet;
     adsRetailMarginsOldID: TFIBBCDField;
     adsRetailMarginsOldLEFTLIMIT: TFIBBCDField;
     adsRetailMarginsOldRIGHTLIMIT: TFIBBCDField;
     adsRetailMarginsOldRETAIL: TFIBIntegerField;
     dsRetailMargins: TDataSource;
-    adsSumOrders: TpFIBDataSet;
-    adsSumOrdersCODE: TFIBStringField;
-    adsSumOrdersCODECR: TFIBStringField;
-    adsSumOrdersORDERCOUNT: TFIBIntegerField;
-    adsSumOrdersCryptPRICE: TCurrencyField;
-    adsSumOrdersSumOrders: TCurrencyField;
+    adsSumOrdersOldForDelete: TpFIBDataSet;
+    adsSumOrdersOldForDeleteCODE: TFIBStringField;
+    adsSumOrdersOldForDeleteCODECR: TFIBStringField;
+    adsSumOrdersOldForDeleteORDERCOUNT: TFIBIntegerField;
+    adsSumOrdersOldForDeleteCryptPRICE: TCurrencyField;
+    adsSumOrdersOldForDeleteSumOrders: TCurrencyField;
     adsPricesOld: TpFIBDataSet;
-    adsOrderDetailsCryptSUMORDER: TCurrencyField;
-    adsOrderDetailsORDERID: TFIBBCDField;
-    adsOrderDetailsCLIENTID: TFIBBCDField;
-    adsOrderDetailsCOREID: TFIBBCDField;
-    adsOrderDetailsCODEFIRMCR: TFIBBCDField;
-    adsOrderDetailsSYNONYMCODE: TFIBBCDField;
-    adsOrderDetailsSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsOrderDetailsCODE: TFIBStringField;
-    adsOrderDetailsCODECR: TFIBStringField;
-    adsOrderDetailsSYNONYMNAME: TFIBStringField;
-    adsOrderDetailsSYNONYMFIRM: TFIBStringField;
-    adsOrderDetailsORDERCOUNT: TFIBIntegerField;
-    adsAllOrders: TpFIBDataSet;
-    adsAllOrdersID: TFIBBCDField;
-    adsAllOrdersORDERID: TFIBBCDField;
-    adsAllOrdersCLIENTID: TFIBBCDField;
-    adsAllOrdersCOREID: TFIBBCDField;
-    adsAllOrdersCODEFIRMCR: TFIBBCDField;
-    adsAllOrdersSYNONYMCODE: TFIBBCDField;
-    adsAllOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsAllOrdersCODE: TFIBStringField;
-    adsAllOrdersCODECR: TFIBStringField;
-    adsAllOrdersSYNONYMNAME: TFIBStringField;
-    adsAllOrdersSYNONYMFIRM: TFIBStringField;
-    adsAllOrdersAWAIT: TFIBBooleanField;
-    adsAllOrdersJUNK: TFIBBooleanField;
-    adsAllOrdersORDERCOUNT: TFIBIntegerField;
-    adsAllOrdersCryptPRICE: TCurrencyField;
+    adsOrderDetailsOldCryptSUMORDER: TCurrencyField;
+    adsOrderDetailsOldORDERID: TFIBBCDField;
+    adsOrderDetailsOldCLIENTID: TFIBBCDField;
+    adsOrderDetailsOldCOREID: TFIBBCDField;
+    adsOrderDetailsOldCODEFIRMCR: TFIBBCDField;
+    adsOrderDetailsOldSYNONYMCODE: TFIBBCDField;
+    adsOrderDetailsOldSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsOrderDetailsOldCODE: TFIBStringField;
+    adsOrderDetailsOldCODECR: TFIBStringField;
+    adsOrderDetailsOldSYNONYMNAME: TFIBStringField;
+    adsOrderDetailsOldSYNONYMFIRM: TFIBStringField;
+    adsOrderDetailsOldORDERCOUNT: TFIBIntegerField;
+    adsAllOrdersOld: TpFIBDataSet;
+    adsAllOrdersOldID: TFIBBCDField;
+    adsAllOrdersOldORDERID: TFIBBCDField;
+    adsAllOrdersOldCLIENTID: TFIBBCDField;
+    adsAllOrdersOldCOREID: TFIBBCDField;
+    adsAllOrdersOldCODEFIRMCR: TFIBBCDField;
+    adsAllOrdersOldSYNONYMCODE: TFIBBCDField;
+    adsAllOrdersOldSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsAllOrdersOldCODE: TFIBStringField;
+    adsAllOrdersOldCODECR: TFIBStringField;
+    adsAllOrdersOldSYNONYMNAME: TFIBStringField;
+    adsAllOrdersOldSYNONYMFIRM: TFIBStringField;
+    adsAllOrdersOldAWAIT: TFIBBooleanField;
+    adsAllOrdersOldJUNK: TFIBBooleanField;
+    adsAllOrdersOldORDERCOUNT: TFIBIntegerField;
+    adsAllOrdersOldCryptPRICE: TCurrencyField;
     adsPricesOldPRICECODE: TFIBBCDField;
     adsPricesOldPRICENAME: TFIBStringField;
     adsPricesOldDATEPRICE: TFIBDateTimeField;
@@ -230,22 +225,22 @@ type
     adsPricesOldPOSITIONS: TFIBIntegerField;
     adsPricesOldPRICESIZE: TFIBIntegerField;
     adsPricesOldINJOB: TFIBIntegerField;
-    adsCoreAWAIT: TFIBBooleanField;
-    adsCoreJUNK: TFIBBooleanField;
+    adsCoreRepareAWAIT: TFIBBooleanField;
+    adsCoreRepareJUNK: TFIBBooleanField;
     adsRepareOrdersPRICE: TFIBStringField;
-    adsCoreBASECOST: TFIBStringField;
-    adsCoreORDERSPRICE: TFIBStringField;
-    adsOrderDetailsPRICE: TFIBStringField;
-    adsSumOrdersPRICE: TFIBStringField;
-    adsAllOrdersPRICE: TFIBStringField;
-    adsCoreORDERSJUNK: TFIBBooleanField;
-    adsCoreORDERSAWAIT: TFIBBooleanField;
-    adsOrderCore: TpFIBDataSet;
-    adsOrderCorePRICECODE: TFIBBCDField;
-    adsOrderCoreBASECOST: TFIBStringField;
-    adsOrderCoreCryptBASECOST: TCurrencyField;
-    adsOrderCorePRICEENABLED: TFIBIntegerField;
-    adsOrderCoreJUNK: TFIBIntegerField;
+    adsCoreRepareBASECOST: TFIBStringField;
+    adsCoreRepareORDERSPRICE: TFIBStringField;
+    adsOrderDetailsOldPRICE: TFIBStringField;
+    adsSumOrdersOldForDeletePRICE: TFIBStringField;
+    adsAllOrdersOldPRICE: TFIBStringField;
+    adsCoreRepareORDERSJUNK: TFIBBooleanField;
+    adsCoreRepareORDERSAWAIT: TFIBBooleanField;
+    adsOrderCoreOld: TpFIBDataSet;
+    adsOrderCoreOldPRICECODE: TFIBBCDField;
+    adsOrderCoreOldBASECOST: TFIBStringField;
+    adsOrderCoreOldCryptBASECOST: TCurrencyField;
+    adsOrderCoreOldPRICEENABLED: TFIBIntegerField;
+    adsOrderCoreOldJUNK: TFIBIntegerField;
     adtClientsOldCLIENTID: TFIBBCDField;
     adtClientsOldNAME: TFIBStringField;
     adtClientsOldREGIONCODE: TFIBBCDField;
@@ -256,29 +251,29 @@ type
     adtClientsOldTECHSUPPORT: TFIBStringField;
     adtClientsOldCALCULATELEADER: TFIBBooleanField;
     adtClientsOldONLYLEADERS: TFIBBooleanField;
-    adsOrderCoreCODEFIRMCR: TFIBBCDField;
-    adsCoreREQUESTRATIO: TFIBIntegerField;
-    adsOrderDetailsSENDPRICE: TFIBBCDField;
-    adsOrderDetailsAWAIT: TFIBBooleanField;
-    adsOrderDetailsJUNK: TFIBBooleanField;
-    adsOrderDetailsID: TFIBBCDField;
+    adsOrderCoreOldCODEFIRMCR: TFIBBCDField;
+    adsCoreRepareREQUESTRATIO: TFIBIntegerField;
+    adsOrderDetailsOldSENDPRICE: TFIBBCDField;
+    adsOrderDetailsOldAWAIT: TFIBBooleanField;
+    adsOrderDetailsOldJUNK: TFIBBooleanField;
+    adsOrderDetailsOldID: TFIBBCDField;
     adtReceivedDocsOld: TpFIBDataSet;
-    adsOrderDetailsPRODUCTID: TFIBBCDField;
-    adsOrderDetailsFULLCODE: TFIBBCDField;
-    adsOrderCorePRODUCTID: TFIBBCDField;
-    adsAllOrdersPRODUCTID: TFIBBCDField;
+    adsOrderDetailsOldPRODUCTID: TFIBBCDField;
+    adsOrderDetailsOldFULLCODE: TFIBBCDField;
+    adsOrderCoreOldPRODUCTID: TFIBBCDField;
+    adsAllOrdersOldPRODUCTID: TFIBBCDField;
     adsRepareOrdersREQUESTRATIO: TFIBIntegerField;
     adsRepareOrdersORDERCOST: TFIBBCDField;
     adsRepareOrdersMINORDERCOUNT: TFIBIntegerField;
-    adsCoreVITALLYIMPORTANT: TFIBBooleanField;
-    adsCoreORDERCOST: TFIBBCDField;
-    adsCoreMINORDERCOUNT: TFIBIntegerField;
+    adsCoreRepareVITALLYIMPORTANT: TFIBBooleanField;
+    adsCoreRepareORDERCOST: TFIBBCDField;
+    adsCoreRepareMINORDERCOUNT: TFIBIntegerField;
     frdsReportOrder: TfrDBDataSet;
-    adsOrderDetailsSUMORDER: TFIBBCDField;
-    adsOrderDetailsCryptPRICE: TCurrencyField;
-    adsOrderDetailsREQUESTRATIO: TFIBIntegerField;
-    adsOrderDetailsORDERCOST: TFIBBCDField;
-    adsOrderDetailsMINORDERCOUNT: TFIBIntegerField;
+    adsOrderDetailsOldSUMORDER: TFIBBCDField;
+    adsOrderDetailsOldCryptPRICE: TCurrencyField;
+    adsOrderDetailsOldREQUESTRATIO: TFIBIntegerField;
+    adsOrderDetailsOldORDERCOST: TFIBBCDField;
+    adsOrderDetailsOldMINORDERCOUNT: TFIBIntegerField;
     MyConnection: TMyConnection;
     MyEmbConnection: TMyEmbConnection;
     adtParams: TMyTable;
@@ -296,16 +291,18 @@ type
     adsRetailMarginsLEFTLIMIT: TFloatField;
     adsRetailMarginsRIGHTLIMIT: TFloatField;
     adsRetailMarginsRETAIL: TIntegerField;
-    adsPrices: TMyStoredProc;
-    adsSelect: TMyQuery;
-    adsPricesPriceCode: TLargeintField;
     MyConnectionCopy: TMyConnection;
     MyEmbConnectionCopy: TMyEmbConnection;
     adcUpdate: TMyQuery;
     adtClientsCALCULATELEADER: TBooleanField;
     adtClientsONLYLEADERS: TBooleanField;
+    MyServerControl: TMyServerControl;
+    MySQLMonitor: TMySQLMonitor;
+    adtReceivedDocs: TMyQuery;
+    adsPrices: TMyQuery;
+    adsPricesPriceCode: TLargeintField;
     adsPricesPriceName: TStringField;
-    adsPricesDatePrice: TDateTimeField;
+    adsPricesUniversalDatePrice: TDateTimeField;
     adsPricesMinReq: TIntegerField;
     adsPricesEnabled: TBooleanField;
     adsPricesPriceInfo: TMemoField;
@@ -321,16 +318,67 @@ type
     adsPricespricesize: TIntegerField;
     adsPricesINJOB: TBooleanField;
     adsPricesCONTROLMINREQ: TBooleanField;
-    MyServerControl: TMyServerControl;
-    MySQLMonitor1: TMySQLMonitor;
-    adtReceivedDocs: TMyQuery;
-    MyBackup1: TMyBackup;
+    adsPricesDatePrice: TDateTimeField;
+    adsPricesPositions: TLargeintField;
+    adsPricessumbycurrentmonth: TFloatField;
+    adsQueryValue: TMyQuery;
+    adsAllOrders: TMyQuery;
+    adsAllOrdersID: TLargeintField;
+    adsAllOrdersORDERID: TLargeintField;
+    adsAllOrdersCLIENTID: TLargeintField;
+    adsAllOrdersCOREID: TLargeintField;
+    adsAllOrdersPRODUCTID: TLargeintField;
+    adsAllOrdersCODEFIRMCR: TLargeintField;
+    adsAllOrdersSYNONYMCODE: TLargeintField;
+    adsAllOrdersSYNONYMFIRMCRCODE: TLargeintField;
+    adsAllOrdersCODE: TStringField;
+    adsAllOrdersCODECR: TStringField;
+    adsAllOrdersSYNONYMNAME: TStringField;
+    adsAllOrdersSYNONYMFIRM: TStringField;
+    adsAllOrdersPRICE: TStringField;
+    adsAllOrdersAWAIT: TBooleanField;
+    adsAllOrdersJUNK: TBooleanField;
+    adsAllOrdersORDERCOUNT: TIntegerField;
+    adsOrderCore: TMyQuery;
+    adsOrderCorePriceCode: TLargeintField;
+    adsOrderCoreproductid: TLargeintField;
+    adsOrderCoreJunk: TBooleanField;
+    adsOrderCorePriceEnabled: TBooleanField;
+    adsOrderCoreCodeFirmCr: TLargeintField;
+    adsOrderCoreBaseCost: TStringField;
+    adsOrderCoreCryptBASECOST: TCurrencyField;
+    adsOrderDetails: TMyQuery;
+    adsOrderDetailsid: TLargeintField;
+    adsOrderDetailsOrderId: TLargeintField;
+    adsOrderDetailsClientId: TLargeintField;
+    adsOrderDetailsCoreId: TLargeintField;
+    adsOrderDetailsfullcode: TLargeintField;
+    adsOrderDetailsproductid: TLargeintField;
+    adsOrderDetailscodefirmcr: TLargeintField;
+    adsOrderDetailssynonymcode: TLargeintField;
+    adsOrderDetailssynonymfirmcrcode: TLargeintField;
+    adsOrderDetailscode: TStringField;
+    adsOrderDetailscodecr: TStringField;
+    adsOrderDetailssynonymname: TStringField;
+    adsOrderDetailssynonymfirm: TStringField;
+    adsOrderDetailsprice: TStringField;
+    adsOrderDetailsawait: TBooleanField;
+    adsOrderDetailsjunk: TBooleanField;
+    adsOrderDetailsordercount: TIntegerField;
+    adsOrderDetailsSumOrder: TFloatField;
+    adsOrderDetailsSendPrice: TFloatField;
+    adsOrderDetailsRequestRatio: TIntegerField;
+    adsOrderDetailsOrderCost: TFloatField;
+    adsOrderDetailsMinOrderCount: TIntegerField;
+    adsOrderDetailsCryptPRICE: TCurrencyField;
+    adsOrderDetailsCryptSUMORDER: TCurrencyField;
+    adsOrdersHeaders: TMyQuery;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
     procedure adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
-    procedure MySQLMonitor1SQL(Sender: TObject; Text: String;
+    procedure MySQLMonitorSQL(Sender: TObject; Text: String;
       Flag: TDATraceFlag);
   private
     //Требуется ли подтверждение обмена
@@ -412,7 +460,7 @@ type
 {$endif}
     procedure TestEmbeddedMysql;
     procedure TestEmbeddedThread;
-    procedure TestEmbeddedBackup;
+    procedure TestDirectoriesOperation;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -420,9 +468,7 @@ type
     SaveGridMask : Integer;
     function DatabaseOpenedBy: string;
     function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
-    procedure CompactDataBase(NewPassword: string='');
-    procedure ClearPassword( ADatasource: string);
-    procedure OpenDatabase( ADatasource: string);
+    procedure CompactDataBase();
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
       APreview: boolean = False; PrintDlg: boolean = True);
     procedure ShowOrderDetailsReport(
@@ -435,14 +481,12 @@ type
     procedure LinkExternalTables;
     procedure UnLinkExternalTables;
     procedure ClearDatabase;
-    function GetCurrentOrderId(ClientId, PriceCode, RegionCode: Integer;
-      CreateIfNotExists: Boolean=True): Integer;
     procedure DeleteEmptyOrders;
     procedure SetImportStage( AValue: integer);
     function GetImportStage: integer;
-    procedure BackupDatabase( APath: string);
-    procedure RestoreDatabase( APath: string);
-    function IsBackuped( APath: string): boolean;
+    procedure BackupDatabase;
+    procedure RestoreDatabase;
+    function IsBackuped : Boolean;
     procedure ClearBackup( APath: string);
     procedure SetExclusive;
     procedure ResetExclusive;
@@ -501,6 +545,7 @@ type
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
     //Установить параметры для компонента TIdHTTP
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
+    function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
   end;
 
 var
@@ -779,8 +824,6 @@ end;
 
 procedure TDM.DMCreate(Sender: TObject);
 var
-  LDBFileName : String;
-  DBCompress : Boolean;
   HTTPS,
   HTTPE : String;
 begin
@@ -794,7 +837,7 @@ begin
 
   adsRepareOrders.OnCalcFields := s3cf;
   adsOrderDetails.OnCalcFields := ocf;
-  adsSumOrders.OnCalcFields := socf;
+  adsSumOrdersOldForDelete.OnCalcFields := socf;
   adsOrderCore.OnCalcFields := occf;
 
   SynC := TINFCrypt.Create('', 300);
@@ -819,20 +862,18 @@ begin
     RunDeleteDBFiles();
     }
 
-  //TODO: здесь надо корректно работать с путями в файлу базы данных, чтобы корректно работало в сетевой версии
-  {
   FNeedImportAfterRecovery := False;
   FCreateClearDatabase     := False;
-  if IsBackuped(ExePath) then
+  if IsBackuped then
     try
-      AProc.OSMoveFile(ChangeFileExt(ParamStr(0), '.bak'), MainConnection1.DBName);
+      RestoreDatabase;
       FNeedImportAfterRecovery := True;
     except
       on E : Exception do
         LogExitError(Format( 'Не возможно переместить AnalitF.bak в AnalitF.fdb : %s ', [ E.Message ]), Integer(ecDBFileError));
     end;
-    }
 
+    
 {
   if FileExists(ExePath + DatabaseName) and ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
   then
@@ -841,9 +882,6 @@ begin
 
   //Делаем проверку файла базы данных и в случае проблем производим восстановление из эталонной копии
   //CheckDBFile;
-
-  LDBFileName := ChangeFileExt(ExeName, '.ldb');
-  DBCompress := FileExists(LDBFileName) and DeleteFile(LDBFileName);
 
   try
     try
@@ -863,20 +901,10 @@ begin
   { устанавливаем текущие записи в Clients и Users }
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
     then adtClients.First;
-  //Проверяем, что работа с программой была завершена корректно
-  {
-  if DBCompress then
-  begin
-    AProc.MessageBox(
-      'Последний сеанс работы с программой не был корректно завершен. '+
-        'Сейчас будет произведено сжатие базы данных.');
-    MainForm.FreeChildForms;
-    RunCompactDataBase;
-    AProc.MessageBox( 'Сжатие базы данных завершено.');
-  end;
-  }
+
   SetStarted;
   ClientChanged;
+  
   { устанавливаем параметры печати }
   frReport.Title := Application.Title;
   { проверяем и если надо создаем нужные каталоги }
@@ -891,7 +919,7 @@ begin
   DeleteFilesByMask(ExePath + SDirIn + '\*.zip', False);
   DeleteFilesByMask(ExePath + SDirIn + '\*.zi_', False);
 
-  //SetSendToNotClosedOrders;
+  SetSendToNotClosedOrders;
 
 {
   if NeedUpdateByCheckUIN then begin
@@ -959,7 +987,7 @@ begin
   MainForm.FreeChildForms;
   MainForm.SetOrdersInfo;
   DoPost(adtParams, True);
-//  InitAllSumOrder;
+  InitAllSumOrder;
 end;
 
 { Проверки на невозможность запуска программы }
@@ -1082,150 +1110,22 @@ begin
   MainForm.CS.Leave;
   adsSelect.Close;
   if not WasConnected then MainConnection.Close;
-}  
-end;
-
-procedure TDM.CompactDataBase(NewPassword: string='');
-var
-  ok: boolean;
-  dbc : TpFIBDatabase;
-begin
-  ok := False;
-  //TODO: ___ Процедура не до конца готова. Использовать другое имя для нормального подключения
-  Tracer.TR('BackupRestore', 'Start');
-  try
-    try
-      with ConfigService do
-      begin
-        ServerName := '';
-        //DatabaseName := MainConnection1.DBName;
-        Params.Clear;
-        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
-        Active := True;
-        try
-          Tracer.TR('BackupRestore', 'Try shutdown database');
-          ShutdownDatabase(Forced, 0);
-          Tracer.TR('BackupRestore', 'Shutdown complete');
-        finally
-          Active := False;
-        end;
-      end;
-      with BackService do
-      begin
-        ServerName := '';
-        Params.Clear;
-        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
-        Active := True;
-        try
-          Verbose := True;
-          //DatabaseName := MainConnection1.DBName;
-          BackupFile.Clear;
-          //BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
-
-          ServiceStart;
-          While not Eof do
-            Tracer.TR('Backup', GetNextLine);
-        finally
-          Active := False;
-        end;
-      end;
-      with RestService do
-      begin
-        ServerName := '';
-        Params.Clear;
-        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
-        Active := True;
-        try
-          Verbose := True;
-          DatabaseName.Clear;
-          //DatabaseName.Add(MainConnection1.DBName);
-          BackupFile.Clear;
-          //BackupFile.Add(ChangeFileExt(MainConnection1.DBName, '.gbk'));
-          ServiceStart;
-          While not Eof do
-            Tracer.TR('Restore', GetNextLine);
-        finally
-          Active := False;
-        end;
-      end;
-      with ConfigService do
-      begin
-        ServerName := '';
-        //DatabaseName := MainConnection1.DBName;
-        Params.Clear;
-        //Params.Add('user_name=' + MainConnection1.ConnectParams.UserName);
-        //Params.Add('password=' + MainConnection1.ConnectParams.Password);
-        Active := True;
-        try
-          Tracer.TR('BackupRestore', 'Try BringDatabaseOnline');
-          BringDatabaseOnline;
-          Tracer.TR('BackupRestore', 'BringDatabaseOnline complete');
-        finally
-          Active := False;
-        end;
-      end;
-      ok := True;
-    except
-      on E : Exception do
-        Tracer.TR('BackupRestore', 'Error : ' + E.Message);
-    end;
-  finally
-    Tracer.TR('BackupRestore', 'Stop');
-  end;
-  if ok then
-  begin
-
-    dbc := TpFIBDatabase.Create(nil);
-    try
-    {
-      dbc.DBName := MainConnection1.DBName;
-      dbc.DBParams.Text := MainConnection1.DBParams.Text;
-      dbc.LibraryName := MainConnection1.LibraryName;
-      dbc.SQLDialect := MainConnection1.SQLDialect;
-      }
-
-      dbc.Open;
-      dbc.QueryValue('update params set LastCompact = :LastCompact where ID = 0', -1, [Now]);
-      dbc.Close;
-
-    finally
-      dbc.Free;
-    end;
-  end;
-end;
-
-procedure TDM.ClearPassword( ADatasource: string);
-begin
-{
-  if MainConnection.Connected then MainConnection.Close;
-  MainConnection.Mode := cmShareExclusive;
-  MainConnection.ConnectionString := SetConnectionProperty(
-    MainConnection.ConnectionString, 'Data Source', ADataSource);
-  MainConnection.Open;
-  adcUpdate.CommandText := 'ALTER DATABASE PASSWORD NULL ' +
-    GetConnectionProperty( MainConnection.ConnectionString,
-    'Jet OLEDB:Database Password');
-  try
-    adcUpdate.Execute;
-  except
-  end;
-  MainConnection.Close;
-  MainConnection.Mode := cmReadWrite;
-}  
-end;
-
-procedure TDM.OpenDatabase( ADatasource: string);
-begin
-  if MyConnection.Connected then MyConnection.Close;
-{
-  MainConnection.ConnectionString :=
-    SetConnectionProperty( MainConnection.ConnectionString, 'Data Source',
-      ADatasource);
 }
+end;
+
+procedure TDM.CompactDataBase();
+var
+  RowAffected : Variant;
+begin
   MyConnection.Open;
+  try
+    MyServerControl.OptimizeTable;
+    RowAffected := MyConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
+    if VarIsNull(RowAffected) then
+      Tracer.TR('BackupRestore', 'Не получилось обновить LastCompact');
+  finally
+    MyConnection.Close;
+  end;
 end;
 
 //загружает отчет и выводит на экран или печатает; если указан DataSet, то
@@ -1344,7 +1244,7 @@ begin
     Files := TStringList.Create;
     Tables := TStringList.Create;
     try
-        //Сначала создали внешние таблицы
+        //Сначала очистили внешние таблицы от предыдущих данных
         repeat
           FileName := ExePath+SDirIn+ '\' + SR.Name;
           ShortName := ChangeFileExt(SR.Name,'');
@@ -1376,69 +1276,6 @@ begin
           end;
         end;
 
-{
-      try
-        //Потом наполнили их данными
-        up := TpFIBDataSet.Create(nil);
-        try
-          //up.Database := MainConnection1;
-          up.Transaction := UpTran;
-
-          InDelimitedFile := TFIBInputDelimitedFile.Create;
-          try
-            InDelimitedFile.SkipTitles := False;
-            InDelimitedFile.ReadBlanksAsNull := True;
-            InDelimitedFile.ColDelimiter := Chr(159);
-            InDelimitedFile.RowDelimiter := Chr(161);
-
-            try
-
-              for I := 0 to Files.Count-1 do begin
-                if NeedImport(Tables[i]) then begin
-                  up.SelectSQL.Text := 'select * from ' + Tables[i];
-                  up.Prepare;
-                  up.Open;
-                  up.AutoUpdateOptions.UpdateTableName := Tables[i];
-                  up.InsertSQL.Text := up.GenerateSQLText(Tables[i], up.Fields[0].FieldName, skInsert);
-                  Tracer.TR(Tables[i], up.InsertSQL.Text);
-                  up.Close;
-                  up.SelectSQL.Text := up.InsertSQL.Text;
-                  InDelimitedFile.Filename := Files[i];
-                  up.BatchInput(InDelimitedFile);
-                end;
-              end;
-
-            except
-              on E : Exception do begin
-                LogText := 'SQL : ' + up.QInsert.SQL.Text + CRLF;
-                if up.QInsert.ParamCount > 0 then begin
-                  LogText := LogText + '  Params ( ';
-                  for I := 0 to up.QInsert.ParamCount-1 do
-                    LogText := LogText +
-                      up.QInsert.Params.Vars[i].Name + ' : ' + up.QInsert.Params.Vars[i].AsString + ';';
-                  LogText := LogText + ' )';
-                end;
-                //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
-                WriteExchangeLog('DModule.LinkExternalTables', LogText);
-                raise;
-              end;
-            end;
-
-          finally
-            InDelimitedFile.Free;
-          end;
-
-        finally
-          up.Free;
-        end;
-
-        UpTran.Commit;
-      except
-        UpTran.Rollback;
-        raise;
-      end;
-}      
-
     finally
       Files.Free;
       Tables.Free;
@@ -1449,55 +1286,37 @@ end;
 
 //отключает все подключенные внешние таблицы
 procedure TDM.UnLinkExternalTables;
+{$ifndef DEBUG}
 var
   I: Integer;
-//  Catalog: Variant;
-  TN : TStringList;
+  Tables : TStringList;
+{$endif}
 begin
-//todo: здесь надо восстановить или удалить эту процедуру
-{
-  Screen.Cursor:=crHourglass;
+{$ifndef DEBUG}
+  //Заполняем список со всеми временными таблицами (префикс tmp) и удаляем из них данные
+  Tables := TStringList.Create();
   try
-    Catalog:=CreateOleObject('ADOX.Catalog');
+    //Проверяем, что существует временная таблица для импорта в базе
+    adcUpdate.SQL.Text := 'select table_name from information_schema.tables where table_schema = ''analitf'' and table_name like "tmp%"';
+    adcUpdate.Open;
     try
-      Catalog.ActiveConnection:=MainConnection.ConnectionObject;
-      for I:=Catalog.Tables.Count-1 downto 0 do
-        if Catalog.Tables.Item[I].Type='LINK' then
-          Catalog.Tables.Delete(Catalog.Tables.Item[I].Name);
-    finally
-      Catalog:=Unassigned;
-    end;
-  finally
-    Screen.Cursor:=crDefault;
-  end;
-  }
-
-{
-  Screen.Cursor:=crHourglass;
-  try
-    TN := TStringList.Create;
-    try
-      MainConnection1.GetTableNames(TN, False);
-      DM.MainConnection1.DefaultUpdateTransaction.StartTransaction;
-      try
-        for I:=TN.Count-1 downto 0 do
-          if Pos('EXT', UpperCase(TN[i])) = 1 then
-          begin
-            adcUpdate.SQL.Text := 'drop table ' + TN[i];
-            adcUpdate.ExecQuery;
-          end;
-        DM.MainConnection1.DefaultUpdateTransaction.Commit;
-      except
-        DM.MainConnection1.DefaultUpdateTransaction.Rollback;
-        raise;
+      while not adcUpdate.Eof do begin
+        Tables.Add(adcUpdate.FieldByName('table_name').AsString);
+        adcUpdate.Next;
       end;
     finally
-      TN.Free;
+      adcUpdate.Close;
     end;
+
+    for I := 0 to Tables.Count-1 do begin
+      adcUpdate.SQL.Text := 'delete from ' + Tables[i];
+      adcUpdate.Execute;
+    end;
+
   finally
-    Screen.Cursor:=crDefault;
+    Tables.Free;
   end;
-}
+{$endif}
 end;
 
 procedure TDM.ClearDatabase;
@@ -1523,8 +1342,6 @@ begin
     SQL.Text:='DELETE FROM PricesData;'; Execute;
     MainForm.StatusText:='Очищается RegionalData';
     SQL.Text:='DELETE FROM RegionalData;'; Execute;
-    //CLIENTSDATAN теперь Providers
-    //todo: Providers сделать очистку таблицы
     MainForm.StatusText:='Очищается Providers';
     SQL.Text:='DELETE FROM Providers;'; Execute;
     MainForm.StatusText:='Очищается Synonym';
@@ -1540,51 +1357,13 @@ begin
   end;
 end;
 
-function TDM.GetCurrentOrderId(ClientId, PriceCode, RegionCode: Integer;
-  CreateIfNotExists: Boolean=True): Integer;
-var
-  NRecs: Integer;
-begin
-  with adsSelect do begin
-    SQL.Text:=Format('SELECT OrderId FROM OrdersH WHERE ClientId=%d And PriceCode=%d And RegionCode=%d And Closed = 0',
-      [ClientId, PriceCode, RegionCode]);
-    Open;
-    try
-      NRecs:=RecordCount;
-      Result:=Fields[0].AsInteger;
-    finally
-      Close;
-    end;
-  end;
-  if NRecs=0 then begin
-    if CreateIfNotExists then with adcUpdate do begin
-      SQL.Text:=Format('INSERT INTO OrdersH (ClientId,PriceCode,RegionCode) VALUES (%d,%d,%d)',
-        [ClientId, PriceCode, RegionCode]);
-      Execute;
-      Result:=GetCurrentOrderId(ClientId,PriceCode,RegionCode,False);
-      if Result=0 then raise Exception.Create('Не удается создать заголовок заказа');
-    end
-    else
-      Result:=0;
-  end
-  else if NRecs>1 then
-    raise Exception.Create('По данным клиенту, прайс-листу и региону найдено больше одного неотправленного заказа');
-end;
-
 procedure TDM.DeleteEmptyOrders;
 begin
   Screen.Cursor:=crHourglass;
   try
-    UpTran.StartTransaction;
-    try
-      with adcUpdate do begin
-        SqL.Text:='EXECUTE PROCEDURE OrdersDeleteEmpty'; Execute;
-        SQL.Text:='EXECUTE PROCEDURE OrdersHDeleteEmpty'; Execute;
-      end;
-      UpTran.Commit;
-    except
-      UpTran.Rollback;
-      raise;
+    with adcUpdate do begin
+      SqL.Text:='DELETE FROM Orders WHERE OrderCount=0'; Execute;
+      SQL.Text:='DELETE FROM OrdersH WHERE NOT Exists(SELECT OrderId FROM Orders WHERE OrderId=OrdersH.OrderId)'; Execute;
     end;
   finally
     Screen.Cursor:=crDefault;
@@ -1604,21 +1383,30 @@ begin
   result := DM.adtParams.FieldByName( 'ImportStage').AsInteger;
 end;
 
-procedure TDM.BackupDatabase( APath: string);
+procedure TDM.BackupDatabase;
 begin
-  MyConnection.Close;
-  Windows.CopyFile( PChar( APath + DatabaseName),
-    PChar( APath + ChangeFileExt( DatabaseName, '.bak')), False);
+  if TCustomMyConnection(MyConnection) is TMyEmbConnection then begin
+    MyConnection.Close;
+    CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+    MyConnection.Open;
+  end;
 end;
 
-function TDM.IsBackuped( APath: string): boolean;
+function TDM.IsBackuped : Boolean;
 begin
-  result := FileExists( APath + ChangeFileExt( DatabaseName, '.bak'));
+  if TCustomMyConnection(MyConnection) is TMyEmbConnection then
+    Result := DirectoryExists(ExePath + SDirDataBackup)
+  else
+    Result := False;
 end;
 
-procedure TDM.RestoreDatabase( APath: string);
+procedure TDM.RestoreDatabase;
 begin
-  OSMoveFile(APath + ChangeFileExt( DatabaseName, '.bak'), APath + DatabaseName);
+  if TCustomMyConnection(MyConnection) is TMyEmbConnection then begin
+    MyConnection.Close;
+    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
+    MyConnection.Open;
+  end;
 end;
 
 procedure TDM.ClearBackup( APath: string);
@@ -1873,10 +1661,7 @@ var
   tmpvb : TINFCrypt;
 begin
   if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
-{
-todo: надо потом восстановить это
     try
-      UpTran.StartTransaction;
       if adsAllOrders.Active then
         adsAllOrders.Close;
       tmps := TINFCrypt.Create(ASyn, 300);
@@ -1906,14 +1691,11 @@ todo: надо потом восстановить это
         tmpb.Free;
         tmpvb.Free;
       end;
-      UpTran.Commit;
     except
       on E : Exception do begin
         Tracer.TR('SavePass', 'Error : ' + E.Message);
-        UpTran.Rollback;
       end;
     end;
-}
 
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
@@ -1969,9 +1751,9 @@ var
   S : String;
 begin
   try
-    S := D_B_N(adsSumOrdersPRICE.AsString);
-    adsSumOrdersCryptPRICE.AsCurrency := StrToCurr(S);
-    adsSumOrdersSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersORDERCOUNT.AsInteger;
+    S := D_B_N(adsSumOrdersOldForDeletePRICE.AsString);
+    adsSumOrdersOldForDeleteCryptPRICE.AsCurrency := StrToCurr(S);
+    adsSumOrdersOldForDeleteSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersOldForDeleteORDERCOUNT.AsInteger;
   except
   end;
 end;
@@ -2073,7 +1855,12 @@ begin
   try
     with adsOrderDetails do begin
       ParamByName('AOrderId').Value:=AOrderId;
-      if Active then CloseOpen(True) else Open;
+      if Active then begin
+        Close;
+        Open;
+      end
+      else
+        Open;
     end;
     DataSetCalc(adsOrderDetails, ['SUM(CryptSUMORDER)'], V);
     Result := V[0];
@@ -2093,23 +1880,10 @@ end;
 function TDM.GetCatalogsCount: Integer;
 begin
   try
-    DM.adsSelect.Close;
+    Result := QueryValue('SELECT COUNT(*) AS CatNum FROM Catalogs', [], []);
   except
+    Result := 0;
   end;
-	DM.adsSelect.SQL.Text := 'SELECT COUNT(*) AS CatNum FROM Catalogs';
-	try
-		DM.adsSelect.Open;
-    try
-  		Result := DM.adsSelect.FieldByName( 'CatNum').AsInteger;
-    finally
-      try
-        DM.adsSelect.Close;
-      except
-      end;
-    end;
-	except
-		Result := 0;
-	end;
 end;
 
 { TSelectPrice }
@@ -2127,11 +1901,11 @@ procedure TDM.LoadSelectedPrices;
 begin
   ClearSelectedPrices(SummarySelectedPrices);
   ClearSelectedPrices(SynonymSelectedPrices);
+  adsPrices.IndexFieldNames := 'PRICENAME';
   if adsPrices.Active then
     adsPrices.Close;
   adsPrices.Open;
   try
-    adsPrices.SetOrderBy('PRICENAME');
     adsPrices.First;
     while not adsPrices.Eof do begin
       SummarySelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
@@ -3007,15 +2781,8 @@ end;
 
 procedure TDM.SetSendToNotClosedOrders;
 begin
-  //adcUpdate.Transaction.StartTransaction;
-  try
-    adcUpdate.SQL.Text := 'update ORDERSH set Send = 1 where (Closed = 0)';
-    adcUpdate.Execute;
-    //adcUpdate.Transaction.Commit;
-  except
-    //adcUpdate.Transaction.Rollback;
-    raise;
-  end;
+  adcUpdate.SQL.Text := 'update ORDERSH set Send = 1 where (Closed = 0)';
+  adcUpdate.Execute;
 end;
 
 { TOrderInfo }
@@ -3654,7 +3421,7 @@ begin
   end;
 end;
 
-procedure TDM.MySQLMonitor1SQL(Sender: TObject; Text: String;
+procedure TDM.MySQLMonitorSQL(Sender: TObject; Text: String;
   Flag: TDATraceFlag);
 const
   DATraceFlagNames : array[TDATraceFlag] of string =
@@ -3668,7 +3435,7 @@ procedure TDM.TestEmbeddedMysql;
 begin
   //TestEmbeddedThread();
 
-  //TestEmbeddedBackup();
+  //TestDirectoriesOperation();
 end;
 
 procedure TDM.TestEmbeddedThread;
@@ -3736,9 +3503,44 @@ begin
   end;
 end;
 
-procedure TDM.TestEmbeddedBackup;
+function TDM.QueryValue(SQL: String; Params: array of string;
+  Values: array of Variant): Variant;
+var
+  I : Integer;
 begin
-  MyBackup1.Backup;
+  if (Length(Params) <> Length(Values)) then
+    raise Exception.Create('QueryValue: Кол-во параметров не совпадает со списком значений.');
+
+  if adsQueryValue.Active then
+    adsQueryValue.Close;
+  adsQueryValue.SQL.Text := SQL;
+  for I := Low(Params) to High(Params) do
+    adsQueryValue.ParamByName(Params[i]).Value := Values[i];
+  adsQueryValue.Open;
+  try
+    if adsQueryValue.Fields.Count < 1 then
+      raise Exception.Create('QueryValue: В результирующем наборе данных нет ни одного столбца.');
+    Result := adsQueryValue.Fields[0].Value;
+  finally
+    adsQueryValue.Close;
+  end;
+end;
+
+procedure TDM.TestDirectoriesOperation;
+begin
+  if DirectoryExists(ExePath + SDirDataBackup) then
+    DeleteDirectory(ExePath + SDirDataBackup);
+
+  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+  if not DirectoryExists(ExePath + SDirDataBackup) then
+    raise Exception.Create('Директория с Backup не существует')
+  else
+    DeleteDirectory(ExePath + SDirDataBackup);
+  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+
+  MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
+  if DirectoryExists(ExePath + SDirDataBackup) then
+    raise Exception.Create('Директория с Backup существует');
 end;
 
 initialization
