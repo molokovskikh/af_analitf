@@ -170,7 +170,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, Exclusive,
-  U_FolderMacros, LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
+  LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
   Constant, U_ExchangeLog, U_SendArchivedOrdersThread;
 
 { TExchangeThread }
@@ -513,7 +513,7 @@ begin
       ParamNames[1]  := 'GetEtalonData';
       ParamValues[1] := BoolToStr( eaGetFullData in ExchangeForm.ExchangeActs, True);
       ParamNames[2]  := 'ExeVersion';
-      ParamValues[2] := MainForm.VerInfo.FileVersion;
+      ParamValues[2] := GetLibraryVersionFromPath(ExePath + ExeName);
       ParamNames[3]  := 'MDBVersion';
       ParamValues[3] := DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString;
       ParamNames[4]  := 'UniqueID';

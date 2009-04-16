@@ -84,6 +84,7 @@ procedure InternalDoSendLetter(
   TempSendDir : String;    //Временная папка для создания аттачмента
   Attachs : TStringList;   //Список приложений
   Subject, Body : String); //Тема письма и тело письма
+function GetLibraryVersionFromPath(AName: String): String;
 function  GetLibraryVersionFromAppPath : TObjectList;
 //устанавливаем параметры для SSL-соединения
 procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocketOpenSSL);
@@ -729,33 +730,33 @@ begin
   ClearDir(GetTempDir + TempSendDir, True);
 end;
 
+function GetLibraryVersionFromPath(AName: String): String;
+var
+  RxVer : TVersionInfo;
+begin
+  if FileExists(AName) then begin
+    try
+      RxVer := TVersionInfo.Create(AName);
+      try
+        Result := LongVersionToString(RxVer.FileLongVersion);
+      finally
+        RxVer.Free;
+      end;
+    except
+      Result := '';
+    end;
+  end
+  else
+    Result := '';
+end;
+
 function GetLibraryVersionFromAppPath : TObjectList;
 var
   DirPath : String;
 
   function IsExeFile(Name : String) : Boolean;
   begin
-    Result := AnsiEndsText('.exe', Name) or AnsiEndsText('.bpl', Name) or AnsiEndsText('.dll', Name); 
-  end;
-
-  function GetLibraryVersionFromPath(AName: String): String;
-  var
-    RxVer : TVersionInfo;
-  begin
-    if FileExists(AName) then begin
-      try
-        RxVer := TVersionInfo.Create(AName);
-        try
-          Result := LongVersionToString(RxVer.FileLongVersion);
-        finally
-          RxVer.Free;
-        end;
-      except
-        Result := '';
-      end;
-    end
-    else
-      Result := '';
+    Result := AnsiEndsText('.exe', Name) or AnsiEndsText('.bpl', Name) or AnsiEndsText('.dll', Name);
   end;
 
   procedure FindVersionsEx(StartDir : String; Res : TObjectList; RelativePath : String);

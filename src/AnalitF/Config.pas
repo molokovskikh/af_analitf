@@ -14,7 +14,6 @@ type
     PageControl: TPageControl;
     tshAuth: TTabSheet;
     tshClients: TTabSheet;
-    btnClientsEdit: TButton;
     tshConnect: TTabSheet;
     RasMenu: TPopupMenu;
     itmRasCreate: TMenuItem;
@@ -92,7 +91,6 @@ type
     dbchbUseOSOpenReject: TDBCheckBox;
     dbchbGroupByProducts: TDBCheckBox;
     dbchbPrintOrdersAfterSend: TDBCheckBox;
-    procedure btnClientsEditClick(Sender: TObject);
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
     procedure itmRasEditClick(Sender: TObject);
@@ -142,7 +140,7 @@ implementation
 
 {$R *.DFM}
 
-uses DBProc, AProc, Client, Main, LU_Tracer, Constant;
+uses DBProc, AProc, Main, LU_Tracer, Constant;
 
 function ShowConfig( Auth: boolean = False): boolean;
 var
@@ -257,11 +255,6 @@ begin
   DM.adsRetailMargins.Close;
   DM.adsRetailMargins.Open;
   DM.ClientChanged;
-end;
-
-procedure TConfigForm.btnClientsEditClick(Sender: TObject);
-begin
-  ShowClient;
 end;
 
 procedure TConfigForm.GetEntries;

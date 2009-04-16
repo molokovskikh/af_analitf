@@ -25,6 +25,7 @@ type
     procedure Label4Click(Sender: TObject);
   private
     { Private declarations }
+    procedure GetVersionInformation(var Version, LegalCopyright: String);
   public
     { Public declarations }
   end;
@@ -34,7 +35,7 @@ var
 
 implementation
 
-uses DModule, Main, DB;
+uses DModule, Main, DB, RxVerInf;
 
 {$R *.dfm}
 
@@ -45,18 +46,55 @@ begin
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
+var
+  Version,
+  LegalCopyright: String;
 begin
+  GetVersionInformation(Version, LegalCopyright);
 	Label1.Caption := Application.Title;
-	Label2.Caption := 'Версия : ' + MainForm.VerInfo.FileVersion +
+	Label2.Caption := 'Версия : ' + Version +
 		' (' + DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString + ')';
 	lIndent.Caption := 'Идентификация : ' + DM.adtClients.FieldByName('ClientID').AsString +
     ' (' + DM.adtClients.FieldByName('Name').AsString + ')';
-	Label4.Caption := MainForm.VerInfo.LegalCopyright;
+	Label4.Caption := LegalCopyright;
 end;
 
 procedure TAboutForm.Label4Click(Sender: TObject);
 begin
 	ShellExecute( Self.Handle, 'open', 'www.analit.net', nil, nil, SW_SHOWNORMAL);
+end;
+
+procedure TAboutForm.GetVersionInformation(var Version,
+  LegalCopyright: String);
+var
+  RxVer : TVersionInfo;
+begin
+  if FileExists(Application.ExeName) then begin
+    try
+      RxVer := TVersionInfo.Create(Application.ExeName);
+      try
+        try
+          Version := LongVersionToString(RxVer.FileLongVersion);
+        except
+          Version := '';
+        end;
+        try
+          LegalCopyright := RxVer.LegalCopyright;
+        except
+          LegalCopyright := '';
+        end;
+      finally
+        RxVer.Free;
+      end;
+    except
+      Version := '';
+      LegalCopyright := '';
+    end;
+  end
+  else begin
+    Version := '';
+    LegalCopyright := '';
+  end;
 end;
 
 end.

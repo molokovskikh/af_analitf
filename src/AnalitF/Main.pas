@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, Menus, ExtCtrls, DBCtrls, DB, Child, Placemnt,
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
-  XPStyleActnCtrls, ActnMenus, ProVersion, DBGridEh, DateUtils, ToughDBGrid,
+  XPStyleActnCtrls, ActnMenus, DBGridEh, DateUtils, ToughDBGrid,
   OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet, Consts, ShellAPI,
   MemDS, DBAccess, MyAccess;
 
@@ -41,12 +41,10 @@ TMainForm = class(TForm)
     itmDocuments: TMenuItem;
     itmRegistry: TMenuItem;
     itmDefective: TMenuItem;
-    itmLeadingDocuments: TMenuItem;
     itmClosedOrders: TMenuItem;
     itmExpireds: TMenuItem;
     btnClosedOrders: TToolButton;
     btnDefectives: TToolButton;
-    btnNormatives: TToolButton;
     ToolButton11: TToolButton;
     btnExpireds: TToolButton;
     N7: TMenuItem;
@@ -93,10 +91,8 @@ TMainForm = class(TForm)
     actPrint: TAction;
     actRegistry: TAction;
     actDefectives: TAction;
-    actNormatives: TAction;
     actClosedOrders: TAction;
     actExit: TAction;
-    actActiveUsers: TAction;
     actSave: TAction;
     actCloseAll: TAction;
     actReceiveAll: TAction;
@@ -136,14 +132,12 @@ TMainForm = class(TForm)
     procedure FormCreate(Sender: TObject);
     procedure actPrintUpdate(Sender: TObject);
     procedure actRegistryExecute(Sender: TObject);
-    procedure actNormativesExecute(Sender: TObject);
     procedure actDefectivesExecute(Sender: TObject);
     procedure actPrintExecute(Sender: TObject);
     procedure actClosedOrdersExecute(Sender: TObject);
     procedure actSaleExecute(Sender: TObject);
     procedure actReceiveExecute(Sender: TObject);
     procedure actExitExecute(Sender: TObject);
-    procedure actActiveUsersExecute(Sender: TObject);
     procedure itmLinkExternalClick(Sender: TObject);
     procedure itmUnlinkExternalClick(Sender: TObject);
     procedure itmClearDatabaseClick(Sender: TObject);
@@ -192,7 +186,6 @@ private
 public
 	CurrentUser: string;	// Имя текущего пользователя
 	ActiveChild: TChildForm;
-	VerInfo: TVerInfo;
 	ExchangeOnly: boolean;
 
 	RegionFilterIndex: integer;
@@ -245,7 +238,7 @@ implementation
 uses
 	DModule, AProc, Config, DBProc, NamesForms, Prices,
 	Defectives, Registers, Summary, OrdersH,
-	Exchange, ActiveUsers, Expireds, Core, UniqueID, CoreFirm,
+	Exchange, Expireds, Core, UniqueID, CoreFirm,
 	Exclusive, Wait, AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog;
 
@@ -297,8 +290,7 @@ begin
   Application.OnException := OnMainAppEx;
 	ExchangeOnly := False;
 	Caption := Application.Title;
-	VersionInformation( Application.ExeName, VerInfo);
-	StatusBar.Panels[ 4].Text := '(версия ' + VerInfo.FileVersion + ')      ';
+	StatusBar.Panels[ 4].Text := '(версия ' + GetLibraryVersionFromPath(Application.ExeName) + ')      ';
 	RegionFilterIndex := 0;
 	EnableFilterIndex := 0;
 	JustRun := True;
@@ -526,11 +518,6 @@ begin
 	ShowChildForm( TRegistersForm);
 end;
 
-procedure TMainForm.actNormativesExecute(Sender: TObject);
-begin
-//	ShowChildForm( TNormativesForm);
-end;
-
 procedure TMainForm.actDefectivesExecute(Sender: TObject);
 begin
 	ShowChildForm( TDefectivesForm);
@@ -579,7 +566,6 @@ begin
 	ExAct := [ eaGetPrice];
 
 	{ Проверяем каталог на наличие записей }
-  CatNum := 0;
 	try
 		CatNum := DM.QueryValue('SELECT COUNT(*) AS CatNum FROM Catalogs', [], []);
 	except
@@ -610,11 +596,6 @@ end;
 procedure TMainForm.actExitExecute(Sender: TObject);
 begin
 	Close;
-end;
-
-procedure TMainForm.actActiveUsersExecute(Sender: TObject);
-begin
-	ShowActiveUsers;
 end;
 
 procedure TMainForm.itmLinkExternalClick(Sender: TObject);
@@ -778,13 +759,6 @@ begin
     Exit;
 	if not DM.MainConnection.Connected then
     Exit;
-
-{
-  if not DM.MainConnection1.DefaultTransaction.Active then begin
-    DM.MainConnection1.DefaultTransaction.StartTransaction;
-    DM.MainConnection1.AfterConnect(nil);
-  end;
-  }
 
 	{ Проверка на запрос на монопольный доступ }
   //todo: восстановить запрос на монопольный доступ потом

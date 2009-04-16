@@ -454,7 +454,9 @@ type
     procedure ExtractDBScript(dbCon : TpFIBDatabase);
 {$endif}
     procedure TestEmbeddedMysql;
+{$ifdef USEMYSQLEMBEDDED}
     procedure TestEmbeddedThread;
+{$endif}    
     procedure TestDirectoriesOperation;
     function GetMainConnection: TCustomMyConnection;
     procedure PatchMyDataSets;
@@ -479,8 +481,6 @@ type
     procedure UnLinkExternalTables;
     procedure ClearDatabase;
     procedure DeleteEmptyOrders;
-    procedure SetImportStage( AValue: integer);
-    function GetImportStage: integer;
     procedure BackupDatabase;
     procedure RestoreDatabase;
     function IsBackuped : Boolean;
@@ -565,7 +565,7 @@ implementation
 {$R *.DFM}
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
-     U_FolderMacros, LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
+     LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
      U_DeleteDBThread;
 
 type
@@ -1368,19 +1368,6 @@ begin
   finally
     Screen.Cursor:=crDefault;
   end;
-end;
-
-{ Запомнить последнюю успешную стадию импорта }
-procedure TDM.SetImportStage( AValue: integer);
-begin
-  DM.adtParams.Edit;
-  DM.adtParams.FieldByName( 'ImportStage').AsInteger := AValue;
-  DM.adtParams.Post;
-end;
-
-function TDM.GetImportStage: integer;
-begin
-  result := DM.adtParams.FieldByName( 'ImportStage').AsInteger;
 end;
 
 procedure TDM.BackupDatabase;
@@ -3448,9 +3435,12 @@ procedure TDM.TestEmbeddedMysql;
 begin
   //TestEmbeddedThread();
 
-  //TestDirectoriesOperation();
+{$ifdef USEMYSQLEMBEDDED}
+  TestDirectoriesOperation();
+{$endif}
 end;
 
+{$ifdef USEMYSQLEMBEDDED}
 procedure TDM.TestEmbeddedThread;
 var
   testThread : TTestMyDBThread;
@@ -3460,9 +3450,7 @@ begin
     WriteExchangeLog('DBtest', 'start test');
     MainConnection.Close;
     MainConnection.Open;
-{$ifdef USEMYSQLEMBEDDED}
     testThread := TTestMyDBThread.Create(MainConnection as TMyEmbConnection);
-{$endif}
     while (testThread.State <> mtsClosinginMain) do
       Sleep(500);
 
@@ -3515,6 +3503,7 @@ begin
     WriteExchangeLog('DBtest', 'stop test');
   end;
 end;
+{$endif}
 
 function TDM.QueryValue(SQL: String; Params: array of string;
   Values: array of Variant): Variant;
