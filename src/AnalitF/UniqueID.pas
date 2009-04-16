@@ -13,8 +13,6 @@ function GetOld525UniqueID( APath, AFileHash: string): longint;
 //Получить уникальный идентификатор относильно пути
 function GetPathID( APath : string): Longint;
 
-function GetExclusiveID : String;
-
 implementation
 
 uses CRC32Unit;
@@ -86,11 +84,6 @@ var
 begin
 	InVal := LowerCase(APath);
 	Result := CalcCRC32( PChar( InVal), Length( InVal));
-end;
-
-function GetExclusiveID : String;
-begin
-  Result := IntToHex(GetUniqueID( ParamStr(0), ''), 8);
 end;
 
 end.

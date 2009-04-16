@@ -92,7 +92,6 @@ private
 	procedure SetTotalProgress;
 	procedure DisableCancel;
 	procedure EnableCancel;
-	procedure ShowEx;
 
 	procedure RasConnect;
 	procedure HTTPConnect;
@@ -169,7 +168,7 @@ end;
 
 implementation
 
-uses Exchange, DModule, AProc, Main, Retry, Exclusive,
+uses Exchange, DModule, AProc, Main, Retry, 
   LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
   Constant, U_ExchangeLog, U_SendArchivedOrdersThread;
 
@@ -198,11 +197,6 @@ end;
 procedure TExchangeThread.EnableCancel;
 begin
 	ExchangeForm.btnCancel.Enabled := True;
-end;
-
-procedure TExchangeThread.ShowEx;
-begin
-	ShowExclusive( False, Self);
 end;
 
 procedure TExchangeThread.Execute;
@@ -307,12 +301,6 @@ begin
 				TotalProgress := 50;
 				Synchronize( SetTotalProgress);
 				TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
-				if DM.DatabaseOpenedBy <> '' then Synchronize( ShowEx)
-					else
-					begin
-						MainForm.Timer.Enabled := False;
-						DM.SetExclusive;
-					end;
 				CheckNewExe;
 				CheckNewFRF;
 				CheckNewMDB;
@@ -322,8 +310,6 @@ begin
         finally
           //DM.adcUpdate.OnExecuteError := nil;
         end;
-				DM.ResetExclusive;
-				MainForm.Timer.Enabled := True;
       	StatusText := 'Обновление завершено';
      	  Synchronize( SetStatus);
 			end;

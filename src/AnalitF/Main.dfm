@@ -19,7 +19,6 @@ object MainForm: TMainForm
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
@@ -624,13 +623,6 @@ object MainForm: TMainForm
     OnIdle = AppEventsIdle
     Left = 288
     Top = 160
-  end
-  object Timer: TTimer
-    Enabled = False
-    Interval = 3000
-    OnTimer = TimerTimer
-    Left = 224
-    Top = 224
   end
   object ImageList: TImageList
     Height = 32
@@ -2344,8 +2336,8 @@ object MainForm: TMainForm
         ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
         'cesregionaldata.PriceCode is not null)))'
       'and (OrdersHead.SEND = :ASend)')
-    Left = 240
-    Top = 280
+    Left = 232
+    Top = 272
     ParamData = <
       item
         DataType = ftUnknown

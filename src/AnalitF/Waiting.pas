@@ -27,7 +27,7 @@ procedure ShowWaiting( Information : String; ChildThread: TThread);
 
 implementation
 
-uses Main, AProc, DModule, UniqueID, SysNames, Exchange, Exclusive;
+uses Main, AProc, DModule, UniqueID, SysNames, Exchange;
 
 {$R *.dfm}
 

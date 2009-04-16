@@ -38,8 +38,6 @@ uses
   RecThread in 'RecThread.pas',
   NotOrders in 'NotOrders.pas' {NotOrdersForm},
   SysNames in 'SysNames.pas',
-  Exclusive in 'Exclusive.pas' {ExclusiveForm},
-  Wait in 'Wait.pas' {WaitForm},
   AlphaUtils in 'AlphaUtils.pas',
   About in 'About.pas' {AboutForm},
   Waiting in 'Waiting.pas' {WaitingForm},

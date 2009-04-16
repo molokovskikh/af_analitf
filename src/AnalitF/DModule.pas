@@ -465,8 +465,6 @@ type
     SerBeg,
     SerEnd : String;
     SaveGridMask : Integer;
-    function DatabaseOpenedBy: string;
-    function DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
     procedure CompactDataBase();
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
       APreview: boolean = False; PrintDlg: boolean = True);
@@ -485,8 +483,6 @@ type
     procedure RestoreDatabase;
     function IsBackuped : Boolean;
     procedure ClearBackup;
-    procedure SetExclusive;
-    procedure ResetExclusive;
     procedure SetCumulative;
     procedure ResetCumulative;
     function GetCumulative: boolean;
@@ -1069,50 +1065,6 @@ begin
       MB_ICONERROR or MB_OK);
 end;
 
-function TDM.DatabaseOpenedBy: string;
-//var
-//  WasConnected: boolean;
-begin
-  result := '';
-{
-  WasConnected := MainConnection.Connected;
-  MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
-    JET_SCHEMA_USERROSTER, adsSelect);
-  if adsSelect.RecordCount > 1 then
-    result := adsSelect.FieldByName( 'COMPUTER_NAME').AsString;
-  adsSelect.Close;
-  if not WasConnected then MainConnection.Close;
-}  
-end;
-
-function TDM.DatabaseOpenedList( var ExclusiveID, ComputerName: string): TStringList;
-//var
-//  WasConnected: boolean;
-begin
-  result := TStringList.Create;
-{
-  WasConnected := MainConnection.Connected;
-  MainConnection.OpenSchema( siProviderSpecific, EmptyParam,
-    JET_SCHEMA_USERROSTER, adsSelect);
-  while not adsSelect.Eof do
-  begin
-    result.Add( adsSelect.FieldByName( 'COMPUTER_NAME').AsString);
-    adsSelect.Next;
-  end;
-  MainForm.CS.Enter;
-  try
-    ExclusiveID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
-    ComputerName := DM.adtFlags.FieldByName( 'ComputerName').AsString;
-  except
-    ExclusiveID := '';
-    ComputerName := '';
-  end;
-  MainForm.CS.Leave;
-  adsSelect.Close;
-  if not WasConnected then MainConnection.Close;
-}
-end;
-
 procedure TDM.CompactDataBase();
 var
   RowAffected : Variant;
@@ -1431,46 +1383,6 @@ begin
 }
 end;
 
-procedure TDM.ResetExclusive;
-begin
-  { Снятие запроса на монопольный доступ }
-//todo: восстановить запрос на монопольный доступ потом
-{
-  MainForm.CS.Enter;
-  try
-    try
-      adtFlags.Edit;
-      adtFlags.FieldByName( 'ComputerName').AsString := '';
-      adtFlags.FieldByName( 'ExclusiveID').AsString := '';
-      adtFlags.Post;
-    except
-    end;
-  finally
-    MainForm.CS.Leave;
-  end;
-}  
-end;
-
-procedure TDM.SetExclusive;
-begin
-  { Установка запроса на монопольный доступ }
-//todo: восстановить запрос на монопольный доступ потом  
-{
-  MainForm.CS.Enter;
-  try
-    try
-      adtFlags.Edit;
-      adtFlags.FieldByName( 'ComputerName').AsString := GetComputerName_;
-      adtFlags.FieldByName( 'ExclusiveID').AsString := GetExclusiveID();
-      adtFlags.Post;
-    except
-    end;
-  finally
-    MainForm.CS.Leave;
-  end;
-}
-end;
-
 function TDM.GetCumulative: boolean;
 begin
   try
@@ -1541,14 +1453,6 @@ begin
   adsRetailMargins.Open;
   LoadRetailMargins;
   LoadSelectedPrices;
-//todo: восстановить запрос на монопольный доступ потом
-{
-  try
-    adtFlags.Close;
-    adtFlags.Open;
-  except
-  end;
-}
 end;
 
 procedure TDM.SweepDB;

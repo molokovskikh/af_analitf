@@ -89,7 +89,7 @@ function RunExchange(AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
-  Exclusive, CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
+  CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
   Child;
 
 {$R *.DFM}
@@ -123,18 +123,6 @@ begin
      and (eaGetPrice in AExchangeActions)
   then
     AExchangeActions := AExchangeActions + [eaGetFullData];
-
-  //TODO: ___ надо подумать, что здесь происходит
-	if ( eaSendOrders in AExchangeActions)
-    and not ( [eaGetPrice, eaGetWaybills] * AExchangeActions <> [])
-    and ( DM.DatabaseOpenedBy <> '')
-  then
-		if not ShowExclusive then
-		begin
-			DM.ResetExclusive;
-			MainForm.Timer.Enabled := True;
-			exit;
-		end;
 
 	if ( eaSendOrders in AExchangeActions) and not CheckMinReq then exit;
 
@@ -185,9 +173,6 @@ begin
   finally
 		ExchangeForm.Free;
 	end;
-
-	DM.ResetExclusive;
-	MainForm.Timer.Enabled := True;
 
   //Сбрасываем флаг кумулятивного обновления, когда сделали успешное обновление,
   //или импортирование данных. Т.е. либо мы получили обновление, либо скорректировали входные данные,

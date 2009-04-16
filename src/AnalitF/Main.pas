@@ -103,7 +103,6 @@ TMainForm = class(TForm)
     tbFind: TToolButton;
     Browser: TWebBrowser;
     AppEvents: TApplicationEvents;
-    Timer: TTimer;
     ImageList: TImageList;
     itmAbout: TMenuItem;
     btnHome: TToolButton;
@@ -154,8 +153,6 @@ TMainForm = class(TForm)
     procedure actFindExecute(Sender: TObject);
     procedure actFindUpdate(Sender: TObject);
     procedure AppEventsIdle(Sender: TObject; var Done: Boolean);
-    procedure TimerTimer(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure actHomeExecute(Sender: TObject);
     procedure actHomeUpdate(Sender: TObject);
     procedure itmAboutClick(Sender: TObject);
@@ -191,8 +188,6 @@ public
 	RegionFilterIndex: integer;
 	EnableFilterIndex: integer;
 //	Filter
-
-	CS: TCriticalSection;
 
   //ћаксимальна€ ширина наименовани€ клиента, необходима дл€ отображени€
   MaxClientNameWidth : Integer;
@@ -239,7 +234,7 @@ uses
 	DModule, AProc, Config, DBProc, NamesForms, Prices,
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, Expireds, Core, UniqueID, CoreFirm,
-	Exclusive, Wait, AlphaUtils, About, CompactThread, LU_Tracer,
+	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog;
 
 {$R *.DFM}
@@ -301,14 +296,8 @@ begin
     itmUnlinkExternal.Visible := True;
     itmClearDatabase.Visible := True;
   end;
-	CS := TCriticalSection.Create;
 	if Set32BPP then
     LoadToImageList(ImageList, Application.ExeName, 100);
-end;
-
-procedure TMainForm.FormDestroy(Sender: TObject);
-begin
-	CS.Free;
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
@@ -329,25 +318,11 @@ begin
   Self.WindowState := wsMaximized;
 
 	UpdateReclame;
-	Timer.Enabled := True;
 	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
   if (Length(CurrentUser) > 0) then
     Self.Caption := Application.Title + ' - ' + CurrentUser
   else
     Self.Caption := Application.Title;
-
-	{ —н€тие запроса на экс. доступ после аварии }
-  {
-	CS.Enter;
-  try
-	  try
-		  if DM.adtFlags.FieldByName( 'ExclusiveID').AsString = GetExclusiveID() then DM.ResetExclusive;
-   	except
-	  end;
-  finally
-  	CS.Leave;
-  end;
-  }
 
 	{ Ћогин пустой }
 	if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
@@ -749,37 +724,6 @@ begin
 		FormatFloat( '00', Browser.Tag) + '.htm') then
 		Browser.Navigate( ExePath + SDirReclame + '\' +
 			FormatFloat( '00', Browser.Tag) + '.htm');
-end;
-
-procedure TMainForm.TimerTimer(Sender: TObject);
-var
-	ExID: string;
-begin
-  if Assigned(GlobalExchangeParams) then
-    Exit;
-	if not DM.MainConnection.Connected then
-    Exit;
-
-	{ ѕроверка на запрос на монопольный доступ }
-  //todo: восстановить запрос на монопольный доступ потом
-{
-	CS.Enter;
-  try
-    try
-      DM.adtFlags.Close;
-      DM.adtFlags.Open;
-      ExID := DM.adtFlags.FieldByName( 'ExclusiveID').AsString;
-    except
-      ExID := '';
-    end;
-  finally
-		CS.Leave;
-  end;
-	if ( ExID <> GetExclusiveID()) and ( ExID <> '') then
-	begin
-		ShowWait;
-	end;
-}
 end;
 
 procedure TMainForm.actHomeExecute(Sender: TObject);
