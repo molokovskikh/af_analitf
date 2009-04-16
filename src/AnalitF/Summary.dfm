@@ -82,7 +82,7 @@ inherited SummaryForm: TSummaryForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'SYNONYMNAME'
+          FieldName = 'SynonymName'
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
@@ -90,7 +90,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'SYNONYMFIRM'
+          FieldName = 'SynonymFirm'
           Footers = <>
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
           Title.TitleButton = True
@@ -99,7 +99,7 @@ inherited SummaryForm: TSummaryForm
         item
           Alignment = taRightJustify
           EditButtons = <>
-          FieldName = 'VOLUME'
+          FieldName = 'Volume'
           Footers = <>
           Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
           Title.TitleButton = True
@@ -107,7 +107,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'NOTE'
+          FieldName = 'Note'
           Footers = <>
           Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
           Title.TitleButton = True
@@ -116,14 +116,14 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'DOC'
+          FieldName = 'doc'
           Footers = <>
           Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
           Visible = False
         end
         item
           EditButtons = <>
-          FieldName = 'PERIOD'
+          FieldName = 'Period'
           Footers = <>
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
           Title.TitleButton = True
@@ -131,7 +131,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'PRICENAME'
+          FieldName = 'PriceName'
           Footers = <>
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.TitleButton = True
@@ -139,7 +139,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'REGIONNAME'
+          FieldName = 'RegionName'
           Footers = <>
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
@@ -148,7 +148,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'REGISTRYCOST'
+          FieldName = 'registrycost'
           Footers = <>
           Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
           Visible = False
@@ -156,7 +156,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'REQUESTRATIO'
+          FieldName = 'RequestRatio'
           Footers = <>
           Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
           Visible = False
@@ -164,7 +164,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'ORDERCOST'
+          FieldName = 'ordercost'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
           Visible = False
@@ -178,7 +178,7 @@ inherited SummaryForm: TSummaryForm
         end
         item
           EditButtons = <>
-          FieldName = 'CryptBASECOST'
+          FieldName = 'Cost'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -200,7 +200,7 @@ inherited SummaryForm: TSummaryForm
         item
           Alignment = taRightJustify
           EditButtons = <>
-          FieldName = 'QUANTITY'
+          FieldName = 'Quantity'
           Footers = <>
           Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
           Title.TitleButton = True
@@ -209,7 +209,7 @@ inherited SummaryForm: TSummaryForm
         item
           Color = 16775406
           EditButtons = <>
-          FieldName = 'ORDERCOUNT'
+          FieldName = 'OrderCount'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
           Width = 44
@@ -475,8 +475,8 @@ inherited SummaryForm: TSummaryForm
     Top = 136
   end
   object dsSummaryH: TDataSource
-    DataSet = adsSummaryH
-    Left = 432
+    DataSet = adsSummaryHOld
+    Left = 440
     Top = 168
   end
   object frdsSummary: TfrDBDataSet
@@ -485,7 +485,7 @@ inherited SummaryForm: TSummaryForm
     Left = 304
     Top = 184
   end
-  object adsSummary: TpFIBDataSet
+  object adsSummaryOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'
       '  orders'
@@ -557,169 +557,166 @@ inherited SummaryForm: TSummaryForm
       'and Regions.RegionCode = OrdersH.RegionCode')
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
-    BeforeDelete = adsSummaryBeforeDelete
-    BeforeEdit = adsSummaryBeforeEdit
+    BeforeDelete = adsSummaryOldBeforeDelete
+    BeforeEdit = adsSummaryOldBeforeEdit
     BeforePost = adsSummary2BeforePost
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 296
     Top = 96
     oTrimCharFields = False
     oCacheCalcFields = True
     oRefreshAfterPost = False
-    object adsSummarySumOrder: TCurrencyField
+    object adsSummaryOldSumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsSummaryCryptBASECOST: TCurrencyField
+    object adsSummaryOldCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsSummaryPriceRet: TCurrencyField
+    object adsSummaryOldPriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsSummaryVOLUME: TFIBStringField
+    object adsSummaryOldVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsSummaryQUANTITY: TFIBStringField
+    object adsSummaryOldQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsSummaryNOTE: TFIBStringField
+    object adsSummaryOldNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
       EmptyStrToNull = True
     end
-    object adsSummaryPERIOD: TFIBStringField
+    object adsSummaryOldPERIOD: TFIBStringField
       FieldName = 'PERIOD'
       EmptyStrToNull = True
     end
-    object adsSummaryJUNK: TFIBBooleanField
+    object adsSummaryOldJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsSummaryAWAIT: TFIBBooleanField
+    object adsSummaryOldAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
     end
-    object adsSummaryCODE: TFIBStringField
+    object adsSummaryOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsSummaryCODECR: TFIBStringField
+    object adsSummaryOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsSummarySYNONYMNAME: TFIBStringField
+    object adsSummaryOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 501
       EmptyStrToNull = True
     end
-    object adsSummarySYNONYMFIRM: TFIBStringField
+    object adsSummaryOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsSummaryBASECOST: TFIBStringField
+    object adsSummaryOldBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsSummaryPRICENAME: TFIBStringField
+    object adsSummaryOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsSummaryREGIONNAME: TFIBStringField
+    object adsSummaryOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsSummaryORDERCOUNT: TFIBIntegerField
+    object adsSummaryOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsSummaryORDERSCOREID: TFIBBCDField
+    object adsSummaryOldORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
       Size = 0
       RoundByScale = True
     end
-    object adsSummaryORDERSORDERID: TFIBBCDField
+    object adsSummaryOldORDERSORDERID: TFIBBCDField
       FieldName = 'ORDERSORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsSummaryPRICECODE: TFIBBCDField
+    object adsSummaryOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSummaryREGIONCODE: TFIBBCDField
+    object adsSummaryOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSummaryDOC: TFIBStringField
+    object adsSummaryOldDOC: TFIBStringField
       FieldName = 'DOC'
       EmptyStrToNull = True
     end
-    object adsSummaryREGISTRYCOST: TFIBFloatField
+    object adsSummaryOldREGISTRYCOST: TFIBFloatField
       FieldName = 'REGISTRYCOST'
     end
-    object adsSummaryVITALLYIMPORTANT: TFIBBooleanField
+    object adsSummaryOldVITALLYIMPORTANT: TFIBBooleanField
       FieldName = 'VITALLYIMPORTANT'
     end
-    object adsSummaryREQUESTRATIO: TFIBIntegerField
+    object adsSummaryOldREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
     end
-    object adsSummarySENDPRICE: TFIBBCDField
+    object adsSummaryOldSENDPRICE: TFIBBCDField
       FieldName = 'SENDPRICE'
       Size = 2
       RoundByScale = True
     end
-    object adsSummaryORDERCOST: TFIBBCDField
+    object adsSummaryOldORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
       Size = 2
       RoundByScale = True
     end
-    object adsSummaryMINORDERCOUNT: TFIBIntegerField
+    object adsSummaryOldMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
-    object adsSummaryCOREID: TFIBBCDField
+    object adsSummaryOldCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
       RoundByScale = True
     end
-    object adsSummaryFULLCODE: TFIBBCDField
+    object adsSummaryOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSummarySHORTCODE: TFIBBCDField
+    object adsSummaryOldSHORTCODE: TFIBBCDField
       FieldName = 'SHORTCODE'
       Size = 0
       RoundByScale = True
     end
   end
-  object adsSummaryH: TpFIBDataSet
+  object adsSummaryHOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    COUNTORDER,'
       '    SUMORDER'
       'FROM'
       '    SUMMARYHSHOW(:ACLIENTID) ')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 432
     Top = 128
@@ -741,7 +738,7 @@ inherited SummaryForm: TSummaryForm
       Caption = '-'
     end
   end
-  object adsCurrentSummary: TpFIBDataSet
+  object adsCurrentSummaryOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT '
       '    catalogs.fullcode,'
@@ -797,14 +794,12 @@ inherited SummaryForm: TSummaryForm
       'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = OrdersH.PriceCode'
       'and Regions.RegionCode = OrdersH.RegionCode')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     Left = 96
     Top = 112
     oCacheCalcFields = True
   end
-  object adsSendSummary: TpFIBDataSet
+  object adsSendSummaryOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT '
       '    catalogs.fullcode,'
@@ -861,106 +856,104 @@ inherited SummaryForm: TSummaryForm
       'and Regions.RegionCode = OrdersH.RegionCode'
       'and ordersh.senddate >= :datefrom'
       'and ordersh.senddate <= :dateTo')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     Left = 144
     Top = 112
     oCacheCalcFields = True
-    object adsSendSummaryVOLUME: TFIBStringField
+    object adsSendSummaryOldVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsSendSummaryQUANTITY: TFIBStringField
+    object adsSendSummaryOldQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsSendSummaryNOTE: TFIBStringField
+    object adsSendSummaryOldNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
       EmptyStrToNull = True
     end
-    object adsSendSummaryPERIOD: TFIBStringField
+    object adsSendSummaryOldPERIOD: TFIBStringField
       FieldName = 'PERIOD'
       EmptyStrToNull = True
     end
-    object adsSendSummaryJUNK: TFIBBooleanField
+    object adsSendSummaryOldJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsSendSummaryAWAIT: TFIBBooleanField
+    object adsSendSummaryOldAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
     end
-    object adsSendSummaryCODE: TFIBStringField
+    object adsSendSummaryOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsSendSummaryCODECR: TFIBStringField
+    object adsSendSummaryOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsSendSummarySYNONYMNAME: TFIBStringField
+    object adsSendSummaryOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 501
       EmptyStrToNull = True
     end
-    object adsSendSummarySYNONYMFIRM: TFIBStringField
+    object adsSendSummaryOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsSendSummaryBASECOST: TFIBStringField
+    object adsSendSummaryOldBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsSendSummaryPRICENAME: TFIBStringField
+    object adsSendSummaryOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsSendSummaryREGIONNAME: TFIBStringField
+    object adsSendSummaryOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsSendSummaryORDERCOUNT: TFIBIntegerField
+    object adsSendSummaryOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsSendSummaryORDERSCOREID: TFIBBCDField
+    object adsSendSummaryOldORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
       Size = 0
       RoundByScale = True
     end
-    object adsSendSummaryORDERSORDERID: TFIBBCDField
+    object adsSendSummaryOldORDERSORDERID: TFIBBCDField
       FieldName = 'ORDERSORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsSendSummaryPRICECODE: TFIBBCDField
+    object adsSendSummaryOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSendSummaryREGIONCODE: TFIBBCDField
+    object adsSendSummaryOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsSendSummaryDOC: TFIBStringField
+    object adsSendSummaryOldDOC: TFIBStringField
       FieldName = 'DOC'
       EmptyStrToNull = True
     end
-    object adsSendSummaryVITALLYIMPORTANT: TFIBIntegerField
+    object adsSendSummaryOldVITALLYIMPORTANT: TFIBIntegerField
       FieldName = 'VITALLYIMPORTANT'
     end
-    object adsSendSummaryREQUESTRATIO: TFIBIntegerField
+    object adsSendSummaryOldREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
     end
-    object adsSendSummaryREGISTRYCOST: TFIBFloatField
+    object adsSendSummaryOldREGISTRYCOST: TFIBFloatField
       FieldName = 'REGISTRYCOST'
     end
   end
@@ -979,5 +972,352 @@ inherited SummaryForm: TSummaryForm
     OnTimer = TimerTimer
     Left = 640
     Top = 216
+  end
+  object adsSummaryH: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'call SUMMARYHSHOW(:ACLIENTID)')
+    Left = 464
+    Top = 128
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ACLIENTID'
+      end>
+  end
+  object adsCurrentSummary: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Clients.Clientid,'
+      '    Core.CoreID,'
+      '    Core.Volume,'
+      '    Core.Quantity,'
+      '    Core.Note,'
+      '    Core.Period,'
+      '    Core.Junk,'
+      '    Core.Await,'
+      '    Core.CODE,'
+      '    Core.CODECR,'
+      '    core.doc,'
+      '    core.registrycost,'
+      '    core.vitallyimportant as vitallyimportant,'
+      '    core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      '    Core.Cost,'
+      
+        '    coalesce(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', ca' +
+        'talogs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceName,'
+      '    Regions.RegionName,'
+      '    OrdersList.OrderCount,'
+      '    OrdersList.CoreId AS OrdersCoreId,'
+      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    pricesdata.pricecode,'
+      '    Regions.regioncode,'
+      '    OrdersList.PRICE*OrdersList.OrderCount as SumOrder'
+      'FROM'
+      '    PricesData,'
+      '    Regions,'
+      '    Core,'
+      '    OrdersHead,'
+      '    products,'
+      '    catalogs,'
+      '    Clients, '
+      '    OrdersList'
+      
+        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
+        'mCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
+        'nymFirmCr.SynonymFirmCrCode'
+      'WHERE'
+      '    OrdersHead.ClientId = :AClientId'
+      'and Clients.Clientid = :AClientId'
+      'and OrdersList.OrderId=OrdersHead.OrderId'
+      'and OrdersList.OrderCount>0'
+      'and Core.CoreId=OrdersList.CoreId'
+      'and products.productid = OrdersList.productid'
+      'and catalogs.fullcode = products.catalogid'
+      'and PricesData.PriceCode = OrdersHead.PriceCode'
+      'and Regions.RegionCode = OrdersHead.RegionCode')
+    Left = 104
+    Top = 152
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end>
+  end
+  object adsSendSummary: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Clients.Clientid,'
+      '    OrdersList.CoreId AS CoreId,'
+      '    cast('#39#39' as char(15)) as Volume,'
+      '    cast('#39#39' as char(15)) as Quantity,'
+      '    cast('#39#39' as char(50)) as Note,'
+      '    cast('#39#39' as char(20)) as Period,'
+      '    OrdersList.Junk,'
+      '    OrdersList.Await,'
+      '    OrdersList.CODE,'
+      '    OrdersList.CODECR,'
+      '    cast('#39#39' as char(20)) as doc,'
+      '    0.0  as registrycost,'
+      '    x_cast_to_tinyint(0) as vitallyimportant,'
+      '    x_cast_to_int10(0) as requestratio,'
+      '    0.0 as ordercost,'
+      '    x_cast_to_int10(0) as minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    OrdersList.Price as Cost,'
+      '    PricesData.PriceName,'
+      '    Regions.RegionName,'
+      '    OrdersList.OrderCount,'
+      '    OrdersList.CoreId AS OrdersCoreId,'
+      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    PricesData.pricecode,'
+      '    Regions.regioncode,'
+      '    OrdersList.Price*OrdersList.OrderCount as SumOrder'
+      'FROM'
+      '    PricesData,'
+      '    Regions,'
+      '    OrdersHead,'
+      '    products,'
+      '    catalogs,'
+      '    Clients, '
+      '    OrdersList'
+      
+        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
+        'mCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
+        'nymFirmCr.SynonymFirmCrCode'
+      'WHERE'
+      '    OrdersHead.ClientId = :AClientId'
+      'and Clients.Clientid = :AClientId'
+      'and OrdersList.OrderId=OrdersHead.OrderId'
+      'and OrdersList.OrderCount>0'
+      'and OrdersList.CoreId is null'
+      'and products.productid = OrdersList.productid'
+      'and catalogs.fullcode = products.catalogid'
+      'and PricesData.PriceCode = OrdersHead.PriceCode'
+      'and Regions.RegionCode = OrdersHead.RegionCode'
+      'and OrdersHead.senddate >= :datefrom'
+      'and OrdersHead.senddate <= :dateTo')
+    Left = 152
+    Top = 152
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'datefrom'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'dateTo'
+      end>
+  end
+  object adsSummary: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Clients.Clientid,'
+      '    Core.CoreID,'
+      '    Core.Volume,'
+      '    Core.Quantity,'
+      '    Core.Note,'
+      '    Core.Period,'
+      '    Core.Junk,'
+      '    Core.Await,'
+      '    Core.CODE,'
+      '    Core.CODECR,'
+      '    core.doc,'
+      '    core.registrycost,'
+      '    core.vitallyimportant,'
+      '    core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      '    Core.Cost,'
+      
+        '    coalesce(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', ca' +
+        'talogs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceName,'
+      '    Regions.RegionName,'
+      '    OrdersList.OrderCount,'
+      '    OrdersList.CoreId AS OrdersCoreId,'
+      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    pricesdata.pricecode,'
+      '    Regions.regioncode,'
+      '    OrdersList.PRICE*OrdersList.OrderCount as SumOrder'
+      'FROM'
+      '    PricesData,'
+      '    Regions,'
+      '    Core,'
+      '    OrdersHead,'
+      '    products,'
+      '    catalogs,'
+      '    Clients, '
+      '    OrdersList'
+      
+        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
+        'mCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
+        'nymFirmCr.SynonymFirmCrCode'
+      'WHERE'
+      '    OrdersHead.ClientId = :AClientId'
+      'and Clients.Clientid = :AClientId'
+      'and OrdersList.OrderId=OrdersHead.OrderId'
+      'and OrdersList.OrderCount>0'
+      'and Core.CoreId=OrdersList.CoreId'
+      'and products.productid = OrdersList.productid'
+      'and catalogs.fullcode = products.catalogid'
+      'and PricesData.PriceCode = OrdersHead.PriceCode'
+      'and Regions.RegionCode = OrdersHead.RegionCode')
+    BeforeEdit = adsSummaryOldBeforeEdit
+    BeforePost = adsSummary2BeforePost
+    AfterPost = adsSummary2AfterPost
+    BeforeDelete = adsSummaryOldBeforeDelete
+    AfterScroll = adsSummary2AfterScroll
+    Left = 336
+    Top = 104
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end>
+    object adsSummaryfullcode: TLargeintField
+      FieldName = 'fullcode'
+    end
+    object adsSummaryshortcode: TLargeintField
+      FieldName = 'shortcode'
+    end
+    object adsSummaryClientid: TLargeintField
+      FieldName = 'Clientid'
+    end
+    object adsSummaryCoreID: TLargeintField
+      FieldName = 'CoreID'
+    end
+    object adsSummaryVolume: TStringField
+      FieldName = 'Volume'
+      Size = 15
+    end
+    object adsSummaryQuantity: TStringField
+      FieldName = 'Quantity'
+      Size = 15
+    end
+    object adsSummaryNote: TStringField
+      FieldName = 'Note'
+      Size = 50
+    end
+    object adsSummaryPeriod: TStringField
+      FieldName = 'Period'
+    end
+    object adsSummaryJunk: TBooleanField
+      FieldName = 'Junk'
+    end
+    object adsSummaryAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsSummaryCODE: TStringField
+      FieldName = 'CODE'
+      Size = 84
+    end
+    object adsSummaryCODECR: TStringField
+      FieldName = 'CODECR'
+      Size = 84
+    end
+    object adsSummarydoc: TStringField
+      FieldName = 'doc'
+    end
+    object adsSummaryregistrycost: TFloatField
+      FieldName = 'registrycost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsSummaryordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsSummaryCost: TFloatField
+      FieldName = 'Cost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsSummarySynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 501
+    end
+    object adsSummarySynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsSummaryPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsSummaryRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsSummaryOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsSummaryOrdersCoreId: TLargeintField
+      FieldName = 'OrdersCoreId'
+    end
+    object adsSummaryOrdersOrderId: TLargeintField
+      FieldName = 'OrdersOrderId'
+    end
+    object adsSummarypricecode: TLargeintField
+      FieldName = 'pricecode'
+    end
+    object adsSummaryregioncode: TLargeintField
+      FieldName = 'regioncode'
+    end
+    object adsSummarySumOrder: TFloatField
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsSummaryPriceRet: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'PriceRet'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
+    object adsSummaryRequestRatio: TIntegerField
+      FieldName = 'RequestRatio'
+    end
+    object adsSummaryMINORDERCOUNT: TIntegerField
+      FieldName = 'MINORDERCOUNT'
+    end
+    object adsSummaryVitallyImportant: TBooleanField
+      FieldName = 'VitallyImportant'
+    end
   end
 end

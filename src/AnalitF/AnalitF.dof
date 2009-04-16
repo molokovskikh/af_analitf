@@ -96,7 +96,7 @@ PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
 SearchPath=..\..\..\..\ARas\src;..\..\..\..\RXLib\src;..\..\..\..\FIBPlusScript\src;..\lib\Indy\Core;..\lib\Indy\Protocols;..\lib\Indy\Security;..\lib\Indy\System
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;FIBPlus7;IndyCore70;IndyProtocols70;IndySystem70
-Conditionals=DSP,DEBUG
+Conditionals=DSP,DEBUG;
 DebugSourceDirs=
 UsePackages=1
 [Parameters]
@@ -114,10 +114,10 @@ RootDir=
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=1
-MajorVer=4
-MinorVer=4
-Release=73
-Build=712
+MajorVer=5
+MinorVer=0
+Release=0
+Build=717
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=4.4.73.712
+FileVersion=5.0.0.717
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2006
 LegalTrademarks=Инфорум
@@ -158,10 +158,12 @@ c:\program files\borland\delphi7\Bin\DCLIB70.bpl=InterBase Data Access Component
 c:\program files\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
 c:\program files\borland\delphi7\Projects\Bpl\dclIndy70.bpl=Internet Direct (Indy) for D6 Property and Component Editors
 [HistoryLists\hlConditionals]
-Count=3
-Item0=DSP,DEBUG
-Item1=DEBUG
-Item2=DSP
+Count=5
+Item0=DSP,DEBUG;
+Item1=DSP,DEBUG;USEMYSQLEMBEDDED
+Item2=DSP,DEBUG
+Item3=DEBUG
+Item4=DSP
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
@@ -185,8 +187,9 @@ Item13=$(DELPHI)\Lib\Debug
 Count=1
 Item0=.\unit
 [HistoryLists\hlOutputDirectorry]
-Count=1
+Count=2
 Item0=.\bin
+Item1=C:\Temp\_MysqlEmbeddednew
 [HistoryLists\hlBPLOutput]
 Count=1
 Item0=.\bin

@@ -57,6 +57,8 @@ type
     procedure DoShow; override;
     procedure UpdateReclame;
     procedure PatchNonBrowser;
+    //Корректируем connection для MySQL-компонент
+    procedure PatchMyDataSets;
     //Проверяем, что заказ сделан кратно Volume
     function  CheckVolume : Boolean;
     //Проверяем, что заказ сделан >= OrderCost
@@ -91,7 +93,7 @@ type
 
 implementation
 
-uses Main, AProc, DBGridEh, Constant;
+uses Main, AProc, DBGridEh, Constant, MyAccess, DModule;
 
 {$R *.DFM}
 
@@ -189,8 +191,6 @@ begin
       TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
       TToughDBGrid(Self.Components[i]).GridLineColors.BrightColor := clDkGray;
 
-{
-      todo: потом восстановить работу с сортировкой
       if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource)
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
@@ -202,7 +202,7 @@ begin
         if NeedFirstOnDataSet then
           TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
       end;
-}
+
     end;
   Show;
   if Parent<>nil then
@@ -268,6 +268,7 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
   inherited;
+  PatchMyDataSets;
   DBComponentWindowProcs := TObjectList.Create(True);
   PatchNonBrowser;
 end;
@@ -419,6 +420,15 @@ begin
     Windows.SetFocus(FFormHandle);
   if Assigned(FOldDBGridWndProc) then
     FOldDBGridWndProc(Message);
+end;
+
+procedure TChildForm.PatchMyDataSets;
+var
+  I : Integer;
+begin
+  for I := 0 to ComponentCount-1 do
+    if Components[i] is TCustomMyDataSet then
+      TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
 end;
 
 end.

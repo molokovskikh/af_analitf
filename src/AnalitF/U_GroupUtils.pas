@@ -3,7 +3,7 @@ unit U_GroupUtils;
 interface
 
 uses
-  SysUtils, Classes, Graphics, pFIBDataSet;
+  SysUtils, Classes, Graphics, DB;
 
 type
   SortGroup = class
@@ -46,7 +46,7 @@ type
 //Отсортировать набор данных в DataSet,
 //CatalogExists - внутри набора есть каталожные записи
 //GroupByProducts - требуется ли группировать по свойствам продуктов
-function GetSortedGroupList(DataSet : TpFIBDataSet; CatalogExists : Boolean; GroupByProducts : Boolean) : TStringList;
+function GetSortedGroupList(DataSet : TDataSet; CatalogExists : Boolean; GroupByProducts : Boolean) : TStringList;
 
 implementation
 
@@ -103,7 +103,7 @@ begin
   end;
 end;
 
-function GetSortedGroupList(DataSet : TpFIBDataSet; CatalogExists : Boolean; GroupByProducts : Boolean) : TStringList;
+function GetSortedGroupList(DataSet : TDataSet; CatalogExists : Boolean; GroupByProducts : Boolean) : TStringList;
 var
   Groups : TStringList;
   I, J : Integer;
@@ -137,26 +137,26 @@ var
   var
     CurrentGroup : SortGroup;
   begin
-    if (CatalogExists and (DataSet.FBN('SynonymCode').AsInteger < 0))
+    if (CatalogExists and (DataSet.FieldByName('SynonymCode').AsInteger < 0))
     then begin
       CurrentGroup := SortGroup.Create(
-        DataSet.FBN('Fullcode').AsInteger,
+        DataSet.FieldByName('Fullcode').AsInteger,
         0,
         0,
-        DataSet.FBN('SynonymName').AsString,
+        DataSet.FieldByName('SynonymName').AsString,
         -1);
       Groups.AddObject(IntToStr(Groups.Count), CurrentGroup);
-      Result.AddObject(DataSet.FBN('CoreID').AsString, SortElem.Create(-1, CurrentGroup, DataSet.FBN('PriceEnabled').AsBoolean));
+      Result.AddObject(DataSet.FieldByName('CoreID').AsString, SortElem.Create(-1, CurrentGroup, DataSet.FieldByName('PriceEnabled').AsBoolean));
     end
     else begin
       CurrentGroup := FindGroup(
-        DataSet.FBN('Fullcode').AsInteger,
-        DataSet.FBN('ProductId').AsInteger,
-        DataSet.FBN('CryptBaseCost').AsCurrency
+        DataSet.FieldByName('Fullcode').AsInteger,
+        DataSet.FieldByName('ProductId').AsInteger,
+        DataSet.FieldByName('Cost').AsCurrency
       );
-      if CurrentGroup.MinCost > DataSet.FBN('CryptBaseCost').AsCurrency then
-        CurrentGroup.MinCost := DataSet.FBN('CryptBaseCost').AsCurrency;
-      Result.AddObject(DataSet.FBN('CoreID').AsString, SortElem.Create(DataSet.FBN('CryptBaseCost').AsCurrency, CurrentGroup, DataSet.FBN('PriceEnabled').AsBoolean));
+      if CurrentGroup.MinCost > DataSet.FieldByName('Cost').AsCurrency then
+        CurrentGroup.MinCost := DataSet.FieldByName('Cost').AsCurrency;
+      Result.AddObject(DataSet.FieldByName('CoreID').AsString, SortElem.Create(DataSet.FieldByName('Cost').AsCurrency, CurrentGroup, DataSet.FieldByName('PriceEnabled').AsBoolean));
     end;
   end;
 

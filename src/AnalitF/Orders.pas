@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
-  pFIBDataSet, DBProc, AProc, GridsEh, U_frameLegend;
+  pFIBDataSet, DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
+  MyAccess;
 
 type
   TOrdersForm = class(TChildForm)
@@ -26,53 +27,77 @@ type
     dbtRegionName: TDBText;
     Panel1: TPanel;
     dbgOrders: TToughDBGrid;
-    adsOrders: TpFIBDataSet;
-    adsOrdersCryptPRICE: TCurrencyField;
-    adsOrdersCryptSUMORDER: TCurrencyField;
-    adsOrdersORDERID: TFIBBCDField;
-    adsOrdersCLIENTID: TFIBBCDField;
-    adsOrdersCOREID: TFIBBCDField;
-    adsOrdersFULLCODE: TFIBBCDField;
-    adsOrdersCODEFIRMCR: TFIBBCDField;
-    adsOrdersSYNONYMCODE: TFIBBCDField;
-    adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsOrdersCODE: TFIBStringField;
-    adsOrdersCODECR: TFIBStringField;
-    adsOrdersSYNONYMNAME: TFIBStringField;
-    adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersORDERCOUNT: TFIBIntegerField;
+    adsOrdersOld: TpFIBDataSet;
+    adsOrdersOldCryptPRICE: TCurrencyField;
+    adsOrdersOldCryptSUMORDER: TCurrencyField;
+    adsOrdersOldORDERID: TFIBBCDField;
+    adsOrdersOldCLIENTID: TFIBBCDField;
+    adsOrdersOldCOREID: TFIBBCDField;
+    adsOrdersOldFULLCODE: TFIBBCDField;
+    adsOrdersOldCODEFIRMCR: TFIBBCDField;
+    adsOrdersOldSYNONYMCODE: TFIBBCDField;
+    adsOrdersOldSYNONYMFIRMCRCODE: TFIBBCDField;
+    adsOrdersOldCODE: TFIBStringField;
+    adsOrdersOldCODECR: TFIBStringField;
+    adsOrdersOldSYNONYMNAME: TFIBStringField;
+    adsOrdersOldSYNONYMFIRM: TFIBStringField;
+    adsOrdersOldORDERCOUNT: TFIBIntegerField;
     lSumOrder: TLabel;
-    adsOrdersPRICE: TFIBStringField;
-    adsOrdersAWAIT: TFIBBooleanField;
-    adsOrdersJUNK: TFIBBooleanField;
-    adsOrdersSUMORDER: TFIBBCDField;
-    adsOrdersSENDPRICE: TFIBBCDField;
-    adsOrdersREQUESTRATIO: TFIBIntegerField;
+    adsOrdersOldPRICE: TFIBStringField;
+    adsOrdersOldAWAIT: TFIBBooleanField;
+    adsOrdersOldJUNK: TFIBBooleanField;
+    adsOrdersOldSUMORDER: TFIBBCDField;
+    adsOrdersOldSENDPRICE: TFIBBCDField;
+    adsOrdersOldREQUESTRATIO: TFIBIntegerField;
     tmrCheckOrderCount: TTimer;
-    adsOrdersORDERCOST: TFIBBCDField;
-    adsOrdersMINORDERCOUNT: TFIBIntegerField;
-    adsOrdersPRODUCTID: TFIBBCDField;
+    adsOrdersOldORDERCOST: TFIBBCDField;
+    adsOrdersOldMINORDERCOUNT: TFIBIntegerField;
+    adsOrdersOldPRODUCTID: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
-    adsOrdersORDERSREQUESTRATIO: TFIBIntegerField;
-    adsOrdersORDERSORDERCOST: TFIBBCDField;
-    adsOrdersORDERSMINORDERCOUNT: TFIBIntegerField;
+    adsOrdersOldORDERSREQUESTRATIO: TFIBIntegerField;
+    adsOrdersOldORDERSORDERCOST: TFIBBCDField;
+    adsOrdersOldORDERSMINORDERCOUNT: TFIBIntegerField;
     frameLegeng: TframeLegeng;
+    adsOrders: TMyQuery;
+    adsOrdersOrderId: TLargeintField;
+    adsOrdersClientId: TLargeintField;
+    adsOrdersCoreId: TLargeintField;
+    adsOrdersfullcode: TLargeintField;
+    adsOrdersproductid: TLargeintField;
+    adsOrderscodefirmcr: TLargeintField;
+    adsOrderssynonymcode: TLargeintField;
+    adsOrderssynonymfirmcrcode: TLargeintField;
+    adsOrderscode: TStringField;
+    adsOrderscodecr: TStringField;
+    adsOrderssynonymname: TStringField;
+    adsOrderssynonymfirm: TStringField;
+    adsOrdersawait: TBooleanField;
+    adsOrdersjunk: TBooleanField;
+    adsOrdersordercount: TIntegerField;
+    adsOrdersprice: TFloatField;
+    adsOrdersSumOrder: TFloatField;
+    adsOrdersrequestratio: TIntegerField;
+    adsOrdersordercost: TFloatField;
+    adsOrdersminordercount: TIntegerField;
+    adsOrdersOrdersrequestratio: TIntegerField;
+    adsOrdersOrdersordercost: TFloatField;
+    adsOrdersOrdersminordercount: TIntegerField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgOrdersSortMarkingChanged(Sender: TObject);
-    procedure adsOrdersBeforeEdit(DataSet: TDataSet);
-    procedure adsOrdersAfterPost(DataSet: TDataSet);
+    procedure adsOrdersOldBeforeEdit(DataSet: TDataSet);
+    procedure adsOrdersOldAfterPost(DataSet: TDataSet);
     procedure dbgOrdersCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure dbgOrdersKeyPress(Sender: TObject; var Key: Char);
     procedure tmrCheckOrderCountTimer(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
-    procedure adsOrdersBeforePost(DataSet: TDataSet);
+    procedure adsOrdersOldBeforePost(DataSet: TDataSet);
   private
     OldOrder, OrderCount: Integer;
     OrderSum: Double;
@@ -119,26 +144,32 @@ var
 	V: array[0..0] of Variant;
   Closed : Variant;
 begin
-  Closed := DM.QueryValue('select Closed from ordersh where orderid = ' + IntToStr(AOrderId), [], []);
+  Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(AOrderId), [], []);
   if Closed = 0 then begin
-    adsOrders.OnCalcFields := ocf;
-    dbgOrders.Columns[2].FieldName := 'CryptPRICE';
-    dbgOrders.Columns[4].FieldName := 'CryptSUMORDER';
+    //adsOrders.OnCalcFields := ocf;
+    dbgOrders.Columns[2].FieldName := 'PRICE';
+    dbgOrders.Columns[4].FieldName := 'SUMORDER';
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;
   end
   else begin
     adsOrders.OnCalcFields := nil;
-    dbgOrders.Columns[2].FieldName := 'SENDPRICE';
+    dbgOrders.Columns[2].FieldName := 'PRICE';
     dbgOrders.Columns[4].FieldName := 'SUMORDER';
     dbgOrders.SearchField := 'SynonymName';
     dbgOrders.ForceRus := True;
   end;
   with adsOrders do begin
     ParamByName('AOrderId').Value:=AOrderId;
-    if Active then CloseOpen(True) else Open;
+    if Active
+    then begin
+      Close;
+      Open;
+    end
+    else
+      Open;
     if Closed = 0 then
-    	DataSetCalc( adsOrders,['SUM(CryptSUMORDER)'], V)
+    	DataSetCalc( adsOrders,['SUM(SUMORDER)'], V)
     else
     	DataSetCalc( adsOrders,['SUM(SUMORDER)'], V);
   	OrderCount := adsOrders.RecordCount;
@@ -161,7 +192,7 @@ procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	{ если уцененный товар, изменяем цвет }
-	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersCryptPRICE) then
+	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
 		Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
 	if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
@@ -183,29 +214,31 @@ var
   S : String;
 begin
   try
+{
     S := DM.D_B_N(adsOrdersPRICE.AsString);
     adsOrdersCryptPRICE.AsString := S;
     adsOrdersCryptSUMORDER.AsCurrency := StrToCurr(S) * adsOrdersORDERCOUNT.AsInteger;
+}    
   except
   end;
 end;
 
 procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
 begin
-  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TOrdersForm.adsOrdersBeforeEdit(DataSet: TDataSet);
+procedure TOrdersForm.adsOrdersOldBeforeEdit(DataSet: TDataSet);
 begin
   OldOrder:=adsOrdersORDERCOUNT.AsInteger;
   DM.SetOldOrderCount(adsOrdersORDERCOUNT.AsInteger);
 end;
 
-procedure TOrdersForm.adsOrdersAfterPost(DataSet: TDataSet);
+procedure TOrdersForm.adsOrdersOldAfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsOrdersORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsOrdersORDERCOUNT.AsInteger - OldOrder) * adsOrdersCryptPRICE.AsCurrency;
-  DM.SetNewOrderCount(adsOrdersORDERCOUNT.AsInteger, adsOrdersCryptPRICE.AsCurrency, OrdersHForm.adsOrdersHFormPRICECODE.AsInteger, OrdersHForm.adsOrdersHFormREGIONCODE.AsInteger);
+	OrderSum := OrderSum + ( adsOrdersORDERCOUNT.AsInteger - OldOrder) * adsOrdersPRICE.AsCurrency;
+  DM.SetNewOrderCount(adsOrdersORDERCOUNT.AsInteger, adsOrdersPRICE.AsCurrency, OrdersHForm.adsOrdersHFormPRICECODE.AsInteger, OrdersHForm.adsOrdersHFormREGIONCODE.AsInteger);
   SetOrderLabel;
 	MainForm.SetOrdersInfo;
   //Если удалили позицию из заказа, то запускаем таймер на удаление этой позиции из DataSet
@@ -232,7 +265,7 @@ begin
   fOrder := adsOrdersORDERCOUNT;
   fVolume := adsOrdersREQUESTRATIO;
   fOrderCost := adsOrdersORDERCOST;
-  fSumOrder := adsOrdersCryptSUMORDER;
+  fSumOrder := adsOrdersSUMORDER;
   fMinOrderCount := adsOrdersMINORDERCOUNT;
   inherited;
 end;
@@ -269,7 +302,7 @@ begin
   MainForm.SetOrdersInfo;
   adsOrders.Delete;
   if adsOrders.RecordCount = 0 then begin
-    DM.adcUpdate.SQL.Text := 'delete from OrdersH where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
+    DM.adcUpdate.SQL.Text := 'delete from OrdersHead where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
     OrdersHForm.adsOrdersHForm.Close;
     DM.adcUpdate.Execute;
     OrdersHForm.adsOrdersHForm.Open;
@@ -289,7 +322,7 @@ begin
 	plOverCost.SendToBack;
 end;
 
-procedure TOrdersForm.adsOrdersBeforePost(DataSet: TDataSet);
+procedure TOrdersForm.adsOrdersOldBeforePost(DataSet: TDataSet);
 var
   PanelCaption : String;
   PanelHeight : Integer;

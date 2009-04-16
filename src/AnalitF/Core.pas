@@ -149,31 +149,36 @@ type
     adsOrdersJunk: TIntegerField;
     adsOrderssendprice: TFloatField;
     adsCoreCoreId: TLargeintField;
+    adsCoreClientid: TLargeintField;
     adsCorePriceCode: TLargeintField;
     adsCoreRegionCode: TLargeintField;
     adsCoreproductid: TLargeintField;
-    adsCoreAFullCode: TLargeintField;
-    adsCoreShortCode: TLargeintField;
+    adsCoreshortcode: TLargeintField;
     adsCoreCodeFirmCr: TLargeintField;
     adsCoreSynonymCode: TLargeintField;
     adsCoreSynonymFirmCrCode: TLargeintField;
     adsCoreCode: TStringField;
     adsCoreCodeCr: TStringField;
     adsCorePeriod: TStringField;
-    adsCoreSale: TLargeintField;
     adsCoreVolume: TStringField;
     adsCoreNote: TStringField;
-    adsCoreBaseCost: TStringField;
+    adsCoreCost: TFloatField;
     adsCoreQuantity: TStringField;
     adsCoreAwait: TBooleanField;
     adsCoreJunk: TBooleanField;
+    adsCoredoc: TStringField;
+    adsCoreregistrycost: TFloatField;
+    adsCorevitallyimportant: TBooleanField;
+    adsCorerequestratio: TIntegerField;
+    adsCoreordercost: TFloatField;
+    adsCoreminordercount: TIntegerField;
     adsCoreSynonymName: TStringField;
     adsCoreSynonymFirm: TStringField;
     adsCoreDatePrice: TDateTimeField;
     adsCorePriceName: TStringField;
     adsCorePriceEnabled: TBooleanField;
     adsCoreFirmCode: TLargeintField;
-    adsCoreStorage: TIntegerField;
+    adsCoreStorage: TBooleanField;
     adsCoreRegionName: TStringField;
     adsCoreOrdersCoreId: TLargeintField;
     adsCoreOrdersOrderId: TLargeintField;
@@ -187,7 +192,8 @@ type
     adsCoreOrderCount: TIntegerField;
     adsCoreOrdersSynonym: TStringField;
     adsCoreOrdersSynonymFirm: TStringField;
-    adsCoreOrdersPrice: TStringField;
+    adsCoreOrdersPrice: TFloatField;
+    adsCoreSumOrder: TFloatField;
     adsCoreOrdersJunk: TBooleanField;
     adsCoreOrdersAwait: TBooleanField;
     adsCoreOrdersHOrderId: TLargeintField;
@@ -196,12 +202,11 @@ type
     adsCoreOrdersHRegionCode: TLargeintField;
     adsCoreOrdersHPriceName: TStringField;
     adsCoreOrdersHRegionName: TStringField;
-    adsCoredoc: TStringField;
-    adsCoreregistrycost: TFloatField;
-    adsCorevitallyimportant: TBooleanField;
-    adsCorerequestratio: TIntegerField;
-    adsCoreordercost: TFloatField;
-    adsCoreminordercount: TIntegerField;
+    adsCorePriceRet: TCurrencyField;
+    adsCorePriceDelta: TCurrencyField;
+    adsCoreSortOrder: TIntegerField;
+    adsCoreEtalon: TMyQuery;
+    adsCorefullcode: TLargeintField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -272,7 +277,7 @@ begin
   fOrder := adsCoreORDERCOUNT;
   fVolume := adsCoreREQUESTRATIO;
   fOrderCost := adsCoreORDERCOST;
-  //fSumOrder := adsCoreSumOrder;
+  fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
 	inherited;
 	PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
@@ -344,8 +349,10 @@ begin
 		begin
 			CurrentUseForms := UseForms;
 			Close;
-			if UseForms then SQL.Text := 'call CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SHOWREGISTER, :REGISTERID)'
-				else SQL.Text := 'call CORESHOWBYNAME(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SHOWREGISTER, :REGISTERID)';
+			if UseForms then
+        SQL.Text := StringReplace(adsCoreEtalon.SQL.Text, '(Catalogs.ShortCode =', '(Catalogs.FullCode =', [])
+      else
+        SQL.Text := adsCoreEtalon.SQL.Text;
 			ParamByName( 'RegisterId').Value := RegisterId;
 			ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 			ParamByName( 'AClientId').Value := ClientId;
@@ -378,19 +385,20 @@ begin
 
   adsCore.DisableControls;
   try
-    //TmpSortList := GetSortedGroupList(adsCore, True, CoreGroupByProducts);
+    TmpSortList := GetSortedGroupList(adsCore, True, CoreGroupByProducts);
   finally
     adsCore.EnableControls;
   end;
 
   SortList := TmpSortList;
-//  UpdatePriceDelta;
+  UpdatePriceDelta;
 
   //¬торое открытие нужно, чтобы отобразилась сортировка, т.к. она не отображаетс€
   adsCore.Close;
   adsCore.Open;
 
   //adsCore.DoSort(['SortOrder'], [True]);
+  adsCore.IndexFieldNames := 'SortOrder';
   adsCore.First;
 
 	{ проверка непустоты }
@@ -448,26 +456,15 @@ end;
 
 procedure TCoreForm.ccf(DataSet: TDataSet);
 var
-  S : String;
-  C : Currency;
   elemIndex : Integer;
 begin
   try
-{
     if Assigned(SortList) then begin
       elemIndex := SortList.IndexOf(adsCoreCOREID.AsString);
       adsCoreSortOrder.AsInteger := elemIndex;
       adsCorePriceDelta.AsCurrency := SortElem(SortList.Objects[elemIndex]).PriceDelta;
     end;
-}
-{
-    S := DM.D_B_N(adsCoreBASECOST.AsString);
-    C := StrToCurr(S);
-    adsCoreCryptBASECOST.AsCurrency := C;
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(C);
-    //вычисл€ем сумму заказа по товару SumOrder
-    adsCoreSumOrder.AsCurrency:=C*adsCoreORDERCOUNT.AsInteger;
-}    
+    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCOST.AsCurrency);
   except
   end;
 end;
@@ -499,6 +496,7 @@ begin
         PanelCaption := 'ѕревышение средней цены!';
 			end;
 		end;
+}    
 
     if (adsCoreJUNK.Value) then
       if Length(PanelCaption) > 0 then
@@ -526,7 +524,6 @@ begin
       plOverCost.Show;
       Timer.Enabled := True;
     end;
-}    
 
   except
 		adsCore.Cancel;
@@ -605,8 +602,8 @@ begin
 	begin
 		//если это реестр, измен€ем цвета
 		if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
-			// or ( Column.Field = adsCoreCryptBASECOST)
-      //or ( Column.Field = adsCorePriceRet)
+			 or ( Column.Field = adsCoreCOST)
+       or ( Column.Field = adsCorePriceRet)
       then Background := REG_CLR;
         end
 	else
@@ -647,7 +644,8 @@ begin
 	begin
 		OrdersHForm := OrdersH;
 		OrdersHForm.Show;
-		OrdersH.adsOrdersHForm.CloseOpen(True);
+    OrdersH.adsOrdersHForm.Close;
+    OrdersH.adsOrdersHForm.Open;
 	end;
 	MainForm.ActiveChild := OrdersHForm;
 	MainForm.ActiveControl := OrdersHForm.ActiveControl;
@@ -662,7 +660,7 @@ end;
 
 procedure TCoreForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
-//  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency, adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
+  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCOST.AsCurrency, adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
 	MainForm.SetOrdersInfo;
   RefreshCurrentSumma;
 end;
@@ -736,10 +734,8 @@ procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
 begin
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
     //≈сли пользователь не измен€л сам наценку, то примен€ем текущую наценку
-{
     if not UserSetRetUpCost then
-      seRetUpCost.Value := DM.GetRetUpCost(adsCoreCryptBASECOST.AsCurrency);
-      }
+      seRetUpCost.Value := DM.GetRetUpCost(adsCoreCOST.AsCurrency);
     seRetUpCostChange(seRetUpCost);
   end;
   RefreshCurrentSumma;
@@ -767,12 +763,10 @@ procedure TCoreForm.seRetUpCostChange(Sender: TObject);
 begin
   UserSetRetUpCost := True;
   RetUpCostValue   := seRetUpCost.Value;
-{
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then
-    eRetUpCost.Text := CurrToStrF((1 + seRetUpCost.Value/100) * adsCoreCryptBASECOST.AsCurrency, ffCurrency, 2)
+    eRetUpCost.Text := CurrToStrF((1 + seRetUpCost.Value/100) * adsCoreCOST.AsCurrency, ffCurrency, 2)
   else
     eRetUpCost.Text := '';
-}    
 end;
 
 procedure TCoreForm.RefreshCurrentSumma;
@@ -828,14 +822,13 @@ begin
   adsCore.DisableControls;
   try
     DBProc.SetFilter( adsCore, '');
-    TmpSortList := TStringList.Create;
-    //GetSortedGroupList(adsCore, True, CoreGroupByProducts);
+    TmpSortList := GetSortedGroupList(adsCore, True, CoreGroupByProducts);
   finally
     adsCore.EnableControls;
   end;
 
   SortList := TmpSortList;
-//  UpdatePriceDelta;
+  UpdatePriceDelta;
 
   //¬торое открытие нужно, чтобы отобразилась сортировка, т.к. она не отображаетс€
   adsCore.Close;
@@ -843,7 +836,7 @@ begin
 
   cbFilterSelect(nil);
 
-  //adsCore.DoSort(['SortOrder'], [True]);
+  adsCore.IndexFieldNames := 'SortOrder';
   adsCore.First;
 
 	if not adsCore.Locate( 'PriceEnabled', 'True', []) then

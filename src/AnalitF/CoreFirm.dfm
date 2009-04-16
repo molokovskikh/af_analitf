@@ -181,7 +181,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptBASECOST'
+        FieldName = 'Cost'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -214,7 +214,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptLEADERPRICE'
+        FieldName = 'LeaderPRICE'
         Footers = <>
         MinWidth = 5
         Title.Caption = #1052#1080#1085'. '#1094#1077#1085#1072
@@ -919,14 +919,16 @@ object CoreFirmForm: TCoreFirmForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       
-        'call updateordercount(:ORDERSHORDERID, :Aclientid, :APRICECODE, ' +
-        ':AREGIONCODE, :ORDERSORDERID, :COREID, :ORDERCOUNT)')
-    Connection = DM.MyConnection
-    SQL.Strings = (
-      '#CORESHOWBYFIRM'
+        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
+        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
+        'ERCOUNT)')
+    SQLRefresh.Strings = (
       'SELECT'
       '    CCore.CoreId AS CoreId,'
+      '    Clients.ClientID,'
       '    CCore.productid,'
+      '    CCore.PriceCode,'
+      '    CCore.RegionCode,'
       '    catalogs.FullCode,'
       '    catalogs.shortcode,'
       '    CCore.CodeFirmCr,'
@@ -940,19 +942,22 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Period,'
       '    CCore.Await,'
       '    CCore.Junk,'
-      '    CCore.BaseCost,'
+      '    CCore.Cost,'
       '    CCore.Quantity,'
+      '    CCore.registrycost,'
+      '    CCore.vitallyimportant,'
+      '    CCore.requestratio,'
+      '    CCore.ordercost,'
+      '    CCore.minordercount,'
       
-        '    ifnull(Synonyms.SynonymName, concat('#39'@@@ '#39', catalogs.name, '#39 +
-        ' '#39', catalogs.form)) as SynonymName,'
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
       '    PricesData.PriceCode AS LeaderPriceCode,'
       '    MinPrices.RegionCode AS LeaderRegionCode,'
       '    Regions.RegionName AS LeaderRegionName,'
       '    PricesData.PriceName AS LeaderPriceName,'
-      '    LCore.code as LeaderCODE,'
-      '    LCore.codecr as LeaderCODECR,'
-      '    LCore.basecost as LeaderPRICE,'
+      '    MinPrices.MinCost As LeaderPRICE,'
       '    osbc.CoreId AS OrdersCoreId,'
       '    osbc.OrderId AS OrdersOrderId,'
       '    osbc.ClientId AS OrdersClientId,'
@@ -966,54 +971,157 @@ object CoreFirmForm: TCoreFirmForm
       '    osbc.SynonymName AS OrdersSynonym,'
       '    osbc.SynonymFirm AS OrdersSynonymFirm,'
       '    osbc.Price AS OrdersPrice,'
+      '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersH.OrderId AS OrdersHOrderId,'
-      '    OrdersH.ClientId AS OrdersHClientId,'
-      '    OrdersH.PriceCode AS OrdersHPriceCode,'
-      '    OrdersH.RegionCode AS OrdersHRegionCode,'
-      '    OrdersH.PriceName AS OrdersHPriceName,'
-      '    OrdersH.RegionName AS OrdersHRegionName,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Core CCore'
+      
+        '    inner join products       on (products.productid = CCore.pro' +
+        'ductid)'
+      
+        '    inner join catalogs       on (catalogs.fullcode = products.c' +
+        'atalogid)'
+      
+        '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
+        'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    inner join Clients        on (Clients.ClientID = :ClientID)'
+      
+        '    left join Core LCore      on LCore.servercoreid = minprices.' +
+        'servercoreid and LCore.RegionCode = minprices.regioncode'
+      
+        '    left JOIN PricesData      ON (PricesData.PriceCode = MinPric' +
+        'es.pricecode)'
+      
+        '    left JOIN Regions         ON (Regions.RegionCode = MinPrices' +
+        '.RegionCode)'
+      
+        '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
+        'e = CCore.SynonymFirmCrCode)'
+      
+        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
+        'ynonymCode)'
+      
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
+        ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
+        'Id'
+      'WHERE '
+      '  (CCore.CoreId = :CoreId)')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#CORESHOWBYFIRM'
+      'SELECT'
+      '    CCore.CoreId AS CoreId,'
+      '    Clients.ClientID,'
+      '    CCore.productid,'
+      '    CCore.PriceCode,'
+      '    CCore.RegionCode,'
+      '    catalogs.FullCode,'
+      '    catalogs.shortcode,'
+      '    CCore.CodeFirmCr,'
+      '    CCore.SynonymCode,'
+      '    CCore.SynonymFirmCrCode,'
+      '    CCore.Code,'
+      '    CCore.CodeCr,'
+      '    CCore.Volume,'
+      '    CCore.Doc,'
+      '    CCore.Note,'
+      '    CCore.Period,'
+      '    CCore.Await,'
+      '    CCore.Junk,'
+      '    CCore.Cost,'
+      '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
       '    CCore.requestratio,'
       '    CCore.ordercost,'
-      '    CCore.minordercount'
+      '    CCore.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceCode AS LeaderPriceCode,'
+      '    MinPrices.RegionCode AS LeaderRegionCode,'
+      '    Regions.RegionName AS LeaderRegionName,'
+      '    PricesData.PriceName AS LeaderPriceName,'
+      '    MinPrices.MinCost As LeaderPRICE,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.FullCode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
       'FROM'
       '    Core CCore'
-      '    inner join products on products.productid = CCore.productid'
       
-        '    inner join catalogs      on catalogs.fullcode = products.cat' +
-        'alogid'
+        '    inner join products       on (products.productid = CCore.pro' +
+        'ductid)'
       
-        '    inner JOIN MinPrices     ON MinPrices.productid = CCore.prod' +
-        'uctid and minprices.regioncode = CCore.regioncode'
+        '    inner join catalogs       on (catalogs.fullcode = products.c' +
+        'atalogid)'
       
-        '    left join Core LCore on LCore.servercoreid = minprices.serve' +
-        'rcoreid and LCore.RegionCode = minprices.regioncode'
-      '    left JOIN PricesData ON PricesData.PriceCode=LCore.pricecode'
+        '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
+        'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    inner join Clients        on (Clients.ClientID = :AClientID)'
       
-        '    left JOIN Regions       ON Regions.RegionCode = MinPrices.Re' +
-        'gionCode'
+        '    left join Core LCore      on LCore.servercoreid = minprices.' +
+        'servercoreid and LCore.RegionCode = minprices.regioncode'
       
-        '    left JOIN SynonymFirmCr ON SynonymFirmCr.SynonymFirmCrCode =' +
-        ' CCore.SynonymFirmCrCode'
+        '    left JOIN PricesData      ON (PricesData.PriceCode = MinPric' +
+        'es.pricecode)'
       
-        '    left join synonyms on Synonyms.SynonymCode = CCore.SynonymCo' +
-        'de'
+        '    left JOIN Regions         ON (Regions.RegionCode = MinPrices' +
+        '.RegionCode)'
       
-        '    left JOIN Orders osbc ON osbc.ClientID = :AClientId and osbc' +
-        '.CoreId = CCore.CoreId'
-      '    left JOIN OrdersH ON OrdersH.OrderId = osbc.OrderId'
+        '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
+        'e = CCore.SynonymFirmCrCode)'
       
-        'WHERE (CCore.PriceCode = :APriceCode) And (CCore.RegionCode = :A' +
-        'RegionCode)')
+        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
+        'ynonymCode)'
+      
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
+        'd (osbc.CoreId = CCore.CoreId)'
+      
+        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
+        'Id'
+      'WHERE '
+      '    (CCore.PriceCode = :APriceCode) '
+      'And (CCore.RegionCode = :ARegionCode)')
+    RefreshOptions = [roAfterUpdate]
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
     AfterPost = adsCore2AfterPost
     Left = 120
     Top = 112
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
       item
         DataType = ftUnknown
         Name = 'AClientId'
@@ -1029,8 +1137,17 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
     end
+    object adsCoreClientID: TLargeintField
+      FieldName = 'ClientID'
+    end
     object adsCoreproductid: TLargeintField
       FieldName = 'productid'
+    end
+    object adsCorePriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsCoreRegionCode: TLargeintField
+      FieldName = 'RegionCode'
     end
     object adsCoreFullCode: TLargeintField
       FieldName = 'FullCode'
@@ -1075,17 +1192,34 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreJunk: TBooleanField
       FieldName = 'Junk'
     end
-    object adsCoreBaseCost: TStringField
-      FieldName = 'BaseCost'
-      Size = 60
+    object adsCoreCost: TFloatField
+      FieldName = 'Cost'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreQuantity: TStringField
       FieldName = 'Quantity'
       Size = 15
     end
+    object adsCoreregistrycost: TFloatField
+      FieldName = 'registrycost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsCorevitallyimportant: TBooleanField
+      FieldName = 'vitallyimportant'
+    end
+    object adsCorerequestratio: TIntegerField
+      FieldName = 'requestratio'
+      DisplayFormat = '#'
+    end
+    object adsCoreordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsCoreminordercount: TIntegerField
+      FieldName = 'minordercount'
+    end
     object adsCoreSynonymName: TStringField
       FieldName = 'SynonymName'
-      Size = 250
+      Size = 505
     end
     object adsCoreSynonymFirm: TStringField
       FieldName = 'SynonymFirm'
@@ -1103,20 +1237,11 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreLeaderPriceName: TStringField
       FieldName = 'LeaderPriceName'
-      OnGetText = adsCoreOldLEADERPRICENAMEGetText
       Size = 70
     end
-    object adsCoreLeaderCODE: TStringField
-      FieldName = 'LeaderCODE'
-      Size = 84
-    end
-    object adsCoreLeaderCODECR: TStringField
-      FieldName = 'LeaderCODECR'
-      Size = 84
-    end
-    object adsCoreLeaderPRICE: TStringField
+    object adsCoreLeaderPRICE: TFloatField
       FieldName = 'LeaderPRICE'
-      Size = 60
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreOrdersCoreId: TLargeintField
       FieldName = 'OrdersCoreId'
@@ -1149,6 +1274,7 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreOrderCount: TIntegerField
       FieldName = 'OrderCount'
+      DisplayFormat = '#'
     end
     object adsCoreOrdersSynonym: TStringField
       FieldName = 'OrdersSynonym'
@@ -1158,9 +1284,8 @@ object CoreFirmForm: TCoreFirmForm
       FieldName = 'OrdersSynonymFirm'
       Size = 250
     end
-    object adsCoreOrdersPrice: TStringField
+    object adsCoreOrdersPrice: TFloatField
       FieldName = 'OrdersPrice'
-      Size = 60
     end
     object adsCoreOrdersJunk: TBooleanField
       FieldName = 'OrdersJunk'
@@ -1188,47 +1313,15 @@ object CoreFirmForm: TCoreFirmForm
       FieldName = 'OrdersHRegionName'
       Size = 25
     end
-    object adsCoreregistrycost: TFloatField
-      FieldName = 'registrycost'
-      DisplayFormat = '0.00;;'#39#39
-    end
-    object adsCorevitallyimportant: TBooleanField
-      FieldName = 'vitallyimportant'
-    end
-    object adsCorerequestratio: TIntegerField
-      FieldName = 'requestratio'
-      DisplayFormat = '#'
-    end
-    object adsCoreordercost: TFloatField
-      FieldName = 'ordercost'
-      DisplayFormat = '#'
-    end
-    object adsCoreminordercount: TIntegerField
-      FieldName = 'minordercount'
-    end
-    object adsCoreCryptLEADERPRICE: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptLEADERPRICE'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
-    end
     object adsCoreCryptPriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPriceRet'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsCoreCryptBASECOST: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptBASECOST'
-      DisplayFormat = '0.00;;'#39#39
-      Calculated = True
-    end
-    object adsCoreSumOrder: TCurrencyField
-      FieldKind = fkCalculated
+    object adsCoreSumOrder: TFloatField
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
-      Calculated = True
     end
   end
 end

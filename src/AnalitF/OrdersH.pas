@@ -7,7 +7,8 @@ uses
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
-  FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps;
+  FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps, MemDS,
+  DBAccess, MyAccess;
 
 type
   TSumOrder = class
@@ -41,28 +42,49 @@ type
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     tmOrderDateChange: TTimer;
-    adsOrdersHForm: TpFIBDataSet;
+    adsOrdersHFormOld: TpFIBDataSet;
     adsCore: TpFIBDataSet;
-    adsOrdersHFormORDERID: TFIBBCDField;
-    adsOrdersHFormSERVERORDERID: TFIBBCDField;
-    adsOrdersHFormDATEPRICE: TFIBDateTimeField;
-    adsOrdersHFormPRICECODE: TFIBBCDField;
-    adsOrdersHFormREGIONCODE: TFIBBCDField;
-    adsOrdersHFormORDERDATE: TFIBDateTimeField;
-    adsOrdersHFormSENDDATE: TFIBDateTimeField;
-    adsOrdersHFormPRICENAME: TFIBStringField;
-    adsOrdersHFormREGIONNAME: TFIBStringField;
-    adsOrdersHFormPOSITIONS: TFIBIntegerField;
-    adsOrdersHFormSUPPORTPHONE: TFIBStringField;
-    adsOrdersHFormSumOrder: TFIBBCDField;
-    adsOrdersHFormSEND: TFIBBooleanField;
-    adsOrdersHFormCLOSED: TFIBBooleanField;
-    adsOrdersHFormMESSAGETO: TFIBMemoField;
-    adsOrdersHFormCOMMENTS: TFIBMemoField;
+    adsOrdersHFormOldORDERID: TFIBBCDField;
+    adsOrdersHFormOldSERVERORDERID: TFIBBCDField;
+    adsOrdersHFormOldDATEPRICE: TFIBDateTimeField;
+    adsOrdersHFormOldPRICECODE: TFIBBCDField;
+    adsOrdersHFormOldREGIONCODE: TFIBBCDField;
+    adsOrdersHFormOldORDERDATE: TFIBDateTimeField;
+    adsOrdersHFormOldSENDDATE: TFIBDateTimeField;
+    adsOrdersHFormOldPRICENAME: TFIBStringField;
+    adsOrdersHFormOldREGIONNAME: TFIBStringField;
+    adsOrdersHFormOldPOSITIONS: TFIBIntegerField;
+    adsOrdersHFormOldSUPPORTPHONE: TFIBStringField;
+    adsOrdersHFormOldSumOrder: TFIBBCDField;
+    adsOrdersHFormOldSEND: TFIBBooleanField;
+    adsOrdersHFormOldCLOSED: TFIBBooleanField;
+    adsOrdersHFormOldMESSAGETO: TFIBMemoField;
+    adsOrdersHFormOldCOMMENTS: TFIBMemoField;
     bevClient: TBevel;
-    adsOrdersHFormMINREQ: TFIBIntegerField;
-    adsOrdersHFormSUMBYCURRENTMONTH: TFIBBCDField;
+    adsOrdersHFormOldMINREQ: TFIBIntegerField;
+    adsOrdersHFormOldSUMBYCURRENTMONTH: TFIBBCDField;
     dbgSendedOrders: TToughDBGrid;
+    adsOrdersHForm: TMyQuery;
+    adsOrdersHFormOrderId: TLargeintField;
+    adsOrdersHFormClientID: TLargeintField;
+    adsOrdersHFormServerOrderId: TLargeintField;
+    adsOrdersHFormDatePrice: TDateTimeField;
+    adsOrdersHFormPriceCode: TLargeintField;
+    adsOrdersHFormRegionCode: TLargeintField;
+    adsOrdersHFormOrderDate: TDateTimeField;
+    adsOrdersHFormSendDate: TDateTimeField;
+    adsOrdersHFormClosed: TBooleanField;
+    adsOrdersHFormSend: TBooleanField;
+    adsOrdersHFormPriceName: TStringField;
+    adsOrdersHFormRegionName: TStringField;
+    adsOrdersHFormSupportPhone: TStringField;
+    adsOrdersHFormMessageTo: TMemoField;
+    adsOrdersHFormComments: TMemoField;
+    adsOrdersHFormminreq: TIntegerField;
+    adsOrdersHFormPriceEnabled: TBooleanField;
+    adsOrdersHFormPositions: TLargeintField;
+    adsOrdersHFormSumOrder: TFloatField;
+    adsOrdersHFormsumbycurrentmonth: TFloatField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -82,8 +104,8 @@ type
     procedure tmOrderDateChangeTimer(Sender: TObject);
     procedure adsOrdersH2BeforePost(DataSet: TDataSet);
     procedure dbgCurrentOrdersSortMarkingChanged(Sender: TObject);
-    procedure adsOrdersHFormCalcFields(DataSet: TDataSet);
-    procedure adsOrdersHFormAfterFetchRecord(FromQuery: TFIBQuery;
+    procedure adsOrdersHFormOldCalcFields(DataSet: TDataSet);
+    procedure adsOrdersHFormOldAfterFetchRecord(FromQuery: TFIBQuery;
       RecordNumber: Integer; var StopFetching: Boolean);
   private
     FSumOrders : TStringList;
@@ -121,7 +143,6 @@ var
 	Reg: TRegIniFile;
 	Year, Month, Day: Word;
 begin
-  adsOrdersHForm.Options := adsOrdersHForm.Options - [poCacheCalcFields];
 	inherited;
   NeedFirstOnDataSet := False;
   FSumOrders := TStringList.Create;
@@ -140,8 +161,6 @@ begin
   finally
   	Reg.Free;
   end;
-
-  adsOrdersHForm.Prepare;
 
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
@@ -232,7 +251,6 @@ begin
   adsOrdersHForm.Close;
   ClearSumOrders;
 
-  adsOrdersHForm.Prepare;
   adsOrdersHForm.Open;
 
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
@@ -345,7 +363,7 @@ begin
           adsOrdersHForm.Edit;
           adsOrdersHForm.FieldByName( 'Send').AsBoolean := False;
           adsOrdersHForm.FieldByName( 'Closed').AsBoolean := True;
-          DM.adcUpdate.SQL.Text := 'UPDATE Orders SET CoreId=NULL WHERE OrderId=' +
+          DM.adcUpdate.SQL.Text := 'UPDATE OrdersList SET CoreId=NULL WHERE OrderId=' +
             adsOrdersHForm.FieldByName( 'OrderId').AsString;
           DM.adcUpdate.Execute;
           adsOrdersHForm.Post;
@@ -436,7 +454,13 @@ begin
 	ParamByName('DateTo').AsDate := dtpDateTo.Date;
     Screen.Cursor:=crHourglass;
     try
-      if Active then CloseOpen(True) else Open;
+      if Active then
+      begin
+        Close;
+        Open;
+      end
+      else
+        Open;
     finally
       Screen.Cursor:=crDefault;
     end;
@@ -527,10 +551,10 @@ end;
 
 procedure TOrdersHForm.dbgCurrentOrdersSortMarkingChanged(Sender: TObject);
 begin
-  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TOrdersHForm.adsOrdersHFormCalcFields(DataSet: TDataSet);
+procedure TOrdersHForm.adsOrdersHFormOldCalcFields(DataSet: TDataSet);
 begin
   adsOrdersHFormSumOrder.AsCurrency :=
     TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum;
@@ -552,7 +576,7 @@ begin
   Sum := ASum;
 end;
 
-procedure TOrdersHForm.adsOrdersHFormAfterFetchRecord(FromQuery: TFIBQuery;
+procedure TOrdersHForm.adsOrdersHFormOldAfterFetchRecord(FromQuery: TFIBQuery;
   RecordNumber: Integer; var StopFetching: Boolean);
 var
   F : TFIBXSQLVAR;
@@ -575,8 +599,8 @@ begin
     //Если заказ архивный, то берем из базы
     try
       SumOrder := DM.QueryValue(
-        'SELECT Sum(Orders.sendprice*Orders.OrderCount) SumOrder FROM Orders '
-          + ' WHERE Orders.OrderId = :OrderId AND Orders.OrderCount>0',
+        'SELECT Sum(OrdersList.price*OrdersList.OrderCount) SumOrder FROM OrdersList '
+          + ' WHERE OrdersList.OrderId = :OrderId AND OrdersList.OrderCount>0',
         ['OrderId'],
         [F.AsString]);
     except
@@ -730,7 +754,8 @@ begin
       if (Index > -1) then
         TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
           DM.FindOrderInfo(adsOrdersHFormPRICECODE.AsInteger, adsOrdersHFormREGIONCODE.AsInteger).Summ;
-      adsOrdersHForm.RefreshClientFields();
+      //todo: надо восстановить RefreshClientFields
+      //adsOrdersHForm.RefreshClientFields();
     end;
   end;
 end;

@@ -7,7 +7,8 @@ uses
   Dialogs, Child, DModule, DB, Grids, DBGrids, RXDBCtrl,
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
   FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, Registry, ExtCtrls,
-  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery, DBProc, GridsEh;
+  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery, DBProc, GridsEh, MemDS,
+  DBAccess, MyAccess;
 
 const
 	DefectSql	= 'SELECT * FROM Defectives WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
@@ -40,10 +41,11 @@ type
     Label8: TLabel;
     Panel2: TPanel;
     Bevel1: TBevel;
-    adsDefectives: TpFIBDataSet;
-    adsPrint: TpFIBDataSet;
-    adcUncheckAll: TpFIBQuery;
+    adsDefectivesOld: TpFIBDataSet;
+    adsPrintOld: TpFIBDataSet;
     dbmReason: TDBMemo;
+    adsPrint: TMyQuery;
+    adsDefectives: TMyQuery;
     procedure FormCreate(Sender: TObject);
     procedure btnUnCheckAllClick(Sender: TObject);
     procedure actCheckExecute(Sender: TObject);
@@ -54,7 +56,7 @@ type
     procedure dbgDefectivesSortMarkingChanged(Sender: TObject);
   private
     FOrderField: string;
-    BaseQuery, PrintQuery: string;
+    PrintQuery: string;
     procedure SetDateInterval;
     procedure SetOrderField(Value: string);
   public
@@ -86,8 +88,7 @@ begin
 	IncAMonth( Year, Month, Day, -3);
 	dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
 	dtpDateTo.Date:=Date;
-	BaseQuery:=adsDefectives.SelectSQL.Text;
-	PrintQuery:=adsPrint.SelectSQL.Text;
+	PrintQuery := adsPrint.SQL.Text;
 	OrderField:='LetterDate';
 	Reg := TRegIniFile.Create;
   try
@@ -120,7 +121,13 @@ begin
     ParamByName('DateTo').AsDate:=dtpDateTo.Date;
     Screen.Cursor:=crHourglass;
     try
-      if Active then CloseOpen(True) else Open;
+      if Active then
+      begin
+        Close;
+        Open;
+      end
+      else
+        Open;
     finally
       Screen.Cursor:=crDefault;
     end;
@@ -131,9 +138,7 @@ procedure TDefectivesForm.SetOrderField(Value: string);
 begin
   with adsDefectives do begin
     Close;
-    SelectSQL.Text:=BaseQuery+' ORDER BY '+Value;
-    //ParamByName('DateFrom').DataType:=ftDate;
-    //ParamByName('DateTo').DataType:=ftDate;
+    adsDefectives.IndexFieldNames := Value;
     SetDateInterval;
   end;
   FOrderField:=AnsiUpperCase(Trim(Value));
@@ -145,10 +150,13 @@ var
 begin
   Screen.Cursor:=crHourglass;
   try
-    adcUncheckAll.ExecQuery;
+    DM.adcUpdate.SQL.Text := 'UPDATE Defectives SET CheckPrint=0 WHERE CheckPrint=1';
+    DM.adcUpdate.Execute;
     with adsDefectives do begin
       Mark:=Bookmark;
-      if Active then CloseOpen(True);
+      if Active then begin
+        Refresh;
+      end;
       Bookmark:=Mark;
     end;
   finally
@@ -178,7 +186,7 @@ begin
   CheckPrintCount := DM.QueryValue('SELECT Count(*) FROM Defectives WHERE CheckPrint = 1', [], []);
   ShowAll := CheckPrintCount = 0;
   with adsPrint do begin
-    SelectSQL.Text:=PrintQuery+' ORDER BY '+OrderField;
+    SQL.Text:=PrintQuery+' ORDER BY '+OrderField;
     //ParamByName('DateFrom').DataType:=ftDate;
     //ParamByName('DateTo').DataType:=ftDate;
     //ParamByName('ShowAll').DataType:=ftBoolean;
@@ -209,7 +217,7 @@ end;
 
 procedure TDefectivesForm.dbgDefectivesSortMarkingChanged(Sender: TObject);
 begin
-  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

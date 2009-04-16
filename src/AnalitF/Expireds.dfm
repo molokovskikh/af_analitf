@@ -99,7 +99,7 @@ inherited ExpiredsForm: TExpiredsForm
         item
           Alignment = taRightJustify
           EditButtons = <>
-          FieldName = 'VOLUME'
+          FieldName = 'Volume'
           Footers = <>
           Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
           Title.TitleButton = True
@@ -116,7 +116,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'DOC'
+          FieldName = 'doc'
           Footers = <>
           Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
           Visible = False
@@ -124,7 +124,7 @@ inherited ExpiredsForm: TExpiredsForm
         item
           Alignment = taCenter
           EditButtons = <>
-          FieldName = 'PERIOD'
+          FieldName = 'Period'
           Footers = <>
           Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
           Title.TitleButton = True
@@ -150,7 +150,7 @@ inherited ExpiredsForm: TExpiredsForm
           Alignment = taCenter
           DisplayFormat = 'dd.mm.yyyy hh:nn'
           EditButtons = <>
-          FieldName = 'DATEPRICE'
+          FieldName = 'DatePrice'
           Footers = <>
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
           Title.TitleButton = True
@@ -174,21 +174,21 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'ORDERCOST'
+          FieldName = 'ordercost'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
           Visible = False
         end
         item
           EditButtons = <>
-          FieldName = 'MINORDERCOUNT'
+          FieldName = 'minordercount'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1082#1086#1083'-'#1074#1086
           Visible = False
         end
         item
           EditButtons = <>
-          FieldName = 'CryptBASECOST'
+          FieldName = 'Cost'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -210,7 +210,7 @@ inherited ExpiredsForm: TExpiredsForm
         item
           Alignment = taRightJustify
           EditButtons = <>
-          FieldName = 'QUANTITY'
+          FieldName = 'Quantity'
           Footers = <>
           Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
           Title.TitleButton = True
@@ -219,7 +219,7 @@ inherited ExpiredsForm: TExpiredsForm
         item
           Color = 16775406
           EditButtons = <>
-          FieldName = 'ORDERCOUNT'
+          FieldName = 'OrderCount'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
           Width = 46
@@ -314,7 +314,7 @@ inherited ExpiredsForm: TExpiredsForm
     Left = 416
     Top = 224
   end
-  object adsExpireds: TpFIBDataSet
+  object adsExpiredsOld: TpFIBDataSet
     UpdateSQL.Strings = (
       
         'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
@@ -328,256 +328,254 @@ inherited ExpiredsForm: TExpiredsForm
       '    :ACLIENTID, null) ')
     AfterPost = adsExpireds2AfterPost
     AfterScroll = adsExpireds2AfterScroll
-    BeforeEdit = adsExpiredsBeforeEdit
+    BeforeEdit = adsExpiredsOldBeforeEdit
     BeforePost = adsExpireds2BeforePost
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 128
     Top = 112
     oTrimCharFields = False
     oCacheCalcFields = True
     oRefreshAfterPost = False
-    object adsExpiredsCOREID: TFIBBCDField
+    object adsExpiredsOldCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsPRICECODE: TFIBBCDField
+    object adsExpiredsOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsREGIONCODE: TFIBBCDField
+    object adsExpiredsOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsFULLCODE: TFIBBCDField
+    object adsExpiredsOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsCODEFIRMCR: TFIBBCDField
+    object adsExpiredsOldCODEFIRMCR: TFIBBCDField
       FieldName = 'CODEFIRMCR'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsSYNONYMCODE: TFIBBCDField
+    object adsExpiredsOldSYNONYMCODE: TFIBBCDField
       FieldName = 'SYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsExpiredsOldSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'SYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsCODE: TFIBStringField
+    object adsExpiredsOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsExpiredsCODECR: TFIBStringField
+    object adsExpiredsOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsExpiredsNOTE: TFIBStringField
+    object adsExpiredsOldNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
       EmptyStrToNull = True
     end
-    object adsExpiredsPERIOD: TFIBStringField
+    object adsExpiredsOldPERIOD: TFIBStringField
       FieldName = 'PERIOD'
       EmptyStrToNull = True
     end
-    object adsExpiredsVOLUME: TFIBStringField
+    object adsExpiredsOldVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsExpiredsQUANTITY: TFIBStringField
+    object adsExpiredsOldQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsExpiredsSYNONYMNAME: TFIBStringField
+    object adsExpiredsOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsExpiredsSYNONYMFIRM: TFIBStringField
+    object adsExpiredsOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsExpiredsAWAIT: TFIBIntegerField
+    object adsExpiredsOldAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
     end
-    object adsExpiredsPRICENAME: TFIBStringField
+    object adsExpiredsOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsExpiredsDATEPRICE: TFIBDateTimeField
+    object adsExpiredsOldDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
     end
-    object adsExpiredsREGIONNAME: TFIBStringField
+    object adsExpiredsOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsExpiredsORDERSCOREID: TFIBBCDField
+    object adsExpiredsOldORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSORDERID: TFIBBCDField
+    object adsExpiredsOldORDERSORDERID: TFIBBCDField
       FieldName = 'ORDERSORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSCLIENTID: TFIBBCDField
+    object adsExpiredsOldORDERSCLIENTID: TFIBBCDField
       FieldName = 'ORDERSCLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSFULLCODE: TFIBBCDField
+    object adsExpiredsOldORDERSFULLCODE: TFIBBCDField
       FieldName = 'ORDERSFULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSCODEFIRMCR: TFIBBCDField
+    object adsExpiredsOldORDERSCODEFIRMCR: TFIBBCDField
       FieldName = 'ORDERSCODEFIRMCR'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSSYNONYMCODE: TFIBBCDField
+    object adsExpiredsOldORDERSSYNONYMCODE: TFIBBCDField
       FieldName = 'ORDERSSYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsExpiredsOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'ORDERSSYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSCODE: TFIBStringField
+    object adsExpiredsOldORDERSCODE: TFIBStringField
       FieldName = 'ORDERSCODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsExpiredsORDERSCODECR: TFIBStringField
+    object adsExpiredsOldORDERSCODECR: TFIBStringField
       FieldName = 'ORDERSCODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsExpiredsORDERSSYNONYM: TFIBStringField
+    object adsExpiredsOldORDERSSYNONYM: TFIBStringField
       FieldName = 'ORDERSSYNONYM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsExpiredsORDERSSYNONYMFIRM: TFIBStringField
+    object adsExpiredsOldORDERSSYNONYMFIRM: TFIBStringField
       FieldName = 'ORDERSSYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsExpiredsORDERCOUNT: TFIBIntegerField
+    object adsExpiredsOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
       DisplayFormat = '#'
     end
-    object adsExpiredsORDERSJUNK: TFIBIntegerField
+    object adsExpiredsOldORDERSJUNK: TFIBIntegerField
       FieldName = 'ORDERSJUNK'
     end
-    object adsExpiredsORDERSAWAIT: TFIBIntegerField
+    object adsExpiredsOldORDERSAWAIT: TFIBIntegerField
       FieldName = 'ORDERSAWAIT'
     end
-    object adsExpiredsORDERSHORDERID: TFIBBCDField
+    object adsExpiredsOldORDERSHORDERID: TFIBBCDField
       FieldName = 'ORDERSHORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSHCLIENTID: TFIBBCDField
+    object adsExpiredsOldORDERSHCLIENTID: TFIBBCDField
       FieldName = 'ORDERSHCLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSHPRICECODE: TFIBBCDField
+    object adsExpiredsOldORDERSHPRICECODE: TFIBBCDField
       FieldName = 'ORDERSHPRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSHREGIONCODE: TFIBBCDField
+    object adsExpiredsOldORDERSHREGIONCODE: TFIBBCDField
       FieldName = 'ORDERSHREGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsExpiredsORDERSHPRICENAME: TFIBStringField
+    object adsExpiredsOldORDERSHPRICENAME: TFIBStringField
       FieldName = 'ORDERSHPRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsExpiredsORDERSHREGIONNAME: TFIBStringField
+    object adsExpiredsOldORDERSHREGIONNAME: TFIBStringField
       FieldName = 'ORDERSHREGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsExpiredsSumOrder: TCurrencyField
+    object adsExpiredsOldSumOrder: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsExpiredsPriceRet: TCurrencyField
+    object adsExpiredsOldPriceRet: TCurrencyField
       Tag = 4
       FieldKind = fkCalculated
       FieldName = 'CryptPriceRet'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsExpiredsCryptBASECOST: TCurrencyField
+    object adsExpiredsOldCryptBASECOST: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptBASECOST'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsExpiredsBASECOST: TFIBStringField
+    object adsExpiredsOldBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsExpiredsORDERSPRICE: TFIBStringField
+    object adsExpiredsOldORDERSPRICE: TFIBStringField
       FieldName = 'ORDERSPRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsExpiredsDOC: TFIBStringField
+    object adsExpiredsOldDOC: TFIBStringField
       FieldName = 'DOC'
       EmptyStrToNull = True
     end
-    object adsExpiredsREGISTRYCOST: TFIBFloatField
+    object adsExpiredsOldREGISTRYCOST: TFIBFloatField
       FieldName = 'REGISTRYCOST'
       DisplayFormat = '#'
     end
-    object adsExpiredsVITALLYIMPORTANT: TFIBIntegerField
-      FieldName = 'VITALLYIMPORTANT'
-    end
-    object adsExpiredsREQUESTRATIO: TFIBIntegerField
+    object adsExpiredsOldREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
       DisplayFormat = '#'
     end
-    object adsExpiredsORDERCOST: TFIBBCDField
+    object adsExpiredsOldVITALLYIMPORTANT: TFIBIntegerField
+      FieldName = 'VITALLYIMPORTANT'
+    end
+    object adsExpiredsOldORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
       Size = 2
       RoundByScale = True
     end
-    object adsExpiredsMINORDERCOUNT: TFIBIntegerField
+    object adsExpiredsOldMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
   end
-  object adsOrdersShowFormSummary: TpFIBDataSet
+  object adsOrdersShowFormSummaryOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    *'
@@ -586,15 +584,13 @@ inherited ExpiredsForm: TExpiredsForm
       'where'
       '  ClientCode = :ACLIENTID'
       'and ProductId = :ProductId')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    DataSource = dsExpireds
     Left = 312
     Top = 152
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
+    object adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField
       FieldName = 'PRICEAVG'
       Size = 2
       RoundByScale = True
@@ -607,6 +603,399 @@ inherited ExpiredsForm: TExpiredsForm
       Caption = 'actFlipCore'
       ShortCut = 113
       OnExecute = actFlipCoreExecute
+    end
+  end
+  object adsOrdersShowFormSummary: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT'
+      '    *'
+      'FROM'
+      '   ClientAVG'
+      'where'
+      '    ClientCode = :CLIENTID'
+      'and ProductId = :ProductId')
+    MasterSource = dsExpireds
+    MasterFields = 'CLIENTID;productid'
+    DetailFields = 'CLIENTCODE;PRODUCTID'
+    Left = 352
+    Top = 152
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'CLIENTID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ProductId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'CLIENTID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'productid'
+      end>
+    object adsOrdersShowFormSummaryPRICEAVG: TFloatField
+      FieldName = 'PRICEAVG'
+    end
+    object adsOrdersShowFormSummaryCLIENTCODE: TLargeintField
+      FieldName = 'CLIENTCODE'
+    end
+    object adsOrdersShowFormSummaryPRODUCTID: TLargeintField
+      FieldName = 'PRODUCTID'
+    end
+  end
+  object adsExpireds: TMyQuery
+    SQLUpdate.Strings = (
+      
+        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
+        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
+        'ERCOUNT)')
+    SQLRefresh.Strings = (
+      'SELECT '
+      '    Core.CoreId,'
+      '    Clients.CLIENTID,'
+      '    Core.PriceCode,'
+      '    Core.RegionCode,'
+      '    Core.productid,'
+      '    catalogs.fullcode,'
+      '    Core.CodeFirmCr,'
+      '    Core.SynonymCode,'
+      '    Core.SynonymFirmCrCode,'
+      '    Core.Code,'
+      '    Core.CodeCr,'
+      '    Core.Note,'
+      '    Core.Period,'
+      '    Core.Volume,'
+      '    Core.Cost,'
+      '    Core.Quantity,'
+      '    Core.doc,'
+      '    Core.registrycost,'
+      '    Core.vitallyimportant,'
+      '    Core.requestratio,'
+      '    Core.ordercost,'
+      '    Core.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    Core.Await,'
+      '    PricesData.PriceName,'
+      
+        '    PricesData.DatePrice + interval  -:TimeZoneBias minute AS Da' +
+        'tePrice,'
+      '    Regions.RegionName,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.fullcode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.OrderCount,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Price*osbc.OrderCount AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Core'
+      '    inner join Clients on Clients.CLIENTID = :ClientId'
+      '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+      '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
+      '    left join products on products.productid = core.productid'
+      '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
+        'mCr.SynonymFirmCrCode'
+      
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :ClientId and o' +
+        'sbc.CoreId=Core.CoreId'
+      '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      'WHERE'
+      '  Core.CoreID = :CoreID')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#EXPIREDSSHOW'
+      'SELECT '
+      '    Core.CoreId,'
+      '    Clients.CLIENTID,'
+      '    Core.PriceCode,'
+      '    Core.RegionCode,'
+      '    Core.productid,'
+      '    catalogs.fullcode,'
+      '    Core.CodeFirmCr,'
+      '    Core.SynonymCode,'
+      '    Core.SynonymFirmCrCode,'
+      '    Core.Code,'
+      '    Core.CodeCr,'
+      '    Core.Note,'
+      '    Core.Period,'
+      '    Core.Volume,'
+      '    Core.Cost,'
+      '    Core.Quantity,'
+      '    Core.doc,'
+      '    Core.registrycost,'
+      '    Core.vitallyimportant,'
+      '    Core.requestratio,'
+      '    Core.ordercost,'
+      '    Core.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    Core.Await,'
+      '    PricesData.PriceName,'
+      
+        '    PricesData.DatePrice + interval  -:TimeZoneBias minute AS Da' +
+        'tePrice,'
+      '    Regions.RegionName,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.fullcode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.OrderCount,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Price*osbc.OrderCount AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Core'
+      '    inner join Clients on Clients.CLIENTID = :AClientId'
+      '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+      '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
+      '    left join products on products.productid = core.productid'
+      '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
+        'mCr.SynonymFirmCrCode'
+      
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :AClientId and ' +
+        'osbc.CoreId=Core.CoreId'
+      '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      'WHERE'
+      '    (Core.productid > 0)'
+      'and (Core.Junk = 1)')
+    RefreshOptions = [roAfterUpdate]
+    BeforeEdit = adsExpiredsOldBeforeEdit
+    BeforePost = adsExpireds2BeforePost
+    AfterPost = adsExpireds2AfterPost
+    AfterScroll = adsExpireds2AfterScroll
+    Left = 160
+    Top = 112
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TimeZoneBias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end>
+    object adsExpiredsCoreId: TLargeintField
+      FieldName = 'CoreId'
+    end
+    object adsExpiredsCLIENTID: TLargeintField
+      FieldName = 'CLIENTID'
+    end
+    object adsExpiredsPriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsExpiredsRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsExpiredsproductid: TLargeintField
+      FieldName = 'productid'
+    end
+    object adsExpiredsfullcode: TLargeintField
+      FieldName = 'fullcode'
+    end
+    object adsExpiredsCodeFirmCr: TLargeintField
+      FieldName = 'CodeFirmCr'
+    end
+    object adsExpiredsSynonymCode: TLargeintField
+      FieldName = 'SynonymCode'
+    end
+    object adsExpiredsSynonymFirmCrCode: TLargeintField
+      FieldName = 'SynonymFirmCrCode'
+    end
+    object adsExpiredsCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsExpiredsCodeCr: TStringField
+      FieldName = 'CodeCr'
+      Size = 84
+    end
+    object adsExpiredsNote: TStringField
+      FieldName = 'Note'
+      Size = 50
+    end
+    object adsExpiredsPeriod: TStringField
+      FieldName = 'Period'
+    end
+    object adsExpiredsVolume: TStringField
+      FieldName = 'Volume'
+      Size = 15
+    end
+    object adsExpiredsCost: TFloatField
+      FieldName = 'Cost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsExpiredsQuantity: TStringField
+      FieldName = 'Quantity'
+      Size = 15
+    end
+    object adsExpiredsdoc: TStringField
+      FieldName = 'doc'
+    end
+    object adsExpiredsregistrycost: TFloatField
+      FieldName = 'registrycost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsExpiredsvitallyimportant: TBooleanField
+      FieldName = 'vitallyimportant'
+    end
+    object adsExpiredsrequestratio: TIntegerField
+      FieldName = 'requestratio'
+      DisplayFormat = '#'
+    end
+    object adsExpiredsordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsExpiredsminordercount: TIntegerField
+      FieldName = 'minordercount'
+    end
+    object adsExpiredsSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 501
+    end
+    object adsExpiredsSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsExpiredsAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsExpiredsPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsExpiredsDatePrice: TDateTimeField
+      FieldName = 'DatePrice'
+    end
+    object adsExpiredsRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsExpiredsOrdersCoreId: TLargeintField
+      FieldName = 'OrdersCoreId'
+    end
+    object adsExpiredsOrdersOrderId: TLargeintField
+      FieldName = 'OrdersOrderId'
+    end
+    object adsExpiredsOrdersClientId: TLargeintField
+      FieldName = 'OrdersClientId'
+    end
+    object adsExpiredsOrdersFullCode: TLargeintField
+      FieldName = 'OrdersFullCode'
+    end
+    object adsExpiredsOrdersCodeFirmCr: TLargeintField
+      FieldName = 'OrdersCodeFirmCr'
+    end
+    object adsExpiredsOrdersSynonymCode: TLargeintField
+      FieldName = 'OrdersSynonymCode'
+    end
+    object adsExpiredsOrdersSynonymFirmCrCode: TLargeintField
+      FieldName = 'OrdersSynonymFirmCrCode'
+    end
+    object adsExpiredsOrdersCode: TStringField
+      FieldName = 'OrdersCode'
+      Size = 84
+    end
+    object adsExpiredsOrdersCodeCr: TStringField
+      FieldName = 'OrdersCodeCr'
+      Size = 84
+    end
+    object adsExpiredsOrdersSynonym: TStringField
+      FieldName = 'OrdersSynonym'
+      Size = 250
+    end
+    object adsExpiredsOrdersSynonymFirm: TStringField
+      FieldName = 'OrdersSynonymFirm'
+      Size = 250
+    end
+    object adsExpiredsOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+      DisplayFormat = '#'
+    end
+    object adsExpiredsOrdersPrice: TFloatField
+      FieldName = 'OrdersPrice'
+    end
+    object adsExpiredsSumOrder: TFloatField
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsExpiredsOrdersJunk: TBooleanField
+      FieldName = 'OrdersJunk'
+    end
+    object adsExpiredsOrdersAwait: TBooleanField
+      FieldName = 'OrdersAwait'
+    end
+    object adsExpiredsOrdersHOrderId: TLargeintField
+      FieldName = 'OrdersHOrderId'
+    end
+    object adsExpiredsOrdersHClientId: TLargeintField
+      FieldName = 'OrdersHClientId'
+    end
+    object adsExpiredsOrdersHPriceCode: TLargeintField
+      FieldName = 'OrdersHPriceCode'
+    end
+    object adsExpiredsOrdersHRegionCode: TLargeintField
+      FieldName = 'OrdersHRegionCode'
+    end
+    object adsExpiredsOrdersHPriceName: TStringField
+      FieldName = 'OrdersHPriceName'
+      Size = 70
+    end
+    object adsExpiredsOrdersHRegionName: TStringField
+      FieldName = 'OrdersHRegionName'
+      Size = 25
+    end
+    object adsExpiredsCryptPriceRet: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'CryptPriceRet'
+      Calculated = True
     end
   end
 end

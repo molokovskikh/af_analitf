@@ -3878,31 +3878,31 @@ object MainForm: TMainForm
       Caption = 'Test2'
     end
   end
-  object adsOrdersH: TMyQuery
+  object adsOrdersHead: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
-      '    OrdersH.OrderId'
+      '    OrdersHead.OrderId'
       'FROM'
-      '   ((OrdersH'
+      '   ((OrdersHead'
       
-        '    LEFT JOIN PricesData ON OrdersH.PriceCode=PricesData.PriceCo' +
-        'de)'
+        '    LEFT JOIN PricesData ON OrdersHead.PriceCode=PricesData.Pric' +
+        'eCode)'
       
         '    left join pricesregionaldata on pricesregionaldata.PriceCode' +
-        ' = OrdersH.PriceCode and pricesregionaldata.regioncode = OrdersH' +
-        '.regioncode)'
+        ' = OrdersHead.PriceCode and pricesregionaldata.regioncode = Orde' +
+        'rsHead.regioncode)'
       
-        '    LEFT JOIN RegionalData ON (RegionalData.RegionCode=OrdersH.R' +
-        'egionCode) AND (PricesData.FirmCode=RegionalData.FirmCode)'
+        '    LEFT JOIN RegionalData ON (RegionalData.RegionCode=OrdersHea' +
+        'd.RegionCode) AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersH.ClientId = :AClientId)'
-      'and (:AClosed = OrdersH.Closed)'
+      '    (OrdersHead.ClientId = :AClientId)'
+      'and (:AClosed = OrdersHead.Closed)'
       
         'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
         ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
         'cesregionaldata.PriceCode is not null)))'
-      'and (OrdersH.SEND = :ASend)')
+      'and (OrdersHead.SEND = :ASend)')
     Left = 240
     Top = 280
     ParamData = <

@@ -379,7 +379,6 @@ inherited NamesFormsForm: TNamesFormsForm
       '    coreexists'
       'FROM'
       '    CATALOGSHOWBYNAME(:SHOWALL) ')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 80
     Top = 168
@@ -391,7 +390,6 @@ inherited NamesFormsForm: TNamesFormsForm
       '*'
       'FROM'
       '    CATALOGSHOWBYFORM(:ASHORTCODE, :SHOWAll) ')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 437
     Top = 152
@@ -399,9 +397,7 @@ inherited NamesFormsForm: TNamesFormsForm
     oCacheCalcFields = True
   end
   object adsCatalogOld: TpFIBDataSet
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     Left = 176
     Top = 168
     oCacheCalcFields = True
@@ -425,21 +421,6 @@ inherited NamesFormsForm: TNamesFormsForm
     Left = 304
     Top = 184
   end
-  object adsNames: TMyStoredProc
-    StoredProcName = 'CATALOGSHOWBYNAME'
-    Connection = DM.MyConnection
-    SQL.Strings = (
-      'CALL CATALOGSHOWBYNAME(:showall)')
-    Left = 96
-    Top = 176
-    ParamData = <
-      item
-        DataType = ftBoolean
-        Name = 'showall'
-        ParamType = ptInput
-      end>
-    CommandStoredProcName = 'CATALOGSHOWBYNAME'
-  end
   object adsForms: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
@@ -461,5 +442,17 @@ inherited NamesFormsForm: TNamesFormsForm
     Connection = DM.MyConnection
     Left = 200
     Top = 168
+  end
+  object adsNames: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'CALL CATALOGSHOWBYNAME(:showall)')
+    Left = 128
+    Top = 184
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'showall'
+      end>
   end
 end

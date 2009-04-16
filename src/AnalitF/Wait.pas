@@ -97,7 +97,7 @@ var
   FExID : String;
 begin
 	Timer.Enabled := False;
-	if DM.MyConnection.Connected then
+	if DM.MainConnection.Connected then
 	begin
   //todo: восстановить запрос на монопольный доступ потом
 {

@@ -1442,22 +1442,7 @@ object DM: TDM
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False
     Left = 32
-    Top = 112
-  end
-  object MyEmbConnection: TMyEmbConnection
-    Database = 'AnalitF'
-    Params.Strings = (
-      '--basedir=.'
-      '--datadir=data'
-      '--skip-innodb'
-      '--character_set_server=cp1251'
-      '--character_set_filesystem=cp1251'
-      '--key_buffer_size=32M'
-      '--max_allowed_packet=16777216')
-    Username = 'root'
-    LoginPrompt = False
-    Left = 160
-    Top = 8
+    Top = 104
   end
   object adtParams: TMyTable
     TableName = 'params'
@@ -1544,19 +1529,10 @@ object DM: TDM
       FieldName = 'RETAIL'
     end
   end
-  object MyConnectionCopy: TMyConnection
-    Database = 'analitf'
-    Options.Charset = 'cp1251'
-    Username = 'root'
-    Server = 'localhost'
-    AfterConnect = MainConnectionOldAfterConnect
-    LoginPrompt = False
-    Left = 264
-    Top = 8
-  end
-  object MyEmbConnectionCopy: TMyEmbConnection
+  object MyEmbConnection: TMyEmbConnection
     Database = 'AnalitF'
     Options.Charset = 'cp1251'
+    Options.KeepDesignConnected = False
     Params.Strings = (
       '--basedir=.'
       '--datadir=data'
@@ -1568,8 +1544,8 @@ object DM: TDM
     Username = 'root'
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False
-    Left = 48
-    Top = 8
+    Left = 128
+    Top = 104
   end
   object adcUpdate: TMyQuery
     Connection = MyConnection
@@ -1578,11 +1554,11 @@ object DM: TDM
   end
   object MyServerControl: TMyServerControl
     Connection = MyConnection
-    Left = 88
+    Left = 256
     Top = 112
   end
   object MySQLMonitor: TMySQLMonitor
-    TraceFlags = [tfError, tfService]
+    TraceFlags = [tfQPrepare, tfQExecute, tfQFetch, tfError, tfStmt, tfTransact, tfService, tfMisc, tfParams]
     OnSQL = MySQLMonitorSQL
     Left = 376
     Top = 8
@@ -1620,39 +1596,59 @@ object DM: TDM
     Connection = MyConnection
     SQL.Strings = (
       'SELECT '
-      'pricesshow.*,'
+      '  pricesshow.*,'
       
-        'pricesshow.UniversalDatePrice - interval :TimeZoneBias minute AS' +
-        ' DatePrice,'
+        '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
+        'AS DatePrice,'
+      '  count(OrdersList.ID) as Positions,'
+      
+        '  ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as Su' +
+        'mOrder,'
+      '/*'
       '('
       '  SELECT'
       '    Count(*)'
       '  FROM'
-      '    OrdersH'
-      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
-      '  WHERE OrdersH.ClientId   = :AClientId'
-      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
-      '     AND OrdersH.Closed <> 1'
-      '     AND Orders.OrderCount > 0'
-      ') as Positions,'
-      '('
-      '  select'
-      '    Sum(Orders.SendPrice * Orders.OrderCount)'
-      '  from'
-      '    OrdersH'
-      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
-      '  WHERE OrdersH.ClientId = :AClientId'
-      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
+      '    OrdersHead'
       
-        '     and ordersh.senddate > curdate() + interval (1-day(curdate(' +
-        '))) day'
-      '     AND OrdersH.Closed = 1'
-      '     AND OrdersH.send = 1'
-      '     AND Orders.OrderCount>0'
-      ') as sumbycurrentmonth'
-      'FROM pricesshow')
+        '    INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Order' +
+        'Id'
+      '  WHERE OrdersHead.ClientId   = :AClientId'
+      '     AND OrdersHead.PriceCode = pricesshow.PriceCode'
+      '     AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      '     AND OrdersHead.Closed <> 1'
+      '     AND OrdersList.OrderCount > 0'
+      ') as Positions,'
+      '*/'
+      '  ('
+      '    select'
+      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '    from'
+      '      OrdersHead'
+      
+        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        'erId'
+      '    WHERE OrdersHead.ClientId = :AClientId'
+      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
+      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      
+        '       and OrdersHead.senddate > curdate() + interval (1-day(cur' +
+        'date())) day'
+      '       AND OrdersHead.Closed = 1'
+      '       AND OrdersHead.send = 1'
+      '       AND OrdersList.OrderCount>0'
+      '  ) as sumbycurrentmonth'
+      'FROM '
+      '  pricesshow'
+      '  left join Ordershead on '
+      '        Ordershead.Pricecode = pricesshow.PriceCode '
+      '    and Ordershead.Regioncode = pricesshow.RegionCode'
+      '    and OrdersHead.ClientId   = :AClientId'
+      '    and OrdersHead.Closed <> 1'
+      '  left join OrdersList on '
+      '        OrdersList.ORDERID = Ordershead.ORDERID'
+      '    and OrdersList.OrderCount > 0'
+      'group by pricesshow.PriceCode, pricesshow.RegionCode')
     Left = 408
     Top = 232
     ParamData = <
@@ -1738,6 +1734,9 @@ object DM: TDM
     object adsPricessumbycurrentmonth: TFloatField
       FieldName = 'sumbycurrentmonth'
     end
+    object adsPricesSumOrder: TFloatField
+      FieldName = 'SumOrder'
+    end
   end
   object adsQueryValue: TMyQuery
     Connection = MyConnection
@@ -1756,28 +1755,28 @@ object DM: TDM
     Connection = MyConnection
     SQL.Strings = (
       'SELECT'
-      '    ORDERS.ID,'
-      '    ORDERS.ORDERID,'
-      '    ORDERS.CLIENTID,'
-      '    ORDERS.COREID,'
-      '    ORDERS.PRODUCTID,'
-      '    ORDERS.CODEFIRMCR,'
-      '    ORDERS.SYNONYMCODE,'
-      '    ORDERS.SYNONYMFIRMCRCODE,'
-      '    ORDERS.CODE,'
-      '    ORDERS.CODECR,'
-      '    ORDERS.SYNONYMNAME,'
-      '    ORDERS.SYNONYMFIRM,'
-      '    ORDERS.PRICE,'
-      '    ORDERS.AWAIT,'
-      '    ORDERS.JUNK,'
-      '    ORDERS.ORDERCOUNT'
+      '    OrdersList.ID,'
+      '    OrdersList.ORDERID,'
+      '    OrdersList.CLIENTID,'
+      '    OrdersList.COREID,'
+      '    OrdersList.PRODUCTID,'
+      '    OrdersList.CODEFIRMCR,'
+      '    OrdersList.SYNONYMCODE,'
+      '    OrdersList.SYNONYMFIRMCRCODE,'
+      '    OrdersList.CODE,'
+      '    OrdersList.CODECR,'
+      '    OrdersList.SYNONYMNAME,'
+      '    OrdersList.SYNONYMFIRM,'
+      '    OrdersList.PRICE,'
+      '    OrdersList.AWAIT,'
+      '    OrdersList.JUNK,'
+      '    OrdersList.ORDERCOUNT'
       'FROM'
-      '    ORDERS,'
-      '    ordersh'
+      '    OrdersList,'
+      '    OrdersHead'
       'where'
-      '    ordersh.orderid = orders.orderid'
-      'and ordersh.closed <> 1')
+      '    OrdersHead.orderid = OrdersList.orderid'
+      'and OrdersHead.closed <> 1')
     Left = 648
     Top = 72
     object adsAllOrdersID: TLargeintField
@@ -1838,18 +1837,110 @@ object DM: TDM
     Connection = MyConnection
     SQL.Strings = (
       
-        'call CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SHO' +
-        'WREGISTER, :REGISTERID)')
+        '#call CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SH' +
+        'OWREGISTER, :REGISTERID)'
+      'SELECT '
+      '    Core.CoreId,'
+      '    Clients.Clientid,'
+      '    Core.PriceCode,'
+      '    Core.RegionCode,'
+      '    Core.productid,'
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Core.CodeFirmCr,'
+      '    Core.SynonymCode,'
+      '    Core.SynonymFirmCrCode,'
+      '    Core.Code,'
+      '    Core.CodeCr,'
+      '    Core.Period,'
+      '    Core.Volume,'
+      '    Core.Note,'
+      '    Core.Cost,'
+      '    Core.Quantity,'
+      '    Core.Await,'
+      '    Core.Junk,'
+      '    Core.doc,'
+      '    Core.registrycost,'
+      '    Core.vitallyimportant,'
+      '    Core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      
+        '    if(PricesData.DatePrice IS NOT NULL, PricesData.DatePrice + ' +
+        'interval -:timezonebias minute, null) AS DatePrice,'
+      '    PricesData.PriceName,'
+      '    PRD.Enabled AS PriceEnabled,'
+      '    Providers.FirmCode AS FirmCode,'
+      '    PRD.Storage,'
+      '    Regions.RegionName,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.fullcode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Price*osbc.OrderCount AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Catalogs'
+      
+        '    inner join products on products.catalogid = catalogs.fullcod' +
+        'e'
+      '    inner join Clients on Clients.Clientid = :AClientID'
+      '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
+        'mCr.SynonymFirmCrCode'
+      '    LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+      
+        '    LEFT JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Reg' +
+        'ionCode)'
+      '        AND (Core.PriceCode=PRD.PriceCode)'
+      
+        '    LEFT JOIN Providers ON PricesData.FirmCode=Providers.FirmCod' +
+        'e'
+      '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
+      
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :aclientid and ' +
+        'osbc.CoreId = Core.CoreId'
+      '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
+      'WHERE '
+      '    (Catalogs.FullCode = :ParentCode)'
+      'and (Core.coreid is not null)'
+      'And ((:ShowRegister = 1) Or (Providers.FirmCode <> :RegisterId))')
     Left = 232
     Top = 384
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TIMEZONEBIAS'
+      end
       item
         DataType = ftUnknown
         Name = 'ACLIENTID'
       end
       item
         DataType = ftUnknown
-        Name = 'TIMEZONEBIAS'
+        Name = 'aclientid'
       end
       item
         DataType = ftUnknown
@@ -1866,10 +1957,6 @@ object DM: TDM
     object adsOrderCorePriceCode: TLargeintField
       FieldName = 'PriceCode'
     end
-    object adsOrderCoreBaseCost: TStringField
-      FieldName = 'BaseCost'
-      Size = 60
-    end
     object adsOrderCorePriceEnabled: TBooleanField
       FieldName = 'PriceEnabled'
     end
@@ -1882,15 +1969,13 @@ object DM: TDM
     object adsOrderCoreproductid: TLargeintField
       FieldName = 'productid'
     end
-    object adsOrderCoreCryptBASECOST: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptBASECOST'
-      Calculated = True
+    object adsOrderCoreCost: TFloatField
+      FieldName = 'Cost'
     end
   end
   object adsOrderDetails: TMyQuery
     SQLUpdate.Strings = (
-      'update orders'
+      'update ordersList'
       'set'
       '  coreid = :coreid'
       'where'
@@ -1898,34 +1983,35 @@ object DM: TDM
     Connection = MyConnection
     SQL.Strings = (
       'SELECT '
-      '    Orders.id,'
-      '    Orders.OrderId,'
-      '    Orders.ClientId,'
-      '    Orders.CoreId,'
+      '    OrdersList.id,'
+      '    OrdersList.OrderId,'
+      '    OrdersList.ClientId,'
+      '    OrdersList.CoreId,'
       '    products.catalogid as fullcode,'
-      '    Orders.productid,'
-      '    Orders.codefirmcr,'
-      '    Orders.synonymcode,'
-      '    Orders.synonymfirmcrcode,'
-      '    Orders.code,'
-      '    Orders.codecr,'
-      '    Orders.synonymname,'
-      '    Orders.synonymfirm,'
-      '    Orders.price,'
-      '    Orders.await,'
-      '    Orders.junk,'
-      '    Orders.ordercount,'
-      '    Orders.SendPrice*Orders.OrderCount AS SumOrder,'
-      '    Orders.SendPrice,'
-      '    Orders.RequestRatio,'
-      '    Orders.OrderCost,'
-      '    Orders.MinOrderCount'
+      '    OrdersList.productid,'
+      '    OrdersList.codefirmcr,'
+      '    OrdersList.synonymcode,'
+      '    OrdersList.synonymfirmcrcode,'
+      '    OrdersList.code,'
+      '    OrdersList.codecr,'
+      '    OrdersList.synonymname,'
+      '    OrdersList.synonymfirm,'
+      '    OrdersList.price,'
+      '    OrdersList.await,'
+      '    OrdersList.junk,'
+      '    OrdersList.ordercount,'
+      '    OrdersList.Price*OrdersList.OrderCount AS SumOrder,'
+      '    OrdersList.RequestRatio,'
+      '    OrdersList.OrderCost,'
+      '    OrdersList.MinOrderCount'
       'FROM '
-      '  Orders'
-      '  left join products on products.productid = orders.productid'
+      '  OrdersList'
+      
+        '  left join products on products.productid = OrdersList.producti' +
+        'd'
       'WHERE '
-      '    (Orders.OrderId=:AOrderId) '
-      'AND (Orders.OrderCount>0)'
+      '    (OrdersList.OrderId=:AOrderId) '
+      'AND (OrdersList.OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
     CachedUpdates = True
     Left = 144
@@ -1978,10 +2064,6 @@ object DM: TDM
       FieldName = 'synonymfirm'
       Size = 250
     end
-    object adsOrderDetailsprice: TStringField
-      FieldName = 'price'
-      Size = 60
-    end
     object adsOrderDetailsawait: TBooleanField
       FieldName = 'await'
     end
@@ -1994,9 +2076,6 @@ object DM: TDM
     object adsOrderDetailsSumOrder: TFloatField
       FieldName = 'SumOrder'
     end
-    object adsOrderDetailsSendPrice: TFloatField
-      FieldName = 'SendPrice'
-    end
     object adsOrderDetailsRequestRatio: TIntegerField
       FieldName = 'RequestRatio'
     end
@@ -2006,20 +2085,13 @@ object DM: TDM
     object adsOrderDetailsMinOrderCount: TIntegerField
       FieldName = 'MinOrderCount'
     end
-    object adsOrderDetailsCryptPRICE: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptPRICE'
-      Calculated = True
-    end
-    object adsOrderDetailsCryptSUMORDER: TCurrencyField
-      FieldKind = fkCalculated
-      FieldName = 'CryptSUMORDER'
-      Calculated = True
+    object adsOrderDetailsprice: TFloatField
+      FieldName = 'price'
     end
   end
   object adsOrdersHeaders: TMyQuery
     SQLUpdate.Strings = (
-      'update ordersh'
+      'update ordershead'
       'set'
       '  SERVERORDERID = :SERVERORDERID,'
       '  SENDDATE = :SENDDATE,'
@@ -2031,74 +2103,70 @@ object DM: TDM
     SQL.Strings = (
       '#ORDERSHSHOW'
       'SELECT'
-      '    OrdersH.OrderId,'
-      '    OrdersH.ServerOrderId,'
+      '    OrdersHead.OrderId,'
+      '    OrdersHead.ClientID,'
+      '    OrdersHead.ServerOrderId,'
       
         '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
         'Price,'
-      '    OrdersH.PriceCode,'
-      '    OrdersH.RegionCode,'
-      '    OrdersH.OrderDate,'
-      '    OrdersH.SendDate,'
-      '    OrdersH.Closed,'
-      '    OrdersH.Send,'
-      '    OrdersH.PriceName,'
-      '    OrdersH.RegionName,'
+      '    OrdersHead.PriceCode,'
+      '    OrdersHead.RegionCode,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate,'
+      '    OrdersHead.Closed,'
+      '    OrdersHead.Send,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
       '    RegionalData.SupportPhone,'
-      '    OrdersH.MessageTo,'
-      '    OrdersH.Comments,'
+      '    OrdersHead.MessageTo,'
+      '    OrdersHead.Comments,'
       '    pricesregionaldata.minreq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
-      '    OrdersPositions.Positions,'
+      '    count(OrdersList.Id) as Positions,'
+      
+        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
+        'SumOrder,'
       '     ('
       '  select'
-      '    Sum(Orders.SendPrice * Orders.OrderCount)'
+      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
       '  from'
-      '    OrdersH header'
-      '    INNER JOIN Orders ON Orders.OrderId=header.OrderId'
-      '  WHERE OrdersH.ClientId = :AClientId'
-      '     AND header.PriceCode = OrdersH.PriceCode'
-      '     AND header.RegionCode = OrdersH.RegionCode'
+      '    OrdersHead header'
+      
+        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
+        'd)'
+      '  WHERE OrdersHead.ClientId = :AClientId'
+      '     AND header.PriceCode = OrdersHead.PriceCode'
+      '     AND header.RegionCode = OrdersHead.RegionCode'
       
         '     and header.senddate > curdate() + interval (1-day(curdate()' +
         ')) day'
       '     AND header.Closed = 1'
       '     AND header.send = 1'
-      '     AND Orders.OrderCount>0'
+      '     AND OrdersList.OrderCount>0'
       ') as sumbycurrentmonth'
       'FROM'
-      '   ((OrdersH'
-      '    inner join '
-      '    ('
-      '    SELECT'
-      '       Orders.OrderId,'
-      '       Count(*) as Positions'
-      '     FROM Orders'
-      '     WHERE'
-      '       Orders.OrderCount > 0'
-      '     group by Orders.OrderId'
-      
-        '    ) OrdersPositions on OrdersPositions.OrderId = OrdersH.Order' +
-        'Id'
-      
-        '    LEFT JOIN PricesData ON OrdersH.PriceCode=PricesData.PriceCo' +
-        'de)'
-      
-        '    left join pricesregionaldata on pricesregionaldata.PriceCode' +
-        ' = OrdersH.PriceCode and pricesregionaldata.regioncode = OrdersH' +
-        '.regioncode)'
-      
-        '    LEFT JOIN RegionalData ON (RegionalData.RegionCode=OrdersH.R' +
-        'egionCode) AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   OrdersHead'
+      '   inner join OrdersList on '
+      '         (OrdersList.OrderId = OrdersHead.OrderId) '
+      '     and (OrdersList.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
+      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersH.ClientId = :AClientId)'
-      'and (:AClosed = OrdersH.Closed)'
+      '    (OrdersHead.ClientId = :AClientId)'
+      'and (OrdersHead.Closed = :AClosed)'
       
         'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
         ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
         'cesregionaldata.PriceCode is not null)))'
-      'and (OrdersH.Send = :ASend)'
-      'and (OrdersPositions.Positions > 0)')
+      'and (OrdersHead.Send = :ASend)'
+      'group by OrdersHead.OrderId'
+      'having count(OrdersList.Id) > 0')
     Left = 48
     Top = 384
     ParamData = <

@@ -136,7 +136,7 @@ inherited OrdersHForm: TOrdersHForm
               item
                 DisplayFormat = 'dd.mm.yyyy hh:nn'
                 EditButtons = <>
-                FieldName = 'ORDERDATE'
+                FieldName = 'OrderDate'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1057#1086#1079#1076#1072#1085#1086
@@ -145,7 +145,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'PRICENAME'
+                FieldName = 'PriceName'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
@@ -154,7 +154,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'REGIONNAME'
+                FieldName = 'RegionName'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1056#1077#1075#1080#1086#1085
@@ -163,7 +163,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'POSITIONS'
+                FieldName = 'Positions'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1055#1086#1079#1080#1094#1080#1081
@@ -173,7 +173,7 @@ inherited OrdersHForm: TOrdersHForm
               item
                 Checkboxes = True
                 EditButtons = <>
-                FieldName = 'SEND'
+                FieldName = 'Send'
                 Footers = <>
                 MinWidth = 5
                 ReadOnly = False
@@ -183,7 +183,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'MINREQ'
+                FieldName = 'minreq'
                 Footers = <>
                 Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
                 Title.TitleButton = True
@@ -199,7 +199,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'SUMBYCURRENTMONTH'
+                FieldName = 'sumbycurrentmonth'
                 Footers = <>
                 Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
                 Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
@@ -248,7 +248,7 @@ inherited OrdersHForm: TOrdersHForm
               item
                 DisplayFormat = 'dd.mm.yyyy hh:nn'
                 EditButtons = <>
-                FieldName = 'SENDDATE'
+                FieldName = 'SendDate'
                 Footers = <>
                 Title.Caption = #1054#1090#1087#1088#1072#1074#1083#1077#1085#1086
                 Title.TitleButton = True
@@ -257,7 +257,7 @@ inherited OrdersHForm: TOrdersHForm
               item
                 DisplayFormat = 'dd.mm.yyyy hh:nn'
                 EditButtons = <>
-                FieldName = 'ORDERDATE'
+                FieldName = 'OrderDate'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1057#1086#1079#1076#1072#1085#1086
@@ -266,7 +266,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'PRICENAME'
+                FieldName = 'PriceName'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
@@ -275,7 +275,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'REGIONNAME'
+                FieldName = 'RegionName'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1056#1077#1075#1080#1086#1085
@@ -284,7 +284,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'POSITIONS'
+                FieldName = 'Positions'
                 Footers = <>
                 MinWidth = 5
                 Title.Caption = #1055#1086#1079#1080#1094#1080#1081
@@ -468,7 +468,7 @@ inherited OrdersHForm: TOrdersHForm
     Left = 76
     Top = 223
   end
-  object adsOrdersHForm: TpFIBDataSet
+  object adsOrdersHFormOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update ordersh'
       'set'
@@ -534,68 +534,68 @@ inherited OrdersHForm: TOrdersHForm
       'order by SendDate DESC')
     AfterPost = adsOrdersH2AfterPost
     BeforePost = adsOrdersH2BeforePost
-    OnCalcFields = adsOrdersHFormCalcFields
+    OnCalcFields = adsOrdersHFormOldCalcFields
     Database = DM.MainConnectionOld
-    AfterFetchRecord = adsOrdersHFormAfterFetchRecord
+    AfterFetchRecord = adsOrdersHFormOldAfterFetchRecord
     AutoCommit = True
     Left = 68
     Top = 119
     oCacheCalcFields = True
     oFetchAll = True
-    object adsOrdersHFormORDERID: TFIBBCDField
+    object adsOrdersHFormOldORDERID: TFIBBCDField
       FieldName = 'ORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHFormSERVERORDERID: TFIBBCDField
+    object adsOrdersHFormOldSERVERORDERID: TFIBBCDField
       FieldName = 'SERVERORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHFormDATEPRICE: TFIBDateTimeField
+    object adsOrdersHFormOldDATEPRICE: TFIBDateTimeField
       FieldName = 'DATEPRICE'
     end
-    object adsOrdersHFormPRICECODE: TFIBBCDField
+    object adsOrdersHFormOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHFormREGIONCODE: TFIBBCDField
+    object adsOrdersHFormOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersHFormORDERDATE: TFIBDateTimeField
+    object adsOrdersHFormOldORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
     end
-    object adsOrdersHFormSENDDATE: TFIBDateTimeField
+    object adsOrdersHFormOldSENDDATE: TFIBDateTimeField
       FieldName = 'SENDDATE'
     end
-    object adsOrdersHFormCLOSED: TFIBBooleanField
+    object adsOrdersHFormOldCLOSED: TFIBBooleanField
       FieldName = 'CLOSED'
     end
-    object adsOrdersHFormSEND: TFIBBooleanField
+    object adsOrdersHFormOldSEND: TFIBBooleanField
       FieldName = 'SEND'
       OnChange = adsOrdersH2SendChange
     end
-    object adsOrdersHFormPRICENAME: TFIBStringField
+    object adsOrdersHFormOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsOrdersHFormREGIONNAME: TFIBStringField
+    object adsOrdersHFormOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsOrdersHFormPOSITIONS: TFIBIntegerField
+    object adsOrdersHFormOldPOSITIONS: TFIBIntegerField
       FieldName = 'POSITIONS'
     end
-    object adsOrdersHFormSUPPORTPHONE: TFIBStringField
+    object adsOrdersHFormOldSUPPORTPHONE: TFIBStringField
       FieldName = 'SUPPORTPHONE'
       EmptyStrToNull = True
     end
-    object adsOrdersHFormSumOrder: TFIBBCDField
+    object adsOrdersHFormOldSumOrder: TFIBBCDField
       FieldKind = fkCalculated
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
@@ -603,20 +603,20 @@ inherited OrdersHForm: TOrdersHForm
       RoundByScale = True
       Calculated = True
     end
-    object adsOrdersHFormMESSAGETO: TFIBMemoField
+    object adsOrdersHFormOldMESSAGETO: TFIBMemoField
       FieldName = 'MESSAGETO'
       BlobType = ftMemo
       Size = 8
     end
-    object adsOrdersHFormCOMMENTS: TFIBMemoField
+    object adsOrdersHFormOldCOMMENTS: TFIBMemoField
       FieldName = 'COMMENTS'
       BlobType = ftMemo
       Size = 8
     end
-    object adsOrdersHFormMINREQ: TFIBIntegerField
+    object adsOrdersHFormOldMINREQ: TFIBIntegerField
       FieldName = 'MINREQ'
     end
-    object adsOrdersHFormSUMBYCURRENTMONTH: TFIBBCDField
+    object adsOrdersHFormOldSUMBYCURRENTMONTH: TFIBBCDField
       FieldName = 'SUMBYCURRENTMONTH'
       Size = 2
       RoundByScale = True
@@ -716,5 +716,248 @@ inherited OrdersHForm: TOrdersHForm
     Left = 188
     Top = 119
     oCacheCalcFields = True
+  end
+  object adsOrdersHForm: TMyQuery
+    SQLDelete.Strings = (
+      'call DeleteOrder(:Old_OrderId)')
+    SQLUpdate.Strings = (
+      'update ordershead'
+      'set'
+      '  SEND = :SEND,'
+      '  CLOSED = :CLOSED,'
+      '  MESSAGETO = :MESSAGETO,'
+      '  COMMENTS = :COMMENTS'
+      'where'
+      '  orderid = :old_ORDERID')
+    SQLRefresh.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    OrdersHead.OrderId,'
+      '    OrdersHead.ClientID,'
+      '    OrdersHead.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    OrdersHead.PriceCode,'
+      '    OrdersHead.RegionCode,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate,'
+      '    OrdersHead.Closed,'
+      '    OrdersHead.Send,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    OrdersHead.MessageTo,'
+      '    OrdersHead.Comments,'
+      '    pricesregionaldata.minreq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(OrdersList.Id) as Positions,'
+      
+        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
+        'SumOrder,'
+      '     ('
+      '  select'
+      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '  from'
+      '    OrdersHead header'
+      
+        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
+        'd)'
+      '  WHERE OrdersHead.ClientId = :ClientId'
+      '     AND header.PriceCode = OrdersHead.PriceCode'
+      '     AND header.RegionCode = OrdersHead.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (1-day(curdate()' +
+        ')) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND OrdersList.OrderCount>0'
+      ') as sumbycurrentmonth'
+      'FROM'
+      '   OrdersHead'
+      '   inner join OrdersList on '
+      '         (OrdersList.OrderId = OrdersHead.OrderId) '
+      '     and (OrdersList.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
+      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (OrdersHead.OrderId = :Old_OrderId)'
+      'group by OrdersHead.OrderId'
+      'having count(OrdersList.Id) > 0')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    OrdersHead.OrderId,'
+      '    OrdersHead.ClientID,'
+      '    OrdersHead.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    OrdersHead.PriceCode,'
+      '    OrdersHead.RegionCode,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate,'
+      '    OrdersHead.Closed,'
+      '    OrdersHead.Send,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    OrdersHead.MessageTo,'
+      '    OrdersHead.Comments,'
+      '    pricesregionaldata.minreq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(OrdersList.Id) as Positions,'
+      
+        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
+        'SumOrder,'
+      '     ('
+      '  select'
+      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '  from'
+      '    OrdersHead header'
+      
+        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
+        'd)'
+      '  WHERE OrdersHead.ClientId = :AClientId'
+      '     AND header.PriceCode = OrdersHead.PriceCode'
+      '     AND header.RegionCode = OrdersHead.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (1-day(curdate()' +
+        ')) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND OrdersList.OrderCount>0'
+      ') as sumbycurrentmonth'
+      'FROM'
+      '   OrdersHead'
+      '   inner join OrdersList on '
+      '         (OrdersList.OrderId = OrdersHead.OrderId) '
+      '     and (OrdersList.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
+      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (OrdersHead.ClientId = :AClientId)'
+      'and (OrdersHead.Closed = :AClosed)'
+      
+        'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
+        ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
+        'cesregionaldata.PriceCode is not null)))'
+      'and (OrdersHead.OrderDate BETWEEN :DateFrom AND :DateTo )'
+      'group by OrdersHead.OrderId'
+      'having count(OrdersList.Id) > 0'
+      'order by OrdersHead.SendDate DESC')
+    Options.StrictUpdate = False
+    Left = 108
+    Top = 119
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DateFrom'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DateTo'
+      end>
+    object adsOrdersHFormOrderId: TLargeintField
+      FieldName = 'OrderId'
+    end
+    object adsOrdersHFormClientID: TLargeintField
+      FieldName = 'ClientID'
+    end
+    object adsOrdersHFormServerOrderId: TLargeintField
+      FieldName = 'ServerOrderId'
+    end
+    object adsOrdersHFormDatePrice: TDateTimeField
+      FieldName = 'DatePrice'
+    end
+    object adsOrdersHFormPriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsOrdersHFormRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsOrdersHFormOrderDate: TDateTimeField
+      FieldName = 'OrderDate'
+    end
+    object adsOrdersHFormSendDate: TDateTimeField
+      FieldName = 'SendDate'
+    end
+    object adsOrdersHFormClosed: TBooleanField
+      FieldName = 'Closed'
+    end
+    object adsOrdersHFormSend: TBooleanField
+      FieldName = 'Send'
+    end
+    object adsOrdersHFormPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsOrdersHFormRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsOrdersHFormSupportPhone: TStringField
+      FieldName = 'SupportPhone'
+    end
+    object adsOrdersHFormMessageTo: TMemoField
+      FieldName = 'MessageTo'
+      BlobType = ftMemo
+    end
+    object adsOrdersHFormComments: TMemoField
+      FieldName = 'Comments'
+      BlobType = ftMemo
+    end
+    object adsOrdersHFormminreq: TIntegerField
+      FieldName = 'minreq'
+    end
+    object adsOrdersHFormPriceEnabled: TBooleanField
+      FieldName = 'PriceEnabled'
+    end
+    object adsOrdersHFormPositions: TLargeintField
+      FieldName = 'Positions'
+    end
+    object adsOrdersHFormSumOrder: TFloatField
+      FieldName = 'SumOrder'
+    end
+    object adsOrdersHFormsumbycurrentmonth: TFloatField
+      FieldName = 'sumbycurrentmonth'
+    end
   end
 end

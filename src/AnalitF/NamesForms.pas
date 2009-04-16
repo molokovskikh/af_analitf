@@ -45,9 +45,9 @@ type
     actNewSearch: TAction;
     cbSearchInBegin: TCheckBox;
     actSearchInBegin: TAction;
-    adsNames: TMyStoredProc;
     adsForms: TMyQuery;
     adsCatalog: TMyQuery;
+    adsNames: TMyQuery;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -509,7 +509,7 @@ procedure TNamesFormsForm.dbgNamesGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if not adsNames.IsEmpty and (adsNames.FieldByName('COREEXISTS').AsInteger = 0) then
+  if not adsNames.IsEmpty and (adsNames.FieldByName('COREEXISTS').AsFloat < 0.001 ) then
     Background := clSilver;
 end;
 
@@ -517,7 +517,7 @@ procedure TNamesFormsForm.dbgFormsGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if not adsForms.IsEmpty and (adsForms.FieldByName('COREEXISTS').AsInteger = 0) then
+  if not adsForms.IsEmpty and (adsForms.FieldByName('COREEXISTS').AsBoolean = False) then
     Background := clSilver;
 end;
 
@@ -526,7 +526,7 @@ procedure TNamesFormsForm.dbgCatalogGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if not adsCatalog.IsEmpty then
-   if (adsCatalog.FieldByName('COREEXISTS').AsInteger = 0) then
+   if (adsCatalog.FieldByName('COREEXISTS').AsBoolean = False) then
      Background := clSilver;
 end;
 

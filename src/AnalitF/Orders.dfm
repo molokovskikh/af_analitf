@@ -274,7 +274,7 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptPRICE'
+        FieldName = 'PRICE'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -293,7 +293,7 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'CryptSUMORDER'
+        FieldName = 'SUMORDER'
         Footers = <>
         Title.Caption = #1057#1091#1084#1084#1072
         Title.TitleButton = True
@@ -330,7 +330,7 @@ inherited OrdersForm: TOrdersForm
     Left = 144
     Top = 288
   end
-  object adsOrders: TpFIBDataSet
+  object adsOrdersOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'
       '  orders'
@@ -377,9 +377,9 @@ inherited OrdersForm: TOrdersForm
       '    (Orders.OrderId=:AOrderId)'
       'AND (OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
-    AfterPost = adsOrdersAfterPost
-    BeforeEdit = adsOrdersBeforeEdit
-    BeforePost = adsOrdersBeforePost
+    AfterPost = adsOrdersOldAfterPost
+    BeforeEdit = adsOrdersOldBeforeEdit
+    BeforePost = adsOrdersOldBeforePost
     Database = DM.MainConnectionOld
     AutoCommit = True
     Left = 144
@@ -387,122 +387,122 @@ inherited OrdersForm: TOrdersForm
     oTrimCharFields = False
     oCacheCalcFields = True
     oRefreshAfterPost = False
-    object adsOrdersCryptPRICE: TCurrencyField
+    object adsOrdersOldCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsOrdersCryptSUMORDER: TCurrencyField
+    object adsOrdersOldCryptSUMORDER: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptSUMORDER'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
-    object adsOrdersORDERID: TFIBBCDField
+    object adsOrdersOldORDERID: TFIBBCDField
       FieldName = 'ORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersCLIENTID: TFIBBCDField
+    object adsOrdersOldCLIENTID: TFIBBCDField
       FieldName = 'CLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersCOREID: TFIBBCDField
+    object adsOrdersOldCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersFULLCODE: TFIBBCDField
+    object adsOrdersOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersCODEFIRMCR: TFIBBCDField
+    object adsOrdersOldCODEFIRMCR: TFIBBCDField
       FieldName = 'CODEFIRMCR'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersSYNONYMCODE: TFIBBCDField
+    object adsOrdersOldSYNONYMCODE: TFIBBCDField
       FieldName = 'SYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsOrdersOldSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'SYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersCODE: TFIBStringField
+    object adsOrdersOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersCODECR: TFIBStringField
+    object adsOrdersOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersSYNONYMNAME: TFIBStringField
+    object adsOrdersOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersSYNONYMFIRM: TFIBStringField
+    object adsOrdersOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersORDERCOUNT: TFIBIntegerField
+    object adsOrdersOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsOrdersPRICE: TFIBStringField
+    object adsOrdersOldPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsOrdersAWAIT: TFIBBooleanField
+    object adsOrdersOldAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
     end
-    object adsOrdersJUNK: TFIBBooleanField
+    object adsOrdersOldJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsOrdersSUMORDER: TFIBBCDField
+    object adsOrdersOldSUMORDER: TFIBBCDField
       FieldName = 'SUMORDER'
       Size = 2
       RoundByScale = True
     end
-    object adsOrdersSENDPRICE: TFIBBCDField
+    object adsOrdersOldSENDPRICE: TFIBBCDField
       FieldName = 'SENDPRICE'
       Size = 2
       RoundByScale = True
     end
-    object adsOrdersREQUESTRATIO: TFIBIntegerField
+    object adsOrdersOldREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
     end
-    object adsOrdersORDERCOST: TFIBBCDField
+    object adsOrdersOldORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
       Size = 2
       RoundByScale = True
     end
-    object adsOrdersMINORDERCOUNT: TFIBIntegerField
+    object adsOrdersOldMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
-    object adsOrdersPRODUCTID: TFIBBCDField
+    object adsOrdersOldPRODUCTID: TFIBBCDField
       FieldName = 'PRODUCTID'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersORDERSREQUESTRATIO: TFIBIntegerField
+    object adsOrdersOldORDERSREQUESTRATIO: TFIBIntegerField
       FieldName = 'ORDERSREQUESTRATIO'
     end
-    object adsOrdersORDERSORDERCOST: TFIBBCDField
+    object adsOrdersOldORDERSORDERCOST: TFIBBCDField
       FieldName = 'ORDERSORDERCOST'
       Size = 2
       RoundByScale = True
     end
-    object adsOrdersORDERSMINORDERCOUNT: TFIBIntegerField
+    object adsOrdersOldORDERSMINORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERSMINORDERCOUNT'
     end
   end
@@ -519,5 +519,127 @@ inherited OrdersForm: TOrdersForm
     OnTimer = TimerTimer
     Left = 640
     Top = 216
+  end
+  object adsOrders: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT OrdersList.OrderId,'
+      '    OrdersList.ClientId,'
+      '    OrdersList.CoreId,'
+      '    products.catalogid as fullcode,'
+      '    OrdersList.productid,'
+      '    OrdersList.codefirmcr,'
+      '    OrdersList.synonymcode,'
+      '    OrdersList.synonymfirmcrcode,'
+      '    OrdersList.code,'
+      '    OrdersList.codecr,'
+      '    OrdersList.synonymname,'
+      '    OrdersList.synonymfirm,'
+      '    OrdersList.await,'
+      '    OrdersList.junk,'
+      '    OrdersList.ordercount,'
+      '    OrdersList.price,'
+      '    OrdersList.Price*OrdersList.OrderCount AS SumOrder,'
+      '    core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      '    OrdersList.requestratio as Ordersrequestratio,'
+      '    OrdersList.ordercost as Ordersordercost,'
+      '    OrdersList.minordercount as Ordersminordercount   '
+      'FROM '
+      '  OrdersList'
+      
+        '  left join products on products.productid = OrdersList.producti' +
+        'd'
+      '  left join core on core.coreid = OrdersList.coreid'
+      'WHERE '
+      '    (OrdersList.OrderId = :AOrderId)'
+      'AND (OrderCount>0)'
+      'ORDER BY SynonymName, SynonymFirm')
+    BeforeEdit = adsOrdersOldBeforeEdit
+    BeforePost = adsOrdersOldBeforePost
+    AfterPost = adsOrdersOldAfterPost
+    Left = 184
+    Top = 184
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AOrderId'
+      end>
+    object adsOrdersOrderId: TLargeintField
+      FieldName = 'OrderId'
+    end
+    object adsOrdersClientId: TLargeintField
+      FieldName = 'ClientId'
+    end
+    object adsOrdersCoreId: TLargeintField
+      FieldName = 'CoreId'
+    end
+    object adsOrdersfullcode: TLargeintField
+      FieldName = 'fullcode'
+    end
+    object adsOrdersproductid: TLargeintField
+      FieldName = 'productid'
+    end
+    object adsOrderscodefirmcr: TLargeintField
+      FieldName = 'codefirmcr'
+    end
+    object adsOrderssynonymcode: TLargeintField
+      FieldName = 'synonymcode'
+    end
+    object adsOrderssynonymfirmcrcode: TLargeintField
+      FieldName = 'synonymfirmcrcode'
+    end
+    object adsOrderscode: TStringField
+      FieldName = 'code'
+      Size = 84
+    end
+    object adsOrderscodecr: TStringField
+      FieldName = 'codecr'
+      Size = 84
+    end
+    object adsOrderssynonymname: TStringField
+      FieldName = 'synonymname'
+      Size = 250
+    end
+    object adsOrderssynonymfirm: TStringField
+      FieldName = 'synonymfirm'
+      Size = 250
+    end
+    object adsOrdersawait: TBooleanField
+      FieldName = 'await'
+    end
+    object adsOrdersjunk: TBooleanField
+      FieldName = 'junk'
+    end
+    object adsOrdersordercount: TIntegerField
+      FieldName = 'ordercount'
+    end
+    object adsOrdersprice: TFloatField
+      FieldName = 'price'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsOrdersSumOrder: TFloatField
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsOrdersrequestratio: TIntegerField
+      FieldName = 'requestratio'
+    end
+    object adsOrdersordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsOrdersminordercount: TIntegerField
+      FieldName = 'minordercount'
+    end
+    object adsOrdersOrdersrequestratio: TIntegerField
+      FieldName = 'Ordersrequestratio'
+    end
+    object adsOrdersOrdersordercost: TFloatField
+      FieldName = 'Ordersordercost'
+    end
+    object adsOrdersOrdersminordercount: TIntegerField
+      FieldName = 'Ordersminordercount'
+    end
   end
 end

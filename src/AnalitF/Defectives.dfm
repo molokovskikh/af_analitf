@@ -361,8 +361,8 @@ inherited DefectivesForm: TDefectivesForm
   end
   object dsDefectives: TDataSource
     DataSet = adsDefectives
-    Left = 176
-    Top = 200
+    Left = 160
+    Top = 192
   end
   object ActionList: TActionList
     Left = 504
@@ -374,11 +374,11 @@ inherited DefectivesForm: TDefectivesForm
     end
   end
   object frdsPrint: TfrDBDataSet
-    DataSet = adsPrint
+    DataSet = adsPrintOld
     Left = 280
     Top = 208
   end
-  object adsDefectives: TpFIBDataSet
+  object adsDefectivesOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'UPDATE DEFECTIVES'
       'SET '
@@ -395,35 +395,73 @@ inherited DefectivesForm: TDefectivesForm
     SelectSQL.Strings = (
       'SELECT * FROM Defectives'
       'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     AutoCommit = True
-    Left = 176
+    Left = 128
     Top = 160
     oCacheCalcFields = True
     oFetchAll = True
   end
-  object adsPrint: TpFIBDataSet
+  object adsPrintOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT * FROM Defectives'
       'WHERE '
       '  LetterDate BETWEEN :DateFrom And :DateTo '
       'AND (CheckPrint = 1 Or :ShowAll = 1)')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 248
     Top = 160
     oCacheCalcFields = True
   end
-  object adcUncheckAll: TpFIBQuery
-    Transaction = DM.UpTran
-    Database = DM.MainConnectionOld
+  object adsPrint: TMyQuery
+    Connection = DM.MyConnection
     SQL.Strings = (
-      'UPDATE Defectives SET CheckPrint=0 WHERE CheckPrint=1')
-    Left = 320
+      'SELECT * FROM Defectives'
+      'WHERE '
+      '  LetterDate BETWEEN :DateFrom And :DateTo '
+      'AND (CheckPrint = 1 Or :ShowAll = 1)')
+    Left = 288
     Top = 160
-    qoAutoCommit = True
-    qoStartTransaction = True
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'DateFrom'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DateTo'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ShowAll'
+      end>
+  end
+  object adsDefectives: TMyQuery
+    SQLUpdate.Strings = (
+      'UPDATE DEFECTIVES'
+      'SET '
+      '    CHECKPRINT = :CHECKPRINT'
+      'WHERE'
+      '    ID = :OLD_ID')
+    SQLRefresh.Strings = (
+      'SELECT * FROM Defectives'
+      'WHERE'
+      '(DEFECTIVES.ID = :OLD_ID)')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT * FROM Defectives'
+      'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
+    RefreshOptions = [roAfterUpdate]
+    Left = 160
+    Top = 160
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'DateFrom'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DateTo'
+      end>
   end
 end

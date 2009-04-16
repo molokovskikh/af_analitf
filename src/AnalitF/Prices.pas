@@ -82,7 +82,7 @@ type
     adsPricesDatePrice: TDateTimeField;
     adsPricesPositions: TLargeintField;
     adsPricessumbycurrentmonth: TFloatField;
-    adsPricesSumOrder: TCurrencyField;
+    adsPricesSumOrder: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -100,7 +100,6 @@ type
     procedure dbgPricesExit(Sender: TObject);
     procedure adsPricesOldINJOBChange(Sender: TField);
     procedure tmStopEditTimer(Sender: TObject);
-    procedure adsPricesOldCalcFields(DataSet: TDataSet);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -363,14 +362,6 @@ begin
   if dbgPrices.EditorMode then
     dbgPrices.EditorMode := False;
   SoftPost(adsPrices);
-end;
-
-procedure TPricesForm.adsPricesOldCalcFields(DataSet: TDataSet);
-begin
-  if adsPricesPOSITIONS.AsInteger > 0 then
-    adsPricesSumOrder.AsCurrency := DM.FindOrderInfo(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger).Summ
-  else
-    adsPricesSumOrder.AsCurrency := 0;
 end;
 
 initialization

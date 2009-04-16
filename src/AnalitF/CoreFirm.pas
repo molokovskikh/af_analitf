@@ -112,8 +112,14 @@ type
     adsOrdersH: TMyQuery;
     adsCountFields: TMyQuery;
     adsCore: TMyQuery;
+    adsCoreCryptPriceRet: TCurrencyField;
+    adsOrdersShowFormSummaryCLIENTCODE: TLargeintField;
+    adsOrdersShowFormSummaryPRODUCTID: TLargeintField;
+    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
     adsCoreCoreId: TLargeintField;
     adsCoreproductid: TLargeintField;
+    adsCorePriceCode: TLargeintField;
+    adsCoreRegionCode: TLargeintField;
     adsCoreFullCode: TLargeintField;
     adsCoreshortcode: TLargeintField;
     adsCoreCodeFirmCr: TLargeintField;
@@ -127,17 +133,20 @@ type
     adsCorePeriod: TStringField;
     adsCoreAwait: TBooleanField;
     adsCoreJunk: TBooleanField;
-    adsCoreBaseCost: TStringField;
+    adsCoreCost: TFloatField;
     adsCoreQuantity: TStringField;
+    adsCoreregistrycost: TFloatField;
+    adsCorevitallyimportant: TBooleanField;
+    adsCorerequestratio: TIntegerField;
+    adsCoreordercost: TFloatField;
+    adsCoreminordercount: TIntegerField;
     adsCoreSynonymName: TStringField;
     adsCoreSynonymFirm: TStringField;
     adsCoreLeaderPriceCode: TLargeintField;
     adsCoreLeaderRegionCode: TLargeintField;
     adsCoreLeaderRegionName: TStringField;
     adsCoreLeaderPriceName: TStringField;
-    adsCoreLeaderCODE: TStringField;
-    adsCoreLeaderCODECR: TStringField;
-    adsCoreLeaderPRICE: TStringField;
+    adsCoreLeaderPRICE: TFloatField;
     adsCoreOrdersCoreId: TLargeintField;
     adsCoreOrdersOrderId: TLargeintField;
     adsCoreOrdersClientId: TLargeintField;
@@ -150,7 +159,7 @@ type
     adsCoreOrderCount: TIntegerField;
     adsCoreOrdersSynonym: TStringField;
     adsCoreOrdersSynonymFirm: TStringField;
-    adsCoreOrdersPrice: TStringField;
+    adsCoreOrdersPrice: TFloatField;
     adsCoreOrdersJunk: TBooleanField;
     adsCoreOrdersAwait: TBooleanField;
     adsCoreOrdersHOrderId: TLargeintField;
@@ -159,18 +168,8 @@ type
     adsCoreOrdersHRegionCode: TLargeintField;
     adsCoreOrdersHPriceName: TStringField;
     adsCoreOrdersHRegionName: TStringField;
-    adsCoreregistrycost: TFloatField;
-    adsCorevitallyimportant: TBooleanField;
-    adsCorerequestratio: TIntegerField;
-    adsCoreordercost: TFloatField;
-    adsCoreminordercount: TIntegerField;
-    adsCoreCryptLEADERPRICE: TCurrencyField;
-    adsCoreCryptPriceRet: TCurrencyField;
-    adsCoreCryptBASECOST: TCurrencyField;
-    adsCoreSumOrder: TCurrencyField;
-    adsOrdersShowFormSummaryCLIENTCODE: TLargeintField;
-    adsOrdersShowFormSummaryPRODUCTID: TLargeintField;
-    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
+    adsCoreSumOrder: TFloatField;
+    adsCoreClientID: TLargeintField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -239,7 +238,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, AlphaUtils, Orders;
+  NamesForms, AlphaUtils, Orders, DASQLMonitor;
 
 {$R *.DFM}
 
@@ -334,21 +333,10 @@ begin
 end;
 
 procedure TCoreFirmForm.ccf(DataSet: TDataSet);
-var
-  S : String;
-  C : Currency;
 begin
   try
-    S := DM.D_B_N(adsCoreBASECOST.AsString);
-    C := StrToCurr(S);
-    adsCoreCryptBASECOST.AsCurrency := C;
-    adsCoreCryptPriceRet.AsCurrency := DM.GetPriceRet(C);
-    adsCoreSumOrder.AsCurrency := adsCoreCryptBASECOST.AsCurrency * adsCoreORDERCOUNT.AsInteger;
-    S := DM.D_B_N(adsCoreLEADERPRICE.AsString);
-    C := StrToCurr(S);
-    adsCoreCryptLEADERPRICE.AsCurrency := C;
+    adsCoreCryptPriceRet.AsCurrency := DM.GetPriceRet(adsCoreCost.AsCurrency);
   except
-    adsCoreSumOrder.AsCurrency := 0;
   end;
 end;
 
@@ -459,7 +447,7 @@ begin
       if (adsOrdersShowFormSummary.Locate('PRODUCTID', adsCorePRODUCTID.AsVariant, [])) then
       begin
         PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
-        if ( PriceAvg > 0) and ( adsCoreCryptBASECOST.AsCurrency>PriceAvg*(1+Excess/100)) then
+        if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
         begin
           PanelCaption := 'ѕревышение средней цены!';
         end;
@@ -502,8 +490,8 @@ end;
 procedure TCoreFirmForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreCryptBASECOST.AsCurrency;
-  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCryptBASECOST.AsCurrency, PriceCode, RegionCode);
+	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreCOST.AsCurrency;
+  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCOST.AsCurrency, PriceCode, RegionCode);
 	SetOrderLabel;
 	MainForm.SetOrdersInfo;
 end;
@@ -511,11 +499,11 @@ end;
 procedure TCoreFirmForm.OrderCalc;
 begin
   OrderCount := DM.QueryValue(
-'SELECT count(*) FROM Orders, ordersh WHERE ' +
-    'ordersh.PriceCode = :PriceCode and ordersh.regioncode = :RegionCode ' +
-    ' and ordersh.ClientId = :AClientId ' +
-    ' and Orders.OrderId = ordersh.orderid and ordersh.closed = 0 ' +
-    ' AND Orders.OrderCount>0',
+'SELECT count(*) FROM OrdersList, ordershead WHERE ' +
+    'ordershead.PriceCode = :PriceCode and ordershead.regioncode = :RegionCode ' +
+    ' and ordershead.ClientId = :AClientId ' +
+    ' and OrdersList.OrderId = ordershead.orderid and ordershead.closed = 0 ' +
+    ' AND OrdersList.OrderCount>0',
     ['PriceCode', 'RegionCode', 'AClientId'],
     [PriceCode, RegionCode, ClientId]);
 	OrderSum :=DM.FindOrderInfo(PriceCode, RegionCode).Summ;
@@ -576,7 +564,7 @@ begin
 
 	//данный прайс-лидер
 	if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and	( adsCoreLeaderRegionCode.AsInteger = RegionCode))
-     or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01)
+     or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
      )
     and
 		(( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME))
@@ -584,7 +572,7 @@ begin
 			Background := LEADER_CLR;
 	//уцененный товар
 	if (adsCoreJunk.AsBoolean) and (( Column.Field = adsCorePERIOD) or
-		( Column.Field = adsCoreCryptBASECOST)) then Background := JUNK_CLR;
+		( Column.Field = adsCoreCOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выдел€ем зеленым
 	if (adsCoreAwait.AsBoolean) and ( Column.Field = adsCoreSYNONYMNAME) then
 		Background := AWAIT_CLR;
@@ -672,11 +660,11 @@ begin
     and
     (
      ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
-      or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01)
+      or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
     )
   else
     Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
-      or (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01);
+      or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
 end;
 
 procedure TCoreFirmForm.RefreshAllCore;
@@ -691,6 +679,7 @@ begin
     adsCore.Open;
     //todo: надо восстановить
     //ShowSQLWaiting(adsCore);
+    DM.MySQLMonitor.TraceFlags := DM.MySQLMonitor.TraceFlags + [DASQLMonitor.tfQFetch, DASQLMonitor.tfQExecute, DASQLMonitor.tfStmt];
   finally
     Screen.Cursor:=crDefault;
   end;
@@ -698,13 +687,13 @@ end;
 
 procedure TCoreFirmForm.dbgCoreSortMarkingChanged(Sender: TObject);
 begin
-  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 procedure TCoreFirmForm.adsCoreOldLEADERPRICENAMEGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
 begin
-  if (abs(adsCoreCryptBASECOST.AsCurrency - adsCoreCryptLEADERPRICE.AsCurrency) < 0.01) then
+  if (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01) then
     Text := PriceName
   else
     Text := Sender.AsString;

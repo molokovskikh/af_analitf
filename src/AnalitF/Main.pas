@@ -126,7 +126,7 @@ TMainForm = class(TForm)
     pmClients: TPopupMenu;
     est11: TMenuItem;
     est21: TMenuItem;
-    adsOrdersH: TMyQuery;
+    adsOrdersHead: TMyQuery;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -713,16 +713,16 @@ end;
 function TMainForm.CheckUnsendOrders: boolean;
 begin
 	result := False;
-  if not Assigned(GlobalExchangeParams) and DM.MyConnection.Connected then begin
-    adsOrdersH.ParamByName( 'AClientId').Value :=
+  if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
+    adsOrdersHead.ParamByName( 'AClientId').Value :=
       DM.adtClients.FieldByName( 'ClientId').Value;
-    adsOrdersH.ParamByName( 'AClosed').Value := False;
-    adsOrdersH.ParamByName( 'ASend').Value := True;
+    adsOrdersHead.ParamByName( 'AClosed').Value := False;
+    adsOrdersHead.ParamByName( 'ASend').Value := True;
     try
-      adsOrdersH.Open;
-      if adsOrdersH.RecordCount > 0 then result := True;
+      adsOrdersHead.Open;
+      if adsOrdersHead.RecordCount > 0 then result := True;
     finally
-      adsOrdersH.Close;
+      adsOrdersHead.Close;
     end;
   end;
 end;
@@ -734,7 +734,7 @@ end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-	if not DM.MyConnection.Connected then exit;
+	if not DM.MainConnection.Connected then exit;
 
   if OldOrders then
     if (not DM.adtParams.FieldByName('CONFIRMDELETEOLDORDERS').AsBoolean) or
@@ -776,7 +776,7 @@ var
 begin
   if Assigned(GlobalExchangeParams) then
     Exit;
-	if not DM.MyConnection.Connected then
+	if not DM.MainConnection.Connected then
     Exit;
 
 {
@@ -918,7 +918,7 @@ begin
   if DM.adsQueryValue.Active then
   	DM.adsQueryValue.Close;
 	DM.adsQueryValue.Close;
-	DM.adsQueryValue.SQL.Text := 'SELECT * FROM ORDERSH where (Closed = 1) and (orderdate < :MinOrderDate)';
+	DM.adsQueryValue.SQL.Text := 'SELECT * FROM OrdersHead where (Closed = 1) and (orderdate < :MinOrderDate)';
   DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
 	DM.adsQueryValue.Open;
 	try
@@ -931,11 +931,11 @@ end;
 procedure TMainForm.DeleteOldOrders;
 begin
   DM.adcUpdate.SQL.Text := ''
-   + ' delete ORDERSH, orders'
-   + ' FROM ORDERSH, orders '
+   + ' delete OrdersHead, OrdersList'
+   + ' FROM OrdersHead, OrdersList '
    + ' where '
    + '    (Closed = 1)'
-   + ' and (Orders.OrderId = Ordersh.OrderId)'
+   + ' and (OrdersList.OrderId = OrdersHead.OrderId)'
    + ' and (orderdate < :MinOrderDate)';
   DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
   DM.adcUpdate.Execute;

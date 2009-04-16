@@ -275,7 +275,6 @@ type
     adsOrderDetailsOldORDERCOST: TFIBBCDField;
     adsOrderDetailsOldMINORDERCOUNT: TFIBIntegerField;
     MyConnection: TMyConnection;
-    MyEmbConnection: TMyEmbConnection;
     adtParams: TMyTable;
     adtClients: TMyQuery;
     adsRetailMargins: TMyQuery;
@@ -291,8 +290,7 @@ type
     adsRetailMarginsLEFTLIMIT: TFloatField;
     adsRetailMarginsRIGHTLIMIT: TFloatField;
     adsRetailMarginsRETAIL: TIntegerField;
-    MyConnectionCopy: TMyConnection;
-    MyEmbConnectionCopy: TMyEmbConnection;
+    MyEmbConnection: TMyEmbConnection;
     adcUpdate: TMyQuery;
     adtClientsCALCULATELEADER: TBooleanField;
     adtClientsONLYLEADERS: TBooleanField;
@@ -345,8 +343,6 @@ type
     adsOrderCoreJunk: TBooleanField;
     adsOrderCorePriceEnabled: TBooleanField;
     adsOrderCoreCodeFirmCr: TLargeintField;
-    adsOrderCoreBaseCost: TStringField;
-    adsOrderCoreCryptBASECOST: TCurrencyField;
     adsOrderDetails: TMyQuery;
     adsOrderDetailsid: TLargeintField;
     adsOrderDetailsOrderId: TLargeintField;
@@ -361,18 +357,17 @@ type
     adsOrderDetailscodecr: TStringField;
     adsOrderDetailssynonymname: TStringField;
     adsOrderDetailssynonymfirm: TStringField;
-    adsOrderDetailsprice: TStringField;
     adsOrderDetailsawait: TBooleanField;
     adsOrderDetailsjunk: TBooleanField;
     adsOrderDetailsordercount: TIntegerField;
     adsOrderDetailsSumOrder: TFloatField;
-    adsOrderDetailsSendPrice: TFloatField;
     adsOrderDetailsRequestRatio: TIntegerField;
     adsOrderDetailsOrderCost: TFloatField;
     adsOrderDetailsMinOrderCount: TIntegerField;
-    adsOrderDetailsCryptPRICE: TCurrencyField;
-    adsOrderDetailsCryptSUMORDER: TCurrencyField;
     adsOrdersHeaders: TMyQuery;
+    adsPricesSumOrder: TFloatField;
+    adsOrderDetailsprice: TFloatField;
+    adsOrderCoreCost: TFloatField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -461,6 +456,8 @@ type
     procedure TestEmbeddedMysql;
     procedure TestEmbeddedThread;
     procedure TestDirectoriesOperation;
+    function GetMainConnection: TCustomMyConnection;
+    procedure PatchMyDataSets;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -487,7 +484,7 @@ type
     procedure BackupDatabase;
     procedure RestoreDatabase;
     function IsBackuped : Boolean;
-    procedure ClearBackup( APath: string);
+    procedure ClearBackup;
     procedure SetExclusive;
     procedure ResetExclusive;
     procedure SetCumulative;
@@ -546,6 +543,7 @@ type
     //Установить параметры для компонента TIdHTTP
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
     function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
+    property MainConnection : TCustomMyConnection read GetMainConnection;
   end;
 
 var
@@ -832,13 +830,15 @@ begin
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
+  PatchMyDataSets;
+
   OrdersInfo := TStringList.Create;
   OrdersInfo.Sorted := True;
 
   adsRepareOrders.OnCalcFields := s3cf;
-  adsOrderDetails.OnCalcFields := ocf;
+  //adsOrderDetails.OnCalcFields := ocf;
   adsSumOrdersOldForDelete.OnCalcFields := socf;
-  adsOrderCore.OnCalcFields := occf;
+ // adsOrderCore.OnCalcFields := occf;
 
   SynC := TINFCrypt.Create('', 300);
   CodeC := TINFCrypt.Create('', 60);
@@ -887,14 +887,14 @@ begin
     try
       CheckRestrictToRun;
     finally
-      MyConnection.Close;
+      MainConnection.Close;
     end;
   except
     on E : Exception do
       LogExitError(Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]), Integer(ecDBFileError));
   end;
 
-  MyConnection.Open;
+  MainConnection.Open;
 
   //TestEmbeddedMysql();
 
@@ -967,7 +967,7 @@ end;
 procedure TDM.DataModuleDestroy(Sender: TObject);
 begin
   WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
-  if not MyConnection.Connected then exit;
+  if not MainConnection.Connected then exit;
 
   try
     adtParams.Edit;
@@ -1011,7 +1011,7 @@ begin
   if not IdSSLOpenSSLHeaders.Load then
     LogExitError('Не найдены библиотеки libeay32.dll и ssleay32.dll, необходимые для работы программы.', Integer(ecSSLOpen));
 
-  DM.MyConnection.Open;
+  DM.MainConnection.Open;
   try
     MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
     FGetCatalogsCount := GetCatalogsCount;
@@ -1022,7 +1022,7 @@ begin
       MyServerControl.Close;
     end;
   finally
-    DM.MyConnection.Close;
+    DM.MainConnection.Close;
   end;
   if ( MaxUsers > 0) and ( ProcessCount > MaxUsers)
   then
@@ -1044,22 +1044,22 @@ begin
 
   NeedUpdateByCheckUIN := not CheckCopyIDFromDB;
   if NeedUpdateByCheckUIN then begin
-    DM.MyConnection.Open;
+    DM.MainConnection.Open;
     try
       adtParams.Edit;
       adtParams.FieldByName('CDS').AsString := '';
       adtParams.Post;
     finally
-      DM.MyConnection.Close;
+      DM.MainConnection.Close;
     end;
     AProc.MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
-    DM.MyConnection.Open;
+    DM.MainConnection.Open;
     try
       if (Trim( adtParams.FieldByName( 'HTTPName').AsString) = '') then
         ShowConfig( True );
     finally
-      DM.MyConnection.Close;
+      DM.MainConnection.Close;
     end;
   end;
 
@@ -1117,14 +1117,14 @@ procedure TDM.CompactDataBase();
 var
   RowAffected : Variant;
 begin
-  MyConnection.Open;
+  MainConnection.Open;
   try
     MyServerControl.OptimizeTable;
-    RowAffected := MyConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
+    RowAffected := MainConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
     if VarIsNull(RowAffected) then
       Tracer.TR('BackupRestore', 'Не получилось обновить LastCompact');
   finally
-    MyConnection.Close;
+    MainConnection.Close;
   end;
 end;
 
@@ -1362,8 +1362,8 @@ begin
   Screen.Cursor:=crHourglass;
   try
     with adcUpdate do begin
-      SqL.Text:='DELETE FROM Orders WHERE OrderCount=0'; Execute;
-      SQL.Text:='DELETE FROM OrdersH WHERE NOT Exists(SELECT OrderId FROM Orders WHERE OrderId=OrdersH.OrderId)'; Execute;
+      SqL.Text:='DELETE FROM OrdersList WHERE OrderCount=0'; Execute;
+      SQL.Text:='DELETE FROM OrdersHead WHERE NOT Exists(SELECT OrderId FROM OrdersList WHERE OrderId=OrdersHead.OrderId)'; Execute;
     end;
   finally
     Screen.Cursor:=crDefault;
@@ -1385,16 +1385,16 @@ end;
 
 procedure TDM.BackupDatabase;
 begin
-  if TCustomMyConnection(MyConnection) is TMyEmbConnection then begin
-    MyConnection.Close;
+  if TCustomMyConnection(MainConnection) is TMyEmbConnection then begin
+    MainConnection.Close;
     CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
-    MyConnection.Open;
+    MainConnection.Open;
   end;
 end;
 
 function TDM.IsBackuped : Boolean;
 begin
-  if TCustomMyConnection(MyConnection) is TMyEmbConnection then
+  if TCustomMyConnection(MainConnection) is TMyEmbConnection then
     Result := DirectoryExists(ExePath + SDirDataBackup)
   else
     Result := False;
@@ -1402,21 +1402,27 @@ end;
 
 procedure TDM.RestoreDatabase;
 begin
-  if TCustomMyConnection(MyConnection) is TMyEmbConnection then begin
-    MyConnection.Close;
+  if TCustomMyConnection(MainConnection) is TMyEmbConnection then begin
+    MainConnection.Close;
     MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
-    MyConnection.Open;
+    MainConnection.Open;
   end;
 end;
 
-procedure TDM.ClearBackup( APath: string);
+procedure TDM.ClearBackup;
+{
 var
   MoveRes : Boolean;
   BackupFileName,
   TemplateEtlName,
   NewEtlName : String;
   N : Integer;
+}
 begin
+  //todo: надо потом восстановить ClearBackup, чтобы потом можно было восстановить из эталонной копии
+  if TCustomMyConnection(MainConnection) is TMyEmbConnection then
+    DeleteDirectory(ExePath + SDirDataBackup);
+{
   BackupFileName := APath + ChangeFileExt( DatabaseName, '.bak');
   TemplateEtlName := APath + DatabaseName + '.etl';
   NewEtlName := TemplateEtlName;
@@ -1435,6 +1441,7 @@ begin
   until MoveRes;
   if not MoveRes then
     Windows.DeleteFile( PChar( BackupFileName ) );
+}
 end;
 
 procedure TDM.ResetExclusive;
@@ -1841,9 +1848,11 @@ var
   S : String;
 begin
   try
+{
     S := DM.D_B_N(adsOrderDetails.FieldByName('PRICE').AsString);
     adsOrderDetailsCryptPRICE.AsString := S;
     adsOrderDetailsCryptSUMORDER.AsCurrency := StrToCurr(S) * adsOrderDetails.FieldByName('ORDERCOUNT').AsInteger;
+}    
   except
   end;
 end;
@@ -1862,7 +1871,7 @@ begin
       else
         Open;
     end;
-    DataSetCalc(adsOrderDetails, ['SUM(CryptSUMORDER)'], V);
+    DataSetCalc(adsOrderDetails, ['SUM(SUMORDER)'], V);
     Result := V[0];
   finally
     adsOrderDetails.Close;
@@ -2011,8 +2020,10 @@ var
   S : String;
 begin
   try
+{
     S := D_B_N(adsOrderCoreBASECOST.AsString);
     adsOrderCoreCryptBASECOST.AsCurrency := StrToCurr(S);
+}    
   except
   end;
 end;
@@ -2781,7 +2792,7 @@ end;
 
 procedure TDM.SetSendToNotClosedOrders;
 begin
-  adcUpdate.SQL.Text := 'update ORDERSH set Send = 1 where (Closed = 0)';
+  adcUpdate.SQL.Text := 'update OrdersHead set Send = 1 where (Closed = 0)';
   adcUpdate.Execute;
 end;
 
@@ -3428,7 +3439,9 @@ const
     ('tfQPrepare', 'tfQExecute', 'tfQFetch', 'tfError', 'tfStmt', 'tfConnect',
      'tfTransact', 'tfBlob', 'tfService', 'tfMisc', 'tfParams');
 begin
-  Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]));
+  if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsOrdersHForm')
+  then
+    Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]));
 end;
 
 procedure TDM.TestEmbeddedMysql;
@@ -3443,21 +3456,21 @@ var
   testThread : TTestMyDBThread;
   FQuery : TMyQuery;
 begin
-  if MyConnection.Connected then begin
+  if MainConnection.Connected then begin
     WriteExchangeLog('DBtest', 'start test');
-    MyConnection.Close;
-    MyConnection.Open;
+    MainConnection.Close;
+    MainConnection.Open;
 {$ifdef USEMYSQLEMBEDDED}
-    testThread := TTestMyDBThread.Create(MyConnection);
+    testThread := TTestMyDBThread.Create(MainConnection as TMyEmbConnection);
 {$endif}
     while (testThread.State <> mtsClosinginMain) do
       Sleep(500);
 
-    if MyConnection.Connected then begin
+    if MainConnection.Connected then begin
 
       FQuery := TMyQuery.Create(nil);
       try
-        FQuery.Connection := MyConnection;
+        FQuery.Connection := MainConnection;
 
         try
           FQuery.SQL.Text := 'select * from analitf.params';
@@ -3485,7 +3498,7 @@ begin
       end;
 
       try
-        MyConnection.Close;
+        MainConnection.Close;
       except
         on E : Exception do
           WriteExchangeLog('DBtest.ErrorOnParentClose', E.Message);
@@ -3541,6 +3554,25 @@ begin
   MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
   if DirectoryExists(ExePath + SDirDataBackup) then
     raise Exception.Create('Директория с Backup существует');
+end;
+
+function TDM.GetMainConnection: TCustomMyConnection;
+begin
+{$ifdef USEMYSQLEMBEDDED}
+  Result := (MyEmbConnection as TCustomMyConnection);
+{$else}
+  Result := (MyConnection as TCustomMyConnection);
+{$endif}
+end;
+
+procedure TDM.PatchMyDataSets;
+var
+  I : Integer;
+begin
+  MyServerControl.Connection := MainConnection;
+  for I := 0 to ComponentCount-1 do
+    if Components[i] is TCustomMyDataSet then
+      TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
 end;
 
 initialization

@@ -659,9 +659,7 @@ object CoreForm: TCoreForm
     AfterScroll = adsCore2AfterScroll
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
-    UpdateTransaction = DM.UpTran
     AutoCommit = True
     Left = 64
     Top = 133
@@ -955,7 +953,6 @@ object CoreForm: TCoreForm
   object adsRegionsOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT * FROM Regions')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 152
     Top = 173
@@ -980,7 +977,6 @@ object CoreForm: TCoreForm
       'FROM'
       '    ORDERSSHOWBYFORM(:FULLCODE,'
       '    :ACLIENTID) ')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 184
     Top = 388
@@ -1056,7 +1052,6 @@ object CoreForm: TCoreForm
       'where'
       '  ClientCode = :ACLIENTID'
       'and ProductId = :ProductId')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 344
     Top = 396
@@ -1085,30 +1080,209 @@ object CoreForm: TCoreForm
       'and RegionalData.RegionCode = :RegionCode'
       'and PricesRegionalData.RegionCode = RegionalData.RegionCode'
       'and PricesRegionalData.PriceCode = :PriceCode')
-    Transaction = DM.DefTran
     Database = DM.MainConnectionOld
     Left = 626
     Top = 404
     oCacheCalcFields = True
   end
   object adsCore: TMyQuery
+    SQLUpdate.Strings = (
+      
+        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
+        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
+        'ERCOUNT)')
+    SQLRefresh.Strings = (
+      'SELECT '
+      '    Core.CoreId,'
+      '    Clients.Clientid,'
+      '    Core.PriceCode,'
+      '    Core.RegionCode,'
+      '    Core.productid,'
+      '    catalogs.fullcode AS AFullCode,'
+      '    catalogs.shortcode,'
+      '    Core.CodeFirmCr,'
+      '    Core.SynonymCode,'
+      '    Core.SynonymFirmCrCode,'
+      '    Core.Code,'
+      '    Core.CodeCr,'
+      '    Core.Period,'
+      '    Core.Volume,'
+      '    Core.Note,'
+      '    Core.Cost,'
+      '    Core.Quantity,'
+      '    Core.Await,'
+      '    Core.Junk,'
+      '    Core.doc,'
+      '    Core.registrycost,'
+      '    Core.vitallyimportant,'
+      '    Core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      
+        '    if(PricesData.DatePrice IS NOT NULL, PricesData.DatePrice + ' +
+        'interval -:timezonebias minute, null) AS DatePrice,'
+      '    PricesData.PriceName,'
+      '    PRD.Enabled AS PriceEnabled,'
+      '    Providers.FirmCode AS FirmCode,'
+      '    PRD.Storage,'
+      '    Regions.RegionName,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.fullcode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Price*osbc.OrderCount AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Catalogs'
+      
+        '    inner join products on products.catalogid = catalogs.fullcod' +
+        'e'
+      '    inner join Clients on Clients.Clientid = :ClientID'
+      '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
+        'mCr.SynonymFirmCrCode'
+      '    LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+      
+        '    LEFT JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Reg' +
+        'ionCode)'
+      '        AND (Core.PriceCode=PRD.PriceCode)'
+      
+        '    LEFT JOIN Providers ON PricesData.FirmCode=Providers.FirmCod' +
+        'e'
+      '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
+      
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
+        'sbc.CoreId = Core.CoreId'
+      '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
+      'WHERE '
+      '  Core.CoreId = :CoreID')
     Connection = DM.MyConnection
     SQL.Strings = (
-      'call CORESHOWBYNAME(:ACLIENT,'
-      '    :TIMEZONEBIAS,'
-      '    :PARENTCODE,'
-      '    :SHOWREGISTER,'
-      '    :REGISTERID)')
+      'SELECT '
+      '    Core.CoreId,'
+      '    Clients.Clientid,'
+      '    Core.PriceCode,'
+      '    Core.RegionCode,'
+      '    Core.productid,'
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Core.CodeFirmCr,'
+      '    Core.SynonymCode,'
+      '    Core.SynonymFirmCrCode,'
+      '    Core.Code,'
+      '    Core.CodeCr,'
+      '    Core.Period,'
+      '    Core.Volume,'
+      '    Core.Note,'
+      '    Core.Cost,'
+      '    Core.Quantity,'
+      '    Core.Await,'
+      '    Core.Junk,'
+      '    Core.doc,'
+      '    Core.registrycost,'
+      '    Core.vitallyimportant,'
+      '    Core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      
+        '    if(PricesData.DatePrice IS NOT NULL, PricesData.DatePrice + ' +
+        'interval -:timezonebias minute, null) AS DatePrice,'
+      '    PricesData.PriceName,'
+      '    PRD.Enabled AS PriceEnabled,'
+      '    Providers.FirmCode AS FirmCode,'
+      '    PRD.Storage,'
+      '    Regions.RegionName,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.fullcode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Price*osbc.OrderCount AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Catalogs'
+      
+        '    inner join products on products.catalogid = catalogs.fullcod' +
+        'e'
+      '    inner join Clients on Clients.Clientid = :AClientID'
+      '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
+        'mCr.SynonymFirmCrCode'
+      '    LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+      
+        '    LEFT JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Reg' +
+        'ionCode)'
+      '        AND (Core.PriceCode=PRD.PriceCode)'
+      
+        '    LEFT JOIN Providers ON PricesData.FirmCode=Providers.FirmCod' +
+        'e'
+      '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
+      
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :aclientid and ' +
+        'osbc.CoreId = Core.CoreId'
+      '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
+      'WHERE '
+      '    (Catalogs.FullCode = :ParentCode)'
+      'and (Core.coreid is not null)'
+      'And ((:ShowRegister = 1) Or (Providers.FirmCode <> :RegisterId))')
+    RefreshOptions = [roAfterUpdate]
     Left = 96
     Top = 141
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'ACLIENT'
+        Name = 'TIMEZONEBIAS'
       end
       item
         DataType = ftUnknown
-        Name = 'TIMEZONEBIAS'
+        Name = 'AClientID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'aclientid'
       end
       item
         DataType = ftUnknown
@@ -1125,6 +1299,9 @@ object CoreForm: TCoreForm
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
     end
+    object adsCoreClientid: TLargeintField
+      FieldName = 'Clientid'
+    end
     object adsCorePriceCode: TLargeintField
       FieldName = 'PriceCode'
     end
@@ -1134,11 +1311,8 @@ object CoreForm: TCoreForm
     object adsCoreproductid: TLargeintField
       FieldName = 'productid'
     end
-    object adsCoreAFullCode: TLargeintField
-      FieldName = 'AFullCode'
-    end
-    object adsCoreShortCode: TLargeintField
-      FieldName = 'ShortCode'
+    object adsCoreshortcode: TLargeintField
+      FieldName = 'shortcode'
     end
     object adsCoreCodeFirmCr: TLargeintField
       FieldName = 'CodeFirmCr'
@@ -1160,9 +1334,6 @@ object CoreForm: TCoreForm
     object adsCorePeriod: TStringField
       FieldName = 'Period'
     end
-    object adsCoreSale: TLargeintField
-      FieldName = 'Sale'
-    end
     object adsCoreVolume: TStringField
       FieldName = 'Volume'
       Size = 15
@@ -1171,9 +1342,9 @@ object CoreForm: TCoreForm
       FieldName = 'Note'
       Size = 50
     end
-    object adsCoreBaseCost: TStringField
-      FieldName = 'BaseCost'
-      Size = 60
+    object adsCoreCost: TFloatField
+      FieldName = 'Cost'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreQuantity: TStringField
       FieldName = 'Quantity'
@@ -1185,9 +1356,29 @@ object CoreForm: TCoreForm
     object adsCoreJunk: TBooleanField
       FieldName = 'Junk'
     end
+    object adsCoredoc: TStringField
+      FieldName = 'doc'
+    end
+    object adsCoreregistrycost: TFloatField
+      FieldName = 'registrycost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsCorevitallyimportant: TBooleanField
+      FieldName = 'vitallyimportant'
+    end
+    object adsCorerequestratio: TIntegerField
+      FieldName = 'requestratio'
+      DisplayFormat = '#'
+    end
+    object adsCoreordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsCoreminordercount: TIntegerField
+      FieldName = 'minordercount'
+    end
     object adsCoreSynonymName: TStringField
       FieldName = 'SynonymName'
-      Size = 250
+      Size = 505
     end
     object adsCoreSynonymFirm: TStringField
       FieldName = 'SynonymFirm'
@@ -1206,8 +1397,9 @@ object CoreForm: TCoreForm
     object adsCoreFirmCode: TLargeintField
       FieldName = 'FirmCode'
     end
-    object adsCoreStorage: TIntegerField
+    object adsCoreStorage: TBooleanField
       FieldName = 'Storage'
+      OnGetText = adsCoreOldSTORAGEGetText
     end
     object adsCoreRegionName: TStringField
       FieldName = 'RegionName'
@@ -1244,6 +1436,7 @@ object CoreForm: TCoreForm
     end
     object adsCoreOrderCount: TIntegerField
       FieldName = 'OrderCount'
+      DisplayFormat = '#'
     end
     object adsCoreOrdersSynonym: TStringField
       FieldName = 'OrdersSynonym'
@@ -1253,9 +1446,12 @@ object CoreForm: TCoreForm
       FieldName = 'OrdersSynonymFirm'
       Size = 250
     end
-    object adsCoreOrdersPrice: TStringField
+    object adsCoreOrdersPrice: TFloatField
       FieldName = 'OrdersPrice'
-      Size = 60
+    end
+    object adsCoreSumOrder: TFloatField
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreOrdersJunk: TBooleanField
       FieldName = 'OrdersJunk'
@@ -1283,23 +1479,23 @@ object CoreForm: TCoreForm
       FieldName = 'OrdersHRegionName'
       Size = 25
     end
-    object adsCoredoc: TStringField
-      FieldName = 'doc'
+    object adsCorePriceRet: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'PriceRet'
+      Calculated = True
     end
-    object adsCoreregistrycost: TFloatField
-      FieldName = 'registrycost'
+    object adsCorePriceDelta: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'PriceDelta'
+      Calculated = True
     end
-    object adsCorevitallyimportant: TBooleanField
-      FieldName = 'vitallyimportant'
+    object adsCoreSortOrder: TIntegerField
+      FieldKind = fkCalculated
+      FieldName = 'SortOrder'
+      Calculated = True
     end
-    object adsCorerequestratio: TIntegerField
-      FieldName = 'requestratio'
-    end
-    object adsCoreordercost: TFloatField
-      FieldName = 'ordercost'
-    end
-    object adsCoreminordercount: TIntegerField
-      FieldName = 'minordercount'
+    object adsCorefullcode: TLargeintField
+      FieldName = 'fullcode'
     end
   end
   object adsRegions: TMyQuery
@@ -1427,6 +1623,125 @@ object CoreForm: TCoreForm
       item
         DataType = ftUnknown
         Name = 'PriceCode'
+      end>
+  end
+  object adsCoreEtalon: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '    Core.CoreId,'
+      '    Clients.Clientid,'
+      '    Core.PriceCode,'
+      '    Core.RegionCode,'
+      '    Core.productid,'
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Core.CodeFirmCr,'
+      '    Core.SynonymCode,'
+      '    Core.SynonymFirmCrCode,'
+      '    Core.Code,'
+      '    Core.CodeCr,'
+      '    Core.Period,'
+      '    Core.Volume,'
+      '    Core.Note,'
+      '    Core.Cost,'
+      '    Core.Quantity,'
+      '    Core.Await,'
+      '    Core.Junk,'
+      '    Core.doc,'
+      '    Core.registrycost,'
+      '    Core.vitallyimportant,'
+      '    Core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      
+        '    if(PricesData.DatePrice IS NOT NULL, PricesData.DatePrice + ' +
+        'interval -:timezonebias minute, null) AS DatePrice,'
+      '    PricesData.PriceName,'
+      '    PRD.Enabled AS PriceEnabled,'
+      '    Providers.FirmCode AS FirmCode,'
+      '    PRD.Storage,'
+      '    Regions.RegionName,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.fullcode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Price*osbc.OrderCount AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Catalogs'
+      
+        '    inner join products on products.catalogid = catalogs.fullcod' +
+        'e'
+      '    inner join Clients on Clients.Clientid = :AClientID'
+      '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
+        'mCr.SynonymFirmCrCode'
+      '    LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+      
+        '    LEFT JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Reg' +
+        'ionCode)'
+      '        AND (Core.PriceCode=PRD.PriceCode)'
+      
+        '    LEFT JOIN Providers ON PricesData.FirmCode=Providers.FirmCod' +
+        'e'
+      '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
+      
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :aclientid and ' +
+        'osbc.CoreId = Core.CoreId'
+      '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
+      'WHERE '
+      '    (Catalogs.ShortCode = :ParentCode)'
+      'and (Core.coreid is not null)'
+      'And ((:ShowRegister = 1) Or (Providers.FirmCode <> :RegisterId))')
+    Left = 152
+    Top = 109
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'aclientid'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ParentCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ShowRegister'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'RegisterId'
       end>
   end
 end

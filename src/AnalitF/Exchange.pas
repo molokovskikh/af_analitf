@@ -169,12 +169,12 @@ begin
 		try
       DM.ResetReclame;
 			ExchangeForm.Timer.Enabled := True;
-      DM.MyConnection.Close;
+      DM.MainConnection.Close;
 			Result := ExchangeForm.ShowModal = mrOk;
       if not Result then
         AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
       Sleep(500);
-      DM.MyConnection.Open;
+      DM.MainConnection.Open;
       DM.UpdateReclame;
 		except
 			on E: Exception do
@@ -229,6 +229,7 @@ begin
 
 	if Result and ( AExchangeActions = [ eaSendOrders]) then
   begin
+    MainForm.SetOrdersInfo;
     if (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count = 0)
     then
       AProc.MessageBox('Отправка заказов завершена успешно.', MB_OK or MB_ICONINFORMATION)
@@ -381,7 +382,7 @@ begin
 	{ Требуется завершение программы }
 	if Assigned( ExThread) and ( ErrMsg = 'Terminate') then
 	begin
-    DM.MyConnection.Close;
+    DM.MainConnection.Close;
 		Application.Terminate;
 	end;
 

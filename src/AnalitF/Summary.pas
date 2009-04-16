@@ -8,7 +8,7 @@ uses
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
-  ActnList, U_frameLegend;
+  ActnList, U_frameLegend, MemDS, DBAccess, MyAccess;
 
 const
 	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
@@ -20,11 +20,11 @@ type
     frdsSummary: TfrDBDataSet;
     pClient: TPanel;
     dbgSummary: TToughDBGrid;
-    adsSummary: TpFIBDataSet;
-    adsSummarySumOrder: TCurrencyField;
-    adsSummaryH: TpFIBDataSet;
-    adsSummaryCryptBASECOST: TCurrencyField;
-    adsSummaryPriceRet: TCurrencyField;
+    adsSummaryOld: TpFIBDataSet;
+    adsSummaryOldSumOrder: TCurrencyField;
+    adsSummaryHOld: TpFIBDataSet;
+    adsSummaryOldCryptBASECOST: TCurrencyField;
+    adsSummaryOldPriceRet: TCurrencyField;
     pStatus: TPanel;
     Bevel1: TBevel;
     dbtCountOrder: TDBText;
@@ -45,66 +45,100 @@ type
     btnSelectPrices: TBitBtn;
     miUnselectedAll: TMenuItem;
     miSeparator: TMenuItem;
-    adsCurrentSummary: TpFIBDataSet;
-    adsSendSummary: TpFIBDataSet;
-    adsSummaryVOLUME: TFIBStringField;
-    adsSummaryQUANTITY: TFIBStringField;
-    adsSummaryNOTE: TFIBStringField;
-    adsSummaryPERIOD: TFIBStringField;
-    adsSummaryJUNK: TFIBBooleanField;
-    adsSummaryAWAIT: TFIBBooleanField;
-    adsSummaryCODE: TFIBStringField;
-    adsSummaryCODECR: TFIBStringField;
-    adsSummarySYNONYMNAME: TFIBStringField;
-    adsSummarySYNONYMFIRM: TFIBStringField;
-    adsSummaryBASECOST: TFIBStringField;
-    adsSummaryPRICENAME: TFIBStringField;
-    adsSummaryREGIONNAME: TFIBStringField;
-    adsSummaryORDERCOUNT: TFIBIntegerField;
-    adsSummaryORDERSCOREID: TFIBBCDField;
-    adsSummaryORDERSORDERID: TFIBBCDField;
-    adsSummaryPRICECODE: TFIBBCDField;
-    adsSummaryREGIONCODE: TFIBBCDField;
-    adsSummaryDOC: TFIBStringField;
-    adsSummaryREGISTRYCOST: TFIBFloatField;
-    adsSummaryVITALLYIMPORTANT: TFIBBooleanField;
-    adsSummaryREQUESTRATIO: TFIBIntegerField;
-    adsSendSummaryVOLUME: TFIBStringField;
-    adsSendSummaryQUANTITY: TFIBStringField;
-    adsSendSummaryNOTE: TFIBStringField;
-    adsSendSummaryPERIOD: TFIBStringField;
-    adsSendSummaryJUNK: TFIBBooleanField;
-    adsSendSummaryAWAIT: TFIBBooleanField;
-    adsSendSummaryCODE: TFIBStringField;
-    adsSendSummaryCODECR: TFIBStringField;
-    adsSendSummarySYNONYMNAME: TFIBStringField;
-    adsSendSummarySYNONYMFIRM: TFIBStringField;
-    adsSendSummaryBASECOST: TFIBStringField;
-    adsSendSummaryPRICENAME: TFIBStringField;
-    adsSendSummaryREGIONNAME: TFIBStringField;
-    adsSendSummaryORDERCOUNT: TFIBIntegerField;
-    adsSendSummaryORDERSCOREID: TFIBBCDField;
-    adsSendSummaryORDERSORDERID: TFIBBCDField;
-    adsSendSummaryPRICECODE: TFIBBCDField;
-    adsSendSummaryREGIONCODE: TFIBBCDField;
-    adsSendSummaryDOC: TFIBStringField;
-    adsSendSummaryVITALLYIMPORTANT: TFIBIntegerField;
-    adsSendSummaryREQUESTRATIO: TFIBIntegerField;
-    adsSendSummaryREGISTRYCOST: TFIBFloatField;
+    adsCurrentSummaryOld: TpFIBDataSet;
+    adsSendSummaryOld: TpFIBDataSet;
+    adsSummaryOldVOLUME: TFIBStringField;
+    adsSummaryOldQUANTITY: TFIBStringField;
+    adsSummaryOldNOTE: TFIBStringField;
+    adsSummaryOldPERIOD: TFIBStringField;
+    adsSummaryOldJUNK: TFIBBooleanField;
+    adsSummaryOldAWAIT: TFIBBooleanField;
+    adsSummaryOldCODE: TFIBStringField;
+    adsSummaryOldCODECR: TFIBStringField;
+    adsSummaryOldSYNONYMNAME: TFIBStringField;
+    adsSummaryOldSYNONYMFIRM: TFIBStringField;
+    adsSummaryOldBASECOST: TFIBStringField;
+    adsSummaryOldPRICENAME: TFIBStringField;
+    adsSummaryOldREGIONNAME: TFIBStringField;
+    adsSummaryOldORDERCOUNT: TFIBIntegerField;
+    adsSummaryOldORDERSCOREID: TFIBBCDField;
+    adsSummaryOldORDERSORDERID: TFIBBCDField;
+    adsSummaryOldPRICECODE: TFIBBCDField;
+    adsSummaryOldREGIONCODE: TFIBBCDField;
+    adsSummaryOldDOC: TFIBStringField;
+    adsSummaryOldREGISTRYCOST: TFIBFloatField;
+    adsSummaryOldVITALLYIMPORTANT: TFIBBooleanField;
+    adsSummaryOldREQUESTRATIO: TFIBIntegerField;
+    adsSendSummaryOldVOLUME: TFIBStringField;
+    adsSendSummaryOldQUANTITY: TFIBStringField;
+    adsSendSummaryOldNOTE: TFIBStringField;
+    adsSendSummaryOldPERIOD: TFIBStringField;
+    adsSendSummaryOldJUNK: TFIBBooleanField;
+    adsSendSummaryOldAWAIT: TFIBBooleanField;
+    adsSendSummaryOldCODE: TFIBStringField;
+    adsSendSummaryOldCODECR: TFIBStringField;
+    adsSendSummaryOldSYNONYMNAME: TFIBStringField;
+    adsSendSummaryOldSYNONYMFIRM: TFIBStringField;
+    adsSendSummaryOldBASECOST: TFIBStringField;
+    adsSendSummaryOldPRICENAME: TFIBStringField;
+    adsSendSummaryOldREGIONNAME: TFIBStringField;
+    adsSendSummaryOldORDERCOUNT: TFIBIntegerField;
+    adsSendSummaryOldORDERSCOREID: TFIBBCDField;
+    adsSendSummaryOldORDERSORDERID: TFIBBCDField;
+    adsSendSummaryOldPRICECODE: TFIBBCDField;
+    adsSendSummaryOldREGIONCODE: TFIBBCDField;
+    adsSendSummaryOldDOC: TFIBStringField;
+    adsSendSummaryOldVITALLYIMPORTANT: TFIBIntegerField;
+    adsSendSummaryOldREQUESTRATIO: TFIBIntegerField;
+    adsSendSummaryOldREGISTRYCOST: TFIBFloatField;
     dtpDateFrom: TDateTimePicker;
     dtpDateTo: TDateTimePicker;
-    adsSummarySENDPRICE: TFIBBCDField;
-    adsSummaryORDERCOST: TFIBBCDField;
-    adsSummaryMINORDERCOUNT: TFIBIntegerField;
-    adsSummaryCOREID: TFIBBCDField;
+    adsSummaryOldSENDPRICE: TFIBBCDField;
+    adsSummaryOldORDERCOST: TFIBBCDField;
+    adsSummaryOldMINORDERCOUNT: TFIBIntegerField;
+    adsSummaryOldCOREID: TFIBBCDField;
     ActionList: TActionList;
     actFlipCore: TAction;
-    adsSummaryFULLCODE: TFIBBCDField;
-    adsSummarySHORTCODE: TFIBBCDField;
+    adsSummaryOldFULLCODE: TFIBBCDField;
+    adsSummaryOldSHORTCODE: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
     frameLegeng: TframeLegeng;
+    adsSummaryH: TMyQuery;
+    adsCurrentSummary: TMyQuery;
+    adsSendSummary: TMyQuery;
+    adsSummary: TMyQuery;
+    adsSummaryfullcode: TLargeintField;
+    adsSummaryshortcode: TLargeintField;
+    adsSummaryClientid: TLargeintField;
+    adsSummaryCoreID: TLargeintField;
+    adsSummaryVolume: TStringField;
+    adsSummaryQuantity: TStringField;
+    adsSummaryNote: TStringField;
+    adsSummaryPeriod: TStringField;
+    adsSummaryJunk: TBooleanField;
+    adsSummaryAwait: TBooleanField;
+    adsSummaryCODE: TStringField;
+    adsSummaryCODECR: TStringField;
+    adsSummarydoc: TStringField;
+    adsSummaryregistrycost: TFloatField;
+    adsSummaryordercost: TFloatField;
+    adsSummaryCost: TFloatField;
+    adsSummarySynonymName: TStringField;
+    adsSummarySynonymFirm: TStringField;
+    adsSummaryPriceName: TStringField;
+    adsSummaryRegionName: TStringField;
+    adsSummaryOrderCount: TIntegerField;
+    adsSummaryOrdersCoreId: TLargeintField;
+    adsSummaryOrdersOrderId: TLargeintField;
+    adsSummarypricecode: TLargeintField;
+    adsSummaryregioncode: TLargeintField;
+    adsSummarySumOrder: TFloatField;
+    adsSummaryPriceRet: TCurrencyField;
+    adsSummaryRequestRatio: TIntegerField;
+    adsSummaryMINORDERCOUNT: TIntegerField;
+    adsSummaryVitallyImportant: TBooleanField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -118,8 +152,8 @@ type
     procedure dbgSummaryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgSummarySortMarkingChanged(Sender: TObject);
-    procedure adsSummaryBeforeEdit(DataSet: TDataSet);
-    procedure adsSummaryBeforeDelete(DataSet: TDataSet);
+    procedure adsSummaryOldBeforeEdit(DataSet: TDataSet);
+    procedure adsSummaryOldBeforeDelete(DataSet: TDataSet);
     procedure btnDeleteClick(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure rgSummaryTypeClick(Sender: TObject);
@@ -245,15 +279,15 @@ begin
 	try
     if adsSummary.Active then
       adsSummary.Close;
-    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersH.');
+    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersHead.');
     if LastSymmaryType = 0 then begin
-      adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
+      adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
       dbgSummary.InputField := 'OrderCount';
       dbgSummary.Tag := 256;
       btnDelete.Enabled := True;
     end
     else begin
-      adsSummary.SelectSQL.Text := adsSendSummary.SelectSQL.Text;
+      adsSummary.SQL.Text := adsSendSummary.SQL.Text;
       adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
       adsSummary.ParamByName( 'DATETO').Value := IncDay(LastDateTo);
       dbgSummary.InputField := '';
@@ -261,7 +295,7 @@ begin
       btnDelete.Enabled := False;
     end;
     if Length(FilterSQL) > 0 then
-      adsSummary.SelectSQL.Text := adsSummary.SelectSQL.Text + ' and ( ' + FilterSQL + ' )';
+      adsSummary.SQL.Text := adsSummary.SQL.Text + ' and ( ' + FilterSQL + ' )';
     adsSummary.Open;
     DataSetCalc( adsSummary,['SUM(SUMORDER)'], V);
     OrderCount := adsSummary.RecordCount;
@@ -276,30 +310,24 @@ procedure TSummaryForm.SummaryHShow;
 begin
 	Screen.Cursor := crHourglass;
 	try
-		with adsSummaryH do if Active then CloseOpen(True) else Open;
+		with adsSummaryH do
+      if Active then
+      begin
+        Close;
+        Open;
+      end
+      else
+        Open;
 	finally
 		Screen.Cursor := crDefault;
 	end;
 end;
 
 procedure TSummaryForm.scf(DataSet: TDataSet);
-var
-  S : String;
-  C : Currency;
 begin
 	//вычисляем сумму по позиции
   try
-    if adsSummarySENDPRICE.IsNull then begin
-      S := DM.D_B_N(adsSummaryBASECOST.AsString);
-      C := StrToCurr(S);
-      adsSummaryCryptBASECOST.AsCurrency := C;
-    end
-    else begin
-      C := adsSummarySENDPRICE.AsCurrency;
-      adsSummaryCryptBASECOST.AsCurrency := C;
-    end;
-    adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(C);
-    adsSummarySumOrder.AsCurrency := C * adsSummaryORDERCOUNT.AsInteger;
+    adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(adsSummaryCOST.AsCurrency);
   except
   end;
 end;
@@ -307,8 +335,8 @@ end;
 procedure TSummaryForm.adsSummary2AfterPost(DataSet: TDataSet);
 begin
 	OrderCount := OrderCount + Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsSummaryORDERCOUNT.AsInteger - OldOrder) * adsSummaryCryptBASECOST.AsCurrency;
-  DM.SetNewOrderCount(adsSummaryORDERCOUNT.AsInteger, adsSummaryCryptBASECOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
+	OrderSum := OrderSum + ( adsSummaryORDERCOUNT.AsInteger - OldOrder) * adsSummaryCOST.AsCurrency;
+  DM.SetNewOrderCount(adsSummaryORDERCOUNT.AsInteger, adsSummaryCOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
   SetOrderLabel;
 	SummaryHShow;
 	if adsSummaryORDERCOUNT.AsInteger = 0 then SummaryShow;
@@ -323,15 +351,15 @@ begin
   if LastSymmaryType = 0 then begin
     adsSummary.DisableControls;
     try
-      LastCurrentSQL := adsSummary.SelectSQL.Text;
+      LastCurrentSQL := adsSummary.SQL.Text;
       if adsSummary.Active then
         adsSummary.Close;
-      adsSummary.SelectSQL.Text := adsCurrentSummary.SelectSQL.Text;
+      adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
       adsSummary.Open;
-      adsSummary.DoSort(['SynonymName'], [True]);
+      adsSummary.IndexFieldNames := 'SynonymName';
       DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
       adsSummary.Close;
-      adsSummary.SelectSQL.Text := LastCurrentSQL;
+      adsSummary.SQL.Text := LastCurrentSQL;
       adsSummary.Open;
       dbgSummary.OnSortMarkingChanged(dbgSummary);
     finally
@@ -346,11 +374,11 @@ procedure TSummaryForm.dbgSummaryGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if adsSummaryVITALLYIMPORTANT.AsBoolean then
+  if (adsSummaryVITALLYIMPORTANT.AsBoolean) then
     AFont.Color := VITALLYIMPORTANT_CLR;
 
 	if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or
-		( Column.Field = adsSummaryCryptBASECOST)) then Background := JUNK_CLR;
+		( Column.Field = adsSummaryCOST)) then Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
 	if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then
 		Background := AWAIT_CLR;
@@ -437,19 +465,19 @@ end;
 
 procedure TSummaryForm.dbgSummarySortMarkingChanged(Sender: TObject);
 begin
-  FIBDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TSummaryForm.adsSummaryBeforeEdit(DataSet: TDataSet);
+procedure TSummaryForm.adsSummaryOldBeforeEdit(DataSet: TDataSet);
 begin
   OldOrder:=adsSummaryORDERCOUNT.AsInteger;
   DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
 end;
 
-procedure TSummaryForm.adsSummaryBeforeDelete(DataSet: TDataSet);
+procedure TSummaryForm.adsSummaryOldBeforeDelete(DataSet: TDataSet);
 begin
   DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-  DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
+  DM.SetNewOrderCount(0, adsSummaryCOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
 end;
 
 procedure TSummaryForm.SetOrderLabel;
@@ -463,16 +491,17 @@ begin
   if LastSymmaryType = 0 then
     if AProc.MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
       OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
-      OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCryptBASECOST.AsCurrency;
+      OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCOST.AsCurrency;
       SetOrderLabel;
       DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-      DM.SetNewOrderCount(0, adsSummaryCryptBASECOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
+      DM.SetNewOrderCount(0, adsSummaryCOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
       DM.adcUpdate.SQL.Text :=
-        'delete from Orders where OrderID = ' +
+        'delete from OrdersList where OrderID = ' +
           IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
           ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
       DM.adcUpdate.Execute;
-      adsSummary.CloseOpen(True);
+      adsSummary.Close;
+      adsSummary.Open;
       MainForm.SetOrdersInfo;
     end;
 end;
@@ -560,7 +589,7 @@ begin
 	FullCode := adsSummaryFullCode.AsInteger;
 	ShortCode := adsSummaryShortCode.AsInteger;
 
-  CoreId := adsSummaryCOREID.AsInt64;
+  CoreId := adsSummaryCOREID.AsLargeInt;
 
   FlipToCode(FullCode, ShortCode, CoreId);
 end;

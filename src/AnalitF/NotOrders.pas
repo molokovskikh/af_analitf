@@ -50,29 +50,29 @@ begin
 	result := True;
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
-	DM.adsQueryValue.SQL.Text :='' 
-+'SELECT OrdersH.OrderId                 , ' 
-+'       OrdersH.PriceName               , ' 
-+'       OrdersH.RegionName              , ' 
-+'       pricesregionaldata.minreq       , ' 
-+'       pricesregionaldata.ControlMinReq, ' 
-+'       OrdersPositions.Positions ' 
-+'FROM ((OrdersH ' 
-+'       INNER JOIN ' 
-+'              ( SELECT  Orders.OrderId, ' 
-+'                       COUNT(*) AS Positions ' 
-+'              FROM     Orders ' 
-+'              WHERE    Orders.OrderCount > 0 ' 
-+'              GROUP BY Orders.OrderId ' 
-+'              ) OrdersPositions     ON OrdersPositions.OrderId = OrdersH.OrderId ' 
-+'       LEFT JOIN PricesData         ON OrdersH.PriceCode=PricesData.PriceCode) ' 
-+'       LEFT JOIN pricesregionaldata ON pricesregionaldata.PriceCode = OrdersH.PriceCode AND pricesregionaldata.regioncode = OrdersH.regioncode) ' 
-+'       LEFT JOIN RegionalData       ON (RegionalData.RegionCode=OrdersH.RegionCode) AND (PricesData.FirmCode=RegionalData.FirmCode) ' 
-+'WHERE (OrdersH.ClientId = :AClientId) ' 
-+'   AND (OrdersH.Closed = 0) ' 
-+'   AND (OrdersH.Send = 1) ' 
-+'   AND (PricesData.PriceCode IS NOT NULL) ' 
-+'   AND (RegionalData.RegionCode IS NOT NULL) ' 
+	DM.adsQueryValue.SQL.Text :=''
++'SELECT OrdersHead.OrderId                 , '
++'       OrdersHead.PriceName               , '
++'       OrdersHead.RegionName              , '
++'       pricesregionaldata.minreq       , '
++'       pricesregionaldata.ControlMinReq, '
++'       OrdersPositions.Positions '
++'FROM ((OrdersHead '
++'       INNER JOIN '
++'              ( SELECT  OrdersList.OrderId, '
++'                       COUNT(*) AS Positions '
++'              FROM     OrdersList '
++'              WHERE    OrdersList.OrderCount > 0 '
++'              GROUP BY OrdersList.OrderId '
++'              ) OrdersPositions     ON OrdersPositions.OrderId = OrdersHead.OrderId '
++'       LEFT JOIN PricesData         ON OrdersHead.PriceCode=PricesData.PriceCode) '
++'       LEFT JOIN pricesregionaldata ON pricesregionaldata.PriceCode = OrdersHead.PriceCode AND pricesregionaldata.regioncode = OrdersHead.regioncode) '
++'       LEFT JOIN RegionalData       ON (RegionalData.RegionCode=OrdersHead.RegionCode) AND (PricesData.FirmCode=RegionalData.FirmCode) '
++'WHERE (OrdersHead.ClientId = :AClientId) '
++'   AND (OrdersHead.Closed = 0) '
++'   AND (OrdersHead.Send = 1) '
++'   AND (PricesData.PriceCode IS NOT NULL) '
++'   AND (RegionalData.RegionCode IS NOT NULL) '
 +'   AND (pricesregionaldata.PriceCode IS NOT NULL) '
 +'   AND (OrdersPositions.Positions > 0)';
 	DM.adsQueryValue.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
@@ -98,12 +98,13 @@ begin
       DM.adsQueryValue.Close;
     end;
 
+    if Strings.Count > 0 then
+      result := ShowNotOrders( Strings);
+      
   finally
 	  Strings.Free;
   end;
 
-  if Strings.Count > 0 then
-    result := ShowNotOrders( Strings);
 end;
 
 procedure TNotOrdersForm.Button1Click(Sender: TObject);

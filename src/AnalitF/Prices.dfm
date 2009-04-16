@@ -445,7 +445,6 @@ inherited PricesForm: TPricesForm
       '    :TIMEZONEBIAS) ')
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
-    OnCalcFields = adsPricesOldCalcFields
     Database = DM.MainConnectionOld
     AutoCommit = True
     Left = 96
@@ -589,42 +588,61 @@ inherited PricesForm: TPricesForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT '
-      'pricesshow.*,'
+      '  pricesshow.*,'
       
-        'pricesshow.UniversalDatePrice - interval :TimeZoneBias minute AS' +
-        ' DatePrice,'
+        '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
+        'AS DatePrice,'
+      '  count(OrdersList.ID) as Positions,'
+      
+        '  ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as Su' +
+        'mOrder,'
+      '/*'
       '('
       '  SELECT'
       '    Count(*)'
       '  FROM'
-      '    OrdersH'
-      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
-      '  WHERE OrdersH.ClientId   = :AClientId'
-      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
-      '     AND OrdersH.Closed <> 1'
-      '     AND Orders.OrderCount > 0'
-      ') as Positions,'
-      '('
-      '  select'
-      '    Sum(Orders.SendPrice * Orders.OrderCount)'
-      '  from'
-      '    OrdersH'
-      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
-      '  WHERE OrdersH.ClientId = :AClientId'
-      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
+      '    OrdersHead'
       
-        '     and ordersh.senddate > curdate() + interval (1-day(curdate(' +
-        '))) day'
-      '     AND OrdersH.Closed = 1'
-      '     AND OrdersH.send = 1'
-      '     AND Orders.OrderCount>0'
-      ') as sumbycurrentmonth'
-      'FROM pricesshow')
+        '    INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Order' +
+        'Id'
+      '  WHERE OrdersHead.ClientId   = :AClientId'
+      '     AND OrdersHead.PriceCode = pricesshow.PriceCode'
+      '     AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      '     AND OrdersHead.Closed <> 1'
+      '     AND OrdersList.OrderCount > 0'
+      ') as Positions,'
+      '*/'
+      '  ('
+      '    select'
+      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '    from'
+      '      OrdersHead'
+      
+        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        'erId'
+      '    WHERE OrdersHead.ClientId = :AClientId'
+      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
+      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      
+        '       and OrdersHead.senddate > curdate() + interval (1-day(cur' +
+        'date())) day'
+      '       AND OrdersHead.Closed = 1'
+      '       AND OrdersHead.send = 1'
+      '       AND OrdersList.OrderCount>0'
+      '  ) as sumbycurrentmonth'
+      'FROM '
+      '  pricesshow'
+      '  left join Ordershead on '
+      '        Ordershead.Pricecode = pricesshow.PriceCode '
+      '    and Ordershead.Regioncode = pricesshow.RegionCode'
+      '    and OrdersHead.ClientId   = :AClientId'
+      '    and OrdersHead.Closed <> 1'
+      '  left join OrdersList on '
+      '        OrdersList.ORDERID = Ordershead.ORDERID'
+      '    and OrdersList.OrderCount > 0'
+      'group by pricesshow.PriceCode, pricesshow.RegionCode')
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
-    OnCalcFields = adsPricesOldCalcFields
     Left = 144
     Top = 152
     ParamData = <
@@ -712,12 +730,11 @@ inherited PricesForm: TPricesForm
     end
     object adsPricessumbycurrentmonth: TFloatField
       FieldName = 'sumbycurrentmonth'
+      DisplayFormat = '0.00;;'#39#39
     end
-    object adsPricesSumOrder: TCurrencyField
-      FieldKind = fkCalculated
+    object adsPricesSumOrder: TFloatField
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
-      Calculated = True
     end
   end
 end

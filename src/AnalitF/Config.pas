@@ -208,20 +208,22 @@ begin
           NewPass := eHTTPPass.Text;
           CryptNewPass := DM.E_HP(NewPass);
           DM.adtParams.FieldByName('HTTPPass').AsString := CryptNewPass;
+{
           LogCriticalError(
             Format(
               'Изменился пароль. Пароль: "%s"  Зашифрованный : "%s"  В датасет : "%s"',
               [NewPass,
               CryptNewPass,
               DM.adtParams.FieldByName('HTTPPass').AsString]));
+}              
         end;
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
           // удаляем все неотправленные открытые заявки
           DM.adcUpdate.SQL.Text := ''
-           + ' delete ORDERSH, orders'
-           + ' FROM ORDERSH, orders '
+           + ' delete OrdersHead, OrdersList'
+           + ' FROM OrdersHead, OrdersList '
            + ' where '
            + '    (Closed = 0)';
           DM.adcUpdate.Execute;

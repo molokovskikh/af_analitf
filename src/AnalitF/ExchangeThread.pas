@@ -215,7 +215,7 @@ begin
 	Synchronize( SetTotalProgress);
 	try
     CoInitialize(nil);
-    DM.MyConnection.Open;
+    DM.MainConnection.Open;
     try
 		try
       ImportComplete := False;
@@ -440,7 +440,7 @@ begin
 			end;
 		end;
     finally
-      try DM.MyConnection.Close;
+      try DM.MainConnection.Close;
       except
         on E : Exception do
           WriteExchangeLog('Exchange', 'Ошибка при закрытии соединения : ' + E.Message);
@@ -865,7 +865,7 @@ begin
 			values[ i * OrderParamCount + 14] := BoolToStr( DM.adsOrderDetails.FieldByName( 'Await').AsBoolean, True);
       try
         if Length(DM.adsOrderDetails.FieldByName( 'PRICE').AsString) > 0 then
-          S := DM.D_B_N(DM.adsOrderDetails.FieldByName( 'PRICE').AsString)
+          S := DM.adsOrderDetails.FieldByName( 'PRICE').AsString
         else
           S := CurrToStr(0.0);
         TmpOrderCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
@@ -919,7 +919,7 @@ begin
         DM.adsOrderCore.ParamByName( 'ShowRegister').Value := False;
         DM.adsOrderCore.Open;
         DM.adsOrderCore.FetchAll;
-        DM.adsOrderCore.IndexFieldNames := 'CryptBaseCost ASC';
+        DM.adsOrderCore.IndexFieldNames := 'Cost ASC';
 
         //Выбираем минимального из всех прайсов
         DBProc.SetFilter(DM.adsOrderCore,
@@ -930,7 +930,7 @@ begin
         DM.adsOrderCore.First;
 
         try
-          S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
+          S := DM.adsOrderCoreCOST.AsString;
           TmpMinCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
           S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
           values[ i * OrderParamCount + 16] := S;
@@ -944,7 +944,7 @@ begin
         except
           on E : Exception do begin
             WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены : ' + E.Message
-              + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
+              + '  Строка : "' + DM.adsOrderCoreCOST.AsString + '"');
             values[ i * OrderParamCount + 16] := '';
             values[ i * OrderParamCount + 17] := '';
           end;
@@ -962,7 +962,7 @@ begin
         //В основных прайс-листах может не быть предложений
         if not DM.adsOrderCore.IsEmpty then begin
           try
-            S := DM.D_B_N(DM.adsOrderCoreBASECOST.AsString);
+            S := DM.adsOrderCoreCOST.AsString;
             TmpMinCost := StringReplace(S, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
             S := StringReplace(S, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
             values[ i * OrderParamCount + 18] := S;
@@ -978,7 +978,7 @@ begin
           except
             on E : Exception do begin
               WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
-                + '  Строка : "' + DM.adsOrderCoreBASECOST.AsString + '"');
+                + '  Строка : "' + DM.adsOrderCoreCOST.AsString + '"');
               values[ i * OrderParamCount + 18] := '';
               values[ i * OrderParamCount + 19] := '';
             end;
@@ -1039,7 +1039,7 @@ begin
 		except
 			DM.adsOrdersHeaders.Close;
 			DM.adsOrderDetails.Close;
-			Synchronize( MainForm.SetOrdersInfo);
+			//Synchronize( MainForm.SetOrdersInfo);
 			raise;
 		end;
 
@@ -1064,11 +1064,11 @@ begin
 		except
 			DM.adsOrdersHeaders.Close;
 			DM.adsOrderDetails.Close;
-			Synchronize( MainForm.SetOrdersInfo);
+			//Synchronize( MainForm.SetOrdersInfo);
 			raise;
 		end;
 	end;
-	Synchronize( MainForm.SetOrdersInfo);
+	//Synchronize( MainForm.SetOrdersInfo);
 	DM.adsOrdersHeaders.Close;
 	DM.adsOrderDetails.Close;
 	Synchronize( EnableCancel);
@@ -1226,11 +1226,11 @@ begin
 
 		StatusText := 'Сжатие базы';
 		Synchronize( SetStatus);
-    DM.MyConnection.Close;
+    DM.MainConnection.Close;
     try
       DM.CompactDatabase;
     finally
-      DM.MyConnection.Open;
+      DM.MainConnection.Open;
     end;
 	end;
 end;
@@ -1382,7 +1382,8 @@ begin
       deletedPriceCodes.Free;
     end;
 
-	  SQL.Text:='update minprices set servercoreid = null, MinCost = null, PriceCode = null where not exists(select * from core c where c.servercoreid = minprices.servercoreid);';
+	  //SQL.Text:='update minprices set servercoreid = null, MinCost = null, PriceCode = null where not exists(select * from core c where c.servercoreid = minprices.servercoreid);';
+	  SQL.Text:='delete from minprices ;';
     InternalExecute;
 	end;
 	if utCore in UpdateTables then begin
@@ -1400,9 +1401,9 @@ begin
     InternalExecute;
 	end;
 
-  DM.MyConnection.Close;
+  DM.MainConnection.Close;
 
-  DM.MyConnection.Open;
+  DM.MainConnection.Open;
 
 	Progress := 10;
 	Synchronize( SetProgress);
@@ -1534,8 +1535,8 @@ begin
     InternalExecute;
 	end;
 
-  DM.MyConnection.Close;
-  DM.MyConnection.Open;
+  DM.MainConnection.Close;
+  DM.MainConnection.Open;
 
 	Progress := 40;
 	Synchronize( SetProgress);
@@ -1543,17 +1544,33 @@ begin
 	Progress := 50;
 	Synchronize( SetProgress);
 	//проставляем мин. цены и лидеров
+{
 	SQL.Text :=
     'INSERT INTO MinPrices ( productid, RegionCode ) select     distinct c.productid, c.regioncode from core c ' +
     'where c.Synonymcode > 0 and not exists(select * from minprices m where m.productid = c.productid and m.regioncode = c.regioncode);';
+}
+	SQL.Text := ''
+    + 'INSERT '
+    + 'INTO    MinPrices '
+    + '(ProductId, RegionCode, MinCost) '
+    + 'SELECT '
+    + '  ProductId, '
+    + '  RegionCode, '
+    + '  min(Cost) '
+    + 'FROM    Core '
+    + 'GROUP BY ProductId, RegionCode';
+{
+    + 'where '
+    + '  (PriceCode is not null) '
+}
   InternalExecute;
   Progress := 60;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
 	Synchronize( SetTotalProgress);
 
-  DM.MyConnection.Close;
-  DM.MyConnection.Open;
+  DM.MainConnection.Close;
+  DM.MainConnection.Open;
 
 	StatusText := 'Импорт данных';
 	Synchronize( SetStatus);
@@ -1606,6 +1623,18 @@ begin
 	//проставляем мин. цены и лидеров
 	if utMinPrices in UpdateTables then
 	begin
+    SQL.Text := ''
+      + 'UPDATE '
+      + '  MinPrices, '
+      + '  Core '
+      + 'SET '
+      + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
+      + '  MinPrices.PriceCode  = Core.PriceCode '
+      + 'WHERE '
+      + '    Core.ProductId  = MinPrices.ProductId '
+      + 'and Core.RegionCode = MinPrices.RegionCode '
+      + 'and Core.Cost       = MinPrices.MinCost';
+    InternalExecute;
 {
     UpdateFromFileByParamsMySQL(ExePath+SDirIn+'\MinPrices.txt',
 ''
@@ -1625,7 +1654,7 @@ begin
 +'WHERE  productid                                                            = :productid '
 +'   AND regioncode                                                           = :regioncode',
      ['servercoreid', 'productid', 'regioncode', 'servermemoid'], True);
-}     
+}
 
   {
     UpdateFromFileByParams(ExePath+SDirIn+'\MinPrices.txt',
@@ -1671,8 +1700,8 @@ begin
 +'   AND pricesregionaldata.regioncode = PriceSizes.regioncode';
 	InternalExecute;
 
-  DM.MyConnection.Close;
-  DM.MyConnection.Open;
+  DM.MainConnection.Close;
+  DM.MainConnection.Open;
 
 	Progress := 100;
 	Synchronize( SetProgress);
@@ -1685,15 +1714,14 @@ begin
   DM.adcUpdate.AfterUpdateExecute := nil;
   end;
 
-  DM.MyConnection.Close;
-  DM.MyConnection.Open;
+  DM.MainConnection.Close;
+  DM.MainConnection.Open;
 
 	DM.UnLinkExternalTables;
 
-  //todo: надо потом восстановить ClearBackup, чтобы потом можно было восстановить из эталонной копии
-  //DM.ClearBackup( ExePath);
+  DM.ClearBackup;
 
-  Dm.MyConnection.AfterConnect(nil);
+  Dm.MainConnection.AfterConnect(nil);
 	{ Показываем время обновления }
 	DM.adtParams.Edit;
 	DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=
@@ -1830,7 +1858,7 @@ begin
   try
 
     absentQuery := TMyQuery.Create(nil);
-    absentQuery.Connection := DM.MyConnection;
+    absentQuery.Connection := DM.MainConnection;
     try
       absentQuery.SQL.Text := ''
 +'SELECT DISTINCT c.Pricecode '
@@ -2415,7 +2443,7 @@ begin
   up := TMyQuery.Create(nil);
   SetLength(Values, Length(Names));
   try
-    up.Connection := DM.MyConnection;
+    up.Connection := DM.MainConnection;
 
     InDelimitedFile := TFIBInputDelimitedFile.Create;
     try
