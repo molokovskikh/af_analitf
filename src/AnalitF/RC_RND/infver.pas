@@ -912,6 +912,7 @@ const rcon: ARRAY [0..9] OF SET32 = (
     (**
      * Encrypt a block (16 bytes) from pt at index p0 onto ct at index c0.
      *)
+{$WARNINGS OFF}
     PROCEDURE Encrypt (CONST rk: ExpandedKey; Nr: LONGINT;
             CONST pt: ARRAY OF BYTE {Block}; p0: LONGINT;
             VAR ct: ARRAY OF BYTE {Block}; c0: LONGINT);
@@ -1130,5 +1131,6 @@ const rcon: ARRAY [0..9] OF SET32 = (
             rk[p + 3];
         PutSet(pt, p0 + 12, s3);
     END { Decrypt };
+{$WARNINGS ON}
 
 END { unit Rijndael }.

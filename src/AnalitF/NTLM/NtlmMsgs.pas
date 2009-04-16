@@ -207,7 +207,6 @@ function TNTLM.GetNTHash(APassword: String; ANonce: Array of byte): String;
 var
   Pass: String;
   PassHash: String;
-  Context: PMD4Ctx;
   Encryption: IEncryption;
   md4 : TIdHashMessageDigest4;
 

@@ -115,18 +115,6 @@ private
 	procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
-  //
-  procedure UpdateFromFile(
-    FileName,
-    InsertSQL : String;
-    OnExecuteError : TFIBQueryErrorEvent = nil;
-    OnBatching : TOnBatching = nil);
-  procedure UpdateFromFileByParams(
-    FileName,
-    InsertSQL : String;
-    Names : array of string;
-    LogSQL : Boolean = True);
-
   procedure UpdateFromFileByParamsMySQL(
     FileName,
     InsertSQL : String;
@@ -140,20 +128,8 @@ private
   procedure OnChildTerminate(Sender: TObject);
   procedure OnFullChildTerminate(Sender: TObject);
   procedure GetWinVersion(var ANumber, ADesc : String);
-  procedure adcUpdateBeforeExecute(Sender: TObject);
-  procedure adcUpdateAfterExecute(Sender: TObject);
-  procedure adcUpdateBeforeUpdateExecuteMySql(Sender: TCustomMyDataSet;
-    StatementTypes: TStatementTypes; Params: TDAParams);
-  procedure adcUpdateAfterUpdateExecuteMySql(Sender: TCustomMyDataSet;
-    StatementTypes: TStatementTypes; Params: TDAParams);
-
   procedure InternalExecute;
-  //"Молчаливое" выполнение запроса изменения метаданных.
-  //Не вызывает исключение в случае ошибки -607
-  procedure SilentExecute(q : TpFIBQuery; SQL : String);
   procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
-  procedure ThreadOnBatching(BatchOperation:TBatchOperation;RecNumber:integer;var BatchAction:TBatchAction);
-  procedure ThreadOnExecuteError(pFIBQuery:TpFIBQuery; E:EFIBError; var Action:TDataAction);
   //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
   procedure ExtractDocs(DirName : String);
   function  GetUpdateId() : String;
@@ -1269,7 +1245,7 @@ begin
 	Synchronize( SetProgress);
 	DM.UnLinkExternalTables;
 	DM.LinkExternalTables;
-	try
+
   UpdateTables := [];
 
 	if (GetFileSize(ExePath+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
@@ -1313,8 +1289,6 @@ begin
 	Progress := 5;
 	Synchronize( SetProgress);
 
-   DM.adcUpdate.BeforeUpdateExecute := adcUpdateBeforeUpdateExecuteMySql;
-   DM.adcUpdate.AfterUpdateExecute := adcUpdateAfterUpdateExecuteMySql;
    with DM.adcUpdate do begin
 
 	//удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
@@ -1695,11 +1669,6 @@ begin
 	Synchronize( SetTotalProgress);
   end; {with DM.adcUpdate do begin}
 
-  finally
-  DM.adcUpdate.BeforeUpdateExecute := nil;
-  DM.adcUpdate.AfterUpdateExecute := nil;
-  end;
-
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
@@ -1811,23 +1780,6 @@ begin
   end;
 end;
 
-procedure TExchangeThread.adcUpdateBeforeExecute(Sender: TObject);
-begin
-  Tracer.TR('Import', 'Exec : ' + TpFIBQuery(Sender).SQL.Text);
-  StartExec := Now;
-end;
-
-procedure TExchangeThread.adcUpdateAfterExecute(Sender: TObject);
-var
-  StopExec : TDateTime;
-  Secs : Int64;
-begin
-  StopExec := Now;
-  Secs := SecondsBetween(StopExec, StartExec);
-  if Secs > 3 then
-    Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
-end;
-
 destructor TExchangeThread.Destroy;
 begin
   if Assigned(AbsentPriceCodeSL) then
@@ -1876,56 +1828,6 @@ begin
   except
     on E : Exception do
       WriteExchangeLog('GetAbsentPriceCode.Error', E.Message);
-  end;
-end;
-
-procedure TExchangeThread.UpdateFromFile(
-  FileName, InsertSQL: String;
-  OnExecuteError : TFIBQueryErrorEvent = nil;
-  OnBatching : TOnBatching = nil);
-var
-  up : TpFIBQuery;
-  InDelimitedFile : TFIBInputDelimitedFile;
-  StopExec : TDateTime;
-  Secs : Int64;
-begin
-  up := TpFIBQuery.Create(nil);
-  try
-    //up.Database := DM.MainConnection1;
-    //up.Transaction := DM.UpTran;
-
-    InDelimitedFile := TFIBInputDelimitedFile.Create;
-    try
-      InDelimitedFile.SkipTitles := False;
-      InDelimitedFile.ReadBlanksAsNull := True;
-      InDelimitedFile.ColDelimiter := Chr(159);
-      InDelimitedFile.RowDelimiter := Chr(161);
-
-      up.SQL.Text := InsertSQL;
-      InDelimitedFile.Filename := FileName;
-      up.OnBatching := OnBatching;
-      if Assigned(OnExecuteError) then
-        up.OnExecuteError := OnExecuteError
-      else
-        up.OnExecuteError := ThreadOnExecuteError;
-
-      Tracer.TR('Import', 'Exec : ' + InsertSQL);
-      StartExec := Now;
-      try
-        up.BatchInput(InDelimitedFile);
-      finally
-        StopExec := Now;
-        Secs := SecondsBetween(StopExec, StartExec);
-        if Secs > 3 then
-          Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
-      end;
-
-    finally
-      InDelimitedFile.Free;
-    end;
-
-  finally
-    up.Free;
   end;
 end;
 
@@ -2017,19 +1919,6 @@ begin
   TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 end;
 
-procedure TExchangeThread.SilentExecute(q: TpFIBQuery; SQL: String);
-begin
-  try
-    q.SQL.Text := SQL;
-    q.ExecQuery;
-  except
-    on E : EFIBInterBaseError do begin
-      if e.SQLCode <> -607 then
-        raise;
-    end;
-  end;
-end;
-
 procedure TExchangeThread.HTTPWork(Sender: TObject; AWorkMode: TWorkMode;
   AWorkCount: Int64);
 var
@@ -2093,34 +1982,6 @@ begin
   ExchangeForm.stStatus.Caption := StatusText; 
 end;
 
-procedure TExchangeThread.ThreadOnBatching(BatchOperation: TBatchOperation;
-  RecNumber: integer; var BatchAction: TBatchAction);
-begin
-  //Tracer.TR('ThreadOnBatching', 'RecNumber=' + IntToStr(RecNumber));
-end;
-
-procedure TExchangeThread.ThreadOnExecuteError(pFIBQuery: TpFIBQuery;
-  E: EFIBError; var Action: TDataAction);
-var
-  LogText : String;
-  I : Integer;
-begin
-  Action := daFail;
-
-  LogText := 'Query : ' + pFIBQuery.Name + CRLF +
-    ' SQL : ' + pFIBQuery.SQL.Text + CRLF;
-  if pFIBQuery.ParamCount > 0 then begin
-    LogText := LogText + '  Params ( ';
-    for I := 0 to pFIBQuery.ParamCount-1 do
-      LogText := LogText +
-        pFIBQuery.Params.Vars[i].Name + ' : ' + pFIBQuery.Params.Vars[i].AsString + ';';
-    LogText := LogText + ' )';
-  end;
-
-  //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
-  WriteExchangeLog('Exchange.ThreadOnExecuteError', LogText);
-end;
-
 procedure TExchangeThread.DoSendLetter;
 var
   Attachs : TStringList;
@@ -2176,124 +2037,6 @@ begin
       SysUtils.FindClose( DocsSR );
     end;
     RemoveDir(ExePath + SDirIn + '\' + DirName);
-  end;
-end;
-
-procedure TExchangeThread.UpdateFromFileByParams(FileName,
-  InsertSQL: String; Names: array of string;
-  LogSQL : Boolean = True);
-var
-  up : TpFIBQuery;
-  InDelimitedFile : TFIBInputDelimitedFile;
-  StopExec : TDateTime;
-  Secs : Int64;
-  Col : String;
-  Values : array of Variant;
-  FEOF : Boolean;
-  FEOL : Boolean;
-  CurColumn : Integer;
-  ResultRead : Integer;
-  I : Integer;
-  LogText : String;
-begin
-  up := TpFIBQuery.Create(nil);
-  SetLength(Values, Length(Names));
-  try
-    //up.Database := DM.MainConnection1;
-    //up.Transaction := DM.UpTran;
-
-    InDelimitedFile := TFIBInputDelimitedFile.Create;
-    try
-      InDelimitedFile.SkipTitles := False;
-      InDelimitedFile.ReadBlanksAsNull := True;
-      InDelimitedFile.ColDelimiter := Chr(159);
-      InDelimitedFile.RowDelimiter := Chr(161);
-
-      up.SQL.Text := InsertSQL;
-      InDelimitedFile.Filename := FileName;
-
-      if LogSQL then
-        Tracer.TR('Import', 'Exec : ' + InsertSQL);
-      try
-
-        StartExec := Now;
-        try
-          up.Prepare;
-          InDelimitedFile.ReadyStream;
-          FEOF := False;
-          repeat
-            FEOL := False;
-            CurColumn := 0;
-            for I := 0 to Length(Names)-1 do
-              Values[i] := Unassigned;
-            repeat
-              ResultRead := InDelimitedFile.GetColumn(Col);
-              if ResultRead = 0 then FEOF := True;
-              if ResultRead = 2 then FEOL := True;
-              if (CurColumn < Length(Names)) then
-              try
-                if (Col = '') then
-                  Values[CurColumn] := Null
-                else
-                  Values[CurColumn] := Col;
-                Inc(CurColumn);
-              except
-                on E: Exception do
-                begin
-                  if not (FEOF and (CurColumn = Length(Names))) then
-                    raise;
-                end;
-              end;
-            until FEOL or FEOF;
-            if ((FEOF) and (CurColumn = Length(Names))) or (not FEOF)
-            then begin
-              for I := 0 to Length(Names)-1 do
-                if Values[i] = Null then
-                  case up.ParamByName(Names[i]).ServerSQLType of
-                    SQL_TEXT,SQL_VARYING:
-                     if InDelimitedFile.ReadBlanksAsNull then
-                       up.ParamByName(Names[i]).IsNull := True
-                     else
-                      up.ParamByName(Names[i]).AsString := '';
-                  else
-                    up.ParamByName(Names[i]).IsNull := True
-                  end
-                else
-                  up.ParamByName(Names[i]).AsString := Values[i];
-              up.ExecQuery;
-            end;
-          until FEOF;
-        finally
-          StopExec := Now;
-          Secs := SecondsBetween(StopExec, StartExec);
-          if (Secs > 3) and LogSQL then
-            Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
-        end;
-
-      except
-        on E : Exception do
-        begin
-          LogText := 'FileName : ' + FileName + CRLF +
-            ' ErrorMessage : ' + E.Message + CRLF;
-          if up.ParamCount > 0 then begin
-            LogText := LogText + '  Params ( ';
-            for I := 0 to up.ParamCount-1 do
-              LogText := LogText +
-                up.Params.Vars[i].Name + ' : ' + up.Params.Vars[i].AsString + ';';
-            LogText := LogText + ' )';
-          end;
-          //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
-          WriteExchangeLog('Exchange.UpdateFromFileByParams', LogText);
-          raise;
-        end;
-      end;
-
-    finally
-      InDelimitedFile.Free;
-    end;
-
-  finally
-    up.Free;
   end;
 end;
 
@@ -2516,27 +2259,6 @@ begin
   finally
     up.Free;
   end;
-end;
-
-procedure TExchangeThread.adcUpdateAfterUpdateExecuteMySql(
-  Sender: TCustomMyDataSet; StatementTypes: TStatementTypes;
-  Params: TDAParams);
-var
-  StopExec : TDateTime;
-  Secs : Int64;
-begin
-  StopExec := Now;
-  Secs := SecondsBetween(StopExec, StartExec);
-  if Secs > 3 then
-    Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
-end;
-
-procedure TExchangeThread.adcUpdateBeforeUpdateExecuteMySql(
-  Sender: TCustomMyDataSet; StatementTypes: TStatementTypes;
-  Params: TDAParams);
-begin
-  Tracer.TR('Import', 'Exec : ' + TpFIBQuery(Sender).SQL.Text);
-  StartExec := Now;
 end;
 
 procedure TExchangeThread.InternalExecute;

@@ -411,9 +411,7 @@ type
     function CheckCriticalLibrary : Boolean;
     function GetFileHash(AFileName : String) : String;
     procedure s3cf(DataSet: TDataSet);
-    procedure ocf(DataSet: TDataSet);
     procedure socf(DataSet: TDataSet);
-    procedure occf(DataSet: TDataSet);
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
     //Обновления UIN в базе данных в случае обновления версии программы
@@ -453,11 +451,14 @@ type
 {$ifdef DEBUG}
     procedure ExtractDBScript(dbCon : TpFIBDatabase);
 {$endif}
+{//$define TestEmbeddedMysql}
+{$ifdef TestEmbeddedMysql}
     procedure TestEmbeddedMysql;
-{$ifdef USEMYSQLEMBEDDED}
+  {$ifdef USEMYSQLEMBEDDED}
     procedure TestEmbeddedThread;
-{$endif}    
+  {$endif}
     procedure TestDirectoriesOperation;
+{$endif}
     function GetMainConnection: TCustomMyConnection;
     procedure PatchMyDataSets;
   public
@@ -892,7 +893,10 @@ begin
 
   MainConnection.Open;
 
-  //TestEmbeddedMysql();
+{$ifdef TestEmbeddedMysql}
+  TestEmbeddedMysql();
+  ExitProcess(1);
+{$endif}
 
   { устанавливаем текущие записи в Clients и Users }
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
@@ -1171,12 +1175,9 @@ var
   SR: TSearchRec;
   FileName,
   ShortName : String;
-  up : TpFIBDataSet;
   Files : TStringList;
   Tables : TStringList;
   I : Integer;
-  InDelimitedFile : TFIBInputDelimitedFile;
-  LogText : String;
 
   function NeedImport(TableName : String) : Boolean;
   var
@@ -1734,20 +1735,6 @@ begin
   end;
 end;
 
-procedure TDM.ocf(DataSet: TDataSet);
-var
-  S : String;
-begin
-  try
-{
-    S := DM.D_B_N(adsOrderDetails.FieldByName('PRICE').AsString);
-    adsOrderDetailsCryptPRICE.AsString := S;
-    adsOrderDetailsCryptSUMORDER.AsCurrency := StrToCurr(S) * adsOrderDetails.FieldByName('ORDERCOUNT').AsInteger;
-}    
-  except
-  end;
-end;
-
 function TDM.GetSumOrder(AOrderID: Integer): Currency;
 var
 	V: array[0..0] of Variant;
@@ -1904,19 +1891,6 @@ begin
     Result := chr(random(110) + 32) + Result[1] + chr(random(110) + 32) + Copy(Result, 2, Length(Result))
   else
     Result := '';
-end;
-
-procedure TDM.occf(DataSet: TDataSet);
-var
-  S : String;
-begin
-  try
-{
-    S := D_B_N(adsOrderCoreBASECOST.AsString);
-    adsOrderCoreCryptBASECOST.AsCurrency := StrToCurr(S);
-}    
-  except
-  end;
 end;
 
 procedure TDM.UpdateDB;
@@ -3335,13 +3309,14 @@ begin
     Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]));
 end;
 
+{$ifdef TestEmbeddedMysql}
 procedure TDM.TestEmbeddedMysql;
 begin
-  //TestEmbeddedThread();
-
 {$ifdef USEMYSQLEMBEDDED}
-  TestDirectoriesOperation();
+  TestEmbeddedThread();
 {$endif}
+
+  TestDirectoriesOperation();
 end;
 
 {$ifdef USEMYSQLEMBEDDED}
@@ -3409,6 +3384,25 @@ begin
 end;
 {$endif}
 
+procedure TDM.TestDirectoriesOperation;
+begin
+  if DirectoryExists(ExePath + SDirDataBackup) then
+    DeleteDirectory(ExePath + SDirDataBackup);
+
+  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+  if not DirectoryExists(ExePath + SDirDataBackup) then
+    raise Exception.Create('Директория с Backup не существует')
+  else
+    DeleteDirectory(ExePath + SDirDataBackup);
+  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+
+  MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
+  if DirectoryExists(ExePath + SDirDataBackup) then
+    raise Exception.Create('Директория с Backup существует');
+end;
+{$endif}
+
+
 function TDM.QueryValue(SQL: String; Params: array of string;
   Values: array of Variant): Variant;
 var
@@ -3430,23 +3424,6 @@ begin
   finally
     adsQueryValue.Close;
   end;
-end;
-
-procedure TDM.TestDirectoriesOperation;
-begin
-  if DirectoryExists(ExePath + SDirDataBackup) then
-    DeleteDirectory(ExePath + SDirDataBackup);
-
-  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
-  if not DirectoryExists(ExePath + SDirDataBackup) then
-    raise Exception.Create('Директория с Backup не существует')
-  else
-    DeleteDirectory(ExePath + SDirDataBackup);
-  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
-
-  MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
-  if DirectoryExists(ExePath + SDirDataBackup) then
-    raise Exception.Create('Директория с Backup существует');
 end;
 
 function TDM.GetMainConnection: TCustomMyConnection;

@@ -106,7 +106,6 @@ type
     PriceCode, RegionCode : Integer;
     PriceName, RegionName : String;
     procedure SetOrderLabel;
-    procedure ocf(DataSet: TDataSet);
   public
     procedure ShowForm(AOrderId: Integer); overload; //reintroduce;
     procedure ShowForm; override;
@@ -207,20 +206,6 @@ begin
       ParentOrdersHForm.ShowForm
     else
       PrevForm.ShowForm;
-end;
-
-procedure TOrdersForm.ocf(DataSet: TDataSet);
-var
-  S : String;
-begin
-  try
-{
-    S := DM.D_B_N(adsOrdersPRICE.AsString);
-    adsOrdersCryptPRICE.AsString := S;
-    adsOrdersCryptSUMORDER.AsCurrency := StrToCurr(S) * adsOrdersORDERCOUNT.AsInteger;
-}    
-  except
-  end;
 end;
 
 procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
