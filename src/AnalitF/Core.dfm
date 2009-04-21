@@ -1269,6 +1269,10 @@ object CoreForm: TCoreForm
       'and (Core.coreid is not null)'
       'And ((:ShowRegister = 1) Or (Providers.FirmCode <> :RegisterId))')
     RefreshOptions = [roAfterUpdate]
+    BeforeEdit = adsCore2BeforeEdit
+    BeforePost = adsCore2BeforePost
+    AfterPost = adsCore2AfterPost
+    AfterScroll = adsCore2AfterScroll
     Left = 96
     Top = 141
     ParamData = <

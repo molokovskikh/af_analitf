@@ -93,7 +93,7 @@ type
 
 implementation
 
-uses Main, AProc, DBGridEh, Constant, MyAccess, DModule;
+uses Main, AProc, DBGridEh, Constant, MyAccess, DModule, MyEmbConnection;
 
 {$R *.DFM}
 
@@ -268,7 +268,6 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
   inherited;
-  PatchMyDataSets;
   DBComponentWindowProcs := TObjectList.Create(True);
   PatchNonBrowser;
 end;
@@ -329,6 +328,7 @@ end;
 
 procedure TChildForm.FormCreate(Sender: TObject);
 begin
+  PatchMyDataSets;
   if Assigned(dsCheckVolume) and Assigned(dgCheckVolume) and Assigned(fOrder)
      and Assigned(fVolume) and Assigned(fOrderCost) and Assigned(fSumOrder) and Assigned(fMinOrderCount)
   then begin
@@ -426,9 +426,10 @@ procedure TChildForm.PatchMyDataSets;
 var
   I : Integer;
 begin
-  for I := 0 to ComponentCount-1 do
-    if Components[i] is TCustomMyDataSet then
-      TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
+  if (DM.MainConnection is TMyEmbConnection) then
+    for I := 0 to ComponentCount-1 do
+      if Components[i] is TCustomMyDataSet then
+        TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
 end;
 
 end.

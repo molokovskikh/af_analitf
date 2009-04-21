@@ -670,6 +670,7 @@ function TMainForm.CheckUnsendOrders: boolean;
 begin
 	result := False;
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
+    adsOrdersHead.Connection := DM.MainConnection;
     adsOrdersHead.ParamByName( 'AClientId').Value :=
       DM.adtClients.FieldByName( 'ClientId').Value;
     adsOrdersHead.ParamByName( 'AClosed').Value := False;
@@ -729,6 +730,7 @@ end;
 procedure TMainForm.actHomeExecute(Sender: TObject);
 begin
 	MainForm.FreeChildForms;
+  UpdateReclame;
 end;
 
 procedure TMainForm.actHomeUpdate(Sender: TObject);
