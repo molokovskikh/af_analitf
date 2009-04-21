@@ -608,7 +608,9 @@ begin
         end
 	else
 	begin
-    if (not adsCore.IsEmpty) and CoreGroupByProducts and (Assigned(SortList))then
+    if (not adsCore.IsEmpty) and CoreGroupByProducts and (Assigned(SortList))
+       and (Column.Field <> adsCoreOrderCount) and (Column.Field <> adsCoreSumOrder)
+    then
       Background := SortElem(SortList.Objects[ SortList.IndexOf(adsCoreCOREID.AsString)]).SelectedColor;
 
     if adsCoreVITALLYIMPORTANT.AsBoolean then
