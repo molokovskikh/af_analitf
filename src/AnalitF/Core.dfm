@@ -113,7 +113,6 @@ object CoreForm: TCoreForm
         TitleFont.Height = -11
         TitleFont.Name = 'MS Sans Serif'
         TitleFont.Style = []
-        VertScrollBar.VisibleMode = sbNeverShowEh
         OnGetCellParams = dbgHistoryGetCellParams
         SearchPosition = spBottom
         Columns = <

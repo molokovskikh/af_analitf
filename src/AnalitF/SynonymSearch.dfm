@@ -350,7 +350,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
         TitleFont.Height = -11
         TitleFont.Name = 'MS Sans Serif'
         TitleFont.Style = []
-        VertScrollBar.VisibleMode = sbNeverShowEh
         SearchPosition = spBottom
         Columns = <
           item
