@@ -621,6 +621,7 @@ object MainForm: TMainForm
   end
   object AppEvents: TApplicationEvents
     OnIdle = AppEventsIdle
+    OnMessage = AppEventsMessage
     Left = 288
     Top = 160
   end

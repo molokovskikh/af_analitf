@@ -170,6 +170,7 @@ TMainForm = class(TForm)
       Y: Integer);
     procedure ToolBarMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure AppEventsMessage(var Msg: tagMSG; var Handled: Boolean);
 private
 	JustRun: boolean;
 
@@ -1033,6 +1034,21 @@ begin
   begin
     ScreenPoint := ToolBar.ClientToScreen(Point(ClientNameRect.Left, ClientNameRect.Bottom));
     pmClients.Popup(ScreenPoint.X, ScreenPoint.Y);
+  end;
+end;
+
+procedure TMainForm.AppEventsMessage(var Msg: tagMSG;
+  var Handled: Boolean);
+begin
+  if     Self.Active
+     and not Assigned(ActiveChild)
+     and (not Assigned(ActiveControl) or (ActiveControl = Browser))
+     and (Msg.Message = WM_KEYDOWN)
+     and (Ord(Msg.wParam) >= 32)
+  then
+  begin
+    actOrderAll.Execute;
+    Handled:=true;
   end;
 end;
 
