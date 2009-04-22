@@ -104,6 +104,10 @@ type
     procedure GetLastPrice;
     procedure SetLastPrice;
     procedure ProcessPrice;
+    // включить/ выключить скроллы в зависимости от объёма текста
+    procedure SetScrolls(var Memo: TDBMemo);
+    // кол-во видимых строк в Memo
+    function LinesVisible(Memo: TDBMemo): Integer;
   public
     procedure ShowForm; override;
   end;
@@ -305,11 +309,15 @@ end;
 procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
 begin
 	inherited;
-  //Реализовать это: http://www.autoaf.ru/faq_delphi.htm
-	if DBMemo2.Lines.Count > 8 then DBMemo2.ScrollBars := ssVertical
-		else DBMemo2.ScrollBars := ssNone;
-	if DBMemo3.Lines.Count > 8 then DBMemo3.ScrollBars := ssVertical
-		else DBMemo3.ScrollBars := ssNone;
+  //Реализация взята отсюда: http://www.autoaf.ru/faq_delphi.htm
+	if DBMemo2.Lines.Count > 0 then
+    SetScrolls(DBMemo2)
+  else
+    DBMemo2.ScrollBars := ssNone;
+	if DBMemo3.Lines.Count > 0 then
+    SetScrolls(DBMemo3)
+  else
+    DBMemo3.ScrollBars := ssNone;
 end;
 
 procedure TPricesForm.adsPrices2AfterOpen(DataSet: TDataSet);
@@ -362,6 +370,46 @@ begin
   if dbgPrices.EditorMode then
     dbgPrices.EditorMode := False;
   SoftPost(adsPrices);
+end;
+
+function TPricesForm.LinesVisible(Memo: TDBMemo): Integer;
+var
+  OldFont: HFont;
+  Hand: THandle;
+  TM: TTextMetric;
+  Rect: TRect;
+  tempint: integer;
+begin
+  Hand:= GetDC(Memo.Handle);
+  try
+    OldFont:= SelectObject(Hand, Memo.Font.Handle);
+    try
+      GetTextMetrics(Hand, TM);
+      Memo.Perform(EM_GETRECT, 0, longint(@Rect));
+      tempint:= (Rect.Bottom - Rect.Top) div
+      (TM.tmHeight + TM.tmExternalLeading);
+    finally
+      SelectObject(Hand, OldFont);
+    end;
+  finally
+    ReleaseDC(Memo.Handle, Hand);
+  end;
+  Result:= tempint;
+end;
+
+procedure TPricesForm.SetScrolls(var Memo: TDBMemo);
+var
+  x, y: integer;
+begin
+  x := Length(Memo.Text);
+  // Кол-во строк в Memo (не линий Lines)
+  y := SendMessage(Memo.Handle, EM_LINEFROMCHAR, x, 0) + 1;
+  //Кол-во видимых линий
+  x := LinesVisible(Memo);
+  if y > x then
+    Memo.ScrollBars:= ssVertical
+  else
+    Memo.ScrollBars:= ssNone;
 end;
 
 initialization
