@@ -5654,7 +5654,7 @@ object AboutForm: TAboutForm
     Transparent = True
   end
   object Label2: TLabel
-    Left = 56
+    Left = 32
     Top = 155
     Width = 46
     Height = 13
@@ -5679,7 +5679,7 @@ object AboutForm: TAboutForm
     Left = 160
     Top = 76
     Width = 230
-    Height = 13
+    Height = 29
     Alignment = taCenter
     AutoSize = False
     Caption = 'Label1'
@@ -5689,16 +5689,17 @@ object AboutForm: TAboutForm
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
+    WordWrap = True
   end
   object Label3: TLabel
-    Left = 56
+    Left = 32
     Top = 186
     Width = 130
     Height = 13
     Caption = #1058#1077#1093#1085#1080#1095#1077#1089#1082#1072#1103' '#1087#1086#1076#1076#1077#1088#1078#1082#1072' :'
   end
   object Label4: TLabel
-    Left = 56
+    Left = 32
     Top = 294
     Width = 32
     Height = 13
@@ -5713,7 +5714,7 @@ object AboutForm: TAboutForm
     OnClick = Label4Click
   end
   object lIndent: TLabel
-    Left = 56
+    Left = 32
     Top = 171
     Width = 90
     Height = 13
@@ -5730,9 +5731,9 @@ object AboutForm: TAboutForm
     TabOrder = 2
   end
   object DBMemo1: TDBMemo
-    Left = 56
+    Left = 32
     Top = 203
-    Width = 329
+    Width = 353
     Height = 73
     DataField = 'TechSupport'
     DataSource = DM.dsClients
@@ -5743,7 +5744,7 @@ object AboutForm: TAboutForm
   object BitBtn1: TBitBtn
     Left = 309
     Top = 290
-    Width = 75
+    Width = 76
     Height = 22
     Caption = 'OK'
     Default = True
