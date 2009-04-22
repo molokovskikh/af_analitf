@@ -3854,17 +3854,23 @@ object MainForm: TMainForm
       'SELECT'
       '    OrdersHead.OrderId'
       'FROM'
-      '   ((OrdersHead'
+      '    OrdersHead'
+      '    inner join OrdersList on '
+      '           (OrdersList.OrderId = OrdersHead.OrderId)'
+      '       and (OrdersList.OrderCount > 0)'
       
-        '    LEFT JOIN PricesData ON OrdersHead.PriceCode=PricesData.Pric' +
-        'eCode)'
+        '    LEFT JOIN PricesData ON (OrdersHead.PriceCode=PricesData.Pri' +
+        'ceCode)'
+      '    left join pricesregionaldata on '
       
-        '    left join pricesregionaldata on pricesregionaldata.PriceCode' +
-        ' = OrdersHead.PriceCode and pricesregionaldata.regioncode = Orde' +
-        'rsHead.regioncode)'
+        '           (pricesregionaldata.PriceCode = OrdersHead.PriceCode)' +
+        ' '
       
-        '    LEFT JOIN RegionalData ON (RegionalData.RegionCode=OrdersHea' +
-        'd.RegionCode) AND (PricesData.FirmCode=RegionalData.FirmCode)'
+        '       and (pricesregionaldata.regioncode = OrdersHead.regioncod' +
+        'e)'
+      '    LEFT JOIN RegionalData ON '
+      '           (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '       AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
       '    (OrdersHead.ClientId = :AClientId)'
       'and (:AClosed = OrdersHead.Closed)'
@@ -3872,7 +3878,8 @@ object MainForm: TMainForm
         'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
         ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
         'cesregionaldata.PriceCode is not null)))'
-      'and (OrdersHead.SEND = :ASend)')
+      'and (OrdersHead.SEND = :ASend)'
+      'group by OrdersHead.OrderId')
     Left = 232
     Top = 272
     ParamData = <
