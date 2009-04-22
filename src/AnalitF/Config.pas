@@ -425,7 +425,9 @@ var
 begin
   if (ModalResult = mrOK) then begin
     if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
-      if AProc.MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES then
+      if MainForm.CheckUnsendOrders and
+         (AProc.MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES)
+      then
         CanClose := False;
     end;
     if CanClose and RetMarginsChanges then begin
