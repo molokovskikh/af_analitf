@@ -309,6 +309,7 @@ begin
   end
   else begin
     dbgCore.InputField := 'OrderCount';
+    InternalSearchText := '';
     RefreshAllCore;
     SetFilter(filAll);
     if adsCore.RecordCount=0 then begin
