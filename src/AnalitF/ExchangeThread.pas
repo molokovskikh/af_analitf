@@ -685,7 +685,13 @@ begin
     try
       FS := TFileStream.Create(ExePath + 'Exchange.log', fmOpenRead or fmShareDenyNone);
       try
-        Len := Integer(FS.Size);
+        if (FS.Size > 50*1024)
+        then begin
+          FS.Position := (FS.Size - 50*1024);
+          Len := 50*1024;
+        end
+        else
+          Len := Integer(FS.Size);
         SetLength(LogStr, Len);
         FS.Read(Pointer(LogStr)^, Len);
       finally
