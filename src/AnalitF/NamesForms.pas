@@ -379,6 +379,7 @@ begin
       SQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS FROM CATALOGS';
       if not actShowAll.Checked then
         SQL.Text := SQL.Text + ' where CATALOGS.COREEXISTS = 1';
+      SQL.Text := SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
       Open;
     finally
       Screen.Cursor := crDefault;
@@ -428,6 +429,7 @@ begin
       'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
     if not actShowAll.Checked then
       adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and CATALOGS.COREEXISTS = 1';
+    adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
     adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
     adsCatalog.Open;
     dbgCatalog.SetFocus;
