@@ -419,16 +419,19 @@ end;
 procedure TNamesFormsForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
-  InternalSearchText := LeftStr(eSearch.Text, 50);
-  eSearch.Text := '';
-  adsCatalog.Close;
-  adsCatalog.SQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS ' +
-    'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
-  if not actShowAll.Checked then
-    adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and CATALOGS.COREEXISTS = 1';
-  adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
-  adsCatalog.Open;
-  dbgCatalog.SetFocus;
+  if Length(eSearch.Text) > 2 then
+  begin
+    InternalSearchText := LeftStr(eSearch.Text, 50);
+    eSearch.Text := '';
+    adsCatalog.Close;
+    adsCatalog.SQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS ' +
+      'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
+    if not actShowAll.Checked then
+      adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and CATALOGS.COREEXISTS = 1';
+    adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
+    adsCatalog.Open;
+    dbgCatalog.SetFocus;
+  end;
 end;
 
 procedure TNamesFormsForm.eSearchKeyDown(Sender: TObject; var Key: Word;

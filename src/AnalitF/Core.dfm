@@ -1605,14 +1605,14 @@ object CoreForm: TCoreForm
       'FROM'
       '   ClientAVG'
       'where'
-      '  ClientCode = :ACLIENTID'
+      '  ClientCode = :CLIENTID'
       'and ProductId = :ProductId')
     Left = 376
     Top = 397
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'ACLIENTID'
+        Name = 'CLIENTID'
       end
       item
         DataType = ftUnknown
