@@ -1522,7 +1522,7 @@ object CoreForm: TCoreForm
       '    osbc.SynonymFirm,'
       '    osbc.OrderCount,'
       '    osbc.Price,'
-      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate as OrderDate,'
       '    OrdersHead.PriceName,'
       '    OrdersHead.RegionName,'
       '    osbc.Await,'
@@ -1536,7 +1536,7 @@ object CoreForm: TCoreForm
       'and (osbc.OrderCount > 0)'
       'and (products.catalogid = :FullCode)'
       'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
-      'ORDER BY OrdersHead.OrderDate DESC'
+      'ORDER BY OrdersHead.SendDate DESC'
       'limit 20')
     MasterSource = dsCore
     Left = 208

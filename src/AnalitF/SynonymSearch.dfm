@@ -1437,7 +1437,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.SynonymFirm,'
       '    osbc.OrderCount,'
       '    osbc.Price,'
-      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate as OrderDate,'
       '    OrdersHead.PriceName,'
       '    OrdersHead.RegionName,'
       '    osbc.Await,'
@@ -1451,7 +1451,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'and (osbc.OrderCount > 0)'
       'and (products.catalogid = :FullCode)'
       'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
-      'ORDER BY OrdersHead.OrderDate DESC'
+      'ORDER BY OrdersHead.SendDate DESC'
       'limit 20')
     Left = 208
     Top = 465
