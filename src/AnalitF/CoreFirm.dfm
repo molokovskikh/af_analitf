@@ -467,7 +467,6 @@ object CoreFirmForm: TCoreFirmForm
       '    :ACLIENTID) ')
     FilterOptions = [foCaseInsensitive]
     AfterPost = adsCore2AfterPost
-    BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
     Database = DM.MainConnectionOld
     AutoCommit = True
@@ -903,17 +902,26 @@ object CoreFirmForm: TCoreFirmForm
   object adsCountFields: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'call CORECOUNTPRICEFIELDS(:AREGIONCODE, :APRICECODE)')
+      'SELECT Count(*) AS CCount,'
+      '    Count(nullif(code, '#39#39')) AS Code,'
+      '    Count(SynonymFirmCrCode) AS SynonymFirm,'
+      '    Count(nullif(Volume, '#39#39')) AS Volume,'
+      '    Count(nullif(Doc, '#39#39')) AS Doc,'
+      '    Count(nullif(Note, '#39#39')) AS Note,'
+      '    Count(nullif(Period, '#39#39')) AS Period,'
+      '    Count(nullif(Quantity, '#39#39')) AS Quantity'
+      'FROM Core'
+      'WHERE PriceCode = :PriceCode AND RegionCode = :RegionCode')
     Left = 240
     Top = 128
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AREGIONCODE'
+        Name = 'PriceCode'
       end
       item
         DataType = ftUnknown
-        Name = 'APRICECODE'
+        Name = 'RegionCode'
       end>
   end
   object adsCore: TMyQuery
@@ -1112,7 +1120,6 @@ object CoreFirmForm: TCoreFirmForm
       '    (CCore.PriceCode = :APriceCode) '
       'And (CCore.RegionCode = :ARegionCode)')
     RefreshOptions = [roAfterUpdate]
-    BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
     AfterPost = adsCore2AfterPost
     Left = 120

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, DBGridEh,
-  ToughDBGrid, FIBDataSet, pFIBDataSet, GridsEh;
+  ToughDBGrid, FIBDataSet, pFIBDataSet, GridsEh, MemDS, DBAccess, MyAccess;
 
 type
   TFormsHistoryForm = class(TForm)
@@ -16,21 +16,34 @@ type
     Label1: TLabel;
     dbtPriceAvg: TDBText;
     Grid: TToughDBGrid;
-    adsOrders: TpFIBDataSet;
-    adsOrdersFULLCODE: TFIBBCDField;
-    adsOrdersSYNONYMNAME: TFIBStringField;
-    adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersORDERCOUNT: TFIBIntegerField;
-    adsOrdersCODE: TFIBStringField;
-    adsOrdersCODECR: TFIBStringField;
-    adsOrdersORDERDATE: TFIBDateTimeField;
-    adsOrdersPRICENAME: TFIBStringField;
-    adsOrdersREGIONNAME: TFIBStringField;
-    adsOrdersAWAIT: TFIBIntegerField;
-    adsOrdersJUNK: TFIBIntegerField;
+    adsOrdersOld: TpFIBDataSet;
+    adsOrdersOldFULLCODE: TFIBBCDField;
+    adsOrdersOldSYNONYMNAME: TFIBStringField;
+    adsOrdersOldSYNONYMFIRM: TFIBStringField;
+    adsOrdersOldORDERCOUNT: TFIBIntegerField;
+    adsOrdersOldCODE: TFIBStringField;
+    adsOrdersOldCODECR: TFIBStringField;
+    adsOrdersOldORDERDATE: TFIBDateTimeField;
+    adsOrdersOldPRICENAME: TFIBStringField;
+    adsOrdersOldREGIONNAME: TFIBStringField;
+    adsOrdersOldAWAIT: TFIBIntegerField;
+    adsOrdersOldJUNK: TFIBIntegerField;
     lPriceAvg: TLabel;
-    adsOrdersPRICE: TFIBStringField;
-    adsOrdersSENDPRICE: TFIBBCDField;
+    adsOrdersOldPRICE: TFIBStringField;
+    adsOrdersOldSENDPRICE: TFIBBCDField;
+    adsOrders: TMyQuery;
+    adsOrdersFullCode: TLargeintField;
+    adsOrdersCode: TStringField;
+    adsOrdersCodeCR: TStringField;
+    adsOrdersSynonymName: TStringField;
+    adsOrdersSynonymFirm: TStringField;
+    adsOrdersOrderCount: TIntegerField;
+    adsOrdersPrice: TFloatField;
+    adsOrdersOrderDate: TDateTimeField;
+    adsOrdersPriceName: TStringField;
+    adsOrdersRegionName: TStringField;
+    adsOrdersAwait: TBooleanField;
+    adsOrdersJunk: TBooleanField;
   private
     { Private declarations }
   public
@@ -54,8 +67,8 @@ begin
     Screen.Cursor:=crHourglass;
     try
       with adsOrders do begin
-        ParamByName('AFullCode').Value:=FullCode;
-        ParamByName('AClientId').Value:=ClientId;
+        ParamByName('FullCode').Value:=FullCode;
+        ParamByName('ClientId').Value:=ClientId;
         Open;
       end;
       Count := 0;
@@ -63,7 +76,7 @@ begin
       while not adsOrders.Eof do
       begin
         if (Now - adsOrdersORDERDATE.Value < 183) then begin
-          Avr := Avr + adsOrdersSENDPRICE.Value;
+          Avr := Avr + adsOrdersPRICE.Value;
           Inc(Count);
           adsOrders.Next;
         end

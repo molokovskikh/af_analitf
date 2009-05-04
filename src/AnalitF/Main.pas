@@ -643,18 +643,32 @@ procedure TMainForm.SetOrdersInfo;
 begin
   if DM.adsQueryValue.Active then
   	DM.adsQueryValue.Close;
-	DM.adsQueryValue.SQL.Text := 'call ORDERSINFOMAIN(:ACLIENTID)';
-	DM.adsQueryValue.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  //call ORDERSINFOMAIN(:ACLIENTID)
+	DM.adsQueryValue.SQL.Text := ''
++'SELECT '
++'       COUNT(DISTINCT OrdersHead.orderid) AS OrdersCount, '
++'       COUNT(osbc.id)                     AS Positions  , '
++'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder '
++'FROM '
++'       OrdersHead '
++'       INNER JOIN OrdersList osbc       ON (OrdersHead.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
++'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = OrdersHead.RegionCode) AND (PRD.PriceCode = OrdersHead.PriceCode) '
++'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
++'WHERE (OrdersHead.CLIENTID                                      = :ClientID) '
++'   AND (OrdersHead.Closed                                      <> 1)';
+
+	DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	DM.adsQueryValue.Open;
 	try
 		StatusBar.Panels[ 0].Text := Format( 'Заказов : %d',
 			 [ DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger]);
 		StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',
 			 [ DM.adsQueryValue.FieldByName( 'Positions').AsInteger]);
+    StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',
+       [ DM.adsQueryValue.FieldByName( 'SumOrder').AsCurrency ]);
 	finally
 		DM.adsQueryValue.Close;
 	end;
-  StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',	[DM.GetAllSumOrder]);
 end;
 
 procedure TMainForm.actCloseAllExecute(Sender: TObject);

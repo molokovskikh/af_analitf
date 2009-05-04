@@ -82,7 +82,7 @@ inherited ExpiredsForm: TExpiredsForm
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'SYNONYMNAME'
+          FieldName = 'SynonymName'
           Footers = <>
           Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
           Title.TitleButton = True
@@ -90,7 +90,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'SYNONYMFIRM'
+          FieldName = 'SynonymFirm'
           Footers = <>
           Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
           Title.TitleButton = True
@@ -107,7 +107,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'NOTE'
+          FieldName = 'Note'
           Footers = <>
           Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
           Title.TitleButton = True
@@ -131,7 +131,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'PRICENAME'
+          FieldName = 'PriceName'
           Footers = <>
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.TitleButton = True
@@ -139,7 +139,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'REGIONNAME'
+          FieldName = 'RegionName'
           Footers = <>
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
@@ -158,7 +158,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'REGISTRYCOST'
+          FieldName = 'registrycost'
           Footers = <>
           Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
           Visible = False
@@ -166,7 +166,7 @@ inherited ExpiredsForm: TExpiredsForm
         end
         item
           EditButtons = <>
-          FieldName = 'REQUESTRATIO'
+          FieldName = 'requestratio'
           Footers = <>
           Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
           Visible = False
@@ -328,7 +328,6 @@ inherited ExpiredsForm: TExpiredsForm
       '    :ACLIENTID, null) ')
     AfterPost = adsExpireds2AfterPost
     AfterScroll = adsExpireds2AfterScroll
-    BeforeEdit = adsExpiredsOldBeforeEdit
     BeforePost = adsExpireds2BeforePost
     Database = DM.MainConnectionOld
     AutoCommit = True
@@ -803,7 +802,6 @@ inherited ExpiredsForm: TExpiredsForm
       '    (Core.productid > 0)'
       'and (Core.Junk = 1)')
     RefreshOptions = [roAfterUpdate]
-    BeforeEdit = adsExpiredsOldBeforeEdit
     BeforePost = adsExpireds2BeforePost
     AfterPost = adsExpireds2AfterPost
     AfterScroll = adsExpireds2AfterScroll

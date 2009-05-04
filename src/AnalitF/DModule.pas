@@ -394,8 +394,6 @@ type
     FCreateClearDatabase     : Boolean;
     FGetCatalogsCount : Integer;
     FRetMargins : array of TRetMass;
-    OldOrderCount : Integer;
-    AllSumOrder : Currency;
     UpdateReclameDT : TDateTime;
     SynC,
     HTTPC,
@@ -529,12 +527,11 @@ type
     procedure ProcessDocsDir(DirName : String; MaxFileDate : TDateTime; FileList : TStringList);
     procedure OpenDocsDir(DirName : String; FileList : TStringList; OpenEachFile : Boolean);
 
-    procedure InitAllSumOrder;
-    procedure SetOldOrderCount(AOldOrderCount : Integer);
-    procedure SetNewOrderCount(ANewOrderCount : Integer; ABaseCost : Currency; APriceCode, ARegionCode : Integer);
-    function GetAllSumOrder : Currency;
+    //получить сумму заказа
     function GetSumOrder (AOrderID : Integer) : Currency;
-    function FindOrderInfo (APriceCode, ARegionCode : Integer) : TOrderInfo;
+    //получить сумму заказа по PriceCode и RegionCode
+    function FindOrderInfo (APriceCode, ARegionCode : Integer) : Currency;
+
     property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
     //Установить параметры для компонента TIdHTTP
@@ -987,7 +984,6 @@ begin
   MainForm.FreeChildForms;
   MainForm.SetOrdersInfo;
   DoPost(adtParams, True);
-  InitAllSumOrder;
 end;
 
 { Проверки на невозможность запуска программы }
@@ -1657,65 +1653,6 @@ begin
   end;
 end;
 
-function TDM.GetAllSumOrder: Currency;
-begin
-  Result := AllSumOrder;
-end;
-
-procedure TDM.SetNewOrderCount(ANewOrderCount: Integer;
-  ABaseCost: Currency; APriceCode, ARegionCode : Integer);
-var
-  CurrOI : TOrderInfo;
-begin
-  CurrOI := FindOrderInfo(APriceCode, ARegionCode);
-  AllSumOrder := AllSumOrder + ( ANewOrderCount - OldOrderCount) * ABaseCost;
-  CurrOI.Summ := CurrOI.Summ + ( ANewOrderCount - OldOrderCount) * ABaseCost;
-end;
-
-procedure TDM.SetOldOrderCount(AOldOrderCount: Integer);
-begin
-  OldOrderCount := AOldOrderCount;
-end;
-
-procedure TDM.InitAllSumOrder;
-var
-  CurrOrderInfo : TOrderInfo;
-begin
-  //Очищаем данные по заказам
-  ClearSelectedPrices(OrdersInfo);
-  AllSumOrder := 0;
- 	adsOrdersHeaders.Close;
-  //Получаем информацию о текущих отправляемых заказах
-	adsOrdersHeaders.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-	adsOrdersHeaders.ParamByName( 'AClosed').Value := False;
-	adsOrdersHeaders.ParamByName( 'ASend').Value := True;
-	adsOrdersHeaders.ParamByName( 'TimeZoneBias').Value := 0;
-	adsOrdersHeaders.Open;
-  try
-  while not adsOrdersHeaders.Eof do begin
-    CurrOrderInfo := FindOrderInfo(adsOrdersHeaders.FieldByName('PriceCode').AsInteger, adsOrdersHeaders.FieldByName('RegionCode').AsInteger);
-    CurrOrderInfo.Summ := GetSumOrder(adsOrdersHeaders.FieldByName('OrderID').AsInteger);
-    AllSumOrder := AllSumOrder + CurrOrderInfo.Summ;
-    adsOrdersHeaders.Next;
-  end;
-  finally
-   	adsOrdersHeaders.Close;
-  end;
-
-	adsOrdersHeaders.ParamByName( 'ASend').Value := False;
-	adsOrdersHeaders.Open;
-  try
-  while not adsOrdersHeaders.Eof do begin
-    CurrOrderInfo := FindOrderInfo(adsOrdersHeaders.FieldByName('PriceCode').AsInteger, adsOrdersHeaders.FieldByName('RegionCode').AsInteger);
-    CurrOrderInfo.Summ := GetSumOrder(adsOrdersHeaders.FieldByName('OrderID').AsInteger);
-    AllSumOrder := AllSumOrder + CurrOrderInfo.Summ;
-    adsOrdersHeaders.Next;
-  end;
-  finally
-   	adsOrdersHeaders.Close;
-  end;
-end;
-
 procedure TDM.ResetReclame;
 begin
   UpdateReclameDT := 0;
@@ -1736,23 +1673,16 @@ begin
 end;
 
 function TDM.GetSumOrder(AOrderID: Integer): Currency;
-var
-	V: array[0..0] of Variant;
 begin
   try
-    with adsOrderDetails do begin
-      ParamByName('AOrderId').Value:=AOrderId;
-      if Active then begin
-        Close;
-        Open;
-      end
-      else
-        Open;
-    end;
-    DataSetCalc(adsOrderDetails, ['SUM(SUMORDER)'], V);
-    Result := V[0];
-  finally
-    adsOrderDetails.Close;
+    Result := DM.QueryValue(
+      'SELECT ifnull(Sum(OrdersList.price*OrdersList.OrderCount), 0) SumOrder '
+      + 'FROM OrdersList '
+      + 'WHERE OrdersList.OrderId = :OrderId AND OrdersList.OrderCount>0',
+      ['OrderId'],
+      [AOrderID]);
+  except
+    Result := 0;
   end;
 end;
 
@@ -2670,17 +2600,29 @@ begin
   RegionCode := ARegionCode;
 end;
 
-function TDM.FindOrderInfo(APriceCode, ARegionCode: Integer): TOrderInfo;
-var
-  Index : Integer;
-  OrderIDStr : String;
+function TDM.FindOrderInfo(APriceCode, ARegionCode: Integer): Currency;
 begin
-  OrderIDStr := IntToStr(APriceCode) + '_' + IntToStr(ARegionCode);
-  if OrdersInfo.Find(OrderIDStr, Index) then
-    Result := TOrderInfo(OrdersInfo.Objects[Index])
-  else begin
-    Result := TOrderInfo.Create(APriceCode, ARegionCode);
-    OrdersInfo.AddObject(OrderIDStr, Result);
+  try
+    Result := DM.QueryValue(
+      'SELECT ifnull(sum(osbc.price * osbc.OrderCount), 0) SumOrder '
+      + 'FROM '
+      + ' OrdersHead '
+      + ' INNER JOIN OrdersList osbc ON '
+      + '       (OrdersHead.orderid = osbc.OrderId) '
+      + '   and (osbc.OrderCount > 0) '
+      + ' INNER JOIN PricesRegionalData PRD ON '
+      + '       (PRD.RegionCode = OrdersHead.RegionCode) '
+      + '   AND (PRD.PriceCode = OrdersHead.PriceCode) '
+      + ' inner JOIN PricesData ON (PricesData.PriceCode=PRD.PriceCode) '
+      + 'WHERE '
+      + '    (OrdersHead.CLIENTID = :AClientID) '
+      + 'and (OrdersHead.Closed <> 1) '
+      + 'and (PRD.PRICECODE = :PriceCode) '
+      + 'and (PRD.Regioncode = :RegionCode) ',
+      ['AClientID', 'PriceCode', 'RegionCode'],
+      [adtClients.FieldByName( 'ClientId').Value, APriceCode, ARegionCode]);
+  except
+    Result := 0;
   end;
 end;
 

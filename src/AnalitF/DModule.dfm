@@ -1558,7 +1558,7 @@ object DM: TDM
     Top = 112
   end
   object MySQLMonitor: TMySQLMonitor
-    TraceFlags = [tfQPrepare, tfQExecute, tfQFetch, tfError, tfStmt, tfTransact, tfService, tfMisc, tfParams]
+    TraceFlags = [tfError, tfService]
     OnSQL = MySQLMonitorSQL
     Left = 376
     Top = 8

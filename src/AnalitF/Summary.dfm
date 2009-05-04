@@ -242,22 +242,6 @@ inherited SummaryForm: TSummaryForm
         Align = alClient
         Shape = bsTopLine
       end
-      object dbtCountOrder: TDBText
-        Left = 412
-        Top = 11
-        Width = 41
-        Height = 17
-        Anchors = [akLeft, akBottom]
-        DataField = 'CountOrder'
-        DataSource = dsSummaryH
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Visible = False
-      end
       object Label1: TLabel
         Left = 108
         Top = 11
@@ -286,22 +270,6 @@ inherited SummaryForm: TSummaryForm
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object dbtSumOrder: TDBText
-        Left = 460
-        Top = 11
-        Width = 81
-        Height = 17
-        Anchors = [akLeft, akBottom]
-        DataField = 'SumOrder'
-        DataSource = dsSummaryH
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        Visible = False
-      end
       object lSumOrder: TLabel
         Left = 288
         Top = 11
@@ -318,7 +286,7 @@ inherited SummaryForm: TSummaryForm
       object lPosCount: TLabel
         Left = 168
         Top = 11
-        Width = 58
+        Width = 49
         Height = 13
         Caption = 'lPosCount'
         Font.Charset = DEFAULT_CHARSET
@@ -474,11 +442,6 @@ inherited SummaryForm: TSummaryForm
     Left = 296
     Top = 136
   end
-  object dsSummaryH: TDataSource
-    DataSet = adsSummaryHOld
-    Left = 440
-    Top = 168
-  end
   object frdsSummary: TfrDBDataSet
     DataSource = dsSummary
     OpenDataSource = False
@@ -557,8 +520,6 @@ inherited SummaryForm: TSummaryForm
       'and Regions.RegionCode = OrdersH.RegionCode')
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
-    BeforeDelete = adsSummaryOldBeforeDelete
-    BeforeEdit = adsSummaryOldBeforeEdit
     BeforePost = adsSummary2BeforePost
     Database = DM.MainConnectionOld
     AutoCommit = True
@@ -709,18 +670,6 @@ inherited SummaryForm: TSummaryForm
       Size = 0
       RoundByScale = True
     end
-  end
-  object adsSummaryHOld: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    COUNTORDER,'
-      '    SUMORDER'
-      'FROM'
-      '    SUMMARYHSHOW(:ACLIENTID) ')
-    Database = DM.MainConnectionOld
-    Left = 432
-    Top = 128
-    oCacheCalcFields = True
   end
   object pmSelectedPrices: TPopupMenu
     AutoPopup = False
@@ -973,18 +922,6 @@ inherited SummaryForm: TSummaryForm
     Left = 640
     Top = 216
   end
-  object adsSummaryH: TMyQuery
-    Connection = DM.MyConnection
-    SQL.Strings = (
-      'call SUMMARYHSHOW(:ACLIENTID)')
-    Left = 464
-    Top = 128
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ACLIENTID'
-      end>
-  end
   object adsCurrentSummary: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
@@ -1198,10 +1135,8 @@ inherited SummaryForm: TSummaryForm
       'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = OrdersHead.PriceCode'
       'and Regions.RegionCode = OrdersHead.RegionCode')
-    BeforeEdit = adsSummaryOldBeforeEdit
     BeforePost = adsSummary2BeforePost
     AfterPost = adsSummary2AfterPost
-    BeforeDelete = adsSummaryOldBeforeDelete
     AfterScroll = adsSummary2AfterScroll
     Left = 336
     Top = 104

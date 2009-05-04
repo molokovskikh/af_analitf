@@ -258,7 +258,7 @@ inherited OrdersForm: TOrdersForm
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'SYNONYMNAME'
+        FieldName = 'synonymname'
         Footers = <>
         Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
         Title.TitleButton = True
@@ -266,7 +266,7 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'SYNONYMFIRM'
+        FieldName = 'synonymfirm'
         Footers = <>
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Title.TitleButton = True
@@ -274,7 +274,7 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'PRICE'
+        FieldName = 'price'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -286,14 +286,14 @@ inherited OrdersForm: TOrdersForm
       end
       item
         EditButtons = <>
-        FieldName = 'ORDERCOUNT'
+        FieldName = 'ordercount'
         Footers = <>
         Title.Caption = #1047#1072#1082#1072#1079
         Title.TitleButton = True
       end
       item
         EditButtons = <>
-        FieldName = 'SUMORDER'
+        FieldName = 'SumOrder'
         Footers = <>
         Title.Caption = #1057#1091#1084#1084#1072
         Title.TitleButton = True
@@ -378,7 +378,6 @@ inherited OrdersForm: TOrdersForm
       'AND (OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
     AfterPost = adsOrdersOldAfterPost
-    BeforeEdit = adsOrdersOldBeforeEdit
     BeforePost = adsOrdersOldBeforePost
     Database = DM.MainConnectionOld
     AutoCommit = True
@@ -556,7 +555,6 @@ inherited OrdersForm: TOrdersForm
       '    (OrdersList.OrderId = :AOrderId)'
       'AND (OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
-    BeforeEdit = adsOrdersOldBeforeEdit
     BeforePost = adsOrdersOldBeforePost
     AfterPost = adsOrdersOldAfterPost
     Left = 184

@@ -174,7 +174,6 @@ type
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2AfterPost(DataSet: TDataSet);
-    procedure adsCore2BeforeEdit(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure actFilterAllExecute(Sender: TObject);
     procedure actFilterOrderExecute(Sender: TObject);
@@ -200,10 +199,9 @@ type
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
   private
-    OldOrder, OrderCount, PriceCode, RegionCode, ClientId: Integer;
+    PriceCode, RegionCode, ClientId: Integer;
     PriceName,
     RegionName : String;
-    OrderSum: Double;
 
     UseExcess: Boolean;
     Excess: Integer;
@@ -213,7 +211,6 @@ type
 
     fr : TForceRus;
 
-    procedure OrderCalc;
     procedure SetOrderLabel;
     procedure SetFilter(Filter: TFilter);
     procedure RefreshOrdersH;
@@ -322,7 +319,6 @@ begin
       SetFilter(filAll);
   end;
   //подсчитываем сумму заявки и количество записей
-  OrderCalc;
   SetOrderLabel;
   lblFirmPrice.Caption := Format( 'Прайс-лист %s, регион %s',[
     PriceName,
@@ -419,12 +415,6 @@ begin
   end;
 end;
 
-procedure TCoreFirmForm.adsCore2BeforeEdit(DataSet: TDataSet);
-begin
-  OldOrder:=adsCoreORDERCOUNT.AsInteger;
-  DM.SetOldOrderCount(OldOrder);
-end;
-
 procedure TCoreFirmForm.adsCore2BeforePost(DataSet: TDataSet);
 var
 	Quantity, E: Integer;
@@ -490,28 +480,24 @@ end;
 
 procedure TCoreFirmForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
-	OrderCount := OrderCount + Iif( adsCoreORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsCoreORDERCOUNT.AsInteger - OldOrder) * adsCoreCOST.AsCurrency;
-  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCOST.AsCurrency, PriceCode, RegionCode);
 	SetOrderLabel;
 	MainForm.SetOrdersInfo;
 end;
 
-procedure TCoreFirmForm.OrderCalc;
+procedure TCoreFirmForm.SetOrderLabel;
+var
+  OrderCount : Integer;
+  OrderSum: Double;
 begin
   OrderCount := DM.QueryValue(
-'SELECT count(*) FROM OrdersList, ordershead WHERE ' +
+  'SELECT count(*) FROM OrdersList, ordershead WHERE ' +
     'ordershead.PriceCode = :PriceCode and ordershead.regioncode = :RegionCode ' +
     ' and ordershead.ClientId = :AClientId ' +
     ' and OrdersList.OrderId = ordershead.orderid and ordershead.closed = 0 ' +
     ' AND OrdersList.OrderCount>0',
     ['PriceCode', 'RegionCode', 'AClientId'],
     [PriceCode, RegionCode, ClientId]);
-	OrderSum :=DM.FindOrderInfo(PriceCode, RegionCode).Summ;
-end;
-
-procedure TCoreFirmForm.SetOrderLabel;
-begin
+	OrderSum := DM.FindOrderInfo(PriceCode, RegionCode);
   lblOrderLabel.Caption:=Format('Заказано %d позиций на сумму %0.2f руб.',
     [OrderCount,OrderSum]);
 end;
@@ -542,10 +528,7 @@ begin
     adsCore.EnableControls;
     RefreshAllCore;
     Screen.Cursor:=crDefault;
-    OrderCount := 0;
-    OrderSum := 0;
   	SetOrderLabel;
-    DM.InitAllSumOrder;
     MainForm.SetOrdersInfo;
   end;
   dbgCore.SetFocus;

@@ -207,6 +207,7 @@ type
     adsCoreSortOrder: TIntegerField;
     adsCoreEtalon: TMyQuery;
     adsCorefullcode: TLargeintField;
+    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -487,16 +488,14 @@ begin
     PanelCaption := '';
 
 		{ проверяем на превышение цены }
-{
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
 		begin
 			PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
-			if ( PriceAvg > 0) and ( adsCoreCryptBASECOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
+			if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
 			begin
         PanelCaption := 'Превышение средней цены!';
 			end;
 		end;
-}    
 
     if (adsCoreJUNK.Value) then
       if Length(PanelCaption) > 0 then
@@ -539,7 +538,6 @@ end;
 procedure TCoreForm.adsCore2BeforeEdit(DataSet: TDataSet);
 begin
 	if adsCoreFirmCode.AsInteger = RegisterId then Abort;
-  DM.SetOldOrderCount(adsCoreORDERCOUNT.AsInteger);
 end;
 
 procedure TCoreForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
@@ -662,7 +660,6 @@ end;
 
 procedure TCoreForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
-  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCOST.AsCurrency, adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
 	MainForm.SetOrdersInfo;
   RefreshCurrentSumma;
 end;
@@ -773,15 +770,15 @@ end;
 
 procedure TCoreForm.RefreshCurrentSumma;
 var
-  COI : TOrderInfo;
+  Summ : Currency;
 begin
   if not adsCore.IsEmpty then begin
-    COI := DM.FindOrderInfo(adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
-    if COI.Summ > 0 then
+    Summ := DM.FindOrderInfo(adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
+    if Summ > 0 then
     begin
-      lCurrentSumma.Caption := CurrToStr(COI.Summ);
+      lCurrentSumma.Caption := CurrToStr(Summ);
       if not adsFirmsInfo.IsEmpty and not adsFirmsInfo.FieldByName('MinReq').IsNull
-        and (adsFirmsInfo.FieldByName('MinReq').AsCurrency > COI.Summ)
+        and (adsFirmsInfo.FieldByName('MinReq').AsCurrency > Summ)
       then
         lCurrentSumma.Font.Color := clRed
       else

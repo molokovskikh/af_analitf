@@ -290,7 +290,6 @@ begin
     if Grid.SelectedRows.Count > 0 then
       if AProc.MessageBox( 'Удалить выбранные заявки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
         Grid.SelectedRows.Delete;
-        DM.InitAllSumOrder;
         MainForm.SetOrdersInfo;
       end;
 	end;
@@ -394,7 +393,6 @@ begin
 	if ( Key = VK_DELETE) and not ( adsOrdersHForm.IsEmpty) then
 	begin
     btnDeleteClick(nil);
-    DM.InitAllSumOrder;
 		MainForm.SetOrdersInfo;
 	end;
 end;
@@ -545,7 +543,6 @@ end;
 
 procedure TOrdersHForm.adsOrdersH2BeforePost(DataSet: TDataSet);
 begin
-  //Здесь не нужный комментарий
   if adsOrdersHFormORDERID.IsNull then Abort; 
 end;
 
@@ -588,7 +585,7 @@ begin
   if not FromQuery.FldByName[adsOrdersHFormCLOSED.FieldName].AsBoolean then begin
     SumOrder := DM.FindOrderInfo(
             FromQuery.FldByName[adsOrdersHFormPRICECODE.FieldName].AsInteger,
-            FromQuery.FldByName[adsOrdersHFormREGIONCODE.FieldName].AsInteger).Summ;
+            FromQuery.FldByName[adsOrdersHFormREGIONCODE.FieldName].AsInteger);
     Index := FSumOrders.IndexOf(F.AsString);
     if (Index = -1) then
       FSumOrders.AddObject( F.AsString, TSumOrder.Create(SumOrder) )
@@ -599,8 +596,9 @@ begin
     //Если заказ архивный, то берем из базы
     try
       SumOrder := DM.QueryValue(
-        'SELECT Sum(OrdersList.price*OrdersList.OrderCount) SumOrder FROM OrdersList '
-          + ' WHERE OrdersList.OrderId = :OrderId AND OrdersList.OrderCount>0',
+        'SELECT ifnull(Sum(OrdersList.price*OrdersList.OrderCount), 0) SumOrder '
+        + 'FROM OrdersList '
+        + 'WHERE OrdersList.OrderId = :OrderId AND OrdersList.OrderCount>0',
         ['OrderId'],
         [F.AsString]);
     except
@@ -736,27 +734,18 @@ begin
     end;
   end;
 
-  DM.InitAllSumOrder;
   MainForm.SetOrdersInfo;
 
   dbgSendedOrders.SelectedRows.Clear;
 end;
 
 procedure TOrdersHForm.ShowForm;
-var
-  Index : Integer;
 begin
   inherited;
   if Assigned(PrevForm) and (PrevForm is TOrdersForm) then begin
     //Если мы производим возврат из окна "Архивный заказ", то надо обновить сумму
-    if not adsOrdersHFormCLOSED.AsBoolean then begin
-      Index := FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString);
-      if (Index > -1) then
-        TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum :=
-          DM.FindOrderInfo(adsOrdersHFormPRICECODE.AsInteger, adsOrdersHFormREGIONCODE.AsInteger).Summ;
-      //todo: надо восстановить RefreshClientFields
-      //adsOrdersHForm.RefreshClientFields();
-    end;
+    if not adsOrdersHFormCLOSED.AsBoolean then
+      adsOrdersHForm.RefreshRecord;
   end;
 end;
 

@@ -139,7 +139,7 @@ object CoreForm: TCoreForm
           end
           item
             EditButtons = <>
-            FieldName = 'sendprice'
+            FieldName = 'Price'
             Footers = <>
             Title.Caption = #1062#1077#1085#1072
             Width = 49
@@ -1485,11 +1485,13 @@ object CoreForm: TCoreForm
     object adsCorePriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCorePriceDelta: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceDelta'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCoreSortOrder: TIntegerField
@@ -1511,19 +1513,42 @@ object CoreForm: TCoreForm
   object adsOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'call     ORDERSSHOWBYFORM(:FULLCODE,'
-      '    :ACLIENTID)')
+      '#ORDERSSHOWBYFORM'
+      'SELECT '
+      '    products.catalogid as FullCode,'
+      '    osbc.Code,'
+      '    osbc.CodeCR,'
+      '    osbc.SynonymName,'
+      '    osbc.SynonymFirm,'
+      '    osbc.OrderCount,'
+      '    osbc.Price,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    osbc.Await,'
+      '    osbc.Junk'
+      'FROM'
+      '  OrdersList osbc'
+      '  inner join products on products.productid = osbc.productid'
+      '  INNER JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      'WHERE'
+      '    (osbc.clientid = :ClientID)'
+      'and (osbc.OrderCount > 0)'
+      'and (products.catalogid = :FullCode)'
+      'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
+      'ORDER BY OrdersHead.OrderDate DESC'
+      'limit 20')
     MasterSource = dsCore
     Left = 208
     Top = 389
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'FULLCODE'
+        Name = 'ClientID'
       end
       item
         DataType = ftUnknown
-        Name = 'ACLIENTID'
+        Name = 'FULLCODE'
       end>
     object adsOrdersFullCode: TLargeintField
       FieldName = 'FullCode'
@@ -1593,6 +1618,9 @@ object CoreForm: TCoreForm
         DataType = ftUnknown
         Name = 'ProductId'
       end>
+    object adsOrdersShowFormSummaryPRICEAVG: TFloatField
+      FieldName = 'PRICEAVG'
+    end
   end
   object adsFirmsInfo: TMyQuery
     Connection = DM.MyConnection

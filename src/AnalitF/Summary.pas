@@ -16,21 +16,17 @@ const
 type
   TSummaryForm = class(TChildForm)
     dsSummary: TDataSource;
-    dsSummaryH: TDataSource;
     frdsSummary: TfrDBDataSet;
     pClient: TPanel;
     dbgSummary: TToughDBGrid;
     adsSummaryOld: TpFIBDataSet;
     adsSummaryOldSumOrder: TCurrencyField;
-    adsSummaryHOld: TpFIBDataSet;
     adsSummaryOldCryptBASECOST: TCurrencyField;
     adsSummaryOldPriceRet: TCurrencyField;
     pStatus: TPanel;
     Bevel1: TBevel;
-    dbtCountOrder: TDBText;
     Label1: TLabel;
     Label2: TLabel;
-    dbtSumOrder: TDBText;
     lSumOrder: TLabel;
     pWebBrowser: TPanel;
     Bevel2: TBevel;
@@ -105,7 +101,6 @@ type
     lWarning: TLabel;
     Timer: TTimer;
     frameLegeng: TframeLegeng;
-    adsSummaryH: TMyQuery;
     adsCurrentSummary: TMyQuery;
     adsSendSummary: TMyQuery;
     adsSummary: TMyQuery;
@@ -152,8 +147,6 @@ type
     procedure dbgSummaryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgSummarySortMarkingChanged(Sender: TObject);
-    procedure adsSummaryOldBeforeEdit(DataSet: TDataSet);
-    procedure adsSummaryOldBeforeDelete(DataSet: TDataSet);
     procedure btnDeleteClick(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure rgSummaryTypeClick(Sender: TObject);
@@ -163,11 +156,10 @@ type
     procedure actFlipCoreExecute(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
   private
-    OldOrder, OrderCount: Integer;
+    OrderCount: Integer;
     OrderSum: Double;
     SelectedPrices : TStringList;
     procedure SummaryShow;
-    procedure SummaryHShow;
     procedure DeleteOrder;
     procedure SetDateInterval;
     procedure OnSPClick(Sender: TObject);
@@ -221,7 +213,6 @@ begin
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
 	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	adsSummaryH.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
   PrintEnabled := ((LastSymmaryType = 0) and ((DM.SaveGridMask and PrintCurrentSummaryOrder) > 0))
                or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
@@ -266,13 +257,11 @@ procedure TSummaryForm.ShowForm;
 begin
   plOverCost.Hide();
 	SummaryShow;
-	SummaryHShow;
 	inherited;
 end;
 
 procedure TSummaryForm.SummaryShow;
 var
-	V: array[0..0] of Variant;
   FilterSQL : String;
 begin
 	Screen.Cursor := crHourglass;
@@ -297,27 +286,7 @@ begin
     if Length(FilterSQL) > 0 then
       adsSummary.SQL.Text := adsSummary.SQL.Text + ' and ( ' + FilterSQL + ' )';
     adsSummary.Open;
-    DataSetCalc( adsSummary,['SUM(SUMORDER)'], V);
-    OrderCount := adsSummary.RecordCount;
-    OrderSum := V[0];
     SetOrderLabel;
-	finally
-		Screen.Cursor := crDefault;
-	end;
-end;
-
-procedure TSummaryForm.SummaryHShow;
-begin
-	Screen.Cursor := crHourglass;
-	try
-		with adsSummaryH do
-      if Active then
-      begin
-        Close;
-        Open;
-      end
-      else
-        Open;
 	finally
 		Screen.Cursor := crDefault;
 	end;
@@ -334,11 +303,7 @@ end;
 
 procedure TSummaryForm.adsSummary2AfterPost(DataSet: TDataSet);
 begin
-	OrderCount := OrderCount + Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsSummaryORDERCOUNT.AsInteger - OldOrder) * adsSummaryCOST.AsCurrency;
-  DM.SetNewOrderCount(adsSummaryORDERCOUNT.AsInteger, adsSummaryCOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
   SetOrderLabel;
-	SummaryHShow;
 	if adsSummaryORDERCOUNT.AsInteger = 0 then SummaryShow;
 	MainForm.SetOrdersInfo;
 end;
@@ -468,20 +433,13 @@ begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TSummaryForm.adsSummaryOldBeforeEdit(DataSet: TDataSet);
-begin
-  OldOrder:=adsSummaryORDERCOUNT.AsInteger;
-  DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-end;
-
-procedure TSummaryForm.adsSummaryOldBeforeDelete(DataSet: TDataSet);
-begin
-  DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-  DM.SetNewOrderCount(0, adsSummaryCOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
-end;
-
 procedure TSummaryForm.SetOrderLabel;
+var
+	V: array[0..0] of Variant;
 begin
+  DataSetCalc( adsSummary,['SUM(SUMORDER)'], V);
+  OrderCount := adsSummary.RecordCount;
+  OrderSum := V[0];
   lSumOrder.Caption := Format('%0.2f', [OrderSum]);
   lPosCount.Caption := IntToStr(OrderCount);
 end;
@@ -492,9 +450,6 @@ begin
     if AProc.MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
       OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
       OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCOST.AsCurrency;
-      SetOrderLabel;
-      DM.SetOldOrderCount(adsSummaryORDERCOUNT.AsInteger);
-      DM.SetNewOrderCount(0, adsSummaryCOST.AsCurrency, adsSummaryPRICECODE.AsInteger, adsSummaryREGIONCODE.AsInteger);
       DM.adcUpdate.SQL.Text :=
         'delete from OrdersList where OrderID = ' +
           IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
@@ -502,6 +457,7 @@ begin
       DM.adcUpdate.Execute;
       adsSummary.Close;
       adsSummary.Open;
+      SetOrderLabel;
       MainForm.SetOrdersInfo;
     end;
 end;

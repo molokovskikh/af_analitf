@@ -89,7 +89,6 @@ type
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgOrdersSortMarkingChanged(Sender: TObject);
-    procedure adsOrdersOldBeforeEdit(DataSet: TDataSet);
     procedure adsOrdersOldAfterPost(DataSet: TDataSet);
     procedure dbgOrdersCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
@@ -99,8 +98,6 @@ type
     procedure TimerTimer(Sender: TObject);
     procedure adsOrdersOldBeforePost(DataSet: TDataSet);
   private
-    OldOrder, OrderCount: Integer;
-    OrderSum: Double;
     ParentOrdersHForm : TChildForm;
     OrderID,
     PriceCode, RegionCode : Integer;
@@ -140,12 +137,10 @@ end;
 
 procedure TOrdersForm.SetParams(AOrderId: Integer);
 var
-	V: array[0..0] of Variant;
   Closed : Variant;
 begin
   Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(AOrderId), [], []);
   if Closed = 0 then begin
-    //adsOrders.OnCalcFields := ocf;
     dbgOrders.Columns[2].FieldName := 'PRICE';
     dbgOrders.Columns[4].FieldName := 'SUMORDER';
     dbgOrders.SearchField := '';
@@ -167,12 +162,6 @@ begin
     end
     else
       Open;
-    if Closed = 0 then
-    	DataSetCalc( adsOrders,['SUM(SUMORDER)'], V)
-    else
-    	DataSetCalc( adsOrders,['SUM(SUMORDER)'], V);
-  	OrderCount := adsOrders.RecordCount;
-  	OrderSum := V[0];
     SetOrderLabel;
   end;
 end;
@@ -213,17 +202,8 @@ begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TOrdersForm.adsOrdersOldBeforeEdit(DataSet: TDataSet);
-begin
-  OldOrder:=adsOrdersORDERCOUNT.AsInteger;
-  DM.SetOldOrderCount(adsOrdersORDERCOUNT.AsInteger);
-end;
-
 procedure TOrdersForm.adsOrdersOldAfterPost(DataSet: TDataSet);
 begin
-	OrderCount := OrderCount + Iif( adsOrdersORDERCOUNT.AsInteger = 0, 0, 1) - Iif( OldOrder = 0, 0, 1);
-	OrderSum := OrderSum + ( adsOrdersORDERCOUNT.AsInteger - OldOrder) * adsOrdersPRICE.AsCurrency;
-  DM.SetNewOrderCount(adsOrdersORDERCOUNT.AsInteger, adsOrdersPRICE.AsCurrency, OrdersHForm.adsOrdersHFormPRICECODE.AsInteger, OrdersHForm.adsOrdersHFormREGIONCODE.AsInteger);
   SetOrderLabel;
 	MainForm.SetOrdersInfo;
   //≈сли удалили позицию из заказа, то запускаем таймер на удаление этой позиции из DataSet
@@ -233,7 +213,7 @@ end;
 
 procedure TOrdersForm.SetOrderLabel;
 begin
-  lSumOrder.Caption := Format('%0.2f', [OrderSum]);
+  lSumOrder.Caption := Format('%0.2f', [ DM.GetSumOrder(OrderID) ]);
 end;
 
 procedure TOrdersForm.dbgOrdersCanInput(Sender: TObject; Value: Integer;

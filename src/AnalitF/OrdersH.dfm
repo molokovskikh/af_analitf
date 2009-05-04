@@ -859,6 +859,8 @@ inherited OrdersHForm: TOrdersHForm
       'group by OrdersHead.OrderId'
       'having count(OrdersList.Id) > 0'
       'order by OrdersHead.SendDate DESC')
+    BeforePost = adsOrdersH2BeforePost
+    AfterPost = adsOrdersH2AfterPost
     Options.StrictUpdate = False
     Left = 108
     Top = 119

@@ -148,7 +148,7 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         EditButtons = <>
-        FieldName = 'SENDPRICE'
+        FieldName = 'Price'
         Footers = <>
         Title.Caption = #1062#1077#1085#1072
         Width = 82
@@ -170,7 +170,7 @@ object FormsHistoryForm: TFormsHistoryForm
     Left = 112
     Top = 200
   end
-  object adsOrders: TpFIBDataSet
+  object adsOrdersOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    FULLCODE,'
@@ -189,68 +189,148 @@ object FormsHistoryForm: TFormsHistoryForm
       'FROM'
       '    ORDERSSHOWBYFORM(:AFULLCODE,'
       '    :ACLIENTID) ')
-    Transaction = DM.DefTran
-    Database = DM.MainConnection1
     Left = 112
     Top = 152
     oTrimCharFields = False
     oCacheCalcFields = True
-    object adsOrdersFULLCODE: TFIBBCDField
+    object adsOrdersOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersSYNONYMNAME: TFIBStringField
+    object adsOrdersOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersSYNONYMFIRM: TFIBStringField
+    object adsOrdersOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersORDERCOUNT: TFIBIntegerField
+    object adsOrdersOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsOrdersCODE: TFIBStringField
+    object adsOrdersOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersCODECR: TFIBStringField
+    object adsOrdersOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersORDERDATE: TFIBDateTimeField
+    object adsOrdersOldORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
     end
-    object adsOrdersPRICENAME: TFIBStringField
+    object adsOrdersOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsOrdersREGIONNAME: TFIBStringField
+    object adsOrdersOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsOrdersAWAIT: TFIBIntegerField
+    object adsOrdersOldAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
     end
-    object adsOrdersJUNK: TFIBIntegerField
+    object adsOrdersOldJUNK: TFIBIntegerField
       FieldName = 'JUNK'
     end
-    object adsOrdersPRICE: TFIBStringField
+    object adsOrdersOldPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsOrdersSENDPRICE: TFIBBCDField
+    object adsOrdersOldSENDPRICE: TFIBBCDField
       FieldName = 'SENDPRICE'
       Size = 2
       RoundByScale = True
+    end
+  end
+  object adsOrders: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#ORDERSSHOWBYFORM'
+      'SELECT '
+      '    products.catalogid as FullCode,'
+      '    osbc.Code,'
+      '    osbc.CodeCR,'
+      '    osbc.SynonymName,'
+      '    osbc.SynonymFirm,'
+      '    osbc.OrderCount,'
+      '    osbc.Price,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    osbc.Await,'
+      '    osbc.Junk'
+      'FROM'
+      '  OrdersList osbc'
+      '  inner join products on products.productid = osbc.productid'
+      '  INNER JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      'WHERE'
+      '    (osbc.clientid = :ClientID)'
+      'and (osbc.OrderCount > 0)'
+      'and (products.catalogid = :FullCode)'
+      'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
+      'ORDER BY OrdersHead.OrderDate DESC'
+      'limit 20')
+    Left = 152
+    Top = 152
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ClientID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'FullCode'
+      end>
+    object adsOrdersFullCode: TLargeintField
+      FieldName = 'FullCode'
+    end
+    object adsOrdersCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsOrdersCodeCR: TStringField
+      FieldName = 'CodeCR'
+      Size = 84
+    end
+    object adsOrdersSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 250
+    end
+    object adsOrdersSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsOrdersOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsOrdersPrice: TFloatField
+      FieldName = 'Price'
+    end
+    object adsOrdersOrderDate: TDateTimeField
+      FieldName = 'OrderDate'
+    end
+    object adsOrdersPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsOrdersRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsOrdersAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsOrdersJunk: TBooleanField
+      FieldName = 'Junk'
     end
   end
 end

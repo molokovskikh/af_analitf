@@ -149,7 +149,6 @@ type
     procedure dbgExpiredsSortMarkingChanged(Sender: TObject);
     procedure dbgExpiredsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
-    procedure adsExpiredsOldBeforeEdit(DataSet: TDataSet);
     procedure actFlipCoreExecute(Sender: TObject);
   private
     ClientId: Integer;
@@ -308,7 +307,6 @@ end;
 
 procedure TExpiredsForm.adsExpireds2AfterPost(DataSet: TDataSet);
 begin
-  DM.SetNewOrderCount(adsExpiredsORDERCOUNT.AsInteger, adsExpiredsCOST.AsCurrency, adsExpiredsPRICECODE.AsInteger, adsExpiredsREGIONCODE.AsInteger);
 	MainForm.SetOrdersInfo;
 end;
 
@@ -345,11 +343,6 @@ begin
 	//уцененный товар
 	if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCOST))
   then Background := JUNK_CLR;
-end;
-
-procedure TExpiredsForm.adsExpiredsOldBeforeEdit(DataSet: TDataSet);
-begin
-  DM.SetOldOrderCount(adsExpiredsORDERCOUNT.AsInteger);
 end;
 
 procedure TExpiredsForm.actFlipCoreExecute(Sender: TObject);

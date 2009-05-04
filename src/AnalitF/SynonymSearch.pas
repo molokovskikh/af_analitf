@@ -79,7 +79,7 @@ type
     miUnselecAll: TMenuItem;
     miSep: TMenuItem;
     lFilter: TLabel;
-    adsOrdersShowFormSummary: TpFIBDataSet;
+    adsOrdersShowFormSummaryOld: TpFIBDataSet;
     adsCoreOldDATEPRICE: TFIBDateTimeField;
     adsCoreOldBASECOST: TFIBStringField;
     adsCoreOldORDERSPRICE: TFIBStringField;
@@ -88,29 +88,29 @@ type
     lblPriceAvg: TLabel;
     dbtPriceAvg: TDBText;
     dbgHistory: TToughDBGrid;
-    adsOrders: TpFIBDataSet;
-    adsOrdersFULLCODE: TFIBBCDField;
-    adsOrdersSYNONYMNAME: TFIBStringField;
-    adsOrdersSYNONYMFIRM: TFIBStringField;
-    adsOrdersORDERCOUNT: TFIBIntegerField;
-    adsOrdersORDERDATE: TFIBDateTimeField;
-    adsOrdersPRICENAME: TFIBStringField;
-    adsOrdersREGIONNAME: TFIBStringField;
-    adsOrdersAWAIT: TFIBIntegerField;
-    adsOrdersJUNK: TFIBIntegerField;
-    adsOrdersCODE: TFIBStringField;
-    adsOrdersCODECR: TFIBStringField;
-    adsOrdersPRICE: TFIBStringField;
+    adsOrdersOld: TpFIBDataSet;
+    adsOrdersOldFULLCODE: TFIBBCDField;
+    adsOrdersOldSYNONYMNAME: TFIBStringField;
+    adsOrdersOldSYNONYMFIRM: TFIBStringField;
+    adsOrdersOldORDERCOUNT: TFIBIntegerField;
+    adsOrdersOldORDERDATE: TFIBDateTimeField;
+    adsOrdersOldPRICENAME: TFIBStringField;
+    adsOrdersOldREGIONNAME: TFIBStringField;
+    adsOrdersOldAWAIT: TFIBIntegerField;
+    adsOrdersOldJUNK: TFIBIntegerField;
+    adsOrdersOldCODE: TFIBStringField;
+    adsOrdersOldCODECR: TFIBStringField;
+    adsOrdersOldPRICE: TFIBStringField;
     dsOrders: TDataSource;
     dsOrdersShowFormSummary: TDataSource;
     adsCoreOldDOC: TFIBStringField;
     adsCoreOldREGISTRYCOST: TFIBFloatField;
     adsCoreOldVITALLYIMPORTANT: TFIBBooleanField;
     adsCoreOldREQUESTRATIO: TFIBIntegerField;
-    adsOrdersSENDPRICE: TFIBBCDField;
+    adsOrdersOldSENDPRICE: TFIBBCDField;
     adsCoreOldORDERCOST: TFIBBCDField;
     adsCoreOldMINORDERCOUNT: TFIBIntegerField;
-    adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField;
+    adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField;
     adsCoreOldPRODUCTID: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
@@ -175,6 +175,22 @@ type
     adsCoreOrdersHRegionName: TStringField;
     adsCorePriceRet: TCurrencyField;
     adsCoreSortOrder: TIntegerField;
+    adsOrders: TMyQuery;
+    adsOrdersFullCode: TLargeintField;
+    adsOrdersCode: TStringField;
+    adsOrdersCodeCR: TStringField;
+    adsOrdersSynonymName: TStringField;
+    adsOrdersSynonymFirm: TStringField;
+    adsOrdersOrderCount: TIntegerField;
+    adsOrdersPrice: TFloatField;
+    adsOrdersOrderDate: TDateTimeField;
+    adsOrdersPriceName: TStringField;
+    adsOrdersRegionName: TStringField;
+    adsOrdersAwait: TBooleanField;
+    adsOrdersJunk: TBooleanField;
+    adsOrdersShowFormSummary: TMyQuery;
+    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
+    adsOrdersShowFormSummaryPRODUCTID: TLargeintField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -271,7 +287,7 @@ begin
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
-	adsOrders.ParamByName( 'AClientId').Value :=
+	adsOrders.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsOrdersShowFormSummary.ParamByName( 'AClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
@@ -334,8 +350,8 @@ begin
     InternalSearchText := LeftStr(eSearch.Text, 50);
     if adsCore.Active then
       adsCore.Close;
-  	adsOrdersShowFormSummary.DataSource := nil;
-  	adsOrders.DataSource := nil;
+  	//adsOrdersShowFormSummary.DataSource := nil;
+  	//adsOrders.DataSource := nil;
     //adsCore.Options := adsCore.Options - [poCacheCalcFields];
     adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
     adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
@@ -461,12 +477,10 @@ end;
 procedure TSynonymSearchForm.adsCoreOldBeforeEdit(DataSet: TDataSet);
 begin
 	if adsCoreFirmCode.AsInteger = RegisterId then Abort;
-  DM.SetOldOrderCount(adsCoreORDERCOUNT.AsInteger);
 end;
 
 procedure TSynonymSearchForm.adsCoreOldAfterPost(DataSet: TDataSet);
 begin
-  DM.SetNewOrderCount(adsCoreORDERCOUNT.AsInteger, adsCoreCOST.AsCurrency, adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
 	MainForm.SetOrdersInfo;
 end;
 
@@ -652,7 +666,7 @@ var
 begin
 	if MainForm.ActiveChild <> Self then exit;
   if adsCore.IsEmpty then Exit;
-  
+
 	FullCode := adsCoreFullCode.AsInteger;
 	ShortCode := adsCoreShortCode.AsInteger;
 

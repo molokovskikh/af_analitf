@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=5
 MinorVer=0
-Release=12
-Build=732
+Release=13
+Build=734
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=5.0.12.732
+FileVersion=5.0.13.734
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2009
 LegalTrademarks=Инфорум
@@ -160,8 +160,8 @@ c:\program files\borland\delphi7\Projects\Bpl\dclIndy70.bpl=Internet Direct (Ind
 [HistoryLists\hlConditionals]
 Count=5
 Item0=DSP,DEBUG;
-Item1=DEBUG
-Item2=DSP,DEBUG;USEMYSQLEMBEDDED
+Item1=DSP,DEBUG;USEMYSQLEMBEDDED
+Item2=DEBUG
 Item3=DSP,DEBUG
 Item4=DSP
 [HistoryLists\hlUnitAliases]

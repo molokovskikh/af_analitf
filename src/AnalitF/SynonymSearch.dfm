@@ -375,7 +375,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
           end
           item
             EditButtons = <>
-            FieldName = 'SENDPRICE'
+            FieldName = 'PRICE'
             Footers = <>
             Title.Caption = #1062#1077#1085#1072
             Width = 49
@@ -892,7 +892,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Caption = '-'
     end
   end
-  object adsOrdersShowFormSummary: TpFIBDataSet
+  object adsOrdersShowFormSummaryOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    *'
@@ -901,18 +901,18 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'where'
       '  ClientCode = :ACLIENTID'
       'and ProductId = :ProductId')
-    Left = 400
-    Top = 476
+    Left = 384
+    Top = 460
     WaitEndMasterScroll = True
     dcForceOpen = True
     oCacheCalcFields = True
-    object adsOrdersShowFormSummaryPRICEAVG: TFIBBCDField
+    object adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField
       FieldName = 'PRICEAVG'
       Size = 2
       RoundByScale = True
     end
   end
-  object adsOrders: TpFIBDataSet
+  object adsOrdersOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    FULLCODE,'
@@ -931,66 +931,66 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'FROM'
       '    ORDERSSHOWBYFORM(:FULLCODE,'
       '    :ACLIENTID) ')
-    Left = 192
-    Top = 476
+    Left = 168
+    Top = 468
     WaitEndMasterScroll = True
     dcForceOpen = True
     oTrimCharFields = False
     oCacheCalcFields = True
-    object adsOrdersFULLCODE: TFIBBCDField
+    object adsOrdersOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsOrdersSYNONYMNAME: TFIBStringField
+    object adsOrdersOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersSYNONYMFIRM: TFIBStringField
+    object adsOrdersOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsOrdersORDERCOUNT: TFIBIntegerField
+    object adsOrdersOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsOrdersORDERDATE: TFIBDateTimeField
+    object adsOrdersOldORDERDATE: TFIBDateTimeField
       FieldName = 'ORDERDATE'
       DisplayFormat = 'dd.mm.yyyy hh:mm AMPM'
     end
-    object adsOrdersPRICENAME: TFIBStringField
+    object adsOrdersOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsOrdersREGIONNAME: TFIBStringField
+    object adsOrdersOldREGIONNAME: TFIBStringField
       FieldName = 'REGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsOrdersAWAIT: TFIBIntegerField
+    object adsOrdersOldAWAIT: TFIBIntegerField
       FieldName = 'AWAIT'
     end
-    object adsOrdersJUNK: TFIBIntegerField
+    object adsOrdersOldJUNK: TFIBIntegerField
       FieldName = 'JUNK'
     end
-    object adsOrdersCODE: TFIBStringField
+    object adsOrdersOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersCODECR: TFIBStringField
+    object adsOrdersOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsOrdersPRICE: TFIBStringField
+    object adsOrdersOldPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsOrdersSENDPRICE: TFIBBCDField
+    object adsOrdersOldSENDPRICE: TFIBBCDField
       FieldName = 'SENDPRICE'
       Size = 2
       RoundByScale = True
@@ -1003,8 +1003,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
   end
   object dsOrdersShowFormSummary: TDataSource
     DataSet = adsOrdersShowFormSummary
-    Left = 336
-    Top = 488
+    Left = 344
+    Top = 480
   end
   object adsOrdersH: TMyQuery
     Connection = DM.MyConnection
@@ -1423,6 +1423,119 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldKind = fkCalculated
       FieldName = 'SortOrder'
       Calculated = True
+    end
+  end
+  object adsOrders: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#ORDERSSHOWBYFORM'
+      'SELECT '
+      '    products.catalogid as FullCode,'
+      '    osbc.Code,'
+      '    osbc.CodeCR,'
+      '    osbc.SynonymName,'
+      '    osbc.SynonymFirm,'
+      '    osbc.OrderCount,'
+      '    osbc.Price,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    osbc.Await,'
+      '    osbc.Junk'
+      'FROM'
+      '  OrdersList osbc'
+      '  inner join products on products.productid = osbc.productid'
+      '  INNER JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      'WHERE'
+      '    (osbc.clientid = :ClientID)'
+      'and (osbc.OrderCount > 0)'
+      'and (products.catalogid = :FullCode)'
+      'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
+      'ORDER BY OrdersHead.OrderDate DESC'
+      'limit 20')
+    Left = 208
+    Top = 465
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ClientID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'FullCode'
+      end>
+    object adsOrdersFullCode: TLargeintField
+      FieldName = 'FullCode'
+    end
+    object adsOrdersCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsOrdersCodeCR: TStringField
+      FieldName = 'CodeCR'
+      Size = 84
+    end
+    object adsOrdersSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 250
+    end
+    object adsOrdersSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsOrdersOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsOrdersPrice: TFloatField
+      FieldName = 'Price'
+    end
+    object adsOrdersOrderDate: TDateTimeField
+      FieldName = 'OrderDate'
+      DisplayFormat = 'dd.mm.yyyy hh:mm AMPM'
+    end
+    object adsOrdersPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsOrdersRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsOrdersAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsOrdersJunk: TBooleanField
+      FieldName = 'Junk'
+    end
+  end
+  object adsOrdersShowFormSummary: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT'
+      '    *'
+      'FROM'
+      '   ClientAVG'
+      'where'
+      '  ClientCode = :CLIENTID')
+    MasterSource = dsCore
+    MasterFields = 'ProductID'
+    DetailFields = 'PRODUCTID'
+    Left = 424
+    Top = 457
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'CLIENTID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ProductID'
+      end>
+    object adsOrdersShowFormSummaryPRICEAVG: TFloatField
+      FieldName = 'PRICEAVG'
+    end
+    object adsOrdersShowFormSummaryPRODUCTID: TLargeintField
+      FieldName = 'PRODUCTID'
     end
   end
 end
