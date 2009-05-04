@@ -128,6 +128,8 @@ type
     procedure EnableRemoteAccess;
     procedure OnAppEx(Sender: TObject; E: Exception);
     procedure RXLoadRetailMargins;
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
   end;
 
@@ -561,6 +563,14 @@ end;
 procedure TConfigForm.eHTTPPassChange(Sender: TObject);
 begin
   HTTPPassChanged := True;
+end;
+
+procedure TConfigForm.CreateParams(var Params: TCreateParams);
+begin
+  inherited CreateParams(Params);
+  //This only works on Windows XP and above
+  if CheckWin32Version(5, 1) then
+    Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
 end;
 
 end.

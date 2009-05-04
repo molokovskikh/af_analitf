@@ -13,8 +13,8 @@ object frmSendLetter: TfrmSendLetter
   OldCreateOrder = False
   Position = poMainFormCenter
   DesignSize = (
-    365
-    405)
+    357
+    396)
   PixelsPerInch = 96
   TextHeight = 13
   object cbAddLogs: TCheckBox

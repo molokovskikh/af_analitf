@@ -102,6 +102,9 @@ begin
   inherited CreateParams(Params);
   //форма будет дочерней
   Params.Style:=Params.Style or WS_CHILD;
+  // This only works on Windows XP and above
+  if CheckWin32Version(5, 1) then
+    Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
 end;
 
 procedure TChildForm.Loaded;
