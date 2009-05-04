@@ -5,7 +5,7 @@ object AboutForm: TAboutForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1054' '#1087#1088#1086#1075#1088#1072#1084#1084#1077
-  ClientHeight = 343
+  ClientHeight = 257
   ClientWidth = 407
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -5691,16 +5691,9 @@ object AboutForm: TAboutForm
     ParentFont = False
     WordWrap = True
   end
-  object Label3: TLabel
-    Left = 32
-    Top = 186
-    Width = 130
-    Height = 13
-    Caption = #1058#1077#1093#1085#1080#1095#1077#1089#1082#1072#1103' '#1087#1086#1076#1076#1077#1088#1078#1082#1072' :'
-  end
   object Label4: TLabel
     Left = 32
-    Top = 294
+    Top = 222
     Width = 32
     Height = 13
     Cursor = crHandPoint
@@ -5720,35 +5713,14 @@ object AboutForm: TAboutForm
     Height = 13
     Caption = #1048#1076#1077#1085#1090#1080#1092#1080#1082#1072#1094#1080#1103' : '
   end
-  object BitBtn2: TBitBtn
-    Left = 136
-    Top = 232
-    Width = 75
-    Height = 25
-    Cancel = True
-    Caption = 'BitBtn2'
-    ModalResult = 2
-    TabOrder = 2
-  end
-  object DBMemo1: TDBMemo
-    Left = 32
-    Top = 203
-    Width = 353
-    Height = 73
-    DataField = 'TechSupport'
-    DataSource = DM.dsClients
-    ReadOnly = True
-    ScrollBars = ssVertical
-    TabOrder = 0
-  end
   object BitBtn1: TBitBtn
     Left = 309
-    Top = 290
+    Top = 218
     Width = 76
     Height = 22
     Caption = 'OK'
     Default = True
     ModalResult = 1
-    TabOrder = 1
+    TabOrder = 0
   end
 end

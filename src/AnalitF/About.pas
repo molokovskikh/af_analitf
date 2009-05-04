@@ -10,13 +10,10 @@ type
   TAboutForm = class(TForm)
     Image1: TImage;
     Image2: TImage;
-    DBMemo1: TDBMemo;
     BitBtn1: TBitBtn;
     DBText1: TDBText;
     Label1: TLabel;
     Label2: TLabel;
-    Label3: TLabel;
-    BitBtn2: TBitBtn;
     Label4: TLabel;
     lIndent: TLabel;
     procedure FormKeyDown(Sender: TObject; var Key: Word;
