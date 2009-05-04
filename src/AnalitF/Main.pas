@@ -444,8 +444,9 @@ end;
 
 procedure TMainForm.actCompactExecute(Sender: TObject);
 begin
-	if AProc.MessageBox( 'Сжатие базы данных достаточно длительный процесс' + #13 +
-		'и должен проводиться монопольно. Продолжить?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then exit;
+	if AProc.MessageBox( 'Сжатие базы данных достаточно длительный процесс.'#13#10'Продолжить?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK
+  then
+    Exit;
 	FreeChildForms;
 	Application.ProcessMessages;
   RunCompactDatabase;
