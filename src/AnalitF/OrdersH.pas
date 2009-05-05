@@ -154,10 +154,18 @@ begin
   try
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'CurrentOrders', False)
     then
-      dbgCurrentOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      try
+        dbgCurrentOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      finally
+        Reg.CloseKey;
+      end;
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'SendedOrders', False)
     then
-      dbgSendedOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      try
+        dbgSendedOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      finally
+        Reg.CloseKey;
+      end;
   finally
   	Reg.Free;
   end;
@@ -199,9 +207,17 @@ begin
   Reg := TRegIniFile.Create();
   try
     Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'CurrentOrders', True);
-    dbgCurrentOrders.SaveColumnsLayout(Reg);
+    try
+      dbgCurrentOrders.SaveColumnsLayout(Reg);
+    finally
+      Reg.CloseKey;
+    end;
     Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'SendedOrders', True);
-    dbgSendedOrders.SaveColumnsLayout(Reg);
+    try
+      dbgSendedOrders.SaveColumnsLayout(Reg);
+    finally
+      Reg.CloseKey;
+    end;
   finally
     Reg.Free;
   end;

@@ -926,6 +926,8 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormSend: TBooleanField
       FieldName = 'Send'
+      Required = True
+      OnChange = adsOrdersH2SendChange
     end
     object adsOrdersHFormPriceName: TStringField
       FieldName = 'PriceName'
