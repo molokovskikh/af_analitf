@@ -289,7 +289,7 @@ begin
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
 	adsOrders.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsOrdersShowFormSummary.ParamByName( 'AClientId').Value :=
+	adsOrdersShowFormSummary.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
 	Reg := TRegIniFile.Create;
