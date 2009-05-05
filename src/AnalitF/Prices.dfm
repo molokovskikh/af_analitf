@@ -62,8 +62,8 @@ inherited PricesForm: TPricesForm
       FooterFont.Height = -11
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
-      Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
-      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghIncSearch, dghPreferIncSearch, dghRowHighlight]
+      Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
@@ -77,13 +77,13 @@ inherited PricesForm: TPricesForm
       OnGetCellParams = dbgPricesGetCellParams
       OnKeyDown = dbgPricesKeyDown
       OnSortMarkingChanged = dbgPricesSortMarkingChanged
+      SearchField = 'PriceName'
       SearchPosition = spBottom
       Columns = <
         item
           EditButtons = <>
           FieldName = 'PriceName'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
           Title.TitleButton = True
           Width = 75
@@ -92,7 +92,6 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'RegionName'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1056#1077#1075#1080#1086#1085
           Title.TitleButton = True
           Width = 57
@@ -102,7 +101,6 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'Storage'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1057#1082#1083#1072#1076
           Title.TitleButton = True
           Width = 36
@@ -118,7 +116,6 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'pricesize'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1055#1086#1079#1080#1094#1080#1081
           Title.TitleButton = True
           Width = 50
@@ -127,7 +124,6 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'Positions'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1047#1072#1082#1072#1079
           Title.TitleButton = True
           Width = 45
@@ -136,7 +132,6 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'SumOrder'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1057#1091#1084#1084#1072
           Title.TitleButton = True
           Width = 51
@@ -147,7 +142,6 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'DatePrice'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1044#1072#1090#1072' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072
           Title.TitleButton = True
           Width = 95
@@ -156,7 +150,6 @@ inherited PricesForm: TPricesForm
           EditButtons = <>
           FieldName = 'sumbycurrentmonth'
           Footers = <>
-          ReadOnly = True
           Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
           Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
           Title.TitleButton = True
@@ -643,6 +636,7 @@ inherited PricesForm: TPricesForm
       'group by pricesshow.PriceCode, pricesshow.RegionCode')
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
+    Options.StrictUpdate = False
     Left = 144
     Top = 152
     ParamData = <
@@ -660,60 +654,76 @@ inherited PricesForm: TPricesForm
       end>
     object adsPricesPriceCode: TLargeintField
       FieldName = 'PriceCode'
+      ReadOnly = True
     end
     object adsPricesPriceName: TStringField
       FieldName = 'PriceName'
+      ReadOnly = True
       Size = 70
     end
     object adsPricesUniversalDatePrice: TDateTimeField
       FieldName = 'UniversalDatePrice'
+      ReadOnly = True
     end
     object adsPricesMinReq: TIntegerField
       FieldName = 'MinReq'
+      ReadOnly = True
     end
     object adsPricesEnabled: TBooleanField
       FieldName = 'Enabled'
+      ReadOnly = True
     end
     object adsPricesPriceInfo: TMemoField
       FieldName = 'PriceInfo'
+      ReadOnly = True
       BlobType = ftMemo
     end
     object adsPricesFirmCode: TLargeintField
       FieldName = 'FirmCode'
+      ReadOnly = True
     end
     object adsPricesFullName: TStringField
       FieldName = 'FullName'
+      ReadOnly = True
       Size = 40
     end
     object adsPricesStorage: TBooleanField
       Alignment = taCenter
       FieldName = 'Storage'
+      ReadOnly = True
       OnGetText = adsPricesOldSTORAGEGetText
     end
     object adsPricesAdminMail: TStringField
       FieldName = 'AdminMail'
+      ReadOnly = True
       Size = 50
     end
     object adsPricesSupportPhone: TStringField
       FieldName = 'SupportPhone'
+      ReadOnly = True
     end
     object adsPricesContactInfo: TMemoField
       FieldName = 'ContactInfo'
+      ReadOnly = True
       BlobType = ftMemo
     end
     object adsPricesOperativeInfo: TMemoField
       FieldName = 'OperativeInfo'
+      ReadOnly = True
       BlobType = ftMemo
     end
     object adsPricesRegionCode: TLargeintField
       FieldName = 'RegionCode'
+      ReadOnly = True
     end
     object adsPricesRegionName: TStringField
       FieldName = 'RegionName'
+      ReadOnly = True
       Size = 25
     end
     object adsPricespricesize: TIntegerField
       FieldName = 'pricesize'
+      ReadOnly = True
     end
     object adsPricesINJOB: TBooleanField
       FieldName = 'INJOB'
@@ -721,19 +731,24 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesCONTROLMINREQ: TBooleanField
       FieldName = 'CONTROLMINREQ'
+      ReadOnly = True
     end
     object adsPricesDatePrice: TDateTimeField
       FieldName = 'DatePrice'
+      ReadOnly = True
     end
     object adsPricesPositions: TLargeintField
       FieldName = 'Positions'
+      ReadOnly = True
     end
     object adsPricessumbycurrentmonth: TFloatField
       FieldName = 'sumbycurrentmonth'
+      ReadOnly = True
       DisplayFormat = '0.00;;'#39#39
     end
     object adsPricesSumOrder: TFloatField
       FieldName = 'SumOrder'
+      ReadOnly = True
       DisplayFormat = '0.00;;'#39#39
     end
   end
