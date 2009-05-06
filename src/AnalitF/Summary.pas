@@ -178,7 +178,7 @@ procedure ShowSummary;
 
 implementation
 
-uses DModule, Main, AProc, Constant, NamesForms;
+uses DModule, Main, AProc, Constant, NamesForms, Fr_Class;
 
 var
   LastDateFrom,
@@ -313,6 +313,10 @@ var
   LastCurrentSQL : String;
 begin
   //Если распечатываем текущий сводный заказ, то сбрасываем фильтр по поставщикам
+  frVariables[ 'SymmaryType'] := LastSymmaryType;
+  frVariables[ 'SymmaryDateFrom'] := DateToStr(LastDateFrom);
+  frVariables[ 'SymmaryDateTo'] := DateToStr(LastDateTo);
+
   if LastSymmaryType = 0 then begin
     adsSummary.DisableControls;
     try

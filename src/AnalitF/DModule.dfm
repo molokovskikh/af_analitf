@@ -2104,6 +2104,9 @@ object DM: TDM
       '#ORDERSHSHOW'
       'SELECT'
       '    OrdersHead.OrderId,'
+      
+        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
+        'layOrderId,'
       '    OrdersHead.ClientID,'
       '    OrdersHead.ServerOrderId,'
       

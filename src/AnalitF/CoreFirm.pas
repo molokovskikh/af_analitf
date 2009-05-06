@@ -234,7 +234,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, AlphaUtils, Orders, DASQLMonitor;
+  NamesForms, AlphaUtils, Orders, DASQLMonitor, FR_Class;
 
 {$R *.DFM}
 
@@ -394,6 +394,8 @@ begin
   try
     adsCore.Filtered := False;
     adsCore.IndexFieldNames := 'SynonymName';
+    frVariables[ 'OrdersComments'] := adsCurrentOrderHeader.FieldByName('Comments').AsVariant;
+
     DM.ShowFastReport('CoreFirm.frf', adsCore, APreview);
     if OldFiltered then
       DBProc.SetFilterProc(adsCore, OldFilterEvent);
@@ -411,6 +413,10 @@ begin
     ParamByName('ClientId').Value:=ClientId;
     ParamByName('PriceCode').Value:=PriceCode;
     ParamByName('RegionCode').Value:=RegionCode;
+
+    if adsCurrentOrderHeader.Active then
+      adsCurrentOrderHeader.Close;
+    adsCurrentOrderHeader.Open;
   end;
 end;
 

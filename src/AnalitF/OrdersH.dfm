@@ -795,6 +795,9 @@ inherited OrdersHForm: TOrdersHForm
       '#ORDERSHSHOW'
       'SELECT'
       '    OrdersHead.OrderId,'
+      
+        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
+        'layOrderId,'
       '    OrdersHead.ClientID,'
       '    OrdersHead.ServerOrderId,'
       
@@ -962,6 +965,9 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormsumbycurrentmonth: TFloatField
       FieldName = 'sumbycurrentmonth'
+    end
+    object adsOrdersHFormDisplayOrderId: TLargeintField
+      FieldName = 'DisplayOrderId'
     end
   end
 end

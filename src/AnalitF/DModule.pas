@@ -3220,7 +3220,7 @@ begin
 
         frdsReportOrder.DataSet := adsOrderDetails;
         //готовим печать
-        frVariables[ 'OrderId'] := adsOrdersHeaders.FieldByName('OrderId').AsVariant;
+        frVariables[ 'DisplayOrderId'] := adsOrdersHeaders.FieldByName('DisplayOrderId').AsVariant;
         frVariables[ 'DatePrice'] := adsOrdersHeaders.FieldByName('DatePrice').AsVariant;
         frVariables[ 'OrdersComments'] := adsOrdersHeaders.FieldByName('Comments').AsString;
         frVariables[ 'SupportPhone'] := adsOrdersHeaders.FieldByName('SupportPhone').AsString;

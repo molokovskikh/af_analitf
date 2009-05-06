@@ -46,7 +46,7 @@ inherited OrdersForm: TOrdersForm
     BevelOuter = bvNone
     TabOrder = 0
     object dbtPriceName: TDBText
-      Left = 355
+      Left = 427
       Top = 9
       Width = 272
       Height = 13
@@ -75,9 +75,9 @@ inherited OrdersForm: TOrdersForm
     object dbtId: TDBText
       Left = 76
       Top = 9
-      Width = 41
+      Width = 109
       Height = 13
-      DataField = 'OrderId'
+      DataField = 'DisplayOrderId'
       DataSource = OrdersHForm.dsOrdersH
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -87,7 +87,7 @@ inherited OrdersForm: TOrdersForm
       ParentFont = False
     end
     object Label2: TLabel
-      Left = 124
+      Left = 196
       Top = 9
       Width = 14
       Height = 13
@@ -100,7 +100,7 @@ inherited OrdersForm: TOrdersForm
       ParentFont = False
     end
     object dbtOrderDate: TDBText
-      Left = 141
+      Left = 213
       Top = 9
       Width = 124
       Height = 13
@@ -169,7 +169,7 @@ inherited OrdersForm: TOrdersForm
       Visible = False
     end
     object Label4: TLabel
-      Left = 275
+      Left = 347
       Top = 9
       Width = 77
       Height = 13

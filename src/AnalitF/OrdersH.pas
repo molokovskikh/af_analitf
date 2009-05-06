@@ -85,6 +85,7 @@ type
     adsOrdersHFormPositions: TLargeintField;
     adsOrdersHFormSumOrder: TFloatField;
     adsOrdersHFormsumbycurrentmonth: TFloatField;
+    adsOrdersHFormDisplayOrderId: TLargeintField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
