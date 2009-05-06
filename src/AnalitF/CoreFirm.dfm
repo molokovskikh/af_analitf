@@ -1,6 +1,6 @@
 object CoreFirmForm: TCoreFirmForm
   Left = 310
-  Top = 203
+  Top = 200
   ActiveControl = dbgCore
   Align = alClient
   Anchors = [akTop, akBottom]
@@ -846,7 +846,7 @@ object CoreFirmForm: TCoreFirmForm
     Left = 160
     Top = 144
   end
-  object adsOrdersShowFormSummary: TMyQuery
+  object adsAvgOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
@@ -854,49 +854,70 @@ object CoreFirmForm: TCoreFirmForm
       'FROM'
       '   ClientAVG'
       'where'
-      '  ClientCode = :ACLIENTID')
+      '  ClientCode = :CLIENTID')
+    MasterSource = dsCore
+    MasterFields = 'productid'
+    DetailFields = 'PRODUCTID'
     Left = 240
     Top = 264
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'ACLIENTID'
+        Name = 'CLIENTID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'productid'
       end>
-    object adsOrdersShowFormSummaryCLIENTCODE: TLargeintField
-      FieldName = 'CLIENTCODE'
-    end
-    object adsOrdersShowFormSummaryPRODUCTID: TLargeintField
+    object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
     end
-    object adsOrdersShowFormSummaryPRICEAVG: TFloatField
+    object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
     end
   end
-  object adsOrdersH: TMyQuery
+  object adsCurrentOrderHeader: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'SELECT'
-      '  *'
-      'FROM'
-      '  ORDERSHSHOWCURRENT'
-      'where'
-      '    ClientId   = :ACLIENTID'
-      'and PriceCode  = :APRICECODE'
-      'and RegionCode = :AREGIONCODE')
+      '#ordershshowcurrent'
+      'select '
+      '  ordershead.ORDERID,'
+      '  ordershead.SERVERORDERID,'
+      
+        '  ifnull(ordershead.SERVERORDERID, ordershead.ORDERID) as Displa' +
+        'yOrderId,'
+      '  ordershead.CLIENTID,'
+      '  ordershead.PRICECODE,'
+      '  ordershead.REGIONCODE,'
+      '  ordershead.PRICENAME,'
+      '  ordershead.REGIONNAME,'
+      '  ordershead.ORDERDATE,'
+      '  ordershead.SENDDATE,'
+      '  ordershead.CLOSED,'
+      '  ordershead.SEND,'
+      '  ordershead.COMMENTS,'
+      '  ordershead.MESSAGETO '
+      'from '
+      '  ordershead '
+      'where '
+      '    (ordershead.ClientId   = :CLIENTID)'
+      'and (ordershead.PriceCode  = :PRICECODE)'
+      'and (ordershead.RegionCode = :REGIONCODE)'
+      'and (ordershead.CLOSED <> 1)')
     Left = 344
     Top = 136
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'ACLIENTID'
+        Name = 'CLIENTID'
       end
       item
         DataType = ftUnknown
-        Name = 'APRICECODE'
+        Name = 'PRICECODE'
       end
       item
         DataType = ftUnknown
-        Name = 'AREGIONCODE'
+        Name = 'REGIONCODE'
       end>
   end
   object adsCountFields: TMyQuery

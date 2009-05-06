@@ -22,7 +22,8 @@ object FormsHistoryForm: TFormsHistoryForm
     Width = 51
     Height = 13
     AutoSize = True
-    DataField = 'Name'
+    DataField = 'NAME'
+    DataSource = dsCatalogName
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -36,7 +37,8 @@ object FormsHistoryForm: TFormsHistoryForm
     Width = 46
     Height = 13
     AutoSize = True
-    DataField = 'Form'
+    DataField = 'FORM'
+    DataSource = dsCatalogName
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -57,21 +59,6 @@ object FormsHistoryForm: TFormsHistoryForm
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object dbtPriceAvg: TDBText
-    Left = 523
-    Top = 358
-    Width = 70
-    Height = 13
-    AutoSize = True
-    DataField = 'PriceAvg'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
-    ParentFont = False
-    Visible = False
-  end
   object lPriceAvg: TLabel
     Left = 363
     Top = 358
@@ -91,7 +78,7 @@ object FormsHistoryForm: TFormsHistoryForm
     Width = 713
     Height = 297
     AutoFitColWidths = True
-    DataSource = dsOrders
+    DataSource = dsPreviosOrders
     Flat = True
     FooterColor = clWindow
     FooterFont.Charset = DEFAULT_CHARSET
@@ -112,21 +99,21 @@ object FormsHistoryForm: TFormsHistoryForm
     Columns = <
       item
         EditButtons = <>
-        FieldName = 'SYNONYMFIRM'
+        FieldName = 'SynonymFirm'
         Footers = <>
         Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
         Width = 149
       end
       item
         EditButtons = <>
-        FieldName = 'PRICENAME'
+        FieldName = 'PriceName'
         Footers = <>
         Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
         Width = 109
       end
       item
         EditButtons = <>
-        FieldName = 'REGIONNAME'
+        FieldName = 'RegionName'
         Footers = <>
         Title.Caption = #1056#1077#1075#1080#1086#1085
         Width = 94
@@ -134,14 +121,14 @@ object FormsHistoryForm: TFormsHistoryForm
       item
         DisplayFormat = 'dd.mm.yyyy hh:nn'
         EditButtons = <>
-        FieldName = 'ORDERDATE'
+        FieldName = 'OrderDate'
         Footers = <>
         Title.Caption = #1044#1072#1090#1072
         Width = 85
       end
       item
         EditButtons = <>
-        FieldName = 'ORDERCOUNT'
+        FieldName = 'OrderCount'
         Footers = <>
         Title.Caption = #1047#1072#1082#1072#1079
         Width = 57
@@ -165,8 +152,8 @@ object FormsHistoryForm: TFormsHistoryForm
     ModalResult = 1
     TabOrder = 0
   end
-  object dsOrders: TDataSource
-    DataSet = adsOrders
+  object dsPreviosOrders: TDataSource
+    DataSet = adsPreviosOrders
     Left = 112
     Top = 200
   end
@@ -251,7 +238,7 @@ object FormsHistoryForm: TFormsHistoryForm
       RoundByScale = True
     end
   end
-  object adsOrders: TMyQuery
+  object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       '#ORDERSSHOWBYFORM'
@@ -275,8 +262,11 @@ object FormsHistoryForm: TFormsHistoryForm
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'
-      'and (products.catalogid = :FullCode)'
-      'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
+      
+        'and (((:GroupByProducts = 0) and (products.catalogid = :FullCode' +
+        ')) or ((:GroupByProducts = 1) and (osbc.productid = :productid))' +
+        ')'
+      'And (OrdersHead.Closed = 1)'
       'ORDER BY OrdersHead.SendDate DESC'
       'limit 20')
     Left = 152
@@ -288,49 +278,91 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
         Name = 'FullCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'productid'
       end>
-    object adsOrdersFullCode: TLargeintField
+    object adsPreviosOrdersFullCode: TLargeintField
       FieldName = 'FullCode'
     end
-    object adsOrdersCode: TStringField
+    object adsPreviosOrdersCode: TStringField
       FieldName = 'Code'
       Size = 84
     end
-    object adsOrdersCodeCR: TStringField
+    object adsPreviosOrdersCodeCR: TStringField
       FieldName = 'CodeCR'
       Size = 84
     end
-    object adsOrdersSynonymName: TStringField
+    object adsPreviosOrdersSynonymName: TStringField
       FieldName = 'SynonymName'
       Size = 250
     end
-    object adsOrdersSynonymFirm: TStringField
+    object adsPreviosOrdersSynonymFirm: TStringField
       FieldName = 'SynonymFirm'
       Size = 250
     end
-    object adsOrdersOrderCount: TIntegerField
+    object adsPreviosOrdersOrderCount: TIntegerField
       FieldName = 'OrderCount'
     end
-    object adsOrdersPrice: TFloatField
+    object adsPreviosOrdersPrice: TFloatField
       FieldName = 'Price'
     end
-    object adsOrdersOrderDate: TDateTimeField
+    object adsPreviosOrdersOrderDate: TDateTimeField
       FieldName = 'OrderDate'
     end
-    object adsOrdersPriceName: TStringField
+    object adsPreviosOrdersPriceName: TStringField
       FieldName = 'PriceName'
       Size = 70
     end
-    object adsOrdersRegionName: TStringField
+    object adsPreviosOrdersRegionName: TStringField
       FieldName = 'RegionName'
       Size = 25
     end
-    object adsOrdersAwait: TBooleanField
+    object adsPreviosOrdersAwait: TBooleanField
       FieldName = 'Await'
     end
-    object adsOrdersJunk: TBooleanField
+    object adsPreviosOrdersJunk: TBooleanField
       FieldName = 'Junk'
     end
+  end
+  object adsCatalogName: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'select'
+      '*'
+      'from'
+      'Catalogs'
+      'where'
+      'FullCode = :FullCode')
+    Left = 128
+    Top = 264
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'FullCode'
+      end>
+    object adsCatalogNameNAME: TStringField
+      FieldName = 'NAME'
+      Size = 250
+    end
+    object adsCatalogNameFORM: TStringField
+      FieldName = 'FORM'
+      Size = 250
+    end
+  end
+  object dsCatalogName: TDataSource
+    DataSet = adsCatalogName
+    Left = 176
+    Top = 264
   end
 end

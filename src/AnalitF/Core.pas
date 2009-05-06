@@ -20,9 +20,9 @@ type
     gbPrevOrders: TGroupBox;
     lblPriceAvg: TLabel;
     frdsCore: TfrDBDataSet;
-    dsOrders: TDataSource;
+    dsPreviosOrders: TDataSource;
     dbtPriceAvg: TDBText;
-    dsOrdersShowFormSummary: TDataSource;
+    dsAvgOrders: TDataSource;
     pBottom: TPanel;
     dbgHistory: TToughDBGrid;
     pTop: TPanel;
@@ -132,22 +132,18 @@ type
     frameLegeng: TframeLegeng;
     adsCore: TMyQuery;
     adsRegions: TMyQuery;
-    adsOrders: TMyQuery;
-    adsOrdersShowFormSummary: TMyQuery;
+    adsPreviosOrders: TMyQuery;
+    adsAvgOrders: TMyQuery;
     adsFirmsInfo: TMyQuery;
-    adsOrdersFullCode: TLargeintField;
-    adsOrdersCode: TStringField;
-    adsOrdersCodeCR: TStringField;
-    adsOrdersSynonymName: TStringField;
-    adsOrdersSynonymFirm: TStringField;
-    adsOrdersOrderCount: TIntegerField;
-    adsOrdersPrice: TStringField;
-    adsOrdersOrderDate: TDateTimeField;
-    adsOrdersPriceName: TStringField;
-    adsOrdersRegionName: TStringField;
-    adsOrdersAwait: TIntegerField;
-    adsOrdersJunk: TIntegerField;
-    adsOrderssendprice: TFloatField;
+    adsPreviosOrdersFullCode: TLargeintField;
+    adsPreviosOrdersCode: TStringField;
+    adsPreviosOrdersCodeCR: TStringField;
+    adsPreviosOrdersSynonymName: TStringField;
+    adsPreviosOrdersSynonymFirm: TStringField;
+    adsPreviosOrdersOrderCount: TIntegerField;
+    adsPreviosOrdersOrderDate: TDateTimeField;
+    adsPreviosOrdersPriceName: TStringField;
+    adsPreviosOrdersRegionName: TStringField;
     adsCoreCoreId: TLargeintField;
     adsCoreClientid: TLargeintField;
     adsCorePriceCode: TLargeintField;
@@ -207,7 +203,12 @@ type
     adsCoreSortOrder: TIntegerField;
     adsCoreEtalon: TMyQuery;
     adsCorefullcode: TLargeintField;
-    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
+    adsAvgOrdersPRICEAVG: TFloatField;
+    adsAvgOrdersPRODUCTID: TLargeintField;
+    tmrUpdatePreviosOrders: TTimer;
+    adsPreviosOrdersPrice: TFloatField;
+    adsPreviosOrdersAwait: TBooleanField;
+    adsPreviosOrdersJunk: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -234,6 +235,9 @@ type
       DisplayText: Boolean);
     procedure seRetUpCostChange(Sender: TObject);
     procedure btnGroupUngroupClick(Sender: TObject);
+    procedure tmrUpdatePreviosOrdersTimer(Sender: TObject);
+    procedure adsCoreBeforeClose(DataSet: TDataSet);
+    procedure adsCoreAfterOpen(DataSet: TDataSet);
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
@@ -294,9 +298,9 @@ begin
         DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
 	RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
 
-	adsOrders.ParamByName( 'ClientId').Value :=
+	adsPreviosOrders.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsOrdersShowFormSummary.ParamByName( 'ClientId').Value :=
+	adsAvgOrders.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
 	Reg := TRegIniFile.Create;
@@ -336,8 +340,6 @@ begin
 	if OrdersH <> nil then OrdersH.Free;
 	SetLength( RecInfos, 0);
 
-	adsOrders.MasterSource := nil;
-	adsOrdersShowFormSummary.MasterSource := nil;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
   TmpSortList := SortList;
@@ -427,10 +429,9 @@ begin
 
 	if not adsCore.Locate( 'PriceEnabled', 'True', []) then
 		adsCore.Locate( 'PriceEnabled', 'False', []);
-	adsOrders.MasterSource := dsCore;
-	adsOrdersShowFormSummary.MasterSource := dsCore;
-//  adsOrders.Open;
-//	adsOrdersShowFormSummary.Open;
+  if not adsAvgOrders.Active then
+    adsAvgOrders.Open;
+
 	lblName.Caption := AName + ' ' + AForm;
 
 	adsFirmsInfo.Open;
@@ -488,9 +489,9 @@ begin
     PanelCaption := '';
 
 		{ проверяем на превышение цены }
-		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
+		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
 		begin
-			PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
+			PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
 			if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
 			begin
         PanelCaption := 'Превышение средней цены!';
@@ -697,10 +698,10 @@ procedure TCoreForm.dbgHistoryGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 	//если уцененный товар, изменяем цвет
-	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
+	if adsPreviosOrdersJunk.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
 		Background := JUNK_CLR;
 	//ожидаемый товар выделяем зеленым
-	if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersPRICE) then
+	if adsPreviosOrdersAwait.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
 		Background := AWAIT_CLR;
 end;
 
@@ -731,6 +732,8 @@ procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
 //var
 //  C : Integer;
 begin
+  tmrUpdatePreviosOrders.Enabled := False;
+  tmrUpdatePreviosOrders.Enabled := True;
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
     //Если пользователь не изменял сам наценку, то применяем текущую наценку
     if not UserSetRetUpCost then
@@ -876,6 +879,33 @@ begin
         FirstPrice := elem.Cost;
     end;
   end;
+end;
+
+procedure TCoreForm.tmrUpdatePreviosOrdersTimer(Sender: TObject);
+begin
+  tmrUpdatePreviosOrders.Enabled := False;
+  if adsPreviosOrders.Active then
+    adsPreviosOrders.Close;
+  if adsCore.Active and not adsCore.IsEmpty
+  then begin
+    adsPreviosOrders.ParamByName( 'GroupByProducts').Value :=
+      DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean;
+    adsPreviosOrders.ParamByName( 'FullCode').Value := adsCoreFullCode.Value;
+    adsPreviosOrders.ParamByName( 'ProductId').Value := adsCoreProductID.Value;
+    adsPreviosOrders.Open;
+  end;
+end;
+
+procedure TCoreForm.adsCoreBeforeClose(DataSet: TDataSet);
+begin
+  if adsPreviosOrders.Active then
+    adsPreviosOrders.Close;
+end;
+
+procedure TCoreForm.adsCoreAfterOpen(DataSet: TDataSet);
+begin
+  tmrUpdatePreviosOrders.Enabled := False;
+  tmrUpdatePreviosOrders.Enabled := True;
 end;
 
 initialization

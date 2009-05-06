@@ -81,9 +81,9 @@ type
     actFlipCore: TAction;
     plOverCost: TPanel;
     lWarning: TLabel;
-    adsOrdersShowFormSummary: TMyQuery;
+    adsAvgOrders: TMyQuery;
     adsExpireds: TMyQuery;
-    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
+    adsAvgOrdersPRICEAVG: TFloatField;
     adsExpiredsCoreId: TLargeintField;
     adsExpiredsCLIENTID: TLargeintField;
     adsExpiredsPriceCode: TLargeintField;
@@ -135,8 +135,7 @@ type
     adsExpiredsOrdersHPriceName: TStringField;
     adsExpiredsOrdersHRegionName: TStringField;
     adsExpiredsCryptPriceRet: TCurrencyField;
-    adsOrdersShowFormSummaryCLIENTCODE: TLargeintField;
-    adsOrdersShowFormSummaryPRODUCTID: TLargeintField;
+    adsAvgOrdersPRODUCTID: TLargeintField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -184,13 +183,13 @@ begin
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-	//adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
+	adsAvgOrders.ParamByName('ClientId').Value := ClientId;
 	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
 	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try
 		adsExpireds.Open;
-    adsOrdersShowFormSummary.Open;
+    adsAvgOrders.Open;
 	finally
 		Screen.Cursor := crDefault;
 	end;
@@ -248,9 +247,9 @@ begin
     PanelCaption := '';
     
 		{ проверяем на превышение цены }
-		if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) then
+		if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) and (not adsAvgOrdersPRODUCTID.IsNull) then
 		begin
-			PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
+			PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
 			if ( PriceAvg > 0) and ( adsExpiredsCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
 			begin
         PanelCaption := 'Превышение средней цены!';

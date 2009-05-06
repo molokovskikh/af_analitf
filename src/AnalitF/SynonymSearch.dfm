@@ -318,7 +318,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         Height = 13
         AutoSize = True
         DataField = 'PRICEAVG'
-        DataSource = dsOrdersShowFormSummary
+        DataSource = dsAvgOrders
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -333,7 +333,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         Height = 90
         Anchors = [akLeft, akTop, akRight]
         AutoFitColWidths = True
-        DataSource = dsOrders
+        DataSource = dsPreviosOrders
         Flat = True
         FooterColor = clWindow
         FooterFont.Charset = DEFAULT_CHARSET
@@ -354,28 +354,28 @@ inherited SynonymSearchForm: TSynonymSearchForm
         Columns = <
           item
             EditButtons = <>
-            FieldName = 'PRICENAME'
+            FieldName = 'PriceName'
             Footers = <>
             Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
             Width = 110
           end
           item
             EditButtons = <>
-            FieldName = 'SYNONYMFIRM'
+            FieldName = 'SynonymFirm'
             Footers = <>
             Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
             Width = 102
           end
           item
             EditButtons = <>
-            FieldName = 'ORDERCOUNT'
+            FieldName = 'OrderCount'
             Footers = <>
             Title.Caption = #1047#1072#1082#1072#1079
             Width = 38
           end
           item
             EditButtons = <>
-            FieldName = 'PRICE'
+            FieldName = 'Price'
             Footers = <>
             Title.Caption = #1062#1077#1085#1072
             Width = 49
@@ -384,7 +384,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
             Alignment = taCenter
             DisplayFormat = 'dd.mm.yyyy'
             EditButtons = <>
-            FieldName = 'ORDERDATE'
+            FieldName = 'OrderDate'
             Footers = <>
             Title.Caption = #1044#1072#1090#1072
             Width = 68
@@ -452,8 +452,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Enabled = False
     Interval = 5000
     OnTimer = TimerTimer
-    Left = 640
-    Top = 216
+    Left = 544
+    Top = 168
   end
   object ActionList: TActionList
     Left = 352
@@ -846,36 +846,12 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Calculated = True
     end
   end
-  object adsOrdersHOld: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    ORDERID,'
-      '    SERVERORDERID,'
-      '    CLIENTID,'
-      '    PRICECODE,'
-      '    REGIONCODE,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    ORDERDATE,'
-      '    SENDDATE,'
-      '    CLOSED,'
-      '    SEND,'
-      '    COMMENTS,'
-      '    MESSAGETO'
-      'FROM'
-      '    ORDERSHSHOWCURRENT(:ACLIENTID,'
-      '    :APRICECODE,'
-      '    :AREGIONCODE) ')
-    Left = 240
-    Top = 173
-    oCacheCalcFields = True
-  end
   object tmrSearch: TTimer
     Enabled = False
     Interval = 5000
     OnTimer = tmrSearchTimer
-    Left = 472
-    Top = 213
+    Left = 488
+    Top = 165
   end
   object pmSelectedPrices: TPopupMenu
     Left = 520
@@ -996,42 +972,15 @@ inherited SynonymSearchForm: TSynonymSearchForm
       RoundByScale = True
     end
   end
-  object dsOrders: TDataSource
-    DataSet = adsOrders
+  object dsPreviosOrders: TDataSource
+    DataSet = adsPreviosOrders
     Left = 160
     Top = 496
   end
-  object dsOrdersShowFormSummary: TDataSource
-    DataSet = adsOrdersShowFormSummary
+  object dsAvgOrders: TDataSource
+    DataSet = adsAvgOrders
     Left = 344
     Top = 480
-  end
-  object adsOrdersH: TMyQuery
-    Connection = DM.MyConnection
-    SQL.Strings = (
-      'SELECT'
-      '  *'
-      'FROM'
-      '  ORDERSHSHOWCURRENT'
-      'where'
-      '    ClientId   = :ACLIENTID'
-      'and PriceCode  = :APRICECODE'
-      'and RegionCode = :AREGIONCODE')
-    Left = 280
-    Top = 176
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ACLIENTID'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'APRICECODE'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'AREGIONCODE'
-      end>
   end
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
@@ -1210,6 +1159,12 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    (synonyms.synonymname like :LikeParam)'
       'and (Synonyms.synonymcode > 0)')
     RefreshOptions = [roAfterUpdate]
+    AfterOpen = adsCoreAfterOpen
+    BeforeClose = adsCoreBeforeClose
+    BeforeEdit = adsCoreOldBeforeEdit
+    BeforePost = adsCoreOldBeforePost
+    AfterPost = adsCoreOldAfterPost
+    AfterScroll = adsCoreAfterScroll
     Left = 104
     Top = 141
     ParamData = <
@@ -1335,6 +1290,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     end
     object adsCoreStorage: TBooleanField
       FieldName = 'Storage'
+      OnGetText = adsCoreOldSTORAGEGetText
     end
     object adsCoreRegionName: TStringField
       FieldName = 'RegionName'
@@ -1425,7 +1381,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Calculated = True
     end
   end
-  object adsOrders: TMyQuery
+  object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       '#ORDERSSHOWBYFORM'
@@ -1449,8 +1405,11 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'
-      'and (products.catalogid = :FullCode)'
-      'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
+      
+        'and (((:GroupByProducts = 0) and (products.catalogid = :FullCode' +
+        ')) or ((:GroupByProducts = 1) and (osbc.productid = :productid))' +
+        ')'
+      'And (OrdersHead.Closed = 1)'
       'ORDER BY OrdersHead.SendDate DESC'
       'limit 20')
     Left = 208
@@ -1462,53 +1421,65 @@ inherited SynonymSearchForm: TSynonymSearchForm
       end
       item
         DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
         Name = 'FullCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'productid'
       end>
-    object adsOrdersFullCode: TLargeintField
+    object adsPreviosOrdersFullCode: TLargeintField
       FieldName = 'FullCode'
     end
-    object adsOrdersCode: TStringField
+    object adsPreviosOrdersCode: TStringField
       FieldName = 'Code'
       Size = 84
     end
-    object adsOrdersCodeCR: TStringField
+    object adsPreviosOrdersCodeCR: TStringField
       FieldName = 'CodeCR'
       Size = 84
     end
-    object adsOrdersSynonymName: TStringField
+    object adsPreviosOrdersSynonymName: TStringField
       FieldName = 'SynonymName'
       Size = 250
     end
-    object adsOrdersSynonymFirm: TStringField
+    object adsPreviosOrdersSynonymFirm: TStringField
       FieldName = 'SynonymFirm'
       Size = 250
     end
-    object adsOrdersOrderCount: TIntegerField
+    object adsPreviosOrdersOrderCount: TIntegerField
       FieldName = 'OrderCount'
     end
-    object adsOrdersPrice: TFloatField
+    object adsPreviosOrdersPrice: TFloatField
       FieldName = 'Price'
     end
-    object adsOrdersOrderDate: TDateTimeField
+    object adsPreviosOrdersOrderDate: TDateTimeField
       FieldName = 'OrderDate'
       DisplayFormat = 'dd.mm.yyyy hh:mm AMPM'
     end
-    object adsOrdersPriceName: TStringField
+    object adsPreviosOrdersPriceName: TStringField
       FieldName = 'PriceName'
       Size = 70
     end
-    object adsOrdersRegionName: TStringField
+    object adsPreviosOrdersRegionName: TStringField
       FieldName = 'RegionName'
       Size = 25
     end
-    object adsOrdersAwait: TBooleanField
+    object adsPreviosOrdersAwait: TBooleanField
       FieldName = 'Await'
     end
-    object adsOrdersJunk: TBooleanField
+    object adsPreviosOrdersJunk: TBooleanField
       FieldName = 'Junk'
     end
   end
-  object adsOrdersShowFormSummary: TMyQuery
+  object adsAvgOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
@@ -1531,11 +1502,18 @@ inherited SynonymSearchForm: TSynonymSearchForm
         DataType = ftUnknown
         Name = 'ProductID'
       end>
-    object adsOrdersShowFormSummaryPRICEAVG: TFloatField
+    object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
     end
-    object adsOrdersShowFormSummaryPRODUCTID: TLargeintField
+    object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
     end
+  end
+  object tmrUpdatePreviosOrders: TTimer
+    Enabled = False
+    Interval = 700
+    OnTimer = tmrUpdatePreviosOrdersTimer
+    Left = 576
+    Top = 173
   end
 end

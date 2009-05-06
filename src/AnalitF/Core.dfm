@@ -82,7 +82,7 @@ object CoreForm: TCoreForm
         Height = 13
         AutoSize = True
         DataField = 'PRICEAVG'
-        DataSource = dsOrdersShowFormSummary
+        DataSource = dsAvgOrders
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -96,7 +96,7 @@ object CoreForm: TCoreForm
         Width = 465
         Height = 87
         AutoFitColWidths = True
-        DataSource = dsOrders
+        DataSource = dsPreviosOrders
         Flat = True
         FooterColor = clWindow
         FooterFont.Charset = DEFAULT_CHARSET
@@ -609,13 +609,13 @@ object CoreForm: TCoreForm
     Left = 64
     Top = 216
   end
-  object dsOrders: TDataSource
-    DataSet = adsOrders
+  object dsPreviosOrders: TDataSource
+    DataSet = adsPreviosOrders
     Left = 152
     Top = 408
   end
-  object dsOrdersShowFormSummary: TDataSource
-    DataSet = adsOrdersShowFormSummary
+  object dsAvgOrders: TDataSource
+    DataSet = adsAvgOrders
     Left = 296
     Top = 400
   end
@@ -1268,6 +1268,8 @@ object CoreForm: TCoreForm
       'and (Core.coreid is not null)'
       'And ((:ShowRegister = 1) Or (Providers.FirmCode <> :RegisterId))')
     RefreshOptions = [roAfterUpdate]
+    AfterOpen = adsCoreAfterOpen
+    BeforeClose = adsCoreBeforeClose
     BeforeEdit = adsCore2BeforeEdit
     BeforePost = adsCore2BeforePost
     AfterPost = adsCore2AfterPost
@@ -1507,10 +1509,10 @@ object CoreForm: TCoreForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT * FROM Regions')
-    Left = 144
+    Left = 160
     Top = 205
   end
-  object adsOrders: TMyQuery
+  object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       '#ORDERSSHOWBYFORM'
@@ -1534,11 +1536,13 @@ object CoreForm: TCoreForm
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'
-      'and (products.catalogid = :FullCode)'
-      'And ((OrdersHead.Closed = 1) Or (OrdersHead.Closed Is Null))'
+      
+        'and (((:GroupByProducts = 0) and (products.catalogid = :FullCode' +
+        ')) or ((:GroupByProducts = 1) and (osbc.productid = :productid))' +
+        ')'
+      'And (OrdersHead.Closed = 1)'
       'ORDER BY OrdersHead.SendDate DESC'
       'limit 20')
-    MasterSource = dsCore
     Left = 208
     Top = 389
     ParamData = <
@@ -1548,56 +1552,64 @@ object CoreForm: TCoreForm
       end
       item
         DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
         Name = 'FULLCODE'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'GroupByProducts'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'productid'
       end>
-    object adsOrdersFullCode: TLargeintField
+    object adsPreviosOrdersFullCode: TLargeintField
       FieldName = 'FullCode'
     end
-    object adsOrdersCode: TStringField
+    object adsPreviosOrdersCode: TStringField
       FieldName = 'Code'
       Size = 84
     end
-    object adsOrdersCodeCR: TStringField
+    object adsPreviosOrdersCodeCR: TStringField
       FieldName = 'CodeCR'
       Size = 84
     end
-    object adsOrdersSynonymName: TStringField
+    object adsPreviosOrdersSynonymName: TStringField
       FieldName = 'SynonymName'
       Size = 250
     end
-    object adsOrdersSynonymFirm: TStringField
+    object adsPreviosOrdersSynonymFirm: TStringField
       FieldName = 'SynonymFirm'
       Size = 250
     end
-    object adsOrdersOrderCount: TIntegerField
+    object adsPreviosOrdersOrderCount: TIntegerField
       FieldName = 'OrderCount'
     end
-    object adsOrdersPrice: TStringField
-      FieldName = 'Price'
-      Size = 60
-    end
-    object adsOrdersOrderDate: TDateTimeField
+    object adsPreviosOrdersOrderDate: TDateTimeField
       FieldName = 'OrderDate'
     end
-    object adsOrdersPriceName: TStringField
+    object adsPreviosOrdersPriceName: TStringField
       FieldName = 'PriceName'
       Size = 70
     end
-    object adsOrdersRegionName: TStringField
+    object adsPreviosOrdersRegionName: TStringField
       FieldName = 'RegionName'
       Size = 25
     end
-    object adsOrdersAwait: TIntegerField
+    object adsPreviosOrdersPrice: TFloatField
+      FieldName = 'Price'
+    end
+    object adsPreviosOrdersAwait: TBooleanField
       FieldName = 'Await'
     end
-    object adsOrdersJunk: TIntegerField
+    object adsPreviosOrdersJunk: TBooleanField
       FieldName = 'Junk'
     end
-    object adsOrderssendprice: TFloatField
-      FieldName = 'sendprice'
-    end
   end
-  object adsOrdersShowFormSummary: TMyQuery
+  object adsAvgOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
@@ -1605,8 +1617,10 @@ object CoreForm: TCoreForm
       'FROM'
       '   ClientAVG'
       'where'
-      '  ClientCode = :CLIENTID'
-      'and ProductId = :ProductId')
+      '  ClientCode = :CLIENTID')
+    MasterSource = dsCore
+    MasterFields = 'productid'
+    DetailFields = 'PRODUCTID'
     Left = 376
     Top = 397
     ParamData = <
@@ -1616,10 +1630,13 @@ object CoreForm: TCoreForm
       end
       item
         DataType = ftUnknown
-        Name = 'ProductId'
+        Name = 'productid'
       end>
-    object adsOrdersShowFormSummaryPRICEAVG: TFloatField
+    object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
+    end
+    object adsAvgOrdersPRODUCTID: TLargeintField
+      FieldName = 'PRODUCTID'
     end
   end
   object adsFirmsInfo: TMyQuery
@@ -1774,5 +1791,12 @@ object CoreForm: TCoreForm
         DataType = ftUnknown
         Name = 'RegisterId'
       end>
+  end
+  object tmrUpdatePreviosOrders: TTimer
+    Enabled = False
+    Interval = 700
+    OnTimer = tmrUpdatePreviosOrdersTimer
+    Left = 576
+    Top = 173
   end
 end

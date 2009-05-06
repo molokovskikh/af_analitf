@@ -108,14 +108,13 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     frameLegeng: TframeLegeng;
-    adsOrdersShowFormSummary: TMyQuery;
-    adsOrdersH: TMyQuery;
+    adsAvgOrders: TMyQuery;
+    adsCurrentOrderHeader: TMyQuery;
     adsCountFields: TMyQuery;
     adsCore: TMyQuery;
     adsCoreCryptPriceRet: TCurrencyField;
-    adsOrdersShowFormSummaryCLIENTCODE: TLargeintField;
-    adsOrdersShowFormSummaryPRODUCTID: TLargeintField;
-    adsOrdersShowFormSummaryPRICEAVG: TFloatField;
+    adsAvgOrdersPRODUCTID: TLargeintField;
+    adsAvgOrdersPRICEAVG: TFloatField;
     adsCoreCoreId: TLargeintField;
     adsCoreproductid: TLargeintField;
     adsCorePriceCode: TLargeintField;
@@ -213,7 +212,7 @@ type
 
     procedure SetOrderLabel;
     procedure SetFilter(Filter: TFilter);
-    procedure RefreshOrdersH;
+    procedure RefreshCurrentOrderHeader;
     procedure AllFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure OrderCountFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure LeaderFilterRecord(DataSet: TDataSet; var Accept: Boolean);
@@ -263,7 +262,7 @@ begin
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsOrdersShowFormSummary.ParamByName('AClientId').Value := ClientId;
+	adsAvgOrders.ParamByName('ClientId').Value := ClientId;
 	Reg := TRegIniFile.Create;
   try
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
@@ -323,8 +322,8 @@ begin
   lblFirmPrice.Caption := Format( 'ѕрайс-лист %s, регион %s',[
     PriceName,
     RegionName]);
-  if not adsOrdersShowFormSummary.Active then
-    adsOrdersShowFormSummary.Open;
+  if not adsAvgOrders.Active then
+    adsAvgOrders.Open;
   Application.ProcessMessages;
   inherited ShowForm;
 end;
@@ -388,7 +387,7 @@ var
   OldFilterEvent : TFilterRecordEvent;
   OldFiltered : Boolean;
 begin
-  RefreshOrdersH;
+  RefreshCurrentOrderHeader;
   OldFiltered := adsCore.Filtered;
   OldFilterEvent := adsCore.OnFilterRecord;
   adsCore.DisableControls;
@@ -406,12 +405,12 @@ end;
 
 //переоткрывает заголовок дл€ текущего заказа
 //нужна дл€ печати. Ќе удал€ть, т.к. сломаетс€ печать прайс-листа
-procedure TCoreFirmForm.RefreshOrdersH;
+procedure TCoreFirmForm.RefreshCurrentOrderHeader;
 begin
-  with adsOrdersH do begin
-    ParamByName('AClientId').Value:=ClientId;
-    ParamByName('APriceCode').Value:=PriceCode;
-    ParamByName('ARegionCode').Value:=RegionCode;
+  with adsCurrentOrderHeader do begin
+    ParamByName('ClientId').Value:=ClientId;
+    ParamByName('PriceCode').Value:=PriceCode;
+    ParamByName('RegionCode').Value:=RegionCode;
   end;
 end;
 
@@ -433,15 +432,12 @@ begin
     PanelCaption := '';
     
 		{ провер€ем на превышение цены }
-		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) then
+		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
 		begin
-      if (adsOrdersShowFormSummary.Locate('PRODUCTID', adsCorePRODUCTID.AsVariant, [])) then
+      PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
+      if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
       begin
-        PriceAvg := adsOrdersShowFormSummaryPRICEAVG.AsCurrency;
-        if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
-        begin
-          PanelCaption := 'ѕревышение средней цены!';
-        end;
+        PanelCaption := 'ѕревышение средней цены!';
       end;
 		end;
 
@@ -504,7 +500,11 @@ end;
 
 procedure TCoreFirmForm.btnFormHistoryClick(Sender: TObject);
 begin
-  ShowFormHistory(adsCoreFullCode.AsInteger,ClientId);
+  ShowFormHistory(
+    DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean,
+    adsCoreFullCode.Value,
+    adsCoreproductid.Value,
+    ClientId);
 end;
 
 procedure TCoreFirmForm.actDeleteOrderExecute(Sender: TObject);

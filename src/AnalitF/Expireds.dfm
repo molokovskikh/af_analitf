@@ -1,6 +1,6 @@
 inherited ExpiredsForm: TExpiredsForm
   Left = 362
-  Top = 206
+  Top = 200
   ActiveControl = dbgExpireds
   Caption = #1055#1088#1077#1087#1072#1088#1072#1090#1099' '#1089' '#1080#1089#1090#1077#1082#1072#1102#1097#1080#1084#1080' '#1089#1088#1086#1082#1072#1084#1080' '#1075#1086#1076#1085#1086#1089#1090#1080
   ClientHeight = 573
@@ -604,7 +604,7 @@ inherited ExpiredsForm: TExpiredsForm
       OnExecute = actFlipCoreExecute
     end
   end
-  object adsOrdersShowFormSummary: TMyQuery
+  object adsAvgOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
@@ -612,11 +612,10 @@ inherited ExpiredsForm: TExpiredsForm
       'FROM'
       '   ClientAVG'
       'where'
-      '    ClientCode = :CLIENTID'
-      'and ProductId = :ProductId')
+      '  ClientCode = :CLIENTID')
     MasterSource = dsExpireds
-    MasterFields = 'CLIENTID;productid'
-    DetailFields = 'CLIENTCODE;PRODUCTID'
+    MasterFields = 'productid'
+    DetailFields = 'PRODUCTID'
     Left = 352
     Top = 152
     ParamData = <
@@ -626,23 +625,12 @@ inherited ExpiredsForm: TExpiredsForm
       end
       item
         DataType = ftUnknown
-        Name = 'ProductId'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'CLIENTID'
-      end
-      item
-        DataType = ftUnknown
         Name = 'productid'
       end>
-    object adsOrdersShowFormSummaryPRICEAVG: TFloatField
+    object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
     end
-    object adsOrdersShowFormSummaryCLIENTCODE: TLargeintField
-      FieldName = 'CLIENTCODE'
-    end
-    object adsOrdersShowFormSummaryPRODUCTID: TLargeintField
+    object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
     end
   end

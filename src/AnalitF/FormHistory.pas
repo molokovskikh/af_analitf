@@ -12,9 +12,8 @@ type
     dbtName: TDBText;
     dbrForm: TDBText;
     btnClose: TButton;
-    dsOrders: TDataSource;
+    dsPreviosOrders: TDataSource;
     Label1: TLabel;
-    dbtPriceAvg: TDBText;
     Grid: TToughDBGrid;
     adsOrdersOld: TpFIBDataSet;
     adsOrdersOldFULLCODE: TFIBBCDField;
@@ -31,26 +30,30 @@ type
     lPriceAvg: TLabel;
     adsOrdersOldPRICE: TFIBStringField;
     adsOrdersOldSENDPRICE: TFIBBCDField;
-    adsOrders: TMyQuery;
-    adsOrdersFullCode: TLargeintField;
-    adsOrdersCode: TStringField;
-    adsOrdersCodeCR: TStringField;
-    adsOrdersSynonymName: TStringField;
-    adsOrdersSynonymFirm: TStringField;
-    adsOrdersOrderCount: TIntegerField;
-    adsOrdersPrice: TFloatField;
-    adsOrdersOrderDate: TDateTimeField;
-    adsOrdersPriceName: TStringField;
-    adsOrdersRegionName: TStringField;
-    adsOrdersAwait: TBooleanField;
-    adsOrdersJunk: TBooleanField;
+    adsPreviosOrders: TMyQuery;
+    adsPreviosOrdersFullCode: TLargeintField;
+    adsPreviosOrdersCode: TStringField;
+    adsPreviosOrdersCodeCR: TStringField;
+    adsPreviosOrdersSynonymName: TStringField;
+    adsPreviosOrdersSynonymFirm: TStringField;
+    adsPreviosOrdersOrderCount: TIntegerField;
+    adsPreviosOrdersPrice: TFloatField;
+    adsPreviosOrdersOrderDate: TDateTimeField;
+    adsPreviosOrdersPriceName: TStringField;
+    adsPreviosOrdersRegionName: TStringField;
+    adsPreviosOrdersAwait: TBooleanField;
+    adsPreviosOrdersJunk: TBooleanField;
+    adsCatalogName: TMyQuery;
+    adsCatalogNameNAME: TStringField;
+    adsCatalogNameFORM: TStringField;
+    dsCatalogName: TDataSource;
   private
     { Private declarations }
   public
     { Public declarations }
   end;
 
-procedure ShowFormHistory(FullCode, ClientId: Integer);
+procedure ShowFormHistory(GroupByProducts : Boolean; FullCode, ProductId : Int64; ClientId: Integer);
 
 implementation
 
@@ -58,7 +61,7 @@ uses DModule;
 
 {$R *.dfm}
 
-procedure ShowFormHistory(FullCode, ClientId: Integer);
+procedure ShowFormHistory(GroupByProducts : Boolean; FullCode, ProductId : Int64; ClientId: Integer);
 var
   Avr : Currency;
   Count : Integer;
@@ -66,24 +69,29 @@ begin
   with TFormsHistoryForm.Create(Application) do try
     Screen.Cursor:=crHourglass;
     try
-      with adsOrders do begin
-        ParamByName('FullCode').Value:=FullCode;
-        ParamByName('ClientId').Value:=ClientId;
+      adsCatalogName.ParamByName('FullCode').Value := FullCode;
+      adsCatalogName.Open;
+      
+      with adsPreviosOrders do begin
+        ParamByName('GroupByProducts').Value := GroupByProducts;
+        ParamByName('ProductId').Value       := ProductId;
+        ParamByName('FullCode').Value        := FullCode;
+        ParamByName('ClientId').Value        := ClientId;
         Open;
       end;
       Count := 0;
       Avr := 0;
-      while not adsOrders.Eof do
+      while not adsPreviosOrders.Eof do
       begin
-        if (Now - adsOrdersORDERDATE.Value < 183) then begin
-          Avr := Avr + adsOrdersPRICE.Value;
+        if (Now - adsPreviosOrdersORDERDATE.Value < 183) then begin
+          Avr := Avr + adsPreviosOrdersPRICE.Value;
           Inc(Count);
-          adsOrders.Next;
+          adsPreviosOrders.Next;
         end
         else
           Break;
       end;
-      adsOrders.First;
+      adsPreviosOrders.First;
       if Count > 0 then
         Avr := Avr / Count;
       lPriceAvg.Caption := FloatToStrF(Avr, ffCurrency, 15, 2);
