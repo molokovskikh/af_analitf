@@ -238,6 +238,9 @@ begin
 	FConcat := False;
 	list.Free;
 
+  if FHTTP.ResponseCode = 401 then
+    raise Exception.Create('Доступ запрещен.'#13#10'Введены некорректные учетные данные.');
+
 	start := PosEx( '>', FResponse, Pos( 'xmlns', FResponse)) + 1;
 	stop := PosEx( '</', FResponse, start);
 	TmpResult := Copy( FResponse, start, stop - start);
