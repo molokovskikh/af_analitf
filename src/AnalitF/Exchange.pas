@@ -90,7 +90,7 @@ implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
-  Child;
+  Child, Config;
 
 {$R *.DFM}
 type
@@ -114,6 +114,19 @@ begin
     FreeAndNil(GlobalExchangeParams);
   GlobalExchangeParams := nil;
 	if AExchangeActions = [] then exit;
+
+  if (Length(DM.adtParams.FieldByName( 'HTTPName').AsString) = 0)
+  then begin
+		AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
+			MB_ICONWARNING or MB_OK);
+    if FindCmdLineSwitch('e') then
+      Exit
+    else begin
+		  ShowConfig( True );
+      if (Length(DM.adtParams.FieldByName( 'HTTPName').AsString) = 0) then
+        Exit;
+    end;
+  end;
 
 	DM.DeleteEmptyOrders;
 
