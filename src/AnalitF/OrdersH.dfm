@@ -622,7 +622,7 @@ inherited OrdersHForm: TOrdersHForm
       RoundByScale = True
     end
   end
-  object adsCore: TpFIBDataSet
+  object adsCoreOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'execute procedure updateordercount('
       '  :new_ORDERSHORDERID, '
@@ -969,5 +969,230 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormDisplayOrderId: TLargeintField
       FieldName = 'DisplayOrderId'
     end
+  end
+  object adsCore: TMyQuery
+    SQLUpdate.Strings = (
+      
+        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
+        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
+        'ERCOUNT)')
+    SQLRefresh.Strings = (
+      'SELECT'
+      '    CCore.CoreId AS CoreId,'
+      '    Clients.ClientID,'
+      '    CCore.productid,'
+      '    CCore.PriceCode,'
+      '    CCore.RegionCode,'
+      '    catalogs.FullCode,'
+      '    catalogs.shortcode,'
+      '    CCore.CodeFirmCr,'
+      '    CCore.SynonymCode,'
+      '    CCore.SynonymFirmCrCode,'
+      '    CCore.Code,'
+      '    CCore.CodeCr,'
+      '    CCore.Volume,'
+      '    CCore.Doc,'
+      '    CCore.Note,'
+      '    CCore.Period,'
+      '    CCore.Await,'
+      '    CCore.Junk,'
+      '    CCore.Cost,'
+      '    CCore.Quantity,'
+      '    CCore.registrycost,'
+      '    CCore.vitallyimportant,'
+      '    CCore.requestratio,'
+      '    CCore.ordercost,'
+      '    CCore.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceCode AS LeaderPriceCode,'
+      '    MinPrices.RegionCode AS LeaderRegionCode,'
+      '    Regions.RegionName AS LeaderRegionName,'
+      '    PricesData.PriceName AS LeaderPriceName,'
+      '    MinPrices.MinCost As LeaderPRICE,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.FullCode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Core CCore'
+      
+        '    inner join products       on (products.productid = CCore.pro' +
+        'ductid)'
+      
+        '    inner join catalogs       on (catalogs.fullcode = products.c' +
+        'atalogid)'
+      
+        '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
+        'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    inner join Clients        on (Clients.ClientID = :ClientID)'
+      
+        '    left join Core LCore      on LCore.servercoreid = minprices.' +
+        'servercoreid and LCore.RegionCode = minprices.regioncode'
+      
+        '    left JOIN PricesData      ON (PricesData.PriceCode = MinPric' +
+        'es.pricecode)'
+      
+        '    left JOIN Regions         ON (Regions.RegionCode = MinPrices' +
+        '.RegionCode)'
+      
+        '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
+        'e = CCore.SynonymFirmCrCode)'
+      
+        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
+        'ynonymCode)'
+      
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
+        ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
+        'Id'
+      'WHERE '
+      '  (CCore.CoreId = :CoreId)')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#CORESHOWBYFIRM'
+      'SELECT'
+      '    CCore.CoreId AS CoreId,'
+      '    Clients.ClientID,'
+      '    CCore.productid,'
+      '    CCore.PriceCode,'
+      '    CCore.RegionCode,'
+      '    catalogs.FullCode,'
+      '    catalogs.shortcode,'
+      '    CCore.CodeFirmCr,'
+      '    CCore.SynonymCode,'
+      '    CCore.SynonymFirmCrCode,'
+      '    CCore.Code,'
+      '    CCore.CodeCr,'
+      '    CCore.Volume,'
+      '    CCore.Doc,'
+      '    CCore.Note,'
+      '    CCore.Period,'
+      '    CCore.Await,'
+      '    CCore.Junk,'
+      '    CCore.Cost,'
+      '    CCore.Quantity,'
+      '    CCore.registrycost,'
+      '    CCore.vitallyimportant,'
+      '    CCore.requestratio,'
+      '    CCore.ordercost,'
+      '    CCore.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceCode AS LeaderPriceCode,'
+      '    MinPrices.RegionCode AS LeaderRegionCode,'
+      '    Regions.RegionName AS LeaderRegionName,'
+      '    PricesData.PriceName AS LeaderPriceName,'
+      '    MinPrices.MinCost As LeaderPRICE,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.FullCode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Core CCore'
+      
+        '    inner join products       on (products.productid = CCore.pro' +
+        'ductid)'
+      
+        '    inner join catalogs       on (catalogs.fullcode = products.c' +
+        'atalogid)'
+      
+        '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
+        'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    inner join Clients        on (Clients.ClientID = :AClientID)'
+      
+        '    left join Core LCore      on LCore.servercoreid = minprices.' +
+        'servercoreid and LCore.RegionCode = minprices.regioncode'
+      
+        '    left JOIN PricesData      ON (PricesData.PriceCode = MinPric' +
+        'es.pricecode)'
+      
+        '    left JOIN Regions         ON (Regions.RegionCode = MinPrices' +
+        '.RegionCode)'
+      
+        '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
+        'e = CCore.SynonymFirmCrCode)'
+      
+        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
+        'ynonymCode)'
+      
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
+        'd (osbc.CoreId = CCore.CoreId)'
+      
+        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
+        'Id'
+      'WHERE '
+      '    (CCore.PriceCode = :APriceCode) '
+      'And (CCore.RegionCode = :ARegionCode)'
+      'and  CCore.SYNONYMCODE = :SYNONYMCODE'
+      'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE')
+    Left = 228
+    Top = 119
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AClientID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'APriceCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ARegionCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'SYNONYMCODE'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'SYNONYMFIRMCRCODE'
+      end>
   end
 end

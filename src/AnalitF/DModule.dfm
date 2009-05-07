@@ -317,7 +317,7 @@ object DM: TDM
     Left = 488
     Top = 48
   end
-  object adsRepareOrders: TpFIBDataSet
+  object adsRepareOrdersOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'
       '  orders'
@@ -358,97 +358,97 @@ object DM: TDM
       '  (OrderCount>0)')
     Database = MainConnectionOld
     AutoCommit = True
-    Left = 744
+    Left = 680
     Top = 200
     oTrimCharFields = False
     oCacheCalcFields = True
-    object adsRepareOrdersID: TFIBBCDField
+    object adsRepareOrdersOldID: TFIBBCDField
       FieldName = 'ID'
       Size = 0
       RoundByScale = True
     end
-    object adsRepareOrdersCOREID: TFIBBCDField
+    object adsRepareOrdersOldCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
       RoundByScale = True
     end
-    object adsRepareOrdersPRICECODE: TFIBBCDField
+    object adsRepareOrdersOldPRICECODE: TFIBBCDField
       FieldName = 'PRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsRepareOrdersREGIONCODE: TFIBBCDField
+    object adsRepareOrdersOldREGIONCODE: TFIBBCDField
       FieldName = 'REGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsRepareOrdersCODE: TFIBStringField
+    object adsRepareOrdersOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsRepareOrdersCODECR: TFIBStringField
+    object adsRepareOrdersOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsRepareOrdersSYNONYMCODE: TFIBBCDField
+    object adsRepareOrdersOldSYNONYMCODE: TFIBBCDField
       FieldName = 'SYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsRepareOrdersSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsRepareOrdersOldSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'SYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsRepareOrdersSYNONYMNAME: TFIBStringField
+    object adsRepareOrdersOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsRepareOrdersSYNONYMFIRM: TFIBStringField
+    object adsRepareOrdersOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsRepareOrdersJUNK: TFIBBooleanField
+    object adsRepareOrdersOldJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsRepareOrdersAWAIT: TFIBBooleanField
+    object adsRepareOrdersOldAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
     end
-    object adsRepareOrdersORDERCOUNT: TFIBIntegerField
+    object adsRepareOrdersOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsRepareOrdersPRICENAME: TFIBStringField
+    object adsRepareOrdersOldPRICENAME: TFIBStringField
       FieldName = 'PRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsRepareOrdersCryptPRICE: TCurrencyField
+    object adsRepareOrdersOldCryptPRICE: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPRICE'
       Calculated = True
     end
-    object adsRepareOrdersPRICE: TFIBStringField
+    object adsRepareOrdersOldPRICE: TFIBStringField
       FieldName = 'PRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsRepareOrdersREQUESTRATIO: TFIBIntegerField
+    object adsRepareOrdersOldREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
     end
-    object adsRepareOrdersORDERCOST: TFIBBCDField
+    object adsRepareOrdersOldORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
       Size = 2
       RoundByScale = True
     end
-    object adsRepareOrdersMINORDERCOUNT: TFIBIntegerField
+    object adsRepareOrdersOldMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
   end
-  object adsCoreRepare: TpFIBDataSet
+  object adsCoreRepareOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '    CCore.CoreId AS CoreId,'
@@ -531,224 +531,224 @@ object DM: TDM
       'and CCore.AWAIT = :AWAIT'
       'and CCore.JUNK = :JUNK')
     Database = MainConnectionOld
-    Left = 752
+    Left = 680
     Top = 256
     oCacheCalcFields = True
-    object adsCoreRepareCOREID: TFIBBCDField
+    object adsCoreRepareOldCOREID: TFIBBCDField
       FieldName = 'COREID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareFULLCODE: TFIBBCDField
+    object adsCoreRepareOldFULLCODE: TFIBBCDField
       FieldName = 'FULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareSHORTCODE: TFIBBCDField
+    object adsCoreRepareOldSHORTCODE: TFIBBCDField
       FieldName = 'SHORTCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareCODEFIRMCR: TFIBBCDField
+    object adsCoreRepareOldCODEFIRMCR: TFIBBCDField
       FieldName = 'CODEFIRMCR'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareSYNONYMCODE: TFIBBCDField
+    object adsCoreRepareOldSYNONYMCODE: TFIBBCDField
       FieldName = 'SYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsCoreRepareOldSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'SYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareCODE: TFIBStringField
+    object adsCoreRepareOldCODE: TFIBStringField
       FieldName = 'CODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCoreRepareCODECR: TFIBStringField
+    object adsCoreRepareOldCODECR: TFIBStringField
       FieldName = 'CODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCoreRepareVOLUME: TFIBStringField
+    object adsCoreRepareOldVOLUME: TFIBStringField
       FieldName = 'VOLUME'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsCoreRepareDOC: TFIBStringField
+    object adsCoreRepareOldDOC: TFIBStringField
       FieldName = 'DOC'
       EmptyStrToNull = True
     end
-    object adsCoreRepareNOTE: TFIBStringField
+    object adsCoreRepareOldNOTE: TFIBStringField
       FieldName = 'NOTE'
       Size = 50
       EmptyStrToNull = True
     end
-    object adsCoreReparePERIOD: TFIBStringField
+    object adsCoreRepareOldPERIOD: TFIBStringField
       FieldName = 'PERIOD'
       EmptyStrToNull = True
     end
-    object adsCoreRepareQUANTITY: TFIBStringField
+    object adsCoreRepareOldQUANTITY: TFIBStringField
       FieldName = 'QUANTITY'
       Size = 15
       EmptyStrToNull = True
     end
-    object adsCoreRepareSYNONYMNAME: TFIBStringField
+    object adsCoreRepareOldSYNONYMNAME: TFIBStringField
       FieldName = 'SYNONYMNAME'
       Size = 501
       EmptyStrToNull = True
     end
-    object adsCoreRepareSYNONYMFIRM: TFIBStringField
+    object adsCoreRepareOldSYNONYMFIRM: TFIBStringField
       FieldName = 'SYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreRepareLEADERPRICECODE: TFIBBCDField
+    object adsCoreRepareOldLEADERPRICECODE: TFIBBCDField
       FieldName = 'LEADERPRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareLEADERREGIONCODE: TFIBBCDField
+    object adsCoreRepareOldLEADERREGIONCODE: TFIBBCDField
       FieldName = 'LEADERREGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareLEADERREGIONNAME: TFIBStringField
+    object adsCoreRepareOldLEADERREGIONNAME: TFIBStringField
       FieldName = 'LEADERREGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsCoreRepareLEADERPRICENAME: TFIBStringField
+    object adsCoreRepareOldLEADERPRICENAME: TFIBStringField
       FieldName = 'LEADERPRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERSCOREID: TFIBBCDField
+    object adsCoreRepareOldORDERSCOREID: TFIBBCDField
       FieldName = 'ORDERSCOREID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSORDERID: TFIBBCDField
+    object adsCoreRepareOldORDERSORDERID: TFIBBCDField
       FieldName = 'ORDERSORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSCLIENTID: TFIBBCDField
+    object adsCoreRepareOldORDERSCLIENTID: TFIBBCDField
       FieldName = 'ORDERSCLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSFULLCODE: TFIBBCDField
+    object adsCoreRepareOldORDERSFULLCODE: TFIBBCDField
       FieldName = 'ORDERSFULLCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSCODEFIRMCR: TFIBBCDField
+    object adsCoreRepareOldORDERSCODEFIRMCR: TFIBBCDField
       FieldName = 'ORDERSCODEFIRMCR'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSSYNONYMCODE: TFIBBCDField
+    object adsCoreRepareOldORDERSSYNONYMCODE: TFIBBCDField
       FieldName = 'ORDERSSYNONYMCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSSYNONYMFIRMCRCODE: TFIBBCDField
+    object adsCoreRepareOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField
       FieldName = 'ORDERSSYNONYMFIRMCRCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSCODE: TFIBStringField
+    object adsCoreRepareOldORDERSCODE: TFIBStringField
       FieldName = 'ORDERSCODE'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERSCODECR: TFIBStringField
+    object adsCoreRepareOldORDERSCODECR: TFIBStringField
       FieldName = 'ORDERSCODECR'
       Size = 84
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERCOUNT: TFIBIntegerField
+    object adsCoreRepareOldORDERCOUNT: TFIBIntegerField
       FieldName = 'ORDERCOUNT'
     end
-    object adsCoreRepareORDERSSYNONYM: TFIBStringField
+    object adsCoreRepareOldORDERSSYNONYM: TFIBStringField
       FieldName = 'ORDERSSYNONYM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERSSYNONYMFIRM: TFIBStringField
+    object adsCoreRepareOldORDERSSYNONYMFIRM: TFIBStringField
       FieldName = 'ORDERSSYNONYMFIRM'
       Size = 250
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERSHORDERID: TFIBBCDField
+    object adsCoreRepareOldORDERSHORDERID: TFIBBCDField
       FieldName = 'ORDERSHORDERID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSHCLIENTID: TFIBBCDField
+    object adsCoreRepareOldORDERSHCLIENTID: TFIBBCDField
       FieldName = 'ORDERSHCLIENTID'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSHPRICECODE: TFIBBCDField
+    object adsCoreRepareOldORDERSHPRICECODE: TFIBBCDField
       FieldName = 'ORDERSHPRICECODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSHREGIONCODE: TFIBBCDField
+    object adsCoreRepareOldORDERSHREGIONCODE: TFIBBCDField
       FieldName = 'ORDERSHREGIONCODE'
       Size = 0
       RoundByScale = True
     end
-    object adsCoreRepareORDERSHPRICENAME: TFIBStringField
+    object adsCoreRepareOldORDERSHPRICENAME: TFIBStringField
       FieldName = 'ORDERSHPRICENAME'
       Size = 70
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERSHREGIONNAME: TFIBStringField
+    object adsCoreRepareOldORDERSHREGIONNAME: TFIBStringField
       FieldName = 'ORDERSHREGIONNAME'
       Size = 25
       EmptyStrToNull = True
     end
-    object adsCoreRepareAWAIT: TFIBBooleanField
+    object adsCoreRepareOldAWAIT: TFIBBooleanField
       FieldName = 'AWAIT'
     end
-    object adsCoreRepareJUNK: TFIBBooleanField
+    object adsCoreRepareOldJUNK: TFIBBooleanField
       FieldName = 'JUNK'
     end
-    object adsCoreRepareBASECOST: TFIBStringField
+    object adsCoreRepareOldBASECOST: TFIBStringField
       FieldName = 'BASECOST'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERSPRICE: TFIBStringField
+    object adsCoreRepareOldORDERSPRICE: TFIBStringField
       FieldName = 'ORDERSPRICE'
       Size = 60
       EmptyStrToNull = True
     end
-    object adsCoreRepareORDERSJUNK: TFIBBooleanField
+    object adsCoreRepareOldORDERSJUNK: TFIBBooleanField
       FieldName = 'ORDERSJUNK'
     end
-    object adsCoreRepareORDERSAWAIT: TFIBBooleanField
+    object adsCoreRepareOldORDERSAWAIT: TFIBBooleanField
       FieldName = 'ORDERSAWAIT'
     end
-    object adsCoreRepareREQUESTRATIO: TFIBIntegerField
+    object adsCoreRepareOldREQUESTRATIO: TFIBIntegerField
       FieldName = 'REQUESTRATIO'
     end
-    object adsCoreRepareVITALLYIMPORTANT: TFIBBooleanField
+    object adsCoreRepareOldVITALLYIMPORTANT: TFIBBooleanField
       FieldName = 'VITALLYIMPORTANT'
     end
-    object adsCoreRepareORDERCOST: TFIBBCDField
+    object adsCoreRepareOldORDERCOST: TFIBBCDField
       FieldName = 'ORDERCOST'
       Size = 2
       RoundByScale = True
     end
-    object adsCoreRepareMINORDERCOUNT: TFIBIntegerField
+    object adsCoreRepareOldMINORDERCOUNT: TFIBIntegerField
       FieldName = 'MINORDERCOUNT'
     end
   end
@@ -2201,5 +2201,421 @@ object DM: TDM
         DataType = ftUnknown
         Name = 'ASend'
       end>
+  end
+  object adsRepareOrders: TMyQuery
+    SQLUpdate.Strings = (
+      'update'
+      '  OrdersList'
+      'set'
+      '  COREID = :COREID,'
+      '  Price = :PRICE,'
+      '  CODE = :CODE,'
+      '  CODECR = :CODECR,'
+      '  ORDERCOUNT = :ORDERCOUNT'
+      'where'
+      '  ID = :OLD_ID')
+    Connection = MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '  Id, '
+      '  CoreId, '
+      '  PriceCode, '
+      '  RegionCode, '
+      '  Code, '
+      '  CodeCr, '
+      '  Price, '
+      '  SynonymCode, '
+      '  SynonymFirmCrCode, '
+      '  SynonymName, '
+      '  SynonymFirm, '
+      '  Junk, '
+      '  Await, '
+      '  OrderCount, '
+      '  PriceName,'
+      '  requestratio,'
+      '  ordercost,'
+      '  minordercount '
+      'FROM '
+      '  OrdersList '
+      
+        '  INNER JOIN OrdersHead ON (OrdersHead.OrderId=OrdersList.OrderI' +
+        'd AND OrdersHead.Closed = 0)'
+      'WHERE '
+      '  (OrdersList.OrderCount>0)')
+    Left = 776
+    Top = 200
+    object adsRepareOrdersId: TLargeintField
+      FieldName = 'Id'
+    end
+    object adsRepareOrdersCoreId: TLargeintField
+      FieldName = 'CoreId'
+    end
+    object adsRepareOrdersPriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsRepareOrdersRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsRepareOrdersCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsRepareOrdersCodeCr: TStringField
+      FieldName = 'CodeCr'
+      Size = 84
+    end
+    object adsRepareOrdersPrice: TFloatField
+      FieldName = 'Price'
+    end
+    object adsRepareOrdersSynonymCode: TLargeintField
+      FieldName = 'SynonymCode'
+    end
+    object adsRepareOrdersSynonymFirmCrCode: TLargeintField
+      FieldName = 'SynonymFirmCrCode'
+    end
+    object adsRepareOrdersSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 250
+    end
+    object adsRepareOrdersSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsRepareOrdersJunk: TBooleanField
+      FieldName = 'Junk'
+    end
+    object adsRepareOrdersAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsRepareOrdersOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsRepareOrdersPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsRepareOrdersrequestratio: TIntegerField
+      FieldName = 'requestratio'
+    end
+    object adsRepareOrdersordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsRepareOrdersminordercount: TIntegerField
+      FieldName = 'minordercount'
+    end
+  end
+  object adsCoreRepare: TMyQuery
+    Connection = MyConnection
+    SQL.Strings = (
+      '#CORESHOWBYFIRM'
+      'SELECT'
+      '    CCore.CoreId AS CoreId,'
+      '    Clients.ClientID,'
+      '    CCore.productid,'
+      '    CCore.PriceCode,'
+      '    CCore.RegionCode,'
+      '    catalogs.FullCode,'
+      '    catalogs.shortcode,'
+      '    CCore.CodeFirmCr,'
+      '    CCore.SynonymCode,'
+      '    CCore.SynonymFirmCrCode,'
+      '    CCore.Code,'
+      '    CCore.CodeCr,'
+      '    CCore.Volume,'
+      '    CCore.Doc,'
+      '    CCore.Note,'
+      '    CCore.Period,'
+      '    CCore.Await,'
+      '    CCore.Junk,'
+      '    CCore.Cost,'
+      '    CCore.Quantity,'
+      '    CCore.registrycost,'
+      '    CCore.vitallyimportant,'
+      '    CCore.requestratio,'
+      '    CCore.ordercost,'
+      '    CCore.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceCode AS LeaderPriceCode,'
+      '    MinPrices.RegionCode AS LeaderRegionCode,'
+      '    Regions.RegionName AS LeaderRegionName,'
+      '    PricesData.PriceName AS LeaderPriceName,'
+      '    MinPrices.MinCost As LeaderPRICE,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.FullCode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Core CCore'
+      
+        '    inner join products       on (products.productid = CCore.pro' +
+        'ductid)'
+      
+        '    inner join catalogs       on (catalogs.fullcode = products.c' +
+        'atalogid)'
+      
+        '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
+        'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    inner join Clients        on (Clients.ClientID = :AClientID)'
+      
+        '    left join Core LCore      on LCore.servercoreid = minprices.' +
+        'servercoreid and LCore.RegionCode = minprices.regioncode'
+      
+        '    left JOIN PricesData      ON (PricesData.PriceCode = MinPric' +
+        'es.pricecode)'
+      
+        '    left JOIN Regions         ON (Regions.RegionCode = MinPrices' +
+        '.RegionCode)'
+      
+        '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
+        'e = CCore.SynonymFirmCrCode)'
+      
+        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
+        'ynonymCode)'
+      
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
+        'd (osbc.CoreId = CCore.CoreId)'
+      
+        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
+        'Id'
+      'WHERE '
+      '    (CCore.PriceCode = :APriceCode) '
+      'And (CCore.RegionCode = :ARegionCode)'
+      'and  CCore.SYNONYMCODE = :SYNONYMCODE'
+      'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE'
+      'and CCore.AWAIT = :AWAIT'
+      'and CCore.JUNK = :JUNK')
+    Left = 784
+    Top = 256
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AClientID'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'APriceCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ARegionCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'SYNONYMCODE'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'SYNONYMFIRMCRCODE'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AWAIT'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'JUNK'
+      end>
+    object adsCoreRepareCoreId: TLargeintField
+      FieldName = 'CoreId'
+    end
+    object adsCoreRepareClientID: TLargeintField
+      FieldName = 'ClientID'
+    end
+    object adsCoreRepareproductid: TLargeintField
+      FieldName = 'productid'
+    end
+    object adsCoreReparePriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsCoreRepareRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsCoreRepareFullCode: TLargeintField
+      FieldName = 'FullCode'
+    end
+    object adsCoreRepareshortcode: TLargeintField
+      FieldName = 'shortcode'
+    end
+    object adsCoreRepareCodeFirmCr: TLargeintField
+      FieldName = 'CodeFirmCr'
+    end
+    object adsCoreRepareSynonymCode: TLargeintField
+      FieldName = 'SynonymCode'
+    end
+    object adsCoreRepareSynonymFirmCrCode: TLargeintField
+      FieldName = 'SynonymFirmCrCode'
+    end
+    object adsCoreRepareCode: TStringField
+      FieldName = 'Code'
+      Size = 84
+    end
+    object adsCoreRepareCodeCr: TStringField
+      FieldName = 'CodeCr'
+      Size = 84
+    end
+    object adsCoreRepareVolume: TStringField
+      FieldName = 'Volume'
+      Size = 15
+    end
+    object adsCoreRepareDoc: TStringField
+      FieldName = 'Doc'
+    end
+    object adsCoreRepareNote: TStringField
+      FieldName = 'Note'
+      Size = 50
+    end
+    object adsCoreReparePeriod: TStringField
+      FieldName = 'Period'
+    end
+    object adsCoreRepareAwait: TBooleanField
+      FieldName = 'Await'
+    end
+    object adsCoreRepareJunk: TBooleanField
+      FieldName = 'Junk'
+    end
+    object adsCoreRepareCost: TFloatField
+      FieldName = 'Cost'
+    end
+    object adsCoreRepareQuantity: TStringField
+      FieldName = 'Quantity'
+      Size = 15
+    end
+    object adsCoreRepareregistrycost: TFloatField
+      FieldName = 'registrycost'
+    end
+    object adsCoreReparevitallyimportant: TBooleanField
+      FieldName = 'vitallyimportant'
+    end
+    object adsCoreReparerequestratio: TIntegerField
+      FieldName = 'requestratio'
+    end
+    object adsCoreRepareordercost: TFloatField
+      FieldName = 'ordercost'
+    end
+    object adsCoreRepareminordercount: TIntegerField
+      FieldName = 'minordercount'
+    end
+    object adsCoreRepareSynonymName: TStringField
+      FieldName = 'SynonymName'
+      Size = 501
+    end
+    object adsCoreRepareSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 250
+    end
+    object adsCoreRepareLeaderPriceCode: TLargeintField
+      FieldName = 'LeaderPriceCode'
+    end
+    object adsCoreRepareLeaderRegionCode: TLargeintField
+      FieldName = 'LeaderRegionCode'
+    end
+    object adsCoreRepareLeaderRegionName: TStringField
+      FieldName = 'LeaderRegionName'
+      Size = 25
+    end
+    object adsCoreRepareLeaderPriceName: TStringField
+      FieldName = 'LeaderPriceName'
+      Size = 70
+    end
+    object adsCoreRepareLeaderPRICE: TFloatField
+      FieldName = 'LeaderPRICE'
+    end
+    object adsCoreRepareOrdersCoreId: TLargeintField
+      FieldName = 'OrdersCoreId'
+    end
+    object adsCoreRepareOrdersOrderId: TLargeintField
+      FieldName = 'OrdersOrderId'
+    end
+    object adsCoreRepareOrdersClientId: TLargeintField
+      FieldName = 'OrdersClientId'
+    end
+    object adsCoreRepareOrdersFullCode: TLargeintField
+      FieldName = 'OrdersFullCode'
+    end
+    object adsCoreRepareOrdersCodeFirmCr: TLargeintField
+      FieldName = 'OrdersCodeFirmCr'
+    end
+    object adsCoreRepareOrdersSynonymCode: TLargeintField
+      FieldName = 'OrdersSynonymCode'
+    end
+    object adsCoreRepareOrdersSynonymFirmCrCode: TLargeintField
+      FieldName = 'OrdersSynonymFirmCrCode'
+    end
+    object adsCoreRepareOrdersCode: TStringField
+      FieldName = 'OrdersCode'
+      Size = 84
+    end
+    object adsCoreRepareOrdersCodeCr: TStringField
+      FieldName = 'OrdersCodeCr'
+      Size = 84
+    end
+    object adsCoreRepareOrderCount: TIntegerField
+      FieldName = 'OrderCount'
+    end
+    object adsCoreRepareOrdersSynonym: TStringField
+      FieldName = 'OrdersSynonym'
+      Size = 250
+    end
+    object adsCoreRepareOrdersSynonymFirm: TStringField
+      FieldName = 'OrdersSynonymFirm'
+      Size = 250
+    end
+    object adsCoreRepareOrdersPrice: TFloatField
+      FieldName = 'OrdersPrice'
+    end
+    object adsCoreRepareSumOrder: TFloatField
+      FieldName = 'SumOrder'
+    end
+    object adsCoreRepareOrdersJunk: TBooleanField
+      FieldName = 'OrdersJunk'
+    end
+    object adsCoreRepareOrdersAwait: TBooleanField
+      FieldName = 'OrdersAwait'
+    end
+    object adsCoreRepareOrdersHOrderId: TLargeintField
+      FieldName = 'OrdersHOrderId'
+    end
+    object adsCoreRepareOrdersHClientId: TLargeintField
+      FieldName = 'OrdersHClientId'
+    end
+    object adsCoreRepareOrdersHPriceCode: TLargeintField
+      FieldName = 'OrdersHPriceCode'
+    end
+    object adsCoreRepareOrdersHRegionCode: TLargeintField
+      FieldName = 'OrdersHRegionCode'
+    end
+    object adsCoreRepareOrdersHPriceName: TStringField
+      FieldName = 'OrdersHPriceName'
+      Size = 70
+    end
+    object adsCoreRepareOrdersHRegionName: TStringField
+      FieldName = 'OrdersHRegionName'
+      Size = 25
+    end
   end
 end

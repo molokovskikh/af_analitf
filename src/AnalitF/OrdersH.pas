@@ -8,7 +8,7 @@ uses
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
   FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps, MemDS,
-  DBAccess, MyAccess;
+  DBAccess, MyAccess, MemData;
 
 type
   TSumOrder = class
@@ -43,7 +43,7 @@ type
     WebBrowser1: TWebBrowser;
     tmOrderDateChange: TTimer;
     adsOrdersHFormOld: TpFIBDataSet;
-    adsCore: TpFIBDataSet;
+    adsCoreOld: TpFIBDataSet;
     adsOrdersHFormOldORDERID: TFIBBCDField;
     adsOrdersHFormOldSERVERORDERID: TFIBBCDField;
     adsOrdersHFormOldDATEPRICE: TFIBDateTimeField;
@@ -86,6 +86,7 @@ type
     adsOrdersHFormSumOrder: TFloatField;
     adsOrdersHFormsumbycurrentmonth: TFloatField;
     adsOrdersHFormDisplayOrderId: TLargeintField;
+    adsCore: TMyQuery;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -698,10 +699,10 @@ begin
           ParamByName( 'SynonymFirmCrCode').Value:=SynonymFirmCrCode;
           Open;
           FetchAll;
-          RecCountSRV := adsCore.RecordCountFromSrv;
+          RecCountSRV := adsCore.RecordCount;
           try
             { пытаемся разбросать заказ по нужным Code, SynonymCode и SynonymFirmCrCode }
-            if Locate( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, RequestRatio, OrderCost, MinOrderCount]), [])
+            if LocateEx( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, RequestRatio, OrderCost, MinOrderCount]), [])
             then
             begin
               repeat
@@ -716,7 +717,7 @@ begin
                 if CurOrder < 0 then CurOrder := 0;
                 Order := Order - CurOrder;
                 if CurOrder > 0 then SetOrder( FieldByName( 'OrderCount').AsInteger + CurOrder);
-              until ( Order = 0) or (not LocateNext( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, RequestRatio, OrderCost, MinOrderCount]), [])) or (RecCountSRV = adsCore.RecordCount);
+              until ( Order = 0) or (not LocateEx( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([ Code, RequestRatio, OrderCost, MinOrderCount]), [lxNext])) or (RecCountSRV = adsCore.RecordCount);
             end;
 
             { если все еще не разбросали, то пишем сообщение }

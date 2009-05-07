@@ -311,8 +311,7 @@ var
 begin
   t := TInternalRepareOrders.Create;
   try
-    //todo: надо потом восстановить RepareOrders
-    //t.RepareOrders;
+    t.RepareOrders;
   finally
     t.Free;
   end;
@@ -517,10 +516,10 @@ var
 		if Order = 0 then
       DM.adsRepareOrdersCOREID.Clear
     else begin
-      DM.adsRepareOrdersCOREID.AsInt64 := DM.adsCoreRepareCOREID.Value;
+      DM.adsRepareOrdersCOREID.Value := DM.adsCoreRepareCOREID.Value;
       DM.adsRepareOrdersCODE.Value := DM.adsCoreRepareCODE.Value;
       DM.adsRepareOrdersCODECR.Value := DM.adsCoreRepareCODECR.Value;
-      DM.adsRepareOrdersPRICE.AsString := DM.adsCoreRepareBASECOST.Value;
+      DM.adsRepareOrdersPRICE.Value := DM.adsCoreRepareCOST.Value;
     end;
 		DM.adsRepareOrders.Post;
 	end;
@@ -544,8 +543,8 @@ begin
 
 			SynonymCode := DM.adsRepareOrdersSYNONYMCODE.AsInteger;
 			SynonymFirmCrCode := DM.adsRepareOrdersSYNONYMFIRMCRCODE.AsVariant;
-      JUNK := DM.adsRepareOrdersJUNK.AsInteger;
-      AWAIT := DM.adsRepareOrdersAWAIT.AsInteger;
+      JUNK := DM.adsRepareOrdersJUNK.AsVariant;
+      AWAIT := DM.adsRepareOrdersAWAIT.AsVariant;
 
       DM.adsCoreRepare.ParamByName( 'AClientId').Value :=
         DM.adtClients.FieldByName('ClientId').Value;
@@ -596,7 +595,7 @@ begin
 						DM.adsRepareOrdersSYNONYMFIRM.AsString,
 						CurOrder,
 						Order,
-						DM.adsRepareOrdersCryptPRICE.AsString]));
+						DM.adsRepareOrdersPRICE.AsString]));
 				end
 				else
 				begin
@@ -604,7 +603,7 @@ begin
 						[ DM.adsRepareOrdersPRICENAME.AsString,
 						DM.adsRepareOrdersSYNONYMNAME.AsString,
 						DM.adsRepareOrdersSYNONYMFIRM.AsString,
-						DM.adsRepareOrdersCryptPRICE.AsString]));
+						DM.adsRepareOrdersPRICE.AsString]));
 				end;
 			end;
 			DM.adsRepareOrders.Next;
@@ -617,7 +616,8 @@ end;
 
 procedure TInternalRepareOrders.RepareOrders;
 begin
- 	DM.adsRepareOrders.CloseOpen(False);
+  DM.adsRepareOrders.Close;
+  DM.adsRepareOrders.Open;
 
 	if DM.adsRepareOrders.IsEmpty then
 	begin
