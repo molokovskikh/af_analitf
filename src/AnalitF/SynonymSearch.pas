@@ -190,6 +190,7 @@ type
     adsAvgOrdersPRICEAVG: TFloatField;
     adsAvgOrdersPRODUCTID: TLargeintField;
     tmrUpdatePreviosOrders: TTimer;
+    tmrSelectedPrices: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -220,6 +221,7 @@ type
     procedure adsCoreBeforeClose(DataSet: TDataSet);
     procedure adsCoreAfterOpen(DataSet: TDataSet);
     procedure adsCoreAfterScroll(DataSet: TDataSet);
+    procedure tmrSelectedPricesTimer(Sender: TObject);
   private
     { Private declarations }
     fr : TForceRus;
@@ -230,13 +232,14 @@ type
     SelectedPrices : TStringList;
     BM : TBitmap;
     InternalSearchText : String;
-    //Список сортировки 
+    //Список сортировки
     SortList : TStringList;
     procedure AddKeyToSearch(Key : Char);
     procedure SetClear;
     procedure ChangeSelected(ASelected : Boolean);
     procedure OnSPClick(Sender: TObject);
     procedure ccf(DataSet: TDataSet);
+    procedure InternalSearch;
   public
     { Public declarations }
   end;
@@ -346,60 +349,11 @@ begin
 end;
 
 procedure TSynonymSearchForm.tmrSearchTimer(Sender: TObject);
-var
-  FilterSQL : String;
-  TmpSortList : TStringList;
-  I : Integer;
 begin
   tmrSearch.Enabled := False;
-  if Length(eSearch.Text) > 2 then begin
+  if (Length(eSearch.Text) > 2) then begin
     InternalSearchText := LeftStr(eSearch.Text, 50);
-    if adsCore.Active then
-      adsCore.Close;
-
-    adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
-    adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
-  	adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
-    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PRD.');
-    adsCore.SQL.Text := StartSQL;
-    lFilter.Visible := Length(FilterSQL) > 0;
-    if lFilter.Visible then
-      adsCore.SQL.Text := adsCore.SQL.Text + 'and (' + FilterSQL + ')';
-    if cbBaseOnly.Checked then
-      adsCore.SQL.Text := adsCore.SQL.Text + ' and (PRD.Enabled = 1)';
-
-    if adsCore.Active then
-    begin
-      adsCore.Close;
-      adsCore.Open;
-    end
-    else
-      adsCore.Open;
-    //ShowSQLWaiting(adsCore);
-
-    //TODO: Здесь надо очистить массив, чтобы не было утечки памяти
-    TmpSortList := SortList;
-    SortList := nil;
-    if Assigned(TmpSortList) then begin
-      for I := 0 to TmpSortList.Count-1 do
-        TmpSortList.Objects[i].Free;
-      TmpSortList.Free;
-    end;
-
-    adsCore.DisableControls;
-    try
-      TmpSortList := GetSortedGroupList(adsCore, False, DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean);
-    finally
-      adsCore.EnableControls;
-    end;
-
-    SortList := TmpSortList;
-
-//    adsCore.DoSort(['SortOrder'], [True]);
-    adsCore.IndexFieldNames := 'SortOrder';
-    adsCore.First;
-
-    dbgCore.SetFocus;
+    InternalSearch;
     eSearch.Text := '';
   end
   else
@@ -610,13 +564,13 @@ procedure TSynonymSearchForm.ChangeSelected(ASelected: Boolean);
 var
   I : Integer;
 begin
-  tmrSearch.Enabled := False;
+  tmrSelectedPrices.Enabled := False;
   for I := 3 to pmSelectedPrices.Items.Count-1 do begin
     pmSelectedPrices.Items.Items[i].Checked := ASelected;
     TSelectPrice(TMenuItem(pmSelectedPrices.Items.Items[i]).Tag).Selected := ASelected;
   end;
   pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
-  tmrSearch.Enabled := True;
+  tmrSelectedPrices.Enabled := True;
 end;
 
 procedure TSynonymSearchForm.miSelectAllClick(Sender: TObject);
@@ -633,18 +587,18 @@ procedure TSynonymSearchForm.OnSPClick(Sender: TObject);
 var
   sp : TSelectPrice;
 begin
-  tmrSearch.Enabled := False;
+  tmrSelectedPrices.Enabled := False;
   TMenuItem(Sender).Checked := not TMenuItem(Sender).Checked;
   sp := TSelectPrice(TMenuItem(Sender).Tag);
   sp.Selected := TMenuItem(Sender).Checked;
   pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
-  tmrSearch.Enabled := True;
+  tmrSelectedPrices.Enabled := True;
 end;
 
 procedure TSynonymSearchForm.cbBaseOnlyClick(Sender: TObject);
 begin
-  tmrSearch.Enabled := False;
-  tmrSearch.Enabled := True;
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+    InternalSearch;
 end;
 
 procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;
@@ -708,6 +662,60 @@ procedure TSynonymSearchForm.adsCoreAfterScroll(DataSet: TDataSet);
 begin
   tmrUpdatePreviosOrders.Enabled := False;
   tmrUpdatePreviosOrders.Enabled := True;
+end;
+
+procedure TSynonymSearchForm.InternalSearch;
+var
+  FilterSQL : String;
+  TmpSortList : TStringList;
+  I : Integer;
+begin
+  if adsCore.Active then
+    adsCore.Close;
+
+  adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
+  adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
+  adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
+  FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PRD.');
+  adsCore.SQL.Text := StartSQL;
+  lFilter.Visible := Length(FilterSQL) > 0;
+  if lFilter.Visible then
+    adsCore.SQL.Text := adsCore.SQL.Text + 'and (' + FilterSQL + ')';
+  if cbBaseOnly.Checked then
+    adsCore.SQL.Text := adsCore.SQL.Text + ' and (PRD.Enabled = 1)';
+
+  ShowSQLWaiting(adsCore);
+
+  //TODO: Здесь надо очистить массив, чтобы не было утечки памяти
+  TmpSortList := SortList;
+  SortList := nil;
+  if Assigned(TmpSortList) then begin
+    for I := 0 to TmpSortList.Count-1 do
+      TmpSortList.Objects[i].Free;
+    TmpSortList.Free;
+  end;
+
+  adsCore.DisableControls;
+  try
+    TmpSortList := GetSortedGroupList(adsCore, False, DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean);
+  finally
+    adsCore.EnableControls;
+  end;
+
+  SortList := TmpSortList;
+
+//    adsCore.DoSort(['SortOrder'], [True]);
+  adsCore.IndexFieldNames := 'SortOrder';
+  adsCore.First;
+
+  dbgCore.SetFocus;
+end;
+
+procedure TSynonymSearchForm.tmrSelectedPricesTimer(Sender: TObject);
+begin
+  tmrSelectedPrices.Enabled := False;
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+    InternalSearch;
 end;
 
 end.

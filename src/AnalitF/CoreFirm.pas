@@ -664,11 +664,7 @@ begin
     adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'AClientId').Value:=ClientId;
-    if adsCore.Active then
-      adsCore.Close;
-    adsCore.Open;
-    //todo: надо восстановить
-    //ShowSQLWaiting(adsCore);
+    ShowSQLWaiting(adsCore);
     DM.MySQLMonitor.TraceFlags := DM.MySQLMonitor.TraceFlags + [DASQLMonitor.tfQFetch, DASQLMonitor.tfQExecute, DASQLMonitor.tfStmt];
   finally
     Screen.Cursor:=crDefault;

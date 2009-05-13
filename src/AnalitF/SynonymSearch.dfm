@@ -1,6 +1,6 @@
 inherited SynonymSearchForm: TSynonymSearchForm
   Left = 280
-  Top = 173
+  Top = 172
   ActiveControl = dbgCore
   Caption = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
   ClientHeight = 573
@@ -1513,7 +1513,13 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Enabled = False
     Interval = 700
     OnTimer = tmrUpdatePreviosOrdersTimer
-    Left = 576
+    Left = 592
+    Top = 173
+  end
+  object tmrSelectedPrices: TTimer
+    Enabled = False
+    OnTimer = tmrSelectedPricesTimer
+    Left = 656
     Top = 173
   end
 end

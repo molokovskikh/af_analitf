@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, pFIBDataSet, FIBQuery, FIBDataSet, ExtCtrls;
+  Dialogs, StdCtrls, pFIBDataSet, FIBQuery, FIBDataSet, ExtCtrls, DBAccess;
 
 type
   TfrmSQLWaiting = class(TForm)
@@ -15,12 +15,12 @@ type
     procedure tmFillTimer(Sender: TObject);
   private
     { Private declarations }
-    ds : TpFIBDataSet;
+    ds : TCustomDADataSet;
     TM : TThreadMethod;
-    OldFetch : TOnFetchRecord;
+    OldBeforFetch : TBeforeFetchEvent;
     Opened : Boolean;
     FetchCount : Integer;
-    procedure NewFetch(FromQuery:TFIBQuery;RecordNumber:integer;var StopFetching:boolean);
+    procedure NewBeforeFetch(Dataset: TCustomDADataSet; var Cancel: boolean);
   public
     { Public declarations }
   end;
@@ -28,7 +28,7 @@ type
 var
   frmSQLWaiting: TfrmSQLWaiting;
 
-procedure ShowSQLWaiting(DS : TpFIBDataSet; lCaption : String = 'Выполняется запрос данных'); overload;
+procedure ShowSQLWaiting(DS : TCustomDADataSet; lCaption : String = 'Выполняется запрос данных'); overload;
 
 procedure ShowSQLWaiting(TM : TThreadMethod; lCaption : String);overload;
 
@@ -36,17 +36,17 @@ implementation
 
 {$R *.dfm}
 
-procedure ShowSQLWaiting(DS : TpFIBDataSet; lCaption : String);
+procedure ShowSQLWaiting(DS : TCustomDADataSet; lCaption : String);
 begin
   frmSQLWaiting := TfrmSQLWaiting.Create(nil);
   try
     frmSQLWaiting.lCaption.Caption := lCaption;
-    frmSQLWaiting.OldFetch := ds.AfterFetchRecord;
-    ds.AfterFetchRecord := frmSQLWaiting.NewFetch;
+    frmSQLWaiting.OldBeforFetch := ds.BeforeFetch;
+    ds.BeforeFetch := frmSQLWaiting.NewBeforeFetch;
     frmSQLWaiting.ds := DS;
     frmSQLWaiting.ShowModal;
   finally
-    ds.AfterFetchRecord := frmSQLWaiting.OldFetch;
+    ds.BeforeFetch := frmSQLWaiting.OldBeforFetch;
     frmSQLWaiting.Free;
   end;
 end;
@@ -69,14 +69,14 @@ begin
   CanClose := Opened;
 end;
 
-procedure TfrmSQLWaiting.NewFetch(FromQuery: TFIBQuery;
-  RecordNumber: integer; var StopFetching: boolean);
+procedure TfrmSQLWaiting.NewBeforeFetch(Dataset: TCustomDADataSet;
+  var Cancel: boolean);
 begin
   Inc(FetchCount);
   if FetchCount mod 200 = 0 then
     Application.ProcessMessages;
-  if Assigned(OldFetch) then
-    OldFetch(FromQuery, RecordNumber, StopFetching);
+  if Assigned(OldBeforFetch) then
+    OldBeforFetch(Dataset, Cancel);
 end;
 
 procedure TfrmSQLWaiting.tmFillTimer(Sender: TObject);
@@ -85,7 +85,12 @@ begin
   try
     FetchCount := 0;
     if Assigned(ds) then
-      if ds.Active then ds.CloseOpen(True) else ds.Open;
+      if ds.Active then begin
+        ds.Close;
+        ds.Open;
+      end
+      else
+        ds.Open;
     if Assigned(TM) then
       TM;
   finally
