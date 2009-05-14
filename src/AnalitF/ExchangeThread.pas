@@ -419,6 +419,13 @@ end;
 
 procedure TExchangeThread.HTTPConnect;
 begin
+	if DM.adtParams.FieldByName( 'ProxyConnect').AsBoolean
+  then
+    WriteExchangeLog('Exchange',
+      'Используется proxy-сервер "' +
+      DM.adtParams.FieldByName( 'ProxyName').AsString + ':' + DM.adtParams.FieldByName( 'ProxyPort').AsString + '"' +
+      IfThen(DM.adtParams.FieldByName( 'ProxyUser').AsString <> '',
+        ' с именем пользователя "' + DM.adtParams.FieldByName( 'ProxyUser').AsString + '"'));
 	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
   //Если запущены в DSP (для служебного пользования), то урл берется из настройки, если нет, то формируем автоматически
 {$ifdef DSP}
@@ -1046,7 +1053,13 @@ procedure TExchangeThread.RasConnect;
 var
   RasTimeout : Integer;
 begin
+
 	if DM.adtParams.FieldByName( 'RasConnect').AsBoolean then begin
+      WriteExchangeLog('Exchange',
+        'Используется удаленное соединение "' +
+        DM.adtParams.FieldByName( 'RasEntry').AsString + '"' +
+        IfThen(DM.adtParams.FieldByName( 'RasName').AsString <> '',
+          ' с именем пользователя "' + DM.adtParams.FieldByName( 'RasName').AsString + '"'));
 			Synchronize( ExchangeForm.Ras.Connect);
       RasTimeout := DM.adtParams.FieldByName( 'RasSleep').AsInteger;
       if RasTimeout > 0 then begin

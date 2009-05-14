@@ -1,6 +1,6 @@
 object CoreFirmForm: TCoreFirmForm
   Left = 310
-  Top = 200
+  Top = 172
   ActiveControl = dbgCore
   Align = alClient
   Anchors = [akTop, akBottom]
