@@ -338,6 +338,9 @@ begin
 end;
 
 procedure TNamesFormsForm.actShowAllExecute(Sender: TObject);
+var
+  ShortCode, FullCode : Variant;
+  NamesIsFocus : Boolean;
 begin
   if actNewSearch.Checked then begin
   	if not dbgCatalog.CanFocus then exit;
@@ -353,13 +356,33 @@ begin
     else
       SetCatalog;
   end
-  else
+  else begin
+    NamesIsFocus := dbgNames.Focused;
+    ShortCode := adsNames.FieldByName('AShortCode').Value;
+    if not NamesIsFocus then
+      FullCode := adsForms.FieldByName('FullCode').Value;
     SetNamesParams;
+  end;
 
   if actNewSearch.Checked then
     dbgCatalog.SetFocus
-  else
-  	dbgNames.SetFocus;
+  else begin
+    if adsNames.Locate('AShortCode', ShortCode, []) then begin
+      if NamesIsFocus then
+        dbgNames.SetFocus
+      else
+        if adsForms.Locate('FullCode', FullCode, []) then
+          dbgForms.SetFocus
+        else begin
+          adsForms.First;
+          dbgForms.SetFocus;
+        end
+    end
+    else begin
+      adsNames.First;
+      dbgNames.SetFocus;
+    end
+  end;
 end;
 
 procedure TNamesFormsForm.SetCatalog;
