@@ -226,6 +226,9 @@ begin
            + ' where '
            + '    (Closed = 0)';
           DM.adcUpdate.Execute;
+          //удаляем изменения в настройках прайс-листов
+          DM.adcUpdate.SQL.Text := 'delete from pricesregionaldataup';
+          DM.adcUpdate.Execute;
         end;
         DM.adtParams.Post;
         while not DM.adsRetailMargins.IsEmpty do

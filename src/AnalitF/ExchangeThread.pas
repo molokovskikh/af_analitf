@@ -198,7 +198,8 @@ begin
 				HTTPConnect;
 				TotalProgress := 10;
 				Synchronize( SetTotalProgress);
-				if ([eaImportOnly, eaGetFullData, eaMDBUpdate, eaSendLetter] * ExchangeForm.ExchangeActs = []) then
+        //Отправяем настройки прайс-листов при запросе данных (обычно или кумулятивном)
+				if (eaGetPrice in ExchangeForm.ExchangeActs) then
         begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
