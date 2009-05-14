@@ -191,6 +191,7 @@ type
     adsAvgOrdersPRODUCTID: TLargeintField;
     tmrUpdatePreviosOrders: TTimer;
     tmrSelectedPrices: TTimer;
+    btnGotoCore: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);

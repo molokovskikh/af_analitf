@@ -341,6 +341,15 @@ object CoreForm: TCoreForm
       TabOrder = 2
       OnClick = btnGroupUngroupClick
     end
+    object btnGotoCoreFirm: TButton
+      Left = 264
+      Top = 3
+      Width = 107
+      Height = 25
+      Action = actFlipCore
+      Anchors = [akTop, akRight]
+      TabOrder = 3
+    end
   end
   object pCenter: TPanel
     Left = 0
@@ -635,6 +644,7 @@ object CoreForm: TCoreForm
     Left = 304
     Top = 248
     object actFlipCore: TAction
+      Caption = #1042' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090' (F2)'
       ShortCut = 113
       OnExecute = actFlipCoreExecute
     end

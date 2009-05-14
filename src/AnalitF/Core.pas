@@ -209,6 +209,7 @@ type
     adsPreviosOrdersPrice: TFloatField;
     adsPreviosOrdersAwait: TBooleanField;
     adsPreviosOrdersJunk: TBooleanField;
+    btnGotoCoreFirm: TButton;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);

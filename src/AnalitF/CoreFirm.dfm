@@ -393,6 +393,15 @@ object CoreFirmForm: TCoreFirmForm
         OnClick = tmrSearchTimer
       end
     end
+    object btnGotoCore: TButton
+      Left = 407
+      Top = 2
+      Width = 94
+      Height = 25
+      Action = actFlipCore
+      Anchors = [akTop, akRight]
+      TabOrder = 2
+    end
   end
   inline frameLegeng: TframeLegeng
     Left = 0
@@ -443,6 +452,7 @@ object CoreFirmForm: TCoreFirmForm
       OnExecute = actDeleteOrderExecute
     end
     object actFlipCore: TAction
+      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
       ShortCut = 113
       OnExecute = actFlipCoreExecute
     end

@@ -70,6 +70,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
         00003333333330000000}
       Layout = blGlyphRight
     end
+    object btnGotoCore: TButton
+      Left = 680
+      Top = 4
+      Width = 94
+      Height = 25
+      Action = actFlipCore
+      TabOrder = 4
+    end
   end
   object pCenter: TPanel [1]
     Left = 0
@@ -459,7 +467,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 352
     Top = 192
     object actFlipCore: TAction
-      Caption = 'actFlipCore'
+      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
       ShortCut = 113
       OnExecute = actFlipCoreExecute
     end

@@ -134,6 +134,7 @@ type
     adsSummaryRequestRatio: TIntegerField;
     adsSummaryMINORDERCOUNT: TIntegerField;
     adsSummaryVitallyImportant: TBooleanField;
+    btnGotoCore: TButton;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;

@@ -244,8 +244,16 @@ inherited ExpiredsForm: TExpiredsForm
       DesignSize = (
         792
         29)
+      object Bevel1: TBevel
+        Left = 0
+        Top = 0
+        Width = 792
+        Height = 29
+        Align = alClient
+        Shape = bsTopLine
+      end
       object lblRecordCount: TLabel
-        Left = 12
+        Left = 109
         Top = 8
         Width = 80
         Height = 13
@@ -258,13 +266,13 @@ inherited ExpiredsForm: TExpiredsForm
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Bevel1: TBevel
-        Left = 0
-        Top = 0
-        Width = 792
-        Height = 29
-        Align = alClient
-        Shape = bsTopLine
+      object btnGotoCore: TButton
+        Left = 5
+        Top = 3
+        Width = 94
+        Height = 25
+        Action = actFlipCore
+        TabOrder = 0
       end
     end
   end
@@ -599,7 +607,7 @@ inherited ExpiredsForm: TExpiredsForm
     Left = 352
     Top = 192
     object actFlipCore: TAction
-      Caption = 'actFlipCore'
+      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
       ShortCut = 113
       OnExecute = actFlipCoreExecute
     end

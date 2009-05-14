@@ -243,7 +243,7 @@ inherited SummaryForm: TSummaryForm
         Shape = bsTopLine
       end
       object Label1: TLabel
-        Left = 108
+        Left = 195
         Top = 11
         Width = 56
         Height = 13
@@ -257,7 +257,7 @@ inherited SummaryForm: TSummaryForm
         ParentFont = False
       end
       object Label2: TLabel
-        Left = 220
+        Left = 307
         Top = 11
         Width = 60
         Height = 13
@@ -271,7 +271,7 @@ inherited SummaryForm: TSummaryForm
         ParentFont = False
       end
       object lSumOrder: TLabel
-        Left = 288
+        Left = 375
         Top = 11
         Width = 59
         Height = 13
@@ -284,9 +284,9 @@ inherited SummaryForm: TSummaryForm
         ParentFont = False
       end
       object lPosCount: TLabel
-        Left = 168
+        Left = 255
         Top = 11
-        Width = 49
+        Width = 58
         Height = 13
         Caption = 'lPosCount'
         Font.Charset = DEFAULT_CHARSET
@@ -304,6 +304,14 @@ inherited SummaryForm: TSummaryForm
         Caption = #1059#1076#1072#1083#1080#1090#1100
         TabOrder = 0
         OnClick = btnDeleteClick
+      end
+      object btnGotoCore: TButton
+        Left = 91
+        Top = 5
+        Width = 94
+        Height = 25
+        Action = actFlipCore
+        TabOrder = 1
       end
     end
     object pTopSettings: TPanel
@@ -910,7 +918,7 @@ inherited SummaryForm: TSummaryForm
     Left = 352
     Top = 192
     object actFlipCore: TAction
-      Caption = 'actFlipCore'
+      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
       ShortCut = 113
       OnExecute = actFlipCoreExecute
     end
