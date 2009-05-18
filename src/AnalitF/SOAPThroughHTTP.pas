@@ -3,7 +3,7 @@ unit SOAPThroughHTTP;
 interface
 
 uses IdHTTP, IdIntercept, SysUtils, StrUtils, Classes, IdException, WinSock, IdURI,
-  IdGlobal, IdStack, IdStackConsts;
+  IdGlobal, IdStack, IdStackConsts, IdComponent, IdHeaderList;
 
 const
 	INVOKE_RESPONSE	= 'Invoke Response';
@@ -37,10 +37,18 @@ private
 	FTmpIntercept: TIdConnectionIntercept;
 
 	function ExtractHost( AURL: string): string;
-	procedure OnReceive( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
   procedure OnReconnectError(E : EIdException);
   //ѕроизводим POST несколько раз, если возникают ошибки сети
   procedure DoPost(AFullURL : String; AList : TStringList);
+
+  //Ётот метод необходим, чтобы формировать ответ от сервера,
+  //т.к. в свойстве FHTTP.Response.ContentStream он бывает не полным из-за ошибок при передачи данных
+	procedure OnReceive( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
+  //—обыти€ дл€ отладки взаимодействи€ с сервером
+{$ifdef DEBUG}
+  procedure HttpReceiveHeadersAvailable(Sender: TObject; AHeaders: TIdHeaderList; var VContinue: Boolean);
+	procedure OnSend( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
+{$endif}
 end;
 
 implementation
@@ -71,7 +79,6 @@ begin
 	FURL := AURL;
 	FConcat := False;
 	FIntercept := TIdConnectionIntercept.Create( nil);
-	FIntercept.OnReceive := OnReceive;
 	FHTTP.Intercept := FIntercept;
 	FHTTP.Request.BasicAuthentication := True;
 	FHTTP.Request.Host := ExtractHost( AURL);
@@ -96,52 +103,62 @@ procedure TSOAP.DoPost(AFullURL: String; AList: TStringList);
 const
   FReconnectCount = 10;
 var
-  ErrorCount : Integer;
+  ErrorCount  : Integer;
   PostSuccess : Boolean;
+  Params      : TStringList;
 begin
-  ErrorCount := 0;
-  PostSuccess := False;
-  repeat
-    try
+  Params := TStringList.Create;
+  try
 
-      FHTTP.Post( AFullURL, AList);
-      
-      PostSuccess := True;
+    ErrorCount := 0;
+    PostSuccess := False;
+    repeat
+      try
 
-    except
-      on E : EIdConnClosedGracefully do begin
-        if (ErrorCount < FReconnectCount) then begin
-          if FHTTP.Connected then
-            try
-              FHTTP.Disconnect;
-            except
-            end;
-          Inc(ErrorCount);
-          OnReconnectError(E);
-          Sleep(100);
-        end
-        else
-          raise;
+        Params.Clear;
+        Params.AddStrings(AList);
+        FHTTP.Post( AFullURL, Params);
+
+        PostSuccess := True;
+
+      except
+        on E : EIdConnClosedGracefully do begin
+          if (ErrorCount < FReconnectCount) then begin
+            if FHTTP.Connected then
+              try
+                FHTTP.Disconnect;
+              except
+              end;
+            Inc(ErrorCount);
+            OnReconnectError(E);
+            Sleep(100);
+          end
+          else
+            raise;
+        end;
+        on E : EIdSocketError do begin
+          if (ErrorCount < FReconnectCount) and
+            ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
+              or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
+          then begin
+            if FHTTP.Connected then
+              try
+                FHTTP.Disconnect;
+              except
+              end;
+            Inc(ErrorCount);
+            OnReconnectError(E);
+            Sleep(100);
+          end
+          else
+            raise;
+        end;
       end;
-      on E : EIdSocketError do begin
-        if (ErrorCount < FReconnectCount) and
-          ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
-            or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
-        then begin
-          if FHTTP.Connected then
-            try
-              FHTTP.Disconnect;
-            except
-            end;
-          Inc(ErrorCount);
-          OnReconnectError(E);
-          Sleep(100);
-        end
-        else
-          raise;
-      end;
-    end;
-  until (PostSuccess);
+    until (PostSuccess);
+
+  finally
+    Params.Free;
+  end;
 end;
 
 function TSOAP.ExtractHost( AURL: string): string;
@@ -156,10 +173,17 @@ begin
   end;
 end;
 
+{$ifdef DEBUG}
+procedure TSOAP.HttpReceiveHeadersAvailable(Sender: TObject;
+  AHeaders: TIdHeaderList; var VContinue: Boolean);
+begin
+   WriteExchangeLog('TSOAP.OnHeadersAvailable:' + FHTTP.Name, 'Headers :'#13#10 + AHeaders.Text);
+end;
+{$endif}
+
 {
 http://ios.analit.net/PrgDataEx/Code.asmx
 }
-
 function TSOAP.Invoke( AMethodName: string; AParams, AValues: array of string): TStrings;
 var
   TmpResult : String;
@@ -177,6 +201,7 @@ var
 begin
   RecieveString := BytesToString(ABuffer);
 {$ifdef DEBUG}
+  //Ёто необходимо включить, когда надо получать более детальную хронологию ответов сервера
   //WriteExchangeLog('TSOAP.OnReceive:' + FHTTP.Name, RecieveString);
 {$endif}
 	if FConcat then FResponse := FResponse + RecieveString;
@@ -190,6 +215,18 @@ begin
   FResponse := '';
 end;
 
+{$ifdef DEBUG}
+procedure TSOAP.OnSend(ASender: TIdConnectionIntercept;
+  var ABuffer: TIdBytes);
+var
+  SendString : String;
+begin
+  SendString := BytesToString(ABuffer);
+  //Ёто необходимо включить, когда надо получать более детальную хронологию запросов к серверу
+  //WriteExchangeLog('TSOAP.OnSend:' + FHTTP.Name, SendString);
+end;
+{$endif}
+
 function TSOAP.SimpleInvoke(AMethodName: string; AParams,
   AValues: array of string): String;
 var
@@ -197,7 +234,6 @@ var
 	i: integer;
 	FullURL: string;
 	start, stop: integer;
-	ExceptMessage: string;
   TmpResult : String;
 begin
 	if High( AParams) <> High( AValues) then
@@ -218,28 +254,45 @@ begin
 	FConcat := True;
 	try
 
-    DoPost(FullURL, list);
+    FIntercept.OnReceive := OnReceive;
+{$ifdef DEBUG}
+    FIntercept.OnSend := OnSend;
+    FHTTP.OnHeadersAvailable := HttpReceiveHeadersAvailable;
+{$endif}
+    try
+{$ifdef DEBUG}
+      WriteExchangeLog('TSOAP.SimpleInvoke:' + FHTTP.Name, 'MethodName : ' + AMethodName);
+{$endif}
+
+      DoPost(FullURL, list);
+    finally
+      FIntercept.OnReceive := nil;
+{$ifdef DEBUG}
+      FHTTP.OnHeadersAvailable := nil;
+      FIntercept.OnSend := nil;
+{$endif}
+    end;
 
 	except
-		on E: Exception do
-		begin
-      if FindCmdLineSwitch('extd') then
-        WriteExchangeLog('SOAP.Response.Raw', Utf8ToAnsi(FResponse));
-			if ( Pos( #$D#$A#$D#$A, FResponse) > 0) then begin
-				ExceptMessage := Copy( FResponse, Pos( #$D#$A#$D#$A, FResponse) + 4, Length( FResponse));
-        if Length(ExceptMessage) = 0 then
-          ExceptMessage := e.ClassName + ': ' + e.Message;
-  			raise Exception.Create( ExceptMessage);
-      end
-			else
-        raise;
-		end;
+    //ѕроизводим протоколирование ответа, который успели получить до ошибки
+    WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8ToAnsi(FResponse));
+    raise;
 	end;
 	FConcat := False;
 	list.Free;
 
-  if FHTTP.ResponseCode = 401 then
-    raise Exception.Create('ƒоступ запрещен.'#13#10'¬ведены некорректные учетные данные.');
+  //ѕроизводим протоколирование ответа, если от сервера получили код, отличный от 200
+  if (FHTTP.ResponseCode <> 200) then
+    WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8ToAnsi(FResponse));
+
+  if (FHTTP.ResponseCode = 401) or (FHTTP.ResponseCode = 403) then
+    raise Exception.Create('ƒоступ запрещен.'#13#10'¬ведены некорректные учетные данные.')
+  else
+    if (FHTTP.ResponseCode = 407) then
+      raise Exception.Create('ƒоступ запрещен.'#13#10'¬ведены некорректные учетные данные дл€ прокси-сервера.')
+    else
+      if (FHTTP.ResponseCode <> 200) then
+        raise Exception.Create('ѕри выполнении вашего запроса произошла ошибка.'#13#10'ѕовторите запрос через несколько минут.');
 
 	start := PosEx( '>', FResponse, Pos( 'xmlns', FResponse)) + 1;
 	stop := PosEx( '</', FResponse, start);

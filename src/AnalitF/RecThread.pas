@@ -61,7 +61,12 @@ begin
     if Terminated then exit;
     FStatusStr := 'Запрос рекламного блока...';
     Synchronize(UpdateProgress);
-    FSOAP := TSOAP.Create(FURL, FHTTPName, FHTTPPass, OnConnectError, ReceiveHTTP);
+    FSOAP := TSOAP.Create(
+      FURL,
+      FHTTPName,
+      FHTTPPass,
+      OnConnectError,
+      ReceiveHTTP);
     try
       Log('Reclame', 'Запущен процесс для получения рекламного блока');
       Res := FSOAP.Invoke('GetReclame', [], []);

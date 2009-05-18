@@ -36,7 +36,12 @@ begin
     end;
     if Terminated then exit;
 
-    FSOAP := TSOAP.Create(FURL, FHTTPName, FHTTPPass, OnConnectError, ReceiveHTTP);
+    FSOAP := TSOAP.Create(
+      FURL,
+      FHTTPName,
+      FHTTPPass,
+      OnConnectError,
+      ReceiveHTTP);
     try
 
      if Terminated then exit;

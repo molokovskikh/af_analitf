@@ -396,6 +396,12 @@ begin
           TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := RusError( E.Message);
 				if TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value = '' then
           TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.ClassName + ': ' + E.Message;
+        if (E is EIdHTTPProtocolException) then
+          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value :=
+            'При выполнении вашего запроса произошла ошибка.'#13#10 +
+            'Повторите запрос через несколько минут.'#13#10 +
+            TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value
+        else
         if (E is EIdException) then
           TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value :=
             'Проверьте подключение к Интернет.'#13#10 +
@@ -436,7 +442,12 @@ begin
 {$endif}
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
-	SOAP := TSOAP.Create( URL, HTTPName, HTTPPass, OnConnectError, ExchangeForm.HTTP);
+	SOAP := TSOAP.Create(
+    URL,
+    HTTPName,
+    HTTPPass,
+    OnConnectError,
+    ExchangeForm.HTTP);
 end;
 
 procedure TExchangeThread.CreateChildThreads;
@@ -655,7 +666,6 @@ begin
 
       finally
         ExchangeForm.HTTP.OnWork := nil;
-        ExchangeForm.HTTP.OnWorkBegin := nil;
       end;
 
 			Synchronize( ExchangeForm.CheckStop);
