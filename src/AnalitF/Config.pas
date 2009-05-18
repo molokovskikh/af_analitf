@@ -161,8 +161,11 @@ begin
       OldHTTPName := dbeHTTPName.Field.AsString;
       dbchbPrintOrdersAfterSend.Enabled := (DM.SaveGridMask and PrintSendedOrder) > 0;
 {$ifndef DSP}
-      gbHTTP.Visible := False;
-      gbAccount.Top := 8;
+      //Если в параметрах программы нет ключа "extd", то скрываем настройку "Хост"
+      if (not FindCmdLineSwitch('extd')) then begin
+        gbHTTP.Visible := False;
+        gbAccount.Top := 8;
+      end;
 {$endif}
       if Auth then
         PageControl.ActivePageIndex := 2

@@ -438,7 +438,13 @@ begin
 {$ifdef DSP}
   URL := DM.adtParams.FieldByName( 'HTTPHost').AsString + '/code.asmx';
 {$else}
-  URL := 'https://ios.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+  if (FindCmdLineSwitch('extd')) and
+    (DM.adtParams.FieldByName( 'HTTPHost').AsString <> '')
+  then
+    URL := 'https://' + DM.adtParams.FieldByName( 'HTTPHost').AsString+
+           '/' + DM.SerBeg + DM.SerEnd + '/code.asmx'
+  else
+    URL := 'https://ios.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 {$endif}
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
