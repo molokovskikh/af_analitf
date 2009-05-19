@@ -442,6 +442,7 @@ type
     adsCoreRepareOrdersHRegionCode: TLargeintField;
     adsCoreRepareOrdersHPriceName: TStringField;
     adsCoreRepareOrdersHRegionName: TStringField;
+    adsRepareOrdersClientName: TStringField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);

@@ -2216,30 +2216,35 @@ object DM: TDM
       '  ID = :OLD_ID')
     Connection = MyConnection
     SQL.Strings = (
-      'SELECT '
-      '  Id, '
-      '  CoreId, '
-      '  PriceCode, '
-      '  RegionCode, '
-      '  Code, '
-      '  CodeCr, '
-      '  Price, '
-      '  SynonymCode, '
-      '  SynonymFirmCrCode, '
-      '  SynonymName, '
-      '  SynonymFirm, '
-      '  Junk, '
-      '  Await, '
-      '  OrderCount, '
-      '  PriceName,'
-      '  requestratio,'
-      '  ordercost,'
-      '  minordercount '
+      'SELECT'
+      '  clients.ClientId,'
+      '  clients.Name as ClientName, '
+      '  OrdersHead.PriceCode, '
+      '  OrdersHead.RegionCode, '
+      '  OrdersHead.PriceName,'
+      '  OrdersList.Id, '
+      '  OrdersList.CoreId, '
+      '  OrdersList.Code, '
+      '  OrdersList.CodeCr, '
+      '  OrdersList.Price, '
+      '  OrdersList.SynonymCode, '
+      '  OrdersList.SynonymFirmCrCode, '
+      '  OrdersList.SynonymName, '
+      '  OrdersList.SynonymFirm, '
+      '  OrdersList.Junk, '
+      '  OrdersList.Await, '
+      '  OrdersList.OrderCount, '
+      '  OrdersList.requestratio,'
+      '  OrdersList.ordercost,'
+      '  OrdersList.minordercount '
       'FROM '
       '  OrdersList '
       
         '  INNER JOIN OrdersHead ON (OrdersHead.OrderId=OrdersList.OrderI' +
         'd AND OrdersHead.Closed = 0)'
+      
+        '  inner join clients    on (clients.clientid = OrdersHead.Client' +
+        'Id)'
       'WHERE '
       '  (OrdersList.OrderCount>0)')
     Left = 776
@@ -2302,6 +2307,10 @@ object DM: TDM
     end
     object adsRepareOrdersminordercount: TIntegerField
       FieldName = 'minordercount'
+    end
+    object adsRepareOrdersClientName: TStringField
+      FieldName = 'ClientName'
+      Size = 50
     end
   end
   object adsCoreRepare: TMyQuery

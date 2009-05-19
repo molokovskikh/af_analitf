@@ -90,15 +90,19 @@ implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
-  Child, Config;
+  Child, Config, RxMemDS;
 
 {$R *.DFM}
+
 type
   TInternalRepareOrders = class
    public
-    Strings : TStrings;
+    Strings  : TStrings;
+    mdOutput : TRxMemoryData;
     procedure RepareOrders;
     procedure InternalRepareOrders;
+    procedure FillData;
+    procedure FormatOutput;
   end;
 
 
@@ -503,7 +507,7 @@ end;
 
 { TInternalRepareOrders }
 
-procedure TInternalRepareOrders.InternalRepareOrders;
+procedure TInternalRepareOrders.FillData;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
@@ -560,10 +564,12 @@ begin
 			{ проверяем наличие прайс-листа }
 			if DM.adsCoreRepare.IsEmpty then
 			begin
-				Strings.Append( Format( '%s : %s - %s : позиция отсутствует',
-					[ DM.adsRepareOrdersPRICENAME.AsString,
-					DM.adsRepareOrdersSYNONYMNAME.AsString,
-					DM.adsRepareOrdersSYNONYMFIRM.AsString]));
+        mdOutput.AppendRecord(
+         [DM.adsRepareOrdersClientName.AsString,
+         DM.adsRepareOrdersPRICENAME.AsString,
+         DM.adsRepareOrdersSYNONYMNAME.AsString,
+         DM.adsRepareOrdersSYNONYMFIRM.AsString,
+         'позиция отсутствует']);
 				DM.adsCoreRepare.Close;
 				SetOrder( 0);
 				DM.adsRepareOrders.Next;
@@ -589,21 +595,21 @@ begin
 			begin
 				if CurOrder > 0 then
 				begin
-					Strings.Append( Format( '%s : %s - %s : %d вместо %d (старая цена : %s)',
-						[ DM.adsRepareOrdersPRICENAME.AsString,
-						DM.adsRepareOrdersSYNONYMNAME.AsString,
-						DM.adsRepareOrdersSYNONYMFIRM.AsString,
-						CurOrder,
-						Order,
-						DM.adsRepareOrdersPRICE.AsString]));
+          mdOutput.AppendRecord(
+           [DM.adsRepareOrdersClientName.AsString,
+           DM.adsRepareOrdersPRICENAME.AsString,
+           DM.adsRepareOrdersSYNONYMNAME.AsString,
+           DM.adsRepareOrdersSYNONYMFIRM.AsString,
+           Format('%d вместо %d (старая цена : %s)', [CurOrder, Order, DM.adsRepareOrdersPRICE.AsString])]);
 				end
 				else
 				begin
-					Strings.Append( Format( '%s : %s - %s : предложение отсутствует (старая цена : %s)',
-						[ DM.adsRepareOrdersPRICENAME.AsString,
-						DM.adsRepareOrdersSYNONYMNAME.AsString,
-						DM.adsRepareOrdersSYNONYMFIRM.AsString,
-						DM.adsRepareOrdersPRICE.AsString]));
+          mdOutput.AppendRecord(
+           [DM.adsRepareOrdersClientName.AsString,
+           DM.adsRepareOrdersPRICENAME.AsString,
+           DM.adsRepareOrdersSYNONYMNAME.AsString,
+           DM.adsRepareOrdersSYNONYMFIRM.AsString,
+           Format('предложение отсутствует (старая цена : %s)', [DM.adsRepareOrdersPRICE.AsString])]);
 				end;
 			end;
 			DM.adsRepareOrders.Next;
@@ -612,6 +618,69 @@ begin
       Screen.Cursor := crDefault;
 		end;
 	end;
+end;
+
+procedure TInternalRepareOrders.FormatOutput;
+var
+  ClientName, PriceName : String;
+begin
+  mdOutput.SortOnFields('ClientName;PriceName;SynonymName;SynonymFirm');
+  mdOutput.First;
+  if mdOutput.RecordCount > 0 then begin
+    ClientName := mdOutput.FieldByName('ClientName').AsString;
+    PriceName := mdOutput.FieldByName('PriceName').AsString;
+    Strings.Append(Format('клиент %s', [ClientName]));
+    Strings.Append(Format('   прайс-лист %s', [PriceName]));
+    while not mdOutput.Eof do begin
+      if     (ClientName = mdOutput.FieldByName('ClientName').AsString)
+         and (PriceName  <> mdOutput.FieldByName('PriceName').AsString)
+      then begin
+        PriceName := mdOutput.FieldByName('PriceName').AsString;
+        Strings.Append('');
+        Strings.Append(Format('   прайс-лист %s', [PriceName]));
+      end
+      else
+        if     (ClientName <> mdOutput.FieldByName('ClientName').AsString)
+           and (PriceName  <> mdOutput.FieldByName('PriceName').AsString)
+        then begin
+          ClientName := mdOutput.FieldByName('ClientName').AsString;
+          PriceName := mdOutput.FieldByName('PriceName').AsString;
+          Strings.Append('');
+          Strings.Append('');
+          Strings.Append(Format('клиент %s', [ClientName]));
+          Strings.Append(Format('   прайс-лист %s', [PriceName]));
+        end;
+
+      Strings.Append( Format( '      %s - %s : %s',
+        [mdOutput.FieldByName('SynonymName').AsString,
+         mdOutput.FieldByName('SynonymFirm').AsString,
+         mdOutput.FieldByName('Reason').AsString]));
+      mdOutput.Next;
+    end;
+  end;
+end;
+
+procedure TInternalRepareOrders.InternalRepareOrders;
+begin
+  mdOutput := TRxMemoryData.Create(nil);
+  try
+    mdOutput.FieldDefs.Add('ClientName', ftString, 500);
+    mdOutput.FieldDefs.Add('PriceName', ftString, 500);
+    mdOutput.FieldDefs.Add('SynonymName', ftString, 500);
+    mdOutput.FieldDefs.Add('SynonymFirm', ftString, 500);
+    mdOutput.FieldDefs.Add('Reason', ftString, 500);
+
+    mdOutput.Open;
+    try
+      FillData;
+
+      FormatOutput;
+    finally
+      mdOutput.Close;
+    end;
+  finally
+    mdOutput.Free;
+  end;
 end;
 
 procedure TInternalRepareOrders.RepareOrders;
@@ -632,7 +701,8 @@ begin
     ShowSQLWaiting(InternalRepareOrders, 'Происходит пересчет заказов');
 
   	{ если не нашли что-то, то выводим сообщение }
-	  if (Strings.Count > 0) and (Length(Strings.Text) > 0) then ShowNotFound( Strings);
+	  if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
+      ShowNotFound( Strings);
 
 	finally
 		Strings.Free;
