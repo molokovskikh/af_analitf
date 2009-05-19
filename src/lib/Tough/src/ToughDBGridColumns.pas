@@ -22,7 +22,6 @@ TfrmColumns = class(TForm)
     BtnDown: TButton;
     btnShow: TButton;
     btnHide: TButton;
-    btnReset: TButton;
     Label2: TLabel;
     edWidth: TEdit;
     Label3: TLabel;
@@ -36,7 +35,6 @@ TfrmColumns = class(TForm)
     procedure BtnDownClick(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
-    procedure btnResetClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
@@ -166,11 +164,6 @@ procedure TfrmColumns.BtnDownClick(Sender: TObject);
 begin
 	clbColumns.Items.Exchange( clbColumns.ItemIndex, clbColumns.ItemIndex + 1);
 	clbColumnsClick( Sender);
-end;
-
-procedure TfrmColumns.btnResetClick(Sender: TObject);
-begin
-	ReadColumns;
 end;
 
 procedure TfrmColumns.btnOKClick(Sender: TObject);

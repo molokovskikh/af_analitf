@@ -117,22 +117,13 @@ object frmColumns: TfrmColumns
     TabOrder = 6
     OnClick = btnHideClick
   end
-  object btnReset: TButton
-    Left = 241
-    Top = 172
-    Width = 75
-    Height = 23
-    Caption = #1057#1073#1088#1086#1089#1080#1090#1100
-    TabOrder = 7
-    OnClick = btnResetClick
-  end
   object edWidth: TEdit
     Left = 174
     Top = 208
     Width = 46
     Height = 24
     AutoSize = False
-    TabOrder = 8
+    TabOrder = 7
     Text = 'edWidth'
     OnExit = edWidthExit
   end

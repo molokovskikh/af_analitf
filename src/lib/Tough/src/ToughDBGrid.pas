@@ -171,8 +171,7 @@ end;
 
 procedure TToughDBGrid.LoadFromRegistry( AReg: TRegistry);
 var
-	i, j: integer;
-	Cols: array of string;
+	i : integer;
 	AutoFit: boolean;
 begin
 	if not AReg.OpenKey( Self.Name, False) then exit;
@@ -211,31 +210,6 @@ begin
       except
       end;
     end;
-
-{
-		SetLength( Cols, Self.Columns.Count);
-		for i := 0 to Self.Columns.Count - 1 do Cols[ i] := Self.Columns[ i].FieldName;
-
-		for i := Self.Columns.Count - 1 downto 0 do
-		begin
-			for j := Self.Columns.Count - 1 downto 0 do
-			begin
-				if Cols[ i] = Self.Columns[ j].FieldName then
-        begin
-					//<atu>
-					try
-          //</atu>
-					Self.Columns[ j].Index := AReg.ReadInteger( Cols[ i] + 'Index');
-					//<atu>
-					except
-					end;
-          //</atu>
-					break;
-				end;
-			end;
-		end;
-}    
-
 	finally
 		Self.Enabled := True;
 		Self.AutoFitColWidths := AutoFit;
