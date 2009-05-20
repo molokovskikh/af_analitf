@@ -640,7 +640,6 @@ begin
           except
             on E : EIdConnClosedGracefully do begin
               if (ErrorCount < FReconnectCount) then begin
-                if ExchangeForm.HTTP.Connected then
                 try
                   ExchangeForm.HTTP.Disconnect;
                 except
@@ -656,7 +655,6 @@ begin
                 ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
                   or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
               then begin
-                if ExchangeForm.HTTP.Connected then
                 try
                   ExchangeForm.HTTP.Disconnect;
                 except

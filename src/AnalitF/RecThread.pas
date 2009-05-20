@@ -126,7 +126,6 @@ begin
                 except
                   on E : EIdConnClosedGracefully do begin
                     if (ErrorCount < FReconnectCount) then begin
-                      if ReceiveHTTP.Connected then
                       try
                         ReceiveHTTP.Disconnect;
                       except
@@ -142,7 +141,6 @@ begin
                       ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
                         or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
                     then begin
-                      if ReceiveHTTP.Connected then
                       try
                         ReceiveHTTP.Disconnect;
                       except
