@@ -285,7 +285,6 @@ type
     adtClientsDELTAMODE: TSmallintField;
     adtClientsMAXUSERS: TIntegerField;
     adtClientsREQMASK: TLargeintField;
-    adtClientsTECHSUPPORT: TStringField;
     adsRetailMarginsID: TLargeintField;
     adsRetailMarginsLEFTLIMIT: TFloatField;
     adsRetailMarginsRIGHTLIMIT: TFloatField;

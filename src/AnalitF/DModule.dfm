@@ -1451,6 +1451,22 @@ object DM: TDM
     Top = 232
   end
   object adtClients: TMyQuery
+    SQLUpdate.Strings = (
+      'UPDATE CLIENTS'
+      'SET'
+      
+        '  NAME = :NAME, REGIONCODE = :REGIONCODE, EXCESS = :EXCESS, DELT' +
+        'AMODE = :DELTAMODE, MAXUSERS = :MAXUSERS, REQMASK = :REQMASK, CA' +
+        'LCULATELEADER = :CALCULATELEADER, ONLYLEADERS = :ONLYLEADERS'
+      'WHERE'
+      '  CLIENTID = :Old_CLIENTID')
+    SQLRefresh.Strings = (
+      
+        'SELECT CLIENTS.NAME, CLIENTS.REGIONCODE, CLIENTS.EXCESS, CLIENTS' +
+        '.DELTAMODE, CLIENTS.MAXUSERS, CLIENTS.REQMASK, CLIENTS.CALCULATE' +
+        'LEADER, CLIENTS.ONLYLEADERS FROM CLIENTS'
+      'WHERE'
+      '  CLIENTS.CLIENTID = :CLIENTID')
     Connection = MyConnection
     SQL.Strings = (
       'SELECT'
@@ -1461,7 +1477,6 @@ object DM: TDM
       ' DELTAMODE,'
       ' MAXUSERS,'
       ' REQMASK,'
-      ' TECHSUPPORT,'
       ' CALCULATELEADER,'
       ' ONLYLEADERS'
       'FROM'
@@ -1490,10 +1505,6 @@ object DM: TDM
     end
     object adtClientsREQMASK: TLargeintField
       FieldName = 'REQMASK'
-    end
-    object adtClientsTECHSUPPORT: TStringField
-      FieldName = 'TECHSUPPORT'
-      Size = 255
     end
     object adtClientsCALCULATELEADER: TBooleanField
       FieldName = 'CALCULATELEADER'
