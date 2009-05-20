@@ -303,21 +303,28 @@ begin
 
   if (dsCheckVolume.RecordCount > 0) and not CheckVolume then begin
     AProc.MessageBox(
-      Format('«аказ "%s" не кратен минимальному отпуску "%s" по данной позиции!', [fOrder.AsString, fVolume.AsString]),
+      Format(
+        'ѕоставщиком определена кратность по заказываемой позиции.'#13#10 +
+        '¬веденное значение "%s" не кратно установленному значению "%s".',
+        [fOrder.AsString, fVolume.AsString]),
       MB_ICONWARNING);
     ClearOrder;
     Abort;
   end;
   if (dsCheckVolume.RecordCount > 0) and not CheckByOrderCost then begin
     AProc.MessageBox(
-      Format('—умма заказа "%s" меньше минимальной сумме заказа "%s" по данной позиции!', [fSumOrder.AsString, fOrderCost.AsString]),
+      Format(
+        '—умма заказа "%s" меньше минимальной сумме заказа "%s" по данной позиции!',
+        [fSumOrder.AsString, fOrderCost.AsString]),
       MB_ICONWARNING);
     ClearOrderByOrderCost;
     Abort;
   end;
   if (dsCheckVolume.RecordCount > 0) and not CheckByMinOrderCount then begin
     AProc.MessageBox(
-      Format('«аказанное количество "%s" меньше минимального количества "%s" по данной позиции!', [fOrder.AsString, fMinOrderCount.AsString]),
+      Format(
+        '«аказанное количество "%s" меньше минимального количества "%s" по данной позиции!',
+        [fOrder.AsString, fMinOrderCount.AsString]),
       MB_ICONWARNING);
     ClearOrderByOrderCost;
     Abort;
