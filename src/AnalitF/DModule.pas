@@ -892,6 +892,8 @@ procedure TDM.DMCreate(Sender: TObject);
 var
   HTTPS,
   HTTPE : String;
+  UpdateByCheckUINExchangeActions : TExchangeActions;
+  UpdateByCheckUINSuccess : Boolean;
 begin
   SerBeg := '8F24';
   SerEnd := 'BB48';
@@ -992,26 +994,44 @@ begin
 
   SetSendToNotClosedOrders;
 
-{
   if NeedUpdateByCheckUIN then begin
-    if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime = adtParams.FieldByName( 'LastDateTime').AsDateTime)
+    UpdateByCheckUINExchangeActions := [eaGetPrice];
+    if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime <> adtParams.FieldByName( 'LastDateTime').AsDateTime)
+    then
+      UpdateByCheckUINExchangeActions := UpdateByCheckUINExchangeActions + [eaGetFullData];
+
+    if not RunExchange(UpdateByCheckUINExchangeActions)
     then begin
-      if not RunExchange([ eaGetPrice]) then
-        LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
-    end
-    else
-      if not RunExchange([eaGetPrice, eaGetFullData]) then
-        LogExitError('Не прошла проверка на UIN в базе.', Integer(ecNotCheckUIN), False);
+      //Если не получилось обновиться, то отображаем форму конфигурации для корректировки настроек и авторизации
+      UpdateByCheckUINSuccess := ShowConfig(True);
+
+      //Если пользователь ввел корректировки, то пытаемся обновиться еще раз
+      if UpdateByCheckUINSuccess then
+        UpdateByCheckUINSuccess := RunExchange(UpdateByCheckUINExchangeActions);
+
+      //Если пользователь обновился не успешно, то проверяем заблокированы ли визуальные контролы
+      //Если контролы не заблокированы, то завершаем с ошибой выполение программы
+      //Если контролы заблокированы, то логируем неуспешную проверку UIN и
+      //отображаем программу с заблокированными контролами 
+      if not UpdateByCheckUINSuccess then
+        if adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
+          MainForm.DisableByHTTPName;
+          LogCriticalError('Не прошла проверка на UIN в базе.');
+        end
+        else
+          LogExitError(
+            'Не прошла проверка на UIN в базе. ' +
+              'Не удалось заблокировать визуальные компоненты',
+            Integer(ecNotCheckUIN), False);
+    end;
   end;
 
   if NeedUpdateByCheckHashes then begin
     if not RunExchange([ eaGetPrice]) then
       LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
   end;
-  }
 
   { Запуск с ключем -e (Получение данных и выход)}
-  {
   if FindCmdLineSwitch('e') then
   begin
     MainForm.ExchangeOnly := True;
@@ -1029,7 +1049,6 @@ begin
       RunExchange([ eaImportOnly]);
     Application.Terminate;
   end;
-  }
 
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
     MainForm.DisableByHTTPName;
@@ -1117,11 +1136,13 @@ begin
     DM.MainConnection.Open;
     try
       adtParams.Edit;
+      adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
       adtParams.FieldByName('CDS').AsString := '';
       adtParams.Post;
     finally
       DM.MainConnection.Close;
     end;
+    MainForm.DisableByHTTPName;
     AProc.MessageBox( 'Ошибка проверки подлинности программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
     DM.MainConnection.Open;
