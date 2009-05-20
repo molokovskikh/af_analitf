@@ -90,6 +90,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'Code'
         Footers = <>
         Title.Caption = #1050#1086#1076
+        Title.TitleButton = True
         Width = 26
       end
       item
@@ -154,6 +155,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'registrycost'
         Footers = <>
         Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+        Title.TitleButton = True
         Visible = False
         Width = 31
       end
@@ -162,6 +164,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'requestratio'
         Footers = <>
         Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
+        Title.TitleButton = True
         Visible = False
         Width = 67
       end
@@ -170,6 +173,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'ordercost'
         Footers = <>
         Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+        Title.TitleButton = True
         Visible = False
       end
       item
@@ -177,6 +181,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'minordercount'
         Footers = <>
         Title.Caption = #1052#1080#1085'. '#1082#1086#1083'-'#1074#1086
+        Title.TitleButton = True
         Visible = False
       end
       item
@@ -247,6 +252,7 @@ object CoreFirmForm: TCoreFirmForm
         Footers = <>
         MinWidth = 5
         Title.Caption = #1047#1072#1082#1072#1079
+        Title.TitleButton = True
         Width = 42
       end
       item
@@ -256,6 +262,7 @@ object CoreFirmForm: TCoreFirmForm
         Footers = <>
         MinWidth = 5
         Title.Caption = #1057#1091#1084#1084#1072
+        Title.TitleButton = True
         Width = 48
       end>
   end

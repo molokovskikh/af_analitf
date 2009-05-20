@@ -111,6 +111,7 @@ inherited PricesForm: TPricesForm
           FieldName = 'INJOB'
           Footers = <>
           Title.Caption = #1042' '#1088#1072#1073#1086#1090#1077
+          Title.TitleButton = True
         end
         item
           EditButtons = <>

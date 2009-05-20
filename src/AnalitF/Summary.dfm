@@ -119,6 +119,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'doc'
           Footers = <>
           Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
+          Title.TitleButton = True
           Visible = False
         end
         item
@@ -151,6 +152,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'registrycost'
           Footers = <>
           Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+          Title.TitleButton = True
           Visible = False
           Width = 58
         end
@@ -159,6 +161,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'RequestRatio'
           Footers = <>
           Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
+          Title.TitleButton = True
           Visible = False
           Width = 59
         end
@@ -167,6 +170,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'ordercost'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+          Title.TitleButton = True
           Visible = False
         end
         item
@@ -174,6 +178,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'MINORDERCOUNT'
           Footers = <>
           Title.Caption = #1052#1080#1085'. '#1082#1086#1083'-'#1074#1086
+          Title.TitleButton = True
           Visible = False
         end
         item
@@ -212,6 +217,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'OrderCount'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
+          Title.TitleButton = True
           Width = 44
         end
         item
@@ -220,6 +226,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'SumOrder'
           Footers = <>
           Title.Caption = #1057#1091#1084#1084#1072
+          Title.TitleButton = True
           Width = 58
         end>
     end
