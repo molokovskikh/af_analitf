@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, U_VistaCorrectForm;
 
 type
-  TWaitingForm = class(TForm)
+  TWaitingForm = class(TVistaCorrectForm)
     lInformation: TLabel;
     Timer: TTimer;
     Animate1: TAnimate;

@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls;
+  Dialogs, StdCtrls, U_VistaCorrectForm;
 
 type
-  TNotOrdersForm = class(TForm)
+  TNotOrdersForm = class(TVistaCorrectForm)
     Memo: TMemo;
     Label1: TLabel;
     btnOK: TButton;

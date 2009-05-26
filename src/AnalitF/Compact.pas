@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls;
+  Dialogs, ExtCtrls, StdCtrls, U_VistaCorrectForm;
 
 type
-  TCompactForm = class(TForm)
+  TCompactForm = class(TVistaCorrectForm)
     Timer: TTimer;
     Image1: TImage;
     lblCompact: TLabel;

@@ -5,10 +5,11 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, DBGridEh,
-  ToughDBGrid, FIBDataSet, pFIBDataSet, GridsEh, MemDS, DBAccess, MyAccess;
+  ToughDBGrid, FIBDataSet, pFIBDataSet, GridsEh, MemDS, DBAccess, MyAccess,
+  U_VistaCorrectForm;
 
 type
-  TFormsHistoryForm = class(TForm)
+  TFormsHistoryForm = class(TVistaCorrectForm)
     dbtName: TDBText;
     dbrForm: TDBText;
     btnClose: TButton;

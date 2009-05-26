@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Buttons, DBCtrls, ShellApi;
+  Dialogs, ExtCtrls, StdCtrls, Buttons, DBCtrls, ShellApi, U_VistaCorrectForm;
 
 type
-  TAboutForm = class(TForm)
+  TAboutForm = class(TVistaCorrectForm)
     Image1: TImage;
     Image2: TImage;
     BitBtn1: TBitBtn;

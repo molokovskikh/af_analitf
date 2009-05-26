@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls;
+  Dialogs, StdCtrls, U_VistaCorrectForm;
 
 type
-  TNotFoundForm = class(TForm)
+  TNotFoundForm = class(TVistaCorrectForm)
     btnClose: TButton;
     Memo: TMemo;
     Button1: TButton;

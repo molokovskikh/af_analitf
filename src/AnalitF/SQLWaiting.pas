@@ -4,10 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, pFIBDataSet, FIBQuery, FIBDataSet, ExtCtrls, DBAccess;
+  Dialogs, StdCtrls, pFIBDataSet, FIBQuery, FIBDataSet, ExtCtrls, DBAccess,
+  U_VistaCorrectForm;
 
 type
-  TfrmSQLWaiting = class(TForm)
+  TfrmSQLWaiting = class(TVistaCorrectForm)
     lWait: TLabel;
     tmFill: TTimer;
     lCaption: TLabel;

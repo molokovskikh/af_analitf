@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls;
+  Dialogs, ExtCtrls, StdCtrls, U_VistaCorrectForm;
 
 type
-  TRetryForm = class(TForm)
+  TRetryForm = class(TVistaCorrectForm)
     btnRetry: TButton;
     lblRetry: TLabel;
     lblError: TLabel;

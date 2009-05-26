@@ -4,10 +4,10 @@ interface
 
 uses
   SysUtils, Windows, Messages, Classes, Graphics, Controls,
-  StdCtrls, ExtCtrls, Forms;
+  StdCtrls, ExtCtrls, Forms, U_VistaCorrectForm;
 
 type
-  TfrmOldOrdersDelete = class(TForm)
+  TfrmOldOrdersDelete = class(TVistaCorrectForm)
     btnOK: TButton;
     btnCancel: TButton;
     Image1: TImage;

@@ -8,11 +8,11 @@ uses
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, DBGridEh, DateUtils, ToughDBGrid,
   OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet, Consts, ShellAPI,
-  MemDS, DBAccess, MyAccess;
+  MemDS, DBAccess, MyAccess, U_VistaCorrectForm;
 
 type
 
-TMainForm = class(TForm)
+TMainForm = class(TVistaCorrectForm)
     StatusBar: TStatusBar;
     MainMenu: TMainMenu;
     itmOrder: TMenuItem;

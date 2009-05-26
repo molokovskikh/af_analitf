@@ -69,7 +69,8 @@ uses
   U_ExchangeLog in 'U_ExchangeLog.pas',
   U_DeleteDBThread in 'U_DeleteDBThread.pas',
   U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas',
-  U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame};
+  U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame},
+  U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}

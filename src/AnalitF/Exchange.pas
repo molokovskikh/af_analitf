@@ -9,14 +9,14 @@ uses
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet, Contnrs,
-  IdIOHandlerStack, IdSSL;
+  IdIOHandlerStack, IdSSL, U_VistaCorrectForm;
 
 type
   TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate, eaGetWaybills, eaSendLetter);
 
   TExchangeActions=set of TExchangeAction;
 
-  TExchangeForm = class(TForm)
+  TExchangeForm = class(TVistaCorrectForm)
     btnCancel: TButton;
     Timer: TTimer;
     ProgressBar: TProgressBar;
