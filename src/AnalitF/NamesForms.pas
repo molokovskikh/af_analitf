@@ -413,12 +413,18 @@ end;
 procedure TNamesFormsForm.tmrShowCatalogTimer(Sender: TObject);
 begin
   try
-    if actNewSearch.Checked then
-      dbgCatalog.SetFocus
+    if actNewSearch.Checked then begin
+      if dbgCatalog.CanFocus then begin
+        dbgCatalog.SetFocus;
+        tmrShowCatalog.Enabled := False;
+      end;
+    end
     else
-      if not dbgForms.Focused then
+      if not dbgForms.Focused and dbgNames.CanFocus then
+      begin
         dbgNames.SetFocus;
-    tmrShowCatalog.Enabled := False;
+        tmrShowCatalog.Enabled := False;
+      end;
   except
   end;
 end;
