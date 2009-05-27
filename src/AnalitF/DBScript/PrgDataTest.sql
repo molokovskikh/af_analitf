@@ -1,4 +1,4 @@
-create definer = 'system'@'%' 
+create definer = 'RootDBMS'@'127.0.0.1' 
 procedure usersettings.PrgDataTest(in ClientCodeParam int unsigned, in FieldsTerminatedParam char(1), in LinesTerminatedParam char(1), in Cumulative bool)
 begin
 declare FirmSegmentParam, SShowAvgCosts, SShowJunkOffers bool;
@@ -486,184 +486,193 @@ where   Fresh
         and Prices.RegionCode= iui.RegionCode
         and iui.clientcode = ClientCodeParam;
 if SClientCode is null then
-if (select sum(fresh)>0  from ActivePrices) or Cumulative  then
-call GetOffers(ClientCodeParam, not Cumulative);
-update  ActivePrices Prices,
-        Core
-        set CryptCost          = replace(replace(replace(replace(replace(aes_encrypt(Cost, CostsPasswordParam), char(37), '%25'), char(32), '%20'),
-         char(159), '%9F'), char(161), '%A1'), char(0), '%00')
-where   Prices.PriceCode= Core.PriceCode
-        and if(Cumulative, 1, Fresh)
-        and Core.PriceCode!=2647
-        ;
-update Core
-        set CryptCost=concat(left(CryptCost, 1), char(round((rand()*110)+32,0)), substring(CryptCost,2,length(CryptCost)-4), char(round((rand()*110)+32,0)), right(CryptCost, 3))
-where  length(CryptCost)>0
-       and Core.PriceCode!=2647;
-set @a:=concat('SELECT right(MinCosts.ID, 9), MinCosts.ProductId, MinCosts.RegionCode, if(PriceCode=2647, "", (99999900 ^ TRUNCATE((MinCost*100), 0))) FROM MinCosts',
-               ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
-                "FIELDS TERMINATED BY '", FieldsTerminated,
-                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
-                LinesTerminated, "'");
-prepare QueryTXT from @a;
-execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
-set @a:=concat('SELECT CT.PriceCode, CT.regioncode, CT.ProductId, ifnull(Core.codefirmcr, 0), Core.synonymcode, ',
-                'ifnull(Core.SynonymFirmCrCode, ""), Core.Code, ',
-                'Core.CodeCr, Core.unit, Core.volume , Core.Junk, Core.Await, Core.quantity, Core.note, Core.period, Core.doc,',
-                'ifnull(Core.RegistryCost, ""), Core.VitallyImportant, ifnull(Core.RequestRatio, ""), ',
-                'CT.CryptCost, ',
-                'right(CT.ID, 9), ifnull(OrderCost, ""), ifnull(MinOrderCount, "") from Core CT, ActivePrices AT, farm.core0 Core ',
-                'where ct.pricecode=at.pricecode and ct.regioncode=at.regioncode ',
-                'and Core.id=CT.id ',
-                'and if(', Cumulative, ', 1, fresh) ',
-                ' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
-                "FIELDS TERMINATED BY '", FieldsTerminated,
-                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
-                LinesTerminated, "'");
-prepare QueryTXT from @a;
-execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
-drop temporary table if exists Core, MinCosts;
+  if (select sum(fresh)>0  from ActivePrices) or Cumulative  then
+    call GetOffersTest(ClientCodeParam, not Cumulative);
+    /*
+    update  ActivePrices Prices,
+            Core
+            set CryptCost          = replace(replace(replace(replace(replace(aes_encrypt(Cost, CostsPasswordParam), char(37), '%25'), char(32), '%20'),
+             char(159), '%9F'), char(161), '%A1'), char(0), '%00')
+    where   Prices.PriceCode= Core.PriceCode
+            and if(Cumulative, 1, Fresh)
+            and Core.PriceCode!=2647
+            ;
+    update Core
+            set CryptCost=concat(left(CryptCost, 1), char(round((rand()*110)+32,0)), substring(CryptCost,2,length(CryptCost)-4), char(round((rand()*110)+32,0)), right(CryptCost, 3))
+    where  length(CryptCost)>0
+           and Core.PriceCode!=2647;
+    */
+    
+    #убираем выгружку MinPrices
+    /*
+    set @a:=concat('SELECT right(MinCosts.ID, 9), MinCosts.ProductId, MinCosts.RegionCode, if(PriceCode=2647, "", (99999900 ^ TRUNCATE((MinCost*100), 0))) FROM MinCosts',
+                   ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
+                    "FIELDS TERMINATED BY '", FieldsTerminated,
+                    "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                    LinesTerminated, "'");
+    prepare QueryTXT from @a;
+    execute QueryTXT;
+    insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
+    */
+    set @a:=concat('SELECT CT.PriceCode, CT.regioncode, CT.ProductId, ifnull(Core.codefirmcr, 0), Core.synonymcode, ',
+                    'Core.SynonymFirmCrCode, Core.Code, ',
+                    'Core.CodeCr, Core.unit, Core.volume , Core.Junk, Core.Await, Core.quantity, Core.note, Core.period, Core.doc,',
+                    'Core.RegistryCost, Core.VitallyImportant, Core.RequestRatio, ',
+                    'CT.Cost, ',
+                    'right(CT.ID, 9), OrderCost, MinOrderCount ',
+                    'from Core CT, ActivePrices AT, farm.core0 Core ',
+                    'where ct.pricecode=at.pricecode and ct.regioncode=at.regioncode ',
+                    'and Core.id=CT.id ',
+                    'and if(', Cumulative, ', 1, fresh) ',
+                    ' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
+                    "FIELDS TERMINATED BY '", FieldsTerminated,
+                    "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                    LinesTerminated, "'");
+    prepare QueryTXT from @a;
+    execute QueryTXT;
+    insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
+    drop temporary table if exists Core, MinCosts;
+  else
+    /*
+    set @a:=concat('SELECT ""',
+                   ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
+                    "FIELDS TERMINATED BY '", FieldsTerminated,
+                    "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY ''");
+    prepare QueryTXT from @a;
+    execute QueryTXT;
+    insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
+    */
+    set @a:=concat('SELECT "" ',
+                    ' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
+                    "FIELDS TERMINATED BY '", FieldsTerminated,
+                    "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY ''");
+    prepare QueryTXT from @a;
+    execute QueryTXT;
+    insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
+  end if;
 else
-set @a:=concat('SELECT ""',
-               ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
-                "FIELDS TERMINATED BY '", FieldsTerminated,
-                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY ''");
-prepare QueryTXT from @a;
-execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
-set @a:=concat('SELECT "" ',
-                ' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
-                "FIELDS TERMINATED BY '", FieldsTerminated,
-                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY ''");
-prepare QueryTXT from @a;
-execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
-end if;
-else
-call GetActivePrices(SClientCode);
-call GetOffers(SClientCode, 0);
-drop temporary table if exists CoreT,
-        CoreTP                      ,
-        CoreT2;
-create temporary table CoreT(ProductId int unsigned, CodeFirmCr int unsigned, Cost decimal(8,2), CryptCost varchar(32),unique MultiK(ProductId, CodeFirmCr))engine=MEMORY;
-create temporary table CoreT2(ProductId int unsigned, CodeFirmCr int unsigned, Cost decimal(8,2), CryptCost varchar(32),unique MultiK(ProductId, CodeFirmCr))engine=MEMORY;
-create temporary table CoreTP(ProductId int unsigned, Cost decimal(8,2), CryptCost varchar(32), unique MultiK(ProductId))engine                                     =MEMORY;
-insert
-into    CoreT
-        (
-                ProductId ,
-                CodeFirmCr,
-                Cost
-        )
-select  core0.ProductId ,
-        core0.codefirmcr,
-        round(avg(cost), 2)
-from    farm.core0,
-        Core
-where   core0.id=Core.id
-group by ProductId,
-        CodeFirmCr;
-update CoreT
-set     CryptCost = replace(replace(replace(replace(replace(aes_encrypt(Cost, CostsPasswordParam), char(37), '%25'), char(32), '%20'), char(159), '%9F'), char(161), '%A1'), char(0), '%00');
-update CoreT
-        set CryptCost=concat(left(CryptCost, 1), char(round((rand()*110)+32,0)), substring(CryptCost,2,length(CryptCost)-4), char(round((rand()*110)+32,0)), right(CryptCost, 3));
-insert
-into    CoreTP(ProductId, Cost)
-select ProductId, round(avg(cost), 2)
-from    CoreT
-group by ProductId;
-update CoreTP
-set     CryptCost = replace(replace(replace(replace(replace(aes_encrypt(Cost, CostsPasswordParam), char(37), '%25'), char(32), '%20'), char(159), '%9F'), char(161), '%A1'), char(0), '%00');
-update CoreTP
-        set CryptCost=concat(left(CryptCost, 1), char(round((rand()*110)+32,0)), substring(CryptCost,2,length(CryptCost)-4), char(round((rand()*110)+32,0)), right(CryptCost, 3));
-insert
-into    CoreT2
-select  *
-from    CoreT;
-set @a:=concat(
-'SELECT  2647               ,',
-        ClientRegionCode,    ',',
-'        A.ProductId         ,',
-'        A.CodeFirmCr        ,',
-'        S.SynonymCode       ,',
-'        SF.SynonymFirmCrCode,',
-'        ""                  ,',
-'        ""                  ,',
-'        ""                  ,',
-'        ""                  ,',
-'        0                   ,',
-'        0                   ,',
-'        ""                  ,',
-'        ""                  ,',
-'        ""                  ,',
-'        ""                  ,',
-'        ""                  ,',
-'        0                   ,',
-'        ""                  ,',
-' if(', SShowAvgCosts,', CryptCost, ""),',
-'        @RowId := @RowId + 1,',
-'        ""                  ,',
-'        ""',
-'FROM    farm.Synonym S       ,',
-'        farm.SynonymFirmCr SF,',
-'        CoreT A            ',
-'WHERE   S.PriceCode   =2647',
-'    AND SF.PriceCode  =2647',
-'    AND S.ProductId   =A.ProductId',
-'    AND SF.CodeFirmCr =A.CodeFirmCr',
-'    AND A.CodeFirmCr is not null  ',
-'',
-'UNION  ',
-'',
-'SELECT  2647             ,',
-        ClientRegionCode,',',
-'        A.ProductId           ,',
-'        1                    ,',
-'        S.SynonymCode         ,',
-'        0                     ,',
-'        ""                    ,',
-'        ""                    ,',
-'        ""                    ,',
-'        ""                    ,',
-'        0                     ,',
-'        0                     ,',
-'        ""                    ,',
-'        ""                    ,',
-'        ""                    ,',
-'        ""                    ,',
-'        ""                    ,',
-'        0                     ,',
-'        ""                    ,',
-' if(', SShowAvgCosts,', A.CryptCost, ""),',
-'        @RowId := @RowId + 1  ,',
-'        ""                    ,',
-'        ""',
-'FROM    farm.Synonym S ,       ',
-'        CoreTP A ',
-'WHERE   S.PriceCode          =2647 ',
-'    AND S.ProductId          =A.ProductId',
-' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
-                 "FIELDS TERMINATED BY '", FieldsTerminated,
-                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
-                LinesTerminated, "'");
-prepare QueryTXT from @a;
-execute QueryTXT;
-set @a:=concat(
-'SELECT  0        , ',
-'        ProductId, ',
-         ClientRegionCode,', ',
-'        "" ',
-'FROM    CoreTP ',
-               ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
-                "FIELDS TERMINATED BY '", FieldsTerminated,
-                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
-                LinesTerminated, "'");
-prepare QueryTXT from @a;
-execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
-insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
+  call GetActivePrices(SClientCode);
+  call GetOffersTest(SClientCode, 0);
+  drop temporary table if exists CoreT,
+          CoreTP                      ,
+          CoreT2;
+  create temporary table CoreT(ProductId int unsigned, CodeFirmCr int unsigned, Cost decimal(8,2), CryptCost varchar(32),unique MultiK(ProductId, CodeFirmCr))engine=MEMORY;
+  create temporary table CoreT2(ProductId int unsigned, CodeFirmCr int unsigned, Cost decimal(8,2), CryptCost varchar(32),unique MultiK(ProductId, CodeFirmCr))engine=MEMORY;
+  create temporary table CoreTP(ProductId int unsigned, Cost decimal(8,2), CryptCost varchar(32), unique MultiK(ProductId))engine                                     =MEMORY;
+  insert
+  into    CoreT
+          (
+                  ProductId ,
+                  CodeFirmCr,
+                  Cost
+          )
+  select  core0.ProductId ,
+          core0.codefirmcr,
+          round(avg(cost), 2)
+  from    farm.core0,
+          Core
+  where   core0.id=Core.id
+  group by ProductId,
+          CodeFirmCr;
+  update CoreT
+  set     CryptCost = replace(replace(replace(replace(replace(aes_encrypt(Cost, CostsPasswordParam), char(37), '%25'), char(32), '%20'), char(159), '%9F'), char(161), '%A1'), char(0), '%00');
+  update CoreT
+          set CryptCost=concat(left(CryptCost, 1), char(round((rand()*110)+32,0)), substring(CryptCost,2,length(CryptCost)-4), char(round((rand()*110)+32,0)), right(CryptCost, 3));
+  insert
+  into    CoreTP(ProductId, Cost)
+  select ProductId, round(avg(cost), 2)
+  from    CoreT
+  group by ProductId;
+  update CoreTP
+  set     CryptCost = replace(replace(replace(replace(replace(aes_encrypt(Cost, CostsPasswordParam), char(37), '%25'), char(32), '%20'), char(159), '%9F'), char(161), '%A1'), char(0), '%00');
+  update CoreTP
+          set CryptCost=concat(left(CryptCost, 1), char(round((rand()*110)+32,0)), substring(CryptCost,2,length(CryptCost)-4), char(round((rand()*110)+32,0)), right(CryptCost, 3));
+  insert
+  into    CoreT2
+  select  *
+  from    CoreT;
+  set @a:=concat(
+  'SELECT  2647               ,',
+          ClientRegionCode,    ',',
+  '        A.ProductId         ,',
+  '        A.CodeFirmCr        ,',
+  '        S.SynonymCode       ,',
+  '        SF.SynonymFirmCrCode,',
+  '        ""                  ,',
+  '        ""                  ,',
+  '        ""                  ,',
+  '        ""                  ,',
+  '        0                   ,',
+  '        0                   ,',
+  '        ""                  ,',
+  '        ""                  ,',
+  '        ""                  ,',
+  '        ""                  ,',
+  '        ""                  ,',
+  '        0                   ,',
+  '        ""                  ,',
+  ' if(', SShowAvgCosts,', CryptCost, ""),',
+  '        @RowId := @RowId + 1,',
+  '        ""                  ,',
+  '        ""',
+  'FROM    farm.Synonym S       ,',
+  '        farm.SynonymFirmCr SF,',
+  '        CoreT A            ',
+  'WHERE   S.PriceCode   =2647',
+  '    AND SF.PriceCode  =2647',
+  '    AND S.ProductId   =A.ProductId',
+  '    AND SF.CodeFirmCr =A.CodeFirmCr',
+  '    AND A.CodeFirmCr is not null  ',
+  '',
+  'UNION  ',
+  '',
+  'SELECT  2647             ,',
+          ClientRegionCode,',',
+  '        A.ProductId           ,',
+  '        1                    ,',
+  '        S.SynonymCode         ,',
+  '        0                     ,',
+  '        ""                    ,',
+  '        ""                    ,',
+  '        ""                    ,',
+  '        ""                    ,',
+  '        0                     ,',
+  '        0                     ,',
+  '        ""                    ,',
+  '        ""                    ,',
+  '        ""                    ,',
+  '        ""                    ,',
+  '        ""                    ,',
+  '        0                     ,',
+  '        ""                    ,',
+  ' if(', SShowAvgCosts,', A.CryptCost, ""),',
+  '        @RowId := @RowId + 1  ,',
+  '        ""                    ,',
+  '        ""',
+  'FROM    farm.Synonym S ,       ',
+  '        CoreTP A ',
+  'WHERE   S.PriceCode          =2647 ',
+  '    AND S.ProductId          =A.ProductId',
+  ' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
+                   "FIELDS TERMINATED BY '", FieldsTerminated,
+                  "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                  LinesTerminated, "'");
+  prepare QueryTXT from @a;
+  execute QueryTXT;
+  set @a:=concat(
+  'SELECT  0        , ',
+  '        ProductId, ',
+           ClientRegionCode,', ',
+  '        "" ',
+  'FROM    CoreTP ',
+                 ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
+                  "FIELDS TERMINATED BY '", FieldsTerminated,
+                  "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                  LinesTerminated, "'");
+  prepare QueryTXT from @a;
+  execute QueryTXT;
+  insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
+  insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
 end if;
 drop temporary table if exists Core, ParentCodes, MaxCodesSynFirmCr, MinCosts, Prices, ActivePrices, tmpprd, MaxCodesSyn, CoreT, CoreTP, CoreT2;
 end
