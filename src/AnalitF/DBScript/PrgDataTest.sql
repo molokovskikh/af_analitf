@@ -74,7 +74,7 @@ insert into ready_client_files values(null, ClientCodeParam, 'Products', 0);
 LinesTerminated, "'");
 prepare QueryTXT from @a;
 execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'Catalog', 0);
+insert into ready_client_files values(null, ClientCodeParam, 'Catalogs', 0);
 set @a:=concat(
 'SELECT  C.Id ',
 'FROM    Catalogs.Catalog C, ',
@@ -172,7 +172,7 @@ set @a:=concat(
 LinesTerminated, "'");
 prepare QueryTXT from @a;
 execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'ClientsDataN', 0);
+insert into ready_client_files values(null, ClientCodeParam, 'Providers', 0);
 set @a:=concat(
 'SELECT  DISTINCT regionaldata.FirmCode, ',
 '        regionaldata.RegionCode, ',
@@ -436,7 +436,7 @@ set @a:=concat(@a,
 LinesTerminated, "'");
 prepare QueryTXT from @a;
 execute QueryTXT;
-insert into ready_client_files values(null, ClientCodeParam, 'Synonym', 0);
+insert into ready_client_files values(null, ClientCodeParam, 'Synonyms', 0);
 
 -- удаляем импорт таблицы CatalogCurrency
 set @a:=concat(
