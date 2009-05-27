@@ -1,4 +1,4 @@
-create definer = 'RootDBMS'@'127.0.0.1' 
+create definer = 'RootDBMS'@'127.0.0.1'
 procedure usersettings.PrgDataTest(in ClientCodeParam int unsigned, in FieldsTerminatedParam char(1), in LinesTerminatedParam char(1), in Cumulative bool)
 begin
 declare FirmSegmentParam, SShowAvgCosts, SShowJunkOffers bool;
@@ -276,7 +276,6 @@ ifnull(ClientRegionCode, 'RegionCode'), ', ',
 '        DifferenceCalculation, ',
 '        MultiUserLevel, ',
 '        OrderRegionMask, ',
-'        "", ',
 '        CalculateLeader ',
 'FROM    retclientsset, ',
 '        clientsdata ',
@@ -290,7 +289,6 @@ ifnull(ClientRegionCode, 'RegionCode'), ', ',
 '        retclientsset.DifferenceCalculation, ',
 '        retclientsset.MultiUserLevel, ',
 '        if(IncludeType=3, parent.OrderRegionMask, retclientsset.OrderRegionMask), ',
-'        "", ',
 '        retclientsset.CalculateLeader ',
 'FROM    retclientsset, ',
 '        clientsdata, ',
