@@ -8,12 +8,13 @@ uses
   FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, IB_Services,
   FIBQuery, pFIBQuery, FIBDataSet, pFIBDataSet, FIBDatabase, pFIBDatabase,
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
-  CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous, 
+  CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous,
   U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
-  MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup;
+  MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
+  MyDump;
 
 {
 Криптование
@@ -527,6 +528,8 @@ type
 {$ifdef TestEmbeddedMysql}
     procedure TestEmbeddedMysql;
   {$ifdef USEMYSQLEMBEDDED}
+    procedure TestOpenDatabase;
+    procedure TestDumpDatabase;
     procedure TestEmbeddedThread;
   {$endif}
     procedure TestDirectoriesOperation;
@@ -926,6 +929,11 @@ begin
 
   WriteExchangeLog('AnalitF', 'Программа запущена.');
 
+{$ifdef TestEmbeddedMysql}
+  TestEmbeddedMysql();
+  ExitProcess(1);
+{$endif}
+
   //Удаляем файлы базы данных для переустановки
   {
   if FindCmdLineSwitch('renew') then
@@ -943,7 +951,6 @@ begin
         LogExitError(Format( 'Не возможно переместить AnalitF.bak в AnalitF.fdb : %s ', [ E.Message ]), Integer(ecDBFileError));
     end;
 
-    
 {
   if FileExists(ExePath + DatabaseName) and ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
   then
@@ -965,11 +972,6 @@ begin
   end;
 
   MainConnection.Open;
-
-{$ifdef TestEmbeddedMysql}
-  TestEmbeddedMysql();
-  ExitProcess(1);
-{$endif}
 
   { устанавливаем текущие записи в Clients и Users }
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
@@ -2737,29 +2739,56 @@ end;
 
 function TDM.GetFullLastCreateScript: String;
 begin
-  Result :=
-    'SET SQL DIALECT 3;'#13#10#13#10 +
-    'SET NAMES WIN1251;'#13#10#13#10 +
-    //TODO: Здесь надо указывать корректно файл базы данных в зависимости от того какая версия
-    Format('CREATE DATABASE ''%s'' USER ''SYSDBA'' PASSWORD ''masterkey'' PAGE_SIZE 4096 DEFAULT CHARACTER SET WIN1251;'#13#10#13#10,
-      [ChangeFileExt(ParamStr(0), '.fdb')]);
-  Result := Concat(Result, GetLastCreateScript());
+  Result := GetLastCreateScript();
   Result := Concat(Result,
-    'SET GENERATOR GEN_CORE_ID TO 0;'#13#10#13#10 +
-    'SET GENERATOR GEN_ORDERSH_ID TO 0;'#13#10#13#10 +
-    'SET GENERATOR GEN_ORDERS_ID TO 0;'#13#10#13#10 +
-    'SET GENERATOR GEN_REGISTRY_ID TO 0;'#13#10#13#10 +
-    'SET GENERATOR GEN_RETAILMARGINS_ID TO 1;'#13#10#13#10 +
-    'COMMIT WORK;'#13#10#13#10 +
-    'INSERT INTO PARAMS (ID, CLIENTID, RASCONNECT, RASENTRY, RASNAME, RASPASS, CONNECTCOUNT, CONNECTPAUSE, PROXYCONNECT, PROXYNAME, PROXYPORT, PROXYUSER, PROXYPASS, SERVICENAME, HTTPHOST, HTTPPORT, HTTPNAME, HTTPPASS, UPDATEDATETIME, LASTDATETIME, FASTPRINT, ' +
-      'SHOWREGISTER, NEWWARES, USEFORMS, OPERATEFORMS, OPERATEFORMSSET, AUTOPRINT, STARTPAGE, LASTCOMPACT, CUMULATIVE, STARTED, EXTERNALORDERSEXE, EXTERNALORDERSPATH, EXTERNALORDERSCREATE, RASSLEEP, HTTPNAMECHANGED, SHOWALLCATALOG, CDS, ORDERSHISTORYDAYCOUNT, ' +
-      'CONFIRMDELETEOLDORDERS, USEOSOPENWAYBILL, USEOSOPENREJECT, GROUPBYPRODUCTS, PRINTORDERSAFTERSEND) VALUES ' +
-      '(0, NULL, 0, NULL, NULL, NULL, 5, 5, 0, NULL, NULL, NULL, NULL, ''GetData'', ''ios.analit.net'', 80, NULL, NULL, NULL, NULL, 0, 1, 0, 1, 0, 0, 0, 0, NULL, 0, 0, NULL, NULL, 0, 3, 1, 0, '''', 31, 1, 0, 1, 0, 0);'#13#10#13#10 +
-    'COMMIT WORK;'#13#10#13#10 +
+    #13#10#13#10 +
+    'insert into analitf.params set ' +
+    'Id = 0,' +
+    'ClientId = null,' +
+    'RasConnect = 0,' +
+    'RasEntry = null,' +
+    'RasName = null,' +
+    'RasPass = null,' +
+    'ConnectCount = 5,' +
+    'ConnectPause = 5,' +
+    'ProxyConnect = 0,' +
+    'ProxyName = null,' +
+    'ProxyPort = null,' +
+    'ProxyUser = null,' +
+    'ProxyPass = null,' +
+    'ServiceName = ''GetData'',' +
+    'HTTPHost = ''ios.analit.net'',' +
+    'HTTPPort = 80,' +
+    'HTTPName = null,' +
+    'HTTPPass = null,' +
+    'UpdateDatetime = null,' +
+    'LastDatetime = null,' +
+    'FastPrint = 0,' +
+    'ShowRegister = 1,' +
+    'NewWares = 0,' +
+    'UseForms = 1,' +
+    'OperateForms = 0,' +
+    'OperateFormSet = 0,' +
+    'AutoPrint = 0,' +
+    'StartPage = 0,' +
+    'LastCompact = null,' +
+    'Cumulative = 0,' +
+    'Started = 0,' +
+    'EXTERNALORDERSEXE = null,' +
+    'EXTERNALORDERSPATH = null,' +
+    'EXTERNALORDERSCREATE = 0,' +
+    'RASSLEEP = 3,' +
+    'HTTPNAMECHANGED = 1,' +
+    'SHOWALLCATALOG = 0,' +
+    'CDS = '''',' +
+    'ORDERSHISTORYDAYCOUNT = 31,' +
+    'CONFIRMDELETEOLDORDERS = 1,' +
+    'USEOSOPENWAYBILL = 0,' +
+    'USEOSOPENREJECT = 1,' +
+    'GROUPBYPRODUCTS = 0,' +
+    'PRINTORDERSAFTERSEND = 0;'#13#10#13#10 +
     'INSERT INTO RECLAME (RECLAMEURL, UPDATEDATETIME) VALUES (''http://ios.analit.net/results/reclame/r#.zip'', NULL);'#13#10#13#10 +
-    'COMMIT WORK;'#13#10#13#10 +
-    'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (0, 0, 1000000, 30);'#13#10#13#10 +
-    'COMMIT WORK;'#13#10#13#10
+    'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (0, 0, 1000000, 30);'#13#10#13#10
     );
 end;
 
@@ -3350,13 +3379,267 @@ end;
 procedure TDM.TestEmbeddedMysql;
 begin
 {$ifdef USEMYSQLEMBEDDED}
-  TestEmbeddedThread();
+  TestDumpDatabase();
+
+  //TestOpenDatabase();
+
+  //TestEmbeddedThread();
 {$endif}
 
-  TestDirectoriesOperation();
+  //TestDirectoriesOperation();
 end;
 
 {$ifdef USEMYSQLEMBEDDED}
+procedure TDM.TestOpenDatabase;
+const
+  DirDataTest : String = 'Data_Test';
+var
+  FEmbConnection : TMyEmbConnection;
+  MyServerControl : TMyServerControl;
+begin
+  WriteExchangeLog('DBtest', 'start TestOpenDatabase');
+  FEmbConnection := TMyEmbConnection.Create(nil);
+  FEmbConnection.Database := MainConnection.Database;
+  FEmbConnection.Username := MainConnection.Username;
+  FEmbConnection.DataDir := TMyEmbConnection(MainConnection).DataDir;
+  FEmbConnection.Options := TMyEmbConnection(MainConnection).Options;
+  FEmbConnection.Params.Clear;
+  FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+  FEmbConnection.LoginPrompt := False;
+
+  try
+
+  try
+    if DirectoryExists(ExePath + SDirData) then begin
+      if DirectoryExists(ExePath + DirDataTest) then
+        DeleteDirectory(ExePath + DirDataTest);
+      MoveDirectories(ExePath + SDirData, ExePath + DirDataTest);
+    end;
+
+    if DirectoryExists(ExePath + SDirData) then
+      raise Exception.CreateFmt('Cуществует директория %s, чего быть не должно.', [ExePath + SDirData]);
+
+    //Попытка открыть базу при несуществовании папки Data
+    try
+      FEmbConnection.Open;
+    except
+      on E : Exception do
+        if (E is EMyError) and (not EMyError(E).IsFatalError) and (EMyError(E).ErrorCode = 1049)
+        then
+          WriteExchangeLog('DBtest.TestOpenDatabase', 'Получили ошибку не существования базы данных' )
+        else
+          raise;
+    end;
+
+    //Попытка открыть базу при несуществовании папки analitf
+    CreateDir(ExePath + SDirData);
+    try
+      FEmbConnection.Open;
+    except
+      on E : Exception do
+        if (E is EMyError) and (not EMyError(E).IsFatalError) and (EMyError(E).ErrorCode = 1049)
+        then
+          WriteExchangeLog('DBtest.TestOpenDatabase', 'Получили ошибку не существования базы данных' )
+        else
+          raise;
+    end;
+
+    //Попытка выбрать данные из таблицы params при пустой базе данных analitf
+    CreateDir(ExePath + SDirData + '\analitf');
+    try
+      FEmbConnection.Open;
+      try
+        FEmbConnection.ExecSQL('select * from params', []);
+      finally
+        FEmbConnection.Close;
+      end;
+    except
+      on E : Exception do
+        if (E is EMyError) and (not EMyError(E).IsFatalError) and (EMyError(E).ErrorCode = 1146)
+        then
+          WriteExchangeLog('DBtest.TestOpenDatabase', 'Получили ошибку не существования таблицы' )
+        else
+          raise;
+    end;
+
+    //создаем тестовую таблицу
+    FEmbConnection.Open;
+    try
+      FEmbConnection.ExecSQL('create table TestTable(id int, namecolumn varchar(255))', []);
+    finally
+      FEmbConnection.Close;
+    end;
+
+    //пытаемся выбрать из information_schema
+    FEmbConnection.Open;
+    try
+      FEmbConnection.ExecSQL('select * from information_schema.tables', []);
+    finally
+      FEmbConnection.Close;
+    end;
+
+    //попытка воспользоваться ХП, которой не существует
+    try
+      FEmbConnection.Open;
+      try
+        FEmbConnection.ExecSQL('select analitf.x_cast_to_tinyint(323232323)', []);
+      finally
+        FEmbConnection.Close;
+      end;
+    except
+      on E : Exception do
+        if (E is EMyError) and (not EMyError(E).IsFatalError) and (EMyError(E).ErrorCode = 1146)
+        then
+          WriteExchangeLog('DBtest.TestOpenDatabase', 'Получили ошибку не существования таблицы mysql.proc из-за чего нельзя использовать ХП')
+        else
+          raise;
+    end;
+
+    //попытка создать ХП, при несуществующей базе mysql
+    try
+      FEmbConnection.Open;
+      try
+        FEmbConnection.ExecSQL('create FUNCTION analitf.x_cast_to_tinyint(number BIGINT) RETURNS tinyint(1) BEGIN return number;END', []);
+      finally
+        FEmbConnection.Close;
+      end;
+    except
+      on E : Exception do
+        if (E is EMyError) and (not EMyError(E).IsFatalError) and (EMyError(E).ErrorCode = 1146)
+        then
+          WriteExchangeLog('DBtest.TestOpenDatabase', 'Получили ошибку не существования таблицы mysql.proc  из-за чего нельзя создать ХП')
+        else
+          raise;
+    end;
+
+    //удаляем все базы данных, чтобы Embedded-сервер отпустил файлы
+    FEmbConnection.Open;
+    try
+      MyServerControl := TMyServerControl.Create(nil);
+      try
+        MyServerControl.Connection := FEmbConnection;
+        MyServerControl.DropDatabase('analitf');
+        MyServerControl.DropDatabase('mysql');
+      finally
+        MyServerControl.Free;
+      end;
+    finally
+      FEmbConnection.Close;
+      FEmbConnection.RemoveFromPool;
+    end;
+
+    //удаляем директорию
+    DeleteDirectory(ExePath + SDirData);
+
+    //копируем данные из эталонной копии
+    CopyDirectories(ExePath + SDirDataEtalon, ExePath + SDirData);
+
+    //пытаемся создать ХП
+    CreateDir(ExePath + SDirData + '\analitf');
+    FEmbConnection.Open;
+    try
+      FEmbConnection.ExecSQL('create FUNCTION analitf.x_cast_to_tinyint(number BIGINT) RETURNS tinyint(1) BEGIN return number;END', []);
+    finally
+      FEmbConnection.Close;
+    end;
+
+    //пытаемся выбрать с помощью созданной ХП
+    FEmbConnection.Open;
+    try
+      FEmbConnection.ExecSQL('select analitf.x_cast_to_tinyint(323232323)', []);
+    finally
+      FEmbConnection.Close;
+    end;
+
+    //Возвращаем все в исходное положение
+    FEmbConnection.Open;
+    try
+      MyServerControl := TMyServerControl.Create(nil);
+      try
+        MyServerControl.Connection := FEmbConnection;
+        MyServerControl.DropDatabase('analitf');
+        MyServerControl.DropDatabase('mysql');
+      finally
+        MyServerControl.Free;
+      end;
+    finally
+      FEmbConnection.Close;
+      FEmbConnection.RemoveFromPool;
+    end;
+
+
+    //удаляем директорию
+    DeleteDirectory(ExePath + SDirData);
+
+    //переносим данные, которые сохранили перед тестом
+    if DirectoryExists(ExePath + DirDataTest) then
+      MoveDirectories(ExePath + DirDataTest, ExePath + SDirData);
+
+  finally
+    FEmbConnection.Free;
+  end;
+  
+  except
+    on E : Exception do
+      WriteExchangeLog('DBtest.TestOpenDatabase', 'ClassName:' + E.ClassName + '  Message:' + E.Message );
+  end;
+
+  WriteExchangeLog('DBtest', 'stop TestOpenDatabase');
+end;
+
+procedure TDM.TestDumpDatabase;
+var
+  FEmbConnection : TMyEmbConnection;
+  MyDump : TMyDump;
+  ExtentionError : EMyError;
+begin
+  FEmbConnection := TMyEmbConnection.Create(nil);
+  FEmbConnection.Database := MainConnection.Database;
+  FEmbConnection.Username := MainConnection.Username;
+  FEmbConnection.DataDir := TMyEmbConnection(MainConnection).DataDir;
+  FEmbConnection.Options := TMyEmbConnection(MainConnection).Options;
+  FEmbConnection.Params.Clear;
+  FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+  FEmbConnection.LoginPrompt := False;
+
+  try
+    try
+
+      FEmbConnection.Open;
+      try
+        MyDump := TMyDump.Create(nil);
+        try
+          MyDump.Connection := FEmbConnection;
+          MyDump.Objects := [doStoredProcs, doTables, doViews];
+          MyDump.BackupToFile('extract_mysql.sql');
+        finally
+          MyDump.Free;
+        end;
+      finally
+        FEmbConnection.Close;
+      end;
+
+    except
+      on E : Exception do
+        if E is EMyError then
+        begin
+          ExtentionError := EMyError(E);
+          if ExtentionError.IsFatalError then
+            LogCriticalError('Fatal Error');
+          LogCriticalError('EMyError : ' + IntToStr(ExtentionError.ErrorCode) + '  ' + ExtentionError.Message);
+          WriteExchangeLog('DBtest.TestDumpDatabase.EMyError',
+            'ErrorCode:' + IntToStr(ExtentionError.ErrorCode) +
+            '  FatalError: ' + BoolToStr(ExtentionError.IsFatalError) +
+            '  Message:' + ExtentionError.Message);
+        end
+        else
+          WriteExchangeLog('DBtest.TestDumpDatabase.Error', 'ClassName:' + E.ClassName + '  Message:' + E.Message );
+    end;
+  finally
+    FEmbConnection.Free;
+  end;
+end;
+
 procedure TDM.TestEmbeddedThread;
 var
   testThread : TTestMyDBThread;
@@ -3420,6 +3703,7 @@ begin
   end;
 end;
 {$endif}
+
 
 procedure TDM.TestDirectoriesOperation;
 begin

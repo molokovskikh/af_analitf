@@ -1259,7 +1259,7 @@ object DM: TDM
       'and ordersh.closed <> 1')
     Database = MainConnectionOld
     Left = 648
-    Top = 48
+    Top = 32
     oTrimCharFields = False
     oCacheCalcFields = True
     oRefreshAfterPost = False
@@ -1789,7 +1789,7 @@ object DM: TDM
       '    OrdersHead.orderid = OrdersList.orderid'
       'and OrdersHead.closed <> 1')
     Left = 648
-    Top = 72
+    Top = 88
     object adsAllOrdersID: TLargeintField
       FieldName = 'ID'
     end
