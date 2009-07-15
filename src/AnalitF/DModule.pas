@@ -469,7 +469,6 @@ type
     FCreateClearDatabase     : Boolean;
     FGetCatalogsCount : Integer;
     FRetMargins : array of TRetMass;
-    UpdateReclameDT : TDateTime;
     SynC,
     HTTPC,
     CodeC,
@@ -488,9 +487,9 @@ type
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
     //Обновления UIN в базе данных в случае обновления версии программы
-    procedure UpdateDBUIN(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+    procedure UpdateDBUIN(dbCon : TCustomMyConnection);
     //Проверяем наличие всех объектов в базе данных
-    procedure CheckDBObjects(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure CheckDBObjects(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
     procedure UpdateDBFile(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     function GetLastEtalonFileName : String;
@@ -518,11 +517,17 @@ type
     procedure SetSendToNotClosedOrders;
     function GetLastCreateScript : String;
     function GetFullLastCreateScript : String;
-    procedure CreateClearDatabaseFromScript(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    //создаем базу данных
+    procedure CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    //восстанавливаем базу данных из предыдущей успешной копии
+    procedure RestoreDatabaseFromPrevios(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    //Производим обновлением базы данных Firebird на базу данных MySql
+    procedure UpdateFirebirdToMySql(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection; firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
 {$ifdef DEBUG}
-    procedure ExtractDBScript(dbCon : TpFIBDatabase);
+    procedure ExtractDBScript(dbCon : TCustomMyConnection);
 {$endif}
 {//$define TestEmbeddedMysql}
 {$ifdef TestEmbeddedMysql}
@@ -576,10 +581,6 @@ type
     procedure ResetNeedCommitExchange;
     function GetServerUpdateId() : String;
 
-    //Эти процедуры нужны для того, чтобы корректно применять дату обновления рекламы
-    procedure ResetReclame;
-    procedure SetReclame;
-    procedure UpdateReclame;
     function D_B_N(BaseC: String) : String;
     function D_B_N_C(c : TINFCrypt; BaseC: String) : String;
     function E_B_N(c : TINFCrypt; BaseCost: String) : String;
@@ -921,9 +922,6 @@ begin
   ResetNeedCommitExchange;
   GetLocaleFormatSettings(0, FFS);
 
-  //todo: здесь надо проверять существование БД
-  //MainConnection1.DBName := ExePath + DatabaseName;
-
   if not IsOneStart then
     LogExitError('Запуск двух копий программы на одном компьютере невозможен.', Integer(ecDoubleStart));
 
@@ -935,10 +933,8 @@ begin
 {$endif}
 
   //Удаляем файлы базы данных для переустановки
-  {
   if FindCmdLineSwitch('renew') then
     RunDeleteDBFiles();
-    }
 
   FNeedImportAfterRecovery := False;
   FCreateClearDatabase     := False;
@@ -957,8 +953,12 @@ begin
     LogExitError(Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]), Integer(ecDBFileReadOnly));
     }
 
-  //Делаем проверку файла базы данных и в случае проблем производим восстановление из эталонной копии
-  //CheckDBFile;
+  //Делаем проверку файла базы данных и в случае проблем производим восстановление из предыдущей удачной копии
+  //Проверяем файл, если используем Embedded-сервер, в ином случае - происходит процесс разработки программы и проверять ничего не надо
+{
+  if MainConnection is TMyEmbConnection then
+    CheckDBFile;
+}    
 
   try
     try
@@ -1163,15 +1163,16 @@ begin
 end;
 
 procedure TDM.CompactDataBase();
-var
-  RowAffected : Variant;
 begin
   MainConnection.Open;
   try
     MyServerControl.OptimizeTable;
-    RowAffected := MainConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
-    if VarIsNull(RowAffected) then
-      Tracer.TR('BackupRestore', 'Не получилось обновить LastCompact');
+    try
+      MainConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
+    except
+      on E : Exception do
+        Tracer.TR('BackupRestore', 'Не получилось обновить LastCompact: ' + E.Message);
+    end;
   finally
     MainConnection.Close;
   end;
@@ -1434,47 +1435,57 @@ begin
 end;
 
 procedure TDM.RestoreDatabase;
+var
+  FEmbConnection : TMyEmbConnection;
+  MyServerControl : TMyServerControl;
 begin
   if TCustomMyConnection(MainConnection) is TMyEmbConnection then begin
     MainConnection.Close;
+
+    FEmbConnection := TMyEmbConnection.Create(nil);
+    try
+      FEmbConnection.Database := MainConnection.Database;
+      FEmbConnection.Username := MainConnection.Username;
+      FEmbConnection.DataDir := TMyEmbConnection(MainConnection).DataDir;
+      FEmbConnection.Options := TMyEmbConnection(MainConnection).Options;
+      FEmbConnection.Params.Clear;
+      FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+      FEmbConnection.LoginPrompt := False;
+      try
+        MyServerControl := TMyServerControl.Create(nil);
+        try
+          MyServerControl.Connection := FEmbConnection;
+          MyServerControl.DropDatabase('analitf');
+          MyServerControl.DropDatabase('mysql');
+        finally
+          MyServerControl.Free;
+        end;
+      finally
+        FEmbConnection.Close;
+        FEmbConnection.RemoveFromPool;
+      end;
+    finally
+      FEmbConnection.Free;
+    end;
+    
+    //удаляем директорию
+    DeleteDirectory(ExePath + SDirData);
+
+    //копируем данные из эталонной копии
     MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
+    
     MainConnection.Open;
   end;
 end;
 
 procedure TDM.ClearBackup;
-{
-var
-  MoveRes : Boolean;
-  BackupFileName,
-  TemplateEtlName,
-  NewEtlName : String;
-  N : Integer;
-}
 begin
-  //todo: надо потом восстановить ClearBackup, чтобы потом можно было восстановить из эталонной копии
   if TCustomMyConnection(MainConnection) is TMyEmbConnection then
-    DeleteDirectory(ExePath + SDirDataBackup);
-{
-  BackupFileName := APath + ChangeFileExt( DatabaseName, '.bak');
-  TemplateEtlName := APath + DatabaseName + '.etl';
-  NewEtlName := TemplateEtlName;
-  N := 0;
-  repeat
-    Windows.DeleteFile(PChar(NewEtlName));
-    MoveRes := Windows.MoveFile(PChar(BackupFileName), PChar(NewEtlName));
-    if not MoveRes then begin
-      if N <= 255 then begin
-        NewEtlName := TemplateEtlName + '.e' + IntToHex(N, 2);
-        Inc(N);
-      end
-      else
-        Break;
-    end;
-  until MoveRes;
-  if not MoveRes then
-    Windows.DeleteFile( PChar( BackupFileName ) );
-}
+  begin
+    if DirectoryExists(ExePath + SDirDataPrev) then
+      DeleteDirectory(ExePath + SDirDataPrev);
+    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirDataPrev);
+  end;
 end;
 
 function TDM.GetCumulative: boolean;
@@ -1645,13 +1656,17 @@ begin
 end;
 
 procedure TDM.SavePass(ASyn, ACodes, AB, ASGM: String);
+{
 var
   Price : String;
   tmps,
   tmpc,
   tmpb,
   tmpvb : TINFCrypt;
+}  
 begin
+{
+  todo: Это пока не нужно, т.к. цену у нас не шифруются и перешифровывать ничего не надо
   if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
     try
       if adsAllOrders.Active then
@@ -1688,6 +1703,7 @@ begin
         Tracer.TR('SavePass', 'Error : ' + E.Message);
       end;
     end;
+}
 
   SynonymPassword := ASyn;
   CodesPassword := ACodes;
@@ -1747,25 +1763,6 @@ begin
     adsSumOrdersOldForDeleteCryptPRICE.AsCurrency := StrToCurr(S);
     adsSumOrdersOldForDeleteSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersOldForDeleteORDERCOUNT.AsInteger;
   except
-  end;
-end;
-
-procedure TDM.ResetReclame;
-begin
-  UpdateReclameDT := 0;
-end;
-
-procedure TDM.SetReclame;
-begin
-  UpdateReclameDT := Now();
-end;
-
-procedure TDM.UpdateReclame;
-begin
-  if (UpdateReclameDT > 1) then begin
-    adtParams.Edit;
-    adtParams.FieldByName('ReclameUPDATEDATETIME').AsDateTime := UpdateReclameDT;
-    adtParams.Post;
   end;
 end;
 
@@ -1922,113 +1919,51 @@ end;
 
 procedure TDM.UpdateDB;
 var
-  dbCon : TpFIBDatabase;
-  trMain : TpFIBTransaction;
+  dbCon : TMyEmbConnection;
   DBVersion : Integer;
   EtlName : String;
 begin
-  dbCon := TpFIBDatabase.Create(nil);
+  dbCon := TMyEmbConnection.Create(nil);
   try
 
-    trMain := TpFIBTransaction.Create(nil);
+    dbCon.Database := MainConnection.Database;
+    dbCon.Username := MainConnection.Username;
+    dbCon.DataDir := TMyEmbConnection(MainConnection).DataDir;
+    dbCon.Options := TMyEmbConnection(MainConnection).Options;
+    dbCon.Params.Clear;
+    dbCon.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+    dbCon.LoginPrompt := False;
+
+    dbCon.Open;
     try
-      dbCon.DBName := MainConnectionOld.DBName;
-      dbCon.DBParams.Text := MainConnectionOld.DBParams.Text;
-      dbCon.LibraryName := MainConnectionOld.LibraryName;
-      dbCon.SQLDialect := MainConnectionOld.SQLDialect;
-      trMain.DefaultDatabase := dbCon;
-      dbCon.DefaultTransaction := trMain;
-      dbCon.DefaultUpdateTransaction := trMain;
-      dbCon.Open;
 {$ifdef DEBUG}
-      ExtractDBScript(dbCon);
+    ExtractDBScript(dbCon);
 {$endif}
-      DBVersion := dbCon.QueryValue('select mdbversion from provider where id = 0', 0);
-      dbCon.Close;
-
-      //Эта версия с 515, до нее автообновление не интересно
-      if DBVersion = 41 then begin
-        etlname := GetLastEtalonFileName;
-        //Если существует эталонный файл, то обновляем его
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 42;
-      end;
-
-      if DBVersion = 42 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, UpdateDBFileDataFor42);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, UpdateDBFileDataFor42);
-        DBVersion := 43;
-      end;
-
-      if DBVersion = 43 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 44;
-      end;
-
-      if DBVersion = 44 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 45;
-      end;
-
-      if DBVersion = 45 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 46;
-      end;
-
-      if DBVersion = 46 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 47;
-      end;
-
-      if DBVersion = 47 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 48;
-      end;
-
-      if DBVersion = 48 then begin
-        etlname := GetLastEtalonFileName;
-        if Length(etlname) > 0 then
-          RunUpdateDBFile(dbCon, trMain, etlname, DBVersion, UpdateDBFile, nil);
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, UpdateDBFile, nil);
-        DBVersion := 49;
-      end;
-
-      if DBVersion <> CURRENT_DB_VERSION then
-        raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
-      //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
-{$ifndef DEBUG}
-      else
-        RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
-{$else}
-        ;
-{$endif}
-
-      //Если было произведено обновление программы, то обновляем ключи
-	    if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
-        UpdateDBUIN(dbCon, trMain);
-
+    DBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
     finally
-      trMain.Free;
+      dbCon.Close;
     end;
+
+    //Мы получим с обновлением версию 49 и обновляем ее до 50
+    if DBVersion = 49 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateFirebirdToMySql, nil);
+      DBVersion := 50;
+    end;
+
+    if DBVersion <> CURRENT_DB_VERSION then
+      raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
+    //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
+{$ifndef DEBUG}
+    else
+      RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
+{$else}
+      ;
+{$endif}
+
+    //todo: Ддя MySql это будет включено в следующем обновлении 
+    //Если было произведено обновление программы, то обновляем ключи
+//    if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
+//      UpdateDBUIN(dbCon);
 
   finally
     dbCon.Free;
@@ -2082,8 +2017,10 @@ begin
         FIBScript.OnExecuteError := nil;
       end;
 
+{
       if Assigned(AOnUpdateDBFileData) then
         AOnUpdateDBFileData(dbCon, trMain);
+}        
 
     finally
       try FIBScript.Free; except  end;
@@ -2297,34 +2234,6 @@ begin
       OpenSuccess := True;
 
     except
-      on EFIB : EFIBError do begin
-        if EFIB.IBErrorCode = isc_network_error then
-          LogExitError('Не возможен запуск программы с сетевого диска. Пожалуйста, используйте локальный диск.', Integer(ecDBFileError))
-        else begin
-          LogCriticalError(Format('Ошибка при открытии (%d): %s'#13#10'StatusVector : %s', [RecoveryCount, EFIB.Message, StatusVectorAsText]));
-          if (RecoveryCount < 2) then begin
-            try
-              //TODO: Здесь надо корректно работать с путями, чтобы работала сетевая версия
-              if (EFIB.IBErrorCode = isc_sys_request) and FileExists(MainConnectionOld.DBName) then begin
-                LogCriticalError(Format('Ошибка при открытии (CreateFile): %s', [EFIB.Message]));
-                Sleep(1000);
-              end
-              else
-                RecoverDatabase(EFIB);
-            except
-              on E : Exception do
-                if (RecoveryCount < 1) then
-                  LogCriticalError(Format('Ошибка при восстановлении (%d): %s', [RecoveryCount, E.Message]))
-                else
-                  raise;
-            end;
-            Inc(RecoveryCount);
-          end
-          else
-            raise;
-        end;
-      end;
-
       on E : Exception do begin
         LogCriticalError(Format('Ошибка при открытии (%d): %s', [RecoveryCount, E.Message]));
         if (RecoveryCount < 2) then begin
@@ -2756,27 +2665,19 @@ begin
     'ProxyPort = null,' +
     'ProxyUser = null,' +
     'ProxyPass = null,' +
-    'ServiceName = ''GetData'',' +
     'HTTPHost = ''ios.analit.net'',' +
-    'HTTPPort = 80,' +
     'HTTPName = null,' +
     'HTTPPass = null,' +
     'UpdateDatetime = null,' +
     'LastDatetime = null,' +
-    'FastPrint = 0,' +
     'ShowRegister = 1,' +
-    'NewWares = 0,' +
     'UseForms = 1,' +
     'OperateForms = 0,' +
-    'OperateFormSet = 0,' +
-    'AutoPrint = 0,' +
+    'OperateFormsSet = 0,' +
     'StartPage = 0,' +
     'LastCompact = null,' +
     'Cumulative = 0,' +
     'Started = 0,' +
-    'EXTERNALORDERSEXE = null,' +
-    'EXTERNALORDERSPATH = null,' +
-    'EXTERNALORDERSCREATE = 0,' +
     'RASSLEEP = 3,' +
     'HTTPNAMECHANGED = 1,' +
     'SHOWALLCATALOG = 0,' +
@@ -2786,16 +2687,25 @@ begin
     'USEOSOPENWAYBILL = 0,' +
     'USEOSOPENREJECT = 1,' +
     'GROUPBYPRODUCTS = 0,' +
-    'PRINTORDERSAFTERSEND = 0;'#13#10#13#10 +
-    'INSERT INTO RECLAME (RECLAMEURL, UPDATEDATETIME) VALUES (''http://ios.analit.net/results/reclame/r#.zip'', NULL);'#13#10#13#10 +
+    'PRINTORDERSAFTERSEND = 0,' +
+    'ProviderName = ''АК "Инфорум"'',' +
+    'ProviderAddress = ''Ленинский пр-т, 160 оф.415'',' +
+    'ProviderPhones = ''4732-606000'',' +
+    'ProviderEmail = ''farm@analit.net'',' +
+    'ProviderWeb = ''http://www.analit.net/'',' +
+    'ProviderMDBVersion = ' + IntToStr(CURRENT_DB_VERSION) + ';'#13#10#13#10 +
     'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (0, 0, 1000000, 30);'#13#10#13#10
     );
 end;
 
-procedure TDM.CreateClearDatabaseFromScript(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+procedure TDM.CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
 var
- FIBScript : TpFIBScript;
+  //FIBScript : TpFIBScript;
+  FEmbConnection : TMyEmbConnection;
+  MyDump : TMyDump;
+  MyServerControl : TMyServerControl;
 begin
+{
   FIBScript := TpFIBScript.Create(nil);
   try
 
@@ -2807,21 +2717,75 @@ begin
     finally
       FIBScript.OnExecuteError := nil;
     end;
-    
+
   finally
     try FIBScript.Free; except  end;
   end;
+}  
+
+  FEmbConnection := TMyEmbConnection.Create(nil);
+  FEmbConnection.Database := '';
+  FEmbConnection.Username := MainConnection.Username;
+  FEmbConnection.DataDir := DBDirectoryName;
+  FEmbConnection.Options := TMyEmbConnection(MainConnection).Options;
+  FEmbConnection.Params.Clear;
+  FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+  FEmbConnection.LoginPrompt := False;
+
+  try
+
+    if DirectoryExists(ExePath + SDirData + '\analitf') or DirectoryExists(ExePath + SDirData + '\mysql')
+    then begin
+      FEmbConnection.Open;
+      try
+        MyServerControl := TMyServerControl.Create(nil);
+        try
+          MyServerControl.Connection := FEmbConnection;
+          MyServerControl.DropDatabase('analitf');
+          MyServerControl.DropDatabase('mysql');
+        finally
+          MyServerControl.Free;
+        end;
+      finally
+        FEmbConnection.Close;
+      end;
+      DeleteDirectory(DBDirectoryName);
+    end;
+
+    CopyDirectories(ExePath + SDirDataEtalon, DBDirectoryName);
+    CreateDir(ExePath + SDirData + '\analitf');
+
+    FEmbConnection.Database := 'analitf';
+
+    FEmbConnection.Open;
+    try
+      MyDump := TMyDump.Create(nil);
+      try
+        MyDump.Connection := FEmbConnection;
+        MyDump.Objects := [doStoredProcs, doTables, doViews];
+        MyDump.SQL.Text := GetFullLastCreateScript();
+        MyDump.Restore;
+      finally
+        MyDump.Free;
+      end;
+    finally
+      FEmbConnection.Close;
+    end;
+
+  finally
+    FEmbConnection.Free;
+  end;
+
 end;
 
 procedure TDM.RecoverDatabase(E: Exception);
 var
+  UserErrorMessage,
   DBErrorMess : String;
-  N : Integer;
   OldDBFileName,
   EtalonDBFileName,
   ErrFileName : String;
 begin
-  //TODO: Восстановление не корректно будет работать в сетевой версии. НАДО ДУМАТЬ!!!
   {
   Здесь мы должны сделать:
   1. Закрыть соединение, если открыто
@@ -2830,94 +2794,75 @@ begin
   4. Скопировать из эталонной базы данных
   5. Открыть эталонную базу данных
   }
+  UserErrorMessage := 'Не удается открыть базу данных программы.';
   DBErrorMess := Format('Не удается открыть базу данных программы.'#13#10 +
     'Ошибка        : %s'#13#10,
     [E.Message]
   );
-  if (E is EFIBError) then
+  if (E is EMyError) then
     DBErrorMess := DBErrorMess +
       Format(
         'Код SQL       : %d'#13#10 +
-        'Сообщение SQL : %s'#13#10 +
-        'Код IB        : %d'#13#10 +
-        'Сообщение IB  : %s',
-        [EFIBError(E).SQLCode, EFIBError(E).SQLMessage, EFIBError(E).IBErrorCode, EFIBError(E).IBMessage]
+        'Сообщение     : %s'#13#10 +
+        'Fatal         : %s',
+        [EMyError(E).ErrorCode, EMyError(E).Message, BoolToStr(EMyError(E).IsFatalError)]
     );
 
   //Пытаемся найти эталонной файл базы данных, чтобы определиться с восстановлением или созданием
   EtalonDBFileName := GetLastEtalonFileName;
 
-  if Length(EtalonDBFileName) = 0 then
-    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.'
-  else
+  if not DirectoryExists(ExePath + SDirDataPrev) then begin
+    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
+    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено создание базы данных.';
+  end
+  else begin
     DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
+    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
+  end;
 
   //Логируем наши действия и отображаем пользователю
   AProc.LogCriticalError(DBErrorMess);
-  AProc.MessageBox(DBErrorMess, MB_ICONERROR or MB_OK);
 
-  //Формируем имя ошибочного файла
-  ErrFileName := ChangeFileExt(ParamStr(0), '.e');
-  N := 0;
-  while (FileExists(ErrFileName + IntToHex(N, 2)) and (N <= 255)) do Inc(N);
-
-  if N > 255 then begin
-    //Много ошибочных файлов - будем все удалять
-    DeleteFilesByMask(ErrFileName + '*', False);
-    N := 0;
-  end;
-
-  ErrFileName := ErrFileName + IntToHex(N, 2);
-  OldDBFileName := ChangeFileExt(ParamStr(0), '.fdb');
-
-  if FileExists(OldDBFileName) then
-    if not Windows.MoveFile(PChar(OldDBFileName), PChar(ErrFileName)) then
-      raise Exception.CreateFmt('Не удалось переименовать в ошибочный файл %s : %s',
-        [ErrFileName, SysErrorMessage(GetLastError)]);
-
-  if Length(EtalonDBFileName) = 0 then begin
-    RunUpdateDBFile(nil, nil, '', CURRENT_DB_VERSION, CreateClearDatabaseFromScript, nil, 'Происходит создание базы данных. Подождите...');
+  //Если нет предыдущей копии, то создаем базу даннных
+  if not DirectoryExists(ExePath + SDirDataPrev) then begin
+    RunUpdateDBFile(nil, ExePath + SDirData, CURRENT_DB_VERSION, CreateClearDatabaseFromScript, nil, 'Происходит создание базы данных. Подождите...');
     FCreateClearDatabase := True;
     FNeedImportAfterRecovery := False;
     WriteExchangeLog('AnalitF', 'Произведено создание базы.');
   end
   else
-    if Windows.MoveFile(PChar(EtalonDBFileName), PChar(OldDBFileName)) then begin
+    try
+      RunUpdateDBFile(nil, ExePath + SDirData, CURRENT_DB_VERSION, RestoreDatabaseFromPrevios, nil, 'Происходит восстановление базы данных из предыдущей копии. Подождите...');
       //Значит восстановили из эталона
       FNeedImportAfterRecovery := True;
-      WriteExchangeLog('AnalitF', 'Произведено копирование из эталонной копии.');
-    end
-    else
-      raise Exception.CreateFmt('Не удалось скопировать из эталонной копии : %s',
-        [SysErrorMessage(GetLastError)]);
+      WriteExchangeLog('AnalitF', 'Произведено копирование из предыдущей копии.');
+    except
+      on E : Exception do
+        raise Exception.CreateFmt(
+        'Не удалось скопировать из предыдущей копии : %s'#13#10 +
+        'Windows-ошибка: %s',
+          [E.Message, SysErrorMessage(GetLastError)]);
+    end;
 end;
 
-procedure TDM.CheckDBObjects(dbCon: TpFIBDatabase;
-  trMain: TpFIBTransaction; FileName: String; OldDBVersion: Integer;
-  AOnUpdateDBFileData: TOnUpdateDBFileData);
+procedure TDM.CheckDBObjects(dbCon : TCustomMyConnection;
+  DBDirectoryName : String; OldDBVersion : Integer;
+  AOnUpdateDBFileData : TOnUpdateDBFileData);
 var
-  exc : TpFIBExtract;
+  MyDump : TMyDump;
   ExistsScript, RightScript : String;
 begin
   dbCon.Open;
   try
-    exc := TpFIBExtract.Create(nil);
+    MyDump := TMyDump.Create(nil);
     try
-      exc.Database := dbCon;
-      exc.Transaction := trMain;
-      exc.IncludeSetTerm := False;
-      exc.ExtractOptions := exc.ExtractOptions - [CreateDb];
-      exc.ExtractObject(eoDatabase);
-
-      //Удаляем первые две строки из скрипта
-      exc.Items.Delete(0);
-      exc.Items.Delete(0);
-
-      //exc.Items.SaveToFile('extract.log');
-
-      ExistsScript := Trim(exc.Items.Text);
+      MyDump.Connection := dbCon;
+      MyDump.Objects := [doStoredProcs, doTables, doViews];
+      MyDump.Backup;
+      ReplaceAutoIncrement(MyDump.SQL);
+      ExistsScript := Trim(MyDump.SQL.Text);
     finally
-      exc.Free;
+      MyDump.Free;
     end;
   finally
     dbCon.Close;
@@ -3021,20 +2966,19 @@ begin
 end;
 
 {$ifdef DEBUG}
-procedure TDM.ExtractDBScript(dbCon: TpFIBDatabase);
+procedure TDM.ExtractDBScript(dbCon: TCustomMyConnection);
 var
-  exc : TpFIBExtract;
+  MyDump : TMyDump;
 begin
-  exc := TpFIBExtract.Create(nil);
+  MyDump := TMyDump.Create(nil);
   try
-    exc.Database := dbCon;
-    exc.Transaction := TpFIBTransaction(dbCon.DefaultTransaction);
-    exc.IncludeSetTerm := False;
-    exc.ExtractOptions := exc.ExtractOptions - [CreateDb];
-    exc.ExtractObject(eoDatabase);
-    exc.Items.SaveToFile('extract.sql');
+    MyDump.Connection := dbCon;
+    MyDump.Objects := [doStoredProcs, doTables, doViews];
+    MyDump.Backup;
+    ReplaceAutoIncrement(MyDump.SQL);
+    MyDump.SQL.SaveToFile('extract_mysql.sql');
   finally
-    exc.Free;
+    MyDump.Free;
   end;
 end;
 {$endif}
@@ -3164,7 +3108,7 @@ begin
 end;
 {$endif}
 
-procedure TDM.UpdateDBUIN(dbCon: TpFIBDatabase; trMain: TpFIBTransaction);
+procedure TDM.UpdateDBUIN(dbCon: TCustomMyConnection);
 var
   CDS,
   BaseCostPass,
@@ -3178,9 +3122,8 @@ begin
   try
     dbCon.Open();
     try
-      trMain.StartTransaction;
 
-      CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
+      CDS := DBProc.QueryValue(dbCon, 'select CDS from analitf.params where ID = 0', [], []);
       //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
       if Length(CDS) = 0 then
         Exit;
@@ -3215,9 +3158,8 @@ begin
       end;
 
       //Обновляем значение CDS в базе с новым CopyID
-      dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
+      dbCon.ExecSQL('update params set CDS = :CDS where ID = 0', [newCDS]);
 
-      trMain.Commit;
     finally
       try dbCon.Close(); except end;
     end;
@@ -3726,25 +3668,8 @@ end;
 
 function TDM.QueryValue(SQL: String; Params: array of string;
   Values: array of Variant): Variant;
-var
-  I : Integer;
 begin
-  if (Length(Params) <> Length(Values)) then
-    raise Exception.Create('QueryValue: Кол-во параметров не совпадает со списком значений.');
-
-  if adsQueryValue.Active then
-    adsQueryValue.Close;
-  adsQueryValue.SQL.Text := SQL;
-  for I := Low(Params) to High(Params) do
-    adsQueryValue.ParamByName(Params[i]).Value := Values[i];
-  adsQueryValue.Open;
-  try
-    if adsQueryValue.Fields.Count < 1 then
-      raise Exception.Create('QueryValue: В результирующем наборе данных нет ни одного столбца.');
-    Result := adsQueryValue.Fields[0].Value;
-  finally
-    adsQueryValue.Close;
-  end;
+  Result := DBProc.QueryValue(MainConnection, SQL, Params, Values);
 end;
 
 function TDM.GetMainConnection: TCustomMyConnection;
@@ -3764,6 +3689,253 @@ begin
   for I := 0 to ComponentCount-1 do
     if Components[i] is TCustomMyDataSet then
       TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
+end;
+
+procedure TDM.RestoreDatabaseFromPrevios(dbCon: TCustomMyConnection;
+  DBDirectoryName: String; OldDBVersion: Integer;
+  AOnUpdateDBFileData: TOnUpdateDBFileData);
+var
+  Succes : Boolean;
+  RepeatCount : Integer;
+begin
+  Succes := False;
+  RepeatCount := 0;
+  repeat
+    try
+      DeleteDirectory(ExePath + SDirData);
+      Succes := True;
+    except
+      Sleep(500);
+      Inc(RepeatCount);
+      if RepeatCount > 10 then
+        raise;
+    end;
+  until Succes;
+
+  Succes := False;
+  RepeatCount := 0;
+  repeat
+    try
+      MoveDirectories(ExePath + SDirDataPrev, ExePath + SDirData);
+      Succes := True;
+    except
+      Sleep(500);
+      Inc(RepeatCount);
+      if RepeatCount > 10 then
+        raise;
+    end;
+  until Succes;
+end;
+
+procedure TDM.UpdateFirebirdToMySql(dbCon: TCustomMyConnection;
+  DBDirectoryName: String; OldDBVersion: Integer;
+  AOnUpdateDBFileData: TOnUpdateDBFileData);
+var
+  firebirdDB : TpFIBDatabase;
+  firebirdTransaction : TpFIBTransaction;
+begin
+  dbCon.Open;
+  try
+   firebirdDB := TpFIBDatabase.Create(nil);
+   try
+      firebirdDB.DBName := ExePath + DatabaseName;
+      firebirdDB.DBParams.Text := MainConnectionOld.DBParams.Text;
+      firebirdDB.LibraryName := MainConnectionOld.LibraryName;
+      firebirdDB.SQLDialect := MainConnectionOld.SQLDialect;
+
+      firebirdTransaction := TpFIBTransaction.Create(nil);
+
+      firebirdTransaction.DefaultDatabase := firebirdDB;
+      firebirdDB.DefaultTransaction := firebirdTransaction;
+      firebirdDB.DefaultUpdateTransaction := firebirdTransaction;
+
+      try
+        try
+          firebirdDB.Open;
+        except
+          on OpenException : Exception do begin
+            AProc.LogCriticalError('Ошибка при открытии старой базы данных : ' + OpenException.Message);
+            raise Exception.Create('Не получилось открыть старую базу данных');
+          end;
+        end;
+
+        try
+          try
+            InternalUpdateFirebirdToMySql(dbCon, firebirdDB, firebirdTransaction);
+          except
+            on UpdateException : Exception do begin
+              AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
+              raise Exception.Create(
+                'При перемещении данных из старой базы в новою возникла ошибка.' +
+                #13#10 +
+                'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+            end;
+          end;
+        finally
+          firebirdDB.Close;
+        end;
+      finally
+        firebirdTransaction.Free;
+      end;
+   finally
+     firebirdDB.Free;
+   end;
+  finally
+    try dbCon.Close; except end;
+  end;
+end;
+
+procedure TDM.InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection;
+  firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction);
+var
+  selectMySql : TMyQuery;
+  updateMySql : TMyQuery;
+  selectFirebird : TpFIBDataSet;
+begin
+  selectMySql := TMyQuery.Create(nil);
+  selectMySql.Connection := dbCon;
+  updateMySql := TMyQuery.Create(nil);
+  updateMySql.Connection := dbCon;
+
+  selectFirebird := TpFIBDataSet.Create(nil);
+  selectFirebird.Database := firebirdDB;
+  selectFirebird.Transaction := firebirdTransaction;
+  selectFirebird.UpdateTransaction := firebirdTransaction;
+  selectFirebird.Options := selectFirebird.Options - [poTrimCharFields];
+
+  try
+    //Производим перемещение наценок
+    updateMySql.SQL.Text := 'delete from analitf.RetailMargins';
+    updateMySql.Execute;
+    selectFirebird.SelectSQL.Text := 'SELECT * FROM RetailMargins order by Id';
+    selectFirebird.Open;
+    try
+      if selectFirebird.RecordCount > 0 then begin
+        updateMySql.SQL.Text := 'insert into analitf.RetailMargins (ID, LeftLIMIT, RIGHTLIMIT, Retail) values (:ID, :LeftLIMIT, :RIGHTLIMIT, :Retail)';
+        while not selectFirebird.Eof do begin
+          updateMySql.ParamByName('Id').Value := selectFirebird.FieldByName('Id').Value;
+          updateMySql.ParamByName('LeftLIMIT').Value := selectFirebird.FieldByName('LeftLIMIT').Value;
+          updateMySql.ParamByName('RIGHTLIMIT').Value := selectFirebird.FieldByName('RIGHTLIMIT').Value;
+          updateMySql.ParamByName('Retail').Value := selectFirebird.FieldByName('Retail').Value;
+          updateMySql.Execute;
+          selectFirebird.Next;
+        end;
+      end;
+    finally
+      selectFirebird.Close;
+    end;
+
+    //Производим перемещение заголовков заказов
+    updateMySql.SQL.Text := 'delete from analitf.ordershead';
+    updateMySql.Execute;
+    selectFirebird.SelectSQL.Text := 'SELECT * FROM ordersh order by orderid';
+    selectFirebird.Open;
+    try
+      if selectFirebird.RecordCount > 0 then begin
+        updateMySql.SQL.Text := 'insert into analitf.ordershead set ' +
+        'ORDERID  = :ORDERID,' +
+        'SERVERORDERID = :SERVERORDERID,' +
+        'CLIENTID = :CLIENTID,' +
+        'PRICECODE = :PRICECODE,' +
+        'REGIONCODE = :REGIONCODE,' +
+        'PRICENAME = :PRICENAME,' +
+        'REGIONNAME = :REGIONNAME,' +
+        'ORDERDATE = :ORDERDATE,' +
+        'SENDDATE = :SENDDATE,' +
+        'CLOSED = :CLOSED,' +
+        'SEND = :SEND,' +
+        'COMMENTS = :COMMENTS,' +
+        'MESSAGETO = :MESSAGETO';
+        while not selectFirebird.Eof do begin
+          updateMySql.ParamByName('ORDERID').Value := selectFirebird.FieldByName('ORDERID').Value;
+          updateMySql.ParamByName('SERVERORDERID').Value := selectFirebird.FieldByName('SERVERORDERID').Value;
+          updateMySql.ParamByName('CLIENTID').Value := selectFirebird.FieldByName('CLIENTID').Value;
+          updateMySql.ParamByName('PRICECODE').Value := selectFirebird.FieldByName('PRICECODE').Value;
+          updateMySql.ParamByName('REGIONCODE').Value := selectFirebird.FieldByName('REGIONCODE').Value;
+          updateMySql.ParamByName('PRICENAME').Value := selectFirebird.FieldByName('PRICENAME').Value;
+          updateMySql.ParamByName('REGIONNAME').Value := selectFirebird.FieldByName('REGIONNAME').Value;
+          updateMySql.ParamByName('ORDERDATE').Value := selectFirebird.FieldByName('ORDERDATE').Value;
+          updateMySql.ParamByName('SENDDATE').Value := selectFirebird.FieldByName('SENDDATE').Value;
+          updateMySql.ParamByName('CLOSED').Value := selectFirebird.FieldByName('CLOSED').Value;
+          updateMySql.ParamByName('SEND').Value := selectFirebird.FieldByName('SEND').Value;
+          updateMySql.ParamByName('COMMENTS').Value := selectFirebird.FieldByName('COMMENTS').Value;
+          updateMySql.ParamByName('MESSAGETO').Value := selectFirebird.FieldByName('MESSAGETO').Value;
+          updateMySql.Execute;
+          selectFirebird.Next;
+        end;
+      end;
+    finally
+      selectFirebird.Close;
+    end;
+
+    //Производим перемещение содержимого текущих и отправленных заказов
+    updateMySql.SQL.Text := 'delete from analitf.orderslist';
+    updateMySql.Execute;
+    selectFirebird.SelectSQL.Text := 'SELECT * FROM orders where order by id';
+    selectFirebird.Open;
+    try
+      if selectFirebird.RecordCount > 0 then begin
+        updateMySql.SQL.Text := 'insert into analitf.orderslist set ' +
+        'ID  = :ID,' +
+        'ORDERID  = :ORDERID,' +
+        'CLIENTID = :CLIENTID,' +
+        'COREID = :COREID,' +
+        'PRODUCTID = :PRODUCTID,' +
+        'CODEFIRMCR = :CODEFIRMCR,' +
+        'SYNONYMCODE = :SYNONYMCODE,' +
+        'SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE,' +
+        'CODE = :CODE,' +
+        'CODECR = :CODECR,' +
+        'SYNONYMNAME = :SYNONYMNAME,' +
+        'SYNONYMFIRM = :SYNONYMFIRM,' +
+        'PRICE = :PRICE,' +
+        'AWAIT = :AWAIT,' +
+        'JUNK = :JUNK,' +
+        'ORDERCOUNT = :ORDERCOUNT,' +
+        'REQUESTRATIO = :REQUESTRATIO,' +
+        'ORDERCOST = :ORDERCOST,' +
+        'MINORDERCOUNT = :MINORDERCOUNT';
+        while not selectFirebird.Eof do begin
+          updateMySql.ParamByName('ID').Value := selectFirebird.FieldByName('ID').Value;
+          updateMySql.ParamByName('ORDERID').Value := selectFirebird.FieldByName('ORDERID').Value;
+          updateMySql.ParamByName('CLIENTID').Value := selectFirebird.FieldByName('CLIENTID').Value;
+          updateMySql.ParamByName('COREID').Value := selectFirebird.FieldByName('COREID').Value;
+          updateMySql.ParamByName('PRODUCTID').Value := selectFirebird.FieldByName('PRODUCTID').Value;
+          updateMySql.ParamByName('CODEFIRMCR').Value := selectFirebird.FieldByName('CODEFIRMCR').Value;
+          updateMySql.ParamByName('SYNONYMCODE').Value := selectFirebird.FieldByName('SYNONYMCODE').Value;
+          updateMySql.ParamByName('SYNONYMFIRMCRCODE').Value := selectFirebird.FieldByName('SYNONYMFIRMCRCODE').Value;
+          updateMySql.ParamByName('CODE').Value := selectFirebird.FieldByName('CODE').Value;
+          updateMySql.ParamByName('CODECR').Value := selectFirebird.FieldByName('CODECR').Value;
+          updateMySql.ParamByName('SYNONYMNAME').Value := selectFirebird.FieldByName('SYNONYMNAME').Value;
+          updateMySql.ParamByName('SYNONYMFIRM').Value := selectFirebird.FieldByName('SYNONYMFIRM').Value;
+          updateMySql.ParamByName('AWAIT').Value := selectFirebird.FieldByName('AWAIT').Value;
+          updateMySql.ParamByName('JUNK').Value := selectFirebird.FieldByName('JUNK').Value;
+          updateMySql.ParamByName('ORDERCOUNT').Value := selectFirebird.FieldByName('ORDERCOUNT').Value;
+          updateMySql.ParamByName('REQUESTRATIO').Value := selectFirebird.FieldByName('REQUESTRATIO').Value;
+          updateMySql.ParamByName('ORDERCOST').Value := selectFirebird.FieldByName('ORDERCOST').Value;
+          updateMySql.ParamByName('MINORDERCOUNT').Value := selectFirebird.FieldByName('MINORDERCOUNT').Value;
+          if not selectFirebird.FieldByName('SENDPRICE').IsNull then begin
+            updateMySql.ParamByName('PRICE').Value := selectFirebird.FieldByName('SENDPRICE').Value
+          end
+          else begin
+            updateMySql.ParamByName('PRICE').Value := selectFirebird.FieldByName('SENDPRICE').Value;
+          end;
+          updateMySql.Execute;
+          selectFirebird.Next;
+        end;
+      end;
+    finally
+      selectFirebird.Close;
+    end;
+
+    updateMySql.SQL.Text := 'update analitf.params ProviderMDBVersion = 50 where Id = 0';
+    updateMySql.Execute;
+
+  finally
+    selectFirebird.Free;
+    selectMySql.Free;
+    updateMySql.Free;
+  end;
 end;
 
 initialization

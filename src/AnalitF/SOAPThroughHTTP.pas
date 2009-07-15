@@ -271,6 +271,7 @@ begin
 
 	except
     //Производим протоколирование ответа, который успели получить до ошибки
+    //todo: !!! не логировать просто так содержание ответа, только заголовки
     WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8ToAnsi(FResponse));
     raise;
 	end;

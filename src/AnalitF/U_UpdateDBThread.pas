@@ -4,17 +4,16 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, FIB, FIBQuery, pFIBQuery, FIBDataSet,
-  pFIBDataSet, FIBDatabase, pFIBDatabase;
+  pFIBDataSet, FIBDatabase, pFIBDatabase, MyAccess, MyEmbConnection;
 
 type
-  TOnUpdateDBFileData = procedure (dbCon : TpFIBDatabase; trMain : TpFIBTransaction) of object;
-  
-  TOnUpdateDBFile = procedure (dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData) of object;
+  TOnUpdateDBFileData = procedure (dbCon : TCustomMyConnection) of object;
+
+  TOnUpdateDBFile = procedure (dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData) of object;
 
 procedure RunUpdateDBFile(
-  dbCon : TpFIBDatabase;
-  trMain : TpFIBTransaction;
-  FileName : String;
+  dbCon : TCustomMyConnection;
+  DBDirectoryName : String;
   OldDBVersion : Integer;
   AOnUpdateDBFile : TOnUpdateDBFile;
   AOnUpdateDBFileData : TOnUpdateDBFileData;
@@ -30,9 +29,8 @@ type
    public
     OnUpdateDBFile : TOnUpdateDBFile;
     OnUpdateDBFileData : TOnUpdateDBFileData;
-    dbCon : TpFIBDatabase;
-    trMain : TpFIBTransaction;
-    FileName : String;
+    dbCon : TCustomMyConnection;
+    DBDirectoryName : String;
     OldDBVersion : Integer;
     ErrorStr : String;
    protected
@@ -46,7 +44,7 @@ begin
   ErrorStr := '';
   try
     if Assigned(OnUpdateDBFile) then
-      OnUpdateDBFile(dbCon, trMain, FileName, OldDBVersion, OnUpdateDBFileData);
+      OnUpdateDBFile(dbCon, DBDirectoryName, OldDBVersion, OnUpdateDBFileData);
   except
     on E : Exception do
       ErrorStr := E.Message;
@@ -54,9 +52,8 @@ begin
 end;
 
 procedure RunUpdateDBFile(
-  dbCon : TpFIBDatabase;
-  trMain : TpFIBTransaction;
-  FileName : String;
+  dbCon : TCustomMyConnection;
+  DBDirectoryName : String;
   OldDBVersion : Integer;
   AOnUpdateDBFile : TOnUpdateDBFile;
   AOnUpdateDBFileData : TOnUpdateDBFileData;
@@ -71,8 +68,9 @@ begin
   RunT.OnUpdateDBFileData := AOnUpdateDBFileData;
   try
     RunT.dbCon := dbCon;
-    RunT.trMain := trMain;
-    RunT.FileName := FileName;
+    if Assigned(RunT.dbCon) and (RunT.dbCon is TMyEmbConnection) then
+      TMyEmbConnection(RunT.dbCon).DataDir := DBDirectoryName;
+    RunT.DBDirectoryName := DBDirectoryName;
     RunT.OldDBVersion := OldDBVersion;
     RunT.FreeOnTerminate := False;
     ShowWaiting(ShowCaption, RunT);

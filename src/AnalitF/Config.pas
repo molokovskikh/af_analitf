@@ -57,8 +57,6 @@ type
     Label1: TLabel;
     dbeHTTPHost: TDBEdit;
     gbAccount: TGroupBox;
-    Label2: TLabel;
-    dbeServiceName: TDBEdit;
     btnRasActions: TBitBtn;
     lblTip: TLabel;
     imgTip: TImage;

@@ -13,7 +13,9 @@ const
   SDirDocs='Docs';
   SDirIn='In';
   SDirData = 'Data';
+  SDirDataEtalon = 'DataEtalon';
   SDirDataBackup = 'DataBackup';
+  SDirDataPrev   = 'DataPrev';
   SDirExe='Exe';
   SDirWaybills = 'Waybills';
   SDirRejects = 'Rejects';

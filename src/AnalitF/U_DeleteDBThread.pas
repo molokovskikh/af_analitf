@@ -15,7 +15,7 @@ uses
 type
   TDeleteDBFiles = class(TThread)
    private
-    procedure DeleteDBFile(DeleteDBFileName : String);
+    procedure DeleteDBDirectory(DeleteDirectoryName : String);
    protected
     procedure Execute; override;
   end;
@@ -23,23 +23,23 @@ type
 
 { TDeleteDBFiles }
 
-procedure TDeleteDBFiles.DeleteDBFile(DeleteDBFileName: String);
+procedure TDeleteDBFiles.DeleteDBDirectory(DeleteDirectoryName: String);
 begin
   try
-    if FileExists(DeleteDBFileName) then
-      AProc.OSDeleteFile(DeleteDBFileName);
+    if DirectoryExists(DeleteDirectoryName) then
+      DeleteDirectory(DeleteDirectoryName);
   except
     on E : Exception do
-      LogExitError(Format( 'Не возможно удалить файл %s : %s ', [DeleteDBFileName, E.Message ]), Integer(ecDeleteDBFiles));
+      LogExitError(Format( 'Не возможно удалить папку %s : %s ', [DeleteDirectoryName, E.Message ]), Integer(ecDeleteDBFiles));
   end;
 end;
 
 procedure TDeleteDBFiles.Execute;
 begin
   WriteExchangeLog('AnalitF', 'Попытка удалить файлы базы данных для пересоздания базы данных.');
-  DeleteDBFile(ChangeFileExt(ParamStr(0), '.bak'));
-  DeleteDBFile(ChangeFileExt(ParamStr(0), '.fdb.etl'));
-  DeleteDBFile(ChangeFileExt(ParamStr(0), '.fdb'));
+  DeleteDBDirectory(ExePath + SDirDataBackup);
+  DeleteDBDirectory(ExePath + SDirDataPrev);
+  DeleteDBDirectory(ExePath + SDirData);
   WriteExchangeLog('AnalitF', 'Удаление файлов базы данных завершилось успешно.');
 end;
 

@@ -18,7 +18,6 @@ type
     procedure HTTPReclameWork(Sender: TObject;
       AWorkMode: TWorkMode;
 	    AWorkCount: Int64);
-    procedure UpdateReclameTable;
    protected
     procedure Execute; override;
    public
@@ -196,8 +195,6 @@ begin
           Log('Reclame', 'ѕытаемс€ подтвердить архив с рекламным блоком...');
           FSOAP.Invoke('ReclameComplete', [], []);
           Log('Reclame', 'јрхив с рекламным блоком успешно подтвержден');
-
-          Synchronize(UpdateReclameTable);
         end;
 
       end
@@ -272,11 +269,6 @@ procedure TReclameThread.UpdateProgress;
 begin
   ExchangeForm.lReclameStatus.Caption := FStatusStr;
   ExchangeForm.ReclameBar.Position := FStatusPosition;
-end;
-
-procedure TReclameThread.UpdateReclameTable;
-begin
-  DM.SetReclame;
 end;
 
 initialization

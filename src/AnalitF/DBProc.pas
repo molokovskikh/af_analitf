@@ -3,7 +3,7 @@ unit DBProc;
 interface
 
 uses Windows, Classes, DB, DbGrids, SysUtils, Forms, Controls, ShellAPI,
-	DBGridEh, DBGridEhImpExp, pFIBDataSet, ToughDBGrid, MyAccess;
+     DBGridEh, DBGridEhImpExp, pFIBDataSet, ToughDBGrid, MyAccess, StrUtils;
 
 procedure DoPost(DataSet: TDataSet; SaveChanges: Boolean);
 procedure SoftEdit(DataSet: TDataSet);
@@ -21,6 +21,12 @@ function SetConnectionProperty(const ConnectionString, PropertyName,
 function SaveGrid(Grid: TCustomDBGridEh): Boolean;
 procedure FIBDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
 procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
+function  QueryValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
+  Values: array of Variant): Variant;
+procedure ReplaceAutoIncrement(SQL : TStrings);
+
+
+
 
 implementation
 
@@ -279,6 +285,57 @@ begin
   end;
 
   MyDacDataSet.IndexFieldNames := SortConditions;
+end;
+
+function  QueryValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
+  Values: array of Variant): Variant;
+var
+  I : Integer;
+  adsQueryValue : TMyQuery;
+begin
+  if (Length(Params) <> Length(Values)) then
+    raise Exception.Create('QueryValue: Кол-во параметров не совпадает со списком значений.');
+
+  adsQueryValue := TMyQuery.Create(nil);
+  try
+    adsQueryValue.Connection := Database;
+    
+    adsQueryValue.SQL.Text := SQL;
+    for I := Low(Params) to High(Params) do
+      adsQueryValue.ParamByName(Params[i]).Value := Values[i];
+    adsQueryValue.Open;
+    try
+      if adsQueryValue.Fields.Count < 1 then
+        raise Exception.Create('QueryValue: В результирующем наборе данных нет ни одного столбца.');
+      Result := adsQueryValue.Fields[0].Value;
+    finally
+      adsQueryValue.Close;
+    end;
+
+  finally
+    adsQueryValue.Free;
+  end;
+end;
+
+procedure ReplaceAutoIncrement(SQL : TStrings);
+var
+  I, Index, SpaceIndex : Integer;
+begin
+  //Удаляем шапку скрипта
+  if SQL.Count > 8 then
+    for I := 1 to 8 do
+      SQL.Delete(0);
+
+  for I := 0 to SQL.Count-1 do begin
+    Index := PosEx('AUTO_INCREMENT=', UpperCase(SQL[i]));
+    if Index > 0 then begin
+      SpaceIndex := PosEx(' ', SQL[i], Index);
+      if SpaceIndex > 0 then
+        SQL[i] :=
+          Copy(SQL[i], 1, Index - 1) +
+          Copy(SQL[i], SpaceIndex + 1, Length(SQL[i]));
+    end;
+  end;
 end;
 
 end.

@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshConnect
+    ActivePage = tshAuth
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5304,7 +5304,7 @@ object ConfigForm: TConfigForm
           Height = 21
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5439,14 +5439,6 @@ object ConfigForm: TConfigForm
           Height = 13
           Caption = #1061#1086#1089#1090
         end
-        object Label2: TLabel
-          Left = 232
-          Top = 16
-          Width = 37
-          Height = 13
-          Caption = #1057#1077#1088#1074#1080#1089
-          Visible = False
-        end
         object dbeHTTPHost: TDBEdit
           Left = 8
           Top = 33
@@ -5455,16 +5447,6 @@ object ConfigForm: TConfigForm
           DataField = 'HTTPHost'
           DataSource = DM.dsParams
           TabOrder = 0
-        end
-        object dbeServiceName: TDBEdit
-          Left = 232
-          Top = 33
-          Width = 137
-          Height = 21
-          DataField = 'ServiceName'
-          DataSource = DM.dsParams
-          TabOrder = 1
-          Visible = False
         end
       end
       object gbAccount: TGroupBox

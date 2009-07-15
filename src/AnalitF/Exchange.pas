@@ -172,7 +172,6 @@ begin
     WriteExchangeLog('Exchange', '---------------------------');
     WriteExchangeLog('Exchange', 'Сессия начата');
 		try
-      DM.ResetReclame;
 			ExchangeForm.Timer.Enabled := True;
       DM.MainConnection.Close;
 			Result := ExchangeForm.ShowModal = mrOk;
@@ -180,7 +179,6 @@ begin
         AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
       Sleep(500);
       DM.MainConnection.Open;
-      DM.UpdateReclame;
 		except
 			on E: Exception do
         AProc.MessageBox(Copy(E.Message, 1, 1024), MB_ICONSTOP);
