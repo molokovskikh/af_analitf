@@ -82,10 +82,12 @@ type
     procedure dbgCatalogGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure actSearchInBeginExecute(Sender: TObject);
+    procedure dbgNamesExit(Sender: TObject);
   private
     fr : TForceRus;
     BM : TBitmap;
     InternalSearchText : String;
+    LastDBGrid : TWinControl;
     procedure SetNamesParams;
     procedure SetFormsParams;
     procedure AddKeyToSearch(Key : Char);
@@ -159,6 +161,8 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+
+  LastDBGrid := nil;
 
   BM := TBitmap.Create;
 
@@ -296,7 +300,8 @@ end;
 
 procedure TNamesFormsForm.dbgFormsExit(Sender: TObject);
 begin
-	dbgForms.Options := dbgForms.Options - [dgAlwaysShowSelection];
+  dbgForms.Options := dbgForms.Options - [dgAlwaysShowSelection];
+  LastDBGrid := dbgForms;
 end;
 
 procedure TNamesFormsForm.dbgFormsDblClick(Sender: TObject);
@@ -355,18 +360,15 @@ begin
       tmrSearchTimer(nil)
     else
       SetCatalog;
+    dbgCatalog.SetFocus
   end
   else begin
-    NamesIsFocus := dbgNames.Focused;
+    NamesIsFocus := LastDBGrid = dbgNames;
     ShortCode := adsNames.FieldByName('AShortCode').Value;
     if not NamesIsFocus then
       FullCode := adsForms.FieldByName('FullCode').Value;
     SetNamesParams;
-  end;
 
-  if actNewSearch.Checked then
-    dbgCatalog.SetFocus
-  else begin
     if adsNames.Locate('AShortCode', ShortCode, []) then begin
       if NamesIsFocus then
         dbgNames.SetFocus
@@ -383,6 +385,7 @@ begin
       dbgNames.SetFocus;
     end
   end;
+
 end;
 
 procedure TNamesFormsForm.SetCatalog;
@@ -605,6 +608,11 @@ begin
   CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
     adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
     True, True);
+end;
+
+procedure TNamesFormsForm.dbgNamesExit(Sender: TObject);
+begin
+  LastDBGrid := dbgNames;
 end;
 
 initialization

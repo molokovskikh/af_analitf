@@ -106,6 +106,7 @@ inherited NamesFormsForm: TNamesFormsForm
       TitleFont.Style = []
       OnDblClick = dbgNamesDblClick
       OnEnter = dbgNamesEnter
+      OnExit = dbgNamesExit
       OnGetCellParams = dbgNamesGetCellParams
       OnKeyDown = dbgNamesKeyDown
       SearchField = 'Name'
