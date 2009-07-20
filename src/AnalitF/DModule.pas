@@ -2646,7 +2646,7 @@ begin
     'ProviderEmail = ''farm@analit.net'',' +
     'ProviderWeb = ''http://www.analit.net/'',' +
     'ProviderMDBVersion = ' + IntToStr(CURRENT_DB_VERSION) + ';'#13#10#13#10 +
-    'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (0, 0, 1000000, 30);'#13#10#13#10
+    'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (1, 0, 1000000, 30);'#13#10#13#10
     );
 end;
 
@@ -3778,6 +3778,13 @@ begin
           updateMySql.Execute;
           selectFirebird.Next;
         end;
+      end
+      else begin
+        updateMySql.ParamByName('Id').Value := 1;
+        updateMySql.ParamByName('LeftLIMIT').Value := 0;
+        updateMySql.ParamByName('RIGHTLIMIT').Value := 1000000;
+        updateMySql.ParamByName('Retail').Value := 30;
+        updateMySql.Execute;
       end;
     finally
       selectFirebird.Close;
