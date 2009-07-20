@@ -32,9 +32,6 @@ type
     Timer1: TTimer;
     HTTP: TIdHTTP;
     HTTPReclame: TIdHTTP;
-    gbReclame: TGroupBox;
-    ReclameBar: TProgressBar;
-    lReclameStatus: TLabel;
     sslMain: TIdSSLIOHandlerSocketOpenSSL;
     sslReclame: TIdSSLIOHandlerSocketOpenSSL;
     httpReceive: TIdHTTP;

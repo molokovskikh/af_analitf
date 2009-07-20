@@ -10,14 +10,7 @@ type
     RecTerminated: boolean;
    private
     { Private declarations }
-    FStatusPosition : Integer;
-    FStatusStr : String;
     StartDownPosition : Integer;
-    procedure ClearProgress;
-    procedure UpdateProgress;
-    procedure HTTPReclameWork(Sender: TObject;
-      AWorkMode: TWorkMode;
-	    AWorkCount: Int64);
    protected
     procedure Execute; override;
    public
@@ -27,14 +20,6 @@ type
 implementation
 
 uses Exchange, DModule, AProc, SevenZip;
-
-procedure TReclameThread.ClearProgress;
-begin
-  FStatusPosition := 0;
-  FStatusStr := '';
-  ExchangeForm.lReclameStatus.Caption := '';
-  ExchangeForm.ReclameBar.Position := 0;
-end;
 
 procedure TReclameThread.Execute;
 const
@@ -50,7 +35,6 @@ var
   SleepCount : Integer;
 begin
 	RecTerminated := False;
-  Synchronize(ClearProgress);
   try
     SleepCount := 0;
     while not Terminated and (SleepCount < 10) do begin
@@ -58,8 +42,6 @@ begin
       Inc(SleepCount);
     end;
     if Terminated then exit;
-    FStatusStr := 'Запрос рекламного блока...';
-    Synchronize(UpdateProgress);
     FSOAP := TSOAP.Create(
       FURL,
       FHTTPName,
@@ -101,7 +83,6 @@ begin
             if Terminated then Abort;
 
             ReceiveHTTP.Request.BasicAuthentication := True;
-            ReceiveHTTP.OnWork := HTTPReclameWork;
             Log('Reclame', 'Пытаемся скачать архив с рекламным блоком...');
             try
 
@@ -201,8 +182,6 @@ begin
       else
         Log('Reclame', 'Рекламный блок не обновлен');
 
-      FStatusStr := 'Загрузка рекламного блока завершена';
-      Synchronize(UpdateProgress);
       Log('Reclame', 'Процесс обновления рекламного блока завершен');
     finally
       FSOAP.Free;
@@ -210,65 +189,10 @@ begin
 
   except
     on E : Exception do begin
-      FStatusStr := 'Загрузка рекламного блока завершена';
-      Synchronize(UpdateProgress);
       Log('Reclame', 'Процесс обновления рекламного блока завершился с ошибкой : ' + E.Message);
     end;
   end;
 	RecTerminated := True;
-end;
-
-procedure TReclameThread.HTTPReclameWork(Sender: TObject;
-  AWorkMode: TWorkMode; AWorkCount: Int64);
-var
-	Total, Current: real;
-	TSuffix, CSuffix: string;
-  HTTP : TIdHTTP;
-  INFileSize : Integer;
-  ProgressPosition : Integer;
-begin
-  if Terminated then Abort;
-
-  HTTP := TIdHTTP(Sender);
-	if HTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then 
-	begin
-    INFileSize := StrToInt(HTTP.Response.RawHeaders.Values['INFileSize']);
-
-		ProgressPosition := Round( ((StartDownPosition+AWorkCount)/INFileSize) *100);
-
-		TSuffix := 'Кб';
-		CSuffix := 'Кб';
-
-		Total := RoundTo(INFileSize/ 1024, -2);
-		Current := RoundTo((StartDownPosition +	AWorkCount) / 1024, -2);
-
-    if Total > 1000 then
-    begin
-      Total := RoundTo( Total / 1024, -2);
-      TSuffix := 'Мб';
-    end;
-    if Current > 1000 then
-    begin
-      Current := RoundTo( Current / 1024, -2);
-      CSuffix := 'Мб';
-    end;
-
-    if (ProgressPosition > 0) and ((ProgressPosition - FStatusPosition > 5) or (ProgressPosition > 97)) then
-    begin
-      FStatusStr := 'Загрузка данных   (' +
-        FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
-        FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
-      FStatusPosition := ProgressPosition;
-      Synchronize(UpdateProgress);
-    end;
-	end;
-
-end;
-
-procedure TReclameThread.UpdateProgress;
-begin
-  ExchangeForm.lReclameStatus.Caption := FStatusStr;
-  ExchangeForm.ReclameBar.Position := FStatusPosition;
 end;
 
 initialization
