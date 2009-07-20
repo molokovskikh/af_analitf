@@ -455,7 +455,8 @@ begin
 	if AProc.MessageBox( 'Сжатие базы данных достаточно длительный процесс.'#13#10'Продолжить?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK
   then
     Exit;
-	FreeChildForms;
+  //Закрываем все окна перед сжатием базы данных
+  FreeChildForms;
 	Application.ProcessMessages;
   RunCompactDatabase;
 	AProc.MessageBox( 'Сжатие базы данных завершено');
@@ -515,7 +516,8 @@ begin
 		result := TChildForm( FindChildControlByClass( Self, FormClass));
 		if result = nil then
 		begin
-			FreeChildForms;
+      //Если я переделаю ShowChildForm, то этот вызов не нужен
+      //FreeChildForms;
 			Result := FormClass.Create(Application);
 		end
 		else result.Show;
@@ -533,7 +535,8 @@ begin
 	end
 	else
 	begin
-		FreeChildForms;
+    //Если я переделаю ShowChildForm, то этот вызов не нужен 
+    //FreeChildForms;
 		ShowOrdersH;
 	end;
 end;
@@ -597,7 +600,8 @@ procedure TMainForm.itmClearDatabaseClick(Sender: TObject);
 begin
 	if AProc.MessageBox( 'Действительно очистить базу?',
 		MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then exit;
-	FreeChildForms;
+  //Перед очисткой базы данных закрываем все окна
+  FreeChildForms;
 	Application.ProcessMessages;
 	DM.ClearDatabase;
 	AProc.MessageBox( 'Очистка базы завершена');
@@ -685,7 +689,9 @@ end;
 
 procedure TMainForm.actCloseAllExecute(Sender: TObject);
 begin
-	FreeChildForms;
+  //Закрываем все окна по требованию пользователя
+  //Этим действием дублируется кнопка "Домой", непонятно зачем
+  FreeChildForms;
 end;
 
 procedure TMainForm.actSendOrdersExecute(Sender: TObject);
@@ -756,7 +762,8 @@ end;
 
 procedure TMainForm.actHomeExecute(Sender: TObject);
 begin
-	MainForm.FreeChildForms;
+  //Отображаем "пустое" главное окно, поэтому закрываем все дочерние формы 
+  MainForm.FreeChildForms;
   UpdateReclame;
 end;
 

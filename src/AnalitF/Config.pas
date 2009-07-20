@@ -148,7 +148,8 @@ var
   NewPass,
   CryptNewPass : String;
 begin
-  MainForm.FreeChildForms; //вид дочерних форм зависит от параметров
+  //вид дочерних форм зависит от параметров, поэтому закрываем окна
+  MainForm.FreeChildForms;
   with TConfigForm.Create(Application) do try
     OldExep := Application.OnException;
     try

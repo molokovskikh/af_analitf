@@ -1072,7 +1072,8 @@ end;
 
 procedure TDM.ClientChanged;
 begin
-  MainForm.CurrentUser := adtClients.FieldByName( 'Name').AsString; 
+  MainForm.CurrentUser := adtClients.FieldByName( 'Name').AsString;
+  //Закрываем все формы перед сменой клиента, т.к. их вид зависит от клиента 
   MainForm.FreeChildForms;
   MainForm.SetOrdersInfo;
   DoPost(adtParams, True);

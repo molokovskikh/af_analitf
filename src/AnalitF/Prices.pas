@@ -155,7 +155,8 @@ begin
   end;
 
   if IsAlonePrice then begin
-    MainForm.FreeChildForms;
+    //Если я переделаю ShowChildForm, то этот вызов не нужен
+    //MainForm.FreeChildForms;
     CoreFirmForm := TCoreFirmForm.Create( Application );
     CoreFirmForm.ShowForm(
       AlonePriceCode,

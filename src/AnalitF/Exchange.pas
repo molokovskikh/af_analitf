@@ -112,7 +112,8 @@ var
 	mr: integer;
 //	hMenuHandle: HMENU;
 begin
-	MainForm.FreeChildForms;
+  //ѕеред запуском взаимодействи€ с сервером закрываем все дочерние окна
+  MainForm.FreeChildForms;
 	Result := False;
   if Assigned(GlobalExchangeParams) then
     FreeAndNil(GlobalExchangeParams);
@@ -272,6 +273,8 @@ begin
 		CompactForm.Close;
 		CompactForm.Free;
 		if mr = mrOK then begin
+      //ѕеред началом сжати€ базы данных закрываем все дочерние окна. ¬озможно, это не надо делать,
+      //т.к. дочерние окна закрывали ранее
       MainForm.FreeChildForms;
       Application.ProcessMessages;
       RunCompactDatabase;
