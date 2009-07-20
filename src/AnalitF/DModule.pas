@@ -1087,7 +1087,13 @@ var
   Total,
   TotalFree,
   DBFileSize : Int64;
+  Kbd: HKL;
 begin
+  //Если попытка загрузить клавиатуру окажется удачной, то делаем ее активной
+  Kbd := LoadKeyboardLayout('00000419', 0);
+  if Kbd<>0 then
+    ActivateKeyboardLayout(Kbd,0);
+
   if GetDisplayColors < 16 then
     LogExitError('Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.', Integer(ecColor));
 
