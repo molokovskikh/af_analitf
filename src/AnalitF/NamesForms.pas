@@ -104,7 +104,7 @@ type
 
 procedure ShowOrderAll;
 
-procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
+procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64{; APrevForm : TChildForm = nil});
 
 implementation
 
@@ -120,7 +120,8 @@ begin
   MainForm.ShowChildForm(TNamesFormsForm);
 end;
 
-procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
+procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64{;
+APrevForm : TChildForm = nil});
 begin
 	ShowOrderAll;
 
@@ -152,6 +153,11 @@ begin
           actUseForms.Checked, False);
       end;
     end;
+
+{
+    if Assigned(APrevForm) then
+      CoreForm.SetPrevForm(APrevForm);
+}      
 		CoreForm.adsCore.Locate( 'CoreId', CoreId, []);
 	end;
 end;
@@ -195,7 +201,9 @@ begin
   	actShowAll.Checked := FieldByName( 'ShowAllCatalog').AsBoolean;
 	end;
 
-	CoreForm := TCoreForm.Create(Application);
+  CoreForm := TCoreForm( FindChildControlByClass(MainForm, TCoreForm) );
+  if CoreForm = nil then
+    CoreForm := TCoreForm.Create(Application);
 
   SetGrids;
 

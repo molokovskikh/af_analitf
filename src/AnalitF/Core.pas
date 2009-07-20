@@ -263,8 +263,8 @@ var
 
 implementation
 
-uses Main, AProc, DModule, NamesForms, Constant, OrdersH, DBProc, CoreFirm,
-  Prices, U_GroupUtils;
+uses Main, AProc, DModule, Constant, NamesForms, OrdersH, DBProc, CoreFirm, 
+  Prices, U_GroupUtils, Orders;
 
 var
   UserSetRetUpCost : Boolean;
@@ -330,15 +330,17 @@ end;
 procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean);
 var
 	I: Integer;
-	OrdersH: TOrdersHForm;
+  //OrdersH: TOrdersHForm;
   TmpSortList : TStringList;
 begin
   plOverCost.Hide();
   //≈сли в прошлый раз пользователь изменил наценку, то выставл€ем ее
   if UserSetRetUpCost then
     seRetUpCost.Value := RetUpCostValue;
-	OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
-	if OrdersH <> nil then OrdersH.Free;
+  //«ачем этот код здесь: тайна, покрыта€ мраком
+  //OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
+  //if OrdersH <> nil then OrdersH.Free;
+  
 	SetLength( RecInfos, 0);
 
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
@@ -553,20 +555,25 @@ end;
 procedure TCoreForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	if (( Key = VK_ESCAPE) or ( Key = VK_SPACE)) and
-		not TToughDBGrid( Sender).InSearch then
-	begin
-		if Self.PrevForm is TNamesFormsForm then
-		begin
-			Self.PrevForm.ShowForm;
-      if TNamesFormsForm( Self.PrevForm).actNewSearch.Checked then
-         TNamesFormsForm( Self.PrevForm).dbgCatalog.SetFocus
-      else
-        if TNamesFormsForm( Self.PrevForm).actUseForms.Checked then
-          TNamesFormsForm( Self.PrevForm).dbgForms.SetFocus
-        else TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
-		end;
-	end;
+  if ( Key = VK_ESCAPE) and (Self.PrevForm is TOrdersForm)
+  then begin
+    Self.PrevForm.ShowForm;
+  end
+  else
+    if (( Key = VK_ESCAPE) or ( Key = VK_SPACE)) and
+      not TToughDBGrid( Sender).InSearch then
+    begin
+      if Self.PrevForm is TNamesFormsForm then
+      begin
+        Self.PrevForm.ShowForm;
+        if TNamesFormsForm( Self.PrevForm).actNewSearch.Checked then
+           TNamesFormsForm( Self.PrevForm).dbgCatalog.SetFocus
+        else
+          if TNamesFormsForm( Self.PrevForm).actUseForms.Checked then
+            TNamesFormsForm( Self.PrevForm).dbgForms.SetFocus
+          else TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
+      end;
+    end;
 end;
 
 procedure TCoreForm.dbgCoreKeyPress(Sender: TObject; var Key: Char);

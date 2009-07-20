@@ -150,7 +150,11 @@ begin
   FSumOrders := TStringList.Create;
   FSumOrders.Sorted := True;
 	PrintEnabled := False;
-	OrdersForm := TOrdersForm.Create( Application);
+
+  OrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
+  if OrdersForm = nil then
+    OrdersForm := TOrdersForm.Create( Application);
+
   WayBillListForm := TWayBillListForm.Create(Application);
 	Reg := TRegIniFile.Create;
   try

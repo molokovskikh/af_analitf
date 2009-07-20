@@ -157,7 +157,11 @@ begin
   if IsAlonePrice then begin
     //Если я переделаю ShowChildForm, то этот вызов не нужен
     //MainForm.FreeChildForms;
-    CoreFirmForm := TCoreFirmForm.Create( Application );
+
+    CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
+    if CoreFirmForm = nil then
+      CoreFirmForm := TCoreFirmForm.Create( Application );
+
     CoreFirmForm.ShowForm(
       AlonePriceCode,
       AloneRegionCode,
@@ -177,7 +181,9 @@ var
 begin
 	inherited;
   NeedFirstOnDataSet := False;
-	CoreFirmForm := TCoreFirmForm.Create( Application);
+  CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
+  if CoreFirmForm = nil then
+    CoreFirmForm := TCoreFirmForm.Create( Application );
 	actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
 	Reg := TRegIniFile.Create;
   try

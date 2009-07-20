@@ -97,6 +97,7 @@ type
     procedure tmrCheckOrderCountTimer(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure adsOrdersOldBeforePost(DataSet: TDataSet);
+    procedure dbgOrdersDblClick(Sender: TObject);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
@@ -104,6 +105,7 @@ type
     PriceName, RegionName : String;
     procedure SetOrderLabel;
     procedure ocf(DataSet: TDataSet);
+    procedure FlipToCore;
   public
     procedure ShowForm(AOrderId: Integer); overload; //reintroduce;
     procedure ShowForm; override;
@@ -116,7 +118,7 @@ var
 
 implementation
 
-uses OrdersH, DModule, Constant, Main, Math, CoreFirm;
+uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core;
 
 {$R *.dfm}
 
@@ -189,11 +191,15 @@ end;
 procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	if Key = VK_ESCAPE then
-    if Assigned(ParentOrdersHForm) then
-      ParentOrdersHForm.ShowForm
-    else
-      PrevForm.ShowForm;
+  if Key = VK_RETURN
+  then
+    FlipToCore
+  else
+    if Key = VK_ESCAPE then
+      if Assigned(ParentOrdersHForm) then
+        ParentOrdersHForm.ShowForm
+      else
+        PrevForm.ShowForm;
 end;
 
 procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
@@ -255,7 +261,7 @@ procedure TOrdersForm.ShowForm;
 begin
   inherited;
   //Если мы производим возврат и формы "Заявка поставщику", то надо обновить данные
-  if Assigned(PrevForm) and (PrevForm is TCoreFirmForm) then
+  if Assigned(PrevForm) and ((PrevForm is TCoreFirmForm) or (PrevForm is TCoreForm)) then
     SetParams(OrderID);
 end;
 
@@ -321,6 +327,27 @@ begin
     plOverCost.Show;
     Timer.Enabled := True;
   end;
+end;
+
+procedure TOrdersForm.FlipToCore;
+var
+  FullCode, ShortCode: integer;
+  CoreId : Int64;
+begin
+  if MainForm.ActiveChild <> Self then exit;
+  if adsOrders.IsEmpty then Exit;
+
+	FullCode := adsOrdersFullCode.AsInteger;
+	ShortCode := DM.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), [] , []);
+
+  CoreId := adsOrdersCOREID.AsLargeInt;
+
+//  FlipToCode(FullCode, ShortCode, CoreId, Self);
+end;
+
+procedure TOrdersForm.dbgOrdersDblClick(Sender: TObject);
+begin
+  FlipToCore
 end;
 
 end.

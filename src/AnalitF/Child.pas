@@ -84,6 +84,7 @@ type
     procedure Print( APreview: boolean = False); virtual;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure  SetPrevForm(NewPrevForm : TChildForm);
   published
     //Вытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
@@ -440,6 +441,11 @@ begin
     for I := 0 to ComponentCount-1 do
       if Components[i] is TCustomMyDataSet then
         TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
+end;
+
+procedure TChildForm.SetPrevForm(NewPrevForm: TChildForm);
+begin
+  PrevForm := NewPrevForm;
 end;
 
 end.

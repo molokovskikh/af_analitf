@@ -246,6 +246,7 @@ inherited OrdersForm: TOrdersForm
     TitleFont.Height = -11
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
+    OnDblClick = dbgOrdersDblClick
     OnGetCellParams = dbgOrdersGetCellParams
     OnKeyDown = dbgOrdersKeyDown
     OnKeyPress = dbgOrdersKeyPress
