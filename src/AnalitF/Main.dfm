@@ -275,7 +275,7 @@ object MainForm: TMainForm
         Action = actSendOrders
       end
       object itmReceiveTickets: TMenuItem
-        Action = actReceiveTickets
+        Action = actWayBill
       end
       object N17: TMenuItem
         Action = actReceiveAll
@@ -414,7 +414,7 @@ object MainForm: TMainForm
       Action = actSendOrders
     end
     object N13: TMenuItem
-      Action = actReceiveTickets
+      Action = actWayBill
     end
     object N14: TMenuItem
       Caption = '-'
@@ -433,12 +433,6 @@ object MainForm: TMainForm
       ImageIndex = 2
       ShortCut = 16466
       OnExecute = actReceiveExecute
-    end
-    object actReceiveTickets: TAction
-      Category = 'Actions'
-      Caption = #1055#1086#1083#1091#1095#1080#1090#1100' '#1076#1086#1082#1091#1084#1077#1085#1090#1099
-      Hint = #1055#1086#1083#1091#1095#1080#1090#1100' '#1076#1086#1082#1091#1084#1077#1085#1090#1099
-      OnExecute = actReceiveTicketsExecute
     end
     object actHelpContent: TAction
       Category = 'Help'
@@ -595,8 +589,8 @@ object MainForm: TMainForm
     end
     object actWayBill: TAction
       Category = 'Order'
-      Caption = #1044#1086#1082#1091#1084#1077#1085#1090#1099
-      Hint = #1053#1072#1082#1083#1072#1076#1085#1099#1077', '#1086#1090#1082#1072#1079#1099' '#1080' '#1076#1086#1082#1091#1084#1077#1085#1090#1099' '#1086#1090' '#1040#1050' '#1048#1085#1092#1086#1088#1091#1084
+      Caption = #1055#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
+      Hint = #1055#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
       ImageIndex = 15
       OnExecute = actWayBillExecute
     end

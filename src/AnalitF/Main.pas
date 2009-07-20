@@ -78,7 +78,6 @@ TMainForm = class(TVistaCorrectForm)
     N17: TMenuItem;
     ActionList: TActionList;
     actReceive: TAction;
-    actReceiveTickets: TAction;
     actHelpContent: TAction;
     actSendOrders: TAction;
     actConfig: TAction;
@@ -158,7 +157,6 @@ TMainForm = class(TVistaCorrectForm)
     procedure itmAboutClick(Sender: TObject);
     procedure actWayBillExecute(Sender: TObject);
     procedure actSynonymSearchExecute(Sender: TObject);
-    procedure actReceiveTicketsExecute(Sender: TObject);
     procedure actSendLetterExecute(Sender: TObject);
     procedure actViewDocsExecute(Sender: TObject);
     procedure FormResize(Sender: TObject);
@@ -893,11 +891,6 @@ begin
    + ' and (orderdate < :MinOrderDate)';
   DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
   DM.adcUpdate.Execute;
-end;
-
-procedure TMainForm.actReceiveTicketsExecute(Sender: TObject);
-begin
-	RunExchange( [eaGetWaybills] );
 end;
 
 procedure TMainForm.actSendLetterExecute(Sender: TObject);
