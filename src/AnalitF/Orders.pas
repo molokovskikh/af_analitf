@@ -77,13 +77,13 @@ type
     adsOrdersjunk: TBooleanField;
     adsOrdersordercount: TIntegerField;
     adsOrdersprice: TFloatField;
-    adsOrdersSumOrder: TFloatField;
     adsOrdersrequestratio: TIntegerField;
     adsOrdersordercost: TFloatField;
     adsOrdersminordercount: TIntegerField;
     adsOrdersOrdersrequestratio: TIntegerField;
     adsOrdersOrdersordercost: TFloatField;
     adsOrdersOrdersminordercount: TIntegerField;
+    adsOrdersSumOrder: TCurrencyField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -103,6 +103,7 @@ type
     PriceCode, RegionCode : Integer;
     PriceName, RegionName : String;
     procedure SetOrderLabel;
+    procedure ocf(DataSet: TDataSet);
   public
     procedure ShowForm(AOrderId: Integer); overload; //reintroduce;
     procedure ShowForm; override;
@@ -140,16 +141,14 @@ var
   Closed : Variant;
 begin
   Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(AOrderId), [], []);
+  adsOrders.OnCalcFields := ocf;
+  dbgOrders.Columns[2].FieldName := 'PRICE';
+  dbgOrders.Columns[4].FieldName := 'SumOrder';
   if Closed = 0 then begin
-    dbgOrders.Columns[2].FieldName := 'PRICE';
-    dbgOrders.Columns[4].FieldName := 'SUMORDER';
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;
   end
   else begin
-    adsOrders.OnCalcFields := nil;
-    dbgOrders.Columns[2].FieldName := 'PRICE';
-    dbgOrders.Columns[4].FieldName := 'SUMORDER';
     dbgOrders.SearchField := 'SynonymName';
     dbgOrders.ForceRus := True;
   end;
@@ -285,6 +284,14 @@ begin
 	Timer.Enabled := False;
 	plOverCost.Hide;
 	plOverCost.SendToBack;
+end;
+
+procedure TOrdersForm.ocf(DataSet: TDataSet);
+begin
+  try
+    adsOrdersSumOrder.AsCurrency := adsOrdersprice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
+  except
+  end;
 end;
 
 procedure TOrdersForm.adsOrdersOldBeforePost(DataSet: TDataSet);

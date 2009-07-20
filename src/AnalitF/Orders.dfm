@@ -538,7 +538,6 @@ inherited OrdersForm: TOrdersForm
       '    OrdersList.junk,'
       '    OrdersList.ordercount,'
       '    OrdersList.price,'
-      '    OrdersList.Price*OrdersList.OrderCount AS SumOrder,'
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
@@ -617,10 +616,6 @@ inherited OrdersForm: TOrdersForm
       FieldName = 'price'
       DisplayFormat = '0.00;;'#39#39
     end
-    object adsOrdersSumOrder: TFloatField
-      FieldName = 'SumOrder'
-      DisplayFormat = '0.00;;'#39#39
-    end
     object adsOrdersrequestratio: TIntegerField
       FieldName = 'requestratio'
     end
@@ -638,6 +633,12 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersOrdersminordercount: TIntegerField
       FieldName = 'Ordersminordercount'
+    end
+    object adsOrdersSumOrder: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
     end
   end
 end

@@ -129,12 +129,12 @@ type
     adsSummaryOrdersOrderId: TLargeintField;
     adsSummarypricecode: TLargeintField;
     adsSummaryregioncode: TLargeintField;
-    adsSummarySumOrder: TFloatField;
     adsSummaryPriceRet: TCurrencyField;
     adsSummaryRequestRatio: TIntegerField;
     adsSummaryMINORDERCOUNT: TIntegerField;
     adsSummaryVitallyImportant: TBooleanField;
     btnGotoCore: TButton;
+    adsSummarySumOrder: TCurrencyField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -298,6 +298,7 @@ begin
 	//вычисляем сумму по позиции
   try
     adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(adsSummaryCOST.AsCurrency);
+    adsSummarySumOrder.AsCurrency := adsSummaryCost.AsCurrency * adsSummaryOrderCount.AsInteger;
   except
   end;
 end;

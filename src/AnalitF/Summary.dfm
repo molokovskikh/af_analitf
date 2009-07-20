@@ -970,8 +970,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.CoreId AS OrdersCoreId,'
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
-      '    Regions.regioncode,'
-      '    OrdersList.PRICE*OrdersList.OrderCount as SumOrder'
+      '    Regions.regioncode'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1042,8 +1041,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.CoreId AS OrdersCoreId,'
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    PricesData.pricecode,'
-      '    Regions.regioncode,'
-      '    OrdersList.Price*OrdersList.OrderCount as SumOrder'
+      '    Regions.regioncode'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1123,8 +1121,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.CoreId AS OrdersCoreId,'
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
-      '    Regions.regioncode,'
-      '    OrdersList.PRICE*OrdersList.OrderCount as SumOrder'
+      '    Regions.regioncode'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1250,10 +1247,6 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryregioncode: TLargeintField
       FieldName = 'regioncode'
     end
-    object adsSummarySumOrder: TFloatField
-      FieldName = 'SumOrder'
-      DisplayFormat = '0.00;;'#39#39
-    end
     object adsSummaryPriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
@@ -1268,6 +1261,12 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryVitallyImportant: TBooleanField
       FieldName = 'VitallyImportant'
+    end
+    object adsSummarySumOrder: TCurrencyField
+      FieldKind = fkCalculated
+      FieldName = 'SumOrder'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
     end
   end
 end

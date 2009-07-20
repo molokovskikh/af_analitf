@@ -543,7 +543,7 @@ object CoreForm: TCoreForm
         end
         item
           EditButtons = <>
-          FieldName = 'CryptBASECOST'
+          FieldName = 'Cost'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11

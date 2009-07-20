@@ -623,7 +623,7 @@ begin
 		end;
 
 		//если уцененный товар, изменяем цвет
-		if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) {or ( Column.Field = adsCoreCryptBASECOST)})
+		if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCost))
     then
 			Background := JUNK_CLR;
 		//ожидаемый товар выделяем зеленым
