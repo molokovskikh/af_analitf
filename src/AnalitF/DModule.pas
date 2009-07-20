@@ -2627,7 +2627,7 @@ begin
     'HTTPNAMECHANGED = 1,' +
     'SHOWALLCATALOG = 0,' +
     'CDS = '''',' +
-    'ORDERSHISTORYDAYCOUNT = 31,' +
+    'ORDERSHISTORYDAYCOUNT = 35,' +
     'CONFIRMDELETEOLDORDERS = 1,' +
     'USEOSOPENWAYBILL = 0,' +
     'USEOSOPENREJECT = 1,' +
@@ -3967,6 +3967,10 @@ begin
       end;
 
       updateMySql.ParamByName('CDS').AsString := newCDS;
+      if (updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value >= 21) and
+         (updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value <= 30)
+      then
+        updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value := 35;
 
       updateMySql.Execute;
 
