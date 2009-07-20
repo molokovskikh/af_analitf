@@ -492,7 +492,6 @@ type
     procedure CheckDBObjects(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
     procedure UpdateDBFile(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
-    function GetLastEtalonFileName : String;
     procedure OnScriptParseError(
       Sender: TObject;
       Error: string;
@@ -955,10 +954,8 @@ begin
 
   //Делаем проверку файла базы данных и в случае проблем производим восстановление из предыдущей удачной копии
   //Проверяем файл, если используем Embedded-сервер, в ином случае - происходит процесс разработки программы и проверять ничего не надо
-{
   if MainConnection is TMyEmbConnection then
     CheckDBFile;
-}    
 
   try
     try
@@ -1482,8 +1479,7 @@ procedure TDM.ClearBackup;
 begin
   if TCustomMyConnection(MainConnection) is TMyEmbConnection then
   begin
-    if DirectoryExists(ExePath + SDirDataPrev) then
-      DeleteDirectory(ExePath + SDirDataPrev);
+    DeleteDirectory(ExePath + SDirDataPrev);
     MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirDataPrev);
   end;
 end;
@@ -2028,57 +2024,6 @@ begin
 
   finally
     try dbCon.Close; except end;
-  end;
-end;
-
-function TDM.GetLastEtalonFileName: String;
-var
-  CurrFileName,
-  FindFileName,
-  TemplateName : String;
-  FindFileAge,
-  CurrFileAge : Integer;
-	EtlSR: TSearchRec;
-begin
-  TemplateName := ChangeFileExt(ParamStr(0), '.fdb') + '.etl';
-  CurrFileName := TemplateName;
-  CurrFileAge := FileAge(CurrFileName);
-
-  if FindFirst( TemplateName + '.e*', faAnyFile, EtlSR) = 0 then
-  try
-
-    repeat
-      if (EtlSR.Name <> '.') and (EtlSR.Name <> '..')
-      then begin
-        FindFileName := ExePath + EtlSR.Name;
-        FindFileAge := FileAge(FindFileName);
-        if FindFileAge > CurrFileAge then begin
-          CurrFileName := FindFileName;
-          CurrFileAge := FindFileAge;
-        end;
-      end;
-    until (FindNext( EtlSR ) <> 0)
-
-  finally
-    SysUtils.FindClose( EtlSR );
-  end;
-
-  if not AnsiSameText(TemplateName, CurrFileName) then begin
-    if Windows.DeleteFile( PChar( TemplateName ) ) then
-      if Windows.MoveFile(PChar(CurrFileName), PChar( TemplateName )) then begin
-        DeleteFilesByMask(TemplateName + '.e*', False);
-        Result := TemplateName;
-      end
-      else
-        Result := CurrFileName
-    else
-      Result := CurrFileName;
-  end
-  else begin
-    if CurrFileAge = -1 then
-      Result := ''
-    else
-      Result := TemplateName;
   end;
 end;
 
@@ -2783,7 +2728,6 @@ var
   UserErrorMessage,
   DBErrorMess : String;
   OldDBFileName,
-  EtalonDBFileName,
   ErrFileName : String;
 begin
   {
@@ -2807,9 +2751,6 @@ begin
         'Fatal         : %s',
         [EMyError(E).ErrorCode, EMyError(E).Message, BoolToStr(EMyError(E).IsFatalError)]
     );
-
-  //Пытаемся найти эталонной файл базы данных, чтобы определиться с восстановлением или созданием
-  EtalonDBFileName := GetLastEtalonFileName;
 
   if not DirectoryExists(ExePath + SDirDataPrev) then begin
     DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
@@ -3353,8 +3294,7 @@ begin
 
   try
     if DirectoryExists(ExePath + SDirData) then begin
-      if DirectoryExists(ExePath + DirDataTest) then
-        DeleteDirectory(ExePath + DirDataTest);
+      DeleteDirectory(ExePath + DirDataTest);
       MoveDirectories(ExePath + SDirData, ExePath + DirDataTest);
     end;
 
@@ -3649,8 +3589,7 @@ end;
 
 procedure TDM.TestDirectoriesOperation;
 begin
-  if DirectoryExists(ExePath + SDirDataBackup) then
-    DeleteDirectory(ExePath + SDirDataBackup);
+  DeleteDirectory(ExePath + SDirDataBackup);
 
   CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
   if not DirectoryExists(ExePath + SDirDataBackup) then
@@ -3791,6 +3730,18 @@ var
   selectMySql : TMyQuery;
   updateMySql : TMyQuery;
   selectFirebird : TpFIBDataSet;
+  UpdateParamsSQL : String;
+  I : Integer;
+  ExistsField : TField;
+  ExistsParam : TDAParam;
+  CDS,
+  BaseCostPass,
+  SynonymPass,
+  CodesPass,
+  oldDBUIN,
+  oldSaveGrids,
+  newCDS : String;
+  pc : TINFCrypt;
 begin
   selectMySql := TMyQuery.Create(nil);
   selectMySql.Connection := dbCon;
@@ -3867,11 +3818,54 @@ begin
     finally
       selectFirebird.Close;
     end;
+    CDS := firebirdDB.QueryValue('select CDS from params where ID = 0', 0);
+    //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
+    if Length(CDS) = 0 then
+      newCDS := ''
+    else begin
+      pc := TINFCrypt.Create(gop, 48);
+      try
+        SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
+        CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
+        BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
+        oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
+        oldSaveGrids := Copy(oldDBUIN, 9, 7);
+        oldDBUIN := Copy(oldDBUIN, 1, 8);
+      finally
+        pc.Free;
+      end;
+      if Length(BaseCostPass) = 0 then
+        AProc.LogCriticalError('Ошибка при переносе данных : Нет необходимой информации.');
+      if Length(oldDBUIN) = 0 then
+        AProc.LogCriticalError('Ошибка при переносе данных : Нет необходимой информации 2.');
+      if oldDBUIN <> IntToHex(GetOldDBID(), 8) then
+        raise Exception.Create('Не совпадает DBUIN в обновляемой базе данных.');
+
+      if (Length(BaseCostPass) > 0) and (Length(oldDBUIN) > 0) then begin
+        pc := TINFCrypt.Create(gcp, 48);
+        try
+          newCDS :=
+            pc.EncodeHex(SynonymPass) +
+            pc.EncodeHex(CodesPass) +
+            pc.EncodeHex(BaseCostPass) +
+            pc.EncodeHex(IntToHex(GetDBID(), 8) + oldSaveGrids);
+        finally
+          pc.Free;
+        end;
+      end
+      else
+        newCDS := '';
+    end;
+
+    if (Length(newCDS) > 0) and (Length(BaseCostPass) > 0) then
+      pc := TINFCrypt.Create(BaseCostPass, 50)
+    else
+      pc := nil;
 
     //Производим перемещение содержимого текущих и отправленных заказов
     updateMySql.SQL.Text := 'delete from analitf.orderslist';
     updateMySql.Execute;
-    selectFirebird.SelectSQL.Text := 'SELECT * FROM orders where order by id';
+    selectFirebird.SelectSQL.Text := 'SELECT * FROM orders order by id';
     selectFirebird.Open;
     try
       if selectFirebird.RecordCount > 0 then begin
@@ -3904,8 +3898,14 @@ begin
           updateMySql.ParamByName('CODEFIRMCR').Value := selectFirebird.FieldByName('CODEFIRMCR').Value;
           updateMySql.ParamByName('SYNONYMCODE').Value := selectFirebird.FieldByName('SYNONYMCODE').Value;
           updateMySql.ParamByName('SYNONYMFIRMCRCODE').Value := selectFirebird.FieldByName('SYNONYMFIRMCRCODE').Value;
-          updateMySql.ParamByName('CODE').Value := selectFirebird.FieldByName('CODE').Value;
-          updateMySql.ParamByName('CODECR').Value := selectFirebird.FieldByName('CODECR').Value;
+          if selectFirebird.FieldByName('CODE').IsNull then
+            updateMySql.ParamByName('CODE').Value := ''
+          else
+            updateMySql.ParamByName('CODE').Value := selectFirebird.FieldByName('CODE').Value;
+          if selectFirebird.FieldByName('CODECR').IsNull then
+            updateMySql.ParamByName('CODECR').Value := ''
+          else
+            updateMySql.ParamByName('CODECR').Value := selectFirebird.FieldByName('CODECR').Value;
           updateMySql.ParamByName('SYNONYMNAME').Value := selectFirebird.FieldByName('SYNONYMNAME').Value;
           updateMySql.ParamByName('SYNONYMFIRM').Value := selectFirebird.FieldByName('SYNONYMFIRM').Value;
           updateMySql.ParamByName('AWAIT').Value := selectFirebird.FieldByName('AWAIT').Value;
@@ -3914,8 +3914,15 @@ begin
           updateMySql.ParamByName('REQUESTRATIO').Value := selectFirebird.FieldByName('REQUESTRATIO').Value;
           updateMySql.ParamByName('ORDERCOST').Value := selectFirebird.FieldByName('ORDERCOST').Value;
           updateMySql.ParamByName('MINORDERCOUNT').Value := selectFirebird.FieldByName('MINORDERCOUNT').Value;
-          if not selectFirebird.FieldByName('SENDPRICE').IsNull then begin
-            updateMySql.ParamByName('PRICE').Value := selectFirebird.FieldByName('SENDPRICE').Value
+          if selectFirebird.FieldByName('SENDPRICE').IsNull then begin
+            //Если пароль для цен известен, то расшифровываем, иначе сбрасываем позицию
+            if Assigned(pc) then
+              updateMySql.ParamByName('PRICE').Value := StrToCurr(D_B_N_C(pc, selectFirebird.FieldByName('PRICE').AsString))
+            else begin
+              updateMySql.ParamByName('PRICE').Value := 0;
+              updateMySql.ParamByName('ORDERCOUNT').Value := 0;
+              updateMySql.ParamByName('COREID').Clear;
+            end;
           end
           else begin
             updateMySql.ParamByName('PRICE').Value := selectFirebird.FieldByName('SENDPRICE').Value;
@@ -3928,7 +3935,48 @@ begin
       selectFirebird.Close;
     end;
 
-    updateMySql.SQL.Text := 'update analitf.params ProviderMDBVersion = 50 where Id = 0';
+    if Assigned(pc) then
+      pc.Free;
+
+    selectMySql.SQL.Text := 'select * from analitf.params where id = 0';
+    selectMySql.Open;
+    selectFirebird.SelectSQL.Text := 'select * from params where id = 0';
+    selectFirebird.Open;
+    try
+      UpdateParamsSQL := '';
+      for I := 0 to selectMySql.FieldCount-1 do
+        if not AnsiSameText(selectMySql.Fields[i].FieldName, 'ID') then begin
+          ExistsField := selectFirebird.FindField(selectMySql.Fields[i].FieldName);
+          if Assigned(ExistsField) then begin
+            if Length(UpdateParamsSQL) > 0 then
+              UpdateParamsSQL := UpdateParamsSQL + ', ';
+            UpdateParamsSQL := UpdateParamsSQL + ExistsField.FieldName + ' = :' + ExistsField.FieldName;
+          end;
+        end;
+
+      UpdateParamsSQL := 'update analitf.params set ' + UpdateParamsSQL + ' where id = 0';
+      updateMySql.SQL.Text := UpdateParamsSQL;
+
+      AProc.LogCriticalError('Получившийся update для params: ' + UpdateParamsSQL);
+
+      for I := 0 to selectFirebird.FieldCount-1 do begin
+        ExistsParam := updateMySql.FindParam(selectFirebird.Fields[i].FieldName);
+        if Assigned(ExistsParam)
+        then
+          ExistsParam.Value := selectFirebird.Fields[i].Value;
+      end;
+
+      updateMySql.ParamByName('CDS').AsString := newCDS;
+
+      updateMySql.Execute;
+
+    finally
+      selectFirebird.Close;
+      selectMySql.Close;
+    end;
+
+
+    updateMySql.SQL.Text := 'update analitf.params set ProviderMDBVersion = 50 where Id = 0';
     updateMySql.Execute;
 
   finally

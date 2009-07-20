@@ -26,8 +26,7 @@ type
 procedure TDeleteDBFiles.DeleteDBDirectory(DeleteDirectoryName: String);
 begin
   try
-    if DirectoryExists(DeleteDirectoryName) then
-      DeleteDirectory(DeleteDirectoryName);
+    DeleteDirectory(DeleteDirectoryName);
   except
     on E : Exception do
       LogExitError(Format( 'Не возможно удалить папку %s : %s ', [DeleteDirectoryName, E.Message ]), Integer(ecDeleteDBFiles));

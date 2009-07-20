@@ -344,15 +344,13 @@ begin
   end;
 
 	{ Запуск с ключем -i (импорт данных) при получении новой версии программы}
-  {
-	if FindCmdLineSwitch('i') then
-	begin
+  if FindCmdLineSwitch('i') then
+  begin
     //Производим только в том случае, если не была создана "чистая" база
     if not DM.CreateClearDatabase then
-  		RunExchange([ eaImportOnly]);
-		exit;
-	end;
-  }
+      RunExchange([ eaImportOnly]);
+    exit;
+  end;
 
 	{ Если операция импорта не была завершена }
 	if DM.IsBackuped or
@@ -387,12 +385,22 @@ begin
     Exit;
   end;
 
-	if ExchangeOnly then exit;
-	{ Не обновлялись больше 20 часов }
-	if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) > 20) and
-		( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
-		if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
-			MB_ICONQUESTION or MB_YESNO) = IDYES then actReceiveExecute( nil);
+  if ExchangeOnly then exit;
+  { Программа только что установлена или не обновлялись больше 20 часов }
+  if (DM.adtParams.FieldByName( 'UpdateDateTime').IsNull and (Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> ''))
+  then begin
+    if AProc.MessageBox( 'База данных программы не заполнена. Выполнить обновление?',
+       MB_ICONQUESTION or MB_YESNO) = IDYES
+    then
+      actReceiveExecute( nil);
+  end
+  else
+    if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) > 20) and
+      ( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
+      if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
+         MB_ICONQUESTION or MB_YESNO) = IDYES
+      then
+        actReceiveExecute( nil);
 
   //Обновляем ToolBar в случае смены клиента после обновления
   ToolBar.Invalidate;
@@ -602,9 +610,12 @@ end;
 
 procedure TMainForm.SetUpdateDateTime;
 begin
-	StatusBar.Panels[ 3].Text := 'Обновление : ' +
-		DateTimeToStr( UTCToLocalTime(
-		DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime));
+  if DM.adtParams.FieldByName( 'UpdateDateTime').IsNull then
+    StatusBar.Panels[ 3].Text := 'Обновление не установлено'
+  else
+    StatusBar.Panels[ 3].Text := 'Обновление : ' +
+      DateTimeToStr( UTCToLocalTime(
+        DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime));
 end;
 
 procedure TMainForm.actSaveExecute(Sender: TObject);

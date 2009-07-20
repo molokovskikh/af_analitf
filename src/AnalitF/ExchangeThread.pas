@@ -2212,8 +2212,8 @@ begin
     try
       InDelimitedFile.SkipTitles := False;
       InDelimitedFile.ReadBlanksAsNull := True;
-      InDelimitedFile.ColDelimiter := Chr(159);
-      InDelimitedFile.RowDelimiter := Chr(161);
+      InDelimitedFile.ColDelimiter := Chr(9);
+      InDelimitedFile.RowDelimiter := #13#10;
 
       up.SQL.Text := InsertSQL;
       InDelimitedFile.Filename := FileName;

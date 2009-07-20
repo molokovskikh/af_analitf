@@ -868,8 +868,7 @@ begin
   Result :=
     'LOAD DATA INFILE ''' + InputFileName + ''' '
     + IfThen(Replace, ' replace ') +
-    ' INTO TABLE AnalitF.' + TableName + ' FIELDS TERMINATED BY ''' + Chr(159) + '''' +
-    ' OPTIONALLY ENCLOSED BY '''' ESCAPED BY '''' LINES TERMINATED BY ''' + Chr(161) + ''';';
+    ' INTO TABLE AnalitF.' + TableName + ';';
 end;
 
 procedure CopyDirectories(const fromDir, toDir: String);
@@ -937,6 +936,9 @@ var
   DeleteLastError : Cardinal;
   Ex : EOSError;
 begin
+  //Если удаляемая директория не существует, то просто выходим
+  if not DirectoryExists(Dir) then
+    Exit;
   if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
   begin
     repeat
