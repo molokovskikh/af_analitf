@@ -1,0 +1,106 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TFilterAndIndexFrame','FORMDATA',[
+  'TPF0'#241#20'TFilterAndIndexFrame'#19'FilterAndIndexFrame'#6'Height'#3#21#1#5
+  +'Width'#3#197#2#5'Align'#7#8'alClient'#12'ClientHeight'#3#17#1#11'ClientWidt'
+  +'h'#3#193#2#8'TabOrder'#2#0#0#242#2#0#7'TDBGrid'#6'DBGrid'#4'Left'#3#166#0#6
+  +'Height'#3#226#0#3'Top'#2'/'#5'Width'#3#27#2#5'Align'#7#8'alClient'#10'DataS'
+  +'ource'#7#10'DataSource'#10'FixedColor'#7#9'clBtnFace'#13'FixedHotColor'#7#9
+  +'cl3DLight'#7'Options'#11#9'dgEditing'#8'dgTitles'#11'dgIndicator'#14'dgColu'
+  +'mnResize'#12'dgColumnMove'#10'dgColLines'#10'dgRowLines'#6'dgTabs'#21'dgAlw'
+  +'aysShowSelection'#15'dgConfirmDelete'#14'dgCancelOnExit'#0#12'OptionsExtra'
+  +#11#14'dgeAutoColumns'#17'dgeCheckboxColumn'#0#11'ParentColor'#8#8'TabOrder'
+  +#2#0#0#0#242#2#1#6'TPanel'#6'Panel3'#6'Height'#3#226#0#3'Top'#2'/'#5'Width'#3
+  +#166#0#5'Align'#7#6'alLeft'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#3#226
+  +#0#11'ClientWidth'#3#166#0#8'TabOrder'#2#1#0#6'TPanel'#6'Panel8'#6'Height'#2
+  +'T'#3'Top'#3#142#0#5'Width'#3#166#0#5'Align'#7#8'alBottom'#10'BevelOuter'#7#6
+  +'bvNone'#7'Caption'#6#6'Panel8'#12'ClientHeight'#2'T'#11'ClientWidth'#3#166#0
+  +#5'Color'#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0#0#6'TPanel'#6'Pane'
+  +'l7'#4'Left'#2#1#6'Height'#2'Q'#3'Top'#2#1#5'Width'#3#164#0#10'BevelOuter'#7
+  +#6'bvNone'#12'ClientHeight'#2'Q'#11'ClientWidth'#3#164#0#11'ParentColor'#8#8
+  +'TabOrder'#2#0#0#6'TLabel'#6'Label1'#4'Left'#2#6#6'Height'#2#13#3'Top'#2#3#5
+  +'Width'#2'Z'#7'Caption'#6#17'IndexFieldNames ='#11'ParentColor'#8#0#0#6'TLab'
+  +'el'#17'lbIndexFieldNames'#4'Left'#2#6#6'Height'#2'6'#3'Top'#2#22#5'Width'#3
+  +#145#0#8'AutoSize'#8#11'ParentColor'#8#8'WordWrap'#9#0#0#0#0#8'TListBox'#8'l'
+  +'bFields'#6'Height'#3#142#0#5'Width'#3#166#0#5'Align'#7#8'alClient'#10'ItemH'
+  +'eight'#2#13#11'MultiSelect'#9#7'OnClick'#7#13'lbFieldsClick'#8'TabOrder'#2#1
+  +#8'TopIndex'#2#255#0#0#0#242#2#2#6'TPanel'#6'Panel4'#6'Height'#2'/'#5'Width'
+  +#3#193#2#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'/'
+  +#11'ClientWidth'#3#193#2#8'TabOrder'#2#2#0#6'TPanel'#7'ToolBar'#6'Height'#2
+  +'/'#5'Width'#3#130#2#5'Align'#7#6'alLeft'#10'BevelOuter'#7#6'bvNone'#12'Clie'
+  +'ntHeight'#2'/'#11'ClientWidth'#3#130#2#5'Color'#4#15'+'#253#0#11'ParentColo'
+  +'r'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#7'btClose'#4'Left'#2'T'#6'Height'#2
+  +#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#5'Close'#5'Color'#7#9'clBtnFace'#4
+  +'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#12'btCloseClick'#0#0
+  +#12'TSpeedButton'#6'btOpen'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'#2
+  +'R'#7'Caption'#6#4'Open'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0
+  +#11'Transparent'#8#7'OnClick'#7#11'btOpenClick'#0#0#6'TPanel'#6'Panel5'#4'Le'
+  +'ft'#3#132#1#6'Height'#2#22#3'Top'#2#24#5'Width'#3#145#0#10'BevelOuter'#7#6
+  +'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#3#145#0#11'ParentColor'#8#8'T'
+  +'abOrder'#2#0#0#9'TCheckBox'#12'cbCalcFields'#4'Left'#2#5#6'Height'#2#20#3'T'
+  +'op'#2#1#5'Width'#3#162#0#7'Caption'#6#24'Calculated/Lookup fields'#7'OnClic'
+  +'k'#7#17'cbCalcFieldsClick'#11'ParentColor'#8#8'TabOrder'#2#0#0#0#0#6'TPanel'
+  +#6'Panel2'#4'Left'#3#167#0#6'Height'#2#22#3'Top'#2#24#5'Width'#3#220#0#10'Be'
+  +'velOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#3#220#0#11'Pare'
+  +'ntColor'#8#8'TabOrder'#2#1#0#9'TCheckBox'#8'cbFilter'#4'Left'#2#5#6'Height'
+  +#2#19#3'Top'#2#1#5'Width'#2'B'#7'Caption'#6#6'Filter'#11'Font.Height'#2#245#9
+  +'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#6'fsBold'#0#7'OnClick'#7#13
+  +'cbFilterClick'#11'ParentColor'#8#10'ParentFont'#8#8'TabOrder'#2#0#0#0#5'TEd'
+  +'it'#8'edFilter'#4'Left'#2'F'#6'Height'#2#21#3'Top'#2#2#5'Width'#3#144#0#7'A'
+  +'nchors'#11#5'akTop'#6'akLeft'#7'akRight'#0#6'OnExit'#7#12'edFilterExit'#8'T'
+  +'abOrder'#2#1#4'Text'#6#11'DEPTNO = 10'#0#0#0#12'TDBNavigator'#12'DBNavigato'
+  +'r1'#4'Left'#3#167#0#6'Height'#2#22#3'Top'#2#1#5'Width'#3#220#0#10'BevelOute'
+  +'r'#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#3#220#0#5'Color'#7#9'c'
+  +'lBtnFace'#10'DataSource'#7#10'DataSource'#4'Flat'#9#11'ParentColor'#8#8'Tab'
+  +'Order'#2#2#0#0#6'TPanel'#6'Panel1'#4'Left'#3#22#2#6'Height'#2#22#3'Top'#2#24
+  +#5'Width'#2'k'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWid'
+  +'th'#2'k'#11'ParentColor'#8#8'TabOrder'#2#3#0#9'TCheckBox'#17'cbCacheCalcFie'
+  +'lds'#4'Left'#2#6#6'Height'#2#20#3'Top'#2#1#5'Width'#2'y'#7'Caption'#6#15'Ca'
+  +'cheCalcFields'#7'OnClick'#7#22'cbCacheCalcFieldsClick'#11'ParentColor'#8#8
+  +'TabOrder'#2#0#0#0#0#6'TPanel'#6'Panel6'#4'Left'#3#132#1#6'Height'#2#22#3'To'
+  +'p'#2#1#5'Width'#3#253#0#10'BevelOuter'#7#6'bvNone'#11'ParentColor'#8#8'TabO'
+  +'rder'#2#4#0#0#6'TPanel'#0#4'Left'#2#2#6'Height'#2#22#3'Top'#2#24#5'Width'#3
+  +#164#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#3#164
+  +#0#11'ParentColor'#8#8'TabOrder'#2#5#0#9'TCheckBox'#7'cbIndex'#4'Left'#2#8#6
+  +'Height'#2#19#3'Top'#2#1#5'Width'#2';'#7'Caption'#6#5'Index'#11'Font.Height'
+  +#2#245#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#6'fsBold'#0#7'OnCl'
+  +'ick'#7#12'cbIndexClick'#11'ParentColor'#8#10'ParentFont'#8#8'TabOrder'#2#0#0
+  ,#0#0#0#0#242#2#3#8'TMyQuery'#5'Query'#10'Connection'#7#22'MyDACForm.MyConnec'
+  +'tion'#11'SQL.Strings'#1#6#17'SELECT * FROM EMP'#0#5'Debug'#9#14'RefreshOpti'
+  +'ons'#11#13'roAfterInsert'#13'roAfterUpdate'#0#4'left'#3#16#1#3'top'#2'7'#0#0
+  +#242#2#4#11'TDatasource'#10'DataSource'#7'DataSet'#7#5'Query'#4'left'#3'0'#1
+  +#3'top'#2'7'#0#0#242#2#5#8'TMyQuery'#6'Query2'#10'Connection'#7#22'MyDACForm'
+  +'.MyConnection'#11'SQL.Strings'#1#6#17'SELECT * FROM EMP'#0#5'Debug'#9#12'On'
+  +'CalcFields'#7#16'Query2CalcFields'#4'left'#3#16#1#3'top'#2'X'#0#13'TLongint'
+  +'Field'#16'Query2CALCULATED'#12'DisplayWidth'#2#10#9'FieldKind'#7#12'fkCalcu'
+  +'lated'#9'FieldName'#6#10'CALCULATED'#13'ProviderFlags'#11#10'pfInUpdate'#9
+  +'pfInWhere'#0#0#0#12'TStringField'#12'Query2LOOKUP'#12'DisplayWidth'#2#20#9
+  +'FieldKind'#7#8'fkLookup'#9'FieldName'#6#6'LOOKUP'#5'Index'#2#1#9'KeyFields'
+  +#6#6'DEPTNO'#6'Lookup'#9#13'LookupDataSet'#7#11'LookupQuery'#15'LookupKeyFie'
+  +'lds'#6#6'DEPTNO'#17'LookupResultField'#6#5'DNAME'#13'ProviderFlags'#11#10'p'
+  +'fInUpdate'#9'pfInWhere'#0#0#0#13'TLongintField'#11'Query2EMPNO'#12'DisplayW'
+  +'idth'#2#10#9'FieldName'#6#5'EMPNO'#5'Index'#2#2#13'ProviderFlags'#11#10'pfI'
+  +'nUpdate'#9'pfInWhere'#0#8'Required'#9#0#0#12'TStringField'#11'Query2ENAME'
+  +#12'DisplayWidth'#2#10#9'FieldName'#6#5'ENAME'#5'Index'#2#3#13'ProviderFlags'
+  +#11#10'pfInUpdate'#9'pfInWhere'#0#4'Size'#2#10#0#0#12'TStringField'#9'Query2'
+  +'JOB'#12'DisplayWidth'#2#9#9'FieldName'#6#3'JOB'#5'Index'#2#4#13'ProviderFla'
+  +'gs'#11#10'pfInUpdate'#9'pfInWhere'#0#4'Size'#2#9#0#0#13'TLongintField'#9'Qu'
+  +'ery2MGR'#12'DisplayWidth'#2#10#9'FieldName'#6#3'MGR'#5'Index'#2#5#13'Provid'
+  +'erFlags'#11#10'pfInUpdate'#9'pfInWhere'#0#0#0#14'TDateTimeField'#14'Query2H'
+  +'IREDATE'#12'DisplayWidth'#2#10#9'FieldName'#6#8'HIREDATE'#5'Index'#2#6#13'P'
+  +'roviderFlags'#11#10'pfInUpdate'#9'pfInWhere'#0#0#0#11'TFloatField'#9'Query2'
+  +'SAL'#12'DisplayWidth'#2#10#9'FieldName'#6#3'SAL'#5'Index'#2#7#13'ProviderFl'
+  +'ags'#11#10'pfInUpdate'#9'pfInWhere'#0#0#0#11'TFloatField'#10'Query2COMM'#12
+  +'DisplayWidth'#2#10#9'FieldName'#6#4'COMM'#5'Index'#2#8#13'ProviderFlags'#11
+  +#10'pfInUpdate'#9'pfInWhere'#0#0#0#13'TLongintField'#12'Query2DEPTNO'#12'Dis'
+  +'playWidth'#2#10#9'FieldName'#6#6'DEPTNO'#5'Index'#2#9#13'ProviderFlags'#11
+  +#10'pfInUpdate'#9'pfInWhere'#0#0#0#0#242#2#6#8'TMyQuery'#11'LookupQuery'#10
+  +'Connection'#7#22'MyDACForm.MyConnection'#11'SQL.Strings'#1#6#18'SELECT * FR'
+  +'OM DEPT'#0#4'left'#3'0'#1#3'top'#2'X'#0#13'TLongintField'#17'LookupQueryDEP'
+  +'TNO'#12'DisplayWidth'#2#10#9'FieldName'#6#6'DEPTNO'#13'ProviderFlags'#11#10
+  +'pfInUpdate'#9'pfInWhere'#0#8'Required'#9#0#0#12'TStringField'#16'LookupQuer'
+  +'yDNAME'#12'DisplayWidth'#2#14#9'FieldName'#6#5'DNAME'#5'Index'#2#1#13'Provi'
+  +'derFlags'#11#10'pfInUpdate'#9'pfInWhere'#0#4'Size'#2#14#0#0#12'TStringField'
+  +#14'LookupQueryLOC'#12'DisplayWidth'#2#13#9'FieldName'#6#3'LOC'#5'Index'#2#2
+  +#13'ProviderFlags'#11#10'pfInUpdate'#9'pfInWhere'#0#4'Size'#2#13#0#0#0#0
+]);

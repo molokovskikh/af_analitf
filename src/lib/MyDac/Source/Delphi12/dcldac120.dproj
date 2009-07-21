@@ -1,0 +1,157 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<ProjectGuid>{1ace60bb-2bff-4717-9389-4c2ab1bbb8f6}</ProjectGuid>
+		<MainSource>dcldac120.dpk</MainSource>
+		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+		<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+		<DCC_DependencyCheckOutputName>D:\Documents and Settings\All Users\Documents\RAD Studio\5.0\Bpl\dcldac120.bpl</DCC_DependencyCheckOutputName>
+		<ProjectVersion>11.1</ProjectVersion>
+		<Config Condition="'$(Config)'==''">Debug</Config>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+		<Base>true</Base>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_Release)'!=''">
+		<Cfg_Release>true</Cfg_Release>
+		<CfgParent>Base</CfgParent>
+		<Base>true</Base>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_Debug)'!=''">
+		<Cfg_Debug>true</Cfg_Debug>
+		<CfgParent>Base</CfgParent>
+		<Base>true</Base>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Base)'!=''">
+		<DCC_ImageBase>00400000</DCC_ImageBase>
+		<DesignOnlyPackage>true</DesignOnlyPackage>
+		<DCC_DependencyCheckOutputName>D:\Documents and Settings\All Users\Documents\RAD Studio\6.0\Bpl\dcldac120.bpl</DCC_DependencyCheckOutputName>
+		<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+		<DCC_Description>Devart Data Access Components</DCC_Description>
+		<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
+		<GenDll>true</GenDll>
+		<GenPackage>true</GenPackage>
+		<DCC_DebugInformation>false</DCC_DebugInformation>
+		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Cfg_Release)'!=''">
+		<Version>7.0</Version>
+		<DCC_DebugInformation>False</DCC_DebugInformation>
+		<DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+		<DCC_Define>RELEASE</DCC_Define>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Cfg_Debug)'!=''">
+		<Version>7.0</Version>
+		<DCC_DebugInformation>False</DCC_DebugInformation>
+		<DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+		<DCC_Define>DEBUG</DCC_Define>
+	</PropertyGroup>
+	<ItemGroup>
+		<DelphiCompile Include="dcldac120.dpk">
+			<MainSource>MainSource</MainSource>
+		</DelphiCompile>
+		<DCCReference Include="rtl.dcp"/>
+		<DCCReference Include="dac120.dcp"/>
+		<DCCReference Include="dcldb.dcp"/>
+		<DCCReference Include="dacvcl120.dcp"/>
+		<DCCReference Include="vcl.dcp"/>
+		<DCCReference Include="dbrtl.dcp"/>
+		<DCCReference Include="vcldb.dcp"/>
+		<DCCReference Include="vclactnband.dcp"/>
+		<DCCReference Include="..\Design\DacReg.pas"/>
+		<DCCReference Include="..\Design\VTDesign.pas"/>
+		<DCCReference Include="..\Design\DAMenu.pas"/>
+		<DCCReference Include="..\Design\DADesign.pas"/>
+		<DCCReference Include="..\Design\Download.pas"/>
+		<DCCReference Include="..\Design\VTDataEditor.pas"/>
+		<DCCReference Include="..\Design\DAConnectionEditor.pas"/>
+		<DCCReference Include="..\Design\HelpUtils.pas"/>
+		<DCCReference Include="..\Design\DATableEditor.pas"/>
+		<DCCReference Include="..\Design\DAStoredProcEditor.pas"/>
+		<DCCReference Include="..\Design\DAScriptEditor.pas"/>
+		<DCCReference Include="..\Design\DADumpEditor.pas"/>
+		<DCCReference Include="..\Design\DADumpProgress.pas"/>
+		<DCCReference Include="..\Design\DADualListEditor.pas"/>
+		<DCCReference Include="..\Design\DAMacrosFrame.pas"/>
+		<DCCReference Include="..\Design\CRColFrame.pas"/>
+		<DCCReference Include="..\Design\DASQLComponentEditor.pas"/>
+		<DCCReference Include="..\Design\DASPCallFrame.pas"/>
+		<DCCReference Include="..\Design\DAUpdateSQLFrame.pas"/>
+		<DCCReference Include="..\Design\DAUpdateSQLEditor.pas"/>
+		<DCCReference Include="..\Design\DASQLGeneratorFrame.pas"/>
+		<DCCReference Include="..\Design\DAQueryEditor.pas"/>
+		<DCCReference Include="..\Design\DADataEditor.pas"/>
+		<DCCReference Include="..\Design\CRDataEditor.pas"/>
+		<DCCReference Include="..\Design\DAParamsFrame.pas"/>
+		<DCCReference Include="..\Design\DASQLFrame.pas"/>
+		<DCCReference Include="..\Design\CRTabEditor.pas"/>
+		<DCCReference Include="..\Design\CRFrame.pas"/>
+		<DCCReference Include="..\Design\CREditor.pas"/>
+		<DCCReference Include="..\Design\DAParamValueEditor.pas"/>
+		<DCCReference Include="..\Design\DATableSQLFrame.pas"/>
+		<DCCReference Include="..\Design\DADesignUtils.pas"/>
+		<DCCReference Include="..\Design\DAEditor.pas"/>
+		<DCCReference Include="..\Design\CRDesign.pas"/>
+		<DCCReference Include="..\Design\CRDesignUtils.pas"/>
+		<DCCReference Include="..\Design\DBToolsClient.pas"/>
+		<DCCReference Include="..\Design\DBToolsClientImp.pas"/>
+		<DCCReference Include="..\Design\DBForgeClientImp.pas"/>
+		<DCCReference Include="..\Design\DBToolsIntf.pas"/>
+		<BuildConfiguration Include="Base">
+			<Key>Base</Key>
+		</BuildConfiguration>
+		<BuildConfiguration Include="Release">
+			<Key>Cfg_Release</Key>
+			<CfgParent>Base</CfgParent>
+		</BuildConfiguration>
+		<BuildConfiguration Include="Debug">
+			<Key>Cfg_Debug</Key>
+			<CfgParent>Base</CfgParent>
+		</BuildConfiguration>
+	</ItemGroup>
+	<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+	<ProjectExtensions>
+		<Borland.Personality>Delphi.Personality</Borland.Personality>
+		<Borland.ProjectType>Package</Borland.ProjectType>
+		<BorlandProject><BorlandProject>
+				<Delphi.Personality>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Type="Integer" Name="MajorVer">6</VersionInfo>
+						<VersionInfo Type="Integer" Name="MinorVer">80</VersionInfo>
+						<VersionInfo Type="Integer" Name="Release">0</VersionInfo>
+						<VersionInfo Type="Integer" Name="Build">6051</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+						<VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+						<VersionInfoKeys Type="String" Name="FileVersion">6.80.0.51</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+						<VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+						<VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+						<VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+						<VersionInfoKeys Type="String" Name="ProductVersion">6.80.0.51</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"></VersionInfoKeys>
+					</VersionInfoKeys>
+					<Source>
+						<Source Name="MainSource">dcldac120.dpk</Source>
+					</Source>
+				</Delphi.Personality>
+			</BorlandProject>
+		</BorlandProject>
+	</ProjectExtensions>
+</Project>

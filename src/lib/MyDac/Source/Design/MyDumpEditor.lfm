@@ -1,0 +1,182 @@
+inherited MyDumpEditorForm: TMyDumpEditorForm
+  Left = 154
+  Height = 484
+  Top = 203
+  VertScrollBar.Page = 483
+  Caption = 'MyDumpForm'
+  ClientHeight = 484
+  Constraints.MinHeight = 468
+  Constraints.MinWidth = 511
+  inherited BtnPanel: TPanel
+    Top = 443
+    TabOrder = 1
+    inherited imCorner: TImage
+    end
+    inherited btOk: TBitBtn
+    end
+    inherited btCancel: TBitBtn
+    end
+  end
+  inherited ClientPanel: TPanel
+    Height = 443
+    ClientHeight = 443
+    TabOrder = 0
+    inherited meSQL: TMemo
+      Height = 441
+    end
+    inherited LeftPanel: TPanel
+      Height = 441
+      ClientHeight = 441
+      inherited gbBackupOptions: TGroupBox
+        Height = 329
+        ClientHeight = 311
+        inherited lbTableNames: TLabel
+          Top = 4
+        end
+        object Label1: TLabel[1]
+          Left = 8
+          Height = 14
+          Top = 52
+          Width = 89
+          Caption = 'StoredProc Names'
+          ParentColor = False
+        end
+        inherited cbTableNames: TComboBox
+          Top = 24
+          TabOrder = 0
+        end
+        inherited cbGenerateHeader: TCheckBox
+          Top = 106
+          TabOrder = 2
+        end
+        object cbDatabase: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 138
+          Width = 112
+          Caption = 'Backup Database'
+          OnClick = cbTablesClick
+          TabOrder = 4
+        end
+        object cbUsers: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 154
+          Width = 93
+          Caption = 'Backup Users'
+          OnClick = cbTablesClick
+          TabOrder = 5
+        end
+        object cbTables: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 186
+          Width = 98
+          Caption = 'Backup Tables'
+          OnClick = cbTablesClick
+          TabOrder = 7
+        end
+        object cbData: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 202
+          Width = 89
+          Caption = 'Backup Data'
+          OnClick = cbTablesClick
+          TabOrder = 8
+        end
+        object cbAddDrop: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 122
+          Width = 133
+          Caption = 'Add DROP statements'
+          OnClick = cbTablesClick
+          TabOrder = 3
+        end
+        object cbAddLock: TCheckBox
+          Left = 24
+          Height = 19
+          Top = 218
+          Width = 130
+          Caption = 'Add LOCK statements'
+          OnClick = cbTablesClick
+          TabOrder = 9
+        end
+        object cbUseExtSyntax: TCheckBox
+          Left = 24
+          Height = 19
+          Top = 250
+          Width = 155
+          Caption = 'Use Extended Insert syntax'
+          OnClick = cbTablesClick
+          TabOrder = 10
+        end
+        object cbDisableKeys: TCheckBox
+          Left = 24
+          Height = 19
+          Top = 266
+          Width = 124
+          Caption = 'Use DISABLE KEYS'
+          OnClick = cbTablesClick
+          TabOrder = 11
+        end
+        object cbDelayedIns: TCheckBox
+          Left = 24
+          Height = 19
+          Top = 282
+          Width = 127
+          Caption = 'Use DELAYED Insert'
+          OnClick = cbTablesClick
+          TabOrder = 12
+        end
+        object cbStoredProcs: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 170
+          Width = 124
+          Caption = 'Backup StoredProcs'
+          OnClick = cbTablesClick
+          TabOrder = 6
+        end
+        object cbStoredProcNames: TComboBox
+          Left = 8
+          Height = 21
+          Top = 71
+          Width = 193
+          AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+          DropDownCount = 16
+          ItemHeight = 13
+          OnChange = cbStoredProcNamesChange
+          OnDropDown = cbTableNamesDropDown
+          TabOrder = 1
+        end
+        object cbCompleteInsert: TCheckBox
+          Left = 24
+          Height = 19
+          Top = 234
+          Width = 98
+          Caption = 'Complete insert'
+          OnClick = cbTablesClick
+          TabOrder = 13
+        end
+      end
+      inherited btBackup: TBitBtn
+        Top = 344
+      end
+      inherited btRestore: TBitBtn
+        Top = 344
+      end
+      inherited btImport: TBitBtn
+        Top = 375
+      end
+      inherited btExport: TBitBtn
+        Top = 375
+      end
+    end
+  end
+  inherited OpenDialog: TOpenDialog
+  end
+  inherited SaveDialog: TSaveDialog
+  end
+end

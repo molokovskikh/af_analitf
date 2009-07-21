@@ -1,0 +1,528 @@
+inherited MyConnectionEditorForm: TMyConnectionEditorForm
+  Left = 248
+  Height = 344
+  Top = 149
+  ClientHeight = 344
+  OnCloseQuery = FormCloseQuery
+  OnHide = FormHide
+  OnKeyPress = FormKeyPress
+  OnShow = FormShow
+  inherited BtnPanel: TPanel
+    Top = 303
+    inherited imCorner: TImage
+    end
+    inherited btOk: TBitBtn
+      OnClick = SaveClick
+    end
+    inherited btCancel: TBitBtn
+      OnClick = CloseClick
+    end
+  end
+  inherited PageControl: TPageControl
+    Height = 295
+    OnChange = PageControlChange
+    OnPageChanged = PageControlChange
+    inherited shConnect: TTabSheet
+      ClientHeight = 269
+      inherited shRed: TShape
+        Top = 238
+      end
+      inherited shYellow: TShape
+        Top = 238
+      end
+      inherited shGreen: TShape
+        Top = 238
+      end
+      object lbExisting: TLabel[3]
+        Left = 24
+        Height = 14
+        Top = 13
+        Width = 38
+        Caption = 'Existing'
+        ParentColor = False
+      end
+      inherited Panel: TPanel[4]
+        Height = 180
+        Top = 41
+        ClientHeight = 180
+        inherited lbUsername: TLabel
+        end
+        inherited lbPassword: TLabel
+        end
+        inherited lbServer: TLabel
+        end
+        object lbDatabase: TLabel[3]
+          Left = 16
+          Height = 14
+          Top = 118
+          Width = 47
+          Caption = 'Database'
+          ParentColor = False
+        end
+        object lbPort: TLabel[4]
+          Left = 16
+          Height = 14
+          Top = 149
+          Width = 21
+          Caption = 'Port'
+          ParentColor = False
+        end
+        inherited edServer: TComboBox[5]
+          MaxLength = -1
+          OnChange = edServerChange
+          OnDropDown = edServerDropDown
+          OnExit = edServerExit
+          OnKeyUp = edServerKeyUp
+        end
+        inherited edUsername: TEdit[6]
+          OnChange = edUsernameChange
+          OnExit = edServerExit
+        end
+        inherited edPassword: TEdit[7]
+          OnChange = edPasswordChange
+        end
+        object edDatabase: TComboBox[8]
+          Left = 104
+          Height = 21
+          Top = 114
+          Width = 153
+          ItemHeight = 13
+          MaxLength = -1
+          OnDropDown = edDatabaseDropDown
+          OnExit = edDatabaseExit
+          TabOrder = 3
+        end
+        object edPort: TEdit[9]
+          Left = 104
+          Height = 21
+          Top = 145
+          Width = 153
+          OnChange = edPortChange
+          OnExit = edPortExit
+          TabOrder = 4
+          Text = '3306'
+        end
+      end
+      inherited btConnect: TButton[5]
+        Top = 233
+        OnClick = btConnectClick
+        TabOrder = 4
+      end
+      inherited btDisconnect: TButton[6]
+        Top = 233
+        OnClick = btDisconnectClick
+        TabOrder = 5
+      end
+      inherited cbLoginPrompt: TCheckBox[7]
+        Top = 41
+        OnClick = cbLoginPromptClick
+      end
+      object cbDirect: TCheckBox[8]
+        Left = 300
+        Height = 19
+        Top = 65
+        Width = 54
+        Caption = 'Direct'
+        OnClick = cbDirectClick
+        TabOrder = 2
+      end
+      object cbEmbedded: TCheckBox[9]
+        Left = 300
+        Height = 19
+        Top = 89
+        Width = 76
+        Caption = 'Embedded'
+        OnClick = cbEmbeddedClick
+        TabOrder = 3
+      end
+      object cbExisting: TComboBox[10]
+        Left = 80
+        Height = 21
+        Top = 9
+        Width = 233
+        ItemHeight = 13
+        MaxLength = -1
+        OnChange = cbExistingChange
+        Style = csDropDownList
+        TabOrder = 6
+      end
+    end
+    inherited shInfo: TTabSheet
+      ClientHeight = 269
+      inherited meInfo: TMemo
+        Height = 250
+        Font.Height = -11
+        Font.Name = 'Courier New'
+        ParentFont = False
+        ScrollBars = ssBoth
+        WordWrap = False
+      end
+    end
+    inherited shAbout: TTabSheet
+      ClientHeight = 269
+      OnMouseMove = shAboutMouseMove
+      inherited Label1: TLabel
+        Width = 395
+        Caption = 'Data Access Components for MySQL'
+      end
+      inherited Label2: TLabel
+      end
+      inherited lbVersion: TLabel
+      end
+      inherited Label3: TLabel
+      end
+      inherited Label5: TLabel
+      end
+      inherited Label6: TLabel
+      end
+      inherited lbWeb: TLabel
+        Width = 119
+        Caption = 'www.devart.com/mydac'
+        OnClick = lbWebClick
+        OnMouseMove = lbWebMouseMove
+      end
+      inherited lbMail: TLabel
+        Width = 97
+        Caption = 'mydac@devart.com'
+        OnClick = lbMailClick
+        OnMouseMove = lbMailMouseMove
+      end
+      inherited lbIDE: TLabel
+      end
+      inherited imPeng: TImage
+      end
+      inherited lbEdition: TLabel
+      end
+    end
+    object shEmbParams: TTabSheet[3]
+      Caption = 'Params'
+      ClientHeight = 269
+      ClientWidth = 429
+      ImageIndex = 3
+      object Label4: TLabel
+        Left = 8
+        Height = 13
+        Hint = 'The path to the MySQL installation directory (--basedir )'
+        Top = 8
+        Width = 89
+        AutoSize = False
+        Caption = 'MySQL base path'
+        ParentColor = False
+      end
+      object Label7: TLabel
+        Left = 8
+        Height = 13
+        Hint = 'The path to the data directory (--datadir )'
+        Top = 32
+        Width = 89
+        AutoSize = False
+        Caption = 'Path to data'
+        ParentColor = False
+      end
+      object Label8: TLabel
+        Left = 8
+        Height = 13
+        Hint = 'The path of the directory to use for creating temporary files (--tmpdir)'
+        Top = 56
+        Width = 89
+        AutoSize = False
+        Caption = 'Path to temp'
+        ParentColor = False
+      end
+      object Label9: TLabel
+        Left = 8
+        Height = 13
+        Hint = 'The directory where character sets are installed (--character-sets-dir)'
+        Top = 80
+        Width = 89
+        AutoSize = False
+        Caption = 'Path to charsets'
+        ParentColor = False
+      end
+      object Label10: TLabel
+        Left = 8
+        Height = 13
+        Hint = 'Client error messages in given language (--language)'
+        Top = 104
+        Width = 89
+        AutoSize = False
+        Caption = 'Language'
+        ParentColor = False
+      end
+      object Label12: TLabel
+        Left = 227
+        Height = 13
+        Hint = 'The index file for binary log filenames (--log-bin-index)'
+        Top = 128
+        Width = 49
+        AutoSize = False
+        Caption = 'index'
+        ParentColor = False
+      end
+      object Label11: TLabel
+        Left = 8
+        Height = 13
+        Hint = 'The binary log file (--log-bin)'
+        Top = 128
+        Width = 49
+        AutoSize = False
+        Caption = 'Binary log'
+        ParentColor = False
+      end
+      object edBaseDir: TEdit
+        Left = 104
+        Height = 21
+        Top = 8
+        Width = 313
+        TabOrder = 0
+        Text = 'edBaseDir'
+      end
+      object edDataDir: TEdit
+        Left = 104
+        Height = 21
+        Top = 32
+        Width = 313
+        TabOrder = 3
+        Text = 'edDataDir'
+      end
+      object edTempDir: TEdit
+        Left = 104
+        Height = 21
+        Top = 56
+        Width = 313
+        TabOrder = 4
+        Text = 'edTempDir'
+      end
+      object edCharsetsDir: TEdit
+        Left = 104
+        Height = 21
+        Top = 80
+        Width = 313
+        TabOrder = 7
+        Text = 'edCharsetsDir'
+      end
+      object edLanguage: TEdit
+        Left = 104
+        Height = 21
+        Top = 104
+        Width = 313
+        TabOrder = 8
+        Text = 'edLanguage'
+      end
+      object btBinaryLogIndex: TBitBtn
+        Left = 397
+        Height = 21
+        Top = 128
+        Width = 17
+        Glyph.Data = {
+          FE000000424DFE0000000000000076000000280000000D000000110000000100
+          0400000000008800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFF0FF0FF0FF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000
+        }
+        NumGlyphs = 0
+        TabOrder = 10
+        Visible = False
+      end
+      object edBinaryLogIndex: TEdit
+        Left = 264
+        Height = 21
+        Top = 128
+        Width = 153
+        TabOrder = 11
+        Text = 'edBinaryLogIndex'
+      end
+      object btBinaryLog: TBitBtn
+        Left = 197
+        Height = 21
+        Top = 128
+        Width = 17
+        Glyph.Data = {
+          FE000000424DFE0000000000000076000000280000000D000000110000000100
+          0400000000008800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFF0FF0FF0FF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000
+        }
+        NumGlyphs = 0
+        TabOrder = 12
+        Visible = False
+      end
+      object edBinaryLog: TEdit
+        Left = 64
+        Height = 21
+        Top = 128
+        Width = 153
+        TabOrder = 13
+        Text = 'edBinaryLog'
+      end
+      object cbInnoDBSafeBinLog: TCheckBox
+        Left = 8
+        Height = 19
+        Hint = 'Adds consistency guarantees between the content of InnoDB tables and the binary log (--innodb-safe-binlog)'
+        Top = 152
+        Width = 152
+        Caption = 'More safe InnoDB storage'
+        TabOrder = 14
+      end
+      object cbFlush: TCheckBox
+        Left = 8
+        Height = 19
+        Hint = 'Flush all changes to disk after each SQL statement (--flush)'
+        Top = 168
+        Width = 268
+        Caption = 'Flush all changes to disk after each SQL statement'
+        TabOrder = 15
+      end
+      object cbSkipInnoDB: TCheckBox
+        Left = 8
+        Height = 19
+        Hint = 'This saves memory and disk space and might speed up some operations. Do not use this option if you require InnoDB tables (--skip-innodb)'
+        Top = 184
+        Width = 192
+        Caption = 'Disable the InnoDB storage engine'
+        TabOrder = 16
+      end
+      object cbSkipGrantTables: TCheckBox
+        Left = 8
+        Height = 19
+        Hint = 'This option causes the server not to use the privilege system at all (--skip-grant-tables)'
+        Top = 200
+        Width = 172
+        Caption = 'Skip using the privilege system'
+        TabOrder = 17
+      end
+      object cbLogShortFormat: TCheckBox
+        Left = 8
+        Height = 19
+        Hint = 'Log less information to the log files (update log, binary update log, and slow queries log, whatever log has been activated) (--log-short-format)'
+        Top = 216
+        Width = 192
+        Caption = 'Log less information to the log files'
+        TabOrder = 18
+      end
+      object btAdvanced: TButton
+        Left = 336
+        Height = 25
+        Top = 200
+        Width = 75
+        Caption = 'Advanced'
+        OnClick = btAdvancedClick
+        TabOrder = 19
+      end
+      object btLanguage: TBitBtn
+        Left = 394
+        Height = 21
+        Top = 104
+        Width = 21
+        Glyph.Data = {
+          FE000000424DFE0000000000000076000000280000000D000000110000000100
+          0400000000008800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFF0FF0FF0FF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000
+        }
+        NumGlyphs = 0
+        TabOrder = 9
+        Visible = False
+      end
+      object btCharsetsDir: TBitBtn
+        Left = 394
+        Height = 21
+        Top = 80
+        Width = 21
+        Glyph.Data = {
+          FE000000424DFE0000000000000076000000280000000D000000110000000100
+          0400000000008800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFF0FF0FF0FF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000
+        }
+        NumGlyphs = 0
+        TabOrder = 6
+        Visible = False
+      end
+      object btTempDir: TBitBtn
+        Left = 394
+        Height = 21
+        Top = 56
+        Width = 21
+        Glyph.Data = {
+          FE000000424DFE0000000000000076000000280000000D000000110000000100
+          0400000000008800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFF0FF0FF0FF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000
+        }
+        NumGlyphs = 0
+        TabOrder = 5
+        Visible = False
+      end
+      object btDataDir: TBitBtn
+        Left = 394
+        Height = 21
+        Top = 32
+        Width = 21
+        Glyph.Data = {
+          FE000000424DFE0000000000000076000000280000000D000000110000000100
+          0400000000008800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFF0FF0FF0FF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000
+        }
+        NumGlyphs = 0
+        TabOrder = 2
+        Visible = False
+      end
+      object btBaseDir: TBitBtn
+        Left = 394
+        Height = 21
+        Top = 8
+        Width = 21
+        Glyph.Data = {
+          FE000000424DFE0000000000000076000000280000000D000000110000000100
+          0400000000008800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFF0FF0FF0FF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFFF000FFFFFFFFFFFF
+          F000
+        }
+        NumGlyphs = 0
+        TabOrder = 1
+        Visible = False
+      end
+    end
+  end
+  inherited btClose: TButton
+    Top = 310
+    OnClick = SaveClick
+  end
+end

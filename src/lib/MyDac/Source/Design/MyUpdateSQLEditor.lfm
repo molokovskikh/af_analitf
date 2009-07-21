@@ -1,0 +1,12 @@
+inherited MyUpdateSQLEditorForm: TMyUpdateSQLEditorForm
+  Left = 88
+  Top = 116
+  inherited BtnPanel: TPanel
+    inherited imCorner: TImage
+    end
+    inherited btOk: TBitBtn
+    end
+    inherited btCancel: TBitBtn
+    end
+  end
+end

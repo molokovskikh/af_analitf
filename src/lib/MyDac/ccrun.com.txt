@@ -1,0 +1,21 @@
+[info]
+name=MySQL Data Access Components(MyDAC)
+ver=v5.80.0.47
+author=devart
+mail=
+web=http://www.devart.com/mydac/
+devtool=Delphi5~12 / C++Builder5~6
+sn=
+fullsource=1
+desc=MySQL Data Access Components (MyDAC) 是为 Delphi,C++Builder 和 Kylix 提供的一系列非可视化组件，用来访问 MySQL 数据库。
+
+本版本支持以下 IDE：
+Delphi 5,6,7,2005,2006,2007,2009
+C++Builder 5,6
+
+╔-----------------------------╗
+┆ Welcome to C++Builder Study ┆
+┆    http://www.ccrun.com     ┆
+╚-----------------------------╝
+
+// 63 63 72 75 6E 2E 63 6F 6D

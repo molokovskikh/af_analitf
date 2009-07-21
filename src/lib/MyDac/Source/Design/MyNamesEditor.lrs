@@ -1,0 +1,12 @@
+LazarusResources.Add('TMyNamesForm','FORMDATA',[
+  'TPF0'#241#12'TMyNamesForm'#11'MyNamesForm'#4'Left'#2#22#3'Top'#2#29#7'Captio'
+  +'n'#6#11'MyNamesForm'#0#241#6'TPanel'#8'BtnPanel'#0#241#6'TImage'#8'imCorner'
+  +#0#0#241#7'TBitBtn'#4'btOk'#0#0#241#7'TBitBtn'#8'btCancel'#0#0#0#241#6'TPane'
+  +'l'#6'Panel2'#0#241#6'TLabel'#8'SrcLabel'#0#0#241#8'TListBox'#7'SrcList'#0#0
+  +#0#241#6'TPanel'#12'PanelButtons'#0#241#12'TSpeedButton'#10'IncludeBtn'#0#0
+  +#241#12'TSpeedButton'#9'IncAllBtn'#0#0#241#12'TSpeedButton'#10'ExcludeBtn'#0
+  +#0#241#12'TSpeedButton'#8'ExAllBtn'#0#0#0#241#6'TPanel'#6'Panel3'#0#241#6'TL'
+  +'abel'#8'DstLabel'#0#0#241#8'TListBox'#7'DstList'#0#0#0#241#6'TPanel'#13'Pan'
+  +'elButtons2'#0#241#12'TSpeedButton'#5'UpBtn'#0#0#241#12'TSpeedButton'#7'Down'
+  +'Btn'#0#0#0#0
+]);

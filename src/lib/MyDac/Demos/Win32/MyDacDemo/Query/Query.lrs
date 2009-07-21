@@ -1,0 +1,65 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TQueryFrame','FORMDATA',[
+  'TPF0'#241#11'TQueryFrame'#10'QueryFrame'#6'Height'#3#21#1#5'Width'#3#178#2#5
+  +'Align'#7#8'alClient'#12'ClientHeight'#3#17#1#11'ClientWidth'#3#174#2#8'TabO'
+  +'rder'#2#0#10'DesignLeft'#3#250#0#9'DesignTop'#3#165#0#0#242#2#0#7'TDBGrid'#6
+  +'DBGrid'#6'Height'#3#149#0#3'Top'#2'|'#5'Width'#3#174#2#5'Align'#7#8'alClien'
+  +'t'#10'DataSource'#7#10'DataSource'#10'FixedColor'#7#9'clBtnFace'#13'FixedHo'
+  +'tColor'#7#9'cl3DLight'#7'Options'#11#9'dgEditing'#8'dgTitles'#11'dgIndicato'
+  +'r'#14'dgColumnResize'#12'dgColumnMove'#10'dgColLines'#10'dgRowLines'#6'dgTa'
+  +'bs'#21'dgAlwaysShowSelection'#15'dgConfirmDelete'#14'dgCancelOnExit'#0#12'O'
+  +'ptionsExtra'#11#14'dgeAutoColumns'#17'dgeCheckboxColumn'#0#11'ParentColor'#8
+  +#8'TabOrder'#2#3#0#0#242#2#1#6'TPanel'#7'ToolBar'#6'Height'#2#26#5'Width'#3
+  +#174#2#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#26
+  +#11'ClientWidth'#3#174#2#8'TabOrder'#2#0#0#6'TPanel'#6'Panel2'#4'Left'#2#1#6
+  +'Height'#2#24#3'Top'#2#1#5'Width'#3'='#2#10'BevelOuter'#7#6'bvNone'#12'Clien'
+  +'tHeight'#2#24#11'ClientWidth'#3'='#2#5'Color'#4#15'+'#253#0#11'ParentColor'
+  +#8#8'TabOrder'#2#0#0#12'TSpeedButton'#9'btExecute'#4'Left'#3'M'#1#6'Height'#2
+  +#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#7'Execute'#5'Color'#7#9'clBtnFace'
+  +#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#14'btExecuteClick'
+  +#0#0#12'TSpeedButton'#7'btClose'#4'Left'#2'T'#6'Height'#2#22#3'Top'#2#1#5'Wi'
+  +'dth'#2'R'#7'Caption'#6#5'Close'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyp'
+  +'hs'#2#0#11'Transparent'#8#7'OnClick'#7#12'btCloseClick'#0#0#12'TSpeedButton'
+  +#6'btOpen'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#4
+  +'Open'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7
+  +'OnClick'#7#11'btOpenClick'#0#0#12'TSpeedButton'#9'btPrepare'#4'Left'#3#167#0
+  +#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#7'Prepare'#5'Color'#7#9
+  +'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#14'btP'
+  +'repareClick'#0#0#12'TSpeedButton'#11'btUnPrepare'#4'Left'#3#250#0#6'Height'
+  +#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#9'UnPrepare'#5'Color'#7#9'clBtnF'
+  +'ace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#16'btUnPrepa'
+  +'reClick'#0#0#12'TSpeedButton'#11'btSaveToXML'#4'Left'#3#160#1#6'Height'#2#22
+  +#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#9'SaveToXML'#5'Color'#7#9'clBtnFace'#4
+  +'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#16'btSaveToXMLClick'
+  +#0#0#6'TPanel'#6'Panel4'#4'Left'#3#243#1#6'Height'#2#22#3'Top'#2#1#5'Width'#2
+  +'I'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#2'I'#11
+  +'ParentColor'#8#8'TabOrder'#2#0#0#9'TCheckBox'#10'cbFetchAll'#4'Left'#2#7#6
+  +'Height'#2#19#3'Top'#2#3#5'Width'#2'P'#7'Caption'#6#8'FetchAll'#10'Font.Colo'
+  +'r'#7#7'clBlack'#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#7'On'
+  +'Click'#7#15'cbFetchAllClick'#11'ParentColor'#8#10'ParentFont'#8#8'TabOrder'
+  +#2#0#0#0#0#0#0#242#2#2#5'TMemo'#5'meSQL'#6'Height'#2'H'#3'Top'#2#26#5'Width'
+  +#3#174#2#5'Align'#7#5'alTop'#6'OnExit'#7#9'meSQLExit'#10'ScrollBars'#7#10'ss'
+  +'Vertical'#8'TabOrder'#2#1#0#0#242#2#3#6'TPanel'#6'Panel1'#6'Height'#2#26#3
+  +'Top'#2'b'#5'Width'#3#174#2#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'#12
+  +'ClientHeight'#2#26#11'ClientWidth'#3#174#2#8'TabOrder'#2#2#0#6'TPanel'#6'Pa'
+  +'nel3'#4'Left'#2#1#6'Height'#2#24#3'Top'#2#1#5'Width'#3'O'#1#10'BevelOuter'#7
+  +#6'bvNone'#12'ClientHeight'#2#24#11'ClientWidth'#3'O'#1#5'Color'#4#15'+'#253
+  +#0#11'ParentColor'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#15'btRefreshRecord'#4
+  +'Left'#3#252#0#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#13'Refre'
+  +'shRecord'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'
+  +#8#7'OnClick'#7#20'btRefreshRecordClick'#0#0#6'TPanel'#6'Panel5'#4'Left'#2#1
+  +#6'Height'#2#22#3'Top'#2#1#5'Width'#3#250#0#10'BevelOuter'#7#6'bvNone'#12'Cl'
+  +'ientHeight'#2#22#11'ClientWidth'#3#250#0#8'TabOrder'#2#0#0#12'TDBNavigator'
+  +#12'DBNavigator1'#6'Height'#2#22#5'Width'#3#250#0#10'BevelOuter'#7#6'bvNone'
+  +#12'ClientHeight'#2#22#11'ClientWidth'#3#250#0#5'Color'#7#9'clBtnFace'#10'Da'
+  +'taSource'#7#10'DataSource'#4'Flat'#9#11'ParentColor'#8#8'TabOrder'#2#0#0#0#0
+  +#0#0#242#2#4#8'TMyQuery'#7'MyQuery'#11'SQL.Strings'#1#6#15'SELECT A.*, B.*'#6
+  +#18'FROM EMP A, DEPT B'#6#27'WHERE (A.DEPTNO = B.DEPTNO)'#0#12'AfterExecute'
+  +#7#19'MyQueryAfterExecute'#4'left'#3#128#0#3'top'#2'8'#0#0#242#2#5#11'TDatas'
+  +'ource'#10'DataSource'#7'DataSet'#7#7'MyQuery'#4'left'#3#160#0#3'top'#2'8'#0
+  +#0#242#2#6#11'TSaveDialog'#10'SaveDialog'#5'Title'#6#18#209#238#245#240#224
+  +#237#232#242#252' '#244#224#233#235' '#234#224#234#10'DefaultExt'#6#4'.xml'#6
+  +'Filter'#6#17'XML (*.xml)|*.xml'#7'Options'#11#17'ofOverwritePrompt'#14'ofHi'
+  +'deReadOnly'#14'ofEnableSizing'#0#4'left'#3#193#0#3'top'#2'5'#0#0#0
+]);

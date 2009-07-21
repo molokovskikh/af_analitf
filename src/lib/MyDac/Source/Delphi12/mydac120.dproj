@@ -1,0 +1,172 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<ProjectGuid>{ea9ec1ce-8ace-4bc6-9d70-dfee1626f110}</ProjectGuid>
+		<MainSource>mydac120.dpk</MainSource>
+		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+		<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+		<DCC_DependencyCheckOutputName>D:\Documents and Settings\All Users\Documents\RAD Studio\6.0\Bpl\mydac120.bpl</DCC_DependencyCheckOutputName>
+		<ProjectVersion>11.1</ProjectVersion>
+		<Config Condition="'$(Config)'==''">Debug</Config>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+		<Base>true</Base>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_Release)'!=''">
+		<Cfg_Release>true</Cfg_Release>
+		<CfgParent>Base</CfgParent>
+		<Base>true</Base>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_Debug)'!=''">
+		<Cfg_Debug>true</Cfg_Debug>
+		<CfgParent>Base</CfgParent>
+		<Base>true</Base>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Base)'!=''">
+		<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
+		<DCC_DependencyCheckOutputName>D:\Documents and Settings\All Users\Documents\RAD Studio\6.0\Bpl\mydac120.bpl</DCC_DependencyCheckOutputName>
+		<DCC_ImageBase>00400000</DCC_ImageBase>
+		<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+		<DCC_Define>mydac;MYBUILDER;$(DCC_Define)</DCC_Define>
+		<DCC_Description>Data Access Components for MySQL</DCC_Description>
+		<DesignOnlyPackage>false</DesignOnlyPackage>
+		<GenPackage>true</GenPackage>
+		<DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
+		<GenDll>true</GenDll>
+		<DCC_WriteableConstants>true</DCC_WriteableConstants>
+		<DCC_DebugInformation>false</DCC_DebugInformation>
+		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Cfg_Release)'!=''">
+		<Version>7.0</Version>
+		<DCC_DebugInformation>False</DCC_DebugInformation>
+		<DCC_WriteableConstants>True</DCC_WriteableConstants>
+		<DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+		<DCC_UnitAlias>WinTypes=Borland.Vcl.Windows;WinProcs=Borland.Vcl.Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</DCC_UnitAlias>
+		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+		<DCC_StackSize>4096,1048576</DCC_StackSize>
+		<DCC_ExeOutput>.</DCC_ExeOutput>
+		<DCC_DcuOutput>.</DCC_DcuOutput>
+		<DCC_ObjOutput>.</DCC_ObjOutput>
+		<DCC_HppOutput>.</DCC_HppOutput>
+		<DCC_UnitSearchPath>..\..\..\Common\Source;..\</DCC_UnitSearchPath>
+		<DCC_ResourcePath>..\..\..\Common\Source;..\</DCC_ResourcePath>
+		<DCC_ObjPath>..\..\..\Common\Source;..\</DCC_ObjPath>
+		<DCC_IncludePath>..\..\..\Common\Source;..\</DCC_IncludePath>
+		<DCC_Define>mydac;MYBUILDER;RELEASE</DCC_Define>
+		<DCC_UNSAFE_TYPE>True</DCC_UNSAFE_TYPE>
+		<DCC_UNSAFE_CODE>True</DCC_UNSAFE_CODE>
+		<DCC_UNSAFE_CAST>True</DCC_UNSAFE_CAST>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Cfg_Debug)'!=''">
+		<Version>7.0</Version>
+		<DCC_DebugInformation>False</DCC_DebugInformation>
+		<DCC_WriteableConstants>True</DCC_WriteableConstants>
+		<DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+		<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+		<DCC_UnitAlias>WinTypes=Borland.Vcl.Windows;WinProcs=Borland.Vcl.Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</DCC_UnitAlias>
+		<DCC_CBuilderOutput>All</DCC_CBuilderOutput>
+		<DCC_StackSize>4096,1048576</DCC_StackSize>
+		<DCC_ExeOutput>.</DCC_ExeOutput>
+		<DCC_DcuOutput>.</DCC_DcuOutput>
+		<DCC_ObjOutput>.</DCC_ObjOutput>
+		<DCC_HppOutput>.</DCC_HppOutput>
+		<DCC_UnitSearchPath>..\..\..\Common\Source;..\</DCC_UnitSearchPath>
+		<DCC_ResourcePath>..\..\..\Common\Source;..\</DCC_ResourcePath>
+		<DCC_ObjPath>..\..\..\Common\Source;..\</DCC_ObjPath>
+		<DCC_IncludePath>..\..\..\Common\Source;..\</DCC_IncludePath>
+		<DCC_Define>mydac;MYBUILDER;DEBUG</DCC_Define>
+		<DCC_UNSAFE_TYPE>True</DCC_UNSAFE_TYPE>
+		<DCC_UNSAFE_CODE>True</DCC_UNSAFE_CODE>
+		<DCC_UNSAFE_CAST>True</DCC_UNSAFE_CAST>
+	</PropertyGroup>
+	<ItemGroup>
+		<DelphiCompile Include="mydac120.dpk">
+			<MainSource>MainSource</MainSource>
+		</DelphiCompile>
+		<DCCReference Include="vcl.dcp"/>
+		<DCCReference Include="vcldb.dcp"/>
+		<DCCReference Include="dac120.dcp"/>
+		<DCCReference Include="..\MyCall.pas"/>
+		<DCCReference Include="..\MyClasses.pas"/>
+		<DCCReference Include="..\MyAccess.pas"/>
+		<DCCReference Include="..\MyServices.pas"/>
+		<DCCReference Include="..\MyConsts.pas"/>
+		<DCCReference Include="..\MyEmbConnection.pas"/>
+		<DCCReference Include="..\MyParser.pas"/>
+		<DCCReference Include="..\MyScript.pas"/>
+		<DCCReference Include="..\MyScriptProcessor.pas"/>
+		<DCCReference Include="..\MyLoader.pas"/>
+		<DCCReference Include="..\MyServerControl.pas"/>
+		<DCCReference Include="..\MyDump.pas"/>
+		<DCCReference Include="..\MyBackup.pas"/>
+		<DCCReference Include="..\MyDacMonitor.pas"/>
+		<DCCReference Include="..\MyConnectionPool.pas"/>
+		<DCCReference Include="..\MySqlApiDirect.pas"/>
+		<DCCReference Include="..\MySqlStmt.pas"/>
+		<DCCReference Include="..\MySqlSession.pas"/>
+		<DCCReference Include="..\MySqlVioPipe.pas"/>
+		<DCCReference Include="..\MySqlResultSet.pas"/>
+		<DCCReference Include="..\MySqlNet.pas"/>
+		<DCCReference Include="..\MySqlErrors.pas"/>
+		<DCCReference Include="..\MySqlBind.pas"/>
+		<DCCReference Include="..\MySqlType.pas"/>
+		<DCCReference Include="..\MySqlApi.pas"/>
+		<None Include="ModelSupport\default.txaPackage"/>
+		<None Include="ModelSupport_mydac120\default.txaPackage"/>
+		<BuildConfiguration Include="Base">
+			<Key>Base</Key>
+		</BuildConfiguration>
+		<BuildConfiguration Include="Release">
+			<Key>Cfg_Release</Key>
+			<CfgParent>Base</CfgParent>
+		</BuildConfiguration>
+		<BuildConfiguration Include="Debug">
+			<Key>Cfg_Debug</Key>
+			<CfgParent>Base</CfgParent>
+		</BuildConfiguration>
+	</ItemGroup>
+	<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+	<ProjectExtensions>
+		<Borland.Personality>Delphi.Personality</Borland.Personality>
+		<Borland.ProjectType>Package</Borland.ProjectType>
+		<BorlandProject><BorlandProject>
+				<Delphi.Personality>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">5</VersionInfo>
+						<VersionInfo Name="MinorVer">80</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">6047</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName">Devart</VersionInfoKeys>
+						<VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">5.80.0.47</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+						<VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+						<VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+						<VersionInfoKeys Name="ProductName">Mydac</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductVersion">5.80.0.47</VersionInfoKeys>
+					</VersionInfoKeys>
+					<Source>
+						<Source Name="MainSource">mydac120.dpk</Source>
+					</Source>
+				</Delphi.Personality>
+			</BorlandProject>
+		</BorlandProject>
+	</ProjectExtensions>
+</Project>

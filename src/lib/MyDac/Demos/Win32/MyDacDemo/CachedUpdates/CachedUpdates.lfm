@@ -1,0 +1,445 @@
+inherited CachedUpdatesFrame: TCachedUpdatesFrame
+  Height = 277
+  Width = 690
+  Align = alClient
+  ClientHeight = 277
+  ClientWidth = 690
+  TabOrder = 0
+  object DBGrid: TDBGrid[0]
+    Height = 175
+    Top = 102
+    Width = 690
+    Align = alClient
+    DataSource = DataSource
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 0
+    OnDrawColumnCell = DBGridDrawColumnCell
+  end
+  object Panel8: TPanel[1]
+    Height = 102
+    Width = 690
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 102
+    ClientWidth = 690
+    TabOrder = 1
+    object ToolBar: TPanel
+      Left = 1
+      Height = 100
+      Top = 1
+      Width = 667
+      BevelOuter = bvNone
+      ClientHeight = 100
+      ClientWidth = 667
+      Color = 16591631
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 0
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object RefreshRecord: TSpeedButton
+        Left = 408
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'RefreshRecord'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = RefreshRecordClick
+      end
+      object Panel1: TPanel
+        Left = 1
+        Height = 52
+        Top = 47
+        Width = 368
+        BevelOuter = bvNone
+        ClientHeight = 52
+        ClientWidth = 368
+        ParentColor = False
+        TabOrder = 0
+        object Label2: TLabel
+          Left = 5
+          Height = 13
+          Top = 5
+          Width = 48
+          Caption = 'Updates'
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object Panel3: TPanel
+          Left = 20
+          Height = 24
+          Top = 23
+          Width = 333
+          BevelOuter = bvNone
+          ClientHeight = 24
+          ClientWidth = 333
+          Color = 16591631
+          ParentColor = False
+          TabOrder = 0
+          object btApply: TSpeedButton
+            Left = 1
+            Height = 22
+            Top = 1
+            Width = 82
+            Caption = 'Apply'
+            Color = clBtnFace
+            Flat = True
+            Font.Color = clMaroon
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            NumGlyphs = 0
+            Transparent = False
+            OnClick = btApplyClick
+            ParentFont = False
+          end
+          object btCommit: TSpeedButton
+            Left = 84
+            Height = 22
+            Top = 1
+            Width = 82
+            Caption = 'Commit'
+            Color = clBtnFace
+            Flat = True
+            Font.Color = clMaroon
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            NumGlyphs = 0
+            Transparent = False
+            OnClick = btCommitClick
+            ParentFont = False
+          end
+          object btCancel: TSpeedButton
+            Left = 167
+            Height = 22
+            Top = 1
+            Width = 82
+            Caption = 'Cancel'
+            Color = clBtnFace
+            Flat = True
+            Font.Color = clMaroon
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            NumGlyphs = 0
+            Transparent = False
+            OnClick = btCancelClick
+            ParentFont = False
+          end
+          object btRevertRecord: TSpeedButton
+            Left = 250
+            Height = 22
+            Top = 1
+            Width = 82
+            Caption = 'Revert'
+            Color = clBtnFace
+            Flat = True
+            Font.Color = clMaroon
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            NumGlyphs = 0
+            Transparent = False
+            OnClick = btRevertRecordClick
+            ParentFont = False
+          end
+        end
+      end
+      object Panel2: TPanel
+        Left = 1
+        Height = 22
+        Top = 24
+        Width = 317
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 317
+        ParentColor = False
+        TabOrder = 1
+        object Label4: TLabel
+          Left = 222
+          Height = 12
+          Top = 7
+          Width = 71
+          Caption = 'Batch Size'
+          ParentColor = False
+        end
+        object cbCachedUpdates: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 4
+          Width = 115
+          Caption = 'CachedUpdates'
+          OnClick = cbCachedUpdatesClick
+          TabOrder = 0
+        end
+        object cbCustomUpdate: TCheckBox
+          Left = 113
+          Height = 19
+          Top = 4
+          Width = 115
+          Caption = 'Custom Update'
+          OnClick = cbCustomUpdateClick
+          TabOrder = 1
+        end
+        object edUpdateBatchSize: TEdit
+          Left = 276
+          Height = 21
+          Top = 1
+          Width = 37
+          TabOrder = 2
+          Text = '1'
+        end
+      end
+      object Panel4: TPanel
+        Left = 370
+        Height = 52
+        Top = 47
+        Width = 296
+        BevelOuter = bvNone
+        ClientHeight = 52
+        ClientWidth = 296
+        ParentColor = False
+        TabOrder = 3
+        object Label3: TLabel
+          Left = 5
+          Height = 13
+          Top = 5
+          Width = 74
+          Caption = 'Transactions'
+          Font.Color = clNavy
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object Panel5: TPanel
+          Left = 24
+          Height = 24
+          Top = 23
+          Width = 250
+          BevelOuter = bvNone
+          ClientHeight = 24
+          ClientWidth = 250
+          Color = 16591631
+          ParentColor = False
+          TabOrder = 0
+          object btStartTrans: TSpeedButton
+            Left = 1
+            Height = 22
+            Top = 1
+            Width = 82
+            Caption = 'Start'
+            Color = clBtnFace
+            Flat = True
+            Font.Color = clNavy
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            NumGlyphs = 0
+            Transparent = False
+            OnClick = btStartTransClick
+            ParentFont = False
+          end
+          object btCommitTrans: TSpeedButton
+            Left = 84
+            Height = 22
+            Top = 1
+            Width = 82
+            Caption = 'Commit'
+            Color = clBtnFace
+            Flat = True
+            Font.Color = clNavy
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            NumGlyphs = 0
+            Transparent = False
+            OnClick = btCommitTransClick
+            ParentFont = False
+          end
+          object btRollBackTrans: TSpeedButton
+            Left = 167
+            Height = 22
+            Top = 1
+            Width = 82
+            Caption = 'Rollback'
+            Color = clBtnFace
+            Flat = True
+            Font.Color = clNavy
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            NumGlyphs = 0
+            Transparent = False
+            OnClick = btRollbackTransClick
+            ParentFont = False
+          end
+        end
+      end
+      object Panel6: TPanel
+        Left = 319
+        Height = 22
+        Top = 24
+        Width = 347
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 347
+        ParentColor = False
+        TabOrder = 2
+        object Label1: TLabel
+          Left = 6
+          Height = 12
+          Top = 7
+          Width = 78
+          Caption = 'RecordTypes'
+          ParentColor = False
+        end
+        object cbDeleted: TCheckBox
+          Left = 287
+          Height = 19
+          Top = 4
+          Width = 73
+          Caption = 'Deleted'
+          OnClick = cbDeletedClick
+          TabOrder = 0
+        end
+        object cbInserted: TCheckBox
+          Left = 223
+          Height = 19
+          Top = 4
+          Width = 80
+          Caption = 'Inserted'
+          OnClick = cbInsertedClick
+          TabOrder = 1
+        end
+        object cbModified: TCheckBox
+          Left = 157
+          Height = 19
+          Top = 4
+          Width = 80
+          Caption = 'Modified'
+          OnClick = cbModifiedClick
+          TabOrder = 2
+        end
+        object cbUnmodified: TCheckBox
+          Left = 78
+          Height = 19
+          Top = 4
+          Width = 94
+          Caption = 'Unmodified'
+          OnClick = cbUnmodifiedClick
+          TabOrder = 3
+        end
+      end
+      object Panel7: TPanel
+        Left = 491
+        Height = 22
+        Top = 1
+        Width = 175
+        BevelOuter = bvNone
+        ParentColor = False
+        TabOrder = 4
+      end
+      object Panel9: TPanel
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 240
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 240
+        TabOrder = 5
+        object DBNavigator: TDBNavigator
+          Height = 22
+          Top = 1
+          Width = 240
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 240
+          Color = clBtnFace
+          DataSource = DataSource
+          Flat = True
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object DataSource: TDatasource[2]
+    DataSet = MyQuery
+    OnStateChange = DataSourceStateChange
+    OnDataChange = DataSourceDataChange
+    left = 783
+    top = 90
+  end
+  object MyQuery: TMyQuery[3]
+    SQLInsert.Strings = (
+      'INSERT INTO EMP_TRANACTION_SAFE'
+      '  (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)'
+      'VALUES'
+      '  (:EMPNO, :ENAME, :JOB, :MGR, :HIREDATE, :SAL, :COMM, :DEPTNO)'
+    )
+    SQLDelete.Strings = (
+      'DELETE FROM EMP_TRANACTION_SAFE'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    SQLUpdate.Strings = (
+      'UPDATE EMP_TRANACTION_SAFE'
+      'SET'
+      '  EMPNO = :EMPNO, ENAME = :ENAME, JOB = :JOB, MGR = :MGR, HIREDATE = :HIREDATE, SAL = :SAL, COMM = :COMM, DEPTNO = :DEPTNO'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    SQLRefresh.Strings = (
+      'SELECT EMP_TRANACTION_SAFE.ENAME, EMP_TRANACTION_SAFE.JOB, EMP_TRANACTION_SAFE.MGR, EMP_TRANACTION_SAFE.HIREDATE, EMP_TRANACTION_SAFE.SAL, EMP_TRANACTION_SAFE.COMM, EMP_TRANACTION_SAFE.DEPTNO FROM EMP_TRANACTION_SAFE'
+      'WHERE'
+      '  EMP_TRANACTION_SAFE.EMPNO = :Old_EMPNO'
+    )
+    SQL.Strings = (
+      'SELECT * FROM EMP_TRANACTION_SAFE'
+    )
+    CachedUpdates = True
+    OnUpdateError = MyQueryUpdateError
+    OnCalcFields = MyQueryCalcFields
+    left = 750
+    top = 90
+  end
+end

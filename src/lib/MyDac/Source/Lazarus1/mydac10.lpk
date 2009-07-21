@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <Package Version="3">
+    <PathDelim Value="\"/>
+    <Name Value="mydac10"/>
+    <CompilerOptions>
+      <Version Value="5"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <IncludeFiles Value="..\;..\..\..\Common\Source\"/>
+        <OtherUnitFiles Value="..\"/>
+        <UnitOutputDirectory Value="lib"/>
+        <ObjectPath Value="..\"/>
+      </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <IncludeAssertionCode Value="True"/>
+          <DelphiCompat Value="True"/>
+        </SyntaxOptions>
+      </Parsing>
+      <CodeGeneration>
+        <Checks>
+          <IOChecks Value="True"/>
+        </Checks>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
+      </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <UseLineInfoUnit Value="False"/>
+        </Debugging>
+      </Linking>
+      <Other>
+        <CompilerPath Value="$(CompPath)"/>
+      </Other>
+    </CompilerOptions>
+    <Description Value="Data Access Components for MySQL
+"/>
+    <Version Major="5" Minor="70" Release="0" Build="44"/>
+    <Files Count="25">
+      <Item1>
+        <Filename Value="..\MyCall.pas"/>
+        <UnitName Value="MyCall"/>
+      </Item1>
+      <Item2>
+        <Filename Value="..\MyClasses.pas"/>
+        <UnitName Value="MyClasses"/>
+      </Item2>
+      <Item3>
+        <Filename Value="..\MyAccess.pas"/>
+        <UnitName Value="MyAccess"/>
+      </Item3>
+      <Item4>
+        <Filename Value="..\MyServices.pas"/>
+        <UnitName Value="MyServices"/>
+      </Item4>
+      <Item5>
+        <Filename Value="..\MyConsts.pas"/>
+        <UnitName Value="MyConsts"/>
+      </Item5>
+      <Item6>
+        <Filename Value="..\MyParser.pas"/>
+        <UnitName Value="MyParser"/>
+      </Item6>
+      <Item7>
+        <Filename Value="..\MyScript.pas"/>
+        <UnitName Value="MyScript"/>
+      </Item7>
+      <Item8>
+        <Filename Value="..\MyScriptProcessor.pas"/>
+        <UnitName Value="MyScriptProcessor"/>
+      </Item8>
+      <Item9>
+        <Filename Value="..\MyLoader.pas"/>
+        <UnitName Value="MyLoader"/>
+      </Item9>
+      <Item10>
+        <Filename Value="..\MyServerControl.pas"/>
+        <UnitName Value="MyServerControl"/>
+      </Item10>
+      <Item11>
+        <Filename Value="..\MyDump.pas"/>
+        <UnitName Value="MyDump"/>
+      </Item11>
+      <Item12>
+        <Filename Value="..\MyBackup.pas"/>
+        <UnitName Value="MyBackup"/>
+      </Item12>
+      <Item13>
+        <Filename Value="..\MyDacMonitor.pas"/>
+        <UnitName Value="MyDacMonitor"/>
+      </Item13>
+      <Item14>
+        <Filename Value="..\MyEmbConnection.pas"/>
+        <UnitName Value="MyEmbConnection"/>
+      </Item14>
+      <Item15>
+        <Filename Value="..\MyConnectionPool.pas"/>
+        <UnitName Value="MyConnectionPool"/>
+      </Item15>
+      <Item16>
+        <Filename Value="..\MySqlApiDirect.pas"/>
+        <UnitName Value="MySqlApiDirect"/>
+      </Item16>
+      <Item17>
+        <Filename Value="..\MySqlStmt.pas"/>
+        <UnitName Value="MySqlStmt"/>
+      </Item17>
+      <Item18>
+        <Filename Value="..\MySqlSession.pas"/>
+        <UnitName Value="MySqlSession"/>
+      </Item18>
+      <Item19>
+        <Filename Value="..\MySqlVioPipe.pas"/>
+        <UnitName Value="MySqlVioPipe"/>
+      </Item19>
+      <Item20>
+        <Filename Value="..\MySqlResultSet.pas"/>
+        <UnitName Value="MySqlResultSet"/>
+      </Item20>
+      <Item21>
+        <Filename Value="..\MySqlNet.pas"/>
+        <UnitName Value="MySqlNet"/>
+      </Item21>
+      <Item22>
+        <Filename Value="..\MySqlErrors.pas"/>
+        <UnitName Value="MySqlErrors"/>
+      </Item22>
+      <Item23>
+        <Filename Value="..\MySqlBind.pas"/>
+        <UnitName Value="MySqlBind"/>
+      </Item23>
+      <Item24>
+        <Filename Value="..\MySqlType.pas"/>
+        <UnitName Value="MySqlType"/>
+      </Item24>
+      <Item25>
+        <Filename Value="..\MySqlApi.pas"/>
+        <UnitName Value="MySqlApi"/>
+      </Item25>
+    </Files>
+    <RequiredPkgs Count="2">
+      <Item1>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="dac10"/>
+      </Item2>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)\"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>

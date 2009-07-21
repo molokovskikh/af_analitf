@@ -1,0 +1,62 @@
+
+package mydac60;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST ON}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Data Access Components for MySQL'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+{$DEFINE MyDAC}
+
+requires
+  vcl,
+  dac60;
+
+contains
+  MyCall in '..\MyCall.pas',
+  MyClasses in '..\MyClasses.pas',
+  MyAccess in '..\MyAccess.pas',
+  MyServices in '..\MyServices.pas',
+  MyConsts in '..\MyConsts.pas',
+  MyParser in '..\MyParser.pas',
+  MyScript in '..\MyScript.pas',
+  MyScriptProcessor in '..\MyScriptProcessor.pas',
+  MyLoader in '..\MyLoader.pas',
+  MyServerControl in '..\MyServerControl.pas',
+  MyDump in '..\MyDump.pas',
+  MyBackup in '..\MyBackup.pas',
+  MyDacMonitor in '..\MyDacMonitor.pas',
+  MyEmbConnection in '..\MyEmbConnection.pas',
+  MyConnectionPool in '..\MyConnectionPool.pas',
+  MySqlApiDirect in '..\MySqlApiDirect.pas',
+  MySqlStmt in '..\MySqlStmt.pas',
+  MySqlSession in '..\MySqlSession.pas',
+  MySqlVioPipe in '..\MySqlVioPipe.pas',
+  MySqlResultSet in '..\MySqlResultSet.pas',
+  MySqlNet in '..\MySqlNet.pas',
+  MySqlErrors in '..\MySqlErrors.pas',
+  MySqlBind in '..\MySqlBind.pas',
+  MySqlType in '..\MySqlType.pas',
+  MySqlApi in '..\MySqlApi.pas';
+
+end.

@@ -1,0 +1,91 @@
+object AboutForm: TAboutForm
+  Left = 333
+  Height = 337
+  Top = 186
+  Width = 415
+  HorzScrollBar.Page = 414
+  VertScrollBar.Page = 336
+  ActiveControl = OKBtn
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
+  Caption = 'About FailOver Demo'
+  ClientHeight = 337
+  ClientWidth = 415
+  OnMouseMove = FormMouseMove
+  ParentFont = True
+  Position = poScreenCenter
+  object Label3: TLabel
+    Left = 16
+    Height = 14
+    Top = 36
+    Width = 152
+    Caption = 'Copyright © 1997-2009 Devart'
+    ParentColor = False
+  end
+  object lbWeb: TLabel
+    Cursor = crHandPoint
+    Left = 16
+    Height = 14
+    Top = 306
+    Width = 84
+    Caption = 'www.devart.com'
+    Font.Color = clBlue
+    Font.Height = 13
+    Font.Name = 'Tahoma'
+    Font.Pitch = fpVariable
+    Font.Style = [fsUnderline]
+    ParentColor = False
+    OnClick = lbWebClick
+    OnMouseMove = lbWebMouseMove
+  end
+  object lbDemo: TLabel
+    Left = 16
+    Height = 20
+    Top = 8
+    Width = 120
+    Caption = 'FailOver Demo'
+    Font.Color = 16591631
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentColor = False
+  end
+  object OKBtn: TButton
+    Left = 319
+    Height = 24
+    Top = 308
+    Width = 75
+    Cancel = True
+    Caption = 'OK'
+    Default = True
+    ModalResult = 1
+    TabOrder = 0
+  end
+  object meAbout: TMemo
+    Left = 16
+    Height = 241
+    Top = 56
+    Width = 385
+    Color = clBtnFace
+    Lines.Strings = (
+      'This demo program shows how to use DisconnectedMode, Pooling, '
+      'CachedUpdates and LocalMasterDetail options. Usage of these options and '
+      'usage of the OnConectionLost event are recommended working in unstable '
+      'and/or slow network.'
+      ''
+      'The ''Open'' button opens two data sets. They are linked by Master/Detail '
+      'relationship. You can preconnect to database before opening the datasets, but '
+      'usage of disconnected mode has no advantages in this case.'
+      ''
+      'The grid above displays the master data set, the grid below displays the detail '
+      'data set. The ''Kill session'' button terminates session on the server, which '
+      'causes connection break. This does not work for with all SQL servers and with '
+      'all users. The memo at the bottom of the main form keeps track of connection '
+      'messages.'
+      ''
+      'See the "Working in unstable and slow networks" topic in help for more '
+      'detailed information.'
+    )
+    TabOrder = 1
+  end
+end

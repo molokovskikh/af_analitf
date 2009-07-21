@@ -1,0 +1,348 @@
+inherited UpdateSQLFrame: TUpdateSQLFrame
+  Height = 277
+  Width = 443
+  Align = alClient
+  ClientHeight = 277
+  ClientWidth = 443
+  TabOrder = 0
+  object DBGrid: TDBGrid[0]
+    Height = 131
+    Top = 146
+    Width = 443
+    Align = alClient
+    DataSource = DataSource
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 3
+  end
+  object ToolBar: TPanel[1]
+    Height = 48
+    Width = 443
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 48
+    ClientWidth = 443
+    TabOrder = 0
+    object Panel3: TPanel
+      Left = 1
+      Height = 46
+      Top = 1
+      Width = 416
+      BevelOuter = bvNone
+      ClientHeight = 46
+      ClientWidth = 416
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btExecute: TSpeedButton
+        Left = 333
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Execute'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btExecuteClick
+      end
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btPrepare: TSpeedButton
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Prepare'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btPrepareClick
+      end
+      object btUnPrepare: TSpeedButton
+        Left = 250
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'UnPrepare'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btUnPrepareClick
+      end
+      object Panel4: TPanel
+        Left = 1
+        Height = 21
+        Top = 24
+        Width = 414
+        BevelOuter = bvNone
+        ClientHeight = 21
+        ClientWidth = 414
+        ParentColor = False
+        TabOrder = 0
+        object cbDeleteObject: TCheckBox
+          Left = 15
+          Height = 20
+          Top = 3
+          Width = 97
+          Caption = 'DeleteObject'
+          OnClick = cbDeleteObjectClick
+          TabOrder = 0
+        end
+        object cbInsertObject: TCheckBox
+          Left = 110
+          Height = 20
+          Top = 3
+          Width = 91
+          Caption = 'InsertObject'
+          OnClick = cbDeleteObjectClick
+          TabOrder = 1
+        end
+        object cbModifyObject: TCheckBox
+          Left = 205
+          Height = 20
+          Top = 3
+          Width = 99
+          Caption = 'ModifyObject'
+          OnClick = cbDeleteObjectClick
+          TabOrder = 2
+        end
+        object cbRefreshObject: TCheckBox
+          Left = 315
+          Height = 20
+          Top = 3
+          Width = 103
+          Caption = 'RefreshObject'
+          OnClick = cbDeleteObjectClick
+          TabOrder = 3
+        end
+      end
+    end
+  end
+  object meSQL: TMemo[2]
+    Height = 72
+    Top = 48
+    Width = 443
+    Align = alTop
+    OnExit = meSQLExit
+    ScrollBars = ssVertical
+    TabOrder = 1
+  end
+  object Panel1: TPanel[3]
+    Height = 26
+    Top = 120
+    Width = 443
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 26
+    ClientWidth = 443
+    TabOrder = 2
+    object Panel2: TPanel
+      Left = 1
+      Height = 24
+      Top = 1
+      Width = 325
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 325
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btRefreshRecord: TSpeedButton
+        Left = 242
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'RefreshRecord'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btRefreshRecordClick
+      end
+      object Panel5: TPanel
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 240
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 240
+        TabOrder = 0
+        object DBNavigator1: TDBNavigator
+          Height = 22
+          Width = 240
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 240
+          Color = clBtnFace
+          DataSource = DataSource
+          Flat = True
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object MyQuery: TMyQuery[4]
+    SQL.Strings = (
+      'SELECT * FROM EMP'
+    )
+    UpdateObject = MyUpdateSQL
+    left = 31
+    top = 92
+  end
+  object DataSource: TDatasource[5]
+    DataSet = MyQuery
+    left = 60
+    top = 92
+  end
+  object MyUpdateSQL: TMyUpdateSQL[6]
+    InsertSQL.Strings = (
+      'INSERT INTO EMP'
+      '  (EMP.ENAME, EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO)'
+      'VALUES'
+      '  (:ENAME, :JOB, :MGR, :HIREDATE, :SAL, :COMM, :DEPTNO)'
+    )
+    DeleteSQL.Strings = (
+      'DELETE FROM EMP'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    ModifySQL.Strings = (
+      'UPDATE EMP'
+      'SET'
+      '  ENAME = :ENAME, JOB = :JOB, MGR = :MGR, HIREDATE = :HIREDATE, SAL = :SAL, COMM = :COMM, DEPTNO = :DEPTNO'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    RefreshSQL.Strings = (
+      'SELECT EMP.ENAME, EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO FROM EMP'
+      'WHERE'
+      '  EMP.EMPNO = :Old_EMPNO'
+    )
+    left = 98
+    top = 92
+  end
+  object DeleteSQL: TMyCommand[7]
+    SQL.Strings = (
+      'DELETE FROM EMP'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    left = 145
+    top = 65
+    ParamData = <    
+      item
+        Name = 'Old_EMPNO'
+      end>
+  end
+  object InsertSQL: TMyCommand[8]
+    SQL.Strings = (
+      'INSERT INTO EMP'
+      '  (EMP.ENAME, EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO)'
+      'VALUES'
+      '  (:ENAME, :JOB, :MGR, :HIREDATE, :SAL, :COMM, :DEPTNO)'
+    )
+    left = 145
+    top = 100
+    ParamData = <    
+      item
+        Name = 'ENAME'
+      end    
+      item
+        Name = 'JOB'
+      end    
+      item
+        Name = 'MGR'
+      end    
+      item
+        Name = 'HIREDATE'
+      end    
+      item
+        Name = 'SAL'
+      end    
+      item
+        Name = 'COMM'
+      end    
+      item
+        Name = 'DEPTNO'
+      end>
+  end
+  object RefreshQuery: TMyQuery[9]
+    SQL.Strings = (
+      'SELECT EMP.ENAME, EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO FROM EMP'
+      'WHERE'
+      '  EMP.EMPNO = :Old_EMPNO'
+    )
+    left = 145
+    top = 165
+    ParamData = <    
+      item
+        Name = 'Old_EMPNO'
+      end>
+  end
+  object ModifyQuery: TMyQuery[10]
+    SQL.Strings = (
+      'UPDATE EMP'
+      'SET'
+      '  ENAME = :ENAME, JOB = :JOB, MGR = :MGR, HIREDATE = :HIREDATE, SAL = :SAL, COMM = :COMM, DEPTNO = :DEPTNO'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    left = 145
+    top = 135
+    ParamData = <    
+      item
+        Name = 'ENAME'
+      end    
+      item
+        Name = 'JOB'
+      end    
+      item
+        Name = 'MGR'
+      end    
+      item
+        Name = 'HIREDATE'
+      end    
+      item
+        Name = 'SAL'
+      end    
+      item
+        Name = 'COMM'
+      end    
+      item
+        Name = 'DEPTNO'
+      end    
+      item
+        Name = 'Old_EMPNO'
+      end>
+  end
+end

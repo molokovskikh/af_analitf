@@ -1,0 +1,386 @@
+inherited LockFrame: TLockFrame
+  Height = 481
+  Width = 763
+  Align = alClient
+  ClientHeight = 477
+  ClientWidth = 759
+  TabOrder = 0
+  object Splitter1: TSplitter[0]
+    Cursor = crVSplit
+    Height = 2
+    Top = 338
+    Width = 759
+    Align = alTop
+    Color = 16591631
+    ParentColor = False
+    ResizeAnchor = akTop
+  end
+  object ToolBar: TPanel[1]
+    Height = 179
+    Width = 759
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 179
+    ClientWidth = 759
+    TabOrder = 0
+    object Panel5: TPanel
+      Left = 2
+      Height = 156
+      Top = 1
+      Width = 687
+      BevelOuter = bvNone
+      ClientHeight = 156
+      ClientWidth = 687
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object Memo1: TMemo
+        Left = 1
+        Height = 81
+        Top = 1
+        Width = 685
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Lines.Strings = (
+          'To see how this demo works you should open two instances of it. In the first instance of demo start editing any '
+          'record, '
+          'then try to edit the same record in the second instance.'
+          'Immediately lock mode equals to SELECT ... FOR UPDATE command.Delayed lock mode equals to SELECT ... '
+          'LOCK IN SHARE MODE command. You can read more about these commands in MySQL Reference Manual.     '
+        )
+        ParentFont = False
+        ReadOnly = True
+        TabOrder = 0
+        WantTabs = True
+      end
+      object meSQL: TMemo
+        Left = 1
+        Height = 72
+        Top = 83
+        Width = 685
+        OnChange = btCloseClick
+        OnExit = meSQLExit
+        ScrollBars = ssVertical
+        TabOrder = 1
+      end
+    end
+    object Panel3: TPanel
+      Left = 2
+      Height = 24
+      Top = 156
+      Width = 167
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 167
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 1
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+    end
+  end
+  object Panel6: TPanel[2]
+    Height = 157
+    Top = 181
+    Width = 759
+    Align = alTop
+    BevelOuter = bvNone
+    Caption = 'Panel6'
+    ClientHeight = 157
+    ClientWidth = 759
+    TabOrder = 1
+    object Panel1: TPanel
+      Height = 26
+      Width = 759
+      Align = alTop
+      BevelOuter = bvNone
+      ClientHeight = 26
+      ClientWidth = 759
+      TabOrder = 0
+      object Label2: TLabel
+        Left = 8
+        Height = 12
+        Top = 5
+        Width = 141
+        Caption = 'The first connection'
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object Panel2: TPanel
+        Left = 200
+        Height = 24
+        Top = 1
+        Width = 500
+        BevelOuter = bvNone
+        ClientHeight = 24
+        ClientWidth = 500
+        Color = 16591631
+        ParentColor = False
+        TabOrder = 0
+        object Panel4: TPanel
+          Left = 252
+          Height = 22
+          Top = 1
+          Width = 247
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 247
+          ParentColor = False
+          TabOrder = 0
+          object Label1: TLabel
+            Left = 8
+            Height = 13
+            Top = 4
+            Width = 56
+            Caption = 'Lock type'
+            ParentColor = False
+          end
+          object rbLockDelayed: TRadioButton
+            Left = 172
+            Height = 20
+            Top = 4
+            Width = 71
+            Caption = 'Delayed'
+            TabOrder = 0
+          end
+          object rbLockImmediately: TRadioButton
+            Left = 67
+            Height = 20
+            Top = 4
+            Width = 89
+            Caption = 'Immediately'
+            Checked = True
+            State = cbChecked
+            TabOrder = 1
+          end
+        end
+        object Panel12: TPanel
+          Left = 1
+          Height = 22
+          Top = 1
+          Width = 250
+          BevelOuter = bvNone
+          Caption = 'Panel12'
+          ClientHeight = 22
+          ClientWidth = 250
+          TabOrder = 1
+          object DBNavigator1: TDBNavigator
+            Height = 22
+            Width = 250
+            BevelOuter = bvNone
+            ClientHeight = 22
+            ClientWidth = 250
+            Color = clBtnFace
+            DataSource = DataSource1
+            Flat = True
+            ParentColor = False
+            TabOrder = 0
+          end
+        end
+      end
+    end
+    object DBGrid: TDBGrid
+      Height = 131
+      Top = 26
+      Width = 759
+      Align = alClient
+      DataSource = DataSource1
+      FixedColor = clBtnFace
+      FixedHotColor = cl3DLight
+      Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+      OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+      ParentColor = False
+      TabOrder = 1
+    end
+  end
+  object Panel7: TPanel[3]
+    Height = 137
+    Top = 340
+    Width = 759
+    Align = alClient
+    BevelOuter = bvNone
+    Caption = 'Panel6'
+    ClientHeight = 137
+    ClientWidth = 759
+    TabOrder = 2
+    object Panel8: TPanel
+      Height = 26
+      Width = 759
+      Align = alTop
+      BevelOuter = bvNone
+      ClientHeight = 26
+      ClientWidth = 759
+      TabOrder = 0
+      object Label3: TLabel
+        Left = 8
+        Height = 12
+        Top = 5
+        Width = 148
+        Caption = 'The second connection'
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object Panel9: TPanel
+        Left = 200
+        Height = 24
+        Top = 1
+        Width = 500
+        BevelOuter = bvNone
+        ClientHeight = 24
+        ClientWidth = 500
+        Color = 16591631
+        ParentColor = False
+        TabOrder = 0
+        object Panel10: TPanel
+          Left = 252
+          Height = 22
+          Top = 1
+          Width = 247
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 247
+          ParentColor = False
+          TabOrder = 1
+          object Label4: TLabel
+            Left = 8
+            Height = 13
+            Top = 4
+            Width = 56
+            Caption = 'Lock type'
+            ParentColor = False
+          end
+          object RadioButton1: TRadioButton
+            Left = 172
+            Height = 20
+            Top = 4
+            Width = 71
+            Caption = 'Delayed'
+            TabOrder = 0
+          end
+          object RadioButton2: TRadioButton
+            Left = 67
+            Height = 20
+            Top = 4
+            Width = 89
+            Caption = 'Immediately'
+            Checked = True
+            State = cbChecked
+            TabOrder = 1
+          end
+        end
+        object Panel14: TPanel
+          Left = 1
+          Height = 22
+          Top = 1
+          Width = 250
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 250
+          TabOrder = 0
+          object DBNavigator2: TDBNavigator
+            Height = 22
+            Width = 250
+            BevelOuter = bvNone
+            ClientHeight = 22
+            ClientWidth = 250
+            Color = clBtnFace
+            DataSource = DataSource2
+            Flat = True
+            ParentColor = False
+            TabOrder = 0
+          end
+        end
+      end
+    end
+    object DBGrid1: TDBGrid
+      Height = 111
+      Top = 26
+      Width = 759
+      Align = alClient
+      DataSource = DataSource2
+      FixedColor = clBtnFace
+      FixedHotColor = cl3DLight
+      Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+      OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+      ParentColor = False
+      TabOrder = 1
+    end
+  end
+  object Panel11: TPanel[4]
+    Height = 2
+    Top = 179
+    Width = 759
+    Align = alTop
+    BevelOuter = bvNone
+    Color = 16591631
+    ParentColor = False
+    TabOrder = 3
+  end
+  object MyQuery1: TMyQuery[5]
+    SQL.Strings = (
+      'SELECT * FROM EMP_TRANACTION_SAFE'
+    )
+    AfterExecute = MyQuery1AfterExecute
+    BeforeEdit = MyQuery1BeforeEdit
+    AfterPost = MyQuery1AfterPost
+    AfterCancel = MyQuery1AfterCancel
+    CommandTimeout = 30
+    left = 173
+    top = 101
+  end
+  object DataSource1: TDatasource[6]
+    DataSet = MyQuery1
+    left = 205
+    top = 101
+  end
+  object MyQuery2: TMyQuery[7]
+    Connection = MyConnection2
+    SQL.Strings = (
+      'SELECT * FROM EMP_TRANACTION_SAFE'
+    )
+    AfterExecute = MyQuery1AfterExecute
+    BeforeEdit = MyQuery1BeforeEdit
+    AfterPost = MyQuery1AfterPost
+    AfterCancel = MyQuery1AfterCancel
+    CommandTimeout = 30
+    left = 83
+    top = 416
+  end
+  object MyConnection2: TMyConnection[8]
+    left = 55
+    top = 415
+  end
+  object DataSource2: TDatasource[9]
+    DataSet = MyQuery2
+    left = 115
+    top = 416
+  end
+end

@@ -1,0 +1,63 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TLoaderFrame','FORMDATA',[
+  'TPF0'#241#12'TLoaderFrame'#11'LoaderFrame'#6'Height'#3#21#1#5'Width'#3#156#2
+  +#5'Align'#7#8'alClient'#12'ClientHeight'#3#17#1#11'ClientWidth'#3#152#2#8'Ta'
+  +'bOrder'#2#0#10'DesignLeft'#3#250#0#9'DesignTop'#3#155#0#0#242#2#0#6'TPanel'
+  +#6'Panel2'#6'Height'#2'@'#5'Width'#3#152#2#5'Align'#7#5'alTop'#10'BevelOuter'
+  +#7#6'bvNone'#12'ClientHeight'#2'@'#11'ClientWidth'#3#152#2#8'TabOrder'#2#0#0
+  +#6'TPanel'#7'ToolBar'#4'Left'#2#1#6'Height'#2'>'#3'Top'#2#1#5'Width'#3'J'#2
+  +#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'>'#11'ClientWidth'#3'J'#2#5'C'
+  +'olor'#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#6
+  +'btOpen'#4'Left'#2#1#6'Height'#2#24#3'Top'#2#1#5'Width'#2'U'#7'Caption'#6#4
+  +'Open'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7
+  +'OnClick'#7#11'btOpenClick'#0#0#12'TSpeedButton'#7'btClose'#4'Left'#2'W'#6'H'
+  +'eight'#2#24#3'Top'#2#1#5'Width'#2'U'#7'Caption'#6#5'Close'#5'Color'#7#9'clB'
+  +'tnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#12'btClos'
+  +'eClick'#0#0#12'TSpeedButton'#6'btLoad'#4'Left'#3#173#0#6'Height'#2#24#3'Top'
+  +#2#1#5'Width'#2'U'#7'Caption'#6#4'Load'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9
+  +'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#11'btLoadClick'#0#0#12'TSpeed'
+  +'Button'#11'btDeleteAll'#4'Left'#3#3#1#6'Height'#2#24#3'Top'#2#1#5'Width'#2
+  +'U'#7'Caption'#6#10'Delete All'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyph'
+  +'s'#2#0#11'Transparent'#8#7'OnClick'#7#16'btDeleteAllClick'#0#0#6'TPanel'#6
+  +'Panel1'#4'Left'#2#1#6'Height'#2'#'#3'Top'#2#26#5'Width'#3#171#0#10'BevelOut'
+  +'er'#7#6'bvNone'#12'ClientHeight'#2'#'#11'ClientWidth'#3#171#0#11'ParentColo'
+  +'r'#8#8'TabOrder'#2#1#0#6'TLabel'#6'Label1'#4'Left'#2#6#6'Height'#2#13#3'Top'
+  +#2#14#5'Width'#2'1'#7'Caption'#6#9'Load rows'#11'ParentColor'#8#0#0#5'TEdit'
+  +#6'edRows'#4'Left'#2'B'#6'Height'#2#21#3'Top'#2#10#5'Width'#2'W'#8'TabOrder'
+  +#2#0#4'Text'#6#4'1000'#0#0#0#6'TPanel'#6'Panel3'#4'Left'#3#173#0#6'Height'#2
+  +'#'#3'Top'#2#26#5'Width'#3#156#1#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'
+  +#2'#'#11'ClientWidth'#3#156#1#11'ParentColor'#8#8'TabOrder'#2#0#0#11'TRadioG'
+  +'roup'#7'rgEvent'#4'Left'#2#9#6'Height'#2' '#3'Top'#2#255#5'Width'#3#225#0#8
+  +'AutoFill'#9#28'ChildSizing.LeftRightSpacing'#2#6#28'ChildSizing.TopBottomSp'
+  +'acing'#2#6#29'ChildSizing.EnlargeHorizontal'#7#24'crsHomogenousChildResize'
+  +#27'ChildSizing.EnlargeVertical'#7#24'crsHomogenousChildResize'#28'ChildSizi'
+  +'ng.ShrinkHorizontal'#7#14'crsScaleChilds'#26'ChildSizing.ShrinkVertical'#7
+  +#14'crsScaleChilds'#18'ChildSizing.Layout'#7#29'cclLeftToRightThenTopToBotto'
+  +'m'#27'ChildSizing.ControlsPerLine'#2#2#12'ClientHeight'#2#28#11'ClientWidth'
+  +#3#221#0#7'Columns'#2#2#13'Items.Strings'#1#6#13'GetColumnData'#6#7'PutData'
+  +#0#7'OnClick'#7#12'rgEventClick'#8'TabOrder'#2#0#0#0#0#6'TPanel'#6'Panel4'#4
+  +'Left'#3'Y'#1#6'Height'#2#24#3'Top'#2#1#5'Width'#3#240#0#10'BevelOuter'#7#6
+  +'bvNone'#12'ClientHeight'#2#24#11'ClientWidth'#3#240#0#8'TabOrder'#2#2#0#12
+  +'TDBNavigator'#11'DBNavigator'#6'Height'#2#24#5'Width'#3#240#0#10'BevelOuter'
+  +#7#6'bvNone'#12'ClientHeight'#2#24#11'ClientWidth'#3#240#0#5'Color'#7#9'clBt'
+  +'nFace'#10'DataSource'#7#10'DataSource'#4'Flat'#9#11'ParentColor'#8#8'TabOrd'
+  +'er'#2#0#0#0#0#0#0#242#2#1#7'TDBGrid'#6'DBGrid'#6'Height'#3#209#0#3'Top'#2'@'
+  +#5'Width'#3#152#2#5'Align'#7#8'alClient'#10'DataSource'#7#10'DataSource'#10
+  +'FixedColor'#7#9'clBtnFace'#13'FixedHotColor'#7#9'cl3DLight'#7'Options'#11#9
+  +'dgEditing'#8'dgTitles'#11'dgIndicator'#14'dgColumnResize'#12'dgColumnMove'
+  +#10'dgColLines'#10'dgRowLines'#6'dgTabs'#21'dgAlwaysShowSelection'#15'dgConf'
+  +'irmDelete'#14'dgCancelOnExit'#0#12'OptionsExtra'#11#14'dgeAutoColumns'#17'd'
+  +'geCheckboxColumn'#0#11'ParentColor'#8#8'TabOrder'#2#1#0#0#242#2#2#11'TDatas'
+  +'ource'#10'DataSource'#7'DataSet'#7#5'Query'#4'left'#3#184#1#3'top'#2'@'#0#0
+  +#242#2#3#8'TMyQuery'#5'Query'#11'SQL.Strings'#1#6#26'SELECT * FROM MYDAC_Loa'
+  +'ded'#0#9'AfterOpen'#7#14'QueryAfterOpen'#11'BeforeClose'#7#16'QueryBeforeCl'
+  +'ose'#12'AfterRefresh'#7#14'QueryAfterOpen'#4'left'#3#152#1#3'top'#2'@'#0#0
+  +#242#2#4#9'TMyLoader'#8'MyLoader'#9'TableName'#6#12'MYDAC_Loaded'#7'Columns'
+  +#14#1#4'Name'#6#4'Code'#9'FieldType'#7#9'ftInteger'#0#1#4'Name'#6#3'Num'#9'F'
+  +'ieldType'#7#9'ftInteger'#0#1#4'Name'#6#4'Num1'#9'FieldType'#7#7'ftFloat'#0#1
+  +#4'Name'#6#3'Str'#0#1#4'Name'#6#3'Dat'#9'FieldType'#7#10'ftDateTime'#0#0#15
+  +'OnGetColumnData'#7#13'GetColumnData'#4'left'#3#152#1#3'top'#2'`'#0#0#242#2#5
+  +#10'TMyCommand'#12'TruncCommand'#11'SQL.Strings'#1#6#27'TRUNCATE TABLE MYDAC'
+  +'_Loaded'#0#4'left'#3#152#1#3'top'#3#128#0#0#0#0
+]);

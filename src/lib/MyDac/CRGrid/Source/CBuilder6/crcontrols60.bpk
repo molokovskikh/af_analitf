@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="CRControls60.bpl"/>
+    <OBJFILES value="CRControlsReg.obj CRControls60.obj"/>
+    <RESFILES value="CRControls60.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value="Vcl.lib Vcldb.lib"/>
+    <PACKAGES value="vcl.bpi Vcldb.bpi dac60.bpi rtl.bpi dbrtl.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;..;..;..;.."/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_DEBUG"/>
+    <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
+    <MAINSOURCE value="CRControls60.cpp"/>
+    <INCLUDEPATH value="..\;..;..\..\..\Dac\Common\Source;..\..\..\DBAccess\Source;..\..\..\Source;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..;..\..\..\Dac\Common\Source;..\..\..\Dac\Common\Source\CBuilder6;..\..\..\DBAccess\Source;..\..\..\DBAccess\Source\CBuilder6;..\..\..\Source;..\..\..\Source\CBuilder6;$(BCB)\lib;$(BCB)\lib\obj"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\. -I.. -I..\..\..\Dac\Common\Source -I..\..\..\Source
+      -I$(BCB)\include -I$(BCB)\include\vcl -src_suffix cpp -D_DEBUG -boa"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -vi -c -tWM"/>
+    <PFLAGS value="-N2. -N0. -$Y- -$W -$L- -$D- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zd"/>
+    <LFLAGS value="-l. -I. -D&quot;Devart Controls&quot; -aa -Tpp -x -Gn -Gl -Gi"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0pkg32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=0
+MajorVer=6
+MinorVer=80
+Release=0
+Build=51
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+
+[Version Info Keys]
+CompanyName=Devart
+FileDescription=
+FileVersion=6.80.0.51
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=Devart Controls
+ProductVersion=6.80.0.51
+Comments=
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

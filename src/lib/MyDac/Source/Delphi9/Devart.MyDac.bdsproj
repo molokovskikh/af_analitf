@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality" Type="String">DelphiDotNet.Personality</Option>
+			<Option Name="ProjectType" Type="String"></Option>
+			<Option Name="Version" Type="String">1.0</Option>
+			<Option Name="GUID" Type="String">{90F92537-A5EA-4E18-9C2B-BA191E1242E4}</Option>
+		</Option>
+	</PersonalityInfo>
+	<DelphiDotNet.Personality>
+		<Source>
+			<Source Name="MainSource" Type="String">Devart.MyDac.dpk</Source>
+		</Source>
+		<FileVersion>
+			<FileVersion Name="Version" Type="String">7.0</FileVersion>
+		</FileVersion>
+		<Compiler>
+			<Compiler Name="A" Type="Integer">0</Compiler>
+			<Compiler Name="B" Type="Integer">0</Compiler>
+			<Compiler Name="C" Type="Integer">1</Compiler>
+			<Compiler Name="D" Type="Integer">0</Compiler>
+			<Compiler Name="E" Type="Integer">0</Compiler>
+			<Compiler Name="F" Type="Integer">0</Compiler>
+			<Compiler Name="G" Type="Integer">1</Compiler>
+			<Compiler Name="H" Type="Integer">1</Compiler>
+			<Compiler Name="I" Type="Integer">1</Compiler>
+			<Compiler Name="J" Type="Integer">1</Compiler>
+			<Compiler Name="K" Type="Integer">0</Compiler>
+			<Compiler Name="L" Type="Integer">0</Compiler>
+			<Compiler Name="M" Type="Integer">0</Compiler>
+			<Compiler Name="N" Type="Integer">1</Compiler>
+			<Compiler Name="O" Type="Integer">1</Compiler>
+			<Compiler Name="P" Type="Integer">1</Compiler>
+			<Compiler Name="Q" Type="Integer">0</Compiler>
+			<Compiler Name="R" Type="Integer">0</Compiler>
+			<Compiler Name="S" Type="Integer">0</Compiler>
+			<Compiler Name="T" Type="Integer">0</Compiler>
+			<Compiler Name="U" Type="Integer">0</Compiler>
+			<Compiler Name="V" Type="Integer">1</Compiler>
+			<Compiler Name="W" Type="Integer">0</Compiler>
+			<Compiler Name="X" Type="Integer">1</Compiler>
+			<Compiler Name="Y" Type="Integer">0</Compiler>
+			<Compiler Name="Z" Type="Integer">1</Compiler>
+			<Compiler Name="ShowHints" Type="Boolean">True</Compiler>
+			<Compiler Name="ShowWarnings" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitAliases" Type="String">WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;</Compiler>
+			<Compiler Name="NamespacePrefix" Type="String">Devart.MyDac;Devart.Dac;Borland.Vcl</Compiler>
+			<Compiler Name="SymbolDeprecated" Type="Boolean">True</Compiler>
+			<Compiler Name="SymbolLibrary" Type="Boolean">True</Compiler>
+			<Compiler Name="SymbolPlatform" Type="Boolean">True</Compiler>
+			<Compiler Name="SymbolExperimental" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitLibrary" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitPlatform" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitDeprecated" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitExperimental" Type="Boolean">True</Compiler>
+			<Compiler Name="HResultCompat" Type="Boolean">True</Compiler>
+			<Compiler Name="HidingMember" Type="Boolean">True</Compiler>
+			<Compiler Name="HiddenVirtual" Type="Boolean">True</Compiler>
+			<Compiler Name="Garbage" Type="Boolean">True</Compiler>
+			<Compiler Name="BoundsError" Type="Boolean">True</Compiler>
+			<Compiler Name="ZeroNilCompat" Type="Boolean">True</Compiler>
+			<Compiler Name="StringConstTruncated" Type="Boolean">True</Compiler>
+			<Compiler Name="ForLoopVarVarPar" Type="Boolean">True</Compiler>
+			<Compiler Name="TypedConstVarPar" Type="Boolean">True</Compiler>
+			<Compiler Name="AsgToTypedConst" Type="Boolean">True</Compiler>
+			<Compiler Name="CaseLabelRange" Type="Boolean">True</Compiler>
+			<Compiler Name="ForVariable" Type="Boolean">True</Compiler>
+			<Compiler Name="ConstructingAbstract" Type="Boolean">True</Compiler>
+			<Compiler Name="ComparisonFalse" Type="Boolean">True</Compiler>
+			<Compiler Name="ComparisonTrue" Type="Boolean">True</Compiler>
+			<Compiler Name="ComparingSignedUnsigned" Type="Boolean">True</Compiler>
+			<Compiler Name="CombiningSignedUnsigned" Type="Boolean">True</Compiler>
+			<Compiler Name="UnsupportedConstruct" Type="Boolean">True</Compiler>
+			<Compiler Name="FileOpen" Type="Boolean">True</Compiler>
+			<Compiler Name="FileOpenUnitSrc" Type="Boolean">True</Compiler>
+			<Compiler Name="BadGlobalSymbol" Type="Boolean">True</Compiler>
+			<Compiler Name="DuplicateConstructorDestructor" Type="Boolean">True</Compiler>
+			<Compiler Name="InvalidDirective" Type="Boolean">True</Compiler>
+			<Compiler Name="PackageNoLink" Type="Boolean">True</Compiler>
+			<Compiler Name="PackageThreadVar" Type="Boolean">True</Compiler>
+			<Compiler Name="ImplicitImport" Type="Boolean">True</Compiler>
+			<Compiler Name="HPPEMITIgnored" Type="Boolean">True</Compiler>
+			<Compiler Name="NoRetVal" Type="Boolean">True</Compiler>
+			<Compiler Name="UseBeforeDef" Type="Boolean">True</Compiler>
+			<Compiler Name="ForLoopVarUndef" Type="Boolean">True</Compiler>
+			<Compiler Name="UnitNameMismatch" Type="Boolean">True</Compiler>
+			<Compiler Name="NoCFGFileFound" Type="Boolean">True</Compiler>
+			<Compiler Name="MessageDirective" Type="Boolean">True</Compiler>
+			<Compiler Name="ImplicitVariants" Type="Boolean">True</Compiler>
+			<Compiler Name="UnicodeToLocale" Type="Boolean">True</Compiler>
+			<Compiler Name="LocaleToUnicode" Type="Boolean">True</Compiler>
+			<Compiler Name="ImagebaseMultiple" Type="Boolean">True</Compiler>
+			<Compiler Name="SuspiciousTypecast" Type="Boolean">True</Compiler>
+			<Compiler Name="PrivatePropAccessor" Type="Boolean">True</Compiler>
+			<Compiler Name="UnsafeType" Type="Boolean">True</Compiler>
+			<Compiler Name="UnsafeCode" Type="Boolean">True</Compiler>
+			<Compiler Name="UnsafeCast" Type="Boolean">True</Compiler>
+			<Compiler Name="OptionTruncated" Type="Boolean">True</Compiler>
+			<Compiler Name="WideCharReduced" Type="Boolean">True</Compiler>
+			<Compiler Name="GenerateDocumentation" Type="Boolean">False</Compiler>
+			<Compiler Name="DefaultNamespace" Type="String"></Compiler>
+			<Compiler Name="DuplicatesIgnored" Type="Boolean">True</Compiler>
+		</Compiler>
+		<Linker>
+			<Linker Name="MapFile" Type="Integer">0</Linker>
+			<Linker Name="OutputObjs" Type="Integer">0</Linker>
+			<Linker Name="ConsoleApp" Type="Integer">1</Linker>
+			<Linker Name="DebugInfo" Type="Boolean">False</Linker>
+			<Linker Name="RemoteSymbols" Type="Boolean">False</Linker>
+			<Linker Name="MinStackSize" Type="Integer">4096</Linker>
+			<Linker Name="MaxStackSize" Type="Integer">1048576</Linker>
+			<Linker Name="ImageBase" Type="Integer">4194304</Linker>
+			<Linker Name="ExeDescription" Type="String">Data Access Components for MySQL</Linker>
+			<Linker Name="GenerateDRC" Type="Boolean">False</Linker>
+		</Linker>
+		<Directories>
+			<Directories Name="OutputDir" Type="String"></Directories>
+			<Directories Name="UnitOutputDir" Type="String">.</Directories>
+			<Directories Name="PackageDLLOutputDir" Type="String"></Directories>
+			<Directories Name="PackageDCPOutputDir" Type="String">.</Directories>
+			<Directories Name="SearchPath" Type="String">..\Net;..;..\..\..\Common\Source\Net;..\..\..\Common\Source;..\..\..\Common\Source\Delphi9;d:\program files\common files\borland shared\bds\shared assemblies\3.0;d:\projects\delphi\Common\Source\delphi9</Directories>
+			<Directories Name="Packages" Type="String">d:\projects\delphi\Common\Source\delphi9\Devart.Dac.dll;d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.VclRtl.dll;d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.VclDbRtl.dll;d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.Vcl.dll;d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.Delphi.dll</Directories>
+			<Directories Name="Conditionals" Type="String"></Directories>
+			<Directories Name="DebugSourceDirs" Type="String"></Directories>
+			<Directories Name="UsePackages" Type="Boolean">False</Directories>
+		</Directories>
+		<Parameters>
+			<Parameters Name="RunParams" Type="String"></Parameters>
+			<Parameters Name="HostApplication" Type="String"></Parameters>
+			<Parameters Name="Launcher" Type="String"></Parameters>
+			<Parameters Name="UseLauncher" Type="Boolean">False</Parameters>
+			<Parameters Name="DebugCWD" Type="String"></Parameters>
+			<Parameters Name="RemoteHost" Type="String"></Parameters>
+			<Parameters Name="RemotePath" Type="String"></Parameters>
+			<Parameters Name="RemoteLauncher" Type="String"></Parameters>
+			<Parameters Name="RemoteCWD" Type="String"></Parameters>
+			<Parameters Name="RemoteDebug" Type="Boolean">False</Parameters>
+		</Parameters>
+		<VersionInfo>
+			<VersionInfo Name="IncludeVerInfo" Type="Boolean">True</VersionInfo>
+			<VersionInfo Name="AutoIncBuild" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="MajorVer" Type="Integer">5</VersionInfo>
+			<VersionInfo Name="MinorVer" Type="Integer">80</VersionInfo>
+			<VersionInfo Name="Release" Type="Integer">0</VersionInfo>
+			<VersionInfo Name="Build" Type="Integer">3047</VersionInfo>
+			<VersionInfo Name="Debug" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="PreRelease" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="Special" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="Private" Type="Boolean">False</VersionInfo>
+			<VersionInfo Name="DLL" Type="Boolean">False</VersionInfo>
+		</VersionInfo>
+		<VersionInfoKeys>
+			<VersionInfoKeys Name="CompanyName" Type="String">Devart</VersionInfoKeys>
+			<VersionInfoKeys Name="FileDescription" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="FileVersion" Type="String">5.80.0.47</VersionInfoKeys>
+			<VersionInfoKeys Name="InternalName" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalCopyright" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="LegalTrademarks" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="OriginalFilename" Type="String"></VersionInfoKeys>
+			<VersionInfoKeys Name="ProductName" Type="String">DAC</VersionInfoKeys>
+			<VersionInfoKeys Name="ProductVersion" Type="String">5.80.0.47</VersionInfoKeys>
+			<VersionInfoKeys Name="Comments" Type="String"></VersionInfoKeys>
+		</VersionInfoKeys>
+		<Language>
+			<Language Name="ActiveLang" Type="String"></Language>
+			<Language Name="ProjectLang" Type="String">$00000000</Language>
+			<Language Name="RootDir" Type="String"></Language>
+		</Language>
+		<FileList>
+			<File FileName="d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.Delphi.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Delphi" AssemblyName="Borland.Delphi" Version="9.0.1731.13532" LinkUnits="False"/>
+			<File FileName="d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.Vcl.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.Vcl" AssemblyName="Borland.Vcl" Version="9.0.1731.13532" LinkUnits="False"/>
+			<File FileName="d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.VclDbRtl.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.VclDbRtl" AssemblyName="Borland.VclDbRtl" Version="9.0.1731.13532" LinkUnits="False"/>
+			<File FileName="d:\program files\common files\borland shared\bds\shared assemblies\3.0\Borland.VclRtl.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Borland.VclRtl" AssemblyName="Borland.VclRtl" Version="9.0.1731.13532" LinkUnits="False"/>
+			<File FileName="..\..\..\Common\Source\delphi9\Devart.Dac.dll" ContainerId="DelphiDotNetAssemblyCompiler" ModuleName="Devart.Dac" AssemblyName="Devart.Dac" CopyLocal="False" Version="5.20.0.3009" LinkUnits="False"/>
+			<File FileName="..\Net\Devart.MyDac.MySQLMonitor.pas" ContainerId="" ModuleName="Devart.MyDac.MySQLMonitor"/>
+			<File FileName="..\Net\Devart.MyDac.MyBackup.pas" ContainerId="" ModuleName="Devart.MyDac.MyBackup"/>
+			<File FileName="..\Net\Devart.MyDac.MyCall.pas" ContainerId="" ModuleName="Devart.MyDac.MyCall"/>
+			<File FileName="..\Net\Devart.MyDac.MyClasses.pas" ContainerId="" ModuleName="Devart.MyDac.MyClasses"/>
+			<File FileName="..\Net\Devart.MyDac.MyConnectForm.pas" ContainerId="" ModuleName="Devart.MyDac.MyConnectForm"/>
+			<File FileName="..\Net\Devart.MyDac.MyConsts.pas" ContainerId="" ModuleName="Devart.MyDac.MyConsts"/>
+			<File FileName="..\Net\Devart.MyDac.MyDump.pas" ContainerId="" ModuleName="Devart.MyDac.MyDump"/>
+			<File FileName="..\Net\Devart.MyDac.MyLoader.pas" ContainerId="" ModuleName="Devart.MyDac.MyLoader"/>
+			<File FileName="..\Net\Devart.MyDac.MyParser.pas" ContainerId="" ModuleName="Devart.MyDac.MyParser"/>
+			<File FileName="..\Net\Devart.MyDac.MyScript.pas" ContainerId="" ModuleName="Devart.MyDac.MyScript"/>
+			<File FileName="..\Net\Devart.MyDac.MyScriptProcessor.pas" ContainerId="" ModuleName="Devart.MyDac.MyScriptProcessor"/>
+			<File FileName="..\Net\Devart.MyDac.MyServerControl.pas" ContainerId="" ModuleName="Devart.MyDac.MyServerControl"/>
+			<File FileName="..\Net\Devart.MyDac.MyAccess.pas" ContainerId="" ModuleName="Devart.MyDac.MyAccess"/>
+			<File FileName="..\Net\Devart.MyDac.MyServices.pas" ContainerId="" ModuleName="Devart.MyDac.MyServices"/>
+			<File FileName="..\Net\Devart.MyDac.MyEmbConnection.pas" ContainerId="" ModuleName="Devart.MyDac.MyEmbConnection"/>
+			<File FileName="..\Net\Devart.MyDac.MydacVcl.pas" ContainerId="" ModuleName="Devart.MyDac.MydacVcl"/>
+			<File FileName="..\Net\Devart.MyDac.MyConnectionPool.pas" ContainerId="" ModuleName="Devart.MyDac.MyConnectionPool"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlApi.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlApi"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlApiDirect.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlApiDirect"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlBind.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlBind"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlErrors.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlErrors"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlNet.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlNet"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlResultSet.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlResultSet"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlSession.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlSession"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlStmt.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlStmt"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlType.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlType"/>
+			<File FileName="..\Net\Devart.MyDac.MySqlVioPipe.pas" ContainerId="" ModuleName="Devart.MyDac.MySqlVioPipe"/>
+			<File FileName="..\Net\Devart.MyDac.MyBuilderIntf.pas" ContainerId="" ModuleName="Devart.MyDac.MyBuilderIntf"/>
+			<File FileName="..\Net\Devart.MyDac.MyBuilderClient.pas" ContainerId="" ModuleName="Devart.MyDac.MyBuilderClient"/>
+		</FileList>
+	</DelphiDotNet.Personality>
+</BorlandProject>

@@ -1,0 +1,208 @@
+inherited StoredProcFrame: TStoredProcFrame
+  Height = 277
+  Width = 640
+  Align = alClient
+  ClientHeight = 273
+  ClientWidth = 636
+  TabOrder = 0
+  object DBGrid: TDBGrid[0]
+    Height = 225
+    Top = 48
+    Width = 636
+    Align = alClient
+    DataSource = DataSource
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 1
+  end
+  object ToolBar: TPanel[1]
+    Height = 48
+    Width = 636
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 48
+    ClientWidth = 636
+    TabOrder = 0
+    object Panel1: TPanel
+      Left = 1
+      Height = 24
+      Width = 517
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 517
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 85
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btClose: TSpeedButton
+        Left = 87
+        Height = 22
+        Top = 1
+        Width = 85
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object btPrepare: TSpeedButton
+        Left = 173
+        Height = 22
+        Top = 1
+        Width = 85
+        Caption = 'Prepare'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btPrepareClick
+      end
+      object btUnPrepare: TSpeedButton
+        Left = 259
+        Height = 22
+        Top = 1
+        Width = 85
+        Caption = 'UnPrepare'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btUnPrepareClick
+      end
+      object btExecute: TSpeedButton
+        Left = 345
+        Height = 22
+        Top = 1
+        Width = 85
+        Caption = 'Execute'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btExecuteClick
+      end
+      object btPrepareSQL: TSpeedButton
+        Left = 431
+        Height = 22
+        Top = 1
+        Width = 85
+        Caption = 'PrepareSQL'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btPrepareSQLClick
+      end
+    end
+    object Panel2: TPanel
+      Left = 1
+      Height = 24
+      Top = 23
+      Width = 517
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 517
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 1
+      object Panel4: TPanel
+        Left = 296
+        Height = 22
+        Top = 1
+        Width = 220
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 220
+        TabOrder = 0
+        object DBNavigator: TDBNavigator
+          Height = 22
+          Width = 220
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 220
+          Color = clBtnFace
+          DataSource = DataSource
+          Flat = True
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+      object Panel3: TPanel
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 294
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 294
+        ParentColor = False
+        TabOrder = 1
+        object Label1: TLabel
+          Left = 4
+          Height = 13
+          Top = 5
+          Width = 82
+          Caption = 'StoredProc name'
+          ParentColor = False
+        end
+        object edStoredProcName: TEdit
+          Left = 95
+          Height = 21
+          Top = 1
+          Width = 181
+          TabOrder = 0
+          Text = 'sel_from_emp'
+        end
+      end
+    end
+  end
+  object DataSource: TDatasource[2]
+    DataSet = MyStoredProc
+    left = 432
+    top = 72
+  end
+  object MyStoredProc: TMyStoredProc[3]
+    StoredProcName = 'sel_from_emp'
+    SQLInsert.Strings = (
+      'INSERT INTO EMP'
+      '  (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO)'
+      'VALUES'
+      '  (:EMPNO, :ENAME, :JOB, :MGR, :HIREDATE, :SAL, :COMM, :DEPTNO)'
+    )
+    SQLDelete.Strings = (
+      'DELETE FROM EMP'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    SQLUpdate.Strings = (
+      'UPDATE EMP'
+      'SET'
+      '  EMPNO = :EMPNO, ENAME = :ENAME, JOB = :JOB, MGR = :MGR, HIREDATE = :HIREDATE, SAL = :SAL, COMM = :COMM, DEPTNO = :DEPTNO'
+      'WHERE'
+      '  EMPNO = :Old_EMPNO'
+    )
+    SQLRefresh.Strings = (
+      'SELECT EMP.EMPNO, EMP.ENAME, EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO FROM EMP'
+      'WHERE'
+      '  EMPNO = :EMPNO'
+    )
+    Debug = True
+    left = 400
+    top = 72
+  end
+end

@@ -1,0 +1,59 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TPicturesFrame','FORMDATA',[
+  'TPF0'#241#14'TPicturesFrame'#13'PicturesFrame'#6'Height'#3#21#1#5'Width'#3
+  +#187#1#5'Align'#7#8'alClient'#12'ClientHeight'#3#21#1#11'ClientWidth'#3#187#1
+  +#8'TabOrder'#2#0#0#242#2#0#9'TSplitter'#9'Splitter1'#6'Cursor'#7#8'crVSplit'
+  +#6'Height'#2#2#3'Top'#3#153#0#5'Width'#3#187#1#5'Align'#7#5'alTop'#12'Resize'
+  +'Anchor'#7#5'akTop'#0#0#242#2#1#10'TScrollBox'#10'ScrollBox1'#6'Height'#2'`'
+  +#3'Top'#3#181#0#5'Width'#3#187#1#5'Align'#7#8'alClient'#8'TabOrder'#2#3#0#8
+  +'TDBImage'#7'DBImage'#6'Height'#2'`'#5'Width'#3#187#1#5'Align'#7#8'alClient'
+  +#9'DataField'#6#7'Picture'#10'DataSource'#7#10'dsPictures'#0#0#0#242#2#2#7'T'
+  +'DBGrid'#6'DBGrid'#6'Height'#2''#3'Top'#2#26#5'Width'#3#187#1#5'Align'#7#5
+  +'alTop'#10'DataSource'#7#10'dsPictures'#10'FixedColor'#7#9'clBtnFace'#13'Fix'
+  +'edHotColor'#7#9'cl3DLight'#7'Options'#11#9'dgEditing'#8'dgTitles'#11'dgIndi'
+  +'cator'#14'dgColumnResize'#12'dgColumnMove'#10'dgColLines'#10'dgRowLines'#6
+  +'dgTabs'#21'dgAlwaysShowSelection'#15'dgConfirmDelete'#14'dgCancelOnExit'#0
+  +#12'OptionsExtra'#11#14'dgeAutoColumns'#17'dgeCheckboxColumn'#0#11'ParentCol'
+  +'or'#8#8'TabOrder'#2#0#0#0#242#2#3#6'TPanel'#7'ToolBar'#6'Height'#2#26#5'Wid'
+  +'th'#3#187#1#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'
+  +#2#26#11'ClientWidth'#3#187#1#8'TabOrder'#2#1#0#6'TPanel'#6'Panel1'#4'Left'#2
+  +#1#6'Height'#2#24#3'Top'#2#1#5'Width'#3#132#1#10'BevelOuter'#7#6'bvNone'#12
+  +'ClientHeight'#2#24#11'ClientWidth'#3#132#1#5'Color'#4#15'+'#253#0#11'Parent'
+  +'Color'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#6'btOpen'#4'Left'#2#1#6'Height'
+  +#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#4'Open'#5'Color'#7#9'clBtnFace'#4
+  +'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#11'btOpenClick'#0#0
+  +#12'TSpeedButton'#7'btClose'#4'Left'#2'T'#6'Height'#2#22#3'Top'#2#1#5'Width'
+  +#2'R'#7'Caption'#6#5'Close'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2
+  +#0#11'Transparent'#8#7'OnClick'#7#12'btCloseClick'#0#0#6'TPanel'#6'Panel3'#4
+  +'Left'#3#167#0#6'Height'#2#22#3'Top'#2#1#5'Width'#3#220#0#10'BevelOuter'#7#6
+  +'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#3#220#0#8'TabOrder'#2#0#0#12
+  +'TDBNavigator'#11'DBNavigator'#6'Height'#2#22#5'Width'#3#220#0#10'BevelOuter'
+  +#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#3#220#0#5'Color'#7#9'clBt'
+  +'nFace'#10'DataSource'#7#10'dsPictures'#4'Flat'#9#11'ParentColor'#8#8'TabOrd'
+  +'er'#2#0#0#0#0#0#0#242#2#4#6'TPanel'#8'ToolBar1'#6'Height'#2#26#3'Top'#3#155
+  +#0#5'Width'#3#187#1#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'#12'Client'
+  +'Height'#2#26#11'ClientWidth'#3#187#1#8'TabOrder'#2#2#0#6'TPanel'#6'Panel2'#4
+  +'Left'#2#2#6'Height'#2#24#3'Top'#2#1#5'Width'#3#250#0#10'BevelOuter'#7#6'bvN'
+  +'one'#12'ClientHeight'#2#24#11'ClientWidth'#3#250#0#5'Color'#4#15'+'#253#0#11
+  +'ParentColor'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#7'btClear'#4'Left'#3#167#0
+  +#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#5'Clear'#5'Color'#7#9
+  +'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#12'btC'
+  +'learClick'#0#0#12'TSpeedButton'#6'btSave'#4'Left'#2'T'#6'Height'#2#22#3'Top'
+  +#2#1#5'Width'#2'R'#7'Caption'#6#16'Save to file ...'#5'Color'#7#9'clBtnFace'
+  +#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#11'btSaveClick'#0
+  +#0#12'TSpeedButton'#6'btLoad'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'
+  +#2'R'#7'Caption'#6#18'Load from file ...'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9
+  +'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#11'btLoadClick'#0#0#0#0#242#2
+  +#5#11'TDatasource'#10'dsPictures'#7'DataSet'#7#10'quPictures'#13'OnStateChan'
+  +'ge'#7#21'dsPicturesStateChange'#4'left'#3'i'#1#3'top'#2#28#0#0#242#2#6#8'TM'
+  +'yQuery'#10'quPictures'#17'SQLInsert.Strings'#1#6#26'INSERT INTO MYDAC_Pictu'
+  +'res'#6'/  (MYDAC_Pictures.Name, MYDAC_Pictures.Picture)'#6#6'VALUES'#6#19' '
+  +' (:Name, :Picture)'#0#17'SQLDelete.Strings'#1#6#26'DELETE FROM MYDAC_Pictur'
+  +'es'#6#5'WHERE'#6#16'  UID = :Old_UID'#0#17'SQLUpdate.Strings'#1#6#21'UPDATE'
+  +' MYDAC_Pictures'#6#3'SET'#6'"  Name = :Name, Picture = :Picture'#6#5'WHERE'
+  +#6#16'  UID = :Old_UID'#0#18'SQLRefresh.Strings'#1#6'FSELECT MYDAC_Pictures.'
+  +'Name, MYDAC_Pictures.Picture FROM MYDAC_Pictures'#6#5'WHERE'#6#31'  MYDAC_P'
+  +'ictures.UID = :Old_UID'#0#11'SQL.Strings'#1#6#28'SELECT * FROM MYDAC_Pictur'
+  +'es'#0#9'FetchRows'#2#1#4'left'#3'I'#1#3'top'#2#28#0#0#0
+]);

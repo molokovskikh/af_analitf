@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="mydacsbridge50.bpl"/>
+    <OBJFILES value="MyIOHandlerReg.obj MyIOHandlerDesign.obj mydacsbridge50.obj"/>
+    <RESFILES value="mydacsbridge50.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value="Vcl50.lib"/>
+    <PACKAGES value="vcl50.bpi dac50.bpi mydac50.bpi sbridge50.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;.."/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
+    <MAINSOURCE value="mydacsbridge50.cpp"/>
+    <INCLUDEPATH value="..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\source\toolsapi"/>
+    <LIBPATH value="..;$(BCB)\projects\lib;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\source\toolsapi"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\Design -I..\. -I.. -I$(BCB)\include -I$(BCB)\include\vcl 
+      -I$(BCB)\source\toolsapi -src_suffix cpp -boa"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -c -tWM"/>
+    <PFLAGS value="-N2&quot;$(BCB)\lib\obj&quot; -N0&quot;$(BCB)\lib\obj&quot; -$Y- -$L- -$D- -v -JPHNE"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-l. -I&quot;$(BCB)\lib\obj&quot; -D&quot;Devart SecureBridge Components&quot; -aa -Tpp -Gpd -x -Gn -Gl -Gi"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0pkg32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=1
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+
+[Version Info Keys]
+CompanyName=Devart
+FileDescription=
+FileVersion=1.0.0.1
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=SecureBridge
+ProductVersion=1.0.0.1
+Comments=
+
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+
+[Language]
+ActiveLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

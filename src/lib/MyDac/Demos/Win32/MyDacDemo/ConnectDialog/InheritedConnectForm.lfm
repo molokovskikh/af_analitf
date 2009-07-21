@@ -1,0 +1,51 @@
+inherited fmInheritedConnect: TfmInheritedConnect
+  Left = 359
+  Top = 212
+  Caption = 'Inherited Connect'
+  inherited Panel: TPanel
+    BevelOuter = bvNone
+    inherited lbUsername: TLabel
+      Width = 80
+      Font.Color = clNavy
+      Font.Style = [fsBold]
+    end
+    inherited lbPassword: TLabel
+      Width = 55
+      Font.Color = clNavy
+      Font.Style = [fsBold]
+    end
+    inherited lbServer: TLabel
+      Width = 38
+      Font.Color = clNavy
+      Font.Style = [fsBold]
+    end
+    inherited lbPort: TLabel
+      Font.Color = clNavy
+      Font.Style = [fsBold]
+    end
+    inherited lbDatabase: TLabel
+      Font.Color = clNavy
+      Font.Style = [fsBold]
+    end
+    inherited edUsername: TEdit
+    end
+    inherited edPassword: TEdit
+    end
+    inherited edServer: TComboBox
+    end
+    inherited edPort: TEdit
+    end
+    inherited edDatabase: TComboBox
+    end
+  end
+  inherited btConnect: TButton
+    Left = 98
+    Height = 22
+    Width = 82
+  end
+  inherited btCancel: TButton
+    Left = 193
+    Height = 22
+    Width = 82
+  end
+end

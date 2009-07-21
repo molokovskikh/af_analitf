@@ -1,0 +1,221 @@
+inherited TableFrame: TTableFrame
+  Height = 277
+  Width = 694
+  Align = alClient
+  ClientHeight = 273
+  ClientWidth = 690
+  TabOrder = 0
+  DesignLeft = 251
+  DesignTop = 126
+  object DBGrid: TDBGrid[0]
+    Height = 195
+    Top = 78
+    Width = 690
+    Align = alClient
+    DataSource = DataSource
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 1
+  end
+  object Panel1: TPanel[1]
+    Height = 78
+    Width = 690
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 78
+    ClientWidth = 690
+    TabOrder = 0
+    object Panel2: TPanel
+      Left = 1
+      Height = 75
+      Top = 1
+      Width = 647
+      BevelOuter = bvNone
+      ClientHeight = 75
+      ClientWidth = 647
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object btExecute: TSpeedButton
+        Left = 333
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Execute'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btExecuteClick
+      end
+      object btUnPrepare: TSpeedButton
+        Left = 250
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'UnPrepare'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btUnPrepareClick
+      end
+      object btPrepare: TSpeedButton
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Prepare'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btPrepareClick
+      end
+      object Panel3: TPanel
+        Left = 1
+        Height = 50
+        Top = 24
+        Width = 248
+        BevelOuter = bvNone
+        ClientHeight = 50
+        ClientWidth = 248
+        ParentColor = False
+        TabOrder = 2
+        object Label1: TLabel
+          Left = 6
+          Height = 14
+          Top = 4
+          Width = 56
+          Caption = 'Table name'
+          ParentColor = False
+        end
+        object edTableName: TComboBox
+          Left = 6
+          Height = 21
+          Top = 20
+          Width = 224
+          MaxLength = 65535
+          OnDropDown = edTableNameDropDown
+          OnExit = edTableNameExit
+          TabOrder = 0
+        end
+      end
+      object Panel4: TPanel
+        Left = 416
+        Height = 50
+        Top = 24
+        Width = 230
+        BevelOuter = bvNone
+        ClientHeight = 50
+        ClientWidth = 230
+        ParentColor = False
+        TabOrder = 1
+        object Label3: TLabel
+          Left = 6
+          Height = 14
+          Top = 4
+          Width = 56
+          Caption = 'OrderFields'
+          ParentColor = False
+        end
+        object edOrderFields: TComboBox
+          Left = 6
+          Height = 21
+          Top = 20
+          Width = 212
+          MaxLength = 65535
+          OnDropDown = edOrderFieldsDropDown
+          OnExit = edOrderFieldsExit
+          TabOrder = 0
+        end
+      end
+      object Panel9: TPanel
+        Left = 416
+        Height = 22
+        Top = 1
+        Width = 230
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 230
+        TabOrder = 0
+        object DBNavigator: TDBNavigator
+          Height = 22
+          Width = 230
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 230
+          Color = clBtnFace
+          DataSource = DataSource
+          Flat = True
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+      object Panel8: TPanel
+        Left = 250
+        Height = 50
+        Top = 24
+        Width = 165
+        BevelOuter = bvNone
+        ClientHeight = 50
+        ClientWidth = 165
+        ParentColor = False
+        TabOrder = 3
+        object Label4: TLabel
+          Left = 6
+          Height = 14
+          Top = 4
+          Width = 44
+          Caption = 'FilterSQL'
+          ParentColor = False
+        end
+        object edFilterSQL: TEdit
+          Left = 6
+          Height = 21
+          Top = 20
+          Width = 140
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object DataSource: TDatasource[2]
+    DataSet = MyTable
+    left = 424
+    top = 87
+  end
+  object MyTable: TMyTable[3]
+    TableName = 'EMP'
+    OrderFields = 'ENAME'
+    left = 392
+    top = 87
+  end
+end

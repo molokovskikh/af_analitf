@@ -1,0 +1,10 @@
+LazarusResources.Add('TMyParamsFrame','FORMDATA',[
+  'TPF0'#241#14'TMyParamsFrame'#13'MyParamsFrame'#0#241#6'TLabel'#7'lbPName'#0#0
+  +#241#6'TLabel'#10'lbParamLog'#0#0#241#8'TListBox'#10'lbItemName'#0#0#241#6'T'
+  +'Panel'#9'PanelItem'#0#241#6'TLabel'#7'lbPType'#0#0#241#6'TLabel'#11'lbParam'
+  +'Type'#0#0#241#6'TLabel'#8'lbPValue'#0#0#241#6'TLabel'#11'lbNullValue'#0#0
+  +#241#6'TLabel'#6'lbSize'#7'Visible'#8#0#0#241#9'TComboBox'#10'cbDataType'#0#0
+  +#241#9'TComboBox'#11'cbParamType'#0#0#241#5'TEdit'#7'edValue'#0#0#241#7'TBut'
+  +'ton'#8'bEdValue'#0#0#241#9'TCheckBox'#11'cbNullValue'#0#0#241#5'TEdit'#6'ed'
+  +'Size'#7'Visible'#8#0#0#0#0
+]);

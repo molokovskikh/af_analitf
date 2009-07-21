@@ -1,0 +1,40 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TConnectDialogFrame','FORMDATA',[
+  'TPF0'#241#19'TConnectDialogFrame'#18'ConnectDialogFrame'#6'Height'#3'0'#1#5
+  +'Width'#3#195#1#5'Align'#7#8'alClient'#12'ClientHeight'#3'0'#1#11'ClientWidt'
+  +'h'#3#195#1#8'TabOrder'#2#0#0#242#2#0#7'TDBGrid'#6'DBGrid'#6'Height'#3#250#0
+  +#3'Top'#2'6'#5'Width'#3#195#1#5'Align'#7#8'alClient'#10'DataSource'#7#10'Dat'
+  +'aSource'#10'FixedColor'#7#9'clBtnFace'#13'FixedHotColor'#7#9'cl3DLight'#7'O'
+  +'ptions'#11#9'dgEditing'#8'dgTitles'#11'dgIndicator'#14'dgColumnResize'#12'd'
+  +'gColumnMove'#10'dgColLines'#10'dgRowLines'#6'dgTabs'#21'dgAlwaysShowSelecti'
+  +'on'#15'dgConfirmDelete'#14'dgCancelOnExit'#0#12'OptionsExtra'#11#14'dgeAuto'
+  +'Columns'#17'dgeCheckboxColumn'#0#11'ParentColor'#8#8'TabOrder'#2#0#0#0#242#2
+  +#1#6'TPanel'#7'ToolBar'#6'Height'#2'6'#5'Width'#3#195#1#5'Align'#7#5'alTop'
+  +#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'6'#11'ClientWidth'#3#195#1#8
+  +'TabOrder'#2#1#0#6'TPanel'#6'Panel1'#4'Left'#2#1#6'Height'#2'4'#3'Top'#2#1#5
+  +'Width'#3#142#1#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'4'#11'ClientWi'
+  +'dth'#3#142#1#5'Color'#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0#0#12
+  +'TSpeedButton'#6'btOpen'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'
+  +#7'Caption'#6#4'Open'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11
+  +'Transparent'#8#7'OnClick'#7#11'btOpenClick'#0#0#12'TSpeedButton'#7'btClose'
+  +#4'Left'#2'T'#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#5'Close'#5
+  +'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClic'
+  +'k'#7#12'btCloseClick'#0#0#12'TDBNavigator'#11'DBNavigator'#4'Left'#3#167#0#6
+  +'Height'#2#22#3'Top'#2#1#5'Width'#3#230#0#10'BevelOuter'#7#6'bvNone'#12'Clie'
+  +'ntHeight'#2#22#11'ClientWidth'#3#230#0#5'Color'#7#9'clBtnFace'#10'DataSourc'
+  +'e'#7#10'DataSource'#4'Flat'#9#11'ParentColor'#8#8'TabOrder'#2#0#0#0#6'TPane'
+  +'l'#6'Panel3'#4'Left'#2#1#6'Height'#2#27#3'Top'#2#24#5'Width'#3#140#1#10'Bev'
+  +'elOuter'#7#6'bvNone'#12'ClientHeight'#2#27#11'ClientWidth'#3#140#1#11'Paren'
+  +'tColor'#8#8'TabOrder'#2#1#0#12'TRadioButton'#11'rbInherited'#4'Left'#3#221#0
+  +#6'Height'#2#20#3'Top'#2#5#5'Width'#2'n'#7'Caption'#6#16'Inherited dialog'#7
+  +'OnClick'#7#16'rbInheritedClick'#8'TabOrder'#2#0#7'TabStop'#8#0#0#12'TRadioB'
+  +'utton'#4'rbMy'#4'Left'#2'o'#6'Height'#2#20#3'Top'#2#5#5'Width'#2'g'#7'Capti'
+  +'on'#6#13'Custom dialog'#7'OnClick'#7#9'rbMyClick'#8'TabOrder'#2#1#7'TabStop'
+  +#8#0#0#12'TRadioButton'#9'rbDefault'#4'Left'#2#8#6'Height'#2#20#3'Top'#2#5#5
+  +'Width'#2'e'#7'Caption'#6#14'Default dialog'#7'Checked'#9#7'OnClick'#7#14'rb'
+  +'DefaultClick'#5'State'#7#9'cbChecked'#8'TabOrder'#2#2#0#0#0#0#0#242#2#2#11
+  +'TDatasource'#10'DataSource'#7'DataSet'#7#7'MyQuery'#4'left'#2'r'#3'top'#2'H'
+  +#0#0#242#2#3#8'TMyQuery'#7'MyQuery'#11'SQL.Strings'#1#6#17'SELECT * FROM EMP'
+  +#0#4'left'#2'R'#3'top'#2'H'#0#0#0
+]);

@@ -1,0 +1,113 @@
+inherited CommandFrame: TCommandFrame
+  Height = 374
+  Width = 575
+  HorzScrollBar.Page = 574
+  VertScrollBar.Page = 373
+  Align = alClient
+  object Label1: TLabel
+    Left = 456
+    Height = 14
+    Top = 48
+    Width = 32
+    Caption = 'Label1'
+    ParentColor = False
+  end
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Height = 3
+    Top = 188
+    Width = 575
+    Align = alTop
+    ResizeAnchor = akTop
+  end
+  object ToolBar: TPanel
+    Height = 26
+    Width = 575
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 26
+    ClientWidth = 575
+    TabOrder = 0
+    object Panel1: TPanel
+      Left = 2
+      Height = 24
+      Top = 1
+      Width = 250
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 250
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btExecute: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Execute'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btExecuteClick
+      end
+      object btBreakExec: TSpeedButton
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Break'
+        Color = clBtnFace
+        Enabled = False
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btBreakExecClick
+      end
+      object btExecInThread: TSpeedButton
+        Left = 84
+        Height = 22
+        Hint = 'Assing a long-drawn command to memo (e.g. `SELECT SLEEP(10);`) and push this button.'
+        Top = 1
+        Width = 82
+        Caption = 'Exec in thread'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btExecInThreadClick
+        ShowHint = True
+        ParentShowHint = False
+      end
+    end
+  end
+  object meSQL: TMemo
+    Height = 162
+    Top = 26
+    Width = 575
+    Align = alTop
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Lines.Strings = (
+      'INSERT INTO DEPT VALUES (11,''ACCOUNTING'',''NEW YORK'')'
+    )
+    TabOrder = 1
+  end
+  object meResult: TMemo
+    Height = 183
+    Top = 191
+    Width = 575
+    Align = alClient
+    Font.Height = -13
+    Font.Name = 'Courier New'
+    Font.Pitch = fpVariable
+    ReadOnly = True
+    TabOrder = 2
+    TabStop = False
+  end
+  object MyCommand: TMyCommand
+    AfterExecute = MySQLAfterExecute
+    left = 109
+    top = 42
+  end
+end

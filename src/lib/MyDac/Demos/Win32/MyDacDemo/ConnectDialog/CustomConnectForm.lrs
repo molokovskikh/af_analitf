@@ -1,0 +1,53 @@
+LazarusResources.Add('TfmCustomConnect','FORMDATA',[
+  'TPF0'#16'TfmCustomConnect'#15'fmCustomConnect'#4'Left'#3#25#1#6'Height'#3#230
+  +#0#3'Top'#2''#5'Width'#3#29#1#7'Caption'#6#10'My Connect'#11'Font.Height'#2
+  +#11#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Pitch'#7#10'fpVariable'#8'Posit'
+  +'ion'#7#14'poScreenCenter'#0#6'TPanel'#5'Panel'#4'Left'#2#6#6'Height'#3#220#0
+  +#3'Top'#2#6#5'Width'#3#17#1#10'BevelInner'#7#8'bvRaised'#10'BevelOuter'#7#9
+  +'bvLowered'#12'ClientHeight'#3#220#0#11'ClientWidth'#3#17#1#8'TabOrder'#2#0#0
+  +#6'TBevel'#6'Bevel1'#4'Left'#2#1#6'Height'#2#5#3'Top'#3#173#0#5'Width'#3#14#1
+  +#5'Shape'#7#12'bsBottomLine'#0#0#6'TLabel'#10'lbUsername'#4'Left'#2#16#6'Hei'
+  +'ght'#2#13#3'Top'#2#20#5'Width'#2'6'#7'Caption'#6#8'Username'#10'Font.Color'
+  +#7#6'clNavy'#11'Font.Height'#2#8#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Pi'
+  +'tch'#7#10'fpVariable'#10'Font.Style'#11#8'fsItalic'#0#11'ParentColor'#8#0#0
+  +#6'TLabel'#10'lbPassword'#4'Left'#2#16#6'Height'#2#13#3'Top'#2'6'#5'Width'#2
+  +'4'#7'Caption'#6#8'Password'#10'Font.Color'#7#6'clNavy'#11'Font.Height'#2#8#9
+  +'Font.Name'#6#13'MS Sans Serif'#10'Font.Pitch'#7#10'fpVariable'#10'Font.Styl'
+  +'e'#11#8'fsItalic'#0#11'ParentColor'#8#0#0#6'TLabel'#8'lbServer'#4'Left'#2#16
+  +#6'Height'#2#13#3'Top'#2'X'#5'Width'#2'%'#7'Caption'#6#6'Server'#10'Font.Col'
+  +'or'#7#6'clNavy'#11'Font.Height'#2#8#9'Font.Name'#6#13'MS Sans Serif'#10'Fon'
+  +'t.Pitch'#7#10'fpVariable'#10'Font.Style'#11#8'fsItalic'#0#11'ParentColor'#8
+  +#0#0#6'TLabel'#10'lbDatabase'#4'Left'#2#16#6'Height'#2#13#3'Top'#3#156#0#5'W'
+  +'idth'#2'4'#7'Caption'#6#8'Database'#10'Font.Color'#7#6'clNavy'#11'Font.Heig'
+  +'ht'#2#8#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Pitch'#7#10'fpVariable'#10
+  +'Font.Style'#11#8'fsItalic'#0#11'ParentColor'#8#0#0#6'TLabel'#6'lbPort'#4'Le'
+  +'ft'#2#16#6'Height'#2#13#3'Top'#2'z'#5'Width'#2#25#7'Caption'#6#4'Port'#10'F'
+  +'ont.Color'#7#6'clNavy'#11'Font.Height'#2#8#9'Font.Name'#6#13'MS Sans Serif'
+  +#10'Font.Pitch'#7#10'fpVariable'#10'Font.Style'#11#8'fsItalic'#0#11'ParentCo'
+  +'lor'#8#0#0#5'TEdit'#10'edUsername'#4'Left'#2'h'#6'Height'#2#21#3'Top'#2#16#5
+  +'Width'#3#153#0#8'TabOrder'#2#0#0#0#9'TComboBox'#8'edServer'#4'Left'#2'h'#6
+  +'Height'#2#21#3'Top'#2'T'#5'Width'#3#153#0#16'AutoCompleteText'#11#22'cbactE'
+  +'ndOfLineComplete'#20'cbactSearchAscending'#0#10'ItemHeight'#2#13#8'TabOrder'
+  +#2#2#0#0#5'TEdit'#6'edPort'#4'Left'#2'h'#6'Height'#2#21#3'Top'#2'v'#5'Width'
+  +#3#153#0#8'TabOrder'#2#3#0#0#7'TBitBtn'#9'btConnect'#4'Left'#2'R'#6'Height'#2
+  +#24#3'Top'#3#185#0#5'Width'#2'R'#7'Caption'#6#2'OK'#7'Default'#9#10'Glyph.Da'
+  +'ta'#10#226#1#0#0#222#1#0#0'BM'#222#1#0#0#0#0#0#0'v'#0#0#0'('#0#0#0'$'#0#0#0
+  +#18#0#0#0#1#0#4#0#0#0#0#0'h'#1#0#0#0#0#0#0#0#0#0#0#16#0#0#0#0#0#0#0#0#0#0#0#0
+  +#0#128#0#0#128#0#0#0#128#128#0#128#0#0#0#128#0#128#0#128#128#0#0#192#192#192
+  +#0#128#128#128#0#0#0#255#0#0#255#0#0#0#255#255#0#255#0#0#0#255#0#255#0#255
+  +#255#0#0#255#255#255#0'333333333333333333'#0#0'333333333333'#243'33333'#0#0
+  +'334C33333338'#143'33333'#0#0'33B$3333333'#131'8'#243'3333'#0#0'34""C3333383'
+  +'3'#143'3333'#0#0'3B""$33333'#131'338'#243'333'#0#0'4"*""C3338'#243'8'#243'3'
+  +#143'333'#0#0'2"'#163#162'"C3338'#243#131#143'3'#143'333'#0#0':*3:"$3338'#248
+  +'38'#243'8'#243'33'#0#0'3'#163'33'#162'"C333'#131'33'#143'3'#143'33'#0#0'333'
+  +'3:"$3333338'#243'8'#243'3'#0#0'33333'#162'"C333333'#143'3'#143'3'#0#0'33333'
+  +':"$3333338'#243'8'#243#0#0'333333'#162'"C333333'#143'3'#143#0#0'333333:"C33'
+  +'33338'#243#143#0#0'3333333'#162'#3333333'#143#131#0#0'3333333:3333333383'#0
+  +#0'333333333333333333'#0#0#9'NumGlyphs'#2#2#7'OnClick'#7#14'btConnectClick'#8
+  +'TabOrder'#2#5#0#0#7'TBitBtn'#8'btCancel'#4'Left'#3#175#0#6'Height'#2#24#3'T'
+  +'op'#3#185#0#5'Width'#2'R'#4'Kind'#7#8'bkCancel'#11'ModalResult'#2#2#9'NumGl'
+  +'yphs'#2#0#8'TabOrder'#2#6#0#0#5'TEdit'#10'edDatabase'#4'Left'#2'h'#6'Height'
+  +#2#21#3'Top'#3#152#0#5'Width'#3#153#0#8'TabOrder'#2#4#0#0#5'TEdit'#10'edPass'
+  +'word'#4'Left'#2'h'#6'Height'#2#21#3'Top'#2'2'#5'Width'#3#153#0#8'EchoMode'#7
+  +#10'emPassword'#12'PasswordChar'#6#1'*'#8'TabOrder'#2#1#0#0#0#0
+]);

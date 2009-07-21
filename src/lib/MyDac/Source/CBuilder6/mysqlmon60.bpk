@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="mysqlmon60.bpl"/>
+    <OBJFILES value="
+      MySQLMonitor.obj         
+      mysqlmon60.obj 
+      "/>
+    <RESFILES value="Mysqlmon60.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi dac60.bpi mydac60.bpi dbrtl.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;..;..;..;..;..;..;..;..;..;..;.."/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="MYDAC"/>
+    <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
+    <MAINSOURCE value="mysqlmon60.cpp"/>
+    <INCLUDEPATH value="..\;..;..\..\..\Common\Source;..\DirectMySQLObjects;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;..\DirectMySQLObjects;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\. -I.. -I..\..\..\Common\Source -I..\DirectMySQLObjects -I$(BCB)\include 
+      -I$(BCB)\include\vcl -src_suffix cpp -DMYDAC -boa"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -c -tWM"/>
+    <PFLAGS value="-N2. -N0. -$Y- -$L- -$J -$D- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-l. -I. -D&quot;Data Access Components for MySQL - TMySQLMonitor&quot; -aa -Tpp -Gpr -x -Gn -Gl -Gi"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0pkg32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="Mysqlmon60.res" FORMNAME="" UNITNAME="mysqlmon60.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="mysqlmon60.cpp" FORMNAME="" UNITNAME="mysqlmon60" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\MySQLMonitor.pas" FORMNAME="" UNITNAME="MySQLMonitor" CONTAINERID="PascalCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="D:\Common\Source\CBuilder6\vcl.bpi" FORMNAME="" UNITNAME="vcl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="D:\Common\Source\CBuilder6\rtl.bpi" FORMNAME="" UNITNAME="rtl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="D:\Common\Source\CBuilder6\dac60.bpi" FORMNAME="" UNITNAME="dac60" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="D:\Common\Source\CBuilder6\mydac60.bpi" FORMNAME="" UNITNAME="mydac60" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="D:\Common\Source\CBuilder6\dbrtl.bpi" FORMNAME="" UNITNAME="dbrtl" CONTAINERID="BPITool" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=0
+MajorVer=5
+MinorVer=80
+Release=0
+Build=47
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+
+[Version Info Keys]
+CompanyName=Devart
+FileDescription=
+FileVersion=5.80.0.47
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=MyDAC
+ProductVersion=5.80.0.47
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=3
+Item0=..\;..;..\..\..\Common\Source;..\DirectMySQLObjects;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\;..;..\..\..\Common\Source;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\;D:\Program Files\Borland\CBuilder6\Projects;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=9
+Item0=..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;..\DirectMySQLObjects;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib
+Item1=..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib
+Item2=..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib
+Item3=..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib
+Item4=..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib
+Item5=d:\program files\borland\cbuilder6\lib\release;..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib
+Item6=;;;;;;;;;;;..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder6;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib
+Item7=..\;..;..\..\..\Common\Source;..\..\..\Common\Source\CBuilder5;$(BCB)\lib;$(BCB)\lib\obj;$(BCB)\projects\lib;..\..\..\Common\Source\CBuilder6
+Item8=..\;D:\Program Files\Borland\CBuilder6\Projects;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=MyDAC
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=.
+
+[HistoryLists\hIBPIOutputDir]
+Count=1
+Item0=.
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+RootDir=
+
+[Linker]
+LibPrefix=
+LibSuffix=
+LibVersion=
+  </IDEOPTIONS>
+</PROJECT>

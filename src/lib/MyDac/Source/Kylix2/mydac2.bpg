@@ -1,0 +1,33 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.02.5
+#------------------------------------------------------------------------------
+MAKE = make -$(MAKEFLAGS) -f$**
+DCC =dcc $<
+#------------------------------------------------------------------------------
+PROJECTS = bpldac2.so.4.0 bpldacclx2.so.4.0 bpldcldac2.so.4.0 bplmydac2.so bplmydacclx2.so bpldclmydac2.so Project5
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+bplmydac2.so: mydac2.dpk
+																																										$(DCC)
+
+bplmydacclx2.so: mydacclx2.dpk
+																																									$(DCC)
+
+bpldclmydac2.so: dclmydac2.dpk
+																																								$(DCC)
+
+bpldac2.so.4.0: ../../../Dac/Source/Kylix2/dac2.dpk
+															$(DCC)
+
+bpldacclx2.so.4.0: ../../../Dac/Source/Kylix2/dacclx2.dpk
+														$(DCC)
+
+bpldcldac2.so.4.0: ../../../Dac/Source/Kylix2/dcldac2.dpk
+													$(DCC)
+
+Project5: ../../../../tmp/Project5.dpr
+	$(DCC)
+
+

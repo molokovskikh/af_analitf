@@ -1,0 +1,41 @@
+inherited MyNamesForm: TMyNamesForm
+  Left = 22
+  Top = 29
+  Caption = 'MyNamesForm'
+  inherited BtnPanel: TPanel
+    inherited imCorner: TImage
+    end
+    inherited btOk: TBitBtn
+    end
+    inherited btCancel: TBitBtn
+    end
+  end
+  inherited Panel2: TPanel
+    inherited SrcLabel: TLabel
+    end
+    inherited SrcList: TListBox
+    end
+  end
+  inherited PanelButtons: TPanel
+    inherited IncludeBtn: TSpeedButton
+    end
+    inherited IncAllBtn: TSpeedButton
+    end
+    inherited ExcludeBtn: TSpeedButton
+    end
+    inherited ExAllBtn: TSpeedButton
+    end
+  end
+  inherited Panel3: TPanel
+    inherited DstLabel: TLabel
+    end
+    inherited DstList: TListBox
+    end
+  end
+  inherited PanelButtons2: TPanel
+    inherited UpBtn: TSpeedButton
+    end
+    inherited DownBtn: TSpeedButton
+    end
+  end
+end

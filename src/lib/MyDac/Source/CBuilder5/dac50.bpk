@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="dac50.bpl"/>
+    <OBJFILES value="
+      DBAccess.obj            
+      CRAccess.obj            
+      DALoader.obj            
+      DADump.obj              
+      CRParser.obj            
+      DAConsts.obj            
+      DBMonitorIntf.obj       
+      DBMonitorClient.obj     
+      DASQLMonitor.obj        
+      MemData.obj             
+      MemDS.obj               
+      VirtualTable.obj        
+      DacVcl.obj              
+      DAVersionInfo.obj       
+      CLRClasses.obj          
+      MemUtils.obj            
+      DAScript.obj            
+      CRBatchMove.obj         
+      Win32Timer.obj 
+      CRConnectionPool.obj 
+      CRXml.obj 
+      CRVio.obj 
+      CRVioTcp.obj 
+      CRVioTcpSSL.obj 
+      dac50.obj
+      "/>
+    <RESFILES value="dac50.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value="Vcl50.lib Vcldb50.lib VCLBDE50.lib"/>
+    <PACKAGES value="vcl50.bpi Vcldb50.bpi VCLBDE50.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;.."/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
+    <MAINSOURCE value="dac50.cpp"/>
+    <INCLUDEPATH value="..\;..;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I.. -I$(BCB)\include -I$(BCB)\include\vcl -src_suffix cpp -boa"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -c -tWM"/>
+    <PFLAGS value="-N2. -N0. -$Y- -$L- -$D- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-l. -I. -D&quot;Devart Data Access Components&quot; -aa -Tpp -Gpr -x -Gn -Gl -Gi"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0pkg32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=0
+MajorVer=6
+MinorVer=80
+Release=0
+Build=51
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+
+[Version Info Keys]
+CompanyName=Devart
+FileDescription=
+FileVersion=6.80.0.51
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=DAC
+ProductVersion=6.80.0.51
+Comments=
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

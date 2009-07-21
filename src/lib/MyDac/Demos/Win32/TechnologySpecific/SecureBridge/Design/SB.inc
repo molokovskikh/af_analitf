@@ -1,0 +1,125 @@
+
+{$IFDEF VER130} { Delphi 5 }
+{$IFNDEF BCB}
+  {$DEFINE VER5}
+
+  {$DEFINE VER5P}
+{$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER140} { Delphi 6, Kylix 1, Kylix 2 }
+{$IFNDEF BCB}
+  {$DEFINE VER6}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+{$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER150} { Delphi 7 }
+{$IFNDEF BCB}
+  {$DEFINE VER7}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+  {$DEFINE VER7P}
+{$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER160} { Delphi 8 }
+  {$DEFINE VER8}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+  {$DEFINE VER7P}
+  {$DEFINE VER8P}
+{$ENDIF}
+
+{$IFDEF VER170} { Delphi 9 }
+  {$DEFINE VER9}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+  {$DEFINE VER7P}
+  {$DEFINE VER8P}
+  {$DEFINE VER9P}
+{$ENDIF}
+
+{$IFDEF VER180} { Delphi 10 }
+{$IFNDEF VER185} { Delphi 11 Spacely}
+  {$DEFINE VER10}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+  {$DEFINE VER7P}
+  {$DEFINE VER8P}
+  {$DEFINE VER9P}
+  {$DEFINE VER10P}
+{$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER185} { Delphi 11 Spacely}
+  {$DEFINE D11}
+{$ENDIF}
+{$IFDEF VER190} { Delphi 11 Highlander}
+  {$DEFINE D11}
+{$ENDIF}
+
+{$IFDEF D11}
+  {$DEFINE VER11}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+  {$DEFINE VER7P}
+  {$DEFINE VER8P}
+  {$DEFINE VER9P}
+  {$DEFINE VER10P}
+  {$DEFINE VER11P}
+{$ENDIF}
+
+{$IFDEF VER200} { Delphi 12 }
+  {$DEFINE D12}
+  {$DEFINE VER12}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+  {$DEFINE VER7P}
+  {$DEFINE VER8P}
+  {$DEFINE VER9P}
+  {$DEFINE VER10P}
+  {$DEFINE VER11P}
+  {$DEFINE VER12P}
+{$ENDIF}
+
+
+{$IFDEF VER125} { C++ Builder 4 }
+  {$DEFINE BCB}
+  {$DEFINE CB4}
+  {$DEFINE VER4}
+
+  {$DEFINE VER34}
+  {$DEFINE VER4P}
+  {$ObjExportAll On}
+{$ENDIF}
+
+{$IFDEF VER130} { C++ Builder 5 }
+{$IFDEF BCB}
+  {$DEFINE CB5}
+  {$DEFINE VER5}
+
+  {$DEFINE VER5P}
+  {$ObjExportAll On}
+{$ENDIF}
+{$ENDIF}
+
+{$IFDEF VER140} { C++ Builder 6 }
+{$IFDEF BCB}
+  {$DEFINE CB6}
+  {$DEFINE VER6}
+
+  {$DEFINE VER5P}
+  {$DEFINE VER6P}
+  {$ObjExportAll On}
+{$ENDIF}
+{$ENDIF}
+

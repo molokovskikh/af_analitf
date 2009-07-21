@@ -1,0 +1,213 @@
+inherited TextFrame: TTextFrame
+  Height = 277
+  Width = 443
+  Align = alClient
+  ClientHeight = 277
+  ClientWidth = 443
+  TabOrder = 0
+  object Splitter1: TSplitter[0]
+    Cursor = crVSplit
+    Height = 2
+    Top = 192
+    Width = 443
+    Align = alTop
+    ResizeAnchor = akTop
+  end
+  object DBGrid: TDBGrid[1]
+    Height = 166
+    Top = 26
+    Width = 443
+    Align = alTop
+    DataSource = DataSource
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 0
+  end
+  object ToolBar: TPanel[2]
+    Height = 26
+    Width = 443
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 26
+    ClientWidth = 443
+    TabOrder = 1
+    object Panel1: TPanel
+      Left = 1
+      Height = 24
+      Top = 1
+      Width = 388
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 388
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object Panel8: TPanel
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 220
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 220
+        TabOrder = 0
+        object DBNavigator: TDBNavigator
+          Height = 22
+          Width = 220
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 220
+          Color = clBtnFace
+          DataSource = DataSource
+          Flat = True
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object meComments: TDBMemo[3]
+    Height = 56
+    Top = 221
+    Width = 443
+    Align = alClient
+    DataField = 'TextField'
+    DataSource = DataSource
+    Lines.Strings = (
+      'meComments'
+    )
+    ScrollBars = ssBoth
+    TabOrder = 2
+  end
+  object ToolBar1: TPanel[4]
+    Height = 27
+    Top = 194
+    Width = 443
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 27
+    ClientWidth = 443
+    TabOrder = 3
+    object Panel2: TPanel
+      Left = 1
+      Height = 24
+      Top = 2
+      Width = 250
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 250
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btLoad: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Load from file'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btLoadClick
+      end
+      object btSave: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Save to file'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btSaveClick
+      end
+      object btClear: TSpeedButton
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Clear'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btClearClick
+      end
+    end
+  end
+  object DataSource: TDatasource[5]
+    DataSet = Query
+    OnStateChange = DataSourceStateChange
+    left = 375
+    top = 32
+  end
+  object Query: TMyQuery[6]
+    SQLInsert.Strings = (
+      'INSERT INTO MYDAC_Text'
+      '  (MYDAC_Text.Name, MYDAC_Text.TextField)'
+      'VALUES'
+      '  (:Name, :TextField)'
+    )
+    SQLDelete.Strings = (
+      'DELETE FROM MYDAC_Text'
+      'WHERE'
+      '  UID = :Old_UID'
+    )
+    SQLUpdate.Strings = (
+      'UPDATE MYDAC_Text'
+      'SET'
+      '  Name = :Name, TextField = :TextField'
+      'WHERE'
+      '  UID = :Old_UID'
+    )
+    SQLRefresh.Strings = (
+      'SELECT MYDAC_Text.Name, MYDAC_Text.TextField FROM MYDAC_Text'
+      'WHERE'
+      '  MYDAC_Text.UID = :Old_UID'
+    )
+    SQL.Strings = (
+      'SELECT * FROM MYDAC_Text'
+    )
+    left = 343
+    top = 32
+  end
+  object OpenDialog: TOpenDialog[7]
+    Title = 'Открыть существующий файл'
+    left = 240
+    top = 259
+  end
+  object SaveDialog: TSaveDialog[8]
+    Title = 'Сохранить файл как'
+    left = 272
+    top = 259
+  end
+end

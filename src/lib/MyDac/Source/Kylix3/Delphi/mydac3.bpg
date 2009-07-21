@@ -1,0 +1,35 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.02.5
+#------------------------------------------------------------------------------
+ifndef ROOT
+ROOT = /usr/local/bin/cortez
+endif
+#------------------------------------------------------------------------------
+MAKE = make -$(MAKEFLAGS) -f$**
+DCC =dcc $<
+#------------------------------------------------------------------------------
+PROJECTS = bpldac3.so.1.0 bpldacclx3.so.1.0 bpldcldac3.so.1.0 bplmydac3.so \
+  bplmydacclx3.so bpldclmydac3.so
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+bplmydacclx3.so: mydacclx3.dpk
+	$(DCC)
+
+bpldclmydac3.so: dclmydac3.dpk
+	$(DCC)
+
+bplmydac3.so: mydac3.dpk
+	$(DCC)
+
+bpldac3.so.1.0: ../../../../Dac/Source/Kylix3/Delphi/dac3.dpk
+	$(DCC)
+
+bpldacclx3.so.1.0: ../../../../Dac/Source/Kylix3/Delphi/dacclx3.dpk
+	$(DCC)
+
+bpldcldac3.so.1.0: ../../../../Dac/Source/Kylix3/Delphi/dcldac3.dpk
+	$(DCC)
+
+

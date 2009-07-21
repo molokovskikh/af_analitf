@@ -1,0 +1,156 @@
+object MyConnectForm: TMyConnectForm
+  Left = 368
+  Height = 240
+  Top = 255
+  Width = 291
+  HorzScrollBar.Page = 290
+  VertScrollBar.Page = 239
+  ActiveControl = edUsername
+  BorderIcons = []
+  BorderStyle = bsDialog
+  Caption = 'Connect'
+  ClientHeight = 240
+  ClientWidth = 291
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Position = poScreenCenter
+  object Panel: TPanel
+    Left = 8
+    Height = 189
+    Top = 8
+    Width = 273
+    Anchors = [akTop, akLeft, akBottom]
+    BevelInner = bvRaised
+    BevelOuter = bvLowered
+    ClientHeight = 189
+    ClientWidth = 273
+    FullRepaint = False
+    TabOrder = 0
+    object lbUsername: TLabel
+      Left = 16
+      Height = 13
+      Top = 20
+      Width = 73
+      AutoSize = False
+      Caption = 'Username'
+      Layout = tlCenter
+      ParentColor = False
+    end
+    object lbPassword: TLabel
+      Left = 16
+      Height = 13
+      Top = 54
+      Width = 73
+      AutoSize = False
+      Caption = 'Password'
+      Layout = tlCenter
+      ParentColor = False
+    end
+    object lbServer: TLabel
+      Left = 16
+      Height = 13
+      Top = 88
+      Width = 73
+      AutoSize = False
+      Caption = 'Server'
+      Layout = tlCenter
+      ParentColor = False
+    end
+    object lbPort: TLabel
+      Left = 16
+      Height = 13
+      Top = 122
+      Width = 73
+      AutoSize = False
+      Caption = 'Port'
+      Layout = tlCenter
+      ParentColor = False
+    end
+    object lbDatabase: TLabel
+      Left = 16
+      Height = 13
+      Top = 156
+      Width = 73
+      AutoSize = False
+      Caption = 'Database'
+      Layout = tlCenter
+      ParentColor = False
+    end
+    object edUsername: TEdit
+      Left = 104
+      Height = 21
+      Top = 16
+      Width = 153
+      MaxLength = 32767
+      OnExit = edExit
+      TabOrder = 0
+    end
+    object edPassword: TEdit
+      Left = 104
+      Height = 21
+      Top = 50
+      Width = 153
+      EchoMode = emPassword
+      MaxLength = 32767
+      OnExit = edExit
+      PasswordChar = '*'
+      TabOrder = 1
+    end
+    object edServer: TComboBox
+      Left = 104
+      Height = 21
+      Top = 84
+      Width = 153
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      DropDownCount = 10
+      ItemHeight = 13
+      OnDropDown = edServerDropDown
+      OnExit = edExit
+      TabOrder = 2
+    end
+    object edPort: TEdit
+      Left = 104
+      Height = 21
+      Top = 118
+      Width = 153
+      OnExit = edExit
+      TabOrder = 3
+    end
+    object edDatabase: TComboBox
+      Left = 104
+      Height = 21
+      Top = 152
+      Width = 153
+      AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+      DropDownCount = 10
+      ItemHeight = 13
+      OnDropDown = edDatabaseDropDown
+      OnExit = edExit
+      TabOrder = 4
+    end
+  end
+  object btConnect: TButton
+    Left = 52
+    Height = 25
+    Top = 209
+    Width = 89
+    Anchors = [akLeft, akBottom]
+    Caption = 'Connect'
+    Default = True
+    OnClick = btConnectClick
+    TabOrder = 1
+  end
+  object btCancel: TButton
+    Left = 148
+    Height = 25
+    Top = 209
+    Width = 89
+    Anchors = [akLeft, akBottom]
+    Cancel = True
+    Caption = 'Cancel'
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    ModalResult = 2
+    TabOrder = 2
+  end
+end

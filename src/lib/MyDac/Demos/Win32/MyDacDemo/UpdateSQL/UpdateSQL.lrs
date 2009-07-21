@@ -1,0 +1,91 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TUpdateSQLFrame','FORMDATA',[
+  'TPF0'#241#15'TUpdateSQLFrame'#14'UpdateSQLFrame'#6'Height'#3#21#1#5'Width'#3
+  +#187#1#5'Align'#7#8'alClient'#12'ClientHeight'#3#21#1#11'ClientWidth'#3#187#1
+  +#8'TabOrder'#2#0#0#242#2#0#7'TDBGrid'#6'DBGrid'#6'Height'#3#131#0#3'Top'#3
+  +#146#0#5'Width'#3#187#1#5'Align'#7#8'alClient'#10'DataSource'#7#10'DataSourc'
+  +'e'#10'FixedColor'#7#9'clBtnFace'#13'FixedHotColor'#7#9'cl3DLight'#7'Options'
+  +#11#9'dgEditing'#8'dgTitles'#11'dgIndicator'#14'dgColumnResize'#12'dgColumnM'
+  +'ove'#10'dgColLines'#10'dgRowLines'#6'dgTabs'#21'dgAlwaysShowSelection'#15'd'
+  +'gConfirmDelete'#14'dgCancelOnExit'#0#12'OptionsExtra'#11#14'dgeAutoColumns'
+  +#17'dgeCheckboxColumn'#0#11'ParentColor'#8#8'TabOrder'#2#3#0#0#242#2#1#6'TPa'
+  +'nel'#7'ToolBar'#6'Height'#2'0'#5'Width'#3#187#1#5'Align'#7#5'alTop'#10'Beve'
+  +'lOuter'#7#6'bvNone'#12'ClientHeight'#2'0'#11'ClientWidth'#3#187#1#8'TabOrde'
+  +'r'#2#0#0#6'TPanel'#6'Panel3'#4'Left'#2#1#6'Height'#2'.'#3'Top'#2#1#5'Width'
+  +#3#160#1#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'.'#11'ClientWidth'#3
+  +#160#1#5'Color'#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0#0#12'TSpeedB'
+  +'utton'#9'btExecute'#4'Left'#3'M'#1#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7
+  +'Caption'#6#7'Execute'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11
+  +'Transparent'#8#7'OnClick'#7#14'btExecuteClick'#0#0#12'TSpeedButton'#7'btClo'
+  +'se'#4'Left'#2'T'#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#5'Clo'
+  +'se'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7
+  +'OnClick'#7#12'btCloseClick'#0#0#12'TSpeedButton'#6'btOpen'#4'Left'#2#1#6'He'
+  +'ight'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#4'Open'#5'Color'#7#9'clBtn'
+  +'Face'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#11'btOpenCl'
+  +'ick'#0#0#12'TSpeedButton'#9'btPrepare'#4'Left'#3#167#0#6'Height'#2#22#3'Top'
+  +#2#1#5'Width'#2'R'#7'Caption'#6#7'Prepare'#5'Color'#7#9'clBtnFace'#4'Flat'#9
+  +#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#14'btPrepareClick'#0#0#12'T'
+  +'SpeedButton'#11'btUnPrepare'#4'Left'#3#250#0#6'Height'#2#22#3'Top'#2#1#5'Wi'
+  +'dth'#2'R'#7'Caption'#6#9'UnPrepare'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'Num'
+  +'Glyphs'#2#0#11'Transparent'#8#7'OnClick'#7#16'btUnPrepareClick'#0#0#6'TPane'
+  +'l'#6'Panel4'#4'Left'#2#1#6'Height'#2#21#3'Top'#2#24#5'Width'#3#158#1#10'Bev'
+  +'elOuter'#7#6'bvNone'#12'ClientHeight'#2#21#11'ClientWidth'#3#158#1#11'Paren'
+  +'tColor'#8#8'TabOrder'#2#0#0#9'TCheckBox'#14'cbDeleteObject'#4'Left'#2#15#6
+  +'Height'#2#20#3'Top'#2#3#5'Width'#2'a'#7'Caption'#6#12'DeleteObject'#7'OnCli'
+  +'ck'#7#19'cbDeleteObjectClick'#8'TabOrder'#2#0#0#0#9'TCheckBox'#14'cbInsertO'
+  +'bject'#4'Left'#2'n'#6'Height'#2#20#3'Top'#2#3#5'Width'#2'['#7'Caption'#6#12
+  +'InsertObject'#7'OnClick'#7#19'cbDeleteObjectClick'#8'TabOrder'#2#1#0#0#9'TC'
+  +'heckBox'#14'cbModifyObject'#4'Left'#3#205#0#6'Height'#2#20#3'Top'#2#3#5'Wid'
+  +'th'#2'c'#7'Caption'#6#12'ModifyObject'#7'OnClick'#7#19'cbDeleteObjectClick'
+  +#8'TabOrder'#2#2#0#0#9'TCheckBox'#15'cbRefreshObject'#4'Left'#3';'#1#6'Heigh'
+  +'t'#2#20#3'Top'#2#3#5'Width'#2'g'#7'Caption'#6#13'RefreshObject'#7'OnClick'#7
+  +#19'cbDeleteObjectClick'#8'TabOrder'#2#3#0#0#0#0#0#242#2#2#5'TMemo'#5'meSQL'
+  +#6'Height'#2'H'#3'Top'#2'0'#5'Width'#3#187#1#5'Align'#7#5'alTop'#6'OnExit'#7
+  +#9'meSQLExit'#10'ScrollBars'#7#10'ssVertical'#8'TabOrder'#2#1#0#0#242#2#3#6
+  +'TPanel'#6'Panel1'#6'Height'#2#26#3'Top'#2'x'#5'Width'#3#187#1#5'Align'#7#5
+  +'alTop'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#26#11'ClientWidth'#3
+  +#187#1#8'TabOrder'#2#2#0#6'TPanel'#6'Panel2'#4'Left'#2#1#6'Height'#2#24#3'To'
+  +'p'#2#1#5'Width'#3'E'#1#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#24#11
+  +'ClientWidth'#3'E'#1#5'Color'#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0
+  +#0#12'TSpeedButton'#15'btRefreshRecord'#4'Left'#3#242#0#6'Height'#2#22#3'Top'
+  +#2#1#5'Width'#2'R'#7'Caption'#6#13'RefreshRecord'#5'Color'#7#9'clBtnFace'#4
+  +'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#20'btRefreshRecordC'
+  +'lick'#0#0#6'TPanel'#6'Panel5'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'
+  +#3#240#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWidth'#3
+  +#240#0#8'TabOrder'#2#0#0#12'TDBNavigator'#12'DBNavigator1'#6'Height'#2#22#5
+  +'Width'#3#240#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11'ClientWi'
+  +'dth'#3#240#0#5'Color'#7#9'clBtnFace'#10'DataSource'#7#10'DataSource'#4'Flat'
+  +#9#11'ParentColor'#8#8'TabOrder'#2#0#0#0#0#0#0#242#2#4#8'TMyQuery'#7'MyQuery'
+  +#11'SQL.Strings'#1#6#17'SELECT * FROM EMP'#0#12'UpdateObject'#7#11'MyUpdateS'
+  +'QL'#4'left'#2#31#3'top'#2'\'#0#0#242#2#5#11'TDatasource'#10'DataSource'#7'D'
+  +'ataSet'#7#7'MyQuery'#4'left'#2'<'#3'top'#2'\'#0#0#242#2#6#12'TMyUpdateSQL'
+  +#11'MyUpdateSQL'#17'InsertSQL.Strings'#1#6#15'INSERT INTO EMP'#6'L  (EMP.ENA'
+  +'ME, EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO)'#6#6'VAL'
+  +'UES'#6'7  (:ENAME, :JOB, :MGR, :HIREDATE, :SAL, :COMM, :DEPTNO)'#0#17'Delet'
+  +'eSQL.Strings'#1#6#15'DELETE FROM EMP'#6#5'WHERE'#6#20'  EMPNO = :Old_EMPNO'
+  +#0#17'ModifySQL.Strings'#1#6#10'UPDATE EMP'#6#3'SET'#6'j  ENAME = :ENAME, JO'
+  ,'B = :JOB, MGR = :MGR, HIREDATE = :HIREDATE, SAL = :SAL, COMM = :COMM, DEPTN'
+  +'O = :DEPTNO'#6#5'WHERE'#6#20'  EMPNO = :Old_EMPNO'#0#18'RefreshSQL.Strings'
+  +#1#6'XSELECT EMP.ENAME, EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, E'
+  +'MP.DEPTNO FROM EMP'#6#5'WHERE'#6#24'  EMP.EMPNO = :Old_EMPNO'#0#4'left'#2'b'
+  +#3'top'#2'\'#0#0#242#2#7#10'TMyCommand'#9'DeleteSQL'#11'SQL.Strings'#1#6#15
+  +'DELETE FROM EMP'#6#5'WHERE'#6#20'  EMPNO = :Old_EMPNO'#0#4'left'#3#145#0#3
+  +'top'#2'A'#9'ParamData'#14#1#4'Name'#6#9'Old_EMPNO'#0#0#0#0#242#2#8#10'TMyCo'
+  +'mmand'#9'InsertSQL'#11'SQL.Strings'#1#6#15'INSERT INTO EMP'#6'L  (EMP.ENAME'
+  +', EMP.JOB, EMP.MGR, EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO)'#6#6'VALUE'
+  +'S'#6'7  (:ENAME, :JOB, :MGR, :HIREDATE, :SAL, :COMM, :DEPTNO)'#0#4'left'#3
+  +#145#0#3'top'#2'd'#9'ParamData'#14#1#4'Name'#6#5'ENAME'#0#1#4'Name'#6#3'JOB'
+  +#0#1#4'Name'#6#3'MGR'#0#1#4'Name'#6#8'HIREDATE'#0#1#4'Name'#6#3'SAL'#0#1#4'N'
+  +'ame'#6#4'COMM'#0#1#4'Name'#6#6'DEPTNO'#0#0#0#0#242#2#9#8'TMyQuery'#12'Refre'
+  +'shQuery'#11'SQL.Strings'#1#6'XSELECT EMP.ENAME, EMP.JOB, EMP.MGR, EMP.HIRED'
+  +'ATE, EMP.SAL, EMP.COMM, EMP.DEPTNO FROM EMP'#6#5'WHERE'#6#24'  EMP.EMPNO = '
+  +':Old_EMPNO'#0#4'left'#3#145#0#3'top'#3#165#0#9'ParamData'#14#1#4'Name'#6#9
+  +'Old_EMPNO'#0#0#0#0#242#2#10#8'TMyQuery'#11'ModifyQuery'#11'SQL.Strings'#1#6
+  +#10'UPDATE EMP'#6#3'SET'#6'j  ENAME = :ENAME, JOB = :JOB, MGR = :MGR, HIREDA'
+  +'TE = :HIREDATE, SAL = :SAL, COMM = :COMM, DEPTNO = :DEPTNO'#6#5'WHERE'#6#20
+  +'  EMPNO = :Old_EMPNO'#0#4'left'#3#145#0#3'top'#3#135#0#9'ParamData'#14#1#4
+  +'Name'#6#5'ENAME'#0#1#4'Name'#6#3'JOB'#0#1#4'Name'#6#3'MGR'#0#1#4'Name'#6#8
+  +'HIREDATE'#0#1#4'Name'#6#3'SAL'#0#1#4'Name'#6#4'COMM'#0#1#4'Name'#6#6'DEPTNO'
+  +#0#1#4'Name'#6#9'Old_EMPNO'#0#0#0#0#0
+]);

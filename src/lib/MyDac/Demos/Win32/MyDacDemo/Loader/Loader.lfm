@@ -1,0 +1,224 @@
+inherited LoaderFrame: TLoaderFrame
+  Height = 277
+  Width = 668
+  Align = alClient
+  ClientHeight = 273
+  ClientWidth = 664
+  TabOrder = 0
+  DesignLeft = 250
+  DesignTop = 155
+  object Panel2: TPanel[0]
+    Height = 64
+    Width = 664
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 64
+    ClientWidth = 664
+    TabOrder = 0
+    object ToolBar: TPanel
+      Left = 1
+      Height = 62
+      Top = 1
+      Width = 586
+      BevelOuter = bvNone
+      ClientHeight = 62
+      ClientWidth = 586
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 24
+        Top = 1
+        Width = 85
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btClose: TSpeedButton
+        Left = 87
+        Height = 24
+        Top = 1
+        Width = 85
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object btLoad: TSpeedButton
+        Left = 173
+        Height = 24
+        Top = 1
+        Width = 85
+        Caption = 'Load'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btLoadClick
+      end
+      object btDeleteAll: TSpeedButton
+        Left = 259
+        Height = 24
+        Top = 1
+        Width = 85
+        Caption = 'Delete All'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btDeleteAllClick
+      end
+      object Panel1: TPanel
+        Left = 1
+        Height = 35
+        Top = 26
+        Width = 171
+        BevelOuter = bvNone
+        ClientHeight = 35
+        ClientWidth = 171
+        ParentColor = False
+        TabOrder = 1
+        object Label1: TLabel
+          Left = 6
+          Height = 13
+          Top = 14
+          Width = 49
+          Caption = 'Load rows'
+          ParentColor = False
+        end
+        object edRows: TEdit
+          Left = 66
+          Height = 21
+          Top = 10
+          Width = 87
+          TabOrder = 0
+          Text = '1000'
+        end
+      end
+      object Panel3: TPanel
+        Left = 173
+        Height = 35
+        Top = 26
+        Width = 412
+        BevelOuter = bvNone
+        ClientHeight = 35
+        ClientWidth = 412
+        ParentColor = False
+        TabOrder = 0
+        object rgEvent: TRadioGroup
+          Left = 9
+          Height = 32
+          Top = -1
+          Width = 225
+          AutoFill = True
+          ChildSizing.LeftRightSpacing = 6
+          ChildSizing.TopBottomSpacing = 6
+          ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+          ChildSizing.EnlargeVertical = crsHomogenousChildResize
+          ChildSizing.ShrinkHorizontal = crsScaleChilds
+          ChildSizing.ShrinkVertical = crsScaleChilds
+          ChildSizing.Layout = cclLeftToRightThenTopToBottom
+          ChildSizing.ControlsPerLine = 2
+          ClientHeight = 28
+          ClientWidth = 221
+          Columns = 2
+          Items.Strings = (
+            'GetColumnData'
+            'PutData'
+          )
+          OnClick = rgEventClick
+          TabOrder = 0
+        end
+      end
+      object Panel4: TPanel
+        Left = 345
+        Height = 24
+        Top = 1
+        Width = 240
+        BevelOuter = bvNone
+        ClientHeight = 24
+        ClientWidth = 240
+        TabOrder = 2
+        object DBNavigator: TDBNavigator
+          Height = 24
+          Width = 240
+          BevelOuter = bvNone
+          ClientHeight = 24
+          ClientWidth = 240
+          Color = clBtnFace
+          DataSource = DataSource
+          Flat = True
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object DBGrid: TDBGrid[1]
+    Height = 209
+    Top = 64
+    Width = 664
+    Align = alClient
+    DataSource = DataSource
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 1
+  end
+  object DataSource: TDatasource[2]
+    DataSet = Query
+    left = 440
+    top = 64
+  end
+  object Query: TMyQuery[3]
+    SQL.Strings = (
+      'SELECT * FROM MYDAC_Loaded'
+    )
+    AfterOpen = QueryAfterOpen
+    BeforeClose = QueryBeforeClose
+    AfterRefresh = QueryAfterOpen
+    left = 408
+    top = 64
+  end
+  object MyLoader: TMyLoader[4]
+    TableName = 'MYDAC_Loaded'
+    Columns = <    
+      item
+        Name = 'Code'
+        FieldType = ftInteger
+      end    
+      item
+        Name = 'Num'
+        FieldType = ftInteger
+      end    
+      item
+        Name = 'Num1'
+        FieldType = ftFloat
+      end    
+      item
+        Name = 'Str'
+      end    
+      item
+        Name = 'Dat'
+        FieldType = ftDateTime
+      end>
+    OnGetColumnData = GetColumnData
+    left = 408
+    top = 96
+  end
+  object TruncCommand: TMyCommand[5]
+    SQL.Strings = (
+      'TRUNCATE TABLE MYDAC_Loaded'
+    )
+    left = 408
+    top = 128
+  end
+end

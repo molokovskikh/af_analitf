@@ -1,0 +1,231 @@
+inherited DumpFrame: TDumpFrame
+  Height = 366
+  Width = 734
+  Align = alClient
+  ClientHeight = 366
+  ClientWidth = 734
+  TabOrder = 0
+  DesignLeft = 261
+  DesignTop = 147
+  object meSQL: TMemo[0]
+    Height = 172
+    Top = 194
+    Width = 734
+    Align = alClient
+    ScrollBars = ssBoth
+    TabOrder = 1
+  end
+  object Panel2: TPanel[1]
+    Height = 194
+    Width = 734
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 194
+    ClientWidth = 734
+    TabOrder = 0
+    object Panel3: TPanel
+      Left = 1
+      Height = 191
+      Top = 1
+      Width = 463
+      BevelOuter = bvNone
+      ClientHeight = 191
+      ClientWidth = 463
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btBackup: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 97
+        Width = 82
+        Caption = 'Backup Tables'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btBackupClick
+      end
+      object btBackupSQL: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 97
+        Width = 82
+        Caption = 'Backup SQL'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btBackupSQLClick
+      end
+      object btRestore: TSpeedButton
+        Left = 167
+        Height = 22
+        Top = 97
+        Width = 82
+        Caption = 'Restore'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btRestoreClick
+      end
+      object Panel4: TPanel
+        Left = 250
+        Height = 22
+        Top = 97
+        Width = 109
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 109
+        ParentColor = False
+        TabOrder = 0
+        object cbTbBackup: TCheckBox
+          Left = 5
+          Height = 20
+          Top = 3
+          Width = 103
+          Caption = 'Backup tables'
+          Checked = True
+          State = cbChecked
+          TabOrder = 0
+        end
+      end
+      object Panel5: TPanel
+        Left = 360
+        Height = 22
+        Top = 97
+        Width = 102
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 102
+        ParentColor = False
+        TabOrder = 1
+        object cbDataBackUp: TCheckBox
+          Left = 5
+          Height = 20
+          Top = 3
+          Width = 96
+          Caption = 'Backup Data'
+          Checked = True
+          State = cbChecked
+          TabOrder = 0
+        end
+      end
+      object Panel6: TPanel
+        Left = 1
+        Height = 47
+        Top = 1
+        Width = 461
+        BevelOuter = bvNone
+        ClientHeight = 47
+        ClientWidth = 461
+        ParentColor = False
+        TabOrder = 2
+        object Label1: TLabel
+          Left = 5
+          Height = 14
+          Top = 4
+          Width = 225
+          Caption = 'Table names to backup (with comma delimiter):'
+          ParentColor = False
+        end
+        object edTbNames: TEdit
+          Left = 5
+          Height = 21
+          Top = 20
+          Width = 449
+          TabOrder = 0
+          Text = 'EMP'
+        end
+      end
+      object Panel7: TPanel
+        Left = 1
+        Height = 47
+        Top = 49
+        Width = 461
+        BevelOuter = bvNone
+        ClientHeight = 47
+        ClientWidth = 461
+        ParentColor = False
+        TabOrder = 3
+        object Label2: TLabel
+          Left = 5
+          Height = 13
+          Top = 2
+          Width = 124
+          Caption = 'SQL statement to backup:'
+          ParentColor = False
+        end
+        object edQuery: TEdit
+          Left = 5
+          Height = 21
+          Top = 20
+          Width = 448
+          TabOrder = 0
+          Text = 'SELECT * FROM DEPT'
+        end
+      end
+      object pnResult: TPanel
+        Left = 1
+        Height = 70
+        Top = 120
+        Width = 461
+        BevelOuter = bvNone
+        ClientHeight = 70
+        ClientWidth = 461
+        ParentColor = False
+        TabOrder = 4
+        object lbTableName: TLabel
+          Left = 91
+          Height = 13
+          Top = 6
+          Width = 3
+          ParentColor = False
+        end
+        object Label3: TLabel
+          Left = 10
+          Height = 13
+          Top = 6
+          Width = 78
+          Caption = 'Current table:'
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Pitch = fpVariable
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object Label4: TLabel
+          Left = 10
+          Height = 13
+          Top = 25
+          Width = 135
+          Caption = 'Table backup progress:'
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object ProgressBar: TProgressBar
+          Height = 22
+          Top = 46
+          Width = 460
+          Anchors = [akTop, akLeft, akRight]
+          Max = 100
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object MyDump: TMyDump[2]
+    SQL.Strings = (
+      ''
+    )
+    OnBackupProgress = MyDumpBackupProgress
+    OnRestoreProgress = MyDumpRestoreProgress
+    left = 470
+    top = 80
+  end
+end

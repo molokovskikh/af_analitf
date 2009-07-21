@@ -1,0 +1,42 @@
+package mydacsbridge60;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Devart SecureBridge Components'}
+{$IMPLICITBUILD OFF}
+
+requires
+  mydac60,
+  sbridge60,
+  rtl,
+  vcl,
+  vclx,
+  designide;
+
+contains
+  MySSHIOHandler in '..\MySSHIOHandler.pas',
+  MySSLIOHandler in '..\MySSLIOHandler.pas',
+  MyIOHandlerReg in '..\Design\MyIOHandlerReg.pas',
+  MyIOHandlerDesign in '..\Design\MyIOHandlerDesign.pas';
+
+end.

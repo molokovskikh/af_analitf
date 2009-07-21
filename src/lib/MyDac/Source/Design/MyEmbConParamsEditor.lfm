@@ -1,0 +1,37 @@
+inherited MyEmbConParamsEditorForm: TMyEmbConParamsEditorForm
+  Left = 22
+  Height = 340
+  Top = 29
+  Width = 512
+  HorzScrollBar.Page = 511
+  VertScrollBar.Page = 339
+  BorderIcons = [biSystemMenu]
+  Caption = 'TMyEmbConnection.Params Editor'
+  ClientHeight = 340
+  ClientWidth = 512
+  Constraints.MinHeight = 332
+  Constraints.MinWidth = 512
+  Font.Height = -11
+  inherited BtnPanel: TPanel
+    Top = 299
+    Width = 512
+    ClientWidth = 512
+    TabOrder = 1
+    inherited imCorner: TImage
+      Left = 500
+    end
+    inherited btOk: TBitBtn
+      Left = 348
+    end
+    inherited btCancel: TBitBtn
+      Left = 429
+    end
+  end
+  object Memo: TMemo
+    Height = 299
+    Width = 512
+    Align = alClient
+    OnChange = MemoChange
+    TabOrder = 0
+  end
+end

@@ -1,0 +1,374 @@
+inherited FilterAndIndexFrame: TFilterAndIndexFrame
+  Height = 277
+  Width = 709
+  Align = alClient
+  ClientHeight = 273
+  ClientWidth = 705
+  TabOrder = 0
+  object DBGrid: TDBGrid[0]
+    Left = 166
+    Height = 226
+    Top = 47
+    Width = 539
+    Align = alClient
+    DataSource = DataSource
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 0
+  end
+  object Panel3: TPanel[1]
+    Height = 226
+    Top = 47
+    Width = 166
+    Align = alLeft
+    BevelOuter = bvNone
+    ClientHeight = 226
+    ClientWidth = 166
+    TabOrder = 1
+    object Panel8: TPanel
+      Height = 84
+      Top = 142
+      Width = 166
+      Align = alBottom
+      BevelOuter = bvNone
+      Caption = 'Panel8'
+      ClientHeight = 84
+      ClientWidth = 166
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object Panel7: TPanel
+        Left = 1
+        Height = 81
+        Top = 1
+        Width = 164
+        BevelOuter = bvNone
+        ClientHeight = 81
+        ClientWidth = 164
+        ParentColor = False
+        TabOrder = 0
+        object Label1: TLabel
+          Left = 6
+          Height = 13
+          Top = 3
+          Width = 90
+          Caption = 'IndexFieldNames ='
+          ParentColor = False
+        end
+        object lbIndexFieldNames: TLabel
+          Left = 6
+          Height = 54
+          Top = 22
+          Width = 145
+          AutoSize = False
+          ParentColor = False
+          WordWrap = True
+        end
+      end
+    end
+    object lbFields: TListBox
+      Height = 142
+      Width = 166
+      Align = alClient
+      ItemHeight = 13
+      MultiSelect = True
+      OnClick = lbFieldsClick
+      TabOrder = 1
+      TopIndex = -1
+    end
+  end
+  object Panel4: TPanel[2]
+    Height = 47
+    Width = 705
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 47
+    ClientWidth = 705
+    TabOrder = 2
+    object ToolBar: TPanel
+      Height = 47
+      Width = 642
+      Align = alLeft
+      BevelOuter = bvNone
+      ClientHeight = 47
+      ClientWidth = 642
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object Panel5: TPanel
+        Left = 388
+        Height = 22
+        Top = 24
+        Width = 145
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 145
+        ParentColor = False
+        TabOrder = 0
+        object cbCalcFields: TCheckBox
+          Left = 5
+          Height = 20
+          Top = 1
+          Width = 162
+          Caption = 'Calculated/Lookup fields'
+          OnClick = cbCalcFieldsClick
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+      object Panel2: TPanel
+        Left = 167
+        Height = 22
+        Top = 24
+        Width = 220
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 220
+        ParentColor = False
+        TabOrder = 1
+        object cbFilter: TCheckBox
+          Left = 5
+          Height = 19
+          Top = 1
+          Width = 66
+          Caption = 'Filter'
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          OnClick = cbFilterClick
+          ParentColor = False
+          ParentFont = False
+          TabOrder = 0
+        end
+        object edFilter: TEdit
+          Left = 70
+          Height = 21
+          Top = 2
+          Width = 144
+          Anchors = [akTop, akLeft, akRight]
+          OnExit = edFilterExit
+          TabOrder = 1
+          Text = 'DEPTNO = 10'
+        end
+      end
+      object DBNavigator1: TDBNavigator
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 220
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 220
+        Color = clBtnFace
+        DataSource = DataSource
+        Flat = True
+        ParentColor = False
+        TabOrder = 2
+      end
+      object Panel1: TPanel
+        Left = 534
+        Height = 22
+        Top = 24
+        Width = 107
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 107
+        ParentColor = False
+        TabOrder = 3
+        object cbCacheCalcFields: TCheckBox
+          Left = 6
+          Height = 20
+          Top = 1
+          Width = 121
+          Caption = 'CacheCalcFields'
+          OnClick = cbCacheCalcFieldsClick
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+      object Panel6: TPanel
+        Left = 388
+        Height = 22
+        Top = 1
+        Width = 253
+        BevelOuter = bvNone
+        ParentColor = False
+        TabOrder = 4
+      end
+      object TPanel
+        Left = 2
+        Height = 22
+        Top = 24
+        Width = 164
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 164
+        ParentColor = False
+        TabOrder = 5
+        object cbIndex: TCheckBox
+          Left = 8
+          Height = 19
+          Top = 1
+          Width = 59
+          Caption = 'Index'
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          OnClick = cbIndexClick
+          ParentColor = False
+          ParentFont = False
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object Query: TMyQuery[3]
+    Connection = MyDACForm.MyConnection
+    SQL.Strings = (
+      'SELECT * FROM EMP'
+    )
+    Debug = True
+    RefreshOptions = [roAfterInsert, roAfterUpdate]
+    left = 272
+    top = 55
+  end
+  object DataSource: TDatasource[4]
+    DataSet = Query
+    left = 304
+    top = 55
+  end
+  object Query2: TMyQuery[5]
+    Connection = MyDACForm.MyConnection
+    SQL.Strings = (
+      'SELECT * FROM EMP'
+    )
+    Debug = True
+    OnCalcFields = Query2CalcFields
+    left = 272
+    top = 88
+    object Query2CALCULATED: TLongintField
+      DisplayWidth = 10
+      FieldKind = fkCalculated
+      FieldName = 'CALCULATED'
+      ProviderFlags = [pfInUpdate, pfInWhere]
+    end
+    object Query2LOOKUP: TStringField
+      DisplayWidth = 20
+      FieldKind = fkLookup
+      FieldName = 'LOOKUP'
+      Index = 1
+      KeyFields = 'DEPTNO'
+      Lookup = True
+      LookupDataSet = LookupQuery
+      LookupKeyFields = 'DEPTNO'
+      LookupResultField = 'DNAME'
+      ProviderFlags = [pfInUpdate, pfInWhere]
+    end
+    object Query2EMPNO: TLongintField
+      DisplayWidth = 10
+      FieldName = 'EMPNO'
+      Index = 2
+      ProviderFlags = [pfInUpdate, pfInWhere]
+      Required = True
+    end
+    object Query2ENAME: TStringField
+      DisplayWidth = 10
+      FieldName = 'ENAME'
+      Index = 3
+      ProviderFlags = [pfInUpdate, pfInWhere]
+      Size = 10
+    end
+    object Query2JOB: TStringField
+      DisplayWidth = 9
+      FieldName = 'JOB'
+      Index = 4
+      ProviderFlags = [pfInUpdate, pfInWhere]
+      Size = 9
+    end
+    object Query2MGR: TLongintField
+      DisplayWidth = 10
+      FieldName = 'MGR'
+      Index = 5
+      ProviderFlags = [pfInUpdate, pfInWhere]
+    end
+    object Query2HIREDATE: TDateTimeField
+      DisplayWidth = 10
+      FieldName = 'HIREDATE'
+      Index = 6
+      ProviderFlags = [pfInUpdate, pfInWhere]
+    end
+    object Query2SAL: TFloatField
+      DisplayWidth = 10
+      FieldName = 'SAL'
+      Index = 7
+      ProviderFlags = [pfInUpdate, pfInWhere]
+    end
+    object Query2COMM: TFloatField
+      DisplayWidth = 10
+      FieldName = 'COMM'
+      Index = 8
+      ProviderFlags = [pfInUpdate, pfInWhere]
+    end
+    object Query2DEPTNO: TLongintField
+      DisplayWidth = 10
+      FieldName = 'DEPTNO'
+      Index = 9
+      ProviderFlags = [pfInUpdate, pfInWhere]
+    end
+  end
+  object LookupQuery: TMyQuery[6]
+    Connection = MyDACForm.MyConnection
+    SQL.Strings = (
+      'SELECT * FROM DEPT'
+    )
+    left = 304
+    top = 88
+    object LookupQueryDEPTNO: TLongintField
+      DisplayWidth = 10
+      FieldName = 'DEPTNO'
+      ProviderFlags = [pfInUpdate, pfInWhere]
+      Required = True
+    end
+    object LookupQueryDNAME: TStringField
+      DisplayWidth = 14
+      FieldName = 'DNAME'
+      Index = 1
+      ProviderFlags = [pfInUpdate, pfInWhere]
+      Size = 14
+    end
+    object LookupQueryLOC: TStringField
+      DisplayWidth = 13
+      FieldName = 'LOC'
+      Index = 2
+      ProviderFlags = [pfInUpdate, pfInWhere]
+      Size = 13
+    end
+  end
+end

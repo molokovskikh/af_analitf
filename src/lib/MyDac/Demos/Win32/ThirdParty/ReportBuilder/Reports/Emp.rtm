@@ -1,0 +1,995 @@
+object ppReport: TppReport
+  AutoStop = False
+  DataPipeline = MyDACQueryDataView3.plQuery
+  PrinterSetup.BinName = 'Default'
+  PrinterSetup.DocumentName = 'Report'
+  PrinterSetup.PaperName = 'Letter      [8.5 x 11 in]'
+  PrinterSetup.PrinterName = 'Default'
+  PrinterSetup.mmMarginBottom = 6350
+  PrinterSetup.mmMarginLeft = 6350
+  PrinterSetup.mmMarginRight = 6350
+  PrinterSetup.mmMarginTop = 6350
+  PrinterSetup.mmPaperHeight = 279401
+  PrinterSetup.mmPaperWidth = 215900
+  PrinterSetup.PaperSize = 1
+  SaveAsTemplate = True
+  Template.DatabaseSettings.DataPipeline = plItem
+  Template.DatabaseSettings.Name = 'EMP'
+  Template.DatabaseSettings.NameField = 'ITEM_NAME'
+  Template.DatabaseSettings.TemplateField = 'TEMPLATE'
+  Template.FileName = 'D:\Projects\Delphi\Mydac\Demos\ReportBuilder\Rb7\Reports\Emp.rtm'
+  Template.Format = ftASCII
+  Units = utScreenPixels
+  DeviceType = 'Screen'
+  OutlineSettings.CreateNode = True
+  OutlineSettings.CreatePageNodes = True
+  OutlineSettings.Enabled = False
+  Left = 289
+  Top = 326
+  Version = '7.0'
+  mmColumnWidth = 0
+  DataPipelineName = 'plQuery'
+  object ppTitleBand1: TppTitleBand
+    mmBottomOffset = 0
+    mmHeight = 15610
+    mmPrintPosition = 0
+    object ppLabel1: TppLabel
+      UserName = 'Label1'
+      Caption = 'Employees Report'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clNavy
+      Font.Name = 'Arial'
+      Font.Size = 20
+      Font.Style = [fsBold, fsItalic]
+      Transparent = True
+      mmHeight = 8467
+      mmLeft = 69850
+      mmTop = 2117
+      mmWidth = 62442
+      BandType = 1
+    end
+    object ppSystemVariable1: TppSystemVariable
+      UserName = 'SystemVariable1'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Name = 'Arial'
+      Font.Size = 8
+      Font.Style = []
+      Transparent = True
+      mmHeight = 3704
+      mmLeft = 188384
+      mmTop = 529
+      mmWidth = 14288
+      BandType = 1
+    end
+  end
+  object ppDetailBand1: TppDetailBand
+    mmBottomOffset = 0
+    mmHeight = 5821
+    mmPrintPosition = 0
+    object ppDBText4: TppDBText
+      UserName = 'DBText4'
+      DataField = 'EMPNO'
+      DataPipeline = MyDACQueryDataView3.plQuery
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGreen
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = []
+      ParentDataPipeline = False
+      Transparent = True
+      DataPipelineName = 'plQuery'
+      mmHeight = 4233
+      mmLeft = 6350
+      mmTop = 794
+      mmWidth = 17198
+      BandType = 4
+    end
+    object ppDBText5: TppDBText
+      UserName = 'DBText5'
+      DataField = 'ENAME'
+      DataPipeline = MyDACQueryDataView3.plQuery
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGreen
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = []
+      Transparent = True
+      DataPipelineName = 'plQuery'
+      mmHeight = 4233
+      mmLeft = 25400
+      mmTop = 794
+      mmWidth = 38365
+      BandType = 4
+    end
+    object ppDBText6: TppDBText
+      UserName = 'DBText6'
+      DataField = 'JOB'
+      DataPipeline = MyDACQueryDataView3.plQuery
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGreen
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = []
+      Transparent = True
+      DataPipelineName = 'plQuery'
+      mmHeight = 4233
+      mmLeft = 65617
+      mmTop = 794
+      mmWidth = 23548
+      BandType = 4
+    end
+    object ppDBText7: TppDBText
+      UserName = 'DBText7'
+      DataField = 'MGR'
+      DataPipeline = MyDACQueryDataView3.plQuery
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGreen
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = []
+      Transparent = True
+      DataPipelineName = 'plQuery'
+      mmHeight = 4233
+      mmLeft = 91017
+      mmTop = 794
+      mmWidth = 17198
+      BandType = 4
+    end
+    object ppDBText8: TppDBText
+      UserName = 'DBText8'
+      DataField = 'HIREDATE'
+      DataPipeline = MyDACQueryDataView3.plQuery
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGreen
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = []
+      Transparent = True
+      DataPipelineName = 'plQuery'
+      mmHeight = 4233
+      mmLeft = 110067
+      mmTop = 794
+      mmWidth = 19579
+      BandType = 4
+    end
+    object ppDBText9: TppDBText
+      UserName = 'DBText9'
+      DataField = 'SAL'
+      DataPipeline = MyDACQueryDataView3.plQuery
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGreen
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = []
+      Transparent = True
+      DataPipelineName = 'plQuery'
+      mmHeight = 4233
+      mmLeft = 131234
+      mmTop = 794
+      mmWidth = 17198
+      BandType = 4
+    end
+  end
+  object ppSummaryBand1: TppSummaryBand
+    mmBottomOffset = 0
+    mmHeight = 7673
+    mmPrintPosition = 0
+    object ppLabel12: TppLabel
+      UserName = 'Label12'
+      Caption = 'Total'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = [fsBold]
+      Transparent = True
+      mmHeight = 4233
+      mmLeft = 6350
+      mmTop = 1852
+      mmWidth = 8467
+      BandType = 7
+    end
+    object ppDBCalc2: TppDBCalc
+      UserName = 'DBCalc2'
+      DataField = 'SAL'
+      DataPipeline = MyDACQueryDataView3.plQuery
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clRed
+      Font.Name = 'Arial'
+      Font.Size = 10
+      Font.Style = [fsBold]
+      Transparent = True
+      DataPipelineName = 'plQuery'
+      mmHeight = 4233
+      mmLeft = 131234
+      mmTop = 1588
+      mmWidth = 17198
+      BandType = 7
+    end
+  end
+  object ppGroup1: TppGroup
+    BreakName = 'DEPTNO'
+    DataPipeline = MyDACQueryDataView3.plQuery
+    KeepTogether = True
+    OutlineSettings.CreateNode = True
+    UserName = 'Group1'
+    mmNewColumnThreshold = 0
+    mmNewPageThreshold = 0
+    DataPipelineName = 'plQuery'
+    object ppGroupHeaderBand1: TppGroupHeaderBand
+      mmBottomOffset = 0
+      mmHeight = 13229
+      mmPrintPosition = 0
+      object ppLabel2: TppLabel
+        UserName = 'Label2'
+        Caption = 'Departament'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = []
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 6350
+        mmTop = 529
+        mmWidth = 19579
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppDBText1: TppDBText
+        UserName = 'DBText1'
+        DataField = 'DNAME'
+        DataPipeline = MyDACQueryDataView3.plQuery
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlue
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsItalic]
+        Transparent = True
+        DataPipelineName = 'plQuery'
+        mmHeight = 4233
+        mmLeft = 29633
+        mmTop = 529
+        mmWidth = 26988
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel3: TppLabel
+        UserName = 'Label3'
+        Caption = 'No'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = []
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 63500
+        mmTop = 529
+        mmWidth = 4233
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppDBText2: TppDBText
+        UserName = 'DBText2'
+        DataField = 'DEPTNO'
+        DataPipeline = MyDACQueryDataView3.plQuery
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlue
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsItalic]
+        Transparent = True
+        DataPipelineName = 'plQuery'
+        mmHeight = 4233
+        mmLeft = 71967
+        mmTop = 529
+        mmWidth = 17198
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel4: TppLabel
+        UserName = 'Label4'
+        Caption = 'Location'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = []
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 93134
+        mmTop = 529
+        mmWidth = 12965
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppDBText3: TppDBText
+        UserName = 'DBText3'
+        DataField = 'LOC'
+        DataPipeline = MyDACQueryDataView3.plQuery
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlue
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsItalic]
+        Transparent = True
+        DataPipelineName = 'plQuery'
+        mmHeight = 4233
+        mmLeft = 110067
+        mmTop = 529
+        mmWidth = 36777
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel5: TppLabel
+        UserName = 'Label5'
+        Caption = 'No'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 6350
+        mmTop = 7408
+        mmWidth = 4498
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel6: TppLabel
+        UserName = 'Label6'
+        Caption = 'Name'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 25400
+        mmTop = 7408
+        mmWidth = 9790
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel7: TppLabel
+        UserName = 'Label7'
+        Caption = 'Job'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 65617
+        mmTop = 7408
+        mmWidth = 6085
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel8: TppLabel
+        UserName = 'Label8'
+        Caption = 'Manager'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 91017
+        mmTop = 7408
+        mmWidth = 14817
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel9: TppLabel
+        UserName = 'Label9'
+        Caption = 'Hire Date'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 110067
+        mmTop = 7673
+        mmWidth = 15610
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppLabel10: TppLabel
+        UserName = 'Label10'
+        Caption = 'Salary'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 131234
+        mmTop = 7408
+        mmWidth = 10848
+        BandType = 3
+        GroupNo = 0
+      end
+      object ppShape1: TppShape
+        UserName = 'Shape1'
+        mmHeight = 529
+        mmLeft = 2117
+        mmTop = 5821
+        mmWidth = 197115
+        BandType = 3
+        GroupNo = 0
+      end
+    end
+    object ppGroupFooterBand1: TppGroupFooterBand
+      mmBottomOffset = 0
+      mmHeight = 10583
+      mmPrintPosition = 0
+      object ppShape2: TppShape
+        UserName = 'Shape2'
+        mmHeight = 529
+        mmLeft = 2117
+        mmTop = 1058
+        mmWidth = 197115
+        BandType = 5
+        GroupNo = 0
+      end
+      object ppLabel11: TppLabel
+        UserName = 'Label11'
+        Caption = 'Summary'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        Transparent = True
+        mmHeight = 4233
+        mmLeft = 6350
+        mmTop = 2910
+        mmWidth = 16140
+        BandType = 5
+        GroupNo = 0
+      end
+      object ppDBCalc1: TppDBCalc
+        UserName = 'DBCalc1'
+        DataField = 'SAL'
+        DataPipeline = MyDACQueryDataView3.plQuery
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clRed
+        Font.Name = 'Arial'
+        Font.Size = 10
+        Font.Style = [fsBold]
+        ResetGroup = ppGroup1
+        Transparent = True
+        DataPipelineName = 'plQuery'
+        mmHeight = 4233
+        mmLeft = 131234
+        mmTop = 2910
+        mmWidth = 17198
+        BandType = 5
+        GroupNo = 0
+      end
+    end
+  end
+  object daDataModule1: TdaDataModule
+    object MyDACQueryDataView1: TdaMyDACQueryDataView
+      UserName = 'Query_Dept'
+      Height = 304
+      Left = 4
+      NameColumnWidth = 105
+      SizeColumnWidth = 35
+      SortMode = 0
+      Top = 7
+      TypeColumnWidth = 52
+      Width = 238
+      AutoSearchTabOrder = 0
+      object plDept: TppChildDBPipeline
+        AutoCreateFields = False
+        UserName = 'plDept'
+        object ppField1: TppField
+          FieldAlias = 'Deptno'
+          FieldName = 'DEPTNO'
+          FieldLength = 0
+          DataType = dtInteger
+          DisplayWidth = 0
+          Position = 0
+          TableName = 'DEPT'
+        end
+        object ppField2: TppField
+          FieldAlias = 'Dname'
+          FieldName = 'DNAME'
+          FieldLength = 0
+          DisplayWidth = 0
+          Position = 1
+          TableName = 'DEPT'
+        end
+        object ppField3: TppField
+          FieldAlias = 'Loc'
+          FieldName = 'LOC'
+          FieldLength = 0
+          DisplayWidth = 0
+          Position = 2
+          TableName = 'DEPT'
+        end
+      end
+      object daSQL1: TdaSQL
+        DatabaseName = 'seDatabase'
+        DatabaseType = dtOracle
+        DataPipelineName = 'plDept'
+        LinkColor = clBlack
+        MaxSQLFieldAliasLength = 25
+        SQLText.Strings = (
+          'SELECT DEPT.DEPTNO, DEPT.DNAME, DEPT.LOC'
+          'FROM DEPT DEPT')
+        SQLType = sqSQL1
+        object TdaField
+          Alias = 'Deptno'
+          DataType = dtInteger
+          DisplayWidth = 0
+          FieldAlias = 'Deptno'
+          FieldLength = 0
+          FieldName = 'DEPTNO'
+          SQLFieldName = 'DEPTNO'
+          TableAlias = 'DEPT'
+          TableName = 'DEPT'
+          TableSQLAlias = 'DEPT'
+        end
+        object TdaField
+          Alias = 'Dname'
+          DisplayWidth = 0
+          FieldAlias = 'Dname'
+          FieldLength = 0
+          FieldName = 'DNAME'
+          SQLFieldName = 'DNAME'
+          TableAlias = 'DEPT'
+          TableName = 'DEPT'
+          TableSQLAlias = 'DEPT'
+        end
+        object TdaField
+          Alias = 'Loc'
+          DisplayWidth = 0
+          FieldAlias = 'Loc'
+          FieldLength = 0
+          FieldName = 'LOC'
+          SQLFieldName = 'LOC'
+          TableAlias = 'DEPT'
+          TableName = 'DEPT'
+          TableSQLAlias = 'DEPT'
+        end
+        object TdaTable
+          ChildType = 5
+          Alias = 'DEPT'
+          JoinType = dajtNone
+          OwnerName = ''
+          SQLAlias = 'DEPT'
+          TableAlias = 'DEPT'
+          TableName = 'DEPT'
+        end
+      end
+    end
+    object MyDACQueryDataView2: TdaMyDACQueryDataView
+      UserName = 'Query_Emp'
+      Height = 305
+      Left = 289
+      NameColumnWidth = 105
+      SizeColumnWidth = 35
+      SortMode = 0
+      Top = 7
+      TypeColumnWidth = 52
+      Width = 241
+      AutoSearchTabOrder = 0
+      object plEmp: TppChildDBPipeline
+        AutoCreateFields = False
+        UserName = 'plEmp'
+        object ppField1: TppField
+          FieldAlias = 'Empno'
+          FieldName = 'EMPNO'
+          FieldLength = 0
+          DataType = dtInteger
+          DisplayWidth = 0
+          Position = 0
+          TableName = 'EMP'
+        end
+        object ppField2: TppField
+          FieldAlias = 'Ename'
+          FieldName = 'ENAME'
+          FieldLength = 0
+          DisplayWidth = 0
+          Position = 1
+          TableName = 'EMP'
+        end
+        object ppField3: TppField
+          FieldAlias = 'Job'
+          FieldName = 'JOB'
+          FieldLength = 0
+          DisplayWidth = 0
+          Position = 2
+          TableName = 'EMP'
+        end
+        object ppField4: TppField
+          FieldAlias = 'Mgr'
+          FieldName = 'MGR'
+          FieldLength = 0
+          DataType = dtInteger
+          DisplayWidth = 0
+          Position = 3
+          TableName = 'EMP'
+        end
+        object ppField5: TppField
+          FieldAlias = 'Hiredate'
+          FieldName = 'HIREDATE'
+          FieldLength = 0
+          DataType = dtDateTime
+          DisplayWidth = 0
+          Position = 4
+          TableName = 'EMP'
+        end
+        object ppField6: TppField
+          FieldAlias = 'Sal'
+          FieldName = 'SAL'
+          FieldLength = 0
+          DataType = dtDouble
+          DisplayWidth = 0
+          Position = 5
+          TableName = 'EMP'
+        end
+        object ppField7: TppField
+          FieldAlias = 'Comm'
+          FieldName = 'COMM'
+          FieldLength = 0
+          DataType = dtDouble
+          DisplayWidth = 0
+          Position = 6
+          TableName = 'EMP'
+        end
+        object ppField8: TppField
+          FieldAlias = 'Deptno'
+          FieldName = 'DEPTNO'
+          FieldLength = 0
+          DataType = dtInteger
+          DisplayWidth = 0
+          Position = 7
+          TableName = 'EMP'
+        end
+      end
+      object daSQL2: TdaSQL
+        DatabaseName = 'seDatabase'
+        DatabaseType = dtOracle
+        DataPipelineName = 'plEmp'
+        LinkColor = clBlack
+        MaxSQLFieldAliasLength = 25
+        SQLText.Strings = (
+          'SELECT EMP.EMPNO, EMP.ENAME, EMP.JOB, EMP.MGR, '
+          '       EMP.HIREDATE, EMP.SAL, EMP.COMM, EMP.DEPTNO'
+          'FROM EMP EMP')
+        SQLType = sqSQL1
+        object TdaField
+          Alias = 'Empno'
+          DataType = dtInteger
+          DisplayWidth = 0
+          FieldAlias = 'Empno'
+          FieldLength = 0
+          FieldName = 'EMPNO'
+          SQLFieldName = 'EMPNO'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaField
+          Alias = 'Ename'
+          DisplayWidth = 0
+          FieldAlias = 'Ename'
+          FieldLength = 0
+          FieldName = 'ENAME'
+          SQLFieldName = 'ENAME'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaField
+          Alias = 'Job'
+          DisplayWidth = 0
+          FieldAlias = 'Job'
+          FieldLength = 0
+          FieldName = 'JOB'
+          SQLFieldName = 'JOB'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaField
+          Alias = 'Mgr'
+          DataType = dtInteger
+          DisplayWidth = 0
+          FieldAlias = 'Mgr'
+          FieldLength = 0
+          FieldName = 'MGR'
+          SQLFieldName = 'MGR'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaField
+          Alias = 'Hiredate'
+          DataType = dtDateTime
+          DisplayWidth = 0
+          FieldAlias = 'Hiredate'
+          FieldLength = 0
+          FieldName = 'HIREDATE'
+          SQLFieldName = 'HIREDATE'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaField
+          Alias = 'Sal'
+          DataType = dtDouble
+          DisplayWidth = 0
+          FieldAlias = 'Sal'
+          FieldLength = 0
+          FieldName = 'SAL'
+          SQLFieldName = 'SAL'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaField
+          Alias = 'Comm'
+          DataType = dtDouble
+          DisplayWidth = 0
+          FieldAlias = 'Comm'
+          FieldLength = 0
+          FieldName = 'COMM'
+          SQLFieldName = 'COMM'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaField
+          Alias = 'Deptno'
+          DataType = dtInteger
+          DisplayWidth = 0
+          FieldAlias = 'Deptno'
+          FieldLength = 0
+          FieldName = 'DEPTNO'
+          SQLFieldName = 'DEPTNO'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+          TableSQLAlias = 'EMP'
+        end
+        object TdaTable
+          ChildType = 5
+          Alias = 'EMP'
+          JoinType = dajtNone
+          OwnerName = ''
+          SQLAlias = 'EMP'
+          TableAlias = 'EMP'
+          TableName = 'EMP'
+        end
+      end
+    end
+    object MyDACQueryDataView3: TdaMyDACQueryDataView
+      UserName = 'Query_Query'
+      Height = 305
+      Left = 572
+      NameColumnWidth = 105
+      SizeColumnWidth = 35
+      SortMode = 0
+      Top = 10
+      TypeColumnWidth = 52
+      Width = 242
+      AutoSearchTabOrder = 0
+      object plQuery: TppChildDBPipeline
+        AutoCreateFields = False
+        UserName = 'plQuery'
+        object ppField1: TppField
+          FieldAlias = 'DEPTNO'
+          FieldName = 'DEPTNO'
+          FieldLength = 10
+          DataType = dtInteger
+          DisplayWidth = 10
+          Position = 0
+        end
+        object ppField2: TppField
+          FieldAlias = 'DNAME'
+          FieldName = 'DNAME'
+          FieldLength = 10
+          DisplayWidth = 10
+          Position = 1
+        end
+        object ppField3: TppField
+          FieldAlias = 'LOC'
+          FieldName = 'LOC'
+          FieldLength = 10
+          DisplayWidth = 10
+          Position = 2
+        end
+        object ppField4: TppField
+          FieldAlias = 'EMPNO'
+          FieldName = 'EMPNO'
+          FieldLength = 10
+          DataType = dtInteger
+          DisplayWidth = 10
+          Position = 3
+        end
+        object ppField5: TppField
+          FieldAlias = 'ENAME'
+          FieldName = 'ENAME'
+          FieldLength = 10
+          DisplayWidth = 10
+          Position = 4
+        end
+        object ppField6: TppField
+          FieldAlias = 'JOB'
+          FieldName = 'JOB'
+          FieldLength = 10
+          DisplayWidth = 10
+          Position = 5
+        end
+        object ppField7: TppField
+          FieldAlias = 'MGR'
+          FieldName = 'MGR'
+          FieldLength = 10
+          DataType = dtInteger
+          DisplayWidth = 10
+          Position = 6
+        end
+        object ppField8: TppField
+          FieldAlias = 'HIREDATE'
+          FieldName = 'HIREDATE'
+          FieldLength = 10
+          DataType = dtDateTime
+          DisplayWidth = 10
+          Position = 7
+        end
+        object ppField9: TppField
+          FieldAlias = 'SAL'
+          FieldName = 'SAL'
+          FieldLength = 10
+          DataType = dtDouble
+          DisplayWidth = 10
+          Position = 8
+        end
+        object ppField10: TppField
+          FieldAlias = 'COMM'
+          FieldName = 'COMM'
+          FieldLength = 10
+          DataType = dtDouble
+          DisplayWidth = 10
+          Position = 9
+        end
+        object ppField11: TppField
+          FieldAlias = 'DEPTNO_1'
+          FieldName = 'DEPTNO_1'
+          FieldLength = 10
+          DataType = dtInteger
+          DisplayWidth = 10
+          Position = 10
+        end
+      end
+      object daSQL3: TdaSQL
+        CollationType = ctASCII
+        DatabaseName = 'seDatabase'
+        DatabaseType = dtOracle
+        DataPipelineName = 'plQuery'
+        EditSQLAsText = True
+        IsCaseSensitive = True
+        LinkColor = clBlack
+        MaxSQLFieldAliasLength = 0
+        SQLText.Strings = (
+          'SELECT DEPT.DEPTNO, DEPT.DNAME, '
+          '       DEPT.LOC, EMP.EMPNO, '
+          '       EMP.ENAME, EMP.JOB, '
+          '       EMP.MGR, EMP.HIREDATE, '
+          '       EMP.SAL, EMP.COMM, '
+          '       EMP.DEPTNO'
+          'FROM DEPT, EMP'
+          'WHERE (EMP.DEPTNO = DEPT.DEPTNO)')
+        SQLType = sqSQL1
+        object daField1: TdaField
+          Alias = 'DEPTNO'
+          DataType = dtInteger
+          DisplayWidth = 10
+          FieldAlias = 'DEPTNO'
+          FieldLength = 10
+          FieldName = 'DEPTNO'
+          SQLFieldName = 'DEPTNO'
+        end
+        object daField2: TdaField
+          Alias = 'DNAME'
+          DisplayWidth = 10
+          FieldAlias = 'DNAME'
+          FieldLength = 10
+          FieldName = 'DNAME'
+          SQLFieldName = 'DNAME'
+        end
+        object daField3: TdaField
+          Alias = 'LOC'
+          DisplayWidth = 10
+          FieldAlias = 'LOC'
+          FieldLength = 10
+          FieldName = 'LOC'
+          SQLFieldName = 'LOC'
+        end
+        object daField4: TdaField
+          Alias = 'EMPNO'
+          DataType = dtInteger
+          DisplayWidth = 10
+          FieldAlias = 'EMPNO'
+          FieldLength = 10
+          FieldName = 'EMPNO'
+          SQLFieldName = 'EMPNO'
+        end
+        object daField5: TdaField
+          Alias = 'ENAME'
+          DisplayWidth = 10
+          FieldAlias = 'ENAME'
+          FieldLength = 10
+          FieldName = 'ENAME'
+          SQLFieldName = 'ENAME'
+        end
+        object daField6: TdaField
+          Alias = 'JOB'
+          DisplayWidth = 10
+          FieldAlias = 'JOB'
+          FieldLength = 10
+          FieldName = 'JOB'
+          SQLFieldName = 'JOB'
+        end
+        object daField7: TdaField
+          Alias = 'MGR'
+          DataType = dtInteger
+          DisplayWidth = 10
+          FieldAlias = 'MGR'
+          FieldLength = 10
+          FieldName = 'MGR'
+          SQLFieldName = 'MGR'
+        end
+        object daField8: TdaField
+          Alias = 'HIREDATE'
+          DataType = dtDateTime
+          DisplayWidth = 10
+          FieldAlias = 'HIREDATE'
+          FieldLength = 10
+          FieldName = 'HIREDATE'
+          SQLFieldName = 'HIREDATE'
+        end
+        object daField9: TdaField
+          Alias = 'SAL'
+          DataType = dtDouble
+          DisplayWidth = 10
+          FieldAlias = 'SAL'
+          FieldLength = 10
+          FieldName = 'SAL'
+          SQLFieldName = 'SAL'
+        end
+        object daField10: TdaField
+          Alias = 'COMM'
+          DataType = dtDouble
+          DisplayWidth = 10
+          FieldAlias = 'COMM'
+          FieldLength = 10
+          FieldName = 'COMM'
+          SQLFieldName = 'COMM'
+        end
+        object daField11: TdaField
+          Alias = 'DEPTNO_1'
+          DataType = dtInteger
+          DisplayWidth = 10
+          FieldAlias = 'DEPTNO_1'
+          FieldLength = 10
+          FieldName = 'DEPTNO_1'
+          SQLFieldName = 'DEPTNO_1'
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,110 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TLockFrame','FORMDATA',[
+  'TPF0'#241#10'TLockFrame'#9'LockFrame'#6'Height'#3#225#1#5'Width'#3#251#2#5'A'
+  +'lign'#7#8'alClient'#12'ClientHeight'#3#221#1#11'ClientWidth'#3#247#2#8'TabO'
+  +'rder'#2#0#0#242#2#0#9'TSplitter'#9'Splitter1'#6'Cursor'#7#8'crVSplit'#6'Hei'
+  +'ght'#2#2#3'Top'#3'R'#1#5'Width'#3#247#2#5'Align'#7#5'alTop'#5'Color'#4#15'+'
+  +#253#0#11'ParentColor'#8#12'ResizeAnchor'#7#5'akTop'#0#0#242#2#1#6'TPanel'#7
+  +'ToolBar'#6'Height'#3#179#0#5'Width'#3#247#2#5'Align'#7#5'alTop'#10'BevelOut'
+  +'er'#7#6'bvNone'#12'ClientHeight'#3#179#0#11'ClientWidth'#3#247#2#8'TabOrder'
+  +#2#0#0#6'TPanel'#6'Panel5'#4'Left'#2#2#6'Height'#3#156#0#3'Top'#2#1#5'Width'
+  +#3#175#2#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#3#156#0#11'ClientWidth'
+  +#3#175#2#5'Color'#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0#0#5'TMemo'
+  +#5'Memo1'#4'Left'#2#1#6'Height'#2'Q'#3'Top'#2#1#5'Width'#3#173#2#11'Font.Hei'
+  +'ght'#2#243#9'Font.Name'#6#13'MS Sans Serif'#13'Lines.Strings'#1#6'pTo see h'
+  +'ow this demo works you should open two instances of it. In the first instan'
+  +'ce of demo start editing any '#6#8'record, '#6'8then try to edit the same r'
+  +'ecord in the second instance.'#6'eImmediately lock mode equals to SELECT ..'
+  +'. FOR UPDATE command.Delayed lock mode equals to SELECT ... '#6'bLOCK IN SH'
+  +'ARE MODE command. You can read more about these commands in MySQL Reference'
+  +' Manual.     '#0#10'ParentFont'#8#8'ReadOnly'#9#8'TabOrder'#2#0#8'WantTabs'
+  +#9#0#0#5'TMemo'#5'meSQL'#4'Left'#2#1#6'Height'#2'H'#3'Top'#2'S'#5'Width'#3
+  +#173#2#8'OnChange'#7#12'btCloseClick'#6'OnExit'#7#9'meSQLExit'#10'ScrollBars'
+  +#7#10'ssVertical'#8'TabOrder'#2#1#0#0#0#6'TPanel'#6'Panel3'#4'Left'#2#2#6'He'
+  +'ight'#2#24#3'Top'#3#156#0#5'Width'#3#167#0#10'BevelOuter'#7#6'bvNone'#12'Cl'
+  +'ientHeight'#2#24#11'ClientWidth'#3#167#0#5'Color'#4#15'+'#253#0#11'ParentCo'
+  +'lor'#8#8'TabOrder'#2#1#0#12'TSpeedButton'#7'btClose'#4'Left'#2'T'#6'Height'
+  +#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#5'Close'#5'Color'#7#9'clBtnFace'
+  +#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#12'btCloseClick'#0
+  +#0#12'TSpeedButton'#6'btOpen'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'
+  +#2'R'#7'Caption'#6#4'Open'#5'Color'#7#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0
+  +#11'Transparent'#8#7'OnClick'#7#11'btOpenClick'#0#0#0#0#242#2#2#6'TPanel'#6
+  +'Panel6'#6'Height'#3#157#0#3'Top'#3#181#0#5'Width'#3#247#2#5'Align'#7#5'alTo'
+  +'p'#10'BevelOuter'#7#6'bvNone'#7'Caption'#6#6'Panel6'#12'ClientHeight'#3#157
+  +#0#11'ClientWidth'#3#247#2#8'TabOrder'#2#1#0#6'TPanel'#6'Panel1'#6'Height'#2
+  +#26#5'Width'#3#247#2#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'#12'Clien'
+  +'tHeight'#2#26#11'ClientWidth'#3#247#2#8'TabOrder'#2#0#0#6'TLabel'#6'Label2'
+  +#4'Left'#2#8#6'Height'#2#12#3'Top'#2#5#5'Width'#3#141#0#7'Caption'#6#20'The '
+  +'first connection'#11'Font.Height'#2#243#9'Font.Name'#6#13'MS Sans Serif'#10
+  +'Font.Style'#11#6'fsBold'#0#11'ParentColor'#8#10'ParentFont'#8#0#0#6'TPanel'
+  +#6'Panel2'#4'Left'#3#200#0#6'Height'#2#24#3'Top'#2#1#5'Width'#3#244#1#10'Bev'
+  +'elOuter'#7#6'bvNone'#12'ClientHeight'#2#24#11'ClientWidth'#3#244#1#5'Color'
+  +#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0#0#6'TPanel'#6'Panel4'#4'Lef'
+  +'t'#3#252#0#6'Height'#2#22#3'Top'#2#1#5'Width'#3#247#0#10'BevelOuter'#7#6'bv'
+  +'None'#12'ClientHeight'#2#22#11'ClientWidth'#3#247#0#11'ParentColor'#8#8'Tab'
+  +'Order'#2#0#0#6'TLabel'#6'Label1'#4'Left'#2#8#6'Height'#2#13#3'Top'#2#4#5'Wi'
+  +'dth'#2'8'#7'Caption'#6#9'Lock type'#11'ParentColor'#8#0#0#12'TRadioButton'
+  +#13'rbLockDelayed'#4'Left'#3#172#0#6'Height'#2#20#3'Top'#2#4#5'Width'#2'G'#7
+  +'Caption'#6#7'Delayed'#8'TabOrder'#2#0#0#0#12'TRadioButton'#17'rbLockImmedia'
+  +'tely'#4'Left'#2'C'#6'Height'#2#20#3'Top'#2#4#5'Width'#2'Y'#7'Caption'#6#11
+  +'Immediately'#7'Checked'#9#5'State'#7#9'cbChecked'#8'TabOrder'#2#1#0#0#0#6'T'
+  +'Panel'#7'Panel12'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'#3#250#0#10
+  +'BevelOuter'#7#6'bvNone'#7'Caption'#6#7'Panel12'#12'ClientHeight'#2#22#11'Cl'
+  +'ientWidth'#3#250#0#8'TabOrder'#2#1#0#12'TDBNavigator'#12'DBNavigator1'#6'He'
+  +'ight'#2#22#5'Width'#3#250#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22
+  +#11'ClientWidth'#3#250#0#5'Color'#7#9'clBtnFace'#10'DataSource'#7#11'DataSou'
+  +'rce1'#4'Flat'#9#11'ParentColor'#8#8'TabOrder'#2#0#0#0#0#0#0#7'TDBGrid'#6'DB'
+  +'Grid'#6'Height'#3#131#0#3'Top'#2#26#5'Width'#3#247#2#5'Align'#7#8'alClient'
+  +#10'DataSource'#7#11'DataSource1'#10'FixedColor'#7#9'clBtnFace'#13'FixedHotC'
+  +'olor'#7#9'cl3DLight'#7'Options'#11#9'dgEditing'#8'dgTitles'#11'dgIndicator'
+  +#14'dgColumnResize'#12'dgColumnMove'#10'dgColLines'#10'dgRowLines'#6'dgTabs'
+  +#21'dgAlwaysShowSelection'#15'dgConfirmDelete'#14'dgCancelOnExit'#0#12'Optio'
+  +'nsExtra'#11#14'dgeAutoColumns'#17'dgeCheckboxColumn'#0#11'ParentColor'#8#8
+  +'TabOrder'#2#1#0#0#0#242#2#3#6'TPanel'#6'Panel7'#6'Height'#3#137#0#3'Top'#3
+  +'T'#1#5'Width'#3#247#2#5'Align'#7#8'alClient'#10'BevelOuter'#7#6'bvNone'#7'C'
+  +'aption'#6#6'Panel6'#12'ClientHeight'#3#137#0#11'ClientWidth'#3#247#2#8'TabO'
+  +'rder'#2#2#0#6'TPanel'#6'Panel8'#6'Height'#2#26#5'Width'#3#247#2#5'Align'#7#5
+  ,'alTop'#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#26#11'ClientWidth'#3
+  +#247#2#8'TabOrder'#2#0#0#6'TLabel'#6'Label3'#4'Left'#2#8#6'Height'#2#12#3'To'
+  +'p'#2#5#5'Width'#3#148#0#7'Caption'#6#21'The second connection'#11'Font.Heig'
+  +'ht'#2#243#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#6'fsBold'#0#11
+  +'ParentColor'#8#10'ParentFont'#8#0#0#6'TPanel'#6'Panel9'#4'Left'#3#200#0#6'H'
+  +'eight'#2#24#3'Top'#2#1#5'Width'#3#244#1#10'BevelOuter'#7#6'bvNone'#12'Clien'
+  +'tHeight'#2#24#11'ClientWidth'#3#244#1#5'Color'#4#15'+'#253#0#11'ParentColor'
+  +#8#8'TabOrder'#2#0#0#6'TPanel'#7'Panel10'#4'Left'#3#252#0#6'Height'#2#22#3'T'
+  +'op'#2#1#5'Width'#3#247#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11
+  +'ClientWidth'#3#247#0#11'ParentColor'#8#8'TabOrder'#2#1#0#6'TLabel'#6'Label4'
+  +#4'Left'#2#8#6'Height'#2#13#3'Top'#2#4#5'Width'#2'8'#7'Caption'#6#9'Lock typ'
+  +'e'#11'ParentColor'#8#0#0#12'TRadioButton'#12'RadioButton1'#4'Left'#3#172#0#6
+  +'Height'#2#20#3'Top'#2#4#5'Width'#2'G'#7'Caption'#6#7'Delayed'#8'TabOrder'#2
+  +#0#0#0#12'TRadioButton'#12'RadioButton2'#4'Left'#2'C'#6'Height'#2#20#3'Top'#2
+  +#4#5'Width'#2'Y'#7'Caption'#6#11'Immediately'#7'Checked'#9#5'State'#7#9'cbCh'
+  +'ecked'#8'TabOrder'#2#1#0#0#0#6'TPanel'#7'Panel14'#4'Left'#2#1#6'Height'#2#22
+  +#3'Top'#2#1#5'Width'#3#250#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22
+  +#11'ClientWidth'#3#250#0#8'TabOrder'#2#0#0#12'TDBNavigator'#12'DBNavigator2'
+  +#6'Height'#2#22#5'Width'#3#250#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'
+  +#2#22#11'ClientWidth'#3#250#0#5'Color'#7#9'clBtnFace'#10'DataSource'#7#11'Da'
+  +'taSource2'#4'Flat'#9#11'ParentColor'#8#8'TabOrder'#2#0#0#0#0#0#0#7'TDBGrid'
+  +#7'DBGrid1'#6'Height'#2'o'#3'Top'#2#26#5'Width'#3#247#2#5'Align'#7#8'alClien'
+  +'t'#10'DataSource'#7#11'DataSource2'#10'FixedColor'#7#9'clBtnFace'#13'FixedH'
+  +'otColor'#7#9'cl3DLight'#7'Options'#11#9'dgEditing'#8'dgTitles'#11'dgIndicat'
+  +'or'#14'dgColumnResize'#12'dgColumnMove'#10'dgColLines'#10'dgRowLines'#6'dgT'
+  +'abs'#21'dgAlwaysShowSelection'#15'dgConfirmDelete'#14'dgCancelOnExit'#0#12
+  +'OptionsExtra'#11#14'dgeAutoColumns'#17'dgeCheckboxColumn'#0#11'ParentColor'
+  +#8#8'TabOrder'#2#1#0#0#0#242#2#4#6'TPanel'#7'Panel11'#6'Height'#2#2#3'Top'#3
+  +#179#0#5'Width'#3#247#2#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'#5'Col'
+  +'or'#4#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#3#0#0#242#2#5#8'TMyQuery'
+  +#8'MyQuery1'#11'SQL.Strings'#1#6'!SELECT * FROM EMP_TRANACTION_SAFE'#0#12'Af'
+  +'terExecute'#7#20'MyQuery1AfterExecute'#10'BeforeEdit'#7#18'MyQuery1BeforeEd'
+  +'it'#9'AfterPost'#7#17'MyQuery1AfterPost'#11'AfterCancel'#7#19'MyQuery1After'
+  +'Cancel'#14'CommandTimeout'#2#30#4'left'#3#173#0#3'top'#2'e'#0#0#242#2#6#11
+  +'TDatasource'#11'DataSource1'#7'DataSet'#7#8'MyQuery1'#4'left'#3#205#0#3'top'
+  +#2'e'#0#0#242#2#7#8'TMyQuery'#8'MyQuery2'#10'Connection'#7#13'MyConnection2'
+  +#11'SQL.Strings'#1#6'!SELECT * FROM EMP_TRANACTION_SAFE'#0#12'AfterExecute'#7
+  +#20'MyQuery1AfterExecute'#10'BeforeEdit'#7#18'MyQuery1BeforeEdit'#9'AfterPos'
+  +'t'#7#17'MyQuery1AfterPost'#11'AfterCancel'#7#19'MyQuery1AfterCancel'#14'Com'
+  +'mandTimeout'#2#30#4'left'#2'S'#3'top'#3#160#1#0#0#242#2#8#13'TMyConnection'
+  +#13'MyConnection2'#4'left'#2'7'#3'top'#3#159#1#0#0#242#2#9#11'TDatasource'#11
+  +'DataSource2'#7'DataSet'#7#8'MyQuery2'#4'left'#2's'#3'top'#3#160#1#0#0#0
+]);

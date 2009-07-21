@@ -1,0 +1,64 @@
+object FetchForm: TFetchForm
+  Left = 395
+  Height = 240
+  Top = 204
+  Width = 320
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
+  Caption = 'Loading'
+  ClientHeight = 240
+  ClientWidth = 320
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  FormStyle = fsStayOnTop
+  KeyPreview = True
+  OnKeyDown = FormKeyDown
+  OnShow = FormShow
+  ParentFont = False
+  Position = poMainFormCenter
+  LCLVersion = '0.9.26'
+  object Label1: TLabel
+    Left = 55
+    Height = 13
+    Top = 61
+    Width = 232
+    Caption = 'Press Cancel to interrupt loading'
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object Panel1: TPanel
+    Left = 102
+    Height = 24
+    Top = 93
+    Width = 84
+    BevelOuter = bvNone
+    ClientHeight = 24
+    ClientWidth = 84
+    Color = 16591631
+    ParentColor = False
+    TabOrder = 0
+    object btCancel: TSpeedButton
+      Left = 1
+      Height = 22
+      Top = 1
+      Width = 82
+      Caption = 'Cancel'
+      Color = clBtnFace
+      Flat = True
+      NumGlyphs = 0
+      Transparent = False
+      OnClick = btCancelClick
+    end
+  end
+  object ProgressBar: TProgressBar
+    Left = 8
+    Height = 16
+    Top = 25
+    Width = 287
+    Max = 100
+    TabOrder = 1
+  end
+end

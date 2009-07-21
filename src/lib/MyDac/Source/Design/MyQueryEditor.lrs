@@ -1,0 +1,10 @@
+LazarusResources.Add('TMyQueryEditorForm','FORMDATA',[
+  'TPF0'#241#18'TMyQueryEditorForm'#17'MyQueryEditorForm'#4'Left'#3#176#0#3'Top'
+  +#3#232#0#7'Caption'#6#14'MyQuery Editor'#0#241#6'TPanel'#8'BtnPanel'#0#241#6
+  +'TImage'#8'imCorner'#0#0#241#7'TBitBtn'#4'btOk'#0#0#241#7'TBitBtn'#8'btCance'
+  +'l'#0#0#241#7'TButton'#9'btExecute'#0#0#241#7'TBitBtn'#13'btnDataEditor'#0#0
+  +#0#12'TPageControl'#12'PageControl2'#0#241#9'TTabSheet'#5'shSQL'#0#0#241#9
+  +'TTabSheet'#9'shEditSQL'#0#0#241#9'TTabSheet'#11'shGenerator'#0#0#241#9'TTab'
+  +'Sheet'#12'shParameters'#0#0#241#9'TTabSheet'#8'shMacros'#0#0#241#9'TTabShee'
+  +'t'#14'shGeneratorSPC'#0#0#0#0
+]);

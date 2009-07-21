@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="dcldac50.bpl"/>
+    <OBJFILES value="DacReg.obj DAMenu.obj DADesign.obj VTDesign.obj Download.obj dcldac50.obj"/>
+    <RESFILES value="dcldac50.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value="Vcl50.lib Vcldb50.lib VCLBDE50.lib"/>
+    <PACKAGES value="vcl50.bpi dac50.bpi Vcldb50.bpi vclbde50.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;..\Design"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
+    <MAINSOURCE value="dcldac50.cpp"/>
+    <INCLUDEPATH value="..\Design;..\;..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\source\toolsapi"/>
+    <LIBPATH value=";;;;;;;;;;..\Design;;..\;..;$(BCB)\projects\lib;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\source\toolsapi"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\Design -I..\. -I.. -I$(BCB)\include -I$(BCB)\include\vcl 
+      -I$(BCB)\source\toolsapi -src_suffix cpp -boa"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -c -tWM"/>
+    <PFLAGS value="-N2. -N0. -$Y- -$L- -$D- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-l. -I. -D&quot;Devart Data Access Components&quot; -aa -Tpp -Gpd -x -Gn -Gl -Gi"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0pkg32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=0
+MajorVer=6
+MinorVer=80
+Release=0
+Build=51
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+
+[Version Info Keys]
+CompanyName=Devart
+FileDescription=
+FileVersion=6.80.0.51
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=DAC
+ProductVersion=6.80.0.51
+Comments=
+
+
+
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=.
+
+[HistoryLists\hIBPIOutputDir]
+Count=1
+Item0=.
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+
+[Language]
+ActiveLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

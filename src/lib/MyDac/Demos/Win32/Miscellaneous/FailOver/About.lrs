@@ -1,0 +1,34 @@
+LazarusResources.Add('TAboutForm','FORMDATA',[
+  'TPF0'#10'TAboutForm'#9'AboutForm'#4'Left'#3'M'#1#6'Height'#3'Q'#1#3'Top'#3
+  +#186#0#5'Width'#3#159#1#18'HorzScrollBar.Page'#3#158#1#18'VertScrollBar.Page'
+  +#3'P'#1#13'ActiveControl'#7#5'OKBtn'#11'BorderIcons'#11#12'biSystemMenu'#0#11
+  +'BorderStyle'#7#8'bsDialog'#7'Caption'#6#19'About FailOver Demo'#12'ClientHe'
+  +'ight'#3'Q'#1#11'ClientWidth'#3#159#1#11'OnMouseMove'#7#13'FormMouseMove'#10
+  +'ParentFont'#9#8'Position'#7#14'poScreenCenter'#0#6'TLabel'#6'Label3'#4'Left'
+  +#2#16#6'Height'#2#14#3'Top'#2'$'#5'Width'#3#152#0#7'Caption'#6#28'Copyright '
+  +#169' 1997-2009 Devart'#11'ParentColor'#8#0#0#6'TLabel'#5'lbWeb'#6'Cursor'#7
+  +#11'crHandPoint'#4'Left'#2#16#6'Height'#2#14#3'Top'#3'2'#1#5'Width'#2'T'#7'C'
+  +'aption'#6#14'www.devart.com'#10'Font.Color'#7#6'clBlue'#11'Font.Height'#2#13
+  +#9'Font.Name'#6#6'Tahoma'#10'Font.Pitch'#7#10'fpVariable'#10'Font.Style'#11
+  +#11'fsUnderline'#0#11'ParentColor'#8#7'OnClick'#7#10'lbWebClick'#11'OnMouseM'
+  +'ove'#7#14'lbWebMouseMove'#0#0#6'TLabel'#6'lbDemo'#4'Left'#2#16#6'Height'#2
+  +#20#3'Top'#2#8#5'Width'#2'x'#7'Caption'#6#13'FailOver Demo'#10'Font.Color'#4
+  +#15'+'#253#0#11'Font.Height'#2#240#9'Font.Name'#6#6'Tahoma'#10'Font.Style'#11
+  +#6'fsBold'#0#11'ParentColor'#8#0#0#7'TButton'#5'OKBtn'#4'Left'#3'?'#1#6'Heig'
+  +'ht'#2#24#3'Top'#3'4'#1#5'Width'#2'K'#6'Cancel'#9#7'Caption'#6#2'OK'#7'Defau'
+  +'lt'#9#11'ModalResult'#2#1#8'TabOrder'#2#0#0#0#5'TMemo'#7'meAbout'#4'Left'#2
+  +#16#6'Height'#3#241#0#3'Top'#2'8'#5'Width'#3#129#1#5'Color'#7#9'clBtnFace'#13
+  +'Lines.Strings'#1#6'>This demo program shows how to use DisconnectedMode, Po'
+  +'oling, '#6'HCachedUpdates and LocalMasterDetail options. Usage of these opt'
+  +'ions and '#6'Gusage of the OnConectionLost event are recommended working in'
+  +' unstable '#6#20'and/or slow network.'#6#0#6'HThe ''Open'' button opens two'
+  +' data sets. They are linked by Master/Detail '#6'Nrelationship. You can pre'
+  +'connect to database before opening the datasets, but '#6':usage of disconne'
+  +'cted mode has no advantages in this case.'#6#0#6'PThe grid above displays t'
+  +'he master data set, the grid below displays the detail '#6'Ldata set. The '
+  +'''Kill session'' button terminates session on the server, which '#6'Ncauses'
+  +' connection break. This does not work for with all SQL servers and with '#6
+  +'Mall users. The memo at the bottom of the main form keeps track of connecti'
+  +'on '#6#9'messages.'#6#0#6'GSee the "Working in unstable and slow networks" '
+  +'topic in help for more '#6#21'detailed information.'#0#8'TabOrder'#2#1#0#0#0
+]);

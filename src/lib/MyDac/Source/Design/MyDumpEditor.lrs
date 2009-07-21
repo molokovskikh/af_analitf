@@ -1,0 +1,48 @@
+LazarusResources.Add('TMyDumpEditorForm','FORMDATA',[
+  'TPF0'#241#17'TMyDumpEditorForm'#16'MyDumpEditorForm'#4'Left'#3#154#0#6'Heigh'
+  +'t'#3#228#1#3'Top'#3#203#0#18'VertScrollBar.Page'#3#227#1#7'Caption'#6#10'My'
+  +'DumpForm'#12'ClientHeight'#3#228#1#21'Constraints.MinHeight'#3#212#1#20'Con'
+  +'straints.MinWidth'#3#255#1#0#241#6'TPanel'#8'BtnPanel'#3'Top'#3#187#1#8'Tab'
+  +'Order'#2#1#0#241#6'TImage'#8'imCorner'#0#0#241#7'TBitBtn'#4'btOk'#0#0#241#7
+  +'TBitBtn'#8'btCancel'#0#0#0#241#6'TPanel'#11'ClientPanel'#6'Height'#3#187#1
+  +#12'ClientHeight'#3#187#1#8'TabOrder'#2#0#0#241#5'TMemo'#5'meSQL'#6'Height'#3
+  +#185#1#0#0#241#6'TPanel'#9'LeftPanel'#6'Height'#3#185#1#12'ClientHeight'#3
+  +#185#1#0#241#9'TGroupBox'#15'gbBackupOptions'#6'Height'#3'I'#1#12'ClientHeig'
+  +'ht'#3'7'#1#0#241#6'TLabel'#12'lbTableNames'#3'Top'#2#4#0#0#242#2#1#6'TLabel'
+  +#6'Label1'#4'Left'#2#8#6'Height'#2#14#3'Top'#2'4'#5'Width'#2'Y'#7'Caption'#6
+  +#16'StoredProc Names'#11'ParentColor'#8#0#0#241#9'TComboBox'#12'cbTableNames'
+  +#3'Top'#2#24#8'TabOrder'#2#0#0#0#241#9'TCheckBox'#16'cbGenerateHeader'#3'Top'
+  +#2'j'#8'TabOrder'#2#2#0#0#9'TCheckBox'#10'cbDatabase'#4'Left'#2#8#6'Height'#2
+  +#19#3'Top'#3#138#0#5'Width'#2'p'#7'Caption'#6#15'Backup Database'#7'OnClick'
+  +#7#13'cbTablesClick'#8'TabOrder'#2#4#0#0#9'TCheckBox'#7'cbUsers'#4'Left'#2#8
+  +#6'Height'#2#19#3'Top'#3#154#0#5'Width'#2']'#7'Caption'#6#12'Backup Users'#7
+  +'OnClick'#7#13'cbTablesClick'#8'TabOrder'#2#5#0#0#9'TCheckBox'#8'cbTables'#4
+  +'Left'#2#8#6'Height'#2#19#3'Top'#3#186#0#5'Width'#2'b'#7'Caption'#6#13'Backu'
+  +'p Tables'#7'OnClick'#7#13'cbTablesClick'#8'TabOrder'#2#7#0#0#9'TCheckBox'#6
+  +'cbData'#4'Left'#2#8#6'Height'#2#19#3'Top'#3#202#0#5'Width'#2'Y'#7'Caption'#6
+  +#11'Backup Data'#7'OnClick'#7#13'cbTablesClick'#8'TabOrder'#2#8#0#0#9'TCheck'
+  +'Box'#9'cbAddDrop'#4'Left'#2#8#6'Height'#2#19#3'Top'#2'z'#5'Width'#3#133#0#7
+  +'Caption'#6#19'Add DROP statements'#7'OnClick'#7#13'cbTablesClick'#8'TabOrde'
+  +'r'#2#3#0#0#9'TCheckBox'#9'cbAddLock'#4'Left'#2#24#6'Height'#2#19#3'Top'#3
+  +#218#0#5'Width'#3#130#0#7'Caption'#6#19'Add LOCK statements'#7'OnClick'#7#13
+  +'cbTablesClick'#8'TabOrder'#2#9#0#0#9'TCheckBox'#14'cbUseExtSyntax'#4'Left'#2
+  +#24#6'Height'#2#19#3'Top'#3#250#0#5'Width'#3#155#0#7'Caption'#6#26'Use Exten'
+  +'ded Insert syntax'#7'OnClick'#7#13'cbTablesClick'#8'TabOrder'#2#10#0#0#9'TC'
+  +'heckBox'#13'cbDisableKeys'#4'Left'#2#24#6'Height'#2#19#3'Top'#3#10#1#5'Widt'
+  +'h'#2'|'#7'Caption'#6#16'Use DISABLE KEYS'#7'OnClick'#7#13'cbTablesClick'#8
+  +'TabOrder'#2#11#0#0#9'TCheckBox'#12'cbDelayedIns'#4'Left'#2#24#6'Height'#2#19
+  +#3'Top'#3#26#1#5'Width'#2''#7'Caption'#6#18'Use DELAYED Insert'#7'OnClick'#7
+  +#13'cbTablesClick'#8'TabOrder'#2#12#0#0#9'TCheckBox'#13'cbStoredProcs'#4'Lef'
+  +'t'#2#8#6'Height'#2#19#3'Top'#3#170#0#5'Width'#2'|'#7'Caption'#6#18'Backup S'
+  +'toredProcs'#7'OnClick'#7#13'cbTablesClick'#8'TabOrder'#2#6#0#0#9'TComboBox'
+  +#17'cbStoredProcNames'#4'Left'#2#8#6'Height'#2#21#3'Top'#2'G'#5'Width'#3#193
+  +#0#16'AutoCompleteText'#11#22'cbactEndOfLineComplete'#20'cbactSearchAscendin'
+  +'g'#0#13'DropDownCount'#2#16#10'ItemHeight'#2#13#8'OnChange'#7#23'cbStoredPr'
+  +'ocNamesChange'#10'OnDropDown'#7#20'cbTableNamesDropDown'#8'TabOrder'#2#1#0#0
+  +#9'TCheckBox'#16'cbCompleteInsert'#4'Left'#2#24#6'Height'#2#19#3'Top'#3#234#0
+  +#5'Width'#2'b'#7'Caption'#6#15'Complete insert'#7'OnClick'#7#13'cbTablesClic'
+  +'k'#8'TabOrder'#2#13#0#0#0#241#7'TBitBtn'#8'btBackup'#3'Top'#3'X'#1#0#0#241#7
+  +'TBitBtn'#9'btRestore'#3'Top'#3'X'#1#0#0#241#7'TBitBtn'#8'btImport'#3'Top'#3
+  +'w'#1#0#0#241#7'TBitBtn'#8'btExport'#3'Top'#3'w'#1#0#0#0#0#241#11'TOpenDialo'
+  +'g'#10'OpenDialog'#0#0#241#11'TSaveDialog'#10'SaveDialog'#0#0#0
+]);

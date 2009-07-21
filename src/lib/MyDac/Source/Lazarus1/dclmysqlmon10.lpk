@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <Package Version="3">
+    <PathDelim Value="\"/>
+    <Name Value="dclmysqlmon10"/>
+    <CompilerOptions>
+      <Version Value="5"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <IncludeFiles Value="..\;..\Design\;..\..\..\Common\Source\"/>
+        <OtherUnitFiles Value="..\;..\Design\"/>
+        <UnitOutputDirectory Value="lib"/>
+        <ObjectPath Value="..\"/>
+      </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <IncludeAssertionCode Value="True"/>
+          <DelphiCompat Value="True"/>
+        </SyntaxOptions>
+      </Parsing>
+      <CodeGeneration>
+        <Checks>
+          <IOChecks Value="True"/>
+        </Checks>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
+      </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <UseLineInfoUnit Value="False"/>
+        </Debugging>
+      </Linking>
+      <Other>
+        <CompilerPath Value="$(CompPath)"/>
+      </Other>
+    </CompilerOptions>
+    <Description Value="Data Access Components for MySQL - TMySQLMonitor"/>
+    <Version Major="5" Minor="70" Release="0" Build="44"/>
+    <Files Count="1">
+      <Item1>
+        <Filename Value="..\Design\MySQLMonReg.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="MySQLMonReg"/>
+      </Item1>
+    </Files>
+    <Type Value="DesignTime"/>
+    <RequiredPkgs Count="7">
+      <Item1>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="IDEIntf"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
+      <Item4>
+        <PackageName Value="dcldac10"/>
+      </Item4>
+      <Item5>
+        <PackageName Value="mydacvcl10"/>
+      </Item5>
+      <Item6>
+        <PackageName Value="mydac10"/>
+      </Item6>
+      <Item7>
+        <PackageName Value="mysqlmon10"/>
+      </Item7>
+    </RequiredPkgs>
+    <UsageOptions>
+      <ObjectPath Value="..\"/>
+      <UnitPath Value="$(PkgOutDir)\"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>

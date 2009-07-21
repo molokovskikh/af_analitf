@@ -1,0 +1,705 @@
+<!doctype html public "-//w3c//dtd html 4.0 Transitional//en">
+<html>
+<head>
+  <title>Frequently Asked Questions</title>
+
+<style>
+body {
+  overflow: hidden; 
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  background: #ffffff; 
+  color: #000000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 70%;
+  width: 100%;
+  }
+p
+  {
+  margin: .5em 0em .5em 0em;
+  }
+ol, ul
+  {
+  margin-top: .5em; 
+  }
+li
+  {
+  margin-bottom: .5em;
+  }
+ul p, ol p, dl p
+  {
+  margin-left: 0em;
+  }
+blockquote.dxOverload
+  {
+  margin: .5em 1.5em .5em 1.5em;
+  }
+h1, h2, h3, h4
+  {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  margin-bottom: .4em; 
+  margin-top: 1em;
+  font-weight: bold;
+  }
+h1
+  {
+  font-size: 120%;
+  margin-top: 0em;
+  }
+h2
+  {
+  font-size: 130%;
+  }
+h3
+  {
+  font-size: 115%;
+  }
+h4
+  {
+  font-size: 100%;
+  }
+.dxH1, .dxH2, .dxH3, .dxH4
+  {
+  margin-left: -18px; 
+  }
+A
+  {
+  color: #0000FF;
+  }
+A:link
+  {
+  color: #0000FF;
+  }
+A:active
+  {
+  color: #000080;
+  }
+A:visited
+  {
+  color: #800080;
+  }
+A:hover
+  {
+  color: #FF0000;
+  }
+pre
+  {
+  font-family: Courier New;
+  font-size: 9pt;
+  color: #000060;
+  margin-top: 0px;
+  }
+code, p.example, p.sourcecode, table.sourcecode, tr.sourcecode, td.sourcecode
+  {
+  font-family: Courier New;
+  font-size: 9pt;
+  color: #000060;
+  }
+div#pagetop {
+  margin: 0px;
+  padding: 0px;
+  background-color: #99ccff;   
+  height: 44;
+  width: 100%;
+  border-bottom: 1px solid #999999;
+  }
+div#pagebody {
+  margin: 0px 0px 0px 0px;
+  padding: 5px 10px 0px 22px;
+  height: 90%;
+  width: 100%;
+  overflow: auto;
+  background-color: #FFFFFF;
+  vertical-align: top;
+  }
+table#BannerTable
+  {
+  width: 100%;
+  height: 100%;
+  border-collapse:collapse;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  }
+table#BannerTable td
+  {
+  padding-left: 8px;
+  padding-right: 8px;
+  }
+tr#BannerTopRow
+  {
+  font-style: italic;
+  font-size: 70%;
+  }
+tr#Banner2ndRow
+  {
+  font-weight: bold;
+  font-size: 80%;
+  }
+
+
+table.filtereditemlisttable, table.xmldoctable
+  {
+  width: 95%; 
+  margin-top: .6em;
+  margin-bottom: .3em;
+  border-width: 1px 1px 0px 0px;
+  border-style: solid;
+  border-color: #999999;
+  background-color: #999999; 
+  font-size: 100%;
+  border-collapse:collapse;
+  }
+table.filtereditemlisttable th, table.filtereditemlisttable td, table.xmldoctable th, table.xmldoctable td
+  { 
+/*  border-style: solid; */
+  border-width: 0px 0px 1px 1px;
+  border-style: solid;
+  border-color: #999999;
+  padding: 4px 6px;
+  text-align: left;
+  vertical-align: top;
+  }
+table.filtereditemlisttable th, table.xmldoctable th
+  { 
+  background: #cccccc; 
+  vertical-align: bottom;
+  }
+table.filtereditemlisttable td, table.xmldoctable td
+  {
+  background-color: #ffffff;
+  vertical-align: top;
+  }
+
+table.desctable 
+    {
+    margin-top: .6em;
+    margin-bottom: .3em;
+    border-width: 1px 1px 0px 0px;
+    border-style: solid;
+    border-color: #999999;
+    background-color: #999999;
+    font-size: 100%;
+    }
+table.desctable th, table.desctable td 
+    {
+    border-style: solid;
+    border-width: 0px 0px 1px 1px;
+    border-style: solid;
+    border-color: #999999;
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: top;
+    }
+table.desctable th 
+    {
+    background: #cccccc;
+    vertical-align: bottom;
+    }
+table.desctable td 
+    {
+    background: #ffffff;
+    vertical-align: top;
+    }
+span.Q 
+  {
+  font-weight: bold;
+  color: #000088;
+  }
+span.A 
+  {
+  color: #000000;
+  }
+span#Category
+  {
+  font-weight: 600;
+  font-size: 110%;
+  }
+</style>
+
+<script>
+
+var Engine;
+var enOpera = 'Opera';
+var enIE = 'IE';
+var enGecko = 'Gecko';
+
+function TestEngine()
+{
+  if (document.all) {
+    if (window.opera) {
+      Engine = enOpera;
+    }
+    else {
+      Engine = enIE;
+    }
+  }
+  else {
+    Engine = enGecko;
+  }
+}
+
+
+function RunningInCHM()
+{
+  var wstr = document.location.href.substr(0,14);
+  return (wstr == 'mk:@MSITStore:');
+}
+
+
+function RunningInHxS()
+{
+  var wstr = document.location.href.substr(0,10);
+  return (wstr == 'ms-help://');
+}
+
+
+function RunningInHost()
+{
+  return RunningInCHM() || RunningInHxS();
+}
+
+
+function AdjustContentSize()
+{
+  var cDiv = document.getElementById("pagebody");
+  if ((Engine == enGecko)||(Engine == enOpera))//amend padding
+    {
+      var w = document.body.clientWidth;
+      cDiv.style.width = w - 32;
+    }
+  var h = document.body.clientHeight;
+  var diff = 44;
+  if ((Engine == enGecko)||(Engine == enOpera)) diff = diff + 6;
+  cDiv.style.height = h - diff;
+}
+
+
+function Startup()
+{
+  //add startup code here
+}
+</script>
+
+</head>
+
+
+<body onresize="AdjustContentSize()" onload="Startup()">
+
+<div id="pagetop">
+  <table id="BannerTable">
+    <tr id="BannerTopRow">
+      <td>Data Access Components for MySQL</td>
+      <td align="right">mydac@devart.com</td>
+    </tr>
+    <tr id="Banner2ndRow">
+      <td>Frequently Asked Questions</td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+</div>
+<div id="pagebody" valign="bottom">
+
+<!-- begin content -->
+
+<p>
+This page contains a list of Frequently Asked Questions for Data Access Components for MySQL. 
+</p>
+<p>
+If you have encounter a question with using MyDAC, please browse through this list first. If this page does not answer your question, refer to the Getting Support topic in MyDAC help.
+</p>
+
+<div id="InsertHere">
+</div>
+<p>&nbsp;</p>
+
+<span id="Category">Installation and Deployment</span>
+<ol>
+  <li>
+    <span id="Qx" class="Q">I am having a problem installing MyDAC or compiling MyDAC-based projects...</span><br>
+    <span class="A">
+  <p>
+  You may be having a compatibility issue that shows up in one or more of the following forms:<p>
+    <ul>
+      <li>Get a "Setup has detected already installed DAC packages which are incompatible with current version" message during MyDAC installation.
+      <li>Get a "Procedure entry point ... not found in ... " message when starting IDE.
+      <li>Get a "Unit ... was compiled with a different version of ..." message on compilation.
+  </ul> 
+  <p>
+  You can have such problems if you installed incompatible MyDAC, SDAC, ODAC or IBDAC versions. All these products use common base packages. The easiest way to avoid the problem is to uninstall all installed DAC products and then download from our site and install the last builds.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">What software should be installed on a client computer  for MyDAC-based applications to work?</span><br>
+    <span class="A">
+    <p>Usually, you do not need any additional files. The only exceptions to this rule are listed below:</p><p>
+    <ul>
+      <li>If you are using MySQL Embedded server (if you are using TMyConnection with TMyConnection.Options.Embedded = True or TMyEmbConnection), you need the server itself (<i>libmysqld.dll</i>) and the service files for it, for example <i>errmsg.sys</i>.</li>
+      <li>If you are connecting in Client mode, (TMyConnection.Options.Direct = False), you need <i>libmysql.dll</i>.</li>
+      <li>If you are using SSL (TMyConnection.Options.Protocol = mpSSL), you need  the OpenSSL library files - <i>ssleay32.dll</i> and <i>libeay32.dll</i>.</li>
+    </ul></p>
+  </span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">When I try to install MyDAC packages under Kylix, I get an "Invalid package" error.</span><br>
+    <span class="A"><p>Probably you are using Kylix Open Edition. MyDAC does not support this version of Kylix.</p></span>
+  </li>
+
+
+  <li>
+    <span id="Qx" class="Q">When I try to connect to the server, I get an error "MySQL client library couldn't be loaded."</span><br>
+    <span class="A"><p>You are using TMyConnection.Options.Direct := False mode and the client library is not 
+	available for your application. <br>
+    <u>Windows:</u> You should copy client file libmysql.dll to a folder available to the executable unit of your program. 
+	For example, to the folder containing the executable or to the Windows system folder. For more details, see the 
+	description of LoadLibrary and the PATH environment variable. <br>
+    <u>Linux:</u> You should copy the client file libmysqlclient.so.X to the folder available to the executable unit of 
+	your program. For more details, see the description of the dlopen function and the LD_LIBRARY_PATH environment 
+	variable.</p></span>
+
+  <li>
+    <span id="Qx" class="Q">Core Lab renaming issue that conserns Delphi for .Net users</span><br>
+    <span class="A">
+  <p>
+    <ul>
+      <li>Please remove all CoreLab assamblies references from your project and add corresponding Devart ones.
+      <li>Please change all unit references in uses clauses from CoreLab to Devart (you can use standard renaming tool) 
+  </ul> 
+  </li>
+</ol>
+
+<span id="Category">Licensing and Subscriptions</span>
+<ol>
+<li>
+  <span id="Qx" class="Q">Am I entitled to distribute applications written with MyDAC?</span><br>
+  <span class="A"><p>If you have purchased a full version of MyDAC, you are entitled to distribute pre-compiled programs created with its use. You are not entitled to propagate any components inherited from MyDAC or using MyDAC source code. For more information see the <i>License.rtf</i> file in your MyDAC installation directory.</p></span>
+</li>
+
+<li>
+  <span id="Qx" class="Q">Can I create components using MyDAC?</span><br>
+  <span class="A">
+    <p>You can create your own components that are inherited from MyDAC or that use the MyDAC source code. You are entitled to sell and distribute compiled application executables that use such components, but not their source code and not the components themselves.</p>
+  </span>
+</li>
+
+<li>
+  <span id="Qx" class="Q">What licensing changes can I expect with MyDAC 5.00?</span><br>
+  <span class="A">
+    <p>The basic MyDAC license agreement will remain the same. With MyDAC 5.00, the <a href="http://www.devart.com/mydac/#editionmatrix">MyDAC Edition Matrix</a> will be reorganized and a new <a href="#subscriptionprogram">MyDAC Subscription Program</a> will be introduced.</p>
+    </span>
+</li>
+<li>
+  <span id="Qx" class="Q">What do the MyDAC 5.00 Edition Levels correspond to?</span><br>
+  <span class="A">
+    <p>MyDAC 5.00 will come in six editions: Trial, Standard, Professional, Professional with Sources, Developer, and Developer with Sources.</p>
+    <p>When you upgrade to the new version, your edition level will be automatically updated using the following Edition Correspondence Table.</p><br>
+    <center>
+    <b>Edition Correspondence Table for Upgrading to MyDAC 5.00</b>
+    <table width = "550" class="desctable" cellspacing="0" >
+    <tr><th width="50%">Old Edition Level</th><th>New Edition Level</th></tr>
+    <tr><td><i>- No Correspondence -</i></td><td>MyDAC Standard Edition</td></tr>
+    <tr><td>MyDAC Standard Edition</td><td>MyDAC Professional Edition</td></tr>
+    <tr><td>MyDAC Professional Edition</td><td>MyDAC Professional Edition with Sources</td></tr>
+    <tr><td><i>- No Correspondence -</i></td><td>MyDAC Developer Edition</td></tr>
+    <tr><td><i>- No Correspondence -</i></td><td>MyDAC Developer Edition with Sources</td></tr>
+    <tr><td>MyDAC Trial Edition</td><td> MyDAC Trial Edition</td></tr>
+    </table></center><br>
+    <p>
+    The feature list for each edition can be found in the MyDAC documentation and on the <a href="http://www.devart.com/mydac/#editionmatrix">MyDAC website</a>.</p>
+  </span>
+</li>
+
+<li>
+  <span id="Qx" class="Q">I have a registered version of MyDAC. Will I need to pay to upgrade to future versions?</span><br>
+  <span class="A">
+    <p>After MyDAC 5.00, all upgrades to future versions are free to users with an active MyDAC Subscription.</p>
+    <p>Users that have a registration for versions of MyDAC prior to MyDAC 5.00 will have to first upgrade to MyDAC 5.00 to jump in on the Subscription program.</p>
+  </span>
+</li>
+
+<li>
+  <span id="Qx" class="Q">What are the benefits of the MyDAC Subscription Program?</span><br>
+  <span class="A">
+  <p><a href="#subscriptionprogram"></a>The <b>MyDAC Subscription Program</b> is an annual maintenance and support service
+          for MyDAC users.</p>
+  <p>Users with a valid MyDAC Subscription get the following benefits:</p>
+     <ul>
+        <li>Access to new versions of MyDAC when they are released
+        <li>Access to all MyDAC updates and bug fixes
+        <li>Product support through the MyDAC Priority Support program
+        <li>Notification of new product versions
+     </ul>
+  <p><b>Priority Support</b> is an advanced product support program which offers you expedited individual assistance with MyDAC-related questions from the MyDAC developers themselves. Priority Support is carried out over email and has a two business day response policy.</p>
+  
+  <p>The MyDAC Subscription Program is available for registered users of MyDAC 5.00 and higher.</p>
+  </span>
+</li>
+
+
+
+<li>
+  <span id="Qx" class="Q">Can I use my version of MyDAC after my Subscription expires?</span><br>
+  <span class="A">
+    <p>Yes, you can.  MyDAC version licenses are perpetual.</p>
+  </span>
+</li>
+
+
+
+<li>
+  <span id="Qx" class="Q">I want a MyDAC Subscription!  How can I get one?</span><br>
+  <span class="A">
+    <p>An annual MyDAC Subscription is included when ordering or upgrading to any registered (non-Trial) edition of MyDAC 5.00 or higher.</p>
+    <p>You can renew your MyDAC Subscription on the <a href="http://www.devart.com/mydac/ordering.html">MyDAC Ordering Page</a>.  For more information, please contact <a href="mailto:sales@devart.com">sales@devart.com</a>.</p>
+  </span>
+</li>
+
+<li>
+  <span id="Qx" class="Q">Does this mean that if I upgrade to MyDAC 5 from MyDAC 4, I'll get an annual MyDAC Subscription for free?</span><br>
+  <span class="A">
+  Yes.
+  </span>
+</li>
+
+<li>
+  <span id="Qx" class="Q">How do I upgrade to MyDAC 5.00?</span><br>
+  <span class="A">
+    <p>To upgrade to MyDAC 5.00, you can get a Version Update from the <a href="http://www.devart.com/mydac/ordering.html">MyDAC Ordering Page</a>.  For more information, please contact <a href="mailto:sales@devart.com">sales@devart.com</a>.</p>
+  </span>
+</li>
+
+</ol>
+
+<span id="Category">Performance</span>
+<ol>
+  <li>
+    <span id="Qx" class="Q">How productive is MyDAC?</span><br>
+    <span class="A"><p>MyDAC uses a low-level protocol to access the database server. This allows MyDAC to achieve high performance. From time to time we compare MyDAC with other products, and MyDAC always takes first place.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">Why does the Locate function work so slowly the first time I use it?</span><br>
+    <span class="A"><p>Locate is performed on the client. So if you had set FetchAll to False when opening your dataset, cached only some of the rows on the client, and then invoked Locate, MyDAC will have to fetch all the remaining rows from the server before performing the operation. On subsequent calls, Locate should work much faster.</p>
+    <p>
+  If the Locate method keeps working slowly on subsequent calls or you are working with FetchAll=True, try the following. Perform local sorting by a field that is used in the Locate method. Just assign corresponding field name to the IndexFieldNames property.</p></span>
+  </li>
+</ol>
+  
+<span id="Category">How To</span>
+<ol>
+
+  <li>
+    <span id="Qx" class="Q">How can I enable syntax highlighting in MyDAC component editors at design time?</span><br>
+    <span class="A"><p>Download and install <A HREF="http://devart.com/mysqldevtools/">MySQL Developer Tools</A>. In addition to syntax highlighting, MySQL Developer Tools provides a lot of <A HREF="http://devart.com/mysqldevtools/features.html">additional features</A>.<br>
+    Alternatively, you can download and install the freeware <A HREF="http://synedit.sourceforge.net/">SynEdit component set</A>.</p>
+    </span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">How can I quickly convert a project from BDE to MyDAC?</span><br>
+    <span class="A"><p>To quickly migrate your project from BDE you can use the BDE Migration Wizard. To start it, open your project and choose BDE Migration Wizard from the MySQL menu of your IDE.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">How can I determine which version of MyDAC I am using?</span><br>
+    <span class="A"><p>You can determine your MyDAC version number in several ways:
+      <ul>
+        <li>During installation of MyDAC, consult the MyDAC Installer screen.
+        <li>After installation, see the <i>history.html</i> file in your MyDAC installation directiory.
+        <li>At design-time, select MySQL | About MyDAC from the main menu of your IDE.
+        <li>At run-time, check the value of the MydacVersion and DACVersion constants.
+      </ul></p>
+    </span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">How can I stop the cursor from changing to an hour glass during query execution?</span><br>
+    <span class="A"><p>Just set the DBAccess.ChangeCursor variable to False anywhere in your program.  The cursor will stop changing after this command is executed.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">How can I execute a query saved in the SQLInsert, SQLUpdate, SQLDelete, or SQLRefresh properties of a MyDAC dataset?</span><br>
+    <span class="A"><p>The values of these properties are templates for query statements, and they cannot be manually executed. Usually there is no need to fill these properties because the text of the query is generated automatically.</p>
+    
+    <p> In special cases, you can set these properties to perform more complicated processing during a query.  These properties are automatically processed by MyDAC during the execution of the Post, Delete, or RefreshRecord methods, and are used to construct the query to the server.  Their values can contain parameters with names of fields in the underlying data source, which will be later replaced by appropriate data values. </p> 
+
+    <p>For example, you can use the SQLInsert template to insert a row into a query instance as follows.</p>
+    <ol>
+    <li>Fill the SQLInsert property with the parameterized query template you want to use.
+    <li>Call Insert.
+    <li>Initialize field values of the row to insert.
+    <li>Call Post.
+    </ol>
+
+    <p>The value of the SQLInsert property will then be used by MyDAC to perform the last step.</p>  
+
+    <p>Setting these properties is optional and allows you to automatically execute additional SQL statements, add calls to stored procedures and functions, check input parameters, and/or store comments during query execution. If these properties are not set, the MyDAC dataset object will generate the query itself using the appropriate insert, update, delete, or refresh record syntax.</p>
+     </span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">How can I get a list of the databases on the server?</span><br>
+    <span class="A"><p>Use the TMyConnection.GetDatabaseNames method.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">How can I get a list of the tables list in a database?</span><br>
+    <span class="A">Use the TMyConnection.GetTableNames method.</span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">Some questions about the visual part of MyDAC</span><br>
+    <span class="A"><p>
+    The following situations usually arise from the same problem:
+    <ul>
+      <li>I set the Debug property to True but nothing happens!
+      <li>While executing a query, the screen cursor does not change to an hour-glass.
+      <li>Even if I have LoginPromp set to True, the connect dialog does not appear.
+  </ul>
+  To fix this, you should add the MyDacVcl (for Windows) or  MyDacClx (for Linux) unit to the uses clause of your project.</p></span>
+  </li>
+</ol>
+ 
+<span id="Category">General Questions</span><br>
+<ol>
+  <li>
+    <span id="Qx" class="Q">I would like to develop an application that works with MySQL Server. Should I use MyDAC or DbxMda?</span><br>
+    <span class="A"><p><a href="http://www.devart.com/dbx/">DbxMda</a> is our dbExpress driver for MySQL.  dbExpress technology serves for providing a more or less uniform way to access different servers (SQL Server, MySQL, Oracle and so on). It is based on drivers that include server-specific features. Like any universal tool, in many specialized cases dbExpress providers lose some functionality. For example, the dbExpress design-time is quite poor and cannot be expanded.</p>
+    <p>MyDAC is a specialized set of components for MySQL, which has advanced server-specific design-time and a component interface similar to that of BDE.</p>
+    <p>We tried to include maximal support of MySQL-specific features in both DbxMda and MyDAC. However, the nature of dbExpress technology has some insurmountable restrictions. For example, Unicode fields cannot be passed from a driver to dbExpress.</p>
+    <p>MyDAC and DbxMda use the same kernel and thus have similar performance. In some cases dbExpress is slower because data undergoes additional conversion to correspond to dbExpress standards.</p>
+    <p>To summarise, if it is important for you to be able to quickly adapt your application to a database server other than MySQL, it is probably better to use DbxMda. In other cases, especially when migrating from BDE or ADO, you should use MyDAC. </span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">Are the MyDAC connection components thread-safe?</span><br>
+    <span class="A"><p>Yes, MyDAC is thread-safe but there is a restriction. The same TMyConnection object cannot be used in several threads. So if you have a multithreaded application, you should have a TMyConnection object for each thread that uses MyDAC.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">Behaviour of my application has changed when I upgraded MyDAC. How can I restore the old behaviour with the new version?</span><br>
+    <span class="A"><p>We always try to keep MyDAC compatible with previous versions, but sometimes we have to change behaviour of MyDAC in order to enhance its functionality, or avoid bugs. If either of changes is undesirable for your application, and you want to save the old behaviour, please refer to the "Compatibility with previous versions" topic in MyDAC help. This topic describes such changes, and how to revert to the old MyDAC behaviour.</p></span>
+  </li>
+
+
+  <li>
+    <span id="Qx" class="Q">When editing a DataSet, I get an exception with the message 'Update failed. Found %d records.' or 'Refresh failed. Found %d records.'
+   </span><br>
+    <span class="A"><p>This error occurs when the database server is unable to determine which record to modify or delete. In other words, there are either more than one record or no records that suit the UPDATE criteria. Such situation can happen when you omit the unique field in a SELECT statement (TCustomDADataSet.SQL) or when another user modifies the table simultaneously. This exception can be suppressed. Refer to TCustomMyDataSet.Options.StrictUpdate topic in MyDAC help for more information.</p>
+  </span>
+  </li>
+
+ <li>
+    <span id="Qx" class="Q">I have problems using BIGINT and INT UNSIGNED fields as key fields in master/detail relationships, and accessing values of such fields through the Field.Value property.</span><br>
+    <span class="A"><p>Fields of this type are represented in Delphi by TLargeIntField objects. In some versions of Delphi, you cannot access these fields through the Value property (for more information see the SetVarValue protected method of TLargeintField in the DB unit). To avoid this problem, you can change the field type to INT, which is usually sufficient for key fields. Alternatively, you can avoid using Value. <br/>
+    For master/detail relationships the problem can be avoided only by changing type of the key field to INT, as Delphi's master/detail mechanism works through Field.Value.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">On accessing server I get a 'MySQL server has gone away' or 'Lost connection to MySQL server during query' error.</span><br>
+    <span class="A"><p>First of all, you should find out what causes the problem. The list of most frequent reasons for this error to occur is below.</p>
+      <ul>
+      <li> Client side: The value of TMyConnection.ConnectionTimeout or TCustomMyDataSet.CommandTimeout is too small. To check this hypothesis, try setting TCustomMyDataSet.CommandTimeout to 0 (infinitive) and TMyConnection.ConnectionTimeout to 300.
+      <li> Server side: MySQL server has closed the connection. You can read a detailed description of all possible reasons for this to happen in the <A HREF="http://dev.mysql.com/doc/mysql/en/gone-away.html">MySQL Reference Manual</A>.  Almost always it is because the value of wait_timeout variable is too small. Try increasing it. If this solution is not possible (for example, because you don't have enough rights), you should invoke MyConnection.Ping with an interval less than wait_timeout. Use TTimer in TMyConnection thread to accomplish this task.
+      <li> Unstable connection (GPRS etc). In case of unstable connection you can adapt MyDAC to work in such conditions by changing some of its settings. For more information please see the "Working in Unstable Networks" article in the MyDAC help documentation.
+      </ul>
+      <p>If the connection is lost, MyDAC tries to reconnect to server. However, your last command will probably not be executed, and you should repeat it again. MyDAC does not try to reconnect if a transaction has started or if at least one of statements is prepared.</p>
+    </span>
+
+  <li>
+    <span id="Qx" class="Q">Some problems using TCustomDADataSet.FetchAll=False mode</span><br>
+    <span class="A"><p>The following problems may appear when using FetchAll=False mode:</p>
+    <ul>
+        <li>I have problems working with temporary tables. 
+        <li>I have problems working with transactions. 
+        <li>Sometimes my application hangs on applying changes to the database.
+    </ul>
+      <p>Usage of FetchAll=False mode has many advantages; however, it also has some restrictions since it requires an additional connection to server for data fetching to be created. The additional connection is created to prevent the main connection from blocking.</p>
+
+      <p>These problems can be avoided by setting the FetchAll property. Please see description of the FetchAll propery and the CreateConnection option in MyDAC help for more information.</p>
+
+      <p>Another alternative that prevents the application from hanging is to switch to the InnoDB storage engine from MyISAM (FetchAll stays False). An application may hang because MyISAM tables can get locked in a read/write collision. If you try to update a table that is not fetched out, MySQL blocks the thread and waits untill the table is completely fetched. For details please refer to the MySQL Reference Manual, the <a href="http://dev.mysql.com/doc/mysql/en/locking-issues.html" target="_blank">Locking Issues</a> section.</p></span>
+  </li>
+
+  <li>
+    <span id="Qx" class="Q">I get an error when opening a Stored Procedure that returns a result set.</span><br>
+    <span class="A">Probably this is a bug of the MySQL Server protocol with prepared stored procedures that return record sets. It occurs in the following cases:
+    <ul>
+      <li>After a call to the Prepare method of MyStoredProc, if the latter had already prepared and opened. The following piece of code demonstrates the problem:
+        <pre class="code">    
+          MyStoredProc.Prepare;
+          MyStoredProc.Open;
+          MyStoredProc.UnPrepare;
+          MyStoredProc.Prepare;
+    </pre>
+    </li>
+      <li>After a call to the MyStoredProc.Execute method, if the stored procedure returns more than one record set.</li>
+    </span>
+  </li>
+</ol>
+
+<!-- end content -->
+
+<p>&nbsp;</p><p>&nbsp;</p><hr size=1>
+<p>&copy; 2002-2009 Devart. All rights reserved.</p>
+
+</div>
+
+
+<script>
+function CreateAnchor(aName)
+{
+  var anc;
+  if (Engine == enIE)
+  {
+    anc = document.createElement('<a name="' + aName + '"></a>');
+    anc.href = '';
+  }//IE
+  else
+  {
+    anc = document.createElement("a");
+    anc.href = '';
+    anc.name = aName;
+  }//Mozilla, Opera
+  return anc;
+}
+
+function BuildTOC()
+{
+  var str = "";
+  var coll = document.getElementsByTagName('span');
+  var i;
+  var theSpan;
+  var InsertHere = document.getElementById("InsertHere");
+  var firstBR = document.createElement("br");
+  InsertHere.insertBefore(firstBR, InsertHere.lastChild);
+  for (i=0;i<coll.length;++i)
+  {
+    theSpan = coll[i];
+    if (theSpan.id == "Qx")
+    {
+      var anc = CreateAnchor('q' + i);
+      var theHref = document.createElement("a");
+      theHref.href = "#q" + i;
+      theHref.innerHTML = theSpan.innerHTML;
+      InsertHere.insertBefore(theHref, InsertHere.lastChild);
+      var theBR = document.createElement("br");
+      InsertHere.insertBefore(theBR, InsertHere.lastChild);
+      theSpan.insertBefore(anc, theSpan.firstChild);
+    } 
+    if (theSpan.id == "Category")
+    {
+      var theCaption = document.createElement("h4");
+      theCaption.innerHTML = theSpan.innerHTML;
+      theCaption.className = "dxH4";
+      InsertHere.insertBefore(theCaption, InsertHere.lastChild);
+    } 
+  }
+  InsertHere.removeChild(firstBR);
+}
+
+TestEngine();
+BuildTOC();
+AdjustContentSize();
+</script>
+</body>
+</html>

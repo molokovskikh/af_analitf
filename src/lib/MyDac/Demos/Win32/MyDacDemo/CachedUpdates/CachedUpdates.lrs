@@ -1,0 +1,125 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TCachedUpdatesFrame','FORMDATA',[
+  'TPF0'#241#19'TCachedUpdatesFrame'#18'CachedUpdatesFrame'#6'Height'#3#21#1#5
+  +'Width'#3#178#2#5'Align'#7#8'alClient'#12'ClientHeight'#3#21#1#11'ClientWidt'
+  +'h'#3#178#2#8'TabOrder'#2#0#0#242#2#0#7'TDBGrid'#6'DBGrid'#6'Height'#3#175#0
+  +#3'Top'#2'f'#5'Width'#3#178#2#5'Align'#7#8'alClient'#10'DataSource'#7#10'Dat'
+  +'aSource'#10'FixedColor'#7#9'clBtnFace'#13'FixedHotColor'#7#9'cl3DLight'#7'O'
+  +'ptions'#11#9'dgEditing'#8'dgTitles'#11'dgIndicator'#14'dgColumnResize'#12'd'
+  +'gColumnMove'#10'dgColLines'#10'dgRowLines'#6'dgTabs'#21'dgAlwaysShowSelecti'
+  +'on'#15'dgConfirmDelete'#14'dgCancelOnExit'#0#12'OptionsExtra'#11#14'dgeAuto'
+  +'Columns'#17'dgeCheckboxColumn'#0#11'ParentColor'#8#8'TabOrder'#2#0#16'OnDra'
+  +'wColumnCell'#7#20'DBGridDrawColumnCell'#0#0#242#2#1#6'TPanel'#6'Panel8'#6'H'
+  +'eight'#2'f'#5'Width'#3#178#2#5'Align'#7#5'alTop'#10'BevelOuter'#7#6'bvNone'
+  +#12'ClientHeight'#2'f'#11'ClientWidth'#3#178#2#8'TabOrder'#2#1#0#6'TPanel'#7
+  +'ToolBar'#4'Left'#2#1#6'Height'#2'd'#3'Top'#2#1#5'Width'#3#155#2#10'BevelOut'
+  +'er'#7#6'bvNone'#12'ClientHeight'#2'd'#11'ClientWidth'#3#155#2#5'Color'#4#15
+  +'+'#253#0#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#11'ParentCo'
+  +'lor'#8#10'ParentFont'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#6'btOpen'#4'Left'
+  +#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#4'Open'#5'Color'#7
+  +#9'clBtnFace'#4'Flat'#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#11'b'
+  +'tOpenClick'#0#0#12'TSpeedButton'#7'btClose'#4'Left'#2'T'#6'Height'#2#22#3'T'
+  +'op'#2#1#5'Width'#2'R'#7'Caption'#6#5'Close'#5'Color'#7#9'clBtnFace'#4'Flat'
+  +#9#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#12'btCloseClick'#0#0#12'T'
+  +'SpeedButton'#13'RefreshRecord'#4'Left'#3#152#1#6'Height'#2#22#3'Top'#2#1#5
+  +'Width'#2'R'#7'Caption'#6#13'RefreshRecord'#5'Color'#7#9'clBtnFace'#4'Flat'#9
+  +#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#18'RefreshRecordClick'#0#0#6
+  +'TPanel'#6'Panel1'#4'Left'#2#1#6'Height'#2'4'#3'Top'#2'/'#5'Width'#3'p'#1#10
+  +'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'4'#11'ClientWidth'#3'p'#1#11'Par'
+  +'entColor'#8#8'TabOrder'#2#0#0#6'TLabel'#6'Label2'#4'Left'#2#5#6'Height'#2#13
+  +#3'Top'#2#5#5'Width'#2'0'#7'Caption'#6#7'Updates'#10'Font.Color'#7#8'clMaroo'
+  +'n'#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11
+  +#6'fsBold'#0#11'ParentColor'#8#10'ParentFont'#8#0#0#6'TPanel'#6'Panel3'#4'Le'
+  +'ft'#2#20#6'Height'#2#24#3'Top'#2#23#5'Width'#3'M'#1#10'BevelOuter'#7#6'bvNo'
+  +'ne'#12'ClientHeight'#2#24#11'ClientWidth'#3'M'#1#5'Color'#4#15'+'#253#0#11
+  +'ParentColor'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#7'btApply'#4'Left'#2#1#6
+  +'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#5'Apply'#5'Color'#7#9'cl'
+  +'BtnFace'#4'Flat'#9#10'Font.Color'#7#8'clMaroon'#11'Font.Height'#2#245#9'Fon'
+  +'t.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#6'fsBold'#0#9'NumGlyphs'#2#0
+  +#11'Transparent'#8#7'OnClick'#7#12'btApplyClick'#10'ParentFont'#8#0#0#12'TSp'
+  +'eedButton'#8'btCommit'#4'Left'#2'T'#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'
+  +#7'Caption'#6#6'Commit'#5'Color'#7#9'clBtnFace'#4'Flat'#9#10'Font.Color'#7#8
+  +'clMaroon'#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#10'Font.St'
+  +'yle'#11#6'fsBold'#0#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#13'btCo'
+  +'mmitClick'#10'ParentFont'#8#0#0#12'TSpeedButton'#8'btCancel'#4'Left'#3#167#0
+  +#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#6'Cancel'#5'Color'#7#9
+  +'clBtnFace'#4'Flat'#9#10'Font.Color'#7#8'clMaroon'#11'Font.Height'#2#245#9'F'
+  +'ont.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#6'fsBold'#0#9'NumGlyphs'#2#0
+  +#11'Transparent'#8#7'OnClick'#7#13'btCancelClick'#10'ParentFont'#8#0#0#12'TS'
+  +'peedButton'#14'btRevertRecord'#4'Left'#3#250#0#6'Height'#2#22#3'Top'#2#1#5
+  +'Width'#2'R'#7'Caption'#6#6'Revert'#5'Color'#7#9'clBtnFace'#4'Flat'#9#10'Fon'
+  +'t.Color'#7#8'clMaroon'#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Seri'
+  +'f'#10'Font.Style'#11#6'fsBold'#0#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnCli'
+  +'ck'#7#19'btRevertRecordClick'#10'ParentFont'#8#0#0#0#0#6'TPanel'#6'Panel2'#4
+  +'Left'#2#1#6'Height'#2#22#3'Top'#2#24#5'Width'#3'='#1#10'BevelOuter'#7#6'bvN'
+  +'one'#12'ClientHeight'#2#22#11'ClientWidth'#3'='#1#11'ParentColor'#8#8'TabOr'
+  +'der'#2#1#0#6'TLabel'#6'Label4'#4'Left'#3#222#0#6'Height'#2#12#3'Top'#2#7#5
+  +'Width'#2'G'#7'Caption'#6#10'Batch Size'#11'ParentColor'#8#0#0#9'TCheckBox'
+  +#15'cbCachedUpdates'#4'Left'#2#8#6'Height'#2#19#3'Top'#2#4#5'Width'#2's'#7'C'
+  +'aption'#6#13'CachedUpdates'#7'OnClick'#7#20'cbCachedUpdatesClick'#8'TabOrde'
+  +'r'#2#0#0#0#9'TCheckBox'#14'cbCustomUpdate'#4'Left'#2'q'#6'Height'#2#19#3'To'
+  +'p'#2#4#5'Width'#2's'#7'Caption'#6#13'Custom Update'#7'OnClick'#7#19'cbCusto'
+  +'mUpdateClick'#8'TabOrder'#2#1#0#0#5'TEdit'#17'edUpdateBatchSize'#4'Left'#3
+  +#20#1#6'Height'#2#21#3'Top'#2#1#5'Width'#2'%'#8'TabOrder'#2#2#4'Text'#6#1'1'
+  +#0#0#0#6'TPanel'#6'Panel4'#4'Left'#3'r'#1#6'Height'#2'4'#3'Top'#2'/'#5'Width'
+  +#3'('#1#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2'4'#11'ClientWidth'#3'('
+  +#1#11'ParentColor'#8#8'TabOrder'#2#3#0#6'TLabel'#6'Label3'#4'Left'#2#5#6'Hei'
+  ,'ght'#2#13#3'Top'#2#5#5'Width'#2'J'#7'Caption'#6#12'Transactions'#10'Font.Co'
+  +'lor'#7#6'clNavy'#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#10
+  +'Font.Style'#11#6'fsBold'#0#11'ParentColor'#8#10'ParentFont'#8#0#0#6'TPanel'
+  +#6'Panel5'#4'Left'#2#24#6'Height'#2#24#3'Top'#2#23#5'Width'#3#250#0#10'Bevel'
+  +'Outer'#7#6'bvNone'#12'ClientHeight'#2#24#11'ClientWidth'#3#250#0#5'Color'#4
+  +#15'+'#253#0#11'ParentColor'#8#8'TabOrder'#2#0#0#12'TSpeedButton'#12'btStart'
+  +'Trans'#4'Left'#2#1#6'Height'#2#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#5'S'
+  +'tart'#5'Color'#7#9'clBtnFace'#4'Flat'#9#10'Font.Color'#7#6'clNavy'#11'Font.'
+  +'Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#10'Font.Style'#11#6'fsBold'#0
+  +#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#17'btStartTransClick'#10'Pa'
+  +'rentFont'#8#0#0#12'TSpeedButton'#13'btCommitTrans'#4'Left'#2'T'#6'Height'#2
+  +#22#3'Top'#2#1#5'Width'#2'R'#7'Caption'#6#6'Commit'#5'Color'#7#9'clBtnFace'#4
+  +'Flat'#9#10'Font.Color'#7#6'clNavy'#11'Font.Height'#2#245#9'Font.Name'#6#13
+  +'MS Sans Serif'#10'Font.Style'#11#6'fsBold'#0#9'NumGlyphs'#2#0#11'Transparen'
+  +'t'#8#7'OnClick'#7#18'btCommitTransClick'#10'ParentFont'#8#0#0#12'TSpeedButt'
+  +'on'#15'btRollBackTrans'#4'Left'#3#167#0#6'Height'#2#22#3'Top'#2#1#5'Width'#2
+  +'R'#7'Caption'#6#8'Rollback'#5'Color'#7#9'clBtnFace'#4'Flat'#9#10'Font.Color'
+  +#7#6'clNavy'#11'Font.Height'#2#245#9'Font.Name'#6#13'MS Sans Serif'#10'Font.'
+  +'Style'#11#6'fsBold'#0#9'NumGlyphs'#2#0#11'Transparent'#8#7'OnClick'#7#20'bt'
+  +'RollbackTransClick'#10'ParentFont'#8#0#0#0#0#6'TPanel'#6'Panel6'#4'Left'#3
+  +'?'#1#6'Height'#2#22#3'Top'#2#24#5'Width'#3'['#1#10'BevelOuter'#7#6'bvNone'
+  +#12'ClientHeight'#2#22#11'ClientWidth'#3'['#1#11'ParentColor'#8#8'TabOrder'#2
+  +#2#0#6'TLabel'#6'Label1'#4'Left'#2#6#6'Height'#2#12#3'Top'#2#7#5'Width'#2'N'
+  +#7'Caption'#6#11'RecordTypes'#11'ParentColor'#8#0#0#9'TCheckBox'#9'cbDeleted'
+  +#4'Left'#3#31#1#6'Height'#2#19#3'Top'#2#4#5'Width'#2'I'#7'Caption'#6#7'Delet'
+  +'ed'#7'OnClick'#7#14'cbDeletedClick'#8'TabOrder'#2#0#0#0#9'TCheckBox'#10'cbI'
+  +'nserted'#4'Left'#3#223#0#6'Height'#2#19#3'Top'#2#4#5'Width'#2'P'#7'Caption'
+  +#6#8'Inserted'#7'OnClick'#7#15'cbInsertedClick'#8'TabOrder'#2#1#0#0#9'TCheck'
+  +'Box'#10'cbModified'#4'Left'#3#157#0#6'Height'#2#19#3'Top'#2#4#5'Width'#2'P'
+  +#7'Caption'#6#8'Modified'#7'OnClick'#7#15'cbModifiedClick'#8'TabOrder'#2#2#0
+  +#0#9'TCheckBox'#12'cbUnmodified'#4'Left'#2'N'#6'Height'#2#19#3'Top'#2#4#5'Wi'
+  +'dth'#2'^'#7'Caption'#6#10'Unmodified'#7'OnClick'#7#17'cbUnmodifiedClick'#8
+  +'TabOrder'#2#3#0#0#0#6'TPanel'#6'Panel7'#4'Left'#3#235#1#6'Height'#2#22#3'To'
+  +'p'#2#1#5'Width'#3#175#0#10'BevelOuter'#7#6'bvNone'#11'ParentColor'#8#8'TabO'
+  +'rder'#2#4#0#0#6'TPanel'#6'Panel9'#4'Left'#3#167#0#6'Height'#2#22#3'Top'#2#1
+  +#5'Width'#3#240#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'#2#22#11'Client'
+  +'Width'#3#240#0#8'TabOrder'#2#5#0#12'TDBNavigator'#11'DBNavigator'#6'Height'
+  +#2#22#3'Top'#2#1#5'Width'#3#240#0#10'BevelOuter'#7#6'bvNone'#12'ClientHeight'
+  +#2#22#11'ClientWidth'#3#240#0#5'Color'#7#9'clBtnFace'#10'DataSource'#7#10'Da'
+  +'taSource'#4'Flat'#9#11'ParentColor'#8#8'TabOrder'#2#0#0#0#0#0#0#242#2#2#11
+  +'TDatasource'#10'DataSource'#7'DataSet'#7#7'MyQuery'#13'OnStateChange'#7#21
+  +'DataSourceStateChange'#12'OnDataChange'#7#20'DataSourceDataChange'#4'left'#3
+  +#15#3#3'top'#2'Z'#0#0#242#2#3#8'TMyQuery'#7'MyQuery'#17'SQLInsert.Strings'#1
+  +#6#31'INSERT INTO EMP_TRANACTION_SAFE'#6'7  (EMPNO, ENAME, JOB, MGR, HIREDAT'
+  +'E, SAL, COMM, DEPTNO)'#6#6'VALUES'#6'?  (:EMPNO, :ENAME, :JOB, :MGR, :HIRED'
+  +'ATE, :SAL, :COMM, :DEPTNO)'#0#17'SQLDelete.Strings'#1#6#31'DELETE FROM EMP_'
+  +'TRANACTION_SAFE'#6#5'WHERE'#6#20'  EMPNO = :Old_EMPNO'#0#17'SQLUpdate.Strin'
+  +'gs'#1#6#26'UPDATE EMP_TRANACTION_SAFE'#6#3'SET'#6'z  EMPNO = :EMPNO, ENAME '
+  +'= :ENAME, JOB = :JOB, MGR = :MGR, HIREDATE = :HIREDATE, SAL = :SAL, COMM = '
+  +':COMM, DEPTNO = :DEPTNO'#6#5'WHERE'#6#20'  EMPNO = :Old_EMPNO'#0#18'SQLRefr'
+  +'esh.Strings'#1#6#216'SELECT EMP_TRANACTION_SAFE.ENAME, EMP_TRANACTION_SAFE.'
+  +'JOB, EMP_TRANACTION_SAFE.MGR, EMP_TRANACTION_SAFE.HIREDATE, EMP_TRANACTION_'
+  +'SAFE.SAL, EMP_TRANACTION_SAFE.COMM, EMP_TRANACTION_SAFE.DEPTNO FROM EMP_TRA'
+  +'NACTION_SAFE'#6#5'WHERE'#6'(  EMP_TRANACTION_SAFE.EMPNO = :Old_EMPNO'#0#11
+  +'SQL.Strings'#1#6'!SELECT * FROM EMP_TRANACTION_SAFE'#0#13'CachedUpdates'#9
+  +#13'OnUpdateError'#7#18'MyQueryUpdateError'#12'OnCalcFields'#7#17'MyQueryCal'
+  +'cFields'#4'left'#3#238#2#3'top'#2'Z'#0#0#0
+]);

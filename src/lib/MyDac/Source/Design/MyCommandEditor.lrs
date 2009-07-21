@@ -1,0 +1,6 @@
+LazarusResources.Add('TMyCommandEditorForm','FORMDATA',[
+  'TPF0'#241#20'TMyCommandEditorForm'#19'MyCommandEditorForm'#4'Left'#2'X'#3'To'
+  +'p'#2't'#7'Caption'#6#16'MyCommand Editor'#0#241#6'TPanel'#8'BtnPanel'#0#241
+  +#6'TImage'#8'imCorner'#0#0#241#7'TBitBtn'#4'btOk'#0#0#241#7'TBitBtn'#8'btCan'
+  +'cel'#0#0#241#7'TButton'#9'btExecute'#0#0#0#0
+]);

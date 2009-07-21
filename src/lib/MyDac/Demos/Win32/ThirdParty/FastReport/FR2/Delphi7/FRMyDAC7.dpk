@@ -1,0 +1,52 @@
+package FRMyDAC7;
+
+{$R *.res}
+{$R 'FR_MyDACreg.dcr'}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'FastReport 2.7 MyDAC Components'}
+{$IMPLICITBUILD ON}
+
+requires
+  FR7,
+  mydac70,
+  dac70,
+  mydacvcl70,
+  VCL,
+  VCLDB,
+  rtl,
+  dbrtl,
+  tee,
+  vcljpg,
+  designide,
+  vclactnband,
+  vclx,
+  VclSmp;
+
+contains
+  FR_MyDACreg in 'FR_MyDACreg.pas',
+  FR_MyDACQuery in 'FR_MyDACQuery.pas',
+  FR_MyDACTable in 'FR_MyDACTable.pas',
+  FR_MyDACDB in 'FR_MyDACDB.pas',
+  FR_MyDACQueryParam in 'FR_MyDACQueryParam.pas' {frMyDACParamsForm};
+
+end.

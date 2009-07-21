@@ -1,0 +1,753 @@
+object MainForm: TMainForm
+  Left = 200
+  Height = 575
+  Top = 130
+  Width = 871
+  HorzScrollBar.Page = 870
+  VertScrollBar.Page = 574
+  ActiveControl = DBGrid2
+  Caption = 'FailOver Demo'
+  ClientHeight = 575
+  ClientWidth = 871
+  Constraints.MinHeight = 480
+  Constraints.MinWidth = 820
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnActivate = FormActivate
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Position = poScreenCenter
+  object pnRight: TPanel
+    Left = 256
+    Height = 503
+    Top = 49
+    Width = 615
+    Align = alClient
+    BevelOuter = bvNone
+    ClientHeight = 503
+    ClientWidth = 615
+    TabOrder = 0
+    object Splitter1: TSplitter
+      Cursor = crVSplit
+      Height = 2
+      Top = 331
+      Width = 615
+      Align = alTop
+      Beveled = True
+      Color = clBtnFace
+      ParentColor = False
+      ResizeAnchor = akTop
+    end
+    object pnMiddle: TPanel
+      Height = 331
+      Width = 615
+      Align = alTop
+      BevelOuter = bvNone
+      ClientHeight = 331
+      ClientWidth = 615
+      Constraints.MinHeight = 160
+      TabOrder = 0
+      object Splitter: TSplitter
+        Cursor = crVSplit
+        Height = 2
+        Top = 153
+        Width = 615
+        Align = alTop
+        Beveled = True
+        Color = clBtnFace
+        MinSize = 100
+        ParentColor = False
+        ResizeAnchor = akTop
+      end
+      object pnDetail: TPanel
+        Height = 176
+        Top = 155
+        Width = 615
+        Align = alClient
+        BevelOuter = bvNone
+        ClientHeight = 176
+        ClientWidth = 615
+        TabOrder = 0
+        object DBGrid2: TDBGrid
+          Height = 149
+          Top = 27
+          Width = 615
+          Align = alClient
+          FixedColor = clBtnFace
+          FixedHotColor = cl3DLight
+          Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+          OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+          ParentColor = False
+          TabOrder = 0
+          TabStop = True
+        end
+        object Panel9: TPanel
+          Height = 27
+          Width = 615
+          Align = alTop
+          BevelOuter = bvNone
+          ClientHeight = 27
+          ClientWidth = 615
+          TabOrder = 1
+          object Panel7: TPanel
+            Height = 24
+            Top = 2
+            Width = 242
+            BevelOuter = bvNone
+            ClientHeight = 24
+            ClientWidth = 242
+            Color = 16591631
+            ParentColor = False
+            TabOrder = 0
+            object DBNavigator2: TDBNavigator
+              Left = 1
+              Height = 22
+              Top = 1
+              Width = 240
+              BevelOuter = bvNone
+              ClientHeight = 22
+              ClientWidth = 240
+              Color = clBtnFace
+              Flat = True
+              ParentColor = False
+              TabOrder = 0
+            end
+          end
+        end
+      end
+      object pnMaster: TPanel
+        Height = 153
+        Width = 615
+        Align = alTop
+        BevelOuter = bvNone
+        ClientHeight = 153
+        ClientWidth = 615
+        Constraints.MinHeight = 100
+        TabOrder = 1
+        object DBGrid1: TDBGrid
+          Height = 152
+          Top = 1
+          Width = 615
+          Align = alBottom
+          Anchors = [akTop, akLeft, akRight, akBottom]
+          FixedColor = clBtnFace
+          FixedHotColor = cl3DLight
+          Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+          OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+          ParentColor = False
+          TabOrder = 0
+          TabStop = True
+        end
+      end
+    end
+    object pnBottom: TPanel
+      Height = 170
+      Top = 333
+      Width = 615
+      Align = alClient
+      BevelOuter = bvNone
+      ClientHeight = 170
+      ClientWidth = 615
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 1
+      object meLog: TMemo
+        Height = 170
+        Width = 615
+        Align = alClient
+        ReadOnly = True
+        ScrollBars = ssVertical
+        TabOrder = 0
+      end
+    end
+  end
+  object pnLeft: TPanel
+    Height = 503
+    Top = 49
+    Width = 256
+    Align = alLeft
+    BevelOuter = bvNone
+    ClientHeight = 503
+    ClientWidth = 256
+    TabOrder = 1
+    object Panel8: TPanel
+      Left = 1
+      Height = 254
+      Top = 128
+      Width = 243
+      BevelOuter = bvNone
+      ClientHeight = 254
+      ClientWidth = 243
+      TabOrder = 0
+      object cbPooling: TCheckBox
+        Left = 8
+        Height = 19
+        Top = 138
+        Width = 61
+        Caption = 'Pooling'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        OnClick = cbPoolingClick
+        TabOrder = 6
+      end
+      object pnPooling: TPanel
+        Left = 26
+        Height = 95
+        Top = 157
+        Width = 215
+        BevelOuter = bvNone
+        ClientHeight = 95
+        ClientWidth = 215
+        Color = 16591631
+        ParentColor = False
+        TabOrder = 7
+        object Panel10: TPanel
+          Left = 1
+          Height = 93
+          Top = 1
+          Width = 213
+          Anchors = [akTop, akLeft, akRight, akBottom]
+          BevelOuter = bvNone
+          ClientHeight = 93
+          ClientWidth = 213
+          ParentColor = False
+          TabOrder = 0
+          object Label2: TLabel
+            Left = 6
+            Height = 14
+            Top = 54
+            Width = 92
+            Caption = 'ConnectionLifetime'
+            ParentColor = False
+          end
+          object Label3: TLabel
+            Left = 6
+            Height = 14
+            Top = 8
+            Width = 60
+            Caption = 'MaxPoolSize'
+            ParentColor = False
+          end
+          object Label4: TLabel
+            Left = 6
+            Height = 14
+            Top = 31
+            Width = 56
+            Caption = 'MinPoolSize'
+            ParentColor = False
+          end
+          object cbValidate: TCheckBox
+            Left = 6
+            Height = 19
+            Top = 77
+            Width = 64
+            Caption = 'Validate'
+            OnClick = cbValidateClick
+            TabOrder = 3
+          end
+          object edMaxPoolSize: TEdit
+            Left = 104
+            Height = 21
+            Top = 4
+            Width = 103
+            OnExit = edMaxPoolSizeExit
+            TabOrder = 0
+          end
+          object edMinPoolSize: TEdit
+            Left = 104
+            Height = 21
+            Top = 27
+            Width = 103
+            OnExit = edMinPoolSizeExit
+            TabOrder = 1
+          end
+          object edConnectionLifetime: TEdit
+            Left = 104
+            Height = 21
+            Top = 50
+            Width = 103
+            OnExit = edConnectionLifetimeExit
+            TabOrder = 2
+          end
+        end
+      end
+      object cbCachedUpdates: TCheckBox
+        Left = 8
+        Height = 19
+        Top = 7
+        Width = 103
+        Caption = 'CachedUpdates'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        OnClick = cbCachedUpdatesClick
+        TabOrder = 0
+      end
+      object cbFailover: TCheckBox
+        Left = 8
+        Height = 19
+        Top = 88
+        Width = 63
+        Caption = 'Failover'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        OnClick = cbFailoverClick
+        TabOrder = 4
+      end
+      object cbLocalMasterDetail: TCheckBox
+        Left = 8
+        Height = 19
+        Top = 27
+        Width = 111
+        Caption = 'LocalMasterDetail'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        OnClick = cbLocalMasterDetailClick
+        TabOrder = 1
+      end
+      object cbDisconnectedMode: TCheckBox
+        Left = 8
+        Height = 19
+        Top = 68
+        Width = 119
+        Caption = 'DisconnectedMode'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        OnClick = cbDisconnectedModeClick
+        TabOrder = 3
+      end
+      object cbFetchAll: TCheckBox
+        Left = 8
+        Height = 19
+        Top = 48
+        Width = 64
+        Caption = 'FetchAll'
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        OnClick = cbFetchAllClick
+        TabOrder = 2
+      end
+      object pnFailover: TPanel
+        Left = 26
+        Height = 28
+        Top = 106
+        Width = 215
+        BevelOuter = bvNone
+        ClientHeight = 28
+        ClientWidth = 215
+        Color = 16591631
+        ParentColor = False
+        TabOrder = 5
+        object Panel16: TPanel
+          Left = 1
+          Height = 26
+          Top = 1
+          Width = 213
+          Anchors = [akTop, akLeft, akRight, akBottom]
+          BevelOuter = bvNone
+          ClientHeight = 26
+          ClientWidth = 213
+          ParentColor = False
+          TabOrder = 0
+          object Label7: TLabel
+            Left = 5
+            Height = 13
+            Top = 7
+            Width = 52
+            Caption = 'RetryMode'
+            ParentColor = False
+          end
+          object coRetryMode: TComboBox
+            Left = 69
+            Height = 21
+            Top = 3
+            Width = 141
+            AutoCompleteText = [cbactEndOfLineComplete, cbactSearchAscending]
+            ItemHeight = 13
+            Items.Strings = (
+              'Default'
+              'Raise'
+              'Reconnect'
+              'ReconnectExecute'
+            )
+            Style = csDropDownList
+            TabOrder = 0
+          end
+        end
+      end
+    end
+    object Panel2: TPanel
+      Height = 122
+      Width = 256
+      Align = alTop
+      BevelOuter = bvNone
+      ClientHeight = 122
+      ClientWidth = 256
+      TabOrder = 1
+      object Panel1: TPanel
+        Left = 2
+        Height = 122
+        Top = 1
+        Width = 253
+        BevelOuter = bvNone
+        ClientHeight = 122
+        ClientWidth = 253
+        Color = 16591631
+        ParentColor = False
+        TabOrder = 0
+        object Panel15: TPanel
+          Left = 1
+          Height = 60
+          Top = 1
+          Width = 251
+          BevelOuter = bvNone
+          ClientHeight = 60
+          ClientWidth = 251
+          ParentColor = False
+          TabOrder = 0
+          object Label1: TLabel
+            Left = 11
+            Height = 13
+            Top = 6
+            Width = 48
+            Alignment = taRightJustify
+            Caption = 'Updates'
+            Font.Color = clMaroon
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentColor = False
+          end
+          object Panel12: TPanel
+            Left = 12
+            Height = 24
+            Top = 26
+            Width = 229
+            BevelOuter = bvNone
+            ClientHeight = 24
+            ClientWidth = 229
+            Color = 16591631
+            ParentColor = False
+            TabOrder = 0
+            object btApply: TSpeedButton
+              Left = 1
+              Height = 22
+              Top = 1
+              Width = 75
+              Caption = 'Apply'
+              Color = clBtnFace
+              Flat = True
+              Font.Color = clMaroon
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              NumGlyphs = 0
+              Transparent = False
+              OnClick = btApplyClick
+            end
+            object btCancel: TSpeedButton
+              Left = 153
+              Height = 22
+              Top = 1
+              Width = 75
+              Caption = 'Cancel'
+              Color = clBtnFace
+              Flat = True
+              Font.Color = clMaroon
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              NumGlyphs = 0
+              Transparent = False
+              OnClick = btCancelClick
+            end
+            object btCommit: TSpeedButton
+              Left = 77
+              Height = 22
+              Top = 1
+              Width = 75
+              Caption = 'Commit'
+              Color = clBtnFace
+              Flat = True
+              Font.Color = clMaroon
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              NumGlyphs = 0
+              Transparent = False
+              OnClick = btCommitClick
+            end
+          end
+        end
+        object Panel17: TPanel
+          Left = 1
+          Height = 58
+          Top = 62
+          Width = 251
+          BevelOuter = bvNone
+          ClientHeight = 58
+          ClientWidth = 251
+          ParentColor = False
+          TabOrder = 1
+          object Label6: TLabel
+            Left = 11
+            Height = 13
+            Top = 6
+            Width = 74
+            Alignment = taRightJustify
+            Caption = 'Transactions'
+            Font.Color = clNavy
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentColor = False
+          end
+          object Panel5: TPanel
+            Left = 12
+            Height = 24
+            Top = 26
+            Width = 229
+            BevelOuter = bvNone
+            ClientHeight = 24
+            ClientWidth = 229
+            Color = 16591631
+            ParentColor = False
+            TabOrder = 0
+            object btStartTrans: TSpeedButton
+              Left = 1
+              Height = 22
+              Top = 1
+              Width = 75
+              Caption = 'Start'
+              Color = clBtnFace
+              Flat = True
+              Font.Color = clNavy
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              NumGlyphs = 0
+              Transparent = False
+              OnClick = btStartTransClick
+            end
+            object btCommitTrans: TSpeedButton
+              Left = 77
+              Height = 22
+              Top = 1
+              Width = 75
+              Caption = 'Commit'
+              Color = clBtnFace
+              Flat = True
+              Font.Color = clNavy
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              NumGlyphs = 0
+              Transparent = False
+              OnClick = btCommitTransClick
+            end
+            object btRollbackTrans: TSpeedButton
+              Left = 153
+              Height = 22
+              Top = 1
+              Width = 75
+              Caption = 'Rollback'
+              Color = clBtnFace
+              Flat = True
+              Font.Color = clNavy
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              NumGlyphs = 0
+              Transparent = False
+              OnClick = btRollbackTransClick
+            end
+          end
+        end
+      end
+    end
+  end
+  object StatusBar: TStatusBar
+    Height = 23
+    Top = 552
+    Width = 871
+    Panels = <    
+      item
+        Width = 208
+      end    
+      item
+        Width = 208
+      end    
+      item
+        Width = 208
+      end    
+      item
+        Width = 50
+      end>
+  end
+  object pnTop: TPanel
+    Height = 49
+    Width = 871
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 49
+    ClientWidth = 871
+    TabOrder = 2
+    OnMouseMove = pnTopMouseMove
+    object lbAbout: TLabel
+      Cursor = crHandPoint
+      Left = 820
+      Height = 14
+      Top = 6
+      Width = 35
+      Anchors = [akTop, akRight]
+      Caption = 'About'
+      Font.Color = clBlue
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold, fsUnderline]
+      ParentColor = False
+      OnClick = lbAboutClick
+      OnMouseMove = lbAboutMouseMove
+    end
+    object Panel18: TPanel
+      Left = 2
+      Height = 47
+      Top = 1
+      Width = 418
+      BevelOuter = bvNone
+      ClientHeight = 47
+      ClientWidth = 418
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btConnect: TSpeedButton
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Connect'
+        Color = clBtnFace
+        Flat = True
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        NumGlyphs = 2
+        Transparent = False
+        OnClick = btConnectClick
+      end
+      object btDisconnect: TSpeedButton
+        Left = 250
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Disconnect'
+        Color = clBtnFace
+        Enabled = False
+        Flat = True
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        NumGlyphs = 2
+        Transparent = False
+        OnClick = btDisconnectClick
+      end
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btKillSession: TSpeedButton
+        Left = 333
+        Height = 22
+        Top = 1
+        Width = 84
+        Caption = 'Kill session'
+        Color = clBtnFace
+        Enabled = False
+        Flat = True
+        Font.Color = clRed
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btKillSessionClick
+      end
+      object btCreate: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 24
+        Width = 82
+        Caption = 'Create'
+        Color = clBtnFace
+        Flat = True
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCreateDropClick
+      end
+      object btDrop: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 24
+        Width = 82
+        Caption = 'Drop'
+        Color = clBtnFace
+        Flat = True
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCreateDropClick
+      end
+      object DBNavigator1: TDBNavigator
+        Left = 167
+        Height = 22
+        Top = 24
+        Width = 250
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 250
+        Color = clBtnFace
+        Flat = True
+        ParentColor = False
+        TabOrder = 0
+      end
+    end
+    object cbDebug: TCheckBox
+      Left = 745
+      Height = 19
+      Top = 5
+      Width = 63
+      Anchors = [akTop, akRight]
+      Caption = 'Debug'
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      OnClick = cbDebugClick
+      TabOrder = 1
+    end
+  end
+end

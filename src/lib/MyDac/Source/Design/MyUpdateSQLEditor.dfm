@@ -1,0 +1,2 @@
+inherited MyUpdateSQLEditorForm: TMyUpdateSQLEditorForm
+end

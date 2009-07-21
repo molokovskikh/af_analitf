@@ -1,0 +1,59 @@
+  
+//////////////////////////////////////////////////
+//  Data Access Components for MySQL
+//  Copyright © 1998-2009 Devart. All right reserved.
+//  MYDAC Package for Kylix 2
+//  Created:            19.02.01
+//////////////////////////////////////////////////
+
+package mydac3;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA OFF}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST ON}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Data Access Components for MySQL'}
+{$LIBVERSION '5.80'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+{$DEFINE MYDAC}
+
+requires
+  rtl,
+  dataclx,
+  dac3;
+
+contains
+  MyAccess in '../../MyAccess.pas',
+  MyClasses in '../../MyClasses.pas',
+  MyCall in '../../MyCall.pas',
+  MyScript in '../../MyScript.pas',
+  MyEmbConnection in '../../MyEmbConnection.pas',
+  MySQLMonitor in '../../MySQLMonitor.pas',
+  MyConsts in '../../MyConsts.pas',
+  MyLoader in '../../MyLoader.pas',
+  MyServerControl in '../../MyServerControl.pas',
+  MyDump in '../../MyDump.pas',
+  MyBackup in '../../MyBackup.pas',
+  MyParser in '../../MyParser.pas';
+
+end.
+  

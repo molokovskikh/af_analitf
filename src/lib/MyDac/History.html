@@ -1,0 +1,1334 @@
+<!doctype html public "-//w3c//dtd html 4.0 Transitional//en">
+<html>
+<head>
+  <title>Data Access Components for MySQL</title>
+
+<style>
+body {
+  overflow: hidden; 
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  background: #ffffff; 
+  color: #000000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 70%;
+  width: 100%;
+  }
+p
+  {
+  margin: .5em 0em .5em 0em;
+  }
+ol, ul
+  {
+  margin-top: .5em; 
+  }
+li
+  {
+  margin-bottom: .5em;
+  }
+ul p, ol p, dl p
+  {
+  margin-left: 0em;
+  }
+blockquote.dxOverload
+  {
+  margin: .5em 1.5em .5em 1.5em;
+  }
+h1, h2, h3, h4
+  {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  margin-bottom: .4em; 
+  margin-top: 1em;
+  font-weight: bold;
+  }
+h1
+  {
+  font-size: 120%;
+  margin-top: 0em;
+  }
+h2
+  {
+  font-size: 130%;
+  }
+h3
+  {
+  font-size: 115%;
+  }
+h4
+  {
+  font-size: 100%;
+  }
+.dxH1, .dxH2, .dxH3, .dxH4
+  {
+  margin-left: -18px; 
+  }
+A
+  {
+  color: #0000FF;
+  }
+A:link
+  {
+  color: #0000FF;
+  }
+A:active
+  {
+  color: #000080;
+  }
+A:visited
+  {
+  color: #800080;
+  }
+A:hover
+  {
+  color: #FF0000;
+  }
+pre
+  {
+  font-family: Courier New;
+  font-size: 9pt;
+  color: #000060;
+  margin-top: 0px;
+  }
+code, p.example, p.sourcecode, table.sourcecode, tr.sourcecode, td.sourcecode
+  {
+  font-family: Courier New;
+  font-size: 9pt;
+  color: #000060;
+  }
+div#pagetop {
+  margin: 0px;
+  padding: 0px;
+  background-color: #99ccff;   
+  height: 44;
+  width: 100%;
+  border-bottom: 1px solid #999999;
+  }
+div#pagebody {
+  margin: 0px 0px 0px 0px;
+  padding: 5px 10px 0px 22px;
+  height: 90%;
+  width: 100%;
+  overflow: auto;
+  background-color: #FFFFFF;
+  vertical-align: top;
+  }
+table#BannerTable
+  {
+  width: 100%;
+  height: 100%;
+  border-collapse:collapse;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  }
+table#BannerTable td
+  {
+  padding-left: 8px;
+  padding-right: 8px;
+  }
+tr#BannerTopRow
+  {
+  font-style: italic;
+  font-size: 70%;
+  }
+tr#Banner2ndRow
+  {
+  font-weight: bold;
+  font-size: 80%;
+  }
+table.filtereditemlisttable, table.xmldoctable
+  {
+  width: 95%; 
+  margin-top: .6em;
+  margin-bottom: .3em;
+  border-width: 1px 1px 0px 0px;
+  border-style: solid;
+  border-color: #999999;
+  background-color: #999999; 
+  font-size: 100%;
+  border-collapse:collapse;
+  }
+table.filtereditemlisttable th, table.filtereditemlisttable td, table.xmldoctable th, table.xmldoctable td
+  { 
+  border-style: solid; 
+  border-width: 0px 0px 1px 1px;
+  border-style: solid;
+  border-color: #999999;
+  padding: 4px 6px;
+  text-align: left;
+  vertical-align: top;
+  }
+table.filtereditemlisttable th, table.xmldoctable th
+  { 
+  background: #cccccc; 
+  vertical-align: bottom;
+  }
+table.filtereditemlisttable td, table.xmldoctable td
+  {
+  background-color: #ffffff;
+  vertical-align: top;
+  }
+</style>
+
+<script>
+
+var Engine;
+var enOpera = 'Opera';
+var enIE = 'IE';
+var enGecko = 'Gecko';
+
+function TestEngine()
+{
+  if (document.all) {
+    if (window.opera) {
+      Engine = enOpera;
+    }
+    else {
+      Engine = enIE;
+    }
+  }
+  else {
+    Engine = enGecko;
+  }
+}
+
+
+function AdjustContentSize()
+{
+  var cDiv = document.getElementById("pagebody");
+  if ((Engine == enGecko)||(Engine == enOpera))//amend padding
+    {
+      var w = document.body.clientWidth;
+      cDiv.style.width = w - 32;
+    }
+  var h = document.body.clientHeight;
+  var diff = 44;
+  if ((Engine == enGecko)||(Engine == enOpera)) diff = diff + 6;
+  cDiv.style.height = h - diff;
+}
+
+
+function Startup()
+{
+  //add startup code here
+}
+</script>
+
+</head>
+
+
+<body onresize="AdjustContentSize()" onload="Startup()">
+
+<div id="pagetop">
+  <table id="BannerTable">
+    <tr id="BannerTopRow">
+      <td>Data Access Components for MySQL</td>
+      <td align="right">mydac@devart.com</td>
+    </tr>
+    <tr id="Banner2ndRow">
+      <td>History</td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+</div>
+
+<div id="pagebody">
+
+<br><p><b>5.80.0.47 27-May-09</b></p>
+<ul>
+  <li>Added the Disconnected property to TCustomDADataSet
+  <li>Added support for TQuery.DataSource property in BDE Migration Wizard
+  <li>Added distinction between empty string and null value when saving/loading string fields in TVirtualTable
+  <li>Added support for NUMERIC parameters in TMyStoredProc
+  <li>Improved work of TMyDump - backup tables before backup views
+  <li>Fixed bug with the GotoCurrent method
+  <li>Fixed bug with LocalMasterDetail and Prepare method
+  <li>Fixed bug with FullRefresh and macros
+  <li>Fixed bug with output UTF8 symbols in log of Embedded server for Delphi 2009
+</ul>
+
+<br><p><b>5.80.0.46 02-Apr-09</b></p>
+<ul>
+  <li>Added support for Free Pascal under Linux
+  <li>Added NoPreconnect property to TMyScript for executing CONNECT and CREATE DATABASE commands
+  <li>Fixed bug with DetailDelay and refreshing closed dataset
+  <li>Fixed bug with not calling UnregisterClient for internal command of dataset
+  <li>Fixed bug with refreshing record when RefreshOptions.roBeforeEdit is set and LockMode = lmImmediate
+  <li>Fixed bug with detecting DBMonitor on 64-bit Windows
+  <li>Fixed bug with processing parameters when using East Asian languages
+  <li>Fixed bug with executing ApplyUpdates when LockMode = lmOptimistic in the CachedUpdates mode
+</ul>
+
+<br><p><b>5.70.0.45 26-Feb-09</b></p>
+<ul>
+  <li>Added ability to backup user defined query to file or stream in TMyDump
+  <li>Fixed bug with not working CachedUpdates in TVirtualTable
+  <li>Fixed bug with suppressing errors in TVirtualTable.LoadFromFile
+  <li>Fixed problem with restoring current row after refresh
+  <li>Fixed bug when statements, executed on TClientDataSet.ApplyUpdates, were not shown in DBMonitor
+  <li>Fixed access violation on the TClientDataSet.ApplyUpdates call
+  <li>Fixed bug in the RefreshQuick method with SQL query joining several tables
+  <li>Fixed bug in TMyDump with backup stored procedure when its name must be quoted
+  <li>Fixed bug with processing Boolean parameters for some versions of MySQL 
+  <li>Fixed bug with processing Time parameters
+  <li>Bug in Delphi 2006 and above with the BcdCompare function avoided 
+</ul>
+
+<br><p><b>5.70.0.44 05-Jan-09</b></p>
+<ul>
+  <li>Fixed bug with treating some string elements as equal by CompareString
+  <li>Fixed bug with processing Time fields on table locking
+</ul>
+
+<br><p><b>5.70.0.43 09-Dec-08</b></p>
+<ul>
+  <li>Fixed bug with calling stored procedures from MySQL server in the case sensitive mode
+</ul>
+
+<br><p><b>5.70.0.42 19-Nov-08</b></p>
+<ul>
+  <li>Added the TMyConnection.Options.CheckBackslashes property
+  <li>Added calling the TfrxReport.OnBeforeConnect event when TfrxDACDatabase is connecting
+  <li>Now timer in TCustomMyDataSet is created only when AutoRefresh is set to True
+  <li>Fixed bug with processing DateTime fields on table locking
+  <li>Fixed bug with specifying database name on setting Default values
+  <li>Fixed bug with executing script in TMyScript when the "delimiter ;" statement is used
+  <li>Fixed bug with processing binary and blob fields when the NoBackslashEscapes mode is used
+  <li>Fixed bug with calling stored procedures when its name must be quoted 
+  <li>Fixed bug with field names containing '.'
+  <li>Fixed bug with AV failure in TMyQuery.IsQuery
+  <li>Fixed bug with name compatibility with ReportBuilder
+  <li>Fixed bug with assertion failure on editing components in design time for Delphi 5
+  <li>Fixed several bugs in DataSet Manager
+  <li>Fixed bug in Migration Wizard with converting binary forms in Delphi 2009
+</ul>
+
+<br><p><b>5.70.0.41 23-Oct-08</b></p>
+<ul>
+  <li>Delphi 2009 and C++Builder 2009 supported 
+  <li>Extended Unicode support for Delphi 2007 added (special Unicode build) 
+  <li>Free Pascal 2.2 supported 
+  <li>Powerful design-time editors implemented in Lazarus 
+  <li>Completed with more comprehensive structured Help 
+</ul>
+
+<br><p><b>5.55.0.39 22-Sep-08</b></p>
+<ul>
+  <li>Improved working with master/detail relationship when LocalMasterDetail=True
+  <li>Fixed bug with AV on getting OldValue for BLOB fields
+  <li>Fixed bug with processing BLOB fields when the NO_BACKSLASH_ESCAPES mode is used
+  <li>Fixed Assert with executing StoredProcedure when exist param name equal to 'STATUS'
+  <li>Avoided bug of some versions of MySQL with fields length for SHOW PROCESSLIST statement
+  <li>Avoided bug of some versions of MySQL with fields length for SHOW SLAVE STATUS statement
+</ul>
+
+<br><p><b>5.55.0.37 21-Aug-08</b></p>
+<ul>
+  <li>dbForge Fusion for MySQL support added 
+  <li>Added support new DATE field type for MySQL server 5.0.54 and older 
+  <li>Added 'USE database' statement after database creating in TMyDump
+  <li>Fixed bug with Master-Detail relationship and QuoteNames
+  <li>Fixed bug with processing Blob parameters in TMyStoredProc
+  <li>Fixed bug with starting transaction on MySQL 4.0 and lower
+  <li>Avoided bug of MySQL server 5.0.51a with truncation values of SHOW PROCESSLIST
+</ul>
+
+<br><p><b>5.50.0.36 11-Jul-08</b></p>
+<ul>
+  <li>Added ability to recognize unquoted True/False values in DefaultExpression
+  <li>Added support of NOT LIKE keyword in the TDataSet.Filter property
+  <li>Improved working with master/detail on inserting new records
+  <li>An event to handle exceptions on restoring added in TMyDump
+  <li>Added support of Blob parameters in TMyStoredProc when UseUnicode is True
+  <li>Fixed several bugs when working with inactive datasets
+  <li>Fixed bug with filtering by TLargeIntField
+  <li>Bug with autocommit after deleting records fixed
+  <li>Fixing bug with calling the OnError event when LocalFailover is set to True
+  <li>Fixed bug with displaying OUT parameters of stored procedures in DBMonitor
+  <li>Fixed bug with NULL date in default values of DateTime fields
+  <li>Fixed bug with determining primary key fields
+  <li>Fixed bug with package names in FastReport 4.x for Delphi 2006
+  <li>Added ability to call Code Editor from component editors
+</ul>
+
+<br><p><b>5.50.0.35 11-Jun-08</b></p>
+<ul>
+  <li>Fixed bug with the SetOrderBy method
+  <li>Fixed bug with determining primary key fields
+  <li>Fixed bug with generating update SQL with IS NULL in the WHERE clause at design-time
+  <li>Fixed bug with AV failure on assigning the OnFilterRecord event handler
+  <li>Fixed bug with multiple order fields in TMyTable
+  <li>Fixed bug with output parameters in TMyStoredProc
+  <li>Fixed bug with 'Invalid class typecast' error inside dlls
+</ul>
+
+<br><p><b>5.50.0.34 23-May-08</b></p>
+<ul>
+  <li>Added compatibility with UniDAC
+  <li>The new component for metadata receiving added
+  <li>Added ability to specify key fields for a dataset
+  <li>Added support of automatic records locking
+  <li>Added support for schema name in TMyStoredProc
+  <li>Improved support of default field values 
+  <li>Improved work with master/detail
+  <li>Fixed bug in TMyDump with backup data when database or table name must be quoted
+  <li>Fixed bug with creating UpdateSQL queries when the WHERE clause is empty
+  <li>Fixed bug with freezing when calling Lock for a locked table
+  <li>Fixed bug with freezing when executing some SQL queries
+  <li>Fixed bug with memory leaks on connection failure when Pooling is enabled
+  <li>Fixed bug with calculating fields length for the SHOW CREATE TABLE statement
+  <li>Avoided bug of MySQL 5.0.51 with fields length for SHOW ENGINES statement
+</ul>
+
+<br><p><b>5.20.1.15 04-Apr-08</b></p>
+<ul>
+  <li>Added support for Boolean parameters in TMyStoredProc
+  <li>Fixed access violation on local sorting
+  <li>Fixed bug with locating records using the LocateEx method and the lxNext option
+  <li>Fixed bug with executing scripts from files larger than 2GB
+  <li>Fixed bug with executing queries in DisconnectedMode
+  <li>Fixed bug with executing prepared stored procedures
+  <li>Fixed bug with calculating string fields length for queries containing string functions
+  <li>Fixed bug with the QueryRecCount option queries containing the 'LIMIT' clause
+  <li>Fixed bug in TMyDump with backup data without tables structure
+  <li>Fixed bug in TMyDump with backup BLOB fields to hex
+  <li>Fixed bug with processing Unicode in BLOBs
+</ul>
+
+<br><p><b>5.20.1.14 18-Feb-08</b></p>
+<ul>
+  <li>Enhanced local sorting with new options (DefaultSortType option, BIN sort type in IndexFieldNames)
+  <li>Added support for SQLInsert, SQLUpdate, SQLDelete properties for updating with TDataSetProvider
+  <li>Improved bookmarks comparison
+  <li>Improved stability of the TMyEmbConnection component 
+  <li>Added TCustomMyConnectionOptions.OptimizedBigInt property to map LargeInt fields to Integer fields
+  <li>Added TMyDataSetOptions.BinaryAsString property for processing Binary fields
+  <li>Fixed bug with corrupting BLOB fields on CancelUpdates method call
+  <li>Fixed bug with accessing persistent BLOB fields in closed dataset
+  <li>Fixed bug with including fields from wrong table into update queries 
+  <li>Fixed bug with updating tables whose names contain special symbols like spaces
+  <li>Fixed bug in TMyDump with backup data in Unicode mode 
+  <li>Fixed bug with fetching BLOB data when using MySQL client library
+  <li>Fixed bug with memory leak in FetchAll=False mode
+  <li>Fixed bug with case of table names in demo projects
+</ul>
+
+<br><p><b>5.20.0.13 09-Jan-08</b></p>
+<ul>
+  <li>Improved stability of the TMyEmbConnection component
+  <li>Improved the BreakExec method to break data fetch
+  <li>Fixed bug in master/detail for shifting columns count in the detail dataset
+  <li>Fixed several bugs with records location  
+  <li>Bug with TCRBathMove which source dataset works in FetchAll=False fixed
+  <li>Fixed several bugs with auto-generated update queries
+  <li>Fixed bug with freezing when executing some stored procedures
+  <li>Fixed design-time editors for Delphi 8
+  <li>Fixed bug with QueryRecCount option for queries with the DISTINCT clause
+  <li>Fixed bug with determining length for string fields returned by miscellaneous MySQL functions (INET_NTOA, etc.)
+  <li>Avoided bug of MySQL 5.1 with field length for SHOW CREATE TABLE statement
+</ul>
+
+<br><p><b>5.20.0.12 14-Nov-07</b></p>
+<ul>
+  <li>Added support for TVariantField in VirtualTable
+  <li>Optimized describing of stored procedure parameters
+  <li>Added ability to upgrade MyDAC without uninstallation of previous MyDAC builds 
+  <li>Now an exception is raised when uaFail is assigned to UpdateAction in OnUpdateRecord event handler
+  <li>Fixed bug with parsing numbers followed by parameters whose names consist of digits
+  <li>Fixed bug with second script execution after the first execution failed with an exception
+  <li>Fixed bug with locating variant values in TVirtualTable
+  <li>Fixed bug with InsertID in the AfterExecute event
+  <li>Fixed bug with executing scripts that contain BLOB values
+  <li>Fixed bug with updating field definitions for queries that assign a variable value
+  <li>Fixed bug with obtaining InsertId when the Assertions project option is disabled
+</ul>
+
+<br><p><b>5.20.0.11 27-Sep-07</b></p>
+<ul>
+  <li>CodeGear RAD Studio 2007 supported
+  <li>Added the OnProgress event in TMyLoader
+  <li>Improved color schema of syntax highlighting with SynEdit
+  <li>Optimized memory utilization when loading XML files by the TVirtualTable.LoadFromFile method
+  <li>Added an option to include the field list in INSERT queries generated by TMyDump
+  <li>Now TMyConnection.GetTableNames returns an empty list when Database is not set
+  <li>Added ability to send the DataSetChange event after dataset open
+  <li>Fixed bug with using the Filter property for FindFirst and similar methods when Filtered is False
+  <li>Fixed bug with calling First after changing UpdateRecordTypes in Edit mode
+  <li>Fixed bug with Disconnected Model and Pooling
+  <li>Fixed bug with committing updates in CachedUpdates mode
+  <li>Fixed Assert with TCRBatchMove and BLOB fields
+  <li>Avoided design-time bug with UniSynEdit
+  <li>Bug with save/load data to/from XML fixed
+  <li>Fixed bug with IDE startup failure
+  <li>Fixed bug with locking records in detail datasets
+  <li>Fixed bug with parameters and string constants in Unicode mode
+  <li>Fixed bug with MySQL Developer Tools integration under Windows Vista
+  <li>Fixed bug with the GetFieldEnum method and MySQL 4.1
+  <li>Fixed bug with truncation results for the SHOW CREATE PROCEDURE command
+  <li>Fixed bug with design-time editor of MyEmbConnection
+  <li>Avoided MySQL bug with field length returned by the SHOW CREATE PROCEDURE statement
+</ul>
+
+<br><p><b>5.10.0.10 02-Aug-07</b></p>
+<ul>
+  <li>A runtime package for the TMySQLMonitor component added
+  <li>Fixed bug with PSGetDefaultOrder method freezing for queries with complicated ORDER BY clauses
+  <li>Fixed bug in TCRBatchMove with mapping fields by name when Fields count and FieldDefs count are not equal
+  <li>Fixed bug with adding fields in TVirtualTable
+  <li>Fixed bug with Pooling and Local Failover
+  <li>Fixed bug with "Invalid Variant Type" exception under Windows 2000 when TDataSet.Refresh is called
+  <li>Fixed bug with performance penalty when processing lookup and calculated fields
+  <li>Problem with DBMonitor integration under Windows Vista Ultimate fixed
+  <li>Bug with field names quotation in CRDBGrid fixed
+  <li>Fixed bug with updating FieldDefs for some kind of composite queries
+  <li>Fixed bug with editing datasets returned by TMyStoredProc
+  <li>Fixed bug in TMyStoredProc with Local Failover and Disconnected Model
+  <li>Fixed bug with updating server calculated fields in datasets
+  <li>Fixed bug with performance loss when editing records containing BLOB and MEMO fields
+  <li>Fixed bug in the Lock demo
+</ul>
+
+<br><p><b>5.10.0.9 12-Jun-07</b></p>
+<ul>
+  <li>C++Builder 2007 supported
+  <li>Extended ability to detect MySQL boolean constants
+  <li>Added ability to customize information view about fields in DataSetManager
+  <li>Performance of some operations in DataSet Manager improved
+  <li>The MySQLBuilder tool has been renamed to SQLBuilder for MySQL
+  <li>Bug with the BaseSQL property set to an empty string after assigning macro values fixed
+  <li>Bug with incorrect registry key used by connect dialog to save/load the Server value fixed
+  <li>Bug with refreshing records in detail dataset fixed
+  <li>Fixed bug with lookup and data fields with the same name
+  <li>Fixed bug with calling the RefreshRecord method when the FullRefresh option is True 
+  <li>Fixed bug with raising exceptions when locating records on filtered recordsets
+  <li>Minor bugs in DataSet Manager fixed
+  <li>Avoided MySQL bug with truncating BLOB values affected by flow control constructs
+  <li>Removed restriction on datasets that TMyDataSource can be associated with
+</ul>
+
+<br><p><b>5.00.1.7 16-May-07</b></p>
+<ul>
+  <li>Support for rmReconnectExecute failover action with SQL statements execution added
+  <li>Added ability to drag datasets between connections in group by connections mode in DataSet Manager
+  <li>Added ability to assign DataSource and DataField properties of DevExpress DB-aware controls automatically in DataSet Manager
+  <li>Extended abilities of assigning default controls for datasets and fields in DataSet Manager
+  <li>Fixed bug with "DisposeBuf failed" exception on updating string fields in CachedUpdates mode
+  <li>Fixed bug with AV failure after second call to CommitUpdates when there are skipped records in cache
+  <li>Bug with complex fields modification in Disconnected Model with Pooling fixed
+  <li>Fixed bug with using TMyTable in Disconnected Model
+  <li>Fixed bug with executing multi-statement queries in Disconnected Mode
+  <li>Bug when UnPrepare is not called for TCustomDASQL on changing value of a macro fixed
+  <li>Fixed bug with updating views
+  <li>Fixed bug with FieldDefs.Update on complicated queries
+  <li>Fixed bug with MySQL Developer Tools connection checking
+  <li>Fixed bug with refreshing values of the TINYINT(1) fields
+  <li>Fixed bug in the MyDataAdapter component with reading BLOB fields
+  <li>Fixed bug with loading DataSet Manager package in a localized IDE
+  <li>Fixed minor bugs in DataSet Manager
+  <li>Fixed Access Violation bug on Delphi 2006 exit on Windows Vista
+  <li>Fixed minor bugs in installation for C++Builder and Delphi 2007
+</ul>
+
+<br><p><b>5.00.1.6 20-Apr-07</b></p>
+<ul>
+  <li>SSH protocol supported via Core Lab SecureBridge component set
+  <li>Added support for DevExpress controls in DataSet Manager
+  <li>FastScript v1.9 support added 
+  <li>Added support for using TMemDataSet.IndexFieldNames with RefreshQuick
+  <li>TMyDump performance improved 
+  <li>Now TMyDump controls connection character sets in the generated SQL scripts
+  <li>Fixed bug with executing parametrized queries in Detail dataset from design-time editor 
+  <li>Fixed access violation when loading DataSet Manager package under Delphi 2007 and Windows Vista
+  <li>Fixed bug with DataSet Manager when IDE freezes on loading a form with a large quantity of datasets
+  <li>Bug with calling TDataSet.Edit for master DataSet in CachedUpdates mode fixed 
+  <li>Bug with setting RecNo property for filtered datasets fixed
+  <li>Bug with PSGetTableName returning incorrect value after changing the SQL property fixed
+  <li>Fixed bug with SQL Generator in design time
+  <li>Minor bugs in installation fixed
+  <li>Fixed bug with trimming SQL texts in design-time editors
+  <li>Fixed access violation on closing Delphi 2005 when MySQL Developer Tools is installed
+  <li>Fixed bug in SQL Generator with generating REFRESH statements for detail DataSet 
+  <li>Fixed bug with displaying invalid object property type in object inspector 
+  <li>Fixed bug with filter expression that contains several consecutive left brackets 
+  <li>Fixed bug with opening queries with complex field names
+  <li>Fixed AV failure with deleting records in CachedUpdates mode 
+  <li>Fixed bug when detail DataSet is refreshed on switching master DataSet to Edit mode 
+  <li>Fixed bug with loading files in TMyScript editor
+  <li>Fixed bug with calling design-time editors of TDADataSource descendants by double click
+  <li>Fixed bug with creating components from Developer Tools database explorer window
+  <li>Fixed bug with the RefreshQuick method and SELECT statements containing column aliases
+  <li>Fixed bug in RefreshQuick method with semicolon at the end of the SELECT statement
+  <li>Fixed bug with detecting MySQL Developer Tools
+  <li>Fixed bug with focus in SQL editor when MySQL Developer Tools installed
+  <li>Fixed bug in TMyConnection editor with choosing a connection name that is unknown to MySQL Developer Tools
+  <li>Fixed bug with MySQLBuilder menu items
+  <li>Fixed bug with sockets leak under Linux
+</ul>
+
+
+<br><p><b>5.00.0.5 06-Apr-07</b></p>
+<ul>
+  <li>Now stored procedures list are retrieved from the information_schema if possible
+  <li>ConnectDialog demo added
+  <li>DataSet Manager stability improved
+  <li>Bug with setting RecNo property for filtered datasets fixed
+  <li>Bug with Locate on ordered data fixed
+  <li>Fixed bug with DefaultValues option and MySQL 5.0.37
+  <li>Fixed bug with calling RefreshQuick method for MyDAC DataSet with parameters in query
+  <li>Fixed bug with master/detail relationship with semicolon at the end of the detail query
+  <li>Fixed bug with TMyDataSetOptions.DefaultValues property for DATETIME fields
+  <li>Fixed bug with FieldDefs.Update and queries that return multiple result sets
+  <li>Fixed bug with opening queries with aggregate functions
+  <li>Fixed bug with executing queries that contain assignment operators
+  <li>Fixed bug with XmlTextReader.Eof property under C++Builder
+</ul>
+
+<br><p><b>5.00.0.4 22-Mar-07</b></p>
+
+<i>New functionality:</i>
+<ul>
+  <li>Delphi 2007 for Win32 supported
+  <li>Disconnected model for working offline and automatically connecting and disconnecting supported 
+  <li>Local failover for detecting connection loss and implicitly reexecuting some operations supported 
+  <li>Added DataSet Manager to control project datasets
+  <li>Integration with MySQL Developer Tools 2.00 added
+  <li>New TCRBatchMove component for transferring data between all types of TDataSets descendants added
+  <li>Output parameters from stored procedures and functions retrieval supported
+  <li>Data export and import to/from XML supported 
+  <li>WideMemo field type in Delphi 2006 supported
+  <li>AutoRefresh mode support added
+  <li>Option to break long-duration query execution added
+  <li>Ability to search for installed MySQL servers on the network added
+  <li>Support for sending messages to DBMonitor from any point of your program added
+</ul>
+
+<i>Support for more MySQL server functionality:</i>
+<ul>
+  <li>HANDLER syntax support in TMyTable added
+  <li>Enumeration values retrieval for the ENUM and SET fields added
+</ul>
+
+<i>Extensions and improvements to existing functionality:</i>
+<ul>
+  <li>General performance improved
+  <li>Master/detail functionality extensions: 
+  <ul>
+    <li>Local master/detail relationship support added 
+    <li>Support for master/detail relationships in CachedUpdates mode added
+  </ul>
+  <li>TMyScript component improvements: 
+  <ul>
+    <li>Support for executing individual statements in scripts added 
+    <li>Support for executing huge scripts stored in files with dynamic loading added 
+    <li>Ability to use standard MySQL client tool syntax added
+  </ul>
+  <li>Working with calculated and lookup fields improvements: 
+  <ul>
+    <li>Local sorting and filtering added 
+    <li>Record location speed increased 
+    <li>Improved working with lookup fields 
+  </ul>
+  <li>Greatly increased performance of applying updates in CachedUpdates mode 
+  <li>Connection pool functionality improvements:
+  <ul>
+    <li>Efficiency significantly improved 
+    <li>API for draining the connection pool added 
+  </ul>
+  <li>Option to ignore or replace records with duplicated key values in TMyLoader added
+  <li>Enhanced TMyServerControl functionality for working with server values
+  <li>Ability to customize update commands by attaching external components to TMyUpdateQuery objects added 
+  <li>Ability to include all fields in automatically generated update SQLs added
+</ul>
+
+<i>Usability improvements:</i>
+<ul>
+  <li>Syntax highlighting in design-time editors added 
+  <li>Completely restructured and clearer demo projects
+</ul>
+
+<br><p><b>4.40.0.26 12-Aug-08</b></p>
+<ul>
+  <li>Improved working with master/detail relationship
+  <li>Fixed bug with processing Unicode in parameters and BLOBs
+  <li>Fixed bug with freezing when executing some SQL queries
+  <li>Fixed bug with executing prepared queries
+  <li>Fixed bug with memory leak on error in TCustomDADataSet 
+  <li>Fixed bug with memory leak in TFieldDefs.Update
+  <li>Fixed bug with deleting manually added macros on assigning values to them
+</ul>
+
+<br><p><b>4.40.0.25 07-Jun-07</b></p>
+<ul>
+  <li>Fixed bug with AV failure after second call to CommitUpdates when there are skipped records in cache
+  <li>Bug when UnPrepare is not called for TCustomDASQL on changing value of a macro fixed
+  <li>Fixed bug in the MyDataAdapter component with reading BLOB fields
+  <li>Fixed bug with DefaultValues option and MySQL 5.0.37
+</ul>
+
+<br><p><b>4.40.0.24 27-Mar-07</b></p>
+<ul>
+  <li>Added possibility to use connection pooling in ODAC, SDAC, IBDAC and MyDAC at the same time.
+  <li>Now stored procedures list are retreived from the information_schema if possible (M19458)
+  <li>Bug with setting the RecNo property for filtered datasets fixed
+  <li>Bug with using alternative memory managers fixed
+  <li>Bug with deleting field from TVirtualTable fixed
+  <li>Fixed bug with WideString lookup fields under Delphi 2006 (M19051)
+  <li>Fixed bug with RefreshQuick and BLOB fields (M19310)
+</ul>
+
+<br><p><b>4.40.0.23 16-Feb-07</b></p>
+<ul>
+  <li>FastReport 4 support added
+  <li>Editor for the MasterFields property of TCustomDADataset in C++Builder added
+  <li>Fixed bug with TMyCommand::Execute ambiguity under C++Builder (18239)
+  <li>Fixed bug with table name quotations in the RefreshQuick method (17799)
+  <li>Fixed bug with fetching large VARCHAR values
+  <li>Bug with the IndexFieldNames property not working for detail dataset in master/detail link fixed
+  <li>Bug with reading and writing Unicode BLOB through TBlobStream on computers with multibyte character set fixed
+  <li>Bug with utf8 to Unicode conversion fixed
+</ul>
+
+<br><p><b>4.40.0.22 05-Dec-06</b></p>
+<ul>
+  <li>Added ability to make Master/Detail relationship by TBytesField
+  <li>Fixed bug in TMyDump with field names that contain point
+</ul>
+
+<br><p><b>4.40.0.21 05-Dec-06</b></p>
+<ul>
+  <li>Added support for Boolean parameter type (15825)
+  <li>Fixed bug with posting read-only fields (16492)
+  <li>Fixed bug with connection pooling in FethAll=False mode (15836)
+  <li>Fixed bug with SHOW FIELDS in Direct mode
+  <li>Fixed bug with unpreparing statements (16032)
+  <li>Fixed bug with TraceFlags in DASQLMonitor (D16224)
+  <li>Fixed bug with TDAParam.AsDate property (D16213)
+  <li>Fixed bug with wrong value of the StatementTypes variable in the BeforeUpdateExecute event
+  <li>Bug with AV failure when modifying VirtualTable data in design time fixed
+</ul>
+
+<br><p><b>4.40.0.20 31-Oct-06</b></p>
+<ul>
+  <li>Optimized TDALoader.CreateColumns method (15322)
+  <li>Fixed bug with applying updates via MIDAS (14748)
+  <li>Fixed bug with generating scripts for stored procedures in TMyDump (15255)
+  <li>Some bugs with object names in TMyDump fixed (15480)
+  <li>Bug with comparing Unicode strings fixed
+  <li>Bug with BeforeDisconnect event lost in design time fixed
+  <li>Bug with debug mode in design time fixed
+  <li>Bug with RefreshRecord in CachedUpdates mode fixed
+  <li>Bug with mouse wheeling in FilterBar and Search bar of CRDBGrid fixed (15675)
+</ul>
+
+<br><p><b>4.40.0.19 29-Sep-06</b></p>
+<ul>
+  <li>Fixed bug with generating queries in TMyQuery design-time editor
+  <li>Fixed bug with editing queries in TMyDump design-time editor
+  <li>Fixed bug with macros and "&amp;" operand
+</ul>
+
+<br><p><b>4.40.0.18 28-Aug-06</b></p>
+<ul>
+  <li>Support for Professional editions of Turbo Delphi, Turbo Delphi for .NET, Turbo C++ added
+  <li>Avoided MySQL server bug with CONCAT function result in MyConnection.UseUnicode=True mode
+  <li>Bug with assertion on dumping tables with complex name fixed (13560)
+  <li>Fixed bug with running MySQLBuilder Add-in under limited user account (13455)
+  <li>Fixed bug with working with temporary tables in design-time (12666)
+  <li>Bug with automatic detail field value generation fixed (D12886)
+  <li>Fixed bug with TrimVarChar
+  <li>Fixed bug with FindKey method when the primary key has field of type Int64 (D12558)
+  <li>Added capability to use quoted field names in IndexFieldNames property (D10091)
+  <li>Bug with canceling edit on record with BLOB fields fixed
+  <li>Bug with WideString lookup fields size fixed
+  <li>Bug with loading wide strings in TVirtualTable fixed
+  <li>Added support for macros names in which first symbol is digit
+  <li>Bugs with parsing macros fixed
+  <li>Bug with filtering DateTime fields when filter expression format differs from one in local system fixed (D12823)
+</ul>
+
+<br><p><b>4.30.1.17 07-Jul-06</b></p>
+<ul>
+  <li>Fixed bug with input parameter of type Data in stored procedure editor (12286)
+  <li>Fixed bug with choosing stored procedure in Stored Procedure Editor when Ñonnection is not set (12366)
+  <li>Fixed bug with wrong line number in DAScript.EndLine property (M12015)
+  <li>Fixed bug with filtering empty strings (S12329)
+  <li>Bug with using calculated and lookup fields in Master/Detail relationship fixed
+  <li>Fixed bug with design-time editor for Detail dataset in Master/Detail relationship (M12021, M11914)
+  <li>Bug with modifying FieldDefs in TVirtualTable fixed
+  <li>Performance of SaveToFile and LoadFromFile functions in TVirtualTable improved (D12435)
+  <li>Bug in TVirtualTable Editor fixed
+</ul>
+
+<br><p><b>4.30.1.16 06-Jun-06</b></p>
+<ul>
+  <li>Fixed bug with fetching some floating-point values calculated on server
+</ul>
+
+<br><p><b>4.30.1.15 31-May-06</b></p>
+<ul>
+  <li>Modifying FieldDefs in TVirtualTable component accelerated
+  <li>Fixed bug with big values of autoincrement fields (11635)
+  <li>Fixed bug with memory leak in TCustomDADataSet (11636)
+  <li>Bug with calling Parameter Editor from Object Inspector fixed (11671)
+  <li>Bug with Master-Detail linked by parameters fixed
+</ul>
+
+<br><p><b>4.30.1.14 18-May-06</b></p>
+<ul>
+  <li>MyDAC is now compatible with InterBase Data Access Components
+</ul>
+
+<br><p><b>4.30.0.13 12-May-06</b></p>
+<ul>
+  <li>Missing file MyEmbConnection.hpp added for C++Builder 2006. (11470)
+  <li>Fixed bug with calling TMyTable.Prepare (11441)
+  <li>Fixed bug with processing empty string parameter with MyConnection.Options.UseUnicode=True mode (11469)
+  <li>Fixed bug with fetching long float values (11403)
+  <li>Fixed bug with FieldDefs.Update in FetchAll=False mode (11409)
+  <li>Fixed bug with Currency parameters (11360)
+  <li>Fixed bug with loosing connection for FetchAll=False datasets (M11398)
+  <li>Added support for MIDAS TDataSet.PSExecuteStatement ResultSet parameter (M11351)
+  <li>Fixed bug with AV failure in ApplyUpdates after CommitUpdates
+  <li>Bug with local filter under CLR fixed (11291)
+  <li>Bug with using alternative memory managers fixed
+</ul>
+
+<br><p><b>4.30.0.12 14-Apr-06</b></p>
+<ul>
+  <li>Fixed bug with positioning in grid after TCustomDADataSet.Locate (11256)
+  <li>Fixed bug with Master/Detail relations and local sorting and filtering (11254, 11255)
+  <li>TCustomDADataSet.Locate now centers position in DBGrid (10976)
+  <li>Fixed some bugs with views in TMyDump
+  <li>Fixed bug with getting declaration of ENUM fields on EXPLAIN statements for MySQL 4.1 and older (11007)
+  <li>Fixed bug with FORMAT function result in MyConnection.UseUnicode=True mode
+  <li>Fixed bug with SHOW CREATE TABLE in MySQL 4.0
+  <li>Fixed bug with calling TCustomMyQuery.Prepare method in Direct=False mode (10765)
+  <li>Bug with displaying query objects in objects tree in DBMonitor fixed
+  <li>Optimized using of system resources when opening query (O11270)
+</ul>
+
+<br><p><b>4.30.0.11 10-Mar-06</b></p>
+<ul>
+  <li>Improved performance of updating recordsets with multiple fields
+  <li>Fixed bug with erroneous exception on TDAParam.LoadFromStream
+  <li>Bug with SSL fixed
+  <li>Bug with AV failure when calling CommitUpdates method of inactive dataset fixed
+  <li>Bug with error failure when assigning empty dataset to VirtualTable under CLR fixed
+  <li>Fixed bug with wrong reference to QT on Kylix C++ console applications
+  <li>Fixed bug with "Command Out of Sync" error for prepared datasets in FetchAll=False mode
+  <li>Fixed bug with "Net packet out of order" error for multistatement command
+  <li>Fixed bug with closing datasets in FetchAll=False mode
+  <li>Fixed bug with changing TCustomMyDataSet.SQL property for prepared statements
+  <li>Fixed bug with non-standard NumericType in FetchAll=False mode
+</ul>
+
+<br><p><b>4.30.0.10 26-Jan-06</b></p>
+<ul>
+  <li>Support for Delphi 2006 added
+  <li>BIT fields of MySQL 5.0 and above are now represented as TLargeintField
+  <li>FastReport 3.20 support added
+  <li>Added server version checking on Prepare method
+  <li>Added capability to close DataSet quicker when FetchAll property is False
+  <li>Fixed bug with opening prepared statements
+  <li>Fixed bug with setting values to BIT fields in MySQL 5 with SQL_STRICT mode
+  <li>Fixed bug with truncating field values for "SHOW SLAVE STATUS" statements
+  <li>Fixed bug with 'delimiter' keyword in TMyScript
+  <li>Fixed bug with single MacroChar in string constants inside SQL
+  <li>Bug with invalid processing of SQL statements when using SQL keywords as macros name fixed
+</ul>
+
+<br><p><b>4.00.2.8 19-Dec-05</b></p>
+<ul>
+  <li>Added BIT and INTEGER types support in parameters of stored procedures
+  <li>Bug with restoring BaseSQL property fixed
+</ul>
+
+<br><p><b>4.00.2.7 07-Dec-05</b></p>
+<ul>
+  <li>Added 'delimiter' keyword support in TMyScript
+  <li>TCustomDADataSet.FindKey, TCustomDADataSet.FindNearest methods added for BDE compatibility
+  <li>Fixed bug with CREATE TRIGGER statements in TMyScript
+  <li>Fixed bug with SetOrderBy function
+  <li>Fixed installator bug with Delphi 2005
+  <li>Fixed bug with Locate by multiple fields
+  <li>Fixed bug with unchanging RecordCount value after CancelUpdates
+  <li>Bug with refreshing record after changing SQL property fixed
+</ul>
+
+<br><p><b>4.00.1.6 24-Oct-05</b></p>
+<ul>
+  <li>Added capability to prevent simultaneous access of several MyEmbConnection instances to single data folder
+  <li>Fixed bug with MyEmbConnection under C++Builder and Kylix
+  <li>Fixed bug with FieldDefs.Update
+  <li>Bug with updating FilterSQL fixed
+  <li>Bug with VirtualTable registration in CBuilder fixed
+  <li>Bug with VtReg.pas in Pro version fixed
+  <li>Bug with closing dataset (SQL contains macros) when the InsertSQL property changes fixed
+  <li>Bug with incorrect sequence of calling BeforeClose, BeforeDisconnect events fixed
+</ul>
+
+<br><p><b>4.00.1.5 11-Oct-05</b></p>
+<ul>
+  <li>FieldDefs.Update behavior in case of temporary tables improved
+  <li>Fixed MySQL server bug with DESCRIBE statements
+  <li>Fixed bug with Master/Detail relations and LOCK clause
+  <li>Fixed bug with LOAD INTO statements
+  <li>Fixed bug with setting TMyStoredProc.FetchAll to False in design-time
+  <li>Fixed bug with describing fields for parametrised prepared statements
+  <li>Fixed bug with Master/Detail relations on string keys that differ in case only
+  <li>Bug with reexecution after SQL statement changed fixed
+  <li>Bug with assertion failure with OnNewRecord fixed
+  <li>Fixed bug with detail refresh when field referenced by MasterFields property is empty
+  <li>Fixed bug with extra detail record posts after master record changed
+  <li>Bug with firing AfterScroll Event after detail dataset refresh fixed
+  <li>Bug with simultaneous use of several DAC products fixed
+  <li>Bug with changing FilterSQL of inactive dataset fixed
+  <li>Bug with column sizing with CRDBGrid.OptionsEx.dgeStretch=True at design-time fixed
+  <li>Bug with TCRColumn.SummaryMode=smLabel for string and date fields fixed
+</ul>
+
+<br><p><b>4.00.1.3 02-Sep-05</b></p>
+<ul>
+  <li>Deferred detail dataset refresh feature with TCustomDADataSet.Options.DetailDelay property added
+  <li>TCustomMyConnection.Ping behavior in case connection loss improved
+  <li>Fixed bug with two Stored Procedures with same names from different databases
+  <li>Fixed bug with locating, filtering and local sorting of strings that contain '--'
+  <li>Fixed DisposeBuf bug
+  <li>Fixed bug with calculating percent in TMyDump.OnRestoreProgress for huge scripts
+  <li>Fixed bug with SHOW statement and TMyConnection.Options.UseUnicode mode
+  <li>Fixed bug with TMyConnection.ExecSQL and recordsets
+  <li>Fixed bug with FieldDefs.Update and multi-statement query
+  <li>Fixed bug with Field.FieldName case sensitivity
+  <li>Fixed bug with reopening recordset after connection lost
+  <li>Fixed bug with old libmysql in MyConnection.Options.Direct = False mode
+</ul>
+
+<br><p><b>4.00.0.2 04-Aug-05</b></p>
+<ul>
+  <li>Optimized macros processing
+  <li>Fixed bug with getting default values for float fields
+  <li>Fixed bug with TCustomMyDataSet.IndexFieldNames set at design-time
+  <li>Fixed bug with adding WHERE to statements with ORDER BY or LIMIT clauses
+  <li>Fixed bug with fetching BCD values with large precision
+  <li>Fixed bug with MySqlVioTcpSSL on Kylix
+</ul>
+
+<br><p><b>4.00.0.1 29-Jul-05</b></p>
+<ul>
+  <li>Unicode support added
+  <li>Enhanced support for MySQL Embedded Server with TMyEmbConnection component added
+  <li>Binary protocol support for MySQL 4.1 and above added
+  <li>Encrypted SSL connections support with OpenSSL added
+  <li>Enhanced support for national charsets added with TMyConnectionOptions.Charset property
+  <li>BLOB compression support added
+  <li>RefreshQuick for TCustomMyDataSet added
+  <li>Retrieve field's default value added with TCustomMyDataSet.Options.DefaultValues property
+  <li>Large amount of data support for TMyDump added
+  <li>Server start/stop ability for TMyServerControl added
+  <li>TMyBuilder component added for easy using MySQLBuilder at run-time
+  <li>FAQ added
+  <li>Tested with MySQL server 5.0.9
+</ul>
+
+<br><p><b>3.55.0.22 05-Jul-05</b></p>
+<ul>
+  <li>Percent calculating bug in TMyDump.OnRestoreProgress  is fixed
+  <li>Bug with TDAParam.AsString with TDataTime parameters fixed
+</ul>
+
+<br><p><b>3.55.0.21 30-May-05</b></p>
+<ul>
+  <li>MySQL 5.0.3 BIT type support added
+  <li>Optimized MySQLMonitor BLOB parameters processing
+  <li>Ability of automatic preparing query with TCustomDADataSet.Options.AutoPrepare property added
+  <li>Ability to synchronize position at different DataSets with TCustomDADataSet.GotoCurrent method added
+  <li>Fixed bug with parsing alias
+  <li>Fixed bug with range-checking error on describe fields in Direct mode
+  <li>Fixed bug with GetOrderBy
+  <li>Fixed bug with DESC &lt;table&gt;
+  <li>Fixed trial version AV bug on Win2003 SP1
+</ul>
+
+<br><p><b>3.50.0.20 29-Apr-05</b></p>
+<ul>
+  <li>Update Pack 3 is required for Delphi 8
+  <li>Fixed design-time TMyTable AV bug
+  <li>Fixed bug with TMyCommand.CommandTimeout default value
+  <li>Fixed design-time TMyTable bug with unexpected connect on project opening
+</ul>
+
+<br><p><b>3.50.0.19 07-Apr-05</b></p>
+<ul>
+  <li>DECIMAL column type in MySQL 5.0.3 support added
+  <li>Fixed bug with ' in scripts
+  <li>Fixed bug with command executing performance in Direct mode
+  <li>Fixed bug with TMyTable.IndexDefs
+</ul>
+
+<br><p><b>3.50.0.18 29-Mar-05</b></p>
+<ul>
+  <li>Lock Demo added
+  <li>Fixed bug with performance in Direct mode
+  <li>Fixed bug with small memory leak in Direct mode
+  <li>Fixed bug with processing quote("'") in TMyScript string literals
+  <li>Fixed bug with processing DateTime fields in TMyLoader and TMyDump
+  <li>Fixed bug with processing DateTime params
+  <li>Fixed bug with quoting fields in SQLRefresh
+  <li>Fixed bug with setting MinValue and MaxValue for TFMTBCDField
+  <li>Fixed design-time bug with deleting TMyTable component
+</ul>
+
+<br><p><b>3.50.0.17 24-Feb-05</b></p>
+<ul>
+  <li>CommandTimeout default value set to 0 (infinite)
+  <li>TCustomDADataSet.UpdateObject support for MIDAS added
+  <li>Fixed "Net packets out of order" bug
+  <li>Fixed bug with tfMisc in TMySQLMonitor.TraceFlags
+  <li>Fixed bug with detach file on LOAD DATA in Direct mode
+  <li>Fixed bug with Direct and multithreading
+  <li>Fixed bug with CLR BLOB Locate
+  <li>Fixed bug with FmtBCD Locate
+</ul>
+
+<br><p><b>3.50.0.16 21-Jan-05</b></p>
+<ul>
+  <li>Support for Delphi 2005 added
+  <li>TMySQLMonitor.OnSQL can return statement encoded to an escaped SQL string
+  <li>Support for ConnectionTimeout in TMyConnection.ExecSQL added
+  <li>Fixed bug with LOAD DATA LOCAL INFILE in Direct mode
+  <li>Fixed bug with design-time SQL generator and macros
+  <li>Fixed bug with MyConnection.Ping in Direct mode
+  <li>Fixed bug with FetchAll = False in Direct mode
+  <li>Fixed bug with TMyConnection.IsolationLevel
+  <li>Fixed bug with KeepDesignConnected
+  <li>Fixed infrequent bug with IndexFieldNames
+  <li>Fixed design-time bug with deleting TDALoader.Connection component
+  <li>Fixed design-time bug with TDALoader columns
+  <li>Fixed bug with TDALoader in Kylix
+  <li>Fixed bug with disconnect on fatal error
+</ul>
+
+<br><p><b>3.30.2.15 22-Dec-04</b></p>
+<ul>
+  <li>TCustomMyDataSet.CommandTimeout property added
+  <li>TMyCommand.CommandTimeout property added
+  <li>"True" value for boolean fields and parameters stored as "1"
+  <li>Connecting with database not specified bug fixed
+  <li>Fixed bug with connection loss on long queries
+  <li>Fixed bug with updating SELECT with ";" after table name
+  <li>Fixed bug with decimal separator on Delphi 5(C++Builder 5)
+  <li>Fixed bug with range-checking on describing fields
+  <li>Fixed design-time bug with deleting TMyDump(TMyBackup).Connection component
+  <li>Fixed bug with generating update queries and float fields in WHERE clause
+  <li>Fixed small bug with Embedded Server Demo
+</ul>
+
+<br><p><b>3.30.1.13 23-Nov-04</b></p>
+<ul>
+  <li>Ability to store only a part of data in TMyDump.BackupQuery added
+  <li>Creating additional connection for TMyDump disabled
+  <li>Fixed bug with design-time SQLGenerator and QuoteNames
+  <li>Fixed bug with boolean fields in TMyDump
+  <li>Fixed bug with SP in MySQL 5.0.1
+  <li>Fixed bug with IndexFieldNames and Locate
+  <li>Fixed bug with 4.1 authentication with empty Database
+  <li>Fixed bug with memory leaks on connection lost
+  <li>Fixed bug with KeepDesignConnected
+  <li>Fixed bug with getting TCustomMyTable.IndexDefs for MySQL 4.1
+</ul>
+
+<br><p><b>3.30.0.12 28-Oct-04</b></p>
+<ul>
+  <li>Fixed C++Builder hpp bug
+  <li>Fixed bug with TMyTable update
+  <li>Fixed bug with fetching empty strings in Direct mode
+</ul>
+
+<br><p><b>3.30.0.10 21-Oct-04</b></p>
+<ul>
+  <li>Full support for all current authentication protocols added
+  <li>Generating update SQL for tables from other database added
+  <li>TCustomMyDataSet.Options.EnableBoolean property added
+  <li>TMyConnection.ThreadId property added
+  <li>lxPartialCompare option for DataSet.LocateEx added
+  <li>FastReport3 engine and demo added
+  <li>Fixed rare bug with changing decimal separator
+  <li>Fixed bug with OnFilterRecord and Blob fields (S4962)
+  <li>Fixed Locate string bug under Kylix
+  <li>Fixed bug with Reconnect and prepared statements (S4910)
+  <li>Fixed bug with BlobField.SetAsString
+  <li>Fixed bug with QuoteNames and Master-Detail relationship
+</ul>
+
+<br><p><b>3.10.2.8 10-Sep-04</b></p>
+<ul>
+  <li>Common class DADataAdapter isolated to CoreLab.Dac.AdoNet.dll library
+  <li>Fixed bug with evaluation period in Trial version
+  <li>Fixed bug with TDAConnectionOptions.AssignTo
+  <li>Fixed bug with SHOW CREATE in TMyDump
+  <li>Fixed bug with filtering NULL string values (S4776)
+  <li>Fixed bug with large blobs in TVirtualTable (4769)
+</ul>
+
+<br><p><b>3.10.1.7 20-Aug-04</b></p>
+<ul>
+  <li>Fatal errors processing improved
+  <li>TINYINT(1) fields now represented as TBooleanField
+</ul>
+
+<br><p><b>3.10.1.6 22-Jul-04</b></p>
+<ul>
+  <li>Assembly CoreLab.MyDac.Data renamed to CoreLab.MyDac.AdoNet
+  <li>Fixed bug with Delphi8 Informal Update 3 for ASP.NET
+  <li>Fixed NRE with flat (wide)string processing (CLR only)
+  <li>Fixed bug with IndexDefs string field processing (CLR only)
+</ul>
+
+<br><p><b>3.10.0.5 08-Jul-04</b></p>
+<ul>
+  <li>Local sorting ability with TMemDataSet.IndexFieldNames added
+  <li>TCustomMyTable.IndexDefs property added
+  <li>TMyConnection.Options.NumericType property added
+  <li>TMyStoredProc component added
+  <li>MyDataAdapter component added
+  <li>Fixed bug with generating SQLUpdate for tables with complex primary keys (4535)
+  <li>Fixed memory leak at CLR params processing
+  <li>Fixed bug with mask in TCustomDADataSet.Filter
+  <li>Fixed bug with simultaneously installed CBuilder5 and Delphi5 versions
+</ul>
+
+<br><p><b>3.00.1.4 26-May-04</b></p>
+<ul>
+  <li>Trial version IDE warning disabled
+  <li>TCRColumn.TotalValue property added
+  <li>Trial version AV bug fixed (BLOB support)
+  <li>Fixed some bugs with using DAC in Dll
+  <li>Memory leak fixed
+  <li>Fixed bug with Local filtering (DateTime fields)
+  <li>Fixed bug with int64 locate
+  <li>Fixed assertion with TMyConnectDialog.Execute without MyConnection (4434)
+  <li>MyBackup bug fixed
+</ul>
+
+<br><p><b>3.00.1.3 29-Apr-04</b></p>
+<ul>
+  <li>TCustomMyDataSet.Options.LongStrings property added
+  <li>TMyLoader.OnPutData event published again
+  <li>Fixed bug with trimming non-binary BLOB with #0 (4246)
+  <li>Memory leak on SQL property changing fixed
+  <li>Bug with title of TCRDBGrid when RecordCount=1 fixed
+  <li>Bug with locating record by DATE field fixed (O4257)
+  <li>Bug with IsNull value in lookup string fields fixed
+  <li>Bug with opening TCustomDADataSet if Filtered = True fixed (O4251)
+</ul>
+
+<br><p><b>3.00.0.2 09-Apr-04</b></p>
+<ul>
+  <li>Support for Delphi 8 added
+  <li>MySQL 5.00 support added
+  <li>Connection pooling support
+  <li>Performance improved
+  <li>TMyLoader performance greatly improved
+  <li>TCRGrid sources in Standard edition
+  <li>.NET Windows Forms demo project added
+  <li>ASP.NET demo project added
+  <li>Global variable MySQLClientLibrary added
+  <li>New time trial limitation
+  <li>Fixed bug with CustomDADataSet.Options.ReturnParams (S4159)
+  <li>Fixed bug with CRDBGrid
+  <li>Fixed bug with resetting TMyLoader.TableName
+  <li>Bug in FastReport Demo fixed
+  <li>Fixed bug with getting RecordCount with Filtered = True (S4125)
+  <li>Fixed bug with getting OldValue after Insert
+</ul>
+
+<br><p><b>2.00.3.6 15-Mar-04</b></p>
+<ul>
+  <li>Mouse wheel support added to CRDBGrid
+  <li>MySQL Embedded server Demo added
+  <li>ConnectDialog Demo added
+  <li>Fixed bug with quote char in Filter property
+  <li>Fixed bug with embedded server startup if standard is not installed
+  <li>Autostop of MySQL server on embedded server startup is disabled
+</ul>
+
+<br><p><b>2.00.3.5 05-Feb-04</b></p>
+<ul>
+  <li>SELECT '' support added
+  <li>Method TMyConnection.Ping added
+  <li>Method TMyConnection.GetExecuteInfo added
+  <li>Autostop normal server on start embedded added
+  <li>Fixed bug with TCustomMSDataSet.PSGetKeyFields (4001)
+  <li>Fixed bug with QuoteNames
+  <li>Fixed bug with datadir checking on embedded server start
+  <li>Fixed bug with large ID values for Direct mode
+  <li>Fixed bug with restoring position after Refresh (3962)
+</ul>
+
+<br><p><b>2.00.2.4 30-Dec-03</b></p>
+<ul>
+  <li>BDE Migration Wizard algorithm optimized
+  <li>Limited MySQL server 4.1.1 support added
+  <li>If libmysql.dll not found then raise EOSError (instead of Exception)
+  <li>Property TCustomMyDataSet.InsertId: int64 added
+  <li>Timestamp support added for CheckRowVersion = True
+  <li>Fixed bug with TMyScript.Debug (DataSet &lt;&gt; nil)
+  <li>Fixed bug with MacroChar('%') in TMyScript
+  <li>Fixed bug with MyDump.Backup in binary mode
+  <li>Fixed bug with empty string values in Direct mode (3730)
+  <li>Fixed bug with WHERE + LIMIT
+  <li>Fixed rare bug with processing '?' in string literals
+</ul>
+
+<br><p><b>2.00.1.3 24-Nov-03</b></p>
+<ul>
+  <li>Property MyConnection.Options.Direct is set to True by default
+  <li>TCustomMyDataSet.Lock method added
+  <li>AutoInc fields can be modified now
+  <li>Fixed bug with SHOW CREATE TABLE on MySQL client 4.0.12 - 4.0.14 (3578)
+  <li>Fixed bug with simultaneous use of Filter and FilterSQL (3615)
+  <li>Fixed small design-time bug with TMyScript.DataSet (3678)
+  <li>Fixed bug with ORDER BY + LIMIT
+</ul>
+
+<br><p><b>2.00.0.2 14-Oct-03</b></p>
+<ul>
+  <li>WHERE clause generating algorithm improved
+</ul>
+
+<br><p><b>2.00.0.1 02-Oct-03</b></p>
+<ul>
+  <li>Access to MySQL without client library using DirectMySQLObjects by Cristian Nicola
+  <li>Prepare support and new parameter binding schema for MySQL 4.1 added
+  <li>Supports working with MySQL server and Embedded server at the same time
+  <li>BDE migration wizard
+  <li>TMyDump component to store a database or its parts as a script
+  <li>TMyBackup component for backup coping specified tables on the server
+  <li>TMyServerControl component to manage the server and standard service tasks execution
+  <li>TMyLoader component for fast loading data to the server
+  <li>New options of TMyConnection such as Compress, Protocol, Direct and Embedded added
+  <li>New properties ClientVersion, ServerVersion were added to TMyConnection
+  <li>Method ExecSQL in TMyConnection added
+  <li>Methods GetTableNames and GetDatabaseNames in TMyConnection added
+  <li>Property TMyConnection.Charset added
+  <li>Property TMyConnection.IsolationLevel added
+  <li>Methods LockTable and UnlockTable added to TCustomMyDataset
+  <li>Properties Limit and Offset added to TCustomMyTable
+  <li>Method TCustomMyTable.EmptyTable added
+  <li>FetchAll set to True by default
+  <li>Large SQL (INSERT/UPDATE BLOB's) executing performance greatly improved
+  <li>Bug with opening queries (FilterSQL &lt;&gt; '', StreamedActive = True) fixed (3497)
+  <li>Fixed bug with calling Refresh after RefreshRecord (3269)
+  <li>Fixed bug with design-time EdMyParam on Master/Detail relations (3155)
+</ul>
+
+<br><p><b>1.50.0.15 04-Jul-03</b></p>
+<ul>
+  <li>Fixed bug with datadir check for Embedded Server
+  <li>Fixed bug with design-time EdMyScript for Kylix (3091)
+</ul>
+
+<br><p><b>1.50.0.14 02-Jul-03</b></p>
+<ul>
+  <li>MySQL Embedded Server support added for Kylix
+  <li>Check for datadir present added
+  <li>Changed behavior on calculating affected rows count
+  <li>Fixed bug with possible AV on destroying DataSet in Delphi5 (S3069)
+</ul>
+
+<br><p><b>1.50.0.13 06-Jun-03</b></p>
+<ul>
+  <li>MySQL Embedded Server support added
+  <li>MySQL Server 4.1 limited support added
+  <li>Properties Port and Database in ConnectForm added
+  <li>RefreshRecord performance improved
+  <li>InfoPower demos added
+  <li>'Explain query...' added to design-time MyQuery menu
+  <li>'Show CREATE...' added to design-time MyQuery and MyTable menus
+  <li>SQL Generator improved - support for complicated statements added
+  <li>SQL Generator improved - "Quote names" checkbox added
+  <li>Complex keys support added
+  <li>Design-time SQL Generator was simplified
+  <li>TParam -&gt; TDAParam
+  <li>Fixed bug with trimming char fields having empty values (S2987)
+  <li>Bug on Post (Insert/Append) when InsertSQL execution fails fixed
+  <li>Fixed bug with call RefreshRecord on SELECT w/o data fields
+  <li>Fixed bug with Locate TIME fields
+  <li>Fixed bug with autosetting MyCommand.ParamCheck in design-time editor
+  <li>Fixed bug with ParamCheck = False (3044)
+  <li>Fixed bug with fetching value for "Null" column in "SHOW COLUMNS ..." query
+</ul>
+
+<br><p><b>1.30.2.12 05-May-03</b></p>
+<ul>
+  <li>Search algorithm for 'libmysqlclient.so' under Linux improved
+  <li>Fixed inconvenience with getting databases list if MyConnection.Database was wrong
+</ul>
+
+<br><p><b>1.30.2.11 04-Apr-03</b></p>
+<ul>
+  <li>unit MySQLAccess renamed to MyClasses
+  <li>MyBuilder bug fixed
+  <li>Property TMyDataSetOptions.LongStrings removed
+  <li>Parameters parsing improved. Symbol ':' in string literals is ignored (S2836)
+  <li>Fixed bug with changing MyDAtaSet.Options.FieldsAsString and design-time fields (2905)
+</ul>
+
+<br><p><b>1.30.1.10 24-Feb-03</b></p>
+<ul>
+  <li>Refresh improved - current record is restored after Refresh call
+  <li>Property MyConnection.Options.KeepDesignConnected added
+  <li>Property MyConnectDialog.StoreLogInfo published
+  <li>Property MyScript.DataSet was published (2733)
+  <li>Property TMyCommand.InsertId: int64 added
+  <li>TINYTEXT -&gt; TMemoField, TINYBLOB -&gt; TBlobField
+  <li>Support for TIMESTAMP (10), TIMESTAMP (4), TIMESTAMP (2) added
+  <li>Support for LIKE expressions in Filter property added (D2706)
+  <li>Fixed bug with TMyConnection.SetPort in CBuilder
+  <li>Bug with UNSIGNED INT processing fixed
+  <li>Bug with fetching '(var)char binary' fields fixed (2642)
+  <li>Bug in MyTable.Execute fixed
+</ul>
+
+<br><p><b>1.30.0.9 03-Feb-03</b></p>
+<ul>
+  <li>Bug with describe fields on 3.23 client fixed
+</ul>
+
+<br><p><b>1.30.0.8 30-Jan-03</b></p>
+<ul>
+  <li>MySQL v4.0 support added
+  <li>Dataset 'with many fields' update performance improved
+  <li>Improved performance for opening queries with lot of parameters
+</ul>
+
+<br><p><b>1.20.0.7 04-Jan-03</b></p>
+<ul>
+  <li>Fetch performance improved for DataSet.FetchAll = True
+  <li>'Connection Lost' error processing improved
+  <li>'Prepare' button removed from demos
+  <li>Fixed bug with memory leaks on DataSet.FetchAll = False (2547, 2548)
+  <li>Fixed bug with DataSet.Last on DataSet.FetchAll = False
+  <li>Fixed small bug with design-time MSConnection editor (1648)
+  <li>Bug with string quote in filter expression fixed (O2532)
+</ul>
+
+<br><p><b>1.20.0.6 26-Dec-02</b></p>
+<ul>
+  <li>Kylix2 and Kylix3 support
+  <li>ReportBuilder demos added
+  <li>DBMonitor client implementation moved to COM server
+  <li>Fixed common bug with lost data in DT-editors (D2137)
+  <li>Bug with design-time MSConnection in DataModule fixed (O2290)
+  <li>Bug with Master/Detail relation for ClientDataSet fixed (O2423)
+  <li>Fixed small bug with error processing
+  <li>Fixed bug with executing wrong script at design-time (2279)
+</ul>
+<!-- end content -->
+<p>&nbsp;</p><p>&nbsp;</p><hr size=1><p>&copy; 1997-2009 Devart. All rights reserved.</p>
+</div>
+
+<script>
+TestEngine();
+AdjustContentSize();
+</script>
+</body>
+</html>

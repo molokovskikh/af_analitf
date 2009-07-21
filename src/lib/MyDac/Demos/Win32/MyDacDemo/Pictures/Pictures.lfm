@@ -1,0 +1,205 @@
+inherited PicturesFrame: TPicturesFrame
+  Height = 277
+  Width = 443
+  Align = alClient
+  ClientHeight = 277
+  ClientWidth = 443
+  TabOrder = 0
+  object Splitter1: TSplitter[0]
+    Cursor = crVSplit
+    Height = 2
+    Top = 153
+    Width = 443
+    Align = alTop
+    ResizeAnchor = akTop
+  end
+  object ScrollBox1: TScrollBox[1]
+    Height = 96
+    Top = 181
+    Width = 443
+    Align = alClient
+    TabOrder = 3
+    object DBImage: TDBImage
+      Height = 96
+      Width = 443
+      Align = alClient
+      DataField = 'Picture'
+      DataSource = dsPictures
+    end
+  end
+  object DBGrid: TDBGrid[2]
+    Height = 127
+    Top = 26
+    Width = 443
+    Align = alTop
+    DataSource = dsPictures
+    FixedColor = clBtnFace
+    FixedHotColor = cl3DLight
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    OptionsExtra = [dgeAutoColumns, dgeCheckboxColumn]
+    ParentColor = False
+    TabOrder = 0
+  end
+  object ToolBar: TPanel[3]
+    Height = 26
+    Width = 443
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 26
+    ClientWidth = 443
+    TabOrder = 1
+    object Panel1: TPanel
+      Left = 1
+      Height = 24
+      Top = 1
+      Width = 388
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 388
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btOpen: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Open'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btOpenClick
+      end
+      object btClose: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Close'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btCloseClick
+      end
+      object Panel3: TPanel
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 220
+        BevelOuter = bvNone
+        ClientHeight = 22
+        ClientWidth = 220
+        TabOrder = 0
+        object DBNavigator: TDBNavigator
+          Height = 22
+          Width = 220
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 220
+          Color = clBtnFace
+          DataSource = dsPictures
+          Flat = True
+          ParentColor = False
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object ToolBar1: TPanel[4]
+    Height = 26
+    Top = 155
+    Width = 443
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 26
+    ClientWidth = 443
+    TabOrder = 2
+    object Panel2: TPanel
+      Left = 2
+      Height = 24
+      Top = 1
+      Width = 250
+      BevelOuter = bvNone
+      ClientHeight = 24
+      ClientWidth = 250
+      Color = 16591631
+      ParentColor = False
+      TabOrder = 0
+      object btClear: TSpeedButton
+        Left = 167
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Clear'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btClearClick
+      end
+      object btSave: TSpeedButton
+        Left = 84
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Save to file ...'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btSaveClick
+      end
+      object btLoad: TSpeedButton
+        Left = 1
+        Height = 22
+        Top = 1
+        Width = 82
+        Caption = 'Load from file ...'
+        Color = clBtnFace
+        Flat = True
+        NumGlyphs = 0
+        Transparent = False
+        OnClick = btLoadClick
+      end
+    end
+  end
+  object dsPictures: TDatasource[5]
+    DataSet = quPictures
+    OnStateChange = dsPicturesStateChange
+    left = 361
+    top = 28
+  end
+  object quPictures: TMyQuery[6]
+    SQLInsert.Strings = (
+      'INSERT INTO MYDAC_Pictures'
+      '  (MYDAC_Pictures.Name, MYDAC_Pictures.Picture)'
+      'VALUES'
+      '  (:Name, :Picture)'
+    )
+    SQLDelete.Strings = (
+      'DELETE FROM MYDAC_Pictures'
+      'WHERE'
+      '  UID = :Old_UID'
+    )
+    SQLUpdate.Strings = (
+      'UPDATE MYDAC_Pictures'
+      'SET'
+      '  Name = :Name, Picture = :Picture'
+      'WHERE'
+      '  UID = :Old_UID'
+    )
+    SQLRefresh.Strings = (
+      'SELECT MYDAC_Pictures.Name, MYDAC_Pictures.Picture FROM MYDAC_Pictures'
+      'WHERE'
+      '  MYDAC_Pictures.UID = :Old_UID'
+    )
+    SQL.Strings = (
+      'SELECT * FROM MYDAC_Pictures'
+    )
+    FetchRows = 1
+    left = 329
+    top = 28
+  end
+end

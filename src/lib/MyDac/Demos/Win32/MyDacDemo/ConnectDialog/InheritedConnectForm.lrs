@@ -1,0 +1,15 @@
+LazarusResources.Add('TfmInheritedConnect','FORMDATA',[
+  'TPF0'#241#19'TfmInheritedConnect'#18'fmInheritedConnect'#4'Left'#3'g'#1#3'To'
+  +'p'#3#212#0#7'Caption'#6#17'Inherited Connect'#0#241#6'TPanel'#5'Panel'#10'B'
+  +'evelOuter'#7#6'bvNone'#0#241#6'TLabel'#10'lbUsername'#5'Width'#2'P'#10'Font'
+  +'.Color'#7#6'clNavy'#10'Font.Style'#11#6'fsBold'#0#0#0#241#6'TLabel'#10'lbPa'
+  +'ssword'#5'Width'#2'7'#10'Font.Color'#7#6'clNavy'#10'Font.Style'#11#6'fsBold'
+  +#0#0#0#241#6'TLabel'#8'lbServer'#5'Width'#2'&'#10'Font.Color'#7#6'clNavy'#10
+  +'Font.Style'#11#6'fsBold'#0#0#0#241#6'TLabel'#6'lbPort'#10'Font.Color'#7#6'c'
+  +'lNavy'#10'Font.Style'#11#6'fsBold'#0#0#0#241#6'TLabel'#10'lbDatabase'#10'Fo'
+  +'nt.Color'#7#6'clNavy'#10'Font.Style'#11#6'fsBold'#0#0#0#241#5'TEdit'#10'edU'
+  +'sername'#0#0#241#5'TEdit'#10'edPassword'#0#0#241#9'TComboBox'#8'edServer'#0
+  +#0#241#5'TEdit'#6'edPort'#0#0#241#9'TComboBox'#10'edDatabase'#0#0#0#241#7'TB'
+  +'utton'#9'btConnect'#4'Left'#2'b'#6'Height'#2#22#5'Width'#2'R'#0#0#241#7'TBu'
+  +'tton'#8'btCancel'#4'Left'#3#193#0#6'Height'#2#22#5'Width'#2'R'#0#0#0
+]);
