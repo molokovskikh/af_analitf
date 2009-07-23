@@ -5,5 +5,5 @@ rem * Mydac for Delphi 7
 rem *
 rem **********************************************************************
 
-set IdeDir="D:\Program Files\Borland\Delphi7
+set IdeDir="C:\Program Files\Borland\Delphi7
 call ..\Make.bat Delphi 7
