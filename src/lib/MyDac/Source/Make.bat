@@ -68,7 +68,7 @@ rem Make paths ===========================================================
 rem Create common paths
 mkdir %PrjName%
 mkdir %PrjName%\Lib
-mkdir %PrjName%\CRGrid
+rem mkdir %PrjName%\CRGrid
 if %IDEVer%A==10A mkdir %PrjName%\Include
 if %IDEVer%A==11A mkdir %PrjName%\Include
 
@@ -98,10 +98,10 @@ if %IDEVer%A==5A goto SkipDVcl
 @if errorlevel 1 goto Err
 
 rem Compile CRControls package ===========================================
-cd ..\..\CRGrid\Source\%IDEName%%IDEVer%
-%IdeDir%\Bin\dcc32.exe" -LE. CRControls%PkgVer%.dpk -I..\..\..\Source -U..\..\..\Source\%IDEName%%IDEVer%
-@if errorlevel 1 goto Err
-cd ..\..\..\Source\%IDEName%%IDEVer%
+rem cd ..\..\CRGrid\Source\%IDEName%%IDEVer%
+rem %IdeDir%\Bin\dcc32.exe" -LE. CRControls%PkgVer%.dpk -I..\..\..\Source -U..\..\..\Source\%IDEName%%IDEVer%
+rem @if errorlevel 1 goto Err
+rem cd ..\..\..\Source\%IDEName%%IDEVer%
 
 rem Compile MyDAC packages ===========================================
 %IdeDir%\Bin\dcc32.exe" -U.. -LE. %PrjNameL%%PkgVer%.dpk
@@ -118,17 +118,18 @@ if %IDEVer%A==5A goto SkipD__Vcl
 %IdeDir%\Bin\dcc32.exe" -U.. -LE. dcl%PrjNameL%%PkgVer%.dpk
 @if errorlevel 1 goto Err
 
+echo "dclmysqlmon -1"
 %IdeDir%\Bin\dcc32.exe" -U.. -LE. dclmysqlmon%PkgVer%.dpk
 @if errorlevel 1 goto Err
 
 rem Copy files ===========================================================
 rem ======================================================================
 
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.bpl    %PrjName%
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.bpl    %PrjName%
 
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.dcp    %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRGrid.dcu                 %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\CRGrid.res                                   %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.dcp    %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRGrid.dcu                 %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\CRGrid.res                                   %PrjName%\CRGrid
 
 copy *.bpl               %PrjName%
 
@@ -139,8 +140,8 @@ copy ..\*.res            %PrjName%\Lib
 copy *.hpp               %PrjName%\Include
 copy ..\*.hpp            %PrjName%\Include
 
-copy ..\..\CRGrid\Source\CRControlsReg.hpp                            %PrjName%\Include
-copy ..\..\CRGrid\Source\CRGrid.hpp                                   %PrjName%\Include
+rem copy ..\..\CRGrid\Source\CRControlsReg.hpp                            %PrjName%\Include
+rem copy ..\..\CRGrid\Source\CRGrid.hpp                                   %PrjName%\Include
  
 rem set IdeDir="D:\Progra~1\Borland\BDS\4.0
 
@@ -166,10 +167,10 @@ rem Compile DAC packages =================================================
 @if errorlevel 1 goto Err
 
 rem Compile CRControls package ===========================================
-cd ..\..\CRGrid\Source\%IDEName%%IDEVer%
-%IdeDir%\Bin\dccil.exe" -LE. Devart.Vcl.dpk -I..\..\..\Source -U..\..\..\Source\%IDEName%%IDEVer%;..\ -R..\..\..\Source\;..\
-@if errorlevel 1 goto Err
-cd ..\..\..\Source\%IDEName%%IDEVer%
+rem cd ..\..\CRGrid\Source\%IDEName%%IDEVer%
+rem %IdeDir%\Bin\dccil.exe" -LE. Devart.Vcl.dpk -I..\..\..\Source -U..\..\..\Source\%IDEName%%IDEVer%;..\ -R..\..\..\Source\;..\
+rem @if errorlevel 1 goto Err
+rem cd ..\..\..\Source\%IDEName%%IDEVer%
 
 rem Compile MyDAC packages ===========================================
 %IdeDir%\Bin\dccil.exe" -LE. Devart.MyDac.dpk
@@ -184,11 +185,11 @@ rem Compile MyDAC packages ===========================================
 rem Copy files ===========================================================
 rem ======================================================================
 
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\Devart.Vcl.dll            %PrjName%
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\Devart.Vcl.dll            %PrjName%
 
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\Devart.Vcl.dcpil          %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\Devart.Vcl.CRGrid.dcuil   %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\CRGrid.res                   %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\Devart.Vcl.dcpil          %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\Devart.Vcl.CRGrid.dcuil   %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\CRGrid.res                   %PrjName%\CRGrid
 
 copy *.dll               %PrjName%
 
@@ -223,13 +224,13 @@ if %IDEVer%A==5A goto SkipCBVcl
 @if errorlevel 1 goto Err
 
 rem Compile CRControls package ===========================================
-cd ..\..\CRGrid\Source\%IDEName%%IDEVer%
+rem cd ..\..\CRGrid\Source\%IDEName%%IDEVer%
 
-%IdeDir%\Bin\bpr2mak.exe" -t..\..\..\Source\dac.bmk CRControls%PkgVer%.bpk
-@if errorlevel 1 goto Err
-%IdeDir%\Bin\make.exe" -f CRControls%PkgVer%.mak
-@if errorlevel 1 goto Err
-cd ..\..\..\Source\%IDEName%%IDEVer%
+rem %IdeDir%\Bin\bpr2mak.exe" -t..\..\..\Source\dac.bmk CRControls%PkgVer%.bpk
+rem @if errorlevel 1 goto Err
+rem %IdeDir%\Bin\make.exe" -f CRControls%PkgVer%.mak
+rem @if errorlevel 1 goto Err
+rem cd ..\..\..\Source\%IDEName%%IDEVer%
 
 rem Compile MyDAC packages ===========================================
 %IdeDir%\Bin\bpr2mak.exe" -t..\dac.bmk %PrjNameL%%PkgVer%.bpk
@@ -251,6 +252,7 @@ if %IDEVer%A==5A goto SkipCB__Vcl
 @if errorlevel 1 goto Err
 %IdeDir%\Bin\make.exe" -f dcl%PrjNameL%%PkgVer%.mak
 @if errorlevel 1 goto Err
+echo "dclmysqlmon -2"
 %IdeDir%\Bin\bpr2mak.exe" -t..\dac.bmk dclmysqlmon%PkgVer%.bpk
 @if errorlevel 1 goto Err
 %IdeDir%\Bin\make.exe" -f dclmysqlmon%PkgVer%.mak
@@ -259,15 +261,15 @@ if %IDEVer%A==5A goto SkipCB__Vcl
 rem Copy files ===========================================================
 rem ======================================================================
 
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.bpl    %PrjName%
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.bpl    %PrjName%
 
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.bpi    %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.lib    %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.bpi    %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRControls%PkgVer%.lib    %PrjName%\CRGrid
 
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRGrid.obj                 %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRGrid.dcu                 %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\CRGrid.hpp                                   %PrjName%\CRGrid
-copy ..\..\CRGrid\Source\CRGrid.res                                   %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRGrid.obj                 %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\%IDEName%%IDEVer%\CRGrid.dcu                 %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\CRGrid.hpp                                   %PrjName%\CRGrid
+rem copy ..\..\CRGrid\Source\CRGrid.res                                   %PrjName%\CRGrid
 
 copy *.bpl               %PrjName%
 
