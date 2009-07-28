@@ -882,15 +882,20 @@ end;
 
 procedure TMainForm.DeleteOldOrders;
 begin
-  DM.adcUpdate.SQL.Text := ''
-   + ' delete OrdersHead, OrdersList'
-   + ' FROM OrdersHead, OrdersList '
-   + ' where '
-   + '    (Closed = 1)'
-   + ' and (OrdersList.OrderId = OrdersHead.OrderId)'
-   + ' and (orderdate < :MinOrderDate)';
-  DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-  DM.adcUpdate.Execute;
+  try
+    DM.adcUpdate.SQL.Text := ''
+     + ' delete OrdersHead, OrdersList'
+     + ' FROM OrdersHead, OrdersList '
+     + ' where '
+     + '    (Closed = 1)'
+     + ' and (OrdersList.OrderId = OrdersHead.OrderId)'
+     + ' and (orderdate < :MinOrderDate)';
+    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+    DM.adcUpdate.Execute;
+  except
+    on E : Exception do
+      LogCriticalError('Ошибка при удалении устаревших заказов : ' + E.Message);
+  end;
 end;
 
 procedure TMainForm.actSendLetterExecute(Sender: TObject);
