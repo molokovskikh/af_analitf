@@ -1841,7 +1841,7 @@ begin
 +'        ON      sfc.synonymfirmcrcode = c.synonymfirmcrcode '
 +'WHERE (c.synonymcode > 0) '
 +'    AND ((s.synonymcode IS NULL) '
-+'     OR (sfc.synonymfirmcrcode IS NULL))';
++'     OR ((c.synonymfirmcrcode is not null) and (sfc.synonymfirmcrcode IS NULL)))';
 
       absentQuery.Open;
       try
