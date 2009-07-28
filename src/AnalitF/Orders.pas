@@ -84,6 +84,9 @@ type
     adsOrdersOrdersordercost: TFloatField;
     adsOrdersOrdersminordercount: TIntegerField;
     adsOrdersSumOrder: TCurrencyField;
+    pClient: TPanel;
+    gbMessageTo: TGroupBox;
+    dbmMessageTo: TDBMemo;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -98,6 +101,9 @@ type
     procedure TimerTimer(Sender: TObject);
     procedure adsOrdersOldBeforePost(DataSet: TDataSet);
     procedure dbgOrdersDblClick(Sender: TObject);
+    procedure dbmMessageToExit(Sender: TObject);
+    procedure dbmMessageToKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
@@ -149,11 +155,14 @@ begin
   if Closed = 0 then begin
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;
+    dbmMessageTo.ReadOnly := False;
   end
   else begin
     dbgOrders.SearchField := 'SynonymName';
     dbgOrders.ForceRus := True;
+    dbmMessageTo.ReadOnly := True;
   end;
+  dbmMessageTo.Color := Iif(dbmMessageTo.ReadOnly, clBtnFace, clWindow);
   with adsOrders do begin
     ParamByName('AOrderId').Value:=AOrderId;
     if Active
@@ -348,6 +357,24 @@ end;
 procedure TOrdersForm.dbgOrdersDblClick(Sender: TObject);
 begin
   FlipToCore
+end;
+
+procedure TOrdersForm.dbmMessageToExit(Sender: TObject);
+begin
+  try
+    SoftPost(OrdersHForm.adsOrdersHForm);
+  except
+  end;
+end;
+
+procedure TOrdersForm.dbmMessageToKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    if Assigned(ParentOrdersHForm) then
+      ParentOrdersHForm.ShowForm
+    else
+      PrevForm.ShowForm;
 end;
 
 end.

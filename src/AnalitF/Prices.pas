@@ -272,7 +272,7 @@ end;
 
 procedure TPricesForm.dbtAdminMailClick(Sender: TObject);
 begin
-	MailTo( dbtAdminMail.Field.AsString, '');
+  MailTo( dbtAdminMail.Field.AsString, '');
 end;
 
 procedure TPricesForm.dbgPricesDblClick(Sender: TObject);

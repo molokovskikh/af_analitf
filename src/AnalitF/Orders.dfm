@@ -1,6 +1,6 @@
 inherited OrdersForm: TOrdersForm
-  Left = 279
-  Top = 243
+  Left = 316
+  Top = 239
   ActiveControl = dbgOrders
   Caption = #1040#1088#1093#1080#1074#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 443
@@ -19,7 +19,7 @@ inherited OrdersForm: TOrdersForm
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 1
     Visible = False
     DesignSize = (
       545
@@ -222,85 +222,7 @@ inherited OrdersForm: TOrdersForm
       ParentFont = False
     end
   end
-  object dbgOrders: TToughDBGrid [2]
-    Left = 0
-    Top = 51
-    Width = 793
-    Height = 359
-    Align = alClient
-    AutoFitColWidths = True
-    DataSource = dsOrders
-    Flat = True
-    FooterColor = clWindow
-    FooterFont.Charset = DEFAULT_CHARSET
-    FooterFont.Color = clWindowText
-    FooterFont.Height = -11
-    FooterFont.Name = 'MS Sans Serif'
-    FooterFont.Style = []
-    Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
-    OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
-    ReadOnly = True
-    TabOrder = 1
-    TitleFont.Charset = DEFAULT_CHARSET
-    TitleFont.Color = clWindowText
-    TitleFont.Height = -11
-    TitleFont.Name = 'MS Sans Serif'
-    TitleFont.Style = []
-    OnDblClick = dbgOrdersDblClick
-    OnGetCellParams = dbgOrdersGetCellParams
-    OnKeyDown = dbgOrdersKeyDown
-    OnKeyPress = dbgOrdersKeyPress
-    OnSortMarkingChanged = dbgOrdersSortMarkingChanged
-    SearchField = 'SynonymName'
-    InputField = 'OrderCount'
-    SearchPosition = spBottom
-    ForceRus = True
-    OnCanInput = dbgOrdersCanInput
-    Columns = <
-      item
-        EditButtons = <>
-        FieldName = 'synonymname'
-        Footers = <>
-        Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
-        Title.TitleButton = True
-        Width = 97
-      end
-      item
-        EditButtons = <>
-        FieldName = 'synonymfirm'
-        Footers = <>
-        Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
-        Title.TitleButton = True
-        Width = 156
-      end
-      item
-        EditButtons = <>
-        FieldName = 'price'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        Footers = <>
-        Title.Caption = #1062#1077#1085#1072
-        Title.TitleButton = True
-      end
-      item
-        EditButtons = <>
-        FieldName = 'ordercount'
-        Footers = <>
-        Title.Caption = #1047#1072#1082#1072#1079
-        Title.TitleButton = True
-      end
-      item
-        EditButtons = <>
-        FieldName = 'SumOrder'
-        Footers = <>
-        Title.Caption = #1057#1091#1084#1084#1072
-        Title.TitleButton = True
-      end>
-  end
-  inline frameLegeng: TframeLegeng [3]
+  inline frameLegeng: TframeLegeng [2]
     Left = 0
     Top = 410
     Width = 793
@@ -308,7 +230,7 @@ inherited OrdersForm: TOrdersForm
     Align = alBottom
     Color = clWindow
     ParentColor = False
-    TabOrder = 3
+    TabOrder = 2
     inherited gbLegend: TGroupBox
       inherited lVitallyImportantLegend: TLabel
         Visible = False
@@ -318,6 +240,113 @@ inherited OrdersForm: TOrdersForm
       end
       inherited lLeaderLegend: TLabel
         Visible = False
+      end
+    end
+  end
+  object pClient: TPanel
+    Left = 0
+    Top = 51
+    Width = 793
+    Height = 359
+    Align = alClient
+    TabOrder = 3
+    object dbgOrders: TToughDBGrid
+      Left = 1
+      Top = 1
+      Width = 791
+      Height = 287
+      Align = alClient
+      AutoFitColWidths = True
+      DataSource = dsOrders
+      Flat = True
+      FooterColor = clWindow
+      FooterFont.Charset = DEFAULT_CHARSET
+      FooterFont.Color = clWindowText
+      FooterFont.Height = -11
+      FooterFont.Name = 'MS Sans Serif'
+      FooterFont.Style = []
+      Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+      OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+      ReadOnly = True
+      TabOrder = 0
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -11
+      TitleFont.Name = 'MS Sans Serif'
+      TitleFont.Style = []
+      OnDblClick = dbgOrdersDblClick
+      OnGetCellParams = dbgOrdersGetCellParams
+      OnKeyDown = dbgOrdersKeyDown
+      OnKeyPress = dbgOrdersKeyPress
+      OnSortMarkingChanged = dbgOrdersSortMarkingChanged
+      SearchField = 'SynonymName'
+      InputField = 'OrderCount'
+      SearchPosition = spBottom
+      ForceRus = True
+      OnCanInput = dbgOrdersCanInput
+      Columns = <
+        item
+          EditButtons = <>
+          FieldName = 'synonymname'
+          Footers = <>
+          Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
+          Title.TitleButton = True
+          Width = 97
+        end
+        item
+          EditButtons = <>
+          FieldName = 'synonymfirm'
+          Footers = <>
+          Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
+          Title.TitleButton = True
+          Width = 156
+        end
+        item
+          EditButtons = <>
+          FieldName = 'price'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          Footers = <>
+          Title.Caption = #1062#1077#1085#1072
+          Title.TitleButton = True
+        end
+        item
+          EditButtons = <>
+          FieldName = 'ordercount'
+          Footers = <>
+          Title.Caption = #1047#1072#1082#1072#1079
+          Title.TitleButton = True
+        end
+        item
+          EditButtons = <>
+          FieldName = 'SumOrder'
+          Footers = <>
+          Title.Caption = #1057#1091#1084#1084#1072
+          Title.TitleButton = True
+        end>
+    end
+    object gbMessageTo: TGroupBox
+      Left = 1
+      Top = 288
+      Width = 791
+      Height = 70
+      Align = alBottom
+      Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1091' '
+      TabOrder = 1
+      object dbmMessageTo: TDBMemo
+        Left = 2
+        Top = 15
+        Width = 787
+        Height = 53
+        Align = alClient
+        DataField = 'MessageTo'
+        DataSource = OrdersHForm.dsOrdersH
+        TabOrder = 0
+        OnExit = dbmMessageToExit
+        OnKeyDown = dbmMessageToKeyDown
       end
     end
   end
