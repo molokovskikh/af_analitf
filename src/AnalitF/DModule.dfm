@@ -1704,8 +1704,8 @@ object DM: TDM
     object adsPricesStorage: TBooleanField
       FieldName = 'Storage'
     end
-    object adsPricesAdminMail: TStringField
-      FieldName = 'AdminMail'
+    object adsPricesManagerMail: TStringField
+      FieldName = 'ManagerMail'
       Size = 50
     end
     object adsPricesSupportPhone: TStringField

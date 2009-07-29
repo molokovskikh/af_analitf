@@ -16,7 +16,7 @@ type
   TPricesForm = class(TChildForm)
     dbtFullName: TDBText;
     dbtPhones: TDBText;
-    dbtAdminMail: TDBText;
+    dbtManagerMail: TDBText;
     Label2: TLabel;
     Label1: TLabel;
     cbOnlyLeaders: TCheckBox;
@@ -70,7 +70,7 @@ type
     adsPricesFirmCode: TLargeintField;
     adsPricesFullName: TStringField;
     adsPricesStorage: TBooleanField;
-    adsPricesAdminMail: TStringField;
+    adsPricesManagerMail: TStringField;
     adsPricesSupportPhone: TStringField;
     adsPricesContactInfo: TMemoField;
     adsPricesOperativeInfo: TMemoField;
@@ -86,7 +86,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
-    procedure dbtAdminMailClick(Sender: TObject);
+    procedure dbtManagerMailClick(Sender: TObject);
     procedure dbgPricesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgPricesGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -100,6 +100,10 @@ type
     procedure dbgPricesExit(Sender: TObject);
     procedure adsPricesOldINJOBChange(Sender: TField);
     procedure tmStopEditTimer(Sender: TObject);
+    procedure adsPricesManagerMailGetText(Sender: TField; var Text: String;
+      DisplayText: Boolean);
+    procedure dbtManagerMailMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -270,9 +274,9 @@ begin
 	dbgPrices.SetFocus;
 end;
 
-procedure TPricesForm.dbtAdminMailClick(Sender: TObject);
+procedure TPricesForm.dbtManagerMailClick(Sender: TObject);
 begin
-  MailTo( dbtAdminMail.Field.AsString, '');
+  MailTo( dbtManagerMail.Field.AsString, '');
 end;
 
 procedure TPricesForm.dbgPricesDblClick(Sender: TObject);
@@ -325,11 +329,13 @@ begin
     SetScrolls(DBMemo3)
   else
     DBMemo3.ScrollBars := ssNone;
+  dbtManagerMail.Hint := adsPricesManagerMail.AsString;
 end;
 
 procedure TPricesForm.adsPrices2AfterOpen(DataSet: TDataSet);
 begin
-	lblPriceCount.Caption := 'Всего прайс-листов : ' + IntToStr( adsPrices.RecordCount);
+  lblPriceCount.Caption := 'Всего прайс-листов : ' + IntToStr( adsPrices.RecordCount);
+  dbtManagerMail.Hint := adsPricesManagerMail.AsString;
 end;
 
 procedure TPricesForm.adsPricesOldSTORAGEGetText(Sender: TField;
@@ -417,6 +423,31 @@ begin
     Memo.ScrollBars:= ssVertical
   else
     Memo.ScrollBars:= ssNone;
+end;
+
+procedure TPricesForm.adsPricesManagerMailGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+var
+  CurrentTextWidth : Integer;
+begin
+  try
+    Text := Sender.AsString;
+    CurrentTextWidth := dbtManagerMail.Canvas.TextWidth(Text);
+    if (CurrentTextWidth > dbtManagerMail.Width - 10) then begin
+      repeat
+        Text := Copy(Text, 1, Length(Text)-1);
+        CurrentTextWidth := dbtManagerMail.Canvas.TextWidth(Text);
+      until (CurrentTextWidth < dbtManagerMail.Width - 10);
+      Text := Text + '...';
+    end;
+  except
+  end;
+end;
+
+procedure TPricesForm.dbtManagerMailMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  dbtManagerMail.Hint := adsPricesManagerMail.AsString;
 end;
 
 initialization

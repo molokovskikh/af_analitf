@@ -531,17 +531,7 @@ CREATE TABLE `providers` (
   `FIRMCODE` bigint(20) NOT NULL,
   `FULLNAME` varchar(40) DEFAULT NULL,
   `FAX` varchar(20) DEFAULT NULL,
-  `PHONE` varchar(20) DEFAULT NULL,
-  `MAIL` varchar(50) DEFAULT NULL,
-  `ADDRESS` varchar(100) DEFAULT NULL,
-  `BUSSSTOP` varchar(100) DEFAULT NULL,
-  `URL` varchar(35) DEFAULT NULL,
-  `ORDERMANAGERNAME` varchar(100) DEFAULT NULL,
-  `ORDERMANAGERPHONE` varchar(35) DEFAULT NULL,
-  `ORDERMANAGERMAIL` varchar(50) DEFAULT NULL,
-  `CLIENTMANAGERNAME` varchar(100) DEFAULT NULL,
-  `CLIENTMANAGERPHONE` varchar(35) DEFAULT NULL,
-  `CLIENTMANAGERMAIL` varchar(50) DEFAULT NULL,
+  `MANAGERMAIL` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`FIRMCODE`),
   UNIQUE KEY `PK_CLIENTSDATAN` (`FIRMCODE`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
@@ -570,7 +560,6 @@ CREATE TABLE `regionaldata` (
   `FIRMCODE` bigint(20) NOT NULL DEFAULT '0',
   `REGIONCODE` bigint(20) NOT NULL DEFAULT '0',
   `SUPPORTPHONE` varchar(20) DEFAULT NULL,
-  `ADMINMAIL` varchar(50) DEFAULT NULL,
   `CONTACTINFO` text,
   `OPERATIVEINFO` text,
   PRIMARY KEY (`FIRMCODE`,`REGIONCODE`),
@@ -695,17 +684,7 @@ CREATE TABLE `tmpproviders` (
   `FIRMCODE` bigint(20) NOT NULL,
   `FULLNAME` varchar(40) DEFAULT NULL,
   `FAX` varchar(20) DEFAULT NULL,
-  `PHONE` varchar(20) DEFAULT NULL,
-  `MAIL` varchar(50) DEFAULT NULL,
-  `ADDRESS` varchar(100) DEFAULT NULL,
-  `BUSSSTOP` varchar(100) DEFAULT NULL,
-  `URL` varchar(35) DEFAULT NULL,
-  `ORDERMANAGERNAME` varchar(100) DEFAULT NULL,
-  `ORDERMANAGERPHONE` varchar(35) DEFAULT NULL,
-  `ORDERMANAGERMAIL` varchar(50) DEFAULT NULL,
-  `CLIENTMANAGERNAME` varchar(100) DEFAULT NULL,
-  `CLIENTMANAGERPHONE` varchar(35) DEFAULT NULL,
-  `CLIENTMANAGERMAIL` varchar(50) DEFAULT NULL
+  `MANAGERMAIL` varchar(255) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 
@@ -718,7 +697,6 @@ CREATE TABLE `tmpregionaldata` (
   `FIRMCODE` bigint(20) NOT NULL,
   `REGIONCODE` bigint(20) NOT NULL,
   `SUPPORTPHONE` varchar(20) DEFAULT NULL,
-  `ADMINMAIL` varchar(50) DEFAULT NULL,
   `CONTACTINFO` text,
   `OPERATIVEINFO` text
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
@@ -749,7 +727,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- 
 
 DROP VIEW IF EXISTS pricesshow;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `pricesshow` AS select `pd`.`PRICECODE` AS `PriceCode`,`pd`.`PRICENAME` AS `PriceName`,`pd`.`DATEPRICE` AS `UniversalDatePrice`,`prd`.`MINREQ` AS `MinReq`,`prd`.`ENABLED` AS `Enabled`,`pd`.`PRICEINFO` AS `PriceInfo`,`cd`.`FIRMCODE` AS `FirmCode`,`cd`.`FULLNAME` AS `FullName`,`prd`.`STORAGE` AS `Storage`,`rd`.`ADMINMAIL` AS `AdminMail`,`rd`.`SUPPORTPHONE` AS `SupportPhone`,`rd`.`CONTACTINFO` AS `ContactInfo`,`rd`.`OPERATIVEINFO` AS `OperativeInfo`,`r`.`REGIONCODE` AS `RegionCode`,`r`.`REGIONNAME` AS `RegionName`,`prd`.`PRICESIZE` AS `pricesize`,`prd`.`INJOB` AS `INJOB`,`prd`.`CONTROLMINREQ` AS `CONTROLMINREQ` from ((((`pricesdata` `pd` join `pricesregionaldata` `prd` on((`pd`.`PRICECODE` = `prd`.`PRICECODE`))) join `regions` `r` on((`prd`.`REGIONCODE` = `r`.`REGIONCODE`))) join `providers` `cd` on((`cd`.`FIRMCODE` = `pd`.`FIRMCODE`))) join `regionaldata` `rd` on(((`rd`.`REGIONCODE` = `prd`.`REGIONCODE`) and (`rd`.`FIRMCODE` = `cd`.`FIRMCODE`))));
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `pricesshow` AS select `pd`.`PRICECODE` AS `PriceCode`,`pd`.`PRICENAME` AS `PriceName`,`pd`.`DATEPRICE` AS `UniversalDatePrice`,`prd`.`MINREQ` AS `MinReq`,`prd`.`ENABLED` AS `Enabled`,`pd`.`PRICEINFO` AS `PriceInfo`,`cd`.`FIRMCODE` AS `FirmCode`,`cd`.`FULLNAME` AS `FullName`,`prd`.`STORAGE` AS `Storage`,`cd`.`MANAGERMAIL` AS `ManagerMail`,`rd`.`SUPPORTPHONE` AS `SupportPhone`,`rd`.`CONTACTINFO` AS `ContactInfo`,`rd`.`OPERATIVEINFO` AS `OperativeInfo`,`r`.`REGIONCODE` AS `RegionCode`,`r`.`REGIONNAME` AS `RegionName`,`prd`.`PRICESIZE` AS `pricesize`,`prd`.`INJOB` AS `INJOB`,`prd`.`CONTROLMINREQ` AS `CONTROLMINREQ` from ((((`pricesdata` `pd` join `pricesregionaldata` `prd` on((`pd`.`PRICECODE` = `prd`.`PRICECODE`))) join `regions` `r` on((`prd`.`REGIONCODE` = `r`.`REGIONCODE`))) join `providers` `cd` on((`cd`.`FIRMCODE` = `pd`.`FIRMCODE`))) join `regionaldata` `rd` on(((`rd`.`REGIONCODE` = `prd`.`REGIONCODE`) and (`rd`.`FIRMCODE` = `cd`.`FIRMCODE`))));
 
 
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

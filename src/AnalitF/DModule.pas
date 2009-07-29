@@ -307,7 +307,7 @@ type
     adsPricesFirmCode: TLargeintField;
     adsPricesFullName: TStringField;
     adsPricesStorage: TBooleanField;
-    adsPricesAdminMail: TStringField;
+    adsPricesManagerMail: TStringField;
     adsPricesSupportPhone: TStringField;
     adsPricesContactInfo: TMemoField;
     adsPricesOperativeInfo: TMemoField;
@@ -955,7 +955,17 @@ begin
   //Делаем проверку файла базы данных и в случае проблем производим восстановление из предыдущей удачной копии
   //Проверяем файл, если используем Embedded-сервер, в ином случае - происходит процесс разработки программы и проверять ничего не надо
   if MainConnection is TMyEmbConnection then
-    CheckDBFile;
+    CheckDBFile
+  else begin
+{$ifdef DEBUG}
+    MainConnection.Open;
+    try
+    ExtractDBScript(MainConnection);
+    finally
+      MainConnection.Close;
+    end;
+{$endif}
+  end;
 
   try
     try

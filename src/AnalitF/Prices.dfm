@@ -183,15 +183,14 @@ inherited PricesForm: TPricesForm
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object dbtAdminMail: TDBText
+      object dbtManagerMail: TDBText
         Left = 55
         Top = 55
-        Width = 76
+        Width = 194
         Height = 13
         Cursor = crHandPoint
-        AutoSize = True
         Color = clBtnFace
-        DataField = 'AdminMail'
+        DataField = 'ManagerMail'
         DataSource = dsPrices
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlue
@@ -200,7 +199,10 @@ inherited PricesForm: TPricesForm
         Font.Style = [fsBold, fsUnderline]
         ParentColor = False
         ParentFont = False
-        OnClick = dbtAdminMailClick
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = dbtManagerMailClick
+        OnMouseMove = dbtManagerMailMouseMove
       end
       object dbtFullName: TDBText
         Left = 5
@@ -694,9 +696,10 @@ inherited PricesForm: TPricesForm
       ReadOnly = True
       OnGetText = adsPricesOldSTORAGEGetText
     end
-    object adsPricesAdminMail: TStringField
-      FieldName = 'AdminMail'
+    object adsPricesManagerMail: TStringField
+      FieldName = 'ManagerMail'
       ReadOnly = True
+      OnGetText = adsPricesManagerMailGetText
       Size = 50
     end
     object adsPricesSupportPhone: TStringField
