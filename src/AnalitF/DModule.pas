@@ -14,7 +14,7 @@ uses
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
-  MyDump;
+  MyDump, MySqlApi;
 
 {
  риптование
@@ -1476,7 +1476,7 @@ begin
         end;
       finally
         FEmbConnection.Close;
-        FEmbConnection.RemoveFromPool;
+        //FEmbConnection.RemoveFromPool;
       end;
     finally
       FEmbConnection.Free;
@@ -1950,11 +1950,12 @@ begin
     dbCon.Open;
     try
 {$ifdef DEBUG}
-    ExtractDBScript(dbCon);
+      ExtractDBScript(dbCon);
 {$endif}
-    DBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
+      DBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
     finally
       dbCon.Close;
+      //dbCon.RemoveFromPool;
     end;
 
     //ћы получим с обновлением версию 49 и обновл€ем ее до 50
@@ -1968,7 +1969,7 @@ begin
     //≈сли у нас не отладочна€ верси€, то влючаем проверку целостности базы данных
 {$ifndef DEBUG}
     else
-      RunUpdateDBFile(dbCon, trMain, MainConnectionOld.DBName, DBVersion, CheckDBObjects, nil, 'ѕроисходит проверка базы данных. ѕодождите...');
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, CheckDBObjects, nil, 'ѕроисходит проверка базы данных. ѕодождите...');
 {$else}
       ;
 {$endif}
@@ -2200,6 +2201,8 @@ begin
         LogCriticalError(Format('ќшибка при открытии (%d): %s', [RecoveryCount, E.Message]));
         if (RecoveryCount < 2) then begin
           try
+            if MainConnection is TMyEmbConnection then
+              MyAPIEmbedded.FreeMySQLLib;
             RecoverDatabase(E);
           except
             on E : Exception do
@@ -2685,6 +2688,15 @@ begin
   end;
 }  
 
+  // огда мы запускаем программу и не можем открыть базу данных AnalitF,
+  //то сохран€ютс€ embedded-параметры (настройки соединени€) внутри MyDac с открытой базой AnalitF,
+  //хот€ на самом деле она не открыта и увеличиваетс€ счетчик открытых соедиений.
+  //ѕосле того, как мы открываем базу здесь (строки ниже),
+  //счетчик открытых соединений увеличиваетс€ еще раз и становитс€ равным 2,
+  //после закрыти€ данного соединени€ он уменьшаетс€ на 1 и становитс€ равным 1.
+  //Ќо MyDac не позвол€ет открыть еще одно соедиение, т.к. параметры различны.
+  //ѕоэтому в нитках приходитс€ создавать свои соединени€ и это работает,
+  //либо все соединени€ открывать в папке ..\AnalitF\Data, а потом измен€ть базу данных на AnalitF
   FEmbConnection := TMyEmbConnection.Create(nil);
   FEmbConnection.Database := '';
   FEmbConnection.Username := MainConnection.Username;
@@ -2824,6 +2836,7 @@ begin
     end;
   finally
     dbCon.Close;
+    //dbCon.RemoveFromPool;
   end;
 
   RightScript := Trim(GetLastCreateScript());
@@ -3424,6 +3437,7 @@ begin
       end;
     finally
       FEmbConnection.Close;
+      //«десь пока удал€ть не буду
       FEmbConnection.RemoveFromPool;
     end;
 
@@ -3463,6 +3477,7 @@ begin
       end;
     finally
       FEmbConnection.Close;
+      //«десь пока удал€ть не буду
       FEmbConnection.RemoveFromPool;
     end;
 
