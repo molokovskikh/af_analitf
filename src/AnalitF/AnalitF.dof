@@ -96,7 +96,7 @@ PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
 SearchPath=..\lib\ARas\src;..\lib\RXLib\src;..\lib\FIBPlusScript\src;..\lib\Indy\Core;..\lib\Indy\Protocols;..\lib\Indy\Security;..\lib\Indy\System;..\lib\MyDac\Source\Delphi7\MyDAC\Lib
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;FIBPlus7;IndyCore70;IndyProtocols70;IndySystem70
-Conditionals=USEMYSQLEMBEDDED
+Conditionals=DEBUG,USEMYSQLEMBEDDED
 DebugSourceDirs=
 UsePackages=1
 [Parameters]
@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=5
 MinorVer=0
-Release=65
-Build=764
+Release=66
+Build=774
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=5.0.65.764
+FileVersion=5.0.66.774
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2009
 LegalTrademarks=Инфорум
@@ -161,13 +161,15 @@ c:\program files\borland\delphi7\Projects\Bpl\dclIndy70.bpl=Internet Direct (Ind
 Count=1
 Item0=..\lib\MyDac\Source
 [HistoryLists\hlConditionals]
-Count=6
-Item0=USEMYSQLEMBEDDED
-Item1=DSP,DEBUG;USEMYSQLEMBEDDED
-Item2=DSP,DEBUG;
-Item3=DEBUG
-Item4=DSP
-Item5=DSP,DEBUG
+Count=8
+Item0=DEBUG,USEMYSQLEMBEDDED
+Item1=DEBUG;USEMYSQLEMBEDDED
+Item2=USEMYSQLEMBEDDED
+Item3=DSP,DEBUG;USEMYSQLEMBEDDED
+Item4=DSP,DEBUG;
+Item5=DEBUG
+Item6=DSP
+Item7=DSP,DEBUG
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;

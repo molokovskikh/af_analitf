@@ -103,6 +103,9 @@ procedure CopyDirectories(const fromDir, toDir: String);
 procedure MoveDirectories(const fromDir, toDir: String);
 procedure DeleteDirectory(const Dir : String);
 
+procedure CopyDataDirToBackup(const dataDir, backupDir: String);
+procedure DeleteDataDir(const dataDir: String);
+
 
 
 implementation
@@ -953,7 +956,7 @@ begin
     until FindNext(sr) <> 0;
     SysUtils.FindClose(sr);
   end;
-  
+
   if not Windows.RemoveDirectory(PChar(Dir)) then begin
     DeleteLastError := Windows.GetLastError();
     if DeleteLastError <> Windows.ERROR_SUCCESS then
@@ -964,6 +967,24 @@ begin
       raise Ex;
     end;
   end;
+end;
+
+procedure CopyDataDirToBackup(const dataDir, backupDir: String);
+begin
+  if not DirectoryExists(backupDir) then
+    ForceDirectories(backupDir);
+
+  if DirectoryExists(dataDir + '\analitf') then
+    CopyDirectories(dataDir + '\analitf', backupDir + '\analitf');
+
+  if DirectoryExists(dataDir + '\mysql') then
+    CopyDirectories(dataDir + '\mysql', backupDir + '\mysql');
+end;
+
+procedure DeleteDataDir(const dataDir: String);
+begin
+  DeleteDirectory(dataDir + '\analitf');
+  DeleteDirectory(dataDir + '\mysql');
 end;
 
 { TFileUpdateInfo }

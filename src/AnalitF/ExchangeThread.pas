@@ -1710,7 +1710,7 @@ begin
 
   DM.ClearBackup;
 
-  Dm.MainConnection.AfterConnect(nil);
+  Dm.MainConnection.AfterConnect(Dm.MainConnection);
 	{ Показываем время обновления }
 	DM.adtParams.Edit;
 	DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=

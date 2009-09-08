@@ -38,7 +38,8 @@ begin
   WriteExchangeLog('AnalitF', 'Попытка удалить файлы базы данных для пересоздания базы данных.');
   DeleteDBDirectory(ExePath + SDirDataBackup);
   DeleteDBDirectory(ExePath + SDirDataPrev);
-  DeleteDBDirectory(ExePath + SDirData);
+  DeleteDBDirectory(ExePath + SDirData + '\analitf');
+  DeleteDBDirectory(ExePath + SDirData + '\mysql');
   WriteExchangeLog('AnalitF', 'Удаление файлов базы данных завершилось успешно.');
 end;
 

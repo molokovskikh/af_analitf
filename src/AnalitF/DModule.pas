@@ -84,6 +84,9 @@ type
     Summ : Currency;
     constructor Create(APriceCode, ARegionCode : Integer);
   end;
+  
+  TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
+  end;
 
   TDM = class(TDataModule)
     frReport: TfrReport;
@@ -290,7 +293,6 @@ type
     adsRetailMarginsLEFTLIMIT: TFloatField;
     adsRetailMarginsRIGHTLIMIT: TFloatField;
     adsRetailMarginsRETAIL: TIntegerField;
-    MyEmbConnection: TMyEmbConnection;
     adcUpdate: TMyQuery;
     adtClientsCALCULATELEADER: TBooleanField;
     adtClientsONLYLEADERS: TBooleanField;
@@ -443,6 +445,7 @@ type
     adsCoreRepareOrdersHPriceName: TStringField;
     adsCoreRepareOrdersHRegionName: TStringField;
     adsRepareOrdersClientName: TStringField;
+    MyEmbConnection: TMyEmbConnection;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -450,6 +453,7 @@ type
     procedure adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
     procedure MySQLMonitorSQL(Sender: TObject; Text: String;
       Flag: TDATraceFlag);
+    procedure MyConnectionAfterDisconnect(Sender: TObject);
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
@@ -898,6 +902,8 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
 begin
+  //MySqlApi.MySQLEmbDisableEventLog := True;
+
   SerBeg := '8F24';
   SerEnd := 'BB48';
   HTTPS := 'rkhgjsdk';
@@ -1435,7 +1441,16 @@ procedure TDM.BackupDatabase;
 begin
   if TCustomMyConnection(MainConnection) is TMyEmbConnection then begin
     MainConnection.Close;
-    CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+    Tracer.TR('Connection.BeforeSleep',
+      'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
+    //Sleep(5000);
+    Tracer.TR('Connection.AfterSleep',
+      'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
+    //Sleep(10000);
+    Tracer.TR('Connection.AfterFreeMySQLLib',
+      'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
+    //Sleep(5000);
+    CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
     MainConnection.Open;
   end;
 end;
@@ -1483,7 +1498,7 @@ begin
     end;
     
     //удаляем директорию
-    DeleteDirectory(ExePath + SDirData);
+    DeleteDataDir(ExePath + SDirData);
 
     //копируем данные из эталонной копии
     MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
@@ -1561,6 +1576,10 @@ end;
 
 procedure TDM.MainConnectionOldAfterConnect(Sender: TObject);
 begin
+  Tracer.TR('Connection.' + TCustomMyConnection(Sender).Name + '.Open',
+    'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
+
+  MainConnection.ExecSQL('use analitf', []);
   //открываем таблицы с параметрами
   adtParams.Close;
   adtParams.Open;
@@ -2201,8 +2220,10 @@ begin
         LogCriticalError(Format('Ошибка при открытии (%d): %s', [RecoveryCount, E.Message]));
         if (RecoveryCount < 2) then begin
           try
+{
             if MainConnection is TMyEmbConnection then
               MyAPIEmbedded.FreeMySQLLib;
+}              
             RecoverDatabase(E);
           except
             on E : Exception do
@@ -2723,10 +2744,10 @@ begin
       finally
         FEmbConnection.Close;
       end;
-      DeleteDirectory(DBDirectoryName);
+      DeleteDataDir(DBDirectoryName);
     end;
 
-    CopyDirectories(ExePath + SDirDataEtalon, DBDirectoryName);
+    CopyDataDirToBackup(ExePath + SDirDataEtalon, DBDirectoryName);
     CreateDir(ExePath + SDirData + '\analitf');
 
     FEmbConnection.Database := 'analitf';
@@ -2803,7 +2824,7 @@ begin
   else
     try
       RunUpdateDBFile(nil, ExePath + SDirData, CURRENT_DB_VERSION, RestoreDatabaseFromPrevios, nil, 'Происходит восстановление базы данных из предыдущей копии. Подождите...');
-      //Значит восстановили из эталона
+      //Значит восстановили из предыдущей копии
       FNeedImportAfterRecovery := True;
       WriteExchangeLog('AnalitF', 'Произведено копирование из предыдущей копии.');
     except
@@ -3292,7 +3313,7 @@ end;
 procedure TDM.TestEmbeddedMysql;
 begin
 {$ifdef USEMYSQLEMBEDDED}
-  TestDumpDatabase();
+  //TestDumpDatabase();
 
   //TestOpenDatabase();
 
@@ -3325,15 +3346,20 @@ begin
   try
     if DirectoryExists(ExePath + SDirData) then begin
       DeleteDirectory(ExePath + DirDataTest);
-      MoveDirectories(ExePath + SDirData, ExePath + DirDataTest);
+      CopyDataDirToBackup(ExePath + SDirData, ExePath + DirDataTest);
+      DeleteDataDir(ExePath + SDirData);
     end;
 
-    if DirectoryExists(ExePath + SDirData) then
-      raise Exception.CreateFmt('Cуществует директория %s, чего быть не должно.', [ExePath + SDirData]);
+    if DirectoryExists(ExePath + SDirData + '\analitf') then
+      raise Exception.CreateFmt('Cуществует директория %s, чего быть не должно.', [ExePath + SDirData + '\analitf']);
 
-    //Попытка открыть базу при несуществовании папки Data
+    //Попытка открыть базу при несуществовании папок "analitf" и "mysql"
     try
       FEmbConnection.Open;
+      try 
+      finally
+        FEmbConnection.Close;
+      end;
     except
       on E : Exception do
         if (E is EMyError) and (not EMyError(E).IsFatalError) and (EMyError(E).ErrorCode = 1049)
@@ -3344,6 +3370,7 @@ begin
     end;
 
     //Попытка открыть базу при несуществовании папки analitf
+{
     CreateDir(ExePath + SDirData);
     try
       FEmbConnection.Open;
@@ -3355,12 +3382,14 @@ begin
         else
           raise;
     end;
+}    
 
     //Попытка выбрать данные из таблицы params при пустой базе данных analitf
     CreateDir(ExePath + SDirData + '\analitf');
     try
       FEmbConnection.Open;
       try
+        FEmbConnection.ExecSQL('use analitf', []);
         FEmbConnection.ExecSQL('select * from params', []);
       finally
         FEmbConnection.Close;
@@ -3377,6 +3406,7 @@ begin
     //создаем тестовую таблицу
     FEmbConnection.Open;
     try
+      FEmbConnection.ExecSQL('use analitf', []);
       FEmbConnection.ExecSQL('create table TestTable(id int, namecolumn varchar(255))', []);
     finally
       FEmbConnection.Close;
@@ -3385,6 +3415,7 @@ begin
     //пытаемся выбрать из information_schema
     FEmbConnection.Open;
     try
+      FEmbConnection.ExecSQL('use analitf', []);
       FEmbConnection.ExecSQL('select * from information_schema.tables', []);
     finally
       FEmbConnection.Close;
@@ -3394,6 +3425,7 @@ begin
     try
       FEmbConnection.Open;
       try
+        FEmbConnection.ExecSQL('use analitf', []);
         FEmbConnection.ExecSQL('select analitf.x_cast_to_tinyint(323232323)', []);
       finally
         FEmbConnection.Close;
@@ -3411,6 +3443,7 @@ begin
     try
       FEmbConnection.Open;
       try
+        FEmbConnection.ExecSQL('use analitf', []);
         FEmbConnection.ExecSQL('create FUNCTION analitf.x_cast_to_tinyint(number BIGINT) RETURNS tinyint(1) BEGIN return number;END', []);
       finally
         FEmbConnection.Close;
@@ -3438,19 +3471,20 @@ begin
     finally
       FEmbConnection.Close;
       //Здесь пока удалять не буду
-      FEmbConnection.RemoveFromPool;
+      //FEmbConnection.RemoveFromPool;
     end;
 
     //удаляем директорию
-    DeleteDirectory(ExePath + SDirData);
+    DeleteDataDir(ExePath + SDirData);
 
     //копируем данные из эталонной копии
-    CopyDirectories(ExePath + SDirDataEtalon, ExePath + SDirData);
+    CopyDataDirToBackup(ExePath + SDirDataEtalon, ExePath + SDirData);
 
     //пытаемся создать ХП
     CreateDir(ExePath + SDirData + '\analitf');
     FEmbConnection.Open;
     try
+      FEmbConnection.ExecSQL('use analitf', []);
       FEmbConnection.ExecSQL('create FUNCTION analitf.x_cast_to_tinyint(number BIGINT) RETURNS tinyint(1) BEGIN return number;END', []);
     finally
       FEmbConnection.Close;
@@ -3459,6 +3493,7 @@ begin
     //пытаемся выбрать с помощью созданной ХП
     FEmbConnection.Open;
     try
+      FEmbConnection.ExecSQL('use analitf', []);
       FEmbConnection.ExecSQL('select analitf.x_cast_to_tinyint(323232323)', []);
     finally
       FEmbConnection.Close;
@@ -3478,12 +3513,12 @@ begin
     finally
       FEmbConnection.Close;
       //Здесь пока удалять не буду
-      FEmbConnection.RemoveFromPool;
+      //FEmbConnection.RemoveFromPool;
     end;
 
 
     //удаляем директорию
-    DeleteDirectory(ExePath + SDirData);
+    DeleteDataDir(ExePath + SDirData);
 
     //переносим данные, которые сохранили перед тестом
     if DirectoryExists(ExePath + DirDataTest) then
@@ -3623,12 +3658,12 @@ procedure TDM.TestDirectoriesOperation;
 begin
   DeleteDirectory(ExePath + SDirDataBackup);
 
-  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+  CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
   if not DirectoryExists(ExePath + SDirDataBackup) then
     raise Exception.Create('Директория с Backup не существует')
   else
     DeleteDirectory(ExePath + SDirDataBackup);
-  CopyDirectories(ExePath + SDirData, ExePath + SDirDataBackup);
+  CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
 
   MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
   if DirectoryExists(ExePath + SDirDataBackup) then
@@ -3673,7 +3708,7 @@ begin
   RepeatCount := 0;
   repeat
     try
-      DeleteDirectory(ExePath + SDirData);
+      DeleteDataDir(ExePath + SDirData);
       Succes := True;
     except
       Sleep(500);
@@ -4027,6 +4062,12 @@ begin
     selectMySql.Free;
     updateMySql.Free;
   end;
+end;
+
+procedure TDM.MyConnectionAfterDisconnect(Sender: TObject);
+begin
+  Tracer.TR('Connection.' + TCustomMyConnection(Sender).Name + '.Close',
+    'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
 end;
 
 initialization

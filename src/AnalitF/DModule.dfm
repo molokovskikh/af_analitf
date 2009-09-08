@@ -1433,7 +1433,6 @@ object DM: TDM
     Top = 544
   end
   object MyConnection: TMyConnection
-    Database = 'analitf'
     Options.Charset = 'cp1251'
     Options.KeepDesignConnected = False
     Username = 'root'
@@ -1540,7 +1539,6 @@ object DM: TDM
     end
   end
   object MyEmbConnection: TMyEmbConnection
-    Database = 'AnalitF'
     Options.Charset = 'cp1251'
     Options.KeepDesignConnected = False
     Params.Strings = (
@@ -1553,6 +1551,7 @@ object DM: TDM
       '--max_allowed_packet=16777216')
     Username = 'root'
     AfterConnect = MainConnectionOldAfterConnect
+    AfterDisconnect = MyConnectionAfterDisconnect
     LoginPrompt = False
     Left = 128
     Top = 104
