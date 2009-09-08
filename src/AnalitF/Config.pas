@@ -358,8 +358,8 @@ end;
 
 procedure TConfigForm.lblServerLinkClick(Sender: TObject);
 begin
-	ShellExecute( 0, 'Open', PChar( 'https://stat.analit.net/ci/auth'),
-		nil, nil, SW_SHOWDEFAULT);
+  ShellExecute(0, 'Open',
+    PChar('https://stat.analit.net/ci/auth/logon.aspx'),nil, nil, SW_SHOWDEFAULT);
 end;
 
 procedure TConfigForm.tshAuthShow(Sender: TObject);
