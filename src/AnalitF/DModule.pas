@@ -964,11 +964,16 @@ begin
     CheckDBFile
   else begin
 {$ifdef DEBUG}
-    MainConnection.Open;
     try
-    ExtractDBScript(MainConnection);
+      MainConnection.Database := 'analitf';
+      MainConnection.Open;
+      try
+        ExtractDBScript(MainConnection);
+      finally
+        MainConnection.Close;
+      end;
     finally
-      MainConnection.Close;
+      MainConnection.Database := '';
     end;
 {$endif}
   end;
@@ -1966,11 +1971,22 @@ begin
     dbCon.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
     dbCon.LoginPrompt := False;
 
+{$ifdef DEBUG}
+    try
+      dbCon.Database := 'analitf';
+      dbCon.Open;
+      try
+        ExtractDBScript(dbCon);
+      finally
+        dbCon.Close;
+      end;
+    finally
+      dbCon.Database := '';
+    end;
+{$endif}
+
     dbCon.Open;
     try
-{$ifdef DEBUG}
-      ExtractDBScript(dbCon);
-{$endif}
       DBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
     finally
       dbCon.Close;
@@ -2843,22 +2859,31 @@ var
   MyDump : TMyDump;
   ExistsScript, RightScript : String;
 begin
-  dbCon.Open;
   try
-    MyDump := TMyDump.Create(nil);
+    dbCon.Database := 'analitf';
+
+    dbCon.Open;
     try
-      MyDump.Connection := dbCon;
-      MyDump.Objects := [doStoredProcs, doTables, doViews];
-      MyDump.Backup;
-      ReplaceAutoIncrement(MyDump.SQL);
-      ExistsScript := Trim(MyDump.SQL.Text);
+      MyDump := TMyDump.Create(nil);
+      try
+        dbCon.ExecSQL('use analitf', []);
+        MyDump.Connection := dbCon;
+        MyDump.Objects := [doStoredProcs, doTables, doViews];
+        MyDump.Backup;
+        ReplaceAutoIncrement(MyDump.SQL);
+        ExistsScript := Trim(MyDump.SQL.Text);
+      finally
+        MyDump.Free;
+      end;
     finally
-      MyDump.Free;
+      dbCon.Close;
+      //dbCon.RemoveFromPool;
     end;
+
   finally
-    dbCon.Close;
-    //dbCon.RemoveFromPool;
+    dbCon.Database := '';
   end;
+
 
   RightScript := Trim(GetLastCreateScript());
 
