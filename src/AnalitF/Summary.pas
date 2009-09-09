@@ -359,7 +359,7 @@ procedure TSummaryForm.dbgSummaryCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
 	inherited;
-  CanInput := LastSymmaryType = 0;
+  CanInput := (LastSymmaryType = 0) and (not adsSummary.IsEmpty);
 end;
 
 procedure TSummaryForm.adsSummary2BeforePost(DataSet: TDataSet);
