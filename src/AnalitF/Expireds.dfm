@@ -652,13 +652,12 @@ inherited ExpiredsForm: TExpiredsForm
   object adsExpireds: TMyQuery
     SQLUpdate.Strings = (
       
-        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
-        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
-        'ERCOUNT)')
+        'call updateordercount(:OLD_ORDERSHORDERID, :AClientid, :OLD_PRIC' +
+        'ECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERC' +
+        'OUNT)')
     SQLRefresh.Strings = (
       'SELECT '
       '    Core.CoreId,'
-      '    Clients.CLIENTID,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
       '    Core.productid,'
@@ -713,7 +712,6 @@ inherited ExpiredsForm: TExpiredsForm
       '    OrdersHead.RegionName AS OrdersHRegionName'
       'FROM'
       '    Core'
-      '    inner join Clients on Clients.CLIENTID = :ClientId'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
       '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       '    left join products on products.productid = core.productid'
@@ -723,8 +721,8 @@ inherited ExpiredsForm: TExpiredsForm
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :ClientId and o' +
-        'sbc.CoreId=Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :AClientId and ' +
+        'osbc.CoreId=Core.CoreId'
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE'
       '  Core.CoreID = :CoreID')
@@ -733,7 +731,6 @@ inherited ExpiredsForm: TExpiredsForm
       '#EXPIREDSSHOW'
       'SELECT '
       '    Core.CoreId,'
-      '    Clients.CLIENTID,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
       '    Core.productid,'
@@ -788,7 +785,6 @@ inherited ExpiredsForm: TExpiredsForm
       '    OrdersHead.RegionName AS OrdersHRegionName'
       'FROM'
       '    Core'
-      '    inner join Clients on Clients.CLIENTID = :AClientId'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
       '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       '    left join products on products.productid = core.productid'
@@ -804,6 +800,7 @@ inherited ExpiredsForm: TExpiredsForm
       'WHERE'
       '    (Core.productid > 0)'
       'and (Core.Junk = 1)')
+    BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsExpireds2BeforePost
     AfterPost = adsExpireds2AfterPost
@@ -818,16 +815,9 @@ inherited ExpiredsForm: TExpiredsForm
       item
         DataType = ftUnknown
         Name = 'AClientId'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'AClientId'
       end>
     object adsExpiredsCoreId: TLargeintField
       FieldName = 'CoreId'
-    end
-    object adsExpiredsCLIENTID: TLargeintField
-      FieldName = 'CLIENTID'
     end
     object adsExpiredsPriceCode: TLargeintField
       FieldName = 'PriceCode'

@@ -168,7 +168,6 @@ type
     adsCoreOrdersHPriceName: TStringField;
     adsCoreOrdersHRegionName: TStringField;
     adsCoreSumOrder: TFloatField;
-    adsCoreClientID: TLargeintField;
     btnGotoCore: TButton;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);

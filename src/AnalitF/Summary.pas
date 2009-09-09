@@ -106,7 +106,6 @@ type
     adsSummary: TMyQuery;
     adsSummaryfullcode: TLargeintField;
     adsSummaryshortcode: TLargeintField;
-    adsSummaryClientid: TLargeintField;
     adsSummaryCoreID: TLargeintField;
     adsSummaryVolume: TStringField;
     adsSummaryQuantity: TStringField;
@@ -135,6 +134,7 @@ type
     adsSummaryVitallyImportant: TBooleanField;
     btnGotoCore: TButton;
     adsSummarySumOrder: TCurrencyField;
+    adsSummaryOrdersHOrderId: TLargeintField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;

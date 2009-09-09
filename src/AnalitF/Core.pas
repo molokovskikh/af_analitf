@@ -145,7 +145,6 @@ type
     adsPreviosOrdersPriceName: TStringField;
     adsPreviosOrdersRegionName: TStringField;
     adsCoreCoreId: TLargeintField;
-    adsCoreClientid: TLargeintField;
     adsCorePriceCode: TLargeintField;
     adsCoreRegionCode: TLargeintField;
     adsCoreproductid: TLargeintField;

@@ -1097,13 +1097,12 @@ object CoreForm: TCoreForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       
-        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
-        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
-        'ERCOUNT)')
+        'call updateordercount(:OLD_ORDERSHORDERID, :AClientid, :OLD_PRIC' +
+        'ECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERC' +
+        'OUNT)')
     SQLRefresh.Strings = (
       'SELECT '
       '    Core.CoreId,'
-      '    Clients.Clientid,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
       '    Core.productid,'
@@ -1166,7 +1165,6 @@ object CoreForm: TCoreForm
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
-      '    inner join Clients on Clients.Clientid = :ClientID'
       '    left JOIN Core ON Core.productid = products.productid'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
@@ -1182,8 +1180,8 @@ object CoreForm: TCoreForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
-        'sbc.CoreId = Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :Aclientid and ' +
+        'osbc.CoreId = Core.CoreId'
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '  Core.CoreId = :CoreID')
@@ -1191,7 +1189,6 @@ object CoreForm: TCoreForm
     SQL.Strings = (
       'SELECT '
       '    Core.CoreId,'
-      '    Clients.Clientid,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
       '    Core.productid,'
@@ -1254,7 +1251,6 @@ object CoreForm: TCoreForm
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
-      '    inner join Clients on Clients.Clientid = :AClientID'
       '    left JOIN Core ON Core.productid = products.productid'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
@@ -1277,6 +1273,7 @@ object CoreForm: TCoreForm
       '    (Catalogs.FullCode = :ParentCode)'
       'and (Core.coreid is not null)'
       'And ((:ShowRegister = 1) Or (Providers.FirmCode <> :RegisterId))')
+    BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
     AfterOpen = adsCoreAfterOpen
     BeforeClose = adsCoreBeforeClose
@@ -1297,10 +1294,6 @@ object CoreForm: TCoreForm
       end
       item
         DataType = ftUnknown
-        Name = 'aclientid'
-      end
-      item
-        DataType = ftUnknown
         Name = 'PARENTCODE'
       end
       item
@@ -1313,9 +1306,6 @@ object CoreForm: TCoreForm
       end>
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
-    end
-    object adsCoreClientid: TLargeintField
-      FieldName = 'Clientid'
     end
     object adsCorePriceCode: TLargeintField
       FieldName = 'PriceCode'
@@ -1688,7 +1678,6 @@ object CoreForm: TCoreForm
     SQL.Strings = (
       'SELECT '
       '    Core.CoreId,'
-      '    Clients.Clientid,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
       '    Core.productid,'
@@ -1751,7 +1740,6 @@ object CoreForm: TCoreForm
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
-      '    inner join Clients on Clients.Clientid = :AClientID'
       '    left JOIN Core ON Core.productid = products.productid'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
@@ -1784,10 +1772,6 @@ object CoreForm: TCoreForm
       item
         DataType = ftUnknown
         Name = 'AClientID'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'aclientid'
       end
       item
         DataType = ftUnknown

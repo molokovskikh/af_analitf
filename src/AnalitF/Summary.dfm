@@ -943,7 +943,6 @@ inherited SummaryForm: TSummaryForm
       'SELECT '
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
-      '    Clients.Clientid,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -970,7 +969,8 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.CoreId AS OrdersCoreId,'
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
-      '    Regions.regioncode'
+      '    Regions.regioncode,'
+      '    OrdersHead.OrderId as OrdersHOrderId'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -978,7 +978,6 @@ inherited SummaryForm: TSummaryForm
       '    OrdersHead,'
       '    products,'
       '    catalogs,'
-      '    Clients, '
       '    OrdersList'
       
         '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
@@ -988,7 +987,6 @@ inherited SummaryForm: TSummaryForm
         'nymFirmCr.SynonymFirmCrCode'
       'WHERE'
       '    OrdersHead.ClientId = :AClientId'
-      'and Clients.Clientid = :AClientId'
       'and OrdersList.OrderId=OrdersHead.OrderId'
       'and OrdersList.OrderCount>0'
       'and Core.CoreId=OrdersList.CoreId'
@@ -1002,10 +1000,6 @@ inherited SummaryForm: TSummaryForm
       item
         DataType = ftUnknown
         Name = 'AClientId'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'AClientId'
       end>
   end
   object adsSendSummary: TMyQuery
@@ -1014,7 +1008,6 @@ inherited SummaryForm: TSummaryForm
       'SELECT '
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
-      '    Clients.Clientid,'
       '    OrdersList.CoreId AS CoreId,'
       '    cast('#39#39' as char(15)) as Volume,'
       '    cast('#39#39' as char(15)) as Quantity,'
@@ -1041,14 +1034,14 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.CoreId AS OrdersCoreId,'
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    PricesData.pricecode,'
-      '    Regions.regioncode'
+      '    Regions.regioncode,'
+      '    OrdersHead.OrderId as OrdersHOrderId  '
       'FROM'
       '    PricesData,'
       '    Regions,'
       '    OrdersHead,'
       '    products,'
       '    catalogs,'
-      '    Clients, '
       '    OrdersList'
       
         '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
@@ -1058,7 +1051,6 @@ inherited SummaryForm: TSummaryForm
         'nymFirmCr.SynonymFirmCrCode'
       'WHERE'
       '    OrdersHead.ClientId = :AClientId'
-      'and Clients.Clientid = :AClientId'
       'and OrdersList.OrderId=OrdersHead.OrderId'
       'and OrdersList.OrderCount>0'
       'and OrdersList.CoreId is null'
@@ -1077,10 +1069,6 @@ inherited SummaryForm: TSummaryForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
-      end
-      item
-        DataType = ftUnknown
         Name = 'datefrom'
       end
       item
@@ -1089,12 +1077,72 @@ inherited SummaryForm: TSummaryForm
       end>
   end
   object adsSummary: TMyQuery
+    SQLUpdate.Strings = (
+      
+        'call updateordercount(:OLD_ORDERSHORDERID, :AClientid, :OLD_PRIC' +
+        'ECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERC' +
+        'OUNT)')
+    SQLRefresh.Strings = (
+      'SELECT '
+      '    catalogs.fullcode,'
+      '    catalogs.shortcode,'
+      '    Core.CoreID,'
+      '    Core.Volume,'
+      '    Core.Quantity,'
+      '    Core.Note,'
+      '    Core.Period,'
+      '    Core.Junk,'
+      '    Core.Await,'
+      '    Core.CODE,'
+      '    Core.CODECR,'
+      '    core.doc,'
+      '    core.registrycost,'
+      '    core.vitallyimportant as vitallyimportant,'
+      '    core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      '    Core.Cost,'
+      
+        '    coalesce(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', ca' +
+        'talogs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceName,'
+      '    Regions.RegionName,'
+      '    OrdersList.OrderCount,'
+      '    OrdersList.CoreId AS OrdersCoreId,'
+      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    pricesdata.pricecode,'
+      '    Regions.regioncode,'
+      '    OrdersHead.OrderId as OrdersHOrderId'
+      'FROM'
+      '    PricesData,'
+      '    Regions,'
+      '    Core,'
+      '    OrdersHead,'
+      '    products,'
+      '    catalogs,'
+      '    OrdersList'
+      
+        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
+        'mCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
+        'nymFirmCr.SynonymFirmCrCode'
+      'WHERE'
+      '    OrdersHead.ClientId = :AClientId'
+      'and OrdersList.OrderId=OrdersHead.OrderId'
+      'and OrdersList.OrderCount>0'
+      'and Core.CoreId=OrdersList.CoreId'
+      'and products.productid = OrdersList.productid'
+      'and catalogs.fullcode = products.catalogid'
+      'and PricesData.PriceCode = OrdersHead.PriceCode'
+      'and Regions.RegionCode = OrdersHead.RegionCode'
+      'and Core.CoreId = :CoreId')
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT '
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
-      '    Clients.Clientid,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -1121,7 +1169,8 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.CoreId AS OrdersCoreId,'
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
-      '    Regions.regioncode'
+      '    Regions.regioncode,'
+      '    OrdersHead.OrderId as OrdersHOrderId'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1129,7 +1178,6 @@ inherited SummaryForm: TSummaryForm
       '    OrdersHead,'
       '    products,'
       '    catalogs,'
-      '    Clients, '
       '    OrdersList'
       
         '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
@@ -1139,7 +1187,6 @@ inherited SummaryForm: TSummaryForm
         'nymFirmCr.SynonymFirmCrCode'
       'WHERE'
       '    OrdersHead.ClientId = :AClientId'
-      'and Clients.Clientid = :AClientId'
       'and OrdersList.OrderId=OrdersHead.OrderId'
       'and OrdersList.OrderCount>0'
       'and Core.CoreId=OrdersList.CoreId'
@@ -1147,6 +1194,7 @@ inherited SummaryForm: TSummaryForm
       'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = OrdersHead.PriceCode'
       'and Regions.RegionCode = OrdersHead.RegionCode')
+    BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     BeforePost = adsSummary2BeforePost
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
@@ -1156,19 +1204,12 @@ inherited SummaryForm: TSummaryForm
       item
         DataType = ftUnknown
         Name = 'AClientId'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'AClientId'
       end>
     object adsSummaryfullcode: TLargeintField
       FieldName = 'fullcode'
     end
     object adsSummaryshortcode: TLargeintField
       FieldName = 'shortcode'
-    end
-    object adsSummaryClientid: TLargeintField
-      FieldName = 'Clientid'
     end
     object adsSummaryCoreID: TLargeintField
       FieldName = 'CoreID'
@@ -1267,6 +1308,9 @@ inherited SummaryForm: TSummaryForm
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
+    end
+    object adsSummaryOrdersHOrderId: TLargeintField
+      FieldName = 'OrdersHOrderId'
     end
   end
 end

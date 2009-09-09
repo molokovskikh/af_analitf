@@ -993,13 +993,12 @@ inherited SynonymSearchForm: TSynonymSearchForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       
-        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
-        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
-        'ERCOUNT)')
+        'call updateordercount(:OLD_ORDERSHORDERID, :AClientid, :OLD_PRIC' +
+        'ECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERC' +
+        'OUNT)')
     SQLRefresh.Strings = (
       'SELECT'
       '    Core.CoreId,'
-      '    Clients.CLIENTID,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
       '    Core.ProductID,'
@@ -1060,7 +1059,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
-      '    inner join Clients on Clients.CLIENTID = :clientid'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
       
@@ -1075,8 +1073,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
-        'sbc.CoreId = Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :Aclientid and ' +
+        'osbc.CoreId = Core.CoreId'
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
@@ -1084,7 +1082,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
     SQL.Strings = (
       'SELECT'
       '    Core.CoreId,'
-      '    Clients.CLIENTID,'
       '    Core.PriceCode,'
       '    Core.RegionCode,'
       '    Core.ProductID,'
@@ -1143,29 +1140,41 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    OrdersHead.PriceName AS OrdersHPriceName,'
       '    OrdersHead.RegionName AS OrdersHRegionName'
       'FROM'
-      '    Synonyms'
-      '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
-      '    inner join Clients on Clients.CLIENTID = :aclientid'
-      '    left join products on products.productid = core.productid'
-      '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '  ('
       
-        '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
-        'mCr.SynonymFirmCrCode'
-      '    LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+        '  (select * from Synonyms where (synonyms.synonymname LIKE :Like' +
+        'Param)) as Synonyms,'
+      '  #Synonyms,'
+      '  Core,'
+      '  products,'
+      '  catalogs,'
+      '  PricesData,'
+      '  PricesRegionalData PRD,'
+      '  Providers,'
+      '  Regions'
+      '  )'
       
-        '    LEFT JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Reg' +
-        'ionCode) AND (Core.PriceCode=PRD.PriceCode)'
+        '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
+        'Core.SynonymFirmCrCode)'
       
-        '    LEFT JOIN Providers ON PricesData.FirmCode=Providers.FirmCod' +
-        'e'
-      '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
+        '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
+        'osbc.clientid = :aclientid)'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :aclientid and ' +
-        'osbc.CoreId = Core.CoreId'
-      '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
-      'WHERE '
-      '    (synonyms.synonymname like :LikeParam)'
-      'and (Synonyms.synonymcode > 0)')
+        '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
+        'AND (OrdersHead.OrderId = osbc.OrderId)'
+      'WHERE'
+      '  #(synonyms.synonymname LIKE :LikeParam)'
+      '  #AND (Synonyms.synonymcode > 0)'
+      '  #and '
+      '  (Core.SynonymCode = Synonyms.synonymcode)'
+      '  AND (products.productid = core.productid)'
+      '  AND (catalogs.fullcode = products.catalogid)'
+      '  AND (Core.PriceCode = PricesData.PriceCode)'
+      '  AND (Core.RegionCode = PRD.RegionCode)'
+      '  AND (Core.PriceCode = PRD.PriceCode)'
+      '  AND (PricesData.FirmCode = Providers.FirmCode)'
+      '  AND (Core.RegionCode = Regions.RegionCode)')
+    BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
     AfterOpen = adsCoreAfterOpen
     BeforeClose = adsCoreBeforeClose
@@ -1182,21 +1191,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
       end
       item
         DataType = ftUnknown
-        Name = 'aclientid'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'aclientid'
-      end
-      item
-        DataType = ftUnknown
         Name = 'LikeParam'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'aclientid'
       end>
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
-    end
-    object adsCoreCLIENTID: TLargeintField
-      FieldName = 'CLIENTID'
     end
     object adsCorePriceCode: TLargeintField
       FieldName = 'PriceCode'

@@ -965,13 +965,12 @@ object CoreFirmForm: TCoreFirmForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       
-        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
-        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
-        'ERCOUNT)')
+        'call updateordercount(:OLD_ORDERSHORDERID, :AClientid, :OLD_PRIC' +
+        'ECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERC' +
+        'OUNT)')
     SQLRefresh.Strings = (
       'SELECT'
       '    CCore.CoreId AS CoreId,'
-      '    Clients.ClientID,'
       '    CCore.productid,'
       '    CCore.PriceCode,'
       '    CCore.RegionCode,'
@@ -1037,7 +1036,6 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
-      '    inner join Clients        on (Clients.ClientID = :ClientID)'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1054,8 +1052,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
-        ' (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
+        'd (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1066,7 +1064,6 @@ object CoreFirmForm: TCoreFirmForm
       '#CORESHOWBYFIRM'
       'SELECT'
       '    CCore.CoreId AS CoreId,'
-      '    Clients.ClientID,'
       '    CCore.productid,'
       '    CCore.PriceCode,'
       '    CCore.RegionCode,'
@@ -1132,7 +1129,6 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
-      '    inner join Clients        on (Clients.ClientID = :AClientID)'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1157,16 +1153,13 @@ object CoreFirmForm: TCoreFirmForm
       'WHERE '
       '    (CCore.PriceCode = :APriceCode) '
       'And (CCore.RegionCode = :ARegionCode)')
+    BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsCore2BeforePost
     AfterPost = adsCore2AfterPost
     Left = 120
     Top = 112
     ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'AClientId'
-      end
       item
         DataType = ftUnknown
         Name = 'AClientId'
@@ -1181,9 +1174,6 @@ object CoreFirmForm: TCoreFirmForm
       end>
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
-    end
-    object adsCoreClientID: TLargeintField
-      FieldName = 'ClientID'
     end
     object adsCoreproductid: TLargeintField
       FieldName = 'productid'

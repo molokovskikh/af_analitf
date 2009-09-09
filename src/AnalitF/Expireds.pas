@@ -85,7 +85,6 @@ type
     adsExpireds: TMyQuery;
     adsAvgOrdersPRICEAVG: TFloatField;
     adsExpiredsCoreId: TLargeintField;
-    adsExpiredsCLIENTID: TLargeintField;
     adsExpiredsPriceCode: TLargeintField;
     adsExpiredsRegionCode: TLargeintField;
     adsExpiredsproductid: TLargeintField;

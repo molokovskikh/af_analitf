@@ -117,7 +117,6 @@ type
     frameLegeng: TframeLegeng;
     adsCore: TMyQuery;
     adsCoreCoreId: TLargeintField;
-    adsCoreCLIENTID: TLargeintField;
     adsCorePriceCode: TLargeintField;
     adsCoreRegionCode: TLargeintField;
     adsCoreProductID: TLargeintField;
@@ -671,6 +670,8 @@ var
   TmpSortList : TStringList;
   I : Integer;
 begin
+  adsCore.IndexFieldNames := '';
+
   if adsCore.Active then
     adsCore.Close;
 

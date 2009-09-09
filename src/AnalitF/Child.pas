@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs;
+  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs,
+  MyAccess, DBAccess;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -88,13 +89,17 @@ type
   published
     //Вытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
+    procedure BeforeUpdateExecuteForClientID(
+      Sender: TCustomMyDataSet;
+      StatementTypes: TStatementTypes;
+      Params: TDAParams);
   end;
 
   TChildFormClass=class of TChildForm;
 
 implementation
 
-uses Main, AProc, DBGridEh, Constant, MyAccess, DModule, MyEmbConnection;
+uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection;
 
 {$R *.DFM}
 
@@ -446,6 +451,14 @@ end;
 procedure TChildForm.SetPrevForm(NewPrevForm: TChildForm);
 begin
   PrevForm := NewPrevForm;
+end;
+
+procedure TChildForm.BeforeUpdateExecuteForClientID(
+  Sender: TCustomMyDataSet; StatementTypes: TStatementTypes;
+  Params: TDAParams);
+begin
+  if (stUpdate in StatementTypes) or (stRefresh in StatementTypes) then
+    Params.ParamByName('AClientId').Value := Sender.Params.ParamByName('AClientId').Value;
 end;
 
 end.
