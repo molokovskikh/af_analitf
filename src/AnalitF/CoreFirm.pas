@@ -523,8 +523,7 @@ begin
   try
     with DM.adcUpdate do begin
       //удаляем сохраненную заявку (если есть)
-      SQL.Text:=Format( 'EXECUTE PROCEDURE OrdersHDeleteNotClosed(:ACLIENTID, :APRICECODE, :AREGIONCODE)',
-        [DM.adtClients.FieldByName('ClientId').AsInteger,PriceCode,RegionCode]);
+      SQL.Text:= 'DELETE FROM OrdersHead WHERE ClientId=:AClientId And PriceCode=:APriceCode And RegionCode=:ARegionCode And Closed <> 1';
       ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
       ParamByName('APRICECODE').Value := PriceCode;
       ParamByName('AREGIONCODE').Value := RegionCode;
