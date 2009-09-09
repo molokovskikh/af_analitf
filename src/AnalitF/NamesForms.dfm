@@ -452,4 +452,16 @@ inherited NamesFormsForm: TNamesFormsForm
         Name = 'showall'
       end>
   end
+  object pmNotFoundPositions: TPopupMenu
+    Left = 312
+    Top = 96
+    object miNotFound: TMenuItem
+      Caption = #1053#1077#1090' '#1087#1088#1077#1076#1083#1086#1078#1077#1085#1080#1081
+      Default = True
+    end
+    object miViewOrdersHistory: TMenuItem
+      Caption = #1055#1086#1082#1072#1079#1072#1090#1100' '#1080#1089#1090#1086#1088#1080#1102' '#1079#1072#1082#1072#1079#1086#1074
+      OnClick = miViewOrdersHistoryClick
+    end
+  end
 end

@@ -626,8 +626,8 @@ object CoreForm: TCoreForm
   end
   object dsAvgOrders: TDataSource
     DataSet = adsAvgOrders
-    Left = 296
-    Top = 400
+    Left = 328
+    Top = 440
   end
   object dsFirmsInfo: TDataSource
     DataSet = adsFirmsInfo
@@ -1623,7 +1623,7 @@ object CoreForm: TCoreForm
     MasterFields = 'productid'
     DetailFields = 'PRODUCTID'
     Left = 376
-    Top = 397
+    Top = 453
     ParamData = <
       item
         DataType = ftUnknown

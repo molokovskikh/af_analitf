@@ -70,7 +70,8 @@ uses
   U_DeleteDBThread in 'U_DeleteDBThread.pas',
   U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas',
   U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame},
-  U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm};
+  U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm},
+  PreviousOrders in 'PreviousOrders.pas' {PreviousOrdersForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}

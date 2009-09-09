@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet, Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
-  MyAccess;
+  MyAccess, Menus;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -48,6 +48,9 @@ type
     adsForms: TMyQuery;
     adsCatalog: TMyQuery;
     adsNames: TMyQuery;
+    pmNotFoundPositions: TPopupMenu;
+    miNotFound: TMenuItem;
+    miViewOrdersHistory: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -83,6 +86,7 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure actSearchInBeginExecute(Sender: TObject);
     procedure dbgNamesExit(Sender: TObject);
+    procedure miViewOrdersHistoryClick(Sender: TObject);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -92,9 +96,10 @@ type
     procedure SetFormsParams;
     procedure AddKeyToSearch(Key : Char);
     procedure SetGrids;
-    procedure NamesToCore;
-    procedure FormsToCore;
-    procedure CatalogToCore;
+    procedure NamesToCore(MouseClick : Boolean);
+    procedure FormsToCore(MouseClick : Boolean);
+    procedure CatalogToCore(MouseClick : Boolean);
+    procedure ShowNotFoundPositionsPopup(Grid : TToughDBGrid; MouseClick : Boolean);
   protected
     procedure DoShow; override;
   public
@@ -108,13 +113,21 @@ procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64{; APrevForm : 
 
 implementation
 
-uses DModule, AProc, Core, Main, Types, AlphaUtils;
+uses DModule, AProc, Core, Main, Types, AlphaUtils, LU_Tracer, PreviousOrders;
 
 {$R *.dfm}
 
 var
   SearchInBegin : Boolean;
 
+type
+  TDelayPopupMenuThread = class(TThread)
+   protected
+     procedure Execute; override;
+   public
+    f : TNamesFormsForm;
+  end;
+  
 procedure ShowOrderAll;
 begin
   MainForm.ShowChildForm(TNamesFormsForm);
@@ -205,6 +218,10 @@ begin
   if CoreForm = nil then
     CoreForm := TCoreForm.Create(Application);
 
+  PreviousOrdersForm := TPreviousOrdersForm(FindChildControlByClass(MainForm, TPreviousOrdersForm) );
+  if PreviousOrdersForm = nil then
+    PreviousOrdersForm := TPreviousOrdersForm.Create(Application);
+
   SetGrids;
 
   dbgNames.PopupMenu := nil;
@@ -278,7 +295,7 @@ procedure TNamesFormsForm.dbgNamesKeyDown(Sender: TObject; var Key: Word;
 begin
 	inherited;
 	if Key = VK_RETURN then
-    NamesToCore;
+    NamesToCore(False);
 end;
 
 procedure TNamesFormsForm.dbgNamesDblClick(Sender: TObject);
@@ -290,7 +307,7 @@ begin
   p := dbgNames.ScreenToClient(Mouse.CursorPos);
   C := dbgNames.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
-    NamesToCore;
+    NamesToCore(False);
 end;
 
 procedure TNamesFormsForm.dbgNamesEnter(Sender: TObject);
@@ -321,7 +338,7 @@ begin
   p := dbgForms.ScreenToClient(Mouse.CursorPos);
   C := dbgForms.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
-    FormsToCore;
+    FormsToCore(True);
 end;
 
 procedure TNamesFormsForm.dbgFormsKeyDown(Sender: TObject; var Key: Word;
@@ -329,7 +346,7 @@ procedure TNamesFormsForm.dbgFormsKeyDown(Sender: TObject; var Key: Word;
 begin
 	inherited;
   if Key = VK_RETURN then
-    FormsToCore;
+    FormsToCore(False);
 	if ( Key = VK_ESCAPE) or ( Key = VK_SPACE) then dbgNames.SetFocus;
 end;
 
@@ -495,7 +512,7 @@ begin
     if tmrSearch.Enabled then
       tmrSearchTimer(nil)
     else
-      CatalogToCore;
+      CatalogToCore(False);
   end
   else
     if Key = VK_ESCAPE then
@@ -510,7 +527,7 @@ begin
   p := dbgCatalog.ScreenToClient(Mouse.CursorPos);
   C := dbgCatalog.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
-    CatalogToCore;
+    CatalogToCore(True);
 end;
 
 procedure TNamesFormsForm.eSearchKeyPress(Sender: TObject; var Key: Char);
@@ -592,35 +609,89 @@ begin
     dbgCatalog.SearchField := '';
 end;
 
-procedure TNamesFormsForm.NamesToCore;
+procedure TNamesFormsForm.NamesToCore(MouseClick : Boolean);
 begin
   if not actUseForms.Checked then
-    CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-      adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
+    if (adsNames.FieldByName('COREEXISTS').AsFloat < 0.001 ) then
+      ShowNotFoundPositionsPopup(dbgNames, MouseClick)
+    else
+      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+        adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
   if actUseForms.Checked and ( adsForms.RecordCount < 2) then
-    CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-      adsNames.FieldByName( 'Name').AsString,
-      adsForms.FieldByName( 'Form').AsString, False, False);
-  if actUseForms.Checked and ( adsForms.RecordCount > 1) then dbgForms.SetFocus;
+    if not adsForms.FieldByName('COREEXISTS').AsBoolean then
+      ShowNotFoundPositionsPopup(dbgNames, MouseClick)
+    else
+      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+        adsNames.FieldByName( 'Name').AsString,
+        adsForms.FieldByName( 'Form').AsString, False, False);
+  if actUseForms.Checked and ( adsForms.RecordCount > 1) then
+    dbgForms.SetFocus;
 end;
 
-procedure TNamesFormsForm.FormsToCore;
+procedure TNamesFormsForm.FormsToCore(MouseClick : Boolean);
 begin
-  CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
-    adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
-    actUseForms.Checked, False);
+  if not adsForms.FieldByName('COREEXISTS').AsBoolean then
+    ShowNotFoundPositionsPopup(dbgForms, MouseClick)
+  else
+    CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
+      adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
+      actUseForms.Checked, False);
 end;
 
-procedure TNamesFormsForm.CatalogToCore;
+procedure TNamesFormsForm.CatalogToCore(MouseClick : Boolean);
 begin
-  CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
-    adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
-    True, True);
+  if not adsCatalog.FieldByName('COREEXISTS').AsBoolean then
+    ShowNotFoundPositionsPopup(dbgCatalog, MouseClick)
+  else
+    CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+      adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
+      True, True);
 end;
 
 procedure TNamesFormsForm.dbgNamesExit(Sender: TObject);
 begin
   LastDBGrid := dbgNames;
+end;
+
+{ TDelayPopupMenuThread }
+
+procedure TDelayPopupMenuThread.Execute;
+begin
+  //Это хак, чтобы подсветилось первый пункт в PopupMenu
+  //взято отсюда: http://www.eggheadcafe.com/conversation.aspx?messageid=29197437&threadid=29197437
+  Sleep(100);
+  keybd_event( VK_DOWN, MapVirtualKey( VK_DOWN,0), 0, 0);
+end;
+
+procedure TNamesFormsForm.miViewOrdersHistoryClick(Sender: TObject);
+begin
+  if actNewSearch.Checked then
+    PreviousOrdersForm.ShowForm(adsCatalog.FieldByName( 'FullCode').AsInteger, False)
+  else
+    if LastDBGrid = dbgNames then
+      PreviousOrdersForm.ShowForm(adsNames.FieldByName('AShortCode').AsInteger, True)
+    else
+      PreviousOrdersForm.ShowForm(adsForms.FieldByName('FullCode').AsInteger, False);
+end;
+
+procedure TNamesFormsForm.ShowNotFoundPositionsPopup(Grid: TToughDBGrid;
+MouseClick : Boolean);
+var
+  P : TPoint;
+  t : TDelayPopupMenuThread;
+  GridCellRect : TRect;
+begin
+  t := TDelayPopupMenuThread.Create(true);
+  t.FreeOnTerminate := True;
+  t.f := Self;
+  t.Resume;
+  if not MouseClick then begin
+    GridCellRect := Grid.CellRect(Grid.Col, Grid.Row);
+    P := Grid.ClientToScreen(Point(GridCellRect.Left, GridCellRect.Top));
+    pmNotFoundPositions.Popup(P.X, P.Y + 20)
+  end
+  else
+    pmNotFoundPositions.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
 end;
 
 initialization
