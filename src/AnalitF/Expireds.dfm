@@ -278,8 +278,9 @@ inherited ExpiredsForm: TExpiredsForm
         Top = 3
         Width = 94
         Height = 25
-        Action = actFlipCore
+        Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
         TabOrder = 0
+        Visible = False
       end
     end
   end

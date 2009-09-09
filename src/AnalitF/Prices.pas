@@ -160,7 +160,7 @@ begin
 
   if IsAlonePrice then begin
     //Если я переделаю ShowChildForm, то этот вызов не нужен
-    //MainForm.FreeChildForms;
+    MainForm.FreeChildForms;
 
     CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
     if CoreFirmForm = nil then

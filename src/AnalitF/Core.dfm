@@ -346,9 +346,10 @@ object CoreForm: TCoreForm
       Top = 3
       Width = 107
       Height = 25
-      Action = actFlipCore
       Anchors = [akTop, akRight]
+      Caption = #1042' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090' (F2)'
       TabOrder = 3
+      Visible = False
     end
   end
   object pCenter: TPanel

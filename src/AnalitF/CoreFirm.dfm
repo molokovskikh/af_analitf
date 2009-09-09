@@ -405,9 +405,10 @@ object CoreFirmForm: TCoreFirmForm
       Top = 2
       Width = 94
       Height = 25
-      Action = actFlipCore
       Anchors = [akTop, akRight]
+      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
       TabOrder = 2
+      Visible = False
     end
   end
   inline frameLegeng: TframeLegeng

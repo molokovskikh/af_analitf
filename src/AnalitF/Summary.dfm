@@ -317,8 +317,9 @@ inherited SummaryForm: TSummaryForm
         Top = 5
         Width = 94
         Height = 25
-        Action = actFlipCore
+        Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
         TabOrder = 1
+        Visible = False
       end
     end
     object pTopSettings: TPanel

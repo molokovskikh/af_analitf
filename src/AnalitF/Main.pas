@@ -515,7 +515,7 @@ begin
 		if result = nil then
 		begin
       //Если я переделаю ShowChildForm, то этот вызов не нужен
-      //FreeChildForms;
+      FreeChildForms;
 			Result := FormClass.Create(Application);
 		end
 		else result.Show;
@@ -534,7 +534,7 @@ begin
 	else
 	begin
     //Если я переделаю ShowChildForm, то этот вызов не нужен 
-    //FreeChildForms;
+    FreeChildForms;
 		ShowOrdersH;
 	end;
 end;
