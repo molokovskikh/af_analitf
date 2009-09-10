@@ -3316,10 +3316,10 @@ const
     ('tfQPrepare', 'tfQExecute', 'tfQFetch', 'tfError', 'tfStmt', 'tfConnect',
      'tfTransact', 'tfBlob', 'tfService', 'tfMisc', 'tfParams');
 begin
+{
   if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsOrdersHForm')
   then
     Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
-{
   else
     if (Sender = nil) then
       Tracer.TR('Monitor', Format('Sender : nil  Flag : %s'#13#10'Text : %s ', [DATraceFlagNames[Flag], Text]))
