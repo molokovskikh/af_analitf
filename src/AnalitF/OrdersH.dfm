@@ -863,10 +863,12 @@ inherited OrdersHForm: TOrdersHForm
       '    (OrdersHead.ClientId = :AClientId)'
       'and (OrdersHead.Closed = :AClosed)'
       
-        'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
-        ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
-        'cesregionaldata.PriceCode is not null)))'
-      'and (OrdersHead.OrderDate BETWEEN :DateFrom AND :DateTo )'
+        'and (((:AClosed = 1) and (OrdersHead.OrderDate BETWEEN :DateFrom' +
+        ' AND :DateTo ))'
+      
+        'or ((:AClosed = 0) and (PricesData.PriceCode is not null) and (R' +
+        'egionalData.RegionCode is not null) and (pricesregionaldata.Pric' +
+        'eCode is not null)))'
       'group by OrdersHead.OrderId'
       'having count(OrdersList.Id) > 0'
       'order by OrdersHead.SendDate DESC')
@@ -898,15 +900,15 @@ inherited OrdersHForm: TOrdersHForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
-      end
-      item
-        DataType = ftUnknown
         Name = 'DateFrom'
       end
       item
         DataType = ftUnknown
         Name = 'DateTo'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
       end>
     object adsOrdersHFormOrderId: TLargeintField
       FieldName = 'OrderId'
