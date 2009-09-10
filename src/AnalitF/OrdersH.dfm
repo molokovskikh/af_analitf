@@ -246,6 +246,14 @@ inherited OrdersHForm: TOrdersHForm
             SearchPosition = spBottom
             Columns = <
               item
+                EditButtons = <>
+                FieldName = 'DisplayOrderId'
+                Footers = <>
+                MinWidth = 5
+                Title.Caption = #1047#1072#1082#1072#1079' '#8470
+                Title.TitleButton = True
+              end
+              item
                 DisplayFormat = 'dd.mm.yyyy hh:nn'
                 EditButtons = <>
                 FieldName = 'SendDate'
