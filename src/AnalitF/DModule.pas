@@ -453,7 +453,6 @@ type
     procedure adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
     procedure MySQLMonitorSQL(Sender: TObject; Text: String;
       Flag: TDATraceFlag);
-    procedure MyConnectionAfterDisconnect(Sender: TObject);
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
@@ -1446,15 +1445,6 @@ procedure TDM.BackupDatabase;
 begin
   if TCustomMyConnection(MainConnection) is TMyEmbConnection then begin
     MainConnection.Close;
-    Tracer.TR('Connection.BeforeSleep',
-      'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
-    //Sleep(5000);
-    Tracer.TR('Connection.AfterSleep',
-      'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
-    //Sleep(10000);
-    Tracer.TR('Connection.AfterFreeMySQLLib',
-      'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
-    //Sleep(5000);
     CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
     MainConnection.Open;
   end;
@@ -1581,9 +1571,6 @@ end;
 
 procedure TDM.MainConnectionOldAfterConnect(Sender: TObject);
 begin
-  Tracer.TR('Connection.' + TCustomMyConnection(Sender).Name + '.Open',
-    'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
-
   MainConnection.ExecSQL('use analitf', []);
   //открываем таблицы с параметрами
   adtParams.Close;
@@ -3331,7 +3318,14 @@ const
 begin
   if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsOrdersHForm')
   then
-    Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]));
+    Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
+{
+  else
+    if (Sender = nil) then
+      Tracer.TR('Monitor', Format('Sender : nil  Flag : %s'#13#10'Text : %s ', [DATraceFlagNames[Flag], Text]))
+    else
+      Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
+}      
 end;
 
 {$ifdef TestEmbeddedMysql}
@@ -4087,12 +4081,6 @@ begin
     selectMySql.Free;
     updateMySql.Free;
   end;
-end;
-
-procedure TDM.MyConnectionAfterDisconnect(Sender: TObject);
-begin
-  Tracer.TR('Connection.' + TCustomMyConnection(Sender).Name + '.Close',
-    'ClientsCount : ' + IntToStr(TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount));
 end;
 
 initialization

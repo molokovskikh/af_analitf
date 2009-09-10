@@ -190,7 +190,7 @@ begin
 			DM.adtClients.FieldByName('ClientId').Value;
     adsOrdersHForm.ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
 		dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-		adsOrdersHForm.ParamByName('DateTo').AsDate:=dtpDateTo.Date;
+		adsOrdersHForm.ParamByName('DateTo').AsDateTime:=dtpDateTo.DateTime;
 		adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 		SetParameters;
 	finally
@@ -471,7 +471,7 @@ begin
   with adsOrdersHForm do begin
 	ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
 	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	ParamByName('DateTo').AsDate := dtpDateTo.Date;
+	ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
     Screen.Cursor:=crHourglass;
     try
       if Active then

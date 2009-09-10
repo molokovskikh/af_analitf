@@ -1551,7 +1551,6 @@ object DM: TDM
       '--max_allowed_packet=16777216')
     Username = 'root'
     AfterConnect = MainConnectionOldAfterConnect
-    AfterDisconnect = MyConnectionAfterDisconnect
     LoginPrompt = False
     Left = 128
     Top = 104
@@ -1567,7 +1566,7 @@ object DM: TDM
     Top = 112
   end
   object MySQLMonitor: TMySQLMonitor
-    TraceFlags = [tfError, tfService]
+    TraceFlags = [tfQPrepare, tfQExecute, tfQFetch, tfError, tfStmt, tfService, tfMisc, tfParams]
     OnSQL = MySQLMonitorSQL
     Left = 376
     Top = 8
