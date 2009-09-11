@@ -562,12 +562,30 @@ begin
 			{ проверяем наличие прайс-листа }
 			if DM.adsCoreRepare.IsEmpty then
 			begin
+{
+      mdOutput.FieldDefs.Add('Reason', ftString, 500);
+      mdOutput.FieldDefs.Add('OldOrderCount', ftInteger);
+      mdOutput.FieldDefs.Add('NewOrderCount', ftInteger);
+      mdOutput.FieldDefs.Add('OldPrice', ftCurrency);
+      mdOutput.FieldDefs.Add('NewPrice', ftCurrency);
+      mdOutput.FieldDefs.Add('OrderListId', ftLargeint);
+      mdOutput.FieldDefs.Add('ProductId', ftLargeint);
+      mdOutput.FieldDefs.Add('ClientId', ftLargeint);
+
+}
         mdOutput.AppendRecord(
          [DM.adsRepareOrdersClientName.AsString,
          DM.adsRepareOrdersPRICENAME.AsString,
          DM.adsRepareOrdersSYNONYMNAME.AsString,
          DM.adsRepareOrdersSYNONYMFIRM.AsString,
-         'позиция отсутствует']);
+         'позиция отсутствует',
+         DM.adsRepareOrdersOrderCount.AsInteger,
+         Null,
+         DM.adsRepareOrdersPrice.AsCurrency,
+         Null,
+         DM.adsRepareOrdersId.AsLargeInt,
+         DM.adsRepareOrdersProductId.AsLargeInt,
+         DM.adsRepareOrdersClientId.AsLargeInt]);
 				DM.adsCoreRepare.Close;
 				SetOrder( 0);
 				DM.adsRepareOrders.Next;
@@ -598,7 +616,14 @@ begin
            DM.adsRepareOrdersPRICENAME.AsString,
            DM.adsRepareOrdersSYNONYMNAME.AsString,
            DM.adsRepareOrdersSYNONYMFIRM.AsString,
-           Format('%d вместо %d (старая цена : %s)', [CurOrder, Order, DM.adsRepareOrdersPRICE.AsString])]);
+           Format('%d вместо %d', [CurOrder, Order]),
+           DM.adsRepareOrdersOrderCount.AsInteger,
+           CurOrder,
+           DM.adsRepareOrdersPrice.AsCurrency,
+           Null,
+           DM.adsRepareOrdersId.AsLargeInt,
+           DM.adsRepareOrdersProductId.AsLargeInt,
+           DM.adsRepareOrdersClientId.AsLargeInt]);
 				end
 				else
 				begin
@@ -607,7 +632,14 @@ begin
            DM.adsRepareOrdersPRICENAME.AsString,
            DM.adsRepareOrdersSYNONYMNAME.AsString,
            DM.adsRepareOrdersSYNONYMFIRM.AsString,
-           Format('предложение отсутствует (старая цена : %s)', [DM.adsRepareOrdersPRICE.AsString])]);
+           'предложение отсутствует',
+           DM.adsRepareOrdersOrderCount.AsInteger,
+           Null,
+           DM.adsRepareOrdersPrice.AsCurrency,
+           Null,
+           DM.adsRepareOrdersId.AsLargeInt,
+           DM.adsRepareOrdersProductId.AsLargeInt,
+           DM.adsRepareOrdersClientId.AsLargeInt]);
 				end;
 			end;
 			DM.adsRepareOrders.Next;
@@ -660,25 +692,8 @@ end;
 
 procedure TInternalRepareOrders.InternalRepareOrders;
 begin
-  mdOutput := TRxMemoryData.Create(nil);
-  try
-    mdOutput.FieldDefs.Add('ClientName', ftString, 500);
-    mdOutput.FieldDefs.Add('PriceName', ftString, 500);
-    mdOutput.FieldDefs.Add('SynonymName', ftString, 500);
-    mdOutput.FieldDefs.Add('SynonymFirm', ftString, 500);
-    mdOutput.FieldDefs.Add('Reason', ftString, 500);
-
-    mdOutput.Open;
-    try
-      FillData;
-
-      FormatOutput;
-    finally
-      mdOutput.Close;
-    end;
-  finally
-    mdOutput.Free;
-  end;
+  FillData;
+  FormatOutput;
 end;
 
 procedure TInternalRepareOrders.RepareOrders;
@@ -696,11 +711,36 @@ begin
 
 	try
 
-    ShowSQLWaiting(InternalRepareOrders, 'Происходит пересчет заказов');
+    mdOutput := TRxMemoryData.Create(nil);
+    try
 
-  	{ если не нашли что-то, то выводим сообщение }
-	  if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
-      ShowNotFound( Strings);
+      mdOutput.FieldDefs.Add('ClientName', ftString, 500);
+      mdOutput.FieldDefs.Add('PriceName', ftString, 500);
+      mdOutput.FieldDefs.Add('SynonymName', ftString, 500);
+      mdOutput.FieldDefs.Add('SynonymFirm', ftString, 500);
+      mdOutput.FieldDefs.Add('Reason', ftString, 500);
+      mdOutput.FieldDefs.Add('OldOrderCount', ftInteger);
+      mdOutput.FieldDefs.Add('NewOrderCount', ftInteger);
+      mdOutput.FieldDefs.Add('OldPrice', ftCurrency);
+      mdOutput.FieldDefs.Add('NewPrice', ftCurrency);
+      mdOutput.FieldDefs.Add('OrderListId', ftLargeint);
+      mdOutput.FieldDefs.Add('ProductId', ftLargeint);
+      mdOutput.FieldDefs.Add('ClientId', ftLargeint);
+
+      mdOutput.Open;
+      try
+        ShowSQLWaiting(InternalRepareOrders, 'Происходит пересчет заказов');
+
+        { если не нашли что-то, то выводим сообщение }
+        if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
+          ShowNotFound( Strings);
+      finally
+        mdOutput.Close;
+      end;
+
+    finally
+      mdOutput.Free;
+    end;
 
 	finally
 		Strings.Free;

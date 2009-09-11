@@ -2232,6 +2232,7 @@ object DM: TDM
       '  OrdersHead.RegionCode, '
       '  OrdersHead.PriceName,'
       '  OrdersList.Id, '
+      '  OrdersList.ProductId,'
       '  OrdersList.CoreId, '
       '  OrdersList.Code, '
       '  OrdersList.CodeCr, '
@@ -2320,6 +2321,12 @@ object DM: TDM
     object adsRepareOrdersClientName: TStringField
       FieldName = 'ClientName'
       Size = 50
+    end
+    object adsRepareOrdersClientId: TLargeintField
+      FieldName = 'ClientId'
+    end
+    object adsRepareOrdersProductId: TLargeintField
+      FieldName = 'ProductId'
     end
   end
   object adsCoreRepare: TMyQuery

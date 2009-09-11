@@ -446,6 +446,8 @@ type
     adsCoreRepareOrdersHRegionName: TStringField;
     adsRepareOrdersClientName: TStringField;
     MyEmbConnection: TMyEmbConnection;
+    adsRepareOrdersClientId: TLargeintField;
+    adsRepareOrdersProductId: TLargeintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
