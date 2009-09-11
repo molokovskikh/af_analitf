@@ -463,9 +463,9 @@ type
     BaseCostPassword,
     DBUIN : String;
     //Требуется обновления из-за того, что некорректный UIN
-    NeedUpdateByCheckUIN : Boolean;
+    FNeedUpdateByCheckUIN : Boolean;
     //Требуется обновления из-за того, что некорректные Hash'и компонент
-    NeedUpdateByCheckHashes : Boolean;
+    FNeedUpdateByCheckHashes : Boolean;
     //Требуется импорт после восстановления из эталонной копии
     FNeedImportAfterRecovery : Boolean;
     //Была создана "чистая" база данных
@@ -614,6 +614,8 @@ type
 
     property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
+    property NeedUpdateByCheckUIN : Boolean read FNeedUpdateByCheckUIN;
+    property NeedUpdateByCheckHashes : Boolean read FNeedUpdateByCheckHashes;
     //Установить параметры для компонента TIdHTTP
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
     function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
@@ -1013,7 +1015,7 @@ begin
 
   SetSendToNotClosedOrders;
 
-  if NeedUpdateByCheckUIN then begin
+  if FNeedUpdateByCheckUIN then begin
     UpdateByCheckUINExchangeActions := [eaGetPrice];
     if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime <> adtParams.FieldByName( 'LastDateTime').AsDateTime)
     then
@@ -1045,7 +1047,7 @@ begin
     end;
   end;
 
-  if NeedUpdateByCheckHashes then begin
+  if FNeedUpdateByCheckHashes then begin
     if not RunExchange([ eaGetPrice]) then
       LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
   end;
@@ -1157,8 +1159,8 @@ begin
       #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
 }
 
-  NeedUpdateByCheckUIN := not CheckCopyIDFromDB;
-  if NeedUpdateByCheckUIN then begin
+  FNeedUpdateByCheckUIN := not CheckCopyIDFromDB;
+  if FNeedUpdateByCheckUIN then begin
     DM.MainConnection.Open;
     try
       adtParams.Edit;
@@ -1180,8 +1182,8 @@ begin
     end;
   end;
 
-  NeedUpdateByCheckHashes := not CheckCriticalLibrary;
-  if NeedUpdateByCheckHashes then
+  FNeedUpdateByCheckHashes := not CheckCriticalLibrary;
+  if FNeedUpdateByCheckHashes then
     AProc.MessageBox( 'Ошибка проверки подлинности компонент программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
 end;
@@ -1998,8 +2000,8 @@ begin
 
     //todo: Ддя MySql это будет включено в следующем обновлении 
     //Если было произведено обновление программы, то обновляем ключи
-//    if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
-//      UpdateDBUIN(dbCon);
+    if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
+      UpdateDBUIN(dbCon);
 
   finally
     dbCon.Free;
@@ -3162,7 +3164,7 @@ begin
       end;
 
       //Обновляем значение CDS в базе с новым CopyID
-      dbCon.ExecSQL('update params set CDS = :CDS where ID = 0', [newCDS]);
+      dbCon.ExecSQL('update analitf.params set CDS = :CDS where ID = 0', [newCDS]);
 
     finally
       try dbCon.Close(); except end;
@@ -4059,7 +4061,9 @@ begin
           ExistsParam.Value := selectFirebird.Fields[i].Value;
       end;
 
-      updateMySql.ParamByName('CDS').AsString := newCDS;
+      //Пишем в базу старое значение CDS, чтобы UIN обновился по стандарнтному сценарию
+      updateMySql.ParamByName('CDS').AsString := CDS;
+
       if (updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value >= 21) and
          (updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value <= 30)
       then

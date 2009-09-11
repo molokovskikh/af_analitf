@@ -233,14 +233,12 @@ begin
         DM.adtParams.Post;
         while not DM.adsRetailMargins.IsEmpty do
           DM.adsRetailMargins.Delete;
-        //todo: надо восстановить
         mdRetail.SaveToDataSet(DM.adsRetailMargins, 0);
         DM.adsRetailMargins.ApplyUpdates;
         DM.LoadRetailMargins;
       end
       else begin
         DM.adtParams.Cancel;
-        //todo: надо восстановить
         DM.adsRetailMargins.CancelUpdates;
       end;
 

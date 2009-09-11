@@ -344,8 +344,11 @@ begin
 	{ Запуск с ключем -i (импорт данных) при получении новой версии программы}
   if FindCmdLineSwitch('i') then
   begin
-    //Производим только в том случае, если не была создана "чистая" база
-    if not DM.CreateClearDatabase then
+    //Производим только в том случае, если не была создана "чистая" база,
+    //не было обновление по ошибке UIN и не было обновление по ошибке хешей библиотек
+    if not DM.CreateClearDatabase and not DM.NeedUpdateByCheckUIN
+      and not DM.NeedUpdateByCheckHashes
+    then
       RunExchange([ eaImportOnly]);
     exit;
   end;
