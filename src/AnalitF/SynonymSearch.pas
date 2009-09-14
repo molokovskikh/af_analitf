@@ -191,6 +191,10 @@ type
     tmrUpdatePreviosOrders: TTimer;
     tmrSelectedPrices: TTimer;
     btnGotoCore: TButton;
+    OldQuery: TMyQuery;
+    adsCoreColorIndex: TLargeintField;
+    adsCoreByProducts: TMyQuery;
+    adsCoreByFullcode: TMyQuery;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -365,8 +369,10 @@ procedure TSynonymSearchForm.ccf(DataSet: TDataSet);
 begin
   try
     adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCost.AsCurrency);
+{
     if Assigned(SortList) then
       adsCoreSortOrder.AsInteger := SortList.IndexOf(adsCoreCOREID.AsString);
+}      
   except
   end;
 end;
@@ -451,6 +457,8 @@ end;
 procedure TSynonymSearchForm.dbgCoreGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
+var
+  ColorIndex : Integer;
 begin
   if adsCore.Active then begin
     if adsCoreSynonymCode.AsInteger < 0 then
@@ -468,10 +476,14 @@ begin
           end
     else
     begin
-      if (not adsCore.IsEmpty) and Assigned(SortList)
+      if (not adsCore.IsEmpty) {and Assigned(SortList)}
           and (Column.Field <> adsCoreOrderCount) and (Column.Field <> adsCoreSumOrder)
-      then
-        Background := SortElem(SortList.Objects[ SortList.IndexOf(adsCoreCOREID.AsString)]).SelectedColor;
+      then begin
+        ColorIndex := adsCoreColorIndex.AsInteger;
+        if ColorIndex mod 2 = 0 then
+          Background := clSkyBlue;
+        //Background := SortElem(SortList.Objects[ SortList.IndexOf(adsCoreCOREID.AsString)]).SelectedColor;
+      end;
 
       if adsCoreVITALLYIMPORTANT.AsBoolean then
         AFont.Color := VITALLYIMPORTANT_CLR;
@@ -670,10 +682,16 @@ var
   TmpSortList : TStringList;
   I : Integer;
 begin
+//  adsCore.Options.CacheCalcFields := False;
   adsCore.IndexFieldNames := '';
 
   if adsCore.Active then
     adsCore.Close;
+
+  if DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean then
+    adsCore.SQL.Text := adsCoreByProducts.SQL.Text
+  else
+    adsCore.SQL.Text := adsCoreByFullcode.SQL.Text;
 
   adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
   adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
@@ -688,6 +706,7 @@ begin
 
   ShowSQLWaiting(adsCore);
 
+  {
   //TODO: Здесь надо очистить массив, чтобы не было утечки памяти
   TmpSortList := SortList;
   SortList := nil;
@@ -705,9 +724,19 @@ begin
   end;
 
   SortList := TmpSortList;
+  }
 
+{
+  adsCore.Close;
 //    adsCore.DoSort(['SortOrder'], [True]);
+  adsCore.Options.CacheCalcFields := True;
+  adsCore.Open;
+  adsCore.First;
+  while not adsCore.Eof do begin
+    adsCore.Next;
+  end;
   adsCore.IndexFieldNames := 'SortOrder';
+}  
   adsCore.First;
 
   dbgCore.SetFocus;
