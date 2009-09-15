@@ -219,6 +219,7 @@ var
 	start, stop: integer;
   TmpResult : String;
   ForceEncodeParamsSet : Boolean;
+  ResponseLog : String;
 begin
 	if High( AParams) <> High( AValues) then
 		raise Exception.Create( 'Несовпадает количество параметров и значений');
@@ -271,8 +272,14 @@ begin
 
 	except
     //Производим протоколирование ответа, который успели получить до ошибки
-    //todo: !!! не логировать просто так содержание ответа, только заголовки
-    WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8ToAnsi(FResponse));
+{$ifndef DEBUG}
+    if ( Pos( #$D#$A#$D#$A, FResponse) > 0) then
+      ResponseLog := Copy(FResponse,
+        Pos( #$D#$A#$D#$A, FResponse) + 4, Length( FResponse))
+    else
+{$endif}
+      ResponseLog := FResponse;
+    WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8ToAnsi(ResponseLog));
     raise;
 	end;
 

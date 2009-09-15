@@ -4054,7 +4054,9 @@ begin
       UpdateParamsSQL := 'update analitf.params set ' + UpdateParamsSQL + ' where id = 0';
       updateMySql.SQL.Text := UpdateParamsSQL;
 
+{$ifdef DEBUG}
       AProc.LogCriticalError('Получившийся update для params: ' + UpdateParamsSQL);
+{$endif}
 
       for I := 0 to selectFirebird.FieldCount-1 do begin
         ExistsParam := updateMySql.FindParam(selectFirebird.Fields[i].FieldName);

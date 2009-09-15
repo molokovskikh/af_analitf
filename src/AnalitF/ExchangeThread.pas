@@ -1421,13 +1421,17 @@ begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
       SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt');
       InternalExecute;
+{$ifdef DEBUG}
       WriteExchangeLog('Import', Format('Catalog RowAffected = %d', [RowsAffected]));
+{$endif}
     end
     else begin
       //catalogs_iu
       SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt', true);
       InternalExecute;
+{$ifdef DEBUG}
       WriteExchangeLog('Import', Format('Catalog RowAffected = %d', [RowsAffected]));
+{$endif}
       if utCatDel in UpdateTables then begin
         UpdateFromFileByParamsMySQL(
           ExePath+SDirIn+'\CatDel.txt',
