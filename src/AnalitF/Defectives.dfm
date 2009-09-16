@@ -374,7 +374,7 @@ inherited DefectivesForm: TDefectivesForm
     end
   end
   object frdsPrint: TfrDBDataSet
-    DataSet = adsPrintOld
+    DataSet = adsPrint
     Left = 280
     Top = 208
   end
