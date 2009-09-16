@@ -1204,8 +1204,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       ' SynonymSearch,'
       ' SynonymSearchGroupColor'
       'where'
-      '  SynonymSearch.ProductId = SynonymSearchGroupColor.ProductId'
-      'order by SynonymSearchGroupColor.ColorIndex, SynonymSearch.Cost')
+      '  (SynonymSearch.ProductId = SynonymSearchGroupColor.ProductId)')
     BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
     AfterOpen = adsCoreAfterOpen
@@ -1567,120 +1566,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 656
     Top = 173
   end
-  object OldQuery: TMyQuery
-    SQL.Strings = (
-      'SELECT'
-      '    Core.CoreId,'
-      '    Core.PriceCode,'
-      '    Core.RegionCode,'
-      '    Core.ProductID,'
-      '    catalogs.FullCode AS FullCode,'
-      '    catalogs.shortcode,'
-      '    Core.CodeFirmCr,'
-      '    Core.SynonymCode,'
-      '    Core.SynonymFirmCrCode,'
-      '    Core.Code,'
-      '    Core.CodeCr,'
-      '    Core.Period,'
-      '    Core.Volume,'
-      '    Core.Note,'
-      '    Core.Cost,'
-      '    Core.Quantity,'
-      '    Core.Await,'
-      '    Core.Junk,'
-      '    Core.doc,'
-      '    Core.registrycost,'
-      '    Core.vitallyimportant,'
-      '    Core.requestratio,'
-      '    Core.OrderCost,'
-      '    Core.MinOrderCount,'
-      
-        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
-        'logs.form)) as SynonymName ,'
-      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
-      
-        '    PricesData.DatePrice + interval  -:TimeZoneBias minute AS Da' +
-        'tePrice,'
-      '    PricesData.PriceName,'
-      '    PRD.Enabled AS PriceEnabled,'
-      '    Providers.FirmCode AS FirmCode,'
-      '    PRD.Storage,'
-      '    Regions.RegionName,'
-      '    osbc.CoreId AS OrdersCoreId,'
-      '    osbc.OrderId AS OrdersOrderId,'
-      '    osbc.ClientId AS OrdersClientId,'
-      '    catalogs.FullCode AS OrdersFullCode,'
-      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
-      '    osbc.SynonymCode AS OrdersSynonymCode,'
-      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
-      '    osbc.Code AS OrdersCode,'
-      '    osbc.CodeCr AS OrdersCodeCr,'
-      '    osbc.OrderCount,'
-      '    osbc.SynonymName AS OrdersSynonym,'
-      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
-      '    osbc.Price AS OrdersPrice,'
-      '    osbc.Price*osbc.OrderCount AS SumOrder,'
-      '    osbc.Junk AS OrdersJunk,'
-      '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
-      'FROM'
-      '  ('
-      
-        '  (select * from Synonyms where (synonyms.synonymname LIKE :Like' +
-        'Param)) as Synonyms,'
-      '  #Synonyms,'
-      '  Core,'
-      '  products,'
-      '  catalogs,'
-      '  PricesData,'
-      '  PricesRegionalData PRD,'
-      '  Providers,'
-      '  Regions'
-      '  )'
-      
-        '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
-        'Core.SynonymFirmCrCode)'
-      
-        '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
-        'osbc.clientid = :aclientid)'
-      
-        '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
-        'AND (OrdersHead.OrderId = osbc.OrderId)'
-      'WHERE'
-      '  #(synonyms.synonymname LIKE :LikeParam)'
-      '  #AND (Synonyms.synonymcode > 0)'
-      '  #and '
-      '  (Core.SynonymCode = Synonyms.synonymcode)'
-      '  AND (products.productid = core.productid)'
-      '  AND (catalogs.fullcode = products.catalogid)'
-      '  AND (Core.PriceCode = PricesData.PriceCode)'
-      '  AND (Core.RegionCode = PRD.RegionCode)'
-      '  AND (Core.PriceCode = PRD.PriceCode)'
-      '  AND (PricesData.FirmCode = Providers.FirmCode)'
-      '  AND (Core.RegionCode = Regions.RegionCode)')
-    Left = 176
-    Top = 101
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'TimeZoneBias'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'LikeParam'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'aclientid'
-      end>
-  end
-  object adsCoreByProducts: TMyQuery
-    Connection = DM.MyConnection
+  object adsCoreStartSQL: TMyQuery
     SQL.Strings = (
       'drop temporary table if exists SynonymSearch;'
       'create temporary table SynonymSearch ENGINE=MEMORY'
@@ -1749,7 +1635,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '  (select * from Synonyms where (synonyms.synonymname LIKE :Like' +
         'Param)) as Synonyms,'
-      '  #Synonyms,'
       '  Core,'
       '  products,'
       '  catalogs,'
@@ -1768,9 +1653,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
         '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
         'AND (OrdersHead.OrderId = osbc.OrderId)'
       'WHERE'
-      '  #(synonyms.synonymname LIKE :LikeParam)'
-      '  #AND (Synonyms.synonymcode > 0)'
-      '  #and '
       '  (Core.SynonymCode = Synonyms.synonymcode)'
       '  AND (products.productid = core.productid)'
       '  AND (catalogs.fullcode = products.catalogid)'
@@ -1778,7 +1660,26 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '  AND (Core.RegionCode = PRD.RegionCode)'
       '  AND (Core.PriceCode = PRD.PriceCode)'
       '  AND (PricesData.FirmCode = Providers.FirmCode)'
-      '  AND (Core.RegionCode = Regions.RegionCode);'
+      '  AND (Core.RegionCode = Regions.RegionCode)')
+    Left = 160
+    Top = 125
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TimeZoneBias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'LikeParam'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'aclientid'
+      end>
+  end
+  object adsCoreByProducts: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
       'drop temporary table if exists SynonymSearchGroup;'
       'create temporary table SynonymSearchGroup ENGINE=MEMORY'
       'as'
@@ -1805,124 +1706,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
       ' SynonymSearch,'
       ' SynonymSearchGroupColor'
       'where'
-      '  SynonymSearch.ProductId = SynonymSearchGroupColor.ProductId'
-      'order by SynonymSearchGroupColor.ColorIndex, SynonymSearch.Cost')
-    Left = 184
-    Top = 149
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'TimeZoneBias'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'LikeParam'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'aclientid'
-      end>
+      '  (SynonymSearch.ProductId = SynonymSearchGroupColor.ProductId)'
+      'order by SynonymSearchGroupColor.ColorIndex, SynonymSearch.Cost;')
+    Left = 152
+    Top = 173
   end
   object adsCoreByFullcode: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'drop temporary table if exists SynonymSearch;'
-      'create temporary table SynonymSearch ENGINE=MEMORY'
-      'as'
-      'SELECT'
-      '    Core.CoreId,'
-      '    Core.PriceCode,'
-      '    Core.RegionCode,'
-      '    Core.ProductID,'
-      '    catalogs.FullCode AS FullCode,'
-      '    catalogs.shortcode,'
-      '    Core.CodeFirmCr,'
-      '    Core.SynonymCode,'
-      '    Core.SynonymFirmCrCode,'
-      '    Core.Code,'
-      '    Core.CodeCr,'
-      '    Core.Period,'
-      '    Core.Volume,'
-      '    Core.Note,'
-      '    Core.Cost,'
-      '    Core.Quantity,'
-      '    Core.Await,'
-      '    Core.Junk,'
-      '    Core.doc,'
-      '    Core.registrycost,'
-      '    Core.vitallyimportant,'
-      '    Core.requestratio,'
-      '    Core.OrderCost,'
-      '    Core.MinOrderCount,'
-      
-        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
-        'logs.form)) as SynonymName ,'
-      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
-      
-        '    PricesData.DatePrice + interval  -:TimeZoneBias minute AS Da' +
-        'tePrice,'
-      '    PricesData.PriceName,'
-      '    PRD.Enabled AS PriceEnabled,'
-      '    Providers.FirmCode AS FirmCode,'
-      '    PRD.Storage,'
-      '    Regions.RegionName,'
-      '    osbc.CoreId AS OrdersCoreId,'
-      '    osbc.OrderId AS OrdersOrderId,'
-      '    osbc.ClientId AS OrdersClientId,'
-      '    catalogs.FullCode AS OrdersFullCode,'
-      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
-      '    osbc.SynonymCode AS OrdersSynonymCode,'
-      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
-      '    osbc.Code AS OrdersCode,'
-      '    osbc.CodeCr AS OrdersCodeCr,'
-      '    osbc.OrderCount,'
-      '    osbc.SynonymName AS OrdersSynonym,'
-      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
-      '    osbc.Price AS OrdersPrice,'
-      '    osbc.Price*osbc.OrderCount AS SumOrder,'
-      '    osbc.Junk AS OrdersJunk,'
-      '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
-      'FROM'
-      '  ('
-      
-        '  (select * from Synonyms where (synonyms.synonymname LIKE :Like' +
-        'Param)) as Synonyms,'
-      '  #Synonyms,'
-      '  Core,'
-      '  products,'
-      '  catalogs,'
-      '  PricesData,'
-      '  PricesRegionalData PRD,'
-      '  Providers,'
-      '  Regions'
-      '  )'
-      
-        '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
-        'Core.SynonymFirmCrCode)'
-      
-        '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
-        'osbc.clientid = :aclientid)'
-      
-        '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
-        'AND (OrdersHead.OrderId = osbc.OrderId)'
-      'WHERE'
-      '  #(synonyms.synonymname LIKE :LikeParam)'
-      '  #AND (Synonyms.synonymcode > 0)'
-      '  #and '
-      '  (Core.SynonymCode = Synonyms.synonymcode)'
-      '  AND (products.productid = core.productid)'
-      '  AND (catalogs.fullcode = products.catalogid)'
-      '  AND (Core.PriceCode = PricesData.PriceCode)'
-      '  AND (Core.RegionCode = PRD.RegionCode)'
-      '  AND (Core.PriceCode = PRD.PriceCode)'
-      '  AND (PricesData.FirmCode = Providers.FirmCode)'
-      '  AND (Core.RegionCode = Regions.RegionCode);'
       'drop temporary table if exists SynonymSearchGroup;'
       'create temporary table SynonymSearchGroup ENGINE=MEMORY'
       'as'
@@ -1949,22 +1740,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       ' SynonymSearch,'
       ' SynonymSearchGroupColor'
       'where'
-      '  SynonymSearch.Fullcode = SynonymSearchGroupColor.Fullcode'
-      'order by SynonymSearchGroupColor.ColorIndex, SynonymSearch.Cost')
-    Left = 240
-    Top = 149
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'TimeZoneBias'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'LikeParam'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'aclientid'
-      end>
+      '  (SynonymSearch.Fullcode = SynonymSearchGroupColor.Fullcode)'
+      'order by SynonymSearchGroupColor.ColorIndex, SynonymSearch.Cost;')
+    Left = 192
+    Top = 173
   end
 end

@@ -191,7 +191,7 @@ type
     tmrUpdatePreviosOrders: TTimer;
     tmrSelectedPrices: TTimer;
     btnGotoCore: TButton;
-    OldQuery: TMyQuery;
+    adsCoreStartSQL: TMyQuery;
     adsCoreColorIndex: TLargeintField;
     adsCoreByProducts: TMyQuery;
     adsCoreByFullcode: TMyQuery;
@@ -232,7 +232,6 @@ type
     UseExcess: Boolean;
     DeltaMode, Excess : Integer;
     slColors : TStringList;
-    StartSQL : String;
     SelectedPrices : TStringList;
     BM : TBitmap;
     InternalSearchText : String;
@@ -289,7 +288,6 @@ begin
   BM := TBitmap.Create;
 
   adsCore.OnCalcFields := ccf;
-  StartSQL := adsCore.SQL.Text;
   slColors := TStringList.Create;
 
   fr := TForceRus.Create;
@@ -681,29 +679,35 @@ var
   FilterSQL : String;
   TmpSortList : TStringList;
   I : Integer;
+  StartSQL : String;
 begin
 //  adsCore.Options.CacheCalcFields := False;
-  adsCore.IndexFieldNames := '';
+//  adsCore.IndexFieldNames := '';
 
   if adsCore.Active then
     adsCore.Close;
 
+  StartSQL := adsCoreStartSQL.SQL.Text;
+  FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PRD.');
+  lFilter.Visible := Length(FilterSQL) > 0;
+  if lFilter.Visible then
+    StartSQL := StartSQL + 'and (' + FilterSQL + ')';
+  if cbBaseOnly.Checked then
+    StartSQL := StartSQL + ' and (PRD.Enabled = 1)';
+
+  StartSQL := StartSQL + ';'#13#10;
+
   if DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean then
-    adsCore.SQL.Text := adsCoreByProducts.SQL.Text
+    StartSQL := StartSQL + adsCoreByProducts.SQL.Text
   else
-    adsCore.SQL.Text := adsCoreByFullcode.SQL.Text;
+    StartSQL := StartSQL + adsCoreByFullcode.SQL.Text;
+
+  adsCore.SQL.Text := StartSQL;
 
   adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
   adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
   adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
-  FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PRD.');
-  adsCore.SQL.Text := StartSQL;
-  lFilter.Visible := Length(FilterSQL) > 0;
-  if lFilter.Visible then
-    adsCore.SQL.Text := adsCore.SQL.Text + 'and (' + FilterSQL + ')';
-  if cbBaseOnly.Checked then
-    adsCore.SQL.Text := adsCore.SQL.Text + ' and (PRD.Enabled = 1)';
-
+  
   ShowSQLWaiting(adsCore);
 
   {
