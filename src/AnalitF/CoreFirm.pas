@@ -524,7 +524,15 @@ begin
   try
     with DM.adcUpdate do begin
       //удаляем сохраненную заявку (если есть)
-      SQL.Text:= 'DELETE FROM OrdersHead WHERE ClientId=:AClientId And PriceCode=:APriceCode And RegionCode=:ARegionCode And Closed <> 1';
+      SQL.Text:= ''
+        + ' delete OrdersHead, OrdersList'
+        + ' FROM OrdersHead, OrdersList '
+        + ' WHERE '
+        + '     (OrdersHead.ClientId=:AClientId) '
+        + ' and (OrdersHead.PriceCode=:APriceCode) '
+        + ' and (OrdersHead.RegionCode=:ARegionCode) '
+        + ' and (OrdersHead.Closed <> 1)'
+        + ' and (OrdersList.OrderId = OrdersHead.OrderId)';
       ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
       ParamByName('APRICECODE').Value := PriceCode;
       ParamByName('AREGIONCODE').Value := RegionCode;

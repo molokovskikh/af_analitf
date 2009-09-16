@@ -156,6 +156,7 @@ type
     procedure miUnselectedAllClick(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
+    procedure adsSummaryBeforeInsert(DataSet: TDataSet);
   private
     OrderCount: Integer;
     OrderSum: Double;
@@ -561,6 +562,11 @@ begin
 	Timer.Enabled := False;
 	plOverCost.Hide;
 	plOverCost.SendToBack;
+end;
+
+procedure TSummaryForm.adsSummaryBeforeInsert(DataSet: TDataSet);
+begin
+  Abort;
 end;
 
 initialization

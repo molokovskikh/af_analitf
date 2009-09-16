@@ -1196,6 +1196,7 @@ inherited SummaryForm: TSummaryForm
       'and PricesData.PriceCode = OrdersHead.PriceCode'
       'and Regions.RegionCode = OrdersHead.RegionCode')
     BeforeUpdateExecute = BeforeUpdateExecuteForClientID
+    BeforeInsert = adsSummaryBeforeInsert
     BeforePost = adsSummary2BeforePost
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
