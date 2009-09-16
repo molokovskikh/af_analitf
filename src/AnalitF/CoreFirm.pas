@@ -99,7 +99,7 @@ type
     adsCoreOldREGISTRYCOST: TFIBFloatField;
     adsCoreOldVITALLYIMPORTANT: TFIBIntegerField;
     adsCoreOldREQUESTRATIO: TFIBIntegerField;
-    adsCoreWithLike: TpFIBDataSet;
+    adsCoreWithLikeOld: TpFIBDataSet;
     adsCoreOldORDERCOST: TFIBBCDField;
     adsCoreOldMINORDERCOUNT: TFIBIntegerField;
     adsCoreOldPRODUCTID: TFIBBCDField;
@@ -169,6 +169,7 @@ type
     adsCoreOrdersHRegionName: TStringField;
     adsCoreSumOrder: TFloatField;
     btnGotoCore: TButton;
+    adsCoreWithLike: TMyQuery;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -697,20 +698,27 @@ procedure TCoreFirmForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
   if Length(eSearch.Text) > 2 then begin
-    InternalSearchText := LeftStr(eSearch.Text, 50);
-    if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
-      adsCore.Close;
-      adsCore.SQL.Text := adsCoreWithLike.SelectSQL.Text;
-      adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
-      RefreshAllCore;
-      dbgCore.InputField := 'OrderCount';
+    eSearch.Enabled := False;
+    adsCore.DisableControls;
+    try
+      InternalSearchText := LeftStr(eSearch.Text, 50);
+      if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
+        adsCore.Close;
+        adsCore.SQL.Text := adsCoreWithLike.SQL.Text;
+        adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
+        RefreshAllCore;
+        dbgCore.InputField := 'OrderCount';
+      end;
+      if not Assigned(adsCore.OnFilterRecord) then begin
+        adsCore.OnFilterRecord := AllFilterRecord;
+        adsCore.Filtered := True;
+      end
+      else
+        DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+    finally
+      adsCore.EnableControls;
+      eSearch.Enabled := True;
     end;
-    if not Assigned(adsCore.OnFilterRecord) then begin
-      adsCore.OnFilterRecord := AllFilterRecord;
-      adsCore.Filtered := True;
-    end
-    else
-      DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
     lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.RecordCount]);
     eSearch.Text := '';
   end
@@ -730,15 +738,22 @@ var
   p : TFilterRecordEvent;
 begin
   tmrSearch.Enabled := False;
-  eSearch.Text := '';
-  InternalSearchText := '';
-  p := AllFilterRecord;
-  if @adsCore.OnFilterRecord = @p then begin
-    adsCore.Filtered := False;
-    adsCore.OnFilterRecord := nil;
-  end
-  else
-    DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+  eSearch.Enabled := False;
+  adsCore.DisableControls;
+  try
+    eSearch.Text := '';
+    InternalSearchText := '';
+    p := AllFilterRecord;
+    if @adsCore.OnFilterRecord = @p then begin
+      adsCore.Filtered := False;
+      adsCore.OnFilterRecord := nil;
+    end
+    else
+      DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+  finally
+    adsCore.EnableControls;
+    eSearch.Enabled := True;
+  end;
   lblRecordCount.Caption:=Format( 'Позиций : %d', [adsCore.RecordCount]);
 end;
 

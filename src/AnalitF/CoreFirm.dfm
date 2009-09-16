@@ -850,7 +850,7 @@ object CoreFirmForm: TCoreFirmForm
     Left = 472
     Top = 213
   end
-  object adsCoreWithLike: TpFIBDataSet
+  object adsCoreWithLikeOld: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
       '*'
@@ -1359,5 +1359,119 @@ object CoreFirmForm: TCoreFirmForm
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
     end
+  end
+  object adsCoreWithLike: TMyQuery
+    SQL.Strings = (
+      'SELECT'
+      '    CCore.CoreId AS CoreId,'
+      '    CCore.productid,'
+      '    CCore.PriceCode,'
+      '    CCore.RegionCode,'
+      '    catalogs.FullCode,'
+      '    catalogs.shortcode,'
+      '    CCore.CodeFirmCr,'
+      '    CCore.SynonymCode,'
+      '    CCore.SynonymFirmCrCode,'
+      '    CCore.Code,'
+      '    CCore.CodeCr,'
+      '    CCore.Volume,'
+      '    CCore.Doc,'
+      '    CCore.Note,'
+      '    CCore.Period,'
+      '    CCore.Await,'
+      '    CCore.Junk,'
+      '    CCore.Cost,'
+      '    CCore.Quantity,'
+      '    CCore.registrycost,'
+      '    CCore.vitallyimportant,'
+      '    CCore.requestratio,'
+      '    CCore.ordercost,'
+      '    CCore.minordercount,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      '    PricesData.PriceCode AS LeaderPriceCode,'
+      '    MinPrices.RegionCode AS LeaderRegionCode,'
+      '    Regions.RegionName AS LeaderRegionName,'
+      '    PricesData.PriceName AS LeaderPriceName,'
+      '    MinPrices.MinCost As LeaderPRICE,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.FullCode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    OrdersHead.OrderId AS OrdersHOrderId,'
+      '    OrdersHead.ClientId AS OrdersHClientId,'
+      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
+      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
+      '    OrdersHead.PriceName AS OrdersHPriceName,'
+      '    OrdersHead.RegionName AS OrdersHRegionName'
+      'FROM'
+      '    Core CCore'
+      
+        '    inner join products       on (products.productid = CCore.pro' +
+        'ductid)'
+      
+        '    inner join catalogs       on (catalogs.fullcode = products.c' +
+        'atalogid)'
+      
+        '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
+        'oductid) and (minprices.regioncode = CCore.regioncode)'
+      
+        '    left join Core LCore      on LCore.servercoreid = minprices.' +
+        'servercoreid and LCore.RegionCode = minprices.regioncode'
+      
+        '    left JOIN PricesData      ON (PricesData.PriceCode = MinPric' +
+        'es.pricecode)'
+      
+        '    left JOIN Regions         ON (Regions.RegionCode = MinPrices' +
+        '.RegionCode)'
+      
+        '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
+        'e = CCore.SynonymFirmCrCode)'
+      
+        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
+        'ynonymCode)'
+      
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
+        'd (osbc.CoreId = CCore.CoreId)'
+      
+        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
+        'Id'
+      'WHERE '
+      '    (CCore.PriceCode = :APriceCode) '
+      'and (CCore.RegionCode = :ARegionCode)'
+      'and (Synonyms.SynonymName like :LikeParam)')
+    Left = 128
+    Top = 160
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'APriceCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ARegionCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'LikeParam'
+      end>
   end
 end
