@@ -506,11 +506,12 @@ end;
 
 procedure TCoreFirmForm.btnFormHistoryClick(Sender: TObject);
 begin
-  ShowFormHistory(
-    DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean,
-    adsCoreFullCode.Value,
-    adsCoreproductid.Value,
-    ClientId);
+  if not adsCoreproductid.IsNull then
+    ShowFormHistory(
+      DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean,
+      adsCoreFullCode.Value,
+      adsCoreproductid.Value,
+      ClientId);
 end;
 
 procedure TCoreFirmForm.actDeleteOrderExecute(Sender: TObject);

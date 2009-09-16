@@ -70,9 +70,11 @@ begin
   with TFormsHistoryForm.Create(Application) do try
     Screen.Cursor:=crHourglass;
     try
+      adsCatalogName.Connection := DM.MainConnection;
+      adsPreviosOrders.Connection := DM.MainConnection;
       adsCatalogName.ParamByName('FullCode').Value := FullCode;
       adsCatalogName.Open;
-      
+
       with adsPreviosOrders do begin
         ParamByName('GroupByProducts').Value := GroupByProducts;
         ParamByName('ProductId').Value       := ProductId;
