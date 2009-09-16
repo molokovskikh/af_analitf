@@ -109,6 +109,7 @@ type
     procedure adsOrdersHFormOldCalcFields(DataSet: TDataSet);
     procedure adsOrdersHFormOldAfterFetchRecord(FromQuery: TFIBQuery;
       RecordNumber: Integer; var StopFetching: Boolean);
+    procedure adsOrdersHFormBeforeInsert(DataSet: TDataSet);
   private
     FSumOrders : TStringList;
     Strings: TStrings;
@@ -772,6 +773,11 @@ begin
     if not adsOrdersHFormCLOSED.AsBoolean then
       adsOrdersHForm.RefreshRecord;
   end;
+end;
+
+procedure TOrdersHForm.adsOrdersHFormBeforeInsert(DataSet: TDataSet);
+begin
+  Abort;
 end;
 
 end.
