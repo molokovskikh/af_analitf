@@ -3862,13 +3862,6 @@ begin
           selectFirebird.Next;
         end;
       end
-      else begin
-        updateMySql.ParamByName('Id').Value := 1;
-        updateMySql.ParamByName('LeftLIMIT').Value := 0;
-        updateMySql.ParamByName('RIGHTLIMIT').Value := 1000000;
-        updateMySql.ParamByName('Retail').Value := 30;
-        updateMySql.Execute;
-      end;
     finally
       selectFirebird.Close;
     end;
