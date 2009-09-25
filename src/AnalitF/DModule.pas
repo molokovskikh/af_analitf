@@ -527,7 +527,8 @@ type
     procedure RestoreDatabaseFromPrevios(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Производим обновлением базы данных Firebird на базу данных MySql
     procedure UpdateFirebirdToMySql(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
-    procedure InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection; firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction);
+    procedure InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection; firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction; UnrestoreOrdersFileName : String; var UnrestoreOrders : Boolean);
+    procedure FormatUnrestoreOrders(UnrestoreOrders : TDataSet; OutReport : TStringList);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
 {$ifdef DEBUG}
@@ -3759,9 +3760,12 @@ end;
 procedure TDM.UpdateFirebirdToMySql(dbCon: TCustomMyConnection;
   DBDirectoryName: String; OldDBVersion: Integer;
   AOnUpdateDBFileData: TOnUpdateDBFileData);
+const
+  UnrestoreOrdersFileName = 'Невостановленные заказ.txt';  
 var
   firebirdDB : TpFIBDatabase;
   firebirdTransaction : TpFIBTransaction;
+  UnrestoreOrders : Boolean;
 begin
   dbCon.Open;
   try
@@ -3790,7 +3794,14 @@ begin
 
         try
           try
-            InternalUpdateFirebirdToMySql(dbCon, firebirdDB, firebirdTransaction);
+            OSDeleteFile(ExePath + UnrestoreOrdersFileName);
+            InternalUpdateFirebirdToMySql(
+              dbCon, firebirdDB, firebirdTransaction,
+              ExePath + UnrestoreOrdersFileName, UnrestoreOrders);
+            if FileExists(ExePath + UnrestoreOrdersFileName) and UnrestoreOrders
+            then
+              ShellExecute( 0, 'Open', PChar(ExePath + UnrestoreOrdersFileName),
+                nil, nil, SW_SHOWDEFAULT);
           except
             on UpdateException : Exception do begin
               AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
@@ -3815,7 +3826,9 @@ begin
 end;
 
 procedure TDM.InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection;
-  firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction);
+  firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction;
+  UnrestoreOrdersFileName : String; 
+  var UnrestoreOrders : Boolean);
 var
   selectMySql : TMyQuery;
   updateMySql : TMyQuery;
@@ -3832,7 +3845,9 @@ var
   oldSaveGrids,
   newCDS : String;
   pc : TINFCrypt;
+  OutReport : TStringList;
 begin
+  UnrestoreOrders := False;
   selectMySql := TMyQuery.Create(nil);
   selectMySql.Connection := dbCon;
   updateMySql := TMyQuery.Create(nil);
@@ -3929,7 +3944,7 @@ begin
       if Length(oldDBUIN) = 0 then
         AProc.LogCriticalError('Ошибка при переносе данных : Нет необходимой информации 2.');
       if oldDBUIN <> IntToHex(GetOldDBID(), 8) then
-        raise Exception.Create('Не совпадает DBUIN в обновляемой базе данных.');
+        AProc.LogCriticalError('Ошибка при переносе данных : Не совпадает DBUIN в обновляемой базе данных.');
 
       if (Length(BaseCostPass) > 0) and (Length(oldDBUIN) > 0) then begin
         pc := TINFCrypt.Create(gcp, 48);
@@ -3955,7 +3970,7 @@ begin
     //Производим перемещение содержимого текущих и отправленных заказов
     updateMySql.SQL.Text := 'delete from analitf.orderslist';
     updateMySql.Execute;
-    selectFirebird.SelectSQL.Text := 'SELECT * FROM orders order by id';
+    selectFirebird.SelectSQL.Text := 'SELECT * FROM orders where (ORDERCOUNT > 0) order by id';
     selectFirebird.Open;
     try
       if selectFirebird.RecordCount > 0 then begin
@@ -4007,10 +4022,16 @@ begin
           if selectFirebird.FieldByName('SENDPRICE').IsNull then begin
             //Если пароль для цен известен, то расшифровываем, иначе сбрасываем позицию
             if Assigned(pc) then
-              updateMySql.ParamByName('PRICE').Value := StrToCurr(D_B_N_C(pc, selectFirebird.FieldByName('PRICE').AsString))
+              try
+                updateMySql.ParamByName('PRICE').Value := StrToCurr(D_B_N_C(pc, selectFirebird.FieldByName('PRICE').AsString))
+              except
+                //Если не смогли рассшифровать цену, то помечаем позицию как незаказанную
+                updateMySql.ParamByName('PRICE').Value := 0;
+                updateMySql.ParamByName('COREID').Clear;
+              end
             else begin
+              //Если пароль для расшифровки не установлен, то помечаем позицию как незаказанную
               updateMySql.ParamByName('PRICE').Value := 0;
-              updateMySql.ParamByName('ORDERCOUNT').Value := 0;
               updateMySql.ParamByName('COREID').Clear;
             end;
           end
@@ -4027,6 +4048,77 @@ begin
 
     if Assigned(pc) then
       pc.Free;
+
+    //Проверим сушествование невосстановленных заказов
+    selectMySql.SQL.Text := '' 
++'select '
++'         ORDERSHEAD.Clientid       , '
++'         Clients.Name as ClientName, '
++'         ORDERSHEAD.ORDERID        , ' 
++'         ORDERSHEAD.Pricename      , ' 
++'         ORDERSLIST.SYNONYMNAME    , ' 
++'         ORDERSLIST.SynonymFirm    , ' 
++'         ORDERSLIST.ORDERCOUNT ' 
++'from ' 
++'         analitf.ORDERSHEAD, ' 
++'         analitf.ORDERSLIST, ' 
++'         analitf.Clients ' 
++'where ' 
++'         (Ordershead.ORDERID in ' 
++'         (select ' 
++'                 ORDERSHEAD.ORDERID ' 
++'         from ' 
++'                 analitf.ORDERSHEAD, ' 
++'                 analitf.ORDERSLIST ' 
++'         where ' 
++'                 (ORDERSLIST.ORDERID      = Ordershead.ORDERID) ' 
++'             and (Ordershead.CLOSED       = 0) ' 
++'             and (ORDERSLIST.COREID is null) ' 
++'         )) ' 
++'     and (ORDERSLIST.ORDERID = Ordershead.ORDERID) ' 
++'     and (Clients.CLIENTID   = ORDERSHEAD.CLIENTID) ' 
++'order by ' 
++'         Clients.Name          , ' 
++'         ORDERSHEAD.Pricename  , ' 
++'         ORDERSLIST.SYNONYMNAME, ' 
++'         ORDERSLIST.SynonymFirm';
+    selectMySql.Open;
+    try
+      if selectMySql.RecordCount > 0 then begin
+        UnrestoreOrders := True;
+        OutReport := TStringList.Create;
+        try
+          FormatUnrestoreOrders(selectMySql, OutReport);
+
+          try OutReport.SaveToFile(UnrestoreOrdersFileName); except end;
+        finally
+          OutReport.Free;
+        end;
+
+        //удаляем невосстановленные заказы из базы
+        updateMySql.SQL.Text := '' 
++'delete '
++'from '
++'       analitf.orderslist '
++'using '
++'       analitf.orderslist, '
++'       (select '
++'               ORDERSHEAD.ORDERID '
++'       from '
++'               analitf.ORDERSHEAD, '
++'               analitf.ORDERSLIST '
++'       where '
++'               (ORDERSLIST.ORDERID      = Ordershead.ORDERID) '
++'           and (Ordershead.CLOSED       = 0) '
++'           and (ORDERSLIST.COREID is null) '
++'       ) as UnrestoreOrder '
++'where '
++'       orderslist.Orderid = UnrestoreOrder.OrderId';;
+        updateMySql.Execute;
+      end;
+    finally
+      selectMySql.Close;
+    end;
 
     selectMySql.SQL.Text := 'select * from analitf.params where id = 0';
     selectMySql.Open;
@@ -4081,6 +4173,47 @@ begin
     selectFirebird.Free;
     selectMySql.Free;
     updateMySql.Free;
+  end;
+end;
+
+procedure TDM.FormatUnrestoreOrders(UnrestoreOrders: TDataSet;
+  OutReport: TStringList);
+var
+  ClientName, PriceName : String;
+begin
+  OutReport.Append('Следующие текущие заказы не были восстановлены при обновлении на новую версию:');
+  OutReport.Append('');
+  OutReport.Append('');
+  UnrestoreOrders.First;
+  ClientName := UnrestoreOrders.FieldByName('ClientName').AsString;
+  PriceName := UnrestoreOrders.FieldByName('PriceName').AsString;
+  OutReport.Append(Format('клиент %s', [ClientName]));
+  OutReport.Append(Format('   прайс-лист %s', [PriceName]));
+  while not UnrestoreOrders.Eof do begin
+    if     (ClientName = UnrestoreOrders.FieldByName('ClientName').AsString)
+       and (PriceName  <> UnrestoreOrders.FieldByName('PriceName').AsString)
+    then begin
+      PriceName := UnrestoreOrders.FieldByName('PriceName').AsString;
+      OutReport.Append('');
+      OutReport.Append(Format('   прайс-лист %s', [PriceName]));
+    end
+    else
+      if     (ClientName <> UnrestoreOrders.FieldByName('ClientName').AsString)
+         and (PriceName  <> UnrestoreOrders.FieldByName('PriceName').AsString)
+      then begin
+        ClientName := UnrestoreOrders.FieldByName('ClientName').AsString;
+        PriceName := UnrestoreOrders.FieldByName('PriceName').AsString;
+        OutReport.Append('');
+        OutReport.Append('');
+        OutReport.Append(Format('клиент %s', [ClientName]));
+        OutReport.Append(Format('   прайс-лист %s', [PriceName]));
+      end;
+
+    OutReport.Append( Format( '      %s - %s : %d',
+      [UnrestoreOrders.FieldByName('SynonymName').AsString,
+       UnrestoreOrders.FieldByName('SynonymFirm').AsString,
+       UnrestoreOrders.FieldByName('OrderCount').AsInteger]));
+    UnrestoreOrders.Next;
   end;
 end;
 
