@@ -71,7 +71,8 @@ uses
   U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas',
   U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame},
   U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm},
-  PreviousOrders in 'PreviousOrders.pas' {PreviousOrdersForm};
+  PreviousOrders in 'PreviousOrders.pas' {PreviousOrdersForm},
+  CorrectOrders in 'CorrectOrders.pas' {CorrectOrdersForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}

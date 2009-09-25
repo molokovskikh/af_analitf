@@ -134,7 +134,7 @@ inherited NamesFormsForm: TNamesFormsForm
         Left = 0
         Top = 0
         Width = 418
-        Height = 232
+        Height = 284
         Align = alClient
         AutoFitColWidths = True
         DataSource = dsForms
@@ -173,9 +173,9 @@ inherited NamesFormsForm: TNamesFormsForm
       end
       object pWebBrowser: TPanel
         Left = 0
-        Top = 232
+        Top = 284
         Width = 418
-        Height = 187
+        Height = 135
         Align = alBottom
         BevelOuter = bvNone
         TabOrder = 1
@@ -192,11 +192,11 @@ inherited NamesFormsForm: TNamesFormsForm
           Left = 0
           Top = 4
           Width = 418
-          Height = 183
+          Height = 131
           Align = alClient
           TabOrder = 0
           ControlData = {
-            4C000000342B0000EA1200000000000000000000000000000000000000000000
+            4C000000342B00008A0D00000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -215,9 +215,9 @@ inherited NamesFormsForm: TNamesFormsForm
     TabOrder = 2
     object pWebBrowserCatalog: TPanel
       Left = 0
-      Top = 232
+      Top = 284
       Width = 687
-      Height = 187
+      Height = 135
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
@@ -234,11 +234,11 @@ inherited NamesFormsForm: TNamesFormsForm
         Left = 0
         Top = 4
         Width = 687
-        Height = 183
+        Height = 131
         Align = alClient
         TabOrder = 0
         ControlData = {
-          4C00000001470000EA1200000000000000000000000000000000000000000000
+          4C000000014700008A0D00000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
           2B2E126208000000000000004C0000000114020000000000C000000000000046
           8000000000000000000000000000000000000000000000000000000000000000
@@ -250,7 +250,7 @@ inherited NamesFormsForm: TNamesFormsForm
       Left = 0
       Top = 41
       Width = 687
-      Height = 191
+      Height = 243
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCatalog
