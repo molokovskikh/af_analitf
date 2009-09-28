@@ -84,7 +84,7 @@ type
     Summ : Currency;
     constructor Create(APriceCode, ARegionCode : Integer);
   end;
-  
+
   TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
   end;
 
@@ -2214,10 +2214,14 @@ begin
         LogCriticalError(Format('Ошибка при открытии (%d): %s', [RecoveryCount, E.Message]));
         if (RecoveryCount < 2) then begin
           try
-{
+            //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
+            //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
             if MainConnection is TMyEmbConnection then
+            begin
+              LogCriticalError(Format('MySql Clients Count : %d',
+                [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
               MyAPIEmbedded.FreeMySQLLib;
-}              
+            end;
             RecoverDatabase(E);
           except
             on E : Exception do
@@ -2824,9 +2828,7 @@ begin
     except
       on E : Exception do
         raise Exception.CreateFmt(
-        'Не удалось скопировать из предыдущей копии : %s'#13#10 +
-        'Windows-ошибка: %s',
-          [E.Message, SysErrorMessage(GetLastError)]);
+        'Не удалось скопировать из предыдущей копии : %s', [E.Message]);
     end;
 end;
 
