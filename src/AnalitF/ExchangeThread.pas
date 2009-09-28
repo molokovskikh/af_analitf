@@ -51,7 +51,8 @@ TUpdateTable = (
   utCatalogFarmGroups,
   utCatFarmGroupsDEL,
   utCatalogNames,
-  utProducts);
+  utProducts,
+  utUser);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -1300,6 +1301,7 @@ begin
 	if (GetFileSize(ExePath+SDirIn+'\CatFarmGroupsDel.txt') > 0) then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
 	if (GetFileSize(ExePath+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
 	if (GetFileSize(ExePath+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
+  if (GetFileSize(ExePath+SDirIn+'\User.txt') > 0) then UpdateTables := UpdateTables + [utUser];
 
 
     //обновляем таблицы
@@ -1308,6 +1310,7 @@ begin
     --------------------  ------  ------  ------
     Catalog                 +       +       +
     Clients                 +       +       +
+    User                    +       +          если получили таблицу User в обновлении, то тупо удаляем все и вставляем заново
     Providers               +       +       +
     Core                    +       +
     Prices                  +       +       +
@@ -1482,6 +1485,13 @@ begin
     SQL.Text := GetLoadDataSQL('Regions', ExePath+SDirIn+'\Regions.txt', true);
     InternalExecute;
 	end;
+  //User
+  if utUser in UpdateTables then begin
+    SQL.Text := 'delete from analitf.userinfo';
+    InternalExecute;
+    SQL.Text := GetLoadDataSQL('UserInfo', ExePath+SDirIn+'\User.txt', true);
+    InternalExecute;
+	end;
 	//Clients
 	if utClients in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Clients', ExePath+SDirIn+'\Clients.txt', true);
@@ -1616,6 +1626,8 @@ begin
     InternalExecute;
 	end;
 
+  //todo: Здесь возможно засада, т.к. идет обработка AfterOpen и поэтому возможна ошибка "Canvas does not drawing"
+  //Это нужно, чтобы обновилась информация о клиенте, отображаемая на главной форме
   DM.adtClients.Close;
   DM.adtClients.Open;
 	//проставляем мин. цены и лидеров

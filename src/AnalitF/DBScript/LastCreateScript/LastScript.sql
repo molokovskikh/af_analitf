@@ -715,6 +715,18 @@ CREATE TABLE `tmpregions` (
 
 
 -- 
+-- Table structure for table  userinfo
+-- 
+
+DROP TABLE IF EXISTS userinfo;
+CREATE TABLE `userinfo` (
+  `ClientId` bigint(20) NOT NULL,
+  `UserId` bigint(20) NOT NULL,
+  `Addition` varchar(50) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+
+
+-- 
 -- Table structure for table  clientavg
 -- 
 

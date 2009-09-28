@@ -14,7 +14,7 @@ uses
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
-  MyDump, MySqlApi;
+  MyDump, MySqlApi, DAScript, MyScript;
 
 {
 Криптование
@@ -448,6 +448,8 @@ type
     MyEmbConnection: TMyEmbConnection;
     adsRepareOrdersClientId: TLargeintField;
     adsRepareOrdersProductId: TLargeintField;
+    adsUser: TMyQuery;
+    dsUser: TDataSource;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -496,18 +498,9 @@ type
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjects(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
-    procedure UpdateDBFile(dbCon : TpFIBDatabase; trMain : TpFIBTransaction; FileName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
-    procedure OnScriptParseError(
-      Sender: TObject;
-      Error: string;
-      SQLText: string;
-      LineIndex: Integer);
-    procedure OnScriptExecuteError(
-      Sender: TObject;
-      Error: string;
-      SQLText: string;
-      LineIndex: Integer;
-      var Ignore: Boolean);
+    procedure UpdateDBFile(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure OnScriptExecuteError(Sender: TObject;
+      E: Exception; SQL: String; var Action: TErrorAction);
     //Обновление определенных данных в таблице
 {$ifdef DEBUG}
     procedure UpdateDBFileDataFor29(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
@@ -1583,6 +1576,8 @@ begin
   ReadPasswords;
   adtClients.Close;
   adtClients.Open;
+  adsUser.Close;
+  adsUser.Open;
   adsRetailMargins.Close;
   adsRetailMargins.Open;
   LoadRetailMargins;
@@ -1991,6 +1986,11 @@ begin
       DBVersion := 50;
     end;
 
+    if DBVersion = 50 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 51;
+    end;
+
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
     //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
@@ -2011,60 +2011,48 @@ begin
   end;
 end;
 
-procedure TDM.UpdateDBFile(dbCon: TpFIBDatabase; trMain: TpFIBTransaction;
-  FileName: String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+procedure TDM.UpdateDBFile(dbCon : TCustomMyConnection;
+DBDirectoryName : String;
+OldDBVersion : Integer;
+AOnUpdateDBFileData : TOnUpdateDBFileData);
 var
  FIBScript : TpFIBScript;
+ MySqlScript : TMyScript;
  CompareScript: TResourceStream;
  CurrentDBVersion : Integer;
 
 begin
-  dbCon.DBName := FileName;
   dbCon.Open;
   try
-    FIBScript := TpFIBScript.Create(nil);
-    FIBScript.Database := dbCon;
-    FIBScript.Transaction := trMain;
-    FIBScript.SQLDialect := dbCon.SQLDialect;
-    //Авто-коммит после каждого DDL-запроса
-    FIBScript.AutoDDL := True;
+    MySqlScript := TMyScript.Create(nil);
+    MySqlScript.Connection := dbCon;
 
     try
-
       //Иногда может получиться так, что мы обновили эталонную копию, но не обновили файл
       //Этим мы это проверяем
-      CurrentDBVersion := dbCon.QueryValue('select mdbversion from provider where id = 0', 0);
+      CurrentDBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
       if CurrentDBVersion > OldDBVersion then
         Exit;
 
       CompareScript := TResourceStream.Create( hInstance, 'COMPARESCRIPT' + IntToStr(OldDBVersion), RT_RCDATA);
       try
-        FIBScript.Script.LoadFromStream(CompareScript);
+        MySqlScript.SQL.LoadFromStream(CompareScript);
       finally
         try CompareScript.Free; except end;
       end;
 
-      FIBScript.OnParseError := OnScriptParseError;
+      MySqlScript.OnError := OnScriptExecuteError;
       try
-        FIBScript.ValidateScript;
+        MySqlScript.Execute;
       finally
-        FIBScript.OnParseError := nil;
+        MySqlScript.OnError := nil;
       end;
 
-      FIBScript.OnExecuteError := OnScriptExecuteError;
-      try
-        FIBScript.ExecuteScript;
-      finally
-        FIBScript.OnExecuteError := nil;
-      end;
-
-{
       if Assigned(AOnUpdateDBFileData) then
-        AOnUpdateDBFileData(dbCon, trMain);
-}        
+        AOnUpdateDBFileData(dbCon);
 
     finally
-      try FIBScript.Free; except  end;
+      try MySqlScript.Free; except  end;
     end;
 
   finally
@@ -2072,16 +2060,14 @@ begin
   end;
 end;
 
-procedure TDM.OnScriptParseError(Sender: TObject; Error, SQLText: string;
-  LineIndex: Integer);
+procedure TDM.OnScriptExecuteError(Sender: TObject; E: Exception;
+  SQL: String; var Action: TErrorAction);
 begin
-  raise Exception.CreateFmt('Ошибка при разборе скрипта: %s'#13#10'SQL: %s'#13#10'Номер строки: %d', [Error, SQLText, LineIndex]);
-end;
-
-procedure TDM.OnScriptExecuteError(Sender: TObject; Error, SQLText: string;
-  LineIndex: Integer; var Ignore: Boolean);
-begin
-  raise Exception.CreateFmt('Ошибка при выполнении скрипта: %s'#13#10'SQL: %s'#13#10'Номер строки: %d', [Error, SQLText, LineIndex]);
+  Action := eaFail;
+  LogCriticalError(
+    Format(
+      'Ошибка при выполнении скрипта: %s'#13#10'Тип исключения: %s'#13#10'SQL: %s',
+      [E.Message, E.ClassName, SQL]));
 end;
 
 function TDM.D_B_N_OLD(c : TINFCrypt; BaseC: String): String;

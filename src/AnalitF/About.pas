@@ -11,15 +11,15 @@ type
     Image1: TImage;
     Image2: TImage;
     BitBtn1: TBitBtn;
-    DBText1: TDBText;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label4: TLabel;
+    dbtProviderName: TDBText;
+    lApplicationTitle: TLabel;
+    lVersion: TLabel;
+    lCopyright: TLabel;
     lIndent: TLabel;
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
-    procedure Label4Click(Sender: TObject);
+    procedure lCopyrightClick(Sender: TObject);
   private
     { Private declarations }
     procedure GetVersionInformation(var Version, LegalCopyright: String);
@@ -48,15 +48,14 @@ var
   LegalCopyright: String;
 begin
   GetVersionInformation(Version, LegalCopyright);
-	Label1.Caption := Application.Title;
-	Label2.Caption := 'Версия : ' + Version +
-		' (' + DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString + ')';
-	lIndent.Caption := 'Идентификация : ' + DM.adtClients.FieldByName('ClientID').AsString +
-    ' (' + DM.adtClients.FieldByName('Name').AsString + ')';
-	Label4.Caption := LegalCopyright;
+  lApplicationTitle.Caption := Application.Title;
+  lVersion.Caption := 'Версия : ' + Version +
+    ' (' + DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString + ')';
+  lIndent.Caption := 'Идентификация : ' + DM.adsUser.FieldByName('UserId').AsString;
+  lCopyright.Caption := LegalCopyright;
 end;
 
-procedure TAboutForm.Label4Click(Sender: TObject);
+procedure TAboutForm.lCopyrightClick(Sender: TObject);
 begin
 	ShellExecute( Self.Handle, 'open', 'www.analit.net', nil, nil, SW_SHOWNORMAL);
 end;

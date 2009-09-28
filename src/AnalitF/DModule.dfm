@@ -26,8 +26,8 @@ object DM: TDM
   end
   object dsClients: TDataSource
     DataSet = adtClients
-    Left = 216
-    Top = 240
+    Left = 168
+    Top = 224
   end
   object Ras: TARas
     Left = 16
@@ -267,8 +267,8 @@ object DM: TDM
     AllowedUpdateKinds = [ukModify]
     Database = MainConnectionOld
     AutoCommit = True
-    Left = 216
-    Top = 192
+    Left = 168
+    Top = 184
     oCacheCalcFields = True
     oFetchAll = True
     object adtClientsOldCLIENTID: TFIBBCDField
@@ -1480,8 +1480,8 @@ object DM: TDM
       'FROM'
       ' CLIENTS')
     AfterOpen = adtClientsOldAfterOpen
-    Left = 216
-    Top = 208
+    Left = 168
+    Top = 200
     object adtClientsCLIENTID: TLargeintField
       FieldName = 'CLIENTID'
     end
@@ -2642,5 +2642,26 @@ object DM: TDM
       FieldName = 'OrdersHRegionName'
       Size = 25
     end
+  end
+  object adsUser: TMyQuery
+    Connection = MyConnection
+    SQL.Strings = (
+      'SELECT'
+      '  CLIENTS.CLIENTID,'
+      '  CLIENTS.NAME,'
+      '  UserInfo.UserId,'
+      '  UserInfo.Addition'
+      'FROM'
+      '  analitf.CLIENTS,'
+      '  analitf.UserInfo'
+      'where'
+      '  (CLIENTS.ClientId = UserInfo.ClientId)')
+    Left = 240
+    Top = 184
+  end
+  object dsUser: TDataSource
+    DataSet = adsUser
+    Left = 240
+    Top = 224
   end
 end

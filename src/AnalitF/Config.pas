@@ -255,6 +255,8 @@ begin
   DM.adtParams.Open;
   DM.adtClients.Close;
   DM.adtClients.Open;
+  DM.adsUser.Close;
+  DM.adsUser.Open;
   DM.adsRetailMargins.Close;
   DM.adsRetailMargins.Open;
   DM.ClientChanged;

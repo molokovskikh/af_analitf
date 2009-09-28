@@ -5653,14 +5653,14 @@ object AboutForm: TAboutForm
       800172FFC00322FFF00F26FF}
     Transparent = True
   end
-  object Label2: TLabel
+  object lVersion: TLabel
     Left = 32
     Top = 155
     Width = 46
     Height = 13
     Caption = #1042#1077#1088#1089#1080#1103' : '
   end
-  object DBText1: TDBText
+  object dbtProviderName: TDBText
     Left = 160
     Top = 44
     Width = 230
@@ -5675,14 +5675,14 @@ object AboutForm: TAboutForm
     Font.Style = []
     ParentFont = False
   end
-  object Label1: TLabel
+  object lApplicationTitle: TLabel
     Left = 160
     Top = 76
     Width = 230
     Height = 29
     Alignment = taCenter
     AutoSize = False
-    Caption = 'Label1'
+    Caption = 'lApplicationTitle'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -5691,20 +5691,20 @@ object AboutForm: TAboutForm
     ParentFont = False
     WordWrap = True
   end
-  object Label4: TLabel
+  object lCopyright: TLabel
     Left = 32
     Top = 222
-    Width = 32
+    Width = 46
     Height = 13
     Cursor = crHandPoint
-    Caption = 'Label4'
+    Caption = 'lCopyright'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsUnderline]
     ParentFont = False
-    OnClick = Label4Click
+    OnClick = lCopyrightClick
   end
   object lIndent: TLabel
     Left = 32
