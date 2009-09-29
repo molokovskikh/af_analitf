@@ -282,13 +282,6 @@ procedure TConfigForm.btnOkClick(Sender: TObject);
 begin
   //если нажать Enter в поле кода dbeID, то значение не заносится, поэтому перемещаем фокус
   btnOk.SetFocus;
-  if DM.adtParams.FieldByName('RasConnect').AsBoolean then begin
-    if cbRas.ItemIndex<0 then
-      raise Exception.Create('Не задано удаленное соединение');
-    DM.Ras.Entry:=cbRas.Items[cbRas.ItemIndex];
-    if DM.Ras.GetEntryIndex<0 then
-      raise Exception.Create('Удаленное соединение не существует');
-  end;
   ModalResult:=mrOk;
 end;
 
@@ -460,6 +453,23 @@ begin
           PageControl.ActivePage := tshClients;
           tdbgRetailMargins.SetFocus;
           AProc.MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
+        end;
+      end;
+    end;
+    if CanClose and DM.adtParams.FieldByName('RasConnect').AsBoolean then begin
+      if (cbRas.ItemIndex < 0) then begin
+        CanClose := False;
+        PageControl.ActivePage := tshConnect;
+        cbRas.SetFocus;
+        AProc.MessageBox('Не задано удаленное соединение.', MB_ICONWARNING);
+      end;
+      if CanClose then begin
+        DM.Ras.Entry:=cbRas.Items[cbRas.ItemIndex];
+        if (DM.Ras.GetEntryIndex < 0) then begin
+          CanClose := False;
+          PageControl.ActivePage := tshConnect;
+          cbRas.SetFocus;
+          AProc.MessageBox('Удаленное соединение не существует.', MB_ICONWARNING);
         end;
       end;
     end;
