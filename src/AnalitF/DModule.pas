@@ -1983,7 +1983,7 @@ begin
     //Мы получим с обновлением версию 49 и обновляем ее до 50
     if DBVersion = 49 then begin
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateFirebirdToMySql, nil);
-      DBVersion := 50;
+      DBVersion := 51;
     end;
 
     if DBVersion = 50 then begin
@@ -2066,8 +2066,8 @@ begin
   Action := eaFail;
   LogCriticalError(
     Format(
-      'Ошибка при выполнении скрипта: %s'#13#10'Тип исключения: %s'#13#10'SQL: %s',
-      [E.Message, E.ClassName, SQL]));
+      'Ошибка при выполнении скрипта: %s'#13#10'Источник: %s'#13#10'Тип исключения: %s'#13#10'SQL: %s',
+      [E.Message, IfThen(Assigned(Sender), Sender.ClassName), E.ClassName, SQL]));
 end;
 
 function TDM.D_B_N_OLD(c : TINFCrypt; BaseC: String): String;
@@ -2756,6 +2756,7 @@ begin
       try
         MyDump.Connection := FEmbConnection;
         MyDump.Objects := [doStoredProcs, doTables, doViews];
+        MyDump.OnError := OnScriptExecuteError;
         MyDump.SQL.Text := GetFullLastCreateScript();
         MyDump.Restore;
       finally
@@ -2849,6 +2850,7 @@ begin
         dbCon.ExecSQL('use analitf', []);
         MyDump.Connection := dbCon;
         MyDump.Objects := [doStoredProcs, doTables, doViews];
+        MyDump.OnError := OnScriptExecuteError;
         MyDump.Backup;
         ReplaceAutoIncrement(MyDump.SQL);
         ExistsScript := Trim(MyDump.SQL.Text);
@@ -2971,6 +2973,7 @@ begin
   try
     MyDump.Connection := dbCon;
     MyDump.Objects := [doStoredProcs, doTables, doViews];
+    MyDump.OnError := OnScriptExecuteError;
     MyDump.Backup;
     ReplaceAutoIncrement(MyDump.SQL);
     MyDump.SQL.SaveToFile('extract_mysql.sql');
@@ -3572,6 +3575,7 @@ begin
         try
           MyDump.Connection := FEmbConnection;
           MyDump.Objects := [doStoredProcs, doTables, doViews];
+          MyDump.OnError := OnScriptExecuteError;
           MyDump.BackupToFile('extract_mysql.sql');
         finally
           MyDump.Free;
@@ -4154,7 +4158,7 @@ begin
     end;
 
 
-    updateMySql.SQL.Text := 'update analitf.params set ProviderMDBVersion = 50 where Id = 0';
+    updateMySql.SQL.Text := 'update analitf.params set ProviderMDBVersion = 51 where Id = 0';
     updateMySql.Execute;
 
   finally
