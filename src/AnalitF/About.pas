@@ -16,6 +16,7 @@ type
     lVersion: TLabel;
     lCopyright: TLabel;
     lIndent: TLabel;
+    lUserAddition: TLabel;
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
@@ -52,6 +53,7 @@ begin
   lVersion.Caption := 'Версия : ' + Version +
     ' (' + DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString + ')';
   lIndent.Caption := 'Идентификация : ' + DM.adsUser.FieldByName('UserId').AsString;
+  lUserAddition.Caption := DM.adsUser.FieldByName('Addition').AsString;
   lCopyright.Caption := LegalCopyright;
 end;
 

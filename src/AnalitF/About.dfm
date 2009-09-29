@@ -5713,6 +5713,14 @@ object AboutForm: TAboutForm
     Height = 13
     Caption = #1048#1076#1077#1085#1090#1080#1092#1080#1082#1072#1094#1080#1103' : '
   end
+  object lUserAddition: TLabel
+    Left = 32
+    Top = 187
+    Width = 353
+    Height = 13
+    AutoSize = False
+    Caption = 'lUserAddtion'
+  end
   object BitBtn1: TBitBtn
     Left = 309
     Top = 218
