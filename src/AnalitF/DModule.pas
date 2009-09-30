@@ -3786,14 +3786,31 @@ begin
 
         try
           try
-            OSDeleteFile(ExePath + UnrestoreOrdersFileName);
+            if FileExists(ExePath + UnrestoreOrdersFileName) then
+            try
+              OSDeleteFile(ExePath + UnrestoreOrdersFileName);
+            except
+              on E : Exception do
+                LogCriticalError(
+                  Format(
+                    'Некритическая ошибка при переносе данных при удалении файла: %s',
+                    [E.Message]));
+            end;
             InternalUpdateFirebirdToMySql(
               dbCon, firebirdDB, firebirdTransaction,
               ExePath + UnrestoreOrdersFileName, UnrestoreOrders);
             if FileExists(ExePath + UnrestoreOrdersFileName) and UnrestoreOrders
             then
+            try
               ShellExecute( 0, 'Open', PChar(ExePath + UnrestoreOrdersFileName),
                 nil, nil, SW_SHOWDEFAULT);
+            except
+              on E : Exception do
+                LogCriticalError(
+                  Format(
+                    'Некритическая ошибка при переносе данных при отображении отчета: %s',
+                    [E.Message]));
+            end;
           except
             on UpdateException : Exception do begin
               AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
@@ -4063,7 +4080,7 @@ begin
 +'                 analitf.ORDERSHEAD, ' 
 +'                 analitf.ORDERSLIST ' 
 +'         where ' 
-+'                 (ORDERSLIST.ORDERID      = Ordershead.ORDERID) ' 
++'                 (ORDERSLIST.ORDERID      = Ordershead.ORDERID) '
 +'             and (Ordershead.CLOSED       = 0) ' 
 +'             and (ORDERSLIST.COREID is null) ' 
 +'         )) ' 
@@ -4082,7 +4099,15 @@ begin
         try
           FormatUnrestoreOrders(selectMySql, OutReport);
 
-          try OutReport.SaveToFile(UnrestoreOrdersFileName); except end;
+          try
+            OutReport.SaveToFile(UnrestoreOrdersFileName);
+          except
+            on E : Exception do
+              LogCriticalError(
+                Format(
+                  'Некритическая ошибка при переносе данных при сохранении отчета: %s',
+                  [E.Message]));
+          end;
         finally
           OutReport.Free;
         end;
