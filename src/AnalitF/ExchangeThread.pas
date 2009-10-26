@@ -1109,21 +1109,21 @@ var
   FoundDeletedText : Boolean;
   FoundIndex : Integer;
 begin
-	if FindFirst( ExePath + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
-	try
-		StatusText := 'Распаковка данных';
-		Synchronize( SetStatus);
-		repeat
-			{ Если это архив с рекламой }
-			if ( SR.Name[ 1] = 'r') and ( SR.Size > 0) then
-			begin
+  try
+    StatusText := 'Распаковка данных';
+    Synchronize( SetStatus);
+    if FindFirst( ExePath + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
+    repeat
+      { Если это архив с рекламой }
+      if ( SR.Name[ 1] = 'r') and ( SR.Size > 0) then
+      begin
 {
         Это делается в нитке с рекламой
 }
-			end
+      end
                 	{ Если это данные }
-			else
-			begin
+      else
+      begin
         SZCS.Enter;
         try
           SevenZipRes := SevenZipExtractArchive(
@@ -1142,20 +1142,20 @@ begin
           SZCS.Leave;
         end;
 
-				OSDeleteFile( ExePath + SDirIn + '\' + SR.Name);
+        OSDeleteFile( ExePath + SDirIn + '\' + SR.Name);
         //Если нет файла ".zi_", то это не является проблемой и импорт может быть осуществлен
-				OSDeleteFile( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'), False);
-			end;
-			Synchronize( ExchangeForm.CheckStop);
-		until FindNext( SR) <> 0;
-	finally
-		SysUtils.FindClose( SR);
-	end;
+        OSDeleteFile( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'), False);
+      end;
+      Synchronize( ExchangeForm.CheckStop);
+    until FindNext( SR) <> 0;
+  finally
+    SysUtils.FindClose( SR);
+  end;
 
-  //Переименовываем файлы с кодом клиента в файлы без код клиента
-  if FindFirst( ExePath + SDirIn + '\*.txt', faAnyFile, DeleteSR) = 0 then
   try
-
+  
+    //Переименовываем файлы с кодом клиента в файлы без код клиента
+    if FindFirst( ExePath + SDirIn + '\*.txt', faAnyFile, DeleteSR) = 0 then
     repeat
       if (DeleteSR.Name <> '.') and (DeleteSR.Name <> '..')
       then begin
@@ -1238,24 +1238,25 @@ var
   SourceFile,
   DestFile : String;
 begin
-	if FindFirst( ExePath + SDirIn + '\*.frf', faAnyFile, SR) = 0 then
-	begin
-	  repeat
-			if ( SR.Attr and faDirectory) = faDirectory then continue;
-			try
-        SourceFile := ExePath + SDirIn + '\' + SR.Name;
-        DestFile := ExePath + '\' + SR.Name;
-        if FileExists(DestFile) then begin
-          Windows.SetFileAttributes(PChar(DestFile), FILE_ATTRIBUTE_NORMAL);
-          Windows.DeleteFile(PChar(DestFile));
-          Sleep(500);
+  try
+    if FindFirst( ExePath + SDirIn + '\*.frf', faAnyFile, SR) = 0 then
+      repeat
+        if ( SR.Attr and faDirectory) = faDirectory then continue;
+        try
+          SourceFile := ExePath + SDirIn + '\' + SR.Name;
+          DestFile := ExePath + '\' + SR.Name;
+          if FileExists(DestFile) then begin
+            Windows.SetFileAttributes(PChar(DestFile), FILE_ATTRIBUTE_NORMAL);
+            Windows.DeleteFile(PChar(DestFile));
+            Sleep(500);
+          end;
+          Windows.MoveFile(PChar(SourceFile), PChar(DestFile))
+        except
         end;
-        Windows.MoveFile(PChar(SourceFile), PChar(DestFile))
-			except
-			end;
-    until FindNext( SR) <> 0;
+      until FindNext( SR) <> 0;
+  finally
     SysUtils.FindClose(SR);
-	end;
+  end;
 end;
 
 procedure TExchangeThread.ImportData;
@@ -2075,18 +2076,18 @@ var
   DocsSR: TSearchRec;
 begin
   if DirectoryExists(ExePath + SDirIn + '\' + DirName) then begin
-    if FindFirst( ExePath + SDirIn + '\' + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
     try
-      repeat
-        if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then
-          OSMoveFile(
-            ExePath + SDirIn + '\' + DirName + '\' + DocsSR.Name,
-            ExePath + DirName + '\' + DocsSR.Name);
-      until (FindNext( DocsSR ) <> 0)
+      if FindFirst( ExePath + SDirIn + '\' + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
+        repeat
+          if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then
+            OSMoveFile(
+              ExePath + SDirIn + '\' + DirName + '\' + DocsSR.Name,
+              ExePath + DirName + '\' + DocsSR.Name);
+        until (FindNext( DocsSR ) <> 0)
     finally
       SysUtils.FindClose( DocsSR );
     end;
-    RemoveDir(ExePath + SDirIn + '\' + DirName);
+    AProc.RemoveDirectory(ExePath + SDirIn + '\' + DirName);
   end;
 end;
 

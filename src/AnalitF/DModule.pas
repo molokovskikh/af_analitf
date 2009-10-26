@@ -1142,18 +1142,17 @@ begin
     LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
       'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
 
-{
-  todo: надо восстановить это
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
-    DBFileSize := GetFileSize(MainConnectionOld.DBName);
+    DBFileSize := GetDirectorySize(ExePath + SDirData);
     DBFileSize := Max(2*DBFileSize, 200*1024*1024);
     if DBFileSize > FreeAvail then
-      LogExitError(Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %d байт.', [ DBFileSize ]), Integer(ecFreeDiskSpace));
+      LogExitError(Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %s.',
+      [ FormatByteSize(DBFileSize) ]),
+      Integer(ecFreeDiskSpace));
   end
   else
     LogExitError(Format( 'Не удается получить количество свободного места на диске.' +
       #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
-}
 
   FNeedUpdateByCheckUIN := not CheckCopyIDFromDB;
   if FNeedUpdateByCheckUIN then begin
@@ -1350,7 +1349,9 @@ begin
       Tables.Free;
       Screen.Cursor:=crDefault;
     end;
-  end;
+  end
+  else
+    FindClose(SR);
 end;
 
 //отключает все подключенные внешние таблицы
@@ -2927,22 +2928,22 @@ var
   CurrentFileDate : TDateTime;
 begin
   if DirectoryExists(ExePath + DirName) then begin
-    if FindFirst( ExePath + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
     try
-      repeat
-        if (DocsSR.Name <> '.') and (DocsSR.Name <> '..')
-        then begin
-          CurrentFileDate := FileDateToDateTime(DocsSR.Time);
-          if CurrentFileDate > MaxFileDate then
-            if not adtReceivedDocs.Locate('FILENAME', DirName + '\' + DocsSR.Name, [loCaseInsensitive]) then begin
-              adtReceivedDocs.Insert;
-              adtReceivedDocs['FILENAME'] := DirName + '\' + DocsSR.Name;
-              adtReceivedDocs['FILEDATETIME'] := CurrentFileDate;
-              adtReceivedDocs.Post;
-              FileList.Add(ExePath + DirName + '\' + DocsSR.Name);
-            end;
-        end;
-      until (FindNext( DocsSR ) <> 0)
+      if FindFirst( ExePath + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
+        repeat
+          if (DocsSR.Name <> '.') and (DocsSR.Name <> '..')
+          then begin
+            CurrentFileDate := FileDateToDateTime(DocsSR.Time);
+            if CurrentFileDate > MaxFileDate then
+              if not adtReceivedDocs.Locate('FILENAME', DirName + '\' + DocsSR.Name, [loCaseInsensitive]) then begin
+                adtReceivedDocs.Insert;
+                adtReceivedDocs['FILENAME'] := DirName + '\' + DocsSR.Name;
+                adtReceivedDocs['FILEDATETIME'] := CurrentFileDate;
+                adtReceivedDocs.Post;
+                FileList.Add(ExePath + DirName + '\' + DocsSR.Name);
+              end;
+          end;
+        until (FindNext( DocsSR ) <> 0)
     finally
       SysUtils.FindClose( DocsSR );
     end;

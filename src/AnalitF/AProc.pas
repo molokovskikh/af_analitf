@@ -106,6 +106,10 @@ procedure DeleteDirectory(const Dir : String);
 procedure CopyDataDirToBackup(const dataDir, backupDir: String);
 procedure DeleteDataDir(const dataDir: String);
 
+function RemoveDirectory(const Dir : String) : LongBool;
+
+function GetDirectorySize(const Dir : String): Int64;
+function FormatByteSize(const bytes: Int64): String;
 
 
 implementation
@@ -418,6 +422,7 @@ procedure OSDeleteFile(FileName: string; RaiseException: Boolean=True);
 var
   DeleteLastError : Cardinal;
   Ex : EOSError;
+  SleepCount : Integer;
 begin
   if not Windows.DeleteFile(PChar(FileName)) and RaiseException then
   begin
@@ -429,6 +434,11 @@ begin
       Ex.ErrorCode := DeleteLastError;
       raise Ex;
     end;
+  end;
+  SleepCount := 0;
+  while FileExists(FileName) and (SleepCount < 3) do begin
+    Inc(SleepCount);
+    Sleep(150);
   end;
 end;
 
@@ -506,14 +516,14 @@ var
   Path: string;
 begin
   Path:=ExtractFilePath(FileName);
-  if SysUtils.FindFirst(FileName,faAnyFile-faDirectory,SR)=0 then
-    try
+  try
+    if SysUtils.FindFirst(FileName,faAnyFile-faDirectory,SR)=0 then
       repeat
         OSDeleteFile(Path+SR.Name,RaiseException);
       until FindNext(SR)<>0;
-    finally
-      SysUtils.FindClose(SR);
-    end;
+  finally
+    SysUtils.FindClose(SR);
+  end;
 end;
 
 function GetTimeZoneBias: Integer;
@@ -769,22 +779,23 @@ var
     sr : TSearchRec;
     FName, FVersion, FHash : String;
   begin
-    if SysUtils.FindFirst(StartDir + '*.*', faAnyFile, sr) = 0 then
-    begin
-      repeat
-        if (sr.Name <> '.') and (sr.Name <> '..') then begin
-          if sr.Attr and faDirectory > 0 then begin
-            FindVersionsEx(StartDir + sr.Name + '\', Res, RelativePath + sr.Name + '\');
-          end
-          else
-            if IsExeFile(sr.Name) then begin
-              FName := sr.Name;
-              FVersion := GetLibraryVersionFromPath(StartDir + sr.Name);
-              FHash := GetFileHash(StartDir + sr.Name);
-              Res.Add(TFileUpdateInfo.Create(RelativePath + FName, FVersion, FHash));
-            end;
-        end;
-      until SysUtils.FindNext(sr) <> 0;
+    try
+      if SysUtils.FindFirst(StartDir + '*.*', faAnyFile, sr) = 0 then
+        repeat
+          if (sr.Name <> '.') and (sr.Name <> '..') then begin
+            if sr.Attr and faDirectory > 0 then begin
+              FindVersionsEx(StartDir + sr.Name + '\', Res, RelativePath + sr.Name + '\');
+            end
+            else
+              if IsExeFile(sr.Name) then begin
+                FName := sr.Name;
+                FVersion := GetLibraryVersionFromPath(StartDir + sr.Name);
+                FHash := GetFileHash(StartDir + sr.Name);
+                Res.Add(TFileUpdateInfo.Create(RelativePath + FName, FVersion, FHash));
+              end;
+          end;
+        until SysUtils.FindNext(sr) <> 0;
+    finally
       SysUtils.FindClose(sr);
     end;
   end;
@@ -881,18 +892,19 @@ begin
   if not DirectoryExists(toDir) then
     ForceDirectories(toDir);
 
-  if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
-  begin
-    repeat
-      if (sr.Name <> '.') and (sr.Name <> '..') then
+  try
+    if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
+      repeat
+        if (sr.Name <> '.') and (sr.Name <> '..') then
 
-        //Если мы встретили директорию
-        if (sr.Attr and faDirectory > 0) then
-          CopyDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
-        else
-          OSCopyFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
+          //Если мы встретили директорию
+          if (sr.Attr and faDirectory > 0) then
+            CopyDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
+          else
+            OSCopyFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
 
-    until FindNext(sr) <> 0;
+      until FindNext(sr) <> 0;
+  finally
     SysUtils.FindClose(sr);
   end;
 end;
@@ -900,35 +912,61 @@ end;
 procedure MoveDirectories(const fromDir, toDir: String);
 var
   SR : TSearchRec;
+  deletedSR : TSearchRec;
+  fileList : String;
   DeleteLastError : Cardinal;
   Ex : EOSError;
 begin
+  fileList := '';
   if not DirectoryExists(toDir) then
     ForceDirectories(toDir);
-    
-  if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
-  begin
-    repeat
-      if (sr.Name <> '.') and (sr.Name <> '..') then
 
-        //Если мы встретили директорию
-        if (sr.Attr and faDirectory > 0) then
-          MoveDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
-        else
-          OSMoveFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
+  try
+    if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
+      repeat
+        if (sr.Name <> '.') and (sr.Name <> '..') then
 
-    until FindNext(sr) <> 0;
+          //Если мы встретили директорию
+          if (sr.Attr and faDirectory > 0) then
+            MoveDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
+          else
+            OSMoveFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
+
+      until FindNext(sr) <> 0;
+  finally
     SysUtils.FindClose(sr);
   end;
 
-  if not Windows.RemoveDirectory(PChar(fromDir)) then begin
+  if not AProc.RemoveDirectory(fromDir) then begin
     DeleteLastError := Windows.GetLastError();
     if DeleteLastError <> Windows.ERROR_SUCCESS then
     begin
-      Ex := EOSError.CreateFmt('Ошибка при перемещении директории %s: %s',
-        [fromDir, SysErrorMessage(DeleteLastError)]);
-      Ex.ErrorCode := DeleteLastError;
-      raise Ex;
+
+      LogCriticalError(Format('Отладочное сообщение : Ошибка при перемещении директории %s: %s',
+        [fromDir, SysErrorMessage(DeleteLastError)]));
+      try
+        if FindFirst(fromDir + '\*.*', faAnyFile, deletedSR) = 0 then
+          repeat
+            if (deletedSR.Name <> '.') and (deletedSR.Name <> '..') then
+              fileList := fileList + '  ' + deletedSR.Name;
+          until FindNext(deletedSR) <> 0;
+      finally
+        SysUtils.FindClose(deletedSR);
+      end;
+      LogCriticalError('Отладочное сообщение список файлов: ' + fileList);
+
+      Sleep(300);
+
+      if not Windows.RemoveDirectory(PChar(fromDir)) then begin
+        DeleteLastError := Windows.GetLastError();
+        if DeleteLastError <> Windows.ERROR_SUCCESS then
+        begin
+          Ex := EOSError.CreateFmt('Ошибка при перемещении директории %s: %s',
+            [fromDir, SysErrorMessage(DeleteLastError)]);
+          Ex.ErrorCode := DeleteLastError;
+          raise Ex;
+        end;
+      end;
     end;
   end;
 end;
@@ -942,22 +980,25 @@ begin
   //Если удаляемая директория не существует, то просто выходим
   if not DirectoryExists(Dir) then
     Exit;
-  if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
-  begin
-    repeat
-      if (sr.Name <> '.') and (sr.Name <> '..') then
 
-        //Если мы встретили директорию
-        if (sr.Attr and faDirectory > 0) then
-          DeleteDirectory(Dir + '\' + sr.Name)
-        else
-          OSDeleteFile(Dir + '\' + sr.Name);
+  try
+    if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
+      repeat
+        if (sr.Name <> '.') and (sr.Name <> '..') then
 
-    until FindNext(sr) <> 0;
+          //Если мы встретили директорию
+          if (sr.Attr and faDirectory > 0) then
+            DeleteDirectory(Dir + '\' + sr.Name)
+          else
+            OSDeleteFile(Dir + '\' + sr.Name);
+
+      until FindNext(sr) <> 0;
+  finally
     SysUtils.FindClose(sr);
   end;
 
-  if not Windows.RemoveDirectory(PChar(Dir)) then begin
+
+  if not AProc.RemoveDirectory(PChar(Dir)) then begin
     DeleteLastError := Windows.GetLastError();
     if DeleteLastError <> Windows.ERROR_SUCCESS then
     begin
@@ -985,6 +1026,70 @@ procedure DeleteDataDir(const dataDir: String);
 begin
   DeleteDirectory(dataDir + '\analitf');
   DeleteDirectory(dataDir + '\mysql');
+end;
+
+function RemoveDirectory(const Dir : String) : LongBool;
+var
+  SleepCount : Integer;
+begin
+  SleepCount := 0;
+  repeat
+    Result := Windows.RemoveDirectory(PChar(Dir));
+    if not Result then begin
+      Inc(SleepCount);
+      Sleep(300);
+    end;
+  until Result or (SleepCount >= 3);
+end;
+
+function GetDirectorySize(const Dir : String): Int64;
+var
+  SR : TSearchRec;
+  fileSize : Int64;
+begin
+  Result := 0;
+  //Если удаляемая директория не существует, то просто выходим
+  if not DirectoryExists(Dir) then
+    Exit;
+
+  try
+    if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
+      repeat
+        if (sr.Name <> '.') and (sr.Name <> '..') then
+
+          //Если мы встретили директорию
+          if (sr.Attr and faDirectory > 0) then
+            Result := Result + GetDirectorySize(Dir + '\' + sr.Name)
+          else begin
+            Int64Rec(fileSize).Lo := sr.FindData.nFileSizeLow;
+            Int64Rec(fileSize).Hi := sr.FindData.nFileSizeHigh;
+            Result := Result + fileSize;
+          end;
+
+      until FindNext(sr) <> 0;
+  finally
+    SysUtils.FindClose(sr);
+  end;
+end;
+
+//Format file byte size
+function FormatByteSize(const bytes: Int64): String;
+const
+  B = 1; //byte
+  KB = 1024 * B; //kilobyte
+  MB = 1024 * KB; //megabyte
+  GB = 1024 * MB; //gigabyte
+begin
+  if bytes > GB then
+    Result := FormatFloat('#.## ГБ', bytes / GB)
+  else
+    if bytes > MB then
+      Result := FormatFloat('#.## МБ', bytes / MB)
+    else
+      if bytes > KB then
+        Result := FormatFloat('#.## КБ', bytes / KB)
+      else
+        Result := FormatFloat('#.## Байт', bytes) ;
 end;
 
 { TFileUpdateInfo }
