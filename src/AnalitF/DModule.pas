@@ -3314,7 +3314,8 @@ const
      'tfTransact', 'tfBlob', 'tfService', 'tfMisc', 'tfParams');
 begin
 {
-  if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsOrdersHForm')
+  if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsOrders')
+     and (TMyQuery(Sender).Owner is TForm) and (TForm(TMyQuery(Sender).Owner).Name = 'OrdersForm')
   then
     Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
   else

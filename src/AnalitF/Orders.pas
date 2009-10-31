@@ -87,6 +87,7 @@ type
     pClient: TPanel;
     gbMessageTo: TGroupBox;
     dbmMessageTo: TDBMemo;
+    adsOrdersId: TLargeintField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -219,10 +220,14 @@ end;
 procedure TOrdersForm.adsOrdersOldAfterPost(DataSet: TDataSet);
 begin
   SetOrderLabel;
-	MainForm.SetOrdersInfo;
+  MainForm.SetOrdersInfo;
+  OrdersHForm.adsOrdersHForm.RefreshRecord;
   //Если удалили позицию из заказа, то запускаем таймер на удаление этой позиции из DataSet
-  if (adsOrdersORDERCOUNT.AsInteger = 0) then
+  if (adsOrdersORDERCOUNT.AsInteger = 0) then begin
+    adsOrders.Delete;
+    tmrCheckOrderCount.Enabled := False;
     tmrCheckOrderCount.Enabled := True;
+  end;
 end;
 
 procedure TOrdersForm.SetOrderLabel;
@@ -277,13 +282,15 @@ end;
 procedure TOrdersForm.tmrCheckOrderCountTimer(Sender: TObject);
 begin
   tmrCheckOrderCount.Enabled := False;
+  //adsOrders.Refresh;
   SetOrderLabel;
   MainForm.SetOrdersInfo;
-  adsOrders.Delete;
+  //adsOrders.Delete;
   if adsOrders.RecordCount = 0 then begin
-    DM.adcUpdate.SQL.Text := 'delete from OrdersHead where OrderId = ' + IntToStr(OrderID);
+    //todo: надо потом подумать о том, чтобы восстановить удаление заголовка заказа
+    //DM.adcUpdate.SQL.Text := 'delete from OrdersHead where OrderId = ' + IntToStr(OrderID);
+    //DM.adcUpdate.Execute;
     OrdersHForm.adsOrdersHForm.Close;
-    DM.adcUpdate.Execute;
     OrdersHForm.adsOrdersHForm.Open;
     MainForm.SetOrdersInfo;
     PrevForm.ShowForm;

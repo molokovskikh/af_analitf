@@ -537,7 +537,7 @@ inherited OrdersForm: TOrdersForm
   end
   object tmrCheckOrderCount: TTimer
     Enabled = False
-    Interval = 500
+    Interval = 250
     OnTimer = tmrCheckOrderCountTimer
     Left = 264
     Top = 136
@@ -550,9 +550,26 @@ inherited OrdersForm: TOrdersForm
     Top = 216
   end
   object adsOrders: TMyQuery
+    SQLDelete.Strings = (
+      'DELETE FROM OrdersList'
+      'WHERE'
+      '  ID = :Old_ID')
+    SQLUpdate.Strings = (
+      'UPDATE OrdersList'
+      'SET'
+      '  ORDERCOUNT = :ORDERCOUNT'
+      'WHERE'
+      '  ID = :Old_ID')
+    SQLRefresh.Strings = (
+      'SELECT OrdersList.Id, OrdersList.ORDERCOUNT '
+      'FROM OrdersList'
+      'WHERE'
+      '    (OrdersList.ID = :ID)')
     Connection = DM.MyConnection
     SQL.Strings = (
-      'SELECT OrdersList.OrderId,'
+      'SELECT '
+      '    OrdersList.Id, '
+      '    OrdersList.OrderId,'
       '    OrdersList.ClientId,'
       '    OrdersList.CoreId,'
       '    products.catalogid as fullcode,'
@@ -584,8 +601,10 @@ inherited OrdersForm: TOrdersForm
       '    (OrdersList.OrderId = :AOrderId)'
       'AND (OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
+    RefreshOptions = [roAfterUpdate]
     BeforePost = adsOrdersOldBeforePost
     AfterPost = adsOrdersOldAfterPost
+    Options.StrictUpdate = False
     Left = 184
     Top = 184
     ParamData = <
@@ -669,6 +688,9 @@ inherited OrdersForm: TOrdersForm
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
       Calculated = True
+    end
+    object adsOrdersId: TLargeintField
+      FieldName = 'Id'
     end
   end
 end
