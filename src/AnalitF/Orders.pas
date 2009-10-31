@@ -281,7 +281,7 @@ begin
   MainForm.SetOrdersInfo;
   adsOrders.Delete;
   if adsOrders.RecordCount = 0 then begin
-    DM.adcUpdate.SQL.Text := 'delete from OrdersHead where OrderId = ' + OrdersHForm.adsOrdersHFormORDERID.AsString;
+    DM.adcUpdate.SQL.Text := 'delete from OrdersHead where OrderId = ' + IntToStr(OrderID);
     OrdersHForm.adsOrdersHForm.Close;
     DM.adcUpdate.Execute;
     OrdersHForm.adsOrdersHForm.Open;
@@ -289,7 +289,7 @@ begin
     PrevForm.ShowForm;
   end
   else begin
-    OrdersHForm.adsOrdersHForm.Refresh;
+    OrdersHForm.adsOrdersHForm.RefreshRecord;
     MainForm.SetOrdersInfo;
   end;
 end;
