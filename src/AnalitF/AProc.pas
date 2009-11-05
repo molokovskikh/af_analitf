@@ -916,25 +916,36 @@ var
   fileList : String;
   DeleteLastError : Cardinal;
   Ex : EOSError;
+  DirList : TStringList;
+  I : Integer;
 begin
   fileList := '';
   if not DirectoryExists(toDir) then
     ForceDirectories(toDir);
 
+  DirList := TStringList.Create();
   try
-    if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
-      repeat
-        if (sr.Name <> '.') and (sr.Name <> '..') then
+    try
+      if FindFirst(fromDir + '\*.*', faAnyFile, sr) = 0 then
+        repeat
+          if (sr.Name <> '.') and (sr.Name <> '..') then
 
-          //Если мы встретили директорию
-          if (sr.Attr and faDirectory > 0) then
-            MoveDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
-          else
-            OSMoveFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
+            //Если мы встретили директорию
+            if (sr.Attr and faDirectory > 0) then
+              DirList.Add(sr.Name)
+              //MoveDirectories(fromDir + '\' + sr.Name, toDir + '\' + sr.Name)
+            else
+              OSMoveFile(fromDir + '\' + sr.Name, toDir + '\' + sr.Name);
 
-      until FindNext(sr) <> 0;
+        until FindNext(sr) <> 0;
+    finally
+      SysUtils.FindClose(sr);
+    end;
+
+    for I := 0 to DirList.Count-1 do
+      MoveDirectories(fromDir + '\' + DirList[i], toDir + '\' + DirList[i]);
   finally
-    SysUtils.FindClose(sr);
+    DirList.Free;
   end;
 
   if not AProc.RemoveDirectory(fromDir) then begin
@@ -976,27 +987,37 @@ var
   SR : TSearchRec;
   DeleteLastError : Cardinal;
   Ex : EOSError;
+  DirList : TStringList;
+  I : Integer;
 begin
   //Если удаляемая директория не существует, то просто выходим
   if not DirectoryExists(Dir) then
     Exit;
 
+  DirList := TStringList.Create();
   try
-    if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
-      repeat
-        if (sr.Name <> '.') and (sr.Name <> '..') then
+    try
+      if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
+        repeat
+          if (sr.Name <> '.') and (sr.Name <> '..') then
 
-          //Если мы встретили директорию
-          if (sr.Attr and faDirectory > 0) then
-            DeleteDirectory(Dir + '\' + sr.Name)
-          else
-            OSDeleteFile(Dir + '\' + sr.Name);
+            //Если мы встретили директорию
+            if (sr.Attr and faDirectory > 0) then
+              DirList.Add(sr.Name)
+              //DeleteDirectory(Dir + '\' + sr.Name)
+            else
+              OSDeleteFile(Dir + '\' + sr.Name);
 
-      until FindNext(sr) <> 0;
+        until FindNext(sr) <> 0;
+    finally
+      SysUtils.FindClose(sr);
+    end;
+
+    for I := 0 to DirList.Count-1 do
+      DeleteDirectory(Dir + '\' + DirList[i]);
   finally
-    SysUtils.FindClose(sr);
+    DirList.Free;
   end;
-
 
   if not AProc.RemoveDirectory(PChar(Dir)) then begin
     DeleteLastError := Windows.GetLastError();
