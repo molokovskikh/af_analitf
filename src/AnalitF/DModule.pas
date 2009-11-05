@@ -450,6 +450,7 @@ type
     adsRepareOrdersProductId: TLargeintField;
     adsUser: TMyQuery;
     dsUser: TDataSource;
+    adsPrintOrderHeader: TMyQuery;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -3266,17 +3267,18 @@ end;
 procedure TDM.ShowOrderDetailsReport(OrderId: Integer; Closed, Send,
   Preview, PrintDlg: Boolean);
 begin
-  if adsOrdersHeaders.Active then
-    adsOrdersHeaders.Close;
+  if adsPrintOrderHeader.Active then
+    adsPrintOrderHeader.Close;
   //Получаем информацию о текущих отправляемых заказах
-	adsOrdersHeaders.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-	adsOrdersHeaders.ParamByName( 'AClosed').Value := Closed;
-	adsOrdersHeaders.ParamByName( 'ASend').Value := Send;
-	adsOrdersHeaders.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
-	adsOrdersHeaders.Open;
+  adsPrintOrderHeader.ParamByName( 'AOrderId').Value := OrderId;
+  adsPrintOrderHeader.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+  adsPrintOrderHeader.ParamByName( 'AClosed').Value := Closed;
+  adsPrintOrderHeader.ParamByName( 'ASend').Value := Send;
+  adsPrintOrderHeader.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
+  adsPrintOrderHeader.Open;
 
   try
-    if adsOrdersHeaders.Locate('OrderId', OrderId, []) then begin
+    if not adsPrintOrderHeader.IsEmpty then begin
       if adsOrderDetails.Active then
         adsOrderDetails.Close();
 
@@ -3287,13 +3289,13 @@ begin
 
         frdsReportOrder.DataSet := adsOrderDetails;
         //готовим печать
-        frVariables[ 'DisplayOrderId'] := adsOrdersHeaders.FieldByName('DisplayOrderId').AsVariant;
-        frVariables[ 'DatePrice'] := adsOrdersHeaders.FieldByName('DatePrice').AsVariant;
-        frVariables[ 'OrdersComments'] := adsOrdersHeaders.FieldByName('Comments').AsString;
-        frVariables[ 'SupportPhone'] := adsOrdersHeaders.FieldByName('SupportPhone').AsString;
-        frVariables[ 'OrderDate'] := adsOrdersHeaders.FieldByName('OrderDate').AsVariant;
-        frVariables[ 'PriceName'] := adsOrdersHeaders.FieldByName('PriceName').AsString;
-        frVariables[ 'Closed'] := adsOrdersHeaders.FieldByName('Closed').AsBoolean;
+        frVariables[ 'DisplayOrderId'] := adsPrintOrderHeader.FieldByName('DisplayOrderId').AsVariant;
+        frVariables[ 'DatePrice'] := adsPrintOrderHeader.FieldByName('DatePrice').AsVariant;
+        frVariables[ 'OrdersComments'] := adsPrintOrderHeader.FieldByName('Comments').AsString;
+        frVariables[ 'SupportPhone'] := adsPrintOrderHeader.FieldByName('SupportPhone').AsString;
+        frVariables[ 'OrderDate'] := adsPrintOrderHeader.FieldByName('OrderDate').AsVariant;
+        frVariables[ 'PriceName'] := adsPrintOrderHeader.FieldByName('PriceName').AsString;
+        frVariables[ 'Closed'] := adsPrintOrderHeader.FieldByName('Closed').AsBoolean;
 
         DM.ShowFastReport( 'Orders.frf', nil, Preview, PrintDlg);
 
@@ -3302,7 +3304,7 @@ begin
       end;
     end;
   finally
-    adsOrdersHeaders.Close;
+    adsPrintOrderHeader.Close;
   end;
 end;
 

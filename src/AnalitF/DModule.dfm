@@ -1544,11 +1544,9 @@ object DM: TDM
     Params.Strings = (
       '--basedir=.'
       '--datadir=data'
-      '--skip-innodb'
       '--character_set_server=cp1251'
       '--character_set_filesystem=cp1251'
-      '--key_buffer_size=32M'
-      '--max_allowed_packet=16777216')
+      '--skip-innodb')
     Username = 'root'
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False
@@ -2663,5 +2661,101 @@ object DM: TDM
     DataSet = adsUser
     Left = 240
     Top = 224
+  end
+  object adsPrintOrderHeader: TMyQuery
+    SQLUpdate.Strings = (
+      'update ordershead'
+      'set'
+      '  SERVERORDERID = :SERVERORDERID,'
+      '  SENDDATE = :SENDDATE,'
+      '  CLOSED = :CLOSED,'
+      '  SEND = :SEND'
+      'where'
+      '  orderid = :old_orderid')
+    Connection = MyConnection
+    SQL.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    OrdersHead.OrderId,'
+      
+        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
+        'layOrderId,'
+      '    OrdersHead.ClientID,'
+      '    OrdersHead.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    OrdersHead.PriceCode,'
+      '    OrdersHead.RegionCode,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate,'
+      '    OrdersHead.Closed,'
+      '    OrdersHead.Send,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    OrdersHead.MessageTo,'
+      '    OrdersHead.Comments,'
+      '    pricesregionaldata.minreq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(OrdersList.Id) as Positions,'
+      
+        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
+        'SumOrder'
+      'FROM'
+      '   OrdersHead'
+      '   inner join OrdersList on '
+      '         (OrdersList.OrderId = OrdersHead.OrderId) '
+      '     and (OrdersList.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
+      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (OrdersHead.OrderId = :AOrderId)'
+      'and (OrdersHead.ClientId = :AClientId)'
+      'and (OrdersHead.Closed = :AClosed)'
+      
+        'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
+        ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
+        'cesregionaldata.PriceCode is not null)))'
+      'and (OrdersHead.Send = :ASend)'
+      'group by OrdersHead.OrderId'
+      'having count(OrdersList.Id) > 0')
+    Left = 48
+    Top = 408
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AOrderId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'AClosed'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ASend'
+      end>
   end
 end
