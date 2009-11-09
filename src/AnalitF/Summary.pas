@@ -158,8 +158,6 @@ type
     procedure TimerTimer(Sender: TObject);
     procedure adsSummaryBeforeInsert(DataSet: TDataSet);
   private
-    OrderCount: Integer;
-    OrderSum: Double;
     SelectedPrices : TStringList;
     procedure SummaryShow;
     procedure DeleteOrder;
@@ -442,21 +440,52 @@ end;
 
 procedure TSummaryForm.SetOrderLabel;
 var
-	V: array[0..0] of Variant;
+  V: array[0..0] of Variant;
+  OrderCount: Integer;
+  OrderSum: Double;
+  FilterSQL : String;
 begin
-  DataSetCalc( adsSummary,['SUM(SUMORDER)'], V);
   OrderCount := adsSummary.RecordCount;
-  OrderSum := V[0];
-  lSumOrder.Caption := Format('%0.2f', [OrderSum]);
   lPosCount.Caption := IntToStr(OrderCount);
+
+  if LastSymmaryType = 0 then begin
+    //Если работает с текущим заказом, то выбираем сумму текущих заказов с учетом выставленного фильтра
+    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersHead.');
+    if DM.adsQueryValue.Active then
+      DM.adsQueryValue.Close;
+    //call ORDERSINFOMAIN(:ACLIENTID)
+    DM.adsQueryValue.SQL.Text := ''
+  +'SELECT '
+  +'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder '
+  +'FROM '
+  +'       OrdersHead '
+  +'       INNER JOIN OrdersList osbc       ON (OrdersHead.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
+  +'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = OrdersHead.RegionCode) AND (PRD.PriceCode = OrdersHead.PriceCode) '
+  +'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
+  +'WHERE (OrdersHead.CLIENTID                                      = :ClientID) '
+  +'   AND (OrdersHead.Closed                                      <> 1)';
+    if Length(FilterSQL) > 0 then
+      DM.adsQueryValue.SQL.Text := DM.adsQueryValue.SQL.Text + ' and ( ' + FilterSQL + ' )';
+
+    DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+    DM.adsQueryValue.Open;
+    try
+      OrderSum := DM.adsQueryValue.FieldByName( 'SumOrder').AsCurrency;
+    finally
+      DM.adsQueryValue.Close;
+    end;
+  end
+  else begin
+    DataSetCalc( adsSummary,['SUM(SUMORDER)'], V);
+    OrderSum := V[0];
+  end;
+  lSumOrder.Caption := Format('%0.2f', [OrderSum]);
 end;
 
 procedure TSummaryForm.DeleteOrder;
 begin
   if LastSymmaryType = 0 then
     if AProc.MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
-      OrderCount := OrderCount + Iif( 0 = 0, 0, 1) - Iif( adsSummaryORDERCOUNT.AsInteger = 0, 0, 1);
-      OrderSum := OrderSum + ( 0 - adsSummaryORDERCOUNT.AsInteger) * adsSummaryCOST.AsCurrency;
       DM.adcUpdate.SQL.Text :=
         'delete from OrdersList where OrderID = ' +
           IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
