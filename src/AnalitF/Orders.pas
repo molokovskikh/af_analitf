@@ -258,7 +258,7 @@ procedure TOrdersForm.dbgOrdersKeyPress(Sender: TObject; var Key: Char);
 var
   _CoreFirmForm : TCoreFirmForm;
 begin
-	if ( Key > #32) and not ( Key in
+	if (OrdersHForm.TabControl.TabIndex = 0) and ( Key > #32) and not ( Key in
 		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
 	begin
     _CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );

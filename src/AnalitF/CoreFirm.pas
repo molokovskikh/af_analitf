@@ -303,6 +303,8 @@ begin
   //Если пришли сюда из заказа
   if FromOrders then begin
     dbgCore.InputField := '';
+    if adsCore.Active then
+      adsCore.Close;
   end
   else begin
     dbgCore.InputField := 'OrderCount';

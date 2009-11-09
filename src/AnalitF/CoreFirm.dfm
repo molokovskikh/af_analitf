@@ -1419,6 +1419,9 @@ object CoreFirmForm: TCoreFirmForm
       '    OrdersHead.PriceName AS OrdersHPriceName,'
       '    OrdersHead.RegionName AS OrdersHRegionName'
       'FROM'
+      
+        '    (select * from synonyms where (synonyms.SynonymName like :Li' +
+        'keParam)) as synonyms,'
       '    Core CCore'
       
         '    inner join products       on (products.productid = CCore.pro' +
@@ -1442,21 +1445,22 @@ object CoreFirmForm: TCoreFirmForm
         '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
         'e = CCore.SynonymFirmCrCode)'
       
-        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
-        'ynonymCode)'
-      
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
         'd (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
       'WHERE '
-      '    (CCore.PriceCode = :APriceCode) '
-      'and (CCore.RegionCode = :ARegionCode)'
-      'and (Synonyms.SynonymName like :LikeParam)')
+      '    (Synonyms.SynonymCode = CCore.SynonymCode)'
+      'and (CCore.PriceCode = :APriceCode) '
+      'and (CCore.RegionCode = :ARegionCode)')
     Left = 128
     Top = 160
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'LikeParam'
+      end
       item
         DataType = ftUnknown
         Name = 'AClientId'
@@ -1468,10 +1472,6 @@ object CoreFirmForm: TCoreFirmForm
       item
         DataType = ftUnknown
         Name = 'ARegionCode'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'LikeParam'
       end>
   end
 end
