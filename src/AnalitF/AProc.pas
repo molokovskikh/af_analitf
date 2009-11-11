@@ -116,7 +116,7 @@ implementation
 
 uses
   IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest,
-  U_ExchangeLog, IdHash;
+  U_ExchangeLog, IdHash, LU_Tracer;
 
 var
   FSilentMode : Boolean;
@@ -386,8 +386,8 @@ begin
     CopyLastError := Windows.GetLastError();
     if CopyLastError <> Windows.ERROR_SUCCESS then
     begin
-      Ex := EOSError.CreateFmt('Ошибка при копировании файла %s в %s: %s',
-        [Source, Destination, SysErrorMessage(CopyLastError)]);
+      Ex := EOSError.CreateFmt('Ошибка при копировании файла %s в %s: (%d) %s',
+        [Source, Destination, CopyLastError, SysErrorMessage(CopyLastError)]);
       Ex.ErrorCode := CopyLastError;
       raise Ex;
     end;
@@ -408,8 +408,8 @@ begin
     MoveLastError := Windows.GetLastError();
     if MoveLastError <> Windows.ERROR_SUCCESS then
     begin
-      Ex := EOSError.CreateFmt('Ошибка при перемещении файла %s в %s: %s',
-        [Source, Destination, SysErrorMessage(MoveLastError)]);
+      Ex := EOSError.CreateFmt('Ошибка при перемещении файла %s в %s: (%d) %s',
+        [Source, Destination, MoveLastError, SysErrorMessage(MoveLastError)]);
       Ex.ErrorCode := MoveLastError;
       raise Ex;
     end;
@@ -429,8 +429,8 @@ begin
     DeleteLastError := Windows.GetLastError();
     if DeleteLastError <> Windows.ERROR_SUCCESS then
     begin
-      Ex := EOSError.CreateFmt('Ошибка при удалении файла %s: %s',
-        [FileName, SysErrorMessage(DeleteLastError)]);
+      Ex := EOSError.CreateFmt('Ошибка при удалении файла %s: (%d) %s',
+        [FileName, DeleteLastError, SysErrorMessage(DeleteLastError)]);
       Ex.ErrorCode := DeleteLastError;
       raise Ex;
     end;
@@ -889,6 +889,8 @@ procedure CopyDirectories(const fromDir, toDir: String);
 var
   SR : TSearchRec;
 begin
+  Tracer.TR('CopyDirectories', Format('Начали копирование директорий из %s в %s.', [fromDir, toDir]));
+  try
   if not DirectoryExists(toDir) then
     ForceDirectories(toDir);
 
@@ -907,6 +909,9 @@ begin
   finally
     SysUtils.FindClose(sr);
   end;
+  finally
+    Tracer.TR('CopyDirectories', Format('Закончили копирование директорий из %s в %s.', [fromDir, toDir]));
+  end;
 end;
 
 procedure MoveDirectories(const fromDir, toDir: String);
@@ -919,6 +924,8 @@ var
   DirList : TStringList;
   I : Integer;
 begin
+  Tracer.TR('MoveDirectories', Format('Начали перемещение директорий из %s в %s.', [fromDir, toDir]));
+  try
   fileList := '';
   if not DirectoryExists(toDir) then
     ForceDirectories(toDir);
@@ -972,13 +979,16 @@ begin
         DeleteLastError := Windows.GetLastError();
         if DeleteLastError <> Windows.ERROR_SUCCESS then
         begin
-          Ex := EOSError.CreateFmt('Ошибка при перемещении директории %s: %s',
-            [fromDir, SysErrorMessage(DeleteLastError)]);
+          Ex := EOSError.CreateFmt('Ошибка при перемещении директории %s: (%d) %s',
+            [fromDir, DeleteLastError, SysErrorMessage(DeleteLastError)]);
           Ex.ErrorCode := DeleteLastError;
           raise Ex;
         end;
       end;
     end;
+  end;
+  finally
+    Tracer.TR('MoveDirectories', Format('Закончили перемещение директорий из %s в %s.', [fromDir, toDir]));
   end;
 end;
 
@@ -990,6 +1000,8 @@ var
   DirList : TStringList;
   I : Integer;
 begin
+  Tracer.TR('DeleteDirectory', Format('Начали удаление директории %s.', [Dir]));
+  try
   //Если удаляемая директория не существует, то просто выходим
   if not DirectoryExists(Dir) then
     Exit;
@@ -1023,16 +1035,21 @@ begin
     DeleteLastError := Windows.GetLastError();
     if DeleteLastError <> Windows.ERROR_SUCCESS then
     begin
-      Ex := EOSError.CreateFmt('Ошибка при удалении директории %s: %s',
-        [Dir, SysErrorMessage(DeleteLastError)]);
+      Ex := EOSError.CreateFmt('Ошибка при удалении директории %s: (%d) %s',
+        [Dir, DeleteLastError, SysErrorMessage(DeleteLastError)]);
       Ex.ErrorCode := DeleteLastError;
       raise Ex;
     end;
+  end;
+  finally
+    Tracer.TR('DeleteDirectory', Format('Закончили удаление директории %s.', [Dir]));
   end;
 end;
 
 procedure CopyDataDirToBackup(const dataDir, backupDir: String);
 begin
+  Tracer.TR('CopyDataDirToBackup', Format('Начали копирование директорий данных из %s в %s.', [dataDir, backupDir]));
+  try
   if not DirectoryExists(backupDir) then
     ForceDirectories(backupDir);
 
@@ -1041,55 +1058,85 @@ begin
 
   if DirectoryExists(dataDir + '\mysql') then
     CopyDirectories(dataDir + '\mysql', backupDir + '\mysql');
+  finally
+    Tracer.TR('CopyDataDirToBackup', Format('Закончили копирование директорий данных из %s в %s.', [dataDir, backupDir]));
+  end;
 end;
 
 procedure DeleteDataDir(const dataDir: String);
 begin
+  Tracer.TR('DeleteDataDir', Format('Начали удаление директории с данными %s.', [dataDir]));
+  try
   DeleteDirectory(dataDir + '\analitf');
   DeleteDirectory(dataDir + '\mysql');
+  finally
+    Tracer.TR('DeleteDataDir', Format('Закончили удаление директории с данными %s.', [dataDir]));
+  end;
 end;
 
 function RemoveDirectory(const Dir : String) : LongBool;
 var
   SleepCount : Integer;
 begin
+  Tracer.TR('RemoveDirectory', Format('Начали удаление пустой директории %s.', [Dir]));
+  try
   SleepCount := 0;
   repeat
     Result := Windows.RemoveDirectory(PChar(Dir));
     if not Result then begin
       Inc(SleepCount);
-      Sleep(300);
+      Tracer.TR('RemoveDirectory', Format('Ожидаем при удалении пустой директории %s.', [Dir]));
+      Sleep(10000);
     end;
-  until Result or (SleepCount >= 3);
+  until Result or (SleepCount >= 6);
+  finally
+    Tracer.TR('RemoveDirectory', Format('Закончили удаление пустой директории %s.', [Dir]));
+  end;
 end;
 
 function GetDirectorySize(const Dir : String): Int64;
 var
   SR : TSearchRec;
   fileSize : Int64;
+  DirList : TStringList;
+  I : Integer;
 begin
+  Tracer.TR('GetDirectorySize', Format('Начали подсчет размера директории %s.', [Dir]));
+  try
   Result := 0;
-  //Если удаляемая директория не существует, то просто выходим
+  //Если директория не существует, то просто выходим
   if not DirectoryExists(Dir) then
     Exit;
 
+  DirList := TStringList.Create;
   try
-    if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
-      repeat
-        if (sr.Name <> '.') and (sr.Name <> '..') then
+    try
+      if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
+        repeat
+          if (sr.Name <> '.') and (sr.Name <> '..') then
 
-          //Если мы встретили директорию
-          if (sr.Attr and faDirectory > 0) then
-            Result := Result + GetDirectorySize(Dir + '\' + sr.Name)
-          else begin
-            Int64Rec(fileSize).Lo := sr.FindData.nFileSizeLow;
-            Int64Rec(fileSize).Hi := sr.FindData.nFileSizeHigh;
-            Result := Result + fileSize;
-          end;
+            //Если мы встретили директорию
+            if (sr.Attr and faDirectory > 0) then
+              //Result := Result + GetDirectorySize(Dir + '\' + sr.Name)
+              DirList.Add(sr.Name)
+            else begin
+              Int64Rec(fileSize).Lo := sr.FindData.nFileSizeLow;
+              Int64Rec(fileSize).Hi := sr.FindData.nFileSizeHigh;
+              Result := Result + fileSize;
+            end;
 
-      until FindNext(sr) <> 0;
+        until FindNext(sr) <> 0;
+    finally
+      SysUtils.FindClose(sr);
+    end;
+
+    for I := 0 to DirList.Count-1 do
+      Result := Result + GetDirectorySize(Dir + '\' + DirList[i]);
   finally
-    SysUtils.FindClose(sr);
+    DirList.Free;
+  end;
+  finally
+    Tracer.TR('GetDirectorySize', Format('Закончили подсчет размера директории %s.', [Dir]));
   end;
 end;
 

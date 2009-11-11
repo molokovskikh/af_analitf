@@ -454,7 +454,6 @@ type
     adsRepareOrdersCodeFirmCr: TLargeintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
-    procedure DataModuleDestroy(Sender: TObject);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
     procedure adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
     procedure MySQLMonitorSQL(Sender: TObject; Text: String;
@@ -619,7 +618,6 @@ type
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
     function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
     property MainConnection : TCustomMyConnection read GetMainConnection;
-    procedure CloseDB;
   end;
 
 var
@@ -860,6 +858,34 @@ begin
   State := mtsStopped;
 end;
 
+function CloseDB: Boolean;
+begin
+  try
+    WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
+    if Assigned(DM) then begin
+      if DM.MainConnection.Connected then begin
+        try
+          DM.adtParams.Edit;
+          DM.adtParams.FieldByName( 'ClientId').Value :=
+            DM.adtClients.FieldByName( 'ClientId').Value;
+          DM.adtParams.Post;
+        except
+          on E : Exception do
+            AProc.LogCriticalError('Ошибка при изменении ClientId: ' + E.Message);
+        end;
+        DM.ResetStarted;
+      end;
+
+      ShowSQLWaiting(DM.InternalCloseMySqlDB, 'Происходит завершение программы');
+    end;
+    WriteExchangeLog('AnalitF', 'Программа закрыта.');
+  except
+    on E : Exception do
+      LogCriticalError('Ошибка при завершении и закрытии БД: ' + E.Message);
+  end;
+  Result := True;
+end;
+
 procedure ClearSelectedPrices(SelectedPrices : TStringList);
 var
   I : Integer;
@@ -950,7 +976,7 @@ begin
       FNeedImportAfterRecovery := True;
     except
       on E : Exception do
-        LogExitError(Format( 'Не возможно переместить AnalitF.bak в AnalitF.fdb : %s ', [ E.Message ]), Integer(ecDBFileError));
+        LogExitError(Format( 'Не возможно восстановить базу данных из резервной копии : %s ', [ E.Message ]), Integer(ecDBFileError));
     end;
 
 {
@@ -1073,11 +1099,6 @@ begin
 
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
     MainForm.DisableByHTTPName;
-end;
-
-procedure TDM.DataModuleDestroy(Sender: TObject);
-begin
-  WriteExchangeLog('AnalitF', 'Программа закрыта.');
 end;
 
 procedure TDM.ClientChanged;
@@ -4237,25 +4258,8 @@ begin
     MyAPIEmbedded.FreeMySQLLib;
 end;
 
-procedure TDM.CloseDB;
-begin
-  WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
-  if not MainConnection.Connected then exit;
-
-  try
-    adtParams.Edit;
-    adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-    adtParams.Post;
-  except
-    on E : Exception do
-      AProc.LogCriticalError('Ошибка при изменении ClientId: ' + E.Message);
-  end;
-  ResetStarted;
-
-  ShowSQLWaiting(InternalCloseMySqlDB, 'Происходит завершение программы');
-end;
-
 initialization
+  AddTerminateProc(CloseDB);
   PassC := TINFCrypt.Create(gcp, 48);
   SummarySelectedPrices := TStringList.Create;
   SynonymSelectedPrices := TStringList.Create;

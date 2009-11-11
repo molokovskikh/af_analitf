@@ -1,7 +1,6 @@
 object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
-  OnDestroy = DataModuleDestroy
   Left = 206
   Top = 145
   Height = 627
