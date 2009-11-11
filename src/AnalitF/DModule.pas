@@ -451,6 +451,7 @@ type
     adsUser: TMyQuery;
     dsUser: TDataSource;
     adsPrintOrderHeader: TMyQuery;
+    adsRepareOrdersCodeFirmCr: TLargeintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure DataModuleDestroy(Sender: TObject);
@@ -540,6 +541,7 @@ type
 {$endif}
     function GetMainConnection: TCustomMyConnection;
     procedure PatchMyDataSets;
+    procedure InternalCloseMySqlDB;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -617,6 +619,7 @@ type
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
     function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
     property MainConnection : TCustomMyConnection read GetMainConnection;
+    procedure CloseDB;
   end;
 
 var
@@ -639,7 +642,7 @@ implementation
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
-     U_DeleteDBThread;
+     U_DeleteDBThread, SQLWaiting;
 
 type
   TestMyDBThreadState = (
@@ -1074,18 +1077,6 @@ end;
 
 procedure TDM.DataModuleDestroy(Sender: TObject);
 begin
-  WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
-  if not MainConnection.Connected then exit;
-
-  try
-    adtParams.Edit;
-    adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-    adtParams.Post;
-  except
-    on E : Exception do
-      AProc.LogCriticalError('Ошибка при изменении ClientId: ' + E.Message);
-  end;
-  ResetStarted;
   WriteExchangeLog('AnalitF', 'Программа закрыта.');
 end;
 
@@ -4236,6 +4227,32 @@ begin
        UnrestoreOrders.FieldByName('OrderCount').AsInteger]));
     UnrestoreOrders.Next;
   end;
+end;
+
+procedure TDM.InternalCloseMySqlDB;
+begin
+  if MainConnection.Connected then
+    MainConnection.Disconnect;
+  if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount = 0 then
+    MyAPIEmbedded.FreeMySQLLib;
+end;
+
+procedure TDM.CloseDB;
+begin
+  WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
+  if not MainConnection.Connected then exit;
+
+  try
+    adtParams.Edit;
+    adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+    adtParams.Post;
+  except
+    on E : Exception do
+      AProc.LogCriticalError('Ошибка при изменении ClientId: ' + E.Message);
+  end;
+  ResetStarted;
+
+  ShowSQLWaiting(InternalCloseMySqlDB, 'Происходит завершение программы');
 end;
 
 initialization

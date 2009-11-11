@@ -169,6 +169,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure ToolBarMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure AppEventsMessage(var Msg: tagMSG; var Handled: Boolean);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
 private
 	JustRun: boolean;
 
@@ -1084,6 +1085,11 @@ begin
     actOrderAll.Execute;
     Handled:=true;
   end;
+end;
+
+procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  DM.CloseDB;
 end;
 
 end.

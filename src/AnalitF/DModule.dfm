@@ -2216,6 +2216,7 @@ object DM: TDM
       'set'
       '  COREID = :COREID,'
       '  Price = :PRICE,'
+      '  CodeFirmCr = :CodeFirmCr,'
       '  CODE = :CODE,'
       '  CODECR = :CODECR,'
       '  ORDERCOUNT = :ORDERCOUNT'
@@ -2231,6 +2232,7 @@ object DM: TDM
       '  OrdersHead.PriceName,'
       '  OrdersList.Id, '
       '  OrdersList.ProductId,'
+      '  OrdersList.CodeFirmCr, '
       '  OrdersList.CoreId, '
       '  OrdersList.Code, '
       '  OrdersList.CodeCr, '
@@ -2325,6 +2327,9 @@ object DM: TDM
     end
     object adsRepareOrdersProductId: TLargeintField
       FieldName = 'ProductId'
+    end
+    object adsRepareOrdersCodeFirmCr: TLargeintField
+      FieldName = 'CodeFirmCr'
     end
   end
   object adsCoreRepare: TMyQuery

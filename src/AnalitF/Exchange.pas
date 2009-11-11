@@ -87,7 +87,7 @@ implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
-  Child, Config, RxMemDS;
+  Child, Config, RxMemDS, CorrectOrders;
 
 {$R *.DFM}
 
@@ -172,7 +172,7 @@ begin
 		try
 			ExchangeForm.Timer.Enabled := True;
       DM.MainConnection.Close;
-			Result := ExchangeForm.ShowModal = mrOk;
+      Result := ExchangeForm.ShowModal = mrOk;
       if not Result then
         AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
       Sleep(500);
@@ -509,7 +509,10 @@ procedure TInternalRepareOrders.FillData;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
-  Code, RequestRatio, OrderCost, MinOrderCount : Variant;
+  Code, RequestRatio, OrderCost, MinOrderCount: Variant;
+  //Есть ли превышение по цене?
+  CostReason : String;
+  OldPrice : Currency;
 
 	procedure SetOrder( Order: integer);
 	begin
@@ -522,6 +525,7 @@ var
       DM.adsRepareOrdersCODE.Value := DM.adsCoreRepareCODE.Value;
       DM.adsRepareOrdersCODECR.Value := DM.adsCoreRepareCODECR.Value;
       DM.adsRepareOrdersPRICE.Value := DM.adsCoreRepareCOST.Value;
+      DM.adsRepareOrdersCodeFirmCr.Value := DM.adsCoreRepareCodeFirmCr.Value;
     end;
 		DM.adsRepareOrders.Post;
 	end;
@@ -536,7 +540,9 @@ begin
 		try
       //Получаем данные, восстанавливаемой позиции
 			Order := DM.adsRepareOrdersORDERCOUNT.AsInteger;
+      OldPrice := DM.adsRepareOrdersPrice.AsCurrency;
 			CurOrder := 0;
+      CostReason := '';
 
 			Code := DM.adsRepareOrdersCODE.AsVariant;
       RequestRatio := DM.adsRepareOrdersREQUESTRATIO.AsVariant;
@@ -578,10 +584,10 @@ begin
          DM.adsRepareOrdersPRICENAME.AsString,
          DM.adsRepareOrdersSYNONYMNAME.AsString,
          DM.adsRepareOrdersSYNONYMFIRM.AsString,
-         'позиция отсутствует',
-         DM.adsRepareOrdersOrderCount.AsInteger,
+         'предложение отсутствует',
+         Order,
          Null,
-         DM.adsRepareOrdersPrice.AsCurrency,
+         OldPrice,
          Null,
          DM.adsRepareOrdersId.AsLargeInt,
          DM.adsRepareOrdersProductId.AsLargeInt,
@@ -606,6 +612,13 @@ begin
 			end;
 			SetOrder( CurOrder);
 
+      if (CurOrder > 0) then
+        if OldPrice < DM.adsRepareOrdersPrice.AsCurrency then
+          CostReason := 'старая цена заказа меньше текущей цены'
+        else
+          if OldPrice > DM.adsRepareOrdersPrice.AsCurrency then
+            CostReason := 'старая цена заказа больше текущей цены';
+
 			{ Если все еще не разбросали, то пишем сообщение }
 			if ( Order - CurOrder) > 0 then
 			begin
@@ -616,11 +629,12 @@ begin
            DM.adsRepareOrdersPRICENAME.AsString,
            DM.adsRepareOrdersSYNONYMNAME.AsString,
            DM.adsRepareOrdersSYNONYMFIRM.AsString,
-           Format('%d вместо %d', [CurOrder, Order]),
-           DM.adsRepareOrdersOrderCount.AsInteger,
+           IfThen(Length(CostReason) > 0, CostReason + '; ') +
+             'доступное количество препарата в прайс-листе меньше заказанного ранее',
+           Order,
            CurOrder,
+           OldPrice,
            DM.adsRepareOrdersPrice.AsCurrency,
-           Null,
            DM.adsRepareOrdersId.AsLargeInt,
            DM.adsRepareOrdersProductId.AsLargeInt,
            DM.adsRepareOrdersClientId.AsLargeInt]);
@@ -633,15 +647,31 @@ begin
            DM.adsRepareOrdersSYNONYMNAME.AsString,
            DM.adsRepareOrdersSYNONYMFIRM.AsString,
            'предложение отсутствует',
-           DM.adsRepareOrdersOrderCount.AsInteger,
+           Order,
            Null,
-           DM.adsRepareOrdersPrice.AsCurrency,
+           OldPrice,
            Null,
            DM.adsRepareOrdersId.AsLargeInt,
            DM.adsRepareOrdersProductId.AsLargeInt,
            DM.adsRepareOrdersClientId.AsLargeInt]);
 				end;
-			end;
+			end
+      else
+        if Length(CostReason) > 0 then
+          mdOutput.AppendRecord(
+           [DM.adsRepareOrdersClientName.AsString,
+           DM.adsRepareOrdersPRICENAME.AsString,
+           DM.adsRepareOrdersSYNONYMNAME.AsString,
+           DM.adsRepareOrdersSYNONYMFIRM.AsString,
+           CostReason,
+           Order,
+           CurOrder,
+           OldPrice,
+           DM.adsRepareOrdersPrice.AsCurrency,
+           DM.adsRepareOrdersId.AsLargeInt,
+           DM.adsRepareOrdersProductId.AsLargeInt,
+           DM.adsRepareOrdersClientId.AsLargeInt]);
+
 			DM.adsRepareOrders.Next;
 		finally
 			DM.adsCoreRepare.Close;
@@ -681,10 +711,20 @@ begin
           Strings.Append(Format('   прайс-лист %s', [PriceName]));
         end;
 
-      Strings.Append( Format( '      %s - %s : %s',
+{
+      mdOutput.FieldDefs.Add('OldOrderCount', ftInteger);
+      mdOutput.FieldDefs.Add('NewOrderCount', ftInteger);
+      mdOutput.FieldDefs.Add('OldPrice', ftCurrency);
+      mdOutput.FieldDefs.Add('NewPrice', ftCurrency);
+}
+      Strings.Append( Format( '      %s - %s : %s (старая цена: %s; старый заказ: %s; новая цена: %s; текущий заказ: %s)',
         [mdOutput.FieldByName('SynonymName').AsString,
          mdOutput.FieldByName('SynonymFirm').AsString,
-         mdOutput.FieldByName('Reason').AsString]));
+         mdOutput.FieldByName('Reason').AsString,
+         mdOutput.FieldByName('OldPrice').AsString,
+         mdOutput.FieldByName('OldOrderCount').AsString,
+         mdOutput.FieldByName('NewPrice').AsString,
+         mdOutput.FieldByName('NewOrderCount').AsString]));
       mdOutput.Next;
     end;
   end;
@@ -733,7 +773,10 @@ begin
 
         { если не нашли что-то, то выводим сообщение }
         if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
-          ShowNotFound( Strings);
+        begin
+          if (ShowCorrectOrders(mdOutput) = mrYes) then
+            ShowNotFound( Strings);
+        end;
       finally
         mdOutput.Close;
       end;
