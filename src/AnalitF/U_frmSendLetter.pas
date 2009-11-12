@@ -8,20 +8,25 @@ uses
 
 type
   TfrmSendLetter = class(TVistaCorrectForm)
-    cbAddLogs: TCheckBox;
+    odAttach: TOpenDialog;
+    pBottom: TPanel;
     btnSend: TButton;
     btnCancel: TButton;
-    odAttach: TOpenDialog;
+    pTop: TPanel;
     gbMessage: TGroupBox;
-    leSubject: TLabeledEdit;
     lBody: TLabel;
+    leSubject: TLabeledEdit;
     mBody: TMemo;
+    pAttach: TPanel;
     gbAttach: TGroupBox;
     lbFiles: TListBox;
     btnAddFile: TButton;
     btnDelFile: TButton;
+    pAddLogs: TPanel;
+    cbAddLogs: TCheckBox;
     procedure btnAddFileClick(Sender: TObject);
     procedure btnDelFileClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
     procedure RefreshScrollWidth;
@@ -67,6 +72,18 @@ begin
     end;
     lbFiles.ScrollWidth := MaxTextWidth + 5;
   end;
+end;
+
+procedure TfrmSendLetter.FormShow(Sender: TObject);
+begin
+  {
+  Кнопки все равно скрываются при использовании "Крупных шрифтов",
+  поэтому им явно высталяется положение слева
+  Решение натолкнула страница:
+  http://www.delphikingdom.com/asp/answer.asp?IDAnswer=38724
+  }
+  btnCancel.Left := pBottom.Width - 10 - btnCancel.Width;
+  btnSend.Left := btnCancel.Left - 10 - btnSend.Width;
 end;
 
 end.
