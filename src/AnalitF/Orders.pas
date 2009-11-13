@@ -346,17 +346,21 @@ begin
 end;
 
 procedure TOrdersForm.FlipToCore;
+{
 var
   FullCode, ShortCode: integer;
   CoreId : Int64;
+}
 begin
   if MainForm.ActiveChild <> Self then exit;
   if adsOrders.IsEmpty then Exit;
 
-	FullCode := adsOrdersFullCode.AsInteger;
-	ShortCode := DM.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), [] , []);
+{
+  FullCode := adsOrdersFullCode.AsInteger;
+  ShortCode := DM.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), [] , []);
 
   CoreId := adsOrdersCOREID.AsLargeInt;
+}  
 
 //  FlipToCode(FullCode, ShortCode, CoreId, Self);
 end;

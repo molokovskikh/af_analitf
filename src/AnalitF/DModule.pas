@@ -490,7 +490,6 @@ type
     procedure LoadSelectedPrices;
     function CheckCriticalLibrary : Boolean;
     function GetFileHash(AFileName : String) : String;
-    procedure s3cf(DataSet: TDataSet);
     procedure socf(DataSet: TDataSet);
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
@@ -509,8 +508,8 @@ type
     procedure UpdateDBFileDataFor35(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor37(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
     procedure UpdateDBFileDataFor40(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
-{$endif}
     procedure UpdateDBFileDataFor42(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
+{$endif}
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetLastCreateScript : String;
@@ -941,7 +940,6 @@ begin
   OrdersInfo := TStringList.Create;
   OrdersInfo.Sorted := True;
 
-  //adsRepareOrders.OnCalcFields := s3cf;
   //adsOrderDetails.OnCalcFields := ocf;
   adsSumOrdersOldForDelete.OnCalcFields := socf;
  // adsOrderCore.OnCalcFields := occf;
@@ -1758,14 +1756,6 @@ begin
   adtParams.Post;
 end;
 
-procedure TDM.s3cf(DataSet: TDataSet);
-begin
-  try
-    //adsRepareOrdersCryptPRICE.AsCurrency := StrToFloat(DM.D_B_N(adsRepareOrdersPRICE.AsString));
-  except
-  end;
-end;
-
 function TDM.GetPriceRet(BaseCost: Currency): Currency;
 begin
   Result := (1 + GetRetUpCost(BaseCost)/100)*BaseCost;
@@ -1959,7 +1949,6 @@ procedure TDM.UpdateDB;
 var
   dbCon : TMyEmbConnection;
   DBVersion : Integer;
-  EtlName : String;
 begin
   dbCon := TMyEmbConnection.Create(nil);
   try
@@ -2030,7 +2019,6 @@ DBDirectoryName : String;
 OldDBVersion : Integer;
 AOnUpdateDBFileData : TOnUpdateDBFileData);
 var
- FIBScript : TpFIBScript;
  MySqlScript : TMyScript;
  CompareScript: TResourceStream;
  CurrentDBVersion : Integer;
@@ -2791,8 +2779,6 @@ procedure TDM.RecoverDatabase(E: Exception);
 var
   UserErrorMessage,
   DBErrorMess : String;
-  OldDBFileName,
-  ErrFileName : String;
 begin
   {
   Здесь мы должны сделать:
@@ -3185,6 +3171,7 @@ begin
   end;
 end;
 
+{$ifdef DEBUG}
 procedure TDM.UpdateDBFileDataFor42(dbCon: TpFIBDatabase;
   trMain: TpFIBTransaction);
 var
@@ -3266,6 +3253,7 @@ AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName
 
   trMain.Commit;
 end;
+{$endif}
 
 function TDM.GetServerUpdateId: String;
 begin

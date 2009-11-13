@@ -207,7 +207,6 @@ procedure TCorrectOrdersForm.Prepare;
 var
   ClientName, PriceName : String;
   ClientNode, PriceNode : TTreeNode;
-  I : Integer;
 begin
   tvList.Items.Clear;
 

@@ -677,8 +677,8 @@ end;
 procedure TSynonymSearchForm.InternalSearch;
 var
   FilterSQL : String;
-  TmpSortList : TStringList;
-  I : Integer;
+//  TmpSortList : TStringList;
+//  I : Integer;
   StartSQL : String;
 begin
 //  adsCore.Options.CacheCalcFields := False;
