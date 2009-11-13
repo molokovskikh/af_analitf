@@ -1455,7 +1455,7 @@ end;
 
 procedure TDM.BackupDatabase;
 begin
-  if TCustomMyConnection(MainConnection) is TMyEmbConnection then begin
+  if MainConnection is TMyEmbConnection then begin
     MainConnection.Close;
     CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
     MainConnection.Open;
@@ -1464,7 +1464,7 @@ end;
 
 function TDM.IsBackuped : Boolean;
 begin
-  if TCustomMyConnection(MainConnection) is TMyEmbConnection then
+  if MainConnection is TMyEmbConnection then
     Result := DirectoryExists(ExePath + SDirDataBackup)
   else
     Result := False;
@@ -1475,7 +1475,7 @@ var
   FEmbConnection : TMyEmbConnection;
   MyServerControl : TMyServerControl;
 begin
-  if TCustomMyConnection(MainConnection) is TMyEmbConnection then begin
+  if MainConnection is TMyEmbConnection then begin
     MainConnection.Close;
 
     FEmbConnection := TMyEmbConnection.Create(nil);
@@ -1516,7 +1516,7 @@ end;
 
 procedure TDM.ClearBackup;
 begin
-  if TCustomMyConnection(MainConnection) is TMyEmbConnection then
+  if MainConnection is TMyEmbConnection then
   begin
     DeleteDirectory(ExePath + SDirDataPrev);
     MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirDataPrev);
@@ -2232,8 +2232,9 @@ begin
             //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
             if MainConnection is TMyEmbConnection then
             begin
-              LogCriticalError(Format('MySql Clients Count : %d',
-                [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+              if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+                LogCriticalError(Format('MySql Clients Count при восстановлении: %d',
+                  [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
               MyAPIEmbedded.FreeMySQLLib;
             end;
             RecoverDatabase(E);
@@ -4254,8 +4255,13 @@ procedure TDM.InternalCloseMySqlDB;
 begin
   if MainConnection.Connected then
     MainConnection.Disconnect;
-  if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount = 0 then
+  if (MainConnection is TMyEmbConnection)
+  then begin
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      LogCriticalError(Format('MySql Clients Count при закрытии программы: %d',
+        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
     MyAPIEmbedded.FreeMySQLLib;
+  end;
 end;
 
 initialization
