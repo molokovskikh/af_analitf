@@ -1020,10 +1020,13 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.CODECR,'
       '    cast('#39#39' as char(20)) as doc,'
       '    0.0  as registrycost,'
-      '    x_cast_to_tinyint(0) as vitallyimportant,'
-      '    x_cast_to_int10(0) as requestratio,'
+      
+        '    # '#1069#1090#1086' '#1093#1072#1082', '#1090'.'#1082'. '#1087#1086#1083#1103' vitallyimportant '#1085#1077#1090' '#1074' '#1090#1072#1073#1083#1080#1094#1077' OrdersLi' +
+        'st, '#1072' '#1085#1080#1082#1072#1082#1080#1084' '#1076#1088#1091#1075#1080#1084' '#1086#1073#1088#1072#1079#1086#1084' '#1079#1085#1072#1095#1077#1085#1080#1077' tinyint(1) '#1087#1086#1083#1091#1095#1080#1090#1100' '#1085#1077#1083#1100#1079#1103
+      '    OrdersList.Await as vitallyimportant,'
+      '    OrdersList.requestratio as requestratio,'
       '    0.0 as ordercost,'
-      '    x_cast_to_int10(0) as minordercount,'
+      '    OrdersList.minordercount as minordercount,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1079,10 +1082,13 @@ inherited SummaryForm: TSummaryForm
   end
   object adsSummary: TMyQuery
     SQLUpdate.Strings = (
-      
-        'call updateordercount(:OLD_ORDERSHORDERID, :AClientid, :OLD_PRIC' +
-        'ECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERC' +
-        'OUNT)')
+      'update'
+      '  orderslist'
+      'set'
+      '  OrderCount = :ORDERCOUNT'
+      'where'
+      '    OrderId = :ORDERSORDERID'
+      'and CoreId  = :OLD_COREID')
     SQLRefresh.Strings = (
       'SELECT '
       '    catalogs.fullcode,'

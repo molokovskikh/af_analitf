@@ -452,6 +452,7 @@ type
     dsUser: TDataSource;
     adsPrintOrderHeader: TMyQuery;
     adsRepareOrdersCodeFirmCr: TLargeintField;
+    adcTemporaryTable: TMyQuery;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -617,6 +618,8 @@ type
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
     function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
     property MainConnection : TCustomMyConnection read GetMainConnection;
+    //произвести вставку заголовка заказа, чтобы потом обновить кол-во при заказе позиции
+    procedure InsertOrderHeader(orderDataSet : TCustomMyDataSet);
   end;
 
 var
@@ -1582,6 +1585,7 @@ end;
 procedure TDM.MainConnectionOldAfterConnect(Sender: TObject);
 begin
   MainConnection.ExecSQL('use analitf', []);
+  adcTemporaryTable.Execute;
   //открываем таблицы с параметрами
   adtParams.Close;
   adtParams.Open;
@@ -4249,6 +4253,121 @@ begin
       LogCriticalError(Format('MySql Clients Count при закрытии программы: %d',
         [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
     MyAPIEmbedded.FreeMySQLLib;
+  end;
+end;
+
+procedure TDM.InsertOrderHeader(orderDataSet: TCustomMyDataSet);
+var
+  OrderId : Int64;
+  OrderIdVariant : Variant;
+  OrderIdFromListVariant : Variant;
+  OldOrderIdFromListVariant : Variant;
+begin
+  //Проверяем то, что есть заголовок заказа
+  //Если его нет, то создаем
+  if orderDataSet.FieldByName('ORDERSHORDERID').IsNull then begin
+    OrderIdVariant := DM.QueryValue(''
++'select ORDERID '
++'from   OrdersHead '
++'where  ClientId   = :ClientId '
++'and    PriceCode  = :PriceCode '
++'and    RegionCode = :RegionCode '
++'and    Closed    <> 1',
+      ['ClientId', 'PriceCode', 'RegionCode'],
+      [orderDataSet.ParamByName('AClientId').Value,
+       orderDataSet.FieldByName('PriceCode').Value,
+       orderDataSet.FieldByName('RegionCode').Value]);
+    //Заказа не существует - создаем его   
+    if VarIsNull(OrderIdVariant) then begin
+      OrderIdVariant := DM.QueryValue(''
++'insert '
++'into   OrdersHead '
++'       ( '
++'              ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate '
++'       ) '
++'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp() '
++'from   pricesdata pd, pricesregionaldata prd, regions r '
++'where  pd.pricecode  = :pricecode '
++'and    prd.pricecode = pd.pricecode '
++'and    r.regioncode  = prd.regioncode '
++'and    r.regioncode  = :regioncode; '
++' '
++'select last_insert_id() ;',
+        ['ClientId', 'PriceCode', 'RegionCode'],
+        [orderDataSet.ParamByName('AClientId').Value,
+         orderDataSet.FieldByName('PriceCode').Value,
+         orderDataSet.FieldByName('RegionCode').Value]);
+    end;
+    OrderId := OrderIdVariant;
+  end
+  else begin
+    OrderId := orderDataSet.FieldByName('ORDERSHORDERID').Value;
+    OrderIdVariant := orderDataSet.FieldByName('ORDERSHORDERID').Value;
+  end;
+
+  {
+  Проверям, что текущая заказанная позиция связана с текущим заказом
+  по данному прайс-листу
+  Позиция может быть привязана к несуществующему заказу, т.к. в MyIsam
+  не существует проверки целостности и заказ может быть удален,
+  а позиция может остаться.
+  Этим кодом мы находим такие позиции и удаляем их.
+  }
+  if not orderDataSet.FieldByName('ORDERSORDERID').IsNull then begin
+    OldOrderIdFromListVariant := orderDataSet.FieldByName('ORDERSORDERID').Value;
+    //Если ID заказов не равны, то удаляем позицию по этому заказу
+    if OldOrderIdFromListVariant <> OrderIdVariant then
+    begin
+      DM.MainConnection.ExecSQL('delect from orderslist where OrderId = :OrderId', [orderDataSet.FieldByName('ORDERSORDERID').Value]);
+      orderDataSet.FieldByName('ORDERSORDERID').Clear;
+    end
+  end;
+
+  {
+  Создаем собственно позицию в OrdersList по данному заказу, если ее не существует
+  }
+  if orderDataSet.FieldByName('ORDERSORDERID').IsNull then begin
+    OrderIdFromListVariant := DM.QueryValue(''
++'select ORDERID '
++'from   OrdersList '
++'where  coreid   = :coreid '
++'and    orderid  = :orderid ',
+      ['coreid', 'orderid'],
+      [orderDataSet.FieldByName('CoreId').Value,
+       OrderId]);
+    if VarIsNull(OrderIdFromListVariant) then begin
+      OrderIdFromListVariant := DM.QueryValue(''
++'insert '
++'into   OrdersList '
++'       ( '
++'              ORDERID          , CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, '
++'              SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, '
++'              PRICE            , AWAIT, JUNK, ORDERCOUNT, REQUESTRATIO, '
++'              ORDERCOST        , MINORDERCOUNT '
++'       ) '
++'select :ORDERID     , :CLIENTID, c.COREID, c.PRODUCTID, c.CODEFIRMCR, '
++'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
++'       (s.SynonymName, concat(catalogs.name, '' '', catalogs.form)) as '
++'       SynonymName   , sf.synonymname, c.cost, c.AWAIT, c.JUNK, 0, '
++'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT '
++'from   core c '
++'       left join products p '
++'       on     p.productid = c.productid '
++'       left join catalogs '
++'       on     catalogs.fullcode = p.catalogid '
++'       left join synonyms s '
++'       on     s.synonymcode = c.synonymcode '
++'       left join synonymfirmcr sf '
++'       on     sf.synonymfirmcrcode = c.synonymfirmcrcode '
++'where  c.coreid                    = :coreid; '
++' '
++'select last_insert_id();',
+        ['ORDERID', 'ClientId', 'CoreId'],
+        [OrderId,
+         orderDataSet.ParamByName('AClientId').Value,
+         orderDataSet.FieldByName('Coreid').Value]);
+    end;
+    orderDataSet.FieldByName('ORDERSORDERID').Value := OrderId;
   end;
 end;
 

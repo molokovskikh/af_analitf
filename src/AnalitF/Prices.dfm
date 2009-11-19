@@ -542,49 +542,30 @@ inherited PricesForm: TPricesForm
   end
   object adsPrices: TMyQuery
     SQLUpdate.Strings = (
-      'call updateupcost(:OLD_PRICECODE, :OLD_RegionCODE, :INJOB)')
+      'update pricesregionaldata '
+      'set'
+      '  INJOB = :INJOB'
+      'where'
+      '    PriceCode = :OLD_PRICECODE'
+      'and RegionCode = :OLD_RegionCODE;'
+      'insert into pricesregionaldataup '
+      'select PriceCode, RegionCode '
+      'from'
+      '  pricesregionaldata'
+      'where'
+      '    PriceCode = :OLD_PRICECODE'
+      'and RegionCode = :OLD_RegionCODE'
+      
+        'and not exists(select * from pricesregionaldataup where PriceCod' +
+        'e = :OLD_PRICECODE and RegionCode = :OLD_RegionCODE);')
     SQLRefresh.Strings = (
       'SELECT '
-      'pricesshow.*,'
-      
-        'pricesshow.UniversalDatePrice - interval :TimeZoneBias minute AS' +
-        ' DatePrice,'
-      '('
-      '  SELECT'
-      '    Count(*)'
-      '  FROM'
-      '    OrdersH'
-      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
-      '  WHERE OrdersH.ClientId   = :AClientId'
-      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
-      '     AND OrdersH.Closed <> 1'
-      '     AND Orders.OrderCount > 0'
-      ') as Positions,'
-      '('
-      '  select'
-      '    Sum(Orders.SendPrice * Orders.OrderCount)'
-      '  from'
-      '    OrdersH'
-      '    INNER JOIN Orders ON Orders.OrderId=OrdersH.OrderId'
-      '  WHERE OrdersH.ClientId = :AClientId'
-      '     AND OrdersH.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersH.RegionCode = pricesshow.RegionCode'
-      
-        '     and ordersh.senddate > curdate() + interval (1-day(curdate(' +
-        '))) day'
-      '     AND OrdersH.Closed = 1'
-      '     AND OrdersH.send = 1'
-      '     AND Orders.OrderCount>0'
-      ') as sumbycurrentmonth'
-      'FROM pricesshow'
-      'where'
-      '    PriceCode = :pricecode'
-      'and RegionCode = :regioncode')
-    Connection = DM.MyConnection
-    SQL.Strings = (
-      'SELECT '
       '  pricesshow.*,'
+      '  pd.PriceInfo,'
+      '  rd.SupportPhone, '
+      '  rd.ContactInfo, '
+      '  rd.OperativeInfo, '
+      '  prd.InJob, '
       
         '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
         'AS DatePrice,'
@@ -592,22 +573,7 @@ inherited PricesForm: TPricesForm
       
         '  ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as Su' +
         'mOrder,'
-      '/*'
-      '('
-      '  SELECT'
-      '    Count(*)'
-      '  FROM'
-      '    OrdersHead'
-      
-        '    INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Order' +
-        'Id'
-      '  WHERE OrdersHead.ClientId   = :AClientId'
-      '     AND OrdersHead.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersHead.RegionCode = pricesshow.RegionCode'
-      '     AND OrdersHead.Closed <> 1'
-      '     AND OrdersList.OrderCount > 0'
-      ') as Positions,'
-      '*/'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
       '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
@@ -628,6 +594,69 @@ inherited PricesForm: TPricesForm
       '  ) as sumbycurrentmonth'
       'FROM '
       '  pricesshow'
+      '  join pricesdata pd on (pd.PriceCode = pricesshow.PriceCode)'
+      
+        '  join pricesregionaldata prd ON (prd.PRICECODE = pricesshow.Pri' +
+        'ceCode) and (prd.RegionCode = pricesshow.RegionCode)'
+      
+        '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
+        ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
+      '  left join Ordershead on '
+      '        Ordershead.Pricecode = pricesshow.PriceCode '
+      '    and Ordershead.Regioncode = pricesshow.RegionCode'
+      '    and OrdersHead.ClientId   = :AClientId'
+      '    and OrdersHead.Closed <> 1'
+      '  left join OrdersList on '
+      '        OrdersList.ORDERID = Ordershead.ORDERID'
+      '    and OrdersList.OrderCount > 0'
+      'where'
+      '    pricesshow.PriceCode = :pricecode'
+      'and pricesshow.RegionCode = :regioncode'
+      'group by pricesshow.PriceCode, pricesshow.RegionCode')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '  pricesshow.*,'
+      '  pd.PriceInfo,'
+      '  rd.SupportPhone, '
+      '  rd.ContactInfo, '
+      '  rd.OperativeInfo, '
+      '  prd.InJob, '
+      
+        '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
+        'AS DatePrice,'
+      '  count(OrdersList.ID) as Positions,'
+      
+        '  ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as Su' +
+        'mOrder,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+      '  ('
+      '    select'
+      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '    from'
+      '      OrdersHead'
+      
+        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        'erId'
+      '    WHERE OrdersHead.ClientId = :AClientId'
+      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
+      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      
+        '       and OrdersHead.senddate > curdate() + interval (1-day(cur' +
+        'date())) day'
+      '       AND OrdersHead.Closed = 1'
+      '       AND OrdersHead.send = 1'
+      '       AND OrdersList.OrderCount>0'
+      '  ) as sumbycurrentmonth'
+      'FROM '
+      '  pricesshow'
+      '  join pricesdata pd on (pd.PriceCode = pricesshow.PriceCode)'
+      
+        '  join pricesregionaldata prd ON (prd.PRICECODE = pricesshow.Pri' +
+        'ceCode) and (prd.RegionCode = pricesshow.RegionCode)'
+      
+        '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
+        ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
       '  left join Ordershead on '
       '        Ordershead.Pricecode = pricesshow.PriceCode '
       '    and Ordershead.Regioncode = pricesshow.RegionCode'
@@ -637,9 +666,9 @@ inherited PricesForm: TPricesForm
       '        OrdersList.ORDERID = Ordershead.ORDERID'
       '    and OrdersList.OrderCount > 0'
       'group by pricesshow.PriceCode, pricesshow.RegionCode')
+    RefreshOptions = [roAfterUpdate]
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
-    Options.StrictUpdate = False
     Left = 144
     Top = 152
     ParamData = <

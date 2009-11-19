@@ -384,10 +384,13 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   end
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
-      
-        'call updateordercount(:OLD_ORDERSHORDERID, :Clientid, :OLD_PRICE' +
-        'CODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERCO' +
-        'UNT)')
+      'update'
+      '  orderslist'
+      'set'
+      '  OrderCount = :ORDERCOUNT'
+      'where'
+      '    OrderId = :ORDERSORDERID'
+      'and CoreId  = :OLD_COREID')
     SQLRefresh.Strings = (
       'SELECT'
       '    Core.CoreId,'

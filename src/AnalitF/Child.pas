@@ -386,6 +386,9 @@ begin
   tCheckVolume.Enabled := False;
   if Assigned(OldBeforePost) then
     OldBeforePost(DataSet);
+  //Это хак: чтобы метод не отрабатывал на adsCore из формы TOrdersForm  
+  if Assigned(DataSet.FindField('ORDERSORDERID')) then
+    DM.InsertOrderHeader(TCustomMyDataSet(DataSet));
 end;
 
 function TChildForm.CheckByOrderCost: Boolean;
@@ -458,7 +461,9 @@ procedure TChildForm.BeforeUpdateExecuteForClientID(
   Params: TDAParams);
 begin
   if (stUpdate in StatementTypes) or (stRefresh in StatementTypes) then
-    Params.ParamByName('AClientId').Value := Sender.Params.ParamByName('AClientId').Value;
+    //Возможна ситуация, когда параметра "AClientId" не будет в выполняемой команде
+    if Assigned(Params.FindParam('AClientId')) then
+      Params.ParamByName('AClientId').Value := Sender.Params.ParamByName('AClientId').Value;
 end;
 
 end.

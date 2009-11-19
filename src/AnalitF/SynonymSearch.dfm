@@ -993,10 +993,13 @@ inherited SynonymSearchForm: TSynonymSearchForm
   end
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
-      
-        'call updateordercount(:OLD_ORDERSHORDERID, :AClientid, :OLD_PRIC' +
-        'ECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORDERC' +
-        'OUNT)')
+      'update'
+      '  orderslist'
+      'set'
+      '  OrderCount = :ORDERCOUNT'
+      'where'
+      '    OrderId = :ORDERSORDERID'
+      'and CoreId  = :OLD_COREID')
     SQLRefresh.Strings = (
       'SELECT'
       '    Core.CoreId,'

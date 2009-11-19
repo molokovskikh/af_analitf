@@ -1603,6 +1603,11 @@ object DM: TDM
     SQL.Strings = (
       'SELECT '
       '  pricesshow.*,'
+      '  pd.PriceInfo,'
+      '  rd.SupportPhone, '
+      '  rd.ContactInfo, '
+      '  rd.OperativeInfo, '
+      '  prd.InJob,'
       
         '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
         'AS DatePrice,'
@@ -1610,22 +1615,7 @@ object DM: TDM
       
         '  ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as Su' +
         'mOrder,'
-      '/*'
-      '('
-      '  SELECT'
-      '    Count(*)'
-      '  FROM'
-      '    OrdersHead'
-      
-        '    INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Order' +
-        'Id'
-      '  WHERE OrdersHead.ClientId   = :AClientId'
-      '     AND OrdersHead.PriceCode = pricesshow.PriceCode'
-      '     AND OrdersHead.RegionCode = pricesshow.RegionCode'
-      '     AND OrdersHead.Closed <> 1'
-      '     AND OrdersList.OrderCount > 0'
-      ') as Positions,'
-      '*/'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
       '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
@@ -1646,6 +1636,13 @@ object DM: TDM
       '  ) as sumbycurrentmonth'
       'FROM '
       '  pricesshow'
+      '  join pricesdata pd on (pd.PriceCode = pricesshow.PriceCode)'
+      
+        '  join pricesregionaldata prd ON (prd.PRICECODE = pricesshow.Pri' +
+        'ceCode) and (prd.RegionCode = pricesshow.RegionCode)'
+      
+        '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
+        ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
       '  left join Ordershead on '
       '        Ordershead.Pricecode = pricesshow.PriceCode '
       '    and Ordershead.Regioncode = pricesshow.RegionCode'
@@ -2761,5 +2758,54 @@ object DM: TDM
         DataType = ftUnknown
         Name = 'ASend'
       end>
+  end
+  object adcTemporaryTable: TMyQuery
+    Connection = MyConnection
+    SQL.Strings = (
+      'drop temporary table if exists pricesshow;'
+      'create temporary table pricesshow ENGINE=MEMORY '
+      'as'
+      'SELECT'
+      '   pd.PRICECODE AS PriceCode, '
+      '  `pd`.`PRICENAME` AS `PriceName`, '
+      '  `pd`.`DATEPRICE` AS `UniversalDatePrice`, '
+      '  `prd`.`MINREQ` AS `MinReq`, '
+      '  `prd`.`ENABLED` AS `Enabled`, '
+      '  `cd`.`FIRMCODE` AS `FirmCode`, '
+      '  `cd`.`FULLNAME` AS `FullName`, '
+      '  `prd`.`STORAGE` AS `Storage`, '
+      '  `cd`.`MANAGERMAIL` AS `ManagerMail`, '
+      '  `r`.`REGIONCODE` AS `RegionCode`, '
+      '  `r`.`REGIONNAME` AS `RegionName`, '
+      '  `prd`.`PRICESIZE` AS `pricesize`, '
+      '  `prd`.`CONTROLMINREQ` AS `CONTROLMINREQ`'
+      'FROM'
+      '  (((`pricesdata` `pd`'
+      
+        '  JOIN `pricesregionaldata` `prd` ON (`pd`.`PRICECODE` = `prd`.`' +
+        'PRICECODE`))'
+      '  JOIN `regions` `r` ON (`prd`.`REGIONCODE` = `r`.`REGIONCODE`))'
+      '  JOIN `providers` `cd` ON (`cd`.`FIRMCODE` = `pd`.`FIRMCODE`));'
+      ''
+      'drop temporary table if exists clientavg;'
+      'create temporary table clientavg ENGINE=MEMORY '
+      'as'
+      'SELECT'
+      
+        '  `ordershead`.`CLIENTID` AS `CLIENTCODE`, `orderslist`.`PRODUCT' +
+        'ID` AS `PRODUCTID`, AVG(`orderslist`.`PRICE`) AS `PRICEAVG`'
+      'FROM'
+      '  (`ordershead`'
+      '  JOIN `orderslist`)'
+      'WHERE'
+      
+        '  ((`orderslist`.`ORDERID` = `ordershead`.`ORDERID`) AND (`order' +
+        'shead`.`ORDERDATE` >= (CURDATE() - INTERVAL 1 MONTH)) AND (`orde' +
+        'rshead`.`CLOSED` = 1) AND (`ordershead`.`SEND` = 1) AND (`orders' +
+        'list`.`ORDERCOUNT` > 0) AND (`orderslist`.`PRICE` IS NOT NULL))'
+      'GROUP BY'
+      '  `ordershead`.`CLIENTID`, `orderslist`.`PRODUCTID`;')
+    Left = 400
+    Top = 104
   end
 end

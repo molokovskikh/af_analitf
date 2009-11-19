@@ -344,7 +344,9 @@ procedure TSummaryForm.dbgSummaryGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if (adsSummaryVITALLYIMPORTANT.AsBoolean) then
+  //Жизненно-важный подсвечиваем только в текущем сводном заказе,
+  //т.к. для отправленного заказа значения не установлено
+  if (LastSymmaryType = 0) and (adsSummaryVITALLYIMPORTANT.AsBoolean) then
     AFont.Color := VITALLYIMPORTANT_CLR;
 
 	if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or

@@ -269,15 +269,41 @@ procedure TNamesFormsForm.SetNamesParams;
 begin
   Screen.Cursor:=crHourglass;
   try
-    adsNames.ParamByName('ShowAll').Value := actShowAll.Checked;
-    adsForms.ParamByName('ShowAll').Value := actShowAll.Checked;
     adsForms.Close;
-    if adsNames.Active then begin
+    if adsNames.Active then
       adsNames.Close;
-      adsNames.Open;
+
+    if actShowAll.Checked then begin
+      adsNames.SQL.Text := '' +
+      'SELECT ' +
+      '  cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) as CoreExists ' +
+      'FROM CATALOGS cat ' +
+      'group by cat.ShortCode, cat.Name ' +
+      'ORDER BY cat.Name;';
+      adsForms.SQL.Text := '' +
+      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists ' +
+      'FROM CATALOGS ' +
+      'WHERE CATALOGS.ShortCode = :ashortcode ' +
+      'order by CATALOGS.Form;';
     end
-    else
-      adsNames.Open;
+    else begin
+      adsNames.SQL.Text := '' +
+      'SELECT ' +
+      '  cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) as CoreExists ' +
+      'FROM CATALOGS cat ' +
+      'where ' +
+        ' CoreExists = 1 ' +
+      'group by cat.ShortCode, cat.Name ' +
+      'ORDER BY cat.Name;';
+      adsForms.SQL.Text := '' +
+      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists ' +
+      'FROM CATALOGS ' +
+      'WHERE CATALOGS.ShortCode = :ashortcode ' +
+      'and catalogs.coreexists = 1 ' +
+      'order by CATALOGS.Form;';
+    end;
+
+    adsNames.Open;
     adsForms.Open;
   finally
     Screen.Cursor := crDefault;

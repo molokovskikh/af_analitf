@@ -110,6 +110,7 @@ type
     procedure adsOrdersHFormOldAfterFetchRecord(FromQuery: TFIBQuery;
       RecordNumber: Integer; var StopFetching: Boolean);
     procedure adsOrdersHFormBeforeInsert(DataSet: TDataSet);
+    procedure adsCoreBeforePost(DataSet: TDataSet);
   private
     FSumOrders : TStringList;
     Strings: TStrings;
@@ -778,6 +779,11 @@ end;
 procedure TOrdersHForm.adsOrdersHFormBeforeInsert(DataSet: TDataSet);
 begin
   Abort;
+end;
+
+procedure TOrdersHForm.adsCoreBeforePost(DataSet: TDataSet);
+begin
+  DM.InsertOrderHeader(adsCore);
 end;
 
 end.

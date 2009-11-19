@@ -727,7 +727,8 @@ inherited OrdersHForm: TOrdersHForm
   end
   object adsOrdersHForm: TMyQuery
     SQLDelete.Strings = (
-      'call DeleteOrder(:Old_OrderId)')
+      'delete from OrdersList where OrderId = :Old_OrderId;'
+      'delete from Ordershead where OrderId = :Old_OrderId;')
     SQLUpdate.Strings = (
       'update ordershead'
       'set'
@@ -983,10 +984,13 @@ inherited OrdersHForm: TOrdersHForm
   end
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
-      
-        'call updateordercount(:OLD_ORDERSHORDERID, :OLD_Clientid, :OLD_P' +
-        'RICECODE, :OLD_REGIONCODE, :OLD_ORDERSORDERID, :OLD_COREID, :ORD' +
-        'ERCOUNT)')
+      'update'
+      '  orderslist'
+      'set'
+      '  OrderCount = :ORDERCOUNT'
+      'where'
+      '    OrderId = :ORDERSORDERID'
+      'and CoreId  = :OLD_COREID')
     SQLRefresh.Strings = (
       'SELECT'
       '    CCore.CoreId AS CoreId,'
@@ -1178,6 +1182,7 @@ inherited OrdersHForm: TOrdersHForm
       'And (CCore.RegionCode = :ARegionCode)'
       'and  CCore.SYNONYMCODE = :SYNONYMCODE'
       'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE')
+    BeforePost = adsCoreBeforePost
     Left = 228
     Top = 119
     ParamData = <

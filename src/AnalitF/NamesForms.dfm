@@ -421,7 +421,10 @@ inherited NamesFormsForm: TNamesFormsForm
   object adsForms: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'CALL CATALOGSHOWBYFORM(:ashortcode, :showall)')
+      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists'
+      '    FROM CATALOGS'
+      '    WHERE CATALOGS.ShortCode = :AShortCode'
+      '    order by CATALOGS.Form;')
     MasterSource = dsNames
     Left = 456
     Top = 184
@@ -429,10 +432,6 @@ inherited NamesFormsForm: TNamesFormsForm
       item
         DataType = ftUnknown
         Name = 'ashortcode'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'showall'
       end>
   end
   object adsCatalog: TMyQuery
@@ -443,14 +442,15 @@ inherited NamesFormsForm: TNamesFormsForm
   object adsNames: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'CALL CATALOGSHOWBYNAME(:showall)')
+      'SELECT'
+      
+        '        cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) a' +
+        's CoreExists'
+      '      FROM CATALOGS cat'
+      '      group by cat.ShortCode, cat.Name'
+      '      ORDER BY cat.Name;')
     Left = 128
     Top = 184
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'showall'
-      end>
   end
   object pmNotFoundPositions: TPopupMenu
     Left = 312
