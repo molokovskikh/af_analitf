@@ -795,7 +795,7 @@ begin
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
  	DM.adsOrdersHeaders.Close;
-	DM.adsOrdersHeaders.ParamByName( 'AClientId').Value :=
+	DM.adsOrdersHeaders.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
 	DM.adsOrdersHeaders.ParamByName( 'AClosed').Value := False;
 	DM.adsOrdersHeaders.ParamByName( 'ASend').Value := True;
@@ -905,7 +905,7 @@ begin
 
         DM.adsOrderCore.ParamByName( 'RegisterId').Value := RegisterId;
         DM.adsOrderCore.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-        DM.adsOrderCore.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+        DM.adsOrderCore.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
         DM.adsOrderCore.ParamByName( 'ParentCode').Value := DM.adsOrderDetails.FieldByName( 'FullCode').Value;
         DM.adsOrderCore.ParamByName( 'ShowRegister').Value := False;
         DM.adsOrderCore.Open;

@@ -175,7 +175,7 @@ object FormsHistoryForm: TFormsHistoryForm
       '    sendprice'
       'FROM'
       '    ORDERSSHOWBYFORM(:AFULLCODE,'
-      '    :ACLIENTID) ')
+      '    :CLIENTID) ')
     Left = 112
     Top = 152
     oTrimCharFields = False

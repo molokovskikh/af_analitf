@@ -526,7 +526,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymF' +
         'irmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersH.ClientId = :AClientId'
+      '    OrdersH.ClientId = :ClientId'
       'and Orders.OrderId=OrdersH.OrderId'
       'and Orders.OrderCount>0'
       'and Core.CoreId=Orders.CoreId'
@@ -751,7 +751,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymF' +
         'irmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersH.ClientId = :AClientId'
+      '    OrdersH.ClientId = :ClientId'
       'and Orders.OrderId=OrdersH.OrderId'
       'and Orders.OrderCount>0'
       'and Core.CoreId=Orders.CoreId'
@@ -811,7 +811,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON Orders.SynonymFirmCrCode=SynonymF' +
         'irmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersH.ClientId = :AClientId'
+      '    OrdersH.ClientId = :ClientId'
       'and Orders.OrderId=OrdersH.OrderId'
       'and Orders.OrderCount>0'
       'and Orders.CoreId is null'
@@ -987,7 +987,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
         'nymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :AClientId'
+      '    OrdersHead.ClientId = :ClientId'
       'and OrdersList.OrderId=OrdersHead.OrderId'
       'and OrdersList.OrderCount>0'
       'and Core.CoreId=OrdersList.CoreId'
@@ -1000,7 +1000,7 @@ inherited SummaryForm: TSummaryForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end>
   end
   object adsSendSummary: TMyQuery
@@ -1054,7 +1054,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
         'nymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :AClientId'
+      '    OrdersHead.ClientId = :ClientId'
       'and OrdersList.OrderId=OrdersHead.OrderId'
       'and OrdersList.OrderCount>0'
       'and OrdersList.CoreId is null'
@@ -1069,7 +1069,7 @@ inherited SummaryForm: TSummaryForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -1136,7 +1136,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
         'nymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :AClientId'
+      '    OrdersHead.ClientId = :ClientId'
       'and OrdersList.OrderId=OrdersHead.OrderId'
       'and OrdersList.OrderCount>0'
       'and Core.CoreId=OrdersList.CoreId'
@@ -1193,7 +1193,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
         'nymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :AClientId'
+      '    OrdersHead.ClientId = :ClientId'
       'and OrdersList.OrderId=OrdersHead.OrderId'
       'and OrdersList.OrderCount>0'
       'and Core.CoreId=OrdersList.CoreId'
@@ -1211,7 +1211,7 @@ inherited SummaryForm: TSummaryForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end>
     object adsSummaryfullcode: TLargeintField
       FieldName = 'fullcode'

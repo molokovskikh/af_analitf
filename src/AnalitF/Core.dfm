@@ -986,7 +986,7 @@ object CoreForm: TCoreForm
       '    sendprice'
       'FROM'
       '    ORDERSSHOWBYFORM(:FULLCODE,'
-      '    :ACLIENTID) ')
+      '    :CLIENTID) ')
     Database = DM.MainConnectionOld
     Left = 184
     Top = 388
@@ -1060,7 +1060,7 @@ object CoreForm: TCoreForm
       'FROM'
       '   ClientAVG'
       'where'
-      '  ClientCode = :ACLIENTID'
+      '  ClientCode = :CLIENTID'
       'and ProductId = :ProductId')
     Database = DM.MainConnectionOld
     Left = 344
@@ -1184,8 +1184,8 @@ object CoreForm: TCoreForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :Aclientid and ' +
-        'osbc.CoreId = Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
+        'sbc.CoreId = Core.CoreId'
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '  Core.CoreId = :CoreID')
@@ -1270,8 +1270,8 @@ object CoreForm: TCoreForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :aclientid and ' +
-        'osbc.CoreId = Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
+        'sbc.CoreId = Core.CoreId'
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (Catalogs.FullCode = :ParentCode)'
@@ -1294,7 +1294,7 @@ object CoreForm: TCoreForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClientID'
+        Name = 'clientid'
       end
       item
         DataType = ftUnknown
@@ -1759,8 +1759,8 @@ object CoreForm: TCoreForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :aclientid and ' +
-        'osbc.CoreId = Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
+        'sbc.CoreId = Core.CoreId'
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (Catalogs.ShortCode = :ParentCode)'
@@ -1775,7 +1775,7 @@ object CoreForm: TCoreForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClientID'
+        Name = 'clientid'
       end
       item
         DataType = ftUnknown

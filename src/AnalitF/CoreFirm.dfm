@@ -473,16 +473,16 @@ object CoreFirmForm: TCoreFirmForm
   object adsCoreOld: TpFIBDataSet
     UpdateSQL.Strings = (
       
-        'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
-        'id, :APRICECODE, :AREGIONCODE, :new_ORDERSORDERID, :new_COREID, ' +
-        ':NEW_ORDERCOUNT)')
+        'execute procedure updateordercount(:new_ORDERSHORDERID, :clienti' +
+        'd, :APRICECODE, :AREGIONCODE, :new_ORDERSORDERID, :new_COREID, :' +
+        'NEW_ORDERCOUNT)')
     SelectSQL.Strings = (
       'SELECT'
       '*'
       'FROM'
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
-      '    :ACLIENTID) ')
+      '    :CLIENTID) ')
     FilterOptions = [foCaseInsensitive]
     AfterPost = adsCore2AfterPost
     BeforePost = adsCore2BeforePost
@@ -802,7 +802,7 @@ object CoreFirmForm: TCoreFirmForm
       '    COMMENTS,'
       '    MESSAGETO'
       'FROM'
-      '    ORDERSHSHOWCURRENT(:ACLIENTID,'
+      '    ORDERSHSHOWCURRENT(:CLIENTID,'
       '    :APRICECODE,'
       '    :AREGIONCODE) ')
     Database = DM.MainConnectionOld
@@ -818,7 +818,7 @@ object CoreFirmForm: TCoreFirmForm
       'FROM'
       '   ClientAVG'
       'where'
-      '  ClientCode = :ACLIENTID')
+      '  ClientCode = :CLIENTID')
     Database = DM.MainConnectionOld
     Left = 200
     Top = 264
@@ -857,7 +857,7 @@ object CoreFirmForm: TCoreFirmForm
       'FROM'
       '    CORESHOWBYFIRM(:APRICECODE,'
       '    :AREGIONCODE,'
-      '    :ACLIENTID) '
+      '    :CLIENTID) '
       'where'
       '  upper(SynonymName) like upper(:LikeParam)')
     Database = DM.MainConnectionOld
@@ -1056,8 +1056,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
-        'd (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
+        ' (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1149,8 +1149,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
-        'd (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
+        ' (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1166,7 +1166,7 @@ object CoreFirmForm: TCoreFirmForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -1448,8 +1448,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
         'e = CCore.SynonymFirmCrCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
-        'd (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
+        ' (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1466,7 +1466,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown

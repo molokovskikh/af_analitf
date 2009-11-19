@@ -554,7 +554,7 @@ begin
       JUNK := DM.adsRepareOrdersJUNK.AsVariant;
       AWAIT := DM.adsRepareOrdersAWAIT.AsVariant;
 
-      DM.adsCoreRepare.ParamByName( 'AClientId').Value :=
+      DM.adsCoreRepare.ParamByName( 'ClientId').Value :=
         DM.adtClients.FieldByName('ClientId').Value;
       DM.adsCoreRepare.ParamByName( 'APriceCode').Value :=
         DM.adsRepareOrders.FieldByName( 'PriceCode').Value;

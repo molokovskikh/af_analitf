@@ -9,9 +9,6 @@ uses
   SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, FIBQuery, Constant,
   GridsEh, ActnList, MemDS, DBAccess, MyAccess;
 
-const
-	ExpiredSql	= 'SELECT * FROM EXPIREDSSHOW(:TIMEZONEBIAS, :ACLIENTID) ORDER BY ';
-
 type
   TExpiredsForm = class(TChildForm)
     dsExpireds: TDataSource;
@@ -184,7 +181,7 @@ begin
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	adsAvgOrders.ParamByName('ClientId').Value := ClientId;
-	adsExpireds.ParamByName( 'AClientId').Value := ClientId;
+	adsExpireds.ParamByName( 'ClientId').Value := ClientId;
 	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 	Screen.Cursor := crHourGlass;
 	try

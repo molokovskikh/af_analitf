@@ -3819,7 +3819,7 @@ object MainForm: TMainForm
       '    MESSAGETO,'
       '    COMMENTS'
       'FROM'
-      '    ORDERSHSHOW(:ACLIENTID,'
+      '    ORDERSHSHOW(:CLIENTID,'
       '    :ACLOSED,'
       '    :TIMEZONEBIAS) '
       'where'
@@ -3866,7 +3866,7 @@ object MainForm: TMainForm
       '           (RegionalData.RegionCode=OrdersHead.RegionCode) '
       '       AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.ClientId = :AClientId)'
+      '    (OrdersHead.ClientId = :ClientId)'
       'and (:AClosed = OrdersHead.Closed)'
       
         'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
@@ -3879,7 +3879,7 @@ object MainForm: TMainForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'ACLIENTID'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown

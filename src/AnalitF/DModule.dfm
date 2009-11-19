@@ -519,8 +519,8 @@ object DM: TDM
         'rmCr.SynonymFirmCrCode'
       '    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode'
       
-        '    LEFT JOIN Orders osbc ON osbc.ClientID = :AClientId and osbc' +
-        '.CoreId=CCore.CoreId'
+        '    LEFT JOIN Orders osbc ON osbc.ClientID = :ClientId and osbc.' +
+        'CoreId=CCore.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       
         'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +
@@ -782,7 +782,7 @@ object DM: TDM
       '    PRD.ControlMinReq,'
       '    PRD.Enabled as PriceEnabled'
       'FROM'
-      '    ORDERSHSHOW(:ACLIENTID,'
+      '    ORDERSHSHOW(:CLIENTID,'
       '    :ACLOSED,'
       '    :TIMEZONEBIAS) OH'
       
@@ -1081,7 +1081,7 @@ object DM: TDM
       'ordersh oh'
       'inner join orders ol on ol.orderid = oh.orderid'
       'WHERE'
-      '    (oh.ClientId=:AClientId)'
+      '    (oh.ClientId=:ClientId)'
       'and (oh.Closed <> 1)'
       'AND (ol.OrderCount > 0)')
     Left = 576
@@ -1139,7 +1139,7 @@ object DM: TDM
       '    PRICESIZE,'
       '    INJOB'
       'FROM'
-      '    PRICESSHOW(:ACLIENTID,'
+      '    PRICESSHOW(:CLIENTID,'
       '    :TIMEZONEBIAS) ')
     Database = MainConnectionOld
     AutoCommit = True
@@ -1347,8 +1347,8 @@ object DM: TDM
       'SELECT * '
       'FROM '
       
-        'CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SHOWREGI' +
-        'STER, :REGISTERID)')
+        'CORESHOWBYFORM(:CLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SHOWREGIS' +
+        'TER, :REGISTERID)')
     Database = MainConnectionOld
     Left = 232
     Top = 344
@@ -1624,7 +1624,7 @@ object DM: TDM
       
         '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
         'erId'
-      '    WHERE OrdersHead.ClientId = :AClientId'
+      '    WHERE OrdersHead.ClientId = :ClientId'
       '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
       '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
       
@@ -1646,7 +1646,7 @@ object DM: TDM
       '  left join Ordershead on '
       '        Ordershead.Pricecode = pricesshow.PriceCode '
       '    and Ordershead.Regioncode = pricesshow.RegionCode'
-      '    and OrdersHead.ClientId   = :AClientId'
+      '    and OrdersHead.ClientId   = :ClientId'
       '    and OrdersHead.Closed <> 1'
       '  left join OrdersList on '
       '        OrdersList.ORDERID = Ordershead.ORDERID'
@@ -1661,11 +1661,11 @@ object DM: TDM
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end>
     object adsPricesPriceCode: TLargeintField
       FieldName = 'PriceCode'
@@ -1839,9 +1839,7 @@ object DM: TDM
   object adsOrderCore: TMyQuery
     Connection = MyConnection
     SQL.Strings = (
-      
-        '#call CORESHOWBYFORM(:ACLIENTID, :TIMEZONEBIAS, :PARENTCODE, :SH' +
-        'OWREGISTER, :REGISTERID)'
+      '#call CORESHOWBYFORM'
       'SELECT '
       '    Core.CoreId,'
       '    Clients.Clientid,'
@@ -1907,7 +1905,7 @@ object DM: TDM
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
-      '    inner join Clients on Clients.Clientid = :AClientID'
+      '    inner join Clients on Clients.Clientid = :ClientID'
       '    left JOIN Core ON Core.productid = products.productid'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
@@ -1923,8 +1921,8 @@ object DM: TDM
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :aclientid and ' +
-        'osbc.CoreId = Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
+        'sbc.CoreId = Core.CoreId'
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (Catalogs.FullCode = :ParentCode)'
@@ -1939,11 +1937,11 @@ object DM: TDM
       end
       item
         DataType = ftUnknown
-        Name = 'ACLIENTID'
+        Name = 'ClientID'
       end
       item
         DataType = ftUnknown
-        Name = 'aclientid'
+        Name = 'clientid'
       end
       item
         DataType = ftUnknown
@@ -2140,7 +2138,7 @@ object DM: TDM
       
         '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
         'd)'
-      '  WHERE OrdersHead.ClientId = :AClientId'
+      '  WHERE OrdersHead.ClientId = :ClientId'
       '     AND header.PriceCode = OrdersHead.PriceCode'
       '     AND header.RegionCode = OrdersHead.RegionCode'
       
@@ -2164,7 +2162,7 @@ object DM: TDM
       '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.ClientId = :AClientId)'
+      '    (OrdersHead.ClientId = :ClientId)'
       'and (OrdersHead.Closed = :AClosed)'
       
         'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
@@ -2182,11 +2180,11 @@ object DM: TDM
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -2400,7 +2398,7 @@ object DM: TDM
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
-      '    inner join Clients        on (Clients.ClientID = :AClientID)'
+      '    inner join Clients        on (Clients.ClientID = :ClientID)'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -2417,8 +2415,8 @@ object DM: TDM
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
-        'd (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
+        ' (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -2434,11 +2432,11 @@ object DM: TDM
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AClientID'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -2718,7 +2716,7 @@ object DM: TDM
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
       '    (OrdersHead.OrderId = :AOrderId)'
-      'and (OrdersHead.ClientId = :AClientId)'
+      'and (OrdersHead.ClientId = :ClientId)'
       'and (OrdersHead.Closed = :AClosed)'
       
         'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
@@ -2740,7 +2738,7 @@ object DM: TDM
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown

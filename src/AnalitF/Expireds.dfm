@@ -333,15 +333,15 @@ inherited ExpiredsForm: TExpiredsForm
   object adsExpiredsOld: TpFIBDataSet
     UpdateSQL.Strings = (
       
-        'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
-        'id, :PRICECODE, :REGIONCODE, :new_ORDERSORDERID, :new_COREID, :N' +
-        'EW_ORDERCOUNT)')
+        'execute procedure updateordercount(:new_ORDERSHORDERID, :clienti' +
+        'd, :PRICECODE, :REGIONCODE, :new_ORDERSORDERID, :new_COREID, :NE' +
+        'W_ORDERCOUNT)')
     SelectSQL.Strings = (
       'SELECT'
       '*'
       'FROM'
       '    EXPIREDSSHOW(:TIMEZONEBIAS,'
-      '    :ACLIENTID, null) ')
+      '    :CLIENTID, null) ')
     AfterPost = adsExpireds2AfterPost
     AfterScroll = adsExpireds2AfterScroll
     BeforePost = adsExpireds2BeforePost
@@ -597,7 +597,7 @@ inherited ExpiredsForm: TExpiredsForm
       'FROM'
       '   ClientAVG'
       'where'
-      '  ClientCode = :ACLIENTID'
+      '  ClientCode = :CLIENTID'
       'and ProductId = :ProductId')
     Database = DM.MainConnectionOld
     Left = 312
@@ -725,8 +725,8 @@ inherited ExpiredsForm: TExpiredsForm
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :AClientId and ' +
-        'osbc.CoreId=Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :ClientId and o' +
+        'sbc.CoreId=Core.CoreId'
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE'
       '  Core.CoreID = :CoreID')
@@ -798,8 +798,8 @@ inherited ExpiredsForm: TExpiredsForm
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :AClientId and ' +
-        'osbc.CoreId=Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :ClientId and o' +
+        'sbc.CoreId=Core.CoreId'
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE'
       '    (Core.productid > 0)'
@@ -818,7 +818,7 @@ inherited ExpiredsForm: TExpiredsForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end>
     object adsExpiredsCoreId: TLargeintField
       FieldName = 'CoreId'

@@ -410,7 +410,7 @@ inherited PricesForm: TPricesForm
       '    PRICESIZE,'
       '    INJOB'
       'FROM'
-      '    PRICESSHOW(:ACLIENTID,'
+      '    PRICESSHOW(:CLIENTID,'
       '    :TIMEZONEBIAS) '
       'where'
       '  PRICECODE = :OLD_PRICECODE'
@@ -437,7 +437,7 @@ inherited PricesForm: TPricesForm
       '    INJOB,'
       '    SUMBYCURRENTMONTH'
       'FROM'
-      '    PRICESSHOW(:ACLIENTID,'
+      '    PRICESSHOW(:CLIENTID,'
       '    :TIMEZONEBIAS) ')
     AfterOpen = adsPrices2AfterOpen
     AfterScroll = adsPrices2AfterScroll
@@ -582,7 +582,7 @@ inherited PricesForm: TPricesForm
       
         '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
         'erId'
-      '    WHERE OrdersHead.ClientId = :AClientId'
+      '    WHERE OrdersHead.ClientId = :ClientId'
       '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
       '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
       
@@ -604,7 +604,7 @@ inherited PricesForm: TPricesForm
       '  left join Ordershead on '
       '        Ordershead.Pricecode = pricesshow.PriceCode '
       '    and Ordershead.Regioncode = pricesshow.RegionCode'
-      '    and OrdersHead.ClientId   = :AClientId'
+      '    and OrdersHead.ClientId   = :ClientId'
       '    and OrdersHead.Closed <> 1'
       '  left join OrdersList on '
       '        OrdersList.ORDERID = Ordershead.ORDERID'
@@ -638,7 +638,7 @@ inherited PricesForm: TPricesForm
       
         '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
         'erId'
-      '    WHERE OrdersHead.ClientId = :AClientId'
+      '    WHERE OrdersHead.ClientId = :ClientId'
       '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
       '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
       
@@ -660,7 +660,7 @@ inherited PricesForm: TPricesForm
       '  left join Ordershead on '
       '        Ordershead.Pricecode = pricesshow.PriceCode '
       '    and Ordershead.Regioncode = pricesshow.RegionCode'
-      '    and OrdersHead.ClientId   = :AClientId'
+      '    and OrdersHead.ClientId   = :ClientId'
       '    and OrdersHead.Closed <> 1'
       '  left join OrdersList on '
       '        OrdersList.ORDERID = Ordershead.ORDERID'
@@ -678,11 +678,11 @@ inherited PricesForm: TPricesForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end>
     object adsPricesPriceCode: TLargeintField
       FieldName = 'PriceCode'

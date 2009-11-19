@@ -509,7 +509,7 @@ inherited OrdersHForm: TOrdersHForm
       '    MESSAGETO,'
       '    COMMENTS'
       'FROM'
-      '    ORDERSHSHOW (:ACLIENTID,'
+      '    ORDERSHSHOW (:CLIENTID,'
       '    :ACLOSED,'
       '    :TIMEZONEBIAS)'
       'WHERE'
@@ -535,7 +535,7 @@ inherited OrdersHForm: TOrdersHForm
       '    MinReq,'
       '    SUMBYCURRENTMONTH'
       'FROM'
-      '    ORDERSHSHOW (:ACLIENTID,'
+      '    ORDERSHSHOW (:CLIENTID,'
       '    :ACLOSED,'
       '    :TIMEZONEBIAS)'
       'WHERE OrderDate BETWEEN :DateFrom AND :DateTo '
@@ -634,7 +634,7 @@ inherited OrdersHForm: TOrdersHForm
     UpdateSQL.Strings = (
       'execute procedure updateordercount('
       '  :new_ORDERSHORDERID, '
-      '  :Aclientid, '
+      '  :clientid, '
       '  :APRICECODE, '
       '  :AREGIONCODE, '
       '  :new_ORDERSORDERID, '
@@ -711,8 +711,8 @@ inherited OrdersHForm: TOrdersHForm
         'rmCr.SynonymFirmCrCode'
       '    left join synonyms on CCore.SynonymCode=Synonyms.SynonymCode'
       
-        '    LEFT JOIN Orders osbc ON osbc.ClientId = :AClientId and osbc' +
-        '.CoreId=CCore.CoreId'
+        '    LEFT JOIN Orders osbc ON osbc.ClientId = :ClientId and osbc.' +
+        'CoreId=CCore.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       
         'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +
@@ -837,7 +837,7 @@ inherited OrdersHForm: TOrdersHForm
       
         '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
         'd)'
-      '  WHERE OrdersHead.ClientId = :AClientId'
+      '  WHERE OrdersHead.ClientId = :ClientId'
       '     AND header.PriceCode = OrdersHead.PriceCode'
       '     AND header.RegionCode = OrdersHead.RegionCode'
       
@@ -861,7 +861,7 @@ inherited OrdersHForm: TOrdersHForm
       '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.ClientId = :AClientId)'
+      '    (OrdersHead.ClientId = :ClientId)'
       'and (OrdersHead.Closed = :AClosed)'
       
         'and (((:AClosed = 1) and (OrdersHead.OrderDate BETWEEN :DateFrom' +
@@ -886,11 +886,11 @@ inherited OrdersHForm: TOrdersHForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -1155,7 +1155,7 @@ inherited OrdersHForm: TOrdersHForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
-      '    inner join Clients        on (Clients.ClientID = :AClientID)'
+      '    inner join Clients        on (Clients.ClientID = :ClientID)'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1172,8 +1172,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :AClientId) an' +
-        'd (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
+        ' (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1188,11 +1188,11 @@ inherited OrdersHForm: TOrdersHForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AClientID'
+        Name = 'ClientID'
       end
       item
         DataType = ftUnknown
-        Name = 'AClientId'
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown

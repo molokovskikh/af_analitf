@@ -9,9 +9,6 @@ uses
   Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh, MemDS,
   DBAccess, MyAccess;
 
-const
-	PricesSql =	'SELECT * FROM PRICESSHOW(:ACLIENTID, :TIMEZONEBIAS) ORDER BY ';
-
 type
   TPricesForm = class(TChildForm)
     dbtFullName: TDBText;
@@ -224,7 +221,7 @@ procedure TPricesForm.ShowForm;
 begin
   //открываем список фирм
   with adsPrices do begin
-    ParamByName('AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+    ParamByName('ClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
     ParamByName('TimeZoneBias').Value:=TimeZoneBias;
     Screen.Cursor:=crHourglass;
     try

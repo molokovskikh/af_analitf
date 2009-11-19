@@ -360,7 +360,7 @@ begin
         SQL.Text := adsCoreEtalon.SQL.Text;
 			ParamByName( 'RegisterId').Value := RegisterId;
 			ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-			ParamByName( 'AClientId').Value := ClientId;
+			ParamByName( 'ClientId').Value := ClientId;
 		end;
 		ParamByName( 'ParentCode').Value := AParentCode;
 	end;

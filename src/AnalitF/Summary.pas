@@ -10,9 +10,6 @@ uses
   pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
   ActnList, U_frameLegend, MemDS, DBAccess, MyAccess;
 
-const
-	SummarySql	= 'SELECT * FROM SUMMARYSHOW(:ACLIENTID)  ORDER BY ';
-
 type
   TSummaryForm = class(TChildForm)
     dsSummary: TDataSource;
@@ -212,7 +209,7 @@ begin
   adsSummary.OnCalcFields := scf;
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
-	adsSummary.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	adsSummary.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
   PrintEnabled := ((LastSymmaryType = 0) and ((DM.SaveGridMask and PrintCurrentSummaryOrder) > 0))
                or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
@@ -455,7 +452,6 @@ begin
     FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersHead.');
     if DM.adsQueryValue.Active then
       DM.adsQueryValue.Close;
-    //call ORDERSINFOMAIN(:ACLIENTID)
     DM.adsQueryValue.SQL.Text := ''
   +'SELECT '
   +'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder '

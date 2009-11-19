@@ -11,9 +11,6 @@ uses
   pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, pFIBProps,
   U_frameLegend, MemDS, DBAccess, MyAccess;
 
-const
-	CoreSql =	'SELECT * FROM CORESHOWBYFIRM(:APRICECODE, :AREGIONCODE, :ACLIENTID) ORDER BY ';
-
 type
   TFilter=( filAll, filOrder, filLeader);
 
@@ -497,10 +494,10 @@ begin
   OrderCount := DM.QueryValue(
   'SELECT count(*) FROM OrdersList, ordershead WHERE ' +
     'ordershead.PriceCode = :PriceCode and ordershead.regioncode = :RegionCode ' +
-    ' and ordershead.ClientId = :AClientId ' +
+    ' and ordershead.ClientId = :ClientId ' +
     ' and OrdersList.OrderId = ordershead.orderid and ordershead.closed = 0 ' +
     ' AND OrdersList.OrderCount>0',
-    ['PriceCode', 'RegionCode', 'AClientId'],
+    ['PriceCode', 'RegionCode', 'ClientId'],
     [PriceCode, RegionCode, ClientId]);
 	OrderSum := DM.FindOrderInfo(PriceCode, RegionCode);
   lblOrderLabel.Caption:=Format('Заказано %d позиций на сумму %0.2f руб.',
@@ -531,12 +528,12 @@ begin
         + ' delete OrdersHead, OrdersList'
         + ' FROM OrdersHead, OrdersList '
         + ' WHERE '
-        + '     (OrdersHead.ClientId=:AClientId) '
+        + '     (OrdersHead.ClientId=:ClientId) '
         + ' and (OrdersHead.PriceCode=:APriceCode) '
         + ' and (OrdersHead.RegionCode=:ARegionCode) '
         + ' and (OrdersHead.Closed <> 1)'
         + ' and (OrdersList.OrderId = OrdersHead.OrderId)';
-      ParamByName('ACLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
+      ParamByName('CLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
       ParamByName('APRICECODE').Value := PriceCode;
       ParamByName('AREGIONCODE').Value := RegionCode;
       Execute;
@@ -674,7 +671,7 @@ begin
   try
     adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
-    adsCore.ParamByName( 'AClientId').Value:=ClientId;
+    adsCore.ParamByName( 'ClientId').Value:=ClientId;
     ShowSQLWaiting(adsCore);
     DM.MySQLMonitor.TraceFlags := DM.MySQLMonitor.TraceFlags + [DASQLMonitor.tfQFetch, DASQLMonitor.tfQExecute, DASQLMonitor.tfStmt];
   finally

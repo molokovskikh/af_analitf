@@ -2612,11 +2612,11 @@ begin
       + '   AND (PRD.PriceCode = OrdersHead.PriceCode) '
       + ' inner JOIN PricesData ON (PricesData.PriceCode=PRD.PriceCode) '
       + 'WHERE '
-      + '    (OrdersHead.CLIENTID = :AClientID) '
+      + '    (OrdersHead.CLIENTID = :ClientID) '
       + 'and (OrdersHead.Closed <> 1) '
       + 'and (PRD.PRICECODE = :PriceCode) '
       + 'and (PRD.Regioncode = :RegionCode) ',
-      ['AClientID', 'PriceCode', 'RegionCode'],
+      ['ClientID', 'PriceCode', 'RegionCode'],
       [adtClients.FieldByName( 'ClientId').Value, APriceCode, ARegionCode]);
   except
     Result := 0;
@@ -3276,7 +3276,7 @@ begin
     adsPrintOrderHeader.Close;
   //Получаем информацию о текущих отправляемых заказах
   adsPrintOrderHeader.ParamByName( 'AOrderId').Value := OrderId;
-  adsPrintOrderHeader.ParamByName( 'AClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+  adsPrintOrderHeader.ParamByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
   adsPrintOrderHeader.ParamByName( 'AClosed').Value := Closed;
   adsPrintOrderHeader.ParamByName( 'ASend').Value := Send;
   adsPrintOrderHeader.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
@@ -4274,7 +4274,7 @@ begin
 +'and    RegionCode = :RegionCode '
 +'and    Closed    <> 1',
       ['ClientId', 'PriceCode', 'RegionCode'],
-      [orderDataSet.ParamByName('AClientId').Value,
+      [orderDataSet.ParamByName('ClientId').Value,
        orderDataSet.FieldByName('PriceCode').Value,
        orderDataSet.FieldByName('RegionCode').Value]);
     //Заказа не существует - создаем его   
@@ -4294,7 +4294,7 @@ begin
 +' '
 +'select last_insert_id() ;',
         ['ClientId', 'PriceCode', 'RegionCode'],
-        [orderDataSet.ParamByName('AClientId').Value,
+        [orderDataSet.ParamByName('ClientId').Value,
          orderDataSet.FieldByName('PriceCode').Value,
          orderDataSet.FieldByName('RegionCode').Value]);
     end;
@@ -4364,7 +4364,7 @@ begin
 +'select last_insert_id();',
         ['ORDERID', 'ClientId', 'CoreId'],
         [OrderId,
-         orderDataSet.ParamByName('AClientId').Value,
+         orderDataSet.ParamByName('ClientId').Value,
          orderDataSet.FieldByName('Coreid').Value]);
     end;
     orderDataSet.FieldByName('ORDERSORDERID').Value := OrderId;

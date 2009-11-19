@@ -188,7 +188,7 @@ begin
 	TabControl.TabIndex := 0;
 	Screen.Cursor := crHourglass;
 	try
-		adsOrdersHForm.ParamByName('AClientId').Value:=
+		adsOrdersHForm.ParamByName('ClientId').Value:=
 			DM.adtClients.FieldByName('ClientId').Value;
     adsOrdersHForm.ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
 		dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
@@ -265,7 +265,7 @@ begin
 		end;
 	end;
 
-	adsOrdersHForm.ParamByName( 'AClientId').Value :=
+	adsOrdersHForm.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
 	adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
 	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
@@ -701,7 +701,7 @@ begin
         SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsVariant;
 
         with adsCore do begin
-          ParamByName( 'AClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+          ParamByName( 'ClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
           ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
           ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
           ParamByName( 'SynonymCode').Value:=SynonymCode;

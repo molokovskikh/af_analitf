@@ -461,9 +461,9 @@ procedure TChildForm.BeforeUpdateExecuteForClientID(
   Params: TDAParams);
 begin
   if (stUpdate in StatementTypes) or (stRefresh in StatementTypes) then
-    //Возможна ситуация, когда параметра "AClientId" не будет в выполняемой команде
-    if Assigned(Params.FindParam('AClientId')) then
-      Params.ParamByName('AClientId').Value := Sender.Params.ParamByName('AClientId').Value;
+    //Возможна ситуация, когда параметра "ClientId" не будет в выполняемой команде
+    if Assigned(Params.FindParam('ClientId')) then
+      Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
 end;
 
 end.

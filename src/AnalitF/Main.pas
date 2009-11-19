@@ -660,7 +660,6 @@ procedure TMainForm.SetOrdersInfo;
 begin
   if DM.adsQueryValue.Active then
   	DM.adsQueryValue.Close;
-  //call ORDERSINFOMAIN(:ACLIENTID)
 	DM.adsQueryValue.SQL.Text := ''
 +'SELECT '
 +'       COUNT(DISTINCT OrdersHead.orderid) AS OrdersCount, '
@@ -705,7 +704,7 @@ begin
 	result := False;
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
     adsOrdersHead.Connection := DM.MainConnection;
-    adsOrdersHead.ParamByName( 'AClientId').Value :=
+    adsOrdersHead.ParamByName( 'ClientId').Value :=
       DM.adtClients.FieldByName( 'ClientId').Value;
     adsOrdersHead.ParamByName( 'AClosed').Value := False;
     adsOrdersHead.ParamByName( 'ASend').Value := True;

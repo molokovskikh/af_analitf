@@ -705,7 +705,7 @@ begin
   adsCore.SQL.Text := StartSQL;
 
   adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
-  adsCore.ParamByName('AClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
+  adsCore.ParamByName('ClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
   adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
   
   ShowSQLWaiting(adsCore);

@@ -476,9 +476,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
   object adsCoreOld: TpFIBDataSet
     UpdateSQL.Strings = (
       
-        'execute procedure updateordercount(:new_ORDERSHORDERID, :Aclient' +
-        'id, :new_PRICECODE, :new_REGIONCODE, :new_ORDERSORDERID, :new_CO' +
-        'REID, :NEW_ORDERCOUNT)')
+        'execute procedure updateordercount(:new_ORDERSHORDERID, :clienti' +
+        'd, :new_PRICECODE, :new_REGIONCODE, :new_ORDERSORDERID, :new_COR' +
+        'EID, :NEW_ORDERCOUNT)')
     SelectSQL.Strings = (
       'SELECT'
       '    Core.CoreId,'
@@ -563,8 +563,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'irmCode'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN Orders osbc ON osbc.clientid = :aclientid and osbc' +
-        '.CoreId = Core.CoreId'
+        '    LEFT JOIN Orders osbc ON osbc.clientid = :clientid and osbc.' +
+        'CoreId = Core.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       'WHERE (upper(synonyms.synonymname) like upper(:LikeParam))'
       'and (Synonyms.synonymcode > 0)')
@@ -884,7 +884,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'FROM'
       '   ClientAVG'
       'where'
-      '  ClientCode = :ACLIENTID'
+      '  ClientCode = :CLIENTID'
       'and ProductId = :ProductId')
     Left = 384
     Top = 460
@@ -915,7 +915,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    sendprice'
       'FROM'
       '    ORDERSSHOWBYFORM(:FULLCODE,'
-      '    :ACLIENTID) ')
+      '    :CLIENTID) ')
     Left = 168
     Top = 468
     WaitEndMasterScroll = True
@@ -1077,8 +1077,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :Aclientid and ' +
-        'osbc.CoreId = Core.CoreId'
+        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
+        'sbc.CoreId = Core.CoreId'
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
@@ -1165,7 +1165,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'Core.SynonymFirmCrCode)'
       
         '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
-        'osbc.clientid = :aclientid)'
+        'osbc.clientid = :clientid)'
       
         '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
         'AND (OrdersHead.OrderId = osbc.OrderId)'
@@ -1229,7 +1229,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       end
       item
         DataType = ftUnknown
-        Name = 'aclientid'
+        Name = 'clientid'
       end>
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
@@ -1651,7 +1651,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'Core.SynonymFirmCrCode)'
       
         '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
-        'osbc.clientid = :aclientid)'
+        'osbc.clientid = :clientid)'
       
         '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
         'AND (OrdersHead.OrderId = osbc.OrderId)'
@@ -1677,7 +1677,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       end
       item
         DataType = ftUnknown
-        Name = 'aclientid'
+        Name = 'clientid'
       end>
   end
   object adsCoreByProducts: TMyQuery

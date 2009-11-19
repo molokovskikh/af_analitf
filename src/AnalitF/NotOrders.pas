@@ -68,14 +68,14 @@ begin
 +'       LEFT JOIN PricesData         ON OrdersHead.PriceCode=PricesData.PriceCode) '
 +'       LEFT JOIN pricesregionaldata ON pricesregionaldata.PriceCode = OrdersHead.PriceCode AND pricesregionaldata.regioncode = OrdersHead.regioncode) '
 +'       LEFT JOIN RegionalData       ON (RegionalData.RegionCode=OrdersHead.RegionCode) AND (PricesData.FirmCode=RegionalData.FirmCode) '
-+'WHERE (OrdersHead.ClientId = :AClientId) '
++'WHERE (OrdersHead.ClientId = :ClientId) '
 +'   AND (OrdersHead.Closed = 0) '
 +'   AND (OrdersHead.Send = 1) '
 +'   AND (PricesData.PriceCode IS NOT NULL) '
 +'   AND (RegionalData.RegionCode IS NOT NULL) '
 +'   AND (pricesregionaldata.PriceCode IS NOT NULL) '
 +'   AND (OrdersPositions.Positions > 0)';
-	DM.adsQueryValue.ParamByName( 'AClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+	DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	Strings := TStringList.Create;
   try
     DM.adsQueryValue.Open;
