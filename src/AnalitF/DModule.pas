@@ -73,16 +73,16 @@ type
     RegionCode : Integer;
     Selected : Boolean;
     PriceName : String;
-    constructor Create(APriceCode, ARegionCode :Integer;
-    ASelected : Boolean;
-    APriceName : String);
+    constructor Create(PriceCode, RegionCode :Integer;
+    Selected : Boolean;
+    PriceName : String);
   end;
 
   TOrderInfo = class
     PriceCode,
     RegionCode : Integer;
     Summ : Currency;
-    constructor Create(APriceCode, ARegionCode : Integer);
+    constructor Create(PriceCode, RegionCode : Integer);
   end;
 
   TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
@@ -608,7 +608,7 @@ type
     //получить сумму заказа
     function GetSumOrder (AOrderID : Integer) : Currency;
     //получить сумму заказа по PriceCode и RegionCode
-    function FindOrderInfo (APriceCode, ARegionCode : Integer) : Currency;
+    function FindOrderInfo (PriceCode, RegionCode : Integer) : Currency;
 
     property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
@@ -1831,13 +1831,13 @@ end;
 
 { TSelectPrice }
 
-constructor TSelectPrice.Create(APriceCode, ARegionCode: Integer; ASelected: Boolean;
-  APriceName: String);
+constructor TSelectPrice.Create(PriceCode, RegionCode: Integer; Selected: Boolean;
+  PriceName: String);
 begin
-  PriceCode := APriceCode;
-  RegionCode := ARegionCode;
-  Selected := ASelected;
-  PriceName := APriceName;
+  Self.PriceCode := PriceCode;
+  Self.RegionCode := RegionCode;
+  Self.Selected := Selected;
+  Self.PriceName := PriceName;
 end;
 
 procedure TDM.LoadSelectedPrices;
@@ -2590,14 +2590,14 @@ end;
 
 { TOrderInfo }
 
-constructor TOrderInfo.Create(APriceCode, ARegionCode : Integer);
+constructor TOrderInfo.Create(PriceCode, RegionCode : Integer);
 begin
   Summ := 0;
-  PriceCode := APriceCode;
-  RegionCode := ARegionCode;
+  Self.PriceCode := PriceCode;
+  Self.RegionCode := RegionCode;
 end;
 
-function TDM.FindOrderInfo(APriceCode, ARegionCode: Integer): Currency;
+function TDM.FindOrderInfo(PriceCode, RegionCode: Integer): Currency;
 begin
   try
     Result := DM.QueryValue(
@@ -2617,7 +2617,7 @@ begin
       + 'and (PRD.PRICECODE = :PriceCode) '
       + 'and (PRD.Regioncode = :RegionCode) ',
       ['ClientID', 'PriceCode', 'RegionCode'],
-      [adtClients.FieldByName( 'ClientId').Value, APriceCode, ARegionCode]);
+      [adtClients.FieldByName( 'ClientId').Value, PriceCode, RegionCode]);
   except
     Result := 0;
   end;

@@ -218,8 +218,8 @@ type
     procedure SetClear;
     procedure AddKeyToSearch(Key : Char);
   public
-    procedure ShowForm(APriceCode, ARegionCode: Integer;
-      APriceName, ARegionName : String;
+    procedure ShowForm(PriceCode, RegionCode: Integer;
+      PriceName, RegionName : String;
       OnlyLeaders: Boolean=False;
       FromOrders : Boolean = False); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -289,14 +289,14 @@ begin
   BM.Free;
 end;
 
-procedure TCoreFirmForm.ShowForm(APriceCode, ARegionCode: Integer;
-  APriceName, ARegionName : String; OnlyLeaders: Boolean=False; FromOrders : Boolean = False);
+procedure TCoreFirmForm.ShowForm(PriceCode, RegionCode: Integer;
+  PriceName, RegionName : String; OnlyLeaders: Boolean=False; FromOrders : Boolean = False);
 begin
   plOverCost.Hide();
-  PriceCode:=APriceCode;
-  RegionCode:=ARegionCode;
-  PriceName := APriceName;
-  RegionName := ARegionName;
+  Self.PriceCode  := PriceCode;
+  Self.RegionCode := RegionCode;
+  Self.PriceName  := PriceName;
+  Self.RegionName := RegionName;
   //Если пришли сюда из заказа
   if FromOrders then begin
     dbgCore.InputField := '';
@@ -529,13 +529,13 @@ begin
         + ' FROM OrdersHead, OrdersList '
         + ' WHERE '
         + '     (OrdersHead.ClientId=:ClientId) '
-        + ' and (OrdersHead.PriceCode=:APriceCode) '
-        + ' and (OrdersHead.RegionCode=:ARegionCode) '
+        + ' and (OrdersHead.PriceCode=:PriceCode) '
+        + ' and (OrdersHead.RegionCode=:RegionCode) '
         + ' and (OrdersHead.Closed <> 1)'
         + ' and (OrdersList.OrderId = OrdersHead.OrderId)';
       ParamByName('CLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
-      ParamByName('APRICECODE').Value := PriceCode;
-      ParamByName('AREGIONCODE').Value := RegionCode;
+      ParamByName('PRICECODE').Value := PriceCode;
+      ParamByName('REGIONCODE').Value := RegionCode;
       Execute;
     end;
   finally
@@ -669,8 +669,8 @@ procedure TCoreFirmForm.RefreshAllCore;
 begin
   Screen.Cursor:=crHourglass;
   try
-    adsCore.ParamByName( 'APriceCode').Value:=PriceCode;
-    adsCore.ParamByName( 'ARegionCode').Value:=RegionCode;
+    adsCore.ParamByName( 'PriceCode').Value:=PriceCode;
+    adsCore.ParamByName( 'RegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'ClientId').Value:=ClientId;
     ShowSQLWaiting(adsCore);
     DM.MySQLMonitor.TraceFlags := DM.MySQLMonitor.TraceFlags + [DASQLMonitor.tfQFetch, DASQLMonitor.tfQExecute, DASQLMonitor.tfStmt];

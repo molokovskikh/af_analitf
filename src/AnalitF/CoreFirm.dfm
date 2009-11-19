@@ -474,14 +474,14 @@ object CoreFirmForm: TCoreFirmForm
     UpdateSQL.Strings = (
       
         'execute procedure updateordercount(:new_ORDERSHORDERID, :clienti' +
-        'd, :APRICECODE, :AREGIONCODE, :new_ORDERSORDERID, :new_COREID, :' +
-        'NEW_ORDERCOUNT)')
+        'd, :PRICECODE, :REGIONCODE, :new_ORDERSORDERID, :new_COREID, :NE' +
+        'W_ORDERCOUNT)')
     SelectSQL.Strings = (
       'SELECT'
       '*'
       'FROM'
-      '    CORESHOWBYFIRM(:APRICECODE,'
-      '    :AREGIONCODE,'
+      '    CORESHOWBYFIRM(:PRICECODE,'
+      '    :REGIONCODE,'
       '    :CLIENTID) ')
     FilterOptions = [foCaseInsensitive]
     AfterPost = adsCore2AfterPost
@@ -777,8 +777,8 @@ object CoreFirmForm: TCoreFirmForm
       '    PERIOD,'
       '    QUANTITY'
       'FROM'
-      '    CORECOUNTPRICEFIELDS(:AREGIONCODE,'
-      '    :APRICECODE) ')
+      '    CORECOUNTPRICEFIELDS(:REGIONCODE,'
+      '    :PRICECODE) ')
     Database = DM.MainConnectionOld
     Left = 208
     Top = 128
@@ -803,8 +803,8 @@ object CoreFirmForm: TCoreFirmForm
       '    MESSAGETO'
       'FROM'
       '    ORDERSHSHOWCURRENT(:CLIENTID,'
-      '    :APRICECODE,'
-      '    :AREGIONCODE) ')
+      '    :PRICECODE,'
+      '    :REGIONCODE) ')
     Database = DM.MainConnectionOld
     Left = 304
     Top = 136
@@ -855,8 +855,8 @@ object CoreFirmForm: TCoreFirmForm
       'SELECT'
       '*'
       'FROM'
-      '    CORESHOWBYFIRM(:APRICECODE,'
-      '    :AREGIONCODE,'
+      '    CORESHOWBYFIRM(:PRICECODE,'
+      '    :REGIONCODE,'
       '    :CLIENTID) '
       'where'
       '  upper(SynonymName) like upper(:LikeParam)')
@@ -1155,8 +1155,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
       'WHERE '
-      '    (CCore.PriceCode = :APriceCode) '
-      'And (CCore.RegionCode = :ARegionCode)')
+      '    (CCore.PriceCode = :PriceCode) '
+      'And (CCore.RegionCode = :RegionCode)')
     BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsCore2BeforePost
@@ -1170,11 +1170,11 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         DataType = ftUnknown
-        Name = 'APriceCode'
+        Name = 'PriceCode'
       end
       item
         DataType = ftUnknown
-        Name = 'ARegionCode'
+        Name = 'RegionCode'
       end>
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
@@ -1455,8 +1455,8 @@ object CoreFirmForm: TCoreFirmForm
         'Id'
       'WHERE '
       '    (Synonyms.SynonymCode = CCore.SynonymCode)'
-      'and (CCore.PriceCode = :APriceCode) '
-      'and (CCore.RegionCode = :ARegionCode)')
+      'and (CCore.PriceCode = :PriceCode) '
+      'and (CCore.RegionCode = :RegionCode)')
     Left = 128
     Top = 160
     ParamData = <
@@ -1470,11 +1470,11 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         DataType = ftUnknown
-        Name = 'APriceCode'
+        Name = 'PriceCode'
       end
       item
         DataType = ftUnknown
-        Name = 'ARegionCode'
+        Name = 'RegionCode'
       end>
   end
 end

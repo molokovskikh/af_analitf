@@ -669,9 +669,9 @@ begin
     with DM.adsQueryValue do begin
       if Active then
         Close;
-      SQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :APriceCode and RegionCode = :ARegionCode';
-      ParamByName('APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
-      ParamByName('ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
+      SQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :PriceCode and RegionCode = :RegionCode';
+      ParamByName('PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
+      ParamByName('RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
       Open;
       try
         { проверяем наличие прайс-листа }
@@ -702,8 +702,8 @@ begin
 
         with adsCore do begin
           ParamByName( 'ClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
-          ParamByName( 'APriceCode').Value:=adsOrdersHFormPRICECODE.Value;
-          ParamByName( 'ARegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
+          ParamByName( 'PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
+          ParamByName( 'RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
           ParamByName( 'SynonymCode').Value:=SynonymCode;
           ParamByName( 'SynonymFirmCrCode').Value:=SynonymFirmCrCode;
           Open;

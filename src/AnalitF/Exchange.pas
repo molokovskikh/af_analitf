@@ -556,9 +556,9 @@ begin
 
       DM.adsCoreRepare.ParamByName( 'ClientId').Value :=
         DM.adtClients.FieldByName('ClientId').Value;
-      DM.adsCoreRepare.ParamByName( 'APriceCode').Value :=
+      DM.adsCoreRepare.ParamByName( 'PriceCode').Value :=
         DM.adsRepareOrders.FieldByName( 'PriceCode').Value;
-      DM.adsCoreRepare.ParamByName( 'ARegionCode').Value :=
+      DM.adsCoreRepare.ParamByName( 'RegionCode').Value :=
         DM.adsRepareOrders.FieldByName( 'RegionCode').Value;
       DM.adsCoreRepare.ParamByName( 'SynonymCode').Value := SynonymCode;
       DM.adsCoreRepare.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;

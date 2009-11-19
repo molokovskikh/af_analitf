@@ -635,8 +635,8 @@ inherited OrdersHForm: TOrdersHForm
       'execute procedure updateordercount('
       '  :new_ORDERSHORDERID, '
       '  :clientid, '
-      '  :APRICECODE, '
-      '  :AREGIONCODE, '
+      '  :PRICECODE, '
+      '  :REGIONCODE, '
       '  :new_ORDERSORDERID, '
       '  :new_COREID, '
       '  :NEW_ORDERCOUNT)')
@@ -700,7 +700,7 @@ inherited OrdersHForm: TOrdersHForm
       '    left join catalogs on catalogs.fullcode = products.catalogid'
       
         '    LEFT JOIN MinPrices ON MinPrices.productid = CCore.productid' +
-        ' and minprices.regioncode = :aregioncode'
+        ' and minprices.regioncode = CCore.regioncode'
       
         '    left join Core LCore on LCore.servercoreid = minprices.serve' +
         'rcoreid and LCore.RegionCode = minprices.regioncode'
@@ -715,8 +715,8 @@ inherited OrdersHForm: TOrdersHForm
         'CoreId=CCore.CoreId'
       '    LEFT JOIN OrdersH ON osbc.OrderId=OrdersH.OrderId'
       
-        'WHERE (CCore.PriceCode=:APriceCode) And (CCore.RegionCode=:ARegi' +
-        'onCode)'
+        'WHERE (CCore.PriceCode=:PriceCode) And (CCore.RegionCode=:Region' +
+        'Code)'
       'and  CCore.SYNONYMCODE = :SYNONYMCODE'
       'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE')
     Database = DM.MainConnectionOld
@@ -1178,8 +1178,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
       'WHERE '
-      '    (CCore.PriceCode = :APriceCode) '
-      'And (CCore.RegionCode = :ARegionCode)'
+      '    (CCore.PriceCode = :PriceCode) '
+      'And (CCore.RegionCode = :RegionCode)'
       'and  CCore.SYNONYMCODE = :SYNONYMCODE'
       'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE')
     BeforePost = adsCoreBeforePost
@@ -1196,11 +1196,11 @@ inherited OrdersHForm: TOrdersHForm
       end
       item
         DataType = ftUnknown
-        Name = 'APriceCode'
+        Name = 'PriceCode'
       end
       item
         DataType = ftUnknown
-        Name = 'ARegionCode'
+        Name = 'RegionCode'
       end
       item
         DataType = ftUnknown
