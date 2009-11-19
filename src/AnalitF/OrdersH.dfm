@@ -510,7 +510,7 @@ inherited OrdersHForm: TOrdersHForm
       '    COMMENTS'
       'FROM'
       '    ORDERSHSHOW (:CLIENTID,'
-      '    :ACLOSED,'
+      '    :CLOSED,'
       '    :TIMEZONEBIAS)'
       'WHERE'
       '(ORDERID = :OLD_ORDERID)'
@@ -536,7 +536,7 @@ inherited OrdersHForm: TOrdersHForm
       '    SUMBYCURRENTMONTH'
       'FROM'
       '    ORDERSHSHOW (:CLIENTID,'
-      '    :ACLOSED,'
+      '    :CLOSED,'
       '    :TIMEZONEBIAS)'
       'WHERE OrderDate BETWEEN :DateFrom AND :DateTo '
       'order by SendDate DESC')
@@ -862,14 +862,14 @@ inherited OrdersHForm: TOrdersHForm
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
       '    (OrdersHead.ClientId = :ClientId)'
-      'and (OrdersHead.Closed = :AClosed)'
+      'and (OrdersHead.Closed = :Closed)'
       
-        'and (((:AClosed = 1) and (OrdersHead.OrderDate BETWEEN :DateFrom' +
-        ' AND :DateTo ))'
+        'and (((:Closed = 1) and (OrdersHead.OrderDate BETWEEN :DateFrom ' +
+        'AND :DateTo ))'
       
-        'or ((:AClosed = 0) and (PricesData.PriceCode is not null) and (R' +
-        'egionalData.RegionCode is not null) and (pricesregionaldata.Pric' +
-        'eCode is not null)))'
+        'or ((:Closed = 0) and (PricesData.PriceCode is not null) and (Re' +
+        'gionalData.RegionCode is not null) and (pricesregionaldata.Price' +
+        'Code is not null)))'
       'group by OrdersHead.OrderId'
       'having count(OrdersList.Id) > 0'
       'order by OrdersHead.SendDate DESC')
@@ -894,11 +894,11 @@ inherited OrdersHForm: TOrdersHForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
@@ -910,7 +910,7 @@ inherited OrdersHForm: TOrdersHForm
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end>
     object adsOrdersHFormOrderId: TLargeintField
       FieldName = 'OrderId'

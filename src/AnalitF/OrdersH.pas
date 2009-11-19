@@ -239,7 +239,7 @@ begin
 	case TabControl.TabIndex of
 		0: begin
 			adsOrdersHForm.Close;
-			adsOrdersHForm.ParamByName( 'AClosed').Value := False;
+			adsOrdersHForm.ParamByName( 'Closed').Value := False;
 			btnMoveSend.Caption := 'Перевести в отправленные';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
@@ -252,7 +252,7 @@ begin
 		end;
 		1: begin
 			adsOrdersHForm.Close;
-			adsOrdersHForm.ParamByName( 'AClosed').Value := True;
+			adsOrdersHForm.ParamByName( 'Closed').Value := True;
 			btnMoveSend.Caption := 'Вернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;

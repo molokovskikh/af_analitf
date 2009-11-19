@@ -114,10 +114,10 @@ type
     procedure ocf(DataSet: TDataSet);
     procedure FlipToCore;
   public
-    procedure ShowForm(AOrderId: Integer); overload; //reintroduce;
+    procedure ShowForm(OrderId: Integer); overload; //reintroduce;
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
-    procedure SetParams(AOrderId: Integer);
+    procedure SetParams(OrderId: Integer);
   end;
 
 var
@@ -129,7 +129,7 @@ uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core;
 
 {$R *.dfm}
 
-procedure TOrdersForm.ShowForm(AOrderId: Integer);
+procedure TOrdersForm.ShowForm(OrderId: Integer);
 begin
   plOverCost.Hide();
   //PrintEnabled:=False;
@@ -140,16 +140,16 @@ begin
   RegionCode := OrdersHForm.adsOrdersHFormREGIONCODE.AsInteger;
   PriceName := OrdersHForm.adsOrdersHFormPRICENAME.AsString;
   RegionName := OrdersHForm.adsOrdersHFormREGIONNAME.AsString;
-  OrderID := AOrderId;
-  SetParams(AOrderId);
+  Self.OrderID := OrderId;
+  SetParams(OrderId);
   inherited ShowForm;
 end;
 
-procedure TOrdersForm.SetParams(AOrderId: Integer);
+procedure TOrdersForm.SetParams(OrderId: Integer);
 var
   Closed : Variant;
 begin
-  Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(AOrderId), [], []);
+  Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(OrderId), [], []);
   adsOrders.OnCalcFields := ocf;
   dbgOrders.Columns[2].FieldName := 'PRICE';
   dbgOrders.Columns[4].FieldName := 'SumOrder';
@@ -165,7 +165,7 @@ begin
   end;
   dbmMessageTo.Color := Iif(dbmMessageTo.ReadOnly, clBtnFace, clWindow);
   with adsOrders do begin
-    ParamByName('AOrderId').Value:=AOrderId;
+    ParamByName('OrderId').Value:=OrderId;
     if Active
     then begin
       Close;

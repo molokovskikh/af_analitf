@@ -3820,10 +3820,10 @@ object MainForm: TMainForm
       '    COMMENTS'
       'FROM'
       '    ORDERSHSHOW(:CLIENTID,'
-      '    :ACLOSED,'
+      '    :CLOSED,'
       '    :TIMEZONEBIAS) '
       'where'
-      '  Send = :ASend')
+      '  Send = :Send')
     Database = DM.MainConnectionOld
     Left = 192
     Top = 272
@@ -3867,12 +3867,12 @@ object MainForm: TMainForm
       '       AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
       '    (OrdersHead.ClientId = :ClientId)'
-      'and (:AClosed = OrdersHead.Closed)'
+      'and (:Closed = OrdersHead.Closed)'
       
-        'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
-        ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
-        'cesregionaldata.PriceCode is not null)))'
-      'and (OrdersHead.SEND = :ASend)'
+        'and ((:Closed = 1) or ((:Closed = 0) and (PricesData.PriceCode i' +
+        's not null) and (RegionalData.RegionCode is not null) and (price' +
+        'sregionaldata.PriceCode is not null)))'
+      'and (OrdersHead.SEND = :Send)'
       'group by OrdersHead.OrderId')
     Left = 232
     Top = 272
@@ -3883,19 +3883,19 @@ object MainForm: TMainForm
       end
       item
         DataType = ftUnknown
-        Name = 'ACLOSED'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'ASend'
+        Name = 'Send'
       end>
   end
 end

@@ -797,8 +797,8 @@ begin
  	DM.adsOrdersHeaders.Close;
 	DM.adsOrdersHeaders.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsOrdersHeaders.ParamByName( 'AClosed').Value := False;
-	DM.adsOrdersHeaders.ParamByName( 'ASend').Value := True;
+	DM.adsOrdersHeaders.ParamByName( 'Closed').Value := False;
+	DM.adsOrdersHeaders.ParamByName( 'Send').Value := True;
 	DM.adsOrdersHeaders.ParamByName( 'TimeZoneBias').Value := 0;
 	DM.adsOrdersHeaders.Open;
 	if not DM.adsOrdersHeaders.Eof then
@@ -810,7 +810,7 @@ begin
 	begin
     SendError := False;
     DM.adsOrderDetails.Close;
-		DM.adsOrderDetails.ParamByName( 'AOrderId').Value :=
+		DM.adsOrderDetails.ParamByName( 'OrderId').Value :=
       DM.adsOrdersHeaders.FieldByName( 'OrderId').Value;
     DM.adsOrderDetails.Open;
 

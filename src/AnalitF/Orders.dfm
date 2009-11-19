@@ -404,7 +404,7 @@ inherited OrdersForm: TOrdersForm
       '  left join products on products.productid = orders.productid'
       '  left join core on core.coreid = orders.coreid'
       'WHERE '
-      '    (Orders.OrderId=:AOrderId)'
+      '    (Orders.OrderId=:OrderId)'
       'AND (OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
     AfterPost = adsOrdersOldAfterPost
@@ -598,7 +598,7 @@ inherited OrdersForm: TOrdersForm
         'd'
       '  left join core on core.coreid = OrdersList.coreid'
       'WHERE '
-      '    (OrdersList.OrderId = :AOrderId)'
+      '    (OrdersList.OrderId = :OrderId)'
       'AND (OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
     RefreshOptions = [roAfterUpdate]
@@ -610,7 +610,7 @@ inherited OrdersForm: TOrdersForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AOrderId'
+        Name = 'OrderId'
       end>
     object adsOrdersOrderId: TLargeintField
       FieldName = 'OrderId'

@@ -706,8 +706,8 @@ begin
     adsOrdersHead.Connection := DM.MainConnection;
     adsOrdersHead.ParamByName( 'ClientId').Value :=
       DM.adtClients.FieldByName( 'ClientId').Value;
-    adsOrdersHead.ParamByName( 'AClosed').Value := False;
-    adsOrdersHead.ParamByName( 'ASend').Value := True;
+    adsOrdersHead.ParamByName( 'Closed').Value := False;
+    adsOrdersHead.ParamByName( 'Send').Value := True;
     try
       adsOrdersHead.Open;
       if adsOrdersHead.RecordCount > 0 then result := True;

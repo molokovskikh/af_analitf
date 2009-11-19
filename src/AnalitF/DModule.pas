@@ -606,7 +606,7 @@ type
     procedure OpenDocsDir(DirName : String; FileList : TStringList; OpenEachFile : Boolean);
 
     //получить сумму заказа
-    function GetSumOrder (AOrderID : Integer) : Currency;
+    function GetSumOrder (OrderID : Integer) : Currency;
     //получить сумму заказа по PriceCode и RegionCode
     function FindOrderInfo (PriceCode, RegionCode : Integer) : Currency;
 
@@ -1798,7 +1798,7 @@ begin
   end;
 end;
 
-function TDM.GetSumOrder(AOrderID: Integer): Currency;
+function TDM.GetSumOrder(OrderID: Integer): Currency;
 begin
   try
     Result := DM.QueryValue(
@@ -1806,7 +1806,7 @@ begin
       + 'FROM OrdersList '
       + 'WHERE OrdersList.OrderId = :OrderId AND OrdersList.OrderCount>0',
       ['OrderId'],
-      [AOrderID]);
+      [OrderID]);
   except
     Result := 0;
   end;
@@ -3275,10 +3275,10 @@ begin
   if adsPrintOrderHeader.Active then
     adsPrintOrderHeader.Close;
   //Получаем информацию о текущих отправляемых заказах
-  adsPrintOrderHeader.ParamByName( 'AOrderId').Value := OrderId;
+  adsPrintOrderHeader.ParamByName( 'OrderId').Value := OrderId;
   adsPrintOrderHeader.ParamByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-  adsPrintOrderHeader.ParamByName( 'AClosed').Value := Closed;
-  adsPrintOrderHeader.ParamByName( 'ASend').Value := Send;
+  adsPrintOrderHeader.ParamByName( 'Closed').Value := Closed;
+  adsPrintOrderHeader.ParamByName( 'Send').Value := Send;
   adsPrintOrderHeader.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
   adsPrintOrderHeader.Open;
 
@@ -3287,7 +3287,7 @@ begin
       if adsOrderDetails.Active then
         adsOrderDetails.Close();
 
-      adsOrderDetails.ParamByName('AOrderId').Value := OrderId;
+      adsOrderDetails.ParamByName('OrderId').Value := OrderId;
       adsOrderDetails.Open;
 
       try

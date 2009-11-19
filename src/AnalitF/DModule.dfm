@@ -783,13 +783,13 @@ object DM: TDM
       '    PRD.Enabled as PriceEnabled'
       'FROM'
       '    ORDERSHSHOW(:CLIENTID,'
-      '    :ACLOSED,'
+      '    :CLOSED,'
       '    :TIMEZONEBIAS) OH'
       
         '    LEFT JOIN PricesRegionalData PRD ON (OH.PriceCode=PRD.PriceC' +
         'ode AND OH.RegionCode=PRD.RegionCode)  '
       'where'
-      '  Send = :ASend')
+      '  Send = :Send')
     Database = MainConnectionOld
     Left = 48
     Top = 344
@@ -834,7 +834,7 @@ object DM: TDM
       '  Orders'
       '  left join products on products.productid = orders.productid'
       'WHERE '
-      '    (Orders.OrderId=:AOrderId) '
+      '    (Orders.OrderId=:OrderId) '
       'AND (Orders.OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
     Database = MainConnectionOld
@@ -2011,7 +2011,7 @@ object DM: TDM
         '  left join products on products.productid = OrdersList.producti' +
         'd'
       'WHERE '
-      '    (OrdersList.OrderId=:AOrderId) '
+      '    (OrdersList.OrderId=:OrderId) '
       'AND (OrdersList.OrderCount>0)'
       'ORDER BY SynonymName, SynonymFirm')
     CachedUpdates = True
@@ -2020,7 +2020,7 @@ object DM: TDM
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'AOrderId'
+        Name = 'OrderId'
       end>
     object adsOrderDetailsid: TLargeintField
       FieldName = 'id'
@@ -2163,12 +2163,12 @@ object DM: TDM
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
       '    (OrdersHead.ClientId = :ClientId)'
-      'and (OrdersHead.Closed = :AClosed)'
+      'and (OrdersHead.Closed = :Closed)'
       
-        'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
-        ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
-        'cesregionaldata.PriceCode is not null)))'
-      'and (OrdersHead.Send = :ASend)'
+        'and ((:Closed = 1) or ((:Closed = 0) and (PricesData.PriceCode i' +
+        's not null) and (RegionalData.RegionCode is not null) and (price' +
+        'sregionaldata.PriceCode is not null)))'
+      'and (OrdersHead.Send = :Send)'
       'group by OrdersHead.OrderId'
       'having count(OrdersList.Id) > 0')
     Left = 48
@@ -2188,19 +2188,19 @@ object DM: TDM
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'ASend'
+        Name = 'Send'
       end>
   end
   object adsRepareOrders: TMyQuery
@@ -2715,14 +2715,14 @@ object DM: TDM
       '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.OrderId = :AOrderId)'
+      '    (OrdersHead.OrderId = :OrderId)'
       'and (OrdersHead.ClientId = :ClientId)'
-      'and (OrdersHead.Closed = :AClosed)'
+      'and (OrdersHead.Closed = :Closed)'
       
-        'and ((:AClosed = 1) or ((:AClosed = 0) and (PricesData.PriceCode' +
-        ' is not null) and (RegionalData.RegionCode is not null) and (pri' +
-        'cesregionaldata.PriceCode is not null)))'
-      'and (OrdersHead.Send = :ASend)'
+        'and ((:Closed = 1) or ((:Closed = 0) and (PricesData.PriceCode i' +
+        's not null) and (RegionalData.RegionCode is not null) and (price' +
+        'sregionaldata.PriceCode is not null)))'
+      'and (OrdersHead.Send = :Send)'
       'group by OrdersHead.OrderId'
       'having count(OrdersList.Id) > 0')
     Left = 48
@@ -2734,7 +2734,7 @@ object DM: TDM
       end
       item
         DataType = ftUnknown
-        Name = 'AOrderId'
+        Name = 'OrderId'
       end
       item
         DataType = ftUnknown
@@ -2742,19 +2742,19 @@ object DM: TDM
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'AClosed'
+        Name = 'Closed'
       end
       item
         DataType = ftUnknown
-        Name = 'ASend'
+        Name = 'Send'
       end>
   end
   object adcTemporaryTable: TMyQuery
