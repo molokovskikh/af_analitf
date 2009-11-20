@@ -241,18 +241,18 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+  with DM.adtParams do
+  begin
+    Edit;
+    FieldByName( 'UseForms').AsBoolean := actUseForms.Checked;
+    FieldByName( 'ShowAllCatalog').AsBoolean := actShowAll.Checked;
+    Post;
+  end;
   fr.Free;
 	Reg := TRegistry.Create;
 	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
   Reg.WriteBool('NewSearch', actNewSearch.Checked);
 	Reg.Free;
-	with DM.adtParams do
-	begin
-		Edit;
-		FieldByName( 'UseForms').AsBoolean := actUseForms.Checked;
-		FieldByName( 'ShowAllCatalog').AsBoolean := actShowAll.Checked;
-		Post;
-	end;
   BM.Free;
 end;
 

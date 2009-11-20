@@ -724,7 +724,26 @@ end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-	if not DM.MainConnection.Connected then exit;
+  {
+    Изменение связано с требованием #1845 Ошибка при закрытии программы,
+    связанная с adsRetailMargins: "adsRetailMargins: Cannot perform this
+    operation on a closed dataset"
+    Если мы только запускаемся и пока не отобразили главную форму, а отобразили
+    форму конфигурации, то не позволять закрывать
+  }
+  if JustRun then begin
+    CanClose := False;
+    Exit;
+  end;
+  {
+    Изменение связано с требованием #1845 Ошибка при закрытии программы,
+    связанная с adsRetailMargins: "adsRetailMargins: Cannot perform this
+    operation on a closed dataset"
+    Сначало закрываем все дочерние формы, чтобы у них отработал Destroy и
+    они произвели сохранение настроек и завершили обращение к базе 
+  }
+  FreeChildForms;
+  if not DM.MainConnection.Connected then exit;
 
   if OldOrders then
     if (not DM.adtParams.FieldByName('CONFIRMDELETEOLDORDERS').AsBoolean) or

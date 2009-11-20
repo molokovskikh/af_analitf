@@ -204,10 +204,10 @@ var
 begin
 	inherited;
   SoftPost(adsPrices);
-	if not DM.adtClients.IsEmpty then
-	begin
-		GetLastPrice;
-	end;
+  if not DM.adtClients.IsEmpty then
+  begin
+    GetLastPrice;
+  end;
   Reg := TRegIniFile.Create();
   try
     Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);

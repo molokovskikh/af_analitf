@@ -1790,8 +1790,12 @@ end;
 
 procedure TExchangeThread.OnChildTerminate(Sender: TObject);
 begin
+  try
+  //Здесь надо все переделать в связи с требованием #1632 Ошибка при обновлении
   if Assigned(Sender) then
     ChildThreads.Remove(Sender);
+  except
+  end;
 end;
 
 procedure TExchangeThread.StopChildThreads;
@@ -1806,6 +1810,8 @@ begin
     except
       on E : Exception do
         S := E.Message;
+      //Здесь надо все переделать в связи с требованием #1632 Ошибка при обновлении
+      //надо логировать сообщение об ошибке при останове нитки
     end;
   end;
 end;
@@ -2093,12 +2099,16 @@ end;
 
 procedure TExchangeThread.OnFullChildTerminate(Sender : TObject);
 begin
-  if Assigned(Sender) then
+  try
+  //Здесь надо все переделать в связи с требованием #1632 Ошибка при обновлении
+  if Assigned(Sender) then 
     ChildThreads.Remove(Sender);
   if (ChildThreads.Count = 0) and ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
   then begin
     HTTPDisconnect;
     RasDisconnect;
+  end;
+  except
   end;
 end;
 
