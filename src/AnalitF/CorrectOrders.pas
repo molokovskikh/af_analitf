@@ -95,6 +95,7 @@ type
     adsAvgOrdersPRICEAVG: TFloatField;
     adsAvgOrdersPRODUCTID: TLargeintField;
     tCheckVolume: TTimer;
+    adsCoreRealCost: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure tvListChange(Sender: TObject; Node: TTreeNode);
     procedure tvListChanging(Sender: TObject; Node: TTreeNode;

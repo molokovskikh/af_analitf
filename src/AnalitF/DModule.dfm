@@ -1856,7 +1856,10 @@ object DM: TDM
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Note,'
-      '    Core.Cost,'
+      '    Core.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
+        'ent/100)) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1923,6 +1926,9 @@ object DM: TDM
       
         '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
         'sbc.CoreId = Core.CoreId'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
+        'irmCode) and (dop.ClientId = osbc.clientid)'
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (Catalogs.FullCode = :ParentCode)'
@@ -2210,6 +2216,7 @@ object DM: TDM
       'set'
       '  COREID = :COREID,'
       '  Price = :PRICE,'
+      '  RealPrice = :RealPRICE,'
       '  CodeFirmCr = :CodeFirmCr,'
       '  CODE = :CODE,'
       '  CODECR = :CODECR,'
@@ -2230,6 +2237,7 @@ object DM: TDM
       '  OrdersList.CoreId, '
       '  OrdersList.Code, '
       '  OrdersList.CodeCr, '
+      '  OrdersList.RealPrice, '
       '  OrdersList.Price, '
       '  OrdersList.SynonymCode, '
       '  OrdersList.SynonymFirmCrCode, '
@@ -2325,6 +2333,9 @@ object DM: TDM
     object adsRepareOrdersCodeFirmCr: TLargeintField
       FieldName = 'CodeFirmCr'
     end
+    object adsRepareOrdersRealPrice: TFloatField
+      FieldName = 'RealPrice'
+    end
   end
   object adsCoreRepare: TMyQuery
     Connection = MyConnection
@@ -2349,7 +2360,10 @@ object DM: TDM
       '    CCore.Period,'
       '    CCore.Await,'
       '    CCore.Junk,'
-      '    CCore.Cost,'
+      '    CCore.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
+        'rcent/100)) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -2417,6 +2431,9 @@ object DM: TDM
       
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
+        'FirmCode) and (dop.ClientId = osbc.clientid)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -2638,6 +2655,9 @@ object DM: TDM
     object adsCoreRepareOrdersHRegionName: TStringField
       FieldName = 'OrdersHRegionName'
       Size = 25
+    end
+    object adsCoreRepareRealCost: TFloatField
+      FieldName = 'RealCost'
     end
   end
   object adsUser: TMyQuery

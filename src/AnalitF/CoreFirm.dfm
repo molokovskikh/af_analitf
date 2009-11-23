@@ -186,6 +186,13 @@ object CoreFirmForm: TCoreFirmForm
       end
       item
         EditButtons = <>
+        FieldName = 'RealCost'
+        Footers = <>
+        Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+        Visible = False
+      end
+      item
+        EditButtons = <>
         FieldName = 'Cost'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -991,7 +998,10 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Period,'
       '    CCore.Await,'
       '    CCore.Junk,'
-      '    CCore.Cost,'
+      '    CCore.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
+        'rcent/100)) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1058,6 +1068,9 @@ object CoreFirmForm: TCoreFirmForm
       
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
+        'FirmCode) and (dop.ClientId = osbc.clientid)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1084,7 +1097,10 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Period,'
       '    CCore.Await,'
       '    CCore.Junk,'
-      '    CCore.Cost,'
+      '    CCore.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
+        'rcent/100)) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1151,6 +1167,9 @@ object CoreFirmForm: TCoreFirmForm
       
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
+        'FirmCode) and (dop.ClientId = osbc.clientid)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1362,6 +1381,10 @@ object CoreFirmForm: TCoreFirmForm
       FieldName = 'SumOrder'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsCoreRealCost: TFloatField
+      FieldName = 'RealCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1383,7 +1406,10 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Period,'
       '    CCore.Await,'
       '    CCore.Junk,'
-      '    CCore.Cost,'
+      '    CCore.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
+        'rcent/100)) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1450,6 +1476,9 @@ object CoreFirmForm: TCoreFirmForm
       
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
+        'FirmCode) and (dop.ClientId = osbc.clientid)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'

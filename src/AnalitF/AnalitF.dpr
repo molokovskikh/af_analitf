@@ -72,7 +72,9 @@ uses
   U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame},
   U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm},
   PreviousOrders in 'PreviousOrders.pas' {PreviousOrdersForm},
-  CorrectOrders in 'CorrectOrders.pas' {CorrectOrdersForm};
+  CorrectOrders in 'CorrectOrders.pas' {CorrectOrdersForm},
+  InforoomException in 'Exceptions\InforoomException.pas',
+  DataIntegrityExceptions in 'Exceptions\DataIntegrityExceptions.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

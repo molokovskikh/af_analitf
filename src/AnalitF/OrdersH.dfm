@@ -1011,7 +1011,10 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Period,'
       '    CCore.Await,'
       '    CCore.Junk,'
-      '    CCore.Cost,'
+      '    CCore.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
+        'rcent/100)) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1079,6 +1082,9 @@ inherited OrdersHForm: TOrdersHForm
       
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
+        'FirmCode) and (dop.ClientId = osbc.clientid)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1106,7 +1112,10 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Period,'
       '    CCore.Await,'
       '    CCore.Junk,'
-      '    CCore.Cost,'
+      '    CCore.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
+        'rcent/100)) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1174,6 +1183,9 @@ inherited OrdersHForm: TOrdersHForm
       
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
+        'FirmCode) and (dop.ClientId = osbc.clientid)'
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'

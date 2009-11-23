@@ -232,6 +232,13 @@ inherited SynonymSearchForm: TSynonymSearchForm
         end
         item
           EditButtons = <>
+          FieldName = 'RealCost'
+          Footers = <>
+          Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+          Visible = False
+        end
+        item
+          EditButtons = <>
           FieldName = 'Cost'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -1016,7 +1023,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Note,'
-      '    Core.Cost,'
+      '    Core.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
+        'ent/100)) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1079,6 +1089,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
         'sbc.CoreId = Core.CoreId'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
+        'irmCode) and (dop.ClientId = osbc.clientid)'
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
@@ -1102,7 +1115,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Note,'
-      '    Core.Cost,'
+      '    Core.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
+        'ent/100)) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1166,6 +1182,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
         'osbc.clientid = :clientid)'
+      
+        '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
+        'mCode) and (dop.ClientId = osbc.clientid)'
       
         '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
         'AND (OrdersHead.OrderId = osbc.OrderId)'
@@ -1427,6 +1446,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreColorIndex: TLargeintField
       FieldName = 'ColorIndex'
     end
+    object adsCoreRealCost: TFloatField
+      FieldName = 'RealCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1589,7 +1612,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Note,'
-      '    Core.Cost,'
+      '    Core.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
+        'ent/100)) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1652,6 +1678,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
         'osbc.clientid = :clientid)'
+      
+        '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
+        'mCode) and (dop.ClientId = osbc.clientid)'
       
         '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
         'AND (OrdersHead.OrderId = osbc.OrderId)'

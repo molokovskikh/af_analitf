@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=5
 MinorVer=0
-Release=113
-Build=857
+Release=114
+Build=859
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=5.0.113.857
+FileVersion=5.0.114.859
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2009
 LegalTrademarks=Инфорум
@@ -163,11 +163,11 @@ Item0=..\lib\MyDac\Source
 [HistoryLists\hlConditionals]
 Count=8
 Item0=USEMYSQLEMBEDDED
-Item1=DEBUG
-Item2=DEBUG,USEMYSQLEMBEDDED
-Item3=DEBUG;USEMYSQLEMBEDDED
-Item4=DSP,DEBUG;USEMYSQLEMBEDDED
-Item5=DSP,DEBUG;
+Item1=DSP,DEBUG;
+Item2=DEBUG
+Item3=DEBUG,USEMYSQLEMBEDDED
+Item4=DEBUG;USEMYSQLEMBEDDED
+Item5=DSP,DEBUG;USEMYSQLEMBEDDED
 Item6=DSP
 Item7=DSP,DEBUG
 [HistoryLists\hlUnitAliases]

@@ -190,6 +190,13 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         end
         item
           EditButtons = <>
+          FieldName = 'RealCost'
+          Footers = <>
+          Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+          Visible = False
+        end
+        item
+          EditButtons = <>
           FieldName = 'Cost'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -407,7 +414,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Note,'
-      '    Core.Cost,'
+      '    Core.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
+        'ent/100)) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -470,6 +480,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       
         '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
         'sbc.CoreId = Core.CoreId'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
+        'irmCode) and (dop.ClientId = osbc.clientid)'
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
@@ -490,7 +503,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Note,'
-      '    Core.Cost,'
+      '    Core.Cost as RealCost,'
+      
+        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
+        'ent/100)) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -557,11 +573,14 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       
         '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
         'sbc.CoreId = Core.CoreId'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
+        'irmCode) and (dop.ClientId = osbc.clientid)'
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (products.ProductId = :ProductId)'
       'and (Core.coreid is not null)'
-      'order by Core.Cost')
+      'order by Cost')
     BeforeUpdateExecute = adsCoreBeforeUpdateExecute
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsCoreBeforePost
@@ -772,6 +791,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
       Calculated = True
+    end
+    object adsCoreRealCost: TFloatField
+      FieldName = 'RealCost'
+      DisplayFormat = '0.00;;'#39#39
     end
   end
   object mdValues: TRxMemoryData

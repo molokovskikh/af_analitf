@@ -9,7 +9,8 @@ uses
   FIBQuery, ibase, U_TINFIBInputDelimitedStream, SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
-  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess;
+  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess,
+  DataIntegrityExceptions;
 
 const
   //Критические сообщения об ошибках при отправке заказов
@@ -52,7 +53,8 @@ TUpdateTable = (
   utCatFarmGroupsDEL,
   utCatalogNames,
   utProducts,
-  utUser);
+  utUser,
+  utDelayOfPayments);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -288,6 +290,9 @@ begin
         finally
           //DM.adcUpdate.OnExecuteError := nil;
         end;
+
+        DM.CheckDataIntegrity;
+
       	StatusText := 'Обновление завершено';
      	  Synchronize( SetStatus);
 			end;
@@ -354,6 +359,14 @@ begin
               'Информация об ошибке отправлена в AK Инфорум.'#13#10 +
               'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
           end;
+        end;
+        on E : EDelayOfPaymentsDataIntegrityException do begin
+          SendLetterWithTechInfo(
+            'Ошибка целостности базы данных в таблице отсрочек при импорте данных',
+            'У клиента возникла ошибка целостности базы данных в таблице отсрочек при импорте данных.');
+          StatusText := 'Обновление завершено';
+          Synchronize( SetStatus);
+          ImportComplete := True;
         end;
       end;
 
@@ -1264,6 +1277,7 @@ var
 	UpdateTables: TUpdateTables;
   deletedPriceCodes : TStringList;
   I : Integer;
+  MainClientIdAllowDelayOfPayment : Variant;
 begin
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
@@ -1303,6 +1317,7 @@ begin
 	if (GetFileSize(ExePath+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
 	if (GetFileSize(ExePath+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
   if (GetFileSize(ExePath+SDirIn+'\User.txt') > 0) then UpdateTables := UpdateTables + [utUser];
+  if (GetFileSize(ExePath+SDirIn+'\DelayOfPayments.txt') > 0) then UpdateTables := UpdateTables + [utDelayOfPayments];
 
 
     //обновляем таблицы
@@ -1312,6 +1327,7 @@ begin
     Catalog                 +       +       +
     Clients                 +       +       +
     User                    +       +          если получили таблицу User в обновлении, то тупо удаляем все и вставляем заново
+    DelayOfPayments         +       +       +
     Providers               +       +       +
     Core                    +       +
     Prices                  +       +       +
@@ -1345,6 +1361,11 @@ begin
 	  SQL.Text:='DELETE FROM RegionalData WHERE NOT Exists(SELECT FirmCode, RegionCode FROM tmpRegionalData WHERE FirmCode=RegionalData.FirmCode AND RegionCode=RegionalData.RegionCode);';
     InternalExecute;
 	end;
+
+  //Удаляем все настройки по отсрочкам, т.к. каждый раз они должны получаться полностью
+  SQL.Text:='DELETE FROM DelayOfPayments;';
+  InternalExecute;
+
   //todo: Providers почему здесь связь на utPricesRegionalData
 	//Providers
 	if utPricesRegionalData in UpdateTables then begin
@@ -1380,7 +1401,6 @@ begin
       deletedPriceCodes.Free;
     end;
 
-	  //SQL.Text:='update minprices set servercoreid = null, MinCost = null, PriceCode = null where not exists(select * from core c where c.servercoreid = minprices.servercoreid);';
 	  SQL.Text:='delete from minprices ;';
     InternalExecute;
 	end;
@@ -1390,7 +1410,7 @@ begin
 	end;
 	//Clients
 	if utClients in UpdateTables then begin
-	  SQL.Text:='DELETE FROM Clients WHERE NOT Exists(SELECT ClientId FROM tmpClients WHERE ClientId=Clients.ClientId);';
+    SQL.Text:='DELETE FROM Clients WHERE NOT Exists(SELECT ClientId FROM tmpClients WHERE ClientId=Clients.ClientId);';
     InternalExecute;
 	end;
 	//Regions
@@ -1503,6 +1523,10 @@ begin
     SQL.Text := GetLoadDataSQL('Providers', ExePath+SDirIn+'\Providers.txt', true);
     InternalExecute;
 	end;
+  if utDelayOfPayments in UpdateTables then begin
+    SQL.Text := GetLoadDataSQL('DelayOfPayments', ExePath+SDirIn+'\DelayOfPayments.txt', true);
+    InternalExecute;
+	end;
 	//RegionalData
 	if utRegionalData in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('RegionalData', ExePath+SDirIn+'\RegionalData.txt', true);
@@ -1552,27 +1576,54 @@ begin
 	SQL.Text := 'DELETE FROM Core WHERE SynonymCode<0;'; InternalExecute;
 	Progress := 50;
 	Synchronize( SetProgress);
-	//проставляем мин. цены и лидеров
-{
-	SQL.Text :=
-    'INSERT INTO MinPrices ( productid, RegionCode ) select     distinct c.productid, c.regioncode from core c ' +
-    'where c.Synonymcode > 0 and not exists(select * from minprices m where m.productid = c.productid and m.regioncode = c.regioncode);';
-}
-	SQL.Text := ''
-    + 'INSERT '
-    + 'INTO    MinPrices '
-    + '(ProductId, RegionCode, MinCost) '
-    + 'SELECT '
-    + '  ProductId, '
-    + '  RegionCode, '
-    + '  min(Cost) '
-    + 'FROM    Core '
-    + 'GROUP BY ProductId, RegionCode';
-{
-    + 'where '
-    + '  (PriceCode is not null) '
-}
-  InternalExecute;
+
+  {todo: подумать, а может быть цены с отсрочками рассчитывать при обновлении,
+  чтобы во время работы не переливать из пустого в порожнее}
+  //проставляем мин. цены и лидеров
+  if utMinPrices in UpdateTables then begin
+    //Пытаем получить код "основного" клиента
+    //Если не null, то для основного клиента включен механизм отсрочек
+    MainClientIdAllowDelayOfPayment := DM.QueryValue(''
+      +'select Clients.ClientId '
+      +'from   Clients, '
+      +'       Userinfo '
+      +'where  (Clients.CLIENTID = Userinfo.ClientId) '
+      +'   and (Clients.AllowDelayOfPayment = 1)',
+      [],
+      []);
+    if VarIsNull(MainClientIdAllowDelayOfPayment) then begin
+      SQL.Text := ''
+        + 'INSERT IGNORE '
+        + 'INTO    MinPrices '
+        + '(ProductId, RegionCode, MinCost) '
+        + 'SELECT '
+        + '  ProductId, '
+        + '  RegionCode, '
+        + '  min(Cost) '
+        + 'FROM    Core '
+        + 'GROUP BY ProductId, RegionCode';
+      InternalExecute;
+    end
+    else begin
+      SQL.Text := ''
+        + 'INSERT IGNORE '
+        + 'INTO    MinPrices '
+        + '(ProductId, RegionCode, MinCost) '
+        +'select   ProductId , '
+        +'         RegionCode, '
+        +'         min(Cost * (1 + Delayofpayments.Percent/100)) '
+        +'from     Core      , '
+        +'         Pricesdata, '
+        +'         Delayofpayments, '
+        +'         UserInfo '
+        +'where    (Pricesdata.PRICECODE     = Core.Pricecode) '
+        +'and      (Delayofpayments.FirmCode = pricesdata.Firmcode) '
+        +'and      (Delayofpayments.CLIENTID = UserInfo.ClientId) '
+        +'group by ProductId, '
+        +'         RegionCode';
+      InternalExecute;
+    end;
+  end;
   Progress := 60;
 	Synchronize( SetProgress);
 	TotalProgress := 75;
@@ -1634,58 +1685,50 @@ begin
 	//проставляем мин. цены и лидеров
 	if utMinPrices in UpdateTables then
 	begin
-    SQL.Text := ''
-      + 'UPDATE '
-      + '  MinPrices, '
-      + '  Core '
-      + 'SET '
-      + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
-      + '  MinPrices.PriceCode  = Core.PriceCode '
-      + 'WHERE '
-      + '    Core.ProductId  = MinPrices.ProductId '
-      + 'and Core.RegionCode = MinPrices.RegionCode '
-      + 'and Core.Cost       = MinPrices.MinCost';
-    InternalExecute;
-{
-    UpdateFromFileByParamsMySQL(ExePath+SDirIn+'\MinPrices.txt',
-''
-+'UPDATE minprices '
-+'SET    servercoreid = IF((servercoreid IS NULL) '
-+'    OR '
-+'       ( '
-+'              servermemoid IS NULL '
-+'       ) '
-+'       , ifnull(:servercoreid, servercoreid), IF((99999900 ^ servermemoid) >= (99999900 ^ ifnull(:servermemoid, servermemoid)), ifnull(:servercoreid, servercoreid), servercoreid ) ), '
-+'       servermemoid                                                         = IF((servercoreid IS NULL) '
-+'    OR '
-+'       ( '
-+'              servermemoid IS NULL '
-+'       ) '
-+'       , ifnull(:servermemoid, servermemoid), IF((99999900 ^ servermemoid) >= (99999900 ^ ifnull(:servermemoid, servermemoid)), ifnull(:servermemoid, servermemoid), servermemoid ) ) '
-+'WHERE  productid                                                            = :productid '
-+'   AND regioncode                                                           = :regioncode',
-     ['servercoreid', 'productid', 'regioncode', 'servermemoid'], True);
-}
-
-  {
-    UpdateFromFileByParams(ExePath+SDirIn+'\MinPrices.txt',
-      'update minprices set ' +
-        'servercoreid = '+
-          'case ' +
-            'when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servercoreid, servercoreid) ' +
-            'when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then coalesce(:servercoreid, servercoreid) ' +
-            'else servercoreid ' +
-          'end, ' +
-        'servermemoid = ' +
-          'case ' +
-            'when ((servercoreid is null) or (servermemoid is null)) then coalesce(:servermemoid, servermemoid) ' +
-            'when (bin_xor(99999900, servermemoid) >= bin_xor(99999900, coalesce(:servermemoid, servermemoid))) then coalesce(:servermemoid, servermemoid) ' +
-            'else servermemoid ' +
-          'end ' +
-      'where productid = :productid and regioncode = :regioncode',
-      ['servercoreid', 'productid', 'regioncode', 'servermemoid'],
-      False);
-}
+    //Пытаем получить код "основного" клиента
+    //Если не null, то для основного клиента включен механизм отсрочек
+    MainClientIdAllowDelayOfPayment := DM.QueryValue(''
+      +'select Clients.ClientId '
+      +'from   Clients, '
+      +'       Userinfo '
+      +'where  (Clients.CLIENTID = Userinfo.ClientId) '
+      +'   and (Clients.AllowDelayOfPayment = 1)',
+      [],
+      []);
+    if VarIsNull(MainClientIdAllowDelayOfPayment) then begin
+      SQL.Text := ''
+        + 'UPDATE '
+        + '  MinPrices, '
+        + '  Core '
+        + 'SET '
+        + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
+        + '  MinPrices.PriceCode  = Core.PriceCode '
+        + 'WHERE '
+        + '    Core.ProductId  = MinPrices.ProductId '
+        + 'and Core.RegionCode = MinPrices.RegionCode '
+        + 'and Core.Cost       = MinPrices.MinCost';
+      InternalExecute;
+    end
+    else begin
+      SQL.Text := ''
+        + 'UPDATE '
+        + '  MinPrices, '
+        + '  Core, '
+        + '  Pricesdata, '
+        + '  Delayofpayments, '
+        + '  UserInfo '
+        + 'SET '
+        + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
+        + '  MinPrices.PriceCode  = Core.PriceCode '
+        + 'WHERE '
+        + '    (Core.ProductId  = MinPrices.ProductId) '
+        + 'and (Core.RegionCode = MinPrices.RegionCode) '
+        + 'and (Pricesdata.PRICECODE     = Core.Pricecode) '
+        + 'and (Delayofpayments.FirmCode = pricesdata.Firmcode) '
+        + 'and (Delayofpayments.CLIENTID = UserInfo.ClientId) '
+        + 'and (cast((Core.Cost * (1 + Delayofpayments.Percent/100)) as decimal(18, 2)) = MinPrices.MinCost)';
+      InternalExecute;
+    end;
   end;
 
 	Progress := 90;

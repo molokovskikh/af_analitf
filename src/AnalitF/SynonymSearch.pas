@@ -195,6 +195,7 @@ type
     adsCoreColorIndex: TLargeintField;
     adsCoreByProducts: TMyQuery;
     adsCoreByFullcode: TMyQuery;
+    adsCoreRealCost: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);

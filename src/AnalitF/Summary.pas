@@ -132,6 +132,7 @@ type
     btnGotoCore: TButton;
     adsSummarySumOrder: TCurrencyField;
     adsSummaryOrdersHOrderId: TLargeintField;
+    adsSummaryRealCost: TFloatField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;

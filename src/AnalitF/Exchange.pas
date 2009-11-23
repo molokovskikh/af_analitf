@@ -533,6 +533,7 @@ var
       DM.adsRepareOrdersCODE.Value := DM.adsCoreRepareCODE.Value;
       DM.adsRepareOrdersCODECR.Value := DM.adsCoreRepareCODECR.Value;
       DM.adsRepareOrdersPRICE.Value := DM.adsCoreRepareCOST.Value;
+      DM.adsRepareOrdersRealPrice.Value := DM.adsCoreRepareRealCost.Value;
       DM.adsRepareOrdersCodeFirmCr.Value := DM.adsCoreRepareCodeFirmCr.Value;
     end;
 		DM.adsRepareOrders.Post;

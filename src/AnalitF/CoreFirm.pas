@@ -167,6 +167,7 @@ type
     adsCoreSumOrder: TFloatField;
     btnGotoCore: TButton;
     adsCoreWithLike: TMyQuery;
+    adsCoreRealCost: TFloatField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);

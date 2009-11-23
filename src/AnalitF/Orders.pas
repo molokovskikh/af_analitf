@@ -88,6 +88,7 @@ type
     gbMessageTo: TGroupBox;
     dbmMessageTo: TDBMemo;
     adsOrdersId: TLargeintField;
+    adsOrdersRealPrice: TFloatField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

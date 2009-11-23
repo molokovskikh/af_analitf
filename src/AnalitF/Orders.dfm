@@ -303,6 +303,13 @@ inherited OrdersForm: TOrdersForm
         end
         item
           EditButtons = <>
+          FieldName = 'RealPrice'
+          Footers = <>
+          Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+          Visible = False
+        end
+        item
+          EditButtons = <>
           FieldName = 'price'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -584,6 +591,7 @@ inherited OrdersForm: TOrdersForm
       '    OrdersList.await,'
       '    OrdersList.junk,'
       '    OrdersList.ordercount,'
+      '    OrdersList.RealPrice,'
       '    OrdersList.price,'
       '    core.requestratio,'
       '    core.ordercost,'
@@ -691,6 +699,10 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersId: TLargeintField
       FieldName = 'Id'
+    end
+    object adsOrdersRealPrice: TFloatField
+      FieldName = 'RealPrice'
+      DisplayFormat = '0.00;;'#39#39
     end
   end
 end

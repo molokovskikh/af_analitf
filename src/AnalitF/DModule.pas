@@ -14,7 +14,7 @@ uses
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
-  MyDump, MySqlApi, DAScript, MyScript;
+  MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions;
 
 {
 Криптование
@@ -453,6 +453,8 @@ type
     adsPrintOrderHeader: TMyQuery;
     adsRepareOrdersCodeFirmCr: TLargeintField;
     adcTemporaryTable: TMyQuery;
+    adsRepareOrdersRealPrice: TFloatField;
+    adsCoreRepareRealCost: TFloatField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -620,6 +622,7 @@ type
     property MainConnection : TCustomMyConnection read GetMainConnection;
     //произвести вставку заголовка заказа, чтобы потом обновить кол-во при заказе позиции
     procedure InsertOrderHeader(orderDataSet : TCustomMyDataSet);
+    procedure CheckDataIntegrity;
   end;
 
 var
@@ -4343,18 +4346,25 @@ begin
 +'              ORDERID          , CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, '
 +'              SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, '
 +'              PRICE            , AWAIT, JUNK, ORDERCOUNT, REQUESTRATIO, '
-+'              ORDERCOST        , MINORDERCOUNT '
++'              ORDERCOST        , MINORDERCOUNT, RealPrice '
 +'       ) '
 +'select :ORDERID     , :CLIENTID, c.COREID, c.PRODUCTID, c.CODEFIRMCR, '
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
 +'       (s.SynonymName, concat(catalogs.name, '' '', catalogs.form)) as '
-+'       SynonymName   , sf.synonymname, c.cost, c.AWAIT, c.JUNK, 0, '
-+'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT '
++'       SynonymName   , sf.synonymname, '
++'       if(dop.Percent is null, c.Cost, c.Cost * (1 + dop.Percent/100)), '
++'       c.AWAIT, c.JUNK, 0, '
++'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT, c.cost '
 +'from   core c '
-+'       left join products p '
++'       inner join pricesdata pd '
++'       on     pd.PriceCode = c.PriceCode '
++'       inner join products p '
 +'       on     p.productid = c.productid '
-+'       left join catalogs '
++'       inner join catalogs '
 +'       on     catalogs.fullcode = p.catalogid '
++'       left join DelayOfPayments dop '
++'       on     dop.FirmCode = pd.FirmCode '
++'          and dop.ClientId = :ClientId '
 +'       left join synonyms s '
 +'       on     s.synonymcode = c.synonymcode '
 +'       left join synonymfirmcr sf '
@@ -4369,6 +4379,105 @@ begin
     end;
     orderDataSet.FieldByName('ORDERSORDERID').Value := OrderId;
   end;
+end;
+
+procedure TDM.CheckDataIntegrity;
+var
+  RaiseException : Boolean;
+  ErrorMessage : TStringList;
+begin
+  RaiseException := False;
+
+  adsQueryValue.Close;
+
+  adsQueryValue.SQL.Text := ''
+  +'select clients.ClientId             , '
+  +'       clients.Name                 , '
+  +'       providers.FirmCode           , '
+  +'       providers.FullName           , '
+  +'       dop.FirmCode as DelayFirmCode, '
+  +'       dop.Percent '
+  +'from   ( clients, providers ) '
+  +'       left join delayofpayments dop '
+  +'       on     (dop.ClientId         = clients.ClientId) '
+  +'       and    (dop.FirmCode         = providers.FirmCode) '
+  +'where  (clients.AllowDelayOfPayment = 1) '
+  +'and    ((dop.FirmCode         is null) '
+  +'       or     (dop.Percent    is null))';
+  
+  adsQueryValue.Open;
+  try
+    if not adsQueryValue.IsEmpty then begin
+      RaiseException := True;
+      ErrorMessage := TStringList.Create;
+      try
+        while not adsQueryValue.Eof do begin
+          if adsQueryValue.FieldByName('DelayFirmCode').IsNull then
+            ErrorMessage.Add(
+              Format(
+                'Клиент: %s (%s)  Поставщик: %s (%s)  Причина: %s',
+                [adsQueryValue.FieldByName('Name').Value,
+                 adsQueryValue.FieldByName('ClientId').Value,
+                 adsQueryValue.FieldByName('FullName').Value,
+                 adsQueryValue.FieldByName('FirmCode').Value,
+                 'Нет записи в таблице отсрочек, хотя механизм отсрочек включен']))
+          else
+            if    not adsQueryValue.FieldByName('DelayFirmCode').IsNull
+              and adsQueryValue.FieldByName('Percent').IsNull
+            then
+              ErrorMessage.Add(
+                Format(
+                  'Клиент: %s (%d)  Поставщик: %s (%d)  Причина: %s',
+                  [adsQueryValue.FieldByName('Name').Value,
+                   adsQueryValue.FieldByName('ClientId').Value,
+                   adsQueryValue.FieldByName('FullName').Value,
+                   adsQueryValue.FieldByName('FirmCode').Value,
+                   'Не установлена отсрочка (null), хотя  запись в таблице отсрочек есть']));
+          adsQueryValue.Next;
+        end;
+        ErrorMessage.Insert(
+          0,
+          'Нарушение целостности данных в таблице отсрочек по следующим записям:');
+        WriteExchangeLog('Exchange', ErrorMessage.Text);
+      finally
+        ErrorMessage.Free;
+      end;
+    end;
+  finally
+    adsQueryValue.Close;
+  end;
+
+  //Добавляем отсрочки по всем остальным поставщиками и клиентам,
+  //у которых нет записей в DelayOfPayments
+  adsQueryValue.SQL.Text := ''
+  +'insert '
+  +'into   Delayofpayments ' 
+  +'       ( ' 
+  +'              ClientId, ' 
+  +'              FirmCode, ' 
+  +'              Percent ' 
+  +'       ) ' 
+  +'select clients.ClientId  , ' 
+  +'       providers.FirmCode, ' 
+  +'       if(clients.AllowDelayOfPayment = 1, 0.0, null) ' 
+  +'from   ( clients, providers ) ' 
+  +'       left join delayofpayments dop ' 
+  +'       on     (dop.ClientId = clients.ClientId) ' 
+  +'       and    (dop.FirmCode = providers.FirmCode) ' 
+  +'where  (dop.FirmCode  is null)';
+  adsQueryValue.Execute;
+
+  //Обновляем значение Percent: если механизм не включен, то null,
+  //иначе должно быть значение, если оно не установлено, то 0.0 
+  adsQueryValue.SQL.Text := ''
+  +'update clients, '
+  +'       delayofpayments dop '
+  +'set    dop.Percent   = if(clients.AllowDelayOfPayment = 0, null, IFNULL(dop.Percent, 0.0)) '
+  +'where  (dop.ClientId = clients.ClientId)';
+  adsQueryValue.Execute;
+
+  if RaiseException then
+    raise EDelayOfPaymentsDataIntegrityException.Create('Нарушение целостности в отсрочках');
 end;
 
 initialization
