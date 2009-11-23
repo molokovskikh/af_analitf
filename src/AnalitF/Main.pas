@@ -235,7 +235,8 @@ uses
 	Defectives, Registers, Summary, OrdersH,
 	Exchange, Expireds, Core, UniqueID, CoreFirm,
 	AlphaUtils, About, CompactThread, LU_Tracer,
-  SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog;
+  SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
+  Variants;
 
 {$R *.DFM}
 
@@ -660,11 +661,15 @@ end;
 
 procedure TMainForm.SetOrdersInfo;
 var
-  UserId : String;
+  UserId : Variant;
 begin
   UserId := DM.QueryValue('select UserId from UserInfo', [], []);
-  StatusBar.Panels[ 4].Text := 'ИД : ' + UserId + '  '
-    + ApplicationVersionText;
+  if VarIsNull(UserId) then
+    StatusBar.Panels[ 4].Text := 'ИД : не установлен  '
+      + ApplicationVersionText
+  else
+    StatusBar.Panels[ 4].Text := 'ИД : ' + UserId + '  '
+      + ApplicationVersionText;
   if DM.adsQueryValue.Active then
   	DM.adsQueryValue.Close;
 	DM.adsQueryValue.SQL.Text := ''

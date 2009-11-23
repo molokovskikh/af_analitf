@@ -4,187 +4,6 @@
 /*!40101 SET NAMES cp1251 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 -- 
--- StoredProc  CATALOGSHOWBYFORM
--- 
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS CATALOGSHOWBYFORM $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CATALOGSHOWBYFORM`(
-    ashortcode bigint,
-    showall tinyint(1))
-BEGIN
-  if (showall = 1) then
-    SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists
-    FROM CATALOGS
-    WHERE CATALOGS.ShortCode = AShortCode
-    order by CATALOGS.Form;
-  else
-    SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists
-    FROM CATALOGS
-    WHERE CATALOGS.ShortCode= AShortCode
-      and catalogs.coreexists = 1
-    order by CATALOGS.Form;
-  end if;
-END $$
-DELIMITER ;
-
-
--- 
--- StoredProc  CATALOGSHOWBYNAME
--- 
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS CATALOGSHOWBYNAME $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CATALOGSHOWBYNAME`(IN showall TINYINT(1))
-BEGIN
-  if (showall = 1) then 
-      SELECT
-        cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) as CoreExists
-      FROM CATALOGS cat
-      group by cat.ShortCode, cat.Name
-      ORDER BY cat.Name;
-  else 
-      SELECT
-        cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) as CoreExists
-      FROM CATALOGS cat
-      where
-        CoreExists = 1
-      group by cat.ShortCode, cat.Name
-      ORDER BY cat.Name;
-  end if;  
-END $$
-DELIMITER ;
-
-
--- 
--- StoredProc  DeleteOrder
--- 
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS DeleteOrder $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `DeleteOrder`(IN aorderid BIGINT)
-BEGIN
-  delete from Ordershead where OrderId = aorderid;
-  delete from OrdersList where OrderId = aorderid;
-END $$
-DELIMITER ;
-
-
--- 
--- StoredProc  UPDATEORDERCOUNT
--- 
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS UPDATEORDERCOUNT $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `UPDATEORDERCOUNT`(IN aorderid BIGINT, IN aclientid BIGINT, IN apricecode BIGINT, IN aregioncode BIGINT, IN aordersorderid BIGINT, IN acoreid BIGINT, IN aordercount INTEGER)
-BEGIN
-  if (aorderid is null) then
-    SELECT ORDERID 
-    FROM OrdersHead 
-    WHERE ClientId = AClientId 
-      AND PriceCode = APriceCode 
-      AND RegionCode = ARegionCode 
-      AND Closed  <> 1
-    into aorderid;
-
-    if (aorderid is null) then 
-      insert into OrdersHead (ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate)
-        select aClientId, aPriceCode, aRegionCode, pd.PriceName, r.RegionName, current_timestamp()
-        from
-          pricesdata pd,
-          pricesregionaldata prd,
-          regions r
-        where
-          pd.pricecode = apricecode
-          and prd.pricecode = pd.pricecode
-          and r.regioncode = prd.regioncode
-          and r.regioncode = aregioncode;
-      select last_insert_id() into aorderid;
-    end if;
-  end if;
-
-  if (aordersorderid is null ) then
-    select orderid from OrdersList where coreid = acoreid and orderid = aorderid into aordersorderid;
-    if (aordersorderid is null) then
-      INSERT INTO OrdersList(ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR,
-               SYNONYMCODE, SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME,
-               SYNONYMFIRM, PRICE, AWAIT, JUNK, ORDERCOUNT,
-               REQUESTRATIO, ORDERCOST, MINORDERCOUNT )
-        select aORDERID, aCLIENTID, aCOREID, c.PRODUCTID, c.CODEFIRMCR,
-               c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR,
-               ifnull(s.SynonymName, concat(catalogs.name, ' ', catalogs.form)) as SynonymName,
-               sf.synonymname, c.cost, c.AWAIT, c.JUNK, aORDERCOUNT,
-               c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT
-        from
-          core c
-          left join products p on p.productid = c.productid
-          left join catalogs on catalogs.fullcode = p.catalogid
-          left join synonyms s on s.synonymcode = c.synonymcode
-          left join synonymfirmcr sf on sf.synonymfirmcrcode = c.synonymfirmcrcode
-        where
-          c.coreid = acoreid;
-    else 
-      update OrdersList set ordercount = aordercount where orderid = aordersorderid and coreid = acoreid;
-    end if;
-  else 
-    update OrdersList set ordercount = aordercount where orderid = aordersorderid and coreid = acoreid;
-  end if;
-
-END $$
-DELIMITER ;
-
-
--- 
--- StoredProc  UPDATEUPCOST
--- 
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS UPDATEUPCOST $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `UPDATEUPCOST`(IN inPricecode BIGINT, IN inRegioncode BIGINT, IN ainjob INTEGER)
-BEGIN
-  declare uppricecode bigint;
-  update pricesregionaldata set
-    INJOB = ainjob
-  where
-    PriceCode = inPricecode
-    and RegionCode = inRegioncode;
-  select
-    pricecode
-  from pricesregionaldataup
-  where
-      PriceCode = inPricecode
-    and RegionCode = inRegioncode
-  into UPPRICECODE;
-  if (UPPRICECODE is null) then
-    insert into pricesregionaldataup values (inPricecode, inRegioncode);
-  end if;
-END $$
-DELIMITER ;
-
-
--- 
--- StoredProc  x_cast_to_int10
--- 
-
-DELIMITER $$
-DROP FUNCTION IF EXISTS x_cast_to_int10 $$
-CREATE DEFINER=`root`@`localhost` FUNCTION `x_cast_to_int10`(number bigint) RETURNS int(10)
-BEGIN    return number;END $$
-DELIMITER ;
-
-
--- 
--- StoredProc  x_cast_to_tinyint
--- 
-
-DELIMITER $$
-DROP FUNCTION IF EXISTS x_cast_to_tinyint $$
-CREATE DEFINER=`root`@`localhost` FUNCTION `x_cast_to_tinyint`(number BIGINT) RETURNS tinyint(1)
-BEGIN    return number;END $$
-DELIMITER ;
-
-
--- 
 -- Table structure for table  catalogfarmgroups
 -- 
 
@@ -252,6 +71,7 @@ CREATE TABLE `clients` (
   `MAXUSERS` int(10) NOT NULL,
   `REQMASK` bigint(20) DEFAULT NULL,
   `CALCULATELEADER` tinyint(1) NOT NULL,
+  `AllowDelayOfPayment` tinyint(1) NOT NULL,
   `ONLYLEADERS` tinyint(1) NOT NULL,
   PRIMARY KEY (`CLIENTID`),
   UNIQUE KEY `PK_CLIENTS` (`CLIENTID`),
@@ -319,6 +139,19 @@ CREATE TABLE `defectives` (
   `CHECKPRINT` tinyint(1) NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_DEFECTIVES` (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+
+
+-- 
+-- Table structure for table  delayofpayments
+-- 
+
+DROP TABLE IF EXISTS delayofpayments;
+CREATE TABLE `delayofpayments` (
+  `ClientId` bigint(20) NOT NULL,
+  `FirmCode` bigint(20) NOT NULL,
+  `Percent` decimal(18,2) DEFAULT NULL,
+  PRIMARY KEY (`ClientId`,`FirmCode`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 
@@ -393,6 +226,7 @@ CREATE TABLE `orderslist` (
   `REQUESTRATIO` int(10) DEFAULT NULL,
   `ORDERCOST` decimal(18,2) DEFAULT NULL,
   `MINORDERCOUNT` int(10) DEFAULT NULL,
+  `RealPrice` decimal(18,2) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_ORDERS` (`ID`),
   KEY `FK_ORDERS_CLIENTID` (`CLIENTID`),
@@ -724,22 +558,6 @@ CREATE TABLE `userinfo` (
   `UserId` bigint(20) NOT NULL,
   `Addition` varchar(50) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
-
-
--- 
--- Table structure for table  clientavg
--- 
-
-DROP VIEW IF EXISTS clientavg;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `clientavg` AS select `ordershead`.`CLIENTID` AS `CLIENTCODE`,`orderslist`.`PRODUCTID` AS `PRODUCTID`,avg(`orderslist`.`PRICE`) AS `PRICEAVG` from (`ordershead` join `orderslist`) where ((`orderslist`.`ORDERID` = `ordershead`.`ORDERID`) and (`ordershead`.`ORDERDATE` >= (curdate() - interval 1 month)) and (`ordershead`.`CLOSED` = 1) and (`ordershead`.`SEND` = 1) and (`orderslist`.`ORDERCOUNT` > 0) and (`orderslist`.`PRICE` is not null)) group by `ordershead`.`CLIENTID`,`orderslist`.`PRODUCTID`;
-
-
--- 
--- Table structure for table  pricesshow
--- 
-
-DROP VIEW IF EXISTS pricesshow;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `pricesshow` AS select `pd`.`PRICECODE` AS `PriceCode`,`pd`.`PRICENAME` AS `PriceName`,`pd`.`DATEPRICE` AS `UniversalDatePrice`,`prd`.`MINREQ` AS `MinReq`,`prd`.`ENABLED` AS `Enabled`,`pd`.`PRICEINFO` AS `PriceInfo`,`cd`.`FIRMCODE` AS `FirmCode`,`cd`.`FULLNAME` AS `FullName`,`prd`.`STORAGE` AS `Storage`,`cd`.`MANAGERMAIL` AS `ManagerMail`,`rd`.`SUPPORTPHONE` AS `SupportPhone`,`rd`.`CONTACTINFO` AS `ContactInfo`,`rd`.`OPERATIVEINFO` AS `OperativeInfo`,`r`.`REGIONCODE` AS `RegionCode`,`r`.`REGIONNAME` AS `RegionName`,`prd`.`PRICESIZE` AS `pricesize`,`prd`.`INJOB` AS `INJOB`,`prd`.`CONTROLMINREQ` AS `CONTROLMINREQ` from ((((`pricesdata` `pd` join `pricesregionaldata` `prd` on((`pd`.`PRICECODE` = `prd`.`PRICECODE`))) join `regions` `r` on((`prd`.`REGIONCODE` = `r`.`REGIONCODE`))) join `providers` `cd` on((`cd`.`FIRMCODE` = `pd`.`FIRMCODE`))) join `regionaldata` `rd` on(((`rd`.`REGIONCODE` = `prd`.`REGIONCODE`) and (`rd`.`FIRMCODE` = `cd`.`FIRMCODE`))));
 
 
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
