@@ -171,6 +171,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure AppEventsMessage(var Msg: tagMSG; var Handled: Boolean);
 private
 	JustRun: boolean;
+  ApplicationVersionText : String;
 
 	procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
@@ -284,7 +285,8 @@ begin
   Application.OnException := OnMainAppEx;
 	ExchangeOnly := False;
 	Caption := Application.Title;
-	StatusBar.Panels[ 4].Text := '(версия ' + GetLibraryVersionFromPath(Application.ExeName) + ')      ';
+  ApplicationVersionText := '(версия ' + GetLibraryVersionFromPath(Application.ExeName) + ')      ';
+	StatusBar.Panels[ 4].Text := ApplicationVersionText;
 	RegionFilterIndex := 0;
 	EnableFilterIndex := 0;
 	JustRun := True;
@@ -657,7 +659,12 @@ begin
 end;
 
 procedure TMainForm.SetOrdersInfo;
+var
+  UserId : String;
 begin
+  UserId := DM.QueryValue('select UserId from UserInfo', [], []);
+  StatusBar.Panels[ 4].Text := 'ИД : ' + UserId + '  '
+    + ApplicationVersionText;
   if DM.adsQueryValue.Active then
   	DM.adsQueryValue.Close;
 	DM.adsQueryValue.SQL.Text := ''
