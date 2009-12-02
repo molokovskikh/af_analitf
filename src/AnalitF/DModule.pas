@@ -951,8 +951,8 @@ begin
   MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
 {$endif}
 
-  SerBeg := '8F24';
-  SerEnd := 'BB48';
+  SerBeg := 'Prg';
+  SerEnd := 'Data';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
