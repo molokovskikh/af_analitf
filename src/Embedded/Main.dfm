@@ -196,7 +196,9 @@ object fmMain: TfmMain
   object MyConnection: TMyEmbConnection
     Params.Strings = (
       '--basedir=.'
-      '--datadir=data')
+      '--datadir=data'
+      '--character_set_server=cp1251'
+      '--character_set_filesystem=cp1251')
     OnLog = MyConnectionLog
     OnLogError = MyConnectionLog
     Username = 'root'

@@ -668,7 +668,7 @@ begin
     StatusBar.Panels[ 4].Text := 'ИД : не установлен  '
       + ApplicationVersionText
   else
-    StatusBar.Panels[ 4].Text := 'ИД : ' + UserId + '  '
+    StatusBar.Panels[ 4].Text := 'ИД : ' + VarToStr(UserId) + '  '
       + ApplicationVersionText;
   if DM.adsQueryValue.Active then
   	DM.adsQueryValue.Close;

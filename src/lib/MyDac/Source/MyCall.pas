@@ -145,6 +145,7 @@ const
 const
   packet_error: longword        = $FFFFFFFF;
 
+{$ifndef USEMEMORYCRYPTDLL}
   MYSQL_TYPE_DECIMAL            = 0;
   MYSQL_TYPE_TINY               = 1;
   MYSQL_TYPE_SHORT              = 2;
@@ -176,6 +177,46 @@ const
 type
   TMySqlFieldType = MYSQL_TYPE_DECIMAL..MYSQL_TYPE_GEOMETRY; // enum_field_types
   
+{$else}
+  MYSQL_TYPE_DECIMAL            = 5;
+  MYSQL_TYPE_TINY               = 12;
+  MYSQL_TYPE_SHORT              = 44;
+  MYSQL_TYPE_LONG               = 2;
+  MYSQL_TYPE_FLOAT              = 31;
+  MYSQL_TYPE_DOUBLE             = 52;
+  MYSQL_TYPE_NULL               = 66;
+  MYSQL_TYPE_TIMESTAMP          = 77;
+  MYSQL_TYPE_LONGLONG           = 75;
+  MYSQL_TYPE_INT24              = 41;
+  MYSQL_TYPE_DATE               = 11;
+  MYSQL_TYPE_TIME               = 55;
+  MYSQL_TYPE_DATETIME           = 78;
+  MYSQL_TYPE_YEAR               = 99;
+  MYSQL_TYPE_NEWDATE            = 36;
+  MYSQL_TYPE_VARCHAR            = 1;
+  MYSQL_TYPE_BIT                = 62;
+  MYSQL_TYPE_NEWDECIMAL         = 250;
+  MYSQL_TYPE_ENUM               = 248;
+  MYSQL_TYPE_SET                = 247;
+  MYSQL_TYPE_TINY_BLOB          = 249;
+  MYSQL_TYPE_MEDIUM_BLOB        = 246;
+  MYSQL_TYPE_LONG_BLOB          = 251;
+  MYSQL_TYPE_BLOB               = 253;
+  MYSQL_TYPE_VAR_STRING         = 252;
+  MYSQL_TYPE_STRING             = 255;
+  MYSQL_TYPE_GEOMETRY           = 254;
+
+type
+  {
+   раньше MYSQL_TYPE_DECIMAL имел значение 0, а теперь у него другое значение,
+   поэтому TMySqlFieldType указывает некорректный период, если его описать так:
+  TMySqlFieldType = MYSQL_TYPE_DECIMAL..MYSQL_TYPE_GEOMETRY; // enum_field_types,
+  поэтому мы его опишем вот так:
+  TMySqlFieldType = 0..MYSQL_TYPE_GEOMETRY; // enum_field_types
+  }
+  TMySqlFieldType = 0..255; // enum_field_types
+{$endif}
+
 const
   FIELD_TYPE_DECIMAL            = MYSQL_TYPE_DECIMAL;
   FIELD_TYPE_TINY               = MYSQL_TYPE_TINY;

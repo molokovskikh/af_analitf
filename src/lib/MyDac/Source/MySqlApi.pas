@@ -30,6 +30,9 @@ uses
 {$IFDEF VER6P}
   Types,
 {$ENDIF}
+{$ifdef USEMEMORYCRYPTDLL}
+  MDLHelper,
+{$endif}
   SysUtils, Classes, MemUtils;
 
 type
@@ -431,6 +434,13 @@ type
 {$ENDIF}
 
   TMySQLAPIEmbedded = class(TMySQLAPIClient)
+{$ifdef USEMEMORYCRYPTDLL}
+  private
+    MDLHelper : TMDLHelper;
+    MemoryLib : TMemoryStream;
+    procedure InternalLoadMySqlLib;
+    procedure InternalFreeMySqlLib;
+{$endif}
   protected
     FParams: TStrings;
     FCurrentParams: string;
@@ -612,6 +622,9 @@ uses
 {$IFDEF WIN32}
   {$IFNDEF FPC}TlHelp32, ImageHlp,{$ELSE}{JwaTlHelp32,}{$ENDIF} DB,
 {$ENDIF}
+{$ifdef USEMEMORYCRYPTDLL}
+  INFHelpers,
+{$endif}
   IniFiles, SysConst, DAConsts, MemData,
 {$IFNDEF UNIDACPRO}
   MyConsts, MyClasses;
@@ -2758,6 +2771,10 @@ end;
 constructor TMySQLAPIEmbedded.Create;
 begin
   inherited;
+{$ifdef USEMEMORYCRYPTDLL}
+  MDLHelper := nil;
+  MemoryLib := GetEncryptedMemoryStream();
+{$endif}  
   FParams := TStringList.Create;
 {$IFDEF EMBLOG}
   FListOnLog := TDAList.Create;
@@ -2774,6 +2791,10 @@ begin
   FParams.Free;
   FClientsCount := 0;
   inherited;
+{$ifdef USEMEMORYCRYPTDLL}
+  if Assigned(MemoryLib) then
+    FreeAndNil(MemoryLib);
+{$endif}    
 end;
 
 procedure TMySQLAPIEmbedded.SetParams(Value: TStrings);
@@ -3168,6 +3189,11 @@ begin
 
   inherited;
 
+{$ifdef USEMEMORYCRYPTDLL}
+  //Попытаемся загрузить библиотеку
+  InternalLoadMySqlLib;
+{$endif}  
+
   if LoadedMySQLLib then begin
     Inc(FClientsCount);
     try
@@ -3338,6 +3364,10 @@ begin
   {$ENDIF}
     FCurrentParams := '';
   end;
+
+{$ifdef USEMEMORYCRYPTDLL}
+  InternalFreeMySqlLib;
+{$endif}  
 
   inherited;
 end;
@@ -3626,6 +3656,133 @@ begin
 end;
 
 {$ENDIF}
+
+{$ifdef USEMEMORYCRYPTDLL}
+procedure TMySQLAPIEmbedded.InternalFreeMySqlLib;
+begin
+  if LoadedMySQLLib then begin
+    if Assigned(MDLHelper) then
+      FreeAndNil(MDLHelper);
+  end;
+end;
+
+procedure TMySQLAPIEmbedded.InternalLoadMySqlLib;
+{$IFNDEF CLR}
+  procedure AssignProc(var Proc: pointer; const Name: string);
+  begin
+  {$IFDEF MSWINDOWS}
+    Proc := MDLHelper.GetFDProcAddress(PChar(Name));
+  {$ELSE}
+    Proc := dlsym(hMySQLLib, PChar(Name));
+  {$ENDIF}
+    if Proc = nil then begin
+      Proc := GetNotLinkProc;
+    end;
+  end;
+{$ENDIF}
+begin
+  if LoadedMySQLLib then begin
+    if Assigned(MDLHelper) then
+      FreeAndNil(MDLHelper);
+    MDLHelper := TMDLHelper.Create();
+    MDLHelper.ShowErrors := True;
+    MDLHelper.InjectDll(MemoryLib.Memory, True);
+
+{$IFNDEF CLR}
+    //AssignProc(@dll_mysql_num_rows, 'mysql_num_rows');
+    AssignProc(@Client_mysql_num_fields, 'mysql_num_fields');
+    //AssignProc(@Client_mysql_eof, 'mysql_eof');
+    AssignProc(@Client_mysql_fetch_field_direct, 'mysql_fetch_field_direct');
+    //AssignProc(@Client_mysql_fetch_fields, 'mysql_fetch_fields');
+    //AssignProc(@Client_mysql_row_tell, 'mysql_row_tell');
+    //AssignProc(@Client_mysql_field_tell, 'mysql_field_tell');
+    AssignProc(@Client_mysql_field_count, 'mysql_field_count');
+    AssignProc(@Client_mysql_affected_rows, 'mysql_affected_rows');
+    AssignProc(@Client_mysql_insert_id, 'mysql_insert_id');
+    AssignProc(@Client_mysql_errno, 'mysql_errno');
+    AssignProc(@Client_mysql_error, 'mysql_error');
+    AssignProc(@Client_mysql_info, 'mysql_info');
+    AssignProc(@Client_mysql_thread_id, 'mysql_thread_id');
+    AssignProc(@Client_mysql_character_set_name, 'mysql_character_set_name');
+    AssignProc(@Client_mysql_init, 'mysql_init');
+  {$IFDEF HAVE_OPENSSL}
+    AssignProc(@Client_mysql_ssl_set, 'mysql_ssl_set');
+  {$ENDIF} // HAVE_OPENSSL
+    //AssignProc(@Client_mysql_connect, 'mysql_connect');
+    //AssignProc(@Client_mysql_change_user, 'mysql_change_user');
+    AssignProc(@Client_mysql_real_connect, 'mysql_real_connect');
+    AssignProc(@Client_mysql_close, 'mysql_close');
+    AssignProc(@Client_mysql_select_db, 'mysql_select_db');
+    //AssignProc(@Client_mysql_query, 'mysql_query');
+    //AssignProc(@Client_mysql_send_query, 'mysql_send_query');
+    //AssignProc(@Client_mysql_read_query_result, 'mysql_read_query_result');
+    AssignProc(@Client_mysql_real_query, 'mysql_real_query');
+    //AssignProc(@Client_mysql_create_db, 'mysql_create_db');
+    //AssignProc(@Client_mysql_drop_db, 'mysql_drop_db');
+    //AssignProc(@Client_mysql_shutdown, 'mysql_shutdown');
+    //AssignProc(@Client_mysql_dump_debug_info, 'mysql_dump_debug_info');
+    //AssignProc(@Client_mysql_refresh, 'mysql_refresh');
+    AssignProc(@Client_mysql_kill, 'mysql_kill');
+    AssignProc(@Client_mysql_ping, 'mysql_ping');
+    //AssignProc(@Client_mysql_stat, 'mysql_stat');
+    AssignProc(@Client_mysql_get_server_info, 'mysql_get_server_info');
+    AssignProc(@Client_mysql_get_client_info, 'mysql_get_client_info');
+    AssignProc(@Client_mysql_get_host_info, 'mysql_get_host_info');
+    //AssignProc(@Client_mysql_get_proto_info, 'mysql_get_proto_info');
+    //AssignProc(@Client_mysql_list_dbs, 'mysql_list_dbs');
+    //AssignProc(@Client_mysql_list_tables, 'mysql_list_tables');
+    //AssignProc(@Client_mysql_list_fields, 'mysql_list_fields');
+    //AssignProc(@Client_mysql_list_processes, 'mysql_list_processes');
+    //AssignProc(@Client_mysql_store_result, 'mysql_store_result');
+    AssignProc(@Client_mysql_use_result, 'mysql_use_result');
+    AssignProc(@Client_mysql_options, 'mysql_options');
+    AssignProc(@Client_mysql_free_result, 'mysql_free_result');
+    //AssignProc(@Client_mysql_data_seek, 'mysql_data_seek');
+    //AssignProc(@Client_mysql_row_seek, 'mysql_row_seek');
+    //AssignProc(@Client_mysql_field_seek, 'mysql_field_seek');
+    AssignProc(@Client_mysql_fetch_row, 'mysql_fetch_row');
+    AssignProc(@Client_mysql_fetch_lengths, 'mysql_fetch_lengths');
+    //AssignProc(@Client_mysql_fetch_field, 'mysql_fetch_field');
+    //AssignProc(@Client_mysql_escape_string, 'mysql_escape_string');
+    //AssignProc(@Client_mysql_real_escape_string, 'mysql_real_escape_string');
+    //AssignProc(@Client_mysql_debug, 'mysql_debug');
+    //AssignProc(@Client_mysql_odbc_escape_string, 'mysql_odbc_escape_string');
+    //AssignProc(@myodbc_remove_escape, 'myodbc_remove_escape');
+    //AssignProc(@Client_mysql_thread_safe, 'mysql_thread_safe');
+
+    AssignProc(@Client_mysql_server_init, 'mysql_server_init');
+    AssignProc(@Client_mysql_server_end, 'mysql_server_end');
+
+  // C API Prepared Statements functions
+    AssignProc(@Client_mysql_stmt_init, 'mysql_stmt_init');
+    AssignProc(@Client_mysql_stmt_prepare, 'mysql_stmt_prepare');
+    AssignProc(@Client_mysql_stmt_execute, 'mysql_stmt_execute');
+    AssignProc(@Client_mysql_stmt_param_count, 'mysql_stmt_param_count');
+    AssignProc(@Client_mysql_stmt_bind_param, 'mysql_stmt_bind_param');
+    AssignProc(@Client_mysql_stmt_bind_result, 'mysql_stmt_bind_result');
+    AssignProc(@Client_mysql_stmt_field_count, 'mysql_stmt_field_count');
+    AssignProc(@Client_mysql_stmt_close, 'mysql_stmt_close');
+    AssignProc(@Client_mysql_stmt_free_result, 'mysql_stmt_free_result');
+    AssignProc(@Client_mysql_stmt_errno, 'mysql_stmt_errno');
+    AssignProc(@Client_mysql_stmt_error, 'mysql_stmt_error');
+    //AssignProc(@Client_mysql_commit, 'mysql_commit');
+    //AssignProc(@Client_mysql_rollback, 'mysql_rollback');
+    //AssignProc(@Client_mysql_autocommit, 'mysql_autocommit');
+    AssignProc(@Client_mysql_fetch, 'mysql_stmt_fetch');
+    AssignProc(@Client_mysql_fetch_column, 'mysql_stmt_fetch_column');
+    AssignProc(@Client_mysql_stmt_send_long_data, 'mysql_stmt_send_long_data');
+    AssignProc(@Client_mysql_stmt_prepare_result, 'mysql_stmt_prepare_result');
+    AssignProc(@Client_mysql_stmt_result_metadata, 'mysql_stmt_result_metadata');
+    AssignProc(@Client_mysql_stmt_param_metadata, 'mysql_stmt_param_metadata');
+    AssignProc(@Client_mysql_stmt_affected_rows, 'mysql_stmt_affected_rows');
+    AssignProc(@Client_mysql_stmt_store_result, 'mysql_stmt_store_result');
+    AssignProc(@Client_mysql_more_results, 'mysql_more_results');
+    AssignProc(@Client_mysql_next_result, 'mysql_next_result');
+{$ENDIF}
+
+  end
+end;
+{$endif}
 
 initialization
   MyAPIClient := TMySQLAPIClient.Create;

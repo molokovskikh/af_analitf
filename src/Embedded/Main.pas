@@ -12,7 +12,7 @@ uses
   Buttons,
 {$ENDIF}
   DBAccess, MyAccess, Db, MemDS, MyCall, MyClasses, MyScript,
-  MyEmbConnection, DAScript;
+  MyEmbConnection, DAScript, MySqlApi;
 
 type
   TfmMain = class(TForm)
@@ -179,6 +179,7 @@ procedure TfmMain.FormCreate(Sender: TObject);
   end;
 {$ENDIF}
 begin
+  MySqlApi.MySQLEmbDisableEventLog := True;
 {$IFDEF XPMAN}
   if UseThemes then
     UpdateStyle(Self);

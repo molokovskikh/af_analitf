@@ -1540,12 +1540,6 @@ object DM: TDM
   object MyEmbConnection: TMyEmbConnection
     Options.Charset = 'cp1251'
     Options.KeepDesignConnected = False
-    Params.Strings = (
-      '--basedir=.'
-      '--datadir=data'
-      '--character_set_server=cp1251'
-      '--character_set_filesystem=cp1251'
-      '--skip-innodb')
     Username = 'root'
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False

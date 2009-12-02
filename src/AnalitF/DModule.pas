@@ -936,6 +936,21 @@ var
 begin
   //MySqlApi.MySQLEmbDisableEventLog := True;
 
+  //Устанавливаем параметры embedded-соединения
+  MyEmbConnection.Params.Clear();
+{$ifndef USEMEMORYCRYPTDLL}
+  MyEmbConnection.Params.Add('--basedir=.');
+  MyEmbConnection.Params.Add('--datadir=data');
+  MyEmbConnection.Params.Add('--character_set_server=cp1251');
+  MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
+  MyEmbConnection.Params.Add('--skip-innodb');
+{$else}
+  MyEmbConnection.Params.Add('--basedir=.');
+  MyEmbConnection.Params.Add('--datadir=data');
+  MyEmbConnection.Params.Add('--character_set_server=cp1251');
+  MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
+{$endif}
+
   SerBeg := '8F24';
   SerEnd := 'BB48';
   HTTPS := 'rkhgjsdk';
@@ -2765,7 +2780,7 @@ begin
       MyDump := TMyDump.Create(nil);
       try
         MyDump.Connection := FEmbConnection;
-        MyDump.Objects := [doStoredProcs, doTables, doViews];
+        MyDump.Objects := [doTables, doViews];
         MyDump.OnError := OnScriptExecuteError;
         MyDump.SQL.Text := GetFullLastCreateScript();
         MyDump.Restore;
@@ -2857,7 +2872,7 @@ begin
       try
         dbCon.ExecSQL('use analitf', []);
         MyDump.Connection := dbCon;
-        MyDump.Objects := [doStoredProcs, doTables, doViews];
+        MyDump.Objects := [doTables, doViews];
         MyDump.OnError := OnScriptExecuteError;
         MyDump.Backup;
         ReplaceAutoIncrement(MyDump.SQL);
@@ -2980,7 +2995,7 @@ begin
   MyDump := TMyDump.Create(nil);
   try
     MyDump.Connection := dbCon;
-    MyDump.Objects := [doStoredProcs, doTables, doViews];
+    MyDump.Objects := [doTables, doViews];
     MyDump.OnError := OnScriptExecuteError;
     MyDump.Backup;
     ReplaceAutoIncrement(MyDump.SQL);
@@ -3586,7 +3601,7 @@ begin
         MyDump := TMyDump.Create(nil);
         try
           MyDump.Connection := FEmbConnection;
-          MyDump.Objects := [doStoredProcs, doTables, doViews];
+          MyDump.Objects := [doTables, doViews];
           MyDump.OnError := OnScriptExecuteError;
           MyDump.BackupToFile('extract_mysql.sql');
         finally
