@@ -5,6 +5,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   ActiveControl = tvList
   Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1086#1089#1089#1090#1072#1085#1086#1074#1083#1077#1085#1085#1099#1093' '#1079#1072#1082#1072#1079#1086#1074
   OnCreate = FormCreate
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object pBottom: TPanel
@@ -42,7 +43,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 1
-      Top = 153
+      Top = 185
       Width = 641
       Height = 3
       Cursor = crVSplit
@@ -51,9 +52,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object dbgCore: TToughDBGrid
       Tag = 32
       Left = 1
-      Top = 156
+      Top = 188
       Width = 641
-      Height = 158
+      Height = 126
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -248,20 +249,20 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       Left = 1
       Top = 1
       Width = 641
-      Height = 152
+      Height = 184
       Align = alTop
       TabOrder = 1
       object Splitter2: TSplitter
         Left = 268
         Top = 1
-        Height = 150
+        Height = 182
         Align = alRight
       end
       object pRight: TPanel
         Left = 271
         Top = 1
         Width = 369
-        Height = 150
+        Height = 182
         Align = alRight
         TabOrder = 1
         object lReason: TLabel
@@ -291,7 +292,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
           Left = 1
           Top = 88
           Width = 367
-          Height = 61
+          Height = 81
           AutoFitColWidths = True
           DataSource = dsValues
           Flat = True
@@ -335,7 +336,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         Left = 1
         Top = 1
         Width = 267
-        Height = 150
+        Height = 182
         Align = alClient
         ChangeDelay = 300
         HideSelection = False
@@ -416,8 +417,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop.Perc' +
-        'ent/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.Percent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -505,8 +506,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop.Perc' +
-        'ent/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.Percent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'

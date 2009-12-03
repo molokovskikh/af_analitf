@@ -117,6 +117,7 @@ type
     procedure adsCoreAfterPost(DataSet: TDataSet);
     procedure adsCoreBeforeScroll(DataSet: TDataSet);
     procedure dbgCoreExit(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   private
     { Private declarations }
     UseExcess: Boolean;
@@ -570,6 +571,12 @@ end;
 procedure TCorrectOrdersForm.dbgCoreExit(Sender: TObject);
 begin
   ShowVolumeMessage;
+end;
+
+procedure TCorrectOrdersForm.FormResize(Sender: TObject);
+begin
+  inherited;
+  pTop.Height := Self.ClientHeight div 2;
 end;
 
 end.
