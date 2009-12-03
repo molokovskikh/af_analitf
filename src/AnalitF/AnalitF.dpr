@@ -84,16 +84,9 @@ uses
 {$R EraserDLL.RES}
 {$R Progress.RES}
 {$R Icons.RES}
-{$R CompareScript41.RES}
-{$R CompareScript42.RES}
-{$R CompareScript43.RES}
-{$R CompareScript44.RES}
-{$R CompareScript45.RES}
-{$R CompareScript46.RES}
-{$R CompareScript47.RES}
-{$R CompareScript48.RES}
 {$R CompareScript50.RES}
 {$R CompareScript51.RES}
+{$R CompareScript52.RES}
 {$R LastScript.RES}
 
 var
