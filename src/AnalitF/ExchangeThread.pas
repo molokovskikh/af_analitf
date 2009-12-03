@@ -1230,7 +1230,7 @@ end;
 
 procedure TExchangeThread.CheckNewMDB;
 begin
-	if eaGetFullData in ExchangeForm.ExchangeActs then
+	if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then
 	begin
 		StatusText := 'Очистка таблиц';
 		Synchronize( SetStatus);
@@ -1431,7 +1431,7 @@ begin
 	//добавляем в таблицы новые данные и изменяем имеющиеся
 	//CatalogNames
 	if utCatalogNames in UpdateTables then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('catalognames', ExePath+SDirIn+'\CatalogNames.txt');
       InternalExecute;
     end
@@ -1444,7 +1444,7 @@ begin
 	//Catalog
 	if utCatalogs in UpdateTables then begin
 
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt');
       InternalExecute;
 {$ifdef DEBUG}
@@ -1470,7 +1470,7 @@ begin
 	end;
 
   if (utProducts in UpdateTables) then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt');
       InternalExecute;
     end
@@ -1482,7 +1482,7 @@ begin
 
 	//CatalogFarmGroups
 	if utCatalogFarmGroups in UpdateTables then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('CatalogFarmGroups', ExePath+SDirIn+'\CatalogFarmGroups.txt');
       InternalExecute;
     end
@@ -1550,7 +1550,7 @@ begin
 
 	//Synonym
 	if utSynonyms in UpdateTables then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) then begin
+	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt');
       InternalExecute;
     end
