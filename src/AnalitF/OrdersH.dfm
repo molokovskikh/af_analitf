@@ -1,6 +1,6 @@
 inherited OrdersHForm: TOrdersHForm
-  Left = 280
-  Top = 172
+  Left = 368
+  Top = 226
   ActiveControl = dbgCurrentOrders
   Caption = #1047#1072#1082#1072#1079#1099
   ClientHeight = 573
@@ -1013,8 +1013,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
-        'rcent/100)) as Cost,'
+        '    if(dop.Percent is null, CCore.Cost, cast(CCore.Cost * (1 + d' +
+        'op.Percent/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1114,8 +1114,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
-        'rcent/100)) as Cost,'
+        '    if(dop.Percent is null, CCore.Cost, cast(CCore.Cost * (1 + d' +
+        'op.Percent/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'

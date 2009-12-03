@@ -1129,8 +1129,8 @@ object CoreForm: TCoreForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
-        'ent/100)) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop.Perc' +
+        'ent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1221,8 +1221,8 @@ object CoreForm: TCoreForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
-        'ent/100)) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop.Perc' +
+        'ent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1718,11 +1718,10 @@ object CoreForm: TCoreForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Note,'
-      '    dop.Percent,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
-        'ent/100)) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop.Perc' +
+        'ent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'

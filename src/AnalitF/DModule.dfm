@@ -1,8 +1,8 @@
 object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
-  Left = 206
-  Top = 145
+  Left = 270
+  Top = 190
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -1852,8 +1852,8 @@ object DM: TDM
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, Core.Cost * (1 + dop.Perc' +
-        'ent/100)) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.Percent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -2356,8 +2356,8 @@ object DM: TDM
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
-        'rcent/100)) as Cost,'
+        '    if(dop.Percent is null, CCore.Cost, cast(CCore.Cost * (1 + d' +
+        'op.Percent/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'

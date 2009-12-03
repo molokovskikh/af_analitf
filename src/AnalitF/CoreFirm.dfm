@@ -1000,8 +1000,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
-        'rcent/100)) as Cost,'
+        '    if(dop.Percent is null, CCore.Cost, cast(CCore.Cost * (1 + dop.Pe' +
+        'rcent/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1099,8 +1099,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
-        'rcent/100)) as Cost,'
+        '    if(dop.Percent is null, CCore.Cost, cast(CCore.Cost * (1 + dop.Pe' +
+        'rcent/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1408,8 +1408,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.Percent is null, CCore.Cost, CCore.Cost * (1 + dop.Pe' +
-        'rcent/100)) as Cost,'
+        '    if(dop.Percent is null, CCore.Cost, cast(CCore.Cost * (1 + dop.Pe' +
+        'rcent/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
