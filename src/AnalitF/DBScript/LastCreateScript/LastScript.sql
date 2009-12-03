@@ -148,10 +148,9 @@ CREATE TABLE `defectives` (
 
 DROP TABLE IF EXISTS delayofpayments;
 CREATE TABLE `delayofpayments` (
-  `ClientId` bigint(20) NOT NULL,
   `FirmCode` bigint(20) NOT NULL,
   `Percent` decimal(18,2) DEFAULT NULL,
-  PRIMARY KEY (`ClientId`,`FirmCode`)
+  PRIMARY KEY (`FirmCode`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 

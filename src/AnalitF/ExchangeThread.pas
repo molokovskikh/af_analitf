@@ -1616,11 +1616,9 @@ begin
         +'         min(Cost * (1 + Delayofpayments.Percent/100)) '
         +'from     Core      , '
         +'         Pricesdata, '
-        +'         Delayofpayments, '
-        +'         UserInfo '
+        +'         Delayofpayments '
         +'where    (Pricesdata.PRICECODE     = Core.Pricecode) '
         +'and      (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-        +'and      (Delayofpayments.CLIENTID = UserInfo.ClientId) '
         +'group by ProductId, '
         +'         RegionCode';
       InternalExecute;
@@ -1717,8 +1715,7 @@ begin
         + '  MinPrices, '
         + '  Core, '
         + '  Pricesdata, '
-        + '  Delayofpayments, '
-        + '  UserInfo '
+        + '  Delayofpayments '
         + 'SET '
         + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
         + '  MinPrices.PriceCode  = Core.PriceCode '
@@ -1727,7 +1724,6 @@ begin
         + 'and (Core.RegionCode = MinPrices.RegionCode) '
         + 'and (Pricesdata.PRICECODE     = Core.Pricecode) '
         + 'and (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-        + 'and (Delayofpayments.CLIENTID = UserInfo.ClientId) '
         + 'and (cast((Core.Cost * (1 + Delayofpayments.Percent/100)) as decimal(18, 2)) = MinPrices.MinCost)';
       InternalExecute;
     end;

@@ -739,7 +739,7 @@ inherited ExpiredsForm: TExpiredsForm
         'sbc.CoreId=Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) and (dop.ClientId = osbc.clientid)'
+        'FirmCode) '
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE'
       '  Core.CoreID = :CoreID')
@@ -818,7 +818,7 @@ inherited ExpiredsForm: TExpiredsForm
         'sbc.CoreId=Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) and (dop.ClientId = osbc.clientid)'
+        'FirmCode) '
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE'
       '    (Core.productid > 0)'

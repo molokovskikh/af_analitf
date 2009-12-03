@@ -1084,7 +1084,7 @@ inherited OrdersHForm: TOrdersHForm
         ' (osbc.CoreId = CCore.CoreId)'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) and (dop.ClientId = osbc.clientid)'
+        'FirmCode) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1185,7 +1185,7 @@ inherited OrdersHForm: TOrdersHForm
         ' (osbc.CoreId = CCore.CoreId)'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) and (dop.ClientId = osbc.clientid)'
+        'FirmCode) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'

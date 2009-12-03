@@ -4384,7 +4384,6 @@ begin
 +'       on     catalogs.fullcode = p.catalogid '
 +'       left join DelayOfPayments dop '
 +'       on     dop.FirmCode = pd.FirmCode '
-+'          and dop.ClientId = :ClientId '
 +'       left join synonyms s '
 +'       on     s.synonymcode = c.synonymcode '
 +'       left join synonymfirmcr sf '
@@ -4417,14 +4416,14 @@ begin
   +'       providers.FullName           , '
   +'       dop.FirmCode as DelayFirmCode, '
   +'       dop.Percent '
-  +'from   ( clients, providers ) '
+  +'from   ( clients, providers, userinfo ) '
   +'       left join delayofpayments dop '
-  +'       on     (dop.ClientId         = clients.ClientId) '
-  +'       and    (dop.FirmCode         = providers.FirmCode) '
+  +'       on     (dop.FirmCode         = providers.FirmCode) '
   +'where  (clients.AllowDelayOfPayment = 1) '
+  +'and    (userinfo.ClientId = clients.ClientId)'
   +'and    ((dop.FirmCode         is null) '
   +'       or     (dop.Percent    is null))';
-  
+
   adsQueryValue.Open;
   try
     if not adsQueryValue.IsEmpty then begin
@@ -4471,29 +4470,29 @@ begin
   //у которых нет записей в DelayOfPayments
   adsQueryValue.SQL.Text := ''
   +'insert '
-  +'into   Delayofpayments ' 
-  +'       ( ' 
-  +'              ClientId, ' 
-  +'              FirmCode, ' 
-  +'              Percent ' 
-  +'       ) ' 
-  +'select clients.ClientId  , ' 
-  +'       providers.FirmCode, ' 
-  +'       if(clients.AllowDelayOfPayment = 1, 0.0, null) ' 
-  +'from   ( clients, providers ) ' 
-  +'       left join delayofpayments dop ' 
-  +'       on     (dop.ClientId = clients.ClientId) ' 
-  +'       and    (dop.FirmCode = providers.FirmCode) ' 
-  +'where  (dop.FirmCode  is null)';
+  +'into   Delayofpayments '
+  +'       ( '
+  +'              FirmCode, '
+  +'              Percent '
+  +'       ) '
+  +'select  '
+  +'       providers.FirmCode, '
+  +'       if(clients.AllowDelayOfPayment = 1, 0.0, null) '
+  +'from   ( clients, providers, userinfo ) '
+  +'       left join delayofpayments dop '
+  +'       on     (dop.FirmCode = providers.FirmCode) '
+  +'where  (dop.FirmCode  is null)'
+  +'and    (userinfo.ClientId = clients.ClientId)';
   adsQueryValue.Execute;
 
   //Обновляем значение Percent: если механизм не включен, то null,
-  //иначе должно быть значение, если оно не установлено, то 0.0 
+  //иначе должно быть значение, если оно не установлено, то 0.0
   adsQueryValue.SQL.Text := ''
   +'update clients, '
+  +'       userinfo, '
   +'       delayofpayments dop '
   +'set    dop.Percent   = if(clients.AllowDelayOfPayment = 0, null, IFNULL(dop.Percent, 0.0)) '
-  +'where  (dop.ClientId = clients.ClientId)';
+  +'where  (userinfo.ClientId = clients.ClientId)';
   adsQueryValue.Execute;
 
   if RaiseException then

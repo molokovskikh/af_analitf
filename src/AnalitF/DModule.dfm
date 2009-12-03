@@ -1922,7 +1922,7 @@ object DM: TDM
         'sbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.ClientId = osbc.clientid)'
+        'irmCode) '
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (Catalogs.FullCode = :ParentCode)'
@@ -2427,7 +2427,7 @@ object DM: TDM
         ' (osbc.CoreId = CCore.CoreId)'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) and (dop.ClientId = osbc.clientid)'
+        'FirmCode) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'

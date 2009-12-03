@@ -1198,7 +1198,7 @@ object CoreForm: TCoreForm
         'sbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.ClientId = osbc.clientid)'
+        'irmCode) '
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '  Core.CoreId = :CoreID')
@@ -1290,7 +1290,7 @@ object CoreForm: TCoreForm
         'sbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.ClientId = osbc.clientid)'
+        'irmCode) '
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (Catalogs.FullCode = :ParentCode)'
@@ -1789,7 +1789,7 @@ object CoreForm: TCoreForm
         'sbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.ClientId = osbc.clientid)'
+        'irmCode) '
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (Catalogs.ShortCode = :ParentCode)'

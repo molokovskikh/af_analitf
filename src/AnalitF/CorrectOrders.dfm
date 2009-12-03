@@ -482,7 +482,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         'sbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.ClientId = osbc.clientid)'
+        'irmCode) '
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
@@ -575,7 +575,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         'sbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.ClientId = osbc.clientid)'
+        'irmCode) '
       '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
       'WHERE '
       '    (products.ProductId = :ProductId)'

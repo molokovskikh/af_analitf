@@ -1091,7 +1091,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'sbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.ClientId = osbc.clientid)'
+        'irmCode) '
       '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
@@ -1184,7 +1184,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'osbc.clientid = :clientid)'
       
         '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
-        'mCode) and (dop.ClientId = osbc.clientid)'
+        'mCode) '
       
         '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
         'AND (OrdersHead.OrderId = osbc.OrderId)'
@@ -1680,7 +1680,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'osbc.clientid = :clientid)'
       
         '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
-        'mCode) and (dop.ClientId = osbc.clientid)'
+        'mCode) '
       
         '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
         'AND (OrdersHead.OrderId = osbc.OrderId)'
