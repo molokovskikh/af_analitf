@@ -1,7 +1,7 @@
 inherited SummaryForm: TSummaryForm
   Left = 350
   Top = 172
-  ActiveControl = dbgSummary
+  ActiveControl = dbgSummaryCurrent
   Caption = #1057#1074#1086#1076#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 573
   ClientWidth = 792
@@ -47,7 +47,7 @@ inherited SummaryForm: TSummaryForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    object dbgSummary: TToughDBGrid
+    object dbgSummaryCurrent: TToughDBGrid
       Left = 0
       Top = 52
       Width = 792
@@ -71,14 +71,14 @@ inherited SummaryForm: TSummaryForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
-      OnGetCellParams = dbgSummaryGetCellParams
-      OnKeyDown = dbgSummaryKeyDown
-      OnSortMarkingChanged = dbgSummarySortMarkingChanged
+      OnGetCellParams = dbgSummaryCurrentGetCellParams
+      OnKeyDown = dbgSummaryCurrentKeyDown
+      OnSortMarkingChanged = dbgSummaryCurrentSortMarkingChanged
       SearchField = 'SynonymName'
       InputField = 'OrderCount'
       SearchPosition = spBottom
       ForceRus = True
-      OnCanInput = dbgSummaryCanInput
+      OnCanInput = dbgSummaryCurrentCanInput
       Columns = <
         item
           EditButtons = <>
@@ -405,6 +405,202 @@ inherited SummaryForm: TSummaryForm
         TabOrder = 3
         OnCloseUp = dtpDateCloseUp
       end
+    end
+    object dbgSummarySend: TToughDBGrid
+      Left = 0
+      Top = 52
+      Width = 792
+      Height = 257
+      Align = alClient
+      AutoFitColWidths = True
+      DataSource = dsSummary
+      Flat = True
+      FooterColor = clWindow
+      FooterFont.Charset = DEFAULT_CHARSET
+      FooterFont.Color = clWindowText
+      FooterFont.Height = -11
+      FooterFont.Name = 'MS Sans Serif'
+      FooterFont.Style = []
+      Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+      OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+      ReadOnly = True
+      TabOrder = 3
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -11
+      TitleFont.Name = 'MS Sans Serif'
+      TitleFont.Style = []
+      OnGetCellParams = dbgSummaryCurrentGetCellParams
+      OnKeyDown = dbgSummaryCurrentKeyDown
+      OnSortMarkingChanged = dbgSummaryCurrentSortMarkingChanged
+      SearchField = 'SynonymName'
+      SearchPosition = spBottom
+      ForceRus = True
+      OnCanInput = dbgSummaryCurrentCanInput
+      Columns = <
+        item
+          EditButtons = <>
+          FieldName = 'SynonymName'
+          Footers = <>
+          Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
+          Title.TitleButton = True
+          Width = 225
+        end
+        item
+          EditButtons = <>
+          FieldName = 'SynonymFirm'
+          Footers = <>
+          Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
+          Title.TitleButton = True
+          Width = 140
+        end
+        item
+          Alignment = taRightJustify
+          EditButtons = <>
+          FieldName = 'Volume'
+          Footers = <>
+          Title.Caption = #1059#1087#1072#1082#1086#1074#1082#1072
+          Title.TitleButton = True
+          Visible = False
+        end
+        item
+          EditButtons = <>
+          FieldName = 'Note'
+          Footers = <>
+          Title.Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077
+          Title.TitleButton = True
+          Visible = False
+          Width = 45
+        end
+        item
+          EditButtons = <>
+          FieldName = 'doc'
+          Footers = <>
+          Title.Caption = #1044#1086#1082#1091#1084#1077#1085#1090
+          Title.TitleButton = True
+          Visible = False
+        end
+        item
+          EditButtons = <>
+          FieldName = 'Period'
+          Footers = <>
+          Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
+          Title.TitleButton = True
+          Width = 61
+        end
+        item
+          EditButtons = <>
+          FieldName = 'PriceName'
+          Footers = <>
+          Title.Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090
+          Title.TitleButton = True
+          Width = 82
+        end
+        item
+          EditButtons = <>
+          FieldName = 'RegionName'
+          Footers = <>
+          Title.Caption = #1056#1077#1075#1080#1086#1085
+          Title.TitleButton = True
+          Visible = False
+          Width = 62
+        end
+        item
+          EditButtons = <>
+          FieldName = 'registrycost'
+          Footers = <>
+          Title.Caption = #1056#1077#1077#1089#1090#1088'. '#1094#1077#1085#1072
+          Title.TitleButton = True
+          Visible = False
+          Width = 58
+        end
+        item
+          EditButtons = <>
+          FieldName = 'RequestRatio'
+          Footers = <>
+          Title.Caption = #1050#1088#1072#1090#1085#1086#1089#1090#1100
+          Title.TitleButton = True
+          Visible = False
+          Width = 59
+        end
+        item
+          EditButtons = <>
+          FieldName = 'ordercost'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+          Title.TitleButton = True
+          Visible = False
+        end
+        item
+          EditButtons = <>
+          FieldName = 'MINORDERCOUNT'
+          Footers = <>
+          Title.Caption = #1052#1080#1085'. '#1082#1086#1083'-'#1074#1086
+          Title.TitleButton = True
+          Visible = False
+        end
+        item
+          EditButtons = <>
+          FieldName = 'RealCost'
+          Footers = <>
+          Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+          Visible = False
+        end
+        item
+          EditButtons = <>
+          FieldName = 'Cost'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          Footers = <>
+          Title.Caption = #1062#1077#1085#1072
+          Title.TitleButton = True
+          Width = 67
+        end
+        item
+          EditButtons = <>
+          FieldName = 'PriceRet'
+          Footers = <>
+          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
+          Title.TitleButton = True
+          Width = 62
+        end
+        item
+          Alignment = taRightJustify
+          EditButtons = <>
+          FieldName = 'Quantity'
+          Footers = <>
+          Title.Caption = #1050#1086#1083#1080#1095#1077#1089#1090#1074#1086
+          Title.TitleButton = True
+          Width = 43
+        end
+        item
+          Color = 16775406
+          EditButtons = <>
+          FieldName = 'OrderCount'
+          Footers = <>
+          Title.Caption = #1047#1072#1082#1072#1079
+          Title.TitleButton = True
+          Width = 44
+        end
+        item
+          Color = 16775406
+          EditButtons = <>
+          FieldName = 'SumOrder'
+          Footers = <>
+          Title.Caption = #1057#1091#1084#1084#1072
+          Title.TitleButton = True
+          Width = 58
+        end
+        item
+          DisplayFormat = 'dd.mm.yyyy hh:nn'
+          EditButtons = <>
+          FieldName = 'SendDate'
+          Footers = <>
+          Title.Caption = #1054#1090#1087#1088#1072#1074#1083#1077#1085#1086
+        end>
     end
   end
   object pWebBrowser: TPanel [2]
@@ -979,7 +1175,8 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId'
+      '    OrdersHead.OrderId as OrdersHOrderId,'
+      '    OrdersHead.SendDate'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1048,7 +1245,8 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    PricesData.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId  '
+      '    OrdersHead.OrderId as OrdersHOrderId,'
+      '    OrdersHead.SendDate'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1130,7 +1328,8 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId'
+      '    OrdersHead.OrderId as OrdersHOrderId,'
+      '    OrdersHead.SendDate'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1188,7 +1387,8 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId'
+      '    OrdersHead.OrderId as OrdersHOrderId,'
+      '    OrdersHead.SendDate'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1334,6 +1534,9 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryRealCost: TFloatField
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
+    end
+    object adsSummarySendDate: TDateTimeField
+      FieldName = 'SendDate'
     end
   end
 end

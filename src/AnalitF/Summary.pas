@@ -15,7 +15,7 @@ type
     dsSummary: TDataSource;
     frdsSummary: TfrDBDataSet;
     pClient: TPanel;
-    dbgSummary: TToughDBGrid;
+    dbgSummaryCurrent: TToughDBGrid;
     adsSummaryOld: TpFIBDataSet;
     adsSummaryOldSumOrder: TCurrencyField;
     adsSummaryOldCryptBASECOST: TCurrencyField;
@@ -133,19 +133,21 @@ type
     adsSummarySumOrder: TCurrencyField;
     adsSummaryOrdersHOrderId: TLargeintField;
     adsSummaryRealCost: TFloatField;
+    dbgSummarySend: TToughDBGrid;
+    adsSummarySendDate: TDateTimeField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
-    procedure dbgSummaryGetCellParams(Sender: TObject; Column: TColumnEh;
+    procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
-    procedure dbgSummaryCanInput(Sender: TObject; Value: Integer;
+    procedure dbgSummaryCurrentCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
     procedure adsSummary2BeforePost(DataSet: TDataSet);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure adsSummary2AfterScroll(DataSet: TDataSet);
-    procedure dbgSummaryKeyDown(Sender: TObject; var Key: Word;
+    procedure dbgSummaryCurrentKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure dbgSummarySortMarkingChanged(Sender: TObject);
+    procedure dbgSummaryCurrentSortMarkingChanged(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure rgSummaryTypeClick(Sender: TObject);
@@ -199,7 +201,7 @@ var
   mi :TMenuItem;
 begin
   dsCheckVolume := adsSummary;
-  dgCheckVolume := dbgSummary;
+  dgCheckVolume := dbgSummaryCurrent;
   fOrder := adsSummaryORDERCOUNT;
   fVolume := adsSummaryREQUESTRATIO;
   fOrderCost := adsSummaryORDERCOST;
@@ -220,7 +222,28 @@ begin
   try
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
     then
-      dbgSummary.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      try
+        dbgSummaryCurrent.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      finally
+        Reg.CloseKey;
+      end;
+    //ѕытаемс€ прочитать из настроек дл€ отправленных заказов,
+    //если их нет, то читаем их текущих заказов
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName + 'Sended', False)
+    then
+      try
+        dbgSummarySend.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      finally
+        Reg.CloseKey;
+      end
+    else
+      if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
+      then
+        try
+          dbgSummarySend.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+        finally
+          Reg.CloseKey;
+        end;
   finally
   	Reg.Free;
   end;
@@ -245,7 +268,17 @@ begin
   Reg := TRegIniFile.Create();
   try
     Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgSummary.SaveColumnsLayout(Reg);
+    try
+      dbgSummaryCurrent.SaveColumnsLayout(Reg);
+    finally
+      Reg.CloseKey;
+    end;
+    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName + 'Sended', True);
+    try
+      dbgSummarySend.SaveColumnsLayout(Reg);
+    finally
+      Reg.CloseKey;
+    end;
   finally
     Reg.Free;
   end;
@@ -268,17 +301,23 @@ begin
       adsSummary.Close;
     FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersHead.');
     if LastSymmaryType = 0 then begin
+      dbgSummaryCurrent.Visible := False;
+      dbgSummarySend.Visible := False;
+      dbgSummaryCurrent.Visible := True;
       adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
-      dbgSummary.InputField := 'OrderCount';
-      dbgSummary.Tag := 256;
+      dbgSummaryCurrent.InputField := 'OrderCount';
+      dbgSummaryCurrent.Tag := 256;
       btnDelete.Enabled := True;
     end
     else begin
+      dbgSummaryCurrent.Visible := False;
+      dbgSummarySend.Visible := False;
+      dbgSummarySend.Visible := True;
       adsSummary.SQL.Text := adsSendSummary.SQL.Text;
       adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
       adsSummary.ParamByName( 'DATETO').Value := IncDay(LastDateTo);
-      dbgSummary.InputField := '';
-      dbgSummary.Tag := 512;
+      dbgSummarySend.InputField := '';
+      dbgSummarySend.Tag := 512;
       btnDelete.Enabled := False;
     end;
     if Length(FilterSQL) > 0 then
@@ -329,7 +368,7 @@ begin
       adsSummary.Close;
       adsSummary.SQL.Text := LastCurrentSQL;
       adsSummary.Open;
-      dbgSummary.OnSortMarkingChanged(dbgSummary);
+      dbgSummaryCurrent.OnSortMarkingChanged(dbgSummaryCurrent);
     finally
       adsSummary.EnableControls;
     end;
@@ -338,7 +377,7 @@ begin
 	  DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
 end;
 
-procedure TSummaryForm.dbgSummaryGetCellParams(Sender: TObject;
+procedure TSummaryForm.dbgSummaryCurrentGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
@@ -354,7 +393,7 @@ begin
 		Background := AWAIT_CLR;
 end;
 
-procedure TSummaryForm.dbgSummaryCanInput(Sender: TObject; Value: Integer;
+procedure TSummaryForm.dbgSummaryCurrentCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
 	inherited;
@@ -391,8 +430,8 @@ begin
       PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
       plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
 
-      plOverCost.Top := ( dbgSummary.Height - plOverCost.Height) div 2;
-      plOverCost.Left := ( dbgSummary.Width - plOverCost.Width) div 2;
+      plOverCost.Top := ( dbgSummaryCurrent.Height - plOverCost.Height) div 2;
+      plOverCost.Left := ( dbgSummaryCurrent.Width - plOverCost.Width) div 2;
       plOverCost.BringToFront;
       plOverCost.Show;
       Timer.Enabled := True;
@@ -414,7 +453,7 @@ procedure TSummaryForm.adsSummary2AfterScroll(DataSet: TDataSet);
 //  C : Integer;
 begin
 {
-  C := dbgSummary.Canvas.TextHeight('Wg') + 2;
+  C := dbgSummaryCurrent.Canvas.TextHeight('Wg') + 2;
   if (adsSummary.RecordCount > 0) and ((adsSummary.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
     pWebBrowser.Visible := False
   else
@@ -422,7 +461,7 @@ begin
 }
 end;
 
-procedure TSummaryForm.dbgSummaryKeyDown(Sender: TObject; var Key: Word;
+procedure TSummaryForm.dbgSummaryCurrentKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if (Shift = []) and (Key = VK_DELETE) and (not adsSummary.IsEmpty) then begin
@@ -433,7 +472,7 @@ begin
     inherited;
 end;
 
-procedure TSummaryForm.dbgSummarySortMarkingChanged(Sender: TObject);
+procedure TSummaryForm.dbgSummaryCurrentSortMarkingChanged(Sender: TObject);
 begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
@@ -499,7 +538,7 @@ end;
 
 procedure TSummaryForm.btnDeleteClick(Sender: TObject);
 begin
-  dbgSummary.SetFocus;
+  dbgSummaryCurrent.SetFocus;
   if (not adsSummary.IsEmpty) then
     DeleteOrder;
 end;
@@ -507,7 +546,7 @@ end;
 procedure TSummaryForm.dtpDateCloseUp(Sender: TObject);
 begin
   SetDateInterval;
-  dbgSummary.SetFocus;
+  dbgSummarySend.SetFocus;
 end;
 
 procedure TSummaryForm.SetDateInterval;
@@ -526,7 +565,10 @@ begin
     dtpDateFrom.Enabled := LastSymmaryType = 1;
     dtpDateTo.Enabled := dtpDateFrom.Enabled;
     SummaryShow;
-    dbgSummary.SetFocus;
+    if (LastSymmaryType = 0) then
+      dbgSummaryCurrent.SetFocus
+    else
+      dbgSummarySend.SetFocus;
   end;
 end;
 
