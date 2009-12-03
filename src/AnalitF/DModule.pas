@@ -533,7 +533,7 @@ type
 {//$define TestEmbeddedMysql}
 {$ifdef TestEmbeddedMysql}
     procedure TestEmbeddedMysql;
-  {$ifdef USEMYSQLEMBEDDED}
+  {$ifndef USEMYSQLSTANDALONE}
     procedure TestOpenDatabase;
     procedure TestDumpDatabase;
     procedure TestEmbeddedThread;
@@ -3359,7 +3359,7 @@ end;
 {$ifdef TestEmbeddedMysql}
 procedure TDM.TestEmbeddedMysql;
 begin
-{$ifdef USEMYSQLEMBEDDED}
+{$ifndef USEMYSQLSTANDALONE}
   //TestDumpDatabase();
 
   //TestOpenDatabase();
@@ -3370,7 +3370,7 @@ begin
   //TestDirectoriesOperation();
 end;
 
-{$ifdef USEMYSQLEMBEDDED}
+{$ifndef USEMYSQLSTANDALONE}
 procedure TDM.TestOpenDatabase;
 const
   DirDataTest : String = 'Data_Test';
@@ -3728,7 +3728,7 @@ end;
 
 function TDM.GetMainConnection: TCustomMyConnection;
 begin
-{$ifdef USEMYSQLEMBEDDED}
+{$ifndef USEMYSQLSTANDALONE}
   Result := (MyEmbConnection as TCustomMyConnection);
 {$else}
   Result := (MyConnection as TCustomMyConnection);
