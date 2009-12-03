@@ -449,8 +449,8 @@ procedure TSynonymSearchForm.dbgCoreCanInput(Sender: TObject;
   Value: Integer; var CanInput: Boolean);
 begin
 	CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
-		(( adsCoreRegionCode.AsInteger and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
-			adsCoreRegionCode.AsInteger);
+		(( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
+			adsCoreRegionCode.AsLargeInt);
 end;
 
 procedure TSynonymSearchForm.dbgCoreGetCellParams(Sender: TObject;

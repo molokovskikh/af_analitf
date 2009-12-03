@@ -547,9 +547,9 @@ end;
 procedure TCoreForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
-	CanInput := ( adsCoreSynonymCode.AsInteger >= 0) and
-		(( adsCoreRegionCode.AsInteger and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
-			adsCoreRegionCode.AsInteger);
+  CanInput := ( adsCoreSynonymCode.AsInteger >= 0) and
+    (( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
+      adsCoreRegionCode.AsLargeInt);
 end;
 
 procedure TCoreForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
@@ -715,14 +715,15 @@ end;
 
 procedure TCoreForm.actFlipCoreExecute(Sender: TObject);
 var
-	PriceCode, RegionCode: integer;
+  PriceCode : Integer;
+  RegionCode: Int64;
   CoreId : Int64;
   PriceName, RegionName : String;
 begin
 	if MainFOrm.ActiveChild <> Self then exit;
 
 	PriceCode := adsCorePriceCode.AsInteger;
-	RegionCode := adsCoreRegionCode.AsInteger;
+	RegionCode := adsCoreRegionCode.AsLargeInt;
   PriceName := adsCorePRICENAME.AsString;
   RegionName := adsCoreREGIONNAME.AsString;
   CoreId := adsCoreCOREID.AsLargeInt;
@@ -784,7 +785,7 @@ var
   Summ : Currency;
 begin
   if not adsCore.IsEmpty then begin
-    Summ := DM.FindOrderInfo(adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsInteger);
+    Summ := DM.FindOrderInfo(adsCorePRICECODE.AsInteger, adsCoreREGIONCODE.AsLargeInt);
     if Summ > 0 then
     begin
       lCurrentSumma.Caption := CurrToStr(Summ);

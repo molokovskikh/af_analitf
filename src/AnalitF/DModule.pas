@@ -70,19 +70,19 @@ type
 
   TSelectPrice = class
     PriceCode :Integer;
-    RegionCode : Integer;
+    RegionCode : Int64;
     Selected : Boolean;
     PriceName : String;
-    constructor Create(PriceCode, RegionCode :Integer;
+    constructor Create(PriceCode:Integer; RegionCode : Int64;
     Selected : Boolean;
     PriceName : String);
   end;
 
   TOrderInfo = class
-    PriceCode,
-    RegionCode : Integer;
+    PriceCode : Integer;
+    RegionCode : Int64;
     Summ : Currency;
-    constructor Create(PriceCode, RegionCode : Integer);
+    constructor Create(PriceCode:Integer; RegionCode : Int64);
   end;
 
   TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
@@ -610,7 +610,7 @@ type
     //получить сумму заказа
     function GetSumOrder (OrderID : Integer) : Currency;
     //получить сумму заказа по PriceCode и RegionCode
-    function FindOrderInfo (PriceCode, RegionCode : Integer) : Currency;
+    function FindOrderInfo (PriceCode: Integer; RegionCode : Int64) : Currency;
 
     property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
@@ -1849,7 +1849,7 @@ end;
 
 { TSelectPrice }
 
-constructor TSelectPrice.Create(PriceCode, RegionCode: Integer; Selected: Boolean;
+constructor TSelectPrice.Create(PriceCode:Integer; RegionCode: Int64; Selected: Boolean;
   PriceName: String);
 begin
   Self.PriceCode := PriceCode;
@@ -1869,8 +1869,8 @@ begin
   try
     adsPrices.First;
     while not adsPrices.Eof do begin
-      SummarySelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
-      SynonymSelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsInteger, True, adsPricesPRICENAME.Value));
+      SummarySelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
+      SynonymSelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
       adsPrices.Next;
     end;
   finally
@@ -2608,14 +2608,14 @@ end;
 
 { TOrderInfo }
 
-constructor TOrderInfo.Create(PriceCode, RegionCode : Integer);
+constructor TOrderInfo.Create(PriceCode: Integer; RegionCode : Int64);
 begin
   Summ := 0;
   Self.PriceCode := PriceCode;
   Self.RegionCode := RegionCode;
 end;
 
-function TDM.FindOrderInfo(PriceCode, RegionCode: Integer): Currency;
+function TDM.FindOrderInfo(PriceCode:Integer; RegionCode: Int64): Currency;
 begin
   try
     Result := DM.QueryValue(

@@ -289,8 +289,8 @@ end;
 procedure TExpiredsForm.dbgExpiredsCanInput(Sender: TObject;
   Value: Integer; var CanInput: Boolean);
 begin
-	CanInput := ( adsExpiredsRegionCode.AsInteger and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
-		adsExpiredsRegionCode.AsInteger;
+	CanInput := ( adsExpiredsRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
+		adsExpiredsRegionCode.AsLargeInt;
 	if not CanInput then exit;
 
 end;

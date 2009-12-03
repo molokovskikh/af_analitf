@@ -125,13 +125,15 @@ uses Main, DModule, AProc, DBProc, CoreFirm, StrUtils;
 {$R *.dfm}
 
 var
-	LastPriceCode, LastRegionCode: Integer;
+  LastPriceCode: Integer;
+  LastRegionCode: Int64;
 
 procedure ShowPrices;
 var
   //” клиента всего лишь один прайс-лист, поэтому открываем сразу форму с содержимым прайс-листа
   IsAlonePrice : Boolean;
-  AlonePriceCode, AloneRegionCode : Integer;
+  AlonePriceCode : Integer;
+  AloneRegionCode : Int64;
   AlonePriceName, AloneRegionName : String;
 begin
   if DM.adsPrices.Active then
@@ -143,7 +145,7 @@ begin
        (DM.adsPricesINJOB.AsBoolean) and (DM.adsPricesPRICESIZE.AsInteger > 0);
     if IsAlonePrice then begin
       AlonePriceCode  := DM.adsPricesPRICECODE.AsInteger;
-      AloneRegionCode := DM.adsPricesREGIONCODE.AsInteger;
+      AloneRegionCode := DM.adsPricesREGIONCODE.AsLargeInt;
       AlonePriceName  := DM.adsPricesPRICENAME.AsString;
       AloneRegionName := DM.adsPricesREGIONNAME.AsString;
     end
@@ -248,7 +250,7 @@ end;
 procedure TPricesForm.GetLastPrice;
 begin
   LastPriceCode := adsPricesPriceCode.AsInteger;
-  LastRegionCode := adsPricesRegionCode.AsInteger;
+  LastRegionCode := adsPricesRegionCode.AsLargeInt;
 end;
 
 procedure TPricesForm.SetLastPrice;
@@ -350,7 +352,7 @@ begin
     if not adsPricesPRICECODE.IsNull and adsPricesINJOB.Value then
       CoreFirmForm.ShowForm(
         adsPricesPRICECODE.AsInteger,
-	     	adsPricesREGIONCODE.AsInteger,
+        adsPricesREGIONCODE.AsLargeInt,
         adsPricesPRICENAME.AsString,
         adsPricesREGIONNAME.AsString,
         actOnlyLeaders.Checked);

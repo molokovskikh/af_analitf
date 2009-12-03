@@ -109,7 +109,8 @@ type
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
-    PriceCode, RegionCode : Integer;
+    PriceCode : Integer;
+    RegionCode : Int64;
     PriceName, RegionName : String;
     procedure SetOrderLabel;
     procedure ocf(DataSet: TDataSet);
@@ -138,7 +139,7 @@ begin
   SaveEnabled := OrdersHForm.TabControl.TabIndex = 1;
   ParentOrdersHForm := OrdersHForm;
   PriceCode := OrdersHForm.adsOrdersHFormPRICECODE.AsInteger;
-  RegionCode := OrdersHForm.adsOrdersHFormREGIONCODE.AsInteger;
+  RegionCode := OrdersHForm.adsOrdersHFormREGIONCODE.AsLargeInt;
   PriceName := OrdersHForm.adsOrdersHFormPRICENAME.AsString;
   RegionName := OrdersHForm.adsOrdersHFormREGIONNAME.AsString;
   Self.OrderID := OrderId;

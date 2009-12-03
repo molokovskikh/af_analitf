@@ -197,7 +197,8 @@ type
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
   private
-    PriceCode, RegionCode, ClientId: Integer;
+    PriceCode, ClientId: Integer;
+    RegionCode : Int64;
     PriceName,
     RegionName : String;
 
@@ -219,7 +220,9 @@ type
     procedure SetClear;
     procedure AddKeyToSearch(Key : Char);
   public
-    procedure ShowForm(PriceCode, RegionCode: Integer;
+    procedure ShowForm(
+      PriceCode: Integer;
+      RegionCode: Int64;
       PriceName, RegionName : String;
       OnlyLeaders: Boolean=False;
       FromOrders : Boolean = False); reintroduce;
@@ -290,7 +293,7 @@ begin
   BM.Free;
 end;
 
-procedure TCoreFirmForm.ShowForm(PriceCode, RegionCode: Integer;
+procedure TCoreFirmForm.ShowForm(PriceCode: Integer; RegionCode: Int64;
   PriceName, RegionName : String; OnlyLeaders: Boolean=False; FromOrders : Boolean = False);
 begin
   plOverCost.Hide();
@@ -562,7 +565,7 @@ begin
     AFont.Color := VITALLYIMPORTANT_CLR;
 
 	//данный прайс-лидер
-	if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and	( adsCoreLeaderRegionCode.AsInteger = RegionCode))
+	if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and	( adsCoreLeaderRegionCode.AsLargeInt = RegionCode))
      or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
      )
     and
@@ -604,7 +607,7 @@ end;
 procedure TCoreFirmForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
-	CanInput := ( RegionCode and DM.adtClients.FieldByName( 'ReqMask').AsInteger) =
+	CanInput := ( RegionCode and DM.adtClientsREQMASK.AsLargeInt) =
 		RegionCode;
 	if not CanInput then Exit;
 end;
