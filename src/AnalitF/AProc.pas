@@ -116,7 +116,7 @@ implementation
 
 uses
   IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest,
-  U_ExchangeLog, IdHash, LU_Tracer;
+  U_ExchangeLog, IdHash;
 
 var
   FSilentMode : Boolean;
@@ -889,8 +889,6 @@ procedure CopyDirectories(const fromDir, toDir: String);
 var
   SR : TSearchRec;
 begin
-  Tracer.TR('CopyDirectories', Format('Ќачали копирование директорий из %s в %s.', [fromDir, toDir]));
-  try
   if not DirectoryExists(toDir) then
     ForceDirectories(toDir);
 
@@ -909,9 +907,6 @@ begin
   finally
     SysUtils.FindClose(sr);
   end;
-  finally
-    Tracer.TR('CopyDirectories', Format('«акончили копирование директорий из %s в %s.', [fromDir, toDir]));
-  end;
 end;
 
 procedure MoveDirectories(const fromDir, toDir: String);
@@ -924,8 +919,6 @@ var
   DirList : TStringList;
   I : Integer;
 begin
-  Tracer.TR('MoveDirectories', Format('Ќачали перемещение директорий из %s в %s.', [fromDir, toDir]));
-  try
   fileList := '';
   if not DirectoryExists(toDir) then
     ForceDirectories(toDir);
@@ -987,9 +980,6 @@ begin
       end;
     end;
   end;
-  finally
-    Tracer.TR('MoveDirectories', Format('«акончили перемещение директорий из %s в %s.', [fromDir, toDir]));
-  end;
 end;
 
 procedure DeleteDirectory(const Dir : String);
@@ -1000,8 +990,6 @@ var
   DirList : TStringList;
   I : Integer;
 begin
-  Tracer.TR('DeleteDirectory', Format('Ќачали удаление директории %s.', [Dir]));
-  try
   //≈сли удал€ема€ директори€ не существует, то просто выходим
   if not DirectoryExists(Dir) then
     Exit;
@@ -1041,15 +1029,10 @@ begin
       raise Ex;
     end;
   end;
-  finally
-    Tracer.TR('DeleteDirectory', Format('«акончили удаление директории %s.', [Dir]));
-  end;
 end;
 
 procedure CopyDataDirToBackup(const dataDir, backupDir: String);
 begin
-  Tracer.TR('CopyDataDirToBackup', Format('Ќачали копирование директорий данных из %s в %s.', [dataDir, backupDir]));
-  try
   if not DirectoryExists(backupDir) then
     ForceDirectories(backupDir);
 
@@ -1058,40 +1041,26 @@ begin
 
   if DirectoryExists(dataDir + '\mysql') then
     CopyDirectories(dataDir + '\mysql', backupDir + '\mysql');
-  finally
-    Tracer.TR('CopyDataDirToBackup', Format('«акончили копирование директорий данных из %s в %s.', [dataDir, backupDir]));
-  end;
 end;
 
 procedure DeleteDataDir(const dataDir: String);
 begin
-  Tracer.TR('DeleteDataDir', Format('Ќачали удаление директории с данными %s.', [dataDir]));
-  try
   DeleteDirectory(dataDir + '\analitf');
   DeleteDirectory(dataDir + '\mysql');
-  finally
-    Tracer.TR('DeleteDataDir', Format('«акончили удаление директории с данными %s.', [dataDir]));
-  end;
 end;
 
 function RemoveDirectory(const Dir : String) : LongBool;
 var
   SleepCount : Integer;
 begin
-  Tracer.TR('RemoveDirectory', Format('Ќачали удаление пустой директории %s.', [Dir]));
-  try
   SleepCount := 0;
   repeat
     Result := Windows.RemoveDirectory(PChar(Dir));
     if not Result then begin
       Inc(SleepCount);
-      Tracer.TR('RemoveDirectory', Format('ќжидаем при удалении пустой директории %s.', [Dir]));
-      Sleep(10000);
+      Sleep(3000);
     end;
-  until Result or (SleepCount >= 6);
-  finally
-    Tracer.TR('RemoveDirectory', Format('«акончили удаление пустой директории %s.', [Dir]));
-  end;
+  until Result or (SleepCount >= 3);
 end;
 
 function GetDirectorySize(const Dir : String): Int64;
@@ -1101,8 +1070,6 @@ var
   DirList : TStringList;
   I : Integer;
 begin
-  Tracer.TR('GetDirectorySize', Format('Ќачали подсчет размера директории %s.', [Dir]));
-  try
   Result := 0;
   //≈сли директори€ не существует, то просто выходим
   if not DirectoryExists(Dir) then
@@ -1134,9 +1101,6 @@ begin
       Result := Result + GetDirectorySize(Dir + '\' + DirList[i]);
   finally
     DirList.Free;
-  end;
-  finally
-    Tracer.TR('GetDirectorySize', Format('«акончили подсчет размера директории %s.', [Dir]));
   end;
 end;
 
