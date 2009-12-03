@@ -202,7 +202,9 @@ begin
 				TotalProgress := 10;
 				Synchronize( SetTotalProgress);
         //Отправяем настройки прайс-листов при запросе данных (обычно или кумулятивном)
-				if (eaGetPrice in ExchangeForm.ExchangeActs) then
+        if (eaGetPrice in ExchangeForm.ExchangeActs)
+          and not DM.adsUser.FieldByName('InheritPrices').AsBoolean
+        then
         begin
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута

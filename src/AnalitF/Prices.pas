@@ -196,6 +196,8 @@ begin
   finally
   	Reg.Free;
   end;
+  //Если наследуются прайс-листы, то редактировать "В работе" запрещено
+  adsPricesINJOB.ReadOnly := DM.adsUser.FieldByName('InheritPrices').AsBoolean;
   if dbgPrices.SortMarkedColumns.Count = 0 then
     dbgPrices.FieldColumns['PRICENAME'].Title.SortMarker := smUpEh;
 end;
