@@ -1192,8 +1192,7 @@ inherited OrdersHForm: TOrdersHForm
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
       'And (CCore.RegionCode = :RegionCode)'
-      'and  CCore.SYNONYMCODE = :SYNONYMCODE'
-      'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE')
+      'and (CCore.SYNONYMCODE = :SYNONYMCODE)')
     BeforePost = adsCoreBeforePost
     Left = 228
     Top = 119
@@ -1217,10 +1216,6 @@ inherited OrdersHForm: TOrdersHForm
       item
         DataType = ftUnknown
         Name = 'SYNONYMCODE'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'SYNONYMFIRMCRCODE'
       end>
   end
 end

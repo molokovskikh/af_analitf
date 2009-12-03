@@ -570,9 +570,17 @@ begin
       DM.adsCoreRepare.ParamByName( 'RegionCode').Value :=
         DM.adsRepareOrders.FieldByName( 'RegionCode').Value;
       DM.adsCoreRepare.ParamByName( 'SynonymCode').Value := SynonymCode;
-      DM.adsCoreRepare.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
       DM.adsCoreRepare.ParamByName( 'JUNK').Value := JUNK;
       DM.adsCoreRepare.ParamByName( 'AWAIT').Value := AWAIT;
+
+      DM.adsCoreRepare.RestoreSQL;
+      if (VarIsNull(SynonymFirmCrCode)) then
+        DM.adsCoreRepare.AddWhere('(CCore.SYNONYMFIRMCRCODE is null)')
+      else begin
+        DM.adsCoreRepare.AddWhere('(CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE)');
+        DM.adsCoreRepare.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
+      end;
+      
 			DM.adsCoreRepare.Open;
 			{ проверяем наличие прайс-листа }
 			if DM.adsCoreRepare.IsEmpty then

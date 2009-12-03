@@ -2434,10 +2434,9 @@ object DM: TDM
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
       'And (CCore.RegionCode = :RegionCode)'
-      'and  CCore.SYNONYMCODE = :SYNONYMCODE'
-      'and CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE'
-      'and CCore.AWAIT = :AWAIT'
-      'and CCore.JUNK = :JUNK')
+      'and (CCore.SYNONYMCODE = :SYNONYMCODE)'
+      'and (CCore.AWAIT = :AWAIT)'
+      'and (CCore.JUNK = :JUNK)')
     Left = 784
     Top = 256
     ParamData = <
@@ -2460,10 +2459,6 @@ object DM: TDM
       item
         DataType = ftUnknown
         Name = 'SYNONYMCODE'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'SYNONYMFIRMCRCODE'
       end
       item
         DataType = ftUnknown

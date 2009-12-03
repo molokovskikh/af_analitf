@@ -705,7 +705,15 @@ begin
           ParamByName( 'PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
           ParamByName( 'RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
           ParamByName( 'SynonymCode').Value:=SynonymCode;
-          ParamByName( 'SynonymFirmCrCode').Value:=SynonymFirmCrCode;
+
+          RestoreSQL;
+          if (VarIsNull(SynonymFirmCrCode)) then
+            AddWhere('(CCore.SYNONYMFIRMCRCODE is null)')
+          else begin
+            AddWhere('(CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE)');
+            ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
+          end;
+          
           Open;
           FetchAll;
           RecCountSRV := adsCore.RecordCount;
