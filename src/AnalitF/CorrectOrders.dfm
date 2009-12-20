@@ -33,6 +33,16 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       ModalResult = 6
       TabOrder = 1
     end
+    object btnRetrySend: TButton
+      Left = 240
+      Top = 8
+      Width = 169
+      Height = 25
+      Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100' '#1079#1072#1082#1072#1079#1099' '#1087#1086#1074#1090#1086#1088#1085#1086
+      ModalResult = 4
+      TabOrder = 2
+      Visible = False
+    end
   end
   object pClient: TPanel
     Left = 0
@@ -588,6 +598,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     AfterPost = adsCoreAfterPost
     BeforeScroll = adsCoreBeforeScroll
     OnCalcFields = adsCoreCalcFields
+    Options.StrictUpdate = False
     Left = 248
     Top = 205
     ParamData = <

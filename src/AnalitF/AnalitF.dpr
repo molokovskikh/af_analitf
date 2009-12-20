@@ -78,7 +78,9 @@ uses
   MDLHelper in '..\Common\DLLHelper\MDLHelper.pas',
 {$endif}
   InforoomException in 'Exceptions\InforoomException.pas',
-  DataIntegrityExceptions in 'Exceptions\DataIntegrityExceptions.pas';
+  DataIntegrityExceptions in 'Exceptions\DataIntegrityExceptions.pas',
+  PostSomeOrdersController in 'BusinessLogic\PostSomeOrdersController.pas',
+  ExchangeParameters in 'BusinessLogic\ExchangeParameters.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

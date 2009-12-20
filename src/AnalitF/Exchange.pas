@@ -9,10 +9,18 @@ uses
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet, Contnrs,
-  IdIOHandlerStack, IdSSL, U_VistaCorrectForm;
+  IdIOHandlerStack, IdSSL, U_VistaCorrectForm, ExchangeParameters;
 
 type
-  TExchangeAction=( eaGetPrice, eaSendOrders, eaImportOnly, eaGetFullData, eaMDBUpdate, eaGetWaybills, eaSendLetter);
+  TExchangeAction=(
+    eaGetPrice,
+    eaSendOrders,
+    eaImportOnly,
+    eaGetFullData,
+    eaMDBUpdate,
+    eaGetWaybills,
+    eaSendLetter,
+    eaForceSendOrders);
 
   TExchangeActions=set of TExchangeAction;
 
@@ -53,7 +61,7 @@ type
 
     //Текст ошибки, которая произошла
 	  ErrMsg: string;
-    
+
     //Содержимое статусного текста
     FStatusStr      : String;
 
@@ -77,9 +85,9 @@ type
 var
 	ExchangeForm: TExchangeForm;
 	ExThread: TExchangeThread;
-  GlobalExchangeParams : TObjectList;
+  NeedRetrySendOrder : Boolean;
 
-procedure TryToRepareOrders;
+procedure TryToRepareOrders(ProcessSendOrdersResponse : Boolean);
 procedure PrintOrdersAfterSend;
 function RunExchange(AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 
@@ -96,6 +104,7 @@ type
    public
     Strings  : TStrings;
     mdOutput : TRxMemoryData;
+    ProcessSendOrdersResponse : Boolean;
     procedure RepareOrders;
     procedure InternalRepareOrders;
     procedure FillData;
@@ -109,6 +118,7 @@ var
 	mr: integer;
 //	hMenuHandle: HMENU;
 begin
+  NeedRetrySendOrder := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
 	Result := False;
@@ -201,7 +211,7 @@ begin
 		  (eaImportOnly in AExchangeActions) or (eaGetFullData in AExchangeActions))
       and Result
   then
-    TryToRepareOrders;
+    TryToRepareOrders(False);
 
 	if MainForm.ExchangeOnly then exit;
 
@@ -225,7 +235,7 @@ begin
   then
     AProc.MessageBox('Письмо успешно отправлено.', MB_OK or MB_ICONINFORMATION);
 
-	if Result and ( AExchangeActions = [ eaSendOrders]) then
+	if Result and ( [eaSendOrders] * AExchangeActions = [eaSendOrders]) then
   begin
     MainForm.SetOrdersInfo;
     if (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count = 0)
@@ -243,13 +253,15 @@ begin
 
 	if Result and ( AExchangeActions = [ eaSendOrders])
     and (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count > 0)
-  then
+  then begin
     if AProc.MessageBox(
         'Во время отправки заказов возникли ошибки. ' +
             'Желаете посмотреть журнал ошибок?',
         MB_ICONWARNING or MB_YESNO) = IDYES
     then
       ShowNotSended(TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Text);
+    TryToRepareOrders(True);
+  end;
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
 	if Result and (( eaGetPrice in AExchangeActions) or
@@ -307,12 +319,13 @@ begin
 end;
 
 { Восстанавливаем заказы после обновления }
-procedure TryToRepareOrders;
+procedure TryToRepareOrders(ProcessSendOrdersResponse : Boolean);
 var
   t : TInternalRepareOrders;
 begin
   t := TInternalRepareOrders.Create;
   try
+    t.ProcessSendOrdersResponse := ProcessSendOrdersResponse;
     t.RepareOrders;
   finally
     t.Free;
@@ -525,7 +538,8 @@ var
 	procedure SetOrder( Order: integer);
 	begin
 		DM.adsRepareOrders.Edit;
-		DM.adsRepareOrdersORDERCOUNT.AsInteger := Order;
+    if not ProcessSendOrdersResponse then
+      DM.adsRepareOrdersORDERCOUNT.AsInteger := Order;
 		if Order = 0 then
       DM.adsRepareOrdersCOREID.Clear
     else begin
@@ -585,17 +599,6 @@ begin
 			{ проверяем наличие прайс-листа }
 			if DM.adsCoreRepare.IsEmpty then
 			begin
-{
-      mdOutput.FieldDefs.Add('Reason', ftString, 500);
-      mdOutput.FieldDefs.Add('OldOrderCount', ftInteger);
-      mdOutput.FieldDefs.Add('NewOrderCount', ftInteger);
-      mdOutput.FieldDefs.Add('OldPrice', ftCurrency);
-      mdOutput.FieldDefs.Add('NewPrice', ftCurrency);
-      mdOutput.FieldDefs.Add('OrderListId', ftLargeint);
-      mdOutput.FieldDefs.Add('ProductId', ftLargeint);
-      mdOutput.FieldDefs.Add('ClientId', ftLargeint);
-
-}
         mdOutput.AppendRecord(
          [DM.adsRepareOrdersClientName.AsString,
          DM.adsRepareOrdersPRICENAME.AsString,
@@ -754,8 +757,16 @@ begin
 end;
 
 procedure TInternalRepareOrders.RepareOrders;
+var
+  formResult : TModalResult;
 begin
   DM.adsRepareOrders.Close;
+
+  DM.adsRepareOrders.RestoreSQL;
+  //Если обрабатываем ответ от сервера, то рассматриваем только "отправляемые" заявки
+  if ProcessSendOrdersResponse then
+    DM.adsRepareOrders.AddWhere('(OrdersHead.Send = 1)');
+
   DM.adsRepareOrders.Open;
 
 	if DM.adsRepareOrders.IsEmpty then
@@ -791,8 +802,12 @@ begin
         { если не нашли что-то, то выводим сообщение }
         if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
         begin
-          if (ShowCorrectOrders(mdOutput) = mrYes) then
-            ShowNotFound( Strings);
+          formResult := ShowCorrectOrders(mdOutput, ProcessSendOrdersResponse);
+          if (formResult = mrYes) then
+            ShowNotFound( Strings)
+          else
+            if (formResult = mrRetry) then
+              NeedRetrySendOrder := True;
         end;
       finally
         mdOutput.Close;
@@ -810,6 +825,5 @@ end;
 
 initialization
   ExThread := nil;
-  GlobalExchangeParams := nil;
 finalization
 end.

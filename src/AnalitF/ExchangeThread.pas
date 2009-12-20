@@ -10,30 +10,9 @@ uses
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
   U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess,
-  DataIntegrityExceptions;
-
-const
-  //Критические сообщения об ошибках при отправке заказов
-  SendOrdersErrorTexts : array[0..3] of string =
-  ('Доступ запрещен.',
-   'Программа была зарегистрирована на другом компьютере.',
-   'Отправка заказов для данного клиента запрещена.',
-   'Отправка заказов завершилась неудачно.');
+  DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters;
 
 type
-  TExchangeParams = (epTerminated, epCriticalError, epErrorMessage,
-                     epDownloadChildThreads, epServerAddition, epSendedOrders,
-                     epSendedOrdersErrorLog);
-
-  TStringValue = class
-    Value : String;
-    constructor Create(AValue : String);
-  end;
-
-  TBooleanValue = class
-    Value : Boolean;
-    constructor Create(AValue : Boolean);
-  end;
 
 TUpdateTable = (
 	utCatalogs,
@@ -109,6 +88,7 @@ private
 	procedure DoExchange;
 	procedure DoSendLetter;
 	procedure DoSendOrders;
+  procedure DoSendSomeOrders;
 	procedure HTTPDisconnect;
 	procedure RasDisconnect;
 	procedure UnpackFiles;
@@ -218,7 +198,8 @@ begin
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-          DoSendOrders;
+          //DoSendOrders;
+          DoSendSomeOrders;
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 				end;
 				if eaSendLetter in ExchangeForm.ExchangeActs then
@@ -2178,20 +2159,7 @@ constructor TExchangeThread.Create(CreateSuspended: Boolean);
 begin
   inherited;
   ExchangeParams := TObjectList.Create(True);
-  //epTerminated
-  ExchangeParams.Add(TBooleanValue.Create(False));
-  //epCriticalError
-  ExchangeParams.Add(TBooleanValue.Create(False));
-  //epErrorMessage
-  ExchangeParams.Add(TStringValue.Create(''));
-  //epDownloadChildThreads
-  ExchangeParams.Add(TBooleanValue.Create(False));
-  //epServerAddition
-  ExchangeParams.Add(TStringValue.Create(''));
-  //epSendedOrders
-  ExchangeParams.Add(TStringList.Create());
-  //epSendedOrdersErrorLog
-  ExchangeParams.Add(TStringList.Create());
+  TExchangeParamsHelper.InitExchangeParams(ExchangeParams);
 end;
 
 function TExchangeThread.ChildThreadClassIsExists(
@@ -2380,18 +2348,26 @@ begin
   end;
 end;
 
-{ TStringValue }
-
-constructor TStringValue.Create(AValue: String);
+procedure TExchangeThread.DoSendSomeOrders;
+var
+  postController : TPostSomeOrdersController;
 begin
-  Value := AValue;
-end;
+  Synchronize( ExchangeForm.CheckStop);
+  Synchronize( DisableCancel);
+  StatusText := 'Отправка заказов';
+  Synchronize( SetStatus);
 
-{ TBooleanValue }
-
-constructor TBooleanValue.Create(AValue: Boolean);
-begin
-  Value := AValue;
+  postController := TPostSomeOrdersController
+    .Create(DM, ExchangeParams, eaForceSendOrders in ExchangeForm.ExchangeActs, Soap);
+  try
+    postController.PostSomeOrders;
+  finally
+    postController.Free;
+    StatusText := '';
+    Synchronize( SetStatus);
+  end;
+  
+  Synchronize( EnableCancel);
 end;
 
 initialization

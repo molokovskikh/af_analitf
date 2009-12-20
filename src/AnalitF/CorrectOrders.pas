@@ -96,6 +96,7 @@ type
     adsAvgOrdersPRODUCTID: TLargeintField;
     tCheckVolume: TTimer;
     adsCoreRealCost: TFloatField;
+    btnRetrySend: TButton;
     procedure FormCreate(Sender: TObject);
     procedure tvListChange(Sender: TObject; Node: TTreeNode);
     procedure tvListChanging(Sender: TObject; Node: TTreeNode;
@@ -156,7 +157,7 @@ http://qc.embarcadero.com/wc/qcmain.aspx?d=2659
 хотя раньше все было в порядке
 }
 
-function ShowCorrectOrders(Orders : TRxMemoryData) : TModalResult;
+function ShowCorrectOrders(Orders : TRxMemoryData; ShowRetry : Boolean) : TModalResult;
 
 implementation
 
@@ -165,13 +166,15 @@ implementation
 uses
   DModule, AProc, DBProc;
 
-function ShowCorrectOrders(Orders : TRxMemoryData) : TModalResult;
+function ShowCorrectOrders(Orders : TRxMemoryData; ShowRetry : Boolean) : TModalResult;
 var
   CorrectOrdersForm: TCorrectOrdersForm;
 begin
   CorrectOrdersForm := TCorrectOrdersForm.Create(Application);
   try
     CorrectOrdersForm.Orders := Orders;
+    if (ShowRetry) then
+      CorrectOrdersForm.btnRetrySend.Visible := True;
     CorrectOrdersForm.Prepare;
     Result := CorrectOrdersForm.ShowModal;
   finally
@@ -323,7 +326,9 @@ procedure TCorrectOrdersForm.adsCoreBeforeUpdateExecute(
   Params: TDAParams);
 begin
   if (stUpdate in StatementTypes) or (stRefresh in StatementTypes) then
-    Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
+    //Возможна ситуация, когда параметра "ClientId" не будет в выполняемой команде
+    if Assigned(Params.FindParam('ClientId')) then
+      Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
 end;
 
 procedure TCorrectOrdersForm.tvListKeyDown(Sender: TObject; var Key: Word;
@@ -467,6 +472,9 @@ begin
     adsCore.Cancel;
     raise;
   end;
+  //Это хак: чтобы метод не отрабатывал на adsCore из формы TOrdersForm  
+  if Assigned(DataSet.FindField('ORDERSORDERID')) then
+    DM.InsertOrderHeader(TCustomMyDataSet(DataSet));
 end;
 
 procedure TCorrectOrdersForm.tCheckVolumeTimer(Sender: TObject);

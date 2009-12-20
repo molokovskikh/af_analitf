@@ -153,8 +153,8 @@ var
 begin
   Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(OrderId), [], []);
   adsOrders.OnCalcFields := ocf;
-  dbgOrders.Columns[2].FieldName := 'PRICE';
-  dbgOrders.Columns[4].FieldName := 'SumOrder';
+//  dbgOrders.Columns[2].FieldName := 'PRICE';
+//  dbgOrders.Columns[4].FieldName := 'SumOrder';
   if Closed = 0 then begin
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;

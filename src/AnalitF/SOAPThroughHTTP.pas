@@ -15,7 +15,14 @@ TSOAP = class( TObject)
 	destructor Destroy; override;
 
 	function Invoke( AMethodName: string; AParams, AValues: array of string): TStrings;
-	function SimpleInvoke( AMethodName: string; AParams, AValues: array of string): String;
+  function SimpleInvoke(
+    MethodName: string;
+    Params,
+    Values: array of string): String; overload;
+  function SimpleInvoke(
+    MethodName: string;
+    PostParams : TStringList): String; overload;
+  function PreparePostValue(PostValue : String) : String;
 private
 	FHTTP: TIdHTTP;
 	FIntercept: TIdConnectionIntercept;
@@ -210,67 +217,80 @@ begin
 end;
 {$endif}
 
-function TSOAP.SimpleInvoke(AMethodName: string; AParams,
-  AValues: array of string): String;
+function TSOAP.SimpleInvoke(
+  MethodName: string;
+  Params,
+  Values: array of string): String;
 var
-	list: TStringList;
-	i: integer;
-	FullURL: string;
-	start, stop: integer;
+  list: TStringList;
+  i: integer;
+begin
+  if High(Params) <> High(Values) then
+    raise Exception.Create( 'Ќесовпадает количество параметров и значений');
+
+  list := TStringList.Create;
+  try
+    for i := Low(Params) to High(Params) do
+      list.Add(Params[i] + '=' + PreparePostValue(Values[i]));
+
+    Result := SimpleInvoke(MethodName, list);
+
+  finally
+    list.Free;
+  end;
+end;
+
+function TSOAP.PreparePostValue(PostValue: String): String;
+begin
+  Result :=
+    StringReplace(TIdURI.ParamsEncode(PostValue), '&', '%26', [rfReplaceAll]);
+end;
+
+function TSOAP.SimpleInvoke(
+  MethodName: string;
+  PostParams: TStringList): String;
+var
+  FullURL: string;
+  start, stop: integer;
   TmpResult : String;
   ForceEncodeParamsSet : Boolean;
   ResponseLog : String;
 begin
-	if High( AParams) <> High( AValues) then
-		raise Exception.Create( 'Ќесовпадает количество параметров и значений');
+  FullURL := FURL;
+  if FullURL[ Length( FullURL)] <> '/' then FullURL := FullURL + '/';
+  FullURL := FullURL + MethodName;
 
-	FullURL := FURL;
-	if FullURL[ Length( FullURL)] <> '/' then FullURL := FullURL + '/';
-	FullURL := FullURL + AMethodName;
+  FResponse := '';
+  try
 
-	FResponse := '';
-	try
-
-    list := TStringList.Create;
+    //ѕровере€м, усталовен ли параметр hoForceEncodeParams
+    //Ётот параметр надо сбросить, чтобы передаваемые значени€ не кодировались IdHTTP
+    ForceEncodeParamsSet := hoForceEncodeParams in FHTTP.HTTPOptions;
+    FHTTP.HTTPOptions := FHTTP.HTTPOptions - [hoForceEncodeParams];
+    FIntercept.OnReceive := OnReceive;
+{$ifdef DEBUG}
+    FIntercept.OnSend := OnSend;
+    FHTTP.OnHeadersAvailable := HttpReceiveHeadersAvailable;
+{$endif}
     try
-      list.Clear;
-      for i := Low( AParams) to High( AParams) do
-      begin
-        list.Add(
-          AParams[i] +
-          '=' +
-          StringReplace(TIdURI.ParamsEncode(AValues[i]), '&', '%26', [rfReplaceAll]));
-      end;
+{$ifdef DEBUG}
+      WriteExchangeLog(
+        'TSOAP.SimpleInvoke:' + FHTTP.Name,
+        'MethodName : ' + MethodName);
+{$endif}
 
-      //ѕровере€м, усталовен ли параметр hoForceEncodeParams
-      //Ётот параметр надо сбросить, чтобы передаваемые значени€ не кодировались IdHTTP
-      ForceEncodeParamsSet := hoForceEncodeParams in FHTTP.HTTPOptions;
-      FHTTP.HTTPOptions := FHTTP.HTTPOptions - [hoForceEncodeParams];
-      FIntercept.OnReceive := OnReceive;
-  {$ifdef DEBUG}
-      FIntercept.OnSend := OnSend;
-      FHTTP.OnHeadersAvailable := HttpReceiveHeadersAvailable;
-  {$endif}
-      try
-  {$ifdef DEBUG}
-        WriteExchangeLog('TSOAP.SimpleInvoke:' + FHTTP.Name, 'MethodName : ' + AMethodName);
-  {$endif}
-
-        DoPost(FullURL, list);
-      finally
-        if ForceEncodeParamsSet then
-          FHTTP.HTTPOptions := FHTTP.HTTPOptions + [hoForceEncodeParams];
-        FIntercept.OnReceive := nil;
-  {$ifdef DEBUG}
-        FHTTP.OnHeadersAvailable := nil;
-        FIntercept.OnSend := nil;
-  {$endif}
-      end;
+      DoPost(FullURL, PostParams);
     finally
-      list.Free;
+      if ForceEncodeParamsSet then
+        FHTTP.HTTPOptions := FHTTP.HTTPOptions + [hoForceEncodeParams];
+      FIntercept.OnReceive := nil;
+{$ifdef DEBUG}
+      FHTTP.OnHeadersAvailable := nil;
+      FIntercept.OnSend := nil;
+{$endif}
     end;
 
-	except
+  except
     //ѕроизводим протоколирование ответа, который успели получить до ошибки
 {$ifndef DEBUG}
     if ( Pos( #$D#$A#$D#$A, FResponse) > 0) then
@@ -281,7 +301,7 @@ begin
       ResponseLog := FResponse;
     WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8ToAnsi(ResponseLog));
     raise;
-	end;
+  end;
 
   //ѕроизводим протоколирование ответа, если от сервера получили код, отличный от 200
   if (FHTTP.ResponseCode <> 200) then
@@ -296,9 +316,9 @@ begin
       if (FHTTP.ResponseCode <> 200) then
         raise Exception.Create('ѕри выполнении вашего запроса произошла ошибка.'#13#10'ѕовторите запрос через несколько минут.');
 
-	start := PosEx( '>', FResponse, Pos( 'xmlns', FResponse)) + 1;
-	stop := PosEx( '</', FResponse, start);
-	TmpResult := Copy( FResponse, start, stop - start);
+  start := PosEx( '>', FResponse, Pos( 'xmlns', FResponse)) + 1;
+  stop := PosEx( '</', FResponse, start);
+  TmpResult := Copy( FResponse, start, stop - start);
   Result := TmpResult;
 end;
 

@@ -455,6 +455,7 @@ type
     adcTemporaryTable: TMyQuery;
     adsRepareOrdersRealPrice: TFloatField;
     adsCoreRepareRealCost: TFloatField;
+    adsOrderDetailsServerCoreId: TLargeintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -608,7 +609,11 @@ type
     procedure OpenDocsDir(DirName : String; FileList : TStringList; OpenEachFile : Boolean);
 
     //получить сумму заказа
-    function GetSumOrder (OrderID : Integer) : Currency;
+    function  GetSumOrder (OrderID : Integer) : Currency;
+    procedure GetOrderInfo (
+      OrderID : Int64;
+      var PriceName,
+      RegionName :String);
     //получить сумму заказа по PriceCode и RegionCode
     function FindOrderInfo (PriceCode: Integer; RegionCode : Int64) : Currency;
 
@@ -951,8 +956,8 @@ begin
   MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
 {$endif}
 
-  SerBeg := '8F24';
-  SerEnd := 'BB48';
+  SerBeg := 'Prg';
+  SerEnd := 'Data';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
@@ -4502,6 +4507,33 @@ begin
 
   if RaiseException then
     raise EDelayOfPaymentsDataIntegrityException.Create('Нарушение целостности в отсрочках');
+end;
+
+procedure TDM.GetOrderInfo(
+  OrderID: Int64;
+  var PriceName,
+  RegionName: String);
+begin
+  try
+    PriceName := DM.QueryValue(
+      'SELECT PriceName '
+      + 'FROM OrdersHead '
+      + 'WHERE OrderId = :OrderId',
+      ['OrderId'],
+      [OrderID]);
+  except
+    PriceName := '';
+  end;
+  try
+    RegionName := DM.QueryValue(
+      'SELECT RegionName '
+      + 'FROM OrdersHead '
+      + 'WHERE OrderId = :OrderId',
+      ['OrderId'],
+      [OrderID]);
+  except
+    RegionName := '';
+  end;
 end;
 
 initialization

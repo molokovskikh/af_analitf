@@ -236,7 +236,7 @@ uses
 	Exchange, Expireds, Core, UniqueID, CoreFirm,
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
-  Variants;
+  Variants, ExchangeParameters;
 
 {$R *.DFM}
 
@@ -708,7 +708,12 @@ end;
 
 procedure TMainForm.actSendOrdersExecute(Sender: TObject);
 begin
-	RunExchange([ eaSendOrders]);
+  repeat
+    if not NeedRetrySendOrder then
+      RunExchange([eaSendOrders])
+    else
+      RunExchange([eaSendOrders, eaForceSendOrders]);
+  until not NeedRetrySendOrder;
 end;
 
 function TMainForm.CheckUnsendOrders: boolean;

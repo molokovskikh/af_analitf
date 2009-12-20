@@ -2004,12 +2004,14 @@ object DM: TDM
       '    OrdersList.Price*OrdersList.OrderCount AS SumOrder,'
       '    OrdersList.RequestRatio,'
       '    OrdersList.OrderCost,'
-      '    OrdersList.MinOrderCount'
+      '    OrdersList.MinOrderCount,'
+      '    core.ServerCoreId'
       'FROM '
       '  OrdersList'
       
         '  left join products on products.productid = OrdersList.producti' +
         'd'
+      '  left join core on core.CoreId = OrdersList.CoreId'
       'WHERE '
       '    (OrdersList.OrderId=:OrderId) '
       'AND (OrdersList.OrderCount>0)'
@@ -2088,6 +2090,9 @@ object DM: TDM
     end
     object adsOrderDetailsprice: TFloatField
       FieldName = 'price'
+    end
+    object adsOrderDetailsServerCoreId: TLargeintField
+      FieldName = 'ServerCoreId'
     end
   end
   object adsOrdersHeaders: TMyQuery
