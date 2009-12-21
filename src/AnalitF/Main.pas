@@ -714,6 +714,8 @@ begin
     else
       RunExchange([eaSendOrders, eaForceSendOrders]);
   until not NeedRetrySendOrder;
+  if NeedRefreshAfterSendOrder then
+    RunExchange([eaGetPrice]);
 end;
 
 function TMainForm.CheckUnsendOrders: boolean;

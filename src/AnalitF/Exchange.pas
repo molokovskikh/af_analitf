@@ -86,6 +86,7 @@ var
 	ExchangeForm: TExchangeForm;
 	ExThread: TExchangeThread;
   NeedRetrySendOrder : Boolean;
+  NeedRefreshAfterSendOrder : Boolean;
 
 procedure TryToRepareOrders(ProcessSendOrdersResponse : Boolean);
 procedure PrintOrdersAfterSend;
@@ -119,6 +120,7 @@ var
 //	hMenuHandle: HMENU;
 begin
   NeedRetrySendOrder := False;
+  NeedRefreshAfterSendOrder := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
 	Result := False;
@@ -240,9 +242,7 @@ begin
     MainForm.SetOrdersInfo;
     if (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count = 0)
     then
-      AProc.MessageBox('Отправка заказов завершена успешно.', MB_OK or MB_ICONINFORMATION)
-    else
-      AProc.MessageBox('Отправка заказов завершена с ошибками.', MB_OK or MB_ICONWARNING);
+      AProc.MessageBox('Отправка заказов завершена успешно.', MB_OK or MB_ICONINFORMATION);
 
     if ((DM.SaveGridMask and PrintSendedOrder) > 0)
       and (DM.adtParams.FieldByName('PrintOrdersAfterSend').AsBoolean)
@@ -802,12 +802,15 @@ begin
         { если не нашли что-то, то выводим сообщение }
         if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
         begin
-          formResult := ShowCorrectOrders(mdOutput, ProcessSendOrdersResponse);
-          if (formResult = mrYes) then
-            ShowNotFound( Strings)
-          else
+          formResult := ShowCorrectOrders(
+            mdOutput,
+            ProcessSendOrdersResponse,
+            Strings);
             if (formResult = mrRetry) then
-              NeedRetrySendOrder := True;
+              NeedRetrySendOrder := True
+            else
+              if (formResult = mrIgnore) then
+                NeedRefreshAfterSendOrder := True;
         end;
       finally
         mdOutput.Close;

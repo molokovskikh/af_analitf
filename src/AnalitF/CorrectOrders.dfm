@@ -29,9 +29,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       Top = 8
       Width = 121
       Height = 25
-      Caption = #1055#1077#1088#1077#1081#1090#1080' '#1082' '#1086#1090#1095#1077#1090#1091
+      Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1086#1090#1095#1077#1090
       ModalResult = 6
       TabOrder = 1
+      OnClick = btnGoToReportClick
     end
     object btnRetrySend: TButton
       Left = 240
@@ -41,6 +42,16 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100' '#1079#1072#1082#1072#1079#1099' '#1087#1086#1074#1090#1086#1088#1085#1086
       ModalResult = 4
       TabOrder = 2
+      Visible = False
+    end
+    object btnRefresh: TButton
+      Left = 424
+      Top = 8
+      Width = 129
+      Height = 25
+      Caption = #1055#1086#1083#1091#1095#1080#1090#1100' '#1076#1072#1085#1085#1099#1077
+      ModalResult = 5
+      TabOrder = 3
       Visible = False
     end
   end
@@ -873,5 +884,12 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     OnTimer = tCheckVolumeTimer
     Left = 40
     Top = 56
+  end
+  object SaveDialog: TSaveDialog
+    DefaultExt = '.txt'
+    Filter = #1058#1077#1082#1089#1090#1086#1074#1099#1077' '#1092#1072#1081#1083#1099' (*.txt)|*.txt|'#1042#1089#1077' '#1092#1072#1081#1083#1099' (*.*)|*.*'
+    Options = [ofOverwritePrompt, ofPathMustExist, ofEnableSizing]
+    Left = 224
+    Top = 104
   end
 end

@@ -97,6 +97,8 @@ type
     tCheckVolume: TTimer;
     adsCoreRealCost: TFloatField;
     btnRetrySend: TButton;
+    SaveDialog: TSaveDialog;
+    btnRefresh: TButton;
     procedure FormCreate(Sender: TObject);
     procedure tvListChange(Sender: TObject; Node: TTreeNode);
     procedure tvListChanging(Sender: TObject; Node: TTreeNode;
@@ -119,6 +121,7 @@ type
     procedure adsCoreBeforeScroll(DataSet: TDataSet);
     procedure dbgCoreExit(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure btnGoToReportClick(Sender: TObject);
   private
     { Private declarations }
     UseExcess: Boolean;
@@ -146,6 +149,7 @@ type
     procedure SetOffers;
   public
     { Public declarations }
+    Report : TStrings;
     procedure Prepare;
   end;
 
@@ -157,7 +161,10 @@ http://qc.embarcadero.com/wc/qcmain.aspx?d=2659
 хотя раньше все было в порядке
 }
 
-function ShowCorrectOrders(Orders : TRxMemoryData; ShowRetry : Boolean) : TModalResult;
+function ShowCorrectOrders(
+  Orders : TRxMemoryData;
+  ShowRetry : Boolean;
+  Report : TStrings) : TModalResult;
 
 implementation
 
@@ -166,15 +173,21 @@ implementation
 uses
   DModule, AProc, DBProc;
 
-function ShowCorrectOrders(Orders : TRxMemoryData; ShowRetry : Boolean) : TModalResult;
+function ShowCorrectOrders(
+  Orders : TRxMemoryData;
+  ShowRetry : Boolean;
+  Report : TStrings) : TModalResult;
 var
   CorrectOrdersForm: TCorrectOrdersForm;
 begin
   CorrectOrdersForm := TCorrectOrdersForm.Create(Application);
   try
     CorrectOrdersForm.Orders := Orders;
-    if (ShowRetry) then
+    if (ShowRetry) then begin
       CorrectOrdersForm.btnRetrySend.Visible := True;
+      CorrectOrdersForm.btnRefresh.Visible := True;
+    end;
+    CorrectOrdersForm.Report := Report;
     CorrectOrdersForm.Prepare;
     Result := CorrectOrdersForm.ShowModal;
   finally
@@ -184,6 +197,7 @@ end;
 
 procedure TCorrectOrdersForm.FormCreate(Sender: TObject);
 begin
+  Report := nil;
   UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
   adsAvgOrders.ParamByName( 'ClientId').Value :=
@@ -585,6 +599,12 @@ procedure TCorrectOrdersForm.FormResize(Sender: TObject);
 begin
   inherited;
   pTop.Height := Self.ClientHeight div 2;
+end;
+
+procedure TCorrectOrdersForm.btnGoToReportClick(Sender: TObject);
+begin
+  if Assigned(Report) and SaveDialog.Execute then
+    Report.SaveToFile(SaveDialog.FileName);
 end;
 
 end.
