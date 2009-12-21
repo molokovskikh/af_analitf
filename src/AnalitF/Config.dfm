@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshConnect
+    ActivePage = tshOther
     Align = alTop
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5735,6 +5735,18 @@ object ConfigForm: TConfigForm
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end
+      object dbchbConfirmSendingOrders: TDBCheckBox
+        Left = 8
+        Top = 210
+        Width = 377
+        Height = 17
+        Caption = #1055#1086#1076#1090#1074#1077#1088#1078#1076#1072#1090#1100' '#1086#1090#1087#1088#1072#1074#1082#1091' '#1079#1072#1082#1072#1079#1086#1074
+        DataField = 'ConfirmSendingOrders'
+        DataSource = DM.dsParams
+        TabOrder = 7
+        ValueChecked = 'True'
+        ValueUnchecked = 'False'
+      end
     end
   end
   object RasMenu: TPopupMenu
@@ -5777,8 +5789,8 @@ object ConfigForm: TConfigForm
       end>
     BeforePost = mdRetailBeforePost
     AfterPost = mdRetailAfterPost
-    Left = 68
-    Top = 224
+    Left = 188
+    Top = 328
     object mdRetailID: TIntegerField
       FieldName = 'ID'
     end
@@ -5799,7 +5811,7 @@ object ConfigForm: TConfigForm
   end
   object dsRetail: TDataSource
     DataSet = mdRetail
-    Left = 100
-    Top = 224
+    Left = 228
+    Top = 328
   end
 end

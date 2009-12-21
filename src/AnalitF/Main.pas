@@ -708,6 +708,12 @@ end;
 
 procedure TMainForm.actSendOrdersExecute(Sender: TObject);
 begin
+  if DM.adtParams.FieldByName('ConfirmSendingOrders').AsBoolean then
+    if AProc.MessageBox( 'Вы действительно хотите отправить заказы?',
+       MB_ICONQUESTION or MB_YESNO or MB_DEFBUTTON2) = IDNO
+    then
+      Exit;
+      
   repeat
     if not NeedRetrySendOrder then
       RunExchange([eaSendOrders])
