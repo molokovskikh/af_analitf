@@ -39,6 +39,7 @@ type
     ToolbarImages: TImageList;
     mtFileListImageIndex: TIntegerField;
     MemTableEh1IntegerField: TIntegerField;
+    MemTableEh1TestChecked: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure DBGridEh1GetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
@@ -51,6 +52,8 @@ type
     procedure MemTableEh1AfterScroll(DataSet: TDataSet);
     procedure DBGridEh2Columns0GetCellParams(Sender: TObject;
       EditMode: Boolean; Params: TColCellParamsEh);
+    procedure DBGridEh1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
   private
     { Private declarations }
   public
@@ -111,7 +114,7 @@ begin
         ImageIndex := GetShellImage(APath + '\' + LSrch.Name, False, True);
         MemTableEh1.AppendRecord([Null, RefParent, LSrch.Name,
           APath + '\' + LSrch.Name, LSrch.Attr, (LSrch.Attr and faDirectory) <> 0,
-          Null, ImageIndex]);
+          Null, ImageIndex, False]);
         Inc(Result);
       end;
       i := FindNext(LSrch);
@@ -163,7 +166,7 @@ begin
   MemTableEh1.Open;
   MemTableEh1.TreeList.KeyFieldName := 'Id';
   MemTableEh1.TreeList.RefParentFieldName := 'RefParent';
-  MemTableEh1.TreeList.DefaultNodeExpanded := False;
+  //MemTableEh1.TreeList.DefaultNodeExpanded := False;
 //  MemTableEh1.TreeList.DefaultNodeHasChildren := False;
   MemTableEh1.TreeList.Active := True;
 
@@ -360,6 +363,16 @@ procedure TForm1.DBGridEh2Columns0GetCellParams(Sender: TObject;
   EditMode: Boolean; Params: TColCellParamsEh);
 begin
   Params.ImageIndex := mtFileList.FieldByName('ImageIndex').AsInteger;
+end;
+
+procedure TForm1.DBGridEh1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumnEh;
+  State: TGridDrawState);
+begin
+  if Column.Field = MemTableEh1TestChecked then begin
+    if MemTableEh1.TreeNodeLevel > 1 then
+      TDBGridEh(Sender).Canvas.FillRect(Rect);
+  end;
 end;
 
 end.

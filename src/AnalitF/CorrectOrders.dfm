@@ -1,8 +1,8 @@
 inherited CorrectOrdersForm: TCorrectOrdersForm
   Left = 255
   Top = 174
-  Height = 384
-  ActiveControl = tvList
+  Width = 868
+  Height = 444
   Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1086#1089#1089#1090#1072#1085#1086#1074#1083#1077#1085#1085#1099#1093' '#1079#1072#1082#1072#1079#1086#1074
   OnCreate = FormCreate
   OnResize = FormResize
@@ -10,8 +10,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   TextHeight = 13
   object pBottom: TPanel
     Left = 0
-    Top = 315
-    Width = 643
+    Top = 375
+    Width = 860
     Height = 41
     Align = alBottom
     TabOrder = 0
@@ -30,42 +30,51 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       Width = 121
       Height = 25
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1086#1090#1095#1077#1090
-      ModalResult = 6
       TabOrder = 1
       OnClick = btnGoToReportClick
     end
     object btnRetrySend: TButton
       Left = 240
       Top = 8
-      Width = 169
+      Width = 129
       Height = 25
-      Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100' '#1079#1072#1082#1072#1079#1099' '#1087#1086#1074#1090#1086#1088#1085#1086
+      Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100' '#1082#1072#1082' '#1077#1089#1090#1100
       ModalResult = 4
       TabOrder = 2
-      Visible = False
+      OnClick = btnRetrySendClick
     end
     object btnRefresh: TButton
-      Left = 424
+      Left = 384
       Top = 8
       Width = 129
       Height = 25
       Caption = #1055#1086#1083#1091#1095#1080#1090#1100' '#1076#1072#1085#1085#1099#1077
       ModalResult = 5
       TabOrder = 3
-      Visible = False
+      OnClick = btnRefreshClick
+    end
+    object btnEditOrders: TButton
+      Left = 528
+      Top = 8
+      Width = 145
+      Height = 25
+      Caption = #1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100' '#1079#1072#1082#1072#1079#1099
+      ModalResult = 7
+      TabOrder = 4
+      OnClick = btnEditOrdersClick
     end
   end
   object pClient: TPanel
     Left = 0
     Top = 0
-    Width = 643
-    Height = 315
+    Width = 860
+    Height = 375
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 1
       Top = 185
-      Width = 641
+      Width = 858
       Height = 3
       Cursor = crVSplit
       Align = alTop
@@ -74,8 +83,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       Tag = 32
       Left = 1
       Top = 188
-      Width = 641
-      Height = 126
+      Width = 858
+      Height = 186
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -269,23 +278,23 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object pTop: TPanel
       Left = 1
       Top = 1
-      Width = 641
+      Width = 858
       Height = 184
       Align = alTop
       TabOrder = 1
       object Splitter2: TSplitter
-        Left = 268
+        Left = 485
         Top = 1
         Height = 182
         Align = alRight
       end
       object pRight: TPanel
-        Left = 271
+        Left = 488
         Top = 1
         Width = 369
         Height = 182
         Align = alRight
-        TabOrder = 1
+        TabOrder = 0
         object lReason: TLabel
           Left = 8
           Top = 8
@@ -353,19 +362,129 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
             end>
         end
       end
-      object tvList: TTreeView
+      object pLog: TPanel
         Left = 1
         Top = 1
-        Width = 267
+        Width = 484
         Height = 182
         Align = alClient
-        ChangeDelay = 300
-        HideSelection = False
-        Indent = 19
-        ReadOnly = True
-        TabOrder = 0
-        OnChange = tvListChange
-        OnKeyDown = tvListKeyDown
+        TabOrder = 1
+        object tvList: TTreeView
+          Left = 1
+          Top = 1
+          Width = 128
+          Height = 180
+          Align = alLeft
+          ChangeDelay = 300
+          HideSelection = False
+          Indent = 19
+          ReadOnly = True
+          TabOrder = 0
+          OnChange = tvListChange
+          OnKeyDown = tvListKeyDown
+        end
+        object dbgLog: TToughDBGrid
+          Tag = 32
+          Left = 129
+          Top = 1
+          Width = 354
+          Height = 180
+          Align = alClient
+          AutoFitColWidths = True
+          DataSource = dsLog
+          Flat = True
+          FooterColor = clWindow
+          FooterFont.Charset = DEFAULT_CHARSET
+          FooterFont.Color = clWindowText
+          FooterFont.Height = -11
+          FooterFont.Name = 'MS Sans Serif'
+          FooterFont.Style = []
+          Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+          OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+          TabOrder = 1
+          TitleFont.Charset = DEFAULT_CHARSET
+          TitleFont.Color = clWindowText
+          TitleFont.Height = -11
+          TitleFont.Name = 'MS Sans Serif'
+          TitleFont.Style = []
+          OnDrawColumnCell = dbgLogDrawColumnCell
+          OnGetCellParams = dbgLogGetCellParams
+          SearchPosition = spTop
+          Columns = <
+            item
+              EditButtons = <>
+              FieldName = 'NodeName'
+              Footers = <>
+              MinWidth = 5
+              ReadOnly = True
+              Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
+              Width = 50
+            end
+            item
+              Alignment = taCenter
+              Checkboxes = True
+              EditButtons = <>
+              FieldName = 'Send'
+              Footers = <>
+              MinWidth = 5
+              Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
+              Width = 20
+            end
+            item
+              EditButtons = <>
+              FieldName = 'SynonymFirm'
+              Footers = <>
+              MinWidth = 5
+              ReadOnly = True
+              Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
+              Width = 50
+            end
+            item
+              EditButtons = <>
+              FieldName = 'OldOrderCount'
+              Footers = <>
+              MinWidth = 5
+              ReadOnly = True
+              Title.Caption = #1057#1090#1072#1088#1086#1077' '#1082#1086#1083'-'#1074#1086
+              Width = 20
+            end
+            item
+              EditButtons = <>
+              FieldName = 'NewOrderCount'
+              Footers = <>
+              MinWidth = 5
+              ReadOnly = True
+              Title.Caption = #1053#1086#1074#1086#1077' '#1082#1086#1083'-'#1074#1086
+              Width = 20
+            end
+            item
+              EditButtons = <>
+              FieldName = 'OldPrice'
+              Footers = <>
+              MinWidth = 5
+              ReadOnly = True
+              Title.Caption = #1057#1090#1072#1088#1072#1103' '#1094#1077#1085#1072
+              Width = 20
+            end
+            item
+              EditButtons = <>
+              FieldName = 'NewPrice'
+              Footers = <>
+              MinWidth = 5
+              ReadOnly = True
+              Title.Caption = #1053#1086#1074#1072#1103' '#1094#1077#1085#1072
+              Width = 20
+            end
+            item
+              EditButtons = <>
+              FieldName = 'Reason'
+              Footers = <>
+              MinWidth = 5
+              ReadOnly = True
+              Title.Caption = #1055#1088#1080#1095#1080#1085#1072
+              Width = 50
+            end>
+        end
       end
     end
   end
@@ -416,7 +535,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       'update'
       '  orderslist'
       'set'
-      '  OrderCount = :ORDERCOUNT'
+      '  OrderCount = :ORDERCOUNT,'
+      '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
+      '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
+      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity)'
       'where'
       '    OrderId = :ORDERSORDERID'
       'and CoreId  = :OLD_COREID')
@@ -891,5 +1013,208 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     Options = [ofOverwritePrompt, ofPathMustExist, ofEnableSizing]
     Left = 224
     Top = 104
+  end
+  object mtLog: TMemTableEh
+    Active = True
+    FieldDefs = <
+      item
+        Name = 'Id'
+        DataType = ftLargeint
+      end
+      item
+        Name = 'ParentId'
+        DataType = ftLargeint
+      end
+      item
+        Name = 'NodeName'
+        DataType = ftString
+        Size = 255
+      end
+      item
+        Name = 'Send'
+        DataType = ftBoolean
+      end
+      item
+        Name = 'SynonymFirm'
+        DataType = ftString
+        Size = 255
+      end
+      item
+        Name = 'OldOrderCount'
+        DataType = ftInteger
+      end
+      item
+        Name = 'NewOrderCount'
+        DataType = ftInteger
+      end
+      item
+        Name = 'OldPrice'
+        DataType = ftCurrency
+      end
+      item
+        Name = 'NewPrice'
+        DataType = ftCurrency
+      end
+      item
+        Name = 'Reason'
+        DataType = ftString
+        Size = 255
+      end>
+    IndexDefs = <>
+    Params = <>
+    StoreDefs = True
+    TreeList.KeyFieldName = 'Id'
+    TreeList.RefParentFieldName = 'ParentId'
+    TreeList.DefaultNodeExpanded = True
+    Left = 362
+    Top = 74
+    object mtLogId: TLargeintField
+      DisplayWidth = 15
+      FieldName = 'Id'
+    end
+    object mtLogParentId: TLargeintField
+      DisplayWidth = 15
+      FieldName = 'ParentId'
+    end
+    object mtLogNodeName: TStringField
+      FieldName = 'NodeName'
+      Size = 255
+    end
+    object mtLogSend: TBooleanField
+      DisplayWidth = 5
+      FieldName = 'Send'
+    end
+    object mtLogSynonymFirm: TStringField
+      FieldName = 'SynonymFirm'
+      Size = 255
+    end
+    object mtLogOldOrderCount: TIntegerField
+      DisplayWidth = 10
+      FieldName = 'OldOrderCount'
+    end
+    object mtLogNewOrderCount: TIntegerField
+      DisplayWidth = 10
+      FieldName = 'NewOrderCount'
+    end
+    object mtLogOldPrice: TCurrencyField
+      DisplayWidth = 10
+      FieldName = 'OldPrice'
+    end
+    object mtLogNewPrice: TCurrencyField
+      DisplayWidth = 10
+      FieldName = 'NewPrice'
+    end
+    object mtLogReason: TStringField
+      FieldName = 'Reason'
+      Size = 255
+    end
+    object MemTableData: TMemTableDataEh
+      object DataStruct: TMTDataStructEh
+        object Id: TMTNumericDataFieldEh
+          FieldName = 'Id'
+          NumericDataType = fdtLargeintEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
+        end
+        object ParentId: TMTNumericDataFieldEh
+          FieldName = 'ParentId'
+          NumericDataType = fdtLargeintEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
+        end
+        object NodeName: TMTStringDataFieldEh
+          FieldName = 'NodeName'
+          StringDataType = fdtStringEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          Size = 255
+          Transliterate = False
+        end
+        object Send: TMTBooleanDataFieldEh
+          FieldName = 'Send'
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+        end
+        object SynonymFirm: TMTStringDataFieldEh
+          FieldName = 'SynonymFirm'
+          StringDataType = fdtStringEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          Size = 255
+          Transliterate = False
+        end
+        object OldOrderCount: TMTNumericDataFieldEh
+          FieldName = 'OldOrderCount'
+          NumericDataType = fdtIntegerEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
+        end
+        object NewOrderCount: TMTNumericDataFieldEh
+          FieldName = 'NewOrderCount'
+          NumericDataType = fdtIntegerEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
+        end
+        object OldPrice: TMTNumericDataFieldEh
+          FieldName = 'OldPrice'
+          NumericDataType = fdtCurrencyEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
+        end
+        object NewPrice: TMTNumericDataFieldEh
+          FieldName = 'NewPrice'
+          NumericDataType = fdtCurrencyEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
+        end
+        object Reason: TMTStringDataFieldEh
+          FieldName = 'Reason'
+          StringDataType = fdtStringEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          Size = 255
+          Transliterate = False
+        end
+      end
+      object RecordsList: TRecordsListEh
+      end
+    end
+  end
+  object dsLog: TDataSource
+    DataSet = mtLog
+    Left = 394
+    Top = 74
   end
 end

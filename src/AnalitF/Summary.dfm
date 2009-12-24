@@ -405,6 +405,15 @@ inherited SummaryForm: TSummaryForm
         TabOrder = 3
         OnCloseUp = dtpDateCloseUp
       end
+      object cbNeedCorrect: TCheckBox
+        Left = 584
+        Top = 16
+        Width = 201
+        Height = 17
+        Caption = #1058#1086#1083#1100#1082#1086' '#1087#1086#1079#1080#1094#1080#1080' '#1089' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1086#1081
+        TabOrder = 4
+        OnClick = cbNeedCorrectClick
+      end
     end
     object dbgSummarySend: TToughDBGrid
       Left = 0
@@ -892,8 +901,7 @@ inherited SummaryForm: TSummaryForm
   end
   object pmSelectedPrices: TPopupMenu
     AutoPopup = False
-    Left = 640
-    Top = 8
+    Left = 560
     object miSelectedAll: TMenuItem
       Caption = #1042#1099#1073#1088#1072#1090#1100' '#1074#1089#1077#1093
       OnClick = miSelectedAllClick
@@ -1292,7 +1300,10 @@ inherited SummaryForm: TSummaryForm
       'update'
       '  orderslist'
       'set'
-      '  OrderCount = :ORDERCOUNT'
+      '  OrderCount = :ORDERCOUNT,'
+      '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
+      '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
+      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity)'
       'where'
       '    OrderId = :ORDERSORDERID'
       'and CoreId  = :OLD_COREID')

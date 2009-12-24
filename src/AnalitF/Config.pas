@@ -254,10 +254,10 @@ begin
   //если RollBack - надо освежить
   DM.adtParams.Close;
   DM.adtParams.Open;
-  DM.adtClients.Close;
-  DM.adtClients.Open;
   DM.adsUser.Close;
   DM.adsUser.Open;
+  DM.adtClients.Close;
+  DM.adtClients.Open;
   DM.adsRetailMargins.Close;
   DM.adsRetailMargins.Open;
   DM.ClientChanged;

@@ -73,14 +73,13 @@ uses
   U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm},
   PreviousOrders in 'PreviousOrders.pas' {PreviousOrdersForm},
   CorrectOrders in 'CorrectOrders.pas' {CorrectOrdersForm},
-{$ifdef USEMEMORYCRYPTDLL}
   INFHelpers in 'RC_RND\INFHelpers.pas',
   MDLHelper in '..\Common\DLLHelper\MDLHelper.pas',
-{$endif}
   InforoomException in 'Exceptions\InforoomException.pas',
   DataIntegrityExceptions in 'Exceptions\DataIntegrityExceptions.pas',
   PostSomeOrdersController in 'BusinessLogic\PostSomeOrdersController.pas',
-  ExchangeParameters in 'BusinessLogic\ExchangeParameters.pas';
+  ExchangeParameters in 'BusinessLogic\ExchangeParameters.pas',
+  EhLibMTE in 'EhLibMT\EhLibMTE.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

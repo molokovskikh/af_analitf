@@ -86,7 +86,6 @@ var
 	ExchangeForm: TExchangeForm;
 	ExThread: TExchangeThread;
   NeedRetrySendOrder : Boolean;
-  NeedRefreshAfterSendOrder : Boolean;
 
 procedure TryToRepareOrders(ProcessSendOrdersResponse : Boolean);
 procedure PrintOrdersAfterSend;
@@ -120,7 +119,6 @@ var
 //	hMenuHandle: HMENU;
 begin
   NeedRetrySendOrder := False;
-  NeedRefreshAfterSendOrder := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
 	Result := False;
@@ -254,13 +252,16 @@ begin
 	if Result and ( AExchangeActions = [ eaSendOrders])
     and (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count > 0)
   then begin
+{
     if AProc.MessageBox(
         'Во время отправки заказов возникли ошибки. ' +
             'Желаете посмотреть журнал ошибок?',
         MB_ICONWARNING or MB_YESNO) = IDYES
     then
       ShowNotSended(TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Text);
-    TryToRepareOrders(True);
+}      
+    NeedRetrySendOrder := True;  
+    //TryToRepareOrders(True);
   end;
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
@@ -758,7 +759,7 @@ end;
 
 procedure TInternalRepareOrders.RepareOrders;
 var
-  formResult : TModalResult;
+  formResult : TCorrectResult;
 begin
   DM.adsRepareOrders.Close;
 
@@ -802,15 +803,14 @@ begin
         { если не нашли что-то, то выводим сообщение }
         if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
         begin
-          formResult := ShowCorrectOrders(
-            mdOutput,
-            ProcessSendOrdersResponse,
-            Strings);
+          //formResult := ShowCorrectOrders(ProcessSendOrdersResponse);
+{
             if (formResult = mrRetry) then
               NeedRetrySendOrder := True
             else
               if (formResult = mrIgnore) then
                 NeedRefreshAfterSendOrder := True;
+}                
         end;
       finally
         mdOutput.Close;

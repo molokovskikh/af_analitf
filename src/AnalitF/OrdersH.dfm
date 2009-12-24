@@ -823,7 +823,9 @@ inherited OrdersHForm: TOrdersHForm
       '    RegionalData.SupportPhone,'
       '    OrdersHead.MessageTo,'
       '    OrdersHead.Comments,'
-      '    pricesregionaldata.minreq,'
+      
+        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
+        'MinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(OrdersList.Id) as Positions,'
       
@@ -963,9 +965,6 @@ inherited OrdersHForm: TOrdersHForm
       FieldName = 'Comments'
       BlobType = ftMemo
     end
-    object adsOrdersHFormminreq: TIntegerField
-      FieldName = 'minreq'
-    end
     object adsOrdersHFormPriceEnabled: TBooleanField
       FieldName = 'PriceEnabled'
     end
@@ -980,6 +979,9 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormDisplayOrderId: TLargeintField
       FieldName = 'DisplayOrderId'
+    end
+    object adsOrdersHFormMinReq: TLargeintField
+      FieldName = 'MinReq'
     end
   end
   object adsCore: TMyQuery

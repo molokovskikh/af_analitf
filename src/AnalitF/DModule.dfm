@@ -1,8 +1,8 @@
 object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
-  Left = 270
-  Top = 190
+  Left = 369
+  Top = 233
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -1432,10 +1432,12 @@ object DM: TDM
     Top = 544
   end
   object MyConnection: TMyConnection
+    Database = 'analitf'
     Options.Charset = 'cp1251'
     Options.KeepDesignConnected = False
     Username = 'root'
     Server = 'localhost'
+    Connected = True
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False
     Left = 32
@@ -1973,6 +1975,9 @@ object DM: TDM
     object adsOrderCoreCost: TFloatField
       FieldName = 'Cost'
     end
+    object adsOrderCoreRealCost: TFloatField
+      FieldName = 'RealCost'
+    end
   end
   object adsOrderDetails: TMyQuery
     SQLUpdate.Strings = (
@@ -1997,6 +2002,7 @@ object DM: TDM
       '    OrdersList.codecr,'
       '    OrdersList.synonymname,'
       '    OrdersList.synonymfirm,'
+      '    OrdersList.RealPrice,'
       '    OrdersList.price,'
       '    OrdersList.await,'
       '    OrdersList.junk,'
@@ -2093,6 +2099,9 @@ object DM: TDM
     end
     object adsOrderDetailsServerCoreId: TLargeintField
       FieldName = 'ServerCoreId'
+    end
+    object adsOrderDetailsRealPrice: TFloatField
+      FieldName = 'RealPrice'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -2219,7 +2228,10 @@ object DM: TDM
       '  CodeFirmCr = :CodeFirmCr,'
       '  CODE = :CODE,'
       '  CODECR = :CODECR,'
-      '  ORDERCOUNT = :ORDERCOUNT'
+      '  ORDERCOUNT = :ORDERCOUNT,'
+      '  DropReason = :DropReason,'
+      '  ServerCost = :ServerCost,'
+      '  ServerQuantity = :ServerQuantity'
       'where'
       '  ID = :OLD_ID')
     Connection = MyConnection
@@ -2247,7 +2259,10 @@ object DM: TDM
       '  OrdersList.OrderCount, '
       '  OrdersList.requestratio,'
       '  OrdersList.ordercost,'
-      '  OrdersList.minordercount '
+      '  OrdersList.minordercount, '
+      '  OrdersList.DropReason, '
+      '  OrdersList.ServerCost, '
+      '  OrdersList.ServerQuantity '
       'FROM '
       '  OrdersList '
       
@@ -2334,6 +2349,15 @@ object DM: TDM
     end
     object adsRepareOrdersRealPrice: TFloatField
       FieldName = 'RealPrice'
+    end
+    object adsRepareOrdersDropReason: TSmallintField
+      FieldName = 'DropReason'
+    end
+    object adsRepareOrdersServerCost: TFloatField
+      FieldName = 'ServerCost'
+    end
+    object adsRepareOrdersServerQuantity: TIntegerField
+      FieldName = 'ServerQuantity'
     end
   end
   object adsCoreRepare: TMyQuery
@@ -2662,7 +2686,8 @@ object DM: TDM
       '  CLIENTS.NAME,'
       '  UserInfo.UserId,'
       '  UserInfo.Addition,'
-      '  UserInfo.InheritPrices'
+      '  UserInfo.InheritPrices,'
+      '  UserInfo.IsFutureClient'
       'FROM'
       '  analitf.CLIENTS,'
       '  analitf.UserInfo'

@@ -58,6 +58,18 @@ CREATE TABLE `catalogs` (
 
 
 -- 
+-- Table structure for table  client
+-- 
+
+DROP TABLE IF EXISTS client;
+CREATE TABLE `client` (
+  `Id` bigint(20) NOT NULL,
+  `Name` varchar(50) NOT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
+
+
+-- 
 -- Table structure for table  clients
 -- 
 
@@ -287,6 +299,7 @@ CREATE TABLE `params` (
   `ProviderEmail` varchar(30) NOT NULL DEFAULT 'farm@analit.net',
   `ProviderWeb` varchar(30) NOT NULL DEFAULT 'http://www.analit.net/',
   `ProviderMDBVersion` smallint(6) NOT NULL DEFAULT '49',
+  `ConfirmSendingOrders` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_PARAMS` (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
@@ -556,7 +569,8 @@ CREATE TABLE `userinfo` (
   `ClientId` bigint(20) NOT NULL,
   `UserId` bigint(20) NOT NULL,
   `Addition` varchar(50) DEFAULT NULL,
-  `InheritPrices` tinyint(1) NOT NULL DEFAULT '0'
+  `InheritPrices` tinyint(1) NOT NULL DEFAULT '0',
+  `IsFutureClient` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 

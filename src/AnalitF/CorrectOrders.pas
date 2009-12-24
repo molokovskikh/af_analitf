@@ -6,9 +6,12 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, U_VistaCorrectForm, StdCtrls, ExtCtrls, GridsEh, DBGridEh,
   ToughDBGrid, ComCtrls, DB, RxMemDS, DAScript, MyScript, Child, DBCtrls,
-  Grids, MemDS, DBAccess, MyAccess, Constant;
+  Grids, MemDS, DBAccess, MyAccess, Constant, MemTableDataEh, MemTableEh,
+  StrUtils, EhLibMTE;
 
 type
+  TCorrectResult = (crClose, crEditOrders, crForceSended, crGetPrice);
+
   TCorrectOrdersForm = class(TVistaCorrectForm)
     pBottom: TPanel;
     pClient: TPanel;
@@ -18,7 +21,6 @@ type
     pTop: TPanel;
     Splitter1: TSplitter;
     pRight: TPanel;
-    tvList: TTreeView;
     Splitter2: TSplitter;
     MyScript1: TMyScript;
     lReason: TLabel;
@@ -99,6 +101,22 @@ type
     btnRetrySend: TButton;
     SaveDialog: TSaveDialog;
     btnRefresh: TButton;
+    btnEditOrders: TButton;
+    pLog: TPanel;
+    tvList: TTreeView;
+    dbgLog: TToughDBGrid;
+    mtLog: TMemTableEh;
+    dsLog: TDataSource;
+    mtLogId: TLargeintField;
+    mtLogParentId: TLargeintField;
+    mtLogSend: TBooleanField;
+    mtLogOldOrderCount: TIntegerField;
+    mtLogNewOrderCount: TIntegerField;
+    mtLogOldPrice: TCurrencyField;
+    mtLogNewPrice: TCurrencyField;
+    mtLogNodeName: TStringField;
+    mtLogSynonymFirm: TStringField;
+    mtLogReason: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure tvListChange(Sender: TObject; Node: TTreeNode);
     procedure tvListChanging(Sender: TObject; Node: TTreeNode;
@@ -119,9 +137,17 @@ type
     procedure tCheckVolumeTimer(Sender: TObject);
     procedure adsCoreAfterPost(DataSet: TDataSet);
     procedure adsCoreBeforeScroll(DataSet: TDataSet);
-    procedure dbgCoreExit(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure btnGoToReportClick(Sender: TObject);
+    procedure btnRetrySendClick(Sender: TObject);
+    procedure btnRefreshClick(Sender: TObject);
+    procedure btnEditOrdersClick(Sender: TObject);
+    procedure dbgCoreExit(Sender: TObject);
+    procedure dbgLogDrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
+    procedure dbgLogGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure mtLogSendChange(Sender: TField);
   private
     { Private declarations }
     UseExcess: Boolean;
@@ -138,7 +164,6 @@ type
     procedure ClearOrderByOrderCost;
     procedure ShowVolumeMessage;
   protected
-    Orders : TRxMemoryData;
     dsCheckVolume : TDataSet;
     dgCheckVolume : TToughDBGrid;
     fOrder        : TField;
@@ -146,10 +171,16 @@ type
     fOrderCost    : TField;
     fSumOrder     : TField;
     fMinOrderCount : TField;
+    ProcessSendOrdersResponse : Boolean;
     procedure SetOffers;
+    procedure PrepareVisual;
+    procedure PrepareData;
+    procedure SaveReport;
+    function GetReportOrdersLogSql : String;
   public
     { Public declarations }
     Report : TStrings;
+    FormResult : TCorrectResult;
     procedure Prepare;
   end;
 
@@ -161,35 +192,25 @@ http://qc.embarcadero.com/wc/qcmain.aspx?d=2659
 хотя раньше все было в порядке
 }
 
-function ShowCorrectOrders(
-  Orders : TRxMemoryData;
-  ShowRetry : Boolean;
-  Report : TStrings) : TModalResult;
+function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean) : TCorrectResult;
 
 implementation
 
 {$R *.dfm}
 
 uses
-  DModule, AProc, DBProc;
+  DModule, AProc, DBProc, PostSomeOrdersController;
 
-function ShowCorrectOrders(
-  Orders : TRxMemoryData;
-  ShowRetry : Boolean;
-  Report : TStrings) : TModalResult;
+function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean) : TCorrectResult;
 var
   CorrectOrdersForm: TCorrectOrdersForm;
 begin
   CorrectOrdersForm := TCorrectOrdersForm.Create(Application);
   try
-    CorrectOrdersForm.Orders := Orders;
-    if (ShowRetry) then begin
-      CorrectOrdersForm.btnRetrySend.Visible := True;
-      CorrectOrdersForm.btnRefresh.Visible := True;
-    end;
-    CorrectOrdersForm.Report := Report;
+    CorrectOrdersForm.ProcessSendOrdersResponse := ProcessSendOrdersResponse;
     CorrectOrdersForm.Prepare;
-    Result := CorrectOrdersForm.ShowModal;
+    CorrectOrdersForm.ShowModal;
+    Result := CorrectOrdersForm.FormResult;
   finally
     CorrectOrdersForm.Free;
   end;
@@ -197,7 +218,10 @@ end;
 
 procedure TCorrectOrdersForm.FormCreate(Sender: TObject);
 begin
-  Report := nil;
+  FormResult := crClose;
+  Report := TStringList.Create;
+  dbgLog.PopupMenu := nil;
+
   UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
   adsAvgOrders.ParamByName( 'ClientId').Value :=
@@ -222,57 +246,192 @@ begin
   fMinOrderCount := adsCoreMINORDERCOUNT;
 end;
 
-procedure TCorrectOrdersForm.Prepare;
+procedure TCorrectOrdersForm.PrepareData;
 var
   ClientName, PriceName : String;
   ClientNode, PriceNode : TTreeNode;
-begin
-  tvList.Items.Clear;
+  ClientId, OrderId : Int64;
 
-  Orders.SortOnFields('ClientName;PriceName;SynonymName;SynonymFirm');
-  Orders.First;
+  procedure AddClient();
+  begin
+    ClientName := DM.adcUpdate.FieldByName('ClientName').AsString;
+    PriceName := DM.adcUpdate.FieldByName('PriceName').AsString;
+    ClientId := TLargeintField(DM.adcUpdate.FieldByName('ClientId')).AsLargeInt;
+    OrderId := TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
 
-  ClientName := Orders.FieldByName('ClientName').AsString;
-  PriceName := Orders.FieldByName('PriceName').AsString;
-  ClientNode := tvList.Items.Add(nil, ClientName);
-  PriceNode := tvList.Items.AddChild(ClientNode, PriceName);
+    mtLog.Append;
+    mtLog.FieldValues['Id'] := ClientId;
+    mtLog.FieldValues['NodeName'] := ClientName;
+    mtLog.Post;
+    Report.Append(Format('клиент %s', [ClientName]));
 
-  while not Orders.Eof do begin
-    if     (ClientName = Orders.FieldByName('ClientName').AsString)
-       and (PriceName  <> Orders.FieldByName('PriceName').AsString)
-    then begin
-      PriceName := Orders.FieldByName('PriceName').AsString;
-      PriceNode := tvList.Items.AddChild(ClientNode, PriceName);
-    end
+    mtLog.Append;
+    mtLog.FieldValues['Id'] := OrderId;
+    mtLog.FieldValues['ParentId'] := ClientId;
+    mtLog.FieldValues['NodeName'] := PriceName;
+    mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
+    if not DM.adcUpdate.FieldByName('ErrorReason').IsNull then
+      mtLog.FieldValues['Reason'] :=
+        DM.adcUpdate.FieldByName('ErrorReason').AsString;
+    mtLog.Post;
+    if DM.adcUpdate.FieldByName('ErrorReason').IsNull then
+      Report.Append(Format('   прайс-лист %s', [PriceName]))
     else
-      if     (ClientName <> Orders.FieldByName('ClientName').AsString)
-         and (PriceName  <> Orders.FieldByName('PriceName').AsString)
-      then begin
-        ClientName := Orders.FieldByName('ClientName').AsString;
-        PriceName := Orders.FieldByName('PriceName').AsString;
-        ClientNode := tvList.Items.Add(nil, ClientName);
-        PriceNode := tvList.Items.AddChild(ClientNode, PriceName);
-      end;
+      Report.Append(Format('   прайс-лист %s   причина: %s',
+        [PriceName,
+         DM.adcUpdate.FieldByName('ErrorReason').AsString]));
+
+    ClientNode := tvList.Items.Add(nil, ClientName);
+    PriceNode := tvList.Items.AddChild(ClientNode, PriceName);
+  end;
+
+  procedure AddOrder();
+  begin
+    PriceName := DM.adcUpdate.FieldByName('PriceName').AsString;
+    OrderId := TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
+
+    mtLog.Append;
+    mtLog.FieldValues['Id'] := OrderId;
+    mtLog.FieldValues['ParentId'] := ClientId;
+    mtLog.FieldValues['NodeName'] := PriceName;
+    mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
+    if not DM.adcUpdate.FieldByName('ErrorReason').IsNull then
+      mtLog.FieldValues['Reason'] :=
+        DM.adcUpdate.FieldByName('ErrorReason').AsString;
+    mtLog.Post;
+    if DM.adcUpdate.FieldByName('ErrorReason').IsNull then
+      Report.Append(Format('   прайс-лист %s', [PriceName]))
+    else
+      Report.Append(Format('   прайс-лист %s   причина: %s',
+        [PriceName,
+         DM.adcUpdate.FieldByName('ErrorReason').AsString]));
+
+    PriceNode := tvList.Items.AddChild(ClientNode, PriceName);
+  end;
+
+  procedure AddPosition();
+  var
+    PositionId : Int64;
+    PostionReason : String;
+    PositionResult : TPositionSendResult;
+  begin
+    PositionId := TLargeintField(DM.adcUpdate
+      .FieldByName('OrderListId')).AsLargeInt;
+
+    mtLog.Append;
+    mtLog.FieldValues['Id'] := PositionId;
+    mtLog.FieldValues['ParentId'] := OrderId;
+    mtLog.FieldValues['NodeName'] :=
+      DM.adcUpdate.FieldByName('SynonymName').AsString;
+    mtLog.FieldValues['SynonymFirm'] :=
+      DM.adcUpdate.FieldByName('SynonymFirm').AsString;
+    mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
+    PositionResult := TPositionSendResult(
+        DM.adcUpdate.FieldByName('DropReason').AsInteger);
+    PostionReason := PositionSendResultText[PositionResult];
+    mtLog.FieldValues['Reason'] := PostionReason;
+
+    case PositionResult of
+      psrNotExists :
+        begin
+          mtLog.FieldValues['OldOrderCount'] :=
+            DM.adcUpdate.FieldByName('OldOrderCount').Value;
+          mtLog.FieldValues['OldPrice'] :=
+            DM.adcUpdate.FieldByName('OldPrice').Value;
+        end;
+      psrDifferentCost :
+        begin
+          mtLog.FieldValues['OldPrice'] :=
+            DM.adcUpdate.FieldByName('OldPrice').Value;
+          mtLog.FieldValues['NewPrice'] :=
+            DM.adcUpdate.FieldByName('NewPrice').Value;
+        end;
+      psrDifferentQuantity :
+        begin
+          mtLog.FieldValues['OldOrderCount'] :=
+            DM.adcUpdate.FieldByName('OldOrderCount').Value;
+          mtLog.FieldValues['NewOrderCount'] :=
+            DM.adcUpdate.FieldByName('NewOrderCount').Value;
+        end;
+    end;
+
+    mtLog.Post;
+
+    Report.Append( Format( '      %s%s : %s (старая цена: %s; старый заказ: %s; новая цена: %s; текущий заказ: %s)',
+      [DM.adcUpdate.FieldByName('SynonymName').AsString,
+       IfThen(Length(DM.adcUpdate.FieldByName('SynonymFirm').AsString) > 0,
+         ' - ' + DM.adcUpdate.FieldByName('SynonymFirm').AsString),
+       PostionReason,
+       DM.adcUpdate.FieldByName('OldPrice').AsString,
+       DM.adcUpdate.FieldByName('OldOrderCount').AsString,
+       DM.adcUpdate.FieldByName('NewPrice').AsString,
+       DM.adcUpdate.FieldByName('NewOrderCount').AsString]));
 
     tvList.Items.AddChildObject(
       PriceNode,
-      Orders.FieldByName('SynonymName').AsString + ' - ' + Orders.FieldByName('SynonymFirm').AsString,
-      TObject(TLargeintField(Orders.FieldByName('OrderListId')).AsLargeInt));
+      DM.adcUpdate.FieldByName('SynonymName').AsString
+      + IfThen(Length(DM.adcUpdate.FieldByName('SynonymFirm').AsString) > 0,
+        ' - ' + DM.adcUpdate.FieldByName('SynonymFirm').AsString),
+      TObject(PositionId));
+  end;
 
-    Orders.Next;
+begin
+
+  mtLog.Close;
+  mtLog.Open;
+  mtLog.TreeList.Active := True;
+
+  tvList.Items.Clear;
+
+  //Orders.SortOnFields('ClientName;PriceName;SynonymName;SynonymFirm');
+  //Orders.First;
+  DM.adcUpdate.Close;
+  DM.adcUpdate.SQL.Text := GetReportOrdersLogSql;
+  DM.adcUpdate.Open;
+  try
+  DM.adcUpdate.First;
+
+  AddClient();
+
+  while not DM.adcUpdate.Eof do begin
+    if     (ClientName = DM.adcUpdate.FieldByName('ClientName').AsString)
+       and (PriceName  <> DM.adcUpdate.FieldByName('PriceName').AsString)
+    then begin
+      AddOrder;
+    end
+    else
+      if     (ClientName <> DM.adcUpdate.FieldByName('ClientName').AsString)
+         and (PriceName  <> DM.adcUpdate.FieldByName('PriceName').AsString)
+      then begin
+        AddClient();
+      end;
+
+    if not DM.adcUpdate.FieldByName('OrderListId').IsNull then
+      AddPosition;
+
+    DM.adcUpdate.Next;
+  end;
+  finally
+    DM.adcUpdate.Close
   end;
 
   tvList.FullExpand;
 
-  dsOrders.DataSet := Orders;
+  mtLog.First;
+
+  //dsOrders.DataSet := Orders;
   //Устанавливаем верний отображаемый узел
   tvList.TopItem := tvList.Items.GetFirstNode;
   //Выделяем первую позицию, требующей корректировки
-  tvList.Items.GetFirstNode.Item[0].Item[0].Selected := True;
+  //tvList.Items.GetFirstNode.Item[0].Item[0].Selected := True;
+  if ProcessSendOrdersResponse then begin
+    mtLogSend.OnChange := mtLogSendChange;
+  end;
 end;
 
 procedure TCorrectOrdersForm.SetOffers;
 begin
+{
   dsOrders.Enabled := True;
   if adsCore.Active then
     adsCore.Close;
@@ -295,6 +454,7 @@ begin
     Orders.FieldByName('NewOrderCount').AsString]);
   mdValues.First;
   dbgValues.Columns[0].Title.Caption := '';
+}  
 end;
 
 procedure TCorrectOrdersForm.tvListChange(Sender: TObject;
@@ -304,8 +464,10 @@ var
 begin
   if Assigned(Node.Data) then begin
     value := Int64(Node.Data);
+{
     if Orders.Locate('OrderListId', value, []) then
       SetOffers;
+}      
   end
   else begin
     adsCore.Close;
@@ -590,21 +752,142 @@ begin
   ShowVolumeMessage;
 end;
 
-procedure TCorrectOrdersForm.dbgCoreExit(Sender: TObject);
-begin
-  ShowVolumeMessage;
-end;
-
 procedure TCorrectOrdersForm.FormResize(Sender: TObject);
 begin
   inherited;
-  pTop.Height := Self.ClientHeight div 2;
+  if not ProcessSendOrdersResponse then
+    pTop.Height := Self.ClientHeight div 2;
 end;
 
 procedure TCorrectOrdersForm.btnGoToReportClick(Sender: TObject);
 begin
   if Assigned(Report) and SaveDialog.Execute then
     Report.SaveToFile(SaveDialog.FileName);
+end;
+
+procedure TCorrectOrdersForm.Prepare;
+begin
+  PrepareVisual;
+  PrepareData;
+end;
+
+procedure TCorrectOrdersForm.PrepareVisual;
+begin
+  if ProcessSendOrdersResponse then begin
+    btnClose.Caption := 'Отменить';
+    Self.Caption := 'Журнал отправки заказов';
+    dbgCore.Align := alNone;
+    dbgCore.Visible := False;
+    pTop.Align := alClient;
+  end
+  else begin
+    btnRetrySend.Visible := False;
+    btnRefresh.Visible := False;
+    btnEditOrders.Visible := False;
+  end;
+end;
+
+procedure TCorrectOrdersForm.SaveReport;
+begin
+  //Здесь должно быть построение отчета
+end;
+
+procedure TCorrectOrdersForm.btnRetrySendClick(Sender: TObject);
+begin
+  inherited;
+  FormResult := crForceSended;
+end;
+
+procedure TCorrectOrdersForm.btnRefreshClick(Sender: TObject);
+begin
+  inherited;
+  FormResult := crGetPrice;
+end;
+
+procedure TCorrectOrdersForm.btnEditOrdersClick(Sender: TObject);
+begin
+  inherited;
+  FormResult := crEditOrders;
+end;
+
+function TCorrectOrdersForm.GetReportOrdersLogSql: String;
+begin
+  Result := '';
+  if ProcessSendOrdersResponse then begin
+    Result := ''
+    + 'select '
+    + '  OrdersHead.ClientId, '
+    + '  clients.Name as ClientName, '
+    + '  OrdersHead.OrderId, '
+    + '  OrdersHead.PriceName, '
+    + '  OrdersHead.Send, '
+    + '  OrdersHead.SendResult, '
+    + '  OrdersHead.ErrorReason, '
+    + '  OrdersList.Id As OrderListId, '
+    + '  OrdersList.SynonymName, '
+    + '  OrdersList.SynonymFirm, '
+    + '  OrdersList.DropReason, '
+    + '  OrdersList.OrderCount as OldOrderCount, '
+    + '  OrdersList.ServerQuantity as NewOrderCount, '
+    + '  OrdersList.Price as OldPrice, '
+    + '  OrdersList.ServerCost as NewPrice '
+    + 'from '
+    + '  OrdersHead '
+    + '  inner join clients   on (clients.clientid = OrdersHead.ClientId) '
+    + '  left join OrdersList on OrdersList.OrderId = OrdersHead.OrderId and (OrdersList.DropReason is not null)'
+    + ' '
+    + ' '
+    + 'where '
+    + '    OrdersHead.ClientId = ' + DM.adtClientsCLIENTID.AsString + '  '
+    + 'and OrdersHead.Closed = 0 '
+    + 'and OrdersHead.Send = 1 '
+    + 'and OrdersHead.SendResult is not null '
+    + 'order by clients.Name, OrdersHead.PriceName, OrdersList.SynonymName, OrdersList.SynonymFirm';
+  end
+  else begin
+  end;
+end;
+
+procedure TCorrectOrdersForm.dbgCoreExit(Sender: TObject);
+begin
+  ShowVolumeMessage;
+end;
+
+procedure TCorrectOrdersForm.dbgLogDrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumnEh;
+  State: TGridDrawState);
+begin
+  if Column.Field = mtLogSend then begin
+    if mtLog.TreeNodeLevel <> 2 then
+      TDBGridEh(Sender).Canvas.FillRect(Rect);
+  end;
+end;
+
+procedure TCorrectOrdersForm.dbgLogGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if mtLog.TreeNodeLevel = 3 then begin
+    //Производим заливку для позиций
+    {
+      Еще один возможный цвет для заливки отличающихся значений
+      Background := RGB(255, 0, 128);
+    }
+      if (Column.Field = mtLogOldOrderCount) or (Column.Field = mtLogNewOrderCount) then
+        if (mtLogOldOrderCount.AsString <> mtLogNewOrderCount.AsString) then
+          Background := RGB(239, 82, 117);
+      if (Column.Field = mtLogOldPrice) or (Column.Field = mtLogNewPrice) then
+        if (mtLogOldPrice.AsString <> mtLogNewPrice.AsString) then
+          Background := RGB(239, 82, 117);
+  end;
+end;
+
+procedure TCorrectOrdersForm.mtLogSendChange(Sender: TField);
+begin
+  DM.adcUpdate.SQL.Text := 'update ordershead set Send = :Send where OrderId = :OrderId';
+  DM.adcUpdate.ParamByName('Send').AsBoolean := Sender.AsBoolean;
+  DM.adcUpdate.ParamByName('OrderId').Value := mtLogId.Value;
+  DM.adcUpdate.Execute;
 end;
 
 end.

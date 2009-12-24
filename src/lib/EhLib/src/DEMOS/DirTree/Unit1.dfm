@@ -12,6 +12,9 @@ object Form1: TForm1
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  DesignSize = (
+    523
+    322)
   PixelsPerInch = 96
   TextHeight = 13
   object SpeedButton1: TSpeedButton
@@ -55,16 +58,27 @@ object Form1: TForm1
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
     VertScrollBar.Tracking = True
+    OnDrawColumnCell = DBGridEh1DrawColumnCell
     OnGetCellParams = DBGridEh1GetCellParams
     Columns = <
       item
-        EditButtons = <>
+        Checkboxes = False
+        EditButtons = <
+          item
+            Style = ebsPlusEh
+          end>
         FieldName = 'FileDirName'
         Footers = <>
         ImageList = ToolbarImages
         ShowImageAndText = True
-        Width = 206
+        Width = 156
         OnGetCellParams = DBGridEh1Columns0GetCellParams
+      end
+      item
+        EditButtons = <>
+        FieldName = 'TestChecked'
+        Footers = <>
+        Width = 54
       end>
   end
   object DBNavigator1: TDBNavigator
@@ -130,8 +144,49 @@ object Form1: TForm1
   end
   object MemTableEh1: TMemTableEh
     Active = True
+    FieldDefs = <
+      item
+        Name = 'Id'
+        DataType = ftAutoInc
+      end
+      item
+        Name = 'RefParent'
+        DataType = ftInteger
+      end
+      item
+        Name = 'FileDirName'
+        DataType = ftString
+        Size = 255
+      end
+      item
+        Name = 'FileDirPath'
+        DataType = ftString
+        Size = 2000
+      end
+      item
+        Name = 'FileDirAttributes'
+        DataType = ftInteger
+      end
+      item
+        Name = 'IsDir'
+        DataType = ftBoolean
+      end
+      item
+        Name = 'SubcLoaded'
+        DataType = ftBoolean
+      end
+      item
+        Name = 'ImageIndex'
+        DataType = ftInteger
+      end
+      item
+        Name = 'TestChecked'
+        DataType = ftBoolean
+      end>
     Filtered = True
+    IndexDefs = <>
     Params = <>
+    StoreDefs = True
     AfterScroll = MemTableEh1AfterScroll
     Left = 230
     Top = 2
@@ -161,6 +216,9 @@ object Form1: TForm1
     end
     object MemTableEh1IntegerField: TIntegerField
       FieldName = 'ImageIndex'
+    end
+    object MemTableEh1TestChecked: TBooleanField
+      FieldName = 'TestChecked'
     end
     object MemTableData: TMemTableDataEh
       object DataStruct: TMTDataStructEh
@@ -237,6 +295,13 @@ object Form1: TForm1
           Visible = False
           currency = False
           Precision = 0
+        end
+        object TestChecked: TMTBooleanDataFieldEh
+          FieldName = 'TestChecked'
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
         end
       end
       object RecordsList: TRecordsListEh

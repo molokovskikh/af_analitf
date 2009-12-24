@@ -9,6 +9,7 @@ const
 	AWAIT_CLR	= $00b8ff71;
 	LEADER_CLR	= clMoneyGreen;
 	REG_CLR		= clLime;
+  NeedCorrectColor = clMedGray;
 	COMPACT_PERIOD	= 3;
   VITALLYIMPORTANT_CLR = clGreen;
   //Текущая версия базы данных для работы программ

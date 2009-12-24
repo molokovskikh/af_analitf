@@ -89,6 +89,9 @@ type
     dbmMessageTo: TDBMemo;
     adsOrdersId: TLargeintField;
     adsOrdersRealPrice: TFloatField;
+    adsOrdersDropReason: TSmallintField;
+    adsOrdersServerCost: TFloatField;
+    adsOrdersServerQuantity: TIntegerField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -127,7 +130,8 @@ var
 
 implementation
 
-uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core;
+uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
+     PostSomeOrdersController;
 
 {$R *.dfm}
 
@@ -191,7 +195,32 @@ end;
 procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
+var
+  PositionResult : TPositionSendResult;
 begin
+  if not adsOrdersDropReason.IsNull then begin
+    PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
+    case PositionResult of
+      psrNotExists :
+        begin
+          if ( Column.Field = adsOrdersordercount) or (Column.Field = adsOrdersSumOrder)
+          then
+            Background := NeedCorrectColor;
+        end;
+      psrDifferentCost :
+        begin
+          if (Column.Field = adsOrdersSumOrder)
+          then
+            Background := NeedCorrectColor;
+        end;
+      psrDifferentQuantity :
+        begin
+          if (Column.Field = adsOrdersordercount)
+          then
+            Background := NeedCorrectColor;
+        end;
+    end;
+  end;
 	{ если уцененный товар, изменяем цвет }
 	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
 		Background := JUNK_CLR;

@@ -135,6 +135,7 @@ type
     adsSummaryRealCost: TFloatField;
     dbgSummarySend: TToughDBGrid;
     adsSummarySendDate: TDateTimeField;
+    cbNeedCorrect: TCheckBox;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -157,6 +158,7 @@ type
     procedure actFlipCoreExecute(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure adsSummaryBeforeInsert(DataSet: TDataSet);
+    procedure cbNeedCorrectClick(Sender: TObject);
   private
     SelectedPrices : TStringList;
     procedure SummaryShow;
@@ -319,9 +321,14 @@ begin
       dbgSummarySend.InputField := '';
       dbgSummarySend.Tag := 512;
       btnDelete.Enabled := False;
+      cbNeedCorrect.Checked := False;
+      cbNeedCorrect.Enabled := False;
     end;
     if Length(FilterSQL) > 0 then
       adsSummary.SQL.Text := adsSummary.SQL.Text + ' and ( ' + FilterSQL + ' )';
+    if (LastSymmaryType = 0) and cbNeedCorrect.Checked then
+      adsSummary.SQL.Text := adsSummary.SQL.Text
+        + ' and ( OrdersList.DropReason is not null )';
     adsSummary.Open;
     SetOrderLabel;
 	finally
@@ -637,6 +644,12 @@ end;
 procedure TSummaryForm.adsSummaryBeforeInsert(DataSet: TDataSet);
 begin
   Abort;
+end;
+
+procedure TSummaryForm.cbNeedCorrectClick(Sender: TObject);
+begin
+  SummaryShow;
+  dbgSummaryCurrent.SetFocus;
 end;
 
 initialization

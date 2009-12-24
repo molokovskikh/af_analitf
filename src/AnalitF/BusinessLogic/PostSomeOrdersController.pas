@@ -16,9 +16,21 @@ const
    'Отправка заказов завершилась неудачно.');
 
 type
-  TOrderSendResult = (osrSuccess, osrWarning, osrNeedCorrect);
+  TOrderSendResult = (osrSuccess, osrLessThanMinReq, osrNeedCorrect);
   TPositionSendResult = (psrNotExists, psrDifferentCost, psrDifferentQuantity);
 
+const
+  //предложение отсутствует
+  OrderSendResultText : array[TOrderSendResult] of string =
+  ('Заказ отправлен успешно',
+   'Нарушение минимальной суммы заказа.',
+   'Требуется корректировка заказа.');
+  PositionSendResultText : array[TPositionSendResult] of string =
+  ('предложение отсутствует',
+   'имеется различие в цене препарата',
+   'доступное количество препарата в прайс-листе меньше заказанного ранее');
+
+type
   TPostSomeOrdersController = class
    private
     FDataLayer : TDM;
@@ -63,13 +75,15 @@ type
     PostResult    : TOrderSendResult;
     ServerOrderId : Int64;
     ErrorReason   : String;
+    ServerMinReq  : String;
 
     OrderPositions : TObjectList;
     constructor Create(
       clientOrderId : Int64;
       postResult    : TOrderSendResult;
       serverOrderId : Int64;
-      errorReason   : String);
+      errorReason   : String;
+      serverMinReq  : String);
     destructor Destroy; override;
   end;
 
@@ -183,7 +197,7 @@ begin
   postLeaderMinCost := '';
   postLeaderMinPriceCode := '';
   try
-    if Length(dataSet.FieldByName('PRICE').AsString) > 0 then
+    if Length(dataSet.FieldByName('RealPRICE').AsString) > 0 then
       S := dataSet.FieldByName('PRICE').AsString
     else
       S := CurrToStr(0.0);
@@ -218,7 +232,7 @@ begin
     FDataLayer.adsOrderCore.Open;
     try
       FDataLayer.adsOrderCore.FetchAll;
-      FDataLayer.adsOrderCore.IndexFieldNames := 'Cost ASC';
+      FDataLayer.adsOrderCore.IndexFieldNames := 'RealCost ASC';
 
       //Выбираем минимального из всех прайсов
       DBProc.SetFilter(FDataLayer.adsOrderCore,
@@ -234,7 +248,7 @@ begin
       FDataLayer.adsOrderCore.First;
 
       try
-        S := FDataLayer.adsOrderCoreCOST.AsString;
+        S := FDataLayer.adsOrderCoreRealCost.AsString;
         TmpMinCost := StringReplace(S, '.', FDataLayer.FFS.DecimalSeparator, [rfReplaceAll]);
         S := StringReplace(S, FDataLayer.FFS.DecimalSeparator, '.', [rfReplaceAll]);
         postMinCost := S;
@@ -247,7 +261,7 @@ begin
       except
         on E : Exception do begin
           WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены : ' + E.Message
-            + '  Строка : "' + FDataLayer.adsOrderCoreCOST.AsString + '"');
+            + '  Строка : "' + FDataLayer.adsOrderCoreRealCOST.AsString + '"');
         end;
       end;
 
@@ -263,7 +277,7 @@ begin
       //В основных прайс-листах может не быть предложений
       if not FDataLayer.adsOrderCore.IsEmpty then begin
         try
-          S := FDataLayer.adsOrderCoreCOST.AsString;
+          S := FDataLayer.adsOrderCoreRealCOST.AsString;
           TmpMinCost := StringReplace(S, '.', FDataLayer.FFS.DecimalSeparator, [rfReplaceAll]);
           S := StringReplace(S, FDataLayer.FFS.DecimalSeparator, '.', [rfReplaceAll]);
           postLeaderMinCost := S;
@@ -278,7 +292,7 @@ begin
         except
           on E : Exception do begin
             WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
-              + '  Строка : "' + FDataLayer.adsOrderCoreCOST.AsString + '"');
+              + '  Строка : "' + FDataLayer.adsOrderCoreRealCOST.AsString + '"');
           end;
         end;
       end;
@@ -457,10 +471,11 @@ begin
       StrToInt64(serverResponse.ValueFromIndex[startIndex]),
       TOrderSendResult(StrToInt(serverResponse.ValueFromIndex[startIndex + 1])),
       StrToInt64(serverResponse.ValueFromIndex[startIndex + 2]),
-      Utf8ToAnsi(serverResponse.ValueFromIndex[startIndex + 3]));
+      Utf8ToAnsi(serverResponse.ValueFromIndex[startIndex + 3]),
+      serverResponse.ValueFromIndex[startIndex + 4]);
   FOrderPostHeaders.Add(currentHeader);
 
-  startIndex := startIndex + 4;
+  startIndex := startIndex + 5;
   while (startIndex < serverResponse.Count)
         and (AnsiCompareText(serverResponse.Names[startIndex], 'ClientPositionID') = 0)
   do begin
@@ -498,6 +513,13 @@ var
   currentPosition : TPostOrderPosition;
   priceName, regionName : String;
 begin
+  //Сбрасываем для всех отправляемых заказов состояние ответа,
+  //т.к. для них будем устанавливать состояние заново
+  FDataLayer.adcUpdate.SQL.Text :=
+    DM.GetClearSendResultSql(
+      TLargeintField(FDataLayer.adtClients.FieldByName('ClientId')).AsLargeInt);
+  FDataLayer.adcUpdate.Execute;
+
   //Дата отправки заказа у всех заказов в кучу должна быть одна и та же
   SendDate := Now;
   if FOrderSendSuccess then begin
@@ -510,13 +532,19 @@ begin
         +'  OrdersHead '
         +'set '
         +'  Send = 1, Closed = 1, SendDate = :SendDate, '
-        +'  ServerOrderId = :ServerOrderId '
+        +'  ServerOrderId = :ServerOrderId, '
+        +'  SendResult = null, '
+        +'  ErrorReason = null, '
+        +'  ServerMinReq = null '
         +'where '
         +'  OrderID = :OrderId;'
         +'update '
         +'  OrdersList '
         +'set '
-        +'  CoreId = NULL '
+        +'  CoreId = NULL, '
+        +'  DropReason = NULL, '
+        +'  ServerCost = NULL, '
+        +'  ServerQuantity = NULL '
         +'where '
         +'  ORDERId = :OrderId;';
       FDataLayer.adcUpdate.ParamByName('SendDate').Value := SendDate;
@@ -534,33 +562,94 @@ begin
     NeedUpdateMinPrices := False;
     for I := 0 to FOrderPostHeaders.Count-1 do begin
       currentHeader := TPostOrderHeader(FOrderPostHeaders[i]);
+      if currentHeader.PostResult = osrSuccess then
+        Continue;
+
       FDataLayer.GetOrderInfo(
         currentHeader.ClientOrderId,
         priceName,
         regionName);
 
-      if currentHeader.PostResult = osrWarning then
-        TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
-          Format('Заказ № %d по прайс-листу %s (%s) не был отправлен. Причина : %s',
-            [currentHeader.ClientOrderId,
-             priceName,
-             regionName,
-             currentHeader.ErrorReason])
-        )
+      case currentHeader.PostResult of
+        osrLessThanMinReq :
+          TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
+            Format('Заказ № %d по прайс-листу %s (%s) не был отправлен. Причина : %s',
+              [currentHeader.ClientOrderId,
+               priceName,
+               regionName,
+               currentHeader.ErrorReason])
+          );
+        osrNeedCorrect :
+          TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
+            Format(
+              'Заказ № %d по прайс-листу %s (%s) не был отправлен. Причина : '
+                + 'различия с текущим прайс-листом на сервере.',
+              [currentHeader.ClientOrderId,
+               priceName,
+               regionName])
+          );
+        else
+          TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
+            Format('Заказ № %d по прайс-листу %s (%s) не был отправлен. Код ответа: %d  Причина : %s',
+              [currentHeader.ClientOrderId,
+               priceName,
+               regionName,
+               Integer(currentHeader.PostResult),
+               currentHeader.ErrorReason])
+          );
+      end;
+
+      FDataLayer.adcUpdate.SQL.Text := ''
+        +'update '
+        +'  OrdersHead '
+        +'set '
+        +'  SendResult = :SendResult, '
+        +'  ErrorReason = :ErrorReason, '
+        +'  ServerMinReq = :ServerMinReq '
+        +'where '
+        +'  OrdersHead.OrderId = :ClientOrderId; ';
+      FDataLayer.adcUpdate.ParamByName('SendResult').Value :=
+        Integer(currentHeader.PostResult);
+      if Length(currentHeader.ErrorReason) > 0 then
+        FDataLayer.adcUpdate.ParamByName('ErrorReason').Value :=
+          currentHeader.ErrorReason
       else
-        TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
-          Format(
-            'Заказ № %d по прайс-листу %s (%s) не был отправлен. Причина : '
-              + 'различия с текущим прайс-листом на сервере.',
-            [currentHeader.ClientOrderId,
-             priceName,
-             regionName])
-        );
+        FDataLayer.adcUpdate.ParamByName('ErrorReason').Clear;
+      if Length(currentHeader.ServerMinReq) > 0 then
+        FDataLayer.adcUpdate.ParamByName('ServerMinReq').Value :=
+          currentHeader.ServerMinReq
+      else
+        FDataLayer.adcUpdate.ParamByName('ServerMinReq').Clear;
+      FDataLayer.adcUpdate.ParamByName('ClientOrderId').Value :=
+        currentHeader.ClientOrderId;
+      FDataLayer.adcUpdate.Execute;
 
       for J := 0 to currentHeader.OrderPositions.Count-1 do begin
         currentPosition := TPostOrderPosition(currentHeader.OrderPositions[j]);
         //  TPositionSendResult = (psrNotExists, psrDifferentCost, psrDifferentQuantity);
+        FDataLayer.adcUpdate.SQL.Text := ''
+          +'update '
+          +'  OrdersList '
+          +'set '
+          +'  DropReason = :DropReason, '
+          +'  ServerCost = :ServerCost, '
+          +'  ServerQuantity = :ServerQuantity '
+          +'where '
+          +'  OrdersList.ID = :ClientPositionId; ';
+        FDataLayer.adcUpdate.ParamByName('DropReason').Value :=
+          Integer(currentPosition.DropReason);
+        FDataLayer.adcUpdate.ParamByName('ServerCost').Value :=
+          currentPosition.ServerCost;
+        if Length(currentPosition.ServerQuantity) > 0 then
+          FDataLayer.adcUpdate.ParamByName('ServerQuantity').Value :=
+            currentPosition.ServerQuantity
+        else
+          FDataLayer.adcUpdate.ParamByName('ServerQuantity').Clear;
+        FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
+          currentPosition.ClientPositionID;
+        FDataLayer.adcUpdate.Execute;
 
+        {
         if currentPosition.DropReason = psrDifferentQuantity then begin
           FDataLayer.adcUpdate.SQL.Text := ''
             +'update '
@@ -610,6 +699,7 @@ begin
             FDataLayer.adcUpdate.Execute;
           end;
         end;
+        }
 
       end;
     end;
@@ -651,13 +741,15 @@ begin
     Index := 0;
     FOrderPostHeaders := TObjectList.Create(True);
 
+    WriteExchangeLog('Exchange', 'PostSendOrderServerResult ='#13#10
+      + rawResult);
     try
       while (Index < serverResponse.Count) do begin
         if AnsiCompareText(serverResponse.Names[Index], 'ClientOrderID') = 0
         then begin
           Index := ParsePostHeader(serverResponse, Index);
           if TPostOrderHeader(FOrderPostHeaders[FOrderPostHeaders.Count-1])
-            .PostResult in [osrWarning, osrNeedCorrect]
+            .PostResult in [osrLessThanMinReq, osrNeedCorrect]
           then
             FOrderSendSuccess := False;
         end
@@ -691,13 +783,15 @@ end;
 { TPostOrderHeader }
 
 constructor TPostOrderHeader.Create(clientOrderId: Int64;
-  postResult: TOrderSendResult; serverOrderId: Int64; errorReason: String);
+  postResult: TOrderSendResult; serverOrderId: Int64; errorReason: String;
+  serverMinReq  : String);
 begin
   OrderPositions := TObjectList.Create(True);
   Self.ClientOrderId := clientOrderId;
   Self.PostResult := postResult;
   Self.ServerOrderId := serverOrderId;
   Self.ErrorReason := errorReason;
+  Self.ServerMinReq := serverMinReq;
 end;
 
 destructor TPostOrderHeader.Destroy;

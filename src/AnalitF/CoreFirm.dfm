@@ -975,7 +975,10 @@ object CoreFirmForm: TCoreFirmForm
       'update'
       '  orderslist'
       'set'
-      '  OrderCount = :ORDERCOUNT'
+      '  OrderCount = :ORDERCOUNT,'
+      '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
+      '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
+      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity)'
       'where'
       '    OrderId = :ORDERSORDERID'
       'and CoreId  = :OLD_COREID')
@@ -1196,179 +1199,233 @@ object CoreFirmForm: TCoreFirmForm
         Name = 'RegionCode'
       end>
     object adsCoreCoreId: TLargeintField
+      AutoGenerateValue = arAutoInc
       FieldName = 'CoreId'
+      Origin = 'Core.CoreId'
     end
     object adsCoreproductid: TLargeintField
       FieldName = 'productid'
+      Origin = 'Core.productid'
     end
     object adsCorePriceCode: TLargeintField
       FieldName = 'PriceCode'
+      Origin = 'Core.PriceCode'
     end
     object adsCoreRegionCode: TLargeintField
       FieldName = 'RegionCode'
+      Origin = 'Core.RegionCode'
     end
     object adsCoreFullCode: TLargeintField
       FieldName = 'FullCode'
+      Origin = 'catalogs.FULLCODE'
     end
     object adsCoreshortcode: TLargeintField
       FieldName = 'shortcode'
+      Origin = 'catalogs.SHORTCODE'
     end
     object adsCoreCodeFirmCr: TLargeintField
       FieldName = 'CodeFirmCr'
+      Origin = 'Core.CodeFirmCr'
     end
     object adsCoreSynonymCode: TLargeintField
       FieldName = 'SynonymCode'
+      Origin = 'Core.SynonymCode'
     end
     object adsCoreSynonymFirmCrCode: TLargeintField
       FieldName = 'SynonymFirmCrCode'
+      Origin = 'Core.SynonymFirmCrCode'
     end
     object adsCoreCode: TStringField
       FieldName = 'Code'
+      Origin = 'Core.Code'
       Size = 84
     end
     object adsCoreCodeCr: TStringField
       FieldName = 'CodeCr'
+      Origin = 'Core.CodeCr'
       Size = 84
     end
     object adsCoreVolume: TStringField
       FieldName = 'Volume'
+      Origin = 'Core.Volume'
       Size = 15
     end
     object adsCoreDoc: TStringField
       FieldName = 'Doc'
+      Origin = 'Core.Doc'
     end
     object adsCoreNote: TStringField
       FieldName = 'Note'
+      Origin = 'Core.Note'
       Size = 50
     end
     object adsCorePeriod: TStringField
       FieldName = 'Period'
+      Origin = 'Core.Period'
     end
     object adsCoreAwait: TBooleanField
       FieldName = 'Await'
+      Origin = 'Core.Await'
     end
     object adsCoreJunk: TBooleanField
       FieldName = 'Junk'
+      Origin = 'Core.Junk'
     end
     object adsCoreCost: TFloatField
       FieldName = 'Cost'
+      Origin = '.Cost'
       DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreQuantity: TStringField
       FieldName = 'Quantity'
+      Origin = 'Core.Quantity'
       Size = 15
     end
     object adsCoreregistrycost: TFloatField
       FieldName = 'registrycost'
+      Origin = 'Core.registrycost'
       DisplayFormat = '0.00;;'#39#39
     end
     object adsCorevitallyimportant: TBooleanField
       FieldName = 'vitallyimportant'
+      Origin = 'Core.vitallyimportant'
     end
     object adsCorerequestratio: TIntegerField
       FieldName = 'requestratio'
+      Origin = 'Core.requestratio'
       DisplayFormat = '#'
     end
     object adsCoreordercost: TFloatField
       FieldName = 'ordercost'
+      Origin = 'Core.ordercost'
     end
     object adsCoreminordercount: TIntegerField
       FieldName = 'minordercount'
+      Origin = 'Core.minordercount'
     end
     object adsCoreSynonymName: TStringField
       FieldName = 'SynonymName'
-      Size = 505
+      Origin = '.SynonymName'
+      Size = 501
     end
     object adsCoreSynonymFirm: TStringField
       FieldName = 'SynonymFirm'
+      Origin = 'SynonymFirmCr.SYNONYMNAME'
       Size = 250
     end
     object adsCoreLeaderPriceCode: TLargeintField
       FieldName = 'LeaderPriceCode'
+      Origin = 'PricesData.PRICECODE'
     end
     object adsCoreLeaderRegionCode: TLargeintField
       FieldName = 'LeaderRegionCode'
+      Origin = 'MinPrices.REGIONCODE'
     end
     object adsCoreLeaderRegionName: TStringField
       FieldName = 'LeaderRegionName'
+      Origin = 'Regions.REGIONNAME'
       Size = 25
     end
     object adsCoreLeaderPriceName: TStringField
       FieldName = 'LeaderPriceName'
+      Origin = 'PricesData.PRICENAME'
       Size = 70
     end
     object adsCoreLeaderPRICE: TFloatField
       FieldName = 'LeaderPRICE'
+      Origin = 'MinPrices.MinCost'
       DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreOrdersCoreId: TLargeintField
       FieldName = 'OrdersCoreId'
+      Origin = 'osbc.OrdersCoreId'
     end
     object adsCoreOrdersOrderId: TLargeintField
       FieldName = 'OrdersOrderId'
+      Origin = 'osbc.OrdersOrderId'
     end
     object adsCoreOrdersClientId: TLargeintField
       FieldName = 'OrdersClientId'
+      Origin = 'osbc.OrdersClientId'
     end
     object adsCoreOrdersFullCode: TLargeintField
       FieldName = 'OrdersFullCode'
+      Origin = 'catalogs.FULLCODE'
     end
     object adsCoreOrdersCodeFirmCr: TLargeintField
       FieldName = 'OrdersCodeFirmCr'
+      Origin = 'osbc.OrdersCodeFirmCr'
     end
     object adsCoreOrdersSynonymCode: TLargeintField
       FieldName = 'OrdersSynonymCode'
+      Origin = 'osbc.OrdersSynonymCode'
     end
     object adsCoreOrdersSynonymFirmCrCode: TLargeintField
       FieldName = 'OrdersSynonymFirmCrCode'
+      Origin = 'osbc.OrdersSynonymFirmCrCode'
     end
     object adsCoreOrdersCode: TStringField
       FieldName = 'OrdersCode'
+      Origin = 'osbc.OrdersCode'
       Size = 84
     end
     object adsCoreOrdersCodeCr: TStringField
       FieldName = 'OrdersCodeCr'
+      Origin = 'osbc.OrdersCodeCr'
       Size = 84
     end
     object adsCoreOrderCount: TIntegerField
       FieldName = 'OrderCount'
+      Origin = 'osbc.OrderCount'
       DisplayFormat = '#'
     end
     object adsCoreOrdersSynonym: TStringField
       FieldName = 'OrdersSynonym'
+      Origin = 'osbc.OrdersSynonym'
       Size = 250
     end
     object adsCoreOrdersSynonymFirm: TStringField
       FieldName = 'OrdersSynonymFirm'
+      Origin = 'osbc.OrdersSynonymFirm'
       Size = 250
     end
     object adsCoreOrdersPrice: TFloatField
       FieldName = 'OrdersPrice'
+      Origin = 'osbc.OrdersPrice'
     end
     object adsCoreOrdersJunk: TBooleanField
       FieldName = 'OrdersJunk'
+      Origin = 'osbc.OrdersJunk'
     end
     object adsCoreOrdersAwait: TBooleanField
       FieldName = 'OrdersAwait'
+      Origin = 'osbc.OrdersAwait'
     end
     object adsCoreOrdersHOrderId: TLargeintField
+      AutoGenerateValue = arAutoInc
       FieldName = 'OrdersHOrderId'
+      Origin = 'OrdersHead.ORDERID'
     end
     object adsCoreOrdersHClientId: TLargeintField
       FieldName = 'OrdersHClientId'
+      Origin = 'OrdersHead.CLIENTID'
     end
     object adsCoreOrdersHPriceCode: TLargeintField
       FieldName = 'OrdersHPriceCode'
+      Origin = 'OrdersHead.PRICECODE'
     end
     object adsCoreOrdersHRegionCode: TLargeintField
       FieldName = 'OrdersHRegionCode'
+      Origin = 'OrdersHead.REGIONCODE'
     end
     object adsCoreOrdersHPriceName: TStringField
       FieldName = 'OrdersHPriceName'
+      Origin = 'OrdersHead.PRICENAME'
       Size = 70
     end
     object adsCoreOrdersHRegionName: TStringField
       FieldName = 'OrdersHRegionName'
+      Origin = 'OrdersHead.REGIONNAME'
       Size = 25
     end
     object adsCoreCryptPriceRet: TCurrencyField
@@ -1379,10 +1436,12 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreSumOrder: TFloatField
       FieldName = 'SumOrder'
+      Origin = '.SumOrder'
       DisplayFormat = '0.00;;'#39#39
     end
     object adsCoreRealCost: TFloatField
       FieldName = 'RealCost'
+      Origin = 'Core.RealCost'
       DisplayFormat = '0.00;;'#39#39
     end
   end

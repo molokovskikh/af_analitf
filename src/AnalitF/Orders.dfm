@@ -564,7 +564,10 @@ inherited OrdersForm: TOrdersForm
     SQLUpdate.Strings = (
       'UPDATE OrdersList'
       'SET'
-      '  ORDERCOUNT = :ORDERCOUNT'
+      '  ORDERCOUNT = :ORDERCOUNT,'
+      '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
+      '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
+      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity)'
       'WHERE'
       '  ID = :Old_ID')
     SQLRefresh.Strings = (
@@ -598,7 +601,10 @@ inherited OrdersForm: TOrdersForm
       '    core.minordercount,'
       '    OrdersList.requestratio as Ordersrequestratio,'
       '    OrdersList.ordercost as Ordersordercost,'
-      '    OrdersList.minordercount as Ordersminordercount   '
+      '    OrdersList.minordercount as Ordersminordercount,'
+      '    OrdersList.DropReason,'
+      '    OrdersList.ServerCost,'
+      '    OrdersList.ServerQuantity'
       'FROM '
       '  OrdersList'
       
@@ -703,6 +709,15 @@ inherited OrdersForm: TOrdersForm
     object adsOrdersRealPrice: TFloatField
       FieldName = 'RealPrice'
       DisplayFormat = '0.00;;'#39#39
+    end
+    object adsOrdersDropReason: TSmallintField
+      FieldName = 'DropReason'
+    end
+    object adsOrdersServerCost: TFloatField
+      FieldName = 'ServerCost'
+    end
+    object adsOrdersServerQuantity: TIntegerField
+      FieldName = 'ServerQuantity'
     end
   end
 end

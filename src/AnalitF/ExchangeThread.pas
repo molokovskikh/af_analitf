@@ -33,7 +33,8 @@ TUpdateTable = (
   utCatalogNames,
   utProducts,
   utUser,
-  utDelayOfPayments);
+  utDelayOfPayments,
+  utClient);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -1301,6 +1302,7 @@ begin
 	if (GetFileSize(ExePath+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
   if (GetFileSize(ExePath+SDirIn+'\User.txt') > 0) then UpdateTables := UpdateTables + [utUser];
   if (GetFileSize(ExePath+SDirIn+'\DelayOfPayments.txt') > 0) then UpdateTables := UpdateTables + [utDelayOfPayments];
+  if (GetFileSize(ExePath+SDirIn+'\Client.txt') > 0) then UpdateTables := UpdateTables + [utClient];
 
 
     //обновляем таблицы
@@ -1385,6 +1387,11 @@ begin
     end;
 
 	  SQL.Text:='delete from minprices ;';
+    InternalExecute;
+
+    //здесь сбрасываем для всех неотправленных заказов состояние результата,
+    //т.к. при восстановлении будем устанавливать заново
+    SQL.Text := DM.GetClearSendResultSql(0);
     InternalExecute;
 	end;
 	if utCore in UpdateTables then begin
@@ -1496,6 +1503,13 @@ begin
     SQL.Text := GetLoadDataSQL('UserInfo', ExePath+SDirIn+'\User.txt', true);
     InternalExecute;
 	end;
+  //Client
+  if utClient in UpdateTables then begin
+    SQL.Text := 'delete from analitf.Client';
+    InternalExecute;
+    SQL.Text := GetLoadDataSQL('Client', ExePath+SDirIn+'\Client.txt', true);
+    InternalExecute;
+  end;
 	//Clients
 	if utClients in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Clients', ExePath+SDirIn+'\Clients.txt', true);

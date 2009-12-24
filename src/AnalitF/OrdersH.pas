@@ -80,13 +80,13 @@ type
     adsOrdersHFormSupportPhone: TStringField;
     adsOrdersHFormMessageTo: TMemoField;
     adsOrdersHFormComments: TMemoField;
-    adsOrdersHFormminreq: TIntegerField;
     adsOrdersHFormPriceEnabled: TBooleanField;
     adsOrdersHFormPositions: TLargeintField;
     adsOrdersHFormSumOrder: TFloatField;
     adsOrdersHFormsumbycurrentmonth: TFloatField;
     adsOrdersHFormDisplayOrderId: TLargeintField;
     adsCore: TMyQuery;
+    adsOrdersHFormMinReq: TLargeintField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);

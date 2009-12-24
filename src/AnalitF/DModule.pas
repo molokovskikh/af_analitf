@@ -456,6 +456,11 @@ type
     adsRepareOrdersRealPrice: TFloatField;
     adsCoreRepareRealCost: TFloatField;
     adsOrderDetailsServerCoreId: TLargeintField;
+    adsOrderCoreRealCost: TFloatField;
+    adsRepareOrdersDropReason: TSmallintField;
+    adsRepareOrdersServerCost: TFloatField;
+    adsRepareOrdersServerQuantity: TIntegerField;
+    adsOrderDetailsRealPrice: TFloatField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -628,6 +633,11 @@ type
     //произвести вставку заголовка заказа, чтобы потом обновить кол-во при заказе позиции
     procedure InsertOrderHeader(orderDataSet : TCustomMyDataSet);
     procedure CheckDataIntegrity;
+    //Получить информацию о клиенте
+    procedure GetClientInformation(
+      var ClientName : String;
+      var IsFutureClient : Boolean);
+    function GetClearSendResultSql(ClientId : Int64) : String; 
   end;
 
 var
@@ -1127,7 +1137,7 @@ end;
 
 procedure TDM.ClientChanged;
 begin
-  MainForm.CurrentUser := adtClients.FieldByName( 'Name').AsString;
+  GetClientInformation(MainForm.CurrentUser, MainForm.IsFutureClient);
   //Закрываем все формы перед сменой клиента, т.к. их вид зависит от клиента 
   MainForm.FreeChildForms;
   MainForm.SetOrdersInfo;
@@ -1221,16 +1231,86 @@ begin
 end;
 
 procedure TDM.CompactDataBase();
+var
+  tableList : TStringList;
+  I : Integer;
+
+  procedure LogError(E : Exception; method : String; tableName : String);
+  begin
+    Tracer.TR('BackupRestore',
+      Format('Ошибка при работе с таблицей: %s; действие: %s; '
+        + 'тип исключения: %s; ошибка: %s',
+        [tableName, method, e.ClassName, E.Message]));
+  end;
+
+  procedure CheckAfterAction();
+  begin
+    if not MyServerControl.Eof then
+      if Assigned(MyServerControl.FindField('Msg_type'))
+        and Assigned(MyServerControl.FindField('Msg_text'))
+        and Assigned(MyServerControl.FindField('Op'))
+        and Assigned(MyServerControl.FindField('Table'))
+      then
+        if (AnsiCompareText(MyServerControl
+              .FieldByName('Msg_type').AsString, 'status') <> 0)
+          or (AnsiCompareText(MyServerControl
+              .FieldByName('Msg_text').AsString, 'OK') <> 0)
+        then
+          Tracer.TR('BackupRestore',
+            Format('Статус при работе с таблицей: %s; действие: %s; '
+              + 'тип: %s; сообщение: %s',
+              [MyServerControl.FieldByName('Table').AsString,
+               MyServerControl.FieldByName('Op').AsString,
+               MyServerControl.FieldByName('Msg_type').AsString,
+               MyServerControl.FieldByName('Msg_text').AsString]));
+  end;
+
 begin
   MainConnection.Open;
   try
-    MyServerControl.OptimizeTable;
+    tableList := TStringList.Create;
     try
-      MainConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
-    except
-      on E : Exception do
-        Tracer.TR('BackupRestore', 'Не получилось обновить LastCompact: ' + E.Message);
+      MainConnection.GetTableNames(tableList);
+      for I := 0 to tableList.Count-1 do begin
+        MyServerControl.TableNames := tableList[i];
+        try
+          MyServerControl.CheckTable([ctExtended]);
+          CheckAfterAction();
+        except
+          on E : Exception do
+            LogError(E, 'check', tableList[i]);
+        end;
+      end;
+      for I := 0 to tableList.Count-1 do begin
+        MyServerControl.TableNames := tableList[i];
+        try
+          MyServerControl.RepairTable([rtExtended]);
+          CheckAfterAction();
+        except
+          on E : Exception do
+            LogError(E, 'check', tableList[i]);
+        end;
+      end;
+      for I := 0 to tableList.Count-1 do begin
+        MyServerControl.TableNames := tableList[i];
+        try
+          MyServerControl.OptimizeTable();
+          CheckAfterAction();
+        except
+          on E : Exception do
+            LogError(E, 'check', tableList[i]);
+        end;
+      end;
+      try
+        MainConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
+      except
+        on E : Exception do
+          Tracer.TR('BackupRestore', 'Не получилось обновить LastCompact: ' + E.Message);
+      end;
+    finally
+      tableList.Free;
     end;
+
   finally
     MainConnection.Close;
   end;
@@ -1613,10 +1693,10 @@ begin
   adtParams.Close;
   adtParams.Open;
   ReadPasswords;
-  adtClients.Close;
-  adtClients.Open;
   adsUser.Close;
   adsUser.Open;
+  adtClients.Close;
+  adtClients.Open;
   adsRetailMargins.Close;
   adsRetailMargins.Open;
   LoadRetailMargins;
@@ -4535,6 +4615,59 @@ begin
   except
     RegionName := '';
   end;
+end;
+
+procedure TDM.GetClientInformation(var ClientName: String;
+  var IsFutureClient: Boolean);
+var
+  tmpClientName : Variant;
+begin
+  IsFutureClient := adsUser.FieldByName('IsFutureClient').AsBoolean;
+  if not IsFutureClient then
+    ClientName := adtClients.FieldByName('Name').AsString
+  else begin
+    ClientName := '';
+    tmpClientName := DM.QueryValue('select Name from Client', [], []);
+    if not VarIsNull(tmpClientName) then
+      ClientName := tmpClientName;
+  end
+end;
+
+function TDM.GetClearSendResultSql(ClientId : Int64): String;
+begin
+  Result := ''
+  + 'update '
+  + '  OrdersHead '
+  + 'set '
+  + '  OrdersHead.SendResult = null, '
+  + '  OrdersHead.ErrorReason = null, '
+  + '  OrdersHead.ServerMinReq = null '
+  + 'where '
+  + '     OrdersHead.Closed = 0 ';
+  if ClientId > 0 then
+    Result := Result
+    + 'and OrdersHead.Send = 1 '
+    + 'and OrdersHead.ClientId = ' + IntToStr(ClientId) + '; '
+  else
+    Result := Result + '; ';
+
+  Result := Result
+  + 'update '
+  + '  OrdersHead, '
+  + '  OrdersList '
+  + 'set '
+  + '  OrdersList.DropReason = null, '
+  + '  OrdersList.ServerCost = null, '
+  + '  OrdersList.ServerQuantity = null '
+  + 'where '
+  + '     OrdersHead.Closed = 0 '
+  + 'and  OrdersList.OrderId = OrdersHead.OrderId ';
+  if ClientId > 0 then
+    Result := Result
+    + 'and OrdersHead.Send = 1 '
+    + 'and OrdersHead.ClientId = ' + IntToStr(ClientId) + '; '
+  else
+    Result := Result + '; ';
 end;
 
 initialization

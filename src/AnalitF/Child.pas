@@ -186,6 +186,7 @@ var
   I: Integer;
 begin
   MainForm.ActiveChild:=Self;
+  //todo: ClientId-UserId
   if Caption <> '' then begin
     if (Length(MainForm.CurrentUser) > 0) then
       MainForm.Caption := Application.Title + ' - ' + MainForm.CurrentUser + ' - ' + Self.Caption

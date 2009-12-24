@@ -662,7 +662,10 @@ inherited ExpiredsForm: TExpiredsForm
       'update'
       '  orderslist'
       'set'
-      '  OrderCount = :ORDERCOUNT'
+      '  OrderCount = :ORDERCOUNT,'
+      '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
+      '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
+      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity)'
       'where'
       '    OrderId = :ORDERSORDERID'
       'and CoreId  = :OLD_COREID')
@@ -683,8 +686,8 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop.Perc' +
-        'ent/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.Percent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.doc,'
       '    Core.registrycost,'
@@ -762,8 +765,8 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop.Perc' +
-        'ent/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.Percent/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.doc,'
       '    Core.registrycost,'

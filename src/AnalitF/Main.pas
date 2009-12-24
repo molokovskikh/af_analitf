@@ -181,7 +181,10 @@ private
   function  OldOrders : Boolean;
   procedure DeleteOldOrders;
 public
-	CurrentUser: string;	// Имя текущего пользователя
+  // Имя текущего пользователя
+  CurrentUser    : string;
+  //Использует ли текущая копия клиентов из схемы Future
+  IsFutureClient : Boolean;
 	ActiveChild: TChildForm;
 	ExchangeOnly: boolean;
 
@@ -236,7 +239,7 @@ uses
 	Exchange, Expireds, Core, UniqueID, CoreFirm,
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
-  Variants, ExchangeParameters;
+  Variants, ExchangeParameters, CorrectOrders;
 
 {$R *.DFM}
 
@@ -320,7 +323,8 @@ begin
   Self.WindowState := wsMaximized;
 
 	UpdateReclame;
-	CurrentUser := DM.adtClients.FieldByName( 'Name').AsString;
+  //todo: ClientId-UserId
+  DM.GetClientInformation(CurrentUser, IsFutureClient);
   if (Length(CurrentUser) > 0) then
     Self.Caption := Application.Title + ' - ' + CurrentUser
   else
@@ -426,6 +430,7 @@ begin
 		if Controls[ i] is TChildForm then
       Controls[ i].Free;
 	ActiveChild := nil;
+  //todo: ClientId-UserId
   if (Length(CurrentUser) > 0) then
     Self.Caption := Application.Title + ' - ' + CurrentUser
   else
@@ -707,21 +712,27 @@ begin
 end;
 
 procedure TMainForm.actSendOrdersExecute(Sender: TObject);
+var
+  correctResult : TCorrectResult;
 begin
   if DM.adtParams.FieldByName('ConfirmSendingOrders').AsBoolean then
     if AProc.MessageBox( 'Вы действительно хотите отправить заказы?',
        MB_ICONQUESTION or MB_YESNO or MB_DEFBUTTON2) = IDNO
     then
       Exit;
-      
-  repeat
-    if not NeedRetrySendOrder then
-      RunExchange([eaSendOrders])
-    else
-      RunExchange([eaSendOrders, eaForceSendOrders]);
-  until not NeedRetrySendOrder;
-  if NeedRefreshAfterSendOrder then
-    RunExchange([eaGetPrice]);
+
+  RunExchange([eaSendOrders]);
+  if NeedRetrySendOrder then begin
+    correctResult := ShowCorrectOrders(True);
+    case correctResult of
+      crForceSended :
+        RunExchange([eaSendOrders, eaForceSendOrders]);
+      crGetPrice :
+        RunExchange([eaGetPrice]);
+      crEditOrders :
+        ShowSummary;
+    end;
+  end;
 end;
 
 function TMainForm.CheckUnsendOrders: boolean;
@@ -1005,6 +1016,7 @@ var
   mi : TMenuItem;
   I : Integer;
 begin
+  //todo: ClientId-UserId
   mi := TMenuItem(Sender);
   if not mi.Checked and (CurrentUser <> mi.Caption) then
   begin
@@ -1016,11 +1028,13 @@ begin
     DM.adtParams.FieldByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
     DM.adtParams.Post;
 		DM.ClientChanged;
-    CurrentUser := mi.Caption;
-    if (Assigned(ActiveChild) and (Length(ActiveChild.Caption) > 0)) then
-      Self.Caption := Application.Title + ' - ' + CurrentUser + ' - ' + ActiveChild.Caption
-    else
-      Self.Caption := Application.Title + ' - ' + CurrentUser;
+    if not IsFutureClient then begin
+      CurrentUser := mi.Caption;
+      if (Assigned(ActiveChild) and (Length(ActiveChild.Caption) > 0)) then
+        Self.Caption := Application.Title + ' - ' + CurrentUser + ' - ' + ActiveChild.Caption
+      else
+        Self.Caption := Application.Title + ' - ' + CurrentUser;
+    end;
     ToolBar.Invalidate;
   end;
 end;
@@ -1032,6 +1046,9 @@ end;
 
 procedure TMainForm.ToolBarAdvancedCustomDraw(Sender: TToolBar;
   const ARect: TRect; Stage: TCustomDrawStage; var DefaultDraw: Boolean);
+const
+  LabelCaption : array[Boolean] of String =
+    ('Текущий клиент:', 'Адрес заказа:');
 var
   TmpRect : TRect;
   OldStyle : TBrushStyle;
@@ -1046,12 +1063,12 @@ begin
     //Выставляем стиль кисти bsClear, чтобы при рисовании надписи был прозрачный фон
     ToolBar.Canvas.Brush.Style := bsClear;
     ToolBar.Canvas.Font.Style := ToolBar.Canvas.Font.Style + [fsBold];
-    LabelWidth := ToolBar.Canvas.TextWidth('Текущий клиент:');
+    LabelWidth := ToolBar.Canvas.TextWidth(LabelCaption[IsFutureClient]);
     if ClientNameRect.Left + LabelWidth > ToolBar.Width then
       LabelWidth := ToolBar.Width - ClientNameRect.Left - 5;
     //Определяем прямоугольник для надписи и производим рисование
     LabelRect := Rect(ClientNameRect.Left, 0, ClientNameRect.Left + LabelWidth, 13);
-    ToolBar.Canvas.TextRect(LabelRect, ClientNameRect.Left, 0, 'Текущий клиент:');
+    ToolBar.Canvas.TextRect(LabelRect, ClientNameRect.Left, 0, LabelCaption[IsFutureClient]);
     //Восстанавливаем стиль кисти и стиль шрифта
     ToolBar.Canvas.Brush.Style := OldStyle;
     ToolBar.Canvas.Font.Style := ToolBar.Canvas.Font.Style - [fsBold];
