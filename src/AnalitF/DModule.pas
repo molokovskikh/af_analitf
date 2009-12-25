@@ -967,7 +967,7 @@ begin
 {$endif}
 
   SerBeg := 'Prg';
-  SerEnd := 'Data';
+  SerEnd := 'DataTest';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 

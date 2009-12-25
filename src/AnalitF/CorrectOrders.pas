@@ -20,12 +20,8 @@ type
     dbgCore: TToughDBGrid;
     pTop: TPanel;
     Splitter1: TSplitter;
-    pRight: TPanel;
-    Splitter2: TSplitter;
     MyScript1: TMyScript;
-    lReason: TLabel;
     dsOrders: TDataSource;
-    dbtReason: TDBText;
     dsCore: TDataSource;
     adsCore: TMyQuery;
     adsCoreCoreId: TLargeintField;
@@ -84,7 +80,6 @@ type
     adsCoreOrdersHPriceName: TStringField;
     adsCoreOrdersHRegionName: TStringField;
     adsCorePriceRet: TCurrencyField;
-    dbgValues: TToughDBGrid;
     mdValues: TRxMemoryData;
     mdValuesParametrName: TStringField;
     mdValuesOldValue: TStringField;
@@ -103,7 +98,6 @@ type
     btnRefresh: TButton;
     btnEditOrders: TButton;
     pLog: TPanel;
-    tvList: TTreeView;
     dbgLog: TToughDBGrid;
     mtLog: TMemTableEh;
     dsLog: TDataSource;
@@ -119,12 +113,8 @@ type
     mtLogReason: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure tvListChange(Sender: TObject; Node: TTreeNode);
-    procedure tvListChanging(Sender: TObject; Node: TTreeNode;
-      var AllowChange: Boolean);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
-    procedure tvListKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure dbgCoreKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgCoreGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -148,6 +138,8 @@ type
     procedure dbgLogGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure mtLogSendChange(Sender: TField);
+    procedure dbgLogKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
     UseExcess: Boolean;
@@ -163,6 +155,8 @@ type
     //очищаем созданный заказ
     procedure ClearOrderByOrderCost;
     procedure ShowVolumeMessage;
+    procedure tvListChanging(Sender: TObject; Node: TTreeNode;
+      var AllowChange: Boolean);
   protected
     dsCheckVolume : TDataSet;
     dgCheckVolume : TToughDBGrid;
@@ -177,6 +171,7 @@ type
     procedure PrepareData;
     procedure SaveReport;
     function GetReportOrdersLogSql : String;
+    procedure SetGridParams(Grid : TToughDBGrid);
   public
     { Public declarations }
     Report : TStrings;
@@ -231,11 +226,9 @@ begin
   adsAvgOrders.Connection := DM.MainConnection;
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
-  dbgCore.Options := dbgCore.Options + [dgRowLines];
-  dbgCore.Font.Size := 10;
-  dbgCore.GridLineColors.DarkColor := clBlack;
-  dbgCore.GridLineColors.BrightColor := clDkGray;
   Self.WindowState := wsMaximized;
+  SetGridParams(dbgCore);
+  //SetGridParams(dbgLog);
 
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
@@ -249,7 +242,6 @@ end;
 procedure TCorrectOrdersForm.PrepareData;
 var
   ClientName, PriceName : String;
-  ClientNode, PriceNode : TTreeNode;
   ClientId, OrderId : Int64;
 
   procedure AddClient();
@@ -280,9 +272,6 @@ var
       Report.Append(Format('   прайс-лист %s   причина: %s',
         [PriceName,
          DM.adcUpdate.FieldByName('ErrorReason').AsString]));
-
-    ClientNode := tvList.Items.Add(nil, ClientName);
-    PriceNode := tvList.Items.AddChild(ClientNode, PriceName);
   end;
 
   procedure AddOrder();
@@ -305,8 +294,6 @@ var
       Report.Append(Format('   прайс-лист %s   причина: %s',
         [PriceName,
          DM.adcUpdate.FieldByName('ErrorReason').AsString]));
-
-    PriceNode := tvList.Items.AddChild(ClientNode, PriceName);
   end;
 
   procedure AddPosition();
@@ -366,13 +353,6 @@ var
        DM.adcUpdate.FieldByName('OldOrderCount').AsString,
        DM.adcUpdate.FieldByName('NewPrice').AsString,
        DM.adcUpdate.FieldByName('NewOrderCount').AsString]));
-
-    tvList.Items.AddChildObject(
-      PriceNode,
-      DM.adcUpdate.FieldByName('SynonymName').AsString
-      + IfThen(Length(DM.adcUpdate.FieldByName('SynonymFirm').AsString) > 0,
-        ' - ' + DM.adcUpdate.FieldByName('SynonymFirm').AsString),
-      TObject(PositionId));
   end;
 
 begin
@@ -380,8 +360,6 @@ begin
   mtLog.Close;
   mtLog.Open;
   mtLog.TreeList.Active := True;
-
-  tvList.Items.Clear;
 
   //Orders.SortOnFields('ClientName;PriceName;SynonymName;SynonymFirm');
   //Orders.First;
@@ -415,15 +393,10 @@ begin
     DM.adcUpdate.Close
   end;
 
-  tvList.FullExpand;
-
   mtLog.First;
 
   //dsOrders.DataSet := Orders;
-  //”станавливаем верний отображаемый узел
-  tvList.TopItem := tvList.Items.GetFirstNode;
   //¬ыдел€ем первую позицию, требующей корректировки
-  //tvList.Items.GetFirstNode.Item[0].Item[0].Selected := True;
   if ProcessSendOrdersResponse then begin
     mtLogSend.OnChange := mtLogSendChange;
   end;
@@ -507,19 +480,11 @@ begin
       Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
 end;
 
-procedure TCorrectOrdersForm.tvListKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if (Key = VK_RETURN) and Assigned(tvList.Selected.Data) and not adsCore.IsEmpty
-  then
-    dbgCore.SetFocus;
-end;
-
 procedure TCorrectOrdersForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if (Key = VK_ESCAPE) then
-    tvList.SetFocus;
+    dbgLog.SetFocus;
 end;
 
 procedure TCorrectOrdersForm.dbgCoreGetCellParams(Sender: TObject;
@@ -755,8 +720,10 @@ end;
 procedure TCorrectOrdersForm.FormResize(Sender: TObject);
 begin
   inherited;
+{
   if not ProcessSendOrdersResponse then
     pTop.Height := Self.ClientHeight div 2;
+}    
 end;
 
 procedure TCorrectOrdersForm.btnGoToReportClick(Sender: TObject);
@@ -784,6 +751,10 @@ begin
     btnRetrySend.Visible := False;
     btnRefresh.Visible := False;
     btnEditOrders.Visible := False;
+
+    dbgCore.Align := alNone;
+    dbgCore.Visible := False;
+    pTop.Align := alClient;
   end;
 end;
 
@@ -845,6 +816,34 @@ begin
     + 'order by clients.Name, OrdersHead.PriceName, OrdersList.SynonymName, OrdersList.SynonymFirm';
   end
   else begin
+    Result := ''
+    + 'select '
+    + '  OrdersHead.ClientId, '
+    + '  clients.Name as ClientName, '
+    + '  OrdersHead.OrderId, '
+    + '  OrdersHead.PriceName, '
+    + '  OrdersHead.Send, '
+    + '  OrdersHead.SendResult, '
+    + '  OrdersHead.ErrorReason, '
+    + '  OrdersList.Id As OrderListId, '
+    + '  OrdersList.SynonymName, '
+    + '  OrdersList.SynonymFirm, '
+    + '  OrdersList.DropReason, '
+
+    + '  OrdersList.ServerQuantity as OldOrderCount, '
+    + '  OrdersList.OrderCount as NewOrderCount, '
+    + '  OrdersList.ServerCost as OldPrice, '
+    + '  OrdersList.Price as NewPrice '
+    
+    + 'from '
+    + '  OrdersHead '
+    + '  inner join clients   on (clients.clientid = OrdersHead.ClientId) '
+    + '  inner join OrdersList on OrdersList.OrderId = OrdersHead.OrderId and (OrdersList.DropReason is not null)'
+    + ' '
+    + ' '
+    + 'where '
+    + '  OrdersHead.Closed = 0 '
+    + 'order by clients.Name, OrdersHead.PriceName, OrdersList.SynonymName, OrdersList.SynonymFirm';
   end;
 end;
 
@@ -888,6 +887,22 @@ begin
   DM.adcUpdate.ParamByName('Send').AsBoolean := Sender.AsBoolean;
   DM.adcUpdate.ParamByName('OrderId').Value := mtLogId.Value;
   DM.adcUpdate.Execute;
+end;
+
+procedure TCorrectOrdersForm.dbgLogKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ProcessSendOrdersResponse and (Key = VK_RETURN) and not adsCore.IsEmpty
+  then
+    dbgCore.SetFocus;
+end;
+
+procedure TCorrectOrdersForm.SetGridParams(Grid: TToughDBGrid);
+begin
+  Grid.Options := Grid.Options + [dgRowLines];
+  Grid.Font.Size := 10;
+  Grid.GridLineColors.DarkColor := clBlack;
+  Grid.GridLineColors.BrightColor := clDkGray;
 end;
 
 end.

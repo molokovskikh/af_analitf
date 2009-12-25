@@ -309,6 +309,7 @@ begin
       adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
       dbgSummaryCurrent.InputField := 'OrderCount';
       dbgSummaryCurrent.Tag := 256;
+      cbNeedCorrect.Enabled := True;
       btnDelete.Enabled := True;
     end
     else begin

@@ -95,7 +95,7 @@ implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
-  Child, Config, RxMemDS, CorrectOrders;
+  Child, Config, RxMemDS, CorrectOrders, PostSomeOrdersController;
 
 {$R *.DFM}
 
@@ -536,9 +536,19 @@ var
   CostReason : String;
   OldPrice : Currency;
 
+  procedure SetOrderDropReason(reason : TPositionSendResult);
+  begin
+    DM.adsRepareOrders.Edit;
+    DM.adsRepareOrdersDropReason.Value := Integer(reason);
+    DM.adsRepareOrders.Post;
+  end;
+
 	procedure SetOrder( Order: integer);
+  var
+    OldOrderCount : Integer;
 	begin
 		DM.adsRepareOrders.Edit;
+    OldOrderCount := DM.adsRepareOrdersORDERCOUNT.AsInteger;
     if not ProcessSendOrdersResponse then
       DM.adsRepareOrdersORDERCOUNT.AsInteger := Order;
 		if Order = 0 then
@@ -551,6 +561,8 @@ var
       DM.adsRepareOrdersRealPrice.Value := DM.adsCoreRepareRealCost.Value;
       DM.adsRepareOrdersCodeFirmCr.Value := DM.adsCoreRepareCodeFirmCr.Value;
     end;
+    DM.adsRepareOrdersServerCost.Value := DM.adsRepareOrdersRealPrice.Value;
+    DM.adsRepareOrdersServerQuantity.Value := OldOrderCount;
 		DM.adsRepareOrders.Post;
 	end;
 
@@ -615,6 +627,7 @@ begin
          DM.adsRepareOrdersClientId.AsLargeInt]);
 				DM.adsCoreRepare.Close;
 				SetOrder( 0);
+        SetOrderDropReason(psrNotExists);
 				DM.adsRepareOrders.Next;
 				continue;
 			end;
@@ -645,6 +658,7 @@ begin
 			begin
 				if CurOrder > 0 then
 				begin
+          SetOrderDropReason(psrDifferentQuantity);
           mdOutput.AppendRecord(
            [DM.adsRepareOrdersClientName.AsString,
            DM.adsRepareOrdersPRICENAME.AsString,
@@ -662,6 +676,7 @@ begin
 				end
 				else
 				begin
+          SetOrderDropReason(psrNotExists);
           mdOutput.AppendRecord(
            [DM.adsRepareOrdersClientName.AsString,
            DM.adsRepareOrdersPRICENAME.AsString,
@@ -678,7 +693,8 @@ begin
 				end;
 			end
       else
-        if Length(CostReason) > 0 then
+        if Length(CostReason) > 0 then begin
+          SetOrderDropReason(psrDifferentCost);
           mdOutput.AppendRecord(
            [DM.adsRepareOrdersClientName.AsString,
            DM.adsRepareOrdersPRICENAME.AsString,
@@ -692,6 +708,7 @@ begin
            DM.adsRepareOrdersId.AsLargeInt,
            DM.adsRepareOrdersProductId.AsLargeInt,
            DM.adsRepareOrdersClientId.AsLargeInt]);
+        end;
 
 			DM.adsRepareOrders.Next;
 		finally
@@ -803,6 +820,7 @@ begin
         { если не нашли что-то, то выводим сообщение }
         if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
         begin
+          ShowCorrectOrders(False);
           //formResult := ShowCorrectOrders(ProcessSendOrdersResponse);
 {
             if (formResult = mrRetry) then

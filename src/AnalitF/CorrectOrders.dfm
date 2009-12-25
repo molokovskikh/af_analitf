@@ -282,112 +282,18 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       Height = 184
       Align = alTop
       TabOrder = 1
-      object Splitter2: TSplitter
-        Left = 485
-        Top = 1
-        Height = 182
-        Align = alRight
-      end
-      object pRight: TPanel
-        Left = 488
-        Top = 1
-        Width = 369
-        Height = 182
-        Align = alRight
-        TabOrder = 0
-        object lReason: TLabel
-          Left = 8
-          Top = 8
-          Width = 49
-          Height = 13
-          Caption = #1055#1088#1080#1095#1080#1085#1072' :'
-        end
-        object dbtReason: TDBText
-          Left = 16
-          Top = 24
-          Width = 337
-          Height = 57
-          DataField = 'Reason'
-          DataSource = dsOrders
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object dbgValues: TToughDBGrid
-          Tag = 32
-          Left = 1
-          Top = 88
-          Width = 367
-          Height = 81
-          AutoFitColWidths = True
-          DataSource = dsValues
-          Flat = True
-          FooterColor = clWindow
-          FooterFont.Charset = DEFAULT_CHARSET
-          FooterFont.Color = clWindowText
-          FooterFont.Height = -11
-          FooterFont.Name = 'MS Sans Serif'
-          FooterFont.Style = []
-          FrozenCols = 1
-          Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit]
-          OptionsEh = [dghFixed3D, dghFrozen3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking]
-          ReadOnly = True
-          TabOrder = 0
-          TitleFont.Charset = DEFAULT_CHARSET
-          TitleFont.Color = clWindowText
-          TitleFont.Height = -11
-          TitleFont.Name = 'MS Sans Serif'
-          TitleFont.Style = []
-          OnGetCellParams = dbgValuesGetCellParams
-          SearchPosition = spTop
-          Columns = <
-            item
-              EditButtons = <>
-              FieldName = 'ParametrName'
-              Footers = <>
-            end
-            item
-              EditButtons = <>
-              FieldName = 'OldValue'
-              Footers = <>
-            end
-            item
-              EditButtons = <>
-              FieldName = 'NewValue'
-              Footers = <>
-            end>
-        end
-      end
       object pLog: TPanel
         Left = 1
         Top = 1
-        Width = 484
+        Width = 856
         Height = 182
         Align = alClient
-        TabOrder = 1
-        object tvList: TTreeView
-          Left = 1
-          Top = 1
-          Width = 128
-          Height = 180
-          Align = alLeft
-          ChangeDelay = 300
-          HideSelection = False
-          Indent = 19
-          ReadOnly = True
-          TabOrder = 0
-          OnChange = tvListChange
-          OnKeyDown = tvListKeyDown
-        end
+        TabOrder = 0
         object dbgLog: TToughDBGrid
           Tag = 32
-          Left = 129
+          Left = 1
           Top = 1
-          Width = 354
+          Width = 854
           Height = 180
           Align = alClient
           AutoFitColWidths = True
@@ -401,7 +307,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
           FooterFont.Style = []
           Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
           OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
-          TabOrder = 1
+          TabOrder = 0
           TitleFont.Charset = DEFAULT_CHARSET
           TitleFont.Color = clWindowText
           TitleFont.Height = -11
@@ -409,6 +315,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
           TitleFont.Style = []
           OnDrawColumnCell = dbgLogDrawColumnCell
           OnGetCellParams = dbgLogGetCellParams
+          OnKeyDown = dbgLogKeyDown
           SearchPosition = spTop
           Columns = <
             item
