@@ -17,7 +17,9 @@ const
 
 type
   TOrderSendResult = (osrSuccess, osrLessThanMinReq, osrNeedCorrect);
-  TPositionSendResult = (psrNotExists, psrDifferentCost, psrDifferentQuantity);
+  TPositionSendResult =
+    (psrNotExists, psrDifferentCost, psrDifferentQuantity,
+    psrDifferentCostAndQuantity);
 
 const
   //предложение отсутствует
@@ -28,7 +30,8 @@ const
   PositionSendResultText : array[TPositionSendResult] of string =
   ('предложение отсутствует',
    'имеется различие в цене препарата',
-   'доступное количество препарата в прайс-листе меньше заказанного ранее');
+   'доступное количество препарата в прайс-листе меньше заказанного ранее',
+   'имеются различия с прайс-листом в цене и количестве заказанного препарата');
 
 type
   TPostSomeOrdersController = class
@@ -627,24 +630,37 @@ begin
       for J := 0 to currentHeader.OrderPositions.Count-1 do begin
         currentPosition := TPostOrderPosition(currentHeader.OrderPositions[j]);
         //  TPositionSendResult = (psrNotExists, psrDifferentCost, psrDifferentQuantity);
-        FDataLayer.adcUpdate.SQL.Text := ''
-          +'update '
-          +'  OrdersList '
-          +'set '
-          +'  DropReason = :DropReason, '
-          +'  ServerCost = :ServerCost, '
-          +'  ServerQuantity = :ServerQuantity '
-          +'where '
-          +'  OrdersList.ID = :ClientPositionId; ';
+        if currentPosition.DropReason = psrNotExists then begin
+          FDataLayer.adcUpdate.SQL.Text := ''
+            +'update '
+            +'  OrdersList '
+            +'set '
+            +'  DropReason = :DropReason, '
+            +'  ServerCost = RealPrice, '
+            +'  ServerQuantity = OrderCount '
+            +'where '
+            +'  OrdersList.ID = :ClientPositionId; ';
+        end
+        else begin
+          FDataLayer.adcUpdate.SQL.Text := ''
+            +'update '
+            +'  OrdersList '
+            +'set '
+            +'  DropReason = :DropReason, '
+            +'  ServerCost = :ServerCost, '
+            +'  ServerQuantity = :ServerQuantity '
+            +'where '
+            +'  OrdersList.ID = :ClientPositionId; ';
+          FDataLayer.adcUpdate.ParamByName('ServerCost').Value :=
+            currentPosition.ServerCost;
+          if Length(currentPosition.ServerQuantity) > 0 then
+            FDataLayer.adcUpdate.ParamByName('ServerQuantity').Value :=
+              currentPosition.ServerQuantity
+          else
+            FDataLayer.adcUpdate.ParamByName('ServerQuantity').Clear;
+        end;
         FDataLayer.adcUpdate.ParamByName('DropReason').Value :=
           Integer(currentPosition.DropReason);
-        FDataLayer.adcUpdate.ParamByName('ServerCost').Value :=
-          currentPosition.ServerCost;
-        if Length(currentPosition.ServerQuantity) > 0 then
-          FDataLayer.adcUpdate.ParamByName('ServerQuantity').Value :=
-            currentPosition.ServerQuantity
-        else
-          FDataLayer.adcUpdate.ParamByName('ServerQuantity').Clear;
         FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
           currentPosition.ClientPositionID;
         FDataLayer.adcUpdate.Execute;

@@ -111,8 +111,8 @@ type
     mtLogNodeName: TStringField;
     mtLogSynonymFirm: TStringField;
     mtLogReason: TStringField;
+    mtLogSelfId: TLargeintField;
     procedure FormCreate(Sender: TObject);
-    procedure tvListChange(Sender: TObject; Node: TTreeNode);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
     procedure dbgCoreKeyDown(Sender: TObject; var Key: Word;
@@ -140,6 +140,7 @@ type
     procedure mtLogSendChange(Sender: TField);
     procedure dbgLogKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure mtLogAfterScroll(DataSet: TDataSet);
   private
     { Private declarations }
     UseExcess: Boolean;
@@ -155,8 +156,6 @@ type
     //очищаем созданный заказ
     procedure ClearOrderByOrderCost;
     procedure ShowVolumeMessage;
-    procedure tvListChanging(Sender: TObject; Node: TTreeNode;
-      var AllowChange: Boolean);
   protected
     dsCheckVolume : TDataSet;
     dgCheckVolume : TToughDBGrid;
@@ -228,7 +227,7 @@ begin
     adsAvgOrders.Open;
   Self.WindowState := wsMaximized;
   SetGridParams(dbgCore);
-  //SetGridParams(dbgLog);
+  SetGridParams(dbgLog);
 
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
@@ -243,23 +242,37 @@ procedure TCorrectOrdersForm.PrepareData;
 var
   ClientName, PriceName : String;
   ClientId, OrderId : Int64;
+  AutoId : Int64;
+
+  function GetNextId : Int64;
+  var
+    LastId : Int64;
+  begin
+    LastId := AutoId;
+    Inc(AutoId);
+    Result := LastId;
+  end;
 
   procedure AddClient();
   begin
     ClientName := DM.adcUpdate.FieldByName('ClientName').AsString;
     PriceName := DM.adcUpdate.FieldByName('PriceName').AsString;
-    ClientId := TLargeintField(DM.adcUpdate.FieldByName('ClientId')).AsLargeInt;
-    OrderId := TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
+    ClientId := GetNextId;
+    OrderId := GetNextId;
 
     mtLog.Append;
     mtLog.FieldValues['Id'] := ClientId;
     mtLog.FieldValues['NodeName'] := ClientName;
+    mtLog.FieldValues['SelfId'] :=
+      TLargeintField(DM.adcUpdate.FieldByName('ClientId')).AsLargeInt;
     mtLog.Post;
     Report.Append(Format('клиент %s', [ClientName]));
 
     mtLog.Append;
     mtLog.FieldValues['Id'] := OrderId;
     mtLog.FieldValues['ParentId'] := ClientId;
+    mtLog.FieldValues['SelfId'] :=
+      TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
     mtLog.FieldValues['NodeName'] := PriceName;
     mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
     if not DM.adcUpdate.FieldByName('ErrorReason').IsNull then
@@ -277,11 +290,13 @@ var
   procedure AddOrder();
   begin
     PriceName := DM.adcUpdate.FieldByName('PriceName').AsString;
-    OrderId := TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
+    OrderId := GetNextId;
 
     mtLog.Append;
     mtLog.FieldValues['Id'] := OrderId;
     mtLog.FieldValues['ParentId'] := ClientId;
+    mtLog.FieldValues['SelfId'] :=
+      TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
     mtLog.FieldValues['NodeName'] := PriceName;
     mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
     if not DM.adcUpdate.FieldByName('ErrorReason').IsNull then
@@ -302,12 +317,13 @@ var
     PostionReason : String;
     PositionResult : TPositionSendResult;
   begin
-    PositionId := TLargeintField(DM.adcUpdate
-      .FieldByName('OrderListId')).AsLargeInt;
+    PositionId := GetNextId;
 
     mtLog.Append;
     mtLog.FieldValues['Id'] := PositionId;
     mtLog.FieldValues['ParentId'] := OrderId;
+    mtLog.FieldValues['SelfId'] :=
+      TLargeintField(DM.adcUpdate.FieldByName('OrderListId')).AsLargeInt;
     mtLog.FieldValues['NodeName'] :=
       DM.adcUpdate.FieldByName('SynonymName').AsString;
     mtLog.FieldValues['SynonymFirm'] :=
@@ -340,6 +356,17 @@ var
           mtLog.FieldValues['NewOrderCount'] :=
             DM.adcUpdate.FieldByName('NewOrderCount').Value;
         end;
+      psrDifferentCostAndQuantity :
+        begin
+          mtLog.FieldValues['OldOrderCount'] :=
+            DM.adcUpdate.FieldByName('OldOrderCount').Value;
+          mtLog.FieldValues['NewOrderCount'] :=
+            DM.adcUpdate.FieldByName('NewOrderCount').Value;
+          mtLog.FieldValues['OldPrice'] :=
+            DM.adcUpdate.FieldByName('OldPrice').Value;
+          mtLog.FieldValues['NewPrice'] :=
+            DM.adcUpdate.FieldByName('NewPrice').Value;
+        end;
     end;
 
     mtLog.Post;
@@ -356,6 +383,7 @@ var
   end;
 
 begin
+  AutoId := 1;
 
   mtLog.Close;
   mtLog.Open;
@@ -403,71 +431,28 @@ begin
 end;
 
 procedure TCorrectOrdersForm.SetOffers;
+var
+  ClientId,
+  ProductId : Variant;
 begin
-{
-  dsOrders.Enabled := True;
+  ClientId := DM
+    .QueryValue(
+      'select ClientId from orderslist where Id = ' + mtLogSelfId.AsString,
+      [],
+      []);
+  ProductId := DM
+    .QueryValue(
+      'select ProductId from orderslist where Id = ' + mtLogSelfId.AsString,
+      [],
+      []);
   if adsCore.Active then
     adsCore.Close;
   adsCore.ParamByName('TimeZoneBias').Value := AProc.TimeZoneBias;
-  adsCore.ParamByName('ClientId').Value := Orders.FieldByName('ClientId').Value;
-  adsCore.ParamByName('ProductId').Value := Orders.FieldByName('ProductId').Value;
+  adsCore.ParamByName('ClientId').Value := ClientId;
+  adsCore.ParamByName('ProductId').Value := ProductId;
   adsCore.Open;
   if not adsCore.IsEmpty then
-    adsCore.Locate('OrderListId', Orders.FieldByName('OrderListId').Value, []);
-  if mdValues.Active then
-    mdValues.Close;
-  mdValues.Open;
-  mdValues.AppendRecord([
-    'Цена',
-    Orders.FieldByName('OldPrice').AsString,
-    Orders.FieldByName('NewPrice').AsString]);
-  mdValues.AppendRecord([
-    'Количество',
-    Orders.FieldByName('OldOrderCount').AsString,
-    Orders.FieldByName('NewOrderCount').AsString]);
-  mdValues.First;
-  dbgValues.Columns[0].Title.Caption := '';
-}  
-end;
-
-procedure TCorrectOrdersForm.tvListChange(Sender: TObject;
-  Node: TTreeNode);
-var
-  value : Int64;
-begin
-  if Assigned(Node.Data) then begin
-    value := Int64(Node.Data);
-{
-    if Orders.Locate('OrderListId', value, []) then
-      SetOffers;
-}      
-  end
-  else begin
-    adsCore.Close;
-    mdValues.Close;
-    dsOrders.Enabled := False;
-  end;
-end;
-
-procedure TCorrectOrdersForm.tvListChanging(Sender: TObject;
-  Node: TTreeNode; var AllowChange: Boolean);
-begin
-  //Это пока отключил, т.к. переходит не совсем корректно
-  AllowChange := False;
-  if Assigned(Node.Data) then
-    AllowChange := True
-  else
-    if (Node.Count > 0) and (Node.Item[0].Count > 0) then begin
-      //Node := Node.Item[0].Item[0];
-      Node.Item[0].Item[0].Selected := True;
-      AllowChange := False;
-    end
-    else
-      if (Node.Count > 0) then begin
-        //Node := Node.Item[0];
-        Node.Item[0].Selected := True;
-        AllowChange := False;
-      end
+    adsCore.Locate('OrderListId', mtLogSelfId.Value, []);
 end;
 
 procedure TCorrectOrdersForm.adsCoreBeforeUpdateExecute(
@@ -720,10 +705,8 @@ end;
 procedure TCorrectOrdersForm.FormResize(Sender: TObject);
 begin
   inherited;
-{
   if not ProcessSendOrdersResponse then
     pTop.Height := Self.ClientHeight div 2;
-}    
 end;
 
 procedure TCorrectOrdersForm.btnGoToReportClick(Sender: TObject);
@@ -752,9 +735,10 @@ begin
     btnRefresh.Visible := False;
     btnEditOrders.Visible := False;
 
-    dbgCore.Align := alNone;
-    dbgCore.Visible := False;
-    pTop.Align := alClient;
+    //dbgCore.Align := alNone;
+    //dbgCore.Visible := False;
+    //pTop.Align := alClient;
+    dbgLog.Columns.Items[1].ReadOnly := True;
   end;
 end;
 
@@ -885,14 +869,14 @@ procedure TCorrectOrdersForm.mtLogSendChange(Sender: TField);
 begin
   DM.adcUpdate.SQL.Text := 'update ordershead set Send = :Send where OrderId = :OrderId';
   DM.adcUpdate.ParamByName('Send').AsBoolean := Sender.AsBoolean;
-  DM.adcUpdate.ParamByName('OrderId').Value := mtLogId.Value;
+  DM.adcUpdate.ParamByName('OrderId').Value := mtLogSelfId.Value;
   DM.adcUpdate.Execute;
 end;
 
 procedure TCorrectOrdersForm.dbgLogKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if ProcessSendOrdersResponse and (Key = VK_RETURN) and not adsCore.IsEmpty
+  if not ProcessSendOrdersResponse and (Key = VK_RETURN) and not adsCore.IsEmpty
   then
     dbgCore.SetFocus;
 end;
@@ -903,6 +887,14 @@ begin
   Grid.Font.Size := 10;
   Grid.GridLineColors.DarkColor := clBlack;
   Grid.GridLineColors.BrightColor := clDkGray;
+end;
+
+procedure TCorrectOrdersForm.mtLogAfterScroll(DataSet: TDataSet);
+begin
+  if mtLog.TreeNodeLevel = 3 then
+    SetOffers
+  else
+    adsCore.Close;
 end;
 
 end.

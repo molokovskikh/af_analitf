@@ -1432,12 +1432,10 @@ object DM: TDM
     Top = 544
   end
   object MyConnection: TMyConnection
-    Database = 'analitf'
     Options.Charset = 'cp1251'
     Options.KeepDesignConnected = False
     Username = 'root'
     Server = 'localhost'
-    Connected = True
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False
     Left = 32

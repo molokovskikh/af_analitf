@@ -87,6 +87,8 @@ type
     adsOrdersHFormDisplayOrderId: TLargeintField;
     adsCore: TMyQuery;
     adsOrdersHFormMinReq: TLargeintField;
+    adsOrdersHFormDifferentCostCount: TLargeintField;
+    adsOrdersHFormDifferentQuantityCount: TLargeintField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -460,9 +462,20 @@ procedure TOrdersHForm.dbgCurrentOrdersGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if TabControl.TabIndex = 0 then
+  if TabControl.TabIndex = 0 then begin
     if (Column.Field = adsOrdersHFormMINREQ) and not adsOrdersHFormMINREQ.IsNull and (adsOrdersHFormMINREQ.AsInteger > adsOrdersHFormSumOrder.AsCurrency) then
       Background := clRed;
+
+    if (adsOrdersHFormDifferentCostCount.Value > 0)
+       and (Column.Field = adsOrdersHFormSumOrder)
+    then
+      Background := NeedCorrectColor;
+
+    if (adsOrdersHFormDifferentQuantityCount.Value > 0)
+       and (Column.Field = adsOrdersHFormPositions)
+    then
+      Background := NeedCorrectColor;
+  end;
 
 	if TabControl.TabIndex = 1 then
 	begin

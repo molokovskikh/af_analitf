@@ -12,20 +12,7 @@ uses
 type
   TOrdersForm = class(TChildForm)
     dsOrders: TDataSource;
-    Label1: TLabel;
-    dbtId: TDBText;
-    Label2: TLabel;
-    dbtOrderDate: TDBText;
-    lblRecordCount: TLabel;
-    lblSum: TLabel;
-    dbtPositions: TDBText;
-    dbtSumOrder: TDBText;
     frdsOrders: TfrDBDataSet;
-    Label4: TLabel;
-    dbtPriceName: TDBText;
-    Label5: TLabel;
-    dbtRegionName: TDBText;
-    Panel1: TPanel;
     dbgOrders: TToughDBGrid;
     adsOrdersOld: TpFIBDataSet;
     adsOrdersOldCryptPRICE: TCurrencyField;
@@ -42,7 +29,6 @@ type
     adsOrdersOldSYNONYMNAME: TFIBStringField;
     adsOrdersOldSYNONYMFIRM: TFIBStringField;
     adsOrdersOldORDERCOUNT: TFIBIntegerField;
-    lSumOrder: TLabel;
     adsOrdersOldPRICE: TFIBStringField;
     adsOrdersOldAWAIT: TFIBBooleanField;
     adsOrdersOldJUNK: TFIBBooleanField;
@@ -92,6 +78,24 @@ type
     adsOrdersDropReason: TSmallintField;
     adsOrdersServerCost: TFloatField;
     adsOrdersServerQuantity: TIntegerField;
+    pTop: TPanel;
+    pOrderHeader: TPanel;
+    dbtPriceName: TDBText;
+    Label1: TLabel;
+    dbtId: TDBText;
+    Label2: TLabel;
+    dbtOrderDate: TDBText;
+    lblRecordCount: TLabel;
+    lblSum: TLabel;
+    dbtPositions: TDBText;
+    dbtSumOrder: TDBText;
+    Label4: TLabel;
+    Label5: TLabel;
+    dbtRegionName: TDBText;
+    lSumOrder: TLabel;
+    cbNeedCorrect: TCheckBox;
+    gbCorrectMessage: TGroupBox;
+    mCorrectMessage: TMemo;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -109,12 +113,19 @@ type
     procedure dbmMessageToExit(Sender: TObject);
     procedure dbmMessageToKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure cbNeedCorrectClick(Sender: TObject);
+    procedure adsOrdersAfterScroll(DataSet: TDataSet);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
     PriceCode : Integer;
     RegionCode : Int64;
     PriceName, RegionName : String;
+    //«аказ €вл€етс€ закрытым
+    IsClosedOrder : Boolean;
+    //«аказ имеет позиции с необходимой корректировкой, которые он получил
+    //во врем€ попытки отправки заказа
+    OrderWithSendError : Boolean;
     procedure SetOrderLabel;
     procedure ocf(DataSet: TDataSet);
     procedure FlipToCore;
@@ -138,6 +149,7 @@ uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
 procedure TOrdersForm.ShowForm(OrderId: Integer);
 begin
   plOverCost.Hide();
+  cbNeedCorrect.Checked := False;
   //PrintEnabled:=False;
   dbgOrders.Tag := IfThen(OrdersHForm.TabControl.TabIndex = 1, 1, 2);
   SaveEnabled := OrdersHForm.TabControl.TabIndex = 1;
@@ -154,8 +166,15 @@ end;
 procedure TOrdersForm.SetParams(OrderId: Integer);
 var
   Closed : Variant;
+  SendResult : Variant;
 begin
   Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(OrderId), [], []);
+  IsClosedOrder := Closed <> 0;
+  gbCorrectMessage.Visible := not IsClosedOrder;
+  if IsClosedOrder then
+    pTop.Height := pOrderHeader.Height;
+  SendResult := DM.QueryValue('select SendResult from ordershead where orderid = ' + IntToStr(OrderId), [], []);
+  OrderWithSendError := not VarIsNull(SendResult);
   adsOrders.OnCalcFields := ocf;
 //  dbgOrders.Columns[2].FieldName := 'PRICE';
 //  dbgOrders.Columns[4].FieldName := 'SumOrder';
@@ -172,6 +191,7 @@ begin
   dbmMessageTo.Color := Iif(dbmMessageTo.ReadOnly, clBtnFace, clWindow);
   with adsOrders do begin
     ParamByName('OrderId').Value:=OrderId;
+    ParamByName('NeedCorrect').Value:=cbNeedCorrect.Checked;
     if Active
     then begin
       Close;
@@ -198,35 +218,32 @@ procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;
 var
   PositionResult : TPositionSendResult;
 begin
+  //ожидаемый товар выдел€ем зеленым
+  if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
+    Background := AWAIT_CLR;
+
   if not adsOrdersDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
-    case PositionResult of
-      psrNotExists :
-        begin
-          if ( Column.Field = adsOrdersordercount) or (Column.Field = adsOrdersSumOrder)
-          then
-            Background := NeedCorrectColor;
-        end;
-      psrDifferentCost :
-        begin
-          if (Column.Field = adsOrdersSumOrder)
-          then
-            Background := NeedCorrectColor;
-        end;
-      psrDifferentQuantity :
-        begin
-          if (Column.Field = adsOrdersordercount)
-          then
-            Background := NeedCorrectColor;
-        end;
-    end;
+
+    //ћы здесь можем затереть подсветку ожидаемости, но это сделано осознано,
+    //т.к. информаци€ о невозможности заказа позиции важнее
+    if ( Column.Field = adsOrderssynonymname) and (PositionResult = psrNotExists)
+    then
+      Background := NeedCorrectColor;
+
+    if ( Column.Field = adsOrdersSumOrder)
+      and (PositionResult in [psrDifferentCost, psrDifferentCostAndQuantity])
+    then
+      Background := NeedCorrectColor;
+
+    if ( Column.Field = adsOrdersordercount)
+      and (PositionResult in [psrDifferentQuantity, psrDifferentCostAndQuantity])
+    then
+      Background := NeedCorrectColor;
   end;
-	{ если уцененный товар, измен€ем цвет }
-	if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
-		Background := JUNK_CLR;
-	//ожидаемый товар выдел€ем зеленым
-	if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
-		Background := AWAIT_CLR;
+  { если уцененный товар, измен€ем цвет }
+  if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
+    Background := JUNK_CLR;
 end;
 
 procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -417,6 +434,58 @@ begin
       ParentOrdersHForm.ShowForm
     else
       PrevForm.ShowForm;
+end;
+
+procedure TOrdersForm.cbNeedCorrectClick(Sender: TObject);
+begin
+  SetParams(OrderID);
+  dbgOrders.SetFocus;
+end;
+
+procedure TOrdersForm.adsOrdersAfterScroll(DataSet: TDataSet);
+var
+  PositionResult : TPositionSendResult;
+  CorrectMessage : String;
+  newOrder, oldOrder, newCost, oldCost : String;
+begin
+  if not adsOrdersDropReason.IsNull then begin
+    PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
+    CorrectMessage := PositionSendResultText[PositionResult];
+    CorrectMessage := CorrectMessage + ' (';
+    if PositionResult = psrNotExists then begin
+      CorrectMessage := CorrectMessage +
+        Format(
+          'стара€ цена: %s; старый заказ: %s',
+          [adsOrdersServerCost.AsString,
+          adsOrdersServerQuantity.AsString]);
+    end
+    else begin
+      if OrderWithSendError then begin
+        newOrder := adsOrdersServerQuantity.AsString;
+        newCost := adsOrdersServerCost.AsString;
+        oldOrder := adsOrdersordercount.AsString;
+        oldCost := adsOrdersprice.AsString;
+      end
+      else begin
+        newOrder := adsOrdersordercount.AsString;
+        newCost := adsOrdersprice.AsString;
+        oldOrder := adsOrdersServerQuantity.AsString;
+        oldCost := adsOrdersServerCost.AsString;
+      end;
+
+      if PositionResult in [psrDifferentCost, psrDifferentCostAndQuantity] then
+        CorrectMessage := CorrectMessage +
+          Format('стара€ цена: %s; нова€ цена: %s', [oldCost, newCost]);
+
+      if PositionResult in [psrDifferentQuantity, psrDifferentCostAndQuantity] then
+        CorrectMessage := CorrectMessage +
+          Format('старый заказ: %s; новый заказ: %s', [oldOrder, newOrder]);
+    end;
+    CorrectMessage := CorrectMessage + ')';
+    mCorrectMessage.Text := CorrectMessage;
+  end
+  else
+    mCorrectMessage.Text := '';
 end;
 
 end.

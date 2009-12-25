@@ -136,6 +136,12 @@ type
     dbgSummarySend: TToughDBGrid;
     adsSummarySendDate: TDateTimeField;
     cbNeedCorrect: TCheckBox;
+    adsSummaryDropReason: TSmallintField;
+    adsSummaryServerCost: TFloatField;
+    adsSummaryServerQuantity: TIntegerField;
+    adsSummarySendResult: TSmallintField;
+    gbCorrectMessage: TGroupBox;
+    mCorrectMessage: TMemo;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -167,6 +173,7 @@ type
     procedure OnSPClick(Sender: TObject);
     procedure ChangeSelected(ASelected : Boolean);
     procedure scf(DataSet: TDataSet);
+    procedure FillCorrectMessage;
   public
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
@@ -180,7 +187,8 @@ procedure ShowSummary;
 
 implementation
 
-uses DModule, Main, AProc, Constant, NamesForms, Fr_Class;
+uses DModule, Main, AProc, Constant, NamesForms, Fr_Class,
+      PostSomeOrdersController;
 
 var
   LastDateFrom,
@@ -388,6 +396,8 @@ end;
 procedure TSummaryForm.dbgSummaryCurrentGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
+var
+  PositionResult : TPositionSendResult;
 begin
   //Жизненно-важный подсвечиваем только в текущем сводном заказе,
   //т.к. для отправленного заказа значения не установлено
@@ -399,6 +409,26 @@ begin
 	//ожидаемый товар выделяем зеленым
 	if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then
 		Background := AWAIT_CLR;
+  //Подсветку позиций требующих корректировки осуществляем только в текущем заказе
+  if (LastSymmaryType = 0) and not adsSummaryDropReason.IsNull then begin
+    PositionResult := TPositionSendResult(adsSummaryDropReason.AsInteger);
+
+    //Мы здесь можем затереть подсветку ожидаемости, но это сделано осознано,
+    //т.к. информация о невозможности заказа позиции важнее
+    if ( Column.Field = adsSummarySynonymName) and (PositionResult = psrNotExists)
+    then
+      Background := NeedCorrectColor;
+
+    if ( Column.Field = adsSummarySumOrder)
+      and (PositionResult in [psrDifferentCost, psrDifferentCostAndQuantity])
+    then
+      Background := NeedCorrectColor;
+
+    if ( Column.Field = adsSummaryOrderCount)
+      and (PositionResult in [psrDifferentQuantity, psrDifferentCostAndQuantity])
+    then
+      Background := NeedCorrectColor;
+  end;
 end;
 
 procedure TSummaryForm.dbgSummaryCurrentCanInput(Sender: TObject; Value: Integer;
@@ -467,6 +497,11 @@ begin
   else
     pWebBrowser.Visible := True;
 }
+  if (LastSymmaryType = 0) then
+    if not adsSummaryDropReason.IsNull then
+      FillCorrectMessage
+    else
+      mCorrectMessage.Text := '';
 end;
 
 procedure TSummaryForm.dbgSummaryCurrentKeyDown(Sender: TObject; var Key: Word;
@@ -573,10 +608,14 @@ begin
     dtpDateFrom.Enabled := LastSymmaryType = 1;
     dtpDateTo.Enabled := dtpDateFrom.Enabled;
     SummaryShow;
-    if (LastSymmaryType = 0) then
-      dbgSummaryCurrent.SetFocus
-    else
+    if (LastSymmaryType = 0) then begin
+      gbCorrectMessage.Visible := True;
+      dbgSummaryCurrent.SetFocus;
+    end
+    else begin
+      gbCorrectMessage.Visible := False;
       dbgSummarySend.SetFocus;
+    end;
   end;
 end;
 
@@ -651,6 +690,48 @@ procedure TSummaryForm.cbNeedCorrectClick(Sender: TObject);
 begin
   SummaryShow;
   dbgSummaryCurrent.SetFocus;
+end;
+
+procedure TSummaryForm.FillCorrectMessage;
+var
+  PositionResult : TPositionSendResult;
+  CorrectMessage : String;
+  newOrder, oldOrder, newCost, oldCost : String;
+begin
+  PositionResult := TPositionSendResult(adsSummaryDropReason.AsInteger);
+  CorrectMessage := PositionSendResultText[PositionResult];
+  CorrectMessage := CorrectMessage + ' (';
+  if PositionResult = psrNotExists then begin
+    CorrectMessage := CorrectMessage +
+      Format(
+        'старая цена: %s; старый заказ: %s',
+        [adsSummaryServerCost.AsString,
+        adsSummaryServerQuantity.AsString]);
+  end
+  else begin
+    if not adsSummarySendResult.IsNull then begin
+      newOrder := adsSummaryServerQuantity.AsString;
+      newCost := adsSummaryServerCost.AsString;
+      oldOrder := adsSummaryOrderCount.AsString;
+      oldCost := adsSummaryCost.AsString;
+    end
+    else begin
+      newOrder := adsSummaryOrderCount.AsString;
+      newCost := adsSummaryCost.AsString;
+      oldOrder := adsSummaryServerQuantity.AsString;
+      oldCost := adsSummaryServerCost.AsString;
+    end;
+
+    if PositionResult in [psrDifferentCost, psrDifferentCostAndQuantity] then
+      CorrectMessage := CorrectMessage +
+        Format('старая цена: %s; новая цена: %s', [oldCost, newCost]);
+
+    if PositionResult in [psrDifferentQuantity, psrDifferentCostAndQuantity] then
+      CorrectMessage := CorrectMessage +
+        Format('старый заказ: %s; новый заказ: %s', [oldOrder, newOrder]);
+  end;
+  CorrectMessage := CorrectMessage + ')';
+  mCorrectMessage.Text := CorrectMessage;
 end;
 
 initialization

@@ -3,6 +3,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   Top = 174
   Width = 868
   Height = 444
+  ActiveControl = dbgLog
   Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1086#1089#1089#1090#1072#1085#1086#1074#1083#1077#1085#1085#1099#1093' '#1079#1072#1082#1072#1079#1086#1074
   OnCreate = FormCreate
   OnResize = FormResize
@@ -325,7 +326,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
-              Width = 50
+              Width = 200
             end
             item
               Alignment = taCenter
@@ -335,7 +336,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               Footers = <>
               MinWidth = 5
               Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
-              Width = 20
+              Width = 30
             end
             item
               EditButtons = <>
@@ -344,7 +345,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
-              Width = 50
+              Width = 100
             end
             item
               EditButtons = <>
@@ -353,7 +354,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1057#1090#1072#1088#1086#1077' '#1082#1086#1083'-'#1074#1086
-              Width = 20
+              Width = 35
             end
             item
               EditButtons = <>
@@ -362,7 +363,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1053#1086#1074#1086#1077' '#1082#1086#1083'-'#1074#1086
-              Width = 20
+              Width = 35
             end
             item
               EditButtons = <>
@@ -371,7 +372,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1057#1090#1072#1088#1072#1103' '#1094#1077#1085#1072
-              Width = 20
+              Width = 35
             end
             item
               EditButtons = <>
@@ -380,7 +381,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1053#1086#1074#1072#1103' '#1094#1077#1085#1072
-              Width = 20
+              Width = 35
             end
             item
               EditButtons = <>
@@ -389,7 +390,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1055#1088#1080#1095#1080#1085#1072
-              Width = 50
+              Width = 360
             end>
         end
       end
@@ -966,6 +967,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         Name = 'Reason'
         DataType = ftString
         Size = 255
+      end
+      item
+        Name = 'SelfId'
+        DataType = ftLargeint
       end>
     IndexDefs = <>
     Params = <>
@@ -973,6 +978,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     TreeList.KeyFieldName = 'Id'
     TreeList.RefParentFieldName = 'ParentId'
     TreeList.DefaultNodeExpanded = True
+    AfterScroll = mtLogAfterScroll
     Left = 362
     Top = 74
     object mtLogId: TLargeintField
@@ -1014,6 +1020,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object mtLogReason: TStringField
       FieldName = 'Reason'
       Size = 255
+    end
+    object mtLogSelfId: TLargeintField
+      FieldName = 'SelfId'
     end
     object MemTableData: TMemTableDataEh
       object DataStruct: TMTDataStructEh
@@ -1113,6 +1122,16 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
           Visible = False
           Size = 255
           Transliterate = False
+        end
+        object SelfId: TMTNumericDataFieldEh
+          FieldName = 'SelfId'
+          NumericDataType = fdtLargeintEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
         end
       end
       object RecordsList: TRecordsListEh

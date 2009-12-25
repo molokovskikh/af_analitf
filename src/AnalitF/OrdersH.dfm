@@ -183,7 +183,7 @@ inherited OrdersHForm: TOrdersHForm
               end
               item
                 EditButtons = <>
-                FieldName = 'minreq'
+                FieldName = 'MinReq'
                 Footers = <>
                 Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
                 Title.TitleButton = True
@@ -758,9 +758,19 @@ inherited OrdersHForm: TOrdersHForm
       '    RegionalData.SupportPhone,'
       '    OrdersHead.MessageTo,'
       '    OrdersHead.Comments,'
-      '    pricesregionaldata.minreq,'
+      
+        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
+        'MinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(OrdersList.Id) as Positions,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentCostCount,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentQuantityCount,'
       
         '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
         'SumOrder,'
@@ -828,6 +838,14 @@ inherited OrdersHForm: TOrdersHForm
         'MinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(OrdersList.Id) as Positions,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentCostCount,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentQuantityCount,'
       
         '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
         'SumOrder,'
@@ -982,6 +1000,12 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormMinReq: TLargeintField
       FieldName = 'MinReq'
+    end
+    object adsOrdersHFormDifferentCostCount: TLargeintField
+      FieldName = 'DifferentCostCount'
+    end
+    object adsOrdersHFormDifferentQuantityCount: TLargeintField
+      FieldName = 'DifferentQuantityCount'
     end
   end
   object adsCore: TMyQuery

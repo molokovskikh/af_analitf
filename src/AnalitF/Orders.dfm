@@ -19,7 +19,7 @@ inherited OrdersForm: TOrdersForm
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 1
+    TabOrder = 0
     Visible = False
     DesignSize = (
       545
@@ -37,192 +37,7 @@ inherited OrdersForm: TOrdersForm
         #1042#1085#1080#1084#1072#1085#1080#1077'! '#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1073#1086#1083#1100#1096#1086#1077' '#1082#1086#1083#1080#1095#1077#1089#1090#1074#1086' '#1087#1088#1077#1087#1072#1088#1072#1090#1072'.'
     end
   end
-  object Panel1: TPanel [1]
-    Left = 0
-    Top = 0
-    Width = 793
-    Height = 51
-    Align = alTop
-    BevelOuter = bvNone
-    TabOrder = 0
-    object dbtPriceName: TDBText
-      Left = 427
-      Top = 9
-      Width = 272
-      Height = 13
-      DataField = 'PriceName'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label1: TLabel
-      Left = 12
-      Top = 9
-      Width = 53
-      Height = 13
-      Caption = #1047#1072#1082#1072#1079' '#8470
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtId: TDBText
-      Left = 76
-      Top = 9
-      Width = 109
-      Height = 13
-      DataField = 'DisplayOrderId'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label2: TLabel
-      Left = 196
-      Top = 9
-      Width = 14
-      Height = 13
-      Caption = #1086#1090
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtOrderDate: TDBText
-      Left = 213
-      Top = 9
-      Width = 124
-      Height = 13
-      DataField = 'OrderDate'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lblRecordCount: TLabel
-      Left = 12
-      Top = 29
-      Width = 60
-      Height = 13
-      Caption = #1055#1086#1079#1080#1094#1080#1081' :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lblSum: TLabel
-      Left = 124
-      Top = 29
-      Width = 64
-      Height = 13
-      Caption = #1085#1072' '#1089#1091#1084#1084#1091' :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtPositions: TDBText
-      Left = 75
-      Top = 29
-      Width = 41
-      Height = 13
-      DataField = 'Positions'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtSumOrder: TDBText
-      Left = 674
-      Top = 29
-      Width = 81
-      Height = 13
-      DataField = 'PRICENAME'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
-    object Label4: TLabel
-      Left = 347
-      Top = 9
-      Width = 77
-      Height = 13
-      Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090' :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label5: TLabel
-      Left = 275
-      Top = 29
-      Width = 51
-      Height = 13
-      Caption = #1056#1077#1075#1080#1086#1085' :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtRegionName: TDBText
-      Left = 328
-      Top = 29
-      Width = 283
-      Height = 13
-      DataField = 'RegionName'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lSumOrder: TLabel
-      Left = 192
-      Top = 29
-      Width = 59
-      Height = 13
-      Caption = 'lSumOrder'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-  end
-  inline frameLegeng: TframeLegeng [2]
+  inline frameLegeng: TframeLegeng [1]
     Left = 0
     Top = 410
     Width = 793
@@ -230,7 +45,7 @@ inherited OrdersForm: TOrdersForm
     Align = alBottom
     Color = clWindow
     ParentColor = False
-    TabOrder = 2
+    TabOrder = 1
     inherited gbLegend: TGroupBox
       inherited lVitallyImportantLegend: TLabel
         Visible = False
@@ -245,16 +60,16 @@ inherited OrdersForm: TOrdersForm
   end
   object pClient: TPanel
     Left = 0
-    Top = 51
+    Top = 75
     Width = 793
-    Height = 359
+    Height = 335
     Align = alClient
-    TabOrder = 3
+    TabOrder = 2
     object dbgOrders: TToughDBGrid
       Left = 1
       Top = 1
       Width = 791
-      Height = 287
+      Height = 223
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsOrders
@@ -337,7 +152,7 @@ inherited OrdersForm: TOrdersForm
     end
     object gbMessageTo: TGroupBox
       Left = 1
-      Top = 288
+      Top = 264
       Width = 791
       Height = 70
       Align = alBottom
@@ -356,6 +171,234 @@ inherited OrdersForm: TOrdersForm
         OnKeyDown = dbmMessageToKeyDown
       end
     end
+    object gbCorrectMessage: TGroupBox
+      Left = 1
+      Top = 224
+      Width = 791
+      Height = 40
+      Align = alBottom
+      Caption = ' '#1055#1088#1080#1095#1080#1085#1072' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1080' '
+      TabOrder = 2
+      object mCorrectMessage: TMemo
+        Left = 2
+        Top = 15
+        Width = 787
+        Height = 23
+        Align = alClient
+        Lines.Strings = (
+          'mCorrectMessage')
+        ReadOnly = True
+        TabOrder = 0
+        OnKeyDown = dbmMessageToKeyDown
+      end
+    end
+  end
+  object pTop: TPanel
+    Left = 0
+    Top = 0
+    Width = 793
+    Height = 75
+    Align = alTop
+    BevelOuter = bvNone
+    TabOrder = 3
+    object pOrderHeader: TPanel
+      Left = 0
+      Top = 0
+      Width = 793
+      Height = 51
+      Align = alTop
+      BevelInner = bvLowered
+      TabOrder = 0
+      object dbtPriceName: TDBText
+        Left = 427
+        Top = 9
+        Width = 198
+        Height = 13
+        DataField = 'PriceName'
+        DataSource = OrdersHForm.dsOrdersH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label1: TLabel
+        Left = 12
+        Top = 9
+        Width = 53
+        Height = 13
+        Caption = #1047#1072#1082#1072#1079' '#8470
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtId: TDBText
+        Left = 75
+        Top = 9
+        Width = 109
+        Height = 13
+        DataField = 'DisplayOrderId'
+        DataSource = OrdersHForm.dsOrdersH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label2: TLabel
+        Left = 196
+        Top = 9
+        Width = 14
+        Height = 13
+        Caption = #1086#1090
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtOrderDate: TDBText
+        Left = 213
+        Top = 9
+        Width = 124
+        Height = 13
+        DataField = 'OrderDate'
+        DataSource = OrdersHForm.dsOrdersH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lblRecordCount: TLabel
+        Left = 12
+        Top = 29
+        Width = 60
+        Height = 13
+        Caption = #1055#1086#1079#1080#1094#1080#1081' :'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lblSum: TLabel
+        Left = 148
+        Top = 29
+        Width = 64
+        Height = 13
+        Caption = #1085#1072' '#1089#1091#1084#1084#1091' :'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtPositions: TDBText
+        Left = 75
+        Top = 29
+        Width = 62
+        Height = 13
+        DataField = 'Positions'
+        DataSource = OrdersHForm.dsOrdersH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtSumOrder: TDBText
+        Left = 674
+        Top = 29
+        Width = 81
+        Height = 13
+        DataField = 'PRICENAME'
+        DataSource = OrdersHForm.dsOrdersH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Visible = False
+      end
+      object Label4: TLabel
+        Left = 347
+        Top = 9
+        Width = 77
+        Height = 13
+        Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090' :'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label5: TLabel
+        Left = 374
+        Top = 29
+        Width = 51
+        Height = 13
+        Caption = #1056#1077#1075#1080#1086#1085' :'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtRegionName: TDBText
+        Left = 427
+        Top = 29
+        Width = 198
+        Height = 13
+        DataField = 'RegionName'
+        DataSource = OrdersHForm.dsOrdersH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lSumOrder: TLabel
+        Left = 213
+        Top = 29
+        Width = 59
+        Height = 13
+        Caption = 'lSumOrder'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+    end
+    object cbNeedCorrect: TCheckBox
+      Left = 8
+      Top = 56
+      Width = 225
+      Height = 17
+      Caption = #1058#1086#1083#1100#1082#1086' '#1087#1086#1079#1080#1094#1080#1080' '#1089' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1086#1081
+      TabOrder = 1
+      OnClick = cbNeedCorrectClick
+    end
+  end
+  inherited tCheckVolume: TTimer
+    Left = 480
+    Top = 176
   end
   object dsOrders: TDataSource
     DataSet = adsOrders
@@ -614,10 +657,14 @@ inherited OrdersForm: TOrdersForm
       'WHERE '
       '    (OrdersList.OrderId = :OrderId)'
       'AND (OrderCount>0)'
+      
+        'and ((:NeedCorrect = 0) or ((:NeedCorrect = 1) and (OrdersList.D' +
+        'ropReason is not null)))'
       'ORDER BY SynonymName, SynonymFirm')
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsOrdersOldBeforePost
     AfterPost = adsOrdersOldAfterPost
+    AfterScroll = adsOrdersAfterScroll
     Options.StrictUpdate = False
     Left = 184
     Top = 184
@@ -625,6 +672,14 @@ inherited OrdersForm: TOrdersForm
       item
         DataType = ftUnknown
         Name = 'OrderId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'NeedCorrect'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'NeedCorrect'
       end>
     object adsOrdersOrderId: TLargeintField
       FieldName = 'OrderId'

@@ -51,7 +51,7 @@ inherited SummaryForm: TSummaryForm
       Left = 0
       Top = 52
       Width = 792
-      Height = 257
+      Height = 217
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -419,7 +419,7 @@ inherited SummaryForm: TSummaryForm
       Left = 0
       Top = 52
       Width = 792
-      Height = 257
+      Height = 217
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -610,6 +610,26 @@ inherited SummaryForm: TSummaryForm
           Footers = <>
           Title.Caption = #1054#1090#1087#1088#1072#1074#1083#1077#1085#1086
         end>
+    end
+    object gbCorrectMessage: TGroupBox
+      Left = 0
+      Top = 269
+      Width = 792
+      Height = 40
+      Align = alBottom
+      Caption = ' '#1055#1088#1080#1095#1080#1085#1072' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1080' '
+      TabOrder = 4
+      object mCorrectMessage: TMemo
+        Left = 2
+        Top = 15
+        Width = 788
+        Height = 23
+        Align = alClient
+        Lines.Strings = (
+          'mCorrectMessage')
+        ReadOnly = True
+        TabOrder = 0
+      end
     end
   end
   object pWebBrowser: TPanel [2]
@@ -1184,7 +1204,11 @@ inherited SummaryForm: TSummaryForm
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
       '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate'
+      '    OrdersHead.SendDate,'
+      '    OrdersList.DropReason,'
+      '    OrdersList.ServerCost,'
+      '    OrdersList.ServerQuantity,'
+      '    OrdersHead.SendResult'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1254,7 +1278,11 @@ inherited SummaryForm: TSummaryForm
       '    PricesData.pricecode,'
       '    Regions.regioncode,'
       '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate'
+      '    OrdersHead.SendDate,'
+      '    OrdersList.DropReason,'
+      '    OrdersList.ServerCost,'
+      '    OrdersList.ServerQuantity,'
+      '    OrdersHead.SendResult'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1340,7 +1368,11 @@ inherited SummaryForm: TSummaryForm
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
       '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate'
+      '    OrdersHead.SendDate,'
+      '    OrdersList.DropReason,'
+      '    OrdersList.ServerCost,'
+      '    OrdersList.ServerQuantity,'
+      '    OrdersHead.SendResult'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1399,7 +1431,11 @@ inherited SummaryForm: TSummaryForm
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
       '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate'
+      '    OrdersHead.SendDate,'
+      '    OrdersList.DropReason,'
+      '    OrdersList.ServerCost,'
+      '    OrdersList.ServerQuantity,'
+      '    OrdersHead.SendResult'
       'FROM'
       '    PricesData,'
       '    Regions,'
@@ -1548,6 +1584,18 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummarySendDate: TDateTimeField
       FieldName = 'SendDate'
+    end
+    object adsSummaryDropReason: TSmallintField
+      FieldName = 'DropReason'
+    end
+    object adsSummaryServerCost: TFloatField
+      FieldName = 'ServerCost'
+    end
+    object adsSummaryServerQuantity: TIntegerField
+      FieldName = 'ServerQuantity'
+    end
+    object adsSummarySendResult: TSmallintField
+      FieldName = 'SendResult'
     end
   end
 end
