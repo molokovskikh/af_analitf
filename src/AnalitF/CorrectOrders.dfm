@@ -25,14 +25,14 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       ModalResult = 1
       TabOrder = 0
     end
-    object btnGoToReport: TButton
+    object btnSaveReport: TButton
       Left = 104
       Top = 8
       Width = 121
       Height = 25
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1086#1090#1095#1077#1090
       TabOrder = 1
-      OnClick = btnGoToReportClick
+      OnClick = btnSaveReportClick
     end
     object btnRetrySend: TButton
       Left = 240
@@ -287,7 +287,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         Left = 1
         Top = 1
         Width = 856
-        Height = 182
+        Height = 143
         Align = alClient
         TabOrder = 0
         object dbgLog: TToughDBGrid
@@ -295,7 +295,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
           Left = 1
           Top = 1
           Width = 854
-          Height = 180
+          Height = 141
           Align = alClient
           AutoFitColWidths = True
           DataSource = dsLog
@@ -326,7 +326,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077
-              Width = 200
+              Width = 330
             end
             item
               Alignment = taCenter
@@ -345,7 +345,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               MinWidth = 5
               ReadOnly = True
               Title.Caption = #1055#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1100
-              Width = 100
+              Width = 330
             end
             item
               EditButtons = <>
@@ -382,16 +382,27 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
               ReadOnly = True
               Title.Caption = #1053#1086#1074#1072#1103' '#1094#1077#1085#1072
               Width = 35
-            end
-            item
-              EditButtons = <>
-              FieldName = 'Reason'
-              Footers = <>
-              MinWidth = 5
-              ReadOnly = True
-              Title.Caption = #1055#1088#1080#1095#1080#1085#1072
-              Width = 360
             end>
+        end
+      end
+      object gbCorrectMessage: TGroupBox
+        Left = 1
+        Top = 144
+        Width = 856
+        Height = 39
+        Align = alBottom
+        Caption = ' '#1055#1088#1080#1095#1080#1085#1072' '
+        TabOrder = 1
+        object dbmCorrectMessage: TDBMemo
+          Left = 2
+          Top = 15
+          Width = 852
+          Height = 22
+          Align = alClient
+          DataField = 'Reason'
+          DataSource = dsLog
+          ReadOnly = True
+          TabOrder = 0
         end
       end
     end
@@ -971,6 +982,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       item
         Name = 'SelfId'
         DataType = ftLargeint
+      end
+      item
+        Name = 'NodeType'
+        DataType = ftInteger
       end>
     IndexDefs = <>
     Params = <>
@@ -1023,6 +1038,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object mtLogSelfId: TLargeintField
       FieldName = 'SelfId'
+    end
+    object mtLogNodeType: TIntegerField
+      FieldName = 'NodeType'
     end
     object MemTableData: TMemTableDataEh
       object DataStruct: TMTDataStructEh
@@ -1126,6 +1144,16 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         object SelfId: TMTNumericDataFieldEh
           FieldName = 'SelfId'
           NumericDataType = fdtLargeintEh
+          Alignment = taLeftJustify
+          DisplayWidth = 0
+          Required = False
+          Visible = False
+          currency = False
+          Precision = 0
+        end
+        object NodeType: TMTNumericDataFieldEh
+          FieldName = 'NodeType'
+          NumericDataType = fdtIntegerEh
           Alignment = taLeftJustify
           DisplayWidth = 0
           Required = False
