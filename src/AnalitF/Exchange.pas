@@ -252,16 +252,7 @@ begin
 	if Result and ( AExchangeActions = [ eaSendOrders])
     and (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count > 0)
   then begin
-{
-    if AProc.MessageBox(
-        'Во время отправки заказов возникли ошибки. ' +
-            'Желаете посмотреть журнал ошибок?',
-        MB_ICONWARNING or MB_YESNO) = IDYES
-    then
-      ShowNotSended(TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Text);
-}      
-    NeedRetrySendOrder := True;  
-    //TryToRepareOrders(True);
+    NeedRetrySendOrder := True;
   end;
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
@@ -749,12 +740,6 @@ begin
           Strings.Append(Format('   прайс-лист %s', [PriceName]));
         end;
 
-{
-      mdOutput.FieldDefs.Add('OldOrderCount', ftInteger);
-      mdOutput.FieldDefs.Add('NewOrderCount', ftInteger);
-      mdOutput.FieldDefs.Add('OldPrice', ftCurrency);
-      mdOutput.FieldDefs.Add('NewPrice', ftCurrency);
-}
       Strings.Append( Format( '      %s - %s : %s (старая цена: %s; старый заказ: %s; новая цена: %s; текущий заказ: %s)',
         [mdOutput.FieldByName('SynonymName').AsString,
          mdOutput.FieldByName('SynonymFirm').AsString,
@@ -775,8 +760,6 @@ begin
 end;
 
 procedure TInternalRepareOrders.RepareOrders;
-var
-  formResult : TCorrectResult;
 begin
   DM.adsRepareOrders.Close;
 
@@ -819,17 +802,7 @@ begin
 
         { если не нашли что-то, то выводим сообщение }
         if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
-        begin
           ShowCorrectOrders(False);
-          //formResult := ShowCorrectOrders(ProcessSendOrdersResponse);
-{
-            if (formResult = mrRetry) then
-              NeedRetrySendOrder := True
-            else
-              if (formResult = mrIgnore) then
-                NeedRefreshAfterSendOrder := True;
-}                
-        end;
       finally
         mdOutput.Close;
       end;

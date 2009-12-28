@@ -176,8 +176,6 @@ begin
   SendResult := DM.QueryValue('select SendResult from ordershead where orderid = ' + IntToStr(OrderId), [], []);
   OrderWithSendError := not VarIsNull(SendResult);
   adsOrders.OnCalcFields := ocf;
-//  dbgOrders.Columns[2].FieldName := 'PRICE';
-//  dbgOrders.Columns[4].FieldName := 'SumOrder';
   if Closed = 0 then begin
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;

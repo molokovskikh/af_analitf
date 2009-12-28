@@ -2111,6 +2111,11 @@ begin
       DBVersion := 53;
     end;
 
+    if DBVersion = 53 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 54;
+    end;
+
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
     //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
@@ -2121,7 +2126,6 @@ begin
       ;
 {$endif}
 
-    //todo: Ддя MySql это будет включено в следующем обновлении 
     //Если было произведено обновление программы, то обновляем ключи
     if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
       UpdateDBUIN(dbCon);

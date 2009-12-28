@@ -60,8 +60,6 @@ type
     function ParsePostHeader(
       serverResponse : TStringList;
       startIndex : Integer) : Integer;
-
-    procedure MinPricesUpdate;
    public
     constructor Create(
       dataLayer : TDM;
@@ -387,83 +385,6 @@ begin
   end;
 end;
 
-procedure TPostSomeOrdersController.MinPricesUpdate;
-var
-  MainClientIdAllowDelayOfPayment : Variant;
-begin
-  FDataLayer.adcUpdate.SQL.Text:='delete from minprices ;';
-  FDataLayer.adcUpdate.Execute;
-
-  //Пытаем получить код "основного" клиента
-  //Если не null, то для основного клиента включен механизм отсрочек
-  MainClientIdAllowDelayOfPayment := DM.QueryValue(''
-    +'select Clients.ClientId '
-    +'from   Clients, '
-    +'       Userinfo '
-    +'where  (Clients.CLIENTID = Userinfo.ClientId) '
-    +'   and (Clients.AllowDelayOfPayment = 1)',
-    [],
-    []);
-  if VarIsNull(MainClientIdAllowDelayOfPayment) then begin
-    FDataLayer.adcUpdate.SQL.Text := ''
-      + 'INSERT IGNORE '
-      + 'INTO    MinPrices '
-      + '(ProductId, RegionCode, MinCost) '
-      + 'SELECT '
-      + '  ProductId, '
-      + '  RegionCode, '
-      + '  min(Cost) '
-      + 'FROM    Core '
-      + 'GROUP BY ProductId, RegionCode';
-    FDataLayer.adcUpdate.Execute;
-    FDataLayer.adcUpdate.SQL.Text := ''
-      + 'UPDATE '
-      + '  MinPrices, '
-      + '  Core '
-      + 'SET '
-      + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
-      + '  MinPrices.PriceCode  = Core.PriceCode '
-      + 'WHERE '
-      + '    Core.ProductId  = MinPrices.ProductId '
-      + 'and Core.RegionCode = MinPrices.RegionCode '
-      + 'and Core.Cost       = MinPrices.MinCost';
-    FDataLayer.adcUpdate.Execute;
-  end
-  else begin
-    FDataLayer.adcUpdate.SQL.Text := ''
-      + 'INSERT IGNORE '
-      + 'INTO    MinPrices '
-      + '(ProductId, RegionCode, MinCost) '
-      +'select   ProductId , '
-      +'         RegionCode, '
-      +'         min(Cost * (1 + Delayofpayments.Percent/100)) '
-      +'from     Core      , '
-      +'         Pricesdata, '
-      +'         Delayofpayments '
-      +'where    (Pricesdata.PRICECODE     = Core.Pricecode) '
-      +'and      (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-      +'group by ProductId, '
-      +'         RegionCode';
-    FDataLayer.adcUpdate.Execute;
-    FDataLayer.adcUpdate.SQL.Text := ''
-      + 'UPDATE '
-      + '  MinPrices, '
-      + '  Core, '
-      + '  Pricesdata, '
-      + '  Delayofpayments '
-      + 'SET '
-      + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
-      + '  MinPrices.PriceCode  = Core.PriceCode '
-      + 'WHERE '
-      + '    (Core.ProductId  = MinPrices.ProductId) '
-      + 'and (Core.RegionCode = MinPrices.RegionCode) '
-      + 'and (Pricesdata.PRICECODE     = Core.Pricecode) '
-      + 'and (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-      + 'and (cast((Core.Cost * (1 + Delayofpayments.Percent/100)) as decimal(18, 2)) = MinPrices.MinCost)';
-    FDataLayer.adcUpdate.Execute;
-  end;
-end;
-
 function TPostSomeOrdersController.ParsePostHeader(
   serverResponse: TStringList; startIndex: Integer): Integer;
 var
@@ -512,7 +433,6 @@ var
   J : Integer;
   currentHeader : TPostOrderHeader;
   SendDate : TDateTime;
-  NeedUpdateMinPrices : Boolean;
   currentPosition : TPostOrderPosition;
   priceName, regionName : String;
 begin
@@ -562,7 +482,6 @@ begin
     end;
   end
   else begin
-    NeedUpdateMinPrices := False;
     for I := 0 to FOrderPostHeaders.Count-1 do begin
       currentHeader := TPostOrderHeader(FOrderPostHeaders[i]);
       if currentHeader.PostResult = osrSuccess then
@@ -629,7 +548,6 @@ begin
 
       for J := 0 to currentHeader.OrderPositions.Count-1 do begin
         currentPosition := TPostOrderPosition(currentHeader.OrderPositions[j]);
-        //  TPositionSendResult = (psrNotExists, psrDifferentCost, psrDifferentQuantity);
         if currentPosition.DropReason = psrNotExists then begin
           FDataLayer.adcUpdate.SQL.Text := ''
             +'update '
@@ -664,64 +582,8 @@ begin
         FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
           currentPosition.ClientPositionID;
         FDataLayer.adcUpdate.Execute;
-
-        {
-        if currentPosition.DropReason = psrDifferentQuantity then begin
-          FDataLayer.adcUpdate.SQL.Text := ''
-            +'update '
-            +'  Core, '
-            +'  OrdersList '
-            +'set '
-            +'  Core.Quantity = :Quantity '
-            +'where '
-            +'  OrdersList.ID = :ClientPositionId '
-            +'  and Core.CoreId = OrdersList.CoreId; ';
-          FDataLayer.adcUpdate.ParamByName('Quantity').Value :=
-            currentPosition.ServerQuantity;
-          FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
-            currentPosition.ClientPositionID;
-          FDataLayer.adcUpdate.Execute;
-        end
-        else begin
-          NeedUpdateMinPrices := True;
-          if currentPosition.DropReason = psrNotExists then begin
-            FDataLayer.adcUpdate.SQL.Text := ''
-              +'delete from '
-              +'  Core '
-              +'using '
-              +'  Core, '
-              +'  OrdersList '
-              +'where '
-              +'  OrdersList.ID = :ClientPositionId '
-              +'  and Core.CoreId = OrdersList.CoreId; ';
-            FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
-              currentPosition.ClientPositionID;
-            FDataLayer.adcUpdate.Execute;
-          end
-          else begin
-            FDataLayer.adcUpdate.SQL.Text := ''
-              +'update '
-              +'  Core, '
-              +'  OrdersList '
-              +'set '
-              +'  Core.Cost = :Cost '
-              +'where '
-              +'  OrdersList.ID = :ClientPositionId '
-              +'  and Core.CoreId = OrdersList.CoreId; ';
-            FDataLayer.adcUpdate.ParamByName('Cost').Value :=
-              currentPosition.ServerCost;
-            FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
-              currentPosition.ClientPositionID;
-            FDataLayer.adcUpdate.Execute;
-          end;
-        end;
-        }
-
       end;
     end;
-
-    if NeedUpdateMinPrices then
-      MinPricesUpdate;
   end;
 end;
 
@@ -732,8 +594,10 @@ var
   serverResponse : TStringList;
   Index : Integer;
 begin
+{
   if FileExists('PostSomeOrders.txt') then
     DeleteFile('PostSomeOrders.txt');
+}    
   FPostParams.SaveToFile('PostSomeOrders.txt');
   soapResult := FSOAP.SimpleInvoke('PostSomeOrders', FPostParams);
   rawResult := soapResult;
@@ -757,8 +621,6 @@ begin
     Index := 0;
     FOrderPostHeaders := TObjectList.Create(True);
 
-    WriteExchangeLog('Exchange', 'PostSendOrderServerResult ='#13#10
-      + rawResult);
     try
       while (Index < serverResponse.Count) do begin
         if AnsiCompareText(serverResponse.Names[Index], 'ClientOrderID') = 0
