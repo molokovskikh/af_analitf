@@ -482,8 +482,8 @@ begin
         .Add(IntToStr(currentHeader.ClientOrderId));
     end;
 
-//    DatabaseController.BackupDataTable(doiOrdersHead);
-//    DatabaseController.BackupDataTable(doiOrdersList);
+    DatabaseController.BackupDataTable(doiOrdersHead);
+    DatabaseController.BackupDataTable(doiOrdersList);
 
   end
   else begin

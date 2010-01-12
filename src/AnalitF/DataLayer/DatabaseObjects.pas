@@ -13,13 +13,18 @@ const
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
-  //SDirDataEtalon = 'DataEtalon';
   SDirDataBackup = 'DataBackup';
   SDirDataPrev   = 'DataPrev';
 
+{$ifndef USENEWMYSQLTYPES}
+  DataFileExtention = '.MYD';
+  IndexFileExtention = '.MYI';
+  StructFileExtention = '.frm';
+{$else}
   DataFileExtention = '.DBD';
   IndexFileExtention = '.DBI';
   StructFileExtention = '.index';
+{$endif}
 
   WorkSchema = 'analitf';
 
@@ -186,14 +191,6 @@ procedure TDatabaseController.BackupDatabase;
 var
   stream : TFileStream;
 begin
-{
-  if MainConnection is TMyEmbConnection then begin
-    MainConnection.Close;
-    //drop database mysql
-    CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
-    MainConnection.Open;
-  end;
-}
   if not FileExists(ExePath + BackupFileFlag) then begin
     stream := TFileStream.Create(ExePath + BackupFileFlag, fmCreate);
     stream.Free;
@@ -331,7 +328,7 @@ var
 
   procedure RepairTable();
   var
-    dataFileName : String;
+    //dataFileName : String;
     NeedRepairFromBackup : Boolean;
     NeedInsertData : Boolean;
   begin
@@ -453,13 +450,6 @@ end;
 
 procedure TDatabaseController.ClearBackup;
 begin
-{
-  if MainConnection is TMyEmbConnection then
-  begin
-    DeleteDirectory(ExePath + SDirDataPrev);
-    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirDataPrev);
-  end;
-}
   OSDeleteFile(ExePath + BackupFileFlag);
 end;
 
@@ -542,7 +532,6 @@ end;
 procedure TDatabaseController.Initialize(connection: TCustomMyConnection);
 var
   I : Integer;
-  MyServerControl : TMyServerControl;
   currentTable : TDatabaseTable;
 begin
   FCommand.Connection := connection;
@@ -582,13 +571,7 @@ end;
 
 function TDatabaseController.IsBackuped: Boolean;
 begin
-{
-  if MainConnection is TMyEmbConnection then
-    Result := DirectoryExists(ExePath + SDirDataBackup)
-  else
-    Result := False;
-}
-  Result := FileExists(ExePath + BackupFileFlag);    
+  Result := FileExists(ExePath + BackupFileFlag);
 end;
 
 procedure TDatabaseController.OptimizeObjects(
@@ -617,50 +600,6 @@ end;
 
 procedure TDatabaseController.RestoreDatabase;
 begin
-{
-var
-  FEmbConnection : TMyEmbConnection;
-  MyServerControl : TMyServerControl;
-begin
-  if MainConnection is TMyEmbConnection then begin
-    MainConnection.Close;
-
-    FEmbConnection := TMyEmbConnection.Create(nil);
-    try
-      FEmbConnection.Database := MainConnection.Database;
-      FEmbConnection.Username := MainConnection.Username;
-      FEmbConnection.DataDir := TMyEmbConnection(MainConnection).DataDir;
-      FEmbConnection.Options := TMyEmbConnection(MainConnection).Options;
-      FEmbConnection.Params.Clear;
-      FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
-      FEmbConnection.LoginPrompt := False;
-      try
-        MyServerControl := TMyServerControl.Create(nil);
-        try
-          MyServerControl.Connection := FEmbConnection;
-          MyServerControl.DropDatabase('analitf');
-          MyServerControl.DropDatabase('mysql');
-        finally
-          MyServerControl.Free;
-        end;
-      finally
-        FEmbConnection.Close;
-        //FEmbConnection.RemoveFromPool;
-      end;
-    finally
-      FEmbConnection.Free;
-    end;
-    
-    //удаляем директорию
-    DeleteDataDir(ExePath + SDirData);
-
-    //копируем данные из эталонной копии
-    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
-    
-    MainConnection.Open;
-  end;
-end;
-}
   OSDeleteFile(ExePath + BackupFileFlag);
 end;
 

@@ -23,6 +23,12 @@ uses
   Code, CodeCr - смешанный тип
 }
 
+{$ifdef USEMEMORYCRYPTDLL}
+  {$ifndef USENEWMYSQLTYPES}
+    {$define USENEWMYSQLTYPES}
+  {$endif}
+{$endif}
+
 const
   HistoryMaxRec=5;
   //макс. кол-во писем доставаемых с сервера
@@ -539,7 +545,9 @@ type
     //ѕроизводим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
 {$ifdef DEBUG}
+{$ifndef USENEWMYSQLTYPES}
     procedure ExtractDBScript(dbCon : TCustomMyConnection);
+{$endif}
 {$endif}
 {//$define TestEmbeddedMysql}
 {$ifdef TestEmbeddedMysql}
@@ -955,12 +963,6 @@ begin
   DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
   //MySqlApi.MySQLEmbDisableEventLog := True;
 
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
-
   //”станавливаем параметры embedded-соединени€
   MyEmbConnection.Params.Clear();
 {$ifndef USENEWMYSQLTYPES}
@@ -1041,7 +1043,9 @@ begin
       MainConnection.Database := 'analitf';
       MainConnection.Open;
       try
-        //ExtractDBScript(MainConnection);
+{$ifndef USENEWMYSQLTYPES}
+        ExtractDBScript(MainConnection);
+{$endif}        
       finally
         MainConnection.Close;
       end;
@@ -1243,88 +1247,9 @@ begin
 end;
 
 procedure TDM.CompactDataBase();
-var
-  tableList : TStringList;
-  I : Integer;
-
-  procedure LogError(E : Exception; method : String; tableName : String);
-  begin
-    Tracer.TR('BackupRestore',
-      Format('ќшибка при работе с таблицей: %s; действие: %s; '
-        + 'тип исключени€: %s; ошибка: %s',
-        [tableName, method, e.ClassName, E.Message]));
-  end;
-
-  procedure CheckAfterAction();
-  begin
-    if not MyServerControl.Eof then
-      if Assigned(MyServerControl.FindField('Msg_type'))
-        and Assigned(MyServerControl.FindField('Msg_text'))
-        and Assigned(MyServerControl.FindField('Op'))
-        and Assigned(MyServerControl.FindField('Table'))
-      then
-        if (AnsiCompareText(MyServerControl
-              .FieldByName('Msg_type').AsString, 'status') <> 0)
-          or (AnsiCompareText(MyServerControl
-              .FieldByName('Msg_text').AsString, 'OK') <> 0)
-        then
-          Tracer.TR('BackupRestore',
-            Format('—татус при работе с таблицей: %s; действие: %s; '
-              + 'тип: %s; сообщение: %s',
-              [MyServerControl.FieldByName('Table').AsString,
-               MyServerControl.FieldByName('Op').AsString,
-               MyServerControl.FieldByName('Msg_type').AsString,
-               MyServerControl.FieldByName('Msg_text').AsString]));
-  end;
-
 begin
   MainConnection.Open;
   try
-  {
-    tableList := TStringList.Create;
-    try
-      MainConnection.GetTableNames(tableList);
-      for I := 0 to tableList.Count-1 do begin
-        MyServerControl.TableNames := tableList[i];
-        try
-          MyServerControl.CheckTable([ctExtended]);
-          CheckAfterAction();
-        except
-          on E : Exception do
-            LogError(E, 'check', tableList[i]);
-        end;
-      end;
-      for I := 0 to tableList.Count-1 do begin
-        MyServerControl.TableNames := tableList[i];
-        try
-          MyServerControl.RepairTable([rtExtended]);
-          CheckAfterAction();
-        except
-          on E : Exception do
-            LogError(E, 'check', tableList[i]);
-        end;
-      end;
-      for I := 0 to tableList.Count-1 do begin
-        MyServerControl.TableNames := tableList[i];
-        try
-          MyServerControl.OptimizeTable();
-          CheckAfterAction();
-        except
-          on E : Exception do
-            LogError(E, 'check', tableList[i]);
-        end;
-      end;
-      try
-        MainConnection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
-      except
-        on E : Exception do
-          Tracer.TR('BackupRestore', 'Ќе получилось обновить LastCompact: ' + E.Message);
-      end;
-    finally
-      tableList.Free;
-    end;
-    }
-
     DatabaseController.OptimizeObjects(MainConnection);
   finally
     MainConnection.Close;
@@ -1413,11 +1338,6 @@ end;
 
 //подключает в качестве внешних текстовые таблицы из папки In
 procedure TDM.LinkExternalTables;
-const
-  ExcludeExtTables : array[0..9] of string =
-  ('EXTCORE', 'EXTSYNONYM', 'EXTREGISTRY', 'EXTMINPRICES',
-   'EXTCATALOGFARMGROUPS', 'EXTCATALOG', 'EXTCATDEL', 'EXTCATFARMGROUPSDEL',
-   'EXTCATALOGNAMES', 'EXTPRODUCTS');
 var
   SR: TSearchRec;
   FileName,
@@ -1425,19 +1345,6 @@ var
   Files : TStringList;
   Tables : TStringList;
   I : Integer;
-
-  function NeedImport(TableName : String) : Boolean;
-  var
-    I : Integer;
-  begin
-    for I := Low(ExcludeExtTables) to High(ExcludeExtTables) do
-      if ExcludeExtTables[i] = TableName then begin
-        Result := False;
-        Exit;
-      end;
-    Result := True;
-  end;
-
 begin
   if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
     Screen.Cursor:=crHourglass;
@@ -1459,27 +1366,7 @@ begin
 
             Files.Add(FileName);
             Tables.Add(UpperCase(ShortName));
-          end
-
-          //ѕровер€ем, что существует временна€ таблица дл€ импорта в базе
-          {
-          adcUpdate.SQL.Text := 'select * from information_schema.tables where table_schema = ''analitf'' and table_name = :tablename';
-          adcUpdate.ParamByName('tablename').Value := 'tmp' + ShortName;
-          adcUpdate.Execute;
-          if adcUpdate.RecordCount = 1 then begin
-            adcUpdate.Close;
-
-            adcUpdate.SQL.Text := 'delete from tmp' + ShortName;
-            adcUpdate.Execute;
-
-            Tracer.TR('CreateExternal', ShortName);
-
-            Files.Add(FileName);
-            Tables.Add(UpperCase(ShortName));
-          end
-          else
-            adcUpdate.Close;
-          }
+          end;          
         until FindNext(SR)<>0;
         FindClose(SR);
 
@@ -1500,13 +1387,12 @@ end;
 
 //отключает все подключенные внешние таблицы
 procedure TDM.UnLinkExternalTables;
-{//$ifndef DEBUG}
+{$ifndef DEBUG}
 var
   I: Integer;
-  //Tables : TStringList;
-{//$endif}
+{$endif}
 begin
-{//$ifndef DEBUG}
+{$ifndef DEBUG}
   //«аполн€ем список со всеми временными таблицами (префикс tmp) и удал€ем из них данные
   for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
     if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
@@ -1515,33 +1401,7 @@ begin
       adcUpdate.SQL.Text := 'delete from ' + TDatabaseTable(DatabaseController.DatabaseObjects[i]).Name;
       adcUpdate.Execute;
     end;
-{
-  Tables := TStringList.Create();
-  try
-    //ѕровер€ем, что существует временна€ таблица дл€ импорта в базе
-    adcUpdate.SQL.Text := 'select table_name from information_schema.tables where table_schema = ''analitf'' and table_name like "tmp%"';
-    adcUpdate.Open;
-    try
-      while not adcUpdate.Eof do begin
-        Tables.Add(adcUpdate.FieldByName('table_name').AsString);
-        adcUpdate.Next;
-      end;
-    finally
-      adcUpdate.Close;
-    end;
-
-    for I := 0 to Tables.Count-1 do begin
-      adcUpdate.SQL.Text := 'delete from ' + Tables[i];
-      adcUpdate.Execute;
-    end;
-
-
-
-  finally
-    Tables.Free;
-  end;
-}  
-{//$endif}
+{$endif}
 end;
 
 procedure TDM.ClearDatabase;
@@ -2042,7 +1902,9 @@ begin
       dbCon.Database := 'analitf';
       dbCon.Open;
       try
-        //ExtractDBScript(dbCon);
+{$ifndef USENEWMYSQLTYPES}
+        ExtractDBScript(dbCon);
+{$endif USENEWMYSQLTYPES}
       finally
         dbCon.Close;
       end;
@@ -2055,7 +1917,7 @@ begin
     RunUpdateDBFile(
       dbCon,
       ExePath + SDirData,
-      DBVersion,
+      0,
       CheckDBObjectsWithDatabaseController,
       nil,
       'ѕроисходит проверка базы данных. ѕодождите...');
@@ -2787,29 +2649,9 @@ end;
 
 procedure TDM.CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
 var
-  //FIBScript : TpFIBScript;
   FEmbConnection : TMyEmbConnection;
   MyDump : TMyDump;
-  MyServerControl : TMyServerControl;
 begin
-{
-  FIBScript := TpFIBScript.Create(nil);
-  try
-
-    FIBScript.Script.Text := GetFullLastCreateScript();
-
-    FIBScript.OnExecuteError := OnScriptExecuteError;
-    try
-      FIBScript.ExecuteScript;
-    finally
-      FIBScript.OnExecuteError := nil;
-    end;
-
-  finally
-    try FIBScript.Free; except  end;
-  end;
-}  
-
   // огда мы запускаем программу и не можем открыть базу данных AnalitF,
   //то сохран€ютс€ embedded-параметры (настройки соединени€) внутри MyDac с открытой базой AnalitF,
   //хот€ на самом деле она не открыта и увеличиваетс€ счетчик открытых соедиений.
@@ -2831,36 +2673,10 @@ begin
   try
 
     if DirectoryExists(ExePath + SDirData + '\analitf')
-    //drop database mysql
-    {or DirectoryExists(ExePath + SDirData + '\mysql')}
-    then begin
-      {
-      FEmbConnection.Open;
-      try
-        MyServerControl := TMyServerControl.Create(nil);
-        try
-          MyServerControl.Connection := FEmbConnection;
-          MyServerControl.DropDatabase('analitf');
-          //MyServerControl.DropDatabase('mysql');
-        finally
-          MyServerControl.Free;
-        end;
-      finally
-        FEmbConnection.Close;
-      end;
-      }
+    then
       DeleteDataDir(DBDirectoryName);
-    end;
 
-    //drop database mysql
-    //CopyDataDirToBackup(ExePath + SDirDataEtalon, DBDirectoryName);
     SysUtils.ForceDirectories(ExePath + SDirData + '\analitf');
-{
-    if not DirectoryExists(ExePath + SDirData) then
-      CreateDir(ExePath + SDirData);
-    if not DirectoryExists(ExePath + SDirData) then
-}
-    //CreateDir(ExePath + SDirData + '\analitf');
 
     FEmbConnection.Database := 'analitf';
 
@@ -3607,10 +3423,6 @@ begin
 
     //удал€ем директорию
     DeleteDataDir(ExePath + SDirData);
-
-    //копируем данные из эталонной копии
-    //drop database mysql
-    //CopyDataDirToBackup(ExePath + SDirDataEtalon, ExePath + SDirData);
 
     //пытаемс€ создать ’ѕ
     CreateDir(ExePath + SDirData + '\analitf');
@@ -4666,17 +4478,17 @@ end;
 
 procedure TDM.adtParamsAfterPost(DataSet: TDataSet);
 begin
-  //DatabaseController.BackupDataTable(doiParams);
+  DatabaseController.BackupDataTable(doiParams);
 end;
 
 procedure TDM.adtReceivedDocsAfterPost(DataSet: TDataSet);
 begin
-  //DatabaseController.BackupDataTable(doiReceivedDocs);
+  DatabaseController.BackupDataTable(doiReceivedDocs);
 end;
 
 procedure TDM.adsRetailMarginsAfterPost(DataSet: TDataSet);
 begin
-  //DatabaseController.BackupDataTable(doiRetailMargins);
+  DatabaseController.BackupDataTable(doiRetailMargins);
 end;
 
 procedure TDM.CheckDBObjectsWithDatabaseController(
@@ -4688,7 +4500,7 @@ begin
     if not DatabaseController.Initialized then
       DatabaseController.Initialize(dbCon);
 
-    DatabaseController.CheckObjects(dbCon);
+    //DatabaseController.CheckObjects(dbCon);
   finally
     dbCon.Close;
     //dbCon.RemoveFromPool;

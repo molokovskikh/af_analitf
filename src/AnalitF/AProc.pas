@@ -1034,20 +1034,11 @@ begin
 
   if DirectoryExists(dataDir + '\analitf') then
     CopyDirectories(dataDir + '\analitf', backupDir + '\analitf');
-
-{
-  drop database mysql
-  if DirectoryExists(dataDir + '\mysql') then
-    CopyDirectories(dataDir + '\mysql', backupDir + '\mysql');
-}
 end;
 
 procedure DeleteDataDir(const dataDir: String);
 begin
   DeleteDirectory(dataDir + '\analitf');
-  //drop database mysql
-  //DeleteDirectory(dataDir + '\mysql');
-  //
 end;
 
 function RemoveDirectory(const Dir : String) : LongBool;
