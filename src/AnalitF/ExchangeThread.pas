@@ -10,7 +10,8 @@ uses
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
   U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess,
-  DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters;
+  DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
+  DatabaseObjects;
 
 type
 
@@ -312,7 +313,7 @@ begin
             Synchronize( SetProgress);
             StatusText := 'ќткат изменений';
             Synchronize( SetStatus);
-            DM.RestoreDatabase;
+            DatabaseController.RestoreDatabase;
             //≈сли мы получили ошибку целостности данных, то мы должны выставить флаг "ѕолучить кумул€тивное обновление",
             //чтобы при любом обновлении сразу происходил запрос кумул€тивное обновлени€
             DM.SetCumulative;
@@ -977,8 +978,8 @@ begin
 	Synchronize( DisableCancel);
 	StatusText := '–езервное копирование данных';
 	Synchronize( SetStatus);
-  if not DM.IsBackuped then
-  	DM.BackupDatabase;
+  if not DatabaseController.IsBackuped then
+    DatabaseController.BackupDatabase;
 
 	TotalProgress := 65;
 	Synchronize( SetTotalProgress);
@@ -1471,7 +1472,7 @@ begin
 
 	DM.UnLinkExternalTables;
 
-  DM.ClearBackup;
+  DatabaseController.ClearBackup;
 
   Dm.MainConnection.AfterConnect(Dm.MainConnection);
 	{ ѕоказываем врем€ обновлени€ }

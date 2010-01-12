@@ -239,7 +239,7 @@ uses
 	Exchange, Expireds, Core, UniqueID, CoreFirm,
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
-  Variants, ExchangeParameters, CorrectOrders;
+  Variants, ExchangeParameters, CorrectOrders, DatabaseObjects;
 
 {$R *.DFM}
 
@@ -361,13 +361,13 @@ begin
   end;
 
 	{ Если операция импорта не была завершена }
-	if DM.IsBackuped or
+	if DatabaseController.IsBackuped or
      DM.NeedImportAfterRecovery
   then
 	begin
 		AProc.MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
-		if DM.IsBackuped then
-			DM.RestoreDatabase;
+    if DatabaseController.IsBackuped then
+      DatabaseController.RestoreDatabase;
 
     //Производим сжатие базы данных для очищения от ошибок
     RunCompactDatabase;

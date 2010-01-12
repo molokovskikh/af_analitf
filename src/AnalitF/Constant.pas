@@ -12,10 +12,6 @@ const
   NeedCorrectColor = clMedGray;
 	COMPACT_PERIOD	= 3;
   VITALLYIMPORTANT_CLR = clGreen;
-  //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 54;
-
-	JET_SCHEMA_USERROSTER = '{947bb102-5d43-11d1-bdbf-00c04fb92675}';
 
   //Кол-во заказа, котором отображается предупреждение
   WarningOrderCount : Integer = 1000;

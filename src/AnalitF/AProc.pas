@@ -12,10 +12,6 @@ const
   SConnectRAS='RAS'; SConnectPROXY='PROXY'; SConnectNONE='NONE';
   SDirDocs='Docs';
   SDirIn='In';
-  SDirData = 'Data';
-  SDirDataEtalon = 'DataEtalon';
-  SDirDataBackup = 'DataBackup';
-  SDirDataPrev   = 'DataPrev';
   SDirExe='Exe';
   SDirWaybills = 'Waybills';
   SDirRejects = 'Rejects';
@@ -1039,14 +1035,19 @@ begin
   if DirectoryExists(dataDir + '\analitf') then
     CopyDirectories(dataDir + '\analitf', backupDir + '\analitf');
 
+{
+  drop database mysql
   if DirectoryExists(dataDir + '\mysql') then
     CopyDirectories(dataDir + '\mysql', backupDir + '\mysql');
+}
 end;
 
 procedure DeleteDataDir(const dataDir: String);
 begin
   DeleteDirectory(dataDir + '\analitf');
-  DeleteDirectory(dataDir + '\mysql');
+  //drop database mysql
+  //DeleteDirectory(dataDir + '\mysql');
+  //
 end;
 
 function RemoveDirectory(const Dir : String) : LongBool;

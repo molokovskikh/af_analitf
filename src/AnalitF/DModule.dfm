@@ -1444,6 +1444,7 @@ object DM: TDM
   object adtParams: TMyTable
     TableName = 'params'
     Connection = MyConnection
+    AfterPost = adtParamsAfterPost
     Left = 48
     Top = 232
   end
@@ -1522,6 +1523,7 @@ object DM: TDM
       '    RETAILMARGINS'
       'order by LEFTLIMIT')
     CachedUpdates = True
+    AfterPost = adsRetailMarginsAfterPost
     Left = 496
     Top = 232
     object adsRetailMarginsID: TLargeintField
@@ -1589,6 +1591,7 @@ object DM: TDM
     SQL.Strings = (
       'select * from Receiveddocs'
       'order by filedatetime desc')
+    AfterPost = adtReceivedDocsAfterPost
     Left = 312
     Top = 232
   end

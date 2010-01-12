@@ -10,7 +10,7 @@ uses
 implementation
 
 uses
-  DModule, Waiting, AProc, U_ExchangeLog;
+  DModule, Waiting, AProc, U_ExchangeLog, DatabaseObjects;
 
 type
   TDeleteDBFiles = class(TThread)
@@ -36,10 +36,11 @@ end;
 procedure TDeleteDBFiles.Execute;
 begin
   WriteExchangeLog('AnalitF', 'Попытка удалить файлы базы данных для пересоздания базы данных.');
-  DeleteDBDirectory(ExePath + SDirDataBackup);
-  DeleteDBDirectory(ExePath + SDirDataPrev);
+  //DeleteDBDirectory(ExePath + SDirDataBackup);
+  //DeleteDBDirectory(ExePath + SDirDataPrev);
   DeleteDBDirectory(ExePath + SDirData + '\analitf');
-  DeleteDBDirectory(ExePath + SDirData + '\mysql');
+  //drop database mysql
+  //DeleteDBDirectory(ExePath + SDirData + '\mysql');
   WriteExchangeLog('AnalitF', 'Удаление файлов базы данных завершилось успешно.');
 end;
 

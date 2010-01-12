@@ -14,7 +14,7 @@ uses
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
-  MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions;
+  MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions, DatabaseObjects;
 
 {
 Криптование
@@ -467,6 +467,9 @@ type
     procedure adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
     procedure MySQLMonitorSQL(Sender: TObject; Text: String;
       Flag: TDATraceFlag);
+    procedure adtParamsAfterPost(DataSet: TDataSet);
+    procedure adtReceivedDocsAfterPost(DataSet: TDataSet);
+    procedure adsRetailMarginsAfterPost(DataSet: TDataSet);
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
@@ -506,6 +509,8 @@ type
     procedure UpdateDBUIN(dbCon : TCustomMyConnection);
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjects(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    //Проверяем наличие всех объектов в базе данных
+    procedure CheckDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
     procedure UpdateDBFile(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure OnScriptExecuteError(Sender: TObject;
@@ -568,10 +573,6 @@ type
     procedure UnLinkExternalTables;
     procedure ClearDatabase;
     procedure DeleteEmptyOrders;
-    procedure BackupDatabase;
-    procedure RestoreDatabase;
-    function IsBackuped : Boolean;
-    procedure ClearBackup;
     procedure SetCumulative;
     procedure ResetCumulative;
     function GetCumulative: boolean;
@@ -949,21 +950,32 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
 begin
+  if not DirectoryExists( ExePath + SDirDataTmpDir) then CreateDir( ExePath + SDirDataTmpDir);
+  if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
+  DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
   //MySqlApi.MySQLEmbDisableEventLog := True;
+
+{$ifdef USEMEMORYCRYPTDLL}
+  {$ifndef USENEWMYSQLTYPES}
+    {$define USENEWMYSQLTYPES}
+  {$endif}
+{$endif}
 
   //Устанавливаем параметры embedded-соединения
   MyEmbConnection.Params.Clear();
-{$ifndef USEMEMORYCRYPTDLL}
+{$ifndef USENEWMYSQLTYPES}
   MyEmbConnection.Params.Add('--basedir=.');
   MyEmbConnection.Params.Add('--datadir=data');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
-  MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
+  //MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
   MyEmbConnection.Params.Add('--skip-innodb');
+  MyEmbConnection.Params.Add('--tmpdir=' + SDirDataTmpDir);
 {$else}
   MyEmbConnection.Params.Add('--basedir=.');
   MyEmbConnection.Params.Add('--datadir=data');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
-  MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
+  //MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
+  MyEmbConnection.Params.Add('--tmpdir=' + SDirDataTmpDir);
 {$endif}
 
   SerBeg := 'Prg';
@@ -1004,9 +1016,9 @@ begin
 
   FNeedImportAfterRecovery := False;
   FCreateClearDatabase     := False;
-  if IsBackuped then
+  if DatabaseController.IsBackuped then
     try
-      RestoreDatabase;
+      DatabaseController.RestoreDatabase;
       FNeedImportAfterRecovery := True;
     except
       on E : Exception do
@@ -1029,7 +1041,7 @@ begin
       MainConnection.Database := 'analitf';
       MainConnection.Open;
       try
-        ExtractDBScript(MainConnection);
+        //ExtractDBScript(MainConnection);
       finally
         MainConnection.Close;
       end;
@@ -1268,6 +1280,7 @@ var
 begin
   MainConnection.Open;
   try
+  {
     tableList := TStringList.Create;
     try
       MainConnection.GetTableNames(tableList);
@@ -1310,7 +1323,9 @@ begin
     finally
       tableList.Free;
     end;
+    }
 
+    DatabaseController.OptimizeObjects(MainConnection);
   finally
     MainConnection.Close;
   end;
@@ -1429,12 +1444,25 @@ begin
     Files := TStringList.Create;
     Tables := TStringList.Create;
     try
+        if adcUpdate.Active then
+          adcUpdate.Close;
         //Сначала очистили внешние таблицы от предыдущих данных
         repeat
           FileName := ExePath+SDirIn+ '\' + SR.Name;
           ShortName := ChangeFileExt(SR.Name,'');
 
+          if DatabaseController.TableExists('tmp' + ShortName) then begin
+            adcUpdate.SQL.Text := 'delete from tmp' + ShortName;
+            adcUpdate.Execute;
+
+            Tracer.TR('CreateExternal', ShortName);
+
+            Files.Add(FileName);
+            Tables.Add(UpperCase(ShortName));
+          end
+
           //Проверяем, что существует временная таблица для импорта в базе
+          {
           adcUpdate.SQL.Text := 'select * from information_schema.tables where table_schema = ''analitf'' and table_name = :tablename';
           adcUpdate.ParamByName('tablename').Value := 'tmp' + ShortName;
           adcUpdate.Execute;
@@ -1451,14 +1479,13 @@ begin
           end
           else
             adcUpdate.Close;
+          }
         until FindNext(SR)<>0;
         FindClose(SR);
 
         for I := 0 to Files.Count-1 do begin
-          if NeedImport(Tables[i]) then begin
-            adcUpdate.SQL.Text := GetLoadDataSQL('tmp' + Tables[i], Files[i]);
-            adcUpdate.Execute;
-          end;
+          adcUpdate.SQL.Text := GetLoadDataSQL('tmp' + Tables[i], Files[i]);
+          adcUpdate.Execute;
         end;
 
     finally
@@ -1473,14 +1500,22 @@ end;
 
 //отключает все подключенные внешние таблицы
 procedure TDM.UnLinkExternalTables;
-{$ifndef DEBUG}
+{//$ifndef DEBUG}
 var
   I: Integer;
-  Tables : TStringList;
-{$endif}
+  //Tables : TStringList;
+{//$endif}
 begin
-{$ifndef DEBUG}
+{//$ifndef DEBUG}
   //Заполняем список со всеми временными таблицами (префикс tmp) и удаляем из них данные
+  for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+    if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+      and AnsiStartsText('tmp', TDatabaseTable(DatabaseController.DatabaseObjects[i]).Name)
+    then begin
+      adcUpdate.SQL.Text := 'delete from ' + TDatabaseTable(DatabaseController.DatabaseObjects[i]).Name;
+      adcUpdate.Execute;
+    end;
+{
   Tables := TStringList.Create();
   try
     //Проверяем, что существует временная таблица для импорта в базе
@@ -1500,10 +1535,13 @@ begin
       adcUpdate.Execute;
     end;
 
+
+
   finally
     Tables.Free;
   end;
-{$endif}
+}  
+{//$endif}
 end;
 
 procedure TDM.ClearDatabase;
@@ -1554,76 +1592,6 @@ begin
     end;
   finally
     Screen.Cursor:=crDefault;
-  end;
-end;
-
-procedure TDM.BackupDatabase;
-begin
-  if MainConnection is TMyEmbConnection then begin
-    MainConnection.Close;
-    CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
-    MainConnection.Open;
-  end;
-end;
-
-function TDM.IsBackuped : Boolean;
-begin
-  if MainConnection is TMyEmbConnection then
-    Result := DirectoryExists(ExePath + SDirDataBackup)
-  else
-    Result := False;
-end;
-
-procedure TDM.RestoreDatabase;
-var
-  FEmbConnection : TMyEmbConnection;
-  MyServerControl : TMyServerControl;
-begin
-  if MainConnection is TMyEmbConnection then begin
-    MainConnection.Close;
-
-    FEmbConnection := TMyEmbConnection.Create(nil);
-    try
-      FEmbConnection.Database := MainConnection.Database;
-      FEmbConnection.Username := MainConnection.Username;
-      FEmbConnection.DataDir := TMyEmbConnection(MainConnection).DataDir;
-      FEmbConnection.Options := TMyEmbConnection(MainConnection).Options;
-      FEmbConnection.Params.Clear;
-      FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
-      FEmbConnection.LoginPrompt := False;
-      try
-        MyServerControl := TMyServerControl.Create(nil);
-        try
-          MyServerControl.Connection := FEmbConnection;
-          MyServerControl.DropDatabase('analitf');
-          MyServerControl.DropDatabase('mysql');
-        finally
-          MyServerControl.Free;
-        end;
-      finally
-        FEmbConnection.Close;
-        //FEmbConnection.RemoveFromPool;
-      end;
-    finally
-      FEmbConnection.Free;
-    end;
-    
-    //удаляем директорию
-    DeleteDataDir(ExePath + SDirData);
-
-    //копируем данные из эталонной копии
-    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
-    
-    MainConnection.Open;
-  end;
-end;
-
-procedure TDM.ClearBackup;
-begin
-  if MainConnection is TMyEmbConnection then
-  begin
-    DeleteDirectory(ExePath + SDirDataPrev);
-    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirDataPrev);
   end;
 end;
 
@@ -1688,7 +1656,8 @@ end;
 procedure TDM.MainConnectionOldAfterConnect(Sender: TObject);
 begin
   MainConnection.ExecSQL('use analitf', []);
-  adcTemporaryTable.Execute;
+  DatabaseController.CreateViews(MainConnection);
+  //adcTemporaryTable.Execute;
   //открываем таблицы с параметрами
   adtParams.Close;
   adtParams.Open;
@@ -2073,7 +2042,7 @@ begin
       dbCon.Database := 'analitf';
       dbCon.Open;
       try
-        ExtractDBScript(dbCon);
+        //ExtractDBScript(dbCon);
       finally
         dbCon.Close;
       end;
@@ -2081,6 +2050,15 @@ begin
       dbCon.Database := '';
     end;
 {$endif}
+
+
+    RunUpdateDBFile(
+      dbCon,
+      ExePath + SDirData,
+      DBVersion,
+      CheckDBObjectsWithDatabaseController,
+      nil,
+      'Происходит проверка базы данных. Подождите...');
 
     dbCon.Open;
     try
@@ -2852,26 +2830,37 @@ begin
 
   try
 
-    if DirectoryExists(ExePath + SDirData + '\analitf') or DirectoryExists(ExePath + SDirData + '\mysql')
+    if DirectoryExists(ExePath + SDirData + '\analitf')
+    //drop database mysql
+    {or DirectoryExists(ExePath + SDirData + '\mysql')}
     then begin
+      {
       FEmbConnection.Open;
       try
         MyServerControl := TMyServerControl.Create(nil);
         try
           MyServerControl.Connection := FEmbConnection;
           MyServerControl.DropDatabase('analitf');
-          MyServerControl.DropDatabase('mysql');
+          //MyServerControl.DropDatabase('mysql');
         finally
           MyServerControl.Free;
         end;
       finally
         FEmbConnection.Close;
       end;
+      }
       DeleteDataDir(DBDirectoryName);
     end;
 
-    CopyDataDirToBackup(ExePath + SDirDataEtalon, DBDirectoryName);
-    CreateDir(ExePath + SDirData + '\analitf');
+    //drop database mysql
+    //CopyDataDirToBackup(ExePath + SDirDataEtalon, DBDirectoryName);
+    SysUtils.ForceDirectories(ExePath + SDirData + '\analitf');
+{
+    if not DirectoryExists(ExePath + SDirData) then
+      CreateDir(ExePath + SDirData);
+    if not DirectoryExists(ExePath + SDirData) then
+}
+    //CreateDir(ExePath + SDirData + '\analitf');
 
     FEmbConnection.Database := 'analitf';
 
@@ -3620,7 +3609,8 @@ begin
     DeleteDataDir(ExePath + SDirData);
 
     //копируем данные из эталонной копии
-    CopyDataDirToBackup(ExePath + SDirDataEtalon, ExePath + SDirData);
+    //drop database mysql
+    //CopyDataDirToBackup(ExePath + SDirDataEtalon, ExePath + SDirData);
 
     //пытаемся создать ХП
     CreateDir(ExePath + SDirData + '\analitf');
@@ -4672,6 +4662,37 @@ begin
     + 'and OrdersHead.ClientId = ' + IntToStr(ClientId) + '; '
   else
     Result := Result + '; ';
+end;
+
+procedure TDM.adtParamsAfterPost(DataSet: TDataSet);
+begin
+  //DatabaseController.BackupDataTable(doiParams);
+end;
+
+procedure TDM.adtReceivedDocsAfterPost(DataSet: TDataSet);
+begin
+  //DatabaseController.BackupDataTable(doiReceivedDocs);
+end;
+
+procedure TDM.adsRetailMarginsAfterPost(DataSet: TDataSet);
+begin
+  //DatabaseController.BackupDataTable(doiRetailMargins);
+end;
+
+procedure TDM.CheckDBObjectsWithDatabaseController(
+  dbCon: TCustomMyConnection; DBDirectoryName: String;
+  OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
+begin
+  dbCon.Open;
+  try
+    if not DatabaseController.Initialized then
+      DatabaseController.Initialize(dbCon);
+
+    DatabaseController.CheckObjects(dbCon);
+  finally
+    dbCon.Close;
+    //dbCon.RemoveFromPool;
+  end;
 end;
 
 initialization

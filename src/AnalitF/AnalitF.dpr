@@ -79,7 +79,14 @@ uses
   DataIntegrityExceptions in 'Exceptions\DataIntegrityExceptions.pas',
   PostSomeOrdersController in 'BusinessLogic\PostSomeOrdersController.pas',
   ExchangeParameters in 'BusinessLogic\ExchangeParameters.pas',
-  EhLibMTE in 'EhLibMT\EhLibMTE.pas';
+  EhLibMTE in 'EhLibMT\EhLibMTE.pas',
+  DatabaseObjects in 'DataLayer\DatabaseObjects.pas',
+  CriticalDatabaseObjects in 'DataLayer\CriticalDatabaseObjects.pas',
+  BackupDatabaseObjects in 'DataLayer\BackupDatabaseObjects.pas',
+  DatabaseViews in 'DataLayer\DatabaseViews.pas',
+  IgnoreDatabaseObjects in 'DataLayer\IgnoreDatabaseObjects.pas',
+  SynonymDatabaseObjects in 'DataLayer\SynonymDatabaseObjects.pas',
+  GeneralDatabaseObjects in 'DataLayer\GeneralDatabaseObjects.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

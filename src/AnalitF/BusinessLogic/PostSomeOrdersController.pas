@@ -5,7 +5,8 @@ interface
 uses
   SysUtils, Classes, Contnrs, DB, StrUtils, Variants,
   //App modules
-  Constant, DModule, ExchangeParameters, U_ExchangeLog, SOAPThroughHTTP;
+  Constant, DModule, ExchangeParameters, U_ExchangeLog, SOAPThroughHTTP,
+  DatabaseObjects;
 
 const
   //Критические сообщения об ошибках при отправке заказов
@@ -480,6 +481,10 @@ begin
       TStringList(FExchangeParams[Integer(epSendedOrders)])
         .Add(IntToStr(currentHeader.ClientOrderId));
     end;
+
+//    DatabaseController.BackupDataTable(doiOrdersHead);
+//    DatabaseController.BackupDataTable(doiOrdersList);
+
   end
   else begin
     for I := 0 to FOrderPostHeaders.Count-1 do begin
