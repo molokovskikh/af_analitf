@@ -1154,9 +1154,13 @@ end;
 procedure TDM.ClientChanged;
 begin
   GetClientInformation(MainForm.CurrentUser, MainForm.IsFutureClient);
-  //«акрываем все формы перед сменой клиента, т.к. их вид зависит от клиента 
-  MainForm.FreeChildForms;
-  MainForm.SetOrdersInfo;
+  //≈сли действи€ происход€т в основной ветки приложени€, то позвол€ем работать
+  //с визуальными компонентами
+  if GetCurrentThreadId = MainThreadID then begin
+    //«акрываем все формы перед сменой клиента, т.к. их вид зависит от клиента
+    MainForm.FreeChildForms;
+    MainForm.SetOrdersInfo;
+  end;
   DoPost(adtParams, True);
 end;
 
@@ -1310,29 +1314,33 @@ begin
     adtParams.Post;
   end;
 
-  //«аполн€ем PopupMenu клиентов
-  MainForm.pmClients.Items.Clear;
-  LastClientId := adtClients.FieldByName( 'ClientId').AsInteger;
-  adtClients.First;
-  MaxClientNameWidth := 0;
-  while not adtClients.Eof do begin
-    mi := TMenuItem.Create(MainForm.pmClients);
-    mi.Name := 'miClient' + adtClients.FieldByName('ClientId').AsString;
-    mi.Caption := adtClients.FieldByName('Name').AsString;
-    mi.Tag := adtClients.FieldByName('ClientId').AsInteger;
-    mi.Checked := LastClientId = adtClients.FieldByName('ClientId').AsInteger;
+  //≈сли действи€ происход€т в основной ветки приложени€, то позвол€ем работать
+  //с визуальными компонентами
+  if GetCurrentThreadId() = MainThreadID then begin
+    //«аполн€ем PopupMenu клиентов
+    MainForm.pmClients.Items.Clear;
+    LastClientId := adtClients.FieldByName( 'ClientId').AsInteger;
+    adtClients.First;
+    MaxClientNameWidth := 0;
+    while not adtClients.Eof do begin
+      mi := TMenuItem.Create(MainForm.pmClients);
+      mi.Name := 'miClient' + adtClients.FieldByName('ClientId').AsString;
+      mi.Caption := adtClients.FieldByName('Name').AsString;
+      mi.Tag := adtClients.FieldByName('ClientId').AsInteger;
+      mi.Checked := LastClientId = adtClients.FieldByName('ClientId').AsInteger;
 
-    mi.OnClick := MainForm.OnSelectClientClick;
-    MainForm.pmClients.Items.Add(mi);
+      mi.OnClick := MainForm.OnSelectClientClick;
+      MainForm.pmClients.Items.Add(mi);
 
-    CurrentClientNameWidth := MainForm.ToolBar.Canvas.TextWidth(adtClients.FieldByName('Name').AsString);
-    if CurrentClientNameWidth > MaxClientNameWidth then
-      MaxClientNameWidth := CurrentClientNameWidth;
-    adtClients.Next;
+      CurrentClientNameWidth := MainForm.ToolBar.Canvas.TextWidth(adtClients.FieldByName('Name').AsString);
+      if CurrentClientNameWidth > MaxClientNameWidth then
+        MaxClientNameWidth := CurrentClientNameWidth;
+      adtClients.Next;
+    end;
+    MainForm.MaxClientNameWidth := MaxClientNameWidth;
+    //¬осстанавливаем выбранного клиента
+    adtClients.Locate('ClientId', LastClientId, []);
   end;
-  MainForm.MaxClientNameWidth := MaxClientNameWidth;
-  //¬осстанавливаем выбранного клиента
-  adtClients.Locate('ClientId', LastClientId, []);
   ClientChanged;
 end;
 
