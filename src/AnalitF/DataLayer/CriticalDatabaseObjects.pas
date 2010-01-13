@@ -72,6 +72,7 @@ begin
 +'    `ProviderWeb`            varchar(30) not null default ''http://www.analit.net/''    , '
 +'    `ProviderMDBVersion`     smallint(6) not null default ''49''                        , '
 +'    `ConfirmSendingOrders`   tinyint(1) not null default ''0''                          , '
++'    `UseCorrectOrders`       tinyint(1) not null default ''0''                          , '
 +'    primary key (`ID`)                                                                , '
 +'    unique key `PK_PARAMS` (`ID`) ' 
 +'  ) ' 
@@ -122,6 +123,7 @@ begin
     'GROUPBYPRODUCTS = 0,' +
     'PRINTORDERSAFTERSEND = 0,' +
     'ConfirmSendingOrders = 0,' +
+    'UseCorrectOrders = 0,' +
     'ProviderName = ''АК "Инфорум"'',' +
     'ProviderAddress = ''Ленинский пр-т, 160 оф.415'',' +
     'ProviderPhones = ''4732-606000'',' +

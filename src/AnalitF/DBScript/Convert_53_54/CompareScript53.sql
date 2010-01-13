@@ -5,7 +5,8 @@ CREATE TABLE analitf.client (
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;
 
 alter table analitf.params
-  add column `ConfirmSendingOrders` tinyint(1) NOT NULL DEFAULT '0';
+  add column `ConfirmSendingOrders` tinyint(1) NOT NULL DEFAULT '0',
+  add column `UseCorrectOrders` tinyint(1) NOT NULL DEFAULT '0';
 
 alter table analitf.userinfo
   add column `IsFutureClient` tinyint(1) NOT NULL DEFAULT '0';

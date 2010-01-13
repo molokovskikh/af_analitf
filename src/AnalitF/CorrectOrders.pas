@@ -196,7 +196,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DModule, AProc, DBProc, PostSomeOrdersController;
+  DModule, AProc, DBProc, PostSomeOrdersController, NotFound;
 
 function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean) : TCorrectResult;
 var
@@ -206,8 +206,17 @@ begin
   try
     CorrectOrdersForm.ProcessSendOrdersResponse := ProcessSendOrdersResponse;
     CorrectOrdersForm.Prepare;
-    CorrectOrdersForm.ShowModal;
-    Result := CorrectOrdersForm.FormResult;
+    if not DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean then begin
+      if ProcessSendOrdersResponse then
+        ShowNotSended(CorrectOrdersForm.Report.Text)
+      else
+        ShowNotFound(CorrectOrdersForm.Report);
+      Result := crClose;
+    end
+    else begin
+      CorrectOrdersForm.ShowModal;
+      Result := CorrectOrdersForm.FormResult;
+    end;
   finally
     CorrectOrdersForm.Free;
   end;

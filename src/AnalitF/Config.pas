@@ -90,6 +90,7 @@ type
     dbchbGroupByProducts: TDBCheckBox;
     dbchbPrintOrdersAfterSend: TDBCheckBox;
     dbchbConfirmSendingOrders: TDBCheckBox;
+    dbchbUseCorrectOrders: TDBCheckBox;
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
     procedure itmRasEditClick(Sender: TObject);

@@ -306,6 +306,7 @@ CREATE TABLE `params` (
   `ProviderWeb` varchar(30) NOT NULL DEFAULT 'http://www.analit.net/',
   `ProviderMDBVersion` smallint(6) NOT NULL DEFAULT '49',
   `ConfirmSendingOrders` tinyint(1) NOT NULL DEFAULT '0',
+  `UseCorrectOrders` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_PARAMS` (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251;

@@ -367,7 +367,10 @@ begin
   end;
 
   AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
-  AddPostParam('ForceSend', BoolToStr( FForceSend, True));
+  if not FDataLayer.adtParams.FieldByName('UseCorrectOrders').AsBoolean then
+    AddPostParam('ForceSend', BoolToStr( True, True))
+  else
+    AddPostParam('ForceSend', BoolToStr( FForceSend, True));
   AddPostParam(
     'ClientCode', FDataLayer.adtClients.FieldByName( 'ClientId').AsString);
   AddPostParam(

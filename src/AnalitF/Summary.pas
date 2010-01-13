@@ -218,6 +218,10 @@ begin
   fSumOrder := adsSummarySumOrder;
   fMinOrderCount := adsSummaryMINORDERCOUNT;
   inherited;
+  if not FUseCorrectOrders then begin
+    cbNeedCorrect.Checked := False;
+    cbNeedCorrect.Visible := False;
+  end;
 	PrintEnabled := False;
   adsSummary.OnCalcFields := scf;
   dtpDateFrom.DateTime := LastDateFrom;
@@ -317,7 +321,8 @@ begin
       adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
       dbgSummaryCurrent.InputField := 'OrderCount';
       dbgSummaryCurrent.Tag := 256;
-      cbNeedCorrect.Enabled := True;
+      if FUseCorrectOrders then
+        cbNeedCorrect.Enabled := True;
       btnDelete.Enabled := True;
     end
     else begin
@@ -330,12 +335,14 @@ begin
       dbgSummarySend.InputField := '';
       dbgSummarySend.Tag := 512;
       btnDelete.Enabled := False;
-      cbNeedCorrect.Checked := False;
-      cbNeedCorrect.Enabled := False;
+      if FUseCorrectOrders then begin
+        cbNeedCorrect.Checked := False;
+        cbNeedCorrect.Enabled := False;
+      end;
     end;
     if Length(FilterSQL) > 0 then
       adsSummary.SQL.Text := adsSummary.SQL.Text + ' and ( ' + FilterSQL + ' )';
-    if (LastSymmaryType = 0) and cbNeedCorrect.Checked then
+    if (LastSymmaryType = 0) and FUseCorrectOrders and cbNeedCorrect.Checked then
       adsSummary.SQL.Text := adsSummary.SQL.Text
         + ' and ( OrdersList.DropReason is not null )';
     adsSummary.Open;
@@ -410,7 +417,7 @@ begin
 	if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then
 		Background := AWAIT_CLR;
   //Подсветку позиций требующих корректировки осуществляем только в текущем заказе
-  if (LastSymmaryType = 0) and not adsSummaryDropReason.IsNull then begin
+  if (LastSymmaryType = 0) and FUseCorrectOrders and not adsSummaryDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsSummaryDropReason.AsInteger);
 
     //Мы здесь можем затереть подсветку ожидаемости, но это сделано осознано,
@@ -498,7 +505,7 @@ begin
     pWebBrowser.Visible := True;
 }
   if (LastSymmaryType = 0) then
-    if not adsSummaryDropReason.IsNull then
+    if FUseCorrectOrders and not adsSummaryDropReason.IsNull then
       FillCorrectMessage
     else
       mCorrectMessage.Text := '';
@@ -609,7 +616,7 @@ begin
     dtpDateTo.Enabled := dtpDateFrom.Enabled;
     SummaryShow;
     if (LastSymmaryType = 0) then begin
-      gbCorrectMessage.Visible := True;
+      gbCorrectMessage.Visible := FUseCorrectOrders;
       dbgSummaryCurrent.SetFocus;
     end
     else begin

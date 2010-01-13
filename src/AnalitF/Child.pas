@@ -49,6 +49,7 @@ type
 
     DBComponentWindowProcs : TObjectList;
 
+    FUseCorrectOrders : Boolean;
 
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Loaded; override;
@@ -277,6 +278,7 @@ end;
 constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
+  FUseCorrectOrders := DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean;
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
   PatchNonBrowser;

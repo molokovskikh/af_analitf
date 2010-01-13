@@ -436,15 +436,17 @@ begin
     if (Column.Field = adsOrdersHFormMINREQ) and not adsOrdersHFormMINREQ.IsNull and (adsOrdersHFormMINREQ.AsInteger > adsOrdersHFormSumOrder.AsCurrency) then
       Background := clRed;
 
-    if (adsOrdersHFormDifferentCostCount.Value > 0)
-       and (Column.Field = adsOrdersHFormSumOrder)
-    then
-      Background := NeedCorrectColor;
+    if FUseCorrectOrders then begin
+      if (adsOrdersHFormDifferentCostCount.Value > 0)
+         and (Column.Field = adsOrdersHFormSumOrder)
+      then
+        Background := NeedCorrectColor;
 
-    if (adsOrdersHFormDifferentQuantityCount.Value > 0)
-       and (Column.Field = adsOrdersHFormPositions)
-    then
-      Background := NeedCorrectColor;
+      if (adsOrdersHFormDifferentQuantityCount.Value > 0)
+         and (Column.Field = adsOrdersHFormPositions)
+      then
+        Background := NeedCorrectColor;
+    end;
   end;
 
 	if TabControl.TabIndex = 1 then

@@ -121,8 +121,6 @@ type
     PriceCode : Integer;
     RegionCode : Int64;
     PriceName, RegionName : String;
-    //«аказ €вл€етс€ закрытым
-    IsClosedOrder : Boolean;
     //«аказ имеет позиции с необходимой корректировкой, которые он получил
     //во врем€ попытки отправки заказа
     OrderWithSendError : Boolean;
@@ -169,9 +167,9 @@ var
   SendResult : Variant;
 begin
   Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(OrderId), [], []);
-  IsClosedOrder := Closed <> 0;
-  gbCorrectMessage.Visible := not IsClosedOrder;
-  if IsClosedOrder then
+  //ќтображаем сообщение с причиной корректировки только если заказ открыт и используетс€ механизм корректировки заказов 
+  gbCorrectMessage.Visible := (Closed = 0)  and FUseCorrectOrders;
+  if not gbCorrectMessage.Visible then
     pTop.Height := pOrderHeader.Height;
   SendResult := DM.QueryValue('select SendResult from ordershead where orderid = ' + IntToStr(OrderId), [], []);
   OrderWithSendError := not VarIsNull(SendResult);
@@ -220,7 +218,7 @@ begin
   if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
     Background := AWAIT_CLR;
 
-  if not adsOrdersDropReason.IsNull then begin
+  if FUseCorrectOrders and not adsOrdersDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
 
     //ћы здесь можем затереть подсветку ожидаемости, но это сделано осознано,
@@ -446,7 +444,7 @@ var
   CorrectMessage : String;
   newOrder, oldOrder, newCost, oldCost : String;
 begin
-  if not adsOrdersDropReason.IsNull then begin
+  if FUseCorrectOrders and not adsOrdersDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
     CorrectMessage := PositionSendResultText[PositionResult];
     CorrectMessage := CorrectMessage + ' (';
