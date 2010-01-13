@@ -115,7 +115,7 @@ inherited OrdersHForm: TOrdersHForm
             FooterFont.Name = 'MS Sans Serif'
             FooterFont.Style = []
             Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
-            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+            OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
             ParentShowHint = False
             ReadOnly = True
             ShowHint = True
@@ -226,7 +226,7 @@ inherited OrdersHForm: TOrdersHForm
             FooterFont.Name = 'MS Sans Serif'
             FooterFont.Style = []
             Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
-            OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+            OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
             ParentShowHint = False
             ReadOnly = True
             ShowHint = True

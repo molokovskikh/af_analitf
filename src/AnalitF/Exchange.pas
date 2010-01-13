@@ -600,6 +600,8 @@ begin
       end;
       
 			DM.adsCoreRepare.Open;
+      DM.adsCoreRepare.IndexFieldNames := 'Cost ASC';
+      DM.adsCoreRepare.First;
 			{ проверяем наличие прайс-листа }
 			if DM.adsCoreRepare.IsEmpty then
 			begin
