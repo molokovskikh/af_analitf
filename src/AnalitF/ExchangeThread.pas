@@ -2083,7 +2083,12 @@ begin
   Synchronize( SetStatus);
 
   postController := TPostSomeOrdersController
-    .Create(DM, ExchangeParams, eaForceSendOrders in ExchangeForm.ExchangeActs, Soap);
+    .Create(
+      DM,
+      ExchangeParams,
+      eaForceSendOrders in ExchangeForm.ExchangeActs,
+      Soap,
+      DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean);
   try
     postController.PostSomeOrders;
   finally

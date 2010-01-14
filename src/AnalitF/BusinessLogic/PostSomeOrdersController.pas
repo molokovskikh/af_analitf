@@ -45,6 +45,7 @@ type
     FOrderSendSuccess : Boolean;
     FSendedOrders     : TStringList;
     FOrderPostHeaders : TObjectList;
+    FUseCorrectOrders : Boolean;
 
     procedure FillPostParams;
     procedure SendOrders;
@@ -66,7 +67,8 @@ type
       dataLayer : TDM;
       exchangeParams : TObjectList;
       forceSend : Boolean;
-      soap : TSOAP);
+      soap : TSOAP;
+      useCorrectOrders : Boolean);
     procedure PostSomeOrders;
     destructor Destroy; override;
   end;
@@ -118,7 +120,8 @@ constructor TPostSomeOrdersController.Create(
   dataLayer: TDM;
   exchangeParams : TObjectList;
   forceSend : Boolean;
-  soap : TSOAP);
+  soap : TSOAP;
+  useCorrectOrders : Boolean);
 begin
   FDataLayer := dataLayer;
 
@@ -130,6 +133,7 @@ begin
   FPostParams := TStringList.Create;
   FSendedOrders := TStringList.Create;
   FSOAP := soap;
+  FUseCorrectOrders := useCorrectOrders;
 end;
 
 destructor TPostSomeOrdersController.Destroy;
@@ -367,10 +371,11 @@ begin
   end;
 
   AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
-  if not FDataLayer.adtParams.FieldByName('UseCorrectOrders').AsBoolean then
+  if not FUseCorrectOrders then
     AddPostParam('ForceSend', BoolToStr( True, True))
   else
     AddPostParam('ForceSend', BoolToStr( FForceSend, True));
+  AddPostParam('UseCorrectOrders', BoolToStr( FUseCorrectOrders, True));
   AddPostParam(
     'ClientCode', FDataLayer.adtClients.FieldByName( 'ClientId').AsString);
   AddPostParam(
@@ -449,10 +454,13 @@ begin
 
   //Дата отправки заказа у всех заказов в кучу должна быть одна и та же
   SendDate := Now;
-  if FOrderSendSuccess then begin
+  if not FUseCorrectOrders or FOrderSendSuccess then begin
     //Здесь будем коммитить заказы
     for I := 0 to FOrderPostHeaders.Count-1 do begin
       currentHeader := TPostOrderHeader(FOrderPostHeaders[i]);
+
+      if currentHeader.PostResult <> osrSuccess then
+        Continue;
 
       FDataLayer.adcUpdate.SQL.Text := ''
         +'update '
@@ -488,8 +496,8 @@ begin
     DatabaseController.BackupDataTable(doiOrdersHead);
     DatabaseController.BackupDataTable(doiOrdersList);
 
-  end
-  else begin
+  end;
+  if not FOrderSendSuccess then begin
     for I := 0 to FOrderPostHeaders.Count-1 do begin
       currentHeader := TPostOrderHeader(FOrderPostHeaders[i]);
       if currentHeader.PostResult = osrSuccess then
