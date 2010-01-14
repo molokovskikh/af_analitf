@@ -263,6 +263,7 @@ begin
 
 	MainForm.UpdateReclame;
 
+{$ifndef USEMEMORYCRYPTDLL}
 	if Result and ( eaGetPrice in AExchangeActions) and
 		( DaysBetween( DM.adtParams.FieldByName( 'LastCompact').AsDateTime, Now) >= COMPACT_PERIOD) then
 	begin
@@ -282,6 +283,8 @@ begin
       AProc.MessageBox( '—жатие базы данных завершено');
     end;
 	end;
+{$endif}  
+
   if Assigned(GlobalExchangeParams) then
     try FreeAndNil(GlobalExchangeParams) except end;
 end;

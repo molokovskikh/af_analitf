@@ -96,7 +96,7 @@ PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
 SearchPath=..\lib\ARas\src;..\lib\RXLib\src;..\lib\FIBPlusScript\src;..\lib\Indy\Core;..\lib\Indy\Protocols;..\lib\Indy\Security;..\lib\Indy\System;..\lib\MyDac\Source
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;FIBPlus7;IndyCore70;IndyProtocols70;IndySystem70
-Conditionals=
+Conditionals=USEMEMORYCRYPTDLL;
 DebugSourceDirs=
 UsePackages=1
 [Parameters]
