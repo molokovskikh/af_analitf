@@ -221,6 +221,7 @@ begin
   if not FUseCorrectOrders then begin
     cbNeedCorrect.Checked := False;
     cbNeedCorrect.Visible := False;
+    gbCorrectMessage.Visible := False;
   end;
 	PrintEnabled := False;
   adsSummary.OnCalcFields := scf;
