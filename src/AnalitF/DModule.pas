@@ -1980,8 +1980,13 @@ begin
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
     //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
 {$ifndef DEBUG}
+  {$ifndef USEMEMORYCRYPTDLL}
+    //Если мы не используем USEMEMORYCRYPTDLL, то будем проверять схему базы данных
     else
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
+  {$else}
+      ; 
+  {$endif}
 {$else}
       ;
 {$endif}

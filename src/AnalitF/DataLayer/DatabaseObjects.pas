@@ -7,6 +7,12 @@ uses
   U_ExchangeLog, AProc,
   MyAccess, MyServerControl;
 
+{$ifdef USEMEMORYCRYPTDLL}
+  {$ifndef USENEWMYSQLTYPES}
+    {$define USENEWMYSQLTYPES}
+  {$endif}
+{$endif}
+
 const
   //Текущая версия базы данных для работы программ
   CURRENT_DB_VERSION = 54;
@@ -557,6 +563,10 @@ begin
         'Не сопадает кол-во объектов с заявленым: должно: %d  есть: %d',
         [Integer(High(TDatabaseObjectId))+1,
         FDatabaseObjects.Count]);
+
+    //Если не существует еще самой директории с базой данных, то нечего проверять
+    if not DirectoryExists(ExePath + SDirData + '\analitf') then
+      Exit;
 
     if not DirectoryExists(ExePath + SDirData + '\' + TestSchema) then
       CreateDir(ExePath + SDirData + '\' + TestSchema);
