@@ -3685,7 +3685,6 @@ begin
     if Assigned(MDLHelper) then
       FreeAndNil(MDLHelper);
     MDLHelper := TMDLHelper.Create();
-    MDLHelper.ShowErrors := True;
     MDLHelper.InjectDll(MemoryLib.Memory, True);
 
 {$IFNDEF CLR}

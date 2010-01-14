@@ -5,11 +5,17 @@ interface
 uses
   SysUtils, Classes, infvercls;
 
+const
+  LibraryFileNameStart = 'appd';
+
   procedure EncodeStream(InputStream : TStream; EncodedStream : TStream);
 
   procedure DecodeStream(EncodedStream : TStream; DecodedStream : TStream);
 
   function GetEncryptedMemoryStream : TMemoryStream;
+
+var
+  LibraryFileNameEnd : String;
 
 implementation
 
@@ -21,7 +27,6 @@ const
 
 type
   TMemoryStreamExtend = class(TMemoryStream);
-
 
 procedure EncodeStream(InputStream : TStream; EncodedStream : TStream);
 var
@@ -138,10 +143,17 @@ function GetEncryptedMemoryStream : TMemoryStream;
 var
   EncodedFile : TFileStream;
 begin
-  if not FileExists('libmysqld.cry') then
+  if not FileExists(
+    IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)))
+      + LibraryFileNameStart + LibraryFileNameEnd)
+  then
     raise Exception.Create('Нет необходимого файла');
 
-  EncodedFile := TFileStream.Create('libmysqld.cry', fmOpenRead or fmShareDenyWrite);
+  EncodedFile := TFileStream
+    .Create(
+      IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)))
+        + LibraryFileNameStart + LibraryFileNameEnd,
+      fmOpenRead or fmShareDenyWrite);
   try
     Result := TMemoryStream.Create();
     try
@@ -156,4 +168,6 @@ begin
   end;
 end;
 
+initialization
+  LibraryFileNameEnd := 'bhlp.dll';
 end.

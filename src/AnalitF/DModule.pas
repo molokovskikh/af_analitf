@@ -70,7 +70,8 @@ type
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
     ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN, ecSSLOpen, ecNotChechHashes,
-    ecDBUpdateError, ecDiffDBVersion, ecDeleteDBFiles, ecDeleteOldMysqlFolder);
+    ecDBUpdateError, ecDiffDBVersion, ecDeleteDBFiles, ecDeleteOldMysqlFolder,
+    ecLibMysqlDCorrupted);
 
   TRetMass = array[1..3] of Variant;
 
@@ -564,6 +565,9 @@ type
     procedure InternalCloseMySqlDB;
     //Удаляем старую директорию с Mysql и директорию с эталонными данными
     procedure DeleteOldMysqlFolder;
+{$ifdef USEMEMORYCRYPTDLL}
+    procedure CheckSpecialLibrary;
+{$endif}
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -671,7 +675,7 @@ implementation
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
-     U_DeleteDBThread, SQLWaiting;
+     U_DeleteDBThread, SQLWaiting, INFHelpers;
 
 type
   TestMyDBThreadState = (
@@ -967,20 +971,22 @@ begin
 
   DeleteOldMysqlFolder;
 
+{$ifdef USEMEMORYCRYPTDLL}
+  CheckSpecialLibrary;
+{$endif}
+
   //Устанавливаем параметры embedded-соединения
   MyEmbConnection.Params.Clear();
 {$ifndef USENEWMYSQLTYPES}
   MyEmbConnection.Params.Add('--basedir=.');
   MyEmbConnection.Params.Add('--datadir=data');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
-  //MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
   MyEmbConnection.Params.Add('--skip-innodb');
   MyEmbConnection.Params.Add('--tmpdir=' + SDirDataTmpDir);
 {$else}
   MyEmbConnection.Params.Add('--basedir=.');
   MyEmbConnection.Params.Add('--datadir=data');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
-  //MyEmbConnection.Params.Add('--character_set_filesystem=cp1251');
   MyEmbConnection.Params.Add('--tmpdir=' + SDirDataTmpDir);
 {$endif}
 
@@ -2908,6 +2914,7 @@ begin
 end;
 
 {$ifdef DEBUG}
+{$ifndef USENEWMYSQLTYPES}
 procedure TDM.ExtractDBScript(dbCon: TCustomMyConnection);
 var
   MyDump : TMyDump;
@@ -2924,6 +2931,7 @@ begin
     MyDump.Free;
   end;
 end;
+{$endif}
 {$endif}
 
 procedure TDM.InternalSetHTTPParams(SetHTTP: TIdHTTP);
@@ -4539,6 +4547,29 @@ begin
     end
   end;
 end;
+
+{$ifdef USEMEMORYCRYPTDLL}
+procedure TDM.CheckSpecialLibrary;
+var
+  calchash : String;
+begin
+  try
+    if not FileExists(ExePath + LibraryFileNameStart + LibraryFileNameEnd)
+    then
+      raise Exception.Create('Библиотека libmysqld.dll повреждена.');
+    calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
+    if AnsiCompareText(calchash, '94CE262A03522B1F0294FF0320FF56FD') <> 0 then
+      raise Exception.Create('Не возможно загрузить библиотеку libmysqld.dll.');
+  except
+    on E : Exception do begin
+      LogExitError(
+        E.Message + #13#10
+          + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+        Integer(ecLibMysqlDCorrupted));
+    end;
+  end;
+end;
+{$endif}
 
 initialization
   AddTerminateProc(CloseDB);

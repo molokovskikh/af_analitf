@@ -3,7 +3,7 @@ unit MDLHelper;
 interface
 
 uses
-  Windows;
+  SysUtils, Windows;
 
 type
   // DWord = Cardinal;
@@ -15,10 +15,8 @@ type
   destructor  Destroy; override;
   protected
     FDSelfHandle :HINST;
-    DoErrors     :LongBool;
   public
     property  FDHandle   :HINST read FDSelfHandle write FDSelfHandle;
-    property  ShowErrors :LongBool read DoErrors write DoErrors;
     procedure InjectDll(MemoryFile :Pointer; FreeOld :LongBool);
     function  GetFDProcAddress(ProcName :PChar) :Pointer;
   private
@@ -46,7 +44,6 @@ constructor TMDLHelper.Create;
 begin
   inherited Create;
   FDHandle  := 0;
-  DoErrors  := True;
   MajVer    := $01;
   MinVer    := $01;
 {
@@ -92,12 +89,16 @@ begin
          (False = _DG_CallDllMain8(pMap, DLL_PROCESS_ATTACH)) ) then
     begin
       Self.ShowError;
-      Exit;
+      //Exit;
     end;
   except
+    on E : Exception do
+      raise Exception.Create('Ошибка при загрузке libmysqld.dll: ' + E.Message)
+{
     MessageBox(GetDesktopWindow, 'Unknown fatal error !!!', 'TFakeDll Error:',
       MB_ICONSTOP);
     Exit;
+}    
   end;
 
   Result := pMap;
@@ -112,10 +113,13 @@ end;
 procedure TMDLHelper.ShowError;
 var
   Buff :PChar;
+  ErrorMessage : String;
 begin
-  if Self.ShowErrors = False then Exit;
   _DG_GetErrorBuff4(Buff);
-  MessageBox(GetDesktopWindow, Buff, 'TFakeDll Error:', MB_ICONSTOP);
+  ErrorMessage := Buff;
+  if Length(ErrorMessage) > 0 then
+    raise Exception.Create(ErrorMessage);
+//  MessageBox(GetDesktopWindow, Buff, 'TFakeDll Error:', MB_ICONSTOP);
 end;
 
 // ###########################################################################
