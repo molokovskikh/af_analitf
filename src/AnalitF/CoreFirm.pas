@@ -401,10 +401,10 @@ begin
     frVariables[ 'OrdersComments'] := adsCurrentOrderHeader.FieldByName('Comments').AsVariant;
 
     DM.ShowFastReport('CoreFirm.frf', adsCore, APreview);
+  finally
     if OldFiltered then
       DBProc.SetFilterProc(adsCore, OldFilterEvent);
     dbgCore.OnSortMarkingChanged(dbgCore);
-  finally
     adsCore.EnableControls;
   end;
 end;
@@ -519,11 +519,18 @@ begin
 end;
 
 procedure TCoreFirmForm.actDeleteOrderExecute(Sender: TObject);
+var
+  OldFilterEvent : TFilterRecordEvent;
+  OldFiltered : Boolean;
+  LastPositionByCoreId : Variant;
 begin
   if not Visible then Exit;
   if AProc.MessageBox( 'Удалить весь заказ по данному прайс-листу?',
     MB_ICONQUESTION or MB_OKCANCEL)<>IDOK then Abort;
   adsCore.DisableControls;
+  OldFiltered := adsCore.Filtered;
+  OldFilterEvent := adsCore.OnFilterRecord;
+  LastPositionByCoreId := adsCoreCoreId.AsVariant;
   Screen.Cursor:=crHourGlass;
   try
     with DM.adcUpdate do begin
@@ -542,11 +549,22 @@ begin
       ParamByName('REGIONCODE').Value := RegionCode;
       Execute;
     end;
+
+    adsCore.Filtered := False;
+    adsCore.First;
+    while not adsCore.Eof do begin
+      if not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0) then
+        adsCore.RefreshRecord;
+      adsCore.Next;
+    end;    
   finally
+    if OldFiltered then
+      DBProc.SetFilterProc(adsCore, OldFilterEvent);
+    adsCore.First;
+    adsCore.Locate([adsCoreCoreId], LastPositionByCoreId, []);  
     adsCore.EnableControls;
-    RefreshAllCore;
     Screen.Cursor:=crDefault;
-  	SetOrderLabel;
+    SetOrderLabel;
     MainForm.SetOrdersInfo;
   end;
   dbgCore.SetFocus;
@@ -677,7 +695,6 @@ begin
     adsCore.ParamByName( 'RegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'ClientId').Value:=ClientId;
     ShowSQLWaiting(adsCore);
-    DM.MySQLMonitor.TraceFlags := DM.MySQLMonitor.TraceFlags + [DASQLMonitor.tfQFetch, DASQLMonitor.tfQExecute, DASQLMonitor.tfStmt];
   finally
     Screen.Cursor:=crDefault;
   end;
