@@ -70,7 +70,7 @@ type
   TAnalitFExitCode = (ecOK, ecDBFileNotExists, ecDBFileReadOnly, ecDBFileError,
     ecDoubleStart, ecColor, ecTCPNotExists, ecUserLimit, ecFreeDiskSpace,
     ecGetFreeDiskSpace, ecIE40, ecSevenZip, ecNotCheckUIN, ecSSLOpen, ecNotChechHashes,
-    ecDBUpdateError, ecDiffDBVersion, ecDeleteDBFiles);
+    ecDBUpdateError, ecDiffDBVersion, ecDeleteDBFiles, ecDeleteOldMysqlFolder);
 
   TRetMass = array[1..3] of Variant;
 
@@ -562,6 +562,8 @@ type
     function GetMainConnection: TCustomMyConnection;
     procedure PatchMyDataSets;
     procedure InternalCloseMySqlDB;
+    //Удаляем старую директорию с Mysql и директорию с эталонными данными
+    procedure DeleteOldMysqlFolder;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -962,6 +964,8 @@ begin
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
   DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
   //MySqlApi.MySQLEmbDisableEventLog := True;
+
+  DeleteOldMysqlFolder;
 
   //Устанавливаем параметры embedded-соединения
   MyEmbConnection.Params.Clear();
@@ -4515,6 +4519,24 @@ begin
   finally
     dbCon.Close;
     //dbCon.RemoveFromPool;
+  end;
+end;
+
+procedure TDM.DeleteOldMysqlFolder;
+begin
+  try
+    DeleteDirectory(ExePath + SDirData + '\mysql');
+    DeleteDirectory(ExePath + 'DataEtalon');
+    DeleteDirectory(ExePath + SDirDataBackup + '\mysql');
+    DeleteDirectory(ExePath + SDirDataPrev + '\mysql');
+  except
+    on E : Exception do begin
+      LogCriticalError('Ошибка при удалении устаревшей директории mysql: ' + E.Message);
+      LogExitError(
+        'Не возможно удалить устаревшую директорию mysql.'#13#10
+        + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+        Integer(ecDeleteOldMysqlFolder));
+    end
   end;
 end;
 
