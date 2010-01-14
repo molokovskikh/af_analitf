@@ -149,10 +149,17 @@ var
   HTTPPass : String;
   NewPass,
   CryptNewPass : String;
+  oldKbd,
+  englishKbd : HKL;
 begin
   //вид дочерних форм зависит от параметров, поэтому закрываем окна
   MainForm.FreeChildForms;
   with TConfigForm.Create(Application) do try
+    oldKbd := GetKeyboardLayout(0);
+    //если получится загрузить английскую клавиатуру, то делаем ее активной
+    englishKbd := LoadKeyboardLayout('00000409', 0);
+    if englishKbd <> 0 then
+      ActivateKeyboardLayout(englishKbd, 0);
     OldExep := Application.OnException;
     try
       Application.OnException := OnAppEx;
@@ -246,6 +253,7 @@ begin
       end;
 
     finally
+      ActivateKeyboardLayout(oldKbd, 0);
       Application.OnException := OldExep;
     end;
 
