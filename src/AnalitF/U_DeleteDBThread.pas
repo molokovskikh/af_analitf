@@ -36,6 +36,8 @@ end;
 procedure TDeleteDBFiles.Execute;
 begin
   WriteExchangeLog('AnalitF', 'Попытка удалить файлы базы данных для пересоздания базы данных.');
+  DeleteDBDirectory(ExePath + SDirDataBackup);
+  DeleteDBDirectory(ExePath + SDirDataPrev);
   DeleteDBDirectory(ExePath + SDirData + '\analitf');
   WriteExchangeLog('AnalitF', 'Удаление файлов базы данных завершилось успешно.');
 end;

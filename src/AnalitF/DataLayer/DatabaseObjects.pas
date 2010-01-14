@@ -154,6 +154,9 @@ type
 
 implementation
 
+uses
+  DModule, MyEmbConnection;
+
 var
   FDatabaseController : TDatabaseController;
 
@@ -188,13 +191,22 @@ begin
 end;
 
 procedure TDatabaseController.BackupDatabase;
+{
 var
   stream : TFileStream;
+}  
 begin
+  if DM.MainConnection is TMyEmbConnection then begin
+    DM.MainConnection.Close;
+    CopyDataDirToBackup(ExePath + SDirData, ExePath + SDirDataBackup);
+    DM.MainConnection.Open;
+  end;
+{
   if not FileExists(ExePath + BackupFileFlag) then begin
     stream := TFileStream.Create(ExePath + BackupFileFlag, fmCreate);
     stream.Free;
   end;
+}  
 end;
 
 procedure TDatabaseController.BackupDataTable(ObjectId: TDatabaseObjectId);
@@ -450,7 +462,11 @@ end;
 
 procedure TDatabaseController.ClearBackup;
 begin
-  OSDeleteFile(ExePath + BackupFileFlag);
+  if DM.MainConnection is TMyEmbConnection then begin
+    DeleteDirectory(ExePath + SDirDataPrev);
+    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirDataPrev);
+  end;
+  //OSDeleteFile(ExePath + BackupFileFlag);
 end;
 
 constructor TDatabaseController.Create;
@@ -571,7 +587,11 @@ end;
 
 function TDatabaseController.IsBackuped: Boolean;
 begin
-  Result := FileExists(ExePath + BackupFileFlag);
+  if DM.MainConnection is TMyEmbConnection then
+    Result := DirectoryExists(ExePath + SDirDataBackup)
+  else
+    Result := False;
+  //Result := FileExists(ExePath + BackupFileFlag);
 end;
 
 procedure TDatabaseController.OptimizeObjects(
@@ -600,7 +620,18 @@ end;
 
 procedure TDatabaseController.RestoreDatabase;
 begin
-  OSDeleteFile(ExePath + BackupFileFlag);
+  if DM.MainConnection is TMyEmbConnection then begin
+    DM.MainConnection.Close;
+
+    //удаляем директорию
+    DeleteDataDir(ExePath + SDirData);
+
+    //копируем данные из backup, который сделали перед импортом
+    MoveDirectories(ExePath + SDirDataBackup, ExePath + SDirData);
+
+    DM.MainConnection.Open;
+  end;
+  //OSDeleteFile(ExePath + BackupFileFlag);
 end;
 
 function TDatabaseController.TableExists(tableName: String): Boolean;

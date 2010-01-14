@@ -1254,7 +1254,9 @@ procedure TDM.CompactDataBase();
 begin
   MainConnection.Open;
   try
+{$ifndef USENEWMYSQLTYPES}
     DatabaseController.OptimizeObjects(MainConnection);
+{$endif}
   finally
     MainConnection.Close;
   end;
