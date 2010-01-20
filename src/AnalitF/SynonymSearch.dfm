@@ -1039,6 +1039,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'
@@ -1131,6 +1132,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'
@@ -1453,6 +1455,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsCoreSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1628,6 +1633,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'

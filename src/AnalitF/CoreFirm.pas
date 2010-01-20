@@ -168,6 +168,7 @@ type
     btnGotoCore: TButton;
     adsCoreWithLike: TMyQuery;
     adsCoreRealCost: TFloatField;
+    adsCoreSupplierPriceMarkup: TFloatField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);

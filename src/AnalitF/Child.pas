@@ -76,6 +76,7 @@ type
     procedure NewBeforePost(DataSet: TDataSet);
     procedure NewBeforeScroll(DataSet : TDataSet);
     procedure NewExit(Sender : TObject);
+    procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
   public
     PrintEnabled: Boolean;
     //Разрешено сохранять отображаемую таблицу
@@ -359,6 +360,7 @@ begin
     dsCheckVolume.BeforePost := NewBeforePost;
     OldExit := dgCheckVolume.OnExit;
     dgCheckVolume.OnExit := NewExit;
+    PrepareColumnsInOrderGrid(dgCheckVolume);
   end;
 end;
 
@@ -467,6 +469,29 @@ begin
     //Возможна ситуация, когда параметра "ClientId" не будет в выполняемой команде
     if Assigned(Params.FindParam('ClientId')) then
       Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
+end;
+
+procedure TChildForm.PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
+var
+  realCostColumn : TColumnEh;
+  supplierPriceMarkupColumn : TColumnEh;
+begin
+  realCostColumn := ColumnByNameT(Grid, 'RealCost');
+  if not Assigned(realCostColumn) then
+    realCostColumn := ColumnByNameT(Grid, 'RealPrice');
+
+  if Assigned(realCostColumn) then  begin
+    supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
+    if not Assigned(supplierPriceMarkupColumn) then begin
+      supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
+      supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
+      supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
+      supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
+    end;
+    //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
+    if not DM.adtClientsAllowDelayOfPayment.Value then
+      Grid.Columns.Delete(realCostColumn.Index);
+  end;
 end;
 
 end.

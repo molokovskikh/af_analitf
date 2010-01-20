@@ -1047,6 +1047,7 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1148,6 +1149,7 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'

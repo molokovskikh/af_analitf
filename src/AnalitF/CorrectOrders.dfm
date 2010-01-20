@@ -490,6 +490,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'
@@ -579,6 +580,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -859,6 +861,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object adsCoreRealCost: TFloatField
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
+    end
+    object adsCoreSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
     end
   end
   object mdValues: TRxMemoryData

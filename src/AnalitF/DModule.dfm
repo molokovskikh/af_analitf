@@ -1462,7 +1462,7 @@ object DM: TDM
       
         'SELECT CLIENTS.NAME, CLIENTS.REGIONCODE, CLIENTS.EXCESS, CLIENTS' +
         '.DELTAMODE, CLIENTS.MAXUSERS, CLIENTS.REQMASK, CLIENTS.CALCULATE' +
-        'LEADER, CLIENTS.ONLYLEADERS FROM CLIENTS'
+        'LEADER, CLIENTS.ONLYLEADERS, AllowDelayOfPayment FROM CLIENTS'
       'WHERE'
       '  CLIENTS.CLIENTID = :CLIENTID')
     Connection = MyConnection
@@ -1476,7 +1476,8 @@ object DM: TDM
       ' MAXUSERS,'
       ' REQMASK,'
       ' CALCULATELEADER,'
-      ' ONLYLEADERS'
+      ' ONLYLEADERS,'
+      ' AllowDelayOfPayment '
       'FROM'
       ' CLIENTS')
     AfterOpen = adtClientsOldAfterOpen
@@ -1509,6 +1510,9 @@ object DM: TDM
     end
     object adtClientsONLYLEADERS: TBooleanField
       FieldName = 'ONLYLEADERS'
+    end
+    object adtClientsAllowDelayOfPayment: TBooleanField
+      FieldName = 'AllowDelayOfPayment'
     end
   end
   object adsRetailMargins: TMyQuery
@@ -1866,6 +1870,7 @@ object DM: TDM
       '    Core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -2012,6 +2017,7 @@ object DM: TDM
       '    OrdersList.RequestRatio,'
       '    OrdersList.OrderCost,'
       '    OrdersList.MinOrderCount,'
+      '    OrdersList.SupplierPriceMarkup,'
       '    core.ServerCoreId'
       'FROM '
       '  OrdersList'
@@ -2103,6 +2109,9 @@ object DM: TDM
     end
     object adsOrderDetailsRealPrice: TFloatField
       FieldName = 'RealPrice'
+    end
+    object adsOrderDetailsSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -2232,7 +2241,8 @@ object DM: TDM
       '  ORDERCOUNT = :ORDERCOUNT,'
       '  DropReason = :DropReason,'
       '  ServerCost = :ServerCost,'
-      '  ServerQuantity = :ServerQuantity'
+      '  ServerQuantity = :ServerQuantity,'
+      '  SupplierPriceMarkup = :SupplierPriceMarkup'
       'where'
       '  ID = :OLD_ID')
     Connection = MyConnection
@@ -2263,7 +2273,8 @@ object DM: TDM
       '  OrdersList.minordercount, '
       '  OrdersList.DropReason, '
       '  OrdersList.ServerCost, '
-      '  OrdersList.ServerQuantity '
+      '  OrdersList.ServerQuantity,'
+      '  OrdersList.SupplierPriceMarkup'
       'FROM '
       '  OrdersList '
       
@@ -2360,6 +2371,9 @@ object DM: TDM
     object adsRepareOrdersServerQuantity: TIntegerField
       FieldName = 'ServerQuantity'
     end
+    object adsRepareOrdersSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
   end
   object adsCoreRepare: TMyQuery
     Connection = MyConnection
@@ -2394,6 +2408,7 @@ object DM: TDM
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -2677,6 +2692,9 @@ object DM: TDM
     end
     object adsCoreRepareRealCost: TFloatField
       FieldName = 'RealCost'
+    end
+    object adsCoreRepareSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
     end
   end
   object adsUser: TMyQuery

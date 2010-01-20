@@ -196,6 +196,7 @@ type
     adsCoreByProducts: TMyQuery;
     adsCoreByFullcode: TMyQuery;
     adsCoreRealCost: TFloatField;
+    adsCoreSupplierPriceMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);

@@ -1011,6 +1011,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1110,6 +1111,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1444,6 +1446,9 @@ object CoreFirmForm: TCoreFirmForm
       Origin = 'Core.RealCost'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsCoreSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1475,6 +1480,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'

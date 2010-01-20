@@ -647,7 +647,8 @@ inherited OrdersForm: TOrdersForm
       '    OrdersList.minordercount as Ordersminordercount,'
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
-      '    OrdersList.ServerQuantity'
+      '    OrdersList.ServerQuantity,'
+      '    OrdersList.SupplierPriceMarkup'
       'FROM '
       '  OrdersList'
       
@@ -773,6 +774,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersServerQuantity: TIntegerField
       FieldName = 'ServerQuantity'
+    end
+    object adsOrdersSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
     end
   end
 end
