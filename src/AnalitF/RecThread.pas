@@ -104,6 +104,18 @@ begin
                   PostSuccess := True;
                   
                 except
+                  on E : EIdCouldNotBindSocket do begin
+                    if (ErrorCount < FReconnectCount) then begin
+                      try
+                        ReceiveHTTP.Disconnect;
+                      except
+                      end;
+                      Inc(ErrorCount);
+                      Sleep(1000);
+                    end
+                    else
+                      raise;
+                  end;
                   on E : EIdConnClosedGracefully do begin
                     if (ErrorCount < FReconnectCount) then begin
                       try
@@ -111,7 +123,7 @@ begin
                       except
                       end;
                       Inc(ErrorCount);
-                      Sleep(100);
+                      Sleep(500);
                     end
                     else
                       raise;
@@ -126,7 +138,7 @@ begin
                       except
                       end;
                       Inc(ErrorCount);
-                      Sleep(100);
+                      Sleep(500);
                     end
                     else
                       raise;
@@ -161,15 +173,21 @@ begin
               ExePath + SDirReclame,
               False,
               nil);
-
-            if SevenZipRes <> 0 then
-              raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d',
-                [ExePath + SDirReclame + '\r' + RegionCode + '.zip',
-                SevenZipRes]);
           finally
             SZCS.Leave;
             SysUtils.DeleteFile(ZipFileName);
           end;
+          if SevenZipRes <> 0 then
+            raise Exception.CreateFmt(
+              'Не удалось разархивировать файл %s. ' +
+              'Код ошибки %d. ' +
+              'Код ошибки 7-zip: %d.'#13#10 +
+              'Текст ошибки: %s',
+              [ExePath + SDirReclame + '\r' + RegionCode + '.zip',
+               SevenZipRes,
+               SevenZip.LastSevenZipErrorCode,
+               SevenZip.LastError]);
+
           Log('Reclame', 'Архив с рекламным блоком успешно распакован');
 
           if Terminated then Abort;

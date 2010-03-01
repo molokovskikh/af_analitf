@@ -887,8 +887,9 @@ procedure TCustomMyDataSetService.FillFieldsDefaultValues;
     Result := True;
     //Len := Length(Def);
 
-    case TMySQLFieldDesc(FieldDesc).MySQLType of
-      FIELD_TYPE_TIMESTAMP:
+    if TMySQLFieldDesc(FieldDesc).MySQLType =
+      FIELD_TYPE_TIMESTAMP
+    then
         case FieldDesc.Length of
           19: // YYYY-MM-DD HH:MM:SS
             Result := TryEncodeDateTime(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), IntAt(11, 2), IntAt(14, 2), IntAt(17, 2), 0, Res);
@@ -908,10 +909,19 @@ procedure TCustomMyDataSetService.FillFieldsDefaultValues;
             Result := TryEncodeDate(Year2, 1, 1, Res);
           else
             Assert(False, 'Invalid FIELD_TYPE_TIMESTAMP FieldDesc.Length (' + IntToStr(FieldDesc.Length) + ')');
-        end;
-      FIELD_TYPE_DATE, FIELD_TYPE_NEWDATE: // YYYY-MM-DD
-        Result := TryEncodeDate(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), Res);
-      FIELD_TYPE_TIME: // HH:MM:SS
+        end
+    else
+    if TMySQLFieldDesc(FieldDesc).MySQLType in
+      [
+
+      FIELD_TYPE_DATE, FIELD_TYPE_NEWDATE // YYYY-MM-DD
+      ]
+    then
+        Result := TryEncodeDate(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), Res)
+    else
+    if TMySQLFieldDesc(FieldDesc).MySQLType =
+      FIELD_TYPE_TIME // HH:MM:SS
+    then
       begin
         i := 0;
         while Byte(Def[i + 1]) <> Byte(':') do begin
@@ -924,8 +934,11 @@ procedure TCustomMyDataSetService.FillFieldsDefaultValues;
           Res := - IntAt(1, i - 1) / HoursPerDay - Res
         else
           Res :=   IntAt(0, i)     / HoursPerDay + Res;
-      end;
-      FIELD_TYPE_DATETIME: // YYYY-MM-DD HH:MM:SS
+      end
+    else
+    if TMySQLFieldDesc(FieldDesc).MySQLType =
+      FIELD_TYPE_DATETIME // YYYY-MM-DD HH:MM:SS
+    then
       begin
         Result := TryEncodeDate(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), Res);
         if Result then begin
@@ -936,7 +949,6 @@ procedure TCustomMyDataSetService.FillFieldsDefaultValues;
             Res := Res - t;
         end;
       end;
-    end;
   end;
 
 var
@@ -1102,9 +1114,16 @@ begin
   if (Field <> nil)
     and (Field is TNumericField) then begin
     FieldDesc := TMySQLFieldDesc(FDataSet.GetFieldDesc(Field));
-    case FieldDesc.MySQLType of // Must be sync with ConvertMySQLTypeToInternalFormat
+
+    //case FieldDesc.MySQLType of // Must be sync with ConvertMySQLTypeToInternalFormat
+    if FieldDesc.MySQLType in
+      [
+
       // Integer fields
-      FIELD_TYPE_DECIMAL, FIELD_TYPE_NEWDECIMAL: begin // DECIMAL
+      FIELD_TYPE_DECIMAL, FIELD_TYPE_NEWDECIMAL // DECIMAL
+      ]
+    then
+      begin
         if Field is TFloatField then begin
           TFloatField(Field).MaxValue :=
             IntPower(10, FieldDesc.Length - FieldDesc.Scale) -
@@ -1132,8 +1151,12 @@ begin
       {$ENDIF}
       {$ENDIF}
           Assert(False, Field.ClassName);
-      end;
-      FIELD_TYPE_TINY: // TINYINT
+      end
+    else
+    if FieldDesc.MySQLType =
+      FIELD_TYPE_TINY // TINYINT
+    then
+    begin
         if FieldDesc.IsUnsigned then
         begin
           TIntegerField(Field).MinValue := 0;
@@ -1144,8 +1167,12 @@ begin
           TIntegerField(Field).MinValue := -128;
           TIntegerField(Field).MaxValue := 127;
         end;
-
-      FIELD_TYPE_SHORT: // SMALLINT
+    end
+    else
+    if FieldDesc.MySQLType =
+      FIELD_TYPE_SHORT // SMALLINT
+    then
+    begin
         if FieldDesc.IsUnsigned then
         begin
           TIntegerField(Field).MinValue := 0;
@@ -1156,8 +1183,14 @@ begin
           TIntegerField(Field).MinValue := -32768;
           TIntegerField(Field).MaxValue := 32767;
         end;
-
-      FIELD_TYPE_LONG, FIELD_TYPE_LONGLONG: // INT
+    end
+    else
+    if FieldDesc.MySQLType in
+      [
+      FIELD_TYPE_LONG, FIELD_TYPE_LONGLONG // INT
+      ]
+    then
+    begin
         if Field is TIntegerField then
           if FieldDesc.IsUnsigned then
           begin
@@ -1169,10 +1202,15 @@ begin
             TIntegerField(Field).MinValue := -2147483647;
             TIntegerField(Field).MaxValue := 2147483647;
           end;
+    end
+    else
 
+    if FieldDesc.MySQLType =
       // FIELD_TYPE_LONGLONG:; // BIGINT - does not need to set bounds
 
-      FIELD_TYPE_INT24: begin// MEDIUMINT
+      FIELD_TYPE_INT24
+    then
+      begin// MEDIUMINT
         // ??? Error in Delphi? Does not set range value
         // May be d5/d6?
 
@@ -1187,23 +1225,33 @@ begin
           TIntegerField(Field).MinValue := -8388608;
           TIntegerField(Field).MaxValue := 8388607;
         end;
-      end;
+      end
+    else
 
       // Float fields
-      FIELD_TYPE_FLOAT: // FLOAT
+    if FieldDesc.MySQLType =
+      FIELD_TYPE_FLOAT // FLOAT
+    then
       begin
         TFloatField(Field).Precision := FieldDesc.Length;
         TFloatField(Field).MinValue := -3.402823466E+38;
         TFloatField(Field).MaxValue :=  3.402823466E+38;
-      end;
-      FIELD_TYPE_DOUBLE: // DOUBLE
+      end
+    else
+
+    if FieldDesc.MySQLType =
+      FIELD_TYPE_DOUBLE // DOUBLE
+    then
       begin
         TFloatField(Field).Precision := FieldDesc.Length;
         TFloatField(Field).MinValue := -1.7976931348623157E+308;
         TFloatField(Field).MaxValue :=  1.7976931348623157E+308;
-      end;
+      end
+    else
 
-      FIELD_TYPE_YEAR:
+    if FieldDesc.MySQLType =
+      FIELD_TYPE_YEAR
+    then
       begin
         Assert(Field is TIntegerField);
         case FieldDesc.Length of
@@ -1218,8 +1266,9 @@ begin
           else
             Assert(False);
         end;
-      end;
-    end;
+      end
+
+    //end; case
   end;
 end;
 

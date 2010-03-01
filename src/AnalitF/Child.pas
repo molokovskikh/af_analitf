@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs,
-  MyAccess, DBAccess;
+  MyAccess, DBAccess, StdCtrls, DescriptionFrm;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -51,6 +51,13 @@ type
 
     FUseCorrectOrders : Boolean;
 
+    gotoMNNAction : TAction;
+    gotoMNNButton : TButton;
+
+    ShowDescriptionAction : TAction;
+    ShowDescriptionActionByF1 : TAction;
+
+    
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Loaded; override;
     procedure Notification(AComponent: TComponent;
@@ -76,6 +83,10 @@ type
     procedure NewBeforePost(DataSet: TDataSet);
     procedure NewBeforeScroll(DataSet : TDataSet);
     procedure NewExit(Sender : TObject);
+    procedure FilterByMNNExecute(Sender: TObject);
+    procedure ShowDescriptionExecute(Sender: TObject);
+    procedure ShowDescriptionUpdate(Sender: TObject);
+    procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
   public
     PrintEnabled: Boolean;
     //Разрешено сохранять отображаемую таблицу
@@ -100,7 +111,8 @@ type
 
 implementation
 
-uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection;
+uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection, Menus, Core,
+  NamesForms;
 
 {$R *.DFM}
 
@@ -201,6 +213,8 @@ begin
       TToughDBGrid(Self.Components[i]).Font.Size := 10;
       TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
       TToughDBGrid(Self.Components[i]).GridLineColors.BrightColor := clDkGray;
+      if CheckWin32Version(5, 1) then
+        TToughDBGrid(Self.Components[i]).OptionsEh := TToughDBGrid(Self.Components[i]).OptionsEh + [dghTraceColSizing];
 
       if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource)
@@ -278,7 +292,7 @@ end;
 constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
-  FUseCorrectOrders := DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean;
+  FUseCorrectOrders := False;
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
   PatchNonBrowser;
@@ -346,7 +360,13 @@ begin
 end;
 
 procedure TChildForm.FormCreate(Sender: TObject);
+var
+  I : Integer;
+  al : TActionList;
 begin
+  gotoMNNAction := nil;
+  ShowDescriptionAction := nil;
+  ShowDescriptionActionByF1 := nil;
   PatchMyDataSets;
   if Assigned(dsCheckVolume) and Assigned(dgCheckVolume) and Assigned(fOrder)
      and Assigned(fVolume) and Assigned(fOrderCost) and Assigned(fSumOrder) and Assigned(fMinOrderCount)
@@ -359,7 +379,44 @@ begin
     dsCheckVolume.BeforePost := NewBeforePost;
     OldExit := dgCheckVolume.OnExit;
     dgCheckVolume.OnExit := NewExit;
+    PrepareColumnsInOrderGrid(dgCheckVolume);
+    if not (Self is TCoreForm) then
+    for I := 0 to Self.ComponentCount-1 do
+      if Self.Components[i] is TActionList then begin
+        al := TActionList(Self.Components[i]);
+        gotoMNNAction := TAction.Create(al);
+        gotoMNNAction.Name := '';
+        gotoMNNAction.Caption := 'Показать синонимы (Ctrl+N)';
+        gotoMNNAction.Hint := 'Переход в каталог с фильтрацией по МНН';
+        gotoMNNAction.ShortCut := TextToShortCut('Ctrl+N');// ShortCut(VK_F5, []);
+        gotoMNNAction.OnExecute := FilterByMNNExecute;
+        gotoMNNAction.ActionList := al;
+        if Assigned(gotoMNNButton) then begin
+          gotoMNNButton.Action := gotoMNNAction;
+          gotoMNNButton.Width := Self.Canvas.TextWidth(gotoMNNAction.Caption) + 30;
+        end
+      end;
   end;
+
+  for I := 0 to Self.ComponentCount-1 do
+    if Self.Components[i] is TActionList then begin
+      al := TActionList(Self.Components[i]);
+      ShowDescriptionAction := TAction.Create(al);
+      ShowDescriptionAction.Name := '';
+      ShowDescriptionAction.Caption := 'Показать описание (Space)';
+      ShowDescriptionAction.ShortCut := TextToShortCut('Space');
+      ShowDescriptionAction.OnUpdate := ShowDescriptionUpdate;
+      ShowDescriptionAction.OnExecute := ShowDescriptionExecute;
+      ShowDescriptionAction.ActionList := al;
+
+      ShowDescriptionActionByF1 := TAction.Create(al);
+      ShowDescriptionActionByF1.Name := '';
+      ShowDescriptionActionByF1.Caption := 'Показать описание (F1)';
+      ShowDescriptionActionByF1.ShortCut := TextToShortCut('F1');
+      ShowDescriptionActionByF1.OnUpdate := ShowDescriptionUpdate;
+      ShowDescriptionActionByF1.OnExecute := ShowDescriptionExecute;
+      ShowDescriptionActionByF1.ActionList := al;
+    end;
 end;
 
 procedure TChildForm.NewAfterPost(DataSet: TDataSet);
@@ -422,7 +479,14 @@ begin
 end;
 
 destructor TChildForm.Destroy;
+var
+  I : Integer;
 begin
+  if Parent <> nil then
+    for I := 0 to Parent.ControlCount-1 do
+      if (Parent.Controls[I] is TChildForm) and (Parent.Controls[I] <> Self) then
+        if Parent.Controls[I].Visible and (TChildForm(Parent.Controls[I]).PrevForm = Self) then
+          TChildForm(Parent.Controls[I]).PrevForm := nil;
   inherited;
   DBComponentWindowProcs.Free;
 end;
@@ -467,6 +531,128 @@ begin
     //Возможна ситуация, когда параметра "ClientId" не будет в выполняемой команде
     if Assigned(Params.FindParam('ClientId')) then
       Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
+end;
+
+procedure TChildForm.FilterByMNNExecute(Sender: TObject);
+var
+  mnnField : TField;
+  MnnId : Int64;
+  lastControl : TWinControl;
+begin
+  lastControl := Self.ActiveControl;
+  if (MainForm.ActiveChild = Self)
+     and (Assigned(dsCheckVolume))
+     and not dsCheckVolume.IsEmpty
+  then begin
+    mnnField := dsCheckVolume.FindField('MnnId');
+    if Assigned(mnnField) then begin
+      if not mnnField.IsNull and (mnnField is TLargeintField) then begin
+        MnnId := TLargeintField(mnnField).Value;
+        FlipToMNN(MnnId);
+        Exit;
+      end
+      else
+        AProc.MessageBox('Для данной позиции не установлено МНН.', MB_ICONWARNING);
+    end;
+  end;
+  if Assigned(lastControl) and (lastControl is TToughDBGrid) and lastControl.CanFocus
+  then
+    lastControl.SetFocus;
+end;
+
+procedure TChildForm.ShowDescriptionExecute(Sender: TObject);
+var
+  fullCodeField : TField;
+  fullCode : Int64;
+  grid : TToughDBGrid;
+begin
+  if (MainForm.ActiveChild = Self)
+     and Assigned(Screen.ActiveControl)
+     and (Screen.ActiveControl is TToughDBGrid)
+  then begin
+  grid := TToughDBGrid(Screen.ActiveControl);
+  if Assigned(grid.DataSource)
+     and Assigned(grid.DataSource.DataSet)
+     and not grid.DataSource.DataSet.IsEmpty
+  then begin
+    fullCodeField := grid.DataSource.DataSet.FindField('FullCode');
+    if Assigned(fullCodeField) and not fullCodeField.IsNull and (fullCodeField is TLargeintField)
+    then begin
+      fullCode := TLargeintField(fullCodeField).Value;
+      if DM.adsQueryValue.Active then
+        DM.adsQueryValue.Close;
+      DM.adsQueryValue.SQL.Text := ''
++'SELECT '
++'       Descriptions.Id, '
++'       Descriptions.Name  , '
++'       Descriptions.EnglishName, '
++'       Descriptions.Description, '
++'       Descriptions.* '
++'FROM '
++'       Catalogs, '
++'       Descriptions '
++'WHERE '
++'  (Catalogs.FullCode = :FullCode) '
++'  and (Descriptions.Id = Catalogs.DescriptionId) ';
+
+      DM.adsQueryValue.ParamByName('FullCode').Value := fullCode;
+      DM.adsQueryValue.Open;
+      try
+        if DM.adsQueryValue.IsEmpty then
+          AProc.MessageBoxEx('Описание отсутствует.', 'Описание', MB_ICONWARNING)
+        else
+          ShowDescription(DM.adsQueryValue);
+      finally
+        DM.adsQueryValue.Close;
+      end;
+    end;
+  end;
+  end;
+end;
+
+procedure TChildForm.ShowDescriptionUpdate(Sender: TObject);
+var
+  grid : TToughDBGrid;
+begin
+  if Assigned(Sender) and (Sender is TAction) then
+
+    TAction(Sender).Enabled := (MainForm.ActiveChild = Self);
+
+    if TAction(Sender).Enabled then begin
+
+      TAction(Sender).Enabled :=
+            Assigned(Screen.ActiveControl)
+        and (Screen.ActiveControl is TToughDBGrid);
+
+      if TAction(Sender).Enabled then begin
+
+        grid := TToughDBGrid(Screen.ActiveControl);
+
+        TAction(Sender).Enabled :=
+              Assigned(grid.DataSource)
+          and Assigned(grid.DataSource.DataSet)
+          and not grid.DataSource.DataSet.IsEmpty;
+      end;
+    end;
+end;
+
+procedure TChildForm.PrepareColumnsInOrderGrid(Grid: TToughDBGrid);
+var
+  realCostColumn : TColumnEh;
+begin
+  realCostColumn := ColumnByNameT(Grid, 'RealCost');
+  if not Assigned(realCostColumn) then
+    realCostColumn := ColumnByNameT(Grid, 'RealPrice');
+
+  if Assigned(realCostColumn) then  begin
+    realCostColumn.Title.Caption := 'Цена поставщика';
+    //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
+    if not DM.adtClientsAllowDelayOfPayment.Value then
+      Grid.Columns.Delete(realCostColumn.Index)
+    else
+      //Если же механизм включен, то колонка должна отображаться по умолчанию
+      realCostColumn.Visible := True;
+  end;
 end;
 
 end.

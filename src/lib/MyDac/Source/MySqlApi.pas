@@ -446,6 +446,9 @@ type
     FCurrentParams: string;
     FServerInited: boolean;
     FClientsCount: Integer;
+{$ifdef USEMEMORYCRYPTDLL}
+    FUseNewTypes : Boolean;
+{$endif}
   {$IFDEF EMBLOG}
     FDataDirMutex: TMutex;
 
@@ -2774,6 +2777,7 @@ begin
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper := nil;
   MemoryLib := GetEncryptedMemoryStream();
+  FUseNewTypes := True;
 {$endif}  
   FParams := TStringList.Create;
 {$IFDEF EMBLOG}
@@ -3191,6 +3195,7 @@ begin
 
 {$ifdef USEMEMORYCRYPTDLL}
   //Попытаемся загрузить библиотеку
+  if FUseNewTypes then
   InternalLoadMySqlLib;
 {$endif}  
 
@@ -3366,6 +3371,7 @@ begin
   end;
 
 {$ifdef USEMEMORYCRYPTDLL}
+  if FUseNewTypes then
   InternalFreeMySqlLib;
 {$endif}  
 

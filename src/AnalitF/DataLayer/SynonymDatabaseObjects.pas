@@ -40,7 +40,7 @@ begin
 +'    unique key `PK_SYNONYMS` (`SYNONYMCODE`), ' 
 +'    FULLTEXT key `IDX_SYNONYMNAME` (`SYNONYMNAME`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TSynonymFirmCrTable }
@@ -61,7 +61,7 @@ begin
 +'    primary key (`SYNONYMFIRMCRCODE`)      , ' 
 +'    unique key `PK_SYNONYMFIRMCR` (`SYNONYMFIRMCRCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 initialization

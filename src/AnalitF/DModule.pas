@@ -14,7 +14,8 @@ uses
   pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
-  MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions, DatabaseObjects;
+  MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions, DatabaseObjects,
+  MyCall;
 
 {
 Криптование
@@ -468,6 +469,7 @@ type
     adsRepareOrdersServerCost: TFloatField;
     adsRepareOrdersServerQuantity: TIntegerField;
     adsOrderDetailsRealPrice: TFloatField;
+    adtClientsAllowDelayOfPayment: TBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -501,6 +503,13 @@ type
     CodeC,
     BasecostC : TINFCrypt;
     OrdersInfo : TStringList;
+
+    //Было произведено обновление программы с Firebird на MySql
+    FProcessFirebirdUpdate : Boolean;
+
+    //Было произведено обновление программы с версии 800-x на 945
+    FProcess800xUpdate : Boolean;
+
     procedure CheckRestrictToRun;
     procedure CheckDBFile;
     procedure ReadPasswords;
@@ -514,8 +523,10 @@ type
     procedure UpdateDB;
     //Обновления UIN в базе данных в случае обновления версии программы
     procedure UpdateDBUIN(dbCon : TCustomMyConnection);
+{$ifndef USENEWMYSQLTYPES}
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjects(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+{$endif}
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
@@ -542,6 +553,10 @@ type
     //Производим обновлением базы данных Firebird на базу данных MySql
     procedure UpdateFirebirdToMySql(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection; firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction; UnrestoreOrdersFileName : String; var UnrestoreOrders : Boolean);
+    //Производим обновлением базы данных с 800-х версий на базу данных MySql нового формата
+    procedure Update800xToMySql(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ExportFrom800xToFiles(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
+    procedure Import800xFilesToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure FormatUnrestoreOrders(UnrestoreOrders : TDataSet; OutReport : TStringList);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
@@ -565,6 +580,8 @@ type
     procedure InternalCloseMySqlDB;
     //Удаляем старую директорию с Mysql и директорию с эталонными данными
     procedure DeleteOldMysqlFolder;
+    //Подготовка директорий к 800-x версий к обновлению
+    procedure PrepareUpdate800xToMySql;
 {$ifdef USEMEMORYCRYPTDLL}
     procedure CheckSpecialLibrary;
 {$endif}
@@ -641,6 +658,8 @@ type
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
     property NeedUpdateByCheckUIN : Boolean read FNeedUpdateByCheckUIN;
     property NeedUpdateByCheckHashes : Boolean read FNeedUpdateByCheckHashes;
+    property ProcessFirebirdUpdate : Boolean read FProcessFirebirdUpdate;
+    property Process800xUpdate : Boolean read FProcess800xUpdate;
     //Установить параметры для компонента TIdHTTP
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
     function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
@@ -652,7 +671,9 @@ type
     procedure GetClientInformation(
       var ClientName : String;
       var IsFutureClient : Boolean);
-    function GetClearSendResultSql(ClientId : Int64) : String; 
+    function GetClearSendResultSql(ClientId : Int64) : String;
+    function NeedUpdateFireBirdToMySql : Boolean;
+    function NeedUpdate800xToMySql : Boolean;
   end;
 
 var
@@ -964,10 +985,22 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
 begin
-  if not DirectoryExists( ExePath + SDirDataTmpDir) then CreateDir( ExePath + SDirDataTmpDir);
+  WriteExchangeLog('AnalitF', 'Программа установлена в каталог: "' + ExtractFileDir(ParamStr(0)) + '"');
+  FProcessFirebirdUpdate := False;
+  FProcess800xUpdate := False;
+  
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
-  DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
+  if DirectoryExists( ExePath + SDirDataTmpDir) then begin
+    DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
+    try
+      DeleteDirectory(ExePath + SDirDataTmpDir);
+    except
+    end;
+  end;
   //MySqlApi.MySQLEmbDisableEventLog := True;
+
+  if NeedUpdate800xToMySql then
+    ShowSQLWaiting(PrepareUpdate800xToMySql, 'Происходит подготовка к обновлению');
 
   DeleteOldMysqlFolder;
 
@@ -978,20 +1011,22 @@ begin
   //Устанавливаем параметры embedded-соединения
   MyEmbConnection.Params.Clear();
 {$ifndef USENEWMYSQLTYPES}
-  MyEmbConnection.Params.Add('--basedir=.');
-  MyEmbConnection.Params.Add('--datadir=data');
+  MyEmbConnection.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
+  MyEmbConnection.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + '\');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
   MyEmbConnection.Params.Add('--skip-innodb');
-  MyEmbConnection.Params.Add('--tmpdir=' + SDirDataTmpDir);
+  MyEmbConnection.Params.Add('--tmp_table_size=33554432');
+  MyEmbConnection.Params.Add('--max_heap_table_size=33554432');
 {$else}
-  MyEmbConnection.Params.Add('--basedir=.');
-  MyEmbConnection.Params.Add('--datadir=data');
+  MyEmbConnection.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
+  MyEmbConnection.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + '\');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
-  MyEmbConnection.Params.Add('--tmpdir=' + SDirDataTmpDir);
+  MyEmbConnection.Params.Add('--tmp_table_size=33554432');
+  MyEmbConnection.Params.Add('--max_heap_table_size=33554432');
 {$endif}
 
   SerBeg := 'Prg';
-  SerEnd := 'DataTest';
+  SerEnd := 'Data';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
@@ -1265,7 +1300,8 @@ begin
   MainConnection.Open;
   try
 {$ifndef USENEWMYSQLTYPES}
-    DatabaseController.OptimizeObjects(MainConnection);
+    //todo: Надо будет восстановить сжатие, когда сборка Михаила сможет восстанавливать таблицы
+    //DatabaseController.OptimizeObjects(MainConnection);
 {$endif}
   finally
     MainConnection.Close;
@@ -1455,6 +1491,10 @@ begin
     SQL.Text:='DELETE FROM SynonymFirmCr;'; Execute;
     MainForm.StatusText:='Очищается Defectives';
     SQL.Text:='DELETE FROM Defectives;'; Execute;
+    MainForm.StatusText:='Очищается МНН';
+    SQL.Text:='DELETE FROM MNN;'; Execute;
+    MainForm.StatusText:='Очищаются описания';
+    SQL.Text:='DELETE FROM Descriptions;'; Execute;
 
   finally
     Screen.Cursor:=crDefault;
@@ -1976,12 +2016,40 @@ begin
       DBVersion := 54;
     end;
 
+    if DBVersion = 54 then begin
+      if NeedUpdateFireBirdToMySql then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateFirebirdToMySql, nil);
+        DBVersion := CURRENT_DB_VERSION;
+      end
+      else begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 55;
+      end;
+    end;
+
+    if DBVersion = 55 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 56;
+    end;
+
+    if DBVersion = 56 then begin
+      if NeedUpdate800xToMySql then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, Update800xToMySql, nil);
+        DBVersion := CURRENT_DB_VERSION;
+      end
+      else begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 57;
+      end;
+    end;
+
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
     //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
 {$ifndef DEBUG}
-  {$ifndef USEMEMORYCRYPTDLL}
-    //Если мы не используем USEMEMORYCRYPTDLL, то будем проверять схему базы данных
+  {$ifndef USENEWMYSQLTYPES}
+    //Если мы не используем USENEWMYSQLTYPES, то будем проверять схему базы данных,
+    //т.к. в специализированной сборке не работает infromation_schema
     else
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
   {$else}
@@ -2620,8 +2688,19 @@ begin
 end;
 
 function TDM.GetFullLastCreateScript: String;
+var
+  realDBVersion : String;
 begin
   Result := GetLastCreateScript();
+  
+  if NeedUpdateFireBirdToMySql then
+    realDBVersion := '54'
+  else
+  if NeedUpdate800xToMySql then
+    realDBVersion := '56'
+  else
+    realDBVersion := IntToStr(CURRENT_DB_VERSION);
+
   Result := Concat(Result,
     #13#10#13#10 +
     'insert into analitf.params set ' +
@@ -2668,7 +2747,7 @@ begin
     'ProviderPhones = ''4732-606000'',' +
     'ProviderEmail = ''farm@analit.net'',' +
     'ProviderWeb = ''http://www.analit.net/'',' +
-    'ProviderMDBVersion = ' + IntToStr(CURRENT_DB_VERSION) + ';'#13#10#13#10 +
+    'ProviderMDBVersion = ' + realDBVersion + ';'#13#10#13#10 +
     'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (1, 0, 1000000, 30);'#13#10#13#10
     );
 end;
@@ -2787,6 +2866,7 @@ begin
     end;
 end;
 
+{$ifndef USENEWMYSQLTYPES}
 procedure TDM.CheckDBObjects(dbCon : TCustomMyConnection;
   DBDirectoryName : String; OldDBVersion : Integer;
   AOnUpdateDBFileData : TOnUpdateDBFileData);
@@ -2828,6 +2908,7 @@ begin
     raise Exception.Create('База данных содержит некорректные метаданные.');
   end;
 end;
+{$endif}
 
 procedure TDM.ProcessDocs;
 var
@@ -3281,7 +3362,11 @@ begin
       Tracer.TR('Monitor', Format('Sender : nil  Flag : %s'#13#10'Text : %s ', [DATraceFlagNames[Flag], Text]))
     else
       Tracer.TR('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
-}      
+  if (Sender = nil) then
+    WriteExchangeLog('Monitor', Format('Sender : nil  Flag : %s'#13#10'Text : %s ', [DATraceFlagNames[Flag], Text]))
+  else
+    WriteExchangeLog('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
+}
 end;
 
 {$ifdef TestEmbeddedMysql}
@@ -3768,6 +3853,7 @@ begin
                     'Некритическая ошибка при переносе данных при отображении отчета: %s',
                     [E.Message]));
             end;
+            FProcessFirebirdUpdate := True;
           except
             on UpdateException : Exception do begin
               AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
@@ -3789,6 +3875,21 @@ begin
   finally
     try dbCon.Close; except end;
   end;
+  
+  if FileExists(ExePath + DatabaseName) then
+    try
+      OSMoveFile(ExePath + DatabaseName, ExePath + SBackDir + '\' + DatabaseName);
+    except
+      on E : Exception do
+        AProc.LogCriticalError('Ошибка при перемещении старой (Firebird) базы данных : ' + E.Message);
+    end;
+  if FileExists(ExePath + DatabaseName + '.etl') then
+    try
+      OSMoveFile(ExePath + DatabaseName + '.etl', ExePath + SBackDir + '\' + DatabaseName + '.etl');
+    except
+      on E : Exception do
+        AProc.LogCriticalError('Ошибка при перемещении etl-файла старой (Firebird) базы данных : ' + E.Message);
+    end;
 end;
 
 procedure TDM.InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection;
@@ -3839,6 +3940,26 @@ begin
           updateMySql.ParamByName('LeftLIMIT').Value := selectFirebird.FieldByName('LeftLIMIT').Value;
           updateMySql.ParamByName('RIGHTLIMIT').Value := selectFirebird.FieldByName('RIGHTLIMIT').Value;
           updateMySql.ParamByName('Retail').Value := selectFirebird.FieldByName('Retail').Value;
+          updateMySql.Execute;
+          selectFirebird.Next;
+        end;
+      end
+    finally
+      selectFirebird.Close;
+    end;
+
+    //Производим перемещение полученых документов
+    updateMySql.SQL.Text := 'delete from analitf.receiveddocs';
+    updateMySql.Execute;
+    selectFirebird.SelectSQL.Text := 'SELECT * FROM receiveddocs order by Id';
+    selectFirebird.Open;
+    try
+      if selectFirebird.RecordCount > 0 then begin
+        updateMySql.SQL.Text := 'insert into analitf.receiveddocs (ID, FileName, FILEDATETIME) values (:ID, :FileName, :FILEDATETIME)';
+        while not selectFirebird.Eof do begin
+          updateMySql.ParamByName('Id').Value := selectFirebird.FieldByName('Id').Value;
+          updateMySql.ParamByName('FileName').Value := selectFirebird.FieldByName('FileName').Value;
+          updateMySql.ParamByName('FILEDATETIME').Value := selectFirebird.FieldByName('FILEDATETIME').Value;
           updateMySql.Execute;
           selectFirebird.Next;
         end;
@@ -3954,6 +4075,7 @@ begin
         'SYNONYMNAME = :SYNONYMNAME,' +
         'SYNONYMFIRM = :SYNONYMFIRM,' +
         'PRICE = :PRICE,' +
+        'RealPRICE = :RealPRICE,' +
         'AWAIT = :AWAIT,' +
         'JUNK = :JUNK,' +
         'ORDERCOUNT = :ORDERCOUNT,' +
@@ -4004,6 +4126,7 @@ begin
           else begin
             updateMySql.ParamByName('PRICE').Value := selectFirebird.FieldByName('SENDPRICE').Value;
           end;
+          updateMySql.ParamByName('RealPRICE').Value := updateMySql.ParamByName('PRICE').Value;
           updateMySql.Execute;
           selectFirebird.Next;
         end;
@@ -4112,7 +4235,7 @@ begin
 
       UpdateParamsSQL := 'update analitf.params set ' + UpdateParamsSQL + ' where id = 0';
       updateMySql.SQL.Text := UpdateParamsSQL;
-
+      
 {$ifdef DEBUG}
       AProc.LogCriticalError('Получившийся update для params: ' + UpdateParamsSQL);
 {$endif}
@@ -4140,7 +4263,9 @@ begin
     end;
 
 
-    updateMySql.SQL.Text := 'update analitf.params set ProviderMDBVersion = 51 where Id = 0';
+    updateMySql.SQL.Text :=
+      'update analitf.params set ProviderMDBVersion = ' + IntToStr(CURRENT_DB_VERSION)
+      + ' where Id = 0';
     updateMySql.Execute;
 
   finally
@@ -4563,7 +4688,7 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
-    if AnsiCompareText(calchash, '94CE262A03522B1F0294FF0320FF56FD') <> 0 then
+    if AnsiCompareText(calchash, 'F6A55DB819AAB3EC9DA1C0C6666456B6') <> 0 then
       raise Exception.Create('Не возможно загрузить библиотеку libmysqld.dll.');
   except
     on E : Exception do begin
@@ -4575,6 +4700,240 @@ begin
   end;
 end;
 {$endif}
+
+function TDM.NeedUpdate800xToMySql: Boolean;
+var
+  buildNumber : Word;
+begin
+  if FindCmdLineSwitch('i') and
+    FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
+  then
+  begin
+    buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+    Result := (buildNumber >= 829) and (buildNumber <= 837);
+  end
+  else
+    Result := False;
+end;
+
+function TDM.NeedUpdateFireBirdToMySql: Boolean;
+var
+  buildNumber : Word;
+begin
+  if FileExists(ExePath + DatabaseName) and FindCmdLineSwitch('i') and
+    FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
+  then
+  begin
+    buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+    Result := (buildNumber >= 705) and (buildNumber <= 716);
+  end
+  else
+    Result := False;
+end;
+
+procedure TDM.PrepareUpdate800xToMySql;
+begin
+  try
+    if DirectoryExists(ExePath + SDirDataPrev) then
+      MoveDirectories(ExePath + SDirDataPrev, ExePath + SBackDir + '\' + SDirDataPrev);
+    if DirectoryExists(ExePath + SDirData) then begin
+      CopyDirectories(ExePath + SDirData, ExePath + SBackDir + '\' + SDirData);
+      MoveDirectories(ExePath + SDirData, ExePath + SDirData + 'Old');
+    end;
+  except
+    on E : Exception do begin
+      LogCriticalError('Ошибка при удалении устаревших директорий при обновлении 800-x версий: ' + E.Message);
+      LogExitError(
+        'Не возможно удалить устаревшие директории.'#13#10
+        + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+        Integer(ecDeleteOldMysqlFolder));
+    end
+  end;
+end;
+
+procedure TDM.Update800xToMySql(dbCon: TCustomMyConnection;
+  DBDirectoryName: String; OldDBVersion: Integer;
+  AOnUpdateDBFileData: TOnUpdateDBFileData);
+var
+  oldMySqlDB : TMyEmbConnection;
+  PathToBackup,
+  MySqlPathToBackup : String;
+begin
+  PathToBackup := ExePath + SDirTableBackup + '\';
+  MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
+  
+  if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+    LogCriticalError(Format('MySql Clients Count при обновлении с 800-х: %d',
+      [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+  MyAPIEmbedded.FreeMySQLLib;
+  TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := False;
+  MyCall.SwithTypesToOld;
+
+  try
+
+    oldMySqlDB := TMyEmbConnection.Create(nil);
+    try
+      oldMySqlDB.Params.Clear();
+      oldMySqlDB.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
+      oldMySqlDB.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + 'Old\');
+      oldMySqlDB.Params.Add('--character_set_server=cp1251');
+      oldMySqlDB.Params.Add('--skip-innodb');
+      oldMySqlDB.Params.Add('--tmp_table_size=33554432');
+      oldMySqlDB.Params.Add('--max_heap_table_size=33554432');
+
+      try
+        oldMySqlDB.Open;
+      except
+        on OpenException : Exception do begin
+          AProc.LogCriticalError('Ошибка при открытии старой базы данных : ' + OpenException.Message);
+          raise Exception.Create('Не получилось открыть старую базу данных');
+        end;
+      end;
+
+      try
+        try
+          ExportFrom800xToFiles(oldMySqlDB, PathToBackup, MySqlPathToBackup);
+        except
+          on UpdateException : Exception do begin
+            AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
+            raise Exception.Create(
+              'При перемещении данных из старой базы в новою возникла ошибка.' +
+              #13#10 +
+              'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+          end;
+        end;
+      finally
+        oldMySqlDB.Close;
+      end;
+    finally
+      oldMySqlDB.Free;
+    end;
+
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      LogCriticalError(Format('MySql Clients Count при обновлении с 800-х: %d',
+        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
+    MyCall.SwithTypesToNew;
+
+    dbCon.Open;
+    try
+
+      try
+        Import800xFilesToMySql(dbCon, PathToBackup, MySqlPathToBackup);
+        FProcess800xUpdate := True;
+      except
+        on UpdateException : Exception do begin
+          AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
+          raise Exception.Create(
+            'При перемещении данных из старой базы в новою возникла ошибка.' +
+            #13#10 +
+            'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+        end;
+      end;
+    finally
+      dbCon.Close;
+    end;
+
+    if DirectoryExists(ExePath + SDirData + 'Old') then
+      try
+        DeleteDirectory(ExePath + SDirData + 'Old');
+      except
+        on E : Exception do
+          AProc.LogCriticalError('Ошибка при удалении старой (800-х) базы данных : ' + E.Message);
+      end;
+  finally
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      LogCriticalError(Format('MySql Clients Count при обновлении с 800-х (обратно): %d',
+        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
+    MyCall.SwithTypesToNew;
+  end;
+end;
+
+procedure TDM.ExportFrom800xToFiles(
+  oldMySqlDB: TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
+var
+  selectMySql : TMyQuery;
+  I : Integer;
+  exportTable : TDatabaseTable;
+begin
+  selectMySql := TMyQuery.Create(nil);
+  try
+    selectMySql.Connection := oldMySqlDB;
+
+    for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+      if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
+         and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
+               in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN])
+      then begin
+        exportTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
+        if FileExists(PathToBackup + exportTable.Name + '.txt') then
+          OSDeleteFile(PathToBackup + exportTable.Name + '.txt');
+        selectMySql.SQL.Text :=
+          Format(
+          'select * from analitf.%s INTO OUTFILE ''%s'';',
+          [exportTable.Name,
+           MySqlPathToBackup + exportTable.Name + '.txt']);
+        selectMySql.Execute;
+      end;
+  finally
+    selectMySql.Free();
+  end;
+end;
+
+procedure TDM.Import800xFilesToMySql(dbCon : TCustomMyConnection;
+  PathToBackup, MySqlPathToBackup : String);
+var
+  selectMySql : TMyQuery;
+  I : Integer;
+  importTable : TDatabaseTable;
+begin
+  selectMySql := TMyQuery.Create(nil);
+  try
+    selectMySql.Connection := dbCon;
+
+    for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+      if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
+         and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
+               in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN])
+      then begin
+        importTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
+        if not FileExists(PathToBackup + importTable.Name + '.txt') then
+          raise Exception.CreateFmt(
+            'Не существует файл для загрузки таблицы: %s',
+            [importTable.Name]);
+        selectMySql.SQL.Text :=
+          Format('delete from analitf.%s;', [importTable.Name]);
+        selectMySql.Execute;
+        selectMySql.SQL.Text :=
+          Format(
+          'LOAD DATA INFILE ''%s'' into table analitf.%s;',
+          [MySqlPathToBackup + importTable.Name + '.txt',
+           importTable.Name]);
+        selectMySql.Execute;
+
+        OSDeleteFile(PathToBackup + importTable.Name + '.txt', False);
+      end;
+
+    selectMySql.SQL.Text :=
+      'update analitf.orderslist set RealPrice = Price;';
+    selectMySql.Execute;
+
+    selectMySql.SQL.Text :=
+      'update analitf.params set ' +
+        'ProviderMDBVersion = ' + IntToStr(CURRENT_DB_VERSION) + ', ' +
+        'ConfirmSendingOrders = 0, ' +
+        'UseCorrectOrders = 0 ' +
+        ' where Id = 0';
+    selectMySql.Execute;
+  finally
+    selectMySql.Free;
+  end;
+end;
 
 initialization
   AddTerminateProc(CloseDB);

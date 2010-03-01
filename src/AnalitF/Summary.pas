@@ -142,6 +142,12 @@ type
     adsSummarySendResult: TSmallintField;
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
+    adsSummaryMnnId: TLargeintField;
+    adsSummaryMnn: TStringField;
+    btnGotoMNN: TButton;
+    adsSummaryDescriptionId: TLargeintField;
+    adsSummaryCatalogVitallyImportant: TBooleanField;
+    adsSummaryCatalogMandatoryList: TBooleanField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -188,7 +194,7 @@ procedure ShowSummary;
 implementation
 
 uses DModule, Main, AProc, Constant, NamesForms, Fr_Class,
-      PostSomeOrdersController;
+      PostSomeOrdersController, U_framePosition;
 
 var
   LastDateFrom,
@@ -217,7 +223,10 @@ begin
   fOrderCost := adsSummaryORDERCOST;
   fSumOrder := adsSummarySumOrder;
   fMinOrderCount := adsSummaryMINORDERCOUNT;
+  gotoMNNButton := btnGotoMNN;
   inherited;
+  PrepareColumnsInOrderGrid(dbgSummarySend);
+  TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'Mnn', ShowDescriptionAction);
   if not FUseCorrectOrders then begin
     cbNeedCorrect.Checked := False;
     cbNeedCorrect.Visible := False;
@@ -366,8 +375,9 @@ end;
 procedure TSummaryForm.adsSummary2AfterPost(DataSet: TDataSet);
 begin
   SetOrderLabel;
-	if adsSummaryORDERCOUNT.AsInteger = 0 then SummaryShow;
-	MainForm.SetOrdersInfo;
+  if adsSummaryORDERCOUNT.AsInteger = 0 then
+    adsSummary.Delete;
+  MainForm.SetOrdersInfo;
 end;
 
 procedure TSummaryForm.Print( APreview: boolean = False);

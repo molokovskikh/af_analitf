@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet, Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
-  MyAccess, Menus;
+  MyAccess, Menus, Buttons, U_framePosition;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -51,6 +51,11 @@ type
     pmNotFoundPositions: TPopupMenu;
     miNotFound: TMenuItem;
     miViewOrdersHistory: TMenuItem;
+    gbFilters: TGroupBox;
+    cbMnnFilter: TComboBox;
+    lUsedFilter: TLabel;
+    sbShowSynonymMNN: TSpeedButton;
+    actShowSynonymMNN: TAction;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -87,6 +92,9 @@ type
     procedure actSearchInBeginExecute(Sender: TObject);
     procedure dbgNamesExit(Sender: TObject);
     procedure miViewOrdersHistoryClick(Sender: TObject);
+    procedure cbMnnFilterSelect(Sender: TObject);
+    procedure sbShowSynonymMNNClick(Sender: TObject);
+    procedure actShowSynonymMNNExecute(Sender: TObject);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -101,7 +109,16 @@ type
     procedure CatalogToCore(MouseClick : Boolean);
     procedure ShowNotFoundPositionsPopup(Grid : TToughDBGrid; MouseClick : Boolean);
   protected
+    InternalMnnId : Int64;
+    InternalFilterMnn : Integer;
+    GotoFromMNNSearch : Boolean;
+    namesFrame : TframePosition;
+    formsFrame : TframePosition;
     procedure DoShow; override;
+    procedure CheckCanFocus;
+    procedure SetUsedFilter;
+    procedure ApplyMNNFilters;
+    procedure DeleteLastMNNFilter;
   public
     procedure ShowForm; override;
     procedure SetCatalog;
@@ -111,9 +128,14 @@ procedure ShowOrderAll;
 
 procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64{; APrevForm : TChildForm = nil});
 
+procedure FlipToMNN(MnnId : Int64);
+
+procedure FlipToMNNFromMNNSearch(MnnId : Int64);
+
 implementation
 
-uses DModule, AProc, Core, Main, Types, AlphaUtils, LU_Tracer, PreviousOrders;
+uses DModule, AProc, Core, Main, Types, AlphaUtils, LU_Tracer, PreviousOrders,
+     MnnSearch;
 
 {$R *.dfm}
 
@@ -127,7 +149,7 @@ type
    public
     f : TNamesFormsForm;
   end;
-  
+
 procedure ShowOrderAll;
 begin
   MainForm.ShowChildForm(TNamesFormsForm);
@@ -170,9 +192,57 @@ begin
 {
     if Assigned(APrevForm) then
       CoreForm.SetPrevForm(APrevForm);
-}      
+}
 		CoreForm.adsCore.Locate( 'CoreId', CoreId, []);
 	end;
+end;
+
+procedure FlipToMNN(MnnId : Int64);
+begin
+  ShowOrderAll;
+
+  with TNamesFormsForm( MainForm.ActiveChild) do
+  begin
+    InternalMnnId := MnnId;
+    sbShowSynonymMNN.Down := True;
+    sbShowSynonymMNN.Caption := 'Убрать синонимы (Esc)';
+    InternalFilterMnn := 0;
+    cbMnnFilter.ItemIndex := 0;
+    if actNewSearch.Checked then
+      SetCatalog
+    else begin
+      SetNamesParams;
+      SetFormsParams;
+    end;
+  end;
+end;
+
+procedure FlipToMNNFromMNNSearch(MnnId : Int64);
+var
+  _CatalogForm : TNamesFormsForm;
+begin
+  _CatalogForm := TNamesFormsForm( FindChildControlByClass(MainForm, TNamesFormsForm) );
+  if not Assigned(_CatalogForm) then
+    _CatalogForm := TNamesFormsForm.Create(Application)
+  else
+    _CatalogForm.ShowForm;
+  with _CatalogForm do
+  begin
+    InternalMnnId := MnnId;
+    sbShowSynonymMNN.Down := True;
+    sbShowSynonymMNN.Caption := 'Убрать синонимы (Esc)';
+    InternalFilterMnn := 0;
+    cbMnnFilter.ItemIndex := 0;
+    if actNewSearch.Checked then begin
+      SetCatalog;
+      dbgCatalog.SetFocus;
+    end
+    else begin
+      SetNamesParams;
+      SetFormsParams;
+      dbgNames.SetFocus;
+    end;
+  end;
 end;
 
 procedure TNamesFormsForm.FormCreate(Sender: TObject);
@@ -180,6 +250,16 @@ var
 	Reg: TRegistry;
 begin
 	inherited;
+
+  InternalMnnId := -1;
+  sbShowSynonymMNN.Down := False;
+  sbShowSynonymMNN.Caption := 'Показать синонимы (Ctrl+N)';
+  InternalFilterMnn := 0;
+
+  TframePosition.AddFrame(Self, pnlTop, dsCatalog, 'FullName', 'Mnn', ShowDescriptionAction);
+  formsFrame := TframePosition.AddFrame(Self, pClient, dsForms, 'FullName', 'Mnn', ShowDescriptionAction);
+  formsFrame.Visible := False;
+  namesFrame := TframePosition.AddFrame(Self, pClient, dsNames, 'FullName', 'Mnn', ShowDescriptionAction);
 
   LastDBGrid := nil;
 
@@ -225,7 +305,9 @@ begin
   SetGrids;
 
   dbgNames.PopupMenu := nil;
+  dbgNames.Options := dbgNames.Options - [dgColumnResize];
   dbgForms.PopupMenu := nil;
+  dbgForms.Options := dbgForms.Options - [dgColumnResize];
   dbgCatalog.PopupMenu := nil;
 
 	ShowForm;
@@ -266,6 +348,9 @@ end;
 
 //устанавливает параметры показа наименований
 procedure TNamesFormsForm.SetNamesParams;
+var
+  FilterSQL,
+  InternalFilterMnnSQL : String;
 begin
   Screen.Cursor:=crHourglass;
   try
@@ -273,38 +358,110 @@ begin
     if adsNames.Active then
       adsNames.Close;
 
+    FilterSQL := '';
+    if InternalMnnId > 0 then
+      FilterSQL := ' (Mnn.Id = ' + IntToStr(InternalMnnId) + ') ';
+
+    if (InternalFilterMnn > 0) then begin
+      if (InternalFilterMnn = 1) then
+        InternalFilterMnnSQL := ' (CATALOGS.VitallyImportant = 1) '
+      else
+        InternalFilterMnnSQL := ' (CATALOGS.MandatoryList = 1) ';
+      if Length(FilterSQL) > 0 then
+        FilterSQL := FilterSQL + ' and ' + InternalFilterMnnSQL
+      else
+        FilterSQL := InternalFilterMnnSQL;
+    end;
+
     if actShowAll.Checked then begin
-      adsNames.SQL.Text := '' +
-      'SELECT ' +
-      '  cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) as CoreExists ' +
-      'FROM CATALOGS cat ' +
-      'group by cat.ShortCode, cat.Name ' +
-      'ORDER BY cat.Name;';
+      adsNames.SQL.Text := ''
+      +'SELECT '
+      +'  CATALOGS.ShortCode AS AShortCode, '
+      +'  CATALOGS.FullCode, '
+      +'  CATALOGS.Name, '
+      +'  CATALOGS.Name as FullName, '
+      +'  CATALOGS.DescriptionId, '
+      +'  sum(catalogs.VitallyImportant) as CatalogVitallyImportant, '
+      +'  sum(catalogs.MandatoryList) as CatalogMandatoryList, '
+      +'  sum(CATALOGS.CoreExists) as CoreExists, '
+      +'  Mnn.Id as MnnId, '
+      +'  Mnn.Mnn '
+      +'FROM CATALOGS '
+      +'  left join Mnn on mnn.Id = CATALOGS.MnnId ';
+
+      if Length(FilterSQL) > 0 then
+        adsNames.SQL.Text := adsNames.SQL.Text+ ' where ' + FilterSQL;
+
+      adsNames.SQL.Text := adsNames.SQL.Text
+      +'group by CATALOGS.ShortCode, CATALOGS.Name '
+      +'ORDER BY CATALOGS.Name;';
+
       adsForms.SQL.Text := '' +
-      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists ' +
-      'FROM CATALOGS ' +
-      'WHERE CATALOGS.ShortCode = :ashortcode ' +
-      'order by CATALOGS.Form;';
+      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists, '
+      +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
+      +'  CATALOGS.DescriptionId, '
+      +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
+      +'  catalogs.MandatoryList as CatalogMandatoryList, '
+      +'  Mnn.Id as MnnId, '
+      +'  Mnn.Mnn '
+      +' FROM CATALOGS '
+      +'  left join Mnn on mnn.Id = Catalogs.MnnId '
+      +' WHERE CATALOGS.ShortCode = :ashortcode ';
+
+      if Length(FilterSQL) > 0 then
+        adsForms.SQL.Text := adsForms.SQL.Text+ ' and ' + FilterSQL;
+
+      adsForms.SQL.Text := adsForms.SQL.Text
+      + 'order by CATALOGS.Form;';
     end
     else begin
-      adsNames.SQL.Text := '' +
-      'SELECT ' +
-      '  cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) as CoreExists ' +
-      'FROM CATALOGS cat ' +
-      'where ' +
-        ' CoreExists = 1 ' +
-      'group by cat.ShortCode, cat.Name ' +
-      'ORDER BY cat.Name;';
+      adsNames.SQL.Text := ''
+      +'SELECT '
+      +'  CATALOGS.ShortCode AS AShortCode, '
+      +'  CATALOGS.FullCode, '
+      +'  CATALOGS.Name, '
+      +'  CATALOGS.Name as FullName, '
+      +'  CATALOGS.DescriptionId, '
+      +'  sum(catalogs.VitallyImportant) as CatalogVitallyImportant, '
+      +'  sum(catalogs.MandatoryList) as CatalogMandatoryList, '
+      +'  sum(CATALOGS.CoreExists) as CoreExists, '
+      +'  Mnn.Id as MnnId, '
+      +'  Mnn.Mnn '
+      +'FROM CATALOGS '
+      +'  left join Mnn on mnn.Id = CATALOGS.MnnId '
+      +'where '
+      +'   (CATALOGS.CoreExists = 1) ';
+
+      if Length(FilterSQL) > 0 then
+        adsNames.SQL.Text := adsNames.SQL.Text+ ' and ' + FilterSQL;
+
+      adsNames.SQL.Text := adsNames.SQL.Text
+      +'group by CATALOGS.ShortCode, CATALOGS.Name '
+      +'ORDER BY CATALOGS.Name;';
+
       adsForms.SQL.Text := '' +
-      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists ' +
-      'FROM CATALOGS ' +
-      'WHERE CATALOGS.ShortCode = :ashortcode ' +
-      'and catalogs.coreexists = 1 ' +
-      'order by CATALOGS.Form;';
+      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists, '
+      +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
+      +'  CATALOGS.DescriptionId, '
+      +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
+      +'  catalogs.MandatoryList as CatalogMandatoryList, '
+      +'  Mnn.Id as MnnId, '
+      +'  Mnn.Mnn '
+      +' FROM CATALOGS '
+      +'  left join Mnn on mnn.Id = Catalogs.MnnId '
+      +' WHERE CATALOGS.ShortCode = :ashortcode ' +
+      'and catalogs.coreexists = 1 ';
+
+      if Length(FilterSQL) > 0 then
+        adsForms.SQL.Text := adsForms.SQL.Text+ ' and ' + FilterSQL;
+
+      adsForms.SQL.Text := adsForms.SQL.Text
+      + 'order by CATALOGS.Form;';
     end;
 
     adsNames.Open;
     adsForms.Open;
+    SetUsedFilter;
   finally
     Screen.Cursor := crDefault;
   end;
@@ -322,6 +479,18 @@ begin
 	inherited;
 	if Key = VK_RETURN then
     NamesToCore(False);
+  if (Key = VK_ESCAPE) and ((InternalMnnId > 0) or (InternalFilterMnn > 0)) then
+  begin
+    DeleteLastMNNFilter;
+    Exit;
+  end
+  else
+    if (Key = VK_ESCAPE) and Assigned(Self.PrevForm) and (Self.PrevForm is TMnnSearchForm) then
+    begin
+      tmrSearch.Enabled := False;
+      Self.PrevForm.ShowForm;
+      MainForm.AddFormToFree(Self);
+    end;
 end;
 
 procedure TNamesFormsForm.dbgNamesDblClick(Sender: TObject);
@@ -340,6 +509,8 @@ procedure TNamesFormsForm.dbgNamesEnter(Sender: TObject);
 begin
 	dbgNames.Color := clWindow;
 	dbgForms.Color := clBtnFace;
+  namesFrame.Visible := True;
+  formsFrame.Visible := False;
 end;
 
 procedure TNamesFormsForm.dbgFormsEnter(Sender: TObject);
@@ -347,6 +518,8 @@ begin
 	dbgNames.Color := clBtnFace;
 	dbgForms.Color := clWindow;
 	dbgForms.Options := dbgForms.Options + [dgAlwaysShowSelection]; 
+  formsFrame.Visible := True;
+  namesFrame.Visible := False;
 end;
 
 procedure TNamesFormsForm.dbgFormsExit(Sender: TObject);
@@ -373,7 +546,7 @@ begin
 	inherited;
   if Key = VK_RETURN then
     FormsToCore(False);
-	if ( Key = VK_ESCAPE) or ( Key = VK_SPACE) then dbgNames.SetFocus;
+	if ( Key = VK_ESCAPE){ or ( Key = VK_SPACE)} then dbgNames.SetFocus;
 end;
 
 procedure TNamesFormsForm.adsForms2AfterScroll(DataSet: TDataSet);
@@ -398,11 +571,7 @@ var
   ShortCode, FullCode : Variant;
   NamesIsFocus : Boolean;
 begin
-  if actNewSearch.Checked then begin
-  	if not dbgCatalog.CanFocus then exit;
-  end
-  else
-  	if not dbgNames.CanFocus then exit;
+  CheckCanFocus;
 
 	actShowAll.Checked := not actShowAll.Checked;
 
@@ -440,7 +609,11 @@ begin
 end;
 
 procedure TNamesFormsForm.SetCatalog;
+var
+  FilterSQL,
+  InternalFilterMnnSQL : String;
 begin
+  FilterSQL := '';
   actSearchInBegin.Checked := SearchInBegin;
   if SearchInBegin then
     dbgCatalog.SearchField := 'Name'
@@ -453,11 +626,44 @@ begin
     Screen.Cursor:=crHourglass;
     try
       if Active then Close;
-      SQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS FROM CATALOGS';
+      SQL.Text := ''
+      +'SELECT '
+      +'  CATALOGS.ShortCode, '
+      +'  CATALOGS.Name, '
+      +'  CATALOGS.fullcode, '
+      +'  CATALOGS.form, '
+      +'  CATALOGS.COREEXISTS, '
+      +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
+      +'  CATALOGS.DescriptionId, '
+      +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
+      +'  catalogs.MandatoryList as CatalogMandatoryList, '
+      +'  Mnn.Id as MnnId, '
+      +'  Mnn.Mnn '
+      +'FROM '
+      +'  CATALOGS '
+      +'  left join Mnn on mnn.Id = Catalogs.MnnId ';
       if not actShowAll.Checked then
-        SQL.Text := SQL.Text + ' where CATALOGS.COREEXISTS = 1';
+        FilterSQL := ' (CATALOGS.COREEXISTS = 1) ';
+      if InternalMnnId > 0 then
+        if Length(FilterSQL) > 0 then
+          FilterSQL := FilterSQL + ' and (Mnn.Id = ' + IntToStr(InternalMnnId) + ') '
+        else
+          FilterSQL := ' (Mnn.Id = ' + IntToStr(InternalMnnId) + ') ';
+      if (InternalFilterMnn > 0) then begin
+        if (InternalFilterMnn = 1) then
+          InternalFilterMnnSQL := ' (Catalogs.VitallyImportant = 1) '
+        else
+          InternalFilterMnnSQL := '(Catalogs.MandatoryList = 1) ';
+        if Length(FilterSQL) > 0 then
+          FilterSQL := FilterSQL + ' and ' + InternalFilterMnnSQL
+        else
+          FilterSQL := InternalFilterMnnSQL;
+      end;
+      if Length(FilterSQL) > 0 then
+        SQL.Text := SQL.Text + ' where ' + FilterSQL;
       SQL.Text := SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
       Open;
+      SetUsedFilter;
     finally
       Screen.Cursor := crDefault;
     end;
@@ -508,13 +714,37 @@ begin
     InternalSearchText := LeftStr(eSearch.Text, 50);
     eSearch.Text := '';
     adsCatalog.Close;
-    adsCatalog.SQL.Text := 'SELECT CATALOGS.ShortCode, CATALOGS.Name, CATALOGS.fullcode, CATALOGS.form, CATALOGS.COREEXISTS ' +
-      'FROM CATALOGS where ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
+    adsCatalog.SQL.Text := ''
+      +'SELECT '
+      +'  CATALOGS.ShortCode, '
+      +'  CATALOGS.Name, '
+      +'  CATALOGS.fullcode, '
+      +'  CATALOGS.form, '
+      +'  CATALOGS.COREEXISTS, '
+      +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
+      +'  CATALOGS.DescriptionId, '
+      +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
+      +'  catalogs.MandatoryList as CatalogMandatoryList, '
+      +'  Mnn.Id as MnnId, '
+      +'  Mnn.Mnn '
+      +'FROM '
+      +'  CATALOGS '
+      +'  left join Mnn on mnn.Id = Catalogs.MnnId '
+      +'where '
+      +'  ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
     if not actShowAll.Checked then
-      adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and CATALOGS.COREEXISTS = 1';
+      adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.COREEXISTS = 1) ';
+    if InternalMnnId > 0 then
+      adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (Mnn.Id = ' + IntToStr(InternalMnnId) + ') ';
+    if (InternalFilterMnn > 0) then
+      if (InternalFilterMnn = 1) then
+        adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.VitallyImportant = 1) '
+      else
+        adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.MandatoryList = 1) ';
     adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
     adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
     adsCatalog.Open;
+    SetUsedFilter;
     dbgCatalog.SetFocus;
   end;
 end;
@@ -541,8 +771,24 @@ begin
       CatalogToCore(False);
   end
   else
-    if Key = VK_ESCAPE then
-      SetCatalog;
+    if Key = VK_ESCAPE then begin
+      if ((InternalMnnId > 0) or (InternalFilterMnn > 0)) then
+        DeleteLastMNNFilter
+      else
+        if (Length(InternalSearchText) > 0) or (Length(eSearch.Text) > 0) then
+          SetCatalog
+        else
+          if Assigned(Self.PrevForm) and (Self.PrevForm is TMnnSearchForm) then begin
+            tmrSearch.Enabled := False;
+            Self.PrevForm.ShowForm;
+          end;
+    end
+    else
+      if Key = VK_BACK then begin
+        tmrSearch.Enabled := False;
+        eSearch.Text := Copy(eSearch.Text, 1, Length(eSearch.Text)-1);
+        tmrSearch.Enabled := True;
+      end;
 end;
 
 procedure TNamesFormsForm.dbgCatalogDblClick(Sender: TObject);
@@ -718,6 +964,131 @@ begin
   end
   else
     pmNotFoundPositions.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
+end;
+
+procedure TNamesFormsForm.CheckCanFocus;
+begin
+  if actNewSearch.Checked then begin
+    if not dbgCatalog.CanFocus then Abort;
+  end
+  else
+    if not dbgNames.CanFocus then Abort;
+end;
+
+procedure TNamesFormsForm.SetUsedFilter;
+var
+  mnnName : String;
+  filterText : String;
+begin
+  filterText := '';
+  if (InternalMnnId > 0) or (InternalFilterMnn > 0) then begin
+    if actNewSearch.Checked then
+      mnnName := adsCatalog.FieldByName('Mnn').AsString
+    else
+      mnnName := adsNames.FieldByName('Mnn').AsString;
+    if (InternalMnnId > 0) then begin
+      filterText := 'Фильтр по  "' + mnnName +'"';
+      if (InternalFilterMnn = 1) then
+        filterText := filterText + '  только жизненно важные'
+      else
+        if (InternalFilterMnn = 2) then
+          filterText := filterText + '  только обязательный ассортимент';
+
+    end
+    else
+      if (InternalFilterMnn = 1) then
+        filterText := 'Фильтр по жизненно важным'
+      else
+        if (InternalFilterMnn = 2) then
+          filterText := 'Фильтр по обязательному ассортименту';
+  end;
+  lUsedFilter.Caption := filterText;
+end;
+
+procedure TNamesFormsForm.cbMnnFilterSelect(Sender: TObject);
+begin
+  CheckCanFocus;
+  InternalMnnId := -1;
+  sbShowSynonymMNN.Down := False;
+  sbShowSynonymMNN.Caption := 'Показать синонимы (Ctrl+N)';
+  InternalFilterMnn := TComboBox(Sender).ItemIndex;
+  ApplyMNNFilters;
+end;
+
+procedure TNamesFormsForm.ApplyMNNFilters;
+var
+  ShortCode, FullCode : Variant;
+begin
+  if actNewSearch.Checked then begin
+    FullCode := adsCatalog.FieldByName('FullCode').Value;
+    SetCatalog;
+    if not adsCatalog.Locate('FullCode', FullCode, []) then
+      adsCatalog.First;
+    dbgCatalog.SetFocus();
+  end
+  else begin
+    ShortCode := adsNames.FieldByName('AShortCode').Value;
+    SetNamesParams;
+    if not adsNames.Locate('AShortCode', ShortCode, []) then
+      adsNames.First;
+    dbgNames.SetFocus();
+  end;
+end;
+
+procedure TNamesFormsForm.DeleteLastMNNFilter;
+begin
+  if (InternalMnnId > 0) then begin
+    InternalMnnId := -1;
+    sbShowSynonymMNN.Down := False;
+    sbShowSynonymMNN.Caption := 'Показать синонимы (Ctrl+N)';
+  end
+  else
+    if (InternalFilterMnn > 0) then begin
+      cbMnnFilter.ItemIndex := 0;
+      InternalFilterMnn := 0;
+    end;
+  ApplyMNNFilters;
+end;
+
+procedure TNamesFormsForm.sbShowSynonymMNNClick(Sender: TObject);
+var
+  MnnField : TField;
+begin
+  try
+  CheckCanFocus;
+  if sbShowSynonymMNN.Down then begin
+    if actNewSearch.Checked then
+      MnnField := adsCatalog.FindField('MnnId')
+    else
+      MnnField := adsNames.FindField('MnnId');
+    if Assigned(MnnField) and (MnnField is TLargeintField)
+      and not TLargeintField(MnnField).IsNull
+      and (TLargeintField(MnnField).Value <> InternalMnnId)
+    then begin
+      InternalMnnId := TLargeintField(MnnField).Value;
+      ApplyMNNFilters;
+    end
+    else
+      Abort;
+    sbShowSynonymMNN.Caption := 'Убрать синонимы (Esc)';
+  end
+  else begin
+    InternalMnnId := -1;
+    ApplyMNNFilters;
+    sbShowSynonymMNN.Caption := 'Показать синонимы (Ctrl+N)';
+  end;
+  except
+    on E : EAbort do
+      sbShowSynonymMNN.Down := not sbShowSynonymMNN.Down;
+  end;
+end;
+
+procedure TNamesFormsForm.actShowSynonymMNNExecute(Sender: TObject);
+begin
+  if not sbShowSynonymMNN.Down then begin
+    sbShowSynonymMNN.Down := True;
+    sbShowSynonymMNN.Click;
+  end;
 end;
 
 initialization

@@ -7,7 +7,7 @@ uses
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
   pFIBDataSet, DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
-  MyAccess;
+  MyAccess, ActnList;
 
 type
   TOrdersForm = class(TChildForm)
@@ -96,6 +96,14 @@ type
     cbNeedCorrect: TCheckBox;
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
+    adsOrdersMnnId: TLargeintField;
+    adsOrdersMnn: TStringField;
+    ActionList: TActionList;
+    pButtons: TPanel;
+    btnGotoMNN: TButton;
+    adsOrdersDescriptionId: TLargeintField;
+    adsOrdersCatalogVitallyImportant: TBooleanField;
+    adsOrdersCatalogMandatoryList: TBooleanField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -140,7 +148,7 @@ var
 implementation
 
 uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
-     PostSomeOrdersController;
+     PostSomeOrdersController, U_framePosition;
 
 {$R *.dfm}
 
@@ -295,7 +303,9 @@ begin
   fOrderCost := adsOrdersORDERCOST;
   fSumOrder := adsOrdersSUMORDER;
   fMinOrderCount := adsOrdersMINORDERCOUNT;
+  gotoMNNButton := btnGotoMNN;
   inherited;
+  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'Mnn', ShowDescriptionAction);
 end;
 
 procedure TOrdersForm.dbgOrdersKeyPress(Sender: TObject; var Key: Char);

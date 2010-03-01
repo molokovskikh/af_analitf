@@ -168,6 +168,12 @@ type
     btnGotoCore: TButton;
     adsCoreWithLike: TMyQuery;
     adsCoreRealCost: TFloatField;
+    adsCoreMnnId: TLargeintField;
+    adsCoreMnn: TStringField;
+    btnGotoMNN: TButton;
+    adsCoreDescriptionId: TLargeintField;
+    adsCoreCatalogVitallyImportant: TBooleanField;
+    adsCoreCatalogMandatoryList: TBooleanField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -236,7 +242,7 @@ var
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, AlphaUtils, Orders, DASQLMonitor, FR_Class;
+  NamesForms, AlphaUtils, Orders, DASQLMonitor, FR_Class, U_framePosition;
 
 {$R *.DFM}
 
@@ -251,8 +257,11 @@ begin
   fOrderCost := adsCoreORDERCOST;
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
+  gotoMNNButton := btnGotoMNN;
 
   inherited;
+
+  TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
 
   BM := TBitmap.Create;
   

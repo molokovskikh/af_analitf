@@ -80,7 +80,7 @@ type
     lRazInfo: TLabel;
     eHTTPPass: TEdit;
     gbDeleteHistory: TGroupBox;
-    Label11: TLabel;
+    lHistoryDayCount: TLabel;
     dbeHistoryDayCount: TDBEdit;
     udHistoryDayCount: TUpDown;
     Label16: TLabel;
@@ -483,6 +483,21 @@ begin
         end;
       end;
     end;
+    if CanClose
+      and ((dbeHistoryDayCount.Field.AsInteger < udHistoryDayCount.Min)
+          or (dbeHistoryDayCount.Field.AsInteger > udHistoryDayCount.Max))
+    then begin
+      CanClose := False;
+      AProc.MessageBox(
+        Format('Пожалуйста, скорректируйте значение в поле "%s".'#13#10
+          + 'Оно должно быть в диапазоне [%d, %d].',
+          [lHistoryDayCount.Caption,
+           udHistoryDayCount.Min,
+           udHistoryDayCount.Max]),
+        MB_ICONWARNING);
+      PageControl.ActivePage := tshOther;
+      dbeHistoryDayCount.SetFocus;
+    end;
   end;
 end;
 
@@ -572,10 +587,12 @@ end;
 
 procedure TConfigForm.dbeHistoryDayCountChange(Sender: TObject);
 var
-  V, E: Integer;
+  currentValue : Integer;
 begin
-  Val(dbeHistoryDayCount.Text,V,E);
-  udHistoryDayCount.Position:=V;
+  currentValue := StrToIntDef(dbeHistoryDayCount.Text, udHistoryDayCount.Min);
+  if (currentValue >= udHistoryDayCount.Min) and (currentValue <= udHistoryDayCount.Max)
+  then
+    udHistoryDayCount.Position := currentValue;
 end;
 
 procedure TConfigForm.udHistoryDayCountClick(Sender: TObject;

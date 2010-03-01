@@ -116,6 +116,8 @@ type
     gbCorrectMessage: TGroupBox;
     dbmCorrectMessage: TDBMemo;
     mtLogNodeType: TIntegerField;
+    adsCoreMnnId: TLargeintField;
+    adsCoreMnn: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -174,6 +176,7 @@ type
     procedure PrepareData;
     function GetReportOrdersLogSql : String;
     procedure SetGridParams(Grid : TToughDBGrid);
+    procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
   public
     { Public declarations }
     Report : TStrings;
@@ -196,7 +199,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DModule, AProc, DBProc, PostSomeOrdersController, NotFound;
+  DModule, AProc, DBProc, PostSomeOrdersController, NotFound, U_framePosition;
 
 function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean) : TCorrectResult;
 var
@@ -206,7 +209,7 @@ begin
   try
     CorrectOrdersForm.ProcessSendOrdersResponse := ProcessSendOrdersResponse;
     CorrectOrdersForm.Prepare;
-    if not DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean then begin
+    if not False then begin
       if ProcessSendOrdersResponse then
         ShowNotSended(CorrectOrdersForm.Report.Text)
       else
@@ -228,6 +231,9 @@ begin
   Report := TStringList.Create;
   dbgLog.PopupMenu := nil;
 
+  //todo: Здесь засада, т.к. описание не отображается
+  TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'Mnn', nil);
+
   UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
   adsAvgOrders.ParamByName( 'ClientId').Value :=
@@ -248,6 +254,7 @@ begin
   fOrderCost := adsCoreORDERCOST;
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
+  PrepareColumnsInOrderGrid(dbgCore);
 end;
 
 procedure TCorrectOrdersForm.PrepareData;
@@ -833,13 +840,15 @@ begin
     + '  OrdersList.SynonymFirm, '
     + '  OrdersList.DropReason, '
     + '  OrdersList.OrderCount as OldOrderCount, '
-    + '  OrdersList.ServerQuantity as NewOrderCount, '
+    + '  if(OrdersList.ServerQuantity is null, OrdersList.OrderCount, if(OrdersList.ServerQuantity > OrdersList.OrderCount, OrdersList.OrderCount, OrdersList.ServerQuantity)) as NewOrderCount, '
     + '  OrdersList.Price as OldPrice, '
-    + '  OrdersList.ServerCost as NewPrice '
+    + '  if(dop.Percent is null, OrdersList.ServerCost, cast(OrdersList.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as NewPrice '
     + 'from '
     + '  OrdersHead '
     + '  inner join clients   on (clients.clientid = OrdersHead.ClientId) '
     + '  left join OrdersList on OrdersList.OrderId = OrdersHead.OrderId and (OrdersList.DropReason is not null)'
+    + '  left JOIN PricesData cpd  ON (cpd.PriceCode = OrdersHead.pricecode)'
+    + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode)'
     + ' '
     + 'where '
     + '    OrdersHead.ClientId = ' + DM.adtClientsCLIENTID.AsString + '  '
@@ -865,13 +874,16 @@ begin
 
     + '  OrdersList.ServerQuantity as OldOrderCount, '
     + '  OrdersList.OrderCount as NewOrderCount, '
-    + '  OrdersList.ServerCost as OldPrice, '
+    + '  if(dop.Percent is null, OrdersList.ServerCost, cast(OrdersList.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as OldPrice, '
     + '  OrdersList.Price as NewPrice '
-    
+
     + 'from '
     + '  OrdersHead '
     + '  inner join clients   on (clients.clientid = OrdersHead.ClientId) '
     + '  inner join OrdersList on OrdersList.OrderId = OrdersHead.OrderId and (OrdersList.DropReason is not null)'
+    + '  left JOIN PricesData cpd  ON (cpd.PriceCode = OrdersHead.pricecode)'
+    + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode)'
+
     + ' '
     + 'where '
     + '  OrdersHead.Closed = 0 '
@@ -932,6 +944,8 @@ end;
 procedure TCorrectOrdersForm.SetGridParams(Grid: TToughDBGrid);
 begin
   Grid.Options := Grid.Options + [dgRowLines];
+  if CheckWin32Version(5, 1) then
+    Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
   Grid.Font.Size := 10;
   Grid.GridLineColors.DarkColor := clBlack;
   Grid.GridLineColors.BrightColor := clDkGray;
@@ -943,6 +957,25 @@ begin
     SetOffers
   else
     adsCore.Close;
+end;
+
+procedure TCorrectOrdersForm.PrepareColumnsInOrderGrid(Grid: TToughDBGrid);
+var
+  realCostColumn : TColumnEh;
+begin
+  realCostColumn := ColumnByNameT(Grid, 'RealCost');
+  if not Assigned(realCostColumn) then
+    realCostColumn := ColumnByNameT(Grid, 'RealPrice');
+
+  if Assigned(realCostColumn) then  begin
+    realCostColumn.Title.Caption := 'Цена поставщика';
+    //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
+    if not DM.adtClientsAllowDelayOfPayment.Value then
+      Grid.Columns.Delete(realCostColumn.Index)
+    else
+      //Если же механизм включен, то колонка должна отображаться по умолчанию
+      realCostColumn.Visible := True;
+  end;
 end;
 
 end.

@@ -523,12 +523,15 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
@@ -613,13 +616,16 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    products'
       
         '    inner join Catalogs on catalogs.fullcode = products.catalogi' +
         'd'
       '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
@@ -859,6 +865,13 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object adsCoreRealCost: TFloatField
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
+    end
+    object adsCoreMnnId: TLargeintField
+      FieldName = 'MnnId'
+    end
+    object adsCoreMnn: TStringField
+      FieldName = 'Mnn'
+      Size = 250
     end
   end
   object mdValues: TRxMemoryData

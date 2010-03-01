@@ -189,6 +189,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'RealCost'
         Footers = <>
         Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+        Title.TitleButton = True
         Visible = False
       end
       item
@@ -408,14 +409,22 @@ object CoreFirmForm: TCoreFirmForm
       end
     end
     object btnGotoCore: TButton
-      Left = 407
+      Left = 223
       Top = 2
       Width = 94
       Height = 25
+      Action = actFlipCore
       Anchors = [akTop, akRight]
-      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
       TabOrder = 2
-      Visible = False
+    end
+    object btnGotoMNN: TButton
+      Left = 328
+      Top = 2
+      Width = 177
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'GotoMNN'
+      TabOrder = 3
     end
   end
   inline frameLegeng: TframeLegeng
@@ -990,6 +999,9 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.RegionCode,'
       '    catalogs.FullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'
@@ -1041,7 +1053,9 @@ object CoreFirmForm: TCoreFirmForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Core CCore'
       
@@ -1053,6 +1067,7 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    left join Mnn             on mnn.Id = Catalogs.MnnId'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1072,8 +1087,11 @@ object CoreFirmForm: TCoreFirmForm
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) '
+        '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
+        'e)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
+        'e) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1089,6 +1107,9 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.RegionCode,'
       '    catalogs.FullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'
@@ -1140,7 +1161,9 @@ object CoreFirmForm: TCoreFirmForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Core CCore'
       
@@ -1152,6 +1175,7 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    left join Mnn             on mnn.Id = Catalogs.MnnId'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1171,8 +1195,11 @@ object CoreFirmForm: TCoreFirmForm
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) '
+        '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
+        'e)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
+        'e) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1444,6 +1471,22 @@ object CoreFirmForm: TCoreFirmForm
       Origin = 'Core.RealCost'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsCoreMnnId: TLargeintField
+      FieldName = 'MnnId'
+    end
+    object adsCoreMnn: TStringField
+      FieldName = 'Mnn'
+      Size = 250
+    end
+    object adsCoreDescriptionId: TLargeintField
+      FieldName = 'DescriptionId'
+    end
+    object adsCoreCatalogVitallyImportant: TBooleanField
+      FieldName = 'CatalogVitallyImportant'
+    end
+    object adsCoreCatalogMandatoryList: TBooleanField
+      FieldName = 'CatalogMandatoryList'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1454,6 +1497,9 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.RegionCode,'
       '    catalogs.FullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'
@@ -1505,7 +1551,9 @@ object CoreFirmForm: TCoreFirmForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       
         '    (select * from synonyms where (synonyms.SynonymName like :Li' +
@@ -1520,6 +1568,7 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    left join Mnn             on mnn.Id = Catalogs.MnnId'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1536,8 +1585,11 @@ object CoreFirmForm: TCoreFirmForm
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) '
+        '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
+        'e)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
+        'e) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'

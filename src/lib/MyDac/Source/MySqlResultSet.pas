@@ -275,22 +275,43 @@ function TMySqlResultSet.Read(var resultBind: TMySqlBinds): bool;
       else
       begin
         resultBind.Binds[i].IsNull := false;
-        case fieldType of
-          FIELD_TYPE_TINY:
-            length := 1;
+        //case fieldType of
+        if fieldType =
+          FIELD_TYPE_TINY
+        then
+            length := 1
+        else
+        if fieldType in
+          [
           FIELD_TYPE_SHORT,
-          FIELD_TYPE_YEAR:
-            length := 2;
+          FIELD_TYPE_YEAR
+          ]
+        then
+            length := 2
+        else
+        if fieldType in
+          [
           FIELD_TYPE_INT24,
-          FIELD_TYPE_LONG:
-            length := 4;
-          FIELD_TYPE_LONGLONG:
-            length := 8;
-          FIELD_TYPE_FLOAT:
-            length := 4;
-          FIELD_TYPE_DOUBLE:
-            length := 8;
-          else
+          FIELD_TYPE_LONG
+        ]
+        then
+            length := 4
+        else
+        if fieldType =
+          FIELD_TYPE_LONGLONG
+        then
+            length := 8
+        else
+        if fieldType =
+          FIELD_TYPE_FLOAT
+        then
+            length := 4
+        else
+        if fieldType =
+          FIELD_TYPE_DOUBLE
+        then
+            length := 8
+        else
           begin
             length := Byte(frowBuffer[offset]);
             Inc(offset);
@@ -315,7 +336,7 @@ function TMySqlResultSet.Read(var resultBind: TMySqlBinds): bool;
                 raise ArgumentException.Create;
             end;
           end;
-        end;
+        //end; //case
         b := resultBind.Binds[i];
         b.Length := length;
         b.Offset := offset;

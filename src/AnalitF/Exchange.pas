@@ -11,6 +11,12 @@ uses
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet, Contnrs,
   IdIOHandlerStack, IdSSL, U_VistaCorrectForm, ExchangeParameters;
 
+{$ifdef USEMEMORYCRYPTDLL}
+  {$ifndef USENEWMYSQLTYPES}
+    {$define USENEWMYSQLTYPES}
+  {$endif}
+{$endif}
+
 type
   TExchangeAction=(
     eaGetPrice,
@@ -114,8 +120,10 @@ type
 
 
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
+{$ifndef USENEWMYSQLTYPES}
 var
 	mr: integer;
+{$endif}
 //	hMenuHandle: HMENU;
 begin
   NeedRetrySendOrder := False;
@@ -263,7 +271,10 @@ begin
 
 	MainForm.UpdateReclame;
 
-{$ifndef USEMEMORYCRYPTDLL}
+{$ifndef USENEWMYSQLTYPES}
+//В специализированной сборке не работает пока сжатие базы данных,
+//незачем его сейчас запускать и при оригинальной сборке
+{
 	if Result and ( eaGetPrice in AExchangeActions) and
 		( DaysBetween( DM.adtParams.FieldByName( 'LastCompact').AsDateTime, Now) >= COMPACT_PERIOD) then
 	begin
@@ -283,7 +294,8 @@ begin
       AProc.MessageBox( 'Сжатие базы данных завершено');
     end;
 	end;
-{$endif}  
+}  
+{$endif}
 
   if Assigned(GlobalExchangeParams) then
     try FreeAndNil(GlobalExchangeParams) except end;
@@ -540,9 +552,11 @@ var
 	procedure SetOrder( Order: integer);
   var
     OldOrderCount : Integer;
+    ServerCost    : Currency;
 	begin
 		DM.adsRepareOrders.Edit;
     OldOrderCount := DM.adsRepareOrdersORDERCOUNT.AsInteger;
+    ServerCost := DM.adsRepareOrdersRealPrice.AsCurrency;
     if not ProcessSendOrdersResponse then
       DM.adsRepareOrdersORDERCOUNT.AsInteger := Order;
 		if Order = 0 then
@@ -555,7 +569,7 @@ var
       DM.adsRepareOrdersRealPrice.Value := DM.adsCoreRepareRealCost.Value;
       DM.adsRepareOrdersCodeFirmCr.Value := DM.adsCoreRepareCodeFirmCr.Value;
     end;
-    DM.adsRepareOrdersServerCost.Value := DM.adsRepareOrdersRealPrice.Value;
+    DM.adsRepareOrdersServerCost.AsCurrency := ServerCost;
     DM.adsRepareOrdersServerQuantity.Value := OldOrderCount;
 		DM.adsRepareOrders.Post;
 	end;

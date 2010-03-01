@@ -1154,17 +1154,26 @@ begin
     dtWideString, dtExtWideString:
       Inc(FetchBlockOffset, sizeof(UInt) + FieldDesc.Length * MaxUTF8CharLen + 3);
     dtMemo, dtWideMemo, dtBlob:
-      case TMySQLFieldDesc(FieldDesc).MySQLType of
-        FIELD_TYPE_TINY_BLOB: // TINYBLOB, TINYTEXT
-          Inc(FetchBlockOffset, $FF + sizeof(UInt));
+      //case TMySQLFieldDesc(FieldDesc).MySQLType of
+      if TMySQLFieldDesc(FieldDesc).MySQLType =
+        FIELD_TYPE_TINY_BLOB // TINYBLOB, TINYTEXT
+      then
+          Inc(FetchBlockOffset, $FF + sizeof(UInt))
+      else
+      if TMySQLFieldDesc(FieldDesc).MySQLType in
+        [
+
+
         FIELD_TYPE_GEOMETRY,
         FIELD_TYPE_MEDIUM_BLOB, // MEDIUMBLOB, MEDIUMTEXT
         FIELD_TYPE_LONG_BLOB, // LONGBLOB, LONGTEXT
         FIELD_TYPE_BLOB, // BLOB, TEXT
         FIELD_TYPE_VAR_STRING,
-        FIELD_TYPE_STRING:
+        FIELD_TYPE_STRING
+        ]
+      then
           Inc(FetchBlockOffset, sizeof(UInt) + DefaultPieceSize);
-      end;
+      //end; case
     dtDate, dtTime, dtDateTime:
       Inc(FetchBlockOffset, sizeof(UInt) + sizeof(MYSQL_TIME));
     dtFloat{corrected, see GetCorrectedDataType}, dtBCD{$IFDEF VER6P}{$IFNDEF FPC}, dtFMTBCD{$ENDIF}{$ENDIF}:
@@ -1368,10 +1377,14 @@ var
 begin
   Fixed := False;
   Result := True;
-
-  case MySQLType of // Must be sync with TCustomMyDataSet.SetNumberRange
+  //case MySQLType of // Must be sync with TCustomMyDataSet.SetNumberRange
+  if MySQLType in
+    [
     // Integer fields
-    FIELD_TYPE_DECIMAL, FIELD_TYPE_NEWDECIMAL: begin // DECIMAL
+    FIELD_TYPE_DECIMAL, FIELD_TYPE_NEWDECIMAL // DECIMAL
+    ]
+  then
+    begin
       if CheckPrecision then begin
         Prec := FieldLengthInBytes - 1;
         if Decimals > 0 then
@@ -1403,8 +1416,12 @@ begin
         else
           InternalType := dtFloat;
       end;
-    end;
-    FIELD_TYPE_TINY: begin// TINYINT
+    end
+  else
+  if MySQLType =
+    FIELD_TYPE_TINY // TINYINT
+  then
+    begin
       if (FieldLengthInBytes = 1) and EnableBoolean then
         InternalType := dtBoolean
       else
@@ -1412,8 +1429,12 @@ begin
           InternalType := dtWord
         else
           InternalType := dtInt8;
-    end;
-    MYSQL_TYPE_BIT:
+    end
+  else
+  if MySQLType =
+    MYSQL_TYPE_BIT
+  then
+    begin
       //MySQL 5.0
       //  BIT(10)     MYSQL_TYPE_BIT      1
       //  BIT(2)      MYSQL_TYPE_BIT      0
@@ -1423,67 +1444,133 @@ begin
         InternalType := dtInt32
       else
         InternalType := dtInt64;
-    FIELD_TYPE_SHORT: // SMALLINT
+    end
+  else
+  if MySQLType =
+    FIELD_TYPE_SHORT // SMALLINT
+  then
+    begin
       if IsUnsigned then
         InternalType := dtUInt16
       else
         InternalType := dtInt16;
-    FIELD_TYPE_LONG: // INT
+    end
+  else
+  if MySQLType =
+    FIELD_TYPE_LONG // INT
+  then
+    begin
       if IsUnsigned then
         InternalType := dtUInt32
       else
         InternalType := dtInt32;
-    FIELD_TYPE_LONGLONG: // BIGINT
+    end
+  else
+  if MySQLType =
+    FIELD_TYPE_LONGLONG // BIGINT
+  then
+    begin
       if (FieldLengthInBytes <= 11) and OptimizedBigInt then
         InternalType := dtInt32
       else
         InternalType := dtInt64; // 'Unsigned' flag is not used. For details see manual.html#Column_types
-    FIELD_TYPE_INT24: // MEDIUMINT
-      InternalType := dtInt32; // 'Unsigned' flag is not used. dtInt32 may contain both signed or unsigned 24-bit values
+    end
+  else
+  if MySQLType =
+    FIELD_TYPE_INT24 // MEDIUMINT
+  then
+      InternalType := dtInt32 // 'Unsigned' flag is not used. dtInt32 may contain both signed or unsigned 24-bit values
 
     // Float fields
-    FIELD_TYPE_FLOAT: // FLOAT
-      InternalType := dtFloat;
-    FIELD_TYPE_DOUBLE: // DOUBLE
-      InternalType := dtFloat;
+  else
+  if MySQLType =
+    FIELD_TYPE_FLOAT // FLOAT
+  then
+      InternalType := dtFloat
+  else
+  if MySQLType =
+    FIELD_TYPE_DOUBLE // DOUBLE
+  then
+      InternalType := dtFloat
 
     // String fields
-    FIELD_TYPE_VAR_STRING, MYSQL_TYPE_VARCHAR: // CHAR(?), VARCHAR
+  else
+  if MySQLType in
+    [
+    FIELD_TYPE_VAR_STRING, MYSQL_TYPE_VARCHAR // CHAR(?), VARCHAR
+    ]
+  then
+    begin
       if IsBinary and (CharsetNr = 63) and not BinaryAsString then
         InternalType := dtVarBytes
       else
         InternalType := dtString;
-    FIELD_TYPE_STRING: // CHAR(?), ENUM, SET
+    end
+  else
+  if MySQLType =
+    FIELD_TYPE_STRING // CHAR(?), ENUM, SET
+  then
     begin
       if IsBinary and (CharsetNr = 63) and not BinaryAsString then
         InternalType := dtBytes
       else
         InternalType := dtString;
       Fixed := True;
-    end;
+    end
 
     // DateTime fields
-    FIELD_TYPE_TIMESTAMP: // TIMESTAMP14, TIMESTAMP12, TIMESTAMP8, TIMESTAMP6
-      InternalType := dtDateTime;
-    FIELD_TYPE_DATE, FIELD_TYPE_NEWDATE: // DATE
-      InternalType := dtDate;
-    FIELD_TYPE_TIME: // TIME
-      InternalType := dtTime;
-    FIELD_TYPE_DATETIME: // DATETIME
-      InternalType := dtDateTime;
-    FIELD_TYPE_YEAR: // YEAR4, YEAR2
-      InternalType := dtWord;
-    FIELD_TYPE_NULL:
-      InternalType := dtString;
-    FIELD_TYPE_ENUM:
-      InternalType := dtString;
-    FIELD_TYPE_SET:
-      InternalType := dtString;
+  else
+  if MySQLType =
+    FIELD_TYPE_TIMESTAMP // TIMESTAMP14, TIMESTAMP12, TIMESTAMP8, TIMESTAMP6
+  then
+      InternalType := dtDateTime
+  else
+  if MySQLType in
+    [
+    FIELD_TYPE_DATE, FIELD_TYPE_NEWDATE // DATE
+    ]
+  then
+      InternalType := dtDate
+  else
+  if MySQLType =
+    FIELD_TYPE_TIME // TIME
+  then
+      InternalType := dtTime
+  else
+  if MySQLType =
+    FIELD_TYPE_DATETIME // DATETIME
+  then
+      InternalType := dtDateTime
+  else
+  if MySQLType =
+    FIELD_TYPE_YEAR // YEAR4, YEAR2
+  then    
+      InternalType := dtWord
+  else
+  if MySQLType =
+    FIELD_TYPE_NULL
+  then
+      InternalType := dtString
+  else
+  if MySQLType =
+    FIELD_TYPE_ENUM
+  then
+      InternalType := dtString
+  else
+  if MySQLType =
+    FIELD_TYPE_SET
+  then
+      InternalType := dtString
+  else
+  if MySQLType in
+    [
     FIELD_TYPE_GEOMETRY,
     FIELD_TYPE_TINY_BLOB, // TINYBLOB, TINYTEXT
     FIELD_TYPE_MEDIUM_BLOB, // MEDIUMBLOB, MEDIUMTEXT
     FIELD_TYPE_LONG_BLOB, // LONGBLOB, LONGTEXT
-    FIELD_TYPE_BLOB: // BLOB, TEXT
+    FIELD_TYPE_BLOB // BLOB, TEXT
+    ]
+  then
       begin
         if IsBinary then
           InternalType := dtBlob
@@ -1497,10 +1584,10 @@ begin
             InternalType := dtVarBytes
           else
             InternalType := dtString;}
-      end;
+      end
     else
       Result := False;
-  end;
+  //end; //case
 
   if Result and Unicode {and not IsBinary }then
     case InternalType of
@@ -5693,8 +5780,11 @@ var
       Len := FValueBuffLen[FieldIdx];
       ValueArr := API._mysql_fetch_value_arr(row, FieldIdx, ValueArrOff, Len);
 
-      case TMySQLFieldDesc(Field).MySQLType of
-        FIELD_TYPE_TIMESTAMP: begin
+      //case TMySQLFieldDesc(Field).MySQLType of
+      if TMySQLFieldDesc(Field).MySQLType =
+        FIELD_TYPE_TIMESTAMP
+      then
+        begin
           case Field.Length of
             19: // YYYY-MM-DD HH:MM:SS
               Result := TryEncodeDateTime(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), IntAt(11, 2), IntAt(14, 2), IntAt(17, 2), 0, Res);
@@ -5717,10 +5807,18 @@ var
           end;
           // For RefreshQuick
           SaveMaxTimestamp(TMySQLFieldDesc(Field), Res);
-        end;
-        FIELD_TYPE_DATE, FIELD_TYPE_NEWDATE: // YYYY-MM-DD
-          Result := TryEncodeDate(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), Res);
-        FIELD_TYPE_TIME: // HH:MM:SS
+        end
+      else
+      if TMySQLFieldDesc(Field).MySQLType in
+        [
+        FIELD_TYPE_DATE, FIELD_TYPE_NEWDATE // YYYY-MM-DD
+        ]
+      then
+          Result := TryEncodeDate(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), Res)
+      else
+      if TMySQLFieldDesc(Field).MySQLType =
+        FIELD_TYPE_TIME // HH:MM:SS
+      then
         begin
           i := 0;
           while Byte(ValueArr[i + ValueArrOff]) <> Byte(':') do begin
@@ -5735,8 +5833,11 @@ var
             Res := - IntAt(1, i - 1) / HoursPerDay - Res
           else
             Res :=   IntAt(0, i)     / HoursPerDay + Res;
-        end;
-        FIELD_TYPE_DATETIME: // YYYY-MM-DD HH:MM:SS
+        end
+      else
+      if TMySQLFieldDesc(Field).MySQLType =
+        FIELD_TYPE_DATETIME // YYYY-MM-DD HH:MM:SS
+      then
         begin
           Result := TryEncodeDate(IntAt(0, 4), IntAt(5, 2), IntAt(8, 2), Res);
           if Result then begin
@@ -5747,7 +5848,7 @@ var
               Res := Res - t;
           end;
         end;
-      end;
+      //end; //case
     end;
 
     function DateTimeFromStrPrep(var Res: TDateTime): boolean;
@@ -5760,8 +5861,11 @@ var
       Len := FValueBuffLen[FieldIdx];
       ValueArr := API._mysql_fetch_value_arr(row, FieldIdx, ValueArrOff, Len);
 
-      case FieldMySQLType of
-        FIELD_TYPE_TIME: begin
+      //case FieldMySQLType of
+      if FieldMySQLType =
+        FIELD_TYPE_TIME
+      then
+        begin
           if Len = 0 then begin /// CR12073
             if FNullForZeroDate then
               Res := Byte(True)// SetNull(i + 1, pRec, True)
@@ -5784,8 +5888,15 @@ var
             if Result then
               Res := Res + ADay;
           end;
-        end;
-        FIELD_TYPE_DATE, FIELD_TYPE_DATETIME, FIELD_TYPE_TIMESTAMP: begin
+        end
+      else
+      if FieldMySQLType in
+        [
+
+        FIELD_TYPE_DATE, FIELD_TYPE_DATETIME, FIELD_TYPE_TIMESTAMP
+        ]
+      then
+        begin
           case Len of
             4: Result := TryEncodeDate(
               Marshal.ReadInt16(ValueArr, ValueArrOff),
@@ -5817,7 +5928,7 @@ var
           // For RefreshQuick
           SaveMaxTimestamp(TMySQLFieldDesc(Field), Res);
         end;
-      end;
+      //end; //case
     end;
 
     procedure ConvertFromBit;

@@ -1064,14 +1064,18 @@ begin
 *)       
 
   if Unicode and (Result.Table <> '') and not res.Session.protocol41 then
-    case Field._type of
-      FIELD_TYPE_VAR_STRING, FIELD_TYPE_STRING, MYSQL_TYPE_VARCHAR, FIELD_TYPE_ENUM, FIELD_TYPE_SET:
+    //case Field._type of
+    if Field._type in
+      [
+      FIELD_TYPE_VAR_STRING, FIELD_TYPE_STRING, MYSQL_TYPE_VARCHAR, FIELD_TYPE_ENUM, FIELD_TYPE_SET
+      ]
+    then
       begin // to prevent F2084 Internal Error: C6662 in BDS 2005
         n := Result.LengthInBytes * MaxUTF8CharLen;
         Result.LengthInBytes := n;
-      end;
+      end
       else;
-    end;
+    //end; //case
 end;
 
 function TMySQLAPIDirect._mysql_stmt_execute(pstmt: PMYSQL_STMT; Params: TParamDescs; const Unicode: boolean): integer;

@@ -68,7 +68,7 @@ begin
 +'    `PRICECODE` bigint(20) not null, ' 
 +'    `REGIONCODE` bigint(20) not null ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TTmpClientsTable }
@@ -95,7 +95,7 @@ begin
 +'    `CALCULATELEADER` tinyint(1) not null      , ' 
 +'    `ONLYLEADERS`     tinyint(1) not null ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TTmpRegionsTable }
@@ -115,7 +115,7 @@ begin
 +'    `REGIONNAME` varchar(25) default null, ' 
 +'    `PRICERET`   varchar(254) default null ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TTmpProvidersTable }
@@ -136,7 +136,7 @@ begin
 +'    `FAX`         varchar(20) default null, '
 +'    `MANAGERMAIL` varchar(255) default null '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TTmpRegionalDataTable }
@@ -159,7 +159,7 @@ begin
 +'    `CONTACTINFO` text                     , ' 
 +'    `OPERATIVEINFO` text ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TTmpPricesDataTable }
@@ -182,7 +182,7 @@ begin
 +'    `DATEPRICE` datetime default null   , ' 
 +'    `FRESH`     tinyint(1) not null ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TTmpPricesRegionalDataTable }
@@ -207,7 +207,7 @@ begin
 +'    `INJOB`         tinyint(1) not null   , ' 
 +'    `CONTROLMINREQ` tinyint(1) not null ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;'
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;'
 end;
 
 initialization

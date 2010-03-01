@@ -80,6 +80,7 @@ type
     adsPricesPositions: TLargeintField;
     adsPricessumbycurrentmonth: TFloatField;
     adsPricesSumOrder: TFloatField;
+    adsPricessumbycurrentweek: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -159,7 +160,7 @@ begin
 
   if IsAlonePrice then begin
     //Если я переделаю ShowChildForm, то этот вызов не нужен
-    MainForm.FreeChildForms;
+    MainForm.AddFormsToFree;
 
     CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
     if CoreFirmForm = nil then

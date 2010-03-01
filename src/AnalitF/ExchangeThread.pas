@@ -11,7 +11,7 @@ uses
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
   U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
-  DatabaseObjects;
+  DatabaseObjects, HFileHelper, NetworkAdapterHelpers;
 
 type
 
@@ -35,7 +35,9 @@ TUpdateTable = (
   utProducts,
   utUser,
   utDelayOfPayments,
-  utClient);
+  utClient,
+  utMNN,
+  utDescriptions);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -70,6 +72,17 @@ private
   //Список дочерних ниток
   ChildThreads : TObjectList;
 
+  hfileHelper : THFileHelper;
+  ChangeHFile : boolean;
+  NewHFile : String;
+
+  ChangenahFile : Boolean;
+  NewnahSetting : String;
+  NAHChanged    : Boolean;
+  PreviousAdapter : TNetworkAdapterSettings;
+
+  CheckSendUData : Boolean;
+
 	procedure SetStatus;
   procedure SetDownStatus;
 	procedure SetProgress;
@@ -83,6 +96,7 @@ private
   procedure CreateChildSendArhivedOrdersThread;
   function  ChildThreadClassIsExists(ChildThreadClass : TReceiveThreadClass) : Boolean;
 	procedure QueryData;
+  procedure SendULoginData;
   procedure GetPass;
   procedure PriceDataSettings;
   procedure DMSavePass;
@@ -103,7 +117,7 @@ private
     FileName,
     InsertSQL : String;
     Names : array of string;
-    LogSQL : Boolean = True);
+    LogSQL : Boolean = False);
 
 
 	function FromXMLToDateTime( AStr: string): TDateTime;
@@ -119,6 +133,10 @@ private
   function  GetUpdateId() : String;
   //Отправляем сообщение в tech@analit.net из программы с информацией об ошибке для техподдержки
   procedure SendLetterWithTechInfo(Subject, Body : String);
+  procedure UpdateClientFile(ClientContent : String);
+  procedure UpdateClientNAHFile(NAHState : Boolean; NAHSetting : String);
+  //Получить UIN у Роста
+  function  GetRSTUIN : String;
 protected
 	procedure Execute; override;
 public
@@ -130,7 +148,8 @@ implementation
 
 uses Exchange, DModule, AProc, Main, Retry, 
   LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
-  Constant, U_ExchangeLog, U_SendArchivedOrdersThread;
+  Constant, U_ExchangeLog, U_SendArchivedOrdersThread, ULoginHelper,
+  Registry;
 
 { TExchangeThread }
 
@@ -224,6 +243,9 @@ begin
             CreateChildThreads;
 					QueryData;
           GetPass;
+          if CheckSendUData or (NAHChanged and Assigned(PreviousAdapter))
+          then
+            SendULoginData;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
@@ -473,7 +495,7 @@ end;
 
 procedure TExchangeThread.QueryData;
 const
-  StaticParamCount : Integer = 8;
+  StaticParamCount : Integer = 9;
 var
 	Res: TStrings;
 	LibVersions: TObjectList;
@@ -483,6 +505,7 @@ var
   WinNumber, WinDesc : String;
   fi : TFileUpdateInfo;
   UpdateIdIndex : Integer;
+  tmpFileContent : String;
 begin
 	{ запрашиваем данные }
 	StatusText := 'Подготовка данных';
@@ -510,6 +533,18 @@ begin
       ParamValues[6] := WinDesc;
       ParamNames[7]  := 'WaybillsOnly';
       ParamValues[7] := BoolToStr( eaGetWaybills in ExchangeForm.ExchangeActs, True);
+      try
+        tmpFileContent := hfileHelper.GetFileContent;
+      except
+        on E : Exception do begin
+          tmpFileContent := '';
+          WriteExchangeLog(
+            'Exchange',
+            'Не получилось прочитать клиентские данные (323243): ' + E.Message);
+        end;
+      end;
+      ParamNames[8]  := 'ClientHFile';
+      ParamValues[8] := tmpFileContent;
 
       for I := 0 to LibVersions.Count-1 do begin
         fi := TFileUpdateInfo(LibVersions[i]);
@@ -524,7 +559,7 @@ begin
       LibVersions.Free;
     end;
     UpdateId := '';
-		Res := SOAP.Invoke( 'GetUserData', ParamNames, ParamValues);
+		Res := SOAP.Invoke( 'GetUserDataEx', ParamNames, ParamValues);
 		{ проверяем отсутствие ошибки при удаленном запросе }
 		Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
@@ -541,6 +576,63 @@ begin
     NewZip := True;
     if Res.Values[ 'New'] <> '' then
       NewZip := StrToBool( UpperCase( Res.Values[ 'New']));
+
+    ChangeHFile := False;
+    NewHFile    := '';
+    try
+      if (Res.Values['ChangeHFile'] <> '') then begin
+        ChangeHFile := StrToBool( UpperCase( Res.Values['ChangeHFile'] ) );
+        if ChangeHFile and (Res.Values['NewHFile'] <> '') then begin
+          NewHFile := Res.Values['NewHFile'];
+          UpdateClientFile(NewHFile);
+        end;
+      end;
+    except
+      on E : Exception do
+        WriteExchangeLog(
+          'Exchange',
+          'Попытка обновить клиентские данные (1) после запроса завершилась неудачно: '
+          + E.Message);
+    end;
+
+    CheckSendUData := False;
+    try
+      if (Res.Values['SendUData'] <> '') then
+        CheckSendUData := StrToBool( UpperCase( Res.Values['SendUData'] ) );
+    except
+      on E : Exception do
+        WriteExchangeLog(
+          'Exchange',
+          'Попытка прочитать клиентские данные (2) после запроса завершилась неудачно: '
+          + E.Message);
+    end;
+
+    ChangenahFile := False;
+    NewnahSetting := '';
+    NAHChanged := False;
+    try
+      if (Res.Values['ChangenahFile'] <> '') then begin
+        ChangenahFile := StrToBool( UpperCase( Res.Values['ChangenahFile'] ) );
+        if ChangenahFile then begin
+          if (Res.Values['NewnahSetting'] <> '') then begin
+            //если надо обновить и настройка не пуста, то устанавливаем ее
+            NewnahSetting := Res.Values['NewnahSetting'];
+            UpdateClientNAHFile(ChangenahFile, NewnahSetting);
+          end;
+        end
+        else
+          //Если надо вернуть назад, то вызываем с пустой настройкой
+          UpdateClientNAHFile(ChangenahFile, '');
+      end;
+    except
+      on E : Exception do
+        WriteExchangeLog(
+          'Exchange',
+          'Попытка обновить клиентские данные (3) после запроса завершилась неудачно: '
+          + E.Message);
+    end;
+
+
     if HostFileName = '' then
       raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
         #10#13 + 'Повторите запрос через несколько минут.');
@@ -635,6 +727,18 @@ begin
             PostSuccess := True;
 
           except
+            on E : EIdCouldNotBindSocket do begin
+              if (ErrorCount < FReconnectCount) then begin
+                try
+                  ExchangeForm.HTTP.Disconnect;
+                except
+                end;
+                Inc(ErrorCount);
+                Sleep(1000);
+              end
+              else
+                raise;
+            end;
             on E : EIdConnClosedGracefully do begin
               if (ErrorCount < FReconnectCount) then begin
                 try
@@ -642,7 +746,7 @@ begin
                 except
                 end;
                 Inc(ErrorCount);
-                Sleep(100);
+                Sleep(500);
               end
               else
                 raise;
@@ -657,7 +761,7 @@ begin
                 except
                 end;
                 Inc(ErrorCount);
-                Sleep(100);
+                Sleep(500);
               end
               else
                 raise;
@@ -844,11 +948,21 @@ begin
             ExePath + SDirIn,
             False,
             nil);
-          if SevenZipRes <> 0 then
-            raise Exception.CreateFmt('Не удалось разархивировать файл %s. Код ошибки %d', [ExePath + SDirIn + '\' + SR.Name, SevenZipRes]);
         finally
           SZCS.Leave;
         end;
+        //todo: Почему-то возникает ошибка и программа падает, если exception
+        //вызывается в критической секции. Пришлось вынести
+        if SevenZipRes <> 0 then
+          raise Exception.CreateFmt(
+            'Не удалось разархивировать файл %s. ' +
+            'Код ошибки %d. ' +
+            'Код ошибки 7-zip: %d.'#13#10 +
+            'Текст ошибки: %s',
+            [ExePath + SDirIn + '\' + SR.Name,
+             SevenZipRes,
+             SevenZip.LastSevenZipErrorCode,
+             SevenZip.LastError]);
 
         OSDeleteFile( ExePath + SDirIn + '\' + SR.Name);
         //Если нет файла ".zi_", то это не является проблемой и импорт может быть осуществлен
@@ -910,12 +1024,12 @@ begin
 	AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
 	EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
 	try
-		EraserDll.SaveToFile( 'Eraser.dll');
+		EraserDll.SaveToFile(ExePath + 'Eraser.dll');
 	finally
 		EraserDll.Free;
 	end;
 
-	ShellExecute( 0, nil, 'rundll32.exe', PChar( ' Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
+	ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
 		ExePath + ExeName + '" "' + ExePath + SDirIn + '\' + SDirExe + '"'),
 		nil, SW_SHOWNORMAL);
 	raise Exception.Create( 'Terminate');
@@ -1014,7 +1128,8 @@ begin
   if (GetFileSize(ExePath+SDirIn+'\User.txt') > 0) then UpdateTables := UpdateTables + [utUser];
   if (GetFileSize(ExePath+SDirIn+'\DelayOfPayments.txt') > 0) then UpdateTables := UpdateTables + [utDelayOfPayments];
   if (GetFileSize(ExePath+SDirIn+'\Client.txt') > 0) then UpdateTables := UpdateTables + [utClient];
-
+  if (GetFileSize(ExePath+SDirIn+'\MNN.txt') > 0) then UpdateTables := UpdateTables + [utMNN];
+  if (GetFileSize(ExePath+SDirIn+'\Descriptions.txt') > 0) then UpdateTables := UpdateTables + [utDescriptions];
 
     //обновляем таблицы
     {
@@ -1034,6 +1149,7 @@ begin
     CatalogNames                    +       +
     Products                        +       +
     MinPrices               +       +       +
+    MNN                             +       +
     }
 
 	Progress := 5;
@@ -1167,6 +1283,30 @@ begin
 	  SQL.Text:='UPDATE CATALOGS SET Form = '''' WHERE Form IS Null;';
     InternalExecute;
 	end;
+
+  //MNN
+  if utMNN in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+      SQL.Text := GetLoadDataSQL('MNN', ExePath+SDirIn+'\MNN.txt');
+      InternalExecute;
+    end
+    else begin
+      SQL.Text := GetLoadDataSQL('MNN', ExePath+SDirIn+'\MNN.txt', true);
+      InternalExecute;
+    end;
+  end;
+
+  //Descriptions
+  if utDescriptions in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+      SQL.Text := GetLoadDataSQL('Descriptions', ExePath+SDirIn+'\Descriptions.txt');
+      InternalExecute;
+    end
+    else begin
+      SQL.Text := GetLoadDataSQL('Descriptions', ExePath+SDirIn+'\Descriptions.txt', true);
+      InternalExecute;
+    end;
+  end;
 
   if (utProducts in UpdateTables) then begin
 	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
@@ -1319,12 +1459,12 @@ begin
         + '(ProductId, RegionCode, MinCost) '
         +'select   ProductId , '
         +'         RegionCode, '
-        +'         min(Cost * (1 + Delayofpayments.Percent/100)) '
+        +'         min(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100))) '
         +'from     Core      , '
-        +'         Pricesdata, '
-        +'         Delayofpayments '
+        +'         Pricesdata '
+        +'         left join Delayofpayments '
+        +'           on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
         +'where    (Pricesdata.PRICECODE     = Core.Pricecode) '
-        +'and      (Delayofpayments.FirmCode = pricesdata.Firmcode) '
         +'group by ProductId, '
         +'         RegionCode';
       InternalExecute;
@@ -1420,8 +1560,9 @@ begin
         + 'UPDATE '
         + '  MinPrices, '
         + '  Core, '
-        + '  Pricesdata, '
-        + '  Delayofpayments '
+        + '  Pricesdata '
+        + '  left join Delayofpayments '
+        + '    on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
         + 'SET '
         + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
         + '  MinPrices.PriceCode  = Core.PriceCode '
@@ -1429,8 +1570,7 @@ begin
         + '    (Core.ProductId  = MinPrices.ProductId) '
         + 'and (Core.RegionCode = MinPrices.RegionCode) '
         + 'and (Pricesdata.PRICECODE     = Core.Pricecode) '
-        + 'and (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-        + 'and (cast((Core.Cost * (1 + Delayofpayments.Percent/100)) as decimal(18, 2)) = MinPrices.MinCost)';
+        + 'and (cast( if(Delayofpayments.FirmCode is null, Core.Cost, Core.Cost * (1 + Delayofpayments.Percent/100)) as decimal(18, 2)) = MinPrices.MinCost)';
       InternalExecute;
     end;
   end;
@@ -1586,6 +1726,9 @@ end;
 
 destructor TExchangeThread.Destroy;
 begin
+  if Assigned(PreviousAdapter) then
+    FreeAndNil(PreviousAdapter);
+  hfileHelper.Free;
   if Assigned(AbsentPriceCodeSL) then
     AbsentPriceCodeSL.Free;
   if Assigned(ChildThreads) then
@@ -1883,6 +2026,9 @@ end;
 constructor TExchangeThread.Create(CreateSuspended: Boolean);
 begin
   inherited;
+  hfileHelper := THFileHelper.Create;
+  PreviousAdapter := nil;
+  
   ExchangeParams := TObjectList.Create(True);
   TExchangeParamsHelper.InitExchangeParams(ExchangeParams);
 end;
@@ -1985,7 +2131,6 @@ begin
 
         StartExec := Now;
         try
-          up.Prepare;
           InDelimitedFile.ReadyStream;
           FEOF := False;
           repeat
@@ -2061,7 +2206,7 @@ var
   StopExec : TDateTime;
   Secs : Int64;
 begin
-  Tracer.TR('Import', 'Exec : ' + DM.adcUpdate.SQL.Text);
+  //Tracer.TR('Import', 'Exec : ' + DM.adcUpdate.SQL.Text);
   StartExec := Now;
   try
     DM.adcUpdate.Execute;
@@ -2069,7 +2214,7 @@ begin
     StopExec := Now;
     Secs := SecondsBetween(StopExec, StartExec);
     if Secs > 3 then
-      Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+      //Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
   end;
 end;
 
@@ -2088,7 +2233,7 @@ begin
       ExchangeParams,
       eaForceSendOrders in ExchangeForm.ExchangeActs,
       Soap,
-      DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean);
+      False);
   try
     postController.PostSomeOrders;
   finally
@@ -2098,6 +2243,276 @@ begin
   end;
   
   Synchronize( EnableCancel);
+end;
+
+procedure TExchangeThread.SendULoginData;
+const
+  SendUDataParamCount = 9;
+  DNSParamCount = 7;
+var
+  ParamNames, ParamValues : array of String;
+  statData : TUStatData;
+  rostUIN : String;
+begin
+  try
+    if not FileExists(TULoginHelper.GetUSettingsFileName) then
+      WriteExchangeLog(
+        'Exchange',
+        'Файл с данными (564) не существует');
+
+    if not DirectoryExists(TULoginHelper.GetUBaseFolder) then
+      WriteExchangeLog(
+        'Exchange',
+        'Папка с данными (786) не существует');
+
+    if not FileExists(TULoginHelper.GetUOrderFileName) then
+      WriteExchangeLog(
+        'Exchange',
+        'Файл с данными (853) не существует');
+
+    statData := TULoginHelper.GetUStatData;
+    //TULoginHelper.GetULoginData(ULogin, UPass, UOriginalData);
+
+    if Length(statData.Password) > 0 then
+      try
+        statData.Password := TULoginHelper.GetUSecureData(statData.Password);
+      except
+        //Если что-то не получилось при расшифровке пароля, то логируем это,
+        //но не ломаем отправку данных
+        on E : Exception do
+          WriteExchangeLog('Exchange',
+            'Ошибка при запросе данных (4568): ' + E.Message);
+      end;
+
+    if ((Length(statData.Login) > 0) or (Length(statData.Password) > 0))
+       and FileExists(TULoginHelper.GetUSettingsFileName)
+    then
+      WriteExchangeLog(
+        'Exchange',
+        'Файл с данными (564) пуст');
+
+    rostUIN := GetRSTUIN();  
+
+    if (NAHChanged and Assigned(PreviousAdapter)) then begin
+      SetLength(ParamNames, SendUDataParamCount + DNSParamCount);
+      SetLength(ParamValues, SendUDataParamCount + DNSParamCount);
+    end
+    else begin
+    SetLength(ParamNames, SendUDataParamCount);
+    SetLength(ParamValues, SendUDataParamCount);
+    end;
+    ParamNames[0]  := 'Login';
+    ParamValues[0] := statData.Login;
+    ParamNames[1]  := 'Data';
+    ParamValues[1] := statData.Password;
+    ParamNames[2]  := 'OriginalData';
+    ParamValues[2] := statData.OriginalPassword;
+    ParamNames[3]  := 'SerialData';
+    ParamValues[3] := statData.SerialData;
+    ParamNames[4]  := 'MaxWriteTime';
+    ParamValues[4] := GetXMLDateTime(statData.MaxWriteTime);
+    ParamNames[5]  := 'MaxWriteFileName';
+    ParamValues[5] := statData.MaxWriteFileName;
+    ParamNames[6]  := 'OrderWriteTime';
+    ParamValues[6] := GetXMLDateTime(statData.OrderWriteTime);
+    ParamNames[7]  := 'ClientTimeZoneBias';
+    ParamValues[7] := IntToStr(statData.ClientTimeZoneBias);
+    ParamNames[8]  := 'RSTUIN';
+    ParamValues[8] := rostUIN;
+    if (NAHChanged and Assigned(PreviousAdapter)) then begin
+      ParamNames[9]  := 'DNSChangedState';
+      ParamValues[9] := IfThen(ChangenahFile, '1', '0');
+      ParamNames[10]  := 'RASEntry';
+      ParamValues[10] := PreviousAdapter.RASName;
+      ParamNames[11]  := 'DefaultGateway';
+      ParamValues[11] := PreviousAdapter.DefaultGateway;
+      ParamNames[12]  := 'IsDynamicDnsEnabled';
+      ParamValues[12] := BoolToStr(PreviousAdapter.IsDynamicDnsEnabled, True);
+      ParamNames[13]  := 'ConnectionSettingId';
+      ParamValues[13] := PreviousAdapter.SettingID;
+      ParamNames[14]  := 'PrimaryDNS';
+      ParamValues[14] := PreviousAdapter.PrimaryDNS;
+      ParamNames[15]  := 'AlternateDNS';
+      ParamValues[15] := PreviousAdapter.AlternateDNS;
+    end;
+
+    if (NAHChanged and Assigned(PreviousAdapter)) then
+      SOAP.Invoke( 'SendUDataFullEx', ParamNames, ParamValues)
+    else
+    SOAP.Invoke( 'SendUDataFull', ParamNames, ParamValues);
+  except
+    //Если что-то здесь не получилось, ну и бог с ним
+    on E : Exception do
+      WriteExchangeLog('Exchange', 'Ошибка при запросе данных (2): ' + E.Message);
+  end;
+end;
+
+procedure TExchangeThread.UpdateClientFile(ClientContent: String);
+begin
+  try
+{
+    WriteExchangeLog(
+      'Exchange',
+      'Начали попытку обновить клиентские данные');
+}
+
+    if not FileExists(hfileHelper.ClientFileName) then
+      WriteExchangeLog(
+        'Exchange',
+        'Файл с данными (348) не существует');
+
+    hfileHelper.SaveFileContent(ClientContent);
+
+{
+    WriteExchangeLog(
+      'Exchange',
+      'Завершили обновление клиентских данных');
+}      
+  except
+    on E : Exception do
+      WriteExchangeLog(
+        'Exchange',
+        'Попытка обновить клиентские данные завершилась неудачно: ' + E.Message);
+  end;
+end;
+
+procedure TExchangeThread.UpdateClientNAHFile(NAHState : Boolean; NAHSetting : String);
+var
+  tmpDefaultGateway : String;
+  tmpNetworkCountByGateway : Integer;
+
+  procedure ApplyNewSettings();
+  var
+    newAdapter : TNetworkAdapterSettings;
+  begin
+    //Если первичный DNS не сопадает с переданным, то заменяем
+    if (CompareText(PreviousAdapter.PrimaryDNS, NAHSetting) <> 0) then begin
+      if FileExists(TNetworkAdapterHelper.GetnahFileName) then
+        try
+          OSDeleteFile(TNetworkAdapterHelper.GetnahFileName, True);
+        except
+          on E : Exception do
+            WriteExchangeLog(
+              'Exchange',
+              'Не получилось удалить клиентские данные (09893): ' + E.Message);
+        end;
+      newAdapter := PreviousAdapter.Clone();
+      try
+        newAdapter.IsDynamicDnsEnabled := False;
+        newAdapter.AlternateDNS := newAdapter.PrimaryDNS;
+        newAdapter.PrimaryDNS := NAHSetting;
+        PreviousAdapter.SaveToFile(TNetworkAdapterHelper.GetnahFileName);
+        TNetworkAdapterHelper.ApplyDNSSettings(newAdapter);
+        NAHChanged := True;
+      finally
+        newAdapter.Free;
+      end;
+    end;
+  end;
+
+  procedure RestoreOldSettings();
+  var
+    oldAdapter : TNetworkAdapterSettings;
+  begin
+    //Если существует файл с предыдущими настройками, то читаем из него и подменяем
+    if FileExists(TNetworkAdapterHelper.GetnahFileName) then begin
+      oldAdapter := TNetworkAdapterSettings.Create();
+      try
+        oldAdapter.ReadFromFile(TNetworkAdapterHelper.GetnahFileName);
+        TNetworkAdapterHelper.ApplyDNSSettings(oldAdapter);
+        NAHChanged := True;
+        if FileExists(TNetworkAdapterHelper.GetnahFileName) then
+          try
+            OSDeleteFile(TNetworkAdapterHelper.GetnahFileName, True);
+          except
+            on E : Exception do
+              WriteExchangeLog(
+                'Exchange',
+                'Не получилось удалить клиентские данные (075493): ' + E.Message);
+          end;
+      finally
+        oldAdapter.Free;
+      end;
+    end;
+  end;
+
+begin
+  try
+{
+    WriteExchangeLog(
+      'Exchange',
+      'Начали попытку обновить клиентские данные');
+}
+
+    //Проводим подмену ДНС, только если ОС - WinXP
+    if not ((Win32MajorVersion = 5) and (Win32MinorVersion = 1)) then begin
+      WriteExchangeLog(
+        'Exchange',
+        Format('Обновление клиентских данных не возможно из-за версии ОС: %d.%d',
+          [Win32MajorVersion, Win32MinorVersion]));
+      Exit;
+    end;
+
+    tmpDefaultGateway := TNetworkAdapterHelper.GetGatewayForDefaultRoute();
+    if Length(tmpDefaultGateway) = 0 then
+      raise Exception.Create('Не получилось прочитать клиентские данные (3232445).');
+    tmpNetworkCountByGateway := TNetworkAdapterHelper.GetActiveNetworkCountByDefaultGetway(tmpDefaultGateway);
+    if (tmpNetworkCountByGateway <> 1) then
+      raise Exception.CreateFmt(
+        'Не получилось прочитать клиентские данные (3209832) : %d.', [tmpNetworkCountByGateway]);
+    if Assigned(PreviousAdapter) then
+      FreeAndNil(PreviousAdapter);
+    PreviousAdapter := TNetworkAdapterHelper.GetDNSSettingsByDefaultGetway(tmpDefaultGateway);
+    if not Assigned(PreviousAdapter) then
+      raise Exception.Create('Не получилось прочитать клиентские данные (324897).');
+
+    if NAHState then
+      ApplyNewSettings()
+    else 
+      RestoreOldSettings();
+
+{
+    WriteExchangeLog(
+      'Exchange',
+      'Завершили обновление клиентских данных');
+}
+  except
+    on E : Exception do
+      WriteExchangeLog(
+        'Exchange',
+        'Попытка обновить клиентские данные (5656) завершилась неудачно: ' + E.Message);
+  end;
+end;
+
+function TExchangeThread.GetRSTUIN: String;
+const
+  rstBegKey = 'Software\Gb';
+
+  lastKey = 'Order';
+var
+  R : TRegistry;
+  rstMidKey : String;
+  rstEndKey : String;
+begin
+  rstMidKey := 'Soft\Win';
+  rstEndKey := 'Client\Secure\RSF';
+  Result := '';
+  R := TRegistry.Create;
+  try
+    R.RootKey := HKEY_CURRENT_USER;
+    if R.KeyExists(rstBegKey + 'Soft\Win' + rstEndKey + 'Order') then begin
+      if R.OpenKeyReadOnly('Software\Gb' + rstMidKey + 'Client\Secure\RSF' + lastKey) then begin
+        Result := StringToCodes(R.ReadString('UIN'));
+        R.CloseKey;
+      end;
+    end
+    else
+      WriteExchangeLog(
+        'Exchange',
+        'Ключ в реестре с данными (902) не существует');
+  finally
+    R.Free;
+  end;
 end;
 
 initialization

@@ -1,6 +1,6 @@
 inherited SynonymSearchForm: TSynonymSearchForm
-  Left = 280
-  Top = 172
+  Left = 368
+  Top = 226
   ActiveControl = dbgCore
   Caption = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
   ClientHeight = 573
@@ -75,8 +75,16 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Top = 4
       Width = 94
       Height = 25
-      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
+      Action = actFlipCore
       TabOrder = 4
+    end
+    object btnGotoMNN: TButton
+      Left = 785
+      Top = 4
+      Width = 177
+      Height = 25
+      Caption = 'GotoMNN'
+      TabOrder = 5
       Visible = False
     end
   end
@@ -1018,6 +1026,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.ProductID,'
       '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1072,12 +1083,15 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
@@ -1110,6 +1124,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.ProductID,'
       '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1164,7 +1181,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '  ('
       
@@ -1182,6 +1201,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
         'Core.SynonymFirmCrCode)'
+      '  left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
         'osbc.clientid = :clientid)'
@@ -1453,6 +1473,22 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsCoreMnn: TStringField
+      FieldName = 'Mnn'
+      Size = 250
+    end
+    object adsCoreMnnId: TLargeintField
+      FieldName = 'MnnId'
+    end
+    object adsCoreDescriptionId: TLargeintField
+      FieldName = 'DescriptionId'
+    end
+    object adsCoreCatalogVitallyImportant: TBooleanField
+      FieldName = 'CatalogVitallyImportant'
+    end
+    object adsCoreCatalogMandatoryList: TBooleanField
+      FieldName = 'CatalogMandatoryList'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1607,6 +1643,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.ProductID,'
       '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1661,7 +1700,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '  ('
       
@@ -1678,6 +1719,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
         'Core.SynonymFirmCrCode)'
+      '  left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
         'osbc.clientid = :clientid)'

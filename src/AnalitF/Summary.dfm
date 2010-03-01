@@ -186,6 +186,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'RealCost'
           Footers = <>
           Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+          Title.TitleButton = True
           Visible = False
         end
         item
@@ -257,7 +258,7 @@ inherited SummaryForm: TSummaryForm
         Shape = bsTopLine
       end
       object Label1: TLabel
-        Left = 195
+        Left = 387
         Top = 11
         Width = 56
         Height = 13
@@ -271,7 +272,7 @@ inherited SummaryForm: TSummaryForm
         ParentFont = False
       end
       object Label2: TLabel
-        Left = 307
+        Left = 499
         Top = 11
         Width = 60
         Height = 13
@@ -285,7 +286,7 @@ inherited SummaryForm: TSummaryForm
         ParentFont = False
       end
       object lSumOrder: TLabel
-        Left = 375
+        Left = 567
         Top = 11
         Width = 59
         Height = 13
@@ -298,7 +299,7 @@ inherited SummaryForm: TSummaryForm
         ParentFont = False
       end
       object lPosCount: TLabel
-        Left = 255
+        Left = 447
         Top = 11
         Width = 58
         Height = 13
@@ -324,8 +325,16 @@ inherited SummaryForm: TSummaryForm
         Top = 5
         Width = 94
         Height = 25
-        Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
+        Action = actFlipCore
         TabOrder = 1
+      end
+      object btnGotoMNN: TButton
+        Left = 193
+        Top = 5
+        Width = 177
+        Height = 25
+        Caption = 'GotoMNN'
+        TabOrder = 2
         Visible = False
       end
     end
@@ -553,6 +562,7 @@ inherited SummaryForm: TSummaryForm
           FieldName = 'RealCost'
           Footers = <>
           Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+          Title.TitleButton = True
           Visible = False
         end
         item
@@ -1175,6 +1185,9 @@ inherited SummaryForm: TSummaryForm
       'SELECT '
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -1208,8 +1221,11 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
-      '    OrdersHead.SendResult'
+      '    OrdersHead.SendResult,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
+      '    ('
       '    PricesData,'
       '    Regions,'
       '    Core,'
@@ -1217,6 +1233,8 @@ inherited SummaryForm: TSummaryForm
       '    products,'
       '    catalogs,'
       '    OrdersList'
+      '    ) '
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
         'mCode'
@@ -1246,6 +1264,9 @@ inherited SummaryForm: TSummaryForm
       'SELECT '
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    OrdersList.CoreId AS CoreId,'
       '    cast('#39#39' as char(15)) as Volume,'
       '    cast('#39#39' as char(15)) as Quantity,'
@@ -1282,14 +1303,19 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
-      '    OrdersHead.SendResult'
+      '    OrdersHead.SendResult,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
+      '   ('
       '    PricesData,'
       '    Regions,'
       '    OrdersHead,'
       '    products,'
       '    catalogs,'
       '    OrdersList'
+      '   )'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
         'mCode'
@@ -1324,6 +1350,11 @@ inherited SummaryForm: TSummaryForm
       end>
   end
   object adsSummary: TMyQuery
+    SQLDelete.Strings = (
+      'DELETE FROM OrdersList'
+      'where'
+      '    OrderId = :OLD_ORDERSORDERID'
+      'and CoreId  = :OLD_COREID')
     SQLUpdate.Strings = (
       'update'
       '  orderslist'
@@ -1339,6 +1370,9 @@ inherited SummaryForm: TSummaryForm
       'SELECT '
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -1372,8 +1406,11 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
-      '    OrdersHead.SendResult'
+      '    OrdersHead.SendResult,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
+      '   ('
       '    PricesData,'
       '    Regions,'
       '    Core,'
@@ -1381,6 +1418,8 @@ inherited SummaryForm: TSummaryForm
       '    products,'
       '    catalogs,'
       '    OrdersList'
+      '   )'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
         'mCode'
@@ -1402,6 +1441,9 @@ inherited SummaryForm: TSummaryForm
       'SELECT '
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -1435,8 +1477,11 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
-      '    OrdersHead.SendResult'
+      '    OrdersHead.SendResult,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
+      '   ('
       '    PricesData,'
       '    Regions,'
       '    Core,'
@@ -1444,6 +1489,8 @@ inherited SummaryForm: TSummaryForm
       '    products,'
       '    catalogs,'
       '    OrdersList'
+      '   )'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       
         '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
         'mCode'
@@ -1460,10 +1507,12 @@ inherited SummaryForm: TSummaryForm
       'and PricesData.PriceCode = OrdersHead.PriceCode'
       'and Regions.RegionCode = OrdersHead.RegionCode')
     BeforeUpdateExecute = BeforeUpdateExecuteForClientID
+    RefreshOptions = [roAfterUpdate]
     BeforeInsert = adsSummaryBeforeInsert
     BeforePost = adsSummary2BeforePost
     AfterPost = adsSummary2AfterPost
     AfterScroll = adsSummary2AfterScroll
+    Options.StrictUpdate = False
     Left = 336
     Top = 104
     ParamData = <
@@ -1596,6 +1645,22 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummarySendResult: TSmallintField
       FieldName = 'SendResult'
+    end
+    object adsSummaryMnnId: TLargeintField
+      FieldName = 'MnnId'
+    end
+    object adsSummaryMnn: TStringField
+      FieldName = 'Mnn'
+      Size = 250
+    end
+    object adsSummaryDescriptionId: TLargeintField
+      FieldName = 'DescriptionId'
+    end
+    object adsSummaryCatalogVitallyImportant: TBooleanField
+      FieldName = 'CatalogVitallyImportant'
+    end
+    object adsSummaryCatalogMandatoryList: TBooleanField
+      FieldName = 'CatalogMandatoryList'
     end
   end
 end

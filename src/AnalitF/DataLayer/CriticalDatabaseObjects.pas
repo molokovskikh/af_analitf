@@ -76,7 +76,7 @@ begin
 +'    primary key (`ID`)                                                                , '
 +'    unique key `PK_PARAMS` (`ID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 function TParamsTable.GetInsertSQL(DatabasePrefix: String): String;

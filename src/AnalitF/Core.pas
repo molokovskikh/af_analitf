@@ -210,6 +210,11 @@ type
     adsPreviosOrdersJunk: TBooleanField;
     btnGotoCoreFirm: TButton;
     adsCoreRealCost: TFloatField;
+    adsCoreMnnId: TLargeintField;
+    adsCoreMnn: TStringField;
+    adsCoreDescriptionId: TLargeintField;
+    adsCoreCatalogVitallyImportant: TBooleanField;
+    adsCoreCatalogMandatoryList: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -263,8 +268,8 @@ var
 
 implementation
 
-uses Main, AProc, DModule, Constant, NamesForms, OrdersH, DBProc, CoreFirm, 
-  Prices, U_GroupUtils, Orders;
+uses Main, AProc, DModule, Constant, NamesForms, OrdersH, DBProc, CoreFirm,
+  Prices, U_GroupUtils, Orders, U_framePosition;
 
 var
   UserSetRetUpCost : Boolean;
@@ -286,6 +291,9 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
 	inherited;
+
+  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
+
 	PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
@@ -560,7 +568,7 @@ begin
     Self.PrevForm.ShowForm;
   end
   else
-    if (( Key = VK_ESCAPE) or ( Key = VK_SPACE)) and
+    if (( Key = VK_ESCAPE) {or ( Key = VK_SPACE)}) and
       not TToughDBGrid( Sender).InSearch then
     begin
       if Self.PrevForm is TNamesFormsForm then

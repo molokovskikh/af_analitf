@@ -407,7 +407,7 @@ var
   SevenZipGetOriginalSize       : TSevenZipGetOriginalSize      = nil;
   SevenZipGetCompressedSize     : TSevenZipGetCompressedSize    = nil;
   SevenZipGetRatio              : TSevenZipGetRatio             = nil;
-  SevenZipGetDate               : TSevenZipGetDate              = nil;   
+  SevenZipGetDate               : TSevenZipGetDate              = nil;
   SevenZipGetTime               : TSevenZipGetTime              = nil;   
   SevenZipGetCRC                : TSevenZipGetCRC               = nil;
   SevenZipGetAttribute          : TSevenZipGetAttribute         = nil;   
@@ -433,6 +433,7 @@ var
   SevenZipGetArchiveType        : TSevenZipGetArchiveType       = nil;
   SevenZipSetUnicodeMode        : TSevenZipSetUnicodeMode       = nil;
   LastError : String;
+  LastSevenZipErrorCode : Integer;
 implementation
 uses classes, sysutils, dialogs;
 
@@ -567,6 +568,8 @@ var
   cwd : string;
 
 begin
+  LastError := '';
+  LastSevenZipErrorCode := 0;
   //
   cwd := GetCurrentDir;
 
@@ -613,7 +616,7 @@ begin
     try
       SevenZipSetOwnerWindowEx( hwnd, Callback );
 
-      SevenZipCommand( hWnd, s7cmd, s7ResultOutput );
+      LastSevenZipErrorCode := SevenZipCommand( hWnd, s7cmd, s7ResultOutput );
 
       SevenZipSetOwnerWindowEx( hwnd, nil );
 
@@ -628,7 +631,12 @@ begin
         Result := SZ_ERROR
       end
       else
-        Result := SZ_OK;
+        if LastSevenZipErrorCode <> 0 then begin
+          LastError := S7ResultOutput;
+          Result := SZ_ERROR;
+        end
+        else
+          Result := SZ_OK;
     except
       on e : exception do
       begin
@@ -660,6 +668,8 @@ var
   i : integer;
 
 begin
+  LastError := '';
+  LastSevenZipErrorCode := 0;
   //
   flist := TStringList.Create;
 
@@ -677,9 +687,9 @@ begin
     else
       s7cmd := 'e';
 
-    s7cmd := s7cmd + ' "' + ArchiveFilename + '" -o"' + ExtractBaseDir + '"';
+    s7cmd := s7cmd + ' "' + ArchiveFilename + '" "-o' + ExtractBaseDir + '"';
 
-    s7cmd := s7cmd + ' "' + flist[ 0 ] + '"';
+    s7cmd := s7cmd + ' "' + RemoveQuotes( flist[ 0 ] ) + '"';
 
 
     for i := 1 to flist.count - 1 do
@@ -695,7 +705,7 @@ begin
       s7cmd := s7cmd + ' -r';
 
     if Password <> '' then
-      s7Cmd := s7Cmd + ' -p' + Password;  
+      s7Cmd := s7Cmd + ' -p' + Password;
 
     if not ShowProgress then
       s7cmd := s7cmd + ' -hide';
@@ -705,7 +715,7 @@ begin
     try
       SevenZipSetOwnerWindowEx( hwnd, Callback );
 
-      SevenZipCommand( hWnd, s7cmd, s7ResultOutput );
+      LastSevenZipErrorCode := SevenZipCommand( hWnd, s7cmd, s7ResultOutput );
 
       SevenZipSetOwnerWindowEx( hwnd, nil );
 
@@ -720,7 +730,12 @@ begin
         Result := SZ_ERROR;
       end
       else
-        Result := SZ_OK;
+        if LastSevenZipErrorCode <> 0 then begin
+          LastError := S7ResultOutput;
+          Result := SZ_ERROR;
+        end
+        else
+          Result := SZ_OK;
     except
       on e : exception do
       begin

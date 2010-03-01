@@ -8,7 +8,7 @@ uses
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, DBGridEh, DateUtils, ToughDBGrid,
   OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet, Consts, ShellAPI,
-  MemDS, DBAccess, MyAccess, U_VistaCorrectForm;
+  MemDS, DBAccess, MyAccess, U_VistaCorrectForm, Contnrs;
 
 type
 
@@ -121,6 +121,8 @@ TMainForm = class(TVistaCorrectForm)
     est11: TMenuItem;
     est21: TMenuItem;
     adsOrdersHead: TMyQuery;
+    tbMnnSearch: TToolButton;
+    actMnnSearch: TAction;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -169,9 +171,11 @@ TMainForm = class(TVistaCorrectForm)
     procedure ToolBarMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure AppEventsMessage(var Msg: tagMSG; var Handled: Boolean);
+    procedure actMnnSearchExecute(Sender: TObject);
 private
 	JustRun: boolean;
   ApplicationVersionText : String;
+  deletedForms : TObjectList;
 
 	procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
@@ -180,6 +184,7 @@ private
   procedure SetActionLists(AValue : TList);
   function  OldOrders : Boolean;
   procedure DeleteOldOrders;
+  procedure RealFreeChildForms;
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -205,6 +210,8 @@ public
 	//FormClass - переменная типа метакласс
 	function ShowChildForm(FormClass: TChildFormClass): TChildForm;
 	procedure FreeChildForms;
+  procedure AddFormsToFree;
+  procedure AddFormToFree(childForm : TChildForm);
 	procedure SetUpdateDateTime;
 	procedure SetOrdersInfo;
 	procedure UpdateReclame;
@@ -239,7 +246,8 @@ uses
 	Exchange, Expireds, Core, UniqueID, CoreFirm,
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
-  Variants, ExchangeParameters, CorrectOrders, DatabaseObjects;
+  Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
+  MnnSearch;
 
 {$R *.DFM}
 
@@ -285,12 +293,13 @@ procedure TMainForm.FormCreate(Sender: TObject);
 //var
 //	il32: TImageList;
 begin
+  deletedForms := TObjectList.Create(False);
   FormPlacement.Active := False;
   Application.OnException := OnMainAppEx;
 	ExchangeOnly := False;
 	Caption := Application.Title;
   ApplicationVersionText := '(версия ' + GetLibraryVersionFromPath(Application.ExeName) + ')      ';
-	StatusBar.Panels[ 4].Text := ApplicationVersionText;
+	StatusBar.Panels[StatusBar.Panels.Count-1].Text := ApplicationVersionText;
 	RegionFilterIndex := 0;
 	EnableFilterIndex := 0;
 	JustRun := True;
@@ -313,11 +322,15 @@ begin
   //из-за чего может измениться список клиентов
   FormResize(nil);
 
+  //Удаляем формы, помеченные как удаленные
+  RealFreeChildForms;
+
 	if not JustRun then exit;
   //Бывает только в том случае, если происходит сжатие базы данных
   if not Active then exit;
 	JustRun := False;
 
+try
   //Производим восстановление
   FormPlacement.Active := True;
   Self.WindowState := wsMaximized;
@@ -330,7 +343,8 @@ begin
   else
     Self.Caption := Application.Title;
 
-	{ Логин пустой }
+
+  // Логин пустой
 	if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
 	begin
 		AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
@@ -338,7 +352,7 @@ begin
 		ShowConfig( True);
 	end;
 
-  //Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации
+  // Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации
   if FindCmdLineSwitch('renew') then
   begin
     for I := 0 to ActionList.ActionCount-1 do
@@ -348,19 +362,27 @@ begin
     Exit;
   end;
 
-	{ Запуск с ключем -i (импорт данных) при получении новой версии программы}
+  // Запуск с ключем -i (импорт данных) при получении новой версии программы}
   if FindCmdLineSwitch('i') then
   begin
     //Производим только в том случае, если не была создана "чистая" база,
     //не было обновление по ошибке UIN и не было обновление по ошибке хешей библиотек
-    if not DM.CreateClearDatabase and not DM.NeedUpdateByCheckUIN
+    if
+      (
+        not DM.CreateClearDatabase
+          //Делаем это только в случае обновления Firebird на Mysql
+        or DM.ProcessFirebirdUpdate
+          //Делаем это только в случае обновления 800x на версию 945
+        or DM.Process800xUpdate
+      )
+      and not DM.NeedUpdateByCheckUIN
       and not DM.NeedUpdateByCheckHashes
     then
       RunExchange([ eaImportOnly]);
     exit;
   end;
 
-	{ Если операция импорта не была завершена }
+  // Если операция импорта не была завершена }
 	if DatabaseController.IsBackuped or
      DM.NeedImportAfterRecovery
   then
@@ -371,8 +393,8 @@ begin
 
     //Производим сжатие базы данных для очищения от ошибок
     RunCompactDatabase;
-    
-		{ Автоматический импорт }
+
+  // Автоматический импорт }
     //Если импорт не прошел, то надо ждать помощи от техподдержки
 		if not RunExchange([ eaImportOnly])
     then
@@ -394,7 +416,7 @@ begin
   end;
 
   if ExchangeOnly then exit;
-  { Программа только что установлена или не обновлялись больше 20 часов }
+  // Программа только что установлена или не обновлялись больше 20 часов }
   if (DM.adtParams.FieldByName( 'UpdateDateTime').IsNull and (Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> ''))
   then begin
     if AProc.MessageBox( 'База данных программы не заполнена. Выполнить обновление?',
@@ -410,8 +432,15 @@ begin
       then
         actReceiveExecute( nil);
 
+finally
+  try
+  //Попытка установить фокус на форме, т.к. он иногда не установлен
+  Self.SetFocus;
+  except
+  end;
   //Обновляем ToolBar в случае смены клиента после обновления
   ToolBar.Invalidate;
+end;
 end;
 
 procedure TMainForm.SetStatusText( Value: string);
@@ -526,7 +555,7 @@ begin
 		if result = nil then
 		begin
       //Если я переделаю ShowChildForm, то этот вызов не нужен
-      FreeChildForms;
+      AddFormsToFree;
 			Result := FormClass.Create(Application);
 		end
 		else result.Show;
@@ -619,6 +648,8 @@ end;
 procedure TMainForm.itmImportClick(Sender: TObject);
 begin
 	RunExchange([ eaImportOnly]);
+  //Обновляем ToolBar в случае смены клиента после обновления
+  ToolBar.Invalidate;
 end;
 
 procedure TMainForm.SetUpdateDateTime;
@@ -670,10 +701,10 @@ var
 begin
   UserId := DM.QueryValue('select UserId from UserInfo', [], []);
   if VarIsNull(UserId) then
-    StatusBar.Panels[ 4].Text := 'ИД : не установлен  '
+    StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : не установлен  '
       + ApplicationVersionText
   else
-    StatusBar.Panels[ 4].Text := 'ИД : ' + VarToStr(UserId) + '  '
+    StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : ' + VarToStr(UserId) + '  '
       + ApplicationVersionText;
   if DM.adsQueryValue.Active then
   	DM.adsQueryValue.Close;
@@ -681,7 +712,31 @@ begin
 +'SELECT '
 +'       COUNT(DISTINCT OrdersHead.orderid) AS OrdersCount, '
 +'       COUNT(osbc.id)                     AS Positions  , '
-+'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder '
++'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder, '
++'  ( '
++'    select '
++'      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) '
++'    from '
++'      OrdersHead '
++'      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.OrderId '
++'    WHERE OrdersHead.ClientId = :ClientId '
++'       and OrdersHead.senddate > curdate() + interval (1-day(curdate())) day '
++'       AND OrdersHead.Closed = 1 '
++'       AND OrdersHead.send = 1 '
++'       AND OrdersList.OrderCount>0 '
++'  ) as sumbycurrentmonth, '
++'  ( '
++'    select '
++'      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) '
++'    from '
++'      OrdersHead '
++'      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.OrderId '
++'    WHERE OrdersHead.ClientId = :ClientId '
++'       and OrdersHead.senddate > curdate() + interval (-WEEKDAY(curdate())) day '
++'       AND OrdersHead.Closed = 1 '
++'       AND OrdersHead.send = 1 '
++'       AND OrdersList.OrderCount>0 '
++'  ) as sumbycurrentweek '
 +'FROM '
 +'       OrdersHead '
 +'       INNER JOIN OrdersList osbc       ON (OrdersHead.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
@@ -699,6 +754,10 @@ begin
 			 [ DM.adsQueryValue.FieldByName( 'Positions').AsInteger]);
     StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',
        [ DM.adsQueryValue.FieldByName( 'SumOrder').AsCurrency ]);
+    StatusBar.Panels[ 4].Text := Format( 'За месяц : %0.2f',
+       [ DM.adsQueryValue.FieldByName( 'sumbycurrentmonth').AsCurrency ]);
+    StatusBar.Panels[ 5].Text := Format( 'За неделю : %0.2f',
+       [ DM.adsQueryValue.FieldByName( 'sumbycurrentweek').AsCurrency ]);
 	finally
 		DM.adsQueryValue.Close;
 	end;
@@ -733,6 +792,8 @@ begin
         ShowSummary;
     end;
   end;
+  //Обновляем ToolBar в случае смены клиента после обновления
+  ToolBar.Invalidate;
 end;
 
 function TMainForm.CheckUnsendOrders: boolean;
@@ -849,6 +910,7 @@ begin
   actDefectives.Enabled := False;
   actClosedOrders.Enabled := False;
   actWayBill.Enabled := False;
+  actMnnSearch.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -863,6 +925,7 @@ begin
   actDefectives.Enabled := True;
   actClosedOrders.Enabled := True;
   actWayBill.Enabled := True;
+  actMnnSearch.Enabled := True;
 end;
 
 procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
@@ -915,6 +978,9 @@ end;
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
 	RunExchange( [eaGetWaybills] );
+
+  //Обновляем ToolBar в случае смены клиента после обновления
+  ToolBar.Invalidate;
 end;
 
 procedure TMainForm.actSynonymSearchExecute(Sender: TObject);
@@ -973,6 +1039,8 @@ begin
     frmSendLetter.Free;
   end;
 
+  //Обновляем ToolBar в случае смены клиента после обновления
+  ToolBar.Invalidate;
 end;
 
 procedure TMainForm.actViewDocsExecute(Sender: TObject);
@@ -1138,12 +1206,54 @@ begin
      and not Assigned(ActiveChild)
      and (not Assigned(ActiveControl) or (ActiveControl = Browser))
      and (Msg.Message = WM_KEYDOWN)
-     and (Ord(Msg.wParam) >= 32)
+     and (Ord(Msg.wParam) = 32)
   then
   begin
     actOrderAll.Execute;
     Handled:=true;
   end;
+end;
+
+procedure TMainForm.actMnnSearchExecute(Sender: TObject);
+begin
+  ShowMnnSearch;
+end;
+
+procedure TMainForm.AddFormsToFree;
+var
+  i: Integer;
+begin
+  for i := ControlCount - 1 downto 0 do
+    if Controls[i] is TChildForm then
+      if deletedForms.IndexOf(Controls[i]) = -1 then begin
+        deletedForms.Add(Controls[i]);
+        Controls[i].Parent := nil;
+      end;
+  ActiveChild := nil;
+  //todo: ClientId-UserId
+  if (Length(CurrentUser) > 0) then
+    Self.Caption := Application.Title + ' - ' + CurrentUser
+  else
+    Self.Caption := Application.Title;
+  SetOrdersInfo;
+end;
+
+procedure TMainForm.RealFreeChildForms;
+var
+  i: Integer;
+begin
+  for i := deletedForms.Count - 1 downto 0 do begin
+    deletedForms[i].Free;
+    deletedForms.Delete(i);
+  end;
+end;
+
+procedure TMainForm.AddFormToFree(childForm: TChildForm);
+begin
+  if deletedForms.IndexOf(childForm) = -1 then begin
+    deletedForms.Add(childForm);
+    childForm.Parent := nil;
+  end
 end;
 
 end.

@@ -205,6 +205,14 @@ inherited OrdersHForm: TOrdersHForm
                 Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
                 Title.TitleButton = True
                 Width = 40
+              end
+              item
+                EditButtons = <>
+                FieldName = 'sumbycurrentweek'
+                Footers = <>
+                Title.Caption = #1053#1077#1076#1077#1083#1100#1085#1099#1081' '#1079#1072#1082#1072#1079
+                Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+                Title.TitleButton = True
               end>
           end
           object dbgSendedOrders: TToughDBGrid
@@ -791,7 +799,26 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.Closed = 1'
       '     AND header.send = 1'
       '     AND OrdersList.OrderCount>0'
-      ') as sumbycurrentmonth'
+      ') as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '('
+      '  select'
+      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '  from'
+      '    OrdersHead header'
+      
+        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
+        'd)'
+      '  WHERE OrdersHead.ClientId = :ClientId'
+      '     AND header.PriceCode = OrdersHead.PriceCode'
+      '     AND header.RegionCode = OrdersHead.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
+        'e())) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND OrdersList.OrderCount>0'
+      '  ) as sumbycurrentweek'
       'FROM'
       '   OrdersHead'
       '   inner join OrdersList on '
@@ -866,7 +893,26 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.Closed = 1'
       '     AND header.send = 1'
       '     AND OrdersList.OrderCount>0'
-      ') as sumbycurrentmonth'
+      ') as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '('
+      '  select'
+      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '  from'
+      '    OrdersHead header'
+      
+        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
+        'd)'
+      '  WHERE OrdersHead.ClientId = :ClientId'
+      '     AND header.PriceCode = OrdersHead.PriceCode'
+      '     AND header.RegionCode = OrdersHead.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
+        'e())) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND OrdersList.OrderCount>0'
+      '  ) as sumbycurrentweek'
       'FROM'
       '   OrdersHead'
       '   inner join OrdersList on '
@@ -903,6 +949,10 @@ inherited OrdersHForm: TOrdersHForm
       item
         DataType = ftUnknown
         Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -994,6 +1044,7 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormsumbycurrentmonth: TFloatField
       FieldName = 'sumbycurrentmonth'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsOrdersHFormDisplayOrderId: TLargeintField
       FieldName = 'DisplayOrderId'
@@ -1006,6 +1057,10 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormDifferentQuantityCount: TLargeintField
       FieldName = 'DifferentQuantityCount'
+    end
+    object adsOrdersHFormsumbycurrentweek: TFloatField
+      FieldName = 'sumbycurrentweek'
+      DisplayFormat = '0.00;;'#39#39
     end
   end
   object adsCore: TMyQuery
@@ -1109,8 +1164,11 @@ inherited OrdersHForm: TOrdersHForm
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) '
+        '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
+        'e)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
+        'e) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'
@@ -1210,8 +1268,11 @@ inherited OrdersHForm: TOrdersHForm
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) '
+        '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
+        'e)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
+        'e) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'

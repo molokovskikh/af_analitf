@@ -152,65 +152,67 @@ const
 {$endif}
 
 {$ifndef USENEWMYSQLTYPES}
-  MYSQL_TYPE_DECIMAL            = 0;
-  MYSQL_TYPE_TINY               = 1;
-  MYSQL_TYPE_SHORT              = 2;
-  MYSQL_TYPE_LONG               = 3;
-  MYSQL_TYPE_FLOAT              = 4;
-  MYSQL_TYPE_DOUBLE             = 5;
-  MYSQL_TYPE_NULL               = 6;
-  MYSQL_TYPE_TIMESTAMP          = 7;
-  MYSQL_TYPE_LONGLONG           = 8;
-  MYSQL_TYPE_INT24              = 9;
-  MYSQL_TYPE_DATE               = 10;
-  MYSQL_TYPE_TIME               = 11;
-  MYSQL_TYPE_DATETIME           = 12;
-  MYSQL_TYPE_YEAR               = 13;
-  MYSQL_TYPE_NEWDATE            = 14;
-  MYSQL_TYPE_VARCHAR            = 15;
-  MYSQL_TYPE_BIT                = 16;
-  MYSQL_TYPE_NEWDECIMAL         = 246;
-  MYSQL_TYPE_ENUM               = 247;
-  MYSQL_TYPE_SET                = 248;
-  MYSQL_TYPE_TINY_BLOB          = 249;
-  MYSQL_TYPE_MEDIUM_BLOB        = 250;
-  MYSQL_TYPE_LONG_BLOB          = 251;
-  MYSQL_TYPE_BLOB               = 252;
-  MYSQL_TYPE_VAR_STRING         = 253;
-  MYSQL_TYPE_STRING             = 254;
-  MYSQL_TYPE_GEOMETRY           = 255;
+var
+  MYSQL_TYPE_DECIMAL            : byte = 0;
+  MYSQL_TYPE_TINY               : byte = 1;
+  MYSQL_TYPE_SHORT              : byte = 2;
+  MYSQL_TYPE_LONG               : byte = 3;
+  MYSQL_TYPE_FLOAT              : byte = 4;
+  MYSQL_TYPE_DOUBLE             : byte = 5;
+  MYSQL_TYPE_NULL               : byte = 6;
+  MYSQL_TYPE_TIMESTAMP          : byte = 7;
+  MYSQL_TYPE_LONGLONG           : byte = 8;
+  MYSQL_TYPE_INT24              : byte = 9;
+  MYSQL_TYPE_DATE               : byte = 10;
+  MYSQL_TYPE_TIME               : byte = 11;
+  MYSQL_TYPE_DATETIME           : byte = 12;
+  MYSQL_TYPE_YEAR               : byte = 13;
+  MYSQL_TYPE_NEWDATE            : byte = 14;
+  MYSQL_TYPE_VARCHAR            : byte = 15;
+  MYSQL_TYPE_BIT                : byte = 16;
+  MYSQL_TYPE_NEWDECIMAL         : byte = 246;
+  MYSQL_TYPE_ENUM               : byte = 247;
+  MYSQL_TYPE_SET                : byte = 248;
+  MYSQL_TYPE_TINY_BLOB          : byte = 249;
+  MYSQL_TYPE_MEDIUM_BLOB        : byte = 250;
+  MYSQL_TYPE_LONG_BLOB          : byte = 251;
+  MYSQL_TYPE_BLOB               : byte = 252;
+  MYSQL_TYPE_VAR_STRING         : byte = 253;
+  MYSQL_TYPE_STRING             : byte = 254;
+  MYSQL_TYPE_GEOMETRY           : byte = 255;
 
 type
-  TMySqlFieldType = MYSQL_TYPE_DECIMAL..MYSQL_TYPE_GEOMETRY; // enum_field_types
-  
+  TMySqlFieldType = 0..255; // enum_field_types
+
 {$else}
-  MYSQL_TYPE_DECIMAL            = 5;
-  MYSQL_TYPE_TINY               = 12;
-  MYSQL_TYPE_SHORT              = 44;
-  MYSQL_TYPE_LONG               = 2;
-  MYSQL_TYPE_FLOAT              = 31;
-  MYSQL_TYPE_DOUBLE             = 52;
-  MYSQL_TYPE_NULL               = 66;
-  MYSQL_TYPE_TIMESTAMP          = 77;
-  MYSQL_TYPE_LONGLONG           = 75;
-  MYSQL_TYPE_INT24              = 41;
-  MYSQL_TYPE_DATE               = 11;
-  MYSQL_TYPE_TIME               = 55;
-  MYSQL_TYPE_DATETIME           = 78;
-  MYSQL_TYPE_YEAR               = 99;
-  MYSQL_TYPE_NEWDATE            = 36;
-  MYSQL_TYPE_VARCHAR            = 1;
-  MYSQL_TYPE_BIT                = 62;
-  MYSQL_TYPE_NEWDECIMAL         = 250;
-  MYSQL_TYPE_ENUM               = 248;
-  MYSQL_TYPE_SET                = 247;
-  MYSQL_TYPE_TINY_BLOB          = 249;
-  MYSQL_TYPE_MEDIUM_BLOB        = 246;
-  MYSQL_TYPE_LONG_BLOB          = 251;
-  MYSQL_TYPE_BLOB               = 253;
-  MYSQL_TYPE_VAR_STRING         = 252;
-  MYSQL_TYPE_STRING             = 255;
-  MYSQL_TYPE_GEOMETRY           = 254;
+var
+  MYSQL_TYPE_DECIMAL            : byte = 5;
+  MYSQL_TYPE_TINY               : byte = 12;
+  MYSQL_TYPE_SHORT              : byte = 44;
+  MYSQL_TYPE_LONG               : byte = 2;
+  MYSQL_TYPE_FLOAT              : byte = 31;
+  MYSQL_TYPE_DOUBLE             : byte = 52;
+  MYSQL_TYPE_NULL               : byte = 66;
+  MYSQL_TYPE_TIMESTAMP          : byte = 77;
+  MYSQL_TYPE_LONGLONG           : byte = 75;
+  MYSQL_TYPE_INT24              : byte = 41;
+  MYSQL_TYPE_DATE               : byte = 11;
+  MYSQL_TYPE_TIME               : byte = 55;
+  MYSQL_TYPE_DATETIME           : byte = 78;
+  MYSQL_TYPE_YEAR               : byte = 99;
+  MYSQL_TYPE_NEWDATE            : byte = 36;
+  MYSQL_TYPE_VARCHAR            : byte = 1;
+  MYSQL_TYPE_BIT                : byte = 62;
+  MYSQL_TYPE_NEWDECIMAL         : byte = 250;
+  MYSQL_TYPE_ENUM               : byte = 248;
+  MYSQL_TYPE_SET                : byte = 247;
+  MYSQL_TYPE_TINY_BLOB          : byte = 249;
+  MYSQL_TYPE_MEDIUM_BLOB        : byte = 246;
+  MYSQL_TYPE_LONG_BLOB          : byte = 251;
+  MYSQL_TYPE_BLOB               : byte = 253;
+  MYSQL_TYPE_VAR_STRING         : byte = 252;
+  MYSQL_TYPE_STRING             : byte = 255;
+  MYSQL_TYPE_GEOMETRY           : byte = 254;
 
 type
   {
@@ -224,36 +226,37 @@ type
 {$endif}
 
 const
-  FIELD_TYPE_DECIMAL            = MYSQL_TYPE_DECIMAL;
-  FIELD_TYPE_TINY               = MYSQL_TYPE_TINY;
-  FIELD_TYPE_SHORT              = MYSQL_TYPE_SHORT;
-  FIELD_TYPE_LONG               = MYSQL_TYPE_LONG;
-  FIELD_TYPE_FLOAT              = MYSQL_TYPE_FLOAT;
-  FIELD_TYPE_DOUBLE             = MYSQL_TYPE_DOUBLE;
-  FIELD_TYPE_NULL               = MYSQL_TYPE_NULL;
-  FIELD_TYPE_TIMESTAMP          = MYSQL_TYPE_TIMESTAMP;
-  FIELD_TYPE_LONGLONG           = MYSQL_TYPE_LONGLONG;
-  FIELD_TYPE_INT24              = MYSQL_TYPE_INT24;
-  FIELD_TYPE_DATE               = MYSQL_TYPE_DATE;
-  FIELD_TYPE_TIME               = MYSQL_TYPE_TIME;
-  FIELD_TYPE_DATETIME           = MYSQL_TYPE_DATETIME;
-  FIELD_TYPE_YEAR               = MYSQL_TYPE_YEAR;
-  FIELD_TYPE_NEWDATE            = MYSQL_TYPE_NEWDATE;
-  FIELD_TYPE_BIT                = MYSQL_TYPE_BIT;
-  FIELD_TYPE_NEWDECIMAL         = MYSQL_TYPE_NEWDECIMAL;
-  FIELD_TYPE_ENUM               = MYSQL_TYPE_ENUM;
-  FIELD_TYPE_SET                = MYSQL_TYPE_SET;
-  FIELD_TYPE_TINY_BLOB          = MYSQL_TYPE_TINY_BLOB;
-  FIELD_TYPE_MEDIUM_BLOB        = MYSQL_TYPE_MEDIUM_BLOB;
-  FIELD_TYPE_LONG_BLOB          = MYSQL_TYPE_LONG_BLOB;
-  FIELD_TYPE_BLOB               = MYSQL_TYPE_BLOB;
-  FIELD_TYPE_VAR_STRING         = MYSQL_TYPE_VAR_STRING;
-  FIELD_TYPE_STRING             = MYSQL_TYPE_STRING;
-  FIELD_TYPE_CHAR               = MYSQL_TYPE_TINY;
-  FIELD_TYPE_INTERVAL           = MYSQL_TYPE_ENUM;
-  FIELD_TYPE_GEOMETRY           = MYSQL_TYPE_GEOMETRY;
+  FIELD_TYPE_DECIMAL            : byte = 0;
+  FIELD_TYPE_TINY               : byte = 0;
+  FIELD_TYPE_SHORT              : byte = 0;
+  FIELD_TYPE_LONG               : byte = 0;
+  FIELD_TYPE_FLOAT              : byte = 0;
+  FIELD_TYPE_DOUBLE             : byte = 0;
+  FIELD_TYPE_NULL               : byte = 0;
+  FIELD_TYPE_TIMESTAMP          : byte = 0;
+  FIELD_TYPE_LONGLONG           : byte = 0;
+  FIELD_TYPE_INT24              : byte = 0;
+  FIELD_TYPE_DATE               : byte = 0;
+  FIELD_TYPE_TIME               : byte = 0;
+  FIELD_TYPE_DATETIME           : byte = 0;
+  FIELD_TYPE_YEAR               : byte = 0;
+  FIELD_TYPE_NEWDATE            : byte = 0;
+  FIELD_TYPE_BIT                : byte = 0;
+  FIELD_TYPE_NEWDECIMAL         : byte = 0;
+  FIELD_TYPE_ENUM               : byte = 0;
+  FIELD_TYPE_SET                : byte = 0;
+  FIELD_TYPE_TINY_BLOB          : byte = 0;
+  FIELD_TYPE_MEDIUM_BLOB        : byte = 0;
+  FIELD_TYPE_LONG_BLOB          : byte = 0;
+  FIELD_TYPE_BLOB               : byte = 0;
+  FIELD_TYPE_VAR_STRING         : byte = 0;
+  FIELD_TYPE_STRING             : byte = 0;
+  FIELD_TYPE_CHAR               : byte = 0;
+  FIELD_TYPE_INTERVAL           : byte = 0;
+  FIELD_TYPE_GEOMETRY           : byte = 0;
 
 // errmsg.h
+const
 
   CLIENT_ERRMAP = 2; (* Errormap used by my_error() *)
   CR_UNKNOWN_ERROR = 2000;
@@ -862,6 +865,10 @@ type
     msUseResult
   );
 
+  procedure SwithTypesToOld();
+
+  procedure SwithTypesToNew();
+
 implementation
 
 
@@ -1002,10 +1009,135 @@ begin
 {$ENDIF}
 end;*)
 
+procedure SwithTypesToOld();
+begin
+  MYSQL_TYPE_DECIMAL            := 0;
+  MYSQL_TYPE_TINY               := 1;
+  MYSQL_TYPE_SHORT              := 2;
+  MYSQL_TYPE_LONG               := 3;
+  MYSQL_TYPE_FLOAT              := 4;
+  MYSQL_TYPE_DOUBLE             := 5;
+  MYSQL_TYPE_NULL               := 6;
+  MYSQL_TYPE_TIMESTAMP          := 7;
+  MYSQL_TYPE_LONGLONG           := 8;
+  MYSQL_TYPE_INT24              := 9;
+  MYSQL_TYPE_DATE               := 10;
+  MYSQL_TYPE_TIME               := 11;
+  MYSQL_TYPE_DATETIME           := 12;
+  MYSQL_TYPE_YEAR               := 13;
+  MYSQL_TYPE_NEWDATE            := 14;
+  MYSQL_TYPE_VARCHAR            := 15;
+  MYSQL_TYPE_BIT                := 16;
+  MYSQL_TYPE_NEWDECIMAL         := 246;
+  MYSQL_TYPE_ENUM               := 247;
+  MYSQL_TYPE_SET                := 248;
+  MYSQL_TYPE_TINY_BLOB          := 249;
+  MYSQL_TYPE_MEDIUM_BLOB        := 250;
+  MYSQL_TYPE_LONG_BLOB          := 251;
+  MYSQL_TYPE_BLOB               := 252;
+  MYSQL_TYPE_VAR_STRING         := 253;
+  MYSQL_TYPE_STRING             := 254;
+  MYSQL_TYPE_GEOMETRY           := 255;
+
+  FIELD_TYPE_DECIMAL            := MYSQL_TYPE_DECIMAL;
+  FIELD_TYPE_TINY               := MYSQL_TYPE_TINY;
+  FIELD_TYPE_SHORT              := MYSQL_TYPE_SHORT;
+  FIELD_TYPE_LONG               := MYSQL_TYPE_LONG;
+  FIELD_TYPE_FLOAT              := MYSQL_TYPE_FLOAT;
+  FIELD_TYPE_DOUBLE             := MYSQL_TYPE_DOUBLE;
+  FIELD_TYPE_NULL               := MYSQL_TYPE_NULL;
+  FIELD_TYPE_TIMESTAMP          := MYSQL_TYPE_TIMESTAMP;
+  FIELD_TYPE_LONGLONG           := MYSQL_TYPE_LONGLONG;
+  FIELD_TYPE_INT24              := MYSQL_TYPE_INT24;
+  FIELD_TYPE_DATE               := MYSQL_TYPE_DATE;
+  FIELD_TYPE_TIME               := MYSQL_TYPE_TIME;
+  FIELD_TYPE_DATETIME           := MYSQL_TYPE_DATETIME;
+  FIELD_TYPE_YEAR               := MYSQL_TYPE_YEAR;
+  FIELD_TYPE_NEWDATE            := MYSQL_TYPE_NEWDATE;
+  FIELD_TYPE_BIT                := MYSQL_TYPE_BIT;
+  FIELD_TYPE_NEWDECIMAL         := MYSQL_TYPE_NEWDECIMAL;
+  FIELD_TYPE_ENUM               := MYSQL_TYPE_ENUM;
+  FIELD_TYPE_SET                := MYSQL_TYPE_SET;
+  FIELD_TYPE_TINY_BLOB          := MYSQL_TYPE_TINY_BLOB;
+  FIELD_TYPE_MEDIUM_BLOB        := MYSQL_TYPE_MEDIUM_BLOB;
+  FIELD_TYPE_LONG_BLOB          := MYSQL_TYPE_LONG_BLOB;
+  FIELD_TYPE_BLOB               := MYSQL_TYPE_BLOB;
+  FIELD_TYPE_VAR_STRING         := MYSQL_TYPE_VAR_STRING;
+  FIELD_TYPE_STRING             := MYSQL_TYPE_STRING;
+  FIELD_TYPE_CHAR               := MYSQL_TYPE_TINY;
+  FIELD_TYPE_INTERVAL           := MYSQL_TYPE_ENUM;
+  FIELD_TYPE_GEOMETRY           := MYSQL_TYPE_GEOMETRY;
+end;
+
+procedure SwithTypesToNew();
+begin
+  MYSQL_TYPE_DECIMAL            := 5;
+  MYSQL_TYPE_TINY               := 12;
+  MYSQL_TYPE_SHORT              := 44;
+  MYSQL_TYPE_LONG               := 2;
+  MYSQL_TYPE_FLOAT              := 31;
+  MYSQL_TYPE_DOUBLE             := 52;
+  MYSQL_TYPE_NULL               := 66;
+  MYSQL_TYPE_TIMESTAMP          := 77;
+  MYSQL_TYPE_LONGLONG           := 75;
+  MYSQL_TYPE_INT24              := 41;
+  MYSQL_TYPE_DATE               := 11;
+  MYSQL_TYPE_TIME               := 55;
+  MYSQL_TYPE_DATETIME           := 78;
+  MYSQL_TYPE_YEAR               := 99;
+  MYSQL_TYPE_NEWDATE            := 36;
+  MYSQL_TYPE_VARCHAR            := 1;
+  MYSQL_TYPE_BIT                := 62;
+  MYSQL_TYPE_NEWDECIMAL         := 250;
+  MYSQL_TYPE_ENUM               := 248;
+  MYSQL_TYPE_SET                := 247;
+  MYSQL_TYPE_TINY_BLOB          := 249;
+  MYSQL_TYPE_MEDIUM_BLOB        := 246;
+  MYSQL_TYPE_LONG_BLOB          := 251;
+  MYSQL_TYPE_BLOB               := 253;
+  MYSQL_TYPE_VAR_STRING         := 252;
+  MYSQL_TYPE_STRING             := 255;
+  MYSQL_TYPE_GEOMETRY           := 254;
+
+  FIELD_TYPE_DECIMAL            := MYSQL_TYPE_DECIMAL;
+  FIELD_TYPE_TINY               := MYSQL_TYPE_TINY;
+  FIELD_TYPE_SHORT              := MYSQL_TYPE_SHORT;
+  FIELD_TYPE_LONG               := MYSQL_TYPE_LONG;
+  FIELD_TYPE_FLOAT              := MYSQL_TYPE_FLOAT;
+  FIELD_TYPE_DOUBLE             := MYSQL_TYPE_DOUBLE;
+  FIELD_TYPE_NULL               := MYSQL_TYPE_NULL;
+  FIELD_TYPE_TIMESTAMP          := MYSQL_TYPE_TIMESTAMP;
+  FIELD_TYPE_LONGLONG           := MYSQL_TYPE_LONGLONG;
+  FIELD_TYPE_INT24              := MYSQL_TYPE_INT24;
+  FIELD_TYPE_DATE               := MYSQL_TYPE_DATE;
+  FIELD_TYPE_TIME               := MYSQL_TYPE_TIME;
+  FIELD_TYPE_DATETIME           := MYSQL_TYPE_DATETIME;
+  FIELD_TYPE_YEAR               := MYSQL_TYPE_YEAR;
+  FIELD_TYPE_NEWDATE            := MYSQL_TYPE_NEWDATE;
+  FIELD_TYPE_BIT                := MYSQL_TYPE_BIT;
+  FIELD_TYPE_NEWDECIMAL         := MYSQL_TYPE_NEWDECIMAL;
+  FIELD_TYPE_ENUM               := MYSQL_TYPE_ENUM;
+  FIELD_TYPE_SET                := MYSQL_TYPE_SET;
+  FIELD_TYPE_TINY_BLOB          := MYSQL_TYPE_TINY_BLOB;
+  FIELD_TYPE_MEDIUM_BLOB        := MYSQL_TYPE_MEDIUM_BLOB;
+  FIELD_TYPE_LONG_BLOB          := MYSQL_TYPE_LONG_BLOB;
+  FIELD_TYPE_BLOB               := MYSQL_TYPE_BLOB;
+  FIELD_TYPE_VAR_STRING         := MYSQL_TYPE_VAR_STRING;
+  FIELD_TYPE_STRING             := MYSQL_TYPE_STRING;
+  FIELD_TYPE_CHAR               := MYSQL_TYPE_TINY;
+  FIELD_TYPE_INTERVAL           := MYSQL_TYPE_ENUM;
+  FIELD_TYPE_GEOMETRY           := MYSQL_TYPE_GEOMETRY;
+end;
+
 
 initialization
   Assert(SizeOf(TMYSQL_FIELD3) = 32);
 //  Assert(SizeOf(TMySqlOption) = SizeOf(Integer));
+{$ifndef USENEWMYSQLTYPES}
+  SwithTypesToOld();
+{$else}
+  SwithTypesToNew();
+{$endif}
 
 
 finalization

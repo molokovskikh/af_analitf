@@ -20,7 +20,8 @@ uses SysUtils, TypInfo;
 
 procedure CreateExchangeLog();
 begin
-  ExchangeLog := TTracer.Create('Exchange', 'log', -1);
+  ExchangeLog := TTracer.Create(
+    IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + 'Exchange', 'log', -1);
 end;
 
 procedure WriteExchangeLog(ASubSystem, AMessage : string);

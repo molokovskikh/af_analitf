@@ -94,9 +94,9 @@ OutputDir=.\bin
 UnitOutputDir=.\unit
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=..\lib\MyDac\Source\Delphi7\MyDAC\Lib
+SearchPath=..\lib\MyDac\Source
 Packages=vcl;rtl;vclx;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualdbclx;vclactnband;vclshlctrls;dclOffice2k;Indy70;mydacvcl70;mydac70;mysqlmon70
-Conditionals=
+Conditionals=USENEWMYSQLTYPES;
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
@@ -136,13 +136,17 @@ ProductVersion=1.0.0.0
 Comments=
 [Excluded Packages]
 c:\program files\borland\delphi7\Projects\Bpl\dclIndy70.bpl=Internet Direct (Indy) for D6 Property and Component Editors
+[HistoryLists\hlConditionals]
+Count=1
+Item0=USENEWMYSQLTYPES;
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=2
-Item0=..\lib\MyDac\Source\Delphi7\MyDAC\Lib
-Item1=..\..\lib\MyDac\Source\Delphi7\MyDAC\Lib
+Count=3
+Item0=..\lib\MyDac\Source
+Item1=..\lib\MyDac\Source\Delphi7\MyDAC\Lib
+Item2=..\..\lib\MyDac\Source\Delphi7\MyDAC\Lib
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit

@@ -1,6 +1,6 @@
 inherited NamesFormsForm: TNamesFormsForm
-  Left = 360
-  Top = 264
+  Left = 473
+  Top = 347
   Caption = #1057#1087#1080#1089#1086#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
   ClientWidth = 687
   OldCreateOrder = True
@@ -62,23 +62,23 @@ inherited NamesFormsForm: TNamesFormsForm
   end
   object pnlTopOld: TPanel [1]
     Left = 0
-    Top = 0
+    Top = 49
     Width = 687
-    Height = 419
+    Height = 370
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 266
       Top = 0
-      Height = 419
+      Height = 370
     end
     object dbgNames: TToughDBGrid
       Tag = 4
       Left = 0
       Top = 0
       Width = 266
-      Height = 419
+      Height = 370
       Align = alLeft
       AutoFitColWidths = True
       DataSource = dsNames
@@ -125,7 +125,7 @@ inherited NamesFormsForm: TNamesFormsForm
       Left = 269
       Top = 0
       Width = 418
-      Height = 419
+      Height = 370
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
@@ -134,7 +134,7 @@ inherited NamesFormsForm: TNamesFormsForm
         Left = 0
         Top = 0
         Width = 418
-        Height = 284
+        Height = 235
         Align = alClient
         AutoFitColWidths = True
         DataSource = dsForms
@@ -173,7 +173,7 @@ inherited NamesFormsForm: TNamesFormsForm
       end
       object pWebBrowser: TPanel
         Left = 0
-        Top = 284
+        Top = 235
         Width = 418
         Height = 135
         Align = alBottom
@@ -207,15 +207,15 @@ inherited NamesFormsForm: TNamesFormsForm
   end
   object pnlTop: TPanel [2]
     Left = 0
-    Top = 0
+    Top = 49
     Width = 687
-    Height = 419
+    Height = 370
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
     object pWebBrowserCatalog: TPanel
       Left = 0
-      Top = 284
+      Top = 235
       Width = 687
       Height = 135
       Align = alBottom
@@ -250,7 +250,7 @@ inherited NamesFormsForm: TNamesFormsForm
       Left = 0
       Top = 41
       Width = 687
-      Height = 243
+      Height = 194
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCatalog
@@ -335,6 +335,56 @@ inherited NamesFormsForm: TNamesFormsForm
       end
     end
   end
+  object gbFilters: TGroupBox [3]
+    Left = 0
+    Top = 0
+    Width = 687
+    Height = 49
+    Align = alTop
+    Caption = ' '#1060#1080#1083#1100#1090#1088#1099' '
+    TabOrder = 3
+    object lUsedFilter: TLabel
+      Left = 392
+      Top = 24
+      Width = 49
+      Height = 13
+      Caption = 'lUsedFilter'
+      Color = clBtnFace
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clRed
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentColor = False
+      ParentFont = False
+    end
+    object sbShowSynonymMNN: TSpeedButton
+      Left = 214
+      Top = 16
+      Width = 171
+      Height = 25
+      AllowAllUp = True
+      GroupIndex = 1
+      Caption = #1055#1086#1082#1072#1079#1072#1090#1100' '#1089#1080#1085#1086#1085#1080#1084#1099' (Ctrl+N)'
+      OnClick = sbShowSynonymMNNClick
+    end
+    object cbMnnFilter: TComboBox
+      Left = 8
+      Top = 16
+      Width = 193
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      ItemIndex = 0
+      TabOrder = 0
+      Text = #1042#1089#1077
+      OnSelect = cbMnnFilterSelect
+      Items.Strings = (
+        #1042#1089#1077
+        #1046#1080#1079#1085#1077#1085#1085#1086' '#1074#1072#1078#1085#1099#1077
+        #1054#1073#1103#1079#1072#1090#1077#1083#1100#1085#1099#1081' '#1072#1089#1089#1086#1088#1090#1080#1084#1077#1085#1090)
+    end
+  end
   object dsNames: TDataSource
     DataSet = adsNames
     Left = 80
@@ -366,6 +416,11 @@ inherited NamesFormsForm: TNamesFormsForm
     object actSearchInBegin: TAction
       Caption = #1048#1089#1082#1072#1090#1100' '#1074' '#1085#1072#1095#1072#1083#1077' '#1089#1083#1086#1074#1072
       OnExecute = actSearchInBeginExecute
+    end
+    object actShowSynonymMNN: TAction
+      Caption = 'actShowSynonymMNN'
+      ShortCut = 16462
+      OnExecute = actShowSynonymMNNExecute
     end
   end
   object adsNamesOld: TpFIBDataSet
@@ -420,19 +475,9 @@ inherited NamesFormsForm: TNamesFormsForm
   end
   object adsForms: TMyQuery
     Connection = DM.MyConnection
-    SQL.Strings = (
-      'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists'
-      '    FROM CATALOGS'
-      '    WHERE CATALOGS.ShortCode = :AShortCode'
-      '    order by CATALOGS.Form;')
     MasterSource = dsNames
     Left = 456
     Top = 184
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ashortcode'
-      end>
   end
   object adsCatalog: TMyQuery
     Connection = DM.MyConnection
@@ -441,14 +486,6 @@ inherited NamesFormsForm: TNamesFormsForm
   end
   object adsNames: TMyQuery
     Connection = DM.MyConnection
-    SQL.Strings = (
-      'SELECT'
-      
-        '        cat.ShortCode AS AShortCode, cat.Name, sum(CoreExists) a' +
-        's CoreExists'
-      '      FROM CATALOGS cat'
-      '      group by cat.ShortCode, cat.Name'
-      '      ORDER BY cat.Name;')
     Left = 128
     Top = 184
   end

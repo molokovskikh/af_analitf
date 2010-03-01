@@ -83,6 +83,7 @@ procedure InternalDoSendLetter(
   Attachs : TStringList;   //Список приложений
   Subject, Body : String); //Тема письма и тело письма
 function GetLibraryVersionFromPath(AName: String): String;
+function GetBuildNumberLibraryVersionFromPath(AName: String): Word;
 function  GetLibraryVersionFromAppPath : TObjectList;
 //устанавливаем параметры для SSL-соединения
 procedure InternalSetSSLParams(SSL : TIdSSLIOHandlerSocketOpenSSL);
@@ -652,11 +653,18 @@ var
         '',
         false,
         nil);
-      if SevenZipRes <> 0 then
-        raise Exception.CreateFmt('Не удалось заархивировать отправляемые файлы. Код ошибки %d', [SevenZipRes]);
     finally
       SZCS.Leave;
     end;
+    if SevenZipRes <> 0 then
+      raise Exception.CreateFmt(
+        'Не удалось заархивировать отправляемые файлы. ' +
+        'Код ошибки %d. ' +
+        'Код ошибки 7-zip: %d.'#13#10 +
+        'Текст ошибки: %s',
+        [SevenZipRes,
+         SevenZip.LastSevenZipErrorCode,
+         SevenZip.LastError]);
   end;
 
   procedure EncodeToBase64;
@@ -760,6 +768,27 @@ begin
   else
     Result := '';
 end;
+
+function GetBuildNumberLibraryVersionFromPath(AName: String): Word;
+var
+  RxVer : TVersionInfo;
+begin
+  if FileExists(AName) then begin
+    try
+      RxVer := TVersionInfo.Create(AName);
+      try
+        Result := RxVer.FileLongVersion.All[3];
+      finally
+        RxVer.Free;
+      end;
+    except
+      Result := 0;
+    end;
+  end
+  else
+    Result := 0;
+end;
+
 
 function GetLibraryVersionFromAppPath : TObjectList;
 var

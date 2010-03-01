@@ -1,8 +1,8 @@
 object DM: TDM
   OldCreateOrder = True
   OnCreate = DMCreate
-  Left = 369
-  Top = 233
+  Left = 484
+  Top = 306
   Height = 627
   Width = 859
   object frReport: TfrReport
@@ -1462,7 +1462,8 @@ object DM: TDM
       
         'SELECT CLIENTS.NAME, CLIENTS.REGIONCODE, CLIENTS.EXCESS, CLIENTS' +
         '.DELTAMODE, CLIENTS.MAXUSERS, CLIENTS.REQMASK, CLIENTS.CALCULATE' +
-        'LEADER, CLIENTS.ONLYLEADERS FROM CLIENTS'
+        'LEADER, CLIENTS.ONLYLEADERS, CLIENTS.AllowDelayOfPayment FROM CL' +
+        'IENTS'
       'WHERE'
       '  CLIENTS.CLIENTID = :CLIENTID')
     Connection = MyConnection
@@ -1476,7 +1477,8 @@ object DM: TDM
       ' MAXUSERS,'
       ' REQMASK,'
       ' CALCULATELEADER,'
-      ' ONLYLEADERS'
+      ' ONLYLEADERS,'
+      ' AllowDelayOfPayment'
       'FROM'
       ' CLIENTS')
     AfterOpen = adtClientsOldAfterOpen
@@ -1509,6 +1511,9 @@ object DM: TDM
     end
     object adtClientsONLYLEADERS: TBooleanField
       FieldName = 'ONLYLEADERS'
+    end
+    object adtClientsAllowDelayOfPayment: TBooleanField
+      FieldName = 'AllowDelayOfPayment'
     end
   end
   object adsRetailMargins: TMyQuery
@@ -1560,7 +1565,7 @@ object DM: TDM
   end
   object MySQLMonitor: TMySQLMonitor
     Active = False
-    TraceFlags = [tfQPrepare, tfQExecute, tfQFetch, tfError, tfStmt, tfService, tfMisc, tfParams]
+    TraceFlags = [tfQPrepare, tfQExecute, tfQFetch, tfError, tfStmt, tfConnect, tfTransact, tfBlob, tfService, tfMisc, tfParams]
     OnSQL = MySQLMonitorSQL
     Left = 376
     Top = 8
@@ -2456,8 +2461,11 @@ object DM: TDM
         '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
         ' (osbc.CoreId = CCore.CoreId)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) '
+        '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
+        'e)'
+      
+        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
+        'e) '
       
         '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
         'Id'

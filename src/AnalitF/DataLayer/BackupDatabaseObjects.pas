@@ -54,7 +54,7 @@ begin
 +'    primary key (`ID`)                      , '
 +'    unique key `PK_RETAILMARGINS` (`ID`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 function TRetailMarginsTable.GetInsertSQL(DatabasePrefix: String): String;
@@ -103,7 +103,7 @@ begin
 +'    key `IDX_ORDERSH_REGIONCODE` (`REGIONCODE`)    , ' 
 +'    key `IDX_ORDERSH_SENDDATE` (`SENDDATE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TOrdersListTable }
@@ -153,7 +153,7 @@ begin
 +'    key `IDX_ORDERS_SYNONYMCODE` (`SYNONYMCODE`)         , ' 
 +'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TReceivedDocsTable }
@@ -176,7 +176,7 @@ begin
 +'    primary key (`ID`)    , '
 +'    unique key `PK_RECEIVEDDOCS` (`ID`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 initialization

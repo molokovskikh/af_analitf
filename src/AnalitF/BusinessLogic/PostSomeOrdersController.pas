@@ -204,7 +204,7 @@ begin
   postLeaderMinPriceCode := '';
   try
     if Length(dataSet.FieldByName('RealPRICE').AsString) > 0 then
-      S := dataSet.FieldByName('PRICE').AsString
+      S := dataSet.FieldByName('RealPRICE').AsString
     else
       S := CurrToStr(0.0);
     TmpOrderCost := StringReplace(S, '.', FDataLayer.FFS.DecimalSeparator, [rfReplaceAll]);
@@ -213,7 +213,7 @@ begin
   except
     on E : Exception do begin
       WriteExchangeLog('Exchange', 'Ошибка при расшифровке цены : ' + E.Message
-        + '  Строка : "' + dataSet.FieldByName('PRICE').AsString + '"');
+        + '  Строка : "' + dataSet.FieldByName('RealPRICE').AsString + '"');
       raise Exception.
         CreateFmt(
           'При отправке заказа для "%s" невозможно сформировать цену по позиции "%s".',
@@ -613,8 +613,8 @@ begin
 {
   if FileExists('PostSomeOrders.txt') then
     DeleteFile('PostSomeOrders.txt');
-}    
   FPostParams.SaveToFile('PostSomeOrders.txt');
+}    
   soapResult := FSOAP.SimpleInvoke('PostSomeOrders', FPostParams);
   rawResult := soapResult;
 

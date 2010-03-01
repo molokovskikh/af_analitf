@@ -70,6 +70,8 @@ uses
   U_DeleteDBThread in 'U_DeleteDBThread.pas',
   U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas',
   U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame},
+  HFileHelper in 'Helpers\HFileHelper.pas',
+  ULoginHelper in 'Helpers\ULoginHelper.pas',
   U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm},
   PreviousOrders in 'PreviousOrders.pas' {PreviousOrdersForm},
   CorrectOrders in 'CorrectOrders.pas' {CorrectOrdersForm},
@@ -86,7 +88,11 @@ uses
   DatabaseViews in 'DataLayer\DatabaseViews.pas',
   IgnoreDatabaseObjects in 'DataLayer\IgnoreDatabaseObjects.pas',
   SynonymDatabaseObjects in 'DataLayer\SynonymDatabaseObjects.pas',
-  GeneralDatabaseObjects in 'DataLayer\GeneralDatabaseObjects.pas';
+  GeneralDatabaseObjects in 'DataLayer\GeneralDatabaseObjects.pas',
+  U_framePosition in 'U_framePosition.pas' {framePosition: TFrame},
+  MnnSearch in 'MnnSearch.pas' {MnnSearchForm},
+  DescriptionFrm in 'DescriptionFrm.pas' {DescriptionForm},
+  NetworkAdapterHelpers in 'Helpers\NetworkAdapterHelpers.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
@@ -96,6 +102,9 @@ uses
 {$R CompareScript51.RES}
 {$R CompareScript52.RES}
 {$R CompareScript53.RES}
+{$R CompareScript54.RES}
+{$R CompareScript55.RES}
+{$R CompareScript56.RES}
 {$R LastScript.RES}
 
 var

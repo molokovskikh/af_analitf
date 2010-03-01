@@ -1122,6 +1122,9 @@ object CoreForm: TCoreForm
       '    Core.productid,'
       '    catalogs.fullcode AS AFullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1176,13 +1179,16 @@ object CoreForm: TCoreForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Catalogs'
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
@@ -1214,6 +1220,9 @@ object CoreForm: TCoreForm
       '    Core.productid,'
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1268,13 +1277,16 @@ object CoreForm: TCoreForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Catalogs'
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
@@ -1534,6 +1546,22 @@ object CoreForm: TCoreForm
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsCoreMnnId: TLargeintField
+      FieldName = 'MnnId'
+    end
+    object adsCoreMnn: TStringField
+      FieldName = 'Mnn'
+      Size = 250
+    end
+    object adsCoreDescriptionId: TLargeintField
+      FieldName = 'DescriptionId'
+    end
+    object adsCoreCatalogVitallyImportant: TBooleanField
+      FieldName = 'CatalogVitallyImportant'
+    end
+    object adsCoreCatalogMandatoryList: TBooleanField
+      FieldName = 'CatalogMandatoryList'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
@@ -1713,6 +1741,9 @@ object CoreForm: TCoreForm
       '    Core.productid,'
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1767,13 +1798,16 @@ object CoreForm: TCoreForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Catalogs'
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +

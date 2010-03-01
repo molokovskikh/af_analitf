@@ -154,7 +154,15 @@ inherited PricesForm: TPricesForm
           Title.Caption = #1052#1077#1089#1103#1095#1085#1099#1081' '#1079#1072#1082#1072#1079
           Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
           Title.TitleButton = True
-          Width = 76
+          Width = 60
+        end
+        item
+          EditButtons = <>
+          FieldName = 'sumbycurrentweek'
+          Footers = <>
+          Title.Caption = #1053#1077#1076#1077#1083#1100#1085#1099#1081' '#1079#1072#1082#1072#1079
+          Title.Hint = #1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1072' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+          Title.TitleButton = True
         end>
     end
     object GroupBox1: TGroupBox
@@ -591,7 +599,26 @@ inherited PricesForm: TPricesForm
       '       AND OrdersHead.Closed = 1'
       '       AND OrdersHead.send = 1'
       '       AND OrdersList.OrderCount>0'
-      '  ) as sumbycurrentmonth'
+      '  ) as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '  ('
+      '    select'
+      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '    from'
+      '      OrdersHead'
+      
+        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        'erId'
+      '    WHERE OrdersHead.ClientId = :ClientId'
+      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
+      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      
+        '       and OrdersHead.senddate > curdate() + interval (-WEEKDAY(' +
+        'curdate())) day'
+      '       AND OrdersHead.Closed = 1'
+      '       AND OrdersHead.send = 1'
+      '       AND OrdersList.OrderCount>0'
+      '  ) as sumbycurrentweek'
       'FROM '
       '  pricesshow'
       '  join pricesdata pd on (pd.PriceCode = pricesshow.PriceCode)'
@@ -647,7 +674,26 @@ inherited PricesForm: TPricesForm
       '       AND OrdersHead.Closed = 1'
       '       AND OrdersHead.send = 1'
       '       AND OrdersList.OrderCount>0'
-      '  ) as sumbycurrentmonth'
+      '  ) as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '  ('
+      '    select'
+      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '    from'
+      '      OrdersHead'
+      
+        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        'erId'
+      '    WHERE OrdersHead.ClientId = :ClientId'
+      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
+      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      
+        '       and OrdersHead.senddate > curdate() + interval (-WEEKDAY(' +
+        'curdate())) day'
+      '       AND OrdersHead.Closed = 1'
+      '       AND OrdersHead.send = 1'
+      '       AND OrdersList.OrderCount>0'
+      '  ) as sumbycurrentweek'
       'FROM '
       '  pricesshow'
       '  join pricesdata pd on (pd.PriceCode = pricesshow.PriceCode)'
@@ -675,6 +721,10 @@ inherited PricesForm: TPricesForm
       item
         DataType = ftUnknown
         Name = 'TimeZoneBias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -781,6 +831,11 @@ inherited PricesForm: TPricesForm
     end
     object adsPricesSumOrder: TFloatField
       FieldName = 'SumOrder'
+      ReadOnly = True
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsPricessumbycurrentweek: TFloatField
+      FieldName = 'sumbycurrentweek'
       ReadOnly = True
       DisplayFormat = '0.00;;'#39#39
     end

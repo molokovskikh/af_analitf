@@ -5304,7 +5304,7 @@ object ConfigForm: TConfigForm
           Height = 21
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5636,7 +5636,7 @@ object ConfigForm: TConfigForm
         Height = 73
         Caption = ' '#1040#1074#1090#1086#1084#1072#1090#1080#1095#1077#1089#1082#1086#1077' '#1091#1076#1072#1083#1077#1085#1080#1077' '#1091#1089#1090#1072#1088#1077#1074#1096#1080#1093' '#1079#1072#1082#1072#1079#1086#1074' '
         TabOrder = 2
-        object Label11: TLabel
+        object lHistoryDayCount: TLabel
           Left = 8
           Top = 24
           Width = 205
@@ -5758,6 +5758,7 @@ object ConfigForm: TConfigForm
         TabOrder = 8
         ValueChecked = 'True'
         ValueUnchecked = 'False'
+        Visible = False
       end
     end
   end

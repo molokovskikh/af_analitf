@@ -103,6 +103,18 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TMNNTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+  TDescriptionsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -124,7 +136,7 @@ begin
 +'    `InheritPrices`  tinyint(1) not null default ''0'', '
 +'    `IsFutureClient` tinyint(1) not null default ''0'' '
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TClientTable }
@@ -144,7 +156,7 @@ begin
 +'    `Name` varchar(50) not null, ' 
 +'    primary key (`Id`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TClientsTable }
@@ -174,7 +186,7 @@ begin
 +'    unique key `PK_CLIENTS` (`CLIENTID`)       , ' 
 +'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TDefectivesTable }
@@ -203,7 +215,7 @@ begin
 +'    primary key (`ID`)                      , ' 
 +'    unique key `PK_DEFECTIVES` (`ID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TProvidersTable }
@@ -226,7 +238,7 @@ begin
 +'    primary key (`FIRMCODE`)               , ' 
 +'    unique key `PK_CLIENTSDATAN` (`FIRMCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';  
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';  
 end;
 
 { TRegionsTable }
@@ -249,7 +261,7 @@ begin
 +'    unique key `PK_REGIONS` (`REGIONCODE`), ' 
 +'    unique key `IDX_REGIONS_REGIONNAME` (`REGIONNAME`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';  
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';  
 end;
 
 { TRegionalDataTable }
@@ -274,7 +286,7 @@ begin
 +'    key `FK_REGIONALDATA_FIRMCODE` (`FIRMCODE`) , '
 +'    key `FK_REGIONALDATA_REGIONCODE` (`REGIONCODE`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TPricesDataTable }
@@ -300,7 +312,7 @@ begin
 +'    unique key `PK_PRICESDATA` (`PRICECODE`), ' 
 +'    key `FK_PRICESDATA_FIRMCODE` (`FIRMCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TPricesRegionalDataTable }
@@ -329,7 +341,7 @@ begin
 +'    key `FK_PRD_REGIONCODE` (`REGIONCODE`)            , '
 +'    key `FK_PRICESREGIONALDATA_PRICECODE` (`PRICECODE`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TDelayOfPaymentsTable }
@@ -350,7 +362,7 @@ begin
 +'    `Percent` decimal(18,2) default null, ' 
 +'    primary key (`FirmCode`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TCatalogNamesTable }
@@ -373,7 +385,7 @@ begin
 +'    primary key (`ID`)                   , ' 
 +'    unique key `PK_CATALOGNAMES` (`ID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TCatalogFarmGroupsTable }
@@ -399,7 +411,7 @@ begin
 +'    unique key `PK_CATALOGFARMGROUPS` (`ID`), '
 +'    key `FK_CATALOG_FARM_GROUPS_PARENT` (`PARENTID`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TCatalogsTable }
@@ -414,22 +426,27 @@ end;
 function TCatalogsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `FULLCODE` bigint(20) not null  , ' 
-+'    `SHORTCODE` bigint(20) not null , ' 
-+'    `NAME`             varchar(250) default null, ' 
-+'    `FORM`             varchar(250) default null, ' 
-+'    `VITALLYIMPORTANT` tinyint(1) not null      , ' 
-+'    `NEEDCOLD`         tinyint(1) not null      , ' 
-+'    `FRAGILE`          tinyint(1) not null      , ' 
-+'    `COREEXISTS`       tinyint(1) not null      , ' 
-+'    primary key (`FULLCODE`)                    , ' 
-+'    unique key `PK_CATALOGS` (`FULLCODE`)       , ' 
-+'    key `IDX_CATALOG_FORM` (`FORM`)             , ' 
-+'    key `IDX_CATALOG_NAME` (`NAME`)             , ' 
-+'    key `IDX_CATALOG_SHORTCODE` (`SHORTCODE`) ' 
-+'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ( '
++'    `FULLCODE` bigint(20) not null  , '
++'    `SHORTCODE` bigint(20) not null , '
++'    `NAME`             varchar(250) default null, '
++'    `FORM`             varchar(250) default null, '
++'    `VITALLYIMPORTANT` tinyint(1) not null      , '
++'    `NEEDCOLD`         tinyint(1) not null      , '
++'    `FRAGILE`          tinyint(1) not null      , '
++'    `MandatoryList`    tinyint(1) not null      , '
++'    `MnnId`            bigint(20) default null  , '
++'    `DescriptionId`            bigint(20) default null, '
++'    `COREEXISTS`       tinyint(1) not null      , '
++'    primary key (`FULLCODE`)                    , '
++'    unique key `PK_CATALOGS` (`FULLCODE`)       , '
++'    key `IDX_CATALOG_FORM` (`FORM`)             , '
++'    key `IDX_CATALOG_NAME` (`NAME`)             , '
++'    key `IDX_CATALOG_SHORTCODE` (`SHORTCODE`)   , '
++'    key `IDX_CATALOG_MnnID` (`MnnId`)           , '
++'    key `IDX_CATALOG_DescriptionId` (`DescriptionId`) '
++'  ) '
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TProductsTable }
@@ -451,7 +468,7 @@ begin
 +'    unique key `PK_PRODUCTS` (`PRODUCTID`), ' 
 +'    key `FK_PRODUCTS_CATALOGID` (`CATALOGID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TCoreTable }
@@ -501,7 +518,7 @@ begin
 +'    key `IDX_CORE_JUNK` (`PRODUCTID`,`JUNK`)                   , ' 
 +'    key `IDX_CORE_SERVERCOREID` (`SERVERCOREID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TMinPricesTable }
@@ -526,7 +543,62 @@ begin
 +'    key `FK_MINPRICES_PRODUCTID` (`PRODUCTID`)  , '
 +'    key `FK_MINPRICES_REGIONCODE` (`REGIONCODE`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251;';
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
+end;
+
+{ TMNNTable }
+
+constructor TMNNTable.Create;
+begin
+  FName := 'mnn';
+  FObjectId := doiMNN;
+  FRepairType := dortCumulative;
+end;
+
+function TMNNTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'    `Id`               bigint(20) not null  , '
++'    `Mnn`              varchar(250) not null, '
++'    primary key (`Id`)                      , '
++'    key `IDX_MNN_Mnn` (`Mnn`)                 '
++'  ) '
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
+end;
+
+{ TDescriptionsTable }
+
+constructor TDescriptionsTable.Create;
+begin
+  FName := 'Descriptions';
+  FObjectId := doiDescriptions;
+  FRepairType := dortCumulative;
+end;
+
+function TDescriptionsTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `Id`               bigint(20) not null  , '
++'  `Name`             varchar(255) not null, '
++'  `EnglishName`  varchar(255) default null, '
++'  `Description`    TEXT DEFAULT NULL, '
++'  `Interaction`    TEXT DEFAULT NULL, '
++'  `SideEffect`    TEXT DEFAULT NULL, '
++'  `IndicationsForUse` TEXT DEFAULT NULL, '
++'  `Dosing` TEXT DEFAULT NULL, '
++'  `Warnings` TEXT DEFAULT NULL, '
++'  `ProductForm` TEXT DEFAULT NULL, '
++'  `PharmacologicalAction` TEXT DEFAULT NULL, '
++'  `Storage` TEXT DEFAULT NULL, '
++'  `Expiration` TEXT DEFAULT NULL, '
++'  `Composition` TEXT DEFAULT NULL, '
++'  PRIMARY KEY (`Id`)                      , '
++'  Key(`Name`)                             , '
++'  Key(`EnglishName`)                        '
++'  ) '
++'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 initialization
@@ -549,4 +621,8 @@ initialization
   DatabaseController.AddObject(TProductsTable.Create());
   DatabaseController.AddObject(TCoreTable.Create());
   DatabaseController.AddObject(TMinPricesTable.Create());
+
+  DatabaseController.AddObject(TMNNTable.Create());
+  DatabaseController.AddObject(TDescriptionsTable.Create());
 end.
+

@@ -134,6 +134,12 @@ type
     adsAvgOrdersPRODUCTID: TLargeintField;
     btnGotoCore: TButton;
     adsExpiredsRealCost: TFloatField;
+    adsExpiredsMnnId: TLargeintField;
+    adsExpiredsMnn: TStringField;
+    btnGotoMNN: TButton;
+    adsExpiredsDescriptionId: TLargeintField;
+    adsExpiredsCatalogVitallyImportant: TBooleanField;
+    adsExpiredsCatalogMandatoryList: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -162,7 +168,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, NamesForms;
+  Main, NamesForms, U_framePosition;
 
 procedure TExpiredsForm.FormCreate(Sender: TObject);
 var
@@ -176,7 +182,9 @@ begin
   fOrderCost := adsExpiredsORDERCOST;
   fSumOrder := adsExpiredsSumOrder;
   fMinOrderCount := adsExpiredsMINORDERCOUNT;
+  gotoMNNButton := btnGotoMNN;
   inherited;
+  TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'Mnn', ShowDescriptionAction);
   adsExpireds.OnCalcFields := ecf;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   UseExcess := True;

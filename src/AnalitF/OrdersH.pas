@@ -89,6 +89,7 @@ type
     adsOrdersHFormMinReq: TLargeintField;
     adsOrdersHFormDifferentCostCount: TLargeintField;
     adsOrdersHFormDifferentQuantityCount: TLargeintField;
+    adsOrdersHFormsumbycurrentweek: TFloatField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);

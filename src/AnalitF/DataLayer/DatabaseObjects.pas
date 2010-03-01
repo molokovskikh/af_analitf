@@ -15,7 +15,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 54;
+  CURRENT_DB_VERSION = 57;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -82,7 +82,10 @@ type
     doiTmpPricesData,
     doiTmpPricesRegionalData,
     doiPricesShow,
-    doiClientAvg);
+    doiClientAvg,
+    //Cumulative
+    doiMNN,
+    doiDescriptions);
 
   TRepairedObjects = set of TDatabaseObjectId;
 
@@ -699,5 +702,6 @@ begin
 end;
 
 initialization
+  SetCurrentDir(ExtractFileDir(ParamStr(0)));
   FDatabaseController := TDatabaseController.Create();
 end.

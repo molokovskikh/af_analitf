@@ -118,6 +118,19 @@ begin
       PostSuccess := True;
 
     except
+      on E : EIdCouldNotBindSocket do begin
+        if (ErrorCount < FReconnectCount) then begin
+          try
+            FHTTP.Disconnect;
+          except
+          end;
+          Inc(ErrorCount);
+          OnReconnectError(E);
+          Sleep(1000);
+        end
+        else
+          raise;
+      end;
       on E : EIdConnClosedGracefully do begin
         if (ErrorCount < FReconnectCount) then begin
           try
@@ -126,7 +139,7 @@ begin
           end;
           Inc(ErrorCount);
           OnReconnectError(E);
-          Sleep(100);
+          Sleep(500);
         end
         else
           raise;
@@ -142,7 +155,7 @@ begin
           end;
           Inc(ErrorCount);
           OnReconnectError(E);
-          Sleep(100);
+          Sleep(500);
         end
         else
           raise;

@@ -196,6 +196,7 @@ inherited ExpiredsForm: TExpiredsForm
           FieldName = 'RealCost'
           Footers = <>
           Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
+          Title.TitleButton = True
           Visible = False
         end
         item
@@ -267,7 +268,7 @@ inherited ExpiredsForm: TExpiredsForm
         Shape = bsTopLine
       end
       object lblRecordCount: TLabel
-        Left = 109
+        Left = 301
         Top = 8
         Width = 80
         Height = 13
@@ -285,8 +286,16 @@ inherited ExpiredsForm: TExpiredsForm
         Top = 3
         Width = 94
         Height = 25
-        Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
+        Action = actFlipCore
         TabOrder = 0
+      end
+      object btnGotoMNN: TButton
+        Left = 109
+        Top = 3
+        Width = 177
+        Height = 25
+        Caption = 'GotoMNN'
+        TabOrder = 1
         Visible = False
       end
     end
@@ -676,6 +685,9 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.RegionCode,'
       '    Core.productid,'
       '    catalogs.fullcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -726,13 +738,16 @@ inherited ExpiredsForm: TExpiredsForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Core'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
       '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
@@ -755,6 +770,9 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.RegionCode,'
       '    Core.productid,'
       '    catalogs.fullcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -805,13 +823,16 @@ inherited ExpiredsForm: TExpiredsForm
       '    OrdersHead.PriceCode AS OrdersHPriceCode,'
       '    OrdersHead.RegionCode AS OrdersHRegionCode,'
       '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn'
       'FROM'
       '    Core'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
       '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
@@ -1017,6 +1038,22 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsRealCost: TFloatField
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
+    end
+    object adsExpiredsMnnId: TLargeintField
+      FieldName = 'MnnId'
+    end
+    object adsExpiredsMnn: TStringField
+      FieldName = 'Mnn'
+      Size = 250
+    end
+    object adsExpiredsDescriptionId: TLargeintField
+      FieldName = 'DescriptionId'
+    end
+    object adsExpiredsCatalogVitallyImportant: TBooleanField
+      FieldName = 'CatalogVitallyImportant'
+    end
+    object adsExpiredsCatalogMandatoryList: TBooleanField
+      FieldName = 'CatalogMandatoryList'
     end
   end
 end

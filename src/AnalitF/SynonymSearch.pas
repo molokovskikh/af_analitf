@@ -196,6 +196,12 @@ type
     adsCoreByProducts: TMyQuery;
     adsCoreByFullcode: TMyQuery;
     adsCoreRealCost: TFloatField;
+    adsCoreMnn: TStringField;
+    adsCoreMnnId: TLargeintField;
+    btnGotoMNN: TButton;
+    adsCoreDescriptionId: TLargeintField;
+    adsCoreCatalogVitallyImportant: TBooleanField;
+    adsCoreCatalogMandatoryList: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -257,7 +263,8 @@ procedure ShowSynonymSearch;
 implementation
 
 uses
-  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms, U_GroupUtils;
+  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms, U_GroupUtils,
+  U_framePosition;
 
 {$R *.dfm}
 
@@ -283,7 +290,10 @@ begin
   fOrderCost := adsCoreORDERCOST;
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
+  gotoMNNButton := btnGotoMNN;
   inherited;
+
+  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
 
   InternalSearchText := '';
   BM := TBitmap.Create;
@@ -708,7 +718,7 @@ begin
   adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
   adsCore.ParamByName('ClientID').AsInteger := DM.adtClients.FieldByName( 'ClientId').Value;
   adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
-  
+
   ShowSQLWaiting(adsCore);
 
   {
@@ -741,7 +751,7 @@ begin
     adsCore.Next;
   end;
   adsCore.IndexFieldNames := 'SortOrder';
-}  
+}
   adsCore.First;
 
   dbgCore.SetFocus;
