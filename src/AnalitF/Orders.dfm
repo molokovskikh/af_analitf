@@ -6,6 +6,7 @@ inherited OrdersForm: TOrdersForm
   ClientHeight = 443
   ClientWidth = 793
   OldCreateOrder = True
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object plOverCost: TPanel [0]
@@ -405,13 +406,19 @@ inherited OrdersForm: TOrdersForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 4
-    object btnGotoMNN: TButton
+    object btnGotoCore: TSpeedButton
       Left = 5
+      Top = 3
+      Width = 105
+      Height = 25
+      Action = actFlipCore
+    end
+    object btnGotoMNN: TSpeedButton
+      Left = 117
       Top = 3
       Width = 177
       Height = 25
       Caption = 'GotoMNN'
-      TabOrder = 0
       Visible = False
     end
   end
@@ -670,6 +677,7 @@ inherited OrdersForm: TOrdersForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
+      '    OrdersList.SupplierPriceMarkup,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn'
       'FROM '
@@ -800,6 +808,9 @@ inherited OrdersForm: TOrdersForm
     object adsOrdersServerQuantity: TIntegerField
       FieldName = 'ServerQuantity'
     end
+    object adsOrdersSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
     object adsOrdersMnnId: TLargeintField
       FieldName = 'MnnId'
     end
@@ -820,5 +831,10 @@ inherited OrdersForm: TOrdersForm
   object ActionList: TActionList
     Left = 360
     Top = 187
+    object actFlipCore: TAction
+      Caption = #1042' '#1082#1072#1090#1072#1083#1086#1075' (F2)'
+      ShortCut = 113
+      OnExecute = actFlipCoreExecute
+    end
   end
 end

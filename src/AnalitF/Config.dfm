@@ -5758,7 +5758,6 @@ object ConfigForm: TConfigForm
         TabOrder = 8
         ValueChecked = 'True'
         ValueUnchecked = 'False'
-        Visible = False
       end
     end
   end

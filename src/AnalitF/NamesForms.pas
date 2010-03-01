@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
   RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
   pFIBDataSet, Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
-  MyAccess, Menus, Buttons, U_framePosition;
+  MyAccess, Menus, Buttons, U_framePosition, PreviousOrders, Core;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -100,6 +100,7 @@ type
     BM : TBitmap;
     InternalSearchText : String;
     LastDBGrid : TWinControl;
+    FPreviousOrdersForm : TPreviousOrdersForm;
     procedure SetNamesParams;
     procedure SetFormsParams;
     procedure AddKeyToSearch(Key : Char);
@@ -114,6 +115,7 @@ type
     GotoFromMNNSearch : Boolean;
     namesFrame : TframePosition;
     formsFrame : TframePosition;
+    FCoreForm: TCoreForm;
     procedure DoShow; override;
     procedure CheckCanFocus;
     procedure SetUsedFilter;
@@ -126,7 +128,9 @@ type
 
 procedure ShowOrderAll;
 
-procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64{; APrevForm : TChildForm = nil});
+procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
+
+procedure FlipToCodeWithReturn(FullCode, ShortCode: Integer; CoreId : Int64);
 
 procedure FlipToMNN(MnnId : Int64);
 
@@ -134,7 +138,7 @@ procedure FlipToMNNFromMNNSearch(MnnId : Int64);
 
 implementation
 
-uses DModule, AProc, Core, Main, Types, AlphaUtils, LU_Tracer, PreviousOrders,
+uses DModule, AProc, Main, Types, AlphaUtils, LU_Tracer,
      MnnSearch;
 
 {$R *.dfm}
@@ -155,8 +159,7 @@ begin
   MainForm.ShowChildForm(TNamesFormsForm);
 end;
 
-procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64{;
-APrevForm : TChildForm = nil});
+procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
 begin
 	ShowOrderAll;
 
@@ -165,7 +168,7 @@ begin
     if actNewSearch.Checked then begin
       SetCatalog;
       adsCatalog.Locate('FullCode', FullCode, []);
-      CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+      FCoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
         adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
         True, True);
     end
@@ -173,28 +176,58 @@ begin
       adsNames.Locate( 'AShortCode', ShortCode, []);
 
       if not actUseForms.Checked then
-        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+        FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
           adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
       if actUseForms.Checked and ( adsForms.RecordCount < 2) then
-        CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+        FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
           adsNames.FieldByName( 'Name').AsString,
           adsForms.FieldByName( 'Form').AsString, False, False);
       if actUseForms.Checked and ( adsForms.RecordCount > 1) then
       begin
         adsForms.Locate( 'FullCode', FullCode, []);
-        CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
+        FCoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
           adsNames.FieldByName( 'Name').AsString,
           adsForms.FieldByName( 'Form').AsString,
           actUseForms.Checked, False);
       end;
     end;
 
-{
-    if Assigned(APrevForm) then
-      CoreForm.SetPrevForm(APrevForm);
-}
-		CoreForm.adsCore.Locate( 'CoreId', CoreId, []);
+		FCoreForm.adsCore.Locate( 'CoreId', CoreId, []);
 	end;
+end;
+
+procedure FlipToCodeWithReturn(FullCode, ShortCode: Integer; CoreId : Int64);
+var
+  FCoreForm : TCoreForm;
+  productName, productForm : String;
+begin
+  productName := '';
+  productForm := '';
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := 'select Name, Form from catalogs where FullCode = :FullCode';
+  DM.adsQueryValue.ParamByName('FullCode').Value := FullCode;
+  DM.adsQueryValue.Open;
+  try
+    if DM.adsQueryValue.RecordCount > 0 then begin
+      productName := DM.adsQueryValue.FieldByName('Name').AsString;
+      productForm := DM.adsQueryValue.FieldByName('Form').AsString;
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+
+  if (productName <> '') then begin
+    FCoreForm := TCoreForm( FindChildControlByClass(MainForm, TCoreForm) );
+    if FCoreForm = nil then
+      FCoreForm := TCoreForm.Create(Application);
+    FCoreForm.ShowForm(
+      FullCode,
+      productName,
+      productForm,
+      True, True);
+    FCoreForm.adsCore.Locate( 'CoreId', CoreId, []);
+  end;
 end;
 
 procedure FlipToMNN(MnnId : Int64);
@@ -294,13 +327,13 @@ begin
   	actShowAll.Checked := FieldByName( 'ShowAllCatalog').AsBoolean;
 	end;
 
-  CoreForm := TCoreForm( FindChildControlByClass(MainForm, TCoreForm) );
-  if CoreForm = nil then
-    CoreForm := TCoreForm.Create(Application);
+  FCoreForm := TCoreForm( FindChildControlByClass(MainForm, TCoreForm) );
+  if FCoreForm = nil then
+    FCoreForm := TCoreForm.Create(Application);
 
-  PreviousOrdersForm := TPreviousOrdersForm(FindChildControlByClass(MainForm, TPreviousOrdersForm) );
-  if PreviousOrdersForm = nil then
-    PreviousOrdersForm := TPreviousOrdersForm.Create(Application);
+  FPreviousOrdersForm := TPreviousOrdersForm(FindChildControlByClass(MainForm, TPreviousOrdersForm) );
+  if FPreviousOrdersForm = nil then
+    FPreviousOrdersForm := TPreviousOrdersForm.Create(Application);
 
   SetGrids;
 
@@ -485,11 +518,11 @@ begin
     Exit;
   end
   else
-    if (Key = VK_ESCAPE) and Assigned(Self.PrevForm) and (Self.PrevForm is TMnnSearchForm) then
+    if (Key = VK_ESCAPE) and Assigned(Self.PrevForm) and not (Self.PrevForm is TCoreForm) then
     begin
       tmrSearch.Enabled := False;
-      Self.PrevForm.ShowForm;
       MainForm.AddFormToFree(Self);
+      Self.PrevForm.ShowAsPrevForm;
     end;
 end;
 
@@ -778,9 +811,10 @@ begin
         if (Length(InternalSearchText) > 0) or (Length(eSearch.Text) > 0) then
           SetCatalog
         else
-          if Assigned(Self.PrevForm) and (Self.PrevForm is TMnnSearchForm) then begin
+          if Assigned(Self.PrevForm) and not (Self.PrevForm is TCoreForm) then begin
             tmrSearch.Enabled := False;
-            Self.PrevForm.ShowForm;
+            MainForm.AddFormToFree(Self);
+            Self.PrevForm.ShowAsPrevForm;
           end;
     end
     else
@@ -887,13 +921,13 @@ begin
     if (adsNames.FieldByName('COREEXISTS').AsFloat < 0.001 ) then
       ShowNotFoundPositionsPopup(dbgNames, MouseClick)
     else
-      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+      FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
         adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
   if actUseForms.Checked and ( adsForms.RecordCount < 2) then
     if not adsForms.FieldByName('COREEXISTS').AsBoolean then
       ShowNotFoundPositionsPopup(dbgNames, MouseClick)
     else
-      CoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+      FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
         adsNames.FieldByName( 'Name').AsString,
         adsForms.FieldByName( 'Form').AsString, False, False);
   if actUseForms.Checked and ( adsForms.RecordCount > 1) then
@@ -905,7 +939,7 @@ begin
   if not adsForms.FieldByName('COREEXISTS').AsBoolean then
     ShowNotFoundPositionsPopup(dbgForms, MouseClick)
   else
-    CoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
+    FCoreForm.ShowForm( adsForms.FieldByName( 'FullCode').AsInteger,
       adsNames.FieldByName( 'Name').AsString, adsForms.FieldByName( 'Form').AsString,
       actUseForms.Checked, False);
 end;
@@ -915,7 +949,7 @@ begin
   if not adsCatalog.FieldByName('COREEXISTS').AsBoolean then
     ShowNotFoundPositionsPopup(dbgCatalog, MouseClick)
   else
-    CoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
+    FCoreForm.ShowForm( adsCatalog.FieldByName( 'FullCode').AsInteger,
       adsCatalog.FieldByName( 'Name').AsString, adsCatalog.FieldByName( 'Form').AsString,
       True, True);
 end;
@@ -938,12 +972,12 @@ end;
 procedure TNamesFormsForm.miViewOrdersHistoryClick(Sender: TObject);
 begin
   if actNewSearch.Checked then
-    PreviousOrdersForm.ShowForm(adsCatalog.FieldByName( 'FullCode').AsInteger, False)
+    FPreviousOrdersForm.ShowForm(adsCatalog.FieldByName( 'FullCode').AsInteger, False)
   else
     if LastDBGrid = dbgNames then
-      PreviousOrdersForm.ShowForm(adsNames.FieldByName('AShortCode').AsInteger, True)
+      FPreviousOrdersForm.ShowForm(adsNames.FieldByName('AShortCode').AsInteger, True)
     else
-      PreviousOrdersForm.ShowForm(adsForms.FieldByName('FullCode').AsInteger, False);
+      FPreviousOrdersForm.ShowForm(adsForms.FieldByName('FullCode').AsInteger, False);
 end;
 
 procedure TNamesFormsForm.ShowNotFoundPositionsPopup(Grid: TToughDBGrid;

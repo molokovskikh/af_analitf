@@ -7,7 +7,7 @@ uses
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
   SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, FIBQuery, Constant,
-  GridsEh, ActnList, MemDS, DBAccess, MyAccess;
+  GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons;
 
 type
   TExpiredsForm = class(TChildForm)
@@ -132,11 +132,12 @@ type
     adsExpiredsOrdersHRegionName: TStringField;
     adsExpiredsCryptPriceRet: TCurrencyField;
     adsAvgOrdersPRODUCTID: TLargeintField;
-    btnGotoCore: TButton;
+    btnGotoCore: TSpeedButton;
     adsExpiredsRealCost: TFloatField;
+    adsExpiredsSupplierPriceMarkup: TFloatField;
     adsExpiredsMnnId: TLargeintField;
     adsExpiredsMnn: TStringField;
-    btnGotoMNN: TButton;
+    btnGotoMNN: TSpeedButton;
     adsExpiredsDescriptionId: TLargeintField;
     adsExpiredsCatalogVitallyImportant: TBooleanField;
     adsExpiredsCatalogMandatoryList: TBooleanField;
@@ -363,7 +364,7 @@ begin
 
   CoreId := adsExpiredsCOREID.AsLargeInt;
 
-  FlipToCode(FullCode, ShortCode, CoreId);
+  FlipToCodeWithReturn(FullCode, ShortCode, CoreId);
 end;
 
 end.

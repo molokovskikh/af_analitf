@@ -569,7 +569,7 @@ procedure TMainForm.actClosedOrdersExecute( Sender: TObject);
 begin
 	if ActiveChild is TCoreForm then
 	begin
-		CoreForm.ShowOrdersH;
+		TCoreForm(ActiveChild).ShowOrdersH;
 	end
 	else
 	begin
@@ -660,6 +660,8 @@ begin
     StatusBar.Panels[ 3].Text := 'Обновление : ' +
       DateTimeToStr( UTCToLocalTime(
         DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime));
+  StatusBar.Panels[3].Width :=
+    StatusBar.Canvas.TextWidth(StatusBar.Panels[3].Text) + 15;
 end;
 
 procedure TMainForm.actSaveExecute(Sender: TObject);
@@ -698,6 +700,7 @@ end;
 procedure TMainForm.SetOrdersInfo;
 var
   UserId : Variant;
+  I : Integer;
 begin
   UserId := DM.QueryValue('select UserId from UserInfo', [], []);
   if VarIsNull(UserId) then
@@ -758,6 +761,9 @@ begin
        [ DM.adsQueryValue.FieldByName( 'sumbycurrentmonth').AsCurrency ]);
     StatusBar.Panels[ 5].Text := Format( 'За неделю : %0.2f',
        [ DM.adsQueryValue.FieldByName( 'sumbycurrentweek').AsCurrency ]);
+    for I := 0 to 2 do
+      StatusBar.Panels[i].Width :=
+        StatusBar.Canvas.TextWidth(StatusBar.Panels[i].Text) + 15; 
 	finally
 		DM.adsQueryValue.Close;
 	end;

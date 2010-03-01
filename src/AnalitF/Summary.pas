@@ -129,7 +129,7 @@ type
     adsSummaryRequestRatio: TIntegerField;
     adsSummaryMINORDERCOUNT: TIntegerField;
     adsSummaryVitallyImportant: TBooleanField;
-    btnGotoCore: TButton;
+    btnGotoCore: TSpeedButton;
     adsSummarySumOrder: TCurrencyField;
     adsSummaryOrdersHOrderId: TLargeintField;
     adsSummaryRealCost: TFloatField;
@@ -142,9 +142,10 @@ type
     adsSummarySendResult: TSmallintField;
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
+    adsSummarySupplierPriceMarkup: TFloatField;
     adsSummaryMnnId: TLargeintField;
     adsSummaryMnn: TStringField;
-    btnGotoMNN: TButton;
+    btnGotoMNN: TSpeedButton;
     adsSummaryDescriptionId: TLargeintField;
     adsSummaryCatalogVitallyImportant: TBooleanField;
     adsSummaryCatalogMandatoryList: TBooleanField;
@@ -180,6 +181,8 @@ type
     procedure ChangeSelected(ASelected : Boolean);
     procedure scf(DataSet: TDataSet);
     procedure FillCorrectMessage;
+  protected
+    procedure UpdateOrderDataset; override;
   public
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
@@ -689,7 +692,7 @@ begin
 
   CoreId := adsSummaryCOREID.AsLargeInt;
 
-  FlipToCode(FullCode, ShortCode, CoreId);
+  FlipToCodeWithReturn(FullCode, ShortCode, CoreId);
 end;
 
 procedure TSummaryForm.TimerTimer(Sender: TObject);
@@ -750,6 +753,26 @@ begin
   end;
   CorrectMessage := CorrectMessage + ')';
   mCorrectMessage.Text := CorrectMessage;
+end;
+
+procedure TSummaryForm.UpdateOrderDataset;
+var
+  lastCoreId : Variant;
+  LastCurrentSQL : String;
+begin
+  if LastSymmaryType = 0 then begin
+    lastCoreId := adsSummaryCoreID.AsVariant;
+    adsSummary.DisableControls;
+    try
+      if adsSummary.Active then
+        adsSummary.Close;
+      adsSummary.Open;
+      if not adsSummary.Locate('CoreId', lastCoreId, []) then
+        adsSummary.First;
+    finally
+      adsSummary.EnableControls;
+    end;
+  end;
 end;
 
 initialization

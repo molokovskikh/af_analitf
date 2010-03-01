@@ -7,7 +7,7 @@ uses
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
   Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh, MemDS,
-  DBAccess, MyAccess;
+  DBAccess, MyAccess, CoreFirm;
 
 type
   TPricesForm = class(TChildForm)
@@ -110,7 +110,9 @@ type
     procedure SetScrolls(var Memo: TDBMemo);
     // кол-во видимых строк в Memo
     function LinesVisible(Memo: TDBMemo): Integer;
+  protected
   public
+    FCoreFirmForm : TCoreFirmForm;
     procedure ShowForm; override;
   end;
 
@@ -121,7 +123,7 @@ procedure ShowPrices;
 
 implementation
 
-uses Main, DModule, AProc, DBProc, CoreFirm, StrUtils;
+uses Main, DModule, AProc, DBProc, StrUtils;
 
 {$R *.dfm}
 
@@ -136,6 +138,7 @@ var
   AlonePriceCode : Integer;
   AloneRegionCode : Int64;
   AlonePriceName, AloneRegionName : String;
+  FCoreFirmForm : TCoreFirmForm;
 begin
   if DM.adsPrices.Active then
     DM.adsPrices.Close;
@@ -162,11 +165,11 @@ begin
     //Если я переделаю ShowChildForm, то этот вызов не нужен
     MainForm.AddFormsToFree;
 
-    CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
-    if CoreFirmForm = nil then
-      CoreFirmForm := TCoreFirmForm.Create( Application );
+    FCoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
+    if FCoreFirmForm = nil then
+      FCoreFirmForm := TCoreFirmForm.Create( Application );
 
-    CoreFirmForm.ShowForm(
+    FCoreFirmForm.ShowForm(
       AlonePriceCode,
       AloneRegionCode,
       AlonePriceName,
@@ -185,9 +188,9 @@ var
 begin
 	inherited;
   NeedFirstOnDataSet := False;
-  CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
-  if CoreFirmForm = nil then
-    CoreFirmForm := TCoreFirmForm.Create( Application );
+  FCoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
+  if FCoreFirmForm = nil then
+    FCoreFirmForm := TCoreFirmForm.Create( Application );
 	actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
 	Reg := TRegIniFile.Create;
   try
@@ -353,7 +356,7 @@ begin
     //MainForm.actRegistry.Execute
   else
     if not adsPricesPRICECODE.IsNull and adsPricesINJOB.Value then
-      CoreFirmForm.ShowForm(
+      FCoreFirmForm.ShowForm(
         adsPricesPRICECODE.AsInteger,
         adsPricesREGIONCODE.AsLargeInt,
         adsPricesPRICENAME.AsString,

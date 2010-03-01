@@ -43,9 +43,6 @@ type
     { Public declarations }
   end;
 
-var
-  MnnSearchForm: TMnnSearchForm;
-
 procedure ShowMnnSearch;
 
 implementation

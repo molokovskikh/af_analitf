@@ -7,7 +7,7 @@ uses
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
   pFIBDataSet, DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
-  MyAccess, ActnList;
+  MyAccess, ActnList, Registry, Buttons;
 
 type
   TOrdersForm = class(TChildForm)
@@ -96,14 +96,17 @@ type
     cbNeedCorrect: TCheckBox;
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
+    adsOrdersSupplierPriceMarkup: TFloatField;
     adsOrdersMnnId: TLargeintField;
     adsOrdersMnn: TStringField;
     ActionList: TActionList;
     pButtons: TPanel;
-    btnGotoMNN: TButton;
+    btnGotoMNN: TSpeedButton;
     adsOrdersDescriptionId: TLargeintField;
     adsOrdersCatalogVitallyImportant: TBooleanField;
     adsOrdersCatalogMandatoryList: TBooleanField;
+    actFlipCore: TAction;
+    btnGotoCore: TSpeedButton;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -123,6 +126,8 @@ type
       Shift: TShiftState);
     procedure cbNeedCorrectClick(Sender: TObject);
     procedure adsOrdersAfterScroll(DataSet: TDataSet);
+    procedure FormDestroy(Sender: TObject);
+    procedure actFlipCoreExecute(Sender: TObject);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
@@ -135,15 +140,14 @@ type
     procedure SetOrderLabel;
     procedure ocf(DataSet: TDataSet);
     procedure FlipToCore;
+  protected
+    procedure UpdateOrderDataset; override;  
   public
-    procedure ShowForm(OrderId: Integer); overload; //reintroduce;
+    procedure ShowForm(OrderId: Integer; ParentForm : TChildForm); overload; //reintroduce;
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
     procedure SetParams(OrderId: Integer);
   end;
-
-var
-  OrdersForm: TOrdersForm;
 
 implementation
 
@@ -152,18 +156,35 @@ uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
 
 {$R *.dfm}
 
-procedure TOrdersForm.ShowForm(OrderId: Integer);
+procedure TOrdersForm.ShowForm(OrderId: Integer; ParentForm : TChildForm);
 begin
   plOverCost.Hide();
   cbNeedCorrect.Checked := False;
   //PrintEnabled:=False;
-  dbgOrders.Tag := IfThen(OrdersHForm.TabControl.TabIndex = 1, 1, 2);
-  SaveEnabled := OrdersHForm.TabControl.TabIndex = 1;
-  ParentOrdersHForm := OrdersHForm;
-  PriceCode := OrdersHForm.adsOrdersHFormPRICECODE.AsInteger;
-  RegionCode := OrdersHForm.adsOrdersHFormREGIONCODE.AsLargeInt;
-  PriceName := OrdersHForm.adsOrdersHFormPRICENAME.AsString;
-  RegionName := OrdersHForm.adsOrdersHFormREGIONNAME.AsString;
+  if Assigned(ParentForm) and (ParentForm is TOrdersHForm) then begin
+    ParentOrdersHForm := ParentForm;
+    dbgOrders.Tag := IfThen(TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 1, 1, 2);
+    SaveEnabled := TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 1;
+    PriceCode := TOrdersHForm(ParentOrdersHForm).adsOrdersHFormPRICECODE.AsInteger;
+    RegionCode := TOrdersHForm(ParentOrdersHForm).adsOrdersHFormREGIONCODE.AsLargeInt;
+    PriceName := TOrdersHForm(ParentOrdersHForm).adsOrdersHFormPRICENAME.AsString;
+    RegionName := TOrdersHForm(ParentOrdersHForm).adsOrdersHFormREGIONNAME.AsString;
+
+    dbmMessageTo.DataSource := TOrdersHForm(ParentOrdersHForm).dsOrdersH;
+    dbtPriceName.DataSource := dbmMessageTo.DataSource;
+    dbtId.DataSource := dbmMessageTo.DataSource;
+    dbtOrderDate.DataSource := dbmMessageTo.DataSource;
+    dbtPositions.DataSource := dbmMessageTo.DataSource;
+    dbtSumOrder.DataSource := dbmMessageTo.DataSource;
+    dbtRegionName.DataSource := dbmMessageTo.DataSource;
+  end
+  else begin
+    if Assigned(PrevForm) then
+      LogCriticalError('Предыдущая форма при детализации заказа : ' + PrevForm.ClassName)
+    else
+      LogCriticalError('Предыдущая форма при детализации заказа не установлена.');
+    raise Exception.Create('Окно "Детализации заказа" открыто не из формы "Заказы"!');
+  end;
   Self.OrderID := OrderId;
   SetParams(OrderId);
   inherited ShowForm;
@@ -175,7 +196,7 @@ var
   SendResult : Variant;
 begin
   Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(OrderId), [], []);
-  //Отображаем сообщение с причиной корректировки только если заказ открыт и используется механизм корректировки заказов 
+  //Отображаем сообщение с причиной корректировки только если заказ открыт и используется механизм корректировки заказов
   gbCorrectMessage.Visible := (Closed = 0)  and FUseCorrectOrders;
   if not gbCorrectMessage.Visible then
     pTop.Height := pOrderHeader.Height;
@@ -186,11 +207,13 @@ begin
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;
     dbmMessageTo.ReadOnly := False;
+    actFlipCore.Enabled := True;
   end
   else begin
     dbgOrders.SearchField := 'SynonymName';
     dbgOrders.ForceRus := True;
     dbmMessageTo.ReadOnly := True;
+    actFlipCore.Enabled := False;
   end;
   dbmMessageTo.Color := Iif(dbmMessageTo.ReadOnly, clBtnFace, clWindow);
   with adsOrders do begin
@@ -209,11 +232,14 @@ end;
 
 procedure TOrdersForm.Print( APreview: boolean = False);
 begin
-  DM.ShowOrderDetailsReport(
-    OrdersHForm.adsOrdersHFormORDERID.AsInteger,
-    OrdersHForm.adsOrdersHFormCLOSED.Value,
-    OrdersHForm.adsOrdersHFormSEND.Value,
-    APreview);
+  if Assigned(ParentOrdersHForm) then
+    DM.ShowOrderDetailsReport(
+      TOrdersHForm(ParentOrdersHForm).adsOrdersHFormORDERID.AsInteger,
+      TOrdersHForm(ParentOrdersHForm).adsOrdersHFormCLOSED.Value,
+      TOrdersHForm(ParentOrdersHForm).adsOrdersHFormSEND.Value,
+      APreview)
+  else
+    raise Exception.Create('Не установлена форма "Заказы"!');
 end;
 
 procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;
@@ -253,7 +279,7 @@ end;
 procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_RETURN
+  if (Key = VK_RETURN) and (not dbmMessageTo.ReadOnly)
   then
     FlipToCore
   else
@@ -261,7 +287,8 @@ begin
       if Assigned(ParentOrdersHForm) then
         ParentOrdersHForm.ShowForm
       else
-        PrevForm.ShowForm;
+        if Assigned(PrevForm) then
+          PrevForm.ShowAsPrevForm;
 end;
 
 procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
@@ -273,7 +300,8 @@ procedure TOrdersForm.adsOrdersOldAfterPost(DataSet: TDataSet);
 begin
   SetOrderLabel;
   MainForm.SetOrdersInfo;
-  OrdersHForm.adsOrdersHForm.RefreshRecord;
+  if Assigned(ParentOrdersHForm) then
+    TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.RefreshRecord;
   //Если удалили позицию из заказа, то запускаем таймер на удаление этой позиции из DataSet
   if (adsOrdersORDERCOUNT.AsInteger = 0) then begin
     adsOrders.Delete;
@@ -291,10 +319,12 @@ procedure TOrdersForm.dbgOrdersCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
   inherited;
-  CanInput := OrdersHForm.TabControl.TabIndex = 0;
+  CanInput := Assigned(ParentOrdersHForm) and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0);
 end;
 
 procedure TOrdersForm.FormCreate(Sender: TObject);
+var
+  Reg: TRegIniFile;
 begin
   dsCheckVolume := adsOrders;
   dgCheckVolume := dbgOrders;
@@ -306,13 +336,25 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
   TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  Reg := TRegIniFile.Create;
+  try
+    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'DetailOrder', False)
+    then
+      try
+        dbgOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      finally
+        Reg.CloseKey;
+      end;
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TOrdersForm.dbgOrdersKeyPress(Sender: TObject; var Key: Char);
 var
   _CoreFirmForm : TCoreFirmForm;
 begin
-	if (OrdersHForm.TabControl.TabIndex = 0) and ( Key > #32) and not ( Key in
+	if Assigned(ParentOrdersHForm) and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0) and ( Key > #32) and not ( Key in
 		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
 	begin
     _CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
@@ -328,7 +370,7 @@ end;
 procedure TOrdersForm.ShowForm;
 begin
   inherited;
-  //Если мы производим возврат и формы "Заявка поставщику", то надо обновить данные
+  //Если мы производим возврат из формы "Заявка поставщику", то надо обновить данные
   if Assigned(PrevForm) and ((PrevForm is TCoreFirmForm) or (PrevForm is TCoreForm)) then
     SetParams(OrderID);
 end;
@@ -344,13 +386,16 @@ begin
     //todo: надо потом подумать о том, чтобы восстановить удаление заголовка заказа
     //DM.adcUpdate.SQL.Text := 'delete from OrdersHead where OrderId = ' + IntToStr(OrderID);
     //DM.adcUpdate.Execute;
-    OrdersHForm.adsOrdersHForm.Close;
-    OrdersHForm.adsOrdersHForm.Open;
+    if Assigned(ParentOrdersHForm) then begin
+      TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.Close;
+      TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.Open;
+    end;
     MainForm.SetOrdersInfo;
-    PrevForm.ShowForm;
+    PrevForm.ShowAsPrevForm;
   end
   else begin
-    OrdersHForm.adsOrdersHForm.RefreshRecord;
+    if Assigned(ParentOrdersHForm) then
+     TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.RefreshRecord;
     MainForm.SetOrdersInfo;
   end;
 end;
@@ -400,34 +445,32 @@ begin
 end;
 
 procedure TOrdersForm.FlipToCore;
-{
 var
   FullCode, ShortCode: integer;
   CoreId : Int64;
-}
 begin
   if MainForm.ActiveChild <> Self then exit;
   if adsOrders.IsEmpty then Exit;
 
-{
   FullCode := adsOrdersFullCode.AsInteger;
   ShortCode := DM.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), [] , []);
 
   CoreId := adsOrdersCOREID.AsLargeInt;
-}  
 
-//  FlipToCode(FullCode, ShortCode, CoreId, Self);
+  FlipToCodeWithReturn(FullCode, ShortCode, CoreId);
 end;
 
 procedure TOrdersForm.dbgOrdersDblClick(Sender: TObject);
 begin
-  FlipToCore
+  if (not dbmMessageTo.ReadOnly) then
+    FlipToCore
 end;
 
 procedure TOrdersForm.dbmMessageToExit(Sender: TObject);
 begin
   try
-    SoftPost(OrdersHForm.adsOrdersHForm);
+    if Assigned(ParentOrdersHForm) then
+      SoftPost(TOrdersHForm(ParentOrdersHForm).adsOrdersHForm);
   except
   end;
 end;
@@ -439,7 +482,7 @@ begin
     if Assigned(ParentOrdersHForm) then
       ParentOrdersHForm.ShowForm
     else
-      PrevForm.ShowForm;
+      PrevForm.ShowAsPrevForm;
 end;
 
 procedure TOrdersForm.cbNeedCorrectClick(Sender: TObject);
@@ -492,6 +535,45 @@ begin
   end
   else
     mCorrectMessage.Text := '';
+end;
+
+procedure TOrdersForm.FormDestroy(Sender: TObject);
+var
+  Reg: TRegIniFile;
+begin
+  inherited;
+  Reg := TRegIniFile.Create();
+  try
+    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'DetailOrder', True);
+    try
+      dbgOrders.SaveColumnsLayout(Reg);
+    finally
+      Reg.CloseKey;
+    end;
+  finally
+    Reg.Free;
+  end;
+end;
+
+procedure TOrdersForm.actFlipCoreExecute(Sender: TObject);
+begin
+  FlipToCore
+end;
+
+procedure TOrdersForm.UpdateOrderDataset;
+var
+  lastCoreId : Variant;
+begin
+  if not dbmMessageTo.ReadOnly then begin
+    lastCoreId := adsOrdersCoreId.AsVariant;
+    SetParams(OrderID);
+    if adsOrders.RecordCount > 0 then begin
+      if not adsOrders.Locate('CoreId', lastCoreId, []) then
+        adsOrders.First;
+    end
+    else
+      ParentOrdersHForm.ShowForm;
+  end;
 end;
 
 end.

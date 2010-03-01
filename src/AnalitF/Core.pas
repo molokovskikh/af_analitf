@@ -208,8 +208,9 @@ type
     adsPreviosOrdersPrice: TFloatField;
     adsPreviosOrdersAwait: TBooleanField;
     adsPreviosOrdersJunk: TBooleanField;
-    btnGotoCoreFirm: TButton;
+    btnGotoCoreFirm: TSpeedButton;
     adsCoreRealCost: TFloatField;
+    adsCoreSupplierPriceMarkup: TFloatField;
     adsCoreMnnId: TLargeintField;
     adsCoreMnn: TStringField;
     adsCoreDescriptionId: TLargeintField;
@@ -262,9 +263,6 @@ type
     procedure Print( APreview: boolean = False); override;
     procedure ShowOrdersH;
   end;
-
-var
-  CoreForm: TCoreForm;
 
 implementation
 
@@ -563,9 +561,9 @@ end;
 procedure TCoreForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if ( Key = VK_ESCAPE) and (Self.PrevForm is TOrdersForm)
+  if ( Key = VK_ESCAPE) and Assigned(Self.PrevForm) and not (Self.PrevForm is TNamesFormsForm)
   then begin
-    Self.PrevForm.ShowForm;
+    Self.PrevForm.ShowAsPrevForm;
   end
   else
     if (( Key = VK_ESCAPE) {or ( Key = VK_SPACE)}) and
@@ -654,18 +652,17 @@ begin
 	OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
 	if OrdersH = nil then
 	begin
-		OrdersHForm := TOrdersHForm.Create( Application);
+		OrdersH := TOrdersHForm.Create( Application);
 //		OrdersHForm.Show;
 	end
 	else
 	begin
-		OrdersHForm := OrdersH;
-		OrdersHForm.Show;
+		OrdersH.Show;
     OrdersH.adsOrdersHForm.Close;
     OrdersH.adsOrdersHForm.Open;
 	end;
-	MainForm.ActiveChild := OrdersHForm;
-	MainForm.ActiveControl := OrdersHForm.ActiveControl;
+	MainForm.ActiveChild := OrdersH;
+	MainForm.ActiveControl := OrdersH.ActiveControl;
 end;
 
 procedure TCoreForm.TimerTimer(Sender: TObject);
@@ -740,8 +737,8 @@ begin
 	with TPricesForm( MainForm.ActiveChild) do
 	begin
 		adsPrices.Locate( 'PriceCode;RegionCode', VarArrayOf([ PriceCode, RegionCode]), []);
-		CoreFirmForm.ShowForm( PriceCode, RegionCode, PriceName, RegionName, actOnlyLeaders.Checked);
-    CoreFirmForm.adsCore.Locate('CoreId', CoreId, []);
+		FCoreFirmForm.ShowForm( PriceCode, RegionCode, PriceName, RegionName, actOnlyLeaders.Checked);
+    FCoreFirmForm.adsCore.Locate('CoreId', CoreId, []);
 	end;
 end;
 

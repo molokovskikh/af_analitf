@@ -116,6 +116,7 @@ type
     gbCorrectMessage: TGroupBox;
     dbmCorrectMessage: TDBMemo;
     mtLogNodeType: TIntegerField;
+    adsCoreSupplierPriceMarkup: TFloatField;
     adsCoreMnnId: TLargeintField;
     adsCoreMnn: TStringField;
     procedure FormCreate(Sender: TObject);
@@ -209,7 +210,7 @@ begin
   try
     CorrectOrdersForm.ProcessSendOrdersResponse := ProcessSendOrdersResponse;
     CorrectOrdersForm.Prepare;
-    if not False then begin
+    if not DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean then begin
       if ProcessSendOrdersResponse then
         ShowNotSended(CorrectOrdersForm.Report.Text)
       else
@@ -962,12 +963,20 @@ end;
 procedure TCorrectOrdersForm.PrepareColumnsInOrderGrid(Grid: TToughDBGrid);
 var
   realCostColumn : TColumnEh;
+  supplierPriceMarkupColumn : TColumnEh;
 begin
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
     realCostColumn := ColumnByNameT(Grid, 'RealPrice');
 
   if Assigned(realCostColumn) then  begin
+    supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
+    if not Assigned(supplierPriceMarkupColumn) then begin
+      supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
+      supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
+      supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
+      supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
+    end;
     realCostColumn.Title.Caption := 'Цена поставщика';
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
     if not DM.adtClientsAllowDelayOfPayment.Value then

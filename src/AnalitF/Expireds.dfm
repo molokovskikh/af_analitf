@@ -281,21 +281,19 @@ inherited ExpiredsForm: TExpiredsForm
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object btnGotoCore: TButton
+      object btnGotoCore: TSpeedButton
         Left = 5
         Top = 3
         Width = 94
         Height = 25
         Action = actFlipCore
-        TabOrder = 0
       end
-      object btnGotoMNN: TButton
+      object btnGotoMNN: TSpeedButton
         Left = 109
         Top = 3
         Width = 177
         Height = 25
         Caption = 'GotoMNN'
-        TabOrder = 1
         Visible = False
       end
     end
@@ -707,6 +705,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.requestratio,'
       '    Core.ordercost,'
       '    Core.minordercount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -792,6 +791,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.requestratio,'
       '    Core.ordercost,'
       '    Core.minordercount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1038,6 +1038,9 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsRealCost: TFloatField
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
+    end
+    object adsExpiredsSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
     end
     object adsExpiredsMnnId: TLargeintField
       FieldName = 'MnnId'

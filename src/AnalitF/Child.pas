@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs,
-  MyAccess, DBAccess, StdCtrls, DescriptionFrm;
+  MyAccess, DBAccess, StdCtrls, DescriptionFrm, Buttons;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -52,12 +52,12 @@ type
     FUseCorrectOrders : Boolean;
 
     gotoMNNAction : TAction;
-    gotoMNNButton : TButton;
+    gotoMNNButton : TSpeedButton;
 
     ShowDescriptionAction : TAction;
     ShowDescriptionActionByF1 : TAction;
 
-    
+
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Loaded; override;
     procedure Notification(AComponent: TComponent;
@@ -87,6 +87,9 @@ type
     procedure ShowDescriptionExecute(Sender: TObject);
     procedure ShowDescriptionUpdate(Sender: TObject);
     procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
+    procedure SetPrevForm;
+    procedure SetActiveChildToMainForm;
+    procedure UpdateOrderDataset; virtual;
   public
     PrintEnabled: Boolean;
     //Разрешено сохранять отображаемую таблицу
@@ -94,10 +97,10 @@ type
     //Требуется вызвать First после сортировки DataSet
     NeedFirstOnDataSet : Boolean;
     procedure ShowForm; overload; virtual;
+    procedure ShowAsPrevForm; virtual;
     procedure Print( APreview: boolean = False); virtual;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure  SetPrevForm(NewPrevForm : TChildForm);
   published
     //Вытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
@@ -198,14 +201,7 @@ procedure TChildForm.ShowForm;
 var
   I: Integer;
 begin
-  MainForm.ActiveChild:=Self;
-  //todo: ClientId-UserId
-  if Caption <> '' then begin
-    if (Length(MainForm.CurrentUser) > 0) then
-      MainForm.Caption := Application.Title + ' - ' + MainForm.CurrentUser + ' - ' + Self.Caption
-    else
-      MainForm.Caption := Application.Title + ' - ' + Self.Caption;
-  end;
+  SetActiveChildToMainForm;
   for I := 0 to Self.ComponentCount-1 do
     if (Self.Components[i] is TToughDBGrid)
     then begin
@@ -230,13 +226,7 @@ begin
 
     end;
   Show;
-  if Parent<>nil then
-    for I:=0 to Parent.ControlCount-1 do
-      if (Parent.Controls[I] is TChildForm)and(Parent.Controls[I]<>Self) then begin
-        if Parent.Controls[I].Visible then PrevForm:=
-          TChildForm(Parent.Controls[I]);
-        Parent.Controls[I].Hide;
-      end;
+  SetPrevForm;
 end;
 
 procedure TChildForm.DoShow;
@@ -292,7 +282,7 @@ end;
 constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
-  FUseCorrectOrders := False;
+  FUseCorrectOrders := DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean;
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
   PatchNonBrowser;
@@ -518,11 +508,6 @@ begin
         TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
 end;
 
-procedure TChildForm.SetPrevForm(NewPrevForm: TChildForm);
-begin
-  PrevForm := NewPrevForm;
-end;
-
 procedure TChildForm.BeforeUpdateExecuteForClientID(
   Sender: TCustomMyDataSet; StatementTypes: TStatementTypes;
   Params: TDAParams);
@@ -531,6 +516,33 @@ begin
     //Возможна ситуация, когда параметра "ClientId" не будет в выполняемой команде
     if Assigned(Params.FindParam('ClientId')) then
       Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
+end;
+
+procedure TChildForm.PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
+var
+  realCostColumn : TColumnEh;
+  supplierPriceMarkupColumn : TColumnEh;
+begin
+  realCostColumn := ColumnByNameT(Grid, 'RealCost');
+  if not Assigned(realCostColumn) then
+    realCostColumn := ColumnByNameT(Grid, 'RealPrice');
+
+  if Assigned(realCostColumn) then  begin
+    supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
+    if not Assigned(supplierPriceMarkupColumn) then begin
+      supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
+      supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
+      supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
+      supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
+    end;
+    realCostColumn.Title.Caption := 'Цена поставщика';
+    //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
+    if not DM.adtClientsAllowDelayOfPayment.Value then
+      Grid.Columns.Delete(realCostColumn.Index)
+    else
+      //Если же механизм включен, то колонка должна отображаться по умолчанию
+      realCostColumn.Visible := True;
+  end;
 end;
 
 procedure TChildForm.FilterByMNNExecute(Sender: TObject);
@@ -548,7 +560,7 @@ begin
     if Assigned(mnnField) then begin
       if not mnnField.IsNull and (mnnField is TLargeintField) then begin
         MnnId := TLargeintField(mnnField).Value;
-        FlipToMNN(MnnId);
+        FlipToMNNFromMNNSearch(MnnId);
         Exit;
       end
       else
@@ -636,22 +648,61 @@ begin
     end;
 end;
 
-procedure TChildForm.PrepareColumnsInOrderGrid(Grid: TToughDBGrid);
-var
-  realCostColumn : TColumnEh;
+procedure TChildForm.ShowAsPrevForm;
 begin
-  realCostColumn := ColumnByNameT(Grid, 'RealCost');
-  if not Assigned(realCostColumn) then
-    realCostColumn := ColumnByNameT(Grid, 'RealPrice');
+  SetActiveChildToMainForm;
+  Show;
+  UpdateOrderDataset;
+end;
 
-  if Assigned(realCostColumn) then  begin
-    realCostColumn.Title.Caption := 'Цена поставщика';
-    //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-    if not DM.adtClientsAllowDelayOfPayment.Value then
-      Grid.Columns.Delete(realCostColumn.Index)
+procedure TChildForm.SetPrevForm;
+var
+  I : Integer;
+begin
+  if Parent<>nil then
+    for I:=0 to Parent.ControlCount-1 do
+      if (Parent.Controls[I] is TChildForm)and(Parent.Controls[I]<>Self) then begin
+        if Parent.Controls[I].Visible then PrevForm:=
+          TChildForm(Parent.Controls[I]);
+        Parent.Controls[I].Hide;
+      end;
+end;
+
+procedure TChildForm.SetActiveChildToMainForm;
+begin
+  MainForm.ActiveChild:=Self;
+  //todo: ClientId-UserId
+  if Caption <> '' then begin
+    if (Length(MainForm.CurrentUser) > 0) then
+      MainForm.Caption := Application.Title + ' - ' + MainForm.CurrentUser + ' - ' + Self.Caption
     else
-      //Если же механизм включен, то колонка должна отображаться по умолчанию
-      realCostColumn.Visible := True;
+      MainForm.Caption := Application.Title + ' - ' + Self.Caption;
+  end;
+end;
+
+procedure TChildForm.UpdateOrderDataset;
+var
+  coreId : TField;
+  lastCoreId : Variant;
+begin
+  if assigned(dsCheckVolume) then begin
+    coreId := dsCheckVolume.FindField('CoreId');
+    if Assigned(coreId) then
+      lastCoreId := coreId.Value;
+    dsCheckVolume.DisableControls;
+    try
+      dsCheckVolume.First;
+      while not dsCheckVolume.Eof do begin
+        if not fOrder.IsNull then
+          TMyQuery(dsCheckVolume).RefreshRecord;
+        dsCheckVolume.Next;
+      end;
+      dsCheckVolume.First;
+      if Assigned(coreId) then
+        dsCheckVolume.Locate('CoreId', lastCoreId, []);
+    finally
+      dsCheckVolume.EnableControls;
+    end;
   end;
 end;
 

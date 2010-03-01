@@ -8,7 +8,7 @@ uses
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
   FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps, MemDS,
-  DBAccess, MyAccess, MemData;
+  DBAccess, MyAccess, MemData, Orders;
 
 type
   TSumOrder = class
@@ -125,24 +125,25 @@ type
     procedure ClearSumOrders;
     procedure OrderEnter;
     procedure FillSelectedRows(Grid : TToughDBGrid);
+  protected
+    FOrdersForm: TOrdersForm;
   public
     procedure SetParameters;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
   end;
 
-var
-  OrdersHForm: TOrdersHForm;
-
 procedure ShowOrdersH;
 
 implementation
 
-uses DModule, Main, AProc, Orders, NotFound, DBProc, Core, WayBillList, Constant;
+uses DModule, Main, AProc, NotFound, DBProc, Core, WayBillList, Constant;
 
 {$R *.dfm}
 
 procedure ShowOrdersH;
+var
+  OrdersHForm : TOrdersHForm;
 begin
 	OrdersHForm := TOrdersHForm( MainForm.ShowChildForm( TOrdersHForm));
 end;
@@ -159,9 +160,9 @@ begin
   FSumOrders.Sorted := True;
 	PrintEnabled := False;
 
-  OrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
-  if OrdersForm = nil then
-    OrdersForm := TOrdersForm.Create( Application);
+  FOrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
+  if FOrdersForm = nil then
+    FOrdersForm := TOrdersForm.Create( Application);
 
   WayBillListForm := TWayBillListForm.Create(Application);
 	Reg := TRegIniFile.Create;
@@ -290,7 +291,7 @@ begin
 	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := ((TabControl.TabIndex = 0) and ((DM.SaveGridMask and PrintCurrentOrder) > 0))
                or ((TabControl.TabIndex = 1) and ((DM.SaveGridMask and PrintSendedOrder) > 0));
-  OrdersForm.PrintEnabled := PrintEnabled;
+  FOrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
 	if adsOrdersHForm.RecordCount = 0 then begin
     dbgCurrentOrders.ReadOnly := True;
@@ -386,6 +387,7 @@ begin
 	if ( Key = VK_ESCAPE) and ( Self.PrevForm <> nil) and
 		( Self.PrevForm is TCoreForm) then
 	begin
+    //todo: непонятно что-то здесь происходит
 		Self.PrevForm.Show;
 		MainForm.ActiveChild := Self.PrevForm;
 		MainForm.ActiveControl := Self.PrevForm.ActiveControl;
@@ -509,6 +511,15 @@ begin
     adsOrdersHForm.DisableControls;
     try
       adsOrdersHForm.First;
+      if not adsOrdersHForm.Eof then begin
+        DM.ShowOrderDetailsReport(
+          adsOrdersHFormORDERID.AsInteger,
+          adsOrdersHFormCLOSED.Value,
+          adsOrdersHFormSEND.Value,
+          APreview,
+          True);
+        adsOrdersHForm.Next;
+      end;
 
       while not adsOrdersHForm.Eof do
       begin
@@ -520,7 +531,7 @@ begin
             adsOrdersHFormCLOSED.Value,
             adsOrdersHFormSEND.Value,
             APreview,
-            True);
+            False);
         end;
         adsOrdersHForm.Next;
       end;
@@ -627,7 +638,7 @@ end;
 
 procedure TOrdersHForm.OrderEnter;
 begin
-  OrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger);
+  FOrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger, Self);
 end;
 
 procedure TOrdersHForm.InternalMoveToPrice;
@@ -675,19 +686,19 @@ begin
       Screen.Cursor:=crHourglass;
       try
         { открываем сохраненный заказ }
-        OrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
+        FOrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
         Application.ProcessMessages;
         { переписываем позиции в текущий прайс-лист }
-        while not OrdersForm.adsOrders.Eof do begin
-          Order:=OrdersForm.adsOrdersORDERCOUNT.AsInteger;
+        while not FOrdersForm.adsOrders.Eof do begin
+          Order:=FOrdersForm.adsOrdersORDERCOUNT.AsInteger;
 
-          Code := OrdersForm.adsOrdersCode.AsVariant;
-          RequestRatio := OrdersForm.adsOrdersORDERSREQUESTRATIO.AsVariant;
-          OrderCost := OrdersForm.adsOrdersORDERSORDERCOST.AsVariant;
-          MinOrderCount := OrdersForm.adsOrdersORDERSMINORDERCOUNT.AsVariant;
+          Code := FOrdersForm.adsOrdersCode.AsVariant;
+          RequestRatio := FOrdersForm.adsOrdersORDERSREQUESTRATIO.AsVariant;
+          OrderCost := FOrdersForm.adsOrdersORDERSORDERCOST.AsVariant;
+          MinOrderCount := FOrdersForm.adsOrdersORDERSMINORDERCOUNT.AsVariant;
 
-          SynonymCode:=OrdersForm.adsOrdersSynonymCode.AsInteger;
-          SynonymFirmCrCode:=OrdersForm.adsOrdersSynonymFirmCrCode.AsVariant;
+          SynonymCode:=FOrdersForm.adsOrdersSynonymCode.AsInteger;
+          SynonymFirmCrCode:=FOrdersForm.adsOrdersSynonymFirmCrCode.AsVariant;
 
           with adsCore do begin
             ParamByName( 'ClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
@@ -732,20 +743,20 @@ begin
               { если все еще не разбросали, то пишем сообщение }
               if Order > 0 then
               begin
-                if ( OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
+                if ( FOrdersForm.adsOrdersORDERCOUNT.AsInteger - Order) > 0 then
                 begin
                   Strings.Append( Format( '%s : %s - %s : %d вместо %d',
                     [adsOrdersHFormPRICENAME.AsString,
-                    OrdersForm.adsOrdersSYNONYMNAME.AsString,
-                    OrdersForm.adsOrdersSYNONYMFIRM.AsString,
-                    OrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
-                    OrdersForm.adsOrdersORDERCOUNT.AsInteger]));
+                    FOrdersForm.adsOrdersSYNONYMNAME.AsString,
+                    FOrdersForm.adsOrdersSYNONYMFIRM.AsString,
+                    FOrdersForm.adsOrdersORDERCOUNT.AsInteger - Order,
+                    FOrdersForm.adsOrdersORDERCOUNT.AsInteger]));
                 end
                 else
                   Strings.Append( Format( '%s : %s - %s : предложение не найдено',
                     [adsOrdersHFormPRICENAME.AsString,
-                    OrdersForm.adsOrdersSYNONYMNAME.AsString,
-                    OrdersForm.adsOrdersSYNONYMFIRM.AsString]));
+                    FOrdersForm.adsOrdersSYNONYMNAME.AsString,
+                    FOrdersForm.adsOrdersSYNONYMFIRM.AsString]));
               end;
 
             finally
@@ -753,7 +764,7 @@ begin
             end;
           end;
 
-          OrdersForm.adsOrders.Next;
+          FOrdersForm.adsOrders.Next;
           Application.ProcessMessages;
         end;
       finally

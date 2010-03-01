@@ -25,6 +25,21 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Caption = '('#1060#1080#1083#1100#1090#1088' '#1087#1088#1080#1084#1077#1085#1077#1085')'
       Visible = False
     end
+    object btnGotoCore: TSpeedButton
+      Left = 680
+      Top = 4
+      Width = 94
+      Height = 25
+      Action = actFlipCore
+    end
+    object btnGotoMNN: TSpeedButton
+      Left = 785
+      Top = 4
+      Width = 177
+      Height = 25
+      Caption = 'GotoMNN'
+      Visible = False
+    end
     object eSearch: TEdit
       Left = 1
       Top = 8
@@ -69,23 +84,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
         0000333303333000000033300033300000003300000330000000300000003000
         00003333333330000000}
       Layout = blGlyphRight
-    end
-    object btnGotoCore: TButton
-      Left = 680
-      Top = 4
-      Width = 94
-      Height = 25
-      Action = actFlipCore
-      TabOrder = 4
-    end
-    object btnGotoMNN: TButton
-      Left = 785
-      Top = 4
-      Width = 177
-      Height = 25
-      Caption = 'GotoMNN'
-      TabOrder = 5
-      Visible = False
     end
   end
   object pCenter: TPanel [1]
@@ -1050,6 +1048,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'
@@ -1148,6 +1147,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'
@@ -1473,6 +1473,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
       FieldName = 'RealCost'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsCoreSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
     object adsCoreMnn: TStringField
       FieldName = 'Mnn'
       Size = 250
@@ -1667,6 +1670,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'

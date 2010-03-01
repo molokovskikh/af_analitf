@@ -469,6 +469,9 @@ type
     adsRepareOrdersServerCost: TFloatField;
     adsRepareOrdersServerQuantity: TIntegerField;
     adsOrderDetailsRealPrice: TFloatField;
+    adsOrderDetailsSupplierPriceMarkup: TFloatField;
+    adsRepareOrdersSupplierPriceMarkup: TFloatField;
+    adsCoreRepareSupplierPriceMarkup: TFloatField;
     adtClientsAllowDelayOfPayment: TBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
@@ -1026,7 +1029,7 @@ begin
 {$endif}
 
   SerBeg := 'Prg';
-  SerEnd := 'Data';
+  SerEnd := 'DataTest';
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 
@@ -2741,7 +2744,7 @@ begin
     'GROUPBYPRODUCTS = 0,' +
     'PRINTORDERSAFTERSEND = 0,' +
     'ConfirmSendingOrders = 0,' +
-    'UseCorrectOrders = 0,' +
+    'UseCorrectOrders = 1,' +
     'ProviderName = ''АК "Инфорум"'',' +
     'ProviderAddress = ''Ленинский пр-т, 160 оф.415'',' +
     'ProviderPhones = ''4732-606000'',' +
@@ -4356,10 +4359,12 @@ begin
 +'insert '
 +'into   OrdersHead '
 +'       ( '
-+'              ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate '
++'              ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate, DelayOfPayment '
 +'       ) '
-+'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp() '
-+'from   pricesdata pd, pricesregionaldata prd, regions r '
++'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp(), dop.Percent '
++'from   (pricesdata pd, pricesregionaldata prd, regions r) '
++'       left join DelayOfPayments dop '
++'       on     dop.FirmCode = pd.FirmCode '
 +'where  pd.pricecode  = :pricecode '
 +'and    prd.pricecode = pd.pricecode '
 +'and    r.regioncode  = prd.regioncode '
@@ -4416,7 +4421,7 @@ begin
 +'              ORDERID          , CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, '
 +'              SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, '
 +'              PRICE            , AWAIT, JUNK, ORDERCOUNT, REQUESTRATIO, '
-+'              ORDERCOST        , MINORDERCOUNT, RealPrice '
++'              ORDERCOST        , MINORDERCOUNT, RealPrice, SupplierPriceMarkup '
 +'       ) '
 +'select :ORDERID     , :CLIENTID, c.COREID, c.PRODUCTID, c.CODEFIRMCR, '
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
@@ -4424,7 +4429,8 @@ begin
 +'       SynonymName   , sf.synonymname, '
 +'       if(dop.Percent is null, c.Cost, c.Cost * (1 + dop.Percent/100)), '
 +'       c.AWAIT, c.JUNK, 0, '
-+'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT, c.cost '
++'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT, c.cost, '
++'       c.SupplierPriceMarkup '
 +'from   core c '
 +'       inner join pricesdata pd '
 +'       on     pd.PriceCode = c.PriceCode '

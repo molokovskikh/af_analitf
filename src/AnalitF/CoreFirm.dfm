@@ -364,6 +364,22 @@ object CoreFirmForm: TCoreFirmForm
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object btnGotoCore: TSpeedButton
+      Left = 223
+      Top = 2
+      Width = 94
+      Height = 25
+      Action = actFlipCore
+      Anchors = [akTop, akRight]
+    end
+    object btnGotoMNN: TSpeedButton
+      Left = 328
+      Top = 2
+      Width = 177
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'GotoMNN'
+    end
     object cbFilter: TComboBox
       Left = 629
       Top = 4
@@ -407,24 +423,6 @@ object CoreFirmForm: TCoreFirmForm
         Visible = False
         OnClick = tmrSearchTimer
       end
-    end
-    object btnGotoCore: TButton
-      Left = 223
-      Top = 2
-      Width = 94
-      Height = 25
-      Action = actFlipCore
-      Anchors = [akTop, akRight]
-      TabOrder = 2
-    end
-    object btnGotoMNN: TButton
-      Left = 328
-      Top = 2
-      Width = 177
-      Height = 25
-      Anchors = [akTop, akRight]
-      Caption = 'GotoMNN'
-      TabOrder = 3
     end
   end
   inline frameLegeng: TframeLegeng
@@ -1023,6 +1021,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1131,6 +1130,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1474,6 +1474,9 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreMnnId: TLargeintField
       FieldName = 'MnnId'
     end
+    object adsCoreSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
     object adsCoreMnn: TStringField
       FieldName = 'Mnn'
       Size = 250
@@ -1521,6 +1524,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'

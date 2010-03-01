@@ -165,12 +165,13 @@ type
     adsCoreOrdersHPriceName: TStringField;
     adsCoreOrdersHRegionName: TStringField;
     adsCoreSumOrder: TFloatField;
-    btnGotoCore: TButton;
+    btnGotoCore: TSpeedButton;
     adsCoreWithLike: TMyQuery;
     adsCoreRealCost: TFloatField;
+    adsCoreSupplierPriceMarkup: TFloatField;
     adsCoreMnnId: TLargeintField;
     adsCoreMnn: TStringField;
-    btnGotoMNN: TButton;
+    btnGotoMNN: TSpeedButton;
     adsCoreDescriptionId: TLargeintField;
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
@@ -235,9 +236,6 @@ type
     procedure Print( APreview: boolean = False); override;
     procedure RefreshAllCore;
   end;
-
-var
-  CoreFirmForm: TCoreFirmForm;
 
 implementation
 
@@ -579,8 +577,8 @@ begin
   dbgCore.SetFocus;
   //Если мы пришли сюда из формы заказа, то возвращаться туда нет смысла
   if Self.PrevForm is TOrdersForm then begin
-    Self.PrevForm := nil;
-    Close;
+    Self.PrevForm.ShowAsPrevForm;
+    //Close;
   end;
 end;
 
@@ -619,14 +617,14 @@ begin
   if Key = VK_ESCAPE then
     if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
       tmrSearch.Enabled := False;
-      Self.PrevForm.ShowForm
+      Self.PrevForm.ShowAsPrevForm
     end
     else
       if tmrSearch.Enabled or (Length(InternalSearchText) > 0) then
         SetClear
       else
         if Assigned(Self.PrevForm) then
-          Self.PrevForm.ShowForm
+          Self.PrevForm.ShowAsPrevForm
         else
           Close;
 end;

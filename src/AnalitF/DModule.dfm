@@ -1871,6 +1871,7 @@ object DM: TDM
       '    Core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -2017,6 +2018,7 @@ object DM: TDM
       '    OrdersList.RequestRatio,'
       '    OrdersList.OrderCost,'
       '    OrdersList.MinOrderCount,'
+      '    OrdersList.SupplierPriceMarkup,'
       '    core.ServerCoreId'
       'FROM '
       '  OrdersList'
@@ -2109,6 +2111,9 @@ object DM: TDM
     object adsOrderDetailsRealPrice: TFloatField
       FieldName = 'RealPrice'
     end
+    object adsOrderDetailsSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
   end
   object adsOrdersHeaders: TMyQuery
     SQLUpdate.Strings = (
@@ -2144,6 +2149,7 @@ object DM: TDM
       '    RegionalData.SupportPhone,'
       '    OrdersHead.MessageTo,'
       '    OrdersHead.Comments,'
+      '    OrdersHead.DelayOfPayment,'
       '    pricesregionaldata.minreq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(OrdersList.Id) as Positions,'
@@ -2237,7 +2243,8 @@ object DM: TDM
       '  ORDERCOUNT = :ORDERCOUNT,'
       '  DropReason = :DropReason,'
       '  ServerCost = :ServerCost,'
-      '  ServerQuantity = :ServerQuantity'
+      '  ServerQuantity = :ServerQuantity,'
+      '  SupplierPriceMarkup = :SupplierPriceMarkup'
       'where'
       '  ID = :OLD_ID')
     Connection = MyConnection
@@ -2268,7 +2275,8 @@ object DM: TDM
       '  OrdersList.minordercount, '
       '  OrdersList.DropReason, '
       '  OrdersList.ServerCost, '
-      '  OrdersList.ServerQuantity '
+      '  OrdersList.ServerQuantity,'
+      '  OrdersList.SupplierPriceMarkup'
       'FROM '
       '  OrdersList '
       
@@ -2365,6 +2373,9 @@ object DM: TDM
     object adsRepareOrdersServerQuantity: TIntegerField
       FieldName = 'ServerQuantity'
     end
+    object adsRepareOrdersSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
   end
   object adsCoreRepare: TMyQuery
     Connection = MyConnection
@@ -2399,6 +2410,7 @@ object DM: TDM
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -2685,6 +2697,9 @@ object DM: TDM
     end
     object adsCoreRepareRealCost: TFloatField
       FieldName = 'RealCost'
+    end
+    object adsCoreRepareSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
     end
   end
   object adsUser: TMyQuery

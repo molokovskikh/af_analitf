@@ -42,9 +42,6 @@ type
     procedure ShowForm(ParentCode : Integer; ByShortCode : Boolean); reintroduce;
   end;
 
-var
-  PreviousOrdersForm: TPreviousOrdersForm;
-
 implementation
 
 uses DModule, AProc, NamesForms;

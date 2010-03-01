@@ -190,15 +190,16 @@ type
     adsAvgOrdersPRODUCTID: TLargeintField;
     tmrUpdatePreviosOrders: TTimer;
     tmrSelectedPrices: TTimer;
-    btnGotoCore: TButton;
+    btnGotoCore: TSpeedButton;
     adsCoreStartSQL: TMyQuery;
     adsCoreColorIndex: TLargeintField;
     adsCoreByProducts: TMyQuery;
     adsCoreByFullcode: TMyQuery;
     adsCoreRealCost: TFloatField;
+    adsCoreSupplierPriceMarkup: TFloatField;
     adsCoreMnn: TStringField;
     adsCoreMnnId: TLargeintField;
-    btnGotoMNN: TButton;
+    btnGotoMNN: TSpeedButton;
     adsCoreDescriptionId: TLargeintField;
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
@@ -649,7 +650,7 @@ begin
 
   CoreId := adsCoreCOREID.AsLargeInt;
 
-  FlipToCode(FullCode, ShortCode, CoreId);
+  FlipToCodeWithReturn(FullCode, ShortCode, CoreId);
 end;
 
 procedure TSynonymSearchForm.tmrUpdatePreviosOrdersTimer(Sender: TObject);

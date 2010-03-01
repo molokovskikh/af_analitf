@@ -2233,7 +2233,7 @@ begin
       ExchangeParams,
       eaForceSendOrders in ExchangeForm.ExchangeActs,
       Soap,
-      False);
+      DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean);
   try
     postController.PostSomeOrders;
   finally

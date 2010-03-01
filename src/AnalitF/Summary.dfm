@@ -311,6 +311,21 @@ inherited SummaryForm: TSummaryForm
         Font.Style = [fsBold]
         ParentFont = False
       end
+      object btnGotoCore: TSpeedButton
+        Left = 91
+        Top = 5
+        Width = 94
+        Height = 25
+        Action = actFlipCore
+      end
+      object btnGotoMNN: TSpeedButton
+        Left = 193
+        Top = 5
+        Width = 177
+        Height = 25
+        Caption = 'GotoMNN'
+        Visible = False
+      end
       object btnDelete: TButton
         Left = 8
         Top = 5
@@ -319,23 +334,6 @@ inherited SummaryForm: TSummaryForm
         Caption = #1059#1076#1072#1083#1080#1090#1100
         TabOrder = 0
         OnClick = btnDeleteClick
-      end
-      object btnGotoCore: TButton
-        Left = 91
-        Top = 5
-        Width = 94
-        Height = 25
-        Action = actFlipCore
-        TabOrder = 1
-      end
-      object btnGotoMNN: TButton
-        Left = 193
-        Top = 5
-        Width = 177
-        Height = 25
-        Caption = 'GotoMNN'
-        TabOrder = 2
-        Visible = False
       end
     end
     object pTopSettings: TPanel
@@ -1203,6 +1201,7 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
       
@@ -1285,6 +1284,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.requestratio as requestratio,'
       '    0.0 as ordercost,'
       '    OrdersList.minordercount as minordercount,'
+      '    OrdersList.SupplierPriceMarkup, '
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1388,6 +1388,7 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
       
@@ -1459,6 +1460,7 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
       
@@ -1645,6 +1647,9 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummarySendResult: TSmallintField
       FieldName = 'SendResult'
+    end
+    object adsSummarySupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
     end
     object adsSummaryMnnId: TLargeintField
       FieldName = 'MnnId'

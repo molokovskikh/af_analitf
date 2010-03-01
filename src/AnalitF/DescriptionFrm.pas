@@ -19,9 +19,6 @@ type
     { Public declarations }
   end;
 
-var
-  DescriptionForm: TDescriptionForm;
-
 procedure ShowDescription(dataSet : TDataSet);
 
 implementation
@@ -66,21 +63,22 @@ var
   descField : TField;
   RichEd : TRxRichEdit;
   trimText : String;
+  FDescriptionForm: TDescriptionForm;
 begin
-  DescriptionForm := TDescriptionForm.Create(nil);
+  FDescriptionForm := TDescriptionForm.Create(nil);
   try
     Name := dataSet.FieldByName('Name').AsString;
     EnglishName := dataSet.FieldByName('EnglishName').AsString;
 
-    RichEd := TRxRichEdit.Create(DescriptionForm);
-    RichEd.Parent := DescriptionForm;
+    RichEd := TRxRichEdit.Create(FDescriptionForm);
+    RichEd.Parent := FDescriptionForm;
     RichEd.Align := alClient;
-    RichEd.OnKeyDown := DescriptionForm.reDescriptionKeyDown;
+    RichEd.OnKeyDown := FDescriptionForm.reDescriptionKeyDown;
     RichEd.ReadOnly := True;
-    DescriptionForm.ActiveControl := RichEd;
+    FDescriptionForm.ActiveControl := RichEd;
 
-    DescriptionForm.Width := (Application.MainForm.Width div 3) * 2;
-    DescriptionForm.Height := (Application.MainForm.Height div 3) * 2;
+    FDescriptionForm.Width := (Application.MainForm.Width div 3) * 2;
+    FDescriptionForm.Height := (Application.MainForm.Height div 3) * 2;
 
     RichEd.Clear;
 
@@ -134,9 +132,9 @@ begin
     RichEd.SelStart := 0;
     RichEd.SelLength := 0;
 
-    DescriptionForm.ShowModal;
+    FDescriptionForm.ShowModal;
   finally
-    DescriptionForm.Free;
+    FDescriptionForm.Free;
   end;
 end;
 

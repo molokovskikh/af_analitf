@@ -65,9 +65,6 @@ type
     property OrderField: string read FOrderField write SetOrderField;
   end;
 
-var
-  DefectivesForm: TDefectivesForm;
-
 implementation
 
 {$R *.dfm}
