@@ -237,7 +237,7 @@ begin
            + ' and (OrdersList.OrderId = OrdersHead.OrderId)';
           DM.adcUpdate.Execute;
           //удаляем изменения в настройках прайс-листов
-          DM.adcUpdate.SQL.Text := 'delete from pricesregionaldataup';
+          DM.adcUpdate.SQL.Text := 'truncate pricesregionaldataup';
           DM.adcUpdate.Execute;
         end;
         DM.adtParams.Post;

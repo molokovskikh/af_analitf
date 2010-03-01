@@ -1418,7 +1418,7 @@ begin
           ShortName := ChangeFileExt(SR.Name,'');
 
           if DatabaseController.TableExists('tmp' + ShortName) then begin
-            adcUpdate.SQL.Text := 'delete from tmp' + ShortName;
+            adcUpdate.SQL.Text := 'truncate tmp' + ShortName;
             adcUpdate.Execute;
 
             Tracer.TR('CreateExternal', ShortName);
@@ -1457,7 +1457,7 @@ begin
     if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
       and AnsiStartsText('tmp', TDatabaseTable(DatabaseController.DatabaseObjects[i]).Name)
     then begin
-      adcUpdate.SQL.Text := 'delete from ' + TDatabaseTable(DatabaseController.DatabaseObjects[i]).Name;
+      adcUpdate.SQL.Text := 'truncate ' + TDatabaseTable(DatabaseController.DatabaseObjects[i]).Name;
       adcUpdate.Execute;
     end;
 {$endif}
@@ -1469,35 +1469,35 @@ begin
   with adcUpdate do try
 
     MainForm.StatusText:='Очищается MinPrices';
-    SQL.Text:='DELETE FROM MinPrices;'; Execute;
+    SQL.Text:='truncate MinPrices;'; Execute;
     MainForm.StatusText:='Очищается Core';
-    SQL.Text:='DELETE FROM Core;'; Execute;
+    SQL.Text:='truncate Core;'; Execute;
     MainForm.StatusText:='Очищается Catalog';
-    SQL.Text:='DELETE FROM CATALOGS;'; Execute;
+    SQL.Text:='truncate CATALOGS;'; Execute;
     MainForm.StatusText:='Очищается CatalogNames';
-    SQL.Text:='DELETE FROM catalognames;'; Execute;
+    SQL.Text:='truncate catalognames;'; Execute;
     MainForm.StatusText:='Очищается CatalogFarmGroups';
-    SQL.Text:='delete from CATALOGFARMGROUPS;'; Execute;
+    SQL.Text:='truncate CATALOGFARMGROUPS;'; Execute;
     MainForm.StatusText:='Очищается Products';
-    SQL.Text:='delete from Products;'; Execute;
+    SQL.Text:='truncate Products;'; Execute;
     MainForm.StatusText:='Очищается PricesRegionalData';
-    SQL.Text:='DELETE FROM PricesRegionalData;'; Execute;
+    SQL.Text:='truncate PricesRegionalData;'; Execute;
     MainForm.StatusText:='Очищается PricesData';
-    SQL.Text:='DELETE FROM PricesData;'; Execute;
+    SQL.Text:='truncate PricesData;'; Execute;
     MainForm.StatusText:='Очищается RegionalData';
-    SQL.Text:='DELETE FROM RegionalData;'; Execute;
+    SQL.Text:='truncate RegionalData;'; Execute;
     MainForm.StatusText:='Очищается Providers';
-    SQL.Text:='DELETE FROM Providers;'; Execute;
+    SQL.Text:='truncate Providers;'; Execute;
     MainForm.StatusText:='Очищается Synonym';
-    SQL.Text:='DELETE FROM Synonyms;'; Execute;
+    SQL.Text:='truncate Synonyms;'; Execute;
     MainForm.StatusText:='Очищается SynonymFirmCr';
-    SQL.Text:='DELETE FROM SynonymFirmCr;'; Execute;
+    SQL.Text:='truncate SynonymFirmCr;'; Execute;
     MainForm.StatusText:='Очищается Defectives';
-    SQL.Text:='DELETE FROM Defectives;'; Execute;
+    SQL.Text:='truncate Defectives;'; Execute;
     MainForm.StatusText:='Очищается МНН';
-    SQL.Text:='DELETE FROM MNN;'; Execute;
+    SQL.Text:='truncate MNN;'; Execute;
     MainForm.StatusText:='Очищаются описания';
-    SQL.Text:='DELETE FROM Descriptions;'; Execute;
+    SQL.Text:='truncate Descriptions;'; Execute;
 
   finally
     Screen.Cursor:=crDefault;

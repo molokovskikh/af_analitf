@@ -1165,23 +1165,23 @@ begin
 	end;
 	//PricesData
 	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='DELETE FROM PricesData WHERE NOT Exists(SELECT FirmCode, PriceCode FROM tmpPricesData WHERE FirmCode=PricesData.FirmCode AND PriceCode=PricesData.PriceCode);';
+	  SQL.Text:='truncate PricesData;';
     InternalExecute;
 	end;
 	//RegionalData
 	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='DELETE FROM RegionalData WHERE NOT Exists(SELECT FirmCode, RegionCode FROM tmpRegionalData WHERE FirmCode=RegionalData.FirmCode AND RegionCode=RegionalData.RegionCode);';
+	  SQL.Text:='truncate RegionalData;';
     InternalExecute;
 	end;
 
   //Удаляем все настройки по отсрочкам, т.к. каждый раз они должны получаться полностью
-  SQL.Text:='DELETE FROM DelayOfPayments;';
+  SQL.Text:='truncate DelayOfPayments;';
   InternalExecute;
 
   //todo: Providers почему здесь связь на utPricesRegionalData
 	//Providers
 	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='DELETE FROM Providers WHERE NOT Exists(SELECT FirmCode FROM tmpProviders WHERE FirmCode=Providers.FirmCode);';
+	  SQL.Text:='truncate Providers;';
     InternalExecute;
 	end;
 	//Core
@@ -1213,7 +1213,7 @@ begin
       deletedPriceCodes.Free;
     end;
 
-	  SQL.Text:='delete from minprices ;';
+	  SQL.Text:='truncate minprices ;';
     InternalExecute;
 
     //здесь сбрасываем для всех неотправленных заказов состояние результата,
@@ -1232,7 +1232,7 @@ begin
 	end;
 	//Regions
 	if utRegions in UpdateTables then begin
-	  SQL.Text:='DELETE FROM Regions WHERE NOT Exists(SELECT RegionCode FROM tmpRegions WHERE RegionCode=Regions.RegionCode);';
+	  SQL.Text:='truncate Regions;';
     InternalExecute;
 	end;
 
@@ -1344,21 +1344,21 @@ begin
 
 	//Regions
 	if utRegions in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('Regions', ExePath+SDirIn+'\Regions.txt', true);
+    SQL.Text := GetLoadDataSQL('Regions', ExePath+SDirIn+'\Regions.txt');
     InternalExecute;
 	end;
   //User
   if utUser in UpdateTables then begin
-    SQL.Text := 'delete from analitf.userinfo';
+    SQL.Text := 'truncate analitf.userinfo';
     InternalExecute;
-    SQL.Text := GetLoadDataSQL('UserInfo', ExePath+SDirIn+'\User.txt', true);
+    SQL.Text := GetLoadDataSQL('UserInfo', ExePath+SDirIn+'\User.txt');
     InternalExecute;
 	end;
   //Client
   if utClient in UpdateTables then begin
-    SQL.Text := 'delete from analitf.Client';
+    SQL.Text := 'truncate analitf.Client';
     InternalExecute;
-    SQL.Text := GetLoadDataSQL('Client', ExePath+SDirIn+'\Client.txt', true);
+    SQL.Text := GetLoadDataSQL('Client', ExePath+SDirIn+'\Client.txt');
     InternalExecute;
   end;
 	//Clients
@@ -1368,11 +1368,11 @@ begin
 	end;
 	//Providers
 	if utProviders in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('Providers', ExePath+SDirIn+'\Providers.txt', true);
+    SQL.Text := GetLoadDataSQL('Providers', ExePath+SDirIn+'\Providers.txt');
     InternalExecute;
 	end;
   if utDelayOfPayments in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('DelayOfPayments', ExePath+SDirIn+'\DelayOfPayments.txt', true);
+    SQL.Text := GetLoadDataSQL('DelayOfPayments', ExePath+SDirIn+'\DelayOfPayments.txt');
     InternalExecute;
 	end;
 	//RegionalData
@@ -1382,7 +1382,7 @@ begin
 	end;
 	//PricesData
 	if utPricesData in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('PricesData', ExePath+SDirIn+'\PricesData.txt', true);
+    SQL.Text := GetLoadDataSQL('PricesData', ExePath+SDirIn+'\PricesData.txt');
     InternalExecute;
 	end;
 	//PricesRegionalData
@@ -1857,7 +1857,7 @@ begin
       raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
     with DM.adcUpdate do begin
       //удаляем признак того, что настройки прайс-листов были изменены
-      SQL.Text := 'delete from pricesregionaldataup';
+      SQL.Text := 'truncate pricesregionaldataup';
       Execute;
     end;
 	end
