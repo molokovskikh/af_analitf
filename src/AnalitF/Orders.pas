@@ -96,7 +96,6 @@ type
     cbNeedCorrect: TCheckBox;
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
-    adsOrdersSupplierPriceMarkup: TFloatField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

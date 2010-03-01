@@ -116,7 +116,6 @@ type
     gbCorrectMessage: TGroupBox;
     dbmCorrectMessage: TDBMemo;
     mtLogNodeType: TIntegerField;
-    adsCoreSupplierPriceMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -175,7 +174,6 @@ type
     procedure PrepareData;
     function GetReportOrdersLogSql : String;
     procedure SetGridParams(Grid : TToughDBGrid);
-    procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
   public
     { Public declarations }
     Report : TStrings;
@@ -250,7 +248,6 @@ begin
   fOrderCost := adsCoreORDERCOST;
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
-  PrepareColumnsInOrderGrid(dbgCore);
 end;
 
 procedure TCorrectOrdersForm.PrepareData;
@@ -946,29 +943,6 @@ begin
     SetOffers
   else
     adsCore.Close;
-end;
-
-procedure TCorrectOrdersForm.PrepareColumnsInOrderGrid(Grid: TToughDBGrid);
-var
-  realCostColumn : TColumnEh;
-  supplierPriceMarkupColumn : TColumnEh;
-begin
-  realCostColumn := ColumnByNameT(Grid, 'RealCost');
-  if not Assigned(realCostColumn) then
-    realCostColumn := ColumnByNameT(Grid, 'RealPrice');
-
-  if Assigned(realCostColumn) then  begin
-    supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
-    if not Assigned(supplierPriceMarkupColumn) then begin
-      supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
-      supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
-      supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
-      supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
-    end;
-    //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-    if not DM.adtClientsAllowDelayOfPayment.Value then
-      Grid.Columns.Delete(realCostColumn.Index);
-  end;
 end;
 
 end.

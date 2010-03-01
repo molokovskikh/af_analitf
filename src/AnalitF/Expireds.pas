@@ -134,7 +134,6 @@ type
     adsAvgOrdersPRODUCTID: TLargeintField;
     btnGotoCore: TButton;
     adsExpiredsRealCost: TFloatField;
-    adsExpiredsSupplierPriceMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;

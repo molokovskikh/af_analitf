@@ -508,15 +508,6 @@ begin
     adsOrdersHForm.DisableControls;
     try
       adsOrdersHForm.First;
-      if not adsOrdersHForm.Eof then begin
-        DM.ShowOrderDetailsReport(
-          adsOrdersHFormORDERID.AsInteger,
-          adsOrdersHFormCLOSED.Value,
-          adsOrdersHFormSEND.Value,
-          APreview,
-          True);
-        adsOrdersHForm.Next;
-      end;
 
       while not adsOrdersHForm.Eof do
       begin
@@ -528,7 +519,7 @@ begin
             adsOrdersHFormCLOSED.Value,
             adsOrdersHFormSEND.Value,
             APreview,
-            False);
+            True);
         end;
         adsOrdersHForm.Next;
       end;

@@ -1190,7 +1190,6 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
-      '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
       
@@ -1265,7 +1264,6 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.requestratio as requestratio,'
       '    0.0 as ordercost,'
       '    OrdersList.minordercount as minordercount,'
-      '    OrdersList.SupplierPriceMarkup, '
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1356,7 +1354,6 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
-      '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
       
@@ -1420,7 +1417,6 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
-      '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
       
@@ -1600,9 +1596,6 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummarySendResult: TSmallintField
       FieldName = 'SendResult'
-    end
-    object adsSummarySupplierPriceMarkup: TFloatField
-      FieldName = 'SupplierPriceMarkup'
     end
   end
 end

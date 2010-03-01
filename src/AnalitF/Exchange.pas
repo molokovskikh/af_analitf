@@ -554,7 +554,6 @@ var
       DM.adsRepareOrdersPRICE.Value := DM.adsCoreRepareCOST.Value;
       DM.adsRepareOrdersRealPrice.Value := DM.adsCoreRepareRealCost.Value;
       DM.adsRepareOrdersCodeFirmCr.Value := DM.adsCoreRepareCodeFirmCr.Value;
-      DM.adsRepareOrdersSupplierPriceMarkup.Value := DM.adsCoreRepareSupplierPriceMarkup.Value;
     end;
     DM.adsRepareOrdersServerCost.Value := DM.adsRepareOrdersRealPrice.Value;
     DM.adsRepareOrdersServerQuantity.Value := OldOrderCount;

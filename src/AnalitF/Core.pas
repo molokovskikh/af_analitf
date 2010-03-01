@@ -210,7 +210,6 @@ type
     adsPreviosOrdersJunk: TBooleanField;
     btnGotoCoreFirm: TButton;
     adsCoreRealCost: TFloatField;
-    adsCoreSupplierPriceMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);

@@ -142,7 +142,6 @@ type
     adsSummarySendResult: TSmallintField;
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
-    adsSummarySupplierPriceMarkup: TFloatField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -219,7 +218,6 @@ begin
   fSumOrder := adsSummarySumOrder;
   fMinOrderCount := adsSummaryMINORDERCOUNT;
   inherited;
-  PrepareColumnsInOrderGrid(dbgSummarySend);
   if not FUseCorrectOrders then begin
     cbNeedCorrect.Checked := False;
     cbNeedCorrect.Visible := False;

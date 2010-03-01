@@ -186,16 +186,6 @@ begin
       dataSet.FieldByName('Ordercount').AsInteger <= MaxOrderCount,
       dataSet.FieldByName('Ordercount').AsString,
       IntToStr(MaxOrderCount)));
-  AddPostParam(
-    'SupplierPriceMarkup',
-    IfThen(
-      dataSet.FieldByName('SupplierPriceMarkup').IsNull,
-      '',
-      StringReplace(
-        dataSet.FieldByName('SupplierPriceMarkup').AsString,
-        FDataLayer.FFS.DecimalSeparator,
-        '.',
-        [rfReplaceAll])));
 end;
 
 procedure TPostSomeOrdersController.FillOrderDetailLeaderParams(
@@ -623,9 +613,9 @@ begin
 {
   if FileExists('PostSomeOrders.txt') then
     DeleteFile('PostSomeOrders.txt');
-  FPostParams.SaveToFile('PostSomeOrders.txt');
 }    
-  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersWithSupplierPriceMarkup', FPostParams);
+  FPostParams.SaveToFile('PostSomeOrders.txt');
+  soapResult := FSOAP.SimpleInvoke('PostSomeOrders', FPostParams);
   rawResult := soapResult;
 
   serverResponse := TStringList.Create;
