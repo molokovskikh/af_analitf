@@ -298,10 +298,11 @@ end;
 procedure TExpiredsForm.dbgExpiredsCanInput(Sender: TObject;
   Value: Integer; var CanInput: Boolean);
 begin
-	CanInput := ( adsExpiredsRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
-		adsExpiredsRegionCode.AsLargeInt;
-	if not CanInput then exit;
-
+  CanInput :=
+    (not adsExpireds.IsEmpty)
+    and ((adsExpiredsRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt)
+      = adsExpiredsRegionCode.AsLargeInt);
+  if not CanInput then exit;
 end;
 
 procedure TExpiredsForm.TimerTimer(Sender: TObject);

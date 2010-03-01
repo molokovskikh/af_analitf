@@ -83,6 +83,7 @@ procedure InternalDoSendLetter(
   Attachs : TStringList;   //Список приложений
   Subject, Body : String); //Тема письма и тело письма
 function GetLibraryVersionFromPath(AName: String): String;
+function GetLibraryVersionFromPathForExe(AName: String): String;
 function GetBuildNumberLibraryVersionFromPath(AName: String): Word;
 function  GetLibraryVersionFromAppPath : TObjectList;
 //устанавливаем параметры для SSL-соединения
@@ -767,6 +768,39 @@ begin
   end
   else
     Result := '';
+end;
+
+function GetLibraryVersionFromPathForExe(AName: String): String;
+var
+  RxVer : TVersionInfo;
+begin
+  if FileExists(AName) then begin
+    try
+      RxVer := TVersionInfo.Create(AName);
+      try
+        Result := LongVersionToString(RxVer.FileLongVersion);
+        if Result = '' then
+          WriteExchangeLog('VersionForExe',
+            Format('Ошибка при чтении информации о версии для файла %s: получена пустая строка',
+            [AName]));
+      finally
+        RxVer.Free;
+      end;
+    except
+      on E : Exception do
+      begin
+        WriteExchangeLog('VersionForExe',
+          Format('Ошибка при чтении информации о версии для файла %s: %s',
+          [AName,
+           E.Message]));
+        Result := '';
+      end;
+    end;
+  end
+  else begin
+    WriteExchangeLog('VersionForExe', 'Файла не существует: ' + AName);
+    Result := '';
+  end
 end;
 
 function GetBuildNumberLibraryVersionFromPath(AName: String): Word;

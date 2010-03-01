@@ -632,9 +632,10 @@ end;
 procedure TCoreFirmForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
-	CanInput := ( RegionCode and DM.adtClientsREQMASK.AsLargeInt) =
-		RegionCode;
-	if not CanInput then Exit;
+  CanInput :=
+    (not adsCore.IsEmpty)
+    and (( RegionCode and DM.adtClientsREQMASK.AsLargeInt) = RegionCode);
+  if not CanInput then Exit;
 end;
 
 procedure TCoreFirmForm.TimerTimer(Sender: TObject);

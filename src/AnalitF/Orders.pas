@@ -319,7 +319,7 @@ procedure TOrdersForm.dbgOrdersCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
   inherited;
-  CanInput := Assigned(ParentOrdersHForm) and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0);
+  CanInput := (not adsOrders.IsEmpty) and Assigned(ParentOrdersHForm) and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0);
 end;
 
 procedure TOrdersForm.FormCreate(Sender: TObject);
