@@ -123,7 +123,6 @@ type
     FDatabaseObjects : TObjectList;
     FInitialized : Boolean;
     FCommand : TMyQuery;
-    function GetFirstFileNameFromDir(DirName : String): String;
     function CheckTable(table : TDatabaseTable; WithOptimize : Boolean = False) : Boolean;
    public
     property DatabaseObjects : TObjectList read FDatabaseObjects;
@@ -537,23 +536,6 @@ begin
       Integer(Result.ObjectId)]);
 end;
 
-function TDatabaseController.GetFirstFileNameFromDir(
-  DirName: String): String;
-var
-  SR: TSearchrec;
-begin
-  try
-    if SysUtils.FindFirst(DirName + '\*.*', faAnyFile-faDirectory,SR)=0
-    then begin
-      Result := ChangeFileExt(SR.Name, '');
-      Exit;
-    end;
-  finally
-    SysUtils.FindClose(SR);
-  end;
-  Result := '';
-end;
-
 procedure TDatabaseController.Initialize(connection: TCustomMyConnection);
 var
   I : Integer;
@@ -571,25 +553,28 @@ begin
     if not DirectoryExists(ExePath + SDirData + '\analitf') then
       Exit;
 
-    if not DirectoryExists(ExePath + SDirData + '\' + TestSchema) then
-      CreateDir(ExePath + SDirData + '\' + TestSchema);
-    try
-      for I := 0 to FDatabaseObjects.Count-1 do begin
-        if FDatabaseObjects[i] is TDatabaseTable then begin
-          currentTable := TDatabaseTable(FDatabaseObjects[i]);
-          FCommand.SQL.Text := currentTable.GetDropSQL(TestSchema);
-          FCommand.Execute;
-          FCommand.SQL.Text := currentTable.GetCreateSQL(TestSchema);
-          FCommand.Execute;
-          currentTable.FileSystemName := GetFirstFileNameFromDir(ExePath + SDirData + '\' + TestSchema);
-          if Length(currentTable.FileSystemName) = 0 then
-            WriteExchangeLog('DatabaseController.Initialize', 'Не удалось получить FileSystemName для объекта ' + currentTable.Name);
-          FCommand.SQL.Text := currentTable.GetDropSQL(TestSchema);
-          FCommand.Execute;
+    for I := 0 to FDatabaseObjects.Count-1 do begin
+      if FDatabaseObjects[i] is TDatabaseTable then begin
+        currentTable := TDatabaseTable(FDatabaseObjects[i]);
+        FCommand.SQL.Text := Format('SELECT PASSWORD(''%s'');', [currentTable.Name]);
+        FCommand.Open;
+        try
+          if (FCommand.RecordCount = 1) then begin
+            if (FCommand.Fields.Count = 1) then
+              currentTable.FileSystemName := FCommand.Fields[0].AsString
+            else
+              WriteExchangeLog(
+                'DatabaseController.Initialize',
+                'Не удалось получить FileSystemName для объекта ' + currentTable.Name  + ', т.к. кол-во полей не равно 1.');
+          end
+          else
+            WriteExchangeLog(
+              'DatabaseController.Initialize',
+              'Не удалось получить FileSystemName для объекта ' + currentTable.Name  + ', т.к. функция не отработала.');
+        finally
+          FCommand.Close;
         end;
       end;
-    finally
-      DeleteDirectory(ExePath + SDirData + '\' + TestSchema);
     end;
 
     FInitialized := True;

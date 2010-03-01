@@ -11,11 +11,6 @@ uses
   DBAccess, MyAccess, MemData, Orders;
 
 type
-  TSumOrder = class
-    Sum : Currency;
-    constructor Create(ASum : Currency);
-  end;
-
   TOrdersHForm = class(TChildForm)
     dsOrdersH: TDataSource;
     TabControl: TTabControl;
@@ -90,6 +85,8 @@ type
     adsOrdersHFormDifferentCostCount: TLargeintField;
     adsOrdersHFormDifferentQuantityCount: TLargeintField;
     adsOrdersHFormsumbycurrentweek: TFloatField;
+    adsCurrentOrders: TMyQuery;
+    adsSendOrders: TMyQuery;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -109,20 +106,15 @@ type
     procedure tmOrderDateChangeTimer(Sender: TObject);
     procedure adsOrdersH2BeforePost(DataSet: TDataSet);
     procedure dbgCurrentOrdersSortMarkingChanged(Sender: TObject);
-    procedure adsOrdersHFormOldCalcFields(DataSet: TDataSet);
-    procedure adsOrdersHFormOldAfterFetchRecord(FromQuery: TFIBQuery;
-      RecordNumber: Integer; var StopFetching: Boolean);
     procedure adsOrdersHFormBeforeInsert(DataSet: TDataSet);
     procedure adsCoreBeforePost(DataSet: TDataSet);
   private
-    FSumOrders : TStringList;
     Strings: TStrings;
     //Список выбранных строк в гридах
     FSelectedRows : TStringList;
     procedure MoveToPrice;
     procedure InternalMoveToPrice;
     procedure SetDateInterval;
-    procedure ClearSumOrders;
     procedure OrderEnter;
     procedure FillSelectedRows(Grid : TToughDBGrid);
   protected
@@ -145,27 +137,25 @@ procedure ShowOrdersH;
 var
   OrdersHForm : TOrdersHForm;
 begin
-	OrdersHForm := TOrdersHForm( MainForm.ShowChildForm( TOrdersHForm));
+  OrdersHForm := TOrdersHForm( MainForm.ShowChildForm( TOrdersHForm));
 end;
 
 procedure TOrdersHForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegIniFile;
-	Year, Month, Day: Word;
+  Reg: TRegIniFile;
+  Year, Month, Day: Word;
 begin
-	inherited;
+  inherited;
   NeedFirstOnDataSet := False;
   FSelectedRows := TStringList.Create;
-  FSumOrders := TStringList.Create;
-  FSumOrders.Sorted := True;
-	PrintEnabled := False;
+  PrintEnabled := False;
 
   FOrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
   if FOrdersForm = nil then
     FOrdersForm := TOrdersForm.Create( Application);
 
   WayBillListForm := TWayBillListForm.Create(Application);
-	Reg := TRegIniFile.Create;
+  Reg := TRegIniFile.Create;
   try
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'CurrentOrders', False)
     then
@@ -182,36 +172,30 @@ begin
         Reg.CloseKey;
       end;
   finally
-  	Reg.Free;
+    Reg.Free;
   end;
 
-	Year := YearOf( Date);
-	Month := MonthOf( Date);
-	Day := DayOf( Date);
-	IncAMonth( Year, Month, Day, -3);
-	dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
-	dtpDateTo.Date := Date;
+  Year := YearOf( Date);
+  Month := MonthOf( Date);
+  Day := DayOf( Date);
+  IncAMonth( Year, Month, Day, -3);
+  dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
+  dtpDateTo.Date := Date;
 
-	TabControl.TabIndex := 0;
-	Screen.Cursor := crHourglass;
-	try
-		adsOrdersHForm.ParamByName('ClientId').Value:=
-			DM.adtClients.FieldByName('ClientId').Value;
-    adsOrdersHForm.ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
-		dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-		adsOrdersHForm.ParamByName('DateTo').AsDateTime:=dtpDateTo.DateTime;
-		adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-		SetParameters;
-	finally
-		Screen.Cursor := crDefault;
-	end;
+  TabControl.TabIndex := 0;
+  Screen.Cursor := crHourglass;
+  try
+    SetParameters;
+  finally
+    Screen.Cursor := crDefault;
+  end;
 
-	ShowForm;
+  ShowForm;
 end;
 
 procedure TOrdersHForm.FormDestroy(Sender: TObject);
 var
-	Reg: TRegIniFile;
+  Reg: TRegIniFile;
 begin
   try
     //TODO: ___ Здесь возникает ошибка с AccessViolation в FBPlus.
@@ -236,19 +220,19 @@ begin
   finally
     Reg.Free;
   end;
-  ClearSumOrders;
-  FSumOrders.Free;
   FSelectedRows.Free;
 end;
 
 procedure TOrdersHForm.SetParameters;
 begin
-	SoftPost( adsOrdersHForm);
-	case TabControl.TabIndex of
-		0: begin
-			adsOrdersHForm.Close;
-			adsOrdersHForm.ParamByName( 'Closed').Value := False;
-			btnMoveSend.Caption := '';
+  SoftPost( adsOrdersHForm);
+  adsOrdersHForm.Close;
+
+  case TabControl.TabIndex of
+    0:
+    begin
+      adsOrdersHForm.SQL.Text := adsCurrentOrders.SQL.Text;
+      btnMoveSend.Caption := '';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
       dbgCurrentOrders.Visible := True;
@@ -257,11 +241,14 @@ begin
       try
         dbgCurrentOrders.SetFocus;
       except end;
-		end;
-		1: begin
-			adsOrdersHForm.Close;
-			adsOrdersHForm.ParamByName( 'Closed').Value := True;
-			btnMoveSend.Caption := 'Вернуть в текущие';
+    end;
+    1:
+    begin
+      adsOrdersHForm.SQL.Text := adsSendOrders.SQL.Text;
+      adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
+      dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+      adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+      btnMoveSend.Caption := 'Вернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
       dbgCurrentOrders.Visible := False;
@@ -270,18 +257,12 @@ begin
       try
         dbgSendedOrders.SetFocus;
       except end;
-		end;
-	end;
+    end;
+  end;
 
-	adsOrdersHForm.ParamByName( 'ClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').Value;
-	adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
-	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
-	adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-
-  adsOrdersHForm.Close;
-  ClearSumOrders;
+  adsOrdersHForm.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').Value;
+  adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
   adsOrdersHForm.Open;
 
@@ -573,67 +554,6 @@ end;
 procedure TOrdersHForm.dbgCurrentOrdersSortMarkingChanged(Sender: TObject);
 begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
-end;
-
-procedure TOrdersHForm.adsOrdersHFormOldCalcFields(DataSet: TDataSet);
-begin
-  adsOrdersHFormSumOrder.AsCurrency :=
-    TSumOrder(FSumOrders.Objects[(FSumOrders.IndexOf(adsOrdersHFormORDERID.AsString))]).Sum;
-end;
-
-procedure TOrdersHForm.ClearSumOrders;
-var
-  I : Integer;
-begin
-  for I := 0 to FSumOrders.Count-1 do
-    FSumOrders.Objects[i].Free;
-  FSumOrders.Clear;
-end;
-
-{ TSumOrder }
-
-constructor TSumOrder.Create(ASum: Currency);
-begin
-  Sum := ASum;
-end;
-
-procedure TOrdersHForm.adsOrdersHFormOldAfterFetchRecord(FromQuery: TFIBQuery;
-  RecordNumber: Integer; var StopFetching: Boolean);
-var
-  F : TFIBXSQLVAR;
-  SumOrder : Currency;
-  Index : Integer;
-begin
-  F := FromQuery.FldByName[adsOrdersHFormORDERID.FieldName];
-  //Если заказ текущий, то данные берем из общего кеша
-  if not FromQuery.FldByName[adsOrdersHFormCLOSED.FieldName].AsBoolean then begin
-    SumOrder := DM.FindOrderInfo(
-            FromQuery.FldByName[adsOrdersHFormPRICECODE.FieldName].AsInteger,
-            FromQuery.FldByName[adsOrdersHFormREGIONCODE.FieldName].AsInteger);
-    Index := FSumOrders.IndexOf(F.AsString);
-    if (Index = -1) then
-      FSumOrders.AddObject( F.AsString, TSumOrder.Create(SumOrder) )
-    else
-      TSumOrder(FSumOrders.Objects[Index]).Sum := SumOrder;
-  end
-  else begin
-    //Если заказ архивный, то берем из базы
-    try
-      SumOrder := DM.QueryValue(
-        'SELECT ifnull(Sum(OrdersList.price*OrdersList.OrderCount), 0) SumOrder '
-        + 'FROM OrdersList '
-        + 'WHERE OrdersList.OrderId = :OrderId AND OrdersList.OrderCount>0',
-        ['OrderId'],
-        [F.AsString]);
-    except
-      SumOrder := 0;
-    end;
-    Index := FSumOrders.IndexOf(F.AsString);
-    if (Index = -1) then
-      FSumOrders.AddObject( F.AsString, TSumOrder.Create(SumOrder) )
-    else
-      TSumOrder(FSumOrders.Objects[Index]).Sum := SumOrder;
-  end;
 end;
 
 procedure TOrdersHForm.OrderEnter;

@@ -4772,7 +4772,9 @@ begin
     LogCriticalError(Format('MySql Clients Count при обновлении с 800-х: %d',
       [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
   MyAPIEmbedded.FreeMySQLLib;
+{$ifdef USEMEMORYCRYPTDLL}
   TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := False;
+{$endif}
   MyCall.SwithTypesToOld;
 
   try
@@ -4819,7 +4821,9 @@ begin
       LogCriticalError(Format('MySql Clients Count при обновлении с 800-х: %d',
         [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
     MyAPIEmbedded.FreeMySQLLib;
+{$ifdef USEMEMORYCRYPTDLL}
     TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
+{$endif}
     MyCall.SwithTypesToNew;
 
     dbCon.Open;
@@ -4853,7 +4857,9 @@ begin
       LogCriticalError(Format('MySql Clients Count при обновлении с 800-х (обратно): %d',
         [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
     MyAPIEmbedded.FreeMySQLLib;
+{$ifdef USEMEMORYCRYPTDLL}
     TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
+{$endif}
     MyCall.SwithTypesToNew;
   end;
 end;

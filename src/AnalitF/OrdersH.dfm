@@ -550,9 +550,7 @@ inherited OrdersHForm: TOrdersHForm
       'order by SendDate DESC')
     AfterPost = adsOrdersH2AfterPost
     BeforePost = adsOrdersH2BeforePost
-    OnCalcFields = adsOrdersHFormOldCalcFields
     Database = DM.MainConnectionOld
-    AfterFetchRecord = adsOrdersHFormOldAfterFetchRecord
     AutoCommit = True
     Left = 68
     Top = 119
@@ -876,6 +874,7 @@ inherited OrdersHForm: TOrdersHForm
       
         '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
         'SumOrder,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '     ('
       '  select'
       '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
@@ -893,7 +892,8 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.Closed = 1'
       '     AND header.send = 1'
       '     AND OrdersList.OrderCount>0'
-      ') as sumbycurrentmonth,'
+      ')'
+      '   as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '('
       '  select'
@@ -912,7 +912,8 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.Closed = 1'
       '     AND header.send = 1'
       '     AND OrdersList.OrderCount>0'
-      '  ) as sumbycurrentweek'
+      '  ) '
+      'as sumbycurrentweek'
       'FROM'
       '   OrdersHead'
       '   inner join OrdersList on '
@@ -1305,6 +1306,214 @@ inherited OrdersHForm: TOrdersHForm
       item
         DataType = ftUnknown
         Name = 'SYNONYMCODE'
+      end>
+  end
+  object adsCurrentOrders: TMyQuery
+    SQL.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    OrdersHead.OrderId,'
+      
+        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
+        'layOrderId,'
+      '    OrdersHead.ClientID,'
+      '    OrdersHead.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    OrdersHead.PriceCode,'
+      '    OrdersHead.RegionCode,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate,'
+      '    OrdersHead.Closed,'
+      '    OrdersHead.Send,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    OrdersHead.MessageTo,'
+      '    OrdersHead.Comments,'
+      
+        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
+        'MinReq, 0)) as MinReq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(OrdersList.Id) as Positions,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentCostCount,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentQuantityCount,'
+      
+        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
+        'SumOrder,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+      '     ('
+      '  select'
+      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '  from'
+      '    OrdersHead header'
+      
+        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
+        'd)'
+      '  WHERE OrdersHead.ClientId = :ClientId'
+      '     AND header.PriceCode = OrdersHead.PriceCode'
+      '     AND header.RegionCode = OrdersHead.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (1-day(curdate()' +
+        ')) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND OrdersList.OrderCount>0'
+      ')'
+      '   as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '('
+      '  select'
+      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '  from'
+      '    OrdersHead header'
+      
+        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
+        'd)'
+      '  WHERE OrdersHead.ClientId = :ClientId'
+      '     AND header.PriceCode = OrdersHead.PriceCode'
+      '     AND header.RegionCode = OrdersHead.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
+        'e())) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND OrdersList.OrderCount>0'
+      '  ) '
+      'as sumbycurrentweek'
+      'FROM'
+      '   OrdersHead'
+      '   inner join OrdersList on '
+      '         (OrdersList.OrderId = OrdersHead.OrderId) '
+      '     and (OrdersList.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
+      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (OrdersHead.ClientId = :ClientId)'
+      'and (OrdersHead.Closed = 0)'
+      'and (PricesData.PriceCode is not null) '
+      'and (RegionalData.RegionCode is not null) '
+      'and (pricesregionaldata.PriceCode is not null)'
+      'group by OrdersHead.OrderId'
+      'having count(OrdersList.Id) > 0'
+      'order by OrdersHead.SendDate DESC')
+    Left = 132
+    Top = 183
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
+      end>
+  end
+  object adsSendOrders: TMyQuery
+    SQL.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    OrdersHead.OrderId,'
+      
+        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
+        'layOrderId,'
+      '    OrdersHead.ClientID,'
+      '    OrdersHead.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    OrdersHead.PriceCode,'
+      '    OrdersHead.RegionCode,'
+      '    OrdersHead.OrderDate,'
+      '    OrdersHead.SendDate,'
+      '    OrdersHead.Closed,'
+      '    OrdersHead.Send,'
+      '    OrdersHead.PriceName,'
+      '    OrdersHead.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    OrdersHead.MessageTo,'
+      '    OrdersHead.Comments,'
+      
+        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
+        'MinReq, 0)) as MinReq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(OrdersList.Id) as Positions,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentCostCount,'
+      
+        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
+        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
+        'erentQuantityCount,'
+      
+        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
+        'SumOrder,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+      '  0.0'
+      '   as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '  0.0'
+      'as sumbycurrentweek'
+      'FROM'
+      '   OrdersHead'
+      '   inner join OrdersList on '
+      '         (OrdersList.OrderId = OrdersHead.OrderId) '
+      '     and (OrdersList.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
+      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (OrdersHead.ClientId = :ClientId)'
+      'and (OrdersHead.Closed = 1)'
+      'and (OrdersHead.OrderDate BETWEEN :DateFrom AND :DateTo )'
+      'group by OrdersHead.OrderId'
+      'having count(OrdersList.Id) > 0'
+      'order by OrdersHead.SendDate DESC')
+    Left = 180
+    Top = 183
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DateFrom'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DateTo'
       end>
   end
 end
