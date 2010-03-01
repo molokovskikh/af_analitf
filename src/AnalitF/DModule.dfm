@@ -2019,13 +2019,20 @@ object DM: TDM
       '    OrdersList.OrderCost,'
       '    OrdersList.MinOrderCount,'
       '    OrdersList.SupplierPriceMarkup,'
-      '    core.ServerCoreId'
+      '    OrdersList.CoreQuantity, '
+      '    OrdersList.ServerCoreID,'
+      '    OrdersList.Unit, '
+      '    OrdersList.Volume, '
+      '    OrdersList.Note, '
+      '    OrdersList.Period, '
+      '    OrdersList.Doc, '
+      '    OrdersList.RegistryCost, '
+      '    OrdersList.VitallyImportant'
       'FROM '
       '  OrdersList'
       
         '  left join products on products.productid = OrdersList.producti' +
         'd'
-      '  left join core on core.CoreId = OrdersList.CoreId'
       'WHERE '
       '    (OrdersList.OrderId=:OrderId) '
       'AND (OrdersList.OrderCount>0)'
@@ -2105,14 +2112,42 @@ object DM: TDM
     object adsOrderDetailsprice: TFloatField
       FieldName = 'price'
     end
-    object adsOrderDetailsServerCoreId: TLargeintField
-      FieldName = 'ServerCoreId'
-    end
     object adsOrderDetailsRealPrice: TFloatField
       FieldName = 'RealPrice'
     end
     object adsOrderDetailsSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
+    end
+    object adsOrderDetailsCoreQuantity: TStringField
+      FieldName = 'CoreQuantity'
+      Size = 15
+    end
+    object adsOrderDetailsServerCoreID: TLargeintField
+      FieldName = 'ServerCoreID'
+    end
+    object adsOrderDetailsUnit: TStringField
+      FieldName = 'Unit'
+      Size = 15
+    end
+    object adsOrderDetailsVolume: TStringField
+      FieldName = 'Volume'
+      Size = 15
+    end
+    object adsOrderDetailsNote: TStringField
+      FieldName = 'Note'
+      Size = 50
+    end
+    object adsOrderDetailsPeriod: TStringField
+      FieldName = 'Period'
+    end
+    object adsOrderDetailsDoc: TStringField
+      FieldName = 'Doc'
+    end
+    object adsOrderDetailsRegistryCost: TFloatField
+      FieldName = 'RegistryCost'
+    end
+    object adsOrderDetailsVitallyImportant: TBooleanField
+      FieldName = 'VitallyImportant'
     end
   end
   object adsOrdersHeaders: TMyQuery

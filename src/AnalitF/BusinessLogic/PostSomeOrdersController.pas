@@ -196,6 +196,24 @@ begin
         FDataLayer.FFS.DecimalSeparator,
         '.',
         [rfReplaceAll])));
+
+  AddPostParam('CoreQuantity', dataSet.FieldByName('CoreQuantity').AsString);
+  AddPostParam('Unit', dataSet.FieldByName('Unit').AsString);
+  AddPostParam('Volume', dataSet.FieldByName('Volume').AsString);
+  AddPostParam('Note', dataSet.FieldByName('Note').AsString);
+  AddPostParam('Period', dataSet.FieldByName('Period').AsString);
+  AddPostParam('Doc', dataSet.FieldByName('Doc').AsString);
+  AddPostParam(
+    'RegistryCost',
+    IfThen(
+      dataSet.FieldByName('RegistryCost').IsNull,
+      '',
+      StringReplace(
+        dataSet.FieldByName('RegistryCost').AsString,
+        FDataLayer.FFS.DecimalSeparator,
+        '.',
+        [rfReplaceAll])));
+  AddPostParam('VitallyImportant', BoolToStr(dataSet.FieldByName('VitallyImportant').AsBoolean, True));
 end;
 
 procedure TPostSomeOrdersController.FillOrderDetailLeaderParams(
@@ -635,7 +653,7 @@ begin
     DeleteFile('PostSomeOrders.txt');
   FPostParams.SaveToFile('PostSomeOrders.txt');
 }    
-  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersWithSupplierPriceMarkup', FPostParams);
+  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersFull', FPostParams);
   rawResult := soapResult;
 
   serverResponse := TStringList.Create;

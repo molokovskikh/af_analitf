@@ -463,7 +463,6 @@ type
     adcTemporaryTable: TMyQuery;
     adsRepareOrdersRealPrice: TFloatField;
     adsCoreRepareRealCost: TFloatField;
-    adsOrderDetailsServerCoreId: TLargeintField;
     adsOrderCoreRealCost: TFloatField;
     adsRepareOrdersDropReason: TSmallintField;
     adsRepareOrdersServerCost: TFloatField;
@@ -473,6 +472,15 @@ type
     adsRepareOrdersSupplierPriceMarkup: TFloatField;
     adsCoreRepareSupplierPriceMarkup: TFloatField;
     adtClientsAllowDelayOfPayment: TBooleanField;
+    adsOrderDetailsCoreQuantity: TStringField;
+    adsOrderDetailsServerCoreID: TLargeintField;
+    adsOrderDetailsUnit: TStringField;
+    adsOrderDetailsVolume: TStringField;
+    adsOrderDetailsNote: TStringField;
+    adsOrderDetailsPeriod: TStringField;
+    adsOrderDetailsDoc: TStringField;
+    adsOrderDetailsRegistryCost: TFloatField;
+    adsOrderDetailsVitallyImportant: TBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -4421,7 +4429,10 @@ begin
 +'              ORDERID          , CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, '
 +'              SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, '
 +'              PRICE            , AWAIT, JUNK, ORDERCOUNT, REQUESTRATIO, '
-+'              ORDERCOST        , MINORDERCOUNT, RealPrice, SupplierPriceMarkup '
++'              ORDERCOST        , MINORDERCOUNT, RealPrice, SupplierPriceMarkup, '
++'              CoreQuantity     , ServerCoreID, '
++'              Unit             , Volume       , Note, '
++'              Period           , Doc          , REGISTRYCOST, VITALLYIMPORTANT '
 +'       ) '
 +'select :ORDERID     , :CLIENTID, c.COREID, c.PRODUCTID, c.CODEFIRMCR, '
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
@@ -4430,7 +4441,10 @@ begin
 +'       if(dop.Percent is null, c.Cost, c.Cost * (1 + dop.Percent/100)), '
 +'       c.AWAIT, c.JUNK, 0, '
 +'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT, c.cost, '
-+'       c.SupplierPriceMarkup '
++'       c.SupplierPriceMarkup, '
++'              c.Quantity     , c.ServerCoreID, '
++'              c.Unit             , c.Volume       , c.Note, '
++'              c.Period           , c.Doc          , c.REGISTRYCOST, c.VITALLYIMPORTANT '
 +'from   core c '
 +'       inner join pricesdata pd '
 +'       on     pd.PriceCode = c.PriceCode '
