@@ -623,10 +623,15 @@ begin
       if tmrSearch.Enabled or (Length(InternalSearchText) > 0) then
         SetClear
       else
-        if Assigned(Self.PrevForm) then
-          Self.PrevForm.ShowAsPrevForm
+        if Assigned(Self.PrevForm) and (Self.PrevForm is TPricesForm) then
+          //Если возвращаемся в Prices, то вызываем ShowForm, т.к. почему
+          //уходит фокус с таблицы предложений на форме "Заявка поставщику"
+          Self.PrevForm.ShowForm
         else
-          Close;
+          if Assigned(Self.PrevForm) then
+            Self.PrevForm.ShowAsPrevForm
+          else
+            Close;
 end;
 
 procedure TCoreFirmForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
