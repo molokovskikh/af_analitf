@@ -247,7 +247,7 @@ uses
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
   Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
-  MnnSearch;
+  MnnSearch, DocumentHeaders;
 
 {$R *.DFM}
 
@@ -1057,6 +1057,7 @@ begin
 		nil, nil, SW_SHOWDEFAULT);
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
 		nil, nil, SW_SHOWDEFAULT);
+  //ShowDocumentHeaders;
 end;
 
 procedure TMainForm.FormResize(Sender: TObject);

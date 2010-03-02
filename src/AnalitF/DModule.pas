@@ -2953,6 +2953,28 @@ begin
       ProcessDocsDir(SDirWaybills, MaxFileDate, WaybillsFL);
       ProcessDocsDir(SDirRejects, MaxFileDate, RejectsFL);
 
+{
+      if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
+        adsQueryValue.Close;
+        adsQueryValue.SQL.Text :=
+          Format(
+          'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+          [ExePath+SDirIn+'\DocumentHeaders.txt',
+           'DocumentHeaders']);
+        adsQueryValue.Execute;
+      end;
+
+      if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then begin
+        adsQueryValue.Close;
+        adsQueryValue.SQL.Text :=
+          Format(
+          'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+          [ExePath+SDirIn+'\DocumentBodies.txt',
+           'DocumentBodies']);
+        adsQueryValue.Execute;
+      end;
+}      
+
       OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
       OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean);
       OpenDocsDir(SDirRejects, RejectsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENREJECT').AsBoolean);

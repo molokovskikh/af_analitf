@@ -32,6 +32,18 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TDocumentHeadersTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+  
+  TDocumentBodiesTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -190,9 +202,60 @@ begin
 +'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
+{ TDocumentHeadersTable }
+
+constructor TDocumentHeadersTable.Create;
+begin
+  FName := 'DocumentHeaders';
+  FObjectId := doiDocumentHeaders;
+  FRepairType := dortBackup;
+end;
+
+function TDocumentHeadersTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT, '
++'  `DownloadId` int(10) unsigned DEFAULT NULL, '
++'  `WriteTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
++'  `FirmCode` int(10) unsigned DEFAULT NULL, '
++'  `ClientId` int(10) unsigned DEFAULT NULL, '
++'  `DocumentType` tinyint(3) unsigned DEFAULT NULL, '
++'  `ProviderDocumentId` varchar(20) DEFAULT NULL, '
++'  `OrderId` int(10) unsigned DEFAULT NULL, '
++'  `Header` varchar(255) DEFAULT NULL, '
++'  PRIMARY KEY (`Id`) '
++') ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
+end;
+
+{ TDocumentBodiesTable }
+
+constructor TDocumentBodiesTable.Create;
+begin
+  FName := 'DocumentBodies';
+  FObjectId := doiDocumentBodies;
+  FRepairType := dortBackup;
+end;
+
+function TDocumentBodiesTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT, '
++'  `DocumentId` int(10) unsigned NOT NULL, '
++'  `Name` varchar(255) NOT NULL, '
++'  `Quantity` int(11) unsigned DEFAULT NULL, '
++'  `Cost` decimal(12,6) unsigned DEFAULT NULL, '
++'  PRIMARY KEY (`Id`) '
++') ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TOrdersHeadTable.Create());
   DatabaseController.AddObject(TOrdersListTable.Create());
   DatabaseController.AddObject(TReceivedDocsTable.Create());
+  DatabaseController.AddObject(TDocumentHeadersTable.Create());
+  DatabaseController.AddObject(TDocumentBodiesTable.Create());
 end.

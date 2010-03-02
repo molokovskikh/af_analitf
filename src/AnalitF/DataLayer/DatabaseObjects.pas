@@ -85,7 +85,10 @@ type
     doiClientAvg,
     //Cumulative
     doiMNN,
-    doiDescriptions);
+    doiDescriptions,
+    //Backup
+    doiDocumentHeaders,
+    doiDocumentBodies);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

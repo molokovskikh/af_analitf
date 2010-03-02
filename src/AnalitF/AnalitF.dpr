@@ -92,7 +92,8 @@ uses
   U_framePosition in 'U_framePosition.pas' {framePosition: TFrame},
   MnnSearch in 'MnnSearch.pas' {MnnSearchForm},
   DescriptionFrm in 'DescriptionFrm.pas' {DescriptionForm},
-  NetworkAdapterHelpers in 'Helpers\NetworkAdapterHelpers.pas';
+  NetworkAdapterHelpers in 'Helpers\NetworkAdapterHelpers.pas',
+  DocumentHeaders in 'DocumentHeaders.pas' {DocumentHeaderForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}

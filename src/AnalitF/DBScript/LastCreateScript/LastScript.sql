@@ -199,6 +199,39 @@ CREATE TABLE `Descriptions` (
 
 
 -- 
+-- Table structure for table  DocumentBodies
+-- 
+
+DROP TABLE IF EXISTS `DocumentBodies`;
+CREATE TABLE  `DocumentBodies` (  
+  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,  
+  `DocumentId` int(10) unsigned NOT NULL,  
+  `Name` varchar(255) NOT NULL,`Code` varchar(20) DEFAULT NULL,
+  `Quantity` int(11) unsigned DEFAULT NULL,
+  `Cost` decimal(12,6) unsigned DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
+-- 
+-- Table structure for table  DocumentHeaders
+--
+
+DROP TABLE IF EXISTS `DocumentHeaders`;
+CREATE TABLE  `DocumentHeaders` (
+  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `DownloadId` int(10) unsigned DEFAULT NULL,
+  `WriteTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `FirmCode` int(10) unsigned DEFAULT NULL,
+  `ClientId` int(10) unsigned DEFAULT NULL,
+  `DocumentType` tinyint(3) unsigned DEFAULT NULL,
+  `ProviderDocumentId` varchar(20) DEFAULT NULL,
+  `OrderId` int(10) unsigned DEFAULT NULL,
+  `Header` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+-- 
 -- Table structure for table  minprices
 -- 
 
