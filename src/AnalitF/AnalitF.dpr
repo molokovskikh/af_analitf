@@ -93,7 +93,8 @@ uses
   MnnSearch in 'MnnSearch.pas' {MnnSearchForm},
   DescriptionFrm in 'DescriptionFrm.pas' {DescriptionForm},
   NetworkAdapterHelpers in 'Helpers\NetworkAdapterHelpers.pas',
-  DocumentHeaders in 'DocumentHeaders.pas' {DocumentHeaderForm};
+  DocumentHeaders in 'DocumentHeaders.pas' {DocumentHeaderForm},
+  DocumentBodies in 'DocumentBodies.pas' {DocumentBodiesForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}

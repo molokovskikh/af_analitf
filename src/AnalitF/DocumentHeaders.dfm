@@ -1,7 +1,8 @@
 inherited DocumentHeaderForm: TDocumentHeaderForm
   Left = 317
   Top = 160
-  Caption = 'DocumentHeaderForm'
+  ActiveControl = dbgHeaders
+  Caption = #1044#1086#1082#1091#1084#1077#1085#1090#1099
   PixelsPerInch = 96
   TextHeight = 13
   object pTop: TPanel [0]
@@ -70,6 +71,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Date = 0.631934409720997800
       Time = 0.631934409720997800
       TabOrder = 1
+      OnCloseUp = dtpDateCloseUp
     end
   end
   object pGrid: TPanel [1]
@@ -90,6 +92,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       AllowedOperations = [alopUpdateEh]
       AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]
       AutoFitColWidths = True
+      DataSource = dsDocumentHeaders
       Flat = True
       FooterColor = clWindow
       FooterFont.Charset = DEFAULT_CHARSET
@@ -108,11 +111,35 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
+      OnDblClick = dbgHeadersDblClick
+      OnKeyDown = dbgHeadersKeyDown
       SearchPosition = spBottom
       Columns = <
         item
           EditButtons = <>
+          FieldName = 'Id'
           Footers = <>
+          Title.Caption = #8470
+        end
+        item
+          EditButtons = <>
+          FieldName = 'WriteTime'
+          Footers = <>
+          Title.Caption = #1044#1072#1090#1072' '#1076#1086#1089#1090#1072#1074#1082#1080
+          Width = 150
+        end
+        item
+          EditButtons = <>
+          FieldName = 'VisibleDocumentType'
+          Footers = <>
+          Title.Caption = #1058#1080#1087' '#1076#1086#1082#1091#1084#1077#1085#1090#1072
+          Width = 100
+        end
+        item
+          EditButtons = <>
+          FieldName = 'ProviderName'
+          Footers = <>
+          Title.Caption = #1055#1086#1089#1090#1072#1074#1097#1080#1082
         end>
     end
   end
@@ -120,12 +147,18 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'select'
-      '*'
+      'dh.*,'
+      
+        'if(dh.DocumentType = 1, '#39#1053#1072#1082#1083#1072#1076#1085#1072#1103#39', if(dh.DocumentType = 2, '#39#1054#1090 +
+        #1082#1072#1079#39', '#39#1044#1086#1082#1091#1084#1077#1085#1090#39')) as VisibleDocumentType,'
+      'p.FullName as ProviderName'
       'from'
-      '  DocumentHeaders dh'
+      '  DocumentHeaders dh,'
+      '  providers p'
       'where'
       '    (dh.ClientId = :ClientId)'
-      'and (dh.WriteTime BETWEEN :DateFrom AND :DateTo )')
+      'and (dh.WriteTime BETWEEN :DateFrom AND :DateTo)'
+      'and (p.FirmCode = dh.FirmCode)')
     Left = 64
     Top = 87
     ParamData = <
@@ -169,5 +202,18 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       FieldName = 'Header'
       Size = 255
     end
+    object adsDocumentHeadersVisibleDocumentType: TStringField
+      FieldName = 'VisibleDocumentType'
+      Size = 9
+    end
+    object adsDocumentHeadersProviderName: TStringField
+      FieldName = 'ProviderName'
+      Size = 40
+    end
+  end
+  object dsDocumentHeaders: TDataSource
+    DataSet = adsDocumentHeaders
+    Left = 128
+    Top = 111
   end
 end

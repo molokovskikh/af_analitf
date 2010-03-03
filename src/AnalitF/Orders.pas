@@ -141,7 +141,7 @@ type
     procedure ocf(DataSet: TDataSet);
     procedure FlipToCore;
   protected
-    procedure UpdateOrderDataset; override;  
+    procedure UpdateOrderDataset; override;
   public
     procedure ShowForm(OrderId: Integer; ParentForm : TChildForm); overload; //reintroduce;
     procedure ShowForm; override;
@@ -178,6 +178,8 @@ begin
     dbtSumOrder.DataSource := dbmMessageTo.DataSource;
     dbtRegionName.DataSource := dbmMessageTo.DataSource;
   end
+  ;
+{
   else begin
     if Assigned(PrevForm) then
       LogCriticalError('Предыдущая форма при детализации заказа : ' + PrevForm.ClassName)
@@ -185,6 +187,7 @@ begin
       LogCriticalError('Предыдущая форма при детализации заказа не установлена.');
     raise Exception.Create('Окно "Детализации заказа" открыто не из формы "Заказы"!');
   end;
+}  
   Self.OrderID := OrderId;
   SetParams(OrderId);
   inherited ShowForm;

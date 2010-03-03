@@ -88,6 +88,7 @@ type
     procedure ShowDescriptionUpdate(Sender: TObject);
     procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
     procedure SetPrevForm;
+    procedure HideAllForms;
     procedure SetActiveChildToMainForm;
     procedure UpdateOrderDataset; virtual;
   public
@@ -652,6 +653,7 @@ procedure TChildForm.ShowAsPrevForm;
 begin
   SetActiveChildToMainForm;
   Show;
+  HideAllForms;
   UpdateOrderDataset;
 end;
 
@@ -704,6 +706,21 @@ begin
       dsCheckVolume.EnableControls;
     end;
   end;
+end;
+
+procedure TChildForm.HideAllForms;
+var
+  I : Integer;
+begin
+  if Parent<>nil then
+    for I:=0 to Parent.ControlCount-1 do
+      if (Parent.Controls[I] is TChildForm)and(Parent.Controls[I]<>Self) then begin
+        {
+        if Parent.Controls[I].Visible then PrevForm:=
+          TChildForm(Parent.Controls[I]);
+        }
+        Parent.Controls[I].Hide;
+      end;
 end;
 
 end.

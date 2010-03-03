@@ -1051,13 +1051,15 @@ end;
 
 procedure TMainForm.actViewDocsExecute(Sender: TObject);
 begin
+{
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirDocs + '\'),
 		nil, nil, SW_SHOWDEFAULT);
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
 		nil, nil, SW_SHOWDEFAULT);
 	ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
 		nil, nil, SW_SHOWDEFAULT);
-  //ShowDocumentHeaders;
+}
+  ShowDocumentHeaders;
 end;
 
 procedure TMainForm.FormResize(Sender: TObject);

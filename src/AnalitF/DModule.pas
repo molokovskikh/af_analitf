@@ -2929,6 +2929,7 @@ var
   DocsFL,
   WaybillsFL,
   RejectsFL : TStringList;
+  InputFileName : String;
 begin
 {
   1. Если в таблице все пусто, то открываем только папки
@@ -2953,27 +2954,27 @@ begin
       ProcessDocsDir(SDirWaybills, MaxFileDate, WaybillsFL);
       ProcessDocsDir(SDirRejects, MaxFileDate, RejectsFL);
 
-{
       if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
+        InputFileName := StringReplace(ExePath+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
         adsQueryValue.Close;
         adsQueryValue.SQL.Text :=
           Format(
           'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
-          [ExePath+SDirIn+'\DocumentHeaders.txt',
+          [InputFileName,
            'DocumentHeaders']);
         adsQueryValue.Execute;
       end;
 
       if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then begin
+        InputFileName := StringReplace(ExePath+SDirIn+'\DocumentBodies.txt', '\', '/', [rfReplaceAll]);
         adsQueryValue.Close;
         adsQueryValue.SQL.Text :=
           Format(
           'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
-          [ExePath+SDirIn+'\DocumentBodies.txt',
+          [InputFileName,
            'DocumentBodies']);
         adsQueryValue.Execute;
       end;
-}      
 
       OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
       OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean);

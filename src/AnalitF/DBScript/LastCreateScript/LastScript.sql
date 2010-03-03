@@ -204,11 +204,20 @@ CREATE TABLE `Descriptions` (
 
 DROP TABLE IF EXISTS `DocumentBodies`;
 CREATE TABLE  `DocumentBodies` (  
-  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,  
-  `DocumentId` int(10) unsigned NOT NULL,  
-  `Name` varchar(255) NOT NULL,`Code` varchar(20) DEFAULT NULL,
+  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `DocumentId` int(10) unsigned NOT NULL,
+  `PositionName` varchar(255) not null,
+  `Code` varchar(20) default null,
+  `SeriesOfCertificates` varchar(50) default null,
+  `Period` varchar(20) default null,
+  `ProducerName` varchar(255) default null,
+  `Country` varchar(150) default null,
+  `ProducerCost` decimal(12,6) unsigned default null,
+  `GRCost` decimal(12,6) unsigned default null,
+  `SupplierPriceMarkup` decimal(5,3) default null,
+  `SupplierCostWithoutNDS` decimal(12,6) unsigned default null,
+  `SupplierCost` decimal(12,6) unsigned default null,  
   `Quantity` int(11) unsigned DEFAULT NULL,
-  `Cost` decimal(12,6) unsigned DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 

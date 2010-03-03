@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, ComCtrls, StdCtrls, GridsEh, DBGridEh,
-  ToughDBGrid, DB, MemDS, DBAccess, MyAccess;
+  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies;
 
 type
   TDocumentHeaderForm = class(TChildForm)
@@ -27,10 +27,20 @@ type
     adsDocumentHeadersProviderDocumentId: TStringField;
     adsDocumentHeadersOrderId: TLargeintField;
     adsDocumentHeadersHeader: TStringField;
+    dsDocumentHeaders: TDataSource;
+    adsDocumentHeadersVisibleDocumentType: TStringField;
+    adsDocumentHeadersProviderName: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
+    procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure dbgHeadersDblClick(Sender: TObject);
   private
     { Private declarations }
+  protected
+    FDocumentBodiesForm: TDocumentBodiesForm;
+    procedure ProcessDocument;
+    procedure ShowArchiveOrder;
   public
     { Public declarations }
     procedure SetParameters;
@@ -41,7 +51,7 @@ type
 
 implementation
 
-uses Main, DateUtils, DModule;
+uses Main, DateUtils, DModule, AProc, Orders;
 
 {$R *.dfm}
 
@@ -73,11 +83,9 @@ var
   Year, Month, Day: Word;
 begin
   inherited;
-{
-  FOrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
-  if FOrdersForm = nil then
-    FOrdersForm := TOrdersForm.Create( Application);
-}
+  FDocumentBodiesForm := TDocumentBodiesForm( FindChildControlByClass(MainForm, TDocumentBodiesForm) );
+  if not Assigned(FDocumentBodiesForm) then
+    FDocumentBodiesForm := TDocumentBodiesForm.Create( Application);
 
   Year := YearOf( Date);
   Month := MonthOf( Date);
@@ -117,5 +125,46 @@ begin
 end;
 
 
+
+procedure TDocumentHeaderForm.dbgHeadersKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and (Shift = []) then
+    ProcessDocument
+  else
+    if (Key = VK_RETURN) and (Shift = [ssShift]) and not adsDocumentHeadersOrderId.IsNull then
+      ShowArchiveOrder;
+end;
+
+procedure TDocumentHeaderForm.ProcessDocument;
+begin
+  if not adsDocumentHeaders.IsEmpty and not adsDocumentHeadersId.IsNull
+    and not adsDocumentHeadersDocumentType.IsNull
+    and (adsDocumentHeadersDocumentType.Value <> 3) 
+  then
+    FDocumentBodiesForm.ShowForm(adsDocumentHeadersId.Value, Self);
+end;
+
+procedure TDocumentHeaderForm.dbgHeadersDblClick(Sender: TObject);
+var
+  C : GridsEh.TGridCoord;
+  P : TPoint;
+begin
+  p := TToughDBGrid(Sender).ScreenToClient(Mouse.CursorPos);
+  C := TToughDBGrid(Sender).MouseCoord(p.X, p.Y);
+  if C.Y > 0 then
+    ProcessDocument;
+end;
+
+procedure TDocumentHeaderForm.ShowArchiveOrder;
+var
+  FOrdersForm : TOrdersForm;
+begin
+  FOrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
+  if not Assigned(FOrdersForm) then
+    FOrdersForm := TOrdersForm.Create( Application);
+
+  FOrdersForm.ShowForm(adsDocumentHeadersOrderId.AsInteger, Self);
+end;
 
 end.
