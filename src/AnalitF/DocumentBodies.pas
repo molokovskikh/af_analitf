@@ -281,8 +281,7 @@ begin
   priceName := Trim(priceName);
 
   frVariables[ 'PrintEmptyTickets'] := cbPrintEmptyTickets.Checked;
-  //Здесь надо отображать имя клиента и его адрес доставки
-  frVariables[ 'ShortClientName'] := DM.adtClientsNAME.AsString;
+  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
   frVariables[ 'TicketSignature'] := priceName;
@@ -356,8 +355,7 @@ begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
 
-  //Здесь надо отображать имя клиента и его адрес доставки
-  frVariables[ 'ClientName'] := DM.adtClientsNAME.AsString;
+  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
@@ -365,9 +363,9 @@ begin
   frVariables[ 'ReestrNumber'] := '17';
   frVariables[ 'ReestrAppend'] := '5';
 
-  frVariables[ 'Director'] := 'Борисов Ю.А.';
-  frVariables[ 'CoDirector'] := 'Тихонов В.Е.';
-  frVariables[ 'Accountant'] := 'Куликовская И.В.';
+  frVariables[ 'Director'] := DM.adtClientsDirector.AsString;
+  frVariables[ 'DeputyDirector'] := DM.adtClientsDeputyDirector.AsString;
+  frVariables[ 'Accountant'] := DM.adtClientsAccountant.AsString;
 
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));

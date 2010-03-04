@@ -1452,18 +1452,29 @@ object DM: TDM
     SQLUpdate.Strings = (
       'UPDATE CLIENTS'
       'SET'
-      
-        '  NAME = :NAME, REGIONCODE = :REGIONCODE, EXCESS = :EXCESS, DELT' +
-        'AMODE = :DELTAMODE, MAXUSERS = :MAXUSERS, REQMASK = :REQMASK, CA' +
-        'LCULATELEADER = :CALCULATELEADER, ONLYLEADERS = :ONLYLEADERS'
+      '  ONLYLEADERS = :ONLYLEADERS,'
+      '  Address = :Address,'
+      '  Director = :Director,'
+      '  DeputyDirector = :DeputyDirector,'
+      '  Accountant = :Accountant'
       'WHERE'
       '  CLIENTID = :Old_CLIENTID')
     SQLRefresh.Strings = (
-      
-        'SELECT CLIENTS.NAME, CLIENTS.REGIONCODE, CLIENTS.EXCESS, CLIENTS' +
-        '.DELTAMODE, CLIENTS.MAXUSERS, CLIENTS.REQMASK, CLIENTS.CALCULATE' +
-        'LEADER, CLIENTS.ONLYLEADERS, CLIENTS.AllowDelayOfPayment FROM CL' +
-        'IENTS'
+      'SELECT '
+      '  CLIENTS.NAME, '
+      '  CLIENTS.REGIONCODE, '
+      '  CLIENTS.EXCESS, '
+      '  CLIENTS.DELTAMODE, '
+      '  CLIENTS.MAXUSERS, '
+      '  CLIENTS.REQMASK, '
+      '  CLIENTS.CALCULATELEADER, '
+      '  CLIENTS.ONLYLEADERS, '
+      '  CLIENTS.AllowDelayOfPayment,'
+      '  CLIENTS.Address,'
+      '  CLIENTS.Director,'
+      '  CLIENTS.DeputyDirector,'
+      '  CLIENTS.Accountant '
+      'FROM CLIENTS'
       'WHERE'
       '  CLIENTS.CLIENTID = :CLIENTID')
     Connection = MyConnection
@@ -1478,7 +1489,11 @@ object DM: TDM
       ' REQMASK,'
       ' CALCULATELEADER,'
       ' ONLYLEADERS,'
-      ' AllowDelayOfPayment'
+      ' AllowDelayOfPayment,'
+      ' Address,'
+      ' Director,'
+      ' DeputyDirector,'
+      ' Accountant'
       'FROM'
       ' CLIENTS')
     AfterOpen = adtClientsOldAfterOpen
@@ -1514,6 +1529,22 @@ object DM: TDM
     end
     object adtClientsAllowDelayOfPayment: TBooleanField
       FieldName = 'AllowDelayOfPayment'
+    end
+    object adtClientsAddress: TStringField
+      FieldName = 'Address'
+      Size = 255
+    end
+    object adtClientsDirector: TStringField
+      FieldName = 'Director'
+      Size = 255
+    end
+    object adtClientsDeputyDirector: TStringField
+      FieldName = 'DeputyDirector'
+      Size = 255
+    end
+    object adtClientsAccountant: TStringField
+      FieldName = 'Accountant'
+      Size = 255
     end
   end
   object adsRetailMargins: TMyQuery

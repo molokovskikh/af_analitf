@@ -90,6 +90,10 @@ CREATE TABLE `clients` (
   `CALCULATELEADER` tinyint(1) NOT NULL,
   `AllowDelayOfPayment` tinyint(1) NOT NULL,
   `ONLYLEADERS` tinyint(1) NOT NULL,
+  `Address` varchar(255) default null,
+  `Director` varchar(255) default null,
+  `DeputyDirector` varchar(255) default null,
+  `Accountant` varchar(255) default null,
   PRIMARY KEY (`CLIENTID`),
   UNIQUE KEY `PK_CLIENTS` (`CLIENTID`),
   KEY `FK_CLIENTS_REGIONCODE` (`REGIONCODE`)

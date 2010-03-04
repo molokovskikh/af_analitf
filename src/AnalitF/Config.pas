@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Grids, DBGrids, ComCtrls, DBCtrls, Mask, Menus, DBGridEh, ShellAPI,
-  Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule, GridsEh, U_VistaCorrectForm;
+  Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule, GridsEh, U_VistaCorrectForm,
+  MyAccess;
 
 type
   TConfigForm = class(TVistaCorrectForm)
@@ -118,6 +119,7 @@ type
     procedure dbeHistoryDayCountChange(Sender: TObject);
     procedure udHistoryDayCountClick(Sender: TObject; Button: TUDBtnType);
     procedure eHTTPPassChange(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     HTTPNameChanged, HTTPPassChanged : Boolean;
     OldHTTPName : String;
@@ -128,6 +130,14 @@ type
     procedure EnableRemoteAccess;
     procedure OnAppEx(Sender: TObject; E: Exception);
     procedure RXLoadRetailMargins;
+    procedure AddsWaybillsSheet;
+    procedure SetStandartSettingsToGrid(Grid : TToughDBGrid);
+    procedure AddColumn(Grid : TToughDBGrid; ColumnName, Caption : String; ReadOnly : Boolean = True; DisplayFormat : String = '');
+  protected
+    tsWaybills : TTabSheet;
+    dbgClientSettings : TToughDBGrid;
+    adsEditClients : TMyQuery;
+    dsEditClients : TDataSource;
   public
   end;
 
@@ -211,6 +221,9 @@ begin
       RetMarginsChanges := False;
       Result := ShowModal=mrOk;
       if Result then begin
+        SoftPost(adsEditClients);
+        adsEditClients.ApplyUpdates;
+
         DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
         if HTTPPassChanged then begin
           NewPass := eHTTPPass.Text;
@@ -248,6 +261,7 @@ begin
         DM.LoadRetailMargins;
       end
       else begin
+        adsEditClients.CancelUpdates;
         DM.adtParams.Cancel;
         DM.adsRetailMargins.CancelUpdates;
       end;
@@ -604,6 +618,84 @@ end;
 procedure TConfigForm.eHTTPPassChange(Sender: TObject);
 begin
   HTTPPassChanged := True;
+end;
+
+procedure TConfigForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  AddsWaybillsSheet;
+end;
+
+procedure TConfigForm.AddsWaybillsSheet;
+begin
+  adsEditClients := TMyQuery.Create(Self);
+  adsEditClients.Connection := DM.MainConnection;
+  dsEditClients := TDataSource.Create(Self);
+  dsEditClients.DataSet := adsEditClients;
+
+  tsWaybills := TTabSheet.Create(PageControl);
+  tsWaybills.PageControl := PageControl;
+  tsWaybills.Caption := 'Накладные';
+
+  dbgClientSettings := TToughDBGrid.Create(Self);
+  SetStandartSettingsToGrid(dbgClientSettings);
+  dbgClientSettings.Parent := tsWaybills;
+  dbgClientSettings.DataSource := dsEditClients;
+  dbgClientSettings.TabOrder := 0;
+  dbgClientSettings.ReadOnly := True;
+  dbgClientSettings.Align := alClient;
+  dbgClientSettings.AllowedOperations := [alopUpdateEh];
+  dbgClientSettings.ParentShowHint := False;
+  dbgClientSettings.ShowHint := True;
+  if not DM.adsUser.IsEmpty then begin
+    dbgClientSettings.ReadOnly := False;
+    dbgClientSettings.Options := dbgClientSettings.Options + [dgEditing];
+    if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then begin
+      AddColumn(dbgClientSettings, 'Name', 'Адрес заказа');
+    end
+    else begin
+      AddColumn(dbgClientSettings, 'Name', 'Клиент');
+      AddColumn(dbgClientSettings, 'Address', 'Адрес', False);
+    end;
+    AddColumn(dbgClientSettings, 'Director', 'Заведующая', False);
+    AddColumn(dbgClientSettings, 'DeputyDirector', 'Зам. заведующей', False);
+    AddColumn(dbgClientSettings, 'Accountant', 'Бухгалтер', False);
+
+    adsEditClients.CachedUpdates := True;
+    adsEditClients.SQL.Text := DM.adtClients.SQL.Text;
+    adsEditClients.SQLRefresh.Text := DM.adtClients.SQLRefresh.Text;
+    adsEditClients.SQLUpdate.Text := DM.adtClients.SQLUpdate.Text;
+    adsEditClients.Open;
+  end
+  else
+    tsWaybills.Visible := False;
+end;
+
+procedure TConfigForm.SetStandartSettingsToGrid(Grid: TToughDBGrid);
+begin
+  Grid.AutoFitColWidths := True;
+  Grid.Flat := True;
+  Grid.Options := [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgRowLines];
+  Grid.OptionsEh := [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight];
+  Grid.Font.Size := 10;
+  Grid.GridLineColors.DarkColor := clBlack;
+  Grid.GridLineColors.BrightColor := clDkGray;
+  if CheckWin32Version(5, 1) then
+    Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
+end;
+
+procedure TConfigForm.AddColumn(Grid: TToughDBGrid; ColumnName, Caption : String;
+  ReadOnly : Boolean;
+  DisplayFormat: String);
+var
+  column : TColumnEh;
+begin
+  column := Grid.Columns.Add;
+  column.FieldName := ColumnName;
+  column.ReadOnly := ReadOnly;
+  column.Title.Caption := Caption;
+  column.Title.Hint := Caption;
+  column.DisplayFormat := DisplayFormat;
 end;
 
 end.

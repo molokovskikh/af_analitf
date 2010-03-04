@@ -481,6 +481,10 @@ type
     adsOrderDetailsDoc: TStringField;
     adsOrderDetailsRegistryCost: TFloatField;
     adsOrderDetailsVitallyImportant: TBooleanField;
+    adtClientsAddress: TStringField;
+    adtClientsDirector: TStringField;
+    adtClientsDeputyDirector: TStringField;
+    adtClientsAccountant: TStringField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -682,6 +686,7 @@ type
     procedure GetClientInformation(
       var ClientName : String;
       var IsFutureClient : Boolean);
+    function GetClientNameAndAddress : String;
     function GetClearSendResultSql(ClientId : Int64) : String;
     function NeedUpdateFireBirdToMySql : Boolean;
     function NeedUpdate800xToMySql : Boolean;
@@ -4982,6 +4987,18 @@ begin
   finally
     selectMySql.Free;
   end;
+end;
+
+function TDM.GetClientNameAndAddress: String;
+var
+  ClientName : String;
+  IsFutureClient : Boolean;
+begin
+  GetClientInformation(ClientName, IsFutureClient);
+  if IsFutureClient then
+    Result := ClientName + ', ' + adtClientsNAME.AsString
+  else
+    Result := ClientName + ', ' + adtClientsAddress.AsString;
 end;
 
 initialization

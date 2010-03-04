@@ -316,6 +316,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Width = 297
       Height = 17
       Caption = #1054#1090#1073#1088#1072#1089#1099#1074#1072#1090#1100' '#1088#1086#1079#1085#1080#1095#1085#1091#1102' '#1094#1077#1085#1091' '#1076#1086' 10 '#1082#1086#1087'. '#1074' "'#1084#1077#1085#1100#1096#1077'"'
+      Checked = True
+      State = cbChecked
       TabOrder = 1
       OnClick = cbClearRetailPriceClick
     end
