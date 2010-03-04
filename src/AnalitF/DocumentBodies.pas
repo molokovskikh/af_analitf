@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, StdCtrls, DBCtrls, GridsEh, DBGridEh,
-  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, Registry;
+  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, Registry, DocumentTypes,
+  FR_DSet, FR_DBSet, Buttons, FR_Class;
 
 type
   TDocumentBodiesForm = class(TChildForm)
@@ -35,7 +36,6 @@ type
     adsDocumentHeadersProviderDocumentId: TStringField;
     adsDocumentHeadersOrderId: TLargeintField;
     adsDocumentHeadersHeader: TStringField;
-    adsDocumentHeadersVisibleDocumentType: TStringField;
     adsDocumentHeadersProviderName: TStringField;
     dsDocumentHeaders: TDataSource;
     adsDocumentHeadersPositions: TLargeintField;
@@ -56,9 +56,17 @@ type
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
     adsDocumentBodiesQuantity: TLargeintField;
+    frdsDocumentBodies: TfrDBDataSet;
+    gbPrint: TGroupBox;
+    cbPrintEmptyTickets: TCheckBox;
+    spPrintTickets: TSpeedButton;
+    adsDocumentHeadersLocalWriteTime: TDateTimeField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
+    procedure adsDocumentHeadersDocumentTypeGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
+    procedure spPrintTicketsClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -77,24 +85,21 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, StrUtils;
+  Main, StrUtils, AProc;
 
 { TDocumentBodiesForm }
 
 procedure TDocumentBodiesForm.SetParams;
 begin
   adsDocumentHeaders.Close;
+  adsDocumentHeaders.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
   adsDocumentHeaders.ParamByName('DocumentId').Value := FDocumentId;
   adsDocumentHeaders.Open;
   adsDocumentBodies.Close;
   PrepareGrid;
   adsDocumentBodies.ParamByName('DocumentId').Value := FDocumentId;
   adsDocumentBodies.Open;
-{
-  dbgDocumentBodies.AutoFitColWidths := False;
-  dbgDocumentBodies.AutoFitColWidths := True;
-}  
-  Self.Caption := 'Детализация ' + AnsiLowerCase(dbtDocumentType.Caption);
+  Self.Caption := 'Детализация ' + RussianDocumentTypeForHeaderForm[TDocumentType(adsDocumentHeadersDocumentType.Value)];
 end;
 
 procedure TDocumentBodiesForm.ShowForm(DocumentId: Int64;
@@ -110,33 +115,13 @@ procedure TDocumentBodiesForm.dbgDocumentBodiesKeyDown(Sender: TObject;
 begin
   if Key = VK_ESCAPE then
     if Assigned(PrevForm) then
-        PrevForm.ShowForm;
+        PrevForm.ShowAsPrevForm;
 end;
 
 procedure TDocumentBodiesForm.PrepareGrid;
 var
   calc : TField;
 begin
-{
-      supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
-      supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
-      supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
-      supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
-
-  `PositionName` varchar(255) not null,
-  `Code` varchar(20) default null,
-  `SeriesOfCertificates` varchar(50) default null,
-  `Period` varchar(20) default null,
-  `ProducerName` varchar(255) default null,
-  `Country` varchar(150) default null,
-  `ProducerCost` decimal(12,6) unsigned default null,
-  `GRCost` decimal(12,6) unsigned default null,
-  `SupplierPriceMarkup` decimal(5,3) default null,
-  `SupplierCostWithoutNDS` decimal(12,6) unsigned default null,
-  `SupplierCost` decimal(12,6) unsigned default null,
-  `Quantity` int(11) unsigned DEFAULT NULL,
-
-}
   dbgDocumentBodies.Columns.Clear();
   dbgDocumentBodies.ShowHint := True;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
@@ -248,6 +233,42 @@ begin
   finally
     Reg.Free;
   end;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentHeadersDocumentTypeGetText(
+  Sender: TField; var Text: String; DisplayText: Boolean);
+begin
+  if DisplayText then
+    Text := RussianDocumentType[TDocumentType(Sender.AsInteger)];
+end;
+
+procedure TDocumentBodiesForm.spPrintTicketsClick(Sender: TObject);
+var
+  priceNameVariant : Variant;
+  priceName : String;
+  bracketIndex : Integer;
+begin
+  priceNameVariant := DM.QueryValue(
+    'select PriceName from pricesdata where FirmCode = ' + adsDocumentHeadersFirmCode.AsString + ' limit 1',
+    [],
+    []);
+  if not VarIsNull(priceNameVariant) and (VarIsStr(priceNameVariant)) then begin
+    priceName := priceNameVariant;
+    bracketIndex := Pos('(',priceName);
+    if bracketIndex > 0 then
+      priceName := Copy(priceName, 1, bracketIndex -1);
+  end
+  else
+    priceName := adsDocumentHeadersProviderName.AsString;
+  priceName := Trim(priceName);
+  
+  frVariables[ 'PrintEmptyTickets'] := cbPrintEmptyTickets.Checked;
+  frVariables[ 'ShortClientName'] := DM.adtClientsNAME.AsString;
+  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+  frVariables[ 'TicketSignature'] := priceName;
+
+  DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
 end;
 
 end.

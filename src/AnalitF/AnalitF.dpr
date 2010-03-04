@@ -94,7 +94,8 @@ uses
   DescriptionFrm in 'DescriptionFrm.pas' {DescriptionForm},
   NetworkAdapterHelpers in 'Helpers\NetworkAdapterHelpers.pas',
   DocumentHeaders in 'DocumentHeaders.pas' {DocumentHeaderForm},
-  DocumentBodies in 'DocumentBodies.pas' {DocumentBodiesForm};
+  DocumentBodies in 'DocumentBodies.pas' {DocumentBodiesForm},
+  DocumentTypes in 'DataLayer\DocumentTypes.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

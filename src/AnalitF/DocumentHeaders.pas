@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, ComCtrls, StdCtrls, GridsEh, DBGridEh,
-  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies;
+  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes;
 
 type
   TDocumentHeaderForm = class(TChildForm)
@@ -28,13 +28,15 @@ type
     adsDocumentHeadersOrderId: TLargeintField;
     adsDocumentHeadersHeader: TStringField;
     dsDocumentHeaders: TDataSource;
-    adsDocumentHeadersVisibleDocumentType: TStringField;
     adsDocumentHeadersProviderName: TStringField;
+    adsDocumentHeadersLocalWriteTime: TDateTimeField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgHeadersDblClick(Sender: TObject);
+    procedure adsDocumentHeadersDocumentTypeGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
   private
     { Private declarations }
   protected
@@ -69,6 +71,7 @@ procedure TDocumentHeaderForm.SetParameters;
 begin
   adsDocumentHeaders.Close;
 
+  adsDocumentHeaders.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
   adsDocumentHeaders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').Value;
   adsDocumentHeaders.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
@@ -165,6 +168,13 @@ begin
     FOrdersForm := TOrdersForm.Create( Application);
 
   FOrdersForm.ShowForm(adsDocumentHeadersOrderId.AsInteger, Self);
+end;
+
+procedure TDocumentHeaderForm.adsDocumentHeadersDocumentTypeGetText(
+  Sender: TField; var Text: String; DisplayText: Boolean);
+begin
+  if DisplayText then
+    Text := RussianDocumentType[TDocumentType(Sender.AsInteger)];
 end;
 
 end.

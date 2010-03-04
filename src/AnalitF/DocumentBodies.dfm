@@ -7,7 +7,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   TextHeight = 13
   object pOrderHeader: TPanel [0]
     Left = 0
-    Top = 0
+    Top = 49
     Width = 856
     Height = 51
     Align = alTop
@@ -73,7 +73,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Top = 9
       Width = 124
       Height = 13
-      DataField = 'WriteTime'
+      DataField = 'LocalWriteTime'
       DataSource = dsDocumentHeaders
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -200,7 +200,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Top = 9
       Width = 94
       Height = 13
-      DataField = 'VisibleDocumentType'
+      DataField = 'DocumentType'
       DataSource = dsDocumentHeaders
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -212,9 +212,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   end
   object pGrid: TPanel [1]
     Left = 0
-    Top = 51
+    Top = 100
     Width = 856
-    Height = 398
+    Height = 349
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -222,7 +222,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Left = 0
       Top = 0
       Width = 856
-      Height = 398
+      Height = 349
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsDocumentBodies
@@ -277,6 +277,31 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
         end>
     end
   end
+  object gbPrint: TGroupBox [2]
+    Left = 0
+    Top = 0
+    Width = 856
+    Height = 49
+    Align = alTop
+    Caption = ' '#1055#1077#1095#1072#1090#1100' '
+    TabOrder = 2
+    object spPrintTickets: TSpeedButton
+      Left = 184
+      Top = 16
+      Width = 121
+      Height = 25
+      Caption = #1055#1077#1095#1072#1090#1100' '#1094#1077#1085#1085#1080#1082#1086#1074
+      OnClick = spPrintTicketsClick
+    end
+    object cbPrintEmptyTickets: TCheckBox
+      Left = 8
+      Top = 16
+      Width = 161
+      Height = 17
+      Caption = #1055#1077#1095#1072#1090#1100' "'#1087#1091#1089#1090#1099#1093'" '#1094#1077#1085#1085#1080#1082#1086#1074
+      TabOrder = 0
+    end
+  end
   inherited tCheckVolume: TTimer
     Top = 112
   end
@@ -285,9 +310,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     SQL.Strings = (
       'select'
       'dh.*,'
-      
-        'if(dh.DocumentType = 1, '#39#1053#1072#1082#1083#1072#1076#1085#1072#1103#39', if(dh.DocumentType = 2, '#39#1054#1090 +
-        #1082#1072#1079#39', '#39#1044#1086#1082#1091#1084#1077#1085#1090#39')) as VisibleDocumentType,'
+      'dh.WriteTime  - interval :timezonebias minute as LocalWriteTime,'
       'p.FullName as ProviderName,'
       'count(dbodies.Id) as Positions'
       'from'
@@ -297,10 +320,15 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  )'
       '  left join DocumentBodies dbodies on dbodies.DocumentId = dh.Id'
       'where'
-      '    (dh.Id = :DocumentId)')
+      '    (dh.Id = :DocumentId)'
+      'and (p.FirmCode = dh.FirmCode)')
     Left = 64
     Top = 87
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
+      end
       item
         DataType = ftUnknown
         Name = 'DocumentId'
@@ -321,7 +349,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       FieldName = 'ClientId'
     end
     object adsDocumentHeadersDocumentType: TWordField
+      Alignment = taLeftJustify
       FieldName = 'DocumentType'
+      OnGetText = adsDocumentHeadersDocumentTypeGetText
     end
     object adsDocumentHeadersProviderDocumentId: TStringField
       FieldName = 'ProviderDocumentId'
@@ -333,16 +363,15 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       FieldName = 'Header'
       Size = 255
     end
-    object adsDocumentHeadersVisibleDocumentType: TStringField
-      FieldName = 'VisibleDocumentType'
-      Size = 9
-    end
     object adsDocumentHeadersProviderName: TStringField
       FieldName = 'ProviderName'
       Size = 40
     end
     object adsDocumentHeadersPositions: TLargeintField
       FieldName = 'Positions'
+    end
+    object adsDocumentHeadersLocalWriteTime: TDateTimeField
+      FieldName = 'LocalWriteTime'
     end
   end
   object dsDocumentHeaders: TDataSource
@@ -417,5 +446,11 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesQuantity: TLargeintField
       FieldName = 'Quantity'
     end
+  end
+  object frdsDocumentBodies: TfrDBDataSet
+    DataSource = dsDocumentBodies
+    OpenDataSource = False
+    Left = 120
+    Top = 219
   end
 end

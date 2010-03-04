@@ -123,14 +123,20 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
         end
         item
           EditButtons = <>
-          FieldName = 'WriteTime'
+          FieldName = 'ProviderDocumentId'
+          Footers = <>
+          Title.Caption = #8470' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
+        end
+        item
+          EditButtons = <>
+          FieldName = 'LocalWriteTime'
           Footers = <>
           Title.Caption = #1044#1072#1090#1072' '#1076#1086#1089#1090#1072#1074#1082#1080
           Width = 150
         end
         item
           EditButtons = <>
-          FieldName = 'VisibleDocumentType'
+          FieldName = 'DocumentType'
           Footers = <>
           Title.Caption = #1058#1080#1087' '#1076#1086#1082#1091#1084#1077#1085#1090#1072
           Width = 100
@@ -148,23 +154,31 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     SQL.Strings = (
       'select'
       'dh.*,'
-      
-        'if(dh.DocumentType = 1, '#39#1053#1072#1082#1083#1072#1076#1085#1072#1103#39', if(dh.DocumentType = 2, '#39#1054#1090 +
-        #1082#1072#1079#39', '#39#1044#1086#1082#1091#1084#1077#1085#1090#39')) as VisibleDocumentType,'
+      'dh.WriteTime  - interval :timezonebias minute as LocalWriteTime,'
       'p.FullName as ProviderName'
       'from'
       '  DocumentHeaders dh,'
       '  providers p'
       'where'
       '    (dh.ClientId = :ClientId)'
-      'and (dh.WriteTime BETWEEN :DateFrom AND :DateTo)'
+      
+        'and ((dh.WriteTime  - interval :timezonebias minute) BETWEEN :Da' +
+        'teFrom AND :DateTo)'
       'and (p.FirmCode = dh.FirmCode)')
     Left = 64
     Top = 87
     ParamData = <
       item
         DataType = ftUnknown
+        Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
         Name = 'ClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
       end
       item
         DataType = ftUnknown
@@ -190,7 +204,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       FieldName = 'ClientId'
     end
     object adsDocumentHeadersDocumentType: TWordField
+      Alignment = taLeftJustify
       FieldName = 'DocumentType'
+      OnGetText = adsDocumentHeadersDocumentTypeGetText
     end
     object adsDocumentHeadersProviderDocumentId: TStringField
       FieldName = 'ProviderDocumentId'
@@ -202,13 +218,12 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       FieldName = 'Header'
       Size = 255
     end
-    object adsDocumentHeadersVisibleDocumentType: TStringField
-      FieldName = 'VisibleDocumentType'
-      Size = 9
-    end
     object adsDocumentHeadersProviderName: TStringField
       FieldName = 'ProviderName'
       Size = 40
+    end
+    object adsDocumentHeadersLocalWriteTime: TDateTimeField
+      FieldName = 'LocalWriteTime'
     end
   end
   object dsDocumentHeaders: TDataSource
