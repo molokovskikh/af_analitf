@@ -95,7 +95,8 @@ uses
   NetworkAdapterHelpers in 'Helpers\NetworkAdapterHelpers.pas',
   DocumentHeaders in 'DocumentHeaders.pas' {DocumentHeaderForm},
   DocumentBodies in 'DocumentBodies.pas' {DocumentBodiesForm},
-  DocumentTypes in 'DataLayer\DocumentTypes.pas';
+  DocumentTypes in 'DataLayer\DocumentTypes.pas',
+  sumprops in 'Helpers\sumprops.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

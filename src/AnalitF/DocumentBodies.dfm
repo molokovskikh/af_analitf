@@ -7,7 +7,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   TextHeight = 13
   object pOrderHeader: TPanel [0]
     Left = 0
-    Top = 49
+    Top = 57
     Width = 856
     Height = 51
     Align = alTop
@@ -212,9 +212,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   end
   object pGrid: TPanel [1]
     Left = 0
-    Top = 100
+    Top = 108
     Width = 856
-    Height = 349
+    Height = 341
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -222,7 +222,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Left = 0
       Top = 0
       Width = 856
-      Height = 349
+      Height = 341
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsDocumentBodies
@@ -281,17 +281,25 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Left = 0
     Top = 0
     Width = 856
-    Height = 49
+    Height = 57
     Align = alTop
     Caption = ' '#1055#1077#1095#1072#1090#1100' '
     TabOrder = 2
     object spPrintTickets: TSpeedButton
-      Left = 184
-      Top = 16
+      Left = 328
+      Top = 19
       Width = 121
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1094#1077#1085#1085#1080#1082#1086#1074
       OnClick = spPrintTicketsClick
+    end
+    object spPrintReestr: TSpeedButton
+      Left = 464
+      Top = 19
+      Width = 121
+      Height = 25
+      Caption = #1055#1077#1095#1072#1090#1100' '#1088#1077#1077#1089#1090#1088#1072
+      OnClick = spPrintReestrClick
     end
     object cbPrintEmptyTickets: TCheckBox
       Left = 8
@@ -300,6 +308,16 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Height = 17
       Caption = #1055#1077#1095#1072#1090#1100' "'#1087#1091#1089#1090#1099#1093'" '#1094#1077#1085#1085#1080#1082#1086#1074
       TabOrder = 0
+      OnClick = cbPrintEmptyTicketsClick
+    end
+    object cbClearRetailPrice: TCheckBox
+      Left = 8
+      Top = 35
+      Width = 297
+      Height = 17
+      Caption = #1054#1090#1073#1088#1072#1089#1099#1074#1072#1090#1100' '#1088#1086#1079#1085#1080#1095#1085#1091#1102' '#1094#1077#1085#1091' '#1076#1086' 10 '#1082#1086#1087'. '#1074' "'#1084#1077#1085#1100#1096#1077'"'
+      TabOrder = 1
+      OnClick = cbClearRetailPriceClick
     end
   end
   inherited tCheckVolume: TTimer

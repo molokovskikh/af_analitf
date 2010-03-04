@@ -61,12 +61,18 @@ type
     cbPrintEmptyTickets: TCheckBox;
     spPrintTickets: TSpeedButton;
     adsDocumentHeadersLocalWriteTime: TDateTimeField;
+    cbClearRetailPrice: TCheckBox;
+    spPrintReestr: TSpeedButton;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
     procedure adsDocumentHeadersDocumentTypeGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
     procedure spPrintTicketsClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure cbPrintEmptyTicketsClick(Sender: TObject);
+    procedure cbClearRetailPriceClick(Sender: TObject);
+    procedure spPrintReestrClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -85,7 +91,27 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, StrUtils, AProc;
+  Main, StrUtils, AProc, Math, DBProc, sumprops;
+
+{
+  Стандартная фунция RoundTo работала не корректно
+  Пример:
+    1.23 -> 1.2
+    1.29 -> 1.2
+    1.2  -> 1.1
+  Пришлось ее доработать, чтобы в случае 1.2 получалось 1.2
+}
+function RoundToOneDigit(const AValue: Double): Double;
+var
+  LFactor: Double;
+begin
+  LFactor := IntPower(10, -1);
+  if (1 - Frac(AValue / LFactor)) > 0.001  then
+    Result := Int(AValue / LFactor) * LFactor
+  else
+    Result := (AValue / LFactor) * LFactor;
+end;
+
 
 { TDocumentBodiesForm }
 
@@ -97,6 +123,7 @@ begin
   adsDocumentHeaders.Open;
   adsDocumentBodies.Close;
   PrepareGrid;
+  gbPrint.Visible := adsDocumentHeadersDocumentType.Value = 1;
   adsDocumentBodies.ParamByName('DocumentId').Value := FDocumentId;
   adsDocumentBodies.Open;
   Self.Caption := 'Детализация ' + RussianDocumentTypeForHeaderForm[TDocumentType(adsDocumentHeadersDocumentType.Value)];
@@ -119,34 +146,11 @@ begin
 end;
 
 procedure TDocumentBodiesForm.PrepareGrid;
-var
-  calc : TField;
 begin
   dbgDocumentBodies.Columns.Clear();
   dbgDocumentBodies.ShowHint := True;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
-    if adsDocumentBodies.FindField('RetailPercent') = nil then begin
-      calc := TCurrencyField.Create(adsDocumentBodies);
-      calc.fieldname := 'RetailPercent';
-      calc.FieldKind := fkCalculated;
-      calc.Calculated := True;
-      calc.Dataset := adsDocumentBodies;
-    end;
-    if adsDocumentBodies.FindField('RetailPrice') = nil then begin
-      calc := TCurrencyField.Create(adsDocumentBodies);
-      calc.fieldname := 'RetailPrice';
-      calc.FieldKind := fkCalculated;
-      calc.Calculated := True;
-      calc.Dataset := adsDocumentBodies;
-    end;
-    if adsDocumentBodies.FindField('RetailSumm') = nil then begin
-      calc := TCurrencyField.Create(adsDocumentBodies);
-      calc.fieldname := 'RetailSumm';
-      calc.FieldKind := fkCalculated;
-      calc.Calculated := True;
-      calc.Dataset := adsDocumentBodies;
-    end;
 
     AddColumn(dbgDocumentBodies, 'PositionName', 'Наименование');
     AddColumn(dbgDocumentBodies, 'SeriesOfCertificates', 'Серии сертификатов');
@@ -158,10 +162,10 @@ begin
     AddColumn(dbgDocumentBodies, 'SupplierPriceMarkup', 'Торговая надбавка оптовика', '0.00;;''''');
     AddColumn(dbgDocumentBodies, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', '0.00;;''''');
     AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена поставщика с НДС', '0.00;;''''');
-    AddColumn(dbgDocumentBodies, 'RetailPercent', 'Розничная надбавка', '#');
-    AddColumn(dbgDocumentBodies, 'RetailPrice', 'Розничная цена', '#');
+    AddColumn(dbgDocumentBodies, 'RetailPercent', 'Розничная надбавка', '0.00;;''''');
+    AddColumn(dbgDocumentBodies, 'RetailPrice', 'Розничная цена', '0.00;;''''');
     AddColumn(dbgDocumentBodies, 'Quantity', 'Заказ', '#');
-    AddColumn(dbgDocumentBodies, 'RetailSumm', 'Розничная сумма', '#');
+    AddColumn(dbgDocumentBodies, 'RetailSumm', 'Розничная сумма', '0.00;;''''');
   end
   else begin
     adsDocumentBodies.OnCalcFields := nil;
@@ -186,11 +190,25 @@ begin
 end;
 
 procedure TDocumentBodiesForm.WaybillCalcFields(DataSet: TDataSet);
+var
+  upcost,
+  retailPrice : Currency;
 begin
   try
-    DataSet.FieldByName('RetailPercent').Value := DM.GetRetUpCost(adsDocumentBodiesSupplierCost.Value);
-    DataSet.FieldByName('RetailPrice').Value := DM.GetPriceRet(adsDocumentBodiesSupplierCost.Value);
-    DataSet.FieldByName('RetailSumm').Value := DataSet.FieldByName('RetailPrice').AsCurrency * adsDocumentBodiesQuantity.Value;
+    upcost := DM.GetRetUpCost(adsDocumentBodiesSupplierCost.Value);
+    retailPrice := (1 + upcost/100)*adsDocumentBodiesSupplierCost.Value;
+
+    if cbClearRetailPrice.Checked then begin
+      retailPrice := RoundToOneDigit(retailPrice);
+      upcost := (retailPrice/adsDocumentBodiesSupplierCost.Value-1)*100;
+    end;
+
+    DataSet.FieldByName('RetailPercent').Value := upcost;
+
+    DataSet.FieldByName('RetailPrice').Value := retailPrice;
+    DataSet.FieldByName('RetailSumm').Value := retailPrice * adsDocumentBodiesQuantity.Value;
+
+    DataSet.FieldByName('SupplierNDS').Value := (adsDocumentBodiesSupplierCost.Value/adsDocumentBodiesSupplierCostWithoutNDS.Value-1)*100;
   except
   end;
 end;
@@ -261,14 +279,100 @@ begin
   else
     priceName := adsDocumentHeadersProviderName.AsString;
   priceName := Trim(priceName);
-  
+
   frVariables[ 'PrintEmptyTickets'] := cbPrintEmptyTickets.Checked;
+  //Здесь надо отображать имя клиента и его адрес доставки
   frVariables[ 'ShortClientName'] := DM.adtClientsNAME.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
   frVariables[ 'TicketSignature'] := priceName;
 
   DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
+end;
+
+procedure TDocumentBodiesForm.FormCreate(Sender: TObject);
+var
+  calc : TField;
+begin
+  //Добавляем вычисляемые поля в датасет
+  if adsDocumentBodies.FindField('SupplierNDS') = nil then begin
+    calc := TCurrencyField.Create(adsDocumentBodies);
+    calc.fieldname := 'SupplierNDS';
+    calc.FieldKind := fkCalculated;
+    calc.Calculated := True;
+    calc.Dataset := adsDocumentBodies;
+  end;
+  if adsDocumentBodies.FindField('RetailPercent') = nil then begin
+    calc := TCurrencyField.Create(adsDocumentBodies);
+    calc.fieldname := 'RetailPercent';
+    calc.FieldKind := fkCalculated;
+    calc.Calculated := True;
+    calc.Dataset := adsDocumentBodies;
+  end;
+  if adsDocumentBodies.FindField('RetailPrice') = nil then begin
+    calc := TCurrencyField.Create(adsDocumentBodies);
+    calc.fieldname := 'RetailPrice';
+    calc.FieldKind := fkCalculated;
+    calc.Calculated := True;
+    calc.Dataset := adsDocumentBodies;
+  end;
+  if adsDocumentBodies.FindField('RetailSumm') = nil then begin
+    calc := TCurrencyField.Create(adsDocumentBodies);
+    calc.fieldname := 'RetailSumm';
+    calc.FieldKind := fkCalculated;
+    calc.Calculated := True;
+    calc.Dataset := adsDocumentBodies;
+  end;
+
+  inherited;
+end;
+
+procedure TDocumentBodiesForm.cbPrintEmptyTicketsClick(Sender: TObject);
+begin
+  dbgDocumentBodies.SetFocus();
+end;
+
+procedure TDocumentBodiesForm.cbClearRetailPriceClick(Sender: TObject);
+var
+  LastId : Int64;
+begin
+  dbgDocumentBodies.SetFocus();
+  adsDocumentBodies.DisableControls;
+  try
+    LastId := adsDocumentBodiesId.Value;
+    adsDocumentBodies.Refresh;
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+  finally
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.spPrintReestrClick(Sender: TObject);
+var
+  totalRetailSumm : Currency;
+  V: array[0..0] of Variant;
+begin
+  DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
+  totalRetailSumm := V[0];
+
+  //Здесь надо отображать имя клиента и его адрес доставки
+  frVariables[ 'ClientName'] := DM.adtClientsNAME.AsString;
+  frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
+  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+
+  frVariables[ 'ReestrNumber'] := '17';
+  frVariables[ 'ReestrAppend'] := '5';
+
+  frVariables[ 'Director'] := 'Борисов Ю.А.';
+  frVariables[ 'CoDirector'] := 'Тихонов В.Е.';
+  frVariables[ 'Accountant'] := 'Куликовская И.В.';
+
+  frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
+  frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
+
+  DM.ShowFastReport('Reestr.frf', adsDocumentBodies, True);
 end;
 
 end.
