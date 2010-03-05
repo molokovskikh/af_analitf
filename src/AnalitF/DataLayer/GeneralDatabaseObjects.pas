@@ -136,7 +136,7 @@ begin
 +'    `InheritPrices`  tinyint(1) not null default ''0'', '
 +'    `IsFutureClient` tinyint(1) not null default ''0'' '
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TClientTable }
@@ -156,7 +156,7 @@ begin
 +'    `Name` varchar(50) not null, ' 
 +'    primary key (`Id`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TClientsTable }
@@ -190,7 +190,7 @@ begin
 +'    unique key `PK_CLIENTS` (`CLIENTID`)       , ' 
 +'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TDefectivesTable }
@@ -219,7 +219,7 @@ begin
 +'    primary key (`ID`)                      , ' 
 +'    unique key `PK_DEFECTIVES` (`ID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TProvidersTable }
@@ -242,7 +242,7 @@ begin
 +'    primary key (`FIRMCODE`)               , ' 
 +'    unique key `PK_CLIENTSDATAN` (`FIRMCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';  
++ GetTableOptions();  
 end;
 
 { TRegionsTable }
@@ -265,7 +265,7 @@ begin
 +'    unique key `PK_REGIONS` (`REGIONCODE`), ' 
 +'    unique key `IDX_REGIONS_REGIONNAME` (`REGIONNAME`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';  
++ GetTableOptions();  
 end;
 
 { TRegionalDataTable }
@@ -290,7 +290,7 @@ begin
 +'    key `FK_REGIONALDATA_FIRMCODE` (`FIRMCODE`) , '
 +'    key `FK_REGIONALDATA_REGIONCODE` (`REGIONCODE`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TPricesDataTable }
@@ -316,7 +316,7 @@ begin
 +'    unique key `PK_PRICESDATA` (`PRICECODE`), ' 
 +'    key `FK_PRICESDATA_FIRMCODE` (`FIRMCODE`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TPricesRegionalDataTable }
@@ -345,7 +345,7 @@ begin
 +'    key `FK_PRD_REGIONCODE` (`REGIONCODE`)            , '
 +'    key `FK_PRICESREGIONALDATA_PRICECODE` (`PRICECODE`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TDelayOfPaymentsTable }
@@ -366,7 +366,7 @@ begin
 +'    `Percent` decimal(18,2) default null, ' 
 +'    primary key (`FirmCode`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TCatalogNamesTable }
@@ -389,7 +389,7 @@ begin
 +'    primary key (`ID`)                   , ' 
 +'    unique key `PK_CATALOGNAMES` (`ID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TCatalogFarmGroupsTable }
@@ -415,7 +415,7 @@ begin
 +'    unique key `PK_CATALOGFARMGROUPS` (`ID`), '
 +'    key `FK_CATALOG_FARM_GROUPS_PARENT` (`PARENTID`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TCatalogsTable }
@@ -450,7 +450,7 @@ begin
 +'    key `IDX_CATALOG_MnnID` (`MnnId`)           , '
 +'    key `IDX_CATALOG_DescriptionId` (`DescriptionId`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TProductsTable }
@@ -472,7 +472,7 @@ begin
 +'    unique key `PK_PRODUCTS` (`PRODUCTID`), ' 
 +'    key `FK_PRODUCTS_CATALOGID` (`CATALOGID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TCoreTable }
@@ -523,7 +523,7 @@ begin
 +'    key `IDX_CORE_JUNK` (`PRODUCTID`,`JUNK`)                   , ' 
 +'    key `IDX_CORE_SERVERCOREID` (`SERVERCOREID`) ' 
 +'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TMinPricesTable }
@@ -548,7 +548,7 @@ begin
 +'    key `FK_MINPRICES_PRODUCTID` (`PRODUCTID`)  , '
 +'    key `FK_MINPRICES_REGIONCODE` (`REGIONCODE`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TMNNTable }
@@ -569,7 +569,7 @@ begin
 +'    primary key (`Id`)                      , '
 +'    key `IDX_MNN_Mnn` (`Mnn`)                 '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TDescriptionsTable }
@@ -603,7 +603,7 @@ begin
 +'  Key(`Name`)                             , '
 +'  Key(`EnglishName`)                        '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 initialization

@@ -72,7 +72,7 @@ begin
 +'    primary key (`ID`)                      , '
 +'    unique key `PK_RETAILMARGINS` (`ID`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 function TRetailMarginsTable.GetInsertSQL(DatabasePrefix: String): String;
@@ -115,14 +115,14 @@ begin
 +'    `ServerMinReq` int(10) default null            , '
 +'    `DelayOfPayment` decimal(5,3) default null     , '
 +'    primary key (`ORDERID`)                        , '
-+'    unique key `PK_ORDERSH` (`ORDERID`)            , ' 
-+'    key `FK_ORDERSH_CLIENTID` (`CLIENTID`)         , ' 
-+'    key `IDX_ORDERSH_ORDERDATE` (`ORDERDATE`)      , ' 
-+'    key `IDX_ORDERSH_PRICECODE` (`PRICECODE`)      , ' 
-+'    key `IDX_ORDERSH_REGIONCODE` (`REGIONCODE`)    , ' 
-+'    key `IDX_ORDERSH_SENDDATE` (`SENDDATE`) ' 
-+'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++'    unique key `PK_ORDERSH` (`ORDERID`)            , '
++'    key `FK_ORDERSH_CLIENTID` (`CLIENTID`)         , '
++'    key `IDX_ORDERSH_ORDERDATE` (`ORDERDATE`)      , '
++'    key `IDX_ORDERSH_PRICECODE` (`PRICECODE`)      , '
++'    key `IDX_ORDERSH_REGIONCODE` (`REGIONCODE`)    , '
++'    key `IDX_ORDERSH_SENDDATE` (`SENDDATE`) '
++'  ) '
++ GetTableOptions();
 end;
 
 { TOrdersListTable }
@@ -137,29 +137,29 @@ end;
 function TOrdersListTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `ID` bigint(20) not null AUTO_INCREMENT    , ' 
-+'    `ORDERID` bigint(20) not null              , ' 
-+'    `CLIENTID` bigint(20) not null             , ' 
-+'    `COREID` bigint(20) default null           , ' 
-+'    `PRODUCTID` bigint(20) not null            , ' 
-+'    `CODEFIRMCR` bigint(20) default null       , ' 
-+'    `SYNONYMCODE` bigint(20) default null      , ' 
-+'    `SYNONYMFIRMCRCODE` bigint(20) default null, ' 
-+'    `CODE`           varchar(84) default null            , ' 
-+'    `CODECR`         varchar(84) default null            , ' 
-+'    `SYNONYMNAME`    varchar(250) default null           , ' 
-+'    `SYNONYMFIRM`    varchar(250) default null           , ' 
-+'    `PRICE`          decimal(18,2) default null          , ' 
-+'    `AWAIT`          tinyint(1) not null                 , ' 
-+'    `JUNK`           tinyint(1) not null                 , ' 
-+'    `ORDERCOUNT`     int(10) not null                    , ' 
-+'    `REQUESTRATIO`   int(10) default null                , ' 
-+'    `ORDERCOST`      decimal(18,2) default null          , ' 
-+'    `MINORDERCOUNT`  int(10) default null                , ' 
-+'    `RealPrice`      decimal(18,2) default null          , ' 
-+'    `DropReason`     smallint(5) default null            , ' 
-+'    `ServerCost`     decimal(18,2) default null          , ' 
++'  ( '
++'    `ID` bigint(20) not null AUTO_INCREMENT    , '
++'    `ORDERID` bigint(20) not null              , '
++'    `CLIENTID` bigint(20) not null             , '
++'    `COREID` bigint(20) default null           , '
++'    `PRODUCTID` bigint(20) not null            , '
++'    `CODEFIRMCR` bigint(20) default null       , '
++'    `SYNONYMCODE` bigint(20) default null      , '
++'    `SYNONYMFIRMCRCODE` bigint(20) default null, '
++'    `CODE`           varchar(84) default null            , '
++'    `CODECR`         varchar(84) default null            , '
++'    `SYNONYMNAME`    varchar(250) default null           , '
++'    `SYNONYMFIRM`    varchar(250) default null           , '
++'    `PRICE`          decimal(18,2) default null          , '
++'    `AWAIT`          tinyint(1) not null                 , '
++'    `JUNK`           tinyint(1) not null                 , '
++'    `ORDERCOUNT`     int(10) not null                    , '
++'    `REQUESTRATIO`   int(10) default null                , '
++'    `ORDERCOST`      decimal(18,2) default null          , '
++'    `MINORDERCOUNT`  int(10) default null                , '
++'    `RealPrice`      decimal(18,2) default null          , '
++'    `DropReason`     smallint(5) default null            , '
++'    `ServerCost`     decimal(18,2) default null          , '
 +'    `ServerQuantity` int(10) default null                , '
 +'    `SupplierPriceMarkup` decimal(5,3) default null      , '
 +'    `CoreQuantity` varchar(15) DEFAULT NULL              , '
@@ -172,17 +172,17 @@ begin
 +'    `RegistryCost` decimal(8,2) DEFAULT NULL             , '
 +'    `VitallyImportant` tinyint(1) NOT NULL               , '
 +'    primary key (`ID`)                                   , '
-+'    unique key `PK_ORDERS` (`ID`)                        , ' 
-+'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , ' 
-+'    key `FK_ORDERS_ORDERID` (`ORDERID`)                  , ' 
-+'    key `IDX_ORDERS_CODEFIRMCR` (`CODEFIRMCR`)           , ' 
-+'    key `IDX_ORDERS_COREID` (`COREID`)                   , ' 
-+'    key `IDX_ORDERS_ORDERCOUNT` (`ORDERCOUNT`)           , ' 
-+'    key `IDX_ORDERS_PRODUCTID` (`PRODUCTID`)             , ' 
-+'    key `IDX_ORDERS_SYNONYMCODE` (`SYNONYMCODE`)         , ' 
-+'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`) ' 
-+'  ) ' 
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++'    unique key `PK_ORDERS` (`ID`)                        , '
++'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '
++'    key `FK_ORDERS_ORDERID` (`ORDERID`)                  , '
++'    key `IDX_ORDERS_CODEFIRMCR` (`CODEFIRMCR`)           , '
++'    key `IDX_ORDERS_COREID` (`COREID`)                   , '
++'    key `IDX_ORDERS_ORDERCOUNT` (`ORDERCOUNT`)           , '
++'    key `IDX_ORDERS_PRODUCTID` (`PRODUCTID`)             , '
++'    key `IDX_ORDERS_SYNONYMCODE` (`SYNONYMCODE`)         , '
++'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`) '
++'  ) '
++ GetTableOptions();
 end;
 
 { TReceivedDocsTable }
@@ -197,7 +197,7 @@ end;
 function TReceivedDocsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
++'  ( '
 +'    `ID` bigint(20) not null AUTO_INCREMENT, '
 +'    `FILENAME` varchar(255) not null       , '
 +'    `FILEDATETIME` timestamp not null default current_timestamp on '
@@ -205,7 +205,7 @@ begin
 +'    primary key (`ID`)    , '
 +'    unique key `PK_RECEIVEDDOCS` (`ID`) '
 +'  ) '
-+'  ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++ GetTableOptions();
 end;
 
 { TDocumentHeadersTable }
@@ -232,7 +232,8 @@ begin
 +'  `OrderId` int(10) unsigned DEFAULT NULL, '
 +'  `Header` varchar(255) DEFAULT NULL, '
 +'  PRIMARY KEY (`Id`) '
-+') ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++' ) '
++ GetTableOptions();
 end;
 
 { TDocumentBodiesTable }
@@ -254,7 +255,8 @@ begin
 +'  `Quantity` int(11) unsigned DEFAULT NULL, '
 +'  `Cost` decimal(12,6) unsigned DEFAULT NULL, '
 +'  PRIMARY KEY (`Id`) '
-+') ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++' ) '
++ GetTableOptions();
 end;
 
 { TVitallyImportantMarkupsTable }
@@ -277,7 +279,8 @@ begin
 +'  `Markup` decimal(5,3) NOT NULL, '
 +'  PRIMARY KEY (`ID`), '
 +'  UNIQUE KEY `PK_VitallyImportantMarkups` (`ID`) '
-+') ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
++' ) '
++ GetTableOptions();
 end;
 
 initialization

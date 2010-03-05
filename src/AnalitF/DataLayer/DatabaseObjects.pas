@@ -110,6 +110,8 @@ type
   end;
 
   TDatabaseTable = class(TDatabaseObject)
+   protected
+     function GetTableOptions() : String; virtual;
    public
     function GetInsertSQL(DatabasePrefix : String = '') : String; virtual;
     function GetDropSQL(DatabasePrefix : String = '') : String; override;
@@ -670,6 +672,11 @@ end;
 function TDatabaseTable.GetInsertSQL(DatabasePrefix: String): String;
 begin
   Result := '';
+end;
+
+function TDatabaseTable.GetTableOptions: String;
+begin
+  Result := ' ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
 { TDatabaseView }
