@@ -88,7 +88,8 @@ type
     doiDescriptions,
     //Backup
     doiDocumentHeaders,
-    doiDocumentBodies);
+    doiDocumentBodies,
+    doiVitallyImportantMarkups);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

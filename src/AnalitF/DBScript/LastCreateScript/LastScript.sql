@@ -683,6 +683,21 @@ CREATE TABLE `userinfo` (
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 
+-- 
+-- Table structure for table  vitallyimportantmarkups
+-- 
+
+DROP TABLE IF EXISTS vitallyimportantmarkups;
+CREATE TABLE `vitallyimportantmarkups` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `LeftLimit` decimal(18,2) NOT NULL,
+  `RightLimit` decimal(18,2) NOT NULL,
+  `Markup` decimal(5,3) NOT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `PK_VitallyImportantMarkups` (`ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

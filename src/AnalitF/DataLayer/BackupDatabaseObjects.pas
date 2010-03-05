@@ -44,6 +44,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TVitallyImportantMarkupsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -251,6 +257,29 @@ begin
 +') ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
 end;
 
+{ TVitallyImportantMarkupsTable }
+
+constructor TVitallyImportantMarkupsTable.Create;
+begin
+  FName := 'VitallyImportantMarkups';
+  FObjectId := doiVitallyImportantMarkups;
+  FRepairType := dortBackup;
+end;
+
+function TVitallyImportantMarkupsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `ID` bigint(20) NOT NULL AUTO_INCREMENT, '
++'  `LeftLimit` decimal(18,2) NOT NULL, '
++'  `RightLimit` decimal(18,2) NOT NULL, '
++'  `Markup` decimal(5,3) NOT NULL, '
++'  PRIMARY KEY (`ID`), '
++'  UNIQUE KEY `PK_VitallyImportantMarkups` (`ID`) '
++') ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TOrdersHeadTable.Create());
@@ -258,4 +287,5 @@ initialization
   DatabaseController.AddObject(TReceivedDocsTable.Create());
   DatabaseController.AddObject(TDocumentHeadersTable.Create());
   DatabaseController.AddObject(TDocumentBodiesTable.Create());
+  DatabaseController.AddObject(TVitallyImportantMarkupsTable.Create());
 end.
