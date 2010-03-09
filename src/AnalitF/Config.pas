@@ -131,8 +131,6 @@ type
     procedure OnAppEx(Sender: TObject; E: Exception);
     procedure RXLoadRetailMargins;
     procedure AddsWaybillsSheet;
-    procedure SetStandartSettingsToGrid(Grid : TToughDBGrid);
-    procedure AddColumn(Grid : TToughDBGrid; ColumnName, Caption : String; ReadOnly : Boolean = True; DisplayFormat : String = '');
     procedure AddLabelAndDBEdit(
       var nextTop: Integer;
       var labelInfo : TLabel;
@@ -141,11 +139,10 @@ type
       DataField : String);
   protected
     tsWaybills : TTabSheet;
-    pBottom : TPanel;
-    gbEditClients : TGroupBox;
-    dbgClientSettings : TToughDBGrid;
     adsEditClients : TMyQuery;
     dsEditClients : TDataSource;
+
+    gbEditClients : TGroupBox;
 
     lClientId : TLabel;
     dblClientId : TDBLookupComboBox;
@@ -686,7 +683,7 @@ begin
     dblClientId.KeyValue := adsEditClients.FieldByName('ClientId').Value;
 
     nextTop := dblClientId.Top + dblClientId.Height + 10;
-
+    
     if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then
       lClientId.Caption := 'Адрес заказа:'
     else begin
@@ -697,65 +694,9 @@ begin
     AddLabelAndDBEdit(nextTop, lDirector, dbeDirector, 'Заведующая:', 'Director');
     AddLabelAndDBEdit(nextTop, lDeputyDirector, dbeDeputyDirector, 'Зам. заведующей:', 'DeputyDirector');
     AddLabelAndDBEdit(nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
-
-    pBottom := TPanel.Create(Self);
-    pBottom.Caption := '';
-    pBottom.Parent := tsWaybills;
-    pBottom.Align := alBottom;
-    pBottom.Visible := False;
-
-    dbgClientSettings := TToughDBGrid.Create(Self);
-    SetStandartSettingsToGrid(dbgClientSettings);
-    dbgClientSettings.Parent := pBottom;
-    dbgClientSettings.DataSource := dsEditClients;
-    dbgClientSettings.TabOrder := 0;
-    dbgClientSettings.Align := alClient;
-    dbgClientSettings.AllowedOperations := [alopUpdateEh];
-    dbgClientSettings.ParentShowHint := False;
-    dbgClientSettings.ShowHint := True;
-
-    dbgClientSettings.ReadOnly := False;
-    dbgClientSettings.Options := dbgClientSettings.Options + [dgEditing];
-    if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then begin
-      AddColumn(dbgClientSettings, 'Name', 'Адрес заказа');
-    end
-    else begin
-      AddColumn(dbgClientSettings, 'Name', 'Клиент');
-      AddColumn(dbgClientSettings, 'Address', 'Адрес', False);
-    end;
-    AddColumn(dbgClientSettings, 'Director', 'Заведующая', False);
-    AddColumn(dbgClientSettings, 'DeputyDirector', 'Зам. заведующей', False);
-    AddColumn(dbgClientSettings, 'Accountant', 'Бухгалтер', False);
   end
   else
     tsWaybills.Visible := False;
-end;
-
-procedure TConfigForm.SetStandartSettingsToGrid(Grid: TToughDBGrid);
-begin
-  Grid.AutoFitColWidths := True;
-  Grid.Flat := True;
-  Grid.Options := [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgRowLines];
-  Grid.OptionsEh := [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight];
-  Grid.Font.Size := 10;
-  Grid.GridLineColors.DarkColor := clBlack;
-  Grid.GridLineColors.BrightColor := clDkGray;
-  if CheckWin32Version(5, 1) then
-    Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
-end;
-
-procedure TConfigForm.AddColumn(Grid: TToughDBGrid; ColumnName, Caption : String;
-  ReadOnly : Boolean;
-  DisplayFormat: String);
-var
-  column : TColumnEh;
-begin
-  column := Grid.Columns.Add;
-  column.FieldName := ColumnName;
-  column.ReadOnly := ReadOnly;
-  column.Title.Caption := Caption;
-  column.Title.Hint := Caption;
-  column.DisplayFormat := DisplayFormat;
 end;
 
 procedure TConfigForm.AddLabelAndDBEdit(var nextTop: Integer;
