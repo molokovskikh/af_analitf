@@ -133,11 +133,32 @@ type
     procedure AddsWaybillsSheet;
     procedure SetStandartSettingsToGrid(Grid : TToughDBGrid);
     procedure AddColumn(Grid : TToughDBGrid; ColumnName, Caption : String; ReadOnly : Boolean = True; DisplayFormat : String = '');
+    procedure AddLabelAndDBEdit(
+      var nextTop: Integer;
+      var labelInfo : TLabel;
+      var dbedit : TDBEdit;
+      LabelCaption,
+      DataField : String);
   protected
     tsWaybills : TTabSheet;
+    pBottom : TPanel;
+    gbEditClients : TGroupBox;
     dbgClientSettings : TToughDBGrid;
     adsEditClients : TMyQuery;
     dsEditClients : TDataSource;
+
+    lClientId : TLabel;
+    dblClientId : TDBLookupComboBox;
+
+    lAddress : TLabel;
+    dbeAddress : TDBEdit;
+
+    lDirector : TLabel;
+    dbeDirector : TDBEdit;
+    lDeputyDirector : TLabel;
+    dbeDeputyDirector : TDBEdit;
+    lAccountant : TLabel;
+    dbeAccountant : TDBEdit;
   public
   end;
 
@@ -184,7 +205,7 @@ begin
       end;
 {$endif}
       if Auth then
-        PageControl.ActivePageIndex := 2
+        PageControl.ActivePage := tshAuth
       else
         PageControl.ActivePageIndex := 0;
 
@@ -621,6 +642,8 @@ begin
 end;
 
 procedure TConfigForm.AddsWaybillsSheet;
+var
+  nextTop : Integer;
 begin
   adsEditClients := TMyQuery.Create(Self);
   adsEditClients.Connection := DM.MainConnection;
@@ -629,19 +652,68 @@ begin
 
   tsWaybills := TTabSheet.Create(PageControl);
   tsWaybills.PageControl := PageControl;
+  tsWaybills.PageIndex := 1;
   tsWaybills.Caption := 'Накладные';
 
-  dbgClientSettings := TToughDBGrid.Create(Self);
-  SetStandartSettingsToGrid(dbgClientSettings);
-  dbgClientSettings.Parent := tsWaybills;
-  dbgClientSettings.DataSource := dsEditClients;
-  dbgClientSettings.TabOrder := 0;
-  dbgClientSettings.ReadOnly := True;
-  dbgClientSettings.Align := alClient;
-  dbgClientSettings.AllowedOperations := [alopUpdateEh];
-  dbgClientSettings.ParentShowHint := False;
-  dbgClientSettings.ShowHint := True;
   if not DM.adsUser.IsEmpty then begin
+    //Открываем дата сет
+    adsEditClients.CachedUpdates := True;
+    adsEditClients.SQL.Text := DM.adtClients.SQL.Text;
+    adsEditClients.SQLRefresh.Text := DM.adtClients.SQLRefresh.Text;
+    adsEditClients.SQLUpdate.Text := DM.adtClients.SQLUpdate.Text;
+    adsEditClients.Open;
+    
+    gbEditClients := TGroupBox.Create(Self);
+    gbEditClients.Caption := ' Настройка печати ';
+    gbEditClients.Parent := tsWaybills;
+    gbEditClients.Align := alClient;
+
+    lClientId := TLabel.Create(Self);
+    lClientId.Caption := 'ClientId:';
+    lClientId.Parent := gbEditClients;
+    lClientId.Top := 16;
+    lClientId.Left := 10;
+
+    dblClientId := TDBLookupComboBox.Create(Self);
+    dblClientId.Parent := gbEditClients;
+    dblClientId.Top := lClientId.Top + 3 + lClientId.Canvas.TextHeight(lClientId.Caption);
+    dblClientId.Left := lClientId.Left;
+    dblClientId.Width := gbEditClients.Width - 20;
+    dblClientId.DataField := 'ClientId';
+    dblClientId.KeyField := 'ClientId';
+    dblClientId.ListField := 'Name';
+    dblClientId.ListSource := dsEditClients;
+    dblClientId.KeyValue := adsEditClients.FieldByName('ClientId').Value;
+
+    nextTop := dblClientId.Top + dblClientId.Height + 10;
+
+    if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then
+      lClientId.Caption := 'Адрес заказа:'
+    else begin
+      lClientId.Caption := 'Клиент:';
+      AddLabelAndDBEdit(nextTop, lAddress, dbeAddress, 'Адрес:', 'Address');
+    end;
+
+    AddLabelAndDBEdit(nextTop, lDirector, dbeDirector, 'Заведующая:', 'Director');
+    AddLabelAndDBEdit(nextTop, lDeputyDirector, dbeDeputyDirector, 'Зам. заведующей:', 'DeputyDirector');
+    AddLabelAndDBEdit(nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
+
+    pBottom := TPanel.Create(Self);
+    pBottom.Caption := '';
+    pBottom.Parent := tsWaybills;
+    pBottom.Align := alBottom;
+    pBottom.Visible := False;
+
+    dbgClientSettings := TToughDBGrid.Create(Self);
+    SetStandartSettingsToGrid(dbgClientSettings);
+    dbgClientSettings.Parent := pBottom;
+    dbgClientSettings.DataSource := dsEditClients;
+    dbgClientSettings.TabOrder := 0;
+    dbgClientSettings.Align := alClient;
+    dbgClientSettings.AllowedOperations := [alopUpdateEh];
+    dbgClientSettings.ParentShowHint := False;
+    dbgClientSettings.ShowHint := True;
+
     dbgClientSettings.ReadOnly := False;
     dbgClientSettings.Options := dbgClientSettings.Options + [dgEditing];
     if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then begin
@@ -654,12 +726,6 @@ begin
     AddColumn(dbgClientSettings, 'Director', 'Заведующая', False);
     AddColumn(dbgClientSettings, 'DeputyDirector', 'Зам. заведующей', False);
     AddColumn(dbgClientSettings, 'Accountant', 'Бухгалтер', False);
-
-    adsEditClients.CachedUpdates := True;
-    adsEditClients.SQL.Text := DM.adtClients.SQL.Text;
-    adsEditClients.SQLRefresh.Text := DM.adtClients.SQLRefresh.Text;
-    adsEditClients.SQLUpdate.Text := DM.adtClients.SQLUpdate.Text;
-    adsEditClients.Open;
   end
   else
     tsWaybills.Visible := False;
@@ -690,6 +756,26 @@ begin
   column.Title.Caption := Caption;
   column.Title.Hint := Caption;
   column.DisplayFormat := DisplayFormat;
+end;
+
+procedure TConfigForm.AddLabelAndDBEdit(var nextTop: Integer;
+  var labelInfo: TLabel; var dbedit: TDBEdit; LabelCaption, DataField: String);
+begin
+  labelInfo := TLabel.Create(Self);
+  labelInfo.Caption := LabelCaption;
+  labelInfo.Parent := gbEditClients;
+  labelInfo.Top := nextTop;
+  labelInfo.Left := 10;
+
+  dbedit := TDBEdit.Create(Self);
+  dbedit.Parent := gbEditClients;
+  dbedit.Top := labelInfo.Top + 3 + labelInfo.Canvas.TextHeight(labelInfo.Caption);
+  dbedit.Left := 10;
+  dbedit.DataSource := dsEditClients;
+  dbedit.DataField := DataField;
+  dbedit.Width := gbEditClients.Width - 20;
+
+  nextTop := dbedit.Top + dbedit.Height + 10;
 end;
 
 end.
