@@ -1046,7 +1046,6 @@ object DM: TDM
     object adsRetailMarginsOldLEFTLIMIT: TFIBBCDField
       FieldName = 'LEFTLIMIT'
       Required = True
-      OnChange = adsRetailMarginsOldLEFTLIMITChange
       DisplayFormat = '0.00;;'
       Size = 4
       RoundByScale = True
@@ -1054,7 +1053,6 @@ object DM: TDM
     object adsRetailMarginsOldRIGHTLIMIT: TFIBBCDField
       FieldName = 'RIGHTLIMIT'
       Required = True
-      OnChange = adsRetailMarginsOldLEFTLIMITChange
       DisplayFormat = '0.00;;'
       Size = 4
       RoundByScale = True

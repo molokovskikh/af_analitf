@@ -63,6 +63,8 @@ type
     adsDocumentHeadersLocalWriteTime: TDateTimeField;
     cbClearRetailPrice: TCheckBox;
     spPrintReestr: TSpeedButton;
+    cbWaybillAsVitallyImportant: TCheckBox;
+    spEditMarkups: TSpeedButton;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -73,6 +75,8 @@ type
     procedure cbPrintEmptyTicketsClick(Sender: TObject);
     procedure cbClearRetailPriceClick(Sender: TObject);
     procedure spPrintReestrClick(Sender: TObject);
+    procedure cbWaybillAsVitallyImportantClick(Sender: TObject);
+    procedure spEditMarkupsClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -81,6 +85,8 @@ type
     procedure AddColumn(Grid : TToughDBGrid; ColumnName, Caption : String; DisplayFormat : String = '');
     procedure WaybillCalcFields(DataSet : TDataSet);
     procedure LoadFromRegistry();
+    procedure RefreshDocument;
+    procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -91,7 +97,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, StrUtils, AProc, Math, DBProc, sumprops;
+  Main, StrUtils, AProc, Math, DBProc, sumprops, EditVitallyImportantMarkups;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -151,6 +157,7 @@ begin
   dbgDocumentBodies.ShowHint := True;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
+    dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
 
     AddColumn(dbgDocumentBodies, 'PositionName', 'Наименование');
     AddColumn(dbgDocumentBodies, 'SeriesOfCertificates', 'Серии сертификатов');
@@ -169,6 +176,7 @@ begin
   end
   else begin
     adsDocumentBodies.OnCalcFields := nil;
+    dbgDocumentBodies.OnGetCellParams := nil;
     AddColumn(dbgDocumentBodies, 'PositionName', 'Наименование');
     AddColumn(dbgDocumentBodies, 'ProducerName', 'Производитель');
     AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена', '0.00;;''''');
@@ -192,10 +200,18 @@ end;
 procedure TDocumentBodiesForm.WaybillCalcFields(DataSet: TDataSet);
 var
   upcost,
+  vitallyImportantMarkup,
   retailPrice : Currency;
 begin
   try
     upcost := DM.GetRetUpCost(adsDocumentBodiesSupplierCost.Value);
+
+    if cbWaybillAsVitallyImportant.Checked then begin
+      vitallyImportantMarkup := DM.GetVitallyImportantMarkup(adsDocumentBodiesProducerCost.Value);
+      if upcost + adsDocumentBodiesSupplierPriceMarkup.Value > vitallyImportantMarkup then
+        upcost := vitallyImportantMarkup - adsDocumentBodiesSupplierPriceMarkup.Value;
+    end;
+
     retailPrice := (1 + upcost/100)*adsDocumentBodiesSupplierCost.Value;
 
     if cbClearRetailPrice.Checked then begin
@@ -332,19 +348,8 @@ begin
 end;
 
 procedure TDocumentBodiesForm.cbClearRetailPriceClick(Sender: TObject);
-var
-  LastId : Int64;
 begin
-  dbgDocumentBodies.SetFocus();
-  adsDocumentBodies.DisableControls;
-  try
-    LastId := adsDocumentBodiesId.Value;
-    adsDocumentBodies.Refresh;
-    if not adsDocumentBodies.Locate('Id', LastId, []) then
-      adsDocumentBodies.First;
-  finally
-    adsDocumentBodies.EnableControls;
-  end;
+  RefreshDocument;
 end;
 
 procedure TDocumentBodiesForm.spPrintReestrClick(Sender: TObject);
@@ -371,6 +376,55 @@ begin
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
 
   DM.ShowFastReport('Reestr.frf', adsDocumentBodies, True);
+end;
+
+procedure TDocumentBodiesForm.RefreshDocument;
+var
+  LastId : Int64;
+begin
+  dbgDocumentBodies.SetFocus();
+  adsDocumentBodies.DisableControls;
+  try
+    LastId := adsDocumentBodiesId.Value;
+    adsDocumentBodies.Refresh;
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+  finally
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.cbWaybillAsVitallyImportantClick(
+  Sender: TObject);
+begin
+  if cbWaybillAsVitallyImportant.Checked then
+    if not DM.VitallyImportantMarkupsExists then begin
+      ShowEditVitallyImportantMarkups;
+      cbWaybillAsVitallyImportant.Checked := DM.VitallyImportantMarkupsExists;
+      if cbWaybillAsVitallyImportant.Checked then
+        RefreshDocument;
+    end
+    else
+      RefreshDocument
+  else
+    RefreshDocument
+end;
+
+procedure TDocumentBodiesForm.WaybillGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if (adsDocumentBodies.FieldByName('RetailPercent').AsCurrency < 0) then
+    if AnsiMatchText(Column.Field.FieldName, ['RetailPercent', 'RetailPrice', 'RetailSumm'])
+    then
+      Background := clRed;
+end;
+
+procedure TDocumentBodiesForm.spEditMarkupsClick(Sender: TObject);
+begin
+  ShowEditVitallyImportantMarkups;
+  if cbWaybillAsVitallyImportant.Checked then
+    RefreshDocument;
 end;
 
 end.

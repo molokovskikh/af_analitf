@@ -526,14 +526,11 @@ end;
 
 procedure TConfigForm.btnAddRetailClick(Sender: TObject);
 begin
-//  DM.adsRetailMargins.Append;
   mdRetail.Append;
 end;
 
 procedure TConfigForm.btnDelRetailClick(Sender: TObject);
 begin
-//  if not DM.adsRetailMargins.IsEmpty then
-//    DM.adsRetailMargins.Delete;
   if not mdRetail.IsEmpty then
     mdRetail.Delete;
 end;
@@ -543,12 +540,9 @@ procedure TConfigForm.tdbgRetailMarginsGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if (mdRetailLEFTLIMIT.AsCurrency > mdRetailRIGHTLIMIT.AsCurrency) and
-    ((Column.Field = mdRetailLEFTLIMIT) or (Column.Field = mdRetailLEFTLIMIT))
+    ((Column.Field = mdRetailLEFTLIMIT) or (Column.Field = mdRetailRIGHTLIMIT))
   then
     Background := lLR.Color;
-
-//  if (mdRetail.RecNo = 1) then
-//    PrevLimit := mdRetailRIGHTLIMIT.AsVariant;
 
   if (mdRetail.RecNo > 1) and (Length(FRXRetMargins) >= mdRetail.RecNo-1)
   then begin

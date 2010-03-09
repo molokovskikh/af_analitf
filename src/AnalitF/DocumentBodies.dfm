@@ -7,7 +7,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   TextHeight = 13
   object pOrderHeader: TPanel [0]
     Left = 0
-    Top = 57
+    Top = 76
     Width = 856
     Height = 51
     Align = alTop
@@ -212,9 +212,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   end
   object pGrid: TPanel [1]
     Left = 0
-    Top = 108
+    Top = 127
     Width = 856
-    Height = 341
+    Height = 322
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -222,7 +222,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Left = 0
       Top = 0
       Width = 856
-      Height = 341
+      Height = 322
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsDocumentBodies
@@ -281,9 +281,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Left = 0
     Top = 0
     Width = 856
-    Height = 57
+    Height = 76
     Align = alTop
-    Caption = ' '#1055#1077#1095#1072#1090#1100' '
+    Caption = ' '#1053#1072#1082#1083#1072#1076#1085#1099#1077' '
     TabOrder = 2
     object spPrintTickets: TSpeedButton
       Left = 328
@@ -300,6 +300,14 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1088#1077#1077#1089#1090#1088#1072
       OnClick = spPrintReestrClick
+    end
+    object spEditMarkups: TSpeedButton
+      Left = 600
+      Top = 19
+      Width = 121
+      Height = 25
+      Caption = #1053#1072#1094#1077#1085#1082#1080' '#1046#1053#1042#1051#1057
+      OnClick = spEditMarkupsClick
     end
     object cbPrintEmptyTickets: TCheckBox
       Left = 8
@@ -320,6 +328,15 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       State = cbChecked
       TabOrder = 1
       OnClick = cbClearRetailPriceClick
+    end
+    object cbWaybillAsVitallyImportant: TCheckBox
+      Left = 8
+      Top = 54
+      Width = 297
+      Height = 17
+      Caption = #1056#1072#1089#1089#1095#1080#1090#1072#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1091#1102' '#1082#1072#1082' '#1046#1053#1042#1051#1057
+      TabOrder = 2
+      OnClick = cbWaybillAsVitallyImportantClick
     end
   end
   inherited tCheckVolume: TTimer

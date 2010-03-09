@@ -96,7 +96,9 @@ uses
   DocumentHeaders in 'DocumentHeaders.pas' {DocumentHeaderForm},
   DocumentBodies in 'DocumentBodies.pas' {DocumentBodiesForm},
   DocumentTypes in 'DataLayer\DocumentTypes.pas',
-  sumprops in 'Helpers\sumprops.pas';
+  sumprops in 'Helpers\sumprops.pas',
+  EditVitallyImportantMarkups in 'EditVitallyImportantMarkups.pas' {EditVitallyImportantMarkupsForm},
+  DBGridHelper in 'Helpers\DBGridHelper.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

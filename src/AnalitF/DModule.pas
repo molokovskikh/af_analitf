@@ -488,7 +488,6 @@ type
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
-    procedure adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
     procedure MySQLMonitorSQL(Sender: TObject; Text: String;
       Flag: TDATraceFlag);
     procedure adtParamsAfterPost(DataSet: TDataSet);
@@ -513,6 +512,7 @@ type
     FCreateClearDatabase     : Boolean;
     FGetCatalogsCount : Integer;
     FRetMargins : array of TRetMass;
+    FVitallyImportantMarkups : array of TRetMass;
     SynC,
     HTTPC,
     CodeC,
@@ -649,10 +649,14 @@ type
     function E_HP(HTTPPass: String) : String;
     procedure SavePass(ASyn, ACodes, AB, ASGM : String);
     procedure LoadRetailMargins;
+    procedure LoadVitallyImportantMarkups;
     //Получить розничную цену товара в зависимости от наценки
     function GetPriceRet(BaseCost : Currency) : Currency;
     //Получить розничную наценку товара
     function GetRetUpCost(BaseCost : Currency) : Integer;
+    //Получить наценку товара для ЖНВЛС
+    function GetVitallyImportantMarkup(BaseCost : Currency) : Currency;
+    function VitallyImportantMarkupsExists : Boolean;
 
     //Обрабатываем папки с документами
     procedure ProcessDocs;
@@ -1605,6 +1609,7 @@ begin
   adsRetailMargins.Close;
   adsRetailMargins.Open;
   LoadRetailMargins;
+  LoadVitallyImportantMarkups;
   LoadSelectedPrices;
 end;
 
@@ -1787,11 +1792,6 @@ begin
     Inc(I);
     adsRetailMargins.Next;
   end;
-end;
-
-procedure TDM.adsRetailMarginsOldLEFTLIMITChange(Sender: TField);
-begin
-//  adsRetailMargins.DoSort(['LEFTLIMIT'], [True]);
 end;
 
 procedure TDM.socf(DataSet: TDataSet);
@@ -4999,6 +4999,52 @@ begin
     Result := ClientName + ', ' + adtClientsNAME.AsString
   else
     Result := ClientName + ', ' + adtClientsAddress.AsString;
+end;
+
+procedure TDM.LoadVitallyImportantMarkups;
+var
+  I : Integer;
+begin
+  adsQueryValue.Close;
+  adsQueryValue.SQL.Text :=
+    'select LeftLimit, RightLimit, Markup from VitallyImportantMarkups order by LeftLimit';
+  adsQueryValue.Open;
+  try
+    SetLength(FVitallyImportantMarkups, adsQueryValue.RecordCount);
+    adsQueryValue.First;
+    I := 0;
+    while not adsQueryValue.Eof do begin
+      FVitallyImportantMarkups[i][1] := adsQueryValue.FieldByName('LeftLimit').AsCurrency;
+      FVitallyImportantMarkups[i][2] := adsQueryValue.FieldByName('RightLimit').AsCurrency;
+      FVitallyImportantMarkups[i][3] := adsQueryValue.FieldByName('Markup').AsCurrency;
+      Inc(I);
+      adsQueryValue.Next;
+    end;
+  finally
+    adsQueryValue.Close;
+  end;
+end;
+
+function TDM.GetVitallyImportantMarkup(BaseCost: Currency): Currency;
+var
+  I : Integer;
+  Markup : Currency;
+begin
+  Markup := 0;
+  I := 0;
+  while (I < Length(FVitallyImportantMarkups)) and (BaseCost >= FVitallyImportantMarkups[i][1]) do begin
+    if (FVitallyImportantMarkups[i][1] <= BaseCost) and (BaseCost < FVitallyImportantMarkups[i][2]) then begin
+      Markup := FVitallyImportantMarkups[i][3];
+      Break;
+    end;
+    Inc(I);
+  end;
+  Result := Markup;
+end;
+
+function TDM.VitallyImportantMarkupsExists: Boolean;
+begin
+  Result := Length(FVitallyImportantMarkups) > 0;
 end;
 
 initialization
