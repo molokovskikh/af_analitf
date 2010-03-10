@@ -920,6 +920,8 @@ begin
   actClosedOrders.Enabled := False;
   actWayBill.Enabled := False;
   actMnnSearch.Enabled := False;
+  actWayBill.Enabled := False;
+  actSendWaybills.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -935,6 +937,8 @@ begin
   actClosedOrders.Enabled := True;
   actWayBill.Enabled := True;
   actMnnSearch.Enabled := True;
+  actWayBill.Enabled := True;
+  actSendWaybills.Enabled := True;
 end;
 
 procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
