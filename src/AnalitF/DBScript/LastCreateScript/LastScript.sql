@@ -493,6 +493,19 @@ CREATE TABLE `providers` (
 
 
 -- 
+-- Table structure for table  providersettings
+-- 
+
+DROP TABLE IF EXISTS ProviderSettings;
+CREATE TABLE `ProviderSettings` (
+  `FirmCode` bigint(20) NOT NULL,
+  `WaybillFolder` varchar(255) default null,
+  PRIMARY KEY (`FirmCode`),
+  UNIQUE KEY `PK_ProviderSettings` (`FirmCode`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
+-- 
 -- Table structure for table  receiveddocs
 -- 
 

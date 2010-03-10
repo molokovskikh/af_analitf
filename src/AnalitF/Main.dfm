@@ -213,8 +213,13 @@ object MainForm: TMainForm
         Top = 0
         Action = actViewDocs
       end
-      object ToolButton9: TToolButton
+      object ToolButton6: TToolButton
         Left = 677
+        Top = 0
+        Action = actSendWaybills
+      end
+      object ToolButton9: TToolButton
+        Left = 716
         Top = 0
         Width = 8
         Caption = 'ToolButton9'
@@ -222,18 +227,18 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnHome: TToolButton
-        Left = 685
+        Left = 724
         Top = 0
         Action = actHome
       end
       object btnConfig: TToolButton
-        Left = 724
+        Left = 763
         Top = 0
         Action = actConfig
         ImageIndex = 12
       end
       object tbLastSeparator: TToolButton
-        Left = 763
+        Left = 802
         Top = 0
         Width = 8
         Caption = 'tbLastSeparator'
@@ -634,6 +639,12 @@ object MainForm: TMainForm
       ImageIndex = 19
       ShortCut = 16461
       OnExecute = actMnnSearchExecute
+    end
+    object actSendWaybills: TAction
+      Category = 'Order'
+      Caption = #1047#1072#1075#1088#1091#1079#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
+      ImageIndex = 18
+      OnExecute = actSendWaybillsExecute
     end
   end
   object AppEvents: TApplicationEvents

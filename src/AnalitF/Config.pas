@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Grids, DBGrids, ComCtrls, DBCtrls, Mask, Menus, DBGridEh, ShellAPI,
   Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule, GridsEh, U_VistaCorrectForm,
-  MyAccess;
+  MyAccess, FileCtrl;
 
 type
   TConfigForm = class(TVistaCorrectForm)
@@ -132,11 +132,16 @@ type
     procedure RXLoadRetailMargins;
     procedure AddsWaybillsSheet;
     procedure AddLabelAndDBEdit(
+      Parents : TWinControl;
+      DataSource : TDataSource;
       var nextTop: Integer;
       var labelInfo : TLabel;
       var dbedit : TDBEdit;
       LabelCaption,
       DataField : String);
+    procedure AddWaybillFoldersSheet;
+    procedure SelectFolderClick(Sender : TObject);
+    procedure WaybillFolderChange(Sender : TObject);
   protected
     tsWaybills : TTabSheet;
     adsEditClients : TMyQuery;
@@ -156,6 +161,21 @@ type
     dbeDeputyDirector : TDBEdit;
     lAccountant : TLabel;
     dbeAccountant : TDBEdit;
+
+    tsWaybillFolders : TTabSheet;
+    adsWaybillFolders : TMyQuery;
+    dsWaybillFolders : TDataSource;
+
+    gbWaybillFolders : TGroupBox;
+    lProviderId : TLabel;
+    dblProviderId : TDBLookupComboBox;
+
+    lWaybillFolder : TLabel;
+    dbeWaybillFolder : TDBEdit;
+
+    sbSelectFolder : TSpeedButton;
+
+    lFolderNotExists : TLabel;
   public
   end;
 
@@ -168,7 +188,7 @@ implementation
 
 {$R *.DFM}
 
-uses DBProc, AProc, Main, LU_Tracer, Constant;
+uses DBProc, AProc, Main, LU_Tracer, Constant, StrUtils;
 
 function ShowConfig( Auth: boolean = False): boolean;
 var
@@ -242,6 +262,9 @@ begin
         SoftPost(adsEditClients);
         adsEditClients.ApplyUpdates;
 
+        SoftPost(adsWaybillFolders);
+        adsWaybillFolders.ApplyUpdates;
+
         DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
         if HTTPPassChanged then begin
           NewPass := eHTTPPass.Text;
@@ -280,6 +303,7 @@ begin
       end
       else begin
         adsEditClients.CancelUpdates;
+        adsWaybillFolders.CancelUpdates;
         DM.adtParams.Cancel;
         DM.adsRetailMargins.CancelUpdates;
       end;
@@ -636,6 +660,7 @@ procedure TConfigForm.FormCreate(Sender: TObject);
 begin
   inherited;
   AddsWaybillsSheet;
+  AddWaybillFoldersSheet;
 end;
 
 procedure TConfigForm.AddsWaybillsSheet;
@@ -688,35 +713,155 @@ begin
       lClientId.Caption := 'Адрес заказа:'
     else begin
       lClientId.Caption := 'Клиент:';
-      AddLabelAndDBEdit(nextTop, lAddress, dbeAddress, 'Адрес:', 'Address');
+      AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAddress, dbeAddress, 'Адрес:', 'Address');
     end;
 
-    AddLabelAndDBEdit(nextTop, lDirector, dbeDirector, 'Заведующая:', 'Director');
-    AddLabelAndDBEdit(nextTop, lDeputyDirector, dbeDeputyDirector, 'Зам. заведующей:', 'DeputyDirector');
-    AddLabelAndDBEdit(nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
+    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lDirector, dbeDirector, 'Заведующая:', 'Director');
+    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lDeputyDirector, dbeDeputyDirector, 'Зам. заведующей:', 'DeputyDirector');
+    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
   end
   else
     tsWaybills.Visible := False;
 end;
 
-procedure TConfigForm.AddLabelAndDBEdit(var nextTop: Integer;
+procedure TConfigForm.AddLabelAndDBEdit(
+  Parents : TWinControl;
+  DataSource : TDataSource;
+  var nextTop: Integer;
   var labelInfo: TLabel; var dbedit: TDBEdit; LabelCaption, DataField: String);
 begin
   labelInfo := TLabel.Create(Self);
   labelInfo.Caption := LabelCaption;
-  labelInfo.Parent := gbEditClients;
+  labelInfo.Parent := Parents;
   labelInfo.Top := nextTop;
   labelInfo.Left := 10;
 
   dbedit := TDBEdit.Create(Self);
-  dbedit.Parent := gbEditClients;
+  dbedit.Parent := Parents;
   dbedit.Top := labelInfo.Top + 3 + labelInfo.Canvas.TextHeight(labelInfo.Caption);
   dbedit.Left := 10;
-  dbedit.DataSource := dsEditClients;
+  dbedit.DataSource := DataSource;
   dbedit.DataField := DataField;
-  dbedit.Width := gbEditClients.Width - 20;
+  dbedit.Width := Parents.Width - 20;
 
   nextTop := dbedit.Top + dbedit.Height + 10;
+end;
+
+procedure TConfigForm.AddWaybillFoldersSheet;
+var
+  nextTop : Integer;
+begin
+  adsWaybillFolders := TMyQuery.Create(Self);
+  adsWaybillFolders.Connection := DM.MainConnection;
+  dsWaybillFolders := TDataSource.Create(Self);
+  dsWaybillFolders.DataSet := adsWaybillFolders;
+
+  tsWaybillFolders := TTabSheet.Create(PageControl);
+  tsWaybillFolders.PageControl := PageControl;
+  tsWaybillFolders.PageIndex := tsWaybills.PageIndex + 1;
+  tsWaybillFolders.Caption := 'Настройки поставщиков';
+
+  if not DM.adsUser.IsEmpty then begin
+    //Открываем дата сет
+    adsWaybillFolders.CachedUpdates := True;
+    adsWaybillFolders.SQL.Text := ''
+      + 'select '
+      + ' Providers.FirmCode, '
+      + ' Providers.FullName, '
+      + ' ProviderSettings.WaybillFolder '
+      + 'from '
+      + '  Providers '
+      + '  inner join ProviderSettings on ProviderSettings.FirmCode = Providers.FirmCode '
+      + 'order by Providers.FullName ';
+    adsWaybillFolders.SQLRefresh.Text := DM.adtClients.SQLRefresh.Text;
+    adsWaybillFolders.SQLUpdate.Text := ''
+      + 'update ProviderSettings '
+      + 'set '
+      + '  WaybillFolder = :WaybillFolder '
+      + 'where '
+      + ' FirmCode = :FirmCode';
+    adsWaybillFolders.Open;
+
+    gbWaybillFolders := TGroupBox.Create(Self);
+    gbWaybillFolders.Caption := ' Настройка поставщиков ';
+    gbWaybillFolders.Parent := tsWaybillFolders;
+    gbWaybillFolders.Align := alClient;
+
+    lProviderId := TLabel.Create(Self);
+    lProviderId.Caption := 'Поставщик:';
+    lProviderId.Parent := gbWaybillFolders;
+    lProviderId.Top := 16;
+    lProviderId.Left := 10;
+
+    dblProviderId := TDBLookupComboBox.Create(Self);
+    dblProviderId.Parent := gbWaybillFolders;
+    dblProviderId.Top := lProviderId.Top + 3 + lProviderId.Canvas.TextHeight(lProviderId.Caption);
+    dblProviderId.Left := lProviderId.Left;
+    dblProviderId.Width := gbWaybillFolders.Width - 20;
+    dblProviderId.DataField := 'FirmCode';
+    dblProviderId.KeyField := 'FirmCode';
+    dblProviderId.ListField := 'FullName';
+    dblProviderId.ListSource := dsWaybillFolders;
+    dblProviderId.KeyValue := adsWaybillFolders.FieldByName('FirmCode').Value;
+
+    nextTop := dblProviderId.Top + dblProviderId.Height + 10;
+
+    AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lWaybillFolder, dbeWaybillFolder, 'Папка:', 'WaybillFolder');
+    dbeWaybillFolder.OnChange := WaybillFolderChange;
+
+    sbSelectFolder := TSpeedButton.Create(Self);
+    sbSelectFolder.Parent := gbWaybillFolders;
+    sbSelectFolder.Top := dbeWaybillFolder.Top;
+    sbSelectFolder.Height := dbeWaybillFolder.Height;
+    sbSelectFolder.Caption := '...';
+    sbSelectFolder.Width := sbSelectFolder.Height;
+    sbSelectFolder.Left := dbeWaybillFolder.Left + dbeWaybillFolder.Width - sbSelectFolder.Width;
+    dbeWaybillFolder.Width := dbeWaybillFolder.Width - sbSelectFolder.Width - 5;
+    sbSelectFolder.OnClick := SelectFolderClick;
+
+    lFolderNotExists := TLabel.Create(Self);
+    lFolderNotExists.Caption := 'Папка не существует';
+    lFolderNotExists.Parent := gbWaybillFolders;
+    lFolderNotExists.Top := sbSelectFolder.Top + sbSelectFolder.Height + 10;
+    lFolderNotExists.Left := 10;
+    lFolderNotExists.Visible := False;
+    lFolderNotExists.Font.Color := clRed;
+  end
+  else
+    tsWaybillFolders.Visible := False;
+end;
+
+procedure TConfigForm.SelectFolderClick(Sender: TObject);
+var
+  DirName : String;
+begin
+  DirName := adsWaybillFolders.FieldByName('WaybillFolder').AsString;
+  if DirName = '' then
+    DirName := '.'
+  else
+    if AnsiStartsText('.\', DirName) then
+      DirName := ExePath + Copy(DirName, 3, Length(DirName));
+
+  if FileCtrl.SelectDirectory(
+       'Выберите директорию для поставщика ' + adsWaybillFolders.FieldByName('FullName').AsString,
+       '',
+       DirName)
+  then begin
+    if AnsiStartsText(ExePath, DirName) then
+      DirName := '.\' + Copy(DirName, Length(ExePath) + 1 , Length(DirName));
+    SoftEdit(adsWaybillFolders);
+    adsWaybillFolders.FieldByName('WaybillFolder').AsString := DirName;
+  end;
+end;
+
+procedure TConfigForm.WaybillFolderChange(Sender: TObject);
+var
+  dirName : String;
+begin
+  dirName := dbeWaybillFolder.Text;
+  if AnsiStartsText('.\', dirName) then
+    dirName := ExePath + Copy(dirName, 3, Length(dirName));
+  lFolderNotExists.Visible := not DirectoryExists(dirName);
 end;
 
 end.

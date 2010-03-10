@@ -123,6 +123,8 @@ TMainForm = class(TVistaCorrectForm)
     adsOrdersHead: TMyQuery;
     tbMnnSearch: TToolButton;
     actMnnSearch: TAction;
+    actSendWaybills: TAction;
+    ToolButton6: TToolButton;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -172,6 +174,7 @@ TMainForm = class(TVistaCorrectForm)
       Shift: TShiftState; X, Y: Integer);
     procedure AppEventsMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure actMnnSearchExecute(Sender: TObject);
+    procedure actSendWaybillsExecute(Sender: TObject);
 private
 	JustRun: boolean;
   ApplicationVersionText : String;
@@ -1263,6 +1266,11 @@ begin
     deletedForms.Add(childForm);
     childForm.Parent := nil;
   end
+end;
+
+procedure TMainForm.actSendWaybillsExecute(Sender: TObject);
+begin
+  RunExchange([eaSendWaybills]);
 end;
 
 end.

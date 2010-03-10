@@ -26,7 +26,8 @@ type
     eaMDBUpdate,
     eaGetWaybills,
     eaSendLetter,
-    eaForceSendOrders);
+    eaForceSendOrders,
+    eaSendWaybills);
 
   TExchangeActions=set of TExchangeAction;
 
@@ -239,6 +240,11 @@ begin
   then
     AProc.MessageBox('Получение документов завершено успешно.', MB_OK or MB_ICONINFORMATION);
 
+  if Result and (eaSendWaybills in AExchangeActions)
+  then
+    AProc.MessageBox('Загрузка накладных завершена успешно.', MB_OK or MB_ICONINFORMATION);
+
+
 	if Result and (eaSendLetter in AExchangeActions)
   then
     AProc.MessageBox('Письмо успешно отправлено.', MB_OK or MB_ICONINFORMATION);
@@ -265,7 +271,7 @@ begin
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
 	if Result and (( eaGetPrice in AExchangeActions) or
-		( eaGetWaybills in AExchangeActions))
+		( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions))
   then
     DM.ProcessDocs;
 

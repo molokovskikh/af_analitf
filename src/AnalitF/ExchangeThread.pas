@@ -11,7 +11,7 @@ uses
   DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
   U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
-  DatabaseObjects, HFileHelper, NetworkAdapterHelpers;
+  DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController;
 
 type
 
@@ -104,6 +104,7 @@ private
 	procedure DoExchange;
 	procedure DoSendLetter;
   procedure DoSendSomeOrders;
+  procedure DoSendWaybills;
 	procedure HTTPDisconnect;
 	procedure RasDisconnect;
 	procedure UnpackFiles;
@@ -194,7 +195,7 @@ begin
       ImportComplete := False;
       repeat
       try
-			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
+			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
       then
 			begin
 				RasConnect;
@@ -229,9 +230,19 @@ begin
 					DoSendLetter;
 					TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 				end;
+        //DoSendWaybills
+        if eaSendWaybills in ExchangeForm.ExchangeActs then
+        begin
+          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+          DoSendWaybills;
+          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
+        end;
+
 				TotalProgress := 20;
 				Synchronize( SetTotalProgress);
-				if ([eaGetPrice, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+				if ([eaGetPrice, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
            and not DM.NeedCommitExchange
         then
 				begin
@@ -257,16 +268,16 @@ begin
 			end;
 
 			{ Распаковка файлов }
-			if ( [eaGetPrice, eaImportOnly, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+			if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
       then UnpackFiles;
 
 			{ Поддтверждение обмена }
-			if [eaGetPrice, eaGetWaybills] * ExchangeForm.ExchangeActs <> []
+			if [eaGetPrice, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> []
       then
         CommitExchange;
 
 			{ Отключение }
-      if ( [eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> []) then
+      if ( [eaGetWaybills, eaSendLetter, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) then
         OnFullChildTerminate(nil)
       else
         if ([eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> [])
@@ -532,7 +543,8 @@ begin
       ParamNames[6]  := 'WINDesc';
       ParamValues[6] := WinDesc;
       ParamNames[7]  := 'WaybillsOnly';
-      ParamValues[7] := BoolToStr( eaGetWaybills in ExchangeForm.ExchangeActs, True);
+      ParamValues[7] := BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
+      
       try
         tmpFileContent := hfileHelper.GetFileContent;
       except
@@ -674,7 +686,7 @@ var
   PostSuccess : Boolean;
 begin
 	//загрузка прайс-листа
-	if ( [eaGetPrice, eaGetWaybills] * ExchangeForm.ExchangeActs <> [])
+	if ( [eaGetPrice, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
   then begin
 		StatusText := 'Загрузка данных';
 //    Tracer.TR('DoExchange', 'Загрузка данных');
@@ -854,7 +866,7 @@ begin
     params[1]:= 'Log';
     values[1]:= LogStr;
     params[2]:= 'WaybillsOnly';
-    values[2]:= BoolToStr( eaGetWaybills in ExchangeForm.ExchangeActs, True);
+    values[2]:= BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
     params[3]:= 'UpdateId';
     values[3]:= GetUpdateId();
   end;
@@ -1993,7 +2005,7 @@ begin
   //Здесь надо все переделать в связи с требованием #1632 Ошибка при обновлении
   if Assigned(Sender) then 
     ChildThreads.Remove(Sender);
-  if (ChildThreads.Count = 0) and ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter] * ExchangeForm.ExchangeActs <> [])
+  if (ChildThreads.Count = 0) and ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
   then begin
     HTTPDisconnect;
     RasDisconnect;
@@ -2513,6 +2525,32 @@ begin
   finally
     R.Free;
   end;
+end;
+
+procedure TExchangeThread.DoSendWaybills;
+var
+  postController : TPostWaybillsControllerController;
+begin
+  Synchronize( ExchangeForm.CheckStop);
+  Synchronize( DisableCancel);
+  StatusText := 'Загрузка накладных';
+  Synchronize( SetStatus);
+
+  postController := TPostWaybillsControllerController
+    .Create(
+      DM,
+      ExchangeParams,
+      ExchangeForm.HTTP,
+      URL);
+  try
+    postController.PostWaybills;
+  finally
+    postController.Free;
+    StatusText := '';
+    Synchronize( SetStatus);
+  end;
+
+  Synchronize( EnableCancel);
 end;
 
 initialization

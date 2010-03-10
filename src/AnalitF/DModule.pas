@@ -716,7 +716,7 @@ implementation
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
-     U_DeleteDBThread, SQLWaiting, INFHelpers;
+     U_DeleteDBThread, SQLWaiting, INFHelpers, PostWaybillsController;
 
 type
   TestMyDBThreadState = (
@@ -1010,6 +1010,7 @@ begin
   FProcess800xUpdate := False;
   
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
+  if not DirectoryExists( ExePath + SDirUpload) then CreateDir( ExePath + SDirUpload);
   if DirectoryExists( ExePath + SDirDataTmpDir) then begin
     DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
     try
@@ -1133,13 +1134,18 @@ begin
 
   MainConnection.Open;
 
+  //todo: здесь могут быть ошибки при создании папки, их надо обработать
+  if not WaybillsHelper.CheckWaybillFolders(MainConnection) then
+    AProc.MessageBox('Ќеобходимо настроить папки дл€ загрузки накладных на форме " онфигураци€"', MB_ICONWARNING);
+
+
   { устанавливаем текущие записи в Clients и Users }
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
     then adtClients.First;
 
   SetStarted;
   ClientChanged;
-  
+
   { устанавливаем параметры печати }
   frReport.Title := Application.Title;
   { провер€ем и если надо создаем нужные каталоги }
@@ -1174,7 +1180,7 @@ begin
       //≈сли пользователь обновилс€ не успешно, то провер€ем заблокированы ли визуальные контролы
       //≈сли контролы не заблокированы, то завершаем с ошибой выполение программы
       //≈сли контролы заблокированы, то логируем неуспешную проверку UIN и
-      //отображаем программу с заблокированными контролами 
+      //отображаем программу с заблокированными контролами
       if not UpdateByCheckUINSuccess then
         if adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
           MainForm.DisableByHTTPName;

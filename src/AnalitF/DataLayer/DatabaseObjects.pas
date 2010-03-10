@@ -21,6 +21,7 @@ const
   SDirTableBackup = 'TableBackup';
   SDirDataBackup = 'DataBackup';
   SDirDataPrev   = 'DataPrev';
+  SDirUpload     = 'Загрузка';
 
 {$ifndef USENEWMYSQLTYPES}
   DataFileExtention = '.MYD';

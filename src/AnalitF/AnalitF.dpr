@@ -98,7 +98,8 @@ uses
   DocumentTypes in 'DataLayer\DocumentTypes.pas',
   sumprops in 'Helpers\sumprops.pas',
   EditVitallyImportantMarkups in 'EditVitallyImportantMarkups.pas' {EditVitallyImportantMarkupsForm},
-  DBGridHelper in 'Helpers\DBGridHelper.pas';
+  DBGridHelper in 'Helpers\DBGridHelper.pas',
+  PostWaybillsController in 'BusinessLogic\PostWaybillsController.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
