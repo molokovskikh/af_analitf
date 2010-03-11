@@ -259,11 +259,15 @@ begin
       RetMarginsChanges := False;
       Result := ShowModal=mrOk;
       if Result then begin
-        SoftPost(adsEditClients);
-        adsEditClients.ApplyUpdates;
+        if adsEditClients.Active then begin
+          SoftPost(adsEditClients);
+          adsEditClients.ApplyUpdates;
+        end;
 
-        SoftPost(adsWaybillFolders);
-        adsWaybillFolders.ApplyUpdates;
+        if adsWaybillFolders.Active then begin
+          SoftPost(adsWaybillFolders);
+          adsWaybillFolders.ApplyUpdates;
+        end;
 
         DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
         if HTTPPassChanged then begin
@@ -302,8 +306,10 @@ begin
         DM.LoadRetailMargins;
       end
       else begin
-        adsEditClients.CancelUpdates;
-        adsWaybillFolders.CancelUpdates;
+        if adsEditClients.Active then
+          adsEditClients.CancelUpdates;
+        if adsWaybillFolders.Active then
+          adsWaybillFolders.CancelUpdates;
         DM.adtParams.Cancel;
         DM.adsRetailMargins.CancelUpdates;
       end;
@@ -672,7 +678,7 @@ begin
   dsEditClients := TDataSource.Create(Self);
   dsEditClients.DataSet := adsEditClients;
 
-  tsWaybills := TTabSheet.Create(PageControl);
+  tsWaybills := TTabSheet.Create(Self);
   tsWaybills.PageControl := PageControl;
   tsWaybills.PageIndex := 1;
   tsWaybills.Caption := 'Накладные';
@@ -721,7 +727,7 @@ begin
     AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
   end
   else
-    tsWaybills.Visible := False;
+    tsWaybills.TabVisible := False;
 end;
 
 procedure TConfigForm.AddLabelAndDBEdit(
@@ -756,9 +762,10 @@ begin
   dsWaybillFolders := TDataSource.Create(Self);
   dsWaybillFolders.DataSet := adsWaybillFolders;
 
-  tsWaybillFolders := TTabSheet.Create(PageControl);
+  tsWaybillFolders := TTabSheet.Create(Self);
   tsWaybillFolders.PageControl := PageControl;
   tsWaybillFolders.PageIndex := tsWaybills.PageIndex + 1;
+  //tsWaybillFolders.PageIndex := 1;
   tsWaybillFolders.Caption := 'Настройки поставщиков';
 
   if not DM.adsUser.IsEmpty then begin
@@ -828,7 +835,7 @@ begin
     lFolderNotExists.Font.Color := clRed;
   end
   else
-    tsWaybillFolders.Visible := False;
+    tsWaybillFolders.TabVisible := False;
 end;
 
 procedure TConfigForm.SelectFolderClick(Sender: TObject);
