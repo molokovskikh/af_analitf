@@ -222,14 +222,14 @@ function TDocumentHeadersTable.GetCreateSQL(
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +' ( '
-+'  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT, '
-+'  `DownloadId` int(10) unsigned DEFAULT NULL, '
++'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'  `DownloadId` bigint(20) unsigned DEFAULT NULL, '
 +'  `WriteTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
-+'  `FirmCode` int(10) unsigned DEFAULT NULL, '
-+'  `ClientId` int(10) unsigned DEFAULT NULL, '
++'  `FirmCode` bigint(20) unsigned DEFAULT NULL, '
++'  `ClientId` bigint(20) unsigned DEFAULT NULL, '
 +'  `DocumentType` tinyint(3) unsigned DEFAULT NULL, '
 +'  `ProviderDocumentId` varchar(20) DEFAULT NULL, '
-+'  `OrderId` int(10) unsigned DEFAULT NULL, '
++'  `OrderId` bigint(20) unsigned DEFAULT NULL, '
 +'  `Header` varchar(255) DEFAULT NULL, '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
@@ -249,8 +249,8 @@ function TDocumentBodiesTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +' ( '
-+'  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT, '
-+'  `DocumentId` int(10) unsigned NOT NULL, '
++'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'  `DocumentId` bigint(20) unsigned NOT NULL, '
 +'  `Name` varchar(255) NOT NULL, '
 +'  `Quantity` int(11) unsigned DEFAULT NULL, '
 +'  `Cost` decimal(12,6) unsigned DEFAULT NULL, '

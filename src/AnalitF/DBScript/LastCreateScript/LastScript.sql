@@ -208,8 +208,8 @@ CREATE TABLE `Descriptions` (
 
 DROP TABLE IF EXISTS `DocumentBodies`;
 CREATE TABLE  `DocumentBodies` (  
-  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `DocumentId` int(10) unsigned NOT NULL,
+  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `DocumentId` bigint(20) unsigned NOT NULL,
   `PositionName` varchar(255) not null,
   `Code` varchar(20) default null,
   `SeriesOfCertificates` varchar(50) default null,
@@ -232,14 +232,14 @@ CREATE TABLE  `DocumentBodies` (
 
 DROP TABLE IF EXISTS `DocumentHeaders`;
 CREATE TABLE  `DocumentHeaders` (
-  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `DownloadId` int(10) unsigned DEFAULT NULL,
+  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `DownloadId` bigint(20) unsigned DEFAULT NULL,
   `WriteTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `FirmCode` int(10) unsigned DEFAULT NULL,
-  `ClientId` int(10) unsigned DEFAULT NULL,
+  `FirmCode` bigint(20) unsigned DEFAULT NULL,
+  `ClientId` bigint(20) unsigned DEFAULT NULL,
   `DocumentType` tinyint(3) unsigned DEFAULT NULL,
   `ProviderDocumentId` varchar(20) DEFAULT NULL,
-  `OrderId` int(10) unsigned DEFAULT NULL,
+  `OrderId` bigint(20) unsigned DEFAULT NULL,
   `Header` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
