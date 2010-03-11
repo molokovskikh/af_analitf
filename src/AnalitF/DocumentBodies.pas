@@ -55,7 +55,6 @@ type
     adsDocumentBodiesSupplierPriceMarkup: TFloatField;
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
-    adsDocumentBodiesQuantity: TLargeintField;
     frdsDocumentBodies: TfrDBDataSet;
     gbPrint: TGroupBox;
     cbPrintEmptyTickets: TCheckBox;
@@ -65,6 +64,7 @@ type
     spPrintReestr: TSpeedButton;
     cbWaybillAsVitallyImportant: TCheckBox;
     spEditMarkups: TSpeedButton;
+    adsDocumentBodiesQuantity: TIntegerField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);

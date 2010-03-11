@@ -221,7 +221,7 @@ CREATE TABLE  `DocumentBodies` (
   `SupplierPriceMarkup` decimal(5,3) default null,
   `SupplierCostWithoutNDS` decimal(12,6) unsigned default null,
   `SupplierCost` decimal(12,6) unsigned default null,  
-  `Quantity` int(11) unsigned DEFAULT NULL,
+  `Quantity` int(10) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 

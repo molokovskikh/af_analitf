@@ -480,7 +480,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesSupplierCost: TFloatField
       FieldName = 'SupplierCost'
     end
-    object adsDocumentBodiesQuantity: TLargeintField
+    object adsDocumentBodiesQuantity: TIntegerField
       FieldName = 'Quantity'
     end
   end
