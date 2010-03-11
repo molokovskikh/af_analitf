@@ -44,14 +44,14 @@ type
     adsDocumentBodies: TMyQuery;
     adsDocumentBodiesId: TLargeintField;
     adsDocumentBodiesDocumentId: TLargeintField;
-    adsDocumentBodiesPositionName: TStringField;
+    adsDocumentBodiesProduct: TStringField;
     adsDocumentBodiesCode: TStringField;
-    adsDocumentBodiesSeriesOfCertificates: TStringField;
+    adsDocumentBodiesCertificates: TStringField;
     adsDocumentBodiesPeriod: TStringField;
-    adsDocumentBodiesProducerName: TStringField;
+    adsDocumentBodiesProducer: TStringField;
     adsDocumentBodiesCountry: TStringField;
     adsDocumentBodiesProducerCost: TFloatField;
-    adsDocumentBodiesGRCost: TFloatField;
+    adsDocumentBodiesRegistryCost: TFloatField;
     adsDocumentBodiesSupplierPriceMarkup: TFloatField;
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
@@ -159,13 +159,13 @@ begin
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
 
-    AddColumn(dbgDocumentBodies, 'PositionName', 'Наименование');
-    AddColumn(dbgDocumentBodies, 'SeriesOfCertificates', 'Серии сертификатов');
+    AddColumn(dbgDocumentBodies, 'Product', 'Наименование');
+    AddColumn(dbgDocumentBodies, 'Certificates', 'Серии сертификатов');
     AddColumn(dbgDocumentBodies, 'Period', 'Срок годности');
-    AddColumn(dbgDocumentBodies, 'ProducerName', 'Производитель');
+    AddColumn(dbgDocumentBodies, 'Producer', 'Производитель');
     AddColumn(dbgDocumentBodies, 'Country', 'Страна');
     AddColumn(dbgDocumentBodies, 'ProducerCost', 'Цена производителя без НДС', '0.00;;''''');
-    AddColumn(dbgDocumentBodies, 'GRCost', 'Цена ГР', '0.00;;''''');
+    AddColumn(dbgDocumentBodies, 'RegistryCost', 'Цена ГР', '0.00;;''''');
     AddColumn(dbgDocumentBodies, 'SupplierPriceMarkup', 'Торговая надбавка оптовика', '0.00;;''''');
     AddColumn(dbgDocumentBodies, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', '0.00;;''''');
     AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена поставщика с НДС', '0.00;;''''');
@@ -177,8 +177,8 @@ begin
   else begin
     adsDocumentBodies.OnCalcFields := nil;
     dbgDocumentBodies.OnGetCellParams := nil;
-    AddColumn(dbgDocumentBodies, 'PositionName', 'Наименование');
-    AddColumn(dbgDocumentBodies, 'ProducerName', 'Производитель');
+    AddColumn(dbgDocumentBodies, 'Product', 'Наименование');
+    AddColumn(dbgDocumentBodies, 'Producer', 'Производитель');
     AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена', '0.00;;''''');
     AddColumn(dbgDocumentBodies, 'Quantity', 'Заказ', '#');
   end;

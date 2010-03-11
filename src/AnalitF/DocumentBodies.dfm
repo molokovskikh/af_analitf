@@ -443,22 +443,22 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesDocumentId: TLargeintField
       FieldName = 'DocumentId'
     end
-    object adsDocumentBodiesPositionName: TStringField
-      FieldName = 'PositionName'
+    object adsDocumentBodiesProduct: TStringField
+      FieldName = 'Product'
       Size = 255
     end
     object adsDocumentBodiesCode: TStringField
       FieldName = 'Code'
     end
-    object adsDocumentBodiesSeriesOfCertificates: TStringField
-      FieldName = 'SeriesOfCertificates'
+    object adsDocumentBodiesCertificates: TStringField
+      FieldName = 'Certificates'
       Size = 50
     end
     object adsDocumentBodiesPeriod: TStringField
       FieldName = 'Period'
     end
-    object adsDocumentBodiesProducerName: TStringField
-      FieldName = 'ProducerName'
+    object adsDocumentBodiesProducer: TStringField
+      FieldName = 'Producer'
       Size = 255
     end
     object adsDocumentBodiesCountry: TStringField
@@ -468,8 +468,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesProducerCost: TFloatField
       FieldName = 'ProducerCost'
     end
-    object adsDocumentBodiesGRCost: TFloatField
-      FieldName = 'GRCost'
+    object adsDocumentBodiesRegistryCost: TFloatField
+      FieldName = 'RegistryCost'
     end
     object adsDocumentBodiesSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
