@@ -102,7 +102,8 @@ implementation
 
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
-  Child, Config, RxMemDS, CorrectOrders, PostSomeOrdersController;
+  Child, Config, RxMemDS, CorrectOrders, PostSomeOrdersController,
+  PostWaybillsController;
 
 {$R *.DFM}
 
@@ -233,8 +234,11 @@ begin
 
 	if Result and (( eaGetPrice in AExchangeActions) or
 		( eaImportOnly in AExchangeActions))
-  then
+  then begin
     AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
+    if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
+      AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
+  end;
 
 	if Result and (eaGetWaybills in AExchangeActions)
   then
