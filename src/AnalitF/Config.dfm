@@ -42,7 +42,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshClients
+    ActivePage = tshOther
     Align = alTop
     MultiLine = True
     TabOrder = 0
@@ -5640,6 +5640,7 @@ object ConfigForm: TConfigForm
         TabOrder = 8
         ValueChecked = 'True'
         ValueUnchecked = 'False'
+        Visible = False
       end
     end
   end

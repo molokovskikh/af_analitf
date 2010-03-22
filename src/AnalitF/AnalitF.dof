@@ -96,7 +96,7 @@ PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
 SearchPath=..\lib\ARas\src;..\lib\RXLib\src;..\lib\FIBPlusScript\src;..\lib\Indy\Core;..\lib\Indy\Protocols;..\lib\Indy\Security;..\lib\Indy\System;..\lib\MyDac\Source
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;FIBPlus7;IndyCore70;IndyProtocols70;IndySystem70
-Conditionals=DEBUG;
+Conditionals=DEBUG;USEMEMORYCRYPTDLL;
 DebugSourceDirs=
 UsePackages=1
 [Parameters]
@@ -117,7 +117,7 @@ AutoIncBuild=1
 MajorVer=5
 MinorVer=2
 Release=29
-Build=1026
+Build=1027
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=5.2.29.1026
+FileVersion=5.2.29.1027
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2010
 LegalTrademarks=Инфорум
@@ -162,8 +162,8 @@ Count=1
 Item0=..\lib\MyDac\Source
 [HistoryLists\hlConditionals]
 Count=18
-Item0=DEBUG;
-Item1=DEBUG;USEMEMORYCRYPTDLL;
+Item0=DEBUG;USEMEMORYCRYPTDLL;
+Item1=DEBUG;
 Item2=DEBUG;USEMYSQLSTANDALONE
 Item3=USEMEMORYCRYPTDLL;
 Item4=DEBUG;USENEWMYSQLTYPES;
