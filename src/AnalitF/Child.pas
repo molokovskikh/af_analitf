@@ -283,7 +283,7 @@ end;
 constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
-  FUseCorrectOrders := DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean;
+  FUseCorrectOrders := False;
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
   PatchNonBrowser;

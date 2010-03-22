@@ -210,7 +210,7 @@ begin
   try
     CorrectOrdersForm.ProcessSendOrdersResponse := ProcessSendOrdersResponse;
     CorrectOrdersForm.Prepare;
-    if not DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean then begin
+    if not False then begin
       if ProcessSendOrdersResponse then
         ShowNotSended(CorrectOrdersForm.Report.Text)
       else
