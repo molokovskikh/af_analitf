@@ -245,8 +245,26 @@ begin
     AProc.MessageBox('ѕолучение документов завершено успешно.', MB_OK or MB_ICONINFORMATION);
 
   if Result and (eaSendWaybills in AExchangeActions)
-  then
-    AProc.MessageBox('«агрузка накладных завершена успешно.', MB_OK or MB_ICONINFORMATION);
+  then begin
+    case
+      TSendWaybillsStatus(TIntegerValue(GlobalExchangeParams[Integer(epSendWaybillsResult)]).Value)
+    of
+      swsNotFiles:
+        AProc.MessageBox('ѕолучение документов завершено успешно.', MB_OK or MB_ICONINFORMATION);
+      swsOk:
+        AProc.MessageBox('«агрузка накладных завершена успешно.', MB_OK or MB_ICONINFORMATION);
+      swsRepeat:
+        AProc.MessageBox(
+         'ѕолучение документов от поставщиков завершено успешно.'#13#10 +
+         '«агрузку накладных повторите позднее.',
+         MB_OK or MB_ICONWARNING);
+      swsRetryLater:
+        AProc.MessageBox(
+         'ѕолучение документов от поставщиков завершено успешно.'#13#10 +
+         'ѕолучение разобранных накладных повторите позднее.',
+         MB_OK or MB_ICONWARNING);
+    end;
+  end;
 
 
 	if Result and (eaSendLetter in AExchangeActions)

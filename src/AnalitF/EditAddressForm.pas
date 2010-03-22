@@ -1,15 +1,14 @@
-unit EditVitallyImportantMarkups;
+unit EditAddressForm;
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, U_VistaCorrectForm, StdCtrls, ExtCtrls, GridsEh, DBGridEh, ToughDBGrid,
-  DBGridHelper, RxMemDS, DB, DModule, DBProc, AProc, Buttons, DatabaseObjects,
-  U_frameEditVitallyImportantMarkups;
+  DBGridHelper, RxMemDS, DB, DModule, DBProc, AProc, Buttons, U_frameEditAddress;
 
 type
-  TEditVitallyImportantMarkupsForm = class(TVistaCorrectForm)
+  TEditAddressFrm = class(TVistaCorrectForm)
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
@@ -26,34 +25,52 @@ type
 
   public
     { Public declarations }
-    frameEdit : TframeEditVitallyImportantMarkups;
+    frameEdit : TframeEditAddress;
   end;
 
 
-  procedure ShowEditVitallyImportantMarkups;
+  procedure ShowEditAddress;
 
 implementation
 
 {$R *.dfm}
 
-procedure ShowEditVitallyImportantMarkups;
+procedure ShowEditAddress;
 var
-  EditVitallyImportantMarkupsForm: TEditVitallyImportantMarkupsForm;
+  EditAddressFrm: TEditAddressFrm;
   modalResultForm : TModalResult;
+  lastClientId : Int64;
 begin
-  EditVitallyImportantMarkupsForm := TEditVitallyImportantMarkupsForm.Create(Application);
+  EditAddressFrm := TEditAddressFrm.Create(Application);
   try
-    EditVitallyImportantMarkupsForm.ActiveControl := EditVitallyImportantMarkupsForm.frameEdit.dbgMarkups; 
-    modalResultForm := EditVitallyImportantMarkupsForm.ShowModal;
+    EditAddressFrm.ActiveControl := EditAddressFrm.frameEdit.dblClientId;
+    modalResultForm := EditAddressFrm.ShowModal;
     if modalResultForm = mrOk then begin
-      EditVitallyImportantMarkupsForm.frameEdit.SaveVitallyImportantMarkups;
-    end;
+      EditAddressFrm.frameEdit.SaveChanges;
+      lastClientId := DM.adtClientsCLIENTID.AsLargeInt;
+      DM.adtClients.DisableControls;
+      try
+        DM.adtClients.First;
+        while not DM.adtClients.Eof do begin
+          DM.adtClients.RefreshRecord;
+          DM.adtClients.Next;
+        end;
+        if not DM.adtClients.Locate('ClientId', lastClientId, []) then
+          DM.adtClients.First;
+      finally
+        DM.adtClients.EnableControls;
+      end;
+    end
+    else
+      EditAddressFrm.frameEdit.CancelChanges;
   finally
-    EditVitallyImportantMarkupsForm.Free;
+    EditAddressFrm.Free;
   end;
 end;
 
-procedure TEditVitallyImportantMarkupsForm.AddBottomPanel;
+{ TEditAddressFrm }
+
+procedure TEditAddressFrm.AddBottomPanel;
 begin
   pButton := TPanel.Create(Self);
   pButton.Parent := Self;
@@ -81,33 +98,27 @@ begin
   btnCancel.ModalResult := mrCancel;
 end;
 
-procedure TEditVitallyImportantMarkupsForm.CreateVisibleComponents;
+procedure TEditAddressFrm.CreateVisibleComponents;
 begin
   AddBottomPanel;
 
-  frameEdit := TframeEditVitallyImportantMarkups
-    .CreateFrame(Self, doiVitallyImportantMarkups, DM.LoadVitallyImportantMarkups);
+  frameEdit := TframeEditAddress.Create(Self);
   frameEdit.Parent := Self;
   Self.Width := frameEdit.Width;
   pButton.Constraints.MinHeight := pButton.Height;
-  frameEdit.Constraints.MinHeight := frameEdit.Height;
-  frameEdit.Constraints.MinWidth := frameEdit.pEditButtons.Width + 100;
   frameEdit.Align := alClient;
 end;
 
-
-procedure TEditVitallyImportantMarkupsForm.FormCloseQuery(Sender: TObject;
+procedure TEditAddressFrm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
-  if (ModalResult = mrOK) and CanClose and not frameEdit.ProcessCloseQuery(CanClose)
-  then
-    frameEdit.dbgMarkups.SetFocus;
+
 end;
 
-procedure TEditVitallyImportantMarkupsForm.FormCreate(Sender: TObject);
+procedure TEditAddressFrm.FormCreate(Sender: TObject);
 begin
   inherited;
-  Self.Caption := 'Редактирование наценок для ЖНВЛС';
+  Self.Caption := 'Настройки накладных';
   Self.Position := poMainFormCenter;
   Self.OnCloseQuery := FormCloseQuery;
   CreateVisibleComponents;

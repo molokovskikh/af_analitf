@@ -153,7 +153,8 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( ' 
 +'    `Id` bigint(20) not null   , ' 
-+'    `Name` varchar(50) not null, ' 
++'    `Name` varchar(50) not null, '
++'    `CalculateOnProducerCost` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
 +'    primary key (`Id`) ' 
 +'  ) ' 
 + GetTableOptions();
@@ -186,6 +187,7 @@ begin
 +'    `Director` varchar(255) default null       , '
 +'    `DeputyDirector` varchar(255) default null , '
 +'    `Accountant` varchar(255) default null     , '
++'    `MethodOfTaxation` smallint(5) not null default ''0'', ' 
 +'    primary key (`CLIENTID`)                   , ' 
 +'    unique key `PK_CLIENTS` (`CLIENTID`)       , ' 
 +'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) ' 

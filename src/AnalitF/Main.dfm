@@ -213,13 +213,8 @@ object MainForm: TMainForm
         Top = 0
         Action = actViewDocs
       end
-      object ToolButton6: TToolButton
-        Left = 677
-        Top = 0
-        Action = actSendWaybills
-      end
       object ToolButton9: TToolButton
-        Left = 716
+        Left = 677
         Top = 0
         Width = 8
         Caption = 'ToolButton9'
@@ -227,18 +222,18 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnHome: TToolButton
-        Left = 724
+        Left = 685
         Top = 0
         Action = actHome
       end
       object btnConfig: TToolButton
-        Left = 763
+        Left = 724
         Top = 0
         Action = actConfig
         ImageIndex = 12
       end
       object tbLastSeparator: TToolButton
-        Left = 802
+        Left = 763
         Top = 0
         Width = 8
         Caption = 'tbLastSeparator'
@@ -609,8 +604,8 @@ object MainForm: TMainForm
     end
     object actWayBill: TAction
       Category = 'Order'
-      Caption = #1055#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
-      Hint = #1055#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
+      Caption = #1047#1072#1075#1088#1091#1079#1080#1090#1100' '#1080' '#1087#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
+      Hint = #1047#1072#1075#1088#1091#1079#1080#1090#1100' '#1080' '#1087#1086#1083#1091#1095#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
       ImageIndex = 15
       OnExecute = actWayBillExecute
     end
@@ -627,8 +622,8 @@ object MainForm: TMainForm
     end
     object actViewDocs: TAction
       Category = 'Order'
-      Caption = #1054#1073#1086#1079#1088#1077#1074#1072#1090#1100' '#1076#1086#1082#1091#1084#1077#1085#1090#1099
-      Hint = #1054#1090#1082#1088#1099#1090#1100' '#1087#1072#1087#1082#1080' '#1089' '#1076#1086#1082#1091#1084#1077#1085#1090#1072#1084#1080
+      Caption = #1053#1072#1082#1083#1072#1076#1085#1099#1077
+      Hint = #1053#1072#1082#1083#1072#1076#1085#1099#1077
       ImageIndex = 18
       OnExecute = actViewDocsExecute
     end
@@ -639,12 +634,6 @@ object MainForm: TMainForm
       ImageIndex = 19
       ShortCut = 16461
       OnExecute = actMnnSearchExecute
-    end
-    object actSendWaybills: TAction
-      Category = 'Order'
-      Caption = #1047#1072#1075#1088#1091#1079#1080#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077
-      ImageIndex = 18
-      OnExecute = actSendWaybillsExecute
     end
   end
   object AppEvents: TApplicationEvents

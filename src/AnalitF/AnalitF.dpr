@@ -99,7 +99,10 @@ uses
   sumprops in 'Helpers\sumprops.pas',
   EditVitallyImportantMarkups in 'EditVitallyImportantMarkups.pas' {EditVitallyImportantMarkupsForm},
   DBGridHelper in 'Helpers\DBGridHelper.pas',
-  PostWaybillsController in 'BusinessLogic\PostWaybillsController.pas';
+  PostWaybillsController in 'BusinessLogic\PostWaybillsController.pas',
+  U_frameEditVitallyImportantMarkups in 'U_frameEditVitallyImportantMarkups.pas' {frameEditVitallyImportantMarkups: TFrame},
+  U_frameEditAddress in 'U_frameEditAddress.pas' {frameEditAddress: TFrame},
+  EditAddressForm in 'EditAddressForm.pas' {EditAddressFrm};
 
 {$R *.RES}
 {$R EraserDLL.RES}
@@ -112,6 +115,7 @@ uses
 {$R CompareScript54.RES}
 {$R CompareScript55.RES}
 {$R CompareScript56.RES}
+{$R CompareScript57.RES}
 {$R LastScript.RES}
 
 var

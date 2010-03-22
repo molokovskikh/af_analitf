@@ -123,8 +123,6 @@ TMainForm = class(TVistaCorrectForm)
     adsOrdersHead: TMyQuery;
     tbMnnSearch: TToolButton;
     actMnnSearch: TAction;
-    actSendWaybills: TAction;
-    ToolButton6: TToolButton;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -921,7 +919,7 @@ begin
   actWayBill.Enabled := False;
   actMnnSearch.Enabled := False;
   actWayBill.Enabled := False;
-  actSendWaybills.Enabled := False;
+  actViewDocs.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -938,7 +936,7 @@ begin
   actWayBill.Enabled := True;
   actMnnSearch.Enabled := True;
   actWayBill.Enabled := True;
-  actSendWaybills.Enabled := True;
+  actViewDocs.Enabled := True;
 end;
 
 procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
@@ -990,7 +988,7 @@ end;
 
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
-	RunExchange( [eaGetWaybills] );
+	RunExchange( [eaSendWaybills] );
 
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€
   ToolBar.Invalidate;

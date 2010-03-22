@@ -74,7 +74,18 @@ type
     ecDBUpdateError, ecDiffDBVersion, ecDeleteDBFiles, ecDeleteOldMysqlFolder,
     ecLibMysqlDCorrupted);
 
-  TRetMass = array[1..3] of Variant;
+  TRetailMarkup = class
+   public
+    LeftLimit,
+    RightLimit,
+    Markup,
+    MaxMarkup : Double;
+    constructor Create(
+      LeftLimit,
+      RightLimit,
+      Markup,
+      MaxMarkup : Double);
+  end;
 
   TSelectPrice = class
     PriceCode :Integer;
@@ -178,12 +189,6 @@ type
     adsCoreRepareOldORDERSHREGIONCODE: TFIBBCDField;
     adsCoreRepareOldORDERSHPRICENAME: TFIBStringField;
     adsCoreRepareOldORDERSHREGIONNAME: TFIBStringField;
-    adsRetailMarginsOld: TpFIBDataSet;
-    adsRetailMarginsOldID: TFIBBCDField;
-    adsRetailMarginsOldLEFTLIMIT: TFIBBCDField;
-    adsRetailMarginsOldRIGHTLIMIT: TFIBBCDField;
-    adsRetailMarginsOldRETAIL: TFIBIntegerField;
-    dsRetailMargins: TDataSource;
     adsSumOrdersOldForDelete: TpFIBDataSet;
     adsSumOrdersOldForDeleteCODE: TFIBStringField;
     adsSumOrdersOldForDeleteCODECR: TFIBStringField;
@@ -289,7 +294,6 @@ type
     MyConnection: TMyConnection;
     adtParams: TMyTable;
     adtClients: TMyQuery;
-    adsRetailMargins: TMyQuery;
     adtClientsCLIENTID: TLargeintField;
     adtClientsNAME: TStringField;
     adtClientsREGIONCODE: TLargeintField;
@@ -297,10 +301,6 @@ type
     adtClientsDELTAMODE: TSmallintField;
     adtClientsMAXUSERS: TIntegerField;
     adtClientsREQMASK: TLargeintField;
-    adsRetailMarginsID: TLargeintField;
-    adsRetailMarginsLEFTLIMIT: TFloatField;
-    adsRetailMarginsRIGHTLIMIT: TFloatField;
-    adsRetailMarginsRETAIL: TIntegerField;
     adcUpdate: TMyQuery;
     adtClientsCALCULATELEADER: TBooleanField;
     adtClientsONLYLEADERS: TBooleanField;
@@ -485,6 +485,7 @@ type
     adtClientsDirector: TStringField;
     adtClientsDeputyDirector: TStringField;
     adtClientsAccountant: TStringField;
+    adtClientsMethodOfTaxation: TSmallintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -492,7 +493,6 @@ type
       Flag: TDATraceFlag);
     procedure adtParamsAfterPost(DataSet: TDataSet);
     procedure adtReceivedDocsAfterPost(DataSet: TDataSet);
-    procedure adsRetailMarginsAfterPost(DataSet: TDataSet);
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
@@ -511,8 +511,8 @@ type
     //Была создана "чистая" база данных
     FCreateClearDatabase     : Boolean;
     FGetCatalogsCount : Integer;
-    FRetMargins : array of TRetMass;
-    FVitallyImportantMarkups : array of TRetMass;
+    FRetMargins : TObjectList;
+    FVitallyImportantMarkups : TObjectList;
     SynC,
     HTTPC,
     CodeC,
@@ -650,13 +650,19 @@ type
     procedure SavePass(ASyn, ACodes, AB, ASGM : String);
     procedure LoadRetailMargins;
     procedure LoadVitallyImportantMarkups;
+    procedure LoadMarkups(TableName : String; Markups : TObjectList);
     //Получить розничную цену товара в зависимости от наценки
     function GetPriceRet(BaseCost : Currency) : Currency;
     //Получить розничную наценку товара
-    function GetRetUpCost(BaseCost : Currency) : Integer;
+    function GetRetUpCost(BaseCost : Currency) : Currency;
+    function GetMaxRetailMarkup(BaseCost : Currency) : Currency;
     //Получить наценку товара для ЖНВЛС
     function GetVitallyImportantMarkup(BaseCost : Currency) : Currency;
+    function GetMaxVitallyImportantMarkup(BaseCost : Currency) : Currency;
     function VitallyImportantMarkupsExists : Boolean;
+
+    function GetRetailMarkup(Markups : TObjectList; BaseCost : Currency) : TRetailMarkup;
+    function GetMarkup(Markups : TObjectList; BaseCost : Currency) : Currency;
 
     //Обрабатываем папки с документами
     procedure ProcessDocs;
@@ -1005,6 +1011,9 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
 begin
+  FRetMargins := TObjectList.Create(True);
+  FVitallyImportantMarkups := TObjectList.Create(True);;
+
   WriteExchangeLog('AnalitF', 'Программа установлена в каталог: "' + ExtractFileDir(ParamStr(0)) + '"');
   FProcessFirebirdUpdate := False;
   FProcess800xUpdate := False;
@@ -1066,7 +1075,10 @@ begin
   HTTPC := TINFCrypt.Create(HTTPS + HTTPE, 255);
 
   ResetNeedCommitExchange;
+  FillChar(FFS, SizeOf(FFS), 0);
   GetLocaleFormatSettings(0, FFS);
+  FFS.ThousandSeparator := #0;
+  FFS.DecimalSeparator := '.';
 
   if not IsOneStart then
     LogExitError('Запуск двух копий программы на одном компьютере невозможен.', Integer(ecDoubleStart));
@@ -1612,8 +1624,6 @@ begin
   adsUser.Open;
   adtClients.Close;
   adtClients.Open;
-  adsRetailMargins.Close;
-  adsRetailMargins.Open;
   LoadRetailMargins;
   LoadVitallyImportantMarkups;
   LoadSelectedPrices;
@@ -1785,19 +1795,8 @@ begin
 end;
 
 procedure TDM.LoadRetailMargins;
-var
-  I : Integer;
 begin
-  SetLength(FRetMargins, adsRetailMargins.RecordCount);
-  adsRetailMargins.First;
-  I := 0;
-  while not adsRetailMargins.Eof do begin
-    FRetMargins[i][1] := adsRetailMarginsLEFTLIMIT.AsCurrency;
-    FRetMargins[i][2] := adsRetailMarginsRIGHTLIMIT.AsCurrency;
-    FRetMargins[i][3] := adsRetailMarginsRETAIL.Value;
-    Inc(I);
-    adsRetailMargins.Next;
-  end;
+  LoadMarkups('retailmargins', FRetMargins);
 end;
 
 procedure TDM.socf(DataSet: TDataSet);
@@ -2063,6 +2062,11 @@ begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 57;
       end;
+    end;
+
+    if DBVersion = 57 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 58;
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
@@ -2466,20 +2470,9 @@ begin
     Result := '';
 end;
 
-function TDM.GetRetUpCost(BaseCost: Currency): Integer;
-var
-  I, Ret : Integer;
+function TDM.GetRetUpCost(BaseCost: Currency): Currency;
 begin
-  Ret := 0;
-  I := 0;
-  while (I < Length(FRetMargins)) and (BaseCost >= FRetMargins[i][1]) do begin
-    if (FRetMargins[i][1] <= BaseCost) and (BaseCost <= FRetMargins[i][2]) then begin
-      Ret := FRetMargins[i][3];
-      Break;
-    end;
-    Inc(I);
-  end;
-  Result := Ret;
+  Result := GetMarkup(FRetMargins, BaseCost);
 end;
 
 {$ifdef DEBUG}
@@ -2600,7 +2593,7 @@ begin
     tmp := BaseC[1] + Copy(BaseC, 3, Len-6) + Copy(BaseC, Len-2, 3);
     if Length(tmp) > 1 then begin
       Result := c.DecodeMix(tmp);
-      Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
+      //Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
     end
     else
       Result := '';
@@ -2770,8 +2763,13 @@ begin
     'ProviderEmail = ''farm@analit.net'',' +
     'ProviderWeb = ''http://www.analit.net/'',' +
     'ProviderMDBVersion = ' + realDBVersion + ';'#13#10#13#10 +
-    'INSERT INTO RETAILMARGINS (ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (1, 0, 1000000, 30);'#13#10#13#10
+    'INSERT INTO RETAILMARGINS (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);'#13#10#13#10
     );
+{
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);'#13#10#13#10
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);'#13#10#13#10
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (3, 500, 1000000, 20, 20);'#13#10#13#10
+}    
 end;
 
 procedure TDM.CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
@@ -2974,6 +2972,7 @@ begin
           [InputFileName,
            'DocumentHeaders']);
         adsQueryValue.Execute;
+        DatabaseController.BackupDataTable(doiDocumentHeaders);
       end;
 
       if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then begin
@@ -2985,6 +2984,7 @@ begin
           [InputFileName,
            'DocumentBodies']);
         adsQueryValue.Execute;
+        DatabaseController.BackupDataTable(doiDocumentBodies);
       end;
 
       OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
@@ -3410,6 +3410,11 @@ begin
   if (Sender = nil) then
     WriteExchangeLog('Monitor', Format('Sender : nil  Flag : %s'#13#10'Text : %s ', [DATraceFlagNames[Flag], Text]))
   else
+    WriteExchangeLog('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
+  if (Sender = nil) then
+    WriteExchangeLog('Monitor', Format('Sender : nil  Flag : %s'#13#10'Text : %s ', [DATraceFlagNames[Flag], Text]))
+  else //adsDocumentBodies
+    if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsDocumentBodies') then
     WriteExchangeLog('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
 }
 end;
@@ -3979,12 +3984,13 @@ begin
     selectFirebird.Open;
     try
       if selectFirebird.RecordCount > 0 then begin
-        updateMySql.SQL.Text := 'insert into analitf.RetailMargins (ID, LeftLIMIT, RIGHTLIMIT, Retail) values (:ID, :LeftLIMIT, :RIGHTLIMIT, :Retail)';
+        updateMySql.SQL.Text := 'insert into analitf.RetailMargins (ID, LeftLimit, RightLimit, Markup, MaxMarkup) values (:ID, :LeftLimit, :RightLimit, :Markup, :MaxMarkup)';
         while not selectFirebird.Eof do begin
           updateMySql.ParamByName('Id').Value := selectFirebird.FieldByName('Id').Value;
-          updateMySql.ParamByName('LeftLIMIT').Value := selectFirebird.FieldByName('LeftLIMIT').Value;
-          updateMySql.ParamByName('RIGHTLIMIT').Value := selectFirebird.FieldByName('RIGHTLIMIT').Value;
-          updateMySql.ParamByName('Retail').Value := selectFirebird.FieldByName('Retail').Value;
+          updateMySql.ParamByName('LeftLimit').Value := selectFirebird.FieldByName('LeftLIMIT').Value;
+          updateMySql.ParamByName('RightLimit').Value := selectFirebird.FieldByName('RIGHTLIMIT').Value;
+          updateMySql.ParamByName('Markup').Value := selectFirebird.FieldByName('Retail').Value;
+          updateMySql.ParamByName('MaxMarkup').Value := selectFirebird.FieldByName('Retail').Value;
           updateMySql.Execute;
           selectFirebird.Next;
         end;
@@ -4156,7 +4162,7 @@ begin
             //Если пароль для цен известен, то расшифровываем, иначе сбрасываем позицию
             if Assigned(pc) then
               try
-                updateMySql.ParamByName('PRICE').Value := StrToCurr(D_B_N_C(pc, selectFirebird.FieldByName('PRICE').AsString))
+                updateMySql.ParamByName('PRICE').Value := StrToFloat(D_B_N_C(pc, selectFirebird.FieldByName('PRICE').AsString), FFS);
               except
                 //Если не смогли рассшифровать цену, то помечаем позицию как незаказанную
                 updateMySql.ParamByName('PRICE').Value := 0;
@@ -4194,7 +4200,7 @@ begin
 +'         ORDERSLIST.SynonymFirm    , ' 
 +'         ORDERSLIST.ORDERCOUNT ' 
 +'from ' 
-+'         analitf.ORDERSHEAD, ' 
++'         analitf.ORDERSHEAD, '
 +'         analitf.ORDERSLIST, ' 
 +'         analitf.Clients ' 
 +'where ' 
@@ -4693,11 +4699,6 @@ begin
   DatabaseController.BackupDataTable(doiReceivedDocs);
 end;
 
-procedure TDM.adsRetailMarginsAfterPost(DataSet: TDataSet);
-begin
-  DatabaseController.BackupDataTable(doiRetailMargins);
-end;
-
 procedure TDM.CheckDBObjectsWithDatabaseController(
   dbCon: TCustomMyConnection; DBDirectoryName: String;
   OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
@@ -5008,22 +5009,47 @@ begin
 end;
 
 procedure TDM.LoadVitallyImportantMarkups;
-var
-  I : Integer;
+begin
+  LoadMarkups('VitallyImportantMarkups', FVitallyImportantMarkups);
+end;
+
+function TDM.GetVitallyImportantMarkup(BaseCost: Currency): Currency;
+begin
+  Result := GetMarkup(FVitallyImportantMarkups, BaseCost);
+end;
+
+function TDM.VitallyImportantMarkupsExists: Boolean;
+begin
+  Result := FVitallyImportantMarkups.Count > 0;
+end;
+
+{ TRetailMarkup }
+
+constructor TRetailMarkup.Create(LeftLimit, RightLimit, Markup,
+  MaxMarkup: Double);
+begin
+  Self.LeftLimit := LeftLimit;
+  Self.RightLimit := RightLimit;
+  Self.Markup := Markup;
+  Self.MaxMarkup := MaxMarkup;
+end;
+
+procedure TDM.LoadMarkups(TableName: String; Markups: TObjectList);
 begin
   adsQueryValue.Close;
   adsQueryValue.SQL.Text :=
-    'select LeftLimit, RightLimit, Markup from VitallyImportantMarkups order by LeftLimit';
+    'select LeftLimit, RightLimit, Markup, MaxMarkup from ' + TableName + ' order by LeftLimit';
   adsQueryValue.Open;
   try
-    SetLength(FVitallyImportantMarkups, adsQueryValue.RecordCount);
+    Markups.Clear;
     adsQueryValue.First;
-    I := 0;
     while not adsQueryValue.Eof do begin
-      FVitallyImportantMarkups[i][1] := adsQueryValue.FieldByName('LeftLimit').AsCurrency;
-      FVitallyImportantMarkups[i][2] := adsQueryValue.FieldByName('RightLimit').AsCurrency;
-      FVitallyImportantMarkups[i][3] := adsQueryValue.FieldByName('Markup').AsCurrency;
-      Inc(I);
+      Markups.Add(TRetailMarkup
+        .Create(
+          adsQueryValue.FieldByName('LeftLimit').AsCurrency,
+          adsQueryValue.FieldByName('RightLimit').AsCurrency,
+          adsQueryValue.FieldByName('Markup').AsCurrency,
+          adsQueryValue.FieldByName('MaxMarkup').AsCurrency));
       adsQueryValue.Next;
     end;
   finally
@@ -5031,26 +5057,53 @@ begin
   end;
 end;
 
-function TDM.GetVitallyImportantMarkup(BaseCost: Currency): Currency;
+function TDM.GetMarkup(Markups: TObjectList; BaseCost: Currency): Currency;
+var
+  retail : TRetailMarkup;
+begin
+  retail := GetRetailMarkup(Markups, BaseCost);
+  if Assigned(retail) then
+    Result := retail.Markup
+  else
+    Result := 0;
+end;
+
+function TDM.GetRetailMarkup(Markups: TObjectList;
+  BaseCost: Currency): TRetailMarkup;
 var
   I : Integer;
-  Markup : Currency;
 begin
-  Markup := 0;
+  Result := nil;
   I := 0;
-  while (I < Length(FVitallyImportantMarkups)) and (BaseCost >= FVitallyImportantMarkups[i][1]) do begin
-    if (FVitallyImportantMarkups[i][1] <= BaseCost) and (BaseCost < FVitallyImportantMarkups[i][2]) then begin
-      Markup := FVitallyImportantMarkups[i][3];
+  while (I < Markups.Count) and (BaseCost > TRetailMarkup(Markups[i]).LeftLimit) do begin
+    if (TRetailMarkup(Markups[i]).LeftLimit < BaseCost) and (BaseCost <= TRetailMarkup(Markups[i]).RightLimit) then begin
+      Result := TRetailMarkup(Markups[i]);
       Break;
     end;
     Inc(I);
   end;
-  Result := Markup;
 end;
 
-function TDM.VitallyImportantMarkupsExists: Boolean;
+function TDM.GetMaxRetailMarkup(BaseCost: Currency): Currency;
+var
+  retail : TRetailMarkup;
 begin
-  Result := Length(FVitallyImportantMarkups) > 0;
+  retail := GetRetailMarkup(FRetMargins, BaseCost);
+  if Assigned(retail) then
+    Result := retail.MaxMarkup
+  else
+    Result := 0;
+end;
+
+function TDM.GetMaxVitallyImportantMarkup(BaseCost: Currency): Currency;
+var
+  retail : TRetailMarkup;
+begin
+  retail := GetRetailMarkup(FVitallyImportantMarkups, BaseCost);
+  if Assigned(retail) then
+    Result := retail.MaxMarkup
+  else
+    Result := 0;
 end;
 
 initialization

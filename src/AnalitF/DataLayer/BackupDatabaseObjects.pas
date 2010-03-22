@@ -50,6 +50,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TProviderSettingsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -66,9 +72,10 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( ' 
 +'    `ID` bigint(20) not null AUTO_INCREMENT, ' 
-+'    `LEFTLIMIT`  decimal(18,4) not null     , ' 
-+'    `RIGHTLIMIT` decimal(18,4) not null     , ' 
-+'    `RETAIL`     int(10) not null           , '
++'    `LEFTLIMIT`  decimal(18,2) not null     , '
++'    `RIGHTLIMIT` decimal(18,2) not null     , ' 
++'    `Markup`     decimal(5,2) not null           , '
++'    `MaxMarkup` decimal(5,2) NOT NULL, '
 +'    primary key (`ID`)                      , '
 +'    unique key `PK_RETAILMARGINS` (`ID`) '
 +'  ) '
@@ -81,7 +88,7 @@ begin
   + 'INSERT INTO '
   + IfThen(Length(DatabasePrefix) > 0, DatabasePrefix + '.')
   + FName
-  +'(ID, LEFTLIMIT, RIGHTLIMIT, RETAIL) VALUES (1, 0, 1000000, 30);';
+  +'(ID, LEFTLIMIT, RIGHTLIMIT, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);';
 end;
 
 { TOrdersHeadTable }
@@ -251,9 +258,22 @@ begin
 +' ( '
 +'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
 +'  `DocumentId` bigint(20) unsigned NOT NULL, '
-+'  `Name` varchar(255) NOT NULL, '
-+'  `Quantity` int(11) unsigned DEFAULT NULL, '
-+'  `Cost` decimal(12,6) unsigned DEFAULT NULL, '
++'  `Product` varchar(255) not null, '
++'  `Code` varchar(20) default null, '
++'  `Certificates` varchar(50) default null, '
++'  `Period` varchar(20) default null, '
++'  `Producer` varchar(255) default null, '
++'  `Country` varchar(150) default null, '
++'  `ProducerCost` decimal(18,2) default null, '
++'  `RegistryCost` decimal(18,2) default null, '
++'  `SupplierPriceMarkup` decimal(5,2) default null, '
++'  `SupplierCostWithoutNDS` decimal(18,2) default null, '
++'  `SupplierCost` decimal(18,2) default null, '
++'  `Quantity` int(10) DEFAULT NULL, '
++'  `VitallyImportant` tinyint(1) unsigned default null, '
++'  `NDS` int(10) unsigned DEFAULT NULL, '
++'  `RetailMarkup` decimal(12,6) default null, '
++'  `ManualCorrection` tinyint(1) unsigned not null default ''0'', '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
 + GetTableOptions();
@@ -271,14 +291,42 @@ end;
 function TVitallyImportantMarkupsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
+{
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);'#13#10#13#10
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);'#13#10#13#10
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (3, 500, 1000000, 20, 20);'#13#10#13#10
+}
   Result := inherited GetCreateSQL(DatabasePrefix)
 +' ( '
 +'  `ID` bigint(20) NOT NULL AUTO_INCREMENT, '
 +'  `LeftLimit` decimal(18,2) NOT NULL, '
 +'  `RightLimit` decimal(18,2) NOT NULL, '
-+'  `Markup` decimal(5,3) NOT NULL, '
++'  `Markup` decimal(5,2) NOT NULL, '
++'  `MaxMarkup` decimal(5,2) NOT NULL, '
 +'  PRIMARY KEY (`ID`), '
 +'  UNIQUE KEY `PK_VitallyImportantMarkups` (`ID`) '
++' ) '
++ GetTableOptions();
+end;
+
+{ TProviderSettingsTable }
+
+constructor TProviderSettingsTable.Create;
+begin
+  FName := 'ProviderSettings';
+  FObjectId := doiProviderSettings;
+  FRepairType := dortBackup;
+end;
+
+function TProviderSettingsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `FirmCode` bigint(20) NOT NULL, '
++'  `WaybillFolder` varchar(255) default null, '
++'  PRIMARY KEY (`FirmCode`), '
++'  UNIQUE KEY `PK_ProviderSettings` (`FirmCode`) '
 +' ) '
 + GetTableOptions();
 end;
@@ -291,4 +339,5 @@ initialization
   DatabaseController.AddObject(TDocumentHeadersTable.Create());
   DatabaseController.AddObject(TDocumentBodiesTable.Create());
   DatabaseController.AddObject(TVitallyImportantMarkupsTable.Create());
+  DatabaseController.AddObject(TProviderSettingsTable.Create());
 end.

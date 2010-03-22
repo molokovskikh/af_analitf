@@ -15,7 +15,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 57;
+  CURRENT_DB_VERSION = 58;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -90,7 +90,8 @@ type
     //Backup
     doiDocumentHeaders,
     doiDocumentBodies,
-    doiVitallyImportantMarkups);
+    doiVitallyImportantMarkups,
+    doiProviderSettings);
 
   TRepairedObjects = set of TDatabaseObjectId;
 
@@ -563,7 +564,10 @@ begin
     for I := 0 to FDatabaseObjects.Count-1 do begin
       if FDatabaseObjects[i] is TDatabaseTable then begin
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
-        FCommand.SQL.Text := Format('SELECT PASSWORD(''%s'');', [currentTable.Name]);
+        FCommand.SQL.Text :=
+          Format(
+            'SELECT PASSWORD(''%s'');',
+            [AnsiLowerCase(currentTable.Name)]);
         FCommand.Open;
         try
           if (FCommand.RecordCount = 1) then begin

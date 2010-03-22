@@ -8,16 +8,22 @@ uses
 type
   TExchangeParams = (epTerminated, epCriticalError, epErrorMessage,
                      epDownloadChildThreads, epServerAddition, epSendedOrders,
-                     epSendedOrdersErrorLog);
+                     epSendedOrdersErrorLog, epSendWaybillsResult);
 
   TStringValue = class
     Value : String;
     constructor Create(AValue : String);
   end;
 
+
   TBooleanValue = class
     Value : Boolean;
     constructor Create(AValue : Boolean);
+  end;
+
+  TIntegerValue = class
+    Value : Integer;
+    constructor Create(AValue : Integer);
   end;
 
   TExchangeParamsHelper = class
@@ -30,6 +36,9 @@ var
 
 implementation
 
+uses
+  PostWaybillsController;
+  
 { TStringValue }
 
 constructor TStringValue.Create(AValue: String);
@@ -63,6 +72,15 @@ begin
   Params.Add(TStringList.Create());
   //epSendedOrdersErrorLog
   Params.Add(TStringList.Create());
+  //epSendWaybillsResult
+  Params.Add(TIntegerValue.Create(Integer(swsNotFiles)));
+end;
+
+{ TIntegerValue }
+
+constructor TIntegerValue.Create(AValue: Integer);
+begin
+  Value := AValue;
 end;
 
 initialization

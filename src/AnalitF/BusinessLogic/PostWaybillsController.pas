@@ -11,15 +11,17 @@ uses
 
 type
   TSendWaybillsStatus = (
-    swsOk,         //все хорошо
-    swsRepeat,     //повторите отправку позднее
-    swsRetryLater  //получите документы позднее
+    swsNotFiles   = -1, //нет файлов для отправки на сервер
+    swsOk         = 0,  //все хорошо
+    swsRepeat     = 1,  //повторите отправку позднее
+    swsRetryLater = 2   //получите документы позднее
   );
 
 const
   //предложение отсутствует
   SendWaybillsStatusText : array[TSendWaybillsStatus] of string =
-  ('все хорошо',
+  ('нет файлов для загрузки',
+   'все хорошо',
    'Пожалуйста, повторите загрузку накладных позднее.',
    'Пожалуйста, получите документы позднее.');
 
@@ -103,9 +105,8 @@ procedure TPostWaybillsControllerController.PostWaybills;
 begin
   ScanFolders;
   CreateArchive;
-  if Elems.Count = 0 then
-    raise Exception.Create('Нет накладных для загрузки');
-  SendArchive;
+  if Elems.Count > 0 then
+    SendArchive;
 end;
 
 procedure TPostWaybillsControllerController.ScanFolders;
@@ -170,6 +171,8 @@ var
   OldAccept,
   OldConnection,
   OldContentType : String;
+  InternalSendResult : TSendWaybillsStatus;
+  InternalSendResultStr : String;
 
   procedure CopyingFiles;
   var
@@ -309,18 +312,25 @@ begin
 	    S := Copy( S, start, stop - start);
       if AnsiStartsText('Status=', S) then
       begin
-        if AnsiCompareText('Status=1', S) = 0 then
-          raise Exception.Create('Пожалуйста, повторите загрузку накладных позднее.')
-        else
-          if AnsiCompareText('Status=2', S) = 0 then begin
-            DeleteSendedFiles;
-            raise Exception.Create('Пожалуйста, получите документы позднее.');
-          end;
-      end
-      else
-        raise Exception.Create(Utf8ToAnsi( Copy(S, 7, Length(S)) ));
+        InternalSendResultStr := Copy(S, Length('Status=') + 1, Length(S));
+        if Pos(';', InternalSendResultStr) > 0 then
+          InternalSendResultStr := Copy(InternalSendResultStr, 1, Pos(';', InternalSendResultStr) - 1);
 
-      DeleteSendedFiles;
+        InternalSendResult := TSendWaybillsStatus(StrToInt(InternalSendResultStr));
+
+        TIntegerValue(FExchangeParams[Integer(epSendWaybillsResult)]).Value :=
+          Integer(InternalSendResult);
+
+        if InternalSendResult in [swsOk, swsRetryLater] then
+          DeleteSendedFiles;
+
+      end
+      else begin
+        WriteExchangeLog('PostWaybillsControllerController', 'Некорректный ответ от сервера: ' + Utf8ToAnsi(S));
+        raise Exception.Create(
+          'При загрузке накладных возникла ошибка.'#13#10+
+          'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+      end
 
     finally
       SendIdHTTP.Request.Accept := OldAccept;
@@ -402,6 +412,7 @@ begin
       finally
         insertSettings.Free;
       end;
+      DatabaseController.BackupDataTable(doiProviderSettings);
     end;
     selectFirmCodes.Close;
     if Result then begin

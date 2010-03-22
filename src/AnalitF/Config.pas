@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Grids, DBGrids, ComCtrls, DBCtrls, Mask, Menus, DBGridEh, ShellAPI,
   Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule, GridsEh, U_VistaCorrectForm,
-  MyAccess, FileCtrl;
+  MyAccess, FileCtrl, U_frameEditVitallyImportantMarkups, U_frameEditAddress,
+  DatabaseObjects;
 
 type
   TConfigForm = class(TVistaCorrectForm)
@@ -64,21 +65,6 @@ type
     Label9: TLabel;
     dbeRasSleep: TDBEdit;
     udRasSleep: TUpDown;
-    tdbgRetailMargins: TToughDBGrid;
-    btnAddRetail: TButton;
-    btnDelRetail: TButton;
-    lLR: TLabel;
-    lLRInfo: TLabel;
-    lPN: TLabel;
-    lPNInfo: TLabel;
-    mdRetail: TRxMemoryData;
-    mdRetailID: TIntegerField;
-    mdRetailLEFTLIMIT: TCurrencyField;
-    mdRetailRIGHTLIMIT: TCurrencyField;
-    dsRetail: TDataSource;
-    mdRetailRETAIL: TIntegerField;
-    lRaz: TLabel;
-    lRazInfo: TLabel;
     eHTTPPass: TEdit;
     gbDeleteHistory: TGroupBox;
     lHistoryDayCount: TLabel;
@@ -110,12 +96,6 @@ type
     procedure dbeRasSleepChange(Sender: TObject);
     procedure dbeHTTPNameChange(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure btnAddRetailClick(Sender: TObject);
-    procedure btnDelRetailClick(Sender: TObject);
-    procedure tdbgRetailMarginsGetCellParams(Sender: TObject; Column: TColumnEh;
-      AFont: TFont; var Background: TColor; State: TGridDrawState);
-    procedure mdRetailAfterPost(DataSet: TDataSet);
-    procedure mdRetailBeforePost(DataSet: TDataSet);
     procedure dbeHistoryDayCountChange(Sender: TObject);
     procedure udHistoryDayCountClick(Sender: TObject; Button: TUDBtnType);
     procedure eHTTPPassChange(Sender: TObject);
@@ -123,14 +103,11 @@ type
   private
     HTTPNameChanged, HTTPPassChanged : Boolean;
     OldHTTPName : String;
-    FRXRetMargins : array of TRetMass;
-    RetMarginsChanges : Boolean;
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
     procedure OnAppEx(Sender: TObject; E: Exception);
-    procedure RXLoadRetailMargins;
-    procedure AddsWaybillsSheet;
+    procedure AddEditAddressSheet;
     procedure AddLabelAndDBEdit(
       Parents : TWinControl;
       DataSource : TDataSource;
@@ -142,25 +119,11 @@ type
     procedure AddWaybillFoldersSheet;
     procedure SelectFolderClick(Sender : TObject);
     procedure WaybillFolderChange(Sender : TObject);
+    procedure AddVitallyImportantMarkups;
+    procedure AddRetailMarkups;
   protected
-    tsWaybills : TTabSheet;
-    adsEditClients : TMyQuery;
-    dsEditClients : TDataSource;
-
-    gbEditClients : TGroupBox;
-
-    lClientId : TLabel;
-    dblClientId : TDBLookupComboBox;
-
-    lAddress : TLabel;
-    dbeAddress : TDBEdit;
-
-    lDirector : TLabel;
-    dbeDirector : TDBEdit;
-    lDeputyDirector : TLabel;
-    dbeDeputyDirector : TDBEdit;
-    lAccountant : TLabel;
-    dbeAccountant : TDBEdit;
+    tsEditAddress : TTabSheet;
+    frameEditAddress : TframeEditAddress;
 
     tsWaybillFolders : TTabSheet;
     adsWaybillFolders : TMyQuery;
@@ -176,7 +139,12 @@ type
     sbSelectFolder : TSpeedButton;
 
     lFolderNotExists : TLabel;
-  public
+
+    tsVitallyImportantMarkups : TTabSheet;
+    frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
+
+    frameEditRetailMarkups : TframeEditVitallyImportantMarkups;
+   public
   end;
 
 var
@@ -254,19 +222,19 @@ begin
       eHTTPPass.Text := StringOfChar('*', Length(HTTPPass));
       HTTPPassChanged := False;
       DM.adtParams.Edit;
-      mdRetail.LoadFromDataSet(DM.adsRetailMargins, 0, lmAppend);
-      RXLoadRetailMargins;
-      RetMarginsChanges := False;
       Result := ShowModal=mrOk;
       if Result then begin
-        if adsEditClients.Active then begin
-          SoftPost(adsEditClients);
-          adsEditClients.ApplyUpdates;
-        end;
+        frameEditVitallyImportantMarkups.SaveVitallyImportantMarkups;
+
+        frameEditRetailMarkups.SaveVitallyImportantMarkups;
+
+        if Assigned(frameEditAddress) then
+          frameEditAddress.SaveChanges;
 
         if adsWaybillFolders.Active then begin
           SoftPost(adsWaybillFolders);
           adsWaybillFolders.ApplyUpdates;
+          DatabaseController.BackupDataTable(doiProviderSettings);
         end;
 
         DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
@@ -299,19 +267,13 @@ begin
           DM.adcUpdate.Execute;
         end;
         DM.adtParams.Post;
-        while not DM.adsRetailMargins.IsEmpty do
-          DM.adsRetailMargins.Delete;
-        mdRetail.SaveToDataSet(DM.adsRetailMargins, 0);
-        DM.adsRetailMargins.ApplyUpdates;
-        DM.LoadRetailMargins;
       end
       else begin
-        if adsEditClients.Active then
-          adsEditClients.CancelUpdates;
+        if Assigned(frameEditAddress) then
+          frameEditAddress.CancelChanges;
         if adsWaybillFolders.Active then
           adsWaybillFolders.CancelUpdates;
         DM.adtParams.Cancel;
-        DM.adsRetailMargins.CancelUpdates;
       end;
 
     finally
@@ -329,8 +291,6 @@ begin
   DM.adsUser.Open;
   DM.adtClients.Close;
   DM.adtClients.Open;
-  DM.adsRetailMargins.Close;
-  DM.adsRetailMargins.Open;
   DM.ClientChanged;
 end;
 
@@ -490,9 +450,6 @@ end;
 
 procedure TConfigForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
-var
-  Res : Boolean;
-  PrevRight : Currency;
 begin
   if (ModalResult = mrOK) then begin
     if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
@@ -501,32 +458,13 @@ begin
       then
         CanClose := False;
     end;
-    if CanClose and RetMarginsChanges then begin
-      try
-        SoftPost(mdRetail);
-      except
-      end;
-      mdRetail.SortOnFields(mdRetailLEFTLIMIT.FieldName);
-      if mdRetail.RecordCount > 0 then begin
-        mdRetail.First;
-        Res := (not mdRetailLEFTLIMIT.IsNull) and (not mdRetailRIGHTLIMIT.IsNull) and (not mdRetailRETAIL.IsNull) and
-              (mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency);
-        PrevRight := mdRetailRIGHTLIMIT.AsCurrency;
-        mdRetail.Next;
-        while not mdRetail.Eof and Res do begin
-          Res := PrevRight <= mdRetailLEFTLIMIT.AsCurrency;
-          if Res then
-            Res := (not mdRetailLEFTLIMIT.IsNull) and (not mdRetailRIGHTLIMIT.IsNull) and (not mdRetailRETAIL.IsNull) and
-                  (mdRetailLEFTLIMIT.AsCurrency <= mdRetailRIGHTLIMIT.AsCurrency);
-          mdRetail.Next;
-        end;
-        if not Res then begin
-          CanClose := False;
-          PageControl.ActivePage := tshClients;
-          tdbgRetailMargins.SetFocus;
-          AProc.MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
-        end;
-      end;
+    if CanClose and not frameEditRetailMarkups.ProcessCloseQuery(CanClose) then begin
+      PageControl.ActivePage := tshClients;
+      frameEditRetailMarkups.dbgMarkups.SetFocus;
+    end;
+    if CanClose and not frameEditVitallyImportantMarkups.ProcessCloseQuery(CanClose) then begin
+      PageControl.ActivePage := tsVitallyImportantMarkups;
+      frameEditVitallyImportantMarkups.dbgMarkups.SetFocus;
     end;
     if CanClose and DM.adtParams.FieldByName('RasConnect').AsBoolean then begin
       if (cbRas.ItemIndex < 0) then begin
@@ -572,75 +510,6 @@ begin
   Tracer.TR('Config', 'AppEx : ' + E.Message);
 end;
 
-procedure TConfigForm.btnAddRetailClick(Sender: TObject);
-begin
-  mdRetail.Append;
-end;
-
-procedure TConfigForm.btnDelRetailClick(Sender: TObject);
-begin
-  if not mdRetail.IsEmpty then
-    mdRetail.Delete;
-end;
-
-procedure TConfigForm.tdbgRetailMarginsGetCellParams(Sender: TObject;
-  Column: TColumnEh; AFont: TFont; var Background: TColor;
-  State: TGridDrawState);
-begin
-  if (mdRetailLEFTLIMIT.AsCurrency > mdRetailRIGHTLIMIT.AsCurrency) and
-    ((Column.Field = mdRetailLEFTLIMIT) or (Column.Field = mdRetailRIGHTLIMIT))
-  then
-    Background := lLR.Color;
-
-  if (mdRetail.RecNo > 1) and (Length(FRXRetMargins) >= mdRetail.RecNo-1)
-  then begin
-    if (FRXRetMargins[mdRetail.RecNo-2][2] > mdRetailLEFTLIMIT.Value)
-      and (Column.Field = mdRetailLEFTLIMIT)
-    then
-      Background := lPN.Color
-    else
-      if (FRXRetMargins[mdRetail.RecNo-2][2] <> mdRetailLEFTLIMIT.Value)
-        and (Column.Field = mdRetailLEFTLIMIT)
-      then
-        Background := lRaz.Color
-  end;
-end;
-
-procedure TConfigForm.mdRetailAfterPost(DataSet: TDataSet);
-begin
-  mdRetail.SortOnFields(mdRetailLEFTLIMIT.FieldName);
-  RXLoadRetailMargins;
-  RetMarginsChanges := True;
-end;
-
-procedure TConfigForm.RXLoadRetailMargins;
-var
-  I : Integer;
-  C : Integer;
-begin
-  SetLength(FRXRetMargins, mdRetail.RecordCount);
-  C := mdRetail.RecNo;
-  try
-    mdRetail.First;
-    I := 0;
-    while not mdRetail.Eof do begin
-      FRXRetMargins[i][1] := mdRetailLEFTLIMIT.AsCurrency;
-      FRXRetMargins[i][2] := mdRetailRIGHTLIMIT.AsCurrency;
-      FRXRetMargins[i][3] := mdRetailRETAIL.Value;
-      Inc(I);
-      mdRetail.Next;
-    end;
-  finally
-    mdRetail.RecNo := C;
-  end;
-end;
-
-procedure TConfigForm.mdRetailBeforePost(DataSet: TDataSet);
-begin
-  if (mdRetailLEFTLIMIT.IsNull) or (mdRetailRIGHTLIMIT.IsNull) or (mdRetailRETAIL.IsNull) then
-    Abort;
-end;
-
 procedure TConfigForm.dbeHistoryDayCountChange(Sender: TObject);
 var
   currentValue : Integer;
@@ -665,69 +534,34 @@ end;
 procedure TConfigForm.FormCreate(Sender: TObject);
 begin
   inherited;
-  AddsWaybillsSheet;
+  AddRetailMarkups;
+  AddVitallyImportantMarkups;
+  AddEditAddressSheet;
   AddWaybillFoldersSheet;
+
+  //Теперь кол-во вкладок увеличилось, поэтому надо увеличивать размер формы
+  Self.Height := Self.Height + 30;
+  btnOk.Top := btnOk.Top + 30;
+  btnCancel.Top := btnCancel.Top + 30;
+  PageControl.Height := PageControl.Height + 30;
 end;
 
-procedure TConfigForm.AddsWaybillsSheet;
-var
-  nextTop : Integer;
+procedure TConfigForm.AddEditAddressSheet;
 begin
-  adsEditClients := TMyQuery.Create(Self);
-  adsEditClients.Connection := DM.MainConnection;
-  dsEditClients := TDataSource.Create(Self);
-  dsEditClients.DataSet := adsEditClients;
+  tsEditAddress := TTabSheet.Create(Self);
+  tsEditAddress.PageControl := PageControl;
+  tsEditAddress.PageIndex := tsVitallyImportantMarkups.PageIndex + 1;
+  tsEditAddress.Caption := 'Накладные';
 
-  tsWaybills := TTabSheet.Create(Self);
-  tsWaybills.PageControl := PageControl;
-  tsWaybills.PageIndex := 1;
-  tsWaybills.Caption := 'Накладные';
+  frameEditAddress := nil;
 
   if not DM.adsUser.IsEmpty then begin
-    //Открываем дата сет
-    adsEditClients.CachedUpdates := True;
-    adsEditClients.SQL.Text := DM.adtClients.SQL.Text;
-    adsEditClients.SQLRefresh.Text := DM.adtClients.SQLRefresh.Text;
-    adsEditClients.SQLUpdate.Text := DM.adtClients.SQLUpdate.Text;
-    adsEditClients.Open;
-    
-    gbEditClients := TGroupBox.Create(Self);
-    gbEditClients.Caption := ' Настройка печати ';
-    gbEditClients.Parent := tsWaybills;
-    gbEditClients.Align := alClient;
-
-    lClientId := TLabel.Create(Self);
-    lClientId.Caption := 'ClientId:';
-    lClientId.Parent := gbEditClients;
-    lClientId.Top := 16;
-    lClientId.Left := 10;
-
-    dblClientId := TDBLookupComboBox.Create(Self);
-    dblClientId.Parent := gbEditClients;
-    dblClientId.Top := lClientId.Top + 3 + lClientId.Canvas.TextHeight(lClientId.Caption);
-    dblClientId.Left := lClientId.Left;
-    dblClientId.Width := gbEditClients.Width - 20;
-    dblClientId.DataField := 'ClientId';
-    dblClientId.KeyField := 'ClientId';
-    dblClientId.ListField := 'Name';
-    dblClientId.ListSource := dsEditClients;
-    dblClientId.KeyValue := adsEditClients.FieldByName('ClientId').Value;
-
-    nextTop := dblClientId.Top + dblClientId.Height + 10;
-    
-    if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then
-      lClientId.Caption := 'Адрес заказа:'
-    else begin
-      lClientId.Caption := 'Клиент:';
-      AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAddress, dbeAddress, 'Адрес:', 'Address');
-    end;
-
-    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lDirector, dbeDirector, 'Заведующая:', 'Director');
-    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lDeputyDirector, dbeDeputyDirector, 'Зам. заведующей:', 'DeputyDirector');
-    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
+    frameEditAddress := TframeEditAddress.Create(Self);
+    frameEditAddress.Parent := tsEditAddress;
+    frameEditAddress.Align := alClient;
   end
   else
-    tsWaybills.TabVisible := False;
+    tsEditAddress.TabVisible := False;
 end;
 
 procedure TConfigForm.AddLabelAndDBEdit(
@@ -764,8 +598,7 @@ begin
 
   tsWaybillFolders := TTabSheet.Create(Self);
   tsWaybillFolders.PageControl := PageControl;
-  tsWaybillFolders.PageIndex := tsWaybills.PageIndex + 1;
-  //tsWaybillFolders.PageIndex := 1;
+  tsWaybillFolders.PageIndex := tsEditAddress.PageIndex + 1;
   tsWaybillFolders.Caption := 'Настройки поставщиков';
 
   if not DM.adsUser.IsEmpty then begin
@@ -869,6 +702,29 @@ begin
   if AnsiStartsText('.\', dirName) then
     dirName := ExePath + Copy(dirName, 3, Length(dirName));
   lFolderNotExists.Visible := not DirectoryExists(dirName);
+end;
+
+procedure TConfigForm.AddVitallyImportantMarkups;
+begin
+  tsVitallyImportantMarkups := TTabSheet.Create(Self);
+  tsVitallyImportantMarkups.PageControl := PageControl;
+  tsVitallyImportantMarkups.PageIndex := 1;
+  tsVitallyImportantMarkups.Caption := 'Наценки ЖНВЛС';
+
+  frameEditVitallyImportantMarkups := TframeEditVitallyImportantMarkups
+    .CreateFrame(Self, doiVitallyImportantMarkups, DM.LoadVitallyImportantMarkups);
+  frameEditVitallyImportantMarkups.Parent := tsVitallyImportantMarkups;
+
+  frameEditVitallyImportantMarkups.Align := alClient;
+end;
+
+procedure TConfigForm.AddRetailMarkups;
+begin
+  frameEditRetailMarkups := TframeEditVitallyImportantMarkups
+    .CreateFrame(Self, doiRetailMargins, DM.LoadRetailMargins);
+  frameEditRetailMarkups.Parent := tshClients;
+
+  frameEditRetailMarkups.Align := alClient;
 end;
 
 end.

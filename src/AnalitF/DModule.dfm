@@ -985,89 +985,6 @@ object DM: TDM
     Left = 576
     Top = 384
   end
-  object adsRetailMarginsOld: TpFIBDataSet
-    CachedUpdates = True
-    UpdateSQL.Strings = (
-      'UPDATE RETAILMARGINS'
-      'SET '
-      '    LEFTLIMIT = :LEFTLIMIT,'
-      '    RIGHTLIMIT = :RIGHTLIMIT,'
-      '    RETAIL = :RETAIL'
-      'WHERE'
-      '    ID = :OLD_ID'
-      '    ')
-    DeleteSQL.Strings = (
-      'DELETE FROM'
-      '    RETAILMARGINS'
-      'WHERE'
-      '        ID = :OLD_ID'
-      '    ')
-    InsertSQL.Strings = (
-      'INSERT INTO RETAILMARGINS('
-      '    LEFTLIMIT,'
-      '    RIGHTLIMIT,'
-      '    RETAIL'
-      ')'
-      'VALUES('
-      '    :LEFTLIMIT,'
-      '    :RIGHTLIMIT,'
-      '    :RETAIL'
-      ')')
-    RefreshSQL.Strings = (
-      'SELECT'
-      '    ID,'
-      '    LEFTLIMIT,'
-      '    RIGHTLIMIT,'
-      '    RETAIL'
-      'FROM'
-      '    RETAILMARGINS'
-      ' WHERE '
-      '        RETAILMARGINS.ID = :OLD_ID'
-      '    ')
-    SelectSQL.Strings = (
-      'SELECT'
-      '    ID,'
-      '    LEFTLIMIT,'
-      '    RIGHTLIMIT,'
-      '    RETAIL'
-      'FROM'
-      '    RETAILMARGINS'
-      'order by LEFTLIMIT ')
-    Database = MainConnectionOld
-    AutoCommit = True
-    Left = 496
-    Top = 192
-    oCacheCalcFields = True
-    object adsRetailMarginsOldID: TFIBBCDField
-      FieldName = 'ID'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsRetailMarginsOldLEFTLIMIT: TFIBBCDField
-      FieldName = 'LEFTLIMIT'
-      Required = True
-      DisplayFormat = '0.00;;'
-      Size = 4
-      RoundByScale = True
-    end
-    object adsRetailMarginsOldRIGHTLIMIT: TFIBBCDField
-      FieldName = 'RIGHTLIMIT'
-      Required = True
-      DisplayFormat = '0.00;;'
-      Size = 4
-      RoundByScale = True
-    end
-    object adsRetailMarginsOldRETAIL: TFIBIntegerField
-      FieldName = 'RETAIL'
-      Required = True
-      MaxValue = 100
-    end
-  end
-  object dsRetailMargins: TDataSource
-    DataSet = adsRetailMargins
-    Left = 528
-    Top = 192
-  end
   object adsSumOrdersOldForDelete: TpFIBDataSet
     SelectSQL.Strings = (
       'SELECT'
@@ -1454,7 +1371,8 @@ object DM: TDM
       '  Address = :Address,'
       '  Director = :Director,'
       '  DeputyDirector = :DeputyDirector,'
-      '  Accountant = :Accountant'
+      '  Accountant = :Accountant,'
+      '  MethodOfTaxation = :MethodOfTaxation'
       'WHERE'
       '  CLIENTID = :Old_CLIENTID')
     SQLRefresh.Strings = (
@@ -1471,7 +1389,8 @@ object DM: TDM
       '  CLIENTS.Address,'
       '  CLIENTS.Director,'
       '  CLIENTS.DeputyDirector,'
-      '  CLIENTS.Accountant '
+      '  CLIENTS.Accountant,'
+      '  CLIENTS.MethodOfTaxation '
       'FROM CLIENTS'
       'WHERE'
       '  CLIENTS.CLIENTID = :CLIENTID')
@@ -1491,7 +1410,8 @@ object DM: TDM
       ' Address,'
       ' Director,'
       ' DeputyDirector,'
-      ' Accountant'
+      ' Accountant,'
+      ' MethodOfTaxation'
       'FROM'
       ' CLIENTS')
     AfterOpen = adtClientsOldAfterOpen
@@ -1544,33 +1464,8 @@ object DM: TDM
       FieldName = 'Accountant'
       Size = 255
     end
-  end
-  object adsRetailMargins: TMyQuery
-    Connection = MyConnection
-    SQL.Strings = (
-      'SELECT'
-      '    ID,'
-      '    LEFTLIMIT,'
-      '    RIGHTLIMIT,'
-      '    RETAIL'
-      'FROM'
-      '    RETAILMARGINS'
-      'order by LEFTLIMIT')
-    CachedUpdates = True
-    AfterPost = adsRetailMarginsAfterPost
-    Left = 496
-    Top = 232
-    object adsRetailMarginsID: TLargeintField
-      FieldName = 'ID'
-    end
-    object adsRetailMarginsLEFTLIMIT: TFloatField
-      FieldName = 'LEFTLIMIT'
-    end
-    object adsRetailMarginsRIGHTLIMIT: TFloatField
-      FieldName = 'RIGHTLIMIT'
-    end
-    object adsRetailMarginsRETAIL: TIntegerField
-      FieldName = 'RETAIL'
+    object adtClientsMethodOfTaxation: TSmallintField
+      FieldName = 'MethodOfTaxation'
     end
   end
   object MyEmbConnection: TMyEmbConnection

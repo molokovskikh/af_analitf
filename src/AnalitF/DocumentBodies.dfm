@@ -218,12 +218,13 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    object dbgDocumentBodies: TToughDBGrid
+    object dbgDocumentBodies: TDBGridEh
       Left = 0
       Top = 0
       Width = 856
       Height = 322
       Align = alClient
+      AllowedOperations = [alopUpdateEh]
       AutoFitColWidths = True
       DataSource = dsDocumentBodies
       Flat = True
@@ -243,10 +244,6 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
       OnKeyDown = dbgDocumentBodiesKeyDown
-      SearchField = 'SynonymName'
-      InputField = 'OrderCount'
-      SearchPosition = spBottom
-      ForceRus = True
       Columns = <
         item
           EditButtons = <>
@@ -286,7 +283,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Caption = ' '#1053#1072#1082#1083#1072#1076#1085#1099#1077' '
     TabOrder = 2
     object spPrintTickets: TSpeedButton
-      Left = 328
+      Left = 310
       Top = 19
       Width = 121
       Height = 25
@@ -294,7 +291,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       OnClick = spPrintTicketsClick
     end
     object spPrintReestr: TSpeedButton
-      Left = 464
+      Left = 443
       Top = 19
       Width = 121
       Height = 25
@@ -302,12 +299,20 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       OnClick = spPrintReestrClick
     end
     object spEditMarkups: TSpeedButton
-      Left = 600
+      Left = 579
       Top = 19
       Width = 121
       Height = 25
       Caption = #1053#1072#1094#1077#1085#1082#1080' '#1046#1053#1042#1051#1057
       OnClick = spEditMarkupsClick
+    end
+    object sbEditAddress: TSpeedButton
+      Left = 712
+      Top = 19
+      Width = 137
+      Height = 25
+      Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1085#1072#1082#1083#1072#1076#1085#1099#1093
+      OnClick = sbEditAddressClick
     end
     object cbPrintEmptyTickets: TCheckBox
       Left = 8
@@ -422,6 +427,21 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Top = 243
   end
   object adsDocumentBodies: TMyQuery
+    SQLUpdate.Strings = (
+      'update'
+      '  DocumentBodies dbodies'
+      'set'
+      '  RetailMarkup     = :RetailMarkup,'
+      '  ManualCorrection = :ManualCorrection'
+      'where'
+      '  dbodies.Id = :OLD_Id')
+    SQLRefresh.Strings = (
+      'select'
+      ' *'
+      'from'
+      '  DocumentBodies dbodies'
+      'where'
+      '  dbodies.Id = :OLD_Id')
     Connection = DM.MyConnection
     SQL.Strings = (
       'select'
@@ -430,6 +450,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  DocumentBodies dbodies'
       'where'
       '  dbodies.DocumentId = :DocumentId')
+    RefreshOptions = [roAfterUpdate]
     Left = 208
     Top = 251
     ParamData = <
@@ -483,11 +504,21 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesQuantity: TIntegerField
       FieldName = 'Quantity'
     end
+    object adsDocumentBodiesVitallyImportant: TBooleanField
+      FieldName = 'VitallyImportant'
+    end
   end
   object frdsDocumentBodies: TfrDBDataSet
     DataSource = dsDocumentBodies
     OpenDataSource = False
     Left = 120
     Top = 219
+  end
+  object tmrVitallyImportantChange: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrVitallyImportantChangeTimer
+    Left = 320
+    Top = 167
   end
 end

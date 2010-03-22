@@ -751,7 +751,7 @@ begin
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
     //Если пользователь не изменял сам наценку, то применяем текущую наценку
     if not UserSetRetUpCost then
-      seRetUpCost.Value := DM.GetRetUpCost(adsCoreCOST.AsCurrency);
+      seRetUpCost.Value := Trunc(DM.GetRetUpCost(adsCoreCOST.AsCurrency));
     seRetUpCostChange(seRetUpCost);
   end;
   RefreshCurrentSumma;

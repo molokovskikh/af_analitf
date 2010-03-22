@@ -164,7 +164,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       
         'and ((dh.WriteTime  - interval :timezonebias minute) BETWEEN :Da' +
         'teFrom AND :DateTo)'
-      'and (p.FirmCode = dh.FirmCode)')
+      'and (p.FirmCode = dh.FirmCode)'
+      'order by dh.WriteTime DESC')
     Left = 64
     Top = 87
     ParamData = <

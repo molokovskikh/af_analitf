@@ -70,6 +70,7 @@ DROP TABLE IF EXISTS client;
 CREATE TABLE `client` (
   `Id` bigint(20) NOT NULL,
   `Name` varchar(50) NOT NULL,
+  `CalculateOnProducerCost` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
@@ -94,6 +95,7 @@ CREATE TABLE `clients` (
   `Director` varchar(255) default null,
   `DeputyDirector` varchar(255) default null,
   `Accountant` varchar(255) default null,
+  `MethodOfTaxation` smallint(5) not null default '0',
   PRIMARY KEY (`CLIENTID`),
   UNIQUE KEY `PK_CLIENTS` (`CLIENTID`),
   KEY `FK_CLIENTS_REGIONCODE` (`REGIONCODE`)
@@ -203,11 +205,11 @@ CREATE TABLE `Descriptions` (
 
 
 -- 
--- Table structure for table  DocumentBodies
+-- Table structure for table  documentbodies
 -- 
 
-DROP TABLE IF EXISTS `DocumentBodies`;
-CREATE TABLE  `DocumentBodies` (  
+DROP TABLE IF EXISTS `documentbodies`;
+CREATE TABLE  `documentbodies` (  
   `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `DocumentId` bigint(20) unsigned NOT NULL,
   `Product` varchar(255) not null,
@@ -216,22 +218,26 @@ CREATE TABLE  `DocumentBodies` (
   `Period` varchar(20) default null,
   `Producer` varchar(255) default null,
   `Country` varchar(150) default null,
-  `ProducerCost` decimal(12,6) unsigned default null,
-  `RegistryCost` decimal(12,6) unsigned default null,
-  `SupplierPriceMarkup` decimal(5,3) default null,
-  `SupplierCostWithoutNDS` decimal(12,6) unsigned default null,
-  `SupplierCost` decimal(12,6) unsigned default null,  
+  `ProducerCost` decimal(18,2) default null,
+  `RegistryCost` decimal(18,2) default null,
+  `SupplierPriceMarkup` decimal(5,2) default null,
+  `SupplierCostWithoutNDS` decimal(18,2) default null,
+  `SupplierCost` decimal(18,2) default null,  
   `Quantity` int(10) DEFAULT NULL,
+  `VitallyImportant` tinyint(1) unsigned default null,
+  `NDS` int(10) unsigned DEFAULT NULL,
+  `RetailMarkup` decimal(12,6) default null,
+  `ManualCorrection` tinyint(1) unsigned not null default '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 
 -- 
--- Table structure for table  DocumentHeaders
+-- Table structure for table  documentheaders
 --
 
-DROP TABLE IF EXISTS `DocumentHeaders`;
-CREATE TABLE  `DocumentHeaders` (
+DROP TABLE IF EXISTS `documentheaders`;
+CREATE TABLE  `documentheaders` (
   `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `DownloadId` bigint(20) unsigned DEFAULT NULL,
   `WriteTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -496,8 +502,8 @@ CREATE TABLE `providers` (
 -- Table structure for table  providersettings
 -- 
 
-DROP TABLE IF EXISTS ProviderSettings;
-CREATE TABLE `ProviderSettings` (
+DROP TABLE IF EXISTS providersettings;
+CREATE TABLE `providersettings` (
   `FirmCode` bigint(20) NOT NULL,
   `WaybillFolder` varchar(255) default null,
   PRIMARY KEY (`FirmCode`),
@@ -558,9 +564,10 @@ CREATE TABLE `regions` (
 DROP TABLE IF EXISTS retailmargins;
 CREATE TABLE `retailmargins` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
-  `LEFTLIMIT` decimal(18,4) NOT NULL,
-  `RIGHTLIMIT` decimal(18,4) NOT NULL,
-  `RETAIL` int(10) NOT NULL,
+  `LEFTLIMIT` decimal(18,2) NOT NULL,
+  `RIGHTLIMIT` decimal(18,2) NOT NULL,
+  `Markup` decimal(5,2) NOT NULL,
+  `MaxMarkup` decimal(5,2) NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_RETAILMARGINS` (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
@@ -705,7 +712,8 @@ CREATE TABLE `vitallyimportantmarkups` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `LeftLimit` decimal(18,2) NOT NULL,
   `RightLimit` decimal(18,2) NOT NULL,
-  `Markup` decimal(5,3) NOT NULL,
+  `Markup` decimal(5,2) NOT NULL,
+  `MaxMarkup` decimal(5,2) NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_VitallyImportantMarkups` (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;

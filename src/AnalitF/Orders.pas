@@ -161,8 +161,11 @@ begin
   plOverCost.Hide();
   cbNeedCorrect.Checked := False;
   //PrintEnabled:=False;
-  if Assigned(ParentForm) and (ParentForm is TOrdersHForm) then begin
-    ParentOrdersHForm := ParentForm;
+  Self.OrderID := OrderId;
+  SetParams(OrderId);
+  inherited ShowForm;
+  if Assigned(PrevForm) and (PrevForm is TOrdersHForm) then begin
+    ParentOrdersHForm := PrevForm;
     dbgOrders.Tag := IfThen(TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 1, 1, 2);
     SaveEnabled := TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 1;
     PriceCode := TOrdersHForm(ParentOrdersHForm).adsOrdersHFormPRICECODE.AsInteger;
@@ -178,19 +181,6 @@ begin
     dbtSumOrder.DataSource := dbmMessageTo.DataSource;
     dbtRegionName.DataSource := dbmMessageTo.DataSource;
   end
-  ;
-{
-  else begin
-    if Assigned(PrevForm) then
-      LogCriticalError('Предыдущая форма при детализации заказа : ' + PrevForm.ClassName)
-    else
-      LogCriticalError('Предыдущая форма при детализации заказа не установлена.');
-    raise Exception.Create('Окно "Детализации заказа" открыто не из формы "Заказы"!');
-  end;
-}  
-  Self.OrderID := OrderId;
-  SetParams(OrderId);
-  inherited ShowForm;
 end;
 
 procedure TOrdersForm.SetParams(OrderId: Integer);

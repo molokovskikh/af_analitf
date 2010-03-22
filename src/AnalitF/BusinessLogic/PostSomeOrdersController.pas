@@ -62,6 +62,7 @@ type
     function ParsePostHeader(
       serverResponse : TStringList;
       startIndex : Integer) : Integer;
+    function CostToStr(cost : Extended) : String;
    public
     constructor Create(
       dataLayer : TDM;
@@ -114,6 +115,11 @@ uses
 procedure TPostSomeOrdersController.AddPostParam(Param, Value: String);
 begin
   FPostParams.Add(Param + '=' + FSOAP.PreparePostValue(Value));
+end;
+
+function TPostSomeOrdersController.CostToStr(cost: Extended): String;
+begin
+  Result := FloatToStr(Cost, FDataLayer.FFS);
 end;
 
 constructor TPostSomeOrdersController.Create(
@@ -219,8 +225,8 @@ end;
 procedure TPostSomeOrdersController.FillOrderDetailLeaderParams(
   dataSet: TDataSet);
 var
-  S : String;
-  TmpOrderCost, TmpMinCost : String;
+  TmpOrderCost,
+  TmpMinCost : Double;
   postMinCost,
   postMinPriceCode,
   postLeaderMinCost,
@@ -232,12 +238,10 @@ begin
   postLeaderMinPriceCode := '';
   try
     if Length(dataSet.FieldByName('RealPRICE').AsString) > 0 then
-      S := dataSet.FieldByName('RealPRICE').AsString
+      TmpOrderCost := dataSet.FieldByName('RealPRICE').AsFloat
     else
-      S := CurrToStr(0.0);
-    TmpOrderCost := StringReplace(S, '.', FDataLayer.FFS.DecimalSeparator, [rfReplaceAll]);
-    S := StringReplace(S, FDataLayer.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-    AddPostParam('Cost', S);
+      TmpOrderCost := 0.0;
+    AddPostParam('Cost', CostToStr(TmpOrderCost));
   except
     on E : Exception do begin
       WriteExchangeLog('Exchange', 'Ошибка при расшифровке цены : ' + E.Message
@@ -282,16 +286,22 @@ begin
       FDataLayer.adsOrderCore.First;
 
       try
-        S := FDataLayer.adsOrderCoreRealCost.AsString;
-        TmpMinCost := StringReplace(S, '.', FDataLayer.FFS.DecimalSeparator, [rfReplaceAll]);
-        S := StringReplace(S, FDataLayer.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-        postMinCost := S;
-        postMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
+        if not FDataLayer.adsOrderCoreRealCost.IsNull then begin
+          TmpMinCost := FDataLayer.adsOrderCoreRealCost.AsFloat;
+          postMinCost := CostToStr(TmpMinCost);
+          postMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
 
-        //Если минимальная цена совпадает с ценой заказа, то минимальный прайс-лист - прайс-лист заказа
-        if (TmpMinCost <> '') and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
-        then
-          postMinPriceCode := FDataLayer.adsOrdersHeaders.FieldByName('PriceCode').AsString
+          //Если минимальная цена совпадает с ценой заказа, то минимальный прайс-лист - прайс-лист заказа
+          if (Abs(TmpMinCost - TmpOrderCost) < 0.01)
+          then
+            postMinPriceCode := FDataLayer.adsOrdersHeaders.FieldByName('PriceCode').AsString
+        end
+        else begin
+          postMinCost := '';
+          postMinPriceCode := '';
+          WriteExchangeLog('Exchange', 'Не найдена минимальная цена по коду каталога : '
+            + dataSet.FieldByName('FullCode').AsString);
+        end;
       except
         on E : Exception do begin
           WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены : ' + E.Message
@@ -311,18 +321,23 @@ begin
       //В основных прайс-листах может не быть предложений
       if not FDataLayer.adsOrderCore.IsEmpty then begin
         try
-          S := FDataLayer.adsOrderCoreRealCOST.AsString;
-          TmpMinCost := StringReplace(S, '.', FDataLayer.FFS.DecimalSeparator, [rfReplaceAll]);
-          S := StringReplace(S, FDataLayer.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-          postLeaderMinCost := S;
-          postLeaderMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
+          if not FDataLayer.adsOrderCoreRealCost.IsNull then begin
+            TmpMinCost := FDataLayer.adsOrderCoreRealCost.AsFloat;
+            postLeaderMinCost := CostToStr(TmpMinCost);
+            postLeaderMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
 
-          //Если минимальная цена лидеров совпадает с ценой заказа и прайс-лист тоже лидер, то минимальный прайс-лист - прайс-лист заказа
-          if (TmpMinCost <> '')
-            and (FDataLayer.adsOrdersHeaders.FieldByName('PriceEnabled').AsBoolean)
-            and (Abs(StrToCurr(TmpMinCost) - StrToCurr(TmpOrderCost)) < 0.01)
-          then
-            postLeaderMinPriceCode := FDataLayer.adsOrdersHeaders.FieldByName('PriceCode').AsString;
+            //Если минимальная цена лидеров совпадает с ценой заказа и прайс-лист тоже лидер, то минимальный прайс-лист - прайс-лист заказа
+            if (FDataLayer.adsOrdersHeaders.FieldByName('PriceEnabled').AsBoolean)
+              and (Abs(TmpMinCost - TmpOrderCost) < 0.01)
+            then
+              postLeaderMinPriceCode := FDataLayer.adsOrdersHeaders.FieldByName('PriceCode').AsString;
+          end
+          else begin
+            postLeaderMinCost := '';
+            postLeaderMinPriceCode := '';
+            WriteExchangeLog('Exchange', 'Не найдена минимальная цена среди лидеров по коду каталога : '
+              + dataSet.FieldByName('FullCode').AsString);
+          end;
         except
           on E : Exception do begin
             WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
@@ -454,7 +469,7 @@ begin
       TPostOrderPosition.Create(
         StrToInt64(serverResponse.ValueFromIndex[startIndex]),
         TPositionSendResult(StrToInt(serverResponse.ValueFromIndex[startIndex + 1])),
-        StrToCurr(serverResponse.ValueFromIndex[startIndex + 2]),
+        StrToCurr(serverResponse.ValueFromIndex[startIndex + 2], FDataLayer.FFS),
         serverResponse.ValueFromIndex[startIndex + 3]
       )
     );
