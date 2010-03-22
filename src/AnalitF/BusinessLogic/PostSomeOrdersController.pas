@@ -62,7 +62,7 @@ type
     function ParsePostHeader(
       serverResponse : TStringList;
       startIndex : Integer) : Integer;
-    function CostToStr(cost : Extended) : String;
+    function FloatToServiceStr(cost : Extended) : String;
    public
     constructor Create(
       dataLayer : TDM;
@@ -117,7 +117,7 @@ begin
   FPostParams.Add(Param + '=' + FSOAP.PreparePostValue(Value));
 end;
 
-function TPostSomeOrdersController.CostToStr(cost: Extended): String;
+function TPostSomeOrdersController.FloatToServiceStr(cost: Extended): String;
 begin
   Result := FloatToStr(Cost, FDataLayer.FFS);
 end;
@@ -177,11 +177,7 @@ begin
     IfThen(
       dataSet.FieldByName('OrderCost').IsNull,
       '',
-      StringReplace(
-        dataSet.FieldByName('OrderCost').AsString,
-        FDataLayer.FFS.DecimalSeparator,
-        '.',
-        [rfReplaceAll])));
+      FloatToServiceStr(dataSet.FieldByName('OrderCost').AsFloat)));
   AddPostParam(
     'MinOrderCount',
     IfThen(
@@ -199,11 +195,7 @@ begin
     IfThen(
       dataSet.FieldByName('SupplierPriceMarkup').IsNull,
       '',
-      StringReplace(
-        dataSet.FieldByName('SupplierPriceMarkup').AsString,
-        FDataLayer.FFS.DecimalSeparator,
-        '.',
-        [rfReplaceAll])));
+      FloatToServiceStr(dataSet.FieldByName('SupplierPriceMarkup').AsFloat)));
 
   AddPostParam('CoreQuantity', dataSet.FieldByName('CoreQuantity').AsString);
   AddPostParam('Unit', dataSet.FieldByName('Unit').AsString);
@@ -216,11 +208,7 @@ begin
     IfThen(
       dataSet.FieldByName('RegistryCost').IsNull,
       '',
-      StringReplace(
-        dataSet.FieldByName('RegistryCost').AsString,
-        FDataLayer.FFS.DecimalSeparator,
-        '.',
-        [rfReplaceAll])));
+      FloatToServiceStr(dataSet.FieldByName('RegistryCost').AsFloat)));
   AddPostParam('VitallyImportant', BoolToStr(dataSet.FieldByName('VitallyImportant').AsBoolean, True));
   if not FDataLayer.adsUser.FieldByName('SendRetailMarkup').AsBoolean
   then begin
@@ -233,11 +221,7 @@ begin
     RetailMarkup := FDataLayer.GetRetUpCost(dataSet.FieldByName('Price').AsFloat);
     AddPostParam(
       'RetailMarkup',
-      StringReplace(
-          FloatToStr(RetailMarkup),
-          FDataLayer.FFS.DecimalSeparator,
-          '.',
-          [rfReplaceAll]));
+      FloatToServiceStr(RetailMarkup));
     FDataLayer.adcUpdate.SQL.Text := 'update orderslist set RetailMarkup = :RetailMarkup where Id = :Id';
     FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
     FDataLayer.adcUpdate.ParamByName('RetailMarkup').Value := RetailMarkup;
@@ -264,7 +248,7 @@ begin
       TmpOrderCost := dataSet.FieldByName('RealPRICE').AsFloat
     else
       TmpOrderCost := 0.0;
-    AddPostParam('Cost', CostToStr(TmpOrderCost));
+    AddPostParam('Cost', FloatToServiceStr(TmpOrderCost));
   except
     on E : Exception do begin
       WriteExchangeLog('Exchange', 'Ошибка при расшифровке цены : ' + E.Message
@@ -311,7 +295,7 @@ begin
       try
         if not FDataLayer.adsOrderCoreRealCost.IsNull then begin
           TmpMinCost := FDataLayer.adsOrderCoreRealCost.AsFloat;
-          postMinCost := CostToStr(TmpMinCost);
+          postMinCost := FloatToServiceStr(TmpMinCost);
           postMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
 
           //Если минимальная цена совпадает с ценой заказа, то минимальный прайс-лист - прайс-лист заказа
@@ -346,7 +330,7 @@ begin
         try
           if not FDataLayer.adsOrderCoreRealCost.IsNull then begin
             TmpMinCost := FDataLayer.adsOrderCoreRealCost.AsFloat;
-            postLeaderMinCost := CostToStr(TmpMinCost);
+            postLeaderMinCost := FloatToServiceStr(TmpMinCost);
             postLeaderMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
 
             //Если минимальная цена лидеров совпадает с ценой заказа и прайс-лист тоже лидер, то минимальный прайс-лист - прайс-лист заказа
@@ -425,11 +409,7 @@ begin
     IfThen(
       FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').IsNull,
       '',
-      StringReplace(
-        FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').AsString,
-        FDataLayer.FFS.DecimalSeparator,
-        '.',
-        [rfReplaceAll])));
+      FloatToServiceStr(FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').AsFloat)));
 end;
 
 procedure TPostSomeOrdersController.FillPostParams;
