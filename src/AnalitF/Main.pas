@@ -1056,15 +1056,17 @@ end;
 
 procedure TMainForm.actViewDocsExecute(Sender: TObject);
 begin
-{
-	ShellExecute( 0, 'Open', PChar(ExePath + SDirDocs + '\'),
-		nil, nil, SW_SHOWDEFAULT);
-	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
-		nil, nil, SW_SHOWDEFAULT);
-	ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
-		nil, nil, SW_SHOWDEFAULT);
-}
-  ShowDocumentHeaders;
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  then
+    ShowDocumentHeaders
+  else begin
+    ShellExecute( 0, 'Open', PChar(ExePath + SDirDocs + '\'),
+      nil, nil, SW_SHOWDEFAULT);
+    ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
+      nil, nil, SW_SHOWDEFAULT);
+    ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
+      nil, nil, SW_SHOWDEFAULT);
+  end;
 end;
 
 procedure TMainForm.FormResize(Sender: TObject);

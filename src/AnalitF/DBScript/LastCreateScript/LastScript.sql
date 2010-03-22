@@ -699,7 +699,8 @@ CREATE TABLE `userinfo` (
   `UserId` bigint(20) NOT NULL,
   `Addition` varchar(50) DEFAULT NULL,
   `InheritPrices` tinyint(1) NOT NULL DEFAULT '0',
-  `IsFutureClient` tinyint(1) NOT NULL DEFAULT '0'
+  `IsFutureClient` tinyint(1) NOT NULL DEFAULT '0',
+  `AllowViewWaybills` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 

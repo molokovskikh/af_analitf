@@ -224,9 +224,11 @@ begin
       DM.adtParams.Edit;
       Result := ShowModal=mrOk;
       if Result then begin
-        frameEditVitallyImportantMarkups.SaveVitallyImportantMarkups;
+        if Assigned(frameEditVitallyImportantMarkups) then
+          frameEditVitallyImportantMarkups.SaveVitallyImportantMarkups;
 
-        frameEditRetailMarkups.SaveVitallyImportantMarkups;
+        if Assigned(frameEditRetailMarkups) then
+          frameEditRetailMarkups.SaveVitallyImportantMarkups;
 
         if Assigned(frameEditAddress) then
           frameEditAddress.SaveChanges;
@@ -458,11 +460,13 @@ begin
       then
         CanClose := False;
     end;
-    if CanClose and not frameEditRetailMarkups.ProcessCloseQuery(CanClose) then begin
+    if CanClose and Assigned(frameEditRetailMarkups) and not frameEditRetailMarkups.ProcessCloseQuery(CanClose)
+    then begin
       PageControl.ActivePage := tshClients;
       frameEditRetailMarkups.dbgMarkups.SetFocus;
     end;
-    if CanClose and not frameEditVitallyImportantMarkups.ProcessCloseQuery(CanClose) then begin
+    if CanClose and Assigned(frameEditVitallyImportantMarkups) and not frameEditVitallyImportantMarkups.ProcessCloseQuery(CanClose)
+    then begin
       PageControl.ActivePage := tsVitallyImportantMarkups;
       frameEditVitallyImportantMarkups.dbgMarkups.SetFocus;
     end;
@@ -539,11 +543,14 @@ begin
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
 
-  //Теперь кол-во вкладок увеличилось, поэтому надо увеличивать размер формы
-  Self.Height := Self.Height + 30;
-  btnOk.Top := btnOk.Top + 30;
-  btnCancel.Top := btnCancel.Top + 30;
-  PageControl.Height := PageControl.Height + 30;
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  then begin
+    //Теперь кол-во вкладок увеличилось, поэтому надо увеличивать размер формы
+    Self.Height := Self.Height + 30;
+    btnOk.Top := btnOk.Top + 30;
+    btnCancel.Top := btnCancel.Top + 30;
+    PageControl.Height := PageControl.Height + 30;
+  end;
 end;
 
 procedure TConfigForm.AddEditAddressSheet;
@@ -555,7 +562,8 @@ begin
 
   frameEditAddress := nil;
 
-  if not DM.adsUser.IsEmpty then begin
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  then begin
     frameEditAddress := TframeEditAddress.Create(Self);
     frameEditAddress.Parent := tsEditAddress;
     frameEditAddress.Align := alClient;
@@ -601,7 +609,8 @@ begin
   tsWaybillFolders.PageIndex := tsEditAddress.PageIndex + 1;
   tsWaybillFolders.Caption := 'Настройки поставщиков';
 
-  if not DM.adsUser.IsEmpty then begin
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  then begin
     //Открываем дата сет
     adsWaybillFolders.CachedUpdates := True;
     adsWaybillFolders.SQL.Text := ''
@@ -711,11 +720,16 @@ begin
   tsVitallyImportantMarkups.PageIndex := 1;
   tsVitallyImportantMarkups.Caption := 'Наценки ЖНВЛС';
 
-  frameEditVitallyImportantMarkups := TframeEditVitallyImportantMarkups
-    .CreateFrame(Self, doiVitallyImportantMarkups, DM.LoadVitallyImportantMarkups);
-  frameEditVitallyImportantMarkups.Parent := tsVitallyImportantMarkups;
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  then begin
+    frameEditVitallyImportantMarkups := TframeEditVitallyImportantMarkups
+      .CreateFrame(Self, doiVitallyImportantMarkups, DM.LoadVitallyImportantMarkups);
+    frameEditVitallyImportantMarkups.Parent := tsVitallyImportantMarkups;
 
-  frameEditVitallyImportantMarkups.Align := alClient;
+    frameEditVitallyImportantMarkups.Align := alClient;
+  end
+  else
+    tsVitallyImportantMarkups.TabVisible := False;
 end;
 
 procedure TConfigForm.AddRetailMarkups;

@@ -231,7 +231,10 @@ begin
 					TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
 				end;
         //DoSendWaybills
-        if eaSendWaybills in ExchangeForm.ExchangeActs then
+        if (eaSendWaybills in ExchangeForm.ExchangeActs)
+          and not DM.adsUser.IsEmpty
+          and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+        then
         begin
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута

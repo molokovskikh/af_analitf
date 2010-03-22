@@ -134,7 +134,8 @@ begin
 +'    `UserId` bigint(20) not null                   , ' 
 +'    `Addition`       varchar(50) default null       , ' 
 +'    `InheritPrices`  tinyint(1) not null default ''0'', '
-+'    `IsFutureClient` tinyint(1) not null default ''0'' '
++'    `IsFutureClient` tinyint(1) not null default ''0'', '
++'    `AllowViewWaybills` tinyint(1) NOT NULL DEFAULT ''0'' '
 +'  ) ' 
 + GetTableOptions();
 end;
