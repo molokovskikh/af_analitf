@@ -222,7 +222,7 @@ begin
         '.',
         [rfReplaceAll])));
   AddPostParam('VitallyImportant', BoolToStr(dataSet.FieldByName('VitallyImportant').AsBoolean, True));
-  if FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').IsNull
+  if not FDataLayer.adsUser.FieldByName('SendRetailMarkup').AsBoolean
   then begin
     AddPostParam('RetailMarkup', '');
     FDataLayer.adcUpdate.SQL.Text := 'update orderslist set RetailMarkup = null where Id = :Id';
@@ -230,17 +230,14 @@ begin
     FDataLayer.adcUpdate.Execute;
   end
   else begin
-    RetailMarkup := FDataLayer.GetRetUpCost(dataSet.FieldByName('Cost').AsFloat);
+    RetailMarkup := FDataLayer.GetRetUpCost(dataSet.FieldByName('Price').AsFloat);
     AddPostParam(
       'RetailMarkup',
-      IfThen(
-        FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').IsNull,
-        '',
-        StringReplace(
+      StringReplace(
           FloatToStr(RetailMarkup),
           FDataLayer.FFS.DecimalSeparator,
           '.',
-          [rfReplaceAll])));
+          [rfReplaceAll]));
     FDataLayer.adcUpdate.SQL.Text := 'update orderslist set RetailMarkup = :RetailMarkup where Id = :Id';
     FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
     FDataLayer.adcUpdate.ParamByName('RetailMarkup').Value := RetailMarkup;

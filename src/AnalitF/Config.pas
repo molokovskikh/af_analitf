@@ -543,7 +543,7 @@ begin
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
 
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
   then begin
     //Теперь кол-во вкладок увеличилось, поэтому надо увеличивать размер формы
     Self.Height := Self.Height + 30;
@@ -562,7 +562,7 @@ begin
 
   frameEditAddress := nil;
 
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
   then begin
     frameEditAddress := TframeEditAddress.Create(Self);
     frameEditAddress.Parent := tsEditAddress;
@@ -609,7 +609,7 @@ begin
   tsWaybillFolders.PageIndex := tsEditAddress.PageIndex + 1;
   tsWaybillFolders.Caption := 'Настройки поставщиков';
 
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
   then begin
     //Открываем дата сет
     adsWaybillFolders.CachedUpdates := True;
@@ -720,7 +720,7 @@ begin
   tsVitallyImportantMarkups.PageIndex := 1;
   tsVitallyImportantMarkups.Caption := 'Наценки ЖНВЛС';
 
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
   then begin
     frameEditVitallyImportantMarkups := TframeEditVitallyImportantMarkups
       .CreateFrame(Self, doiVitallyImportantMarkups, DM.LoadVitallyImportantMarkups);

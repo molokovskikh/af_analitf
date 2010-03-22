@@ -2671,12 +2671,16 @@ object DM: TDM
       '  UserInfo.Addition,'
       '  UserInfo.InheritPrices,'
       '  UserInfo.IsFutureClient,'
-      '  UserInfo.AllowViewWaybills'
+      '  client.CalculateOnProducerCost,'
+      '  client.ParseWaybills,'
+      '  client.SendRetailMarkup'
       'FROM'
       '  analitf.CLIENTS,'
-      '  analitf.UserInfo'
+      '  analitf.UserInfo,'
+      '  analitf.client'
       'where'
-      '  (CLIENTS.ClientId = UserInfo.ClientId)')
+      '    (CLIENTS.ClientId = UserInfo.ClientId)'
+      'and (client.Id = UserInfo.ClientId)')
     Left = 240
     Top = 184
   end

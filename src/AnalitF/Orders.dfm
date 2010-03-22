@@ -139,13 +139,6 @@ inherited OrdersForm: TOrdersForm
         end
         item
           EditButtons = <>
-          FieldName = 'RetailPrice'
-          Footers = <>
-          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
-          Title.TitleButton = True
-        end
-        item
-          EditButtons = <>
           FieldName = 'ordercount'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079

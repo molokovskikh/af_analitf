@@ -71,6 +71,8 @@ CREATE TABLE `client` (
   `Id` bigint(20) NOT NULL,
   `Name` varchar(50) NOT NULL,
   `CalculateOnProducerCost` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `ParseWaybills` tinyint(1) unsigned not null default '0',
+  `SendRetailMarkup` tinyint(1) unsigned not null default '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
@@ -700,8 +702,7 @@ CREATE TABLE `userinfo` (
   `UserId` bigint(20) NOT NULL,
   `Addition` varchar(50) DEFAULT NULL,
   `InheritPrices` tinyint(1) NOT NULL DEFAULT '0',
-  `IsFutureClient` tinyint(1) NOT NULL DEFAULT '0',
-  `AllowViewWaybills` tinyint(1) NOT NULL DEFAULT '0'
+  `IsFutureClient` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 

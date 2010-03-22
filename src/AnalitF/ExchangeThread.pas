@@ -233,7 +233,7 @@ begin
         //DoSendWaybills
         if (eaSendWaybills in ExchangeForm.ExchangeActs)
           and not DM.adsUser.IsEmpty
-          and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+          and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
         then
         begin
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;

@@ -1056,7 +1056,7 @@ end;
 
 procedure TMainForm.actViewDocsExecute(Sender: TObject);
 begin
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('AllowViewWaybills').AsBoolean
+  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
   then
     ShowDocumentHeaders
   else begin

@@ -395,7 +395,6 @@ end;
 procedure TDocumentBodiesForm.FormCreate(Sender: TObject);
 var
   calc : TField;
-  tmpCalculateOnProducerCost : Variant;
 
   procedure SetDisplayFormat(fieldNames : array of string);
   var
@@ -437,11 +436,7 @@ var
   end;
 
 begin
-  tmpCalculateOnProducerCost := DM.QueryValue('select CalculateOnProducerCost from Client', [], []);
-  if not VarIsNull(tmpCalculateOnProducerCost) and VarIsOrdinal(tmpCalculateOnProducerCost) then
-    CalculateOnProducerCost := tmpCalculateOnProducerCost <> 0
-  else
-    CalculateOnProducerCost := False;
+  CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
   //Добавлем наценки
   retailMarkupField := TFloatField(adsDocumentBodies.FindField('RetailMarkup'));
   if not Assigned(retailMarkupField) then begin

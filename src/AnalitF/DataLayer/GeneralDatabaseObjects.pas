@@ -134,9 +134,8 @@ begin
 +'    `UserId` bigint(20) not null                   , ' 
 +'    `Addition`       varchar(50) default null       , ' 
 +'    `InheritPrices`  tinyint(1) not null default ''0'', '
-+'    `IsFutureClient` tinyint(1) not null default ''0'', '
-+'    `AllowViewWaybills` tinyint(1) NOT NULL DEFAULT ''0'' '
-+'  ) ' 
++'    `IsFutureClient` tinyint(1) not null default ''0'' '
++'  ) '
 + GetTableOptions();
 end;
 
@@ -156,6 +155,8 @@ begin
 +'    `Id` bigint(20) not null   , ' 
 +'    `Name` varchar(50) not null, '
 +'    `CalculateOnProducerCost` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
++'    `ParseWaybills` tinyint(1) unsigned not null default ''0'', '
++'    `SendRetailMarkup` tinyint(1) unsigned not null default ''0'', '
 +'    primary key (`Id`) ' 
 +'  ) ' 
 + GetTableOptions();

@@ -1220,6 +1220,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
+      '    OrdersList.RetailMarkup,'
       '    OrdersHead.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn'
@@ -1303,6 +1304,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
+      '    OrdersList.RetailMarkup,'
       '    OrdersHead.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn'
@@ -1407,6 +1409,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
+      '    OrdersList.RetailMarkup,'
       '    OrdersHead.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn'
@@ -1479,6 +1482,7 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
+      '    OrdersList.RetailMarkup,'
       '    OrdersHead.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn'
@@ -1666,6 +1670,9 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryCatalogMandatoryList: TBooleanField
       FieldName = 'CatalogMandatoryList'
+    end
+    object adsSummaryRetailMarkup: TFloatField
+      FieldName = 'RetailMarkup'
     end
   end
 end

@@ -145,6 +145,7 @@ type
     procedure FlipToCore;
   protected
     procedure UpdateOrderDataset; override;
+    procedure AddRetailPriceColumn;
   public
     procedure ShowForm(OrderId: Integer; ParentForm : TChildForm); overload; //reintroduce;
     procedure ShowForm; override;
@@ -332,6 +333,7 @@ begin
   fMinOrderCount := adsOrdersMINORDERCOUNT;
   gotoMNNButton := btnGotoMNN;
   inherited;
+  AddRetailPriceColumn;
   TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'Mnn', ShowDescriptionAction);
   Reg := TRegIniFile.Create;
   try
@@ -575,6 +577,25 @@ begin
     end
     else
       ParentOrdersHForm.ShowForm;
+  end;
+end;
+
+procedure TOrdersForm.AddRetailPriceColumn;
+var
+  orderCountColumn : TColumnEh;
+  retailPriceColumn : TColumnEh;
+begin
+  if DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
+    orderCountColumn := ColumnByNameT(dbgOrders, 'orderCount');
+    if Assigned(orderCountColumn) then begin
+      retailPriceColumn := ColumnByNameT(dbgOrders, 'RetailPrice');
+      if not Assigned(retailPriceColumn) then begin
+        retailPriceColumn := TColumnEh(dbgOrders.Columns.Insert(orderCountColumn.Index));
+        retailPriceColumn.FieldName := 'RetailPrice';
+        retailPriceColumn.Title.Caption := 'Розн. цена';
+        retailPriceColumn.Title.TitleButton := True;
+      end;
+    end;
   end;
 end;
 
