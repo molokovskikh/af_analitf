@@ -352,6 +352,7 @@ CREATE TABLE `orderslist` (
   `Doc` varchar(20) DEFAULT NULL,
   `RegistryCost` decimal(8,2) DEFAULT NULL,
   `VitallyImportant` tinyint(1) NOT NULL,
+  `RetailMarkup` decimal(12,6) default null,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_ORDERS` (`ID`),
   KEY `FK_ORDERS_CLIENTID` (`CLIENTID`),

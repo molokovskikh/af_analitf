@@ -139,6 +139,13 @@ inherited OrdersForm: TOrdersForm
         end
         item
           EditButtons = <>
+          FieldName = 'RetailPrice'
+          Footers = <>
+          Title.Caption = #1056#1086#1079#1085'. '#1094#1077#1085#1072
+          Title.TitleButton = True
+        end
+        item
+          EditButtons = <>
           FieldName = 'ordercount'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
@@ -679,7 +686,8 @@ inherited OrdersForm: TOrdersForm
       '    OrdersList.ServerQuantity,'
       '    OrdersList.SupplierPriceMarkup,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    OrdersList.RetailMarkup'
       'FROM '
       '  OrdersList'
       
@@ -826,6 +834,15 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersCatalogMandatoryList: TBooleanField
       FieldName = 'CatalogMandatoryList'
+    end
+    object adsOrdersRetailPrice: TFloatField
+      FieldKind = fkCalculated
+      FieldName = 'RetailPrice'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
+    object adsOrdersRetailMarkup: TFloatField
+      FieldName = 'RetailMarkup'
     end
   end
   object ActionList: TActionList

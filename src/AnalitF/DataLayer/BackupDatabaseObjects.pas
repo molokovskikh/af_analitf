@@ -178,6 +178,7 @@ begin
 +'    `Doc` varchar(20) DEFAULT NULL                       , '
 +'    `RegistryCost` decimal(8,2) DEFAULT NULL             , '
 +'    `VitallyImportant` tinyint(1) NOT NULL               , '
++'    `RetailMarkup` decimal(12,6) default null            , '
 +'    primary key (`ID`)                                   , '
 +'    unique key `PK_ORDERS` (`ID`)                        , '
 +'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '

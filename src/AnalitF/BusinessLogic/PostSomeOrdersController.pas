@@ -153,6 +153,8 @@ end;
 
 procedure TPostSomeOrdersController.FillOrderDetailGeneralParams(
   dataSet: TDataSet);
+var
+  RetailMarkup : Currency;
 begin
   AddPostParam('ClientPositionID', dataSet.FieldByName('Id').AsString);
   AddPostParam('ClientServerCoreID', dataSet.FieldByName('ServerCoreId').AsString);
@@ -220,6 +222,30 @@ begin
         '.',
         [rfReplaceAll])));
   AddPostParam('VitallyImportant', BoolToStr(dataSet.FieldByName('VitallyImportant').AsBoolean, True));
+  if FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').IsNull
+  then begin
+    AddPostParam('RetailMarkup', '');
+    FDataLayer.adcUpdate.SQL.Text := 'update orderslist set RetailMarkup = null where Id = :Id';
+    FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
+    FDataLayer.adcUpdate.Execute;
+  end
+  else begin
+    RetailMarkup := FDataLayer.GetRetUpCost(dataSet.FieldByName('Cost').AsFloat);
+    AddPostParam(
+      'RetailMarkup',
+      IfThen(
+        FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').IsNull,
+        '',
+        StringReplace(
+          FloatToStr(RetailMarkup),
+          FDataLayer.FFS.DecimalSeparator,
+          '.',
+          [rfReplaceAll])));
+    FDataLayer.adcUpdate.SQL.Text := 'update orderslist set RetailMarkup = :RetailMarkup where Id = :Id';
+    FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
+    FDataLayer.adcUpdate.ParamByName('RetailMarkup').Value := RetailMarkup;
+    FDataLayer.adcUpdate.Execute;
+  end;
 end;
 
 procedure TPostSomeOrdersController.FillOrderDetailLeaderParams(

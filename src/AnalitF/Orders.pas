@@ -107,6 +107,8 @@ type
     adsOrdersCatalogMandatoryList: TBooleanField;
     actFlipCore: TAction;
     btnGotoCore: TSpeedButton;
+    adsOrdersRetailPrice: TFloatField;
+    adsOrdersRetailMarkup: TFloatField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -134,6 +136,7 @@ type
     PriceCode : Integer;
     RegionCode : Int64;
     PriceName, RegionName : String;
+    ClosedOrder : Boolean;
     //Заказ имеет позиции с необходимой корректировкой, которые он получил
     //во время попытки отправки заказа
     OrderWithSendError : Boolean;
@@ -189,6 +192,7 @@ var
   SendResult : Variant;
 begin
   Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(OrderId), [], []);
+  ClosedOrder := Closed <> 0;
   //Отображаем сообщение с причиной корректировки только если заказ открыт и используется механизм корректировки заказов
   gbCorrectMessage.Visible := (Closed = 0)  and FUseCorrectOrders;
   if not gbCorrectMessage.Visible then
@@ -403,6 +407,11 @@ end;
 procedure TOrdersForm.ocf(DataSet: TDataSet);
 begin
   try
+    if not ClosedOrder or adsOrdersRetailMarkup.IsNull then
+      adsOrdersRetailPrice.AsCurrency := DM.GetPriceRet(adsOrdersprice.AsCurrency)
+    else
+      adsOrdersRetailPrice.AsCurrency :=
+        (1 + adsOrdersRetailMarkup.Value/100)*adsOrdersprice.AsCurrency;
     adsOrdersSumOrder.AsCurrency := adsOrdersprice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
   except
   end;
