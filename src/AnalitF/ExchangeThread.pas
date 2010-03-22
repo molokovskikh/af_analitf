@@ -519,7 +519,7 @@ var
   WinNumber, WinDesc : String;
   fi : TFileUpdateInfo;
   UpdateIdIndex : Integer;
-  tmpFileContent : String;
+  //tmpFileContent : String;
 begin
 	{ запрашиваем данные }
 	StatusText := 'Подготовка данных';
@@ -547,7 +547,7 @@ begin
       ParamValues[6] := WinDesc;
       ParamNames[7]  := 'WaybillsOnly';
       ParamValues[7] := BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
-      
+      {
       try
         tmpFileContent := hfileHelper.GetFileContent;
       except
@@ -558,8 +558,9 @@ begin
             'Не получилось прочитать клиентские данные (323243): ' + E.Message);
         end;
       end;
+      }
       ParamNames[8]  := 'ClientHFile';
-      ParamValues[8] := tmpFileContent;
+      ParamValues[8] := '';
 
       for I := 0 to LibVersions.Count-1 do begin
         fi := TFileUpdateInfo(LibVersions[i]);
@@ -594,6 +595,7 @@ begin
 
     ChangeHFile := False;
     NewHFile    := '';
+    {
     try
       if (Res.Values['ChangeHFile'] <> '') then begin
         ChangeHFile := StrToBool( UpperCase( Res.Values['ChangeHFile'] ) );
@@ -609,6 +611,7 @@ begin
           'Попытка обновить клиентские данные (1) после запроса завершилась неудачно: '
           + E.Message);
     end;
+    }
 
     CheckSendUData := False;
     try
