@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DBCtrls, StdCtrls, DB, ActnList, Buttons;
+  Dialogs, DBCtrls, StdCtrls, DB, ActnList, Buttons, RXCtrls;
 
 type
   TframePosition = class(TFrame)
@@ -13,7 +13,7 @@ type
     lMNN: TLabel;
     dbtSynonymName: TDBText;
     dbtMNN: TDBText;
-    btnShowDescription: TSpeedButton;
+    btnShowDescription: TRxSpeedButton;
     lVitallyImportant: TLabel;
     lMandatoryList: TLabel;
     procedure FrameResize(Sender: TObject);

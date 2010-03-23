@@ -38,7 +38,7 @@ object framePosition: TframePosition
       Width = 65
       Height = 17
     end
-    object btnShowDescription: TSpeedButton
+    object btnShowDescription: TRxSpeedButton
       Left = 280
       Top = 24
       Width = 81
