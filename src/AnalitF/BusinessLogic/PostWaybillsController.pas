@@ -46,9 +46,7 @@ type
     SendIdHTTP : TIdHTTP;    //Компонент для отправки письма
     SendURL : String;        //URL, по которому происходит доступ
     TempSendDir : String;    //Временная папка для создания аттачмента
-    Attachs : TStringList;   //Список приложений
-    Elems   : TObjectList;
-    Subject, Body : String;
+    Elems   : TObjectList;   //Список отправляемых файлов
     procedure ScanFolders;
     procedure CreateArchive;
     procedure SendArchive;

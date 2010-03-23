@@ -763,7 +763,6 @@ end;
 procedure TSummaryForm.UpdateOrderDataset;
 var
   lastCoreId : Variant;
-  LastCurrentSQL : String;
 begin
   if LastSymmaryType = 0 then begin
     lastCoreId := adsSummaryCoreID.AsVariant;
