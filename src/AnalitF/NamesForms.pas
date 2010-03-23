@@ -655,51 +655,49 @@ begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
-  with adsCatalog do begin
-    Screen.Cursor:=crHourglass;
-    try
-      if Active then Close;
-      SQL.Text := ''
-      +'SELECT '
-      +'  CATALOGS.ShortCode, '
-      +'  CATALOGS.Name, '
-      +'  CATALOGS.fullcode, '
-      +'  CATALOGS.form, '
-      +'  CATALOGS.COREEXISTS, '
-      +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
-      +'  CATALOGS.DescriptionId, '
-      +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
-      +'  catalogs.MandatoryList as CatalogMandatoryList, '
-      +'  Mnn.Id as MnnId, '
-      +'  Mnn.Mnn '
-      +'FROM '
-      +'  CATALOGS '
-      +'  left join Mnn on mnn.Id = Catalogs.MnnId ';
-      if not actShowAll.Checked then
-        FilterSQL := ' (CATALOGS.COREEXISTS = 1) ';
-      if InternalMnnId > 0 then
-        if Length(FilterSQL) > 0 then
-          FilterSQL := FilterSQL + ' and (Mnn.Id = ' + IntToStr(InternalMnnId) + ') '
-        else
-          FilterSQL := ' (Mnn.Id = ' + IntToStr(InternalMnnId) + ') ';
-      if (InternalFilterMnn > 0) then begin
-        if (InternalFilterMnn = 1) then
-          InternalFilterMnnSQL := ' (Catalogs.VitallyImportant = 1) '
-        else
-          InternalFilterMnnSQL := '(Catalogs.MandatoryList = 1) ';
-        if Length(FilterSQL) > 0 then
-          FilterSQL := FilterSQL + ' and ' + InternalFilterMnnSQL
-        else
-          FilterSQL := InternalFilterMnnSQL;
-      end;
+  Screen.Cursor:=crHourglass;
+  try
+    if adsCatalog.Active then adsCatalog.Close;
+    adsCatalog.SQL.Text := ''
+    +'SELECT '
+    +'  CATALOGS.ShortCode, '
+    +'  CATALOGS.Name, '
+    +'  CATALOGS.fullcode, '
+    +'  CATALOGS.form, '
+    +'  CATALOGS.COREEXISTS, '
+    +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
+    +'  CATALOGS.DescriptionId, '
+    +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
+    +'  catalogs.MandatoryList as CatalogMandatoryList, '
+    +'  Mnn.Id as MnnId, '
+    +'  Mnn.Mnn '
+    +'FROM '
+    +'  CATALOGS '
+    +'  left join Mnn on mnn.Id = Catalogs.MnnId ';
+    if not actShowAll.Checked then
+      FilterSQL := ' (CATALOGS.COREEXISTS = 1) ';
+    if InternalMnnId > 0 then
       if Length(FilterSQL) > 0 then
-        SQL.Text := SQL.Text + ' where ' + FilterSQL;
-      SQL.Text := SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
-      Open;
-      SetUsedFilter;
-    finally
-      Screen.Cursor := crDefault;
+        FilterSQL := FilterSQL + ' and (Mnn.Id = ' + IntToStr(InternalMnnId) + ') '
+      else
+        FilterSQL := ' (Mnn.Id = ' + IntToStr(InternalMnnId) + ') ';
+    if (InternalFilterMnn > 0) then begin
+      if (InternalFilterMnn = 1) then
+        InternalFilterMnnSQL := ' (Catalogs.VitallyImportant = 1) '
+      else
+        InternalFilterMnnSQL := '(Catalogs.MandatoryList = 1) ';
+      if Length(FilterSQL) > 0 then
+        FilterSQL := FilterSQL + ' and ' + InternalFilterMnnSQL
+      else
+        FilterSQL := InternalFilterMnnSQL;
     end;
+    if Length(FilterSQL) > 0 then
+      adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' where ' + FilterSQL;
+    adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
+    adsCatalog.Open;
+    SetUsedFilter;
+  finally
+    Screen.Cursor := crDefault;
   end;
 end;
 
