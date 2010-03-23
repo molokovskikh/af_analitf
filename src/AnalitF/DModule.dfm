@@ -2203,7 +2203,16 @@ object DM: TDM
       '  DropReason = :DropReason,'
       '  ServerCost = :ServerCost,'
       '  ServerQuantity = :ServerQuantity,'
-      '  SupplierPriceMarkup = :SupplierPriceMarkup'
+      '  SupplierPriceMarkup = :SupplierPriceMarkup,'
+      '  CoreQuantity = :CoreQuantity,'
+      '  ServerCoreID = :ServerCoreID,'
+      '  Unit = :Unit,'
+      '  Volume = :Volume,'
+      '  Note = :Note,'
+      '  Period = :Period,'
+      '  Doc = :Doc,'
+      '  RegistryCost = :RegistryCost,'
+      '  VitallyImportant = :VitallyImportant'
       'where'
       '  ID = :OLD_ID')
     Connection = MyConnection
@@ -2235,7 +2244,16 @@ object DM: TDM
       '  OrdersList.DropReason, '
       '  OrdersList.ServerCost, '
       '  OrdersList.ServerQuantity,'
-      '  OrdersList.SupplierPriceMarkup'
+      '  OrdersList.SupplierPriceMarkup,'
+      '  OrdersList.CoreQuantity,'
+      '  OrdersList.ServerCoreID,'
+      '  OrdersList.Unit,'
+      '  OrdersList.Volume,'
+      '  OrdersList.Note,'
+      '  OrdersList.Period,'
+      '  OrdersList.Doc,'
+      '  OrdersList.RegistryCost,'
+      '  OrdersList.VitallyImportant'
       'FROM '
       '  OrdersList '
       
@@ -2335,6 +2353,33 @@ object DM: TDM
     object adsRepareOrdersSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
     end
+    object adsRepareOrdersCoreQuantity: TStringField
+      FieldName = 'CoreQuantity'
+    end
+    object adsRepareOrdersServerCoreID: TLargeintField
+      FieldName = 'ServerCoreID'
+    end
+    object adsRepareOrdersUnit: TStringField
+      FieldName = 'Unit'
+    end
+    object adsRepareOrdersVolume: TStringField
+      FieldName = 'Volume'
+    end
+    object adsRepareOrdersNote: TStringField
+      FieldName = 'Note'
+    end
+    object adsRepareOrdersPeriod: TStringField
+      FieldName = 'Period'
+    end
+    object adsRepareOrdersDoc: TStringField
+      FieldName = 'Doc'
+    end
+    object adsRepareOrdersRegistryCost: TFloatField
+      FieldName = 'RegistryCost'
+    end
+    object adsRepareOrdersVitallyImportant: TBooleanField
+      FieldName = 'VitallyImportant'
+    end
   end
   object adsCoreRepare: TMyQuery
     Connection = MyConnection
@@ -2353,6 +2398,8 @@ object DM: TDM
       '    CCore.SynonymFirmCrCode,'
       '    CCore.Code,'
       '    CCore.CodeCr,'
+      '    CCore.ServerCoreId,'
+      '    CCore.Unit,'
       '    CCore.Volume,'
       '    CCore.Doc,'
       '    CCore.Note,'
@@ -2659,6 +2706,12 @@ object DM: TDM
     end
     object adsCoreRepareSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
+    end
+    object adsCoreRepareUnit: TStringField
+      FieldName = 'Unit'
+    end
+    object adsCoreRepareServerCoreId: TLargeintField
+      FieldName = 'ServerCoreId'
     end
   end
   object adsUser: TMyQuery

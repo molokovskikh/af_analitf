@@ -597,6 +597,15 @@ var
       DM.adsRepareOrdersRealPrice.Value := DM.adsCoreRepareRealCost.Value;
       DM.adsRepareOrdersCodeFirmCr.Value := DM.adsCoreRepareCodeFirmCr.Value;
       DM.adsRepareOrdersSupplierPriceMarkup.Value := DM.adsCoreRepareSupplierPriceMarkup.Value;
+      DM.adsRepareOrdersCoreQuantity.Value := DM.adsCoreRepareQuantity.Value;
+      DM.adsRepareOrdersServerCoreID.Value := DM.adsCoreRepareServerCoreID.Value;
+      DM.adsRepareOrdersUnit.Value := DM.adsCoreRepareUnit.Value;
+      DM.adsRepareOrdersVolume.Value := DM.adsCoreRepareVolume.Value;
+      DM.adsRepareOrdersNote.Value := DM.adsCoreRepareNote.Value;
+      DM.adsRepareOrdersPeriod.Value := DM.adsCoreReparePeriod.Value;
+      DM.adsRepareOrdersDoc.Value := DM.adsCoreRepareDoc.Value;
+      DM.adsRepareOrdersRegistryCost.Value := DM.adsCoreRepareRegistryCost.Value;
+      DM.adsRepareOrdersVitallyImportant.Value := DM.adsCoreRepareVitallyImportant.Value;
     end;
     DM.adsRepareOrdersServerCost.AsCurrency := ServerCost;
     DM.adsRepareOrdersServerQuantity.Value := OldOrderCount;

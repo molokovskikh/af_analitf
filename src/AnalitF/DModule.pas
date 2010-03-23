@@ -486,6 +486,17 @@ type
     adtClientsDeputyDirector: TStringField;
     adtClientsAccountant: TStringField;
     adtClientsMethodOfTaxation: TSmallintField;
+    adsRepareOrdersCoreQuantity: TStringField;
+    adsRepareOrdersServerCoreID: TLargeintField;
+    adsRepareOrdersUnit: TStringField;
+    adsCoreRepareUnit: TStringField;
+    adsRepareOrdersVolume: TStringField;
+    adsRepareOrdersNote: TStringField;
+    adsRepareOrdersPeriod: TStringField;
+    adsRepareOrdersDoc: TStringField;
+    adsRepareOrdersRegistryCost: TFloatField;
+    adsRepareOrdersVitallyImportant: TBooleanField;
+    adsCoreRepareServerCoreId: TLargeintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
