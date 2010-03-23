@@ -2069,6 +2069,11 @@ begin
       DBVersion := 58;
     end;
 
+    if DBVersion = 58 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 59;
+    end;
+
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
     //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
@@ -4928,7 +4933,9 @@ begin
       if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
          and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
          and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
-               in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN])
+               in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN,
+                   doiDocumentBodies, doiDocumentHeaders, doiProviderSettings,
+                   doiVitallyImportantMarkups])
       then begin
         exportTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
         if FileExists(PathToBackup + exportTable.Name + '.txt') then
@@ -4960,7 +4967,9 @@ begin
       if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
          and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
          and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
-               in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN])
+               in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN,
+                   doiDocumentBodies, doiDocumentHeaders, doiProviderSettings,
+                   doiVitallyImportantMarkups])
       then begin
         importTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
         if not FileExists(PathToBackup + importTable.Name + '.txt') then
@@ -4980,6 +4989,10 @@ begin
         OSDeleteFile(PathToBackup + importTable.Name + '.txt', False);
       end;
 
+    selectMySql.SQL.Text :=
+      'update analitf.retailmargins set MaxMarkup = Markup;';
+    selectMySql.Execute;
+    
     selectMySql.SQL.Text :=
       'update analitf.orderslist set RealPrice = Price;';
     selectMySql.Execute;

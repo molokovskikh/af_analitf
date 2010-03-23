@@ -210,7 +210,7 @@ CREATE TABLE `Descriptions` (
 -- Table structure for table  documentbodies
 -- 
 
-DROP TABLE IF EXISTS `documentbodies`;
+DROP TABLE IF EXISTS documentbodies;
 CREATE TABLE  `documentbodies` (  
   `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `DocumentId` bigint(20) unsigned NOT NULL,
@@ -238,7 +238,7 @@ CREATE TABLE  `documentbodies` (
 -- Table structure for table  documentheaders
 --
 
-DROP TABLE IF EXISTS `documentheaders`;
+DROP TABLE IF EXISTS documentheaders;
 CREATE TABLE  `documentheaders` (
   `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `DownloadId` bigint(20) unsigned DEFAULT NULL,
@@ -251,6 +251,7 @@ CREATE TABLE  `documentheaders` (
   `Header` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
 
 -- 
 -- Table structure for table  minprices
