@@ -1,4 +1,6 @@
 inherited MnnSearchForm: TMnnSearchForm
+  Left = 471
+  Top = 333
   ActiveControl = dbgMnn
   Caption = #1055#1086#1080#1089#1082' '#1087#1086' '#1052#1053#1053
   OnDestroy = FormDestroy
@@ -55,6 +57,12 @@ inherited MnnSearchForm: TMnnSearchForm
           Footers = <>
           Title.Caption = #1052#1053#1053
           Width = 136
+        end
+        item
+          EditButtons = <>
+          FieldName = 'RussianMnn'
+          Footers = <>
+          Title.Caption = #1056#1091#1089#1089#1082#1080#1081' '#1101#1082#1074#1080#1074#1072#1083#1077#1085#1090' '#1052#1053#1053
         end>
     end
     object pnlSearch: TPanel
@@ -90,15 +98,21 @@ inherited MnnSearchForm: TMnnSearchForm
     SQL.Strings = (
       'select'
       '  Mnn.Id,'
-      '  Mnn.Mnn'
+      '  Mnn.Mnn,'
+      '  Mnn.RussianMnn'
       'from'
       '  Mnn'
       'where'
-      '  Mnn.Mnn like :LikeParam'
+      '   Mnn.Mnn like :LikeParam'
+      'or Mnn.RussianMnn like :LikeParam'
       'order by Mnn')
     Left = 200
     Top = 168
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'LikeParam'
+      end
       item
         DataType = ftUnknown
         Name = 'LikeParam'
@@ -109,6 +123,9 @@ inherited MnnSearchForm: TMnnSearchForm
     object adsMNNMnn: TStringField
       FieldName = 'Mnn'
       Size = 250
+    end
+    object adsMNNRussianMnn: TStringField
+      FieldName = 'RussianMnn'
     end
   end
   object tmrSearch: TTimer
