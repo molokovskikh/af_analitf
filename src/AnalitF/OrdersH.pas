@@ -134,10 +134,8 @@ uses DModule, Main, AProc, NotFound, DBProc, Core, WayBillList, Constant;
 {$R *.dfm}
 
 procedure ShowOrdersH;
-var
-  OrdersHForm : TOrdersHForm;
 begin
-  OrdersHForm := TOrdersHForm( MainForm.ShowChildForm( TOrdersHForm));
+  MainForm.ShowChildForm( TOrdersHForm );
 end;
 
 procedure TOrdersHForm.FormCreate(Sender: TObject);

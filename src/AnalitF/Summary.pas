@@ -210,7 +210,7 @@ var
 
 procedure ShowSummary;
 begin
-	SummaryForm := TSummaryForm( MainForm.ShowChildForm( TSummaryForm));
+  SummaryForm := TSummaryForm( MainForm.ShowChildForm( TSummaryForm ) );
 end;
 
 procedure TSummaryForm.FormCreate(Sender: TObject);

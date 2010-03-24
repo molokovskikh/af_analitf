@@ -540,30 +540,36 @@ end;
 
 procedure TMainForm.actRegistryExecute(Sender: TObject);
 begin
-	ShowChildForm( TRegistersForm);
+  ShowChildForm( TRegistersForm );
 end;
 
 procedure TMainForm.actDefectivesExecute(Sender: TObject);
 begin
-	ShowChildForm( TDefectivesForm);
+  ShowChildForm( TDefectivesForm );
 end;
 
 { создание экземпляра класса FormClass - наследника TChildForm }
 function TMainForm.ShowChildForm( FormClass: TChildFormClass): TChildForm;
 begin
-	try
-		result := TChildForm( FindChildControlByClass( Self, FormClass));
-		if result = nil then
-		begin
+  try
+    //Удаляем все отображаемые формы и создаем новую форму
+    //Если будут проблемы, что переделаю вызов уже созданной формы
+    AddFormsToFree;
+    Result := FormClass.Create(Application);
+{
+    result := TChildForm( FindChildControlByClass( Self, FormClass));
+    if result = nil then
+    begin
       //Если я переделаю ShowChildForm, то этот вызов не нужен
       AddFormsToFree;
-			Result := FormClass.Create(Application);
-		end
-		else result.Show;
-	except
-		FreeChildForms;
-		raise;
-	end;
+      Result := FormClass.Create(Application);
+    end
+    else result.Show;
+}    
+  except
+    FreeChildForms;
+    raise;
+  end;
 end;
 
 procedure TMainForm.actClosedOrdersExecute( Sender: TObject);
@@ -582,7 +588,7 @@ end;
 
 procedure TMainForm.actSaleExecute(Sender: TObject);
 begin
-	ShowChildForm( TExpiredsForm);
+  ShowChildForm( TExpiredsForm );
 end;
 
 procedure TMainForm.actReceiveExecute(Sender: TObject);

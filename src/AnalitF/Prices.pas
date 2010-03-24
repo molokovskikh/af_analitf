@@ -177,7 +177,7 @@ begin
       False);
   end
   else begin
-    PricesForm := TPricesForm( MainForm.ShowChildForm( TPricesForm));
+    PricesForm := TPricesForm( MainForm.ShowChildForm( TPricesForm ) );
     PricesForm.ShowForm;
   end;
 end;
