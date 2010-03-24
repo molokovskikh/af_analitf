@@ -1066,8 +1066,13 @@ begin
   MyEmbConnection.Params.Add('--max_heap_table_size=33554432');
 {$endif}
 
+{$ifdef UsePrgDataTest}
+  SerBeg := 'Prg';
+  SerEnd := 'DataTest';
+{$else}
   SerBeg := 'Prg';
   SerEnd := 'Data';
+{$endif}
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
 

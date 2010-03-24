@@ -477,7 +477,11 @@ begin
     URL := 'https://' + DM.adtParams.FieldByName( 'HTTPHost').AsString+
            '/' + DM.SerBeg + DM.SerEnd + '/code.asmx'
   else
+{$ifdef UsePrgDataTest}
+    URL := 'https://test.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+{$else}
     URL := 'https://ios.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+{$endif}
 {$endif}
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
