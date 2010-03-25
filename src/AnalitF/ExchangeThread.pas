@@ -497,7 +497,10 @@ procedure TExchangeThread.CreateChildThreads;
 var
   T : TThread;
 begin
-  if not ChildThreadClassIsExists(TReclameThread) then
+  if not ChildThreadClassIsExists(TReclameThread)
+    and (DM.adsUser.FieldByName('ShowAdvertising').IsNull
+         or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean)
+  then
   begin
     T := TReclameThread.Create( True);
     T.FreeOnTerminate := True;

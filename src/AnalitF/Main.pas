@@ -882,11 +882,33 @@ begin
 end;
 
 procedure TMainForm.UpdateReclame;
+var
+  openFileName : String;
 begin
-	if SysUtils.FileExists( ExePath + SDirReclame + '\' +
-		FormatFloat( '00', Browser.Tag) + '.htm') then
-		Browser.Navigate( ExePath + SDirReclame + '\' +
-			FormatFloat( '00', Browser.Tag) + '.htm');
+  if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
+  then begin
+    openFileName := ExePath + SDirReclame + '\' + FormatFloat('00', Browser.Tag) + '.htm';
+    if SysUtils.FileExists( openFileName ) then
+    try
+      Browser.Navigate( openFileName );
+    except
+      on E : Exception do
+        LogCriticalError(
+          'Ошибка при открытии файла в WebBrowserе в MainForm: ' + E.Message + #13#10 +
+          'Системная ошибка: ' + SysErrorMessage(GetLastError()));
+    end;
+  end
+  else begin
+    try
+      Browser.Navigate( 'about:blank' );
+    except
+      on E : Exception do
+        LogCriticalError(
+          'Ошибка при открытии пустой страницы в WebBrowserе в MainForm: ' + E.Message + #13#10 +
+          'Системная ошибка: ' + SysErrorMessage(GetLastError()));
+    end;
+    DeleteFilesByMask(ExePath + SDirReclame + '\*.*', False);
+  end;
 end;
 
 procedure TMainForm.actHomeExecute(Sender: TObject);

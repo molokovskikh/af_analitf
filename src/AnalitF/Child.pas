@@ -242,17 +242,29 @@ end;
 
 procedure TChildForm.UpdateReclame;
 var
-	i: integer;
+  i: integer;
+  openFileName : String;
 begin
-	for i := 0 to Self.ComponentCount - 1 do
-		if Self.Components[ i] is TWebBrowser then
-		begin
-			if SysUtils.FileExists( ExePath + SDirReclame + '\' +
-				FormatFloat( '00', Self.Components[ i].Tag) + '.htm') then
-				TWebBrowser( Self.Components[ i]).Navigate(
-				ExePath + SDirReclame + '\' + FormatFloat( '00',
-				Self.Components[ i].Tag) + '.htm');
-		end;
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[ i] is TWebBrowser then
+    begin
+      try
+        if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
+        then begin
+          openFileName := ExePath + SDirReclame + '\' + FormatFloat('00', Self.Components[ i].Tag) + '.htm';
+          if SysUtils.FileExists(openFileName)
+          then
+            TWebBrowser(Self.Components[i]).Navigate(openFileName);
+        end
+        else
+          TWebBrowser( Self.Components[i] ).Navigate('about:blank');
+      except
+        on E : Exception do
+          LogCriticalError(
+            'Ошибка при открытии файла в WebBrowserе: ' + E.Message + #13#10 +
+            'Системная ошибка: ' + SysErrorMessage(GetLastError()));
+      end;
+    end;
 end;
 
 procedure TChildForm.PatchNonBrowser;

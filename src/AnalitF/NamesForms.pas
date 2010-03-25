@@ -284,6 +284,12 @@ var
 begin
 	inherited;
 
+  if not DM.adsUser.FieldByName('ShowAdvertising').IsNull
+    and not DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
+  then begin
+    pWebBrowser.Visible := False;
+    pWebBrowserCatalog.Visible := False;
+  end;
   InternalMnnId := -1;
   sbShowSynonymMNN.Down := False;
   sbShowSynonymMNN.Caption := 'Показать синонимы (Ctrl+N)';
@@ -586,11 +592,14 @@ procedure TNamesFormsForm.adsForms2AfterScroll(DataSet: TDataSet);
 var
   C : Integer;
 begin
-  C := dbgForms.Canvas.TextHeight('Wg') + 2;
-  if (adsForms.RecordCount > 0) and ((adsForms.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
-    pWebBrowser.Visible := False
-  else
-    pWebBrowser.Visible := True;
+  if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
+  then begin
+    C := dbgForms.Canvas.TextHeight('Wg') + 2;
+    if (adsForms.RecordCount > 0) and ((adsForms.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
+      pWebBrowser.Visible := False
+    else
+      pWebBrowser.Visible := True;
+  end;
 end;
 
 procedure TNamesFormsForm.FormResize(Sender: TObject);
