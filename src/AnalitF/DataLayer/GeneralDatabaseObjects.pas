@@ -151,12 +151,13 @@ end;
 function TClientTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `Id` bigint(20) not null   , ' 
++'  ( '
++'    `Id` bigint(20) not null   , '
 +'    `Name` varchar(50) not null, '
 +'    `CalculateOnProducerCost` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
 +'    `ParseWaybills` tinyint(1) unsigned not null default ''0'', '
 +'    `SendRetailMarkup` tinyint(1) unsigned not null default ''0'', '
++'    `ShowAdvertising` tinyint(1) unsigned not null default ''1'', '
 +'    primary key (`Id`) ' 
 +'  ) ' 
 + GetTableOptions();
@@ -516,6 +517,8 @@ begin
 +'    `ORDERCOST`     decimal(18,2) default null                 , ' 
 +'    `MINORDERCOUNT` int(10) default null                       , '
 +'    `SupplierPriceMarkup` decimal(5,3) default null            , '
++'    `ProducerCost` decimal(18,2) default null                  , '
++'    `NDS` smallint(5) default null                             , '
 +'    `COREID` bigint(20) not null AUTO_INCREMENT                , '
 +'    primary key (`COREID`)                                     , ' 
 +'    unique key `PK_CORE` (`COREID`)                            , ' 

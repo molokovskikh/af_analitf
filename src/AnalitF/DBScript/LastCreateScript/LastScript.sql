@@ -73,6 +73,7 @@ CREATE TABLE `client` (
   `CalculateOnProducerCost` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `ParseWaybills` tinyint(1) unsigned not null default '0',
   `SendRetailMarkup` tinyint(1) unsigned not null default '0',
+  `ShowAdvertising` tinyint(1) unsigned not null default '1',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
@@ -134,6 +135,8 @@ CREATE TABLE `core` (
   `ORDERCOST` decimal(18,2) DEFAULT NULL,
   `MINORDERCOUNT` int(10) DEFAULT NULL,
   `SupplierPriceMarkup` decimal(5,3) default null,
+  `ProducerCost` decimal(18,2) default null,
+  `NDS` smallint(5) default null,
   `COREID` bigint(20) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`COREID`),
   UNIQUE KEY `PK_CORE` (`COREID`),
@@ -358,6 +361,8 @@ CREATE TABLE `orderslist` (
   `RegistryCost` decimal(8,2) DEFAULT NULL,
   `VitallyImportant` tinyint(1) NOT NULL,
   `RetailMarkup` decimal(12,6) default null,
+  `ProducerCost` decimal(18,2) default null, 
+  `NDS` smallint(5) default null,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `PK_ORDERS` (`ID`),
   KEY `FK_ORDERS_CLIENTID` (`CLIENTID`),
