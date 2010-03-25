@@ -497,6 +497,12 @@ type
     adsRepareOrdersRegistryCost: TFloatField;
     adsRepareOrdersVitallyImportant: TBooleanField;
     adsCoreRepareServerCoreId: TLargeintField;
+    adsRepareOrdersProducerCost: TFloatField;
+    adsRepareOrdersNDS: TSmallintField;
+    adsCoreRepareProducerCost: TFloatField;
+    adsCoreRepareNDS: TSmallintField;
+    adsOrderDetailsProducerCost: TFloatField;
+    adsOrderDetailsNDS: TSmallintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -4493,7 +4499,8 @@ begin
 +'              ORDERCOST        , MINORDERCOUNT, RealPrice, SupplierPriceMarkup, '
 +'              CoreQuantity     , ServerCoreID, '
 +'              Unit             , Volume       , Note, '
-+'              Period           , Doc          , REGISTRYCOST, VITALLYIMPORTANT '
++'              Period           , Doc          , REGISTRYCOST, VITALLYIMPORTANT, '
++'              ProducerCost     , NDS            '
 +'       ) '
 +'select :ORDERID     , :CLIENTID, c.COREID, c.PRODUCTID, c.CODEFIRMCR, '
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
@@ -4505,7 +4512,8 @@ begin
 +'       c.SupplierPriceMarkup, '
 +'              c.Quantity     , c.ServerCoreID, '
 +'              c.Unit             , c.Volume       , c.Note, '
-+'              c.Period           , c.Doc          , c.REGISTRYCOST, c.VITALLYIMPORTANT '
++'              c.Period           , c.Doc          , c.REGISTRYCOST, c.VITALLYIMPORTANT, '
++'              c.ProducerCost     , c.NDS            '
 +'from   core c '
 +'       inner join pricesdata pd '
 +'       on     pd.PriceCode = c.PriceCode '

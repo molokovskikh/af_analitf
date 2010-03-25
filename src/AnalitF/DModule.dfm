@@ -1951,7 +1951,9 @@ object DM: TDM
       '    OrdersList.Period, '
       '    OrdersList.Doc, '
       '    OrdersList.RegistryCost, '
-      '    OrdersList.VitallyImportant'
+      '    OrdersList.VitallyImportant,'
+      '    OrdersList.ProducerCost,'
+      '    OrdersList.NDS'
       'FROM '
       '  OrdersList'
       
@@ -2072,6 +2074,12 @@ object DM: TDM
     end
     object adsOrderDetailsVitallyImportant: TBooleanField
       FieldName = 'VitallyImportant'
+    end
+    object adsOrderDetailsProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+    end
+    object adsOrderDetailsNDS: TSmallintField
+      FieldName = 'NDS'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -2212,7 +2220,9 @@ object DM: TDM
       '  Period = :Period,'
       '  Doc = :Doc,'
       '  RegistryCost = :RegistryCost,'
-      '  VitallyImportant = :VitallyImportant'
+      '  VitallyImportant = :VitallyImportant,'
+      '  ProducerCost = :ProducerCost,'
+      '  NDS = :NDS'
       'where'
       '  ID = :OLD_ID')
     Connection = MyConnection
@@ -2253,7 +2263,9 @@ object DM: TDM
       '  OrdersList.Period,'
       '  OrdersList.Doc,'
       '  OrdersList.RegistryCost,'
-      '  OrdersList.VitallyImportant'
+      '  OrdersList.VitallyImportant,'
+      '  OrdersList.ProducerCost,'
+      '  OrdersList.NDS'
       'FROM '
       '  OrdersList '
       
@@ -2380,6 +2392,12 @@ object DM: TDM
     object adsRepareOrdersVitallyImportant: TBooleanField
       FieldName = 'VitallyImportant'
     end
+    object adsRepareOrdersProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+    end
+    object adsRepareOrdersNDS: TSmallintField
+      FieldName = 'NDS'
+    end
   end
   object adsCoreRepare: TMyQuery
     Connection = MyConnection
@@ -2417,6 +2435,8 @@ object DM: TDM
       '    CCore.ordercost,'
       '    CCore.minordercount,'
       '    CCore.SupplierPriceMarkup,'
+      '    CCore.ProducerCost,'
+      '    CCore.NDS,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -2712,6 +2732,12 @@ object DM: TDM
     end
     object adsCoreRepareServerCoreId: TLargeintField
       FieldName = 'ServerCoreId'
+    end
+    object adsCoreRepareProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+    end
+    object adsCoreRepareNDS: TSmallintField
+      FieldName = 'NDS'
     end
   end
   object adsUser: TMyQuery

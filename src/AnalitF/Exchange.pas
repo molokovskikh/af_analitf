@@ -590,22 +590,24 @@ var
 		if Order = 0 then
       DM.adsRepareOrdersCOREID.Clear
     else begin
-      DM.adsRepareOrdersCOREID.Value := DM.adsCoreRepareCOREID.Value;
-      DM.adsRepareOrdersCODE.Value := DM.adsCoreRepareCODE.Value;
-      DM.adsRepareOrdersCODECR.Value := DM.adsCoreRepareCODECR.Value;
-      DM.adsRepareOrdersPRICE.Value := DM.adsCoreRepareCOST.Value;
-      DM.adsRepareOrdersRealPrice.Value := DM.adsCoreRepareRealCost.Value;
-      DM.adsRepareOrdersCodeFirmCr.Value := DM.adsCoreRepareCodeFirmCr.Value;
-      DM.adsRepareOrdersSupplierPriceMarkup.Value := DM.adsCoreRepareSupplierPriceMarkup.Value;
-      DM.adsRepareOrdersCoreQuantity.Value := DM.adsCoreRepareQuantity.Value;
-      DM.adsRepareOrdersServerCoreID.Value := DM.adsCoreRepareServerCoreID.Value;
-      DM.adsRepareOrdersUnit.Value := DM.adsCoreRepareUnit.Value;
-      DM.adsRepareOrdersVolume.Value := DM.adsCoreRepareVolume.Value;
-      DM.adsRepareOrdersNote.Value := DM.adsCoreRepareNote.Value;
-      DM.adsRepareOrdersPeriod.Value := DM.adsCoreReparePeriod.Value;
-      DM.adsRepareOrdersDoc.Value := DM.adsCoreRepareDoc.Value;
-      DM.adsRepareOrdersRegistryCost.Value := DM.adsCoreRepareRegistryCost.Value;
-      DM.adsRepareOrdersVitallyImportant.Value := DM.adsCoreRepareVitallyImportant.Value;
+      DM.adsRepareOrdersCOREID.AsVariant := DM.adsCoreRepareCOREID.AsVariant;
+      DM.adsRepareOrdersCODE.AsVariant := DM.adsCoreRepareCODE.AsVariant;
+      DM.adsRepareOrdersCODECR.AsVariant := DM.adsCoreRepareCODECR.AsVariant;
+      DM.adsRepareOrdersPRICE.AsVariant := DM.adsCoreRepareCOST.AsVariant;
+      DM.adsRepareOrdersRealPrice.AsVariant := DM.adsCoreRepareRealCost.AsVariant;
+      DM.adsRepareOrdersCodeFirmCr.AsVariant := DM.adsCoreRepareCodeFirmCr.AsVariant;
+      DM.adsRepareOrdersSupplierPriceMarkup.AsVariant := DM.adsCoreRepareSupplierPriceMarkup.AsVariant;
+      DM.adsRepareOrdersCoreQuantity.AsVariant := DM.adsCoreRepareQuantity.AsVariant;
+      DM.adsRepareOrdersServerCoreID.AsVariant := DM.adsCoreRepareServerCoreID.AsVariant;
+      DM.adsRepareOrdersUnit.AsVariant := DM.adsCoreRepareUnit.AsVariant;
+      DM.adsRepareOrdersVolume.AsVariant := DM.adsCoreRepareVolume.AsVariant;
+      DM.adsRepareOrdersNote.AsVariant := DM.adsCoreRepareNote.AsVariant;
+      DM.adsRepareOrdersPeriod.AsVariant := DM.adsCoreReparePeriod.AsVariant;
+      DM.adsRepareOrdersDoc.AsVariant := DM.adsCoreRepareDoc.AsVariant;
+      DM.adsRepareOrdersRegistryCost.AsVariant := DM.adsCoreRepareRegistryCost.AsVariant;
+      DM.adsRepareOrdersVitallyImportant.AsVariant := DM.adsCoreRepareVitallyImportant.AsVariant;
+      DM.adsRepareOrdersProducerCost.AsVariant := DM.adsCoreRepareProducerCost.AsVariant;
+      DM.adsRepareOrdersNDS.AsVariant := DM.adsCoreRepareNDS.AsVariant;
     end;
     DM.adsRepareOrdersServerCost.AsCurrency := ServerCost;
     DM.adsRepareOrdersServerQuantity.Value := OldOrderCount;

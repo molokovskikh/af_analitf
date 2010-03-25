@@ -227,6 +227,19 @@ begin
     FDataLayer.adcUpdate.ParamByName('RetailMarkup').Value := RetailMarkup;
     FDataLayer.adcUpdate.Execute;
   end;
+
+  AddPostParam(
+    'ProducerCost',
+    IfThen(
+      dataSet.FieldByName('ProducerCost').IsNull,
+      '',
+      FloatToServiceStr(dataSet.FieldByName('ProducerCost').AsFloat)));
+  AddPostParam(
+    'NDS',
+    IfThen(
+      dataSet.FieldByName('NDS').IsNull,
+      '',
+      dataSet.FieldByName('NDS').AsString));
 end;
 
 procedure TPostSomeOrdersController.FillOrderDetailLeaderParams(
