@@ -248,7 +248,7 @@ uses
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
   Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
-  MnnSearch, DocumentHeaders;
+  MnnSearch, DocumentHeaders, DocumentTypes;
 
 {$R *.DFM}
 
@@ -1030,19 +1030,32 @@ end;
 function TMainForm.OldOrders: Boolean;
 begin
   if DM.adsQueryValue.Active then
-  	DM.adsQueryValue.Close;
-	DM.adsQueryValue.Close;
-	DM.adsQueryValue.SQL.Text := 'SELECT * FROM OrdersHead where (Closed = 1) and (orderdate < :MinOrderDate)';
+    DM.adsQueryValue.Close;
+  DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := 'SELECT * FROM OrdersHead where (Closed = 1) and (orderdate < :MinOrderDate)';
   DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-	DM.adsQueryValue.Open;
-	try
+  DM.adsQueryValue.Open;
+  try
     Result := not DM.adsQueryValue.IsEmpty;
-	finally
-		DM.adsQueryValue.Close;
-	end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+  if not Result then begin
+    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (WriteTime < :MinOrderDate)';
+    DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+    DM.adsQueryValue.Open;
+    try
+      Result := not DM.adsQueryValue.IsEmpty;
+    finally
+      DM.adsQueryValue.Close;
+    end;
+  end;
 end;
 
 procedure TMainForm.DeleteOldOrders;
+var
+  documentType : TDocumentType;
+  downloadId : String;
 begin
   try
     DM.adcUpdate.SQL.Text := ''
@@ -1057,6 +1070,51 @@ begin
   except
     on E : Exception do
       LogCriticalError('Ошибка при удалении устаревших заказов : ' + E.Message);
+  end;
+  try
+    if DM.adsQueryValue.Active then
+      DM.adsQueryValue.Close;
+    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (WriteTime < :MinOrderDate)';
+    DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+    DM.adsQueryValue.Open;
+    try
+      while not DM.adsQueryValue.Eof do begin
+        documentType := TDocumentType(DM.adsQueryValue.FieldByName('DocumentType').AsInteger);
+        downloadId := DM.adsQueryValue.FieldByName('DownloadId').AsString;
+        if (documentType <> dtUnknown) and (Length(downloadId) > 0) then
+        try
+          DeleteFilesByMask(
+            ExePath + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
+            True);
+        except
+          on DeleteFile : Exception do
+            LogCriticalError('Ошибка при файла устаревшего документа ' + downloadId + ' : ' + DeleteFile.Message);
+        end;
+        DM.adsQueryValue.Next;
+      end;
+    finally
+      DM.adsQueryValue.Close;
+    end;
+    //Удаление накладных и отказов
+    DM.adcUpdate.SQL.Text := ''
+     + ' delete DocumentHeaders, DocumentBodies'
+     + ' FROM DocumentHeaders, DocumentBodies '
+     + ' where '
+     + '     (DocumentBodies.DocumentId = DocumentHeaders.Id) '
+     + ' and (WriteTime < :MinOrderDate)';
+    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+    DM.adcUpdate.Execute;
+    //удаление других документов, у которых не существует тела (позиций внутри)
+    DM.adcUpdate.SQL.Text := ''
+     + ' delete '
+     + ' FROM DocumentHeaders '
+     + ' where '
+     + '    (WriteTime < :MinOrderDate)';
+    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
+    DM.adcUpdate.Execute;
+  except
+    on E : Exception do
+      LogCriticalError('Ошибка при удалении устаревших документов : ' + E.Message);
   end;
 end;
 

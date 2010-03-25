@@ -33,7 +33,7 @@ begin
     frmOldOrdersDelete.btnOK.Caption := 'Удалить';
     frmOldOrdersDelete.btnCancel.Caption := 'Отмена';
     frmOldOrdersDelete.lblMessage.Caption := Format(
-      'В архиве заказов обнаружены заказы, сделанные более %d дней назад. Рекомендуется удалить их.',
+      'В архиве заказов обнаружены заказы и документы (накладные, отказы), сделанные более %d дней назад. Рекомендуется удалить их.',
       [DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger]);
     Result := frmOldOrdersDelete.ShowModal = mrOk;
   finally
