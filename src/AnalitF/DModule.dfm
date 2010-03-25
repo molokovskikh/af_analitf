@@ -2131,7 +2131,7 @@ object DM: TDM
       
         '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
         'd)'
-      '  WHERE OrdersHead.ClientId = :ClientId'
+      '  WHERE header.ClientId = :ClientId'
       '     AND header.PriceCode = OrdersHead.PriceCode'
       '     AND header.RegionCode = OrdersHead.RegionCode'
       
