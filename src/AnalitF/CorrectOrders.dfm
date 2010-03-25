@@ -490,6 +490,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -583,6 +585,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
       '    core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -870,6 +874,13 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object adsCoreSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
+    end
+    object adsCoreProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsCoreNDS: TSmallintField
+      FieldName = 'NDS'
     end
     object adsCoreMnnId: TLargeintField
       FieldName = 'MnnId'

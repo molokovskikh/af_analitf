@@ -1048,6 +1048,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -1147,6 +1149,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -1476,6 +1480,13 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
     end
+    object adsCoreProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsCoreNDS: TSmallintField
+      FieldName = 'NDS'
+    end
     object adsCoreMnn: TStringField
       FieldName = 'Mnn'
       Size = 250
@@ -1670,6 +1681,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.requestratio,'
       '    Core.OrderCost,'
       '    Core.MinOrderCount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +

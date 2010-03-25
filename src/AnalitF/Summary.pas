@@ -143,6 +143,8 @@ type
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
     adsSummarySupplierPriceMarkup: TFloatField;
+    adsSummaryProducerCost: TFloatField;
+    adsSummaryNDS: TSmallintField;
     adsSummaryMnnId: TLargeintField;
     adsSummaryMnn: TStringField;
     btnGotoMNN: TSpeedButton;

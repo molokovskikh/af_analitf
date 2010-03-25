@@ -211,6 +211,8 @@ type
     btnGotoCoreFirm: TSpeedButton;
     adsCoreRealCost: TFloatField;
     adsCoreSupplierPriceMarkup: TFloatField;
+    adsCoreProducerCost: TFloatField;
+    adsCoreNDS: TSmallintField;
     adsCoreMnnId: TLargeintField;
     adsCoreMnn: TStringField;
     adsCoreDescriptionId: TLargeintField;

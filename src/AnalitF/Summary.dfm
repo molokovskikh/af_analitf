@@ -1201,6 +1201,8 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.ProducerCost,'
+      '    core.NDS,'
       '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
@@ -1285,6 +1287,8 @@ inherited SummaryForm: TSummaryForm
       '    OrdersList.requestratio as requestratio,'
       '    0.0 as ordercost,'
       '    OrdersList.minordercount as minordercount,'
+      '    OrdersList.ProducerCost,'
+      '    OrdersList.NDS,'
       '    OrdersList.SupplierPriceMarkup, '
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -1390,6 +1394,8 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.ProducerCost,'
+      '    core.NDS,'
       '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
@@ -1463,6 +1469,8 @@ inherited SummaryForm: TSummaryForm
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
+      '    core.ProducerCost,'
+      '    core.NDS,'
       '    core.SupplierPriceMarkup,'
       '    OrdersList.RealPrice as RealCost,'
       '    OrdersList.Price as Cost,'
@@ -1654,6 +1662,13 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummarySupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
+    end
+    object adsSummaryProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsSummaryNDS: TSmallintField
+      FieldName = 'NDS'
     end
     object adsSummaryMnnId: TLargeintField
       FieldName = 'MnnId'

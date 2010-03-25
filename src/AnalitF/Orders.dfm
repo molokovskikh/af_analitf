@@ -677,6 +677,8 @@ inherited OrdersForm: TOrdersForm
       '    OrdersList.DropReason,'
       '    OrdersList.ServerCost,'
       '    OrdersList.ServerQuantity,'
+      '    OrdersList.ProducerCost,'
+      '    OrdersList.NDS,'
       '    OrdersList.SupplierPriceMarkup,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -811,6 +813,13 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
+    end
+    object adsOrdersProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsOrdersNDS: TSmallintField
+      FieldName = 'NDS'
     end
     object adsOrdersMnnId: TLargeintField
       FieldName = 'MnnId'

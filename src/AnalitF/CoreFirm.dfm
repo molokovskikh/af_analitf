@@ -1021,6 +1021,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.ProducerCost,'
+      '    CCore.NDS,'
       '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -1130,6 +1132,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.ProducerCost,'
+      '    CCore.NDS,'
       '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -1477,6 +1481,13 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
     end
+    object adsCoreProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsCoreNDS: TSmallintField
+      FieldName = 'NDS'
+    end
     object adsCoreMnn: TStringField
       FieldName = 'Mnn'
       Size = 250
@@ -1524,6 +1535,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.requestratio,'
       '    CCore.ordercost,'
       '    CCore.minordercount,'
+      '    CCore.ProducerCost,'
+      '    CCore.NDS,'
       '    CCore.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +

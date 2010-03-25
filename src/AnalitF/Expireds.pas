@@ -135,6 +135,8 @@ type
     btnGotoCore: TSpeedButton;
     adsExpiredsRealCost: TFloatField;
     adsExpiredsSupplierPriceMarkup: TFloatField;
+    adsExpiredsProducerCost: TFloatField;
+    adsExpiredsNDS: TSmallintField;
     adsExpiredsMnnId: TLargeintField;
     adsExpiredsMnn: TStringField;
     btnGotoMNN: TSpeedButton;

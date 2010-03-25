@@ -705,6 +705,8 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.requestratio,'
       '    Core.ordercost,'
       '    Core.minordercount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -791,6 +793,8 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.requestratio,'
       '    Core.ordercost,'
       '    Core.minordercount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
@@ -1041,6 +1045,13 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsSupplierPriceMarkup: TFloatField
       FieldName = 'SupplierPriceMarkup'
+    end
+    object adsExpiredsProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsExpiredsNDS: TSmallintField
+      FieldName = 'NDS'
     end
     object adsExpiredsMnnId: TLargeintField
       FieldName = 'MnnId'

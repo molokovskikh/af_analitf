@@ -97,6 +97,8 @@ type
     gbCorrectMessage: TGroupBox;
     mCorrectMessage: TMemo;
     adsOrdersSupplierPriceMarkup: TFloatField;
+    adsOrdersProducerCost: TFloatField;
+    adsOrdersNDS: TSmallintField;
     adsOrdersMnnId: TLargeintField;
     adsOrdersMnn: TStringField;
     ActionList: TActionList;

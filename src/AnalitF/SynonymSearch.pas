@@ -197,6 +197,8 @@ type
     adsCoreByFullcode: TMyQuery;
     adsCoreRealCost: TFloatField;
     adsCoreSupplierPriceMarkup: TFloatField;
+    adsCoreProducerCost: TFloatField;
+    adsCoreNDS: TSmallintField;
     adsCoreMnn: TStringField;
     adsCoreMnnId: TLargeintField;
     btnGotoMNN: TSpeedButton;

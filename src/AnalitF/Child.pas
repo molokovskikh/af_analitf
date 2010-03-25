@@ -535,19 +535,36 @@ procedure TChildForm.PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
 var
   realCostColumn : TColumnEh;
   supplierPriceMarkupColumn : TColumnEh;
+  producerCostColumn : TColumnEh;
+  ndsColumn : TColumnEh;
 begin
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
     realCostColumn := ColumnByNameT(Grid, 'RealPrice');
 
   if Assigned(realCostColumn) then  begin
+    ndsColumn := ColumnByNameT(Grid, 'NDS');
+    if not Assigned(ndsColumn) then begin
+      ndsColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
+      ndsColumn.FieldName := 'NDS';
+      ndsColumn.Title.Caption := 'НДС';
+      ndsColumn.DisplayFormat := '#';
+    end;
     supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
     if not Assigned(supplierPriceMarkupColumn) then begin
-      supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
+      supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(ndsColumn.Index));
       supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
       supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
       supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
     end;
+    producerCostColumn := ColumnByNameT(Grid, 'ProducerCost');
+    if not Assigned(producerCostColumn) then begin
+      producerCostColumn := TColumnEh(Grid.Columns.Insert(supplierPriceMarkupColumn.Index));
+      producerCostColumn.FieldName := 'ProducerCost';
+      producerCostColumn.Title.Caption := 'Цена производителя';
+      producerCostColumn.DisplayFormat := '0.00;;''''';
+    end;
+
     realCostColumn.Title.Caption := 'Цена поставщика';
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
     if not DM.adtClientsAllowDelayOfPayment.Value then
