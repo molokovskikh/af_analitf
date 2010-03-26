@@ -3,24 +3,27 @@ unit DBGridHelper;
 interface
 
 uses
-  SysUtils, Classes, Windows, Graphics, Grids, DBGrids, GridsEh, DBGridEh, ToughDBGrid;
+  SysUtils, Classes, Windows, Graphics, Grids, DBGrids, GridsEh, DBGridEh,
+  DBGridEhImpExp, ShellAPI,
+  ToughDBGrid, AProc;
 
 type
   TDBGridHelper = class
    public
-     class procedure SetDefaultSettingsToGrid(Grid : TDBGridEh);
-     class function AddColumn(Grid : TDBGridEh; ColumnName, Caption : String; ReadOnly : Boolean = True) : TColumnEh; overload;
-     class function AddColumn(Grid : TDBGridEh; ColumnName, Caption : String; Width : Integer; ReadOnly : Boolean = True ) : TColumnEh; overload;
-     class function AddColumn(Grid : TDBGridEh; ColumnName, Caption : String; DisplayFormat: String; ReadOnly : Boolean = True) : TColumnEh; overload;
-     class function AddColumn(Grid : TDBGridEh; ColumnName, Caption : String; DisplayFormat : String; Width : Integer = 0; ReadOnly : Boolean = True) : TColumnEh; overload;
-     class function GetColumnWidths(Grid : TDBGridEh) : Integer;
+     class procedure SetDefaultSettingsToGrid(Grid : TCustomDBGridEh);
+     class function AddColumn(Grid : TCustomDBGridEh; ColumnName, Caption : String; ReadOnly : Boolean = True) : TColumnEh; overload;
+     class function AddColumn(Grid : TCustomDBGridEh; ColumnName, Caption : String; Width : Integer; ReadOnly : Boolean = True ) : TColumnEh; overload;
+     class function AddColumn(Grid : TCustomDBGridEh; ColumnName, Caption : String; DisplayFormat: String; ReadOnly : Boolean = True) : TColumnEh; overload;
+     class function AddColumn(Grid : TCustomDBGridEh; ColumnName, Caption : String; DisplayFormat : String; Width : Integer = 0; ReadOnly : Boolean = True) : TColumnEh; overload;
+     class function GetColumnWidths(Grid : TCustomDBGridEh) : Integer;
+     class procedure SaveGrid(Grid: TCustomDBGridEh);
   end;
 
 implementation
 
 { TDBGridHelper }
 
-class function TDBGridHelper.AddColumn(Grid: TDBGridEh; ColumnName,
+class function TDBGridHelper.AddColumn(Grid: TCustomDBGridEh; ColumnName,
   Caption: String; ReadOnly : Boolean) : TColumnEh;
 begin
   Result := Grid.Columns.Add;
@@ -30,14 +33,14 @@ begin
   Result.Title.Hint := Caption;
 end;
 
-class function TDBGridHelper.AddColumn(Grid: TDBGridEh; ColumnName,
+class function TDBGridHelper.AddColumn(Grid: TCustomDBGridEh; ColumnName,
   Caption, DisplayFormat: String; ReadOnly: Boolean): TColumnEh;
 begin
   Result := AddColumn(Grid, ColumnName, Caption, ReadOnly);
   Result.DisplayFormat := DisplayFormat;
 end;
 
-class function TDBGridHelper.AddColumn(Grid: TDBGridEh; ColumnName,
+class function TDBGridHelper.AddColumn(Grid: TCustomDBGridEh; ColumnName,
   Caption: String; Width: Integer; ReadOnly: Boolean): TColumnEh;
 begin
   Result := AddColumn(Grid, ColumnName, Caption, ReadOnly);
@@ -47,7 +50,7 @@ begin
     Result.Width := Grid.Canvas.TextWidth(Caption) + 20;
 end;
 
-class function TDBGridHelper.AddColumn(Grid: TDBGridEh; ColumnName,
+class function TDBGridHelper.AddColumn(Grid: TCustomDBGridEh; ColumnName,
   Caption, DisplayFormat: String; Width: Integer; ReadOnly : Boolean): TColumnEh;
 begin
   Result := AddColumn(Grid, ColumnName, Caption, DisplayFormat, ReadOnly);
@@ -57,7 +60,7 @@ begin
     Result.Width := Grid.Canvas.TextWidth(Caption) + 20;
 end;
 
-class function TDBGridHelper.GetColumnWidths(Grid : TDBGridEh): Integer;
+class function TDBGridHelper.GetColumnWidths(Grid : TCustomDBGridEh): Integer;
 var
   I : Integer;
 begin
@@ -68,7 +71,33 @@ begin
   end;
 end;
 
-class procedure TDBGridHelper.SetDefaultSettingsToGrid(Grid : TDBGridEh);
+class procedure TDBGridHelper.SaveGrid(Grid: TCustomDBGridEh);
+var
+  Path,
+  tmpFileName : String;
+begin
+  if Grid = nil then
+    raise Exception.Create( 'Не задана таблица для сохранения');
+
+  Path := ExcludeTrailingPathDelimiter( GetTempDir);
+  tmpFileName := StringOfChar(' ', MAX_PATH);
+  Win32CheckA(GetTempFileName(PChar(Path), 'tmp', 0, (@tmpFileName[1])) <> 0);
+  tmpFileName := ChangeFileExt(Trim(tmpFileName), '.xls');
+
+  SaveDBGridEhToExportFile(
+    TDBGridEhExportAsXls,
+    Grid,
+    tmpFileName,
+    True);
+
+  ShellExecute(
+    0,
+    'Open',
+    PChar(tmpFileName),
+    nil, nil, SW_SHOWNORMAL);
+end;
+
+class procedure TDBGridHelper.SetDefaultSettingsToGrid(Grid : TCustomDBGridEh);
 begin
   Grid.AutoFitColWidths := True;
   Grid.Flat := True;

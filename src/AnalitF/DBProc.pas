@@ -18,7 +18,6 @@ procedure SetFilterProc(DataSet: TDataSet; AFilterProc: TFilterRecordEvent);
 function GetConnectionProperty(const ConnectionString, PropertyName: string): string;
 function SetConnectionProperty(const ConnectionString, PropertyName,
   PropertyValue: string): string;
-function SaveGrid(Grid: TCustomDBGridEh): Boolean;
 procedure FIBDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
 procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
 function  QueryValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
@@ -203,36 +202,6 @@ begin
   finally
     Strings.Free;
   end;
-end;
-
-function SaveGrid(Grid: TCustomDBGridEh): Boolean;
-//var
-//	Ext: string;
-//	SaveDialog: TSaveDialog;
-begin
-	if Grid = nil then raise Exception.Create( 'Не задана таблица для сохранения');
-	result := False;
-{	SaveDialog := TSaveDialog.Create( nil);
-	SaveDialog.DefaultExt := 'xls';
-	SaveDialog.InitialDir := ExePath;
-	SaveDialog.Options := SaveDialog.Options + [ofOverWritePrompt];
-	SaveDialog.Filter := 'Microsoft Excel|*.xls';}
-	try
-//		if SaveDialog.Execute then
-//		begin
-//			Ext := UpperCase( ExtractFileExt( SaveDialog.FileName));
-			SaveDBGridEhToExportFile( TDBGridEhExportAsXls,
-				TCustomDBGridEh( Grid), ExcludeTrailingPathDelimiter( GetTempDir) +
-					'\temp.xls' {SaveDialog.FileName}, True);
-{			MessageBox( 'Сохранено записей : ' +
-				IntToStr( Grid.DataSource.DataSet.RecordCount), MB_ICONINFORMATION);}
-			ShellExecute( 0, 'Open', PChar( ExcludeTrailingPathDelimiter( GetTempDir) +
-				'\temp.xls'), nil, nil, SW_SHOWNORMAL);
-
-//		end;
-	finally
-//		SaveDialog.Free;
-	end;
 end;
 
 procedure SetFilterProc(DataSet: TDataSet; AFilterProc: TFilterRecordEvent);

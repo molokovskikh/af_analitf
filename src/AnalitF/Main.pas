@@ -248,7 +248,7 @@ uses
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
   Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
-  MnnSearch, DocumentHeaders, DocumentTypes;
+  MnnSearch, DocumentHeaders, DBGridHelper, DocumentTypes;
 
 {$R *.DFM}
 
@@ -692,7 +692,7 @@ begin
       DBGirdName := TCustomDBGridEh(Screen.ActiveControl).Name;
     AProc.LogCriticalError('SE.' + DBGirdName + ' : ' + BoolToStr(SaveGridFlag) );
     
-    SaveGrid( TCustomDBGridEh( Screen.ActiveControl));
+    TDBGridHelper.SaveGrid( TCustomDBGridEh( Screen.ActiveControl ) );
   end;
 end;
 
