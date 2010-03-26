@@ -91,7 +91,9 @@ type
     doiDocumentHeaders,
     doiDocumentBodies,
     doiVitallyImportantMarkups,
-    doiProviderSettings);
+    doiProviderSettings,
+    //Cumulative
+    doiMaxProducerCosts);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

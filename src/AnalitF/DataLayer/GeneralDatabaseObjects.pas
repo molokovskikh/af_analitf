@@ -115,6 +115,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TMaxProducerCostsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -615,6 +621,35 @@ begin
 + GetTableOptions();
 end;
 
+{ TMaxProducerCostsTable }
+
+constructor TMaxProducerCostsTable.Create;
+begin
+  FName := 'maxproducercosts';
+  FObjectId := doiMaxProducerCosts;
+  FRepairType := dortCumulative;
+end;
+
+function TMaxProducerCostsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `Id`          bigint(20) not null  , '
++'  `CatalogId`   bigint(20) not null  , '
++'  `ProductId`   bigint(20) not null  , '
++'  `Product`     varchar(255) not null, '
++'  `Producer`    varchar(255) not null, '
++'  `Cost`        decimal(18,2) default null, '
++'  PRIMARY KEY (`Id`), '
++'  Key(`CatalogId`), '
++'  Key(`ProductId`), '
++'  Key(`Product`), '
++'  Key(`Producer`) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TUserInfoTable.Create());
   DatabaseController.AddObject(TClientTable.Create());
@@ -638,5 +673,6 @@ initialization
 
   DatabaseController.AddObject(TMNNTable.Create());
   DatabaseController.AddObject(TDescriptionsTable.Create());
+  DatabaseController.AddObject(TMaxProducerCostsTable.Create());
 end.
 

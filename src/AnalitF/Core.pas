@@ -256,10 +256,20 @@ type
     SortList : TStringList;
     CoreGroupByProducts : Boolean;
 
+    adsMaxProducerCosts : TMyQuery;
+    dsMaxProducerCosts : TDataSource;
+    dbgMaxProducerCosts : TToughDBGrid;
+
+    pcMaxProducerCosts : TPageControl;
+    tsMaxProducerCosts : TTabSheet;
+    tsFirmInfo : TTabSheet;
+
     procedure ccf(DataSet: TDataSet);
     procedure RefreshCurrentSumma;
     procedure GroupedCore;
     procedure UpdatePriceDelta;
+
+    procedure PrepareForMaxProducerCosts;
   public
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -280,6 +290,7 @@ var
 
 procedure TCoreForm.FormCreate(Sender: TObject);
 begin
+  PrepareForMaxProducerCosts;
   SortList := nil;
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
@@ -331,14 +342,14 @@ begin
   //Зачем этот код здесь: тайна, покрытая мраком
   //OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
   //if OrdersH <> nil then OrdersH.Free;
-  
+
 	SetLength( RecInfos, 0);
 
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
   TmpSortList := SortList;
   SortList := nil;
-  
+
 	{ готовим запрос в зависимости от того, показываем по наименованию или форме выпуска }
 	with adsCore do
         begin
@@ -425,6 +436,8 @@ begin
 		adsCore.Locate( 'PriceEnabled', 'False', []);
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
+  if not adsMaxProducerCosts.Active then
+    adsMaxProducerCosts.Open;
 
 	lblName.Caption := AName + ' ' + AForm;
 
@@ -751,6 +764,7 @@ end;
 
 procedure TCoreForm.FormResize(Sender: TObject);
 begin
+  gbPrevOrders.Width := Trunc((pBottom.ClientWidth - pRight.Width)*0.4);
   adsCore2AfterScroll(adsCore);
 end;
 
@@ -905,6 +919,50 @@ procedure TCoreForm.adsCoreAfterOpen(DataSet: TDataSet);
 begin
   tmrUpdatePreviosOrders.Enabled := False;
   tmrUpdatePreviosOrders.Enabled := True;
+end;
+
+procedure TCoreForm.PrepareForMaxProducerCosts;
+begin
+  gbPrevOrders.Constraints.MinWidth := lblPriceAvg.Canvas.TextWidth(lblPriceAvg.Caption) + 100;
+  pcMaxProducerCosts := TPageControl.Create(Self);
+  pcMaxProducerCosts.Parent := pBottom;
+  
+  tsMaxProducerCosts := TTabSheet.Create(Self);
+  tsMaxProducerCosts.PageControl := pcMaxProducerCosts;
+  tsMaxProducerCosts.Caption := 'Максимальные цены производителей';
+
+  tsFirmInfo := TTabSheet.Create(Self);
+  tsFirmInfo.PageControl := pcMaxProducerCosts;
+  tsFirmInfo.Caption := Trim(gbFirmInfo.Caption);
+
+  gbFirmInfo.Parent := tsFirmInfo;
+  gbFirmInfo.Caption := '';
+
+  pcMaxProducerCosts.ActivePage := tsMaxProducerCosts;
+  pcMaxProducerCosts.Align := alClient;
+
+  adsMaxProducerCosts := TMyQuery.Create(Self);
+  adsMaxProducerCosts.Connection := DM.MainConnection;
+  adsMaxProducerCosts.SQL.Text := ''
++ 'select '
++ ' * '
++ ' from '
++ '   MaxProducerCosts';
+  adsMaxProducerCosts.MasterSource := dsCore;
+  adsMaxProducerCosts.MasterFields := 'fullcode';
+  adsMaxProducerCosts.DetailFields := 'catalogid';
+
+  dsMaxProducerCosts := TDataSource.Create(Self);
+  dsMaxProducerCosts.DataSet := adsMaxProducerCosts;
+
+  dbgMaxProducerCosts := TToughDBGrid.Create(Self);
+  dbgMaxProducerCosts.Parent := tsMaxProducerCosts;
+  TDBGridHelper.SetDefaultSettingsToGrid(dbgMaxProducerCosts);
+  dbgMaxProducerCosts.Align := alClient;
+  TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Product', 'Наименование', dbgMaxProducerCosts.ClientWidth div 2);
+  TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Producer', 'Производитель', (dbgMaxProducerCosts.ClientWidth div 6)*2);
+  TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Cost', 'Цена', dbgMaxProducerCosts.ClientWidth div 6);
+  dbgMaxProducerCosts.DataSource := dsMaxProducerCosts;
 end;
 
 initialization

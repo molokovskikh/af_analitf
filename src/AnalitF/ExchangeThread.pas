@@ -37,7 +37,8 @@ TUpdateTable = (
   utDelayOfPayments,
   utClient,
   utMNN,
-  utDescriptions);
+  utDescriptions,
+  utMaxProducerCosts);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -1155,6 +1156,7 @@ begin
   if (GetFileSize(ExePath+SDirIn+'\Client.txt') > 0) then UpdateTables := UpdateTables + [utClient];
   if (GetFileSize(ExePath+SDirIn+'\MNN.txt') > 0) then UpdateTables := UpdateTables + [utMNN];
   if (GetFileSize(ExePath+SDirIn+'\Descriptions.txt') > 0) then UpdateTables := UpdateTables + [utDescriptions];
+  if (GetFileSize(ExePath+SDirIn+'\MaxProducerCosts.txt') > 0) then UpdateTables := UpdateTables + [utMaxProducerCosts];
 
     //обновляем таблицы
     {
@@ -1440,6 +1442,15 @@ begin
     SQL.Text := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
     InternalExecute;
 	end;
+  //MaxProducerCosts
+  if utMaxProducerCosts in UpdateTables then begin
+    if DM.QueryValue('select count(*) from MaxProducerCosts', [], []) > 0 then begin
+      SQL.Text:='truncate maxproducercosts;';
+      InternalExecute;
+    end;
+    SQL.Text := GetLoadDataSQL('MaxProducerCosts', ExePath+SDirIn+'\MaxProducerCosts.txt');
+    InternalExecute;
+  end;
 
   DM.MainConnection.Close;
   DM.MainConnection.Open;

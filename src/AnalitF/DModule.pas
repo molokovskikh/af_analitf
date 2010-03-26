@@ -1555,6 +1555,8 @@ begin
     SQL.Text:='truncate MNN;'; Execute;
     MainForm.StatusText:='Очищаются описания';
     SQL.Text:='truncate Descriptions;'; Execute;
+    MainForm.StatusText:='Очищаются макимальные цены производителей';
+    SQL.Text:='truncate maxproducercosts;'; Execute;
 
   finally
     Screen.Cursor:=crDefault;

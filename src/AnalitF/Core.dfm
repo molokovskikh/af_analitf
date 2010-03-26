@@ -95,6 +95,7 @@ object CoreForm: TCoreForm
         Top = 16
         Width = 465
         Height = 87
+        Anchors = [akLeft, akTop, akRight]
         AutoFitColWidths = True
         DataSource = dsPreviosOrders
         Flat = True

@@ -257,6 +257,26 @@ CREATE TABLE  `documentheaders` (
 
 
 -- 
+-- Table structure for table  maxproducercosts
+-- 
+
+DROP TABLE IF EXISTS maxproducercosts;
+CREATE TABLE `maxproducercosts` (
+  `Id`          bigint(20) not null  ,
+  `CatalogId`   bigint(20) not null  ,
+  `ProductId`   bigint(20) not null  ,
+  `Product`     varchar(255) not null,
+  `Producer`    varchar(255) not null,
+  `Cost`        decimal(18,2) default null,
+  PRIMARY KEY (`Id`),
+  Key(`CatalogId`),
+  Key(`ProductId`),
+  Key(`Product`),
+  Key(`Producer`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
+-- 
 -- Table structure for table  minprices
 -- 
 
