@@ -200,7 +200,7 @@ procedure ShowSummary;
 implementation
 
 uses DModule, Main, AProc, Constant, NamesForms, Fr_Class,
-      PostSomeOrdersController, U_framePosition;
+      PostSomeOrdersController, U_framePosition, DBGridHelper;
 
 var
   LastDateFrom,
@@ -248,21 +248,15 @@ begin
                or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
   dtpDateFrom.Enabled := LastSymmaryType = 1;
   dtpDateTo.Enabled := dtpDateFrom.Enabled;
+  TDBGridHelper.RestoreColumnsLayout(dbgSummaryCurrent, Self.ClassName);
 	Reg := TRegIniFile.Create;
   try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-    then
-      try
-        dbgSummaryCurrent.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-      finally
-        Reg.CloseKey;
-      end;
     //ѕытаемс€ прочитать из настроек дл€ отправленных заказов,
     //если их нет, то читаем их текущих заказов
     if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName + 'Sended', False)
     then
       try
-        dbgSummarySend.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+        TDBGridHelper.RestoreColumnsLayout(dbgSummarySend, Self.ClassName + 'Sended');
       finally
         Reg.CloseKey;
       end
@@ -270,7 +264,7 @@ begin
       if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
       then
         try
-          dbgSummarySend.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+          TDBGridHelper.RestoreColumnsLayout(dbgSummarySend, Self.ClassName);
         finally
           Reg.CloseKey;
         end;
@@ -292,26 +286,9 @@ begin
 end;
 
 procedure TSummaryForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    try
-      dbgSummaryCurrent.SaveColumnsLayout(Reg);
-    finally
-      Reg.CloseKey;
-    end;
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName + 'Sended', True);
-    try
-      dbgSummarySend.SaveColumnsLayout(Reg);
-    finally
-      Reg.CloseKey;
-    end;
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgSummaryCurrent, Self.ClassName);
+  TDBGridHelper.SaveColumnsLayout(dbgSummarySend, Self.ClassName + 'Sended');
 end;
 
 procedure TSummaryForm.ShowForm;

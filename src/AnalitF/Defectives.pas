@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DModule, DB, Grids, DBGrids, RXDBCtrl,
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
-  FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, Registry, ExtCtrls,
+  FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, ExtCtrls,
   FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery, DBProc, GridsEh, MemDS,
   DBAccess, MyAccess;
 
@@ -70,11 +70,10 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, Constant;
+  Main, Constant, DBGridHelper;
 
 procedure TDefectivesForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegIniFile;
 	Year, Month, Day: Word;
 begin
 	inherited;
@@ -87,28 +86,13 @@ begin
 	dtpDateTo.Date:=Date;
 	PrintQuery := adsPrint.SQL.Text;
 	OrderField:='LetterDate';
-	Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-    then
-      dbgDefectives.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-  finally
-  	Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgDefectives, Self.ClassName);
 	ShowForm;
 end;
 
 procedure TDefectivesForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgDefectives.SaveColumnsLayout(Reg);
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgDefectives, Self.ClassName);
 end;
 
 procedure TDefectivesForm.SetDateInterval;

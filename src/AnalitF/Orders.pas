@@ -7,7 +7,7 @@ uses
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
   pFIBDataSet, DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
-  MyAccess, ActnList, Registry, Buttons;
+  MyAccess, ActnList, Buttons;
 
 type
   TOrdersForm = class(TChildForm)
@@ -158,7 +158,7 @@ type
 implementation
 
 uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
-     PostSomeOrdersController, U_framePosition;
+     PostSomeOrdersController, U_framePosition, DBGridHelper;
 
 {$R *.dfm}
 
@@ -323,8 +323,6 @@ begin
 end;
 
 procedure TOrdersForm.FormCreate(Sender: TObject);
-var
-  Reg: TRegIniFile;
 begin
   dsCheckVolume := adsOrders;
   dgCheckVolume := dbgOrders;
@@ -337,18 +335,7 @@ begin
   inherited;
   AddRetailPriceColumn;
   TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'Mnn', ShowDescriptionAction);
-  Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'DetailOrder', False)
-    then
-      try
-        dbgOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-      finally
-        Reg.CloseKey;
-      end;
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgOrders, 'DetailOrder');
 end;
 
 procedure TOrdersForm.dbgOrdersKeyPress(Sender: TObject; var Key: Char);
@@ -544,21 +531,9 @@ begin
 end;
 
 procedure TOrdersForm.FormDestroy(Sender: TObject);
-var
-  Reg: TRegIniFile;
 begin
   inherited;
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'DetailOrder', True);
-    try
-      dbgOrders.SaveColumnsLayout(Reg);
-    finally
-      Reg.CloseKey;
-    end;
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgOrders, 'DetailOrder');
 end;
 
 procedure TOrdersForm.actFlipCoreExecute(Sender: TObject);

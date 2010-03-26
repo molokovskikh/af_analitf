@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
-  Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls,
+  Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls,
   SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, FIBQuery, Constant,
   GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons;
 
@@ -171,11 +171,9 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, NamesForms, U_framePosition;
+  Main, NamesForms, U_framePosition, DBGridHelper;
 
 procedure TExpiredsForm.FormCreate(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
   plOverCost.Hide();
   dsCheckVolume := adsExpireds;
@@ -203,14 +201,7 @@ begin
 		Screen.Cursor := crDefault;
 	end;
 	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCount]);
-	Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-    then
-      dbgExpireds.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-  finally
-  	Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgExpireds, Self.ClassName);
   if dbgExpireds.SortMarkedColumns.Count = 0 then
     dbgExpireds.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
 	ShowForm;
@@ -218,16 +209,8 @@ begin
 end;
 
 procedure TExpiredsForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgExpireds.SaveColumnsLayout(Reg);
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgExpireds, Self.ClassName);
 end;
 
 procedure TExpiredsForm.ecf(DataSet: TDataSet);

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
-  Placemnt, StdCtrls, DBCtrls, DBGridEh, ToughDBGrid, ExtCtrls, Registry,
+  Placemnt, StdCtrls, DBCtrls, DBGridEh, ToughDBGrid, ExtCtrls, 
   FIBDataSet, pFIBDataSet, DBProc, GridsEh;
 
 const
@@ -45,11 +45,9 @@ implementation
 {$R *.dfm}
 
 uses
-  DModule, Main;
+  DModule, Main, DBGridHelper;
 
 procedure TRegistersForm.FormCreate(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
   inherited;
   with adsRegistry do begin
@@ -60,28 +58,13 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
-	Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-    then
-      dbgRegistry.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-  finally
-  	Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgRegistry, Self.ClassName);
   ShowForm;
 end;
 
 procedure TRegistersForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgRegistry.SaveColumnsLayout(Reg);
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgRegistry, Self.ClassName);
 end;
 
 procedure TRegistersForm.dbgRegistrySortMarkingChanged(Sender: TObject);

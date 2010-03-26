@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  Registry, FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh, MemDS,
+  FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh, MemDS,
   DBAccess, MyAccess, CoreFirm;
 
 type
@@ -123,7 +123,7 @@ procedure ShowPrices;
 
 implementation
 
-uses Main, DModule, AProc, DBProc, StrUtils;
+uses Main, DModule, AProc, DBProc, StrUtils, DBGridHelper;
 
 {$R *.dfm}
 
@@ -183,8 +183,6 @@ begin
 end;
 
 procedure TPricesForm.FormCreate(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
 	inherited;
   NeedFirstOnDataSet := False;
@@ -192,14 +190,9 @@ begin
   if FCoreFirmForm = nil then
     FCoreFirmForm := TCoreFirmForm.Create( Application );
 	actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
-	Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-    then
-      dbgPrices.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-  finally
-  	Reg.Free;
-  end;
+
+  TDBGridHelper.RestoreColumnsLayout(dbgPrices, Self.ClassName);
+  
   //Если наследуются прайс-листы, то редактировать "В работе" запрещено
   adsPricesINJOB.ReadOnly := DM.adsUser.FieldByName('InheritPrices').AsBoolean;
   if dbgPrices.SortMarkedColumns.Count = 0 then
@@ -207,8 +200,6 @@ begin
 end;
 
 procedure TPricesForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
 	inherited;
   SoftPost(adsPrices);
@@ -216,13 +207,7 @@ begin
   begin
     GetLastPrice;
   end;
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgPrices.SaveColumnsLayout(Reg);
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgPrices, Self.ClassName);
 end;
 
 procedure TPricesForm.ShowForm;

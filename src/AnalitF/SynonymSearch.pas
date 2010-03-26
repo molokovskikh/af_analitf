@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB, FIBDataSet, pFIBDataSet, ActnList, ExtCtrls, FR_DSet,
-  FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Registry, Constant,
+  FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Constant,
   ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls, StrUtils, GridsEh,
   U_frameLegend, MemDS, DBAccess, MyAccess;
 
@@ -267,7 +267,7 @@ implementation
 
 uses
   DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms, U_GroupUtils,
-  U_framePosition;
+  U_framePosition, DBGridHelper;
 
 {$R *.dfm}
 
@@ -279,7 +279,6 @@ end;
 
 procedure TSynonymSearchForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegIniFile;
   I : Integer;
   sp : TSelectPrice;
   mi :TMenuItem;
@@ -317,14 +316,7 @@ begin
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
 
-	Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'TCoreForm', False)
-    then
-      dbgCore.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-  finally
-  	Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgCore, 'TCoreForm');
 
   SelectedPrices := SynonymSelectedPrices;
   for I := 0 to SelectedPrices.Count-1 do begin
@@ -342,18 +334,10 @@ begin
 end;
 
 procedure TSynonymSearchForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
   slColors.Free;
   fr.Free;
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'TCoreForm', True);
-    dbgCore.SaveColumnsLayout(Reg);
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgCore, 'TCoreForm');
   BM.Free;
 end;
 

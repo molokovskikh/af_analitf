@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, StdCtrls, DBCtrls, GridsEh, DBGridEh,
-  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, Registry, DocumentTypes,
+  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, DocumentTypes,
   FR_DSet, FR_DBSet, Buttons, FR_Class;
 
 type
@@ -317,43 +317,18 @@ begin
 end;
 
 procedure TDocumentBodiesForm.FormHide(Sender: TObject);
-var
-  Reg: TRegIniFile;
 begin
   inherited;
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' +
-      IfThen(adsDocumentHeadersDocumentType.Value = 1, 'DetailWaybill', 'DetailReject'),
-      True);
-    try
-      dbgDocumentBodies.SaveColumnsLayout(Reg);
-    finally
-      Reg.CloseKey;
-    end;
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(
+    dbgDocumentBodies,
+    IfThen(adsDocumentHeadersDocumentType.Value = 1, 'DetailWaybill', 'DetailReject'));
 end;
 
 procedure TDocumentBodiesForm.LoadFromRegistry;
-var
-  Reg: TRegIniFile;
 begin
-  Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' +
-       IfThen(adsDocumentHeadersDocumentType.Value = 1, 'DetailWaybill', 'DetailReject'),
-       False)
-    then
-      try
-        dbgDocumentBodies.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-      finally
-        Reg.CloseKey;
-      end;
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(
+    dbgDocumentBodies,
+    IfThen(adsDocumentHeadersDocumentType.Value = 1, 'DetailWaybill', 'DetailReject'));
 end;
 
 procedure TDocumentBodiesForm.adsDocumentHeadersDocumentTypeGetText(

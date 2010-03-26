@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   RXDBCtrl, Grids, DBGrids, ComCtrls, Db, StrUtils, Child,
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
-  Math, ExtCtrls, DBGridEh, ToughDBGrid, Registry, OleCtrls, SHDocVw,
+  Math, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw,
   FIBDataSet, pFIBDataSet, FIBSQLMonitor, hlpcodecs, LU_Tracer, FIBQuery,
   pFIBQuery, lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, pFIBProps,
   U_frameLegend, MemDS, DBAccess, MyAccess;
@@ -242,13 +242,12 @@ type
 implementation
 
 uses Main, AProc, DModule, DBProc, FormHistory, Prices, Constant,
-  NamesForms, AlphaUtils, Orders, DASQLMonitor, FR_Class, U_framePosition;
+  NamesForms, AlphaUtils, Orders, DASQLMonitor, FR_Class, U_framePosition,
+  DBGridHelper;
 
 {$R *.DFM}
 
 procedure TCoreFirmForm.FormCreate(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
@@ -264,9 +263,9 @@ begin
   TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
 
   BM := TBitmap.Create;
-  
+
   fr := TForceRus.Create;
-  
+
   InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
 	PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
@@ -274,30 +273,15 @@ begin
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 	adsAvgOrders.ParamByName('ClientId').Value := ClientId;
-	Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-    then
-      dbgCore.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-  finally
-  	Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
   if dbgCore.SortMarkedColumns.Count = 0 then
     dbgCore.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
 end;
 
 procedure TCoreFirmForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
 	inherited;
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgCore.SaveColumnsLayout(Reg);
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
   fr.Free;
   BM.Free;
 end;

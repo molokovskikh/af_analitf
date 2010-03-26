@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
-  StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, Registry, DateUtils,
+  StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
   FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps, MemDS,
   DBAccess, MyAccess, MemData, Orders;
@@ -129,7 +129,8 @@ procedure ShowOrdersH;
 
 implementation
 
-uses DModule, Main, AProc, NotFound, DBProc, Core, WayBillList, Constant;
+uses DModule, Main, AProc, NotFound, DBProc, Core, WayBillList, Constant,
+     DBGridHelper;
 
 {$R *.dfm}
 
@@ -140,7 +141,6 @@ end;
 
 procedure TOrdersHForm.FormCreate(Sender: TObject);
 var
-  Reg: TRegIniFile;
   Year, Month, Day: Word;
 begin
   inherited;
@@ -153,25 +153,8 @@ begin
     FOrdersForm := TOrdersForm.Create( Application);
 
   WayBillListForm := TWayBillListForm.Create(Application);
-  Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'CurrentOrders', False)
-    then
-      try
-        dbgCurrentOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-      finally
-        Reg.CloseKey;
-      end;
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'SendedOrders', False)
-    then
-      try
-        dbgSendedOrders.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-      finally
-        Reg.CloseKey;
-      end;
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgCurrentOrders, 'CurrentOrders');
+  TDBGridHelper.RestoreColumnsLayout(dbgSendedOrders, 'SendedOrders');
 
   Year := YearOf( Date);
   Month := MonthOf( Date);
@@ -192,8 +175,6 @@ begin
 end;
 
 procedure TOrdersHForm.FormDestroy(Sender: TObject);
-var
-  Reg: TRegIniFile;
 begin
   try
     //TODO: ___ Здесь возникает ошибка с AccessViolation в FBPlus.
@@ -201,23 +182,8 @@ begin
     SoftPost(adsOrdersHForm);
   except
   end;
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'CurrentOrders', True);
-    try
-      dbgCurrentOrders.SaveColumnsLayout(Reg);
-    finally
-      Reg.CloseKey;
-    end;
-    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + 'SendedOrders', True);
-    try
-      dbgSendedOrders.SaveColumnsLayout(Reg);
-    finally
-      Reg.CloseKey;
-    end;
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgCurrentOrders, 'CurrentOrders');
+  TDBGridHelper.SaveColumnsLayout(dbgSendedOrders, 'SendedOrders');
   FSelectedRows.Free;
 end;
 

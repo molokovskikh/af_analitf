@@ -7,7 +7,7 @@ uses
   ExtCtrls, Grids, DBGrids, ComCtrls, Db, StrUtils,
   StdCtrls, Buttons, DBCtrls, FR_Class, FR_DSet, FR_DBSet,
   Child, RXDBCtrl, Variants, Math, DBGridEh,
-  ToughDBGrid, Registry, OleCtrls, SHDocVw, ActnList, FIBDataSet,
+  ToughDBGrid, OleCtrls, SHDocVw, ActnList, FIBDataSet,
   pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor, Spin,
   GridsEh, pFIBProps, U_frameLegend, MemDS, DBAccess, MyAccess;
 
@@ -269,7 +269,7 @@ type
 implementation
 
 uses Main, AProc, DModule, Constant, NamesForms, OrdersH, DBProc, CoreFirm,
-  Prices, U_GroupUtils, Orders, U_framePosition;
+  Prices, U_GroupUtils, Orders, U_framePosition, DBGridHelper;
 
 var
   UserSetRetUpCost : Boolean;
@@ -279,8 +279,6 @@ var
 {$R *.DFM}
 
 procedure TCoreForm.FormCreate(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
   SortList := nil;
   dsCheckVolume := adsCore;
@@ -312,27 +310,12 @@ begin
 	adsAvgOrders.ParamByName( 'ClientId').Value :=
 		DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
-	Reg := TRegIniFile.Create;
-  try
-    if Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, False)
-    then
-      dbgCore.RestoreColumnsLayout(Reg, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
-  finally
-  	Reg.Free;
-  end;
+  TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
 end;
 
 procedure TCoreForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegIniFile;
 begin
-  Reg := TRegIniFile.Create();
-  try
-    Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + Self.ClassName, True);
-    dbgCore.SaveColumnsLayout(Reg);
-  finally
-    Reg.Free;
-  end;
+  TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
 end;
 
 procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean);
