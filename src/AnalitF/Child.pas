@@ -24,6 +24,16 @@ type
     constructor Create(AFormHandle : THandle; AOldDBGridWndProc: TWndMethod);
   end;
 
+  TModifiedAction = class
+   private
+    FOwner : TForm;
+    FAction : TCustomAction;
+    FOldUpdate : TNotifyEvent;
+    procedure ModifedUpdate(Sender: TObject);
+   public
+    constructor Create(Action : TCustomAction; Owner : TForm);
+  end;
+
   TChildForm = class(TForm)
     tCheckVolume: TTimer;
     procedure FormCreate(Sender: TObject);
@@ -48,6 +58,7 @@ type
     OldExit : TNotifyEvent;
 
     DBComponentWindowProcs : TObjectList;
+    ModifiedActions        : TObjectList;
 
     FUseCorrectOrders : Boolean;
 
@@ -91,6 +102,7 @@ type
     procedure HideAllForms;
     procedure SetActiveChildToMainForm;
     procedure UpdateOrderDataset; virtual;
+    procedure ModifyActionList(ActionList: TCustomActionList);
   public
     PrintEnabled: Boolean;
     //Разрешено сохранять отображаемую таблицу
@@ -296,6 +308,7 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
   FUseCorrectOrders := False;
+  ModifiedActions        := TObjectList.Create(True);
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
   PatchNonBrowser;
@@ -404,6 +417,9 @@ begin
   for I := 0 to Self.ComponentCount-1 do
     if Self.Components[i] is TActionList then begin
       al := TActionList(Self.Components[i]);
+
+      ModifyActionList(al);
+
       ShowDescriptionAction := TAction.Create(al);
       ShowDescriptionAction.Name := '';
       ShowDescriptionAction.Caption := 'Показать описание (Space)';
@@ -492,6 +508,7 @@ begin
           TChildForm(Parent.Controls[I]).PrevForm := nil;
   inherited;
   DBComponentWindowProcs.Free;
+  ModifiedActions.Free;
 end;
 
 { TDBComponentWindowProc }
@@ -750,6 +767,36 @@ begin
         }
         Parent.Controls[I].Hide;
       end;
+end;
+
+{ TModifiedAction }
+
+constructor TModifiedAction.Create(Action: TCustomAction; Owner : TForm);
+begin
+  FAction := Action;
+  FOldUpdate := FAction.OnUpdate;
+  FAction.OnUpdate := Self.ModifedUpdate;
+  FOwner := Owner;
+end;
+
+procedure TModifiedAction.ModifedUpdate(Sender: TObject);
+begin
+  FAction.Enabled := MainForm.ActiveChild = FOwner;
+  if FAction.Enabled and Assigned(FOldUpdate) then
+    FOldUpdate(Sender);
+end;
+
+procedure TChildForm.ModifyActionList(ActionList: TCustomActionList);
+var
+  I : Integer;
+begin
+  for I := 0 to ActionList.ActionCount-1 do
+    if ActionList.Actions[i] is TCustomAction then
+      ModifiedActions
+        .Add( TModifiedAction
+          .Create(
+            TCustomAction(ActionList.Actions[i]),
+            Self) );
 end;
 
 end.
