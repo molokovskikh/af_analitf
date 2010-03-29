@@ -93,6 +93,7 @@ type
     NDSField : TIntegerField;
     retailSummField : TCurrencyField;
     maxRetailMarkupField : TCurrencyField;
+    realMarkupField : TFloatField;
 
     FGridPopup : TPopupMenu;
     FGridColumns : TMenuItem;
@@ -110,6 +111,8 @@ type
     procedure RetailPriceGetCellParams(Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
     procedure RetailMarkupUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RetailMarkupGetCellParams(Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
+    procedure RealMarkupUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+    procedure RealMarkupGetCellParams(Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
 
     //методы для расчета розничных наценок и цен
     //Получить цену по наценке, но может измениться сама наценка
@@ -265,6 +268,9 @@ begin
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailMarkup', 'Розничная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
       column.OnUpdateData := RetailMarkupUpdateData;
       column.OnGetCellParams := RetailMarkupGetCellParams;
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RealMarkup', 'Реальная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
+      column.OnUpdateData := RealMarkupUpdateData;
+      column.OnGetCellParams := RealMarkupGetCellParams;
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailPrice', 'Розничная цена', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
       column.OnUpdateData := RetailPriceUpdateData;
       column.OnGetCellParams := RetailPriceGetCellParams;
@@ -318,6 +324,7 @@ begin
       price := GetRetailPriceByMarkup(markup);
       retailPriceField.Value := price;
       retailSummField.Value := price * adsDocumentBodiesQuantity.Value;
+      realMarkupField.Value := ((price - adsDocumentBodiesSupplierCost.Value) * 100)/ adsDocumentBodiesSupplierCost.Value; 
     end;
 
   except
@@ -459,6 +466,7 @@ begin
   retailSummField := AddField('RetailSumm');
   maxRetailMarkupField := AddField('MaxRetailMarkup');
   retailPriceField := AddFloatField('RetailPrice');
+  realMarkupField := AddFloatField('RealMarkup');
 
   FGridPopup := TPopupMenu.Create( Self);
   dbgDocumentBodies.PopupMenu := FGridPopup;
@@ -525,7 +533,8 @@ procedure TDocumentBodiesForm.WaybillGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if (retailMarkupField.Value < 0) then
-    if AnsiMatchText(Column.Field.FieldName, ['RetailMarkup', 'RetailPrice', 'RetailSumm'])
+    if AnsiMatchText(Column.Field.FieldName,
+        ['RetailMarkup', 'RetailPrice', 'RetailSumm', 'RealMarkup'])
     then
       Background := clRed;
 
@@ -678,7 +687,9 @@ end;
 procedure TDocumentBodiesForm.WaybillKeyPress(Sender: TObject;
   var Key: Char);
 begin
-  if (dbgDocumentBodies.SelectedField <> retailPriceField) and (dbgDocumentBodies.SelectedField <> retailMarkupField)
+  if (dbgDocumentBodies.SelectedField <> retailPriceField)
+    and (dbgDocumentBodies.SelectedField <> retailMarkupField)
+    and (dbgDocumentBodies.SelectedField <> realMarkupField)
   then
     if (Key in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then begin
       dbgDocumentBodies.SelectedField := retailMarkupField;
@@ -873,6 +884,40 @@ begin
     FColumnsForm.ShowModal;
   finally
     FColumnsForm.Free;
+  end;
+end;
+
+procedure TDocumentBodiesForm.RealMarkupGetCellParams(Sender: TObject;
+  EditMode: Boolean; Params: TColCellParamsEh);
+begin
+  if (Sender is TColumnEh) and (TColumnEh(Sender).Field = realMarkupField)
+  then
+    if not retailMarkupField.IsNull and Params.ReadOnly then
+      Params.ReadOnly := False;
+end;
+
+procedure TDocumentBodiesForm.RealMarkupUpdateData(Sender: TObject;
+  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+var
+  realMarkup,
+  markup,
+  price : Double;
+begin
+  if (adsDocumentBodies.State in [dsEdit]) and not retailMarkupField.IsNull
+  then begin
+    if StrToFloatDef(Value, 0.0) > 0 then begin
+      realMarkup := Value;
+      price := adsDocumentBodiesSupplierCost.Value * (1 + realMarkup/100);
+      markup := GetRetailMarkupByPrice(price);
+      if (price > 0) and (markup > 0) then begin
+        manualCorrectionField.Value := True;
+        retailMarkupField.AsVariant := markup;
+        adsDocumentBodies.Post;
+      end
+      else
+        adsDocumentBodies.Cancel;
+    end;
+    Handled := True;
   end;
 end;
 
