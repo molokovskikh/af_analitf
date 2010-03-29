@@ -40,6 +40,7 @@ type
     procedure adsDocumentHeadersDocumentTypeGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
     procedure spDeleteClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -92,6 +93,9 @@ var
   Year, Month, Day: Word;
 begin
   inherited;
+
+  TDBGridHelper.RestoreColumnsLayout(dbgHeaders, Self.ClassName);
+
   FDocumentBodiesForm := TDocumentBodiesForm( FindChildControlByClass(MainForm, TDocumentBodiesForm) );
   if not Assigned(FDocumentBodiesForm) then
     FDocumentBodiesForm := TDocumentBodiesForm.Create( Application);
@@ -239,6 +243,12 @@ end;
 procedure TDocumentHeaderForm.spDeleteClick(Sender: TObject);
 begin
   DeleteDocuments;
+end;
+
+procedure TDocumentHeaderForm.FormDestroy(Sender: TObject);
+begin
+  TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
+  inherited;
 end;
 
 end.

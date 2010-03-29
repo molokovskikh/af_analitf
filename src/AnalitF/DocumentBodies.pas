@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, StdCtrls, DBCtrls, GridsEh, DBGridEh,
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, DocumentTypes,
-  FR_DSet, FR_DBSet, Buttons, FR_Class;
+  FR_DSet, FR_DBSet, Buttons, FR_Class,
+  Menus;
 
 type
   TDocumentBodiesForm = class(TChildForm)
@@ -92,6 +93,10 @@ type
     NDSField : TIntegerField;
     retailSummField : TCurrencyField;
     maxRetailMarkupField : TCurrencyField;
+
+    FGridPopup : TPopupMenu;
+    FGridColumns : TMenuItem;
+
     procedure SetParams;
     procedure PrepareGrid;
     procedure WaybillCalcFields(DataSet : TDataSet);
@@ -113,6 +118,8 @@ type
     function GetRetailMarkupByPrice(price : Double) : Double;
     //Можем ли мы рассчитать розничную наценку, основываясь на полученных данных
     function CanCalculateRetailMarkup : Boolean;
+
+    procedure GridColumnsClick( Sender: TObject);
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -124,7 +131,8 @@ implementation
 
 uses
   Main, StrUtils, AProc, Math, DBProc, sumprops, EditVitallyImportantMarkups,
-  EditAddressForm, Constant, DBGridHelper;
+  EditAddressForm, Constant, DBGridHelper,
+  ToughDBGridColumns;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -249,12 +257,12 @@ begin
       //TDBGridHelper.AddColumn(dbgDocumentBodies, 'VitallyImportant', 'Признак ЖНВЛС', 0, False);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'ProducerCost', 'Цена производителя без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'RegistryCost', 'Цена ГР', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierPriceMarkup', 'Торговая надбавка оптовика', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
+      TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierPriceMarkup', 'Торговая наценка оптовика', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'NDS', 'НДС', dbgDocumentBodies.Canvas.TextWidth('999'));
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена поставщика с НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'MaxRetailMarkup', 'Макс. розничная надбавка', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailMarkup', 'Розничная надбавка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
+      TDBGridHelper.AddColumn(dbgDocumentBodies, 'MaxRetailMarkup', 'Макс. розничная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailMarkup', 'Розничная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
       column.OnUpdateData := RetailMarkupUpdateData;
       column.OnGetCellParams := RetailMarkupGetCellParams;
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailPrice', 'Розничная цена', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
@@ -451,6 +459,13 @@ begin
   retailSummField := AddField('RetailSumm');
   maxRetailMarkupField := AddField('MaxRetailMarkup');
   retailPriceField := AddFloatField('RetailPrice');
+
+  FGridPopup := TPopupMenu.Create( Self);
+  dbgDocumentBodies.PopupMenu := FGridPopup;
+  FGridColumns := TMenuItem.Create(FGridPopup);
+  FGridColumns.Caption := 'Столбцы...';
+  FGridColumns.OnClick := GridColumnsClick;
+  FGridPopup.Items.Add(FGridColumns);
 
   inherited;
 end;
@@ -845,6 +860,19 @@ begin
     else
     //По цене поставщика без НДС
       Result := not adsDocumentBodiesSupplierCostWithoutNDS.IsNull and not NDSField.IsNull and not adsDocumentBodiesSupplierCost.IsNull;
+  end;
+end;
+
+procedure TDocumentBodiesForm.GridColumnsClick(Sender: TObject);
+var
+  FColumnsForm : TfrmColumns;
+begin
+  FColumnsForm := TfrmColumns.Create(Self);
+  try
+    FColumnsForm.OwnerDBGrid := TToughDBGrid(dbgDocumentBodies);
+    FColumnsForm.ShowModal;
+  finally
+    FColumnsForm.Free;
   end;
 end;
 

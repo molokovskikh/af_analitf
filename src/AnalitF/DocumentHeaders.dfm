@@ -3,6 +3,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
   Top = 160
   ActiveControl = dbgHeaders
   Caption = #1044#1086#1082#1091#1084#1077#1085#1090#1099
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object pTop: TPanel [0]
