@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, ComCtrls, StdCtrls, GridsEh, DBGridEh,
-  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes;
+  ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes,
+  Buttons;
 
 type
   TDocumentHeaderForm = class(TChildForm)
@@ -30,6 +31,7 @@ type
     dsDocumentHeaders: TDataSource;
     adsDocumentHeadersProviderName: TStringField;
     adsDocumentHeadersLocalWriteTime: TDateTimeField;
+    spDelete: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -37,12 +39,14 @@ type
     procedure dbgHeadersDblClick(Sender: TObject);
     procedure adsDocumentHeadersDocumentTypeGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
+    procedure spDeleteClick(Sender: TObject);
   private
     { Private declarations }
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
     procedure ProcessDocument;
     procedure ShowArchiveOrder;
+    procedure DeleteDocuments;
   public
     { Public declarations }
     procedure SetParameters;
@@ -53,7 +57,9 @@ type
 
 implementation
 
-uses Main, DateUtils, DModule, AProc, Orders;
+uses Main, DateUtils, DModule, AProc, Orders,
+  DBGridHelper,
+  U_ExchangeLog;
 
 {$R *.dfm}
 
@@ -135,8 +141,11 @@ begin
   if (Key = VK_RETURN) and (Shift = []) then
     ProcessDocument
   else
-    if (Key = VK_RETURN) and (Shift = [ssShift]) and not adsDocumentHeadersOrderId.IsNull then
-      ShowArchiveOrder;
+    if (Key = VK_DELETE) and not adsDocumentHeaders.IsEmpty then
+      DeleteDocuments
+    else
+      if (Key = VK_RETURN) and (Shift = [ssShift]) and not adsDocumentHeadersOrderId.IsNull then
+        ShowArchiveOrder;
 end;
 
 procedure TDocumentHeaderForm.ProcessDocument;
@@ -175,6 +184,61 @@ procedure TDocumentHeaderForm.adsDocumentHeadersDocumentTypeGetText(
 begin
   if DisplayText then
     Text := RussianDocumentType[TDocumentType(Sender.AsInteger)];
+end;
+
+procedure TDocumentHeaderForm.DeleteDocuments;
+var
+  selectedRows : TStringList;
+  documentType : TDocumentType;
+  downloadId : String;
+  I : Integer;
+begin
+  if not adsDocumentHeaders.IsEmpty then begin
+    selectedRows := TDBGridHelper.GetSelectedRows(dbgHeaders);
+
+    if selectedRows.Count > 0 then
+      if AProc.MessageBox( 'Удалить выбранные документы (накладные, отказы, докумнеты)?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
+        dbgHeaders.DataSource.DataSet.DisableControls;
+        try
+          for I := 0 to selectedRows.Count-1 do begin
+            dbgHeaders.DataSource.DataSet.Bookmark := selectedRows[i];
+            documentType := TDocumentType(adsDocumentHeadersDocumentType.AsInteger);
+            downloadId := adsDocumentHeadersDownloadId.AsString;
+
+            WriteExchangeLog(
+              'DocumentHeaders',
+              Format(
+                'Удаление документа Id: %s  ProviderDocumentId: %s  DownloadId: %s',
+                [adsDocumentHeadersId.AsString,
+                 adsDocumentHeadersProviderDocumentId.AsString,
+                 downloadId]
+              )
+              );
+
+            if (documentType <> dtUnknown) and (Length(downloadId) > 0) then
+            try
+              DeleteFilesByMask(
+                ExePath + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
+                True);
+            except
+              on DeleteFile : Exception do
+                WriteExchangeLog(
+                  'DocumentHeaders',
+                  'Ошибка при файла устаревшего документа '
+                  + downloadId + ' : ' + DeleteFile.Message);
+            end;
+            dbgHeaders.DataSource.DataSet.Delete;
+          end;
+        finally
+          dbgHeaders.DataSource.DataSet.EnableControls;
+        end;
+      end;
+  end;
+end;
+
+procedure TDocumentHeaderForm.spDeleteClick(Sender: TObject);
+begin
+  DeleteDocuments;
 end;
 
 end.

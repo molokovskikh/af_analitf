@@ -47,6 +47,14 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Align = alClient
       Shape = bsBottomLine
     end
+    object spDelete: TSpeedButton
+      Left = 344
+      Top = 5
+      Width = 97
+      Height = 27
+      Caption = #1059#1076#1072#1083#1080#1090#1100
+      OnClick = spDeleteClick
+    end
     object dtpDateFrom: TDateTimePicker
       Left = 127
       Top = 9
@@ -150,6 +158,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     end
   end
   object adsDocumentHeaders: TMyQuery
+    SQLDelete.Strings = (
+      'delete from DocumentBodies where DocumentId = :Old_Id;'
+      'delete from DocumentHeaders where Id = :Old_Id;')
     Connection = DM.MyConnection
     SQL.Strings = (
       'select'
@@ -166,6 +177,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
         'teFrom AND :DateTo)'
       'and (p.FirmCode = dh.FirmCode)'
       'order by dh.WriteTime DESC')
+    Options.StrictUpdate = False
     Left = 64
     Top = 87
     ParamData = <

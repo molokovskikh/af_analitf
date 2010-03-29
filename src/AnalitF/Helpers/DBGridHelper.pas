@@ -31,6 +31,8 @@ type
 
     class procedure SaveColumnsLayout(Grid: TCustomDBGridEh; SectionName : String);
     class procedure RestoreColumnsLayout(Grid: TCustomDBGridEh; SectionName : String);
+
+    class function GetSelectedRows(Grid: TCustomDBGridEh) : TStringList;
   end;
 
 implementation
@@ -158,6 +160,36 @@ begin
     end;
   end else
     Result := '';
+end;
+
+class function TDBGridHelper.GetSelectedRows(
+  Grid: TCustomDBGridEh): TStringList;
+var
+  CurrentBookmark : String;
+begin
+  Result := TStringList.Create;
+
+  //Если выделение не Rect, то берем только текущую строку, иначе работаем
+  //со свойством Grid.Selection.Rect
+  if Grid.Selection.SelectionType <> gstRectangle then
+    Result.Add(Grid.DataSource.DataSet.Bookmark)
+  else begin
+    CurrentBookmark := Grid.DataSource.DataSet.Bookmark;
+    Grid.DataSource.DataSet.DisableControls;
+    try
+      Grid.DataSource.DataSet.Bookmark := Grid.Selection.Rect.TopRow;
+      repeat
+        Result.Add(Grid.DataSource.DataSet.Bookmark);
+        if Grid.DataSource.DataSet.Bookmark = Grid.Selection.Rect.BottomRow then
+          Break
+        else
+          Grid.DataSource.DataSet.Next;
+      until Grid.DataSource.DataSet.Eof;
+    finally
+      Grid.DataSource.DataSet.Bookmark := CurrentBookmark;
+      Grid.DataSource.DataSet.EnableControls;
+    end;
+  end;
 end;
 
 class procedure TDBGridHelper.InternalRestoreColumnsLayout(
