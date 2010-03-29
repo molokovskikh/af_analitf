@@ -4962,7 +4962,8 @@ begin
          and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
                in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN,
                    doiDocumentBodies, doiDocumentHeaders, doiProviderSettings,
-                   doiVitallyImportantMarkups, doiClientSettings])
+                   doiVitallyImportantMarkups, doiMaxProducerCosts,
+                   doiClientSettings])
       then begin
         exportTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
         if FileExists(PathToBackup + exportTable.Name + '.txt') then
@@ -4996,7 +4997,8 @@ begin
          and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
                in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN,
                    doiDocumentBodies, doiDocumentHeaders, doiProviderSettings,
-                   doiVitallyImportantMarkups, doiClientSettings])
+                   doiVitallyImportantMarkups, doiMaxProducerCosts,
+                   doiClientSettings])
       then begin
         importTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
         if not FileExists(PathToBackup + importTable.Name + '.txt') then

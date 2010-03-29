@@ -26,6 +26,20 @@ alter table analitf.orderslist
   add column `ProducerCost` decimal(18,2) default null,
   add column `NDS` smallint(5) default null;
 
+CREATE TABLE analitf.`maxproducercosts` (
+  `Id`          bigint(20) not null  ,
+  `CatalogId`   bigint(20) not null  ,
+  `ProductId`   bigint(20) not null  ,
+  `Product`     varchar(255) not null,
+  `Producer`    varchar(255) not null,
+  `Cost`        decimal(18,2) default null,
+  PRIMARY KEY (`Id`),
+  Key(`CatalogId`),
+  Key(`ProductId`),
+  Key(`Product`),
+  Key(`Producer`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
 alter table analitf.mnn
   add column `RussianMnn` varchar(250) default null,
   add index `IDX_MNN_RussianMnn` (`RussianMnn`);
