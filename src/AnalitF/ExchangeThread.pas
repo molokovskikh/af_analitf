@@ -1252,11 +1252,11 @@ begin
  	  SQL.Text:='DELETE FROM Core WHERE PriceCode is not null and NOT Exists(SELECT PriceCode, RegionCode FROM PricesRegionalData WHERE PriceCode=Core.PriceCode AND RegionCode=Core.RegionCode);';
     InternalExecute;
 	end;
-	//Clients
-	if utClients in UpdateTables then begin
-    SQL.Text:='DELETE FROM Clients WHERE NOT Exists(SELECT ClientId FROM tmpClients WHERE ClientId=Clients.ClientId);';
+  //Clients
+  if utClients in UpdateTables then begin
+    SQL.Text:='truncate Clients;';
     InternalExecute;
-	end;
+  end;
 	//Regions
 	if utRegions in UpdateTables then begin
 	  SQL.Text:='truncate Regions;';
@@ -1391,6 +1391,10 @@ begin
 	//Clients
 	if utClients in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Clients', ExePath+SDirIn+'\Clients.txt', true);
+    InternalExecute;
+    SQL.Text := ''
+      +' insert ignore into ClientSettings (ClientId) '
+      +' select ClientId from Clients ';
     InternalExecute;
 	end;
 	//Providers

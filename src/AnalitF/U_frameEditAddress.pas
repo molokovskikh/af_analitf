@@ -3,10 +3,10 @@ unit U_frameEditAddress;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, GridsEh, DBGridEh, ToughDBGrid,
   DBGridHelper, RxMemDS, DB, DModule, DBProc, AProc, Buttons, MyAccess,
-  DBCtrls;
+  DBCtrls, DatabaseObjects;
 
 type
   TframeEditAddress = class(TFrame)
@@ -47,6 +47,8 @@ type
 
     lMethodOfTaxation : TLabel;
     dblMethodOfTaxation : TDBLookupComboBox;
+
+    dbchbCalculateWithNDS : TDBCheckBox;
 
     constructor Create(AOwner: TComponent); override;
     procedure SaveChanges;
@@ -101,8 +103,8 @@ begin
     dblClientId.ListSource := dsEditClients;
     dblClientId.KeyValue := adsEditClients.FieldByName('ClientId').Value;
 
-    nextTop := dblClientId.Top + dblClientId.Height + 10;
-    
+    nextTop := dblClientId.Top + dblClientId.Height + 7;
+
     if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then
       lClientId.Caption := 'Адрес заказа:'
     else begin
@@ -132,7 +134,19 @@ begin
     dblMethodOfTaxation.ListSource := dsMethods;
     dblMethodOfTaxation.DataSource := dsEditClients;
 
-    gbEditClients.Height := dblMethodOfTaxation.Top + dblMethodOfTaxation.Height + 10;
+
+    dbchbCalculateWithNDS := TDBCheckBox.Create(Self);
+    dbchbCalculateWithNDS.Parent := gbEditClients;
+    dbchbCalculateWithNDS.Anchors := [akLeft, akTop, akRight];
+    dbchbCalculateWithNDS.Top := dblMethodOfTaxation.Top + dblMethodOfTaxation.Height + 10;
+    dbchbCalculateWithNDS.Left := lMethodOfTaxation.Left;
+    dbchbCalculateWithNDS.Width := gbEditClients.Width - 20;
+    dbchbCalculateWithNDS.Caption := 'Включать НДС в розничную цену ЖНВЛС';
+    dbchbCalculateWithNDS.DataField := 'CalculateWithNDS';
+    dbchbCalculateWithNDS.DataSource := dsEditClients;
+
+
+    gbEditClients.Height := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 7;
     gbEditClients.Constraints.MinHeight := gbEditClients.Height;
     gbEditClients.Align := alClient;
   end;
@@ -157,7 +171,7 @@ begin
   dbedit.DataField := DataField;
   dbedit.Width := Parents.Width - 20;
 
-  nextTop := dbedit.Top + dbedit.Height + 10;
+  nextTop := dbedit.Top + dbedit.Height + 7;
 end;
 
 procedure TframeEditAddress.AddNonVisualComponents;
@@ -203,6 +217,7 @@ begin
   if adsEditClients.Active then begin
     SoftPost(adsEditClients);
     adsEditClients.ApplyUpdates;
+    DatabaseController.BackupDataTable(doiClientSettings);
   end;
 end;
 

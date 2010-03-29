@@ -503,6 +503,7 @@ type
     adsCoreRepareNDS: TSmallintField;
     adsOrderDetailsProducerCost: TFloatField;
     adsOrderDetailsNDS: TSmallintField;
+    adtClientsCalculateWithNDS: TBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);

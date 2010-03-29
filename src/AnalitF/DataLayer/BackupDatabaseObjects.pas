@@ -56,6 +56,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TClientSettingsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -334,6 +340,32 @@ begin
 + GetTableOptions();
 end;
 
+{ TClientSettingsTable }
+
+constructor TClientSettingsTable.Create;
+begin
+  FName := 'clientsettings';
+  FObjectId := doiClientSettings;
+  FRepairType := dortBackup;
+end;
+
+function TClientSettingsTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'    `ClientId`         bigint(20) not null, '
++'    `OnlyLeaders`      tinyint(1) not null, '
++'    `Address`          varchar(255) default null, '
++'    `Director`         varchar(255) default null, '
++'    `DeputyDirector`   varchar(255) default null, '
++'    `Accountant`       varchar(255) default null, '
++'    `MethodOfTaxation` smallint(5) not null default ''0'', '
++'    `CalculateWithNDS` tinyint(1) not null default ''1'', '
++'    primary key (`CLIENTID`) '
++' ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TOrdersHeadTable.Create());
@@ -343,4 +375,5 @@ initialization
   DatabaseController.AddObject(TDocumentBodiesTable.Create());
   DatabaseController.AddObject(TVitallyImportantMarkupsTable.Create());
   DatabaseController.AddObject(TProviderSettingsTable.Create());
+  DatabaseController.AddObject(TClientSettingsTable.Create());
 end.

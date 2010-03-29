@@ -1365,55 +1365,65 @@ object DM: TDM
   end
   object adtClients: TMyQuery
     SQLUpdate.Strings = (
-      'UPDATE CLIENTS'
+      'UPDATE ClientSettings'
       'SET'
       '  ONLYLEADERS = :ONLYLEADERS,'
       '  Address = :Address,'
       '  Director = :Director,'
       '  DeputyDirector = :DeputyDirector,'
       '  Accountant = :Accountant,'
-      '  MethodOfTaxation = :MethodOfTaxation'
+      '  MethodOfTaxation = :MethodOfTaxation,'
+      '  CalculateWithNDS = :CalculateWithNDS'
       'WHERE'
       '  CLIENTID = :Old_CLIENTID')
     SQLRefresh.Strings = (
-      'SELECT '
-      '  CLIENTS.NAME, '
-      '  CLIENTS.REGIONCODE, '
-      '  CLIENTS.EXCESS, '
-      '  CLIENTS.DELTAMODE, '
-      '  CLIENTS.MAXUSERS, '
-      '  CLIENTS.REQMASK, '
-      '  CLIENTS.CALCULATELEADER, '
-      '  CLIENTS.ONLYLEADERS, '
-      '  CLIENTS.AllowDelayOfPayment,'
-      '  CLIENTS.Address,'
-      '  CLIENTS.Director,'
-      '  CLIENTS.DeputyDirector,'
-      '  CLIENTS.Accountant,'
-      '  CLIENTS.MethodOfTaxation '
-      'FROM CLIENTS'
-      'WHERE'
-      '  CLIENTS.CLIENTID = :CLIENTID')
+      'SELECT'
+      ' CLIENTS.CLIENTID,'
+      ' CLIENTS.NAME,'
+      ' CLIENTS.REGIONCODE,'
+      ' CLIENTS.EXCESS,'
+      ' CLIENTS.DELTAMODE,'
+      ' CLIENTS.MAXUSERS,'
+      ' CLIENTS.REQMASK,'
+      ' CLIENTS.CALCULATELEADER,'
+      ' CLIENTS.AllowDelayOfPayment,'
+      ' ClientSettings.ONLYLEADERS,'
+      ' ClientSettings.Address,'
+      ' ClientSettings.Director,'
+      ' ClientSettings.DeputyDirector,'
+      ' ClientSettings.Accountant,'
+      ' ClientSettings.MethodOfTaxation,'
+      ' ClientSettings.CalculateWithNDS'
+      'FROM'
+      ' CLIENTS,'
+      ' ClientSettings'
+      'where'
+      '    (CLIENTS.CLIENTID = :CLIENTID)'
+      'and (ClientSettings.ClientId = CLIENTS.ClientId)')
     Connection = MyConnection
     SQL.Strings = (
       'SELECT'
-      ' CLIENTID,'
-      ' NAME,'
-      ' REGIONCODE,'
-      ' EXCESS,'
-      ' DELTAMODE,'
-      ' MAXUSERS,'
-      ' REQMASK,'
-      ' CALCULATELEADER,'
-      ' ONLYLEADERS,'
-      ' AllowDelayOfPayment,'
-      ' Address,'
-      ' Director,'
-      ' DeputyDirector,'
-      ' Accountant,'
-      ' MethodOfTaxation'
+      ' CLIENTS.CLIENTID,'
+      ' CLIENTS.NAME,'
+      ' CLIENTS.REGIONCODE,'
+      ' CLIENTS.EXCESS,'
+      ' CLIENTS.DELTAMODE,'
+      ' CLIENTS.MAXUSERS,'
+      ' CLIENTS.REQMASK,'
+      ' CLIENTS.CALCULATELEADER,'
+      ' CLIENTS.AllowDelayOfPayment,'
+      ' ClientSettings.ONLYLEADERS,'
+      ' ClientSettings.Address,'
+      ' ClientSettings.Director,'
+      ' ClientSettings.DeputyDirector,'
+      ' ClientSettings.Accountant,'
+      ' ClientSettings.MethodOfTaxation,'
+      ' ClientSettings.CalculateWithNDS'
       'FROM'
-      ' CLIENTS')
+      ' CLIENTS,'
+      ' ClientSettings'
+      'where'
+      '  (ClientSettings.ClientId = CLIENTS.ClientId)')
     AfterOpen = adtClientsOldAfterOpen
     Left = 168
     Top = 200
@@ -1466,6 +1476,9 @@ object DM: TDM
     end
     object adtClientsMethodOfTaxation: TSmallintField
       FieldName = 'MethodOfTaxation'
+    end
+    object adtClientsCalculateWithNDS: TBooleanField
+      FieldName = 'CalculateWithNDS'
     end
   end
   object MyEmbConnection: TMyEmbConnection

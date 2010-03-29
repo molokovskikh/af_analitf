@@ -93,15 +93,27 @@ CREATE TABLE `clients` (
   `REQMASK` bigint(20) DEFAULT NULL,
   `CALCULATELEADER` tinyint(1) NOT NULL,
   `AllowDelayOfPayment` tinyint(1) NOT NULL,
-  `ONLYLEADERS` tinyint(1) NOT NULL,
-  `Address` varchar(255) default null,
-  `Director` varchar(255) default null,
-  `DeputyDirector` varchar(255) default null,
-  `Accountant` varchar(255) default null,
-  `MethodOfTaxation` smallint(5) not null default '0',
   PRIMARY KEY (`CLIENTID`),
   UNIQUE KEY `PK_CLIENTS` (`CLIENTID`),
   KEY `FK_CLIENTS_REGIONCODE` (`REGIONCODE`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
+-- 
+-- Table structure for table  clientsettings
+-- 
+
+DROP TABLE IF EXISTS clientsettings;
+CREATE TABLE `clientsettings` (
+  `ClientId`         bigint(20) not null,
+  `OnlyLeaders`      tinyint(1) not null,
+  `Address`          varchar(255) default null,
+  `Director`         varchar(255) default null,
+  `DeputyDirector`   varchar(255) default null,
+  `Accountant`       varchar(255) default null,
+  `MethodOfTaxation` smallint(5) not null default '0',
+  `CalculateWithNDS` tinyint(1) not null default '1',
+  primary key (`CLIENTID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 

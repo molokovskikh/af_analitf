@@ -93,7 +93,9 @@ type
     doiVitallyImportantMarkups,
     doiProviderSettings,
     //Cumulative
-    doiMaxProducerCosts);
+    doiMaxProducerCosts,
+    //Backup
+    doiClientSettings);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

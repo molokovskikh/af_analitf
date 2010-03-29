@@ -622,7 +622,6 @@ begin
       + '  Providers '
       + '  inner join ProviderSettings on ProviderSettings.FirmCode = Providers.FirmCode '
       + 'order by Providers.FullName ';
-    adsWaybillFolders.SQLRefresh.Text := DM.adtClients.SQLRefresh.Text;
     adsWaybillFolders.SQLUpdate.Text := ''
       + 'update ProviderSettings '
       + 'set '
