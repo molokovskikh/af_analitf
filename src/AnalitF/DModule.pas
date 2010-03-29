@@ -2095,17 +2095,7 @@ begin
     end;
 
     if DBVersion = 58 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 59;
-    end;
-
-    if DBVersion = 59 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 60;
-    end;
-
-    if DBVersion = 60 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      RunUpdateDBFile(dbCon, ExePath + SDirData, 60, UpdateDBFile, nil);
       DBVersion := 61;
     end;
 
@@ -4972,7 +4962,7 @@ begin
          and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
                in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN,
                    doiDocumentBodies, doiDocumentHeaders, doiProviderSettings,
-                   doiVitallyImportantMarkups])
+                   doiVitallyImportantMarkups, doiClientSettings])
       then begin
         exportTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
         if FileExists(PathToBackup + exportTable.Name + '.txt') then
@@ -5006,7 +4996,7 @@ begin
          and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
                in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN,
                    doiDocumentBodies, doiDocumentHeaders, doiProviderSettings,
-                   doiVitallyImportantMarkups])
+                   doiVitallyImportantMarkups, doiClientSettings])
       then begin
         importTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
         if not FileExists(PathToBackup + importTable.Name + '.txt') then
