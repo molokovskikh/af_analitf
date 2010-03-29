@@ -2104,6 +2104,11 @@ begin
       DBVersion := 60;
     end;
 
+    if DBVersion = 60 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 61;
+    end;
+
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
     //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
