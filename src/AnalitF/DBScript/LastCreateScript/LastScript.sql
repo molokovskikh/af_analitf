@@ -279,7 +279,7 @@ CREATE TABLE `maxproducercosts` (
   `ProductId`   bigint(20) not null  ,
   `Product`     varchar(255) not null,
   `Producer`    varchar(255) not null,
-  `Cost`        decimal(18,2) default null,
+  `Cost`        varchar(50) default null,
   PRIMARY KEY (`Id`),
   Key(`CatalogId`),
   Key(`ProductId`),

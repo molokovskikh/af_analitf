@@ -261,6 +261,7 @@ type
     dbgMaxProducerCosts : TToughDBGrid;
 
     pcMaxProducerCosts : TPageControl;
+    pMaxProducerCostsIsEmpty : TPanel;
     tsMaxProducerCosts : TTabSheet;
     tsFirmInfo : TTabSheet;
 
@@ -270,6 +271,7 @@ type
     procedure UpdatePriceDelta;
 
     procedure PrepareForMaxProducerCosts;
+    procedure MaxProducerCostsUpdateGrid(DataSet: TDataSet);
   public
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
@@ -922,11 +924,13 @@ begin
 end;
 
 procedure TCoreForm.PrepareForMaxProducerCosts;
+var
+  column : TColumnEh;
 begin
   gbPrevOrders.Constraints.MinWidth := lblPriceAvg.Canvas.TextWidth(lblPriceAvg.Caption) + 100;
   pcMaxProducerCosts := TPageControl.Create(Self);
   pcMaxProducerCosts.Parent := pBottom;
-  
+
   tsMaxProducerCosts := TTabSheet.Create(Self);
   tsMaxProducerCosts.PageControl := pcMaxProducerCosts;
   tsMaxProducerCosts.Caption := 'Предельные отпускные цены производителей на ЖНВЛС';
@@ -951,18 +955,34 @@ begin
   adsMaxProducerCosts.MasterSource := dsCore;
   adsMaxProducerCosts.MasterFields := 'fullcode';
   adsMaxProducerCosts.DetailFields := 'catalogid';
+  adsMaxProducerCosts.AfterRefresh := MaxProducerCostsUpdateGrid;
+  adsMaxProducerCosts.AfterOpen := MaxProducerCostsUpdateGrid;
 
   dsMaxProducerCosts := TDataSource.Create(Self);
   dsMaxProducerCosts.DataSet := adsMaxProducerCosts;
 
+  pMaxProducerCostsIsEmpty := TPanel.Create(Self);
+  pMaxProducerCostsIsEmpty.Parent := tsMaxProducerCosts;
+  pMaxProducerCostsIsEmpty.Align := alClient;
+  pMaxProducerCostsIsEmpty.Caption := 'Предельных отпускных цен производителей на ЖНВЛС нет.';
+  pMaxProducerCostsIsEmpty.BevelOuter := bvNone;
+  pMaxProducerCostsIsEmpty.Font.Size := plOverCost.Font.Size - 4;
+
   dbgMaxProducerCosts := TToughDBGrid.Create(Self);
-  dbgMaxProducerCosts.Parent := tsMaxProducerCosts;
+  dbgMaxProducerCosts.ParentFont := False;
+  dbgMaxProducerCosts.Parent := pMaxProducerCostsIsEmpty;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMaxProducerCosts);
   dbgMaxProducerCosts.Align := alClient;
   TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Product', 'Наименование', dbgMaxProducerCosts.ClientWidth div 2);
   TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Producer', 'Производитель', (dbgMaxProducerCosts.ClientWidth div 6)*2);
-  TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Cost', 'Цена', dbgMaxProducerCosts.ClientWidth div 6);
+  column := TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Cost', 'Цена', dbgMaxProducerCosts.ClientWidth div 6);
+  column.Alignment := taRightJustify; 
   dbgMaxProducerCosts.DataSource := dsMaxProducerCosts;
+end;
+
+procedure TCoreForm.MaxProducerCostsUpdateGrid(DataSet: TDataSet);
+begin
+  dbgMaxProducerCosts.Visible := not adsMaxProducerCosts.IsEmpty;
 end;
 
 initialization
