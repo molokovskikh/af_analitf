@@ -310,7 +310,8 @@ begin
     if Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + SectionName, False)
     then begin
       Section := GetDefaultSection(Grid);
-      InternalRestoreColumnsLayout(Grid, Reg, Section, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      if Reg.KeyExists(Section) then
+        InternalRestoreColumnsLayout(Grid, Reg, Section, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
     end;
   finally
     Reg.Free;
