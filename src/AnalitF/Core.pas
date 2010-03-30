@@ -929,7 +929,7 @@ begin
   
   tsMaxProducerCosts := TTabSheet.Create(Self);
   tsMaxProducerCosts.PageControl := pcMaxProducerCosts;
-  tsMaxProducerCosts.Caption := 'Предельные отп. цены производителей на ЖНВЛС';
+  tsMaxProducerCosts.Caption := 'Предельные отпускные цены производителей на ЖНВЛС';
 
   tsFirmInfo := TTabSheet.Create(Self);
   tsFirmInfo.PageControl := pcMaxProducerCosts;
