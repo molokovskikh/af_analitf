@@ -117,7 +117,7 @@ begin
     AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
 
     lMethodOfTaxation := TLabel.Create(Self);
-    lMethodOfTaxation.Caption := 'Способо налогообложения:';
+    lMethodOfTaxation.Caption := 'Способ налогообложения:';
     lMethodOfTaxation.Parent := gbEditClients;
     lMethodOfTaxation.Top := nextTop;
     lMethodOfTaxation.Left := 10;
@@ -141,7 +141,7 @@ begin
     dbchbCalculateWithNDS.Top := dblMethodOfTaxation.Top + dblMethodOfTaxation.Height + 10;
     dbchbCalculateWithNDS.Left := lMethodOfTaxation.Left;
     dbchbCalculateWithNDS.Width := gbEditClients.Width - 20;
-    dbchbCalculateWithNDS.Caption := 'Включать НДС в розничную цену ЖНВЛС';
+    dbchbCalculateWithNDS.Caption := 'Включать входную НДС в расчет розничной надбавки при ЕНВД';
     dbchbCalculateWithNDS.DataField := 'CalculateWithNDS';
     dbchbCalculateWithNDS.DataSource := dsEditClients;
 

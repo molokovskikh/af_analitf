@@ -734,6 +734,7 @@ function TDocumentBodiesForm.GetRetailMarkupByPrice(price: Double): Double;
 var
   vitallyNDS : Integer;
   vitallyNDSMultiplier : Double;
+  nonVitallyNDSMultiplier : Double;
 begin
   if cbClearRetailPrice.Checked and (Abs(price - RoundToOneDigit(price)) > 0.001)
   then
@@ -748,10 +749,11 @@ begin
     else
       vitallyNDS := 10;
 
-    if DM.adtClientsCalculateWithNDS.Value then
-      vitallyNDSMultiplier := (1 + vitallyNDS/100)
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      vitallyNDSMultiplier := 1
     else
-      vitallyNDSMultiplier := 1;
+      vitallyNDSMultiplier := (1 + vitallyNDS/100);
 
     //ЕНВД
     if (DM.adtClientsMethodOfTaxation.Value = 0) then
@@ -765,12 +767,19 @@ begin
 
   end
   else begin
+
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      nonVitallyNDSMultiplier := 1
+    else
+      nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
+
     //По цене производителя
     if CalculateOnProducerCost then
-      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * (1 + NDSField.Value/100))
+      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * nonVitallyNDSMultiplier)
     else
     //По цене поставщика без НДС
-      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCostWithoutNDS.Value * (1 + NDSField.Value/100));
+      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCostWithoutNDS.Value * nonVitallyNDSMultiplier);
   end;
 end;
 
@@ -779,6 +788,7 @@ function TDocumentBodiesForm.GetRetailPriceByMarkup(
 var
   vitallyNDS : Integer;
   vitallyNDSMultiplier : Double;
+  nonVitallyNDSMultiplier : Double;
 begin
   if adsDocumentBodiesVitallyImportant.Value
   or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
@@ -789,10 +799,11 @@ begin
     else
       vitallyNDS := 10;
 
-    if DM.adtClientsCalculateWithNDS.Value then
-      vitallyNDSMultiplier := (1 + vitallyNDS/100)
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      vitallyNDSMultiplier := 1
     else
-      vitallyNDSMultiplier := 1;
+      vitallyNDSMultiplier := (1 + vitallyNDS/100);
 
     //ЕНВД
     if (DM.adtClientsMethodOfTaxation.Value = 0) then begin
@@ -820,24 +831,30 @@ begin
   end
   else begin
 
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      nonVitallyNDSMultiplier := 1
+    else
+      nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
+
     //По цене производителя
     if CalculateOnProducerCost then begin
-      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesProducerCost.Value*(1 + NDSField.Value/100)*(markup/100);
+      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesProducerCost.Value*nonVitallyNDSMultiplier*(markup/100);
 
       if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
       then begin
         Result := RoundToOneDigit(Result);
-        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * (1 + NDSField.Value/100));
+        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * nonVitallyNDSMultiplier);
       end;
     end
     else begin
     //По цене поставщика без НДС
-      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesSupplierCostWithoutNDS.Value*(1 + NDSField.Value/100)*(markup/100);
+      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesSupplierCostWithoutNDS.Value*nonVitallyNDSMultiplier*(markup/100);
 
       if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
       then begin
         Result := RoundToOneDigit(Result);
-        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCostWithoutNDS.Value * (1 + NDSField.Value/100));
+        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCostWithoutNDS.Value * nonVitallyNDSMultiplier);
       end;
     end;
   end;
