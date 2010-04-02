@@ -77,13 +77,14 @@ begin
   heightOnHalf := gbPosition.ClientHeight div 2;
 
   btnShowDescription.Left := leftInc;
-  btnShowDescription.Top := heightOnHalf div 3 + 1;
   buttonWidth := btnShowDescription.Width;
 
   lSynonymName.Left := 2*leftInc + buttonWidth;
   lMNN.Left := lSynonymName.Left;
   lSynonymName.Top := heightOnHalf div 3;
   lMNN.Top := heightOnHalf + (heightOnHalf div 4);
+
+  btnShowDescription.Top := heightOnHalf;
 
   dbtSynonymName.Top := lSynonymName.Top;
   dbtMNN.Top := lMNN.Top;
@@ -92,7 +93,7 @@ begin
   dbtSynonymName.Width := gbPosition.Width - (labelWidth + + buttonWidth + 3*leftInc);
   dbtMNN.Width := dbtSynonymName.Width;
 
-  lVitallyImportant.Top := lMNN.Top;
+  lVitallyImportant.Top := lSynonymName.Top;
   lMandatoryList.Top := lVitallyImportant.Top;
   lVitallyImportant.Left := btnShowDescription.Left;
   lMandatoryList.Left := lVitallyImportant.Left + lVitallyImportant.Width + (leftInc div 2);
