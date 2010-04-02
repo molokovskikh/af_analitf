@@ -285,7 +285,7 @@ begin
   else
     if Key = VK_ESCAPE then
       if Assigned(ParentOrdersHForm) then
-        ParentOrdersHForm.ShowForm
+        ParentOrdersHForm.ShowAsPrevForm
       else
         if Assigned(PrevForm) then
           PrevForm.ShowAsPrevForm;
@@ -473,7 +473,7 @@ procedure TOrdersForm.dbmMessageToKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_ESCAPE then
     if Assigned(ParentOrdersHForm) then
-      ParentOrdersHForm.ShowForm
+      ParentOrdersHForm.ShowAsPrevForm
     else
       PrevForm.ShowAsPrevForm;
 end;
@@ -553,7 +553,7 @@ begin
         adsOrders.First;
     end
     else
-      ParentOrdersHForm.ShowForm;
+      ParentOrdersHForm.ShowAsPrevForm;
   end;
 end;
 

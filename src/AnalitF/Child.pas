@@ -231,7 +231,6 @@ begin
          and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
       then begin
         TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
-        TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
 
         if NeedFirstOnDataSet then
           TToughDBGrid(Self.Components[i]).DataSource.DataSet.First;
