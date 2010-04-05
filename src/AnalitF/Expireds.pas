@@ -185,7 +185,7 @@ begin
   fMinOrderCount := adsExpiredsMINORDERCOUNT;
   gotoMNNButton := btnGotoMNN;
   inherited;
-  TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'MnnId', ShowDescriptionAction);
   adsExpireds.OnCalcFields := ecf;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   UseExcess := True;

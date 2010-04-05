@@ -235,7 +235,7 @@ begin
   dbgLog.PopupMenu := nil;
 
   //todo: Здесь засада, т.к. описание не отображается
-  TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'Mnn', nil);
+  TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'MnnId', nil);
 
   UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;

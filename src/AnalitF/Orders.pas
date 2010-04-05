@@ -334,7 +334,7 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
   AddRetailPriceColumn;
-  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'MnnId', ShowDescriptionAction);
   TDBGridHelper.RestoreColumnsLayout(dbgOrders, 'DetailOrder');
 end;
 

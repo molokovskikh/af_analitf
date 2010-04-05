@@ -260,7 +260,7 @@ begin
 
   inherited;
 
-  TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   BM := TBitmap.Create;
 

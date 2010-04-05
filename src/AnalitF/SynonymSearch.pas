@@ -295,7 +295,7 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
 
-  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   InternalSearchText := '';
   BM := TBitmap.Create;

@@ -232,7 +232,7 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
   PrepareColumnsInOrderGrid(dbgSummarySend);
-  TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'MnnId', ShowDescriptionAction);
   if not FUseCorrectOrders then begin
     cbNeedCorrect.Checked := False;
     cbNeedCorrect.Visible := False;

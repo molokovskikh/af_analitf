@@ -303,7 +303,7 @@ begin
   fMinOrderCount := adsCoreMINORDERCOUNT;
 	inherited;
 
-  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
 	PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
   NeedFirstOnDataSet := False;
