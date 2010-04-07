@@ -373,11 +373,6 @@ inherited DefectivesForm: TDefectivesForm
       OnExecute = actCheckExecute
     end
   end
-  object frdsPrint: TfrDBDataSet
-    DataSet = adsPrint
-    Left = 280
-    Top = 208
-  end
   object adsDefectivesOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'UPDATE DEFECTIVES'

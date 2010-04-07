@@ -464,12 +464,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 64
     Top = 168
   end
-  object frdsCore: TfrDBDataSet
-    DataSource = dsCore
-    OpenDataSource = False
-    Left = 64
-    Top = 216
-  end
   object Timer: TTimer
     Enabled = False
     Interval = 5000

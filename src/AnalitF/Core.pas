@@ -19,7 +19,6 @@ type
     dsCore: TDataSource;
     gbPrevOrders: TGroupBox;
     lblPriceAvg: TLabel;
-    frdsCore: TfrDBDataSet;
     dsPreviosOrders: TDataSource;
     dbtPriceAvg: TDBText;
     dsAvgOrders: TDataSource;
@@ -305,7 +304,7 @@ begin
 
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
-	PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
+  PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
   UseExcess := True;

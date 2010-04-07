@@ -56,7 +56,6 @@ type
     adsDocumentBodiesSupplierPriceMarkup: TFloatField;
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
-    frdsDocumentBodies: TfrDBDataSet;
     gbPrint: TGroupBox;
     cbPrintEmptyTickets: TCheckBox;
     spPrintTickets: TSpeedButton;

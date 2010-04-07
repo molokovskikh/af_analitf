@@ -15,7 +15,6 @@ type
     pCenter: TPanel;
     dbgCore: TToughDBGrid;
     dsCore: TDataSource;
-    frdsCore: TfrDBDataSet;
     Timer: TTimer;
     ActionList: TActionList;
     actFlipCore: TAction;

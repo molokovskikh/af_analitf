@@ -13,7 +13,6 @@ uses
 type
   TSummaryForm = class(TChildForm)
     dsSummary: TDataSource;
-    frdsSummary: TfrDBDataSet;
     pClient: TPanel;
     dbgSummaryCurrent: TToughDBGrid;
     adsSummaryOld: TpFIBDataSet;

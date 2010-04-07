@@ -12,7 +12,6 @@ uses
 type
   TOrdersForm = class(TChildForm)
     dsOrders: TDataSource;
-    frdsOrders: TfrDBDataSet;
     dbgOrders: TToughDBGrid;
     adsOrdersOld: TpFIBDataSet;
     adsOrdersOldCryptPRICE: TCurrencyField;

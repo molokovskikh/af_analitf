@@ -2927,4 +2927,9 @@ object DM: TDM
     Left = 400
     Top = 104
   end
+  object frDBDataSet: TfrDBDataSet
+    OpenDataSource = False
+    Left = 232
+    Top = 544
+  end
 end
