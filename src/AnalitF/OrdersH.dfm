@@ -1409,7 +1409,7 @@ inherited OrdersHForm: TOrdersHForm
       'and (pricesregionaldata.PriceCode is not null)'
       'group by OrdersHead.OrderId'
       'having count(OrdersList.Id) > 0'
-      'order by OrdersHead.SendDate DESC')
+      'order by OrdersHead.PriceName')
     Left = 132
     Top = 183
     ParamData = <
