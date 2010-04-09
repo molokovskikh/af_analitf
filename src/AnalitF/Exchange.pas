@@ -293,7 +293,8 @@ begin
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
 	if Result and (( eaGetPrice in AExchangeActions) or
-		( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions))
+		( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
+    or (eaImportOnly in AExchangeActions))
   then
     DM.ProcessDocs;
 
