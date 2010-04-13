@@ -2773,7 +2773,9 @@ object DM: TDM
       '  analitf.client'
       'where'
       '    (CLIENTS.ClientId = UserInfo.ClientId)'
-      'and (client.Id = UserInfo.ClientId)')
+      
+        'and (((UserInfo.IsFutureClient = 0) and (client.Id = UserInfo.Cl' +
+        'ientId)) or (UserInfo.IsFutureClient = 1))')
     Left = 240
     Top = 184
   end
