@@ -121,6 +121,7 @@ type
     adsCoreNDS: TSmallintField;
     adsCoreMnnId: TLargeintField;
     adsCoreMnn: TStringField;
+    adsCoreMaxProducerCost: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -234,16 +235,17 @@ begin
   Report := TStringList.Create;
   dbgLog.PopupMenu := nil;
 
+  adsCore.Connection := DM.MainConnection;
+  adsAvgOrders.Connection := DM.MainConnection;
+  
   //todo: Здесь засада, т.к. описание не отображается
-  TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'Mnn', nil);
+  TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'MnnId', nil);
 
   UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
   adsAvgOrders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').AsInteger;
   plOverCost.Hide();
-  adsCore.Connection := DM.MainConnection;
-  adsAvgOrders.Connection := DM.MainConnection;
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
   Self.WindowState := wsMaximized;
@@ -467,12 +469,12 @@ var
 begin
   ClientId := DM
     .QueryValue(
-      'select ClientId from orderslist where Id = ' + mtLogSelfId.AsString,
+      'select ClientId from CurrentOrderLists where Id = ' + mtLogSelfId.AsString,
       [],
       []);
   ProductId := DM
     .QueryValue(
-      'select ProductId from orderslist where Id = ' + mtLogSelfId.AsString,
+      'select ProductId from CurrentOrderLists where Id = ' + mtLogSelfId.AsString,
       [],
       []);
   if adsCore.Active then
@@ -831,66 +833,66 @@ begin
   if ProcessSendOrdersResponse then begin
     Result := ''
     + 'select '
-    + '  OrdersHead.ClientId, '
+    + '  CurrentOrderHeads.ClientId, '
     + '  clients.Name as ClientName, '
-    + '  OrdersHead.OrderId, '
-    + '  OrdersHead.PriceName, '
-    + '  OrdersHead.Send, '
-    + '  OrdersHead.SendResult, '
-    + '  OrdersHead.ErrorReason, '
-    + '  OrdersList.Id As OrderListId, '
-    + '  OrdersList.SynonymName, '
-    + '  OrdersList.SynonymFirm, '
-    + '  OrdersList.DropReason, '
-    + '  OrdersList.OrderCount as OldOrderCount, '
-    + '  if(OrdersList.ServerQuantity is null, OrdersList.OrderCount, if(OrdersList.ServerQuantity > OrdersList.OrderCount, OrdersList.OrderCount, OrdersList.ServerQuantity)) as NewOrderCount, '
-    + '  OrdersList.Price as OldPrice, '
-    + '  if(dop.Percent is null, OrdersList.ServerCost, cast(OrdersList.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as NewPrice '
+    + '  CurrentOrderHeads.OrderId, '
+    + '  CurrentOrderHeads.PriceName, '
+    + '  CurrentOrderHeads.Send, '
+    + '  CurrentOrderHeads.SendResult, '
+    + '  CurrentOrderHeads.ErrorReason, '
+    + '  CurrentOrderLists.Id As OrderListId, '
+    + '  CurrentOrderLists.SynonymName, '
+    + '  CurrentOrderLists.SynonymFirm, '
+    + '  CurrentOrderLists.DropReason, '
+    + '  CurrentOrderLists.OrderCount as OldOrderCount, '
+    + '  if(CurrentOrderLists.ServerQuantity is null, CurrentOrderLists.OrderCount, if(CurrentOrderLists.ServerQuantity > CurrentOrderLists.OrderCount, CurrentOrderLists.OrderCount, CurrentOrderLists.ServerQuantity)) as NewOrderCount, '
+    + '  CurrentOrderLists.Price as OldPrice, '
+    + '  if(dop.Percent is null, CurrentOrderLists.ServerCost, cast(CurrentOrderLists.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as NewPrice '
     + 'from '
-    + '  OrdersHead '
-    + '  inner join clients   on (clients.clientid = OrdersHead.ClientId) '
-    + '  left join OrdersList on OrdersList.OrderId = OrdersHead.OrderId and (OrdersList.DropReason is not null)'
-    + '  left JOIN PricesData cpd  ON (cpd.PriceCode = OrdersHead.pricecode)'
+    + '  CurrentOrderHeads '
+    + '  inner join clients   on (clients.clientid = CurrentOrderHeads.ClientId) '
+    + '  left join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId and (CurrentOrderLists.DropReason is not null)'
+    + '  left JOIN PricesData cpd  ON (cpd.PriceCode = CurrentOrderHeads.pricecode)'
     + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode)'
     + ' '
     + 'where '
-    + '    OrdersHead.ClientId = ' + DM.adtClientsCLIENTID.AsString + '  '
-    + 'and OrdersHead.Closed = 0 '
-    + 'and OrdersHead.Send = 1 '
-    + 'and OrdersHead.SendResult is not null '
-    + 'order by clients.Name, OrdersHead.PriceName, OrdersList.SynonymName, OrdersList.SynonymFirm';
+    + '    CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + '  '
+    + 'and CurrentOrderHeads.Closed = 0 '
+    + 'and CurrentOrderHeads.Send = 1 '
+    + 'and CurrentOrderHeads.SendResult is not null '
+    + 'order by clients.Name, CurrentOrderHeads.PriceName, CurrentOrderLists.SynonymName, CurrentOrderLists.SynonymFirm';
   end
   else begin
     Result := ''
     + 'select '
-    + '  OrdersHead.ClientId, '
+    + '  CurrentOrderHeads.ClientId, '
     + '  clients.Name as ClientName, '
-    + '  OrdersHead.OrderId, '
-    + '  OrdersHead.PriceName, '
-    + '  OrdersHead.Send, '
-    + '  OrdersHead.SendResult, '
-    + '  OrdersHead.ErrorReason, '
-    + '  OrdersList.Id As OrderListId, '
-    + '  OrdersList.SynonymName, '
-    + '  OrdersList.SynonymFirm, '
-    + '  OrdersList.DropReason, '
+    + '  CurrentOrderHeads.OrderId, '
+    + '  CurrentOrderHeads.PriceName, '
+    + '  CurrentOrderHeads.Send, '
+    + '  CurrentOrderHeads.SendResult, '
+    + '  CurrentOrderHeads.ErrorReason, '
+    + '  CurrentOrderLists.Id As OrderListId, '
+    + '  CurrentOrderLists.SynonymName, '
+    + '  CurrentOrderLists.SynonymFirm, '
+    + '  CurrentOrderLists.DropReason, '
 
-    + '  OrdersList.ServerQuantity as OldOrderCount, '
-    + '  OrdersList.OrderCount as NewOrderCount, '
-    + '  if(dop.Percent is null, OrdersList.ServerCost, cast(OrdersList.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as OldPrice, '
-    + '  OrdersList.Price as NewPrice '
+    + '  CurrentOrderLists.ServerQuantity as OldOrderCount, '
+    + '  CurrentOrderLists.OrderCount as NewOrderCount, '
+    + '  if(dop.Percent is null, CurrentOrderLists.ServerCost, cast(CurrentOrderLists.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as OldPrice, '
+    + '  CurrentOrderLists.Price as NewPrice '
 
     + 'from '
-    + '  OrdersHead '
-    + '  inner join clients   on (clients.clientid = OrdersHead.ClientId) '
-    + '  inner join OrdersList on OrdersList.OrderId = OrdersHead.OrderId and (OrdersList.DropReason is not null)'
-    + '  left JOIN PricesData cpd  ON (cpd.PriceCode = OrdersHead.pricecode)'
+    + '  CurrentOrderHeads '
+    + '  inner join clients   on (clients.clientid = CurrentOrderHeads.ClientId) '
+    + '  inner join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId and (CurrentOrderLists.DropReason is not null)'
+    + '  left JOIN PricesData cpd  ON (cpd.PriceCode = CurrentOrderHeads.pricecode)'
     + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode)'
 
     + ' '
     + 'where '
-    + '  OrdersHead.Closed = 0 '
-    + 'order by clients.Name, OrdersHead.PriceName, OrdersList.SynonymName, OrdersList.SynonymFirm';
+    + '  CurrentOrderHeads.Closed = 0 '
+    + 'order by clients.Name, CurrentOrderHeads.PriceName, CurrentOrderLists.SynonymName, CurrentOrderLists.SynonymFirm';
   end;
 end;
 
@@ -930,7 +932,7 @@ end;
 
 procedure TCorrectOrdersForm.mtLogSendChange(Sender: TField);
 begin
-  DM.adcUpdate.SQL.Text := 'update ordershead set Send = :Send where OrderId = :OrderId';
+  DM.adcUpdate.SQL.Text := 'update CurrentOrderHeads set Send = :Send where OrderId = :OrderId';
   DM.adcUpdate.ParamByName('Send').AsBoolean := Sender.AsBoolean;
   DM.adcUpdate.ParamByName('OrderId').Value := mtLogSelfId.Value;
   DM.adcUpdate.Execute;
@@ -968,6 +970,7 @@ var
   supplierPriceMarkupColumn : TColumnEh;
   producerCostColumn : TColumnEh;
   ndsColumn : TColumnEh;
+  maxProducerCostColumn : TColumnEh;
 begin
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
@@ -994,6 +997,13 @@ begin
       producerCostColumn.FieldName := 'ProducerCost';
       producerCostColumn.Title.Caption := 'Цена производителя';
       producerCostColumn.DisplayFormat := '0.00;;''''';
+    end;
+    maxProducerCostColumn := ColumnByNameT(Grid, 'MaxProducerCost');
+    if not Assigned(maxProducerCostColumn) then begin
+      maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
+      maxProducerCostColumn.FieldName := 'MaxProducerCost';
+      maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
+      maxProducerCostColumn.DisplayFormat := '0.00;;''''';
     end;
     
     realCostColumn.Title.Caption := 'Цена поставщика';

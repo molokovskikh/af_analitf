@@ -45,6 +45,9 @@ type
     lAccountant : TLabel;
     dbeAccountant : TDBEdit;
 
+    lEditName : TLabel;
+    dbeEditName : TDBEdit;
+
     lMethodOfTaxation : TLabel;
     dblMethodOfTaxation : TDBLookupComboBox;
 
@@ -88,7 +91,7 @@ begin
     lClientId.Top := 16;
     lClientId.Left := 10;
 
-    gbEditClients.Width := lClientId.Canvas.TextWidth('Зам. заведующей:') + 100;
+    gbEditClients.Width := lClientId.Canvas.TextWidth('Включать входную НДС в расчет розничной надбавки при ЕНВД') + 60;
     gbEditClients.Constraints.MinWidth := gbEditClients.Width;
 
     dblClientId := TDBLookupComboBox.Create(Self);
@@ -109,9 +112,10 @@ begin
       lClientId.Caption := 'Адрес заказа:'
     else begin
       lClientId.Caption := 'Клиент:';
-      AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAddress, dbeAddress, 'Адрес:', 'Address');
     end;
 
+    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lEditName, dbeEditName, 'Наименование:', 'EditName');
+    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAddress, dbeAddress, 'Адрес:', 'Address');
     AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lDirector, dbeDirector, 'Заведующая:', 'Director');
     AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lDeputyDirector, dbeDeputyDirector, 'Зам. заведующей:', 'DeputyDirector');
     AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lAccountant, dbeAccountant, 'Бухгалтер:', 'Accountant');
@@ -145,10 +149,11 @@ begin
     dbchbCalculateWithNDS.DataField := 'CalculateWithNDS';
     dbchbCalculateWithNDS.DataSource := dsEditClients;
 
-
     gbEditClients.Height := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 7;
     gbEditClients.Constraints.MinHeight := gbEditClients.Height;
     gbEditClients.Align := alClient;
+    Self.Constraints.MinHeight := Self.Height;
+    Self.Constraints.MinWidth := Self.Width;
   end;
 end;
 

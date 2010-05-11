@@ -12,7 +12,7 @@ uses
 type
   TDocumentBodiesForm = class(TChildForm)
     pOrderHeader: TPanel;
-    dbtPriceName: TDBText;
+    dbtProviderName: TDBText;
     Label1: TLabel;
     dbtId: TDBText;
     Label2: TLabel;
@@ -56,7 +56,6 @@ type
     adsDocumentBodiesSupplierPriceMarkup: TFloatField;
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
-    frdsDocumentBodies: TfrDBDataSet;
     gbPrint: TGroupBox;
     cbPrintEmptyTickets: TCheckBox;
     spPrintTickets: TSpeedButton;
@@ -64,11 +63,13 @@ type
     cbClearRetailPrice: TCheckBox;
     spPrintReestr: TSpeedButton;
     cbWaybillAsVitallyImportant: TCheckBox;
-    spEditMarkups: TSpeedButton;
     adsDocumentBodiesQuantity: TIntegerField;
     sbEditAddress: TSpeedButton;
     adsDocumentBodiesVitallyImportant: TBooleanField;
     tmrVitallyImportantChange: TTimer;
+    adsDocumentBodiesSerialNumber: TStringField;
+    spPrintWaybill: TSpeedButton;
+    spPrintInvoice: TSpeedButton;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -80,9 +81,11 @@ type
     procedure cbClearRetailPriceClick(Sender: TObject);
     procedure spPrintReestrClick(Sender: TObject);
     procedure cbWaybillAsVitallyImportantClick(Sender: TObject);
-    procedure spEditMarkupsClick(Sender: TObject);
     procedure sbEditAddressClick(Sender: TObject);
     procedure tmrVitallyImportantChangeTimer(Sender: TObject);
+    procedure dbgDocumentBodiesSortMarkingChanged(Sender: TObject);
+    procedure spPrintWaybillClick(Sender: TObject);
+    procedure spPrintInvoiceClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -133,7 +136,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, StrUtils, AProc, Math, DBProc, sumprops, EditVitallyImportantMarkups,
+  Main, StrUtils, AProc, Math, DBProc, sumprops, EditVitallyImportantMarkups, 
   EditAddressForm, Constant, DBGridHelper,
   ToughDBGridColumns;
 
@@ -233,6 +236,7 @@ procedure TDocumentBodiesForm.PrepareGrid;
 var
   column : TColumnEh;
 begin
+  dbgDocumentBodies.MinAutoFitWidth := DBGridColumnMinWidth;
   dbgDocumentBodies.Flat := True;
   dbgDocumentBodies.Options := dbgDocumentBodies.Options + [dgRowLines];
   dbgDocumentBodies.Font.Size := 10;
@@ -253,7 +257,9 @@ begin
     dbgDocumentBodies.AutoFitColWidths := False;
     try
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Product', 'Наименование', 0);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Серии сертификатов', 0);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Номер сертификата', 0);
+      column.Visible := False;
+      TDBGridHelper.AddColumn(dbgDocumentBodies, 'SerialNumber', 'Серия товара', 0);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Period', 'Срок годности', 0);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Producer', 'Производитель', 0);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Country', 'Страна', 0);
@@ -314,8 +320,12 @@ begin
       or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
       then
         maxMarkup := DM.GetMaxVitallyImportantMarkup(adsDocumentBodiesProducerCost.Value)
-      else
-        maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesProducerCost.Value);
+      else begin
+        if CalculateOnProducerCost then
+          maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesProducerCost.Value)
+        else
+          maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+      end;
       maxRetailMarkupField.Value := maxMarkup;
     end;
 
@@ -341,9 +351,11 @@ end;
 
 procedure TDocumentBodiesForm.LoadFromRegistry;
 begin
+  TDBGridHelper.SetTitleButtonToColumns(dbgDocumentBodies);
   TDBGridHelper.RestoreColumnsLayout(
     dbgDocumentBodies,
     IfThen(adsDocumentHeadersDocumentType.Value = 1, 'DetailWaybill', 'DetailReject'));
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(dbgDocumentBodies) );
 end;
 
 procedure TDocumentBodiesForm.adsDocumentHeadersDocumentTypeGetText(
@@ -553,12 +565,6 @@ begin
   end;
 end;
 
-procedure TDocumentBodiesForm.spEditMarkupsClick(Sender: TObject);
-begin
-  ShowEditVitallyImportantMarkups;
-  RecalcDocument;
-end;
-
 procedure TDocumentBodiesForm.sbEditAddressClick(Sender: TObject);
 begin
   ShowEditAddress;
@@ -626,13 +632,21 @@ begin
   upCostVariant := Null;
   if not manualCorrectionField.Value then begin
 
-    if not adsDocumentBodiesProducerCost.IsNull then begin
-      if adsDocumentBodiesVitallyImportant.Value
-      or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
-      then
-        upCostVariant := DM.GetVitallyImportantMarkup(adsDocumentBodiesProducerCost.Value)
-      else
-        upCostVariant := DM.GetRetUpCost(adsDocumentBodiesProducerCost.Value);
+    if adsDocumentBodiesVitallyImportant.Value
+    or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
+    then begin
+      if not adsDocumentBodiesProducerCost.IsNull then
+        upCostVariant := DM.GetVitallyImportantMarkup(adsDocumentBodiesProducerCost.Value);
+    end
+    else begin
+      if CalculateOnProducerCost then begin
+        if not adsDocumentBodiesProducerCost.IsNull then
+          upCostVariant := DM.GetRetUpCost(adsDocumentBodiesProducerCost.Value);
+      end
+      else begin
+        if not adsDocumentBodiesSupplierCostWithoutNDS.IsNull then
+          upCostVariant := DM.GetRetUpCost(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+      end;
     end;
 
   end
@@ -936,6 +950,67 @@ begin
     end;
     Handled := True;
   end;
+end;
+
+procedure TDocumentBodiesForm.dbgDocumentBodiesSortMarkingChanged(
+  Sender: TObject);
+begin
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TDocumentBodiesForm.spPrintWaybillClick(Sender: TObject);
+var
+  totalRetailSumm : Currency;
+  V: array[0..0] of Variant;
+begin
+  DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
+  totalRetailSumm := V[0];
+
+  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
+  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+
+  frVariables[ 'ReestrNumber'] := '17';
+  frVariables[ 'ReestrAppend'] := '5';
+
+  frVariables[ 'Director'] := DM.adtClientsDirector.AsString;
+  frVariables[ 'DeputyDirector'] := DM.adtClientsDeputyDirector.AsString;
+  frVariables[ 'Accountant'] := DM.adtClientsAccountant.AsString;
+
+  frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
+  frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
+
+  DM.ShowFastReport('Waybill.frf', adsDocumentBodies, True);
+end;
+
+procedure TDocumentBodiesForm.spPrintInvoiceClick(Sender: TObject);
+var
+  totalRetailSumm : Currency;
+  V: array[0..0] of Variant;
+begin
+  DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
+  totalRetailSumm := V[0];
+
+  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
+  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+
+  frVariables[ 'ReestrNumber'] := '17';
+  frVariables[ 'ReestrAppend'] := '5';
+
+  frVariables[ 'Director'] := DM.adtClientsDirector.AsString;
+  frVariables[ 'DeputyDirector'] := DM.adtClientsDeputyDirector.AsString;
+  frVariables[ 'Accountant'] := DM.adtClientsAccountant.AsString;
+
+  frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
+  frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
+
+  frVariables[ 'Получатель'] := '';
+  frVariables[ 'АдресПолучателя'] := '';
+
+  DM.ShowFastReport('Invoice.frf', adsDocumentBodies, True);
 end;
 
 end.

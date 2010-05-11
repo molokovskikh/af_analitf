@@ -123,6 +123,8 @@ TMainForm = class(TVistaCorrectForm)
     adsOrdersHead: TMyQuery;
     tbMnnSearch: TToolButton;
     actMnnSearch: TAction;
+    actRestoreDatabase: TAction;
+    itmRestoreDatabase: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -173,6 +175,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure AppEventsMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure actMnnSearchExecute(Sender: TObject);
     procedure actSendWaybillsExecute(Sender: TObject);
+    procedure actRestoreDatabaseExecute(Sender: TObject);
 private
 	JustRun: boolean;
   ApplicationVersionText : String;
@@ -375,11 +378,22 @@ try
         or DM.ProcessFirebirdUpdate
           //ƒелаем это только в случае обновлени€ 800x на версию 945
         or DM.Process800xUpdate
+          //ƒелаем это только в случае обновлени€ libmysqld на новую версию
+        or DM.ProcessUpdateToNewLibMysqlD
       )
       and not DM.NeedUpdateByCheckUIN
       and not DM.NeedUpdateByCheckHashes
-    then
-      RunExchange([ eaImportOnly]);
+    then begin
+      if DM.ProcessUpdateToNewLibMysqlD and DM.NeedCumulativeAfterUpdateToNewLibMySqlD
+      then begin
+        AProc.MessageBox(
+          '¬ результате обновлени€ базы данных некоторые данные были потер€ны и необходимо сделать кумул€тивное обновление.',
+          MB_ICONWARNING or MB_OK);
+        RunExchange([eaGetPrice, eaGetFullData]);
+      end
+      else
+        RunExchange([ eaImportOnly]);
+    end;
     exit;
   end;
 
@@ -720,40 +734,40 @@ begin
   	DM.adsQueryValue.Close;
 	DM.adsQueryValue.SQL.Text := ''
 +'SELECT '
-+'       COUNT(DISTINCT OrdersHead.orderid) AS OrdersCount, '
++'       COUNT(DISTINCT CurrentOrderHeads.orderid) AS OrdersCount, '
 +'       COUNT(osbc.id)                     AS Positions  , '
 +'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder, '
 +'  ( '
 +'    select '
-+'      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) '
++'      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0) '
 +'    from '
-+'      OrdersHead '
-+'      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.OrderId '
-+'    WHERE OrdersHead.ClientId = :ClientId '
-+'       and OrdersHead.senddate > curdate() + interval (1-day(curdate())) day '
-+'       AND OrdersHead.Closed = 1 '
-+'       AND OrdersHead.send = 1 '
-+'       AND OrdersList.OrderCount>0 '
++'      PostedOrderHeads '
++'      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.OrderId '
++'    WHERE PostedOrderHeads.ClientId = :ClientId '
++'       and PostedOrderHeads.senddate > curdate() + interval (1-day(curdate())) day '
++'       AND PostedOrderHeads.Closed = 1 '
++'       AND PostedOrderHeads.send = 1 '
++'       AND PostedOrderLists.OrderCount>0 '
 +'  ) as sumbycurrentmonth, '
 +'  ( '
 +'    select '
-+'      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) '
++'      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0) '
 +'    from '
-+'      OrdersHead '
-+'      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.OrderId '
-+'    WHERE OrdersHead.ClientId = :ClientId '
-+'       and OrdersHead.senddate > curdate() + interval (-WEEKDAY(curdate())) day '
-+'       AND OrdersHead.Closed = 1 '
-+'       AND OrdersHead.send = 1 '
-+'       AND OrdersList.OrderCount>0 '
++'      PostedOrderHeads '
++'      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.OrderId '
++'    WHERE PostedOrderHeads.ClientId = :ClientId '
++'       and PostedOrderHeads.senddate > curdate() + interval (-WEEKDAY(curdate())) day '
++'       AND PostedOrderHeads.Closed = 1 '
++'       AND PostedOrderHeads.send = 1 '
++'       AND PostedOrderLists.OrderCount>0 '
 +'  ) as sumbycurrentweek '
 +'FROM '
-+'       OrdersHead '
-+'       INNER JOIN OrdersList osbc       ON (OrdersHead.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
-+'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = OrdersHead.RegionCode) AND (PRD.PriceCode = OrdersHead.PriceCode) '
++'       CurrentOrderHeads '
++'       INNER JOIN CurrentOrderLists osbc       ON (CurrentOrderHeads.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
++'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
 +'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
-+'WHERE (OrdersHead.CLIENTID                                      = :ClientID) '
-+'   AND (OrdersHead.Closed                                      <> 1)';
++'WHERE (CurrentOrderHeads.CLIENTID                                      = :ClientID) '
++'   AND (CurrentOrderHeads.Closed                                      <> 1)';
 
 	DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	DM.adsQueryValue.Open;
@@ -1031,8 +1045,7 @@ function TMainForm.OldOrders: Boolean;
 begin
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
-  DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := 'SELECT * FROM OrdersHead where (Closed = 1) and (orderdate < :MinOrderDate)';
+  DM.adsQueryValue.SQL.Text := 'SELECT * FROM PostedOrderHeads where (Closed = 1) and (orderdate < :MinOrderDate)';
   DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
   DM.adsQueryValue.Open;
   try
@@ -1041,7 +1054,7 @@ begin
     DM.adsQueryValue.Close;
   end;
   if not Result then begin
-    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (WriteTime < :MinOrderDate)';
+    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
     DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adsQueryValue.Open;
     try
@@ -1059,11 +1072,11 @@ var
 begin
   try
     DM.adcUpdate.SQL.Text := ''
-     + ' delete OrdersHead, OrdersList'
-     + ' FROM OrdersHead, OrdersList '
+     + ' delete PostedOrderHeads, PostedOrderLists'
+     + ' FROM PostedOrderHeads, PostedOrderLists '
      + ' where '
      + '    (Closed = 1)'
-     + ' and (OrdersList.OrderId = OrdersHead.OrderId)'
+     + ' and (PostedOrderLists.OrderId = PostedOrderHeads.OrderId)'
      + ' and (orderdate < :MinOrderDate)';
     DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adcUpdate.Execute;
@@ -1074,7 +1087,7 @@ begin
   try
     if DM.adsQueryValue.Active then
       DM.adsQueryValue.Close;
-    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (WriteTime < :MinOrderDate)';
+    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
     DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adsQueryValue.Open;
     try
@@ -1101,7 +1114,7 @@ begin
      + ' FROM DocumentHeaders, DocumentBodies '
      + ' where '
      + '     (DocumentBodies.DocumentId = DocumentHeaders.Id) '
-     + ' and (WriteTime < :MinOrderDate)';
+     + ' and (LoadTime < :MinOrderDate)';
     DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adcUpdate.Execute;
     //удаление других документов, у которых не существует тела (позиций внутри)
@@ -1109,7 +1122,7 @@ begin
      + ' delete '
      + ' FROM DocumentHeaders '
      + ' where '
-     + '    (WriteTime < :MinOrderDate)';
+     + '    (LoadTime < :MinOrderDate)';
     DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adcUpdate.Execute;
   except
@@ -1361,6 +1374,23 @@ end;
 procedure TMainForm.actSendWaybillsExecute(Sender: TObject);
 begin
   RunExchange([eaSendWaybills]);
+end;
+
+procedure TMainForm.actRestoreDatabaseExecute(Sender: TObject);
+begin
+  //«акрываем все окна перед сжатием базы данных
+  FreeChildForms;
+  Application.ProcessMessages;
+  if not RunRestoreDatabase then begin
+    if AProc.MessageBox(
+        '¬осстановление базы данных завершено.'#13#10
+        +'¬ результате восстановлени€ некоторые данные могли быть потер€ны и необходимо сделать кумул€тивное обновление.'#13#10
+        +'¬ыполнить кумул€тивное обновление?', MB_ICONWARNING or MB_OKCANCEL) = IDOK
+    then
+      RunExchange([eaGetPrice, eaGetFullData]);
+  end
+  else
+    AProc.MessageBox('¬осстановление базы данных завершено успешно.');
 end;
 
 end.

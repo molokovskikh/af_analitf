@@ -17,18 +17,27 @@ type
     btnCorruptDataFile: TButton;
     mLog: TMemo;
     btnCorruptIndexFile: TButton;
+    btnCorruptStructFile: TButton;
+    btnAnalyzeTable: TButton;
+    btnOptimizeTable: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnTestPrepareClick(Sender: TObject);
     procedure btnCorruptDataFileClick(Sender: TObject);
     procedure btnCorruptIndexFileClick(Sender: TObject);
+    procedure btnCorruptStructFileClick(Sender: TObject);
+    procedure btnAnalyzeTableClick(Sender: TObject);
+    procedure btnOptimizeTableClick(Sender: TObject);
   private
     { Private declarations }
     table : TSynonymFirmCrTable;
+    function ParseMethodResuls(MethodName: String; ServiceControl : TMyServerControl) : Boolean;
   public
     { Public declarations }
-    procedure PrepareSynonymFirmCr;
+    function PrepareSynonymFirmCr : LargeInt;
     procedure CorruptFile(corruptFileName : String);
     procedure TryToRepare(MethodName : String; FileExtention : String);
+    procedure TryToAnalyze(MethodName : String);
+    procedure TryToOptimize(MethodName : String);
   end;
 
 var
@@ -37,6 +46,9 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+  DBProc;
 
 function GetFirstFileNameFromDir(
   DirName: String): String;
@@ -83,7 +95,7 @@ begin
   table := TSynonymFirmCrTable.Create;
 end;
 
-procedure TMainFrm.PrepareSynonymFirmCr;
+function TMainFrm.PrepareSynonymFirmCr : LargeInt;
 begin
   if MyEmbConnection.Connected then
     MyEmbConnection.Close;
@@ -101,6 +113,7 @@ begin
     if Length(table.FileSystemName) = 0 then
       table.FileSystemName := GetFirstFileNameFromDir(ExePath + 'Data\analitf');
     MyEmbConnection.ExecSQL(GetLoadDataSQL('SynonymFirmCr', ExePath + 'In\SynonymFirmCr.txt'), []);
+    Result := DBProc.QueryValue(MyEmbConnection, 'select count(*) from analitf.SynonymFirmCr', [], []);
   finally
     MyEmbConnection.Close;
   end;
@@ -141,9 +154,15 @@ end;
 procedure TMainFrm.TryToRepare(MethodName, FileExtention: String);
 var
   sc : TMyServerControl;
+  repaired : Boolean;
+  sourceCount,
+  afterCount : LargeInt;
 begin
+  mLog.Lines.Add('');
+  mLog.Lines.Add('');
+  mLog.Lines.Add(Format('Старт метода %s на файле %s', [MethodName, FileExtention]));
   try
-    PrepareSynonymFirmCr;
+    sourceCount := PrepareSynonymFirmCr;
 
   {
     if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
@@ -162,27 +181,36 @@ begin
       MyEmbConnection.ExecSQL('use analitf', []);
       try
         sc.TableNames := table.Name;
-        sc.RepairTable([rtExtended, rtUseFrm]);
-        //Msg_type
-        //Msg_text
-        if (sc.RecordCount > 0) then begin
-          if (AnsiCompareText(sc
-                .FieldByName('Msg_type').AsString, 'status') <> 0)
-            or (AnsiCompareText(sc
-                .FieldByName('Msg_text').AsString, 'OK') <> 0)
-          then
-            mLog.Lines.Add(
-              Format('Метод: %s  Восстановление: тип сообщения: %s  сообщение: %s',
-              [MethodName,
-               sc.FieldByName('Msg_type').AsString,
-               sc.FieldByName('Msg_text').AsString]))
+        sc.CheckTable();
+        repaired := False;
+        if not ParseMethodResuls(MethodName, sc) then begin
+          mLog.Lines.Add('Попытка восстановить без использования frm');
+          sc.RepairTable([rtExtended]);
+          if not ParseMethodResuls(MethodName, sc) then begin
+            mLog.Lines.Add('Попытка восстановить с использованием frm');
+            sc.RepairTable([rtExtended, rtUseFrm]);
+            if not ParseMethodResuls(MethodName, sc) then
+              mLog.Lines.Add('Ошибка Восстановление не удалось!!!')
+            else
+              repaired := True;
+          end
           else
-            mLog.Lines.Add(
-              Format('Метод: %s  Восстановление: успешно', [MethodName]));
-        end
-        else
-          mLog.Lines.Add(
-            Format('Метод: %s  Восстановление: нет данных', [MethodName]));
+           repaired := True;
+
+          if repaired then begin
+            sc.CheckTable();
+            if not ParseMethodResuls(MethodName, sc) then
+              mLog.Lines.Add('Проверка после восстановления - не успешна!!!')
+            else begin
+              afterCount := DBProc.QueryValue(MyEmbConnection, 'select count(*) from analitf.SynonymFirmCr', [], []);
+              mLog.Lines.Add(
+                Format(
+                  'Кол-во записей до теста: %d   после теста: %d',
+                  [sourceCount,
+                   afterCount]))
+            end;
+          end;
+        end;
       finally
         MyEmbConnection.Close;
       end;
@@ -197,6 +225,7 @@ begin
           [MethodName,
            E.Message]));
   end;
+  mLog.Lines.Add(Format('Окончание метода %s на файле %s', [MethodName, FileExtention]));
 end;
 
 procedure TMainFrm.btnCorruptDataFileClick(Sender: TObject);
@@ -204,7 +233,8 @@ begin
 {$ifndef USENEWMYSQLTYPES}
   TryToRepare('CorruptDataFile', '.MYD');
 {$else}
-  TryToRepare('CorruptDataFile', DataFileExtention);
+  //TryToRepare('CorruptDataFile', DataFileExtention);
+  TryToRepare('CorruptDataFile', '.dbf');
 {$endif}
 end;
 
@@ -213,8 +243,185 @@ begin
 {$ifndef USENEWMYSQLTYPES}
   TryToRepare('CorruptIndexFile', '.MYI');
 {$else}
-  TryToRepare('CorruptIndexFile', IndexFileExtention);
+  //TryToRepare('CorruptIndexFile', IndexFileExtention);
+  TryToRepare('CorruptIndexFile', '.idx');
 {$endif}
+end;
+
+procedure TMainFrm.btnCorruptStructFileClick(Sender: TObject);
+begin
+{$ifndef USENEWMYSQLTYPES}
+  TryToRepare('CorruptStructFile', '.frm');
+{$else}
+  TryToRepare('CorruptStructFile', '.index');
+{$endif}
+end;
+
+procedure TMainFrm.TryToAnalyze(MethodName: String);
+var
+  sc : TMyServerControl;
+begin
+  mLog.Lines.Add('');
+  mLog.Lines.Add('');
+  mLog.Lines.Add(Format('Старт метода %s', [MethodName]));
+  try
+    //PrepareSynonymFirmCr;
+
+    MyAPIEmbedded.FreeMySQLLib;
+
+    sc := TMyServerControl.Create(nil);
+    try
+      sc.Connection := MyEmbConnection;
+      MyEmbConnection.Open;
+      MyEmbConnection.ExecSQL('use analitf', []);
+      try
+        sc.TableNames := table.Name;
+        sc.AnalyzeTable;
+        if not ParseMethodResuls(MethodName, sc) then
+          mLog.Lines.Add('Анализ завершился с ошибкой!!!')
+        else
+          mLog.Lines.Add('Анализ успешно завершен');
+      finally
+        MyEmbConnection.Close;
+      end;
+    finally
+      sc.Free;
+    end;
+  except
+    on E : Exception do
+      mLog.Lines.Add(
+        Format(
+          'Метод: %s  ошибка: %s',
+          [MethodName,
+           E.Message]));
+  end;
+  mLog.Lines.Add(Format('Окончание метода %s', [MethodName]));
+end;
+
+procedure TMainFrm.btnAnalyzeTableClick(Sender: TObject);
+begin
+  TryToAnalyze('Analyze');
+end;
+
+procedure TMainFrm.btnOptimizeTableClick(Sender: TObject);
+begin
+  TryToOptimize('Optimize');
+end;
+
+procedure TMainFrm.TryToOptimize(MethodName: String);
+var
+  sc : TMyServerControl;
+  sourceCount,
+  deletefromBegin,
+  deleteFromEnd,
+  afterCount : LargeInt;
+
+begin
+  mLog.Lines.Add('');
+  mLog.Lines.Add('');
+  mLog.Lines.Add(Format('Старт метода %s', [MethodName]));
+  try
+    sourceCount := PrepareSynonymFirmCr;
+
+    MyAPIEmbedded.FreeMySQLLib;
+
+    sc := TMyServerControl.Create(nil);
+    try
+      sc.Connection := MyEmbConnection;
+      MyEmbConnection.Open;
+      MyEmbConnection.ExecSQL('use analitf', []);
+      try
+        MyEmbConnection.ExecSQL('delete from synonymfirmcr limit 10000', []);
+        deletefromBegin := 10000;
+        MyEmbConnection.ExecSQL('delete from synonymfirmcr order by SynonymFirmCrCode desc limit 20000', []);
+        deletefromEnd := 20000;
+
+        sc.TableNames := table.Name;
+        sc.OptimizeTable;
+        if not ParseMethodResuls(MethodName, sc) then
+          mLog.Lines.Add('Оптимизация завершилась с ошибкой!!!')
+        else
+          mLog.Lines.Add('Оптимизация успешно завершена');
+
+        afterCount := DBProc.QueryValue(MyEmbConnection, 'select count(*) from analitf.SynonymFirmCr', [], []);
+        if afterCount <> sourceCount - deletefromBegin - deletefromEnd then
+          mLog.Lines.Add('Неожидаемое кол-во элементов после оптимизации!!!')
+        else begin
+
+          sc.CheckTable();
+          if ParseMethodResuls(MethodName, sc) then
+            mLog.Lines.Add('Проверка успешна завершена')
+          else
+            mLog.Lines.Add('Проверка завершилась с ошибкой');
+            
+        end;
+      finally
+        MyEmbConnection.Close;
+      end;
+    finally
+      sc.Free;
+    end;
+  except
+    on E : Exception do
+      mLog.Lines.Add(
+        Format(
+          'Метод: %s  ошибка: %s',
+          [MethodName,
+           E.Message]));
+  end;
+  mLog.Lines.Add(Format('Окончание метода %s', [MethodName]));
+end;
+
+function TMainFrm.ParseMethodResuls(
+  MethodName: String;
+  ServiceControl: TMyServerControl): Boolean;
+begin
+  //Op
+  //Msg_type
+  //Msg_text
+  if (ServiceControl.RecordCount > 0) then begin
+    mLog.Lines.Add(
+      Format('Кол-во записей в статусе метода %s операции %s: %d',
+      [MethodName,
+       ServiceControl.FieldByName('Op').AsString,
+       ServiceControl.RecordCount]));
+    while not ServiceControl.Eof do begin
+      if (AnsiCompareText(ServiceControl
+            .FieldByName('Msg_type').AsString, 'status') <> 0)
+        or (AnsiCompareText(ServiceControl
+            .FieldByName('Msg_text').AsString, 'OK') <> 0)
+      then
+        mLog.Lines.Add(
+          Format('Метод: %s  результат %s: тип сообщения: %s  сообщение: %s',
+          [MethodName,
+           ServiceControl.FieldByName('Op').AsString,
+           ServiceControl.FieldByName('Msg_type').AsString,
+           ServiceControl.FieldByName('Msg_text').AsString]))
+      else
+        mLog.Lines.Add(
+          Format('Метод: %s  результат %s: успешно  тип сообщения: %s  сообщение: %s',
+          [MethodName,
+           ServiceControl.FieldByName('Op').AsString,
+           ServiceControl.FieldByName('Msg_type').AsString,
+           ServiceControl.FieldByName('Msg_text').AsString]));
+      ServiceControl.Next;
+    end;
+    Result :=
+      (AnsiCompareText(ServiceControl.FieldByName('Msg_type').AsString, 'status') = 0)
+        and
+        (
+        (AnsiCompareText(ServiceControl
+            .FieldByName('Msg_text').AsString, 'OK') = 0)
+        or
+        (AnsiCompareText(ServiceControl
+            .FieldByName('Msg_text').AsString, 'Table is already up to date') = 0)
+        );
+  end
+  else begin
+    mLog.Lines.Add(
+      Format('Метод: %s  результат: нет данных', [MethodName]));
+    Result := False;
+  end;
 end;
 
 end.

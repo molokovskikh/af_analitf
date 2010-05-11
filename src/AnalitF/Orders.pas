@@ -7,12 +7,12 @@ uses
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
   pFIBDataSet, DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
-  MyAccess, ActnList, Buttons;
+  MyAccess, ActnList, Buttons,
+  Menus;
 
 type
   TOrdersForm = class(TChildForm)
     dsOrders: TDataSource;
-    frdsOrders: TfrDBDataSet;
     dbgOrders: TToughDBGrid;
     adsOrdersOld: TpFIBDataSet;
     adsOrdersOldCryptPRICE: TCurrencyField;
@@ -111,6 +111,9 @@ type
     btnGotoCore: TSpeedButton;
     adsOrdersRetailPrice: TFloatField;
     adsOrdersRetailMarkup: TFloatField;
+    adsOrdersMaxProducerCost: TFloatField;
+    adsOrdersEditRetailMarkup: TFloatField;
+    adsOrdersVitallyImportant: TBooleanField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -139,36 +142,47 @@ type
     RegionCode : Int64;
     PriceName, RegionName : String;
     ClosedOrder : Boolean;
+    EtalonSQL : String;
     //Заказ имеет позиции с необходимой корректировкой, которые он получил
     //во время попытки отправки заказа
     OrderWithSendError : Boolean;
+    dbgEditOrders: TDBGridEh;
+    FGridPopup : TPopupMenu;
+    FGridColumns : TMenuItem;
     procedure SetOrderLabel;
     procedure ocf(DataSet: TDataSet);
     procedure FlipToCore;
+    procedure PrepareEditOrdersGrid;
+    procedure EditColumnGetCellParams(Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
+    procedure OrderCountUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+    procedure RetailMarkupUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+    procedure RetailPriceUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
   protected
     procedure UpdateOrderDataset; override;
-    procedure AddRetailPriceColumn;
+    procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
+    procedure OnPopupGridColumnsClick( Sender: TObject);
   public
-    procedure ShowForm(OrderId: Integer; ParentForm : TChildForm); overload; //reintroduce;
+    procedure ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean); overload; //reintroduce;
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
-    procedure SetParams(OrderId: Integer);
+    procedure SetParams(OrderId: Integer; ExternalClosed : Boolean);
   end;
 
 implementation
 
 uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
-     PostSomeOrdersController, U_framePosition, DBGridHelper;
+     PostSomeOrdersController, U_framePosition, DBGridHelper,
+     ToughDBGridColumns;
 
 {$R *.dfm}
 
-procedure TOrdersForm.ShowForm(OrderId: Integer; ParentForm : TChildForm);
+procedure TOrdersForm.ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean);
 begin
   plOverCost.Hide();
   cbNeedCorrect.Checked := False;
   //PrintEnabled:=False;
   Self.OrderID := OrderId;
-  SetParams(OrderId);
+  SetParams(OrderId, ExternalClosed);
   inherited ShowForm;
   if Assigned(PrevForm) and (PrevForm is TOrdersHForm) then begin
     ParentOrdersHForm := PrevForm;
@@ -186,30 +200,63 @@ begin
     dbtPositions.DataSource := dbmMessageTo.DataSource;
     dbtSumOrder.DataSource := dbmMessageTo.DataSource;
     dbtRegionName.DataSource := dbmMessageTo.DataSource;
+  end;
+  if not ClosedOrder and DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
+    if dbgEditOrders.CanFocus then begin
+      dbgEditOrders.SetFocus;
+      dbgEditOrders.SelectedField := adsOrdersordercount;
+    end;
   end
+  else begin
+    if dbgOrders.CanFocus then begin
+      dbgOrders.SetFocus;
+      dbgOrders.SelectedField := adsOrdersordercount;
+    end;
+  end;
 end;
 
-procedure TOrdersForm.SetParams(OrderId: Integer);
+procedure TOrdersForm.SetParams(OrderId: Integer; ExternalClosed : Boolean);
 var
-  Closed : Variant;
   SendResult : Variant;
 begin
-  Closed := DM.QueryValue('select Closed from ordershead where orderid = ' + IntToStr(OrderId), [], []);
-  ClosedOrder := Closed <> 0;
+  ClosedOrder := ExternalClosed;
+  
+  if not ClosedOrder and DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
+    dbgOrders.Visible := False;
+    dbgEditOrders.Visible := True;
+    dbgOrders.DataSource := nil;
+    dbgEditOrders.DataSource := dsOrders;
+    if dbgEditOrders.CanFocus then
+      dbgEditOrders.SetFocus;
+  end
+  else begin
+    dbgEditOrders.Visible := False;
+    dbgOrders.Visible := True;
+    dbgEditOrders.DataSource := nil;
+    dbgOrders.DataSource := dsOrders;
+    if dbgOrders.CanFocus then
+      dbgOrders.SetFocus;
+  end;
+
   //Отображаем сообщение с причиной корректировки только если заказ открыт и используется механизм корректировки заказов
-  gbCorrectMessage.Visible := (Closed = 0)  and FUseCorrectOrders;
+  gbCorrectMessage.Visible := (not ClosedOrder)  and FUseCorrectOrders;
   if not gbCorrectMessage.Visible then
     pTop.Height := pOrderHeader.Height;
-  SendResult := DM.QueryValue('select SendResult from ordershead where orderid = ' + IntToStr(OrderId), [], []);
+  if not ClosedOrder then
+    SendResult := DM.QueryValue('select SendResult from CurrentOrderHeads where orderid = ' + IntToStr(OrderId), [], [])
+  else
+    SendResult := Null;
   OrderWithSendError := not VarIsNull(SendResult);
   adsOrders.OnCalcFields := ocf;
-  if Closed = 0 then begin
+  if not ClosedOrder then begin
+    adsOrders.SQL.Text := EtalonSQL;
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;
     dbmMessageTo.ReadOnly := False;
     actFlipCore.Enabled := True;
   end
   else begin
+    adsOrders.SQL.Text := StringReplace(EtalonSQL, 'CurrentOrderLists', 'PostedOrderLists', [rfReplaceAll, rfIgnoreCase]);
     dbgOrders.SearchField := 'SynonymName';
     dbgOrders.ForceRus := True;
     dbmMessageTo.ReadOnly := True;
@@ -248,6 +295,9 @@ procedure TOrdersForm.dbgOrdersGetCellParams(Sender: TObject;
 var
   PositionResult : TPositionSendResult;
 begin
+  if adsOrdersVITALLYIMPORTANT.AsBoolean then
+    AFont.Color := VITALLYIMPORTANT_CLR;
+
   //ожидаемый товар выделяем зеленым
   if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
     Background := AWAIT_CLR;
@@ -279,16 +329,23 @@ end;
 procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (Key = VK_RETURN) and (not dbmMessageTo.ReadOnly)
-  then
-    FlipToCore
+  if (Key = VK_RETURN) 
+  then begin
+    if dbgEditOrders.Visible and dbgEditOrders.EditorMode then
+    else
+      if not dbmMessageTo.ReadOnly then
+        FlipToCore
+  end
   else
-    if Key = VK_ESCAPE then
-      if Assigned(ParentOrdersHForm) then
-        ParentOrdersHForm.ShowForm
+    if Key = VK_ESCAPE then begin
+      if dbgEditOrders.Visible and dbgEditOrders.EditorMode then
       else
-        if Assigned(PrevForm) then
-          PrevForm.ShowAsPrevForm;
+        if Assigned(ParentOrdersHForm) then
+          ParentOrdersHForm.ShowAsPrevForm
+        else
+          if Assigned(PrevForm) then
+            PrevForm.ShowAsPrevForm;
+    end;
 end;
 
 procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
@@ -312,7 +369,7 @@ end;
 
 procedure TOrdersForm.SetOrderLabel;
 begin
-  lSumOrder.Caption := Format('%0.2f', [ DM.GetSumOrder(OrderID) ]);
+  lSumOrder.Caption := Format('%0.2f', [ DM.GetSumOrder(OrderID, ClosedOrder) ]);
 end;
 
 procedure TOrdersForm.dbgOrdersCanInput(Sender: TObject; Value: Integer;
@@ -324,27 +381,63 @@ end;
 
 procedure TOrdersForm.FormCreate(Sender: TObject);
 begin
+  dbgEditOrders:= TDBGridEh.Create(Self);
+  dbgEditOrders.Parent := pClient;
+  dbgEditOrders.Align := alClient;
+  dbgEditOrders.Visible := False;
+  TDBGridHelper.SetDefaultSettingsToGrid(dbgEditOrders);
+  dbgEditOrders.Options := dbgEditOrders.Options + [dgEditing];
+  dbgEditOrders.Columns.Assign(dbgOrders.Columns);
+  dbgEditOrders.SelectedField := adsOrdersordercount;
+  dbgEditOrders.OnDblClick := dbgOrdersDblClick;
+  dbgEditOrders.OnGetCellParams := dbgOrdersGetCellParams;
+  dbgEditOrders.OnKeyDown := dbgOrdersKeyDown;
+  dbgEditOrders.OnKeyPress := dbgOrdersKeyPress;
+  dbgEditOrders.OnSortMarkingChanged := dbgOrdersSortMarkingChanged;
+
+  FGridPopup := TPopupMenu.Create( Self);
+  dbgEditOrders.PopupMenu := FGridPopup;
+  FGridColumns := TMenuItem.Create(FGridPopup);
+  FGridColumns.Caption := 'Столбцы...';
+  FGridColumns.OnClick := OnPopupGridColumnsClick;
+  FGridPopup.Items.Add(FGridColumns);
+
+  EtalonSQL := adsOrders.SQL.Text;
   dsCheckVolume := adsOrders;
-  dgCheckVolume := dbgOrders;
+  if DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then
+    dgCheckVolume := TToughDBGrid(dbgEditOrders)
+  else
+    dgCheckVolume := dbgOrders;
+
   fOrder := adsOrdersORDERCOUNT;
   fVolume := adsOrdersREQUESTRATIO;
   fOrderCost := adsOrdersORDERCOST;
   fSumOrder := adsOrdersSUMORDER;
   fMinOrderCount := adsOrdersMINORDERCOUNT;
   gotoMNNButton := btnGotoMNN;
+
   inherited;
-  AddRetailPriceColumn;
-  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'Mnn', ShowDescriptionAction);
+
+  if dgCheckVolume <> dbgOrders then
+    PrepareColumnsInOrderGrid(dbgOrders);
+
+  AddRetailPriceColumn(dbgOrders);
+  AddRetailPriceColumn(dbgEditOrders);
+
+  PrepareEditOrdersGrid;
+
+  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'MnnId', ShowDescriptionAction);
   TDBGridHelper.RestoreColumnsLayout(dbgOrders, 'DetailOrder');
+  TDBGridHelper.RestoreColumnsLayout(dbgEditOrders, 'DetailOrder');
 end;
 
 procedure TOrdersForm.dbgOrdersKeyPress(Sender: TObject; var Key: Char);
 var
   _CoreFirmForm : TCoreFirmForm;
 begin
-	if Assigned(ParentOrdersHForm) and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0) and ( Key > #32) and not ( Key in
-		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
-	begin
+  if Assigned(ParentOrdersHForm) and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0) and ( Key > #32) and not ( Key in
+    [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+  begin
     _CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
     if not Assigned(_CoreFirmForm) then
       _CoreFirmForm := TCoreFirmForm.Create(Application);
@@ -352,7 +445,19 @@ begin
     _CoreFirmForm.dbgCore.SetFocus;
     _CoreFirmForm.eSearch.Text := '';
     SendMessage(GetFocus, WM_CHAR, Ord( Key), 0);
-	end;
+  end
+  else
+    if (Sender = dbgEditOrders)
+      and (dbgEditOrders.SelectedField <> adsOrdersordercount)
+      and (dbgEditOrders.SelectedField <> adsOrdersRetailPrice)
+      and (dbgEditOrders.SelectedField <> adsOrdersEditRetailMarkup)
+    then begin
+      if (Key in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then begin
+        dbgEditOrders.SelectedField := adsOrdersordercount;
+        SendMessage(dbgEditOrders.Handle, WM_CHAR, Ord( Key), 0);
+        Key := #0;
+      end;
+    end;
 end;
 
 procedure TOrdersForm.ShowForm;
@@ -360,7 +465,7 @@ begin
   inherited;
   //Если мы производим возврат из формы "Заявка поставщику", то надо обновить данные
   if Assigned(PrevForm) and ((PrevForm is TCoreFirmForm) or (PrevForm is TCoreForm)) then
-    SetParams(OrderID);
+    SetParams(OrderID, ClosedOrder);
 end;
 
 procedure TOrdersForm.tmrCheckOrderCountTimer(Sender: TObject);
@@ -372,7 +477,7 @@ begin
   //adsOrders.Delete;
   if adsOrders.RecordCount = 0 then begin
     //todo: надо потом подумать о том, чтобы восстановить удаление заголовка заказа
-    //DM.adcUpdate.SQL.Text := 'delete from OrdersHead where OrderId = ' + IntToStr(OrderID);
+    //DM.adcUpdate.SQL.Text := 'delete from CurrentOrderHeads where OrderId = ' + IntToStr(OrderID);
     //DM.adcUpdate.Execute;
     if Assigned(ParentOrdersHForm) then begin
       TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.Close;
@@ -398,11 +503,14 @@ end;
 procedure TOrdersForm.ocf(DataSet: TDataSet);
 begin
   try
-    if not ClosedOrder or adsOrdersRetailMarkup.IsNull then
-      adsOrdersRetailPrice.AsCurrency := DM.GetPriceRet(adsOrdersprice.AsCurrency)
+    if adsOrdersRetailMarkup.IsNull then
+      adsOrdersEditRetailMarkup.Value := DM.GetRetUpCost(adsOrdersprice.AsCurrency)
     else
-      adsOrdersRetailPrice.AsCurrency :=
-        (1 + adsOrdersRetailMarkup.Value/100)*adsOrdersprice.AsCurrency;
+      adsOrdersEditRetailMarkup.Value := adsOrdersRetailMarkup.Value;
+
+    adsOrdersRetailPrice.AsCurrency :=
+        (1 + adsOrdersEditRetailMarkup.Value/100)*adsOrdersprice.AsCurrency;
+
     adsOrdersSumOrder.AsCurrency := adsOrdersprice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
   except
   end;
@@ -473,14 +581,14 @@ procedure TOrdersForm.dbmMessageToKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_ESCAPE then
     if Assigned(ParentOrdersHForm) then
-      ParentOrdersHForm.ShowForm
+      ParentOrdersHForm.ShowAsPrevForm
     else
       PrevForm.ShowAsPrevForm;
 end;
 
 procedure TOrdersForm.cbNeedCorrectClick(Sender: TObject);
 begin
-  SetParams(OrderID);
+  SetParams(OrderID, ClosedOrder);
   dbgOrders.SetFocus;
 end;
 
@@ -533,6 +641,7 @@ end;
 procedure TOrdersForm.FormDestroy(Sender: TObject);
 begin
   inherited;
+  TDBGridHelper.SaveColumnsLayout(dbgEditOrders, 'DetailOrder');
   TDBGridHelper.SaveColumnsLayout(dbgOrders, 'DetailOrder');
 end;
 
@@ -547,32 +656,161 @@ var
 begin
   if not dbmMessageTo.ReadOnly then begin
     lastCoreId := adsOrdersCoreId.AsVariant;
-    SetParams(OrderID);
+    SetParams(OrderID, ClosedOrder);
     if adsOrders.RecordCount > 0 then begin
       if not adsOrders.Locate('CoreId', lastCoreId, []) then
         adsOrders.First;
     end
-    else
-      ParentOrdersHForm.ShowForm;
+    else begin
+    MainForm.SetOrdersInfo;
+      if Assigned(ParentOrdersHForm) then begin
+        TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.Close;
+        TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.Open;
+        ParentOrdersHForm.ShowAsPrevForm;
+      end;
+    end;
   end;
 end;
 
-procedure TOrdersForm.AddRetailPriceColumn;
+procedure TOrdersForm.AddRetailPriceColumn(dbgrid : TDBGridEh);
 var
   orderCountColumn : TColumnEh;
   retailPriceColumn : TColumnEh;
+  retailMarkupColumn : TColumnEh;
 begin
   if DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
-    orderCountColumn := ColumnByNameT(dbgOrders, 'orderCount');
+    orderCountColumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersordercount.FieldName);
     if Assigned(orderCountColumn) then begin
-      retailPriceColumn := ColumnByNameT(dbgOrders, 'RetailPrice');
+      retailPriceColumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersRetailPrice.FieldName);
       if not Assigned(retailPriceColumn) then begin
-        retailPriceColumn := TColumnEh(dbgOrders.Columns.Insert(orderCountColumn.Index));
-        retailPriceColumn.FieldName := 'RetailPrice';
+        retailPriceColumn := TColumnEh(dbgrid.Columns.Insert(orderCountColumn.Index));
+        retailPriceColumn.FieldName := adsOrdersRetailPrice.FieldName;
         retailPriceColumn.Title.Caption := 'Розн. цена';
         retailPriceColumn.Title.TitleButton := True;
       end;
+      retailMarkupColumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersEditRetailMarkup.FieldName);
+      if not Assigned(retailMarkupColumn) then begin
+        retailMarkupColumn := TColumnEh(dbgrid.Columns.Insert(retailPriceColumn.Index));
+        retailMarkupColumn.FieldName := adsOrdersEditRetailMarkup.FieldName;
+        retailMarkupColumn.Title.Caption := 'Розн. наценка';
+        retailMarkupColumn.Title.TitleButton := True;
+      end;
     end;
+  end;
+end;
+
+procedure TOrdersForm.OnPopupGridColumnsClick(Sender: TObject);
+var
+  FColumnsForm : TfrmColumns;
+begin
+  FColumnsForm := TfrmColumns.Create(Self);
+  try
+    FColumnsForm.OwnerDBGrid := TToughDBGrid(dbgEditOrders);
+    FColumnsForm.ShowModal;
+  finally
+    FColumnsForm.Free;
+  end;
+end;
+
+procedure TOrdersForm.PrepareEditOrdersGrid;
+var
+  I : Integer;
+  editColumn : TColumnEh;
+begin
+  if DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
+    dbgEditOrders.ReadOnly := True;
+    for I := 0 to dbgEditOrders.Columns.Count-1 do
+      dbgEditOrders.Columns[i].ReadOnly := True;
+
+    editColumn := ColumnByNameT(TToughDBGrid(dbgEditOrders), adsOrdersRetailPrice.FieldName);
+    if Assigned(editColumn) then begin
+      editColumn.ReadOnly := False;
+      editColumn.OnGetCellParams := EditColumnGetCellParams;
+      editColumn.OnUpdateData := RetailPriceUpdateData;
+    end;
+
+    editColumn := ColumnByNameT(TToughDBGrid(dbgEditOrders), adsOrdersEditRetailMarkup.FieldName);
+    if Assigned(editColumn) then begin
+      editColumn.ReadOnly := False;
+      editColumn.OnGetCellParams := EditColumnGetCellParams;
+      editColumn.OnUpdateData := RetailMarkupUpdateData;
+    end;
+
+    editColumn := ColumnByNameT(TToughDBGrid(dbgEditOrders), adsOrdersordercount.FieldName);
+    if Assigned(editColumn) then begin
+      editColumn.ReadOnly := False;
+      editColumn.OnGetCellParams := EditColumnGetCellParams;
+      editColumn.OnUpdateData := OrderCountUpdateData;
+    end;
+  end;
+end;
+
+procedure TOrdersForm.EditColumnGetCellParams(Sender: TObject;
+  EditMode: Boolean; Params: TColCellParamsEh);
+begin
+  if (Sender is TColumnEh) and Params.ReadOnly then
+    Params.ReadOnly := False;
+end;
+
+procedure TOrdersForm.OrderCountUpdateData(Sender: TObject;
+  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+var
+  orderCount : Integer;
+begin
+  if (adsOrders.State in [dsEdit])
+  then begin
+    if StrToIntDef(Value, 0) >= 0 then begin
+      orderCount := Value;
+      if (orderCount >= 0) then begin
+        adsOrdersordercount.Value := orderCount;
+        adsOrders.Post;
+      end
+      else
+        adsOrders.Cancel;
+    end;
+    Handled := True;
+  end;
+end;
+
+procedure TOrdersForm.RetailMarkupUpdateData(Sender: TObject;
+  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+var
+  markup: Double;
+begin
+  if (adsOrders.State in [dsEdit])
+  then begin
+    if StrToFloatDef(Value, 0.0) > 0 then begin
+      markup := Value;
+      if (markup > 0) then begin
+        adsOrdersRetailMarkup.AsVariant := markup;
+        adsOrders.Post;
+      end
+      else
+        adsOrders.Cancel;
+    end;
+    Handled := True;
+  end;
+end;
+
+procedure TOrdersForm.RetailPriceUpdateData(Sender: TObject;
+  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+var
+  markup,
+  price : Double;
+begin
+  if (adsOrders.State in [dsEdit])
+  then begin
+    if StrToFloatDef(Value, 0.0) > 0 then begin
+      price := Value;
+      markup := (price/adsOrdersprice.AsCurrency - 1) * 100;
+      if (markup > 0) then begin
+        adsOrdersRetailMarkup.AsVariant := markup;
+        adsOrders.Post;
+      end
+      else
+        adsOrders.Cancel;
+    end;
+    Handled := True;
   end;
 end;
 

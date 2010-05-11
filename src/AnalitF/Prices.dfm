@@ -577,47 +577,47 @@ inherited PricesForm: TPricesForm
       
         '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
         'AS DatePrice,'
-      '  count(OrdersList.ID) as Positions,'
+      '  count(CurrentOrderLists.ID) as Positions,'
       
-        '  ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as Su' +
+        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCount), 0) as Su' +
         'mOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
-      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
       '    from'
-      '      OrdersHead'
+      '      PostedOrderHeads'
       
-        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
         'erId'
-      '    WHERE OrdersHead.ClientId = :ClientId'
-      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
-      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      '    WHERE PostedOrderHeads.ClientId = :ClientId'
+      '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
+      '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and OrdersHead.senddate > curdate() + interval (1-day(cur' +
+        '       and PostedOrderHeads.senddate > curdate() + interval (1-day(cur' +
         'date())) day'
-      '       AND OrdersHead.Closed = 1'
-      '       AND OrdersHead.send = 1'
-      '       AND OrdersList.OrderCount>0'
+      '       AND PostedOrderHeads.Closed = 1'
+      '       AND PostedOrderHeads.send = 1'
+      '       AND PostedOrderLists.OrderCount>0'
       '  ) as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  ('
       '    select'
-      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
       '    from'
-      '      OrdersHead'
+      '      PostedOrderHeads'
       
-        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
         'erId'
-      '    WHERE OrdersHead.ClientId = :ClientId'
-      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
-      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      '    WHERE PostedOrderHeads.ClientId = :ClientId'
+      '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
+      '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and OrdersHead.senddate > curdate() + interval (-WEEKDAY(' +
+        '       and PostedOrderHeads.senddate > curdate() + interval (-WEEKDAY(' +
         'curdate())) day'
-      '       AND OrdersHead.Closed = 1'
-      '       AND OrdersHead.send = 1'
-      '       AND OrdersList.OrderCount>0'
+      '       AND PostedOrderHeads.Closed = 1'
+      '       AND PostedOrderHeads.send = 1'
+      '       AND PostedOrderLists.OrderCount>0'
       '  ) as sumbycurrentweek'
       'FROM '
       '  pricesshow'
@@ -628,14 +628,14 @@ inherited PricesForm: TPricesForm
       
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
-      '  left join Ordershead on '
-      '        Ordershead.Pricecode = pricesshow.PriceCode '
-      '    and Ordershead.Regioncode = pricesshow.RegionCode'
-      '    and OrdersHead.ClientId   = :ClientId'
-      '    and OrdersHead.Closed <> 1'
-      '  left join OrdersList on '
-      '        OrdersList.ORDERID = Ordershead.ORDERID'
-      '    and OrdersList.OrderCount > 0'
+      '  left join CurrentOrderHeads on '
+      '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
+      '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
+      '    and CurrentOrderHeads.ClientId   = :ClientId'
+      '    and CurrentOrderHeads.Closed <> 1'
+      '  left join CurrentOrderLists on '
+      '        CurrentOrderLists.ORDERID = CurrentOrderHeads.ORDERID'
+      '    and CurrentOrderLists.OrderCount > 0'
       'where'
       '    pricesshow.PriceCode = :pricecode'
       'and pricesshow.RegionCode = :regioncode'
@@ -652,47 +652,47 @@ inherited PricesForm: TPricesForm
       
         '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
         'AS DatePrice,'
-      '  count(OrdersList.ID) as Positions,'
+      '  count(CurrentOrderLists.ID) as Positions,'
       
-        '  ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as Su' +
+        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCount), 0) as Su' +
         'mOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
-      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
       '    from'
-      '      OrdersHead'
+      '      PostedOrderHeads'
       
-        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
         'erId'
-      '    WHERE OrdersHead.ClientId = :ClientId'
-      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
-      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      '    WHERE PostedOrderHeads.ClientId = :ClientId'
+      '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
+      '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and OrdersHead.senddate > curdate() + interval (1-day(cur' +
+        '       and PostedOrderHeads.senddate > curdate() + interval (1-day(cur' +
         'date())) day'
-      '       AND OrdersHead.Closed = 1'
-      '       AND OrdersHead.send = 1'
-      '       AND OrdersList.OrderCount>0'
+      '       AND PostedOrderHeads.Closed = 1'
+      '       AND PostedOrderHeads.send = 1'
+      '       AND PostedOrderLists.OrderCount>0'
       '  ) as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  ('
       '    select'
-      '      ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
+      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
       '    from'
-      '      OrdersHead'
+      '      PostedOrderHeads'
       
-        '      INNER JOIN OrdersList ON OrdersList.OrderId=OrdersHead.Ord' +
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
         'erId'
-      '    WHERE OrdersHead.ClientId = :ClientId'
-      '       AND OrdersHead.PriceCode = pricesshow.PriceCode'
-      '       AND OrdersHead.RegionCode = pricesshow.RegionCode'
+      '    WHERE PostedOrderHeads.ClientId = :ClientId'
+      '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
+      '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and OrdersHead.senddate > curdate() + interval (-WEEKDAY(' +
+        '       and PostedOrderHeads.senddate > curdate() + interval (-WEEKDAY(' +
         'curdate())) day'
-      '       AND OrdersHead.Closed = 1'
-      '       AND OrdersHead.send = 1'
-      '       AND OrdersList.OrderCount>0'
+      '       AND PostedOrderHeads.Closed = 1'
+      '       AND PostedOrderHeads.send = 1'
+      '       AND PostedOrderLists.OrderCount>0'
       '  ) as sumbycurrentweek'
       'FROM '
       '  pricesshow'
@@ -703,14 +703,14 @@ inherited PricesForm: TPricesForm
       
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
-      '  left join Ordershead on '
-      '        Ordershead.Pricecode = pricesshow.PriceCode '
-      '    and Ordershead.Regioncode = pricesshow.RegionCode'
-      '    and OrdersHead.ClientId   = :ClientId'
-      '    and OrdersHead.Closed <> 1'
-      '  left join OrdersList on '
-      '        OrdersList.ORDERID = Ordershead.ORDERID'
-      '    and OrdersList.OrderCount > 0'
+      '  left join CurrentOrderHeads on '
+      '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
+      '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
+      '    and CurrentOrderHeads.ClientId   = :ClientId'
+      '    and CurrentOrderHeads.Closed <> 1'
+      '  left join CurrentOrderLists on '
+      '        CurrentOrderLists.ORDERID = CurrentOrderHeads.ORDERID'
+      '    and CurrentOrderLists.OrderCount > 0'
       'group by pricesshow.PriceCode, pricesshow.RegionCode')
     RefreshOptions = [roAfterUpdate]
     AfterOpen = adsPrices2AfterOpen

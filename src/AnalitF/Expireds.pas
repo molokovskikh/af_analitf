@@ -143,6 +143,7 @@ type
     adsExpiredsDescriptionId: TLargeintField;
     adsExpiredsCatalogVitallyImportant: TBooleanField;
     adsExpiredsCatalogMandatoryList: TBooleanField;
+    adsExpiredsMaxProducerCost: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -185,7 +186,7 @@ begin
   fMinOrderCount := adsExpiredsMINORDERCOUNT;
   gotoMNNButton := btnGotoMNN;
   inherited;
-  TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'MnnId', ShowDescriptionAction);
   adsExpireds.OnCalcFields := ecf;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   UseExcess := True;

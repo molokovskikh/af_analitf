@@ -12,7 +12,7 @@ uses
   U_frameLegend, MemDS, DBAccess, MyAccess;
 
 type
-  TFilter=( filAll, filOrder, filLeader);
+  TFilter=( filAll, filOrder, filLeader, filProducer);
 
   TCoreFirmForm = class(TChildForm)
     dsCore: TDataSource;
@@ -22,7 +22,6 @@ type
     actFilterLeader: TAction;
     actSaveToFile: TAction;
     actDeleteOrder: TAction;
-    frdsCore: TfrDBDataSet;
     lblRecordCount: TLabel;
     cbFilter: TComboBox;
     lblOrderLabel: TLabel;
@@ -177,6 +176,12 @@ type
     adsCoreDescriptionId: TLargeintField;
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
+    adsCoreMaxProducerCost: TFloatField;
+    dblProducers: TDBLookupComboBox;
+    adsProducers: TMyQuery;
+    adsProducersId: TLargeintField;
+    adsProducersName: TStringField;
+    dsProducers: TDataSource;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -205,6 +210,7 @@ type
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
+    procedure dblProducersCloseUp(Sender: TObject);
   private
     PriceCode, ClientId: Integer;
     RegionCode : Int64;
@@ -225,6 +231,7 @@ type
     procedure AllFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure OrderCountFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure LeaderFilterRecord(DataSet: TDataSet; var Accept: Boolean);
+    procedure ProducerFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure ccf(DataSet: TDataSet);
     procedure SetClear;
     procedure AddKeyToSearch(Key : Char);
@@ -260,7 +267,7 @@ begin
 
   inherited;
 
-  TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   BM := TBitmap.Create;
 
@@ -268,7 +275,7 @@ begin
 
   InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
-	PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
+  PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
@@ -289,6 +296,17 @@ end;
 procedure TCoreFirmForm.ShowForm(PriceCode: Integer; RegionCode: Int64;
   PriceName, RegionName : String; OnlyLeaders: Boolean=False; FromOrders : Boolean = False);
 begin
+  if adsProducers.Active then
+    adsProducers.Close;
+  adsProducers.ParamByName( 'PriceCode').Value:=PriceCode;
+  adsProducers.ParamByName( 'RegionCode').Value:=RegionCode;
+  adsProducers.Open;
+  dblProducers.DataField := 'Id';
+  dblProducers.KeyField := 'Id';
+  dblProducers.ListField := 'Name';
+  dblProducers.ListSource := dsProducers;
+  dblProducers.KeyValue := adsProducersId.Value;
+
   plOverCost.Hide();
   Self.PriceCode  := PriceCode;
   Self.RegionCode := RegionCode;
@@ -352,6 +370,7 @@ begin
       end;
     filOrder: FP := OrderCountFilterRecord;
     filLeader: FP := LeaderFilterRecord;
+    filProducer: FP := ProducerFilterRecord;
   end;
   DBProc.SetFilterProc(adsCore, FP);
   lblRecordCount.Caption:=Format( 'ѕозиций : %d', [adsCore.RecordCount]);
@@ -392,6 +411,20 @@ begin
     adsCore.Filtered := False;
     adsCore.IndexFieldNames := 'SynonymName';
     frVariables[ 'OrdersComments'] := adsCurrentOrderHeader.FieldByName('Comments').AsVariant;
+
+    if DM.adsPrices.Active then
+      DM.adsPrices.Close;
+    try
+      DM.adsPrices.ParamByName('ClientId').Value := Self.ClientId;
+      DM.adsPrices.ParamByName('TimeZoneBias').Value := TimeZoneBias;
+      DM.adsPrices.Open;
+      DM.adsPrices.Locate('PriceCode;RegionCode', VarArrayOf([ PriceCode, RegionCode]), []);
+      frVariables[ 'PricesSupportPhone'] := DM.adsPricesSupportPhone.Value;
+      frVariables[ 'PricesFullName'] := DM.adsPricesFullName.Value;
+      frVariables[ 'PricesDatePrice'] := DM.adsPricesDatePrice.AsString;
+    finally
+      DM.adsPrices.Close;
+    end;
 
     DM.ShowFastReport('CoreFirm.frf', adsCore, APreview);
   finally
@@ -489,11 +522,11 @@ var
   OrderSum: Double;
 begin
   OrderCount := DM.QueryValue(
-  'SELECT count(*) FROM OrdersList, ordershead WHERE ' +
-    'ordershead.PriceCode = :PriceCode and ordershead.regioncode = :RegionCode ' +
-    ' and ordershead.ClientId = :ClientId ' +
-    ' and OrdersList.OrderId = ordershead.orderid and ordershead.closed = 0 ' +
-    ' AND OrdersList.OrderCount>0',
+  'SELECT count(*) FROM CurrentOrderLists, CurrentOrderHeads WHERE ' +
+    'CurrentOrderHeads.PriceCode = :PriceCode and CurrentOrderHeads.regioncode = :RegionCode ' +
+    ' and CurrentOrderHeads.ClientId = :ClientId ' +
+    ' and CurrentOrderLists.OrderId = CurrentOrderHeads.orderid and CurrentOrderHeads.closed = 0 ' +
+    ' AND CurrentOrderLists.OrderCount>0',
     ['PriceCode', 'RegionCode', 'ClientId'],
     [PriceCode, RegionCode, ClientId]);
 	OrderSum := DM.FindOrderInfo(PriceCode, RegionCode);
@@ -529,14 +562,14 @@ begin
     with DM.adcUpdate do begin
       //удал€ем сохраненную за€вку (если есть)
       SQL.Text:= ''
-        + ' delete OrdersHead, OrdersList'
-        + ' FROM OrdersHead, OrdersList '
+        + ' delete CurrentOrderHeads, CurrentOrderLists'
+        + ' FROM CurrentOrderHeads, CurrentOrderLists '
         + ' WHERE '
-        + '     (OrdersHead.ClientId=:ClientId) '
-        + ' and (OrdersHead.PriceCode=:PriceCode) '
-        + ' and (OrdersHead.RegionCode=:RegionCode) '
-        + ' and (OrdersHead.Closed <> 1)'
-        + ' and (OrdersList.OrderId = OrdersHead.OrderId)';
+        + '     (CurrentOrderHeads.ClientId=:ClientId) '
+        + ' and (CurrentOrderHeads.PriceCode=:PriceCode) '
+        + ' and (CurrentOrderHeads.RegionCode=:RegionCode) '
+        + ' and (CurrentOrderHeads.Closed <> 1)'
+        + ' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)';
       ParamByName('CLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
       ParamByName('PRICECODE').Value := PriceCode;
       ParamByName('REGIONCODE').Value := RegionCode;
@@ -669,6 +702,8 @@ begin
       and not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0)
   else
     Accept := not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0);
+  if Accept and (dblProducers.KeyValue <> 0) then
+    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 procedure TCoreFirmForm.LeaderFilterRecord(DataSet: TDataSet;
@@ -684,6 +719,8 @@ begin
   else
     Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
       or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
+  if Accept and (dblProducers.KeyValue <> 0) then
+    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 procedure TCoreFirmForm.RefreshAllCore;
@@ -750,6 +787,8 @@ procedure TCoreFirmForm.AllFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
   Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText);
+  if Accept and (dblProducers.KeyValue <> 0) then
+    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 procedure TCoreFirmForm.SetClear;
@@ -813,6 +852,50 @@ begin
       eSearch.Text := eSearch.Text + Key;
     tmrSearch.Enabled := True;
   end;
+end;
+
+procedure TCoreFirmForm.dblProducersCloseUp(Sender: TObject);
+begin
+  if dblProducers.KeyValue = 0 then
+    SetFilter(TFilter(cbFilter.ItemIndex))
+  else
+    SetFilter(filProducer);
+  dbgCore.SetFocus;
+end;
+
+procedure TCoreFirmForm.ProducerFilterRecord(DataSet: TDataSet;
+  var Accept: Boolean);
+begin
+  case cbFilter.ItemIndex of
+    0 :
+      begin
+        if Length(InternalSearchText) > 0 then
+          Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText);
+      end;
+    1 :
+      begin
+        if Length(InternalSearchText) > 0 then
+          Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText)
+            and not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0)
+        else
+          Accept := not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0);
+      end;
+    2 :
+      begin
+        if Length(InternalSearchText) > 0 then
+          Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText)
+          and
+          (
+           ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+            or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
+          )
+        else
+          Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+            or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
+      end;
+  end;
+  if Accept then
+    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 end.

@@ -19,7 +19,6 @@ type
     dsCore: TDataSource;
     gbPrevOrders: TGroupBox;
     lblPriceAvg: TLabel;
-    frdsCore: TfrDBDataSet;
     dsPreviosOrders: TDataSource;
     dbtPriceAvg: TDBText;
     dsAvgOrders: TDataSource;
@@ -218,6 +217,13 @@ type
     adsCoreDescriptionId: TLargeintField;
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
+    adsCoreMaxProducerCost: TFloatField;
+    dblProducers: TDBLookupComboBox;
+    adsProducers: TMyQuery;
+    dsProducers: TDataSource;
+    adsProducersId: TLargeintField;
+    adsProducersName: TStringField;
+    adsProducersEtalon: TMyQuery;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -247,6 +253,7 @@ type
     procedure tmrUpdatePreviosOrdersTimer(Sender: TObject);
     procedure adsCoreBeforeClose(DataSet: TDataSet);
     procedure adsCoreAfterOpen(DataSet: TDataSet);
+    procedure dblProducersCloseUp(Sender: TObject);
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
@@ -303,9 +310,9 @@ begin
   fMinOrderCount := adsCoreMINORDERCOUNT;
 	inherited;
 
-  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
-	PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
+  PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
   UseExcess := True;
@@ -337,6 +344,20 @@ var
   //OrdersH: TOrdersHForm;
   TmpSortList : TStringList;
 begin
+  if adsProducers.Active then
+    adsProducers.Close;
+  if UseForms then
+    adsProducers.SQL.Text := StringReplace(adsProducersEtalon.SQL.Text, '(Catalogs.ShortCode =', '(Catalogs.FullCode =', [])
+  else
+    adsProducers.SQL.Text := adsProducersEtalon.SQL.Text;
+  adsProducers.ParamByName('ParentCode').Value := AParentCode;
+  adsProducers.Open;
+  dblProducers.DataField := 'Id';
+  dblProducers.KeyField := 'Id';
+  dblProducers.ListField := 'Name';
+  dblProducers.ListSource := dsProducers;
+  dblProducers.KeyValue := adsProducersId.Value;
+
   plOverCost.Hide();
   //Если в прошлый раз пользователь изменил наценку, то выставляем ее
   if UserSetRetUpCost then
@@ -395,6 +416,7 @@ begin
 
   adsCore.DisableControls;
   try
+    DBProc.SetFilter( adsCore, '');
     TmpSortList := GetSortedGroupList(adsCore, True, CoreGroupByProducts);
   finally
     adsCore.EnableControls;
@@ -561,25 +583,22 @@ end;
 procedure TCoreForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if ( Key = VK_ESCAPE) and Assigned(Self.PrevForm) and not (Self.PrevForm is TNamesFormsForm)
-  then begin
-    Self.PrevForm.ShowAsPrevForm;
+  if ( Key = VK_ESCAPE) and (dblProducers.KeyValue <> 0) then begin
+    dblProducers.KeyValue := 0;
+    cbFilterSelect(nil);
   end
   else
-    if (( Key = VK_ESCAPE) {or ( Key = VK_SPACE)}) and
-      not TToughDBGrid( Sender).InSearch then
-    begin
-      if Self.PrevForm is TNamesFormsForm then
+    if ( Key = VK_ESCAPE) and Assigned(Self.PrevForm) and not (Self.PrevForm is TNamesFormsForm)
+    then begin
+      Self.PrevForm.ShowAsPrevForm;
+    end
+    else
+      if (( Key = VK_ESCAPE) {or ( Key = VK_SPACE)}) and
+        not TToughDBGrid( Sender).InSearch then
       begin
-        Self.PrevForm.ShowForm;
-        if TNamesFormsForm( Self.PrevForm).actNewSearch.Checked then
-           TNamesFormsForm( Self.PrevForm).dbgCatalog.SetFocus
-        else
-          if TNamesFormsForm( Self.PrevForm).actUseForms.Checked then
-            TNamesFormsForm( Self.PrevForm).dbgForms.SetFocus
-          else TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
+        if Self.PrevForm is TNamesFormsForm then
+          TNamesFormsForm(Self.PrevForm).ReturnFromCore;
       end;
-    end;
 end;
 
 procedure TCoreForm.dbgCoreKeyPress(Sender: TObject; var Key: Char);
@@ -680,24 +699,33 @@ end;
 
 procedure TCoreForm.cbFilterSelect(Sender: TObject);
 var
-	ft: string;
+  filterSql: string;
 begin
-	if cbEnabled.ItemIndex = 0 then ft := ''
-		else if cbEnabled.ItemIndex = 1 then ft := 'PriceEnabled = True'
-			else ft := 'PriceEnabled = False';
+  if cbEnabled.ItemIndex = 0 then
+    filterSql := ''
+  else
+    if cbEnabled.ItemIndex = 1 then
+      filterSql := 'PriceEnabled = True'
+    else
+      filterSql := 'PriceEnabled = False';
 
-	if cbFilter.Items[ cbFilter.ItemIndex] <> ALL_REGIONS then
-	begin
-		if ft <> '' then ft := ft + ' AND ';
-		ft := ft + 'RegionName = ''' + cbFilter.Items[ cbFilter.ItemIndex] +
+  if cbFilter.Items[ cbFilter.ItemIndex] <> ALL_REGIONS then
+  begin
+    if filterSql <> '' then filterSql := filterSql + ' AND ';
+    filterSql := filterSql + 'RegionName = ''' + cbFilter.Items[ cbFilter.ItemIndex] +
                 ''' OR RegionName = NULL';
-	end
-	else
-	begin
-		if ft <> '' then ft := ft + ' OR PriceEnabled = NULL';
-	end;
-	DBProc.SetFilter( adsCore, ft);
-	dbgCore.SetFocus;
+  end
+  else
+  begin
+    //if filterSql <> '' then filterSql := filterSql + ' OR PriceEnabled = NULL';
+  end;
+  if dblProducers.KeyValue <> 0 then begin
+    if filterSql <> '' then
+      filterSql := filterSql + ' and ';
+    filterSql := filterSql + 'CodeFirmCr = ' + VarToStr(dblProducers.KeyValue);
+  end;
+  DBProc.SetFilter( adsCore, filterSql);
+  dbgCore.SetFocus;
 end;
 
 procedure TCoreForm.FormHide(Sender: TObject);
@@ -983,6 +1011,11 @@ end;
 procedure TCoreForm.MaxProducerCostsUpdateGrid(DataSet: TDataSet);
 begin
   dbgMaxProducerCosts.Visible := not adsMaxProducerCosts.IsEmpty;
+end;
+
+procedure TCoreForm.dblProducersCloseUp(Sender: TObject);
+begin
+  cbFilterSelect(nil);
 end;
 
 initialization

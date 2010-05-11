@@ -7,6 +7,9 @@ uses
   DBGridEhImpExp, ShellAPI, Registry, Forms, IniFiles,
   ToughDBGrid, AProc;
 
+const
+  DBGridColumnMinWidth = 5;
+
 type
   TCharSet = Set of AnsiChar;
 
@@ -33,6 +36,8 @@ type
     class procedure RestoreColumnsLayout(Grid: TCustomDBGridEh; SectionName : String);
 
     class function GetSelectedRows(Grid: TCustomDBGridEh) : TStringList;
+    class procedure SetMinWidthToColumns(Grid : TCustomDBGridEh);
+    class procedure SetTitleButtonToColumns(Grid : TCustomDBGridEh);
   end;
 
 implementation
@@ -53,6 +58,7 @@ begin
   Result.ReadOnly := ReadOnly;
   Result.Title.Caption := Caption;
   Result.Title.Hint := Caption;
+  Result.MinWidth := DBGridColumnMinWidth;
 end;
 
 class function TDBGridHelper.AddColumn(Grid: TCustomDBGridEh; ColumnName,
@@ -360,6 +366,7 @@ end;
 
 class procedure TDBGridHelper.SetDefaultSettingsToGrid(Grid : TCustomDBGridEh);
 begin
+  Grid.MinAutoFitWidth := DBGridColumnMinWidth;
   Grid.AutoFitColWidths := True;
   Grid.Flat := True;
   Grid.Options := [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgRowLines];
@@ -369,6 +376,23 @@ begin
   Grid.GridLineColors.BrightColor := clDkGray;
   if CheckWin32Version(5, 1) then
     Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
+end;
+
+class procedure TDBGridHelper.SetMinWidthToColumns(Grid: TCustomDBGridEh);
+var
+  I : Integer;
+begin
+  for I := 0 to Grid.Columns.Count-1 do
+    Grid.Columns[i].MinWidth := DBGridColumnMinWidth;
+end;
+
+class procedure TDBGridHelper.SetTitleButtonToColumns(
+  Grid: TCustomDBGridEh);
+var
+  I : Integer;
+begin
+  for I := 0 to Grid.Columns.Count-1 do
+    Grid.Columns[i].Title.TitleButton := True;
 end;
 
 class function TDBGridHelper.WordPosition(const N: Integer;

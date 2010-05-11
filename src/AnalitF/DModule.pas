@@ -504,6 +504,10 @@ type
     adsOrderDetailsProducerCost: TFloatField;
     adsOrderDetailsNDS: TSmallintField;
     adtClientsCalculateWithNDS: TBooleanField;
+    frDBDataSet: TfrDBDataSet;
+    adtClientsEditName: TStringField;
+    adsOrderDetailsEtalon: TMyQuery;
+    adsOrderDetailsRetailMarkup: TFloatField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -542,6 +546,11 @@ type
 
     //Было произведено обновление программы с версии 800-x на 945
     FProcess800xUpdate : Boolean;
+
+    //Было произведено обновление программы на новую версию libmysqld
+    FProcessUpdateToNewLibMysqlD : Boolean;
+    //Не были восстановлены в процессе обновления со старой базы данных на новую
+    FNotImportedWithUpdateToNewLibMysql : TRepairedObjects;
 
     procedure CheckRestrictToRun;
     procedure CheckDBFile;
@@ -591,6 +600,10 @@ type
     procedure ExportFrom800xToFiles(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure Import800xFilesToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure FormatUnrestoreOrders(UnrestoreOrders : TDataSet; OutReport : TStringList);
+    //Производим обновление базы данных на libmysqld  нового формата
+    procedure UpdateToNewLibMySqlD(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ExportFromOldLibMysqlDToFiles(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
+    procedure ImportOldLibMysqlDFilesToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
 {$ifdef DEBUG}
@@ -615,6 +628,8 @@ type
     procedure DeleteOldMysqlFolder;
     //Подготовка директорий к 800-x версий к обновлению
     procedure PrepareUpdate800xToMySql;
+    //Подготовка директорий старой libmysqld к обновлению
+    procedure PrepareUpdateToNewLibMySqlD;
 {$ifdef USEMEMORYCRYPTDLL}
     procedure CheckSpecialLibrary;
 {$endif}
@@ -683,13 +698,13 @@ type
     function GetMarkup(Markups : TObjectList; BaseCost : Currency) : Currency;
 
     //Обрабатываем папки с документами
-    procedure ProcessDocs;
+    function ProcessDocs : Boolean;
     //обрабатываем каждую конкретную папку
     procedure ProcessDocsDir(DirName : String; MaxFileDate : TDateTime; FileList : TStringList);
     procedure OpenDocsDir(DirName : String; FileList : TStringList; OpenEachFile : Boolean);
 
     //получить сумму заказа
-    function  GetSumOrder (OrderID : Integer) : Currency;
+    function  GetSumOrder (OrderID : Integer; Closed : Boolean = False) : Currency;
     procedure GetOrderInfo (
       OrderID : Int64;
       var PriceName,
@@ -703,6 +718,8 @@ type
     property NeedUpdateByCheckHashes : Boolean read FNeedUpdateByCheckHashes;
     property ProcessFirebirdUpdate : Boolean read FProcessFirebirdUpdate;
     property Process800xUpdate : Boolean read FProcess800xUpdate;
+    property ProcessUpdateToNewLibMysqlD : Boolean read FProcessUpdateToNewLibMysqlD;
+    property NotImportedWithUpdateToNewLibMysql : TRepairedObjects read FNotImportedWithUpdateToNewLibMysql;
     //Установить параметры для компонента TIdHTTP
     procedure InternalSetHTTPParams(SetHTTP : TIdHTTP);
     function  QueryValue(SQL : String; Params: array of string; Values: array of Variant) : Variant;
@@ -718,6 +735,8 @@ type
     function GetClearSendResultSql(ClientId : Int64) : String;
     function NeedUpdateFireBirdToMySql : Boolean;
     function NeedUpdate800xToMySql : Boolean;
+    function NeedUpdateToNewLibMySqlD : Boolean;
+    function NeedCumulativeAfterUpdateToNewLibMySqlD : Boolean;
   end;
 
 var
@@ -1035,6 +1054,7 @@ begin
   WriteExchangeLog('AnalitF', 'Программа установлена в каталог: "' + ExtractFileDir(ParamStr(0)) + '"');
   FProcessFirebirdUpdate := False;
   FProcess800xUpdate := False;
+  FProcessUpdateToNewLibMysqlD := False;
   
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
   if not DirectoryExists( ExePath + SDirUpload) then CreateDir( ExePath + SDirUpload);
@@ -1050,6 +1070,9 @@ begin
   if NeedUpdate800xToMySql then
     ShowSQLWaiting(PrepareUpdate800xToMySql, 'Происходит подготовка к обновлению');
 
+  if NeedUpdateToNewLibMySqlD then
+    ShowSQLWaiting(PrepareUpdateToNewLibMySqlD, 'Происходит подготовка к обновлению');
+    
   DeleteOldMysqlFolder;
 
 {$ifdef USEMEMORYCRYPTDLL}
@@ -1071,6 +1094,12 @@ begin
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
   MyEmbConnection.Params.Add('--tmp_table_size=33554432');
   MyEmbConnection.Params.Add('--max_heap_table_size=33554432');
+
+  MyEmbConnection.Params.Add('--sort_buffer_size=64M');
+  MyEmbConnection.Params.Add('--read_buffer_size=2M');
+  //MyEmbConnection.Params.Add('--write_buffer_size=2M');
+  //Для настройки этого параметра необходимо получить 60% свободной памяти
+  //MyEmbConnection.Params.Add('--key_buffer_size==30M');
 {$endif}
 
 {$ifdef UsePrgDataTest}
@@ -1078,7 +1107,7 @@ begin
   SerEnd := 'DataTest';
 {$else}
   SerBeg := 'Prg';
-  SerEnd := 'Data';
+  SerEnd := 'DataEx';
 {$endif}
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
@@ -1360,10 +1389,10 @@ procedure TDM.CompactDataBase();
 begin
   MainConnection.Open;
   try
-{$ifndef USENEWMYSQLTYPES}
+{//$ifndef USENEWMYSQLTYPES}
     //todo: Надо будет восстановить сжатие, когда сборка Михаила сможет восстанавливать таблицы
-    //DatabaseController.OptimizeObjects(MainConnection);
-{$endif}
+    DatabaseController.OptimizeObjects(MainConnection);
+{//$endif}
   finally
     MainConnection.Close;
   end;
@@ -1391,6 +1420,7 @@ begin
     DataSet.DisableControls;
   end;
   try
+    frDBDataSet.DataSet := DataSet;
 
     if not APreview then begin
       frReport.PrepareReport;
@@ -1558,6 +1588,8 @@ begin
     SQL.Text:='truncate Descriptions;'; Execute;
     MainForm.StatusText:='Очищаются макимальные цены производителей';
     SQL.Text:='truncate maxproducercosts;'; Execute;
+    MainForm.StatusText:='Очищаются каталог производителей';
+    SQL.Text:='truncate producers;'; Execute;
 
   finally
     Screen.Cursor:=crDefault;
@@ -1570,8 +1602,10 @@ begin
   Screen.Cursor:=crHourglass;
   try
     with adcUpdate do begin
-      SqL.Text:='DELETE FROM OrdersList WHERE OrderCount=0'; Execute;
-      SQL.Text:='DELETE FROM OrdersHead WHERE NOT Exists(SELECT OrderId FROM OrdersList WHERE OrderId=OrdersHead.OrderId)'; Execute;
+      SqL.Text:='DELETE FROM CurrentOrderLists WHERE OrderCount=0'; Execute;
+      SQL.Text:='DELETE FROM CurrentOrderHeads WHERE NOT Exists(SELECT OrderId FROM CurrentOrderLists WHERE OrderId=CurrentOrderHeads.OrderId)'; Execute;
+      SqL.Text:='DELETE FROM PostedOrderLists WHERE OrderCount=0'; Execute;
+      SQL.Text:='DELETE FROM PostedOrderHeads WHERE NOT Exists(SELECT OrderId FROM PostedOrderLists WHERE OrderId=PostedOrderHeads.OrderId)'; Execute;
     end;
   finally
     Screen.Cursor:=crDefault;
@@ -1836,15 +1870,23 @@ begin
   end;
 end;
 
-function TDM.GetSumOrder(OrderID: Integer): Currency;
+function TDM.GetSumOrder(OrderID: Integer; Closed : Boolean = False): Currency;
 begin
   try
-    Result := DM.QueryValue(
-      'SELECT ifnull(Sum(OrdersList.price*OrdersList.OrderCount), 0) SumOrder '
-      + 'FROM OrdersList '
-      + 'WHERE OrdersList.OrderId = :OrderId AND OrdersList.OrderCount>0',
-      ['OrderId'],
-      [OrderID]);
+    if not Closed then
+      Result := DM.QueryValue(
+        'SELECT ifnull(Sum(CurrentOrderLists.price*CurrentOrderLists.OrderCount), 0) SumOrder '
+        + 'FROM CurrentOrderLists '
+        + 'WHERE CurrentOrderLists.OrderId = :OrderId AND CurrentOrderLists.OrderCount>0',
+        ['OrderId'],
+        [OrderID])
+    else
+      Result := DM.QueryValue(
+        'SELECT ifnull(Sum(PostedOrderLists.price*PostedOrderLists.OrderCount), 0) SumOrder '
+        + 'FROM PostedOrderLists '
+        + 'WHERE PostedOrderLists.OrderId = :OrderId AND PostedOrderLists.OrderCount>0',
+        ['OrderId'],
+        [OrderID]);
   except
     Result := 0;
   end;
@@ -2097,6 +2139,21 @@ begin
     if DBVersion = 58 then begin
       RunUpdateDBFile(dbCon, ExePath + SDirData, 60, UpdateDBFile, nil);
       DBVersion := 61;
+    end;
+
+    if DBVersion = 61 then begin
+      if NeedUpdateToNewLibMySqlD then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlD, nil);
+        DBVersion := CURRENT_DB_VERSION;
+      end
+      else begin
+        DBVersion := CURRENT_DB_VERSION;
+      end;
+    end;
+    
+    if DBVersion = 62 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 63;
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
@@ -2679,7 +2736,7 @@ end;
 
 procedure TDM.SetSendToNotClosedOrders;
 begin
-  adcUpdate.SQL.Text := 'update OrdersHead set Send = 1 where (Closed = 0)';
+  adcUpdate.SQL.Text := 'update CurrentOrderHeads set Send = 1 where (Closed = 0)';
   adcUpdate.Execute;
 end;
 
@@ -2698,17 +2755,17 @@ begin
     Result := DM.QueryValue(
       'SELECT ifnull(sum(osbc.price * osbc.OrderCount), 0) SumOrder '
       + 'FROM '
-      + ' OrdersHead '
-      + ' INNER JOIN OrdersList osbc ON '
-      + '       (OrdersHead.orderid = osbc.OrderId) '
+      + ' CurrentOrderHeads '
+      + ' INNER JOIN CurrentOrderLists osbc ON '
+      + '       (CurrentOrderHeads.orderid = osbc.OrderId) '
       + '   and (osbc.OrderCount > 0) '
       + ' INNER JOIN PricesRegionalData PRD ON '
-      + '       (PRD.RegionCode = OrdersHead.RegionCode) '
-      + '   AND (PRD.PriceCode = OrdersHead.PriceCode) '
+      + '       (PRD.RegionCode = CurrentOrderHeads.RegionCode) '
+      + '   AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
       + ' inner JOIN PricesData ON (PricesData.PriceCode=PRD.PriceCode) '
       + 'WHERE '
-      + '    (OrdersHead.CLIENTID = :ClientID) '
-      + 'and (OrdersHead.Closed <> 1) '
+      + '    (CurrentOrderHeads.CLIENTID = :ClientID) '
+      + 'and (CurrentOrderHeads.Closed <> 1) '
       + 'and (PRD.PRICECODE = :PriceCode) '
       + 'and (PRD.Regioncode = :RegionCode) ',
       ['ClientID', 'PriceCode', 'RegionCode'],
@@ -2743,6 +2800,9 @@ begin
   else
   if NeedUpdate800xToMySql then
     realDBVersion := '56'
+  else
+  if NeedUpdateToNewLibMySqlD then
+    realDBVersion := '61'
   else
     realDBVersion := IntToStr(CURRENT_DB_VERSION);
 
@@ -2854,7 +2914,16 @@ begin
   finally
     FEmbConnection.Free;
   end;
-
+  //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
+  //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
+  if MainConnection is TMyEmbConnection then
+  begin
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      LogCriticalError(Format('MySql Clients Count после создания базы данных: %d',
+        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+  end;
+  DatabaseController.RepairTableFromBackup();
 end;
 
 procedure TDM.RecoverDatabase(E: Exception);
@@ -2960,7 +3029,7 @@ begin
 end;
 {$endif}
 
-procedure TDM.ProcessDocs;
+function TDM.ProcessDocs : Boolean;
 var
   //Открыть только директорию с файлами
   OnlyDirOpen : Boolean;
@@ -2969,6 +3038,8 @@ var
   WaybillsFL,
   RejectsFL : TStringList;
   InputFileName : String;
+  beforeWaybillCount,
+  afterWaybillCount : Integer;
 begin
 {
   1. Если в таблице все пусто, то открываем только папки
@@ -2976,6 +3047,7 @@ begin
   3. Открываем Датасет с файлами и пробуем искать, добавляя элементы в список
   4.
 }
+  Result := False;
   adtReceivedDocs.Close;
   adtReceivedDocs.Open;
   try
@@ -2993,6 +3065,7 @@ begin
       ProcessDocsDir(SDirWaybills, MaxFileDate, WaybillsFL);
       ProcessDocsDir(SDirRejects, MaxFileDate, RejectsFL);
 
+      beforeWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
       if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
         InputFileName := StringReplace(ExePath+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
         adsQueryValue.Close;
@@ -3003,6 +3076,8 @@ begin
            'DocumentHeaders']);
         adsQueryValue.Execute;
         DatabaseController.BackupDataTable(doiDocumentHeaders);
+        afterWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
+        Result := afterWaybillCount > beforeWaybillCount;
       end;
 
       if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then begin
@@ -3018,7 +3093,8 @@ begin
       end;
 
       OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
-      OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean);
+      if not Result then
+        OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean);
       OpenDocsDir(SDirRejects, RejectsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENREJECT').AsBoolean);
 
     finally
@@ -3381,6 +3457,19 @@ procedure TDM.ShowOrderDetailsReport(OrderId: Integer; Closed, Send,
 begin
   if adsPrintOrderHeader.Active then
     adsPrintOrderHeader.Close;
+  if adsOrderDetails.Active then
+    adsOrderDetails.Close;
+
+  adsPrintOrderHeader.SQL.Text := adsPrintOrderHeader.SQLRefresh.Text;
+  adsOrderDetails.SQL.Text := adsOrderDetailsEtalon.SQL.Text;
+
+  if Closed then begin
+    adsPrintOrderHeader.SQL.Text := StringReplace(adsPrintOrderHeader.SQL.Text, 'CurrentOrderHeads', 'PostedOrderHeads', [rfReplaceAll, rfIgnoreCase]);
+    adsPrintOrderHeader.SQL.Text := StringReplace(adsPrintOrderHeader.SQL.Text, 'CurrentOrderLists', 'PostedOrderLists', [rfReplaceAll, rfIgnoreCase]);
+    adsOrderDetails.SQL.Text := StringReplace(adsOrderDetails.SQL.Text, 'CurrentOrderLists', 'PostedOrderLists', [rfReplaceAll, rfIgnoreCase]);
+  end;
+
+
   //Получаем информацию о текущих отправляемых заказах
   adsPrintOrderHeader.ParamByName( 'OrderId').Value := OrderId;
   adsPrintOrderHeader.ParamByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
@@ -3869,13 +3958,14 @@ begin
         raise;
     end;
   until Succes;
+  DatabaseController.RepairTableFromBackup();
 end;
 
 procedure TDM.UpdateFirebirdToMySql(dbCon: TCustomMyConnection;
   DBDirectoryName: String; OldDBVersion: Integer;
   AOnUpdateDBFileData: TOnUpdateDBFileData);
 const
-  UnrestoreOrdersFileName = 'Невостановленные заказ.txt';  
+  UnrestoreOrdersFileName = 'Невостановленные заказ.txt';
 var
   firebirdDB : TpFIBDatabase;
   firebirdTransaction : TpFIBTransaction;
@@ -4050,13 +4140,13 @@ begin
     end;
 
     //Производим перемещение заголовков заказов
-    updateMySql.SQL.Text := 'delete from analitf.ordershead';
+    updateMySql.SQL.Text := 'delete from analitf.currentorderheads';
     updateMySql.Execute;
     selectFirebird.SelectSQL.Text := 'SELECT * FROM ordersh order by orderid';
     selectFirebird.Open;
     try
       if selectFirebird.RecordCount > 0 then begin
-        updateMySql.SQL.Text := 'insert into analitf.ordershead set ' +
+        updateMySql.SQL.Text := 'insert into analitf.currentorderheads set ' +
         'ORDERID  = :ORDERID,' +
         'SERVERORDERID = :SERVERORDERID,' +
         'CLIENTID = :CLIENTID,' +
@@ -4136,13 +4226,13 @@ begin
       pc := nil;
 
     //Производим перемещение содержимого текущих и отправленных заказов
-    updateMySql.SQL.Text := 'delete from analitf.orderslist';
+    updateMySql.SQL.Text := 'delete from analitf.currentorderlists';
     updateMySql.Execute;
     selectFirebird.SelectSQL.Text := 'SELECT * FROM orders where (ORDERCOUNT > 0) order by id';
     selectFirebird.Open;
     try
       if selectFirebird.RecordCount > 0 then begin
-        updateMySql.SQL.Text := 'insert into analitf.orderslist set ' +
+        updateMySql.SQL.Text := 'insert into analitf.currentorderlists set ' +
         'ID  = :ID,' +
         'ORDERID  = :ORDERID,' +
         'CLIENTID = :CLIENTID,' +
@@ -4222,36 +4312,36 @@ begin
     //Проверим сушествование невосстановленных заказов
     selectMySql.SQL.Text := '' 
 +'select '
-+'         ORDERSHEAD.Clientid       , '
++'         currentorderheads.Clientid       , '
 +'         Clients.Name as ClientName, '
-+'         ORDERSHEAD.ORDERID        , ' 
-+'         ORDERSHEAD.Pricename      , ' 
-+'         ORDERSLIST.SYNONYMNAME    , ' 
-+'         ORDERSLIST.SynonymFirm    , ' 
-+'         ORDERSLIST.ORDERCOUNT ' 
++'         currentorderheads.ORDERID        , ' 
++'         currentorderheads.Pricename      , ' 
++'         currentorderlists.SYNONYMNAME    , ' 
++'         currentorderlists.SynonymFirm    , ' 
++'         currentorderlists.ORDERCOUNT ' 
 +'from ' 
-+'         analitf.ORDERSHEAD, '
-+'         analitf.ORDERSLIST, ' 
++'         analitf.currentorderheads, '
++'         analitf.currentorderlists, ' 
 +'         analitf.Clients ' 
 +'where ' 
-+'         (Ordershead.ORDERID in ' 
++'         (currentorderheads.ORDERID in '
 +'         (select ' 
-+'                 ORDERSHEAD.ORDERID ' 
++'                 currentorderheads.ORDERID ' 
 +'         from ' 
-+'                 analitf.ORDERSHEAD, ' 
-+'                 analitf.ORDERSLIST ' 
++'                 analitf.currentorderheads, ' 
++'                 analitf.currentorderlists ' 
 +'         where ' 
-+'                 (ORDERSLIST.ORDERID      = Ordershead.ORDERID) '
-+'             and (Ordershead.CLOSED       = 0) ' 
-+'             and (ORDERSLIST.COREID is null) ' 
++'                 (currentorderlists.ORDERID      = currentorderheads.ORDERID) '
++'             and (currentorderheads.CLOSED       = 0) ' 
++'             and (currentorderlists.COREID is null) ' 
 +'         )) ' 
-+'     and (ORDERSLIST.ORDERID = Ordershead.ORDERID) ' 
-+'     and (Clients.CLIENTID   = ORDERSHEAD.CLIENTID) ' 
++'     and (currentorderlists.ORDERID = currentorderheads.ORDERID) ' 
++'     and (Clients.CLIENTID   = currentorderheads.CLIENTID) ' 
 +'order by ' 
 +'         Clients.Name          , ' 
-+'         ORDERSHEAD.Pricename  , ' 
-+'         ORDERSLIST.SYNONYMNAME, ' 
-+'         ORDERSLIST.SynonymFirm';
++'         currentorderheads.Pricename  , ' 
++'         currentorderlists.SYNONYMNAME, ' 
++'         currentorderlists.SynonymFirm';
     selectMySql.Open;
     try
       if selectMySql.RecordCount > 0 then begin
@@ -4274,29 +4364,60 @@ begin
         end;
 
         //удаляем невосстановленные заказы из базы
-        updateMySql.SQL.Text := '' 
+        updateMySql.SQL.Text := ''
 +'delete '
 +'from '
-+'       analitf.orderslist '
++'       analitf.currentorderlists '
 +'using '
-+'       analitf.orderslist, '
++'       analitf.currentorderlists, '
 +'       (select '
-+'               ORDERSHEAD.ORDERID '
++'               currentorderheads.ORDERID '
 +'       from '
-+'               analitf.ORDERSHEAD, '
-+'               analitf.ORDERSLIST '
++'               analitf.currentorderheads, '
++'               analitf.currentorderlists '
 +'       where '
-+'               (ORDERSLIST.ORDERID      = Ordershead.ORDERID) '
-+'           and (Ordershead.CLOSED       = 0) '
-+'           and (ORDERSLIST.COREID is null) '
++'               (currentorderlists.ORDERID      = currentorderheads.ORDERID) '
++'           and (currentorderheads.CLOSED       = 0) '
++'           and (currentorderlists.COREID is null) '
 +'       ) as UnrestoreOrder '
 +'where '
-+'       orderslist.Orderid = UnrestoreOrder.OrderId';;
++'       currentorderlists.Orderid = UnrestoreOrder.OrderId';;
         updateMySql.Execute;
       end;
     finally
       selectMySql.Close;
     end;
+
+    //Перенос заказов из текущих в отправленные
+    updateMySql.SQL.Text := ''
+      +'insert into '
+      +'  analitf.PostedOrderHeads '
+      +'select '
+      +'   CurrentOrderHeads.*  '
+      +'from '
+      +'  analitf.CurrentOrderHeads '
+      +'where '
+      +'      (CurrentOrderHeads.Closed = 1);'
+      +'insert into '
+      +'  analitf.PostedOrderLists '
+      +'select '
+      +'   CurrentOrderLists.* '
+      +'from '
+      +'  analitf.CurrentOrderLists, '
+      +'  analitf.CurrentOrderHeads '
+      +'where '
+      +'      (CurrentOrderHeads.Closed = 1) '
+      +'  and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);'
+      +' '
+      +' '
+      +' delete analitf.CurrentOrderHeads, analitf.CurrentOrderLists '
+      +' FROM analitf.CurrentOrderHeads, analitf.CurrentOrderLists '
+      +' where '
+      +'     (CurrentOrderHeads.Closed = 1) '
+      +' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);'
+      ;
+    updateMySql.Execute;
+    
 
     selectMySql.SQL.Text := 'select * from analitf.params where id = 0';
     selectMySql.Open;
@@ -4316,7 +4437,7 @@ begin
 
       UpdateParamsSQL := 'update analitf.params set ' + UpdateParamsSQL + ' where id = 0';
       updateMySql.SQL.Text := UpdateParamsSQL;
-      
+
 {$ifdef DEBUG}
       AProc.LogCriticalError('Получившийся update для params: ' + UpdateParamsSQL);
 {$endif}
@@ -4422,7 +4543,7 @@ begin
   if orderDataSet.FieldByName('ORDERSHORDERID').IsNull then begin
     OrderIdVariant := DM.QueryValue(''
 +'select ORDERID '
-+'from   OrdersHead '
++'from   CurrentOrderHeads '
 +'where  ClientId   = :ClientId '
 +'and    PriceCode  = :PriceCode '
 +'and    RegionCode = :RegionCode '
@@ -4435,7 +4556,7 @@ begin
     if VarIsNull(OrderIdVariant) then begin
       OrderIdVariant := DM.QueryValue(''
 +'insert '
-+'into   OrdersHead '
++'into   CurrentOrderHeads '
 +'       ( '
 +'              ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate, DelayOfPayment '
 +'       ) '
@@ -4474,7 +4595,7 @@ begin
     //Если ID заказов не равны, то удаляем позицию по этому заказу
     if OldOrderIdFromListVariant <> OrderIdVariant then
     begin
-      DM.MainConnection.ExecSQL('delect from orderslist where OrderId = :OrderId', [orderDataSet.FieldByName('ORDERSORDERID').Value]);
+      DM.MainConnection.ExecSQL('delect from CurrentOrderLists where OrderId = :OrderId', [orderDataSet.FieldByName('ORDERSORDERID').Value]);
       orderDataSet.FieldByName('ORDERSORDERID').Clear;
     end
   end;
@@ -4485,7 +4606,7 @@ begin
   if orderDataSet.FieldByName('ORDERSORDERID').IsNull then begin
     OrderIdFromListVariant := DM.QueryValue(''
 +'select ORDERID '
-+'from   OrdersList '
++'from   CurrentOrderLists '
 +'where  coreid   = :coreid '
 +'and    orderid  = :orderid ',
       ['coreid', 'orderid'],
@@ -4494,7 +4615,7 @@ begin
     if VarIsNull(OrderIdFromListVariant) then begin
       OrderIdFromListVariant := DM.QueryValue(''
 +'insert '
-+'into   OrdersList '
++'into   CurrentOrderLists '
 +'       ( '
 +'              ORDERID          , CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, '
 +'              SYNONYMFIRMCRCODE, CODE, CODECR, SYNONYMNAME, SYNONYMFIRM, '
@@ -4649,7 +4770,7 @@ begin
   try
     PriceName := DM.QueryValue(
       'SELECT PriceName '
-      + 'FROM OrdersHead '
+      + 'FROM CurrentOrderHeads '
       + 'WHERE OrderId = :OrderId',
       ['OrderId'],
       [OrderID]);
@@ -4659,7 +4780,7 @@ begin
   try
     RegionName := DM.QueryValue(
       'SELECT RegionName '
-      + 'FROM OrdersHead '
+      + 'FROM CurrentOrderHeads '
       + 'WHERE OrderId = :OrderId',
       ['OrderId'],
       [OrderID]);
@@ -4688,35 +4809,35 @@ function TDM.GetClearSendResultSql(ClientId : Int64): String;
 begin
   Result := ''
   + 'update '
-  + '  OrdersHead '
+  + '  CurrentOrderHeads '
   + 'set '
-  + '  OrdersHead.SendResult = null, '
-  + '  OrdersHead.ErrorReason = null, '
-  + '  OrdersHead.ServerMinReq = null '
+  + '  CurrentOrderHeads.SendResult = null, '
+  + '  CurrentOrderHeads.ErrorReason = null, '
+  + '  CurrentOrderHeads.ServerMinReq = null '
   + 'where '
-  + '     OrdersHead.Closed = 0 ';
+  + '     CurrentOrderHeads.Closed = 0 ';
   if ClientId > 0 then
     Result := Result
-    + 'and OrdersHead.Send = 1 '
-    + 'and OrdersHead.ClientId = ' + IntToStr(ClientId) + '; '
+    + 'and CurrentOrderHeads.Send = 1 '
+    + 'and CurrentOrderHeads.ClientId = ' + IntToStr(ClientId) + '; '
   else
     Result := Result + '; ';
 
   Result := Result
   + 'update '
-  + '  OrdersHead, '
-  + '  OrdersList '
+  + '  CurrentOrderHeads, '
+  + '  CurrentOrderLists '
   + 'set '
-  + '  OrdersList.DropReason = null, '
-  + '  OrdersList.ServerCost = null, '
-  + '  OrdersList.ServerQuantity = null '
+  + '  CurrentOrderLists.DropReason = null, '
+  + '  CurrentOrderLists.ServerCost = null, '
+  + '  CurrentOrderLists.ServerQuantity = null '
   + 'where '
-  + '     OrdersHead.Closed = 0 '
-  + 'and  OrdersList.OrderId = OrdersHead.OrderId ';
+  + '     CurrentOrderHeads.Closed = 0 '
+  + 'and  CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId ';
   if ClientId > 0 then
     Result := Result
-    + 'and OrdersHead.Send = 1 '
-    + 'and OrdersHead.ClientId = ' + IntToStr(ClientId) + '; '
+    + 'and CurrentOrderHeads.Send = 1 '
+    + 'and CurrentOrderHeads.ClientId = ' + IntToStr(ClientId) + '; '
   else
     Result := Result + '; ';
 end;
@@ -4740,7 +4861,9 @@ begin
     if not DatabaseController.Initialized then
       DatabaseController.Initialize(dbCon);
 
-    //DatabaseController.CheckObjects(dbCon);
+    //Проверяем объекты если не производим обновление программы
+    if not FindCmdLineSwitch('i') and not FindCmdLineSwitch('si') then
+      DatabaseController.CheckObjectsExists(dbCon, FCreateClearDatabase or FNeedImportAfterRecovery);
   finally
     dbCon.Close;
     //dbCon.RemoveFromPool;
@@ -4775,7 +4898,7 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
-    if AnsiCompareText(calchash, 'F6A55DB819AAB3EC9DA1C0C6666456B6') <> 0 then
+    if AnsiCompareText(calchash, '40C4B11643DA0D07DF4E07EA2E6E6E09') <> 0 then
       raise Exception.Create('Не возможно загрузить библиотеку libmysqld.dll.');
   except
     on E : Exception do begin
@@ -5021,7 +5144,7 @@ begin
     selectMySql.SQL.Text :=
       'update analitf.retailmargins set MaxMarkup = Markup;';
     selectMySql.Execute;
-    
+
     selectMySql.SQL.Text :=
       'update analitf.orderslist set RealPrice = Price;';
     selectMySql.Execute;
@@ -5146,6 +5269,360 @@ begin
     Result := retail.MaxMarkup
   else
     Result := 0;
+end;
+
+function TDM.NeedUpdateToNewLibMySqlD: Boolean;
+var
+  buildNumber : Word;
+begin
+  if FindCmdLineSwitch('i')
+    and FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
+    and FileExists(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak')
+  then
+  begin
+    buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+    Result := (buildNumber >= 1063) and (buildNumber <= 1079);
+  end
+  else
+    Result := False;
+end;
+
+procedure TDM.PrepareUpdateToNewLibMySqlD;
+begin
+  try
+    if DirectoryExists(ExePath + SDirDataPrev) then
+      MoveDirectories(ExePath + SDirDataPrev, ExePath + SBackDir + '\' + SDirDataPrev);
+    if DirectoryExists(ExePath + SDirData) then begin
+      CopyDirectories(ExePath + SDirData, ExePath + SBackDir + '\' + SDirData);
+      MoveDirectories(ExePath + SDirData, ExePath + SDirData + 'Old');
+    end;
+  except
+    on E : Exception do begin
+      LogCriticalError('Ошибка при удалении устаревших директорий при обновлении на новую libd: ' + E.Message);
+      LogExitError(
+        'Не возможно удалить устаревшие директории.'#13#10
+        + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+        Integer(ecDeleteOldMysqlFolder));
+    end
+  end;
+end;
+
+procedure TDM.ExportFromOldLibMysqlDToFiles(
+  oldMySqlDB: TCustomMyConnection; PathToBackup,
+  MySqlPathToBackup: String);
+var
+  selectMySql : TMyQuery;
+  I : Integer;
+  exportTable : TDatabaseTable;
+  ordersExportTableName : String;
+
+  procedure OnExportException(ExportException : Exception; exportObject : String);
+  begin
+    WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles',
+    'Ошибка при экспорте таблицы ' + exportObject + ': ' + ExportException.Message);
+    if FileExists(PathToBackup + exportObject + '.txt')
+      and (GetFileSize(PathToBackup + exportObject + '.txt') = 0)
+    then
+      try
+        OSDeleteFile(PathToBackup + exportObject + '.txt');
+      except
+        on DeleteFile : Exception do
+          WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles',
+          'Ошибка при удалении файла ' + exportObject + ': ' + DeleteFile.Message);
+      end;
+  end;
+
+begin
+  selectMySql := TMyQuery.Create(nil);
+  try
+    selectMySql.Connection := oldMySqlDB;
+
+    for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+      if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
+         and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
+               in [doiPostedOrderHeads, doiPostedOrderLists,
+                   doiCurrentOrderHeads, doiCurrentOrderLists])
+      then begin
+        exportTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
+        if FileExists(PathToBackup + exportTable.Name + '.txt') then
+          OSDeleteFile(PathToBackup + exportTable.Name + '.txt');
+        try
+          selectMySql.SQL.Text :=
+            Format(
+            'select * from analitf.%s INTO OUTFILE ''%s'';',
+            [exportTable.Name,
+             MySqlPathToBackup + exportTable.Name + '.txt']);
+          selectMySql.Execute;
+        except
+          on E : Exception do begin
+            WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles',
+            'Ошибка при экспорте таблицы ' + exportTable.Name + ': ' + E.Message);
+            if FileExists(PathToBackup + exportTable.Name + '.txt')
+              and (GetFileSize(PathToBackup + exportTable.Name + '.txt') = 0)
+            then
+              try
+                OSDeleteFile(PathToBackup + exportTable.Name + '.txt');
+              except
+                on DeleteFile : Exception do
+                  WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles',
+                  'Ошибка при удалении файла ' + exportTable.Name + ': ' + DeleteFile.Message);
+              end;
+          end;
+        end;
+      end;
+
+    ordersExportTableName := 'currentorderheads';
+    if FileExists(PathToBackup + ordersExportTableName + '.txt') then
+      OSDeleteFile(PathToBackup + ordersExportTableName + '.txt');
+    try
+    selectMySql.SQL.Text :=
+      Format(
+      'select * from analitf.%s where Closed = 0 INTO OUTFILE ''%s'';',
+      ['ordershead',
+       MySqlPathToBackup + ordersExportTableName + '.txt']);
+    selectMySql.Execute;
+    except
+      on E : Exception do 
+        OnExportException(E, ordersExportTableName);
+    end;
+
+    ordersExportTableName := 'postedorderheads';
+    if FileExists(PathToBackup + ordersExportTableName + '.txt') then
+      OSDeleteFile(PathToBackup + ordersExportTableName + '.txt');
+    try
+    selectMySql.SQL.Text :=
+      Format(
+      'select * from analitf.%s where Closed = 1 INTO OUTFILE ''%s'';',
+      ['ordershead',
+       MySqlPathToBackup + ordersExportTableName + '.txt']);
+    selectMySql.Execute;
+    except
+      on E : Exception do 
+        OnExportException(E, ordersExportTableName);
+    end;
+
+    ordersExportTableName := 'currentorderlists';
+    if FileExists(PathToBackup + ordersExportTableName + '.txt') then
+      OSDeleteFile(PathToBackup + ordersExportTableName + '.txt');
+    try
+    selectMySql.SQL.Text :=
+      Format(
+      'select ol.* from analitf.%s ol, analitf.ordershead where (ordershead.Closed = 0) and (ordershead.OrderId = ol.OrderId) INTO OUTFILE ''%s'';',
+      ['orderslist',
+       MySqlPathToBackup + ordersExportTableName + '.txt']);
+    selectMySql.Execute;
+    except
+      on E : Exception do 
+        OnExportException(E, ordersExportTableName);
+    end;
+
+    ordersExportTableName := 'postedorderlists';
+    if FileExists(PathToBackup + ordersExportTableName + '.txt') then
+      OSDeleteFile(PathToBackup + ordersExportTableName + '.txt');
+    try
+    selectMySql.SQL.Text :=
+      Format(
+      'select ol.* from analitf.%s ol, analitf.ordershead where (ordershead.Closed = 1) and (ordershead.OrderId = ol.OrderId) INTO OUTFILE ''%s'';',
+      ['orderslist',
+       MySqlPathToBackup + ordersExportTableName + '.txt']);
+    selectMySql.Execute;
+    except
+      on E : Exception do 
+        OnExportException(E, ordersExportTableName);
+    end;
+
+  finally
+    selectMySql.Free();
+  end;
+end;
+
+procedure TDM.ImportOldLibMysqlDFilesToMySql(dbCon: TCustomMyConnection;
+  PathToBackup, MySqlPathToBackup: String);
+var
+  selectMySql : TMyQuery;
+  I : Integer;
+  importTable : TDatabaseTable;
+begin
+  FNotImportedWithUpdateToNewLibMysql := [];
+  selectMySql := TMyQuery.Create(nil);
+  try
+    selectMySql.Connection := dbCon;
+
+    for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+      if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
+{
+         and not (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId
+               in [doiCatalogs, doiClient, doiDelayOfPayments, doiDescriptions, doiMNN,
+                   doiDocumentBodies, doiDocumentHeaders, doiProviderSettings,
+                   doiVitallyImportantMarkups, doiMaxProducerCosts,
+                   doiClientSettings])
+}
+      then begin
+        importTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
+        if FileExists(PathToBackup + importTable.Name + '.txt') then
+        begin
+          try
+            selectMySql.SQL.Text :=
+              Format('delete from analitf.%s;', [importTable.Name]);
+            selectMySql.Execute;
+            selectMySql.SQL.Text :=
+              Format(
+              'LOAD DATA INFILE ''%s'' into table analitf.%s;',
+              [MySqlPathToBackup + importTable.Name + '.txt',
+               importTable.Name]);
+            selectMySql.Execute;
+          except
+            on ImportException : Exception do begin
+              FNotImportedWithUpdateToNewLibMysql :=
+                FNotImportedWithUpdateToNewLibMysql + [importTable.ObjectId];
+              WriteExchangeLog('Exchange.ImportOldLibMysqlDFilesToMySql',
+              'Ошибка при импорте таблицы ' + importTable.Name + ': ' + ImportException.Message);
+            end;
+          end;
+
+          try
+            OSDeleteFile(PathToBackup + importTable.Name + '.txt', False);
+          except
+            on DeleteFile : Exception do
+              WriteExchangeLog('Exchange.ImportOldLibMysqlDFilesToMySql',
+              'Ошибка при удалении файла ' + importTable.Name + ': ' + DeleteFile.Message);
+          end;
+        end
+        else
+          FNotImportedWithUpdateToNewLibMysql :=
+            FNotImportedWithUpdateToNewLibMysql + [importTable.ObjectId];
+      end;
+
+    selectMySql.SQL.Text :=
+      'update analitf.params set ' +
+        'ProviderMDBVersion = ' + IntToStr(CURRENT_DB_VERSION) + ' ' +
+        ' where Id = 0';
+    selectMySql.Execute;
+  finally
+    selectMySql.Free;
+  end;
+end;
+
+procedure TDM.UpdateToNewLibMySqlD(dbCon: TCustomMyConnection;
+  DBDirectoryName: String; OldDBVersion: Integer;
+  AOnUpdateDBFileData: TOnUpdateDBFileData);
+var
+  oldMySqlDB : TMyEmbConnection;
+  PathToBackup,
+  MySqlPathToBackup : String;
+begin
+  PathToBackup := ExePath + SDirTableBackup + '\';
+  MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
+
+  if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+    LogCriticalError(Format('MySql Clients Count при обновлении со старой libd: %d',
+      [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+  MyAPIEmbedded.FreeMySQLLib;
+{$ifdef USEMEMORYCRYPTDLL}
+  TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak');
+{$endif}
+
+  try
+
+    oldMySqlDB := TMyEmbConnection.Create(nil);
+    try
+      oldMySqlDB.Params.Clear();
+      oldMySqlDB.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
+      oldMySqlDB.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + 'Old\');
+      oldMySqlDB.Params.Add('--character_set_server=cp1251');
+      oldMySqlDB.Params.Add('--tmp_table_size=33554432');
+      oldMySqlDB.Params.Add('--max_heap_table_size=33554432');
+
+      try
+        oldMySqlDB.Open;
+      except
+        on OpenException : Exception do begin
+          AProc.LogCriticalError('Ошибка при открытии старой базы данных : ' + OpenException.Message);
+          raise Exception.Create('Не получилось открыть старую базу данных');
+        end;
+      end;
+
+      try
+        try
+          ExportFromOldLibMysqlDToFiles(oldMySqlDB, PathToBackup, MySqlPathToBackup);
+        except
+          on UpdateException : Exception do begin
+            AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
+            raise Exception.Create(
+              'При перемещении данных из старой базы в новою возникла ошибка.' +
+              #13#10 +
+              'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+          end;
+        end;
+      finally
+        oldMySqlDB.Close;
+      end;
+    finally
+      oldMySqlDB.Free;
+    end;
+
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      LogCriticalError(Format('MySql Clients Count при обновлении со старой libd: %d',
+        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+{$ifdef USEMEMORYCRYPTDLL}
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib();
+{$endif}
+
+    dbCon.Open;
+    try
+
+      try
+        ImportOldLibMysqlDFilesToMySql(dbCon, PathToBackup, MySqlPathToBackup);
+        FProcessUpdateToNewLibMysqlD := True;
+      except
+        on UpdateException : Exception do begin
+          AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
+          raise Exception.Create(
+            'При перемещении данных из старой базы в новою возникла ошибка.' +
+            #13#10 +
+            'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+        end;
+      end;
+    finally
+      dbCon.Close;
+    end;
+
+    if DirectoryExists(ExePath + SDirData + 'Old') then
+      try
+        DeleteDataDir(ExePath + SDirData + 'Old');
+        DeleteDirectory(ExePath + SDirData + 'Old');
+      except
+        on E : Exception do
+          AProc.LogCriticalError('Ошибка при удалении старой (libd) базы данных : ' + E.Message);
+      end;
+  finally
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      LogCriticalError(Format('MySql Clients Count при обновлении со старой libd (обратно): %d',
+        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+{$ifdef USEMEMORYCRYPTDLL}
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib();
+{$endif}
+  end;
+end;
+
+function TDM.NeedCumulativeAfterUpdateToNewLibMySqlD: Boolean;
+var
+  I : Integer;
+begin
+  Result := False;
+  if FNotImportedWithUpdateToNewLibMysql <> [] then
+    for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+      if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+          and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType = dortCumulative)
+          and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId in FNotImportedWithUpdateToNewLibMysql)
+      then begin
+        Result := True;
+        Exit;
+      end;
 end;
 
 initialization

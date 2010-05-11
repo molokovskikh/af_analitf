@@ -268,6 +268,7 @@ var
   TmpResult : String;
   ForceEncodeParamsSet : Boolean;
   ResponseLog : String;
+  Utf8Response : String;
 begin
   FullURL := FURL;
   if FullURL[ Length( FullURL)] <> '/' then FullURL := FullURL + '/';
@@ -312,7 +313,11 @@ begin
     else
 {$endif}
       ResponseLog := FResponse;
-    WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8ToAnsi(ResponseLog));
+    Utf8Response := Utf8ToAnsi(ResponseLog);
+    if Length(Utf8Response) > 0 then
+      WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, Utf8Response)
+    else
+      WriteExchangeLog('SOAP.Response.Raw:' + FHTTP.Name, ResponseLog);
     raise;
   end;
 

@@ -1,6 +1,6 @@
 inherited OrdersHForm: TOrdersHForm
   Left = 368
-  Top = 226
+  Top = 172
   ActiveControl = dbgCurrentOrders
   Caption = #1047#1072#1082#1072#1079#1099
   ClientHeight = 573
@@ -733,10 +733,10 @@ inherited OrdersHForm: TOrdersHForm
   end
   object adsOrdersHForm: TMyQuery
     SQLDelete.Strings = (
-      'delete from OrdersList where OrderId = :Old_OrderId;'
-      'delete from Ordershead where OrderId = :Old_OrderId;')
+      'delete from CurrentOrderLists where OrderId = :Old_OrderId;'
+      'delete from CurrentOrderHeads where OrderId = :Old_OrderId;')
     SQLUpdate.Strings = (
-      'update ordershead'
+      'update CurrentOrderHeads'
       'set'
       '  SEND = :SEND,'
       '  CLOSED = :CLOSED,'
@@ -747,199 +747,219 @@ inherited OrdersHForm: TOrdersHForm
     SQLRefresh.Strings = (
       '#ORDERSHSHOW'
       'SELECT'
-      '    OrdersHead.OrderId,'
-      '    OrdersHead.ClientID,'
-      '    OrdersHead.ServerOrderId,'
+      '    CurrentOrderHeads.OrderId,'
+      '    CurrentOrderHeads.ClientID,'
+      '    CurrentOrderHeads.ServerOrderId,'
       
         '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
         'Price,'
-      '    OrdersHead.PriceCode,'
-      '    OrdersHead.RegionCode,'
-      '    OrdersHead.OrderDate,'
-      '    OrdersHead.SendDate,'
-      '    OrdersHead.Closed,'
-      '    OrdersHead.Send,'
-      '    OrdersHead.PriceName,'
-      '    OrdersHead.RegionName,'
+      '    CurrentOrderHeads.PriceCode,'
+      '    CurrentOrderHeads.RegionCode,'
+      '    CurrentOrderHeads.OrderDate,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderHeads.Closed,'
+      '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.PriceName,'
+      '    CurrentOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
-      '    OrdersHead.MessageTo,'
-      '    OrdersHead.Comments,'
+      '    CurrentOrderHeads.MessageTo,'
+      '    CurrentOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
-        'MinReq, 0)) as MinReq,'
+        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
+        '.ServerMinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
-      '    count(OrdersList.Id) as Positions,'
+      '    count(CurrentOrderLists.Id) as Positions,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentCostCount,'
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 1 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentCostCount,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentQuantityCount,'
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
-        'SumOrder,'
+        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
+        'Count), 0) as SumOrder,'
       '     ('
       '  select'
-      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
-      '  from'
-      '    OrdersHead header'
       
-        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
-        'd)'
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
       '  WHERE header.ClientId = :ClientId'
-      '     AND header.PriceCode = OrdersHead.PriceCode'
-      '     AND header.RegionCode = OrdersHead.RegionCode'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
       
         '     and header.senddate > curdate() + interval (1-day(curdate()' +
         ')) day'
       '     AND header.Closed = 1'
       '     AND header.send = 1'
-      '     AND OrdersList.OrderCount>0'
+      '     AND PostedOrderLists.OrderCount>0'
       ') as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '('
       '  select'
-      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
-      '  from'
-      '    OrdersHead header'
       
-        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
-        'd)'
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
       '  WHERE header.ClientId = :ClientId'
-      '     AND header.PriceCode = OrdersHead.PriceCode'
-      '     AND header.RegionCode = OrdersHead.RegionCode'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
       
         '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
         'e())) day'
       '     AND header.Closed = 1'
       '     AND header.send = 1'
-      '     AND OrdersList.OrderCount>0'
+      '     AND PostedOrderLists.OrderCount>0'
       '  ) as sumbycurrentweek'
       'FROM'
-      '   OrdersHead'
-      '   inner join OrdersList on '
-      '         (OrdersList.OrderId = OrdersHead.OrderId) '
-      '     and (OrdersList.OrderCount > 0)'
+      '   CurrentOrderHeads'
+      '   inner join CurrentOrderLists on '
+      
+        '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
+        ' '
+      '     and (CurrentOrderLists.OrderCount > 0)'
       '   LEFT JOIN PricesData ON '
-      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '         (CurrentOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '
-      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
-      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      
+        '         (pricesregionaldata.PriceCode = CurrentOrderHeads.Price' +
+        'Code) '
+      
+        '     and pricesregionaldata.regioncode = CurrentOrderHeads.regio' +
+        'ncode'
       '   LEFT JOIN RegionalData ON '
-      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.OrderId = :Old_OrderId)'
-      'group by OrdersHead.OrderId'
-      'having count(OrdersList.Id) > 0')
+      '    (CurrentOrderHeads.OrderId = :Old_OrderId)'
+      'group by CurrentOrderHeads.OrderId'
+      'having count(CurrentOrderLists.Id) > 0')
     Connection = DM.MyConnection
     SQL.Strings = (
       '#ORDERSHSHOW'
       'SELECT'
-      '    OrdersHead.OrderId,'
+      '    CurrentOrderHeads.OrderId,'
       
-        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
-        'layOrderId,'
-      '    OrdersHead.ClientID,'
-      '    OrdersHead.ServerOrderId,'
+        '    ifnull(CurrentOrderHeads.ServerOrderId, CurrentOrderHeads.Or' +
+        'derId) as DisplayOrderId,'
+      '    CurrentOrderHeads.ClientID,'
+      '    CurrentOrderHeads.ServerOrderId,'
       
         '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
         'Price,'
-      '    OrdersHead.PriceCode,'
-      '    OrdersHead.RegionCode,'
-      '    OrdersHead.OrderDate,'
-      '    OrdersHead.SendDate,'
-      '    OrdersHead.Closed,'
-      '    OrdersHead.Send,'
-      '    OrdersHead.PriceName,'
-      '    OrdersHead.RegionName,'
+      '    CurrentOrderHeads.PriceCode,'
+      '    CurrentOrderHeads.RegionCode,'
+      '    CurrentOrderHeads.OrderDate,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderHeads.Closed,'
+      '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.PriceName,'
+      '    CurrentOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
-      '    OrdersHead.MessageTo,'
-      '    OrdersHead.Comments,'
+      '    CurrentOrderHeads.MessageTo,'
+      '    CurrentOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
-        'MinReq, 0)) as MinReq,'
+        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
+        '.ServerMinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
-      '    count(OrdersList.Id) as Positions,'
+      '    count(CurrentOrderLists.Id) as Positions,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentCostCount,'
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 1 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentCostCount,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentQuantityCount,'
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
-        'SumOrder,'
+        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
+        'Count), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '     ('
       '  select'
-      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
-      '  from'
-      '    OrdersHead header'
       
-        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
-        'd)'
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
       '  WHERE header.ClientId = :ClientId'
-      '     AND header.PriceCode = OrdersHead.PriceCode'
-      '     AND header.RegionCode = OrdersHead.RegionCode'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
       
         '     and header.senddate > curdate() + interval (1-day(curdate()' +
         ')) day'
       '     AND header.Closed = 1'
       '     AND header.send = 1'
-      '     AND OrdersList.OrderCount>0'
+      '     AND PostedOrderLists.OrderCount>0'
       ')'
       '   as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '('
       '  select'
-      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
-      '  from'
-      '    OrdersHead header'
       
-        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
-        'd)'
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
       '  WHERE header.ClientId = :ClientId'
-      '     AND header.PriceCode = OrdersHead.PriceCode'
-      '     AND header.RegionCode = OrdersHead.RegionCode'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
       
         '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
         'e())) day'
       '     AND header.Closed = 1'
       '     AND header.send = 1'
-      '     AND OrdersList.OrderCount>0'
+      '     AND PostedOrderLists.OrderCount>0'
       '  ) '
       'as sumbycurrentweek'
       'FROM'
-      '   OrdersHead'
-      '   inner join OrdersList on '
-      '         (OrdersList.OrderId = OrdersHead.OrderId) '
-      '     and (OrdersList.OrderCount > 0)'
+      '   CurrentOrderHeads'
+      '   inner join CurrentOrderLists on '
+      
+        '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
+        ' '
+      '     and (CurrentOrderLists.OrderCount > 0)'
       '   LEFT JOIN PricesData ON '
-      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '         (CurrentOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '
-      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
-      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      
+        '         (pricesregionaldata.PriceCode = CurrentOrderHeads.Price' +
+        'Code) '
+      
+        '     and pricesregionaldata.regioncode = CurrentOrderHeads.regio' +
+        'ncode'
       '   LEFT JOIN RegionalData ON '
-      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.ClientId = :ClientId)'
-      'and (OrdersHead.Closed = :Closed)'
+      '    (CurrentOrderHeads.ClientId = :ClientId)'
+      'and (CurrentOrderHeads.Closed = :Closed)'
       
-        'and (((:Closed = 1) and (OrdersHead.OrderDate BETWEEN :DateFrom ' +
-        'AND :DateTo ))'
+        'and (((:Closed = 1) and (CurrentOrderHeads.OrderDate BETWEEN :Da' +
+        'teFrom AND :DateTo ))'
       
         'or ((:Closed = 0) and (PricesData.PriceCode is not null) and (Re' +
         'gionalData.RegionCode is not null) and (pricesregionaldata.Price' +
         'Code is not null)))'
-      'group by OrdersHead.OrderId'
-      'having count(OrdersList.Id) > 0'
-      'order by OrdersHead.SendDate DESC')
+      'group by CurrentOrderHeads.OrderId'
+      'having count(CurrentOrderLists.Id) > 0'
+      'order by CurrentOrderHeads.SendDate DESC')
     BeforeInsert = adsOrdersHFormBeforeInsert
     BeforePost = adsOrdersH2BeforePost
     AfterPost = adsOrdersH2AfterPost
@@ -1067,7 +1087,7 @@ inherited OrdersHForm: TOrdersHForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       'update'
-      '  orderslist'
+      '  CurrentOrderLists'
       'set'
       '  OrderCount = :ORDERCOUNT'
       'where'
@@ -1129,12 +1149,12 @@ inherited OrdersHForm: TOrdersHForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName'
       'FROM'
       '    Core CCore'
       
@@ -1163,8 +1183,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
-        ' (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN CurrentOrderLists osbc ON (osbc.ClientID = :Client' +
+        'Id) and (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
         'e)'
@@ -1172,8 +1192,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
         'e) '
       
-        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
-        'Id'
+        '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
+        'd = osbc.OrderId'
       'WHERE '
       '  (CCore.CoreId = :CoreId)')
     Connection = DM.MyConnection
@@ -1234,12 +1254,12 @@ inherited OrdersHForm: TOrdersHForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName'
       'FROM'
       '    Core CCore'
       
@@ -1268,8 +1288,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
-        ' (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN CurrentOrderLists osbc ON (osbc.ClientID = :Client' +
+        'Id) and (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
         'e)'
@@ -1277,8 +1297,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
         'e) '
       
-        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
-        'Id'
+        '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
+        'd = osbc.OrderId'
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
       'And (CCore.RegionCode = :RegionCode)'
@@ -1309,107 +1329,229 @@ inherited OrdersHForm: TOrdersHForm
       end>
   end
   object adsCurrentOrders: TMyQuery
-    SQL.Strings = (
+    SQLDelete.Strings = (
+      'delete from CurrentOrderLists where OrderId = :Old_OrderId;'
+      'delete from CurrentOrderHeads where OrderId = :Old_OrderId;')
+    SQLUpdate.Strings = (
+      'update CurrentOrderHeads'
+      'set'
+      '  SEND = :SEND,'
+      '  CLOSED = :CLOSED,'
+      '  MESSAGETO = :MESSAGETO,'
+      '  COMMENTS = :COMMENTS'
+      'where'
+      '  orderid = :old_ORDERID')
+    SQLRefresh.Strings = (
       '#ORDERSHSHOW'
       'SELECT'
-      '    OrdersHead.OrderId,'
-      
-        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
-        'layOrderId,'
-      '    OrdersHead.ClientID,'
-      '    OrdersHead.ServerOrderId,'
+      '    CurrentOrderHeads.OrderId,'
+      '    CurrentOrderHeads.ClientID,'
+      '    CurrentOrderHeads.ServerOrderId,'
       
         '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
         'Price,'
-      '    OrdersHead.PriceCode,'
-      '    OrdersHead.RegionCode,'
-      '    OrdersHead.OrderDate,'
-      '    OrdersHead.SendDate,'
-      '    OrdersHead.Closed,'
-      '    OrdersHead.Send,'
-      '    OrdersHead.PriceName,'
-      '    OrdersHead.RegionName,'
+      '    CurrentOrderHeads.PriceCode,'
+      '    CurrentOrderHeads.RegionCode,'
+      '    CurrentOrderHeads.OrderDate,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderHeads.Closed,'
+      '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.PriceName,'
+      '    CurrentOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
-      '    OrdersHead.MessageTo,'
-      '    OrdersHead.Comments,'
+      '    CurrentOrderHeads.MessageTo,'
+      '    CurrentOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
-        'MinReq, 0)) as MinReq,'
+        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
+        '.ServerMinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
-      '    count(OrdersList.Id) as Positions,'
+      '    count(CurrentOrderLists.Id) as Positions,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentCostCount,'
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 1 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentCostCount,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentQuantityCount,'
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
-        'SumOrder,'
-      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
+        'Count), 0) as SumOrder,'
       '     ('
       '  select'
-      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
-      '  from'
-      '    OrdersHead header'
       
-        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
-        'd)'
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
       '  WHERE header.ClientId = :ClientId'
-      '     AND header.PriceCode = OrdersHead.PriceCode'
-      '     AND header.RegionCode = OrdersHead.RegionCode'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
       
         '     and header.senddate > curdate() + interval (1-day(curdate()' +
         ')) day'
       '     AND header.Closed = 1'
       '     AND header.send = 1'
-      '     AND OrdersList.OrderCount>0'
-      ')'
-      '   as sumbycurrentmonth,'
+      '     AND PostedOrderLists.OrderCount>0'
+      ') as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '('
       '  select'
-      '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0)'
-      '  from'
-      '    OrdersHead header'
       
-        '    INNER JOIN OrdersList ON (OrdersList.OrderId = header.OrderI' +
-        'd)'
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
       '  WHERE header.ClientId = :ClientId'
-      '     AND header.PriceCode = OrdersHead.PriceCode'
-      '     AND header.RegionCode = OrdersHead.RegionCode'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
       
         '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
         'e())) day'
       '     AND header.Closed = 1'
       '     AND header.send = 1'
-      '     AND OrdersList.OrderCount>0'
+      '     AND PostedOrderLists.OrderCount>0'
+      '  ) as sumbycurrentweek'
+      'FROM'
+      '   CurrentOrderHeads'
+      '   inner join CurrentOrderLists on '
+      
+        '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
+        ' '
+      '     and (CurrentOrderLists.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (CurrentOrderHeads.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      
+        '         (pricesregionaldata.PriceCode = CurrentOrderHeads.Price' +
+        'Code) '
+      
+        '     and pricesregionaldata.regioncode = CurrentOrderHeads.regio' +
+        'ncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (CurrentOrderHeads.OrderId = :Old_OrderId)'
+      'group by CurrentOrderHeads.OrderId'
+      'having count(CurrentOrderLists.Id) > 0')
+    SQL.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    CurrentOrderHeads.OrderId,'
+      
+        '    ifnull(CurrentOrderHeads.ServerOrderId, CurrentOrderHeads.Or' +
+        'derId) as DisplayOrderId,'
+      '    CurrentOrderHeads.ClientID,'
+      '    CurrentOrderHeads.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    CurrentOrderHeads.PriceCode,'
+      '    CurrentOrderHeads.RegionCode,'
+      '    CurrentOrderHeads.OrderDate,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderHeads.Closed,'
+      '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.PriceName,'
+      '    CurrentOrderHeads.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    CurrentOrderHeads.MessageTo,'
+      '    CurrentOrderHeads.Comments,'
+      
+        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
+        '.ServerMinReq, 0)) as MinReq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(CurrentOrderLists.Id) as Positions,'
+      
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 1 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentCostCount,'
+      
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentQuantityCount,'
+      
+        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
+        'Count), 0) as SumOrder,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+      '     ('
+      '  select'
+      
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
+      '  WHERE header.ClientId = :ClientId'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (1-day(curdate()' +
+        ')) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND PostedOrderLists.OrderCount>0'
+      ')'
+      '   as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '('
+      '  select'
+      
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
+      '  WHERE header.ClientId = :ClientId'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
+        'e())) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND PostedOrderLists.OrderCount>0'
       '  ) '
       'as sumbycurrentweek'
       'FROM'
-      '   OrdersHead'
-      '   inner join OrdersList on '
-      '         (OrdersList.OrderId = OrdersHead.OrderId) '
-      '     and (OrdersList.OrderCount > 0)'
+      '   CurrentOrderHeads'
+      '   inner join CurrentOrderLists on '
+      
+        '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
+        ' '
+      '     and (CurrentOrderLists.OrderCount > 0)'
       '   LEFT JOIN PricesData ON '
-      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '         (CurrentOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '
-      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
-      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      
+        '         (pricesregionaldata.PriceCode = CurrentOrderHeads.Price' +
+        'Code) '
+      
+        '     and pricesregionaldata.regioncode = CurrentOrderHeads.regio' +
+        'ncode'
       '   LEFT JOIN RegionalData ON '
-      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.ClientId = :ClientId)'
-      'and (OrdersHead.Closed = 0)'
+      '    (CurrentOrderHeads.ClientId = :ClientId)'
+      'and (CurrentOrderHeads.Closed = 0)'
       'and (PricesData.PriceCode is not null) '
       'and (RegionalData.RegionCode is not null) '
       'and (pricesregionaldata.PriceCode is not null)'
-      'group by OrdersHead.OrderId'
-      'having count(OrdersList.Id) > 0'
-      'order by OrdersHead.SendDate DESC')
+      'group by CurrentOrderHeads.OrderId'
+      'having count(CurrentOrderLists.Id) > 0'
+      'order by CurrentOrderHeads.PriceName')
     Left = 132
     Top = 183
     ParamData = <
@@ -1431,45 +1573,55 @@ inherited OrdersHForm: TOrdersHForm
       end>
   end
   object adsSendOrders: TMyQuery
-    SQL.Strings = (
+    SQLDelete.Strings = (
+      'delete from PostedOrderLists where OrderId = :Old_OrderId;'
+      'delete from PostedOrderHeads where OrderId = :Old_OrderId;')
+    SQLUpdate.Strings = (
+      'update PostedOrderHeads'
+      'set'
+      '  MESSAGETO = :MESSAGETO,'
+      '  COMMENTS = :COMMENTS'
+      'where'
+      '  orderid = :old_ORDERID')
+    SQLRefresh.Strings = (
       '#ORDERSHSHOW'
       'SELECT'
-      '    OrdersHead.OrderId,'
+      '    PostedOrderHeads.OrderId,'
       
-        '    ifnull(OrdersHead.ServerOrderId, OrdersHead.OrderId) as Disp' +
-        'layOrderId,'
-      '    OrdersHead.ClientID,'
-      '    OrdersHead.ServerOrderId,'
+        '    ifnull(PostedOrderHeads.ServerOrderId, PostedOrderHeads.Orde' +
+        'rId) as DisplayOrderId,'
+      '    PostedOrderHeads.ClientID,'
+      '    PostedOrderHeads.ServerOrderId,'
       
         '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
         'Price,'
-      '    OrdersHead.PriceCode,'
-      '    OrdersHead.RegionCode,'
-      '    OrdersHead.OrderDate,'
-      '    OrdersHead.SendDate,'
-      '    OrdersHead.Closed,'
-      '    OrdersHead.Send,'
-      '    OrdersHead.PriceName,'
-      '    OrdersHead.RegionName,'
+      '    PostedOrderHeads.PriceCode,'
+      '    PostedOrderHeads.RegionCode,'
+      '    PostedOrderHeads.OrderDate,'
+      '    PostedOrderHeads.SendDate,'
+      '    PostedOrderHeads.Closed,'
+      '    PostedOrderHeads.Send,'
+      '    PostedOrderHeads.PriceName,'
+      '    PostedOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
-      '    OrdersHead.MessageTo,'
-      '    OrdersHead.Comments,'
+      '    PostedOrderHeads.MessageTo,'
+      '    PostedOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(OrdersHead.Server' +
-        'MinReq, 0)) as MinReq,'
+        '    GREATEST(pricesregionaldata.minreq, ifnull(PostedOrderHeads.' +
+        'ServerMinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
-      '    count(OrdersList.Id) as Positions,'
+      '    count(PostedOrderLists.Id) as Positions,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 1 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentCostCount,'
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 1 or PostedOrderLists.DropReason = 3),' +
+        ' 1, null)) as DifferentCostCount,'
       
-        '    count(if((OrdersList.DropReason is not null) and (OrdersList' +
-        '.DropReason = 2 or OrdersList.DropReason = 3), 1, null)) as Diff' +
-        'erentQuantityCount,'
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 2 or PostedOrderLists.DropReason = 3),' +
+        ' 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(OrdersList.Price * OrdersList.OrderCount), 0) as ' +
-        'SumOrder,'
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  0.0'
       '   as sumbycurrentmonth,'
@@ -1477,25 +1629,96 @@ inherited OrdersHForm: TOrdersHForm
       '  0.0'
       'as sumbycurrentweek'
       'FROM'
-      '   OrdersHead'
-      '   inner join OrdersList on '
-      '         (OrdersList.OrderId = OrdersHead.OrderId) '
-      '     and (OrdersList.OrderCount > 0)'
+      '   PostedOrderHeads'
+      '   inner join PostedOrderLists on '
+      '         (PostedOrderLists.OrderId = PostedOrderHeads.OrderId) '
+      '     and (PostedOrderLists.OrderCount > 0)'
       '   LEFT JOIN PricesData ON '
-      '         (OrdersHead.PriceCode=PricesData.PriceCode)'
+      '         (PostedOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '
-      '         (pricesregionaldata.PriceCode = OrdersHead.PriceCode) '
-      '     and pricesregionaldata.regioncode = OrdersHead.regioncode'
+      
+        '         (pricesregionaldata.PriceCode = PostedOrderHeads.PriceC' +
+        'ode) '
+      
+        '     and pricesregionaldata.regioncode = PostedOrderHeads.region' +
+        'code'
       '   LEFT JOIN RegionalData ON '
-      '         (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      '         (RegionalData.RegionCode=PostedOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.ClientId = :ClientId)'
-      'and (OrdersHead.Closed = 1)'
-      'and (OrdersHead.OrderDate BETWEEN :DateFrom AND :DateTo )'
-      'group by OrdersHead.OrderId'
-      'having count(OrdersList.Id) > 0'
-      'order by OrdersHead.SendDate DESC')
+      '    (PostedOrderHeads.OrderId = :Old_OrderId)'
+      'group by PostedOrderHeads.OrderId'
+      'having count(PostedOrderLists.Id) > 0'
+      'order by PostedOrderHeads.SendDate DESC')
+    SQL.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    PostedOrderHeads.OrderId,'
+      
+        '    ifnull(PostedOrderHeads.ServerOrderId, PostedOrderHeads.Orde' +
+        'rId) as DisplayOrderId,'
+      '    PostedOrderHeads.ClientID,'
+      '    PostedOrderHeads.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    PostedOrderHeads.PriceCode,'
+      '    PostedOrderHeads.RegionCode,'
+      '    PostedOrderHeads.OrderDate,'
+      '    PostedOrderHeads.SendDate,'
+      '    PostedOrderHeads.Closed,'
+      '    PostedOrderHeads.Send,'
+      '    PostedOrderHeads.PriceName,'
+      '    PostedOrderHeads.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    PostedOrderHeads.MessageTo,'
+      '    PostedOrderHeads.Comments,'
+      
+        '    GREATEST(pricesregionaldata.minreq, ifnull(PostedOrderHeads.' +
+        'ServerMinReq, 0)) as MinReq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(PostedOrderLists.Id) as Positions,'
+      
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 1 or PostedOrderLists.DropReason = 3),' +
+        ' 1, null)) as DifferentCostCount,'
+      
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 2 or PostedOrderLists.DropReason = 3),' +
+        ' 1, null)) as DifferentQuantityCount,'
+      
+        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
+        'unt), 0) as SumOrder,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+      '  0.0'
+      '   as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '  0.0'
+      'as sumbycurrentweek'
+      'FROM'
+      '   PostedOrderHeads'
+      '   inner join PostedOrderLists on '
+      '         (PostedOrderLists.OrderId = PostedOrderHeads.OrderId) '
+      '     and (PostedOrderLists.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (PostedOrderHeads.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      
+        '         (pricesregionaldata.PriceCode = PostedOrderHeads.PriceC' +
+        'ode) '
+      
+        '     and pricesregionaldata.regioncode = PostedOrderHeads.region' +
+        'code'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=PostedOrderHeads.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      'WHERE'
+      '    (PostedOrderHeads.ClientId = :ClientId)'
+      'and (PostedOrderHeads.Closed = 1)'
+      'and (PostedOrderHeads.OrderDate BETWEEN :DateFrom AND :DateTo )'
+      'group by PostedOrderHeads.OrderId'
+      'having count(PostedOrderLists.Id) > 0'
+      'order by PostedOrderHeads.SendDate DESC')
     Left = 180
     Top = 183
     ParamData = <

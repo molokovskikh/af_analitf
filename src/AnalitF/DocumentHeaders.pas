@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, ComCtrls, StdCtrls, GridsEh, DBGridEh,
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes,
-  Buttons;
+  Buttons,
+  ShellAPI;
 
 type
   TDocumentHeaderForm = class(TChildForm)
@@ -32,6 +33,8 @@ type
     adsDocumentHeadersProviderName: TStringField;
     adsDocumentHeadersLocalWriteTime: TDateTimeField;
     spDelete: TSpeedButton;
+    spOpenFolders: TSpeedButton;
+    adsDocumentHeadersLoadTime: TDateTimeField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -41,6 +44,8 @@ type
       var Text: String; DisplayText: Boolean);
     procedure spDeleteClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure dbgHeadersSortMarkingChanged(Sender: TObject);
+    procedure spOpenFoldersClick(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -60,7 +65,8 @@ implementation
 
 uses Main, DateUtils, DModule, AProc, Orders,
   DBGridHelper,
-  U_ExchangeLog;
+  U_ExchangeLog,
+  DBProc;
 
 {$R *.dfm}
 
@@ -180,7 +186,7 @@ begin
   if not Assigned(FOrdersForm) then
     FOrdersForm := TOrdersForm.Create( Application);
 
-  FOrdersForm.ShowForm(adsDocumentHeadersOrderId.AsInteger, Self);
+  FOrdersForm.ShowForm(adsDocumentHeadersOrderId.AsInteger, Self, True);
 end;
 
 procedure TDocumentHeaderForm.adsDocumentHeadersDocumentTypeGetText(
@@ -249,6 +255,22 @@ procedure TDocumentHeaderForm.FormDestroy(Sender: TObject);
 begin
   TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
   inherited;
+end;
+
+procedure TDocumentHeaderForm.dbgHeadersSortMarkingChanged(
+  Sender: TObject);
+begin
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TDocumentHeaderForm.spOpenFoldersClick(Sender: TObject);
+begin
+  ShellExecute( 0, 'Open', PChar(ExePath + SDirDocs + '\'),
+    nil, nil, SW_SHOWDEFAULT);
+  ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
+    nil, nil, SW_SHOWDEFAULT);
+  ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
+    nil, nil, SW_SHOWDEFAULT);
 end;
 
 end.

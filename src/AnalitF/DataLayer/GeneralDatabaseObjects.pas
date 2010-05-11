@@ -121,6 +121,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TProducersTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -164,6 +170,7 @@ begin
 +'    `ParseWaybills` tinyint(1) unsigned not null default ''0'', '
 +'    `SendRetailMarkup` tinyint(1) unsigned not null default ''0'', '
 +'    `ShowAdvertising` tinyint(1) unsigned not null default ''1'', '
++'    `SendWaybillsFromClient` tinyint(1) unsigned not null default ''0'', '
 +'    primary key (`Id`) ' 
 +'  ) ' 
 + GetTableOptions();
@@ -183,15 +190,16 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( ' 
 +'    `CLIENTID` bigint(20) not null      , ' 
-+'    `NAME` varchar(50) not null         , ' 
-+'    `REGIONCODE` bigint(20) default null, ' 
-+'    `EXCESS`    int(10) not null           , ' 
-+'    `DELTAMODE` smallint(5) default null   , ' 
-+'    `MAXUSERS`  int(10) not null           , ' 
-+'    `REQMASK` bigint(20) default null      , ' 
-+'    `CALCULATELEADER`     tinyint(1) not null  , ' 
-+'    `AllowDelayOfPayment` tinyint(1) not null  , ' 
-+'    primary key (`CLIENTID`)                   , ' 
++'    `NAME` varchar(50) not null         , '
++'    `REGIONCODE` bigint(20) default null, '
++'    `EXCESS`    int(10) not null           , '
++'    `DELTAMODE` smallint(5) default null   , '
++'    `MAXUSERS`  int(10) not null           , '
++'    `REQMASK` bigint(20) default null      , '
++'    `CALCULATELEADER`     tinyint(1) not null  , '
++'    `AllowDelayOfPayment` tinyint(1) not null  , '
++'    `FullName` varchar(255) default null, '
++'    primary key (`CLIENTID`)                   , '
 +'    unique key `PK_CLIENTS` (`CLIENTID`)       , ' 
 +'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) ' 
 +'  ) ' 
@@ -378,6 +386,7 @@ end;
 
 constructor TCatalogNamesTable.Create;
 begin
+  FNeedCompact := True;
   FName := 'catalognames';
   FObjectId := doiCatalogNames;
   FRepairType := dortCumulative;
@@ -401,6 +410,7 @@ end;
 
 constructor TCatalogFarmGroupsTable.Create;
 begin
+  FNeedCompact := True;
   FName := 'catalogfarmgroups';
   FObjectId := doiCatalogFarmGroups;
   FRepairType := dortCumulative;
@@ -427,6 +437,7 @@ end;
 
 constructor TCatalogsTable.Create;
 begin
+  FNeedCompact := True;
   FName := 'catalogs';
   FObjectId := doiCatalogs;
   FRepairType := dortCumulative;
@@ -445,7 +456,8 @@ begin
 +'    `FRAGILE`          tinyint(1) not null      , '
 +'    `MandatoryList`    tinyint(1) not null      , '
 +'    `MnnId`            bigint(20) default null  , '
-+'    `DescriptionId`            bigint(20) default null, '
++'    `DescriptionId`    bigint(20) default null  , '
++'    `Hidden`           tinyint(1) not null      , '
 +'    `COREEXISTS`       tinyint(1) not null      , '
 +'    primary key (`FULLCODE`)                    , '
 +'    unique key `PK_CATALOGS` (`FULLCODE`)       , '
@@ -462,6 +474,7 @@ end;
 
 constructor TProductsTable.Create;
 begin
+  FNeedCompact := True;
   FName := 'products';
   FObjectId := doiProducts;
   FRepairType := dortCumulative;
@@ -484,6 +497,7 @@ end;
 
 constructor TCoreTable.Create;
 begin
+  FNeedCompact := True;
   FName := 'core';
   FObjectId := doiCore;
   FRepairType := dortCumulative;
@@ -562,6 +576,7 @@ end;
 
 constructor TMNNTable.Create;
 begin
+  FNeedCompact := True;
   FName := 'mnn';
   FObjectId := doiMNN;
   FRepairType := dortCumulative;
@@ -574,6 +589,7 @@ begin
 +'    `Id`               bigint(20) not null  , '
 +'    `Mnn`              varchar(250) not null, '
 +'    `RussianMnn`       varchar(250) default null, '
++'    `Hidden`           tinyint(1) not null      , '
 +'    primary key (`Id`)                      , '
 +'    key `IDX_MNN_Mnn` (`Mnn`)               , '
 +'    key `IDX_MNN_RussianMnn` (`RussianMnn`)   '
@@ -585,6 +601,7 @@ end;
 
 constructor TDescriptionsTable.Create;
 begin
+  FNeedCompact := True;
   FName := 'Descriptions';
   FObjectId := doiDescriptions;
   FRepairType := dortCumulative;
@@ -608,6 +625,7 @@ begin
 +'  `Storage` TEXT DEFAULT NULL, '
 +'  `Expiration` TEXT DEFAULT NULL, '
 +'  `Composition` TEXT DEFAULT NULL, '
++'  `Hidden`           tinyint(1) not null, '
 +'  PRIMARY KEY (`Id`)                      , '
 +'  Key(`Name`)                             , '
 +'  Key(`EnglishName`)                        '
@@ -635,11 +653,37 @@ begin
 +'  `Product`     varchar(255) not null, '
 +'  `Producer`    varchar(255) not null, '
 +'  `Cost`        varchar(50) default null, '
++'  `ProducerId`  bigint(20) default null  , '
++'  `RealCost`    decimal(12,6) default null  , '
 +'  PRIMARY KEY (`Id`), '
 +'  Key(`CatalogId`), '
 +'  Key(`ProductId`), '
 +'  Key(`Product`), '
-+'  Key(`Producer`) '
++'  Key(`Producer`), '
++'  Key(`ProducerId`) '
++'  ) '
++ GetTableOptions();
+end;
+
+{ TProducersTable }
+
+constructor TProducersTable.Create;
+begin
+  FNeedCompact := True;
+  FName := 'producers';
+  FObjectId := doiProducers;
+  FRepairType := dortCumulative;
+end;
+
+function TProducersTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `Id`          bigint(20) not null  , '
++'  `Name`        varchar(255) not null, '
++'  `Hidden`      tinyint(1) not null, '
++'  PRIMARY KEY (`Id`), '
++'  Key(`Name`) '
 +'  ) '
 + GetTableOptions();
 end;
@@ -668,5 +712,6 @@ initialization
   DatabaseController.AddObject(TMNNTable.Create());
   DatabaseController.AddObject(TDescriptionsTable.Create());
   DatabaseController.AddObject(TMaxProducerCostsTable.Create());
+  DatabaseController.AddObject(TProducersTable.Create());
 end.
 

@@ -667,7 +667,7 @@ inherited ExpiredsForm: TExpiredsForm
   object adsExpireds: TMyQuery
     SQLUpdate.Strings = (
       'update'
-      '  orderslist'
+      '  CurrentOrderLists'
       'set'
       '  OrderCount = :ORDERCOUNT,'
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
@@ -734,14 +734,15 @@ inherited ExpiredsForm: TExpiredsForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    Core'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
@@ -749,17 +750,22 @@ inherited ExpiredsForm: TExpiredsForm
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       '    left JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :ClientId and o' +
-        'sbc.CoreId=Core.CoreId'
+        '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :ClientI' +
+        'd and osbc.CoreId=Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
         'FirmCode) '
-      '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      
+        '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
+        's.OrderId'
       'WHERE'
       '  Core.CoreID = :CoreID')
     Connection = DM.MyConnection
@@ -822,14 +828,15 @@ inherited ExpiredsForm: TExpiredsForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    Core'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
@@ -837,17 +844,22 @@ inherited ExpiredsForm: TExpiredsForm
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       '    left JOIN Synonyms ON Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :ClientId and o' +
-        'sbc.CoreId=Core.CoreId'
+        '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :ClientI' +
+        'd and osbc.CoreId=Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
         'FirmCode) '
-      '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      
+        '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
+        's.OrderId'
       'WHERE'
       '    (Core.productid > 0)'
       'and (Core.Junk = 1)')
@@ -1068,6 +1080,9 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsCatalogMandatoryList: TBooleanField
       FieldName = 'CatalogMandatoryList'
+    end
+    object adsExpiredsMaxProducerCost: TFloatField
+      FieldName = 'MaxProducerCost'
     end
   end
 end

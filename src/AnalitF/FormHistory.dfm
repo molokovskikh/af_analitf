@@ -250,15 +250,15 @@ object FormsHistoryForm: TFormsHistoryForm
       '    osbc.SynonymFirm,'
       '    osbc.OrderCount,'
       '    osbc.Price,'
-      '    OrdersHead.SendDate as OrderDate,'
-      '    OrdersHead.PriceName,'
-      '    OrdersHead.RegionName,'
+      '    PostedOrderHeads.SendDate as OrderDate,'
+      '    PostedOrderHeads.PriceName,'
+      '    PostedOrderHeads.RegionName,'
       '    osbc.Await,'
       '    osbc.Junk'
       'FROM'
-      '  OrdersList osbc'
+      '  PostedOrderLists osbc'
       '  inner join products on products.productid = osbc.productid'
-      '  INNER JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.OrderId'
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'
@@ -266,8 +266,8 @@ object FormsHistoryForm: TFormsHistoryForm
         'and (((:GroupByProducts = 0) and (products.catalogid = :FullCode' +
         ')) or ((:GroupByProducts = 1) and (osbc.productid = :productid))' +
         ')'
-      'And (OrdersHead.Closed = 1)'
-      'ORDER BY OrdersHead.SendDate DESC'
+      'And (PostedOrderHeads.Closed = 1)'
+      'ORDER BY PostedOrderHeads.SendDate DESC'
       'limit 20')
     Left = 152
     Top = 152

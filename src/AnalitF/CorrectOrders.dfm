@@ -452,7 +452,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       'update'
-      '  orderslist'
+      '  CurrentOrderLists'
       'set'
       '  OrderCount = :ORDERCOUNT,'
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
@@ -521,20 +521,24 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
@@ -547,12 +551,14 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
-        'sbc.CoreId = Core.CoreId'
+        '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
+        'd and osbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
         'irmCode) '
-      '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      
+        '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
+        's.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
     Connection = DM.MyConnection
@@ -617,14 +623,15 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    products'
       
@@ -632,6 +639,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         'd'
       '    left JOIN Core ON Core.productid = products.productid'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
@@ -646,12 +656,14 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
-        'sbc.CoreId = Core.CoreId'
+        '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
+        'd and osbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
         'irmCode) '
-      '    LEFT JOIN OrdersHead ON OrdersHead.OrderId = osbc.OrderId'
+      
+        '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
+        'sbc.OrderId'
       'WHERE '
       '    (products.ProductId = :ProductId)'
       'and (Core.coreid is not null)'
@@ -888,6 +900,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object adsCoreMnn: TStringField
       FieldName = 'Mnn'
       Size = 250
+    end
+    object adsCoreMaxProducerCost: TFloatField
+      FieldName = 'MaxProducerCost'
     end
   end
   object mdValues: TRxMemoryData

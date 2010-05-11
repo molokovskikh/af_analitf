@@ -477,6 +477,9 @@ type
       var lpNumberOfBytesWritten: DWORD; lpOverlapped: POverlapped): BOOL;
     procedure ExitProcess(uExitCode: UINT);
   {$ENDIF}
+{$ifdef USEMEMORYCRYPTDLL}
+    procedure SwitchMemoryLib(fileName : String = '');
+{$endif}
   public
     constructor Create;
     destructor Destroy; override;
@@ -3786,6 +3789,16 @@ begin
 {$ENDIF}
 
   end
+end;
+{$endif}
+
+{$ifdef USEMEMORYCRYPTDLL}
+procedure TMySQLAPIEmbedded.SwitchMemoryLib(fileName: String);
+begin
+  if Assigned(MemoryLib) then
+    FreeAndNil(MemoryLib);
+
+  MemoryLib := GetEncryptedMemoryStream(fileName);  
 end;
 {$endif}
 

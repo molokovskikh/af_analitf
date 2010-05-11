@@ -13,7 +13,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 0
     Top = 0
     Width = 792
-    Height = 37
+    Height = 65
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
@@ -85,12 +85,21 @@ inherited SynonymSearchForm: TSynonymSearchForm
         00003333333330000000}
       Layout = blGlyphRight
     end
+    object dblProducers: TDBLookupComboBox
+      Left = 1
+      Top = 37
+      Width = 320
+      Height = 21
+      DropDownRows = 30
+      TabOrder = 4
+      OnCloseUp = dblProducersCloseUp
+    end
   end
   object pCenter: TPanel [1]
     Left = 0
-    Top = 37
+    Top = 65
     Width = 792
-    Height = 372
+    Height = 344
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -99,7 +108,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 372
+      Height = 344
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -463,12 +472,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
     DataSet = adsCore
     Left = 64
     Top = 168
-  end
-  object frdsCore: TfrDBDataSet
-    DataSource = dsCore
-    OpenDataSource = False
-    Left = 64
-    Top = 216
   end
   object Timer: TTimer
     Enabled = False
@@ -1007,7 +1010,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       'update'
-      '  orderslist'
+      '  CurrentOrderLists'
       'set'
       '  OrderCount = :ORDERCOUNT,'
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
@@ -1079,20 +1082,24 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
@@ -1105,12 +1112,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
-        '    LEFT JOIN OrdersList osbc ON osbc.clientid = :clientid and o' +
-        'sbc.CoreId = Core.CoreId'
+        '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
+        'd and osbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
         'irmCode) '
-      '    LEFT JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      
+        '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
+        's.OrderId'
       'WHERE '
       '  Core.CoreID = :CoreId')
     Connection = DM.MyConnection
@@ -1180,14 +1189,15 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '  ('
       
@@ -1206,15 +1216,18 @@ inherited SynonymSearchForm: TSynonymSearchForm
         '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
         'Core.SynonymFirmCrCode)'
       '  left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
-        '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
-        'osbc.clientid = :clientid)'
+        '  LEFT JOIN CurrentOrderLists osbc ON (osbc.CoreId = Core.CoreId' +
+        ') AND (osbc.clientid = :clientid)'
       
         '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
         'mCode) '
       
-        '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
-        'AND (OrdersHead.OrderId = osbc.OrderId)'
+        '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
+        'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId)'
       'WHERE'
       '  #(synonyms.synonymname LIKE :LikeParam)'
       '  #AND (Synonyms.synonymcode > 0)'
@@ -1503,6 +1516,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreCatalogMandatoryList: TBooleanField
       FieldName = 'CatalogMandatoryList'
     end
+    object adsCoreMaxProducerCost: TFloatField
+      FieldName = 'MaxProducerCost'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1516,15 +1532,17 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.SynonymFirm,'
       '    osbc.OrderCount,'
       '    osbc.Price,'
-      '    OrdersHead.SendDate as OrderDate,'
-      '    OrdersHead.PriceName,'
-      '    OrdersHead.RegionName,'
+      '    PostedOrderHeads.SendDate as OrderDate,'
+      '    PostedOrderHeads.PriceName,'
+      '    PostedOrderHeads.RegionName,'
       '    osbc.Await,'
       '    osbc.Junk'
       'FROM'
-      '  OrdersList osbc'
+      '  PostedOrderLists osbc'
       '  inner join products on products.productid = osbc.productid'
-      '  INNER JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      
+        '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.O' +
+        'rderId'
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'
@@ -1532,8 +1550,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'and (((:GroupByProducts = 0) and (products.catalogid = :FullCode' +
         ')) or ((:GroupByProducts = 1) and (osbc.productid = :productid))' +
         ')'
-      'And (OrdersHead.Closed = 1)'
-      'ORDER BY OrdersHead.SendDate DESC'
+      'And (PostedOrderHeads.Closed = 1)'
+      'ORDER BY PostedOrderHeads.SendDate DESC'
       'limit 20')
     Left = 208
     Top = 465
@@ -1712,14 +1730,15 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '  ('
       
@@ -1737,15 +1756,18 @@ inherited SynonymSearchForm: TSynonymSearchForm
         '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
         'Core.SynonymFirmCrCode)'
       '  left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
-        '  LEFT JOIN OrdersList osbc ON (osbc.CoreId = Core.CoreId) AND (' +
-        'osbc.clientid = :clientid)'
+        '  LEFT JOIN CurrentOrderLists osbc ON (osbc.CoreId = Core.CoreId' +
+        ') AND (osbc.clientid = :clientid)'
       
         '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
         'mCode) '
       
-        '  LEFT JOIN OrdersHead ON (OrdersHead.ClientId = osbc.ClientId) ' +
-        'AND (OrdersHead.OrderId = osbc.OrderId)'
+        '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
+        'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId)'
       'WHERE'
       '  (Core.SynonymCode = Synonyms.synonymcode)'
       '  AND (products.productid = core.productid)'
@@ -1838,5 +1860,38 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'order by SynonymSearchGroupColor.ColorIndex, SynonymSearch.Cost;')
     Left = 192
     Top = 173
+  end
+  object adsProducers: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'select'
+      '  0 as Id,'
+      '  '#39#1042#1089#1077' '#1087#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1080#39' as Name'
+      'union'
+      'select'
+      '  prod.*'
+      'from'
+      '('
+      'SELECT '
+      '  p.Id,'
+      '  p.Name'
+      'FROM'
+      '  Producers p'
+      'order by p.Name'
+      ') prod')
+    Left = 384
+    Top = 253
+    object adsProducersId: TLargeintField
+      FieldName = 'Id'
+    end
+    object adsProducersName: TStringField
+      FieldName = 'Name'
+      Size = 255
+    end
+  end
+  object dsProducers: TDataSource
+    DataSet = adsProducers
+    Left = 384
+    Top = 289
   end
 end

@@ -431,11 +431,6 @@ inherited OrdersForm: TOrdersForm
     Left = 144
     Top = 256
   end
-  object frdsOrders: TfrDBDataSet
-    DataSource = dsOrders
-    Left = 144
-    Top = 288
-  end
   object adsOrdersOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'
@@ -627,76 +622,82 @@ inherited OrdersForm: TOrdersForm
   end
   object adsOrders: TMyQuery
     SQLDelete.Strings = (
-      'DELETE FROM OrdersList'
+      'DELETE FROM CurrentOrderLists'
       'WHERE'
       '  ID = :Old_ID')
     SQLUpdate.Strings = (
-      'UPDATE OrdersList'
+      'UPDATE CurrentOrderLists'
       'SET'
       '  ORDERCOUNT = :ORDERCOUNT,'
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
       '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
-      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity)'
+      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity),'
+      '  RetailMarkup = :RetailMarkup'
       'WHERE'
       '  ID = :Old_ID')
     SQLRefresh.Strings = (
-      'SELECT OrdersList.Id, OrdersList.ORDERCOUNT '
-      'FROM OrdersList'
+      
+        'SELECT CurrentOrderLists.Id, CurrentOrderLists.ORDERCOUNT, Curre' +
+        'ntOrderLists.RetailMarkup'
+      'FROM CurrentOrderLists'
       'WHERE'
-      '    (OrdersList.ID = :ID)')
+      '    (CurrentOrderLists.ID = :ID)')
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT '
-      '    OrdersList.Id, '
-      '    OrdersList.OrderId,'
-      '    OrdersList.ClientId,'
-      '    OrdersList.CoreId,'
+      '    ol.Id, '
+      '    ol.OrderId,'
+      '    ol.ClientId,'
+      '    ol.CoreId,'
       '    products.catalogid as fullcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
-      '    OrdersList.productid,'
-      '    OrdersList.codefirmcr,'
-      '    OrdersList.synonymcode,'
-      '    OrdersList.synonymfirmcrcode,'
-      '    OrdersList.code,'
-      '    OrdersList.codecr,'
-      '    OrdersList.synonymname,'
-      '    OrdersList.synonymfirm,'
-      '    OrdersList.await,'
-      '    OrdersList.junk,'
-      '    OrdersList.ordercount,'
-      '    OrdersList.RealPrice,'
-      '    OrdersList.price,'
+      '    ol.productid,'
+      '    ol.codefirmcr,'
+      '    ol.synonymcode,'
+      '    ol.synonymfirmcrcode,'
+      '    ol.code,'
+      '    ol.codecr,'
+      '    ol.synonymname,'
+      '    ol.synonymfirm,'
+      '    ol.await,'
+      '    ol.junk,'
+      '    ol.ordercount,'
+      '    ol.RealPrice,'
+      '    ol.price,'
+      '    ol.VitallyImportant,'
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
-      '    OrdersList.requestratio as Ordersrequestratio,'
-      '    OrdersList.ordercost as Ordersordercost,'
-      '    OrdersList.minordercount as Ordersminordercount,'
-      '    OrdersList.DropReason,'
-      '    OrdersList.ServerCost,'
-      '    OrdersList.ServerQuantity,'
-      '    OrdersList.ProducerCost,'
-      '    OrdersList.NDS,'
-      '    OrdersList.SupplierPriceMarkup,'
+      '    ol.requestratio as Ordersrequestratio,'
+      '    ol.ordercost as Ordersordercost,'
+      '    ol.minordercount as Ordersminordercount,'
+      '    ol.DropReason,'
+      '    ol.ServerCost,'
+      '    ol.ServerQuantity,'
+      '    ol.ProducerCost,'
+      '    ol.NDS,'
+      '    ol.SupplierPriceMarkup,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    OrdersList.RetailMarkup'
+      '    ol.RetailMarkup,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM '
-      '  OrdersList'
-      
-        '  left join products on products.productid = OrdersList.producti' +
-        'd'
+      '  CurrentOrderLists ol'
+      '  left join products on products.productid = ol.productid'
       '  left join catalogs on catalogs.fullcode = products.catalogid '
       '  left join Mnn on mnn.Id = Catalogs.MnnId'
-      '  left join core on core.coreid = OrdersList.coreid'
+      '  left join GroupMaxProducerCosts on '
+      '    (GroupMaxProducerCosts.ProductId = ol.productid) '
+      '    and (ol.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
+      '  left join core on core.coreid = ol.coreid'
       'WHERE '
-      '    (OrdersList.OrderId = :OrderId)'
+      '    (ol.OrderId = :OrderId)'
       'AND (OrderCount>0)'
       
-        'and ((:NeedCorrect = 0) or ((:NeedCorrect = 1) and (OrdersList.D' +
-        'ropReason is not null)))'
+        'and ((:NeedCorrect = 0) or ((:NeedCorrect = 1) and (ol.DropReaso' +
+        'n is not null)))'
       'ORDER BY SynonymName, SynonymFirm')
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsOrdersOldBeforePost
@@ -845,6 +846,18 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersRetailMarkup: TFloatField
       FieldName = 'RetailMarkup'
+    end
+    object adsOrdersMaxProducerCost: TFloatField
+      FieldName = 'MaxProducerCost'
+    end
+    object adsOrdersEditRetailMarkup: TFloatField
+      FieldKind = fkCalculated
+      FieldName = 'EditRetailMarkup'
+      DisplayFormat = '0.00;;'#39#39
+      Calculated = True
+    end
+    object adsOrdersVitallyImportant: TBooleanField
+      FieldName = 'VitallyImportant'
     end
   end
   object ActionList: TActionList

@@ -1,10 +1,9 @@
 object ConfigForm: TConfigForm
   Left = 456
   Top = 244
-  BorderStyle = bsDialog
+  Width = 409
+  Height = 388
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072
-  ClientHeight = 361
-  ClientWidth = 401
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -42,17 +41,19 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshOther
-    Align = alTop
+    ActivePage = tshClients
     MultiLine = True
     TabOrder = 0
     object tshClients: TTabSheet
-      Caption = #1056#1086#1079#1085'. '#1085#1072#1094'.'
+      Caption = #1053#1072#1094#1077#1085#1082#1080' '#1085#1077' '#1046#1053#1042#1051#1057
       ImageIndex = 1
     end
     object tshConnect: TTabSheet
       Caption = #1057#1086#1077#1076#1080#1085#1077#1085#1080#1077
       ImageIndex = 2
+      DesignSize = (
+        393
+        275)
       object lblTip: TLabel
         Left = 53
         Top = 248
@@ -5137,8 +5138,12 @@ object ConfigForm: TConfigForm
         Top = 8
         Width = 377
         Height = 238
+        Anchors = [akLeft, akTop, akRight]
         Caption = ' '#1059#1076#1072#1083#1077#1085#1085#1086#1077' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1077' '
         TabOrder = 0
+        DesignSize = (
+          377
+          238)
         object Label12: TLabel
           Left = 8
           Top = 84
@@ -5149,8 +5154,10 @@ object ConfigForm: TConfigForm
         object Label13: TLabel
           Left = 192
           Top = 84
-          Width = 38
+          Width = 177
           Height = 13
+          Anchors = [akTop, akRight]
+          AutoSize = False
           Caption = #1055#1072#1088#1086#1083#1100
         end
         object Label7: TLabel
@@ -5165,6 +5172,7 @@ object ConfigForm: TConfigForm
           Top = 208
           Width = 243
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = #1047#1072#1076#1077#1088#1078#1082#1072' '#1087#1086#1089#1083#1077' '#1091#1089#1090#1072#1085#1086#1074#1082#1080' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103', '#1089#1077#1082#1091#1085#1076
         end
         object dbcbRasConnect: TDBCheckBox
@@ -5186,7 +5194,8 @@ object ConfigForm: TConfigForm
           Height = 21
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
-          ItemHeight = 0
+          Anchors = [akLeft, akTop, akRight]
+          ItemHeight = 13
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5195,6 +5204,7 @@ object ConfigForm: TConfigForm
           Width = 177
           Height = 21
           Hint = #1048#1084#1103' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103' '#1076#1083#1103' '#1091#1089#1090#1072#1085#1086#1074#1083#1077#1085#1080#1103' '#1089#1074#1103#1079#1080
+          Anchors = [akLeft, akTop, akRight]
           DataField = 'RasName'
           DataSource = DM.dsParams
           TabOrder = 2
@@ -5205,6 +5215,7 @@ object ConfigForm: TConfigForm
           Width = 177
           Height = 21
           Hint = #1048#1084#1103' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103' '#1076#1083#1103' '#1091#1089#1090#1072#1085#1086#1074#1083#1077#1085#1080#1103' '#1089#1074#1103#1079#1080
+          Anchors = [akTop, akRight]
           DataField = 'RasPass'
           DataSource = DM.dsParams
           PasswordChar = '*'
@@ -5215,13 +5226,18 @@ object ConfigForm: TConfigForm
           Top = 127
           Width = 361
           Height = 69
+          Anchors = [akLeft, akTop, akRight]
           Caption = ' '#1040#1074#1090#1086#1076#1086#1079#1074#1086#1085' '
           TabOrder = 4
+          DesignSize = (
+            361
+            69)
           object Label14: TLabel
             Left = 58
             Top = 18
             Width = 155
             Height = 13
+            Anchors = [akLeft, akTop, akRight]
             Caption = #1052#1072#1082#1089#1080#1084#1072#1083#1100#1085#1086#1077' '#1095#1080#1089#1083#1086' '#1087#1086#1087#1099#1090#1086#1082
           end
           object Label15: TLabel
@@ -5229,6 +5245,7 @@ object ConfigForm: TConfigForm
             Top = 42
             Width = 181
             Height = 13
+            Anchors = [akLeft, akTop, akRight]
             Caption = #1047#1072#1076#1077#1088#1078#1082#1072' '#1084#1077#1078#1076#1091' '#1079#1074#1086#1085#1082#1072#1084#1080', '#1089#1077#1082#1091#1085#1076
           end
           object dbeConnectCount: TDBEdit
@@ -5236,6 +5253,7 @@ object ConfigForm: TConfigForm
             Top = 16
             Width = 41
             Height = 21
+            Anchors = [akTop, akRight]
             DataField = 'ConnectCount'
             DataSource = DM.dsParams
             TabOrder = 0
@@ -5246,6 +5264,7 @@ object ConfigForm: TConfigForm
             Top = 16
             Width = 15
             Height = 21
+            Anchors = [akTop, akRight]
             Min = 1
             Position = 10
             TabOrder = 1
@@ -5256,6 +5275,7 @@ object ConfigForm: TConfigForm
             Top = 40
             Width = 41
             Height = 21
+            Anchors = [akTop, akRight]
             DataField = 'ConnectPause'
             DataSource = DM.dsParams
             TabOrder = 2
@@ -5266,6 +5286,7 @@ object ConfigForm: TConfigForm
             Top = 40
             Width = 15
             Height = 21
+            Anchors = [akTop, akRight]
             Min = 1
             Max = 3600
             Position = 10
@@ -5278,6 +5299,7 @@ object ConfigForm: TConfigForm
           Top = 58
           Width = 75
           Height = 24
+          Anchors = [akTop, akRight]
           Caption = #1044#1077#1081#1089#1090#1074#1080#1077
           TabOrder = 5
           OnClick = btnRasActionsClick
@@ -5287,6 +5309,7 @@ object ConfigForm: TConfigForm
           Top = 203
           Width = 41
           Height = 21
+          Anchors = [akTop, akRight]
           DataField = 'RasSleep'
           DataSource = DM.dsParams
           TabOrder = 6
@@ -5297,6 +5320,7 @@ object ConfigForm: TConfigForm
           Top = 203
           Width = 15
           Height = 21
+          Anchors = [akTop, akRight]
           Min = 1
           Position = 10
           TabOrder = 7
@@ -5307,91 +5331,126 @@ object ConfigForm: TConfigForm
     object tshAuth: TTabSheet
       Caption = #1040#1074#1090#1086#1088#1080#1079#1072#1094#1080#1103
       OnShow = tshAuthShow
-      object gbHTTP: TGroupBox
-        Left = 8
-        Top = 8
-        Width = 377
+      object pHTTP: TPanel
+        Left = 0
+        Top = 0
+        Width = 393
         Height = 65
-        Caption = ' '#1057#1077#1088#1074#1077#1088' '#1076#1072#1085#1085#1099#1093' '
+        Align = alTop
+        BevelOuter = bvNone
         TabOrder = 0
-        object Label1: TLabel
-          Left = 8
-          Top = 16
-          Width = 24
-          Height = 13
-          Caption = #1061#1086#1089#1090
-        end
-        object dbeHTTPHost: TDBEdit
-          Left = 8
-          Top = 33
-          Width = 361
-          Height = 21
-          DataField = 'HTTPHost'
-          DataSource = DM.dsParams
+        object gbHTTP: TGroupBox
+          Left = 0
+          Top = 0
+          Width = 393
+          Height = 65
+          Align = alClient
+          Caption = ' '#1057#1077#1088#1074#1077#1088' '#1076#1072#1085#1085#1099#1093' '
           TabOrder = 0
+          DesignSize = (
+            393
+            65)
+          object Label1: TLabel
+            Left = 8
+            Top = 16
+            Width = 24
+            Height = 13
+            Caption = #1061#1086#1089#1090
+          end
+          object dbeHTTPHost: TDBEdit
+            Left = 8
+            Top = 33
+            Width = 377
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            DataField = 'HTTPHost'
+            DataSource = DM.dsParams
+            TabOrder = 0
+          end
         end
       end
-      object gbAccount: TGroupBox
-        Left = 8
-        Top = 84
-        Width = 377
-        Height = 68
-        Caption = ' '#1059#1095#1077#1090#1085#1099#1077' '#1076#1072#1085#1085#1099#1077' '
+      object pAccount: TPanel
+        Left = 0
+        Top = 65
+        Width = 393
+        Height = 210
+        Align = alClient
+        BevelOuter = bvNone
         TabOrder = 1
-        object Label4: TLabel
-          Left = 185
-          Top = 20
-          Width = 38
-          Height = 13
-          Caption = #1055#1072#1088#1086#1083#1100
-        end
-        object Label3: TLabel
-          Left = 8
-          Top = 20
-          Width = 22
-          Height = 13
-          Caption = #1048#1084#1103
-        end
-        object dbeHTTPName: TDBEdit
-          Left = 8
-          Top = 37
-          Width = 169
-          Height = 21
-          DataField = 'HTTPName'
-          DataSource = DM.dsParams
+        object gbAccount: TGroupBox
+          Left = 0
+          Top = 0
+          Width = 393
+          Height = 68
+          Align = alTop
+          Caption = ' '#1059#1095#1077#1090#1085#1099#1077' '#1076#1072#1085#1085#1099#1077' '
           TabOrder = 0
-          OnChange = dbeHTTPNameChange
-        end
-        object dbeHTTPPass: TDBEdit
-          Left = 184
-          Top = 37
-          Width = 185
-          Height = 21
-          DataField = 'HTTPPass'
-          PasswordChar = '*'
-          TabOrder = 1
-          Visible = False
-        end
-        object eHTTPPass: TEdit
-          Left = 184
-          Top = 37
-          Width = 185
-          Height = 21
-          PasswordChar = '*'
-          TabOrder = 2
-          Text = 'eHTTPPass'
-          OnChange = eHTTPPassChange
+          DesignSize = (
+            393
+            68)
+          object Label4: TLabel
+            Left = 201
+            Top = 20
+            Width = 184
+            Height = 13
+            Anchors = [akTop, akRight]
+            AutoSize = False
+            Caption = #1055#1072#1088#1086#1083#1100
+          end
+          object Label3: TLabel
+            Left = 8
+            Top = 20
+            Width = 22
+            Height = 13
+            Caption = #1048#1084#1103
+          end
+          object dbeHTTPName: TDBEdit
+            Left = 8
+            Top = 37
+            Width = 185
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            DataField = 'HTTPName'
+            DataSource = DM.dsParams
+            TabOrder = 0
+            OnChange = dbeHTTPNameChange
+          end
+          object dbeHTTPPass: TDBEdit
+            Left = 184
+            Top = 37
+            Width = 185
+            Height = 21
+            DataField = 'HTTPPass'
+            PasswordChar = '*'
+            TabOrder = 1
+            Visible = False
+          end
+          object eHTTPPass: TEdit
+            Left = 200
+            Top = 37
+            Width = 185
+            Height = 21
+            Anchors = [akTop, akRight]
+            PasswordChar = '*'
+            TabOrder = 2
+            Text = 'eHTTPPass'
+            OnChange = eHTTPPassChange
+          end
         end
       end
     end
     object TabSheet1: TTabSheet
       Caption = #1055#1088#1086#1082#1089#1080'-'#1089#1077#1088#1074#1077#1088
       ImageIndex = 3
+      DesignSize = (
+        393
+        275)
       object Label10: TLabel
         Left = 312
         Top = 32
-        Width = 25
+        Width = 57
         Height = 13
+        Anchors = [akTop, akRight]
         Caption = #1055#1086#1088#1090
       end
       object Label5: TLabel
@@ -5411,8 +5470,10 @@ object ConfigForm: TConfigForm
       object Label8: TLabel
         Left = 192
         Top = 72
-        Width = 38
+        Width = 177
         Height = 13
+        Anchors = [akTop, akRight]
+        AutoSize = False
         Caption = #1055#1072#1088#1086#1083#1100
       end
       object dbcbProxyConnect: TDBCheckBox
@@ -5432,6 +5493,7 @@ object ConfigForm: TConfigForm
         Top = 48
         Width = 297
         Height = 21
+        Anchors = [akLeft, akTop, akRight]
         DataField = 'ProxyName'
         DataSource = DM.dsParams
         TabOrder = 1
@@ -5441,6 +5503,7 @@ object ConfigForm: TConfigForm
         Top = 48
         Width = 57
         Height = 21
+        Anchors = [akTop, akRight]
         DataField = 'ProxyPort'
         DataSource = DM.dsParams
         TabOrder = 2
@@ -5451,6 +5514,7 @@ object ConfigForm: TConfigForm
         Width = 177
         Height = 21
         Hint = #1048#1084#1103' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103' '#1076#1083#1103' '#1091#1089#1090#1072#1085#1086#1074#1083#1077#1085#1080#1103' '#1089#1074#1103#1079#1080
+        Anchors = [akLeft, akTop, akRight]
         DataField = 'ProxyUser'
         DataSource = DM.dsParams
         TabOrder = 3
@@ -5461,6 +5525,7 @@ object ConfigForm: TConfigForm
         Width = 177
         Height = 21
         Hint = #1048#1084#1103' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103' '#1076#1083#1103' '#1091#1089#1090#1072#1085#1086#1074#1083#1077#1085#1080#1103' '#1089#1074#1103#1079#1080
+        Anchors = [akTop, akRight]
         DataField = 'ProxyPass'
         DataSource = DM.dsParams
         PasswordChar = '*'
@@ -5470,6 +5535,9 @@ object ConfigForm: TConfigForm
     object tshOther: TTabSheet
       Caption = #1044#1086#1087#1086#1083#1085#1080#1090#1077#1083#1100#1085#1086
       ImageIndex = 4
+      DesignSize = (
+        393
+        275)
       object lblServerLink: TLabel
         Left = 9
         Top = 269
@@ -5516,6 +5584,7 @@ object ConfigForm: TConfigForm
         Top = 32
         Width = 377
         Height = 73
+        Anchors = [akLeft, akTop, akRight]
         Caption = ' '#1040#1074#1090#1086#1084#1072#1090#1080#1095#1077#1089#1082#1086#1077' '#1091#1076#1072#1083#1077#1085#1080#1077' '#1091#1089#1090#1072#1088#1077#1074#1096#1080#1093' '#1079#1072#1082#1072#1079#1086#1074' '
         TabOrder = 2
         object lHistoryDayCount: TLabel

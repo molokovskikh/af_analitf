@@ -17,7 +17,6 @@ type
 
 TUpdateTable = (
 	utCatalogs,
-	utCatDel,
 	utClients,
 	utProviders,
 	utPricesData,
@@ -38,7 +37,8 @@ TUpdateTable = (
   utClient,
   utMNN,
   utDescriptions,
-  utMaxProducerCosts);
+  utMaxProducerCosts,
+  utProducers);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -139,6 +139,9 @@ private
   procedure UpdateClientNAHFile(NAHState : Boolean; NAHSetting : String);
   //Получить UIN у Роста
   function  GetRSTUIN : String;
+
+  procedure CheckFieldAfterUpdate(fieldName : String);
+  procedure ProcessClientToAddressMigration;
 protected
 	procedure Execute; override;
 public
@@ -235,6 +238,7 @@ begin
         if (eaSendWaybills in ExchangeForm.ExchangeActs)
           and not DM.adsUser.IsEmpty
           and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
+          and DM.adsUser.FieldByName('SendWaybillsFromClient').AsBoolean
         then
         begin
           TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
@@ -534,9 +538,29 @@ begin
 	Synchronize( SetStatus);
 	try
     LibVersions := AProc.GetLibraryVersionFromAppPath;
+
+    if Assigned(AbsentPriceCodeSL) then
+      FreeAndNil(AbsentPriceCodeSL);
+    //Если не производим кумулятивное обновление, то проверяем наличие синонимов
+    if ([eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs = [])
+       and (not (eaGetFullData in ExchangeForm.ExchangeActs))
+    then
+      GetAbsentPriceCode();
+
     try
-      SetLength(ParamNames, StaticParamCount + LibVersions.Count*3);
-      SetLength(ParamValues, StaticParamCount + LibVersions.Count*3);
+      WriteExchangeLog(
+        'Exchange',
+        'Дата обновления, отправляемая на сервер: ' + GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime));
+
+
+      if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
+        SetLength(ParamNames, StaticParamCount + LibVersions.Count*3 + AbsentPriceCodeSL.Count);
+        SetLength(ParamValues, StaticParamCount + LibVersions.Count*3 + AbsentPriceCodeSL.Count);
+      end
+      else begin
+        SetLength(ParamNames, StaticParamCount + LibVersions.Count*3 + 1);
+        SetLength(ParamValues, StaticParamCount + LibVersions.Count*3 + 1);
+      end;
       ParamNames[0]  := 'AccessTime';
       ParamValues[0] := GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
       ParamNames[1]  := 'GetEtalonData';
@@ -579,11 +603,23 @@ begin
         ParamNames[StaticParamCount+i*3+2] := 'LibraryHash';
         ParamValues[StaticParamCount+i*3+2] := fi.MD5;
       end;
+
+      if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
+        for I := 0 to AbsentPriceCodeSL.Count-1 do begin
+          ParamNames[StaticParamCount+LibVersions.Count*3 + i]:= 'PriceCodes';
+          ParamValues[StaticParamCount+LibVersions.Count*3 + i]:= AbsentPriceCodeSL[i];
+        end;
+      end
+      else begin
+        ParamNames[StaticParamCount+LibVersions.Count*3] := 'PriceCodes';
+        ParamValues[StaticParamCount+LibVersions.Count*3] := '0';
+      end;
+
     finally
       LibVersions.Free;
     end;
     UpdateId := '';
-		Res := SOAP.Invoke( 'GetUserDataEx', ParamNames, ParamValues);
+		Res := SOAP.Invoke( 'GetUserDataWithPriceCodes', ParamNames, ParamValues);
 		{ проверяем отсутствие ошибки при удаленном запросе }
 		Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
@@ -821,11 +857,13 @@ var
   LogStr : String;
   Len : Integer;
 	params, values: array of string;
-  I : Integer;
+  NeedEnableByHTTP : Boolean;
+  LastExchangeFileSize : Int64;
 begin
   LogStr := '';
   params := nil;
   values := nil;
+  LastExchangeFileSize := 0;
 
   if (eaGetPrice in ExchangeForm.ExchangeActs)
   then begin
@@ -841,6 +879,7 @@ begin
         end
         else
           Len := Integer(FS.Size);
+        LastExchangeFileSize := FS.Size;
         SetLength(LogStr, Len);
         FS.Read(Pointer(LogStr)^, Len);
       finally
@@ -848,58 +887,60 @@ begin
       end;
     except
       LogStr := '';
-    end;
-
-    //Если не производили кумулятивное обновление, то проверяем наличие синонимов
-    if (not (eaGetFullData in ExchangeForm.ExchangeActs))
-    then begin
-      GetAbsentPriceCode();
-
-      if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
-        SetLength(params, AbsentPriceCodeSL.Count + 3);
-        SetLength(values, AbsentPriceCodeSL.Count + 3);
-        for I := 0 to AbsentPriceCodeSL.Count-1 do begin
-          params[i]:= 'PriceCode';
-          values[i]:= AbsentPriceCodeSL[i];
-        end;
-        params[AbsentPriceCodeSL.Count]:= 'Log';
-        values[AbsentPriceCodeSL.Count]:= LogStr;
-        params[AbsentPriceCodeSL.Count + 1]:= 'WaybillsOnly';
-        values[AbsentPriceCodeSL.Count + 1]:= BoolToStr( False, True);
-        params[AbsentPriceCodeSL.Count + 2]:= 'UpdateId';
-        values[AbsentPriceCodeSL.Count + 2]:= GetUpdateId();
-      end;
+      LastExchangeFileSize := 0;
     end;
   end;
 
-  if length(params) = 0 then begin
-    SetLength(params, 4);
-    SetLength(values, 4);
-    params[0]:= 'PriceCode';
-    values[0]:= '0';
-    params[1]:= 'Log';
-    values[1]:= LogStr;
-    params[2]:= 'WaybillsOnly';
-    values[2]:= BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
-    params[3]:= 'UpdateId';
-    values[3]:= GetUpdateId();
-  end;
+  SetLength(params, 2);
+  SetLength(values, 2);
+  params[0]:= 'WaybillsOnly';
+  values[0]:= BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
+  params[1]:= 'UpdateId';
+  values[1]:= GetUpdateId();
 
-	Res := SOAP.Invoke( 'MaxSynonymCode', params, values);
+  Res := SOAP.Invoke( 'CommitExchange', params, values);
 
   if (eaGetPrice in ExchangeForm.ExchangeActs) then begin
+    NeedEnableByHTTP := False;
     ExchangeDateTime := FromXMLToDateTime( Res.Text);
-    DM.adtParams.Edit;
-    DM.adtParams.FieldByName( 'LastDateTime').AsDateTime := ExchangeDateTime;
-    if DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
-      DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := False;
-      MainForm.EnableByHTTPName;
+    WriteExchangeLog('Exchange',
+      Format('Ответ от сервера: %s  разобранная дата обновления: %s',
+        [Res.Text,
+         DateTimeToStr(ExchangeDateTime)]));
+    try
+      if DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
+        DM.adtParams.Edit;
+        DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := False;
+        NeedEnableByHTTP := True;
+        DM.adtParams.Post;
+      end;
+    except
+      on PostException : Exception do begin
+        WriteExchangeLog('Exchange', 'Ошибка при Post при сохранении HTTPNameChanged: ' + PostException.Message);
+        raise;
+      end;
     end;
-    DM.adtParams.Post;
-    FreeExchangeLog();
-    SysUtils.DeleteFile(ExePath + 'Exchange.log');
-    CreateExchangeLog();
+
+    if NeedEnableByHTTP then
+      Synchronize(MainForm.EnableByHTTPName);
+
     DM.ResetNeedCommitExchange;
+  end;
+
+  if (eaGetPrice in ExchangeForm.ExchangeActs) and (Length(LogStr) > 0) then begin
+    SetLength(params, 2);
+    SetLength(values, 2);
+    params[0]:= 'UpdateId';
+    values[0]:= GetUpdateId();
+    params[1]:= 'Log';
+    values[1]:= LogStr;
+
+    Res := SOAP.Invoke( 'SendClientLog', params, values);
+
+    if AnsiStartsText('Ok', Trim(Res.Text)) then begin
+      FreeExchangeLog(LastExchangeFileSize);
+      CreateExchangeLog();
+    end;
   end;
 end;
 
@@ -1062,13 +1103,38 @@ begin
 end;
 
 procedure TExchangeThread.CheckNewMDB;
+var
+  updateParamsSql : String;
 begin
+  if (GetFileSize(ExePath+SDirIn+'\UpdateInfo.txt') > 0) then begin
+    updateParamsSql := Trim(GetLoadDataSQL('params', ExePath+SDirIn+'\UpdateInfo.txt', True));
+    DM.adcUpdate.SQL.Text :=
+      Copy(updateParamsSql, 1, LENGTH(updateParamsSql) - 1) +
+      '(LastDateTime, Cumulative) set Id = 1;';
+    DM.adcUpdate.Execute;
+    DM.adcUpdate.SQL.Text := ''
+    + ' update analitf.params work, analitf.params new '
+    + ' set '
+    + '   work.LastDateTime = new.LastDateTime, '
+    + '   work.Cumulative = new.Cumulative '
+    + ' where '
+    + '      (work.Id = 0) '
+    + '  and (new.Id = 1);'
+    + ' delete from analitf.params where Id = 1;';
+    DM.adcUpdate.Execute;
+    DM.adtParams.RefreshRecord;
+    CheckFieldAfterUpdate('LastDateTime');
+  end;
+  if (GetFileSize(ExePath+SDirIn+'\ClientToAddressMigrations.txt') > 0) then
+    ProcessClientToAddressMigration;
+
 	if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then
 	begin
 		StatusText := 'Очистка таблиц';
 		Synchronize( SetStatus);
 		DM.ClearDatabase;
 
+{
 		StatusText := 'Сжатие базы';
 		Synchronize( SetStatus);
     DM.MainConnection.Close;
@@ -1077,6 +1143,7 @@ begin
     finally
       DM.MainConnection.Open;
     end;
+}    
 	end;
 end;
 
@@ -1134,7 +1201,6 @@ begin
   UpdateTables := [];
 
 	if (GetFileSize(ExePath+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
-	if (GetFileSize(ExePath+SDirIn+'\CatDel.txt') > 0) then UpdateTables:=UpdateTables+[utCatDel];
 	if (GetFileSize(ExePath+SDirIn+'\Clients.txt') > 0) then UpdateTables:=UpdateTables+[utClients];
 	if (GetFileSize(ExePath+SDirIn+'\Providers.txt') > 0) then UpdateTables:=UpdateTables+[utProviders];
 	if (GetFileSize(ExePath+SDirIn+'\RegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utRegionalData];
@@ -1157,6 +1223,7 @@ begin
   if (GetFileSize(ExePath+SDirIn+'\MNN.txt') > 0) then UpdateTables := UpdateTables + [utMNN];
   if (GetFileSize(ExePath+SDirIn+'\Descriptions.txt') > 0) then UpdateTables := UpdateTables + [utDescriptions];
   if (GetFileSize(ExePath+SDirIn+'\MaxProducerCosts.txt') > 0) then UpdateTables := UpdateTables + [utMaxProducerCosts];
+  if (GetFileSize(ExePath+SDirIn+'\Producers.txt') > 0) then UpdateTables := UpdateTables + [utProducers];
 
     //обновляем таблицы
     {
@@ -1300,12 +1367,8 @@ begin
 {$ifdef DEBUG}
       WriteExchangeLog('Import', Format('Catalog RowAffected = %d', [RowsAffected]));
 {$endif}
-      if utCatDel in UpdateTables then begin
-        UpdateFromFileByParamsMySQL(
-          ExePath+SDirIn+'\CatDel.txt',
-          'delete from catalogs where (fullcode = :fullcode)',
-          ['fullcode']);
-      end;
+      SQL.Text := 'delete from Catalogs where Hidden = 1;';
+      InternalExecute;
     end;
 	  SQL.Text:='UPDATE CATALOGS SET Form = '''' WHERE Form IS Null;';
     InternalExecute;
@@ -1320,6 +1383,8 @@ begin
     else begin
       SQL.Text := GetLoadDataSQL('MNN', ExePath+SDirIn+'\MNN.txt', true);
       InternalExecute;
+      SQL.Text := 'delete from mnn where Hidden = 1;';
+      InternalExecute;
     end;
   end;
 
@@ -1332,6 +1397,8 @@ begin
     else begin
       SQL.Text := GetLoadDataSQL('Descriptions', ExePath+SDirIn+'\Descriptions.txt', true);
       InternalExecute;
+      SQL.Text := 'delete from descriptions where Hidden = 1;';
+      InternalExecute;
     end;
   end;
 
@@ -1342,6 +1409,26 @@ begin
     end
     else begin
       SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt', true);
+      InternalExecute;
+    end;
+  end;
+
+  //Producers
+  if utProducers in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+      SQL.Text := GetLoadDataSQL('Producers', ExePath+SDirIn+'\Producers.txt');
+      InternalExecute;
+{$ifdef DEBUG}
+      WriteExchangeLog('Import', Format('Producers RowAffected = %d', [RowsAffected]));
+{$endif}
+    end
+    else begin
+      SQL.Text := GetLoadDataSQL('Producers', ExePath+SDirIn+'\Producers.txt', true);
+      InternalExecute;
+{$ifdef DEBUG}
+      WriteExchangeLog('Import', Format('Producers RowAffected = %d', [RowsAffected]));
+{$endif}
+      SQL.Text := 'delete from producers where Hidden = 1;';
       InternalExecute;
     end;
   end;
@@ -1392,9 +1479,15 @@ begin
 	if utClients in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Clients', ExePath+SDirIn+'\Clients.txt', true);
     InternalExecute;
-    SQL.Text := ''
-      +' insert ignore into ClientSettings (ClientId) '
-      +' select ClientId from Clients ';
+
+    if DM.QueryValue('select IsFutureClient from analitf.userinfo limit 1', [], []) = True then
+      SQL.Text := ''
+        +' insert ignore into ClientSettings (ClientId, Address, Name) '
+        +' select ClientId, Name, FullName from Clients '
+    else
+      SQL.Text := ''
+        +' insert ignore into ClientSettings (ClientId, Name) '
+        +' select ClientId, FullName from Clients ';
     InternalExecute;
 	end;
 	//Providers
@@ -1656,10 +1749,20 @@ begin
 
   Dm.MainConnection.AfterConnect(Dm.MainConnection);
 	{ Показываем время обновления }
+  try
+  WriteExchangeLog('Exchange', 'Пытаемся обновить дату обновления прайс-листа');
 	DM.adtParams.Edit;
 	DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=
 		DM.adtParams.FieldByName( 'LastDateTime').AsDateTime;
 	DM.adtParams.Post;
+  CheckFieldAfterUpdate('UpdateDateTime');
+  except
+    on PostException : Exception do begin
+      WriteExchangeLog('Exchange', 'Ошибка при Post при обновлении UpdateDateTime: ' + PostException.Message);
+      CheckFieldAfterUpdate('UpdateDateTime');
+      raise;
+    end;
+  end;
 	Synchronize( MainForm.SetUpdateDateTime);
 	Synchronize( EnableCancel);
 end;
@@ -2579,6 +2682,114 @@ begin
   end;
 
   Synchronize( EnableCancel);
+end;
+
+procedure TExchangeThread.CheckFieldAfterUpdate(fieldName: String);
+var
+  fieldVariant : Variant;
+begin
+  try
+    fieldVariant := DM.QueryValue('select ' + fieldName + ' from analitf.params where Id = 0', [], []);
+    WriteExchangeLog('Exchange',
+      Format('Выбранное значение для %s: %s',
+      [fieldName,
+         VarToStr(fieldVariant)]));
+    if VarCompareValue(fieldVariant, DM.adtParams.FieldByName(fieldName).Value) <> vrEqual then
+      WriteExchangeLog('Exchange',
+        Format('Не совпадает сохраненная %s: должно - %s,  имеется - %s',
+        [fieldName,
+         VarToStr(DM.adtParams.FieldByName(fieldName).Value),
+         VarToStr(fieldVariant)]));
+  except
+    on LogException : Exception do
+      WriteExchangeLog('Exchange', 'Ошибка при проверки ' + fieldName + ': ' + LogException.Message);
+  end;
+end;
+
+procedure TExchangeThread.ProcessClientToAddressMigration;
+begin
+  try
+    DM.adcUpdate.SQL.Text := 'drop temporary table if exists analitf.ClientToAddressMigrations';
+    DM.adcUpdate.Execute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' create temporary table analitf.ClientToAddressMigrations ('
+      + '   `ClientCode` bigint(20) unsigned not NULL, '
+      + '   `AddressId` bigint(20) unsigned not NULL '
+      + ' ) ENGINE=MEMORY;';
+    DM.adcUpdate.Execute;
+    try
+      DM.adcUpdate.SQL.Text :=
+        GetLoadDataSQL('ClientToAddressMigrations', ExePath+SDirIn+'\ClientToAddressMigrations.txt');
+      DM.adcUpdate.Execute;
+
+      if DM.adsQueryValue.Active then DM.adsQueryValue.Close;
+      DM.adsQueryValue.SQL.Text := 'select * from analitf.ClientToAddressMigrations order by ClientCode';
+      DM.adsQueryValue.Open;
+      try
+        while not DM.adsQueryValue.Eof do begin
+          try
+            DM.adcUpdate.SQL.Text := ''
+              + ' update analitf.clientsettings '
+              + '   set ClientId = :AddressId '
+              + '   where (ClientId = :ClientCode);';
+            DM.adcUpdate.ParamByName('ClientCode').Value := DM.adsQueryValue.FieldByName('ClientCode').Value;
+            DM.adcUpdate.ParamByName('AddressId').Value := DM.adsQueryValue.FieldByName('AddressId').Value;
+            DM.adcUpdate.Execute;
+          except
+            on UpdateError : Exception do
+              WriteExchangeLog('Exchange',
+                Format(
+                  'Ошика при обновлении таблицы с настройками клиентов при миграции к адресам заказа: %s'#13#10 +
+                    'Параметры: ClientCode: %s  AddressId: %s',
+                  [UpdateError.Message,
+                  DM.adsQueryValue.FieldByName('ClientCode').AsString,
+                  DM.adsQueryValue.FieldByName('AddressId').AsString])
+              );
+          end;
+          try
+            DM.adcUpdate.SQL.Text := ''
+              + ' update analitf.documentheaders '
+              + '   set ClientId = :AddressId '
+              + '   where ClientId = :ClientCode;'
+              + ' update analitf.currentorderheads '
+              + '   set ClientId = :AddressId '
+              + '   where ClientId = :ClientCode;'
+              + ' update analitf.currentorderlists '
+              + '   set ClientId = :AddressId '
+              + '   where ClientId = :ClientCode;'
+              + ' update analitf.postedorderheads '
+              + '   set ClientId = :AddressId '
+              + '   where ClientId = :ClientCode;'
+              + ' update analitf.postedorderlists '
+              + '   set ClientId = :AddressId '
+              + '   where ClientId = :ClientCode;';
+            DM.adcUpdate.ParamByName('ClientCode').Value := DM.adsQueryValue.FieldByName('ClientCode').Value;
+            DM.adcUpdate.ParamByName('AddressId').Value := DM.adsQueryValue.FieldByName('AddressId').Value;
+            DM.adcUpdate.Execute;
+          except
+            on UpdateError : Exception do
+              WriteExchangeLog('Exchange',
+                Format(
+                  'Ошика при обновлении остальных таблиц при миграции к адресам заказа : %s'#13#10 +
+                    'Параметры: ClientCode: %s  AddressId: %s',
+                  [UpdateError.Message,
+                  DM.adsQueryValue.FieldByName('ClientCode').AsString,
+                  DM.adsQueryValue.FieldByName('AddressId').AsString])
+              );
+          end;
+          DM.adsQueryValue.Next;
+        end;
+      finally
+        DM.adsQueryValue.Close;
+      end;
+    finally
+      DM.adcUpdate.SQL.Text := 'drop temporary table if exists analitf.ClientToAddressMigrations';
+      try DM.adcUpdate.Execute; except end;
+    end;
+  except
+    on MigrationError : Exception do
+      WriteExchangeLog('Exchange', 'Ошибка при миграции клиентов в адреса заказа: ' + MigrationError.Message);
+  end;
 end;
 
 initialization

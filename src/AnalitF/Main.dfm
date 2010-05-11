@@ -359,6 +359,9 @@ object MainForm: TMainForm
       object itmCompact: TMenuItem
         Action = actCompact
       end
+      object itmRestoreDatabase: TMenuItem
+        Action = actRestoreDatabase
+      end
       object itmActiveUsers: TMenuItem
         Caption = #1040#1082#1090#1080#1074#1085#1099#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
         Hint = #1040#1082#1090#1080#1074#1085#1099#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
@@ -634,6 +637,11 @@ object MainForm: TMainForm
       ImageIndex = 19
       ShortCut = 16461
       OnExecute = actMnnSearchExecute
+    end
+    object actRestoreDatabase: TAction
+      Category = 'Service'
+      Caption = #1042#1086#1089#1089#1090#1072#1085#1086#1074#1083#1077#1085#1080#1077' '#1073#1072#1079#1099' '#1076#1072#1085#1085#1099#1093
+      OnExecute = actRestoreDatabaseExecute
     end
   end
   object AppEvents: TApplicationEvents
@@ -3869,34 +3877,38 @@ object MainForm: TMainForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
-      '    OrdersHead.OrderId'
+      '    CurrentOrderHeads.OrderId'
       'FROM'
-      '    OrdersHead'
-      '    inner join OrdersList on '
-      '           (OrdersList.OrderId = OrdersHead.OrderId)'
-      '       and (OrdersList.OrderCount > 0)'
+      '    CurrentOrderHeads'
+      '    inner join CurrentOrderLists on '
       
-        '    LEFT JOIN PricesData ON (OrdersHead.PriceCode=PricesData.Pri' +
-        'ceCode)'
+        '           (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderI' +
+        'd)'
+      '       and (CurrentOrderLists.OrderCount > 0)'
+      
+        '    LEFT JOIN PricesData ON (CurrentOrderHeads.PriceCode=PricesD' +
+        'ata.PriceCode)'
       '    left join pricesregionaldata on '
       
-        '           (pricesregionaldata.PriceCode = OrdersHead.PriceCode)' +
-        ' '
+        '           (pricesregionaldata.PriceCode = CurrentOrderHeads.Pri' +
+        'ceCode) '
       
-        '       and (pricesregionaldata.regioncode = OrdersHead.regioncod' +
-        'e)'
+        '       and (pricesregionaldata.regioncode = CurrentOrderHeads.re' +
+        'gioncode)'
       '    LEFT JOIN RegionalData ON '
-      '           (RegionalData.RegionCode=OrdersHead.RegionCode) '
+      
+        '           (RegionalData.RegionCode=CurrentOrderHeads.RegionCode' +
+        ') '
       '       AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
-      '    (OrdersHead.ClientId = :ClientId)'
-      'and (:Closed = OrdersHead.Closed)'
+      '    (CurrentOrderHeads.ClientId = :ClientId)'
+      'and (:Closed = CurrentOrderHeads.Closed)'
       
         'and ((:Closed = 1) or ((:Closed = 0) and (PricesData.PriceCode i' +
         's not null) and (RegionalData.RegionCode is not null) and (price' +
         'sregionaldata.PriceCode is not null)))'
-      'and (OrdersHead.SEND = :Send)'
-      'group by OrdersHead.OrderId')
+      'and (CurrentOrderHeads.SEND = :Send)'
+      'group by CurrentOrderHeads.OrderId')
     Left = 232
     Top = 272
     ParamData = <

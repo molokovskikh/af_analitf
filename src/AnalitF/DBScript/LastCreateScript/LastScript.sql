@@ -50,7 +50,8 @@ CREATE TABLE `catalogs` (
   `FRAGILE` tinyint(1) NOT NULL,
   `MandatoryList`    tinyint(1) not null,
   `MnnId`            bigint(20) default null, 
-  `DescriptionId`            bigint(20) default null, 
+  `DescriptionId`    bigint(20) default null,
+  `Hidden`           tinyint(1) not null,
   `COREEXISTS` tinyint(1) NOT NULL,
   PRIMARY KEY (`FULLCODE`),
   UNIQUE KEY `PK_CATALOGS` (`FULLCODE`),
@@ -74,6 +75,7 @@ CREATE TABLE `client` (
   `ParseWaybills` tinyint(1) unsigned not null default '0',
   `SendRetailMarkup` tinyint(1) unsigned not null default '0',
   `ShowAdvertising` tinyint(1) unsigned not null default '1',
+  `SendWaybillsFromClient` tinyint(1) unsigned not null default '0',
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
@@ -93,6 +95,7 @@ CREATE TABLE `clients` (
   `REQMASK` bigint(20) DEFAULT NULL,
   `CALCULATELEADER` tinyint(1) NOT NULL,
   `AllowDelayOfPayment` tinyint(1) NOT NULL,
+  `FullName` varchar(255) default null,
   PRIMARY KEY (`CLIENTID`),
   UNIQUE KEY `PK_CLIENTS` (`CLIENTID`),
   KEY `FK_CLIENTS_REGIONCODE` (`REGIONCODE`)
@@ -113,6 +116,7 @@ CREATE TABLE `clientsettings` (
   `Accountant`       varchar(255) default null,
   `MethodOfTaxation` smallint(5) not null default '0',
   `CalculateWithNDS` tinyint(1) not null default '1',
+  `Name` varchar(255) default null,
   primary key (`CLIENTID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
@@ -215,6 +219,7 @@ CREATE TABLE `Descriptions` (
   `Storage` TEXT DEFAULT NULL, 
   `Expiration` TEXT DEFAULT NULL, 
   `Composition` TEXT DEFAULT NULL, 
+  `Hidden`           tinyint(1) not null,
   PRIMARY KEY (`Id`),
   Key(`Name`),
   Key(`EnglishName`)
@@ -243,6 +248,7 @@ CREATE TABLE  `documentbodies` (
   `Quantity` int(10) DEFAULT NULL,
   `VitallyImportant` tinyint(1) unsigned default null,
   `NDS` int(10) unsigned DEFAULT NULL,
+  `SerialNumber` varchar(50) default null,
   `RetailMarkup` decimal(12,6) default null,
   `ManualCorrection` tinyint(1) unsigned not null default '0',
   PRIMARY KEY (`Id`)
@@ -257,14 +263,18 @@ DROP TABLE IF EXISTS documentheaders;
 CREATE TABLE  `documentheaders` (
   `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `DownloadId` bigint(20) unsigned DEFAULT NULL,
-  `WriteTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `WriteTime` datetime NOT NULL,
   `FirmCode` bigint(20) unsigned DEFAULT NULL,
   `ClientId` bigint(20) unsigned DEFAULT NULL,
   `DocumentType` tinyint(3) unsigned DEFAULT NULL,
   `ProviderDocumentId` varchar(20) DEFAULT NULL,
   `OrderId` bigint(20) unsigned DEFAULT NULL,
   `Header` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`Id`)
+  `LoadTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`),
+  KEY (`LoadTime`),
+  KEY (`DownloadId`),
+  KEY (`ClientId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 
@@ -280,11 +290,14 @@ CREATE TABLE `maxproducercosts` (
   `Product`     varchar(255) not null,
   `Producer`    varchar(255) not null,
   `Cost`        varchar(50) default null,
+  `ProducerId`  bigint(20) default null,
+  `RealCost`    decimal(12,6) default null,
   PRIMARY KEY (`Id`),
   Key(`CatalogId`),
   Key(`ProductId`),
   Key(`Product`),
-  Key(`Producer`)
+  Key(`Producer`),
+  Key(`ProducerId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 
@@ -314,6 +327,7 @@ CREATE TABLE `mnn` (
     `Id`               bigint(20) not null  , 
     `Mnn`              varchar(250) not null, 
     `RussianMnn`       varchar(250) default null, 
+    `Hidden`           tinyint(1) not null      ,
     primary key (`Id`),
     key `IDX_MNN_Mnn` (`Mnn`),
     key `IDX_MNN_RussianMnn` (`RussianMnn`)
@@ -321,11 +335,11 @@ CREATE TABLE `mnn` (
 
 
 -- 
--- Table structure for table  ordershead
+-- Table structure for table  currentorderheads
 -- 
 
-DROP TABLE IF EXISTS ordershead;
-CREATE TABLE `ordershead` (
+DROP TABLE IF EXISTS currentorderheads;
+CREATE TABLE `currentorderheads` (
   `ORDERID` bigint(20) NOT NULL AUTO_INCREMENT,
   `SERVERORDERID` bigint(20) DEFAULT NULL,
   `CLIENTID` bigint(20) NOT NULL,
@@ -354,11 +368,99 @@ CREATE TABLE `ordershead` (
 
 
 -- 
--- Table structure for table  orderslist
+-- Table structure for table  currentorderlists
 -- 
 
-DROP TABLE IF EXISTS orderslist;
-CREATE TABLE `orderslist` (
+DROP TABLE IF EXISTS currentorderlists;
+CREATE TABLE `currentorderlists` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ORDERID` bigint(20) NOT NULL,
+  `CLIENTID` bigint(20) NOT NULL,
+  `COREID` bigint(20) DEFAULT NULL,
+  `PRODUCTID` bigint(20) NOT NULL,
+  `CODEFIRMCR` bigint(20) DEFAULT NULL,
+  `SYNONYMCODE` bigint(20) DEFAULT NULL,
+  `SYNONYMFIRMCRCODE` bigint(20) DEFAULT NULL,
+  `CODE` varchar(84) DEFAULT NULL,
+  `CODECR` varchar(84) DEFAULT NULL,
+  `SYNONYMNAME` varchar(250) DEFAULT NULL,
+  `SYNONYMFIRM` varchar(250) DEFAULT NULL,
+  `PRICE` decimal(18,2) DEFAULT NULL,
+  `AWAIT` tinyint(1) NOT NULL,
+  `JUNK` tinyint(1) NOT NULL,
+  `ORDERCOUNT` int(10) NOT NULL,
+  `REQUESTRATIO` int(10) DEFAULT NULL,
+  `ORDERCOST` decimal(18,2) DEFAULT NULL,
+  `MINORDERCOUNT` int(10) DEFAULT NULL,
+  `RealPrice` decimal(18,2) DEFAULT NULL,
+  `DropReason` smallint(5) DEFAULT NULL,
+  `ServerCost` decimal(18,2) DEFAULT NULL,
+  `ServerQuantity` int(10) DEFAULT NULL,
+  `SupplierPriceMarkup` decimal(5,3) default null,
+  `CoreQuantity` varchar(15) DEFAULT NULL,
+  `ServerCoreID` bigint(20) DEFAULT NULL, 
+  `Unit` varchar(15) DEFAULT NULL,
+  `Volume` varchar(15) DEFAULT NULL,
+  `Note` varchar(50) DEFAULT NULL,
+  `Period` varchar(20) DEFAULT NULL,
+  `Doc` varchar(20) DEFAULT NULL,
+  `RegistryCost` decimal(8,2) DEFAULT NULL,
+  `VitallyImportant` tinyint(1) NOT NULL,
+  `RetailMarkup` decimal(12,6) default null,
+  `ProducerCost` decimal(18,2) default null, 
+  `NDS` smallint(5) default null,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `PK_ORDERS` (`ID`),
+  KEY `FK_ORDERS_CLIENTID` (`CLIENTID`),
+  KEY `FK_ORDERS_ORDERID` (`ORDERID`),
+  KEY `IDX_ORDERS_CODEFIRMCR` (`CODEFIRMCR`),
+  KEY `IDX_ORDERS_COREID` (`COREID`),
+  KEY `IDX_ORDERS_ORDERCOUNT` (`ORDERCOUNT`),
+  KEY `IDX_ORDERS_PRODUCTID` (`PRODUCTID`),
+  KEY `IDX_ORDERS_SYNONYMCODE` (`SYNONYMCODE`),
+  KEY `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
+-- 
+-- Table structure for table  postedorderheads
+-- 
+
+DROP TABLE IF EXISTS postedorderheads;
+CREATE TABLE `postedorderheads` (
+  `ORDERID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `SERVERORDERID` bigint(20) DEFAULT NULL,
+  `CLIENTID` bigint(20) NOT NULL,
+  `PRICECODE` bigint(20) NOT NULL,
+  `REGIONCODE` bigint(20) NOT NULL,
+  `PRICENAME` varchar(70) DEFAULT NULL,
+  `REGIONNAME` varchar(25) DEFAULT NULL,
+  `ORDERDATE` timestamp NULL DEFAULT NULL,
+  `SENDDATE` timestamp NULL DEFAULT NULL,
+  `CLOSED` tinyint(1) NOT NULL,
+  `SEND` tinyint(1) NOT NULL DEFAULT '1',
+  `COMMENTS` text,
+  `MESSAGETO` text,
+  `SendResult` smallint(5) DEFAULT NULL,
+  `ErrorReason` varchar(250) DEFAULT NULL,
+  `ServerMinReq` int(10) DEFAULT NULL,
+  `DelayOfPayment` decimal(5,3) default null,
+  PRIMARY KEY (`ORDERID`),
+  UNIQUE KEY `PK_ORDERSH` (`ORDERID`),
+  KEY `FK_ORDERSH_CLIENTID` (`CLIENTID`),
+  KEY `IDX_ORDERSH_ORDERDATE` (`ORDERDATE`),
+  KEY `IDX_ORDERSH_PRICECODE` (`PRICECODE`),
+  KEY `IDX_ORDERSH_REGIONCODE` (`REGIONCODE`),
+  KEY `IDX_ORDERSH_SENDDATE` (`SENDDATE`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
+-- 
+-- Table structure for table  postedorderlists
+-- 
+
+DROP TABLE IF EXISTS postedorderlists;
+CREATE TABLE `postedorderlists` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `ORDERID` bigint(20) NOT NULL,
   `CLIENTID` bigint(20) NOT NULL,
@@ -509,6 +611,20 @@ DROP TABLE IF EXISTS pricesregionaldataup;
 CREATE TABLE `pricesregionaldataup` (
   `PRICECODE` bigint(20) NOT NULL,
   `REGIONCODE` bigint(20) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
+
+-- 
+-- Table structure for table  producers
+-- 
+
+DROP TABLE IF EXISTS producers;
+CREATE TABLE `producers` (
+  `Id`          bigint(20) not null  , 
+  `Name`        varchar(255) not null, 
+  `Hidden`      tinyint(1) not null, 
+  PRIMARY KEY (`Id`), 
+  Key(`Name`) 
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
 

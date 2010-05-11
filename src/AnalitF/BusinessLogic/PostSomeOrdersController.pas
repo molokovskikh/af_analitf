@@ -213,19 +213,25 @@ begin
   if not FDataLayer.adsUser.FieldByName('SendRetailMarkup').AsBoolean
   then begin
     AddPostParam('RetailMarkup', '');
-    FDataLayer.adcUpdate.SQL.Text := 'update orderslist set RetailMarkup = null where Id = :Id';
+    FDataLayer.adcUpdate.SQL.Text := 'update CurrentOrderLists set RetailMarkup = null where Id = :Id';
     FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
     FDataLayer.adcUpdate.Execute;
   end
   else begin
-    RetailMarkup := FDataLayer.GetRetUpCost(dataSet.FieldByName('Price').AsFloat);
-    AddPostParam(
-      'RetailMarkup',
-      FloatToServiceStr(RetailMarkup));
-    FDataLayer.adcUpdate.SQL.Text := 'update orderslist set RetailMarkup = :RetailMarkup where Id = :Id';
-    FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
-    FDataLayer.adcUpdate.ParamByName('RetailMarkup').Value := RetailMarkup;
-    FDataLayer.adcUpdate.Execute;
+    if dataSet.FieldByName('RetailMarkup').IsNull then begin
+      RetailMarkup := FDataLayer.GetRetUpCost(dataSet.FieldByName('Price').AsFloat);
+      AddPostParam(
+        'RetailMarkup',
+        FloatToServiceStr(RetailMarkup));
+      FDataLayer.adcUpdate.SQL.Text := 'update CurrentOrderLists set RetailMarkup = :RetailMarkup where Id = :Id';
+      FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
+      FDataLayer.adcUpdate.ParamByName('RetailMarkup').Value := RetailMarkup;
+      FDataLayer.adcUpdate.Execute;
+    end
+    else
+      AddPostParam(
+        'RetailMarkup',
+        FloatToServiceStr(dataSet.FieldByName('RetailMarkup').AsFloat));
   end;
 
   AddPostParam(
@@ -427,6 +433,9 @@ end;
 
 procedure TPostSomeOrdersController.FillPostParams;
 begin
+  if FDataLayer.adsOrderDetails.Active then
+    FDataLayer.adsOrderDetails.Close;
+  FDataLayer.adsOrderDetails.SQL.Text := FDataLayer.adsOrderDetailsEtalon.SQL.Text; 
   FDataLayer.adsOrdersHeaders.Close;
   FDataLayer.adsOrdersHeaders.ParamByName( 'ClientId').Value :=
     FDataLayer.adtClients.FieldByName( 'ClientId').Value;
@@ -456,6 +465,15 @@ begin
         FDataLayer.adsOrdersHeaders.FieldByName( 'OrderId').AsString);
       FillOrderHeadParams;
       FillOrderDetailParams;
+      WriteExchangeLog(
+        'Exchange',
+        Format('Попытка отправки заказа %s по прайсу %s-%s (%s) от %s с кол-вом позиций %d',
+          [FDataLayer.adsOrdersHeaders.FieldByName('OrderId').AsString,
+          FDataLayer.adsOrdersHeaders.FieldByName('PriceName').AsString,
+          FDataLayer.adsOrdersHeaders.FieldByName('RegionName').AsString,
+          FDataLayer.adsOrdersHeaders.FieldByName('PriceCode').AsString,
+          FDataLayer.adsOrdersHeaders.FieldByName('DatePrice').AsString,
+          FDataLayer.adsOrdersHeaders.FieldByName('Positions').AsInteger]));
       FDataLayer.adsOrdersHeaders.Next;
     end;
   finally
@@ -513,6 +531,7 @@ var
   SendDate : TDateTime;
   currentPosition : TPostOrderPosition;
   priceName, regionName : String;
+  LastPostedOrderId : Variant;
 begin
   //Сбрасываем для всех отправляемых заказов состояние ответа,
   //т.к. для них будем устанавливать состояние заново
@@ -533,7 +552,7 @@ begin
 
       FDataLayer.adcUpdate.SQL.Text := ''
         +'update '
-        +'  OrdersHead '
+        +'  CurrentOrderHeads '
         +'set '
         +'  Send = 1, Closed = 1, SendDate = :SendDate, '
         +'  ServerOrderId = :ServerOrderId, '
@@ -543,7 +562,7 @@ begin
         +'where '
         +'  OrderID = :OrderId;'
         +'update '
-        +'  OrdersList '
+        +'  CurrentOrderLists '
         +'set '
         +'  CoreId = NULL, '
         +'  DropReason = NULL, '
@@ -558,12 +577,72 @@ begin
         currentHeader.ClientOrderId;
       FDataLayer.adcUpdate.Execute;
 
+      FDataLayer.adcUpdate.SQL.Text := ''
+        +'insert into '
+        +'  PostedOrderHeads '
+        +'  (SERVERORDERID, CLIENTID, PRICECODE, REGIONCODE, PRICENAME, RegionName, '
+        +'   OrderDate, SendDate, Closed, Send, Comments, MessageTo, SendResult, '
+        +'   ErrorReason, ServerMinReq, DelayOfPayment) '
+        +'select '
+        +'   SERVERORDERID, CLIENTID, PRICECODE, REGIONCODE, PRICENAME, RegionName, '
+        +'   OrderDate, SendDate, Closed, Send, Comments, MessageTo, SendResult, '
+        +'   ErrorReason, ServerMinReq, DelayOfPayment '
+        +'from '
+        +'  CurrentOrderHeads '
+        +'where '
+        +'  OrderID = :OrderId;'
+        +'set @LastPostedOrderId = last_insert_id();'
+        +' '
+        +' '
+        +'insert into '
+        +'  PostedOrderLists '
+        +'  (ORDERID, CLIENTID, CoreId, ProductId, CodeFirmcr, SynonymCode, '
+        +'   SynonymFirmCrCode, Code, CodeCr, SynonymName, SynonymFirm, '
+        +'   Price, Await, Junk, OrderCount, RequestRatio, OrderCost, '
+        +'   MinOrderCount, RealPrice, DropReason, ServerCost, ServerQuantity, '
+        +'   SupplierPriceMarkup, CoreQuantity, ServerCoreID, '
+        +'   Unit, Volume, Note, Period, Doc, RegistryCost, VitallyImportant, '
+        +'   RetailMarkup, ProducerCost, NDS) '
+        +'select '
+        +'   @LastPostedOrderId, CLIENTID, CoreId, ProductId, CodeFirmcr, SynonymCode, '
+        +'   SynonymFirmCrCode, Code, CodeCr, SynonymName, SynonymFirm, '
+        +'   Price, Await, Junk, OrderCount, RequestRatio, OrderCost, '
+        +'   MinOrderCount, RealPrice, DropReason, ServerCost, ServerQuantity, '
+        +'   SupplierPriceMarkup, CoreQuantity, ServerCoreID, '
+        +'   Unit, Volume, Note, Period, Doc, RegistryCost, VitallyImportant, '
+        +'   RetailMarkup, ProducerCost, NDS '
+        +'from '
+        +'  CurrentOrderLists '
+        +'where '
+        +'  OrderID = :OrderId;'
+        +' '
+        +' '
+        +' delete CurrentOrderHeads, CurrentOrderLists'
+        +' FROM CurrentOrderHeads, CurrentOrderLists '
+        +' where '
+        +'     (CurrentOrderHeads.OrderId = :OrderId)'
+        +' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)'
+        ;
+      FDataLayer.adcUpdate.ParamByName('OrderId').Value :=
+        currentHeader.ClientOrderId;
+      FDataLayer.adcUpdate.Execute;
+
+      LastPostedOrderId := FDataLayer.QueryValue('select @LastPostedOrderId', [], []);
+
+      WriteExchangeLog(
+        'Exchange',
+        Format('Заказ %d успешно отправлен, Id заказа на сервере: %d',
+          [currentHeader.ClientOrderId,
+          currentHeader.ServerOrderId]));
+
       TStringList(FExchangeParams[Integer(epSendedOrders)])
-        .Add(IntToStr(currentHeader.ClientOrderId));
+        .Add(VarToStr(LastPostedOrderId));
     end;
 
-    DatabaseController.BackupDataTable(doiOrdersHead);
-    DatabaseController.BackupDataTable(doiOrdersList);
+    DatabaseController.BackupDataTable(doiPostedOrderHeads);
+    DatabaseController.BackupDataTable(doiPostedOrderLists);
+    DatabaseController.BackupDataTable(doiCurrentOrderHeads);
+    DatabaseController.BackupDataTable(doiCurrentOrderLists);
 
   end;
   if not FOrderSendSuccess then begin
@@ -576,6 +655,13 @@ begin
         currentHeader.ClientOrderId,
         priceName,
         regionName);
+
+      WriteExchangeLog(
+        'Exchange',
+        Format('Заказ %d не был отправлен. Причина: %s  Ответ сервера: %s',
+          [currentHeader.ClientOrderId,
+          OrderSendResultText[currentHeader.PostResult],
+          currentHeader.ErrorReason]));
 
       case currentHeader.PostResult of
         osrLessThanMinReq :
@@ -608,13 +694,13 @@ begin
 
       FDataLayer.adcUpdate.SQL.Text := ''
         +'update '
-        +'  OrdersHead '
+        +'  CurrentOrderHeads '
         +'set '
         +'  SendResult = :SendResult, '
         +'  ErrorReason = :ErrorReason, '
         +'  ServerMinReq = :ServerMinReq '
         +'where '
-        +'  OrdersHead.OrderId = :ClientOrderId; ';
+        +'  CurrentOrderHeads.OrderId = :ClientOrderId; ';
       FDataLayer.adcUpdate.ParamByName('SendResult').Value :=
         Integer(currentHeader.PostResult);
       if Length(currentHeader.ErrorReason) > 0 then
@@ -636,24 +722,24 @@ begin
         if currentPosition.DropReason = psrNotExists then begin
           FDataLayer.adcUpdate.SQL.Text := ''
             +'update '
-            +'  OrdersList '
+            +'  CurrentOrderLists '
             +'set '
             +'  DropReason = :DropReason, '
             +'  ServerCost = RealPrice, '
             +'  ServerQuantity = OrderCount '
             +'where '
-            +'  OrdersList.ID = :ClientPositionId; ';
+            +'  CurrentOrderLists.ID = :ClientPositionId; ';
         end
         else begin
           FDataLayer.adcUpdate.SQL.Text := ''
             +'update '
-            +'  OrdersList '
+            +'  CurrentOrderLists '
             +'set '
             +'  DropReason = :DropReason, '
             +'  ServerCost = :ServerCost, '
             +'  ServerQuantity = :ServerQuantity '
             +'where '
-            +'  OrdersList.ID = :ClientPositionId; ';
+            +'  CurrentOrderLists.ID = :ClientPositionId; ';
           FDataLayer.adcUpdate.ParamByName('ServerCost').Value :=
             currentPosition.ServerCost;
           if Length(currentPosition.ServerQuantity) > 0 then

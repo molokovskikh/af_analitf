@@ -14,13 +14,13 @@ type
     function GetInsertSQL(DatabasePrefix : String = '') : String; override;
   end;
 
-  TOrdersHeadTable = class(TDatabaseTable)
+  TPostedOrderHeadsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
-  TOrdersListTable = class(TDatabaseTable)
+  TPostedOrderListsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
@@ -62,6 +62,18 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TCurrentOrderHeadsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+  TCurrentOrderListsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -97,16 +109,16 @@ begin
   +'(ID, LEFTLIMIT, RIGHTLIMIT, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);';
 end;
 
-{ TOrdersHeadTable }
+{ TPostedOrderHeadsTable }
 
-constructor TOrdersHeadTable.Create;
+constructor TPostedOrderHeadsTable.Create;
 begin
-  FName := 'ordershead';
-  FObjectId := doiOrdersHead;
+  FName := 'postedorderheads';
+  FObjectId := doiPostedOrderHeads;
   FRepairType := dortBackup;
 end;
 
-function TOrdersHeadTable.GetCreateSQL(DatabasePrefix: String): String;
+function TPostedOrderHeadsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( '
@@ -138,16 +150,16 @@ begin
 + GetTableOptions();
 end;
 
-{ TOrdersListTable }
+{ TPostedOrderListsTable }
 
-constructor TOrdersListTable.Create;
+constructor TPostedOrderListsTable.Create;
 begin
-  FName := 'orderslist';
-  FObjectId := doiOrdersList;
+  FName := 'postedorderlists';
+  FObjectId := doiPostedOrderLists;
   FRepairType := dortBackup;
 end;
 
-function TOrdersListTable.GetCreateSQL(DatabasePrefix: String): String;
+function TPostedOrderListsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( '
@@ -240,14 +252,18 @@ begin
 +' ( '
 +'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
 +'  `DownloadId` bigint(20) unsigned DEFAULT NULL, '
-+'  `WriteTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
++'  `WriteTime` datetime NOT NULL, '
 +'  `FirmCode` bigint(20) unsigned DEFAULT NULL, '
 +'  `ClientId` bigint(20) unsigned DEFAULT NULL, '
 +'  `DocumentType` tinyint(3) unsigned DEFAULT NULL, '
 +'  `ProviderDocumentId` varchar(20) DEFAULT NULL, '
 +'  `OrderId` bigint(20) unsigned DEFAULT NULL, '
 +'  `Header` varchar(255) DEFAULT NULL, '
-+'  PRIMARY KEY (`Id`) '
++'  `LoadTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
++'  PRIMARY KEY (`Id`), '
++'  KEY (`LoadTime`), '
++'  KEY (`DownloadId`), '
++'  KEY (`ClientId`) '
 +' ) '
 + GetTableOptions();
 end;
@@ -281,6 +297,7 @@ begin
 +'  `Quantity` int(10) DEFAULT NULL, '
 +'  `VitallyImportant` tinyint(1) unsigned default null, '
 +'  `NDS` int(10) unsigned DEFAULT NULL, '
++'  `SerialNumber` varchar(50) default null, '
 +'  `RetailMarkup` decimal(12,6) default null, '
 +'  `ManualCorrection` tinyint(1) unsigned not null default ''0'', '
 +'  PRIMARY KEY (`Id`) '
@@ -361,19 +378,128 @@ begin
 +'    `Accountant`       varchar(255) default null, '
 +'    `MethodOfTaxation` smallint(5) not null default ''0'', '
 +'    `CalculateWithNDS` tinyint(1) not null default ''1'', '
++'    `Name` varchar(255) default null, '
 +'    primary key (`CLIENTID`) '
 +' ) '
 + GetTableOptions();
 end;
 
+{ TCurrentOrderHeadsTable }
+
+constructor TCurrentOrderHeadsTable.Create;
+begin
+  FName := 'currentorderheads';
+  FObjectId := doiCurrentOrderHeads;
+  FRepairType := dortBackup;
+end;
+
+function TCurrentOrderHeadsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'    `ORDERID` bigint(20) not null AUTO_INCREMENT, '
++'    `SERVERORDERID` bigint(20) default null     , '
++'    `CLIENTID` bigint(20) not null              , '
++'    `PRICECODE` bigint(20) not null             , '
++'    `REGIONCODE` bigint(20) not null            , '
++'    `PRICENAME`  varchar(70) default null        , '
++'    `REGIONNAME` varchar(25) default null        , '
++'    `ORDERDATE` timestamp null default null      , '
++'    `SENDDATE` timestamp null default null       , '
++'    `CLOSED` tinyint(1) not null                 , '
++'    `SEND`   tinyint(1) not null default ''1''     , '
++'    `COMMENTS` text                              , '
++'    `MESSAGETO` text                             , '
++'    `SendResult`   smallint(5) default null        , '
++'    `ErrorReason`  varchar(250) default null       , '
++'    `ServerMinReq` int(10) default null            , '
++'    `DelayOfPayment` decimal(5,3) default null     , '
++'    primary key (`ORDERID`)                        , '
++'    unique key `PK_ORDERSH` (`ORDERID`)            , '
++'    key `FK_ORDERSH_CLIENTID` (`CLIENTID`)         , '
++'    key `IDX_ORDERSH_ORDERDATE` (`ORDERDATE`)      , '
++'    key `IDX_ORDERSH_PRICECODE` (`PRICECODE`)      , '
++'    key `IDX_ORDERSH_REGIONCODE` (`REGIONCODE`)    , '
++'    key `IDX_ORDERSH_SENDDATE` (`SENDDATE`) '
++'  ) '
++ GetTableOptions();
+end;
+
+{ TCurrentOrderListsTable }
+
+constructor TCurrentOrderListsTable.Create;
+begin
+  FName := 'currentorderlists';
+  FObjectId := doiCurrentOrderLists;
+  FRepairType := dortBackup;
+end;
+
+function TCurrentOrderListsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'    `ID` bigint(20) not null AUTO_INCREMENT    , '
++'    `ORDERID` bigint(20) not null              , '
++'    `CLIENTID` bigint(20) not null             , '
++'    `COREID` bigint(20) default null           , '
++'    `PRODUCTID` bigint(20) not null            , '
++'    `CODEFIRMCR` bigint(20) default null       , '
++'    `SYNONYMCODE` bigint(20) default null      , '
++'    `SYNONYMFIRMCRCODE` bigint(20) default null, '
++'    `CODE`           varchar(84) default null            , '
++'    `CODECR`         varchar(84) default null            , '
++'    `SYNONYMNAME`    varchar(250) default null           , '
++'    `SYNONYMFIRM`    varchar(250) default null           , '
++'    `PRICE`          decimal(18,2) default null          , '
++'    `AWAIT`          tinyint(1) not null                 , '
++'    `JUNK`           tinyint(1) not null                 , '
++'    `ORDERCOUNT`     int(10) not null                    , '
++'    `REQUESTRATIO`   int(10) default null                , '
++'    `ORDERCOST`      decimal(18,2) default null          , '
++'    `MINORDERCOUNT`  int(10) default null                , '
++'    `RealPrice`      decimal(18,2) default null          , '
++'    `DropReason`     smallint(5) default null            , '
++'    `ServerCost`     decimal(18,2) default null          , '
++'    `ServerQuantity` int(10) default null                , '
++'    `SupplierPriceMarkup` decimal(5,3) default null      , '
++'    `CoreQuantity` varchar(15) DEFAULT NULL              , '
++'    `ServerCoreID` bigint(20) DEFAULT NULL               , '
++'    `Unit` varchar(15) DEFAULT NULL                      , '
++'    `Volume` varchar(15) DEFAULT NULL                    , '
++'    `Note` varchar(50) DEFAULT NULL                      , '
++'    `Period` varchar(20) DEFAULT NULL                    , '
++'    `Doc` varchar(20) DEFAULT NULL                       , '
++'    `RegistryCost` decimal(8,2) DEFAULT NULL             , '
++'    `VitallyImportant` tinyint(1) NOT NULL               , '
++'    `RetailMarkup` decimal(12,6) default null            , '
++'    `ProducerCost` decimal(18,2) default null            , '
++'    `NDS` smallint(5) default null                       , '
++'    primary key (`ID`)                                   , '
++'    unique key `PK_ORDERS` (`ID`)                        , '
++'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '
++'    key `FK_ORDERS_ORDERID` (`ORDERID`)                  , '
++'    key `IDX_ORDERS_CODEFIRMCR` (`CODEFIRMCR`)           , '
++'    key `IDX_ORDERS_COREID` (`COREID`)                   , '
++'    key `IDX_ORDERS_ORDERCOUNT` (`ORDERCOUNT`)           , '
++'    key `IDX_ORDERS_PRODUCTID` (`PRODUCTID`)             , '
++'    key `IDX_ORDERS_SYNONYMCODE` (`SYNONYMCODE`)         , '
++'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
-  DatabaseController.AddObject(TOrdersHeadTable.Create());
-  DatabaseController.AddObject(TOrdersListTable.Create());
+  DatabaseController.AddObject(TPostedOrderHeadsTable.Create());
+  DatabaseController.AddObject(TPostedOrderListsTable.Create());
   DatabaseController.AddObject(TReceivedDocsTable.Create());
   DatabaseController.AddObject(TDocumentHeadersTable.Create());
   DatabaseController.AddObject(TDocumentBodiesTable.Create());
   DatabaseController.AddObject(TVitallyImportantMarkupsTable.Create());
   DatabaseController.AddObject(TProviderSettingsTable.Create());
   DatabaseController.AddObject(TClientSettingsTable.Create());
+  DatabaseController.AddObject(TCurrentOrderHeadsTable.Create());
+  DatabaseController.AddObject(TCurrentOrderListsTable.Create());
 end.

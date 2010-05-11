@@ -34,9 +34,9 @@ object MainFrm: TMainFrm
   end
   object mLog: TMemo
     Left = 0
-    Top = 111
+    Top = 144
     Width = 639
-    Height = 146
+    Height = 114
     Align = alBottom
     ScrollBars = ssBoth
     TabOrder = 2
@@ -49,6 +49,33 @@ object MainFrm: TMainFrm
     Caption = 'CorruptIndexFile'
     TabOrder = 3
     OnClick = btnCorruptIndexFileClick
+  end
+  object btnCorruptStructFile: TButton
+    Left = 344
+    Top = 64
+    Width = 121
+    Height = 25
+    Caption = 'CorruptStructFile'
+    TabOrder = 4
+    OnClick = btnCorruptStructFileClick
+  end
+  object btnAnalyzeTable: TButton
+    Left = 56
+    Top = 104
+    Width = 121
+    Height = 25
+    Caption = 'AnalyzeTable'
+    TabOrder = 5
+    OnClick = btnAnalyzeTableClick
+  end
+  object btnOptimizeTable: TButton
+    Left = 200
+    Top = 104
+    Width = 121
+    Height = 25
+    Caption = 'OptimizeTable'
+    TabOrder = 6
+    OnClick = btnOptimizeTableClick
   end
   object MyEmbConnection: TMyEmbConnection
     Params.Strings = (

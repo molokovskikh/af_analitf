@@ -13,7 +13,6 @@ uses
 type
   TSummaryForm = class(TChildForm)
     dsSummary: TDataSource;
-    frdsSummary: TfrDBDataSet;
     pClient: TPanel;
     dbgSummaryCurrent: TToughDBGrid;
     adsSummaryOld: TpFIBDataSet;
@@ -152,6 +151,7 @@ type
     adsSummaryCatalogVitallyImportant: TBooleanField;
     adsSummaryCatalogMandatoryList: TBooleanField;
     adsSummaryRetailMarkup: TFloatField;
+    adsSummaryMaxProducerCost: TFloatField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -232,7 +232,7 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
   PrepareColumnsInOrderGrid(dbgSummarySend);
-  TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'MnnId', ShowDescriptionAction);
   if not FUseCorrectOrders then begin
     cbNeedCorrect.Checked := False;
     cbNeedCorrect.Visible := False;
@@ -306,8 +306,8 @@ begin
 	try
     if adsSummary.Active then
       adsSummary.Close;
-    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersHead.');
     if LastSymmaryType = 0 then begin
+      FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'CurrentOrderHeads.');
       dbgSummaryCurrent.Visible := False;
       dbgSummarySend.Visible := False;
       dbgSummaryCurrent.Visible := True;
@@ -319,6 +319,7 @@ begin
       btnDelete.Enabled := True;
     end
     else begin
+      FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PostedOrderHeads.');
       dbgSummaryCurrent.Visible := False;
       dbgSummarySend.Visible := False;
       dbgSummarySend.Visible := True;
@@ -337,7 +338,7 @@ begin
       adsSummary.SQL.Text := adsSummary.SQL.Text + ' and ( ' + FilterSQL + ' )';
     if (LastSymmaryType = 0) and FUseCorrectOrders and cbNeedCorrect.Checked then
       adsSummary.SQL.Text := adsSummary.SQL.Text
-        + ' and ( OrdersList.DropReason is not null )';
+        + ' and ( CurrentOrderLists.DropReason is not null )';
     adsSummary.Open;
     SetOrderLabel;
 	finally
@@ -537,19 +538,19 @@ begin
 
   if LastSymmaryType = 0 then begin
     //Если работает с текущим заказом, то выбираем сумму текущих заказов с учетом выставленного фильтра
-    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'OrdersHead.');
+    FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'CurrentOrderHeads.');
     if DM.adsQueryValue.Active then
       DM.adsQueryValue.Close;
     DM.adsQueryValue.SQL.Text := ''
   +'SELECT '
   +'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder '
   +'FROM '
-  +'       OrdersHead '
-  +'       INNER JOIN OrdersList osbc       ON (OrdersHead.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
-  +'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = OrdersHead.RegionCode) AND (PRD.PriceCode = OrdersHead.PriceCode) '
+  +'       CurrentOrderHeads '
+  +'       INNER JOIN CurrentOrderLists osbc       ON (CurrentOrderHeads.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
+  +'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
   +'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
-  +'WHERE (OrdersHead.CLIENTID                                      = :ClientID) '
-  +'   AND (OrdersHead.Closed                                      <> 1)';
+  +'WHERE (CurrentOrderHeads.CLIENTID                                      = :ClientID) '
+  +'   AND (CurrentOrderHeads.Closed                                      <> 1)';
     if Length(FilterSQL) > 0 then
       DM.adsQueryValue.SQL.Text := DM.adsQueryValue.SQL.Text + ' and ( ' + FilterSQL + ' )';
 
@@ -573,7 +574,7 @@ begin
   if LastSymmaryType = 0 then
     if AProc.MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
       DM.adcUpdate.SQL.Text :=
-        'delete from OrdersList where OrderID = ' +
+        'delete from CurrentOrderLists where OrderID = ' +
           IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
           ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
       DM.adcUpdate.Execute;

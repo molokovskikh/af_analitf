@@ -1,11 +1,11 @@
 object AboutForm: TAboutForm
   Left = 357
   Top = 230
-  ActiveControl = BitBtn1
+  ActiveControl = bbtnOk
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1054' '#1087#1088#1086#1075#1088#1072#1084#1084#1077
-  ClientHeight = 257
+  ClientHeight = 374
   ClientWidth = 407
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -17,6 +17,7 @@ object AboutForm: TAboutForm
   Position = poDesktopCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Image2: TImage
@@ -5693,7 +5694,7 @@ object AboutForm: TAboutForm
   end
   object lCopyright: TLabel
     Left = 32
-    Top = 222
+    Top = 330
     Width = 46
     Height = 13
     Cursor = crHandPoint
@@ -5721,14 +5722,29 @@ object AboutForm: TAboutForm
     AutoSize = False
     Caption = 'lUserAddtion'
   end
-  object BitBtn1: TBitBtn
+  object lEmails: TLabel
+    Left = 32
+    Top = 216
+    Width = 222
+    Height = 13
+    Caption = #1040#1076#1088#1077#1089#1072' '#1076#1083#1103' '#1076#1086#1089#1090#1072#1074#1082#1080' '#1085#1072#1082#1083#1072#1076#1085#1099#1093' '#1080' '#1086#1090#1082#1072#1079#1086#1074':'
+  end
+  object bbtnOk: TBitBtn
     Left = 309
-    Top = 218
+    Top = 326
     Width = 76
     Height = 22
     Caption = 'OK'
     Default = True
     ModalResult = 1
     TabOrder = 0
+  end
+  object mEmails: TMemo
+    Left = 32
+    Top = 232
+    Width = 353
+    Height = 81
+    ReadOnly = True
+    TabOrder = 1
   end
 end

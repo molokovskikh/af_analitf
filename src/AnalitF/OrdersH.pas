@@ -123,6 +123,7 @@ type
     procedure SetParameters;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
+    procedure ShowAsPrevForm; override;
   end;
 
 procedure ShowOrdersH;
@@ -188,19 +189,26 @@ begin
 end;
 
 procedure TOrdersHForm.SetParameters;
+var
+  Grid : TDBGridEh;
 begin
   SoftPost( adsOrdersHForm);
+  adsOrdersHForm.IndexFieldNames := '';
   adsOrdersHForm.Close;
 
   case TabControl.TabIndex of
     0:
     begin
       adsOrdersHForm.SQL.Text := adsCurrentOrders.SQL.Text;
+      adsOrdersHForm.SQLRefresh.Text := adsCurrentOrders.SQLRefresh.Text;
+      adsOrdersHForm.SQLDelete.Text := adsCurrentOrders.SQLDelete.Text;
+      adsOrdersHForm.SQLUpdate.Text := adsCurrentOrders.SQLUpdate.Text;
       btnMoveSend.Caption := '';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
       dbgCurrentOrders.Visible := True;
       dbgSendedOrders.Visible := False;
+      Grid := dbgCurrentOrders;
       //try except необходим, т.к. вызвается когда форма еще не отображена
       try
         dbgCurrentOrders.SetFocus;
@@ -209,6 +217,9 @@ begin
     1:
     begin
       adsOrdersHForm.SQL.Text := adsSendOrders.SQL.Text;
+      adsOrdersHForm.SQLRefresh.Text := adsSendOrders.SQLRefresh.Text;
+      adsOrdersHForm.SQLDelete.Text := adsSendOrders.SQLDelete.Text;
+      adsOrdersHForm.SQLUpdate.Text := adsSendOrders.SQLUpdate.Text;
       adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
       dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
       adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
@@ -217,6 +228,7 @@ begin
       btnWayBillList.Visible := True;
       dbgCurrentOrders.Visible := False;
       dbgSendedOrders.Visible := True;
+      Grid := dbgSendedOrders;
       //try except необходим, т.к. вызвается когда форма еще не отображена
       try
         dbgSendedOrders.SetFocus;
@@ -229,6 +241,11 @@ begin
   adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
   adsOrdersHForm.Open;
+
+  if Assigned(Grid.OnSortMarkingChanged) then begin
+    Grid.OnSortMarkingChanged(Grid);
+    adsOrdersHForm.First;
+  end;
 
   dtpDateFrom.Enabled := TabControl.TabIndex = 1;
   dtpDateTo.Enabled   := dtpDateFrom.Enabled;
@@ -522,7 +539,7 @@ end;
 
 procedure TOrdersHForm.OrderEnter;
 begin
-  FOrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger, Self);
+  FOrdersForm.ShowForm( adsOrdersHFormORDERID.AsInteger, Self, adsOrdersHFormClosed.Value);
 end;
 
 procedure TOrdersHForm.InternalMoveToPrice;
@@ -570,7 +587,7 @@ begin
       Screen.Cursor:=crHourglass;
       try
         { открываем сохраненный заказ }
-        FOrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger);
+        FOrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger, True);
         Application.ProcessMessages;
         { переписываем позиции в текущий прайс-лист }
         while not FOrdersForm.adsOrders.Eof do begin
@@ -712,6 +729,15 @@ begin
       Grid.DataSource.DataSet.Bookmark := CurrentBookmark;
       Grid.DataSource.DataSet.EnableControls;
     end;
+  end;
+end;
+
+procedure TOrdersHForm.ShowAsPrevForm;
+begin
+  inherited;
+  case TabControl.TabIndex of
+    0: dbgCurrentOrders.SetFocus;
+    1: dbgSendedOrders.SetFocus;
   end;
 end;
 

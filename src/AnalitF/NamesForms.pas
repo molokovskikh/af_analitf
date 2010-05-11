@@ -124,6 +124,7 @@ type
   public
     procedure ShowForm; override;
     procedure SetCatalog;
+    procedure ReturnFromCore;
   end;
 
 procedure ShowOrderAll;
@@ -154,9 +155,17 @@ type
     f : TNamesFormsForm;
   end;
 
+  THackChildForm = class(TChildForm);
+
 procedure ShowOrderAll;
 begin
-  MainForm.ShowChildForm(TNamesFormsForm);
+  //Это хак: если текущей активной формой является форма "Сводный прайс-лист", а у нее предыдущая форма "Поиск в каталоге",
+  //то отображаем форму "Поиск в каталоге" как предыдущую форму
+  if (MainForm.ActiveChild is TCoreForm) and (THackChildForm(MainForm.ActiveChild).PrevForm is TNamesFormsForm)
+  then
+    TNamesFormsForm(THackChildForm(MainForm.ActiveChild).PrevForm).ReturnFromCore
+  else
+    MainForm.ShowChildForm(TNamesFormsForm);
 end;
 
 procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
@@ -295,10 +304,10 @@ begin
   sbShowSynonymMNN.Caption := 'Показать синонимы (Ctrl+N)';
   InternalFilterMnn := 0;
 
-  TframePosition.AddFrame(Self, pnlTop, dsCatalog, 'FullName', 'Mnn', ShowDescriptionAction);
-  formsFrame := TframePosition.AddFrame(Self, pClient, dsForms, 'FullName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pnlTop, dsCatalog, 'FullName', 'MnnId', ShowDescriptionAction);
+  formsFrame := TframePosition.AddFrame(Self, pClient, dsForms, 'FullName', 'MnnId', ShowDescriptionAction);
   formsFrame.Visible := False;
-  namesFrame := TframePosition.AddFrame(Self, pClient, dsNames, 'FullName', 'Mnn', ShowDescriptionAction);
+  namesFrame := TframePosition.AddFrame(Self, pClient, dsNames, 'FullName', 'MnnId', ShowDescriptionAction);
 
   LastDBGrid := nil;
 
@@ -1130,6 +1139,18 @@ begin
     sbShowSynonymMNN.Down := True;
     sbShowSynonymMNN.Click;
   end;
+end;
+
+procedure TNamesFormsForm.ReturnFromCore;
+begin
+  Self.ShowForm;
+  if Self.actNewSearch.Checked then
+     Self.dbgCatalog.SetFocus
+  else
+    if Self.actUseForms.Checked and (Self.adsForms.RecordCount > 1) then
+      Self.dbgForms.SetFocus
+    else
+      Self.dbgNames.SetFocus;
 end;
 
 initialization

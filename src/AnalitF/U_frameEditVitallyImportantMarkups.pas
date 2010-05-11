@@ -257,6 +257,8 @@ begin
 
   Self.Width := pEditButtons.Width + TDBGridHelper.GetColumnWidths(dbgMarkups) + 20;
   Self.Height := pClient.Height;
+  Self.Constraints.MinHeight := Self.Height;
+  Self.Constraints.MinWidth := Self.Width;
   pClient.Align := alClient;
 
   dbgMarkups.AutoFitColWidths := True;

@@ -12,7 +12,7 @@ const
 
   procedure DecodeStream(EncodedStream : TStream; DecodedStream : TStream);
 
-  function GetEncryptedMemoryStream : TMemoryStream;
+  function GetEncryptedMemoryStream(fileName : String = '') : TMemoryStream;
 
 var
   LibraryFileNameEnd : String;
@@ -139,21 +139,31 @@ begin
   end;
 end;
 
-function GetEncryptedMemoryStream : TMemoryStream;
+function GetEncryptedMemoryStream(fileName : String = '') : TMemoryStream;
 var
   EncodedFile : TFileStream;
 begin
-  if not FileExists(
-    IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)))
-      + LibraryFileNameStart + LibraryFileNameEnd)
-  then
-    raise Exception.Create('Нет необходимого файла');
-
-  EncodedFile := TFileStream
-    .Create(
+  if Length(fileName) = 0 then
+  begin
+    if not FileExists(
       IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)))
-        + LibraryFileNameStart + LibraryFileNameEnd,
-      fmOpenRead or fmShareDenyWrite);
+        + LibraryFileNameStart + LibraryFileNameEnd)
+    then
+      raise Exception.Create('Нет необходимого файла')
+  end
+  else
+    if not FileExists(fileName) 
+    then
+      raise Exception.Create('Нет необходимого файла');
+
+  if Length(fileName) = 0 then
+    EncodedFile := TFileStream
+      .Create(
+        IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)))
+          + LibraryFileNameStart + LibraryFileNameEnd,
+        fmOpenRead or fmShareDenyWrite)
+  else
+    EncodedFile := TFileStream.Create(fileName, fmOpenRead or fmShareDenyWrite);
   try
     Result := TMemoryStream.Create();
     try

@@ -142,6 +142,11 @@ begin
               sendElem.FirmCode := selectFirmCodes.FieldByName('FirmCode').Value;
               sendElem.FileName := folderName + '\' +SR.Name;
               Elems.Add(sendElem);
+              WriteExchangeLog('Exchange',
+                Format('Добавляем в архив накладную от поставщика %s: имя файла %s  размер %d',
+                [selectFirmCodes.FieldByName('FullName').AsString,
+                 SR.Name,
+                 FileUtil.GetFileSize(folderName + '\' +SR.Name)]));
             until FindNext(SR)<>0;
         finally
           SysUtils.FindClose(SR);

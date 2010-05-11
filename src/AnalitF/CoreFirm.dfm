@@ -404,6 +404,9 @@ object CoreFirmForm: TCoreFirmForm
       Align = alBottom
       BevelOuter = bvLowered
       TabOrder = 1
+      DesignSize = (
+        792
+        37)
       object eSearch: TEdit
         Left = 1
         Top = 8
@@ -422,6 +425,15 @@ object CoreFirmForm: TCoreFirmForm
         TabOrder = 1
         Visible = False
         OnClick = tmrSearchTimer
+      end
+      object dblProducers: TDBLookupComboBox
+        Left = 376
+        Top = 8
+        Width = 412
+        Height = 21
+        Anchors = [akRight]
+        TabOrder = 2
+        OnCloseUp = dblProducersCloseUp
       end
     end
   end
@@ -478,11 +490,6 @@ object CoreFirmForm: TCoreFirmForm
       ShortCut = 113
       OnExecute = actFlipCoreExecute
     end
-  end
-  object frdsCore: TfrDBDataSet
-    DataSource = dsCore
-    Left = 88
-    Top = 192
   end
   object adsCoreOld: TpFIBDataSet
     UpdateSQL.Strings = (
@@ -913,29 +920,29 @@ object CoreFirmForm: TCoreFirmForm
     SQL.Strings = (
       '#ordershshowcurrent'
       'select '
-      '  ordershead.ORDERID,'
-      '  ordershead.SERVERORDERID,'
+      '  CurrentOrderHeads.ORDERID,'
+      '  CurrentOrderHeads.SERVERORDERID,'
       
-        '  ifnull(ordershead.SERVERORDERID, ordershead.ORDERID) as Displa' +
-        'yOrderId,'
-      '  ordershead.CLIENTID,'
-      '  ordershead.PRICECODE,'
-      '  ordershead.REGIONCODE,'
-      '  ordershead.PRICENAME,'
-      '  ordershead.REGIONNAME,'
-      '  ordershead.ORDERDATE,'
-      '  ordershead.SENDDATE,'
-      '  ordershead.CLOSED,'
-      '  ordershead.SEND,'
-      '  ordershead.COMMENTS,'
-      '  ordershead.MESSAGETO '
+        '  ifnull(CurrentOrderHeads.SERVERORDERID, CurrentOrderHeads.ORDE' +
+        'RID) as DisplayOrderId,'
+      '  CurrentOrderHeads.CLIENTID,'
+      '  CurrentOrderHeads.PRICECODE,'
+      '  CurrentOrderHeads.REGIONCODE,'
+      '  CurrentOrderHeads.PRICENAME,'
+      '  CurrentOrderHeads.REGIONNAME,'
+      '  CurrentOrderHeads.ORDERDATE,'
+      '  CurrentOrderHeads.SENDDATE,'
+      '  CurrentOrderHeads.CLOSED,'
+      '  CurrentOrderHeads.SEND,'
+      '  CurrentOrderHeads.COMMENTS,'
+      '  CurrentOrderHeads.MESSAGETO '
       'from '
-      '  ordershead '
+      '  CurrentOrderHeads '
       'where '
-      '    (ordershead.ClientId   = :CLIENTID)'
-      'and (ordershead.PriceCode  = :PRICECODE)'
-      'and (ordershead.RegionCode = :REGIONCODE)'
-      'and (ordershead.CLOSED <> 1)')
+      '    (CurrentOrderHeads.ClientId   = :CLIENTID)'
+      'and (CurrentOrderHeads.PriceCode  = :PRICECODE)'
+      'and (CurrentOrderHeads.RegionCode = :REGIONCODE)'
+      'and (CurrentOrderHeads.CLOSED <> 1)')
     Left = 344
     Top = 136
     ParamData = <
@@ -980,7 +987,7 @@ object CoreFirmForm: TCoreFirmForm
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
       'update'
-      '  orderslist'
+      '  CurrentOrderLists'
       'set'
       '  OrderCount = :ORDERCOUNT,'
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
@@ -1049,14 +1056,15 @@ object CoreFirmForm: TCoreFirmForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    Core CCore'
       
@@ -1069,6 +1077,9 @@ object CoreFirmForm: TCoreFirmForm
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
       '    left join Mnn             on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = CCore.productid) '
+      '      and (CCore.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1085,8 +1096,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
-        ' (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN CurrentOrderLists osbc ON (osbc.ClientID = :Client' +
+        'Id) and (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
         'e)'
@@ -1094,8 +1105,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
         'e) '
       
-        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
-        'Id'
+        '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
+        'd = osbc.OrderId'
       'WHERE '
       '  (CCore.CoreId = :CoreId)')
     Connection = DM.MyConnection
@@ -1160,14 +1171,15 @@ object CoreFirmForm: TCoreFirmForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    Core CCore'
       
@@ -1180,6 +1192,9 @@ object CoreFirmForm: TCoreFirmForm
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
       '    left join Mnn             on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = CCore.productid) '
+      '      and (CCore.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1196,8 +1211,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
         'ynonymCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
-        ' (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN CurrentOrderLists osbc ON (osbc.ClientID = :Client' +
+        'Id) and (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
         'e)'
@@ -1205,8 +1220,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
         'e) '
       
-        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
-        'Id'
+        '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
+        'd = osbc.OrderId'
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
       'And (CCore.RegionCode = :RegionCode)')
@@ -1435,28 +1450,28 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreOrdersHOrderId: TLargeintField
       AutoGenerateValue = arAutoInc
       FieldName = 'OrdersHOrderId'
-      Origin = 'OrdersHead.ORDERID'
+      Origin = 'CurrentOrderHeads.ORDERID'
     end
     object adsCoreOrdersHClientId: TLargeintField
       FieldName = 'OrdersHClientId'
-      Origin = 'OrdersHead.CLIENTID'
+      Origin = 'CurrentOrderHeads.CLIENTID'
     end
     object adsCoreOrdersHPriceCode: TLargeintField
       FieldName = 'OrdersHPriceCode'
-      Origin = 'OrdersHead.PRICECODE'
+      Origin = 'CurrentOrderHeads.PRICECODE'
     end
     object adsCoreOrdersHRegionCode: TLargeintField
       FieldName = 'OrdersHRegionCode'
-      Origin = 'OrdersHead.REGIONCODE'
+      Origin = 'CurrentOrderHeads.REGIONCODE'
     end
     object adsCoreOrdersHPriceName: TStringField
       FieldName = 'OrdersHPriceName'
-      Origin = 'OrdersHead.PRICENAME'
+      Origin = 'CurrentOrderHeads.PRICENAME'
       Size = 70
     end
     object adsCoreOrdersHRegionName: TStringField
       FieldName = 'OrdersHRegionName'
-      Origin = 'OrdersHead.REGIONNAME'
+      Origin = 'CurrentOrderHeads.REGIONNAME'
       Size = 25
     end
     object adsCoreCryptPriceRet: TCurrencyField
@@ -1500,6 +1515,9 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsCoreCatalogMandatoryList: TBooleanField
       FieldName = 'CatalogMandatoryList'
+    end
+    object adsCoreMaxProducerCost: TFloatField
+      FieldName = 'MaxProducerCost'
     end
   end
   object adsCoreWithLike: TMyQuery
@@ -1563,14 +1581,15 @@ object CoreFirmForm: TCoreFirmForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
-      '    OrdersHead.OrderId AS OrdersHOrderId,'
-      '    OrdersHead.ClientId AS OrdersHClientId,'
-      '    OrdersHead.PriceCode AS OrdersHPriceCode,'
-      '    OrdersHead.RegionCode AS OrdersHRegionCode,'
-      '    OrdersHead.PriceName AS OrdersHPriceName,'
-      '    OrdersHead.RegionName AS OrdersHRegionName,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       
         '    (select * from synonyms where (synonyms.SynonymName like :Li' +
@@ -1586,6 +1605,9 @@ object CoreFirmForm: TCoreFirmForm
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
       '    left join Mnn             on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = CCore.productid) '
+      '      and (CCore.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
         '    left join Core LCore      on LCore.servercoreid = minprices.' +
         'servercoreid and LCore.RegionCode = minprices.regioncode'
@@ -1599,8 +1621,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
         'e = CCore.SynonymFirmCrCode)'
       
-        '    left JOIN OrdersList osbc ON (osbc.ClientID = :ClientId) and' +
-        ' (osbc.CoreId = CCore.CoreId)'
+        '    left JOIN CurrentOrderLists osbc ON (osbc.ClientID = :Client' +
+        'Id) and (osbc.CoreId = CCore.CoreId)'
       
         '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
         'e)'
@@ -1608,8 +1630,8 @@ object CoreFirmForm: TCoreFirmForm
         '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
         'e) '
       
-        '    left JOIN OrdersHead      ON OrdersHead.OrderId = osbc.Order' +
-        'Id'
+        '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
+        'd = osbc.OrderId'
       'WHERE '
       '    (Synonyms.SynonymCode = CCore.SynonymCode)'
       'and (CCore.PriceCode = :PriceCode) '
@@ -1633,5 +1655,52 @@ object CoreFirmForm: TCoreFirmForm
         DataType = ftUnknown
         Name = 'RegionCode'
       end>
+  end
+  object adsProducers: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'select'
+      '  0 as Id,'
+      '  '#39#1042#1089#1077' '#1087#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1080#39' as Name'
+      'union'
+      'select'
+      '  prod.*'
+      'from'
+      '('
+      'SELECT '
+      '  p.Id,'
+      '  p.Name'
+      'FROM'
+      '  Core,'
+      '  Producers p'
+      'where'
+      '    (Core.PriceCode = :PriceCode)'
+      'and (Core.RegionCode = :RegionCode)'
+      'and (p.Id = Core.CodeFirmCr)  '
+      'order by p.Name'
+      ') prod')
+    Left = 384
+    Top = 253
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'PriceCode'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'RegionCode'
+      end>
+    object adsProducersId: TLargeintField
+      FieldName = 'Id'
+    end
+    object adsProducersName: TStringField
+      FieldName = 'Name'
+      Size = 255
+    end
+  end
+  object dsProducers: TDataSource
+    DataSet = adsProducers
+    Left = 384
+    Top = 289
   end
 end

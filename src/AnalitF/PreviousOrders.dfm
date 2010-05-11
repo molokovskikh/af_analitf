@@ -140,24 +140,24 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
       '    osbc.SynonymFirm,'
       '    osbc.OrderCount,'
       '    osbc.Price,'
-      '    OrdersHead.SendDate as OrderDate,'
-      '    OrdersHead.PriceName,'
-      '    OrdersHead.RegionName,'
+      '    PostedOrderHeads.SendDate as OrderDate,'
+      '    PostedOrderHeads.PriceName,'
+      '    PostedOrderHeads.RegionName,'
       '    osbc.Await,'
       '    osbc.Junk'
       'FROM'
-      '  OrdersList osbc'
+      '  PostedOrderLists osbc'
       '  inner join products on products.productid = osbc.productid'
       '  inner join catalogs on catalogs.FullCode = products.catalogid'
-      '  INNER JOIN OrdersHead ON osbc.OrderId=OrdersHead.OrderId'
+      '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.OrderId'
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'
       
         'and (((:ByShortCode = 0) and (products.catalogid = :ParentCode))' +
         ' or ((:ByShortCode = 1) and (catalogs.ShortCode = :ParentCode)))'
-      'And (OrdersHead.Closed = 1)'
-      'ORDER BY OrdersHead.SendDate DESC')
+      'And (PostedOrderHeads.Closed = 1)'
+      'ORDER BY PostedOrderHeads.SendDate DESC')
     Left = 200
     Top = 197
     ParamData = <

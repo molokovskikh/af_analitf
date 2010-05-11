@@ -5,7 +5,9 @@ interface
 uses
   SysUtils, Classes, Contnrs, StrUtils,
   U_ExchangeLog, AProc,
-  MyAccess, MyServerControl;
+  MyAccess, MyServerControl,
+  MyClasses,
+  MyCall;
 
 {$ifdef USEMEMORYCRYPTDLL}
   {$ifndef USENEWMYSQLTYPES}
@@ -15,7 +17,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 61;
+  CURRENT_DB_VERSION = 63;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -28,8 +30,8 @@ const
   IndexFileExtention = '.MYI';
   StructFileExtention = '.frm';
 {$else}
-  DataFileExtention = '.DBD';
-  IndexFileExtention = '.DBI';
+  DataFileExtention = '.dbf';
+  IndexFileExtention = '.idx';
   StructFileExtention = '.index';
 {$endif}
 
@@ -51,8 +53,8 @@ type
     doiParams,
     //Backup
     doiRetailMargins,
-    doiOrdersHead,
-    doiOrdersList,
+    doiPostedOrderHeads,
+    doiPostedOrderLists,
     doiReceivedDocs,
     //Cumulative
     doiUserInfo,
@@ -95,7 +97,13 @@ type
     //Cumulative
     doiMaxProducerCosts,
     //Backup
-    doiClientSettings);
+    doiClientSettings,
+    doiCurrentOrderHeads,
+    doiCurrentOrderLists,
+    //Cumulative
+    doiProducers,
+    //Ignore
+    doiGroupMaxProducerCosts);
 
   TRepairedObjects = set of TDatabaseObjectId;
 
@@ -117,8 +125,11 @@ type
 
   TDatabaseTable = class(TDatabaseObject)
    protected
+     FNeedCompact : Boolean;
      function GetTableOptions() : String; virtual;
+     function LogObjectName : String;
    public
+    property NeedCompact : Boolean read FNeedCompact;
     function GetInsertSQL(DatabasePrefix : String = '') : String; virtual;
     function GetDropSQL(DatabasePrefix : String = '') : String; override;
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
@@ -135,7 +146,10 @@ type
     FDatabaseObjects : TObjectList;
     FInitialized : Boolean;
     FCommand : TMyQuery;
+    function ParseMethodResuls(ServiceControl : TMyServerControl; LogObjectName : String) : Boolean;
     function CheckTable(table : TDatabaseTable; WithOptimize : Boolean = False) : Boolean;
+    function CheckTableOnOpen(table : TDatabaseTable; IsBackupRepair : Boolean) : Boolean;
+    procedure OptimizeTable(table : TDatabaseTable);
    public
     property DatabaseObjects : TObjectList read FDatabaseObjects;
 
@@ -147,6 +161,10 @@ type
     procedure Initialize(connection : TCustomMyConnection);
 
     procedure CreateViews(connection : TCustomMyConnection);
+
+    procedure CheckObjectsExists(connection : TCustomMyConnection; IsBackupRepair : Boolean);
+
+    procedure RepairTableFromBackup();
 
     function CheckObjects(connection : TCustomMyConnection) : TRepairedObjects;
 
@@ -266,13 +284,85 @@ var
 begin
   Result := [];
   FCommand.Connection := connection;
+  WriteExchangeLog('DatabaseController', 'Производим восстановление базы данных');
   try
     for I := 0 to FDatabaseObjects.Count-1 do
       if (FDatabaseObjects[i] is TDatabaseTable) then begin
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         if CheckTable(currentTable) then
-          Result := Result + [currentTable.ObjectId];
+        begin
+          if currentTable.RepairType = dortCumulative then
+            Result := Result + [currentTable.ObjectId];
+          WriteExchangeLog('DatabaseController', 'Произведено восстановление объекта : ' + currentTable.LogObjectName);
+        end;
       end;
+  finally
+    FCommand.Connection := nil;
+    WriteExchangeLog('DatabaseController', 'Восстановление базы данных завершено');
+  end;
+end;
+
+procedure TDatabaseController.CheckObjectsExists(
+  connection: TCustomMyConnection;
+  IsBackupRepair : Boolean);
+var
+  I : Integer;
+  currentTable : TDatabaseTable;
+begin
+  FCommand.Connection := connection;
+  try
+    //Если не существует еще самой директории с базой данных, то нечего проверять
+    if not DirectoryExists(ExePath + SDirData + '\analitf') then
+      Exit;
+
+    for I := 0 to FDatabaseObjects.Count-1 do begin
+      if FDatabaseObjects[i] is TDatabaseTable then begin
+        currentTable := TDatabaseTable(FDatabaseObjects[i]);
+        FCommand.SQL.Text :=
+          Format(
+            'SELECT * from analitf.%s limit 100;',
+            [AnsiLowerCase(currentTable.Name)]);
+        try
+          FCommand.Open;
+          FCommand.Close;
+        except
+          on E : EMyError do
+            if E.ErrorCode = ER_NO_SUCH_TABLE then
+              raise
+            else begin
+              WriteExchangeLog(
+                'DatabaseController.CheckObjectsExists',
+                Format('Производим попытку восстановления объекта %s, т.к. при проверке была получена ошибка (%d): %s',
+                [currentTable.LogObjectName,
+                 E.ErrorCode,
+                 E.Message]));
+            end;
+        end;
+
+        CheckTableOnOpen(currentTable, IsBackupRepair);
+{
+        try
+          if (FCommand.RecordCount = 1) then begin
+            if (FCommand.Fields.Count = 1) then
+              currentTable.FileSystemName := FCommand.Fields[0].AsString
+            else
+              WriteExchangeLog(
+                'DatabaseController.Initialize',
+                'Не удалось получить FileSystemName для объекта ' + currentTable.Name  + ', т.к. кол-во полей не равно 1.');
+          end
+          else
+            WriteExchangeLog(
+              'DatabaseController.Initialize',
+              'Не удалось получить FileSystemName для объекта ' + currentTable.Name  + ', т.к. функция не отработала.');
+        finally
+          FCommand.Close;
+        end;
+}        
+
+      end;
+    end;
+
+    FInitialized := True;
   finally
     FCommand.Connection := nil;
   end;
@@ -294,6 +384,7 @@ var
         [tableName, method, e.ClassName, E.Message]));
   end;
 
+{
   function LastOperationFailed() : Boolean;
   begin
     Result := False;
@@ -320,6 +411,7 @@ var
                MyServerControl.FieldByName('Msg_text').AsString]));
         end;
   end;
+}  
 
   procedure DropTable();
   var
@@ -335,7 +427,7 @@ var
         on E : Exception do
           WriteExchangeLog('DatabaseController.CheckTable',
             Format('Ошибка при физическом удалении таблицы %s: %s',
-            [table.Name,
+            [table.LogObjectName,
             E.Message]));
       end;
     if not FileDropped then
@@ -346,7 +438,7 @@ var
         on E : Exception do
           WriteExchangeLog('DatabaseController.CheckTable',
             Format('Ошибка при удалении таблицы %s: %s',
-            [table.Name,
+            [table.LogObjectName,
             E.Message]));
       end;
   end;
@@ -356,6 +448,8 @@ var
     DropTable();
     FCommand.SQL.Text := table.GetCreateSQL(WorkSchema);
     FCommand.Execute;
+    WriteExchangeLog('DatabaseController.CheckTable',
+      Format('Объект %s был пересоздан', [table.LogObjectName]));
   end;
 
   procedure RepairTable();
@@ -367,6 +461,47 @@ var
     if table.RepairType = dortIgnore then
       SimpleRepairTable()
     else begin
+      MyServerControl.RepairTable([rtExtended]);
+      NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+
+      if not NeedRepairFromBackup then begin
+        MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+        NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+
+        if not NeedRepairFromBackup then begin
+          if (table.RepairType in [dortCritical, dortBackup])
+            and FileExists(ExePath + SDirTableBackup + '\'
+              + table.FileSystemName + DataFileExtention)
+            and FileExists(ExePath + SDirTableBackup + '\'
+              + table.FileSystemName + IndexFileExtention)
+            and FileExists(ExePath + SDirTableBackup + '\'
+              + table.FileSystemName + StructFileExtention)
+          then begin
+            OSCopyFile(
+              ExePath + SDirTableBackup + '\'
+              + table.FileSystemName + DataFileExtention,
+              ExePath + SDirData + '\' + WorkSchema + '\'
+              + table.FileSystemName + DataFileExtention);
+            OSCopyFile(
+              ExePath + SDirTableBackup + '\'
+              + table.FileSystemName + IndexFileExtention,
+              ExePath + SDirData + '\' + WorkSchema + '\'
+              + table.FileSystemName + IndexFileExtention);
+            OSCopyFile(
+              ExePath + SDirTableBackup + '\'
+              + table.FileSystemName + StructFileExtention,
+              ExePath + SDirData + '\' + WorkSchema + '\'
+              + table.FileSystemName + StructFileExtention);
+            WriteExchangeLog('DatabaseController.CheckTable',
+              Format('Объект %s был восстановлен из backupа', [table.LogObjectName]));
+          end
+          else
+            SimpleRepairTable();
+        end;
+      end
+
+{
+
       NeedRepairFromBackup := False;
       //Если файл с данными существует, то пытаемся восстановиться с него
       if FileExists(ExePath + SDirData + '\' + WorkSchema + '\'
@@ -385,10 +520,10 @@ var
             ExePath + SDirData + '\' + WorkSchema + '\'
             + table.FileSystemName + DataFileExtention);
           try
-          {
-            MyServerControl.RepairTable([rtExtended, rtUseFrm]);
-            NeedRepairFromBackup := LastOperationFailed();
-          } 
+
+            //MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+            //NeedRepairFromBackup := LastOperationFailed();
+
             MyServerControl.CheckTable([ctExtended]);
             NeedRepairFromBackup := LastOperationFailed();
           except
@@ -433,6 +568,8 @@ var
           end;
         end;
       end;
+}      
+
     end;
   end;
 
@@ -445,15 +582,20 @@ begin
     MyServerControl.TableNames := WorkSchema + '.' + table.Name;
     try
       MyServerControl.CheckTable([ctExtended]);
-      NeedRepair := LastOperationFailed();
+      NeedRepair := ParseMethodResuls(MyServerControl, table.LogObjectName);
     except
       on E : Exception do
-        LogError(E, 'check', table.Name);
+        LogError(E, 'check', table.LogObjectName);
     end;
 
-    if NeedRepair then begin
+    if not NeedRepair then begin
       Result := True;
-      RepairTable();
+      try
+        RepairTable();
+      except
+        on E : Exception do
+          LogError(E, 'repair', table.LogObjectName);
+      end;
     end;
 {
       try
@@ -465,8 +607,9 @@ begin
         on E : Exception do
           LogError(E, 'check', table.Name);
       end;
-}      
+}
 
+{
     if not NeedRepair and WithOptimize then
       try
         MyServerControl.OptimizeTable();
@@ -475,6 +618,160 @@ begin
         on E : Exception do
           LogError(E, 'check', table.Name);
       end;
+}
+  finally
+    MyServerControl.Free;
+  end;
+end;
+
+function TDatabaseController.CheckTableOnOpen(table: TDatabaseTable;
+  IsBackupRepair: Boolean): Boolean;
+var
+  MyServerControl : TMyServerControl;
+  LastType,
+  LastText : String;
+  NeedRepair : Boolean;
+
+  procedure LogError(E : Exception; method : String; tableName : String);
+  begin
+    WriteExchangeLog('DatabaseController.CheckTable',
+      Format('Ошибка при работе с таблицей: %s; действие: %s; '
+        + 'тип исключения: %s; ошибка: %s',
+        [tableName, method, e.ClassName, E.Message]));
+  end;
+
+  procedure DropTable();
+  var
+    FileDropped : Boolean;
+  begin
+    FileDropped := False;
+    if Length(table.FileSystemName) > 0 then
+      try
+        DeleteFilesByMask(ExePath + SDirData + '\' + WorkSchema + '\'
+          + table.FileSystemName + '.*');
+        FileDropped := True;
+      except
+        on E : Exception do
+          WriteExchangeLog('DatabaseController.CheckTable',
+            Format('Ошибка при физическом удалении таблицы %s: %s',
+            [table.LogObjectName,
+            E.Message]));
+      end;
+    if not FileDropped then
+      try
+        FCommand.SQL.Text := table.GetDropSQL(WorkSchema);
+        FCommand.Execute;
+      except
+        on E : Exception do
+          WriteExchangeLog('DatabaseController.CheckTable',
+            Format('Ошибка при удалении таблицы %s: %s',
+            [table.LogObjectName,
+            E.Message]));
+      end;
+  end;
+
+  procedure SimpleRepairTable();
+  begin
+    DropTable();
+    FCommand.SQL.Text := table.GetCreateSQL(WorkSchema);
+    FCommand.Execute;
+    WriteExchangeLog('DatabaseController.CheckTable',
+      Format('Объект %s был пересоздан', [table.LogObjectName]));
+  end;
+
+  procedure RepairTable();
+  var
+    //dataFileName : String;
+    NeedRepairFromBackup : Boolean;
+    NeedInsertData : Boolean;
+  begin
+    if table.RepairType = dortIgnore then
+      SimpleRepairTable()
+    else begin
+      MyServerControl.RepairTable([rtExtended]);
+      NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+
+      if not NeedRepairFromBackup then begin
+        MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+        NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+
+        if not NeedRepairFromBackup then begin
+          if (table.RepairType in [dortCritical, dortBackup]) then begin
+            if IsBackupRepair then
+              SimpleRepairTable()
+            else begin
+
+              if    FileExists(ExePath + SDirTableBackup + '\'
+                  + table.FileSystemName + DataFileExtention)
+                and FileExists(ExePath + SDirTableBackup + '\'
+                  + table.FileSystemName + IndexFileExtention)
+                and FileExists(ExePath + SDirTableBackup + '\'
+                  + table.FileSystemName + StructFileExtention)
+              then begin
+                OSCopyFile(
+                  ExePath + SDirTableBackup + '\'
+                  + table.FileSystemName + DataFileExtention,
+                  ExePath + SDirData + '\' + WorkSchema + '\'
+                  + table.FileSystemName + DataFileExtention);
+                OSCopyFile(
+                  ExePath + SDirTableBackup + '\'
+                  + table.FileSystemName + IndexFileExtention,
+                  ExePath + SDirData + '\' + WorkSchema + '\'
+                  + table.FileSystemName + IndexFileExtention);
+                OSCopyFile(
+                  ExePath + SDirTableBackup + '\'
+                  + table.FileSystemName + StructFileExtention,
+                  ExePath + SDirData + '\' + WorkSchema + '\'
+                  + table.FileSystemName + StructFileExtention);
+
+                MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+                NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+                if not NeedRepairFromBackup then begin
+                  SimpleRepairTable();
+                end
+                else
+                  WriteExchangeLog('DatabaseController.CheckTable',
+                    Format('Объект %s был восстановлен из backupа', [table.LogObjectName]));
+              end
+              else
+                SimpleRepairTable();
+
+            end;
+          end
+          else begin
+            raise Exception.Create('Ошибка при чтение объекта ' + table.LogObjectName);
+          end;
+
+        end;
+      end
+
+    end;
+  end;
+
+begin
+  Result := False;
+  NeedRepair := False;
+  MyServerControl := TMyServerControl.Create(nil);
+  try
+    MyServerControl.Connection := FCommand.Connection;
+    MyServerControl.TableNames := WorkSchema + '.' + table.Name;
+    try
+      MyServerControl.CheckTable([ctQuick]);
+      NeedRepair := ParseMethodResuls(MyServerControl, table.LogObjectName);
+    except
+      on E : Exception do
+        LogError(E, 'check', table.LogObjectName);
+    end;
+
+    if not NeedRepair then begin
+      Result := True;
+      try
+        RepairTable();
+      except
+        on E : Exception do
+          LogError(E, 'repair', table.LogObjectName);
+      end;
+    end;
   finally
     MyServerControl.Free;
   end;
@@ -614,12 +911,16 @@ var
   currentTable : TDatabaseTable;
 begin
   FCommand.Connection := connection;
+  WriteExchangeLog('DatabaseController.OptimizeObjects', 'Запуск оптимизации таблиц');
   try
+  {
     for I := 0 to FDatabaseObjects.Count-1 do
       if (FDatabaseObjects[i] is TDatabaseTable) then begin
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
-        CheckTable(currentTable, True);
+        if currentTable.NeedCompact then
+          OptimizeTable(currentTable);
       end;
+  }      
     try
       connection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
     except
@@ -628,6 +929,142 @@ begin
     end;
   finally
     FCommand.Connection := nil;
+    WriteExchangeLog('DatabaseController.OptimizeObjects', 'Окончание оптимизации таблиц');
+  end;
+end;
+
+procedure TDatabaseController.OptimizeTable(table: TDatabaseTable);
+var
+  MyServerControl : TMyServerControl;
+begin
+  MyServerControl := TMyServerControl.Create(nil);
+  try
+    MyServerControl.Connection := FCommand.Connection;
+    MyServerControl.TableNames := WorkSchema + '.' + table.Name;
+    MyServerControl.OptimizeTable();
+    if ParseMethodResuls(MyServerControl, table.LogObjectName) then
+      WriteExchangeLog('TDatabaseController.OptimizeTable',
+        Format('Оптимизация объекта %s успешно завершена.', [table.LogObjectName]))
+    else
+      WriteExchangeLog('TDatabaseController.OptimizeTable',
+        Format('Оптимизация объекта %s завершилась с ошибкой!', [table.LogObjectName]));
+  finally
+    MyServerControl.Free;
+  end;
+end;
+
+function TDatabaseController.ParseMethodResuls(
+  ServiceControl: TMyServerControl;
+  LogObjectName : String): Boolean;
+begin
+  //Op
+  //Msg_type
+  //Msg_text
+  if (ServiceControl.RecordCount > 0) then begin
+    Result :=
+      (ServiceControl.RecordCount = 1)
+      and
+      (AnsiCompareText(ServiceControl.FieldByName('Msg_type').AsString, 'status') = 0)
+      and
+        (
+        (AnsiCompareText(ServiceControl
+            .FieldByName('Msg_text').AsString, 'OK') = 0)
+        or
+        (AnsiCompareText(ServiceControl
+            .FieldByName('Msg_text').AsString, 'Table is already up to date') = 0)
+        );
+    if not Result then begin
+      WriteExchangeLog('DatabaseController.ParseMethodResuls',
+            Format('Кол-во записей в статусе операции %s: %d для объекта: %s',
+              [ServiceControl.FieldByName('Op').AsString,
+               ServiceControl.RecordCount,
+               LogObjectName])
+      );
+
+      while not ServiceControl.Eof do begin
+        if
+          (AnsiCompareText(ServiceControl.FieldByName('Msg_type').AsString, 'status') = 0)
+            and
+            (
+            (AnsiCompareText(ServiceControl
+                .FieldByName('Msg_text').AsString, 'OK') = 0)
+            or
+            (AnsiCompareText(ServiceControl
+                .FieldByName('Msg_text').AsString, 'Table is already up to date') = 0)
+            )
+        then
+          WriteExchangeLog('DatabaseController.ParseMethodResuls',
+            Format('операция %s: успешно  тип сообщения: %s  сообщение: %s',
+            [
+             ServiceControl.FieldByName('Op').AsString,
+             ServiceControl.FieldByName('Msg_type').AsString,
+             ServiceControl.FieldByName('Msg_text').AsString]))
+        else
+          WriteExchangeLog('DatabaseController.ParseMethodResuls',
+            Format('операция %s: тип сообщения: %s  сообщение: %s',
+            [
+             ServiceControl.FieldByName('Op').AsString,
+             ServiceControl.FieldByName('Msg_type').AsString,
+             ServiceControl.FieldByName('Msg_text').AsString]));
+        ServiceControl.Next;
+      end;
+
+      Result :=
+        (AnsiCompareText(ServiceControl.FieldByName('Msg_type').AsString, 'status') = 0)
+          and
+          (
+          (AnsiCompareText(ServiceControl
+              .FieldByName('Msg_text').AsString, 'OK') = 0)
+          or
+          (AnsiCompareText(ServiceControl
+              .FieldByName('Msg_text').AsString, 'Table is already up to date') = 0)
+          );
+    end;
+  end
+  else begin
+    WriteExchangeLog('DatabaseController.ParseMethodResuls',
+      Format('Для таблицы %s вызов сервисного метода не вернул результатов.',
+      [ServiceControl.TableNames]));
+    Result := False;
+  end;
+end;
+
+procedure TDatabaseController.RepairTableFromBackup;
+var
+  I : Integer;
+  currentTable : TDatabaseTable;
+begin
+  for I := 0 to FDatabaseObjects.Count-1 do begin
+    if FDatabaseObjects[i] is TDatabaseTable then begin
+      currentTable := TDatabaseTable(FDatabaseObjects[i]);
+
+      if (currentTable.RepairType in [dortCritical, dortBackup]) then
+      begin
+        if FileExists(ExePath + SDirTableBackup + '\' + currentTable.FileSystemName + DataFileExtention)
+           and FileExists(ExePath + SDirTableBackup + '\' + currentTable.FileSystemName + IndexFileExtention)
+           and FileExists(ExePath + SDirTableBackup + '\' + currentTable.FileSystemName + StructFileExtention)
+        then begin
+          OSCopyFile(
+            ExePath + SDirTableBackup + '\'
+            + currentTable.FileSystemName + DataFileExtention,
+            ExePath + SDirData + '\' + WorkSchema + '\'
+            + currentTable.FileSystemName + DataFileExtention);
+          OSCopyFile(
+            ExePath + SDirTableBackup + '\'
+            + currentTable.FileSystemName + IndexFileExtention,
+            ExePath + SDirData + '\' + WorkSchema + '\'
+            + currentTable.FileSystemName + IndexFileExtention);
+          OSCopyFile(
+            ExePath + SDirTableBackup + '\'
+            + currentTable.FileSystemName + StructFileExtention,
+            ExePath + SDirData + '\' + WorkSchema + '\'
+            + currentTable.FileSystemName + StructFileExtention);
+          WriteExchangeLog('DatabaseController.RepairTableFromBackup',
+            Format('Объект %s был восстановлен из backupа', [currentTable.LogObjectName]));
+        end;
+      end;
+
+    end;
   end;
 end;
 
@@ -686,6 +1123,15 @@ end;
 function TDatabaseTable.GetTableOptions: String;
 begin
   Result := ' ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;';
+end;
+
+function TDatabaseTable.LogObjectName: String;
+begin
+  Result :=
+    IfThen(
+      Length(Self.FileSystemName) > 0,
+      Self.FileSystemName,
+      Self.Name);
 end;
 
 { TDatabaseView }

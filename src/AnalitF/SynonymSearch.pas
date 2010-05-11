@@ -15,7 +15,6 @@ type
     pCenter: TPanel;
     dbgCore: TToughDBGrid;
     dsCore: TDataSource;
-    frdsCore: TfrDBDataSet;
     Timer: TTimer;
     ActionList: TActionList;
     actFlipCore: TAction;
@@ -205,6 +204,12 @@ type
     adsCoreDescriptionId: TLargeintField;
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
+    adsCoreMaxProducerCost: TFloatField;
+    dblProducers: TDBLookupComboBox;
+    adsProducers: TMyQuery;
+    adsProducersId: TLargeintField;
+    adsProducersName: TStringField;
+    dsProducers: TDataSource;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -236,6 +241,7 @@ type
     procedure adsCoreAfterOpen(DataSet: TDataSet);
     procedure adsCoreAfterScroll(DataSet: TDataSet);
     procedure tmrSelectedPricesTimer(Sender: TObject);
+    procedure dblProducersCloseUp(Sender: TObject);
   private
     { Private declarations }
     fr : TForceRus;
@@ -295,7 +301,16 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
 
-  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
+
+  if adsProducers.Active then
+    adsProducers.Close;
+  adsProducers.Open;
+  dblProducers.DataField := 'Id';
+  dblProducers.KeyField := 'Id';
+  dblProducers.ListField := 'Name';
+  dblProducers.ListSource := dsProducers;
+  dblProducers.KeyValue := adsProducersId.Value;
 
   InternalSearchText := '';
   BM := TBitmap.Create;
@@ -692,6 +707,8 @@ begin
     StartSQL := StartSQL + 'and (' + FilterSQL + ')';
   if cbBaseOnly.Checked then
     StartSQL := StartSQL + ' and (PRD.Enabled = 1)';
+  if dblProducers.KeyValue <> 0 then
+    StartSQL := StartSQL + ' and (Core.CodeFirmCr = ' + VarToStr(dblProducers.KeyValue) + ')';
 
   StartSQL := StartSQL + ';'#13#10;
 
@@ -749,6 +766,14 @@ begin
   tmrSelectedPrices.Enabled := False;
   if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
     InternalSearch;
+end;
+
+procedure TSynonymSearchForm.dblProducersCloseUp(Sender: TObject);
+begin
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+    InternalSearch
+  else
+    dbgCore.SetFocus;
 end;
 
 end.

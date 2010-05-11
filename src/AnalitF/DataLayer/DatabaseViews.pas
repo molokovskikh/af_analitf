@@ -22,6 +22,12 @@ type
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
+
+  TGroupMaxProducerCostsView = class(TDatabaseView)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
   
 implementation
 
@@ -77,41 +83,67 @@ end;
 function TClientAvgView.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  select `ordershead`.`CLIENTID` as `CLIENTCODE`, ' 
-+'    `orderslist`.`PRODUCTID`     as `PRODUCTID` , ' 
-+'    avg(`orderslist`.`PRICE`)    as `PRICEAVG` ' 
-+'  from (`ordershead` ' 
-+'    join `orderslist`) ' 
++'  select `postedorderheads`.`CLIENTID` as `CLIENTCODE`, ' 
++'    `postedorderlists`.`PRODUCTID`     as `PRODUCTID` , ' 
++'    avg(`postedorderlists`.`PRICE`)    as `PRICEAVG` ' 
++'  from (`postedorderheads` ' 
++'    join `postedorderlists`) ' 
 +'  where ( ' 
 +'      ( ' 
-+'        `orderslist`.`ORDERID` = `ordershead`.`ORDERID` ' 
++'        `postedorderlists`.`ORDERID` = `postedorderheads`.`ORDERID` ' 
 +'      ) ' 
 +'    and ' 
 +'      ( ' 
-+'        `ordershead`.`ORDERDATE` >= (CURDATE() - INTERVAL 1 month) ' 
++'        `postedorderheads`.`ORDERDATE` >= (CURDATE() - INTERVAL 1 month) ' 
 +'      ) ' 
 +'    and ' 
 +'      ( ' 
-+'        `ordershead`.`CLOSED` = 1 ' 
++'        `postedorderheads`.`CLOSED` = 1 ' 
 +'      ) ' 
 +'    and ' 
 +'      ( ' 
-+'        `ordershead`.`SEND` = 1 ' 
++'        `postedorderheads`.`SEND` = 1 ' 
 +'      ) ' 
 +'    and ' 
 +'      ( ' 
-+'        `orderslist`.`ORDERCOUNT` > 0 ' 
++'        `postedorderlists`.`ORDERCOUNT` > 0 ' 
 +'      ) ' 
 +'    and ' 
 +'      ( ' 
-+'        `orderslist`.`PRICE` is not null ' 
++'        `postedorderlists`.`PRICE` is not null ' 
 +'      ) ' 
-+'    ) ' 
-+'  group by `ordershead`.`CLIENTID`, ' 
-+'    `orderslist`.`PRODUCTID`;';
++'    and ' 
++'      ( '
++'        `postedorderlists`.`Junk` = 0 '
++'      ) '
++'    ) '
++'  group by `postedorderheads`.`CLIENTID`, ' 
++'    `postedorderlists`.`PRODUCTID`;';
+end;
+
+{ TGroupMaxProducerCostsView }
+
+constructor TGroupMaxProducerCostsView.Create;
+begin
+  FName := 'groupmaxproducercosts';
+  FObjectId := doiGroupMaxProducerCosts;
+  FRepairType := dortIgnore;
+end;
+
+function TGroupMaxProducerCostsView.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  select  '
++'    ProductId , '
++'    ProducerId, '
++'    Max(RealCost) as MaxProducerCost ' 
++'  from `maxproducercosts` '
++'  group by ProductId, ProducerId;';
 end;
 
 initialization
   DatabaseController.AddObject(TPricesShowView.Create());
   DatabaseController.AddObject(TClientAvgView.Create());
+  DatabaseController.AddObject(TGroupMaxProducerCostsView.Create());
 end.

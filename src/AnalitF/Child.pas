@@ -95,6 +95,7 @@ type
     procedure NewBeforeScroll(DataSet : TDataSet);
     procedure NewExit(Sender : TObject);
     procedure FilterByMNNExecute(Sender: TObject);
+    procedure FilterByMNNUpdate(Sender: TObject);
     procedure ShowDescriptionExecute(Sender: TObject);
     procedure ShowDescriptionUpdate(Sender: TObject);
     procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
@@ -128,7 +129,8 @@ type
 implementation
 
 uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection, Menus, Core,
-  NamesForms;
+  NamesForms,
+  DBGridHelper;
 
 {$R *.DFM}
 
@@ -218,6 +220,7 @@ begin
   for I := 0 to Self.ComponentCount-1 do
     if (Self.Components[i] is TToughDBGrid)
     then begin
+      TDBGridHelper.SetMinWidthToColumns(TToughDBGrid(Self.Components[i]));
       TToughDBGrid(Self.Components[i]).Options := TToughDBGrid(Self.Components[i]).Options + [dgRowLines];
       TToughDBGrid(Self.Components[i]).Font.Size := 10;
       TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
@@ -230,7 +233,6 @@ begin
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource.DataSet)
          and TToughDBGrid(Self.Components[i]).DataSource.DataSet.Active
       then begin
-        TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
         TToughDBGrid(Self.Components[i]).OnSortMarkingChanged( Self.Components[i] );
 
         if NeedFirstOnDataSet then
@@ -406,6 +408,7 @@ begin
         gotoMNNAction.Hint := 'Переход в каталог с фильтрацией по МНН';
         gotoMNNAction.ShortCut := TextToShortCut('Ctrl+N');// ShortCut(VK_F5, []);
         gotoMNNAction.OnExecute := FilterByMNNExecute;
+        gotoMNNAction.OnUpdate  := FilterByMNNUpdate;
         gotoMNNAction.ActionList := al;
         if Assigned(gotoMNNButton) then begin
           gotoMNNButton.Action := gotoMNNAction;
@@ -554,6 +557,7 @@ var
   supplierPriceMarkupColumn : TColumnEh;
   producerCostColumn : TColumnEh;
   ndsColumn : TColumnEh;
+  maxProducerCostColumn : TColumnEh;
 begin
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
@@ -580,6 +584,13 @@ begin
       producerCostColumn.FieldName := 'ProducerCost';
       producerCostColumn.Title.Caption := 'Цена производителя';
       producerCostColumn.DisplayFormat := '0.00;;''''';
+    end;
+    maxProducerCostColumn := ColumnByNameT(Grid, 'MaxProducerCost');
+    if not Assigned(maxProducerCostColumn) then begin
+      maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
+      maxProducerCostColumn.FieldName := 'MaxProducerCost';
+      maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
+      maxProducerCostColumn.DisplayFormat := '0.00;;''''';
     end;
 
     realCostColumn.Title.Caption := 'Цена поставщика';
@@ -797,6 +808,24 @@ begin
           .Create(
             TCustomAction(ActionList.Actions[i]),
             Self) );
+end;
+
+procedure TChildForm.FilterByMNNUpdate(Sender: TObject);
+var
+  mnnField : TField;
+  MnnId : Int64;
+begin
+  if Assigned(Sender) and (Sender is TAction) then begin
+    if (MainForm.ActiveChild = Self)
+       and (Assigned(dsCheckVolume))
+       and not dsCheckVolume.IsEmpty
+    then begin
+      mnnField := dsCheckVolume.FindField('MnnId');
+      TAction(Sender).Enabled := Assigned(mnnField) and not mnnField.IsNull and (mnnField is TLargeintField)
+    end
+    else
+      TAction(Sender).Enabled := False;
+  end;
 end;
 
 end.

@@ -13,20 +13,19 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Align = alTop
     BevelInner = bvLowered
     TabOrder = 0
-    object dbtPriceName: TDBText
-      Left = 619
+    object dbtProviderName: TDBText
+      Left = 515
       Top = 9
       Width = 198
       Height = 13
-      DataField = 'PriceName'
-      DataSource = OrdersHForm.dsOrdersH
+      DataField = 'ProviderName'
+      DataSource = dsDocumentHeaders
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
-      Visible = False
     end
     object Label1: TLabel
       Left = 116
@@ -46,7 +45,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Top = 9
       Width = 109
       Height = 13
-      DataField = 'Id'
+      DataField = 'DownloadId'
       DataSource = dsDocumentHeaders
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -139,18 +138,17 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Visible = False
     end
     object Label4: TLabel
-      Left = 539
+      Left = 435
       Top = 9
-      Width = 77
+      Width = 74
       Height = 13
-      Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090' :'
+      Caption = #1087#1086#1089#1090#1072#1074#1097#1080#1082' :'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
-      Visible = False
     end
     object Label5: TLabel
       Left = 566
@@ -244,6 +242,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
       OnKeyDown = dbgDocumentBodiesKeyDown
+      OnSortMarkingChanged = dbgDocumentBodiesSortMarkingChanged
       Columns = <
         item
           EditButtons = <>
@@ -282,37 +281,49 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Align = alTop
     Caption = ' '#1053#1072#1082#1083#1072#1076#1085#1099#1077' '
     TabOrder = 2
+    DesignSize = (
+      856
+      76)
     object spPrintTickets: TSpeedButton
       Left = 310
-      Top = 19
+      Top = 12
       Width = 121
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1094#1077#1085#1085#1080#1082#1086#1074
       OnClick = spPrintTicketsClick
     end
     object spPrintReestr: TSpeedButton
-      Left = 443
-      Top = 19
+      Left = 311
+      Top = 42
       Width = 121
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1088#1077#1077#1089#1090#1088#1072
       OnClick = spPrintReestrClick
     end
-    object spEditMarkups: TSpeedButton
-      Left = 579
-      Top = 19
-      Width = 121
-      Height = 25
-      Caption = #1053#1072#1094#1077#1085#1082#1080' '#1046#1053#1042#1051#1057
-      OnClick = spEditMarkupsClick
-    end
     object sbEditAddress: TSpeedButton
       Left = 712
-      Top = 19
+      Top = 26
       Width = 137
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1085#1072#1082#1083#1072#1076#1085#1099#1093
       OnClick = sbEditAddressClick
+    end
+    object spPrintWaybill: TSpeedButton
+      Left = 438
+      Top = 12
+      Width = 121
+      Height = 25
+      Caption = #1055#1077#1095#1072#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1086#1081
+      OnClick = spPrintWaybillClick
+    end
+    object spPrintInvoice: TSpeedButton
+      Left = 438
+      Top = 42
+      Width = 121
+      Height = 25
+      Caption = #1055#1077#1095#1072#1090#1100' '#1089#1095#1077#1090'-'#1092#1072#1082#1090#1091#1088#1099
+      OnClick = spPrintInvoiceClick
     end
     object cbPrintEmptyTickets: TCheckBox
       Left = 8
@@ -449,7 +460,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'from'
       '  DocumentBodies dbodies'
       'where'
-      '  dbodies.DocumentId = :DocumentId')
+      '  dbodies.DocumentId = :DocumentId'
+      'order by dbodies.Product')
     RefreshOptions = [roAfterUpdate]
     Left = 208
     Top = 251
@@ -507,12 +519,10 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesVitallyImportant: TBooleanField
       FieldName = 'VitallyImportant'
     end
-  end
-  object frdsDocumentBodies: TfrDBDataSet
-    DataSource = dsDocumentBodies
-    OpenDataSource = False
-    Left = 120
-    Top = 219
+    object adsDocumentBodiesSerialNumber: TStringField
+      FieldName = 'SerialNumber'
+      Size = 50
+    end
   end
   object tmrVitallyImportantChange: TTimer
     Enabled = False

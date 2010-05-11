@@ -14,6 +14,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
+    DesignSize = (
+      684
+      39)
     object Label7: TLabel
       Left = 10
       Top = 12
@@ -55,6 +58,15 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Height = 27
       Caption = #1059#1076#1072#1083#1080#1090#1100
       OnClick = spDeleteClick
+    end
+    object spOpenFolders: TSpeedButton
+      Left = 576
+      Top = 5
+      Width = 101
+      Height = 27
+      Anchors = [akTop, akRight]
+      Caption = #1054#1090#1082#1088#1099#1090#1100' '#1087#1072#1087#1082#1080
+      OnClick = spOpenFoldersClick
     end
     object dtpDateFrom: TDateTimePicker
       Left = 127
@@ -110,7 +122,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
-      OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+      OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghRowHighlight]
       ParentShowHint = False
       ReadOnly = True
       ShowHint = True
@@ -122,32 +134,44 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       TitleFont.Style = []
       OnDblClick = dbgHeadersDblClick
       OnKeyDown = dbgHeadersKeyDown
+      OnSortMarkingChanged = dbgHeadersSortMarkingChanged
       SearchPosition = spBottom
       Columns = <
         item
           EditButtons = <>
-          FieldName = 'Id'
+          FieldName = 'DownloadId'
           Footers = <>
           Title.Caption = #8470
+          Title.TitleButton = True
         end
         item
           EditButtons = <>
           FieldName = 'ProviderDocumentId'
           Footers = <>
           Title.Caption = #8470' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
+          Title.TitleButton = True
         end
         item
           EditButtons = <>
           FieldName = 'LocalWriteTime'
           Footers = <>
-          Title.Caption = #1044#1072#1090#1072' '#1076#1086#1089#1090#1072#1074#1082#1080
+          Title.Caption = #1044#1072#1090#1072' '#1076#1086#1082#1091#1084#1077#1085#1090#1072
+          Title.TitleButton = True
           Width = 150
+        end
+        item
+          EditButtons = <>
+          FieldName = 'LoadTime'
+          Footers = <>
+          Title.Caption = #1044#1072#1090#1072' '#1087#1086#1083#1091#1095#1077#1085#1080#1103' '#1076#1086#1082#1091#1084#1077#1085#1090#1072
+          Title.TitleButton = True
         end
         item
           EditButtons = <>
           FieldName = 'DocumentType'
           Footers = <>
           Title.Caption = #1058#1080#1087' '#1076#1086#1082#1091#1084#1077#1085#1090#1072
+          Title.TitleButton = True
           Width = 100
         end
         item
@@ -155,6 +179,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
           FieldName = 'ProviderName'
           Footers = <>
           Title.Caption = #1055#1086#1089#1090#1072#1074#1097#1080#1082
+          Title.TitleButton = True
         end>
     end
   end
@@ -173,11 +198,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       '  providers p'
       'where'
       '    (dh.ClientId = :ClientId)'
-      
-        'and ((dh.WriteTime  - interval :timezonebias minute) BETWEEN :Da' +
-        'teFrom AND :DateTo)'
+      'and (dh.LoadTime BETWEEN :DateFrom AND :DateTo)'
       'and (p.FirmCode = dh.FirmCode)'
-      'order by dh.WriteTime DESC')
+      'order by dh.LoadTime DESC')
     Options.StrictUpdate = False
     Left = 64
     Top = 87
@@ -189,10 +212,6 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       item
         DataType = ftUnknown
         Name = 'ClientId'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'timezonebias'
       end
       item
         DataType = ftUnknown
@@ -238,6 +257,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     end
     object adsDocumentHeadersLocalWriteTime: TDateTimeField
       FieldName = 'LocalWriteTime'
+    end
+    object adsDocumentHeadersLoadTime: TDateTimeField
+      FieldName = 'LoadTime'
     end
   end
   object dsDocumentHeaders: TDataSource

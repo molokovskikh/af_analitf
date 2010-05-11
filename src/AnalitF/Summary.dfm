@@ -698,12 +698,6 @@ inherited SummaryForm: TSummaryForm
     Left = 296
     Top = 136
   end
-  object frdsSummary: TfrDBDataSet
-    DataSource = dsSummary
-    OpenDataSource = False
-    Left = 304
-    Top = 184
-  end
   object adsSummaryOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'
@@ -1204,54 +1198,58 @@ inherited SummaryForm: TSummaryForm
       '    core.ProducerCost,'
       '    core.NDS,'
       '    core.SupplierPriceMarkup,'
-      '    OrdersList.RealPrice as RealCost,'
-      '    OrdersList.Price as Cost,'
+      '    CurrentOrderLists.RealPrice as RealCost,'
+      '    CurrentOrderLists.Price as Cost,'
       
         '    coalesce(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', ca' +
         'talogs.form)) as SynonymName,'
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
       '    PricesData.PriceName,'
       '    Regions.RegionName,'
-      '    OrdersList.OrderCount,'
-      '    OrdersList.CoreId AS OrdersCoreId,'
-      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    CurrentOrderLists.OrderCount,'
+      '    CurrentOrderLists.CoreId AS OrdersCoreId,'
+      '    CurrentOrderLists.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate,'
-      '    OrdersList.DropReason,'
-      '    OrdersList.ServerCost,'
-      '    OrdersList.ServerQuantity,'
-      '    OrdersList.RetailMarkup,'
-      '    OrdersHead.SendResult,'
+      '    CurrentOrderHeads.OrderId as OrdersHOrderId,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderLists.DropReason,'
+      '    CurrentOrderLists.ServerCost,'
+      '    CurrentOrderLists.ServerQuantity,'
+      '    CurrentOrderLists.RetailMarkup,'
+      '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '    ('
       '    PricesData,'
       '    Regions,'
       '    Core,'
-      '    OrdersHead,'
+      '    CurrentOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    OrdersList'
+      '    CurrentOrderLists'
       '    ) '
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
-        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
-        'mCode'
+        '    left join Synonyms on CurrentOrderLists.SynonymCode=Synonyms' +
+        '.SynonymCode'
       
-        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
-        'nymFirmCr.SynonymFirmCrCode'
+        '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
+        'de=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :ClientId'
-      'and OrdersList.OrderId=OrdersHead.OrderId'
-      'and OrdersList.OrderCount>0'
-      'and Core.CoreId=OrdersList.CoreId'
-      'and products.productid = OrdersList.productid'
+      '    CurrentOrderHeads.ClientId = :ClientId'
+      'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
+      'and CurrentOrderLists.OrderCount>0'
+      'and Core.CoreId=CurrentOrderLists.CoreId'
+      'and products.productid = CurrentOrderLists.productid'
       'and catalogs.fullcode = products.catalogid'
-      'and PricesData.PriceCode = OrdersHead.PriceCode'
-      'and Regions.RegionCode = OrdersHead.RegionCode')
+      'and PricesData.PriceCode = CurrentOrderHeads.PriceCode'
+      'and Regions.RegionCode = CurrentOrderHeads.RegionCode')
     Left = 104
     Top = 152
     ParamData = <
@@ -1269,76 +1267,84 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
-      '    OrdersList.CoreId AS CoreId,'
+      '    PostedOrderLists.CoreId AS CoreId,'
       '    cast('#39#39' as char(15)) as Volume,'
       '    cast('#39#39' as char(15)) as Quantity,'
       '    cast('#39#39' as char(50)) as Note,'
       '    cast('#39#39' as char(20)) as Period,'
-      '    OrdersList.Junk,'
-      '    OrdersList.Await,'
-      '    OrdersList.CODE,'
-      '    OrdersList.CODECR,'
+      '    PostedOrderLists.Junk,'
+      '    PostedOrderLists.Await,'
+      '    PostedOrderLists.CODE,'
+      '    PostedOrderLists.CODECR,'
       '    cast('#39#39' as char(20)) as doc,'
       '    0.0  as registrycost,'
       
         '    # '#1069#1090#1086' '#1093#1072#1082', '#1090'.'#1082'. '#1087#1086#1083#1103' vitallyimportant '#1085#1077#1090' '#1074' '#1090#1072#1073#1083#1080#1094#1077' OrdersLi' +
         'st, '#1072' '#1085#1080#1082#1072#1082#1080#1084' '#1076#1088#1091#1075#1080#1084' '#1086#1073#1088#1072#1079#1086#1084' '#1079#1085#1072#1095#1077#1085#1080#1077' tinyint(1) '#1087#1086#1083#1091#1095#1080#1090#1100' '#1085#1077#1083#1100#1079#1103
-      '    OrdersList.Await as vitallyimportant,'
-      '    OrdersList.requestratio as requestratio,'
+      '    PostedOrderLists.Await as vitallyimportant,'
+      '    PostedOrderLists.requestratio as requestratio,'
       '    0.0 as ordercost,'
-      '    OrdersList.minordercount as minordercount,'
-      '    OrdersList.ProducerCost,'
-      '    OrdersList.NDS,'
-      '    OrdersList.SupplierPriceMarkup, '
+      '    PostedOrderLists.minordercount as minordercount,'
+      '    PostedOrderLists.ProducerCost,'
+      '    PostedOrderLists.NDS,'
+      '    PostedOrderLists.SupplierPriceMarkup, '
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
-      '    OrdersList.RealPrice as RealCost,'
-      '    OrdersList.Price as Cost,'
+      '    PostedOrderLists.RealPrice as RealCost,'
+      '    PostedOrderLists.Price as Cost,'
       '    PricesData.PriceName,'
       '    Regions.RegionName,'
-      '    OrdersList.OrderCount,'
-      '    OrdersList.CoreId AS OrdersCoreId,'
-      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    PostedOrderLists.OrderCount,'
+      '    PostedOrderLists.CoreId AS OrdersCoreId,'
+      '    PostedOrderLists.OrderId AS OrdersOrderId,'
       '    PricesData.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate,'
-      '    OrdersList.DropReason,'
-      '    OrdersList.ServerCost,'
-      '    OrdersList.ServerQuantity,'
-      '    OrdersList.RetailMarkup,'
-      '    OrdersHead.SendResult,'
+      '    PostedOrderHeads.OrderId as OrdersHOrderId,'
+      '    PostedOrderHeads.SendDate,'
+      '    PostedOrderLists.DropReason,'
+      '    PostedOrderLists.ServerCost,'
+      '    PostedOrderLists.ServerQuantity,'
+      '    PostedOrderLists.RetailMarkup,'
+      '    PostedOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '   ('
       '    PricesData,'
       '    Regions,'
-      '    OrdersHead,'
+      '    PostedOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    OrdersList'
+      '    PostedOrderLists'
       '   )'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
       
-        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
-        'mCode'
+        '      (GroupMaxProducerCosts.ProductId = PostedOrderLists.produc' +
+        'tid) '
       
-        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
-        'nymFirmCr.SynonymFirmCrCode'
+        '      and (PostedOrderLists.CodeFirmCr = GroupMaxProducerCosts.P' +
+        'roducerId)'
+      
+        '    left join Synonyms on PostedOrderLists.SynonymCode=Synonyms.' +
+        'SynonymCode'
+      
+        '    LEFT JOIN SynonymFirmCr ON PostedOrderLists.SynonymFirmCrCod' +
+        'e=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :ClientId'
-      'and OrdersList.OrderId=OrdersHead.OrderId'
-      'and OrdersList.OrderCount>0'
-      'and OrdersList.CoreId is null'
-      'and products.productid = OrdersList.productid'
+      '    PostedOrderHeads.ClientId = :ClientId'
+      'and PostedOrderLists.OrderId=PostedOrderHeads.OrderId'
+      'and PostedOrderLists.OrderCount>0'
+      'and PostedOrderLists.CoreId is null'
+      'and products.productid = PostedOrderLists.productid'
       'and catalogs.fullcode = products.catalogid'
-      'and PricesData.PriceCode = OrdersHead.PriceCode'
-      'and Regions.RegionCode = OrdersHead.RegionCode'
-      'and OrdersHead.senddate >= :datefrom'
-      'and OrdersHead.senddate <= :dateTo')
+      'and PricesData.PriceCode = PostedOrderHeads.PriceCode'
+      'and Regions.RegionCode = PostedOrderHeads.RegionCode'
+      'and PostedOrderHeads.senddate >= :datefrom'
+      'and PostedOrderHeads.senddate <= :dateTo')
     Left = 152
     Top = 152
     ParamData = <
@@ -1357,13 +1363,13 @@ inherited SummaryForm: TSummaryForm
   end
   object adsSummary: TMyQuery
     SQLDelete.Strings = (
-      'DELETE FROM OrdersList'
+      'DELETE FROM CurrentOrderLists'
       'where'
       '    OrderId = :OLD_ORDERSORDERID'
       'and CoreId  = :OLD_COREID')
     SQLUpdate.Strings = (
       'update'
-      '  orderslist'
+      '  CurrentOrderLists'
       'set'
       '  OrderCount = :ORDERCOUNT,'
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
@@ -1397,54 +1403,58 @@ inherited SummaryForm: TSummaryForm
       '    core.ProducerCost,'
       '    core.NDS,'
       '    core.SupplierPriceMarkup,'
-      '    OrdersList.RealPrice as RealCost,'
-      '    OrdersList.Price as Cost,'
+      '    CurrentOrderLists.RealPrice as RealCost,'
+      '    CurrentOrderLists.Price as Cost,'
       
         '    coalesce(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', ca' +
         'talogs.form)) as SynonymName,'
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
       '    PricesData.PriceName,'
       '    Regions.RegionName,'
-      '    OrdersList.OrderCount,'
-      '    OrdersList.CoreId AS OrdersCoreId,'
-      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    CurrentOrderLists.OrderCount,'
+      '    CurrentOrderLists.CoreId AS OrdersCoreId,'
+      '    CurrentOrderLists.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate,'
-      '    OrdersList.DropReason,'
-      '    OrdersList.ServerCost,'
-      '    OrdersList.ServerQuantity,'
-      '    OrdersList.RetailMarkup,'
-      '    OrdersHead.SendResult,'
+      '    CurrentOrderHeads.OrderId as OrdersHOrderId,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderLists.DropReason,'
+      '    CurrentOrderLists.ServerCost,'
+      '    CurrentOrderLists.ServerQuantity,'
+      '    CurrentOrderLists.RetailMarkup,'
+      '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '   ('
       '    PricesData,'
       '    Regions,'
       '    Core,'
-      '    OrdersHead,'
+      '    CurrentOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    OrdersList'
+      '    CurrentOrderLists'
       '   )'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
-        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
-        'mCode'
+        '    left join Synonyms on CurrentOrderLists.SynonymCode=Synonyms' +
+        '.SynonymCode'
       
-        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
-        'nymFirmCr.SynonymFirmCrCode'
+        '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
+        'de=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :ClientId'
-      'and OrdersList.OrderId=OrdersHead.OrderId'
-      'and OrdersList.OrderCount>0'
-      'and Core.CoreId=OrdersList.CoreId'
-      'and products.productid = OrdersList.productid'
+      '    CurrentOrderHeads.ClientId = :ClientId'
+      'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
+      'and CurrentOrderLists.OrderCount>0'
+      'and Core.CoreId=CurrentOrderLists.CoreId'
+      'and products.productid = CurrentOrderLists.productid'
       'and catalogs.fullcode = products.catalogid'
-      'and PricesData.PriceCode = OrdersHead.PriceCode'
-      'and Regions.RegionCode = OrdersHead.RegionCode'
+      'and PricesData.PriceCode = CurrentOrderHeads.PriceCode'
+      'and Regions.RegionCode = CurrentOrderHeads.RegionCode'
       'and Core.CoreId = :CoreId')
     Connection = DM.MyConnection
     SQL.Strings = (
@@ -1472,54 +1482,58 @@ inherited SummaryForm: TSummaryForm
       '    core.ProducerCost,'
       '    core.NDS,'
       '    core.SupplierPriceMarkup,'
-      '    OrdersList.RealPrice as RealCost,'
-      '    OrdersList.Price as Cost,'
+      '    CurrentOrderLists.RealPrice as RealCost,'
+      '    CurrentOrderLists.Price as Cost,'
       
         '    coalesce(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', ca' +
         'talogs.form)) as SynonymName,'
       '    SynonymFirmCr.SynonymName AS SynonymFirm,'
       '    PricesData.PriceName,'
       '    Regions.RegionName,'
-      '    OrdersList.OrderCount,'
-      '    OrdersList.CoreId AS OrdersCoreId,'
-      '    OrdersList.OrderId AS OrdersOrderId,'
+      '    CurrentOrderLists.OrderCount,'
+      '    CurrentOrderLists.CoreId AS OrdersCoreId,'
+      '    CurrentOrderLists.OrderId AS OrdersOrderId,'
       '    pricesdata.pricecode,'
       '    Regions.regioncode,'
-      '    OrdersHead.OrderId as OrdersHOrderId,'
-      '    OrdersHead.SendDate,'
-      '    OrdersList.DropReason,'
-      '    OrdersList.ServerCost,'
-      '    OrdersList.ServerQuantity,'
-      '    OrdersList.RetailMarkup,'
-      '    OrdersHead.SendResult,'
+      '    CurrentOrderHeads.OrderId as OrdersHOrderId,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderLists.DropReason,'
+      '    CurrentOrderLists.ServerCost,'
+      '    CurrentOrderLists.ServerQuantity,'
+      '    CurrentOrderLists.RetailMarkup,'
+      '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
-      '    Mnn.Mnn'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost'
       'FROM'
       '   ('
       '    PricesData,'
       '    Regions,'
       '    Core,'
-      '    OrdersHead,'
+      '    CurrentOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    OrdersList'
+      '    CurrentOrderLists'
       '   )'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       
-        '    left join Synonyms on OrdersList.SynonymCode=Synonyms.Synony' +
-        'mCode'
+        '    left join Synonyms on CurrentOrderLists.SynonymCode=Synonyms' +
+        '.SynonymCode'
       
-        '    LEFT JOIN SynonymFirmCr ON OrdersList.SynonymFirmCrCode=Syno' +
-        'nymFirmCr.SynonymFirmCrCode'
+        '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
+        'de=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    OrdersHead.ClientId = :ClientId'
-      'and OrdersList.OrderId=OrdersHead.OrderId'
-      'and OrdersList.OrderCount>0'
-      'and Core.CoreId=OrdersList.CoreId'
-      'and products.productid = OrdersList.productid'
+      '    CurrentOrderHeads.ClientId = :ClientId'
+      'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
+      'and CurrentOrderLists.OrderCount>0'
+      'and Core.CoreId=CurrentOrderLists.CoreId'
+      'and products.productid = CurrentOrderLists.productid'
       'and catalogs.fullcode = products.catalogid'
-      'and PricesData.PriceCode = OrdersHead.PriceCode'
-      'and Regions.RegionCode = OrdersHead.RegionCode')
+      'and PricesData.PriceCode = CurrentOrderHeads.PriceCode'
+      'and Regions.RegionCode = CurrentOrderHeads.RegionCode')
     BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
     BeforeInsert = adsSummaryBeforeInsert
@@ -1688,6 +1702,9 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryRetailMarkup: TFloatField
       FieldName = 'RetailMarkup'
+    end
+    object adsSummaryMaxProducerCost: TFloatField
+      FieldName = 'MaxProducerCost'
     end
   end
 end

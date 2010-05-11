@@ -103,7 +103,8 @@ implementation
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
   Child, Config, RxMemDS, CorrectOrders, PostSomeOrdersController,
-  PostWaybillsController;
+  PostWaybillsController,
+  DocumentHeaders;
 
 {$R *.DFM}
 
@@ -122,11 +123,12 @@ type
 
 
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
-{$ifndef USENEWMYSQLTYPES}
+{//$ifndef USENEWMYSQLTYPES}
 var
 	mr: integer;
-{$endif}
+{//$endif}
 //	hMenuHandle: HMENU;
+  needShowDocumentForm : Boolean;
 begin
   NeedRetrySendOrder := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
@@ -293,16 +295,16 @@ begin
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
 	if Result and (( eaGetPrice in AExchangeActions) or
-		( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions))
+		( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
+    or (eaImportOnly in AExchangeActions))
   then
-    DM.ProcessDocs;
+    needShowDocumentForm := DM.ProcessDocs;
 
 	MainForm.UpdateReclame;
 
-{$ifndef USENEWMYSQLTYPES}
+{//$ifndef USENEWMYSQLTYPES}
 //В специализированной сборке не работает пока сжатие базы данных,
 //незачем его сейчас запускать и при оригинальной сборке
-{
 	if Result and ( eaGetPrice in AExchangeActions) and
 		( DaysBetween( DM.adtParams.FieldByName( 'LastCompact').AsDateTime, Now) >= COMPACT_PERIOD) then
 	begin
@@ -322,8 +324,15 @@ begin
       AProc.MessageBox( 'Сжатие базы данных завершено');
     end;
 	end;
-}  
-{$endif}
+{//$endif}
+
+  if Result and
+     (( eaGetPrice in AExchangeActions) or
+      ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
+      or (eaImportOnly in AExchangeActions))
+     and needShowDocumentForm
+  then
+    ShowDocumentHeaders; 
 
   if Assigned(GlobalExchangeParams) then
     try FreeAndNil(GlobalExchangeParams) except end;
@@ -565,7 +574,7 @@ procedure TInternalRepareOrders.FillData;
 var
 	Order, CurOrder, Quantity, E: Integer;
 	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
-  Code, RequestRatio, OrderCost, MinOrderCount: Variant;
+  Code, RequestRatio, OrderCost, MinOrderCount, Period, ProducerCost: Variant;
   //Есть ли превышение по цене?
   CostReason : String;
   OldPrice : Currency;
@@ -632,6 +641,8 @@ begin
       RequestRatio := DM.adsRepareOrdersREQUESTRATIO.AsVariant;
       OrderCost := DM.adsRepareOrdersORDERCOST.AsVariant;
       MinOrderCount := DM.adsRepareOrdersMINORDERCOUNT.AsVariant;
+      Period := DM.adsRepareOrdersPeriod.AsVariant;
+      ProducerCost := DM.adsRepareOrdersProducerCost.AsVariant;
 
 			SynonymCode := DM.adsRepareOrdersSYNONYMCODE.AsInteger;
 			SynonymFirmCrCode := DM.adsRepareOrdersSYNONYMFIRMCRCODE.AsVariant;
@@ -682,7 +693,10 @@ begin
 				continue;
 			end;
 
-			if DM.adsCoreRepare.Locate( 'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT', VarArrayOf([Code, RequestRatio, OrderCost, MinOrderCount]), [])
+			if DM.adsCoreRepare
+        .Locate(
+          'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT;Period;ProducerCost',
+          VarArrayOf([Code, RequestRatio, OrderCost, MinOrderCount, Period, ProducerCost]), [])
       then
 			begin
 				Val( DM.adsCoreRepareQUANTITY.AsString, Quantity, E);
@@ -825,7 +839,7 @@ begin
   DM.adsRepareOrders.RestoreSQL;
   //Если обрабатываем ответ от сервера, то рассматриваем только "отправляемые" заявки
   if ProcessSendOrdersResponse then
-    DM.adsRepareOrders.AddWhere('(OrdersHead.Send = 1)');
+    DM.adsRepareOrders.AddWhere('(CurrentOrderHeads.Send = 1)');
 
   DM.adsRepareOrders.Open;
 

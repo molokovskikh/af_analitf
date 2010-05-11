@@ -119,6 +119,7 @@ uses
 {$R CompareScript58.RES}
 {$R CompareScript59.RES}
 {$R CompareScript60.RES}
+{$R CompareScript62.RES}
 {$R LastScript.RES}
 
 var

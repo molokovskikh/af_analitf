@@ -24,10 +24,6 @@ type
     itmRasEditName: TMenuItem;
     TabSheet1: TTabSheet;
     dbcbProxyConnect: TDBCheckBox;
-    Label3: TLabel;
-    dbeHTTPName: TDBEdit;
-    Label4: TLabel;
-    dbeHTTPPass: TDBEdit;
     Label10: TLabel;
     Label5: TLabel;
     Label6: TLabel;
@@ -55,17 +51,12 @@ type
     DBCheckBox1: TDBCheckBox;
     DBCheckBox2: TDBCheckBox;
     lblServerLink: TLabel;
-    gbHTTP: TGroupBox;
-    Label1: TLabel;
-    dbeHTTPHost: TDBEdit;
-    gbAccount: TGroupBox;
     btnRasActions: TBitBtn;
     lblTip: TLabel;
     imgTip: TImage;
     Label9: TLabel;
     dbeRasSleep: TDBEdit;
     udRasSleep: TUpDown;
-    eHTTPPass: TEdit;
     gbDeleteHistory: TGroupBox;
     lHistoryDayCount: TLabel;
     dbeHistoryDayCount: TDBEdit;
@@ -78,6 +69,17 @@ type
     dbchbPrintOrdersAfterSend: TDBCheckBox;
     dbchbConfirmSendingOrders: TDBCheckBox;
     dbchbUseCorrectOrders: TDBCheckBox;
+    pHTTP: TPanel;
+    gbHTTP: TGroupBox;
+    Label1: TLabel;
+    dbeHTTPHost: TDBEdit;
+    pAccount: TPanel;
+    gbAccount: TGroupBox;
+    Label4: TLabel;
+    Label3: TLabel;
+    dbeHTTPName: TDBEdit;
+    dbeHTTPPass: TDBEdit;
+    eHTTPPass: TEdit;
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
     procedure itmRasEditClick(Sender: TObject);
@@ -121,6 +123,7 @@ type
     procedure WaybillFolderChange(Sender : TObject);
     procedure AddVitallyImportantMarkups;
     procedure AddRetailMarkups;
+    procedure AddBottomPanel;
   protected
     tsEditAddress : TTabSheet;
     frameEditAddress : TframeEditAddress;
@@ -144,6 +147,8 @@ type
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
 
     frameEditRetailMarkups : TframeEditVitallyImportantMarkups;
+
+    pButton : TPanel;
    public
   end;
 
@@ -184,10 +189,8 @@ begin
       dbchbPrintOrdersAfterSend.Enabled := (DM.SaveGridMask and PrintSendedOrder) > 0;
 {$ifndef DSP}
       //Если в параметрах программы нет ключа "extd", то скрываем настройку "Хост"
-      if (not FindCmdLineSwitch('extd')) then begin
-        gbHTTP.Visible := False;
-        gbAccount.Top := 8;
-      end;
+      if (not FindCmdLineSwitch('extd')) then
+        pHTTP.Visible := False;
 {$endif}
       if Auth then
         PageControl.ActivePage := tshAuth
@@ -258,11 +261,11 @@ begin
           MainForm.DisableByHTTPName;
           // удаляем все неотправленные открытые заявки
           DM.adcUpdate.SQL.Text := ''
-           + ' delete OrdersHead, OrdersList'
-           + ' FROM OrdersHead, OrdersList '
+           + ' delete CurrentOrderHeads, CurrentOrderLists'
+           + ' FROM CurrentOrderHeads, CurrentOrderLists '
            + ' where '
            + '    (Closed = 0)'
-           + ' and (OrdersList.OrderId = OrdersHead.OrderId)';
+           + ' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)';
           DM.adcUpdate.Execute;
           //удаляем изменения в настройках прайс-листов
           DM.adcUpdate.SQL.Text := 'truncate pricesregionaldataup';
@@ -536,21 +539,30 @@ begin
 end;
 
 procedure TConfigForm.FormCreate(Sender: TObject);
+var
+  I : Integer;
 begin
   inherited;
+  AddBottomPanel;
   AddRetailMarkups;
   AddVitallyImportantMarkups;
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
 
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
-  then begin
-    //Теперь кол-во вкладок увеличилось, поэтому надо увеличивать размер формы
-    Self.Height := Self.Height + 30;
-    btnOk.Top := btnOk.Top + 30;
-    btnCancel.Top := btnCancel.Top + 30;
-    PageControl.Height := PageControl.Height + 30;
+  for I := 0 to PageControl.PageCount-1 do begin
+    if PageControl.Pages[i].Constraints.MinHeight > PageControl.ClientHeight then
+      PageControl.ClientHeight := PageControl.Pages[i].Constraints.MinHeight;
+    if PageControl.Pages[i].Constraints.MinWidth > PageControl.ClientWidth then
+      PageControl.ClientWidth := PageControl.Pages[i].Constraints.MinWidth;
   end;
+
+  PageControl.Constraints.MinHeight := PageControl.Height + tshClients.Top;
+  PageControl.Constraints.MinWidth := PageControl.Width;
+
+  PageControl.Align := alClient;
+  Self.ClientHeight := PageControl.Height + pButton.Height;
+  Self.ClientWidth := PageControl.Width;
+  Self.BorderStyle := bsDialog;
 end;
 
 procedure TConfigForm.AddEditAddressSheet;
@@ -565,6 +577,10 @@ begin
   if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
   then begin
     frameEditAddress := TframeEditAddress.Create(Self);
+
+    tsEditAddress.Constraints.MinHeight := frameEditAddress.Height;
+    tsEditAddress.Constraints.MinWidth := frameEditAddress.Width;
+
     frameEditAddress.Parent := tsEditAddress;
     frameEditAddress.Align := alClient;
   end
@@ -586,6 +602,7 @@ begin
 
   dbedit := TDBEdit.Create(Self);
   dbedit.Parent := Parents;
+  dbedit.Anchors := [akLeft, akTop, akRight];
   dbedit.Top := labelInfo.Top + 3 + labelInfo.Canvas.TextHeight(labelInfo.Caption);
   dbedit.Left := 10;
   dbedit.DataSource := DataSource;
@@ -609,7 +626,9 @@ begin
   tsWaybillFolders.PageIndex := tsEditAddress.PageIndex + 1;
   tsWaybillFolders.Caption := 'Настройки поставщиков';
 
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
+  if not DM.adsUser.IsEmpty
+    and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
+    and DM.adsUser.FieldByName('SendWaybillsFromClient').AsBoolean
   then begin
     //Открываем дата сет
     adsWaybillFolders.CachedUpdates := True;
@@ -643,6 +662,7 @@ begin
 
     dblProviderId := TDBLookupComboBox.Create(Self);
     dblProviderId.Parent := gbWaybillFolders;
+    dblProviderId.Anchors := [akLeft, akTop, akRight];
     dblProviderId.Top := lProviderId.Top + 3 + lProviderId.Canvas.TextHeight(lProviderId.Caption);
     dblProviderId.Left := lProviderId.Left;
     dblProviderId.Width := gbWaybillFolders.Width - 20;
@@ -659,6 +679,7 @@ begin
 
     sbSelectFolder := TSpeedButton.Create(Self);
     sbSelectFolder.Parent := gbWaybillFolders;
+    sbSelectFolder.Anchors := [akTop, akRight];
     sbSelectFolder.Top := dbeWaybillFolder.Top;
     sbSelectFolder.Height := dbeWaybillFolder.Height;
     sbSelectFolder.Caption := '...';
@@ -719,25 +740,45 @@ begin
   tsVitallyImportantMarkups.PageIndex := 1;
   tsVitallyImportantMarkups.Caption := 'Наценки ЖНВЛС';
 
-  if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
-  then begin
-    frameEditVitallyImportantMarkups := TframeEditVitallyImportantMarkups
-      .CreateFrame(Self, doiVitallyImportantMarkups, DM.LoadVitallyImportantMarkups);
-    frameEditVitallyImportantMarkups.Parent := tsVitallyImportantMarkups;
+  frameEditVitallyImportantMarkups := TframeEditVitallyImportantMarkups
+    .CreateFrame(Self, doiVitallyImportantMarkups, DM.LoadVitallyImportantMarkups);
 
-    frameEditVitallyImportantMarkups.Align := alClient;
-  end
-  else
-    tsVitallyImportantMarkups.TabVisible := False;
+  tsVitallyImportantMarkups.Constraints.MinHeight := frameEditVitallyImportantMarkups.Height;
+  tsVitallyImportantMarkups.Constraints.MinWidth := frameEditVitallyImportantMarkups.Width;
+
+  frameEditVitallyImportantMarkups.Parent := tsVitallyImportantMarkups;
+  frameEditVitallyImportantMarkups.Align := alClient;
 end;
 
 procedure TConfigForm.AddRetailMarkups;
 begin
   frameEditRetailMarkups := TframeEditVitallyImportantMarkups
     .CreateFrame(Self, doiRetailMargins, DM.LoadRetailMargins);
-  frameEditRetailMarkups.Parent := tshClients;
 
+  tshClients.Constraints.MinHeight := frameEditRetailMarkups.Height;
+  tshClients.Constraints.MinWidth := frameEditRetailMarkups.Width;
+
+  frameEditRetailMarkups.Parent := tshClients;
   frameEditRetailMarkups.Align := alClient;
+end;
+
+procedure TConfigForm.AddBottomPanel;
+begin
+  pButton := TPanel.Create(Self);
+  pButton.Parent := Self;
+  pButton.Align := alBottom;
+  pButton.Caption := '';
+  pButton.BevelOuter := bvNone;
+
+  btnOk.Parent := pButton;
+  pButton.Height := btnOk.Height + 20;
+  btnOk.Left := 10;
+  btnOk.Top := 10;
+
+  btnCancel.Parent := pButton;
+  btnCancel.Caption := 'Отменить';
+  btnCancel.Left := 10 + btnOk.Width + 10;
+  btnCancel.Top := 10;
 end;
 
 end.
