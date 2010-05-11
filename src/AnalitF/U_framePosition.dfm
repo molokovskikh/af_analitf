@@ -32,6 +32,12 @@ object framePosition: TframePosition
       Width = 65
       Height = 17
     end
+    object dbtMNN: TDBText
+      Left = 72
+      Top = 40
+      Width = 65
+      Height = 17
+    end
     object btnShowDescription: TRxSpeedButton
       Left = 280
       Top = 24

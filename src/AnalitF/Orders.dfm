@@ -431,6 +431,11 @@ inherited OrdersForm: TOrdersForm
     Left = 144
     Top = 256
   end
+  object frdsOrders: TfrDBDataSet
+    DataSource = dsOrders
+    Left = 144
+    Top = 288
+  end
   object adsOrdersOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'

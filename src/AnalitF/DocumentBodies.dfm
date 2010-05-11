@@ -508,6 +508,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       FieldName = 'VitallyImportant'
     end
   end
+  object frdsDocumentBodies: TfrDBDataSet
+    DataSource = dsDocumentBodies
+    OpenDataSource = False
+    Left = 120
+    Top = 219
+  end
   object tmrVitallyImportantChange: TTimer
     Enabled = False
     Interval = 500

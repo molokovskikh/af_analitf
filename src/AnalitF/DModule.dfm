@@ -2773,9 +2773,7 @@ object DM: TDM
       '  analitf.client'
       'where'
       '    (CLIENTS.ClientId = UserInfo.ClientId)'
-      
-        'and (((UserInfo.IsFutureClient = 0) and (client.Id = UserInfo.Cl' +
-        'ientId)) or (UserInfo.IsFutureClient = 1))')
+      'and (client.Id = UserInfo.ClientId)')
     Left = 240
     Top = 184
   end
@@ -2928,10 +2926,5 @@ object DM: TDM
       '  `ordershead`.`CLIENTID`, `orderslist`.`PRODUCTID`;')
     Left = 400
     Top = 104
-  end
-  object frDBDataSet: TfrDBDataSet
-    OpenDataSource = False
-    Left = 232
-    Top = 544
   end
 end

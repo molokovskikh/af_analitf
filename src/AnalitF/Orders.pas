@@ -12,6 +12,7 @@ uses
 type
   TOrdersForm = class(TChildForm)
     dsOrders: TDataSource;
+    frdsOrders: TfrDBDataSet;
     dbgOrders: TToughDBGrid;
     adsOrdersOld: TpFIBDataSet;
     adsOrdersOldCryptPRICE: TCurrencyField;
@@ -284,7 +285,7 @@ begin
   else
     if Key = VK_ESCAPE then
       if Assigned(ParentOrdersHForm) then
-        ParentOrdersHForm.ShowAsPrevForm
+        ParentOrdersHForm.ShowForm
       else
         if Assigned(PrevForm) then
           PrevForm.ShowAsPrevForm;
@@ -333,7 +334,7 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
   AddRetailPriceColumn;
-  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'Mnn', ShowDescriptionAction);
   TDBGridHelper.RestoreColumnsLayout(dbgOrders, 'DetailOrder');
 end;
 
@@ -472,7 +473,7 @@ procedure TOrdersForm.dbmMessageToKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_ESCAPE then
     if Assigned(ParentOrdersHForm) then
-      ParentOrdersHForm.ShowAsPrevForm
+      ParentOrdersHForm.ShowForm
     else
       PrevForm.ShowAsPrevForm;
 end;
@@ -552,7 +553,7 @@ begin
         adsOrders.First;
     end
     else
-      ParentOrdersHForm.ShowAsPrevForm;
+      ParentOrdersHForm.ShowForm;
   end;
 end;
 

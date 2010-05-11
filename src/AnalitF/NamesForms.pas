@@ -295,10 +295,10 @@ begin
   sbShowSynonymMNN.Caption := 'Показать синонимы (Ctrl+N)';
   InternalFilterMnn := 0;
 
-  TframePosition.AddFrame(Self, pnlTop, dsCatalog, 'FullName', 'MnnId', ShowDescriptionAction);
-  formsFrame := TframePosition.AddFrame(Self, pClient, dsForms, 'FullName', 'MnnId', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pnlTop, dsCatalog, 'FullName', 'Mnn', ShowDescriptionAction);
+  formsFrame := TframePosition.AddFrame(Self, pClient, dsForms, 'FullName', 'Mnn', ShowDescriptionAction);
   formsFrame.Visible := False;
-  namesFrame := TframePosition.AddFrame(Self, pClient, dsNames, 'FullName', 'MnnId', ShowDescriptionAction);
+  namesFrame := TframePosition.AddFrame(Self, pClient, dsNames, 'FullName', 'Mnn', ShowDescriptionAction);
 
   LastDBGrid := nil;
 

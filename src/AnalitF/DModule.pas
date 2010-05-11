@@ -504,7 +504,6 @@ type
     adsOrderDetailsProducerCost: TFloatField;
     adsOrderDetailsNDS: TSmallintField;
     adtClientsCalculateWithNDS: TBooleanField;
-    frDBDataSet: TfrDBDataSet;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -1392,7 +1391,6 @@ begin
     DataSet.DisableControls;
   end;
   try
-    frDBDataSet.DataSet := DataSet;
 
     if not APreview then begin
       frReport.PrepareReport;

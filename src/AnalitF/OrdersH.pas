@@ -123,7 +123,6 @@ type
     procedure SetParameters;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
-    procedure ShowAsPrevForm; override;
   end;
 
 procedure ShowOrdersH;
@@ -189,11 +188,8 @@ begin
 end;
 
 procedure TOrdersHForm.SetParameters;
-var
-  Grid : TDBGridEh;
 begin
   SoftPost( adsOrdersHForm);
-  adsOrdersHForm.IndexFieldNames := '';
   adsOrdersHForm.Close;
 
   case TabControl.TabIndex of
@@ -205,7 +201,6 @@ begin
       btnWayBillList.Visible := False;
       dbgCurrentOrders.Visible := True;
       dbgSendedOrders.Visible := False;
-      Grid := dbgCurrentOrders;
       //try except необходим, т.к. вызвается когда форма еще не отображена
       try
         dbgCurrentOrders.SetFocus;
@@ -222,7 +217,6 @@ begin
       btnWayBillList.Visible := True;
       dbgCurrentOrders.Visible := False;
       dbgSendedOrders.Visible := True;
-      Grid := dbgSendedOrders;
       //try except необходим, т.к. вызвается когда форма еще не отображена
       try
         dbgSendedOrders.SetFocus;
@@ -235,11 +229,6 @@ begin
   adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
   adsOrdersHForm.Open;
-
-  if Assigned(Grid.OnSortMarkingChanged) then begin
-    Grid.OnSortMarkingChanged(Grid);
-    adsOrdersHForm.First;
-  end;
 
   dtpDateFrom.Enabled := TabControl.TabIndex = 1;
   dtpDateTo.Enabled   := dtpDateFrom.Enabled;
@@ -723,15 +712,6 @@ begin
       Grid.DataSource.DataSet.Bookmark := CurrentBookmark;
       Grid.DataSource.DataSet.EnableControls;
     end;
-  end;
-end;
-
-procedure TOrdersHForm.ShowAsPrevForm;
-begin
-  inherited;
-  case TabControl.TabIndex of
-    0: dbgCurrentOrders.SetFocus;
-    1: dbgSendedOrders.SetFocus;
   end;
 end;
 

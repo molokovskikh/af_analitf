@@ -22,6 +22,7 @@ type
     actFilterLeader: TAction;
     actSaveToFile: TAction;
     actDeleteOrder: TAction;
+    frdsCore: TfrDBDataSet;
     lblRecordCount: TLabel;
     cbFilter: TComboBox;
     lblOrderLabel: TLabel;
@@ -259,7 +260,7 @@ begin
 
   inherited;
 
-  TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
 
   BM := TBitmap.Create;
 
@@ -267,7 +268,7 @@ begin
 
   InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
-  PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
+	PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
   UseExcess := True;
 	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
 	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
@@ -391,20 +392,6 @@ begin
     adsCore.Filtered := False;
     adsCore.IndexFieldNames := 'SynonymName';
     frVariables[ 'OrdersComments'] := adsCurrentOrderHeader.FieldByName('Comments').AsVariant;
-
-    if DM.adsPrices.Active then
-      DM.adsPrices.Close;
-    try
-      DM.adsPrices.ParamByName('ClientId').Value := Self.ClientId;
-      DM.adsPrices.ParamByName('TimeZoneBias').Value := TimeZoneBias;
-      DM.adsPrices.Open;
-      DM.adsPrices.Locate('PriceCode;RegionCode', VarArrayOf([ PriceCode, RegionCode]), []);
-      frVariables[ 'PricesSupportPhone'] := DM.adsPricesSupportPhone.Value;
-      frVariables[ 'PricesFullName'] := DM.adsPricesFullName.Value;
-      frVariables[ 'PricesDatePrice'] := DM.adsPricesDatePrice.AsString;
-    finally
-      DM.adsPrices.Close;
-    end;
 
     DM.ShowFastReport('CoreFirm.frf', adsCore, APreview);
   finally

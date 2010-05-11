@@ -15,6 +15,7 @@ type
     pCenter: TPanel;
     dbgCore: TToughDBGrid;
     dsCore: TDataSource;
+    frdsCore: TfrDBDataSet;
     Timer: TTimer;
     ActionList: TActionList;
     actFlipCore: TAction;
@@ -294,7 +295,7 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
 
-  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'Mnn', ShowDescriptionAction);
 
   InternalSearchText := '';
   BM := TBitmap.Create;

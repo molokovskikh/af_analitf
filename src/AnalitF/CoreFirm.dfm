@@ -479,6 +479,11 @@ object CoreFirmForm: TCoreFirmForm
       OnExecute = actFlipCoreExecute
     end
   end
+  object frdsCore: TfrDBDataSet
+    DataSource = dsCore
+    Left = 88
+    Top = 192
+  end
   object adsCoreOld: TpFIBDataSet
     UpdateSQL.Strings = (
       

@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DBCtrls, StdCtrls, DB, ActnList, Buttons, RXCtrls,
-  MyAccess;
+  Dialogs, DBCtrls, StdCtrls, DB, ActnList, Buttons, RXCtrls;
 
 type
   TframePosition = class(TFrame)
@@ -13,6 +12,7 @@ type
     lSynonymName: TLabel;
     lMNN: TLabel;
     dbtSynonymName: TDBText;
+    dbtMNN: TDBText;
     btnShowDescription: TRxSpeedButton;
     lVitallyImportant: TLabel;
     lMandatoryList: TLabel;
@@ -26,22 +26,11 @@ type
     descriptionId : TField;
     catalogVitallyImportant : TField;
     catalogMandatoryList : TField;
-
-    adsMNN : TMyQuery;
-    mnnIdField : TLargeintField;
-    mnnField : TStringField;
-    russianMnnField : TStringField;
-    dsMnn : TDataSource;
-
-    lMnnInfo : TLabel;
-
     procedure ProcessResize;
     procedure SetFrameSize;
     procedure NewAfterOpen(DataSet : TDataSet);
     procedure NewAfterScroll(DataSet : TDataSet);
     procedure RefreshPositionDetail(DataSet : TDataSet);
-    procedure CreateMNNDataSet(Source: TDataSource; MnnIdFieldName : String);
-    procedure MnnUpdateLabel(DataSet: TDataSet);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -61,11 +50,6 @@ implementation
 constructor TframePosition.Create(AOwner: TComponent);
 begin
   inherited;
-  lMnnInfo := TLabel.Create(Self);
-  lMnnInfo.Name := 'lMnnInfo';
-  lMnnInfo.Parent := gbPosition;
-  lMnnInfo.AutoSize := False;
-
   showDescriptionAction := nil;
   oldAfterOpen := nil;
   oldAfterScroll := nil;
@@ -93,6 +77,7 @@ begin
   heightOnHalf := gbPosition.ClientHeight div 2;
 
   btnShowDescription.Left := leftInc;
+  btnShowDescription.Top := heightOnHalf div 3 + 1;
   buttonWidth := btnShowDescription.Width;
 
   lSynonymName.Left := 2*leftInc + buttonWidth;
@@ -100,16 +85,14 @@ begin
   lSynonymName.Top := heightOnHalf div 3;
   lMNN.Top := heightOnHalf + (heightOnHalf div 4);
 
-  btnShowDescription.Top := heightOnHalf;
-
   dbtSynonymName.Top := lSynonymName.Top;
-  lMnnInfo.Top := lMNN.Top;
+  dbtMNN.Top := lMNN.Top;
   dbtSynonymName.Left := labelWidth + 2*leftInc + (leftInc div 2) + buttonWidth;
-  lMnnInfo.Left := dbtSynonymName.Left;
+  dbtMNN.Left := dbtSynonymName.Left;
   dbtSynonymName.Width := gbPosition.Width - (labelWidth + + buttonWidth + 3*leftInc);
-  lMnnInfo.Width := dbtSynonymName.Width;
+  dbtMNN.Width := dbtSynonymName.Width;
 
-  lVitallyImportant.Top := lSynonymName.Top;
+  lVitallyImportant.Top := lMNN.Top;
   lMandatoryList.Top := lVitallyImportant.Top;
   lVitallyImportant.Left := btnShowDescription.Left;
   lMandatoryList.Left := lVitallyImportant.Left + lVitallyImportant.Width + (leftInc div 2);
@@ -128,7 +111,6 @@ begin
   Result.lVitallyImportant.Visible := False;
   Result.lMandatoryList.Visible := False;
   if Assigned(Source.DataSet) then begin
-    Result.CreateMNNDataSet(Source, MnnField);
     Result.oldAfterOpen := Source.DataSet.AfterOpen;
     Source.DataSet.AfterOpen := Result.NewAfterOpen;
     Result.oldAfterScroll := Source.DataSet.AfterScroll;
@@ -139,8 +121,11 @@ begin
   Result.Align := alBottom;
   Result.dbtSynonymName.DataSource := Source;
   Result.dbtSynonymName.DataField := SynonymNameField;
+  Result.dbtMNN.DataSource := Source;
+  if MnnField <> '' then
+    Result.dbtMNN.DataField := MnnField;
   Result.dbtSynonymName.Font.Style := Result.dbtSynonymName.Font.Style + [fsBold];
-  Result.lMnnInfo.Font.Style := Result.lMnnInfo.Font.Style + [fsBold];
+  Result.dbtMNN.Font.Style := Result.dbtMNN.Font.Style + [fsBold];
   Result.SetFrameSize;
   Result.BringToFront();
 end;
@@ -213,52 +198,6 @@ begin
     and Assigned(catalogMandatoryList)
     and not catalogMandatoryList.IsNull
     and (((catalogMandatoryList.DataType = ftBoolean) and catalogMandatoryList.AsBoolean) or (catalogMandatoryList.Value > 0));
-end;
-
-procedure TframePosition.CreateMNNDataSet(Source: TDataSource; MnnIdFieldName : String);
-begin
-  adsMNN := TMyQuery.Create(Self);
-  if Assigned(Source.DataSet) and (Source.DataSet is TCustomMyDataSet) then
-    adsMNN.Connection := TCustomMyDataSet(Source.DataSet).Connection;
-
-  adsMNN.SQL.Text := 'select Mnn.Id, Mnn.Mnn, Mnn.RussianMnn from mnn';
-
-  adsMNN.MasterSource := Source;
-  adsMNN.MasterFields := MnnIdFieldName;
-  adsMNN.DetailFields := 'Id';
-  adsMNN.AfterRefresh := MnnUpdateLabel;
-  adsMNN.AfterOpen := MnnUpdateLabel;
-
-  mnnIdField := TLargeintField.Create(adsMNN);
-  mnnIdField.fieldname := 'Id';
-  mnnIdField.Dataset := adsMNN;
-
-  mnnField := TStringField.Create(adsMNN);
-  mnnField.fieldname := 'Mnn';
-  mnnField.Size := 250;
-  mnnField.Dataset := adsMNN;
-
-  russianMnnField := TStringField.Create(adsMNN);
-  russianMnnField.fieldname := 'RussianMnn';
-  russianMnnField.Size := 250;
-  russianMnnField.Dataset := adsMNN;
-
-  dsMnn := TDataSource.Create(Self);
-  dsMnn.DataSet := adsMNN;
-
-  if not adsMNN.Active then
-    adsMNN.Open;
-end;
-
-procedure TframePosition.MnnUpdateLabel(DataSet: TDataSet);
-begin
-  if not mnnField.IsNull and not russianMnnField.IsNull then
-    lMnnInfo.Caption := mnnField.Value + '  (' + russianMnnField.Value + ')'
-  else
-    if not mnnField.IsNull then
-      lMnnInfo.Caption := mnnField.Value
-    else
-      lMnnInfo.Caption := russianMnnField.Value;
 end;
 
 end.

@@ -698,6 +698,12 @@ inherited SummaryForm: TSummaryForm
     Left = 296
     Top = 136
   end
+  object frdsSummary: TfrDBDataSet
+    DataSource = dsSummary
+    OpenDataSource = False
+    Left = 304
+    Top = 184
+  end
   object adsSummaryOld: TpFIBDataSet
     UpdateSQL.Strings = (
       'update'

@@ -62,9 +62,6 @@ object CoreForm: TCoreForm
       Align = alLeft
       Caption = ' '#1055#1088#1077#1076#1099#1076#1091#1097#1080#1077' '#1079#1072#1082#1072#1079#1099' '
       TabOrder = 0
-      DesignSize = (
-        482
-        131)
       object lblPriceAvg: TLabel
         Left = 8
         Top = 110
@@ -622,6 +619,12 @@ object CoreForm: TCoreForm
     DataSet = adsCore
     Left = 64
     Top = 168
+  end
+  object frdsCore: TfrDBDataSet
+    DataSource = dsCore
+    OpenDataSource = False
+    Left = 64
+    Top = 216
   end
   object dsPreviosOrders: TDataSource
     DataSet = adsPreviosOrders

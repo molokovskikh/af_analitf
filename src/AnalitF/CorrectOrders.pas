@@ -234,17 +234,16 @@ begin
   Report := TStringList.Create;
   dbgLog.PopupMenu := nil;
 
-  adsCore.Connection := DM.MainConnection;
-  adsAvgOrders.Connection := DM.MainConnection;
-  
   //todo: Здесь засада, т.к. описание не отображается
-  TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'MnnId', nil);
+  TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'Mnn', nil);
 
   UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
   adsAvgOrders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').AsInteger;
   plOverCost.Hide();
+  adsCore.Connection := DM.MainConnection;
+  adsAvgOrders.Connection := DM.MainConnection;
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
   Self.WindowState := wsMaximized;

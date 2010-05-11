@@ -34,6 +34,7 @@ type
     btnCheck: TButton;
     btnUnCheckAll: TButton;
     actCheck: TAction;
+    frdsPrint: TfrDBDataSet;
     dbgDefectives: TToughDBGrid;
     Panel1: TPanel;
     Label7: TLabel;
@@ -76,7 +77,7 @@ var
 	Year, Month, Day: Word;
 begin
 	inherited;
-  PrintEnabled := (DM.SaveGridMask and PrintDefectives) > 0;
+	PrintEnabled := (DM.SaveGridMask and PrintDefectives) > 0;
 	Year := YearOf( Date);
 	Month := MonthOf( Date);
 	Day := DayOf( Date);
@@ -175,7 +176,7 @@ begin
     ParamByName('ShowAll').Value:=ShowAll;
     Open;
     try
-      DM.ShowFastReport('Defectives.frf', adsPrint, APreview);
+      DM.ShowFastReport('Defectives.frf', nil, APreview);
     finally
       Close;
     end;

@@ -13,6 +13,7 @@ uses
 type
   TSummaryForm = class(TChildForm)
     dsSummary: TDataSource;
+    frdsSummary: TfrDBDataSet;
     pClient: TPanel;
     dbgSummaryCurrent: TToughDBGrid;
     adsSummaryOld: TpFIBDataSet;
@@ -231,7 +232,7 @@ begin
   gotoMNNButton := btnGotoMNN;
   inherited;
   PrepareColumnsInOrderGrid(dbgSummarySend);
-  TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'Mnn', ShowDescriptionAction);
   if not FUseCorrectOrders then begin
     cbNeedCorrect.Checked := False;
     cbNeedCorrect.Visible := False;
