@@ -3190,7 +3190,12 @@ begin
 		SetHTTP.ProxyParams.ProxyPassword := '';
     SetHTTP.Request.ProxyConnection := '';
 	end;
+  if Assigned(SetHTTP.Request.Authentication) then begin
+    SetHTTP.Request.Authentication.Free;
+    SetHTTP.Request.Authentication := nil;
+  end;
 	SetHTTP.Request.Username := adtParams.FieldByName( 'HTTPName').AsString;
+  SetHTTP.Request.Password := '';
   SetHTTP.AllowCookies := True;
   SetHTTP.HandleRedirects := False;
   SetHTTP.HTTPOptions := [hoForceEncodeParams];

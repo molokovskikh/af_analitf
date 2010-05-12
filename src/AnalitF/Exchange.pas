@@ -129,6 +129,7 @@ var
 {//$endif}
 //	hMenuHandle: HMENU;
   needShowDocumentForm : Boolean;
+  needAuth : Boolean;
 begin
   NeedRetrySendOrder := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
@@ -180,31 +181,48 @@ begin
 
 	if not MainForm.Showing then ExchangeForm.Position := poDesktopCenter;
 	try
-    //Эти параметры выставляются всегда, раньше не выставлялись при импорте
-    //Сейчас если импорт не пройдет, то будет производиться подключение к серверу, поэтому параметры необходимы
-    ExchangeForm.SetRasParams;
-    ExchangeForm.SetHTTPParams;
-    
-		ExchangeForm.ExchangeActions := AExchangeActions;
-    WriteExchangeLog('Exchange', '-');
-    WriteExchangeLog('Exchange', '-');
-    WriteExchangeLog('Exchange', '-');
-    WriteExchangeLog('Exchange', '---------------------------');
-    WriteExchangeLog('Exchange', 'Сессия начата');
-		try
-			ExchangeForm.Timer.Enabled := True;
-      DM.MainConnection.Close;
-      Result := ExchangeForm.ShowModal = mrOk;
-      if not Result then
-        AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
-      Sleep(500);
-      DM.MainConnection.Open;
-		except
-			on E: Exception do
-        AProc.MessageBox(Copy(E.Message, 1, 1024), MB_ICONSTOP);
-		end;
-    WriteExchangeLog('Exchange', 'Сессия окончена');
-    WriteExchangeLog('Exchange', '---------------------------');
+    needAuth := False;
+    repeat
+      ExchangeForm.ErrMsg := '';
+      if Assigned(GlobalExchangeParams) then
+        FreeAndNil(GlobalExchangeParams);
+      GlobalExchangeParams := nil;
+      //Эти параметры выставляются всегда, раньше не выставлялись при импорте
+      //Сейчас если импорт не пройдет, то будет производиться подключение к серверу, поэтому параметры необходимы
+      ExchangeForm.SetRasParams;
+      ExchangeForm.SetHTTPParams;
+
+      ExchangeForm.ExchangeActions := AExchangeActions;
+      WriteExchangeLog('Exchange', '-');
+      WriteExchangeLog('Exchange', '-');
+      WriteExchangeLog('Exchange', '-');
+      WriteExchangeLog('Exchange', '---------------------------');
+      WriteExchangeLog('Exchange', 'Сессия начата');
+      try
+        ExchangeForm.Timer.Enabled := True;
+        DM.MainConnection.Close;
+        Result := ExchangeForm.ShowModal = mrOk;
+        if not Result then
+          AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
+        Sleep(500);
+        DM.MainConnection.Open;
+        if Result then
+          needAuth := False
+        else
+          if AnsiStartsText('Доступ запрещен', ExchangeForm.ErrMsg) then
+          begin
+            if needAuth then
+              needAuth := False
+            else
+              needAuth := ShowConfig( True );
+          end;
+      except
+        on E: Exception do
+          AProc.MessageBox(Copy(E.Message, 1, 1024), MB_ICONSTOP);
+      end;
+      WriteExchangeLog('Exchange', 'Сессия окончена');
+      WriteExchangeLog('Exchange', '---------------------------');
+    until not needAuth;
   finally
 		ExchangeForm.Free;
 	end;
