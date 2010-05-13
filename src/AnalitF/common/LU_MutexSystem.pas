@@ -39,6 +39,12 @@ initialization
       GlobalMutex := 0;
     end;
   end;
+
+  if not IsOneStart then begin
+    if not (FindCmdLineSwitch('e') or FindCmdLineSwitch('si')) then
+      Windows.MessageBox(0, PChar('Запуск двух копий программы на одном компьютере невозможен.'), PChar('Ошибка'), MB_ICONERROR or MB_OK);
+    ExitProcess( 1 );
+  end;
 finalization
   if GlobalMutex <> 0 then ReleaseMutex(GlobalMutex);
 end.
