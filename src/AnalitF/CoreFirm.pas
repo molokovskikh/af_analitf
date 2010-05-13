@@ -703,7 +703,10 @@ begin
   else
     Accept := not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0);
   if Accept and (dblProducers.KeyValue <> 0) then
-    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+    if dblProducers.KeyValue = 1 then
+      Accept := adsCoreCodeFirmCr.AsVariant = 0
+    else
+      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 procedure TCoreFirmForm.LeaderFilterRecord(DataSet: TDataSet;
@@ -720,7 +723,10 @@ begin
     Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
       or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
   if Accept and (dblProducers.KeyValue <> 0) then
-    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+    if dblProducers.KeyValue = 1 then
+      Accept := adsCoreCodeFirmCr.AsVariant = 0
+    else
+      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 procedure TCoreFirmForm.RefreshAllCore;
@@ -788,7 +794,10 @@ procedure TCoreFirmForm.AllFilterRecord(DataSet: TDataSet;
 begin
   Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText);
   if Accept and (dblProducers.KeyValue <> 0) then
-    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+    if dblProducers.KeyValue = 1 then
+      Accept := adsCoreCodeFirmCr.AsVariant = 0
+    else
+      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 procedure TCoreFirmForm.SetClear;
@@ -895,7 +904,10 @@ begin
       end;
   end;
   if Accept then
-    Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+    if dblProducers.KeyValue = 1 then
+      Accept := adsCoreCodeFirmCr.AsVariant = 0
+    else
+      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
 end;
 
 end.

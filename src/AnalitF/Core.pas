@@ -722,7 +722,10 @@ begin
   if dblProducers.KeyValue <> 0 then begin
     if filterSql <> '' then
       filterSql := filterSql + ' and ';
-    filterSql := filterSql + 'CodeFirmCr = ' + VarToStr(dblProducers.KeyValue);
+    if dblProducers.KeyValue = 1 then
+      filterSql := filterSql + 'CodeFirmCr = 0 '
+    else
+      filterSql := filterSql + 'CodeFirmCr = ' + VarToStr(dblProducers.KeyValue);
   end;
   DBProc.SetFilter( adsCore, filterSql);
   dbgCore.SetFocus;

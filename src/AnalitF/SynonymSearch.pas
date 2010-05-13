@@ -707,8 +707,12 @@ begin
     StartSQL := StartSQL + 'and (' + FilterSQL + ')';
   if cbBaseOnly.Checked then
     StartSQL := StartSQL + ' and (PRD.Enabled = 1)';
-  if dblProducers.KeyValue <> 0 then
-    StartSQL := StartSQL + ' and (Core.CodeFirmCr = ' + VarToStr(dblProducers.KeyValue) + ')';
+  if dblProducers.KeyValue <> 0 then begin
+    if dblProducers.KeyValue = 1 then
+      StartSQL := StartSQL + ' and (Core.CodeFirmCr = 0)'
+    else
+      StartSQL := StartSQL + ' and (Core.CodeFirmCr = ' + VarToStr(dblProducers.KeyValue) + ')';
+  end;
 
   StartSQL := StartSQL + ';'#13#10;
 

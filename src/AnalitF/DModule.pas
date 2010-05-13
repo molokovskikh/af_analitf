@@ -1922,6 +1922,7 @@ begin
   ClearSelectedPrices(SummarySelectedPrices);
   ClearSelectedPrices(SynonymSelectedPrices);
   adsPrices.IndexFieldNames := 'PRICENAME';
+  adsPrices.ParamByName('ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
   if adsPrices.Active then
     adsPrices.Close;
   adsPrices.Open;
