@@ -252,7 +252,8 @@ begin
 +'    `FULLNAME`    varchar(40) default null , ' 
 +'    `FAX`         varchar(20) default null , ' 
 +'    `MANAGERMAIL` varchar(255) default null, ' 
-+'    primary key (`FIRMCODE`)               , ' 
++'    `ShortName`    varchar(50) default null , '
++'    primary key (`FIRMCODE`)               , '
 +'    unique key `PK_CLIENTSDATAN` (`FIRMCODE`) ' 
 +'  ) ' 
 + GetTableOptions();  
