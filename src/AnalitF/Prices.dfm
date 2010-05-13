@@ -569,6 +569,8 @@ inherited PricesForm: TPricesForm
     SQLRefresh.Strings = (
       'SELECT '
       '  pricesshow.*,'
+      '  minreqrules.ControlMinReq,'
+      '  minreqrules.MinReq,'
       '  pd.PriceInfo,'
       '  rd.SupportPhone, '
       '  rd.ContactInfo, '
@@ -579,23 +581,25 @@ inherited PricesForm: TPricesForm
         'AS DatePrice,'
       '  count(CurrentOrderLists.ID) as Positions,'
       
-        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCount), 0) as Su' +
-        'mOrder,'
+        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCo' +
+        'unt), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
-      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
+      
+        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
+        'Count), 0)'
       '    from'
       '      PostedOrderHeads'
       
-        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
-        'erId'
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=Po' +
+        'stedOrderHeads.OrderId'
       '    WHERE PostedOrderHeads.ClientId = :ClientId'
       '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
       '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and PostedOrderHeads.senddate > curdate() + interval (1-day(cur' +
-        'date())) day'
+        '       and PostedOrderHeads.senddate > curdate() + interval (1-d' +
+        'ay(curdate())) day'
       '       AND PostedOrderHeads.Closed = 1'
       '       AND PostedOrderHeads.send = 1'
       '       AND PostedOrderLists.OrderCount>0'
@@ -603,18 +607,20 @@ inherited PricesForm: TPricesForm
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  ('
       '    select'
-      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
+      
+        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
+        'Count), 0)'
       '    from'
       '      PostedOrderHeads'
       
-        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
-        'erId'
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=Po' +
+        'stedOrderHeads.OrderId'
       '    WHERE PostedOrderHeads.ClientId = :ClientId'
       '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
       '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and PostedOrderHeads.senddate > curdate() + interval (-WEEKDAY(' +
-        'curdate())) day'
+        '       and PostedOrderHeads.senddate > curdate() + interval (-WE' +
+        'EKDAY(curdate())) day'
       '       AND PostedOrderHeads.Closed = 1'
       '       AND PostedOrderHeads.send = 1'
       '       AND PostedOrderLists.OrderCount>0'
@@ -628,6 +634,10 @@ inherited PricesForm: TPricesForm
       
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
+      
+        '  join minreqrules on (minreqrules.ClientId = :ClientId) and (mi' +
+        'nreqrules.PriceCode = pricesshow.PriceCode) and (minreqrules.Reg' +
+        'ionCode = pricesshow.RegionCode)'
       '  left join CurrentOrderHeads on '
       '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
       '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
@@ -644,6 +654,8 @@ inherited PricesForm: TPricesForm
     SQL.Strings = (
       'SELECT '
       '  pricesshow.*,'
+      '  minreqrules.ControlMinReq,'
+      '  minreqrules.MinReq,'
       '  pd.PriceInfo,'
       '  rd.SupportPhone, '
       '  rd.ContactInfo, '
@@ -654,23 +666,25 @@ inherited PricesForm: TPricesForm
         'AS DatePrice,'
       '  count(CurrentOrderLists.ID) as Positions,'
       
-        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCount), 0) as Su' +
-        'mOrder,'
+        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCo' +
+        'unt), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
-      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
+      
+        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
+        'Count), 0)'
       '    from'
       '      PostedOrderHeads'
       
-        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
-        'erId'
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=Po' +
+        'stedOrderHeads.OrderId'
       '    WHERE PostedOrderHeads.ClientId = :ClientId'
       '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
       '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and PostedOrderHeads.senddate > curdate() + interval (1-day(cur' +
-        'date())) day'
+        '       and PostedOrderHeads.senddate > curdate() + interval (1-d' +
+        'ay(curdate())) day'
       '       AND PostedOrderHeads.Closed = 1'
       '       AND PostedOrderHeads.send = 1'
       '       AND PostedOrderLists.OrderCount>0'
@@ -678,18 +692,20 @@ inherited PricesForm: TPricesForm
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  ('
       '    select'
-      '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0)'
+      
+        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
+        'Count), 0)'
       '    from'
       '      PostedOrderHeads'
       
-        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.Ord' +
-        'erId'
+        '      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=Po' +
+        'stedOrderHeads.OrderId'
       '    WHERE PostedOrderHeads.ClientId = :ClientId'
       '       AND PostedOrderHeads.PriceCode = pricesshow.PriceCode'
       '       AND PostedOrderHeads.RegionCode = pricesshow.RegionCode'
       
-        '       and PostedOrderHeads.senddate > curdate() + interval (-WEEKDAY(' +
-        'curdate())) day'
+        '       and PostedOrderHeads.senddate > curdate() + interval (-WE' +
+        'EKDAY(curdate())) day'
       '       AND PostedOrderHeads.Closed = 1'
       '       AND PostedOrderHeads.send = 1'
       '       AND PostedOrderLists.OrderCount>0'
@@ -703,6 +719,10 @@ inherited PricesForm: TPricesForm
       
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
+      
+        '  join minreqrules on (minreqrules.ClientId = :ClientId) and (mi' +
+        'nreqrules.PriceCode = pricesshow.PriceCode) and (minreqrules.Reg' +
+        'ionCode = pricesshow.RegionCode)'
       '  left join CurrentOrderHeads on '
       '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
       '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
@@ -721,6 +741,10 @@ inherited PricesForm: TPricesForm
       item
         DataType = ftUnknown
         Name = 'TimeZoneBias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown

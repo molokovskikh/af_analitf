@@ -1550,6 +1550,8 @@ object DM: TDM
     SQL.Strings = (
       'SELECT '
       '  pricesshow.*,'
+      '  minreqrules.ControlMinReq,'
+      '  minreqrules.MinReq,'
       '  pd.PriceInfo,'
       '  rd.SupportPhone, '
       '  rd.ContactInfo, '
@@ -1592,6 +1594,10 @@ object DM: TDM
       
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
+      
+        '  join minreqrules on (minreqrules.ClientId = :ClientId) and (mi' +
+        'nreqrules.PriceCode = pricesshow.PriceCode) and (minreqrules.Reg' +
+        'ionCode = pricesshow.RegionCode)'
       '  left join CurrentOrderHeads on '
       '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
       '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
@@ -1607,6 +1613,10 @@ object DM: TDM
       item
         DataType = ftUnknown
         Name = 'TimeZoneBias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ClientId'
       end
       item
         DataType = ftUnknown

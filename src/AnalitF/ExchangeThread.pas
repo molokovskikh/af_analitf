@@ -38,7 +38,8 @@ TUpdateTable = (
   utMNN,
   utDescriptions,
   utMaxProducerCosts,
-  utProducers);
+  utProducers,
+  utMinReqRules);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -1224,6 +1225,7 @@ begin
   if (GetFileSize(ExePath+SDirIn+'\Descriptions.txt') > 0) then UpdateTables := UpdateTables + [utDescriptions];
   if (GetFileSize(ExePath+SDirIn+'\MaxProducerCosts.txt') > 0) then UpdateTables := UpdateTables + [utMaxProducerCosts];
   if (GetFileSize(ExePath+SDirIn+'\Producers.txt') > 0) then UpdateTables := UpdateTables + [utProducers];
+  if (GetFileSize(ExePath+SDirIn+'\MinReqRules.txt') > 0) then UpdateTables := UpdateTables + [utMinReqRules];
 
     //обновляем таблицы
     {
@@ -1244,6 +1246,7 @@ begin
     Products                        +       +
     MinPrices               +       +       +
     MNN                             +       +
+    minreqrules             +       +       +
     }
 
 	Progress := 5;
@@ -1262,6 +1265,11 @@ begin
 	  SQL.Text:='truncate PricesData;';
     InternalExecute;
 	end;
+  //MinReqRules
+  if utMinReqRules in UpdateTables then begin
+    SQL.Text:='truncate MinReqRules;';
+    InternalExecute;
+  end;
 	//RegionalData
 	if utPricesRegionalData in UpdateTables then begin
 	  SQL.Text:='truncate RegionalData;';
@@ -1509,6 +1517,11 @@ begin
     SQL.Text := GetLoadDataSQL('PricesData', ExePath+SDirIn+'\PricesData.txt');
     InternalExecute;
 	end;
+  //MinReqRules
+  if utMinReqRules in UpdateTables then begin
+    SQL.Text := GetLoadDataSQL('MinReqRules', ExePath+SDirIn+'\MinReqRules.txt');
+    InternalExecute;
+  end;
 	//PricesRegionalData
 	if utPricesData in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('PricesRegionalData', ExePath+SDirIn+'\PricesRegionalData.txt', true);

@@ -127,6 +127,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TMinReqRulesTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -346,7 +352,7 @@ function TPricesRegionalDataTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
++'  ( '
 +'    `PRICECODE` bigint(20) not null default ''0'' , '
 +'    `REGIONCODE` bigint(20) not null default ''0'', '
 +'    `STORAGE`       tinyint(1) not null               , '
@@ -689,6 +695,32 @@ begin
 + GetTableOptions();
 end;
 
+{ TMinReqRulesTable }
+
+constructor TMinReqRulesTable.Create;
+begin
+  FName := 'minreqrules';
+  FObjectId := doiMinReqRules;
+  FRepairType := dortCumulative;
+end;
+
+function TMinReqRulesTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `ClientId`      bigint(20) not null, '
++'  `PriceCode`     bigint(20) not null, '
++'  `RegionCode`    bigint(20) not null, '
++'  `ControlMinReq` tinyint(1) not null, '
++'  `MinReq`        int(10) default null, '
++'  primary key (`ClientId`, `PriceCode`, `RegionCode`), '
++'  key `FK_minreqrules_ClientId` (`ClientId`), '
++'  key `FK_minreqrules_PriceCode` (`PriceCode`), '
++'  key `FK_minreqrules_RegionCode` (`RegionCode`) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TUserInfoTable.Create());
   DatabaseController.AddObject(TClientTable.Create());
@@ -714,5 +746,7 @@ initialization
   DatabaseController.AddObject(TDescriptionsTable.Create());
   DatabaseController.AddObject(TMaxProducerCostsTable.Create());
   DatabaseController.AddObject(TProducersTable.Create());
+
+  DatabaseController.AddObject(TMinReqRulesTable.Create());
 end.
 

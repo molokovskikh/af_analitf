@@ -765,8 +765,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CurrentOrderHeads.MessageTo,'
       '    CurrentOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
-        '.ServerMinReq, 0)) as MinReq,'
+        '    GREATEST(MinReqRules.minreq, ifnull(CurrentOrderHeads.Server' +
+        'MinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(CurrentOrderLists.Id) as Positions,'
       
@@ -840,6 +840,10 @@ inherited OrdersHForm: TOrdersHForm
       '   LEFT JOIN RegionalData ON '
       '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = CurrentOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = CurrentOrderHeads.PriceCode) '
+      '     and (MinReqRules.RegionCode = CurrentOrderHeads.RegionCode)'
       'WHERE'
       '    (CurrentOrderHeads.OrderId = :Old_OrderId)'
       'group by CurrentOrderHeads.OrderId'
@@ -869,8 +873,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CurrentOrderHeads.MessageTo,'
       '    CurrentOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
-        '.ServerMinReq, 0)) as MinReq,'
+        '    GREATEST(MinReqRules.minreq, ifnull(CurrentOrderHeads.Server' +
+        'MinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(CurrentOrderLists.Id) as Positions,'
       
@@ -947,6 +951,10 @@ inherited OrdersHForm: TOrdersHForm
       '   LEFT JOIN RegionalData ON '
       '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = CurrentOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = CurrentOrderHeads.PriceCode) '
+      '     and (MinReqRules.RegionCode = CurrentOrderHeads.RegionCode)'
       'WHERE'
       '    (CurrentOrderHeads.ClientId = :ClientId)'
       'and (CurrentOrderHeads.Closed = :Closed)'
@@ -1362,8 +1370,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CurrentOrderHeads.MessageTo,'
       '    CurrentOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
-        '.ServerMinReq, 0)) as MinReq,'
+        '    GREATEST(MinReqRules.minreq, ifnull(CurrentOrderHeads.Server' +
+        'MinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(CurrentOrderLists.Id) as Positions,'
       
@@ -1437,6 +1445,12 @@ inherited OrdersHForm: TOrdersHForm
       '   LEFT JOIN RegionalData ON '
       '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = CurrentOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = CurrentOrderHeads.PriceCode) '
+      
+        '     and (MinReqRules.RegionCode = CurrentOrderHeads.RegionCode)' +
+        ' '
       'WHERE'
       '    (CurrentOrderHeads.OrderId = :Old_OrderId)'
       'group by CurrentOrderHeads.OrderId'
@@ -1465,8 +1479,8 @@ inherited OrdersHForm: TOrdersHForm
       '    CurrentOrderHeads.MessageTo,'
       '    CurrentOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(CurrentOrderHeads' +
-        '.ServerMinReq, 0)) as MinReq,'
+        '    GREATEST(MinReqRules.minreq, ifnull(CurrentOrderHeads.Server' +
+        'MinReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(CurrentOrderLists.Id) as Positions,'
       
@@ -1543,6 +1557,12 @@ inherited OrdersHForm: TOrdersHForm
       '   LEFT JOIN RegionalData ON '
       '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = CurrentOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = CurrentOrderHeads.PriceCode) '
+      
+        '     and (MinReqRules.RegionCode = CurrentOrderHeads.RegionCode)' +
+        ' '
       'WHERE'
       '    (CurrentOrderHeads.ClientId = :ClientId)'
       'and (CurrentOrderHeads.Closed = 0)'
@@ -1607,8 +1627,8 @@ inherited OrdersHForm: TOrdersHForm
       '    PostedOrderHeads.MessageTo,'
       '    PostedOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(PostedOrderHeads.' +
-        'ServerMinReq, 0)) as MinReq,'
+        '    GREATEST(MinReqRules.minreq, ifnull(PostedOrderHeads.ServerM' +
+        'inReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(PostedOrderLists.Id) as Positions,'
       
@@ -1645,6 +1665,10 @@ inherited OrdersHForm: TOrdersHForm
       '   LEFT JOIN RegionalData ON '
       '         (RegionalData.RegionCode=PostedOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = PostedOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = PostedOrderHeads.PriceCode) '
+      '     and (MinReqRules.RegionCode = PostedOrderHeads.RegionCode)'
       'WHERE'
       '    (PostedOrderHeads.OrderId = :Old_OrderId)'
       'group by PostedOrderHeads.OrderId'
@@ -1674,8 +1698,8 @@ inherited OrdersHForm: TOrdersHForm
       '    PostedOrderHeads.MessageTo,'
       '    PostedOrderHeads.Comments,'
       
-        '    GREATEST(pricesregionaldata.minreq, ifnull(PostedOrderHeads.' +
-        'ServerMinReq, 0)) as MinReq,'
+        '    GREATEST(MinReqRules.minreq, ifnull(PostedOrderHeads.ServerM' +
+        'inReq, 0)) as MinReq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(PostedOrderLists.Id) as Positions,'
       
@@ -1712,6 +1736,10 @@ inherited OrdersHForm: TOrdersHForm
       '   LEFT JOIN RegionalData ON '
       '         (RegionalData.RegionCode=PostedOrderHeads.RegionCode) '
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = PostedOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = PostedOrderHeads.PriceCode) '
+      '     and (MinReqRules.RegionCode = PostedOrderHeads.RegionCode)'
       'WHERE'
       '    (PostedOrderHeads.ClientId = :ClientId)'
       'and (PostedOrderHeads.Closed = 1)'

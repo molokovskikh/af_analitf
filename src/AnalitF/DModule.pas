@@ -1585,6 +1585,8 @@ begin
     SQL.Text:='truncate maxproducercosts;'; Execute;
     MainForm.StatusText:='Очищаются каталог производителей';
     SQL.Text:='truncate producers;'; Execute;
+    MainForm.StatusText:='Очищаются правила минимального заказа';
+    SQL.Text:='truncate minreqrules;'; Execute;
 
   finally
     Screen.Cursor:=crDefault;
