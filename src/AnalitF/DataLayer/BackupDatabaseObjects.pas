@@ -94,6 +94,7 @@ begin
 +'    `RIGHTLIMIT` decimal(18,2) not null     , ' 
 +'    `Markup`     decimal(5,2) not null           , '
 +'    `MaxMarkup` decimal(5,2) NOT NULL, '
++'    `MaxSupplierMarkup` decimal(5,2) default NULL, '
 +'    primary key (`ID`)                      , '
 +'    unique key `PK_RETAILMARGINS` (`ID`) '
 +'  ) '
@@ -106,7 +107,7 @@ begin
   + 'INSERT INTO '
   + IfThen(Length(DatabasePrefix) > 0, DatabasePrefix + '.')
   + FName
-  +'(ID, LEFTLIMIT, RIGHTLIMIT, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);';
+  +'(ID, LEFTLIMIT, RIGHTLIMIT, Markup, MaxMarkup, MaxSupplierMarkup) VALUES (1, 0, 1000000, 30, 30, null);';
 end;
 
 { TPostedOrderHeadsTable }
@@ -329,6 +330,7 @@ begin
 +'  `RightLimit` decimal(18,2) NOT NULL, '
 +'  `Markup` decimal(5,2) NOT NULL, '
 +'  `MaxMarkup` decimal(5,2) NOT NULL, '
++'  `MaxSupplierMarkup` decimal(5,2) default NULL, '
 +'  PRIMARY KEY (`ID`), '
 +'  UNIQUE KEY `PK_VitallyImportantMarkups` (`ID`) '
 +' ) '
