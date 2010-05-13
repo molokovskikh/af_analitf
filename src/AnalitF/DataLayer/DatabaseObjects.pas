@@ -186,6 +186,8 @@ type
     procedure ClearBackup;
     procedure BackupDatabase;
     procedure RestoreDatabase;
+
+    function GetLastCreateScript : String;
   end;
 
   function DatabaseController : TDatabaseController;
@@ -843,6 +845,19 @@ begin
       'Получен не тот объект базы данных: ожидалось: %d  получен: %d',
       [Integer(id),
       Integer(Result.ObjectId)]);
+end;
+
+function TDatabaseController.GetLastCreateScript: String;
+var
+  I : Integer;
+  currentTable : TDatabaseTable;
+begin
+  Result := '';
+  for I := 0 to FDatabaseObjects.Count-1 do 
+    if FDatabaseObjects[i] is TDatabaseTable then begin
+      currentTable := TDatabaseTable(FDatabaseObjects[i]);
+      Result := Concat(Result, #13#10#13#10, currentTable.GetDropSQL(), #13#10, currentTable.GetCreateSQL());
+    end;
 end;
 
 procedure TDatabaseController.Initialize(connection: TCustomMyConnection);

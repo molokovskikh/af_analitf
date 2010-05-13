@@ -565,10 +565,6 @@ type
     procedure UpdateDB;
     //Обновления UIN в базе данных в случае обновления версии программы
     procedure UpdateDBUIN(dbCon : TCustomMyConnection);
-{$ifndef USENEWMYSQLTYPES}
-    //Проверяем наличие всех объектов в базе данных
-    procedure CheckDBObjects(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
-{$endif}
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Проверяем и обновляем определенный файл
@@ -586,7 +582,6 @@ type
 {$endif}
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
-    function GetLastCreateScript : String;
     function GetFullLastCreateScript : String;
     //создаем базу данных
     procedure CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
@@ -2157,20 +2152,7 @@ begin
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
-      raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION])
-    //Если у нас не отладочная версия, то влючаем проверку целостности базы данных
-{$ifndef DEBUG}
-  {$ifndef USENEWMYSQLTYPES}
-    //Если мы не используем USENEWMYSQLTYPES, то будем проверять схему базы данных,
-    //т.к. в специализированной сборке не работает infromation_schema
-    else
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, CheckDBObjects, nil, 'Происходит проверка базы данных. Подождите...');
-  {$else}
-      ; 
-  {$endif}
-{$else}
-      ;
-{$endif}
+      raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]);
 
     //Если было произведено обновление программы, то обновляем ключи
     if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
@@ -2775,25 +2757,11 @@ begin
   end;
 end;
 
-function TDM.GetLastCreateScript: String;
-var
-  LastCreateScript : TResourceStream;
-begin
-  LastCreateScript := TResourceStream.Create( hInstance, 'LastScript', RT_RCDATA);
-  try
-    LastCreateScript.Position := 0;
-    SetString(Result, nil, LastCreateScript.Size);
-    LastCreateScript.Read(Result[1], LastCreateScript.Size);
-  finally
-    try LastCreateScript.Free; except end;
-  end;
-end;
-
 function TDM.GetFullLastCreateScript: String;
 var
   realDBVersion : String;
 begin
-  Result := GetLastCreateScript();
+  Result := DatabaseController.GetLastCreateScript();
   
   if NeedUpdateFireBirdToMySql then
     realDBVersion := '54'
@@ -2984,50 +2952,6 @@ begin
         'Не удалось скопировать из предыдущей копии : %s', [E.Message]);
     end;
 end;
-
-{$ifndef USENEWMYSQLTYPES}
-procedure TDM.CheckDBObjects(dbCon : TCustomMyConnection;
-  DBDirectoryName : String; OldDBVersion : Integer;
-  AOnUpdateDBFileData : TOnUpdateDBFileData);
-var
-  MyDump : TMyDump;
-  ExistsScript, RightScript : String;
-begin
-  try
-    dbCon.Database := 'analitf';
-
-    dbCon.Open;
-    try
-      MyDump := TMyDump.Create(nil);
-      try
-        dbCon.ExecSQL('use analitf', []);
-        MyDump.Connection := dbCon;
-        MyDump.Objects := [doTables, doViews];
-        MyDump.OnError := OnScriptExecuteError;
-        MyDump.Backup;
-        ReplaceAutoIncrement(MyDump.SQL);
-        ExistsScript := Trim(MyDump.SQL.Text);
-      finally
-        MyDump.Free;
-      end;
-    finally
-      dbCon.Close;
-      //dbCon.RemoveFromPool;
-    end;
-
-  finally
-    dbCon.Database := '';
-  end;
-
-
-  RightScript := Trim(GetLastCreateScript());
-
-  if ExistsScript <> RightScript then begin
-    LogCriticalError('Скрипт с некорректными метаданными:'#13#10 + ExistsScript);
-    raise Exception.Create('База данных содержит некорректные метаданные.');
-  end;
-end;
-{$endif}
 
 function TDM.ProcessDocs : Boolean;
 var
