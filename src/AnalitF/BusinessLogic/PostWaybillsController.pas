@@ -364,7 +364,8 @@ begin
     selectFirmCodes.SQL.Text := ''
     + 'select '
     + ' Providers.FirmCode, '
-    + ' Providers.FullName '
+    + ' Providers.FullName, '
+    + ' Providers.ShortName '
     + 'from '
     + '  Providers '
     + '  left join ProviderSettings on ProviderSettings.FirmCode = Providers.FirmCode '
@@ -381,7 +382,7 @@ begin
           + ' values (:FirmCode, :WaybillFolder);';
         while not selectFirmCodes.Eof do begin
           try
-            folderName := GetFolderNameFromFullName(selectFirmCodes.FieldByName('FullName').AsString);
+            folderName := GetFolderNameFromFullName(selectFirmCodes.FieldByName('ShortName').AsString);
 
             if not DirectoryExists(ExePath + SDirUpload + '\' + folderName) then
               if not CreateDir(ExePath + SDirUpload + '\' + folderName) then begin
