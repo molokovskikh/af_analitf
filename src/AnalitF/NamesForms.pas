@@ -95,6 +95,7 @@ type
     procedure cbMnnFilterSelect(Sender: TObject);
     procedure sbShowSynonymMNNClick(Sender: TObject);
     procedure actShowSynonymMNNExecute(Sender: TObject);
+    procedure actUseFormsUpdate(Sender: TObject);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -1151,6 +1152,15 @@ begin
       Self.dbgForms.SetFocus
     else
       Self.dbgNames.SetFocus;
+end;
+
+procedure TNamesFormsForm.actUseFormsUpdate(Sender: TObject);
+begin
+  if MainForm.ActiveChild = Self then
+    if not DM.adtParams.FieldByName( 'OperateForms').AsBoolean then
+      actUseForms.Enabled := False
+    else
+      actUseForms.Enabled := True;
 end;
 
 initialization

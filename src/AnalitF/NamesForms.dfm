@@ -403,6 +403,7 @@ inherited NamesFormsForm: TNamesFormsForm
       Hint = #1055#1086#1080#1089#1082' '#1087#1086' '#1092#1086#1088#1084#1077' '#1074#1099#1087#1091#1089#1082#1072
       ShortCut = 115
       OnExecute = actUseFormsExecute
+      OnUpdate = actUseFormsUpdate
     end
     object actShowAll: TAction
       Caption = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1074#1077#1089#1100' '#1082#1072#1090#1072#1083#1086#1075
