@@ -973,10 +973,15 @@ var
   producerCostColumn : TColumnEh;
   ndsColumn : TColumnEh;
   maxProducerCostColumn : TColumnEh;
+  registryCostColumn : TColumnEh;
 begin
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
     realCostColumn := ColumnByNameT(Grid, 'RealPrice');
+
+  registryCostColumn := ColumnByNameT(Grid, 'RegistryCost');
+  if Assigned(registryCostColumn) then
+    registryCostColumn.Visible := True;
 
   if Assigned(realCostColumn) then  begin
     ndsColumn := ColumnByNameT(Grid, 'NDS');
