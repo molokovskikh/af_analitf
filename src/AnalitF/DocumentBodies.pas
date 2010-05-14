@@ -656,16 +656,20 @@ begin
     if adsDocumentBodiesVitallyImportant.Value
     or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     then begin
-      if not adsDocumentBodiesProducerCost.IsNull then
+      if not adsDocumentBodiesProducerCost.IsNull and (adsDocumentBodiesProducerCost.Value > 0)
+      then
         upCostVariant := DM.GetVitallyImportantMarkup(GetMinProducerCost());
     end
     else begin
       if CalculateOnProducerCost then begin
-        if not adsDocumentBodiesProducerCost.IsNull then
+        if not adsDocumentBodiesProducerCost.IsNull and (adsDocumentBodiesProducerCost.Value > 0)
+        then
           upCostVariant := DM.GetRetUpCost(adsDocumentBodiesProducerCost.Value);
       end
       else begin
-        if not adsDocumentBodiesSupplierCostWithoutNDS.IsNull then
+        if not adsDocumentBodiesSupplierCostWithoutNDS.IsNull
+           and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0)
+        then
           upCostVariant := DM.GetRetUpCost(adsDocumentBodiesSupplierCostWithoutNDS.Value);
       end;
     end;
@@ -911,18 +915,30 @@ begin
   then begin
     //ЕНВД
     if (DM.adtClientsMethodOfTaxation.Value = 0) then
-      Result := not adsDocumentBodiesSupplierCost.IsNull
+      Result :=
+            not adsDocumentBodiesSupplierCost.IsNull
+        and (adsDocumentBodiesSupplierCost.Value > 0)
     else
     //НДС
-      Result := not adsDocumentBodiesSupplierCostWithoutNDS.IsNull;
+      Result :=
+            not adsDocumentBodiesSupplierCostWithoutNDS.IsNull
+        and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0);
   end
   else begin
     //По цене производителя
     if CalculateOnProducerCost then
-      Result := not NDSField.IsNull and not adsDocumentBodiesSupplierCost.IsNull
+      Result :=
+            not NDSField.IsNull
+        and not adsDocumentBodiesSupplierCost.IsNull
+        and (adsDocumentBodiesSupplierCost.Value > 0)
     else
     //По цене поставщика без НДС
-      Result := not adsDocumentBodiesSupplierCostWithoutNDS.IsNull and not NDSField.IsNull and not adsDocumentBodiesSupplierCost.IsNull;
+      Result :=
+            not adsDocumentBodiesSupplierCostWithoutNDS.IsNull
+        and not NDSField.IsNull
+        and not adsDocumentBodiesSupplierCost.IsNull
+        and (adsDocumentBodiesSupplierCost.Value > 0)
+        and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0);
   end;
 end;
 
@@ -1037,6 +1053,7 @@ end;
 function TDocumentBodiesForm.GetMinProducerCost: Double;
 begin
   if not adsDocumentBodiesRegistryCost.IsNull
+    and (adsDocumentBodiesRegistryCost.Value > 0)
     and (adsDocumentBodiesRegistryCost.Value < adsDocumentBodiesProducerCost.Value)
   then
     Result := adsDocumentBodiesRegistryCost.Value
