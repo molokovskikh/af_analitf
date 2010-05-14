@@ -42,28 +42,28 @@ object NotOrdersForm: TNotOrdersForm
   object btnOK: TButton
     Left = 8
     Top = 296
-    Width = 105
+    Width = 130
     Height = 25
-    Caption = #1055#1088#1086#1076#1086#1083#1078#1080#1090#1100
+    Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100' '#1079#1072#1082#1072#1079#1099
     Default = True
     ModalResult = 1
     TabOrder = 1
   end
   object Button1: TButton
-    Left = 232
+    Left = 278
     Top = 296
-    Width = 105
+    Width = 130
     Height = 25
     Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1074' '#1092#1072#1081#1083
     TabOrder = 2
     OnClick = Button1Click
   end
   object btnCancel: TButton
-    Left = 120
+    Left = 143
     Top = 296
-    Width = 105
+    Width = 130
     Height = 25
-    Caption = #1054#1090#1084#1077#1085#1072
+    Caption = #1054#1090#1084#1077#1085#1080#1090#1100' '#1086#1090#1087#1088#1072#1074#1082#1091
     ModalResult = 2
     TabOrder = 3
   end
