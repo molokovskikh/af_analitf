@@ -79,12 +79,14 @@ type
     LeftLimit,
     RightLimit,
     Markup,
-    MaxMarkup : Double;
+    MaxMarkup,
+    MaxSupplierMarkup : Double;
     constructor Create(
       LeftLimit,
       RightLimit,
       Markup,
-      MaxMarkup : Double);
+      MaxMarkup,
+      MaxSupplierMarkup : Double);
   end;
 
   TSelectPrice = class
@@ -684,9 +686,11 @@ type
     //Получить розничную наценку товара
     function GetRetUpCost(BaseCost : Currency) : Currency;
     function GetMaxRetailMarkup(BaseCost : Currency) : Currency;
+    function GetMaxRetailSupplierMarkup(BaseCost : Currency) : Currency;
     //Получить наценку товара для ЖНВЛС
     function GetVitallyImportantMarkup(BaseCost : Currency) : Currency;
     function GetMaxVitallyImportantMarkup(BaseCost : Currency) : Currency;
+    function GetMaxVitallyImportantSupplierMarkup(BaseCost : Currency) : Currency;
     function VitallyImportantMarkupsExists : Boolean;
 
     function GetRetailMarkup(Markups : TObjectList; BaseCost : Currency) : TRetailMarkup;
@@ -2824,13 +2828,11 @@ begin
     'ProviderEmail = ''farm@analit.net'',' +
     'ProviderWeb = ''http://www.analit.net/'',' +
     'ProviderMDBVersion = ' + realDBVersion + ';'#13#10#13#10 +
-    'INSERT INTO RETAILMARGINS (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);'#13#10#13#10
-    );
-{
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);'#13#10#13#10
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);'#13#10#13#10
+    'INSERT INTO RETAILMARGINS (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);'#13#10#13#10 +
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);'#13#10#13#10  +
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);'#13#10#13#10 +
     'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (3, 500, 1000000, 20, 20);'#13#10#13#10
-}    
+    );
 end;
 
 procedure TDM.CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
@@ -5123,19 +5125,20 @@ end;
 { TRetailMarkup }
 
 constructor TRetailMarkup.Create(LeftLimit, RightLimit, Markup,
-  MaxMarkup: Double);
+  MaxMarkup, MaxSupplierMarkup: Double);
 begin
   Self.LeftLimit := LeftLimit;
   Self.RightLimit := RightLimit;
   Self.Markup := Markup;
   Self.MaxMarkup := MaxMarkup;
+  Self.MaxSupplierMarkup := MaxSupplierMarkup;
 end;
 
 procedure TDM.LoadMarkups(TableName: String; Markups: TObjectList);
 begin
   adsQueryValue.Close;
   adsQueryValue.SQL.Text :=
-    'select LeftLimit, RightLimit, Markup, MaxMarkup from ' + TableName + ' order by LeftLimit';
+    'select LeftLimit, RightLimit, Markup, MaxMarkup, MaxSupplierMarkup from ' + TableName + ' order by LeftLimit';
   adsQueryValue.Open;
   try
     Markups.Clear;
@@ -5146,7 +5149,8 @@ begin
           adsQueryValue.FieldByName('LeftLimit').AsCurrency,
           adsQueryValue.FieldByName('RightLimit').AsCurrency,
           adsQueryValue.FieldByName('Markup').AsCurrency,
-          adsQueryValue.FieldByName('MaxMarkup').AsCurrency));
+          adsQueryValue.FieldByName('MaxMarkup').AsCurrency,
+          adsQueryValue.FieldByName('MaxSupplierMarkup').AsCurrency));
       adsQueryValue.Next;
     end;
   finally
@@ -5555,6 +5559,29 @@ begin
         Result := True;
         Exit;
       end;
+end;
+
+function TDM.GetMaxRetailSupplierMarkup(BaseCost: Currency): Currency;
+var
+  retail : TRetailMarkup;
+begin
+  retail := GetRetailMarkup(FRetMargins, BaseCost);
+  if Assigned(retail) then
+    Result := retail.MaxSupplierMarkup
+  else
+    Result := 0;
+end;
+
+function TDM.GetMaxVitallyImportantSupplierMarkup(
+  BaseCost: Currency): Currency;
+var
+  retail : TRetailMarkup;
+begin
+  retail := GetRetailMarkup(FVitallyImportantMarkups, BaseCost);
+  if Assigned(retail) then
+    Result := retail.MaxSupplierMarkup
+  else
+    Result := 0;
 end;
 
 initialization

@@ -318,11 +318,6 @@ end;
 function TVitallyImportantMarkupsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
-{
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);'#13#10#13#10
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);'#13#10#13#10
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (3, 500, 1000000, 20, 20);'#13#10#13#10
-}
   Result := inherited GetCreateSQL(DatabasePrefix)
 +' ( '
 +'  `ID` bigint(20) NOT NULL AUTO_INCREMENT, '

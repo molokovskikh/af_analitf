@@ -16,6 +16,7 @@ type
     MarkupsChanges : Boolean;
     FTableId : TDatabaseObjectId;
     FLoadMarkups : TThreadMethod;
+    OnlyEdit : Boolean;
 
 
     procedure CreateVisibleComponents;
@@ -60,6 +61,7 @@ type
     fRightLimit : TCurrencyField;
     fMarkup : TCurrencyField;
     fMaxMarkup : TCurrencyField;
+    fMaxSupplierMarkup : TCurrencyField;
 
     dsMarkups : TDataSource;
 
@@ -161,6 +163,11 @@ begin
   pEditButtons.Width := btnAdd.Width + 20;
   pClient.Height := lBreakingExistsInfo.Top + lBreakingExistsInfo.Height + 10;
   pEditButtons.Height := pClient.Height;
+
+  if OnlyEdit then begin
+    btnAdd.Visible := False;
+    btnDelete.Visible := False;
+  end;
 end;
 
 procedure TframeEditVitallyImportantMarkups.AddGridPanel;
@@ -170,6 +177,7 @@ begin
   pGrid.Align := alClient;
   pGrid.Caption := '';
   pGrid.BevelOuter := bvNone;
+
 
   dbgMarkups := TToughDBGrid.Create(Self);
   dbgMarkups.Parent := pGrid;
@@ -186,8 +194,12 @@ begin
   TDBGridHelper.AddColumn(dbgMarkups, 'RightLimit', 'Правая граница', '0.00;;', False);
   TDBGridHelper.AddColumn(dbgMarkups, 'Markup', 'Наценка (%)', '0.00;;', False);
   TDBGridHelper.AddColumn(dbgMarkups, 'MaxMarkup', 'Макс. наценка (%)', '0.00;;', False);
+  TDBGridHelper.AddColumn(dbgMarkups, 'MaxSupplierMarkup', 'Макс.нац.опт.звена (%)', '0.00;;', False);
 
   dbgMarkups.DataSource := dsMarkups;
+
+  if OnlyEdit then
+    dbgMarkups.AllowedOperations := [alopUpdateEh];
 end;
 
 procedure TframeEditVitallyImportantMarkups.AddMarkupClick(Sender: TObject);
@@ -202,6 +214,7 @@ constructor TframeEditVitallyImportantMarkups.CreateFrame(
   LoadMarkups : TThreadMethod);
 begin
   FTableId := TableId;
+  OnlyEdit := TableId = doiVitallyImportantMarkups;
   FLoadMarkups := LoadMarkups;
   FMarkups := TObjectList.Create(True);
   Self.Name := 'frameEdit' + DatabaseController.GetById(TableId).Name;
@@ -239,6 +252,10 @@ begin
   fMaxMarkup := TCurrencyField.Create(mdMarkups);
   fMaxMarkup.fieldname := 'MaxMarkup';
   fMaxMarkup.Dataset := mdMarkups;
+
+  fMaxSupplierMarkup := TCurrencyField.Create(mdMarkups);
+  fMaxSupplierMarkup.fieldname := 'MaxSupplierMarkup';
+  fMaxSupplierMarkup.Dataset := mdMarkups;
 
   dsMarkups := TDataSource.Create(Self);
   dsMarkups.DataSet := mdMarkups;
@@ -330,7 +347,8 @@ begin
           fLeftLimit.AsCurrency,
           fRightLimit.AsCurrency,
           fMarkup.Value,
-          FMaxMarkup.Value));
+          fMaxMarkup.Value,
+          fMaxSupplierMarkup.Value));
       mdMarkups.Next;
     end;
   finally
@@ -342,7 +360,7 @@ procedure TframeEditVitallyImportantMarkups.LoadVitallyImportantMarkups;
 begin
   DM.adsQueryValue.Close;
   DM.adsQueryValue.SQL.Text :=
-    'select LeftLimit, RightLimit, Markup, MaxMarkup from ' +
+    'select LeftLimit, RightLimit, Markup, MaxMarkup, MaxSupplierMarkup from ' +
     DatabaseController.GetById(FTableId).Name  +
     ' order by LeftLimit';
   DM.adsQueryValue.Open;
@@ -402,8 +420,8 @@ begin
     DM.adsQueryValue.SQL.Text :=
        'insert into ' +
        DatabaseController.GetById(FTableId).Name +
-      ' (LeftLimit, RightLimit, Markup, MaxMarkup) values ' +
-      '(:LeftLimit, :RightLimit, :Markup, :MaxMarkup);';
+      ' (LeftLimit, RightLimit, Markup, MaxMarkup, MaxSupplierMarkup) values ' +
+      '(:LeftLimit, :RightLimit, :Markup, :MaxMarkup, :MaxSupplierMarkup);';
 
     mdMarkups.First;
     while not mdMarkups.Eof do begin
@@ -411,6 +429,7 @@ begin
       DM.adsQueryValue.ParamByName('RightLimit').Value := fRightLimit.Value;
       DM.adsQueryValue.ParamByName('Markup').Value := fMarkup.Value;
       DM.adsQueryValue.ParamByName('MaxMarkup').Value := fMaxMarkup.Value;
+      DM.adsQueryValue.ParamByName('MaxSupplierMarkup').Value := fMaxSupplierMarkup.Value;
       DM.adsQueryValue.Execute;
       mdMarkups.Next;
     end;

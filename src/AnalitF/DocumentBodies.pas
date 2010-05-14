@@ -544,6 +544,8 @@ end;
 procedure TDocumentBodiesForm.WaybillGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
+var
+  maxSupplierMarkup : Currency;
 begin
   if (retailMarkupField.Value < 0) then
     if AnsiMatchText(Column.Field.FieldName,
@@ -555,6 +557,22 @@ begin
      and AnsiMatchText(Column.Field.FieldName, ['RetailMarkup', 'MaxRetailMarkup'])
   then
     Background := clRed;
+
+  if not retailMarkupField.IsNull and (Column.Field = adsDocumentBodiesSupplierPriceMarkup) then
+  begin
+    if adsDocumentBodiesVitallyImportant.Value
+    or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
+    then
+      maxSupplierMarkup := DM.GetMaxVitallyImportantSupplierMarkup(GetMinProducerCost())
+    else begin
+      if CalculateOnProducerCost then
+        maxSupplierMarkup := DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesProducerCost.Value)
+      else
+        maxSupplierMarkup := DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+    end;
+    if adsDocumentBodiesSupplierPriceMarkup.Value > maxSupplierMarkup then
+      Background := clRed;
+  end;
 
   if (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     or (not adsDocumentBodiesVitallyImportant.IsNull and adsDocumentBodiesVitallyImportant.AsBoolean)
