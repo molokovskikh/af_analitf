@@ -50,19 +50,21 @@ var
   Switch : String;
 begin
   try
-    trLog := TTracer.Create(ChangeFileExt(ParamStr(ParamCount-1), 'up'), 'log', 0);
+    //Ждем, пока вызвавший процесс не закончит работу
+    if TryStrToInt64(ParamStr(ParamCount-2), PH64) then begin
+      PH := OpenProcess(Windows.SYNCHRONIZE, FALSE, PH64);
+      if PH <> 0 then begin
+        WaitForSingleObject(PH, 60000);
+        CloseHandle(PH);
+      end
+      else
+        Sleep(10000);
+    end;
+
+    trLog := TTracer.Create(
+      IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + 'Exchange', 'log', 0);
     try
 
-      //Ждем, пока вызвавший процесс не закончит работу
-      if TryStrToInt64(ParamStr(ParamCount-2), PH64) then begin
-        PH := OpenProcess(Windows.SYNCHRONIZE, FALSE, PH64);
-        if PH <> 0 then begin
-          WaitForSingleObject(PH, 60000);
-          CloseHandle(PH);
-        end
-        else
-          Sleep(10000);
-      end;
 
       //Читаем параметры вызова
       //Директория с обновлениями (без слеша)
@@ -102,6 +104,7 @@ begin
           trLog.TR('Eraser', 'Не получилось удалить директорию ' + InDir
             + ': ' + SysErrorMessage(GetLastError()));
 
+        FreeAndNil(trLog);    
         FillChar( SI, SizeOf( SI), 0);
         SI.cb := SizeOf( SI);
         CreateProcess( nil, PChar( ExeName + ' ' +
@@ -111,7 +114,8 @@ begin
       end;
 
     finally
-      trLog.Free;
+      if Assigned(trLog) then
+        trLog.Free;
     end;
   except
   end;
