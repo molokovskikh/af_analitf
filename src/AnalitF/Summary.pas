@@ -283,6 +283,8 @@ begin
     pmSelectedPrices.Items.Add(mi);
   end;
 	ShowForm;
+  if LastSymmaryType = 1 then
+    try dbgSummarySend.SetFocus; except end;
 end;
 
 procedure TSummaryForm.FormDestroy(Sender: TObject);
