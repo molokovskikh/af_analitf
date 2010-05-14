@@ -84,7 +84,6 @@ procedure TDocumentHeaderForm.SetParameters;
 begin
   adsDocumentHeaders.Close;
 
-  adsDocumentHeaders.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
   adsDocumentHeaders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').Value;
   adsDocumentHeaders.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;

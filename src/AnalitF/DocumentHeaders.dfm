@@ -191,7 +191,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     SQL.Strings = (
       'select'
       'dh.*,'
-      'dh.WriteTime  - interval :timezonebias minute as LocalWriteTime,'
+      'dh.WriteTime as LocalWriteTime,'
       'p.FullName as ProviderName'
       'from'
       '  DocumentHeaders dh,'
@@ -205,10 +205,6 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Left = 64
     Top = 87
     ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'timezonebias'
-      end
       item
         DataType = ftUnknown
         Name = 'ClientId'

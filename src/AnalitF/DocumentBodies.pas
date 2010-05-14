@@ -165,7 +165,6 @@ end;
 procedure TDocumentBodiesForm.SetParams;
 begin
   adsDocumentHeaders.Close;
-  adsDocumentHeaders.ParamByName( 'TimeZoneBias').Value := AProc.TimeZoneBias;
   adsDocumentHeaders.ParamByName('DocumentId').Value := FDocumentId;
   adsDocumentHeaders.Open;
   adsDocumentBodies.Close;

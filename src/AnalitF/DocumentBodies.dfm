@@ -363,7 +363,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     SQL.Strings = (
       'select'
       'dh.*,'
-      'dh.WriteTime  - interval :timezonebias minute as LocalWriteTime,'
+      'dh.WriteTime as LocalWriteTime,'
       'p.FullName as ProviderName,'
       'count(dbodies.Id) as Positions'
       'from'
@@ -378,10 +378,6 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Left = 64
     Top = 87
     ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'timezonebias'
-      end
       item
         DataType = ftUnknown
         Name = 'DocumentId'
