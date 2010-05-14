@@ -230,7 +230,7 @@ begin
 {
       if CheckWin32Version(5, 1) then
         TToughDBGrid(Self.Components[i]).OptionsEh := TToughDBGrid(Self.Components[i]).OptionsEh + [dghTraceColSizing];
-}        
+}
 
       if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource)
@@ -573,6 +573,8 @@ begin
       ndsColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
       ndsColumn.FieldName := 'NDS';
       ndsColumn.Title.Caption := 'НДС';
+      if Assigned(Grid.OnSortMarkingChanged) then
+        ndsColumn.Title.TitleButton := True;
       ndsColumn.DisplayFormat := '#';
     end;
     supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
@@ -580,6 +582,8 @@ begin
       supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(ndsColumn.Index));
       supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
       supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
+      if Assigned(Grid.OnSortMarkingChanged) then
+        supplierPriceMarkupColumn.Title.TitleButton := True;
       supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
     end;
     producerCostColumn := ColumnByNameT(Grid, 'ProducerCost');
@@ -587,6 +591,8 @@ begin
       producerCostColumn := TColumnEh(Grid.Columns.Insert(supplierPriceMarkupColumn.Index));
       producerCostColumn.FieldName := 'ProducerCost';
       producerCostColumn.Title.Caption := 'Цена производителя';
+      if Assigned(Grid.OnSortMarkingChanged) then
+        producerCostColumn.Title.TitleButton := True;
       producerCostColumn.DisplayFormat := '0.00;;''''';
     end;
     maxProducerCostColumn := ColumnByNameT(Grid, 'MaxProducerCost');
@@ -594,6 +600,8 @@ begin
       maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
       maxProducerCostColumn.FieldName := 'MaxProducerCost';
       maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
+      if Assigned(Grid.OnSortMarkingChanged) then
+        maxProducerCostColumn.Title.TitleButton := True;
       maxProducerCostColumn.DisplayFormat := '0.00;;''''';
     end;
 
