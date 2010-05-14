@@ -72,8 +72,10 @@ begin
   descriptionId := nil;
   catalogVitallyImportant := nil;
   catalogMandatoryList := nil;
+{
   gbPosition.ControlStyle := gbPosition.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+}  
 end;
 
 procedure TframePosition.FrameResize(Sender: TObject);

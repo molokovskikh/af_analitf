@@ -243,8 +243,10 @@ begin
   dbgDocumentBodies.Font.Size := 10;
   dbgDocumentBodies.GridLineColors.DarkColor := clBlack;
   dbgDocumentBodies.GridLineColors.BrightColor := clDkGray;
+{
   if CheckWin32Version(5, 1) then
     dbgDocumentBodies.OptionsEh := dbgDocumentBodies.OptionsEh + [dghTraceColSizing];
+}    
 
   dbgDocumentBodies.SelectedField := nil;
   dbgDocumentBodies.Columns.Clear();

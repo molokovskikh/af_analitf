@@ -3,6 +3,7 @@ program AnalitF;
 {%ToDo 'AnalitF.todo'}
 
 uses
+  VCLFixPack in 'Helpers\VCLFixPack.pas',
   Forms,
   SysUtils,
   Windows,

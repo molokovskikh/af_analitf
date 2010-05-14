@@ -139,9 +139,11 @@ begin
   inherited CreateParams(Params);
   //форма будет дочерней
   Params.Style:=Params.Style or WS_CHILD;
+{
   // This only works on Windows XP and above
   if CheckWin32Version(5, 1) then
     Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
+}    
 end;
 
 procedure TChildForm.Loaded;
@@ -225,8 +227,10 @@ begin
       TToughDBGrid(Self.Components[i]).Font.Size := 10;
       TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
       TToughDBGrid(Self.Components[i]).GridLineColors.BrightColor := clDkGray;
+{
       if CheckWin32Version(5, 1) then
         TToughDBGrid(Self.Components[i]).OptionsEh := TToughDBGrid(Self.Components[i]).OptionsEh + [dghTraceColSizing];
+}        
 
       if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource)
