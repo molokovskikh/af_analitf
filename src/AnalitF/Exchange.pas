@@ -140,6 +140,8 @@ begin
   GlobalExchangeParams := nil;
 	if AExchangeActions = [] then exit;
 
+  try
+
   if (Length(DM.adtParams.FieldByName( 'HTTPName').AsString) = 0)
   then begin
 		AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
@@ -350,10 +352,12 @@ begin
       or (eaImportOnly in AExchangeActions))
      and needShowDocumentForm
   then
-    ShowDocumentHeaders; 
+    ShowDocumentHeaders;
 
-  if Assigned(GlobalExchangeParams) then
-    try FreeAndNil(GlobalExchangeParams) except end;
+  finally
+    if Assigned(GlobalExchangeParams) then
+      try FreeAndNil(GlobalExchangeParams) except end;
+  end;
 end;
 
 //Распечатываем отправленные заказы
@@ -364,7 +368,7 @@ var
 begin
   PrintDialog := TPrintDialog.Create(Application);
   try
-  
+
     if PrintDialog.Execute then
       for I := 0 to TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count-1 do
         DM.ShowOrderDetailsReport(
