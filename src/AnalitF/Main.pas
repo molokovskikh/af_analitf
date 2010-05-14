@@ -722,72 +722,93 @@ procedure TMainForm.SetOrdersInfo;
 var
   UserId : Variant;
   I : Integer;
-begin
-  UserId := DM.QueryValue('select UserId from UserInfo', [], []);
-  if VarIsNull(UserId) then
-    StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : не установлен  '
-      + ApplicationVersionText
-  else
-    StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : ' + VarToStr(UserId) + '  '
-      + ApplicationVersionText;
-  if DM.adsQueryValue.Active then
-  	DM.adsQueryValue.Close;
-	DM.adsQueryValue.SQL.Text := ''
-+'SELECT '
-+'       COUNT(DISTINCT CurrentOrderHeads.orderid) AS OrdersCount, '
-+'       COUNT(osbc.id)                     AS Positions  , '
-+'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder, '
-+'  ( '
-+'    select '
-+'      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0) '
-+'    from '
-+'      PostedOrderHeads '
-+'      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.OrderId '
-+'    WHERE PostedOrderHeads.ClientId = :ClientId '
-+'       and PostedOrderHeads.senddate > curdate() + interval (1-day(curdate())) day '
-+'       AND PostedOrderHeads.Closed = 1 '
-+'       AND PostedOrderHeads.send = 1 '
-+'       AND PostedOrderLists.OrderCount>0 '
-+'  ) as sumbycurrentmonth, '
-+'  ( '
-+'    select '
-+'      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0) '
-+'    from '
-+'      PostedOrderHeads '
-+'      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.OrderId '
-+'    WHERE PostedOrderHeads.ClientId = :ClientId '
-+'       and PostedOrderHeads.senddate > curdate() + interval (-WEEKDAY(curdate())) day '
-+'       AND PostedOrderHeads.Closed = 1 '
-+'       AND PostedOrderHeads.send = 1 '
-+'       AND PostedOrderLists.OrderCount>0 '
-+'  ) as sumbycurrentweek '
-+'FROM '
-+'       CurrentOrderHeads '
-+'       INNER JOIN CurrentOrderLists osbc       ON (CurrentOrderHeads.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
-+'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
-+'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
-+'WHERE (CurrentOrderHeads.CLIENTID                                      = :ClientID) '
-+'   AND (CurrentOrderHeads.Closed                                      <> 1)';
+  IdTextWidth,
+  CurrentWidth,
+  NeedWidth,
+  AllWidth : Integer;
 
-	DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	DM.adsQueryValue.Open;
-	try
-		StatusBar.Panels[ 0].Text := Format( 'Заказов : %d',
-			 [ DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger]);
-		StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',
-			 [ DM.adsQueryValue.FieldByName( 'Positions').AsInteger]);
-    StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',
-       [ DM.adsQueryValue.FieldByName( 'SumOrder').AsCurrency ]);
-    StatusBar.Panels[ 4].Text := Format( 'За месяц : %0.2f',
-       [ DM.adsQueryValue.FieldByName( 'sumbycurrentmonth').AsCurrency ]);
-    StatusBar.Panels[ 5].Text := Format( 'За неделю : %0.2f',
-       [ DM.adsQueryValue.FieldByName( 'sumbycurrentweek').AsCurrency ]);
-    for I := 0 to 2 do
-      StatusBar.Panels[i].Width :=
-        StatusBar.Canvas.TextWidth(StatusBar.Panels[i].Text) + 15; 
-	finally
-		DM.adsQueryValue.Close;
-	end;
+begin
+try
+  if DM.MainConnection.Connected then begin
+    UserId := DM.QueryValue('select UserId from UserInfo', [], []);
+    if VarIsNull(UserId) then
+      StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : не установлен  '
+        + ApplicationVersionText
+    else
+      StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : ' + VarToStr(UserId) + '  '
+        + ApplicationVersionText;
+    IdTextWidth := StatusBar.Canvas.TextWidth(StatusBar.Panels[StatusBar.Panels.Count-1].Text) + 15;
+    if DM.adsQueryValue.Active then
+      DM.adsQueryValue.Close;
+    DM.adsQueryValue.SQL.Text := ''
+  +'SELECT '
+  +'       COUNT(DISTINCT CurrentOrderHeads.orderid) AS OrdersCount, '
+  +'       COUNT(osbc.id)                     AS Positions  , '
+  +'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder, '
+  +'  ( '
+  +'    select '
+  +'      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0) '
+  +'    from '
+  +'      PostedOrderHeads '
+  +'      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.OrderId '
+  +'    WHERE PostedOrderHeads.ClientId = :ClientId '
+  +'       and PostedOrderHeads.senddate > curdate() + interval (1-day(curdate())) day '
+  +'       AND PostedOrderHeads.Closed = 1 '
+  +'       AND PostedOrderHeads.send = 1 '
+  +'       AND PostedOrderLists.OrderCount>0 '
+  +'  ) as sumbycurrentmonth, '
+  +'  ( '
+  +'    select '
+  +'      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCount), 0) '
+  +'    from '
+  +'      PostedOrderHeads '
+  +'      INNER JOIN PostedOrderLists ON PostedOrderLists.OrderId=PostedOrderHeads.OrderId '
+  +'    WHERE PostedOrderHeads.ClientId = :ClientId '
+  +'       and PostedOrderHeads.senddate > curdate() + interval (-WEEKDAY(curdate())) day '
+  +'       AND PostedOrderHeads.Closed = 1 '
+  +'       AND PostedOrderHeads.send = 1 '
+  +'       AND PostedOrderLists.OrderCount>0 '
+  +'  ) as sumbycurrentweek '
+  +'FROM '
+  +'       CurrentOrderHeads '
+  +'       INNER JOIN CurrentOrderLists osbc       ON (CurrentOrderHeads.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
+  +'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
+  +'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
+  +'WHERE (CurrentOrderHeads.CLIENTID                                      = :ClientID) '
+  +'   AND (CurrentOrderHeads.Closed                                      <> 1)';
+
+    DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+    DM.adsQueryValue.Open;
+    try
+      StatusBar.Panels[ 0].Text := Format( 'Заказов : %d',
+         [ DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger]);
+      StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',
+         [ DM.adsQueryValue.FieldByName( 'Positions').AsInteger]);
+      StatusBar.Panels[ 2].Text := Format( 'Сумма : %0.2f',
+         [ DM.adsQueryValue.FieldByName( 'SumOrder').AsCurrency ]);
+      StatusBar.Panels[ 4].Text := Format( 'За месяц : %0.2f',
+         [ DM.adsQueryValue.FieldByName( 'sumbycurrentmonth').AsCurrency ]);
+      StatusBar.Panels[ 5].Text := Format( 'За неделю : %0.2f',
+         [ DM.adsQueryValue.FieldByName( 'sumbycurrentweek').AsCurrency ]);
+      for I := 0 to StatusBar.Panels.Count-2 do
+        StatusBar.Panels[i].Width :=
+          StatusBar.Canvas.TextWidth(StatusBar.Panels[i].Text) + 15;
+      AllWidth := 0;
+      for I := 0 to StatusBar.Panels.Count-2 do
+        AllWidth := AllWidth + StatusBar.Panels[i].Width;
+      NeedWidth := StatusBar.Width - IdTextWidth;
+      I := StatusBar.Panels.Count-2;
+      while (NeedWidth < AllWidth) and (I >= 0) do begin
+        AllWidth := AllWidth - StatusBar.Panels[i].Width;
+        StatusBar.Panels[i].Width := 0;
+        I := I - 1;
+      end;
+    finally
+      DM.adsQueryValue.Close;
+    end;
+  end;
+except
+end;
 end;
 
 procedure TMainForm.actCloseAllExecute(Sender: TObject);
@@ -1192,6 +1213,7 @@ begin
     ClientNameRect.Right := ClientNameRect.Left + NewWidth;
     ToolBar.Invalidate;
   end;
+  SetOrdersInfo;
 end;
 
 procedure TMainForm.OnSelectClientClick(Sender: TObject);
