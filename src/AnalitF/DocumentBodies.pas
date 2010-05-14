@@ -126,6 +126,8 @@ type
     function CanCalculateRetailMarkup : Boolean;
 
     procedure GridColumnsClick( Sender: TObject);
+
+    function GetMinProducerCost() : Double;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -318,7 +320,7 @@ begin
       if adsDocumentBodiesVitallyImportant.Value
       or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
       then
-        maxMarkup := DM.GetMaxVitallyImportantMarkup(adsDocumentBodiesProducerCost.Value)
+        maxMarkup := DM.GetMaxVitallyImportantMarkup(GetMinProducerCost())
       else begin
         if CalculateOnProducerCost then
           maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesProducerCost.Value)
@@ -635,7 +637,7 @@ begin
     or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     then begin
       if not adsDocumentBodiesProducerCost.IsNull then
-        upCostVariant := DM.GetVitallyImportantMarkup(adsDocumentBodiesProducerCost.Value);
+        upCostVariant := DM.GetVitallyImportantMarkup(GetMinProducerCost());
     end
     else begin
       if CalculateOnProducerCost then begin
@@ -771,12 +773,12 @@ begin
     //ЕНВД
     if (DM.adtClientsMethodOfTaxation.Value = 0) then
 
-      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * vitallyNDSMultiplier)
+      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(GetMinProducerCost() * vitallyNDSMultiplier)
 
     else
     //НДС
 
-      Result := ((price/vitallyNDSMultiplier - adsDocumentBodiesSupplierCostWithoutNDS.Value) *100) / adsDocumentBodiesProducerCost.Value;
+      Result := ((price/vitallyNDSMultiplier - adsDocumentBodiesSupplierCostWithoutNDS.Value) *100) / GetMinProducerCost();
 
   end
   else begin
@@ -820,25 +822,25 @@ begin
 
     //ЕНВД
     if (DM.adtClientsMethodOfTaxation.Value = 0) then begin
-      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesProducerCost.Value*vitallyNDSMultiplier*(markup/100);
+      Result := adsDocumentBodiesSupplierCost.Value + GetMinProducerCost()*vitallyNDSMultiplier*(markup/100);
 
       if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
       then begin
         Result := RoundToOneDigit(Result);
         //markup := ((Result - adsDocumentBodiesSupplierCost.Value) / adsDocumentBodiesProducerCost.Value)*100;
-        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * vitallyNDSMultiplier)
+        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(GetMinProducerCost() * vitallyNDSMultiplier)
       end;
 
     end
     else begin
     //НДС
-      Result := (adsDocumentBodiesSupplierCostWithoutNDS.Value + adsDocumentBodiesProducerCost.Value*(markup/100)) * vitallyNDSMultiplier;
+      Result := (adsDocumentBodiesSupplierCostWithoutNDS.Value + GetMinProducerCost()*(markup/100)) * vitallyNDSMultiplier;
 
       if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
       then begin
         Result := RoundToOneDigit(Result);
         //markup := ((Result/1.1 - adsDocumentBodiesSupplierCostWithoutNDS.Value) / adsDocumentBodiesProducerCost.Value)*100;
-        markup := ((Result/vitallyNDSMultiplier - adsDocumentBodiesSupplierCostWithoutNDS.Value) *100) / adsDocumentBodiesProducerCost.Value;
+        markup := ((Result/vitallyNDSMultiplier - adsDocumentBodiesSupplierCostWithoutNDS.Value) *100) / GetMinProducerCost();
       end;
     end;
   end
@@ -1010,6 +1012,16 @@ begin
   frVariables[ 'АдресПолучателя'] := '';
 
   DM.ShowFastReport('Invoice.frf', adsDocumentBodies, True);
+end;
+
+function TDocumentBodiesForm.GetMinProducerCost: Double;
+begin
+  if not adsDocumentBodiesRegistryCost.IsNull
+    and (adsDocumentBodiesRegistryCost.Value < adsDocumentBodiesProducerCost.Value)
+  then
+    Result := adsDocumentBodiesRegistryCost.Value
+  else
+    Result := adsDocumentBodiesProducerCost.Value;
 end;
 
 end.
