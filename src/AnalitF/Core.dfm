@@ -1732,6 +1732,7 @@ object CoreForm: TCoreForm
       end>
     object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
