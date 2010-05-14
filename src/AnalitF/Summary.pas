@@ -572,18 +572,51 @@ begin
 end;
 
 procedure TSummaryForm.DeleteOrder;
+var
+  I : Integer;
+  selectedRows : TStringList;
 begin
   if LastSymmaryType = 0 then
-    if AProc.MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
-      DM.adcUpdate.SQL.Text :=
-        'delete from CurrentOrderLists where OrderID = ' +
-          IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
-          ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
-      DM.adcUpdate.Execute;
-      adsSummary.Close;
-      adsSummary.Open;
-      SetOrderLabel;
-      MainForm.SetOrdersInfo;
+    selectedRows := TDBGridHelper.GetSelectedRows(dbgSummaryCurrent);
+    if selectedRows.Count > 0 then begin
+
+      if selectedRows.Count = 1 then begin
+        if AProc.MessageBox('Удалить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
+          DM.adcUpdate.SQL.Text :=
+            'delete from CurrentOrderLists where OrderID = ' +
+              IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
+              ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
+          DM.adcUpdate.Execute;
+
+          adsSummary.Close;
+          adsSummary.Open;
+          SetOrderLabel;
+          MainForm.SetOrdersInfo;
+        end;
+      end
+      else begin
+        if AProc.MessageBox('Удалить выбранные позиции?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
+
+          adsSummary.DisableControls;
+          try
+            for I := 0 to selectedRows.Count-1 do begin
+              adsSummary.Bookmark := selectedRows[i];
+              DM.adcUpdate.SQL.Text :=
+                'delete from CurrentOrderLists where OrderID = ' +
+                  IntToStr(adsSummary.FieldByName('OrdersOrderID').AsInteger) +
+                  ' and CoreID = ' + IntToStr(adsSummary.FieldByName('OrdersCoreID').AsInteger);
+              DM.adcUpdate.Execute;
+            end;
+          finally
+            adsSummary.EnableControls;
+          end;
+
+          adsSummary.Close;
+          adsSummary.Open;
+          SetOrderLabel;
+          MainForm.SetOrdersInfo;
+        end;
+      end;
     end;
 end;
 

@@ -66,7 +66,7 @@ object CoreFirmForm: TCoreFirmForm
     FooterFont.Height = -11
     FooterFont.Name = 'MS Sans Serif'
     FooterFont.Style = []
-    Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+    Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
     OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
     ReadOnly = True
     TabOrder = 2

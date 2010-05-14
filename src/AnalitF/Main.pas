@@ -1213,7 +1213,8 @@ begin
     ClientNameRect.Right := ClientNameRect.Left + NewWidth;
     ToolBar.Invalidate;
   end;
-  SetOrdersInfo;
+  if not JustRun then
+    SetOrdersInfo;
 end;
 
 procedure TMainForm.OnSelectClientClick(Sender: TObject);

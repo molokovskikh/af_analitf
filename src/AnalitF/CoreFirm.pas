@@ -235,6 +235,7 @@ type
     procedure ccf(DataSet: TDataSet);
     procedure SetClear;
     procedure AddKeyToSearch(Key : Char);
+    procedure DeleteOrder;
   public
     procedure ShowForm(
       PriceCode: Integer;
@@ -582,12 +583,12 @@ begin
       if not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0) then
         adsCore.RefreshRecord;
       adsCore.Next;
-    end;    
+    end;
   finally
     if OldFiltered then
       DBProc.SetFilterProc(adsCore, OldFilterEvent);
     adsCore.First;
-    adsCore.Locate([adsCoreCoreId], LastPositionByCoreId, []);  
+    adsCore.Locate([adsCoreCoreId], LastPositionByCoreId, []);
     adsCore.EnableControls;
     Screen.Cursor:=crDefault;
     SetOrderLabel;
@@ -628,6 +629,11 @@ procedure TCoreFirmForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	inherited;
+  if (Shift = []) and (Key = VK_DELETE) and (not adsCore.IsEmpty) then begin
+    Key := 0;
+    DeleteOrder;
+  end
+  else
 	if ( Key = VK_RETURN) then
     if tmrSearch.Enabled then
       tmrSearchTimer(nil)
@@ -908,6 +914,53 @@ begin
       Accept := adsCoreCodeFirmCr.AsVariant = 0
     else
       Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+end;
+
+procedure TCoreFirmForm.DeleteOrder;
+var
+  OldFilterEvent : TFilterRecordEvent;
+  OldFiltered : Boolean;
+  LastPositionByCoreId : Variant;
+  I : Integer;
+  selectedRows : TStringList;
+begin
+  if not Visible then Exit;
+  selectedRows := TDBGridHelper.GetSelectedRows(dbgCore);
+  if (selectedRows.Count > 0)
+    and (AProc.MessageBox( '”далить выбранные позиции?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK)
+  then
+    Abort;
+  adsCore.DisableControls;
+  OldFiltered := adsCore.Filtered;
+  OldFilterEvent := adsCore.OnFilterRecord;
+  LastPositionByCoreId := adsCoreCoreId.AsVariant;
+  Screen.Cursor:=crHourGlass;
+  try
+
+    for I := 0 to selectedRows.Count-1 do begin
+      adsCore.Bookmark := selectedRows[i];
+      if adsCoreOrderCount.Value > 0 then begin
+        adsCore.Edit;
+        adsCoreOrderCount.Value := 0;
+        adsCore.Post;
+      end;
+    end;
+
+  finally
+    if OldFiltered then
+      DBProc.SetFilterProc(adsCore, OldFilterEvent);
+    adsCore.First;
+    adsCore.Locate([adsCoreCoreId], LastPositionByCoreId, []);
+    adsCore.EnableControls;
+    Screen.Cursor:=crDefault;
+    SetOrderLabel;
+    MainForm.SetOrdersInfo;
+  end;
+  //≈сли мы пришли сюда из формы заказа, то возвращатьс€ туда нет смысла
+  if Self.PrevForm is TOrdersForm then begin
+    Self.PrevForm.ShowAsPrevForm;
+    //Close;
+  end;
 end;
 
 end.
