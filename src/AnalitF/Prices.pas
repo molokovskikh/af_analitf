@@ -11,28 +11,15 @@ uses
 
 type
   TPricesForm = class(TChildForm)
-    dbtFullName: TDBText;
-    dbtPhones: TDBText;
-    dbtManagerMail: TDBText;
-    Label2: TLabel;
-    Label1: TLabel;
     cbOnlyLeaders: TCheckBox;
     ActionList: TActionList;
     actOnlyLeaders: TAction;
     dsPrices: TDataSource;
-    dbtMinOrder: TDBText;
     actCurrentOrders: TAction;
     Panel1: TPanel;
     Panel2: TPanel;
-    Label3: TLabel;
-    Label5: TLabel;
     GroupBox1: TGroupBox;
     dbgPrices: TToughDBGrid;
-    DBMemo2: TDBMemo;
-    Bevel2: TBevel;
-    Label6: TLabel;
-    DBMemo3: TDBMemo;
-    Bevel3: TBevel;
     Panel3: TPanel;
     lblPriceCount: TLabel;
     adsPricesOld: TpFIBDataSet;
@@ -81,10 +68,26 @@ type
     adsPricessumbycurrentmonth: TFloatField;
     adsPricesSumOrder: TFloatField;
     adsPricessumbycurrentweek: TFloatField;
+    pPriceHeader: TPanel;
+    dbtFullName: TDBText;
+    Label3: TLabel;
+    dbtPhones: TDBText;
+    Label5: TLabel;
+    Label2: TLabel;
+    dbtMinOrder: TDBText;
+    pPriceFooter: TPanel;
+    pContact: TPanel;
+    DBMemoContact: TDBMemo;
+    LabelContact: TLabel;
+    BevelContact: TBevel;
+    pOperativInfo: TPanel;
+    BevelOperativeInfo: TBevel;
+    LabelOperativeInfo: TLabel;
+    DBMemoOperativeInfo: TDBMemo;
+    stManagerMail: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
-    procedure dbtManagerMailClick(Sender: TObject);
     procedure dbgPricesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgPricesGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -98,10 +101,7 @@ type
     procedure dbgPricesExit(Sender: TObject);
     procedure adsPricesOldINJOBChange(Sender: TField);
     procedure tmStopEditTimer(Sender: TObject);
-    procedure adsPricesManagerMailGetText(Sender: TField; var Text: String;
-      DisplayText: Boolean);
-    procedure dbtManagerMailMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure stManagerMailClick(Sender: TObject);
   private
     procedure GetLastPrice;
     procedure SetLastPrice;
@@ -110,6 +110,7 @@ type
     procedure SetScrolls(var Memo: TDBMemo);
     // кол-во видимых строк в Memo
     function LinesVisible(Memo: TDBMemo): Integer;
+    procedure ProcessManagerMail;
   protected
   public
     FCoreFirmForm : TCoreFirmForm;
@@ -264,11 +265,6 @@ begin
 	dbgPrices.SetFocus;
 end;
 
-procedure TPricesForm.dbtManagerMailClick(Sender: TObject);
-begin
-  MailTo( dbtManagerMail.Field.AsString, '');
-end;
-
 procedure TPricesForm.dbgPricesDblClick(Sender: TObject);
 var
   C : GridsEh.TGridCoord;
@@ -311,21 +307,21 @@ procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
 begin
 	inherited;
   //Реализация взята отсюда: http://www.autoaf.ru/faq_delphi.htm
-	if DBMemo2.Lines.Count > 0 then
-    SetScrolls(DBMemo2)
+	if DBMemoContact.Lines.Count > 0 then
+    SetScrolls(DBMemoContact)
   else
-    DBMemo2.ScrollBars := ssNone;
-	if DBMemo3.Lines.Count > 0 then
-    SetScrolls(DBMemo3)
+    DBMemoContact.ScrollBars := ssNone;
+	if DBMemoOperativeInfo.Lines.Count > 0 then
+    SetScrolls(DBMemoOperativeInfo)
   else
-    DBMemo3.ScrollBars := ssNone;
-  dbtManagerMail.Hint := adsPricesManagerMail.AsString;
+    DBMemoOperativeInfo.ScrollBars := ssNone;
+  ProcessManagerMail;
 end;
 
 procedure TPricesForm.adsPrices2AfterOpen(DataSet: TDataSet);
 begin
   lblPriceCount.Caption := 'Всего прайс-листов : ' + IntToStr( adsPrices.RecordCount);
-  dbtManagerMail.Hint := adsPricesManagerMail.AsString;
+  ProcessManagerMail;
 end;
 
 procedure TPricesForm.adsPricesOldSTORAGEGetText(Sender: TField;
@@ -415,29 +411,24 @@ begin
     Memo.ScrollBars:= ssNone;
 end;
 
-procedure TPricesForm.adsPricesManagerMailGetText(Sender: TField;
-  var Text: String; DisplayText: Boolean);
+procedure TPricesForm.ProcessManagerMail;
 var
-  CurrentTextWidth : Integer;
+  sl : TStringList;
 begin
+  sl := TStringList.Create;
   try
-    Text := Sender.AsString;
-    CurrentTextWidth := dbtManagerMail.Canvas.TextWidth(Text);
-    if (CurrentTextWidth > dbtManagerMail.Width - 10) then begin
-      repeat
-        Text := Copy(Text, 1, Length(Text)-1);
-        CurrentTextWidth := dbtManagerMail.Canvas.TextWidth(Text);
-      until (CurrentTextWidth < dbtManagerMail.Width - 10);
-      Text := Text + '...';
-    end;
-  except
+    sl.CommaText := adsPricesManagerMail.AsString;
+    stManagerMail.Caption := sl.Text;
+    stManagerMail.Height := sl.Count * dbtFullName.Height;
+    pPriceHeader.Height := stManagerMail.Top + stManagerMail.Height + 3;
+  finally
+    sl.Free;
   end;
 end;
 
-procedure TPricesForm.dbtManagerMailMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
+procedure TPricesForm.stManagerMailClick(Sender: TObject);
 begin
-  dbtManagerMail.Hint := adsPricesManagerMail.AsString;
+  MailTo( adsPricesManagerMail.AsString, '');
 end;
 
 initialization

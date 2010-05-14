@@ -173,183 +173,223 @@ inherited PricesForm: TPricesForm
       Align = alRight
       Caption = ' '#1048#1085#1092#1086#1088#1084#1072#1094#1080#1103' '
       TabOrder = 0
-      DesignSize = (
-        256
-        514)
-      object dbtPhones: TDBText
-        Left = 72
-        Top = 37
-        Width = 61
-        Height = 13
-        AutoSize = True
-        DataField = 'SupportPhone'
-        DataSource = dsPrices
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object dbtManagerMail: TDBText
-        Left = 55
-        Top = 55
-        Width = 194
-        Height = 13
-        Cursor = crHandPoint
-        Color = clBtnFace
-        DataField = 'ManagerMail'
-        DataSource = dsPrices
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlue
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold, fsUnderline]
-        ParentColor = False
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = dbtManagerMailClick
-        OnMouseMove = dbtManagerMailMouseMove
-      end
-      object dbtFullName: TDBText
-        Left = 5
-        Top = 20
-        Width = 244
-        Height = 13
-        DataField = 'FullName'
-        DataSource = dsPrices
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object dbtMinOrder: TDBText
-        Left = 174
-        Top = 71
-        Width = 70
-        Height = 13
-        AutoSize = True
-        DataField = 'MinReq'
-        DataSource = dsPrices
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Label1: TLabel
-        Left = 6
-        Top = 100
-        Width = 156
-        Height = 13
-        Caption = #1050#1086#1085#1090#1072#1082#1090#1085#1072#1103' '#1080#1085#1092#1086#1088#1084#1072#1094#1080#1103' :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Label2: TLabel
-        Left = 6
-        Top = 71
-        Width = 164
-        Height = 13
-        Caption = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1081' '#1079#1072#1082#1072#1079', '#1088#1091#1073'. :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Label3: TLabel
-        Left = 5
-        Top = 37
-        Width = 61
-        Height = 13
-        Caption = #1058#1077#1083#1077#1092#1086#1085' :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Label5: TLabel
-        Left = 6
-        Top = 55
-        Width = 44
-        Height = 13
-        Caption = 'E-Mail :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Bevel2: TBevel
-        Left = 5
-        Top = 91
-        Width = 243
-        Height = 3
-        Shape = bsTopLine
-      end
-      object Label6: TLabel
-        Left = 6
-        Top = 246
-        Width = 165
-        Height = 13
-        Caption = #1054#1087#1077#1088#1072#1090#1080#1074#1085#1072#1103' '#1080#1085#1092#1086#1088#1084#1072#1094#1080#1103' :'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Bevel3: TBevel
-        Left = 5
-        Top = 237
-        Width = 243
-        Height = 3
-        Shape = bsTopLine
-      end
-      object DBMemo2: TDBMemo
-        Left = 6
-        Top = 119
-        Width = 243
-        Height = 115
-        BevelInner = bvNone
+      object pPriceHeader: TPanel
+        Left = 2
+        Top = 15
+        Width = 252
+        Height = 122
+        Align = alTop
         BevelOuter = bvNone
-        BorderStyle = bsNone
-        Color = clBtnFace
-        DataField = 'ContactInfo'
-        DataSource = dsPrices
-        ReadOnly = True
-        ScrollBars = ssVertical
         TabOrder = 0
+        object dbtFullName: TDBText
+          Left = 5
+          Top = 4
+          Width = 244
+          Height = 13
+          DataField = 'FullName'
+          DataSource = dsPrices
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label3: TLabel
+          Left = 5
+          Top = 21
+          Width = 61
+          Height = 13
+          Caption = #1058#1077#1083#1077#1092#1086#1085' :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object dbtPhones: TDBText
+          Left = 72
+          Top = 21
+          Width = 61
+          Height = 13
+          AutoSize = True
+          DataField = 'SupportPhone'
+          DataSource = dsPrices
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label5: TLabel
+          Left = 5
+          Top = 55
+          Width = 44
+          Height = 13
+          Caption = 'E-Mail :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label2: TLabel
+          Left = 5
+          Top = 38
+          Width = 164
+          Height = 13
+          Caption = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1081' '#1079#1072#1082#1072#1079', '#1088#1091#1073'. :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object dbtMinOrder: TDBText
+          Left = 174
+          Top = 38
+          Width = 70
+          Height = 13
+          AutoSize = True
+          DataField = 'MinReq'
+          DataSource = dsPrices
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object stManagerMail: TStaticText
+          Left = 24
+          Top = 72
+          Width = 225
+          Height = 33
+          Cursor = crHandPoint
+          AutoSize = False
+          Caption = 'stManagerMail'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlue
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold, fsUnderline]
+          ParentFont = False
+          TabOrder = 0
+          OnClick = stManagerMailClick
+        end
       end
-      object DBMemo3: TDBMemo
-        Left = 6
-        Top = 264
-        Width = 243
-        Height = 235
-        Anchors = [akLeft, akTop, akBottom]
-        BevelInner = bvNone
+      object pPriceFooter: TPanel
+        Left = 2
+        Top = 137
+        Width = 252
+        Height = 375
+        Align = alClient
         BevelOuter = bvNone
-        BorderStyle = bsNone
-        Color = clBtnFace
-        DataField = 'OperativeInfo'
-        DataSource = dsPrices
-        ReadOnly = True
-        ScrollBars = ssVertical
         TabOrder = 1
+        object pContact: TPanel
+          Left = 0
+          Top = 0
+          Width = 252
+          Height = 120
+          Align = alTop
+          BevelOuter = bvNone
+          Caption = 'pContact'
+          TabOrder = 0
+          object LabelContact: TLabel
+            Left = 0
+            Top = 3
+            Width = 252
+            Height = 13
+            Align = alTop
+            Caption = ' '#1050#1086#1085#1090#1072#1082#1090#1085#1072#1103' '#1080#1085#1092#1086#1088#1084#1072#1094#1080#1103' :'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object BevelContact: TBevel
+            Left = 0
+            Top = 0
+            Width = 252
+            Height = 3
+            Align = alTop
+            Shape = bsTopLine
+          end
+          object DBMemoContact: TDBMemo
+            Left = 0
+            Top = 16
+            Width = 252
+            Height = 104
+            Align = alClient
+            BevelInner = bvNone
+            BevelOuter = bvSpace
+            BevelKind = bkSoft
+            BevelWidth = 4
+            BorderStyle = bsNone
+            Color = clBtnFace
+            DataField = 'ContactInfo'
+            DataSource = dsPrices
+            ReadOnly = True
+            ScrollBars = ssVertical
+            TabOrder = 0
+          end
+        end
+        object pOperativInfo: TPanel
+          Left = 0
+          Top = 120
+          Width = 252
+          Height = 255
+          Align = alClient
+          BevelOuter = bvNone
+          Caption = 'pOperativeInfo'
+          TabOrder = 1
+          object BevelOperativeInfo: TBevel
+            Left = 0
+            Top = 0
+            Width = 252
+            Height = 3
+            Align = alTop
+            Shape = bsTopLine
+          end
+          object LabelOperativeInfo: TLabel
+            Left = 0
+            Top = 3
+            Width = 252
+            Height = 13
+            Align = alTop
+            Caption = ' '#1054#1087#1077#1088#1072#1090#1080#1074#1085#1072#1103' '#1080#1085#1092#1086#1088#1084#1072#1094#1080#1103' :'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object DBMemoOperativeInfo: TDBMemo
+            Left = 0
+            Top = 16
+            Width = 252
+            Height = 239
+            Align = alClient
+            BevelInner = bvNone
+            BevelOuter = bvSpace
+            BevelKind = bkSoft
+            BevelWidth = 4
+            BorderStyle = bsNone
+            Color = clBtnFace
+            DataField = 'OperativeInfo'
+            DataSource = dsPrices
+            ReadOnly = True
+            ScrollBars = ssVertical
+            TabOrder = 0
+          end
+        end
       end
     end
     object Panel3: TPanel
@@ -802,7 +842,6 @@ inherited PricesForm: TPricesForm
     object adsPricesManagerMail: TStringField
       FieldName = 'ManagerMail'
       ReadOnly = True
-      OnGetText = adsPricesManagerMailGetText
       Size = 50
     end
     object adsPricesSupportPhone: TStringField
