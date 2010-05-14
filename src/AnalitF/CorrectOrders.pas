@@ -974,6 +974,7 @@ var
   ndsColumn : TColumnEh;
   maxProducerCostColumn : TColumnEh;
   registryCostColumn : TColumnEh;
+  synonymFirmColumn : TColumnEh;
 begin
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
@@ -982,6 +983,13 @@ begin
   registryCostColumn := ColumnByNameT(Grid, 'RegistryCost');
   if Assigned(registryCostColumn) then
     registryCostColumn.Visible := True;
+
+  synonymFirmColumn  := ColumnByNameT(Grid, 'SynonymFirm');
+  if Assigned(synonymFirmColumn) then begin
+    Grid.ParentShowHint := False;
+    Grid.ShowHint := True;
+    synonymFirmColumn.ToolTips := True;
+  end;
 
   if Assigned(realCostColumn) then  begin
     ndsColumn := ColumnByNameT(Grid, 'NDS');

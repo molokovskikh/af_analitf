@@ -1004,8 +1004,12 @@ begin
   dbgMaxProducerCosts.Parent := pMaxProducerCostsIsEmpty;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMaxProducerCosts);
   dbgMaxProducerCosts.Align := alClient;
-  TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Product', 'Наименование', dbgMaxProducerCosts.ClientWidth div 2);
-  TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Producer', 'Производитель', (dbgMaxProducerCosts.ClientWidth div 6)*2);
+  dbgMaxProducerCosts.ParentShowHint := False;
+  dbgMaxProducerCosts.ShowHint := True;
+  column := TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Product', 'Наименование', dbgMaxProducerCosts.ClientWidth div 2);
+  column.ToolTips := True;
+  column := TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Producer', 'Производитель', (dbgMaxProducerCosts.ClientWidth div 6)*2);
+  column.ToolTips := True;
   column := TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Cost', 'Цена', dbgMaxProducerCosts.ClientWidth div 6);
   column.Alignment := taRightJustify; 
   dbgMaxProducerCosts.DataSource := dsMaxProducerCosts;
