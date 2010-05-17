@@ -3831,35 +3831,6 @@ object MainForm: TMainForm
       FFFFFFFFFFFFFFFF0000001FFFC1FFFF00000000000000000000000000000000
       000000000000}
   end
-  object adsOrdersHOld: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    ORDERID,'
-      '    SERVERORDERID,'
-      '    DATEPRICE,'
-      '    PRICECODE,'
-      '    REGIONCODE,'
-      '    ORDERDATE,'
-      '    SENDDATE,'
-      '    CLOSED,'
-      '    SEND,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    POSITIONS,'
-      '    SUPPORTPHONE,'
-      '    MESSAGETO,'
-      '    COMMENTS'
-      'FROM'
-      '    ORDERSHSHOW(:CLIENTID,'
-      '    :CLOSED,'
-      '    :TIMEZONEBIAS) '
-      'where'
-      '  Send = :Send')
-    Database = DM.MainConnectionOld
-    Left = 192
-    Top = 272
-    oCacheCalcFields = True
-  end
   object pmClients: TPopupMenu
     Left = 328
     Top = 160

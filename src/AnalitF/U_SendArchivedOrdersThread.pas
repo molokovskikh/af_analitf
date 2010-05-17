@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, SysUtils, Windows, StrUtils, DModule, IdHTTP, IdSSLOpenSSL, AProc,
-  SOAPThroughHTTP, Contnrs, pFIBDataSet, pFIBProps, U_RecvThread;
+  SOAPThroughHTTP, Contnrs, U_RecvThread;
 
 type
   TSendArchivedOrdersThread = class(TReceiveThread)

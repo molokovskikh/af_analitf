@@ -3,7 +3,7 @@ unit DBProc;
 interface
 
 uses Windows, Classes, DB, DbGrids, SysUtils, Forms, Controls, ShellAPI,
-     DBGridEh, DBGridEhImpExp, pFIBDataSet, ToughDBGrid, MyAccess, StrUtils;
+     DBGridEh, DBGridEhImpExp, ToughDBGrid, MyAccess, StrUtils;
 
 procedure DoPost(DataSet: TDataSet; SaveChanges: Boolean);
 procedure SoftEdit(DataSet: TDataSet);
@@ -18,7 +18,6 @@ procedure SetFilterProc(DataSet: TDataSet; AFilterProc: TFilterRecordEvent);
 function GetConnectionProperty(const ConnectionString, PropertyName: string): string;
 function SetConnectionProperty(const ConnectionString, PropertyName,
   PropertyValue: string): string;
-procedure FIBDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
 procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
 function  QueryValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
   Values: array of Variant): Variant;
@@ -218,23 +217,6 @@ begin
       Screen.Cursor:=crDefault;
     end;
   end;
-end;
-
-procedure FIBDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
-var
-  B : array of Boolean;
-  I : Integer;
-  L : array of Integer;
-  FIBDataSet : TpFIBDataSet;
-begin
-  FIBDataSet := TpFIBDataSet(DBGrid.DataSource.DataSet);
-  SetLength(B, DBGrid.SortMarkedColumns.Count);
-  SetLength(L, DBGrid.SortMarkedColumns.Count);
-  for I := 0 to DBGrid.SortMarkedColumns.Count-1 do begin
-    L[i] := DBGrid.SortMarkedColumns[i].Field.Index;
-    B[i] := DBGrid.SortMarkedColumns[i].Title.SortMarker = smUpEh;
-  end;
-  FIBDataSet.DoSortEx(L, B);
 end;
 
 procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);

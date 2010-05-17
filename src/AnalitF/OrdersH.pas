@@ -6,8 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, DateUtils,
-  FR_DSet, FR_DBSet, OleCtrls, SHDocVw, FIBDataSet, pFIBDataSet,
-  FIBSQLMonitor, FIBQuery, SQLWaiting, ShellAPI, GridsEh, pFIBProps, MemDS,
+  FR_DSet, FR_DBSet, OleCtrls, SHDocVw, 
+  SQLWaiting, ShellAPI, GridsEh, MemDS,
   DBAccess, MyAccess, MemData, Orders;
 
 type
@@ -37,27 +37,7 @@ type
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
     tmOrderDateChange: TTimer;
-    adsOrdersHFormOld: TpFIBDataSet;
-    adsCoreOld: TpFIBDataSet;
-    adsOrdersHFormOldORDERID: TFIBBCDField;
-    adsOrdersHFormOldSERVERORDERID: TFIBBCDField;
-    adsOrdersHFormOldDATEPRICE: TFIBDateTimeField;
-    adsOrdersHFormOldPRICECODE: TFIBBCDField;
-    adsOrdersHFormOldREGIONCODE: TFIBBCDField;
-    adsOrdersHFormOldORDERDATE: TFIBDateTimeField;
-    adsOrdersHFormOldSENDDATE: TFIBDateTimeField;
-    adsOrdersHFormOldPRICENAME: TFIBStringField;
-    adsOrdersHFormOldREGIONNAME: TFIBStringField;
-    adsOrdersHFormOldPOSITIONS: TFIBIntegerField;
-    adsOrdersHFormOldSUPPORTPHONE: TFIBStringField;
-    adsOrdersHFormOldSumOrder: TFIBBCDField;
-    adsOrdersHFormOldSEND: TFIBBooleanField;
-    adsOrdersHFormOldCLOSED: TFIBBooleanField;
-    adsOrdersHFormOldMESSAGETO: TFIBMemoField;
-    adsOrdersHFormOldCOMMENTS: TFIBMemoField;
     bevClient: TBevel;
-    adsOrdersHFormOldMINREQ: TFIBIntegerField;
-    adsOrdersHFormOldSUMBYCURRENTMONTH: TFIBBCDField;
     dbgSendedOrders: TToughDBGrid;
     adsOrdersHForm: TMyQuery;
     adsOrdersHFormOrderId: TLargeintField;

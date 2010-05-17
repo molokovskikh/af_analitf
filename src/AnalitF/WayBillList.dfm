@@ -168,7 +168,6 @@ inherited WayBillListForm: TWayBillListForm
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
     OnKeyDown = dbgWBLKeyDown
-    OnSortMarkingChanged = dbgWBLSortMarkingChanged
     SearchPosition = spBottom
     ForceRus = True
     Columns = <
@@ -247,29 +246,7 @@ inherited WayBillListForm: TWayBillListForm
       end>
   end
   object dsWBL: TDataSource
-    DataSet = adsWBL
     Left = 96
     Top = 208
-  end
-  object adsWBL: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    SERVERID,'
-      '    SERVERWAYBILLID,'
-      '    FULLCODE,'
-      '    CODEFIRMCR,'
-      '    SYNONYMCODE,'
-      '    SYNONYMFIRMCRCODE,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    CODE,'
-      '    CODECR,'
-      '    QUANTITY,'
-      '    COST'
-      'FROM'
-      '    WAYBILLLISTSHOW(:AWAYBILLID) ')
-    Transaction = DM.DefTran
-    Left = 96
-    Top = 152
   end
 end

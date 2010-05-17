@@ -157,87 +157,6 @@ object FormsHistoryForm: TFormsHistoryForm
     Left = 112
     Top = 200
   end
-  object adsOrdersOld: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    FULLCODE,'
-      '    SYNONYMNAME,'
-      '    SYNONYMFIRM,'
-      '    ORDERCOUNT,'
-      '    CODE,'
-      '    CODECR,'
-      '    PRICE,'
-      '    ORDERDATE,'
-      '    PRICENAME,'
-      '    REGIONNAME,'
-      '    AWAIT,'
-      '    JUNK,'
-      '    sendprice'
-      'FROM'
-      '    ORDERSSHOWBYFORM(:AFULLCODE,'
-      '    :CLIENTID) ')
-    Left = 112
-    Top = 152
-    oTrimCharFields = False
-    oCacheCalcFields = True
-    object adsOrdersOldFULLCODE: TFIBBCDField
-      FieldName = 'FULLCODE'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsOrdersOldSYNONYMNAME: TFIBStringField
-      FieldName = 'SYNONYMNAME'
-      Size = 250
-      EmptyStrToNull = True
-    end
-    object adsOrdersOldSYNONYMFIRM: TFIBStringField
-      FieldName = 'SYNONYMFIRM'
-      Size = 250
-      EmptyStrToNull = True
-    end
-    object adsOrdersOldORDERCOUNT: TFIBIntegerField
-      FieldName = 'ORDERCOUNT'
-    end
-    object adsOrdersOldCODE: TFIBStringField
-      FieldName = 'CODE'
-      Size = 84
-      EmptyStrToNull = True
-    end
-    object adsOrdersOldCODECR: TFIBStringField
-      FieldName = 'CODECR'
-      Size = 84
-      EmptyStrToNull = True
-    end
-    object adsOrdersOldORDERDATE: TFIBDateTimeField
-      FieldName = 'ORDERDATE'
-    end
-    object adsOrdersOldPRICENAME: TFIBStringField
-      FieldName = 'PRICENAME'
-      Size = 70
-      EmptyStrToNull = True
-    end
-    object adsOrdersOldREGIONNAME: TFIBStringField
-      FieldName = 'REGIONNAME'
-      Size = 25
-      EmptyStrToNull = True
-    end
-    object adsOrdersOldAWAIT: TFIBIntegerField
-      FieldName = 'AWAIT'
-    end
-    object adsOrdersOldJUNK: TFIBIntegerField
-      FieldName = 'JUNK'
-    end
-    object adsOrdersOldPRICE: TFIBStringField
-      FieldName = 'PRICE'
-      Size = 60
-      EmptyStrToNull = True
-    end
-    object adsOrdersOldSENDPRICE: TFIBBCDField
-      FieldName = 'SENDPRICE'
-      Size = 2
-      RoundByScale = True
-    end
-  end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
@@ -258,7 +177,9 @@ object FormsHistoryForm: TFormsHistoryForm
       'FROM'
       '  PostedOrderLists osbc'
       '  inner join products on products.productid = osbc.productid'
-      '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.OrderId'
+      
+        '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.O' +
+        'rderId'
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'

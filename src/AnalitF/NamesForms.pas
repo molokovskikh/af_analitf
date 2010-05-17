@@ -5,8 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
-  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
+  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, 
+  Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
   MyAccess, Menus, Buttons, U_framePosition, PreviousOrders, Core;
 
 type
@@ -22,8 +22,6 @@ type
     dbgNames: TToughDBGrid;
     dbgForms: TToughDBGrid;
     pClient: TPanel;
-    adsNamesOld: TpFIBDataSet;
-    adsFormsOld: TpFIBDataSet;
     cbShowAll: TCheckBox;
     actShowAll: TAction;
     pnlTop: TPanel;
@@ -35,7 +33,6 @@ type
     WebBrowser2: TWebBrowser;
     dbgCatalog: TToughDBGrid;
     cbNewSearch: TCheckBox;
-    adsCatalogOld: TpFIBDataSet;
     dsCatalog: TDataSource;
     tmrShowCatalog: TTimer;
     pnlSearch: TPanel;

@@ -46,7 +46,6 @@ uses
   CompactThread in 'CompactThread.pas',
   WayBillList in 'WayBillList.pas' {WayBillListForm},
   LU_Tracer in 'common\LU_Tracer.pas',
-  U_TINFIBInputDelimitedStream in 'U_TINFIBInputDelimitedStream.pas',
   inforoomapi in 'RC_RND\inforoomapi.pas',
   hlpcodecs in 'RC_RND\hlpcodecs.pas',
   incrt in 'RC_RND\incrt.pas',

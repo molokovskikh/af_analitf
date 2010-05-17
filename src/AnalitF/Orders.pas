@@ -5,8 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
-  Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, FIBDataSet,
-  pFIBDataSet, DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
+  Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, 
+  DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
   MyAccess, ActnList, Buttons,
   Menus;
 
@@ -14,37 +14,10 @@ type
   TOrdersForm = class(TChildForm)
     dsOrders: TDataSource;
     dbgOrders: TToughDBGrid;
-    adsOrdersOld: TpFIBDataSet;
-    adsOrdersOldCryptPRICE: TCurrencyField;
-    adsOrdersOldCryptSUMORDER: TCurrencyField;
-    adsOrdersOldORDERID: TFIBBCDField;
-    adsOrdersOldCLIENTID: TFIBBCDField;
-    adsOrdersOldCOREID: TFIBBCDField;
-    adsOrdersOldFULLCODE: TFIBBCDField;
-    adsOrdersOldCODEFIRMCR: TFIBBCDField;
-    adsOrdersOldSYNONYMCODE: TFIBBCDField;
-    adsOrdersOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsOrdersOldCODE: TFIBStringField;
-    adsOrdersOldCODECR: TFIBStringField;
-    adsOrdersOldSYNONYMNAME: TFIBStringField;
-    adsOrdersOldSYNONYMFIRM: TFIBStringField;
-    adsOrdersOldORDERCOUNT: TFIBIntegerField;
-    adsOrdersOldPRICE: TFIBStringField;
-    adsOrdersOldAWAIT: TFIBBooleanField;
-    adsOrdersOldJUNK: TFIBBooleanField;
-    adsOrdersOldSUMORDER: TFIBBCDField;
-    adsOrdersOldSENDPRICE: TFIBBCDField;
-    adsOrdersOldREQUESTRATIO: TFIBIntegerField;
     tmrCheckOrderCount: TTimer;
-    adsOrdersOldORDERCOST: TFIBBCDField;
-    adsOrdersOldMINORDERCOUNT: TFIBIntegerField;
-    adsOrdersOldPRODUCTID: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
-    adsOrdersOldORDERSREQUESTRATIO: TFIBIntegerField;
-    adsOrdersOldORDERSORDERCOST: TFIBBCDField;
-    adsOrdersOldORDERSMINORDERCOUNT: TFIBIntegerField;
     frameLegeng: TframeLegeng;
     adsOrders: TMyQuery;
     adsOrdersOrderId: TLargeintField;

@@ -5,13 +5,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Db, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
-  FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, IB_Services,
-  FIBQuery, pFIBQuery, FIBDataSet, pFIBDataSet, FIBDatabase, pFIBDatabase,
+  FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, 
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
-  CompactThread, FIB, IB_ErrorCodes, Math, IdIcmpClient, FIBMiscellaneous,
-  U_TINFIBInputDelimitedStream, incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, pFIBScript,
-  pFIBProps, U_UpdateDBThread, pFIBExtract, DateUtils, ShellAPI, ibase, IdHTTP,
+  CompactThread, Math, IdIcmpClient, 
+  incrt, hlpcodecs, StrUtils, RxMemDS,
+  Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, 
+  U_UpdateDBThread, DateUtils, ShellAPI, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
   MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions, DatabaseObjects,
@@ -37,12 +36,11 @@ const
   //Строка для шифрации паролей
   PassPassW = 'sh' + #90 + 'kjw' + #10 + 'h';
   //Список критических библиотек
-  CriticalLibraryHashes : array[0..18] of array[0..4] of string =
+  CriticalLibraryHashes : array[0..17] of array[0..4] of string =
   (
       ('dbrtl70.bpl', '0650B08C', '583E1038', '5F35A236', '6DD703FA'),
       ('designide70.bpl', 'F16F1849', 'E4827C1D', 'C4FD04B9', '968D63F9'),
       ('EhLib70.bpl', '10FCCB4D', '5DE0A836', 'CCBC83EC', 'B5A52ACC'),
-      ('FIBPlus7.bpl', '93C1BA38', '07A95850', '3E51729A', '30003797'),
       ('fr7.bpl', 'F7516F76', '2191B5F2', '43975BC8', '5602F31A'),
       ('IndySystem70.bpl', 'F10B27ED', 'B8E3BE27', '66042960', '8FC2AF12'),
       ('IndyCore70.bpl', '12A2BB12', 'AEA739A4', '4E08CED3', '771EBF60'),
@@ -127,172 +125,7 @@ type
     frJPEGExport: TfrJPEGExport;
     frTIFFExport: TfrTIFFExport;
     frRtfAdvExport: TfrRtfAdvExport;
-    MainConnectionOld: TpFIBDatabase;
-    adtParamsOld: TpFIBDataSet;
-    adtClientsOld: TpFIBDataSet;
-    adcUpdateOld: TpFIBQuery;
-    adsRepareOrdersOld: TpFIBDataSet;
-    adsCoreRepareOld: TpFIBDataSet;
-    adsOrdersHeadersOld: TpFIBDataSet;
-    adsOrderDetailsOld: TpFIBDataSet;
-    BackService: TpFIBBackupService;
-    RestService: TpFIBRestoreService;
-    ConfigService: TpFIBConfigService;
-    ValidService: TpFIBValidationService;
-    adsRepareOrdersOldID: TFIBBCDField;
-    adsRepareOrdersOldCOREID: TFIBBCDField;
-    adsRepareOrdersOldPRICECODE: TFIBBCDField;
-    adsRepareOrdersOldREGIONCODE: TFIBBCDField;
-    adsRepareOrdersOldCODE: TFIBStringField;
-    adsRepareOrdersOldCODECR: TFIBStringField;
-    adsRepareOrdersOldSYNONYMCODE: TFIBBCDField;
-    adsRepareOrdersOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsRepareOrdersOldSYNONYMNAME: TFIBStringField;
-    adsRepareOrdersOldSYNONYMFIRM: TFIBStringField;
-    adsRepareOrdersOldJUNK: TFIBBooleanField;
-    adsRepareOrdersOldAWAIT: TFIBBooleanField;
-    adsRepareOrdersOldORDERCOUNT: TFIBIntegerField;
-    adsRepareOrdersOldPRICENAME: TFIBStringField;
-    adsRepareOrdersOldCryptPRICE: TCurrencyField;
-    adsCoreRepareOldCOREID: TFIBBCDField;
-    adsCoreRepareOldFULLCODE: TFIBBCDField;
-    adsCoreRepareOldSHORTCODE: TFIBBCDField;
-    adsCoreRepareOldCODEFIRMCR: TFIBBCDField;
-    adsCoreRepareOldSYNONYMCODE: TFIBBCDField;
-    adsCoreRepareOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreRepareOldCODE: TFIBStringField;
-    adsCoreRepareOldCODECR: TFIBStringField;
-    adsCoreRepareOldVOLUME: TFIBStringField;
-    adsCoreRepareOldDOC: TFIBStringField;
-    adsCoreRepareOldNOTE: TFIBStringField;
-    adsCoreRepareOldPERIOD: TFIBStringField;
-    adsCoreRepareOldQUANTITY: TFIBStringField;
-    adsCoreRepareOldSYNONYMNAME: TFIBStringField;
-    adsCoreRepareOldSYNONYMFIRM: TFIBStringField;
-    adsCoreRepareOldLEADERPRICECODE: TFIBBCDField;
-    adsCoreRepareOldLEADERREGIONCODE: TFIBBCDField;
-    adsCoreRepareOldLEADERREGIONNAME: TFIBStringField;
-    adsCoreRepareOldLEADERPRICENAME: TFIBStringField;
-    adsCoreRepareOldORDERSCOREID: TFIBBCDField;
-    adsCoreRepareOldORDERSORDERID: TFIBBCDField;
-    adsCoreRepareOldORDERSCLIENTID: TFIBBCDField;
-    adsCoreRepareOldORDERSFULLCODE: TFIBBCDField;
-    adsCoreRepareOldORDERSCODEFIRMCR: TFIBBCDField;
-    adsCoreRepareOldORDERSSYNONYMCODE: TFIBBCDField;
-    adsCoreRepareOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreRepareOldORDERSCODE: TFIBStringField;
-    adsCoreRepareOldORDERSCODECR: TFIBStringField;
-    adsCoreRepareOldORDERCOUNT: TFIBIntegerField;
-    adsCoreRepareOldORDERSSYNONYM: TFIBStringField;
-    adsCoreRepareOldORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreRepareOldORDERSHORDERID: TFIBBCDField;
-    adsCoreRepareOldORDERSHCLIENTID: TFIBBCDField;
-    adsCoreRepareOldORDERSHPRICECODE: TFIBBCDField;
-    adsCoreRepareOldORDERSHREGIONCODE: TFIBBCDField;
-    adsCoreRepareOldORDERSHPRICENAME: TFIBStringField;
-    adsCoreRepareOldORDERSHREGIONNAME: TFIBStringField;
-    adsSumOrdersOldForDelete: TpFIBDataSet;
-    adsSumOrdersOldForDeleteCODE: TFIBStringField;
-    adsSumOrdersOldForDeleteCODECR: TFIBStringField;
-    adsSumOrdersOldForDeleteORDERCOUNT: TFIBIntegerField;
-    adsSumOrdersOldForDeleteCryptPRICE: TCurrencyField;
-    adsSumOrdersOldForDeleteSumOrders: TCurrencyField;
-    adsPricesOld: TpFIBDataSet;
-    adsOrderDetailsOldCryptSUMORDER: TCurrencyField;
-    adsOrderDetailsOldORDERID: TFIBBCDField;
-    adsOrderDetailsOldCLIENTID: TFIBBCDField;
-    adsOrderDetailsOldCOREID: TFIBBCDField;
-    adsOrderDetailsOldCODEFIRMCR: TFIBBCDField;
-    adsOrderDetailsOldSYNONYMCODE: TFIBBCDField;
-    adsOrderDetailsOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsOrderDetailsOldCODE: TFIBStringField;
-    adsOrderDetailsOldCODECR: TFIBStringField;
-    adsOrderDetailsOldSYNONYMNAME: TFIBStringField;
-    adsOrderDetailsOldSYNONYMFIRM: TFIBStringField;
-    adsOrderDetailsOldORDERCOUNT: TFIBIntegerField;
-    adsAllOrdersOld: TpFIBDataSet;
-    adsAllOrdersOldID: TFIBBCDField;
-    adsAllOrdersOldORDERID: TFIBBCDField;
-    adsAllOrdersOldCLIENTID: TFIBBCDField;
-    adsAllOrdersOldCOREID: TFIBBCDField;
-    adsAllOrdersOldCODEFIRMCR: TFIBBCDField;
-    adsAllOrdersOldSYNONYMCODE: TFIBBCDField;
-    adsAllOrdersOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsAllOrdersOldCODE: TFIBStringField;
-    adsAllOrdersOldCODECR: TFIBStringField;
-    adsAllOrdersOldSYNONYMNAME: TFIBStringField;
-    adsAllOrdersOldSYNONYMFIRM: TFIBStringField;
-    adsAllOrdersOldAWAIT: TFIBBooleanField;
-    adsAllOrdersOldJUNK: TFIBBooleanField;
-    adsAllOrdersOldORDERCOUNT: TFIBIntegerField;
-    adsAllOrdersOldCryptPRICE: TCurrencyField;
-    adsPricesOldPRICECODE: TFIBBCDField;
-    adsPricesOldPRICENAME: TFIBStringField;
-    adsPricesOldDATEPRICE: TFIBDateTimeField;
-    adsPricesOldMINREQ: TFIBIntegerField;
-    adsPricesOldENABLED: TFIBIntegerField;
-    adsPricesOldPRICEINFO: TFIBMemoField;
-    adsPricesOldFIRMCODE: TFIBBCDField;
-    adsPricesOldFULLNAME: TFIBStringField;
-    adsPricesOldSTORAGE: TFIBIntegerField;
-    adsPricesOldADMINMAIL: TFIBStringField;
-    adsPricesOldSUPPORTPHONE: TFIBStringField;
-    adsPricesOldCONTACTINFO: TFIBMemoField;
-    adsPricesOldOPERATIVEINFO: TFIBMemoField;
-    adsPricesOldREGIONCODE: TFIBBCDField;
-    adsPricesOldREGIONNAME: TFIBStringField;
-    adsPricesOldPOSITIONS: TFIBIntegerField;
-    adsPricesOldPRICESIZE: TFIBIntegerField;
-    adsPricesOldINJOB: TFIBIntegerField;
-    adsCoreRepareOldAWAIT: TFIBBooleanField;
-    adsCoreRepareOldJUNK: TFIBBooleanField;
-    adsRepareOrdersOldPRICE: TFIBStringField;
-    adsCoreRepareOldBASECOST: TFIBStringField;
-    adsCoreRepareOldORDERSPRICE: TFIBStringField;
-    adsOrderDetailsOldPRICE: TFIBStringField;
-    adsSumOrdersOldForDeletePRICE: TFIBStringField;
-    adsAllOrdersOldPRICE: TFIBStringField;
-    adsCoreRepareOldORDERSJUNK: TFIBBooleanField;
-    adsCoreRepareOldORDERSAWAIT: TFIBBooleanField;
-    adsOrderCoreOld: TpFIBDataSet;
-    adsOrderCoreOldPRICECODE: TFIBBCDField;
-    adsOrderCoreOldBASECOST: TFIBStringField;
-    adsOrderCoreOldCryptBASECOST: TCurrencyField;
-    adsOrderCoreOldPRICEENABLED: TFIBIntegerField;
-    adsOrderCoreOldJUNK: TFIBIntegerField;
-    adtClientsOldCLIENTID: TFIBBCDField;
-    adtClientsOldNAME: TFIBStringField;
-    adtClientsOldREGIONCODE: TFIBBCDField;
-    adtClientsOldEXCESS: TFIBIntegerField;
-    adtClientsOldDELTAMODE: TFIBSmallIntField;
-    adtClientsOldMAXUSERS: TFIBIntegerField;
-    adtClientsOldREQMASK: TFIBBCDField;
-    adtClientsOldTECHSUPPORT: TFIBStringField;
-    adtClientsOldCALCULATELEADER: TFIBBooleanField;
-    adtClientsOldONLYLEADERS: TFIBBooleanField;
-    adsOrderCoreOldCODEFIRMCR: TFIBBCDField;
-    adsCoreRepareOldREQUESTRATIO: TFIBIntegerField;
-    adsOrderDetailsOldSENDPRICE: TFIBBCDField;
-    adsOrderDetailsOldAWAIT: TFIBBooleanField;
-    adsOrderDetailsOldJUNK: TFIBBooleanField;
-    adsOrderDetailsOldID: TFIBBCDField;
-    adtReceivedDocsOld: TpFIBDataSet;
-    adsOrderDetailsOldPRODUCTID: TFIBBCDField;
-    adsOrderDetailsOldFULLCODE: TFIBBCDField;
-    adsOrderCoreOldPRODUCTID: TFIBBCDField;
-    adsAllOrdersOldPRODUCTID: TFIBBCDField;
-    adsRepareOrdersOldREQUESTRATIO: TFIBIntegerField;
-    adsRepareOrdersOldORDERCOST: TFIBBCDField;
-    adsRepareOrdersOldMINORDERCOUNT: TFIBIntegerField;
-    adsCoreRepareOldVITALLYIMPORTANT: TFIBBooleanField;
-    adsCoreRepareOldORDERCOST: TFIBBCDField;
-    adsCoreRepareOldMINORDERCOUNT: TFIBIntegerField;
     frdsReportOrder: TfrDBDataSet;
-    adsOrderDetailsOldSUMORDER: TFIBBCDField;
-    adsOrderDetailsOldCryptPRICE: TCurrencyField;
-    adsOrderDetailsOldREQUESTRATIO: TFIBIntegerField;
-    adsOrderDetailsOldORDERCOST: TFIBBCDField;
-    adsOrderDetailsOldMINORDERCOUNT: TFIBIntegerField;
     MyConnection: TMyConnection;
     adtParams: TMyTable;
     adtClients: TMyQuery;
@@ -332,23 +165,6 @@ type
     adsPricesPositions: TLargeintField;
     adsPricessumbycurrentmonth: TFloatField;
     adsQueryValue: TMyQuery;
-    adsAllOrders: TMyQuery;
-    adsAllOrdersID: TLargeintField;
-    adsAllOrdersORDERID: TLargeintField;
-    adsAllOrdersCLIENTID: TLargeintField;
-    adsAllOrdersCOREID: TLargeintField;
-    adsAllOrdersPRODUCTID: TLargeintField;
-    adsAllOrdersCODEFIRMCR: TLargeintField;
-    adsAllOrdersSYNONYMCODE: TLargeintField;
-    adsAllOrdersSYNONYMFIRMCRCODE: TLargeintField;
-    adsAllOrdersCODE: TStringField;
-    adsAllOrdersCODECR: TStringField;
-    adsAllOrdersSYNONYMNAME: TStringField;
-    adsAllOrdersSYNONYMFIRM: TStringField;
-    adsAllOrdersPRICE: TStringField;
-    adsAllOrdersAWAIT: TBooleanField;
-    adsAllOrdersJUNK: TBooleanField;
-    adsAllOrdersORDERCOUNT: TIntegerField;
     adsOrderCore: TMyQuery;
     adsOrderCorePriceCode: TLargeintField;
     adsOrderCoreproductid: TLargeintField;
@@ -562,7 +378,6 @@ type
     procedure LoadSelectedPrices;
     function CheckCriticalLibrary : Boolean;
     function GetFileHash(AFileName : String) : String;
-    procedure socf(DataSet: TDataSet);
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
     //Обновления UIN в базе данных в случае обновления версии программы
@@ -573,15 +388,6 @@ type
     procedure UpdateDBFile(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure OnScriptExecuteError(Sender: TObject;
       E: Exception; SQL: String; var Action: TErrorAction);
-    //Обновление определенных данных в таблице
-{$ifdef DEBUG}
-    procedure UpdateDBFileDataFor29(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
-    procedure UpdateDBFileDataFor36(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
-    procedure UpdateDBFileDataFor35(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
-    procedure UpdateDBFileDataFor37(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
-    procedure UpdateDBFileDataFor40(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
-    procedure UpdateDBFileDataFor42(dbCon : TpFIBDatabase; trMain : TpFIBTransaction);
-{$endif}
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetFullLastCreateScript : String;
@@ -589,14 +395,10 @@ type
     procedure CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //восстанавливаем базу данных из предыдущей успешной копии
     procedure RestoreDatabaseFromPrevios(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
-    //Производим обновлением базы данных Firebird на базу данных MySql
-    procedure UpdateFirebirdToMySql(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
-    procedure InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection; firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction; UnrestoreOrdersFileName : String; var UnrestoreOrders : Boolean);
     //Производим обновлением базы данных с 800-х версий на базу данных MySql нового формата
     procedure Update800xToMySql(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure ExportFrom800xToFiles(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure Import800xFilesToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
-    procedure FormatUnrestoreOrders(UnrestoreOrders : TDataSet; OutReport : TStringList);
     //Производим обновление базы данных на libmysqld  нового формата
     procedure UpdateToNewLibMySqlD(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure ExportFromOldLibMysqlDToFiles(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
@@ -732,7 +534,6 @@ type
       var IsFutureClient : Boolean);
     function GetClientNameAndAddress : String;
     function GetClearSendResultSql(ClientId : Int64) : String;
-    function NeedUpdateFireBirdToMySql : Boolean;
     function NeedUpdate800xToMySql : Boolean;
     function NeedUpdateToNewLibMySqlD : Boolean;
     function NeedCumulativeAfterUpdateToNewLibMySqlD : Boolean;
@@ -1117,7 +918,6 @@ begin
   OrdersInfo.Sorted := True;
 
   //adsOrderDetails.OnCalcFields := ocf;
-  adsSumOrdersOldForDelete.OnCalcFields := socf;
  // adsOrderCore.OnCalcFields := occf;
 
   SynC := TINFCrypt.Create('', 300);
@@ -1859,18 +1659,6 @@ begin
   LoadMarkups('retailmargins', FRetMargins);
 end;
 
-procedure TDM.socf(DataSet: TDataSet);
-var
-  S : String;
-begin
-  try
-    S := D_B_N(adsSumOrdersOldForDeletePRICE.AsString);
-    adsSumOrdersOldForDeleteCryptPRICE.AsCurrency := StrToCurr(S);
-    adsSumOrdersOldForDeleteSumOrders.AsCurrency := StrToCurr(S) * adsSumOrdersOldForDeleteORDERCOUNT.AsInteger;
-  except
-  end;
-end;
-
 function TDM.GetSumOrder(OrderID: Integer; Closed : Boolean = False): Currency;
 begin
   try
@@ -2080,12 +1868,6 @@ begin
       //dbCon.RemoveFromPool;
     end;
 
-    //Мы получим с обновлением версию 49 и обновляем ее до 50
-    if DBVersion = 49 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateFirebirdToMySql, nil);
-      DBVersion := 51;
-    end;
-
     if DBVersion = 50 then begin
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
       DBVersion := 51;
@@ -2107,14 +1889,8 @@ begin
     end;
 
     if DBVersion = 54 then begin
-      if NeedUpdateFireBirdToMySql then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateFirebirdToMySql, nil);
-        DBVersion := CURRENT_DB_VERSION;
-      end
-      else begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-        DBVersion := 55;
-      end;
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 55;
     end;
 
     if DBVersion = 55 then begin
@@ -2276,87 +2052,6 @@ begin
     Result := '';
 end;
 
-{$ifdef DEBUG}
-procedure TDM.UpdateDBFileDataFor35(dbCon: TpFIBDatabase;
-  trMain: TpFIBTransaction);
-var
-  adsAllOrdersUpdate : TpFIBDataSet;
-  CDS,
-  BaseCostPass,
-  Price : String;
-  bc : TINFCrypt;
-  AllCount,
-  CryptErrorCount : Integer;
-begin
-  adsAllOrdersUpdate := TpFIBDataSet.Create(nil);
-
-  try
-    adsAllOrdersUpdate.Database := dbCon;
-    adsAllOrdersUpdate.Transaction := trMain;
-    adsAllOrdersUpdate.UpdateTransaction := trMain;
-    adsAllOrdersUpdate.SelectSQL.Text := 'SELECT ORDERS.* FROM ORDERS';
-    adsAllOrdersUpdate.UpdateSQL.Text := 'UPDATE ORDERS SET PRICE = :PRICE, CODE = :CODE, CODECR = :CODECR WHERE ID = :OLD_ID';
-    adsAllOrdersUpdate.Options := adsAllOrdersUpdate.Options - [poTrimCharFields];
-
-    trMain.StartTransaction;
-
-    try
-      CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
-      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
-      if Length(CDS) = 0 then
-        Exit;
-      BaseCostPass := PassC.DecodeHex(Copy(CDS, 129, 64));
-      if Length(BaseCostPass) = 0 then
-        raise Exception.Create('Нет необходимой информации.');
-    except
-      on E : Exception do
-       raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
-    end;
-
-    bc := TINFCrypt.Create(BaseCostPass, 50);
-    try
-
-      CryptErrorCount := 0;
-
-      adsAllOrdersUpdate.Open;
-
-      while not adsAllOrdersUpdate.Eof do begin
-
-        try
-          Price := D_B_N_OLD(bc, adsAllOrdersUpdate.FieldByName('PRICE').AsString);
-
-          Price := E_B_N(bc, Price);
-
-          adsAllOrdersUpdate.Edit;
-          adsAllOrdersUpdate.FieldByName('PRICE').AsString := Price;
-          adsAllOrdersUpdate.Post;
-        except
-          on E : Exception do
-            Inc(CryptErrorCount)
-        end;
-
-        adsAllOrdersUpdate.Next;
-      end;
-
-      AllCount := adsAllOrdersUpdate.RecordCount;
-
-      adsAllOrdersUpdate.Close;
-
-      if CryptErrorCount > 0 then
-        AProc.LogCriticalError('Количество нерасшифрованных позиций в заказах : ' + IntToStr(CryptErrorCount) + ' Всего позиций : ' + IntToStr(AllCount));
-
-    finally
-      try bc.Free except end;
-    end;
-
-    trMain.Commit;
-
-  finally
-    try adsAllOrdersUpdate.Free; except end;
-  end;
-end;
-{$endif}
-
 procedure TDM.CheckDBFile;
 var
   OpenSuccess : Boolean;
@@ -2408,127 +2103,6 @@ begin
   end;
 end;
 
-{$ifdef DEBUG}
-procedure TDM.UpdateDBFileDataFor29(dbCon: TpFIBDatabase;
-  trMain: TpFIBTransaction);
-var
-  qUpdatePass : TpFIBQuery;
-  OldPass : String;
-
-  adsAllOrdersUpdate : TpFIBDataSet;
-  CDS,
-  BaseCostPass,
-  CodesPass,
-  CodeStr,
-  CodeCrStr,
-  Price : String;
-  bc : TINFCrypt;
-  cc : TINFCrypt;
-  AllCount,
-  CryptErrorCount : Integer;
-begin
-  qUpdatePass := TpFIBQuery.Create(nil);
-
-  try
-    qUpdatePass.Database := dbCon;
-    qUpdatePass.Transaction := trMain;
-
-    OldPass := dbCon.QueryValue('select httppass from params where id = 0', 0);
-
-    if Length(OldPass) > 0 then begin
-      trMain.StartTransaction;
-      qUpdatePass.SQL.Text := 'update params set httppass = :httppass where id = 0';
-      qUpdatePass.ParamByName('httppass').AsString := E_HP(OldPass);
-      qUpdatePass.ExecQuery;
-
-      trMain.Commit;
-    end;
-
-  finally
-    qUpdatePass.Free;
-  end;
-
-  adsAllOrdersUpdate := TpFIBDataSet.Create(nil);
-
-  try
-    adsAllOrdersUpdate.Database := dbCon;
-    adsAllOrdersUpdate.Transaction := trMain;
-    adsAllOrdersUpdate.UpdateTransaction := trMain;
-    adsAllOrdersUpdate.SelectSQL.Text := 'SELECT ORDERS.* FROM ORDERS';
-    adsAllOrdersUpdate.UpdateSQL.Text := 'UPDATE ORDERS SET PRICE = :PRICE, CODE = :CODE, CODECR = :CODECR WHERE ID = :OLD_ID';
-    adsAllOrdersUpdate.Options := adsAllOrdersUpdate.Options - [poTrimCharFields];
-
-    trMain.StartTransaction;
-
-    try
-      CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
-      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
-      if Length(CDS) = 0 then
-        Exit;
-
-      BaseCostPass := PassC.DecodeHex(Copy(CDS, 129, 64));
-      if Length(BaseCostPass) = 0 then
-        raise Exception.Create('Нет необходимой информации 1.');
-
-      CodesPass := PassC.DecodeHex(Copy(CDS, 65, 64));
-      if Length(CodesPass) = 0 then
-        raise Exception.Create('Нет необходимой информации 2.');
-    except
-      on E : Exception do
-       raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
-    end;
-
-    bc := TINFCrypt.Create(BaseCostPass, 50);
-    cc := TINFCrypt.Create(CodesPass, 60);
-    try
-
-      CryptErrorCount := 0;
-
-      adsAllOrdersUpdate.Open;
-
-      while not adsAllOrdersUpdate.Eof do begin
-
-        try
-          CodeStr := D_29_C_OLD(cc, adsAllOrdersUpdate.FieldByName('CODE').AsString);
-          CodeCrStr := D_29_C_OLD(cc, adsAllOrdersUpdate.FieldByName('CODECR').AsString);
-
-          Price := D_29_B_OLD(bc, adsAllOrdersUpdate.FieldByName('CODE').AsString, adsAllOrdersUpdate.FieldByName('CODECR').AsString);
-
-          Price := E_B_N(bc, Price);
-
-          adsAllOrdersUpdate.Edit;
-          adsAllOrdersUpdate.FieldByName('CODE').AsString := CodeStr;
-          adsAllOrdersUpdate.FieldByName('CODECR').AsString := CodeCrStr;
-          adsAllOrdersUpdate.FieldByName('PRICE').AsString := Price;
-          adsAllOrdersUpdate.Post;
-        except
-          on E : Exception do
-            Inc(CryptErrorCount)
-        end;
-
-        adsAllOrdersUpdate.Next;
-      end;
-
-      AllCount := adsAllOrdersUpdate.RecordCount;
-
-      adsAllOrdersUpdate.Close;
-
-      if CryptErrorCount > 0 then
-        AProc.LogCriticalError('Количество нерасшифрованных позиций в заказах : ' + IntToStr(CryptErrorCount) + ' Всего позиций : ' + IntToStr(AllCount));
-
-    finally
-      try bc.Free except end;
-      try cc.Free except end;
-    end;
-
-    trMain.Commit;
-
-  finally
-    try adsAllOrdersUpdate.Free; except end;
-  end;
-end;
-{$endif}
-
 function TDM.D_29_C_OLD(c : TINFCrypt; CodeS: String): String;
 begin
   CodeS := Copy(CodeS, 1, Length(CodeS)-16);
@@ -2556,113 +2130,6 @@ begin
   Result := GetMarkup(FRetMargins, BaseCost);
 end;
 
-{$ifdef DEBUG}
-procedure TDM.UpdateDBFileDataFor36(dbCon: TpFIBDatabase;
-  trMain: TpFIBTransaction);
-var
-  adsAllOrdersUpdate : TpFIBDataSet;
-  CDS,
-  BaseCostPass,
-  SynonymPass,
-  CodesPass,
-  oldDBUIN,
-  newCDS,
-  Price : String;
-  pc,
-  bc : TINFCrypt;
-  AllCount,
-  CryptErrorCount : Integer;
-  p, ch : String;
-  I : Integer;
-begin
-  adsAllOrdersUpdate := TpFIBDataSet.Create(nil);
-
-  try
-    adsAllOrdersUpdate.Database := dbCon;
-    adsAllOrdersUpdate.Transaction := trMain;
-    adsAllOrdersUpdate.UpdateTransaction := trMain;
-    adsAllOrdersUpdate.SelectSQL.Text := 'SELECT ORDERS.* FROM ORDERS, ordersh where ordersh.orderid = orders.orderid and ordersh.closed = 1';
-    adsAllOrdersUpdate.UpdateSQL.Text := 'UPDATE ORDERS SET SENDPRICE = :SENDPRICE WHERE ID = :OLD_ID';
-    adsAllOrdersUpdate.Options := adsAllOrdersUpdate.Options - [poTrimCharFields];
-
-    trMain.StartTransaction;
-
-    try
-      CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
-      ch := IntToHex(GetOld427UniqueID(Application.ExeName, ''), 8);
-      p := '';
-      for I := 1 to Length(ch) do
-        p := p + ch[i] + PassPassW[i];
-      pc := TINFCrypt.Create(p, 48);
-      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
-      if Length(CDS) = 0 then
-        Exit;
-      SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
-      CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
-      BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
-      oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
-
-      if Length(BaseCostPass) = 0 then
-        raise Exception.Create('Нет необходимой информации.');
-      if Length(oldDBUIN) = 0 then
-        raise Exception.Create('Нет необходимой информации 2.');
-      if oldDBUIN <> ch then
-        raise Exception.Create('Не совпадает DBUIN в обновляемой базе данных.');
-
-      //Обновляем значение CDS в базе с новым CopyID
-      newCDS :=
-        PassC.EncodeHex(SynonymPass) +
-        PassC.EncodeHex(CodesPass) +
-        PassC.EncodeHex(BaseCostPass) +
-        PassC.EncodeHex(IntToHex(GetCopyID, 8));
-      dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
-    except
-      on E : Exception do
-       raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
-    end;
-
-    bc := TINFCrypt.Create(BaseCostPass, 50);
-    try
-
-      CryptErrorCount := 0;
-
-      adsAllOrdersUpdate.Open;
-
-      while not adsAllOrdersUpdate.Eof do begin
-
-        try
-          Price := D_B_N_C(bc, adsAllOrdersUpdate.FieldByName('PRICE').AsString);
-
-          adsAllOrdersUpdate.Edit;
-          adsAllOrdersUpdate.FieldByName('SENDPRICE').AsCurrency := StrToCurr( Price );
-          adsAllOrdersUpdate.Post;
-        except
-          on E : Exception do
-            Inc(CryptErrorCount)
-        end;
-
-        adsAllOrdersUpdate.Next;
-      end;
-
-      AllCount := adsAllOrdersUpdate.RecordCount;
-
-      adsAllOrdersUpdate.Close;
-
-      if CryptErrorCount > 0 then
-        AProc.LogCriticalError('Количество нерасшифрованных позиций в заказах : ' + IntToStr(CryptErrorCount) + ' Всего позиций : ' + IntToStr(AllCount));
-
-    finally
-      try bc.Free except end;
-    end;
-
-    trMain.Commit;
-
-  finally
-    try adsAllOrdersUpdate.Free; except end;
-  end;
-end;
-{$endif}
-
 function TDM.D_B_N_C(c: TINFCrypt; BaseC: String): String;
 var
   tmp : String;
@@ -2682,51 +2149,6 @@ begin
   else
     Result := '';
 end;
-
-{$ifdef DEBUG}
-procedure TDM.UpdateDBFileDataFor37(dbCon: TpFIBDatabase;
-  trMain: TpFIBTransaction);
-var
-  CDS,
-  BaseCostPass,
-  SynonymPass,
-  CodesPass,
-  oldDBUIN,
-  newCDS : String;
-begin
-  trMain.StartTransaction;
-
-  try
-    CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
-    //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
-    if Length(CDS) = 0 then
-      Exit;
-    SynonymPass := PassC.DecodeHex(Copy(CDS, 1, 64));
-    CodesPass := PassC.DecodeHex(Copy(CDS, 65, 64));
-    BaseCostPass := PassC.DecodeHex(Copy(CDS, 129, 64));
-    oldDBUIN := PassC.DecodeHex(Copy(CDS, 193, 32));
-
-    if Length(BaseCostPass) = 0 then
-      raise Exception.Create('Нет необходимой информации.');
-    if Length(oldDBUIN) = 0 then
-      raise Exception.Create('Нет необходимой информации 2.');
-
-    //Обновляем значение CDS в базе с новым CopyID
-    newCDS :=
-      PassC.EncodeHex(SynonymPass) +
-      PassC.EncodeHex(CodesPass) +
-      PassC.EncodeHex(BaseCostPass) +
-      PassC.EncodeHex(oldDBUIN + '0000001');
-    dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
-  except
-    on E : Exception do
-     raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
-  end;
-
-  trMain.Commit;
-end;
-{$endif}
-
 
 procedure TDM.SetSendToNotClosedOrders;
 begin
@@ -2775,9 +2197,6 @@ var
 begin
   Result := DatabaseController.GetLastCreateScript();
   
-  if NeedUpdateFireBirdToMySql then
-    realDBVersion := '54'
-  else
   if NeedUpdate800xToMySql then
     realDBVersion := '56'
   else
@@ -3167,74 +2586,6 @@ begin
     Result := Result + ch[i] + PassPassW[i];
 end;
 
-{$ifdef DEBUG}
-procedure TDM.UpdateDBFileDataFor40(dbCon: TpFIBDatabase;
-  trMain: TpFIBTransaction);
-var
-  ch,
-  p,
-  CDS,
-  BaseCostPass,
-  SynonymPass,
-  CodesPass,
-  oldDBUIN,
-  oldSaveGrids,
-  newCDS : String;
-  pc : TINFCrypt;
-  I : Integer;
-begin
-  trMain.StartTransaction;
-
-  try
-    CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
-    //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
-    if Length(CDS) = 0 then
-      Exit;
-    ch := IntToHex(GetCopyID(), 8);
-    p := '';
-    for I := 1 to Length(ch) do
-      p := p + ch[i] + PassPassW[i];
-    pc := TINFCrypt.Create(p, 48);
-    try
-      SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
-      CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
-      BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
-      oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
-      oldSaveGrids := Copy(oldDBUIN, 9, 7);
-      oldDBUIN := Copy(oldDBUIN, 1, 8);
-    finally
-      pc.Free;
-    end;
-
-    if Length(BaseCostPass) = 0 then
-      raise Exception.Create('Нет необходимой информации.');
-    if Length(oldDBUIN) = 0 then
-      raise Exception.Create('Нет необходимой информации 2.');
-    if oldDBUIN <> IntToHex(GetCopyID(), 8) then
-      raise Exception.Create('Не совпадает DBUIN в обновляемой базе данных.');
-
-    pc := TINFCrypt.Create(gop, 48);
-    try
-      newCDS :=
-        pc.EncodeHex(SynonymPass) +
-        pc.EncodeHex(CodesPass) +
-        pc.EncodeHex(BaseCostPass) +
-        pc.EncodeHex(IntToHex(GetOldDBID(), 8) + oldSaveGrids);
-    finally
-      pc.Free;
-    end;
-
-    //Обновляем значение CDS в базе с новым CopyID
-    dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
-  except
-    on E : Exception do
-     raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
-  end;
-
-  trMain.Commit;
-end;
-{$endif}
-
 procedure TDM.UpdateDBUIN(dbCon: TCustomMyConnection);
 var
   CDS,
@@ -3296,90 +2647,6 @@ begin
     end;
   end;
 end;
-
-{$ifdef DEBUG}
-procedure TDM.UpdateDBFileDataFor42(dbCon: TpFIBDatabase;
-  trMain: TpFIBTransaction);
-var
-  CDS,
-  BaseCostPass,
-  SynonymPass,
-  CodesPass,
-  oldDBUIN,
-  oldSaveGrids,
-  newCDS : String;
-  pc : TINFCrypt;
-  p, ch : String;
-  I : Integer;
-begin
-  trMain.StartTransaction;
-
-  try
-    CDS := dbCon.QueryValue('select CDS from params where ID = 0', 0);
-    //Расчитываем уникальный идентификатор для старого exe (525) по старой формуле
-    ch := IntToHex(GetOld525UniqueID(Application.ExeName,
-{$ifdef DEBUG}
-'E99E483DDE777778ADEFCB3DCD988BC9'
-{$else}
-AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak')
-{$ENDIF}
-      ),
-      8);
-    p := '';
-    for I := 1 to Length(ch) do
-      p := p + ch[i] + PassPassW[i];
-    pc := TINFCrypt.Create(p, 48);
-    try
-      //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
-      if Length(CDS) = 0 then
-        Exit;
-      SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
-      CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
-      BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
-      oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
-      oldSaveGrids := Copy(oldDBUIN, 9, 7);
-      oldDBUIN := Copy(oldDBUIN, 1, 8);
-    finally
-      pc.Free;
-    end;
-
-    if Length(BaseCostPass) = 0 then
-      raise Exception.Create('Нет необходимой информации.');
-    if Length(oldDBUIN) = 0 then
-      raise Exception.Create('Нет необходимой информации 2.');
-
-    //Обновляем значение CDS в базе с новым CopyID
-    //Шифруем данные с уникальным идентификатором старого exe (525) по новой формуле
-    pc := TINFCrypt.Create(gop, 48);
-    try
-      newCDS :=
-        pc.EncodeHex(SynonymPass) +
-        pc.EncodeHex(CodesPass) +
-        pc.EncodeHex(BaseCostPass) +
-        pc.EncodeHex(IntToHex(GetOldDBID(), 8) + oldSaveGrids);
-    finally
-      pc.Free;
-    end;
-
-    dbCon.QueryValue('update params set CDS = :CDS where ID = 0', -1, [newCDS]);
-  except
-    on E : Exception do
-     raise Exception.CreateFmt('Невозможно произвести обновление данных: %s', [E.Message]);
-  end;
-
-  trMain.Commit;
-
-  trMain.StartTransaction;
-
-  dbCon.QueryValue('select count(*) from MinPrices where ServerCoreID is not null', 0);
-
-  dbCon.QueryValue('select count(*) from Core where productid is not null', 0);
-
-  dbCon.QueryValue('select count(*) from PricesData where Fresh is not null', 0);
-
-  trMain.Commit;
-end;
-{$endif}
 
 function TDM.GetServerUpdateId: String;
 begin
@@ -3900,563 +3167,6 @@ begin
   DatabaseController.RepairTableFromBackup();
 end;
 
-procedure TDM.UpdateFirebirdToMySql(dbCon: TCustomMyConnection;
-  DBDirectoryName: String; OldDBVersion: Integer;
-  AOnUpdateDBFileData: TOnUpdateDBFileData);
-const
-  UnrestoreOrdersFileName = 'Невостановленные заказ.txt';
-var
-  firebirdDB : TpFIBDatabase;
-  firebirdTransaction : TpFIBTransaction;
-  UnrestoreOrders : Boolean;
-begin
-  dbCon.Open;
-  try
-   firebirdDB := TpFIBDatabase.Create(nil);
-   try
-      firebirdDB.DBName := ExePath + DatabaseName;
-      firebirdDB.DBParams.Text := MainConnectionOld.DBParams.Text;
-      firebirdDB.LibraryName := MainConnectionOld.LibraryName;
-      firebirdDB.SQLDialect := MainConnectionOld.SQLDialect;
-
-      firebirdTransaction := TpFIBTransaction.Create(nil);
-
-      firebirdTransaction.DefaultDatabase := firebirdDB;
-      firebirdDB.DefaultTransaction := firebirdTransaction;
-      firebirdDB.DefaultUpdateTransaction := firebirdTransaction;
-
-      try
-        try
-          firebirdDB.Open;
-        except
-          on OpenException : Exception do begin
-            AProc.LogCriticalError('Ошибка при открытии старой базы данных : ' + OpenException.Message);
-            raise Exception.Create('Не получилось открыть старую базу данных');
-          end;
-        end;
-
-        try
-          try
-            if FileExists(ExePath + UnrestoreOrdersFileName) then
-            try
-              OSDeleteFile(ExePath + UnrestoreOrdersFileName);
-            except
-              on E : Exception do
-                LogCriticalError(
-                  Format(
-                    'Некритическая ошибка при переносе данных при удалении файла: %s',
-                    [E.Message]));
-            end;
-            InternalUpdateFirebirdToMySql(
-              dbCon, firebirdDB, firebirdTransaction,
-              ExePath + UnrestoreOrdersFileName, UnrestoreOrders);
-            if FileExists(ExePath + UnrestoreOrdersFileName) and UnrestoreOrders
-            then
-            try
-              ShellExecute( 0, 'Open', PChar(ExePath + UnrestoreOrdersFileName),
-                nil, nil, SW_SHOWDEFAULT);
-            except
-              on E : Exception do
-                LogCriticalError(
-                  Format(
-                    'Некритическая ошибка при переносе данных при отображении отчета: %s',
-                    [E.Message]));
-            end;
-            FProcessFirebirdUpdate := True;
-          except
-            on UpdateException : Exception do begin
-              AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
-              raise Exception.Create(
-                'При перемещении данных из старой базы в новою возникла ошибка.' +
-                #13#10 +
-                'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
-            end;
-          end;
-        finally
-          firebirdDB.Close;
-        end;
-      finally
-        firebirdTransaction.Free;
-      end;
-   finally
-     firebirdDB.Free;
-   end;
-  finally
-    try dbCon.Close; except end;
-  end;
-  
-  if FileExists(ExePath + DatabaseName) then
-    try
-      OSMoveFile(ExePath + DatabaseName, ExePath + SBackDir + '\' + DatabaseName);
-    except
-      on E : Exception do
-        AProc.LogCriticalError('Ошибка при перемещении старой (Firebird) базы данных : ' + E.Message);
-    end;
-  if FileExists(ExePath + DatabaseName + '.etl') then
-    try
-      OSMoveFile(ExePath + DatabaseName + '.etl', ExePath + SBackDir + '\' + DatabaseName + '.etl');
-    except
-      on E : Exception do
-        AProc.LogCriticalError('Ошибка при перемещении etl-файла старой (Firebird) базы данных : ' + E.Message);
-    end;
-end;
-
-procedure TDM.InternalUpdateFirebirdToMySql(dbCon : TCustomMyConnection;
-  firebirdDB : TpFIBDatabase; firebirdTransaction : TpFIBTransaction;
-  UnrestoreOrdersFileName : String; 
-  var UnrestoreOrders : Boolean);
-var
-  selectMySql : TMyQuery;
-  updateMySql : TMyQuery;
-  selectFirebird : TpFIBDataSet;
-  UpdateParamsSQL : String;
-  I : Integer;
-  ExistsField : TField;
-  ExistsParam : TDAParam;
-  CDS,
-  BaseCostPass,
-  SynonymPass,
-  CodesPass,
-  oldDBUIN,
-  oldSaveGrids,
-  newCDS : String;
-  pc : TINFCrypt;
-  OutReport : TStringList;
-begin
-  UnrestoreOrders := False;
-  selectMySql := TMyQuery.Create(nil);
-  selectMySql.Connection := dbCon;
-  updateMySql := TMyQuery.Create(nil);
-  updateMySql.Connection := dbCon;
-
-  selectFirebird := TpFIBDataSet.Create(nil);
-  selectFirebird.Database := firebirdDB;
-  selectFirebird.Transaction := firebirdTransaction;
-  selectFirebird.UpdateTransaction := firebirdTransaction;
-  selectFirebird.Options := selectFirebird.Options - [poTrimCharFields];
-
-  try
-    //Производим перемещение наценок
-    updateMySql.SQL.Text := 'delete from analitf.RetailMargins';
-    updateMySql.Execute;
-    selectFirebird.SelectSQL.Text := 'SELECT * FROM RetailMargins order by Id';
-    selectFirebird.Open;
-    try
-      if selectFirebird.RecordCount > 0 then begin
-        updateMySql.SQL.Text := 'insert into analitf.RetailMargins (ID, LeftLimit, RightLimit, Markup, MaxMarkup) values (:ID, :LeftLimit, :RightLimit, :Markup, :MaxMarkup)';
-        while not selectFirebird.Eof do begin
-          updateMySql.ParamByName('Id').Value := selectFirebird.FieldByName('Id').Value;
-          updateMySql.ParamByName('LeftLimit').Value := selectFirebird.FieldByName('LeftLIMIT').Value;
-          updateMySql.ParamByName('RightLimit').Value := selectFirebird.FieldByName('RIGHTLIMIT').Value;
-          updateMySql.ParamByName('Markup').Value := selectFirebird.FieldByName('Retail').Value;
-          updateMySql.ParamByName('MaxMarkup').Value := selectFirebird.FieldByName('Retail').Value;
-          updateMySql.Execute;
-          selectFirebird.Next;
-        end;
-      end
-    finally
-      selectFirebird.Close;
-    end;
-
-    //Производим перемещение полученых документов
-    updateMySql.SQL.Text := 'delete from analitf.receiveddocs';
-    updateMySql.Execute;
-    selectFirebird.SelectSQL.Text := 'SELECT * FROM receiveddocs order by Id';
-    selectFirebird.Open;
-    try
-      if selectFirebird.RecordCount > 0 then begin
-        updateMySql.SQL.Text := 'insert into analitf.receiveddocs (ID, FileName, FILEDATETIME) values (:ID, :FileName, :FILEDATETIME)';
-        while not selectFirebird.Eof do begin
-          updateMySql.ParamByName('Id').Value := selectFirebird.FieldByName('Id').Value;
-          updateMySql.ParamByName('FileName').Value := selectFirebird.FieldByName('FileName').Value;
-          updateMySql.ParamByName('FILEDATETIME').Value := selectFirebird.FieldByName('FILEDATETIME').Value;
-          updateMySql.Execute;
-          selectFirebird.Next;
-        end;
-      end
-    finally
-      selectFirebird.Close;
-    end;
-
-    //Производим перемещение заголовков заказов
-    updateMySql.SQL.Text := 'delete from analitf.currentorderheads';
-    updateMySql.Execute;
-    selectFirebird.SelectSQL.Text := 'SELECT * FROM ordersh order by orderid';
-    selectFirebird.Open;
-    try
-      if selectFirebird.RecordCount > 0 then begin
-        updateMySql.SQL.Text := 'insert into analitf.currentorderheads set ' +
-        'ORDERID  = :ORDERID,' +
-        'SERVERORDERID = :SERVERORDERID,' +
-        'CLIENTID = :CLIENTID,' +
-        'PRICECODE = :PRICECODE,' +
-        'REGIONCODE = :REGIONCODE,' +
-        'PRICENAME = :PRICENAME,' +
-        'REGIONNAME = :REGIONNAME,' +
-        'ORDERDATE = :ORDERDATE,' +
-        'SENDDATE = :SENDDATE,' +
-        'CLOSED = :CLOSED,' +
-        'SEND = :SEND,' +
-        'COMMENTS = :COMMENTS,' +
-        'MESSAGETO = :MESSAGETO';
-        while not selectFirebird.Eof do begin
-          updateMySql.ParamByName('ORDERID').Value := selectFirebird.FieldByName('ORDERID').Value;
-          updateMySql.ParamByName('SERVERORDERID').Value := selectFirebird.FieldByName('SERVERORDERID').Value;
-          updateMySql.ParamByName('CLIENTID').Value := selectFirebird.FieldByName('CLIENTID').Value;
-          updateMySql.ParamByName('PRICECODE').Value := selectFirebird.FieldByName('PRICECODE').Value;
-          updateMySql.ParamByName('REGIONCODE').Value := selectFirebird.FieldByName('REGIONCODE').Value;
-          updateMySql.ParamByName('PRICENAME').Value := selectFirebird.FieldByName('PRICENAME').Value;
-          updateMySql.ParamByName('REGIONNAME').Value := selectFirebird.FieldByName('REGIONNAME').Value;
-          updateMySql.ParamByName('ORDERDATE').Value := selectFirebird.FieldByName('ORDERDATE').Value;
-          updateMySql.ParamByName('SENDDATE').Value := selectFirebird.FieldByName('SENDDATE').Value;
-          updateMySql.ParamByName('CLOSED').Value := selectFirebird.FieldByName('CLOSED').Value;
-          updateMySql.ParamByName('SEND').Value := selectFirebird.FieldByName('SEND').Value;
-          updateMySql.ParamByName('COMMENTS').Value := selectFirebird.FieldByName('COMMENTS').Value;
-          updateMySql.ParamByName('MESSAGETO').Value := selectFirebird.FieldByName('MESSAGETO').Value;
-          updateMySql.Execute;
-          selectFirebird.Next;
-        end;
-      end;
-    finally
-      selectFirebird.Close;
-    end;
-    CDS := firebirdDB.QueryValue('select CDS from params where ID = 0', 0);
-    //Если это поле пустое, то ничего не делаем, предполагая, что база пустая
-    if Length(CDS) = 0 then
-      newCDS := ''
-    else begin
-      pc := TINFCrypt.Create(gop, 48);
-      try
-        SynonymPass := pc.DecodeHex(Copy(CDS, 1, 64));
-        CodesPass := pc.DecodeHex(Copy(CDS, 65, 64));
-        BaseCostPass := pc.DecodeHex(Copy(CDS, 129, 64));
-        oldDBUIN := pc.DecodeHex(Copy(CDS, 193, 32));
-        oldSaveGrids := Copy(oldDBUIN, 9, 7);
-        oldDBUIN := Copy(oldDBUIN, 1, 8);
-      finally
-        pc.Free;
-      end;
-      if Length(BaseCostPass) = 0 then
-        AProc.LogCriticalError('Ошибка при переносе данных : Нет необходимой информации.');
-      if Length(oldDBUIN) = 0 then
-        AProc.LogCriticalError('Ошибка при переносе данных : Нет необходимой информации 2.');
-      if oldDBUIN <> IntToHex(GetOldDBID(), 8) then
-        AProc.LogCriticalError('Ошибка при переносе данных : Не совпадает DBUIN в обновляемой базе данных.');
-
-      if (Length(BaseCostPass) > 0) and (Length(oldDBUIN) > 0) then begin
-        pc := TINFCrypt.Create(gcp, 48);
-        try
-          newCDS :=
-            pc.EncodeHex(SynonymPass) +
-            pc.EncodeHex(CodesPass) +
-            pc.EncodeHex(BaseCostPass) +
-            pc.EncodeHex(IntToHex(GetDBID(), 8) + oldSaveGrids);
-        finally
-          pc.Free;
-        end;
-      end
-      else
-        newCDS := '';
-    end;
-
-    if (Length(newCDS) > 0) and (Length(BaseCostPass) > 0) then
-      pc := TINFCrypt.Create(BaseCostPass, 50)
-    else
-      pc := nil;
-
-    //Производим перемещение содержимого текущих и отправленных заказов
-    updateMySql.SQL.Text := 'delete from analitf.currentorderlists';
-    updateMySql.Execute;
-    selectFirebird.SelectSQL.Text := 'SELECT * FROM orders where (ORDERCOUNT > 0) order by id';
-    selectFirebird.Open;
-    try
-      if selectFirebird.RecordCount > 0 then begin
-        updateMySql.SQL.Text := 'insert into analitf.currentorderlists set ' +
-        'ID  = :ID,' +
-        'ORDERID  = :ORDERID,' +
-        'CLIENTID = :CLIENTID,' +
-        'COREID = :COREID,' +
-        'PRODUCTID = :PRODUCTID,' +
-        'CODEFIRMCR = :CODEFIRMCR,' +
-        'SYNONYMCODE = :SYNONYMCODE,' +
-        'SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE,' +
-        'CODE = :CODE,' +
-        'CODECR = :CODECR,' +
-        'SYNONYMNAME = :SYNONYMNAME,' +
-        'SYNONYMFIRM = :SYNONYMFIRM,' +
-        'PRICE = :PRICE,' +
-        'RealPRICE = :RealPRICE,' +
-        'AWAIT = :AWAIT,' +
-        'JUNK = :JUNK,' +
-        'ORDERCOUNT = :ORDERCOUNT,' +
-        'REQUESTRATIO = :REQUESTRATIO,' +
-        'ORDERCOST = :ORDERCOST,' +
-        'MINORDERCOUNT = :MINORDERCOUNT';
-        while not selectFirebird.Eof do begin
-          updateMySql.ParamByName('ID').Value := selectFirebird.FieldByName('ID').Value;
-          updateMySql.ParamByName('ORDERID').Value := selectFirebird.FieldByName('ORDERID').Value;
-          updateMySql.ParamByName('CLIENTID').Value := selectFirebird.FieldByName('CLIENTID').Value;
-          updateMySql.ParamByName('COREID').Value := selectFirebird.FieldByName('COREID').Value;
-          updateMySql.ParamByName('PRODUCTID').Value := selectFirebird.FieldByName('PRODUCTID').Value;
-          updateMySql.ParamByName('CODEFIRMCR').Value := selectFirebird.FieldByName('CODEFIRMCR').Value;
-          updateMySql.ParamByName('SYNONYMCODE').Value := selectFirebird.FieldByName('SYNONYMCODE').Value;
-          updateMySql.ParamByName('SYNONYMFIRMCRCODE').Value := selectFirebird.FieldByName('SYNONYMFIRMCRCODE').Value;
-          if selectFirebird.FieldByName('CODE').IsNull then
-            updateMySql.ParamByName('CODE').Value := ''
-          else
-            updateMySql.ParamByName('CODE').Value := selectFirebird.FieldByName('CODE').Value;
-          if selectFirebird.FieldByName('CODECR').IsNull then
-            updateMySql.ParamByName('CODECR').Value := ''
-          else
-            updateMySql.ParamByName('CODECR').Value := selectFirebird.FieldByName('CODECR').Value;
-          updateMySql.ParamByName('SYNONYMNAME').Value := selectFirebird.FieldByName('SYNONYMNAME').Value;
-          updateMySql.ParamByName('SYNONYMFIRM').Value := selectFirebird.FieldByName('SYNONYMFIRM').Value;
-          updateMySql.ParamByName('AWAIT').Value := selectFirebird.FieldByName('AWAIT').Value;
-          updateMySql.ParamByName('JUNK').Value := selectFirebird.FieldByName('JUNK').Value;
-          updateMySql.ParamByName('ORDERCOUNT').Value := selectFirebird.FieldByName('ORDERCOUNT').Value;
-          updateMySql.ParamByName('REQUESTRATIO').Value := selectFirebird.FieldByName('REQUESTRATIO').Value;
-          updateMySql.ParamByName('ORDERCOST').Value := selectFirebird.FieldByName('ORDERCOST').Value;
-          updateMySql.ParamByName('MINORDERCOUNT').Value := selectFirebird.FieldByName('MINORDERCOUNT').Value;
-          if selectFirebird.FieldByName('SENDPRICE').IsNull then begin
-            //Если пароль для цен известен, то расшифровываем, иначе сбрасываем позицию
-            if Assigned(pc) then
-              try
-                updateMySql.ParamByName('PRICE').Value := StrToFloat(D_B_N_C(pc, selectFirebird.FieldByName('PRICE').AsString), FFS);
-              except
-                //Если не смогли рассшифровать цену, то помечаем позицию как незаказанную
-                updateMySql.ParamByName('PRICE').Value := 0;
-                updateMySql.ParamByName('COREID').Clear;
-              end
-            else begin
-              //Если пароль для расшифровки не установлен, то помечаем позицию как незаказанную
-              updateMySql.ParamByName('PRICE').Value := 0;
-              updateMySql.ParamByName('COREID').Clear;
-            end;
-          end
-          else begin
-            updateMySql.ParamByName('PRICE').Value := selectFirebird.FieldByName('SENDPRICE').Value;
-          end;
-          updateMySql.ParamByName('RealPRICE').Value := updateMySql.ParamByName('PRICE').Value;
-          updateMySql.Execute;
-          selectFirebird.Next;
-        end;
-      end;
-    finally
-      selectFirebird.Close;
-    end;
-
-    if Assigned(pc) then
-      pc.Free;
-
-    //Проверим сушествование невосстановленных заказов
-    selectMySql.SQL.Text := '' 
-+'select '
-+'         currentorderheads.Clientid       , '
-+'         Clients.Name as ClientName, '
-+'         currentorderheads.ORDERID        , ' 
-+'         currentorderheads.Pricename      , ' 
-+'         currentorderlists.SYNONYMNAME    , ' 
-+'         currentorderlists.SynonymFirm    , ' 
-+'         currentorderlists.ORDERCOUNT ' 
-+'from ' 
-+'         analitf.currentorderheads, '
-+'         analitf.currentorderlists, ' 
-+'         analitf.Clients ' 
-+'where ' 
-+'         (currentorderheads.ORDERID in '
-+'         (select ' 
-+'                 currentorderheads.ORDERID ' 
-+'         from ' 
-+'                 analitf.currentorderheads, ' 
-+'                 analitf.currentorderlists ' 
-+'         where ' 
-+'                 (currentorderlists.ORDERID      = currentorderheads.ORDERID) '
-+'             and (currentorderheads.CLOSED       = 0) ' 
-+'             and (currentorderlists.COREID is null) ' 
-+'         )) ' 
-+'     and (currentorderlists.ORDERID = currentorderheads.ORDERID) ' 
-+'     and (Clients.CLIENTID   = currentorderheads.CLIENTID) ' 
-+'order by ' 
-+'         Clients.Name          , ' 
-+'         currentorderheads.Pricename  , ' 
-+'         currentorderlists.SYNONYMNAME, ' 
-+'         currentorderlists.SynonymFirm';
-    selectMySql.Open;
-    try
-      if selectMySql.RecordCount > 0 then begin
-        UnrestoreOrders := True;
-        OutReport := TStringList.Create;
-        try
-          FormatUnrestoreOrders(selectMySql, OutReport);
-
-          try
-            OutReport.SaveToFile(UnrestoreOrdersFileName);
-          except
-            on E : Exception do
-              LogCriticalError(
-                Format(
-                  'Некритическая ошибка при переносе данных при сохранении отчета: %s',
-                  [E.Message]));
-          end;
-        finally
-          OutReport.Free;
-        end;
-
-        //удаляем невосстановленные заказы из базы
-        updateMySql.SQL.Text := ''
-+'delete '
-+'from '
-+'       analitf.currentorderlists '
-+'using '
-+'       analitf.currentorderlists, '
-+'       (select '
-+'               currentorderheads.ORDERID '
-+'       from '
-+'               analitf.currentorderheads, '
-+'               analitf.currentorderlists '
-+'       where '
-+'               (currentorderlists.ORDERID      = currentorderheads.ORDERID) '
-+'           and (currentorderheads.CLOSED       = 0) '
-+'           and (currentorderlists.COREID is null) '
-+'       ) as UnrestoreOrder '
-+'where '
-+'       currentorderlists.Orderid = UnrestoreOrder.OrderId';;
-        updateMySql.Execute;
-      end;
-    finally
-      selectMySql.Close;
-    end;
-
-    //Перенос заказов из текущих в отправленные
-    updateMySql.SQL.Text := ''
-      +'insert into '
-      +'  analitf.PostedOrderHeads '
-      +'select '
-      +'   CurrentOrderHeads.*  '
-      +'from '
-      +'  analitf.CurrentOrderHeads '
-      +'where '
-      +'      (CurrentOrderHeads.Closed = 1);'
-      +'insert into '
-      +'  analitf.PostedOrderLists '
-      +'select '
-      +'   CurrentOrderLists.* '
-      +'from '
-      +'  analitf.CurrentOrderLists, '
-      +'  analitf.CurrentOrderHeads '
-      +'where '
-      +'      (CurrentOrderHeads.Closed = 1) '
-      +'  and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);'
-      +' '
-      +' '
-      +' delete analitf.CurrentOrderHeads, analitf.CurrentOrderLists '
-      +' FROM analitf.CurrentOrderHeads, analitf.CurrentOrderLists '
-      +' where '
-      +'     (CurrentOrderHeads.Closed = 1) '
-      +' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);'
-      ;
-    updateMySql.Execute;
-    
-
-    selectMySql.SQL.Text := 'select * from analitf.params where id = 0';
-    selectMySql.Open;
-    selectFirebird.SelectSQL.Text := 'select * from params where id = 0';
-    selectFirebird.Open;
-    try
-      UpdateParamsSQL := '';
-      for I := 0 to selectMySql.FieldCount-1 do
-        if not AnsiSameText(selectMySql.Fields[i].FieldName, 'ID') then begin
-          ExistsField := selectFirebird.FindField(selectMySql.Fields[i].FieldName);
-          if Assigned(ExistsField) then begin
-            if Length(UpdateParamsSQL) > 0 then
-              UpdateParamsSQL := UpdateParamsSQL + ', ';
-            UpdateParamsSQL := UpdateParamsSQL + ExistsField.FieldName + ' = :' + ExistsField.FieldName;
-          end;
-        end;
-
-      UpdateParamsSQL := 'update analitf.params set ' + UpdateParamsSQL + ' where id = 0';
-      updateMySql.SQL.Text := UpdateParamsSQL;
-
-{$ifdef DEBUG}
-      AProc.LogCriticalError('Получившийся update для params: ' + UpdateParamsSQL);
-{$endif}
-
-      for I := 0 to selectFirebird.FieldCount-1 do begin
-        ExistsParam := updateMySql.FindParam(selectFirebird.Fields[i].FieldName);
-        if Assigned(ExistsParam)
-        then
-          ExistsParam.Value := selectFirebird.Fields[i].Value;
-      end;
-
-      //Пишем в базу старое значение CDS, чтобы UIN обновился по стандарнтному сценарию
-      updateMySql.ParamByName('CDS').AsString := CDS;
-
-      if (updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value >= 21) and
-         (updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value <= 30)
-      then
-        updateMySql.ParamByName('ORDERSHISTORYDAYCOUNT').Value := 35;
-
-      updateMySql.Execute;
-
-    finally
-      selectFirebird.Close;
-      selectMySql.Close;
-    end;
-
-
-    updateMySql.SQL.Text :=
-      'update analitf.params set ProviderMDBVersion = ' + IntToStr(CURRENT_DB_VERSION)
-      + ' where Id = 0';
-    updateMySql.Execute;
-
-  finally
-    selectFirebird.Free;
-    selectMySql.Free;
-    updateMySql.Free;
-  end;
-end;
-
-procedure TDM.FormatUnrestoreOrders(UnrestoreOrders: TDataSet;
-  OutReport: TStringList);
-var
-  ClientName, PriceName : String;
-begin
-  OutReport.Append('Следующие текущие заказы не были восстановлены при обновлении на новую версию:');
-  OutReport.Append('');
-  OutReport.Append('');
-  UnrestoreOrders.First;
-  ClientName := UnrestoreOrders.FieldByName('ClientName').AsString;
-  PriceName := UnrestoreOrders.FieldByName('PriceName').AsString;
-  OutReport.Append(Format('клиент %s', [ClientName]));
-  OutReport.Append(Format('   прайс-лист %s', [PriceName]));
-  while not UnrestoreOrders.Eof do begin
-    if     (ClientName = UnrestoreOrders.FieldByName('ClientName').AsString)
-       and (PriceName  <> UnrestoreOrders.FieldByName('PriceName').AsString)
-    then begin
-      PriceName := UnrestoreOrders.FieldByName('PriceName').AsString;
-      OutReport.Append('');
-      OutReport.Append(Format('   прайс-лист %s', [PriceName]));
-    end
-    else
-      if     (ClientName <> UnrestoreOrders.FieldByName('ClientName').AsString)
-         and (PriceName  <> UnrestoreOrders.FieldByName('PriceName').AsString)
-      then begin
-        ClientName := UnrestoreOrders.FieldByName('ClientName').AsString;
-        PriceName := UnrestoreOrders.FieldByName('PriceName').AsString;
-        OutReport.Append('');
-        OutReport.Append('');
-        OutReport.Append(Format('клиент %s', [ClientName]));
-        OutReport.Append(Format('   прайс-лист %s', [PriceName]));
-      end;
-
-    OutReport.Append( Format( '      %s - %s : %d',
-      [UnrestoreOrders.FieldByName('SynonymName').AsString,
-       UnrestoreOrders.FieldByName('SynonymFirm').AsString,
-       UnrestoreOrders.FieldByName('OrderCount').AsInteger]));
-    UnrestoreOrders.Next;
-  end;
-end;
-
 procedure TDM.InternalCloseMySqlDB;
 begin
   if MainConnection.Connected then
@@ -4860,21 +3570,6 @@ begin
   begin
     buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
     Result := (buildNumber >= 829) and (buildNumber <= 837);
-  end
-  else
-    Result := False;
-end;
-
-function TDM.NeedUpdateFireBirdToMySql: Boolean;
-var
-  buildNumber : Word;
-begin
-  if FileExists(ExePath + DatabaseName) and FindCmdLineSwitch('i') and
-    FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
-  then
-  begin
-    buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
-    Result := (buildNumber >= 705) and (buildNumber <= 716);
   end
   else
     Result := False;

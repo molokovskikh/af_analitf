@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, pFIBDataSet, FIBQuery, FIBDataSet, ExtCtrls, DBAccess,
+  Dialogs, StdCtrls, ExtCtrls, DBAccess,
   U_VistaCorrectForm;
 
 type

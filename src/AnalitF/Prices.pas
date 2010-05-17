@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
-  FIBDataSet, pFIBDataSet, FIBQuery, Menus, GridsEh, MemDS,
+  Menus, GridsEh, MemDS,
   DBAccess, MyAccess, CoreFirm;
 
 type
@@ -22,28 +22,7 @@ type
     dbgPrices: TToughDBGrid;
     Panel3: TPanel;
     lblPriceCount: TLabel;
-    adsPricesOld: TpFIBDataSet;
-    adsPricesOldPRICECODE: TFIBBCDField;
-    adsPricesOldPRICENAME: TFIBStringField;
-    adsPricesOldDATEPRICE: TFIBDateTimeField;
-    adsPricesOldMINREQ: TFIBIntegerField;
-    adsPricesOldENABLED: TFIBIntegerField;
-    adsPricesOldPRICEINFO: TFIBBlobField;
-    adsPricesOldFIRMCODE: TFIBBCDField;
-    adsPricesOldFULLNAME: TFIBStringField;
-    adsPricesOldSTORAGE: TFIBIntegerField;
-    adsPricesOldADMINMAIL: TFIBStringField;
-    adsPricesOldSUPPORTPHONE: TFIBStringField;
-    adsPricesOldCONTACTINFO: TFIBBlobField;
-    adsPricesOldOPERATIVEINFO: TFIBBlobField;
-    adsPricesOldREGIONCODE: TFIBBCDField;
-    adsPricesOldREGIONNAME: TFIBStringField;
-    adsPricesOldPOSITIONS: TFIBIntegerField;
-    adsPricesOldPRICESIZE: TFIBIntegerField;
-    adsPricesOldSumOrder: TCurrencyField;
-    adsPricesOldINJOB: TFIBBooleanField;
     tmStopEdit: TTimer;
-    adsPricesOldSUMBYCURRENTMONTH: TFIBBCDField;
     adsPrices: TMyQuery;
     adsPricesPriceCode: TLargeintField;
     adsPricesPriceName: TStringField;

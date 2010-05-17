@@ -7,7 +7,7 @@ uses
   Dialogs, Child, DModule, DB, Grids, DBGrids, RXDBCtrl,
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
   FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, ExtCtrls,
-  FIBDataSet, pFIBDataSet, FIBQuery, pFIBQuery, DBProc, GridsEh, MemDS,
+  DBProc, GridsEh, MemDS,
   DBAccess, MyAccess;
 
 const
@@ -40,8 +40,6 @@ type
     Label8: TLabel;
     Panel2: TPanel;
     Bevel1: TBevel;
-    adsDefectivesOld: TpFIBDataSet;
-    adsPrintOld: TpFIBDataSet;
     dbmReason: TDBMemo;
     adsPrint: TMyQuery;
     adsDefectives: TMyQuery;

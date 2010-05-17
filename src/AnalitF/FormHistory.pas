@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, DBGridEh,
-  ToughDBGrid, FIBDataSet, pFIBDataSet, GridsEh, MemDS, DBAccess, MyAccess,
+  ToughDBGrid, GridsEh, MemDS, DBAccess, MyAccess,
   U_VistaCorrectForm;
 
 type
@@ -16,21 +16,7 @@ type
     dsPreviosOrders: TDataSource;
     Label1: TLabel;
     Grid: TToughDBGrid;
-    adsOrdersOld: TpFIBDataSet;
-    adsOrdersOldFULLCODE: TFIBBCDField;
-    adsOrdersOldSYNONYMNAME: TFIBStringField;
-    adsOrdersOldSYNONYMFIRM: TFIBStringField;
-    adsOrdersOldORDERCOUNT: TFIBIntegerField;
-    adsOrdersOldCODE: TFIBStringField;
-    adsOrdersOldCODECR: TFIBStringField;
-    adsOrdersOldORDERDATE: TFIBDateTimeField;
-    adsOrdersOldPRICENAME: TFIBStringField;
-    adsOrdersOldREGIONNAME: TFIBStringField;
-    adsOrdersOldAWAIT: TFIBIntegerField;
-    adsOrdersOldJUNK: TFIBIntegerField;
     lPriceAvg: TLabel;
-    adsOrdersOldPRICE: TFIBStringField;
-    adsOrdersOldSENDPRICE: TFIBBCDField;
     adsPreviosOrders: TMyQuery;
     adsPreviosOrdersFullCode: TLargeintField;
     adsPreviosOrdersCode: TStringField;

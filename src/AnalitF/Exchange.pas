@@ -8,7 +8,7 @@ uses
   Variants, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
-  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, FIBDataSet, Contnrs,
+  IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, Contnrs,
   IdIOHandlerStack, IdSSL, U_VistaCorrectForm, ExchangeParameters;
 
 {$ifdef USEMEMORYCRYPTDLL}

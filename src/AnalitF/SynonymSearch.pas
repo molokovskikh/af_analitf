@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Child, DB, FIBDataSet, pFIBDataSet, ActnList, ExtCtrls, FR_DSet,
+  Dialogs, Child, DB, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Constant,
-  ForceRus, DBGrids, Buttons, Menus, ibase, DBCtrls, StrUtils, GridsEh,
+  ForceRus, DBGrids, Buttons, Menus, DBCtrls, StrUtils, GridsEh,
   U_frameLegend, MemDS, DBAccess, MyAccess;
 
 type
@@ -18,58 +18,9 @@ type
     Timer: TTimer;
     ActionList: TActionList;
     actFlipCore: TAction;
-    adsCoreOld: TpFIBDataSet;
-    adsCoreOldSumOrder: TCurrencyField;
-    adsCoreOldPriceRet: TCurrencyField;
-    adsCoreOldPriceDelta: TFloatField;
-    adsCoreOldCryptBASECOST: TCurrencyField;
     eSearch: TEdit;
     btnSearch: TButton;
     tmrSearch: TTimer;
-    adsCoreOldCOREID: TFIBBCDField;
-    adsCoreOldPRICECODE: TFIBBCDField;
-    adsCoreOldREGIONCODE: TFIBBCDField;
-    adsCoreOldSHORTCODE: TFIBBCDField;
-    adsCoreOldCODEFIRMCR: TFIBBCDField;
-    adsCoreOldSYNONYMCODE: TFIBBCDField;
-    adsCoreOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreOldCODE: TFIBStringField;
-    adsCoreOldCODECR: TFIBStringField;
-    adsCoreOldPERIOD: TFIBStringField;
-    adsCoreOldSALE: TFIBIntegerField;
-    adsCoreOldVOLUME: TFIBStringField;
-    adsCoreOldNOTE: TFIBStringField;
-    adsCoreOldQUANTITY: TFIBStringField;
-    adsCoreOldAWAIT: TFIBBooleanField;
-    adsCoreOldJUNK: TFIBBooleanField;
-    adsCoreOldSYNONYMNAME: TFIBStringField;
-    adsCoreOldSYNONYMFIRM: TFIBStringField;
-    adsCoreOldPRICENAME: TFIBStringField;
-    adsCoreOldPRICEENABLED: TFIBBooleanField;
-    adsCoreOldFIRMCODE: TFIBBCDField;
-    adsCoreOldSTORAGE: TFIBBooleanField;
-    adsCoreOldREGIONNAME: TFIBStringField;
-    adsCoreOldORDERSCOREID: TFIBBCDField;
-    adsCoreOldORDERSORDERID: TFIBBCDField;
-    adsCoreOldORDERSCLIENTID: TFIBBCDField;
-    adsCoreOldORDERSFULLCODE: TFIBBCDField;
-    adsCoreOldORDERSCODEFIRMCR: TFIBBCDField;
-    adsCoreOldORDERSSYNONYMCODE: TFIBBCDField;
-    adsCoreOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreOldORDERSCODE: TFIBStringField;
-    adsCoreOldORDERSCODECR: TFIBStringField;
-    adsCoreOldORDERCOUNT: TFIBIntegerField;
-    adsCoreOldORDERSSYNONYM: TFIBStringField;
-    adsCoreOldORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreOldORDERSJUNK: TFIBBooleanField;
-    adsCoreOldORDERSAWAIT: TFIBBooleanField;
-    adsCoreOldORDERSHORDERID: TFIBBCDField;
-    adsCoreOldORDERSHCLIENTID: TFIBBCDField;
-    adsCoreOldORDERSHPRICECODE: TFIBBCDField;
-    adsCoreOldORDERSHREGIONCODE: TFIBBCDField;
-    adsCoreOldORDERSHPRICENAME: TFIBStringField;
-    adsCoreOldORDERSHREGIONNAME: TFIBStringField;
-    adsCoreOldFULLCODE: TFIBBCDField;
     cbBaseOnly: TCheckBox;
     btnSelectPrices: TBitBtn;
     pmSelectedPrices: TPopupMenu;
@@ -77,42 +28,15 @@ type
     miUnselecAll: TMenuItem;
     miSep: TMenuItem;
     lFilter: TLabel;
-    adsOrdersShowFormSummaryOld: TpFIBDataSet;
-    adsCoreOldDATEPRICE: TFIBDateTimeField;
-    adsCoreOldBASECOST: TFIBStringField;
-    adsCoreOldORDERSPRICE: TFIBStringField;
     pBottom: TPanel;
     gbPrevOrders: TGroupBox;
     lblPriceAvg: TLabel;
     dbtPriceAvg: TDBText;
     dbgHistory: TToughDBGrid;
-    adsOrdersOld: TpFIBDataSet;
-    adsOrdersOldFULLCODE: TFIBBCDField;
-    adsOrdersOldSYNONYMNAME: TFIBStringField;
-    adsOrdersOldSYNONYMFIRM: TFIBStringField;
-    adsOrdersOldORDERCOUNT: TFIBIntegerField;
-    adsOrdersOldORDERDATE: TFIBDateTimeField;
-    adsOrdersOldPRICENAME: TFIBStringField;
-    adsOrdersOldREGIONNAME: TFIBStringField;
-    adsOrdersOldAWAIT: TFIBIntegerField;
-    adsOrdersOldJUNK: TFIBIntegerField;
-    adsOrdersOldCODE: TFIBStringField;
-    adsOrdersOldCODECR: TFIBStringField;
-    adsOrdersOldPRICE: TFIBStringField;
     dsPreviosOrders: TDataSource;
     dsAvgOrders: TDataSource;
-    adsCoreOldDOC: TFIBStringField;
-    adsCoreOldREGISTRYCOST: TFIBFloatField;
-    adsCoreOldVITALLYIMPORTANT: TFIBBooleanField;
-    adsCoreOldREQUESTRATIO: TFIBIntegerField;
-    adsOrdersOldSENDPRICE: TFIBBCDField;
-    adsCoreOldORDERCOST: TFIBBCDField;
-    adsCoreOldMINORDERCOUNT: TFIBIntegerField;
-    adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField;
-    adsCoreOldPRODUCTID: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
-    adsCoreOldSortOrder: TIntegerField;
     frameLegeng: TframeLegeng;
     adsCore: TMyQuery;
     adsCoreCoreId: TLargeintField;
@@ -272,7 +196,7 @@ procedure ShowSynonymSearch;
 implementation
 
 uses
-  DModule, AProc, Main, SQLWaiting, AlphaUtils, pFIBProps, NamesForms, U_GroupUtils,
+  DModule, AProc, Main, SQLWaiting, AlphaUtils, NamesForms, U_GroupUtils,
   U_framePosition, DBGridHelper;
 
 {$R *.dfm}

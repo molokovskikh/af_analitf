@@ -7,7 +7,7 @@ uses
   ComCtrls, Menus, ExtCtrls, DBCtrls, DB, Child, Placemnt,
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, DBGridEh, DateUtils, ToughDBGrid,
-  OleCtrls, SHDocVw, AppEvnts, SyncObjs, FIBDataSet, pFIBDataSet, Consts, ShellAPI,
+  OleCtrls, SHDocVw, AppEvnts, SyncObjs, Consts, ShellAPI,
   MemDS, DBAccess, MyAccess, U_VistaCorrectForm, Contnrs;
 
 type
@@ -106,7 +106,6 @@ TMainForm = class(TVistaCorrectForm)
     itmAbout: TMenuItem;
     btnHome: TToolButton;
     actHome: TAction;
-    adsOrdersHOld: TpFIBDataSet;
     tbWaybill: TToolButton;
     actWayBill: TAction;
     tbLastSeparator: TToolButton;

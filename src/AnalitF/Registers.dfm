@@ -33,7 +33,6 @@ inherited RegistersForm: TRegistersForm
     TitleFont.Height = -11
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
-    OnSortMarkingChanged = dbgRegistrySortMarkingChanged
     SearchField = 'Name'
     SearchPosition = spTop
     ForceRus = True
@@ -211,66 +210,7 @@ inherited RegistersForm: TRegistersForm
     end
   end
   object dsRegistry: TDataSource
-    DataSet = adsRegistry
     Left = 96
     Top = 192
-  end
-  object adsRegistry: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    ID,'
-      '    NAME,'
-      '    FORM,'
-      '    PRODUCER,'
-      '    BOX,'
-      '    PRICE,'
-      '    CURR,'
-      '    PRICERUB'
-      'FROM'
-      '    REGISTRY ')
-    Transaction = DM.DefTran
-    Left = 96
-    Top = 136
-    oCacheCalcFields = True
-    object adsRegistryID: TFIBBCDField
-      FieldName = 'ID'
-      Size = 0
-      RoundByScale = True
-    end
-    object adsRegistryNAME: TFIBStringField
-      FieldName = 'NAME'
-      Size = 250
-      EmptyStrToNull = True
-    end
-    object adsRegistryFORM: TFIBStringField
-      FieldName = 'FORM'
-      Size = 250
-      EmptyStrToNull = True
-    end
-    object adsRegistryPRODUCER: TFIBStringField
-      FieldName = 'PRODUCER'
-      Size = 150
-      EmptyStrToNull = True
-    end
-    object adsRegistryBOX: TFIBStringField
-      FieldName = 'BOX'
-      Size = 10
-      EmptyStrToNull = True
-    end
-    object adsRegistryPRICE: TFIBBCDField
-      FieldName = 'PRICE'
-      Size = 4
-      RoundByScale = True
-    end
-    object adsRegistryCURR: TFIBStringField
-      FieldName = 'CURR'
-      Size = 10
-      EmptyStrToNull = True
-    end
-    object adsRegistryPRICERUB: TFIBBCDField
-      FieldName = 'PRICERUB'
-      Size = 4
-      RoundByScale = True
-    end
   end
 end

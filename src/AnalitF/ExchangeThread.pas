@@ -5,11 +5,11 @@ interface
 uses
 	Classes, SysUtils, Windows, StrUtils, ComObj, Variants,
 	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
-  IdException, WinSock, RxVerInf, DB, pFIBQuery, pFIBDatabase, FIBMiscellaneous,
-  FIBQuery, ibase, U_TINFIBInputDelimitedStream, SevenZip,
+  IdException, WinSock, RxVerInf, DB, 
+  SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdComponent, IdHTTP, FIB, FileUtil, pFIBProps,
-  U_frmOldOrdersDelete, IB_ErrorCodes, U_RecvThread, IdStack, MyAccess, DBAccess,
+  DADAuthenticationNTLM, IdComponent, IdHTTP, FileUtil, 
+  U_frmOldOrdersDelete, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
   DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController;
 
@@ -116,13 +116,6 @@ private
 	procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
-  procedure UpdateFromFileByParamsMySQL(
-    FileName,
-    InsertSQL : String;
-    Names : array of string;
-    LogSQL : Boolean = False);
-
-
 	function FromXMLToDateTime( AStr: string): TDateTime;
 	function RusError( AStr: string): string;
   procedure OnConnectError (AMessage : String);
@@ -153,7 +146,7 @@ end;
 implementation
 
 uses Exchange, DModule, AProc, Main, Retry, 
-  LU_Tracer, FIBDatabase, FIBDataSet, Math, DBProc, U_frmSendLetter,
+  LU_Tracer, Math, DBProc, U_frmSendLetter,
   Constant, U_ExchangeLog, U_SendArchivedOrdersThread, ULoginHelper,
   Registry;
 
@@ -325,6 +318,7 @@ begin
       ImportComplete := True;
 
       except
+{
         on EFIB : EFIBError do
         begin
           WriteExchangeLog(
@@ -339,13 +333,11 @@ begin
             'Msg           = ' + EFIB.Msg + CRLF +
             'Message       = ' + EFIB.Message);
 
-          {
           Если получили ошибку целостности:
             1. Если не было запроса кумулятивного обновления, то откатываемся и запрашиваем КО
             2. Если запрос КО уже был, то высылаем данные в АК Инфорум и прерываем обновление
 
           Если это другая ошибка, то пишем сообщение и прерываем обмен данными
-          }
 
           if ((EFIB.SQLCode = sqlcode_foreign_or_create_schema) or (EFIB.SQLCode = sqlcode_unique_violation))
           then begin
@@ -385,6 +377,7 @@ begin
               'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
           end;
         end;
+}        
         on E : EDelayOfPaymentsDataIntegrityException do begin
           SendLetterWithTechInfo(
             'Ошибка целостности базы данных в таблице отсрочек при импорте данных',
@@ -1450,12 +1443,14 @@ begin
     else begin
       SQL.Text := GetLoadDataSQL('CatalogFarmGroups', ExePath+SDirIn+'\CatalogFarmGroups.txt', true);
       InternalExecute;
+{
       if utCatFarmGroupsDel in UpdateTables then begin
         UpdateFromFileByParamsMySQL(
           ExePath+SDirIn+'\CatFarmGroupsDel.txt',
           'delete from catalogfarmgroups where (ID = :ID)',
           ['ID']);
       end;
+}      
     end;
 	end;
 
@@ -2247,113 +2242,6 @@ begin
     on E : Exception do
       WriteExchangeLog('Exchange',
         'При отправке письма с технической информацией произошла ошибка : ' + E.Message);
-  end;
-end;
-
-procedure TExchangeThread.UpdateFromFileByParamsMySQL(FileName,
-  InsertSQL: String; Names: array of string; LogSQL: Boolean);
-var
-  up : TMyQuery;
-  InDelimitedFile : TFIBInputDelimitedFile;
-  StopExec : TDateTime;
-  Secs : Int64;
-  Col : String;
-  Values : array of Variant;
-  FEOF : Boolean;
-  FEOL : Boolean;
-  CurColumn : Integer;
-  ResultRead : Integer;
-  I : Integer;
-  LogText : String;
-begin
-  up := TMyQuery.Create(nil);
-  SetLength(Values, Length(Names));
-  try
-    up.Connection := DM.MainConnection;
-
-    InDelimitedFile := TFIBInputDelimitedFile.Create;
-    try
-      InDelimitedFile.SkipTitles := False;
-      InDelimitedFile.ReadBlanksAsNull := True;
-      InDelimitedFile.ColDelimiter := Chr(9);
-      InDelimitedFile.RowDelimiter := #13#10;
-
-      up.SQL.Text := InsertSQL;
-      InDelimitedFile.Filename := FileName;
-
-      if LogSQL then
-        Tracer.TR('Import', 'Exec : ' + InsertSQL);
-      try
-
-        StartExec := Now;
-        try
-          InDelimitedFile.ReadyStream;
-          FEOF := False;
-          repeat
-            FEOL := False;
-            CurColumn := 0;
-            for I := 0 to Length(Names)-1 do
-              Values[i] := Unassigned;
-            repeat
-              ResultRead := InDelimitedFile.GetColumn(Col);
-              if ResultRead = 0 then FEOF := True;
-              if ResultRead = 2 then FEOL := True;
-              if (CurColumn < Length(Names)) then
-              try
-                if (Col = '') then
-                  Values[CurColumn] := Null
-                else
-                  Values[CurColumn] := Col;
-                Inc(CurColumn);
-              except
-                on E: Exception do
-                begin
-                  if not (FEOF and (CurColumn = Length(Names))) then
-                    raise;
-                end;
-              end;
-            until FEOL or FEOF;
-            if ((FEOF) and (CurColumn = Length(Names))) or (not FEOF)
-            then begin
-              for I := 0 to Length(Names)-1 do
-                if Values[i] = Null then
-                  up.ParamByName(Names[i]).Clear
-                else
-                  up.ParamByName(Names[i]).AsString := Values[i];
-              up.Execute;
-            end;
-          until FEOF;
-        finally
-          StopExec := Now;
-          Secs := SecondsBetween(StopExec, StartExec);
-          if (Secs > 3) and LogSQL then
-            Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
-        end;
-
-      except
-        on E : Exception do
-        begin
-          LogText := 'FileName : ' + FileName + CRLF +
-            ' ErrorMessage : ' + E.Message + CRLF;
-          if up.ParamCount > 0 then begin
-            LogText := LogText + '  Params ( ';
-            for I := 0 to up.ParamCount-1 do
-              LogText := LogText +
-                up.Params.Items[i].Name + ' : ' + up.Params.Items[i].AsString + ';';
-            LogText := LogText + ' )';
-          end;
-          //TODO: Пока эта информация пишется в Exchange.log, возможно ее стоит убрать
-          WriteExchangeLog('Exchange.UpdateFromFileByParamsMySQL', LogText);
-          raise;
-        end;
-      end;
-
-    finally
-      InDelimitedFile.Free;
-    end;
-
-  finally
-    up.Free;
   end;
 end;
 

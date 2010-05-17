@@ -6,8 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
-  ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw, FIBDataSet,
-  pFIBDataSet, DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
+  ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw,
+  DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
   ActnList, U_frameLegend, MemDS, DBAccess, MyAccess;
 
 type
@@ -15,10 +15,6 @@ type
     dsSummary: TDataSource;
     pClient: TPanel;
     dbgSummaryCurrent: TToughDBGrid;
-    adsSummaryOld: TpFIBDataSet;
-    adsSummaryOldSumOrder: TCurrencyField;
-    adsSummaryOldCryptBASECOST: TCurrencyField;
-    adsSummaryOldPriceRet: TCurrencyField;
     pStatus: TPanel;
     Bevel1: TBevel;
     Label1: TLabel;
@@ -37,62 +33,10 @@ type
     btnSelectPrices: TBitBtn;
     miUnselectedAll: TMenuItem;
     miSeparator: TMenuItem;
-    adsCurrentSummaryOld: TpFIBDataSet;
-    adsSendSummaryOld: TpFIBDataSet;
-    adsSummaryOldVOLUME: TFIBStringField;
-    adsSummaryOldQUANTITY: TFIBStringField;
-    adsSummaryOldNOTE: TFIBStringField;
-    adsSummaryOldPERIOD: TFIBStringField;
-    adsSummaryOldJUNK: TFIBBooleanField;
-    adsSummaryOldAWAIT: TFIBBooleanField;
-    adsSummaryOldCODE: TFIBStringField;
-    adsSummaryOldCODECR: TFIBStringField;
-    adsSummaryOldSYNONYMNAME: TFIBStringField;
-    adsSummaryOldSYNONYMFIRM: TFIBStringField;
-    adsSummaryOldBASECOST: TFIBStringField;
-    adsSummaryOldPRICENAME: TFIBStringField;
-    adsSummaryOldREGIONNAME: TFIBStringField;
-    adsSummaryOldORDERCOUNT: TFIBIntegerField;
-    adsSummaryOldORDERSCOREID: TFIBBCDField;
-    adsSummaryOldORDERSORDERID: TFIBBCDField;
-    adsSummaryOldPRICECODE: TFIBBCDField;
-    adsSummaryOldREGIONCODE: TFIBBCDField;
-    adsSummaryOldDOC: TFIBStringField;
-    adsSummaryOldREGISTRYCOST: TFIBFloatField;
-    adsSummaryOldVITALLYIMPORTANT: TFIBBooleanField;
-    adsSummaryOldREQUESTRATIO: TFIBIntegerField;
-    adsSendSummaryOldVOLUME: TFIBStringField;
-    adsSendSummaryOldQUANTITY: TFIBStringField;
-    adsSendSummaryOldNOTE: TFIBStringField;
-    adsSendSummaryOldPERIOD: TFIBStringField;
-    adsSendSummaryOldJUNK: TFIBBooleanField;
-    adsSendSummaryOldAWAIT: TFIBBooleanField;
-    adsSendSummaryOldCODE: TFIBStringField;
-    adsSendSummaryOldCODECR: TFIBStringField;
-    adsSendSummaryOldSYNONYMNAME: TFIBStringField;
-    adsSendSummaryOldSYNONYMFIRM: TFIBStringField;
-    adsSendSummaryOldBASECOST: TFIBStringField;
-    adsSendSummaryOldPRICENAME: TFIBStringField;
-    adsSendSummaryOldREGIONNAME: TFIBStringField;
-    adsSendSummaryOldORDERCOUNT: TFIBIntegerField;
-    adsSendSummaryOldORDERSCOREID: TFIBBCDField;
-    adsSendSummaryOldORDERSORDERID: TFIBBCDField;
-    adsSendSummaryOldPRICECODE: TFIBBCDField;
-    adsSendSummaryOldREGIONCODE: TFIBBCDField;
-    adsSendSummaryOldDOC: TFIBStringField;
-    adsSendSummaryOldVITALLYIMPORTANT: TFIBIntegerField;
-    adsSendSummaryOldREQUESTRATIO: TFIBIntegerField;
-    adsSendSummaryOldREGISTRYCOST: TFIBFloatField;
     dtpDateFrom: TDateTimePicker;
     dtpDateTo: TDateTimePicker;
-    adsSummaryOldSENDPRICE: TFIBBCDField;
-    adsSummaryOldORDERCOST: TFIBBCDField;
-    adsSummaryOldMINORDERCOUNT: TFIBIntegerField;
-    adsSummaryOldCOREID: TFIBBCDField;
     ActionList: TActionList;
     actFlipCore: TAction;
-    adsSummaryOldFULLCODE: TFIBBCDField;
-    adsSummaryOldSHORTCODE: TFIBBCDField;
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;

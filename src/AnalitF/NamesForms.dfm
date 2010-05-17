@@ -424,37 +424,6 @@ inherited NamesFormsForm: TNamesFormsForm
       OnExecute = actShowSynonymMNNExecute
     end
   end
-  object adsNamesOld: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '    ASHORTCODE,'
-      '    NAME,'
-      '    coreexists'
-      'FROM'
-      '    CATALOGSHOWBYNAME(:SHOWALL) ')
-    Database = DM.MainConnectionOld
-    Left = 80
-    Top = 168
-    oCacheCalcFields = True
-  end
-  object adsFormsOld: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT'
-      '*'
-      'FROM'
-      '    CATALOGSHOWBYFORM(:ASHORTCODE, :SHOWAll) ')
-    Database = DM.MainConnectionOld
-    Left = 437
-    Top = 152
-    dcForceOpen = True
-    oCacheCalcFields = True
-  end
-  object adsCatalogOld: TpFIBDataSet
-    Database = DM.MainConnectionOld
-    Left = 176
-    Top = 168
-    oCacheCalcFields = True
-  end
   object dsCatalog: TDataSource
     DataSet = adsCatalog
     Left = 176

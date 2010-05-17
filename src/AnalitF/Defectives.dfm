@@ -373,41 +373,6 @@ inherited DefectivesForm: TDefectivesForm
       OnExecute = actCheckExecute
     end
   end
-  object adsDefectivesOld: TpFIBDataSet
-    UpdateSQL.Strings = (
-      'UPDATE DEFECTIVES'
-      'SET '
-      '    CHECKPRINT = :CHECKPRINT'
-      'WHERE'
-      '    ID = :OLD_ID'
-      '    ')
-    RefreshSQL.Strings = (
-      'SELECT * FROM Defectives'
-      'WHERE(  LetterDate BETWEEN :DateFrom And :DateTo'
-      '     ) and (     DEFECTIVES.ID = :OLD_ID'
-      '     )'
-      '    ')
-    SelectSQL.Strings = (
-      'SELECT * FROM Defectives'
-      'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
-    Database = DM.MainConnectionOld
-    AutoCommit = True
-    Left = 128
-    Top = 160
-    oCacheCalcFields = True
-    oFetchAll = True
-  end
-  object adsPrintOld: TpFIBDataSet
-    SelectSQL.Strings = (
-      'SELECT * FROM Defectives'
-      'WHERE '
-      '  LetterDate BETWEEN :DateFrom And :DateTo '
-      'AND (CheckPrint = 1 Or :ShowAll = 1)')
-    Database = DM.MainConnectionOld
-    Left = 248
-    Top = 160
-    oCacheCalcFields = True
-  end
   object adsPrint: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (

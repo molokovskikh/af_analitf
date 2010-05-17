@@ -3,8 +3,8 @@ unit U_UpdateDBThread;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, FIB, FIBQuery, pFIBQuery, FIBDataSet,
-  pFIBDataSet, FIBDatabase, pFIBDatabase, MyAccess, MyEmbConnection;
+  Windows, Messages, SysUtils, Classes,
+  MyAccess, MyEmbConnection;
 
 type
   TOnUpdateDBFileData = procedure (dbCon : TCustomMyConnection) of object;

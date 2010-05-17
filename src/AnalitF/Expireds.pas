@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls,
-  SHDocVw, FIBDataSet, pFIBDataSet, FIBSQLMonitor, DBProc, FIBQuery, Constant,
+  SHDocVw, DBProc, Constant,
   GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons;
 
 type
@@ -15,65 +15,12 @@ type
     Timer: TTimer;
     pClient: TPanel;
     dbgExpireds: TToughDBGrid;
-    adsExpiredsOld: TpFIBDataSet;
-    adsExpiredsOldSumOrder: TCurrencyField;
-    adsOrdersShowFormSummaryOld: TpFIBDataSet;
-    adsExpiredsOldPriceRet: TCurrencyField;
-    adsExpiredsOldCryptBASECOST: TCurrencyField;
-    adsExpiredsOldCOREID: TFIBBCDField;
-    adsExpiredsOldPRICECODE: TFIBBCDField;
-    adsExpiredsOldREGIONCODE: TFIBBCDField;
-    adsExpiredsOldFULLCODE: TFIBBCDField;
-    adsExpiredsOldCODEFIRMCR: TFIBBCDField;
-    adsExpiredsOldSYNONYMCODE: TFIBBCDField;
-    adsExpiredsOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsExpiredsOldCODE: TFIBStringField;
-    adsExpiredsOldCODECR: TFIBStringField;
-    adsExpiredsOldNOTE: TFIBStringField;
-    adsExpiredsOldPERIOD: TFIBStringField;
-    adsExpiredsOldVOLUME: TFIBStringField;
-    adsExpiredsOldQUANTITY: TFIBStringField;
-    adsExpiredsOldSYNONYMNAME: TFIBStringField;
-    adsExpiredsOldSYNONYMFIRM: TFIBStringField;
-    adsExpiredsOldAWAIT: TFIBIntegerField;
-    adsExpiredsOldPRICENAME: TFIBStringField;
-    adsExpiredsOldDATEPRICE: TFIBDateTimeField;
-    adsExpiredsOldREGIONNAME: TFIBStringField;
-    adsExpiredsOldORDERSCOREID: TFIBBCDField;
-    adsExpiredsOldORDERSORDERID: TFIBBCDField;
-    adsExpiredsOldORDERSCLIENTID: TFIBBCDField;
-    adsExpiredsOldORDERSFULLCODE: TFIBBCDField;
-    adsExpiredsOldORDERSCODEFIRMCR: TFIBBCDField;
-    adsExpiredsOldORDERSSYNONYMCODE: TFIBBCDField;
-    adsExpiredsOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsExpiredsOldORDERSCODE: TFIBStringField;
-    adsExpiredsOldORDERSCODECR: TFIBStringField;
-    adsExpiredsOldORDERSSYNONYM: TFIBStringField;
-    adsExpiredsOldORDERSSYNONYMFIRM: TFIBStringField;
-    adsExpiredsOldORDERCOUNT: TFIBIntegerField;
-    adsExpiredsOldORDERSJUNK: TFIBIntegerField;
-    adsExpiredsOldORDERSAWAIT: TFIBIntegerField;
-    adsExpiredsOldORDERSHORDERID: TFIBBCDField;
-    adsExpiredsOldORDERSHCLIENTID: TFIBBCDField;
-    adsExpiredsOldORDERSHPRICECODE: TFIBBCDField;
-    adsExpiredsOldORDERSHREGIONCODE: TFIBBCDField;
-    adsExpiredsOldORDERSHPRICENAME: TFIBStringField;
-    adsExpiredsOldORDERSHREGIONNAME: TFIBStringField;
     pRecordCount: TPanel;
     lblRecordCount: TLabel;
     Bevel1: TBevel;
     pWebBrowser: TPanel;
     Bevel2: TBevel;
     WebBrowser1: TWebBrowser;
-    adsExpiredsOldBASECOST: TFIBStringField;
-    adsExpiredsOldORDERSPRICE: TFIBStringField;
-    adsExpiredsOldDOC: TFIBStringField;
-    adsExpiredsOldREGISTRYCOST: TFIBFloatField;
-    adsExpiredsOldVITALLYIMPORTANT: TFIBIntegerField;
-    adsExpiredsOldREQUESTRATIO: TFIBIntegerField;
-    adsExpiredsOldORDERCOST: TFIBBCDField;
-    adsExpiredsOldMINORDERCOUNT: TFIBIntegerField;
-    adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField;
     ActionList: TActionList;
     actFlipCore: TAction;
     plOverCost: TPanel;

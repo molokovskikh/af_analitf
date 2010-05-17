@@ -7,9 +7,9 @@ uses
   ExtCtrls, Grids, DBGrids, ComCtrls, Db, StrUtils,
   StdCtrls, Buttons, DBCtrls, FR_Class, FR_DSet, FR_DBSet,
   Child, RXDBCtrl, Variants, Math, DBGridEh,
-  ToughDBGrid, OleCtrls, SHDocVw, ActnList, FIBDataSet,
-  pFIBDataSet, pFIBDatabase, pFIBQuery, FIBDatabase, FIBSQLMonitor, Spin,
-  GridsEh, pFIBProps, U_frameLegend, MemDS, DBAccess, MyAccess;
+  ToughDBGrid, OleCtrls, SHDocVw, ActnList, 
+  Spin,
+  GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess;
 
 const
 	ALL_REGIONS	= 'Все регионы';
@@ -42,91 +42,13 @@ type
     Bevel1: TBevel;
     WebBrowser1: TWebBrowser;
     dbgCore: TToughDBGrid;
-    adsCoreOld: TpFIBDataSet;
-    adsCoreOldCOREID: TFIBBCDField;
-    adsCoreOldPRICECODE: TFIBBCDField;
-    adsCoreOldREGIONCODE: TFIBBCDField;
-    adsCoreOldFULLCODE: TFIBBCDField;
-    adsCoreOldSHORTCODE: TFIBBCDField;
-    adsCoreOldCODEFIRMCR: TFIBBCDField;
-    adsCoreOldSYNONYMCODE: TFIBBCDField;
-    adsCoreOldSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreOldCODE: TFIBStringField;
-    adsCoreOldCODECR: TFIBStringField;
-    adsCoreOldPERIOD: TFIBStringField;
-    adsCoreOldSALE: TFIBIntegerField;
-    adsCoreOldVOLUME: TFIBStringField;
-    adsCoreOldNOTE: TFIBStringField;
-    adsCoreOldSYNONYMNAME: TFIBStringField;
-    adsCoreOldSYNONYMFIRM: TFIBStringField;
-    adsCoreOldDATEPRICE: TFIBDateTimeField;
-    adsCoreOldPRICENAME: TFIBStringField;
-    adsCoreOldFIRMCODE: TFIBBCDField;
-    adsCoreOldREGIONNAME: TFIBStringField;
-    adsCoreOldORDERSCOREID: TFIBBCDField;
-    adsCoreOldORDERSORDERID: TFIBBCDField;
-    adsCoreOldORDERSCLIENTID: TFIBBCDField;
-    adsCoreOldORDERSFULLCODE: TFIBBCDField;
-    adsCoreOldORDERSCODEFIRMCR: TFIBBCDField;
-    adsCoreOldORDERSSYNONYMCODE: TFIBBCDField;
-    adsCoreOldORDERSSYNONYMFIRMCRCODE: TFIBBCDField;
-    adsCoreOldORDERSCODE: TFIBStringField;
-    adsCoreOldORDERSCODECR: TFIBStringField;
-    adsCoreOldORDERCOUNT: TFIBIntegerField;
-    adsCoreOldORDERSSYNONYM: TFIBStringField;
-    adsCoreOldORDERSSYNONYMFIRM: TFIBStringField;
-    adsCoreOldORDERSHORDERID: TFIBBCDField;
-    adsCoreOldORDERSHCLIENTID: TFIBBCDField;
-    adsCoreOldORDERSHPRICECODE: TFIBBCDField;
-    adsCoreOldORDERSHREGIONCODE: TFIBBCDField;
-    adsCoreOldORDERSHPRICENAME: TFIBStringField;
-    adsCoreOldORDERSHREGIONNAME: TFIBStringField;
-    adsCoreOldSumOrder: TCurrencyField;
-    adsCoreOldPriceRet: TCurrencyField;
-    adsCoreOldPriceDelta: TFloatField;
-    adsRegionsOld: TpFIBDataSet;
-    adsOrdersOld: TpFIBDataSet;
-    adsOrdersOldFULLCODE: TFIBBCDField;
-    adsOrdersOldSYNONYMNAME: TFIBStringField;
-    adsOrdersOldSYNONYMFIRM: TFIBStringField;
-    adsOrdersOldORDERCOUNT: TFIBIntegerField;
-    adsOrdersOldORDERDATE: TFIBDateTimeField;
-    adsOrdersOldPRICENAME: TFIBStringField;
-    adsOrdersOldREGIONNAME: TFIBStringField;
-    adsOrdersOldAWAIT: TFIBIntegerField;
-    adsOrdersOldJUNK: TFIBIntegerField;
-    adsOrdersShowFormSummaryOld: TpFIBDataSet;
-    adsFirmsInfoOld: TpFIBDataSet;
-    adsCoreOldSTORAGE: TFIBBooleanField;
-    adsCoreOldAWAIT: TFIBBooleanField;
-    adsCoreOldJUNK: TFIBBooleanField;
-    adsCoreOldPRICEENABLED: TFIBBooleanField;
-    adsCoreOldORDERSJUNK: TFIBBooleanField;
-    adsCoreOldORDERSAWAIT: TFIBBooleanField;
-    adsCoreOldCryptBASECOST: TCurrencyField;
-    adsCoreOldQUANTITY: TFIBStringField;
-    adsOrdersOldCODE: TFIBStringField;
-    adsOrdersOldCODECR: TFIBStringField;
-    adsCoreOldBASECOST: TFIBStringField;
-    adsCoreOldORDERSPRICE: TFIBStringField;
-    adsOrdersOldPRICE: TFIBStringField;
-    adsCoreOldDOC: TFIBStringField;
-    adsCoreOldREGISTRYCOST: TFIBFloatField;
-    adsCoreOldVITALLYIMPORTANT: TFIBIntegerField;
-    adsCoreOldREQUESTRATIO: TFIBIntegerField;
-    adsOrdersOldSENDPRICE: TFIBBCDField;
     pRight: TPanel;
     gbRetUpCost: TGroupBox;
     seRetUpCost: TSpinEdit;
     eRetUpCost: TEdit;
     gbSum: TGroupBox;
     lCurrentSumma: TLabel;
-    adsCoreOldORDERCOST: TFIBBCDField;
-    adsCoreOldMINORDERCOUNT: TFIBIntegerField;
-    adsCoreOldPRODUCTID: TFIBBCDField;
-    adsOrdersShowFormSummaryOldPRICEAVG: TFIBBCDField;
     lWarning: TLabel;
-    adsCoreOldSortOrder: TIntegerField;
     btnGroupUngroup: TButton;
     frameLegeng: TframeLegeng;
     adsCore: TMyQuery;
