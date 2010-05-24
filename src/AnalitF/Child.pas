@@ -838,7 +838,6 @@ end;
 procedure TChildForm.FilterByMNNUpdate(Sender: TObject);
 var
   mnnField : TField;
-  MnnId : Int64;
 begin
   if Assigned(Sender) and (Sender is TAction) then begin
     if (MainForm.ActiveChild = Self)

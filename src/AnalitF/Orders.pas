@@ -405,12 +405,16 @@ begin
 end;
 
 procedure TOrdersForm.dbgOrdersKeyPress(Sender: TObject; var Key: Char);
+const
+  SymbolsForEdit = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '.'];
 var
   _CoreFirmForm : TCoreFirmForm;
 begin
-  if Assigned(ParentOrdersHForm) and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0) and ( Key > #32) and not ( Key in
-    [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
-  begin
+  if Assigned(ParentOrdersHForm)
+    and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0)
+    and ( Key > #32)
+    and not ( Key in SymbolsForEdit)
+  then begin
     _CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
     if not Assigned(_CoreFirmForm) then
       _CoreFirmForm := TCoreFirmForm.Create(Application);
@@ -425,7 +429,7 @@ begin
       and (dbgEditOrders.SelectedField <> adsOrdersRetailPrice)
       and (dbgEditOrders.SelectedField <> adsOrdersEditRetailMarkup)
     then begin
-      if (Key in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then begin
+      if (Key in SymbolsForEdit) then begin
         dbgEditOrders.SelectedField := adsOrdersordercount;
         SendMessage(dbgEditOrders.Handle, WM_CHAR, Ord( Key), 0);
         Key := #0;

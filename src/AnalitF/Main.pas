@@ -722,7 +722,6 @@ var
   UserId : Variant;
   I : Integer;
   IdTextWidth,
-  CurrentWidth,
   NeedWidth,
   AllWidth : Integer;
 
@@ -807,6 +806,8 @@ try
     end;
   end;
 except
+  on E : Exception do
+    WriteExchangeLog('SetOrdersInfo', 'Ошибка : ' + E.Message);
 end;
 end;
 
@@ -1212,7 +1213,9 @@ begin
     ClientNameRect.Right := ClientNameRect.Left + NewWidth;
     ToolBar.Invalidate;
   end;
-  if not JustRun then
+  if not JustRun and Self.Active and Self.Visible and (Screen.ActiveForm = Self)
+    and not Assigned(GlobalExchangeParams)
+  then
     SetOrdersInfo;
 end;
 

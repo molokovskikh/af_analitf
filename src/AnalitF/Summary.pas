@@ -520,7 +520,7 @@ var
   I : Integer;
   selectedRows : TStringList;
 begin
-  if LastSymmaryType = 0 then
+  if LastSymmaryType = 0 then begin
     selectedRows := TDBGridHelper.GetSelectedRows(dbgSummaryCurrent);
     if selectedRows.Count > 0 then begin
 
@@ -562,6 +562,7 @@ begin
         end;
       end;
     end;
+  end;
 end;
 
 procedure TSummaryForm.btnDeleteClick(Sender: TObject);

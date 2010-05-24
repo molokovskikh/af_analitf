@@ -336,8 +336,8 @@ begin
       markup := retailMarkupField.Value;
       price := GetRetailPriceByMarkup(markup);
       retailPriceField.Value := price;
-      retailSummField.Value := price * adsDocumentBodiesQuantity.Value;
-      realMarkupField.Value := ((price - adsDocumentBodiesSupplierCost.Value) * 100)/ adsDocumentBodiesSupplierCost.Value; 
+      retailSummField.Value := RoundTo(price, -2) * adsDocumentBodiesQuantity.Value;
+      realMarkupField.Value := ((price - adsDocumentBodiesSupplierCost.Value) * 100)/ adsDocumentBodiesSupplierCost.Value;
     end;
 
   except

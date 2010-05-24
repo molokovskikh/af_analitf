@@ -930,14 +930,12 @@ begin
   FCommand.Connection := connection;
   WriteExchangeLog('DatabaseController.OptimizeObjects', 'Запуск оптимизации таблиц');
   try
-  {
     for I := 0 to FDatabaseObjects.Count-1 do
       if (FDatabaseObjects[i] is TDatabaseTable) then begin
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         if currentTable.NeedCompact then
           OptimizeTable(currentTable);
       end;
-  }      
     try
       connection.ExecSQL('update params set LastCompact = :LastCompact where ID = 0', [Now]);
     except
