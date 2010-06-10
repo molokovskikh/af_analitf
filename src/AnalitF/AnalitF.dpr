@@ -102,7 +102,9 @@ uses
   PostWaybillsController in 'BusinessLogic\PostWaybillsController.pas',
   U_frameEditVitallyImportantMarkups in 'U_frameEditVitallyImportantMarkups.pas' {frameEditVitallyImportantMarkups: TFrame},
   U_frameEditAddress in 'U_frameEditAddress.pas' {frameEditAddress: TFrame},
-  EditAddressForm in 'EditAddressForm.pas' {EditAddressFrm};
+  EditAddressForm in 'EditAddressForm.pas' {EditAddressFrm},
+  U_OrderBatchForm in 'U_OrderBatchForm.pas' {OrderBatchForm},
+  ArchiveHelper in 'Helpers\ArchiveHelper.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

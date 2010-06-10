@@ -49,6 +49,13 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TBatchReportDataTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+
 implementation
 
 { TPricesRegionalDataUpTable }
@@ -210,6 +217,35 @@ begin
 + GetTableOptions()
 end;
 
+{ TBatchReportDataTable }
+
+constructor TBatchReportDataTable.Create;
+begin
+  FName := 'batchreport';
+  FObjectId := doiBatchReport;
+  FRepairType := dortIgnore;
+end;
+
+function TBatchReportDataTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( ' 
++'    `Id` bigint(20) not null , '
++'    `ClientId` bigint(20) not null , '
++'    `SynonymName` varchar(250) default null , '
++'    `SynonymFirm` varchar(250) default null , '
++'    `Quantity`  int(10) not null            , '
++'    `Comment`  text                         , '
++'    `OrderListId` bigint(20) default null   , '
++'    `Status`     smallint(5) default null   , '
++'    `ProductId` bigint(20) default null         , '
++'    `CodeFirmCr` bigint(20) default null    , '
++'    primary key (`Id`)                        '
++'  ) '
++ GetTableOptions()
+end;
+
 initialization
   DatabaseController.AddObject(TPricesRegionalDataUpTable.Create());
   DatabaseController.AddObject(TTmpClientsTable.Create());
@@ -218,4 +254,5 @@ initialization
   DatabaseController.AddObject(TTmpRegionalDataTable.Create());
   DatabaseController.AddObject(TTmpPricesDataTable.Create());
   DatabaseController.AddObject(TTmpPricesRegionalDataTable.Create());
+  DatabaseController.AddObject(TBatchReportDataTable.Create());
 end.

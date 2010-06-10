@@ -244,7 +244,8 @@ begin
   list := TStringList.Create;
   try
     for i := Low(Params) to High(Params) do
-      list.Add(Params[i] + '=' + PreparePostValue(Values[i]));
+      if Length(Params[i]) > 0 then
+        list.Add(Params[i] + '=' + PreparePostValue(Values[i]));
 
     Result := SimpleInvoke(MethodName, list);
 
@@ -257,6 +258,8 @@ function TSOAP.PreparePostValue(PostValue: String): String;
 begin
   Result :=
     StringReplace(TIdURI.ParamsEncode(PostValue), '&', '%26', [rfReplaceAll]);
+  Result :=
+    StringReplace(Result, '+', '%2B', [rfReplaceAll]);
 end;
 
 function TSOAP.SimpleInvoke(

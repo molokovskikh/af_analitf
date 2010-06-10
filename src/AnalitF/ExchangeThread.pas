@@ -11,7 +11,8 @@ uses
   DADAuthenticationNTLM, IdComponent, IdHTTP, FileUtil, 
   U_frmOldOrdersDelete, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
-  DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController;
+  DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController,
+  ArchiveHelper;
 
 type
 
@@ -39,7 +40,8 @@ TUpdateTable = (
   utDescriptions,
   utMaxProducerCosts,
   utProducers,
-  utMinReqRules);
+  utMinReqRules,
+  utBatchReport);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -98,6 +100,8 @@ private
   procedure CreateChildSendArhivedOrdersThread;
   function  ChildThreadClassIsExists(ChildThreadClass : TReceiveThreadClass) : Boolean;
 	procedure QueryData;
+  function TestBatchFile : String;
+  procedure GetMaxIds(var MaxOrderId, MaxOrderListId, MaxBatchId : String);
   procedure SendULoginData;
   procedure GetPass;
   procedure PriceDataSettings;
@@ -111,6 +115,7 @@ private
 	procedure RasDisconnect;
 	procedure UnpackFiles;
 	procedure ImportData;
+  procedure ImportBatchReport;
 	procedure CheckNewExe;
 	procedure CheckNewMDB;
 	procedure CheckNewFRF;
@@ -193,7 +198,7 @@ begin
       ImportComplete := False;
       repeat
       try
-			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
+			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
       then
 			begin
 				RasConnect;
@@ -244,7 +249,7 @@ begin
 
 				TotalProgress := 20;
 				Synchronize( SetTotalProgress);
-				if ([eaGetPrice, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
+				if ([eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
            and not DM.NeedCommitExchange
         then
 				begin
@@ -252,7 +257,8 @@ begin
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 
           //Запускаем дочерние нитки только тогда, когда получаем обновление данных, но не накладные
-          if eaGetPrice in ExchangeForm.ExchangeActs then
+          if eaGetPrice in ExchangeForm.ExchangeActs
+          then
             CreateChildThreads;
 					QueryData;
           GetPass;
@@ -270,11 +276,11 @@ begin
 			end;
 
 			{ Распаковка файлов }
-			if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
+			if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
       then UnpackFiles;
 
 			{ Поддтверждение обмена }
-			if [eaGetPrice, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> []
+			if [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []
       then
         CommitExchange;
 
@@ -294,7 +300,7 @@ begin
             OnFullChildTerminate(nil);
         end;
 
-			if ( [eaGetPrice, eaImportOnly] * ExchangeForm.ExchangeActs <> []) then
+			if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
 			begin
 				TotalProgress := 50;
 				Synchronize( SetTotalProgress);
@@ -515,7 +521,7 @@ end;
 
 procedure TExchangeThread.QueryData;
 const
-  StaticParamCount : Integer = 9;
+  StaticParamCount : Integer = 12;
 var
 	Res: TStrings;
 	LibVersions: TObjectList;
@@ -526,7 +532,12 @@ var
   fi : TFileUpdateInfo;
   UpdateIdIndex : Integer;
   //tmpFileContent : String;
+  batchFileContent : String;
+  NeedProcessBatch : Boolean;
+  MaxOrderId, MaxOrderListId, MaxBatchId : String;
 begin
+  batchFileContent := '';
+  NeedProcessBatch := [eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [];
 	{ запрашиваем данные }
 	StatusText := 'Подготовка данных';
 	Synchronize( SetStatus);
@@ -540,6 +551,9 @@ begin
        and (not (eaGetFullData in ExchangeForm.ExchangeActs))
     then
       GetAbsentPriceCode();
+
+    if (BatchFileName <> '') and NeedProcessBatch then
+      batchFileContent := TestBatchFile;
 
     try
       WriteExchangeLog(
@@ -571,8 +585,14 @@ begin
       ParamValues[5] := WinNumber;
       ParamNames[6]  := 'WINDesc';
       ParamValues[6] := WinDesc;
+      if NeedProcessBatch then begin
+      ParamNames[7]  := 'ClientId';
+      ParamValues[7] := DM.adtClients.FieldByName( 'ClientId').AsString;
+      end
+      else begin
       ParamNames[7]  := 'WaybillsOnly';
       ParamValues[7] := BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
+      end;
       {
       try
         tmpFileContent := hfileHelper.GetFileContent;
@@ -585,8 +605,27 @@ begin
         end;
       end;
       }
-      ParamNames[8]  := 'ClientHFile';
-      ParamValues[8] := '';
+      if NeedProcessBatch then begin
+        ParamNames[8]  := 'BatchFile';
+        ParamValues[8] := batchFileContent;
+        GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
+        ParamNames[9]  := 'MaxOrderId';
+        ParamValues[9] := MaxOrderId;
+        ParamNames[10]  := 'MaxOrderListId';
+        ParamValues[10] := MaxOrderListId;
+        ParamNames[11]  := 'MaxBatchId';
+        ParamValues[11] := MaxBatchId;
+      end
+      else begin
+        ParamNames[8]  := 'ClientHFile';
+        ParamValues[8] := '';
+        ParamNames[9]  := '';
+        ParamValues[9] := '';
+        ParamNames[10]  := '';
+        ParamValues[10] := '';
+        ParamNames[11]  := '';
+        ParamValues[11] := '';
+      end;
 
       for I := 0 to LibVersions.Count-1 do begin
         fi := TFileUpdateInfo(LibVersions[i]);
@@ -613,7 +652,10 @@ begin
       LibVersions.Free;
     end;
     UpdateId := '';
-		Res := SOAP.Invoke( 'GetUserDataWithPriceCodes', ParamNames, ParamValues);
+    if NeedProcessBatch then
+      Res := SOAP.Invoke( 'PostOrderBatch', ParamNames, ParamValues)
+    else
+      Res := SOAP.Invoke( 'GetUserDataWithPriceCodes', ParamNames, ParamValues);
 		{ проверяем отсутствие ошибки при удаленном запросе }
 		Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
@@ -730,7 +772,7 @@ var
   PostSuccess : Boolean;
 begin
 	//загрузка прайс-листа
-	if ( [eaGetPrice, eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
+	if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
   then begin
 		StatusText := 'Загрузка данных';
 //    Tracer.TR('DoExchange', 'Загрузка данных');
@@ -859,7 +901,7 @@ begin
   values := nil;
   LastExchangeFileSize := 0;
 
-  if (eaGetPrice in ExchangeForm.ExchangeActs)
+  if (eaGetPrice in ExchangeForm.ExchangeActs) or (eaPostOrderBatch in ExchangeForm.ExchangeActs)
   then begin
     DM.SetNeedCommitExchange();
 
@@ -894,7 +936,8 @@ begin
 
   Res := SOAP.Invoke( 'CommitExchange', params, values);
 
-  if (eaGetPrice in ExchangeForm.ExchangeActs) then begin
+  if (eaGetPrice in ExchangeForm.ExchangeActs) or (eaPostOrderBatch in ExchangeForm.ExchangeActs)
+  then begin
     NeedEnableByHTTP := False;
     ExchangeDateTime := FromXMLToDateTime( Res.Text);
     WriteExchangeLog('Exchange',
@@ -921,7 +964,7 @@ begin
     DM.ResetNeedCommitExchange;
   end;
 
-  if (eaGetPrice in ExchangeForm.ExchangeActs) and (Length(LogStr) > 0) then begin
+  if ((eaGetPrice in ExchangeForm.ExchangeActs) or (eaPostOrderBatch in ExchangeForm.ExchangeActs))and (Length(LogStr) > 0) then begin
     SetLength(params, 2);
     SetLength(values, 2);
     params[0]:= 'UpdateId';
@@ -1219,6 +1262,7 @@ begin
   if (GetFileSize(ExePath+SDirIn+'\MaxProducerCosts.txt') > 0) then UpdateTables := UpdateTables + [utMaxProducerCosts];
   if (GetFileSize(ExePath+SDirIn+'\Producers.txt') > 0) then UpdateTables := UpdateTables + [utProducers];
   if (GetFileSize(ExePath+SDirIn+'\MinReqRules.txt') > 0) then UpdateTables := UpdateTables + [utMinReqRules];
+  if (GetFileSize(ExePath+SDirIn+'\BatchReport.txt') > 0) then UpdateTables := UpdateTables + [utBatchReport];
 
     //обновляем таблицы
     {
@@ -1738,6 +1782,9 @@ begin
 +'WHERE  pricesregionaldata.pricecode  = PriceSizes.pricecode '
 +'   AND pricesregionaldata.regioncode = PriceSizes.regioncode';
 	InternalExecute;
+
+  if utBatchReport in UpdateTables then
+    ImportBatchReport;
 
   DM.MainConnection.Close;
   DM.MainConnection.Open;
@@ -2691,6 +2738,212 @@ begin
     on MigrationError : Exception do
       WriteExchangeLog('Exchange', 'Ошибка при миграции клиентов в адреса заказа: ' + MigrationError.Message);
   end;
+end;
+
+function TExchangeThread.TestBatchFile : String;
+var
+  ah : TArchiveHelper;
+begin
+  ah := TArchiveHelper.Create(Exchange.BatchFileName);
+  try
+    Result := Trim(ah.GetEncodedContent());
+  finally
+    ah.Free;
+  end;
+end;
+
+procedure TExchangeThread.ImportBatchReport;
+var
+  insertSQL : String;
+  ClientId : String;
+begin
+  ClientId := DM.adtClients.FieldByName( 'ClientId').AsString;
+  DM.adcUpdate.SQL.Text := ''
+    + ' delete from batchreport where ClientID = ' + ClientID + ';'
+    + ' delete CurrentOrderHeads, CurrentOrderLists '
+    + ' FROM CurrentOrderHeads, CurrentOrderLists '
+    + ' where '
+    + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+    + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
+  InternalExecute;
+  DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', ExePath+SDirIn+'\batchreport.txt');
+  InternalExecute;
+
+  if (GetFileSize(ExePath+SDirIn+'\BatchOrder.txt') > 0)
+    and (GetFileSize(ExePath+SDirIn+'\BatchOrderItems.txt') > 0)
+  then begin
+    insertSQL := Trim(GetLoadDataSQL('CurrentOrderHeads', ExePath+SDirIn+'\BatchOrder.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
+    InternalExecute;
+
+{
+
+          buildItems.AppendFormat(
+            item.RowId,
+            item.Order.RowId,
+            item.Order.ClientCode,
+            item.CoreId,
+            item.ProductId,
+            item.CodeFirmCr.HasValue ? item.CodeFirmCr.Value.ToString() : "\\N",
+            item.SynonymCode.HasValue ? item.SynonymCode.Value.ToString() : "\\N",
+            item.SynonymFirmCrCode.HasValue ? item.SynonymFirmCrCode.Value.ToString() : "\\N",
+            item.Code,
+            item.CodeCr,
+            item.Cost,
+            item.Await ? "1" : "0",
+            item.Junk ? "1" : "0",
+            item.Quantity,
+            item.RequestRatio.HasValue ? item.RequestRatio.Value.ToString() : "\\N",
+            item.OrderCost.HasValue ? item.OrderCost.Value.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat) : "\\N",
+            item.MinOrderCount.HasValue ? item.MinOrderCount.Value.ToString() : "\\N",
+            item.OfferInfo.Period,
+            item.OfferInfo.ProducerCost.HasValue ? item.OfferInfo.ProducerCost.Value.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat) : "\\N",
+}
+
+    insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', ExePath+SDirIn+'\BatchOrderItems.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
+      + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
+      + '  CODE, CODECr, RealPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost) set Price = RealPrice;';
+
+{
++'    `ID` bigint(20) not null AUTO_INCREMENT    , '
++'    `ORDERID` bigint(20) not null              , '
++'    `CLIENTID` bigint(20) not null             , '
++'    `COREID` bigint(20) default null           , '
++'    `PRODUCTID` bigint(20) not null            , '
++'    `CODEFIRMCR` bigint(20) default null       , '
++'    `SYNONYMCODE` bigint(20) default null      , '
++'    `SYNONYMFIRMCRCODE` bigint(20) default null, '
++'    `CODE`           varchar(84) default null            , '
++'    `CODECR`         varchar(84) default null            , '
++'    `SYNONYMNAME`    varchar(250) default null           , '
++'    `SYNONYMFIRM`    varchar(250) default null           , '
++'    `PRICE`          decimal(18,2) default null          , '
++'    `AWAIT`          tinyint(1) not null                 , '
++'    `JUNK`           tinyint(1) not null                 , '
++'    `ORDERCOUNT`     int(10) not null                    , '
++'    `REQUESTRATIO`   int(10) default null                , '
++'    `ORDERCOST`      decimal(18,2) default null          , '
++'    `MINORDERCOUNT`  int(10) default null                , '
++'    `RealPrice`      decimal(18,2) default null          , '
++'    `DropReason`     smallint(5) default null            , '
++'    `ServerCost`     decimal(18,2) default null          , '
++'    `ServerQuantity` int(10) default null                , '
++'    `SupplierPriceMarkup` decimal(5,3) default null      , '
++'    `CoreQuantity` varchar(15) DEFAULT NULL              , '
++'    `ServerCoreID` bigint(20) DEFAULT NULL               , '
++'    `Unit` varchar(15) DEFAULT NULL                      , '
++'    `Volume` varchar(15) DEFAULT NULL                    , '
++'    `Note` varchar(50) DEFAULT NULL                      , '
++'    `Period` varchar(20) DEFAULT NULL                    , '
++'    `Doc` varchar(20) DEFAULT NULL                       , '
++'    `RegistryCost` decimal(8,2) DEFAULT NULL             , '
++'    `VitallyImportant` tinyint(1) NOT NULL               , '
++'    `RetailMarkup` decimal(12,6) default null            , '
++'    `ProducerCost` decimal(18,2) default null            , '
++'    `NDS` smallint(5) default null                       , '
+
+
+}
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' update CurrentOrderHeads, PricesData '
+      + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
+      + ' where '
+      + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderHeads.PriceCode = PricesData.PriceCode);'
+      + ' update CurrentOrderHeads, regions '
+      + ' set CurrentOrderHeads.RegionName = regions.RegionName '
+      + ' where '
+      + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderHeads.RegionCode = regions.RegionCode);';
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' update CurrentOrderLists, synonyms '
+      + ' set CurrentOrderLists.SYNONYMNAME = synonyms.SYNONYMNAME '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderLists.SYNONYMCODE = synonyms.SYNONYMCODE);'
+      + ' update CurrentOrderLists, synonymfirmcr '
+      + ' set CurrentOrderLists.SYNONYMFIRM = synonymfirmcr.SYNONYMNAME '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
+    InternalExecute;
+  end;
+
+  DM.adcUpdate.SQL.Text := ''
+    + ' update batchreport '
+    + ' set OrderListId = null, Status = (Status & ~(1 & 4)) | 2 '
+    + ' where '
+    + '       (batchreport.ClientId = ' + ClientID + ')'
+    + '   and (OrderListId is not null) '
+    + '   and not exists(select * from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
+  InternalExecute;
+
+{
+      if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
+        InputFileName := StringReplace(ExePath+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
+        adsQueryValue.Close;
+        adsQueryValue.SQL.Text :=
+          Format(
+          'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+          [InputFileName,
+           'DocumentHeaders']);
+        adsQueryValue.Execute;
+        DatabaseController.BackupDataTable(doiDocumentHeaders);
+        afterWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
+        Result := afterWaybillCount > beforeWaybillCount;
+      end;
+}
+{
+  if (GetFileSize(ExePath+SDirIn+'\UpdateInfo.txt') > 0) then begin
+    updateParamsSql := Trim(GetLoadDataSQL('params', ExePath+SDirIn+'\UpdateInfo.txt', True));
+    DM.adcUpdate.SQL.Text :=
+      Copy(updateParamsSql, 1, LENGTH(updateParamsSql) - 1) +
+      '(LastDateTime, Cumulative) set Id = 1;';
+    DM.adcUpdate.Execute;
+    DM.adcUpdate.SQL.Text := ''
+    + ' update analitf.params work, analitf.params new '
+    + ' set '
+    + '   work.LastDateTime = new.LastDateTime, '
+    + '   work.Cumulative = new.Cumulative '
+    + ' where '
+    + '      (work.Id = 0) '
+    + '  and (new.Id = 1);'
+    + ' delete from analitf.params where Id = 1;';
+    DM.adcUpdate.Execute;
+    DM.adtParams.RefreshRecord;
+    CheckFieldAfterUpdate('LastDateTime');
+  end;
+}
+end;
+
+procedure TExchangeThread.GetMaxIds(var MaxOrderId, MaxOrderListId,
+  MaxBatchId: String);
+var
+  val : Variant;
+begin
+  val := DM.QueryValue('select max(OrderId) + 1 from CurrentOrderHeads', [], []);
+  if VarIsNull(val) then
+    MaxOrderId := '1'
+  else
+    MaxOrderId := val;
+
+  val := DM.QueryValue('select max(Id) + 1 from CurrentOrderLists', [], []);
+  if VarIsNull(val) then
+    MaxOrderListId := '1'
+  else
+    MaxOrderListId := val;
+
+  val := DM.QueryValue('select max(Id) + 1 from batchreport', [], []);
+  if VarIsNull(val) then
+    MaxBatchId := '1'
+  else
+    MaxBatchId := val;
 end;
 
 initialization

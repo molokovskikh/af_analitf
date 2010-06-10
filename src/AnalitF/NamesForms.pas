@@ -207,6 +207,7 @@ procedure FlipToCodeWithReturn(FullCode, ShortCode: Integer; CoreId : Int64);
 var
   FCoreForm : TCoreForm;
   productName, productForm : String;
+  currentBookmark : String;
 begin
   productName := '';
   productForm := '';
@@ -233,7 +234,11 @@ begin
       productName,
       productForm,
       True, True);
-    FCoreForm.adsCore.Locate( 'CoreId', CoreId, []);
+    if CoreId > 0 then begin
+      currentBookmark := FCoreForm.adsCore.Bookmark;
+      if not FCoreForm.adsCore.Locate( 'CoreId', CoreId, []) then
+        FCoreForm.adsCore.Bookmark := currentBookmark;
+    end;
   end;
 end;
 

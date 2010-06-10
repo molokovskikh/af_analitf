@@ -27,7 +27,8 @@ type
     eaGetWaybills,
     eaSendLetter,
     eaForceSendOrders,
-    eaSendWaybills);
+    eaSendWaybills,
+    eaPostOrderBatch);
 
   TExchangeActions=set of TExchangeAction;
 
@@ -93,6 +94,7 @@ var
 	ExchangeForm: TExchangeForm;
 	ExThread: TExchangeThread;
   NeedRetrySendOrder : Boolean;
+  BatchFileName : String;
 
 procedure TryToRepareOrders(ProcessSendOrdersResponse : Boolean);
 procedure PrintOrdersAfterSend;
@@ -104,7 +106,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
   Child, Config, RxMemDS, CorrectOrders, PostSomeOrdersController,
   PostWaybillsController,
-  DocumentHeaders;
+  DocumentHeaders,
+  U_OrderBatchForm;
 
 {$R *.DFM}
 
@@ -139,6 +142,8 @@ begin
     FreeAndNil(GlobalExchangeParams);
   GlobalExchangeParams := nil;
 	if AExchangeActions = [] then exit;
+  if (eaPostOrderBatch in AExchangeActions) and (Length(BatchFileName) = 0) then
+    Exit;
 
   try
 
@@ -235,12 +240,16 @@ begin
   //импортировали данные после замены exe-файла.  
 	if Result and
     ((eaGetPrice in AExchangeActions) or (eaGetFullData in AExchangeActions)
-      or (eaImportOnly in AExchangeActions))
+      or (eaImportOnly in AExchangeActions)
+      or (eaPostOrderBatch in AExchangeActions)
+      )
   then
     DM.ResetCumulative;
 
 	if (( eaGetPrice in AExchangeActions) or
-		  (eaImportOnly in AExchangeActions) or (eaGetFullData in AExchangeActions))
+		  (eaImportOnly in AExchangeActions) or (eaGetFullData in AExchangeActions)
+      or (eaPostOrderBatch in AExchangeActions)
+      )
       and Result
   then
     TryToRepareOrders(False);
@@ -255,7 +264,7 @@ begin
 			MB_OK or MB_ICONINFORMATION);
 
 	if Result and (( eaGetPrice in AExchangeActions) or
-		( eaImportOnly in AExchangeActions))
+		( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then begin
     AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
     if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
@@ -316,7 +325,7 @@ begin
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
 	if Result and (( eaGetPrice in AExchangeActions) or
 		( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
-    or (eaImportOnly in AExchangeActions))
+    or (eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then
     needShowDocumentForm := DM.ProcessDocs;
 
@@ -346,15 +355,19 @@ begin
 	end;
 {//$endif}
 
-  if Result and
-     (( eaGetPrice in AExchangeActions) or
-      ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
-      or (eaImportOnly in AExchangeActions))
-     and needShowDocumentForm
-  then
-    ShowDocumentHeaders;
+  if Result then
+    if (eaPostOrderBatch in AExchangeActions) then
+      ShowOrderBatch
+    else
+      if (( eaGetPrice in AExchangeActions) or
+          ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
+           or (eaImportOnly in AExchangeActions))
+         and needShowDocumentForm
+      then
+        ShowDocumentHeaders;
 
   finally
+    BatchFileName := '';
     if Assigned(GlobalExchangeParams) then
       try FreeAndNil(GlobalExchangeParams) except end;
   end;
@@ -913,6 +926,7 @@ begin
 end;
 
 initialization
+  BatchFileName := '';
   ExThread := nil;
 finalization
 end.

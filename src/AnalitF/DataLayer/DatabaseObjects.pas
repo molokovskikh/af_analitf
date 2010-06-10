@@ -105,7 +105,9 @@ type
     //Ignore
     doiGroupMaxProducerCosts,
     //Cumulative
-    doiMinReqRules);
+    doiMinReqRules,
+    //Ignore
+    doiBatchReport);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

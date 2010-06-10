@@ -904,7 +904,7 @@ begin
 
 {$ifdef UsePrgDataTest}
   SerBeg := 'Prg';
-  SerEnd := 'DataTest';
+  SerEnd := 'DataSmart';
 {$else}
   SerBeg := 'Prg';
   SerEnd := 'DataEx';

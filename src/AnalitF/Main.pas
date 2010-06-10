@@ -124,6 +124,9 @@ TMainForm = class(TVistaCorrectForm)
     actMnnSearch: TAction;
     actRestoreDatabase: TAction;
     itmRestoreDatabase: TMenuItem;
+    miOrderBatch: TMenuItem;
+    btnPostOrderBatch: TToolButton;
+    actPostOrderBatch: TAction;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -175,6 +178,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure actMnnSearchExecute(Sender: TObject);
     procedure actSendWaybillsExecute(Sender: TObject);
     procedure actRestoreDatabaseExecute(Sender: TObject);
+    procedure actPostOrderBatchExecute(Sender: TObject);
 private
 	JustRun: boolean;
   ApplicationVersionText : String;
@@ -250,7 +254,8 @@ uses
 	AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
   Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
-  MnnSearch, DocumentHeaders, DBGridHelper, DocumentTypes;
+  MnnSearch, DocumentHeaders, DBGridHelper, DocumentTypes,
+  U_OrderBatchForm;
 
 {$R *.DFM}
 
@@ -1416,6 +1421,11 @@ begin
   end
   else
     AProc.MessageBox('¬осстановление базы данных завершено успешно.');
+end;
+
+procedure TMainForm.actPostOrderBatchExecute(Sender: TObject);
+begin
+  ShowOrderBatch;
 end;
 
 end.
