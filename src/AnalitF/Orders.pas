@@ -302,12 +302,18 @@ end;
 procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (Key = VK_RETURN) 
+  if (Key = VK_RETURN)
   then begin
-    if dbgEditOrders.Visible and dbgEditOrders.EditorMode then
+    if dbgEditOrders.Visible and
+      (   (dbgEditOrders.SelectedField = adsOrdersordercount)
+        or (dbgEditOrders.SelectedField = adsOrdersRetailPrice)
+        or (dbgEditOrders.SelectedField = adsOrdersEditRetailMarkup))
+    then
+      //Если мы можем редактировать поля, то никак не обрабатываем Enter,
+      //позволяя обработать Enter самим гридом
     else
       if not dbmMessageTo.ReadOnly then
-        FlipToCore
+        FlipToCore;
   end
   else
     if Key = VK_ESCAPE then begin
