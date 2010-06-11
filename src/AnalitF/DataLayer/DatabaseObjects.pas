@@ -904,7 +904,7 @@ begin
     'GROUPBYPRODUCTS = 0,' +
     'PRINTORDERSAFTERSEND = 0,' +
     'ConfirmSendingOrders = 0,' +
-    'UseCorrectOrders = 0,' +
+    'UseCorrectOrders = 1,' +
     'ProviderName = ''АК "Инфорум"'',' +
     'ProviderAddress = ''Ленинский пр-т, 160 оф.415'',' +
     'ProviderPhones = ''4732-606000'',' +
