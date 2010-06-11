@@ -162,6 +162,8 @@ type
 
     fr : TForceRus;
 
+    FOpenWithSearch : Boolean;
+
     procedure SetOrderLabel;
     procedure SetFilter(Filter: TFilter);
     procedure RefreshCurrentOrderHeader;
@@ -179,7 +181,7 @@ type
       RegionCode: Int64;
       PriceName, RegionName : String;
       OnlyLeaders: Boolean=False;
-      FromOrders : Boolean = False); reintroduce;
+      OpenWithSearch : Boolean = False); reintroduce;
     procedure Print( APreview: boolean = False); override;
     procedure RefreshAllCore;
   end;
@@ -232,8 +234,9 @@ begin
 end;
 
 procedure TCoreFirmForm.ShowForm(PriceCode: Integer; RegionCode: Int64;
-  PriceName, RegionName : String; OnlyLeaders: Boolean=False; FromOrders : Boolean = False);
+  PriceName, RegionName : String; OnlyLeaders: Boolean=False; OpenWithSearch : Boolean = False);
 begin
+  FOpenWithSearch := OpenWithSearch;
   if adsProducers.Active then
     adsProducers.Close;
   adsProducers.ParamByName( 'PriceCode').Value:=PriceCode;
@@ -250,8 +253,8 @@ begin
   Self.RegionCode := RegionCode;
   Self.PriceName  := PriceName;
   Self.RegionName := RegionName;
-  //≈сли пришли сюда из заказа
-  if FromOrders then begin
+  //≈сли пришли сюда из заказа с возможностью поиска
+  if FOpenWithSearch then begin
     dbgCore.InputField := '';
     if adsCore.Active then
       adsCore.Close;
@@ -577,7 +580,8 @@ begin
     else
       btnFormHistoryClick( nil);
   if Key = VK_ESCAPE then
-    if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
+    if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) and FOpenWithSearch
+    then begin
       tmrSearch.Enabled := False;
       Self.PrevForm.ShowAsPrevForm
     end
@@ -707,7 +711,8 @@ begin
     adsCore.DisableControls;
     try
       InternalSearchText := LeftStr(eSearch.Text, 50);
-      if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) then begin
+      if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) and FOpenWithSearch
+      then begin
         adsCore.Close;
         adsCore.SQL.Text := adsCoreWithLike.SQL.Text;
         adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';

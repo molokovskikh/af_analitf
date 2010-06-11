@@ -31,10 +31,8 @@ begin
     Взято отсюда: http://www.stevetrefethen.com/blog/UsingTheWSEXCOMPOSITEWindowStyleToEliminateFlickerOnWindowsXP.aspx
     На этой странице есть другие решения для проблем под Vista: http://www.installationexcellence.com/articles/VistaWithDelphi/Index.html
   }
-{
   if CheckWin32Version(5, 1) then
     Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
-}    
 end;
 
 end.

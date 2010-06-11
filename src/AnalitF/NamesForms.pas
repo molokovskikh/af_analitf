@@ -330,20 +330,14 @@ begin
     actNewSearch.Checked := Reg.ReadBool('NewSearch');
 	Reg.Free;
 
-	with DM.adtParams do
-	begin
-		if not DM.adtParams.FieldByName( 'OperateForms').AsBoolean then
-		begin
-			actUseForms.Checked := True;
-			actUseForms.Enabled := False;
-		end
-		else
-		begin
-			actUseForms.Checked := FieldByName( 'UseForms').AsBoolean;
-			actUseForms.Enabled := True;
-		end;
-  	actShowAll.Checked := FieldByName( 'ShowAllCatalog').AsBoolean;
-	end;
+  with DM.adtParams do
+  begin
+    if not DM.adtParams.FieldByName( 'OperateForms').AsBoolean then
+      actUseForms.Checked := True
+    else
+      actUseForms.Checked := FieldByName( 'UseForms').AsBoolean;
+    actShowAll.Checked := FieldByName( 'ShowAllCatalog').AsBoolean;
+  end;
 
   FCoreForm := TCoreForm( FindChildControlByClass(MainForm, TCoreForm) );
   if FCoreForm = nil then
@@ -1158,11 +1152,11 @@ end;
 
 procedure TNamesFormsForm.actUseFormsUpdate(Sender: TObject);
 begin
-  if MainForm.ActiveChild = Self then
-    if not DM.adtParams.FieldByName( 'OperateForms').AsBoolean then
-      actUseForms.Enabled := False
-    else
-      actUseForms.Enabled := True;
+  if (MainForm.ActiveChild = Self) and DM.adtParams.FieldByName( 'OperateForms').AsBoolean
+  then
+    actUseForms.Enabled := True
+  else
+    actUseForms.Enabled := False;
 end;
 
 initialization

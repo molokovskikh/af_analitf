@@ -62,7 +62,7 @@ begin
     end;
 
     trLog := TTracer.Create(
-      IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + 'Exchange', 'log', 0);
+      IncludeTrailingBackslash(ExtractFileDir(ParamStr(ParamCount-1))) + 'Exchange', 'log', 0);
     try
 
 

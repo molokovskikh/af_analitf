@@ -99,9 +99,6 @@ begin
     RestoreThread.FreeOnTerminate := False;
     DM.MainConnection.Close;
     try
-      ShowSQLWaiting(
-        RestoreThread.FreeMySqlLib,
-        'Происходит подготовка к созданию базы данных');
       ShowWaiting(
         'Производится создание базы данных с сохранением отправленных заказов. Подождите...',
         RestoreThread);
@@ -152,10 +149,15 @@ procedure TRestoreFromEtalonThread.Execute;
 var
   FEmbConnection : TMyEmbConnection;
   MyDump : TMyDump;
+  command : TMyQuery;
 begin
   Restored := False;
   try
     WriteExchangeLog('RestoreFromEtalonThread', 'Начали создание базы данных');
+
+    FreeMySqlLib;
+    WriteExchangeLog('RestoreFromEtalonThread', 'Выгрузили библиотеку');
+
     AProc.MoveDirectories(ExePath + SDirTableBackup, ExePath + SDirTableBackup + 'Tmp');
     WriteExchangeLog('RestoreFromEtalonThread', 'Переместили директорию TableBackup');
     AProc.DeleteDirectory(ExePath + SDirDataPrev);
@@ -175,10 +177,9 @@ begin
     FEmbConnection.LoginPrompt := False;
 
     try
-      FEmbConnection.Database := 'analitf';
-
       FEmbConnection.Open;
       try
+        FEmbConnection.ExecSQL('use analitf', []);
         MyDump := TMyDump.Create(nil);
         try
           MyDump.Connection := FEmbConnection;
@@ -192,41 +193,57 @@ begin
       finally
         FEmbConnection.Close;
       end;
+      WriteExchangeLog('RestoreFromEtalonThread', 'Создали базу данных');
+
+      FreeMySqlLib;
+      WriteExchangeLog('RestoreFromEtalonThread', 'Выгрузили библиотеку');
+
+      DatabaseController.RepairTableFromBackup(SDirTableBackup + 'Tmp');
+      WriteExchangeLog('RestoreFromEtalonThread', 'Восстановили из TableBackup');
+
+      SysUtils.ForceDirectories(ExePath + SDirTableBackup);
+
+      FEmbConnection.Open;
+      try
+        FEmbConnection.ExecSQL('use analitf', []);
+        DatabaseController.CreateViews(FEmbConnection);
+        command := TMyQuery.Create(FEmbConnection);
+        try
+          command.Connection := FEmbConnection;
+
+          command.SQL.Text := 'select * from analitf.pricesshow';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.params';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.clients';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.client';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.userinfo';
+          command.Open;
+          command.Close;         
+        finally
+          command.Free;
+        end;
+      finally
+        FEmbConnection.Close;
+      end;
+      WriteExchangeLog('RestoreFromEtalonThread', 'Проверили подключение к новой базе данных');
+
+      AProc.DeleteDirectory(ExePath + SDirTableBackup + 'Tmp');
 
     finally
       FEmbConnection.Free;
     end;
 
-    //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
-    //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
-    if DM.MainConnection is TMyEmbConnection then
-    begin
-      if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-        WriteExchangeLog('RestoreFromEtalonThread',
-          Format('MySql Clients Count после создания базы данных: %d',
-            [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-      MyAPIEmbedded.FreeMySQLLib;
-    end;
-    
-    DatabaseController.RepairTableFromBackup(SDirTableBackup + 'Tmp');
-
-    SysUtils.ForceDirectories(ExePath + SDirTableBackup);
-    DM.MainConnection.Open;
-    DM.MainConnection.Close;
-
-    AProc.DeleteDirectory(ExePath + SDirTableBackup + 'Tmp');
-
-    //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
-    //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
-    if DM.MainConnection is TMyEmbConnection then
-    begin
-      if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-        WriteExchangeLog('RestoreFromEtalonThread',
-          Format('MySql Clients Count после создания базы данных: %d',
-            [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-      MyAPIEmbedded.FreeMySQLLib;
-    end;
-    
     Restored := True;
     WriteExchangeLog('RestoreFromEtalonThread', 'Создание базы данных успешно завершено');
   except

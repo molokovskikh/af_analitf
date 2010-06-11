@@ -139,11 +139,9 @@ begin
   inherited CreateParams(Params);
   //форма будет дочерней
   Params.Style:=Params.Style or WS_CHILD;
-{
   // This only works on Windows XP and above
   if CheckWin32Version(5, 1) then
     Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
-}    
 end;
 
 procedure TChildForm.Loaded;
@@ -817,9 +815,14 @@ end;
 
 procedure TModifiedAction.ModifedUpdate(Sender: TObject);
 begin
-  FAction.Enabled := MainForm.ActiveChild = FOwner;
-  if FAction.Enabled and Assigned(FOldUpdate) then
-    FOldUpdate(Sender);
+  if Assigned(FOldUpdate) then
+    FOldUpdate(Sender)
+  else
+    if not FAction.Enabled and (MainForm.ActiveChild = FOwner) then
+      FAction.Enabled := True
+    else
+      if FAction.Enabled and (MainForm.ActiveChild <> FOwner) then
+        FAction.Enabled := False;
 end;
 
 procedure TChildForm.ModifyActionList(ActionList: TCustomActionList);

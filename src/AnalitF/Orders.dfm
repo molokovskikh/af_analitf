@@ -421,6 +421,14 @@ inherited OrdersForm: TOrdersForm
       Caption = 'GotoMNN'
       Visible = False
     end
+    object btnGotoPrice: TSpeedButton
+      Left = 301
+      Top = 3
+      Width = 105
+      Height = 25
+      Caption = #1042' '#1087#1088#1072#1081#1089
+      OnClick = btnGotoPriceClick
+    end
   end
   inherited tCheckVolume: TTimer
     Left = 480

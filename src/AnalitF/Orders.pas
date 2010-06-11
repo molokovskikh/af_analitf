@@ -87,6 +87,7 @@ type
     adsOrdersMaxProducerCost: TFloatField;
     adsOrdersEditRetailMarkup: TFloatField;
     adsOrdersVitallyImportant: TBooleanField;
+    btnGotoPrice: TSpeedButton;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -108,6 +109,7 @@ type
     procedure adsOrdersAfterScroll(DataSet: TDataSet);
     procedure FormDestroy(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
+    procedure btnGotoPriceClick(Sender: TObject);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
@@ -360,6 +362,8 @@ end;
 
 procedure TOrdersForm.FormCreate(Sender: TObject);
 begin
+  btnGotoPrice.Visible := False;
+
   dbgEditOrders:= TDBGridEh.Create(Self);
   dbgEditOrders.Parent := pClient;
   dbgEditOrders.Align := alClient;
@@ -795,6 +799,29 @@ begin
     end;
     Handled := True;
   end;
+end;
+
+procedure TOrdersForm.btnGotoPriceClick(Sender: TObject);
+var
+  _CoreFirmForm : TCoreFirmForm;
+begin
+{
+  Если выключить двойную буферизацию:
+    if CheckWin32Version(5, 1) then
+      Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
+  то при первом вызове формы можно будет наблюдать моргание всей формы,
+  связанное с TframePosition.  
+
+  if Assigned(ParentOrdersHForm)
+    and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0)
+  then begin
+    _CoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
+    if not Assigned(_CoreFirmForm) then
+      _CoreFirmForm := TCoreFirmForm.Create(Application);
+    _CoreFirmForm.ShowForm(PriceCode, RegionCode, PriceName, RegionName, False, False);
+    _CoreFirmForm.dbgCore.SetFocus;
+  end;
+}  
 end;
 
 end.

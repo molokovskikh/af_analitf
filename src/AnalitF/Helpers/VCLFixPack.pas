@@ -29,7 +29,7 @@
 {$IFDEF VCLFIXPACK_DEBUG} {$D+} {$ENDIF}
 
 { If you use Delphi 6/7/2005 Personal you must disable the VCLFIXPACK_DB_SUPPORT define. }
-{$DEFINE VCLFIXPACK_DB_SUPPORT}
+{//$DEFINE VCLFIXPACK_DB_SUPPORT}
 
 unit VCLFixPack;
 
