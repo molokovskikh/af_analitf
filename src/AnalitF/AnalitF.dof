@@ -96,7 +96,7 @@ PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
 SearchPath=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Core;..\lib\Indy\Protocols;..\lib\Indy\Security;..\lib\Indy\System;..\lib\MyDac\Source
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;IndyCore70;IndyProtocols70;IndySystem70
-Conditionals=USEMEMORYCRYPTDLL;
+Conditionals=USEMEMORYCRYPTDLL;UsePrgDataTest;
 DebugSourceDirs=
 UsePackages=1
 [Parameters]
@@ -162,9 +162,9 @@ Count=1
 Item0=..\lib\MyDac\Source
 [HistoryLists\hlConditionals]
 Count=20
-Item0=USEMEMORYCRYPTDLL;
-Item1=DEBUG;USEMEMORYCRYPTDLL;
-Item2=USEMEMORYCRYPTDLL;UsePrgDataTest;
+Item0=USEMEMORYCRYPTDLL;UsePrgDataTest;
+Item1=USEMEMORYCRYPTDLL;
+Item2=DEBUG;USEMEMORYCRYPTDLL;
 Item3=DEBUG;USEMEMORYCRYPTDLL;UsePrgDataTest;
 Item4=DEBUG;
 Item5=DEBUG;USENEWMYSQLTYPES;
