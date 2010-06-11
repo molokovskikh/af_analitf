@@ -14,7 +14,9 @@ uses
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
   MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions, DatabaseObjects,
-  MyCall;
+  MyCall,
+  Registry,
+  RegistryHelper;
 
 {
 Криптование
@@ -389,6 +391,7 @@ type
     procedure OnScriptExecuteError(Sender: TObject;
       E: Exception; SQL: String; var Action: TErrorAction);
     procedure UpdateDBFileDataFor64(dbCon : TCustomMyConnection);
+    procedure DeleteRegistryCostColumn(CurrentKey : TRegistry);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetFullLastCreateScript : String;
@@ -4360,6 +4363,29 @@ begin
 
   finally
     adcCommand.Free;
+  end;
+
+  try
+    TRegistryHelper.DoAction('Software\Inforoom\AnalitF\' + GetPathCopyID, DeleteRegistryCostColumn);
+  except
+    on E : Exception do
+      WriteExchangeLog('UpdateRegistry', 'Error : ' + E.Message);
+  end;
+end;
+
+procedure TDM.DeleteRegistryCostColumn(CurrentKey: TRegistry);
+var
+  names : TStringList;
+  I : Integer;
+begin
+  names := TStringList.Create;
+  try
+    CurrentKey.GetValueNames(names);
+    for I := 0 to names.Count-1 do
+      if AnsiEndsText('RegistryCost', names[i]) then
+        CurrentKey.DeleteValue(names[i]);
+  finally
+    names.Free;
   end;
 end;
 
