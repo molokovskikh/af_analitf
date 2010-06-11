@@ -195,6 +195,7 @@ private
   function  OldOrders : Boolean;
   procedure DeleteOldOrders;
   procedure RealFreeChildForms;
+  procedure SetFocusOnMainForm;
 public
   // »м€ текущего пользовател€
   CurrentUser    : string;
@@ -455,11 +456,7 @@ try
         actReceiveExecute( nil);
 
 finally
-  try
-  //ѕопытка установить фокус на форме, т.к. он иногда не установлен
-  Self.SetFocus;
-  except
-  end;
+  SetFocusOnMainForm;
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€
   ToolBar.Invalidate;
 end;
@@ -958,11 +955,12 @@ begin
     end;
     DeleteFilesByMask(ExePath + SDirReclame + '\*.*', False);
   end;
+  SetFocusOnMainForm;
 end;
 
 procedure TMainForm.actHomeExecute(Sender: TObject);
 begin
-  //ќтображаем "пустое" главное окно, поэтому закрываем все дочерние формы 
+  //ќтображаем "пустое" главное окно, поэтому закрываем все дочерние формы
   MainForm.FreeChildForms;
   UpdateReclame;
 end;
@@ -1356,15 +1354,17 @@ end;
 procedure TMainForm.AppEventsMessage(var Msg: tagMSG;
   var Handled: Boolean);
 begin
+  if ((Msg.Message = WM_KEYDOWN) or (Msg.Message = WM_SYSKEYDOWN))
+     and (Ord(Msg.wParam) = 32)
+  then begin
   if     Self.Active
      and not Assigned(ActiveChild)
      and (not Assigned(ActiveControl) or (ActiveControl = Browser))
-     and (Msg.Message = WM_KEYDOWN)
-     and (Ord(Msg.wParam) = 32)
   then
   begin
     actOrderAll.Execute;
     Handled:=true;
+  end;
   end;
 end;
 
@@ -1449,9 +1449,23 @@ begin
   end;
 end;
 
+procedure TMainForm.SetFocusOnMainForm;
+begin
+  try
+    Self.SetFocusedControl(Self);
+  except
+  end;
+  try
+    //ѕопытка установить фокус на форме, т.к. он иногда не установлен
+    Self.SetFocus;
+  except
+  end;
+end;
+
 procedure TMainForm.actPostOrderBatchExecute(Sender: TObject);
 begin
   ShowOrderBatch;
 end;
+
 end.
 
