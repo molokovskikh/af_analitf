@@ -94,6 +94,7 @@ var
 	ExchangeForm: TExchangeForm;
 	ExThread: TExchangeThread;
   NeedRetrySendOrder : Boolean;
+  NeedEditCurrentOrders : Boolean;
   BatchFileName : String;
 
 procedure TryToRepareOrders(ProcessSendOrdersResponse : Boolean);
@@ -135,6 +136,7 @@ var
   needAuth : Boolean;
 begin
   NeedRetrySendOrder := False;
+  NeedEditCurrentOrders := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
 	Result := False;
@@ -169,7 +171,10 @@ begin
   then
     AExchangeActions := AExchangeActions + [eaGetFullData];
 
-	if ( eaSendOrders in AExchangeActions) and not CheckMinReq then exit;
+  if ( eaSendOrders in AExchangeActions) and not CheckMinReq then begin
+    NeedEditCurrentOrders := True;
+    Exit;
+  end;
 
 	if ( eaGetPrice in AExchangeActions) and not ( eaGetFullData in AExchangeActions) and
 		(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime <>

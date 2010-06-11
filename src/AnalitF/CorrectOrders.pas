@@ -277,6 +277,31 @@ var
     Result := LastId;
   end;
 
+  procedure AddOrderInfo();
+  begin
+    mtLog.Append;
+    mtLog.FieldValues['Id'] := OrderId;
+    if not ProcessSendOrdersResponse then
+      mtLog.FieldValues['ParentId'] := ClientId;
+    mtLog.FieldValues['SelfId'] :=
+      TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
+    mtLog.FieldValues['NodeName'] := PriceName;
+    mtLog.FieldValues['NodeType'] := Integer(cntOrder);
+    mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
+    if not DM.adcUpdate.FieldByName('ErrorReason').IsNull then
+      mtLog.FieldValues['Reason'] :=
+        DM.adcUpdate.FieldByName('ErrorReason').AsString;
+    mtLog.Post;
+    if DM.adcUpdate.FieldByName('ErrorReason').IsNull then
+      Report.Append(Format('   прайс-лист %s', [PriceName]))
+    else
+      Report.Append(Format('%sпрайс-лист %s  -  минимальный заказ %s  -  заказано %s',
+        [IfThen(not ProcessSendOrdersResponse, '   '),
+         PriceName,
+         DM.adcUpdate.FieldByName('ServerMinReq').AsString,
+         CurrToStr(DM.GetSumOrder(DM.adcUpdate.FieldByName('OrderId').AsInteger, False))]));
+  end;
+
   procedure AddClient();
   begin
     ClientName := DM.adcUpdate.FieldByName('ClientName').AsString;
@@ -293,30 +318,14 @@ var
         TLargeintField(DM.adcUpdate.FieldByName('ClientId')).AsLargeInt;
       mtLog.Post;
     end;
-    if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then
-      Report.Append(Format('адрес заказа %s', [ClientName]))
-    else
-      Report.Append(Format('клиент %s', [ClientName]));
 
-    mtLog.Append;
-    mtLog.FieldValues['Id'] := OrderId;
     if not ProcessSendOrdersResponse then
-      mtLog.FieldValues['ParentId'] := ClientId;
-    mtLog.FieldValues['SelfId'] :=
-      TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
-    mtLog.FieldValues['NodeName'] := PriceName;
-    mtLog.FieldValues['NodeType'] := Integer(cntOrder);
-    mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
-    if not DM.adcUpdate.FieldByName('ErrorReason').IsNull then
-      mtLog.FieldValues['Reason'] :=
-        DM.adcUpdate.FieldByName('ErrorReason').AsString;
-    mtLog.Post;
-    if DM.adcUpdate.FieldByName('ErrorReason').IsNull then
-      Report.Append(Format('   прайс-лист %s', [PriceName]))
-    else
-      Report.Append(Format('   прайс-лист %s   причина: %s',
-        [PriceName,
-         DM.adcUpdate.FieldByName('ErrorReason').AsString]));
+      if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then
+        Report.Append(Format('адрес заказа %s', [ClientName]))
+      else
+        Report.Append(Format('клиент %s', [ClientName]));
+
+    AddOrderInfo();
   end;
 
   procedure AddOrder();
@@ -324,25 +333,7 @@ var
     PriceName := DM.adcUpdate.FieldByName('PriceName').AsString;
     OrderId := GetNextId;
 
-    mtLog.Append;
-    mtLog.FieldValues['Id'] := OrderId;
-    if not ProcessSendOrdersResponse then
-      mtLog.FieldValues['ParentId'] := ClientId;
-    mtLog.FieldValues['SelfId'] :=
-      TLargeintField(DM.adcUpdate.FieldByName('OrderId')).AsLargeInt;
-    mtLog.FieldValues['NodeName'] := PriceName;
-    mtLog.FieldValues['NodeType'] := Integer(cntOrder);
-    mtLog.FieldValues['Send'] := DM.adcUpdate.FieldByName('Send').AsBoolean;
-    if not DM.adcUpdate.FieldByName('ErrorReason').IsNull then
-      mtLog.FieldValues['Reason'] :=
-        DM.adcUpdate.FieldByName('ErrorReason').AsString;
-    mtLog.Post;
-    if DM.adcUpdate.FieldByName('ErrorReason').IsNull then
-      Report.Append(Format('   прайс-лист %s', [PriceName]))
-    else
-      Report.Append(Format('   прайс-лист %s   причина: %s',
-        [PriceName,
-         DM.adcUpdate.FieldByName('ErrorReason').AsString]));
+    AddOrderInfo();
   end;
 
   procedure AddPosition();
@@ -840,6 +831,7 @@ begin
     + '  CurrentOrderHeads.Send, '
     + '  CurrentOrderHeads.SendResult, '
     + '  CurrentOrderHeads.ErrorReason, '
+    + '  CurrentOrderHeads.ServerMinReq, '
     + '  CurrentOrderLists.Id As OrderListId, '
     + '  CurrentOrderLists.SynonymName, '
     + '  CurrentOrderLists.SynonymFirm, '
@@ -872,6 +864,7 @@ begin
     + '  CurrentOrderHeads.Send, '
     + '  CurrentOrderHeads.SendResult, '
     + '  CurrentOrderHeads.ErrorReason, '
+    + '  CurrentOrderHeads.ServerMinReq, '
     + '  CurrentOrderLists.Id As OrderListId, '
     + '  CurrentOrderLists.SynonymName, '
     + '  CurrentOrderLists.SynonymFirm, '

@@ -13,6 +13,7 @@ type
     Button1: TButton;
     SaveDialog: TSaveDialog;
     Label1: TLabel;
+    Label2: TLabel;
     procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
@@ -29,10 +30,17 @@ implementation
 {$R *.dfm}
 
 procedure ShowNotSended(ALog: String);
+var
+  Interval : Integer;
 begin
   with TNotFoundForm.Create(Application) do try
     Caption := 'Не отправленные заказы';
-    Label1.Caption := 'Следующие заказы не удалось отправить :';
+    Label1.Caption := 'Данные заказы НЕ ОТПРАВЛЕНЫ, т.к. Поставщик отказал в приеме заказа:';//;
+    Label2.Caption := 'Сумма заказа меньше минимально допустимой Поставщиком';
+    Label2.Visible := True;
+    Interval := Label2.Top - Label1.Top;
+    Memo.Top := Memo.Top + Interval;
+    Memo.Height := Memo.Height - Interval;
     Memo.Lines.Text := ALog;
     ShowModal;
   finally

@@ -76,7 +76,8 @@ begin
 +'   AND (PricesData.PriceCode IS NOT NULL) '
 +'   AND (RegionalData.RegionCode IS NOT NULL) '
 +'   AND (pricesregionaldata.PriceCode IS NOT NULL) '
-+'   AND (OrdersPositions.Positions > 0)';
++'   AND (OrdersPositions.Positions > 0) '
++' order by CurrentOrderHeads.PriceName';
 	DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 	Strings := TStringList.Create;
   ControlMinReqOrders := '';
@@ -88,22 +89,14 @@ begin
       begin
         C := DM.GetSumOrder(DM.adsQueryValue.FieldByName( 'OrderID').AsInteger);
         if (DM.adsQueryValue.FieldByName( 'MinReq').AsCurrency > 0) and (C < DM.adsQueryValue.FieldByName( 'MinReq').AsCurrency) then begin
+          Strings.Append( Format( 'прайс-лист %s  -  минимальный заказ %s  -  заказано %g',
+            [DM.adsQueryValue.FieldByName( 'PriceName').AsString,
+             DM.adsQueryValue.FieldByName( 'MinReq').AsString,
+            C]));
           if (DM.adsQueryValue.FieldByName('ControlMinReq').AsBoolean) then begin
-            Strings.Append( Format( '%s (%s) : необходимый минимальный заказ %s - заказано %m',
-              [ DM.adsQueryValue.FieldByName( 'PriceName').AsString,
-              DM.adsQueryValue.FieldByName( 'RegionName').AsString,
-              DM.adsQueryValue.FieldByName( 'MinReq').AsString,
-              C]));
             if ControlMinReqOrders <> '' then
               ControlMinReqOrders := ControlMinReqOrders + ', ';
             ControlMinReqOrders := ControlMinReqOrders + DM.adsQueryValue.FieldByName('OrderId').AsString;
-          end
-          else begin
-            Strings.Append( Format( '%s (%s) : желательный минимальный заказ %s - заказано %m',
-              [ DM.adsQueryValue.FieldByName( 'PriceName').AsString,
-              DM.adsQueryValue.FieldByName( 'RegionName').AsString,
-              DM.adsQueryValue.FieldByName( 'MinReq').AsString,
-              C]));
           end;
         end;
         DM.adsQueryValue.Next;
@@ -114,12 +107,14 @@ begin
 
     if Strings.Count > 0 then begin
       result := ShowNotOrders( Strings);
+{
       if Result and (Length(ControlMinReqOrders) > 0) then begin
         DM.adcUpdate.SQL.Text :=
           'update CurrentOrderHeads set Send = 0 where OrderId in ('
           + ControlMinReqOrders + ')';
         DM.adcUpdate.Execute;
       end;
+}
     end;
 
   finally

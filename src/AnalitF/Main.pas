@@ -601,7 +601,7 @@ begin
 	end
 	else
 	begin
-    //Если я переделаю ShowChildForm, то этот вызов не нужен 
+    //Если я переделаю ShowChildForm, то этот вызов не нужен
     FreeChildForms;
 		ShowOrdersH;
 	end;
@@ -836,18 +836,24 @@ begin
     then
       Exit;
 
-  RunExchange([eaSendOrders]);
-  if NeedRetrySendOrder then begin
-    correctResult := ShowCorrectOrders(True);
-    case correctResult of
-      crForceSended :
-        RunExchange([eaSendOrders, eaForceSendOrders]);
-      crGetPrice :
-        RunExchange([eaGetPrice]);
-      crEditOrders :
-        ShowSummary;
-    end;
-  end;
+  if RunExchange([eaSendOrders]) then
+  begin
+    if NeedRetrySendOrder then begin
+      correctResult := ShowCorrectOrders(True);
+      case correctResult of
+        crForceSended :
+          RunExchange([eaSendOrders, eaForceSendOrders]);
+        crGetPrice :
+          RunExchange([eaGetPrice]);
+        crEditOrders :
+          ShowSummary;
+      end;
+    end
+  end
+  else
+    if NeedEditCurrentOrders then
+      ShowOrdersH;
+
   //Обновляем ToolBar в случае смены клиента после обновления
   ToolBar.Invalidate;
 end;

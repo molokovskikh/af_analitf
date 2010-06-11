@@ -29,6 +29,20 @@ object NotFoundForm: TNotFoundForm
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object Label2: TLabel
+    Left = 8
+    Top = 24
+    Width = 32
+    Height = 13
+    Caption = 'Label2'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    Visible = False
+  end
   object btnClose: TButton
     Left = 8
     Top = 296
