@@ -410,6 +410,10 @@ object MainForm: TMainForm
           Caption = #1048#1084#1087#1086#1088#1090#1080#1088#1086#1074#1072#1090#1100' '#1076#1072#1085#1085#1099#1077
           OnClick = itmImportClick
         end
+        object itmRestoreDatabaseFromEtalon: TMenuItem
+          Action = actRestoreDatabaseFromEtalon
+          Caption = #1057#1086#1079#1076#1072#1085#1080#1077' '#1073#1072#1079#1099' '#1076#1072#1085#1085#1099#1093' '#1089' '#1089#1086#1093#1088#1072#1085#1077#1085#1080#1077#1084' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1093' '#1079#1072#1082#1072#1079#1086#1074
+        end
       end
     end
     object itmHelp: TMenuItem
@@ -650,6 +654,11 @@ object MainForm: TMainForm
       Category = 'Service'
       Caption = #1042#1086#1089#1089#1090#1072#1085#1086#1074#1083#1077#1085#1080#1077' '#1073#1072#1079#1099' '#1076#1072#1085#1085#1099#1093
       OnExecute = actRestoreDatabaseExecute
+    end
+    object actRestoreDatabaseFromEtalon: TAction
+      Category = 'Service'
+      Caption = #1042#1086#1089#1089#1090#1072#1085#1086#1074#1083#1077#1085#1080#1077' '#1073#1072#1079#1099' '#1076#1072#1085#1085#1099#1093' '#1080#1079' '#1101#1090#1072#1083#1086#1085#1072
+      OnExecute = actRestoreDatabaseFromEtalonExecute
     end
     object actPostOrderBatch: TAction
       Category = 'Order'

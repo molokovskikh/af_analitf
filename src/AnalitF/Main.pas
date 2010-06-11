@@ -124,6 +124,8 @@ TMainForm = class(TVistaCorrectForm)
     actMnnSearch: TAction;
     actRestoreDatabase: TAction;
     itmRestoreDatabase: TMenuItem;
+    actRestoreDatabaseFromEtalon: TAction;
+    itmRestoreDatabaseFromEtalon: TMenuItem;
     miOrderBatch: TMenuItem;
     btnPostOrderBatch: TToolButton;
     actPostOrderBatch: TAction;
@@ -178,6 +180,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure actMnnSearchExecute(Sender: TObject);
     procedure actSendWaybillsExecute(Sender: TObject);
     procedure actRestoreDatabaseExecute(Sender: TObject);
+    procedure actRestoreDatabaseFromEtalonExecute(Sender: TObject);
     procedure actPostOrderBatchExecute(Sender: TObject);
 private
 	JustRun: boolean;
@@ -1423,10 +1426,26 @@ begin
     AProc.MessageBox('Восстановление базы данных завершено успешно.');
 end;
 
+procedure TMainForm.actRestoreDatabaseFromEtalonExecute(Sender: TObject);
+begin
+  if AProc.MessageBox(
+    'При создании базы данных будут потеряны текущие заказы. Продолжить?',
+    MB_ICONWARNING or MB_OKCANCEL) = IDOK
+  then begin
+    //Закрываем все окна перед восстановлением
+    FreeChildForms;
+    Application.ProcessMessages;
+    if RunRestoreDatabaseFromEtalon then
+      RunExchange([eaGetPrice, eaGetFullData])
+    else
+      AProc.MessageBox('Создание базы данных завершилось с ошибками.'#13#10 +
+      'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.', MB_ICONWARNING);
+  end;
+end;
+
 procedure TMainForm.actPostOrderBatchExecute(Sender: TObject);
 begin
   ShowOrderBatch;
 end;
-
 end.
 

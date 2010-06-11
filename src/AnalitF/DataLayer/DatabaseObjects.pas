@@ -168,7 +168,7 @@ type
 
     procedure CheckObjectsExists(connection : TCustomMyConnection; IsBackupRepair : Boolean);
 
-    procedure RepairTableFromBackup();
+    procedure RepairTableFromBackup(backupDir : String = '');
 
     function CheckObjects(connection : TCustomMyConnection) : TRepairedObjects;
 
@@ -192,6 +192,7 @@ type
     procedure RestoreDatabase;
 
     function GetLastCreateScript : String;
+    function GetFullLastCreateScript(DBVersion : String = '') : String;
   end;
 
   function DatabaseController : TDatabaseController;
@@ -851,6 +852,72 @@ begin
       Integer(Result.ObjectId)]);
 end;
 
+function TDatabaseController.GetFullLastCreateScript(
+  DBVersion : String = ''): String;
+var
+  realDBVersion : String;
+begin
+  if Length(DBVersion) = 0 then
+    realDBVersion := IntToStr(CURRENT_DB_VERSION)
+  else
+    realDBVersion := DBVersion;
+
+  Result := GetLastCreateScript;
+  
+  Result := Concat(Result,
+    #13#10#13#10 +
+    'insert into analitf.params set ' +
+    'Id = 0,' +
+    'ClientId = null,' +
+    'RasConnect = 0,' +
+    'RasEntry = null,' +
+    'RasName = null,' +
+    'RasPass = null,' +
+    'ConnectCount = 5,' +
+    'ConnectPause = 5,' +
+    'ProxyConnect = 0,' +
+    'ProxyName = null,' +
+    'ProxyPort = null,' +
+    'ProxyUser = null,' +
+    'ProxyPass = null,' +
+    'HTTPHost = ''ios.analit.net'',' +
+    'HTTPName = null,' +
+    'HTTPPass = null,' +
+    'UpdateDatetime = null,' +
+    'LastDatetime = null,' +
+    'ShowRegister = 1,' +
+    'UseForms = 1,' +
+    'OperateForms = 0,' +
+    'OperateFormsSet = 0,' +
+    'StartPage = 0,' +
+    'LastCompact = null,' +
+    'Cumulative = 0,' +
+    'Started = 0,' +
+    'RASSLEEP = 3,' +
+    'HTTPNAMECHANGED = 1,' +
+    'SHOWALLCATALOG = 0,' +
+    'CDS = '''',' +
+    'ORDERSHISTORYDAYCOUNT = 35,' +
+    'CONFIRMDELETEOLDORDERS = 1,' +
+    'USEOSOPENWAYBILL = 0,' +
+    'USEOSOPENREJECT = 1,' +
+    'GROUPBYPRODUCTS = 0,' +
+    'PRINTORDERSAFTERSEND = 0,' +
+    'ConfirmSendingOrders = 0,' +
+    'UseCorrectOrders = 0,' +
+    'ProviderName = ''АК "Инфорум"'',' +
+    'ProviderAddress = ''Ленинский пр-т, 160 оф.415'',' +
+    'ProviderPhones = ''4732-606000'',' +
+    'ProviderEmail = ''farm@analit.net'',' +
+    'ProviderWeb = ''http://www.analit.net/'',' +
+    'ProviderMDBVersion = ' + realDBVersion + ';'#13#10#13#10 +
+    'INSERT INTO RETAILMARGINS (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);'#13#10#13#10 +
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);'#13#10#13#10  +
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);'#13#10#13#10 +
+    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (3, 500, 1000000, 20, 20);'#13#10#13#10
+    );
+end;
+
 function TDatabaseController.GetLastCreateScript: String;
 var
   I : Integer;
@@ -1046,33 +1113,36 @@ begin
   end;
 end;
 
-procedure TDatabaseController.RepairTableFromBackup;
+procedure TDatabaseController.RepairTableFromBackup(backupDir : String = '');
 var
   I : Integer;
   currentTable : TDatabaseTable;
 begin
+  if Length(backupDir) = 0 then
+    backupDir := SDirTableBackup;
+
   for I := 0 to FDatabaseObjects.Count-1 do begin
     if FDatabaseObjects[i] is TDatabaseTable then begin
       currentTable := TDatabaseTable(FDatabaseObjects[i]);
 
       if (currentTable.RepairType in [dortCritical, dortBackup]) then
       begin
-        if FileExists(ExePath + SDirTableBackup + '\' + currentTable.FileSystemName + DataFileExtention)
-           and FileExists(ExePath + SDirTableBackup + '\' + currentTable.FileSystemName + IndexFileExtention)
-           and FileExists(ExePath + SDirTableBackup + '\' + currentTable.FileSystemName + StructFileExtention)
+        if FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + DataFileExtention)
+           and FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + IndexFileExtention)
+           and FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + StructFileExtention)
         then begin
           OSCopyFile(
-            ExePath + SDirTableBackup + '\'
+            ExePath + backupDir + '\'
             + currentTable.FileSystemName + DataFileExtention,
             ExePath + SDirData + '\' + WorkSchema + '\'
             + currentTable.FileSystemName + DataFileExtention);
           OSCopyFile(
-            ExePath + SDirTableBackup + '\'
+            ExePath + backupDir + '\'
             + currentTable.FileSystemName + IndexFileExtention,
             ExePath + SDirData + '\' + WorkSchema + '\'
             + currentTable.FileSystemName + IndexFileExtention);
           OSCopyFile(
-            ExePath + SDirTableBackup + '\'
+            ExePath + backupDir + '\'
             + currentTable.FileSystemName + StructFileExtention,
             ExePath + SDirData + '\' + WorkSchema + '\'
             + currentTable.FileSystemName + StructFileExtention);

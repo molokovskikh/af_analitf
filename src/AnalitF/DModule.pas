@@ -2195,8 +2195,6 @@ function TDM.GetFullLastCreateScript: String;
 var
   realDBVersion : String;
 begin
-  Result := DatabaseController.GetLastCreateScript();
-  
   if NeedUpdate800xToMySql then
     realDBVersion := '56'
   else
@@ -2205,58 +2203,7 @@ begin
   else
     realDBVersion := IntToStr(CURRENT_DB_VERSION);
 
-  Result := Concat(Result,
-    #13#10#13#10 +
-    'insert into analitf.params set ' +
-    'Id = 0,' +
-    'ClientId = null,' +
-    'RasConnect = 0,' +
-    'RasEntry = null,' +
-    'RasName = null,' +
-    'RasPass = null,' +
-    'ConnectCount = 5,' +
-    'ConnectPause = 5,' +
-    'ProxyConnect = 0,' +
-    'ProxyName = null,' +
-    'ProxyPort = null,' +
-    'ProxyUser = null,' +
-    'ProxyPass = null,' +
-    'HTTPHost = ''ios.analit.net'',' +
-    'HTTPName = null,' +
-    'HTTPPass = null,' +
-    'UpdateDatetime = null,' +
-    'LastDatetime = null,' +
-    'ShowRegister = 1,' +
-    'UseForms = 1,' +
-    'OperateForms = 0,' +
-    'OperateFormsSet = 0,' +
-    'StartPage = 0,' +
-    'LastCompact = null,' +
-    'Cumulative = 0,' +
-    'Started = 0,' +
-    'RASSLEEP = 3,' +
-    'HTTPNAMECHANGED = 1,' +
-    'SHOWALLCATALOG = 0,' +
-    'CDS = '''',' +
-    'ORDERSHISTORYDAYCOUNT = 35,' +
-    'CONFIRMDELETEOLDORDERS = 1,' +
-    'USEOSOPENWAYBILL = 0,' +
-    'USEOSOPENREJECT = 1,' +
-    'GROUPBYPRODUCTS = 0,' +
-    'PRINTORDERSAFTERSEND = 0,' +
-    'ConfirmSendingOrders = 0,' +
-    'UseCorrectOrders = 0,' +
-    'ProviderName = ''АК "Инфорум"'',' +
-    'ProviderAddress = ''Ленинский пр-т, 160 оф.415'',' +
-    'ProviderPhones = ''4732-606000'',' +
-    'ProviderEmail = ''farm@analit.net'',' +
-    'ProviderWeb = ''http://www.analit.net/'',' +
-    'ProviderMDBVersion = ' + realDBVersion + ';'#13#10#13#10 +
-    'INSERT INTO RETAILMARGINS (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 1000000, 30, 30);'#13#10#13#10 +
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);'#13#10#13#10  +
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);'#13#10#13#10 +
-    'INSERT INTO VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (3, 500, 1000000, 20, 20);'#13#10#13#10
-    );
+  Result := DatabaseController.GetFullLastCreateScript(realDBVersion);
 end;
 
 procedure TDM.CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
@@ -3531,7 +3478,7 @@ begin
       LogCriticalError('Ошибка при удалении устаревшей директории mysql: ' + E.Message);
       LogExitError(
         'Не возможно удалить устаревшую директорию mysql.'#13#10
-        + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+        + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecDeleteOldMysqlFolder));
     end
   end;
@@ -3553,7 +3500,7 @@ begin
     on E : Exception do begin
       LogExitError(
         E.Message + #13#10
-          + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+          + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecLibMysqlDCorrupted));
     end;
   end;
@@ -3589,7 +3536,7 @@ begin
       LogCriticalError('Ошибка при удалении устаревших директорий при обновлении 800-x версий: ' + E.Message);
       LogExitError(
         'Не возможно удалить устаревшие директории.'#13#10
-        + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+        + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecDeleteOldMysqlFolder));
     end
   end;
@@ -3645,7 +3592,7 @@ begin
             raise Exception.Create(
               'При перемещении данных из старой базы в новою возникла ошибка.' +
               #13#10 +
-              'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+              'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
           end;
         end;
       finally
@@ -3676,7 +3623,7 @@ begin
           raise Exception.Create(
             'При перемещении данных из старой базы в новою возникла ошибка.' +
             #13#10 +
-            'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+            'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
         end;
       end;
     finally
@@ -3937,7 +3884,7 @@ begin
       LogCriticalError('Ошибка при удалении устаревших директорий при обновлении на новую libd: ' + E.Message);
       LogExitError(
         'Не возможно удалить устаревшие директории.'#13#10
-        + 'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.',
+        + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecDeleteOldMysqlFolder));
     end
   end;
@@ -4189,7 +4136,7 @@ begin
             raise Exception.Create(
               'При перемещении данных из старой базы в новою возникла ошибка.' +
               #13#10 +
-              'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+              'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
           end;
         end;
       finally
@@ -4219,7 +4166,7 @@ begin
           raise Exception.Create(
             'При перемещении данных из старой базы в новою возникла ошибка.' +
             #13#10 +
-            'Пожалуйста, свяжитесь со службой техничесской поддержки для получения инструкций.');
+            'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
         end;
       end;
     finally
