@@ -166,6 +166,15 @@ var
   sp : TSelectPrice;
   mi :TMenuItem;
 begin
+  {
+    Проблема с отображением кнопки TSpeedButton при глубине вложенности на Panel большей 1.
+    т.е. если form -> panel -> TSpeedButton : все хорошо
+    а если form -> panel -> panel -> TSpeedButton : Caption у панели отображается жирным шрифтом
+    Решение найдено здесь:
+    http://qc.embarcadero.com/wc/qcmain.aspx?d=49109
+    Speedbuttons don't paint correctly when parented by a TGridPanel on a TGroupBox 
+  }
+  pStatus.ControlStyle := pStatus.ControlStyle - [csParentBackground] + [csOpaque];
   dsCheckVolume := adsSummary;
   dgCheckVolume := dbgSummaryCurrent;
   fOrder := adsSummaryORDERCOUNT;

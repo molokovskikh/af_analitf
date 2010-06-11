@@ -279,6 +279,7 @@ inherited PricesForm: TPricesForm
           Font.Style = [fsBold, fsUnderline]
           ParentFont = False
           TabOrder = 0
+          Transparent = False
           OnClick = stManagerMailClick
         end
       end

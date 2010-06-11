@@ -225,10 +225,8 @@ begin
   CreateVisibleComponents;
   LoadVitallyImportantMarkups;
 
-{
   pClient.ControlStyle := pClient.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
-}  
 end;
 
 procedure TframeEditVitallyImportantMarkups.CreateNonVisibleComponents;

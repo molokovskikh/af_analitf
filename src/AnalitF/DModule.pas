@@ -388,6 +388,7 @@ type
     procedure UpdateDBFile(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure OnScriptExecuteError(Sender: TObject;
       E: Exception; SQL: String; var Action: TErrorAction);
+    procedure UpdateDBFileDataFor64(dbCon : TCustomMyConnection);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetFullLastCreateScript : String;
@@ -1928,14 +1929,14 @@ begin
         DBVersion := CURRENT_DB_VERSION;
       end;
     end;
-    
+
     if DBVersion = 62 then begin
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
       DBVersion := 63;
     end;
 
     if DBVersion = 63 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor64);
       DBVersion := 64;
     end;
 
@@ -4229,6 +4230,137 @@ begin
     Result := retail.MaxSupplierMarkup
   else
     Result := 0;
+end;
+
+procedure TDM.UpdateDBFileDataFor64(dbCon: TCustomMyConnection);
+var
+  adcCommand : TMyQuery;
+  ExistsMarkups : TObjectList;
+  NewMarkups : TObjectList;
+
+  procedure LoadMarkups(TableName: String; Markups: TObjectList);
+  begin
+    WriteExchangeLog('UpdateMarkups', 'Начали загрузку наценок');
+    adcCommand.Close;
+    adcCommand.SQL.Text :=
+      'select LeftLimit, RightLimit, Markup, MaxMarkup, MaxSupplierMarkup from analitf.' + TableName + ' order by LeftLimit';
+    adcCommand.Open;
+    try
+      Markups.Clear;
+      adcCommand.First;
+      while not adcCommand.Eof do begin
+        WriteExchangeLog('UpdateMarkups',
+         Format('Наценка: LeftLimit %s  RightLimit %s  Markup %s  MaxMarkup %s',
+          [adcCommand.FieldByName('LeftLimit').AsString,
+           adcCommand.FieldByName('RightLimit').AsString,
+           adcCommand.FieldByName('Markup').AsString,
+           adcCommand.FieldByName('MaxMarkup').AsString]));
+        Markups.Add(TRetailMarkup
+          .Create(
+            adcCommand.FieldByName('LeftLimit').AsCurrency,
+            adcCommand.FieldByName('RightLimit').AsCurrency,
+            adcCommand.FieldByName('Markup').AsCurrency,
+            adcCommand.FieldByName('MaxMarkup').AsCurrency,
+            adcCommand.FieldByName('MaxSupplierMarkup').AsCurrency));
+        adcCommand.Next;
+      end;
+    finally
+      adcCommand.Close;
+      WriteExchangeLog('UpdateMarkups', 'Закончили загрузку наценок');
+    end;
+  end;
+
+  procedure SaveMarkups(Markups: TObjectList);
+  var
+    I : Integer;
+    markup : TRetailMarkup;
+  begin
+    dbCon.ExecSQL(
+      'truncate analitf.' + DatabaseController.GetById(doiVitallyImportantMarkups).Name, []);
+    adcCommand.Close;
+    adcCommand.SQL.Text :=
+       'insert into analitf.' +
+       DatabaseController.GetById(doiVitallyImportantMarkups).Name +
+      ' (LeftLimit, RightLimit, Markup, MaxMarkup) values ' +
+      '(:LeftLimit, :RightLimit, :Markup, :MaxMarkup);';
+
+    for I := 0 to Markups.Count-1 do begin
+      markup := TRetailMarkup(Markups[i]);
+      adcCommand.ParamByName('LeftLimit').Value := markup.LeftLimit;
+      adcCommand.ParamByName('RightLimit').Value := markup.RightLimit;
+      adcCommand.ParamByName('Markup').Value := markup.Markup;
+      adcCommand.ParamByName('MaxMarkup').Value := markup.MaxMarkup;
+      adcCommand.Execute;
+    end;
+
+    DatabaseController.BackupDataTable(doiVitallyImportantMarkups);
+  end;
+
+  function GetExistsMarkup(Point: Double): TRetailMarkup;
+  var
+    I : Integer;
+  begin
+    Result := nil;
+    I := 0;
+    while (I < ExistsMarkups.Count) and (Point > TRetailMarkup(ExistsMarkups[i]).LeftLimit) do begin
+      if (TRetailMarkup(ExistsMarkups[i]).LeftLimit < Point) and (Point <= TRetailMarkup(ExistsMarkups[i]).RightLimit) then begin
+        Result := TRetailMarkup(ExistsMarkups[i]);
+        Break;
+      end;
+      Inc(I);
+    end;
+  end;
+
+  procedure MoveMarkup(LeftLimit, RightLimit : Double);
+  var
+    ExistsMarkup : TRetailMarkup;
+    NewMarkup : TRetailMarkup;
+  begin
+    ExistsMarkup := GetExistsMarkup(LeftLimit + 0.01);
+    if Assigned(ExistsMarkup) then begin
+      NewMarkup := TRetailMarkup
+        .Create(
+          LeftLimit,
+          RightLimit,
+          ExistsMarkup.Markup,
+          ExistsMarkup.MaxMarkup,
+          20);
+      ExistsMarkups.Remove(ExistsMarkup);
+    end
+    else
+      NewMarkup := TRetailMarkup
+        .Create(
+          LeftLimit,
+          RightLimit,
+          20,
+          20,
+          20);
+    NewMarkups.Add(NewMarkup);
+  end;
+
+begin
+  adcCommand := TMyQuery.Create(nil);
+  try
+    adcCommand.Connection := dbCon;
+
+    ExistsMarkups := TObjectList.Create(True);
+    NewMarkups := TObjectList.Create(True);
+    try
+      LoadMarkups(DatabaseController.GetById(doiVitallyImportantMarkups).Name, ExistsMarkups);
+
+      MoveMarkup(0, 50);
+      MoveMarkup(50, 500);
+      MoveMarkup(500, 1000000);
+
+      SaveMarkups(NewMarkups);
+    finally
+      ExistsMarkups.Free;
+      NewMarkups.Free;
+    end;
+
+  finally
+    adcCommand.Free;
+  end;
 end;
 
 initialization

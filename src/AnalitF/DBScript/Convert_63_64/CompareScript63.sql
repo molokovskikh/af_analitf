@@ -19,13 +19,4 @@ CREATE TABLE analitf.`minreqrules` (
   key `FK_minreqrules_RegionCode` (`RegionCode`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
-
-delete from analitf.VitallyImportantMarkups;
-
-INSERT INTO analitf.VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (1, 0, 50, 20, 20);
-
-INSERT INTO analitf.VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (2, 50, 500, 20, 20);
-
-INSERT INTO analitf.VitallyImportantMarkups (ID, LeftLimit, RightLimit, Markup, MaxMarkup) VALUES (3, 500, 1000000, 20, 20);
-
 update analitf.params set ProviderMDBVersion = 64 where id = 0;

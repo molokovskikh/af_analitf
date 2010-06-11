@@ -30,10 +30,8 @@ implementation
 constructor TframeLegeng.Create(AOwner: TComponent);
 begin
   inherited;
-{
   gbLegend.ControlStyle := gbLegend.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
-}  
 end;
 
 end.

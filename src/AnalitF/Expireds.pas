@@ -123,6 +123,7 @@ uses
 
 procedure TExpiredsForm.FormCreate(Sender: TObject);
 begin
+  pRecordCount.ControlStyle := pRecordCount.ControlStyle - [csParentBackground] + [csOpaque];
   plOverCost.Hide();
   dsCheckVolume := adsExpireds;
   dgCheckVolume := dbgExpireds;

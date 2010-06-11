@@ -213,10 +213,8 @@ begin
   
   AddComponents;
 
-{
   gbEditClients.ControlStyle := gbEditClients.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
-}  
 end;
 
 procedure TframeEditAddress.SaveChanges;
