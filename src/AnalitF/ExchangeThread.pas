@@ -100,7 +100,7 @@ private
   procedure CreateChildSendArhivedOrdersThread;
   function  ChildThreadClassIsExists(ChildThreadClass : TReceiveThreadClass) : Boolean;
 	procedure QueryData;
-  function TestBatchFile : String;
+  function  GetEncodedBatchFileContent : String;
   procedure GetMaxIds(var MaxOrderId, MaxOrderListId, MaxBatchId : String);
   procedure SendULoginData;
   procedure GetPass;
@@ -553,7 +553,7 @@ begin
       GetAbsentPriceCode();
 
     if (BatchFileName <> '') and NeedProcessBatch then
-      batchFileContent := TestBatchFile;
+      batchFileContent := GetEncodedBatchFileContent;
 
     try
       WriteExchangeLog(
@@ -2740,13 +2740,13 @@ begin
   end;
 end;
 
-function TExchangeThread.TestBatchFile : String;
+function TExchangeThread.GetEncodedBatchFileContent : String;
 var
   ah : TArchiveHelper;
 begin
   ah := TArchiveHelper.Create(Exchange.BatchFileName);
   try
-    Result := Trim(ah.GetEncodedContent());
+    Result := ah.GetEncodedContent();
   finally
     ah.Free;
   end;

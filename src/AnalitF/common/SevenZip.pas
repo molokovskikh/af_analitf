@@ -426,7 +426,7 @@ var
 
   SevenZipSetOwnerWindow        : TSevenZipSetOwnerWindow       = nil; 
   SevenZipClearOwnerWindow      : TSevenZipClearOwnerWindow     = nil; 
-  SevenZipSetOwnerWindowEx      : TSevenZipSetOwnerWindowEx     = nil; 
+  SevenZipSetOwnerWindowEx      : TSevenZipSetOwnerWindowEx     = nil;
   SevenZipKillOwnerWindowEx     : TSevenZipKillOwnerWindowEx    = nil; 
 
   SevenZipGetSubVersion         : TSevenZipGetSubVersion        = nil; 
@@ -532,11 +532,14 @@ function SevenZipCommand( hWnd : HWND;
                           CommandLine : string;
                           var CommandOutput : string;
                           MaxCommandOutputLen : integer = 32768 ) : integer;
-
+var
+  Buffer : array[0..32768] of Char;
 begin
+  CommandOutput := '';
   SetLength( CommandOutput, MaxCommandOutputLen );
-  Result := _SevenZipCommand( hWnd, PChar( CommandLine), PChar( CommandOutput ), MaxCommandOutputLen - 1 );
-  CommandOutput := string( PChar( CommandOutput ) );
+  Result := _SevenZipCommand( hWnd, PChar( CommandLine), Buffer, MaxCommandOutputLen - 1 );
+  SetString(CommandOutput, Buffer, MaxCommandOutputLen);
+  CommandOutput := TrimRight(CommandOutput);
 end;
 
 function RemoveQuotes( s : string ) : string;
@@ -614,13 +617,13 @@ begin
       s7cmd := s7cmd + ' -hide';
 
     try
-      SevenZipSetOwnerWindowEx( hwnd, Callback );
+      if (hwnd <> 0) and (@Callback <> nil) then
+        SevenZipSetOwnerWindowEx( hwnd, Callback );
 
       LastSevenZipErrorCode := SevenZipCommand( hWnd, s7cmd, s7ResultOutput );
 
-      SevenZipSetOwnerWindowEx( hwnd, nil );
-
-      S7ResultOutput := string(PChar(S7ResultOutput));
+      if (hwnd <> 0) and (@Callback <> nil) then
+        SevenZipSetOwnerWindowEx( hwnd, nil );
 
       if Pos( 'operation aborted', Lowercase( S7ResultOutput ) ) > 0 then
         Result := SZ_CANCELLED
@@ -640,6 +643,7 @@ begin
     except
       on e : exception do
       begin
+        LastError := E.Message;
         Result := SZ_DLLERROR;
       end;
     end;
@@ -713,13 +717,13 @@ begin
     s7cmd := s7cmd + ' -y'; // yes on all queries (will overwrite)
 
     try
-      SevenZipSetOwnerWindowEx( hwnd, Callback );
+      if (hwnd <> 0) and (@Callback <> nil) then
+        SevenZipSetOwnerWindowEx( hwnd, Callback );
 
       LastSevenZipErrorCode := SevenZipCommand( hWnd, s7cmd, s7ResultOutput );
 
-      SevenZipSetOwnerWindowEx( hwnd, nil );
-
-      S7ResultOutput := string(PChar(S7ResultOutput));
+      if (hwnd <> 0) and (@Callback <> nil) then
+        SevenZipSetOwnerWindowEx( hwnd, nil );
 
       if Pos( 'operation aborted', Lowercase( S7ResultOutput ) ) > 0 then
         Result := SZ_CANCELLED
@@ -739,6 +743,7 @@ begin
     except
       on e : exception do
       begin
+        LastError := E.Message;
         Result := SZ_DLLERROR;
       end;
     end;
