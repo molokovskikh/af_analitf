@@ -114,6 +114,8 @@ type
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure ProducerStatusGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
   protected
     procedure OpenFile(Sender : TObject);
     procedure BatchReportGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -169,6 +171,7 @@ type
     dsCore : TDataSource;
 
     IdField : TLargeintField;
+    ProducerStatusField : TField;
     SynonymNameField : TStringField;
     ProductIdField : TLargeintField;
     OrderListIdField : TLargeintField;
@@ -255,6 +258,8 @@ begin
   dbgCore.DataSource := dsCore;
 
   IdField := TLargeintField (adsReport.FieldByName('Id'));
+  ProducerStatusField := TField (adsReport.FieldByName('ProducerStatus'));;
+  ProducerStatusField.OnGetText := ProducerStatusGetText;
   SynonymNameField := TStringField (adsReport.FieldByName('SynonymName'));
   ProductIdField := TLargeintField  (adsReport.FieldByName('ProductId'));
   OrderListIdField := TLargeintField  (adsReport.FieldByName('OrderListId'));
@@ -378,6 +383,7 @@ begin
   dbgOrderBatch.InputField := 'OrderCount';
 
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Сформирован заказ', 0);
+  TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Известен изготовитель', Self.Canvas.TextWidth('Нет   '));
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymName', 'Наименование', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymFirm', 'Производитель', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
@@ -946,6 +952,13 @@ begin
       eSearch.Text := '';
     AddKeyToSearch(Key);
   end;
+end;
+
+procedure TOrderBatchForm.ProducerStatusGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+begin
+  if DisplayText then
+    Text := IfThen(Sender.AsInteger = 0, 'Нет', 'Да');
 end;
 
 end.

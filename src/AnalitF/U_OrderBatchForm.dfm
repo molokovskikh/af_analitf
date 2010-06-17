@@ -3,11 +3,15 @@ inherited OrderBatchForm: TOrderBatchForm
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
+  inherited tCheckVolume: TTimer
+    Left = 128
+    Top = 24
+  end
   object shBatchReport: TStrHolder
     Capacity = 60
     Macros = <>
-    Left = 64
-    Top = 120
+    Left = 24
+    Top = 80
     InternalVer = 1
     StrData = (
       ''
@@ -15,6 +19,9 @@ inherited OrderBatchForm: TOrderBatchForm
       '202062617463687265706f72742e49642c'
       '202027c4e0272061732053696d706c655374617475732c'
       '202062617463687265706f72742e50726f6475637449642c'
+      
+        '202062617463687265706f72742e436f64654669726d4372206973206e6f7420' +
+        '6e756c6c2050726f64756365725374617475732c'
       '202062617463687265706f72742e4f726465724c69737449642c'
       '202062617463687265706f72742e5374617475732c'
       '202062617463687265706f72742e436f6d6d656e742c'
@@ -63,6 +70,9 @@ inherited OrderBatchForm: TOrderBatchForm
       '202062617463687265706f72742e49642c'
       '202027cde5f2272061732053696d706c655374617475732c'
       '202062617463687265706f72742e50726f6475637449642c'
+      
+        '202062617463687265706f72742e436f64654669726d4372206973206e6f7420' +
+        '6e756c6c2050726f64756365725374617475732c'
       '202062617463687265706f72742e4f726465724c69737449642c'
       '202062617463687265706f72742e5374617475732c'
       '202062617463687265706f72742e436f6d6d656e742c'
@@ -102,20 +112,20 @@ inherited OrderBatchForm: TOrderBatchForm
       
         '202062617463687265706f72742e4f726465724c6973744964206973206e756c' +
         '6c'
-      '6f726465722062792038')
+      '6f726465722062792053796e6f6e796d4e616d65')
   end
   object tmRunBatch: TTimer
     Enabled = False
     Interval = 300
     OnTimer = tmRunBatchTimer
-    Left = 168
-    Top = 64
+    Left = 176
+    Top = 24
   end
   object shDelete: TStrHolder
     Capacity = 4
     Macros = <>
-    Left = 120
-    Top = 128
+    Left = 40
+    Top = 112
     InternalVer = 1
     StrData = (
       ''
@@ -129,7 +139,7 @@ inherited OrderBatchForm: TOrderBatchForm
   object stUpdate: TStrHolder
     Capacity = 8
     Macros = <>
-    Left = 176
+    Left = 40
     Top = 144
     InternalVer = 1
     StrData = (
@@ -141,10 +151,10 @@ inherited OrderBatchForm: TOrderBatchForm
       '20204944203d203a6f6c645f4f726465724c6973744964')
   end
   object stRefresh: TStrHolder
-    Capacity = 28
+    Capacity = 44
     Macros = <>
-    Left = 104
-    Top = 168
+    Left = 40
+    Top = 176
     InternalVer = 1
     StrData = (
       ''
@@ -152,6 +162,9 @@ inherited OrderBatchForm: TOrderBatchForm
       '202062617463687265706f72742e49642c'
       '202027c4e0272061732053696d706c655374617475732c'
       '202062617463687265706f72742e50726f6475637449642c'
+      
+        '202062617463687265706f72742e436f64654669726d4372206973206e6f7420' +
+        '6e756c6c2050726f64756365725374617475732c'
       '202062617463687265706f72742e4f726465724c69737449642c'
       '202062617463687265706f72742e5374617475732c'
       '202062617463687265706f72742e436f6d6d656e742c'
@@ -215,8 +228,8 @@ inherited OrderBatchForm: TOrderBatchForm
   object shPreviosOrders: TStrHolder
     Capacity = 28
     Macros = <>
-    Left = 200
-    Top = 200
+    Left = 136
+    Top = 80
     InternalVer = 1
     StrData = (
       ''
@@ -268,14 +281,14 @@ inherited OrderBatchForm: TOrderBatchForm
     Enabled = False
     Interval = 350
     OnTimer = tmrUpdatePreviosOrdersTimer
-    Left = 592
-    Top = 173
+    Left = 280
+    Top = 21
   end
   object shCore: TStrHolder
     Capacity = 95
     Macros = <>
-    Left = 88
-    Top = 224
+    Left = 192
+    Top = 80
     InternalVer = 1
     StrData = (
       ''
@@ -457,7 +470,7 @@ inherited OrderBatchForm: TOrderBatchForm
     Enabled = False
     Interval = 5000
     OnTimer = tmrSearchTimer
-    Left = 488
-    Top = 165
+    Left = 232
+    Top = 29
   end
 end
