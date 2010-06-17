@@ -43,8 +43,8 @@ const
   (
     'Все',
     'Заказано',
-    '   Оптимальные',
-    '   Не оптимальные',
+    '   Минимальные',
+    '   Не минимальные',
     'Не заказано',
     '   Нет предложений',
     '   Нулевое количество',
@@ -337,7 +337,7 @@ var
 begin
   newLeft := 8;
   newTop := (pLegend.Height - (Self.Canvas.TextHeight('Test') + 10)) div 2;
-  newLeft := CreateLegendLabel(lOptimalCost, 'Оптимальная цена', RGB(172, 255, 151), newLeft, newTop);
+  newLeft := CreateLegendLabel(lOptimalCost, 'Минимальная цена', RGB(172, 255, 151), newLeft, newTop);
   newLeft := CreateLegendLabel(lErrorQuantity, 'Указано неверное количество', RGB(200, 203, 206), newLeft, newTop);
   newLeft := CreateLegendLabel(lNotOffers, 'Нет предложений', RGB(226, 180, 181), newLeft, newTop);
   newLeft := CreateLegendLabel(lNotEnoughQuantity, 'Нет достаточного количества', RGB(255, 190, 151), newLeft, newTop);
