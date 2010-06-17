@@ -92,6 +92,7 @@ type
     procedure AfterPost(DataSet: TDataSet);
     procedure UpdatePreviosOrders(DataSet: TDataSet);
     procedure ReportBeforeClose(DataSet: TDataSet);
+    procedure ReportSortMarkingChanged(Sender: TObject);
   protected
     procedure OpenFile(Sender : TObject);
     procedure BatchReportGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -294,6 +295,7 @@ begin
   dbgOrderBatch.OnGetCellParams := BatchReportGetCellParams;
   dbgOrderBatch.OnCanInput := BatchReportCanInput;
   dbgOrderBatch.OnKeyDown := dbgOrderBatchKeyDown;
+  dbgOrderBatch.OnSortMarkingChanged := ReportSortMarkingChanged;
   dbgOrderBatch.InputField := 'OrderCount';
 
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Сформирован заказ', 0);
@@ -305,6 +307,7 @@ begin
   TDBGridHelper.AddColumn(dbgOrderBatch, 'RetailSumm', 'Сумма', 0);
   column := TDBGridHelper.AddColumn(dbgOrderBatch, 'Comment', 'Комментарий', 0);
   column.ToolTips := True;
+  TDBGridHelper.SetTitleButtonToColumns(dbgOrderBatch);
 end;
 
 function TOrderBatchForm.CreateLegendLabel(
@@ -693,6 +696,11 @@ procedure TOrderBatchForm.UpdatePreviosOrders(DataSet: TDataSet);
 begin
   tmrUpdatePreviosOrders.Enabled := False;
   tmrUpdatePreviosOrders.Enabled := True;
+end;
+
+procedure TOrderBatchForm.ReportSortMarkingChanged(Sender: TObject);
+begin
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.
