@@ -17,7 +17,9 @@ uses
   ToughDBGrid,
   StrHlder,
   ActnList,
-  ShellAPI;
+  ShellAPI,
+  StrUtils,
+  AlphaUtils;
 
 type
   TItemToOrderStatus = (
@@ -69,14 +71,20 @@ type
     shPreviosOrders: TStrHolder;
     tmrUpdatePreviosOrders: TTimer;
     shCore: TStrHolder;
+    tmrSearch: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tmRunBatchTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
     procedure actGotoMNNActionUpdate(Sender: TObject);
     procedure actGotoMNNActionExecute(Sender: TObject);
     procedure tmrUpdatePreviosOrdersTimer(Sender: TObject);
+    procedure tmrSearchTimer(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    BM : TBitmap;
+    InternalSearchText : String;
+    
     procedure CreateNonVisualComponent;
     procedure CreateVisualComponent;
     procedure CreateTopPanel;
@@ -99,6 +107,13 @@ type
     procedure ReportSortMarkingChanged(Sender: TObject);
     procedure EditRuleClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
+
+    procedure InternalSearch;
+    procedure SetClear;
+    procedure AddKeyToSearch(Key : Char);
+    procedure eSearchKeyPress(Sender: TObject; var Key: Char);
+    procedure eSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   protected
     procedure OpenFile(Sender : TObject);
     procedure BatchReportGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -108,10 +123,16 @@ type
     procedure DeletePositions(Sender: TObject);
     procedure FilterClick(Sender: TObject);
     procedure dbgOrderBatchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure dbgOrderBatchKeyPress(Sender: TObject; var Key: Char);
+    procedure dbgOrderBatchDrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
   public
     { Public declarations }
 
     odBatch: TOpenDialog;
+
+    pTopSearch : TPanel;
+    eSearch : TEdit;
 
     pTop : TPanel;
     spLoad : TSpeedButton;
@@ -148,6 +169,7 @@ type
     dsCore : TDataSource;
 
     IdField : TLargeintField;
+    SynonymNameField : TStringField;
     ProductIdField : TLargeintField;
     OrderListIdField : TLargeintField;
     StatusField : TIntegerField;
@@ -233,6 +255,7 @@ begin
   dbgCore.DataSource := dsCore;
 
   IdField := TLargeintField (adsReport.FieldByName('Id'));
+  SynonymNameField := TStringField (adsReport.FieldByName('SynonymName'));
   ProductIdField := TLargeintField  (adsReport.FieldByName('ProductId'));
   OrderListIdField := TLargeintField  (adsReport.FieldByName('OrderListId'));
   StatusField := TIntegerField  (adsReport.FieldByName('Status'));
@@ -349,7 +372,9 @@ begin
   dbgOrderBatch.OnGetCellParams := BatchReportGetCellParams;
   dbgOrderBatch.OnCanInput := BatchReportCanInput;
   dbgOrderBatch.OnKeyDown := dbgOrderBatchKeyDown;
+  dbgOrderBatch.OnKeyPress := dbgOrderBatchKeyPress;
   dbgOrderBatch.OnSortMarkingChanged := ReportSortMarkingChanged;
+  dbgOrderBatch.OnDrawColumnCell := dbgOrderBatchDrawColumnCell;
   dbgOrderBatch.InputField := 'OrderCount';
 
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Сформирован заказ', 0);
@@ -442,9 +467,14 @@ procedure TOrderBatchForm.CreateTopPanel;
 var
   filter : TFilterReport;
 begin
+  pTopSearch := TPanel.Create(Self);
+  pTopSearch.Align := alTop;
+  pTopSearch.Parent := Self;
+
   pTop := TPanel.Create(Self);
+  pTop.ControlStyle := pTop.ControlStyle - [csParentBackground] + [csOpaque];
   pTop.Align := alTop;
-  pTop.Parent := Self;
+  pTop.Parent := pTopSearch;
 
   cbFilter := TComboBox.Create(Self);
   cbFilter.Parent := pTop;
@@ -464,8 +494,18 @@ begin
   spLoad.Width := Self.Canvas.TextWidth(spLoad.Caption) + 20;
   spLoad.Left := 3;
   spLoad.Top := 5;
+  pTopSearch.Height := (spLoad.Height + 10) * 2;
   pTop.Height := spLoad.Height + 10;
   spLoad.OnClick := OpenFile;
+
+  eSearch := TEdit.Create(Self);
+  eSearch.Parent := pTopSearch;
+  eSearch.Left := 5;
+  eSearch.Top := pTop.Height + ((pTopSearch.Height div 2) - eSearch.Height) div 2;
+  eSearch.Width := Self.Canvas.TextWidth('Это очень очень длинная строка поиска');
+  eSearch.OnKeyPress := eSearchKeyPress;
+  eSearch.OnKeyDown := eSearchKeyDown;
+
 
   cbFilter.Top := (pTop.Height - cbFilter.Height) div 2;
 
@@ -522,6 +562,9 @@ end;
 
 procedure TOrderBatchForm.FormCreate(Sender: TObject);
 begin
+  InternalSearchText := '';
+  BM := TBitmap.Create;
+
   CreateNonVisualComponent;
   CreateVisualComponent;
 
@@ -654,6 +697,8 @@ procedure TOrderBatchForm.SetFilter(Filter: TFilterReport);
 var
   FP : TFilterRecordEvent;
 begin
+  eSearch.Text := '';
+  InternalSearchText := '';
   FP := nil;
   if Filter <> frAll then
     FP := FilterRecord;
@@ -664,31 +709,38 @@ end;
 procedure TOrderBatchForm.FilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
-  if CurrentFilter in [frAllOrdered, frOrderedOptimal, frOrderedNonOptimal]
-  then begin
-    Accept := not OrderListIdField.IsNull;
-    if Accept and (CurrentFilter = frOrderedOptimal) then
-      Accept := (StatusField.Value and Integer(osOptimalCost)) > 0
+  if Length(InternalSearchText) > 0 then
+    Accept := AnsiContainsText(SynonymNameField.DisplayText, InternalSearchText);
+
+  if Accept then begin
+
+    if CurrentFilter in [frAllOrdered, frOrderedOptimal, frOrderedNonOptimal]
+    then begin
+      Accept := not OrderListIdField.IsNull;
+      if Accept and (CurrentFilter = frOrderedOptimal) then
+        Accept := (StatusField.Value and Integer(osOptimalCost)) > 0
+      else
+        if Accept and (CurrentFilter = frOrderedNonOptimal) then
+          Accept := (StatusField.Value and Integer(osOptimalCost)) = 0
+    end
     else
-      if Accept and (CurrentFilter = frOrderedNonOptimal) then
-        Accept := (StatusField.Value and Integer(osOptimalCost)) = 0
-  end
-  else
-  if CurrentFilter = frNotParsed
-  then
-  begin
-    Accept := OrderListIdField.IsNull and ProductIdField.IsNull;
-  end
-  else begin
-    Accept := OrderListIdField.IsNull and not ProductIdField.IsNull;
-    if Accept and (CurrentFilter = frNotOrderedNotOffers) then
-      Accept := ((StatusField.Value and Integer(OffersExists)) = 0) and (OrderCountField.Value > 0)
-    else
-    if Accept and (CurrentFilter = frNotOrderedErrorQuantity) then
-      Accept := (OrderCountField.Value < 1)
-    else
-    if Accept and (CurrentFilter = frNotOrderedAnother) then
-      Accept := (OrderCountField.Value > 0) and ((StatusField.Value and Integer(OffersExists)) > 0);
+    if CurrentFilter = frNotParsed
+    then
+    begin
+      Accept := OrderListIdField.IsNull and ProductIdField.IsNull;
+    end
+    else begin
+      Accept := OrderListIdField.IsNull and not ProductIdField.IsNull;
+      if Accept and (CurrentFilter = frNotOrderedNotOffers) then
+        Accept := ((StatusField.Value and Integer(OffersExists)) = 0) and (OrderCountField.Value > 0)
+      else
+      if Accept and (CurrentFilter = frNotOrderedErrorQuantity) then
+        Accept := (OrderCountField.Value < 1)
+      else
+      if Accept and (CurrentFilter = frNotOrderedAnother) then
+        Accept := (OrderCountField.Value > 0) and ((StatusField.Value and Integer(OffersExists)) > 0);
+    end;
+    
   end;
 end;
 
@@ -703,7 +755,21 @@ begin
   if (Shift = []) and (Key = VK_DELETE) and (not adsReport.IsEmpty) then begin
     Key := 0;
     DeleteOrder;
-  end;
+  end
+  else
+    if Key = VK_RETURN then begin
+      if (Length(eSearch.Text) > 0) then
+        tmrSearchTimer(nil);
+    end
+    else
+      if Key = VK_ESCAPE then
+        SetClear
+      else
+        if Key = VK_BACK then begin
+          tmrSearch.Enabled := False;
+          eSearch.Text := Copy(eSearch.Text, 1, Length(eSearch.Text)-1);
+          tmrSearch.Enabled := True;
+        end;
 end;
 
 procedure TOrderBatchForm.actGotoMNNActionUpdate(Sender: TObject);
@@ -795,6 +861,91 @@ end;
 procedure TOrderBatchForm.FormResize(Sender: TObject);
 begin
   dbgHistory.Width := pBottom.ClientWidth div 2;
+end;
+
+procedure TOrderBatchForm.tmrSearchTimer(Sender: TObject);
+begin
+  tmrSearch.Enabled := False;
+  if (Length(eSearch.Text) > 2) then begin
+    InternalSearchText := LeftStr(eSearch.Text, 50);
+    InternalSearch;
+  end
+  else
+    if Length(eSearch.Text) = 0 then
+      SetClear;
+end;
+
+procedure TOrderBatchForm.InternalSearch;
+begin
+  DBProc.SetFilterProc(adsReport, FilterRecord);
+
+  dbgOrderBatch.SetFocus;
+end;
+
+procedure TOrderBatchForm.SetClear;
+begin
+  tmrSearch.Enabled := False;
+
+  SetFilter(TFilterReport(cbFilter.ItemIndex));
+
+  dbgOrderBatch.SetFocus;
+end;
+
+procedure TOrderBatchForm.AddKeyToSearch(Key: Char);
+begin
+  if Ord(Key) >= 32 then begin
+    tmrSearch.Enabled := False;
+    if not eSearch.Focused then
+      eSearch.Text := eSearch.Text + Key;
+    tmrSearch.Enabled := True;
+  end;
+end;
+
+procedure TOrderBatchForm.eSearchKeyPress(Sender: TObject; var Key: Char);
+begin
+  tmrSearch.Enabled := False;
+  AddKeyToSearch(Key);
+  //Если мы что-то нажали в элементе, то должны на это отреагировать
+  if Ord(Key) <> VK_RETURN then
+    tmrSearch.Enabled := True;
+end;
+
+procedure TOrderBatchForm.eSearchKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    tmrSearchTimer(nil);
+    dbgOrderBatch.SetFocus;
+  end
+  else
+    if Key = VK_ESCAPE then
+      SetClear;
+end;
+
+procedure TOrderBatchForm.dbgOrderBatchDrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumnEh;
+  State: TGridDrawState);
+begin
+  if (Column.Field = SynonymNameField) then
+    ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgOrderBatch.Canvas, Rect, BM);
+end;
+
+procedure TOrderBatchForm.FormDestroy(Sender: TObject);
+begin
+  BM.Free;
+  inherited;
+end;
+
+procedure TOrderBatchForm.dbgOrderBatchKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if ( Key > #32) and not ( Key in
+    [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+  begin
+    if not tmrSearch.Enabled and (InternalSearchText = eSearch.Text) then
+      eSearch.Text := '';
+    AddKeyToSearch(Key);
+  end;
 end;
 
 end.

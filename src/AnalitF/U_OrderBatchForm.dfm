@@ -1,5 +1,6 @@
 inherited OrderBatchForm: TOrderBatchForm
   Caption = 'OrderBatchForm'
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object shBatchReport: TStrHolder
@@ -451,5 +452,12 @@ inherited OrderBatchForm: TOrderBatchForm
         '6374496429'
       '616e642028436f72652e636f72656964206973206e6f74206e756c6c29'
       '6f7264657220627920436f7374')
+  end
+  object tmrSearch: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = tmrSearchTimer
+    Left = 488
+    Top = 165
   end
 end
