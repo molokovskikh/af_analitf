@@ -100,7 +100,8 @@ inherited OrderBatchForm: TOrderBatchForm
       '7768657265'
       
         '202062617463687265706f72742e4f726465724c6973744964206973206e756c' +
-        '6c')
+        '6c'
+      '6f726465722062792038')
   end
   object tmRunBatch: TTimer
     Enabled = False
