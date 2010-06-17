@@ -138,9 +138,10 @@ implementation
 {$R *.dfm}
 
 uses
-  Main, StrUtils, AProc, Math, DBProc, sumprops, EditVitallyImportantMarkups, 
+  Main, StrUtils, AProc, Math, DBProc, sumprops, EditVitallyImportantMarkups,
   EditAddressForm, Constant, DBGridHelper,
-  ToughDBGridColumns;
+  ToughDBGridColumns,
+  U_ExchangeLog;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -341,6 +342,8 @@ begin
     end;
 
   except
+    on E : Exception do
+      WriteExchangeLog('TDocumentBodiesForm.WaybillCalcFields', 'Ошибка: ' + E.Message);
   end;
 end;
 
