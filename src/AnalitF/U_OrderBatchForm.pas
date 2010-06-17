@@ -68,6 +68,7 @@ type
     actGotoMNNAction: TAction;
     shPreviosOrders: TStrHolder;
     tmrUpdatePreviosOrders: TTimer;
+    shCore: TStrHolder;
     procedure FormCreate(Sender: TObject);
     procedure tmRunBatchTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
@@ -97,6 +98,7 @@ type
     procedure ReportBeforeClose(DataSet: TDataSet);
     procedure ReportSortMarkingChanged(Sender: TObject);
     procedure EditRuleClick(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   protected
     procedure OpenFile(Sender : TObject);
     procedure BatchReportGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -124,6 +126,7 @@ type
     pLegend : TPanel;
     dbmComment : TDBMemo;
     dbgHistory : TToughDBGrid;
+    dbgCore : TToughDBGrid;
 
     lOptimalCost : TLabel;
     lErrorQuantity : TLabel;
@@ -140,6 +143,9 @@ type
 
     adsPreviosOrders : TMyQuery;
     dsPreviosOrders : TDataSource;
+
+    adsCore : TMyQuery;
+    dsCore : TDataSource;
 
     IdField : TLargeintField;
     ProductIdField : TLargeintField;
@@ -224,6 +230,8 @@ begin
 
   dbgHistory.DataSource := dsPreviosOrders;
 
+  dbgCore.DataSource := dsCore;
+
   IdField := TLargeintField (adsReport.FieldByName('Id'));
   ProductIdField := TLargeintField  (adsReport.FieldByName('ProductId'));
   OrderListIdField := TLargeintField  (adsReport.FieldByName('OrderListId'));
@@ -238,6 +246,7 @@ end;
 procedure TOrderBatchForm.CreateBottomPanel;
 var
   OneLineHeight : Integer;
+  column : TColumnEh;
 begin
   OneLineHeight := Self.Canvas.TextHeight('Tes');
 
@@ -268,11 +277,11 @@ begin
   pLegendAndComment.Height := pLegend.Height + (OneLineHeight * 6);
 
   dbgHistory := TToughDBGrid.Create(Self);
-  dbgHistory.Parent := pBottom;
-  dbgHistory.Align := alClient;
+  dbgHistory.Parent := pLegendAndComment;
+  dbgHistory.Align := alLeft;
+  dbgHistory.Width := 480;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgHistory);
 
-  pBottom.Height := pLegendAndComment.Height + (OneLineHeight * 15);
 
   TDBGridHelper.AddColumn(dbgHistory, 'PriceName', 'Прайс-лист', Self.Canvas.TextWidth('Большое имя прайс-листа'));
   TDBGridHelper.AddColumn(dbgHistory, 'SynonymFirm', 'Производитель', Self.Canvas.TextWidth('Большое имя синонима'));
@@ -280,6 +289,46 @@ begin
   TDBGridHelper.AddColumn(dbgHistory, 'ProducerCost', 'Цена производителя', Self.Canvas.TextWidth('999.99'));
   TDBGridHelper.AddColumn(dbgHistory, 'Price', 'Цена', Self.Canvas.TextWidth('999.99'));
   TDBGridHelper.AddColumn(dbgHistory, 'OrderDate', 'Дата', 0);
+
+  dbgCore := TToughDBGrid.Create(Self);
+  dbgCore.Parent := pBottom;
+  dbgCore.Align := alClient;
+  TDBGridHelper.SetDefaultSettingsToGrid(dbgCore);
+
+  TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
+  TDBGridHelper.AddColumn(dbgCore, 'SynonymFirm', 'Производитель', 85);
+  TDBGridHelper.AddColumn(dbgCore, 'Volume', 'Упаковка', 63);
+  TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 69);
+  column := TDBGridHelper.AddColumn(dbgCore, 'Doc', 'Документ');
+  column.Visible := False;
+  column := TDBGridHelper.AddColumn(dbgCore, 'Period', 'Срок годн.', 85);
+  column.Alignment := taCenter;
+  TDBGridHelper.AddColumn(dbgCore, 'PriceName', 'Прайс-лист', 85);
+  column := TDBGridHelper.AddColumn(dbgCore, 'RegionName', 'Регион', 72);
+  column.Visible := False;
+  column := TDBGridHelper.AddColumn(dbgCore, 'Storage', 'Склад', 37);
+  column.Alignment := taCenter;
+  column.Visible := False;
+  column.Checkboxes := False;
+  TDBGridHelper.AddColumn(dbgCore, 'DatePrice', 'Дата прайс-листа', 'dd.mm.yyyy hh:nn', 103);
+  TDBGridHelper.AddColumn(dbgCore, 'registrycost', 'Реестр. цена', '0.00;;''''', 0);
+  TDBGridHelper.AddColumn(dbgCore, 'requestratio', 'Кратность');
+  TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин. сумма', '0.00;;''''', 0);
+  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во');
+  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во');
+  column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена без отсрочки');
+  column.Visible := False;
+  column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
+  column.Font.Style := [fsBold];
+  TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
+  column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Количество', 68);
+  column.Alignment := taRightJustify;
+  column := TDBGridHelper.AddColumn(dbgCore, 'OrderCount', 'Заказ', 47);
+  column.Color := TColor(16775406);
+  column := TDBGridHelper.AddColumn(dbgCore, 'SumOrder', 'Сумма', '0.00;;''''', 70);
+  column.Color := TColor(16775406);
+
+  pBottom.Height := pLegendAndComment.Height + (OneLineHeight * 15);
 end;
 
 procedure TOrderBatchForm.CreateGridPanel;
@@ -380,6 +429,13 @@ begin
   dsPreviosOrders  := TDataSource.Create(Self);
   dsPreviosOrders.DataSet := adsPreviosOrders;
 
+  adsCore := TMyQuery.Create(Self);
+  adsCore.SQL.Text := shCore.Strings.Text;
+  adsCore.ParamByName('TimeZoneBias').Value := AProc.TimeZoneBias;
+  adsCore.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+
+  dsCore := TDataSource.Create(Self);
+  dsCore.DataSet := adsCore;
 end;
 
 procedure TOrderBatchForm.CreateTopPanel;
@@ -460,6 +516,8 @@ begin
   CreateTopPanel;
   CreateBottomPanel;
   CreateGridPanel;
+
+  Self.OnResize := FormResize;
 end;
 
 procedure TOrderBatchForm.FormCreate(Sender: TObject);
@@ -692,6 +750,8 @@ begin
   tmrUpdatePreviosOrders.Enabled := False;
   if adsPreviosOrders.Active then
     adsPreviosOrders.Close;
+  if adsCore.Active then
+    adsCore.Close;
   if adsReport.Active and not adsReport.IsEmpty
   then begin
     adsPreviosOrders.ParamByName( 'GroupByProducts').Value :=
@@ -699,6 +759,8 @@ begin
     adsPreviosOrders.ParamByName( 'FullCode').Value := FullcodeField.Value;
     adsPreviosOrders.ParamByName( 'ProductId').Value := ProductIdField.Value;
     adsPreviosOrders.Open;
+    adsCore.ParamByName( 'ProductId').Value := ProductIdField.Value;
+    adsCore.Open;
   end;
 end;
 
@@ -728,6 +790,11 @@ begin
     nil,
     nil,
     SW_SHOWDEFAULT);
+end;
+
+procedure TOrderBatchForm.FormResize(Sender: TObject);
+begin
+  dbgHistory.Width := pBottom.ClientWidth div 2;
 end;
 
 end.
