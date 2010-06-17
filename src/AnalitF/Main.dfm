@@ -662,8 +662,8 @@ object MainForm: TMainForm
     end
     object actPostOrderBatch: TAction
       Category = 'Order'
-      Caption = #1044#1077#1092#1077#1082#1090#1091#1088#1072
-      Hint = #1044#1077#1092#1077#1082#1090#1091#1088#1072
+      Caption = #1040#1074#1090#1086#1047#1072#1082#1072#1079
+      Hint = #1040#1074#1090#1086#1047#1072#1082#1072#1079
       ImageIndex = 7
       OnExecute = actPostOrderBatchExecute
     end
