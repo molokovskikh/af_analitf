@@ -14,7 +14,10 @@ uses
   MyAccess,
   GridsEh,
   DbGridEh,
-  ToughDBGrid, StrHlder, ActnList;
+  ToughDBGrid,
+  StrHlder,
+  ActnList,
+  ShellAPI;
 
 type
   TItemToOrderStatus = (
@@ -93,6 +96,7 @@ type
     procedure UpdatePreviosOrders(DataSet: TDataSet);
     procedure ReportBeforeClose(DataSet: TDataSet);
     procedure ReportSortMarkingChanged(Sender: TObject);
+    procedure EditRuleClick(Sender: TObject);
   protected
     procedure OpenFile(Sender : TObject);
     procedure BatchReportGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -113,6 +117,7 @@ type
     spGotoCatalog : TSpeedButton;
     spDelete : TSpeedButton;
     spGotoMNNButton : TSpeedButton;
+    lEditRule : TLabel;
 
     pBottom : TPanel;
     pLegendAndComment : TPanel;
@@ -437,6 +442,17 @@ begin
   spDelete.Left := spGotoMNNButton.Left + spGotoMNNButton.Width + 5;
 
   spLoad.Left := spDelete.Left + spDelete.Width + 5;
+
+  lEditRule := TLabel.Create(Self);
+  lEditRule.Parent := pTop;
+  lEditRule.Caption := 'Настройка правил автозаказа';
+  lEditRule.OnClick := EditRuleClick;
+  lEditRule.Cursor := crHandPoint;
+  lEditRule.ParentFont := False;
+  lEditRule.Font.Color := clBlue;
+  lEditRule.Font.Style := [fsBold, fsUnderline];
+  lEditRule.Top := (pTop.Height - lEditRule.Height) div 2;
+  lEditRule.Left := spLoad.Left + spLoad.Width + 5;
 end;
 
 procedure TOrderBatchForm.CreateVisualComponent;
@@ -701,6 +717,17 @@ end;
 procedure TOrderBatchForm.ReportSortMarkingChanged(Sender: TObject);
 begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TOrderBatchForm.EditRuleClick(Sender: TObject);
+begin
+  ShellExecute(
+    0,
+    'open',
+    PChar('https://stat.analit.net/CI/SmartOrderRule/show.rails'),
+    nil,
+    nil,
+    SW_SHOWDEFAULT);
 end;
 
 end.
