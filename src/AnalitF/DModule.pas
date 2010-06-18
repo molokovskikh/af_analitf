@@ -1395,6 +1395,8 @@ begin
     SQL.Text:='truncate producers;'; Execute;
     MainForm.StatusText:='Очищаются правила минимального заказа';
     SQL.Text:='truncate minreqrules;'; Execute;
+    MainForm.StatusText:='Очищается время сжатия базы данных';
+    SQL.Text:='update params set LastCompact = now() where ID = 0;'; Execute;
 
   finally
     Screen.Cursor:=crDefault;

@@ -890,7 +890,7 @@ begin
     'OperateForms = 0,' +
     'OperateFormsSet = 0,' +
     'StartPage = 0,' +
-    'LastCompact = null,' +
+    'LastCompact = now(),' +
     'Cumulative = 0,' +
     'Started = 0,' +
     'RASSLEEP = 3,' +
