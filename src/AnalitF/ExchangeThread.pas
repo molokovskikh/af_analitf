@@ -2806,7 +2806,7 @@ begin
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
       + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
-      + '  CODE, CODECr, RealPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost) set Price = RealPrice;';
+      + '  CODE, CODECr, RealPrice, Price, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
 
 {
 +'    `ID` bigint(20) not null AUTO_INCREMENT    , '
