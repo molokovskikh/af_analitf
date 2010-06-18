@@ -735,18 +735,20 @@ begin
     begin
       Accept := OrderListIdField.IsNull and ProductIdField.IsNull;
     end
-    else begin
-      Accept := OrderListIdField.IsNull and not ProductIdField.IsNull;
-      if Accept and (CurrentFilter = frNotOrderedNotOffers) then
-        Accept := ((StatusField.Value and Integer(OffersExists)) = 0) and (OrderCountField.Value > 0)
-      else
-      if Accept and (CurrentFilter = frNotOrderedErrorQuantity) then
-        Accept := (OrderCountField.Value < 1)
-      else
-      if Accept and (CurrentFilter = frNotOrderedAnother) then
-        Accept := (OrderCountField.Value > 0) and ((StatusField.Value and Integer(OffersExists)) > 0);
-    end;
-    
+    else
+      if CurrentFilter <> frAll then
+      begin
+        Accept := OrderListIdField.IsNull and not ProductIdField.IsNull;
+        if Accept and (CurrentFilter = frNotOrderedNotOffers) then
+          Accept := ((StatusField.Value and Integer(OffersExists)) = 0) and (OrderCountField.Value > 0)
+        else
+        if Accept and (CurrentFilter = frNotOrderedErrorQuantity) then
+          Accept := (OrderCountField.Value < 1)
+        else
+        if Accept and (CurrentFilter = frNotOrderedAnother) then
+          Accept := (OrderCountField.Value > 0) and ((StatusField.Value and Integer(OffersExists)) > 0);
+      end;
+
   end;
 end;
 
