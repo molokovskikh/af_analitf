@@ -581,15 +581,18 @@ end;
 
 procedure TOrderBatchForm.OpenFile(Sender: TObject);
 begin
-  odBatch.InitialDir := ExePath;
-  if odBatch.Execute then begin
-    Exchange.BatchFileName := odBatch.FileName;
-    tmRunBatch.Enabled := True;
-{
-    MainForm.ActiveChild := nil;
-    MainForm.AddFormToFree(Self);
-    Close;
-}    
+  if AProc.MessageBox('После успешной отправки дефектуры будут удалены текущие заказы.'#13#10'Продолжить?', MB_ICONWARNING or MB_OKCANCEL) = IDOK
+  then begin
+    odBatch.InitialDir := ExePath;
+    if odBatch.Execute then begin
+      Exchange.BatchFileName := odBatch.FileName;
+      tmRunBatch.Enabled := True;
+  {
+      MainForm.ActiveChild := nil;
+      MainForm.AddFormToFree(Self);
+      Close;
+  }
+    end;
   end;
 end;
 
