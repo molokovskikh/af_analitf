@@ -110,6 +110,8 @@ type
     SaveEnabled: Boolean;
     //Требуется вызвать First после сортировки DataSet
     NeedFirstOnDataSet : Boolean;
+    //Сортировать грид с заказом
+    SortOnOrderGrid : Boolean;
     procedure ShowForm; overload; virtual;
     procedure ShowAsPrevForm; virtual;
     procedure Print( APreview: boolean = False); virtual;
@@ -311,6 +313,7 @@ end;
 constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
+  SortOnOrderGrid := True;
   FUseCorrectOrders := DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean;
   ModifiedActions        := TObjectList.Create(True);
   inherited;
@@ -584,7 +587,7 @@ begin
       ndsColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
       ndsColumn.FieldName := 'NDS';
       ndsColumn.Title.Caption := 'НДС';
-      if Assigned(Grid.OnSortMarkingChanged) then
+      if SortOnOrderGrid then
         ndsColumn.Title.TitleButton := True;
       ndsColumn.DisplayFormat := '#';
     end;
@@ -593,7 +596,7 @@ begin
       supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(ndsColumn.Index));
       supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
       supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
-      if Assigned(Grid.OnSortMarkingChanged) then
+      if SortOnOrderGrid then
         supplierPriceMarkupColumn.Title.TitleButton := True;
       supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
     end;
@@ -602,7 +605,7 @@ begin
       producerCostColumn := TColumnEh(Grid.Columns.Insert(supplierPriceMarkupColumn.Index));
       producerCostColumn.FieldName := 'ProducerCost';
       producerCostColumn.Title.Caption := 'Цена производителя';
-      if Assigned(Grid.OnSortMarkingChanged) then
+      if SortOnOrderGrid then
         producerCostColumn.Title.TitleButton := True;
       producerCostColumn.DisplayFormat := '0.00;;''''';
     end;
@@ -611,7 +614,7 @@ begin
       maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
       maxProducerCostColumn.FieldName := 'MaxProducerCost';
       maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
-      if Assigned(Grid.OnSortMarkingChanged) then
+      if SortOnOrderGrid then
         maxProducerCostColumn.Title.TitleButton := True;
       maxProducerCostColumn.DisplayFormat := '0.00;;''''';
     end;

@@ -230,6 +230,7 @@ begin
   fOrderCost := adsCoreORDERCOST;
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
+  SortOnOrderGrid := False;
 	inherited;
 
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);

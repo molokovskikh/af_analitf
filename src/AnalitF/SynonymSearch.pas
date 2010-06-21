@@ -223,6 +223,7 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
   gotoMNNButton := btnGotoMNN;
+  SortOnOrderGrid := False;
   inherited;
 
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
