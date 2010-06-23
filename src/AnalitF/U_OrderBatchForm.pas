@@ -388,8 +388,10 @@ begin
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymFirm', 'Производитель', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'OrderCount', 'Количество', 0);
-  TDBGridHelper.AddColumn(dbgOrderBatch, 'Cost', 'Цена', 0);
-  TDBGridHelper.AddColumn(dbgOrderBatch, 'RetailSumm', 'Сумма', 0);
+  if DM.adtClientsAllowDelayOfPayment.Value then
+    TDBGridHelper.AddColumn(dbgOrderBatch, 'RealCost', 'Цена поставщика', '0.00;;''''', 0);
+  TDBGridHelper.AddColumn(dbgOrderBatch, 'Cost', 'Цена', '0.00;;''''', 0);
+  TDBGridHelper.AddColumn(dbgOrderBatch, 'RetailSumm', 'Сумма', '0.00;;''''', 0);
   column := TDBGridHelper.AddColumn(dbgOrderBatch, 'Comment', 'Комментарий', 0);
   column.ToolTips := True;
   TDBGridHelper.SetTitleButtonToColumns(dbgOrderBatch);
@@ -763,9 +765,10 @@ end;
 procedure TOrderBatchForm.dbgOrderBatchKeyDown(Sender: TObject;
   var Key: Word; Shift: TShiftState);
 begin
-  if (Shift = []) and (Key = VK_DELETE) and (not adsReport.IsEmpty) then begin
+  if (Shift = []) and (Key = VK_DELETE) then begin
     Key := 0;
-    DeleteOrder;
+    if not adsReport.IsEmpty then
+      DeleteOrder;
   end
   else
     if Key = VK_RETURN then begin
