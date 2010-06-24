@@ -18,13 +18,8 @@ type
     Label2: TLabel;
     dbtOrderDate: TDBText;
     lblRecordCount: TLabel;
-    lblSum: TLabel;
     dbtPositions: TDBText;
-    dbtSumOrder: TDBText;
     Label4: TLabel;
-    Label5: TLabel;
-    dbtRegionName: TDBText;
-    lSumOrder: TLabel;
     pGrid: TPanel;
     dbgDocumentBodies: TDBGridEh;
     adsDocumentHeaders: TMyQuery;

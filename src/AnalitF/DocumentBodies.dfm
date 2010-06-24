@@ -13,11 +13,15 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Align = alTop
     BevelInner = bvLowered
     TabOrder = 0
+    DesignSize = (
+      856
+      51)
     object dbtProviderName: TDBText
       Left = 515
       Top = 9
-      Width = 198
+      Width = 334
       Height = 13
+      Anchors = [akLeft, akTop, akRight]
       DataField = 'ProviderName'
       DataSource = dsDocumentHeaders
       Font.Charset = DEFAULT_CHARSET
@@ -94,20 +98,6 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object lblSum: TLabel
-      Left = 468
-      Top = 29
-      Width = 64
-      Height = 13
-      Caption = #1085#1072' '#1089#1091#1084#1084#1091' :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
     object dbtPositions: TDBText
       Left = 75
       Top = 29
@@ -122,21 +112,6 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object dbtSumOrder: TDBText
-      Left = 842
-      Top = 29
-      Width = 81
-      Height = 13
-      DataField = 'PRICENAME'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
     object Label4: TLabel
       Left = 435
       Top = 9
@@ -149,49 +124,6 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
       ParentFont = False
-    end
-    object Label5: TLabel
-      Left = 566
-      Top = 29
-      Width = 51
-      Height = 13
-      Caption = #1056#1077#1075#1080#1086#1085' :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
-    object dbtRegionName: TDBText
-      Left = 619
-      Top = 29
-      Width = 198
-      Height = 13
-      DataField = 'RegionName'
-      DataSource = OrdersHForm.dsOrdersH
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
-    object lSumOrder: TLabel
-      Left = 533
-      Top = 29
-      Width = 59
-      Height = 13
-      Caption = 'lSumOrder'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
     end
     object dbtDocumentType: TDBText
       Left = 11
@@ -356,7 +288,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
   end
   inherited tCheckVolume: TTimer
-    Top = 112
+    Left = 104
+    Top = 152
   end
   object adsDocumentHeaders: TMyQuery
     Connection = DM.MyConnection
@@ -375,8 +308,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'where'
       '    (dh.Id = :DocumentId)'
       'and (p.FirmCode = dh.FirmCode)')
-    Left = 64
-    Top = 87
+    Left = 56
+    Top = 159
     ParamData = <
       item
         DataType = ftUnknown
@@ -425,8 +358,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
-    Left = 128
-    Top = 111
+    Left = 136
+    Top = 151
   end
   object dsDocumentBodies: TDataSource
     DataSet = adsDocumentBodies
