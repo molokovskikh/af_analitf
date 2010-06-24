@@ -995,6 +995,7 @@ begin
   actMnnSearch.Enabled := False;
   actWayBill.Enabled := False;
   actViewDocs.Enabled := False;
+  actPostOrderBatch.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -1012,6 +1013,7 @@ begin
   actMnnSearch.Enabled := True;
   actWayBill.Enabled := True;
   actViewDocs.Enabled := True;
+  actPostOrderBatch.Enabled := True;
 end;
 
 procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
