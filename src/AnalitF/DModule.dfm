@@ -1467,6 +1467,7 @@ object DM: TDM
       '  UserInfo.Addition,'
       '  UserInfo.InheritPrices,'
       '  UserInfo.IsFutureClient,'
+      '  client.Id as MainClientId,'
       '  client.CalculateOnProducerCost,'
       '  client.ParseWaybills,'
       '  client.SendRetailMarkup,'

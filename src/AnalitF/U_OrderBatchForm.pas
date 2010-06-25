@@ -862,11 +862,18 @@ begin
 end;
 
 procedure TOrderBatchForm.EditRuleClick(Sender: TObject);
+var
+  settingUrl : String;
 begin
+  settingUrl := 'https://stat.analit.net/CI/SmartOrderRule/show.rails?ClientId=';
+  if DM.adsUser.FieldByName('IsFutureClient').AsBoolean then
+    settingUrl := settingUrl + DM.adsUser.FieldByName('MainClientId').AsString
+  else
+    settingUrl := settingUrl + DM.adtClients.FieldByName('ClientId').AsString;
   ShellExecute(
     0,
     'open',
-    PChar('https://stat.analit.net/CI/SmartOrderRule/show.rails'),
+    PChar(settingUrl),
     nil,
     nil,
     SW_SHOWDEFAULT);
