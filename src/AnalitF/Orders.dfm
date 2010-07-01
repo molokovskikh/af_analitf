@@ -38,39 +38,18 @@ inherited OrdersForm: TOrdersForm
         #1042#1085#1080#1084#1072#1085#1080#1077'! '#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1073#1086#1083#1100#1096#1086#1077' '#1082#1086#1083#1080#1095#1077#1089#1090#1074#1086' '#1087#1088#1077#1087#1072#1088#1072#1090#1072'.'
     end
   end
-  inline frameLegeng: TframeLegeng [1]
-    Left = 0
-    Top = 410
-    Width = 793
-    Height = 33
-    Align = alBottom
-    Color = clWindow
-    ParentColor = False
-    TabOrder = 1
-    inherited gbLegend: TGroupBox
-      inherited lVitallyImportantLegend: TLabel
-        Visible = False
-      end
-      inherited lNotBasicLegend: TLabel
-        Visible = False
-      end
-      inherited lLeaderLegend: TLabel
-        Visible = False
-      end
-    end
-  end
-  object pClient: TPanel
+  object pClient: TPanel [1]
     Left = 0
     Top = 108
     Width = 793
-    Height = 302
+    Height = 335
     Align = alClient
-    TabOrder = 2
+    TabOrder = 1
     object dbgOrders: TToughDBGrid
       Left = 1
       Top = 1
       Width = 791
-      Height = 190
+      Height = 223
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsOrders
@@ -154,7 +133,7 @@ inherited OrdersForm: TOrdersForm
     end
     object gbMessageTo: TGroupBox
       Left = 1
-      Top = 231
+      Top = 264
       Width = 791
       Height = 70
       Align = alBottom
@@ -175,7 +154,7 @@ inherited OrdersForm: TOrdersForm
     end
     object gbCorrectMessage: TGroupBox
       Left = 1
-      Top = 191
+      Top = 224
       Width = 791
       Height = 40
       Align = alBottom
@@ -195,14 +174,14 @@ inherited OrdersForm: TOrdersForm
       end
     end
   end
-  object pTop: TPanel
+  object pTop: TPanel [2]
     Left = 0
     Top = 33
     Width = 793
     Height = 75
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 2
     object pOrderHeader: TPanel
       Left = 0
       Top = 0
@@ -398,14 +377,14 @@ inherited OrdersForm: TOrdersForm
       OnClick = cbNeedCorrectClick
     end
   end
-  object pButtons: TPanel
+  object pButtons: TPanel [3]
     Left = 0
     Top = 0
     Width = 793
     Height = 33
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 4
+    TabOrder = 3
     object btnGotoCore: TSpeedButton
       Left = 5
       Top = 3

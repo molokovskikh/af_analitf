@@ -1,5 +1,5 @@
 inherited OrderBatchForm: TOrderBatchForm
-  Caption = 'OrderBatchForm'
+  Caption = #1040#1074#1090#1086#1047#1072#1082#1072#1079
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
@@ -224,7 +224,7 @@ inherited OrderBatchForm: TOrderBatchForm
       OnExecute = actFlipCoreExecute
     end
     object actGotoMNNAction: TAction
-      Caption = #1055#1086#1082#1072#1079#1072#1090#1100' '#1089#1080#1085#1086#1085#1080#1084#1099' (Ctrl+N)'
+      Caption = #1057#1080#1085#1086#1085#1080#1084#1099' (Ctrl+N)'
       Hint = #1055#1077#1088#1077#1093#1086#1076' '#1074' '#1082#1072#1090#1072#1083#1086#1075' '#1089' '#1092#1080#1083#1100#1090#1088#1072#1094#1080#1077#1081' '#1087#1086' '#1052#1053#1053
       ShortCut = 16462
       OnExecute = actGotoMNNActionExecute

@@ -8,7 +8,7 @@ uses
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, 
   DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
   MyAccess, ActnList, Buttons,
-  Menus;
+  Menus, U_frameBaseLegend;
 
 type
   TOrdersForm = class(TChildForm)
@@ -18,7 +18,6 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
-    frameLegeng: TframeLegeng;
     adsOrders: TMyQuery;
     adsOrdersOrderId: TLargeintField;
     adsOrdersClientId: TLargeintField;
@@ -137,6 +136,7 @@ type
     procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
     procedure OnPopupGridColumnsClick( Sender: TObject);
   public
+    frameLegend : TframeLegend;
     procedure ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean); overload; //reintroduce;
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
@@ -400,6 +400,10 @@ begin
   gotoMNNButton := btnGotoMNN;
 
   inherited;
+
+  frameLegend := TframeLegend.CreateFrame(Self, False, False, False);
+  frameLegend.Parent := Self;
+  frameLegend.Align := alBottom;
 
   if dgCheckVolume <> dbgOrders then
     PrepareColumnsInOrderGrid(dbgOrders);

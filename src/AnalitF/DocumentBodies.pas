@@ -96,6 +96,9 @@ type
     FGridPopup : TPopupMenu;
     FGridColumns : TMenuItem;
 
+    NeedLog,
+    NeedCalcFieldsLog : Boolean;
+
     procedure SetParams;
     procedure PrepareGrid;
     procedure WaybillCalcFields(DataSet : TDataSet);
@@ -136,7 +139,8 @@ uses
   Main, StrUtils, AProc, Math, DBProc, sumprops, EditVitallyImportantMarkups,
   EditAddressForm, Constant, DBGridHelper,
   ToughDBGridColumns,
-  U_ExchangeLog;
+  U_ExchangeLog,
+  LU_Tracer;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -313,33 +317,59 @@ var
   price,
   markup : Double;
 begin
+  if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Начали пересчет позиции: ' + adsDocumentBodiesId.AsString);
   try
     if not adsDocumentBodiesProducerCost.IsNull then begin
+      if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Цена производителя: ' + adsDocumentBodiesProducerCost.AsString);
       if adsDocumentBodiesVitallyImportant.Value
       or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
-      then
+      then begin
+        if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальную наценку берем из ЖНВЛС');
+        if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'GetMinProducerCost: ' + FloatToStr(GetMinProducerCost()));
         maxMarkup := DM.GetMaxVitallyImportantMarkup(GetMinProducerCost())
+      end
       else begin
-        if CalculateOnProducerCost then
+        if CalculateOnProducerCost then begin
+          if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальную наценку берем из не-ЖНВЛС относительно ProducerCost');
           maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesProducerCost.Value)
-        else
+        end
+        else begin
+          if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальную наценку берем из не-ЖНВЛС относительно SupplierCostWithoutNDS');
+          if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'SupplierCostWithoutNDS: ' + adsDocumentBodiesSupplierCostWithoutNDS.AsString);
           maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+        end;
       end;
       maxRetailMarkupField.Value := maxMarkup;
-    end;
+      if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальная розничная наценка: ' + maxRetailMarkupField.AsString);
+    end
+    else
+      if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Цена производителя: null');
 
     if not retailMarkupField.IsNull then begin
+      if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Розничная наценка: ' + retailMarkupField.AsString);
       markup := retailMarkupField.Value;
       price := GetRetailPriceByMarkup(markup);
       retailPriceField.Value := price;
       retailSummField.Value := RoundTo(price, -2) * adsDocumentBodiesQuantity.Value;
       realMarkupField.Value := ((price - adsDocumentBodiesSupplierCost.Value) * 100)/ adsDocumentBodiesSupplierCost.Value;
-    end;
+      if NeedLog and NeedCalcFieldsLog then
+        Tracer.TR('WaybillCalcFields',
+          Format(
+            'Розничная цена: %s  ' +
+            'Розничная сумма: %s  ' +
+            'Реальная наценка: %s  ',
+            [retailPriceField.AsString,
+             retailSummField.AsString,
+             realMarkupField.AsString]));
+    end
+    else
+      if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Розничная наценка: null');
 
   except
     on E : Exception do
       WriteExchangeLog('TDocumentBodiesForm.WaybillCalcFields', 'Ошибка: ' + E.Message);
   end;
+  if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Закончили пересчет позиции: ' + adsDocumentBodiesId.AsString);
 end;
 
 procedure TDocumentBodiesForm.FormHide(Sender: TObject);
@@ -440,6 +470,7 @@ var
 
 begin
   CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
+  NeedLog := FindCmdLineSwitch('extd');
   //Добавлем наценки
   retailMarkupField := TFloatField(adsDocumentBodies.FindField('RetailMarkup'));
   if not Assigned(retailMarkupField) then begin
@@ -614,29 +645,31 @@ end;
 procedure TDocumentBodiesForm.RecalcDocument;
 var
   LastId : Int64;
+  RecalcCount : Integer;
 begin
   //retailPriceField.OnChange := nil;
   //retailMarkupField.OnChange := nil;
   //adsDocumentBodiesVitallyImportant.OnChange := nil;
+  if NeedLog then Tracer.TR('RecalcDocument', 'Начали расчет документа: ' + adsDocumentBodiesDocumentId.AsString);
+  RecalcCount := 0;
   adsDocumentBodies.DisableControls;
   try
     LastId := adsDocumentBodiesId.Value;
     adsDocumentBodies.Close;
     adsDocumentBodies.Open;
     while not adsDocumentBodies.Eof do begin
-{
-      if not manualCorrectionField.Value then begin
-      end;
-}      
       adsDocumentBodies.Edit;
       RecalcPosition;
       adsDocumentBodies.Post;
       adsDocumentBodies.Next;
+      Inc(RecalcCount);
     end;
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
   finally
     adsDocumentBodies.EnableControls;
+    if NeedLog then Tracer.TR('RecalcDocument',
+      'Закончили расчет документа: ' + IntToStr(RecalcCount));
     //retailPriceField.OnChange := FieldOnChange;
     //retailMarkupField.OnChange := FieldOnChange;
     //adsDocumentBodiesVitallyImportant.OnChange := FieldOnChange;
@@ -648,44 +681,76 @@ var
   upCostVariant : Variant;
   upcost : Double;
 begin
+  if NeedLog then Tracer.TR('RecalcPosition', 'Начали расчет позиции: ' + adsDocumentBodiesId.AsString);
   upCostVariant := Null;
   if not manualCorrectionField.Value then begin
 
+    if NeedLog then Tracer.TR('RecalcPosition', 'Позиция без ручной корректировки');
+    if NeedLog then Tracer.TR('RecalcPosition', 'ProducerCost: '  + adsDocumentBodiesProducerCost.AsString);
     if adsDocumentBodiesVitallyImportant.Value
     or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     then begin
       if not adsDocumentBodiesProducerCost.IsNull and (adsDocumentBodiesProducerCost.Value > 0)
-      then
+      then begin
+        if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку берем из ЖНВЛС');
+        if NeedLog then Tracer.TR('RecalcPosition', 'GetMinProducerCost: ' + FloatToStr(GetMinProducerCost()));
         upCostVariant := DM.GetVitallyImportantMarkup(GetMinProducerCost());
+      end
     end
     else begin
       if CalculateOnProducerCost then begin
         if not adsDocumentBodiesProducerCost.IsNull and (adsDocumentBodiesProducerCost.Value > 0)
-        then
+        then begin
+          if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку берем из не-ЖНВЛС относительно ProducerCost');
           upCostVariant := DM.GetRetUpCost(adsDocumentBodiesProducerCost.Value);
+        end
       end
       else begin
+       if NeedLog then Tracer.TR('RecalcPosition', 'SupplierCostWithoutNDS: '  + adsDocumentBodiesSupplierCostWithoutNDS.AsString);
         if not adsDocumentBodiesSupplierCostWithoutNDS.IsNull
            and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0)
-        then
+        then begin
+          if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку берем из не-ЖНВЛС относительно SupplierCostWithoutNDS');
           upCostVariant := DM.GetRetUpCost(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+        end
       end;
     end;
 
+    if NeedLog then Tracer.TR('RecalcPosition', 'Розничная наценка: ' + VarToStr(upCostVariant));
   end
-  else
+  else begin
+    if NeedLog then Tracer.TR('RecalcPosition', 'Позиция с ручной корректировкой');
+    if NeedLog then Tracer.TR('RecalcPosition', 'Розничная наценка: ' + retailMarkupField.AsString);
     upCostVariant := retailMarkupField.AsVariant;
+  end;
 
   if not VarIsNull(upCostVariant) then begin
+    if NeedLog then Tracer.TR('RecalcPosition', 'Розничная наценка не пуста');
     if CanCalculateRetailMarkup() then begin
+      if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку рассчитать можно');
       upcost := upCostVariant;
       GetRetailPriceByMarkup(upcost);
-      retailMarkupField.Value := upcost;
+      if NeedLog then NeedCalcFieldsLog := True;
+      try
+        retailMarkupField.Value := upcost;
+      finally
+        if NeedCalcFieldsLog then
+          NeedCalcFieldsLog := False;
+      end
     end
-    else
+    else begin
+      if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку рассчитать нельзя');
       //Если не можем рассчитать, то надо сбрасывать наценку
-      retailMarkupField.Clear;
+      if NeedLog then NeedCalcFieldsLog := True;
+      try
+        retailMarkupField.Clear;
+      finally
+        if NeedCalcFieldsLog then
+          NeedCalcFieldsLog := False;
+      end
+    end;
   end;
+  if NeedLog then Tracer.TR('RecalcPosition', 'Закончили расчет позиции: ' + adsDocumentBodiesId.AsString);
 end;
 
 procedure TDocumentBodiesForm.tmrVitallyImportantChangeTimer(
@@ -912,24 +977,30 @@ begin
   or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
   then begin
     //ЕНВД
-    if (DM.adtClientsMethodOfTaxation.Value = 0) then
+    if (DM.adtClientsMethodOfTaxation.Value = 0) then begin
       Result :=
             not adsDocumentBodiesSupplierCost.IsNull
-        and (adsDocumentBodiesSupplierCost.Value > 0)
-    else
+        and (adsDocumentBodiesSupplierCost.Value > 0);
+     if NeedLog then Tracer.TR('CanCalculateRetailMarkup', 'ЖНВЛС ЕНВД: ' + BoolToStr(Result, True));
+    end
+    else begin
     //НДС
       Result :=
             not adsDocumentBodiesSupplierCostWithoutNDS.IsNull
         and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0);
+     if NeedLog then Tracer.TR('CanCalculateRetailMarkup', 'ЖНВЛС НДС: ' + BoolToStr(Result, True));
+    end
   end
   else begin
     //По цене производителя
-    if CalculateOnProducerCost then
+    if CalculateOnProducerCost then begin
       Result :=
             not NDSField.IsNull
         and not adsDocumentBodiesSupplierCost.IsNull
-        and (adsDocumentBodiesSupplierCost.Value > 0)
-    else
+        and (adsDocumentBodiesSupplierCost.Value > 0);
+     if NeedLog then Tracer.TR('CanCalculateRetailMarkup', 'не-ЖНВЛС ProducerCost: ' + BoolToStr(Result, True));
+    end
+    else begin
     //По цене поставщика без НДС
       Result :=
             not adsDocumentBodiesSupplierCostWithoutNDS.IsNull
@@ -937,6 +1008,8 @@ begin
         and not adsDocumentBodiesSupplierCost.IsNull
         and (adsDocumentBodiesSupplierCost.Value > 0)
         and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0);
+     if NeedLog then Tracer.TR('CanCalculateRetailMarkup', 'не-ЖНВЛС SupplierCostWithoutNDS: ' + BoolToStr(Result, True));
+    end
   end;
 end;
 

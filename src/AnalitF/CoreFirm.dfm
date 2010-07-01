@@ -55,7 +55,7 @@ object CoreFirmForm: TCoreFirmForm
     Left = 0
     Top = 65
     Width = 792
-    Height = 437
+    Height = 470
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsCore
@@ -434,22 +434,6 @@ object CoreFirmForm: TCoreFirmForm
         Anchors = [akRight]
         TabOrder = 2
         OnCloseUp = dblProducersCloseUp
-      end
-    end
-  end
-  inline frameLegeng: TframeLegeng
-    Left = 0
-    Top = 502
-    Width = 792
-    Height = 33
-    Align = alBottom
-    Color = clWindow
-    ParentColor = False
-    TabOrder = 4
-    inherited gbLegend: TGroupBox
-      Width = 792
-      inherited lNotBasicLegend: TLabel
-        Visible = False
       end
     end
   end

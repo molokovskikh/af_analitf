@@ -69,7 +69,7 @@ uses
   U_ExchangeLog in 'U_ExchangeLog.pas',
   U_DeleteDBThread in 'U_DeleteDBThread.pas',
   U_SendArchivedOrdersThread in 'U_SendArchivedOrdersThread.pas',
-  U_frameLegend in 'U_frameLegend.pas' {frameLegeng: TFrame},
+  U_frameLegend in 'U_frameLegend.pas' {frameLegend: TFrame},
   HFileHelper in 'Helpers\HFileHelper.pas',
   ULoginHelper in 'Helpers\ULoginHelper.pas',
   U_VistaCorrectForm in 'U_VistaCorrectForm.pas' {VistaCorrectForm},
@@ -105,7 +105,9 @@ uses
   EditAddressForm in 'EditAddressForm.pas' {EditAddressFrm},
   RegistryHelper in 'Helpers\RegistryHelper.pas',
   U_OrderBatchForm in 'U_OrderBatchForm.pas' {OrderBatchForm},
-  ArchiveHelper in 'Helpers\ArchiveHelper.pas';
+  ArchiveHelper in 'Helpers\ArchiveHelper.pas',
+  U_frameBaseLegend in 'U_frameBaseLegend.pas' {frameBaseLegend: TFrame},
+  U_frameOrderHeadLegend in 'U_frameOrderHeadLegend.pas' {frameOrderHeadLegend: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}

@@ -48,7 +48,7 @@ object CoreForm: TCoreForm
   end
   object pBottom: TPanel
     Left = 0
-    Top = 409
+    Top = 442
     Width = 792
     Height = 131
     Align = alBottom
@@ -369,14 +369,14 @@ object CoreForm: TCoreForm
     Left = 0
     Top = 57
     Width = 792
-    Height = 352
+    Height = 385
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
     object pWebBrowser: TPanel
       Tag = 84
       Left = 0
-      Top = 268
+      Top = 301
       Width = 792
       Height = 84
       Align = alBottom
@@ -412,7 +412,7 @@ object CoreForm: TCoreForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 268
+      Height = 301
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -610,22 +610,6 @@ object CoreForm: TCoreForm
           Title.Caption = #1057#1091#1084#1084#1072
           Width = 51
         end>
-    end
-  end
-  inline frameLegeng: TframeLegeng
-    Left = 0
-    Top = 540
-    Width = 792
-    Height = 33
-    Align = alBottom
-    Color = clWindow
-    ParentColor = False
-    TabOrder = 4
-    inherited gbLegend: TGroupBox
-      Width = 792
-      inherited lLeaderLegend: TLabel
-        Visible = False
-      end
     end
   end
   object dsCore: TDataSource

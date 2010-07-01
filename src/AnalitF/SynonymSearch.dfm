@@ -99,7 +99,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 0
     Top = 65
     Width = 792
-    Height = 344
+    Height = 377
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -108,7 +108,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 344
+      Height = 377
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -312,7 +312,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
   end
   object pBottom: TPanel [2]
     Left = 0
-    Top = 409
+    Top = 442
     Width = 792
     Height = 131
     Align = alBottom
@@ -450,22 +450,6 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Caption = 
         #1055#1088#1077#1074#1099#1096#1077#1085#1080#1077' '#1089#1088#1077#1076#1085#1077#1081' '#1094#1077#1085#1099'!'#13#10#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1085#1077#1082#1086#1085#1076#1080#1094#1080#1086#1085#1085#1099#1081' '#1087#1088#1077#1087#1072#1088#1072#1090'.'#13#10 +
         #1042#1085#1080#1084#1072#1085#1080#1077'! '#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1073#1086#1083#1100#1096#1086#1077' '#1082#1086#1083#1080#1095#1077#1089#1090#1074#1086' '#1087#1088#1077#1087#1072#1088#1072#1090#1072'.'
-    end
-  end
-  inline frameLegeng: TframeLegeng [4]
-    Left = 0
-    Top = 540
-    Width = 792
-    Height = 33
-    Align = alBottom
-    Color = clWindow
-    ParentColor = False
-    TabOrder = 4
-    inherited gbLegend: TGroupBox
-      Width = 792
-      inherited lLeaderLegend: TLabel
-        Visible = False
-      end
     end
   end
   object dsCore: TDataSource

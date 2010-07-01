@@ -9,7 +9,7 @@ uses
   Child, RXDBCtrl, Variants, Math, DBGridEh,
   ToughDBGrid, OleCtrls, SHDocVw, ActnList, 
   Spin,
-  GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess;
+  GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
 
 const
 	ALL_REGIONS	= 'Все регионы';
@@ -50,7 +50,6 @@ type
     lCurrentSumma: TLabel;
     lWarning: TLabel;
     btnGroupUngroup: TButton;
-    frameLegeng: TframeLegeng;
     adsCore: TMyQuery;
     adsRegions: TMyQuery;
     adsPreviosOrders: TMyQuery;
@@ -202,6 +201,7 @@ type
     procedure PrepareForMaxProducerCosts;
     procedure MaxProducerCostsUpdateGrid(DataSet: TDataSet);
   public
+    frameLegend : TframeLegend;
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
     procedure ShowOrdersH;
@@ -233,6 +233,9 @@ begin
   SortOnOrderGrid := False;
 	inherited;
 
+  frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
+  frameLegend.Parent := Self;
+  frameLegend.Align := alBottom;
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;

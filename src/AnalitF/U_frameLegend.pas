@@ -4,34 +4,43 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, StdCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ExtCtrls,
+  Constant,
+  U_frameBaseLegend;
 
 type
-  TframeLegeng = class(TFrame)
-    gbLegend: TGroupBox;
-    lVitallyImportantLegend: TLabel;
-    lNotBasicLegend: TLabel;
-    lLeaderLegend: TLabel;
-    lJunkLegend: TLabel;
-    lAwaitLegend: TLabel;
+  TframeLegend = class(TframeBaseLegend)
   private
     { Private declarations }
   public
     { Public declarations }
-    constructor Create(AOwner: TComponent); override;
+    lJunkLegend: TLabel;
+    lAwaitLegend: TLabel;
+    lVitallyImportantLegend: TLabel;
+    lNotBasicLegend: TLabel;
+    lLeaderLegend: TLabel;
+    constructor CreateFrame(AOwner: TComponent;
+      ShowVitallyImportant, ShowLeader, ShowNotBasic : Boolean);
   end;
 
 implementation
 
 {$R *.dfm}
 
-{ TframeLegeng }
+{ TframeLegend }
 
-constructor TframeLegeng.Create(AOwner: TComponent);
+constructor TframeLegend.CreateFrame(AOwner: TComponent;
+  ShowVitallyImportant, ShowLeader, ShowNotBasic : Boolean);
 begin
-  inherited;
-  gbLegend.ControlStyle := gbLegend.ControlStyle - [csParentBackground] + [csOpaque];
-  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+  inherited Create(AOwner);
+  lJunkLegend := CreateLegendLabel('Уцененные препараты', JUNK_CLR, clWindowText);
+  lAwaitLegend := CreateLegendLabel('Ожидаемая позиция', AWAIT_CLR, clWindowText);
+  if ShowVitallyImportant then
+    lVitallyImportantLegend := CreateLegendLabel('Жизненно важные препараты', clWindow, VITALLYIMPORTANT_CLR);
+  if ShowLeader then
+    lLeaderLegend := CreateLegendLabel('Прайс-лист - лидер', LEADER_CLR, clWindowText);
+  if ShowNotBasic then
+    lNotBasicLegend := CreateLegendLabel('Неосновной поставщик', clBtnFace, clWindowText);
 end;
 
 end.

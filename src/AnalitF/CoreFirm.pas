@@ -9,7 +9,7 @@ uses
   Math, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw,
   hlpcodecs, LU_Tracer, 
   lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, 
-  U_frameLegend, MemDS, DBAccess, MyAccess;
+  U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
 
 type
   TFilter=( filAll, filOrder, filLeader, filProducer);
@@ -40,7 +40,6 @@ type
     tmrSearch: TTimer;
     plOverCost: TPanel;
     lWarning: TLabel;
-    frameLegeng: TframeLegeng;
     adsAvgOrders: TMyQuery;
     adsCurrentOrderHeader: TMyQuery;
     adsCountFields: TMyQuery;
@@ -176,6 +175,7 @@ type
     procedure AddKeyToSearch(Key : Char);
     procedure DeleteOrder;
   public
+    frameLegend : TframeLegend;
     procedure ShowForm(
       PriceCode: Integer;
       RegionCode: Int64;
@@ -207,6 +207,9 @@ begin
 
   inherited;
 
+  frameLegend := TframeLegend.CreateFrame(Self, True, True, False);
+  frameLegend.Parent := Self;
+  frameLegend.Align := alBottom;
   TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   BM := TBitmap.Create;

@@ -8,7 +8,8 @@ uses
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, DateUtils,
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, 
   SQLWaiting, ShellAPI, GridsEh, MemDS,
-  DBAccess, MyAccess, MemData, Orders;
+  DBAccess, MyAccess, MemData, Orders,
+  U_frameOrderHeadLegend;
 
 type
   TOrdersHForm = class(TChildForm)
@@ -100,6 +101,7 @@ type
   protected
     FOrdersForm: TOrdersForm;
   public
+    frameOrderHeadLegend : TframeOrderHeadLegend; 
     procedure SetParameters;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
@@ -125,6 +127,10 @@ var
   Year, Month, Day: Word;
 begin
   inherited;
+  frameOrderHeadLegend := TframeOrderHeadLegend.Create(Self);
+  frameOrderHeadLegend.Parent := pGrid;
+  frameOrderHeadLegend.Align := alBottom;
+  frameOrderHeadLegend.lNeedCorrect.Visible := FUseCorrectOrders;
   NeedFirstOnDataSet := False;
   FSelectedRows := TStringList.Create;
   PrintEnabled := False;
@@ -172,6 +178,7 @@ procedure TOrdersHForm.SetParameters;
 var
   Grid : TDBGridEh;
 begin
+  Grid := nil;
   SoftPost( adsOrdersHForm);
   adsOrdersHForm.IndexFieldNames := '';
   adsOrdersHForm.Close;
@@ -188,6 +195,7 @@ begin
       btnWayBillList.Visible := False;
       dbgCurrentOrders.Visible := True;
       dbgSendedOrders.Visible := False;
+      frameOrderHeadLegend.Visible := True;
       Grid := dbgCurrentOrders;
       //try except необходим, т.к. вызвается когда форма еще не отображена
       try
@@ -208,6 +216,7 @@ begin
       btnWayBillList.Visible := True;
       dbgCurrentOrders.Visible := False;
       dbgSendedOrders.Visible := True;
+      frameOrderHeadLegend.Visible := False;
       Grid := dbgSendedOrders;
       //try except необходим, т.к. вызвается когда форма еще не отображена
       try

@@ -8,7 +8,7 @@ uses
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw,
   DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
-  ActnList, U_frameLegend, MemDS, DBAccess, MyAccess;
+  ActnList, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
 
 type
   TSummaryForm = class(TChildForm)
@@ -40,7 +40,6 @@ type
     plOverCost: TPanel;
     lWarning: TLabel;
     Timer: TTimer;
-    frameLegeng: TframeLegeng;
     adsCurrentSummary: TMyQuery;
     adsSendSummary: TMyQuery;
     adsSummary: TMyQuery;
@@ -131,6 +130,7 @@ type
   protected
     procedure UpdateOrderDataset; override;
   public
+    frameLegend : TframeLegend;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
     procedure SetOrderLabel;
@@ -172,7 +172,7 @@ begin
     а если form -> panel -> panel -> TSpeedButton : Caption у панели отображается жирным шрифтом
     Решение найдено здесь:
     http://qc.embarcadero.com/wc/qcmain.aspx?d=49109
-    Speedbuttons don't paint correctly when parented by a TGridPanel on a TGroupBox 
+    Speedbuttons don't paint correctly when parented by a TGridPanel on a TGroupBox
   }
   pStatus.ControlStyle := pStatus.ControlStyle - [csParentBackground] + [csOpaque];
   dsCheckVolume := adsSummary;
@@ -184,6 +184,11 @@ begin
   fMinOrderCount := adsSummaryMINORDERCOUNT;
   gotoMNNButton := btnGotoMNN;
   inherited;
+
+  frameLegend := TframeLegend.CreateFrame(Self, True, False, False);
+  frameLegend.Parent := Self;
+  frameLegend.Align := alBottom;
+
   PrepareColumnsInOrderGrid(dbgSummarySend);
   TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'MnnId', ShowDescriptionAction);
   if not FUseCorrectOrders then begin

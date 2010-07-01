@@ -38,6 +38,8 @@ type
     class function GetSelectedRows(Grid: TCustomDBGridEh) : TStringList;
     class procedure SetMinWidthToColumns(Grid : TCustomDBGridEh);
     class procedure SetTitleButtonToColumns(Grid : TCustomDBGridEh);
+
+    class function GetStdDefaultRowHeight(Grid : TCustomDBGridEh) : Integer;
   end;
 
 implementation
@@ -196,6 +198,12 @@ begin
       Grid.DataSource.DataSet.EnableControls;
     end;
   end;
+end;
+
+class function TDBGridHelper.GetStdDefaultRowHeight(
+  Grid: TCustomDBGridEh): Integer;
+begin
+  Result := TCustomDBGridEhEx(Grid).StdDefaultRowHeight;
 end;
 
 class procedure TDBGridHelper.InternalRestoreColumnsLayout(

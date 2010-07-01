@@ -19,7 +19,8 @@ uses
   ActnList,
   ShellAPI,
   StrUtils,
-  AlphaUtils;
+  AlphaUtils,
+  U_framePosition;
 
 type
   TItemToOrderStatus = (
@@ -84,7 +85,7 @@ type
     { Private declarations }
     BM : TBitmap;
     InternalSearchText : String;
-    
+
     procedure CreateNonVisualComponent;
     procedure CreateVisualComponent;
     procedure CreateTopPanel;
@@ -133,7 +134,6 @@ type
 
     odBatch: TOpenDialog;
 
-    pTopSearch : TPanel;
     eSearch : TEdit;
 
     pTop : TPanel;
@@ -184,6 +184,8 @@ type
 
     CurrentFilter : TFilterReport;
 
+    framePosition : TframePosition;
+
     procedure ShowForm; override;
   end;
 
@@ -204,8 +206,7 @@ uses
   AProc,
   DBProc,
   Exchange,
-  NamesForms,
-  U_framePosition;
+  NamesForms;
 
 procedure ShowOrderBatch;
 var
@@ -302,14 +303,16 @@ begin
   dbmComment.Color := clBtnFace;
   dbmComment.DataField := 'Comment';
 
-  pLegendAndComment.Height := pLegend.Height + (OneLineHeight * 6);
-
   dbgHistory := TToughDBGrid.Create(Self);
   dbgHistory.Parent := pLegendAndComment;
   dbgHistory.Align := alLeft;
   dbgHistory.Width := 480;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgHistory);
 
+  OneLineHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgHistory);
+
+  pLegendAndComment.Height := pLegend.Height + (OneLineHeight * 6);
+  pLegendAndComment.Constraints.MaxHeight := pLegendAndComment.Height;
 
   TDBGridHelper.AddColumn(dbgHistory, 'PriceName', 'Прайс-лист', Self.Canvas.TextWidth('Большое имя прайс-листа'));
   TDBGridHelper.AddColumn(dbgHistory, 'SynonymFirm', 'Производитель', Self.Canvas.TextWidth('Большое имя синонима'));
@@ -356,7 +359,8 @@ begin
   column := TDBGridHelper.AddColumn(dbgCore, 'SumOrder', 'Сумма', '0.00;;''''', 70);
   column.Color := TColor(16775406);
 
-  pBottom.Height := pLegendAndComment.Height + (OneLineHeight * 15);
+  pBottom.Height := pLegendAndComment.Height + (OneLineHeight * 10);
+  pBottom.Constraints.MaxHeight := pBottom.Height;
 end;
 
 procedure TOrderBatchForm.CreateGridPanel;
@@ -475,14 +479,17 @@ procedure TOrderBatchForm.CreateTopPanel;
 var
   filter : TFilterReport;
 begin
-  pTopSearch := TPanel.Create(Self);
-  pTopSearch.Align := alTop;
-  pTopSearch.Parent := Self;
-
   pTop := TPanel.Create(Self);
   pTop.ControlStyle := pTop.ControlStyle - [csParentBackground] + [csOpaque];
   pTop.Align := alTop;
-  pTop.Parent := pTopSearch;
+  pTop.Parent := Self;
+
+  eSearch := TEdit.Create(Self);
+  eSearch.Parent := pTop;
+  eSearch.Left := 5;
+  eSearch.Width := Self.Canvas.TextWidth('Это очень очень длинная строка поиска');
+  eSearch.OnKeyPress := eSearchKeyPress;
+  eSearch.OnKeyDown := eSearchKeyDown;
 
   cbFilter := TComboBox.Create(Self);
   cbFilter.Parent := pTop;
@@ -491,7 +498,7 @@ begin
     cbFilter.Items.Add(FilterReportNames[filter]);
   cbFilter.ItemIndex := 0;
   cbFilter.Width := cbFilter.Canvas.TextWidth(FilterReportNames[frNotOrderedErrorQuantity]) + 5;
-  cbFilter.Left := 5;
+  cbFilter.Left := eSearch.Left + eSearch.Width + 5;
   cbFilter.OnClick := FilterClick;
 
 
@@ -502,18 +509,10 @@ begin
   spLoad.Width := Self.Canvas.TextWidth(spLoad.Caption) + 20;
   spLoad.Left := 3;
   spLoad.Top := 5;
-  pTopSearch.Height := (spLoad.Height + 10) * 2;
-  pTop.Height := spLoad.Height + 10;
   spLoad.OnClick := OpenFile;
 
-  eSearch := TEdit.Create(Self);
-  eSearch.Parent := pTopSearch;
-  eSearch.Left := 5;
-  eSearch.Top := pTop.Height + ((pTopSearch.Height div 2) - eSearch.Height) div 2;
-  eSearch.Width := Self.Canvas.TextWidth('Это очень очень длинная строка поиска');
-  eSearch.OnKeyPress := eSearchKeyPress;
-  eSearch.OnKeyDown := eSearchKeyDown;
-
+  pTop.Height := spLoad.Height + 10;
+  eSearch.Top := (pTop.Height - eSearch.Height) div 2;
 
   cbFilter.Top := (pTop.Height - cbFilter.Height) div 2;
 
@@ -549,7 +548,9 @@ begin
 
   lEditRule := TLabel.Create(Self);
   lEditRule.Parent := pTop;
-  lEditRule.Caption := 'Настройка правил автозаказа';
+  lEditRule.Caption := 'Настройка';
+  lEditRule.Hint := 'Настройка правил автозаказа';
+  lEditRule.ShowHint := True;
   lEditRule.OnClick := EditRuleClick;
   lEditRule.Cursor := crHandPoint;
   lEditRule.ParentFont := False;
@@ -578,7 +579,7 @@ begin
 
   inherited;
 
-  TframePosition.AddFrame(Self, pGrid, dsReport, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  framePosition := TframePosition.AddFrame(Self, pGrid, dsReport, 'SynonymName', 'MnnId', ShowDescriptionAction);
 end;
 
 procedure TOrderBatchForm.OpenFile(Sender: TObject);
@@ -880,7 +881,17 @@ begin
 end;
 
 procedure TOrderBatchForm.FormResize(Sender: TObject);
+var
+  AllUnresizedControl : Integer;
+  ResidualHeight : Integer;
+  NewHistoryHeight : Integer;
 begin
+  AllUnresizedControl := pTop.Height + framePosition.Height + pLegend.Height;
+  ResidualHeight := Self.ClientHeight - AllUnresizedControl;
+  NewHistoryHeight := ResidualHeight div 5;
+  pLegendAndComment.Height := pLegend.Height + NewHistoryHeight;
+  pBottom.Height := pLegendAndComment.Height + ((ResidualHeight - NewHistoryHeight) div 2);
+  
   dbgHistory.Width := pBottom.ClientWidth div 2;
 end;
 

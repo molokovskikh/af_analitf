@@ -7,7 +7,7 @@ uses
   Dialogs, Child, DB, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Constant,
   ForceRus, DBGrids, Buttons, Menus, DBCtrls, StrUtils, GridsEh,
-  U_frameLegend, MemDS, DBAccess, MyAccess;
+  U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -37,7 +37,6 @@ type
     dsAvgOrders: TDataSource;
     plOverCost: TPanel;
     lWarning: TLabel;
-    frameLegeng: TframeLegeng;
     adsCore: TMyQuery;
     adsCoreCoreId: TLargeintField;
     adsCorePriceCode: TLargeintField;
@@ -185,6 +184,7 @@ type
     procedure InternalSearch;
   public
     { Public declarations }
+   frameLegend : TframeLegend;
   end;
 
 var
@@ -226,6 +226,10 @@ begin
   SortOnOrderGrid := False;
   inherited;
 
+  frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
+  frameLegend.Parent := Self;
+  frameLegend.Align := alBottom;
+  
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   if adsProducers.Active then
