@@ -72,6 +72,7 @@ begin
 +'       LEFT JOIN MinReqRules        ON (MinReqRules.ClientId = CurrentOrderHeads.ClientId) and (MinReqRules.PriceCode = CurrentOrderHeads.PriceCode) and (MinReqRules.RegionCode=CurrentOrderHeads.RegionCode) '
 +'WHERE (CurrentOrderHeads.ClientId = :ClientId) '
 +'   AND (CurrentOrderHeads.Closed = 0) '
++'   and (CurrentOrderHeads.Frozen = 0) '
 +'   AND (CurrentOrderHeads.Send = 1) '
 +'   AND (PricesData.PriceCode IS NOT NULL) '
 +'   AND (RegionalData.RegionCode IS NOT NULL) '

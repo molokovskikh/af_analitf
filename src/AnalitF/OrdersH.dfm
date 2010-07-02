@@ -71,6 +71,26 @@ inherited OrdersHForm: TOrdersHForm
           TabOrder = 2
           OnClick = btnWayBillListClick
         end
+        object btnFrozen: TButton
+          Left = 163
+          Top = 4
+          Width = 150
+          Height = 27
+          Anchors = [akLeft, akBottom]
+          Caption = '"'#1047#1072#1084#1086#1088#1086#1079#1080#1090#1100'" '#1079#1072#1082#1072#1079#1099
+          TabOrder = 3
+          OnClick = btnFrozenClick
+        end
+        object btnUnFrozen: TButton
+          Left = 328
+          Top = 4
+          Width = 150
+          Height = 27
+          Anchors = [akLeft, akBottom]
+          Caption = '"'#1056#1072#1079#1084#1086#1088#1086#1079#1080#1090#1100'" '#1079#1072#1082#1072#1079#1099
+          TabOrder = 4
+          OnClick = btnUnFrozenClick
+        end
       end
       object pClient: TPanel
         Left = 0
@@ -282,6 +302,7 @@ inherited OrdersHForm: TOrdersHForm
                 Title.Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100
                 Title.TitleButton = True
                 Width = 56
+                OnGetCellParams = dbgCurrentOrdersColumns4GetCellParams
               end
               item
                 EditButtons = <>
@@ -620,6 +641,7 @@ inherited OrdersHForm: TOrdersHForm
       '    CurrentOrderHeads.SendDate,'
       '    CurrentOrderHeads.Closed,'
       '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.Frozen,'
       '    CurrentOrderHeads.PriceName,'
       '    CurrentOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
@@ -844,6 +866,9 @@ inherited OrdersHForm: TOrdersHForm
       FieldName = 'sumbycurrentweek'
       DisplayFormat = '0.00;;'#39#39
     end
+    object adsOrdersHFormFrozen: TBooleanField
+      FieldName = 'Frozen'
+    end
   end
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
@@ -954,7 +979,7 @@ inherited OrdersHForm: TOrdersHForm
         'e) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
-        'd = osbc.OrderId'
+        'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0'
       'WHERE '
       '  (CCore.CoreId = :CoreId)')
     Connection = DM.MyConnection
@@ -1059,7 +1084,7 @@ inherited OrdersHForm: TOrdersHForm
         'e) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
-        'd = osbc.OrderId'
+        'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0'
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
       'And (CCore.RegionCode = :RegionCode)'
@@ -1099,7 +1124,8 @@ inherited OrdersHForm: TOrdersHForm
       '  SEND = :SEND,'
       '  CLOSED = :CLOSED,'
       '  MESSAGETO = :MESSAGETO,'
-      '  COMMENTS = :COMMENTS'
+      '  COMMENTS = :COMMENTS,'
+      '  Frozen = :Frozen'
       'where'
       '  orderid = :old_ORDERID')
     SQLRefresh.Strings = (
@@ -1117,6 +1143,7 @@ inherited OrdersHForm: TOrdersHForm
       '    CurrentOrderHeads.SendDate,'
       '    CurrentOrderHeads.Closed,'
       '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.Frozen,'
       '    CurrentOrderHeads.PriceName,'
       '    CurrentOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
@@ -1226,6 +1253,7 @@ inherited OrdersHForm: TOrdersHForm
       '    CurrentOrderHeads.SendDate,'
       '    CurrentOrderHeads.Closed,'
       '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.Frozen,'
       '    CurrentOrderHeads.PriceName,'
       '    CurrentOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
@@ -1374,6 +1402,7 @@ inherited OrdersHForm: TOrdersHForm
       '    PostedOrderHeads.SendDate,'
       '    PostedOrderHeads.Closed,'
       '    PostedOrderHeads.Send,'
+      '    PostedOrderHeads.Send as Frozen,'
       '    PostedOrderHeads.PriceName,'
       '    PostedOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'
@@ -1445,6 +1474,7 @@ inherited OrdersHForm: TOrdersHForm
       '    PostedOrderHeads.SendDate,'
       '    PostedOrderHeads.Closed,'
       '    PostedOrderHeads.Send,'
+      '    PostedOrderHeads.Send as Frozen,'
       '    PostedOrderHeads.PriceName,'
       '    PostedOrderHeads.RegionName,'
       '    RegionalData.SupportPhone,'

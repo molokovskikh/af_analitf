@@ -2163,7 +2163,7 @@ end;
 
 procedure TDM.SetSendToNotClosedOrders;
 begin
-  adcUpdate.SQL.Text := 'update CurrentOrderHeads set Send = 1 where (Closed = 0)';
+  adcUpdate.SQL.Text := 'update CurrentOrderHeads set Send = 1 where (Closed = 0) and (CurrentOrderHeads.Frozen = 0) ';
   adcUpdate.Execute;
 end;
 
@@ -2193,6 +2193,7 @@ begin
       + 'WHERE '
       + '    (CurrentOrderHeads.CLIENTID = :ClientID) '
       + 'and (CurrentOrderHeads.Closed <> 1) '
+      + 'and (CurrentOrderHeads.Frozen = 0) '
       + 'and (PRD.PRICECODE = :PriceCode) '
       + 'and (PRD.Regioncode = :RegionCode) ',
       ['ClientID', 'PriceCode', 'RegionCode'],
@@ -2700,6 +2701,8 @@ begin
     if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsDocumentBodies') then
     WriteExchangeLog('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
 }
+    if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsOrdersHForm') then
+    WriteExchangeLog('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
 end;
 
 {$ifdef TestEmbeddedMysql}
@@ -3154,6 +3157,7 @@ begin
 +'where  ClientId   = :ClientId '
 +'and    PriceCode  = :PriceCode '
 +'and    RegionCode = :RegionCode '
++'and    CurrentOrderHeads.Frozen = 0 '
 +'and    Closed    <> 1',
       ['ClientId', 'PriceCode', 'RegionCode'],
       [orderDataSet.ParamByName('ClientId').Value,
@@ -3378,7 +3382,7 @@ begin
     PriceName := DM.QueryValue(
       'SELECT PriceName '
       + 'FROM CurrentOrderHeads '
-      + 'WHERE OrderId = :OrderId',
+      + 'WHERE OrderId = :OrderId ',
       ['OrderId'],
       [OrderID]);
   except
@@ -3422,7 +3426,8 @@ begin
   + '  CurrentOrderHeads.ErrorReason = null, '
   + '  CurrentOrderHeads.ServerMinReq = null '
   + 'where '
-  + '     CurrentOrderHeads.Closed = 0 ';
+  + '     CurrentOrderHeads.Closed = 0 '
+  + 'and CurrentOrderHeads.Frozen = 0 ';
   if ClientId > 0 then
     Result := Result
     + 'and CurrentOrderHeads.Send = 1 '
@@ -3440,6 +3445,7 @@ begin
   + '  CurrentOrderLists.ServerQuantity = null '
   + 'where '
   + '     CurrentOrderHeads.Closed = 0 '
+  + 'and  CurrentOrderHeads.Frozen = 0 '
   + 'and  CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId ';
   if ClientId > 0 then
     Result := Result

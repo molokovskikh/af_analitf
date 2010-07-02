@@ -484,7 +484,7 @@ inherited ExpiredsForm: TExpiredsForm
         'FirmCode) '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
-        's.OrderId'
+        's.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE'
       '  Core.CoreID = :CoreID')
     Connection = DM.MyConnection
@@ -578,7 +578,7 @@ inherited ExpiredsForm: TExpiredsForm
         'FirmCode) '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
-        's.OrderId'
+        's.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE'
       '    (Core.productid > 0)'
       'and (Core.Junk = 1)')

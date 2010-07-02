@@ -3897,6 +3897,7 @@ object MainForm: TMainForm
       '       AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
       '    (CurrentOrderHeads.ClientId = :ClientId)'
+      'and (CurrentOrderHeads.Frozen = 0) '
       'and (:Closed = CurrentOrderHeads.Closed)'
       
         'and ((:Closed = 1) or ((:Closed = 0) and (PricesData.PriceCode i' +

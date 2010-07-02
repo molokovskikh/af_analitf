@@ -271,7 +271,6 @@ object DM: TDM
     Top = 112
   end
   object MySQLMonitor: TMySQLMonitor
-    Active = False
     TraceFlags = [tfQPrepare, tfQExecute, tfQFetch, tfError, tfStmt, tfConnect, tfTransact, tfBlob, tfService, tfMisc, tfParams]
     OnSQL = MySQLMonitorSQL
     Left = 376
@@ -364,6 +363,7 @@ object DM: TDM
       '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
       '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
       '    and CurrentOrderHeads.ClientId   = :ClientId'
+      '    and CurrentOrderHeads.Frozen = 0 '
       '    and CurrentOrderHeads.Closed <> 1'
       '  left join CurrentOrderLists on '
       '        CurrentOrderLists.ORDERID = CurrentOrderHeads.ORDERID'
@@ -563,7 +563,7 @@ object DM: TDM
         'irmCode) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
-        'sbc.OrderId'
+        'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '    (Catalogs.FullCode = :ParentCode)'
       'and (Core.coreid is not null)'
@@ -873,6 +873,7 @@ object DM: TDM
       '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
       'WHERE'
       '    (CurrentOrderHeads.ClientId = :ClientId)'
+      'and (CurrentOrderHeads.Frozen = 0)  '
       'and (CurrentOrderHeads.Closed = :Closed)'
       
         'and ((:Closed = 1) or ((:Closed = 0) and (PricesData.PriceCode i' +
@@ -987,7 +988,8 @@ object DM: TDM
       '  CurrentOrderLists '
       
         '  INNER JOIN CurrentOrderHeads ON (CurrentOrderHeads.OrderId=Cur' +
-        'rentOrderLists.OrderId AND CurrentOrderHeads.Closed = 0)'
+        'rentOrderLists.OrderId AND CurrentOrderHeads.Closed = 0 and Curr' +
+        'entOrderHeads.Frozen = 0 )'
       
         '  inner join clients    on (clients.clientid = CurrentOrderHeads' +
         '.ClientId)'
@@ -1223,7 +1225,7 @@ object DM: TDM
         'e) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
-        'd = osbc.OrderId'
+        'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
       'And (CCore.RegionCode = :RegionCode)'

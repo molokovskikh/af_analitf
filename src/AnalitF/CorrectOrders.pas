@@ -850,6 +850,7 @@ begin
     + 'where '
     + '    CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + '  '
     + 'and CurrentOrderHeads.Closed = 0 '
+    + 'and CurrentOrderHeads.Frozen = 0 '
     + 'and CurrentOrderHeads.Send = 1 '
     + 'and CurrentOrderHeads.SendResult is not null '
     + 'order by clients.Name, CurrentOrderHeads.PriceName, CurrentOrderLists.SynonymName, CurrentOrderLists.SynonymFirm';
@@ -884,7 +885,8 @@ begin
 
     + ' '
     + 'where '
-    + '  CurrentOrderHeads.Closed = 0 '
+    + '    CurrentOrderHeads.Closed = 0 '
+    + 'and CurrentOrderHeads.Frozen = 0 '
     + 'order by clients.Name, CurrentOrderHeads.PriceName, CurrentOrderLists.SynonymName, CurrentOrderLists.SynonymFirm';
   end;
 end;

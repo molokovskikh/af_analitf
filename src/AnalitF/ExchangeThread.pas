@@ -2764,6 +2764,7 @@ begin
     + ' FROM CurrentOrderHeads, CurrentOrderLists '
     + ' where '
     + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+    + '   and (CurrentOrderHeads.Frozen = 0) '
     + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
   InternalExecute;
   DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', ExePath+SDirIn+'\batchreport.txt');
@@ -2854,11 +2855,13 @@ begin
       + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
       + ' where '
       + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderHeads.Frozen = 0) '
       + '   and (CurrentOrderHeads.PriceCode = PricesData.PriceCode);'
       + ' update CurrentOrderHeads, regions '
       + ' set CurrentOrderHeads.RegionName = regions.RegionName '
       + ' where '
       + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderHeads.Frozen = 0) '
       + '   and (CurrentOrderHeads.RegionCode = regions.RegionCode);';
     InternalExecute;
     DM.adcUpdate.SQL.Text := ''

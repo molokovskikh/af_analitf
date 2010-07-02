@@ -12,6 +12,7 @@ const
   NeedCorrectColor = clMedGray;
 	COMPACT_PERIOD	= 3;
   VITALLYIMPORTANT_CLR = clGreen;
+  FrozenOrderColor = clSilver;
 
   //Кол-во заказа, котором отображается предупреждение
   WarningOrderCount : Integer = 1000;

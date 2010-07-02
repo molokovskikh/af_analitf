@@ -468,7 +468,7 @@ begin
   OrderCount := DM.QueryValue(
   'SELECT count(*) FROM CurrentOrderLists, CurrentOrderHeads WHERE ' +
     'CurrentOrderHeads.PriceCode = :PriceCode and CurrentOrderHeads.regioncode = :RegionCode ' +
-    ' and CurrentOrderHeads.ClientId = :ClientId ' +
+    ' and CurrentOrderHeads.ClientId = :ClientId and CurrentOrderHeads.Frozen = 0 ' +
     ' and CurrentOrderLists.OrderId = CurrentOrderHeads.orderid and CurrentOrderHeads.closed = 0 ' +
     ' AND CurrentOrderLists.OrderCount>0',
     ['PriceCode', 'RegionCode', 'ClientId'],
@@ -513,6 +513,7 @@ begin
         + ' and (CurrentOrderHeads.PriceCode=:PriceCode) '
         + ' and (CurrentOrderHeads.RegionCode=:RegionCode) '
         + ' and (CurrentOrderHeads.Closed <> 1)'
+        + ' and (CurrentOrderHeads.Frozen = 0) '
         + ' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)';
       ParamByName('CLIENTID').Value := DM.adtClients.FieldByName('ClientId').Value;
       ParamByName('PRICECODE').Value := PriceCode;

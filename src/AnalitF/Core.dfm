@@ -763,7 +763,7 @@ object CoreForm: TCoreForm
         'irmCode) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
-        'sbc.OrderId'
+        'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '  Core.CoreId = :CoreID')
     Connection = DM.MyConnection
@@ -870,7 +870,7 @@ object CoreForm: TCoreForm
         'irmCode) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
-        'sbc.OrderId'
+        'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '    (Catalogs.FullCode = :ParentCode)'
       'and (Core.coreid is not null)'
@@ -1416,7 +1416,7 @@ object CoreForm: TCoreForm
         'irmCode) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
-        'sbc.OrderId'
+        'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '    (Catalogs.ShortCode = :ParentCode)'
       'and (Core.coreid is not null)'

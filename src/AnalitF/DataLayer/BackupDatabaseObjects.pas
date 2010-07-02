@@ -412,6 +412,7 @@ begin
 +'    `ErrorReason`  varchar(250) default null       , '
 +'    `ServerMinReq` int(10) default null            , '
 +'    `DelayOfPayment` decimal(5,3) default null     , '
++'    `Frozen` tinyint(1) not null default ''0''     , '
 +'    primary key (`ORDERID`)                        , '
 +'    unique key `PK_ORDERSH` (`ORDERID`)            , '
 +'    key `FK_ORDERSH_CLIENTID` (`CLIENTID`)         , '

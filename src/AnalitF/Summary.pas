@@ -510,6 +510,7 @@ begin
   +'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
   +'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
   +'WHERE (CurrentOrderHeads.CLIENTID                                      = :ClientID) '
+  +'   and (CurrentOrderHeads.Frozen = 0) '
   +'   AND (CurrentOrderHeads.Closed                                      <> 1)';
     if Length(FilterSQL) > 0 then
       DM.adsQueryValue.SQL.Text := DM.adsQueryValue.SQL.Text + ' and ( ' + FilterSQL + ' )';

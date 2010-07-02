@@ -546,6 +546,7 @@ object CoreFirmForm: TCoreFirmForm
       '    (CurrentOrderHeads.ClientId   = :CLIENTID)'
       'and (CurrentOrderHeads.PriceCode  = :PRICECODE)'
       'and (CurrentOrderHeads.RegionCode = :REGIONCODE)'
+      'and (CurrentOrderHeads.Frozen = 0) '
       'and (CurrentOrderHeads.CLOSED <> 1)')
     Left = 344
     Top = 136
@@ -710,7 +711,7 @@ object CoreFirmForm: TCoreFirmForm
         'e) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
-        'd = osbc.OrderId'
+        'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '  (CCore.CoreId = :CoreId)')
     Connection = DM.MyConnection
@@ -825,7 +826,7 @@ object CoreFirmForm: TCoreFirmForm
         'e) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
-        'd = osbc.OrderId'
+        'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
       'And (CCore.RegionCode = :RegionCode)')
@@ -1235,7 +1236,7 @@ object CoreFirmForm: TCoreFirmForm
         'e) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
-        'd = osbc.OrderId'
+        'd = osbc.OrderId  and CurrentOrderHeads.Frozen = 0 '
       'WHERE '
       '    (Synonyms.SynonymCode = CCore.SynonymCode)'
       'and (CCore.PriceCode = :PriceCode) '

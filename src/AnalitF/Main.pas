@@ -778,6 +778,7 @@ try
   +'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
   +'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
   +'WHERE (CurrentOrderHeads.CLIENTID                                      = :ClientID) '
+  +'   and (CurrentOrderHeads.Frozen = 0) '
   +'   AND (CurrentOrderHeads.Closed                                      <> 1)';
 
     DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;

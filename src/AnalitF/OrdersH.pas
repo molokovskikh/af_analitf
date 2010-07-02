@@ -68,6 +68,9 @@ type
     adsOrdersHFormsumbycurrentweek: TFloatField;
     adsCurrentOrders: TMyQuery;
     adsSendOrders: TMyQuery;
+    adsOrdersHFormFrozen: TBooleanField;
+    btnFrozen: TButton;
+    btnUnFrozen: TButton;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -89,6 +92,10 @@ type
     procedure dbgCurrentOrdersSortMarkingChanged(Sender: TObject);
     procedure adsOrdersHFormBeforeInsert(DataSet: TDataSet);
     procedure adsCoreBeforePost(DataSet: TDataSet);
+    procedure btnFrozenClick(Sender: TObject);
+    procedure dbgCurrentOrdersColumns4GetCellParams(Sender: TObject;
+      EditMode: Boolean; Params: TColCellParamsEh);
+    procedure btnUnFrozenClick(Sender: TObject);
   private
     Strings: TStrings;
     //—писок выбранных строк в гридах
@@ -100,6 +107,7 @@ type
     procedure FillSelectedRows(Grid : TToughDBGrid);
   protected
     FOrdersForm: TOrdersForm;
+    RestoreUnFrozenOrMoveToClient : Boolean;
   public
     frameOrderHeadLegend : TframeOrderHeadLegend; 
     procedure SetParameters;
@@ -190,6 +198,8 @@ begin
       adsOrdersHForm.SQLRefresh.Text := adsCurrentOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsCurrentOrders.SQLDelete.Text;
       adsOrdersHForm.SQLUpdate.Text := adsCurrentOrders.SQLUpdate.Text;
+      btnFrozen.Visible := True;
+      btnUnFrozen.Visible := True;
       btnMoveSend.Caption := '';
       btnMoveSend.Visible := False;
       btnWayBillList.Visible := False;
@@ -211,6 +221,8 @@ begin
       adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
       dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
       adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+      btnFrozen.Visible := False;
+      btnUnFrozen.Visible := False;
       btnMoveSend.Caption := '¬ернуть в текущие';
       btnMoveSend.Visible := True;
       btnWayBillList.Visible := True;
@@ -309,6 +321,7 @@ end;
 
 procedure TOrdersHForm.MoveToPrice;
 begin
+  RestoreUnFrozenOrMoveToClient := False;
   if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>1) then Exit;
 
   if FSelectedRows.Count = 0 then Exit;
@@ -389,6 +402,9 @@ begin
   if TabControl.TabIndex = 0 then begin
     if (Column.Field = adsOrdersHFormMINREQ) and not adsOrdersHFormMINREQ.IsNull and (adsOrdersHFormMINREQ.AsInteger > adsOrdersHFormSumOrder.AsCurrency) then
       Background := clRed;
+
+    if adsOrdersHFormFrozen.Value then
+      Background := FrozenOrderColor;
 
     if FUseCorrectOrders then begin
       if (adsOrdersHFormDifferentCostCount.Value > 0)
@@ -576,7 +592,7 @@ begin
       Screen.Cursor:=crHourglass;
       try
         { открываем сохраненный заказ }
-        FOrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger, True);
+        FOrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger, not RestoreUnFrozenOrMoveToClient);
         Application.ProcessMessages;
         { переписываем позиции в текущий прайс-лист }
         while not FOrdersForm.adsOrders.Eof do begin
@@ -727,6 +743,119 @@ begin
   case TabControl.TabIndex of
     0: dbgCurrentOrders.SetFocus;
     1: dbgSendedOrders.SetFocus;
+  end;
+end;
+
+procedure TOrdersHForm.btnFrozenClick(Sender: TObject);
+var
+  Grid : TToughDBGrid;
+  I : Integer;
+begin
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Exit;
+
+  Grid.SetFocus;
+  if not adsOrdersHForm.IsEmpty then
+  begin
+    FillSelectedRows(Grid);
+    if FSelectedRows.Count > 0 then
+      if AProc.MessageBox( '"«аморозить" выбранные за€вки?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
+        Grid.DataSource.DataSet.DisableControls;
+        try
+          for I := 0 to FSelectedRows.Count-1 do begin
+            Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
+            if not adsOrdersHFormFrozen.Value then begin
+              DM.adcUpdate.SQL.Text := 'update CurrentOrderLists set CoreId = null where OrderId = ' + adsOrdersHFormOrderId.AsString;
+              DM.adcUpdate.Execute;
+              Grid.DataSource.DataSet.Edit;
+              adsOrdersHFormSend.Value := False;
+              adsOrdersHFormFrozen.Value := True;
+              Grid.DataSource.DataSet.Post;
+            end;
+          end;
+        finally
+          Grid.DataSource.DataSet.EnableControls;
+        end;
+        MainForm.SetOrdersInfo;
+      end;
+  end;
+  if adsOrdersHForm.RecordCount = 0 then begin
+    dbgCurrentOrders.ReadOnly := True;
+    dbgSendedOrders.ReadOnly := True;
+  end
+  else begin
+    dbgCurrentOrders.ReadOnly := False;
+    dbgSendedOrders.ReadOnly := False;
+  end;
+end;
+
+procedure TOrdersHForm.dbgCurrentOrdersColumns4GetCellParams(
+  Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
+begin
+  if (Sender is TColumnEh) and (TColumnEh(Sender).Field = adsOrdersHFormSend)
+  then
+    if adsOrdersHFormFrozen.Value then
+      Params.CheckboxState := cbUnchecked;
+end;
+
+procedure TOrdersHForm.btnUnFrozenClick(Sender: TObject);
+var
+  Grid : TToughDBGrid;
+  I : Integer;
+  Strings : TStringList;
+begin
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Exit;
+
+  Grid.SetFocus;
+  if not adsOrdersHForm.IsEmpty then
+  begin
+    FillSelectedRows(Grid);
+    if FSelectedRows.Count > 0 then
+      if AProc.MessageBox(
+          '¬нимание! "–азмороженные" за€вки будут объеденены с текущими за€вками.'#13#10 +
+          '"–азморозить" выбранные за€вки?',
+          MB_ICONQUESTION or MB_OKCANCEL) = IDOK
+      then begin
+
+        RestoreUnFrozenOrMoveToClient := True;
+        Strings:=TStringList.Create;
+        try
+          ShowSQLWaiting(InternalMoveToPrice, 'ѕроисходит "размороживание" за€вок');
+
+          Grid.DataSource.DataSet.DisableControls;
+          try
+            for I := 0 to FSelectedRows.Count-1 do begin
+              Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
+              if adsOrdersHFormFrozen.Value then
+                Grid.DataSource.DataSet.Delete
+            end;
+            Grid.DataSource.DataSet.Refresh;
+          finally
+            Grid.DataSource.DataSet.EnableControls;
+          end;
+          
+          //если не нашли что-то, то выводим сообщение
+          if Strings.Count > 0 then ShowNotFound(Strings);
+
+        finally
+          Strings.Free;
+        end;
+
+        MainForm.SetOrdersInfo;
+      end;
+  end;
+  if adsOrdersHForm.RecordCount = 0 then begin
+    dbgCurrentOrders.ReadOnly := True;
+    dbgSendedOrders.ReadOnly := True;
+  end
+  else begin
+    dbgCurrentOrders.ReadOnly := False;
+    dbgSendedOrders.ReadOnly := False;
   end;
 end;
 
