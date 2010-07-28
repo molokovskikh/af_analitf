@@ -71,6 +71,7 @@ type
     adsOrdersHFormFrozen: TBooleanField;
     btnFrozen: TButton;
     btnUnFrozen: TButton;
+    sbMoveToClient: TSpeedButton;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -135,6 +136,13 @@ var
   Year, Month, Day: Word;
 begin
   inherited;
+
+  if DM.adtClients.RecordCount = 1 then
+    sbMoveToClient.Enabled := False
+  else
+    if DM.adtClients.RecordCount = 2 then
+      sbMoveToClient.Glyph := nil;
+
   frameOrderHeadLegend := TframeOrderHeadLegend.Create(Self);
   frameOrderHeadLegend.Parent := pGrid;
   frameOrderHeadLegend.Align := alBottom;
@@ -198,6 +206,7 @@ begin
       adsOrdersHForm.SQLRefresh.Text := adsCurrentOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsCurrentOrders.SQLDelete.Text;
       adsOrdersHForm.SQLUpdate.Text := adsCurrentOrders.SQLUpdate.Text;
+      sbMoveToClient.Visible := sbMoveToClient.Enabled;
       btnFrozen.Visible := True;
       btnUnFrozen.Visible := True;
       btnMoveSend.Caption := '';
@@ -221,6 +230,7 @@ begin
       adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
       dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
       adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+      sbMoveToClient.Visible := False;
       btnFrozen.Visible := False;
       btnUnFrozen.Visible := False;
       btnMoveSend.Caption := 'Вернуть в текущие';
