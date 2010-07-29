@@ -1245,7 +1245,7 @@ end;
 procedure TDM.adtClientsOldAfterOpen(DataSet: TDataSet);
 var
   mi :TMenuItem;
-  LastClientId : Integer;
+  LastClientId : Variant;
   MaxClientNameWidth, CurrentClientNameWidth : Integer;
 begin
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
@@ -1261,7 +1261,7 @@ begin
   if GetCurrentThreadId() = MainThreadID then begin
     //Заполняем PopupMenu клиентов
     MainForm.pmClients.Items.Clear;
-    LastClientId := adtClients.FieldByName( 'ClientId').AsInteger;
+    LastClientId := adtClients.FieldByName( 'ClientId').Value;
     adtClients.First;
     MaxClientNameWidth := 0;
     while not adtClients.Eof do begin
@@ -1269,7 +1269,7 @@ begin
       mi.Name := 'miClient' + adtClients.FieldByName('ClientId').AsString;
       mi.Caption := adtClients.FieldByName('Name').AsString;
       mi.Tag := adtClients.FieldByName('ClientId').AsInteger;
-      mi.Checked := LastClientId = adtClients.FieldByName('ClientId').AsInteger;
+      mi.Checked := LastClientId = adtClients.FieldByName('ClientId').Value;
 
       mi.OnClick := MainForm.OnSelectClientClick;
       MainForm.pmClients.Items.Add(mi);

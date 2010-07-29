@@ -527,9 +527,9 @@ inherited PricesForm: TPricesForm
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
       
-        '  join minreqrules on (minreqrules.ClientId = :ClientId) and (mi' +
-        'nreqrules.PriceCode = pricesshow.PriceCode) and (minreqrules.Reg' +
-        'ionCode = pricesshow.RegionCode)'
+        '  left join minreqrules on (minreqrules.ClientId = :ClientId) an' +
+        'd (minreqrules.PriceCode = pricesshow.PriceCode) and (minreqrule' +
+        's.RegionCode = pricesshow.RegionCode)'
       '  left join CurrentOrderHeads on '
       '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
       '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
@@ -613,9 +613,9 @@ inherited PricesForm: TPricesForm
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
       
-        '  join minreqrules on (minreqrules.ClientId = :ClientId) and (mi' +
-        'nreqrules.PriceCode = pricesshow.PriceCode) and (minreqrules.Reg' +
-        'ionCode = pricesshow.RegionCode)'
+        '  left join minreqrules on (minreqrules.ClientId = :ClientId) an' +
+        'd (minreqrules.PriceCode = pricesshow.PriceCode) and (minreqrule' +
+        's.RegionCode = pricesshow.RegionCode)'
       '  left join CurrentOrderHeads on '
       '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
       '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'

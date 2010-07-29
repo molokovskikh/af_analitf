@@ -252,9 +252,9 @@ begin
 	RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
 
 	adsPreviosOrders.ParamByName( 'ClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').AsInteger;
+		DM.adtClients.FieldByName( 'ClientId').Value;
 	adsAvgOrders.ParamByName( 'ClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').AsInteger;
+		DM.adtClients.FieldByName( 'ClientId').Value;
 
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
 end;

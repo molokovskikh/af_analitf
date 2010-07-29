@@ -356,9 +356,9 @@ object DM: TDM
         '  join regionaldata rd on (rd.REGIONCODE = pricesshow.REGIONCODE' +
         ') and (rd.FIRMCODE = pricesshow.FIRMCODE)'
       
-        '  join minreqrules on (minreqrules.ClientId = :ClientId) and (mi' +
-        'nreqrules.PriceCode = pricesshow.PriceCode) and (minreqrules.Reg' +
-        'ionCode = pricesshow.RegionCode)'
+        '  left join minreqrules on (minreqrules.ClientId = :ClientId) an' +
+        'd (minreqrules.PriceCode = pricesshow.PriceCode) and (minreqrule' +
+        's.RegionCode = pricesshow.RegionCode)'
       '  left join CurrentOrderHeads on '
       '        CurrentOrderHeads.Pricecode = pricesshow.PriceCode '
       '    and CurrentOrderHeads.Regioncode = pricesshow.RegionCode'
@@ -1470,20 +1470,24 @@ object DM: TDM
       '  UserInfo.InheritPrices,'
       '  UserInfo.IsFutureClient,'
       '  client.Id as MainClientId,'
+      '  client.Name as MainClientName,'
       '  client.CalculateOnProducerCost,'
       '  client.ParseWaybills,'
       '  client.SendRetailMarkup,'
       '  client.ShowAdvertising,'
       '  client.SendWaybillsFromClient'
       'FROM'
-      '  analitf.CLIENTS,'
+      '  ('
       '  analitf.UserInfo,'
       '  analitf.client'
-      'where'
-      '    (CLIENTS.ClientId = UserInfo.ClientId)'
+      '  )'
       
-        'and (((UserInfo.IsFutureClient = 0) and (client.Id = UserInfo.Cl' +
-        'ientId)) or (UserInfo.IsFutureClient = 1))')
+        '  left join analitf.CLIENTS on CLIENTS.ClientId = UserInfo.Clien' +
+        'tId '
+      'where'
+      
+        '  (((UserInfo.IsFutureClient = 0) and (client.Id = UserInfo.Clie' +
+        'ntId)) or (UserInfo.IsFutureClient = 1))')
     Left = 240
     Top = 184
   end

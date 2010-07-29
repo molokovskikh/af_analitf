@@ -617,8 +617,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'irmCode) '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
-        's.OrderId and CurrentOrderHeads.Frozen = 0 ' +
-      'WHERE '
+        's.OrderId and CurrentOrderHeads.Frozen = 0 WHERE '
       '  Core.CoreID = :CoreId')
     Connection = DM.MyConnection
     SQL.Strings = (
@@ -725,9 +724,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'mCode) '
       
         '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
-        'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId)' +
-        ' and CurrentOrderHeads.Frozen = 0 ' +
-      'WHERE'
+        'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId) and' +
+        ' CurrentOrderHeads.Frozen = 0 WHERE'
       '  #(synonyms.synonymname LIKE :LikeParam)'
       '  #AND (Synonyms.synonymcode > 0)'
       '  #and '
@@ -1266,9 +1264,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'mCode) '
       
         '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
-        'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId) ' +
-        '  and CurrentOrderHeads.Frozen = 0 ' +
-      'WHERE'
+        'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId)   a' +
+        'nd CurrentOrderHeads.Frozen = 0 WHERE'
       '  (Core.SynonymCode = Synonyms.synonymcode)'
       '  AND (products.productid = core.productid)'
       '  AND (catalogs.fullcode = products.catalogid)'
