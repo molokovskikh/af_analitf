@@ -2656,7 +2656,10 @@ begin
         frdsReportOrder.DataSet := adsOrderDetails;
         //готовим печать
         frVariables[ 'DisplayOrderId'] := adsPrintOrderHeader.FieldByName('DisplayOrderId').AsVariant;
-        frVariables[ 'DatePrice'] := adsPrintOrderHeader.FieldByName('DatePrice').AsVariant;
+        if Closed then
+          frVariables[ 'DatePrice'] := adsPrintOrderHeader.FieldByName('SendDate').AsVariant
+        else
+          frVariables[ 'DatePrice'] := adsPrintOrderHeader.FieldByName('DatePrice').AsVariant;
         frVariables[ 'OrdersComments'] := adsPrintOrderHeader.FieldByName('Comments').AsString;
         frVariables[ 'SupportPhone'] := adsPrintOrderHeader.FieldByName('SupportPhone').AsString;
         frVariables[ 'OrderDate'] := adsPrintOrderHeader.FieldByName('OrderDate').AsVariant;
