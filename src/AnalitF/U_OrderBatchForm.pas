@@ -353,7 +353,8 @@ begin
   //column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
   column.Font.Style := [fsBold];
-  TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
+  column := TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
+  column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Количество', 68);
   column.Alignment := taRightJustify;
   {

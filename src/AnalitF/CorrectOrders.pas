@@ -970,7 +970,14 @@ var
   maxProducerCostColumn : TColumnEh;
   registryCostColumn : TColumnEh;
   synonymFirmColumn : TColumnEh;
+  priceRetColumn : TColumnEh;
 begin
+  priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
+  if not Assigned(priceRetColumn) then
+    priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');
+  if Assigned(priceRetColumn) then
+    priceRetColumn.Visible := False;
+
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
     realCostColumn := ColumnByNameT(Grid, 'RealPrice');

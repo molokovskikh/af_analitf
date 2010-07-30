@@ -391,7 +391,9 @@ type
     procedure OnScriptExecuteError(Sender: TObject;
       E: Exception; SQL: String; var Action: TErrorAction);
     procedure UpdateDBFileDataFor64(dbCon : TCustomMyConnection);
+    procedure UpdateDBFileDataFor66(dbCon : TCustomMyConnection);
     procedure DeleteRegistryCostColumn(CurrentKey : TRegistry);
+    procedure DeletePriceRetColumn(CurrentKey : TRegistry);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetFullLastCreateScript : String;
@@ -1951,7 +1953,7 @@ begin
     end;
 
     if DBVersion = 65 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor66);
       DBVersion := 66;
     end;
 
@@ -4404,6 +4406,32 @@ begin
     CurrentKey.GetValueNames(names);
     for I := 0 to names.Count-1 do
       if AnsiEndsText('RegistryCost', names[i]) then
+        CurrentKey.DeleteValue(names[i]);
+  finally
+    names.Free;
+  end;
+end;
+
+procedure TDM.UpdateDBFileDataFor66(dbCon: TCustomMyConnection);
+begin
+  try
+    TRegistryHelper.DoAction('Software\Inforoom\AnalitF\' + GetPathCopyID, DeletePriceRetColumn);
+  except
+    on E : Exception do
+      WriteExchangeLog('UpdateRegistryFor66', 'Error : ' + E.Message);
+  end;
+end;
+
+procedure TDM.DeletePriceRetColumn(CurrentKey: TRegistry);
+var
+  names : TStringList;
+  I : Integer;
+begin
+  names := TStringList.Create;
+  try
+    CurrentKey.GetValueNames(names);
+    for I := 0 to names.Count-1 do
+      if AnsiEndsText('PriceRet', names[i]) then
         CurrentKey.DeleteValue(names[i]);
   finally
     names.Free;
