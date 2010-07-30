@@ -177,7 +177,8 @@ begin
 +'    `SendRetailMarkup` tinyint(1) unsigned not null default ''0'', '
 +'    `ShowAdvertising` tinyint(1) unsigned not null default ''1'', '
 +'    `SendWaybillsFromClient` tinyint(1) unsigned not null default ''0'', '
-+'    primary key (`Id`) ' 
++'    `EnableSmartOrder` tinyint(1) unsigned not null default ''0'', '
++'    primary key (`Id`) '
 +'  ) ' 
 + GetTableOptions();
 end;

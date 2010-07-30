@@ -12,4 +12,7 @@ CREATE TABLE analitf.`batchreport` (
   primary key (`Id`)                       
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
+alter table analitf.`client`
+  add column `EnableSmartOrder` tinyint(1) unsigned not null default '0';
+
 update analitf.params set ProviderMDBVersion = 65 where id = 0;

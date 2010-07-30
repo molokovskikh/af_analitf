@@ -168,7 +168,6 @@ TMainForm = class(TVistaCorrectForm)
     procedure actSendLetterExecute(Sender: TObject);
     procedure actViewDocsExecute(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure ToolBarAdvancedCustomDraw(Sender: TToolBar;
       const ARect: TRect; Stage: TCustomDrawStage;
       var DefaultDraw: Boolean);
@@ -932,6 +931,8 @@ procedure TMainForm.UpdateReclame;
 var
   openFileName : String;
 begin
+  actPostOrderBatch.Visible := DM.adsUser.FieldByName('EnableSmartOrder').AsBoolean;
+
   if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
     openFileName := ExePath + SDirReclame + '\' + FormatFloat('00', Browser.Tag) + '.htm';
@@ -1208,6 +1209,8 @@ procedure TMainForm.FormResize(Sender: TObject);
 var
   PaintBoxWidth, PanelWidth, NewWidth : Integer;
 begin
+  ClientNameRect := Rect(tbLastSeparator.Left + tbLastSeparator.Width + 7, 15, 10, 15 + 21{¬ысота контрола});
+  
   //–асчитываем ширину пр€моугольника в зависимости от максимальной ширины имени клиента
   PaintBoxWidth :=
     MaxClientNameWidth {максимальна€ ширина наименовани€ клиента}
@@ -1260,11 +1263,6 @@ begin
     end;
     ToolBar.Invalidate;
   end;
-end;
-
-procedure TMainForm.FormActivate(Sender: TObject);
-begin
-  ClientNameRect := Rect(tbLastSeparator.Left + tbLastSeparator.Width + 7, 15, 10, 15 + 21{¬ысота контрола});
 end;
 
 procedure TMainForm.ToolBarAdvancedCustomDraw(Sender: TToolBar;
