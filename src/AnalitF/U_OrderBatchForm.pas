@@ -354,10 +354,12 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
   column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Количество', 68);
   column.Alignment := taRightJustify;
+  {
   column := TDBGridHelper.AddColumn(dbgCore, 'OrderCount', 'Заказ', 47);
   column.Color := TColor(16775406);
   column := TDBGridHelper.AddColumn(dbgCore, 'SumOrder', 'Сумма', '0.00;;''''', 70);
   column.Color := TColor(16775406);
+  }
 
   pBottom.Height := pLegendAndComment.Height + (OneLineHeight * 10);
   pBottom.Constraints.MaxHeight := pBottom.Height;
@@ -391,7 +393,7 @@ begin
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymName', 'Наименование', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymFirm', 'Производитель', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
-  TDBGridHelper.AddColumn(dbgOrderBatch, 'OrderCount', 'Количество', 0);
+  TDBGridHelper.AddColumn(dbgOrderBatch, 'OrderCount', 'Заказ', 0);
   if DM.adtClientsAllowDelayOfPayment.Value then
     TDBGridHelper.AddColumn(dbgOrderBatch, 'RealCost', 'Цена поставщика', '0.00;;''''', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'Cost', 'Цена', '0.00;;''''', 0);
