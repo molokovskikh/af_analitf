@@ -87,6 +87,7 @@ type
     adsOrdersEditRetailMarkup: TFloatField;
     adsOrdersVitallyImportant: TBooleanField;
     btnGotoPrice: TSpeedButton;
+    adsOrdersPeriod: TStringField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

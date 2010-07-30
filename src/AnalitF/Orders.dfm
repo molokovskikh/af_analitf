@@ -98,6 +98,12 @@ inherited OrdersForm: TOrdersForm
         end
         item
           EditButtons = <>
+          FieldName = 'Period'
+          Footers = <>
+          Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
+        end
+        item
+          EditButtons = <>
           FieldName = 'RealPrice'
           Footers = <>
           Title.Caption = #1062#1077#1085#1072' '#1073#1077#1079' '#1086#1090#1089#1088#1086#1095#1082#1080
@@ -494,7 +500,8 @@ inherited OrdersForm: TOrdersForm
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
       '    ol.RetailMarkup,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    ol.Period'
       'FROM '
       '  CurrentOrderLists ol'
       '  left join products on products.productid = ol.productid'
@@ -670,6 +677,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersVitallyImportant: TBooleanField
       FieldName = 'VitallyImportant'
+    end
+    object adsOrdersPeriod: TStringField
+      FieldName = 'Period'
     end
   end
   object ActionList: TActionList

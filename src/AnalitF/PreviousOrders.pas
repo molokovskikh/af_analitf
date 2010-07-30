@@ -33,6 +33,7 @@ type
     adsAvgOrdersPRODUCTID: TLargeintField;
     dsAvgOrders: TDataSource;
     adsPreviousOrdersproductid: TLargeintField;
+    adsPreviousOrdersPeriod: TStringField;
     procedure dbgHistoryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private

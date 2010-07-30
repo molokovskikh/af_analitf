@@ -316,6 +316,7 @@ begin
 
   TDBGridHelper.AddColumn(dbgHistory, 'PriceName', 'Прайс-лист', Self.Canvas.TextWidth('Большое имя прайс-листа'));
   TDBGridHelper.AddColumn(dbgHistory, 'SynonymFirm', 'Производитель', Self.Canvas.TextWidth('Большое имя синонима'));
+  TDBGridHelper.AddColumn(dbgHistory, 'Period', 'Срок годн.', Self.Canvas.TextWidth('12.00.10'));
   TDBGridHelper.AddColumn(dbgHistory, 'OrderCount', 'Заказ', Self.Canvas.TextWidth('999'));
   TDBGridHelper.AddColumn(dbgHistory, 'ProducerCost', 'Цена производителя', Self.Canvas.TextWidth('999.99'));
   TDBGridHelper.AddColumn(dbgHistory, 'Price', 'Цена', Self.Canvas.TextWidth('999.99'));

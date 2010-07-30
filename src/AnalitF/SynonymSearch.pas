@@ -134,6 +134,7 @@ type
     adsProducersName: TStringField;
     dsProducers: TDataSource;
     adsCoreBuyingMatrixType: TIntegerField;
+    adsPreviosOrdersPeriod: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);

@@ -128,6 +128,12 @@ object FormsHistoryForm: TFormsHistoryForm
       end
       item
         EditButtons = <>
+        FieldName = 'Period'
+        Footers = <>
+        Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
+      end
+      item
+        EditButtons = <>
         FieldName = 'OrderCount'
         Footers = <>
         Title.Caption = #1047#1072#1082#1072#1079
@@ -173,7 +179,8 @@ object FormsHistoryForm: TFormsHistoryForm
       '    PostedOrderHeads.PriceName,'
       '    PostedOrderHeads.RegionName,'
       '    osbc.Await,'
-      '    osbc.Junk'
+      '    osbc.Junk,'
+      '    osbc.Period'
       'FROM'
       '  PostedOrderLists osbc'
       '  inner join products on products.productid = osbc.productid'
@@ -254,6 +261,9 @@ object FormsHistoryForm: TFormsHistoryForm
     end
     object adsPreviosOrdersJunk: TBooleanField
       FieldName = 'Junk'
+    end
+    object adsPreviosOrdersPeriod: TStringField
+      FieldName = 'Period'
     end
   end
   object adsCatalogName: TMyQuery

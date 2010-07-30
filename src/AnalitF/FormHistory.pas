@@ -34,6 +34,7 @@ type
     adsCatalogNameNAME: TStringField;
     adsCatalogNameFORM: TStringField;
     dsCatalogName: TDataSource;
+    adsPreviosOrdersPeriod: TStringField;
   private
     { Private declarations }
   public

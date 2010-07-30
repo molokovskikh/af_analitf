@@ -63,6 +63,12 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
         end
         item
           EditButtons = <>
+          FieldName = 'Period'
+          Footers = <>
+          Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
+        end
+        item
+          EditButtons = <>
           FieldName = 'OrderCount'
           Footers = <>
           Title.Caption = #1047#1072#1082#1072#1079
@@ -144,12 +150,15 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
       '    PostedOrderHeads.PriceName,'
       '    PostedOrderHeads.RegionName,'
       '    osbc.Await,'
-      '    osbc.Junk'
+      '    osbc.Junk,'
+      '    osbc.Period'
       'FROM'
       '  PostedOrderLists osbc'
       '  inner join products on products.productid = osbc.productid'
       '  inner join catalogs on catalogs.FullCode = products.catalogid'
-      '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.OrderId'
+      
+        '  INNER JOIN PostedOrderHeads ON osbc.OrderId=PostedOrderHeads.O' +
+        'rderId'
       'WHERE'
       '    (osbc.clientid = :ClientID)'
       'and (osbc.OrderCount > 0)'
@@ -225,6 +234,9 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
     end
     object adsPreviousOrdersproductid: TLargeintField
       FieldName = 'productid'
+    end
+    object adsPreviousOrdersPeriod: TStringField
+      FieldName = 'Period'
     end
   end
   object adsAvgOrders: TMyQuery

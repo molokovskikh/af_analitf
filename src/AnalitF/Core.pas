@@ -146,6 +146,7 @@ type
     adsProducersName: TStringField;
     adsProducersEtalon: TMyQuery;
     adsCoreBuyingMatrixType: TIntegerField;
+    adsPreviosOrdersPeriod: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
