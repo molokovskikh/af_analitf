@@ -346,9 +346,10 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'requestratio', 'Кратность');
   TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин. сумма', '0.00;;''''', 0);
   TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во');
-  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во');
-  column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена без отсрочки');
-  column.Visible := False;
+  //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
+  if DM.adtClientsAllowDelayOfPayment.Value then
+    column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена поставщика');
+  //column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
   column.Font.Style := [fsBold];
   TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
