@@ -127,6 +127,7 @@ uses
 {$R CompareScript62.RES}
 {$R CompareScript63.RES}
 {$R CompareScript64.RES}
+{$R CompareScript65.RES}
 
 var
   B : TWebBrowser;
