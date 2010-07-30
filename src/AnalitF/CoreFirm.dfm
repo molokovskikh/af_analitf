@@ -636,6 +636,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.ProducerCost,'
       '    CCore.NDS,'
       '    CCore.SupplierPriceMarkup,'
+      '    CCore.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -751,6 +752,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.ProducerCost,'
       '    CCore.NDS,'
       '    CCore.SupplierPriceMarkup,'
+      '    CCore.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -1124,6 +1126,9 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreMaxProducerCost: TFloatField
       FieldName = 'MaxProducerCost'
     end
+    object adsCoreBuyingMatrixType: TIntegerField
+      FieldName = 'BuyingMatrixType'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1161,6 +1166,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.ProducerCost,'
       '    CCore.NDS,'
       '    CCore.SupplierPriceMarkup,'
+      '    CCore.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'

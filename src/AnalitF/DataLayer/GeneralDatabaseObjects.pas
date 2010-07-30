@@ -540,6 +540,7 @@ begin
 +'    `SupplierPriceMarkup` decimal(5,3) default null            , '
 +'    `ProducerCost` decimal(18,2) default null                  , '
 +'    `NDS` smallint(5) default null                             , '
++'    `BuyingMatrixType` smallint(5) default null                , '
 +'    `COREID` bigint(20) not null AUTO_INCREMENT                , '
 +'    primary key (`COREID`)                                     , ' 
 +'    unique key `PK_CORE` (`COREID`)                            , ' 

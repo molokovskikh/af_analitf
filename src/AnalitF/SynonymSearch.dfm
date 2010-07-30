@@ -552,6 +552,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.ProducerCost,'
       '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
+      '    Core.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'
@@ -658,6 +659,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.ProducerCost,'
       '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
+      '    Core.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'
@@ -1016,6 +1018,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreMaxProducerCost: TFloatField
       FieldName = 'MaxProducerCost'
     end
+    object adsCoreBuyingMatrixType: TIntegerField
+      FieldName = 'BuyingMatrixType'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1199,6 +1204,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.ProducerCost,'
       '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
+      '    Core.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName ,'

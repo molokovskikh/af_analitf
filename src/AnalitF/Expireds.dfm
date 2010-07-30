@@ -427,6 +427,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.ProducerCost,'
       '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
+      '    Core.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -521,6 +522,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.ProducerCost,'
       '    Core.NDS,'
       '    Core.SupplierPriceMarkup,'
+      '    Core.BuyingMatrixType,'
       
         '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
         'logs.form)) as SynonymName,'
@@ -802,6 +804,9 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsMaxProducerCost: TFloatField
       FieldName = 'MaxProducerCost'
+    end
+    object adsExpiredsBuyingMatrixType: TIntegerField
+      FieldName = 'BuyingMatrixType'
     end
   end
 end

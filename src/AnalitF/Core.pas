@@ -145,6 +145,7 @@ type
     adsProducersId: TLargeintField;
     adsProducersName: TStringField;
     adsProducersEtalon: TMyQuery;
+    adsCoreBuyingMatrixType: TIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -445,13 +446,41 @@ begin
 
     PanelCaption := '';
 
+    if (adsCoreBuyingMatrixType.Value > 0) then begin
+      if (adsCoreBuyingMatrixType.Value = 1) then begin
+        PanelCaption := 'Препарат запрещен к заказу.';
+
+        begin
+        if Timer.Enabled then
+          Timer.OnTimer(nil);
+
+        lWarning.Caption := PanelCaption;
+        PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
+        plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
+
+        plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
+        plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
+        plOverCost.BringToFront;
+        plOverCost.Show;
+        Timer.Enabled := True;
+        end;
+
+        Abort;
+      end
+      else
+        PanelCaption := 'Препарат не желателен к заказу';
+    end;
+    
 		{ проверяем на превышение цены }
 		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
 		begin
 			PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
 			if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
 			begin
-        PanelCaption := 'Превышение средней цены!';
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + 'Превышение средней цены!'
+        else
+          PanelCaption := 'Превышение средней цены!';
 			end;
 		end;
 
