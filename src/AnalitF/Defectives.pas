@@ -82,6 +82,7 @@ begin
 	dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
 	dtpDateTo.Date:=Date;
 	PrintQuery := adsPrint.SQL.Text;
+  adsDefectives.IndexFieldNames := 'LetterDate';
 	OrderField:='LetterDate';
   TDBGridHelper.RestoreColumnsLayout(dbgDefectives, Self.ClassName);
 	ShowForm;
@@ -114,11 +115,13 @@ end;
 
 procedure TDefectivesForm.SetOrderField(Value: string);
 begin
+{
   with adsDefectives do begin
     Close;
     adsDefectives.IndexFieldNames := Value;
     SetDateInterval;
   end;
+}  
   FOrderField:=AnsiUpperCase(Trim(Value));
 end;
 
@@ -196,6 +199,7 @@ end;
 procedure TDefectivesForm.dbgDefectivesSortMarkingChanged(Sender: TObject);
 begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  OrderField := adsDefectives.IndexFieldNames;
 end;
 
 end.
