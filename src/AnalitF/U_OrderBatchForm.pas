@@ -150,6 +150,8 @@ type
     dbmComment : TDBMemo;
     dbgHistory : TToughDBGrid;
     dbgCore : TToughDBGrid;
+    bevelHistory : TBevel;
+    gbHistory : TGroupBox;
 
     lOptimalCost : TLabel;
     lErrorQuantity : TLabel;
@@ -296,6 +298,12 @@ begin
 
   CreateLegends;
 
+  bevelHistory := TBevel.Create(Self);
+  bevelHistory.Parent := pLegendAndComment;
+  bevelHistory.Align := alTop;
+  bevelHistory.Shape := bsTopLine;
+  bevelHistory.Height := 4;
+
   dbmComment := TDBMemo.Create(Self);
   dbmComment.Parent := pLegendAndComment;
   dbmComment.Align := alClient;
@@ -303,9 +311,16 @@ begin
   dbmComment.Color := clBtnFace;
   dbmComment.DataField := 'Comment';
 
+  gbHistory := TGroupBox.Create(Self);
+  gbHistory.Parent := pLegendAndComment;
+  gbHistory.Caption := ' Предыдущие заказы ';
+  gbHistory.Align := alLeft;
+  gbHistory.Width := 480;
+  gbHistory.Constraints.MinWidth := 480;
+
   dbgHistory := TToughDBGrid.Create(Self);
-  dbgHistory.Parent := pLegendAndComment;
-  dbgHistory.Align := alLeft;
+  dbgHistory.Parent := gbHistory;
+  dbgHistory.Align := alClient;
   dbgHistory.Width := 480;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgHistory);
 
@@ -900,7 +915,7 @@ begin
   pLegendAndComment.Height := pLegend.Height + NewHistoryHeight;
   pBottom.Height := pLegendAndComment.Height + ((ResidualHeight - NewHistoryHeight) div 2);
   
-  dbgHistory.Width := pBottom.ClientWidth div 2;
+  gbHistory.Width := Trunc(pBottom.ClientWidth * 0.4);
 end;
 
 procedure TOrderBatchForm.tmrSearchTimer(Sender: TObject);
