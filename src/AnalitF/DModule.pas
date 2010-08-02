@@ -1856,17 +1856,17 @@ begin
 
 {$ifdef DEBUG}
     try
-      dbCon.Database := 'analitf';
-      dbCon.Open;
+//      dbCon.Database := 'analitf';
+//      dbCon.Open;
       try
 {$ifndef USENEWMYSQLTYPES}
-        ExtractDBScript(dbCon);
+//        ExtractDBScript(dbCon);
 {$endif USENEWMYSQLTYPES}
       finally
-        dbCon.Close;
+//        dbCon.Close;
       end;
     finally
-      dbCon.Database := '';
+//      dbCon.Database := '';
     end;
 {$endif}
 
