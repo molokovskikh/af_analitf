@@ -1783,8 +1783,13 @@ begin
 +'   AND pricesregionaldata.regioncode = PriceSizes.regioncode';
 	InternalExecute;
 
-  if utBatchReport in UpdateTables then
-    ImportBatchReport;
+  if (utBatchReport in UpdateTables) and (eaPostOrderBatch in ExchangeForm.ExchangeActs)
+  then
+    ImportBatchReport
+  else begin
+    SQL.Text := 'delete from batchreport';
+    InternalExecute;
+  end;
 
   DM.MainConnection.Close;
   DM.MainConnection.Open;
