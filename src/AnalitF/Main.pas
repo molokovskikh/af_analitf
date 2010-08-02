@@ -305,6 +305,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 //var
 //	il32: TImageList;
 begin
+  ClientNameRect := Rect(0, 0, 10, 10);
   deletedForms := TObjectList.Create(False);
   FormPlacement.Active := False;
   Application.OnException := OnMainAppEx;
@@ -1210,9 +1211,10 @@ end;
 procedure TMainForm.FormResize(Sender: TObject);
 var
   PaintBoxWidth, PanelWidth, NewWidth : Integer;
+  newClientNameRect : TRect;
 begin
-  ClientNameRect := Rect(tbLastSeparator.Left + tbLastSeparator.Width + 7, 15, 10, 15 + 21{¬ысота контрола});
-  
+  newClientNameRect := Rect(tbLastSeparator.Left + tbLastSeparator.Width + 7, 15, 10, 15 + 21{¬ысота контрола});
+
   //–асчитываем ширину пр€моугольника в зависимости от максимальной ширины имени клиента
   PaintBoxWidth :=
     MaxClientNameWidth {максимальна€ ширина наименовани€ клиента}
@@ -1228,8 +1230,9 @@ begin
   else
     NewWidth := PanelWidth;
 
-  if NewWidth <> ClientNameRect.Right - ClientNameRect.Left then
-  begin
+  if (NewWidth <> ClientNameRect.Right - ClientNameRect.Left) or (newClientNameRect.Left <> ClientNameRect.Left)
+  then begin
+    ClientNameRect := newClientNameRect;
     ClientNameRect.Right := ClientNameRect.Left + NewWidth;
     ToolBar.Invalidate;
   end;
