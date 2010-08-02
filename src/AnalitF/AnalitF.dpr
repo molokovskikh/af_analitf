@@ -107,7 +107,8 @@ uses
   U_OrderBatchForm in 'U_OrderBatchForm.pas' {OrderBatchForm},
   ArchiveHelper in 'Helpers\ArchiveHelper.pas',
   U_frameBaseLegend in 'U_frameBaseLegend.pas' {frameBaseLegend: TFrame},
-  U_frameOrderHeadLegend in 'U_frameOrderHeadLegend.pas' {frameOrderHeadLegend: TFrame};
+  U_frameOrderHeadLegend in 'U_frameOrderHeadLegend.pas' {frameOrderHeadLegend: TFrame},
+  StartupHelper in 'Helpers\StartupHelper.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
@@ -176,8 +177,12 @@ begin
   Application.Title := 'АналитФАРМАЦИЯ';
 {$endif}
   Application.HintHidePause := 10*60*1000;
+  mainStartupHelper.Write('AnalitF', 'Начали создание MainForm');
   Application.CreateForm(TMainForm, MainForm);
+  mainStartupHelper.Write('AnalitF', 'Закончили создание MainForm');
   MainForm.FormPlacement.IniFileName := 'Software\Inforoom\AnalitF\' + GetPathCopyID + '\';
+  mainStartupHelper.Write('AnalitF', 'Начали создание MainForm');
   Application.CreateForm(TDM, DM);
+  mainStartupHelper.Write('AnalitF', 'Закончили создание DModule');
   Application.Run;
 end.

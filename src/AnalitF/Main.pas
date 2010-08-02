@@ -258,7 +258,8 @@ uses
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
   Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
   MnnSearch, DocumentHeaders, DBGridHelper, DocumentTypes,
-  U_OrderBatchForm;
+  U_OrderBatchForm,
+  StartupHelper;
 
 {$R *.DFM}
 
@@ -340,6 +341,7 @@ begin
   //Бывает только в том случае, если происходит сжатие базы данных
   if not Active then exit;
 	JustRun := False;
+  mainStartupHelper.Stop;
 
 try
   //Производим восстановление

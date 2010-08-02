@@ -565,7 +565,8 @@ implementation
 
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
-     U_DeleteDBThread, SQLWaiting, INFHelpers, PostWaybillsController;
+     U_DeleteDBThread, SQLWaiting, INFHelpers, PostWaybillsController,
+     StartupHelper;
 
 type
   TestMyDBThreadState = (
@@ -858,6 +859,8 @@ begin
   FVitallyImportantMarkups := TObjectList.Create(True);;
 
   WriteExchangeLog('AnalitF', 'Программа установлена в каталог: "' + ExtractFileDir(ParamStr(0)) + '"');
+  mainStartupHelper.Write('DModule', 'Начали подготовительные действия');
+
   FProcessFirebirdUpdate := False;
   FProcess800xUpdate := False;
   FProcessUpdateToNewLibMysqlD := False;
@@ -881,8 +884,12 @@ begin
     
   DeleteOldMysqlFolder;
 
+  mainStartupHelper.Write('DModule', 'Закончили подготовительные действия');
+
 {$ifdef USEMEMORYCRYPTDLL}
+  mainStartupHelper.Write('DModule', 'Начали проверку специализированной библиотеки');
   CheckSpecialLibrary;
+  mainStartupHelper.Write('DModule', 'Закончили проверку специализированной библиотеки');
 {$endif}
 
   //Устанавливаем параметры embedded-соединения
@@ -968,6 +975,7 @@ begin
     LogExitError(Format( 'Файл базы данных %s имеет атрибут "Только чтение".', [ ExePath + DatabaseName ]), Integer(ecDBFileReadOnly));
     }
 
+  mainStartupHelper.Write('DModule', 'Начали проверку базы данных');
   //Делаем проверку файла базы данных и в случае проблем производим восстановление из предыдущей удачной копии
   //Проверяем файл, если используем Embedded-сервер, в ином случае - происходит процесс разработки программы и проверять ничего не надо
   if MainConnection is TMyEmbConnection then
@@ -989,7 +997,9 @@ begin
     end;
 {$endif}
   end;
+  mainStartupHelper.Write('DModule', 'Закончили проверку базы данных');
 
+  mainStartupHelper.Write('DModule', 'Начали проверки для запуска');
   try
     try
       CheckRestrictToRun;
@@ -1000,6 +1010,7 @@ begin
     on E : Exception do
       LogExitError(Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]), Integer(ecDBFileError));
   end;
+  mainStartupHelper.Write('DModule', 'Закончили проверки для запуска');
 
   MainConnection.Open;
 
@@ -1860,6 +1871,7 @@ begin
 {$endif}
 
 
+    mainStartupHelper.Write('DModule', 'Начали проверку объектов базы данных');
     RunUpdateDBFile(
       dbCon,
       ExePath + SDirData,
@@ -1867,7 +1879,9 @@ begin
       CheckDBObjectsWithDatabaseController,
       nil,
       'Происходит проверка базы данных. Подождите...');
+    mainStartupHelper.Write('DModule', 'Закончили проверку объектов базы данных');
 
+    mainStartupHelper.Write('DModule', 'Начали проверки миграций');
     dbCon.Open;
     try
       DBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
@@ -1963,6 +1977,7 @@ begin
     //Если было произведено обновление программы, то обновляем ключи
     if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
       UpdateDBUIN(dbCon);
+    mainStartupHelper.Write('DModule', 'Закончили проверки миграций');
 
   finally
     dbCon.Free;
@@ -2099,7 +2114,9 @@ begin
                   [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
               MyAPIEmbedded.FreeMySQLLib;
             end;
+            mainStartupHelper.Write('DModule', 'Начали восстановление базы данных');
             RecoverDatabase(E);
+            mainStartupHelper.Write('DModule', 'Закончили восстановление базы данных');
           except
             on E : Exception do
               if (RecoveryCount < 1) then
@@ -3481,12 +3498,18 @@ procedure TDM.CheckDBObjectsWithDatabaseController(
 begin
   dbCon.Open;
   try
-    if not DatabaseController.Initialized then
+    if not DatabaseController.Initialized then begin
+      mainStartupHelper.Write('DModule', 'Начали инициализацию объектов базы данных');
       DatabaseController.Initialize(dbCon);
+      mainStartupHelper.Write('DModule', 'Закончили инициализацию объектов базы данных');
+    end;
 
     //Проверяем объекты если не производим обновление программы
-    if not FindCmdLineSwitch('i') and not FindCmdLineSwitch('si') then
+    if not FindCmdLineSwitch('i') and not FindCmdLineSwitch('si') then begin
+      mainStartupHelper.Write('DModule', 'Начали проверку на существование объектов базы данных');
       DatabaseController.CheckObjectsExists(dbCon, FCreateClearDatabase or FNeedImportAfterRecovery);
+      mainStartupHelper.Write('DModule', 'Закончили проверку на существование объектов базы данных');
+    end;
   finally
     dbCon.Close;
     //dbCon.RemoveFromPool;

@@ -200,7 +200,8 @@ type
 implementation
 
 uses
-  DModule, MyEmbConnection;
+  DModule, MyEmbConnection,
+  StartupHelper;
 
 var
   FDatabaseController : TDatabaseController;
@@ -324,6 +325,7 @@ begin
 
     for I := 0 to FDatabaseObjects.Count-1 do begin
       if FDatabaseObjects[i] is TDatabaseTable then begin
+        mainStartupHelper.Write('DatabaseController.Initialize', 'Начали проверку на существование объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         FCommand.SQL.Text :=
           Format(
@@ -345,6 +347,7 @@ begin
                  E.Message]));
             end;
         end;
+        mainStartupHelper.Write('DatabaseController.Initialize', 'Закончили выборку данных из объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
 
         CheckTableOnOpen(currentTable, IsBackupRepair);
 {
@@ -366,6 +369,7 @@ begin
         end;
 }        
 
+        mainStartupHelper.Write('DatabaseController.Initialize', 'Закончили проверку на существование объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
       end;
     end;
 
@@ -924,7 +928,7 @@ var
   currentTable : TDatabaseTable;
 begin
   Result := '';
-  for I := 0 to FDatabaseObjects.Count-1 do 
+  for I := 0 to FDatabaseObjects.Count-1 do
     if FDatabaseObjects[i] is TDatabaseTable then begin
       currentTable := TDatabaseTable(FDatabaseObjects[i]);
       Result := Concat(Result, #13#10#13#10, currentTable.GetDropSQL(), #13#10, currentTable.GetCreateSQL());
@@ -950,6 +954,7 @@ begin
 
     for I := 0 to FDatabaseObjects.Count-1 do begin
       if FDatabaseObjects[i] is TDatabaseTable then begin
+        mainStartupHelper.Write('DatabaseController.Initialize', 'Начали инициализацию объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         FCommand.SQL.Text :=
           Format(
@@ -972,6 +977,7 @@ begin
         finally
           FCommand.Close;
         end;
+        mainStartupHelper.Write('DatabaseController.Initialize', 'Закончили инициализацию объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
       end;
     end;
 
