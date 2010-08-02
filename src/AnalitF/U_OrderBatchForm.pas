@@ -229,19 +229,19 @@ procedure TOrderBatchForm.BatchReportGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if StatusField.IsNull or ProductIdField.IsNull then
-    Background := lNotParsed.Color
+    Background := lAnotherError.Color
   else begin
     if (StatusField.Value and Integer(osOptimalCost)) > 0 then
       Background := lOptimalCost.Color
     else
     if ((StatusField.Value and Integer(osNotOrdered)) > 0) and (OrderCountField.Value < 1) then
-      Background := lErrorQuantity.Color
+      Background := lAnotherError.Color
     else
     if ((StatusField.Value and Integer(osNotOrdered)) > 0) and ((StatusField.Value and Integer(OffersExists)) = 0) then
-      Background := lNotOffers.Color
+      Background := lAnotherError.Color
     else
     if (StatusField.Value and Integer(osNotEnoughQuantity)) > 0 then
-      Background := lNotEnoughQuantity.Color
+      Background := lAnotherError.Color
     else
     if (StatusField.Value and Integer(osNotOrdered)) > 0 then
       Background := lAnotherError.Color
@@ -434,11 +434,12 @@ begin
   newLeft := 8;
   newTop := (pLegend.Height - (Self.Canvas.TextHeight('Test') + 10)) div 2;
   newLeft := CreateLegendLabel(lOptimalCost, 'Минимальная цена', RGB(172, 255, 151), newLeft, newTop);
-  newLeft := CreateLegendLabel(lErrorQuantity, 'Указано неверное количество', RGB(200, 203, 206), newLeft, newTop);
-  newLeft := CreateLegendLabel(lNotOffers, 'Нет предложений', RGB(226, 180, 181), newLeft, newTop);
-  newLeft := CreateLegendLabel(lNotEnoughQuantity, 'Нет достаточного количества', RGB(255, 190, 151), newLeft, newTop);
-  newLeft := CreateLegendLabel(lAnotherError, 'Прочие не заказанные', RGB(255, 128, 128), newLeft, newTop);
-  CreateLegendLabel(lNotParsed, 'Не найденные в ассортиментном прайс-листе', RGB(245, 233, 160), newLeft, newTop);
+  //newLeft := CreateLegendLabel(lErrorQuantity, 'Указано неверное количество', RGB(200, 203, 206), newLeft, newTop);
+  //newLeft := CreateLegendLabel(lNotOffers, 'Нет предложений', RGB(226, 180, 181), newLeft, newTop);
+  //newLeft := CreateLegendLabel(lNotEnoughQuantity, 'Нет достаточного количества', RGB(255, 190, 151), newLeft, newTop);
+  //newLeft :=
+  CreateLegendLabel(lAnotherError, 'Не заказанные', RGB(255, 128, 128), newLeft, newTop);
+  //CreateLegendLabel(lNotParsed, 'Не найденные в ассортиментном прайс-листе', RGB(245, 233, 160), newLeft, newTop);
 end;
 
 procedure TOrderBatchForm.CreateNonVisualComponent;
