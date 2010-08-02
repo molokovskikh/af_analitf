@@ -778,8 +778,10 @@ begin
   end
   else
     if Key = VK_RETURN then begin
-      if (Length(eSearch.Text) > 0) then
-        tmrSearchTimer(nil);
+      if (Length(eSearch.Text) > 0) and (InternalSearchText <> eSearch.Text) then
+        tmrSearchTimer(nil)
+      else
+        actFlipCoreExecute(nil);
     end
     else
       if Key = VK_ESCAPE then
