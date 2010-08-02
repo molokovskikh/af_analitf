@@ -789,6 +789,13 @@ end;
 procedure TDocumentBodiesForm.WaybillKeyPress(Sender: TObject;
   var Key: Char);
 begin
+  if (dbgDocumentBodies.SelectedField = retailPriceField)
+    or (dbgDocumentBodies.SelectedField = retailMarkupField)
+    or (dbgDocumentBodies.SelectedField = realMarkupField)
+  then begin
+    if (Key in ['.', ',']) and (Key <> DecimalSeparator) then
+      Key := DecimalSeparator;
+  end;
   if (dbgDocumentBodies.SelectedField <> retailPriceField)
     and (dbgDocumentBodies.SelectedField <> retailMarkupField)
     and (dbgDocumentBodies.SelectedField <> realMarkupField)

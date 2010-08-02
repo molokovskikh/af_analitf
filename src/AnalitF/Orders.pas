@@ -438,7 +438,16 @@ begin
     _CoreFirmForm.eSearch.Text := '';
     SendMessage(GetFocus, WM_CHAR, Ord( Key), 0);
   end
-  else
+  else begin
+    if (Sender = dbgEditOrders)
+      and ((dbgEditOrders.SelectedField = adsOrdersordercount)
+      or (dbgEditOrders.SelectedField = adsOrdersRetailPrice)
+      or (dbgEditOrders.SelectedField = adsOrdersEditRetailMarkup))
+    then begin
+      if (Key in ['.', ',']) and (Key <> DecimalSeparator) then
+        Key := DecimalSeparator;
+    end;
+
     if (Sender = dbgEditOrders)
       and (dbgEditOrders.SelectedField <> adsOrdersordercount)
       and (dbgEditOrders.SelectedField <> adsOrdersRetailPrice)
@@ -450,6 +459,7 @@ begin
         Key := #0;
       end;
     end;
+  end;
 end;
 
 procedure TOrdersForm.ShowForm;
