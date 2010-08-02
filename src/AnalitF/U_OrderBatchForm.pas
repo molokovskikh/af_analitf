@@ -555,17 +555,7 @@ begin
   spGotoMNNButton.Top := 5;
   spGotoMNNButton.Left := spGotoCatalog.Left + spGotoCatalog.Width + 5;
 
-
-  spDelete := TSpeedButton.Create(Self);
-  spDelete.OnClick := DeletePositions;
-  spDelete.Height := 25;
-  spDelete.Caption := 'Удалить';
-  spDelete.Parent := pTop;
-  spDelete.Width := Self.Canvas.TextWidth(spDelete.Caption) + 20;
-  spDelete.Top := 5;
-  spDelete.Left := spGotoMNNButton.Left + spGotoMNNButton.Width + 5;
-
-  spLoad.Left := spDelete.Left + spDelete.Width + 5;
+  spLoad.Left := spGotoMNNButton.Left + spGotoMNNButton.Width + 5;
 
   lEditRule := TLabel.Create(Self);
   lEditRule.Parent := pTop;
@@ -601,6 +591,16 @@ begin
   inherited;
 
   framePosition := TframePosition.AddFrame(Self, pGrid, dsReport, 'SynonymName', 'MnnId', ShowDescriptionAction);
+
+  spDelete := TSpeedButton.Create(Self);
+  spDelete.OnClick := DeletePositions;
+  spDelete.Height := framePosition.btnShowDescription.Height;
+  spDelete.Caption := 'Удалить';
+  spDelete.Parent := framePosition.btnShowDescription.Parent;
+  spDelete.Width := Self.Canvas.TextWidth(spDelete.Caption) + 20;
+  spDelete.Top := framePosition.btnShowDescription.Top;
+  spDelete.Left := framePosition.btnShowDescription.Parent.Width - spDelete.Width - framePosition.btnShowDescription.Left;
+  spDelete.Anchors := [akTop, akRight];
 end;
 
 procedure TOrderBatchForm.OpenFile(Sender: TObject);
