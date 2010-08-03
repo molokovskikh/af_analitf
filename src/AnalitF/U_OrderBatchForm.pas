@@ -406,15 +406,15 @@ begin
   dbgOrderBatch.OnDrawColumnCell := dbgOrderBatchDrawColumnCell;
   dbgOrderBatch.InputField := 'OrderCount';
 
-  TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Сформирован заказ', 0);
-  TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Известен изготовитель', Self.Canvas.TextWidth('Нет   '));
+  TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Заказано', 0);
+  TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Есть производитель', Self.Canvas.TextWidth('Нет   '));
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymName', 'Наименование', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymFirm', 'Производитель', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
-  TDBGridHelper.AddColumn(dbgOrderBatch, 'OrderCount', 'Заказ', 0);
   if DM.adtClientsAllowDelayOfPayment.Value then
     TDBGridHelper.AddColumn(dbgOrderBatch, 'RealCost', 'Цена поставщика', '0.00;;''''', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'Cost', 'Цена', '0.00;;''''', 0);
+  TDBGridHelper.AddColumn(dbgOrderBatch, 'OrderCount', 'Заказ', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'RetailSumm', 'Сумма', '0.00;;''''', 0);
   column := TDBGridHelper.AddColumn(dbgOrderBatch, 'Comment', 'Комментарий', 0);
   column.ToolTips := True;
