@@ -129,6 +129,8 @@ type
     procedure dbgOrderBatchKeyPress(Sender: TObject; var Key: Char);
     procedure dbgOrderBatchDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
+    procedure dbgOrderBatchDblClick(Sender: TObject);
+
   public
     { Public declarations }
 
@@ -404,6 +406,7 @@ begin
   dbgOrderBatch.OnKeyPress := dbgOrderBatchKeyPress;
   dbgOrderBatch.OnSortMarkingChanged := ReportSortMarkingChanged;
   dbgOrderBatch.OnDrawColumnCell := dbgOrderBatchDrawColumnCell;
+  dbgOrderBatch.OnDblClick := dbgOrderBatchDblClick;
   dbgOrderBatch.InputField := 'OrderCount';
 
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Заказано', 0);
@@ -1008,6 +1011,18 @@ procedure TOrderBatchForm.ProducerStatusGetText(Sender: TField;
 begin
   if DisplayText then
     Text := IfThen(Sender.AsInteger = 0, 'Нет', 'Да');
+end;
+
+procedure TOrderBatchForm.dbgOrderBatchDblClick(Sender: TObject);
+var
+  C : GridsEh.TGridCoord;
+  P : TPoint;
+begin
+  inherited;
+  p := dbgOrderBatch.ScreenToClient(Mouse.CursorPos);
+  C := dbgOrderBatch.MouseCoord(p.X, p.Y);
+  if C.Y > 0 then
+    actFlipCoreExecute(nil);
 end;
 
 end.
