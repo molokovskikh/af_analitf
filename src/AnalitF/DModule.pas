@@ -1261,13 +1261,14 @@ var
   LastClientId : Variant;
   MaxClientNameWidth, CurrentClientNameWidth : Integer;
 begin
-  if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
-  then begin
-    adtClients.First;
-    adtParams.Edit;
-    adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
-    adtParams.Post;
-  end;
+  if (adtClients.RecordCount > 0) and not adtParams.FieldByName('ClientId').IsNull then
+    if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])
+    then begin
+      adtClients.First;
+      adtParams.Edit;
+      adtParams.FieldByName( 'ClientId').Value := adtClients.FieldByName( 'ClientId').Value;
+      adtParams.Post;
+    end;
 
   //Если действия происходят в основной ветки приложения, то позволяем работать
   //с визуальными компонентами
