@@ -868,6 +868,9 @@ begin
     adsPreviosOrders.Open;
     adsCore.ParamByName( 'ProductId').Value := ProductIdField.Value;
     adsCore.Open;
+    if not CoreIdField.IsNull and not adsCore.Locate('CoreId', CoreIdField.Value, [])
+    then
+      adsCore.First;
   end;
 end;
 
