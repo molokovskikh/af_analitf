@@ -119,6 +119,7 @@ type
     procedure SetUsedFilter;
     procedure ApplyMNNFilters;
     procedure DeleteLastMNNFilter;
+    procedure SaveActionStates;
   public
     procedure ShowForm; override;
     procedure SetCatalog;
@@ -364,22 +365,10 @@ begin
 end;
 
 procedure TNamesFormsForm.FormDestroy(Sender: TObject);
-var
-	Reg: TRegistry;
 begin
 	inherited;
-  with DM.adtParams do
-  begin
-    Edit;
-    FieldByName( 'UseForms').AsBoolean := actUseForms.Checked;
-    FieldByName( 'ShowAllCatalog').AsBoolean := actShowAll.Checked;
-    Post;
-  end;
+  SaveActionStates;
   fr.Free;
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
-  Reg.WriteBool('NewSearch', actNewSearch.Checked);
-	Reg.Free;
   BM.Free;
 end;
 
@@ -387,6 +376,7 @@ procedure TNamesFormsForm.actUseFormsExecute(Sender: TObject);
 begin
 	if not dbgNames.CanFocus then exit;
 	actUseForms.Checked := not actUseForms.Checked;
+  SaveActionStates; 
 	SetFormsParams;
 	dbgNames.SetFocus;
 end;
@@ -622,7 +612,8 @@ begin
   CheckCanFocus;
 
 	actShowAll.Checked := not actShowAll.Checked;
-
+  SaveActionStates;
+  
   if actNewSearch.Checked then begin
     if Length(InternalSearchText) > 0 then
       tmrSearchTimer(nil)
@@ -876,6 +867,7 @@ end;
 procedure TNamesFormsForm.actNewSearchExecute(Sender: TObject);
 begin
 	actNewSearch.Checked := not actNewSearch.Checked;
+  SaveActionStates;
   SetGrids;
 end;
 
@@ -1157,6 +1149,23 @@ begin
     actUseForms.Enabled := True
   else
     actUseForms.Enabled := False;
+end;
+
+procedure TNamesFormsForm.SaveActionStates;
+var
+  Reg: TRegistry;
+begin
+  with DM.adtParams do
+  begin
+    Edit;
+    FieldByName( 'UseForms').AsBoolean := actUseForms.Checked;
+    FieldByName( 'ShowAllCatalog').AsBoolean := actShowAll.Checked;
+    Post;
+  end;
+  Reg := TRegistry.Create;
+  Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
+  Reg.WriteBool('NewSearch', actNewSearch.Checked);
+  Reg.Free;
 end;
 
 initialization
