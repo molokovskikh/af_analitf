@@ -81,6 +81,8 @@ inherited NamesFormsForm: TNamesFormsForm
       Height = 370
       Align = alLeft
       AutoFitColWidths = True
+      Constraints.MaxWidth = 500
+      Constraints.MinWidth = 50
       DataSource = dsNames
       Flat = True
       Font.Charset = DEFAULT_CHARSET

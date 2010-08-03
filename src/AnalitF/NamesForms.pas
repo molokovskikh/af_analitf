@@ -600,8 +600,11 @@ end;
 
 procedure TNamesFormsForm.FormResize(Sender: TObject);
 begin
-  if not actNewSearch.Checked then
+  if not actNewSearch.Checked then begin
+    if dbgNames.Constraints.MaxWidth <> pnlTopOld.ClientWidth div 2 then
+      dbgNames.Constraints.MaxWidth := pnlTopOld.ClientWidth div 2;
     adsForms2AfterScroll(adsForms);
+  end;
 end;
 
 procedure TNamesFormsForm.actShowAllExecute(Sender: TObject);
