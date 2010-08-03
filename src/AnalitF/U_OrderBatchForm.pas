@@ -346,8 +346,8 @@ begin
 
   TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
   TDBGridHelper.AddColumn(dbgCore, 'SynonymFirm', 'Производитель', 85);
-  TDBGridHelper.AddColumn(dbgCore, 'Volume', 'Упаковка', 63);
-  TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 69);
+  TDBGridHelper.AddColumn(dbgCore, 'Volume', 'Упаковка', 30);
+  TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 30);
   column := TDBGridHelper.AddColumn(dbgCore, 'Doc', 'Документ');
   column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Period', 'Срок годн.', 85);
@@ -355,18 +355,26 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'PriceName', 'Прайс-лист', 85);
   column := TDBGridHelper.AddColumn(dbgCore, 'RegionName', 'Регион', 72);
   column.Visible := False;
+{
   column := TDBGridHelper.AddColumn(dbgCore, 'Storage', 'Склад', 37);
   column.Alignment := taCenter;
   column.Visible := False;
   column.Checkboxes := False;
+}  
   TDBGridHelper.AddColumn(dbgCore, 'DatePrice', 'Дата прайс-листа', 'dd.mm.yyyy hh:nn', 103);
-  TDBGridHelper.AddColumn(dbgCore, 'registrycost', 'Реестр. цена', '0.00;;''''', 0);
-  TDBGridHelper.AddColumn(dbgCore, 'requestratio', 'Кратность');
-  TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин. сумма', '0.00;;''''', 0);
-  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во');
+  TDBGridHelper.AddColumn(dbgCore, 'requestratio', 'Кратность', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин. сумма', '0.00;;''''', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'registrycost', 'Реестр. цена', '0.00;;''''', 20);
+
+  TDBGridHelper.AddColumn(dbgCore, 'MaxProducerCost', 'Пред. зарег. цена', '0.00;;''''', 30);
+  TDBGridHelper.AddColumn(dbgCore, 'ProducerCost', 'Цена производителя', '0.00;;''''', 30);
+  TDBGridHelper.AddColumn(dbgCore, 'SupplierPriceMarkup', 'Наценка поставщика', '0.00;;''''', 30);
+  TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', '#', 20);
+
   //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
   if DM.adtClientsAllowDelayOfPayment.Value then
-    column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена поставщика');
+    column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена поставщика', 30);
   //column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
   column.Font.Style := [fsBold];
