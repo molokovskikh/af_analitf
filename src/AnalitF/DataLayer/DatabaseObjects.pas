@@ -1127,6 +1127,11 @@ begin
   if Length(backupDir) = 0 then
     backupDir := SDirTableBackup;
 
+  if not Self.Initialized then begin
+    WriteExchangeLog('DatabaseController.RepairTableFromBackup', 'ѕопытка восстановлени€ без инициализации DatabaseController');
+    Exit;
+  end;
+
   for I := 0 to FDatabaseObjects.Count-1 do begin
     if FDatabaseObjects[i] is TDatabaseTable then begin
       currentTable := TDatabaseTable(FDatabaseObjects[i]);

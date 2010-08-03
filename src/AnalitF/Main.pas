@@ -440,6 +440,17 @@ try
     Exit;
   end;
 
+  if DM.CreateClearDatabase and (DM.adtParams.FieldByName('HTTPName').AsString <> '')
+  then begin
+    WriteExchangeLog('AnalitF',
+      '¬ыполнено пересоздание базы данных с восстановлением учетных данных из TableBackup,' +
+      'будет произведено кумул€тивное обновление.');
+    RunExchange([eaGetPrice, eaGetFullData]);
+    //¬ любом случае сразу же выходим из данной секции, т.к. либо обновились и все хорошо,
+    //либо обновление не помогло и надо ждать помощи от техподдержки
+    Exit;
+  end;
+
   if ExchangeOnly then exit;
   // ѕрограмма только что установлена или не обновл€лись больше 20 часов }
   if (DM.adtParams.FieldByName( 'UpdateDateTime').IsNull and (Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> ''))

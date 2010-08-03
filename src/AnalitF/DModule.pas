@@ -2287,6 +2287,12 @@ begin
       finally
         MyDump.Free;
       end;
+
+      if not DatabaseController.Initialized then begin
+        mainStartupHelper.Write('DModule.CreateClearDatabase', 'Начали инициализацию объектов базы данных');
+        DatabaseController.Initialize(FEmbConnection);
+        mainStartupHelper.Write('DModule.CreateClearDatabase', 'Закончили инициализацию объектов базы данных');
+      end;
     finally
       FEmbConnection.Close;
     end;
@@ -3124,6 +3130,7 @@ procedure TDM.RestoreDatabaseFromPrevios(dbCon: TCustomMyConnection;
 var
   Succes : Boolean;
   RepeatCount : Integer;
+  FEmbConnection : TMyEmbConnection;
 begin
   Succes := False;
   RepeatCount := 0;
@@ -3152,6 +3159,42 @@ begin
         raise;
     end;
   until Succes;
+
+  FEmbConnection := TMyEmbConnection.Create(nil);
+  FEmbConnection.Database := '';
+  FEmbConnection.Username := MainConnection.Username;
+  FEmbConnection.DataDir := DBDirectoryName;
+  FEmbConnection.Options := TMyEmbConnection(MainConnection).Options;
+  FEmbConnection.Params.Clear;
+  FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+  FEmbConnection.LoginPrompt := False;
+
+  try
+
+    FEmbConnection.Open;
+    try
+      if not DatabaseController.Initialized then begin
+        mainStartupHelper.Write('DModule.RestoreDatabaseFromPrevios', 'Начали инициализацию объектов базы данных');
+        DatabaseController.Initialize(FEmbConnection);
+        mainStartupHelper.Write('DModule.RestoreDatabaseFromPrevios', 'Закончили инициализацию объектов базы данных');
+      end;
+    finally
+      FEmbConnection.Close;
+    end;
+
+  finally
+    FEmbConnection.Free;
+  end;
+  //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
+  //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
+  if MainConnection is TMyEmbConnection then
+  begin
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      LogCriticalError(Format('MySql Clients Count после восстановления базы данных: %d',
+        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+  end;
+
   DatabaseController.RepairTableFromBackup();
 end;
 
