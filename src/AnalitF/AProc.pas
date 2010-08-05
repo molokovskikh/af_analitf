@@ -192,8 +192,19 @@ begin
       Result := ID_OK;
   end
   else begin
-    if Screen.ActiveForm=nil then H:=0 else H:=Screen.ActiveForm.Handle;
-    Result := Windows.MessageBox(H, PChar(MesStr), PChar(Caption), Icon);
+    if Screen.ActiveForm=nil then
+      H := Application.Handle
+    else begin
+      if AnsiCompareText(Screen.ActiveForm.ClassName, 'TExchangeForm') = 0 then
+        H := Application.Handle
+      else
+        H := Screen.ActiveForm.Handle;
+    end;
+    {
+      Решил передавать всегда Application.Handle вместо H
+      Если надо будет, то к Icon надо будет добавить "or MB_TASKMODAL".
+    }
+    Result := Windows.MessageBox(Application.Handle {H}, PChar(MesStr), PChar(Caption), Icon);
   end;
 end;
 
