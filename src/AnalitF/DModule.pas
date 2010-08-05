@@ -331,8 +331,6 @@ type
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
-    procedure MySQLMonitorSQL(Sender: TObject; Text: String;
-      Flag: TDATraceFlag);
     procedure adtParamsAfterPost(DataSet: TDataSet);
     procedure adtReceivedDocsAfterPost(DataSet: TDataSet);
   private
@@ -437,6 +435,10 @@ type
     procedure PrepareUpdateToNewLibMySqlD;
 {$ifdef USEMEMORYCRYPTDLL}
     procedure CheckSpecialLibrary;
+{$endif}
+{$ifdef DEBUG}
+    procedure MySQLMonitorSQL(Sender: TObject; Text: String;
+      Flag: TDATraceFlag);
 {$endif}
   public
     FFS : TFormatSettings;
@@ -855,6 +857,10 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
 begin
+{$ifdef DEBUG}
+  MySQLMonitor.Active := False;
+  MySQLMonitor.OnSQL := MySQLMonitorSQL;
+{$endif}
   FRetMargins := TObjectList.Create(True);
   FVitallyImportantMarkups := TObjectList.Create(True);;
 
@@ -2708,6 +2714,7 @@ begin
   end;
 end;
 
+{$ifdef DEBUG}
 procedure TDM.MySQLMonitorSQL(Sender: TObject; Text: String;
   Flag: TDATraceFlag);
 const
@@ -2734,10 +2741,11 @@ begin
   else //adsDocumentBodies
     if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsDocumentBodies') then
     WriteExchangeLog('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
-}
     if (Sender is TMyQuery) and (TMyQuery(Sender).Name = 'adsOrdersHForm') then
     WriteExchangeLog('Monitor', Format('Sender : %s  Flag : %s'#13#10'Text : %s ', [Sender.ClassName, DATraceFlagNames[Flag], Text]))
+}
 end;
+{$endif}
 
 {$ifdef TestEmbeddedMysql}
 procedure TDM.TestEmbeddedMysql;
