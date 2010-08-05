@@ -206,7 +206,7 @@ begin
 				TotalProgress := 10;
 				Synchronize( SetTotalProgress);
         //Отправяем настройки прайс-листов при запросе данных (обычно или кумулятивном)
-        if (eaGetPrice in ExchangeForm.ExchangeActs)
+        if ([eaGetPrice, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
           and not DM.adsUser.FieldByName('InheritPrices').AsBoolean
         then
         begin
