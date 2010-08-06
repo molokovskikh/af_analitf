@@ -238,15 +238,6 @@ begin
     if (StatusField.Value and Integer(osOptimalCost)) > 0 then
       Background := lOptimalCost.Color
     else
-    if ((StatusField.Value and Integer(osNotOrdered)) > 0) and (OrderCountField.Value < 1) then
-      Background := lAnotherError.Color
-    else
-    if ((StatusField.Value and Integer(osNotOrdered)) > 0) and ((StatusField.Value and Integer(OffersExists)) = 0) then
-      Background := lAnotherError.Color
-    else
-    if (StatusField.Value and Integer(osNotEnoughQuantity)) > 0 then
-      Background := lAnotherError.Color
-    else
     if (StatusField.Value and Integer(osNotOrdered)) > 0 then
       Background := lAnotherError.Color
   end;
