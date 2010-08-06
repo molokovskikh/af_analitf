@@ -1,6 +1,7 @@
 inherited OrderBatchForm: TOrderBatchForm
   Caption = #1040#1074#1090#1086#1047#1072#1082#1072#1079
   OnDestroy = FormDestroy
+  OnHide = FormHide
   PixelsPerInch = 96
   TextHeight = 13
   inherited tCheckVolume: TTimer

@@ -81,6 +81,7 @@ type
     procedure tmrUpdatePreviosOrdersTimer(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
     BM : TBitmap;
@@ -331,6 +332,7 @@ begin
   TDBGridHelper.AddColumn(dbgHistory, 'OrderDate', 'Дата', 0);
 
   dbgCore := TToughDBGrid.Create(Self);
+  dbgCore.Name := 'dbgCore';
   dbgCore.Parent := pBottom;
   dbgCore.Align := alClient;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgCore);
@@ -393,6 +395,7 @@ begin
   pGrid.Parent := Self;
 
   dbgOrderBatch := TToughDBGrid.Create(Self);
+  dbgOrderBatch.Name := 'dbgOrderBatch';
   dbgOrderBatch.Parent := pGrid;
   dbgOrderBatch.Align := alClient;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgOrderBatch);
@@ -644,6 +647,9 @@ begin
   dbgOrder.Align := alClient;
   dbgOrder.DataSource := dsOrder;
 }
+
+  TDBGridHelper.RestoreColumnsLayout(dbgOrderBatch, Self.ClassName);
+  TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
 
   inherited;
 
@@ -1025,6 +1031,15 @@ begin
   C := dbgOrderBatch.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
     actFlipCoreExecute(nil);
+end;
+
+procedure TOrderBatchForm.FormHide(Sender: TObject);
+begin
+  inherited;
+  if Assigned(dbgOrderBatch) then
+    TDBGridHelper.SaveColumnsLayout(dbgOrderBatch, Self.ClassName);
+  if Assigned(dbgCore) then
+    TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
 end;
 
 end.
