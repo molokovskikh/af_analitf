@@ -1323,45 +1323,61 @@ begin
 	  SQL.Text:='truncate Providers;';
     InternalExecute;
 	end;
-	//Core
-	if utCore in UpdateTables then begin
-    //”даление из Core старых прайсов и обновление ServerCoreID в MinPrices
-    //SELECT cast(PriceCode as BIGINT) FROM ExtPricesData where Fresh = ''1''
-    DM.adcUpdate.SQL.Text := 'SELECT PriceCode FROM tmpPricesData where Fresh = 1;';
-    deletedPriceCodes := TStringList.Create;
+
+  //”даление из Core старых прайсов и обновление ServerCoreID в MinPrices
+  DM.adcUpdate.SQL.Text := 'SELECT PriceCode FROM tmpPricesData where Fresh = 1;';
+  deletedPriceCodes := TStringList.Create;
+  try
+
+    //получили список обновленных файлов
+    DM.adcUpdate.Open;
     try
-
-      //получили список обновленных файлов
-      DM.adcUpdate.Open;
-      try
-        while not DM.adcUpdate.Eof do begin
-          deletedPriceCodes.Add(DM.adcUpdate.FieldByName('PriceCode').AsString);
-          DM.adcUpdate.Next;
-        end
-      finally
-        DM.adcUpdate.Close;
-      end;
-
-      DM.adcUpdate.SQL.Text := 'delete from core where PriceCode = :PriceCode;';
-      for I := 0 to deletedPriceCodes.Count-1 do begin
-        DM.adcUpdate.ParamByName('PriceCode').AsString := deletedPriceCodes[i];
-        InternalExecute;
-      end;
-
+      while not DM.adcUpdate.Eof do begin
+        deletedPriceCodes.Add(DM.adcUpdate.FieldByName('PriceCode').AsString);
+        DM.adcUpdate.Next;
+      end
     finally
-      deletedPriceCodes.Free;
+      DM.adcUpdate.Close;
     end;
 
-	  SQL.Text:='truncate minprices ;';
+    DM.adcUpdate.SQL.Text := 'delete from core where PriceCode = :PriceCode;';
+    for I := 0 to deletedPriceCodes.Count-1 do begin
+      DM.adcUpdate.ParamByName('PriceCode').AsString := deletedPriceCodes[i];
+      InternalExecute;
+      //≈сли при удалении удалились какие-то записи из таблицы,
+      //то помечаем Core и MinPrices на обновление
+      if DM.adcUpdate.RowsAffected > 0 then
+        UpdateTables := UpdateTables + [utCore, utMinPrices];
+    end;
+
+  finally
+    deletedPriceCodes.Free;
+  end;
+
+  //”дал€ем прайс-листы, которых нет в PricesRegionalData
+  SQL.Text:='' +
+    ' DELETE FROM Core ' +
+    ' using ' +
+    '   Core ' +
+    '   left join PricesRegionalData on PricesRegionalData.PriceCode=Core.PriceCode AND PricesRegionalData.RegionCode=Core.RegionCode ' +
+    ' WHERE ' +
+    '     (Core.PriceCode is not null) ' +
+    ' and (PricesRegionalData.PriceCode is null);';
+  InternalExecute;
+  //≈сли при удалении удалились какие-то записи из таблицы,
+  //то помечаем Core и MinPrices на обновление
+  if DM.adcUpdate.RowsAffected > 0 then
+    UpdateTables := UpdateTables + [utCore, utMinPrices];
+
+	//Core
+	if utCore in UpdateTables then begin
+    //ќбновление ServerCoreID в MinPrices
+    SQL.Text:='truncate minprices ;';
     InternalExecute;
 
     //здесь сбрасываем дл€ всех неотправленных заказов состо€ние результата,
     //т.к. при восстановлении будем устанавливать заново
     SQL.Text := DM.GetClearSendResultSql(0);
-    InternalExecute;
-	end;
-	if utCore in UpdateTables then begin
- 	  SQL.Text:='DELETE FROM Core WHERE PriceCode is not null and NOT Exists(SELECT PriceCode, RegionCode FROM PricesRegionalData WHERE PriceCode=Core.PriceCode AND RegionCode=Core.RegionCode);';
     InternalExecute;
 	end;
   //Clients
