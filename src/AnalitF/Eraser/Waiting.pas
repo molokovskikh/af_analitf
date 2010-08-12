@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls,
+  UpdateExeThread;
 
 type
   TWaitingForm = class(TForm)
@@ -22,13 +23,13 @@ type
     { Public declarations }
   end;
 
-procedure ShowWaiting( Information : String; ChildThread: TThread);
+procedure ShowWaiting( Information : String; ChildThread: TUpdateExeThread);
 
 implementation
 
 {$R *.dfm}
 
-procedure ShowWaiting( Information : String; ChildThread: TThread);
+procedure ShowWaiting( Information : String; ChildThread: TUpdateExeThread);
 var
 	WaitingForm: TWaitingForm;
 begin
@@ -39,6 +40,7 @@ begin
     ChildThread.OnTerminate := WaitingForm.OnTerminate;
     try
       WaitingForm.Animate1.Active := True;
+      ChildThread.WaitFormHandle := WaitingForm.Handle;
       ChildThread.Resume;
       WaitingForm.ShowModal
     finally
