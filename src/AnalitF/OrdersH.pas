@@ -9,7 +9,7 @@ uses
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, 
   SQLWaiting, ShellAPI, GridsEh, MemDS,
   DBAccess, MyAccess, MemData, Orders,
-  U_frameOrderHeadLegend;
+  U_frameOrderHeadLegend, Menus;
 
 type
   TOrdersHForm = class(TChildForm)
@@ -72,6 +72,7 @@ type
     btnFrozen: TButton;
     btnUnFrozen: TButton;
     sbMoveToClient: TSpeedButton;
+    pmDestinationClients: TPopupMenu;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -97,6 +98,7 @@ type
     procedure dbgCurrentOrdersColumns4GetCellParams(Sender: TObject;
       EditMode: Boolean; Params: TColCellParamsEh);
     procedure btnUnFrozenClick(Sender: TObject);
+    procedure sbMoveToClientClick(Sender: TObject);
   private
     Strings: TStrings;
     //Список выбранных строк в гридах
@@ -106,11 +108,15 @@ type
     procedure SetDateInterval;
     procedure OrderEnter;
     procedure FillSelectedRows(Grid : TToughDBGrid);
+    procedure FillDestinationClients;
+    procedure MoveToClient(DestinationClientId : Integer);
+    procedure OnDectinationClientClick(Sender: TObject);
   protected
     FOrdersForm: TOrdersForm;
     RestoreUnFrozenOrMoveToClient : Boolean;
+    InternalDestinationClientId : Integer;
   public
-    frameOrderHeadLegend : TframeOrderHeadLegend; 
+    frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
@@ -142,6 +148,7 @@ begin
   else
     if DM.adtClients.RecordCount = 2 then
       sbMoveToClient.Glyph := nil;
+  FillDestinationClients;    
 
   frameOrderHeadLegend := TframeOrderHeadLegend.Create(Self);
   frameOrderHeadLegend.Parent := pGrid;
@@ -332,6 +339,7 @@ end;
 procedure TOrdersHForm.MoveToPrice;
 begin
   RestoreUnFrozenOrMoveToClient := False;
+  InternalDestinationClientId := 0;
   if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>1) then Exit;
 
   if FSelectedRows.Count = 0 then Exit;
@@ -617,7 +625,10 @@ begin
           SynonymFirmCrCode:=FOrdersForm.adsOrdersSynonymFirmCrCode.AsVariant;
 
           with adsCore do begin
-            ParamByName( 'ClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
+            if RestoreUnFrozenOrMoveToClient and (InternalDestinationClientId <> 0) then
+              ParamByName( 'ClientId').Value := InternalDestinationClientId
+            else
+              ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
             ParamByName( 'PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
             ParamByName( 'RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
             ParamByName( 'SynonymCode').Value:=SynonymCode;
@@ -833,6 +844,7 @@ begin
       then begin
 
         RestoreUnFrozenOrMoveToClient := True;
+        InternalDestinationClientId := 0;
         Strings:=TStringList.Create;
         try
           ShowSQLWaiting(InternalMoveToPrice, 'Происходит "размороживание" заявок');
@@ -848,7 +860,7 @@ begin
           finally
             Grid.DataSource.DataSet.EnableControls;
           end;
-          
+
           //если не нашли что-то, то выводим сообщение
           if Strings.Count > 0 then ShowNotFound(Strings);
 
@@ -867,6 +879,113 @@ begin
     dbgCurrentOrders.ReadOnly := False;
     dbgSendedOrders.ReadOnly := False;
   end;
+end;
+
+procedure TOrdersHForm.MoveToClient(DestinationClientId: Integer);
+var
+  Grid : TToughDBGrid;
+  I : Integer;
+  Strings : TStringList;
+begin
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Exit;
+
+  Grid.SetFocus;
+  if not adsOrdersHForm.IsEmpty then
+  begin
+    FillSelectedRows(Grid);
+    if FSelectedRows.Count > 0 then
+      if AProc.MessageBox(
+          'Внимание! Перемещяемые заявки будут объеденены с текущими заявками.'#13#10 +
+          'Перенести выбранные заявки?',
+          MB_ICONQUESTION or MB_OKCANCEL) = IDOK
+      then begin
+
+        RestoreUnFrozenOrMoveToClient := True;
+        InternalDestinationClientId := DestinationClientId;
+        Strings:=TStringList.Create;
+        try
+          ShowSQLWaiting(InternalMoveToPrice, 'Происходит перемещение заявок');
+
+          Grid.DataSource.DataSet.DisableControls;
+          try
+            for I := 0 to FSelectedRows.Count-1 do begin
+              Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
+              Grid.DataSource.DataSet.Delete
+            end;
+            Grid.DataSource.DataSet.Refresh;
+          finally
+            Grid.DataSource.DataSet.EnableControls;
+          end;
+
+          //если не нашли что-то, то выводим сообщение
+          if Strings.Count > 0 then ShowNotFound(Strings);
+
+        finally
+          Strings.Free;
+        end;
+
+        MainForm.SetOrdersInfo;
+      end;
+  end;
+  if adsOrdersHForm.RecordCount = 0 then begin
+    dbgCurrentOrders.ReadOnly := True;
+    dbgSendedOrders.ReadOnly := True;
+  end
+  else begin
+    dbgCurrentOrders.ReadOnly := False;
+    dbgSendedOrders.ReadOnly := False;
+  end;
+end;
+
+procedure TOrdersHForm.sbMoveToClientClick(Sender: TObject);
+begin
+  if pmDestinationClients.Items.Count > 0 then
+    if pmDestinationClients.Items.Count = 1 then
+      pmDestinationClients.Items[0].Click
+    else
+      pmDestinationClients.Popup(sbMoveToClient.ClientOrigin.X + sbMoveToClient.Width, sbMoveToClient.ClientOrigin.Y);
+end;
+
+procedure TOrdersHForm.FillDestinationClients;
+var
+  mi : TMenuItem;
+  DestinationClientId : Integer;
+  DestinationClientName : String;
+begin
+  pmDestinationClients.Items.Clear;
+
+  DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := 'SELECT * FROM CLIENTS where ClientId <> :ClientId';
+  DM.adsQueryValue.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  DM.adsQueryValue.Open;
+  try
+    while not DM.adsQueryValue.Eof do begin
+      DestinationClientId := DM.adsQueryValue.FieldByName('ClientId').AsInteger;
+      DestinationClientName := DM.adsQueryValue.FieldByName('Name').AsString;
+
+      mi := TMenuItem.Create(pmDestinationClients);
+      mi.Name := 'dc' + IntToStr(DestinationClientId);
+      mi.Caption := DestinationClientName;
+      mi.Tag := DestinationClientId;
+      mi.OnClick := OnDectinationClientClick;
+      pmDestinationClients.Items.Add(mi);
+
+      DM.adsQueryValue.Next;
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TOrdersHForm.OnDectinationClientClick(Sender: TObject);
+var
+  mi : TMenuItem;
+begin
+  mi := TMenuItem(Sender);
+  MoveToClient(mi.Tag);
 end;
 
 end.

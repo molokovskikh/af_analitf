@@ -56,6 +56,7 @@ inherited OrdersHForm: TOrdersHForm
             00003333333330000000}
           Layout = blGlyphRight
           Spacing = 10
+          OnClick = sbMoveToClientClick
         end
         object btnMoveSend: TButton
           Left = 163
@@ -1565,5 +1566,9 @@ inherited OrdersHForm: TOrdersHForm
         DataType = ftUnknown
         Name = 'DateTo'
       end>
+  end
+  object pmDestinationClients: TPopupMenu
+    Left = 164
+    Top = 459
   end
 end
