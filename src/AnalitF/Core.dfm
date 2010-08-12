@@ -1530,7 +1530,7 @@ object CoreForm: TCoreForm
       '  Core,'
       '  Producers p'
       'where'
-      '    (Catalogs.FullCode = :ParentCode)'
+      '    (Catalogs.ShortCode = :ParentCode)'
       'and (products.catalogid = catalogs.fullcode)'
       'and (Core.productid = products.productid)'
       'and (p.Id = Core.CodeFirmCr)  '
