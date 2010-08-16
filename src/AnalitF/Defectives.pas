@@ -84,6 +84,7 @@ begin
 	PrintQuery := adsPrint.SQL.Text;
   adsDefectives.IndexFieldNames := 'LetterDate';
 	OrderField:='LetterDate';
+  SetDateInterval;
   TDBGridHelper.RestoreColumnsLayout(dbgDefectives, Self.ClassName);
 	ShowForm;
 end;
@@ -115,13 +116,6 @@ end;
 
 procedure TDefectivesForm.SetOrderField(Value: string);
 begin
-{
-  with adsDefectives do begin
-    Close;
-    adsDefectives.IndexFieldNames := Value;
-    SetDateInterval;
-  end;
-}  
   FOrderField:=AnsiUpperCase(Trim(Value));
 end;
 
