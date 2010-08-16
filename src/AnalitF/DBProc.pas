@@ -19,6 +19,7 @@ function GetConnectionProperty(const ConnectionString, PropertyName: string): st
 function SetConnectionProperty(const ConnectionString, PropertyName,
   PropertyValue: string): string;
 procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
+procedure MyDacDataSetSortMarkingChangedForMemo(DBGrid : TToughDBGrid);
 function  QueryValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
   Values: array of Variant): Variant;
 procedure ReplaceAutoIncrement(SQL : TStrings);
@@ -236,6 +237,42 @@ begin
   end;
 
   MyDacDataSet.IndexFieldNames := SortConditions;
+end;
+
+procedure MyDacDataSetSortMarkingChangedForMemo(DBGrid : TToughDBGrid);
+var
+  MyDacDataSet : TCustomMyDataSet;
+  SortConditions : String;
+  I : Integer;
+  MemoExists : Boolean;
+  SqlText : String;
+begin
+  MyDacDataSet := TCustomMyDataSet(DBGrid.DataSource.DataSet);
+  MemoExists := False;
+  SortConditions := '';
+
+  for I := 0 to DBGrid.SortMarkedColumns.Count-1 do begin
+    if SortConditions <> '' then
+      SortConditions := SortConditions + ';';
+    if DBGrid.SortMarkedColumns[i].Field.DataType = ftMemo then
+      MemoExists := True;
+    SortConditions := SortConditions + DBGrid.SortMarkedColumns[i].Field.FieldName;
+    if DBGrid.SortMarkedColumns[i].Title.SortMarker = smDownEh then
+      SortConditions := SortConditions + ' DESC';
+  end;
+
+  if not MemoExists then
+    MyDacDataSet.IndexFieldNames := SortConditions
+  else begin
+    MyDacDataSet.IndexFieldNames := '';
+    if SortConditions = '' then
+      MyDacDataSet.RestoreSQL
+    else
+      MyDacDataSet.SetOrderBy(SortConditions);
+    SqlText := MyDacDataSet.SQL.Text;
+    SqlText := SqlText + ';'; 
+    MyDacDataSet.Open;
+  end;
 end;
 
 function  QueryValue(Database: TCustomMyConnection; SQL: String; Params: array of string;

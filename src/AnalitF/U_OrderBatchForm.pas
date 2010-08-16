@@ -132,6 +132,14 @@ type
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure dbgOrderBatchDblClick(Sender: TObject);
 
+    function AddLargeIntField(dataSet : TDataSet; FieldName : String) : TLargeintField;
+    function AddStringField(dataSet : TDataSet; FieldName : String) : TStringField;
+    function AddIntegerField(dataSet : TDataSet; FieldName : String) : TIntegerField;
+    function AddMemoField(dataSet : TDataSet; FieldName : String) : TMemoField;
+    function AddFloatField(dataSet : TDataSet; FieldName : String) : TFloatField;
+    function AddBooleanField(dataSet : TDataSet; FieldName : String) : TBooleanField;
+    function AddSmallintField(dataSet : TDataSet; FieldName : String) : TSmallintField;
+
   public
     { Public declarations }
 
@@ -186,6 +194,17 @@ type
     FullcodeField : TLargeintField;
     ShortCodeField : TLargeintField;
     MnnField : TLargeintField;
+    CommentField : TField;
+
+    SimpleStatusField : TStringField;
+    SynonymFirmField : TStringField;
+    PriceNameField : TStringField;
+    RealCostField : TFloatField;
+    CostField : TFloatField;
+    RetailSummField : TFloatField;
+    DescriptionIdField : TLargeintField;
+    CatalogVitallyImportantField : TSmallintField;
+    CatalogMandatoryListField : TSmallintField;
 
     CurrentFilter : TFilterReport;
 
@@ -253,19 +272,6 @@ begin
   dbgHistory.DataSource := dsPreviosOrders;
 
   dbgCore.DataSource := dsCore;
-
-  IdField := TLargeintField (adsReport.FieldByName('Id'));
-  ProducerStatusField := TField (adsReport.FieldByName('ProducerStatus'));;
-  ProducerStatusField.OnGetText := ProducerStatusGetText;
-  SynonymNameField := TStringField (adsReport.FieldByName('SynonymName'));
-  ProductIdField := TLargeintField  (adsReport.FieldByName('ProductId'));
-  OrderListIdField := TLargeintField  (adsReport.FieldByName('OrderListId'));
-  StatusField := TIntegerField  (adsReport.FieldByName('Status'));
-  CoreIdField := TLargeintField (adsReport.FieldByName('CoreId'));
-  OrderCountField := TIntegerField (adsReport.FieldByName('OrderCount'));
-  FullcodeField := TLargeintField (adsReport.FieldByName('Fullcode'));
-  ShortCodeField := TLargeintField (adsReport.FieldByName('ShortCode'));
-  MnnField := TLargeintField (adsReport.FieldByName('MnnId'));
 end;
 
 procedure TOrderBatchForm.CreateBottomPanel;
@@ -481,6 +487,32 @@ begin
   adsReport.AfterOpen := UpdatePreviosOrders;
   adsReport.AfterScroll := UpdatePreviosOrders;
 
+  IdField := AddLargeintField(adsReport, 'Id');
+  ProducerStatusField := AddLargeintField(adsReport, 'ProducerStatus');
+  ProducerStatusField.OnGetText := ProducerStatusGetText;
+  SynonymNameField := AddStringField(adsReport, 'SynonymName');
+  ProductIdField := AddLargeintField(adsReport, 'ProductId');
+  OrderListIdField := AddLargeintField(adsReport, 'OrderListId');
+  StatusField := AddIntegerField(adsReport, 'Status');
+  CoreIdField := AddLargeintField(adsReport, 'CoreId');
+  OrderCountField := AddIntegerField(adsReport, 'OrderCount');
+  FullcodeField := AddLargeintField(adsReport, 'Fullcode');
+  ShortCodeField := AddLargeintField(adsReport, 'ShortCode');
+  MnnField := AddLargeintField (adsReport, 'MnnId');
+  CommentField := AddMemoField(adsReport, 'Comment');
+
+  SimpleStatusField := AddStringField(adsReport, 'SimpleStatus');
+  SynonymFirmField := AddStringField(adsReport, 'SynonymFirm');
+  PriceNameField := AddStringField(adsReport, 'PriceName');
+  RealCostField := AddFloatField(adsReport, 'RealCost');
+  CostField := AddFloatField(adsReport, 'Cost');
+  RetailSummField := AddFloatField(adsReport, 'RetailSumm');
+
+  DescriptionIdField := AddLargeintField(adsReport, 'DescriptionId');
+  CatalogVitallyImportantField := AddSmallintField(adsReport, 'CatalogVitallyImportant');
+  CatalogMandatoryListField := AddSmallintField(adsReport, 'CatalogMandatoryList');
+  
+
   dsReport := TDataSource.Create(Self);
   dsReport.DataSet := adsReport;
 
@@ -643,9 +675,11 @@ begin
   dsOrder := TDataSource.Create(Self);
   dsOrder.DataSet := adsOrder;
   dbgOrder := TToughDBGrid.Create(Self);
+  dbgOrder.DrawMemoText := True;
   dbgOrder.Parent := pBottom;
   dbgOrder.Align := alClient;
   dbgOrder.DataSource := dsOrder;
+  TDBGridHelper.SetTitleButtonToColumns(dbgOrder);
 }
 
   TDBGridHelper.RestoreColumnsLayout(dbgOrderBatch, Self.ClassName);
@@ -893,7 +927,7 @@ end;
 
 procedure TOrderBatchForm.ReportSortMarkingChanged(Sender: TObject);
 begin
-  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+  MyDacDataSetSortMarkingChangedForMemo( TToughDBGrid(Sender) );
 end;
 
 procedure TOrderBatchForm.EditRuleClick(Sender: TObject);
@@ -1040,6 +1074,62 @@ begin
     TDBGridHelper.SaveColumnsLayout(dbgOrderBatch, Self.ClassName);
   if Assigned(dbgCore) then
     TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
+end;
+
+function TOrderBatchForm.AddLargeIntField(
+  dataSet: TDataSet; FieldName : String): TLargeintField;
+begin
+  Result := TLargeintField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
+end;
+
+function TOrderBatchForm.AddStringField(dataSet: TDataSet;
+  FieldName: String): TStringField;
+begin
+  Result := TStringField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
+end;
+
+function TOrderBatchForm.AddIntegerField(dataSet: TDataSet;
+  FieldName: String): TIntegerField;
+begin
+  Result := TIntegerField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
+end;
+
+function TOrderBatchForm.AddMemoField(dataSet: TDataSet;
+  FieldName: String): TMemoField;
+begin
+  Result := TMemoField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
+end;
+
+function TOrderBatchForm.AddFloatField(dataSet: TDataSet;
+  FieldName: String): TFloatField;
+begin
+  Result := TFloatField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
+end;
+
+function TOrderBatchForm.AddBooleanField(dataSet: TDataSet;
+  FieldName: String): TBooleanField;
+begin
+  Result := TBooleanField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
+end;
+
+function TOrderBatchForm.AddSmallintField(dataSet: TDataSet;
+  FieldName: String): TSmallintField;
+begin
+  Result := TSmallintField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
 end;
 
 end.
