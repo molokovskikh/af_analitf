@@ -376,6 +376,7 @@ class procedure TDBGridHelper.SetDefaultSettingsToGrid(Grid : TCustomDBGridEh);
 begin
   Grid.MinAutoFitWidth := DBGridColumnMinWidth;
   Grid.AutoFitColWidths := True;
+  Grid.AllowedSelections := [gstRecordBookmarks, gstRectangle]; 
   Grid.Flat := True;
   Grid.Options := [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgRowLines];
   Grid.OptionsEh := [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight];

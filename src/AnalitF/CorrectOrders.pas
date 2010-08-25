@@ -943,6 +943,7 @@ end;
 
 procedure TCorrectOrdersForm.SetGridParams(Grid: TToughDBGrid);
 begin
+  Grid.AllowedSelections := [gstRecordBookmarks, gstRectangle]; 
   Grid.Options := Grid.Options + [dgRowLines];
 {
   if CheckWin32Version(5, 1) then
