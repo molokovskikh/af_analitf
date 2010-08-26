@@ -330,6 +330,7 @@ end;
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
 var
   I : Integer;
+  LoggedOn : Boolean;
 begin
   //Вызываем это для того, чтобы произошла отрисовка pbSelectClient после обновления,
   //из-за чего может измениться список клиентов
@@ -359,12 +360,13 @@ try
 
 
   // Логин пустой
-	if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
-	begin
-		AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
-			MB_ICONWARNING or MB_OK);
-		ShowConfig( True);
-	end;
+  LoggedOn := False;
+  if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
+  begin
+    AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
+      MB_ICONWARNING or MB_OK);
+    LoggedOn := ShowConfig( True);
+  end;
 
   // Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации
   if FindCmdLineSwitch('renew') then
@@ -440,7 +442,7 @@ try
     Exit;
   end;
 
-  if DM.CreateClearDatabase and (DM.adtParams.FieldByName('HTTPName').AsString <> '')
+  if DM.CreateClearDatabase and (DM.adtParams.FieldByName('HTTPName').AsString <> '') and not LoggedOn
   then begin
     WriteExchangeLog('AnalitF',
       'Выполнено пересоздание базы данных с восстановлением учетных данных из TableBackup,' +
