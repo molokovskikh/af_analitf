@@ -501,11 +501,13 @@ inherited OrdersForm: TOrdersForm
       '    Mnn.Mnn,'
       '    ol.RetailMarkup,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
-      '    ol.Period'
+      '    ol.Period,'
+      '    Producers.Name as ProducerName'
       'FROM '
       '  CurrentOrderLists ol'
       '  left join products on products.productid = ol.productid'
       '  left join catalogs on catalogs.fullcode = products.catalogid '
+      '  left join Producers on Producers.Id = ol.CodeFirmCr'
       '  left join Mnn on mnn.Id = Catalogs.MnnId'
       '  left join GroupMaxProducerCosts on '
       '    (GroupMaxProducerCosts.ProductId = ol.productid) '
@@ -680,6 +682,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersPeriod: TStringField
       FieldName = 'Period'
+    end
+    object adsOrdersProducerName: TStringField
+      FieldName = 'ProducerName'
     end
   end
   object ActionList: TActionList

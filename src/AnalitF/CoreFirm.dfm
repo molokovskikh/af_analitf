@@ -670,7 +670,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Core CCore'
       
@@ -682,6 +683,7 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    left join Producers on Producers.Id = CCore.CodeFirmCr'
       '    left join Mnn             on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = CCore.productid) '
@@ -786,7 +788,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Core CCore'
       
@@ -798,6 +801,7 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    left join Producers on Producers.Id = CCore.CodeFirmCr'
       '    left join Mnn             on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = CCore.productid) '
@@ -1129,6 +1133,9 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreBuyingMatrixType: TIntegerField
       FieldName = 'BuyingMatrixType'
     end
+    object adsCoreProducerName: TStringField
+      FieldName = 'ProducerName'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1200,7 +1207,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       
         '    (select * from synonyms where (synonyms.SynonymName like :Li' +
@@ -1215,6 +1223,7 @@ object CoreFirmForm: TCoreFirmForm
       
         '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
         'oductid) and (minprices.regioncode = CCore.regioncode)'
+      '    left join Producers on Producers.Id = CCore.CodeFirmCr'
       '    left join Mnn             on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = CCore.productid) '

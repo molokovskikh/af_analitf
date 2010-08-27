@@ -205,6 +205,7 @@ type
     DescriptionIdField : TLargeintField;
     CatalogVitallyImportantField : TSmallintField;
     CatalogMandatoryListField : TSmallintField;
+    ProducerNameField : TStringField;
 
     CurrentFilter : TFilterReport;
 
@@ -348,6 +349,8 @@ begin
 
   TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
   TDBGridHelper.AddColumn(dbgCore, 'SynonymFirm', 'Производитель', 85);
+  column := TDBGridHelper.AddColumn(dbgCore, 'ProducerName', 'Кат. производитель', 50);
+  column.Visible := False;
   TDBGridHelper.AddColumn(dbgCore, 'Volume', 'Упаковка', 30);
   TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 30);
   column := TDBGridHelper.AddColumn(dbgCore, 'Doc', 'Документ');
@@ -424,6 +427,8 @@ begin
   TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Есть производитель', Self.Canvas.TextWidth('Нет   '));
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymName', 'Наименование', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymFirm', 'Производитель', 0);
+  column := TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerName', 'Кат. производитель', 0);
+  column.Visible := False;
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
   if DM.adtClientsAllowDelayOfPayment.Value then
     TDBGridHelper.AddColumn(dbgOrderBatch, 'RealCost', 'Цена поставщика', '0.00;;''''', 0);
@@ -514,6 +519,8 @@ begin
   DescriptionIdField := AddLargeintField(adsReport, 'DescriptionId');
   CatalogVitallyImportantField := AddSmallintField(adsReport, 'CatalogVitallyImportant');
   CatalogMandatoryListField := AddSmallintField(adsReport, 'CatalogMandatoryList');
+
+  ProducerNameField := AddStringField(adsReport, 'ProducerName');
   
 
   dsReport := TDataSource.Create(Self);

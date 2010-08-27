@@ -738,13 +738,15 @@ object CoreForm: TCoreForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Catalogs'
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -846,13 +848,15 @@ object CoreForm: TCoreForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Catalogs'
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -1150,6 +1154,9 @@ object CoreForm: TCoreForm
     object adsCoreBuyingMatrixType: TIntegerField
       FieldName = 'BuyingMatrixType'
     end
+    object adsCoreProducerName: TStringField
+      FieldName = 'ProducerName'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
@@ -1400,14 +1407,16 @@ object CoreForm: TCoreForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Catalogs'
       
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    left JOIN Core ON Core.productid = products.productid'
-      '    left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
+      '    left join Mnn on mnn.Id = Catalogs.MnnId    '
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
       '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'

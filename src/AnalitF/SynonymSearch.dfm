@@ -595,12 +595,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -702,7 +704,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '  ('
       
@@ -720,6 +723,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
         'Core.SynonymFirmCrCode)'
+      '  left join Producers on Producers.Id = Core.CodeFirmCr'
       '  left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -1027,6 +1031,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreBuyingMatrixType: TIntegerField
       FieldName = 'BuyingMatrixType'
     end
+    object adsCoreProducerName: TStringField
+      FieldName = 'ProducerName'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1251,7 +1258,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '  ('
       
@@ -1268,6 +1276,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       
         '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
         'Core.SynonymFirmCrCode)'
+      '  left join Producers on Producers.Id = Core.CodeFirmCr'
       '  left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '

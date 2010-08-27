@@ -530,10 +530,12 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Synonyms'
       '    inner join Core on (Core.SynonymCode = Synonyms.synonymcode)'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
@@ -632,13 +634,15 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    products'
       
         '    inner join Catalogs on catalogs.fullcode = products.catalogi' +
         'd'
       '    left JOIN Core ON Core.productid = products.productid'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -904,6 +908,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object adsCoreMaxProducerCost: TFloatField
       FieldName = 'MaxProducerCost'
+    end
+    object adsCoreProducerName: TStringField
+      FieldName = 'ProducerName'
     end
   end
   object mdValues: TRxMemoryData

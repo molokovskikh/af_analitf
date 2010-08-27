@@ -119,6 +119,7 @@ type
     adsProducersName: TStringField;
     dsProducers: TDataSource;
     adsCoreBuyingMatrixType: TIntegerField;
+    adsCoreProducerName: TStringField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);

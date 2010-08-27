@@ -759,7 +759,8 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    ('
       '    PricesData,'
@@ -770,6 +771,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs,'
       '    CurrentOrderLists'
       '    ) '
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -847,7 +849,8 @@ inherited SummaryForm: TSummaryForm
       '    PostedOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '   ('
       '    PricesData,'
@@ -857,6 +860,9 @@ inherited SummaryForm: TSummaryForm
       '    catalogs,'
       '    PostedOrderLists'
       '   )'
+      
+        '    left join Producers on Producers.Id = PostedOrderLists.CodeF' +
+        'irmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       
@@ -962,7 +968,8 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '   ('
       '    PricesData,'
@@ -973,6 +980,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs,'
       '    CurrentOrderLists'
       '   )'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -1042,7 +1050,8 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '   ('
       '    PricesData,'
@@ -1053,6 +1062,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs,'
       '    CurrentOrderLists'
       '   )'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -1244,6 +1254,9 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryMaxProducerCost: TFloatField
       FieldName = 'MaxProducerCost'
+    end
+    object adsSummaryProducerName: TStringField
+      FieldName = 'ProducerName'
     end
   end
 end

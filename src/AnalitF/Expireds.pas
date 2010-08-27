@@ -92,6 +92,7 @@ type
     adsExpiredsCatalogMandatoryList: TBooleanField;
     adsExpiredsMaxProducerCost: TFloatField;
     adsExpiredsBuyingMatrixType: TIntegerField;
+    adsExpiredsProducerName: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;

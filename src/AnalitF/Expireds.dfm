@@ -462,13 +462,15 @@ inherited ExpiredsForm: TExpiredsForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Core'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
       '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -557,13 +559,15 @@ inherited ExpiredsForm: TExpiredsForm
       '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
-      '    GroupMaxProducerCosts.MaxProducerCost'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
       'FROM'
       '    Core'
       '    left JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
       '    left JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       '    left join products on products.productid = core.productid'
       '    left join catalogs on catalogs.fullcode = products.catalogid'
+      '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
       '      (GroupMaxProducerCosts.ProductId = Core.productid) '
@@ -807,6 +811,9 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsBuyingMatrixType: TIntegerField
       FieldName = 'BuyingMatrixType'
+    end
+    object adsExpiredsProducerName: TStringField
+      FieldName = 'ProducerName'
     end
   end
 end

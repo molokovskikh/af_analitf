@@ -122,6 +122,7 @@ type
     adsCoreMnnId: TLargeintField;
     adsCoreMnn: TStringField;
     adsCoreMaxProducerCost: TFloatField;
+    adsCoreProducerName: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -975,6 +976,7 @@ var
   registryCostColumn : TColumnEh;
   synonymFirmColumn : TColumnEh;
   priceRetColumn : TColumnEh;
+  producerNameColumn : TColumnEh;
 begin
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
@@ -995,6 +997,11 @@ begin
     Grid.ParentShowHint := False;
     Grid.ShowHint := True;
     synonymFirmColumn.ToolTips := True;
+    
+    producerNameColumn := TColumnEh(Grid.Columns.Insert(synonymFirmColumn.Index+1));
+    producerNameColumn.FieldName := 'ProducerName';
+    producerNameColumn.Title.Caption := 'Кат. производитель';
+    producerNameColumn.Visible := False;
   end;
 
   if Assigned(realCostColumn) then  begin

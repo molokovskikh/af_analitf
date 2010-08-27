@@ -567,6 +567,7 @@ var
   registryCostColumn : TColumnEh;
   synonymFirmColumn : TColumnEh;
   priceRetColumn : TColumnEh;
+  producerNameColumn : TColumnEh;
 begin
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
@@ -587,6 +588,13 @@ begin
     Grid.ParentShowHint := False;
     Grid.ShowHint := True;
     synonymFirmColumn.ToolTips := True;
+    
+    producerNameColumn := TColumnEh(Grid.Columns.Insert(synonymFirmColumn.Index+1));
+    producerNameColumn.FieldName := 'ProducerName';
+    producerNameColumn.Title.Caption := 'Кат. производитель';
+    producerNameColumn.Visible := False;
+    if SortOnOrderGrid then
+      producerNameColumn.Title.TitleButton := True;
   end;
 
   if Assigned(realCostColumn) then  begin
