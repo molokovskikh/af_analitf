@@ -332,10 +332,6 @@ var
   I : Integer;
   LoggedOn : Boolean;
 begin
-  //Вызываем это для того, чтобы произошла отрисовка pbSelectClient после обновления,
-  //из-за чего может измениться список клиентов
-  FormResize(nil);
-
   //Удаляем формы, помеченные как удаленные
   RealFreeChildForms;
 
@@ -350,7 +346,11 @@ try
   FormPlacement.Active := True;
   Self.WindowState := wsMaximized;
 
-	UpdateReclame;
+  UpdateReclame;
+  //Вызываем это для того, чтобы произошла отрисовка pbSelectClient после обновления,
+  //из-за чего может измениться список клиентов
+  FormResize(Self);
+
   //todo: ClientId-UserId
   DM.GetClientInformation(CurrentUser, IsFutureClient);
   if (Length(CurrentUser) > 0) then
