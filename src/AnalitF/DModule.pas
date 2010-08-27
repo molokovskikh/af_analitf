@@ -2441,6 +2441,15 @@ begin
         DatabaseController.BackupDataTable(doiDocumentBodies);
       end;
 
+      //Если суммарное кол-во открываемых файлов больше 5, то открываем только папки
+      if not OnlyDirOpen then
+        OnlyDirOpen :=
+          (
+            DocsFL.Count
+            + IfThen(not Result and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean, WaybillsFL.Count, 0)
+            + IfThen(adtParams.FieldByName('USEOSOPENREJECT').AsBoolean, RejectsFL.Count, 0)
+          ) > 5;
+
       OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
       if not Result then
         OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean);
