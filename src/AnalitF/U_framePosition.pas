@@ -30,7 +30,6 @@ type
     adsMNN : TMyQuery;
     mnnIdField : TLargeintField;
     mnnField : TStringField;
-    russianMnnField : TStringField;
     dsMnn : TDataSource;
 
     lMnnInfo : TLabel;
@@ -221,7 +220,7 @@ begin
   if Assigned(Source.DataSet) and (Source.DataSet is TCustomMyDataSet) then
     adsMNN.Connection := TCustomMyDataSet(Source.DataSet).Connection;
 
-  adsMNN.SQL.Text := 'select Mnn.Id, Mnn.Mnn, Mnn.RussianMnn from mnn';
+  adsMNN.SQL.Text := 'select Mnn.Id, Mnn.Mnn from mnn';
 
   adsMNN.MasterSource := Source;
   adsMNN.MasterFields := MnnIdFieldName;
@@ -238,11 +237,6 @@ begin
   mnnField.Size := 250;
   mnnField.Dataset := adsMNN;
 
-  russianMnnField := TStringField.Create(adsMNN);
-  russianMnnField.fieldname := 'RussianMnn';
-  russianMnnField.Size := 250;
-  russianMnnField.Dataset := adsMNN;
-
   dsMnn := TDataSource.Create(Self);
   dsMnn.DataSet := adsMNN;
 
@@ -252,13 +246,7 @@ end;
 
 procedure TframePosition.MnnUpdateLabel(DataSet: TDataSet);
 begin
-  if not mnnField.IsNull and not russianMnnField.IsNull then
-    lMnnInfo.Caption := mnnField.Value + '  (' + russianMnnField.Value + ')'
-  else
-    if not mnnField.IsNull then
-      lMnnInfo.Caption := mnnField.Value
-    else
-      lMnnInfo.Caption := russianMnnField.Value;
+  lMnnInfo.Caption := mnnField.Value;
 end;
 
 end.

@@ -19,7 +19,6 @@ type
     adsMNNId: TLargeintField;
     adsMNNMnn: TStringField;
     tmrFlipToMNN: TTimer;
-    adsMNNRussianMnn: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
@@ -66,7 +65,7 @@ begin
   BM := TBitmap.Create;
 
   dbgMnn.PopupMenu := nil;
-  
+
   ShowForm;
 
   SetClear;
@@ -193,7 +192,7 @@ procedure TMnnSearchForm.dbgMnnDrawColumnCell(Sender: TObject;
   const Rect: TRect; DataCol: Integer; Column: TColumnEh;
   State: TGridDrawState);
 begin
-  if (Column.Field = adsMNNMnn) or (Column.Field = adsMNNRussianMnn) then
+  if (Column.Field = adsMNNMnn) then
     ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgMnn.Canvas, Rect, BM);
 end;
 
