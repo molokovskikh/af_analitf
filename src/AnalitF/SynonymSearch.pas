@@ -263,6 +263,7 @@ begin
     adsAvgOrders.Open;
 
   TDBGridHelper.RestoreColumnsLayout(dbgCore, 'TCoreForm');
+  TDBGridHelper.RestoreColumnsLayout(dbgHistory, 'TCoreForm');
 
   SelectedPrices := SynonymSelectedPrices;
   for I := 0 to SelectedPrices.Count-1 do begin
@@ -284,6 +285,7 @@ begin
   slColors.Free;
   fr.Free;
   TDBGridHelper.SaveColumnsLayout(dbgCore, 'TCoreForm');
+  TDBGridHelper.SaveColumnsLayout(dbgHistory, 'TCoreForm');
   BM.Free;
 end;
 

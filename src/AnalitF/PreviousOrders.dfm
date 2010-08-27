@@ -3,6 +3,7 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
   Caption = #1055#1088#1077#1076#1099#1076#1091#1097#1080#1077' '#1079#1072#1082#1072#1079#1099
   ClientHeight = 364
   ClientWidth = 665
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object gbPrevOrders: TGroupBox [0]

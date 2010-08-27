@@ -35,6 +35,8 @@ type
     adsCatalogNameFORM: TStringField;
     dsCatalogName: TDataSource;
     adsPreviosOrdersPeriod: TStringField;
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
@@ -45,7 +47,9 @@ procedure ShowFormHistory(GroupByProducts : Boolean; FullCode, ProductId : Int64
 
 implementation
 
-uses DModule;
+uses
+  DModule,
+  DBGridHelper;
 
 {$R *.dfm}
 
@@ -92,6 +96,18 @@ begin
   finally
     Free;
   end;
+end;
+
+procedure TFormsHistoryForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  TDBGridHelper.RestoreColumnsLayout(Grid, Self.ClassName);
+end;
+
+procedure TFormsHistoryForm.FormDestroy(Sender: TObject);
+begin
+  TDBGridHelper.SaveColumnsLayout(Grid, Self.ClassName);
+  inherited;
 end;
 
 end.

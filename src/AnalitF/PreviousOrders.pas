@@ -36,6 +36,8 @@ type
     adsPreviousOrdersPeriod: TStringField;
     procedure dbgHistoryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
@@ -45,7 +47,11 @@ type
 
 implementation
 
-uses DModule, AProc, NamesForms;
+uses
+  DModule,
+  AProc,
+  NamesForms,
+  DBGridHelper;
 
 {$R *.dfm}
 
@@ -98,6 +104,18 @@ begin
         else TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
     end;
   end;
+end;
+
+procedure TPreviousOrdersForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  TDBGridHelper.RestoreColumnsLayout(dbgHistory, Self.ClassName);
+end;
+
+procedure TPreviousOrdersForm.FormDestroy(Sender: TObject);
+begin
+  TDBGridHelper.SaveColumnsLayout(dbgHistory, Self.ClassName);
+  inherited;
 end;
 
 end.

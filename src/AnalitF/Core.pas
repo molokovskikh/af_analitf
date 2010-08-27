@@ -259,11 +259,15 @@ begin
 		DM.adtClients.FieldByName( 'ClientId').Value;
 
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
+  TDBGridHelper.RestoreColumnsLayout(dbgHistory, Self.ClassName);
+  TDBGridHelper.RestoreColumnsLayout(dbgMaxProducerCosts, Self.ClassName);
 end;
 
 procedure TCoreForm.FormDestroy(Sender: TObject);
 begin
   TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
+  TDBGridHelper.SaveColumnsLayout(dbgHistory, Self.ClassName);
+  TDBGridHelper.SaveColumnsLayout(dbgMaxProducerCosts, Self.ClassName);
 end;
 
 procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean);
@@ -956,6 +960,7 @@ begin
   pMaxProducerCostsIsEmpty.Font.Size := plOverCost.Font.Size - 4;
 
   dbgMaxProducerCosts := TToughDBGrid.Create(Self);
+  dbgMaxProducerCosts.Name := 'dbgMaxProducerCosts';
   dbgMaxProducerCosts.ParentFont := False;
   dbgMaxProducerCosts.Parent := pMaxProducerCostsIsEmpty;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMaxProducerCosts);

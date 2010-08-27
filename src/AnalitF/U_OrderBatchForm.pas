@@ -321,6 +321,7 @@ begin
   gbHistory.Constraints.MinWidth := 480;
 
   dbgHistory := TToughDBGrid.Create(Self);
+  dbgHistory.Name := 'dbgHistory';
   dbgHistory.Parent := gbHistory;
   dbgHistory.Align := alClient;
   dbgHistory.Width := 480;
@@ -685,6 +686,7 @@ begin
 
   TDBGridHelper.RestoreColumnsLayout(dbgOrderBatch, Self.ClassName);
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
+  TDBGridHelper.RestoreColumnsLayout(dbgHistory, Self.ClassName);
 
   inherited;
 
@@ -1074,6 +1076,8 @@ begin
     TDBGridHelper.SaveColumnsLayout(dbgOrderBatch, Self.ClassName);
   if Assigned(dbgCore) then
     TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
+  if Assigned(dbgHistory) then
+    TDBGridHelper.SaveColumnsLayout(dbgHistory, Self.ClassName);
 end;
 
 function TOrderBatchForm.AddLargeIntField(

@@ -6,6 +6,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   ActiveControl = dbgLog
   Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1086#1089#1089#1090#1072#1085#1086#1074#1083#1077#1085#1085#1099#1093' '#1079#1072#1082#1072#1079#1086#1074
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13

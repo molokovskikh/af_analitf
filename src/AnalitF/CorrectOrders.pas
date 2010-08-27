@@ -151,6 +151,7 @@ type
     procedure dbgLogKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure mtLogAfterScroll(DataSet: TDataSet);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     UseExcess: Boolean;
@@ -203,7 +204,8 @@ implementation
 {$R *.dfm}
 
 uses
-  DModule, AProc, DBProc, PostSomeOrdersController, NotFound, U_framePosition;
+  DModule, AProc, DBProc, PostSomeOrdersController, NotFound, U_framePosition,
+  DBGridHelper;
 
 function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean) : TCorrectResult;
 var
@@ -260,6 +262,7 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
   PrepareColumnsInOrderGrid(dbgCore);
+  TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
 end;
 
 procedure TCorrectOrdersForm.PrepareData;
@@ -1031,6 +1034,12 @@ begin
       //≈сли же механизм включен, то колонка должна отображатьс€ по умолчанию
       realCostColumn.Visible := True;
   end;
+end;
+
+procedure TCorrectOrdersForm.FormDestroy(Sender: TObject);
+begin
+  TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
+  inherited;
 end;
 
 end.
