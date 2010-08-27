@@ -371,7 +371,7 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'MaxProducerCost', 'Пред. зарег. цена', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'ProducerCost', 'Цена производителя', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'SupplierPriceMarkup', 'Наценка поставщика', '0.00;;''''', 30);
-  TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', '#', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', 20);
 
   //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
   if DM.adtClientsAllowDelayOfPayment.Value then

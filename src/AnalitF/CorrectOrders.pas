@@ -1000,7 +1000,6 @@ begin
       ndsColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
       ndsColumn.FieldName := 'NDS';
       ndsColumn.Title.Caption := 'ÍÄÑ';
-      ndsColumn.DisplayFormat := '#';
     end;
     supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
     if not Assigned(supplierPriceMarkupColumn) then begin

@@ -597,7 +597,6 @@ begin
       ndsColumn.Title.Caption := 'ÍÄÑ';
       if SortOnOrderGrid then
         ndsColumn.Title.TitleButton := True;
-      ndsColumn.DisplayFormat := '#';
     end;
     supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
     if not Assigned(supplierPriceMarkupColumn) then begin
