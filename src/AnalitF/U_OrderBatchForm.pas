@@ -55,7 +55,7 @@ const
     '   Нет предложений',
     '   Нулевое количество',
     '   Прочее',
-    'Не сопоставлено'
+    '   Не сопоставлено'
   );
 
 type
@@ -215,6 +215,8 @@ type
 
 var
   OrderBatchForm: TOrderBatchForm;
+  //Последний открытый каталог для отправки дефектуры
+  LastUsedDir : String;
 
   procedure ShowOrderBatch;
 
@@ -642,18 +644,17 @@ end;
 
 procedure TOrderBatchForm.OpenFile(Sender: TObject);
 begin
-  if AProc.MessageBox('После успешной отправки дефектуры будут удалены текущие заказы.'#13#10'Продолжить?', MB_ICONWARNING or MB_OKCANCEL) = IDOK
-  then begin
-    odBatch.InitialDir := ExePath;
-    if odBatch.Execute then begin
-      Exchange.BatchFileName := odBatch.FileName;
-      tmRunBatch.Enabled := True;
-  {
-      MainForm.ActiveChild := nil;
-      MainForm.AddFormToFree(Self);
-      Close;
-  }
-    end;
+  //Если есть текущие заказы и пользователь не подтвердил отправку дефектуры, то выходим
+  if MainForm.CheckUnsendOrders and
+      (AProc.MessageBox('После успешной отправки дефектуры будут удалены текущие заказы.'#13#10'Продолжить?', MB_ICONWARNING or MB_OKCANCEL) <> IDOK)
+  then
+    Exit;
+
+  odBatch.InitialDir := LastUsedDir;
+  if odBatch.Execute then begin
+    LastUsedDir := ExtractFileDir(odBatch.FileName);
+    Exchange.BatchFileName := odBatch.FileName;
+    tmRunBatch.Enabled := True;
   end;
 end;
 
@@ -799,23 +800,22 @@ begin
           Accept := (StatusField.Value and Integer(osOptimalCost)) = 0
     end
     else
-    if CurrentFilter = frNotParsed
-    then
-    begin
-      Accept := OrderListIdField.IsNull and ProductIdField.IsNull;
-    end
-    else
       if CurrentFilter <> frAll then
       begin
-        Accept := OrderListIdField.IsNull and not ProductIdField.IsNull;
+
+        Accept := OrderListIdField.IsNull;
+
+        if Accept and (CurrentFilter = frNotParsed) then
+          Accept := ProductIdField.IsNull
+        else
         if Accept and (CurrentFilter = frNotOrderedNotOffers) then
-          Accept := ((StatusField.Value and Integer(OffersExists)) = 0) and (OrderCountField.Value > 0)
+          Accept := ((StatusField.Value and Integer(OffersExists)) = 0) and (OrderCountField.Value > 0) and not ProductIdField.IsNull
         else
         if Accept and (CurrentFilter = frNotOrderedErrorQuantity) then
-          Accept := (OrderCountField.Value < 1)
+          Accept := (OrderCountField.Value < 1) and not ProductIdField.IsNull
         else
         if Accept and (CurrentFilter = frNotOrderedAnother) then
-          Accept := (OrderCountField.Value > 0) and ((StatusField.Value and Integer(OffersExists)) > 0);
+          Accept := (OrderCountField.Value > 0) and ((StatusField.Value and Integer(OffersExists)) > 0) and not ProductIdField.IsNull;
       end;
 
   end;
@@ -1132,6 +1132,8 @@ begin
   Result.Dataset := dataSet;
 end;
 
+initialization
+  LastUsedDir := ExePath;
 end.
 
 
