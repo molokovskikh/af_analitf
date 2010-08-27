@@ -662,9 +662,11 @@ begin
     if adsOrders.RecordCount > 0 then begin
       if not adsOrders.Locate('CoreId', lastCoreId, []) then
         adsOrders.First;
+      if Assigned(ParentOrdersHForm) then
+        TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.RefreshRecord;
     end
     else begin
-    MainForm.SetOrdersInfo;
+      MainForm.SetOrdersInfo;
       if Assigned(ParentOrdersHForm) then begin
         TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.Close;
         TOrdersHForm(ParentOrdersHForm).adsOrdersHForm.Open;
