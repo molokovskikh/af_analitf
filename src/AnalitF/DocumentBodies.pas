@@ -647,11 +647,13 @@ procedure TDocumentBodiesForm.RecalcDocument;
 var
   LastId : Int64;
   RecalcCount : Integer;
+  blockedWaybillAsVitallyImportant : Boolean;
 begin
   //retailPriceField.OnChange := nil;
   //retailMarkupField.OnChange := nil;
   //adsDocumentBodiesVitallyImportant.OnChange := nil;
   if NeedLog then Tracer.TR('RecalcDocument', 'Начали расчет документа: ' + adsDocumentBodiesDocumentId.AsString);
+  blockedWaybillAsVitallyImportant := False;
   RecalcCount := 0;
   adsDocumentBodies.DisableControls;
   try
@@ -659,6 +661,8 @@ begin
     adsDocumentBodies.Close;
     adsDocumentBodies.Open;
     while not adsDocumentBodies.Eof do begin
+      if not adsDocumentBodiesVitallyImportant.IsNull then
+        blockedWaybillAsVitallyImportant := True;
       adsDocumentBodies.Edit;
       RecalcPosition;
       adsDocumentBodies.Post;
@@ -667,6 +671,8 @@ begin
     end;
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
+
+    cbWaybillAsVitallyImportant.Enabled := not blockedWaybillAsVitallyImportant;
   finally
     adsDocumentBodies.EnableControls;
     if NeedLog then Tracer.TR('RecalcDocument',
