@@ -92,6 +92,7 @@ type
     retailSummField : TCurrencyField;
     maxRetailMarkupField : TCurrencyField;
     realMarkupField : TFloatField;
+    manualRetailPriceField : TFloatField;
 
     FGridPopup : TPopupMenu;
     FGridColumns : TMenuItem;
@@ -363,8 +364,15 @@ begin
              retailSummField.AsString,
              realMarkupField.AsString]));
     end
-    else
+    else begin
       if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Розничная наценка: null');
+      if not manualRetailPriceField.IsNull then begin
+        if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Розничная цена введена вручную: ' + manualRetailPriceField.AsString);
+        price := manualRetailPriceField.Value;
+        retailPriceField.Value := price;
+        retailSummField.Value := RoundTo(price, -2) * adsDocumentBodiesQuantity.Value;
+      end;
+    end;
 
   except
     on E : Exception do
@@ -497,6 +505,14 @@ begin
   calc := adsDocumentBodies.FindField('Quantity');
   if Assigned(calc) and (calc is TIntegerField) then
     TIntegerField(calc).DisplayFormat := '#';
+
+  manualRetailPriceField := TFloatField(adsDocumentBodies.FindField('ManualRetailPrice'));
+  if not Assigned(manualRetailPriceField) then begin
+    manualRetailPriceField := TFloatField.Create(adsDocumentBodies);
+    manualRetailPriceField.FieldName := 'ManualRetailPrice';
+    manualRetailPriceField.DisplayFormat := '0.00;;';
+    manualRetailPriceField.DataSet := adsDocumentBodies;
+  end;
 
   SetDisplayFormat(
   [
@@ -776,20 +792,34 @@ var
   markup,
   price : Double;
 begin
-  if (adsDocumentBodies.State in [dsEdit]) and not retailMarkupField.IsNull
-  then begin
-    if StrToFloatDef(Value, 0.0) > 0 then begin
-      price := Value;
-      markup := GetRetailMarkupByPrice(price);
-      if (price > 0) and (markup > 0) then begin
-        manualCorrectionField.Value := True;
-        retailMarkupField.AsVariant := markup;
-        adsDocumentBodies.Post;
-      end
-      else
-        adsDocumentBodies.Cancel;
+  if (adsDocumentBodies.State in [dsEdit]) then begin
+    if not retailMarkupField.IsNull then begin
+      if StrToFloatDef(Value, 0.0) > 0 then begin
+        price := Value;
+        markup := GetRetailMarkupByPrice(price);
+        if (price > 0) and (markup > 0) then begin
+          manualCorrectionField.Value := True;
+          retailMarkupField.AsVariant := markup;
+          adsDocumentBodies.Post;
+        end
+        else
+          adsDocumentBodies.Cancel;
+      end;
+      Handled := True;
+    end
+    else begin
+      if StrToFloatDef(Value, 0.0) > 0 then begin
+        price := Value;
+        if (price > 0) then begin
+          manualCorrectionField.Value := True;
+          manualRetailPriceField.Value := price;
+          adsDocumentBodies.Post;
+        end
+        else
+          adsDocumentBodies.Cancel;
+      end;
+      Handled := True;
     end;
-    Handled := True;
   end;
 end;
 
@@ -843,7 +873,10 @@ begin
   if (Sender is TColumnEh) and (TColumnEh(Sender).Field = retailPriceField)
   then
     if not retailMarkupField.IsNull and Params.ReadOnly then
-      Params.ReadOnly := False;
+      Params.ReadOnly := False
+    else
+      if Params.ReadOnly then
+        Params.ReadOnly := False;
 end;
 
 function TDocumentBodiesForm.GetRetailMarkupByPrice(price: Double): Double;

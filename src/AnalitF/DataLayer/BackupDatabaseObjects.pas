@@ -301,6 +301,7 @@ begin
 +'  `SerialNumber` varchar(50) default null, '
 +'  `RetailMarkup` decimal(12,6) default null, '
 +'  `ManualCorrection` tinyint(1) unsigned not null default ''0'', '
++'  `ManualRetailPrice` decimal(12,6) default null, '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
 + GetTableOptions();

@@ -372,7 +372,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  DocumentBodies dbodies'
       'set'
       '  RetailMarkup     = :RetailMarkup,'
-      '  ManualCorrection = :ManualCorrection'
+      '  ManualCorrection = :ManualCorrection,'
+      '  ManualRetailPrice = :ManualRetailPrice'
       'where'
       '  dbodies.Id = :OLD_Id')
     SQLRefresh.Strings = (
