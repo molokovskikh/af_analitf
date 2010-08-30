@@ -2646,6 +2646,8 @@ begin
     finally
       try dbCon.Close(); except end;
     end;
+
+    DatabaseController.BackupDataTables();
   except
     on E : Exception do begin
       AProc.LogCriticalError('Ошибка при обновлении UIN : ' + E.Message);

@@ -183,6 +183,7 @@ type
     function TableExists(tableName : String) : Boolean;
 
     procedure BackupDataTable(ObjectId : TDatabaseObjectId);
+    procedure BackupDataTables();
 
 
     //Методы для работы с backup-ом при импортировании данных
@@ -282,6 +283,25 @@ begin
     backupFileName(backupTable.FileSystemName + IndexFileExtention);
     backupFileName(backupTable.FileSystemName + StructFileExtention);
   end
+end;
+
+procedure TDatabaseController.BackupDataTables;
+var
+  I : Integer;
+  currentTable : TDatabaseTable;
+begin
+  if not Self.Initialized then begin
+    WriteExchangeLog('DatabaseController.BackupDataTables', 'Попытка backup без инициализации DatabaseController');
+    Exit;
+  end;
+
+  for I := 0 to FDatabaseObjects.Count-1 do 
+    if FDatabaseObjects[i] is TDatabaseTable then begin
+      currentTable := TDatabaseTable(FDatabaseObjects[i]);
+
+      if (currentTable.RepairType in [dortCritical, dortBackup]) then
+        BackupDataTable(currentTable.ObjectId);
+    end;
 end;
 
 function TDatabaseController.CheckObjects(
