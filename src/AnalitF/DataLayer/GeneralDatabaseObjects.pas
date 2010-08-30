@@ -597,11 +597,9 @@ begin
 +'  ( '
 +'    `Id`               bigint(20) not null  , '
 +'    `Mnn`              varchar(250) not null, '
-+'    `RussianMnn`       varchar(250) default null, '
-+'    `Hidden`           tinyint(1) not null      , '
++'    `Hidden`           tinyint(1) not null  , '
 +'    primary key (`Id`)                      , '
-+'    key `IDX_MNN_Mnn` (`Mnn`)               , '
-+'    key `IDX_MNN_RussianMnn` (`RussianMnn`)   '
++'    key `IDX_MNN_Mnn` (`Mnn`)                 '
 +'  ) '
 + GetTableOptions();
 end;
