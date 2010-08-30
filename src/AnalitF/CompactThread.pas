@@ -205,6 +205,9 @@ begin
 
       FEmbConnection.Open;
       try
+        DatabaseController.CheckObjectsExists(FEmbConnection, True);
+        WriteExchangeLog('RestoreFromEtalonThread', 'Проверили объекты базы данных');
+
         FEmbConnection.ExecSQL('use analitf', []);
         DatabaseController.CreateViews(FEmbConnection);
         command := TMyQuery.Create(FEmbConnection);
@@ -243,6 +246,9 @@ begin
     finally
       FEmbConnection.Free;
     end;
+
+    DatabaseController.BackupDataTables();
+    WriteExchangeLog('RestoreFromEtalonThread', 'Произвели backup таблиц в TableBackup');
 
     Restored := True;
     WriteExchangeLog('RestoreFromEtalonThread', 'Создание базы данных успешно завершено');
