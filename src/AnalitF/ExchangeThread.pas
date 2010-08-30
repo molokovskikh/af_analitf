@@ -1238,7 +1238,7 @@ begin
   UpdateTables := [];
 
 	if (GetFileSize(ExePath+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
-	if (GetFileSize(ExePath+SDirIn+'\Clients.txt') > 0) then UpdateTables:=UpdateTables+[utClients];
+	if (GetFileSize(ExePath+SDirIn+'\Clients.txt') >= 0) then UpdateTables:=UpdateTables+[utClients];
 	if (GetFileSize(ExePath+SDirIn+'\Providers.txt') > 0) then UpdateTables:=UpdateTables+[utProviders];
 	if (GetFileSize(ExePath+SDirIn+'\RegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utRegionalData];
 	if (GetFileSize(ExePath+SDirIn+'\PricesData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesData];
