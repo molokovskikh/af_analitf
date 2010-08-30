@@ -195,6 +195,7 @@ private
   procedure DeleteOldOrders;
   procedure RealFreeChildForms;
   procedure SetFocusOnMainForm;
+  function  NeedUpdateClientLabel : Boolean;
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -332,6 +333,11 @@ var
   I : Integer;
   LoggedOn : Boolean;
 begin
+  //Вызываем это для того, чтобы произошла отрисовка pbSelectClient после обновления,
+  //из-за чего может измениться список клиентов
+  //Вроде бы работает без него
+  //FormResize(Self);
+
   //Удаляем формы, помеченные как удаленные
   RealFreeChildForms;
 
@@ -347,9 +353,10 @@ try
   Self.WindowState := wsMaximized;
 
   UpdateReclame;
-  //Вызываем это для того, чтобы произошла отрисовка pbSelectClient после обновления,
-  //из-за чего может измениться список клиентов
-  FormResize(Self);
+  //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
+  //поэтому надо еще раз пересчитать
+  //Вроде бы работает без него
+  //FormResize(Self);
 
   //todo: ClientId-UserId
   DM.GetClientInformation(CurrentUser, IsFutureClient);
@@ -1222,33 +1229,13 @@ begin
 end;
 
 procedure TMainForm.FormResize(Sender: TObject);
-var
-  PaintBoxWidth, PanelWidth, NewWidth : Integer;
-  newClientNameRect : TRect;
 begin
-  newClientNameRect := Rect(tbLastSeparator.Left + tbLastSeparator.Width + 7, 15, 10, 15 + 21{Высота контрола});
-
-  //Расчитываем ширину прямоугольника в зависимости от максимальной ширины имени клиента
-  PaintBoxWidth :=
-    MaxClientNameWidth {максимальная ширина наименования клиента}
-    + 30{на кнопку вниз}
-    + 12{на подгон под ширину PopupMenu};
-
-  //Расчитываем размер прямоугольника от размера ToolBar и берем чуть меньше
-  PanelWidth := ToolBar.Width - 10 - ClientNameRect.Left;
-
-  //Выставляем минимальное значение
-  if PaintBoxWidth < PanelWidth then
-    NewWidth := PaintBoxWidth
-  else
-    NewWidth := PanelWidth;
-
-  if (NewWidth <> ClientNameRect.Right - ClientNameRect.Left) or (newClientNameRect.Left <> ClientNameRect.Left)
-  then begin
-    ClientNameRect := newClientNameRect;
-    ClientNameRect.Right := ClientNameRect.Left + NewWidth;
+{
+  Корректное отображение списка текущих клиентов работает и без этого кода 
+  if NeedUpdateClientLabel then
     ToolBar.Invalidate;
-  end;
+}
+
   if not JustRun and Self.Active and Self.Visible and (Screen.ActiveForm = Self)
     and not Assigned(GlobalExchangeParams)
   then
@@ -1295,6 +1282,7 @@ var
   LabelWidth : Integer;
 begin
   if Stage = cdPrePaint then begin
+    NeedUpdateClientLabel;
 
     //Рисуем метку
     //Сохраняем предыдущий стиль кисти, чтобы потом его восстановить
@@ -1484,6 +1472,37 @@ end;
 procedure TMainForm.actPostOrderBatchExecute(Sender: TObject);
 begin
   ShowOrderBatch;
+end;
+
+function TMainForm.NeedUpdateClientLabel: Boolean;
+var
+  PaintBoxWidth, PanelWidth, NewWidth : Integer;
+  newClientNameRect : TRect;
+begin
+  Result := False;
+  newClientNameRect := Rect(tbLastSeparator.Left + tbLastSeparator.Width + 7, 15, 10, 15 + 21{Высота контрола});
+
+  //Расчитываем ширину прямоугольника в зависимости от максимальной ширины имени клиента
+  PaintBoxWidth :=
+    MaxClientNameWidth {максимальная ширина наименования клиента}
+    + 30{на кнопку вниз}
+    + 12{на подгон под ширину PopupMenu};
+
+  //Расчитываем размер прямоугольника от размера ToolBar и берем чуть меньше
+  PanelWidth := ToolBar.Width - 10 - ClientNameRect.Left;
+
+  //Выставляем минимальное значение
+  if PaintBoxWidth < PanelWidth then
+    NewWidth := PaintBoxWidth
+  else
+    NewWidth := PanelWidth;
+
+  if (NewWidth <> ClientNameRect.Right - ClientNameRect.Left) or (newClientNameRect.Left <> ClientNameRect.Left)
+  then begin
+    ClientNameRect := newClientNameRect;
+    ClientNameRect.Right := ClientNameRect.Left + NewWidth;
+    Result := True;
+  end;
 end;
 
 end.
