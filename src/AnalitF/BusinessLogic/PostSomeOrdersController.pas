@@ -449,6 +449,7 @@ begin
   end;
 
   AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
+  AddPostParam('EXEVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
   if not FUseCorrectOrders then
     AddPostParam('ForceSend', BoolToStr( True, True))
   else
@@ -770,7 +771,7 @@ begin
     DeleteFile('PostSomeOrders.txt');
   FPostParams.SaveToFile('PostSomeOrders.txt');
 }    
-  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersFull', FPostParams);
+  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersFullEx', FPostParams);
   rawResult := soapResult;
 
   serverResponse := TStringList.Create;

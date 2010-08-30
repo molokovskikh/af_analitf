@@ -63,6 +63,9 @@ type
 
 implementation
 
+uses
+  Main;
+  
 { TPostWaybillsControllerController }
 
 constructor TPostWaybillsControllerController.Create(dataLayer: TDM;
@@ -258,8 +261,10 @@ var
     slLetter.Add('<?xml version="1.0" encoding="windows-1251"?>');
     slLetter.Add('<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">');
     slLetter.Add('  <soap:Body>');
-    slLetter.Add('    <SendWaybills xmlns="IOS.Service">');
+    slLetter.Add('    <SendWaybillsEx xmlns="IOS.Service">');
     slLetter.Add('      <ClientId>' + FDataLayer.adtClientsCLIENTID.AsString + '</ClientId>');
+    slLetter.Add('      <UniqueID>' + IntToHex( GetCopyID, 8) + '</UniqueID>');
+    slLetter.Add('      <EXEVersion>' + GetLibraryVersionFromPathForExe(ExePath + ExeName) + '</EXEVersion>');
 
     slLetter.Add('      <ProviderIds>');
     for I := 0 to Elems.Count-1 do
@@ -272,7 +277,7 @@ var
     slLetter.Add('      </FileNames>');
 
     slLetter.Add(Concat('      <Waybills>', bs, '</Waybills>'));
-    slLetter.Add('    </SendWaybills>');
+    slLetter.Add('    </SendWaybillsEx>');
     slLetter.Add('  </soap:Body>');
     slLetter.Add('</soap:Envelope>');
     slLetter.Add('');
@@ -307,10 +312,10 @@ begin
       OldContentType := SendIdHTTP.Request.ContentType;
       SendIdHTTP.Request.Accept := '';
       SendIdHTTP.Request.Connection := '';
-      SendIdHTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendWaybills"';
+      SendIdHTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendWaybillsEx"';
 
       S := SendIdHTTP.Post(SendURL, ss);
-     	start := PosEx( '>', S, Pos( 'SendWaybillsResult', S)) + 1;
+     	start := PosEx( '>', S, Pos( 'SendWaybillsExResult', S)) + 1;
     	stop := PosEx( '</', S, start);
 	    S := Copy( S, start, stop - start);
       if AnsiStartsText('Status=', S) then

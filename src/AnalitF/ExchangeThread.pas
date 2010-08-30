@@ -2003,7 +2003,10 @@ var
   Error : String;
 begin
   TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
-  Res := SOAP.Invoke( 'GetPasswords', ['UniqueID'], [IntToHex( GetCopyID, 8)]);
+  Res := SOAP.Invoke(
+    'GetPasswordsEx',
+    ['UniqueID', 'EXEVersion'],
+    [IntToHex( GetCopyID, 8), GetLibraryVersionFromPathForExe(ExePath + ExeName)]);
   Error := Utf8ToAnsi( Res.Values[ 'Error']);
   if Error <> '' then
     raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
@@ -2028,7 +2031,7 @@ end;
 
 procedure TExchangeThread.PriceDataSettings;
 const
-  StaticParamCount : Integer = 1;
+  StaticParamCount : Integer = 2;
 var
 	Res: TStrings;
   Error : String;
@@ -2054,6 +2057,8 @@ begin
     SetLength(ParamValues, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     ParamNames[0] := 'UniqueID';
     ParamValues[0] := IntToHex( GetCopyID, 8);
+    ParamNames[1] := 'EXEVersion';
+    ParamValues[1] := GetLibraryVersionFromPathForExe(ExePath + ExeName);
     I := 0;
     while not DM.adsQueryValue.Eof do begin
       //PriceCodes As Int32(), ByVal RegionCodes As Int32(), ByVal INJobs As Boolean(), ByVal UpCosts
@@ -2064,13 +2069,13 @@ begin
       ParamNames[StaticParamCount+i*4+2] := 'INJobs';
       ParamValues[StaticParamCount+i*4+2] := BoolToStr(DM.adsQueryValue.FieldByName('INJob').AsBoolean, True);
       ParamNames[StaticParamCount+i*4+3] := 'UpCosts';
-      //TODO: Пока здесь передаем 0, потом этот параметр надо удалить 
+      //TODO: Пока здесь передаем 0, потом этот параметр надо удалить
       ParamValues[StaticParamCount+i*4+3] := '0.0';
       DM.adsQueryValue.Next;
       Inc(i);
     end;
     DM.adsQueryValue.Close;
-    Res := SOAP.Invoke( 'PostPriceDataSettings', ParamNames, ParamValues);
+    Res := SOAP.Invoke( 'PostPriceDataSettingsEx', ParamNames, ParamValues);
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
       raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
