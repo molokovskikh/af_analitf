@@ -914,8 +914,10 @@ begin
         ShowSQLWaiting(InternalRepareOrders, 'Происходит пересчет заказов');
 
         { если не нашли что-то, то выводим сообщение }
-        if (Strings.Count > 0) and (Length(Strings.Text) > 0) then
+        if (Strings.Count > 0) and (Length(Strings.Text) > 0) then begin
+          WriteExchangeLog('RestoreOrders', 'Восстановленные заказы после обновления:'#13#10 + Strings.Text);
           ShowCorrectOrders(False);
+        end;
       finally
         mdOutput.Close;
       end;

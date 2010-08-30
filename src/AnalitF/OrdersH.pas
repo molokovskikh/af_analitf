@@ -128,7 +128,8 @@ procedure ShowOrdersH;
 implementation
 
 uses DModule, Main, AProc, NotFound, DBProc, Core, WayBillList, Constant,
-     DBGridHelper;
+     DBGridHelper,
+     U_ExchangeLog;
 
 {$R *.dfm}
 
@@ -351,7 +352,10 @@ begin
     ShowSQLWaiting(InternalMoveToPrice, 'Происходит восстановление заявок');
 
     //если не нашли что-то, то выводим сообщение
-    if Strings.Count > 0 then ShowNotFound(Strings);
+    if Strings.Count > 0 then begin
+      WriteExchangeLog('RestoreSendOrders', 'Заказы, восстановленные из отправленных:'#13#10 + Strings.Text);
+      ShowNotFound(Strings);
+    end;
 
   finally
     Strings.Free;
@@ -862,7 +866,10 @@ begin
           end;
 
           //если не нашли что-то, то выводим сообщение
-          if Strings.Count > 0 then ShowNotFound(Strings);
+          if Strings.Count > 0 then begin
+            WriteExchangeLog('RestoreFrozenOrders', 'Заказы, восстановленные из "замороженных":'#13#10 + Strings.Text);
+            ShowNotFound(Strings);
+          end;
 
         finally
           Strings.Free;
