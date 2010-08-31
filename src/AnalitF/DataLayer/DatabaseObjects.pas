@@ -194,6 +194,8 @@ type
 
     function GetLastCreateScript : String;
     function GetFullLastCreateScript(DBVersion : String = '') : String;
+
+    function IsFatalError(E : EMyError) : Boolean;
   end;
 
   function DatabaseController : TDatabaseController;
@@ -721,10 +723,16 @@ var
     else begin
       MyServerControl.RepairTable([rtExtended]);
       NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+      if NeedRepairFromBackup then
+        WriteExchangeLog('DatabaseController.CheckTable',
+          Format('Объект %s был восстановлен (Extended)', [table.LogObjectName]));
 
       if not NeedRepairFromBackup then begin
         MyServerControl.RepairTable([rtExtended, rtUseFrm]);
         NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+        if NeedRepairFromBackup then
+          WriteExchangeLog('DatabaseController.CheckTable',
+            Format('Объект %s был восстановлен (Extended, UseFrm)', [table.LogObjectName]));
 
         if not NeedRepairFromBackup then begin
           if (table.RepairType in [dortCritical, dortBackup]) then begin
@@ -1014,6 +1022,28 @@ begin
   else
     Result := False;
   //Result := FileExists(ExePath + BackupFileFlag);
+end;
+
+function TDatabaseController.IsFatalError(E: EMyError): Boolean;
+const
+  FatalErrorCodes : array[0..4] of Integer =
+  (
+    ER_NO_SUCH_TABLE,
+    ER_GET_ERRNO,
+    ER_CRASHED_ON_USAGE,
+    ER_CRASHED_ON_REPAIR,
+    ER_CANT_CREATE_TABLE
+  );
+var
+  I : Integer;
+begin
+  Result := E.IsFatalError;
+  if not Result then
+    for I := Low(FatalErrorCodes) to High(FatalErrorCodes) do
+      if E.ErrorCode = FatalErrorCodes[i] then begin
+        Result := True;
+        Exit;
+      end;
 end;
 
 procedure TDatabaseController.OptimizeObjects(

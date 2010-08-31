@@ -3929,4 +3929,11 @@ object MainForm: TMainForm
         Name = 'Send'
       end>
   end
+  object tmrRestoreOnError: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrRestoreOnErrorTimer
+    Left = 320
+    Top = 240
+  end
 end

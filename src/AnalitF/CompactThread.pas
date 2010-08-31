@@ -37,11 +37,22 @@ type
     Restored : Boolean;
   end;
 
+  TRestoreOnErrorThread = class(TThread)
+   protected
+    procedure Execute; override;
+    procedure FreeMySqlLib;
+   public
+    Restored : Boolean;
+  end;
+
 procedure RunCompactDatabase;
 
 function RunRestoreDatabase : Boolean;
 
 function RunRestoreDatabaseFromEtalon : Boolean;
+
+function RunRestoreDatabaseOnError : Boolean;
+
 
 implementation
 
@@ -101,6 +112,27 @@ begin
     try
       ShowWaiting(
         'Производится создание базы данных с сохранением отправленных заказов. Подождите...',
+        RestoreThread);
+      Result := RestoreThread.Restored;
+    finally
+      DM.MainConnection.Open;
+    end;
+  finally
+    RestoreThread.Free;
+  end;
+end;
+
+function RunRestoreDatabaseOnError : Boolean;
+var
+  RestoreThread : TRestoreOnErrorThread;
+begin
+  RestoreThread := TRestoreOnErrorThread.Create(True);
+  try
+    RestoreThread.FreeOnTerminate := False;
+    DM.MainConnection.Close;
+    try
+      ShowWaiting(
+        'Производится восстановление базы данных. Подождите...',
         RestoreThread);
       Result := RestoreThread.Restored;
     finally
@@ -283,6 +315,100 @@ begin
     Format(
       'Ошибка при выполнении скрипта: %s'#13#10'Источник: %s'#13#10'Тип исключения: %s'#13#10'SQL: %s',
       [E.Message, IfThen(Assigned(Sender), Sender.ClassName), E.ClassName, SQL]));
+end;
+
+{ TRestoreOnErrorThread }
+
+procedure TRestoreOnErrorThread.Execute;
+var
+  FEmbConnection : TMyEmbConnection;
+  command : TMyQuery;
+begin
+  Restored := False;
+  try
+    WriteExchangeLog('RestoreOnErrorThread', 'Начали восстановление базы данных');
+
+    FreeMySqlLib;
+    WriteExchangeLog('RestoreOnErrorThread', 'Выгрузили библиотеку');
+
+    FEmbConnection := TMyEmbConnection.Create(nil);
+    FEmbConnection.Database := '';
+    FEmbConnection.Username := DM.MainConnection.Username;
+    FEmbConnection.DataDir := ExePath + SDirData;
+    FEmbConnection.Options := TMyEmbConnection(DM.MainConnection).Options;
+    FEmbConnection.Params.Clear;
+    FEmbConnection.Params.AddStrings(TMyEmbConnection(DM.MainConnection).Params);
+    FEmbConnection.LoginPrompt := False;
+
+    try
+
+      FEmbConnection.Open;
+      try
+        DatabaseController.CheckObjectsExists(FEmbConnection, False);
+        WriteExchangeLog('RestoreOnErrorThread', 'Проверили объекты базы данных');
+
+        FEmbConnection.ExecSQL('use analitf', []);
+        DatabaseController.CreateViews(FEmbConnection);
+        command := TMyQuery.Create(FEmbConnection);
+        try
+          command.Connection := FEmbConnection;
+
+          command.SQL.Text := 'select * from analitf.pricesshow';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.params';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.clients';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.client';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.userinfo';
+          command.Open;
+          command.Close;
+        finally
+          command.Free;
+        end;
+      finally
+        FEmbConnection.Close;
+      end;
+      WriteExchangeLog('RestoreOnErrorThread', 'Проверили подключение к новой базе данных');
+
+    finally
+      FEmbConnection.Free;
+    end;
+
+    DatabaseController.BackupDataTables();
+    WriteExchangeLog('RestoreOnErrorThread', 'Произвели backup таблиц в TableBackup');
+
+    Restored := True;
+    WriteExchangeLog('RestoreOnErrorThread', 'Восстановление базы данных успешно завершено');
+  except
+    on E : Exception do begin
+      Restored := False;
+      WriteExchangeLog('TRestoreFromEtalonThread', 'Ошибка в нитке создания БД: ' + E.Message);
+    end;
+  end;
+end;
+
+procedure TRestoreOnErrorThread.FreeMySqlLib;
+begin
+  //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
+  //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
+  if DM.MainConnection is TMyEmbConnection then
+  begin
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      WriteExchangeLog('RestoreOnErrorThread',
+        Format('MySql Clients Count перед созданием базы данных: %d',
+          [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+  end;
 end;
 
 end.

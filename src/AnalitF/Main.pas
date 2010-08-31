@@ -129,6 +129,7 @@ TMainForm = class(TVistaCorrectForm)
     miOrderBatch: TMenuItem;
     btnPostOrderBatch: TToolButton;
     actPostOrderBatch: TAction;
+    tmrRestoreOnError: TTimer;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -181,6 +182,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure actRestoreDatabaseExecute(Sender: TObject);
     procedure actRestoreDatabaseFromEtalonExecute(Sender: TObject);
     procedure actPostOrderBatchExecute(Sender: TObject);
+    procedure tmrRestoreOnErrorTimer(Sender: TObject);
 private
 	JustRun: boolean;
   ApplicationVersionText : String;
@@ -236,6 +238,7 @@ end;
 
 var
 	MainForm: TMainForm;
+  ProcessFatalMySqlError : Boolean;
 
 //Уникальный идентификатор, передаваемый при обновлении
 function GetCopyID: LongInt;
@@ -260,7 +263,8 @@ uses
   Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
   MnnSearch, DocumentHeaders, DBGridHelper, DocumentTypes,
   U_OrderBatchForm,
-  StartupHelper;
+  StartupHelper,
+  MyClasses;
 
 {$R *.DFM}
 
@@ -1067,12 +1071,28 @@ begin
   else begin
     if E.Message <> SCannotFocus then begin
       S := 'Sender = ' + Iif(Assigned(Sender), Sender.ClassName, 'nil');
-      AProc.LogCriticalError(S + ' ' + E.Message);
-      Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
-        '%s'#13#10'%s'#13#10#13#10 +
-        'Завершить работу программы?', [S, E.Message]);
-      if AProc.MessageBox(Mess, MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = ID_YES then
-        ExitProcess(100);
+
+      if not JustRun and (E is EMyError) and not ProcessFatalMySqlError
+        and  DatabaseController.IsFatalError(EMyError(E))
+      then begin
+        ProcessFatalMySqlError := True;
+        WriteExchangeLog('OnMainAppEx',
+          Format('Будем производить восстановление БД из-за ошибки: (%d) %s',
+            [EMyError(E).ErrorCode, EMyError(E).Message]));
+        AProc.MessageBox(
+          'Возникла ошибка при работе с базой данных.'#13#10 +
+          'Будет произведено восстановление базы данных.',
+          MB_ICONERROR);
+        tmrRestoreOnError.Enabled := True;
+      end
+      else begin
+        AProc.LogCriticalError(S + ' ' + E.Message);
+        Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
+          '%s'#13#10'%s'#13#10#13#10 +
+          'Завершить работу программы?', [S, E.Message]);
+        if AProc.MessageBox(Mess, MB_ICONERROR or MB_YESNO or MB_DEFBUTTON2) = ID_YES then
+          ExitProcess(100);
+      end;
     end;
   end;
 end;
@@ -1505,5 +1525,23 @@ begin
   end;
 end;
 
+procedure TMainForm.tmrRestoreOnErrorTimer(Sender: TObject);
+begin
+  tmrRestoreOnError.Enabled := False;
+  //Закрываем все окна перед восстановлением
+  FreeChildForms;
+  Application.ProcessMessages;
+  if RunRestoreDatabaseOnError then
+    AProc.MessageBox('Восстановление базы данных завершено успешно.')
+  else
+    AProc.MessageBox(
+        'Восстановление базы данных завершилось с ошибой.'#13#10
+        +'Пожалуйста, перезапустите программу.'#13#10
+        +'Если проблема повториться, то свяжитесь со службой технической поддержки для получения инструкций.',
+        MB_ICONWARNING)
+end;
+
+initialization
+  ProcessFatalMySqlError := False;
 end.
 
