@@ -1011,6 +1011,7 @@ end;
 
 procedure TMainForm.DisableByHTTPName;
 begin
+{
   actSendOrders.Enabled := False;
   actOrderAll.Enabled := False;
   actSynonymSearch.Enabled := False;
@@ -1025,6 +1026,7 @@ begin
   actWayBill.Enabled := False;
   actViewDocs.Enabled := False;
   actPostOrderBatch.Enabled := False;
+}  
 end;
 
 procedure TMainForm.EnableByHTTPName;

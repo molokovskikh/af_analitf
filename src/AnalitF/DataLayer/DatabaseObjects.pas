@@ -107,7 +107,8 @@ type
     //Cumulative
     doiMinReqRules,
     //Ignore
-    doiBatchReport);
+    doiBatchReport,
+    doiCoreTest);
 
   TRepairedObjects = set of TDatabaseObjectId;
 
@@ -1005,6 +1006,9 @@ begin
         finally
           FCommand.Close;
         end;
+        WriteExchangeLog(
+          'DatabaseController.Initialize',
+          'Для объекта ' + currentTable.Name  + ' FileSystemName = ' + currentTable.FileSystemName);
         mainStartupHelper.Write('DatabaseController.Initialize', 'Закончили инициализацию объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
       end;
     end;
