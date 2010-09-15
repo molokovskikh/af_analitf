@@ -166,7 +166,7 @@ type
 
     procedure CreateViews(connection : TCustomMyConnection);
 
-    procedure CheckObjectsExists(connection : TCustomMyConnection; IsBackupRepair : Boolean);
+    procedure CheckObjectsExists(connection : TCustomMyConnection; IsBackupRepair : Boolean; CheckedTables : TRepairedObjects = []);
 
     procedure RepairTableFromBackup(backupDir : String = '');
 
@@ -334,7 +334,8 @@ end;
 
 procedure TDatabaseController.CheckObjectsExists(
   connection: TCustomMyConnection;
-  IsBackupRepair : Boolean);
+  IsBackupRepair : Boolean;
+  CheckedTables : TRepairedObjects = []);
 var
   I : Integer;
   currentTable : TDatabaseTable;
@@ -346,7 +347,9 @@ begin
       Exit;
 
     for I := 0 to FDatabaseObjects.Count-1 do begin
-      if FDatabaseObjects[i] is TDatabaseTable then begin
+      if (FDatabaseObjects[i] is TDatabaseTable)
+         and ((CheckedTables = []) or (TDatabaseTable(FDatabaseObjects[i]).ObjectId in CheckedTables))
+      then begin
         mainStartupHelper.Write('DatabaseController.Initialize', 'Начали проверку на существование объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         FCommand.SQL.Text :=
