@@ -668,19 +668,18 @@ end;
 
 procedure TOrderBatchForm.ShowForm;
 {
-}
 var
   adsOrder : TMyQuery;
   dsOrder : TDataSource;
   dbgOrder : TToughDBGrid;
+}
 begin
   BindFields;
 
 {
-}
   adsOrder := TMyQuery.Create(Self);
   adsOrder.Connection := DM.MainConnection;
-  adsOrder.SQL.Text := 'select * from coretest';
+  adsOrder.SQL.Text := 'select * from batchreport';
   adsOrder.Open;
   dsOrder := TDataSource.Create(Self);
   dsOrder.DataSet := adsOrder;
@@ -690,6 +689,7 @@ begin
   dbgOrder.Align := alClient;
   dbgOrder.DataSource := dsOrder;
   TDBGridHelper.SetTitleButtonToColumns(dbgOrder);
+}
 
   TDBGridHelper.RestoreColumnsLayout(dbgOrderBatch, Self.ClassName);
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);

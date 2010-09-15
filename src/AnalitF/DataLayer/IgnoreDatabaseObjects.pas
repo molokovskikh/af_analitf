@@ -55,11 +55,6 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
-  TCoreTestTable = class(TDatabaseTable)
-   public
-    constructor Create();
-    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
-  end;
 
 implementation
 
@@ -251,28 +246,6 @@ begin
 + GetTableOptions()
 end;
 
-{ TCoreTestTable }
-
-constructor TCoreTestTable.Create;
-begin
-  FNeedCompact := True;
-  FName := 'coretest';
-  FObjectId := doiCoreTest;
-  FRepairType := dortCumulative;
-end;
-
-function TCoreTestTable.GetCreateSQL(DatabasePrefix: String): String;
-begin
-  Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `SERVERCOREID` bigint(20) default null     , '
-+'    `Cost`         decimal(18,2) default null  , '
-+'    `CryptCost`    VARCHAR(32) default null  , '
-+'    primary key (`SERVERCOREID`)                 '
-+'  ) '
-+ GetTableOptions();
-end;
-
 initialization
   DatabaseController.AddObject(TPricesRegionalDataUpTable.Create());
   DatabaseController.AddObject(TTmpClientsTable.Create());
@@ -282,5 +255,4 @@ initialization
   DatabaseController.AddObject(TTmpPricesDataTable.Create());
   DatabaseController.AddObject(TTmpPricesRegionalDataTable.Create());
   DatabaseController.AddObject(TBatchReportDataTable.Create());
-  DatabaseController.AddObject(TCoreTestTable.Create());
 end.

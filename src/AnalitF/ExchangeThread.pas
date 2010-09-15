@@ -1217,7 +1217,6 @@ var
   deletedPriceCodes : TStringList;
   I : Integer;
   MainClientIdAllowDelayOfPayment : Variant;
-  coreTestInsertSQl : String;
 begin
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
@@ -1607,41 +1606,6 @@ begin
 	if utCore in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
     InternalExecute;
-
-    SQL.Text:='truncate coretest ;';
-    InternalExecute;
-{
-    DM.adcUpdate.SQL.Text :=
-      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
-      '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
-    InternalExecute;
-}
-    coreTestInsertSQl := GetLoadDataSQL('CoreTest', ExePath+SDirIn+'\CoreTest.txt');
-{
-    SQL.Text :=
-      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
-      '(SERVERCOREID, CryptCost) set CryptCost = @VarCryptCost, Cost = AES_DECRYPT(CryptCost, "' + ABPass + '");';
-}
-{
-    SQL.Text :=
-      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
-      '(SERVERCOREID, CryptCost) set Cost = AES_DECRYPT(CryptCost, "' + ABPass + '");';
-}
-{
-    SQL.Text :=
-      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
-      '(SERVERCOREID, @VarCryptCost) set CryptCost = @VarCryptCost, Cost = AES_DECRYPT(cast(@VarCryptCost as char), "' + ABPass + '");';
-}
-    SQL.Text :=
-      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
-      '(SERVERCOREID, @VarCryptCost) set CryptCost = @VarCryptCost, Cost = AES_DECRYPT(cast(@VarCryptCost as char(16)), "' + ABPass + '");';
-    InternalExecute;
-{
-    LOAD DATA INFILE 'file.txt'
-  INTO TABLE t1
-  (column1, @var1)
-  SET column2 = @var1/100
-}
 	end;
   //MaxProducerCosts
   if utMaxProducerCosts in UpdateTables then begin
