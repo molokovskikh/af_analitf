@@ -1,0 +1,29 @@
+#   Makefile.fpc for indycorefpc 10.2.0.1
+
+[package]
+name=indyprotocolsfpc
+version=10.2.0.1
+main=indy
+
+[compiler]
+includedir=../Inc
+unittargetdir=lib/$(CPU_TARGET)-$(OS_TARGET)
+unitdir=../System/lib/$(CPU_TARGET)-$(OS_TARGET) \
+        ../Core/lib/$(CPU_TARGET)-$(OS_TARGET)
+options=-gl
+
+[target]
+units=indyprotocolsfpc
+rsts=IdResourceStringsProtocols
+{%FILES}
+
+[requires]
+packages=indycorefpc
+packagedir=../System/lib/$(CPU_TARGET)-$(OS_TARGET)/:../Core/lib/$(CPU_TARGET)-$(OS_TARGET)/
+
+[install]
+fpcpackage=y
+fpcsubdir=packages/extra
+
+[shared]	
+build=n
