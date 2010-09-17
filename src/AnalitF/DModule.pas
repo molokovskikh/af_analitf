@@ -2684,6 +2684,7 @@ begin
   if Closed then begin
     adsPrintOrderHeader.SQL.Text := StringReplace(adsPrintOrderHeader.SQL.Text, 'CurrentOrderHeads', 'PostedOrderHeads', [rfReplaceAll, rfIgnoreCase]);
     adsPrintOrderHeader.SQL.Text := StringReplace(adsPrintOrderHeader.SQL.Text, 'CurrentOrderLists', 'PostedOrderLists', [rfReplaceAll, rfIgnoreCase]);
+    adsPrintOrderHeader.SQL.Text := StringReplace(adsPrintOrderHeader.SQL.Text, 'PricesData.DatePrice', 'header.PriceDate', [rfReplaceAll, rfIgnoreCase]);
     adsOrderDetails.SQL.Text := StringReplace(adsOrderDetails.SQL.Text, 'CurrentOrderLists', 'PostedOrderLists', [rfReplaceAll, rfIgnoreCase]);
   end;
 
@@ -2709,10 +2710,7 @@ begin
         frdsReportOrder.DataSet := adsOrderDetails;
         //готовим печать
         frVariables[ 'DisplayOrderId'] := adsPrintOrderHeader.FieldByName('DisplayOrderId').AsVariant;
-        if Closed then
-          frVariables[ 'DatePrice'] := adsPrintOrderHeader.FieldByName('SendDate').AsVariant
-        else
-          frVariables[ 'DatePrice'] := adsPrintOrderHeader.FieldByName('DatePrice').AsVariant;
+        frVariables[ 'DatePrice'] := adsPrintOrderHeader.FieldByName('DatePrice').AsVariant;
         frVariables[ 'OrdersComments'] := adsPrintOrderHeader.FieldByName('Comments').AsString;
         frVariables[ 'SupportPhone'] := adsPrintOrderHeader.FieldByName('SupportPhone').AsString;
         frVariables[ 'OrderDate'] := adsPrintOrderHeader.FieldByName('OrderDate').AsVariant;

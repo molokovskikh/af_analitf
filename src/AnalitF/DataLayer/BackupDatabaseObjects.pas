@@ -140,6 +140,7 @@ begin
 +'    `ErrorReason`  varchar(250) default null       , '
 +'    `ServerMinReq` int(10) default null            , '
 +'    `DelayOfPayment` decimal(5,3) default null     , '
++'    `PriceDate` datetime null default null       , '
 +'    primary key (`ORDERID`)                        , '
 +'    unique key `PK_ORDERSH` (`ORDERID`)            , '
 +'    key `FK_ORDERSH_CLIENTID` (`CLIENTID`)         , '

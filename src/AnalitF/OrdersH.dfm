@@ -1411,8 +1411,8 @@ inherited OrdersHForm: TOrdersHForm
       '    PostedOrderHeads.ClientID,'
       '    PostedOrderHeads.ServerOrderId,'
       
-        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
-        'Price,'
+        '    PostedOrderHeads.PriceDate - interval :timezonebias minute A' +
+        'S DatePrice,'
       '    PostedOrderHeads.PriceCode,'
       '    PostedOrderHeads.RegionCode,'
       '    PostedOrderHeads.OrderDate,'
@@ -1483,8 +1483,8 @@ inherited OrdersHForm: TOrdersHForm
       '    PostedOrderHeads.ClientID,'
       '    PostedOrderHeads.ServerOrderId,'
       
-        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
-        'Price,'
+        '    PostedOrderHeads.PriceDate - interval :timezonebias minute A' +
+        'S DatePrice,'
       '    PostedOrderHeads.PriceCode,'
       '    PostedOrderHeads.RegionCode,'
       '    PostedOrderHeads.OrderDate,'

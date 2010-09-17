@@ -3197,7 +3197,7 @@ begin
     insertSQL := Trim(GetLoadDataSQL('PostedOrderHeads', ExePath+SDirIn+'\PostedOrderHeads.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
-      '(ORDERID, ServerOrderId, CLIENTID, PRICECODE, REGIONCODE, SendDate, MessageTO, DelayOfPayment) set ORDERDATE = SendDate, Closed = 1, Send = 1;';
+      '(ORDERID, ServerOrderId, CLIENTID, PRICECODE, REGIONCODE, SendDate, MessageTO, DelayOfPayment, PriceDate) set ORDERDATE = SendDate, Closed = 1, Send = 1;';
     InternalExecute;
 
     insertSQL := Trim(GetLoadDataSQL('PostedOrderLists', ExePath+SDirIn+'\PostedOrderLists.txt'));
