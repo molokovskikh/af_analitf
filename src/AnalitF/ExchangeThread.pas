@@ -1258,6 +1258,7 @@ var
   deletedPriceCodes : TStringList;
   I : Integer;
   MainClientIdAllowDelayOfPayment : Variant;
+  coreTestInsertSQl : String;
 begin
 	Synchronize( ExchangeForm.CheckStop);
 	Synchronize( DisableCancel);
@@ -1645,8 +1646,57 @@ begin
 	end;
 	//Core
 	if utCore in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
+    coreTestInsertSQl := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
+
+{$ifndef DisableCrypt}
+    SQL.Text :=
+      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
+      ' (PriceCode, RegionCode, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, ' +
+      ' Code, CodeCr, Unit, Volume, Junk, Await, QUANTITY, Note, Period, Doc, ' +
+      ' RegistryCost, VitallyImportant, REQUESTRATIO, CryptCost, SERVERCOREID, ' +
+      ' ORDERCOST, MINORDERCOUNT, SupplierPriceMarkup, ProducerCost, NDS, BuyingMatrixType);';
+{$else}
+    SQL.Text :=
+      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
+      ' (PriceCode, RegionCode, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, ' +
+      ' Code, CodeCr, Unit, Volume, Junk, Await, QUANTITY, Note, Period, Doc, ' +
+      ' RegistryCost, VitallyImportant, REQUESTRATIO, Cost, SERVERCOREID, ' +
+      ' ORDERCOST, MINORDERCOUNT, SupplierPriceMarkup, ProducerCost, NDS, BuyingMatrixType);';
+{$endif}
+
     InternalExecute;
+
+{$ifndef DisableCrypt}
+    SQL.Text :=
+      'update Core ' +
+      'set ' +
+      '  Cost = AES_DECRYPT(CryptCost, "' + ABPass + '"), ' +
+      '  CryptCost = null ' +
+      ' where ' +
+      '   CryptCost is not null';
+    InternalExecute;
+{$endif}
+
+//    Так Core грузился раньше
+//    SQL.Text := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
+//    InternalExecute;
+
+//    Тесты для загрузки в CoreTest
+//    SQL.Text:='truncate coretest ;';
+//    InternalExecute;
+//    coreTestInsertSQl := GetLoadDataSQL('CoreTest', ExePath+SDirIn+'\CoreTest.txt');
+//    SQL.Text :=
+//      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
+//      '(SERVERCOREID, @VarCryptCost) set CryptCost = @VarCryptCost, Cost = AES_DECRYPT(cast(@VarCryptCost as char(16)), "' + ABPass + '");';
+//    InternalExecute;
+
+{
+  Пример Load data из документации MySql
+  LOAD DATA INFILE 'file.txt'
+  INTO TABLE t1
+  (column1, @var1)
+  SET column2 = @var1/100
+}
 	end;
   //MaxProducerCosts
   if utMaxProducerCosts in UpdateTables then begin
