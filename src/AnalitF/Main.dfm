@@ -363,6 +363,9 @@ object MainForm: TMainForm
       object miSendLetter: TMenuItem
         Action = actSendLetter
       end
+      object miGetHistoryOrders: TMenuItem
+        Action = actGetHistoryOrders
+      end
       object itmCompact: TMenuItem
         Action = actCompact
       end
@@ -666,6 +669,11 @@ object MainForm: TMainForm
       ImageIndex = 7
       Visible = False
       OnExecute = actPostOrderBatchExecute
+    end
+    object actGetHistoryOrders: TAction
+      Category = 'Order'
+      Caption = #1047#1072#1075#1088#1091#1079#1080#1090#1100' '#1080#1089#1090#1086#1088#1080#1102' '#1079#1072#1082#1072#1079#1086#1074
+      OnExecute = actGetHistoryOrdersExecute
     end
   end
   object AppEvents: TApplicationEvents

@@ -130,6 +130,8 @@ TMainForm = class(TVistaCorrectForm)
     btnPostOrderBatch: TToolButton;
     actPostOrderBatch: TAction;
     tmrRestoreOnError: TTimer;
+    actGetHistoryOrders: TAction;
+    miGetHistoryOrders: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -183,6 +185,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure actRestoreDatabaseFromEtalonExecute(Sender: TObject);
     procedure actPostOrderBatchExecute(Sender: TObject);
     procedure tmrRestoreOnErrorTimer(Sender: TObject);
+    procedure actGetHistoryOrdersExecute(Sender: TObject);
 private
 	JustRun: boolean;
   ApplicationVersionText : String;
@@ -1025,6 +1028,7 @@ begin
   actWayBill.Enabled := False;
   actViewDocs.Enabled := False;
   actPostOrderBatch.Enabled := False;
+  actGetHistoryOrders.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -1043,6 +1047,7 @@ begin
   actWayBill.Enabled := True;
   actViewDocs.Enabled := True;
   actPostOrderBatch.Enabled := True;
+  actGetHistoryOrders.Enabled := True;
 end;
 
 procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
@@ -1539,6 +1544,12 @@ begin
         +'Пожалуйста, перезапустите программу.'#13#10
         +'Если проблема повториться, то свяжитесь со службой технической поддержки для получения инструкций.',
         MB_ICONWARNING)
+end;
+
+procedure TMainForm.actGetHistoryOrdersExecute(Sender: TObject);
+begin
+  inherited;
+  RunExchange([eaGetHistoryOrders]);
 end;
 
 initialization

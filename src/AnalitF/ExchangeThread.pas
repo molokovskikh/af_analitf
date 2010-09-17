@@ -102,6 +102,8 @@ private
 	procedure QueryData;
   function  GetEncodedBatchFileContent : String;
   procedure GetMaxIds(var MaxOrderId, MaxOrderListId, MaxBatchId : String);
+  procedure GetMaxPostedIds(var MaxOrderId, MaxOrderListId : String);
+  procedure GetPostedServerOrderId(PostParams : TStringList);
   procedure SendULoginData;
   procedure GetPass;
   procedure PriceDataSettings;
@@ -120,6 +122,11 @@ private
 	procedure CheckNewMDB;
 	procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
+
+  procedure GetHistoryOrders;
+  procedure CommitHistoryOrders;
+  procedure ImportHistoryOrders;
+
 
 	function FromXMLToDateTime( AStr: string): TDateTime;
 	function RusError( AStr: string): string;
@@ -198,7 +205,7 @@ begin
       ImportComplete := False;
       repeat
       try
-			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
       then
 			begin
 				RasConnect;
@@ -271,18 +278,47 @@ begin
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					DoExchange;
 				end;
+
+        if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+        then
+        begin
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+
+          GetHistoryOrders;
+
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+
+          if not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+          then
+            DoExchange;
+        end;
+
 				TotalProgress := 40;
 				Synchronize( SetTotalProgress);
 			end;
 
 			{ Распаковка файлов }
 			if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
-      then UnpackFiles;
+      then
+        UnpackFiles;
+
+      if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+         and not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+      then
+        UnpackFiles;
 
 			{ Поддтверждение обмена }
 			if [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []
       then
         CommitExchange;
+
+      if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+         and not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+         and (Length(UpdateId) > 0)
+      then
+        CommitHistoryOrders;
 
 			{ Отключение }
       if ( [eaGetWaybills, eaSendLetter, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) then
@@ -299,6 +335,11 @@ begin
           else
             OnFullChildTerminate(nil);
         end;
+
+      if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+         and not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+      then
+        ImportHistoryOrders;
 
 			if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
 			begin
@@ -772,7 +813,7 @@ var
   PostSuccess : Boolean;
 begin
 	//загрузка прайс-листа
-	if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+	if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
   then begin
 		StatusText := 'Загрузка данных';
 //    Tracer.TR('DoExchange', 'Загрузка данных');
@@ -1079,7 +1120,7 @@ begin
   end;
 
   try
-  
+
     //Переименовываем файлы с кодом клиента в файлы без код клиента
     if FindFirst( ExePath + SDirIn + '\*.txt', faAnyFile, DeleteSR) = 0 then
     repeat
@@ -2876,6 +2917,8 @@ begin
 
 }
     InternalExecute;
+
+        
     DM.adcUpdate.SQL.Text := ''
       + ' update CurrentOrderHeads, PricesData '
       + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
@@ -2973,6 +3016,226 @@ begin
     MaxBatchId := '1'
   else
     MaxBatchId := val;
+end;
+
+procedure TExchangeThread.CommitHistoryOrders;
+var
+  Res: TStrings;
+  params, values: array of string;
+begin
+  params := nil;
+  values := nil;
+
+  SetLength(params, 1);
+  SetLength(values, 1);
+  params[0]:= 'UpdateId';
+  values[0]:= UpdateId;
+
+  Res := SOAP.Invoke( 'CommitHistoryOrders', params, values);
+end;
+
+
+procedure TExchangeThread.GetHistoryOrders;
+const
+  StaticParamCount : Integer = 12;
+var
+  FPostParams : TStringList;
+  Res: TStrings;
+  Error : String;
+  I : Integer;
+  UpdateIdIndex : Integer;
+  MaxOrderId, MaxOrderListId : String;
+  InvokeResult : String;
+
+  procedure AddPostParam(Param, Value: String);
+  begin
+    FPostParams.Add(Param + '=' + SOAP.PreparePostValue(Value));
+  end;
+
+begin
+  FPostParams := TStringList.Create;
+  Res := TStringList.Create;
+  try
+	{ запрашиваем данные }
+	StatusText := 'Запрос истории заказов';
+	Synchronize( SetStatus);
+	try
+    AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
+    AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
+
+    GetMaxPostedIds(MaxOrderId, MaxOrderListId);
+    AddPostParam('MaxOrderId', MaxOrderId);
+    AddPostParam('MaxOrderListId', MaxOrderListId);
+
+    //AddPostParam('ExistsServerOrderIds', '0');
+    GetPostedServerOrderId(FPostParams);
+
+    UpdateId := '';
+    InvokeResult := SOAP.SimpleInvoke('GetHistoryOrders', FPostParams);
+    Res.Clear;
+    { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
+    while InvokeResult <> '' do Res.Add( GetNextWord( InvokeResult, ';'));
+
+		{ проверяем отсутствие ошибки при удаленном запросе }
+		Error := Utf8ToAnsi( Res.Values[ 'Error']);
+    if Error <> '' then
+      raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
+        + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+
+    if AnsiCompareText(Res.Values['FullHistory'], 'True') = 0
+    then begin
+      TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value := True;
+      Exit;
+    end;
+
+    { получаем имя удаленного файла }
+    HostFileName := Res.Values[ 'URL'];
+    NewZip := True;
+
+    if HostFileName = '' then
+      raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+        #10#13 + 'Повторите запрос через несколько минут.');
+
+    //Вырезаем из URL параметр ID, чтобы потом передать его при подтверждении
+    UpdateIdIndex := AnsiPos(UpperCase('?Id='), UpperCase(HostFileName));
+    if UpdateIdIndex = 0 then begin
+      WriteExchangeLog('Exchange', 'Не найдена строка "?Id=" в URL : ' + HostFileName);
+      raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+        #10#13 + 'Повторите запрос через несколько минут.');
+    end
+    else begin
+      UpdateId := Copy(HostFileName, UpdateIdIndex + 4, Length(HostFileName));
+      if UpdateId = '' then begin
+        WriteExchangeLog('Exchange', 'UpdateId - пустой, URL : ' + HostFileName);
+        raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+          #10#13 + 'Повторите запрос через несколько минут.');
+      end;
+    end;
+    LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
+	except
+		on E: Exception do
+		begin
+			TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+			raise;
+		end;
+	end;
+	{ очищаем папку In }
+	DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+	Synchronize( ExchangeForm.CheckStop);
+  finally
+    FPostParams.Free;
+    Res.Free;
+  end;
+end;
+
+procedure TExchangeThread.GetMaxPostedIds(var MaxOrderId,
+  MaxOrderListId: String);
+var
+  val : Variant;
+begin
+  val := DM.QueryValue('select max(OrderId) + 1 from PostedOrderHeads', [], []);
+  if VarIsNull(val) then
+    MaxOrderId := '1'
+  else
+    MaxOrderId := val;
+
+  val := DM.QueryValue('select max(Id) + 1 from PostedOrderLists', [], []);
+  if VarIsNull(val) then
+    MaxOrderListId := '1'
+  else
+    MaxOrderListId := val;
+end;
+
+procedure TExchangeThread.GetPostedServerOrderId(PostParams: TStringList);
+var
+  serverOrderIdQuery : TMyQuery;
+begin
+  try
+
+    serverOrderIdQuery := TMyQuery.Create(nil);
+    serverOrderIdQuery.Connection := DM.MainConnection;
+    try
+      serverOrderIdQuery.SQL.Text := ''
++'SELECT DISTINCT oh.ServerOrderId '
++'FROM    PostedOrderHeads oh '
++'WHERE (oh.Send = 1) '
++'    AND (oh.Closed = 1) '
++'    and (oh.ServerOrderId is not null)';
+
+      serverOrderIdQuery.Open;
+      try
+        if serverOrderIdQuery.RecordCount > 0 then begin
+          while not serverOrderIdQuery.Eof do begin
+            PostParams.Add('ExistsServerOrderIds=' + serverOrderIdQuery.FieldByName('ServerOrderId').AsString);
+            serverOrderIdQuery.Next;
+          end;
+        end
+        else
+          PostParams.Add('ExistsServerOrderIds=0');
+      finally
+        serverOrderIdQuery.Close;
+      end;
+    finally
+      serverOrderIdQuery.Free;
+    end;
+
+  except
+    on E : Exception do begin
+      WriteExchangeLog('GetPostedServerOrderId.Error', E.Message);
+      raise;
+    end
+  end;
+end;
+
+procedure TExchangeThread.ImportHistoryOrders;
+var
+  insertSQL : String;
+begin
+  if (GetFileSize(ExePath+SDirIn+'\PostedOrderHeads.txt') > 0)
+    and (GetFileSize(ExePath+SDirIn+'\PostedOrderLists.txt') > 0)
+  then begin
+    insertSQL := Trim(GetLoadDataSQL('PostedOrderHeads', ExePath+SDirIn+'\PostedOrderHeads.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(ORDERID, ServerOrderId, CLIENTID, PRICECODE, REGIONCODE, SendDate, MessageTO, DelayOfPayment) set ORDERDATE = SendDate, Closed = 1, Send = 1;';
+    InternalExecute;
+
+    insertSQL := Trim(GetLoadDataSQL('PostedOrderLists', ExePath+SDirIn+'\PostedOrderLists.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
+      + ' (Id, ORDERID, CLIENTID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
+      + '  CODE, CODECr, Await, Junk, ORDERCOUNT, Price, RealPrice, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, '
+      + '  SupplierPriceMarkup, RetailMarkup, Unit, Volume, Note, Period, Doc, '
+      + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS);';
+    InternalExecute;
+    
+    DM.adcUpdate.SQL.Text := ''
+      + ' update PostedOrderHeads, PricesData '
+      + ' set PostedOrderHeads.PriceName = PricesData.PriceName '
+      + ' where '
+      + '       (PostedOrderHeads.PriceName is null) '
+      + '   and (PostedOrderHeads.PriceCode = PricesData.PriceCode);'
+      + ' update PostedOrderHeads, regions '
+      + ' set PostedOrderHeads.RegionName = regions.RegionName '
+      + ' where '
+      + '       (PostedOrderHeads.RegionName is null) '
+      + '   and (PostedOrderHeads.RegionCode = regions.RegionCode);';
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' update PostedOrderLists, synonyms '
+      + ' set PostedOrderLists.SYNONYMNAME = synonyms.SYNONYMNAME '
+      + ' where '
+      + '       (PostedOrderLists.SYNONYMNAME is null)'
+      + '   and (PostedOrderLists.SYNONYMCODE = synonyms.SYNONYMCODE);'
+      + ' update PostedOrderLists, synonymfirmcr '
+      + ' set PostedOrderLists.SYNONYMFIRM = synonymfirmcr.SYNONYMNAME '
+      + ' where '
+      + '       (PostedOrderLists.SYNONYMFIRM is null)'
+      + '   and (PostedOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
+    InternalExecute;
+  end;
+  OSDeleteFile(ExePath+SDirIn+'\PostedOrderHeads.txt');
+  OSDeleteFile(ExePath+SDirIn+'\PostedOrderLists.txt');
 end;
 
 initialization

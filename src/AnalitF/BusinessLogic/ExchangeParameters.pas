@@ -8,7 +8,8 @@ uses
 type
   TExchangeParams = (epTerminated, epCriticalError, epErrorMessage,
                      epDownloadChildThreads, epServerAddition, epSendedOrders,
-                     epSendedOrdersErrorLog, epSendWaybillsResult);
+                     epSendedOrdersErrorLog, epSendWaybillsResult,
+                     epFullHistoryOrders);
 
   TStringValue = class
     Value : String;
@@ -74,6 +75,8 @@ begin
   Params.Add(TStringList.Create());
   //epSendWaybillsResult
   Params.Add(TIntegerValue.Create(Integer(swsNotFiles)));
+  //epFullHistoryOrders
+  Params.Add(TBooleanValue.Create(False));
 end;
 
 { TIntegerValue }

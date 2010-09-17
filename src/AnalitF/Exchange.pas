@@ -28,7 +28,8 @@ type
     eaSendLetter,
     eaForceSendOrders,
     eaSendWaybills,
-    eaPostOrderBatch);
+    eaPostOrderBatch,
+    eaGetHistoryOrders);
 
   TExchangeActions=set of TExchangeAction;
 
@@ -333,6 +334,14 @@ begin
     or (eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then
     needShowDocumentForm := DM.ProcessDocs;
+
+  if Result and (AExchangeActions = [ eaGetHistoryOrders])
+  then
+    if TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+    then
+      AProc.MessageBox('— сервера загружена вс€ истори€ заказов.', MB_OK or MB_ICONINFORMATION)
+    else
+      AProc.MessageBox('«агрузка истории заказов завершена успешно.', MB_OK or MB_ICONINFORMATION);
 
 	MainForm.UpdateReclame;
 
