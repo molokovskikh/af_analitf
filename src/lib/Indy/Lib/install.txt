@@ -1,0 +1,24 @@
+Indy 10 Installation Instructions
+
+
+All packages are followed by X0 (Where X is your Delphi verison).
+Example: For Delphi 6, the IndySystem package would be named: IndySystem60.dpk
+
+(Please note that SuperCore has not been finished and is not currently usable).
+
+
+1) Download source from the Development Snapshot.
+
+Delphi / BCB Installation
+
+2) Open and compile .dpk files in the following order:
+
+IndySystemX0.dpk (in Lib\System) 
+IndyCoreX0.dpk (in Lib\Core) 
+IndyProtocolsX0.dpk (in Lib\Protocols) 
+3) Now open these .dpk files and click install in the following order:
+
+
+dclIndyCoreX0.dpk (in Lib\Core) 
+dclIndyProtocolsX0.dpk (in Lib\Protocols) 
+4) In your Indy directory you should now see some compiled .dcu files. Open your Delphi IDE and goto the menu Tools>Environment options> Select Library tab. Now add the path to your .dcu files into the 
