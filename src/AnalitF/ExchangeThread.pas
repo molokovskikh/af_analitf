@@ -267,8 +267,20 @@ begin
           if eaGetPrice in ExchangeForm.ExchangeActs
           then
             CreateChildThreads;
-					QueryData;
-          GetPass;
+
+          Synchronize( ExchangeForm.CheckStop);
+          try
+{$ifndef DEBUG}
+            Synchronize( DisableCancel);
+{$endif}
+            QueryData;
+            GetPass;
+          finally
+{$ifndef DEBUG}
+            Synchronize( EnableCancel);
+{$endif}
+          end;
+          
           if CheckSendUData or (NAHChanged and Assigned(PreviousAdapter))
           then
             SendULoginData;
