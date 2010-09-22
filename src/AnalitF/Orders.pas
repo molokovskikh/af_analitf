@@ -89,6 +89,8 @@ type
     btnGotoPrice: TSpeedButton;
     adsOrdersPeriod: TStringField;
     adsOrdersProducerName: TStringField;
+    lDatePrice: TLabel;
+    dbtDatePrice: TDBText;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -217,6 +219,9 @@ begin
 
   //Отображаем сообщение с причиной корректировки только если заказ открыт и используется механизм корректировки заказов
   gbCorrectMessage.Visible := (not ClosedOrder)  and FUseCorrectOrders;
+  //Отображаем дату прайс-листа только для отправленного заказа
+  dbtDatePrice.Visible := ClosedOrder;
+  lDatePrice.Visible := dbtDatePrice.Visible;
   if not gbCorrectMessage.Visible then
     pTop.Height := pOrderHeader.Height;
   if not ClosedOrder then

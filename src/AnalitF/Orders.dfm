@@ -372,6 +372,33 @@ inherited OrdersForm: TOrdersForm
         Font.Style = [fsBold]
         ParentFont = False
       end
+      object lDatePrice: TLabel
+        Left = 632
+        Top = 9
+        Width = 14
+        Height = 13
+        Caption = #1086#1090
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtDatePrice: TDBText
+        Left = 649
+        Top = 9
+        Width = 124
+        Height = 13
+        DataField = 'DatePrice'
+        DataSource = OrdersHForm.dsOrdersH
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
     end
     object cbNeedCorrect: TCheckBox
       Left = 8
