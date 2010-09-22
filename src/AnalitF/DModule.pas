@@ -926,7 +926,11 @@ begin
   SerEnd := 'DataSmart';
 {$else}
   SerBeg := 'Prg';
+  {$ifdef DEBUG}
+  SerEnd := 'Data';
+  {$else}
   SerEnd := 'DataEx';
+  {$endif}
 {$endif}
   HTTPS := 'rkhgjsdk';
   HTTPE := 'fhhjfgfh';
