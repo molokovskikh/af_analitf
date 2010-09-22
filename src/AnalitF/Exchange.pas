@@ -219,16 +219,15 @@ begin
           AProc.MessageBox(ExchangeForm.ErrMsg, MB_ICONERROR);
         Sleep(500);
         DM.MainConnection.Open;
-        if Result then
-          needAuth := False
+        if not Result and AnsiStartsText('Доступ запрещен', ExchangeForm.ErrMsg)
+        then begin
+          if needAuth then
+            needAuth := False
+          else
+            needAuth := (ShowConfig( True ) * AuthChanges) <> [];
+        end
         else
-          if AnsiStartsText('Доступ запрещен', ExchangeForm.ErrMsg) then
-          begin
-            if needAuth then
-              needAuth := False
-            else
-              needAuth := ShowConfig( True );
-          end;
+          needAuth := False;
       except
         on E: Exception do
           AProc.MessageBox(Copy(E.Message, 1, 1024), MB_ICONSTOP);

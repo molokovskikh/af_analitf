@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshOther
+    ActivePage = tshAuth
     MultiLine = True
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5195,7 +5195,7 @@ object ConfigForm: TConfigForm
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 1
         end
         object dbeRasName: TDBEdit

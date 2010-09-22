@@ -10,6 +10,13 @@ uses
   DatabaseObjects;
 
 type
+  TConfigChange = (ccOk, ccHTTPName, ccHTTPPassword, ccHTTPHost);
+  TConfigChanges = set of TConfigChange;
+
+const
+  AuthChanges = [ccHTTPName, ccHTTPPassword, ccHTTPHost];
+
+type  
   TConfigForm = class(TVistaCorrectForm)
     btnOk: TButton;
     btnCancel: TButton;
@@ -105,6 +112,7 @@ type
   private
     HTTPNameChanged, HTTPPassChanged : Boolean;
     OldHTTPName : String;
+    OldHTTPHost : String;
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
@@ -155,7 +163,7 @@ type
 var
   ConfigForm: TConfigForm;
 
-function ShowConfig( Auth: boolean = False): boolean;
+function ShowConfig( Auth: boolean = False): TConfigChanges;
 
 implementation
 
@@ -163,7 +171,7 @@ implementation
 
 uses DBProc, AProc, Main, LU_Tracer, Constant, StrUtils;
 
-function ShowConfig( Auth: boolean = False): boolean;
+function ShowConfig( Auth: boolean = False): TConfigChanges;
 var
 	IsRasPresent: boolean;
   OldExep : TExceptionEvent;
@@ -173,6 +181,7 @@ var
   oldKbd,
   englishKbd : HKL;
 begin
+  Result := [];
   //вид дочерних форм зависит от параметров, поэтому закрываем окна
   MainForm.FreeChildForms;
   with TConfigForm.Create(Application) do try
@@ -186,6 +195,7 @@ begin
       Application.OnException := OnAppEx;
       HTTPNameChanged := False;
       OldHTTPName := dbeHTTPName.Field.AsString;
+      OldHTTPHost := dbeHTTPHost.Field.AsString;
       dbchbPrintOrdersAfterSend.Enabled := (DM.SaveGridMask and PrintSendedOrder) > 0;
 {$ifndef DSP}
       //Если в параметрах программы нет ключа "extd", то скрываем настройку "Хост"
@@ -225,8 +235,9 @@ begin
       eHTTPPass.Text := StringOfChar('*', Length(HTTPPass));
       HTTPPassChanged := False;
       DM.adtParams.Edit;
-      Result := ShowModal=mrOk;
-      if Result then begin
+      if ShowModal = mrOk then
+        Result := [ccOk];
+      if Result = [ccOk] then begin
         if Assigned(frameEditVitallyImportantMarkups) then
           frameEditVitallyImportantMarkups.SaveVitallyImportantMarkups;
 
@@ -244,6 +255,7 @@ begin
 
         DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
         if HTTPPassChanged then begin
+          Result := Result + [ccHTTPPassword];
           NewPass := eHTTPPass.Text;
           CryptNewPass := DM.E_HP(NewPass);
           DM.adtParams.FieldByName('HTTPPass').AsString := CryptNewPass;
@@ -257,6 +269,7 @@ begin
 }              
         end;
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
+          Result := Result + [ccHTTPName];
           DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
           MainForm.DisableByHTTPName;
           // удаляем все неотправленные открытые заявки
@@ -271,6 +284,8 @@ begin
           DM.adcUpdate.SQL.Text := 'truncate pricesregionaldataup';
           DM.adcUpdate.Execute;
         end;
+        if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then
+          Result := Result + [ccHTTPHost];
         DM.adtParams.Post;
       end
       else begin

@@ -379,7 +379,7 @@ try
   begin
     AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
       MB_ICONWARNING or MB_OK);
-    LoggedOn := ShowConfig( True);
+    LoggedOn := (ShowConfig( True) * [ccHTTPName]) <> [];
   end;
 
   // Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации

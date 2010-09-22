@@ -1061,7 +1061,7 @@ begin
     if not RunExchange(UpdateByCheckUINExchangeActions)
     then begin
       //Если не получилось обновиться, то отображаем форму конфигурации для корректировки настроек и авторизации
-      UpdateByCheckUINSuccess := ShowConfig(True);
+      UpdateByCheckUINSuccess := (ShowConfig(True) * AuthChanges) <> [];
 
       //Если пользователь ввел корректировки, то пытаемся обновиться еще раз
       if UpdateByCheckUINSuccess then
