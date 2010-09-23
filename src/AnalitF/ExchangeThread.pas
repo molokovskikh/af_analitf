@@ -85,6 +85,9 @@ private
 
   CheckSendUData : Boolean;
 
+  //Используется при получении истории заказов с сервера
+  MaxOrderId : String;
+
 	procedure SetStatus;
   procedure SetDownStatus;
 	procedure SetProgress;
@@ -3094,7 +3097,7 @@ var
   Error : String;
   I : Integer;
   UpdateIdIndex : Integer;
-  MaxOrderId, MaxOrderListId : String;
+  MaxOrderListId : String;
   InvokeResult : String;
 
   procedure AddPostParam(Param, Value: String);
@@ -3117,7 +3120,6 @@ begin
     AddPostParam('MaxOrderId', MaxOrderId);
     AddPostParam('MaxOrderListId', MaxOrderListId);
 
-    //AddPostParam('ExistsServerOrderIds', '0');
     GetPostedServerOrderId(FPostParams);
 
     UpdateId := '';
@@ -3263,24 +3265,28 @@ begin
       + ' update PostedOrderHeads, PricesData '
       + ' set PostedOrderHeads.PriceName = PricesData.PriceName '
       + ' where '
-      + '       (PostedOrderHeads.PriceName is null) '
+      + '       (PostedOrderHeads.OrderId >= ' + MaxOrderId + ') '
+      + '   and (PostedOrderHeads.PriceName is null) '
       + '   and (PostedOrderHeads.PriceCode = PricesData.PriceCode);'
       + ' update PostedOrderHeads, regions '
       + ' set PostedOrderHeads.RegionName = regions.RegionName '
       + ' where '
-      + '       (PostedOrderHeads.RegionName is null) '
+      + '       (PostedOrderHeads.OrderId >= ' + MaxOrderId + ') '
+      + '   and (PostedOrderHeads.RegionName is null) '
       + '   and (PostedOrderHeads.RegionCode = regions.RegionCode);';
     InternalExecute;
     DM.adcUpdate.SQL.Text := ''
       + ' update PostedOrderLists, synonyms '
       + ' set PostedOrderLists.SYNONYMNAME = synonyms.SYNONYMNAME '
       + ' where '
-      + '       (PostedOrderLists.SYNONYMNAME is null)'
+      + '       (PostedOrderLists.OrderId >= ' + MaxOrderId + ') '
+      + '   and (PostedOrderLists.SYNONYMNAME is null)'
       + '   and (PostedOrderLists.SYNONYMCODE = synonyms.SYNONYMCODE);'
       + ' update PostedOrderLists, synonymfirmcr '
       + ' set PostedOrderLists.SYNONYMFIRM = synonymfirmcr.SYNONYMNAME '
       + ' where '
-      + '       (PostedOrderLists.SYNONYMFIRM is null)'
+      + '       (PostedOrderLists.OrderId >= ' + MaxOrderId + ') '
+      + '   and (PostedOrderLists.SYNONYMFIRM is null)'
       + '   and (PostedOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
     InternalExecute;
   end;
