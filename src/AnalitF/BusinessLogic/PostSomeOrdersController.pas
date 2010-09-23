@@ -38,7 +38,7 @@ type
   TPostSomeOrdersController = class
    private
     FDataLayer : TDM;
-    FExchangeParams : TObjectList;
+    FExchangeParams : TExchangeParams;
     FForceSend : Boolean;
     FPostParams : TStringList;
     FSOAP : TSOAP;
@@ -66,7 +66,7 @@ type
    public
     constructor Create(
       dataLayer : TDM;
-      exchangeParams : TObjectList;
+      exchangeParams : TExchangeParams;
       forceSend : Boolean;
       soap : TSOAP;
       useCorrectOrders : Boolean);
@@ -124,7 +124,7 @@ end;
 
 constructor TPostSomeOrdersController.Create(
   dataLayer: TDM;
-  exchangeParams : TObjectList;
+  exchangeParams : TExchangeParams;
   forceSend : Boolean;
   soap : TSOAP;
   useCorrectOrders : Boolean);
@@ -132,8 +132,8 @@ begin
   FDataLayer := dataLayer;
 
   FExchangeParams := exchangeParams;
-  TStringList(FExchangeParams[Integer(epSendedOrders)]).Clear;
-  TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Clear;
+  FExchangeParams.SendedOrders.Clear();
+  FExchangeParams.SendedOrdersErrorLog.Clear();
 
   FForceSend := forceSend;
   FPostParams := TStringList.Create;
@@ -637,8 +637,7 @@ begin
           [currentHeader.ClientOrderId,
           currentHeader.ServerOrderId]));
 
-      TStringList(FExchangeParams[Integer(epSendedOrders)])
-        .Add(VarToStr(LastPostedOrderId));
+      FExchangeParams.SendedOrders.Add(VarToStr(LastPostedOrderId));
     end;
 
     DatabaseController.BackupDataTable(doiPostedOrderHeads);
@@ -667,7 +666,7 @@ begin
 
       case currentHeader.PostResult of
         osrLessThanMinReq :
-          TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
+          FExchangeParams.SendedOrdersErrorLog.Add(
             Format('Заказ № %d по прайс-листу %s (%s) не был отправлен. Причина : %s',
               [currentHeader.ClientOrderId,
                priceName,
@@ -675,7 +674,7 @@ begin
                currentHeader.ErrorReason])
           );
         osrNeedCorrect :
-          TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
+          FExchangeParams.SendedOrdersErrorLog.Add(
             Format(
               'Заказ № %d по прайс-листу %s (%s) не был отправлен. Причина : '
                 + 'различия с текущим прайс-листом на сервере.',
@@ -684,7 +683,7 @@ begin
                regionName])
           );
         else
-          TStringList(FExchangeParams[Integer(epSendedOrdersErrorLog)]).Add(
+          FExchangeParams.SendedOrdersErrorLog.Add(
             Format('Заказ № %d по прайс-листу %s (%s) не был отправлен. Код ответа: %d  Причина : %s',
               [currentHeader.ClientOrderId,
                priceName,

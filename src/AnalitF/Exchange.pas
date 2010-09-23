@@ -9,7 +9,8 @@ uses
   IdTCPConnection, IdTCPClient, IdHTTP, ExchangeThread, CheckLst, DateUtils,
   ActnList, Math, IdAuthentication, IdAntiFreezeBase, IdAntiFreeze, WinSock,
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, Contnrs,
-  IdIOHandlerStack, IdSSL, U_VistaCorrectForm, ExchangeParameters;
+  IdIOHandlerStack, IdSSL, U_VistaCorrectForm, ExchangeParameters,
+  GlobalExchangeParameters;
 
 {$ifdef USEMEMORYCRYPTDLL}
   {$ifndef USENEWMYSQLTYPES}
@@ -63,13 +64,13 @@ type
       const AStatusText: String);
   private
     FStatusPosition: Integer;
-	  ExchangeActions: TExchangeActions;
-	  StartTime: TTime;
-	  ConnectCount: integer;
-	  ConnectPause: cardinal;
+    ExchangeActions: TExchangeActions;
+    StartTime: TTime;
+    ConnectCount: integer;
+    ConnectPause: cardinal;
 
     //Текст ошибки, которая произошла
-	  ErrMsg: string;
+    ErrMsg: string;
 
     //Содержимое статусного текста
     FStatusStr      : String;
@@ -88,12 +89,12 @@ type
     property ExchangeActs: TExchangeActions read ExchangeActions write ExchangeActions;
     property AppHandle: HWND read GetAppHandle;
     procedure CheckStop;
-   	function PauseAfterError : TModalResult;
+    function PauseAfterError : TModalResult;
   end;
 
 var
-	ExchangeForm: TExchangeForm;
-	ExThread: TExchangeThread;
+  ExchangeForm: TExchangeForm;
+  ExThread: TExchangeThread;
   NeedRetrySendOrder : Boolean;
   NeedEditCurrentOrders : Boolean;
   BatchFileName : String;
@@ -109,7 +110,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   Child, Config, RxMemDS, CorrectOrders, PostSomeOrdersController,
   PostWaybillsController,
   DocumentHeaders,
-  U_OrderBatchForm;
+  U_OrderBatchForm,
+  SendWaybillTypes;
 
 {$R *.DFM}
 
@@ -130,7 +132,7 @@ type
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 {//$ifndef USENEWMYSQLTYPES}
 var
-	mr: integer;
+ mr: integer;
 {//$endif}
 //	hMenuHandle: HMENU;
   needShowDocumentForm : Boolean;
@@ -140,11 +142,11 @@ begin
   NeedEditCurrentOrders := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
-	Result := False;
+  Result := False;
   if Assigned(GlobalExchangeParams) then
     FreeAndNil(GlobalExchangeParams);
   GlobalExchangeParams := nil;
-	if AExchangeActions = [] then exit;
+  if AExchangeActions = [] then exit;
   if (eaPostOrderBatch in AExchangeActions) and (Length(BatchFileName) = 0) then
     Exit;
 
@@ -152,22 +154,22 @@ begin
 
   if (Length(DM.adtParams.FieldByName( 'HTTPName').AsString) = 0)
   then begin
-		AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
-			MB_ICONWARNING or MB_OK);
+    AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
+      MB_ICONWARNING or MB_OK);
     if FindCmdLineSwitch('e') then
       Exit
     else begin
-		  ShowConfig( True );
+      ShowConfig( True );
       if (Length(DM.adtParams.FieldByName( 'HTTPName').AsString) = 0) then
         Exit;
     end;
   end;
 
-	DM.DeleteEmptyOrders;
+  DM.DeleteEmptyOrders;
 
   //Если мы выставили флаг "Получать кумулятивное обновление", то при попытки обновления мы будем запрашивать кумулятивное,
   //кроме ситуации, когда пользователь делает "Импортирование данных"
-	if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions)
+  if DM.GetCumulative and ([eaImportOnly] <> AExchangeActions)
      and (eaGetPrice in AExchangeActions)
   then
     AExchangeActions := AExchangeActions + [eaGetFullData];
@@ -177,23 +179,23 @@ begin
     Exit;
   end;
 
-	if ( eaGetPrice in AExchangeActions) and not ( eaGetFullData in AExchangeActions) and
-		(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime <>
-		DM.adtParams.FieldByName( 'LastDateTime').AsDateTime) then
-	begin
+  if ( eaGetPrice in AExchangeActions) and not ( eaGetFullData in AExchangeActions) and
+    (DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime <>
+    DM.adtParams.FieldByName( 'LastDateTime').AsDateTime) then
+  begin
     AProc.MessageBox('Предыдущая операция импорта данных не была завершена.' + #10#13 +
-			'Обратитесь в АК "Инфорум"', MB_OK or MB_ICONWARNING);
-		exit;
-	end;
+      'Обратитесь в АК "Инфорум"', MB_OK or MB_ICONWARNING);
+    exit;
+  end;
 
   if (eaGetFullData in AExchangeActions) then
     DM.ResetNeedCommitExchange;
 
-	//выводим форму и начинаем обмен данными
-	ExchangeForm := TExchangeForm.Create( Application);
+  //выводим форму и начинаем обмен данными
+  ExchangeForm := TExchangeForm.Create( Application);
 
-	if not MainForm.Showing then ExchangeForm.Position := poDesktopCenter;
-	try
+  if not MainForm.Showing then ExchangeForm.Position := poDesktopCenter;
+  try
     needAuth := False;
     repeat
       ExchangeForm.ErrMsg := '';
@@ -236,14 +238,14 @@ begin
       WriteExchangeLog('Exchange', '---------------------------');
     until not needAuth;
   finally
-		ExchangeForm.Free;
-	end;
+    ExchangeForm.Free;
+  end;
 
   //Сбрасываем флаг кумулятивного обновления, когда сделали успешное обновление,
   //или импортирование данных. Т.е. либо мы получили обновление, либо скорректировали входные данные,
   //что смогли их импортировать, либо получили свежую версию после установки новой программы и
-  //импортировали данные после замены exe-файла.  
-	if Result and
+  //импортировали данные после замены exe-файла.
+  if Result and
     ((eaGetPrice in AExchangeActions) or (eaGetFullData in AExchangeActions)
       or (eaImportOnly in AExchangeActions)
       or (eaPostOrderBatch in AExchangeActions)
@@ -251,39 +253,39 @@ begin
   then
     DM.ResetCumulative;
 
-	if (( eaGetPrice in AExchangeActions) or
-		  (eaImportOnly in AExchangeActions) or (eaGetFullData in AExchangeActions)
+  if (( eaGetPrice in AExchangeActions) or
+      (eaImportOnly in AExchangeActions) or (eaGetFullData in AExchangeActions)
       or (eaPostOrderBatch in AExchangeActions)
       )
       and Result
   then
     TryToRepareOrders(False);
 
-	if MainForm.ExchangeOnly then exit;
+  if MainForm.ExchangeOnly then exit;
 
-	if Result and (Trim(TStringValue(GlobalExchangeParams[Integer(epServerAddition)]).Value) <> '')
+  if Result and (Trim(GlobalExchangeParams.ServerAddition) <> '')
   then
     AProc.MessageBoxEx(
-			TStringValue(GlobalExchangeParams[Integer(epServerAddition)]).Value,
+      GlobalExchangeParams.ServerAddition,
       'Сообщение от АК "Инфорум"',
-			MB_OK or MB_ICONINFORMATION);
+      MB_OK or MB_ICONINFORMATION);
 
-	if Result and (( eaGetPrice in AExchangeActions) or
-		( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
+  if Result and (( eaGetPrice in AExchangeActions) or
+    ( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then begin
     AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
     if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
       AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
   end;
 
-	if Result and (eaGetWaybills in AExchangeActions)
+  if Result and (eaGetWaybills in AExchangeActions)
   then
     AProc.MessageBox('Получение документов завершено успешно.', MB_OK or MB_ICONINFORMATION);
 
   if Result and (eaSendWaybills in AExchangeActions)
   then begin
     case
-      TSendWaybillsStatus(TIntegerValue(GlobalExchangeParams[Integer(epSendWaybillsResult)]).Value)
+      GlobalExchangeParams.SendWaybillsResult
     of
       swsNotFiles:
         AProc.MessageBox('Получение документов завершено успешно.', MB_OK or MB_ICONINFORMATION);
@@ -303,61 +305,61 @@ begin
   end;
 
 
-	if Result and (eaSendLetter in AExchangeActions)
+  if Result and (eaSendLetter in AExchangeActions)
   then
     AProc.MessageBox('Письмо успешно отправлено.', MB_OK or MB_ICONINFORMATION);
 
-	if Result and ( [eaSendOrders] * AExchangeActions = [eaSendOrders]) then
+  if Result and ( [eaSendOrders] * AExchangeActions = [eaSendOrders]) then
   begin
     MainForm.SetOrdersInfo;
-    if (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count = 0)
+    if (GlobalExchangeParams.SendedOrdersErrorLog.Count = 0)
     then
       AProc.MessageBox('Отправка заказов завершена успешно.', MB_OK or MB_ICONINFORMATION);
 
     if ((DM.SaveGridMask and PrintSendedOrder) > 0)
       and (DM.adtParams.FieldByName('PrintOrdersAfterSend').AsBoolean)
-      and (TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count > 0)
+      and (GlobalExchangeParams.SendedOrders.Count > 0)
     then
       PrintOrdersAfterSend;
   end;
 
-	if Result and ( AExchangeActions = [ eaSendOrders])
-    and (TStringList(GlobalExchangeParams[Integer(epSendedOrdersErrorLog)]).Count > 0)
+  if Result and ( AExchangeActions = [ eaSendOrders])
+    and (GlobalExchangeParams.SendedOrdersErrorLog.Count > 0)
   then begin
     NeedRetrySendOrder := True;
   end;
 
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
-	if Result and (( eaGetPrice in AExchangeActions) or
-		( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
+  if Result and (( eaGetPrice in AExchangeActions) or
+    ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
     or (eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then
     needShowDocumentForm := DM.ProcessDocs;
 
   if Result and (AExchangeActions = [ eaGetHistoryOrders])
   then
-    if TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+    if GlobalExchangeParams.FullHistoryOrders
     then
       AProc.MessageBox('С сервера загружена вся история заказов.', MB_OK or MB_ICONINFORMATION)
     else
       AProc.MessageBox('Загрузка истории заказов завершена успешно.', MB_OK or MB_ICONINFORMATION);
 
-	MainForm.UpdateReclame;
+  MainForm.UpdateReclame;
 
 {//$ifndef USENEWMYSQLTYPES}
 //В специализированной сборке не работает пока сжатие базы данных,
 //незачем его сейчас запускать и при оригинальной сборке
-	if Result and ( eaGetPrice in AExchangeActions) and
-		( DaysBetween( DM.adtParams.FieldByName( 'LastCompact').AsDateTime, Now) >= COMPACT_PERIOD) then
-	begin
-		CompactForm := TCompactForm.Create( Application);
-		CompactForm.lblMessage.Caption := 'Сжатие базы не производилось более ' +
-			IntToStr( COMPACT_PERIOD) + ' дней.' + #10 + #13 +
-			'Произвести сжатие базы? (Рекомендуется)';
-		mr := CompactForm.ShowModal;
-		CompactForm.Close;
-		CompactForm.Free;
-		if mr = mrOK then begin
+  if Result and ( eaGetPrice in AExchangeActions) and
+    ( DaysBetween( DM.adtParams.FieldByName( 'LastCompact').AsDateTime, Now) >= COMPACT_PERIOD) then
+  begin
+    CompactForm := TCompactForm.Create( Application);
+    CompactForm.lblMessage.Caption := 'Сжатие базы не производилось более ' +
+      IntToStr( COMPACT_PERIOD) + ' дней.' + #10 + #13 +
+      'Произвести сжатие базы? (Рекомендуется)';
+    mr := CompactForm.ShowModal;
+    CompactForm.Close;
+    CompactForm.Free;
+    if mr = mrOK then begin
       //Перед началом сжатия базы данных закрываем все дочерние окна. Возможно, это не надо делать,
       //т.к. дочерние окна закрывали ранее
       MainForm.FreeChildForms;
@@ -365,7 +367,7 @@ begin
       RunCompactDatabase;
       AProc.MessageBox( 'Сжатие базы данных завершено');
     end;
-	end;
+  end;
 {//$endif}
 
   if Result then
@@ -396,9 +398,9 @@ begin
   try
 
     if PrintDialog.Execute then
-      for I := 0 to TStringList(GlobalExchangeParams[Integer(epSendedOrders)]).Count-1 do
+      for I := 0 to GlobalExchangeParams.SendedOrders.Count-1 do
         DM.ShowOrderDetailsReport(
-          StrToInt(TStringList(GlobalExchangeParams[Integer(epSendedOrders)])[i]),
+          StrToInt(GlobalExchangeParams.SendedOrders[i]),
           True,
           True,
           False,
@@ -428,42 +430,42 @@ end;
 //пауза после ошибки
 function TExchangeForm.PauseAfterError : TModalResult;
 begin
-	RetryForm := TRetryForm.Create( Application);
-	RetryForm.lblError.Caption := TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value;
-	RetryForm.Seconds := ConnectPause;
-	Result := RetryForm.ShowModal;
-	RetryForm.Close;
-	RetryForm.Free;
+  RetryForm := TRetryForm.Create( Application);
+  RetryForm.lblError.Caption := GlobalExchangeParams.ErrorMessage;
+  RetryForm.Seconds := ConnectPause;
+  Result := RetryForm.ShowModal;
+  RetryForm.Close;
+  RetryForm.Free;
 end;
 
 procedure TExchangeForm.TimerTimer(Sender: TObject);
 var
-	ConnectNumber: Integer;
+  ConnectNumber: Integer;
 begin
-	//здесь производим те действия, которые могут быть отменены
-	StartTime := Now;
+  //здесь производим те действия, которые могут быть отменены
+  StartTime := Now;
   FStatusStr := '';
-	Timer1.Enabled := True;
-	Timer.Enabled := False;
-	DoStop := False;
+  Timer1.Enabled := True;
+  Timer.Enabled := False;
+  DoStop := False;
 
-	Caption := 'Обмен данными';
+  Caption := 'Обмен данными';
 
-	//главный цикл соединения
-	for ConnectNumber := 1 to ConnectCount do
-	begin
-		ExThread := TExchangeThread.Create( False);
+  //главный цикл соединения
+  for ConnectNumber := 1 to ConnectCount do
+  begin
+    ExThread := TExchangeThread.Create( False);
     GlobalExchangeParams := ExThread.ExchangeParams;
-		while not TBooleanValue(GlobalExchangeParams[Integer(epTerminated)]).Value do
-		begin
-			CheckSynchronize;
-			Application.ProcessMessages;
-			Sleep( 10);
-		end;
+    while not GlobalExchangeParams.Terminated do
+    begin
+      CheckSynchronize;
+      Application.ProcessMessages;
+      Sleep( 10);
+    end;
 
-		if TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value <> '' then
-		begin
-			if ( ConnectNumber < ConnectCount) and not TBooleanValue(GlobalExchangeParams[Integer(epCriticalError)]).Value then begin
+    if GlobalExchangeParams.ErrorMessage <> '' then
+    begin
+      if ( ConnectNumber < ConnectCount) and not GlobalExchangeParams.CriticalError then begin
         if PauseAfterError = mrCancel then begin
           btnCancel.Click;
           break;
@@ -477,23 +479,23 @@ begin
         end;
         break;
       end;
-		end
-		else break;
-	end;
+    end
+    else break;
+  end;
 
-  ErrMsg := TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value;
+  ErrMsg := GlobalExchangeParams.ErrorMessage;
 
-	{ Требуется завершение программы }
-	if Assigned( ExThread) and ( ErrMsg = 'Terminate') then
-	begin
+  { Требуется завершение программы }
+  if Assigned( ExThread) and ( ErrMsg = 'Terminate') then
+  begin
     DM.MainConnection.Close;
-		Application.Terminate;
-	end;
+    Application.Terminate;
+  end;
 
-	if Assigned( ExThread) and ( ErrMsg <> '') then
-	begin
+  if Assigned( ExThread) and ( ErrMsg <> '') then
+  begin
     //Эта ситация происходит когда возникает ошибка или пользователь отменяет действие
-		ModalResult := mrAbort;
+    ModalResult := mrAbort;
     {
     Здесь надо все переделать в связи с требованием #1632 Ошибка при обновлении
     При отмене обмена данными (нажатии на кнопку "Отмена") нельзя просто
@@ -501,45 +503,45 @@ begin
     либо отвязать их, чтобы они не обновляли ChildThreads,
     а то возникает ошибка при обращении к ChildThreads
     }
-		if Assigned( ExThread) then
+    if Assigned( ExThread) then
       FreeAndNil(ExThread);
-	end
-	else
-	begin
-		ModalResult := mrOk;
+  end
+  else
+  begin
+    ModalResult := mrOk;
     //Это тоже относится к требованию #1632 Ошибка при обновлении
-		if Assigned( ExThread) then
+    if Assigned( ExThread) then
       FreeAndNil(ExThread);
-	end;
+  end;
 end;
 
 
 procedure TExchangeForm.CheckStop;
 begin
-	StatusText := '';
-	StatusPosition := 0;
-	if DoStop then
-	begin
-		TBooleanValue(GlobalExchangeParams[Integer(epTerminated)]).Value := True;
-		Abort;
-	end;
+  StatusText := '';
+  StatusPosition := 0;
+  if DoStop then
+  begin
+    GlobalExchangeParams.Terminated := True;
+    Abort;
+  end;
 end;
 
 procedure TExchangeForm.RasStateChange(Sender: TObject; State: Integer;
   StateStr: String);
 begin
-	StatusText := StateStr;
+  StatusText := StateStr;
 end;
 
 procedure TExchangeForm.btnCancelClick(Sender: TObject);
 begin
-	DoStop := True;
-  if TBooleanValue(GlobalExchangeParams[Integer(epDownloadChildThreads)]).Value then
+  DoStop := True;
+  if GlobalExchangeParams.DownloadChildThreads then
     ExThread.StopChildThreads
   else
     try
-      TBooleanValue(GlobalExchangeParams[Integer(epCriticalError)]).Value := True;
-      TStringValue(GlobalExchangeParams[Integer(epErrorMessage)]).Value := 'Операция отменена';
+      GlobalExchangeParams.CriticalError := True;
+      GlobalExchangeParams.ErrorMessage := 'Операция отменена';
       HTTP.Disconnect;
       Ras.Disconnect;
     except
@@ -548,13 +550,13 @@ end;
 
 procedure TExchangeForm.SetRasParams;
 begin
-	// параметры удаленного соединения
-	if DM.adtParams.FieldByName( 'RasConnect').AsBoolean then
-	begin
-		Ras.Entry := DM.adtParams.FieldByName( 'RasEntry').AsString;
-		Ras.UserName := DM.adtParams.FieldByName( 'RasName').AsString;
-		Ras.Password := DM.adtParams.FieldByName( 'RasPass').AsString;
-	end;
+  // параметры удаленного соединения
+  if DM.adtParams.FieldByName( 'RasConnect').AsBoolean then
+  begin
+    Ras.Entry := DM.adtParams.FieldByName( 'RasEntry').AsString;
+    Ras.UserName := DM.adtParams.FieldByName( 'RasName').AsString;
+    Ras.Password := DM.adtParams.FieldByName( 'RasPass').AsString;
+  end;
 end;
 
 procedure TExchangeForm.SetHTTPParams;
@@ -569,36 +571,36 @@ end;
 
 function TExchangeForm.GetAppHandle: HWND;
 begin
-	result := Application.Handle;
+  result := Application.Handle;
 end;
 
 function TExchangeForm.GetStatusText: string;
 begin
-	result := stStatus.Caption;
+  result := stStatus.Caption;
 end;
 
 procedure TExchangeForm.SetStatusText(Value: string);
 begin
-	Value := Trim( Value);
-	stStatus.Caption := Value;
-	if Value <> '' then
+  Value := Trim( Value);
+  stStatus.Caption := Value;
+  if Value <> '' then
     WriteExchangeLog('Exchange', Value);
-	Application.ProcessMessages;
+  Application.ProcessMessages;
 end;
 
 procedure TExchangeForm.SetStatusPosition(Value: Integer);
 begin
-	if FStatusPosition<>Value then
-	begin
-		FStatusPosition := Value;
-		ProgressBar.Position := Value;
-		Application.ProcessMessages;
-	end;
+  if FStatusPosition<>Value then
+  begin
+    FStatusPosition := Value;
+    ProgressBar.Position := Value;
+    Application.ProcessMessages;
+  end;
 end;
 
 procedure TExchangeForm.Timer1Timer(Sender: TObject);
 begin
-	lblElapsed.Caption := TimeToStr( Now - StartTime);
+  lblElapsed.Caption := TimeToStr( Now - StartTime);
 end;
 
 procedure TExchangeForm.FormCreate(Sender: TObject);
@@ -606,8 +608,8 @@ begin
   HTTP.ConnectTimeout := -2;
   HTTPReclame.ConnectTimeout := -2;
   httpReceive.ConnectTimeout := -2;
-	ConnectCount := DM.adtParams.FieldByName( 'ConnectCount').AsInteger;
-	ConnectPause := DM.adtParams.FieldByName( 'ConnectPause').AsInteger;
+  ConnectCount := DM.adtParams.FieldByName( 'ConnectCount').AsInteger;
+  ConnectPause := DM.adtParams.FieldByName( 'ConnectPause').AsInteger;
 end;
 
 procedure TExchangeForm.HTTPStatus(ASender: TObject;
@@ -620,8 +622,8 @@ end;
 
 procedure TInternalRepareOrders.FillData;
 var
-	Order, CurOrder, Quantity, E: Integer;
-	SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
+  Order, CurOrder, Quantity, E: Integer;
+  SynonymCode, SynonymFirmCrCode, JUNK, AWAIT: Variant;
   Code, RequestRatio, OrderCost, MinOrderCount, Period, ProducerCost: Variant;
   //Есть ли превышение по цене?
   CostReason : String;
@@ -634,17 +636,17 @@ var
     DM.adsRepareOrders.Post;
   end;
 
-	procedure SetOrder( Order: integer);
+  procedure SetOrder( Order: integer);
   var
     OldOrderCount : Integer;
     ServerCost    : Currency;
-	begin
-		DM.adsRepareOrders.Edit;
+  begin
+    DM.adsRepareOrders.Edit;
     OldOrderCount := DM.adsRepareOrdersORDERCOUNT.AsInteger;
     ServerCost := DM.adsRepareOrdersRealPrice.AsCurrency;
     if not ProcessSendOrdersResponse then
       DM.adsRepareOrdersORDERCOUNT.AsInteger := Order;
-		if Order = 0 then
+    if Order = 0 then
       DM.adsRepareOrdersCOREID.Clear
     else begin
       DM.adsRepareOrdersCOREID.AsVariant := DM.adsCoreRepareCOREID.AsVariant;
@@ -668,32 +670,32 @@ var
     end;
     DM.adsRepareOrdersServerCost.AsCurrency := ServerCost;
     DM.adsRepareOrdersServerQuantity.Value := OldOrderCount;
-		DM.adsRepareOrders.Post;
-	end;
+    DM.adsRepareOrders.Post;
+  end;
 
 begin
-	while not DM.adsRepareOrders.Eof do
-	begin
+  while not DM.adsRepareOrders.Eof do
+  begin
     Application.ProcessMessages;
     if DM.adsCoreRepare.Active then
-  		DM.adsCoreRepare.Close;
-		Screen.Cursor := crHourglass;
-		try
+      DM.adsCoreRepare.Close;
+    Screen.Cursor := crHourglass;
+    try
       //Получаем данные, восстанавливаемой позиции
-			Order := DM.adsRepareOrdersORDERCOUNT.AsInteger;
+      Order := DM.adsRepareOrdersORDERCOUNT.AsInteger;
       OldPrice := DM.adsRepareOrdersPrice.AsCurrency;
-			CurOrder := 0;
+      CurOrder := 0;
       CostReason := '';
 
-			Code := DM.adsRepareOrdersCODE.AsVariant;
+      Code := DM.adsRepareOrdersCODE.AsVariant;
       RequestRatio := DM.adsRepareOrdersREQUESTRATIO.AsVariant;
       OrderCost := DM.adsRepareOrdersORDERCOST.AsVariant;
       MinOrderCount := DM.adsRepareOrdersMINORDERCOUNT.AsVariant;
       Period := DM.adsRepareOrdersPeriod.AsVariant;
       ProducerCost := DM.adsRepareOrdersProducerCost.AsVariant;
 
-			SynonymCode := DM.adsRepareOrdersSYNONYMCODE.AsInteger;
-			SynonymFirmCrCode := DM.adsRepareOrdersSYNONYMFIRMCRCODE.AsVariant;
+      SynonymCode := DM.adsRepareOrdersSYNONYMCODE.AsInteger;
+      SynonymFirmCrCode := DM.adsRepareOrdersSYNONYMFIRMCRCODE.AsVariant;
       JUNK := DM.adsRepareOrdersJUNK.AsVariant;
       AWAIT := DM.adsRepareOrdersAWAIT.AsVariant;
 
@@ -714,13 +716,13 @@ begin
         DM.adsCoreRepare.AddWhere('(CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE)');
         DM.adsCoreRepare.ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
       end;
-      
-			DM.adsCoreRepare.Open;
+
+      DM.adsCoreRepare.Open;
       DM.adsCoreRepare.IndexFieldNames := 'Cost ASC';
       DM.adsCoreRepare.First;
-			{ проверяем наличие прайс-листа }
-			if DM.adsCoreRepare.IsEmpty then
-			begin
+      { проверяем наличие прайс-листа }
+      if DM.adsCoreRepare.IsEmpty then
+      begin
         mdOutput.AppendRecord(
          [DM.adsRepareOrdersClientName.AsString,
          DM.adsRepareOrdersPRICENAME.AsString,
@@ -734,29 +736,29 @@ begin
          DM.adsRepareOrdersId.AsLargeInt,
          DM.adsRepareOrdersProductId.AsLargeInt,
          DM.adsRepareOrdersClientId.AsLargeInt]);
-				DM.adsCoreRepare.Close;
-				SetOrder( 0);
+        DM.adsCoreRepare.Close;
+        SetOrder( 0);
         SetOrderDropReason(psrNotExists);
-				DM.adsRepareOrders.Next;
-				continue;
-			end;
+        DM.adsRepareOrders.Next;
+        continue;
+      end;
 
-			if DM.adsCoreRepare
+      if DM.adsCoreRepare
         .Locate(
           'Code;REQUESTRATIO;ORDERCOST;MINORDERCOUNT;Period;ProducerCost',
           VarArrayOf([Code, RequestRatio, OrderCost, MinOrderCount, Period, ProducerCost]), [])
       then
-			begin
-				Val( DM.adsCoreRepareQUANTITY.AsString, Quantity, E);
-				if E <> 0 then Quantity := 0;
-				if Quantity > 0 then
-					CurOrder := Min( Order, Quantity)
-				else
+      begin
+        Val( DM.adsCoreRepareQUANTITY.AsString, Quantity, E);
+        if E <> 0 then Quantity := 0;
+        if Quantity > 0 then
+          CurOrder := Min( Order, Quantity)
+        else
           CurOrder := Order;
         if not DM.adsCoreRepareREQUESTRATIO.IsNull and (DM.adsCoreRepareREQUESTRATIO.AsInteger > 0) then
           CurOrder := CurOrder - (CurOrder mod DM.adsCoreRepareREQUESTRATIO.AsInteger);
-			end;
-			SetOrder( CurOrder);
+      end;
+      SetOrder( CurOrder);
 
       if (CurOrder > 0) then
         if OldPrice < DM.adsRepareOrdersPrice.AsCurrency then
@@ -765,11 +767,11 @@ begin
           if OldPrice > DM.adsRepareOrdersPrice.AsCurrency then
             CostReason := 'старая цена заказа больше текущей цены';
 
-			{ Если все еще не разбросали, то пишем сообщение }
-			if ( Order - CurOrder) > 0 then
-			begin
-				if CurOrder > 0 then
-				begin
+      { Если все еще не разбросали, то пишем сообщение }
+      if ( Order - CurOrder) > 0 then
+      begin
+        if CurOrder > 0 then
+        begin
           SetOrderDropReason(psrDifferentQuantity);
           mdOutput.AppendRecord(
            [DM.adsRepareOrdersClientName.AsString,
@@ -785,9 +787,9 @@ begin
            DM.adsRepareOrdersId.AsLargeInt,
            DM.adsRepareOrdersProductId.AsLargeInt,
            DM.adsRepareOrdersClientId.AsLargeInt]);
-				end
-				else
-				begin
+        end
+        else
+        begin
           SetOrderDropReason(psrNotExists);
           mdOutput.AppendRecord(
            [DM.adsRepareOrdersClientName.AsString,
@@ -802,8 +804,8 @@ begin
            DM.adsRepareOrdersId.AsLargeInt,
            DM.adsRepareOrdersProductId.AsLargeInt,
            DM.adsRepareOrdersClientId.AsLargeInt]);
-				end;
-			end
+        end;
+      end
       else
         if Length(CostReason) > 0 then begin
           SetOrderDropReason(psrDifferentCost);
@@ -822,12 +824,12 @@ begin
            DM.adsRepareOrdersClientId.AsLargeInt]);
         end;
 
-			DM.adsRepareOrders.Next;
-		finally
-			DM.adsCoreRepare.Close;
+      DM.adsRepareOrders.Next;
+    finally
+      DM.adsCoreRepare.Close;
       Screen.Cursor := crDefault;
-		end;
-	end;
+    end;
+  end;
 end;
 
 procedure TInternalRepareOrders.FormatOutput;
@@ -891,15 +893,15 @@ begin
 
   DM.adsRepareOrders.Open;
 
-	if DM.adsRepareOrders.IsEmpty then
-	begin
-	 	DM.adsRepareOrders.Close;
-		exit;
-	end;
+  if DM.adsRepareOrders.IsEmpty then
+  begin
+    DM.adsRepareOrders.Close;
+    exit;
+  end;
 
-	Strings := TStringList.Create;
+  Strings := TStringList.Create;
 
-	try
+  try
 
     mdOutput := TRxMemoryData.Create(nil);
     try
@@ -934,9 +936,9 @@ begin
       mdOutput.Free;
     end;
 
-	finally
-		Strings.Free;
-		DM.adsRepareOrders.Close;
+  finally
+    Strings.Free;
+    DM.adsRepareOrders.Close;
   end;
 end;
 

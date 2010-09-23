@@ -108,7 +108,9 @@ uses
   ArchiveHelper in 'Helpers\ArchiveHelper.pas',
   U_frameBaseLegend in 'U_frameBaseLegend.pas' {frameBaseLegend: TFrame},
   U_frameOrderHeadLegend in 'U_frameOrderHeadLegend.pas' {frameOrderHeadLegend: TFrame},
-  StartupHelper in 'Helpers\StartupHelper.pas';
+  StartupHelper in 'Helpers\StartupHelper.pas',
+  SendWaybillTypes in 'BusinessLogic\SendWaybillTypes.pas',
+  GlobalExchangeParameters in 'BusinessLogic\GlobalExchangeParameters.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

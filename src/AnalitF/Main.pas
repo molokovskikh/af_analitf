@@ -267,7 +267,8 @@ uses
   MnnSearch, DocumentHeaders, DBGridHelper, DocumentTypes,
   U_OrderBatchForm,
   StartupHelper,
-  MyClasses;
+  MyClasses,
+  GlobalExchangeParameters;
 
 {$R *.DFM}
 

@@ -47,7 +47,7 @@ TUpdateTables = set of TUpdateTable;
 
 TExchangeThread = class( TThread)
  public
-  ExchangeParams : TObjectList;
+  ExchangeParams : TExchangeParams;
   procedure StopChildThreads;
 private
 	StatusText: string;
@@ -226,19 +226,19 @@ begin
 
 				if eaSendOrders in ExchangeForm.ExchangeActs then
 				begin
-          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+          ExchangeParams.CriticalError := True;
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
           DoSendSomeOrders;
-          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
+          ExchangeParams.CriticalError := False;
 				end;
 				if eaSendLetter in ExchangeForm.ExchangeActs then
 				begin
-					TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+					ExchangeParams.CriticalError := True;
 					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
 					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 					DoSendLetter;
-					TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
+					ExchangeParams.CriticalError := False;
 				end;
         //DoSendWaybills
         if (eaSendWaybills in ExchangeForm.ExchangeActs)
@@ -247,11 +247,11 @@ begin
           and DM.adsUser.FieldByName('SendWaybillsFromClient').AsBoolean
         then
         begin
-          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+          ExchangeParams.CriticalError := True;
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
           DoSendWaybills;
-          TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
+          ExchangeParams.CriticalError := False;
         end;
 
 				TotalProgress := 20;
@@ -302,7 +302,7 @@ begin
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 
-          if not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
+          if not ExchangeParams.FullHistoryOrders
           then
             DoExchange;
         end;
@@ -317,7 +317,7 @@ begin
         UnpackFiles;
 
       if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
-         and not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
+         and not ExchangeParams.FullHistoryOrders
       then
         UnpackFiles;
 
@@ -327,7 +327,7 @@ begin
         CommitExchange;
 
       if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
-         and not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
+         and not ExchangeParams.FullHistoryOrders
          and (Length(UpdateId) > 0)
       then
         CommitHistoryOrders;
@@ -349,7 +349,7 @@ begin
         end;
 
       if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
-         and not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
+         and not ExchangeParams.FullHistoryOrders
       then
         ImportHistoryOrders;
 
@@ -357,7 +357,7 @@ begin
 			begin
 				TotalProgress := 50;
 				Synchronize( SetTotalProgress);
-				TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+				ExchangeParams.CriticalError := True;
 				CheckNewExe;
 				CheckNewFRF;
 				CheckNewMDB;
@@ -458,7 +458,7 @@ begin
 			{ Дожидаемся завершения работы дочерних ниток : рекламы, шпионской нитки }
 			if ( [eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> [])
       then begin
-        TBooleanValue(ExchangeParams[Integer(epDownloadChildThreads)]).Value := True;
+        ExchangeParams.DownloadChildThreads := True;
         while ChildThreads.Count > 0 do
           Sleep(500);
 			end;
@@ -489,20 +489,20 @@ begin
 				//if ExchangeForm.DoStop then Abort;
 				//обрабатываем ошибку
         WriteExchangeLog('Exchange', LastStatus + ':' + CRLF + E.Message);
-				if TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value = '' then
-          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := RusError( E.Message);
-				if TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value = '' then
-          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.ClassName + ': ' + E.Message;
+				if ExchangeParams.ErrorMessage = '' then
+          ExchangeParams.ErrorMessage := RusError( E.Message);
+				if ExchangeParams.ErrorMessage = '' then
+          ExchangeParams.ErrorMessage := E.ClassName + ': ' + E.Message;
         if (E is EIdHTTPProtocolException) then
-          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value :=
+          ExchangeParams.ErrorMessage :=
             'При выполнении вашего запроса произошла ошибка.'#13#10 +
             'Повторите запрос через несколько минут.'#13#10 +
-            TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value
+            ExchangeParams.ErrorMessage
         else
         if (E is EIdException) then
-          TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value :=
+          ExchangeParams.ErrorMessage :=
             'Проверьте подключение к Интернет.'#13#10 +
-            TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value;
+            ExchangeParams.ErrorMessage;
 			end;
 		end;
     finally
@@ -515,10 +515,10 @@ begin
     end;
 	except
 		on E: Exception do
-      TStringValue(ExchangeParams[Integer(epErrorMessage)]).Value := E.Message;
+      ExchangeParams.ErrorMessage := E.Message;
 	end;
-	Synchronize( EnableCancel);
-	TBooleanValue(ExchangeParams[Integer(epTerminated)]).Value := True;
+  Synchronize( EnableCancel);
+  ExchangeParams.Terminated := True;
 end;
 
 procedure TExchangeThread.HTTPConnect;
@@ -725,7 +725,7 @@ begin
     if (Length(Res.Values['Cumulative']) > 0) and (StrToBool(Res.Values['Cumulative'])) then
       ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
 
-    TStringValue(ExchangeParams[Integer(epServerAddition)]).Value := Utf8ToAnsi( Res.Values[ 'Addition']);
+    ExchangeParams.ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
     { получаем имя удаленного файла }
     HostFileName := Res.Values[ 'URL'];
     NewZip := True;
@@ -814,7 +814,7 @@ begin
 	except
 		on E: Exception do
 		begin
-			TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+			ExchangeParams.CriticalError := True;
 			raise;
 		end;
 	end;
@@ -2111,7 +2111,7 @@ var
   Res : TStrings;
   Error : String;
 begin
-  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+  ExchangeParams.CriticalError := True;
   Res := SOAP.Invoke(
     'GetPasswordsEx',
     ['UniqueID', 'EXEVersion'],
@@ -2126,7 +2126,7 @@ begin
   else
     ASaveGridMask := '0000000';
   DM.SavePass(ASaveGridMask);
-  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
+  ExchangeParams.CriticalError := False;
 end;
 
 procedure TExchangeThread.PriceDataSettings;
@@ -2138,7 +2138,7 @@ var
   ParamNames, ParamValues : array of String;
   I : Integer;
 begin
-  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+  ExchangeParams.CriticalError := True;
   if DM.adsQueryValue.Active then
    	DM.adsQueryValue.Close;
   DM.adsQueryValue.SQL.Text := '' +
@@ -2187,7 +2187,7 @@ begin
 	end
   else
     DM.adsQueryValue.Close;
-  TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
+  ExchangeParams.CriticalError := False;
 end;
 
 procedure TExchangeThread.HTTPWork(Sender: TObject; AWorkMode: TWorkMode;
@@ -2244,7 +2244,7 @@ begin
     end;
 	end;
 
-	if TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value then
+	if ExchangeParams.CriticalError then
     Abort;
 end;
 
@@ -2353,8 +2353,7 @@ begin
   hfileHelper := THFileHelper.Create;
   PreviousAdapter := nil;
   
-  ExchangeParams := TObjectList.Create(True);
-  TExchangeParamsHelper.InitExchangeParams(ExchangeParams);
+  ExchangeParams := TExchangeParams.Create();
 end;
 
 function TExchangeThread.ChildThreadClassIsExists(
@@ -3142,7 +3141,7 @@ begin
 
     if AnsiCompareText(Res.Values['FullHistory'], 'True') = 0
     then begin
-      TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value := True;
+      ExchangeParams.FullHistoryOrders := True;
       Exit;
     end;
 
@@ -3173,7 +3172,7 @@ begin
 	except
 		on E: Exception do
 		begin
-			TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := True;
+			ExchangeParams.CriticalError := True;
 			raise;
 		end;
 	end;

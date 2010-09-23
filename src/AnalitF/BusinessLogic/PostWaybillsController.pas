@@ -7,23 +7,8 @@ uses
   //App modules
   Constant, DModule, ExchangeParameters, U_ExchangeLog, SOAPThroughHTTP,
   DatabaseObjects, MyAccess, DocumentTypes, AProc, U_SGXMLGeneral, IdCoderMIME,
-  SevenZip, IdHttp, FileUtil, U_SXConversions, Windows;
-
-type
-  TSendWaybillsStatus = (
-    swsNotFiles   = -1, //нет файлов для отправки на сервер
-    swsOk         = 0,  //все хорошо
-    swsRepeat     = 1,  //повторите отправку позднее
-    swsRetryLater = 2   //получите документы позднее
-  );
-
-const
-  //предложение отсутствует
-  SendWaybillsStatusText : array[TSendWaybillsStatus] of string =
-  ('нет файлов для загрузки',
-   'все хорошо',
-   'Пожалуйста, повторите загрузку накладных позднее.',
-   'Пожалуйста, получите документы позднее.');
+  SevenZip, IdHttp, FileUtil, U_SXConversions, Windows,
+  SendWaybillTypes;
 
 type
   TSendElem = class
@@ -42,7 +27,7 @@ type
   TPostWaybillsControllerController = class
    private
     FDataLayer : TDM;
-    FExchangeParams : TObjectList;
+    FExchangeParams : TExchangeParams;
     SendIdHTTP : TIdHTTP;    //Компонент для отправки письма
     SendURL : String;        //URL, по которому происходит доступ
     TempSendDir : String;    //Временная папка для создания аттачмента
@@ -54,7 +39,7 @@ type
    public
     constructor Create(
       dataLayer : TDM;
-      exchangeParams : TObjectList;
+      exchangeParams : TExchangeParams;
       ASendIdHTTP : TIdHTTP;
       ASendURL : String);
     procedure PostWaybills;
@@ -69,7 +54,7 @@ uses
 { TPostWaybillsControllerController }
 
 constructor TPostWaybillsControllerController.Create(dataLayer: TDM;
-  exchangeParams: TObjectList;
+  exchangeParams: TExchangeParams;
   ASendIdHTTP : TIdHTTP;
   ASendURL : String);
 begin
@@ -326,8 +311,7 @@ begin
 
         InternalSendResult := TSendWaybillsStatus(StrToInt(InternalSendResultStr));
 
-        TIntegerValue(FExchangeParams[Integer(epSendWaybillsResult)]).Value :=
-          Integer(InternalSendResult);
+        FExchangeParams.SendWaybillsResult := InternalSendResult;
 
         if InternalSendResult in [swsOk, swsRetryLater] then
           DeleteSendedFiles;
