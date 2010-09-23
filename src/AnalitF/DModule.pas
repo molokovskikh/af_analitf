@@ -338,9 +338,6 @@ type
     FNeedCommitExchange : Boolean;
     //Код подтверждения обновления, полученный с сервера
     FServerUpdateId : String;
-    SynonymPassword,
-    CodesPassword,
-    BaseCostPassword,
     DBUIN : String;
     //Требуется обновления из-за того, что некорректный UIN
     FNeedUpdateByCheckUIN : Boolean;
@@ -353,10 +350,7 @@ type
     FGetCatalogsCount : Integer;
     FRetMargins : TObjectList;
     FVitallyImportantMarkups : TObjectList;
-    SynC,
-    HTTPC,
-    CodeC,
-    BasecostC : TINFCrypt;
+    HTTPC : TINFCrypt;
     OrdersInfo : TStringList;
 
     //Было произведено обновление программы с Firebird на MySql
@@ -476,18 +470,9 @@ type
     procedure ResetNeedCommitExchange;
     function GetServerUpdateId() : String;
 
-    function D_B_N(BaseC: String) : String;
-    function D_B_N_C(c : TINFCrypt; BaseC: String) : String;
-    function E_B_N(c : TINFCrypt; BaseCost: String) : String;
-    function D_B_N_OLD(c : TINFCrypt; BaseC: String) : String;
-    function E_B_N_OLD(c : TINFCrypt; BaseCost: String) : String;
-    //Декодируем поле CODE от версии 29
-    function D_29_C_OLD(c : TINFCrypt; CodeS : String) : String;
-    //Декодируем поле PRICE от версии 29
-    function D_29_B_OLD(c : TINFCrypt; CodeS1, CodeS2 : String) : String;
     function D_HP(HTTPPassC: String) : String;
     function E_HP(HTTPPass: String) : String;
-    procedure SavePass(ASyn, ACodes, AB, ASGM : String);
+    procedure SavePass(ASGM : String);
     procedure LoadRetailMargins;
     procedure LoadVitallyImportantMarkups;
     procedure LoadMarkups(TableName : String; Markups : TObjectList);
@@ -943,9 +928,6 @@ begin
   //adsOrderDetails.OnCalcFields := ocf;
  // adsOrderCore.OnCalcFields := occf;
 
-  SynC := TINFCrypt.Create('', 300);
-  CodeC := TINFCrypt.Create('', 60);
-  BasecostC := TINFCrypt.Create('', 50);
   HTTPC := TINFCrypt.Create(HTTPS + HTTPE, 255);
 
   ResetNeedCommitExchange;
@@ -1592,90 +1574,49 @@ var
   SaveGridMaskStr : String;
 begin
   try
+{
     SynonymPassword := Copy(adtParams.FieldByName('CDS').AsString, 1, 64);
     CodesPassword := Copy(adtParams.FieldByName('CDS').AsString, 65, 64);
     BasecostPassword := Copy(adtParams.FieldByName('CDS').AsString, 129, 64);
+}
     DBUIN := Copy(adtParams.FieldByName('CDS').AsString, 193, 32);
+{
     SynonymPassword := PassC.DecodeHex(SynonymPassword);
     CodesPassword := PassC.DecodeHex(CodesPassword);
     BasecostPassword := PassC.DecodeHex(BasecostPassword);
+}    
     DBUIN := PassC.DecodeHex(DBUIN);
     SaveGridMaskStr := '$' + Copy(DBUIN, 9, 7);
     DBUIN := Copy(DBUIN, 1, 8);
     SaveGridMask := StrToIntDef(SaveGridMaskStr, 0);
   except
+{
     SynonymPassword := '';
     CodesPassword := '';
     BasecostPassword := '';
+}    
     DBUIN := '';
   end;
-
-  SynC.UpdateKey(SynonymPassword);
-  CodeC.UpdateKey(CodesPassword);
-  BasecostC.UpdateKey(BasecostPassword);
 end;
 
-procedure TDM.SavePass(ASyn, ACodes, AB, ASGM: String);
-{
-var
-  Price : String;
-  tmps,
-  tmpc,
-  tmpb,
-  tmpvb : TINFCrypt;
-}  
+procedure TDM.SavePass(ASGM: String);
+
+  function GetRandomString() : String;
+  var
+    I : Integer;
+  begin
+    Result := '';
+    for I := 1 to 16 do
+      Result := Result + Chr(33 + Random(60));
+  end;
+
 begin
-{
-  todo: Это пока не нужно, т.к. цену у нас не шифруются и перешифровывать ничего не надо
-  if (SynonymPassword <> ASyn) or (CodesPassword <> ACodes) or (BaseCostPassword <> AB) then
-    try
-      if adsAllOrders.Active then
-        adsAllOrders.Close;
-      tmps := TINFCrypt.Create(ASyn, 300);
-      tmpc := TINFCrypt.Create(ACodes, 60);
-      tmpb := TINFCrypt.Create(AB, 50);
-      tmpvb := TINFCrypt.Create(LeftStr(ASyn, 4) + RightStr(AB, 4) + Copy(ACodes, 5, 8), 50);
-      try
-        adsAllOrders.Open;
-        while not adsAllOrders.Eof do begin
-
-          Price := D_B_N(adsAllOrdersPRICE.AsString);
-
-          Price := E_B_N(tmpb, Price);
-
-          adsAllOrders.Edit;
-
-          adsAllOrdersPRICE.AsString := Price;
-
-          adsAllOrders.Post;
-
-          adsAllOrders.Next;
-        end;
-      finally
-        adsAllOrders.Close;
-        tmps.Free;
-        tmpc.Free;
-        tmpb.Free;
-        tmpvb.Free;
-      end;
-    except
-      on E : Exception do begin
-        Tracer.TR('SavePass', 'Error : ' + E.Message);
-      end;
-    end;
-}
-
-  SynonymPassword := ASyn;
-  CodesPassword := ACodes;
-  BaseCostPassword := AB;
-  SynC.UpdateKey(SynonymPassword);
-  CodeC.UpdateKey(CodesPassword);
-  BasecostC.UpdateKey(BasecostPassword);
+  Randomize;
   adtParams.Edit;
   adtParams.FieldByName('CDS').AsString :=
-    PassC.EncodeHex(SynonymPassword) +
-    PassC.EncodeHex(CodesPassword) +
-    PassC.EncodeHex(BaseCostPassword) +
+    PassC.EncodeHex(GetRandomString()) +
+    PassC.EncodeHex(GetRandomString()) +
+    PassC.EncodeHex(GetRandomString()) +
     PassC.EncodeHex(IntToHex(GetDBID(), 8) + ASGM);
   adtParams.Post;
 end;
@@ -1797,31 +1738,6 @@ begin
   finally
     md5.Free;
   end;
-end;
-
-function TDM.D_B_N(BaseC: String): String;
-{
-var
-  tmp : String;
-  Len : Integer;
-}  
-begin
-  result := D_B_N_C(BasecostC, BaseC);
-{
-  Len := Length(BaseC);
-  if Len > 6 then begin
-
-    tmp := BaseC[1] + Copy(BaseC, 3, Len-6) + Copy(BaseC, Len-2, 3);
-    if Length(tmp) > 1 then begin
-      Result := BasecostC.DecodeMix(tmp);
-      Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
-    end
-    else
-      Result := '';
-  end
-  else
-    Result := '';
-}    
 end;
 
 function TDM.D_HP(HTTPPassC: String): String;
@@ -2059,49 +1975,6 @@ begin
       [E.Message, IfThen(Assigned(Sender), Sender.ClassName), E.ClassName, SQL]));
 end;
 
-function TDM.D_B_N_OLD(c : TINFCrypt; BaseC: String): String;
-var
-  tmp : String;
-begin
-  if Length(BaseC) > 3 then begin
-    tmp := BaseC[2] + Copy(BaseC, 4, Length(BaseC));
-    if Length(tmp) > 1 then begin
-      Result := c.DecodeMix(tmp);
-      Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
-    end
-    else
-      Result := '';
-  end
-  else
-    Result := '';
-end;
-
-function TDM.E_B_N_OLD(c : TINFCrypt; BaseCost: String): String;
-begin
-  Result := StringReplace(BaseCost, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-  Result := c.EncodeMix( Result );
-
-  if Length(Result) > 2 then
-    Result := chr(random(110) + 32) + Result[1] + chr(random(110) + 32) + Copy(Result, 2, Length(Result))
-  else
-    Result := '';
-end;
-
-function TDM.E_B_N(c: TINFCrypt; BaseCost: String): String;
-var
-  Len : Integer;
-begin
-  Result := StringReplace(BaseCost, DM.FFS.DecimalSeparator, '.', [rfReplaceAll]);
-  Result := c.EncodeMix( Result );
-
-  Len := Length(Result);
-
-  if Length(Result) > 3 then
-    Result := Result[1] + chr(random(110) + 32) + Copy(Result, 2, Len-4)+ chr(random(110) + 32) + Copy(Result, Len-2, 3)
-  else
-    Result := '';
-end;
-
 procedure TDM.CheckDBFile;
 var
   OpenSuccess : Boolean;
@@ -2155,51 +2028,9 @@ begin
   end;
 end;
 
-function TDM.D_29_C_OLD(c : TINFCrypt; CodeS: String): String;
-begin
-  CodeS := Copy(CodeS, 1, Length(CodeS)-16);
-  if Length(CodeS) >= 16 then
-    Result := c.DecodeMix(CodeS)
-  else
-    Result := CodeS;
-end;
-
-function TDM.D_29_B_OLD(c : TINFCrypt; CodeS1, CodeS2: String): String;
-var
-  tmp : String;
-begin
-  tmp := RightStr(CodeS1, 16) + RightStr(CodeS2, 16);
-  if Length(tmp) > 1 then begin
-    Result := c.DecodeHex(tmp);
-    Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
-  end
-  else
-    Result := '';
-end;
-
 function TDM.GetRetUpCost(BaseCost: Currency): Currency;
 begin
   Result := GetMarkup(FRetMargins, BaseCost);
-end;
-
-function TDM.D_B_N_C(c: TINFCrypt; BaseC: String): String;
-var
-  tmp : String;
-  Len : Integer;
-begin
-  Len := Length(BaseC);
-  if Len > 6 then begin
-
-    tmp := BaseC[1] + Copy(BaseC, 3, Len-6) + Copy(BaseC, Len-2, 3);
-    if Length(tmp) > 1 then begin
-      Result := c.DecodeMix(tmp);
-      //Result := StringReplace(Result, '.', DM.FFS.DecimalSeparator, [rfReplaceAll]);
-    end
-    else
-      Result := '';
-  end
-  else
-    Result := '';
 end;
 
 procedure TDM.SetSendToNotClosedOrders;

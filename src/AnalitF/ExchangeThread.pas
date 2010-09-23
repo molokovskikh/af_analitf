@@ -60,10 +60,8 @@ private
 	FileStream: TFileStream;
   StartExec : TDateTime;
   AbsentPriceCodeSL : TStringList;
-  ASynPass,
-  ACodesPass,
-  ABPass,
   ASaveGridMask : String;
+  CostSessionKey : String;
   URL : String;
   HTTPName,
   HTTPPass : String;
@@ -107,7 +105,6 @@ private
   procedure SendULoginData;
   procedure GetPass;
   procedure PriceDataSettings;
-  procedure DMSavePass;
 	procedure CommitExchange;
 	procedure DoExchange;
 	procedure DoSendLetter;
@@ -1682,7 +1679,7 @@ begin
     SQL.Text :=
       'update Core ' +
       'set ' +
-      '  Cost = AES_DECRYPT(CryptCost, "' + ABPass + '"), ' +
+      '  Cost = AES_DECRYPT(CryptCost, "' + CostSessionKey + '"), ' +
       '  CryptCost = null ' +
       ' where ' +
       '   CryptCost is not null';
@@ -2113,23 +2110,14 @@ begin
   Error := Utf8ToAnsi( Res.Values[ 'Error']);
   if Error <> '' then
     raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
-  SetString(ASynPass, nil, INFDataLen);
-  HexToBin(PChar(Res.Values['Synonym']), PChar(ASynPass), INFDataLen);
-  SetString(ACodesPass, nil, INFDataLen);
-  HexToBin(PChar(Res.Values['Codes']), PChar(ACodesPass), INFDataLen);
-  SetString(ABPass, nil, INFDataLen);
-  HexToBin(PChar(Res.Values['BaseCost']), PChar(ABPass), INFDataLen);
+  SetString(CostSessionKey, nil, INFDataLen);
+  HexToBin(PChar(Res.Values['SessionKey']), PChar(CostSessionKey), INFDataLen);
   if Length(Res.Values['SaveGridMask']) = 7 then
     ASaveGridMask := Res.Values['SaveGridMask']
   else
     ASaveGridMask := '0000000';
-  DMSavePass;
+  DM.SavePass(ASaveGridMask);
   TBooleanValue(ExchangeParams[Integer(epCriticalError)]).Value := False;
-end;
-
-procedure TExchangeThread.DMSavePass;
-begin
-  DM.SavePass(ASynPass, ACodesPass, ABPass, ASaveGridMask);
 end;
 
 procedure TExchangeThread.PriceDataSettings;
