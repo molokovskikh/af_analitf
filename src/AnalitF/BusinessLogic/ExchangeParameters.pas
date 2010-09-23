@@ -9,7 +9,10 @@ type
   TExchangeParams = (epTerminated, epCriticalError, epErrorMessage,
                      epDownloadChildThreads, epServerAddition, epSendedOrders,
                      epSendedOrdersErrorLog, epSendWaybillsResult,
-                     epFullHistoryOrders);
+                     epFullHistoryOrders,
+                     epImportDocs,
+                     epBeforeDocsCount,
+                     epAfterDocsCount);
 
   TStringValue = class
     Value : String;
@@ -39,7 +42,7 @@ implementation
 
 uses
   PostWaybillsController;
-  
+
 { TStringValue }
 
 constructor TStringValue.Create(AValue: String);
@@ -77,6 +80,12 @@ begin
   Params.Add(TIntegerValue.Create(Integer(swsNotFiles)));
   //epFullHistoryOrders
   Params.Add(TBooleanValue.Create(False));
+  //epImportDocs
+  Params.Add(TBooleanValue.Create(False));
+  //epBeforeDocsCount
+  Params.Add(TIntegerValue.Create(0));
+  //epAfterDocsCount
+  Params.Add(TIntegerValue.Create(0));
 end;
 
 { TIntegerValue }

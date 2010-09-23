@@ -302,7 +302,7 @@ begin
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 
-          if not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+          if not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
           then
             DoExchange;
         end;
@@ -317,7 +317,7 @@ begin
         UnpackFiles;
 
       if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
-         and not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+         and not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
       then
         UnpackFiles;
 
@@ -327,7 +327,7 @@ begin
         CommitExchange;
 
       if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
-         and not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+         and not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
          and (Length(UpdateId) > 0)
       then
         CommitHistoryOrders;
@@ -349,7 +349,7 @@ begin
         end;
 
       if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
-         and not TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value
+         and not TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value
       then
         ImportHistoryOrders;
 
@@ -3142,7 +3142,7 @@ begin
 
     if AnsiCompareText(Res.Values['FullHistory'], 'True') = 0
     then begin
-      TBooleanValue(GlobalExchangeParams[Integer(epFullHistoryOrders)]).Value := True;
+      TBooleanValue(ExchangeParams[Integer(epFullHistoryOrders)]).Value := True;
       Exit;
     end;
 
