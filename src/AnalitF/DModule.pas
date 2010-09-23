@@ -1104,7 +1104,8 @@ begin
     MainForm.ExchangeOnly := True;
     //Производим только в том случае, если не была создана "чистая" база
     if not CreateClearDatabase then
-      RunExchange([ eaImportOnly]);
+      //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
+      RunExchange([eaImportOnly]);
     Application.Terminate;
   end;
 

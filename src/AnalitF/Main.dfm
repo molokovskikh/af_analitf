@@ -84,13 +84,13 @@ object MainForm: TMainForm
         Style = tbsDropDown
       end
       object ToolButton2: TToolButton
-        Left = 52
+        Left = 54
         Top = 0
         Action = actSendOrders
         ImageIndex = 1
       end
       object ToolButton5: TToolButton
-        Left = 91
+        Left = 93
         Top = 0
         Width = 8
         Caption = 'ToolButton5'
@@ -98,25 +98,25 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object ToolButton1: TToolButton
-        Left = 99
+        Left = 101
         Top = 0
         Action = actSave
         ImageIndex = 2
       end
       object btnPrint: TToolButton
-        Left = 138
+        Left = 140
         Top = 0
         Action = actPrint
         ImageIndex = 3
       end
       object tbFind: TToolButton
-        Left = 177
+        Left = 179
         Top = 0
         Action = actFind
         ImageIndex = 13
       end
       object ToolButton11: TToolButton
-        Left = 216
+        Left = 218
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -124,31 +124,31 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnOrderAll: TToolButton
-        Left = 224
+        Left = 226
         Top = 0
         Hint = #1055#1086#1080#1089#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074' '#1074' '#1082#1072#1090#1072#1083#1086#1075#1077
         Action = actOrderAll
         ImageIndex = 4
       end
       object ToolButton7: TToolButton
-        Left = 263
+        Left = 265
         Top = 0
         Action = actSynonymSearch
         ImageIndex = 16
       end
       object tbMnnSearch: TToolButton
-        Left = 302
+        Left = 304
         Top = 0
         Action = actMnnSearch
       end
       object btnOrderPrice: TToolButton
-        Left = 341
+        Left = 343
         Top = 0
         Action = actOrderPrice
         ImageIndex = 6
       end
       object ToolButton3: TToolButton
-        Left = 380
+        Left = 382
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
@@ -156,24 +156,24 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnOrderSummary: TToolButton
-        Left = 388
+        Left = 390
         Top = 0
         Action = actOrderSummary
         ImageIndex = 17
       end
       object btnClosedOrders: TToolButton
-        Left = 427
+        Left = 429
         Top = 0
         Action = actClosedOrders
         ImageIndex = 8
       end
       object btnPostOrderBatch: TToolButton
-        Left = 466
+        Left = 468
         Top = 0
         Action = actPostOrderBatch
       end
       object ToolButton4: TToolButton
-        Left = 505
+        Left = 507
         Top = 0
         Width = 8
         Caption = 'ToolButton4'
@@ -181,26 +181,26 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnOrderRegister: TToolButton
-        Left = 513
+        Left = 515
         Top = 0
         Action = actRegistry
         Caption = #1043#1086#1089#1091#1076#1072#1088#1089#1090#1074#1077#1085#1085#1099#1081' '#1088#1077#1077#1089#1090#1088' '#1094#1077#1085
         ImageIndex = 9
       end
       object btnExpireds: TToolButton
-        Left = 552
+        Left = 554
         Top = 0
         Action = actSale
         ImageIndex = 5
       end
       object btnDefectives: TToolButton
-        Left = 591
+        Left = 593
         Top = 0
         Action = actDefectives
         ImageIndex = 10
       end
       object ToolButton10: TToolButton
-        Left = 630
+        Left = 632
         Top = 0
         Width = 8
         Caption = 'ToolButton10'
@@ -208,17 +208,17 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object tbWaybill: TToolButton
-        Left = 638
+        Left = 640
         Top = 0
         Action = actWayBill
       end
       object tbViewDocs: TToolButton
-        Left = 677
+        Left = 679
         Top = 0
         Action = actViewDocs
       end
       object ToolButton9: TToolButton
-        Left = 716
+        Left = 718
         Top = 0
         Width = 8
         Caption = 'ToolButton9'
@@ -226,18 +226,18 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnHome: TToolButton
-        Left = 724
+        Left = 726
         Top = 0
         Action = actHome
       end
       object btnConfig: TToolButton
-        Left = 763
+        Left = 765
         Top = 0
         Action = actConfig
         ImageIndex = 12
       end
       object tbLastSeparator: TToolButton
-        Left = 802
+        Left = 804
         Top = 0
         Width = 8
         Caption = 'tbLastSeparator'
@@ -410,6 +410,7 @@ object MainForm: TMainForm
         end
         object itmImport: TMenuItem
           Caption = #1048#1084#1087#1086#1088#1090#1080#1088#1086#1074#1072#1090#1100' '#1076#1072#1085#1085#1099#1077
+          Visible = False
           OnClick = itmImportClick
         end
         object itmRestoreDatabaseFromEtalon: TMenuItem

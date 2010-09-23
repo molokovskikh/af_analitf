@@ -418,6 +418,7 @@ try
         RunExchange([eaGetPrice, eaGetFullData]);
       end
       else
+        //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
         RunExchange([ eaImportOnly]);
     end;
     exit;
@@ -437,7 +438,7 @@ try
 
   // Автоматический импорт }
     //Если импорт не прошел, то надо ждать помощи от техподдержки
-		if not RunExchange([ eaImportOnly])
+		if not RunExchange([eaGetPrice])
     then
       Exit;
 	end;
@@ -701,7 +702,7 @@ end;
 
 procedure TMainForm.itmImportClick(Sender: TObject);
 begin
-	RunExchange([ eaImportOnly]);
+  //RunExchange([ eaImportOnly]);
   //Обновляем ToolBar в случае смены клиента после обновления
   ToolBar.Invalidate;
 end;
