@@ -365,6 +365,12 @@ begin
           //DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
           ImportData;
         finally
+{$ifndef DEBUG}
+          //Ќадо перенести загрузку разобранных документов в другое место,
+          //т.к. после удалени€ файлов с разобранными документами не будет
+          { очищаем папку In }
+          DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+{$endif}
           //DM.adcUpdate.OnExecuteError := nil;
         end;
 
