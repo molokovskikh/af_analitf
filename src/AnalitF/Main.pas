@@ -325,10 +325,12 @@ begin
 	EnableFilterIndex := 0;
 	JustRun := True;
   if FindCmdLineSwitch('extd') then begin
+{$ifdef DEBUG}
     N2.Visible := True;
     N6.Visible := True;
     itmLinkExternal.Visible := True;
     itmUnlinkExternal.Visible := True;
+{$endif}
     itmClearDatabase.Visible := True;
   end;
 	if Set32BPP then
