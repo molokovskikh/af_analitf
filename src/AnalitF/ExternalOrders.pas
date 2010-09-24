@@ -11,7 +11,7 @@ type
 {   AHandle := Application.Handle }
 TExternalOrdersConfig = procedure(
   Connection: TpFIBDatabase;
-	AHandle: THandle);
+  AHandle: THandle);
 
 {Отправка заказов внешней программе}
 {  OrderID - заказ, который нужно обработать}
@@ -20,9 +20,9 @@ TExternalOrdersThreading = function(
   AHandle: THandle;
   Connection: TpFIBDatabase;
   OrderID : Integer;
-	inStStatus: TLabel;
+  inStStatus: TLabel;
   inProgressBar: TProgressBar;
-	inTotalProgressBar: TProgressBar;
+  inTotalProgressBar: TProgressBar;
   var ErrorStr : PChar) : Boolean;
 
 {Проверка того, что заказ является внешним}
@@ -63,7 +63,7 @@ type
   end;
 
 var
-	hExternalOrdersDLL: THandle;
+  hExternalOrdersDLL: THandle;
   RunExternalOrdersError : String;
 
 
@@ -94,7 +94,7 @@ end;
 
 function IsExternalOrdersDLLPresent: Boolean;
 begin
-	Result := (hExternalOrdersDLL <> 0)
+  Result := (hExternalOrdersDLL <> 0)
     and (Assigned(ExternalOrdersConfig))
     and (Assigned(ExternalOrdersThreading))
     and (Assigned(ExternalOrdersPriceIsProtek))

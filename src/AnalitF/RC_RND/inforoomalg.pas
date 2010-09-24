@@ -44,7 +44,7 @@ function rijndaelEncrypt(var a: TArrayK; keyBits, blockBits: integer; rk: TArray
 { Encrypt only a certain number of rounds.
   Only used in the Intermediate Value Known Answer Test. }
 function rijndaelEncryptRound(var a: TArrayK; keyBits, blockBits: integer;
-		              rk: TArrayRK; var irounds: integer): integer;
+                  rk: TArrayRK; var irounds: integer): integer;
 
 { Decryption of one block. }
 function rijndaelDecrypt(var a: TArrayK; keyBits, blockBits: integer; rk: TArrayRK): integer;
@@ -55,7 +55,7 @@ function rijndaelDecrypt(var a: TArrayK; keyBits, blockBits: integer; rk: TArray
   of decryption correspond with the intermediate values
   of encryption. }
 function rijndaelDecryptRound(var a: TArrayK; keyBits, blockBits: integer;
-	                      rk: TArrayRK; var irounds: integer): integer;
+                        rk: TArrayRK; var irounds: integer): integer;
 
 
 implementation
@@ -160,7 +160,7 @@ begin
 end;
 
 function rijndaelKeySched(k: TArrayK; keyBits, blockBits: integer;
-		          var W: TArrayRK): integer;
+              var W: TArrayRK): integer;
 { Calculate the necessary round keys
   The number of calculations depends on keyBits and blockBits }
 var
@@ -248,7 +248,7 @@ begin
                 tk[i][j]:= tk[i][j] xor tk[i][j-1];
               inc(j);
             end;
-	      end;
+        end;
 
       { copy values into round key array }
       j:= 0;
@@ -310,7 +310,7 @@ begin
 end;
 
 function rijndaelEncryptRound(var a: TArrayK; keyBits, blockBits: integer;
-		              rk: TArrayRK; var irounds: integer): integer;
+                  rk: TArrayRK; var irounds: integer): integer;
 { Encrypt only a certain number of rounds.
   Only used in the Intermediate Value Known Answer Test. }
 var
@@ -424,7 +424,7 @@ begin
 end;
 
 function rijndaelDecryptRound(var a: TArrayK; keyBits, blockBits: integer;
-	                      rk: TArrayRK; var irounds: integer): integer;
+                        rk: TArrayRK; var irounds: integer): integer;
 { Decrypt only a certain number of rounds.
   Only used in the Intermediate Value Known Answer Test.
   Operations rearranged such that the intermediate values

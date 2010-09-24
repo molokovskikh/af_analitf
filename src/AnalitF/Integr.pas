@@ -11,27 +11,27 @@ uses {ADODB,} StdCtrls, ComCtrls, Windows;
 { AHandle := Application.Handle }
 {
 TIntegrConfig = procedure( ADOConnection: TADOConnection;
-	HomeRegionCode: integer; AHandle: THandle);
+  HomeRegionCode: integer; AHandle: THandle);
   }
 
 {
 TIntegrThreading = procedure( AHandle: THandle; ADOConnection: TADOConnection;
-	HomeRegionCode: integer; inStStatus: TLabel; inProgressBar: TProgressBar;
-	inTotalProgressBar: TProgressBar; Async: boolean = False);
+  HomeRegionCode: integer; inStStatus: TLabel; inProgressBar: TProgressBar;
+  inTotalProgressBar: TProgressBar; Async: boolean = False);
 }
 
 { OutCount будет содержать количество прайс-листов, которые подвергнуться импорту }
 {
 TIntegrTotalWellPrices = procedure( ADOConnection: TADOConnection;
-	HomeRegionCode: integer; var OutCount: Word);
+  HomeRegionCode: integer; var OutCount: Word);
 }  
 
 var
-	hDLL: THandle;
+  hDLL: THandle;
   {
-	IntegrConfig: TIntegrConfig;
-	IntegrThreading: TIntegrThreading;
-	IntegrTotalWellPrices: TIntegrTotalWellPrices;
+  IntegrConfig: TIntegrConfig;
+  IntegrThreading: TIntegrThreading;
+  IntegrTotalWellPrices: TIntegrTotalWellPrices;
 }
 
 function LoadIntegrDLL: boolean;
@@ -42,33 +42,33 @@ implementation
 
 function LoadIntegrDLL: boolean;
 begin
-	result := True;
-	try
-		hDLL := LoadLibrary( 'Integr.dll');
-		if hDLL <> 0 then
-		begin
+  result := True;
+  try
+    hDLL := LoadLibrary( 'Integr.dll');
+    if hDLL <> 0 then
+    begin
 {
-			@IntegrConfig := GetProcAddress( hDLL, 'IntegrConfig');
-			@IntegrThreading := GetProcAddress( hDLL, 'IntegrThreading');
-			@IntegrTotalWellPrices := GetProcAddress( hDLL, 'IntegrTotalWellPrices');
+      @IntegrConfig := GetProcAddress( hDLL, 'IntegrConfig');
+      @IntegrThreading := GetProcAddress( hDLL, 'IntegrThreading');
+      @IntegrTotalWellPrices := GetProcAddress( hDLL, 'IntegrTotalWellPrices');
 
 
-			if ( Addr( IntegrConfig) = nil) or ( Addr( IntegrThreading) = nil) or
-				( Addr( IntegrTotalWellPrices) = nil) then result := False;
+      if ( Addr( IntegrConfig) = nil) or ( Addr( IntegrThreading) = nil) or
+        ( Addr( IntegrTotalWellPrices) = nil) then result := False;
 }
       result := False;
-		end
-		else
-			result := False;
-	except
-		result := False;
-		hDLL := 0;
-	end;
+    end
+    else
+      result := False;
+  except
+    result := False;
+    hDLL := 0;
+  end;
 end;
 
 function IsIntegrDLLPresent: boolean;
 begin
-	result := hDLL <> 0;
+  result := hDLL <> 0;
 end;
 
 procedure UnLoadIntegrDLL;
@@ -76,9 +76,9 @@ begin
   if hDLL <> 0 then begin
     FreeLibrary(hDLL);
 {
-		IntegrConfig := nil;
-		IntegrThreading := nil;
-		IntegrTotalWellPrices := nil;
+    IntegrConfig := nil;
+    IntegrThreading := nil;
+    IntegrTotalWellPrices := nil;
 }    
     hDLL := 0;
   end;

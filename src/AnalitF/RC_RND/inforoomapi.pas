@@ -31,7 +31,7 @@ const
   MODE_CFB1     = 3;    { Are we ciphering in 1-bit CFB mode? }
   rTRUE         = 1;    { integer(true) }
   rFALSE        = 0;    { integer(false) }
-  BITSPERBLOCK	= 128;	{ Default number of bits in a cipher block }
+  BITSPERBLOCK  = 128;  { Default number of bits in a cipher block }
 
 { Error Codes - CHANGE POSSIBLE: inclusion of additional error codes }
   BAD_KEY_DIR         = -1;  { Key direction is invalid, e.g., unknown value }
@@ -42,8 +42,8 @@ const
   BAD_CIPHER_INSTANCE = -7;
 
 {  CHANGE POSSIBLE:  inclusion of algorithm specific defines  }
-  MAX_KEY_SIZE	= 64;                   { # of ASCII char's needed to represent a key }
-  MAX_IV_SIZE	= (BITSPERBLOCK div 8);   { # bytes needed to represent an IV }
+  MAX_KEY_SIZE  = 64;                   { # of ASCII char's needed to represent a key }
+  MAX_IV_SIZE   = (BITSPERBLOCK div 8);   { # bytes needed to represent an IV }
 
 type
 { Typedef'ed data storage elements.  Add any algorithm specific
@@ -82,7 +82,7 @@ function makeKey(key: PkeyInstance; direction: Byte; keyLen: integer; keyMateria
 function cipherInit(cipher: PcipherInstance; mode: Byte; IV: pchar): integer;
 {sergey has corrected it}
 function blocksEnCrypt(cipher: PcipherInstance; key: PkeyInstance; input: PByte;
-		      inputLen: integer; outBuffer: PByte): integer;
+          inputLen: integer; outBuffer: PByte): integer;
 {sergey has corrected it}
 function blocksDeCrypt(cipher: PcipherInstance; key: PkeyInstance; input: PByte;
                       inputLen: integer; outBuffer: PByte): integer;

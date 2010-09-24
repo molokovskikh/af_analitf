@@ -169,10 +169,10 @@ end;
 
 procedure FlipToCode(FullCode, ShortCode: Integer; CoreId : Int64);
 begin
-	ShowOrderAll;
+  ShowOrderAll;
 
-	with TNamesFormsForm( MainForm.ActiveChild) do
-	begin
+  with TNamesFormsForm( MainForm.ActiveChild) do
+  begin
     if actNewSearch.Checked then begin
       SetCatalog;
       adsCatalog.Locate('FullCode', FullCode, []);
@@ -200,8 +200,8 @@ begin
       end;
     end;
 
-		FCoreForm.adsCore.Locate( 'CoreId', CoreId, []);
-	end;
+    FCoreForm.adsCore.Locate( 'CoreId', CoreId, []);
+  end;
 end;
 
 procedure FlipToCodeWithReturn(FullCode, ShortCode: Integer; CoreId : Int64);
@@ -293,9 +293,9 @@ end;
 
 procedure TNamesFormsForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegistry;
+  Reg: TRegistry;
 begin
-	inherited;
+  inherited;
 
   if not DM.adsUser.FieldByName('ShowAdvertising').IsNull
     and not DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
@@ -324,12 +324,12 @@ begin
   fr := TForceRus.Create;
 
   //Читаем настройки из реестра
-	Reg := TRegistry.Create;
-	Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
+  Reg := TRegistry.Create;
+  Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
   actNewSearch.Checked := False;
   if Reg.ValueExists('NewSearch') then
     actNewSearch.Checked := Reg.ReadBool('NewSearch');
-	Reg.Free;
+  Reg.Free;
 
   with DM.adtParams do
   begin
@@ -356,17 +356,17 @@ begin
   dbgForms.Options := dbgForms.Options - [dgColumnResize];
   dbgCatalog.PopupMenu := nil;
 
-	ShowForm;
+  ShowForm;
 end;
 
 procedure TNamesFormsForm.ShowForm;
 begin
-	inherited;
+  inherited;
 end;
 
 procedure TNamesFormsForm.FormDestroy(Sender: TObject);
 begin
-	inherited;
+  inherited;
   SaveActionStates;
   fr.Free;
   BM.Free;
@@ -374,11 +374,11 @@ end;
 
 procedure TNamesFormsForm.actUseFormsExecute(Sender: TObject);
 begin
-	if not dbgNames.CanFocus then exit;
-	actUseForms.Checked := not actUseForms.Checked;
+  if not dbgNames.CanFocus then exit;
+  actUseForms.Checked := not actUseForms.Checked;
   SaveActionStates; 
-	SetFormsParams;
-	dbgNames.SetFocus;
+  SetFormsParams;
+  dbgNames.SetFocus;
 end;
 
 //устанавливает параметры показа наименований
@@ -505,14 +505,14 @@ end;
 //устанавливает параметры показа форм выпуска
 procedure TNamesFormsForm.SetFormsParams;
 begin
-	dbgForms.Enabled := actUseForms.Checked;
+  dbgForms.Enabled := actUseForms.Checked;
 end;
 
 procedure TNamesFormsForm.dbgNamesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	inherited;
-	if Key = VK_RETURN then
+  inherited;
+  if Key = VK_RETURN then
     NamesToCore(False);
   if (Key = VK_ESCAPE) and ((InternalMnnId > 0) or (InternalFilterMnn > 0)) then
   begin
@@ -533,7 +533,7 @@ var
   C : GridsEh.TGridCoord;
   P : TPoint;
 begin
-	inherited;
+  inherited;
   p := dbgNames.ScreenToClient(Mouse.CursorPos);
   C := dbgNames.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
@@ -542,17 +542,17 @@ end;
 
 procedure TNamesFormsForm.dbgNamesEnter(Sender: TObject);
 begin
-	dbgNames.Color := clWindow;
-	dbgForms.Color := clBtnFace;
+  dbgNames.Color := clWindow;
+  dbgForms.Color := clBtnFace;
   namesFrame.Visible := True;
   formsFrame.Visible := False;
 end;
 
 procedure TNamesFormsForm.dbgFormsEnter(Sender: TObject);
 begin
-	dbgNames.Color := clBtnFace;
-	dbgForms.Color := clWindow;
-	dbgForms.Options := dbgForms.Options + [dgAlwaysShowSelection]; 
+  dbgNames.Color := clBtnFace;
+  dbgForms.Color := clWindow;
+  dbgForms.Options := dbgForms.Options + [dgAlwaysShowSelection]; 
   formsFrame.Visible := True;
   namesFrame.Visible := False;
 end;
@@ -568,7 +568,7 @@ var
   C : GridsEh.TGridCoord;
   P : TPoint;
 begin
-	inherited;
+  inherited;
   p := dbgForms.ScreenToClient(Mouse.CursorPos);
   C := dbgForms.MouseCoord(p.X, p.Y);
   if C.Y > 0 then
@@ -578,10 +578,10 @@ end;
 procedure TNamesFormsForm.dbgFormsKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	inherited;
+  inherited;
   if Key = VK_RETURN then
     FormsToCore(False);
-	if ( Key = VK_ESCAPE){ or ( Key = VK_SPACE)} then dbgNames.SetFocus;
+  if ( Key = VK_ESCAPE){ or ( Key = VK_SPACE)} then dbgNames.SetFocus;
 end;
 
 procedure TNamesFormsForm.adsForms2AfterScroll(DataSet: TDataSet);
@@ -614,7 +614,7 @@ var
 begin
   CheckCanFocus;
 
-	actShowAll.Checked := not actShowAll.Checked;
+  actShowAll.Checked := not actShowAll.Checked;
   SaveActionStates;
   
   if actNewSearch.Checked then begin
@@ -869,7 +869,7 @@ end;
 
 procedure TNamesFormsForm.actNewSearchExecute(Sender: TObject);
 begin
-	actNewSearch.Checked := not actNewSearch.Checked;
+  actNewSearch.Checked := not actNewSearch.Checked;
   SaveActionStates;
   SetGrids;
 end;

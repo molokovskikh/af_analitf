@@ -11,7 +11,7 @@ uses
   DBAccess, MyAccess;
 
 const
-	DefectSql	= 'SELECT * FROM Defectives WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
+  DefectSql = 'SELECT * FROM Defectives WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
 
 type
   //типы сортировки информации
@@ -71,22 +71,22 @@ uses
 
 procedure TDefectivesForm.FormCreate(Sender: TObject);
 var
-	Year, Month, Day: Word;
+  Year, Month, Day: Word;
 begin
-	inherited;
+  inherited;
   PrintEnabled := (DM.SaveGridMask and PrintDefectives) > 0;
-	Year := YearOf( Date);
-	Month := MonthOf( Date);
-	Day := DayOf( Date);
-	IncAMonth( Year, Month, Day, -3);
-	dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
-	dtpDateTo.Date:=Date;
-	PrintQuery := adsPrint.SQL.Text;
+  Year := YearOf( Date);
+  Month := MonthOf( Date);
+  Day := DayOf( Date);
+  IncAMonth( Year, Month, Day, -3);
+  dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
+  dtpDateTo.Date:=Date;
+  PrintQuery := adsPrint.SQL.Text;
   adsDefectives.IndexFieldNames := 'LetterDate';
-	OrderField:='LetterDate';
+  OrderField:='LetterDate';
   SetDateInterval;
   TDBGridHelper.RestoreColumnsLayout(dbgDefectives, Self.ClassName);
-	ShowForm;
+  ShowForm;
 end;
 
 procedure TDefectivesForm.FormDestroy(Sender: TObject);
@@ -181,13 +181,13 @@ procedure TDefectivesForm.dbgDefectivesGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	if adsDefectives.FieldByName( 'CheckPrint').AsBoolean then Background := clSilver;
+  if adsDefectives.FieldByName( 'CheckPrint').AsBoolean then Background := clSilver;
 end;
 
 procedure TDefectivesForm.dtpDateCloseUp(Sender: TObject);
 begin
-	SetDateInterval;
-	dbgDefectives.SetFocus;
+  SetDateInterval;
+  dbgDefectives.SetFocus;
 end;
 
 procedure TDefectivesForm.dbgDefectivesSortMarkingChanged(Sender: TObject);

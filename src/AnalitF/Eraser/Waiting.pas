@@ -31,7 +31,7 @@ implementation
 
 procedure ShowWaiting( Information : String; ChildThread: TUpdateExeThread);
 var
-	WaitingForm: TWaitingForm;
+  WaitingForm: TWaitingForm;
 begin
   try
 

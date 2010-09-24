@@ -253,12 +253,12 @@ begin
   fr := TForceRus.Create;
 
   UseExcess := True;
-	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-        DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
-	adsPreviosOrders.ParamByName( 'ClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsAvgOrders.ParamByName( 'ClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').AsInteger;
+  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
+  adsPreviosOrders.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').AsInteger;
+  adsAvgOrders.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
@@ -292,9 +292,9 @@ end;
 
 procedure TSynonymSearchForm.TimerTimer(Sender: TObject);
 begin
-	Timer.Enabled := False;
-	plOverCost.Hide;
-	plOverCost.SendToBack;
+  Timer.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
 end;
 
 procedure TSynonymSearchForm.tmrSearchTimer(Sender: TObject);
@@ -324,18 +324,18 @@ end;
 
 procedure TSynonymSearchForm.adsCoreOldBeforePost(DataSet: TDataSet);
 var
-	Quantity, E: Integer;
-	PriceAvg: Double;
+  Quantity, E: Integer;
+  PriceAvg: Double;
   PanelCaption : String;
   PanelHeight : Integer;
 begin
-	try
-		{ провер€ем заказ на соответствие наличию товара на складе }
-		Val( adsCoreQuantity.AsString,Quantity,E);
-		if E<>0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
-			( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
-			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
+  try
+    { провер€ем заказ на соответствие наличию товара на складе }
+    Val( adsCoreQuantity.AsString,Quantity,E);
+    if E<>0 then Quantity := 0;
+    if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
+      ( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
+      MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
     PanelCaption := '';
     
@@ -364,18 +364,18 @@ begin
         PanelCaption := 'ѕрепарат не желателен к заказу';
     end;
     
-		{ провер€ем на превышение цены }
-		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
-		begin
-			PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
-			if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
-			begin
+    { провер€ем на превышение цены }
+    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
+      if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
+      begin
         if Length(PanelCaption) > 0 then
           PanelCaption := PanelCaption + #13#10 + 'ѕревышение средней цены!'
         else
           PanelCaption := 'ѕревышение средней цены!';
-			end;
-		end;
+      end;
+    end;
 
     if (adsCoreJUNK.AsBoolean) then
       if Length(PanelCaption) > 0 then
@@ -404,27 +404,27 @@ begin
       Timer.Enabled := True;
     end;
   except
-		adsCore.Cancel;
-		raise;
-	end;
+    adsCore.Cancel;
+    raise;
+  end;
 end;
 
 procedure TSynonymSearchForm.adsCoreOldBeforeEdit(DataSet: TDataSet);
 begin
-	if adsCoreFirmCode.AsInteger = RegisterId then Abort;
+  if adsCoreFirmCode.AsInteger = RegisterId then Abort;
 end;
 
 procedure TSynonymSearchForm.adsCoreOldAfterPost(DataSet: TDataSet);
 begin
-	MainForm.SetOrdersInfo;
+  MainForm.SetOrdersInfo;
 end;
 
 procedure TSynonymSearchForm.dbgCoreCanInput(Sender: TObject;
   Value: Integer; var CanInput: Boolean);
 begin
-	CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
-		(( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
-			adsCoreRegionCode.AsLargeInt);
+  CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
+    (( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
+      adsCoreRegionCode.AsLargeInt);
 end;
 
 procedure TSynonymSearchForm.dbgCoreGetCellParams(Sender: TObject;
@@ -533,9 +533,9 @@ end;
 procedure TSynonymSearchForm.dbgCoreKeyPress(Sender: TObject;
   var Key: Char);
 begin
-	if ( Key > #32) and not ( Key in
-		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
-	begin
+  if ( Key > #32) and not ( Key in
+    [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+  begin
     AddKeyToSearch(Key);
   end;
 end;
@@ -602,14 +602,14 @@ end;
 
 procedure TSynonymSearchForm.actFlipCoreExecute(Sender: TObject);
 var
-	FullCode, ShortCode: integer;
+  FullCode, ShortCode: integer;
   CoreId : Int64;
 begin
-	if MainForm.ActiveChild <> Self then exit;
+  if MainForm.ActiveChild <> Self then exit;
   if adsCore.IsEmpty then Exit;
 
-	FullCode := adsCoreFullCode.AsInteger;
-	ShortCode := adsCoreShortCode.AsInteger;
+  FullCode := adsCoreFullCode.AsInteger;
+  ShortCode := adsCoreShortCode.AsInteger;
 
   CoreId := adsCoreCOREID.AsLargeInt;
 

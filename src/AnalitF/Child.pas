@@ -288,11 +288,11 @@ end;
 
 procedure TChildForm.PatchNonBrowser;
 var
-	i: integer;
+  i: integer;
   hack : TDBComponentWindowProc;
 begin
-	for i := 0 to Self.ComponentCount - 1 do
-		if Self.Components[ i].ClassNameIs( 'TToughDBGrid') then
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[ i].ClassNameIs( 'TToughDBGrid') then
     begin
       hack := TDBComponentWindowProc.Create(Self.Handle, TToughDBGrid( Self.Components[ i]).WindowProc);
       DBComponentWindowProcs.Add(hack);

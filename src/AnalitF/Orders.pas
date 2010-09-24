@@ -503,9 +503,9 @@ end;
 
 procedure TOrdersForm.TimerTimer(Sender: TObject);
 begin
-	Timer.Enabled := False;
-	plOverCost.Hide;
-	plOverCost.SendToBack;
+  Timer.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
 end;
 
 procedure TOrdersForm.ocf(DataSet: TDataSet);

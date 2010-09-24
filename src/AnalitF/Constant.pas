@@ -5,12 +5,12 @@ interface
 uses Graphics;
 
 const
-  JUNK_CLR	= $00669ef2;
-	AWAIT_CLR	= $00b8ff71;
-	LEADER_CLR	= clMoneyGreen;
-	REG_CLR		= clLime;
+  JUNK_CLR = $00669ef2;
+  AWAIT_CLR = $00b8ff71;
+  LEADER_CLR = clMoneyGreen;
+  REG_CLR = clLime;
   NeedCorrectColor = clMedGray;
-	COMPACT_PERIOD	= 3;
+  COMPACT_PERIOD = 3;
   VITALLYIMPORTANT_CLR = clGreen;
   FrozenOrderColor = clSilver;
 

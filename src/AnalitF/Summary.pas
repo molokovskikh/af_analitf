@@ -162,7 +162,7 @@ end;
 
 procedure TSummaryForm.FormCreate(Sender: TObject);
 var
-	Reg: TRegIniFile;
+  Reg: TRegIniFile;
   I : Integer;
   sp : TSelectPrice;
   mi :TMenuItem;
@@ -197,18 +197,18 @@ begin
     cbNeedCorrect.Visible := False;
     gbCorrectMessage.Visible := False;
   end;
-	PrintEnabled := False;
+  PrintEnabled := False;
   adsSummary.OnCalcFields := scf;
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
-	adsSummary.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  adsSummary.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
   PrintEnabled := ((LastSymmaryType = 0) and ((DM.SaveGridMask and PrintCurrentSummaryOrder) > 0))
                or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
   dtpDateFrom.Enabled := LastSymmaryType = 1;
   dtpDateTo.Enabled := dtpDateFrom.Enabled;
   TDBGridHelper.RestoreColumnsLayout(dbgSummaryCurrent, Self.ClassName);
-	Reg := TRegIniFile.Create;
+  Reg := TRegIniFile.Create;
   try
     //ѕытаемс€ прочитать из настроек дл€ отправленных заказов,
     //если их нет, то читаем их текущих заказов
@@ -228,7 +228,7 @@ begin
           Reg.CloseKey;
         end;
   finally
-  	Reg.Free;
+    Reg.Free;
   end;
   SelectedPrices := SummarySelectedPrices;
   for I := 0 to SelectedPrices.Count-1 do begin
@@ -241,7 +241,7 @@ begin
     mi.OnClick := OnSPClick;
     pmSelectedPrices.Items.Add(mi);
   end;
-	ShowForm;
+  ShowForm;
   if LastSymmaryType = 1 then
     try dbgSummarySend.SetFocus; except end;
 end;
@@ -255,16 +255,16 @@ end;
 procedure TSummaryForm.ShowForm;
 begin
   plOverCost.Hide();
-	SummaryShow;
-	inherited;
+  SummaryShow;
+  inherited;
 end;
 
 procedure TSummaryForm.SummaryShow;
 var
   FilterSQL : String;
 begin
-	Screen.Cursor := crHourglass;
-	try
+  Screen.Cursor := crHourglass;
+  try
     if adsSummary.Active then
       adsSummary.Close;
     if LastSymmaryType = 0 then begin
@@ -302,14 +302,14 @@ begin
         + ' and ( CurrentOrderLists.DropReason is not null )';
     adsSummary.Open;
     SetOrderLabel;
-	finally
-		Screen.Cursor := crDefault;
-	end;
+  finally
+    Screen.Cursor := crDefault;
+  end;
 end;
 
 procedure TSummaryForm.scf(DataSet: TDataSet);
 begin
-	//вычисл€ем сумму по позиции
+  //вычисл€ем сумму по позиции
   try
     if (LastSymmaryType = 0) or adsSummaryRetailMarkup.IsNull then
       adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(adsSummaryCOST.AsCurrency)
@@ -357,7 +357,7 @@ begin
     end;
   end
   else
-	  DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
+    DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
 end;
 
 procedure TSummaryForm.dbgSummaryCurrentGetCellParams(Sender: TObject;
@@ -371,11 +371,11 @@ begin
   if (LastSymmaryType = 0) and (adsSummaryVITALLYIMPORTANT.AsBoolean) then
     AFont.Color := VITALLYIMPORTANT_CLR;
 
-	if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or
-		( Column.Field = adsSummaryCOST)) then Background := JUNK_CLR;
-	//ожидаемый товар выдел€ем зеленым
-	if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then
-		Background := AWAIT_CLR;
+  if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or
+    ( Column.Field = adsSummaryCOST)) then Background := JUNK_CLR;
+  //ожидаемый товар выдел€ем зеленым
+  if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then
+    Background := AWAIT_CLR;
   //ѕодсветку позиций требующих корректировки осуществл€ем только в текущем заказе
   if (LastSymmaryType = 0) and FUseCorrectOrders and not adsSummaryDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsSummaryDropReason.AsInteger);
@@ -401,23 +401,23 @@ end;
 procedure TSummaryForm.dbgSummaryCurrentCanInput(Sender: TObject; Value: Integer;
   var CanInput: Boolean);
 begin
-	inherited;
+  inherited;
   CanInput := (LastSymmaryType = 0) and (not adsSummary.IsEmpty);
 end;
 
 procedure TSummaryForm.adsSummary2BeforePost(DataSet: TDataSet);
 var
-	Quantity, E: Integer;
+  Quantity, E: Integer;
   PanelCaption : String;
   PanelHeight : Integer;
 begin
-	try
-		{ провер€ем заказ на соответствие наличию товара на складе }
-		Val( adsSummaryQuantity.AsString, Quantity, E);
-		if E<>0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsSummaryORDERCOUNT.AsInteger > Quantity) and
-			( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
-			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsSummaryORDERCOUNT.AsInteger := Quantity;
+  try
+    { провер€ем заказ на соответствие наличию товара на складе }
+    Val( adsSummaryQuantity.AsString, Quantity, E);
+    if E<>0 then Quantity := 0;
+    if ( Quantity > 0) and ( adsSummaryORDERCOUNT.AsInteger > Quantity) and
+      ( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
+      MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsSummaryORDERCOUNT.AsInteger := Quantity;
       
     PanelCaption := '';
     
@@ -441,11 +441,11 @@ begin
       plOverCost.Show;
       Timer.Enabled := True;
     end;
-	except
-		adsSummary.Cancel;
-		raise;
-	end;
-	inherited;
+  except
+    adsSummary.Cancel;
+    raise;
+  end;
+  inherited;
 end;
 
 procedure TSummaryForm.FormResize(Sender: TObject);
@@ -661,15 +661,15 @@ end;
 
 procedure TSummaryForm.actFlipCoreExecute(Sender: TObject);
 var
-	FullCode, ShortCode: integer;
+  FullCode, ShortCode: integer;
   CoreId : Int64;
 begin
-	if MainForm.ActiveChild <> Self then exit;
+  if MainForm.ActiveChild <> Self then exit;
   if adsSummary.IsEmpty then Exit;
   if LastSymmaryType <> 0 then Exit;
 
-	FullCode := adsSummaryFullCode.AsInteger;
-	ShortCode := adsSummaryShortCode.AsInteger;
+  FullCode := adsSummaryFullCode.AsInteger;
+  ShortCode := adsSummaryShortCode.AsInteger;
 
   CoreId := adsSummaryCOREID.AsLargeInt;
 
@@ -678,9 +678,9 @@ end;
 
 procedure TSummaryForm.TimerTimer(Sender: TObject);
 begin
-	Timer.Enabled := False;
-	plOverCost.Hide;
-	plOverCost.SendToBack;
+  Timer.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
 end;
 
 procedure TSummaryForm.adsSummaryBeforeInsert(DataSet: TDataSet);

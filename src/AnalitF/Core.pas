@@ -12,7 +12,7 @@ uses
   GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
 
 const
-	ALL_REGIONS	= '¬се регионы';
+  ALL_REGIONS = '¬се регионы';
 
 type
   TCoreForm = class(TChildForm)
@@ -234,7 +234,7 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
   SortOnOrderGrid := False;
-	inherited;
+  inherited;
 
   frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
   frameLegend.Parent := Self;
@@ -250,14 +250,14 @@ begin
     btnGroupUngroup.Caption := '–азгруппировать'
   else
     btnGroupUngroup.Caption := '√руппировать';
-	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-        DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
-	RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
+  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
+  RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
 
-	adsPreviosOrders.ParamByName( 'ClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').Value;
-	adsAvgOrders.ParamByName( 'ClientId').Value :=
-		DM.adtClients.FieldByName( 'ClientId').Value;
+  adsPreviosOrders.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').Value;
+  adsAvgOrders.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').Value;
 
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
   TDBGridHelper.RestoreColumnsLayout(dbgHistory, Self.ClassName);
@@ -273,7 +273,7 @@ end;
 
 procedure TCoreForm.ShowForm(AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean);
 var
-	I: Integer;
+  I: Integer;
   //OrdersH: TOrdersHForm;
   TmpSortList : TStringList;
 begin
@@ -299,46 +299,46 @@ begin
   //OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
   //if OrdersH <> nil then OrdersH.Free;
 
-	SetLength( RecInfos, 0);
+  SetLength( RecInfos, 0);
 
-	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
+  ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
 
   TmpSortList := SortList;
   SortList := nil;
 
-	{ готовим запрос в зависимости от того, показываем по наименованию или форме выпуска }
-	with adsCore do
-        begin
-		if not Active or ( CurrentUseForms <> UseForms) then
-		begin
-			CurrentUseForms := UseForms;
-			Close;
-			if UseForms then
+  { готовим запрос в зависимости от того, показываем по наименованию или форме выпуска }
+  with adsCore do
+  begin
+    if not Active or ( CurrentUseForms <> UseForms) then
+    begin
+      CurrentUseForms := UseForms;
+      Close;
+      if UseForms then
         SQL.Text := StringReplace(adsCoreEtalon.SQL.Text, '(Catalogs.ShortCode =', '(Catalogs.FullCode =', [])
       else
         SQL.Text := adsCoreEtalon.SQL.Text;
-			ParamByName( 'RegisterId').Value := RegisterId;
-			ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-			ParamByName( 'ClientId').Value := ClientId;
-		end;
-		ParamByName( 'ParentCode').Value := AParentCode;
-	end;
+      ParamByName( 'RegisterId').Value := RegisterId;
+      ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+      ParamByName( 'ClientId').Value := ClientId;
+    end;
+    ParamByName( 'ParentCode').Value := AParentCode;
+  end;
 
  { открываем запрос }
-	with adsCore do
-	begin
-		ParamByName( 'ShowRegister').Value :=
-			DM.adtParams.FieldByName( 'ShowRegister').AsBoolean;
-		Screen.Cursor := crHourglass;
-		try
-			if Active then Close;
+  with adsCore do
+  begin
+    ParamByName( 'ShowRegister').Value :=
+      DM.adtParams.FieldByName( 'ShowRegister').AsBoolean;
+    Screen.Cursor := crHourglass;
+    try
+      if Active then Close;
       //adsCore.Options := adsCore.Options - [poCacheCalcFields];
       Open;
       //FetchAll;
 
-		finally
-			Screen.Cursor := crDefault;
-		end;
+    finally
+      Screen.Cursor := crDefault;
+    end;
   end;
 
   if Assigned(TmpSortList) then begin
@@ -366,58 +366,58 @@ begin
   adsCore.IndexFieldNames := 'SortOrder';
   adsCore.First;
 
-	{ проверка непустоты }
-	if adsCore.RecordCount = 0 then
-	begin
-		AProc.MessageBox( 'Ќет предложений', MB_ICONWARNING);
-		Abort;
-	end;
+  { проверка непустоты }
+  if adsCore.RecordCount = 0 then
+  begin
+    AProc.MessageBox( 'Ќет предложений', MB_ICONWARNING);
+    Abort;
+  end;
 
-	{ заполн€ем список регионов дл€ фильтрации }
-	cbFilter.Clear;
-	cbFilter.Items.Add( ALL_REGIONS);
-	adsRegions.Open;
-	try
-		while not adsRegions.Eof do
-		begin
-			cbFilter.Items.Add( adsRegions.FieldByName( 'RegionName').AsString);
-			adsRegions.Next;
-		end;
-	finally
-		adsRegions.Close;
-	end;
-	cbFilter.ItemIndex := MainForm.RegionFilterIndex;
-	cbEnabled.ItemIndex := MainForm.EnableFilterIndex;
+  { заполн€ем список регионов дл€ фильтрации }
+  cbFilter.Clear;
+  cbFilter.Items.Add( ALL_REGIONS);
+  adsRegions.Open;
+  try
+    while not adsRegions.Eof do
+    begin
+      cbFilter.Items.Add( adsRegions.FieldByName( 'RegionName').AsString);
+      adsRegions.Next;
+    end;
+  finally
+    adsRegions.Close;
+  end;
+  cbFilter.ItemIndex := MainForm.RegionFilterIndex;
+  cbEnabled.ItemIndex := MainForm.EnableFilterIndex;
 
-	if not adsCore.Locate( 'PriceEnabled', 'True', []) then
-		adsCore.Locate( 'PriceEnabled', 'False', []);
+  if not adsCore.Locate( 'PriceEnabled', 'True', []) then
+    adsCore.Locate( 'PriceEnabled', 'False', []);
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
   if not adsMaxProducerCosts.Active then
     adsMaxProducerCosts.Open;
 
-	lblName.Caption := AName + ' ' + AForm;
+  lblName.Caption := AName + ' ' + AForm;
 
-	adsFirmsInfo.Open;
+  adsFirmsInfo.Open;
 
-	inherited ShowForm; // д.б. перед MainForm.actPrint.OnExecute
-	//готовим печать
-	frVariables[ 'UseForms'] := UseForms;
-	frVariables[ 'NewSearch'] := NewSearch;
-	frVariables[ 'CatalogName'] := AName;
-	frVariables[ 'CatalogForm'] := AForm;
-	cbFilterSelect( nil);
+  inherited ShowForm; // д.б. перед MainForm.actPrint.OnExecute
+  //готовим печать
+  frVariables[ 'UseForms'] := UseForms;
+  frVariables[ 'NewSearch'] := NewSearch;
+  frVariables[ 'CatalogName'] := AName;
+  frVariables[ 'CatalogForm'] := AForm;
+  cbFilterSelect( nil);
 end;
 
 procedure TCoreForm.adsCore2SynonymGetText(Sender: TField; var Text: String;
   DisplayText: Boolean);
 begin
-	if adsCoreSynonymCode.AsInteger < 0 then
-	begin
-		if Pos( '  ', Sender.AsString) > 0 then
-			Text := Copy( Sender.AsString, Pos( '  ', Sender.AsString) + 2, Length( Sender.AsString));
-	end
-	else Text := Sender.AsString;
+  if adsCoreSynonymCode.AsInteger < 0 then
+  begin
+    if Pos( '  ', Sender.AsString) > 0 then
+      Text := Copy( Sender.AsString, Pos( '  ', Sender.AsString) + 2, Length( Sender.AsString));
+  end
+  else Text := Sender.AsString;
 end;
 
 procedure TCoreForm.ccf(DataSet: TDataSet);
@@ -437,18 +437,18 @@ end;
 
 procedure TCoreForm.adsCore2BeforePost(DataSet: TDataSet);
 var
-	Quantity, E: Integer;
-	PriceAvg: Double;
+  Quantity, E: Integer;
+  PriceAvg: Double;
   PanelCaption : String;
   PanelHeight : Integer;
 begin
-	try
-		{ провер€ем заказ на соответствие наличию товара на складе }
-		Val( adsCoreQuantity.AsString,Quantity,E);
-		if E<>0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
-			( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
-			MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
+  try
+    { провер€ем заказ на соответствие наличию товара на складе }
+    Val( adsCoreQuantity.AsString,Quantity,E);
+    if E<>0 then Quantity := 0;
+    if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
+      ( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
+      MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
     PanelCaption := '';
 
@@ -477,18 +477,18 @@ begin
         PanelCaption := 'ѕрепарат не желателен к заказу';
     end;
     
-		{ провер€ем на превышение цены }
-		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
-		begin
-			PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
-			if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
-			begin
+    { провер€ем на превышение цены }
+    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
+      if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
+      begin
         if Length(PanelCaption) > 0 then
           PanelCaption := PanelCaption + #13#10 + 'ѕревышение средней цены!'
         else
           PanelCaption := 'ѕревышение средней цены!';
-			end;
-		end;
+      end;
+    end;
 
     if (adsCoreJUNK.Value) then
       if Length(PanelCaption) > 0 then
@@ -518,19 +518,19 @@ begin
     end;
 
   except
-		adsCore.Cancel;
-		raise;
-	end;
+    adsCore.Cancel;
+    raise;
+  end;
 end;
 
 procedure TCoreForm.Print( APreview: boolean = False);
 begin
-	DM.ShowFastReport( 'Core.frf', adsCore, APreview);
+  DM.ShowFastReport( 'Core.frf', adsCore, APreview);
 end;
 
 procedure TCoreForm.adsCore2BeforeEdit(DataSet: TDataSet);
 begin
-	if adsCoreFirmCode.AsInteger = RegisterId then Abort;
+  if adsCoreFirmCode.AsInteger = RegisterId then Abort;
 end;
 
 procedure TCoreForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
@@ -564,43 +564,43 @@ end;
 
 procedure TCoreForm.dbgCoreKeyPress(Sender: TObject; var Key: Char);
 begin
-	if ( Key > #32) and not ( Key in
-		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
-	begin
-		if Self.PrevForm is TNamesFormsForm then
-		begin
-			Self.PrevForm.ShowForm;
+  if ( Key > #32) and not ( Key in
+    [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+  begin
+    if Self.PrevForm is TNamesFormsForm then
+    begin
+      Self.PrevForm.ShowForm;
       if TNamesFormsForm( Self.PrevForm).actNewSearch.Checked then begin
         TNamesFormsForm( Self.PrevForm).dbgCatalog.SetFocus;
         TNamesFormsForm( Self.PrevForm).eSearch.Text := '';
       end
       else
-  			TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
-			SendMessage( GetFocus, WM_CHAR, Ord( Key), 0);
-		end;
-	end;
+        TNamesFormsForm( Self.PrevForm).dbgNames.SetFocus;
+      SendMessage( GetFocus, WM_CHAR, Ord( Key), 0);
+    end;
+  end;
 end;
 
 procedure TCoreForm.dbgCoreGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	if adsCoreSynonymCode.AsInteger < 0 then
-	begin
-		Background := $00fff1d8;
-                AFont.Style := [fsBold];
-	end
-	else
-	if adsCoreFirmCode.AsInteger = RegisterId then
-	begin
-		//если это реестр, измен€ем цвета
-		if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
-			 or ( Column.Field = adsCoreCOST)
+  if adsCoreSynonymCode.AsInteger < 0 then
+  begin
+    Background := $00fff1d8;
+    AFont.Style := [fsBold];
+  end
+  else
+  if adsCoreFirmCode.AsInteger = RegisterId then
+  begin
+    //если это реестр, измен€ем цвета
+    if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
+       or ( Column.Field = adsCoreCOST)
        or ( Column.Field = adsCorePriceRet)
       then Background := REG_CLR;
-        end
-	else
-	begin
+  end
+  else
+  begin
     if (not adsCore.IsEmpty) and CoreGroupByProducts and (Assigned(SortList))
        and (Column.Field <> adsCoreOrderCount) and (Column.Field <> adsCoreSumOrder)
     then
@@ -608,53 +608,53 @@ begin
 
     if adsCoreVITALLYIMPORTANT.AsBoolean then
       AFont.Color := VITALLYIMPORTANT_CLR;
-		if not adsCorePriceEnabled.AsBoolean then
-		begin
-			//если фирма недоступна, измен€ем цвет
-			if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
-				then Background := clBtnFace;
-		end;
+    if not adsCorePriceEnabled.AsBoolean then
+    begin
+      //если фирма недоступна, измен€ем цвет
+      if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
+        then Background := clBtnFace;
+    end;
 
-		//если уцененный товар, измен€ем цвет
-		if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCost))
+    //если уцененный товар, измен€ем цвет
+    if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCost))
     then
-			Background := JUNK_CLR;
-		//ожидаемый товар выдел€ем зеленым
-		if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
-			Background := AWAIT_CLR;
-	end;
+      Background := JUNK_CLR;
+    //ожидаемый товар выдел€ем зеленым
+    if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
+      Background := AWAIT_CLR;
+  end;
 end;
 
 procedure TCoreForm.ShowOrdersH;
 var
-	OrdersH: TOrdersHForm;
+  OrdersH: TOrdersHForm;
 begin
-	OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
-	if OrdersH = nil then
-	begin
-		OrdersH := TOrdersHForm.Create( Application);
-//		OrdersHForm.Show;
-	end
-	else
-	begin
-		OrdersH.Show;
+  OrdersH := TOrdersHForm( FindChildControlByClass( MainForm, TOrdersHForm));
+  if OrdersH = nil then
+  begin
+    OrdersH := TOrdersHForm.Create( Application);
+//    OrdersHForm.Show;
+  end
+  else
+  begin
+    OrdersH.Show;
     OrdersH.adsOrdersHForm.Close;
     OrdersH.adsOrdersHForm.Open;
-	end;
-	MainForm.ActiveChild := OrdersH;
-	MainForm.ActiveControl := OrdersH.ActiveControl;
+  end;
+  MainForm.ActiveChild := OrdersH;
+  MainForm.ActiveControl := OrdersH.ActiveControl;
 end;
 
 procedure TCoreForm.TimerTimer(Sender: TObject);
 begin
-	Timer.Enabled := False;
-	plOverCost.Hide;
-	plOverCost.SendToBack;
+  Timer.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
 end;
 
 procedure TCoreForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
-	MainForm.SetOrdersInfo;
+  MainForm.SetOrdersInfo;
   RefreshCurrentSumma;
 end;
 
@@ -694,20 +694,20 @@ end;
 
 procedure TCoreForm.FormHide(Sender: TObject);
 begin
-	MainForm.RegionFilterIndex := cbFilter.ItemIndex;
-	MainForm.EnableFilterIndex := cbEnabled.ItemIndex;
+  MainForm.RegionFilterIndex := cbFilter.ItemIndex;
+  MainForm.EnableFilterIndex := cbEnabled.ItemIndex;
 end;
 
 procedure TCoreForm.dbgHistoryGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	//если уцененный товар, измен€ем цвет
-	if adsPreviosOrdersJunk.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
-		Background := JUNK_CLR;
-	//ожидаемый товар выдел€ем зеленым
-	if adsPreviosOrdersAwait.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
-		Background := AWAIT_CLR;
+  //если уцененный товар, измен€ем цвет
+  if adsPreviosOrdersJunk.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
+    Background := JUNK_CLR;
+  //ожидаемый товар выдел€ем зеленым
+  if adsPreviosOrdersAwait.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
+    Background := AWAIT_CLR;
 end;
 
 procedure TCoreForm.actFlipCoreExecute(Sender: TObject);
@@ -717,21 +717,21 @@ var
   CoreId : Int64;
   PriceName, RegionName : String;
 begin
-	if MainFOrm.ActiveChild <> Self then exit;
+  if MainFOrm.ActiveChild <> Self then exit;
 
-	PriceCode := adsCorePriceCode.AsInteger;
-	RegionCode := adsCoreRegionCode.AsLargeInt;
+  PriceCode := adsCorePriceCode.AsInteger;
+  RegionCode := adsCoreRegionCode.AsLargeInt;
   PriceName := adsCorePRICENAME.AsString;
   RegionName := adsCoreREGIONNAME.AsString;
   CoreId := adsCoreCOREID.AsLargeInt;
-	ShowPrices;
+  ShowPrices;
 
-	with TPricesForm( MainForm.ActiveChild) do
-	begin
-		adsPrices.Locate( 'PriceCode;RegionCode', VarArrayOf([ PriceCode, RegionCode]), []);
-		FCoreFirmForm.ShowForm( PriceCode, RegionCode, PriceName, RegionName, actOnlyLeaders.Checked);
+  with TPricesForm( MainForm.ActiveChild) do
+  begin
+    adsPrices.Locate( 'PriceCode;RegionCode', VarArrayOf([ PriceCode, RegionCode]), []);
+    FCoreFirmForm.ShowForm( PriceCode, RegionCode, PriceName, RegionName, actOnlyLeaders.Checked);
     FCoreFirmForm.adsCore.Locate('CoreId', CoreId, []);
-	end;
+  end;
 end;
 
 procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
@@ -848,18 +848,18 @@ begin
   adsCore.IndexFieldNames := 'SortOrder';
   adsCore.First;
 
-	if not adsCore.Locate( 'PriceEnabled', 'True', []) then
-		adsCore.Locate( 'PriceEnabled', 'False', []);
+  if not adsCore.Locate( 'PriceEnabled', 'True', []) then
+    adsCore.Locate( 'PriceEnabled', 'False', []);
 end;
 
 procedure TCoreForm.UpdatePriceDelta;
 var
-	FirstPrice, PrevPrice, D: Currency;
+  FirstPrice, PrevPrice, D: Currency;
   I : Integer;
   elem : SortElem;
 begin
-	FirstPrice := 0;
-	PrevPrice := 0;
+  FirstPrice := 0;
+  PrevPrice := 0;
   for I := 0 to SortList.Count-1 do begin
     elem := SortElem(SortList.Objects[i]);
     //попали на заголовок формы выпуска
@@ -867,7 +867,7 @@ begin
       PrevPrice := 0;
       FirstPrice := 0;
     end;
-		//разница в цене от другого поставщика PRICE_DELTA
+    //разница в цене от другого поставщика PRICE_DELTA
     case DeltaMode of
       1, 2:
       D := FirstPrice;

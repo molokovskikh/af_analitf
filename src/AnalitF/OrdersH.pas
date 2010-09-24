@@ -269,12 +269,12 @@ begin
   dtpDateFrom.Enabled := TabControl.TabIndex = 1;
   dtpDateTo.Enabled   := dtpDateFrom.Enabled;
 
-	dbmMessage.ReadOnly := TabControl.TabIndex = 1;
+  dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := ((TabControl.TabIndex = 0) and ((DM.SaveGridMask and PrintCurrentOrder) > 0))
                or ((TabControl.TabIndex = 1) and ((DM.SaveGridMask and PrintSendedOrder) > 0));
   FOrdersForm.PrintEnabled := PrintEnabled;
   dbmMessage.Color := Iif(TabControl.TabIndex = 0, clWindow, clBtnFace);
-	if adsOrdersHForm.RecordCount = 0 then begin
+  if adsOrdersHForm.RecordCount = 0 then begin
     dbgCurrentOrders.ReadOnly := True;
     dbgSendedOrders.ReadOnly := True;
   end
@@ -286,7 +286,7 @@ end;
 
 procedure TOrdersHForm.TabControlChange(Sender: TObject);
 begin
-	SetParameters;
+  SetParameters;
 end;
 
 procedure TOrdersHForm.btnDeleteClick(Sender: TObject);
@@ -365,29 +365,29 @@ end;
 procedure TOrdersHForm.dbgCurrentOrdersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	if Key = VK_RETURN then
-	begin
-		SoftPost( adsOrdersHForm);
-		if not adsOrdersHForm.Isempty then OrderEnter;
-	end;
-	if ( Key = VK_ESCAPE) and ( Self.PrevForm <> nil) and
-		( Self.PrevForm is TCoreForm) then
-	begin
+  if Key = VK_RETURN then
+  begin
+    SoftPost( adsOrdersHForm);
+    if not adsOrdersHForm.Isempty then OrderEnter;
+  end;
+  if ( Key = VK_ESCAPE) and ( Self.PrevForm <> nil) and
+    ( Self.PrevForm is TCoreForm) then
+  begin
     //todo: непонятно что-то здесь происходит
-		Self.PrevForm.Show;
-		MainForm.ActiveChild := Self.PrevForm;
-		MainForm.ActiveControl := Self.PrevForm.ActiveControl;
-	end;
-	if ( Key = VK_DELETE) and not ( adsOrdersHForm.IsEmpty) then
-	begin
+    Self.PrevForm.Show;
+    MainForm.ActiveChild := Self.PrevForm;
+    MainForm.ActiveControl := Self.PrevForm.ActiveControl;
+  end;
+  if ( Key = VK_DELETE) and not ( adsOrdersHForm.IsEmpty) then
+  begin
     btnDeleteClick(nil);
-		MainForm.SetOrdersInfo;
-	end;
+    MainForm.SetOrdersInfo;
+  end;
 end;
 
 procedure TOrdersHForm.dbgCurrentOrdersExit(Sender: TObject);
 begin
-	SoftPost( adsOrdersHForm);
+  SoftPost( adsOrdersHForm);
 end;
 
 procedure TOrdersHForm.dbgCurrentOrdersDblClick(Sender: TObject);
@@ -395,26 +395,26 @@ var
   C : GridsEh.TGridCoord;
   P : TPoint;
 begin
-	SoftPost( adsOrdersHForm);
+  SoftPost( adsOrdersHForm);
   p := TToughDBGrid(Sender).ScreenToClient(Mouse.CursorPos);
   C := TToughDBGrid(Sender).MouseCoord(p.X, p.Y);
   if C.Y > 0 then
-  	if not adsOrdersHForm.Isempty then OrderEnter;
+    if not adsOrdersHForm.Isempty then OrderEnter;
 end;
 
 procedure TOrdersHForm.adsOrdersH2AfterPost(DataSet: TDataSet);
 begin
-	MainForm.SetOrdersInfo;
+  MainForm.SetOrdersInfo;
 end;
 
 procedure TOrdersHForm.dbgCurrentOrdersKeyPress(Sender: TObject; var Key: Char);
 begin
-	if ( TabControl.TabIndex = 0) and ( Ord( Key) > 32) and
-		not adsOrdersHForm.IsEmpty then
-	begin
-		dbmMessage.SetFocus;
-		SendMessage( GetFocus, WM_CHAR, Ord( Key), 0);
-	end;
+  if ( TabControl.TabIndex = 0) and ( Ord( Key) > 32) and
+    not adsOrdersHForm.IsEmpty then
+  begin
+    dbmMessage.SetFocus;
+    SendMessage( GetFocus, WM_CHAR, Ord( Key), 0);
+  end;
 end;
 
 procedure TOrdersHForm.dbgCurrentOrdersGetCellParams(Sender: TObject;
@@ -441,19 +441,19 @@ begin
     end;
   end;
 
-	if TabControl.TabIndex = 1 then
-	begin
-		if not Column.Field.DataSet.FieldByName( 'Send').AsBoolean then
-			Background := clSilver;
-	end;
+  if TabControl.TabIndex = 1 then
+  begin
+    if not Column.Field.DataSet.FieldByName( 'Send').AsBoolean then
+      Background := clSilver;
+  end;
 end;
 
 procedure TOrdersHForm.SetDateInterval;
 begin
   with adsOrdersHForm do begin
-	ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
-	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
+  ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
+  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+  ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
     Screen.Cursor:=crHourglass;
     try
       if Active then
@@ -477,15 +477,15 @@ begin
     Grid := dbgCurrentOrders
   else
     Grid := dbgSendedOrders;
-	SetDateInterval;
-	Grid.SetFocus;
+  SetDateInterval;
+  Grid.SetFocus;
 end;
 
 procedure TOrdersHForm.Print(APreview: boolean);
 var
-	Mark: TBookmarkStr;
+  Mark: TBookmarkStr;
 begin
-	if not adsOrdersHForm.Active or adsOrdersHForm.IsEmpty then exit;
+  if not adsOrdersHForm.Active or adsOrdersHForm.IsEmpty then exit;
 
   //Если вызван "Предварительный просмотр", то отображаем только текущий заказ,
   //иначе выводим на печать все заказы из списка
@@ -534,8 +534,8 @@ end;
 
 procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);
 begin
-	ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
-		nil, nil, SW_SHOWDEFAULT);
+  ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
+    nil, nil, SW_SHOWDEFAULT);
 end;
 
 procedure TOrdersHForm.adsOrdersH2SendChange(Sender: TField);
@@ -571,8 +571,8 @@ end;
 
 procedure TOrdersHForm.InternalMoveToPrice;
 var
-	Order, CurOrder, Quantity, E: Integer;
-	SynonymFirmCrCode, SynonymCode: Variant;
+  Order, CurOrder, Quantity, E: Integer;
+  SynonymFirmCrCode, SynonymCode: Variant;
   Code, RequestRatio, OrderCost, MinOrderCount : Variant;
   I : Integer;
   RecCountSRV : Integer;

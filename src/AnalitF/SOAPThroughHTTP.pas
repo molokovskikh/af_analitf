@@ -11,10 +11,10 @@ type
 
 TSOAP = class( TObject)
 
-	constructor Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP = nil);
-	destructor Destroy; override;
+  constructor Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP = nil);
+  destructor Destroy; override;
 
-	function Invoke( AMethodName: string; AParams, AValues: array of string): TStrings;
+  function Invoke( AMethodName: string; AParams, AValues: array of string): TStrings;
   function SimpleInvoke(
     MethodName: string;
     Params,
@@ -24,33 +24,33 @@ TSOAP = class( TObject)
     PostParams : TStringList): String; overload;
   function PreparePostValue(PostValue : String) : String;
 private
-	FHTTP: TIdHTTP;
-	FIntercept: TIdConnectionIntercept;
-	FExternalHTTP: boolean;
-	FResponse: string;
-	FURL: string;
+  FHTTP: TIdHTTP;
+  FIntercept: TIdConnectionIntercept;
+  FExternalHTTP: boolean;
+  FResponse: string;
+  FURL: string;
   FOnError : TOnConnectError;
 
   FQueryResults : TStringList;
 
-	{ √руппа полей, использующихс€ дл€ временного хранени€ }
-	{ настроек AHTTP, дл€ их восстановлени€ в деструкторе  }
-	FHTTPRequest: TIdHTTPRequest;
-	FHTTPOptions: TIdHTTPOptions;
-	FTmpIntercept: TIdConnectionIntercept;
+  { √руппа полей, использующихс€ дл€ временного хранени€ }
+  { настроек AHTTP, дл€ их восстановлени€ в деструкторе  }
+  FHTTPRequest: TIdHTTPRequest;
+  FHTTPOptions: TIdHTTPOptions;
+  FTmpIntercept: TIdConnectionIntercept;
 
-	function ExtractHost( AURL: string): string;
+  function ExtractHost( AURL: string): string;
   procedure OnReconnectError(E : EIdException);
   //ѕроизводим POST несколько раз, если возникают ошибки сети
   procedure DoPost(AFullURL : String; ASource: TStringList);
 
   //Ётот метод необходим, чтобы формировать ответ от сервера,
   //т.к. в свойстве FHTTP.Response.ContentStream он бывает не полным из-за ошибок при передачи данных
-	procedure OnReceive( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
+  procedure OnReceive( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
   //—обыти€ дл€ отладки взаимодействи€ с сервером
 {$ifdef DEBUG}
   procedure HttpReceiveHeadersAvailable(Sender: TObject; AHeaders: TIdHeaderList; var VContinue: Boolean);
-	procedure OnSend( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
+  procedure OnSend( ASender: TIdConnectionIntercept; var ABuffer : TIdBytes);
 {$endif}
 end;
 
@@ -65,39 +65,39 @@ constructor TSOAP.Create( AURL, AUserName, APassword: string; AOnError : TOnConn
 begin
   FQueryResults := TStringList.Create;
   FOnError := AOnError;
-	if Assigned( AHTTP) then
-	begin
-		FExternalHTTP := True;
-		FHTTP := AHTTP;
-		FHTTPRequest := FHTTP.Request;
-		FHTTPOptions := FHTTP.HTTPOptions;
-		FTmpIntercept := AHTTP.Intercept;
-		FHTTP.Request.Clear;
-        end
-	else
-	begin
-		FExternalHTTP := False;
-		FHTTP := TIdHTTP.Create( nil);
-	end;
-	FURL := AURL;
-	FIntercept := TIdConnectionIntercept.Create( nil);
-	FHTTP.Intercept := FIntercept;
-	FHTTP.Request.BasicAuthentication := True;
-	FHTTP.Request.Host := ExtractHost( AURL);
-	FHTTP.Request.Password := APassword;
-	FHTTP.Request.Username := AUserName;
+  if Assigned( AHTTP) then
+  begin
+    FExternalHTTP := True;
+    FHTTP := AHTTP;
+    FHTTPRequest := FHTTP.Request;
+    FHTTPOptions := FHTTP.HTTPOptions;
+    FTmpIntercept := AHTTP.Intercept;
+    FHTTP.Request.Clear;
+  end
+  else
+  begin
+    FExternalHTTP := False;
+    FHTTP := TIdHTTP.Create( nil);
+  end;
+  FURL := AURL;
+  FIntercept := TIdConnectionIntercept.Create( nil);
+  FHTTP.Intercept := FIntercept;
+  FHTTP.Request.BasicAuthentication := True;
+  FHTTP.Request.Host := ExtractHost( AURL);
+  FHTTP.Request.Password := APassword;
+  FHTTP.Request.Username := AUserName;
 end;
 
 destructor TSOAP.Destroy;
 begin
   FQueryResults.Free;
-	if not FExternalHTTP then FHTTP.Free
-	else
-	begin
-		FHTTP.Intercept := FTmpIntercept;
-		FHTTP.Request := FHTTPRequest;
-		FHTTP.HTTPOptions := FHTTPOptions;
-	end;
+  if not FExternalHTTP then FHTTP.Free
+  else
+  begin
+    FHTTP.Intercept := FTmpIntercept;
+    FHTTP.Request := FHTTPRequest;
+    FHTTP.HTTPOptions := FHTTPOptions;
+  end;
   FIntercept.Free;
 end;
 

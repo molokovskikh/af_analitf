@@ -222,9 +222,9 @@ begin
   adsCore.OnCalcFields := ccf;
   PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
   UseExcess := True;
-	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-	adsAvgOrders.ParamByName('ClientId').Value := ClientId;
+  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
+  adsAvgOrders.ParamByName('ClientId').Value := ClientId;
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
   if dbgCore.SortMarkedColumns.Count = 0 then
     dbgCore.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
@@ -232,7 +232,7 @@ end;
 
 procedure TCoreFirmForm.FormDestroy(Sender: TObject);
 begin
-	inherited;
+  inherited;
   TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
   fr.Free;
   BM.Free;
@@ -331,17 +331,17 @@ end;
 
 procedure TCoreFirmForm.actFilterAllExecute(Sender: TObject);
 begin
-	if Self.Visible then SetFilter(filAll);
+  if Self.Visible then SetFilter(filAll);
 end;
 
 procedure TCoreFirmForm.actFilterOrderExecute(Sender: TObject);
 begin
-	if Self.Visible then SetFilter(filOrder);
+  if Self.Visible then SetFilter(filOrder);
 end;
 
 procedure TCoreFirmForm.actFilterLeaderExecute(Sender: TObject);
 begin
-	if Self.Visible then SetFilter(filLeader);
+  if Self.Visible then SetFilter(filLeader);
 end;
 
 procedure TCoreFirmForm.Print( APreview: boolean = False);
@@ -398,18 +398,18 @@ end;
 
 procedure TCoreFirmForm.adsCore2BeforePost(DataSet: TDataSet);
 var
-	Quantity, E: Integer;
-	PriceAvg: Double;
+  Quantity, E: Integer;
+  PriceAvg: Double;
   PanelCaption : String;
   PanelHeight : Integer;
 begin
-	try
-		{ провер€ем заказ на соответствие наличию товара на складе }
-		Val( adsCoreQuantity.AsString, Quantity, E);
-		if E <> 0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
-			( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
-			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
+  try
+    { провер€ем заказ на соответствие наличию товара на складе }
+    Val( adsCoreQuantity.AsString, Quantity, E);
+    if E <> 0 then Quantity := 0;
+    if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
+      ( AProc.MessageBox( '«аказ превышает остаток на складе. ѕродолжить?',
+      MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
 
     PanelCaption := '';
     
@@ -438,9 +438,9 @@ begin
         PanelCaption := 'ѕрепарат не желателен к заказу';
     end;
     
-		{ провер€ем на превышение цены }
-		if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
-		begin
+    { провер€ем на превышение цены }
+    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
       PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
       begin
@@ -449,7 +449,7 @@ begin
         else
           PanelCaption := 'ѕревышение средней цены!';
       end;
-		end;
+    end;
 
     if (adsCoreJUNK.AsBoolean) then
       if Length(PanelCaption) > 0 then
@@ -479,15 +479,15 @@ begin
     end;
 
   except
-		adsCore.Cancel;
-		raise;
-	end;
+    adsCore.Cancel;
+    raise;
+  end;
 end;
 
 procedure TCoreFirmForm.adsCore2AfterPost(DataSet: TDataSet);
 begin
-	SetOrderLabel;
-	MainForm.SetOrdersInfo;
+  SetOrderLabel;
+  MainForm.SetOrdersInfo;
 end;
 
 procedure TCoreFirmForm.SetOrderLabel;
@@ -503,7 +503,7 @@ begin
     ' AND CurrentOrderLists.OrderCount>0',
     ['PriceCode', 'RegionCode', 'ClientId'],
     [PriceCode, RegionCode, ClientId]);
-	OrderSum := DM.FindOrderInfo(PriceCode, RegionCode);
+  OrderSum := DM.FindOrderInfo(PriceCode, RegionCode);
   lblOrderLabel.Caption:=Format('«аказано %d позиций на сумму %0.2f руб.',
     [OrderCount,OrderSum]);
 end;
@@ -583,32 +583,32 @@ begin
   if adsCoreVITALLYIMPORTANT.AsBoolean then
     AFont.Color := VITALLYIMPORTANT_CLR;
 
-	//данный прайс-лидер
-	if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and	( adsCoreLeaderRegionCode.AsLargeInt = RegionCode))
+  //данный прайс-лидер
+  if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and ( adsCoreLeaderRegionCode.AsLargeInt = RegionCode))
      or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
      )
     and
-		(( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME))
+    (( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME))
   then
-			Background := LEADER_CLR;
-	//уцененный товар
-	if (adsCoreJunk.AsBoolean) and (( Column.Field = adsCorePERIOD) or
-		( Column.Field = adsCoreCOST)) then Background := JUNK_CLR;
-	//ожидаемый товар выдел€ем зеленым
-	if (adsCoreAwait.AsBoolean) and ( Column.Field = adsCoreSYNONYMNAME) then
-		Background := AWAIT_CLR;
+    Background := LEADER_CLR;
+  //уцененный товар
+  if (adsCoreJunk.AsBoolean) and (( Column.Field = adsCorePERIOD) or
+    ( Column.Field = adsCoreCOST)) then Background := JUNK_CLR;
+  //ожидаемый товар выдел€ем зеленым
+  if (adsCoreAwait.AsBoolean) and ( Column.Field = adsCoreSYNONYMNAME) then
+    Background := AWAIT_CLR;
 end;
 
 procedure TCoreFirmForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	inherited;
+  inherited;
   if (Shift = []) and (Key = VK_DELETE) and (not adsCore.IsEmpty) then begin
     Key := 0;
     DeleteOrder;
   end
   else
-	if ( Key = VK_RETURN) then
+  if ( Key = VK_RETURN) then
     if tmrSearch.Enabled then
       tmrSearchTimer(nil)
     else
@@ -645,21 +645,21 @@ end;
 
 procedure TCoreFirmForm.TimerTimer(Sender: TObject);
 begin
-	Timer.Enabled := False;
-	plOverCost.Hide;
-	plOverCost.SendToBack;
+  Timer.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
 end;
 
 procedure TCoreFirmForm.actFlipCoreExecute(Sender: TObject);
 var
-	FullCode, ShortCode: integer;
+  FullCode, ShortCode: integer;
   CoreId : Int64;
 begin
-	if MainForm.ActiveChild <> Self then exit;
+  if MainForm.ActiveChild <> Self then exit;
   if Self.PrevForm is TOrdersForm then exit;
 
-	FullCode := adsCoreFullCode.AsInteger;
-	ShortCode := adsCoreShortCode.AsInteger;
+  FullCode := adsCoreFullCode.AsInteger;
+  ShortCode := adsCoreShortCode.AsInteger;
 
   CoreId := adsCoreCOREID.AsLargeInt;
 
@@ -668,9 +668,9 @@ end;
 
 procedure TCoreFirmForm.dbgCoreKeyPress(Sender: TObject; var Key: Char);
 begin
-	if ( Key > #32) and not ( Key in
-		[ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
-	begin
+  if ( Key > #32) and not ( Key in
+    [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+  begin
     AddKeyToSearch(Key);
   end;
 end;

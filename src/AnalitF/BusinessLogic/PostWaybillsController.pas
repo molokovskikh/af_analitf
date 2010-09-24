@@ -300,9 +300,9 @@ begin
       SendIdHTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendWaybillsEx"';
 
       S := SendIdHTTP.Post(SendURL, ss);
-     	start := PosEx( '>', S, Pos( 'SendWaybillsExResult', S)) + 1;
-    	stop := PosEx( '</', S, start);
-	    S := Copy( S, start, stop - start);
+      start := PosEx( '>', S, Pos( 'SendWaybillsExResult', S)) + 1;
+      stop := PosEx( '</', S, start);
+      S := Copy( S, start, stop - start);
       if AnsiStartsText('Status=', S) then
       begin
         InternalSendResultStr := Copy(S, Length('Status=') + 1, Length(S));

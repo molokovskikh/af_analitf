@@ -164,12 +164,12 @@ end;
 
 procedure TPricesForm.FormCreate(Sender: TObject);
 begin
-	inherited;
+  inherited;
   NeedFirstOnDataSet := False;
   FCoreFirmForm := TCoreFirmForm( FindChildControlByClass(MainForm, TCoreFirmForm) );
   if FCoreFirmForm = nil then
     FCoreFirmForm := TCoreFirmForm.Create( Application );
-	actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
+  actOnlyLeaders.Checked := DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean;
 
   TDBGridHelper.RestoreColumnsLayout(dbgPrices, Self.ClassName);
   
@@ -181,7 +181,7 @@ end;
 
 procedure TPricesForm.FormDestroy(Sender: TObject);
 begin
-	inherited;
+  inherited;
   SoftPost(adsPrices);
   if not DM.adtClients.IsEmpty then
   begin
@@ -226,22 +226,22 @@ end;
 
 procedure TPricesForm.SetLastPrice;
 begin
-	if not adsPrices.IsEmpty then
+  if not adsPrices.IsEmpty then
     //Если был первый запуск, то устанавливаем в начало списка
     if LastPriceCode = -1 then
       adsPrices.First
     else
-  		adsPrices.Locate( 'PriceCode;RegionCode',
+      adsPrices.Locate( 'PriceCode;RegionCode',
         VarArrayOf([ LastPriceCode, LastRegionCode]),[]);
 end;
 
 procedure TPricesForm.actOnlyLeadersExecute(Sender: TObject);
 begin
-	actOnlyLeaders.Checked:=not actOnlyLeaders.Checked;
+  actOnlyLeaders.Checked:=not actOnlyLeaders.Checked;
   DM.adtClients.Edit;
   DM.adtClients.FieldByName( 'OnlyLeaders').AsBoolean := actOnlyLeaders.Checked;
   DM.adtClients.Post;
-	dbgPrices.SetFocus;
+  dbgPrices.SetFocus;
 end;
 
 procedure TPricesForm.dbgPricesDblClick(Sender: TObject);
@@ -249,7 +249,7 @@ var
   C : GridsEh.TGridCoord;
   P : TPoint;
 begin
-	inherited;
+  inherited;
   p := dbgPrices.ScreenToClient(Mouse.CursorPos);
   C := dbgPrices.MouseCoord(p.X, p.Y);
   if C.Y > 0 then begin
@@ -260,8 +260,8 @@ end;
 procedure TPricesForm.dbgPricesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	inherited;
-	if Key = VK_RETURN then begin
+  inherited;
+  if Key = VK_RETURN then begin
     ProcessPrice;
   end
   else
@@ -276,21 +276,21 @@ procedure TPricesForm.dbgPricesGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-	inherited;
-	if not adsPricesEnabled.AsBoolean and ( Column.Field = adsPricesPriceName) then
-		BackGround := clBtnFace;
-	if adsPricesPositions.AsInteger > 0 then AFont.Style := [fsBold];
+  inherited;
+  if not adsPricesEnabled.AsBoolean and ( Column.Field = adsPricesPriceName) then
+    BackGround := clBtnFace;
+  if adsPricesPositions.AsInteger > 0 then AFont.Style := [fsBold];
 end;
 
 procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
 begin
-	inherited;
+  inherited;
   //Реализация взята отсюда: http://www.autoaf.ru/faq_delphi.htm
-	if DBMemoContact.Lines.Count > 0 then
+  if DBMemoContact.Lines.Count > 0 then
     SetScrolls(DBMemoContact)
   else
     DBMemoContact.ScrollBars := ssNone;
-	if DBMemoOperativeInfo.Lines.Count > 0 then
+  if DBMemoOperativeInfo.Lines.Count > 0 then
     SetScrolls(DBMemoOperativeInfo)
   else
     DBMemoOperativeInfo.ScrollBars := ssNone;
@@ -312,7 +312,7 @@ end;
 procedure TPricesForm.ProcessPrice;
 begin
   SoftPost(adsPrices);
-	if adsPricesFirmCode.AsInteger=RegisterId then
+  if adsPricesFirmCode.AsInteger=RegisterId then
     //MainForm.actRegistry.Execute
   else
     if not adsPricesPRICECODE.IsNull and adsPricesINJOB.Value then

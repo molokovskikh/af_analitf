@@ -22,8 +22,8 @@ type
   private
     { Private declarations }
   public
-	Seconds: integer;
-	DoRetry: boolean;
+  Seconds: integer;
+  DoRetry: boolean;
     { Public declarations }
   end;
 
@@ -36,37 +36,37 @@ implementation
 
 procedure TRetryForm.FormCreate(Sender: TObject);
 begin
-	DoRetry := False;
-	Timer.Enabled := True;
+  DoRetry := False;
+  Timer.Enabled := True;
 end;
 
 procedure TRetryForm.FormShow(Sender: TObject);
 begin
-	lblRetry.Caption := Format( 'ѕовторна€ попытка через %d секунд', [ Seconds]);
-	dec( Seconds);
+  lblRetry.Caption := Format( 'ѕовторна€ попытка через %d секунд', [ Seconds]);
+  dec( Seconds);
 end;
 
 procedure TRetryForm.btnRetryClick(Sender: TObject);
 begin
-	DoRetry := True;
-	Timer.Enabled := False;
+  DoRetry := True;
+  Timer.Enabled := False;
 end;
 
 procedure TRetryForm.TimerTimer(Sender: TObject);
 begin
-	//ждем заданное врем€
-	if Seconds = 0 then
-	begin
-		ModalResult := mrOK;
-		exit;
-	end;
-	lblRetry.Caption := Format( 'ѕовторна€ попытка через %d секунд', [ Seconds]);
-	dec( Seconds);
+  //ждем заданное врем€
+  if Seconds = 0 then
+  begin
+    ModalResult := mrOK;
+    exit;
+  end;
+  lblRetry.Caption := Format( 'ѕовторна€ попытка через %d секунд', [ Seconds]);
+  dec( Seconds);
 end;
 
 procedure TRetryForm.btnCancelClick(Sender: TObject);
 begin
-	Timer.Enabled := False;
+  Timer.Enabled := False;
 end;
 
 end.

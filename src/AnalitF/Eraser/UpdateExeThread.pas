@@ -32,8 +32,8 @@ implementation
 
 procedure TUpdateExeThread.Execute;
 var
-	SI: TStartupInfo;
-	PI: TProcessInformation;
+  SI: TStartupInfo;
+  PI: TProcessInformation;
   ExeName,
   ExePath,
   InDir,

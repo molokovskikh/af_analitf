@@ -19,7 +19,7 @@ type
     procedure btnCancelClick(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
   private
-	Seconds: integer;
+  Seconds: integer;
   public
     { Public declarations }
   end;
@@ -33,31 +33,31 @@ implementation
 
 procedure TCompactForm.FormCreate(Sender: TObject);
 begin
-	Seconds := 3;
-	Timer.Enabled := True;
+  Seconds := 3;
+  Timer.Enabled := True;
 end;
 
 procedure TCompactForm.FormShow(Sender: TObject);
 begin
-	lblCompact.Caption := Format( '—жатие будет произведено через %d секунд', [ Seconds]);
-	dec( Seconds);
+  lblCompact.Caption := Format( '—жатие будет произведено через %d секунд', [ Seconds]);
+  dec( Seconds);
 end;
 
 procedure TCompactForm.btnCancelClick(Sender: TObject);
 begin
-	Timer.Enabled := False;
+  Timer.Enabled := False;
 end;
 
 procedure TCompactForm.TimerTimer(Sender: TObject);
 begin
-	//ждем заданное врем€
-	if Seconds = 0 then
-	begin
-		ModalResult := mrOK;
-		exit;
-	end;
-	lblCompact.Caption := Format( '—жатие будет произведено через %d секунд', [ Seconds]);
-	dec( Seconds);
+  //ждем заданное врем€
+  if Seconds = 0 then
+  begin
+    ModalResult := mrOK;
+    exit;
+  end;
+  lblCompact.Caption := Format( '—жатие будет произведено через %d секунд', [ Seconds]);
+  dec( Seconds);
 end;
 
 end.

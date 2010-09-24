@@ -5,8 +5,8 @@ interface
 type
 
   {TEAType содержит возможные типы аттрибутов}
-  TEAType 	 = (eatNone, eatCDATA, eatID, eatIDREF, eatIDREFS, eatENTITY,
-                    eatENTITIES, eatNMTOKEN, eatNMTOKENS, eatEnum);
+  TEAType = (eatNone, eatCDATA, eatID, eatIDREF, eatIDREFS, eatENTITY,
+             eatENTITIES, eatNMTOKEN, eatNMTOKENS, eatEnum);
 {TEAType задает возмжные значения типов аттибутов:
   eatNone       - нет типа,
   eatCDATA      - любые символьные данные,
@@ -22,10 +22,10 @@ type
 
   TEASpecification = (easNone, easRequired, easImplied, easFixed);
   {TEASpecification содержит параметры спецификации аттрибутов:
-    easNone 	- нет специфкации;
-    easRequired	- аттрибут является обязательным;
-    easImplied	- аттрибут не является обязательным;
-    easFixed	- аттрибут имеет фиксированное значение.
+    easNone     - нет специфкации;
+    easRequired - аттрибут является обязательным;
+    easImplied  - аттрибут не является обязательным;
+    easFixed    - аттрибут имеет фиксированное значение.
   }
 
 const

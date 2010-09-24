@@ -9,7 +9,7 @@ uses
   DBProc, GridsEh;
 
 const
-	RegistrySql	= 'SELECT * FROM Registry ORDER BY ';
+  RegistrySql = 'SELECT * FROM Registry ORDER BY ';
 
 type
   TRegistersForm = class(TChildForm)

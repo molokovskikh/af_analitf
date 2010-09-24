@@ -58,7 +58,7 @@ procedure TWayBillListForm.dbgWBLKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   inherited;
-	if Key = VK_ESCAPE then PrevForm.ShowForm;
+  if Key = VK_ESCAPE then PrevForm.ShowForm;
 end;
 
 end.

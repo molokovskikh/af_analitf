@@ -138,24 +138,24 @@ begin
   inherited;
   TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'MnnId', ShowDescriptionAction);
   adsExpireds.OnCalcFields := ecf;
-	ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
+  ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   UseExcess := True;
-	Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-	adsAvgOrders.ParamByName('ClientId').Value := ClientId;
-	adsExpireds.ParamByName( 'ClientId').Value := ClientId;
-	adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
-	Screen.Cursor := crHourGlass;
-	try
-		adsExpireds.Open;
+  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  adsAvgOrders.ParamByName('ClientId').Value := ClientId;
+  adsExpireds.ParamByName( 'ClientId').Value := ClientId;
+  adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+  Screen.Cursor := crHourGlass;
+  try
+    adsExpireds.Open;
     adsAvgOrders.Open;
-	finally
-		Screen.Cursor := crDefault;
-	end;
-	lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCount]);
+  finally
+    Screen.Cursor := crDefault;
+  end;
+  lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCount]);
   TDBGridHelper.RestoreColumnsLayout(dbgExpireds, Self.ClassName);
   if dbgExpireds.SortMarkedColumns.Count = 0 then
     dbgExpireds.FieldColumns['SYNONYMNAME'].Title.SortMarker := smUpEh;
-	ShowForm;
+  ShowForm;
   adsExpireds.First;
 end;
 
@@ -174,18 +174,18 @@ end;
 
 procedure TExpiredsForm.adsExpireds2BeforePost(DataSet: TDataSet);
 var
-	Quantity, E: Integer;
-	PriceAvg: Double;
+  Quantity, E: Integer;
+  PriceAvg: Double;
   PanelCaption : String;
   PanelHeight : Integer;
 begin
-	try
-		{ провер€ем заказ на соответствие наличию товара на складе }
-		Val( adsExpiredsQuantity.AsString, Quantity, E);
-		if E <> 0 then Quantity := 0;
-		if ( Quantity > 0) and ( adsExpiredsORDERCOUNT.AsInteger > Quantity)and
-			(AProc.MessageBox('«аказ превышает остаток на складе. ѕродолжить?',
-			MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsORDERCOUNT.AsInteger := Quantity;
+  try
+    { провер€ем заказ на соответствие наличию товара на складе }
+    Val( adsExpiredsQuantity.AsString, Quantity, E);
+    if E <> 0 then Quantity := 0;
+    if ( Quantity > 0) and ( adsExpiredsORDERCOUNT.AsInteger > Quantity)and
+      (AProc.MessageBox('«аказ превышает остаток на складе. ѕродолжить?',
+      MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsORDERCOUNT.AsInteger := Quantity;
 
     PanelCaption := '';
 
@@ -214,18 +214,18 @@ begin
         PanelCaption := 'ѕрепарат не желателен к заказу';
     end;
 
-		{ провер€ем на превышение цены }
-		if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) and (not adsAvgOrdersPRODUCTID.IsNull) then
-		begin
-			PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
-			if ( PriceAvg > 0) and ( adsExpiredsCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
-			begin
+    { провер€ем на превышение цены }
+    if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
+      if ( PriceAvg > 0) and ( adsExpiredsCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
+      begin
         if Length(PanelCaption) > 0 then
           PanelCaption := PanelCaption + #13#10 + 'ѕревышение средней цены!'
         else
           PanelCaption := 'ѕревышение средней цены!';
-			end;
-		end;
+      end;
+    end;
 
     if Length(PanelCaption) > 0 then
       PanelCaption := PanelCaption + #13#10 + '¬ы заказали некондиционный препарат.'
@@ -254,9 +254,9 @@ begin
     end;
 
   except
-		adsExpireds.Cancel;
-		raise;
-	end;
+    adsExpireds.Cancel;
+    raise;
+  end;
 end;
 
 procedure TExpiredsForm.dbgExpiredsCanInput(Sender: TObject;
@@ -271,14 +271,14 @@ end;
 
 procedure TExpiredsForm.TimerTimer(Sender: TObject);
 begin
-	Timer.Enabled := False;
-	plOverCost.Hide;
-	plOverCost.SendToBack;
+  Timer.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
 end;
 
 procedure TExpiredsForm.adsExpireds2AfterPost(DataSet: TDataSet);
 begin
-	MainForm.SetOrdersInfo;
+  MainForm.SetOrdersInfo;
 end;
 
 procedure TExpiredsForm.adsExpireds2AfterScroll(DataSet: TDataSet);
@@ -311,21 +311,21 @@ begin
   if adsExpiredsVITALLYIMPORTANT.AsBoolean then
     AFont.Color := VITALLYIMPORTANT_CLR;
 
-	//уцененный товар
-	if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCOST))
+  //уцененный товар
+  if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCOST))
   then Background := JUNK_CLR;
 end;
 
 procedure TExpiredsForm.actFlipCoreExecute(Sender: TObject);
 var
-	FullCode, ShortCode: integer;
+  FullCode, ShortCode: integer;
   CoreId : Int64;
 begin
-	if MainForm.ActiveChild <> Self then exit;
+  if MainForm.ActiveChild <> Self then exit;
   if adsExpireds.IsEmpty then Exit;
 
-	FullCode := adsExpiredsFullCode.AsInteger;
-	ShortCode := DM.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), [] , []);
+  FullCode := adsExpiredsFullCode.AsInteger;
+  ShortCode := DM.QueryValue('select ShortCode from catalogs where FullCode = ' + IntToStr(FullCode), [] , []);
 
   CoreId := adsExpiredsCOREID.AsLargeInt;
 

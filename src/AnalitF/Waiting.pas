@@ -33,18 +33,18 @@ uses Main, AProc, DModule, UniqueID, SysNames, Exchange;
 
 procedure ShowWaiting( Information : String; ChildThread: TThread);
 var
-	WaitingForm: TWaitingForm;
-	ProgressAVI: TResourceStream;
+  WaitingForm: TWaitingForm;
+  ProgressAVI: TResourceStream;
 begin
-	if not SysUtils.FileExists( ExePath + 'Progress.avi') then
-	begin
-		ProgressAVI := TResourceStream.Create( hInstance, 'PROGRESS', RT_RCDATA);
-		try
-			ProgressAVI.SaveToFile( ExePath + 'Progress.avi');
-		except
-			ProgressAVI.Free;
-		end;
-	end;
+  if not SysUtils.FileExists( ExePath + 'Progress.avi') then
+  begin
+    ProgressAVI := TResourceStream.Create( hInstance, 'PROGRESS', RT_RCDATA);
+    try
+      ProgressAVI.SaveToFile( ExePath + 'Progress.avi');
+    except
+      ProgressAVI.Free;
+    end;
+  end;
 
 
   try
@@ -71,9 +71,9 @@ begin
 end;
 
 procedure TWaitingForm.FormKeyDown(Sender: TObject; var Key: Word;
-	Shift: TShiftState);
+  Shift: TShiftState);
 begin
-//	if EnableEscape and ( Key = VK_ESCAPE) then ModalResult := mrCancel;
+//  if EnableEscape and ( Key = VK_ESCAPE) then ModalResult := mrCancel;
 end;
 
 procedure TWaitingForm.TimerTimer(Sender: TObject);

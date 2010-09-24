@@ -187,11 +187,11 @@ TMainForm = class(TVistaCorrectForm)
     procedure tmrRestoreOnErrorTimer(Sender: TObject);
     procedure actGetHistoryOrdersExecute(Sender: TObject);
 private
-	JustRun: boolean;
+  JustRun: boolean;
   ApplicationVersionText : String;
   deletedForms : TObjectList;
 
-	procedure SetStatusText(Value: string);
+  procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
   procedure OnMainAppEx(Sender: TObject; E: Exception);
   function  GetActionLists : TList;
@@ -206,41 +206,41 @@ public
   CurrentUser    : string;
   //Использует ли текущая копия клиентов из схемы Future
   IsFutureClient : Boolean;
-	ActiveChild: TChildForm;
-	ExchangeOnly: boolean;
+  ActiveChild: TChildForm;
+  ExchangeOnly: boolean;
 
-	RegionFilterIndex: integer;
-	EnableFilterIndex: integer;
-//	Filter
+  RegionFilterIndex: integer;
+  EnableFilterIndex: integer;
+//  Filter
 
   //Максимальная ширина наименования клиента, необходима для отображения
   MaxClientNameWidth : Integer;
   //Прямоугольник на ToolBar для отображения контрола выбора клиента
   ClientNameRect : TRect;
 
-	//для TChildForm нужен FActionLists, который в базовом классе является protected
-	property ActionLists: TList read GetActionLists write SetActionLists;
-	property StatusText: string write SetStatusText;
+  //для TChildForm нужен FActionLists, который в базовом классе является protected
+  property ActionLists: TList read GetActionLists write SetActionLists;
+  property StatusText: string write SetStatusText;
 
-	//создание экземпляра класса FormClass - наследника TChildForm
-	//FormClass - переменная типа метакласс
-	function ShowChildForm(FormClass: TChildFormClass): TChildForm;
-	procedure FreeChildForms;
+  //создание экземпляра класса FormClass - наследника TChildForm
+  //FormClass - переменная типа метакласс
+  function ShowChildForm(FormClass: TChildFormClass): TChildForm;
+  procedure FreeChildForms;
   procedure AddFormsToFree;
   procedure AddFormToFree(childForm : TChildForm);
-	procedure SetUpdateDateTime;
-	procedure SetOrdersInfo;
-	procedure UpdateReclame;
+  procedure SetUpdateDateTime;
+  procedure SetOrdersInfo;
+  procedure UpdateReclame;
   //Отключить все действия, связанные с изменением имени авторизации
   procedure DisableByHTTPName;
   //Включить все действия, связанные с изменением имени авторизации
   procedure EnableByHTTPName;
-	function CheckUnsendOrders: boolean;
+  function CheckUnsendOrders: boolean;
   procedure OnSelectClientClick(Sender: TObject);
 end;
 
 var
-	MainForm: TMainForm;
+  MainForm: TMainForm;
   ProcessFatalMySqlError : Boolean;
 
 //Уникальный идентификатор, передаваемый при обновлении
@@ -258,10 +258,10 @@ function GetPathCopyID: String;
 implementation
 
 uses
-	DModule, AProc, Config, DBProc, NamesForms, Prices,
-	Defectives, Registers, Summary, OrdersH,
-	Exchange, Expireds, Core, UniqueID, CoreFirm,
-	AlphaUtils, About, CompactThread, LU_Tracer,
+  DModule, AProc, Config, DBProc, NamesForms, Prices,
+  Defectives, Registers, Summary, OrdersH,
+  Exchange, Expireds, Core, UniqueID, CoreFirm,
+  AlphaUtils, About, CompactThread, LU_Tracer,
   SynonymSearch, U_frmOldOrdersDelete, U_frmSendLetter, Types, U_ExchangeLog,
   Variants, ExchangeParameters, CorrectOrders, DatabaseObjects,
   MnnSearch, DocumentHeaders, DBGridHelper, DocumentTypes,
@@ -277,14 +277,14 @@ begin
 {$ifdef DSP}
   result := StrToInt64('$E99E48');
 {$else}
-	result := GetUniqueID( Application.ExeName, '');
+  result := GetUniqueID( Application.ExeName, '');
 {$endif}
 end;
 
 function GetDBID: LongInt;
 begin
 {$ifdef DEBUG}
- 	result := GetUniqueID( Application.ExeName, 'E99E483DDE777778ADEFCB3DCD988BC9');
+   result := GetUniqueID( Application.ExeName, 'E99E483DDE777778ADEFCB3DCD988BC9');
 {$else}
   {$ifdef DSP}
     result := StrToInt64('$3DDE77');
@@ -312,19 +312,19 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 //var
-//	il32: TImageList;
+//  il32: TImageList;
 begin
   ClientNameRect := Rect(0, 0, 10, 10);
   deletedForms := TObjectList.Create(False);
   FormPlacement.Active := False;
   Application.OnException := OnMainAppEx;
-	ExchangeOnly := False;
-	Caption := Application.Title;
+  ExchangeOnly := False;
+  Caption := Application.Title;
   ApplicationVersionText := '(версия ' + GetLibraryVersionFromPath(Application.ExeName) + ')      ';
-	StatusBar.Panels[StatusBar.Panels.Count-1].Text := ApplicationVersionText;
-	RegionFilterIndex := 0;
-	EnableFilterIndex := 0;
-	JustRun := True;
+  StatusBar.Panels[StatusBar.Panels.Count-1].Text := ApplicationVersionText;
+  RegionFilterIndex := 0;
+  EnableFilterIndex := 0;
+  JustRun := True;
   if FindCmdLineSwitch('extd') then begin
 {$ifdef DEBUG}
     N2.Visible := True;
@@ -334,7 +334,7 @@ begin
 {$endif}
     itmClearDatabase.Visible := True;
   end;
-	if Set32BPP then
+  if Set32BPP then
     LoadToImageList(ImageList, Application.ExeName, 100);
 end;
 
@@ -351,10 +351,10 @@ begin
   //Удаляем формы, помеченные как удаленные
   RealFreeChildForms;
 
-	if not JustRun then exit;
+  if not JustRun then exit;
   //Бывает только в том случае, если происходит сжатие базы данных
   if not Active then exit;
-	JustRun := False;
+  JustRun := False;
   mainStartupHelper.Stop;
 
 try
@@ -428,11 +428,11 @@ try
   end;
 
   // Если операция импорта не была завершена }
-	if DatabaseController.IsBackuped or
+  if DatabaseController.IsBackuped or
      DM.NeedImportAfterRecovery
   then
-	begin
-		AProc.MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
+  begin
+    AProc.MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
     if DatabaseController.IsBackuped then
       DatabaseController.RestoreDatabase;
 
@@ -441,10 +441,10 @@ try
 
   // Автоматический импорт }
     //Если импорт не прошел, то надо ждать помощи от техподдержки
-		if not RunExchange([eaGetPrice])
+    if not RunExchange([eaGetPrice])
     then
       Exit;
-	end;
+  end;
 
   //Если выставлен флаг "Делать кумулятивное обновление", то делаем его
   //Он может быть выставлен с предыдущего запуска программы или в результате непрошедщего импорта,
@@ -454,7 +454,7 @@ try
     WriteExchangeLog('AnalitF',
       'Предыдущая операция импорта данных была завершена с нарушением целостности данных,' +
       'будет произведено кумулятивное обновление.');
-		RunExchange([eaGetPrice, eaGetFullData]);
+    RunExchange([eaGetPrice, eaGetFullData]);
     //В любом случае сразу же выходим из данной секции, т.к. либо обновились и все хорошо,
     //либо обновление не помогло и надо ждать помощи от техподдержки
     Exit;
@@ -497,34 +497,34 @@ end;
 
 procedure TMainForm.SetStatusText( Value: string);
 begin
-	Value := Trim( Value);
-	StatusBar.SimpleText := Value;
-	StatusBar.SimplePanel := Value <> '';
-	Application.ProcessMessages;
+  Value := Trim( Value);
+  StatusBar.SimpleText := Value;
+  StatusBar.SimplePanel := Value <> '';
+  Application.ProcessMessages;
 end;
 
 procedure TMainForm.FreeChildForms;
 var
-	i: Integer;
+  i: Integer;
 begin
-	for i := ControlCount - 1 downto 0 do
-		if Controls[ i] is TChildForm then
+  for i := ControlCount - 1 downto 0 do
+    if Controls[ i] is TChildForm then
       Controls[ i].Free;
-	ActiveChild := nil;
+  ActiveChild := nil;
   //todo: ClientId-UserId
   if (Length(CurrentUser) > 0) then
     Self.Caption := Application.Title + ' - ' + CurrentUser
   else
     Self.Caption := Application.Title;
-	SetOrdersInfo;
+  SetOrdersInfo;
 end;
 
 procedure TMainForm.imgLogoDblClick(Sender: TObject);
 begin
-	case DM.adtParams.FieldByName( 'StartPage').AsInteger of
-		0: ShowOrderAll;
-		1: actOrderPrice.Execute;
-	end;
+  case DM.adtParams.FieldByName( 'StartPage').AsInteger of
+    0: ShowOrderAll;
+    1: actOrderPrice.Execute;
+  end;
 end;
 
 procedure TMainForm.actConfigExecute(Sender: TObject);
@@ -534,7 +534,7 @@ begin
   OldExep := Application.OnException;
   try
     Application.OnException := OnAppEx;
-  	ShowConfig;
+    ShowConfig;
   finally
     Application.OnException := OldExep;
   end;
@@ -542,51 +542,51 @@ end;
 
 procedure TMainForm.actCompactExecute(Sender: TObject);
 begin
-	if AProc.MessageBox( 'Сжатие базы данных достаточно длительный процесс.'#13#10'Продолжить?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK
+  if AProc.MessageBox( 'Сжатие базы данных достаточно длительный процесс.'#13#10'Продолжить?', MB_ICONQUESTION or MB_OKCANCEL) <> IDOK
   then
     Exit;
   //Закрываем все окна перед сжатием базы данных
   FreeChildForms;
-	Application.ProcessMessages;
+  Application.ProcessMessages;
   RunCompactDatabase;
-	AProc.MessageBox( 'Сжатие базы данных завершено');
+  AProc.MessageBox( 'Сжатие базы данных завершено');
 end;
 
 procedure TMainForm.actOrderAllExecute(Sender: TObject);
 begin
-	ShowOrderAll;
+  ShowOrderAll;
 end;
 
 procedure TMainForm.actOrderPriceExecute(Sender: TObject);
 begin
-	ShowPrices;
+  ShowPrices;
 end;
 
 procedure TMainForm.actOrderSummaryExecute(Sender: TObject);
 begin
-	ShowSummary;
+  ShowSummary;
 end;
 
 procedure TMainForm.actPrintUpdate(Sender: TObject);
 begin
-	actPrint.Enabled := ( ActiveChild <> nil) and ActiveChild.PrintEnabled;
+  actPrint.Enabled := ( ActiveChild <> nil) and ActiveChild.PrintEnabled;
 end;
 
 procedure TMainForm.actPrintExecute(Sender: TObject);
 begin
-	if ( ActiveChild <> nil) and ActiveChild.PrintEnabled then
-		ActiveChild.Print;
+  if ( ActiveChild <> nil) and ActiveChild.PrintEnabled then
+    ActiveChild.Print;
 end;
 
 procedure TMainForm.actPreviewUpdate(Sender: TObject);
 begin
-	actPreview.Enabled := ( ActiveChild <> nil) and ActiveChild.PrintEnabled;
+  actPreview.Enabled := ( ActiveChild <> nil) and ActiveChild.PrintEnabled;
 end;
 
 procedure TMainForm.actPreviewExecute(Sender: TObject);
 begin
-	if ( ActiveChild <> nil) and ActiveChild.PrintEnabled then
-		ActiveChild.Print( True);
+  if ( ActiveChild <> nil) and ActiveChild.PrintEnabled then
+    ActiveChild.Print( True);
 end;
 
 procedure TMainForm.actRegistryExecute(Sender: TObject);
@@ -625,16 +625,16 @@ end;
 
 procedure TMainForm.actClosedOrdersExecute( Sender: TObject);
 begin
-	if ActiveChild is TCoreForm then
-	begin
-		TCoreForm(ActiveChild).ShowOrdersH;
-	end
-	else
-	begin
+  if ActiveChild is TCoreForm then
+  begin
+    TCoreForm(ActiveChild).ShowOrdersH;
+  end
+  else
+  begin
     //Если я переделаю ShowChildForm, то этот вызов не нужен
     FreeChildForms;
-		ShowOrdersH;
-	end;
+    ShowOrdersH;
+  end;
 end;
 
 procedure TMainForm.actSaleExecute(Sender: TObject);
@@ -644,22 +644,22 @@ end;
 
 procedure TMainForm.actReceiveExecute(Sender: TObject);
 var
-	CatNum: integer;
-	ExAct: TExchangeActions;
+  CatNum: integer;
+  ExAct: TExchangeActions;
 begin
-	ExAct := [ eaGetPrice];
+  ExAct := [ eaGetPrice];
 
-	{ Проверяем каталог на наличие записей }
-	try
-		CatNum := DM.QueryValue('SELECT COUNT(*) AS CatNum FROM Catalogs', [], []);
-	except
-		CatNum := 0;
-	end;
+  { Проверяем каталог на наличие записей }
+  try
+    CatNum := DM.QueryValue('SELECT COUNT(*) AS CatNum FROM Catalogs', [], []);
+  except
+    CatNum := 0;
+  end;
 
-	{ Если каталог пустой, то обновление будет принудительно кумулятивным }
-	if CatNum = 0 then ExAct := ExAct + [eaGetFullData];
+  { Если каталог пустой, то обновление будет принудительно кумулятивным }
+  if CatNum = 0 then ExAct := ExAct + [eaGetFullData];
 
-	RunExchange( ExAct);
+  RunExchange( ExAct);
 
   //Обновляем ToolBar в случае смены клиента после обновления
   ToolBar.Invalidate;
@@ -667,8 +667,8 @@ end;
 
 procedure TMainForm.actReceiveAllExecute(Sender: TObject);
 begin
-	if AProc.MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
-		MB_ICONQUESTION or MB_OKCANCEL) = IDOK
+  if AProc.MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
+    MB_ICONQUESTION or MB_OKCANCEL) = IDOK
   then begin
     RunExchange([eaGetPrice, eaGetFullData]);
 
@@ -679,28 +679,28 @@ end;
 
 procedure TMainForm.actExitExecute(Sender: TObject);
 begin
-	Close;
+  Close;
 end;
 
 procedure TMainForm.itmLinkExternalClick(Sender: TObject);
 begin
-	DM.LinkExternalTables;
+  DM.LinkExternalTables;
 end;
 
 procedure TMainForm.itmUnlinkExternalClick(Sender: TObject);
 begin
-	DM.UnLinkExternalTables;
+  DM.UnLinkExternalTables;
 end;
 
 procedure TMainForm.itmClearDatabaseClick(Sender: TObject);
 begin
-	if AProc.MessageBox( 'Действительно очистить базу?',
-		MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then exit;
+  if AProc.MessageBox( 'Действительно очистить базу?',
+    MB_ICONQUESTION or MB_OKCANCEL) <> IDOK then exit;
   //Перед очисткой базы данных закрываем все окна
   FreeChildForms;
-	Application.ProcessMessages;
-	DM.ClearDatabase;
-	AProc.MessageBox( 'Очистка базы завершена');
+  Application.ProcessMessages;
+  DM.ClearDatabase;
+  AProc.MessageBox( 'Очистка базы завершена');
 end;
 
 procedure TMainForm.itmImportClick(Sender: TObject);
@@ -729,7 +729,7 @@ var
   DBGirdName : String;
 begin
   if ( Screen.ActiveControl <> nil) and
-		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
+     ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
   then begin
     SaveGridFlag := ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
 
@@ -749,9 +749,9 @@ end;
 
 procedure TMainForm.actSaveUpdate(Sender: TObject);
 begin
-	actSave.Enabled :=
+  actSave.Enabled :=
   ( Screen.ActiveControl <> nil) and
-		 ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
+     ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
      and ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
 end;
 
@@ -891,7 +891,7 @@ end;
 
 function TMainForm.CheckUnsendOrders: boolean;
 begin
-	result := False;
+  result := False;
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
     adsOrdersHead.Connection := DM.MainConnection;
     adsOrdersHead.ParamByName( 'ClientId').Value :=
@@ -909,7 +909,7 @@ end;
 
 procedure TMainForm.actSendOrdersUpdate(Sender: TObject);
 begin
-	actSendOrders.Enabled := CheckUnsendOrders;
+  actSendOrders.Enabled := CheckUnsendOrders;
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -941,24 +941,24 @@ begin
     then
       DeleteOldOrders;
 
-	if CheckUnsendOrders then
-	begin
-		if AProc.MessageBox( 'Обнаружены неотправленные заказы. ' +
-			'Отправить их сейчас?', MB_ICONQUESTION or MB_YESNO) = IDYES then
-			RunExchange([ eaSendOrders]);
-	end;
+  if CheckUnsendOrders then
+  begin
+    if AProc.MessageBox( 'Обнаружены неотправленные заказы. ' +
+      'Отправить их сейчас?', MB_ICONQUESTION or MB_YESNO) = IDYES then
+      RunExchange([ eaSendOrders]);
+  end;
 end;
 
 procedure TMainForm.actFindExecute(Sender: TObject);
 begin
-	TToughDBGrid( Screen.ActiveControl).ShowFind;
+  TToughDBGrid( Screen.ActiveControl).ShowFind;
 end;
 
 procedure TMainForm.actFindUpdate(Sender: TObject);
 begin
-	TAction( Sender).Enabled := ( Screen.ActiveControl <> nil) and
-		( Screen.ActiveControl is TToughDBGrid) and
-		( TToughDBGrid( Screen.ActiveControl).SearchField <> '');
+  TAction( Sender).Enabled := ( Screen.ActiveControl <> nil) and
+    ( Screen.ActiveControl is TToughDBGrid) and
+    ( TToughDBGrid( Screen.ActiveControl).SearchField <> '');
 end;
 
 procedure TMainForm.UpdateReclame;
@@ -1003,17 +1003,17 @@ end;
 
 procedure TMainForm.actHomeUpdate(Sender: TObject);
 begin
-	if Self.ActiveChild <> nil then TAction( Sender).Enabled := True
-		else TAction( Sender).Enabled := False;
+  if Self.ActiveChild <> nil then TAction( Sender).Enabled := True
+    else TAction( Sender).Enabled := False;
 end;
 
 procedure TMainForm.itmAboutClick(Sender: TObject);
 begin
-	with TAboutForm.Create( Self) do
-	begin
-		ShowModal;
-		Free;
-	end;
+  with TAboutForm.Create( Self) do
+  begin
+    ShowModal;
+    Free;
+  end;
 end;
 
 procedure TMainForm.DisableByHTTPName;
@@ -1119,7 +1119,7 @@ end;
 
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
-	RunExchange( [eaSendWaybills] );
+  RunExchange( [eaSendWaybills] );
 
   //Обновляем ToolBar в случае смены клиента после обновления
   ToolBar.Invalidate;
@@ -1127,7 +1127,7 @@ end;
 
 procedure TMainForm.actSynonymSearchExecute(Sender: TObject);
 begin
-	ShowSynonymSearch;
+  ShowSynonymSearch;
 end;
 
 function TMainForm.OldOrders: Boolean;
@@ -1287,7 +1287,7 @@ begin
     DM.adtParams.Edit;
     DM.adtParams.FieldByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
     DM.adtParams.Post;
-		DM.ClientChanged;
+    DM.ClientChanged;
     if not IsFutureClient then begin
       CurrentUser := mi.Caption;
       if (Assigned(ActiveChild) and (Length(ActiveChild.Caption) > 0)) then

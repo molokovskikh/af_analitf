@@ -62,7 +62,7 @@ end;
 
 procedure TNotFoundForm.Button1Click(Sender: TObject);
 begin
-	if SaveDialog.Execute then Memo.Lines.SaveToFile(SaveDialog.FileName);
+  if SaveDialog.Execute then Memo.Lines.SaveToFile(SaveDialog.FileName);
 end;
 
 end.

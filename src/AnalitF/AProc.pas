@@ -4,7 +4,7 @@ interface
 
 uses SysUtils, Controls, Windows, Forms, StrUtils, Classes, Math, DBGrids,
   ComCtrls, Messages, ShellApi, IniFiles, AppUtils, IdFTP, DateUtils, ToughDBGrid,
-	DbGridEh, IdHTTP, SyncObjs, FileUtil, Contnrs, IdSSLOpenSSL;
+  DbGridEh, IdHTTP, SyncObjs, FileUtil, Contnrs, IdSSLOpenSSL;
 
 const
   WM_AFTERRETRIEVEMAIL=WM_USER+100; //сообщение о получении сообщений. с сервера
@@ -241,8 +241,8 @@ end;
 //если X=True возвращает Y, иначе - Z
 function Iif(X: Boolean; Y,Z: Variant): Variant;
 begin
-	if X then Result:=Y
-	else Result:=Z;
+  if X then Result:=Y
+  else Result:=Z;
 end;
 
 //возвращает колонку из TDBGrid по имени поля
@@ -581,16 +581,16 @@ end;
 
 function SimpleHash( AStr: string): string;
 var
-	i: integer;
-	h: integer;
+  i: integer;
+  h: integer;
 begin
-	h := 0;
-	for i := 1 to Length( AStr) do
-	begin
-		h := h xor Ord( AStr[ i]);
-		h := h shl 1;
-	end;
-	result := IntToHex( h, 8);
+  h := 0;
+  for i := 1 to Length( AStr) do
+  begin
+    h := h xor Ord( AStr[ i]);
+    h := h shl 1;
+  end;
+  result := IntToHex( h, 8);
 end;
 
 procedure LogCriticalError(Error: String);
@@ -741,9 +741,9 @@ begin
       SendIdHTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendLetter"';
 
       S := SendIdHTTP.Post(SendURL, ss);
-     	start := PosEx( '>', S, Pos( 'SendLetterResult', S)) + 1;
-    	stop := PosEx( '</', S, start);
-	    S := Copy( S, start, stop - start);
+      start := PosEx( '>', S, Pos( 'SendLetterResult', S)) + 1;
+      stop := PosEx( '</', S, start);
+      S := Copy( S, start, stop - start);
       if AnsiStartsText('Error=', S) then
         raise Exception.Create(Utf8ToAnsi( Copy(S, 7, Length(S)) ));
 
@@ -915,21 +915,21 @@ end;
 
 function StringToCodes( AStr: string): string;
 var
-	i: integer;
+  i: integer;
 begin
-	Result := '';
-	for i := 1 to Length( Astr) do
+  Result := '';
+  for i := 1 to Length( Astr) do
     Result := Result + Format('%.3d', [Ord( AStr[i] )]);
 end;
 
 function GetXMLDateTime( ADateTime: TDateTime): string;
 begin
-	result := IntToStr( YearOf( ADateTime)) + '-' +
-		IntToStr( MonthOf( ADateTime)) + '-' +
-		IntToStr( DayOf( ADateTime)) + ' ' +
-		IntToStr( HourOf( ADateTime)) + ':' +
-		IntToStr( MinuteOf( ADateTime)) + ':' +
-		IntToStr( SecondOf( ADateTime));
+  result := IntToStr( YearOf( ADateTime)) + '-' +
+    IntToStr( MonthOf( ADateTime)) + '-' +
+    IntToStr( DayOf( ADateTime)) + ' ' +
+    IntToStr( HourOf( ADateTime)) + ':' +
+    IntToStr( MinuteOf( ADateTime)) + ':' +
+    IntToStr( SecondOf( ADateTime));
 end;
 
 function WordCount(const S: string; const WordDelims: TSysCharSet): Integer;

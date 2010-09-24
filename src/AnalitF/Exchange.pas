@@ -134,7 +134,7 @@ function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 var
  mr: integer;
 {//$endif}
-//	hMenuHandle: HMENU;
+//  hMenuHandle: HMENU;
   needShowDocumentForm : Boolean;
   needAuth : Boolean;
 begin

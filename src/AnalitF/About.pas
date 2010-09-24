@@ -47,7 +47,7 @@ uses DModule, Main, DB, RxVerInf,
 procedure TAboutForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-	if Key = VK_ESCAPE then ModalResult := mrOK;
+  if Key = VK_ESCAPE then ModalResult := mrOK;
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
@@ -67,7 +67,7 @@ end;
 
 procedure TAboutForm.lCopyrightClick(Sender: TObject);
 begin
-	ShellExecute( Self.Handle, 'open', 'www.analit.net', nil, nil, SW_SHOWNORMAL);
+  ShellExecute( Self.Handle, 'open', 'www.analit.net', nil, nil, SW_SHOWNORMAL);
 end;
 
 procedure TAboutForm.GetVersionInformation(var Version,

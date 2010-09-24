@@ -31,27 +31,27 @@ uses DModule, AProc, DB;
 
 function ShowNotOrders( Strings: TStrings): boolean;
 begin
-	with TNotOrdersForm.Create( Application) do
-	begin
-		try
-     	Memo.Lines.Assign( Strings);
-			result := ShowModal = mrOK;
+  with TNotOrdersForm.Create( Application) do
+  begin
+    try
+       Memo.Lines.Assign( Strings);
+      result := ShowModal = mrOK;
     finally
-			Free;
-		end;
-	end;
+      Free;
+    end;
+  end;
 end;
 
 function CheckMinReq: boolean;
 var
-	Strings: TStrings;
+  Strings: TStrings;
   C : Currency;
   ControlMinReqOrders : String;
 begin
-	result := True;
+  result := True;
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
-	DM.adsQueryValue.SQL.Text :=''
+  DM.adsQueryValue.SQL.Text :=''
 +'SELECT CurrentOrderHeads.OrderId                 , '
 +'       CurrentOrderHeads.PriceName               , '
 +'       CurrentOrderHeads.RegionName              , '
@@ -79,8 +79,8 @@ begin
 +'   AND (pricesregionaldata.PriceCode IS NOT NULL) '
 +'   AND (OrdersPositions.Positions > 0) '
 +' order by CurrentOrderHeads.PriceName';
-	DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-	Strings := TStringList.Create;
+  DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  Strings := TStringList.Create;
   ControlMinReqOrders := '';
   try
     DM.adsQueryValue.Open;
@@ -119,14 +119,14 @@ begin
     end;
 
   finally
-	  Strings.Free;
+    Strings.Free;
   end;
 
 end;
 
 procedure TNotOrdersForm.Button1Click(Sender: TObject);
 begin
-	if SaveDialog.Execute then Memo.Lines.SaveToFile( SaveDialog.FileName);
+  if SaveDialog.Execute then Memo.Lines.SaveToFile( SaveDialog.FileName);
 end;
 
 end.

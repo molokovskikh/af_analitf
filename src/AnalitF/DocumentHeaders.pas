@@ -124,9 +124,9 @@ end;
 procedure TDocumentHeaderForm.SetDateInterval;
 begin
   with adsDocumentHeaders do begin
-	ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
-	dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-	ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
+    ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
+    dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+    ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
     Screen.Cursor:=crHourglass;
     try
       if Active then

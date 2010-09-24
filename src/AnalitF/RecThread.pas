@@ -14,7 +14,7 @@ type
    protected
     procedure Execute; override;
    public
-  	RegionCode: string;
+    RegionCode: string;
   end;
 
 implementation
@@ -25,7 +25,7 @@ procedure TReclameThread.Execute;
 const
   FReconnectCount = 10;
 var
-	FileStream: TFileStream;
+  FileStream: TFileStream;
   Res       : TStrings;
   NewReclame : Boolean;
   ZipFileName : String;
@@ -34,7 +34,7 @@ var
   PostSuccess : Boolean;
   SleepCount : Integer;
 begin
-	RecTerminated := False;
+  RecTerminated := False;
   try
     SleepCount := 0;
     while not Terminated and (SleepCount < 10) do begin
@@ -210,7 +210,7 @@ begin
       Log('Reclame', 'Процесс обновления рекламного блока завершился с ошибкой : ' + E.Message);
     end;
   end;
-	RecTerminated := True;
+  RecTerminated := True;
 end;
 
 initialization

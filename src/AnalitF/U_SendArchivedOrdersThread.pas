@@ -82,7 +82,7 @@ end;
 
 procedure TSendArchivedOrdersThread.SendFileFromClient;
 var
-	LibVersions: TObjectList;
+  LibVersions: TObjectList;
   ParamNames, ParamValues : array of String;
   fi : TFileUpdateInfo;
   SoapResult : String;

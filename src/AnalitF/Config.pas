@@ -173,7 +173,7 @@ uses DBProc, AProc, Main, LU_Tracer, Constant, StrUtils;
 
 function ShowConfig( Auth: boolean = False): TConfigChanges;
 var
-	IsRasPresent: boolean;
+  IsRasPresent: boolean;
   OldExep : TExceptionEvent;
   HTTPPass : String;
   NewPass,
@@ -210,15 +210,15 @@ begin
       //читаем параметры соединения
       IsRasPresent := True;
       try
-	      GetEntries;
+        GetEntries;
         DM.Ras.Entry:=DM.adtParams.FieldByName('RasEntry').AsString;
         cbRas.ItemIndex:=DM.Ras.GetEntryIndex;
       except
-	      IsRasPresent := False;
+        IsRasPresent := False;
       end;
       if IsRasPresent then
         EnableRemoteAccess
-    	else
+      else
         DisableRemoteAccess;
       try
         HTTPPass := DM.D_HP(DM.adtParams.FieldByName('HTTPPass').AsString);
@@ -316,18 +316,18 @@ end;
 
 procedure TConfigForm.GetEntries;
 var
-	I: Integer;
+  I: Integer;
 begin
-	DM.Ras.GetEntries;
-	cbRas.Items.Assign(DM.Ras.Items);
-	if cbRas.Items.Count = 0 then exit;
-	for i := 0 to cbRas.Items.Count - 1 do
-		if cbRas.Items[ I] = DM.Ras.Entry then
-		begin
-			cbRas.ItemIndex := i;
-			break;
-		end;
-	if ( cbRas.ItemIndex = -1) and ( cbRas.Items.Count > 0) then cbRas.ItemIndex := 0;
+  DM.Ras.GetEntries;
+  cbRas.Items.Assign(DM.Ras.Items);
+  if cbRas.Items.Count = 0 then exit;
+  for i := 0 to cbRas.Items.Count - 1 do
+    if cbRas.Items[ I] = DM.Ras.Entry then
+    begin
+      cbRas.ItemIndex := i;
+      break;
+    end;
+  if ( cbRas.ItemIndex = -1) and ( cbRas.Items.Count > 0) then cbRas.ItemIndex := 0;
 end;
 
 procedure TConfigForm.btnOkClick(Sender: TObject);
@@ -410,44 +410,44 @@ end;
 
 procedure TConfigForm.tshAuthShow(Sender: TObject);
 begin
-	dbeHTTPName.SetFocus;	
+  dbeHTTPName.SetFocus;  
 end;
 
 procedure TConfigForm.btnRasActionsClick(Sender: TObject);
 var
-	P: TPoint;
+  P: TPoint;
 begin
-	P := btnRasActions.ClientToScreen(Point(0,btnRasActions.Height));
-	RasMenu.Popup(P.X-1,P.Y-1);
+  P := btnRasActions.ClientToScreen(Point(0,btnRasActions.Height));
+  RasMenu.Popup(P.X-1,P.Y-1);
 end;
 
 procedure TConfigForm.DisableRemoteAccess;
 begin
-	DM.adtParams.Edit;
-	DM.adtParams.FieldByName( 'RasConnect').AsBoolean := False;
-	DM.adtParams.Post;
-	dbcbRasConnect.Enabled := False;
-	cbRas.Enabled := False;
-	btnRasActions.Enabled := False;
-	dbeRasName.Enabled := False;
-	dbeRasPass.Enabled := False;
-	dbeConnectCount.Enabled := False;
-	dbeConnectPause.Enabled := False;
-	lblTip.Visible := True;
-	imgTip.Visible := True;
+  DM.adtParams.Edit;
+  DM.adtParams.FieldByName( 'RasConnect').AsBoolean := False;
+  DM.adtParams.Post;
+  dbcbRasConnect.Enabled := False;
+  cbRas.Enabled := False;
+  btnRasActions.Enabled := False;
+  dbeRasName.Enabled := False;
+  dbeRasPass.Enabled := False;
+  dbeConnectCount.Enabled := False;
+  dbeConnectPause.Enabled := False;
+  lblTip.Visible := True;
+  imgTip.Visible := True;
 end;
 
 procedure TConfigForm.EnableRemoteAccess;
 begin
-	dbcbRasConnect.Enabled := True;
-	cbRas.Enabled := True;
-	btnRasActions.Enabled := True;
-	dbeRasName.Enabled := True;
-	dbeRasPass.Enabled := True;
-	dbeConnectCount.Enabled := True;
-	dbeConnectPause.Enabled := True;
-	lblTip.Visible := False;
-	imgTip.Visible := False;
+  dbcbRasConnect.Enabled := True;
+  cbRas.Enabled := True;
+  btnRasActions.Enabled := True;
+  dbeRasName.Enabled := True;
+  dbeRasPass.Enabled := True;
+  dbeConnectCount.Enabled := True;
+  dbeConnectPause.Enabled := True;
+  lblTip.Visible := False;
+  imgTip.Visible := False;
 end;
 
 procedure TConfigForm.udRasSleepClick(Sender: TObject; Button: TUDBtnType);

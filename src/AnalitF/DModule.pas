@@ -2341,11 +2341,11 @@ var
 begin
   if FileList.Count > 0 then
     if not OpenEachFile then
-    	ShellExecute( 0, 'Open', PChar(ExePath + DirName + '\'),
+      ShellExecute( 0, 'Open', PChar(ExePath + DirName + '\'),
         nil, nil, SW_SHOWDEFAULT)
     else
       for I := 0 to FileList.Count-1 do
-      	ShellExecute( 0, 'Open', PChar(FileList[i]),
+        ShellExecute( 0, 'Open', PChar(FileList[i]),
           nil, nil, SW_SHOWDEFAULT);
 end;
 
@@ -2372,34 +2372,34 @@ end;
 
 procedure TDM.InternalSetHTTPParams(SetHTTP: TIdHTTP);
 begin
-	// выставляем параметры HTTP-клиента
-	if adtParams.FieldByName( 'ProxyConnect').AsBoolean then
-        begin
-		SetHTTP.ProxyParams.ProxyServer := adtParams.FieldByName( 'ProxyName').AsString;
-		SetHTTP.ProxyParams.ProxyPort := adtParams.FieldByName( 'ProxyPort').AsInteger;
-		SetHTTP.ProxyParams.ProxyUsername := adtParams.FieldByName( 'ProxyUser').AsString;
-		SetHTTP.ProxyParams.ProxyPassword := adtParams.FieldByName( 'ProxyPass').AsString;
+  // выставляем параметры HTTP-клиента
+  if adtParams.FieldByName( 'ProxyConnect').AsBoolean then
+  begin
+    SetHTTP.ProxyParams.ProxyServer := adtParams.FieldByName( 'ProxyName').AsString;
+    SetHTTP.ProxyParams.ProxyPort := adtParams.FieldByName( 'ProxyPort').AsInteger;
+    SetHTTP.ProxyParams.ProxyUsername := adtParams.FieldByName( 'ProxyUser').AsString;
+    SetHTTP.ProxyParams.ProxyPassword := adtParams.FieldByName( 'ProxyPass').AsString;
     SetHTTP.Request.ProxyConnection := 'keep-alive';
-	end
-	else
-	begin
-		SetHTTP.ProxyParams.ProxyServer := '';
-		SetHTTP.ProxyParams.ProxyPort := 0;
-		SetHTTP.ProxyParams.ProxyUsername := '';
-		SetHTTP.ProxyParams.ProxyPassword := '';
+  end
+  else
+  begin
+    SetHTTP.ProxyParams.ProxyServer := '';
+    SetHTTP.ProxyParams.ProxyPort := 0;
+    SetHTTP.ProxyParams.ProxyUsername := '';
+    SetHTTP.ProxyParams.ProxyPassword := '';
     SetHTTP.Request.ProxyConnection := '';
-	end;
+  end;
   if Assigned(SetHTTP.Request.Authentication) then begin
     SetHTTP.Request.Authentication.Free;
     SetHTTP.Request.Authentication := nil;
   end;
-	SetHTTP.Request.Username := adtParams.FieldByName( 'HTTPName').AsString;
+  SetHTTP.Request.Username := adtParams.FieldByName( 'HTTPName').AsString;
   SetHTTP.Request.Password := '';
   SetHTTP.AllowCookies := True;
   SetHTTP.HandleRedirects := False;
   SetHTTP.HTTPOptions := [hoForceEncodeParams];
-	SetHTTP.ReadTimeout := 0; // Без тайм-аута
-	SetHTTP.ConnectTimeout := -2; // Без тайм-аута
+  SetHTTP.ReadTimeout := 0; // Без тайм-аута
+  SetHTTP.ConnectTimeout := -2; // Без тайм-аута
   SetHTTP.Request.Accept := 'text/html, */*';
   SetHTTP.Request.BasicAuthentication := True;
   SetHTTP.Request.Connection := 'keep-alive';

@@ -3,8 +3,8 @@ unit ExchangeThread;
 interface
 
 uses
-	Classes, SysUtils, Windows, StrUtils, ComObj, Variants,
-	SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
+  Classes, SysUtils, Windows, StrUtils, ComObj, Variants,
+  SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
   IdException, WinSock, RxVerInf, DB, 
   SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
@@ -17,17 +17,17 @@ uses
 type
 
 TUpdateTable = (
-	utCatalogs,
-	utClients,
-	utProviders,
-	utPricesData,
-	utRegionalData,
-	utPricesRegionalData,
-	utCore,
-	utRegions,
-	utSynonyms,
-	utSynonymFirmCr,
-	utRejects,
+  utCatalogs,
+  utClients,
+  utProviders,
+  utPricesData,
+  utRegionalData,
+  utPricesRegionalData,
+  utCore,
+  utRegions,
+  utSynonyms,
+  utSynonymFirmCr,
+  utRejects,
   utMinPrices,
   utCatalogFarmGroups,
   utCatFarmGroupsDEL,
@@ -50,14 +50,14 @@ TExchangeThread = class( TThread)
   ExchangeParams : TExchangeParams;
   procedure StopChildThreads;
 private
-	StatusText: string;
-	Progress: integer;
-	TotalProgress: integer;
-	SOAP: TSOAP;
-	ExchangeDateTime: TDateTime;
-	NewZip: boolean;
+  StatusText: string;
+  Progress: integer;
+  TotalProgress: integer;
+  SOAP: TSOAP;
+  ExchangeDateTime: TDateTime;
+  NewZip: boolean;
   ImportComplete : Boolean;
-	FileStream: TFileStream;
+  FileStream: TFileStream;
   StartExec : TDateTime;
   AbsentPriceCodeSL : TStringList;
   ASaveGridMask : String;
@@ -69,7 +69,7 @@ private
   //Уникальный идентификатор обновления, должен передаваться при подтверждении
   UpdateId : String;
 
-	HostFileName, LocalFileName: string;
+  HostFileName, LocalFileName: string;
 
   //Список дочерних ниток
   ChildThreads : TObjectList;
@@ -88,19 +88,19 @@ private
   //Используется при получении истории заказов с сервера
   MaxOrderId : String;
 
-	procedure SetStatus;
+  procedure SetStatus;
   procedure SetDownStatus;
-	procedure SetProgress;
-	procedure SetTotalProgress;
-	procedure DisableCancel;
-	procedure EnableCancel;
+  procedure SetProgress;
+  procedure SetTotalProgress;
+  procedure DisableCancel;
+  procedure EnableCancel;
 
-	procedure RasConnect;
-	procedure HTTPConnect;
-	procedure CreateChildThreads;
+  procedure RasConnect;
+  procedure HTTPConnect;
+  procedure CreateChildThreads;
   procedure CreateChildSendArhivedOrdersThread;
   function  ChildThreadClassIsExists(ChildThreadClass : TReceiveThreadClass) : Boolean;
-	procedure QueryData;
+  procedure QueryData;
   function  GetEncodedBatchFileContent : String;
   procedure GetMaxIds(var MaxOrderId, MaxOrderListId, MaxBatchId : String);
   procedure GetMaxPostedIds(var MaxOrderId, MaxOrderListId : String);
@@ -108,19 +108,19 @@ private
   procedure SendULoginData;
   procedure GetPass;
   procedure PriceDataSettings;
-	procedure CommitExchange;
-	procedure DoExchange;
-	procedure DoSendLetter;
+  procedure CommitExchange;
+  procedure DoExchange;
+  procedure DoSendLetter;
   procedure DoSendSomeOrders;
   procedure DoSendWaybills;
-	procedure HTTPDisconnect;
-	procedure RasDisconnect;
-	procedure UnpackFiles;
-	procedure ImportData;
+  procedure HTTPDisconnect;
+  procedure RasDisconnect;
+  procedure UnpackFiles;
+  procedure ImportData;
   procedure ImportBatchReport;
-	procedure CheckNewExe;
-	procedure CheckNewMDB;
-	procedure CheckNewFRF;
+  procedure CheckNewExe;
+  procedure CheckNewMDB;
+  procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
   procedure GetHistoryOrders;
@@ -128,8 +128,8 @@ private
   procedure ImportHistoryOrders;
 
 
-	function FromXMLToDateTime( AStr: string): TDateTime;
-	function RusError( AStr: string): string;
+  function FromXMLToDateTime( AStr: string): TDateTime;
+  function RusError( AStr: string): string;
   procedure OnConnectError (AMessage : String);
   procedure OnChildTerminate(Sender: TObject);
   procedure OnFullChildTerminate(Sender: TObject);
@@ -149,7 +149,7 @@ private
   procedure CheckFieldAfterUpdate(fieldName : String);
   procedure ProcessClientToAddressMigration;
 protected
-	procedure Execute; override;
+  procedure Execute; override;
 public
   constructor Create(CreateSuspended: Boolean);
   destructor Destroy; override;
@@ -166,80 +166,80 @@ uses Exchange, DModule, AProc, Main, Retry,
 
 procedure TExchangeThread.SetStatus;
 begin
-	ExchangeForm.StatusText := StatusText;
+  ExchangeForm.StatusText := StatusText;
 end;
 
 procedure TExchangeThread.SetProgress;
 begin
-	ExchangeForm.ProgressBar.Position := Progress;
+  ExchangeForm.ProgressBar.Position := Progress;
 end;
 
 procedure TExchangeThread.SetTotalProgress;
 begin
-	ExchangeForm.TotalProgress.Position := TotalProgress;
+  ExchangeForm.TotalProgress.Position := TotalProgress;
 end;
 
 procedure TExchangeThread.DisableCancel;
 begin
-	ExchangeForm.btnCancel.Enabled := False;
+  ExchangeForm.btnCancel.Enabled := False;
 end;
 
 procedure TExchangeThread.EnableCancel;
 begin
-	ExchangeForm.btnCancel.Enabled := True;
+  ExchangeForm.btnCancel.Enabled := True;
 end;
 
 procedure TExchangeThread.Execute;
 var
-	LastStatus: string;
+  LastStatus: string;
   I : Integer;
 begin
   ChildThreads := TObjectList.Create(False);
-	TotalProgress := 0;
-	Synchronize( SetTotalProgress);
-	try
+  TotalProgress := 0;
+  Synchronize( SetTotalProgress);
+  try
     CoInitialize(nil);
     DM.MainConnection.Open;
     try
-		try
+    try
       ImportComplete := False;
       repeat
       try
-			if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+      if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
       then
-			begin
-				RasConnect;
-				HTTPConnect;
-				TotalProgress := 10;
-				Synchronize( SetTotalProgress);
+      begin
+        RasConnect;
+        HTTPConnect;
+        TotalProgress := 10;
+        Synchronize( SetTotalProgress);
         //Отправяем настройки прайс-листов при запросе данных (обычно или кумулятивном)
         if ([eaGetPrice, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
           and not DM.adsUser.FieldByName('InheritPrices').AsBoolean
         then
         begin
-					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
-					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-					PriceDataSettings;
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+          PriceDataSettings;
         end;
-				TotalProgress := 15;
-				Synchronize( SetTotalProgress);
+        TotalProgress := 15;
+        Synchronize( SetTotalProgress);
 
-				if eaSendOrders in ExchangeForm.ExchangeActs then
-				begin
+        if eaSendOrders in ExchangeForm.ExchangeActs then
+        begin
           ExchangeParams.CriticalError := True;
           ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
           ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
           DoSendSomeOrders;
           ExchangeParams.CriticalError := False;
-				end;
-				if eaSendLetter in ExchangeForm.ExchangeActs then
-				begin
-					ExchangeParams.CriticalError := True;
-					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
-					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-					DoSendLetter;
-					ExchangeParams.CriticalError := False;
-				end;
+        end;
+        if eaSendLetter in ExchangeForm.ExchangeActs then
+        begin
+          ExchangeParams.CriticalError := True;
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+          DoSendLetter;
+          ExchangeParams.CriticalError := False;
+        end;
         //DoSendWaybills
         if (eaSendWaybills in ExchangeForm.ExchangeActs)
           and not DM.adsUser.IsEmpty
@@ -254,14 +254,14 @@ begin
           ExchangeParams.CriticalError := False;
         end;
 
-				TotalProgress := 20;
-				Synchronize( SetTotalProgress);
-				if ([eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+        TotalProgress := 20;
+        Synchronize( SetTotalProgress);
+        if ([eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
            and not DM.NeedCommitExchange
         then
-				begin
-					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
-					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+        begin
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
 
           //Запускаем дочерние нитки только тогда, когда получаем обновление данных, но не накладные
           if eaGetPrice in ExchangeForm.ExchangeActs
@@ -286,10 +286,10 @@ begin
             SendULoginData;
           if eaGetFullData in ExchangeForm.ExchangeActs then
             DM.SetCumulative;
-					ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
-					ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
-					DoExchange;
-				end;
+          ExchangeForm.HTTP.ReadTimeout := 0; // Без тайм-аута
+          ExchangeForm.HTTP.ConnectTimeout := -2; // Без тайм-аута
+          DoExchange;
+        end;
 
         if ([eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
         then
@@ -307,12 +307,12 @@ begin
             DoExchange;
         end;
 
-				TotalProgress := 40;
-				Synchronize( SetTotalProgress);
-			end;
+        TotalProgress := 40;
+        Synchronize( SetTotalProgress);
+      end;
 
-			{ Распаковка файлов }
-			if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+      { Распаковка файлов }
+      if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
       then
         UnpackFiles;
 
@@ -321,8 +321,8 @@ begin
       then
         UnpackFiles;
 
-			{ Поддтверждение обмена }
-			if [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []
+      { Поддтверждение обмена }
+      if [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []
       then
         CommitExchange;
 
@@ -332,7 +332,7 @@ begin
       then
         CommitHistoryOrders;
 
-			{ Отключение }
+      { Отключение }
       if ( [eaGetWaybills, eaSendLetter, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) then
         OnFullChildTerminate(nil)
       else
@@ -353,14 +353,14 @@ begin
       then
         ImportHistoryOrders;
 
-			if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
-			begin
-				TotalProgress := 50;
-				Synchronize( SetTotalProgress);
-				ExchangeParams.CriticalError := True;
-				CheckNewExe;
-				CheckNewFRF;
-				CheckNewMDB;
+      if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
+      begin
+        TotalProgress := 50;
+        Synchronize( SetTotalProgress);
+        ExchangeParams.CriticalError := True;
+        CheckNewExe;
+        CheckNewFRF;
+        CheckNewMDB;
         try
           //DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
           ImportData;
@@ -376,9 +376,9 @@ begin
 
         DM.CheckDataIntegrity;
 
-      	StatusText := 'Обновление завершено';
-     	  Synchronize( SetStatus);
-			end;
+        StatusText := 'Обновление завершено';
+         Synchronize( SetStatus);
+      end;
 
       ImportComplete := True;
 
@@ -455,43 +455,43 @@ begin
 
       until ImportComplete;
 
-			{ Дожидаемся завершения работы дочерних ниток : рекламы, шпионской нитки }
-			if ( [eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> [])
+      { Дожидаемся завершения работы дочерних ниток : рекламы, шпионской нитки }
+      if ( [eaGetPrice, eaSendOrders] * ExchangeForm.ExchangeActs <> [])
       then begin
         ExchangeParams.DownloadChildThreads := True;
         while ChildThreads.Count > 0 do
           Sleep(500);
-			end;
+      end;
       TotalProgress := 100;
       Synchronize( SetTotalProgress);
 
-		except //в случае ошибки показываем сообщение
-			on E: Exception do
-			begin
-				LastStatus := StatusText;
-				Progress := 0;
-				Synchronize( SetProgress);
-				TotalProgress := 0;
-				Synchronize( SetTotalProgress);
-				try
-					HTTPDisconnect;
+    except //в случае ошибки показываем сообщение
+      on E: Exception do
+      begin
+        LastStatus := StatusText;
+        Progress := 0;
+        Synchronize( SetProgress);
+        TotalProgress := 0;
+        Synchronize( SetTotalProgress);
+        try
+          HTTPDisconnect;
           StopChildThreads;
           while ChildThreads.Count > 0 do
             Sleep(500);
-				except
-				end;
+        except
+        end;
         //если это сокетная ошибка, то не рвем DialUp
         if not (E is EIdException) then
           RasDisconnect;
-				StatusText := '';
-				Synchronize( SetStatus);
-				//обрабатываем Отмену
-				//if ExchangeForm.DoStop then Abort;
-				//обрабатываем ошибку
+        StatusText := '';
+        Synchronize( SetStatus);
+        //обрабатываем Отмену
+        //if ExchangeForm.DoStop then Abort;
+        //обрабатываем ошибку
         WriteExchangeLog('Exchange', LastStatus + ':' + CRLF + E.Message);
-				if ExchangeParams.ErrorMessage = '' then
+        if ExchangeParams.ErrorMessage = '' then
           ExchangeParams.ErrorMessage := RusError( E.Message);
-				if ExchangeParams.ErrorMessage = '' then
+        if ExchangeParams.ErrorMessage = '' then
           ExchangeParams.ErrorMessage := E.ClassName + ': ' + E.Message;
         if (E is EIdHTTPProtocolException) then
           ExchangeParams.ErrorMessage :=
@@ -503,8 +503,8 @@ begin
           ExchangeParams.ErrorMessage :=
             'Проверьте подключение к Интернет.'#13#10 +
             ExchangeParams.ErrorMessage;
-			end;
-		end;
+      end;
+    end;
     finally
       try DM.MainConnection.Close;
       except
@@ -513,24 +513,24 @@ begin
       end;
       CoUninitialize;
     end;
-	except
-		on E: Exception do
+  except
+    on E: Exception do
       ExchangeParams.ErrorMessage := E.Message;
-	end;
+  end;
   Synchronize( EnableCancel);
   ExchangeParams.Terminated := True;
 end;
 
 procedure TExchangeThread.HTTPConnect;
 begin
-	if DM.adtParams.FieldByName( 'ProxyConnect').AsBoolean
+  if DM.adtParams.FieldByName( 'ProxyConnect').AsBoolean
   then
     WriteExchangeLog('Exchange',
       'Используется proxy-сервер "' +
       DM.adtParams.FieldByName( 'ProxyName').AsString + ':' + DM.adtParams.FieldByName( 'ProxyPort').AsString + '"' +
       IfThen(DM.adtParams.FieldByName( 'ProxyUser').AsString <> '',
         ' с именем пользователя "' + DM.adtParams.FieldByName( 'ProxyUser').AsString + '"'));
-	{ создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
+  { создаем экземпляр класса TSOAP для работы с SOAP через HTTP вручную }
   //Если запущены в DSP (для служебного пользования), то урл берется из настройки, если нет, то формируем автоматически
 {$ifdef DSP}
   URL := DM.adtParams.FieldByName( 'HTTPHost').AsString + '/code.asmx';
@@ -549,7 +549,7 @@ begin
 {$endif}
   HTTPName := DM.adtParams.FieldByName( 'HTTPName').AsString;
   HTTPPass := DM.D_HP( DM.adtParams.FieldByName( 'HTTPPass').AsString );
-	SOAP := TSOAP.Create(
+  SOAP := TSOAP.Create(
     URL,
     HTTPName,
     HTTPPass,
@@ -582,8 +582,8 @@ procedure TExchangeThread.QueryData;
 const
   StaticParamCount : Integer = 12;
 var
-	Res: TStrings;
-	LibVersions: TObjectList;
+  Res: TStrings;
+  LibVersions: TObjectList;
   Error : String;
   ParamNames, ParamValues : array of String;
   I : Integer;
@@ -597,10 +597,10 @@ var
 begin
   batchFileContent := '';
   NeedProcessBatch := [eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [];
-	{ запрашиваем данные }
-	StatusText := 'Подготовка данных';
-	Synchronize( SetStatus);
-	try
+  { запрашиваем данные }
+  StatusText := 'Подготовка данных';
+  Synchronize( SetStatus);
+  try
     LibVersions := AProc.GetLibraryVersionFromAppPath;
 
     if Assigned(AbsentPriceCodeSL) then
@@ -715,8 +715,8 @@ begin
       Res := SOAP.Invoke( 'PostOrderBatch', ParamNames, ParamValues)
     else
       Res := SOAP.Invoke( 'GetUserDataWithPriceCodes', ParamNames, ParamValues);
-		{ проверяем отсутствие ошибки при удаленном запросе }
-		Error := Utf8ToAnsi( Res.Values[ 'Error']);
+    { проверяем отсутствие ошибки при удаленном запросе }
+    Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
       raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
         + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
@@ -811,16 +811,16 @@ begin
     end;
     DM.SetServerUpdateId(UpdateId);
     LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
-	except
-		on E: Exception do
-		begin
-			ExchangeParams.CriticalError := True;
-			raise;
-		end;
-	end;
-	{ очищаем папку In }
-	DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
-	Synchronize( ExchangeForm.CheckStop);
+  except
+    on E: Exception do
+    begin
+      ExchangeParams.CriticalError := True;
+      raise;
+    end;
+  end;
+  { очищаем папку In }
+  DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+  Synchronize( ExchangeForm.CheckStop);
 end;
 
 procedure TExchangeThread.DoExchange;
@@ -830,25 +830,25 @@ var
   ErrorCount : Integer;
   PostSuccess : Boolean;
 begin
-	//загрузка прайс-листа
-	if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+  //загрузка прайс-листа
+  if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
   then begin
-		StatusText := 'Загрузка данных';
+    StatusText := 'Загрузка данных';
 //    Tracer.TR('DoExchange', 'Загрузка данных');
-		Synchronize( SetStatus);
-		if not NewZip then
-		begin
-			if SysUtils.FileExists( LocalFileName) then
-				FileStream := TFileStream.Create( LocalFileName, fmOpenReadWrite)
-			else
-				FileStream := TFileStream.Create( LocalFileName, fmCreate);
-			if FileStream.Size > 1024 then
+    Synchronize( SetStatus);
+    if not NewZip then
+    begin
+      if SysUtils.FileExists( LocalFileName) then
+        FileStream := TFileStream.Create( LocalFileName, fmOpenReadWrite)
+      else
+        FileStream := TFileStream.Create( LocalFileName, fmCreate);
+      if FileStream.Size > 1024 then
         FileStream.Seek( -1024, soFromEnd)
       else
         FileStream.Seek( 0, soFromEnd);
-		end
-		else
-			FileStream := TFileStream.Create( LocalFileName, fmCreate);
+    end
+    else
+      FileStream := TFileStream.Create( LocalFileName, fmCreate);
 
     try
       if AnsiStartsText('https', HostFileName) then
@@ -857,7 +857,7 @@ begin
     except
     end;
 
-		try
+    try
       ExchangeForm.HTTP.OnWork := HTTPWork;
       ExchangeForm.HTTP.Request.BasicAuthentication := True;
 
@@ -930,28 +930,28 @@ begin
         ExchangeForm.HTTP.OnWork := nil;
       end;
 
-			Synchronize( ExchangeForm.CheckStop);
-		finally
+      Synchronize( ExchangeForm.CheckStop);
+    finally
       try
         ExchangeForm.HTTP.Disconnect;
       except
       end;
 
-			FileStream.Free;
-		end;
-		Windows.CopyFile( PChar( LocalFileName),
-			PChar( ChangeFileExt( LocalFileName, '.zi_')), False);
-//		Sleep( 10000);
-	end;
+      FileStream.Free;
+    end;
+    Windows.CopyFile( PChar( LocalFileName),
+      PChar( ChangeFileExt( LocalFileName, '.zi_')), False);
+//    Sleep( 10000);
+  end;
 end;
 
 procedure TExchangeThread.CommitExchange;
 var
-	Res: TStrings;
+  Res: TStrings;
   FS : TFileStream;
   LogStr : String;
   Len : Integer;
-	params, values: array of string;
+  params, values: array of string;
   NeedEnableByHTTP : Boolean;
   LastExchangeFileSize : Int64;
 begin
@@ -1045,39 +1045,39 @@ var
   RasTimeout : Integer;
 begin
 
-	if DM.adtParams.FieldByName( 'RasConnect').AsBoolean then begin
+  if DM.adtParams.FieldByName( 'RasConnect').AsBoolean then begin
       WriteExchangeLog('Exchange',
         'Используется удаленное соединение "' +
         DM.adtParams.FieldByName( 'RasEntry').AsString + '"' +
         IfThen(DM.adtParams.FieldByName( 'RasName').AsString <> '',
           ' с именем пользователя "' + DM.adtParams.FieldByName( 'RasName').AsString + '"'));
-			Synchronize( ExchangeForm.Ras.Connect);
+      Synchronize( ExchangeForm.Ras.Connect);
       RasTimeout := DM.adtParams.FieldByName( 'RasSleep').AsInteger;
       if RasTimeout > 0 then begin
         WriteExchangeLog('Exchange', 'Sleep = ' + IntToStr(RasTimeout));
         Sleep(RasTimeout * 1000);
       end;
   end;
-	Synchronize( ExchangeForm.CheckStop);
+  Synchronize( ExchangeForm.CheckStop);
 end;
 
 procedure TExchangeThread.HTTPDisconnect;
 begin
-	try
-		FreeAndNil( SOAP);
-	except
-	end;
-	ExchangeForm.HTTP.Disconnect;
+  try
+    FreeAndNil( SOAP);
+  except
+  end;
+  ExchangeForm.HTTP.Disconnect;
 end;
 
 procedure TExchangeThread.RasDisconnect;
 begin
-	Synchronize( ExchangeForm.Ras.Disconnect);
+  Synchronize( ExchangeForm.Ras.Disconnect);
 end;
 
 procedure TExchangeThread.UnpackFiles;
 var
-	SR, DeleteSR: TSearchRec;
+  SR, DeleteSR: TSearchRec;
   SevenZipRes : Integer;
   I : Integer;
   DeletedText, NewImportFileName : String;
@@ -1096,7 +1096,7 @@ begin
         Это делается в нитке с рекламой
 }
       end
-                	{ Если это данные }
+                  { Если это данные }
       else
       begin
         SZCS.Enter;
@@ -1180,22 +1180,22 @@ end;
 
 procedure TExchangeThread.CheckNewExe;
 var
-	EraserDll: TResourceStream;
+  EraserDll: TResourceStream;
 begin
-	if not SysUtils.DirectoryExists( ExePath + SDirIn + '\' + SDirExe) then exit;
+  if not SysUtils.DirectoryExists( ExePath + SDirIn + '\' + SDirExe) then exit;
 
-	AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
-	EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
-	try
-		EraserDll.SaveToFile(ExePath + 'Eraser.dll');
-	finally
-		EraserDll.Free;
-	end;
+  AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
+  EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
+  try
+    EraserDll.SaveToFile(ExePath + 'Eraser.dll');
+  finally
+    EraserDll.Free;
+  end;
 
-	ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
-		ExePath + ExeName + '" "' + ExePath + SDirIn + '\' + SDirExe + '"'),
-		nil, SW_SHOWNORMAL);
-	raise Exception.Create( 'Terminate');
+  ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
+    ExePath + ExeName + '" "' + ExePath + SDirIn + '\' + SDirExe + '"'),
+    nil, SW_SHOWNORMAL);
+  raise Exception.Create( 'Terminate');
 end;
 
 procedure TExchangeThread.CheckNewMDB;
@@ -1224,15 +1224,15 @@ begin
   if (GetFileSize(ExePath+SDirIn+'\ClientToAddressMigrations.txt') > 0) then
     ProcessClientToAddressMigration;
 
-	if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then
-	begin
-		StatusText := 'Очистка таблиц';
-		Synchronize( SetStatus);
-		DM.ClearDatabase;
+  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then
+  begin
+    StatusText := 'Очистка таблиц';
+    Synchronize( SetStatus);
+    DM.ClearDatabase;
 
 {
-		StatusText := 'Сжатие базы';
-		Synchronize( SetStatus);
+    StatusText := 'Сжатие базы';
+    Synchronize( SetStatus);
     DM.MainConnection.Close;
     try
       DM.CompactDatabase;
@@ -1240,12 +1240,12 @@ begin
       DM.MainConnection.Open;
     end;
 }    
-	end;
+  end;
 end;
 
 procedure TExchangeThread.CheckNewFRF;
 var
-	SR: TSearchRec;
+  SR: TSearchRec;
   SourceFile,
   DestFile : String;
 begin
@@ -1272,48 +1272,48 @@ end;
 
 procedure TExchangeThread.ImportData;
 var
-	UpdateTables: TUpdateTables;
+  UpdateTables: TUpdateTables;
   deletedPriceCodes : TStringList;
   I : Integer;
   MainClientIdAllowDelayOfPayment : Variant;
   coreTestInsertSQl : String;
 begin
-	Synchronize( ExchangeForm.CheckStop);
-	Synchronize( DisableCancel);
-	StatusText := 'Резервное копирование данных';
-	Synchronize( SetStatus);
+  Synchronize( ExchangeForm.CheckStop);
+  Synchronize( DisableCancel);
+  StatusText := 'Резервное копирование данных';
+  Synchronize( SetStatus);
   if not DatabaseController.IsBackuped then
     DatabaseController.BackupDatabase;
 
-	TotalProgress := 65;
-	Synchronize( SetTotalProgress);
+  TotalProgress := 65;
+  Synchronize( SetTotalProgress);
 
-	StatusText := 'Импорт данных';
-	Synchronize( SetStatus);
-	Progress := 0;
-	Synchronize( SetProgress);
-	DM.UnLinkExternalTables;
-	DM.LinkExternalTables;
+  StatusText := 'Импорт данных';
+  Synchronize( SetStatus);
+  Progress := 0;
+  Synchronize( SetProgress);
+  DM.UnLinkExternalTables;
+  DM.LinkExternalTables;
 
   UpdateTables := [];
 
-	if (GetFileSize(ExePath+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
-	if (GetFileSize(ExePath+SDirIn+'\Clients.txt') >= 0) then UpdateTables:=UpdateTables+[utClients];
-	if (GetFileSize(ExePath+SDirIn+'\Providers.txt') > 0) then UpdateTables:=UpdateTables+[utProviders];
-	if (GetFileSize(ExePath+SDirIn+'\RegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utRegionalData];
-	if (GetFileSize(ExePath+SDirIn+'\PricesData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesData];
-	if (GetFileSize(ExePath+SDirIn+'\PricesRegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesRegionalData];
-	if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables:=UpdateTables+[utCore];
-	if (GetFileSize(ExePath+SDirIn+'\Regions.txt') > 0) then UpdateTables:=UpdateTables+[utRegions];
-	if (GetFileSize(ExePath+SDirIn+'\Synonyms.txt') > 0) then UpdateTables := UpdateTables + [utSynonyms];
-	if (GetFileSize(ExePath+SDirIn+'\SynonymFirmCr.txt') > 0) then UpdateTables := UpdateTables + [utSynonymFirmCr];
-	if (GetFileSize(ExePath+SDirIn+'\Rejects.txt') > 0) then UpdateTables := UpdateTables + [utRejects];
+  if (GetFileSize(ExePath+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
+  if (GetFileSize(ExePath+SDirIn+'\Clients.txt') >= 0) then UpdateTables:=UpdateTables+[utClients];
+  if (GetFileSize(ExePath+SDirIn+'\Providers.txt') > 0) then UpdateTables:=UpdateTables+[utProviders];
+  if (GetFileSize(ExePath+SDirIn+'\RegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utRegionalData];
+  if (GetFileSize(ExePath+SDirIn+'\PricesData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesData];
+  if (GetFileSize(ExePath+SDirIn+'\PricesRegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesRegionalData];
+  if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables:=UpdateTables+[utCore];
+  if (GetFileSize(ExePath+SDirIn+'\Regions.txt') > 0) then UpdateTables:=UpdateTables+[utRegions];
+  if (GetFileSize(ExePath+SDirIn+'\Synonyms.txt') > 0) then UpdateTables := UpdateTables + [utSynonyms];
+  if (GetFileSize(ExePath+SDirIn+'\SynonymFirmCr.txt') > 0) then UpdateTables := UpdateTables + [utSynonymFirmCr];
+  if (GetFileSize(ExePath+SDirIn+'\Rejects.txt') > 0) then UpdateTables := UpdateTables + [utRejects];
   //Удаляем минимальные цены, если есть обновления в Core
-	if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
-	if (GetFileSize(ExePath+SDirIn+'\CatalogFarmGroups.txt') > 0) then UpdateTables := UpdateTables + [utCatalogFarmGroups];
-	if (GetFileSize(ExePath+SDirIn+'\CatFarmGroupsDel.txt') > 0) then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
-	if (GetFileSize(ExePath+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
-	if (GetFileSize(ExePath+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
+  if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
+  if (GetFileSize(ExePath+SDirIn+'\CatalogFarmGroups.txt') > 0) then UpdateTables := UpdateTables + [utCatalogFarmGroups];
+  if (GetFileSize(ExePath+SDirIn+'\CatFarmGroupsDel.txt') > 0) then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
+  if (GetFileSize(ExePath+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
+  if (GetFileSize(ExePath+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
   if (GetFileSize(ExePath+SDirIn+'\User.txt') > 0) then UpdateTables := UpdateTables + [utUser];
   if (GetFileSize(ExePath+SDirIn+'\DelayOfPayments.txt') > 0) then UpdateTables := UpdateTables + [utDelayOfPayments];
   if (GetFileSize(ExePath+SDirIn+'\Client.txt') > 0) then UpdateTables := UpdateTables + [utClient];
@@ -1346,43 +1346,43 @@ begin
     minreqrules             +       +       +
     }
 
-	Progress := 5;
-	Synchronize( SetProgress);
+  Progress := 5;
+  Synchronize( SetProgress);
 
    with DM.adcUpdate do begin
 
-	//удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
-	//PricesRegionalData
-	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='DELETE FROM PricesRegionalData WHERE NOT Exists(SELECT PriceCode, RegionCode FROM TmpPricesRegionalData  WHERE PriceCode=PricesRegionalData.PriceCode AND RegionCode=PricesRegionalData.RegionCode);';
+  //удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
+  //PricesRegionalData
+  if utPricesRegionalData in UpdateTables then begin
+    SQL.Text:='DELETE FROM PricesRegionalData WHERE NOT Exists(SELECT PriceCode, RegionCode FROM TmpPricesRegionalData  WHERE PriceCode=PricesRegionalData.PriceCode AND RegionCode=PricesRegionalData.RegionCode);';
     InternalExecute;
-	end;
-	//PricesData
-	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='truncate PricesData;';
+  end;
+  //PricesData
+  if utPricesRegionalData in UpdateTables then begin
+    SQL.Text:='truncate PricesData;';
     InternalExecute;
-	end;
+  end;
   //MinReqRules
   if utMinReqRules in UpdateTables then begin
     SQL.Text:='truncate MinReqRules;';
     InternalExecute;
   end;
-	//RegionalData
-	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='truncate RegionalData;';
+  //RegionalData
+  if utPricesRegionalData in UpdateTables then begin
+    SQL.Text:='truncate RegionalData;';
     InternalExecute;
-	end;
+  end;
 
   //Удаляем все настройки по отсрочкам, т.к. каждый раз они должны получаться полностью
   SQL.Text:='truncate DelayOfPayments;';
   InternalExecute;
 
   //todo: Providers почему здесь связь на utPricesRegionalData
-	//Providers
-	if utPricesRegionalData in UpdateTables then begin
-	  SQL.Text:='truncate Providers;';
+  //Providers
+  if utPricesRegionalData in UpdateTables then begin
+    SQL.Text:='truncate Providers;';
     InternalExecute;
-	end;
+  end;
 
   //Удаление из Core старых прайсов и обновление ServerCoreID в MinPrices
   DM.adcUpdate.SQL.Text := 'SELECT PriceCode FROM tmpPricesData where Fresh = 1;';
@@ -1429,8 +1429,8 @@ begin
   if DM.adcUpdate.RowsAffected > 0 then
     UpdateTables := UpdateTables + [utCore, utMinPrices];
 
-	//Core
-	if utCore in UpdateTables then begin
+  //Core
+  if utCore in UpdateTables then begin
     //Обновление ServerCoreID в MinPrices
     SQL.Text:='truncate minprices ;';
     InternalExecute;
@@ -1439,29 +1439,29 @@ begin
     //т.к. при восстановлении будем устанавливать заново
     SQL.Text := DM.GetClearSendResultSql(0);
     InternalExecute;
-	end;
+  end;
   //Clients
   if utClients in UpdateTables then begin
     SQL.Text:='truncate Clients;';
     InternalExecute;
   end;
-	//Regions
-	if utRegions in UpdateTables then begin
-	  SQL.Text:='truncate Regions;';
+  //Regions
+  if utRegions in UpdateTables then begin
+    SQL.Text:='truncate Regions;';
     InternalExecute;
-	end;
+  end;
 
   DM.MainConnection.Close;
 
   DM.MainConnection.Open;
 
-	Progress := 10;
-	Synchronize( SetProgress);
+  Progress := 10;
+  Synchronize( SetProgress);
 
-	//добавляем в таблицы новые данные и изменяем имеющиеся
-	//CatalogNames
-	if utCatalogNames in UpdateTables then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+  //добавляем в таблицы новые данные и изменяем имеющиеся
+  //CatalogNames
+  if utCatalogNames in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('catalognames', ExePath+SDirIn+'\CatalogNames.txt');
       InternalExecute;
     end
@@ -1469,12 +1469,12 @@ begin
       SQL.Text := GetLoadDataSQL('catalognames', ExePath+SDirIn+'\CatalogNames.txt', true);
       InternalExecute;
     end;
-	end;
+  end;
 
-	//Catalog
-	if utCatalogs in UpdateTables then begin
+  //Catalog
+  if utCatalogs in UpdateTables then begin
 
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt');
       InternalExecute;
 {$ifdef DEBUG}
@@ -1491,9 +1491,9 @@ begin
       SQL.Text := 'delete from Catalogs where Hidden = 1;';
       InternalExecute;
     end;
-	  SQL.Text:='UPDATE CATALOGS SET Form = '''' WHERE Form IS Null;';
+    SQL.Text:='UPDATE CATALOGS SET Form = '''' WHERE Form IS Null;';
     InternalExecute;
-	end;
+  end;
 
   //MNN
   if utMNN in UpdateTables then begin
@@ -1524,7 +1524,7 @@ begin
   end;
 
   if (utProducts in UpdateTables) then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt');
       InternalExecute;
     end
@@ -1554,9 +1554,9 @@ begin
     end;
   end;
 
-	//CatalogFarmGroups
-	if utCatalogFarmGroups in UpdateTables then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+  //CatalogFarmGroups
+  if utCatalogFarmGroups in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('CatalogFarmGroups', ExePath+SDirIn+'\CatalogFarmGroups.txt');
       InternalExecute;
     end
@@ -1572,25 +1572,25 @@ begin
       end;
 }      
     end;
-	end;
+  end;
 
-	Progress := 20;
-	Synchronize( SetProgress);
-	TotalProgress := 70;
-	Synchronize( SetTotalProgress);
+  Progress := 20;
+  Synchronize( SetProgress);
+  TotalProgress := 70;
+  Synchronize( SetTotalProgress);
 
-	//Regions
-	if utRegions in UpdateTables then begin
+  //Regions
+  if utRegions in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Regions', ExePath+SDirIn+'\Regions.txt');
     InternalExecute;
-	end;
+  end;
   //User
   if utUser in UpdateTables then begin
     SQL.Text := 'truncate analitf.userinfo';
     InternalExecute;
     SQL.Text := GetLoadDataSQL('UserInfo', ExePath+SDirIn+'\User.txt');
     InternalExecute;
-	end;
+  end;
   //Client
   if utClient in UpdateTables then begin
     SQL.Text := 'truncate analitf.Client';
@@ -1598,8 +1598,8 @@ begin
     SQL.Text := GetLoadDataSQL('Client', ExePath+SDirIn+'\Client.txt');
     InternalExecute;
   end;
-	//Clients
-	if utClients in UpdateTables then begin
+  //Clients
+  if utClients in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Clients', ExePath+SDirIn+'\Clients.txt', true);
     InternalExecute;
 
@@ -1612,43 +1612,43 @@ begin
         +' insert ignore into ClientSettings (ClientId, Name) '
         +' select ClientId, FullName from Clients ';
     InternalExecute;
-	end;
-	//Providers
-	if utProviders in UpdateTables then begin
+  end;
+  //Providers
+  if utProviders in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Providers', ExePath+SDirIn+'\Providers.txt');
     InternalExecute;
-	end;
+  end;
   if utDelayOfPayments in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('DelayOfPayments', ExePath+SDirIn+'\DelayOfPayments.txt');
     InternalExecute;
-	end;
-	//RegionalData
-	if utRegionalData in UpdateTables then begin
+  end;
+  //RegionalData
+  if utRegionalData in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('RegionalData', ExePath+SDirIn+'\RegionalData.txt', true);
     InternalExecute;
-	end;
-	//PricesData
-	if utPricesData in UpdateTables then begin
+  end;
+  //PricesData
+  if utPricesData in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('PricesData', ExePath+SDirIn+'\PricesData.txt');
     InternalExecute;
-	end;
+  end;
   //MinReqRules
   if utMinReqRules in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('MinReqRules', ExePath+SDirIn+'\MinReqRules.txt');
     InternalExecute;
   end;
-	//PricesRegionalData
-	if utPricesData in UpdateTables then begin
+  //PricesRegionalData
+  if utPricesData in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('PricesRegionalData', ExePath+SDirIn+'\PricesRegionalData.txt', true);
     InternalExecute;
-	end;
+  end;
 
-	Progress := 30;
-	Synchronize( SetProgress);
+  Progress := 30;
+  Synchronize( SetProgress);
 
-	//Synonym
-	if utSynonyms in UpdateTables then begin
-	  if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+  //Synonym
+  if utSynonyms in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt');
       InternalExecute;
     end
@@ -1656,14 +1656,14 @@ begin
       SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt', true);
       InternalExecute;
     end;
-	end;
-	//SynonymFirmCr
-	if utSynonymFirmCr in UpdateTables then begin
+  end;
+  //SynonymFirmCr
+  if utSynonymFirmCr in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('SynonymFirmCr', ExePath+SDirIn+'\SynonymFirmCr.txt', true);
     InternalExecute;
-	end;
-	//Core
-	if utCore in UpdateTables then begin
+  end;
+  //Core
+  if utCore in UpdateTables then begin
     coreTestInsertSQl := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
 
 {$ifndef DisableCrypt}
@@ -1715,7 +1715,7 @@ begin
   (column1, @var1)
   SET column2 = @var1/100
 }
-	end;
+  end;
   //MaxProducerCosts
   if utMaxProducerCosts in UpdateTables then begin
     if DM.QueryValue('select count(*) from MaxProducerCosts', [], []) > 0 then begin
@@ -1729,11 +1729,11 @@ begin
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
-	Progress := 40;
-	Synchronize( SetProgress);
-	SQL.Text := 'DELETE FROM Core WHERE SynonymCode<0;'; InternalExecute;
-	Progress := 50;
-	Synchronize( SetProgress);
+  Progress := 40;
+  Synchronize( SetProgress);
+  SQL.Text := 'DELETE FROM Core WHERE SynonymCode<0;'; InternalExecute;
+  Progress := 50;
+  Synchronize( SetProgress);
 
   {todo: подумать, а может быть цены с отсрочками рассчитывать при обновлении,
   чтобы во время работы не переливать из пустого в порожнее}
@@ -1781,28 +1781,28 @@ begin
     end;
   end;
   Progress := 60;
-	Synchronize( SetProgress);
-	TotalProgress := 75;
-	Synchronize( SetTotalProgress);
+  Synchronize( SetProgress);
+  TotalProgress := 75;
+  Synchronize( SetTotalProgress);
 
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
-	StatusText := 'Импорт данных';
-	Synchronize( SetStatus);
+  StatusText := 'Импорт данных';
+  Synchronize( SetStatus);
 
-	SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; InternalExecute;
-	SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
+  SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; InternalExecute;
+  SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
   InternalExecute;
-	Progress := 65;
-	Synchronize( SetProgress);
+  Progress := 65;
+  Synchronize( SetProgress);
   DM.adtParams.Close;
   DM.adtParams.Open;
-	if DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean then
-	begin
-		Progress := 70;
-		Synchronize( SetProgress);
-		SQL.Text :=
+  if DM.adtParams.FieldByName( 'OperateFormsSet').AsBoolean then
+  begin
+    Progress := 70;
+    Synchronize( SetProgress);
+    SQL.Text :=
       'insert into Core (ProductId, SynonymCode) ' +
       'select products.productid, -products.catalogid ' +
       'from ' +
@@ -1818,29 +1818,29 @@ begin
          'products.catalogid = distinctfulcodes.FullCode ' +
       'group by products.CATALOGID';
     InternalExecute;
-		Progress := 80;
-		Synchronize( SetProgress);
-	end;
+    Progress := 80;
+    Synchronize( SetProgress);
+  end;
 
   SQL.Text:='update params set OperateForms = OperateFormsSet where ID = 0'; InternalExecute;
 
-	TotalProgress := 80;
-	Synchronize( SetTotalProgress);
+  TotalProgress := 80;
+  Synchronize( SetTotalProgress);
 
-	{ Добавляем забракованые препараты }
-	if utRejects in UpdateTables then
-	begin
+  { Добавляем забракованые препараты }
+  if utRejects in UpdateTables then
+  begin
     SQL.Text := GetLoadDataSQL('Defectives', ExePath+SDirIn+'\Rejects.txt', True);
     InternalExecute;
-	end;
+  end;
 
   //todo: Здесь возможно засада, т.к. идет обработка AfterOpen и поэтому возможна ошибка "Canvas does not drawing"
   //Это нужно, чтобы обновилась информация о клиенте, отображаемая на главной форме
   DM.adtClients.Close;
   DM.adtClients.Open;
-	//проставляем мин. цены и лидеров
-	if utMinPrices in UpdateTables then
-	begin
+  //проставляем мин. цены и лидеров
+  if utMinPrices in UpdateTables then
+  begin
     //Пытаем получить код "основного" клиента
     //Если не null, то для основного клиента включен механизм отсрочек
     MainClientIdAllowDelayOfPayment := DM.QueryValue(''
@@ -1885,12 +1885,12 @@ begin
     end;
   end;
 
-	Progress := 90;
-	Synchronize( SetProgress);
-	TotalProgress := 85;
-	Synchronize( SetTotalProgress);
+  Progress := 90;
+  Synchronize( SetProgress);
+  TotalProgress := 85;
+  Synchronize( SetTotalProgress);
 
-	SQL.Text := ''
+  SQL.Text := ''
 +'UPDATE pricesregionaldata                    , '
 +'       ( SELECT  Pricesdata.PriceCode        , '
 +'                pricesregionaldata.regioncode, '
@@ -1906,7 +1906,7 @@ begin
 +'SET    pricesregionaldata.pricesize  = PriceSizes.PriceCount '
 +'WHERE  pricesregionaldata.pricecode  = PriceSizes.pricecode '
 +'   AND pricesregionaldata.regioncode = PriceSizes.regioncode';
-	InternalExecute;
+  InternalExecute;
 
   if (utBatchReport in UpdateTables) and (eaPostOrderBatch in ExchangeForm.ExchangeActs)
   then
@@ -1919,27 +1919,27 @@ begin
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
-	Progress := 100;
-	Synchronize( SetProgress);
-	TotalProgress := 90;
-	Synchronize( SetTotalProgress);
+  Progress := 100;
+  Synchronize( SetProgress);
+  TotalProgress := 90;
+  Synchronize( SetTotalProgress);
   end; {with DM.adcUpdate do begin}
 
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
-	DM.UnLinkExternalTables;
+  DM.UnLinkExternalTables;
 
   DatabaseController.ClearBackup;
 
   Dm.MainConnection.AfterConnect(Dm.MainConnection);
-	{ Показываем время обновления }
+  { Показываем время обновления }
   try
   WriteExchangeLog('Exchange', 'Пытаемся обновить дату обновления прайс-листа');
-	DM.adtParams.Edit;
-	DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=
-		DM.adtParams.FieldByName( 'LastDateTime').AsDateTime;
-	DM.adtParams.Post;
+  DM.adtParams.Edit;
+  DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=
+    DM.adtParams.FieldByName( 'LastDateTime').AsDateTime;
+  DM.adtParams.Post;
   CheckFieldAfterUpdate('UpdateDateTime');
   except
     on PostException : Exception do begin
@@ -1948,54 +1948,54 @@ begin
       raise;
     end;
   end;
-	Synchronize( MainForm.SetUpdateDateTime);
-	Synchronize( EnableCancel);
+  Synchronize( MainForm.SetUpdateDateTime);
+  Synchronize( EnableCancel);
 end;
 
 function TExchangeThread.FromXMLToDateTime( AStr: string): TDateTime;
 begin
-	result := EncodeDateTime( StrToInt( Copy( AStr, 1, 4)),
-		StrToInt( Copy( AStr, 6, 2)),
-		StrToInt( Copy( AStr, 9, 2)),
-		StrToInt( Copy( AStr, 12, 2)),
-		StrToInt( Copy( AStr, 15, 2)),
-		StrToInt( Copy( AStr, 18, 2)),
-		0);
+  result := EncodeDateTime( StrToInt( Copy( AStr, 1, 4)),
+    StrToInt( Copy( AStr, 6, 2)),
+    StrToInt( Copy( AStr, 9, 2)),
+    StrToInt( Copy( AStr, 12, 2)),
+    StrToInt( Copy( AStr, 15, 2)),
+    StrToInt( Copy( AStr, 18, 2)),
+    0);
 end;
 
 function TExchangeThread.RusError( AStr: string): string;
 begin
-	result := AStr;
-	if AStr = 'Read Timeout' then
-	begin
-		result :=
-			'Соединение разорвано из-за превышения времени ожидания ответа сервера.' +
-			#10#13 + 'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
-		exit;
-	end;
-	if ( Pos( 'connection timeout', AnsiLowerCase( AStr)) > 0) or
-		( Pos( 'timed out', AnsiLowerCase( AStr)) > 0) then
-	begin
-		result := 'Превышения времени ожидания подключения к серверу.' +
-			#10#13 + 'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
-		exit;
-	end;
-	if Pos( 'reset by peer', AnsiLowerCase( AStr)) > 0 then
-	begin
-		result := 'Соединение разорвано.' + #10#13 +
-			'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
-		exit;
-	end;
-	if Pos( 'connection refused', AnsiLowerCase( AStr)) > 0 then
-	begin
-		result := 'Не удалось установить соединение.'#13#10#13#10 + AStr;
-		exit;
-	end;
-	if Pos( 'host not found', AnsiLowerCase( AStr)) > 0 then
-	begin
-		result := 'Сервер не найден.'#13#10#13#10 + AStr;
-		exit;
-	end;
+  result := AStr;
+  if AStr = 'Read Timeout' then
+  begin
+    result :=
+      'Соединение разорвано из-за превышения времени ожидания ответа сервера.' +
+      #10#13 + 'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
+    exit;
+  end;
+  if ( Pos( 'connection timeout', AnsiLowerCase( AStr)) > 0) or
+    ( Pos( 'timed out', AnsiLowerCase( AStr)) > 0) then
+  begin
+    result := 'Превышения времени ожидания подключения к серверу.' +
+      #10#13 + 'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
+    exit;
+  end;
+  if Pos( 'reset by peer', AnsiLowerCase( AStr)) > 0 then
+  begin
+    result := 'Соединение разорвано.' + #10#13 +
+      'Повторите запрос через несколько минут.'#13#10#13#10 + AStr;
+    exit;
+  end;
+  if Pos( 'connection refused', AnsiLowerCase( AStr)) > 0 then
+  begin
+    result := 'Не удалось установить соединение.'#13#10#13#10 + AStr;
+    exit;
+  end;
+  if Pos( 'host not found', AnsiLowerCase( AStr)) > 0 then
+  begin
+    result := 'Сервер не найден.'#13#10#13#10 + AStr;
+    exit;
+  end;
 end;
 
 procedure TExchangeThread.OnConnectError(AMessage: String);
@@ -2133,26 +2133,26 @@ procedure TExchangeThread.PriceDataSettings;
 const
   StaticParamCount : Integer = 2;
 var
-	Res: TStrings;
+  Res: TStrings;
   Error : String;
   ParamNames, ParamValues : array of String;
   I : Integer;
 begin
   ExchangeParams.CriticalError := True;
   if DM.adsQueryValue.Active then
-   	DM.adsQueryValue.Close;
+     DM.adsQueryValue.Close;
   DM.adsQueryValue.SQL.Text := '' +
       '  select '
     + ' prd.pricecode, prd.regioncode, prd.injob '
     + ' from '
     + '   pricesregionaldata prd '
     + '   inner join pricesregionaldataup prdu on prdu.PriceCode = prd.PriceCode and prdu.RegionCode = prd.regioncode';
-	DM.adsQueryValue.Open;
+  DM.adsQueryValue.Open;
   //Отправляем настройки только в том случае, если есть что отправлять
-	if not DM.adsQueryValue.Eof then
-	begin
-		StatusText := 'Отправка настроек прайс-листов';
-		Synchronize( SetStatus);
+  if not DM.adsQueryValue.Eof then
+  begin
+    StatusText := 'Отправка настроек прайс-листов';
+    Synchronize( SetStatus);
     SetLength(ParamNames, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     SetLength(ParamValues, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     ParamNames[0] := 'UniqueID';
@@ -2184,7 +2184,7 @@ begin
       SQL.Text := 'truncate pricesregionaldataup';
       Execute;
     end;
-	end
+  end
   else
     DM.adsQueryValue.Close;
   ExchangeParams.CriticalError := False;
@@ -2193,8 +2193,8 @@ end;
 procedure TExchangeThread.HTTPWork(Sender: TObject; AWorkMode: TWorkMode;
   AWorkCount: Int64);
 var
-	Total, Current: real;
-	TSuffix, CSuffix: string;
+  Total, Current: real;
+  TSuffix, CSuffix: string;
   inHTTP : TidHTTP;
   INFileSize : Integer;
   ProgressPosition : Integer;
@@ -2205,19 +2205,19 @@ begin
 //  Tracer.TR('Main.HTTPWork', 'Request.RawHeaders : ' + inHTTP.Request.RawHeaders.Text);
 //  Tracer.TR('Main.HTTPWork', 'Response.RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
   
-//	Writeln( ExchangeForm.LogFile, 'Main.HTTPWork   WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
+//  Writeln( ExchangeForm.LogFile, 'Main.HTTPWork   WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
 
   if inHTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then
-	begin
+  begin
     INFileSize := StrToInt(inHTTP.Response.RawHeaders.Values['INFileSize']);
 
-		ProgressPosition := Round( ((StartDownPosition+AWorkCount)/INFileSize) *100);
+    ProgressPosition := Round( ((StartDownPosition+AWorkCount)/INFileSize) *100);
 
-		TSuffix := 'Кб';
-		CSuffix := 'Кб';
+    TSuffix := 'Кб';
+    CSuffix := 'Кб';
 
-		Total := RoundTo(INFileSize/1024, -2);
-		Current := RoundTo((StartDownPosition +	AWorkCount) / 1024, -2);
+    Total := RoundTo(INFileSize/1024, -2);
+    Current := RoundTo((StartDownPosition +  AWorkCount) / 1024, -2);
 
     if Total > 1000 then
     begin
@@ -2242,9 +2242,9 @@ begin
 //      Tracer.TR('Main.HTTPWork', 'StatusText : ' + StatusText);
       Synchronize( SetDownStatus );
     end;
-	end;
+  end;
 
-	if ExchangeParams.CriticalError then
+  if ExchangeParams.CriticalError then
     Abort;
 end;
 
@@ -2265,7 +2265,7 @@ var
 
 begin
   StatusText := 'Отправка письма';
-	Synchronize( SetStatus);
+  Synchronize( SetStatus);
 
   Attachs := TStringList.Create;
   Attachs.CaseSensitive := False;
@@ -3114,10 +3114,10 @@ begin
   FPostParams := TStringList.Create;
   Res := TStringList.Create;
   try
-	{ запрашиваем данные }
-	StatusText := 'Запрос истории заказов';
-	Synchronize( SetStatus);
-	try
+  { запрашиваем данные }
+  StatusText := 'Запрос истории заказов';
+  Synchronize( SetStatus);
+  try
     AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
     AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
 
@@ -3133,8 +3133,8 @@ begin
     { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
     while InvokeResult <> '' do Res.Add( GetNextWord( InvokeResult, ';'));
 
-		{ проверяем отсутствие ошибки при удаленном запросе }
-		Error := Utf8ToAnsi( Res.Values[ 'Error']);
+    { проверяем отсутствие ошибки при удаленном запросе }
+    Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
       raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
         + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
@@ -3169,16 +3169,16 @@ begin
       end;
     end;
     LocalFileName := ExePath + SDirIn + '\UpdateData.zip';
-	except
-		on E: Exception do
-		begin
-			ExchangeParams.CriticalError := True;
-			raise;
-		end;
-	end;
-	{ очищаем папку In }
-	DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
-	Synchronize( ExchangeForm.CheckStop);
+  except
+    on E: Exception do
+    begin
+      ExchangeParams.CriticalError := True;
+      raise;
+    end;
+  end;
+  { очищаем папку In }
+  DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+  Synchronize( ExchangeForm.CheckStop);
   finally
     FPostParams.Free;
     Res.Free;
