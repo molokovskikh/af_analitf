@@ -492,7 +492,7 @@ type
     function GetMarkup(Markups : TObjectList; BaseCost : Currency) : Currency;
 
     //Обрабатываем папки с документами
-    function ProcessDocs : Boolean;
+    procedure ProcessDocs(ImportDocs : Boolean);
     //обрабатываем каждую конкретную папку
     procedure ProcessDocsDir(DirName : String; MaxFileDate : TDateTime; FileList : TStringList);
     procedure OpenDocsDir(DirName : String; FileList : TStringList; OpenEachFile : Boolean);
@@ -2219,7 +2219,7 @@ begin
     end;
 end;
 
-function TDM.ProcessDocs : Boolean;
+procedure TDM.ProcessDocs(ImportDocs : Boolean);
 var
   //Открыть только директорию с файлами
   OnlyDirOpen : Boolean;
@@ -2227,9 +2227,6 @@ var
   DocsFL,
   WaybillsFL,
   RejectsFL : TStringList;
-  InputFileName : String;
-  beforeWaybillCount,
-  afterWaybillCount : Integer;
 begin
 {
   1. Если в таблице все пусто, то открываем только папки
@@ -2237,7 +2234,6 @@ begin
   3. Открываем Датасет с файлами и пробуем искать, добавляя элементы в список
   4.
 }
-  Result := False;
   adtReceivedDocs.Close;
   adtReceivedDocs.Open;
   try
@@ -2255,30 +2251,8 @@ begin
       ProcessDocsDir(SDirWaybills, MaxFileDate, WaybillsFL);
       ProcessDocsDir(SDirRejects, MaxFileDate, RejectsFL);
 
-      beforeWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
-      if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
-        InputFileName := StringReplace(ExePath+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
-        adsQueryValue.Close;
-        adsQueryValue.SQL.Text :=
-          Format(
-          'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
-          [InputFileName,
-           'DocumentHeaders']);
-        adsQueryValue.Execute;
+      if ImportDocs then begin
         DatabaseController.BackupDataTable(doiDocumentHeaders);
-        afterWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
-        Result := afterWaybillCount > beforeWaybillCount;
-      end;
-
-      if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then begin
-        InputFileName := StringReplace(ExePath+SDirIn+'\DocumentBodies.txt', '\', '/', [rfReplaceAll]);
-        adsQueryValue.Close;
-        adsQueryValue.SQL.Text :=
-          Format(
-          'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
-          [InputFileName,
-           'DocumentBodies']);
-        adsQueryValue.Execute;
         DatabaseController.BackupDataTable(doiDocumentBodies);
       end;
 
@@ -2287,12 +2261,12 @@ begin
         OnlyDirOpen :=
           (
             DocsFL.Count
-            + IfThen(not Result and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean, WaybillsFL.Count, 0)
+            + IfThen(not ImportDocs and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean, WaybillsFL.Count, 0)
             + IfThen(adtParams.FieldByName('USEOSOPENREJECT').AsBoolean, RejectsFL.Count, 0)
           ) > 5;
 
       OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
-      if not Result then
+      if not ImportDocs then
         OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean);
       OpenDocsDir(SDirRejects, RejectsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENREJECT').AsBoolean);
 

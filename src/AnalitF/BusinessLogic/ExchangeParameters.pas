@@ -19,8 +19,6 @@ type
     SendWaybillsResult : TSendWaybillsStatus;
     FullHistoryOrders : Boolean;
     ImportDocs : Boolean;
-    BeforeDocsCount : Integer;
-    AfterDocsCount : Integer;
 
     constructor Create();
     destructor Destroy; override;
@@ -42,8 +40,6 @@ begin
   SendWaybillsResult := swsNotFiles;
   FullHistoryOrders := False;
   ImportDocs := False;
-  BeforeDocsCount := 0;
-  AfterDocsCount := 0;
 end;
 
 destructor TExchangeParams.Destroy;

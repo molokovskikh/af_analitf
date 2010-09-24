@@ -135,7 +135,6 @@ var
  mr: integer;
 {//$endif}
 //  hMenuHandle: HMENU;
-  needShowDocumentForm : Boolean;
   needAuth : Boolean;
 begin
   NeedRetrySendOrder := False;
@@ -334,7 +333,7 @@ begin
     ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
     or (eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then
-    needShowDocumentForm := DM.ProcessDocs;
+    DM.ProcessDocs(GlobalExchangeParams.ImportDocs);
 
   if Result and (AExchangeActions = [ eaGetHistoryOrders])
   then
@@ -377,7 +376,7 @@ begin
       if (( eaGetPrice in AExchangeActions) or
           ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
            or (eaImportOnly in AExchangeActions))
-         and needShowDocumentForm
+         and GlobalExchangeParams.ImportDocs
       then
         ShowDocumentHeaders;
 

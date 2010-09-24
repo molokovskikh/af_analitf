@@ -41,7 +41,10 @@ TUpdateTable = (
   utMaxProducerCosts,
   utProducers,
   utMinReqRules,
-  utBatchReport);
+  utBatchReport,
+  utDocumentHeaders,
+  utDocumentBodies
+);
 
 TUpdateTables = set of TUpdateTable;
 
@@ -118,6 +121,7 @@ private
   procedure UnpackFiles;
   procedure ImportData;
   procedure ImportBatchReport;
+  procedure ImportDocs;
   procedure CheckNewExe;
   procedure CheckNewMDB;
   procedure CheckNewFRF;
@@ -274,7 +278,11 @@ begin
             Synchronize( DisableCancel);
 {$endif}
             QueryData;
-            GetPass;
+
+            //Пытаемся получить пароли только при обновлении или автозаказе
+            if ([eaGetPrice, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+            then
+              GetPass;
           finally
 {$ifndef DEBUG}
             Synchronize( EnableCancel);
@@ -352,6 +360,10 @@ begin
          and not ExchangeParams.FullHistoryOrders
       then
         ImportHistoryOrders;
+
+      if ( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
+      then
+        ImportDocs;
 
       if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
       begin
@@ -1323,6 +1335,8 @@ begin
   if (GetFileSize(ExePath+SDirIn+'\Producers.txt') > 0) then UpdateTables := UpdateTables + [utProducers];
   if (GetFileSize(ExePath+SDirIn+'\MinReqRules.txt') > 0) then UpdateTables := UpdateTables + [utMinReqRules];
   if (GetFileSize(ExePath+SDirIn+'\BatchReport.txt') > 0) then UpdateTables := UpdateTables + [utBatchReport];
+  if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then UpdateTables := UpdateTables + [utDocumentHeaders];
+  if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then UpdateTables := UpdateTables + [utDocumentBodies];
 
     //обновляем таблицы
     {
@@ -1915,6 +1929,10 @@ begin
     SQL.Text := 'delete from batchreport';
     InternalExecute;
   end;
+
+  if (utDocumentHeaders in UpdateTables) or (utDocumentBodies in UpdateTables)
+  then
+    ImportDocs;
 
   DM.MainConnection.Close;
   DM.MainConnection.Open;
@@ -3078,7 +3096,6 @@ end;
 
 procedure TExchangeThread.CommitHistoryOrders;
 var
-  Res: TStrings;
   params, values: array of string;
 begin
   params := nil;
@@ -3089,7 +3106,7 @@ begin
   params[0]:= 'UpdateId';
   values[0]:= UpdateId;
 
-  Res := SOAP.Invoke( 'CommitHistoryOrders', params, values);
+  SOAP.Invoke( 'CommitHistoryOrders', params, values);
 end;
 
 
@@ -3100,7 +3117,6 @@ var
   FPostParams : TStringList;
   Res: TStrings;
   Error : String;
-  I : Integer;
   UpdateIdIndex : Integer;
   MaxOrderListId : String;
   InvokeResult : String;
@@ -3297,6 +3313,38 @@ begin
   end;
   OSDeleteFile(ExePath+SDirIn+'\PostedOrderHeads.txt');
   OSDeleteFile(ExePath+SDirIn+'\PostedOrderLists.txt');
+end;
+
+procedure TExchangeThread.ImportDocs;
+var
+  InputFileName : String;
+  beforeWaybillCount,
+  afterWaybillCount : Integer;
+begin
+  beforeWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
+  if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
+    InputFileName := StringReplace(ExePath+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
+    DM.adcUpdate.Close;
+    DM.adcUpdate.SQL.Text :=
+      Format(
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+      [InputFileName,
+       'DocumentHeaders']);
+    DM.adcUpdate.Execute;
+    afterWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
+    ExchangeParams.ImportDocs := afterWaybillCount > beforeWaybillCount;
+  end;
+
+  if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then begin
+    InputFileName := StringReplace(ExePath+SDirIn+'\DocumentBodies.txt', '\', '/', [rfReplaceAll]);
+    DM.adcUpdate.Close;
+    DM.adcUpdate.SQL.Text :=
+      Format(
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+      [InputFileName,
+       'DocumentBodies']);
+    DM.adcUpdate.Execute;
+  end;
 end;
 
 initialization
