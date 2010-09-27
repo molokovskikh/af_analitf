@@ -2922,79 +2922,30 @@ begin
       '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
     InternalExecute;
 
-{
-
-          buildItems.AppendFormat(
-            item.RowId,
-            item.Order.RowId,
-            item.Order.ClientCode,
-            item.CoreId,
-            item.ProductId,
-            item.CodeFirmCr.HasValue ? item.CodeFirmCr.Value.ToString() : "\\N",
-            item.SynonymCode.HasValue ? item.SynonymCode.Value.ToString() : "\\N",
-            item.SynonymFirmCrCode.HasValue ? item.SynonymFirmCrCode.Value.ToString() : "\\N",
-            item.Code,
-            item.CodeCr,
-            item.Cost,
-            item.Await ? "1" : "0",
-            item.Junk ? "1" : "0",
-            item.Quantity,
-            item.RequestRatio.HasValue ? item.RequestRatio.Value.ToString() : "\\N",
-            item.OrderCost.HasValue ? item.OrderCost.Value.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat) : "\\N",
-            item.MinOrderCount.HasValue ? item.MinOrderCount.Value.ToString() : "\\N",
-            item.OfferInfo.Period,
-            item.OfferInfo.ProducerCost.HasValue ? item.OfferInfo.ProducerCost.Value.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat) : "\\N",
-}
-
     insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', ExePath+SDirIn+'\BatchOrderItems.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
       + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
-      + '  CODE, CODECr, RealPrice, Price, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
-
-{
-+'    `ID` bigint(20) not null AUTO_INCREMENT    , '
-+'    `ORDERID` bigint(20) not null              , '
-+'    `CLIENTID` bigint(20) not null             , '
-+'    `COREID` bigint(20) default null           , '
-+'    `PRODUCTID` bigint(20) not null            , '
-+'    `CODEFIRMCR` bigint(20) default null       , '
-+'    `SYNONYMCODE` bigint(20) default null      , '
-+'    `SYNONYMFIRMCRCODE` bigint(20) default null, '
-+'    `CODE`           varchar(84) default null            , '
-+'    `CODECR`         varchar(84) default null            , '
-+'    `SYNONYMNAME`    varchar(250) default null           , '
-+'    `SYNONYMFIRM`    varchar(250) default null           , '
-+'    `PRICE`          decimal(18,2) default null          , '
-+'    `AWAIT`          tinyint(1) not null                 , '
-+'    `JUNK`           tinyint(1) not null                 , '
-+'    `ORDERCOUNT`     int(10) not null                    , '
-+'    `REQUESTRATIO`   int(10) default null                , '
-+'    `ORDERCOST`      decimal(18,2) default null          , '
-+'    `MINORDERCOUNT`  int(10) default null                , '
-+'    `RealPrice`      decimal(18,2) default null          , '
-+'    `DropReason`     smallint(5) default null            , '
-+'    `ServerCost`     decimal(18,2) default null          , '
-+'    `ServerQuantity` int(10) default null                , '
-+'    `SupplierPriceMarkup` decimal(5,3) default null      , '
-+'    `CoreQuantity` varchar(15) DEFAULT NULL              , '
-+'    `ServerCoreID` bigint(20) DEFAULT NULL               , '
-+'    `Unit` varchar(15) DEFAULT NULL                      , '
-+'    `Volume` varchar(15) DEFAULT NULL                    , '
-+'    `Note` varchar(50) DEFAULT NULL                      , '
-+'    `Period` varchar(20) DEFAULT NULL                    , '
-+'    `Doc` varchar(20) DEFAULT NULL                       , '
-+'    `RegistryCost` decimal(8,2) DEFAULT NULL             , '
-+'    `VitallyImportant` tinyint(1) NOT NULL               , '
-+'    `RetailMarkup` decimal(12,6) default null            , '
-+'    `ProducerCost` decimal(18,2) default null            , '
-+'    `NDS` smallint(5) default null                       , '
-
-
-}
+      + '  CODE, CODECr, CryptRealPrice, CryptPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
     InternalExecute;
 
-        
+    DM.adcUpdate.SQL.Text := ''
+      + ' update CurrentOrderLists '
+      + ' set '
+      + '    CurrentOrderLists.Price = AES_DECRYPT(CurrentOrderLists.CryptPrice, "' + CostSessionKey + '"), '
+      + '    CurrentOrderLists.CryptPrice = null '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderLists.CryptPrice is not null);'
+      + ' update CurrentOrderLists '
+      + ' set '
+      + '    CurrentOrderLists.RealPrice = AES_DECRYPT(CurrentOrderLists.CryptRealPrice, "' + CostSessionKey + '"), '
+      + '    CurrentOrderLists.CryptRealPrice = null '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '   and (CurrentOrderLists.CryptRealPrice is not null);';
+    InternalExecute;
+
     DM.adcUpdate.SQL.Text := ''
       + ' update CurrentOrderHeads, PricesData '
       + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
@@ -3023,6 +2974,8 @@ begin
     InternalExecute;
   end;
 
+  //—брасываем OrderListId и статус у тех элементов BatchReport,
+  //у которых не нашли соответствующую запись в CurrentOrderLists
   DM.adcUpdate.SQL.Text := ''
     + ' update batchreport '
     + ' set OrderListId = null, Status = (Status & ~(1 & 4)) | 2 '
@@ -3031,43 +2984,6 @@ begin
     + '   and (OrderListId is not null) '
     + '   and not exists(select * from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
   InternalExecute;
-
-{
-      if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
-        InputFileName := StringReplace(ExePath+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
-        adsQueryValue.Close;
-        adsQueryValue.SQL.Text :=
-          Format(
-          'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
-          [InputFileName,
-           'DocumentHeaders']);
-        adsQueryValue.Execute;
-        DatabaseController.BackupDataTable(doiDocumentHeaders);
-        afterWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
-        Result := afterWaybillCount > beforeWaybillCount;
-      end;
-}
-{
-  if (GetFileSize(ExePath+SDirIn+'\UpdateInfo.txt') > 0) then begin
-    updateParamsSql := Trim(GetLoadDataSQL('params', ExePath+SDirIn+'\UpdateInfo.txt', True));
-    DM.adcUpdate.SQL.Text :=
-      Copy(updateParamsSql, 1, LENGTH(updateParamsSql) - 1) +
-      '(LastDateTime, Cumulative) set Id = 1;';
-    DM.adcUpdate.Execute;
-    DM.adcUpdate.SQL.Text := ''
-    + ' update analitf.params work, analitf.params new '
-    + ' set '
-    + '   work.LastDateTime = new.LastDateTime, '
-    + '   work.Cumulative = new.Cumulative '
-    + ' where '
-    + '      (work.Id = 0) '
-    + '  and (new.Id = 1);'
-    + ' delete from analitf.params where Id = 1;';
-    DM.adcUpdate.Execute;
-    DM.adtParams.RefreshRecord;
-    CheckFieldAfterUpdate('LastDateTime');
-  end;
-}
 end;
 
 procedure TExchangeThread.GetMaxIds(var MaxOrderId, MaxOrderListId,

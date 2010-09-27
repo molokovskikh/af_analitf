@@ -476,6 +476,8 @@ begin
 +'    `RetailMarkup` decimal(12,6) default null            , '
 +'    `ProducerCost` decimal(18,2) default null            , '
 +'    `NDS` smallint(5) default null                       , '
++'    `CryptPrice`    VARCHAR(32) default null             , '
++'    `CryptRealPrice`    VARCHAR(32) default null         , '
 +'    primary key (`ID`)                                   , '
 +'    unique key `PK_ORDERS` (`ID`)                        , '
 +'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '
