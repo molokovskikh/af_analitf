@@ -175,29 +175,15 @@ inherited PricesForm: TPricesForm
       TabOrder = 0
       object pPriceHeader: TPanel
         Left = 2
-        Top = 15
+        Top = 41
         Width = 252
-        Height = 122
+        Height = 96
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 0
-        object dbtFullName: TDBText
-          Left = 5
-          Top = 4
-          Width = 244
-          Height = 13
-          DataField = 'FullName'
-          DataSource = dsPrices
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
         object Label3: TLabel
           Left = 5
-          Top = 21
+          Top = 4
           Width = 61
           Height = 13
           Caption = #1058#1077#1083#1077#1092#1086#1085' :'
@@ -210,7 +196,7 @@ inherited PricesForm: TPricesForm
         end
         object dbtPhones: TDBText
           Left = 72
-          Top = 21
+          Top = 4
           Width = 61
           Height = 13
           AutoSize = True
@@ -225,7 +211,7 @@ inherited PricesForm: TPricesForm
         end
         object Label5: TLabel
           Left = 5
-          Top = 55
+          Top = 38
           Width = 44
           Height = 13
           Caption = 'E-Mail :'
@@ -238,7 +224,7 @@ inherited PricesForm: TPricesForm
         end
         object Label2: TLabel
           Left = 5
-          Top = 38
+          Top = 21
           Width = 164
           Height = 13
           Caption = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1081' '#1079#1072#1082#1072#1079', '#1088#1091#1073'. :'
@@ -251,7 +237,7 @@ inherited PricesForm: TPricesForm
         end
         object dbtMinOrder: TDBText
           Left = 174
-          Top = 38
+          Top = 21
           Width = 70
           Height = 13
           AutoSize = True
@@ -266,7 +252,7 @@ inherited PricesForm: TPricesForm
         end
         object stManagerMail: TStaticText
           Left = 24
-          Top = 72
+          Top = 55
           Width = 225
           Height = 33
           Cursor = crHandPoint
@@ -390,6 +376,35 @@ inherited PricesForm: TPricesForm
             ScrollBars = ssVertical
             TabOrder = 0
           end
+        end
+      end
+      object pFullName: TPanel
+        Left = 2
+        Top = 15
+        Width = 252
+        Height = 26
+        Align = alTop
+        BevelOuter = bvNone
+        TabOrder = 2
+        DesignSize = (
+          252
+          26)
+        object dbtFullName: TDBText
+          Left = 5
+          Top = 4
+          Width = 236
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = True
+          DataField = 'FullName'
+          DataSource = dsPrices
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
         end
       end
     end

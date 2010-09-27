@@ -48,7 +48,6 @@ type
     adsPricesSumOrder: TFloatField;
     adsPricessumbycurrentweek: TFloatField;
     pPriceHeader: TPanel;
-    dbtFullName: TDBText;
     Label3: TLabel;
     dbtPhones: TDBText;
     Label5: TLabel;
@@ -64,6 +63,8 @@ type
     LabelOperativeInfo: TLabel;
     DBMemoOperativeInfo: TDBMemo;
     stManagerMail: TStaticText;
+    pFullName: TPanel;
+    dbtFullName: TDBText;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -393,12 +394,16 @@ end;
 procedure TPricesForm.ProcessManagerMail;
 var
   sl : TStringList;
+  OneRowHeight : Integer;
 begin
+  OneRowHeight := dbtPhones.Height;
   sl := TStringList.Create;
   try
+    dbtFullName.Width := pFullName.Width - 2*dbtFullName.Left;
+    pFullName.Height := dbtFullName.Top + dbtFullName.Height + (dbtFullName.Top div 2); 
     sl.CommaText := adsPricesManagerMail.AsString;
     stManagerMail.Caption := sl.Text;
-    stManagerMail.Height := sl.Count * dbtFullName.Height;
+    stManagerMail.Height := sl.Count * OneRowHeight;
     pPriceHeader.Height := stManagerMail.Top + stManagerMail.Height + 3;
   finally
     sl.Free;
