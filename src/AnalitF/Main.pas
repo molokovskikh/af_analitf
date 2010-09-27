@@ -186,10 +186,13 @@ TMainForm = class(TVistaCorrectForm)
     procedure actPostOrderBatchExecute(Sender: TObject);
     procedure tmrRestoreOnErrorTimer(Sender: TObject);
     procedure actGetHistoryOrdersExecute(Sender: TObject);
+    procedure StatusBarDrawPanel(StatusBar: TStatusBar;
+      Panel: TStatusPanel; const Rect: TRect);
 private
   JustRun: boolean;
   ApplicationVersionText : String;
   deletedForms : TObjectList;
+  incompleteImport : Boolean;
 
   procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
@@ -711,15 +714,25 @@ begin
 end;
 
 procedure TMainForm.SetUpdateDateTime;
+var
+  updateTimePanel : TStatusPanel;
 begin
+  updateTimePanel := StatusBar.Panels[3];
+  incompleteImport := False;
+  updateTimePanel.Style := psText;
   if DM.adtParams.FieldByName( 'UpdateDateTime').IsNull then
-    StatusBar.Panels[ 3].Text := 'Обновление не установлено'
-  else
-    StatusBar.Panels[ 3].Text := 'Обновление : ' +
+    updateTimePanel.Text := 'Обновление не установлено'
+  else begin
+    incompleteImport :=
+      DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime <
+        DM.adtParams.FieldByName( 'LastDateTime').AsDateTime;
+    if incompleteImport then
+      updateTimePanel.Style := psOwnerDraw;
+    updateTimePanel.Text := 'Обновление : ' +
       DateTimeToStr( UTCToLocalTime(
         DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime));
-  StatusBar.Panels[3].Width :=
-    StatusBar.Canvas.TextWidth(StatusBar.Panels[3].Text) + 15;
+  end;
+  updateTimePanel.Width := StatusBar.Canvas.TextWidth(updateTimePanel.Text) + 15;
 end;
 
 procedure TMainForm.actSaveExecute(Sender: TObject);
@@ -1554,6 +1567,18 @@ procedure TMainForm.actGetHistoryOrdersExecute(Sender: TObject);
 begin
   inherited;
   RunExchange([eaGetHistoryOrders]);
+end;
+
+procedure TMainForm.StatusBarDrawPanel(StatusBar: TStatusBar;
+  Panel: TStatusPanel; const Rect: TRect);
+begin
+  if (Panel.Index = 3) and incompleteImport then begin
+    StatusBar.Canvas.Brush.Color := clRed;
+    //Panel background color
+    StatusBar.Canvas.FillRect(Rect);
+    //Panel Text
+    StatusBar.Canvas.TextRect(Rect, Rect.Left, Rect.Top, Panel.Text) ;
+  end;
 end;
 
 initialization

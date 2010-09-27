@@ -281,6 +281,7 @@ object MainForm: TMainForm
         Text = 'ID information       '
         Width = 100
       end>
+    OnDrawPanel = StatusBarDrawPanel
   end
   object MainMenu: TMainMenu
     Left = 224
