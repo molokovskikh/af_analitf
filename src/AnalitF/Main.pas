@@ -481,7 +481,7 @@ try
       actReceiveExecute( nil);
   end
   else
-    if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) > 20) and
+    if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) >= 8) and
       ( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
       if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
          MB_ICONQUESTION or MB_YESNO) = IDYES
