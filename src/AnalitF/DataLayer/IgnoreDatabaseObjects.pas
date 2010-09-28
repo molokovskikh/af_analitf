@@ -55,6 +55,11 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TBatchReportServiceFieldsDataTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;  
 
 implementation
 
@@ -241,6 +246,53 @@ begin
 +'    `Status`     smallint(5) default null   , '
 +'    `ProductId` bigint(20) default null         , '
 +'    `CodeFirmCr` bigint(20) default null    , '
++'    `ServiceField1` varchar(255) default null, '
++'    `ServiceField2` varchar(255) default null, '
++'    `ServiceField3` varchar(255) default null, '
++'    `ServiceField4` varchar(255) default null, '
++'    `ServiceField5` varchar(255) default null, '
++'    `ServiceField6` varchar(255) default null, '
++'    `ServiceField7` varchar(255) default null, '
++'    `ServiceField8` varchar(255) default null, '
++'    `ServiceField9` varchar(255) default null, '
++'    `ServiceField10` varchar(255) default null, '
++'    `ServiceField11` varchar(255) default null, '
++'    `ServiceField12` varchar(255) default null, '
++'    `ServiceField13` varchar(255) default null, '
++'    `ServiceField14` varchar(255) default null, '
++'    `ServiceField15` varchar(255) default null, '
++'    `ServiceField16` varchar(255) default null, '
++'    `ServiceField17` varchar(255) default null, '
++'    `ServiceField18` varchar(255) default null, '
++'    `ServiceField19` varchar(255) default null, '
++'    `ServiceField20` varchar(255) default null, '
++'    `ServiceField21` varchar(255) default null, '
++'    `ServiceField22` varchar(255) default null, '
++'    `ServiceField23` varchar(255) default null, '
++'    `ServiceField24` varchar(255) default null, '
++'    `ServiceField25` varchar(255) default null, '
++'    primary key (`Id`)                        '
++'  ) '
++ GetTableOptions()
+end;
+
+{ TBatchReportServiceFieldsDataTable }
+
+constructor TBatchReportServiceFieldsDataTable.Create;
+begin
+  FName := 'batchreportservicefields';
+  FObjectId := doiBatchReportServiceFields;
+  FRepairType := dortIgnore;
+end;
+
+function TBatchReportServiceFieldsDataTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'    `Id` bigint(20) not null AUTO_INCREMENT, '
++'    `ClientId` bigint(20) not null , '
++'    `FieldName` varchar(250) not null , '
 +'    primary key (`Id`)                        '
 +'  ) '
 + GetTableOptions()
@@ -255,4 +307,5 @@ initialization
   DatabaseController.AddObject(TTmpPricesDataTable.Create());
   DatabaseController.AddObject(TTmpPricesRegionalDataTable.Create());
   DatabaseController.AddObject(TBatchReportDataTable.Create());
+  DatabaseController.AddObject(TBatchReportServiceFieldsDataTable.Create());
 end.

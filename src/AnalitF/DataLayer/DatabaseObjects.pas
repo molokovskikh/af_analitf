@@ -107,7 +107,8 @@ type
     //Cumulative
     doiMinReqRules,
     //Ignore
-    doiBatchReport);
+    doiBatchReport,
+    doiBatchReportServiceFields);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

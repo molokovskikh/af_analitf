@@ -92,6 +92,7 @@ type
     procedure CreateTopPanel;
     procedure CreateBottomPanel;
     procedure CreateGridPanel;
+    function AddServiceFields : Integer;
     procedure CreateLegends;
     function CreateLegendLabel(
       var legendLabel : TLabel;
@@ -401,6 +402,7 @@ end;
 procedure TOrderBatchForm.CreateGridPanel;
 var
   column : TColumnEh;
+  serviceFieldsCount : Integer;
 begin
   pGrid := TPanel.Create(Self);
   pGrid.Align := alClient;
@@ -437,6 +439,11 @@ begin
   TDBGridHelper.AddColumn(dbgOrderBatch, 'RetailSumm', 'Сумма', '0.00;;''''', 0);
   column := TDBGridHelper.AddColumn(dbgOrderBatch, 'Comment', 'Комментарий', 0);
   column.ToolTips := True;
+
+  serviceFieldsCount := AddServiceFields;
+  if serviceFieldsCount > 0 then
+    dbgOrderBatch.AutoFitColWidths := False;
+      
   TDBGridHelper.SetTitleButtonToColumns(dbgOrderBatch);
 end;
 
@@ -477,6 +484,8 @@ begin
 end;
 
 procedure TOrderBatchForm.CreateNonVisualComponent;
+var
+  I : Integer;
 begin
   odBatch := TOpenDialog.Create(Self);
   odBatch.Filter := 'Все файлы|*.*';
@@ -521,7 +530,9 @@ begin
   CatalogMandatoryListField := AddSmallintField(adsReport, 'CatalogMandatoryList');
 
   ProducerNameField := AddStringField(adsReport, 'ProducerName');
-  
+
+  for I := 1 to 25 do
+    AddStringField(adsReport, 'ServiceField' + IntToStr(i));
 
   dsReport := TDataSource.Create(Self);
   dsReport.DataSet := adsReport;
@@ -1141,6 +1152,42 @@ begin
   Result := TSmallintField.Create(dataSet);
   Result.fieldname := FieldName;
   Result.Dataset := dataSet;
+end;
+
+function TOrderBatchForm.AddServiceFields : Integer;
+var
+  adsServiceFields : TMyQuery;
+  index : Integer;
+begin
+  adsServiceFields := TMyQuery.Create(Self);
+  try
+    adsServiceFields.Connection := DM.MainConnection;
+    adsServiceFields.SQL.Text := 'select Id, FieldName from batchreportservicefields where ClientId = :ClientId order by Id';
+    adsServiceFields.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+
+    adsServiceFields.Open;
+    try
+      Result := adsServiceFields.RecordCount;
+      if Result <= 0 then
+        Exit;
+
+      index := 1;
+      while not adsServiceFields.Eof do begin
+        TDBGridHelper.AddColumn(
+          dbgOrderBatch,
+          'ServiceField' + IntToStr(Index),
+          adsServiceFields.FieldByName('FieldName').AsString,
+          0);
+        adsServiceFields.Next;
+        inc(index);
+      end;
+    finally
+      adsServiceFields.Close;
+    end;
+
+  finally
+    adsServiceFields.Free;
+  end;
 end;
 
 initialization

@@ -2903,6 +2903,7 @@ begin
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsString;
   DM.adcUpdate.SQL.Text := ''
     + ' delete from batchreport where ClientID = ' + ClientID + ';'
+    + ' delete from batchreportservicefields where ClientID = ' + ClientID + ';'
     + ' delete CurrentOrderHeads, CurrentOrderLists '
     + ' FROM CurrentOrderHeads, CurrentOrderLists '
     + ' where '
@@ -2912,6 +2913,15 @@ begin
   InternalExecute;
   DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', ExePath+SDirIn+'\batchreport.txt');
   InternalExecute;
+
+  //Загружаем название служебных колонок относительно пользователя 
+  if (GetFileSize(ExePath+SDirIn+'\BatchReportServiceFields.txt') > 0) then begin
+    insertSQL := Trim(GetLoadDataSQL('batchreportservicefields', ExePath+SDirIn+'\BatchReportServiceFields.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(FieldName) set ClientId = '+ ClientID + ';';
+    InternalExecute;
+  end;
 
   if (GetFileSize(ExePath+SDirIn+'\BatchOrder.txt') > 0)
     and (GetFileSize(ExePath+SDirIn+'\BatchOrderItems.txt') > 0)
