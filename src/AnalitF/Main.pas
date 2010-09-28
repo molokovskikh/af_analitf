@@ -204,6 +204,7 @@ private
   procedure RealFreeChildForms;
   procedure SetFocusOnMainForm;
   function  NeedUpdateClientLabel : Boolean;
+  function DontShowAddresses : Boolean;
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -1326,6 +1327,10 @@ begin
   if Stage = cdPrePaint then begin
     NeedUpdateClientLabel;
 
+    //Ничего не рисуем, если информация о новом пользователе есть, а об адресах доставки нет
+    if DontShowAddresses then
+      Exit;
+
     //Рисуем метку
     //Сохраняем предыдущий стиль кисти, чтобы потом его восстановить
     OldStyle := ToolBar.Canvas.Brush.Style;
@@ -1380,7 +1385,10 @@ begin
   if Windows.IntersectRect(ResultRect, ClientNameRect, Rect(X, Y, X+1, Y+1))
   then begin
     if Length(ToolBar.Hint) = 0 then
-      ToolBar.Hint := 'Клиент: ' + DM.adtClients.FieldByName( 'Name').AsString;
+      if DontShowAddresses then
+        ToolBar.Hint := ''
+      else
+        ToolBar.Hint := 'Клиент: ' + DM.adtClients.FieldByName( 'Name').AsString;
   end
   else
     if Length(ToolBar.Hint) > 0 then
@@ -1395,6 +1403,8 @@ var
 begin
   if (Button = mbLeft) and (Windows.IntersectRect(ResultRect, ClientNameRect, Rect(X, Y, X+1, Y+1))) then
   begin
+    if DontShowAddresses then
+      Exit;
     ScreenPoint := ToolBar.ClientToScreen(Point(ClientNameRect.Left, ClientNameRect.Bottom));
     pmClients.Popup(ScreenPoint.X, ScreenPoint.Y);
   end;
@@ -1579,6 +1589,11 @@ begin
     //Panel Text
     StatusBar.Canvas.TextRect(Rect, Rect.Left, Rect.Top, Panel.Text) ;
   end;
+end;
+
+function TMainForm.DontShowAddresses: Boolean;
+begin
+  Result := IsFutureClient and (DM.adsUser.RecordCount > 0) and (DM.adtClients.RecordCount = 0);
 end;
 
 initialization
