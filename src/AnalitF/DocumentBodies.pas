@@ -431,6 +431,11 @@ begin
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
   frVariables[ 'TicketSignature'] := priceName;
 
+  frVariables['ClientNameVisible'] := True;
+  frVariables['ProductVisible'] := True;
+  frVariables['CountryVisible'] := True;
+  frVariables['ProducerVisible'] := True;
+
   DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
 end;
 
