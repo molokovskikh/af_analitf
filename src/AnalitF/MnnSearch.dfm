@@ -47,6 +47,7 @@ inherited MnnSearchForm: TMnnSearchForm
       TitleFont.Style = []
       OnDblClick = dbgMnnDblClick
       OnDrawColumnCell = dbgMnnDrawColumnCell
+      OnGetCellParams = dbgMnnGetCellParams
       OnKeyDown = dbgMnnKeyDown
       OnKeyPress = dbgMnnKeyPress
       SearchPosition = spBottom
@@ -76,6 +77,20 @@ inherited MnnSearchForm: TMnnSearchForm
         OnKeyDown = eSearchKeyDown
         OnKeyPress = eSearchKeyPress
       end
+      object cbShowAll: TCheckBox
+        Left = 334
+        Top = 10
+        Width = 210
+        Height = 17
+        Action = actShowAll
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 1
+      end
     end
   end
   inherited tCheckVolume: TTimer
@@ -92,18 +107,26 @@ inherited MnnSearchForm: TMnnSearchForm
     SQL.Strings = (
       'select'
       '  Mnn.Id,'
-      '  Mnn.Mnn'
+      '  Mnn.Mnn,'
+      '  sum(CATALOGS.CoreExists) as CoreExists'
       'from'
       '  Mnn'
+      '  left join CATALOGS on CATALOGS.MnnId = Mnn.Id '
       'where'
-      '   Mnn.Mnn like :LikeParam'
-      'order by Mnn')
+      '     Mnn.Mnn like :LikeParam'
+      'group by Mnn.Id'
+      'having  (CoreExists >= :ShowAll)'
+      'order by Mnn.Mnn')
     Left = 200
     Top = 168
     ParamData = <
       item
         DataType = ftUnknown
         Name = 'LikeParam'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ShowAll'
       end>
     object adsMNNId: TLargeintField
       FieldName = 'Id'
@@ -111,6 +134,9 @@ inherited MnnSearchForm: TMnnSearchForm
     object adsMNNMnn: TStringField
       FieldName = 'Mnn'
       Size = 250
+    end
+    object adsMNNCoreExists: TFloatField
+      FieldName = 'CoreExists'
     end
   end
   object tmrSearch: TTimer
@@ -126,5 +152,14 @@ inherited MnnSearchForm: TMnnSearchForm
     OnTimer = tmrFlipToMNNTimer
     Left = 264
     Top = 184
+  end
+  object ActionList: TActionList
+    Left = 336
+    Top = 144
+    object actShowAll: TAction
+      Caption = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1074#1077#1089#1100' '#1082#1072#1090#1072#1083#1086#1075
+      Hint = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1074#1077#1089#1100' '#1082#1072#1090#1072#1083#1086#1075
+      OnExecute = actShowAllExecute
+    end
   end
 end

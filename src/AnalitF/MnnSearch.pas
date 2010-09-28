@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, ExtCtrls, StdCtrls, GridsEh, DBGridEh, ToughDBGrid, DB,
-  MemDS, DBAccess, MyAccess, StrUtils;
+  MemDS, DBAccess, MyAccess, StrUtils, ActnList;
 
 type
   TMnnSearchForm = class(TChildForm)
@@ -19,6 +19,10 @@ type
     adsMNNId: TLargeintField;
     adsMNNMnn: TStringField;
     tmrFlipToMNN: TTimer;
+    ActionList: TActionList;
+    actShowAll: TAction;
+    adsMNNCoreExists: TFloatField;
+    cbShowAll: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
@@ -32,6 +36,9 @@ type
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure tmrFlipToMNNTimer(Sender: TObject);
     procedure dbgMnnDblClick(Sender: TObject);
+    procedure actShowAllExecute(Sender: TObject);
+    procedure dbgMnnGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
   private
     { Private declarations }
     BM : TBitmap;
@@ -39,6 +46,7 @@ type
     procedure SetClear;
     procedure InternalSearch;
     procedure AddKeyToSearch(Key : Char);
+    procedure SaveActionStates;
   public
     { Public declarations }
   end;
@@ -66,6 +74,11 @@ begin
 
   dbgMnn.PopupMenu := nil;
 
+  with DM.adtParams do
+  begin
+    actShowAll.Checked := FieldByName( 'ShowAllCatalog').AsBoolean;
+  end;
+
   ShowForm;
 
   SetClear;
@@ -73,6 +86,7 @@ end;
 
 procedure TMnnSearchForm.FormDestroy(Sender: TObject);
 begin
+  SaveActionStates;
   BM.Free;
   inherited;
 end;
@@ -83,6 +97,10 @@ begin
     adsMNN.Close;
 
   adsMNN.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
+  if actShowAll.Checked then
+    adsMNN.ParamByName('ShowAll').Value := 0
+  else
+    adsMNN.ParamByName('ShowAll').Value := 1;
 
   adsMNN.Open;
 
@@ -100,6 +118,10 @@ begin
     adsMNN.Close;
 
   adsMNN.ParamByName('LikeParam').AsString := '%';
+  if actShowAll.Checked then
+    adsMNN.ParamByName('ShowAll').Value := 0
+  else
+    adsMNN.ParamByName('ShowAll').Value := 1;
 
   adsMNN.Open;
 
@@ -230,6 +252,40 @@ begin
     }
     tmrFlipToMNN.Enabled := True
     //FlipToMNN(adsMNNId.Value);
+end;
+
+procedure TMnnSearchForm.SaveActionStates;
+begin
+  with DM.adtParams do
+  begin
+    Edit;
+    FieldByName( 'ShowAllCatalog').AsBoolean := actShowAll.Checked;
+    Post;
+  end;
+end;
+
+procedure TMnnSearchForm.actShowAllExecute(Sender: TObject);
+begin
+  if not dbgMnn.CanFocus then Abort;
+
+  actShowAll.Checked := not actShowAll.Checked;
+  SaveActionStates;
+
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+    InternalSearch
+  else
+    if not tmrSearch.Enabled then
+      SetClear;
+
+  dbgMnn.SetFocus();
+end;
+
+procedure TMnnSearchForm.dbgMnnGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if not adsMNN.IsEmpty and (adsMNNCoreExists.Value < 0.001 ) then
+    Background := clSilver;
 end;
 
 end.
