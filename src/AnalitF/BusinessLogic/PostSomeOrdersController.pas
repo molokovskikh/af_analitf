@@ -4,6 +4,7 @@ interface
 
 uses
   SysUtils, Classes, Contnrs, DB, StrUtils, Variants,
+  DateUtils,
   //App modules
   Constant, DModule, ExchangeParameters, U_ExchangeLog, SOAPThroughHTTP,
   DatabaseObjects;
@@ -81,6 +82,7 @@ type
     ServerOrderId : Int64;
     ErrorReason   : String;
     ServerMinReq  : String;
+    SendDate      : TDateTime;
 
     OrderPositions : TObjectList;
     constructor Create(
@@ -88,8 +90,11 @@ type
       postResult    : TOrderSendResult;
       serverOrderId : Int64;
       errorReason   : String;
-      serverMinReq  : String);
+      serverMinReq  : String;
+      sendDate      : String);
     destructor Destroy; override;
+   private
+    function FromMysqlToDateTime(value: String) : TDateTime; 
   end;
 
   TPostOrderPosition = class
@@ -493,10 +498,11 @@ begin
       TOrderSendResult(StrToInt(serverResponse.ValueFromIndex[startIndex + 1])),
       StrToInt64(serverResponse.ValueFromIndex[startIndex + 2]),
       Utf8ToAnsi(serverResponse.ValueFromIndex[startIndex + 3]),
-      serverResponse.ValueFromIndex[startIndex + 4]);
+      serverResponse.ValueFromIndex[startIndex + 4],
+      serverResponse.ValueFromIndex[startIndex + 5]);
   FOrderPostHeaders.Add(currentHeader);
 
-  startIndex := startIndex + 5;
+  startIndex := startIndex + 6;
   while (startIndex < serverResponse.Count)
         and (AnsiCompareText(serverResponse.Names[startIndex], 'ClientPositionID') = 0)
   do begin
@@ -529,7 +535,6 @@ var
   I,
   J : Integer;
   currentHeader : TPostOrderHeader;
-  SendDate : TDateTime;
   currentPosition : TPostOrderPosition;
   priceName, regionName : String;
   LastPostedOrderId : Variant;
@@ -541,8 +546,6 @@ begin
       TLargeintField(FDataLayer.adtClients.FieldByName('ClientId')).AsLargeInt);
   FDataLayer.adcUpdate.Execute;
 
-  //Дата отправки заказа у всех заказов в кучу должна быть одна и та же
-  SendDate := Now;
   if not FUseCorrectOrders or FOrderSendSuccess then begin
     //Здесь будем коммитить заказы
     for I := 0 to FOrderPostHeaders.Count-1 do begin
@@ -555,11 +558,12 @@ begin
         +'update '
         +'  CurrentOrderHeads '
         +'set '
-        +'  Send = 1, Closed = 1, SendDate = :SendDate, '
+        +'  Send = 1, Closed = 1, '
         +'  ServerOrderId = :ServerOrderId, '
         +'  SendResult = null, '
         +'  ErrorReason = null, '
-        +'  ServerMinReq = null '
+        +'  ServerMinReq = null, '
+        +'  SendDate = :SendDate + interval -:timezonebias minute '
         +'where '
         +'  OrderID = :OrderId;'
         +'update '
@@ -571,7 +575,8 @@ begin
         +'  ServerQuantity = NULL '
         +'where '
         +'  ORDERId = :OrderId;';
-      FDataLayer.adcUpdate.ParamByName('SendDate').Value := SendDate;
+      FDataLayer.adcUpdate.ParamByName('SendDate').Value := currentHeader.SendDate;
+      FDataLayer.adcUpdate.ParamByName('TimeZoneBias').Value := TimeZoneBias;
       FDataLayer.adcUpdate.ParamByName('ServerOrderId').Value :=
         currentHeader.ServerOrderId;
       FDataLayer.adcUpdate.ParamByName('OrderId').Value :=
@@ -834,7 +839,7 @@ end;
 
 constructor TPostOrderHeader.Create(clientOrderId: Int64;
   postResult: TOrderSendResult; serverOrderId: Int64; errorReason: String;
-  serverMinReq  : String);
+  serverMinReq  : String; sendDate: string);
 begin
   OrderPositions := TObjectList.Create(True);
   Self.ClientOrderId := clientOrderId;
@@ -842,12 +847,24 @@ begin
   Self.ServerOrderId := serverOrderId;
   Self.ErrorReason := errorReason;
   Self.ServerMinReq := serverMinReq;
+  Self.SendDate := FromMysqlToDateTime(sendDate);  
 end;
 
 destructor TPostOrderHeader.Destroy;
 begin
   OrderPositions.Free;
   inherited;
+end;
+
+function TPostOrderHeader.FromMysqlToDateTime(value: String): TDateTime;
+begin
+  result := EncodeDateTime( StrToInt( Copy( value, 1, 4)),
+    StrToInt( Copy( value, 6, 2)),
+    StrToInt( Copy( value, 9, 2)),
+    StrToInt( Copy( value, 12, 2)),
+    StrToInt( Copy( value, 15, 2)),
+    StrToInt( Copy( value, 18, 2)),
+    0);
 end;
 
 { TPostOrderPosition }
