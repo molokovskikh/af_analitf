@@ -42,11 +42,26 @@ create table analitf.batchreportservicefields(
   primary key (`Id`)
 ) ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
 
+create table analitf.globalparams(
+  `Name` varchar(255) not null,
+  `Value` varchar(255) default null,
+  primary key (`Name`)
+) ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
 update 
   analitf.postedorderheads
 set
   PriceDate = SendDate
 where
   PriceDate is null;
+
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportPrintEmptyTickets", "0");
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportSizePercent", "100");
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportClientNameVisible", "1");
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportProductVisible", "1");
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportCountryVisible", "1");
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportProducerVisible", "1");
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportPeriodVisible", "1");
+INSERT INTO analitf.GlobalParams (Name, Value) VALUES ("TicketReportProviderDocumentIdVisible", "1");
 
 update analitf.params set ProviderMDBVersion = 68 where id = 0;
