@@ -473,8 +473,15 @@ begin
 
         Abort;
       end
-      else
-        PanelCaption := 'ѕрепарат не желателен к заказу';
+      else begin
+        //PanelCaption := 'ѕрепарат не желателен к заказу';
+        if AProc.MessageBox(
+            'ѕрепарат не входит в разрешенную матрицу закупок.'#13#10 +
+            '¬ы действительно хотите заказать его?',
+             MB_ICONWARNING or MB_OKCANCEL) = ID_CANCEL
+        then
+          Abort;
+      end;
     end;
     
     { провер€ем на превышение цены }
