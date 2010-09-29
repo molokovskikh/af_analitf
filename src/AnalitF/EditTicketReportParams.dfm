@@ -1,4 +1,6 @@
 inherited EditTicketReportParamsForm: TEditTicketReportParamsForm
+  Left = 365
+  Top = 273
   Caption = 'EditTicketReportParamsForm'
   OnCreate = FormCreate
   OnDestroy = FormDestroy

@@ -52,7 +52,6 @@ type
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
     gbPrint: TGroupBox;
-    cbPrintEmptyTickets: TCheckBox;
     spPrintTickets: TSpeedButton;
     adsDocumentHeadersLocalWriteTime: TDateTimeField;
     cbClearRetailPrice: TCheckBox;
@@ -73,7 +72,6 @@ type
       var Text: String; DisplayText: Boolean);
     procedure spPrintTicketsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure cbPrintEmptyTicketsClick(Sender: TObject);
     procedure cbClearRetailPriceClick(Sender: TObject);
     procedure spPrintReestrClick(Sender: TObject);
     procedure cbWaybillAsVitallyImportantClick(Sender: TObject);
@@ -82,6 +80,7 @@ type
     procedure dbgDocumentBodiesSortMarkingChanged(Sender: TObject);
     procedure spPrintWaybillClick(Sender: TObject);
     procedure spPrintInvoiceClick(Sender: TObject);
+    procedure sbEditTicketReportParamsClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -143,7 +142,8 @@ uses
   ToughDBGridColumns,
   U_ExchangeLog,
   LU_Tracer,
-  EditTicketReportParams;
+  EditTicketReportParams,
+  TicketReportParams;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -412,33 +412,41 @@ var
   priceNameVariant : Variant;
   priceName : String;
   bracketIndex : Integer;
+  TicketParams : TTicketReportParams;
 begin
-  priceNameVariant := DM.QueryValue(
-    'select PriceName from pricesdata where FirmCode = ' + adsDocumentHeadersFirmCode.AsString + ' limit 1',
-    [],
-    []);
-  if not VarIsNull(priceNameVariant) and (VarIsStr(priceNameVariant)) then begin
-    priceName := priceNameVariant;
-    bracketIndex := Pos('(',priceName);
-    if bracketIndex > 0 then
-      priceName := Copy(priceName, 1, bracketIndex -1);
-  end
-  else
-    priceName := adsDocumentHeadersProviderName.AsString;
-  priceName := Trim(priceName);
+  TicketParams := TTicketReportParams.Create(DM.MainConnection);
+  try
+    priceNameVariant := DM.QueryValue(
+      'select PriceName from pricesdata where FirmCode = ' + adsDocumentHeadersFirmCode.AsString + ' limit 1',
+      [],
+      []);
+    if not VarIsNull(priceNameVariant) and (VarIsStr(priceNameVariant)) then begin
+      priceName := priceNameVariant;
+      bracketIndex := Pos('(',priceName);
+      if bracketIndex > 0 then
+        priceName := Copy(priceName, 1, bracketIndex -1);
+    end
+    else
+      priceName := adsDocumentHeadersProviderName.AsString;
+    priceName := Trim(priceName);
 
-  frVariables[ 'PrintEmptyTickets'] := cbPrintEmptyTickets.Checked;
-  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
-  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
-  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
-  frVariables[ 'TicketSignature'] := priceName;
+    frVariables[ 'PrintEmptyTickets'] := TicketParams.PrintEmptyTickets;
+    frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+    frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+    frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+    frVariables[ 'TicketSignature'] := priceName;
 
-  frVariables['ClientNameVisible'] := True;
-  frVariables['ProductVisible'] := True;
-  frVariables['CountryVisible'] := True;
-  frVariables['ProducerVisible'] := True;
+    frVariables['ClientNameVisible'] := TicketParams.ClientNameVisible;
+    frVariables['ProductVisible'] := TicketParams.ProductVisible;
+    frVariables['CountryVisible'] := TicketParams.CountryVisible;
+    frVariables['ProducerVisible'] := TicketParams.ProducerVisible;
+    frVariables['PeriodVisible'] := TicketParams.PeriodVisible;
+    frVariables['ProviderDocumentIdVisible'] := TicketParams.ProviderDocumentIdVisible;
 
-  DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
+    DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
+  finally
+    TicketParams.Free;
+  end;
 end;
 
 procedure TDocumentBodiesForm.FormCreate(Sender: TObject);
@@ -544,11 +552,6 @@ begin
   FGridPopup.Items.Add(FGridColumns);
 
   inherited;
-end;
-
-procedure TDocumentBodiesForm.cbPrintEmptyTicketsClick(Sender: TObject);
-begin
-  dbgDocumentBodies.SetFocus();
 end;
 
 procedure TDocumentBodiesForm.cbClearRetailPriceClick(Sender: TObject);
@@ -1184,6 +1187,12 @@ begin
     Result := adsDocumentBodiesRegistryCost.Value
   else
     Result := adsDocumentBodiesProducerCost.Value;
+end;
+
+procedure TDocumentBodiesForm.sbEditTicketReportParamsClick(
+  Sender: TObject);
+begin
+  ShowEditTicketReportParams;
 end;
 
 end.

@@ -233,9 +233,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       OnClick = spPrintReestrClick
     end
     object sbEditAddress: TSpeedButton
-      Left = 712
-      Top = 26
-      Width = 137
+      Left = 685
+      Top = 12
+      Width = 165
       Height = 25
       Anchors = [akTop, akRight]
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1085#1072#1082#1083#1072#1076#1085#1099#1093
@@ -258,40 +258,32 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       OnClick = spPrintInvoiceClick
     end
     object sbEditTicketReportParams: TSpeedButton
-      Left = 575
+      Left = 685
       Top = 42
-      Width = 137
+      Width = 165
       Height = 25
       Anchors = [akTop, akRight]
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1087#1077#1095#1072#1090#1080' '#1094#1077#1085#1085#1080#1082#1086#1074
-    end
-    object cbPrintEmptyTickets: TCheckBox
-      Left = 8
-      Top = 16
-      Width = 161
-      Height = 17
-      Caption = #1055#1077#1095#1072#1090#1100' "'#1087#1091#1089#1090#1099#1093'" '#1094#1077#1085#1085#1080#1082#1086#1074
-      TabOrder = 0
-      OnClick = cbPrintEmptyTicketsClick
+      OnClick = sbEditTicketReportParamsClick
     end
     object cbClearRetailPrice: TCheckBox
       Left = 8
-      Top = 35
+      Top = 16
       Width = 297
       Height = 17
       Caption = #1054#1090#1073#1088#1072#1089#1099#1074#1072#1090#1100' '#1088#1086#1079#1085#1080#1095#1085#1091#1102' '#1094#1077#1085#1091' '#1076#1086' 10 '#1082#1086#1087'. '#1074' "'#1084#1077#1085#1100#1096#1077'"'
       Checked = True
       State = cbChecked
-      TabOrder = 1
+      TabOrder = 0
       OnClick = cbClearRetailPriceClick
     end
     object cbWaybillAsVitallyImportant: TCheckBox
       Left = 8
-      Top = 54
+      Top = 35
       Width = 297
       Height = 17
       Caption = #1056#1072#1089#1089#1095#1080#1090#1072#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1091#1102' '#1082#1072#1082' '#1046#1053#1042#1051#1057
-      TabOrder = 2
+      TabOrder = 1
       OnClick = cbWaybillAsVitallyImportantClick
     end
   end
