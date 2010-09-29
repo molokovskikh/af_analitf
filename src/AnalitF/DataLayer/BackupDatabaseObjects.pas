@@ -74,6 +74,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TGlobalParamsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -492,6 +498,26 @@ begin
 + GetTableOptions();
 end;
 
+{ TGlobalParamsTable }
+
+constructor TGlobalParamsTable.Create;
+begin
+  FName := 'globalparams';
+  FObjectId := doiGlobalParams;
+  FRepairType := dortBackup;
+end;
+
+function TGlobalParamsTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'    `Name` varchar(255) not null, '
++'    `Value` varchar(255) default null, '
++'    primary key (`Name`) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TPostedOrderHeadsTable.Create());
@@ -504,4 +530,5 @@ initialization
   DatabaseController.AddObject(TClientSettingsTable.Create());
   DatabaseController.AddObject(TCurrentOrderHeadsTable.Create());
   DatabaseController.AddObject(TCurrentOrderListsTable.Create());
+  DatabaseController.AddObject(TGlobalParamsTable.Create());
 end.

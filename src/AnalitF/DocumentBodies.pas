@@ -65,6 +65,7 @@ type
     adsDocumentBodiesSerialNumber: TStringField;
     spPrintWaybill: TSpeedButton;
     spPrintInvoice: TSpeedButton;
+    sbEditTicketReportParams: TSpeedButton;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -141,7 +142,8 @@ uses
   EditAddressForm, Constant, DBGridHelper,
   ToughDBGridColumns,
   U_ExchangeLog,
-  LU_Tracer;
+  LU_Tracer,
+  EditTicketReportParams;
 
 {
   Стандартная фунция RoundTo работала не корректно

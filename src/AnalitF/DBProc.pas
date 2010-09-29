@@ -22,6 +22,8 @@ procedure MyDacDataSetSortMarkingChanged(DBGrid : TToughDBGrid);
 procedure MyDacDataSetSortMarkingChangedForMemo(DBGrid : TToughDBGrid);
 function  QueryValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
   Values: array of Variant): Variant;
+function  UpdateValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
+  Values: array of Variant): Integer;
 procedure ReplaceAutoIncrement(SQL : TStrings);
 
 
@@ -300,6 +302,31 @@ begin
       adsQueryValue.Close;
     end;
 
+  finally
+    adsQueryValue.Free;
+  end;
+end;
+
+function  UpdateValue(Database: TCustomMyConnection; SQL: String; Params: array of string;
+  Values: array of Variant): Integer;
+var
+  I : Integer;
+  adsQueryValue : TMyQuery;
+begin
+  if (Length(Params) <> Length(Values)) then
+    raise Exception.Create('QueryValue: Кол-во параметров не совпадает со списком значений.');
+
+  adsQueryValue := TMyQuery.Create(nil);
+  try
+    adsQueryValue.Connection := Database;
+    
+    adsQueryValue.SQL.Text := SQL;
+    for I := Low(Params) to High(Params) do
+      adsQueryValue.ParamByName(Params[i]).Value := Values[i];
+
+    adsQueryValue.Execute;
+
+    Result := adsQueryValue.RowsAffected;
   finally
     adsQueryValue.Free;
   end;

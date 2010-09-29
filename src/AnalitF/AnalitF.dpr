@@ -110,7 +110,10 @@ uses
   U_frameOrderHeadLegend in 'U_frameOrderHeadLegend.pas' {frameOrderHeadLegend: TFrame},
   StartupHelper in 'Helpers\StartupHelper.pas',
   SendWaybillTypes in 'BusinessLogic\SendWaybillTypes.pas',
-  GlobalExchangeParameters in 'BusinessLogic\GlobalExchangeParameters.pas';
+  GlobalExchangeParameters in 'BusinessLogic\GlobalExchangeParameters.pas',
+  GlobalParams in 'GlobalParams\GlobalParams.pas',
+  TicketReportParams in 'GlobalParams\TicketReportParams.pas',
+  EditTicketReportParams in 'EditTicketReportParams.pas' {EditTicketReportParamsForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}
