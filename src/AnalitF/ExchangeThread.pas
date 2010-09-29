@@ -2137,8 +2137,14 @@ begin
   Error := Utf8ToAnsi( Res.Values[ 'Error']);
   if Error <> '' then
     raise Exception.Create( Error + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+
+{$ifndef DisableCrypt}
   SetString(CostSessionKey, nil, INFDataLen);
   HexToBin(PChar(Res.Values['SessionKey']), PChar(CostSessionKey), INFDataLen);
+{$else}
+  CostSessionKey := '0123456789012345';
+{$endif}
+
   if Length(Res.Values['SaveGridMask']) = 7 then
     ASaveGridMask := Res.Values['SaveGridMask']
   else
@@ -2933,6 +2939,8 @@ begin
     InternalExecute;
 
     insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', ExePath+SDirIn+'\BatchOrderItems.txt'));
+    
+{$ifndef DisableCrypt}
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
       + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
@@ -2955,6 +2963,13 @@ begin
       + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
       + '   and (CurrentOrderLists.CryptRealPrice is not null);';
     InternalExecute;
+{$else}
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
+      + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
+      + '  CODE, CODECr, RealPrice, Price, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
+    InternalExecute;
+{$endif}
 
     DM.adcUpdate.SQL.Text := ''
       + ' update CurrentOrderHeads, PricesData '
