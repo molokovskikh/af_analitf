@@ -3388,7 +3388,17 @@ begin
     //Проверяем объекты если не производим обновление программы
     if not FindCmdLineSwitch('i') and not FindCmdLineSwitch('si') then begin
       mainStartupHelper.Write('DModule', 'Начали проверку на существование объектов базы данных');
-      DatabaseController.CheckObjectsExists(dbCon, FCreateClearDatabase or FNeedImportAfterRecovery);
+      DatabaseController.CheckObjectsExists(
+        dbCon,
+        FCreateClearDatabase or FNeedImportAfterRecovery,
+        [doiParams,
+         doiUserInfo, doiClient, doiClients, doiClientSettings,
+         doiRetailMargins, doiVitallyImportantMarkups,
+         doiPostedOrderHeads, doiPostedOrderLists, doiCurrentOrderHeads, doiCurrentOrderLists,
+         doiProviders, doiRegionalData, doiPricesData, doiPricesRegionalData, 
+         doiRegions,
+         doiMaxProducerCosts,
+         doiMinReqRules]);
       mainStartupHelper.Write('DModule', 'Закончили проверку на существование объектов базы данных');
     end;
   finally
