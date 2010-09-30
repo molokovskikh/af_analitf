@@ -197,7 +197,7 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( ' 
 +'    `CLIENTID` bigint(20) not null      , ' 
-+'    `NAME` varchar(50) not null         , '
++'    `NAME` varchar(255) not null         , '
 +'    `REGIONCODE` bigint(20) default null, '
 +'    `EXCESS`    int(10) not null           , '
 +'    `DELTAMODE` smallint(5) default null   , '
