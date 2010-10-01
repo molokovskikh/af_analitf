@@ -1,3 +1,6 @@
+alter table analitf.clients
+  modify column `NAME` varchar(255) not null;
+
 alter table analitf.postedorderheads
   add column `PriceDate` datetime null default null;
 
