@@ -1,0 +1,6 @@
+*.dcu
+*.~*
+bin
+unit
+*.dsk
+*.ddp
