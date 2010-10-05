@@ -178,15 +178,6 @@ begin
     Exit;
   end;
 
-  if ( eaGetPrice in AExchangeActions) and not ( eaGetFullData in AExchangeActions) and
-    (DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime <>
-    DM.adtParams.FieldByName( 'LastDateTime').AsDateTime) then
-  begin
-    AProc.MessageBox('Предыдущая операция импорта данных не была завершена.' + #10#13 +
-      'Обратитесь в АК "Инфорум"', MB_OK or MB_ICONWARNING);
-    exit;
-  end;
-
   if (eaGetFullData in AExchangeActions) then
     DM.ResetNeedCommitExchange;
 
