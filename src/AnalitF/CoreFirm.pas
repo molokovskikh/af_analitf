@@ -8,7 +8,7 @@ uses
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
   Math, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw,
   hlpcodecs, LU_Tracer, 
-  lU_TSGHashTable, SQLWaiting, ForceRus, GridsEh, 
+  SQLWaiting, ForceRus, GridsEh, 
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
 
 type
