@@ -890,14 +890,14 @@ begin
   MyEmbConnection.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + '\');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
   MyEmbConnection.Params.Add('--skip-innodb');
-  MyEmbConnection.Params.Add('--tmp_table_size=33554432');
-  MyEmbConnection.Params.Add('--max_heap_table_size=33554432');
+  MyEmbConnection.Params.Add('--tmp_table_size=' + DatabaseController.GetMaxTempTableSize());
+  MyEmbConnection.Params.Add('--max_heap_table_size=' + DatabaseController.GetMaxTempTableSize());
 {$else}
   MyEmbConnection.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
   MyEmbConnection.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + '\');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
-  MyEmbConnection.Params.Add('--tmp_table_size=33554432');
-  MyEmbConnection.Params.Add('--max_heap_table_size=33554432');
+  MyEmbConnection.Params.Add('--tmp_table_size=' + DatabaseController.GetMaxTempTableSize());
+  MyEmbConnection.Params.Add('--max_heap_table_size=' + DatabaseController.GetMaxTempTableSize());
 
   MyEmbConnection.Params.Add('--sort_buffer_size=64M');
   MyEmbConnection.Params.Add('--read_buffer_size=2M');
