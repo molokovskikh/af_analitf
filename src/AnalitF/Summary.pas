@@ -145,7 +145,8 @@ procedure ShowSummary;
 implementation
 
 uses DModule, Main, AProc, Constant, NamesForms, Fr_Class,
-      PostSomeOrdersController, U_framePosition, DBGridHelper;
+      PostSomeOrdersController, U_framePosition, DBGridHelper,
+  UniqueID;
 
 var
   LastDateFrom,

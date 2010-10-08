@@ -139,7 +139,8 @@ procedure FlipToMNNFromMNNSearch(MnnId : Int64);
 implementation
 
 uses DModule, AProc, Main, Types, AlphaUtils, LU_Tracer,
-     MnnSearch;
+     MnnSearch,
+     UniqueID;
 
 {$R *.dfm}
 

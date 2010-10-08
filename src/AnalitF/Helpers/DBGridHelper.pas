@@ -45,7 +45,8 @@ type
 implementation
 
 uses
-  Main;
+  Main,
+  UniqueID;
 
 type
   TCustomDBGridEhEx = class(TCustomDBGridEh);

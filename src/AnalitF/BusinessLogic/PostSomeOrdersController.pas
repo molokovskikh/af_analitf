@@ -113,7 +113,8 @@ type
 implementation
 
 uses
-  Main, AProc, DBProc;
+  Main, AProc, DBProc,
+  UniqueID;
 
 { TPostSomeOrdersController }
 

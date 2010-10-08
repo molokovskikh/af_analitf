@@ -13,9 +13,24 @@ function GetOld525UniqueID( APath, AFileHash: string): longint;
 //Получить уникальный идентификатор относильно пути
 function GetPathID( APath : string): Longint;
 
+//Уникальный идентификатор, передаваемый при обновлении
+function GetCopyID: LongInt;
+
+//Уникальный идентификатор с учетом Hash'а приложения
+function GetDBID: LongInt;
+
+//Уникальный идентификатор с учетом Hash'а приложения старой версии
+function GetOldDBID: LongInt;
+
+//Получить идентификатор установки программы относительно пути, чтобы сохранять настройки программы в реестре
+function GetPathCopyID: String;
+
 implementation
 
-uses CRC32Unit;
+uses
+  Forms,
+  CRC32Unit,
+  AProc;
 
 function GetUniqueID( APath, AFileHash: string): longint;
 var
@@ -84,6 +99,43 @@ var
 begin
   InVal := LowerCase(APath);
   Result := CalcCRC32( PChar( InVal), Length( InVal));
+end;
+
+function GetCopyID: LongInt;
+begin
+{$ifdef DSP}
+  result := StrToInt64('$E99E48');
+{$else}
+  result := GetUniqueID( Application.ExeName, '');
+{$endif}
+end;
+
+function GetDBID: LongInt;
+begin
+{$ifdef DEBUG}
+   result := GetUniqueID( Application.ExeName, 'E99E483DDE777778ADEFCB3DCD988BC9');
+{$else}
+  {$ifdef DSP}
+    result := StrToInt64('$3DDE77');
+  {$else}
+    result := GetUniqueID( Application.ExeName, AProc.GetFileHash(Application.ExeName));
+  {$endif}
+{$endif}
+end;
+
+function GetOldDBID: LongInt;
+begin
+{$ifdef DSP}
+  result := StrToInt64('$3DDE77');
+{$else}
+  result := GetUniqueID( Application.ExeName, AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak'));
+{$endif}
+end;
+
+
+function GetPathCopyID: String;
+begin
+  Result := IntToHex( GetPathID(Application.ExeName), 8);
 end;
 
 end.

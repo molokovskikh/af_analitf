@@ -199,6 +199,14 @@ type
     function GetFullLastCreateScript(DBVersion : String = '') : String;
 
     function IsFatalError(E : EMyError) : Boolean;
+
+    function GetNewConnection(Main: TCustomMyConnection) : TCustomMyConnection;
+
+    function WorkSchemaExists(connection: TCustomMyConnection) : Boolean;
+
+    procedure DropWorkSchema(connection: TCustomMyConnection);
+
+    procedure CreateWorkSchema(connection: TCustomMyConnection);
   end;
 
   function DatabaseController : TDatabaseController;
@@ -346,8 +354,18 @@ begin
   FCommand.Connection := connection;
   try
     //≈сли не существует еще самой директории с базой данных, то нечего провер€ть
-    if not DirectoryExists(ExePath + SDirData + '\analitf') then
+    if not WorkSchemaExists(connection) then
       Exit;
+
+{
+    if connection is TMyEmbConnection then begin
+      if not DirectoryExists(ExePath + SDirData + '\analitf') then
+        Exit;
+    end
+    else begin
+      connection.ExecSQL('use analitf;', []);
+    end;
+}    
 
     for I := 0 to FDatabaseObjects.Count-1 do begin
       if (FDatabaseObjects[i] is TDatabaseTable)
@@ -373,11 +391,12 @@ begin
                 [currentTable.LogObjectName,
                  E.ErrorCode,
                  E.Message]));
+              raise;
             end;
         end;
         mainStartupHelper.Write('DatabaseController.Initialize', '«акончили выборку данных из объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
 
-        CheckTableOnOpen(currentTable, IsBackupRepair);
+        //CheckTableOnOpen(currentTable, IsBackupRepair);
 {
         try
           if (FCommand.RecordCount = 1) then begin
@@ -855,11 +874,29 @@ begin
   end;
 end;
 
+procedure TDatabaseController.CreateWorkSchema(
+  connection: TCustomMyConnection);
+begin
+  if connection is TMyEmbConnection then
+    SysUtils.ForceDirectories(ExePath + SDirData + '\analitf')
+  else
+    connection.ExecSQL('create database analitf;', []);
+end;
+
 destructor TDatabaseController.Destroy;
 begin
   FCommand.Free;
   FDatabaseObjects.Free;
   inherited;
+end;
+
+procedure TDatabaseController.DropWorkSchema(
+  connection: TCustomMyConnection);
+begin
+  if connection is TMyEmbConnection then
+    DeleteDataDir(ExePath + SDirData)
+  else
+    connection.ExecSQL('drop database if exists analitf;', []);
 end;
 
 function TDatabaseController.FindById(
@@ -977,6 +1014,30 @@ begin
     end;
 end;
 
+function TDatabaseController.GetNewConnection(
+  Main: TCustomMyConnection): TCustomMyConnection;
+begin
+  if Main is TMyEmbConnection then
+    Result := TMyEmbConnection.Create(nil)
+  else
+    Result := TMyConnection.Create(nil);
+
+  Result.Database := '';
+  Result.Username := Main.Username;
+  Result.Password := Main.Password;
+  Result.LoginPrompt := False;
+  if Main is TMyEmbConnection then begin
+    TMyEmbConnection(Result).DataDir := TMyEmbConnection(Main).DataDir;
+    TMyEmbConnection(Result).Options := TMyEmbConnection(Main).Options;
+    TMyEmbConnection(Result).Params.Clear;
+    TMyEmbConnection(Result).Params.AddStrings(TMyEmbConnection(Main).Params);
+  end
+  else begin
+    TMyConnection(Result).Port := TMyConnection(Main).Port;
+    TMyConnection(Result).Options := TMyConnection(Main).Options;
+  end;
+end;
+
 procedure TDatabaseController.Initialize(connection: TCustomMyConnection);
 var
   I : Integer;
@@ -991,8 +1052,12 @@ begin
         FDatabaseObjects.Count]);
 
     //≈сли не существует еще самой директории с базой данных, то нечего провер€ть
+    if not WorkSchemaExists(connection) then
+      Exit;
+{
     if not DirectoryExists(ExePath + SDirData + '\analitf') then
       Exit;
+}      
 
     for I := 0 to FDatabaseObjects.Count-1 do begin
       if FDatabaseObjects[i] is TDatabaseTable then begin
@@ -1258,6 +1323,25 @@ begin
       Exit;
     end;
   Result := False;
+end;
+
+function TDatabaseController.WorkSchemaExists(
+  connection: TCustomMyConnection): Boolean;
+begin
+  if connection is TMyEmbConnection then
+    Result := DirectoryExists(ExePath + SDirData + '\analitf')
+  else begin
+    try
+      connection.ExecSQL('use analitf;', []);
+      Result := True;
+    except
+      on E : EMyError do
+        if E.ErrorCode = ER_BAD_DB_ERROR then
+          Result := False
+        else
+          raise;
+    end;
+  end;
 end;
 
 { TDatabaseTable }

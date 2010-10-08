@@ -164,7 +164,8 @@ implementation
 uses Exchange, DModule, AProc, Main, Retry, 
   LU_Tracer, Math, DBProc, U_frmSendLetter,
   Constant, U_ExchangeLog, U_SendArchivedOrdersThread, ULoginHelper,
-  Registry;
+  Registry,
+  UniqueID;
 
 { TExchangeThread }
 
@@ -381,7 +382,7 @@ begin
           //Надо перенести загрузку разобранных документов в другое место,
           //т.к. после удаления файлов с разобранными документами не будет
           { очищаем папку In }
-          DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+          DeleteFilesByMask( RootFolder() + SDirIn + '\*.txt');
 {$endif}
           //DM.adcUpdate.OnExecuteError := nil;
         end;
@@ -831,7 +832,7 @@ begin
     end;
   end;
   { очищаем папку In }
-  DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+  DeleteFilesByMask( RootFolder() + SDirIn + '\*.txt');
   Synchronize( ExchangeForm.CheckStop);
 end;
 
@@ -951,8 +952,11 @@ begin
 
       FileStream.Free;
     end;
-    Windows.CopyFile( PChar( LocalFileName),
-      PChar( ChangeFileExt( LocalFileName, '.zi_')), False);
+    OSMoveFile(LocalFileName,
+      RootFolder() + SDirIn + ExtractFileName(LocalFileName));
+    Windows.CopyFile(
+      PChar( RootFolder() + SDirIn + ExtractFileName(LocalFileName)),
+      PChar( RootFolder() + SDirIn + ChangeFileExt( ExtractFileName(LocalFileName), '.zi_')), False);
 //    Sleep( 10000);
   end;
 end;
@@ -1099,7 +1103,7 @@ begin
   try
     StatusText := 'Распаковка данных';
     Synchronize( SetStatus);
-    if FindFirst( ExePath + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
+    if FindFirst( RootFolder() + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
     repeat
       { Если это архив с рекламой }
       if ( SR.Name[ 1] = 'r') and ( SR.Size > 0) then
@@ -1115,12 +1119,12 @@ begin
         try
           SevenZipRes := SevenZipExtractArchive(
             0,
-            ExePath + SDirIn + '\' + SR.Name,
+            RootFolder() + SDirIn + '\' + SR.Name,
             '*.*',
             True,
             '',
             True,
-            ExePath + SDirIn,
+            RootFolder() + SDirIn,
             False,
             nil);
         finally
@@ -1134,14 +1138,14 @@ begin
             'Код ошибки %d. ' +
             'Код ошибки 7-zip: %d.'#13#10 +
             'Текст ошибки: %s',
-            [ExePath + SDirIn + '\' + SR.Name,
+            [RootFolder() + SDirIn + '\' + SR.Name,
              SevenZipRes,
              SevenZip.LastSevenZipErrorCode,
              SevenZip.LastError]);
 
-        OSDeleteFile( ExePath + SDirIn + '\' + SR.Name);
+        OSDeleteFile( RootFolder() + SDirIn + '\' + SR.Name);
         //Если нет файла ".zi_", то это не является проблемой и импорт может быть осуществлен
-        OSDeleteFile( ExePath + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'), False);
+        OSDeleteFile( RootFolder() + SDirIn + '\' + ChangeFileExt( SR.Name, '.zi_'), False);
       end;
       Synchronize( ExchangeForm.CheckStop);
     until FindNext( SR) <> 0;
@@ -1152,7 +1156,7 @@ begin
   try
 
     //Переименовываем файлы с кодом клиента в файлы без код клиента
-    if FindFirst( ExePath + SDirIn + '\*.txt', faAnyFile, DeleteSR) = 0 then
+    if FindFirst( RootFolder() + SDirIn + '\*.txt', faAnyFile, DeleteSR) = 0 then
     repeat
       if (DeleteSR.Name <> '.') and (DeleteSR.Name <> '..')
       then begin
@@ -1170,8 +1174,8 @@ begin
           DeletedText := Copy(DeleteSR.Name, FoundIndex + 1, Length(DeleteSR.Name));
           NewImportFileName := StringReplace(DeleteSR.Name, DeletedText, '.txt', []);
           OSMoveFile(
-            ExePath + SDirIn + '\' + DeleteSR.Name,
-            ExePath + SDirIn + '\' + NewImportFileName);
+            RootFolder() + SDirIn + '\' + DeleteSR.Name,
+            RootFolder() + SDirIn + '\' + NewImportFileName);
         end;
 
       end;
@@ -1194,7 +1198,7 @@ procedure TExchangeThread.CheckNewExe;
 var
   EraserDll: TResourceStream;
 begin
-  if not SysUtils.DirectoryExists( ExePath + SDirIn + '\' + SDirExe) then exit;
+  if not SysUtils.DirectoryExists( RootFolder() + SDirIn + '\' + SDirExe) then exit;
 
   AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
   EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
@@ -1205,7 +1209,7 @@ begin
   end;
 
   ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
-    ExePath + ExeName + '" "' + ExePath + SDirIn + '\' + SDirExe + '"'),
+    ExePath + ExeName + '" "' + RootFolder() + SDirIn + '\' + SDirExe + '"'),
     nil, SW_SHOWNORMAL);
   raise Exception.Create( 'Terminate');
 end;
@@ -1214,8 +1218,8 @@ procedure TExchangeThread.CheckNewMDB;
 var
   updateParamsSql : String;
 begin
-  if (GetFileSize(ExePath+SDirIn+'\UpdateInfo.txt') > 0) then begin
-    updateParamsSql := Trim(GetLoadDataSQL('params', ExePath+SDirIn+'\UpdateInfo.txt', True));
+  if (GetFileSize(RootFolder()+SDirIn+'\UpdateInfo.txt') > 0) then begin
+    updateParamsSql := Trim(GetLoadDataSQL('params', RootFolder()+SDirIn+'\UpdateInfo.txt', True));
     DM.adcUpdate.SQL.Text :=
       Copy(updateParamsSql, 1, LENGTH(updateParamsSql) - 1) +
       '(LastDateTime, Cumulative) set Id = 1;';
@@ -1233,7 +1237,7 @@ begin
     DM.adtParams.RefreshRecord;
     CheckFieldAfterUpdate('LastDateTime');
   end;
-  if (GetFileSize(ExePath+SDirIn+'\ClientToAddressMigrations.txt') > 0) then
+  if (GetFileSize(RootFolder()+SDirIn+'\ClientToAddressMigrations.txt') > 0) then
     ProcessClientToAddressMigration;
 
   if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then
@@ -1262,12 +1266,12 @@ var
   DestFile : String;
 begin
   try
-    if FindFirst( ExePath + SDirIn + '\*.frf', faAnyFile, SR) = 0 then
+    if FindFirst( RootFolder() + SDirIn + '\*.frf', faAnyFile, SR) = 0 then
       repeat
         if ( SR.Attr and faDirectory) = faDirectory then continue;
         try
-          SourceFile := ExePath + SDirIn + '\' + SR.Name;
-          DestFile := ExePath + '\' + SR.Name;
+          SourceFile := RootFolder() + SDirIn + '\' + SR.Name;
+          DestFile := RootFolder() + '\' + SR.Name;
           if FileExists(DestFile) then begin
             Windows.SetFileAttributes(PChar(DestFile), FILE_ATTRIBUTE_NORMAL);
             Windows.DeleteFile(PChar(DestFile));
@@ -1309,34 +1313,34 @@ begin
 
   UpdateTables := [];
 
-  if (GetFileSize(ExePath+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
-  if (GetFileSize(ExePath+SDirIn+'\Clients.txt') >= 0) then UpdateTables:=UpdateTables+[utClients];
-  if (GetFileSize(ExePath+SDirIn+'\Providers.txt') > 0) then UpdateTables:=UpdateTables+[utProviders];
-  if (GetFileSize(ExePath+SDirIn+'\RegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utRegionalData];
-  if (GetFileSize(ExePath+SDirIn+'\PricesData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesData];
-  if (GetFileSize(ExePath+SDirIn+'\PricesRegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesRegionalData];
-  if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables:=UpdateTables+[utCore];
-  if (GetFileSize(ExePath+SDirIn+'\Regions.txt') > 0) then UpdateTables:=UpdateTables+[utRegions];
-  if (GetFileSize(ExePath+SDirIn+'\Synonyms.txt') > 0) then UpdateTables := UpdateTables + [utSynonyms];
-  if (GetFileSize(ExePath+SDirIn+'\SynonymFirmCr.txt') > 0) then UpdateTables := UpdateTables + [utSynonymFirmCr];
-  if (GetFileSize(ExePath+SDirIn+'\Rejects.txt') > 0) then UpdateTables := UpdateTables + [utRejects];
+  if (GetFileSize(RootFolder()+SDirIn+'\Catalogs.txt') > 0) then UpdateTables:=UpdateTables+[utCatalogs];
+  if (GetFileSize(RootFolder()+SDirIn+'\Clients.txt') >= 0) then UpdateTables:=UpdateTables+[utClients];
+  if (GetFileSize(RootFolder()+SDirIn+'\Providers.txt') > 0) then UpdateTables:=UpdateTables+[utProviders];
+  if (GetFileSize(RootFolder()+SDirIn+'\RegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utRegionalData];
+  if (GetFileSize(RootFolder()+SDirIn+'\PricesData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesData];
+  if (GetFileSize(RootFolder()+SDirIn+'\PricesRegionalData.txt') > 0) then UpdateTables:=UpdateTables+[utPricesRegionalData];
+  if (GetFileSize(RootFolder()+SDirIn+'\Core.txt') > 0) then UpdateTables:=UpdateTables+[utCore];
+  if (GetFileSize(RootFolder()+SDirIn+'\Regions.txt') > 0) then UpdateTables:=UpdateTables+[utRegions];
+  if (GetFileSize(RootFolder()+SDirIn+'\Synonyms.txt') > 0) then UpdateTables := UpdateTables + [utSynonyms];
+  if (GetFileSize(RootFolder()+SDirIn+'\SynonymFirmCr.txt') > 0) then UpdateTables := UpdateTables + [utSynonymFirmCr];
+  if (GetFileSize(RootFolder()+SDirIn+'\Rejects.txt') > 0) then UpdateTables := UpdateTables + [utRejects];
   //Удаляем минимальные цены, если есть обновления в Core
-  if (GetFileSize(ExePath+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
-  if (GetFileSize(ExePath+SDirIn+'\CatalogFarmGroups.txt') > 0) then UpdateTables := UpdateTables + [utCatalogFarmGroups];
-  if (GetFileSize(ExePath+SDirIn+'\CatFarmGroupsDel.txt') > 0) then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
-  if (GetFileSize(ExePath+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
-  if (GetFileSize(ExePath+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
-  if (GetFileSize(ExePath+SDirIn+'\User.txt') > 0) then UpdateTables := UpdateTables + [utUser];
-  if (GetFileSize(ExePath+SDirIn+'\DelayOfPayments.txt') > 0) then UpdateTables := UpdateTables + [utDelayOfPayments];
-  if (GetFileSize(ExePath+SDirIn+'\Client.txt') > 0) then UpdateTables := UpdateTables + [utClient];
-  if (GetFileSize(ExePath+SDirIn+'\MNN.txt') > 0) then UpdateTables := UpdateTables + [utMNN];
-  if (GetFileSize(ExePath+SDirIn+'\Descriptions.txt') > 0) then UpdateTables := UpdateTables + [utDescriptions];
-  if (GetFileSize(ExePath+SDirIn+'\MaxProducerCosts.txt') > 0) then UpdateTables := UpdateTables + [utMaxProducerCosts];
-  if (GetFileSize(ExePath+SDirIn+'\Producers.txt') > 0) then UpdateTables := UpdateTables + [utProducers];
-  if (GetFileSize(ExePath+SDirIn+'\MinReqRules.txt') > 0) then UpdateTables := UpdateTables + [utMinReqRules];
-  if (GetFileSize(ExePath+SDirIn+'\BatchReport.txt') > 0) then UpdateTables := UpdateTables + [utBatchReport];
-  if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then UpdateTables := UpdateTables + [utDocumentHeaders];
-  if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then UpdateTables := UpdateTables + [utDocumentBodies];
+  if (GetFileSize(RootFolder()+SDirIn+'\Core.txt') > 0) then UpdateTables := UpdateTables + [utMinPrices];
+  if (GetFileSize(RootFolder()+SDirIn+'\CatalogFarmGroups.txt') > 0) then UpdateTables := UpdateTables + [utCatalogFarmGroups];
+  if (GetFileSize(RootFolder()+SDirIn+'\CatFarmGroupsDel.txt') > 0) then UpdateTables := UpdateTables + [utCatFarmGroupsDEL];
+  if (GetFileSize(RootFolder()+SDirIn+'\CatalogNames.txt') > 0) then UpdateTables := UpdateTables + [utCatalogNames];
+  if (GetFileSize(RootFolder()+SDirIn+'\Products.txt') > 0) then UpdateTables := UpdateTables + [utProducts];
+  if (GetFileSize(RootFolder()+SDirIn+'\User.txt') > 0) then UpdateTables := UpdateTables + [utUser];
+  if (GetFileSize(RootFolder()+SDirIn+'\DelayOfPayments.txt') > 0) then UpdateTables := UpdateTables + [utDelayOfPayments];
+  if (GetFileSize(RootFolder()+SDirIn+'\Client.txt') > 0) then UpdateTables := UpdateTables + [utClient];
+  if (GetFileSize(RootFolder()+SDirIn+'\MNN.txt') > 0) then UpdateTables := UpdateTables + [utMNN];
+  if (GetFileSize(RootFolder()+SDirIn+'\Descriptions.txt') > 0) then UpdateTables := UpdateTables + [utDescriptions];
+  if (GetFileSize(RootFolder()+SDirIn+'\MaxProducerCosts.txt') > 0) then UpdateTables := UpdateTables + [utMaxProducerCosts];
+  if (GetFileSize(RootFolder()+SDirIn+'\Producers.txt') > 0) then UpdateTables := UpdateTables + [utProducers];
+  if (GetFileSize(RootFolder()+SDirIn+'\MinReqRules.txt') > 0) then UpdateTables := UpdateTables + [utMinReqRules];
+  if (GetFileSize(RootFolder()+SDirIn+'\BatchReport.txt') > 0) then UpdateTables := UpdateTables + [utBatchReport];
+  if (GetFileSize(RootFolder()+SDirIn+'\DocumentHeaders.txt') > 0) then UpdateTables := UpdateTables + [utDocumentHeaders];
+  if (GetFileSize(RootFolder()+SDirIn+'\DocumentBodies.txt') > 0) then UpdateTables := UpdateTables + [utDocumentBodies];
 
     //обновляем таблицы
     {
@@ -1476,11 +1480,11 @@ begin
   //CatalogNames
   if utCatalogNames in UpdateTables then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('catalognames', ExePath+SDirIn+'\CatalogNames.txt');
+      SQL.Text := GetLoadDataSQL('catalognames', RootFolder()+SDirIn+'\CatalogNames.txt');
       InternalExecute;
     end
     else begin
-      SQL.Text := GetLoadDataSQL('catalognames', ExePath+SDirIn+'\CatalogNames.txt', true);
+      SQL.Text := GetLoadDataSQL('catalognames', RootFolder()+SDirIn+'\CatalogNames.txt', true);
       InternalExecute;
     end;
   end;
@@ -1489,7 +1493,7 @@ begin
   if utCatalogs in UpdateTables then begin
 
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt');
+      SQL.Text := GetLoadDataSQL('Catalogs', RootFolder()+SDirIn+'\Catalogs.txt');
       InternalExecute;
 {$ifdef DEBUG}
       WriteExchangeLog('Import', Format('Catalog RowAffected = %d', [RowsAffected]));
@@ -1497,7 +1501,7 @@ begin
     end
     else begin
       //catalogs_iu
-      SQL.Text := GetLoadDataSQL('Catalogs', ExePath+SDirIn+'\Catalogs.txt', true);
+      SQL.Text := GetLoadDataSQL('Catalogs', RootFolder()+SDirIn+'\Catalogs.txt', true);
       InternalExecute;
 {$ifdef DEBUG}
       WriteExchangeLog('Import', Format('Catalog RowAffected = %d', [RowsAffected]));
@@ -1512,11 +1516,11 @@ begin
   //MNN
   if utMNN in UpdateTables then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('MNN', ExePath+SDirIn+'\MNN.txt');
+      SQL.Text := GetLoadDataSQL('MNN', RootFolder()+SDirIn+'\MNN.txt');
       InternalExecute;
     end
     else begin
-      SQL.Text := GetLoadDataSQL('MNN', ExePath+SDirIn+'\MNN.txt', true);
+      SQL.Text := GetLoadDataSQL('MNN', RootFolder()+SDirIn+'\MNN.txt', true);
       InternalExecute;
       SQL.Text := 'delete from mnn where Hidden = 1;';
       InternalExecute;
@@ -1526,11 +1530,11 @@ begin
   //Descriptions
   if utDescriptions in UpdateTables then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('Descriptions', ExePath+SDirIn+'\Descriptions.txt');
+      SQL.Text := GetLoadDataSQL('Descriptions', RootFolder()+SDirIn+'\Descriptions.txt');
       InternalExecute;
     end
     else begin
-      SQL.Text := GetLoadDataSQL('Descriptions', ExePath+SDirIn+'\Descriptions.txt', true);
+      SQL.Text := GetLoadDataSQL('Descriptions', RootFolder()+SDirIn+'\Descriptions.txt', true);
       InternalExecute;
       SQL.Text := 'delete from descriptions where Hidden = 1;';
       InternalExecute;
@@ -1539,11 +1543,11 @@ begin
 
   if (utProducts in UpdateTables) then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt');
+      SQL.Text := GetLoadDataSQL('Products', RootFolder()+SDirIn+'\Products.txt');
       InternalExecute;
     end
     else begin
-      SQL.Text := GetLoadDataSQL('Products', ExePath+SDirIn+'\Products.txt', true);
+      SQL.Text := GetLoadDataSQL('Products', RootFolder()+SDirIn+'\Products.txt', true);
       InternalExecute;
     end;
   end;
@@ -1551,14 +1555,14 @@ begin
   //Producers
   if utProducers in UpdateTables then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('Producers', ExePath+SDirIn+'\Producers.txt');
+      SQL.Text := GetLoadDataSQL('Producers', RootFolder()+SDirIn+'\Producers.txt');
       InternalExecute;
 {$ifdef DEBUG}
       WriteExchangeLog('Import', Format('Producers RowAffected = %d', [RowsAffected]));
 {$endif}
     end
     else begin
-      SQL.Text := GetLoadDataSQL('Producers', ExePath+SDirIn+'\Producers.txt', true);
+      SQL.Text := GetLoadDataSQL('Producers', RootFolder()+SDirIn+'\Producers.txt', true);
       InternalExecute;
 {$ifdef DEBUG}
       WriteExchangeLog('Import', Format('Producers RowAffected = %d', [RowsAffected]));
@@ -1571,16 +1575,16 @@ begin
   //CatalogFarmGroups
   if utCatalogFarmGroups in UpdateTables then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('CatalogFarmGroups', ExePath+SDirIn+'\CatalogFarmGroups.txt');
+      SQL.Text := GetLoadDataSQL('CatalogFarmGroups', RootFolder()+SDirIn+'\CatalogFarmGroups.txt');
       InternalExecute;
     end
     else begin
-      SQL.Text := GetLoadDataSQL('CatalogFarmGroups', ExePath+SDirIn+'\CatalogFarmGroups.txt', true);
+      SQL.Text := GetLoadDataSQL('CatalogFarmGroups', RootFolder()+SDirIn+'\CatalogFarmGroups.txt', true);
       InternalExecute;
 {
       if utCatFarmGroupsDel in UpdateTables then begin
         UpdateFromFileByParamsMySQL(
-          ExePath+SDirIn+'\CatFarmGroupsDel.txt',
+          RootFolder()+SDirIn+'\CatFarmGroupsDel.txt',
           'delete from catalogfarmgroups where (ID = :ID)',
           ['ID']);
       end;
@@ -1595,26 +1599,26 @@ begin
 
   //Regions
   if utRegions in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('Regions', ExePath+SDirIn+'\Regions.txt');
+    SQL.Text := GetLoadDataSQL('Regions', RootFolder()+SDirIn+'\Regions.txt');
     InternalExecute;
   end;
   //User
   if utUser in UpdateTables then begin
     SQL.Text := 'truncate analitf.userinfo';
     InternalExecute;
-    SQL.Text := GetLoadDataSQL('UserInfo', ExePath+SDirIn+'\User.txt');
+    SQL.Text := GetLoadDataSQL('UserInfo', RootFolder()+SDirIn+'\User.txt');
     InternalExecute;
   end;
   //Client
   if utClient in UpdateTables then begin
     SQL.Text := 'truncate analitf.Client';
     InternalExecute;
-    SQL.Text := GetLoadDataSQL('Client', ExePath+SDirIn+'\Client.txt');
+    SQL.Text := GetLoadDataSQL('Client', RootFolder()+SDirIn+'\Client.txt');
     InternalExecute;
   end;
   //Clients
   if utClients in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('Clients', ExePath+SDirIn+'\Clients.txt', true);
+    SQL.Text := GetLoadDataSQL('Clients', RootFolder()+SDirIn+'\Clients.txt', true);
     InternalExecute;
 
     if DM.QueryValue('select IsFutureClient from analitf.userinfo limit 1', [], []) = True then
@@ -1629,31 +1633,31 @@ begin
   end;
   //Providers
   if utProviders in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('Providers', ExePath+SDirIn+'\Providers.txt');
+    SQL.Text := GetLoadDataSQL('Providers', RootFolder()+SDirIn+'\Providers.txt');
     InternalExecute;
   end;
   if utDelayOfPayments in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('DelayOfPayments', ExePath+SDirIn+'\DelayOfPayments.txt');
+    SQL.Text := GetLoadDataSQL('DelayOfPayments', RootFolder()+SDirIn+'\DelayOfPayments.txt');
     InternalExecute;
   end;
   //RegionalData
   if utRegionalData in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('RegionalData', ExePath+SDirIn+'\RegionalData.txt', true);
+    SQL.Text := GetLoadDataSQL('RegionalData', RootFolder()+SDirIn+'\RegionalData.txt', true);
     InternalExecute;
   end;
   //PricesData
   if utPricesData in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('PricesData', ExePath+SDirIn+'\PricesData.txt');
+    SQL.Text := GetLoadDataSQL('PricesData', RootFolder()+SDirIn+'\PricesData.txt');
     InternalExecute;
   end;
   //MinReqRules
   if utMinReqRules in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('MinReqRules', ExePath+SDirIn+'\MinReqRules.txt');
+    SQL.Text := GetLoadDataSQL('MinReqRules', RootFolder()+SDirIn+'\MinReqRules.txt');
     InternalExecute;
   end;
   //PricesRegionalData
   if utPricesData in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('PricesRegionalData', ExePath+SDirIn+'\PricesRegionalData.txt', true);
+    SQL.Text := GetLoadDataSQL('PricesRegionalData', RootFolder()+SDirIn+'\PricesRegionalData.txt', true);
     InternalExecute;
   end;
 
@@ -1663,22 +1667,22 @@ begin
   //Synonym
   if utSynonyms in UpdateTables then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
-      SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt');
+      SQL.Text := GetLoadDataSQL('Synonyms', RootFolder()+SDirIn+'\Synonyms.txt');
       InternalExecute;
     end
     else begin
-      SQL.Text := GetLoadDataSQL('Synonyms', ExePath+SDirIn+'\Synonyms.txt', true);
+      SQL.Text := GetLoadDataSQL('Synonyms', RootFolder()+SDirIn+'\Synonyms.txt', true);
       InternalExecute;
     end;
   end;
   //SynonymFirmCr
   if utSynonymFirmCr in UpdateTables then begin
-    SQL.Text := GetLoadDataSQL('SynonymFirmCr', ExePath+SDirIn+'\SynonymFirmCr.txt', true);
+    SQL.Text := GetLoadDataSQL('SynonymFirmCr', RootFolder()+SDirIn+'\SynonymFirmCr.txt', true);
     InternalExecute;
   end;
   //Core
   if utCore in UpdateTables then begin
-    coreTestInsertSQl := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
+    coreTestInsertSQl := GetLoadDataSQL('Core', RootFolder()+SDirIn+'\Core.txt');
 
 {$ifndef DisableCrypt}
     SQL.Text :=
@@ -1710,13 +1714,13 @@ begin
 {$endif}
 
 //    Так Core грузился раньше
-//    SQL.Text := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
+//    SQL.Text := GetLoadDataSQL('Core', RootFolder()+SDirIn+'\Core.txt');
 //    InternalExecute;
 
 //    Тесты для загрузки в CoreTest
 //    SQL.Text:='truncate coretest ;';
 //    InternalExecute;
-//    coreTestInsertSQl := GetLoadDataSQL('CoreTest', ExePath+SDirIn+'\CoreTest.txt');
+//    coreTestInsertSQl := GetLoadDataSQL('CoreTest', RootFolder()+SDirIn+'\CoreTest.txt');
 //    SQL.Text :=
 //      Copy(coreTestInsertSQl, 1, LENGTH(coreTestInsertSQl) - 1) +
 //      '(SERVERCOREID, @VarCryptCost) set CryptCost = @VarCryptCost, Cost = AES_DECRYPT(cast(@VarCryptCost as char(16)), "' + ABPass + '");';
@@ -1736,7 +1740,7 @@ begin
       SQL.Text:='truncate maxproducercosts;';
       InternalExecute;
     end;
-    SQL.Text := GetLoadDataSQL('MaxProducerCosts', ExePath+SDirIn+'\MaxProducerCosts.txt');
+    SQL.Text := GetLoadDataSQL('MaxProducerCosts', RootFolder()+SDirIn+'\MaxProducerCosts.txt');
     InternalExecute;
   end;
 
@@ -1844,7 +1848,7 @@ begin
   { Добавляем забракованые препараты }
   if utRejects in UpdateTables then
   begin
-    SQL.Text := GetLoadDataSQL('Defectives', ExePath+SDirIn+'\Rejects.txt', True);
+    SQL.Text := GetLoadDataSQL('Defectives', RootFolder()+SDirIn+'\Rejects.txt', True);
     InternalExecute;
   end;
 
@@ -2319,19 +2323,19 @@ procedure TExchangeThread.ExtractDocs(DirName: String);
 var
   DocsSR: TSearchRec;
 begin
-  if DirectoryExists(ExePath + SDirIn + '\' + DirName) then begin
+  if DirectoryExists(RootFolder() + SDirIn + '\' + DirName) then begin
     try
-      if FindFirst( ExePath + SDirIn + '\' + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
+      if FindFirst( RootFolder() + SDirIn + '\' + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
         repeat
           if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then
             OSMoveFile(
-              ExePath + SDirIn + '\' + DirName + '\' + DocsSR.Name,
-              ExePath + DirName + '\' + DocsSR.Name);
+              RootFolder() + SDirIn + '\' + DirName + '\' + DocsSR.Name,
+              RootFolder() + DirName + '\' + DocsSR.Name);
         until (FindNext( DocsSR ) <> 0)
     finally
       SysUtils.FindClose( DocsSR );
     end;
-    AProc.RemoveDirectory(ExePath + SDirIn + '\' + DirName);
+    AProc.RemoveDirectory(RootFolder() + SDirIn + '\' + DirName);
   end;
 end;
 
@@ -2816,7 +2820,7 @@ begin
     DM.adcUpdate.Execute;
     try
       DM.adcUpdate.SQL.Text :=
-        GetLoadDataSQL('ClientToAddressMigrations', ExePath+SDirIn+'\ClientToAddressMigrations.txt');
+        GetLoadDataSQL('ClientToAddressMigrations', RootFolder()+SDirIn+'\ClientToAddressMigrations.txt');
       DM.adcUpdate.Execute;
 
       if DM.adsQueryValue.Active then DM.adsQueryValue.Close;
@@ -2917,28 +2921,28 @@ begin
     + '   and (CurrentOrderHeads.Frozen = 0) '
     + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
   InternalExecute;
-  DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', ExePath+SDirIn+'\batchreport.txt');
+  DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', RootFolder()+SDirIn+'\batchreport.txt');
   InternalExecute;
 
   //Загружаем название служебных колонок относительно пользователя 
-  if (GetFileSize(ExePath+SDirIn+'\BatchReportServiceFields.txt') > 0) then begin
-    insertSQL := Trim(GetLoadDataSQL('batchreportservicefields', ExePath+SDirIn+'\BatchReportServiceFields.txt'));
+  if (GetFileSize(RootFolder()+SDirIn+'\BatchReportServiceFields.txt') > 0) then begin
+    insertSQL := Trim(GetLoadDataSQL('batchreportservicefields', RootFolder()+SDirIn+'\BatchReportServiceFields.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
       '(FieldName) set ClientId = '+ ClientID + ';';
     InternalExecute;
   end;
 
-  if (GetFileSize(ExePath+SDirIn+'\BatchOrder.txt') > 0)
-    and (GetFileSize(ExePath+SDirIn+'\BatchOrderItems.txt') > 0)
+  if (GetFileSize(RootFolder()+SDirIn+'\BatchOrder.txt') > 0)
+    and (GetFileSize(RootFolder()+SDirIn+'\BatchOrderItems.txt') > 0)
   then begin
-    insertSQL := Trim(GetLoadDataSQL('CurrentOrderHeads', ExePath+SDirIn+'\BatchOrder.txt'));
+    insertSQL := Trim(GetLoadDataSQL('CurrentOrderHeads', RootFolder()+SDirIn+'\BatchOrder.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
       '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
     InternalExecute;
 
-    insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', ExePath+SDirIn+'\BatchOrderItems.txt'));
+    insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', RootFolder()+SDirIn+'\BatchOrderItems.txt'));
     
 {$ifndef DisableCrypt}
     DM.adcUpdate.SQL.Text :=
@@ -3134,7 +3138,7 @@ begin
     end;
   end;
   { очищаем папку In }
-  DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+  DeleteFilesByMask( RootFolder() + SDirIn + '\*.txt');
   Synchronize( ExchangeForm.CheckStop);
   finally
     FPostParams.Free;
@@ -3205,16 +3209,16 @@ procedure TExchangeThread.ImportHistoryOrders;
 var
   insertSQL : String;
 begin
-  if (GetFileSize(ExePath+SDirIn+'\PostedOrderHeads.txt') > 0)
-    and (GetFileSize(ExePath+SDirIn+'\PostedOrderLists.txt') > 0)
+  if (GetFileSize(RootFolder()+SDirIn+'\PostedOrderHeads.txt') > 0)
+    and (GetFileSize(RootFolder()+SDirIn+'\PostedOrderLists.txt') > 0)
   then begin
-    insertSQL := Trim(GetLoadDataSQL('PostedOrderHeads', ExePath+SDirIn+'\PostedOrderHeads.txt'));
+    insertSQL := Trim(GetLoadDataSQL('PostedOrderHeads', RootFolder()+SDirIn+'\PostedOrderHeads.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
       '(ORDERID, ServerOrderId, CLIENTID, PRICECODE, REGIONCODE, SendDate, MessageTO, DelayOfPayment, PriceDate) set ORDERDATE = SendDate, Closed = 1, Send = 1;';
     InternalExecute;
 
-    insertSQL := Trim(GetLoadDataSQL('PostedOrderLists', ExePath+SDirIn+'\PostedOrderLists.txt'));
+    insertSQL := Trim(GetLoadDataSQL('PostedOrderLists', RootFolder()+SDirIn+'\PostedOrderLists.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
       + ' (Id, ORDERID, CLIENTID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
@@ -3252,8 +3256,8 @@ begin
       + '   and (PostedOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
     InternalExecute;
   end;
-  OSDeleteFile(ExePath+SDirIn+'\PostedOrderHeads.txt');
-  OSDeleteFile(ExePath+SDirIn+'\PostedOrderLists.txt');
+  OSDeleteFile(RootFolder()+SDirIn+'\PostedOrderHeads.txt');
+  OSDeleteFile(RootFolder()+SDirIn+'\PostedOrderLists.txt');
 end;
 
 procedure TExchangeThread.ImportDocs;
@@ -3263,8 +3267,8 @@ var
   afterWaybillCount : Integer;
 begin
   beforeWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
-  if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
-    InputFileName := StringReplace(ExePath+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
+  if (GetFileSize(RootFolder()+SDirIn+'\DocumentHeaders.txt') > 0) then begin
+    InputFileName := StringReplace(RootFolder()+SDirIn+'\DocumentHeaders.txt', '\', '/', [rfReplaceAll]);
     DM.adcUpdate.Close;
     DM.adcUpdate.SQL.Text :=
       Format(
@@ -3276,8 +3280,8 @@ begin
     ExchangeParams.ImportDocs := afterWaybillCount > beforeWaybillCount;
   end;
 
-  if (GetFileSize(ExePath+SDirIn+'\DocumentBodies.txt') > 0) then begin
-    InputFileName := StringReplace(ExePath+SDirIn+'\DocumentBodies.txt', '\', '/', [rfReplaceAll]);
+  if (GetFileSize(RootFolder()+SDirIn+'\DocumentBodies.txt') > 0) then begin
+    InputFileName := StringReplace(RootFolder()+SDirIn+'\DocumentBodies.txt', '\', '/', [rfReplaceAll]);
     DM.adcUpdate.Close;
     DM.adcUpdate.SQL.Text :=
       Format(

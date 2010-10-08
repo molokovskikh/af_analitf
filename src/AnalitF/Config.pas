@@ -724,15 +724,15 @@ begin
     DirName := '.'
   else
     if AnsiStartsText('.\', DirName) then
-      DirName := ExePath + Copy(DirName, 3, Length(DirName));
+      DirName := RootFolder() + Copy(DirName, 3, Length(DirName));
 
   if FileCtrl.SelectDirectory(
        'Выберите директорию для поставщика ' + adsWaybillFolders.FieldByName('FullName').AsString,
        '',
        DirName)
   then begin
-    if AnsiStartsText(ExePath, DirName) then
-      DirName := '.\' + Copy(DirName, Length(ExePath) + 1 , Length(DirName));
+    if AnsiStartsText(RootFolder(), DirName) then
+      DirName := '.\' + Copy(DirName, Length(RootFolder()) + 1 , Length(DirName));
     SoftEdit(adsWaybillFolders);
     adsWaybillFolders.FieldByName('WaybillFolder').AsString := DirName;
   end;
@@ -744,7 +744,7 @@ var
 begin
   dirName := dbeWaybillFolder.Text;
   if AnsiStartsText('.\', dirName) then
-    dirName := ExePath + Copy(dirName, 3, Length(dirName));
+    dirName := RootFolder() + Copy(dirName, 3, Length(dirName));
   lFolderNotExists.Visible := not DirectoryExists(dirName);
 end;
 

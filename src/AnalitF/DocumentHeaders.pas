@@ -227,7 +227,7 @@ begin
             if (documentType <> dtUnknown) and (Length(downloadId) > 0) then
             try
               DeleteFilesByMask(
-                ExePath + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
+                RootFolder() + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
                 True);
             except
               on DeleteFile : Exception do
@@ -264,11 +264,11 @@ end;
 
 procedure TDocumentHeaderForm.spOpenFoldersClick(Sender: TObject);
 begin
-  ShellExecute( 0, 'Open', PChar(ExePath + SDirDocs + '\'),
+  ShellExecute( 0, 'Open', PChar(RootFolder() + SDirDocs + '\'),
     nil, nil, SW_SHOWDEFAULT);
-  ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
+  ShellExecute( 0, 'Open', PChar(RootFolder() + SDirWaybills + '\'),
     nil, nil, SW_SHOWDEFAULT);
-  ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
+  ShellExecute( 0, 'Open', PChar(RootFolder() + SDirRejects + '\'),
     nil, nil, SW_SHOWDEFAULT);
 end;
 

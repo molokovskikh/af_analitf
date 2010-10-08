@@ -247,18 +247,6 @@ var
   MainForm: TMainForm;
   ProcessFatalMySqlError : Boolean;
 
-//Уникальный идентификатор, передаваемый при обновлении
-function GetCopyID: LongInt;
-
-//Уникальный идентификатор с учетом Hash'а приложения
-function GetDBID: LongInt;
-
-//Уникальный идентификатор с учетом Hash'а приложения старой версии
-function GetOldDBID: LongInt;
-
-//Получить идентификатор установки программы относительно пути, чтобы сохранять настройки программы в реестре
-function GetPathCopyID: String;
-
 implementation
 
 uses
@@ -275,44 +263,6 @@ uses
   GlobalExchangeParameters;
 
 {$R *.DFM}
-
-function GetCopyID: LongInt;
-begin
-{$ifdef DSP}
-  result := StrToInt64('$E99E48');
-{$else}
-  result := GetUniqueID( Application.ExeName, '');
-{$endif}
-end;
-
-function GetDBID: LongInt;
-begin
-{$ifdef DEBUG}
-   result := GetUniqueID( Application.ExeName, 'E99E483DDE777778ADEFCB3DCD988BC9');
-{$else}
-  {$ifdef DSP}
-    result := StrToInt64('$3DDE77');
-  {$else}
-    result := GetUniqueID( Application.ExeName, AProc.GetFileHash(Application.ExeName));
-  {$endif}
-{$endif}
-end;
-
-function GetOldDBID: LongInt;
-begin
-{$ifdef DSP}
-  result := StrToInt64('$3DDE77');
-{$else}
-  result := GetUniqueID( Application.ExeName, AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak'));
-{$endif}
-end;
-
-
-function GetPathCopyID: String;
-begin
-  Result := IntToHex( GetPathID(Application.ExeName), 8);
-end;
-
 
 procedure TMainForm.FormCreate(Sender: TObject);
 //var
@@ -983,7 +933,7 @@ begin
 
   if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
-    openFileName := ExePath + SDirReclame + '\' + FormatFloat('00', Browser.Tag) + '.htm';
+    openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', Browser.Tag) + '.htm';
     if SysUtils.FileExists( openFileName ) then
     try
       Browser.Navigate( openFileName );
@@ -1003,7 +953,7 @@ begin
           'Ошибка при открытии пустой страницы в WebBrowserе в MainForm: ' + E.Message + #13#10 +
           'Системная ошибка: ' + SysErrorMessage(GetLastError()));
     end;
-    DeleteFilesByMask(ExePath + SDirReclame + '\*.*', False);
+    DeleteFilesByMask(RootFolder() + SDirReclame + '\*.*', False);
   end;
   SetFocusOnMainForm;
 end;
@@ -1200,7 +1150,7 @@ begin
         if (documentType <> dtUnknown) and (Length(downloadId) > 0) then
         try
           DeleteFilesByMask(
-            ExePath + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
+            RootFolder() + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
             True);
         except
           on DeleteFile : Exception do
@@ -1262,11 +1212,11 @@ begin
   then
     ShowDocumentHeaders
   else begin
-    ShellExecute( 0, 'Open', PChar(ExePath + SDirDocs + '\'),
+    ShellExecute( 0, 'Open', PChar(RootFolder() + SDirDocs + '\'),
       nil, nil, SW_SHOWDEFAULT);
-    ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
+    ShellExecute( 0, 'Open', PChar(RootFolder() + SDirWaybills + '\'),
       nil, nil, SW_SHOWDEFAULT);
-    ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
+    ShellExecute( 0, 'Open', PChar(RootFolder() + SDirRejects + '\'),
       nil, nil, SW_SHOWDEFAULT);
   end;
 end;

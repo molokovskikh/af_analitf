@@ -109,6 +109,7 @@ function RemoveDirectory(const Dir : String) : LongBool;
 function GetDirectorySize(const Dir : String): Int64;
 function FormatByteSize(const bytes: Int64): String;
 
+function RootFolder() : String;
 
 implementation
 
@@ -1188,6 +1189,15 @@ begin
         Result := FormatFloat('#.## КБ', bytes / KB)
       else
         Result := FormatFloat('#.## Байт', bytes) ;
+end;
+
+function RootFolder() : String;
+begin
+{$ifdef NetworkVersion}
+  Result := '\\prg1.adc.analit.net\AnalitFShare\';
+{$else}
+  Result := ExePath;
+{$endif}
 end;
 
 { TFileUpdateInfo }

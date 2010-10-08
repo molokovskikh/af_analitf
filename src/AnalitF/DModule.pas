@@ -434,6 +434,7 @@ type
     procedure MySQLMonitorSQL(Sender: TObject; Text: String;
       Flag: TDATraceFlag);
 {$endif}
+    procedure SetNetworkSettings;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -842,6 +843,8 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
 begin
+  SetNetworkSettings;
+
 {$ifdef DEBUG}
   MySQLMonitor.Active := False;
   MySQLMonitor.OnSQL := MySQLMonitorSQL;
@@ -855,9 +858,9 @@ begin
   FProcessFirebirdUpdate := False;
   FProcess800xUpdate := False;
   FProcessUpdateToNewLibMysqlD := False;
-  
+
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
-  if not DirectoryExists( ExePath + SDirUpload) then CreateDir( ExePath + SDirUpload);
+  if not DirectoryExists( RootFolder() + SDirUpload) then CreateDir( RootFolder() + SDirUpload);
   if DirectoryExists( ExePath + SDirDataTmpDir) then begin
     DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
     try
@@ -872,7 +875,7 @@ begin
 
   if NeedUpdateToNewLibMySqlD then
     ShowSQLWaiting(PrepareUpdateToNewLibMySqlD, 'Происходит подготовка к обновлению');
-    
+
   DeleteOldMysqlFolder;
 
   mainStartupHelper.Write('DModule', 'Закончили подготовительные действия');
@@ -946,10 +949,22 @@ begin
   ExitProcess(1);
 {$endif}
 
+{
+  try
+    MainConnection.Open;
+  except
+    on E : Exception do
+      LogExitError(Format( 'Не возможно открыть базу данных: %s ', [ E.Message ]), Integer(ecDBFileError));
+  end;
+}  
+
   //Удаляем файлы базы данных для переустановки
+{
   if FindCmdLineSwitch('renew') then
     RunDeleteDBFiles();
+}    
 
+{
   FNeedImportAfterRecovery := False;
   FCreateClearDatabase     := False;
   if DatabaseController.IsBackuped then
@@ -960,6 +975,7 @@ begin
       on E : Exception do
         LogExitError(Format( 'Не возможно восстановить базу данных из резервной копии : %s ', [ E.Message ]), Integer(ecDBFileError));
     end;
+}    
 
 {
   if FileExists(ExePath + DatabaseName) and ((FileGetAttr(ExePath + DatabaseName) and SysUtils.faReadOnly) = SysUtils.faReadOnly)
@@ -973,6 +989,9 @@ begin
   if MainConnection is TMyEmbConnection then
     CheckDBFile
   else begin
+{$ifdef NetworkVersion}
+    CheckDBFile
+{$else}
 {$ifdef DEBUG}
     try
       MainConnection.Database := 'analitf';
@@ -980,13 +999,14 @@ begin
       try
 {$ifndef USENEWMYSQLTYPES}
         ExtractDBScript(MainConnection);
-{$endif}        
+{$endif}
       finally
         MainConnection.Close;
       end;
     finally
       MainConnection.Database := '';
     end;
+{$endif}
 {$endif}
   end;
   mainStartupHelper.Write('DModule', 'Закончили проверку базы данных');
@@ -1021,16 +1041,20 @@ begin
   { устанавливаем параметры печати }
   frReport.Title := Application.Title;
   { проверяем и если надо создаем нужные каталоги }
-  if not DirectoryExists( ExePath + SDirDocs) then CreateDir( ExePath + SDirDocs);
-  if not DirectoryExists( ExePath + SDirWaybills) then CreateDir( ExePath + SDirWaybills);
-  if not DirectoryExists( ExePath + SDirRejects) then CreateDir( ExePath + SDirRejects);
+  if not DirectoryExists( RootFolder() + SDirDocs) then CreateDir( RootFolder() + SDirDocs);
+  if not DirectoryExists( RootFolder() + SDirWaybills) then CreateDir( RootFolder() + SDirWaybills);
+  if not DirectoryExists( RootFolder() + SDirRejects) then CreateDir( RootFolder() + SDirRejects);
+  if not DirectoryExists( RootFolder() + SDirIn) then CreateDir( RootFolder() + SDirIn);
   if not DirectoryExists( ExePath + SDirIn) then CreateDir( ExePath + SDirIn);
   if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
+  if not DirectoryExists( RootFolder() + SDirReclame) then CreateDir( RootFolder() + SDirReclame);
   MainForm.SetUpdateDateTime;
   Application.HintPause := 0;
 
   DeleteFilesByMask(ExePath + SDirIn + '\*.zip', False);
   DeleteFilesByMask(ExePath + SDirIn + '\*.zi_', False);
+  DeleteFilesByMask(RootFolder() + SDirIn + '\*.zip', False);
+  DeleteFilesByMask(RootFolder() + SDirIn + '\*.zi_', False);
 
   SetSendToNotClosedOrders;
 
@@ -1303,7 +1327,7 @@ var
   Tables : TStringList;
   I : Integer;
 begin
-  if FindFirst(ExePath+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
+  if FindFirst(RootFolder()+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
     Screen.Cursor:=crHourglass;
     Files := TStringList.Create;
     Tables := TStringList.Create;
@@ -1312,7 +1336,7 @@ begin
           adcUpdate.Close;
         //Сначала очистили внешние таблицы от предыдущих данных
         repeat
-          FileName := ExePath+SDirIn+ '\' + SR.Name;
+          FileName := RootFolder()+SDirIn+ '\' + SR.Name;
           ShortName := ChangeFileExt(SR.Name,'');
 
           if DatabaseController.TableExists('tmp' + ShortName) then begin
@@ -1768,12 +1792,13 @@ end;
 
 procedure TDM.UpdateDB;
 var
-  dbCon : TMyEmbConnection;
+  dbCon : TCustomMyConnection;
   DBVersion : Integer;
 begin
-  dbCon := TMyEmbConnection.Create(nil);
+  dbCon := DatabaseController.GetNewConnection(MainConnection);
   try
 
+{
     dbCon.Database := MainConnection.Database;
     dbCon.Username := MainConnection.Username;
     dbCon.DataDir := TMyEmbConnection(MainConnection).DataDir;
@@ -1781,6 +1806,7 @@ begin
     dbCon.Params.Clear;
     dbCon.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
     dbCon.LoginPrompt := False;
+}
 
 {$ifdef DEBUG}
     try
@@ -1812,12 +1838,16 @@ begin
     mainStartupHelper.Write('DModule', 'Начали проверки миграций');
     dbCon.Open;
     try
+{$ifdef NetworkVersion}
+      dbCon.ExecSQL('use analitf;', []);
+{$endif}
       DBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
     finally
       dbCon.Close;
       //dbCon.RemoveFromPool;
     end;
 
+{
     if DBVersion = 50 then begin
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
       DBVersion := 51;
@@ -1911,6 +1941,7 @@ begin
 
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]);
+}      
 
     //Если было произведено обновление программы, то обновляем ключи
     if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
@@ -2097,7 +2128,7 @@ end;
 
 procedure TDM.CreateClearDatabaseFromScript(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
 var
-  FEmbConnection : TMyEmbConnection;
+  FConnection : TCustomMyConnection;
   MyDump : TMyDump;
 begin
   //Когда мы запускаем программу и не можем открыть базу данных AnalitF,
@@ -2109,6 +2140,13 @@ begin
   //Но MyDac не позволяет открыть еще одно соедиение, т.к. параметры различны.
   //Поэтому в нитках приходится создавать свои соединения и это работает,
   //либо все соединения открывать в папке ..\AnalitF\Data, а потом изменять базу данных на AnalitF
+
+  FConnection := DatabaseController.GetNewConnection(MainConnection);
+
+  if MainConnection is TMyEmbConnection then
+    TMyEmbConnection(FConnection).DataDir := DBDirectoryName;
+
+{
   FEmbConnection := TMyEmbConnection.Create(nil);
   FEmbConnection.Database := '';
   FEmbConnection.Username := MainConnection.Username;
@@ -2117,25 +2155,33 @@ begin
   FEmbConnection.Params.Clear;
   FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
   FEmbConnection.LoginPrompt := False;
+}  
 
   try
 
+    if DatabaseController.WorkSchemaExists(FConnection) then
+      DatabaseController.DropWorkSchema(FConnection);
+
+{
     if DirectoryExists(ExePath + SDirData + '\analitf')
     then
       DeleteDataDir(DBDirectoryName);
+}
 
-    SysUtils.ForceDirectories(ExePath + SDirData + '\analitf');
+    //SysUtils.ForceDirectories(ExePath + SDirData + '\analitf');
+    DatabaseController.CreateWorkSchema(FConnection);
 
-    FEmbConnection.Database := 'analitf';
+    FConnection.Database := 'analitf';
 
-    FEmbConnection.Open;
+    FConnection.Open;
     try
       MyDump := TMyDump.Create(nil);
       try
-        MyDump.Connection := FEmbConnection;
+        MyDump.Connection := FConnection;
         MyDump.Objects := [doTables, doViews];
         MyDump.OnError := OnScriptExecuteError;
         MyDump.SQL.Text := GetFullLastCreateScript();
+        WriteExchangeLog('CreateClearDatabaseFromScript', MyDump.SQL.Text);
         MyDump.Restore;
       finally
         MyDump.Free;
@@ -2143,15 +2189,15 @@ begin
 
       if not DatabaseController.Initialized then begin
         mainStartupHelper.Write('DModule.CreateClearDatabase', 'Начали инициализацию объектов базы данных');
-        DatabaseController.Initialize(FEmbConnection);
+        DatabaseController.Initialize(FConnection);
         mainStartupHelper.Write('DModule.CreateClearDatabase', 'Закончили инициализацию объектов базы данных');
       end;
     finally
-      FEmbConnection.Close;
+      FConnection.Close;
     end;
 
   finally
-    FEmbConnection.Free;
+    FConnection.Free;
   end;
   //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
@@ -2161,14 +2207,15 @@ begin
       LogCriticalError(Format('MySql Clients Count после создания базы данных: %d',
         [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
     MyAPIEmbedded.FreeMySQLLib;
+    DatabaseController.RepairTableFromBackup();
   end;
-  DatabaseController.RepairTableFromBackup();
 end;
 
 procedure TDM.RecoverDatabase(E: Exception);
 var
   UserErrorMessage,
   DBErrorMess : String;
+  InternalRestore : Boolean;
 begin
   {
   Здесь мы должны сделать:
@@ -2178,6 +2225,7 @@ begin
   4. Скопировать из эталонной базы данных
   5. Открыть эталонную базу данных
   }
+  InternalRestore := False;
   UserErrorMessage := 'Не удается открыть базу данных программы.';
   DBErrorMess := Format('Не удается открыть базу данных программы.'#13#10 +
     'Ошибка        : %s'#13#10,
@@ -2192,6 +2240,17 @@ begin
         [EMyError(E).ErrorCode, EMyError(E).Message, BoolToStr(EMyError(E).IsFatalError)]
     );
 
+{$ifdef NetworkVersion}
+  if (E is EMyError) and (EMyError(E).ErrorCode = ER_BAD_DB_ERROR) then begin
+    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
+    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено создание базы данных.';
+  end
+  else begin
+    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
+    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
+    InternalRestore := True;
+  end;
+{$else}
   if not DirectoryExists(ExePath + SDirDataPrev) then begin
     DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
     UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено создание базы данных.';
@@ -2200,12 +2259,13 @@ begin
     DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
     UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
   end;
+{$endif}
 
   //Логируем наши действия и отображаем пользователю
   AProc.LogCriticalError(DBErrorMess);
 
   //Если нет предыдущей копии, то создаем базу даннных
-  if not DirectoryExists(ExePath + SDirDataPrev) then begin
+  if not InternalRestore then begin
     RunUpdateDBFile(nil, ExePath + SDirData, CURRENT_DB_VERSION, CreateClearDatabaseFromScript, nil, 'Происходит создание базы данных. Подождите...');
     FCreateClearDatabase := True;
     FNeedImportAfterRecovery := False;
@@ -2290,9 +2350,9 @@ var
   DocsSR: TSearchRec;
   CurrentFileDate : TDateTime;
 begin
-  if DirectoryExists(ExePath + DirName) then begin
+  if DirectoryExists(RootFolder() + DirName) then begin
     try
-      if FindFirst( ExePath + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
+      if FindFirst( RootFolder() + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
         repeat
           if (DocsSR.Name <> '.') and (DocsSR.Name <> '..')
           then begin
@@ -2303,7 +2363,7 @@ begin
                 adtReceivedDocs['FILENAME'] := DirName + '\' + DocsSR.Name;
                 adtReceivedDocs['FILEDATETIME'] := CurrentFileDate;
                 adtReceivedDocs.Post;
-                FileList.Add(ExePath + DirName + '\' + DocsSR.Name);
+                FileList.Add(RootFolder() + DirName + '\' + DocsSR.Name);
               end;
           end;
         until (FindNext( DocsSR ) <> 0)
@@ -2320,7 +2380,7 @@ var
 begin
   if FileList.Count > 0 then
     if not OpenEachFile then
-      ShellExecute( 0, 'Open', PChar(ExePath + DirName + '\'),
+      ShellExecute( 0, 'Open', PChar(RootFolder() + DirName + '\'),
         nil, nil, SW_SHOWDEFAULT)
     else
       for I := 0 to FileList.Count-1 do
@@ -2946,7 +3006,11 @@ end;
 function TDM.GetMainConnection: TCustomMyConnection;
 begin
 {$ifndef USEMYSQLSTANDALONE}
+  {$ifdef NetworkVersion}
+  Result := (MyConnection as TCustomMyConnection);
+  {$else}
   Result := (MyEmbConnection as TCustomMyConnection);
+  {$endif}
 {$else}
   Result := (MyConnection as TCustomMyConnection);
 {$endif}
@@ -4350,6 +4414,14 @@ begin
   finally
     names.Free;
   end;
+end;
+
+procedure TDM.SetNetworkSettings;
+begin
+  MyConnection.Server := 'prg1';
+  MyConnection.Username := 'root';
+  MyConnection.Password := 'root';
+  MyConnection.Port := 3306;
 end;
 
 initialization

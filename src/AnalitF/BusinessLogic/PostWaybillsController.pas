@@ -49,7 +49,8 @@ type
 implementation
 
 uses
-  Main;
+  Main,
+  UniqueID;
   
 { TPostWaybillsControllerController }
 
@@ -121,7 +122,7 @@ begin
     else begin
       folderName := selectFirmCodes.FieldByName('WaybillFolder').AsString;
       if AnsiStartsText('.\', folderName) then
-        folderName := ExePath + Copy(folderName, 3, Length(folderName));
+        folderName := RootFolder() + Copy(folderName, 3, Length(folderName));
       if DirectoryExists(folderName) then begin
         try
           if SysUtils.FindFirst(folderName + '\*.*',faAnyFile-faDirectory,SR)=0 then
@@ -373,8 +374,8 @@ begin
           try
             folderName := GetFolderNameFromFullName(selectFirmCodes.FieldByName('ShortName').AsString);
 
-            if not DirectoryExists(ExePath + SDirUpload + '\' + folderName) then
-              if not CreateDir(ExePath + SDirUpload + '\' + folderName) then begin
+            if not DirectoryExists(RootFolder() + SDirUpload + '\' + folderName) then
+              if not CreateDir(RootFolder() + SDirUpload + '\' + folderName) then begin
                 Result := False;
                 WriteExchangeLog('WaybillsHelper',
                   Format('Ошибка при создании папки %s для поставщика %s: %s',
@@ -426,7 +427,7 @@ begin
         else begin
           folderName := selectFirmCodes.FieldByName('WaybillFolder').AsString;
           if AnsiStartsText('.\', folderName) then
-            folderName := ExePath + Copy(folderName, 3, Length(folderName));
+            folderName := RootFolder() + Copy(folderName, 3, Length(folderName));
           if not DirectoryExists(folderName) then begin
             Result := False;
             Break;

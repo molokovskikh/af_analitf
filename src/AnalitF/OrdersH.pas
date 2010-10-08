@@ -534,7 +534,7 @@ end;
 
 procedure TOrdersHForm.btnWayBillListClick(Sender: TObject);
 begin
-  ShellExecute( 0, 'Open', PChar(ExePath + SDirWaybills + '\'),
+  ShellExecute( 0, 'Open', PChar(RootFolder() + SDirWaybills + '\'),
     nil, nil, SW_SHOWDEFAULT);
 end;
 

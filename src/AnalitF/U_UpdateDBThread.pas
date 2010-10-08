@@ -22,7 +22,8 @@ procedure RunUpdateDBFile(
 implementation
 
 uses
-  Waiting;
+  Waiting,
+  DatabaseObjects;
 
 type
   TRunUpdateDBFile = class(TThread)
@@ -41,12 +42,18 @@ type
 
 procedure TRunUpdateDBFile.Execute;
 var
-  InternalConnection : TMyEmbConnection;
+  InternalConnection : TCustomMyConnection;
 begin
   ErrorStr := '';
   try
     InternalConnection := nil;
-    if Assigned(dbCon) and (dbCon is TMyEmbConnection) then begin
+    if Assigned(dbCon) then begin
+      InternalConnection := DatabaseController.GetNewConnection(dbCon);
+
+      if (dbCon is TMyEmbConnection) then
+        TMyEmbConnection(InternalConnection).DataDir := DBDirectoryName;
+
+{
       InternalConnection := TMyEmbConnection.Create(nil);
       InternalConnection.Database := dbCon.Database;
       InternalConnection.Username := dbCon.Username;
@@ -55,6 +62,7 @@ begin
       InternalConnection.Params.Clear;
       InternalConnection.Params.AddStrings(TMyEmbConnection(dbCon).Params);
       InternalConnection.LoginPrompt := False;
+}      
     end;
     try
     if Assigned(OnUpdateDBFile) then
