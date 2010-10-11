@@ -262,7 +262,8 @@ uses
   U_OrderBatchForm,
   StartupHelper,
   MyClasses,
-  GlobalExchangeParameters;
+  GlobalExchangeParameters,
+  Wait;
 
 {$R *.DFM}
 
@@ -1557,9 +1558,22 @@ end;
 procedure TMainForm.tmrOnExclusiveTimer(Sender: TObject);
 begin
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
-    DM.GlobalExclusiveParams.ReadParams;
-    if DM.GlobalExclusiveParams.ExclusiveId <> '' then begin
-      WriteExchangeLog('OnExclusiveTimer', 'ExclusiveId = ' + DM.GlobalExclusiveParams.ExclusiveId);
+    try
+      SetOrdersInfo;
+    except
+    end;
+    try
+      DM.GlobalExclusiveParams.ReadParams;
+    except
+    end;
+    if not DM.GlobalExclusiveParams.ClearOrSelfExclusive
+    then begin
+      tmrOnExclusive.Enabled := False;
+      try
+        ShowWait;
+      finally
+        tmrOnExclusive.Enabled := True;
+      end
     end;
   end;
 end;

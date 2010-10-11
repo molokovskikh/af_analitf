@@ -111,7 +111,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   PostWaybillsController,
   DocumentHeaders,
   U_OrderBatchForm,
-  SendWaybillTypes;
+  SendWaybillTypes,
+  Exclusive;
 
 {$R *.DFM}
 
@@ -162,6 +163,15 @@ begin
       if (Length(DM.adtParams.FieldByName( 'HTTPName').AsString) = 0) then
         Exit;
     end;
+  end;
+
+  if [eaSendLetter] <> AExchangeActions then begin
+    DM.GlobalExclusiveParams.ReadParams;
+    if not DM.GlobalExclusiveParams.ClearOrSelfExclusive then
+      Exit
+    else
+      if not ShowExclusive() then
+        Exit;
   end;
 
   DM.DeleteEmptyOrders;
@@ -382,6 +392,8 @@ begin
 
   finally
     BatchFileName := '';
+    if ([eaSendLetter] <> AExchangeActions) and DM.GlobalExclusiveParams.SelfExclusive then
+      try DM.GlobalExclusiveParams.ResetExclusive; except end;
     if Assigned(GlobalExchangeParams) then
       try FreeAndNil(GlobalExchangeParams) except end;
   end;

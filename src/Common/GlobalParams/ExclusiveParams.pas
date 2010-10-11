@@ -6,7 +6,10 @@ uses
   SysUtils,
   Classes,
   MyAccess,
-  GlobalParams;
+  MyServerControl,
+  GlobalParams,
+  UniqueId,
+  SysNames;
 
 type
   TExclusiveParams = class(TGlobalParams)
@@ -16,13 +19,37 @@ type
     ExclusiveDate : TDateTime;
     procedure ReadParams; override;
     procedure SaveParams; override;
+    procedure SetExclusive;
+    procedure ResetExclusive;
+    function CountOfProcess : Integer;
+    function ClearOrSelfExclusive : Boolean;
+    function SelfExclusive : Boolean;
   end;
 
 implementation
 
-uses Variants;
+uses Variants, DB;
 
 { TExclusiveParams }
+
+function TExclusiveParams.ClearOrSelfExclusive: Boolean;
+begin
+  Result := (ExclusiveId = '') or SelfExclusive;
+end;
+
+function TExclusiveParams.CountOfProcess: Integer;
+var
+  ServerControl : TMyServerControl;
+begin
+  ServerControl := TMyServerControl.Create(nil);
+  try
+    ServerControl.Connection := FConnection;
+    ServerControl.ShowProcessList(True);
+    Result := ServerControl.RecordCount;
+  finally
+    ServerControl.Free;
+  end;
+end;
 
 procedure TExclusiveParams.ReadParams;
 var
@@ -42,7 +69,15 @@ begin
   if VarIsNull(value) then
     ExclusiveDate := 0
   else
-    ExclusiveDate := value;
+    ExclusiveDate := VarToDateTime(value);
+end;
+
+procedure TExclusiveParams.ResetExclusive;
+begin
+  ExclusiveId := '';
+  ExclusiveComputerName := '';
+  ExclusiveDate := 0;
+  SaveParams;
 end;
 
 procedure TExclusiveParams.SaveParams;
@@ -50,6 +85,19 @@ begin
   SaveParam('ExclusiveId', ExclusiveId);
   SaveParam('ExclusiveComputerName', ExclusiveComputerName);
   SaveParam('ExclusiveDate', ExclusiveDate);
+end;
+
+function TExclusiveParams.SelfExclusive: Boolean;
+begin
+  Result := ExclusiveId = GetPathCopyID();
+end;
+
+procedure TExclusiveParams.SetExclusive;
+begin
+  ExclusiveId := GetPathCopyID();
+  ExclusiveComputerName := GetComputerName_();
+  ExclusiveDate := Now;
+  SaveParams;
 end;
 
 end.

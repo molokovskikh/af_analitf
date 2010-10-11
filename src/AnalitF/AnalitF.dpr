@@ -39,7 +39,7 @@ uses
   CRC32Unit in 'CRC32Unit.pas',
   RecThread in 'RecThread.pas',
   NotOrders in 'NotOrders.pas' {NotOrdersForm},
-  SysNames in 'SysNames.pas',
+  SysNames in '..\Common\System\SysNames.pas',
   AlphaUtils in 'AlphaUtils.pas',
   About in 'About.pas' {AboutForm},
   Waiting in 'Waiting.pas' {WaitingForm},
@@ -114,7 +114,9 @@ uses
   TicketReportParams in '..\Common\GlobalParams\TicketReportParams.pas',
   EditTicketReportParams in 'EditTicketReportParams.pas' {EditTicketReportParamsForm},
   NetworkSettings in '..\Common\GlobalParams\NetworkSettings.pas',
-  ExclusiveParams in '..\Common\GlobalParams\ExclusiveParams.pas';
+  ExclusiveParams in '..\Common\GlobalParams\ExclusiveParams.pas',
+  Exclusive in 'Exclusive.pas' {ExclusiveForm},
+  Wait in 'Wait.pas' {WaitForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}
