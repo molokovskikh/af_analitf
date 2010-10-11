@@ -554,7 +554,8 @@ implementation
 uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
      U_DeleteDBThread, SQLWaiting, INFHelpers, PostWaybillsController,
-     StartupHelper;
+     StartupHelper,
+     NetworkSettings;
 
 type
   TestMyDBThreadState = (
@@ -4424,11 +4425,10 @@ end;
 
 procedure TDM.SetNetworkSettings;
 begin
-  MyConnection.Server := 'prg1';
-  MyConnection.Username := 'root';
-  MyConnection.Password := 'root';
-//  MyConnection.Password := '';
-  MyConnection.Port := 3306;
+  MyConnection.Server := GetNetworkSettings.Server;
+  MyConnection.Username := GetNetworkSettings.Username;
+  MyConnection.Password := GetNetworkSettings.Password;
+  MyConnection.Port := GetNetworkSettings.Port;
 end;
 
 initialization

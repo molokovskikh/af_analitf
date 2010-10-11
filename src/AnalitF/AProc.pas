@@ -115,7 +115,8 @@ implementation
 
 uses
   IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest,
-  U_ExchangeLog, IdHash;
+  U_ExchangeLog, IdHash,
+  NetworkSettings;
 
 var
   FSilentMode : Boolean;
@@ -1200,7 +1201,8 @@ end;
 function RootFolder() : String;
 begin
 {$ifdef NetworkVersion}
-  Result := '\\prg1.adc.analit.net\AnalitFShare\';
+  //'\\prg1.adc.analit.net\AnalitFShare\'
+  Result := '\\' + GetNetworkSettings.Server  + '\' + GetNetworkSettings.ShareFolderName + '\';
 {$else}
   Result := ExePath;
 {$endif}

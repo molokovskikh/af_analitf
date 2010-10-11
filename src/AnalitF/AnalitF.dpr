@@ -112,7 +112,8 @@ uses
   GlobalExchangeParameters in 'BusinessLogic\GlobalExchangeParameters.pas',
   GlobalParams in '..\Common\GlobalParams\GlobalParams.pas',
   TicketReportParams in '..\Common\GlobalParams\TicketReportParams.pas',
-  EditTicketReportParams in 'EditTicketReportParams.pas' {EditTicketReportParamsForm};
+  EditTicketReportParams in 'EditTicketReportParams.pas' {EditTicketReportParamsForm},
+  NetworkSettings in '..\Common\GlobalParams\NetworkSettings.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
