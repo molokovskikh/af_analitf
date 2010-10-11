@@ -155,27 +155,32 @@ begin
               ReceiveHTTP.Disconnect;
             except
             end;
-            
+
             FileStream.Free;
           end;
 
           if Terminated then Abort;
           Log('Reclame', 'Пытаемся распаковать архив с рекламным блоком...');
+
+          OSMoveFile(
+            ExePath + SDirReclame + '\r' + RegionCode + '.zip',
+            RootFolder() + SDirReclame + '\r' + RegionCode + '.zip');
+
           SZCS.Enter;
           try
             SevenZipRes := SevenZipExtractArchive(
               0,
-              ExePath + SDirReclame + '\r' + RegionCode + '.zip',
+              RootFolder() + SDirReclame + '\r' + RegionCode + '.zip',
               '*.*',
               True,
               '',
               True,
-              ExePath + SDirReclame,
+              RootFolder() + SDirReclame,
               False,
               nil);
           finally
             SZCS.Leave;
-            SysUtils.DeleteFile(ZipFileName);
+            SysUtils.DeleteFile(RootFolder() + SDirReclame + '\r' + RegionCode + '.zip');
           end;
           if SevenZipRes <> 0 then
             raise Exception.CreateFmt(
@@ -183,7 +188,7 @@ begin
               'Код ошибки %d. ' +
               'Код ошибки 7-zip: %d.'#13#10 +
               'Текст ошибки: %s',
-              [ExePath + SDirReclame + '\r' + RegionCode + '.zip',
+              [RootFolder() + SDirReclame + '\r' + RegionCode + '.zip',
                SevenZipRes,
                SevenZip.LastSevenZipErrorCode,
                SevenZip.LastError]);

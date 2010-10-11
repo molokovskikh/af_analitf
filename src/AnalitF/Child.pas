@@ -270,7 +270,7 @@ begin
       try
         if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
         then begin
-          openFileName := ExePath + SDirReclame + '\' + FormatFloat('00', Self.Components[ i].Tag) + '.htm';
+          openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', Self.Components[ i].Tag) + '.htm';
           if SysUtils.FileExists(openFileName)
           then
             TWebBrowser(Self.Components[i]).Navigate(openFileName);
