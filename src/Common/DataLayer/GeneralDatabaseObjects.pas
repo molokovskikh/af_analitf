@@ -575,6 +575,8 @@ begin
 +'    `SERVERCOREID` bigint(20) default null      , '
 +'    `PriceCode` bigint(20) default null         , '
 +'    `MinCost` decimal(18,2) default null        , '
++'    `NextCost` decimal(18,2) default null    , '
++'    `MinCostCount` int default ''0''            , '
 +'    primary key (`PRODUCTID`,`REGIONCODE`)      , '
 +'    key `FK_MINPRICES_PRODUCTID` (`PRODUCTID`)  , '
 +'    key `FK_MINPRICES_REGIONCODE` (`REGIONCODE`) '

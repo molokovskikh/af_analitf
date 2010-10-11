@@ -1767,6 +1767,16 @@ begin
       +'   and (Clients.AllowDelayOfPayment = 1)',
       [],
       []);
+    SQL.Text := ''
+      + 'drop temporary table if exists MinPricesNext;'
+      + 'create temporary table MinPricesNext ('
+      +'   `PRODUCTID` bigint(20) not null default ''0''   , '
+      +'   `REGIONCODE` bigint(20) not null default ''0''  , '
+      +'   `NextCost` decimal(18,2) default null           , '
+      +'   `MinCostCount` int default ''0''                , '
+      +'   primary key (`PRODUCTID`,`REGIONCODE`)            '
+      + ') engine=Memory;';
+    InternalExecute;
     if VarIsNull(MainClientIdAllowDelayOfPayment) then begin
       SQL.Text := ''
         + 'INSERT IGNORE '
@@ -1778,6 +1788,18 @@ begin
         + '  min(Cost) '
         + 'FROM    Core '
         + 'GROUP BY ProductId, RegionCode';
+      InternalExecute;
+      SQL.Text := ''
+        + 'insert ignore into MinPricesNext (ProductId, RegionCode, NextCost, MinCostCount) '
+        + ' SELECT '
+        + '   Core.ProductId, '
+        + '   Core.RegionCode, '
+        + '   min(nullif(Core.Cost, MinPrices.MinCost)) as NextCost, '
+        + '   sum(Core.Cost = MinPrices.MinCost) as MinCostCount '
+        + ' FROM '
+        + '    MinPrices '
+        + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode '
+        + ' GROUP BY MinPrices.ProductId, MinPrices.RegionCode';
       InternalExecute;
     end
     else begin
@@ -1796,7 +1818,34 @@ begin
         +'group by ProductId, '
         +'         RegionCode';
       InternalExecute;
+      SQL.Text := ''
+        + 'insert ignore into MinPricesNext (ProductId, RegionCode, NextCost, MinCostCount) '
+        + ' SELECT '
+        + '   Core.ProductId, '
+        + '   Core.RegionCode, '
+        + '   min(nullif(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100)), MinPrices.MinCost)) as NextCost, '
+        + '   sum(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100)) = MinPrices.MinCost) as MinCostCount '
+        + ' FROM '
+        + '    MinPrices '
+        + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode '
+        +'     inner join Pricesdata on Pricesdata.PRICECODE     = Core.Pricecode '
+        +'     left join Delayofpayments '
+        +'       on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
+        + ' GROUP BY MinPrices.ProductId, MinPrices.RegionCode';
+      InternalExecute;
     end;
+
+    SQL.Text := ''
+      + ' update '
+      + '   MinPrices '
+      + '   left join MinPricesNext on MinPricesNext.ProductId = MinPrices.ProductId and MinPricesNext.RegionCode = MinPrices.RegionCode '
+      + ' set '
+      + '   MinPrices.NextCost = MinPricesNext.NextCost, '
+      + '   MinPrices.MinCostcount = MinPricesNext.MinCostCount; ';
+    InternalExecute;
+
+    SQL.Text := 'drop temporary table if exists MinPricesNext';
+    InternalExecute;
   end;
   Progress := 60;
   Synchronize( SetProgress);
