@@ -270,6 +270,7 @@ begin
 end;
 
 procedure TDatabaseController.BackupDataTable(ObjectId: TDatabaseObjectId);
+{$ifndef NetworkVersion}
 var
   backupTable : TDatabaseTable;
 
@@ -289,32 +290,39 @@ var
           E.Message]));
     end;
   end;
+{$endif}
 begin
+{$ifndef NetworkVersion}
   backupTable := TDatabaseTable(GetById(ObjectId));
   if Length(backupTable.FileSystemName) > 0 then begin
     backupFileName(backupTable.FileSystemName + DataFileExtention);
     backupFileName(backupTable.FileSystemName + IndexFileExtention);
     backupFileName(backupTable.FileSystemName + StructFileExtention);
   end
+{$endif}
 end;
 
 procedure TDatabaseController.BackupDataTables;
+{$ifndef NetworkVersion}
 var
   I : Integer;
   currentTable : TDatabaseTable;
+{$endif}
 begin
+{$ifndef NetworkVersion}
   if not Self.Initialized then begin
     WriteExchangeLog('DatabaseController.BackupDataTables', 'Попытка backup без инициализации DatabaseController');
     Exit;
   end;
 
-  for I := 0 to FDatabaseObjects.Count-1 do 
+  for I := 0 to FDatabaseObjects.Count-1 do
     if FDatabaseObjects[i] is TDatabaseTable then begin
       currentTable := TDatabaseTable(FDatabaseObjects[i]);
 
       if (currentTable.RepairType in [dortCritical, dortBackup]) then
         BackupDataTable(currentTable.ObjectId);
     end;
+{$endif}
 end;
 
 function TDatabaseController.CheckObjects(
@@ -391,12 +399,11 @@ begin
                 [currentTable.LogObjectName,
                  E.ErrorCode,
                  E.Message]));
-              raise;
             end;
         end;
         mainStartupHelper.Write('DatabaseController.Initialize', 'Закончили выборку данных из объекта : ' + IntToStr(Integer(TDatabaseTable(FDatabaseObjects[i]).ObjectId)));
 
-        //CheckTableOnOpen(currentTable, IsBackupRepair);
+        CheckTableOnOpen(currentTable, IsBackupRepair);
 {
         try
           if (FCommand.RecordCount = 1) then begin
@@ -765,6 +772,11 @@ var
               SimpleRepairTable()
             else begin
 
+{$ifdef NetworkVersion}
+
+                SimpleRepairTable();
+                
+{$else}
               if    FileExists(ExePath + SDirTableBackup + '\'
                   + table.FileSystemName + DataFileExtention)
                 and FileExists(ExePath + SDirTableBackup + '\'
@@ -799,6 +811,7 @@ var
               end
               else
                 SimpleRepairTable();
+{$endif}
 
             end;
           end
@@ -1249,10 +1262,13 @@ begin
 end;
 
 procedure TDatabaseController.RepairTableFromBackup(backupDir : String = '');
+{$ifndef NetworkVersion}
 var
   I : Integer;
   currentTable : TDatabaseTable;
+{$endif}
 begin
+{$ifndef NetworkVersion}
   if Length(backupDir) = 0 then
     backupDir := SDirTableBackup;
 
@@ -1293,6 +1309,7 @@ begin
 
     end;
   end;
+{$endif}  
 end;
 
 procedure TDatabaseController.RestoreDatabase;

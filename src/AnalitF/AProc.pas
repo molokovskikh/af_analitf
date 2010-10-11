@@ -953,7 +953,13 @@ begin
   Result :=
     'LOAD DATA INFILE ''' + InputFileName + ''' '
     + IfThen(Replace, ' replace ') +
-    ' INTO TABLE AnalitF.' + TableName + ';';
+    ' INTO TABLE AnalitF.' + TableName +
+{
+    ' FIELDS TERMINATED BY ''\t'' ENCLOSED BY '''' ESCAPED BY ''\\'' ' +
+    ' LINES TERMINATED BY ''\n'' STARTING BY '''' ' +
+}    
+    ';'
+    ;
 end;
 
 procedure CopyDirectories(const fromDir, toDir: String);

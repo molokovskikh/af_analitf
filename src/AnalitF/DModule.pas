@@ -3032,7 +3032,7 @@ procedure TDM.RestoreDatabaseFromPrevios(dbCon: TCustomMyConnection;
 var
   Succes : Boolean;
   RepeatCount : Integer;
-  FEmbConnection : TMyEmbConnection;
+  FConnection : TCustomMyConnection;
 begin
   Succes := False;
   RepeatCount := 0;
@@ -3062,7 +3062,12 @@ begin
     end;
   until Succes;
 
-  FEmbConnection := TMyEmbConnection.Create(nil);
+  FConnection := DatabaseController.GetNewConnection(MainConnection);
+
+  if MainConnection is TMyEmbConnection then
+    TMyEmbConnection(FConnection).DataDir := DBDirectoryName;
+
+{
   FEmbConnection.Database := '';
   FEmbConnection.Username := MainConnection.Username;
   FEmbConnection.DataDir := DBDirectoryName;
@@ -3070,22 +3075,23 @@ begin
   FEmbConnection.Params.Clear;
   FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
   FEmbConnection.LoginPrompt := False;
+}  
 
   try
 
-    FEmbConnection.Open;
+    FConnection.Open;
     try
       if not DatabaseController.Initialized then begin
         mainStartupHelper.Write('DModule.RestoreDatabaseFromPrevios', 'Начали инициализацию объектов базы данных');
-        DatabaseController.Initialize(FEmbConnection);
+        DatabaseController.Initialize(FConnection);
         mainStartupHelper.Write('DModule.RestoreDatabaseFromPrevios', 'Закончили инициализацию объектов базы данных');
       end;
     finally
-      FEmbConnection.Close;
+      FConnection.Close;
     end;
 
   finally
-    FEmbConnection.Free;
+    FConnection.Free;
   end;
   //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
@@ -4421,6 +4427,7 @@ begin
   MyConnection.Server := 'prg1';
   MyConnection.Username := 'root';
   MyConnection.Password := 'root';
+//  MyConnection.Password := '';
   MyConnection.Port := 3306;
 end;
 

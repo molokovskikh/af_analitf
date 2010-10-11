@@ -268,6 +268,9 @@ procedure TMainForm.FormCreate(Sender: TObject);
 //var
 //  il32: TImageList;
 begin
+{$ifndef DEBUG}
+  itmImport.Visible := False;
+{$endif}
   ClientNameRect := Rect(0, 0, 10, 10);
   deletedForms := TObjectList.Create(False);
   FormPlacement.Active := False;
@@ -659,7 +662,9 @@ end;
 
 procedure TMainForm.itmImportClick(Sender: TObject);
 begin
-  //RunExchange([ eaImportOnly]);
+{$ifdef DEBUG}
+  RunExchange([ eaImportOnly]);
+{$endif}
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€
   ToolBar.Invalidate;
 end;

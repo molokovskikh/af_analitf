@@ -953,10 +953,10 @@ begin
       FileStream.Free;
     end;
     OSMoveFile(LocalFileName,
-      RootFolder() + SDirIn + ExtractFileName(LocalFileName));
+      RootFolder() + SDirIn + '\' + ExtractFileName(LocalFileName));
     Windows.CopyFile(
-      PChar( RootFolder() + SDirIn + ExtractFileName(LocalFileName)),
-      PChar( RootFolder() + SDirIn + ChangeFileExt( ExtractFileName(LocalFileName), '.zi_')), False);
+      PChar( RootFolder() + SDirIn + '\' + ExtractFileName(LocalFileName)),
+      PChar( RootFolder() + SDirIn + '\' + ChangeFileExt( ExtractFileName(LocalFileName), '.zi_')), False);
 //    Sleep( 10000);
   end;
 end;
@@ -2450,7 +2450,7 @@ var
   StopExec : TDateTime;
   Secs : Int64;
 begin
-  //Tracer.TR('Import', 'Exec : ' + DM.adcUpdate.SQL.Text);
+  Tracer.TR('Import', 'Exec : ' + DM.adcUpdate.SQL.Text);
   StartExec := Now;
   try
     DM.adcUpdate.Execute;
@@ -2458,7 +2458,7 @@ begin
     StopExec := Now;
     Secs := SecondsBetween(StopExec, StartExec);
     if Secs > 3 then
-      //Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+      Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
   end;
 end;
 

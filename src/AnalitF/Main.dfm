@@ -411,7 +411,6 @@ object MainForm: TMainForm
         end
         object itmImport: TMenuItem
           Caption = #1048#1084#1087#1086#1088#1090#1080#1088#1086#1074#1072#1090#1100' '#1076#1072#1085#1085#1099#1077
-          Visible = False
           OnClick = itmImportClick
         end
         object itmRestoreDatabaseFromEtalon: TMenuItem
