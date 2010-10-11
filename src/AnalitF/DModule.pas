@@ -16,7 +16,8 @@ uses
   MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions, DatabaseObjects,
   MyCall,
   Registry,
-  RegistryHelper;
+  RegistryHelper,
+  ExclusiveParams;
 
 {
 Криптование
@@ -440,6 +441,7 @@ type
     SerBeg,
     SerEnd : String;
     SaveGridMask : Integer;
+    GlobalExclusiveParams : TExclusiveParams;
     procedure CompactDataBase();
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
       APreview: boolean = False; PrintDlg: boolean = True);
@@ -1026,6 +1028,8 @@ begin
   mainStartupHelper.Write('DModule', 'Закончили проверки для запуска');
 
   MainConnection.Open;
+  GlobalExclusiveParams := TExclusiveParams.Create(MainConnection);
+
 
   //todo: здесь могут быть ошибки при создании папки, их надо обработать
   if not WaybillsHelper.CheckWaybillFolders(MainConnection) then

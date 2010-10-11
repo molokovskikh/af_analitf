@@ -132,6 +132,7 @@ TMainForm = class(TVistaCorrectForm)
     tmrRestoreOnError: TTimer;
     actGetHistoryOrders: TAction;
     miGetHistoryOrders: TMenuItem;
+    tmrOnExclusive: TTimer;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -188,6 +189,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure actGetHistoryOrdersExecute(Sender: TObject);
     procedure StatusBarDrawPanel(StatusBar: TStatusBar;
       Panel: TStatusPanel; const Rect: TRect);
+    procedure tmrOnExclusiveTimer(Sender: TObject);
 private
   JustRun: boolean;
   ApplicationVersionText : String;
@@ -315,6 +317,7 @@ begin
   mainStartupHelper.Stop;
 
 try
+  tmrOnExclusive.Enabled := True;
   //Производим восстановление
   FormPlacement.Active := True;
   Self.WindowState := wsMaximized;
@@ -1549,6 +1552,16 @@ end;
 function TMainForm.DontShowAddresses: Boolean;
 begin
   Result := IsFutureClient and (DM.adsUser.RecordCount > 0) and (DM.adtClients.RecordCount = 0);
+end;
+
+procedure TMainForm.tmrOnExclusiveTimer(Sender: TObject);
+begin
+  if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
+    DM.GlobalExclusiveParams.ReadParams;
+    if DM.GlobalExclusiveParams.ExclusiveId <> '' then begin
+      WriteExchangeLog('OnExclusiveTimer', 'ExclusiveId = ' + DM.GlobalExclusiveParams.ExclusiveId);
+    end;
+  end;
 end;
 
 initialization

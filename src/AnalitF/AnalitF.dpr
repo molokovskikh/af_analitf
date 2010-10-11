@@ -113,7 +113,8 @@ uses
   GlobalParams in '..\Common\GlobalParams\GlobalParams.pas',
   TicketReportParams in '..\Common\GlobalParams\TicketReportParams.pas',
   EditTicketReportParams in 'EditTicketReportParams.pas' {EditTicketReportParamsForm},
-  NetworkSettings in '..\Common\GlobalParams\NetworkSettings.pas';
+  NetworkSettings in '..\Common\GlobalParams\NetworkSettings.pas',
+  ExclusiveParams in '..\Common\GlobalParams\ExclusiveParams.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

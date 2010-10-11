@@ -3945,4 +3945,10 @@ object MainForm: TMainForm
     Left = 320
     Top = 240
   end
+  object tmrOnExclusive: TTimer
+    Enabled = False
+    OnTimer = tmrOnExclusiveTimer
+    Left = 472
+    Top = 272
+  end
 end
