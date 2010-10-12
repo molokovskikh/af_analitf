@@ -1041,6 +1041,7 @@ begin
   else
     Result := TMyConnection.Create(nil);
 
+  Result.Server := Main.Server;
   Result.Database := '';
   Result.Username := Main.Username;
   Result.Password := Main.Password;
