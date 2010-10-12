@@ -1010,7 +1010,10 @@ begin
     'INSERT INTO GlobalParams (Name, Value) VALUES ("TicketReportCountryVisible", "1");'#13#10#13#10 +
     'INSERT INTO GlobalParams (Name, Value) VALUES ("TicketReportProducerVisible", "1");'#13#10#13#10 +
     'INSERT INTO GlobalParams (Name, Value) VALUES ("TicketReportPeriodVisible", "1");'#13#10#13#10 +
-    'INSERT INTO GlobalParams (Name, Value) VALUES ("TicketReportProviderDocumentIdVisible", "1");'#13#10#13#10
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("TicketReportProviderDocumentIdVisible", "1");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("ExclusiveId", "");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("ExclusiveComputerName", "");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("ExclusiveDate", "0");'#13#10#13#10
     );
 end;
 
