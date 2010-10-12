@@ -133,6 +133,8 @@ TMainForm = class(TVistaCorrectForm)
     actGetHistoryOrders: TAction;
     miGetHistoryOrders: TMenuItem;
     tmrOnExclusive: TTimer;
+    actShowMinPrices: TAction;
+    ToolButton6: TToolButton;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -190,6 +192,7 @@ TMainForm = class(TVistaCorrectForm)
     procedure StatusBarDrawPanel(StatusBar: TStatusBar;
       Panel: TStatusPanel; const Rect: TRect);
     procedure tmrOnExclusiveTimer(Sender: TObject);
+    procedure actShowMinPricesExecute(Sender: TObject);
 private
   JustRun: boolean;
   ApplicationVersionText : String;
@@ -263,7 +266,8 @@ uses
   StartupHelper,
   MyClasses,
   GlobalExchangeParameters,
-  Wait;
+  Wait,
+  U_MinPricesForm;
 
 {$R *.DFM}
 
@@ -1576,6 +1580,11 @@ begin
       end
     end;
   end;
+end;
+
+procedure TMainForm.actShowMinPricesExecute(Sender: TObject);
+begin
+  ShowMinPrices;
 end;
 
 initialization

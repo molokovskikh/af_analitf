@@ -116,7 +116,9 @@ uses
   NetworkSettings in '..\Common\GlobalParams\NetworkSettings.pas',
   ExclusiveParams in '..\Common\GlobalParams\ExclusiveParams.pas',
   Exclusive in 'Exclusive.pas' {ExclusiveForm},
-  Wait in 'Wait.pas' {WaitForm};
+  Wait in 'Wait.pas' {WaitForm},
+  U_MinPricesForm in 'U_MinPricesForm.pas' {MinPricesForm},
+  DataSetHelper in '..\Common\Helpers\DataSetHelper.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

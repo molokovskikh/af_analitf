@@ -172,8 +172,13 @@ object MainForm: TMainForm
         Top = 0
         Action = actPostOrderBatch
       end
-      object ToolButton4: TToolButton
+      object ToolButton6: TToolButton
         Left = 507
+        Top = 0
+        Action = actShowMinPrices
+      end
+      object ToolButton4: TToolButton
+        Left = 546
         Top = 0
         Width = 8
         Caption = 'ToolButton4'
@@ -181,26 +186,26 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnOrderRegister: TToolButton
-        Left = 515
+        Left = 554
         Top = 0
         Action = actRegistry
         Caption = #1043#1086#1089#1091#1076#1072#1088#1089#1090#1074#1077#1085#1085#1099#1081' '#1088#1077#1077#1089#1090#1088' '#1094#1077#1085
         ImageIndex = 9
       end
       object btnExpireds: TToolButton
-        Left = 554
+        Left = 593
         Top = 0
         Action = actSale
         ImageIndex = 5
       end
       object btnDefectives: TToolButton
-        Left = 593
+        Left = 632
         Top = 0
         Action = actDefectives
         ImageIndex = 10
       end
       object ToolButton10: TToolButton
-        Left = 632
+        Left = 671
         Top = 0
         Width = 8
         Caption = 'ToolButton10'
@@ -208,17 +213,17 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object tbWaybill: TToolButton
-        Left = 640
+        Left = 679
         Top = 0
         Action = actWayBill
       end
       object tbViewDocs: TToolButton
-        Left = 679
+        Left = 718
         Top = 0
         Action = actViewDocs
       end
       object ToolButton9: TToolButton
-        Left = 718
+        Left = 757
         Top = 0
         Width = 8
         Caption = 'ToolButton9'
@@ -226,18 +231,18 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnHome: TToolButton
-        Left = 726
+        Left = 765
         Top = 0
         Action = actHome
       end
       object btnConfig: TToolButton
-        Left = 765
+        Left = 804
         Top = 0
         Action = actConfig
         ImageIndex = 12
       end
       object tbLastSeparator: TToolButton
-        Left = 804
+        Left = 843
         Top = 0
         Width = 8
         Caption = 'tbLastSeparator'
@@ -675,6 +680,14 @@ object MainForm: TMainForm
       Category = 'Order'
       Caption = #1047#1072#1075#1088#1091#1079#1080#1090#1100' '#1080#1089#1090#1086#1088#1080#1102' '#1079#1072#1082#1072#1079#1086#1074
       OnExecute = actGetHistoryOrdersExecute
+    end
+    object actShowMinPrices: TAction
+      Category = 'Order'
+      Caption = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1077' '#1094#1077#1085#1099
+      Hint = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1077' '#1094#1077#1085#1099
+      ImageIndex = 7
+      Visible = False
+      OnExecute = actShowMinPricesExecute
     end
   end
   object AppEvents: TApplicationEvents

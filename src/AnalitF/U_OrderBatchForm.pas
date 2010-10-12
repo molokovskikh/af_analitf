@@ -133,14 +133,6 @@ type
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure dbgOrderBatchDblClick(Sender: TObject);
 
-    function AddLargeIntField(dataSet : TDataSet; FieldName : String) : TLargeintField;
-    function AddStringField(dataSet : TDataSet; FieldName : String) : TStringField;
-    function AddIntegerField(dataSet : TDataSet; FieldName : String) : TIntegerField;
-    function AddMemoField(dataSet : TDataSet; FieldName : String) : TMemoField;
-    function AddFloatField(dataSet : TDataSet; FieldName : String) : TFloatField;
-    function AddBooleanField(dataSet : TDataSet; FieldName : String) : TBooleanField;
-    function AddSmallintField(dataSet : TDataSet; FieldName : String) : TSmallintField;
-
   public
     { Public declarations }
 
@@ -231,6 +223,7 @@ uses
   Main,
   DModule,
   DBGridHelper,
+  DataSetHelper,
   AProc,
   DBProc,
   Exchange,
@@ -504,35 +497,35 @@ begin
   adsReport.AfterOpen := UpdatePreviosOrders;
   adsReport.AfterScroll := UpdatePreviosOrders;
 
-  IdField := AddLargeintField(adsReport, 'Id');
-  ProducerStatusField := AddLargeintField(adsReport, 'ProducerStatus');
+  IdField := TDataSetHelper.AddLargeintField(adsReport, 'Id');
+  ProducerStatusField := TDataSetHelper.AddLargeintField(adsReport, 'ProducerStatus');
   ProducerStatusField.OnGetText := ProducerStatusGetText;
-  SynonymNameField := AddStringField(adsReport, 'SynonymName');
-  ProductIdField := AddLargeintField(adsReport, 'ProductId');
-  OrderListIdField := AddLargeintField(adsReport, 'OrderListId');
-  StatusField := AddIntegerField(adsReport, 'Status');
-  CoreIdField := AddLargeintField(adsReport, 'CoreId');
-  OrderCountField := AddIntegerField(adsReport, 'OrderCount');
-  FullcodeField := AddLargeintField(adsReport, 'Fullcode');
-  ShortCodeField := AddLargeintField(adsReport, 'ShortCode');
-  MnnField := AddLargeintField (adsReport, 'MnnId');
-  CommentField := AddMemoField(adsReport, 'Comment');
+  SynonymNameField := TDataSetHelper.AddStringField(adsReport, 'SynonymName');
+  ProductIdField := TDataSetHelper.AddLargeintField(adsReport, 'ProductId');
+  OrderListIdField := TDataSetHelper.AddLargeintField(adsReport, 'OrderListId');
+  StatusField := TDataSetHelper.AddIntegerField(adsReport, 'Status');
+  CoreIdField := TDataSetHelper.AddLargeintField(adsReport, 'CoreId');
+  OrderCountField := TDataSetHelper.AddIntegerField(adsReport, 'OrderCount');
+  FullcodeField := TDataSetHelper.AddLargeintField(adsReport, 'Fullcode');
+  ShortCodeField := TDataSetHelper.AddLargeintField(adsReport, 'ShortCode');
+  MnnField := TDataSetHelper.AddLargeintField (adsReport, 'MnnId');
+  CommentField := TDataSetHelper.AddMemoField(adsReport, 'Comment');
 
-  SimpleStatusField := AddStringField(adsReport, 'SimpleStatus');
-  SynonymFirmField := AddStringField(adsReport, 'SynonymFirm');
-  PriceNameField := AddStringField(adsReport, 'PriceName');
-  RealCostField := AddFloatField(adsReport, 'RealCost');
-  CostField := AddFloatField(adsReport, 'Cost');
-  RetailSummField := AddFloatField(adsReport, 'RetailSumm');
+  SimpleStatusField := TDataSetHelper.AddStringField(adsReport, 'SimpleStatus');
+  SynonymFirmField := TDataSetHelper.AddStringField(adsReport, 'SynonymFirm');
+  PriceNameField := TDataSetHelper.AddStringField(adsReport, 'PriceName');
+  RealCostField := TDataSetHelper.AddFloatField(adsReport, 'RealCost');
+  CostField := TDataSetHelper.AddFloatField(adsReport, 'Cost');
+  RetailSummField := TDataSetHelper.AddFloatField(adsReport, 'RetailSumm');
 
-  DescriptionIdField := AddLargeintField(adsReport, 'DescriptionId');
-  CatalogVitallyImportantField := AddSmallintField(adsReport, 'CatalogVitallyImportant');
-  CatalogMandatoryListField := AddSmallintField(adsReport, 'CatalogMandatoryList');
+  DescriptionIdField := TDataSetHelper.AddLargeintField(adsReport, 'DescriptionId');
+  CatalogVitallyImportantField := TDataSetHelper.AddSmallintField(adsReport, 'CatalogVitallyImportant');
+  CatalogMandatoryListField := TDataSetHelper.AddSmallintField(adsReport, 'CatalogMandatoryList');
 
-  ProducerNameField := AddStringField(adsReport, 'ProducerName');
+  ProducerNameField := TDataSetHelper.AddStringField(adsReport, 'ProducerName');
 
   for I := 1 to 25 do
-    AddStringField(adsReport, 'ServiceField' + IntToStr(i));
+    TDataSetHelper.AddStringField(adsReport, 'ServiceField' + IntToStr(i));
 
   dsReport := TDataSource.Create(Self);
   dsReport.DataSet := adsReport;
@@ -1096,62 +1089,6 @@ begin
     TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
   if Assigned(dbgHistory) then
     TDBGridHelper.SaveColumnsLayout(dbgHistory, Self.ClassName);
-end;
-
-function TOrderBatchForm.AddLargeIntField(
-  dataSet: TDataSet; FieldName : String): TLargeintField;
-begin
-  Result := TLargeintField.Create(dataSet);
-  Result.fieldname := FieldName;
-  Result.Dataset := dataSet;
-end;
-
-function TOrderBatchForm.AddStringField(dataSet: TDataSet;
-  FieldName: String): TStringField;
-begin
-  Result := TStringField.Create(dataSet);
-  Result.fieldname := FieldName;
-  Result.Dataset := dataSet;
-end;
-
-function TOrderBatchForm.AddIntegerField(dataSet: TDataSet;
-  FieldName: String): TIntegerField;
-begin
-  Result := TIntegerField.Create(dataSet);
-  Result.fieldname := FieldName;
-  Result.Dataset := dataSet;
-end;
-
-function TOrderBatchForm.AddMemoField(dataSet: TDataSet;
-  FieldName: String): TMemoField;
-begin
-  Result := TMemoField.Create(dataSet);
-  Result.fieldname := FieldName;
-  Result.Dataset := dataSet;
-end;
-
-function TOrderBatchForm.AddFloatField(dataSet: TDataSet;
-  FieldName: String): TFloatField;
-begin
-  Result := TFloatField.Create(dataSet);
-  Result.fieldname := FieldName;
-  Result.Dataset := dataSet;
-end;
-
-function TOrderBatchForm.AddBooleanField(dataSet: TDataSet;
-  FieldName: String): TBooleanField;
-begin
-  Result := TBooleanField.Create(dataSet);
-  Result.fieldname := FieldName;
-  Result.Dataset := dataSet;
-end;
-
-function TOrderBatchForm.AddSmallintField(dataSet: TDataSet;
-  FieldName: String): TSmallintField;
-begin
-  Result := TSmallintField.Create(dataSet);
-  Result.fieldname := FieldName;
-  Result.Dataset := dataSet;
 end;
 
 function TOrderBatchForm.AddServiceFields : Integer;
