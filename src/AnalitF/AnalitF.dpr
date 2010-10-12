@@ -118,7 +118,8 @@ uses
   Exclusive in 'Exclusive.pas' {ExclusiveForm},
   Wait in 'Wait.pas' {WaitForm},
   U_MinPricesForm in 'U_MinPricesForm.pas' {MinPricesForm},
-  DataSetHelper in '..\Common\Helpers\DataSetHelper.pas';
+  DataSetHelper in '..\Common\Helpers\DataSetHelper.pas',
+  NetworkParams in '..\Common\GlobalParams\NetworkParams.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
