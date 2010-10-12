@@ -3,6 +3,7 @@ object WaitForm: TWaitForm
   Top = 182
   BorderIcons = []
   BorderStyle = bsDialog
+  Caption = #1054#1078#1080#1076#1072#1085#1080#1077
   ClientHeight = 148
   ClientWidth = 289
   Color = clBtnFace

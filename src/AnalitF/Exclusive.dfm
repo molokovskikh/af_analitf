@@ -3,6 +3,7 @@ object ExclusiveForm: TExclusiveForm
   Top = 384
   BorderIcons = []
   BorderStyle = bsDialog
+  Caption = #1052#1086#1085#1086#1087#1086#1083#1100#1085#1099#1081' '#1076#1086#1089#1090#1091#1087
   ClientHeight = 148
   ClientWidth = 289
   Color = clBtnFace
