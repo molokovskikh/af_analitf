@@ -541,10 +541,13 @@ procedure TChildForm.PatchMyDataSets;
 var
   I : Integer;
 begin
-  if (DM.MainConnection is TMyEmbConnection) then
-    for I := 0 to ComponentCount-1 do
-      if Components[i] is TCustomMyDataSet then
-        TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
+  for I := 0 to ComponentCount-1 do
+    if Components[i] is TCustomMyDataSet then
+      if (DM.MainConnection is TMyEmbConnection) then
+        TCustomMyDataSet(Components[i]).Connection := DM.MainConnection
+      else
+        if TCustomMyDataSet(Components[i]).Connection <> DM.MainConnection then
+          TCustomMyDataSet(Components[i]).Connection := DM.MainConnection;
 end;
 
 procedure TChildForm.BeforeUpdateExecuteForClientID(
