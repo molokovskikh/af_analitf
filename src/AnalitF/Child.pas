@@ -593,6 +593,7 @@ begin
     producerNameColumn.FieldName := 'ProducerName';
     producerNameColumn.Title.Caption := 'Кат. производитель';
     producerNameColumn.Visible := False;
+    producerNameColumn.Width := Grid.Canvas.TextWidth(producerNameColumn.Title.Caption);
     if SortOnOrderGrid then
       producerNameColumn.Title.TitleButton := True;
   end;
