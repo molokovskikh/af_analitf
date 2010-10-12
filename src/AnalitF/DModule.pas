@@ -862,7 +862,9 @@ begin
   FProcess800xUpdate := False;
   FProcessUpdateToNewLibMysqlD := False;
 
+{$ifndef NetworkVersion}
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
+{$endif}
   if not DirectoryExists( RootFolder() + SDirUpload) then CreateDir( RootFolder() + SDirUpload);
   if DirectoryExists( ExePath + SDirDataTmpDir) then begin
     DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
@@ -1182,6 +1184,7 @@ begin
     LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
       'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
 
+{$ifndef NetworkVersion}
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
     DBFileSize := GetDirectorySize(ExePath + SDirData);
     DBFileSize := Max(2*DBFileSize, 200*1024*1024);
@@ -1193,6 +1196,7 @@ begin
   else
     LogExitError(Format( 'Не удается получить количество свободного места на диске.' +
       #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
+{$endif}      
 
   FNeedUpdateByCheckUIN := not CheckCopyIDFromDB;
   if FNeedUpdateByCheckUIN then begin
