@@ -199,6 +199,9 @@ private
   deletedForms : TObjectList;
   incompleteImport : Boolean;
 
+  LastOrderCount,
+  LastPositionCount : Integer;
+
   procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
   procedure OnMainAppEx(Sender: TObject; E: Exception);
@@ -798,6 +801,8 @@ try
     DM.adsQueryValue.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
     DM.adsQueryValue.Open;
     try
+      LastOrderCount := DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger;
+      LastPositionCount := DM.adsQueryValue.FieldByName( 'Positions').AsInteger; 
       StatusBar.Panels[ 0].Text := Format( 'Заказов : %d',
          [ DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger]);
       StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',
@@ -1569,10 +1574,15 @@ begin
 end;
 
 procedure TMainForm.tmrOnExclusiveTimer(Sender: TObject);
+var
+  BeforeOrderCount,
+  BeforePositionCount : Integer;
 begin
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
     try
       SetOrdersInfo;
+      BeforeOrderCount := LastOrderCount;
+      BeforePositionCount := LastPositionCount;
     except
     end;
     try
@@ -1586,7 +1596,15 @@ begin
         ShowWait;
       finally
         tmrOnExclusive.Enabled := True;
-      end
+      end;
+      try
+        SetOrdersInfo;
+      except
+      end;
+      if (BeforeOrderCount <> LastOrderCount) or (BeforePositionCount <> LastPositionCount) then
+        AProc.MessageBox(
+          'Сервисом был изменен список текущих заказов.'#13#10 +
+          'Подробнее смотрите в журнале работы сервиса.');
     end;
   end;
 end;
