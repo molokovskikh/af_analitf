@@ -135,6 +135,8 @@ TMainForm = class(TVistaCorrectForm)
     tmrOnExclusive: TTimer;
     actShowMinPrices: TAction;
     ToolButton6: TToolButton;
+    actServiceLog: TAction;
+    itmServiceLog: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -193,6 +195,7 @@ TMainForm = class(TVistaCorrectForm)
       Panel: TStatusPanel; const Rect: TRect);
     procedure tmrOnExclusiveTimer(Sender: TObject);
     procedure actShowMinPricesExecute(Sender: TObject);
+    procedure actServiceLogExecute(Sender: TObject);
 private
   JustRun: boolean;
   ApplicationVersionText : String;
@@ -272,7 +275,8 @@ uses
   GlobalExchangeParameters,
   Wait,
   U_MinPricesForm,
-  NetworkSettings;
+  NetworkSettings,
+  U_ServiceLogForm;
 
 {$R *.DFM}
 
@@ -282,6 +286,11 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
 {$ifndef DEBUG}
   itmImport.Visible := False;
+{$endif}
+{$ifdef NetworkVersion}
+  actServiceLog.Visible := True;
+{$else}
+  actServiceLog.Visible := False;
 {$endif}
   ClientNameRect := Rect(0, 0, 10, 10);
   deletedForms := TObjectList.Create(False);
@@ -1622,6 +1631,11 @@ begin
   actWayBill.Enabled := not GetNetworkSettings.DisableUpdate;
   actGetHistoryOrders.Enabled := not GetNetworkSettings.DisableUpdate;
 {$endif}
+end;
+
+procedure TMainForm.actServiceLogExecute(Sender: TObject);
+begin
+  ShowServiceLog;
 end;
 
 initialization

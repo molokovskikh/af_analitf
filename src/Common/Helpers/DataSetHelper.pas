@@ -15,6 +15,7 @@ type
     class function AddFloatField(dataSet : TDataSet; FieldName : String) : TFloatField;
     class function AddBooleanField(dataSet : TDataSet; FieldName : String) : TBooleanField;
     class function AddSmallintField(dataSet : TDataSet; FieldName : String) : TSmallintField;
+    class function AddDateTimeField(dataSet : TDataSet; FieldName : String) : TDateTimeField;
   end;
 
 implementation
@@ -73,6 +74,14 @@ class function TDataSetHelper.AddSmallintField(dataSet: TDataSet;
   FieldName: String): TSmallintField;
 begin
   Result := TSmallintField.Create(dataSet);
+  Result.fieldname := FieldName;
+  Result.Dataset := dataSet;
+end;
+
+class function TDataSetHelper.AddDateTimeField(dataSet: TDataSet;
+  FieldName: String): TDateTimeField;
+begin
+  Result := TDateTimeField.Create(dataSet);
   Result.fieldname := FieldName;
   Result.Dataset := dataSet;
 end;

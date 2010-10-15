@@ -1,0 +1,2 @@
+inherited frameServiceLogLegend: TframeServiceLogLegend
+end

@@ -119,7 +119,9 @@ uses
   Wait in 'Wait.pas' {WaitForm},
   U_MinPricesForm in 'U_MinPricesForm.pas' {MinPricesForm},
   DataSetHelper in '..\Common\Helpers\DataSetHelper.pas',
-  NetworkParams in '..\Common\GlobalParams\NetworkParams.pas';
+  NetworkParams in '..\Common\GlobalParams\NetworkParams.pas',
+  U_ServiceLogForm in 'U_ServiceLogForm.pas' {ServiceLogForm},
+  U_frameServiceLogLegend in 'U_frameServiceLogLegend.pas' {frameServiceLogLegend: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}
