@@ -329,6 +329,7 @@ type
     adtClientsEditName: TStringField;
     adsOrderDetailsEtalon: TMyQuery;
     adsOrderDetailsRetailMarkup: TFloatField;
+    adtClientsSelfClientId: TStringField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);

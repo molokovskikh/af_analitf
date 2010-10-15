@@ -153,11 +153,12 @@ type
 
     lFolderNotExists : TLabel;
 
+{$ifdef NetworkVersion}
     lOrderFolder : TLabel;
     dbeOrderFolder : TDBEdit;
     sbSelectOrderFolder : TSpeedButton;
     lOrderFolderNotExists : TLabel;
-
+{$endif}
 
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
@@ -721,6 +722,7 @@ begin
     lFolderNotExists.Visible := False;
     lFolderNotExists.Font.Color := clRed;
 
+{$ifdef NetworkVersion}
     nextTop := lFolderNotExists.Top + lFolderNotExists.Height + 10;
     AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lOrderFolder, dbeOrderFolder, 'Папка для внешних заказов:', 'OrderFolder');
     dbeOrderFolder.OnChange := OrderFolderChange;
@@ -743,6 +745,7 @@ begin
     lOrderFolderNotExists.Left := 10;
     lOrderFolderNotExists.Visible := False;
     lOrderFolderNotExists.Font.Color := clRed;
+{$endif}
   end
   else
     tsWaybillFolders.TabVisible := False;

@@ -177,6 +177,7 @@ object DM: TDM
       ' CLIENTS.REQMASK,'
       ' CLIENTS.CALCULATELEADER,'
       ' CLIENTS.AllowDelayOfPayment,'
+      ' CLIENTS.SelfClientId,'
       ' ClientSettings.ONLYLEADERS,'
       ' ClientSettings.Address,'
       ' ClientSettings.Director,'
@@ -223,6 +224,9 @@ object DM: TDM
     end
     object adtClientsAllowDelayOfPayment: TBooleanField
       FieldName = 'AllowDelayOfPayment'
+    end
+    object adtClientsSelfClientId: TStringField
+      FieldName = 'SelfClientId'
     end
     object adtClientsAddress: TStringField
       FieldName = 'Address'
