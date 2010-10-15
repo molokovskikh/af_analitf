@@ -227,7 +227,8 @@ uses
   AProc,
   DBProc,
   Exchange,
-  NamesForms;
+  NamesForms,
+  NetworkSettings;
 
 procedure ShowOrderBatch;
 var
@@ -582,6 +583,9 @@ begin
   spLoad.Left := 3;
   spLoad.Top := 5;
   spLoad.OnClick := OpenFile;
+{$ifdef NetworkVersion}
+  spLoad.Enabled := not GetNetworkSettings.DisableUpdate;
+{$endif}
 
   pTop.Height := spLoad.Height + 10;
   eSearch.Top := (pTop.Height - eSearch.Height) div 2;

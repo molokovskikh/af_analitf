@@ -16,6 +16,8 @@ type
     Password : String;
     Port : Integer;
     ShareFolderName : String;
+    DisableUpdate : Boolean;
+    DisableSendOrders : Boolean;
     constructor Create();
     function SettingsExists() : Boolean;
     procedure ReadSettings();
@@ -43,6 +45,8 @@ begin
   Password := '';
   Port := 3306;
   ShareFolderName := 'AnalitF';
+  DisableUpdate := False;
+  DisableSendOrders := False;
   if SettingsExists then
     ReadSettings;
 end;
@@ -59,6 +63,8 @@ begin
     Password := sl.Values['Password'];
     ShareFolderName := sl.Values['ShareFolderName'];
     Port := StrToIntDef(sl.Values['Port'], 3306);
+    DisableUpdate := sl.Values['DisableUpdate'] = '1';
+    DisableSendOrders := sl.Values['DisableSendOrders'] = '1';
   finally
     sl.Free;
   end;

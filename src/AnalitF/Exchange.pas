@@ -112,7 +112,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   DocumentHeaders,
   U_OrderBatchForm,
   SendWaybillTypes,
-  Exclusive;
+  Exclusive,
+  NetworkSettings;
 
 {$R *.DFM}
 
@@ -149,6 +150,15 @@ begin
   if AExchangeActions = [] then exit;
   if (eaPostOrderBatch in AExchangeActions) and (Length(BatchFileName) = 0) then
     Exit;
+{$ifdef NetworkVersion}
+  if GetNetworkSettings.DisableUpdate
+    and ([eaGetPrice, eaGetFullData, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * AExchangeActions <> [])
+  then
+    Exit;
+  if GetNetworkSettings.DisableSendOrders and (eaSendOrders in AExchangeActions)
+  then
+    Exit;
+{$endif}
 
   try
 

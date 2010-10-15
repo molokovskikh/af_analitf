@@ -242,6 +242,7 @@ public
   procedure UpdateReclame;
   //Отключить все действия, связанные с изменением имени авторизации
   procedure DisableByHTTPName;
+  procedure DisableByNetworkSettings;
   //Включить все действия, связанные с изменением имени авторизации
   procedure EnableByHTTPName;
   function CheckUnsendOrders: boolean;
@@ -267,7 +268,8 @@ uses
   MyClasses,
   GlobalExchangeParameters,
   Wait,
-  U_MinPricesForm;
+  U_MinPricesForm,
+  NetworkSettings;
 
 {$R *.DFM}
 
@@ -322,6 +324,8 @@ begin
   mainStartupHelper.Stop;
 
 try
+  DisableByNetworkSettings;
+  
   tmrOnExclusive.Enabled := True;
   //Производим восстановление
   FormPlacement.Active := True;
@@ -886,7 +890,11 @@ end;
 
 procedure TMainForm.actSendOrdersUpdate(Sender: TObject);
 begin
+{$ifdef NetworkVersion}
+  actSendOrders.Enabled := not GetNetworkSettings.DisableSendOrders and CheckUnsendOrders;
+{$else}
   actSendOrders.Enabled := CheckUnsendOrders;
+{$endif}
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -1029,6 +1037,7 @@ begin
   actViewDocs.Enabled := True;
   actPostOrderBatch.Enabled := True;
   actGetHistoryOrders.Enabled := True;
+  DisableByNetworkSettings;
 end;
 
 procedure TMainForm.OnAppEx(Sender: TObject; E: Exception);
@@ -1585,6 +1594,16 @@ end;
 procedure TMainForm.actShowMinPricesExecute(Sender: TObject);
 begin
   ShowMinPrices;
+end;
+
+procedure TMainForm.DisableByNetworkSettings;
+begin
+{$ifdef NetworkVersion}
+  actReceive.Enabled := not GetNetworkSettings.DisableUpdate;
+  actReceiveAll.Enabled := not GetNetworkSettings.DisableUpdate;
+  actWayBill.Enabled := not GetNetworkSettings.DisableUpdate;
+  actGetHistoryOrders.Enabled := not GetNetworkSettings.DisableUpdate;
+{$endif}
 end;
 
 initialization
