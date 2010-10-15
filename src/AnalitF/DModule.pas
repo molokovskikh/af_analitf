@@ -1180,10 +1180,12 @@ begin
   finally
     DM.MainConnection.Close;
   end;
+{
   if ( MaxUsers > 0) and ( ProcessCount > MaxUsers)
   then
     LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
       'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
+}      
 
 {$ifndef NetworkVersion}
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
