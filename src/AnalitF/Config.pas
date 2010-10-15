@@ -129,6 +129,8 @@ type
     procedure AddWaybillFoldersSheet;
     procedure SelectFolderClick(Sender : TObject);
     procedure WaybillFolderChange(Sender : TObject);
+    procedure OrderFolderChange(Sender : TObject);
+    procedure SelectOrderFolderClick(Sender : TObject);
     procedure AddVitallyImportantMarkups;
     procedure AddRetailMarkups;
     procedure AddBottomPanel;
@@ -150,6 +152,12 @@ type
     sbSelectFolder : TSpeedButton;
 
     lFolderNotExists : TLabel;
+
+    lOrderFolder : TLabel;
+    dbeOrderFolder : TDBEdit;
+    sbSelectOrderFolder : TSpeedButton;
+    lOrderFolderNotExists : TLabel;
+
 
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
@@ -651,7 +659,8 @@ begin
       + 'select '
       + ' Providers.FirmCode, '
       + ' Providers.FullName, '
-      + ' ProviderSettings.WaybillFolder '
+      + ' ProviderSettings.WaybillFolder, '
+      + ' ProviderSettings.OrderFolder '
       + 'from '
       + '  Providers '
       + '  inner join ProviderSettings on ProviderSettings.FirmCode = Providers.FirmCode '
@@ -659,7 +668,8 @@ begin
     adsWaybillFolders.SQLUpdate.Text := ''
       + 'update ProviderSettings '
       + 'set '
-      + '  WaybillFolder = :WaybillFolder '
+      + '  WaybillFolder = :WaybillFolder, '
+      + '  OrderFolder = :OrderFolder '
       + 'where '
       + ' FirmCode = :FirmCode';
     adsWaybillFolders.Open;
@@ -710,6 +720,29 @@ begin
     lFolderNotExists.Left := 10;
     lFolderNotExists.Visible := False;
     lFolderNotExists.Font.Color := clRed;
+
+    nextTop := lFolderNotExists.Top + lFolderNotExists.Height + 10;
+    AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lOrderFolder, dbeOrderFolder, 'Папка для внешних заказов:', 'OrderFolder');
+    dbeOrderFolder.OnChange := OrderFolderChange;
+
+    sbSelectOrderFolder := TSpeedButton.Create(Self);
+    sbSelectOrderFolder.Parent := gbWaybillFolders;
+    sbSelectOrderFolder.Anchors := [akTop, akRight];
+    sbSelectOrderFolder.Top := dbeOrderFolder.Top;
+    sbSelectOrderFolder.Height := dbeOrderFolder.Height;
+    sbSelectOrderFolder.Caption := '...';
+    sbSelectOrderFolder.Width := sbSelectOrderFolder.Height;
+    sbSelectOrderFolder.Left := dbeOrderFolder.Left + dbeOrderFolder.Width - sbSelectOrderFolder.Width;
+    dbeOrderFolder.Width := dbeOrderFolder.Width - sbSelectOrderFolder.Width - 5;
+    sbSelectOrderFolder.OnClick := SelectOrderFolderClick;
+
+    lOrderFolderNotExists := TLabel.Create(Self);
+    lOrderFolderNotExists.Caption := 'Папка не существует';
+    lOrderFolderNotExists.Parent := gbWaybillFolders;
+    lOrderFolderNotExists.Top := sbSelectOrderFolder.Top + sbSelectOrderFolder.Height + 10;
+    lOrderFolderNotExists.Left := 10;
+    lOrderFolderNotExists.Visible := False;
+    lOrderFolderNotExists.Font.Color := clRed;
   end
   else
     tsWaybillFolders.TabVisible := False;
@@ -794,6 +827,38 @@ begin
   btnCancel.Caption := 'Отменить';
   btnCancel.Left := 10 + btnOk.Width + 10;
   btnCancel.Top := 10;
+end;
+
+procedure TConfigForm.OrderFolderChange(Sender: TObject);
+begin
+  lOrderFolderNotExists.Visible := not DirectoryExists(dbeOrderFolder.Text);
+end;
+
+procedure TConfigForm.SelectOrderFolderClick(Sender: TObject);
+var
+  DirName : String;
+begin
+  DirName := adsWaybillFolders.FieldByName('OrderFolder').AsString;
+{
+  if DirName = '' then
+    DirName := '.'
+  else
+    if AnsiStartsText('.\', DirName) then
+      DirName := RootFolder() + Copy(DirName, 3, Length(DirName));
+}
+
+  if FileCtrl.SelectDirectory(
+       'Выберите директорию заказов для поставщика ' + adsWaybillFolders.FieldByName('FullName').AsString,
+       '',
+       DirName)
+  then begin
+{
+    if AnsiStartsText(RootFolder(), DirName) then
+      DirName := '.\' + Copy(DirName, Length(RootFolder()) + 1 , Length(DirName));
+}
+    SoftEdit(adsWaybillFolders);
+    adsWaybillFolders.FieldByName('OrderFolder').AsString := DirName;
+  end;
 end;
 
 end.
