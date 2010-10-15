@@ -80,6 +80,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TNetworkLogTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -356,6 +362,7 @@ begin
 +' ( '
 +'  `FirmCode` bigint(20) NOT NULL, '
 +'  `WaybillFolder` varchar(255) default null, '
++'  `OrderFolder` varchar(255) default null, '
 +'  PRIMARY KEY (`FirmCode`), '
 +'  UNIQUE KEY `PK_ProviderSettings` (`FirmCode`) '
 +' ) '
@@ -518,6 +525,59 @@ begin
 + GetTableOptions();
 end;
 
+{ TNetworkLogTable }
+
+constructor TNetworkLogTable.Create;
+begin
+  FName := 'networklog';
+  FObjectId := doiNetworkLog;
+  FRepairType := dortBackup;
+end;
+
+function TNetworkLogTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  //Source: 0 - обновление, 1 - разбор заказов
+  //MessageType: 0 - информация, 1 - предупреждение, 2 - ошибка
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'    `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'    `LogTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
++'    `Source` smallint(5) not null default 0, '
++'    `MessageType` smallint(5) not null default 0, '
++'    `Info` text default null, '
++'    primary key (`Id`), '
++'    key (`LogTime`) '
++'  ) '
++ GetTableOptions();
+{
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'  `DocumentId` bigint(20) unsigned NOT NULL, '
++'  `Product` varchar(255) not null, '
++'  `Code` varchar(20) default null, '
++'  `Certificates` varchar(50) default null, '
++'  `Period` varchar(20) default null, '
++'  `Producer` varchar(255) default null, '
++'  `Country` varchar(150) default null, '
++'  `ProducerCost` decimal(18,2) default null, '
++'  `RegistryCost` decimal(18,2) default null, '
++'  `SupplierPriceMarkup` decimal(5,2) default null, '
++'  `SupplierCostWithoutNDS` decimal(18,2) default null, '
++'  `SupplierCost` decimal(18,2) default null, '
++'  `Quantity` int(10) DEFAULT NULL, '
++'  `VitallyImportant` tinyint(1) unsigned default null, '
++'  `NDS` int(10) unsigned DEFAULT NULL, '
++'  `SerialNumber` varchar(50) default null, '
++'  `RetailMarkup` decimal(12,6) default null, '
++'  `ManualCorrection` tinyint(1) unsigned not null default ''0'', '
++'  `ManualRetailPrice` decimal(12,6) default null, '
++'  PRIMARY KEY (`Id`) '
++' ) '
++ GetTableOptions();
+}
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TPostedOrderHeadsTable.Create());
@@ -531,4 +591,5 @@ initialization
   DatabaseController.AddObject(TCurrentOrderHeadsTable.Create());
   DatabaseController.AddObject(TCurrentOrderListsTable.Create());
   DatabaseController.AddObject(TGlobalParamsTable.Create());
+  DatabaseController.AddObject(TNetworkLogTable.Create());
 end.

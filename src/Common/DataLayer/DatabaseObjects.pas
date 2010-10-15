@@ -110,7 +110,8 @@ type
     doiBatchReport,
     doiBatchReportServiceFields,
     //Backup
-    doiGlobalParams);
+    doiGlobalParams,
+    doiNetworkLog);
 
   TRepairedObjects = set of TDatabaseObjectId;
 
