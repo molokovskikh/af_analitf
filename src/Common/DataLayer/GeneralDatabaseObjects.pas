@@ -206,7 +206,7 @@ begin
 +'    `CALCULATELEADER`     tinyint(1) not null  , '
 +'    `AllowDelayOfPayment` tinyint(1) not null  , '
 +'    `FullName` varchar(255) default null, '
-+'    `SelfClientId` varchar(200) default null, '
++'    `SelfAddressId` varchar(200) default null, '
 +'    primary key (`CLIENTID`)                   , '
 +'    unique key `PK_CLIENTS` (`CLIENTID`)       , ' 
 +'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) ' 

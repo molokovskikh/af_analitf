@@ -54,8 +54,8 @@ type
     dbchbCalculateWithNDS : TDBCheckBox;
 
 {$ifdef NetworkVersion}
-    lSelfClientId : TLabel;
-    dbeSelfClientId : TDBEdit;
+    lSelfAddressId : TLabel;
+    dbeSelfAddressId : TDBEdit;
 {$endif}
 
     constructor Create(AOwner: TComponent); override;
@@ -156,10 +156,10 @@ begin
 
 {$ifdef NetworkVersion}
     nextTop := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 10;
-    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lSelfClientId, dbeSelfClientId, 'Собственный код аптеки:', 'SelfClientId');
-    dbeSelfClientId.ReadOnly := True;
-    dbeSelfClientId.Color := clBtnFace;
-    gbEditClients.Height := dbeSelfClientId.Top + dbeSelfClientId.Height + 7;
+    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lSelfAddressId, dbeSelfAddressId, 'Собственный код аптеки:', 'SelfAddressId');
+    dbeSelfAddressId.ReadOnly := True;
+    dbeSelfAddressId.Color := clBtnFace;
+    gbEditClients.Height := dbeSelfAddressId.Top + dbeSelfAddressId.Height + 7;
 {$else}
     gbEditClients.Height := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 7;
 {$endif}
