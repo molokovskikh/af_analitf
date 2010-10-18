@@ -7,7 +7,8 @@ uses
   StdCtrls, Grids, DBGrids, ComCtrls, DBCtrls, Mask, Menus, DBGridEh, ShellAPI,
   Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule, GridsEh, U_VistaCorrectForm,
   MyAccess, FileCtrl, U_frameEditVitallyImportantMarkups, U_frameEditAddress,
-  DatabaseObjects;
+  DatabaseObjects,
+  NetworkParams;
 
 type
   TConfigChange = (ccOk, ccHTTPName, ccHTTPPassword, ccHTTPHost);
@@ -113,6 +114,7 @@ type
     HTTPNameChanged, HTTPPassChanged : Boolean;
     OldHTTPName : String;
     OldHTTPHost : String;
+    FNetworkParams : TNetworkParams;
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
@@ -134,6 +136,13 @@ type
     procedure AddVitallyImportantMarkups;
     procedure AddRetailMarkups;
     procedure AddBottomPanel;
+    procedure AddNetworkVersionSettings();
+    procedure AddLabelAndEdit(
+      Parents : TWinControl;
+      var nextTop: Integer;
+      var labelInfo : TLabel;
+      var edit : TEdit;
+      LabelCaption : String);
   protected
     tsEditAddress : TTabSheet;
     frameEditAddress : TframeEditAddress;
@@ -158,6 +167,12 @@ type
     dbeOrderFolder : TDBEdit;
     sbSelectOrderFolder : TSpeedButton;
     lOrderFolderNotExists : TLabel;
+
+    gbNetworkVersionSettings : TGroupBox;
+    lExportPricesFolder : TLabel;
+    eExportPricesFolder : TEdit;
+    lPositionPercent : TLabel;
+    ePositionPercent : TEdit;
 {$endif}
 
     tsVitallyImportantMarkups : TTabSheet;
@@ -296,6 +311,7 @@ begin
         if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then
           Result := Result + [ccHTTPHost];
         DM.adtParams.Post;
+        FNetworkParams.SaveParams;
       end
       else begin
         if Assigned(frameEditAddress) then
@@ -479,6 +495,10 @@ end;
 
 procedure TConfigForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
+{$ifdef NetworkVersion}
+var
+  newPercent : Double;
+{$endif}
 begin
   if (ModalResult = mrOK) then begin
     if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
@@ -529,6 +549,24 @@ begin
       PageControl.ActivePage := tshOther;
       dbeHistoryDayCount.SetFocus;
     end;
+{$ifdef NetworkVersion}
+    if CanClose then begin
+      if TryStrToFloat(ePositionPercent.Text, newPercent) then begin
+        FNetworkParams.NetworkPositionPercent := newPercent;
+        FNetworkParams.NetworkExportPricesFolder := eExportPricesFolder.Text;
+      end
+      else begin
+        CanClose := False;
+        AProc.MessageBox(
+          Format('Пожалуйста, скорректируйте значение в поле "%s".'#13#10
+            + 'Оно должно быть вещественным числом.',
+            [lPositionPercent.Caption]),
+          MB_ICONWARNING);
+        PageControl.ActivePage := tshOther;
+        ePositionPercent.SetFocus;
+      end;
+    end;
+{$endif}
   end;
 end;
 
@@ -566,12 +604,14 @@ procedure TConfigForm.FormCreate(Sender: TObject);
 var
   I : Integer;
 begin
+  FNetworkParams := TNetworkParams.Create(DM.MainConnection);
   inherited;
   AddBottomPanel;
   AddRetailMarkups;
   AddVitallyImportantMarkups;
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
+  AddNetworkVersionSettings();
 
   for I := 0 to PageControl.PageCount-1 do begin
     if PageControl.Pages[i].Constraints.MinHeight > PageControl.ClientHeight then
@@ -862,6 +902,65 @@ begin
     SoftEdit(adsWaybillFolders);
     adsWaybillFolders.FieldByName('OrderFolder').AsString := DirName;
   end;
+end;
+
+procedure TConfigForm.AddNetworkVersionSettings;
+{$ifdef NetworkVersion}
+var
+  controlInterval : Integer;
+  nextTop : Integer;
+{$endif}
+begin
+{$ifdef NetworkVersion}
+  controlInterval := dbchbUseCorrectOrders.Top - dbchbUseCorrectOrders.Height - dbchbConfirmSendingOrders.Top;
+  gbNetworkVersionSettings := TGroupBox.Create(Self);
+  gbNetworkVersionSettings.Parent := tshOther;
+  gbNetworkVersionSettings.Caption := ' Сетевая версия ';
+  gbNetworkVersionSettings.Left := gbDeleteHistory.Left;
+  gbNetworkVersionSettings.Width := gbDeleteHistory.Width;
+  gbNetworkVersionSettings.Anchors := gbDeleteHistory.Anchors;
+  gbNetworkVersionSettings.Top := dbchbUseCorrectOrders.Top + dbchbUseCorrectOrders.Height + controlInterval;
+
+  nextTop := 16;
+
+  AddLabelAndEdit(gbNetworkVersionSettings, nextTop, lExportPricesFolder, eExportPricesFolder, 'Папка для экспорта прайс-листов:');
+  eExportPricesFolder.Text := FNetworkParams.NetworkExportPricesFolder;
+
+  AddLabelAndEdit(gbNetworkVersionSettings, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при заказе:');
+  ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
+
+  gbNetworkVersionSettings.Height := ePositionPercent.Top + ePositionPercent.Height + 5;
+
+  lblServerLink.Top := gbNetworkVersionSettings.Top + gbNetworkVersionSettings.Height + controlInterval;
+  tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
+{$endif}
+
+{
+    lExportPricesFolder : TLabel;
+    eExportPricesFolder : TEdit;
+    lPositionPercent : TLabel;
+    ePositionPercent : TEdit;
+}
+end;
+
+procedure TConfigForm.AddLabelAndEdit(Parents: TWinControl;
+  var nextTop: Integer; var labelInfo: TLabel; var edit: TEdit;
+  LabelCaption: String);
+begin
+  labelInfo := TLabel.Create(Self);
+  labelInfo.Caption := LabelCaption;
+  labelInfo.Parent := Parents;
+  labelInfo.Top := nextTop;
+  labelInfo.Left := 10;
+
+  edit := TEdit.Create(Self);
+  edit.Parent := Parents;
+  edit.Anchors := [akLeft, akTop, akRight];
+  edit.Top := labelInfo.Top + 3 + labelInfo.Canvas.TextHeight(labelInfo.Caption);
+  edit.Left := 10;
+  edit.Width := Parents.Width - 20;
+
+  nextTop := edit.Top + edit.Height + 10;
 end;
 
 end.
