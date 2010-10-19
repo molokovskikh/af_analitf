@@ -689,7 +689,6 @@ object MainForm: TMainForm
       Caption = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1077' '#1094#1077#1085#1099
       Hint = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1077' '#1094#1077#1085#1099
       ImageIndex = 7
-      Visible = False
       OnExecute = actShowMinPricesExecute
     end
     object actServiceLog: TAction
