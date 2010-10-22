@@ -82,7 +82,8 @@ begin
   dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
   dtpDateTo.Date:=Date;
   PrintQuery := adsPrint.SQL.Text;
-  adsDefectives.IndexFieldNames := 'LetterDate';
+  if dbgDefectives.SortMarkedColumns.Count = 0 then
+    dbgDefectives.FieldColumns['LetterDate'].Title.SortMarker := smUpEh;
   OrderField:='LetterDate';
   SetDateInterval;
   TDBGridHelper.RestoreColumnsLayout(dbgDefectives, Self.ClassName);
