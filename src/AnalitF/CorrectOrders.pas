@@ -7,7 +7,8 @@ uses
   Dialogs, U_VistaCorrectForm, StdCtrls, ExtCtrls, GridsEh, DBGridEh,
   ToughDBGrid, ComCtrls, DB, RxMemDS, DAScript, MyScript, Child, DBCtrls,
   Grids, MemDS, DBAccess, MyAccess, Constant, MemTableDataEh, MemTableEh,
-  StrUtils, EhLibMTE, Contnrs;
+  StrUtils, EhLibMTE, Contnrs,
+  U_CurrentOrderItem;
 
 type
   TCorrectResult = (crClose, crEditOrders, crForceSended, crGetPrice);

@@ -112,7 +112,12 @@ uses
   GlobalExchangeParameters in 'BusinessLogic\GlobalExchangeParameters.pas',
   GlobalParams in '..\Common\GlobalParams\GlobalParams.pas',
   TicketReportParams in '..\Common\GlobalParams\TicketReportParams.pas',
-  EditTicketReportParams in 'EditTicketReportParams.pas' {EditTicketReportParamsForm};
+  EditTicketReportParams in 'EditTicketReportParams.pas' {EditTicketReportParamsForm},
+  U_Address in '..\Common\Models\U_Address.pas',
+  U_CurrentOrderHead in '..\Common\Models\U_CurrentOrderHead.pas',
+  U_CurrentOrderItem in '..\Common\Models\U_CurrentOrderItem.pas',
+  U_DBMapping in '..\Common\Models\U_DBMapping.pas',
+  U_Offer in '..\Common\Models\U_Offer.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

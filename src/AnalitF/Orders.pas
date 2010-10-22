@@ -8,7 +8,8 @@ uses
   Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, 
   DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
   MyAccess, ActnList, Buttons,
-  Menus, U_frameBaseLegend;
+  Menus, U_frameBaseLegend,
+  U_CurrentOrderItem;
 
 type
   TOrdersForm = class(TChildForm)

@@ -8,7 +8,8 @@ uses
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw,
   DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
-  ActnList, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
+  ActnList, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
+  U_CurrentOrderItem;
 
 type
   TSummaryForm = class(TChildForm)
