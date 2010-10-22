@@ -180,7 +180,7 @@ begin
   Result :=
     Format(
       'CurrentOrderItem  Id: %d  OrderId: %d  CoreId: %s  OrderCount: %d  ProductId: %d  CodeFirmCr: %s  SynonymCode: %s  SynonymFirmCrCode: %s  Code: %s  ' +
-      'CodeCr: %s  RealPrice: %0.2f  Price: %0.2f  DropReason: %s',
+      'CodeCr: %s  RealPrice: %0.2f  Price: %0.2f  Junk: %s  Await: %s  Period: %s  ProducerCost: %s  DropReason: %s',
       [
         Id,
         OrderId,
@@ -194,6 +194,10 @@ begin
         CodeCr,
         RealPrice,
         Price,
+        BoolToStr(Junk, True),
+        BoolToStr(Await, True),
+        Period,
+        VarToStrDef(ProducerCost, '(Null)'),
         VarToStrDef(DropReason, '(Null)')
       ]);
 end;
