@@ -324,6 +324,7 @@ begin
         else begin
           mainItem.OrderCount := mainItem.OrderCount + currentItem.OrderCount;
           currentItem.DropReason := psrUnoin;
+          currentItem.UnionOrderItem := mainItem;
           currentItem.CoreId := Null;
           currentItem.OrderCount := 0;
 

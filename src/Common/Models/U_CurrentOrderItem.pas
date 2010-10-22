@@ -66,6 +66,8 @@ type
     Period : String;
     ProducerCost : Variant;
 
+    UnionOrderItem : TCurrentOrderItem;
+
     function IsOfferExists(aOffer: TOffer) : Boolean;
     function IsOfferValid(aOffer: TOffer) : Boolean;
     function IsFullOffer(aOffer: TOffer) : Boolean;

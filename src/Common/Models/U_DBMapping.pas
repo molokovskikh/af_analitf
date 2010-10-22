@@ -426,7 +426,23 @@ begin
      currentOrderItem.RealPrice, currentOrderItem.OrderCount,
      currentOrderItem.DropReason, currentOrderItem.ServerCost, currentOrderItem.ServerQuantity]);
 
-  if not VarIsNull(currentOrderItem.CoreId) then
+  if not VarIsNull(currentOrderItem.DropReason) and (TPositionSendResult(currentOrderItem.DropReason) = psrUnoin)
+    and Assigned(currentOrderItem.UnionOrderItem)
+  then
+    DBProc.UpdateValue(
+      connection,
+      ''
++' update '
++'  batchreport '
++' set '
++'  OrderListId = :NewOrderListId '
++'where '
++'  OrderListId = :OldOrderListId ',
+      ['OldOrderListId', 'NewOrderListId'],
+      [currentOrderItem.Id, currentOrderItem.UnionOrderItem.Id]);
+
+  if not VarIsNull(currentOrderItem.CoreId)
+  then
     DBProc.UpdateValue(
       connection,
       ''
