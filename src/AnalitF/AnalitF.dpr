@@ -121,7 +121,12 @@ uses
   DataSetHelper in '..\Common\Helpers\DataSetHelper.pas',
   NetworkParams in '..\Common\GlobalParams\NetworkParams.pas',
   U_ServiceLogForm in 'U_ServiceLogForm.pas' {ServiceLogForm},
-  U_frameServiceLogLegend in 'U_frameServiceLogLegend.pas' {frameServiceLogLegend: TFrame};
+  U_frameServiceLogLegend in 'U_frameServiceLogLegend.pas' {frameServiceLogLegend: TFrame},
+  U_Address in '..\Common\Models\U_Address.pas',
+  U_CurrentOrderHead in '..\Common\Models\U_CurrentOrderHead.pas',
+  U_CurrentOrderItem in '..\Common\Models\U_CurrentOrderItem.pas',
+  U_DBMapping in '..\Common\Models\U_DBMapping.pas',
+  U_Offer in '..\Common\Models\U_Offer.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

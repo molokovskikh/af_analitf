@@ -4,6 +4,7 @@ interface
 
 uses
   SysUtils, Classes, Contnrs, StrUtils,
+  Windows,
   U_ExchangeLog, AProc,
   MyAccess, MyServerControl,
   MyClasses,
@@ -154,6 +155,7 @@ type
     FDatabaseObjects : TObjectList;
     FInitialized : Boolean;
     FCommand : TMyQuery;
+    FMaxTempTableSize : String;
     function ParseMethodResuls(ServiceControl : TMyServerControl; LogObjectName : String) : Boolean;
     function CheckTable(table : TDatabaseTable; WithOptimize : Boolean = False) : Boolean;
     function CheckTableOnOpen(table : TDatabaseTable; IsBackupRepair : Boolean) : Boolean;
@@ -200,7 +202,7 @@ type
     function GetFullLastCreateScript(DBVersion : String = '') : String;
 
     function IsFatalError(E : EMyError) : Boolean;
-
+    function GetMaxTempTableSize() : String;
     function GetNewConnection(Main: TCustomMyConnection) : TCustomMyConnection;
 
     function WorkSchemaExists(connection: TCustomMyConnection) : Boolean;
@@ -865,7 +867,19 @@ begin
 end;
 
 constructor TDatabaseController.Create;
+const
+  defaultMaxTempTableSize = 33554432;
+var
+  Memory : TMemoryStatus;
 begin
+  FillChar(Memory, SizeOf(TMemoryStatus), 0);
+  Memory.dwLength := SizeOf(TMemoryStatus);
+  GlobalMemoryStatus(Memory) ;
+  if (Memory.dwAvailVirtual > 0) and (Memory.dwAvailVirtual div 3 > defaultMaxTempTableSize)
+  then
+    FMaxTempTableSize := IntToStr(Memory.dwAvailVirtual div 3)
+  else
+    FMaxTempTableSize := IntToStr(defaultMaxTempTableSize);
   FDatabaseObjects := TObjectList.Create(True);
   FCommand := TMyQuery.Create(nil);
 end;
@@ -1032,6 +1046,11 @@ begin
       currentTable := TDatabaseTable(FDatabaseObjects[i]);
       Result := Concat(Result, #13#10#13#10, currentTable.GetDropSQL(), #13#10, currentTable.GetCreateSQL());
     end;
+end;
+
+function TDatabaseController.GetMaxTempTableSize: String;
+begin
+  Result := FMaxTempTableSize;
 end;
 
 function TDatabaseController.GetNewConnection(

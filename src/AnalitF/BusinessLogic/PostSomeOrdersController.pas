@@ -7,7 +7,8 @@ uses
   DateUtils,
   //App modules
   Constant, DModule, ExchangeParameters, U_ExchangeLog, SOAPThroughHTTP,
-  DatabaseObjects;
+  DatabaseObjects,
+  U_CurrentOrderItem;
 
 const
   // ритические сообщени€ об ошибках при отправке заказов
@@ -19,9 +20,6 @@ const
 
 type
   TOrderSendResult = (osrSuccess, osrLessThanMinReq, osrNeedCorrect);
-  TPositionSendResult =
-    (psrNotExists, psrDifferentCost, psrDifferentQuantity,
-    psrDifferentCostAndQuantity);
 
 const
   //предложение отсутствует
@@ -29,11 +27,6 @@ const
   ('«аказ отправлен успешно',
    'Ќарушение минимальной суммы заказа.',
    '“ребуетс€ корректировка заказа.');
-  PositionSendResultText : array[TPositionSendResult] of string =
-  ('предложение отсутствует',
-   'имеетс€ различие в цене препарата',
-   'доступное количество препарата в прайс-листе меньше заказанного ранее',
-   'имеютс€ различи€ с прайс-листом в цене и количестве заказанного препарата');
 
 type
   TPostSomeOrdersController = class
