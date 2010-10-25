@@ -853,18 +853,82 @@ begin
 end;
 
 procedure TDatabaseController.CreateViews(connection: TCustomMyConnection);
+const
+  RepeatCount = 10;
 var
   I : Integer;
+  ErrorCount : Integer;
+  Success : Boolean;
+  SR: TSearchrec;
+  FilePath,
+  Path: String;
 begin
   FCommand.Connection := connection;
   try
-    for I := 0 to FDatabaseObjects.Count-1 do
-      if FDatabaseObjects[i] is TDatabaseView then begin
-        FCommand.SQL.Text := TDatabaseView(FDatabaseObjects[i]).GetDropSQL();
-        FCommand.Execute;
-        FCommand.SQL.Text := TDatabaseView(FDatabaseObjects[i]).GetCreateSQL();
-        FCommand.Execute;
+    Success := False;
+    ErrorCount := 0;
+    repeat
+
+      try
+        FilePath := ExePath + SDirDataTmpDir + '\*.*';
+        Path := ExtractFilePath(FilePath);
+        try
+          if SysUtils.FindFirst(FilePath, faAnyFile-faDirectory, SR) = 0 then
+            repeat
+              try
+                OSDeleteFile(Path + SR.Name, True);
+              except
+                on E : Exception do
+                  WriteExchangeLog('CreateViews',
+                    Format('Ошибка при удалении временного файла %s: %s', [SR.Name, E.Message]));
+              end;
+            until FindNext(SR) <> 0;
+        finally
+          SysUtils.FindClose(SR);
+        end;
+
+        for I := 0 to FDatabaseObjects.Count-1 do
+          if FDatabaseObjects[i] is TDatabaseView then begin
+            FCommand.SQL.Text := TDatabaseView(FDatabaseObjects[i]).GetDropSQL('analitf');
+            FCommand.Execute;
+            FCommand.SQL.Text := TDatabaseView(FDatabaseObjects[i]).GetCreateSQL('analitf');
+            FCommand.Execute;
+
+            FCommand.SQL.Text := 'select * from analitf.' + TDatabaseView(FDatabaseObjects[i]).Name + '  limit 0';
+            FCommand.Open;
+            FCommand.Close;
+
+            try
+              FCommand.SQL.Text := 'select * from ' + TDatabaseView(FDatabaseObjects[i]).Name + '  limit 0';
+              FCommand.Open;
+              FCommand.Close;
+            except
+              on E : Exception do
+                raise Exception.CreateFmt('Ошибка создания объекта %s: %s',
+                  [TDatabaseView(FDatabaseObjects[i]).Name, E.Message]);
+            end;
+          end;
+
+        Success := True;
+      except
+        on E : Exception do begin
+          Inc(ErrorCount);
+          if ErrorCount < RepeatCount then begin
+            WriteExchangeLog('CreateViews',
+              Format('Ошибка при создании видов, попытка %d: %s', [ErrorCount, E.Message]));
+            Sleep(2000);
+          end
+          else begin
+            WriteExchangeLog('CreateViews',
+              Format('Ошибка при создании видов: %s', [E.Message]));
+            raise Exception.Create(
+              'Ошибка при создании вспомогательных объектов.'#13#10 +
+              'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
+          end;
+        end;
       end;
+
+    until (Success);
   finally
     FCommand.Connection := nil;
   end;
