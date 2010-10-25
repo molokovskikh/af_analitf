@@ -540,7 +540,8 @@ var
   DM: TDM;
   PassC : TINFCrypt;
   SummarySelectedPrices,
-  SynonymSelectedPrices : TStringList;
+  SynonymSelectedPrices,
+  MinCostSelectedPrices : TStringList;
 
 procedure ClearSelectedPrices(SelectedPrices : TStringList);
 
@@ -1723,6 +1724,7 @@ procedure TDM.LoadSelectedPrices;
 begin
   ClearSelectedPrices(SummarySelectedPrices);
   ClearSelectedPrices(SynonymSelectedPrices);
+  ClearSelectedPrices(MinCostSelectedPrices);
   adsPrices.IndexFieldNames := 'PRICENAME';
   adsPrices.ParamByName('ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
   if adsPrices.Active then
@@ -1733,6 +1735,7 @@ begin
     while not adsPrices.Eof do begin
       SummarySelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
       SynonymSelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
+      MinCostSelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
       adsPrices.Next;
     end;
   finally
@@ -4449,10 +4452,13 @@ initialization
   PassC := TINFCrypt.Create(gcp, 48);
   SummarySelectedPrices := TStringList.Create;
   SynonymSelectedPrices := TStringList.Create;
+  MinCostSelectedPrices := TStringList.Create;
 finalization
   PassC.Free;
   ClearSelectedPrices(SummarySelectedPrices);
   ClearSelectedPrices(SynonymSelectedPrices);
+  ClearSelectedPrices(MinCostSelectedPrices);
   SummarySelectedPrices.Free;
   SynonymSelectedPrices.Free;
+  MinCostSelectedPrices.Free;
 end.

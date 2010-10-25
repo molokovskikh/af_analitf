@@ -2,6 +2,31 @@ inherited MinPricesForm: TMinPricesForm
   Caption = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1077' '#1094#1077#1085#1099
   PixelsPerInch = 96
   TextHeight = 13
+  object lFilter: TLabel [0]
+    Left = 442
+    Top = 8
+    Width = 99
+    Height = 13
+    Caption = '('#1060#1080#1083#1100#1090#1088' '#1087#1088#1080#1084#1077#1085#1077#1085')'
+    Visible = False
+  end
+  object btnSelectPrices: TBitBtn [1]
+    Left = 332
+    Top = 4
+    Width = 105
+    Height = 25
+    Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090#1099
+    TabOrder = 0
+    OnClick = btnSelectPricesClick
+    Glyph.Data = {
+      A6000000424DA600000000000000760000002800000009000000060000000100
+      0400000000003000000000000000000000001000000010000000000000000000
+      80000080000000808000800000008000800080800000C0C0C000808080000000
+      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
+      0000333303333000000033300033300000003300000330000000300000003000
+      00003333333330000000}
+    Layout = blGlyphRight
+  end
   object shShowMinPrices: TStrHolder
     Capacity = 28
     Macros = <>
@@ -47,9 +72,7 @@ inherited MinPricesForm: TMinPricesForm
         '63656e7429'
       
         '2020616e6420284d696e5072696365732e4d696e436f7374436f756e74203d20' +
-        '3129'
-      '4f52444552204259'
-      '202053796e6f6e796d732e53594e4f4e594d4e414d45')
+        '3129')
   end
   object tmrSearch: TTimer
     Enabled = False
@@ -251,6 +274,38 @@ inherited MinPricesForm: TMinPricesForm
     Interval = 350
     OnTimer = tmrUpdatePreviosOrdersTimer
     Left = 280
-    Top = 21
+    Top = 29
+  end
+  object ActionList: TActionList
+    Left = 312
+    Top = 171
+    object actGotoMNNAction: TAction
+      Caption = #1057#1080#1085#1086#1085#1080#1084#1099' (Ctrl+N)'
+      Hint = #1055#1077#1088#1077#1093#1086#1076' '#1074' '#1082#1072#1090#1072#1083#1086#1075' '#1089' '#1092#1080#1083#1100#1090#1088#1072#1094#1080#1077#1081' '#1087#1086' '#1052#1053#1053
+      ShortCut = 16462
+      OnExecute = actGotoMNNActionExecute
+      OnUpdate = actGotoMNNActionUpdate
+    end
+  end
+  object pmSelectedPrices: TPopupMenu
+    Left = 520
+    Top = 48
+    object miSelectAll: TMenuItem
+      Caption = #1042#1099#1073#1088#1072#1090#1100' '#1074#1089#1077#1093
+      OnClick = miSelectAllClick
+    end
+    object miUnselecAll: TMenuItem
+      Caption = #1048#1089#1082#1083#1102#1095#1080#1090#1100' '#1074#1089#1077#1093
+      OnClick = miUnselecAllClick
+    end
+    object miSep: TMenuItem
+      Caption = '-'
+    end
+  end
+  object tmrSelectedPrices: TTimer
+    Enabled = False
+    OnTimer = tmrSelectedPricesTimer
+    Left = 560
+    Top = 45
   end
 end

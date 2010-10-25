@@ -1100,7 +1100,8 @@ begin
     'INSERT INTO GlobalParams (Name, Value) VALUES ("ExclusiveDate", "0");'#13#10#13#10 +
     'INSERT INTO GlobalParams (Name, Value) VALUES ("NetworkExportPricesFolder", "");'#13#10#13#10 +
     'INSERT INTO GlobalParams (Name, Value) VALUES ("NetworkPositionPercent", "0");'#13#10#13#10 +
-    'INSERT INTO GlobalParams (Name, Value) VALUES ("NetworkExternalOrder", "0");'#13#10#13#10
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("NetworkExternalOrder", "0");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("NetworkMinCostPercent", "7");'#13#10#13#10
     );
 end;
 

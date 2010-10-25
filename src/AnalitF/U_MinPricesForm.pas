@@ -7,6 +7,10 @@ uses
   Dialogs, Child, ExtCtrls,
   StdCtrls,
   StrUtils,
+  Buttons,
+  SHDocVw,
+  ActnList,
+  Menus,
   DB,
   DBAccess,
   MyAccess,
@@ -14,7 +18,8 @@ uses
   GridsEh,
   DbGridEh,
   AProc,
-  ToughDBGrid;
+  ToughDBGrid,
+  NetworkParams;
 
 type
   TMinPricesForm = class(TChildForm)
@@ -22,13 +27,31 @@ type
     tmrSearch: TTimer;
     shCore: TStrHolder;
     tmrUpdatePreviosOrders: TTimer;
+    ActionList: TActionList;
+    actGotoMNNAction: TAction;
+    btnSelectPrices: TBitBtn;
+    pmSelectedPrices: TPopupMenu;
+    miSelectAll: TMenuItem;
+    miUnselecAll: TMenuItem;
+    miSep: TMenuItem;
+    lFilter: TLabel;
+    tmrSelectedPrices: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
     procedure tmrUpdatePreviosOrdersTimer(Sender: TObject);
+    procedure actGotoMNNActionExecute(Sender: TObject);
+    procedure actGotoMNNActionUpdate(Sender: TObject);
+    procedure tmrSelectedPricesTimer(Sender: TObject);
+    procedure btnSelectPricesClick(Sender: TObject);
+    procedure miSelectAllClick(Sender: TObject);
+    procedure miUnselecAllClick(Sender: TObject);
   private
     { Private declarations }
+    FNetworkParams : TNetworkParams;
     InternalSearchText : String;
     
+    SelectedPrices : TStringList;
+
     procedure CreateNonVisualComponent;
 
     procedure CreateVisualComponent;
@@ -43,6 +66,8 @@ type
     procedure InternalSearch;
 
     procedure UpdateOffers();
+
+    procedure ChangeSelected(ASelected : Boolean);
   protected
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
@@ -50,6 +75,12 @@ type
 
     procedure MinPricesAfteOpen(dataSet : TDataSet);
     procedure MinPricesAfteScroll(dataSet : TDataSet);
+
+    procedure dbgMinPricesKeyPress(Sender: TObject; var Key: Char);
+    procedure dbgMinPricesKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+
+    procedure OnSPClick(Sender: TObject);
   public
     { Public declarations }
     adsMinPrices : TMyQuery;
@@ -58,7 +89,6 @@ type
     minRegionCodeField : TLargeintField;
     minMinCostField : TFloatField;
     minNextCostField : TFloatField;
-    //minMinCostCount : TIntegerField;
     minSynonymNameField : TStringField;
     minPercentField : TFloatField;
 
@@ -68,12 +98,17 @@ type
     pTop : TPanel;
     eSearch : TEdit;
     lFindCount : TLabel;
+    spGotoMNNButton : TSpeedButton;
 
     pLeft : TPanel;
     dbgMinPrices : TToughDBGrid;
 
     pOffers : TPanel;
     dbgCore : TToughDBGrid;
+    pWebBrowser : TPanel;
+    bWebBrowser : TBevel;
+    WebBrowser : TWebBrowser;
+
 
     procedure ShowForm; override;
   end;
@@ -114,7 +149,7 @@ begin
 
   dbgCore.DataSource := dsCore;
 
-  adsMinPrices.Open;
+  InternalSearch;
 end;
 
 procedure TMinPricesForm.CreateLeftPanel;
@@ -136,13 +171,9 @@ begin
   TDBGridHelper.AddColumn(dbgMinPrices, 'MinCost', 'Мин. цена', '0.00;;''''', Self.Canvas.TextWidth('999.99'));
   TDBGridHelper.AddColumn(dbgMinPrices, 'NextCost', 'След. цена', '0.00;;''''', Self.Canvas.TextWidth('999.99'));
   TDBGridHelper.AddColumn(dbgMinPrices, 'Percent', '%', '0.00;;''''', Self.Canvas.TextWidth('999.99'));
-{
-  TDBGridHelper.AddColumn(dbgMinPrices, 'OrderCount', 'Заказ', Self.Canvas.TextWidth('999'));
-  TDBGridHelper.AddColumn(dbgMinPrices, 'ProducerCost', 'Цена производителя', Self.Canvas.TextWidth('999.99'));
-  TDBGridHelper.AddColumn(dbgMinPrices, 'Price', 'Цена', Self.Canvas.TextWidth('999.99'));
-  TDBGridHelper.AddColumn(dbgMinPrices, 'OrderDate', 'Дата', 0);
-}
 
+  dbgMinPrices.OnKeyPress := dbgMinPricesKeyPress;
+  dbgMinPrices.OnKeyDown := dbgMinPricesKeyDown;
 end;
 
 procedure TMinPricesForm.CreateNonVisualComponent;
@@ -153,45 +184,21 @@ begin
   adsMinPrices.RefreshOptions := [roAfterUpdate];
   adsMinPrices.Options.StrictUpdate := False;
   adsMinPrices.SQL.Text := shShowMinPrices.Strings.Text;
-  adsMinPrices.ParamByName('Percent').Value := 30;
+  adsMinPrices.ParamByName('Percent').Value := FNetworkParams.NetworkMinCostPercent;
+  InternalSearchText := IntToStr(FNetworkParams.NetworkMinCostPercent);
 
   adsMinPrices.AfterOpen := MinPricesAfteOpen;
   adsMinPrices.AfterScroll := MinPricesAfteScroll;
-  //adsReport.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-{
-  adsMinPrices.SQLDelete.Text := shDelete.Strings.Text;
-  adsMinPrices.SQLUpdate.Text := stUpdate.Strings.Text;
-  adsMinPrices.SQLRefresh.Text := stRefresh.Strings.Text;
-}
-{
-  adsMinPrices.AfterPost := AfterPost;
-  adsMinPrices.BeforeClose := ReportBeforeClose;
-  adsMinPrices.AfterOpen := UpdatePreviosOrders;
-  adsMinPrices.AfterScroll := UpdatePreviosOrders;
-}
 
   minProductIdField := TDataSetHelper.AddLargeintField(adsMinPrices, 'ProductId');
   minRegionCodeField := TDataSetHelper.AddLargeintField(adsMinPrices, 'RegionCode');
   minMinCostField := TDataSetHelper.AddFloatField(adsMinPrices, 'MinCost');
   minNextCostField := TDataSetHelper.AddFloatField(adsMinPrices, 'NextCost');
-//  minMinCostCount := TDataSetHelper.AddIntegerField(adsMinPrices, 'MinCostCount');
   minSynonymNameField := TDataSetHelper.AddStringField(adsMinPrices, 'SynonymName');
   minPercentField := TDataSetHelper.AddFloatField(adsMinPrices, 'Percent');
 
-{
-  IdField := TDataSetHelper.AddLargeintField(adsReport, 'Id');
-  ProducerStatusField := TDataSetHelper.AddLargeintField(adsReport, 'ProducerStatus');
-  ProducerStatusField.OnGetText := ProducerStatusGetText;
-  SynonymNameField := TDataSetHelper.AddStringField(adsReport, 'SynonymName');
-  ProductIdField := TDataSetHelper.AddLargeintField(adsReport, 'ProductId');
-  OrderListIdField := TDataSetHelper.AddLargeintField(adsReport, 'OrderListId');
-  StatusField := TDataSetHelper.AddIntegerField(adsReport, 'Status');
-  CoreIdField := TDataSetHelper.AddLargeintField(adsReport, 'CoreId');
-}
-
   dsMinPrices := TDataSource.Create(Self);
   dsMinPrices.DataSet := adsMinPrices;
-
 
   adsCore := TMyQuery.Create(Self);
   adsCore.SQL.Text := shCore.Strings.Text;
@@ -210,6 +217,25 @@ begin
   pOffers.ControlStyle := pLeft.ControlStyle - [csParentBackground] + [csOpaque];
   pOffers.Align := alClient;
   pOffers.Parent := Self;
+
+  pWebBrowser := TPanel.Create(Self);
+  pWebBrowser.Parent := pOffers;
+  pWebBrowser.Align := alBottom;
+  pWebBrowser.BevelOuter := bvNone;
+  pWebBrowser.Height := 135;
+
+  bWebBrowser := TBevel.Create(Self);
+  bWebBrowser.Parent := pWebBrowser;
+  bWebBrowser.Align := alTop;
+  bWebBrowser.Height := 4;
+  bWebBrowser.Shape := bsTopLine;
+
+  WebBrowser := TWebBrowser.Create(Self);
+  WebBrowser.Tag := 2;
+  TWinControl(WebBrowser).Name := 'WebBrowser';
+  TWinControl(WebBrowser).Parent := pWebBrowser;
+  TWinControl(WebBrowser).Align := alClient;
+  UpdateReclame;
 
   dbgCore := TToughDBGrid.Create(Self);
   dbgCore.Name := 'dbgCore';
@@ -250,19 +276,16 @@ begin
   //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
   if DM.adtClientsAllowDelayOfPayment.Value then
     column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена поставщика', 30);
-  //column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
   column.Font.Style := [fsBold];
   column := TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
   column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Количество', 68);
   column.Alignment := taRightJustify;
-  {
   column := TDBGridHelper.AddColumn(dbgCore, 'OrderCount', 'Заказ', 47);
   column.Color := TColor(16775406);
   column := TDBGridHelper.AddColumn(dbgCore, 'SumOrder', 'Сумма', '0.00;;''''', 70);
   column.Color := TColor(16775406);
-  }
 end;
 
 procedure TMinPricesForm.CreateTopPanel;
@@ -276,7 +299,7 @@ begin
   eSearch.Parent := pTop;
   eSearch.Left := 5;
   eSearch.Width := Self.Canvas.TextWidth('Это очень очень длинная строка поиска');
-  eSearch.Text := '30';
+  eSearch.Text := IntToStr(FNetworkParams.NetworkMinCostPercent);
   eSearch.OnKeyPress := eSearchKeyPress;
   eSearch.OnKeyDown := eSearchKeyDown;
 
@@ -285,8 +308,24 @@ begin
   lFindCount.Left := eSearch.Left + eSearch.Width + 15;
   lFindCount.Caption := 'Количество найденных позиций: ';
 
+  spGotoMNNButton := TSpeedButton.Create(Self);
+  spGotoMNNButton.Height := 25;
+  spGotoMNNButton.Action := actGotoMNNAction;
+  spGotoMNNButton.Caption := actGotoMNNAction.Caption;
+  spGotoMNNButton.Parent := pTop;
+  spGotoMNNButton.Width := Self.Canvas.TextWidth(spGotoMNNButton.Caption) + 20;
+  spGotoMNNButton.Left := lFindCount.Left + lFindCount.Width + 50;
+
+  btnSelectPrices.Parent := pTop;
+  btnSelectPrices.Left := spGotoMNNButton.Left + spGotoMNNButton.Width + 15;
+
+  lFilter.Parent := pTop;
+  lFilter.Left := btnSelectPrices.Left + btnSelectPrices.Width + 10;
+
   pTop.Height := eSearch.Height + 10;
   eSearch.Top := (pTop.Height - eSearch.Height) div 2;
+  spGotoMNNButton.Top := (pTop.Height - spGotoMNNButton.Height) div 2;
+  btnSelectPrices.Top := (pTop.Height - btnSelectPrices.Height) div 2;
   lFindCount.Top := (pTop.Height - lFindCount.Height) div 2;
 end;
 
@@ -295,6 +334,25 @@ begin
   CreateTopPanel;
   CreateLeftPanel;
   CreateOffersPanel;
+end;
+
+procedure TMinPricesForm.dbgMinPricesKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    tmrSearchTimer(nil);
+  end;
+end;
+
+procedure TMinPricesForm.dbgMinPricesKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if (Key in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+  begin
+    if not tmrSearch.Enabled and (InternalSearchText = eSearch.Text) then
+      eSearch.Text := '';
+    AddKeyToSearch(Key);
+  end;
 end;
 
 procedure TMinPricesForm.eSearchKeyDown(Sender: TObject; var Key: Word;
@@ -312,35 +370,69 @@ end;
 procedure TMinPricesForm.eSearchKeyPress(Sender: TObject; var Key: Char);
 begin
   tmrSearch.Enabled := False;
-  AddKeyToSearch(Key);
-  //Если мы что-то нажали в элементе, то должны на это отреагировать
-  if Ord(Key) <> VK_RETURN then
-    tmrSearch.Enabled := True;
+  if (Key in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+  then begin
+    AddKeyToSearch(Key);
+    //Если мы что-то нажали в элементе, то должны на это отреагировать
+    if Ord(Key) <> VK_RETURN then
+      tmrSearch.Enabled := True;
+  end
+  else
+    if (Ord(Key) <> VK_RETURN) or (Ord(Key) <> VK_ESCAPE)
+    then
+      Key := Char(0);
 end;
 
 procedure TMinPricesForm.FormCreate(Sender: TObject);
+var
+  I : Integer;
+  sp : TSelectPrice;
+  mi :TMenuItem;
 begin
-  InternalSearchText := '';
-
+  FNetworkParams := TNetworkParams.Create(DM.MainConnection);
   CreateNonVisualComponent;
   CreateVisualComponent;
 
   inherited;
 
-
+  SelectedPrices := MinCostSelectedPrices;
+  for I := 0 to SelectedPrices.Count-1 do begin
+    sp := TSelectPrice(SelectedPrices.Objects[i]);
+    mi := TMenuItem.Create(pmSelectedPrices);
+    mi.Name := 'sl' + SelectedPrices[i];
+    mi.Caption := sp.PriceName;
+    mi.Checked := sp.Selected;
+    mi.Tag := Integer(sp);
+    mi.OnClick := OnSPClick;
+    pmSelectedPrices.Items.Add(mi);
+  end;
 end;
 
 procedure TMinPricesForm.InternalSearch;
+var
+  FilterSQL : String;
 begin
-  //DBProc.SetFilterProc(adsReport, FilterRecord);
-
   adsMinPrices.Close;
-  adsMinPrices.ParamByName('Percent').Value := eSearch.Text;
+  FNetworkParams.NetworkMinCostPercent := StrToInt(InternalSearchText);
+  FNetworkParams.SaveMinCostPercent;
+
+  adsMinPrices.SQL.Text := shShowMinPrices.Strings.Text;
+
+  FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'Core.');
+  lFilter.Visible := Length(FilterSQL) > 0;
+
+  if lFilter.Visible then
+    adsMinPrices.SQL.Text := adsMinPrices.SQL.Text + 'and (' + FilterSQL + ')';
+
+  adsMinPrices.SQL.Text := adsMinPrices.SQL.Text + 'ORDER BY Synonyms.SYNONYMNAME';
+  adsMinPrices.ParamByName('Percent').Value := FNetworkParams.NetworkMinCostPercent;
+
   adsMinPrices.Open;
 
   adsMinPrices.First;
 
-  dbgMinPrices.SetFocus;
+  if dbgMinPrices.CanFocus then
+    dbgMinPrices.SetFocus;
 end;
 
 procedure TMinPricesForm.MinPricesAfteOpen(dataSet: TDataSet);
@@ -358,7 +450,7 @@ procedure TMinPricesForm.SetClear;
 begin
   tmrSearch.Enabled := False;
 
-  //SetFilter(TFilterReport(cbFilter.ItemIndex));
+  //Непонятно, что делать при попытке сброса фильтра
 
   dbgMinPrices.SetFocus;
 end;
@@ -391,21 +483,9 @@ begin
     adsCore.Close;
   if adsMinPrices.Active and not adsMinPrices.IsEmpty
   then begin
-{
-    adsPreviosOrders.ParamByName( 'GroupByProducts').Value :=
-      DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean;
-    adsPreviosOrders.ParamByName( 'FullCode').Value := FullcodeField.Value;
-    adsPreviosOrders.ParamByName( 'ProductId').Value := minProductIdField.Value;
-    adsPreviosOrders.Open;
-}    
     adsCore.ParamByName( 'ProductId').Value := minProductIdField.Value;
     adsCore.Open;
     adsCore.First;
-{
-    if not CoreIdField.IsNull and not adsCore.Locate('CoreId', CoreIdField.Value, [])
-    then
-      adsCore.First;
-}      
   end;
 end;
 
@@ -413,6 +493,97 @@ procedure TMinPricesForm.UpdateOffers;
 begin
   tmrUpdatePreviosOrders.Enabled := False;
   tmrUpdatePreviosOrders.Enabled := True;
+end;
+
+procedure TMinPricesForm.actGotoMNNActionExecute(Sender: TObject);
+begin
+{
+var
+  MnnId : Int64;
+  lastControl : TWinControl;
+begin
+  lastControl := Self.ActiveControl;
+  if (MainForm.ActiveChild = Self)
+     and (Assigned(adsReport))
+     and not adsReport.IsEmpty
+  then begin
+    if Assigned(MnnField) then begin
+      if not MnnField.IsNull then begin
+        MnnId := MnnField.Value;
+        FlipToMNNFromMNNSearch(MnnId);
+        Exit;
+      end
+      else
+        AProc.MessageBox('Для данной позиции не установлено МНН.', MB_ICONWARNING);
+    end;
+  end;
+  if Assigned(lastControl) and (lastControl is TToughDBGrid) and lastControl.CanFocus
+  then
+    lastControl.SetFocus;
+}
+end;
+
+procedure TMinPricesForm.actGotoMNNActionUpdate(Sender: TObject);
+begin
+{
+  if Assigned(Sender) and (Sender is TAction) then begin
+    if (MainForm.ActiveChild = Self)
+       and (Assigned(adsReport))
+       and not adsReport.IsEmpty
+    then begin
+      TAction(Sender).Enabled := Assigned(MnnField) and not MnnField.IsNull
+    end
+    else
+      TAction(Sender).Enabled := False;
+  end;
+}
+end;
+
+procedure TMinPricesForm.OnSPClick(Sender: TObject);
+var
+  sp : TSelectPrice;
+begin
+  tmrSelectedPrices.Enabled := False;
+  TMenuItem(Sender).Checked := not TMenuItem(Sender).Checked;
+  sp := TSelectPrice(TMenuItem(Sender).Tag);
+  sp.Selected := TMenuItem(Sender).Checked;
+  pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
+  tmrSelectedPrices.Enabled := True;
+end;
+
+procedure TMinPricesForm.tmrSelectedPricesTimer(Sender: TObject);
+begin
+  tmrSelectedPrices.Enabled := False;
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+    InternalSearch;
+end;
+
+procedure TMinPricesForm.btnSelectPricesClick(Sender: TObject);
+begin
+  pmSelectedPrices.Popup(btnSelectPrices.ClientOrigin.X, btnSelectPrices.ClientOrigin.Y + btnSelectPrices.Height);
+end;
+
+procedure TMinPricesForm.miSelectAllClick(Sender: TObject);
+begin
+  ChangeSelected(True);
+end;
+
+procedure TMinPricesForm.miUnselecAllClick(Sender: TObject);
+begin
+  ChangeSelected(False);
+end;
+
+procedure TMinPricesForm.ChangeSelected(ASelected: Boolean);
+var
+  I : Integer;
+begin
+  tmrSelectedPrices.Enabled := False;
+  for I := 3 to pmSelectedPrices.Items.Count-1 do begin
+    pmSelectedPrices.Items.Items[i].Checked := ASelected;
+    TSelectPrice(TMenuItem(pmSelectedPrices.Items.Items[i]).Tag).Selected := ASelected;
+  end;
+  pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
+  tmrSelectedPrices.Enabled := True;
 end;
 
 end.
