@@ -47,15 +47,19 @@ type
     PrevForm: TChildForm;
     dsCheckVolume : TDataSet;
     dgCheckVolume : TToughDBGrid;
+    OldOrderValue : Variant;
     fOrder        : TField;
     fVolume       : TField;
     fOrderCost    : TField;
     fSumOrder     : TField;
     fMinOrderCount : TField;
+    fBuyingMatrixType : TIntegerField;
     OldAfterPost : TDataSetNotifyEvent;
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
     OldExit : TNotifyEvent;
+    OldAfterScroll : TDataSetNotifyEvent;
+    OldAfterOpen : TDataSetNotifyEvent;
 
     DBComponentWindowProcs : TObjectList;
     ModifiedActions        : TObjectList;
@@ -85,6 +89,8 @@ type
     function  CheckByOrderCost : Boolean;
     //Проверяем, что заказанное кол-во >= MinOrderCount
     function  CheckByMinOrderCount : Boolean;
+    //Проверяем, что позиция не запрещена к заказу
+    function  CheckByBuyingMatrixType : Boolean;
     //очищаем созданный заказ
     procedure ClearOrder;
     //очищаем созданный заказ
@@ -94,6 +100,8 @@ type
     procedure NewBeforePost(DataSet: TDataSet);
     procedure NewBeforeScroll(DataSet : TDataSet);
     procedure NewExit(Sender : TObject);
+    procedure NewAfterScroll(DataSet : TDataSet);
+    procedure NewAfterOpen(DataSet : TDataSet);
     procedure FilterByMNNExecute(Sender: TObject);
     procedure FilterByMNNUpdate(Sender: TObject);
     procedure ShowDescriptionExecute(Sender: TObject);
@@ -132,7 +140,7 @@ implementation
 
 uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection, Menus, Core,
   NamesForms,
-  DBGridHelper;
+  DBGridHelper, Variants;
 
 {$R *.DFM}
 
@@ -228,10 +236,8 @@ begin
       TToughDBGrid(Self.Components[i]).Font.Size := 10;
       TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
       TToughDBGrid(Self.Components[i]).GridLineColors.BrightColor := clDkGray;
-{
       if CheckWin32Version(5, 1) then
         TToughDBGrid(Self.Components[i]).OptionsEh := TToughDBGrid(Self.Components[i]).OptionsEh + [dghTraceColSizing];
-}
 
       if Assigned(TToughDBGrid(Self.Components[i]).OnSortMarkingChanged )
          and Assigned(TToughDBGrid(Self.Components[i]).DataSource)
@@ -376,6 +382,19 @@ begin
     ClearOrderByOrderCost;
     Abort;
   end;
+  if (dsCheckVolume.RecordCount > 0) and not CheckByBuyingMatrixType then begin
+    if AProc.MessageBox(
+        'Препарат не входит в разрешенную матрицу закупок.'#13#10 +
+        'Вы действительно хотите заказать его?',
+         MB_ICONWARNING or MB_OKCANCEL) = ID_CANCEL
+    then begin
+      ClearOrderByOrderCost;
+      Abort;
+    end;
+  end;
+
+  if Assigned(fBuyingMatrixType) then
+    OldOrderValue := fOrder.Value;
 end;
 
 procedure TChildForm.tCheckVolumeTimer(Sender: TObject);
@@ -403,6 +422,12 @@ begin
     dsCheckVolume.BeforePost := NewBeforePost;
     OldExit := dgCheckVolume.OnExit;
     dgCheckVolume.OnExit := NewExit;
+    if Assigned(fBuyingMatrixType) then begin
+      OldAfterOpen := dsCheckVolume.AfterOpen;
+      dsCheckVolume.AfterOpen := NewAfterOpen;
+      OldAfterScroll := dsCheckVolume.AfterScroll;
+      dsCheckVolume.AfterScroll := NewAfterScroll;
+    end;
     PrepareColumnsInOrderGrid(dgCheckVolume);
     if not (Self is TCoreForm) then
     for I := 0 to Self.ComponentCount-1 do
@@ -572,6 +597,8 @@ var
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
 begin
+  Grid.AutoFitColWidths := False;
+  try
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');
@@ -591,7 +618,7 @@ begin
     Grid.ParentShowHint := False;
     Grid.ShowHint := True;
     synonymFirmColumn.ToolTips := True;
-    
+
     producerNameColumn := TColumnEh(Grid.Columns.Insert(synonymFirmColumn.Index+1));
     producerNameColumn.FieldName := 'ProducerName';
     producerNameColumn.Title.Caption := 'Кат. производитель';
@@ -607,6 +634,7 @@ begin
       ndsColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
       ndsColumn.FieldName := 'NDS';
       ndsColumn.Title.Caption := 'НДС';
+      ndsColumn.Width := Grid.Canvas.TextWidth(ndsColumn.Title.Caption);
       if SortOnOrderGrid then
         ndsColumn.Title.TitleButton := True;
     end;
@@ -615,6 +643,7 @@ begin
       supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(ndsColumn.Index));
       supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
       supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
+      supplierPriceMarkupColumn.Width := Grid.Canvas.TextWidth('00.00');
       if SortOnOrderGrid then
         supplierPriceMarkupColumn.Title.TitleButton := True;
       supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
@@ -624,6 +653,7 @@ begin
       producerCostColumn := TColumnEh(Grid.Columns.Insert(supplierPriceMarkupColumn.Index));
       producerCostColumn.FieldName := 'ProducerCost';
       producerCostColumn.Title.Caption := 'Цена производителя';
+      producerCostColumn.Width := Grid.Canvas.TextWidth('000.00');
       if SortOnOrderGrid then
         producerCostColumn.Title.TitleButton := True;
       producerCostColumn.DisplayFormat := '0.00;;''''';
@@ -633,18 +663,23 @@ begin
       maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
       maxProducerCostColumn.FieldName := 'MaxProducerCost';
       maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
+      maxProducerCostColumn.Width := Grid.Canvas.TextWidth('000.00');
       if SortOnOrderGrid then
         maxProducerCostColumn.Title.TitleButton := True;
       maxProducerCostColumn.DisplayFormat := '0.00;;''''';
     end;
 
     realCostColumn.Title.Caption := 'Цена поставщика';
+    realCostColumn.Width := Grid.Canvas.TextWidth('0000.00');
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
     if not DM.adtClientsAllowDelayOfPayment.Value then
       Grid.Columns.Delete(realCostColumn.Index)
     else
       //Если же механизм включен, то колонка должна отображаться по умолчанию
       realCostColumn.Visible := True;
+  end;
+  finally
+    Grid.AutoFitColWidths := True;
   end;
 end;
 
@@ -875,6 +910,30 @@ begin
     else
       TAction(Sender).Enabled := False;
   end;
+end;
+
+function TChildForm.CheckByBuyingMatrixType: Boolean;
+begin
+  if Assigned(fBuyingMatrixType) and (not fBuyingMatrixType.IsNull) and (not fOrder.IsNull)
+     and (fOrder.AsInteger > 0) and (VarIsNull(OldOrderValue) or (OldOrderValue <> fOrder.AsInteger))
+  then
+    Result := fBuyingMatrixType.Value < 2
+  else
+    Result := True;
+end;
+
+procedure TChildForm.NewAfterOpen(DataSet : TDataSet);
+begin
+  OldOrderValue := fOrder.Value;
+  if Assigned(OldAfterOpen) then
+    OldAfterOpen(DataSet);
+end;
+
+procedure TChildForm.NewAfterScroll(DataSet : TDataSet);
+begin
+  OldOrderValue := fOrder.Value;
+  if Assigned(OldAfterScroll) then
+    OldAfterScroll(DataSet);
 end;
 
 end.

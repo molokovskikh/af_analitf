@@ -950,10 +950,8 @@ procedure TCorrectOrdersForm.SetGridParams(Grid: TToughDBGrid);
 begin
   Grid.AllowedSelections := [gstRecordBookmarks, gstRectangle]; 
   Grid.Options := Grid.Options + [dgRowLines];
-{
   if CheckWin32Version(5, 1) then
     Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
-}    
   Grid.Font.Size := 10;
   Grid.GridLineColors.DarkColor := clBlack;
   Grid.GridLineColors.BrightColor := clDkGray;
@@ -979,6 +977,8 @@ var
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
 begin
+  Grid.AutoFitColWidths := False;
+  try
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');
@@ -1003,6 +1003,7 @@ begin
     producerNameColumn.FieldName := 'ProducerName';
     producerNameColumn.Title.Caption := 'Кат. производитель';
     producerNameColumn.Visible := False;
+    producerNameColumn.Width := Grid.Canvas.TextWidth(producerNameColumn.Title.Caption);
   end;
 
   if Assigned(realCostColumn) then  begin
@@ -1011,12 +1012,14 @@ begin
       ndsColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
       ndsColumn.FieldName := 'NDS';
       ndsColumn.Title.Caption := 'НДС';
+      ndsColumn.Width := Grid.Canvas.TextWidth(ndsColumn.Title.Caption);
     end;
     supplierPriceMarkupColumn := ColumnByNameT(Grid, 'SupplierPriceMarkup');
     if not Assigned(supplierPriceMarkupColumn) then begin
       supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(ndsColumn.Index));
       supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
       supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
+      supplierPriceMarkupColumn.Width := Grid.Canvas.TextWidth('00.00');
       supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
     end;
     producerCostColumn := ColumnByNameT(Grid, 'ProducerCost');
@@ -1024,6 +1027,7 @@ begin
       producerCostColumn := TColumnEh(Grid.Columns.Insert(supplierPriceMarkupColumn.Index));
       producerCostColumn.FieldName := 'ProducerCost';
       producerCostColumn.Title.Caption := 'Цена производителя';
+      producerCostColumn.Width := Grid.Canvas.TextWidth('000.00');
       producerCostColumn.DisplayFormat := '0.00;;''''';
     end;
     maxProducerCostColumn := ColumnByNameT(Grid, 'MaxProducerCost');
@@ -1031,16 +1035,21 @@ begin
       maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
       maxProducerCostColumn.FieldName := 'MaxProducerCost';
       maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
+      maxProducerCostColumn.Width := Grid.Canvas.TextWidth('000.00');
       maxProducerCostColumn.DisplayFormat := '0.00;;''''';
     end;
     
     realCostColumn.Title.Caption := 'Цена поставщика';
+    realCostColumn.Width := Grid.Canvas.TextWidth('0000.00');
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
     if not DM.adtClientsAllowDelayOfPayment.Value then
       Grid.Columns.Delete(realCostColumn.Index)
     else
       //Если же механизм включен, то колонка должна отображаться по умолчанию
       realCostColumn.Visible := True;
+  end;
+  finally
+    Grid.AutoFitColWidths := True;
   end;
 end;
 

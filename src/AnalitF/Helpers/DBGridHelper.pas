@@ -384,10 +384,8 @@ begin
   Grid.Font.Size := 10;
   Grid.GridLineColors.DarkColor := clBlack;
   Grid.GridLineColors.BrightColor := clDkGray;
-{
   if CheckWin32Version(5, 1) then
     Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
-}    
 end;
 
 class procedure TDBGridHelper.SetMinWidthToColumns(Grid: TCustomDBGridEh);

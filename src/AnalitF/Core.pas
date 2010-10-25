@@ -233,6 +233,7 @@ begin
   fOrderCost := adsCoreORDERCOST;
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
+  fBuyingMatrixType := adsCoreBuyingMatrixType;
   SortOnOrderGrid := False;
   inherited;
 
@@ -452,7 +453,8 @@ begin
 
     PanelCaption := '';
 
-    if (adsCoreBuyingMatrixType.Value > 0) then begin
+    if (adsCoreBuyingMatrixType.Value > 0) and (adsCoreORDERCOUNT.AsInteger > 0)
+    then begin
       if (adsCoreBuyingMatrixType.Value = 1) then begin
         PanelCaption := 'Препарат запрещен к заказу.';
 
@@ -472,15 +474,6 @@ begin
         end;
 
         Abort;
-      end
-      else begin
-        //PanelCaption := 'Препарат не желателен к заказу';
-        if AProc.MessageBox(
-            'Препарат не входит в разрешенную матрицу закупок.'#13#10 +
-            'Вы действительно хотите заказать его?',
-             MB_ICONWARNING or MB_OKCANCEL) = ID_CANCEL
-        then
-          Abort;
       end;
     end;
     

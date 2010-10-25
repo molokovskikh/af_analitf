@@ -962,6 +962,9 @@ begin
 end;
 
 procedure TExchangeThread.CommitExchange;
+const
+  //Максимальный размер лога, отправляемый на сервер
+  MaxLogLen = 300*1024;
 var
   Res: TStrings;
   FS : TFileStream;
@@ -983,10 +986,10 @@ begin
     try
       FS := TFileStream.Create(ExePath + 'Exchange.log', fmOpenRead or fmShareDenyNone);
       try
-        if (FS.Size > 50*1024)
+        if (FS.Size > MaxLogLen)
         then begin
-          FS.Position := (FS.Size - 50*1024);
-          Len := 50*1024;
+          FS.Position := (FS.Size - MaxLogLen);
+          Len := MaxLogLen;
         end
         else
           Len := Integer(FS.Size);

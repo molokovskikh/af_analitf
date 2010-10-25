@@ -134,6 +134,7 @@ begin
   fOrderCost := adsExpiredsORDERCOST;
   fSumOrder := adsExpiredsSumOrder;
   fMinOrderCount := adsExpiredsMINORDERCOUNT;
+  fBuyingMatrixType := adsExpiredsBuyingMatrixType;
   gotoMNNButton := btnGotoMNN;
   inherited;
   TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'MnnId', ShowDescriptionAction);
@@ -189,7 +190,8 @@ begin
 
     PanelCaption := '';
 
-    if (adsExpiredsBuyingMatrixType.Value > 0) then begin
+    if (adsExpiredsBuyingMatrixType.Value > 0) and (adsExpiredsORDERCOUNT.AsInteger > 0)
+    then begin
       if (adsExpiredsBuyingMatrixType.Value = 1) then begin
         PanelCaption := 'Препарат запрещен к заказу.';
 
@@ -209,15 +211,6 @@ begin
         end;
 
         Abort;
-      end
-      else begin
-        //PanelCaption := 'Препарат не желателен к заказу';
-        if AProc.MessageBox(
-            'Препарат не входит в разрешенную матрицу закупок.'#13#10 +
-            'Вы действительно хотите заказать его?',
-             MB_ICONWARNING or MB_OKCANCEL) = ID_CANCEL
-        then
-          Abort;
       end;
     end;
 

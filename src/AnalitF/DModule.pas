@@ -866,14 +866,10 @@ begin
 {$ifndef NetworkVersion}
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
 {$endif}
-  if not DirectoryExists( RootFolder() + SDirUpload) then CreateDir( RootFolder() + SDirUpload);
-  if DirectoryExists( ExePath + SDirDataTmpDir) then begin
+  if not DirectoryExists( ExePath + SDirDataTmpDir) then
+    CreateDir( ExePath + SDirDataTmpDir)
+  else
     DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
-    try
-      DeleteDirectory(ExePath + SDirDataTmpDir);
-    except
-    end;
-  end;
   //MySqlApi.MySQLEmbDisableEventLog := True;
 
   if NeedUpdate800xToMySql then
@@ -901,12 +897,14 @@ begin
   MyEmbConnection.Params.Add('--skip-innodb');
   MyEmbConnection.Params.Add('--tmp_table_size=' + DatabaseController.GetMaxTempTableSize());
   MyEmbConnection.Params.Add('--max_heap_table_size=' + DatabaseController.GetMaxTempTableSize());
+  MyEmbConnection.Params.Add('--tmpdir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirDataTmpDir  + '\');
 {$else}
   MyEmbConnection.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
   MyEmbConnection.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + '\');
   MyEmbConnection.Params.Add('--character_set_server=cp1251');
   MyEmbConnection.Params.Add('--tmp_table_size=' + DatabaseController.GetMaxTempTableSize());
   MyEmbConnection.Params.Add('--max_heap_table_size=' + DatabaseController.GetMaxTempTableSize());
+  MyEmbConnection.Params.Add('--tmpdir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirDataTmpDir  + '\');
 
   MyEmbConnection.Params.Add('--sort_buffer_size=64M');
   MyEmbConnection.Params.Add('--read_buffer_size=2M');
