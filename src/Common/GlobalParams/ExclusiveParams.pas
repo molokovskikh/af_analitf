@@ -5,14 +5,18 @@ interface
 uses
   SysUtils,
   Classes,
+  DB,
   MyAccess,
   MyServerControl,
   GlobalParams,
   UniqueId,
+  DBProc,
   SysNames;
 
 type
   TExclusiveParams = class(TGlobalParams)
+   private
+    procedure FilterDB(DataSet: TDataSet; var Accept: Boolean);
    public
     ExclusiveId : String;
     ExclusiveComputerName : String;
@@ -28,7 +32,8 @@ type
 
 implementation
 
-uses Variants, DB;
+uses
+  Variants;
 
 { TExclusiveParams }
 
@@ -45,27 +50,38 @@ begin
   try
     ServerControl.Connection := FConnection;
     ServerControl.ShowProcessList(True);
-    Result := ServerControl.RecordCount;
+    try
+      SetFilterProc(ServerControl, FilterDB);
+      Result := ServerControl.RecordCount;
+    finally
+      SetFilterProc(ServerControl, nil);
+    end;
   finally
     ServerControl.Free;
   end;
+end;
+
+procedure TExclusiveParams.FilterDB(DataSet: TDataSet;
+  var Accept: Boolean);
+begin
+  Accept := AnsiCompareText('analitf', DataSet.FieldByName('DB').AsString) = 0;
 end;
 
 procedure TExclusiveParams.ReadParams;
 var
   value : Variant;
 begin
-  value := GetParam('ExclusiveId');
+  value := GetParam('ExclusiveId', 'analitf');
   if VarIsNull(value) then
     ExclusiveId := ''
   else
     ExclusiveId := value;
-  value := GetParam('ExclusiveComputerName');
+  value := GetParam('ExclusiveComputerName', 'analitf');
   if VarIsNull(value) then
     ExclusiveComputerName := ''
   else
     ExclusiveComputerName := value;
-  value := GetParam('ExclusiveDate');
+  value := GetParam('ExclusiveDate', 'analitf');
   if VarIsNull(value) then
     ExclusiveDate := 0
   else

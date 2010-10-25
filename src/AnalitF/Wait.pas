@@ -15,7 +15,7 @@ const
     'запрашивает монопольный доступ к базе данных.' + #10 + #13 +
     '¬ы можете подождать завершени€ монопольного доступа или выйти из программы.';
 
-  WAIT_COUNT	= 40; // ¬рем€ ожидани€ в секундах
+  WAIT_COUNT	= 5; // ¬рем€ ожидани€ в секундах
 
 type
   TWaitForm = class(TVistaCorrectForm)
@@ -146,7 +146,6 @@ begin
     try
       Connection.Open;
       try
-        Connection.ExecSQL('use analitf;', []);
         ExParam := TExclusiveParams.Create(Connection);
         try
           if ExParam.ClearOrSelfExclusive then begin
@@ -165,12 +164,6 @@ begin
     except
       on E : Exception do
         WriteExchangeLog('TWaitForm.TimerTimer', E.Message);
-    end;
-
-    if Timer.Interval <> 10000 then begin
-      Timer.Enabled := False;
-      Timer.Interval := 10000;
-      Timer.Enabled := True;
     end;
   end;
 end;

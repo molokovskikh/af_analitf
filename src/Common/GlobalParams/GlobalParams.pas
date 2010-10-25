@@ -5,6 +5,7 @@ interface
 uses
   SysUtils,
   Classes,
+  StrUtils,
   MyAccess,
   DBProc;
 
@@ -12,7 +13,7 @@ type
   TGlobalParams = class
    protected
     FConnection : TCustomMyConnection;
-    function GetParam(ParamName : String) : Variant;
+    function GetParam(ParamName : String; Schema : String = '') : Variant;
     procedure SaveParam(ParamName : String; ParamValue : Variant);
    public
     constructor Create(Connection : TCustomMyConnection);
@@ -31,11 +32,11 @@ begin
   ReadParams;
 end;
 
-function TGlobalParams.GetParam(ParamName: String): Variant;
+function TGlobalParams.GetParam(ParamName: String; Schema : String = ''): Variant;
 begin
   Result := DBProc.QueryValue(
     FConnection,
-    'select Value from GlobalParams where Name = :Name',
+    'select Value from ' + IfThen(Schema <> '', Schema + '.') + 'GlobalParams where Name = :Name',
     ['Name'],
     [ParamName]);
 end;
