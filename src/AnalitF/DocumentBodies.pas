@@ -247,10 +247,8 @@ begin
   dbgDocumentBodies.GridLineColors.DarkColor := clBlack;
   dbgDocumentBodies.GridLineColors.BrightColor := clDkGray;
   dbgDocumentBodies.AllowedSelections := [gstRecordBookmarks, gstRectangle];
-{
   if CheckWin32Version(5, 1) then
     dbgDocumentBodies.OptionsEh := dbgDocumentBodies.OptionsEh + [dghTraceColSizing];
-}    
 
   dbgDocumentBodies.SelectedField := nil;
   dbgDocumentBodies.Columns.Clear();

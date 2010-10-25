@@ -950,10 +950,8 @@ procedure TCorrectOrdersForm.SetGridParams(Grid: TToughDBGrid);
 begin
   Grid.AllowedSelections := [gstRecordBookmarks, gstRectangle]; 
   Grid.Options := Grid.Options + [dgRowLines];
-{
   if CheckWin32Version(5, 1) then
     Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
-}    
   Grid.Font.Size := 10;
   Grid.GridLineColors.DarkColor := clBlack;
   Grid.GridLineColors.BrightColor := clDkGray;
