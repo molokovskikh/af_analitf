@@ -865,11 +865,11 @@ begin
 
 {$ifndef NetworkVersion}
   if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
-{$endif}
   if not DirectoryExists( ExePath + SDirDataTmpDir) then
     CreateDir( ExePath + SDirDataTmpDir)
   else
     DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
+{$endif}
   //MySqlApi.MySQLEmbDisableEventLog := True;
 
   if NeedUpdate800xToMySql then

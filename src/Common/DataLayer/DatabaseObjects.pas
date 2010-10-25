@@ -891,9 +891,11 @@ var
   I : Integer;
   ErrorCount : Integer;
   Success : Boolean;
+{$ifndef NetworkVersion}
   SR: TSearchrec;
   FilePath,
   Path: String;
+{$endif}
 begin
   FCommand.Connection := connection;
   try
@@ -902,6 +904,7 @@ begin
     repeat
 
       try
+{$ifndef NetworkVersion}
         FilePath := ExePath + SDirDataTmpDir + '\*.*';
         Path := ExtractFilePath(FilePath);
         try
@@ -918,6 +921,7 @@ begin
         finally
           SysUtils.FindClose(SR);
         end;
+{$endif}
 
         for I := 0 to FDatabaseObjects.Count-1 do
           if FDatabaseObjects[i] is TDatabaseView then begin
