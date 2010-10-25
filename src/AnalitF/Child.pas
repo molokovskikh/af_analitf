@@ -47,15 +47,19 @@ type
     PrevForm: TChildForm;
     dsCheckVolume : TDataSet;
     dgCheckVolume : TToughDBGrid;
+    OldOrderValue : Variant;
     fOrder        : TField;
     fVolume       : TField;
     fOrderCost    : TField;
     fSumOrder     : TField;
     fMinOrderCount : TField;
+    fBuyingMatrixType : TIntegerField;
     OldAfterPost : TDataSetNotifyEvent;
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
     OldExit : TNotifyEvent;
+    OldAfterScroll : TDataSetNotifyEvent;
+    OldAfterOpen : TDataSetNotifyEvent;
 
     DBComponentWindowProcs : TObjectList;
     ModifiedActions        : TObjectList;
@@ -85,6 +89,8 @@ type
     function  CheckByOrderCost : Boolean;
     //ѕровер€ем, что заказанное кол-во >= MinOrderCount
     function  CheckByMinOrderCount : Boolean;
+    //ѕровер€ем, что позици€ не запрещена к заказу
+    function  CheckByBuyingMatrixType : Boolean;
     //очищаем созданный заказ
     procedure ClearOrder;
     //очищаем созданный заказ
@@ -94,6 +100,8 @@ type
     procedure NewBeforePost(DataSet: TDataSet);
     procedure NewBeforeScroll(DataSet : TDataSet);
     procedure NewExit(Sender : TObject);
+    procedure NewAfterScroll(DataSet : TDataSet);
+    procedure NewAfterOpen(DataSet : TDataSet);
     procedure FilterByMNNExecute(Sender: TObject);
     procedure FilterByMNNUpdate(Sender: TObject);
     procedure ShowDescriptionExecute(Sender: TObject);
@@ -132,7 +140,7 @@ implementation
 
 uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection, Menus, Core,
   NamesForms,
-  DBGridHelper;
+  DBGridHelper, Variants;
 
 {$R *.DFM}
 
@@ -374,6 +382,19 @@ begin
     ClearOrderByOrderCost;
     Abort;
   end;
+  if (dsCheckVolume.RecordCount > 0) and not CheckByBuyingMatrixType then begin
+    if AProc.MessageBox(
+        'ѕрепарат не входит в разрешенную матрицу закупок.'#13#10 +
+        '¬ы действительно хотите заказать его?',
+         MB_ICONWARNING or MB_OKCANCEL) = ID_CANCEL
+    then begin
+      ClearOrderByOrderCost;
+      Abort;
+    end;
+  end;
+
+  if Assigned(fBuyingMatrixType) then
+    OldOrderValue := fOrder.Value;
 end;
 
 procedure TChildForm.tCheckVolumeTimer(Sender: TObject);
@@ -401,6 +422,12 @@ begin
     dsCheckVolume.BeforePost := NewBeforePost;
     OldExit := dgCheckVolume.OnExit;
     dgCheckVolume.OnExit := NewExit;
+    if Assigned(fBuyingMatrixType) then begin
+      OldAfterOpen := dsCheckVolume.AfterOpen;
+      dsCheckVolume.AfterOpen := NewAfterOpen;
+      OldAfterScroll := dsCheckVolume.AfterScroll;
+      dsCheckVolume.AfterScroll := NewAfterScroll;
+    end;
     PrepareColumnsInOrderGrid(dgCheckVolume);
     if not (Self is TCoreForm) then
     for I := 0 to Self.ComponentCount-1 do
@@ -880,6 +907,30 @@ begin
     else
       TAction(Sender).Enabled := False;
   end;
+end;
+
+function TChildForm.CheckByBuyingMatrixType: Boolean;
+begin
+  if Assigned(fBuyingMatrixType) and (not fBuyingMatrixType.IsNull) and (not fOrder.IsNull)
+     and (fOrder.AsInteger > 0) and (VarIsNull(OldOrderValue) or (OldOrderValue <> fOrder.AsInteger))
+  then
+    Result := fBuyingMatrixType.Value < 2
+  else
+    Result := True;
+end;
+
+procedure TChildForm.NewAfterOpen(DataSet : TDataSet);
+begin
+  OldOrderValue := fOrder.Value;
+  if Assigned(OldAfterOpen) then
+    OldAfterOpen(DataSet);
+end;
+
+procedure TChildForm.NewAfterScroll(DataSet : TDataSet);
+begin
+  OldOrderValue := fOrder.Value;
+  if Assigned(OldAfterScroll) then
+    OldAfterScroll(DataSet);
 end;
 
 end.
