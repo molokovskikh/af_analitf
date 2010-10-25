@@ -245,7 +245,7 @@ var
   unionIndex : Integer;
   currentItem : TCurrentOrderItem;
 begin
-  IsDebugEnabled := FindCmdLineSwitch('extd');
+  IsDebugEnabled := True;
 
   if (IsDebugEnabled) then
     WriteExchangeLog(
