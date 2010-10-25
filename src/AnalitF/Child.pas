@@ -569,6 +569,8 @@ var
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
 begin
+  Grid.AutoFitColWidths := False;
+  try
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');
@@ -588,7 +590,7 @@ begin
     Grid.ParentShowHint := False;
     Grid.ShowHint := True;
     synonymFirmColumn.ToolTips := True;
-    
+
     producerNameColumn := TColumnEh(Grid.Columns.Insert(synonymFirmColumn.Index+1));
     producerNameColumn.FieldName := 'ProducerName';
     producerNameColumn.Title.Caption := 'Кат. производитель';
@@ -604,6 +606,7 @@ begin
       ndsColumn := TColumnEh(Grid.Columns.Insert(realCostColumn.Index));
       ndsColumn.FieldName := 'NDS';
       ndsColumn.Title.Caption := 'НДС';
+      ndsColumn.Width := Grid.Canvas.TextWidth(ndsColumn.Title.Caption);
       if SortOnOrderGrid then
         ndsColumn.Title.TitleButton := True;
     end;
@@ -612,6 +615,7 @@ begin
       supplierPriceMarkupColumn := TColumnEh(Grid.Columns.Insert(ndsColumn.Index));
       supplierPriceMarkupColumn.FieldName := 'SupplierPriceMarkup';
       supplierPriceMarkupColumn.Title.Caption := 'Наценка поставщика';
+      supplierPriceMarkupColumn.Width := Grid.Canvas.TextWidth('00.00');
       if SortOnOrderGrid then
         supplierPriceMarkupColumn.Title.TitleButton := True;
       supplierPriceMarkupColumn.DisplayFormat := '0.00;;''''';
@@ -621,6 +625,7 @@ begin
       producerCostColumn := TColumnEh(Grid.Columns.Insert(supplierPriceMarkupColumn.Index));
       producerCostColumn.FieldName := 'ProducerCost';
       producerCostColumn.Title.Caption := 'Цена производителя';
+      producerCostColumn.Width := Grid.Canvas.TextWidth('000.00');
       if SortOnOrderGrid then
         producerCostColumn.Title.TitleButton := True;
       producerCostColumn.DisplayFormat := '0.00;;''''';
@@ -630,18 +635,23 @@ begin
       maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
       maxProducerCostColumn.FieldName := 'MaxProducerCost';
       maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
+      maxProducerCostColumn.Width := Grid.Canvas.TextWidth('000.00');
       if SortOnOrderGrid then
         maxProducerCostColumn.Title.TitleButton := True;
       maxProducerCostColumn.DisplayFormat := '0.00;;''''';
     end;
 
     realCostColumn.Title.Caption := 'Цена поставщика';
+    realCostColumn.Width := Grid.Canvas.TextWidth('0000.00');
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
     if not DM.adtClientsAllowDelayOfPayment.Value then
       Grid.Columns.Delete(realCostColumn.Index)
     else
       //Если же механизм включен, то колонка должна отображаться по умолчанию
       realCostColumn.Visible := True;
+  end;
+  finally
+    Grid.AutoFitColWidths := True;
   end;
 end;
 
