@@ -83,7 +83,6 @@ end;
 
 procedure TExclusiveForm.TimerTimer(Sender: TObject);
 var
-  Dummy1, Dummy2: string;
   countOfProcess : Integer;
 begin
   countOfProcess := DM.GlobalExclusiveParams.CountOfProcess();

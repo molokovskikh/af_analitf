@@ -1141,11 +1141,13 @@ end;
 { Проверки на невозможность запуска программы }
 procedure TDM.CheckRestrictToRun;
 var
+{$ifndef NetworkVersion}
   MaxUsers, ProcessCount: integer;
   FreeAvail,
   Total,
   TotalFree,
   DBFileSize : Int64;
+{$endif}
   Kbd: HKL;
 begin
   //Если попытка загрузить клавиатуру окажется удачной, то делаем ее активной
@@ -1167,23 +1169,25 @@ begin
 
   DM.MainConnection.Open;
   try
-    MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
     FGetCatalogsCount := GetCatalogsCount;
+{$ifndef NetworkVersion}
+    MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
     try
       MyServerControl.ShowProcessList();
       ProcessCount := MyServerControl.RecordCount;
     finally
       MyServerControl.Close;
     end;
+{$endif}
   finally
     DM.MainConnection.Close;
   end;
-{
+{$ifndef NetworkVersion}
   if ( MaxUsers > 0) and ( ProcessCount > MaxUsers)
   then
     LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
       'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
-}      
+{$endif}
 
 {$ifndef NetworkVersion}
   if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
@@ -1857,7 +1861,7 @@ begin
       //dbCon.RemoveFromPool;
     end;
 
-{
+{$ifndef NetworkVersion}
     if DBVersion = 50 then begin
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
       DBVersion := 51;
@@ -1948,10 +1952,10 @@ begin
       RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor66);
       DBVersion := 68;
     end;
+{$endif}
 
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]);
-}      
 
     //Если было произведено обновление программы, то обновляем ключи
     if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then

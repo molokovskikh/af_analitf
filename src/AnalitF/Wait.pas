@@ -27,7 +27,6 @@ type
     procedure btnExitClick(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
   private
-  ComputerName: string;
   Counter: integer;
   public
     { Public declarations }

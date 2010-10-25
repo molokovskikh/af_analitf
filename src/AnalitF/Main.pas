@@ -1587,6 +1587,8 @@ var
   BeforeOrderCount,
   BeforePositionCount : Integer;
 begin
+  BeforeOrderCount := LastOrderCount;
+  BeforePositionCount := LastPositionCount;
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
     try
       SetOrdersInfo;
