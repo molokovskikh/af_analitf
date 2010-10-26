@@ -1,8 +1,8 @@
 object ConfigForm: TConfigForm
   Left = 456
   Top = 244
-  Width = 409
-  Height = 388
+  Width = 421
+  Height = 403
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -41,11 +41,11 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshAuth
+    ActivePage = tshClients
     MultiLine = True
     TabOrder = 0
     object tshClients: TTabSheet
-      Caption = #1053#1072#1094#1077#1085#1082#1080' '#1085#1077' '#1046#1053#1042#1051#1057
+      Caption = #1053#1072#1094#1077#1085#1082#1080' '#1087#1088#1086#1095#1080#1081' '#1072#1089#1089#1086#1088#1090#1080#1084#1077#1085#1090
       ImageIndex = 1
     end
     object tshConnect: TTabSheet

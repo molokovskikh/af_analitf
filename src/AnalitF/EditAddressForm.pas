@@ -125,7 +125,7 @@ procedure TEditAddressFrm.AddRetailMarkups;
 begin
   tsRetailMarkups := TTabSheet.Create(Self);
   tsRetailMarkups.PageControl := pcMain;
-  tsRetailMarkups.Caption := 'Наценки не ЖНВЛС';
+  tsRetailMarkups.Caption := 'Наценки прочий ассортимент';
 
   frameEditRetailMarkups := TframeEditVitallyImportantMarkups
     .CreateFrame(Self, doiRetailMargins, DM.LoadRetailMargins);
