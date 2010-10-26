@@ -17,6 +17,7 @@ uses
   StrHlder,
   GridsEh,
   DbGridEh,
+  Constant,
   AProc,
   ToughDBGrid,
   NetworkParams;
@@ -36,6 +37,9 @@ type
     miSep: TMenuItem;
     lFilter: TLabel;
     tmrSelectedPrices: TTimer;
+    shCoreUpdate: TStrHolder;
+    shCoreRefresh: TStrHolder;
+    tmrOverCostHide: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
     procedure tmrUpdatePreviosOrdersTimer(Sender: TObject);
@@ -45,19 +49,23 @@ type
     procedure btnSelectPricesClick(Sender: TObject);
     procedure miSelectAllClick(Sender: TObject);
     procedure miUnselecAllClick(Sender: TObject);
+    procedure tmrOverCostHideTimer(Sender: TObject);
   private
     { Private declarations }
     FNetworkParams : TNetworkParams;
     InternalSearchText : String;
+    UseEx
     
     SelectedPrices : TStringList;
 
     procedure CreateNonVisualComponent;
+    procedure AddCoreFields;
 
     procedure CreateVisualComponent;
     procedure CreateTopPanel;
     procedure CreateLeftPanel;
     procedure CreateOffersPanel;
+    procedure CreateOverCostPanel;
 
     procedure BindFields;
 
@@ -68,6 +76,8 @@ type
     procedure UpdateOffers();
 
     procedure ChangeSelected(ASelected : Boolean);
+
+    procedure ShowOverCostPanel(panelCaption : String);
   protected
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
@@ -81,6 +91,18 @@ type
       Shift: TShiftState);
 
     procedure OnSPClick(Sender: TObject);
+
+    procedure adsCoreCalcFields(DataSet: TDataSet);
+    procedure adsCoreAfterPost(DataSet: TDataSet);
+    procedure adsCoreBeforeEdit(DataSet: TDataSet);
+    procedure adsCoreBeforePost(DataSet: TDataSet);
+
+    procedure dbgCoreKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure dbgCoreCanInput(Sender: TObject; Value: Integer;
+      var CanInput: Boolean);
+    procedure dbgCoreGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
   public
     { Public declarations }
     adsMinPrices : TMyQuery;
@@ -94,6 +116,58 @@ type
 
     adsCore : TMyQuery;
     dsCore : TDataSource;
+
+    adsCoreCoreId: TLargeintField;
+    adsCorePriceCode: TLargeintField;
+    adsCoreRegionCode: TLargeintField;
+    adsCoreProductid: TLargeintField;
+    adsCoreShortcode: TLargeintField;
+    adsCoreCodeFirmCr: TLargeintField;
+    adsCoreSynonymCode: TLargeintField;
+    adsCoreSynonymFirmCrCode: TLargeintField;
+    adsCoreCode: TStringField;
+    adsCoreCodeCr: TStringField;
+    adsCorePeriod: TStringField;
+    adsCoreVolume: TStringField;
+    adsCoreNote: TStringField;
+    adsCoreCost: TFloatField;
+    adsCoreQuantity: TStringField;
+    adsCoreAwait: TBooleanField;
+    adsCoreJunk: TBooleanField;
+    adsCoreDoc: TStringField;
+    adsCoreRegistryCost: TFloatField;
+    adsCoreVitallyImportant: TBooleanField;
+    adsCoreRequestRatio: TIntegerField;
+    adsCoreOrderCost: TFloatField;
+    adsCoreMinOrderCount: TIntegerField;
+    adsCoreSynonymName: TStringField;
+    adsCoreSynonymFirm: TStringField;
+    adsCoreDatePrice: TDateTimeField;
+    adsCorePriceName: TStringField;
+    adsCorePriceEnabled: TBooleanField;
+    adsCoreFirmCode: TLargeintField;
+    adsCoreStorage: TBooleanField;
+    adsCoreRegionName: TStringField;
+    adsCoreFullcode: TLargeintField;
+    adsCoreRealCost: TFloatField;
+    adsCoreSupplierPriceMarkup: TFloatField;
+    adsCoreProducerCost: TFloatField;
+    adsCoreNDS: TSmallintField;
+    adsCoreMnnId: TLargeintField;
+    adsCoreMnn: TStringField;
+    adsCoreDescriptionId: TLargeintField;
+    adsCoreCatalogVitallyImportant: TBooleanField;
+    adsCoreCatalogMandatoryList: TBooleanField;
+    adsCoreMaxProducerCost: TFloatField;
+    adsCoreBuyingMatrixType: TIntegerField;
+    adsCoreProducerName: TStringField;
+
+    adsCoreOrdersOrderId: TLargeintField;
+    adsCoreOrdersHOrderId: TLargeintField;
+    adsCoreOrderCount: TIntegerField;
+    adsCoreSumOrder: TFloatField;
+
+    adsCorePriceRet: TCurrencyField;
 
     pTop : TPanel;
     eSearch : TEdit;
@@ -109,6 +183,8 @@ type
     bWebBrowser : TBevel;
     WebBrowser : TWebBrowser;
 
+    plOverCost : TPanel;
+    lWarning : TLabel;
 
     procedure ShowForm; override;
   end;
@@ -202,11 +278,23 @@ begin
 
   adsCore := TMyQuery.Create(Self);
   adsCore.SQL.Text := shCore.Strings.Text;
+  adsCore.SQLUpdate.Text := shCoreUpdate.Strings.Text;
+  adsCore.SQLRefresh.Text := shCoreRefresh.Strings.Text;
   adsCore.ParamByName('TimeZoneBias').Value := AProc.TimeZoneBias;
   adsCore.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
 
   dsCore := TDataSource.Create(Self);
   dsCore.DataSet := adsCore;
+
+  AddCoreFields;
+
+  adsCore.OnCalcFields := adsCoreCalcFields;
+  adsCore.BeforeUpdateExecute := BeforeUpdateExecuteForClientID;
+  adsCore.AfterPost := adsCoreAfterPost;
+  adsCore.BeforeEdit := adsCoreBeforeEdit;
+  adsCore.BeforePost := adsCoreBeforePost;
+
+  adsCore.RefreshOptions := [roAfterUpdate];
 end;
 
 procedure TMinPricesForm.CreateOffersPanel;
@@ -286,6 +374,12 @@ begin
   column.Color := TColor(16775406);
   column := TDBGridHelper.AddColumn(dbgCore, 'SumOrder', 'Сумма', '0.00;;''''', 70);
   column.Color := TColor(16775406);
+
+  dbgCore.OnKeyDown := dbgCoreKeyDown;
+  dbgCore.OnCanInput := dbgCoreCanInput;
+  dbgCore.OnGetCellParams := dbgCoreGetCellParams;
+
+  dbgCore.InputField := 'OrderCount';
 end;
 
 procedure TMinPricesForm.CreateTopPanel;
@@ -331,6 +425,7 @@ end;
 
 procedure TMinPricesForm.CreateVisualComponent;
 begin
+  CreateOverCostPanel;
   CreateTopPanel;
   CreateLeftPanel;
   CreateOffersPanel;
@@ -340,7 +435,10 @@ procedure TMinPricesForm.dbgMinPricesKeyDown(Sender: TObject;
   var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_RETURN then begin
-    tmrSearchTimer(nil);
+    if (Length(eSearch.Text) > 0) and (InternalSearchText <> eSearch.Text) then
+      tmrSearchTimer(nil)
+    else
+      dbgCore.SetFocus();
   end;
 end;
 
@@ -393,6 +491,16 @@ begin
   CreateNonVisualComponent;
   CreateVisualComponent;
 
+  dsCheckVolume := adsCore;
+  dgCheckVolume := dbgCore;
+  fOrder := adsCoreOrderCount;
+  fVolume := adsCoreRequestRatio;
+  fOrderCost := adsCoreOrderCost;
+  fSumOrder := adsCoreSumOrder;
+  fMinOrderCount := adsCoreMinOrderCount;
+  fBuyingMatrixType := adsCoreBuyingMatrixType;
+  SortOnOrderGrid := False;
+  
   inherited;
 
   SelectedPrices := MinCostSelectedPrices;
@@ -459,6 +567,8 @@ procedure TMinPricesForm.ShowForm;
 begin
   BindFields;
 
+  plOverCost.Hide();
+  
   inherited;
 
   dbgMinPrices.SetFocus;
@@ -584,6 +694,273 @@ begin
   end;
   pmSelectedPrices.Popup(pmSelectedPrices.PopupPoint.X, pmSelectedPrices.PopupPoint.Y);
   tmrSelectedPrices.Enabled := True;
+end;
+
+procedure TMinPricesForm.AddCoreFields;
+begin
+  adsCoreCoreId := TDataSetHelper.AddLargeintField(adsCore, 'CoreId');
+  adsCorePriceCode := TDataSetHelper.AddLargeintField(adsCore, 'PriceCode');
+  adsCoreRegionCode := TDataSetHelper.AddLargeintField(adsCore, 'RegionCode');
+  adsCoreproductid := TDataSetHelper.AddLargeintField(adsCore, 'productid');
+  adsCoreShortcode := TDataSetHelper.AddLargeintField(adsCore, 'shortcode');
+  adsCoreCodeFirmCr := TDataSetHelper.AddLargeintField(adsCore, 'CodeFirmCr');
+  adsCoreSynonymCode := TDataSetHelper.AddLargeintField(adsCore, 'SynonymCode');
+  adsCoreSynonymFirmCrCode := TDataSetHelper.AddLargeintField(adsCore, 'SynonymFirmCrCode');
+  adsCoreCode := TDataSetHelper.AddStringField(adsCore, 'Code');
+  adsCoreCodeCr := TDataSetHelper.AddStringField(adsCore, 'CodeCr');
+  adsCorePeriod := TDataSetHelper.AddStringField(adsCore, 'Period');
+  adsCoreVolume := TDataSetHelper.AddStringField(adsCore, 'Volume');
+  adsCoreNote := TDataSetHelper.AddStringField(adsCore, 'Note');
+  adsCoreCost := TDataSetHelper.AddFloatField(adsCore, 'Cost');
+  adsCoreQuantity := TDataSetHelper.AddStringField(adsCore, 'Quantity');
+  adsCoreAwait := TDataSetHelper.AddBooleanField(adsCore, 'Await');
+  adsCoreJunk := TDataSetHelper.AddBooleanField(adsCore, 'Junk');
+  adsCoreDoc := TDataSetHelper.AddStringField(adsCore, 'doc');
+  adsCoreRegistryCost := TDataSetHelper.AddFloatField(adsCore, 'registrycost');
+  adsCoreVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'vitallyimportant');
+  adsCoreRequestRatio := TDataSetHelper.AddIntegerField(adsCore, 'requestratio');
+  adsCoreOrderCost := TDataSetHelper.AddFloatField(adsCore, 'ordercost');
+  adsCoreMinOrderCount := TDataSetHelper.AddIntegerField(adsCore, 'minordercount');
+  adsCoreSynonymName := TDataSetHelper.AddStringField(adsCore, 'SynonymName');
+  adsCoreSynonymFirm := TDataSetHelper.AddStringField(adsCore, 'SynonymFirm');
+  adsCoreDatePrice := TDataSetHelper.AddDateTimeField(adsCore, 'DatePrice');
+  adsCorePriceName := TDataSetHelper.AddStringField(adsCore, 'PriceName');
+  adsCorePriceEnabled := TDataSetHelper.AddBooleanField(adsCore, 'PriceEnabled');
+  adsCoreFirmCode := TDataSetHelper.AddLargeintField(adsCore, 'FirmCode');
+  adsCoreStorage := TDataSetHelper.AddBooleanField(adsCore, 'Storage');
+  adsCoreRegionName := TDataSetHelper.AddStringField(adsCore, 'RegionName');
+  adsCoreFullcode := TDataSetHelper.AddLargeintField(adsCore, 'fullcode');
+  adsCoreRealCost := TDataSetHelper.AddFloatField(adsCore, 'RealCost');
+  adsCoreSupplierPriceMarkup := TDataSetHelper.AddFloatField(adsCore, 'SupplierPriceMarkup');
+  adsCoreProducerCost := TDataSetHelper.AddFloatField(adsCore, 'ProducerCost');
+  adsCoreNDS := TDataSetHelper.AddSmallintField(adsCore, 'NDS');
+  adsCoreMnnId := TDataSetHelper.AddLargeintField(adsCore, 'MnnId');
+  adsCoreMnn := TDataSetHelper.AddStringField(adsCore, 'Mnn');
+  adsCoreDescriptionId := TDataSetHelper.AddLargeintField(adsCore, 'DescriptionId');
+  adsCoreCatalogVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'CatalogVitallyImportant');
+  adsCoreCatalogMandatoryList := TDataSetHelper.AddBooleanField(adsCore, 'CatalogMandatoryList');
+  adsCoreMaxProducerCost := TDataSetHelper.AddFloatField(adsCore, 'MaxProducerCost');
+  adsCoreBuyingMatrixType := TDataSetHelper.AddIntegerField(adsCore, 'BuyingMatrixType');
+  adsCoreProducerName := TDataSetHelper.AddStringField(adsCore, 'ProducerName');
+
+
+  adsCoreOrderCount := TDataSetHelper.AddIntegerField(adsCore, 'OrderCount');
+  adsCoreSumOrder := TDataSetHelper.AddFloatField(adsCore, 'SumOrder');
+
+  adsCoreOrdersOrderId := TDataSetHelper.AddLargeintField(adsCore, 'OrdersOrderId');
+  adsCoreOrdersHOrderId := TDataSetHelper.AddLargeintField(adsCore, 'OrdersHOrderId');
+
+  adsCoreCost.DisplayFormat := '0.00;;''''';
+  adsCoreRealCost.DisplayFormat := '0.00;;''''';
+  adsCoreRegistryCost.DisplayFormat := '0.00;;''''';
+  adsCoreProducerCost.DisplayFormat := '0.00;;''''';
+  adsCoreSumOrder.DisplayFormat := '0.00;;''''';
+  adsCoreRequestRatio.DisplayFormat := '#';
+  adsCoreOrderCount.DisplayFormat := '#';
+
+  adsCorePriceRet := TCurrencyField.Create(adsCore);
+  adsCorePriceRet.FieldName := 'PriceRet';
+  adsCorePriceRet.FieldKind := fkCalculated;
+  adsCorePriceRet.Calculated := True;
+  adsCorePriceRet.DisplayFormat := '0.00;;';
+  adsCorePriceRet.Dataset := adsCore;
+end;
+
+procedure TMinPricesForm.adsCoreCalcFields(DataSet: TDataSet);
+begin
+  try
+    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCost.AsCurrency);
+  except
+  end;
+end;
+
+procedure TMinPricesForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    dbgMinPrices.SetFocus();
+end;
+
+procedure TMinPricesForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
+  var CanInput: Boolean);
+begin
+  CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
+    (( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
+      adsCoreRegionCode.AsLargeInt);
+end;
+
+procedure TMinPricesForm.dbgCoreGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if adsCoreSynonymCode.AsInteger < 0 then
+  begin
+    Background := $00fff1d8;
+    AFont.Style := [fsBold];
+  end
+  else
+  if adsCoreFirmCode.AsInteger = RegisterId then
+  begin
+    //если это реестр, изменяем цвета
+    if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
+       or ( Column.Field = adsCoreCOST)
+       or ( Column.Field = adsCorePriceRet)
+      then Background := REG_CLR;
+  end
+  else
+  begin
+    if adsCoreVITALLYIMPORTANT.AsBoolean then
+      AFont.Color := VITALLYIMPORTANT_CLR;
+    if not adsCorePriceEnabled.AsBoolean then
+    begin
+      //если фирма недоступна, изменяем цвет
+      if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
+        then Background := clBtnFace;
+    end;
+
+    //если уцененный товар, изменяем цвет
+    if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCost))
+    then
+      Background := JUNK_CLR;
+    //ожидаемый товар выделяем зеленым
+    if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
+      Background := AWAIT_CLR;
+  end;
+end;
+
+procedure TMinPricesForm.adsCoreAfterPost(DataSet: TDataSet);
+begin
+  MainForm.SetOrdersInfo;
+end;
+
+procedure TMinPricesForm.adsCoreBeforeEdit(DataSet: TDataSet);
+begin
+  if adsCoreFirmCode.AsInteger = RegisterId then Abort;
+end;
+
+procedure TMinPricesForm.adsCoreBeforePost(DataSet: TDataSet);
+var
+  Quantity, E: Integer;
+  PriceAvg: Double;
+  PanelCaption : String;
+begin
+  try
+    { проверяем заказ на соответствие наличию товара на складе }
+    Val( adsCoreQuantity.AsString,Quantity,E);
+    if E<>0 then Quantity := 0;
+    if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) and
+      ( AProc.MessageBox( 'Заказ превышает остаток на складе. Продолжить?',
+      MB_ICONQUESTION + MB_OKCANCEL) <> IDOK) then adsCoreORDERCOUNT.AsInteger := Quantity;
+
+    PanelCaption := '';
+
+    if (adsCoreBuyingMatrixType.Value > 0) and (adsCoreORDERCOUNT.AsInteger > 0)
+    then begin
+      if (adsCoreBuyingMatrixType.Value = 1) then begin
+        PanelCaption := 'Препарат запрещен к заказу.';
+
+        ShowOverCostPanel(PanelCaption);
+
+        Abort;
+      end;
+    end;
+    
+    { проверяем на превышение цены }
+{
+    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
+      if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + 'Превышение средней цены!'
+        else
+          PanelCaption := 'Превышение средней цены!';
+      end;
+    end;
+}
+
+    if (adsCoreJUNK.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + 'Вы заказали некондиционный препарат.'
+      else
+        PanelCaption := 'Вы заказали некондиционный препарат.';
+
+    if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+      else
+        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+
+    if Length(PanelCaption) > 0 then
+      ShowOverCostPanel(PanelCaption);
+
+  except
+    adsCore.Cancel;
+    raise;
+  end;
+end;
+
+procedure TMinPricesForm.CreateOverCostPanel;
+begin
+  plOverCost := TPanel.Create(Self);
+  plOverCost.Visible := False;
+  plOverCost.ParentFont := False;
+  plOverCost.Font.Color := clRed;
+  plOverCost.Font.Size := 16;
+  plOverCost.Parent := Self;
+
+  lWarning := TLabel.Create(Self);
+  lWarning.AutoSize := False;
+  lWarning.Parent := plOverCost;
+  lWarning.Align := alClient;
+  lWarning.Alignment := taCenter;
+  lWarning.Layout := tlCenter;
+end;
+
+procedure TMinPricesForm.tmrOverCostHideTimer(Sender: TObject);
+begin
+  tmrOverCostHide.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
+end;
+
+procedure TMinPricesForm.ShowOverCostPanel(panelCaption: String);
+var
+  PanelHeight : Integer;
+  sl : TStringList;
+  CaptionWordCount,
+  I,
+  panelWidth : Integer;
+begin
+  if tmrOverCostHide.Enabled then
+    tmrOverCostHide.OnTimer(nil);
+
+  if lWarning.Canvas.Font.Size <> lWarning.Font.Size then
+    lWarning.Canvas.Font.Size := lWarning.Font.Size;
+
+  sl := TStringList.Create;
+  try
+    sl.Text := panelCaption;
+    CaptionWordCount := sl.Count;
+    panelWidth := lWarning.Canvas.TextWidth(sl[0]);
+    for I := 1 to sl.Count-1 do
+      if lWarning.Canvas.TextWidth(sl[i]) > panelWidth then
+        panelWidth := lWarning.Canvas.TextWidth(sl[i]);
+  finally
+    sl.Free;
+  end;
+
+  lWarning.Caption := PanelCaption;
+  PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
+  plOverCost.Height := PanelHeight * CaptionWordCount + 20;
+  plOverCost.Width := panelWidth + 20;
+
+  plOverCost.Top := pOffers.Top + ( dbgCore.Height - plOverCost.Height) div 2;
+  plOverCost.Left := pOffers.Left + ( dbgCore.Width - plOverCost.Width) div 2;
+  plOverCost.BringToFront;
+  plOverCost.Show;
+  tmrOverCostHide.Enabled := True;
 end;
 
 end.
