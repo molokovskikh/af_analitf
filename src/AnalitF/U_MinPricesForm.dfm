@@ -1,5 +1,6 @@
 inherited MinPricesForm: TMinPricesForm
   Caption = #1052#1080#1085#1080#1084#1072#1083#1100#1085#1099#1077' '#1094#1077#1085#1099
+  OnHide = FormHide
   PixelsPerInch = 96
   TextHeight = 13
   object lFilter: TLabel [0]

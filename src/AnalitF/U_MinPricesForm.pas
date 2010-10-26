@@ -19,6 +19,7 @@ uses
   DbGridEh,
   Constant,
   AProc,
+  DBProc,
   ToughDBGrid,
   NetworkParams;
 
@@ -50,6 +51,7 @@ type
     procedure miSelectAllClick(Sender: TObject);
     procedure miUnselecAllClick(Sender: TObject);
     procedure tmrOverCostHideTimer(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
     FNetworkParams : TNetworkParams;
@@ -89,6 +91,7 @@ type
     procedure dbgMinPricesKeyPress(Sender: TObject; var Key: Char);
     procedure dbgMinPricesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure dbgMinPricesSortMarkingChanged(Sender: TObject);
 
     procedure OnSPClick(Sender: TObject);
 
@@ -253,8 +256,11 @@ begin
   TDBGridHelper.AddColumn(dbgMinPrices, 'NextCost', 'След. цена', '0.00;;''''', Self.Canvas.TextWidth('999.99'));
   TDBGridHelper.AddColumn(dbgMinPrices, 'Percent', '%', '0.00;;''''', Self.Canvas.TextWidth('999.99'));
 
+  TDBGridHelper.SetTitleButtonToColumns(dbgMinPrices);
+
   dbgMinPrices.OnKeyPress := dbgMinPricesKeyPress;
   dbgMinPrices.OnKeyDown := dbgMinPricesKeyDown;
+  dbgMinPrices.OnSortMarkingChanged := dbgMinPricesSortMarkingChanged;
 end;
 
 procedure TMinPricesForm.CreateNonVisualComponent;
@@ -577,7 +583,10 @@ begin
   BindFields;
 
   plOverCost.Hide();
-  
+
+  TDBGridHelper.RestoreColumnsLayout(dbgMinPrices, Self.ClassName);
+  TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
+
   inherited;
 
   dbgMinPrices.SetFocus;
@@ -971,6 +980,20 @@ procedure TMinPricesForm.UpdateOrderDataset;
 begin
   inherited;
   dbgMinPrices.SetFocus();
+end;
+
+procedure TMinPricesForm.dbgMinPricesSortMarkingChanged(Sender: TObject);
+begin
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TMinPricesForm.FormHide(Sender: TObject);
+begin
+  inherited;
+  if Assigned(dbgMinPrices) then
+    TDBGridHelper.SaveColumnsLayout(dbgMinPrices, Self.ClassName);
+  if Assigned(dbgCore) then
+    TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
 end;
 
 end.
