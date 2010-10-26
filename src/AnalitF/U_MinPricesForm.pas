@@ -115,6 +115,7 @@ type
     minNextCostField : TFloatField;
     minSynonymNameField : TStringField;
     minPercentField : TFloatField;
+    minFullCodeField : TLargeintField;
 
     adsCore : TMyQuery;
     dsCore : TDataSource;
@@ -276,6 +277,7 @@ begin
   minNextCostField := TDataSetHelper.AddFloatField(adsMinPrices, 'NextCost');
   minSynonymNameField := TDataSetHelper.AddStringField(adsMinPrices, 'SynonymName');
   minPercentField := TDataSetHelper.AddFloatField(adsMinPrices, 'Percent');
+  minFullCodeField := TDataSetHelper.AddLargeintField(adsMinPrices, 'FullCode');
 
   dsMinPrices := TDataSource.Create(Self);
   dsMinPrices.DataSet := adsMinPrices;
