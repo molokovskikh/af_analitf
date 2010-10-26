@@ -54,7 +54,7 @@ type
     { Private declarations }
     FNetworkParams : TNetworkParams;
     InternalSearchText : String;
-    UseEx
+    UseExcess : Boolean;
     
     SelectedPrices : TStringList;
 
@@ -103,6 +103,8 @@ type
       var CanInput: Boolean);
     procedure dbgCoreGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+
+    procedure UpdateOrderDataset; override;
   public
     { Public declarations }
     adsMinPrices : TMyQuery;
@@ -197,7 +199,9 @@ uses
   Main,
   DModule,
   DBGridHelper,
-  DataSetHelper;
+  DataSetHelper,
+  NamesForms,
+  U_framePosition;
 
 {$R *.dfm}
 
@@ -487,6 +491,7 @@ var
   sp : TSelectPrice;
   mi :TMenuItem;
 begin
+  UseExcess := True;
   FNetworkParams := TNetworkParams.Create(DM.MainConnection);
   CreateNonVisualComponent;
   CreateVisualComponent;
@@ -502,6 +507,8 @@ begin
   SortOnOrderGrid := False;
   
   inherited;
+
+  TframePosition.AddFrame(Self, pOffers, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   SelectedPrices := MinCostSelectedPrices;
   for I := 0 to SelectedPrices.Count-1 do begin
@@ -606,20 +613,18 @@ begin
 end;
 
 procedure TMinPricesForm.actGotoMNNActionExecute(Sender: TObject);
-begin
-{
 var
   MnnId : Int64;
   lastControl : TWinControl;
 begin
   lastControl := Self.ActiveControl;
   if (MainForm.ActiveChild = Self)
-     and (Assigned(adsReport))
-     and not adsReport.IsEmpty
+     and (Assigned(adsCore))
+     and not adsCore.IsEmpty
   then begin
-    if Assigned(MnnField) then begin
-      if not MnnField.IsNull then begin
-        MnnId := MnnField.Value;
+    if Assigned(adsCoreMnnId) then begin
+      if not adsCoreMnnId.IsNull then begin
+        MnnId := adsCoreMnnId.Value;
         FlipToMNNFromMNNSearch(MnnId);
         Exit;
       end
@@ -630,23 +635,20 @@ begin
   if Assigned(lastControl) and (lastControl is TToughDBGrid) and lastControl.CanFocus
   then
     lastControl.SetFocus;
-}
 end;
 
 procedure TMinPricesForm.actGotoMNNActionUpdate(Sender: TObject);
 begin
-{
   if Assigned(Sender) and (Sender is TAction) then begin
     if (MainForm.ActiveChild = Self)
-       and (Assigned(adsReport))
-       and not adsReport.IsEmpty
+       and (Assigned(adsCore))
+       and not adsCore.IsEmpty
     then begin
-      TAction(Sender).Enabled := Assigned(MnnField) and not MnnField.IsNull
+      TAction(Sender).Enabled := Assigned(adsCoreMnnId) and not adsCoreMnnId.IsNull
     end
     else
       TAction(Sender).Enabled := False;
   end;
-}
 end;
 
 procedure TMinPricesForm.OnSPClick(Sender: TObject);
@@ -961,6 +963,12 @@ begin
   plOverCost.BringToFront;
   plOverCost.Show;
   tmrOverCostHide.Enabled := True;
+end;
+
+procedure TMinPricesForm.UpdateOrderDataset;
+begin
+  inherited;
+  dbgMinPrices.SetFocus();
 end;
 
 end.
