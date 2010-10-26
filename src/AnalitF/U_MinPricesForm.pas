@@ -176,7 +176,9 @@ type
     adsCorePriceRet: TCurrencyField;
 
     pTop : TPanel;
+    lBeforeInfo  : TLabel;
     eSearch : TEdit;
+    lAfterInfo  : TLabel;
     lFindCount : TLabel;
     spGotoMNNButton : TSpeedButton;
 
@@ -401,18 +403,28 @@ begin
   pTop.Align := alTop;
   pTop.Parent := Self;
 
+  lBeforeInfo := TLabel.Create(Self);
+  lBeforeInfo.Parent := pTop;
+  lBeforeInfo.Left := 5;
+  lBeforeInfo.Caption := 'Оставить товары с разницей';
+
   eSearch := TEdit.Create(Self);
   eSearch.Parent := pTop;
-  eSearch.Left := 5;
-  eSearch.Width := Self.Canvas.TextWidth('Это очень очень длинная строка поиска');
+  eSearch.Left := lBeforeInfo.Left + lBeforeInfo.Width + 5;
+  eSearch.Width := Self.Canvas.TextWidth('00000');
   eSearch.Text := IntToStr(FNetworkParams.NetworkMinCostPercent);
   eSearch.OnKeyPress := eSearchKeyPress;
   eSearch.OnKeyDown := eSearchKeyDown;
 
+  lAfterInfo := TLabel.Create(Self);
+  lAfterInfo.Parent := pTop;
+  lAfterInfo.Left := eSearch.Left + eSearch.Width + 5;
+  lAfterInfo.Caption := '% между первой и второй ценой';
+
   lFindCount := TLabel.Create(Self);
   lFindCount.Parent := pTop;
-  lFindCount.Left := eSearch.Left + eSearch.Width + 15;
-  lFindCount.Caption := 'Количество найденных позиций: ';
+  lFindCount.Left := lAfterInfo.Left + lAfterInfo.Width + 15;
+  lFindCount.Caption := 'Позиций: ';
 
   spGotoMNNButton := TSpeedButton.Create(Self);
   spGotoMNNButton.Height := 25;
@@ -433,6 +445,8 @@ begin
   spGotoMNNButton.Top := (pTop.Height - spGotoMNNButton.Height) div 2;
   btnSelectPrices.Top := (pTop.Height - btnSelectPrices.Height) div 2;
   lFindCount.Top := (pTop.Height - lFindCount.Height) div 2;
+  lBeforeInfo.Top := lFindCount.Top;
+  lAfterInfo.Top := lFindCount.Top;
 end;
 
 procedure TMinPricesForm.CreateVisualComponent;
@@ -560,7 +574,7 @@ end;
 
 procedure TMinPricesForm.MinPricesAfteOpen(dataSet: TDataSet);
 begin
-  lFindCount.Caption := 'Количество найденных позиций: ' + IntToStr(adsMinPrices.RecordCount);
+  lFindCount.Caption := 'Позиций: ' + IntToStr(adsMinPrices.RecordCount);
   UpdateOffers;
 end;
 
