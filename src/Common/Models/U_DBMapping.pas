@@ -71,10 +71,10 @@ begin
       while not dataSet.Eof do begin
         address := TAddress.Create();
         address.Id := dataSet['ClientId'];
-        address.Name := dataSet['Name'];
-        address.FullName := dataSet['FullName'];
+        address.Name := VarToStr(dataSet['Name']);
+        address.FullName := VarToStr(dataSet['FullName']);
         address.RegionCode := dataSet['RegionCode'];
-        address.SelfAddressId := dataSet['SelfAddressId'];
+        address.SelfAddressId := VarToStr(dataSet['SelfAddressId']);
         address.ReqMask := dataSet['ReqMask'];
         Result.Add(address);
         dataSet.Next;
@@ -233,10 +233,10 @@ begin
         orderItem.CodeFirmCr := dataSet['CodeFirmCr'];
         orderItem.SynonymCode := dataSet['SynonymCode'];
         orderItem.SynonymFirmCrCode := dataSet['SynonymFirmCrCode'];
-        orderItem.SynonymName := dataSet['SynonymName'];
-        orderItem.SynonymFirm := dataSet['SynonymFirm'];
-        orderItem.Code := dataSet['Code'];
-        orderItem.CodeCr := dataSet['CodeCr'];
+        orderItem.SynonymName := VarToStr(dataSet['SynonymName']);
+        orderItem.SynonymFirm := VarToStr(dataSet['SynonymFirm']);
+        orderItem.Code := VarToStr(dataSet['Code']);
+        orderItem.CodeCr := VarToStr(dataSet['CodeCr']);
 
         orderItem.Junk := dataSet.FieldByName('Junk').AsBoolean;
         orderItem.Await := dataSet.FieldByName('Await').AsBoolean;
@@ -253,7 +253,7 @@ begin
         orderItem.ServerCost := dataSet['ServerCost'];
         orderItem.ServerQuantity := dataSet['ServerQuantity'];
 
-        orderItem.Period := dataSet['Period'];
+        orderItem.Period := VarToStr(dataSet['Period']);
         orderItem.ProducerCost := dataSet['ProducerCost'];
 
         Result.Add(orderItem);
@@ -338,11 +338,11 @@ begin
         offer := TOffer.Create();
 
         offer.CoreId := dataSet['CoreId'];
-        offer.Period := dataSet['Period'];
+        offer.Period := VarToStr(dataSet['Period']);
         offer.Await := dataSet.FieldByName('Await').AsBoolean;
         offer.Junk := dataSet.FieldByName('Junk').AsBoolean;
-        offer.Code := dataSet['Code'];
-        offer.CodeCr := dataSet['CodeCr'];
+        offer.Code := VarToStr(dataSet['Code']);
+        offer.CodeCr := VarToStr(dataSet['CodeCr']);
         offer.ProductId := dataSet['ProductId'];
         offer.CodeFirmCr := dataSet['CodeFirmCr'];
         offer.RealCost := dataSet['RealCost'];
@@ -363,7 +363,7 @@ begin
 
         offer.PriceCode := dataSet['PriceCode'];
         offer.RegionCode := dataSet['RegionCode'];
-        offer.PriceName := dataSet['PriceName'];
+        offer.PriceName := VarToStr(dataSet['PriceName']);
 
         Result.Add(offer);
         dataSet.Next;
