@@ -378,6 +378,11 @@ type
     procedure UpdateDBUIN(dbCon : TCustomMyConnection);
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+{$ifdef ExportData}
+    procedure ExportDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ImportDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ProcessExportImport;
+{$endif}
     //Проверяем и обновляем определенный файл
     procedure UpdateDBFile(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure OnScriptExecuteError(Sender: TObject;
@@ -948,6 +953,11 @@ begin
   //Удаляем файлы базы данных для переустановки
   if FindCmdLineSwitch('renew') then
     RunDeleteDBFiles();
+
+{$ifdef ExportData}
+  //экспорт/импорт файлов от клиента
+  ProcessExportImport;
+{$endif}  
 
   FNeedImportAfterRecovery := False;
   FCreateClearDatabase     := False;
@@ -4350,6 +4360,87 @@ begin
     names.Free;
   end;
 end;
+
+{$ifdef ExportData}
+procedure TDM.ExportDBObjectsWithDatabaseController(
+  dbCon: TCustomMyConnection; DBDirectoryName: String;
+  OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
+begin
+  dbCon.Open;
+  try
+    DatabaseController.ExportObjects(dbCon);
+  finally
+    dbCon.Close;
+  end;
+end;
+
+procedure TDM.ImportDBObjectsWithDatabaseController(
+  dbCon: TCustomMyConnection; DBDirectoryName: String;
+  OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
+begin
+  dbCon.Open;
+  try
+    DatabaseController.ImportObjects(dbCon);
+  finally
+    dbCon.Close;
+  end;
+end;
+
+procedure TDM.ProcessExportImport;
+var
+  dbExportCon : TMyEmbConnection;
+begin
+  if FindCmdLineSwitch('export') then begin
+    dbExportCon := TMyEmbConnection.Create(nil);
+    try
+
+      dbExportCon.Database := MainConnection.Database;
+      dbExportCon.Username := MainConnection.Username;
+      dbExportCon.DataDir := TMyEmbConnection(MainConnection).DataDir;
+      dbExportCon.Options := TMyEmbConnection(MainConnection).Options;
+      dbExportCon.Params.Clear;
+      dbExportCon.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+      dbExportCon.LoginPrompt := False;
+
+      RunUpdateDBFile(
+        dbExportCon,
+        ExePath + SDirData,
+        0,
+        ExportDBObjectsWithDatabaseController,
+        nil,
+        'Происходит экспорт базы данных. Подождите...');
+    finally
+      dbExportCon.Free;
+    end;
+    ExitProcess(1);
+  end
+  else
+    if FindCmdLineSwitch('import') then begin
+      dbExportCon := TMyEmbConnection.Create(nil);
+      try
+
+        dbExportCon.Database := MainConnection.Database;
+        dbExportCon.Username := MainConnection.Username;
+        dbExportCon.DataDir := TMyEmbConnection(MainConnection).DataDir;
+        dbExportCon.Options := TMyEmbConnection(MainConnection).Options;
+        dbExportCon.Params.Clear;
+        dbExportCon.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+        dbExportCon.LoginPrompt := False;
+
+        RunUpdateDBFile(
+          dbExportCon,
+          ExePath + SDirData,
+          0,
+          ImportDBObjectsWithDatabaseController,
+          nil,
+          'Происходит импорт базы данных. Подождите...');
+      finally
+        dbExportCon.Free;
+      end;
+      ExitProcess(1);
+    end;
+end;
+{$endif}
 
 initialization
   AddTerminateProc(CloseDB);

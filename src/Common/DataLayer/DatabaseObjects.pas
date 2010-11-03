@@ -202,6 +202,9 @@ type
 
     function IsFatalError(E : EMyError) : Boolean;
     function GetMaxTempTableSize() : String;
+
+    procedure ExportObjects(connection : TCustomMyConnection);
+    procedure ImportObjects(connection : TCustomMyConnection);
   end;
 
   function DatabaseController : TDatabaseController;
@@ -210,7 +213,8 @@ implementation
 
 uses
   DModule, MyEmbConnection,
-  StartupHelper;
+  StartupHelper,
+  DBProc;
 
 var
   FDatabaseController : TDatabaseController;
@@ -942,6 +946,43 @@ begin
   inherited;
 end;
 
+procedure TDatabaseController.ExportObjects(
+  connection: TCustomMyConnection);
+var
+  I : Integer;
+  table : TDatabaseTable;
+  rowExported : Integer;
+  PathToBackup,
+  MySqlPathToBackup : String;
+begin
+  PathToBackup := ExePath + SDirTableBackup + '\';
+  MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
+  for I := 0 to DatabaseObjects.Count-1 do
+    if (DatabaseObjects[i] is TDatabaseTable) then begin
+      table := TDatabaseTable(DatabaseObjects[i]);
+      rowExported := 0;
+      WriteExchangeLog('ExportObjects', 'Начали экспорт объекта: ' + table.Name);
+      try
+        try
+          rowExported := DBProc.UpdateValue(
+            connection,
+            Format(
+              'select * from analitf.%s INTO OUTFILE ''%s'';',
+              [table.Name,
+               MySqlPathToBackup + table.Name + '.txt']
+            ),
+            [],
+            []);
+        except
+          on E : Exception do
+            WriteExchangeLog('ExportObjects', 'Во время экспорта объекта ' + table.Name + ' возникла ошибка: ' + E.Message);
+        end;
+      finally
+        WriteExchangeLog('ExportObjects', 'Закончили экспорт объекта: ' + table.Name + ', count = ' + IntToStr(rowExported));
+      end;
+    end;
+end;
+
 function TDatabaseController.FindById(
   id: TDatabaseObjectId): TDatabaseObject;
 var
@@ -1060,6 +1101,40 @@ end;
 function TDatabaseController.GetMaxTempTableSize: String;
 begin
   Result := FMaxTempTableSize;
+end;
+
+procedure TDatabaseController.ImportObjects(
+  connection: TCustomMyConnection);
+var
+  I : Integer;
+  table : TDatabaseTable;
+  rowExported : Integer;
+  PathToBackup,
+  MySqlPathToBackup : String;
+begin
+  PathToBackup := ExePath + SDirTableBackup + '\';
+  MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
+  for I := 0 to DatabaseObjects.Count-1 do
+    if (DatabaseObjects[i] is TDatabaseTable) then begin
+      table := TDatabaseTable(DatabaseObjects[i]);
+      rowExported := 0;
+      WriteExchangeLog('ImportObjects', 'Начали импорт объекта: ' + table.Name);
+      try
+        try
+          connection.ExecSQL('truncate analitf.' + table.Name + ';', []);
+          rowExported := DBProc.UpdateValue(
+            connection,
+            AProc.GetLoadDataSQL(table.Name, PathToBackup + table.Name + '.txt'),
+            [],
+            []);
+        except
+          on E : Exception do
+            WriteExchangeLog('ImportObjects', 'Во время импорта объекта ' + table.Name + ' возникла ошибка: ' + E.Message);
+        end;
+      finally
+        WriteExchangeLog('ImportObjects', 'Закончили импорт объекта: ' + table.Name + ', count = ' + IntToStr(rowExported));
+      end;
+    end;
 end;
 
 procedure TDatabaseController.Initialize(connection: TCustomMyConnection);
