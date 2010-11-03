@@ -1386,15 +1386,27 @@ end;
 function TDatabaseView.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := ''
+{$ifdef ViewAsTable}
++'create table '
+{$else}
 +'create temporary table '
+{$endif}
 +IfThen(Length(DatabasePrefix) > 0, DatabasePrefix + '.')
 +FName
+{$ifdef ViewAsTable}
++' ENGINE=MYISAM as ';
+{$else}
 +' ENGINE=MEMORY as ';
+{$endif}
 end;
 
 function TDatabaseView.GetDropSQL(DatabasePrefix: String): String;
 begin
+{$ifdef ViewAsTable}
+  Result := 'drop table if exists '
+{$else}
   Result := 'drop temporary table if exists '
+{$endif}
     + IfThen(Length(DatabasePrefix) > 0, DatabasePrefix + '.')
     + FName + ';';
 end;
