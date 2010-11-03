@@ -1175,6 +1175,9 @@ begin
       #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
 
   FNeedUpdateByCheckUIN := not CheckCopyIDFromDB;
+{$ifdef ViewAsTable}
+  FNeedUpdateByCheckUIN := False;
+{$endif}
   if FNeedUpdateByCheckUIN then begin
     DM.MainConnection.Open;
     try
