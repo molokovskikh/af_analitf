@@ -127,6 +127,8 @@ private
   procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
+  function DataSetToString(SQL : String) : String;
+
   procedure GetHistoryOrders;
   procedure CommitHistoryOrders;
   procedure ImportHistoryOrders;
@@ -1367,12 +1369,14 @@ begin
   Synchronize( SetProgress);
 
    with DM.adcUpdate do begin
+   WriteExchangeLog('ImportData', Concat('Core before start import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
 
   //удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
   //PricesRegionalData
   if utPricesRegionalData in UpdateTables then begin
     SQL.Text:='DELETE FROM PricesRegionalData WHERE NOT Exists(SELECT PriceCode, RegionCode FROM TmpPricesRegionalData  WHERE PriceCode=PricesRegionalData.PriceCode AND RegionCode=PricesRegionalData.RegionCode);';
     InternalExecute;
+    WriteExchangeLog('ImportData', 'Delete not exists: ' + IntToStr(DM.adcUpdate.RowsAffected));
   end;
   //PricesData
   if utPricesRegionalData in UpdateTables then begin
@@ -1417,10 +1421,12 @@ begin
       DM.adcUpdate.Close;
     end;
 
+    WriteExchangeLog('ImportData', 'Deleted Prices: ' + deletedPriceCodes.CommaText);
     DM.adcUpdate.SQL.Text := 'delete from core where PriceCode = :PriceCode;';
     for I := 0 to deletedPriceCodes.Count-1 do begin
       DM.adcUpdate.ParamByName('PriceCode').AsString := deletedPriceCodes[i];
       InternalExecute;
+      WriteExchangeLog('ImportData', 'Deleted position by price ' + deletedPriceCodes[i] + ' : ' + IntToStr(DM.adcUpdate.RowsAffected));
       //Если при удалении удалились какие-то записи из таблицы,
       //то помечаем Core и MinPrices на обновление
       if DM.adcUpdate.RowsAffected > 0 then
@@ -1441,6 +1447,7 @@ begin
     '     (Core.PriceCode is not null) ' +
     ' and (PricesRegionalData.PriceCode is null);';
   InternalExecute;
+  WriteExchangeLog('ImportData', 'Deleted position by PricesRegionalData: ' + IntToStr(DM.adcUpdate.RowsAffected));
   //Если при удалении удалились какие-то записи из таблицы,
   //то помечаем Core и MinPrices на обновление
   if DM.adcUpdate.RowsAffected > 0 then
@@ -1681,6 +1688,7 @@ begin
   end;
   //Core
   if utCore in UpdateTables then begin
+    WriteExchangeLog('ImportData', Concat('Core before import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
     coreTestInsertSQl := GetLoadDataSQL('Core', ExePath+SDirIn+'\Core.txt');
 
 {$ifndef DisableCrypt}
@@ -1700,6 +1708,8 @@ begin
 {$endif}
 
     InternalExecute;
+    WriteExchangeLog('ImportData', 'Import Core count : ' + IntToStr(DM.adcUpdate.RowsAffected));
+    WriteExchangeLog('ImportData', Concat('Core after import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
 
 {$ifndef DisableCrypt}
     SQL.Text :=
@@ -3288,6 +3298,41 @@ begin
       [InputFileName,
        'DocumentBodies']);
     DM.adcUpdate.Execute;
+  end;
+end;
+
+function TExchangeThread.DataSetToString(SQL: String): String;
+var
+  Header : String;
+  Row : String;
+  I : Integer;
+begin
+  Result := '';
+  Header := '';
+
+  if DM.adsQueryValue.Active then
+     DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := SQL;
+  DM.adsQueryValue.Open;
+  try
+    for I := 0 to DM.adsQueryValue.Fields.Count-1 do
+      if Header = '' then
+        Header := DM.adsQueryValue.Fields[i].FieldName
+      else
+        Header := Header + Chr(9) + DM.adsQueryValue.Fields[i].FieldName;
+    Result := Header + #13#10 + StringOfChar('-', Length(Header));
+    while not DM.adsQueryValue.Eof do begin
+      Row := '';
+      for I := 0 to DM.adsQueryValue.Fields.Count-1 do
+        if Row = '' then
+          Row := DM.adsQueryValue.Fields[i].AsString
+        else
+          Row := Row + Chr(9) + DM.adsQueryValue.Fields[i].AsString;
+      Result := Concat(Result, #13#10, Row);
+      DM.adsQueryValue.Next;
+    end;
+  finally
+    DM.adsQueryValue.Close;
   end;
 end;
 
