@@ -672,6 +672,7 @@ var
   LastId : Int64;
   RecalcCount : Integer;
   blockedWaybillAsVitallyImportant : Boolean;
+  LastSort : String;
 begin
   //retailPriceField.OnChange := nil;
   //retailMarkupField.OnChange := nil;
@@ -682,8 +683,11 @@ begin
   adsDocumentBodies.DisableControls;
   try
     LastId := adsDocumentBodiesId.Value;
+    LastSort := adsDocumentBodies.IndexFieldNames;
+    adsDocumentBodies.IndexFieldNames := '';
     adsDocumentBodies.Close;
     adsDocumentBodies.Open;
+    adsDocumentBodies.First;
     while not adsDocumentBodies.Eof do begin
       if not adsDocumentBodiesVitallyImportant.IsNull then
         blockedWaybillAsVitallyImportant := True;
@@ -693,6 +697,9 @@ begin
       adsDocumentBodies.Next;
       Inc(RecalcCount);
     end;
+
+    if LastSort <> '' then
+      adsDocumentBodies.IndexFieldNames := LastSort;
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
 
