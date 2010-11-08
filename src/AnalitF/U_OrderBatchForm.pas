@@ -121,6 +121,7 @@ type
       var Text: String; DisplayText: Boolean);
   protected
     procedure OpenFile(Sender : TObject);
+    procedure SaveReport(Sender : TObject);
     procedure BatchReportGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure BatchReportCanInput(Sender: TObject; Value: Integer; var CanInput: Boolean);
@@ -141,10 +142,13 @@ type
     function AddBooleanField(dataSet : TDataSet; FieldName : String) : TBooleanField;
     function AddSmallintField(dataSet : TDataSet; FieldName : String) : TSmallintField;
 
+    procedure SaveReportToFile(FileName : String);
   public
     { Public declarations }
 
     odBatch: TOpenDialog;
+
+    sdReport: TSaveDialog;
 
     eSearch : TEdit;
 
@@ -155,6 +159,7 @@ type
     spDelete : TSpeedButton;
     spGotoMNNButton : TSpeedButton;
     lEditRule : TLabel;
+    spSaveReport : TSpeedButton;
 
     pBottom : TPanel;
     pLegendAndComment : TPanel;
@@ -219,6 +224,7 @@ var
   OrderBatchForm: TOrderBatchForm;
   //Последний открытый каталог для отправки дефектуры
   LastUsedDir : String;
+  LastUsedSaveDir : String;
 
   procedure ShowOrderBatch;
 
@@ -234,7 +240,8 @@ uses
   AProc,
   DBProc,
   Exchange,
-  NamesForms;
+  NamesForms,
+  jbdbf;
 
 procedure ShowOrderBatch;
 var
@@ -490,6 +497,9 @@ begin
   odBatch := TOpenDialog.Create(Self);
   odBatch.Filter := 'Все файлы|*.*';
 
+  sdReport := TSaveDialog.Create(Self);
+  sdReport.Filter := 'Отчет|*.dbf|Все файлы|*.*';
+
   adsReport := TMyQuery.Create(Self);
   adsReport.Name := 'adsReport';
   adsReport.RefreshOptions := [roAfterUpdate];
@@ -627,6 +637,15 @@ begin
   lEditRule.Font.Style := [fsBold, fsUnderline];
   lEditRule.Top := (pTop.Height - lEditRule.Height) div 2;
   lEditRule.Left := spLoad.Left + spLoad.Width + 5;
+
+  spSaveReport := TSpeedButton.Create(Self);
+  spSaveReport.Height := 25;
+  spSaveReport.Caption := 'Сохранить';
+  spSaveReport.Parent := pTop;
+  spSaveReport.Width := Self.Canvas.TextWidth(spSaveReport.Caption) + 20;
+  spSaveReport.Top := 5;
+  spSaveReport.Left := lEditRule.Left + lEditRule.Width + 5;
+  spSaveReport.OnClick := SaveReport;
 end;
 
 procedure TOrderBatchForm.CreateVisualComponent;
@@ -1190,8 +1209,77 @@ begin
   end;
 end;
 
+procedure TOrderBatchForm.SaveReport(Sender: TObject);
+begin
+  sdReport.InitialDir := LastUsedSaveDir;
+  if sdReport.Execute then begin
+    LastUsedSaveDir := ExtractFileDir(sdReport.FileName);
+    SaveReportToFile(sdReport.FileName);
+  end;
+end;
+
+procedure TOrderBatchForm.SaveReportToFile(FileName: String);
+var
+  DBF: TjbDBF;
+begin
+  if FileExists(FileName) then
+    OSDeleteFile(FileName);
+
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+
+  DM.adsQueryValue.SQL.Text := ''
+  + ' select '
+  + '   left(ol.Code, 9) as Code, left(br.SynonymName, 100) as SynonymName, '
+  + '   ol.OrderCount, ol.Price, ol.Id, '
+  + '   left(br.ServiceField1, 6) as ServiceField1 '
+  + ' from BatchReport br, CurrentOrderLists ol '
+  + ' where '
+  + '  br.OrderListId is not null '
+  + '  and ol.Id = br.OrderListId '
+  + ' order by br.SynonymName';
+
+  DM.adsQueryValue.Open;
+
+  try
+
+    DBF := TjbDBF.Create(Self);
+
+    try
+      DBF.MakeField(1, 'KOD', 'c', 9, 0, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(2, 'NAME', 'c', 100, 0, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(3, 'KOL', 'F', 17, 3, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(4, 'PRICE', 'F', 17, 3, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(5, 'NOM_ZAK', 'c', 10, 0, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(6, 'NOM_AU', 'c', 6, 0, '', dbfDuplicates, dbfAscending);
+      DBF.CreateDB(FileName, 9+100+21+21+10+6, 6, 1251);
+
+      DBF.FileName := FileName;
+      if DBF.Open then begin
+        while not DM.adsQueryValue.Eof do begin
+          DBF.Store('KOD', ShortString(DM.adsQueryValue.FieldByName('Code').AsString));
+          DBF.Store('NAME', ShortString(DM.adsQueryValue.FieldByName('SynonymName').AsString));
+          DBF.Store('KOL', ShortString(DM.adsQueryValue.FieldByName('OrderCount').AsString));
+          DBF.Store('PRICE', ShortString(FloatToStr(DM.adsQueryValue.FieldByName('Price').AsFloat, DM.FFS)));
+          DBF.Store('NOM_ZAK', ShortString(DM.adsQueryValue.FieldByName('Id').AsString));
+          DBF.Store('NOM_AU', ShortString(DM.adsQueryValue.FieldByName('ServiceField1').AsString));
+          DBF.NewRecord;
+          DM.adsQueryValue.Next;
+        end;
+        DBF.Close;
+      end;
+
+    finally
+      DBF.Free;
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+end;
+
 initialization
   LastUsedDir := ExePath;
+  LastUsedSaveDir := ExePath;
 end.
 
 
