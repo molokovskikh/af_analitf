@@ -2920,25 +2920,54 @@ var
   ClientId : String;
 begin
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsString;
+
+  DM.adcUpdate.SQL.Text := 'drop temporary table if exists analitf.BatchAddresses, analitf.DistinctBatchAddresses;'
+      + ' create temporary table analitf.BatchAddresses ('
+      + '   `AddressId` bigint(20) unsigned not NULL ) ENGINE=MEMORY;'
+      + 'insert into analitf.BatchAddresses (AddressId) value (' + ClientId + ');';
+  InternalExecute;
+
+  if (GetFileSize(ExePath+SDirIn+'\BatchOrder.txt') > 0) then begin
+    insertSQL := Trim(GetLoadDataSQL('BatchAddresses', ExePath+SDirIn+'\BatchOrder.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(@dummy, AddressId);';
+    InternalExecute;
+  end;
+
+  DM.adcUpdate.SQL.Text := 'create temporary table analitf.DistinctBatchAddresses ENGINE=MEMORY as '
+      + ' select distinct AddressId as AddressId from analitf.BatchAddresses ;';
+  InternalExecute;
+
   DM.adcUpdate.SQL.Text := ''
-    + ' delete from batchreport where ClientID = ' + ClientID + ';'
-    + ' delete from batchreportservicefields where ClientID = ' + ClientID + ';'
-    + ' delete CurrentOrderHeads, CurrentOrderLists '
-    + ' FROM CurrentOrderHeads, CurrentOrderLists '
+    + ' delete from batchreport using batchreport, analitf.DistinctBatchAddresses where ClientID = AddressId;'
+    + ' delete from batchreportservicefields using batchreportservicefields, analitf.DistinctBatchAddresses where ClientID = AddressId;'
+    + ' delete FROM CurrentOrderHeads, CurrentOrderLists '
+    + ' using CurrentOrderHeads, CurrentOrderLists, analitf.DistinctBatchAddresses '
     + ' where '
-    + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+    + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
     + '   and (CurrentOrderHeads.Frozen = 0) '
     + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
   InternalExecute;
+  
   DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', ExePath+SDirIn+'\batchreport.txt');
   InternalExecute;
 
-  //«агружаем название служебных колонок относительно пользовател€ 
+  //«агружаем название служебных колонок относительно пользовател€
   if (GetFileSize(ExePath+SDirIn+'\BatchReportServiceFields.txt') > 0) then begin
     insertSQL := Trim(GetLoadDataSQL('batchreportservicefields', ExePath+SDirIn+'\BatchReportServiceFields.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
       '(FieldName) set ClientId = '+ ClientID + ';';
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' delete from batchreport using batchreport, analitf.DistinctBatchAddresses where ClientID = AddressId;'
+      + ' insert into batchreportservicefields (ClientId, FieldName) '
+      + ' select AddressId, FieldName '
+      + ' from batchreportservicefields, analitf.DistinctBatchAddresses '
+      + ' where ClientId = ' + ClientID + ' '
+      + '    and AddressId <> ' + ClientID + ' '
+      + ' order by AddressId, Id; ';
     InternalExecute;
   end;
 
@@ -2961,19 +2990,19 @@ begin
     InternalExecute;
 
     DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderLists '
+      + ' update CurrentOrderLists, analitf.DistinctBatchAddresses '
       + ' set '
       + '    CurrentOrderLists.Price = AES_DECRYPT(CurrentOrderLists.CryptPrice, "' + CostSessionKey + '"), '
       + '    CurrentOrderLists.CryptPrice = null '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.CryptPrice is not null);'
-      + ' update CurrentOrderLists '
+      + ' update CurrentOrderLists, analitf.DistinctBatchAddresses '
       + ' set '
       + '    CurrentOrderLists.RealPrice = AES_DECRYPT(CurrentOrderLists.CryptRealPrice, "' + CostSessionKey + '"), '
       + '    CurrentOrderLists.CryptRealPrice = null '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.CryptRealPrice is not null);';
     InternalExecute;
 {$else}
@@ -2985,29 +3014,29 @@ begin
 {$endif}
 
     DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderHeads, PricesData '
+      + ' update CurrentOrderHeads, PricesData, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
       + ' where '
-      + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderHeads.Frozen = 0) '
       + '   and (CurrentOrderHeads.PriceCode = PricesData.PriceCode);'
-      + ' update CurrentOrderHeads, regions '
+      + ' update CurrentOrderHeads, regions, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderHeads.RegionName = regions.RegionName '
       + ' where '
-      + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderHeads.Frozen = 0) '
       + '   and (CurrentOrderHeads.RegionCode = regions.RegionCode);';
     InternalExecute;
     DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderLists, synonyms '
+      + ' update CurrentOrderLists, synonyms, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderLists.SYNONYMNAME = synonyms.SYNONYMNAME '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.SYNONYMCODE = synonyms.SYNONYMCODE);'
-      + ' update CurrentOrderLists, synonymfirmcr '
+      + ' update CurrentOrderLists, synonymfirmcr, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderLists.SYNONYMFIRM = synonymfirmcr.SYNONYMNAME '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
     InternalExecute;
   end;
@@ -3015,10 +3044,10 @@ begin
   //—брасываем OrderListId и статус у тех элементов BatchReport,
   //у которых не нашли соответствующую запись в CurrentOrderLists
   DM.adcUpdate.SQL.Text := ''
-    + ' update batchreport '
+    + ' update batchreport, analitf.DistinctBatchAddresses '
     + ' set OrderListId = null, Status = (Status & ~(1 & 4)) | 2 '
     + ' where '
-    + '       (batchreport.ClientId = ' + ClientID + ')'
+    + '       (batchreport.ClientId = DistinctBatchAddresses.AddressId)'
     + '   and (OrderListId is not null) '
     + '   and not exists(select * from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
   InternalExecute;
