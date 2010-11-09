@@ -9,7 +9,9 @@ uses
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, 
   SQLWaiting, ShellAPI, GridsEh, MemDS,
   DBAccess, MyAccess, MemData, Orders,
-  U_frameOrderHeadLegend, Menus;
+  U_frameOrderHeadLegend, Menus,
+  AddressController,
+  U_frameFilterAddresses;
 
 type
   TOrdersHForm = class(TChildForm)
@@ -73,6 +75,8 @@ type
     btnUnFrozen: TButton;
     sbMoveToClient: TSpeedButton;
     pmDestinationClients: TPopupMenu;
+    adsOrdersHFormAddressName: TStringField;
+    tmrFillReport: TTimer;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -99,6 +103,7 @@ type
       EditMode: Boolean; Params: TColCellParamsEh);
     procedure btnUnFrozenClick(Sender: TObject);
     procedure sbMoveToClientClick(Sender: TObject);
+    procedure tmrFillReportTimer(Sender: TObject);
   private
     Strings: TStrings;
     //Список выбранных строк в гридах
@@ -111,10 +116,13 @@ type
     procedure FillDestinationClients;
     procedure MoveToClient(DestinationClientId : Integer);
     procedure OnDectinationClientClick(Sender: TObject);
+    procedure OnChangeCheckBoxAllOrders;
+    procedure OnChangeFilterAllOrders;
   protected
     FOrdersForm: TOrdersForm;
     RestoreUnFrozenOrMoveToClient : Boolean;
     InternalDestinationClientId : Integer;
+    frameFilterAddresses : TframeFilterAddresses;
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -159,6 +167,18 @@ begin
   FSelectedRows := TStringList.Create;
   PrintEnabled := False;
 
+  frameFilterAddresses := TframeFilterAddresses.AddFrame(
+    Self,
+    pTop,
+    dtpDateTo.Left + dtpDateTo.Width + 5,
+    pTop.Height,
+    dbgCurrentOrders,
+    OnChangeCheckBoxAllOrders,
+    OnChangeFilterAllOrders);
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Interval := 500;
+  frameFilterAddresses.Visible := False;
+
   FOrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
   if FOrdersForm = nil then
     FOrdersForm := TOrdersForm.Create( Application);
@@ -201,8 +221,10 @@ end;
 procedure TOrdersHForm.SetParameters;
 var
   Grid : TDBGridEh;
+  clientsSql : String;
 begin
   Grid := nil;
+  clientsSql := ''; 
   SoftPost( adsOrdersHForm);
   adsOrdersHForm.IndexFieldNames := '';
   adsOrdersHForm.Close;
@@ -210,7 +232,22 @@ begin
   case TabControl.TabIndex of
     0:
     begin
+      frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
       adsOrdersHForm.SQL.Text := adsCurrentOrders.SQL.Text;
+
+      if GetAddressController.ShowAllOrders then begin
+        clientsSql := GetAddressController.GetFilter('CurrentOrderHeads.ClientId');
+        if clientsSql <> '' then
+          adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+            + #13#10' and ' + clientsSql + ' '#13#10;
+      end
+      else
+        adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+          + #13#10' and (CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
+
+      adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+        + ' group by CurrentOrderHeads.OrderId having count(CurrentOrderLists.Id) > 0 order by CurrentOrderHeads.PriceName ';
+
       adsOrdersHForm.SQLRefresh.Text := adsCurrentOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsCurrentOrders.SQLDelete.Text;
       adsOrdersHForm.SQLUpdate.Text := adsCurrentOrders.SQLUpdate.Text;
@@ -231,6 +268,7 @@ begin
     end;
     1:
     begin
+      frameFilterAddresses.Visible := False;
       adsOrdersHForm.SQL.Text := adsSendOrders.SQL.Text;
       adsOrdersHForm.SQLRefresh.Text := adsSendOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsSendOrders.SQLDelete.Text;
@@ -255,8 +293,10 @@ begin
     end;
   end;
 
-  adsOrdersHForm.ParamByName( 'ClientId').Value :=
-    DM.adtClients.FieldByName( 'ClientId').Value;
+  if Assigned(adsOrdersHForm.Params.FindParam('ClientId'))
+  then
+    adsOrdersHForm.ParamByName( 'ClientId').Value :=
+      DM.adtClients.FieldByName( 'ClientId').Value;
   adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
   adsOrdersHForm.Open;
@@ -993,6 +1033,23 @@ var
 begin
   mi := TMenuItem(Sender);
   MoveToClient(mi.Tag);
+end;
+
+procedure TOrdersHForm.OnChangeCheckBoxAllOrders;
+begin
+
+end;
+
+procedure TOrdersHForm.OnChangeFilterAllOrders;
+begin
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Enabled := True;
+end;
+
+procedure TOrdersHForm.tmrFillReportTimer(Sender: TObject);
+begin
+  tmrFillReport.Enabled := False;
+  SetParameters;
 end;
 
 end.

@@ -16,7 +16,8 @@ uses
   MyDump, MySqlApi, DAScript, MyScript, DataIntegrityExceptions, DatabaseObjects,
   MyCall,
   Registry,
-  RegistryHelper;
+  RegistryHelper,
+  AddressController;
 
 {
 Криптование
@@ -1026,6 +1027,8 @@ begin
 
   SetStarted;
   ClientChanged;
+
+  GetAddressController.UpdateAddresses(MainConnection, DM.adtClientsCLIENTID.Value);
 
   { устанавливаем параметры печати }
   frReport.Title := Application.Title;

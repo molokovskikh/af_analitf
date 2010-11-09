@@ -272,7 +272,8 @@ uses
   U_OrderBatchForm,
   StartupHelper,
   MyClasses,
-  GlobalExchangeParameters;
+  GlobalExchangeParameters,
+  AddressController;
 
 {$R *.DFM}
 
@@ -1302,6 +1303,7 @@ begin
     DM.adtParams.FieldByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
     DM.adtParams.Post;
     DM.ClientChanged;
+    GetAddressController.ChangeCurrent(DM.adtClientsCLIENTID.Value);
     if not IsFutureClient then begin
       CurrentUser := mi.Caption;
       if (Assigned(ActiveChild) and (Length(ActiveChild.Caption) > 0)) then

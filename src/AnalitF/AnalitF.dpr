@@ -117,7 +117,10 @@ uses
   U_CurrentOrderHead in '..\Common\Models\U_CurrentOrderHead.pas',
   U_CurrentOrderItem in '..\Common\Models\U_CurrentOrderItem.pas',
   U_DBMapping in '..\Common\Models\U_DBMapping.pas',
-  U_Offer in '..\Common\Models\U_Offer.pas';
+  U_Offer in '..\Common\Models\U_Offer.pas',
+  AllOrdersParams in '..\Common\GlobalParams\AllOrdersParams.pas',
+  AddressController in 'BusinessLogic\AddressController.pas',
+  U_frameFilterAddresses in 'Views\U_frameFilterAddresses.pas' {frameFilterAddresses: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}

@@ -20,7 +20,9 @@ uses
   ShellAPI,
   StrUtils,
   AlphaUtils,
-  U_framePosition;
+  U_framePosition,
+  AddressController,
+  U_frameFilterAddresses;
 
 type
   TItemToOrderStatus = (
@@ -73,6 +75,9 @@ type
     tmrUpdatePreviosOrders: TTimer;
     shCore: TStrHolder;
     tmrSearch: TTimer;
+    shStartClients: TStrHolder;
+    shEndClients: TStrHolder;
+    tmrFillReport: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tmRunBatchTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
@@ -82,6 +87,7 @@ type
     procedure tmrSearchTimer(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormHide(Sender: TObject);
+    procedure tmrFillReportTimer(Sender: TObject);
   private
     { Private declarations }
     BM : TBitmap;
@@ -119,6 +125,10 @@ type
       Shift: TShiftState);
     procedure ProducerStatusGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
+
+    procedure FillReport;
+    procedure OnChangeCheckBoxAllOrders;
+    procedure OnChangeFilterAllOrders;
   protected
     procedure OpenFile(Sender : TObject);
     procedure SaveReport(Sender : TObject);
@@ -213,9 +223,12 @@ type
     CatalogMandatoryListField : TSmallintField;
     ProducerNameField : TStringField;
 
+    AddressNameField : TStringField;
+
     CurrentFilter : TFilterReport;
 
     framePosition : TframePosition;
+    frameFilterAddresses : TframeFilterAddresses;
 
     procedure ShowForm; override;
   end;
@@ -278,7 +291,8 @@ procedure TOrderBatchForm.BindFields;
 begin
   dbgOrderBatch.DataSource := dsReport;
   dbmComment.DataSource := dsReport;
-  adsReport.Open;
+
+  FillReport;
 
   dbgHistory.DataSource := dsPreviosOrders;
 
@@ -541,6 +555,8 @@ begin
 
   ProducerNameField := AddStringField(adsReport, 'ProducerName');
 
+  AddressNameField := AddStringField(adsReport, 'AddressName');
+
   for I := 1 to 25 do
     AddStringField(adsReport, 'ServiceField' + IntToStr(i));
 
@@ -668,6 +684,17 @@ begin
   inherited;
 
   framePosition := TframePosition.AddFrame(Self, pGrid, dsReport, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  frameFilterAddresses := TframeFilterAddresses.AddFrame(
+    Self,
+    pTop,
+    spSaveReport.Left + spSaveReport.Width + 5,
+    pTop.Height,
+    dbgOrderBatch,
+    OnChangeCheckBoxAllOrders,
+    OnChangeFilterAllOrders);
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Interval := 500;
+  frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
 
   spDelete := TSpeedButton.Create(Self);
   spDelete.OnClick := DeletePositions;
@@ -1275,6 +1302,56 @@ begin
   finally
     DM.adsQueryValue.Close;
   end;
+end;
+
+procedure TOrderBatchForm.FillReport;
+var
+  lastOrderBy : String;
+  FilterSql : String;
+begin
+  adsReport.Close;
+  lastOrderBy := adsReport.GetOrderBy;
+
+  adsReport.SQL.Text := '';
+
+  if GetAddressController.ShowAllOrders then begin
+    FilterSql := GetAddressController.GetFilter('batchreport.ClientId');
+    adsReport.SQL.Text := shStartClients.Strings.Text;
+    if FilterSql <> '' then
+      adsReport.SQL.Text := adsReport.SQL.Text + ' where ' + FilterSql + #13#10;
+
+    adsReport.SQL.Text := adsReport.SQL.Text + ' union '#13#10 + shEndClients.Strings.Text;
+    if FilterSql <> '' then
+      adsReport.SQL.Text := adsReport.SQL.Text + ' and ' + FilterSql + #13#10;
+  end
+  else begin
+    adsReport.SQL.Text := shBatchReport.Strings.Text;
+    adsReport.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  end;
+
+  if (lastOrderBy <> '') then
+    adsReport.SetOrderBy(lastOrderBy)
+  else
+    adsReport.SetOrderBy('SynonymName');
+
+  adsReport.Open;
+end;
+
+procedure TOrderBatchForm.OnChangeCheckBoxAllOrders;
+begin
+
+end;
+
+procedure TOrderBatchForm.OnChangeFilterAllOrders;
+begin
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Enabled := True;
+end;
+
+procedure TOrderBatchForm.tmrFillReportTimer(Sender: TObject);
+begin
+  tmrFillReport.Enabled := False;
+  FillReport;
 end;
 
 initialization

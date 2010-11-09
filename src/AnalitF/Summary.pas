@@ -9,7 +9,9 @@ uses
   ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw,
   DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
   ActnList, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
-  U_CurrentOrderItem;
+  U_CurrentOrderItem,
+  AddressController,
+  U_frameFilterAddresses;
 
 type
   TSummaryForm = class(TChildForm)
@@ -97,6 +99,8 @@ type
     adsSummaryRetailMarkup: TFloatField;
     adsSummaryMaxProducerCost: TFloatField;
     adsSummaryProducerName: TStringField;
+    tmrFillReport: TTimer;
+    adsSummaryAddressName: TStringField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -120,6 +124,7 @@ type
     procedure TimerTimer(Sender: TObject);
     procedure adsSummaryBeforeInsert(DataSet: TDataSet);
     procedure cbNeedCorrectClick(Sender: TObject);
+    procedure tmrFillReportTimer(Sender: TObject);
   private
     SelectedPrices : TStringList;
     procedure SummaryShow;
@@ -129,7 +134,10 @@ type
     procedure ChangeSelected(ASelected : Boolean);
     procedure scf(DataSet: TDataSet);
     procedure FillCorrectMessage;
+    procedure OnChangeCheckBoxAllOrders;
+    procedure OnChangeFilterAllOrders;
   protected
+    frameFilterAddresses : TframeFilterAddresses;
     procedure UpdateOrderDataset; override;
   public
     frameLegend : TframeLegend;
@@ -167,6 +175,7 @@ var
   I : Integer;
   sp : TSelectPrice;
   mi :TMenuItem;
+  frameLeft : Integer;
 begin
   {
     Проблема с отображением кнопки TSpeedButton при глубине вложенности на Panel большей 1.
@@ -193,16 +202,34 @@ begin
 
   PrepareColumnsInOrderGrid(dbgSummarySend);
   TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'MnnId', ShowDescriptionAction);
+
   if not FUseCorrectOrders then begin
     cbNeedCorrect.Checked := False;
     cbNeedCorrect.Visible := False;
     gbCorrectMessage.Visible := False;
   end;
+
+  if cbNeedCorrect.Visible then
+    frameLeft := cbNeedCorrect.Left + cbNeedCorrect.Width + 5
+  else
+    frameLeft := btnSelectPrices.Left + btnSelectPrices.Width + 5;
+  frameFilterAddresses := TframeFilterAddresses.AddFrame(
+    Self,
+    pTopSettings,
+    frameLeft,
+    pTopSettings.Height,
+    dbgSummaryCurrent,
+    OnChangeCheckBoxAllOrders,
+    OnChangeFilterAllOrders);
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Interval := 500;
+  frameFilterAddresses.Visible := (LastSymmaryType = 0) and GetAddressController.AllowAllOrders;
+
   PrintEnabled := False;
   adsSummary.OnCalcFields := scf;
   dtpDateFrom.DateTime := LastDateFrom;
   dtpDateTo.DateTime := LastDateTo;
-  adsSummary.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  //adsSummary.ParamByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   rgSummaryType.ItemIndex := LastSymmaryType;
   PrintEnabled := ((LastSymmaryType = 0) and ((DM.SaveGridMask and PrintCurrentSummaryOrder) > 0))
                or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
@@ -263,9 +290,11 @@ end;
 procedure TSummaryForm.SummaryShow;
 var
   FilterSQL : String;
+  clientsSql : String;
 begin
   Screen.Cursor := crHourglass;
   try
+    clientsSql := '';
     if adsSummary.Active then
       adsSummary.Close;
     if LastSymmaryType = 0 then begin
@@ -274,6 +303,15 @@ begin
       dbgSummarySend.Visible := False;
       dbgSummaryCurrent.Visible := True;
       adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
+      if GetAddressController.ShowAllOrders then begin
+        clientsSql := GetAddressController.GetFilter('CurrentOrderHeads.ClientId');
+        if clientsSql <> '' then
+          adsSummary.SQL.Text := adsSummary.SQL.Text
+            + #13#10' and ' + clientsSql + ' '#13#10;
+      end
+      else
+        adsSummary.SQL.Text := adsSummary.SQL.Text
+          + #13#10' and (CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
       dbgSummaryCurrent.InputField := 'OrderCount';
       dbgSummaryCurrent.Tag := 256;
       if FUseCorrectOrders then
@@ -286,6 +324,8 @@ begin
       dbgSummarySend.Visible := False;
       dbgSummarySend.Visible := True;
       adsSummary.SQL.Text := adsSendSummary.SQL.Text;
+      adsSummary.SQL.Text := adsSummary.SQL.Text
+        + #13#10' and (PostedOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
       adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
       adsSummary.ParamByName( 'DATETO').Value := IncDay(LastDateTo);
       dbgSummarySend.InputField := '';
@@ -606,6 +646,7 @@ procedure TSummaryForm.rgSummaryTypeClick(Sender: TObject);
 begin
   if rgSummaryType.ItemIndex <> LastSymmaryType then begin
     LastSymmaryType := rgSummaryType.ItemIndex;
+    frameFilterAddresses.Visible := (LastSymmaryType = 0) and GetAddressController.AllowAllOrders;
     PrintEnabled := ((LastSymmaryType = 0) and ((DM.SaveGridMask and PrintCurrentSummaryOrder) > 0))
                  or ((LastSymmaryType = 1) and ((DM.SaveGridMask and PrintSendedSummaryOrder) > 0));
     dtpDateFrom.Enabled := LastSymmaryType = 1;
@@ -754,6 +795,23 @@ begin
       adsSummary.EnableControls;
     end;
   end;
+end;
+
+procedure TSummaryForm.OnChangeCheckBoxAllOrders;
+begin
+
+end;
+
+procedure TSummaryForm.OnChangeFilterAllOrders;
+begin
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Enabled := True;
+end;
+
+procedure TSummaryForm.tmrFillReportTimer(Sender: TObject);
+begin
+  tmrFillReport.Enabled := False;
+  SummaryShow;
 end;
 
 initialization

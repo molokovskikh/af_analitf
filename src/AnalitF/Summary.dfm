@@ -760,7 +760,8 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
-      '    Producers.Name as ProducerName'
+      '    Producers.Name as ProducerName,'
+      '    c.Name as AddressName'
       'FROM'
       '    ('
       '    PricesData,'
@@ -769,7 +770,8 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    CurrentOrderLists'
+      '    CurrentOrderLists,'
+      '    clients c'
       '    ) '
       '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
@@ -783,8 +785,8 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
         'de=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    CurrentOrderHeads.ClientId = :ClientId'
-      'and CurrentOrderHeads.Frozen = 0 '
+      '    CurrentOrderHeads.Frozen = 0 '
+      'and c.ClientId = CurrentOrderHeads.ClientId'
       'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
       'and CurrentOrderLists.OrderCount>0'
       'and Core.CoreId=CurrentOrderLists.CoreId'
@@ -794,11 +796,6 @@ inherited SummaryForm: TSummaryForm
       'and Regions.RegionCode = CurrentOrderHeads.RegionCode')
     Left = 104
     Top = 152
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ClientId'
-      end>
   end
   object adsSendSummary: TMyQuery
     Connection = DM.MyConnection
@@ -850,7 +847,8 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
-      '    Producers.Name as ProducerName'
+      '    Producers.Name as ProducerName,'
+      '    c.Name As AddressName'
       'FROM'
       '   ('
       '    PricesData,'
@@ -858,7 +856,8 @@ inherited SummaryForm: TSummaryForm
       '    PostedOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    PostedOrderLists'
+      '    PostedOrderLists,'
+      '    clients c'
       '   )'
       
         '    left join Producers on Producers.Id = PostedOrderLists.CodeF' +
@@ -878,10 +877,10 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON PostedOrderLists.SynonymFirmCrCod' +
         'e=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    PostedOrderHeads.ClientId = :ClientId'
-      'and PostedOrderLists.OrderId=PostedOrderHeads.OrderId'
+      '    PostedOrderLists.OrderId=PostedOrderHeads.OrderId'
       'and PostedOrderLists.OrderCount>0'
       'and PostedOrderLists.CoreId is null'
+      'and c.ClientId = PostedOrderHeads.ClientId'
       'and products.productid = PostedOrderLists.productid'
       'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = PostedOrderHeads.PriceCode'
@@ -891,10 +890,6 @@ inherited SummaryForm: TSummaryForm
     Left = 152
     Top = 152
     ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ClientId'
-      end
       item
         DataType = ftUnknown
         Name = 'datefrom'
@@ -992,7 +987,7 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
         'de=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    CurrentOrderHeads.ClientId = :ClientId'
+      '    CurrentOrderHeads.OrderId = :OrdersOrderId'
       'and CurrentOrderHeads.Frozen = 0 '
       'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
       'and CurrentOrderLists.OrderCount>0'
@@ -1051,7 +1046,8 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
-      '    Producers.Name as ProducerName'
+      '    Producers.Name as ProducerName,'
+      '    c.Name As AddressName'
       'FROM'
       '   ('
       '    PricesData,'
@@ -1060,7 +1056,8 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    CurrentOrderLists'
+      '    CurrentOrderLists,'
+      '    clients c'
       '   )'
       '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
@@ -1074,10 +1071,10 @@ inherited SummaryForm: TSummaryForm
         '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
         'de=SynonymFirmCr.SynonymFirmCrCode'
       'WHERE'
-      '    CurrentOrderHeads.ClientId = :ClientId'
-      'and CurrentOrderHeads.Frozen = 0 '
+      '    CurrentOrderHeads.Frozen = 0 '
       'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
       'and CurrentOrderLists.OrderCount>0'
+      'and c.ClientId = CurrentOrderHeads.ClientId'
       'and Core.CoreId=CurrentOrderLists.CoreId'
       'and products.productid = CurrentOrderLists.productid'
       'and catalogs.fullcode = products.catalogid'
@@ -1092,11 +1089,6 @@ inherited SummaryForm: TSummaryForm
     Options.StrictUpdate = False
     Left = 336
     Top = 104
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ClientId'
-      end>
     object adsSummaryfullcode: TLargeintField
       FieldName = 'fullcode'
     end
@@ -1258,5 +1250,16 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryProducerName: TStringField
       FieldName = 'ProducerName'
     end
+    object adsSummaryAddressName: TStringField
+      FieldName = 'AddressName'
+      Size = 0
+    end
+  end
+  object tmrFillReport: TTimer
+    Enabled = False
+    Interval = 3000
+    OnTimer = tmrFillReportTimer
+    Left = 424
+    Top = 104
   end
 end
