@@ -273,7 +273,8 @@ uses
   StartupHelper,
   MyClasses,
   GlobalExchangeParameters,
-  AddressController;
+  AddressController,
+  KeyboardHelper;
 
 {$R *.DFM}
 
@@ -366,6 +367,7 @@ try
   //Производим восстановление
   FormPlacement.Active := True;
   Self.WindowState := wsMaximized;
+  GetKeyboardHelper.SwitchToRussian();
 
   UpdateReclame;
   //В UpdateReclame может включится отображение кнопки actPostOrderBatch,

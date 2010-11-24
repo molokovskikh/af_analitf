@@ -120,7 +120,8 @@ uses
   U_Offer in '..\Common\Models\U_Offer.pas',
   AllOrdersParams in '..\Common\GlobalParams\AllOrdersParams.pas',
   AddressController in 'BusinessLogic\AddressController.pas',
-  U_frameFilterAddresses in 'Views\U_frameFilterAddresses.pas' {frameFilterAddresses: TFrame};
+  U_frameFilterAddresses in 'Views\U_frameFilterAddresses.pas' {frameFilterAddresses: TFrame},
+  KeyboardHelper in '..\Common\Helpers\KeyboardHelper.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
