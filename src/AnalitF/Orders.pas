@@ -696,14 +696,14 @@ begin
       if not Assigned(retailPriceColumn) then begin
         retailPriceColumn := TColumnEh(dbgrid.Columns.Insert(orderCountColumn.Index));
         retailPriceColumn.FieldName := adsOrdersRetailPrice.FieldName;
-        retailPriceColumn.Title.Caption := 'Розн. цена';
+        retailPriceColumn.Title.Caption := 'Розн.цена';
         retailPriceColumn.Title.TitleButton := True;
       end;
       retailMarkupColumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersEditRetailMarkup.FieldName);
       if not Assigned(retailMarkupColumn) then begin
         retailMarkupColumn := TColumnEh(dbgrid.Columns.Insert(retailPriceColumn.Index));
         retailMarkupColumn.FieldName := adsOrdersEditRetailMarkup.FieldName;
-        retailMarkupColumn.Title.Caption := 'Розн. наценка';
+        retailMarkupColumn.Title.Caption := 'Розн.наценка';
         retailMarkupColumn.Title.TitleButton := True;
       end;
     end;
