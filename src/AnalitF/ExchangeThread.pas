@@ -503,17 +503,23 @@ begin
         //if ExchangeForm.DoStop then Abort;
         //обрабатываем ошибку
         WriteExchangeLog('Exchange', LastStatus + ':' + CRLF + E.Message);
+        if (E is EAbort) and (ExchangeParams.ErrorMessage = '') then
+          ExchangeParams.ErrorMessage := UserAbortMessage;
         if ExchangeParams.ErrorMessage = '' then
           ExchangeParams.ErrorMessage := RusError( E.Message);
         if ExchangeParams.ErrorMessage = '' then
           ExchangeParams.ErrorMessage := E.ClassName + ': ' + E.Message;
-        if (E is EIdHTTPProtocolException) then
+        if (E is EIdHTTPProtocolException)
+           and (ExchangeParams.ErrorMessage <> UserAbortMessage)
+        then
           ExchangeParams.ErrorMessage :=
             'При выполнении вашего запроса произошла ошибка.'#13#10 +
             'Повторите запрос через несколько минут.'#13#10 +
             ExchangeParams.ErrorMessage
         else
-        if (E is EIdException) then
+        if (E is EIdException)
+            and (ExchangeParams.ErrorMessage <> UserAbortMessage)
+        then
           ExchangeParams.ErrorMessage :=
             'Проверьте подключение к Интернет.'#13#10 +
             ExchangeParams.ErrorMessage;

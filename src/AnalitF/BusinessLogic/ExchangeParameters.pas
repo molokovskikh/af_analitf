@@ -6,6 +6,9 @@ uses
   SysUtils, Classes, Contnrs,
   SendWaybillTypes;
 
+const
+  UserAbortMessage = 'Операция отменена пользователем';
+    
 type
   TExchangeParams = class
    public

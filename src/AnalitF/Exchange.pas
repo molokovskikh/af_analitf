@@ -553,17 +553,20 @@ end;
 
 procedure TExchangeForm.btnCancelClick(Sender: TObject);
 begin
-  DoStop := True;
   if GlobalExchangeParams.DownloadChildThreads then
     ExThread.StopChildThreads
   else
     try
+      //Сначала установлю сообщение и помечу, что возникла критическая ошибка,
+      //а потом выставлю флаг DoStop, что EAbort в ExchangeThread не было обработано первым 
+      GlobalExchangeParams.ErrorMessage := UserAbortMessage;
       GlobalExchangeParams.CriticalError := True;
-      GlobalExchangeParams.ErrorMessage := 'Операция отменена';
+      DoStop := True;
       HTTP.Disconnect;
       Ras.Disconnect;
     except
     end;
+  DoStop := True;
 end;
 
 procedure TExchangeForm.SetRasParams;
