@@ -12,7 +12,8 @@ uses
   U_frmOldOrdersDelete, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
   DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController,
-  ArchiveHelper;
+  ArchiveHelper,
+  UserMessageParams;
 
 type
 
@@ -91,6 +92,8 @@ private
   //Используется при получении истории заказов с сервера
   MaxOrderId : String;
 
+  FUserMessageParams : TUserMessageParams;
+
   procedure SetStatus;
   procedure SetDownStatus;
   procedure SetProgress;
@@ -133,6 +136,7 @@ private
   procedure CommitHistoryOrders;
   procedure ImportHistoryOrders;
 
+  procedure ConfirmUserMessage;
 
   function FromXMLToDateTime( AStr: string): TDateTime;
   function RusError( AStr: string): string;
@@ -154,6 +158,7 @@ private
 
   procedure CheckFieldAfterUpdate(fieldName : String);
   procedure ProcessClientToAddressMigration;
+
 protected
   procedure Execute; override;
 public
@@ -207,6 +212,7 @@ begin
     CoInitialize(nil);
     DM.MainConnection.Open;
     try
+    FUserMessageParams := TUserMessageParams.Create(DM.MainConnection);
     try
       ImportComplete := False;
       repeat
@@ -218,6 +224,10 @@ begin
         HTTPConnect;
         TotalProgress := 10;
         Synchronize( SetTotalProgress);
+
+        if FUserMessageParams.NeedConfirm then
+          ConfirmUserMessage;
+
         //Отправяем настройки прайс-листов при запросе данных (обычно или кумулятивном)
         if ([eaGetPrice, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
           and not DM.adsUser.FieldByName('InheritPrices').AsBoolean
@@ -526,6 +536,7 @@ begin
       end;
     end;
     finally
+      FUserMessageParams.Free;
       try DM.MainConnection.Close;
       except
         on E : Exception do
@@ -746,6 +757,12 @@ begin
       ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
 
     ExchangeParams.ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
+    if ExchangeParams.ServerAddition <> ''
+    then begin
+      FUserMessageParams.UserMessage := ExchangeParams.ServerAddition;
+      FUserMessageParams.SaveParams;
+    end;
+    
     { получаем имя удаленного файла }
     HostFileName := Res.Values[ 'URL'];
     NewZip := True;
@@ -3368,6 +3385,51 @@ begin
     end;
   finally
     DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TExchangeThread.ConfirmUserMessage;
+var
+  FPostParams : TStringList;
+  InvokeResult : String;
+
+  procedure AddPostParam(Param, Value: String);
+  begin
+    FPostParams.Add(Param + '=' + SOAP.PreparePostValue(Value));
+  end;
+
+begin
+  FPostParams := TStringList.Create;
+  try
+  { запрашиваем данные }
+  StatusText := 'Подтверждение о прочтении';
+  Synchronize( SetStatus);
+  try
+    AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
+    AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
+
+    AddPostParam('ConfirmedMessage', FUserMessageParams.UserMessage);
+
+    InvokeResult := SOAP.SimpleInvoke('ConfirmUserMessage', FPostParams);
+
+    if AnsiCompareText(InvokeResult, 'Res=Ok') = 0 then begin
+      FUserMessageParams.UserMessage := '';
+      FUserMessageParams.SaveParams;
+    end
+    else begin
+      WriteExchangeLog('ConfirmUserMessage', 'При подтверждении сообщения возникла ошибка: ' + InvokeResult);
+    end;
+    
+  except
+    on E: Exception do
+    begin
+      ExchangeParams.CriticalError := True;
+      raise;
+    end;
+  end;
+  Synchronize( ExchangeForm.CheckStop);
+  finally
+    FPostParams.Free;
   end;
 end;
 

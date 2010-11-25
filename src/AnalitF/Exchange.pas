@@ -285,7 +285,7 @@ begin
     AProc.MessageBoxEx(
       GlobalExchangeParams.ServerAddition,
       'Сообщение от АК "Инфорум"',
-      MB_OK or MB_ICONINFORMATION);
+      MB_OK or MB_ICONWARNING);
 
   if Result and (( eaGetPrice in AExchangeActions) or
     ( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))

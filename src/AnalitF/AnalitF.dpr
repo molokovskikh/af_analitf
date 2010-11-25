@@ -121,7 +121,8 @@ uses
   AllOrdersParams in '..\Common\GlobalParams\AllOrdersParams.pas',
   AddressController in 'BusinessLogic\AddressController.pas',
   U_frameFilterAddresses in 'Views\U_frameFilterAddresses.pas' {frameFilterAddresses: TFrame},
-  KeyboardHelper in '..\Common\Helpers\KeyboardHelper.pas';
+  KeyboardHelper in '..\Common\Helpers\KeyboardHelper.pas',
+  UserMessageParams in '..\Common\GlobalParams\UserMessageParams.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
