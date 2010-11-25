@@ -634,6 +634,15 @@ begin
     for I := 0 to FSelectedRows.Count-1 do begin
       adsOrdersHForm.Bookmark := FSelectedRows[i];
 
+      //ѕроизводим работу только с за€вками текущего клиента
+      if adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value then
+        Continue;
+
+      //"–азмораживаем" только замороженные за€вки
+      if RestoreUnFrozenOrMoveToClient and (InternalDestinationClientId = 0) then
+        if not adsOrdersHFormFrozen.Value then
+          Continue;
+
       with DM.adsQueryValue do begin
         if Active then
           Close;
@@ -897,7 +906,10 @@ begin
           try
             for I := 0 to FSelectedRows.Count-1 do begin
               Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
-              if adsOrdersHFormFrozen.Value then
+              //ќбрабатываем только "замороженные" за€вки текущего клиента
+              if adsOrdersHFormFrozen.Value
+                and (adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value)
+              then
                 Grid.DataSource.DataSet.Delete
             end;
             Grid.DataSource.DataSet.Refresh;
@@ -960,7 +972,9 @@ begin
           try
             for I := 0 to FSelectedRows.Count-1 do begin
               Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
-              Grid.DataSource.DataSet.Delete
+              //ќбрабатываем только за€вки текущего клиента
+              if adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value then
+                Grid.DataSource.DataSet.Delete
             end;
             Grid.DataSource.DataSet.Refresh;
           finally
