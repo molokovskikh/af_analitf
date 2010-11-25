@@ -453,6 +453,10 @@ try
       Exit;
   end;
 
+  //Если запрещен обмен с сервером, то выходим из процедуры
+  if DM.DisableAllExchange then
+    Exit;
+    
   //Если выставлен флаг "Делать кумулятивное обновление", то делаем его
   //Он может быть выставлен с предыдущего запуска программы или в результате непрошедщего импорта,
   //который был запущен двумя строками выше
@@ -926,7 +930,7 @@ end;
 
 procedure TMainForm.actSendOrdersUpdate(Sender: TObject);
 begin
-  actSendOrders.Enabled := CheckUnsendOrders;
+  actSendOrders.Enabled := not DM.DisableAllExchange and CheckUnsendOrders;
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

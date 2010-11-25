@@ -354,6 +354,8 @@ type
     FVitallyImportantMarkups : TObjectList;
     HTTPC : TINFCrypt;
     OrdersInfo : TStringList;
+    //Запрещен любой обмен с сервером из-за разницы во времени
+    FDisableAllExchange : Boolean;
 
     //Было произведено обновление программы с Firebird на MySql
     FProcessFirebirdUpdate : Boolean;
@@ -441,6 +443,7 @@ type
     procedure MySQLMonitorSQL(Sender: TObject; Text: String;
       Flag: TDATraceFlag);
 {$endif}
+    procedure CheckLocalTime;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -515,6 +518,7 @@ type
 
     property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
+    property DisableAllExchange : Boolean read FDisableAllExchange;
     property NeedUpdateByCheckUIN : Boolean read FNeedUpdateByCheckUIN;
     property NeedUpdateByCheckHashes : Boolean read FNeedUpdateByCheckHashes;
     property ProcessFirebirdUpdate : Boolean read FProcessFirebirdUpdate;
@@ -1047,61 +1051,65 @@ begin
 
   SetSendToNotClosedOrders;
 
-  if FNeedUpdateByCheckUIN then begin
-    UpdateByCheckUINExchangeActions := [eaGetPrice];
-    if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime <> adtParams.FieldByName( 'LastDateTime').AsDateTime)
-    then
-      UpdateByCheckUINExchangeActions := UpdateByCheckUINExchangeActions + [eaGetFullData];
+  CheckLocalTime;
 
-    if not RunExchange(UpdateByCheckUINExchangeActions)
-    then begin
-      //Если не получилось обновиться, то отображаем форму конфигурации для корректировки настроек и авторизации
-      UpdateByCheckUINSuccess := (ShowConfig(True) * AuthChanges) <> [];
+  if not DisableAllExchange then begin
+    if FNeedUpdateByCheckUIN then begin
+      UpdateByCheckUINExchangeActions := [eaGetPrice];
+      if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime <> adtParams.FieldByName( 'LastDateTime').AsDateTime)
+      then
+        UpdateByCheckUINExchangeActions := UpdateByCheckUINExchangeActions + [eaGetFullData];
 
-      //Если пользователь ввел корректировки, то пытаемся обновиться еще раз
-      if UpdateByCheckUINSuccess then
-        UpdateByCheckUINSuccess := RunExchange(UpdateByCheckUINExchangeActions);
+      if not RunExchange(UpdateByCheckUINExchangeActions)
+      then begin
+        //Если не получилось обновиться, то отображаем форму конфигурации для корректировки настроек и авторизации
+        UpdateByCheckUINSuccess := (ShowConfig(True) * AuthChanges) <> [];
 
-      //Если пользователь обновился не успешно, то проверяем заблокированы ли визуальные контролы
-      //Если контролы не заблокированы, то завершаем с ошибой выполение программы
-      //Если контролы заблокированы, то логируем неуспешную проверку UIN и
-      //отображаем программу с заблокированными контролами
-      if not UpdateByCheckUINSuccess then
-        if adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
-          MainForm.DisableByHTTPName;
-          LogCriticalError('Не прошла проверка на UIN в базе.');
-        end
-        else
-          LogExitError(
-            'Не прошла проверка на UIN в базе. ' +
-              'Не удалось заблокировать визуальные компоненты',
-            Integer(ecNotCheckUIN), False);
+        //Если пользователь ввел корректировки, то пытаемся обновиться еще раз
+        if UpdateByCheckUINSuccess then
+          UpdateByCheckUINSuccess := RunExchange(UpdateByCheckUINExchangeActions);
+
+        //Если пользователь обновился не успешно, то проверяем заблокированы ли визуальные контролы
+        //Если контролы не заблокированы, то завершаем с ошибой выполение программы
+        //Если контролы заблокированы, то логируем неуспешную проверку UIN и
+        //отображаем программу с заблокированными контролами
+        if not UpdateByCheckUINSuccess then
+          if adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
+            MainForm.DisableByHTTPName;
+            LogCriticalError('Не прошла проверка на UIN в базе.');
+          end
+          else
+            LogExitError(
+              'Не прошла проверка на UIN в базе. ' +
+                'Не удалось заблокировать визуальные компоненты',
+              Integer(ecNotCheckUIN), False);
+      end;
     end;
-  end;
 
-  if FNeedUpdateByCheckHashes then begin
-    if not RunExchange([ eaGetPrice]) then
-      LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
-  end;
+    if FNeedUpdateByCheckHashes then begin
+      if not RunExchange([ eaGetPrice]) then
+        LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
+    end;
 
-  { Запуск с ключем -e (Получение данных и выход)}
-  if FindCmdLineSwitch('e') then
-  begin
-    MainForm.ExchangeOnly := True;
-    //Производим только в том случае, если не была создана "чистая" база
-    if not CreateClearDatabase then
-      RunExchange([ eaGetPrice]);
-    Application.Terminate;
-  end;
-  //"Безмолвное импортирование" - производится в том случае, если была получена новая версия программы при
-  if FindCmdLineSwitch('si') then
-  begin
-    MainForm.ExchangeOnly := True;
-    //Производим только в том случае, если не была создана "чистая" база
-    if not CreateClearDatabase then
-      //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
-      RunExchange([eaImportOnly]);
-    Application.Terminate;
+    { Запуск с ключем -e (Получение данных и выход)}
+    if FindCmdLineSwitch('e') then
+    begin
+      MainForm.ExchangeOnly := True;
+      //Производим только в том случае, если не была создана "чистая" база
+      if not CreateClearDatabase then
+        RunExchange([ eaGetPrice]);
+      Application.Terminate;
+    end;
+    //"Безмолвное импортирование" - производится в том случае, если была получена новая версия программы при
+    if FindCmdLineSwitch('si') then
+    begin
+      MainForm.ExchangeOnly := True;
+      //Производим только в том случае, если не была создана "чистая" база
+      if not CreateClearDatabase then
+        //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
+        RunExchange([eaImportOnly]);
+      Application.Terminate;
+    end;
   end;
 
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
@@ -4442,6 +4450,26 @@ begin
     end;
 end;
 {$endif}
+
+procedure TDM.CheckLocalTime;
+var
+  currentTime : TDateTime;
+  updateTime : TDateTime;
+begin
+  currentTime := Now();
+  updateTime := UTCToLocalTime(adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
+  if (currentTime < updateTime - 1) and (currentTime > updateTime - 30)
+  then
+    AProc.MessageBox('Время, установленное на компьютере, старше времени последнего обновления больше чем на сутки.', MB_ICONWARNING or MB_OK)
+  else
+    if (currentTime < updateTime - 30) then begin
+      FDisableAllExchange := True;
+      MainForm.DisableByHTTPName;
+      MainForm.actReceive.Enabled := False;
+      MainForm.actReceiveAll.Enabled := False;
+      AProc.MessageBox('Время, установленное на компьютере, старше времени последнего обновления больше чем месяц.', MB_ICONERROR or MB_OK)
+    end;
+end;
 
 initialization
   AddTerminateProc(CloseDB);
