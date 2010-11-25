@@ -325,7 +325,7 @@ inherited OrdersHForm: TOrdersHForm
                 EditButtons = <>
                 FieldName = 'MinReq'
                 Footers = <>
-                Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+                Title.Caption = #1052#1080#1085'.'#1089#1091#1084#1084#1072
                 Title.TitleButton = True
               end
               item

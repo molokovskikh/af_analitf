@@ -371,7 +371,7 @@ begin
 
   TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
   TDBGridHelper.AddColumn(dbgCore, 'SynonymFirm', 'Производитель', 85);
-  column := TDBGridHelper.AddColumn(dbgCore, 'ProducerName', 'Кат. производитель', 50);
+  column := TDBGridHelper.AddColumn(dbgCore, 'ProducerName', 'Кат.производитель', 50);
   column.Visible := False;
   TDBGridHelper.AddColumn(dbgCore, 'Volume', 'Упаковка', 30);
   TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 30);
@@ -390,11 +390,11 @@ begin
 }  
   TDBGridHelper.AddColumn(dbgCore, 'DatePrice', 'Дата прайс-листа', 'dd.mm.yyyy hh:nn', 103);
   TDBGridHelper.AddColumn(dbgCore, 'requestratio', 'Кратность', 20);
-  TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин. сумма', '0.00;;''''', 20);
-  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во', 20);
-  TDBGridHelper.AddColumn(dbgCore, 'registrycost', 'Реестр. цена', '0.00;;''''', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин.сумма', '0.00;;''''', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин.кол-во', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'registrycost', 'Реестр.цена', '0.00;;''''', 20);
 
-  TDBGridHelper.AddColumn(dbgCore, 'MaxProducerCost', 'Пред. зарег. цена', '0.00;;''''', 30);
+  TDBGridHelper.AddColumn(dbgCore, 'MaxProducerCost', 'Пред.зарег.цена', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'ProducerCost', 'Цена производителя', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'SupplierPriceMarkup', 'Наценка поставщика', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', 20);
@@ -405,9 +405,9 @@ begin
   //column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
   column.Font.Style := [fsBold];
-  column := TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
+  column := TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн.цена', '0.00;;''''', 62);
   column.Visible := False;
-  column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Количество', 68);
+  column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Остаток', 68);
   column.Alignment := taRightJustify;
   {
   column := TDBGridHelper.AddColumn(dbgCore, 'OrderCount', 'Заказ', 47);
@@ -450,7 +450,7 @@ begin
   TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Есть производитель', Self.Canvas.TextWidth('Нет   '));
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymName', 'Наименование', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymFirm', 'Производитель', 0);
-  column := TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerName', 'Кат. производитель', 0);
+  column := TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerName', 'Кат.производитель', 0);
   column.Visible := False;
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
   if DM.adtClientsAllowDelayOfPayment.Value then
