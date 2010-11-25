@@ -402,15 +402,24 @@ var
 
     mtLog.Post;
 
-    Report.Append( Format( '      %s%s : %s (старая цена: %s; старый заказ: %s; новая цена: %s; текущий заказ: %s)',
-      [DM.adcUpdate.FieldByName('SynonymName').AsString,
-       IfThen(Length(DM.adcUpdate.FieldByName('SynonymFirm').AsString) > 0,
-         ' - ' + DM.adcUpdate.FieldByName('SynonymFirm').AsString),
-       PostionReason,
-       DM.adcUpdate.FieldByName('OldPrice').AsString,
-       DM.adcUpdate.FieldByName('OldOrderCount').AsString,
-       DM.adcUpdate.FieldByName('NewPrice').AsString,
-       DM.adcUpdate.FieldByName('NewOrderCount').AsString]));
+    if (PositionResult in [psrNotExists, psrUnoin]) then
+      Report.Append( Format( '      %s%s : %s (старая цена: %s; старый заказ: %s)',
+        [DM.adcUpdate.FieldByName('SynonymName').AsString,
+         IfThen(Length(DM.adcUpdate.FieldByName('SynonymFirm').AsString) > 0,
+           ' - ' + DM.adcUpdate.FieldByName('SynonymFirm').AsString),
+         PostionReason,
+         DM.adcUpdate.FieldByName('OldPrice').AsString,
+         DM.adcUpdate.FieldByName('OldOrderCount').AsString]))
+    else
+      Report.Append( Format( '      %s%s : %s (старая цена: %s; старый заказ: %s; новая цена: %s; текущий заказ: %s)',
+        [DM.adcUpdate.FieldByName('SynonymName').AsString,
+         IfThen(Length(DM.adcUpdate.FieldByName('SynonymFirm').AsString) > 0,
+           ' - ' + DM.adcUpdate.FieldByName('SynonymFirm').AsString),
+         PostionReason,
+         DM.adcUpdate.FieldByName('OldPrice').AsString,
+         DM.adcUpdate.FieldByName('OldOrderCount').AsString,
+         DM.adcUpdate.FieldByName('NewPrice').AsString,
+         DM.adcUpdate.FieldByName('NewOrderCount').AsString]));
   end;
 
 begin
@@ -878,7 +887,7 @@ begin
 
     + '  CurrentOrderLists.ServerQuantity as OldOrderCount, '
     + '  CurrentOrderLists.OrderCount as NewOrderCount, '
-    + '  if(dop.Percent is null, CurrentOrderLists.ServerCost, cast(CurrentOrderLists.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as OldPrice, '
+    + '  CurrentOrderLists.ServerCost as OldPrice, '
     + '  CurrentOrderLists.Price as NewPrice '
 
     + 'from '
