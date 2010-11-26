@@ -29,6 +29,9 @@ type
     cbProducer : TCheckBox;
     cbPeriod : TCheckBox;
     cbProviderDocumentId : TCheckBox;
+    cbSignature : TCheckBox;
+    cbSerialNumber : TCheckBox;
+    cbDocumentDate : TCheckBox;
 
     procedure CreateVisibleComponents;
     procedure AddBottomPanel;
@@ -160,7 +163,10 @@ begin
   cbProducer := AddCheckBox(5+ cbCountry.Top + cbCountry.Height, 'Производитель', TicketParams.ProducerVisible);
   cbPeriod := AddCheckBox(5+ cbProducer.Top + cbProducer.Height, 'Срок годности', TicketParams.PeriodVisible);
   cbProviderDocumentId := AddCheckBox(5+ cbPeriod.Top + cbPeriod.Height, 'Номер накладной', TicketParams.ProviderDocumentIdVisible);
-  gbColumns.Height := cbProviderDocumentId.Top + cbProviderDocumentId.Height + 20;
+  cbSignature := AddCheckBox(5+ cbProviderDocumentId.Top + cbProviderDocumentId.Height, 'Поставщик', TicketParams.SignatureVisible);
+  cbSerialNumber := AddCheckBox(5+ cbSignature.Top + cbSignature.Height, 'Серия товара', TicketParams.SerialNumberVisible);
+  cbDocumentDate := AddCheckBox(5+ cbSerialNumber.Top + cbSerialNumber.Height, 'Дата накладной', TicketParams.DocumentDateVisible);
+  gbColumns.Height := cbDocumentDate.Top + cbDocumentDate.Height + 20;
   if gbColumns.Width < cbClientName.Width + 10 then
     gbColumns.Width := cbClientName.Width + 10;
 
@@ -186,6 +192,9 @@ begin
     TicketParams.ProducerVisible := cbProducer.Checked;
     TicketParams.PeriodVisible := cbPeriod.Checked;
     TicketParams.ProviderDocumentIdVisible := cbProviderDocumentId.Checked;
+    TicketParams.SignatureVisible := cbSignature.Checked;
+    TicketParams.SerialNumberVisible := cbSerialNumber.Checked;
+    TicketParams.DocumentDateVisible := cbDocumentDate.Checked;
   end;
 end;
 

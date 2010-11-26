@@ -13,6 +13,7 @@ type
    protected
     FConnection : TCustomMyConnection;
     function GetParam(ParamName : String) : Variant;
+    function GetParamDef(ParamName : String; DefaultValue : Variant) : Variant;
     procedure SaveParam(ParamName : String; ParamValue : Variant);
    public
     constructor Create(Connection : TCustomMyConnection);
@@ -22,6 +23,9 @@ type
 
 
 implementation
+
+uses
+  Variants;
 
 { TGlobalParams }
 
@@ -38,6 +42,18 @@ begin
     'select Value from GlobalParams where Name = :Name',
     ['Name'],
     [ParamName]);
+end;
+
+function TGlobalParams.GetParamDef(ParamName: String;
+  DefaultValue: Variant): Variant;
+var
+  value : Variant;
+begin
+  value := GetParam(ParamName);
+  if VarIsNull(value) then
+    Result := DefaultValue
+  else
+    Result := value;
 end;
 
 procedure TGlobalParams.SaveParam(ParamName: String; ParamValue: Variant);

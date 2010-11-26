@@ -452,6 +452,9 @@ begin
     frVariables['ProducerVisible'] := TicketParams.ProducerVisible;
     frVariables['PeriodVisible'] := TicketParams.PeriodVisible;
     frVariables['ProviderDocumentIdVisible'] := TicketParams.ProviderDocumentIdVisible;
+    frVariables['SignatureVisible'] := TicketParams.SignatureVisible;
+    frVariables['SerialNumberVisible'] := TicketParams.SerialNumberVisible;
+    frVariables['DocumentDateVisible'] := TicketParams.DocumentDateVisible;
 
     DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
   finally
