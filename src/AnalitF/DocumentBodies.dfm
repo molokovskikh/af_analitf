@@ -216,21 +216,21 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     DesignSize = (
       856
       76)
-    object spPrintTickets: TSpeedButton
+    object sbPrintTickets: TSpeedButton
       Left = 310
       Top = 12
       Width = 121
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1094#1077#1085#1085#1080#1082#1086#1074
-      OnClick = spPrintTicketsClick
+      OnClick = sbPrintTicketsClick
     end
-    object spPrintReestr: TSpeedButton
+    object sbPrintReestr: TSpeedButton
       Left = 311
       Top = 42
       Width = 121
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1088#1077#1077#1089#1090#1088#1072
-      OnClick = spPrintReestrClick
+      OnClick = sbPrintReestrClick
     end
     object sbEditAddress: TSpeedButton
       Left = 685
@@ -241,21 +241,21 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1085#1072#1082#1083#1072#1076#1085#1099#1093
       OnClick = sbEditAddressClick
     end
-    object spPrintWaybill: TSpeedButton
+    object sbPrintWaybill: TSpeedButton
       Left = 438
       Top = 12
       Width = 121
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1086#1081
-      OnClick = spPrintWaybillClick
+      OnClick = sbPrintWaybillClick
     end
-    object spPrintInvoice: TSpeedButton
+    object sbPrintInvoice: TSpeedButton
       Left = 438
       Top = 42
       Width = 121
       Height = 25
       Caption = #1055#1077#1095#1072#1090#1100' '#1089#1095#1077#1090'-'#1092#1072#1082#1090#1091#1088#1099
-      OnClick = spPrintInvoiceClick
+      OnClick = sbPrintInvoiceClick
     end
     object sbEditTicketReportParams: TSpeedButton
       Left = 685
@@ -265,6 +265,28 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Anchors = [akTop, akRight]
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1087#1077#1095#1072#1090#1080' '#1094#1077#1085#1085#1080#1082#1086#1074
       OnClick = sbEditTicketReportParamsClick
+    end
+    object sbPrintRackCard: TSpeedButton
+      Left = 566
+      Top = 18
+      Width = 121
+      Height = 25
+      Caption = #1057#1090#1077#1083#1083#1072#1078#1085#1072#1103' '#1082#1072#1088#1090#1072
+    end
+    object sbEditRackCardParams: TSpeedButton
+      Left = 691
+      Top = 50
+      Width = 165
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1089#1090#1077#1083#1083#1072#1078#1085#1086#1081' '#1082#1072#1088#1090#1099
+    end
+    object sbReestrToExcel: TSpeedButton
+      Left = 574
+      Top = 26
+      Width = 121
+      Height = 25
+      Caption = #1056#1077#1077#1089#1090#1088' '#1074' Excel'
     end
     object cbClearRetailPrice: TCheckBox
       Left = 8

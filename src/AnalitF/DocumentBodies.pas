@@ -52,34 +52,37 @@ type
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
     gbPrint: TGroupBox;
-    spPrintTickets: TSpeedButton;
+    sbPrintTickets: TSpeedButton;
     adsDocumentHeadersLocalWriteTime: TDateTimeField;
     cbClearRetailPrice: TCheckBox;
-    spPrintReestr: TSpeedButton;
+    sbPrintReestr: TSpeedButton;
     cbWaybillAsVitallyImportant: TCheckBox;
     adsDocumentBodiesQuantity: TIntegerField;
     sbEditAddress: TSpeedButton;
     adsDocumentBodiesVitallyImportant: TBooleanField;
     tmrVitallyImportantChange: TTimer;
     adsDocumentBodiesSerialNumber: TStringField;
-    spPrintWaybill: TSpeedButton;
-    spPrintInvoice: TSpeedButton;
+    sbPrintWaybill: TSpeedButton;
+    sbPrintInvoice: TSpeedButton;
     sbEditTicketReportParams: TSpeedButton;
+    sbPrintRackCard: TSpeedButton;
+    sbEditRackCardParams: TSpeedButton;
+    sbReestrToExcel: TSpeedButton;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
     procedure adsDocumentHeadersDocumentTypeGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
-    procedure spPrintTicketsClick(Sender: TObject);
+    procedure sbPrintTicketsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure cbClearRetailPriceClick(Sender: TObject);
-    procedure spPrintReestrClick(Sender: TObject);
+    procedure sbPrintReestrClick(Sender: TObject);
     procedure cbWaybillAsVitallyImportantClick(Sender: TObject);
     procedure sbEditAddressClick(Sender: TObject);
     procedure tmrVitallyImportantChangeTimer(Sender: TObject);
     procedure dbgDocumentBodiesSortMarkingChanged(Sender: TObject);
-    procedure spPrintWaybillClick(Sender: TObject);
-    procedure spPrintInvoiceClick(Sender: TObject);
+    procedure sbPrintWaybillClick(Sender: TObject);
+    procedure sbPrintInvoiceClick(Sender: TObject);
     procedure sbEditTicketReportParamsClick(Sender: TObject);
   private
     { Private declarations }
@@ -127,6 +130,10 @@ type
     procedure GridColumnsClick( Sender: TObject);
 
     function GetMinProducerCost() : Double;
+
+    procedure SetButtonPositions;
+    procedure OnResizeForm(Sender: TObject);
+    function  NeedReplaceButtons : Boolean;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -186,9 +193,14 @@ end;
 procedure TDocumentBodiesForm.ShowForm(DocumentId: Int64;
   ParentForm: TChildForm);
 begin
+  Self.OnResize := nil;
   FDocumentId := DocumentId;
   SetParams;
   inherited ShowForm;
+  if adsDocumentHeadersDocumentType.Value = 1 then begin
+    SetButtonPositions;
+    Self.OnResize := OnResizeForm;
+  end;
 end;
 
 procedure TDocumentBodiesForm.dbgDocumentBodiesKeyDown(Sender: TObject;
@@ -405,7 +417,7 @@ begin
     Text := RussianDocumentType[TDocumentType(Sender.AsInteger)];
 end;
 
-procedure TDocumentBodiesForm.spPrintTicketsClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintTicketsClick(Sender: TObject);
 var
   priceNameVariant : Variant;
   priceName : String;
@@ -558,7 +570,7 @@ begin
   RecalcDocument;
 end;
 
-procedure TDocumentBodiesForm.spPrintReestrClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintReestrClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
   V: array[0..0] of Variant;
@@ -1128,7 +1140,7 @@ begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TDocumentBodiesForm.spPrintWaybillClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintWaybillClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
   V: array[0..0] of Variant;
@@ -1154,7 +1166,7 @@ begin
   DM.ShowFastReport('Waybill.frf', adsDocumentBodies, True);
 end;
 
-procedure TDocumentBodiesForm.spPrintInvoiceClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintInvoiceClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
   V: array[0..0] of Variant;
@@ -1198,6 +1210,83 @@ procedure TDocumentBodiesForm.sbEditTicketReportParamsClick(
   Sender: TObject);
 begin
   ShowEditTicketReportParams;
+end;
+
+procedure TDocumentBodiesForm.SetButtonPositions;
+const
+  topButton = 12;
+  buttonInterval = 5;
+  leftButton = 310;
+begin
+  if leftButton + 3*sbPrintTickets.Width + 3*buttonInterval + 2*sbEditAddress.Width + 2*buttonInterval > gbPrint.ClientWidth
+  then begin
+    //Расставляем по три в столбик
+    sbPrintTickets.Left := leftButton;
+    sbPrintReestr.Left := sbPrintTickets.Left;
+    sbPrintWaybill.Left := sbPrintTickets.Left;
+
+    sbPrintInvoice.Left := sbPrintTickets.Left + sbPrintTickets.Width + buttonInterval;
+    sbPrintRackCard.Left := sbPrintInvoice.Left;
+    sbReestrToExcel.Left := sbPrintInvoice.Left;
+
+    sbPrintTickets.Top := topButton;
+    sbPrintReestr.Top := sbPrintTickets.Top + sbPrintTickets.Height + buttonInterval;
+    sbPrintWaybill.Top := sbPrintReestr.Top + sbPrintReestr.Height + buttonInterval;
+
+    sbPrintInvoice.Top := topButton;
+    sbPrintRackCard.Top := sbPrintInvoice.Top + sbPrintInvoice.Height + buttonInterval;
+    sbReestrToExcel.Top := sbPrintRackCard.Top + sbPrintRackCard.Height + buttonInterval;
+
+
+    sbEditAddress.Top := topButton;
+    sbEditTicketReportParams.Top := sbEditAddress.Top + sbEditAddress.Height + buttonInterval;
+    sbEditRackCardParams.Top := sbEditTicketReportParams.Top + sbEditTicketReportParams.Height + buttonInterval;
+
+    sbEditAddress.Left := gbPrint.ClientWidth - buttonInterval - sbEditAddress.Width;
+    sbEditTicketReportParams.Left := sbEditAddress.Left;
+    sbEditRackCardParams.Left := sbEditTicketReportParams.Left;
+  end
+  else begin
+    //Расставляем по два в столбик
+    sbPrintTickets.Left := leftButton;
+    sbPrintReestr.Left := sbPrintTickets.Left;
+    
+    sbPrintWaybill.Left := sbPrintTickets.Left + sbPrintTickets.Width + buttonInterval;
+    sbPrintInvoice.Left := sbPrintWaybill.Left;
+
+    sbPrintRackCard.Left := sbPrintInvoice.Left + sbPrintInvoice.Width + buttonInterval;
+    sbReestrToExcel.Left := sbPrintRackCard.Left;
+
+    sbPrintTickets.Top := topButton;
+    sbPrintReestr.Top := sbPrintTickets.Top + sbPrintTickets.Height + buttonInterval;
+
+    sbPrintWaybill.Top := topButton;
+    sbPrintInvoice.Top := sbPrintReestr.Top;
+
+    sbPrintRackCard.Top := topButton;
+    sbReestrToExcel.Top := sbPrintReestr.Top;
+    
+
+    sbEditAddress.Top := topButton;
+    sbEditTicketReportParams.Top := topButton;
+    sbEditRackCardParams.Top := sbEditTicketReportParams.Top + sbEditTicketReportParams.Height + buttonInterval;
+    sbEditTicketReportParams.Left := gbPrint.ClientWidth - buttonInterval - sbEditTicketReportParams.Width;
+    sbEditRackCardParams.Left := sbEditTicketReportParams.Left;
+    sbEditAddress.Left := sbEditTicketReportParams.Left - buttonInterval - sbEditAddress.Width;
+  end;
+
+  gbPrint.ClientHeight := sbEditRackCardParams.Top + sbEditRackCardParams.Height + buttonInterval;
+end;
+
+function TDocumentBodiesForm.NeedReplaceButtons: Boolean;
+begin
+  Result := True;
+end;
+
+procedure TDocumentBodiesForm.OnResizeForm(Sender: TObject);
+begin
+  if NeedReplaceButtons then
+    SetButtonPositions;
 end;
 
 end.
