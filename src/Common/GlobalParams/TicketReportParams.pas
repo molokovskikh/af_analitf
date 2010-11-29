@@ -22,6 +22,8 @@ type
     SignatureVisible : Boolean;
     SerialNumberVisible : Boolean;
     DocumentDateVisible : Boolean;
+
+    DeleteUnprintableElemnts : Boolean;
     procedure ReadParams; override;
     procedure SaveParams; override;
   end;
@@ -43,6 +45,7 @@ begin
   SignatureVisible := GetParamDef('TicketReportSignatureVisible', True);
   SerialNumberVisible := GetParamDef('TicketReportSerialNumberVisible', True);
   DocumentDateVisible := GetParamDef('TicketReportDocumentDateVisible', True);
+  DeleteUnprintableElemnts := GetParamDef('TicketReportDeleteUnprintableElemnts', False);
 end;
 
 procedure TTicketReportParams.SaveParams;
@@ -58,6 +61,7 @@ begin
   SaveParam('TicketReportSignatureVisible', SignatureVisible);
   SaveParam('TicketReportSerialNumberVisible', SerialNumberVisible);
   SaveParam('TicketReportDocumentDateVisible', DocumentDateVisible);
+  SaveParam('TicketReportDeleteUnprintableElemnts', DeleteUnprintableElemnts);
 end;
 
 end.

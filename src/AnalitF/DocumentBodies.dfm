@@ -280,6 +280,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Height = 25
       Anchors = [akTop, akRight]
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1089#1090#1077#1083#1083#1072#1078#1085#1086#1081' '#1082#1072#1088#1090#1099
+      OnClick = sbEditRackCardParamsClick
     end
     object sbReestrToExcel: TSpeedButton
       Left = 574

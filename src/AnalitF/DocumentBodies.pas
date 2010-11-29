@@ -84,6 +84,7 @@ type
     procedure sbPrintWaybillClick(Sender: TObject);
     procedure sbPrintInvoiceClick(Sender: TObject);
     procedure sbEditTicketReportParamsClick(Sender: TObject);
+    procedure sbEditRackCardParamsClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -150,7 +151,8 @@ uses
   U_ExchangeLog,
   LU_Tracer,
   EditTicketReportParams,
-  TicketReportParams;
+  TicketReportParams,
+  EditRackCardReportParams;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -1290,6 +1292,11 @@ procedure TDocumentBodiesForm.OnResizeForm(Sender: TObject);
 begin
   if NeedReplaceButtons then
     SetButtonPositions;
+end;
+
+procedure TDocumentBodiesForm.sbEditRackCardParamsClick(Sender: TObject);
+begin
+  ShowEditRackCardReportParams();
 end;
 
 end.

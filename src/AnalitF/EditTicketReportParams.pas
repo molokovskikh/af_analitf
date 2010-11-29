@@ -19,8 +19,7 @@ type
 
     pSettings : TPanel;
     cbPrintEmptyTickets : TCheckBox;
-    lSizePercent : TLabel;
-    tbSizePercent : TTrackBar;
+    cbDeleteUnprintableElemnts : TCheckBox;
 
     gbColumns : TGroupBox;
     cbClientName : TCheckBox;
@@ -38,7 +37,6 @@ type
     procedure FormCloseQuery(
       Sender: TObject;
       var CanClose: Boolean);
-    procedure TrackBarChange(Sender: TObject);
     function AddCheckBox(Top: Integer; Caption : String; Value : Boolean) : TCheckBox;
   public
     { Public declarations }
@@ -126,36 +124,20 @@ begin
   cbPrintEmptyTickets.Top := 5;
   cbPrintEmptyTickets.Checked := TicketParams.PrintEmptyTickets;
 
-  lSizePercent := TLabel.Create(Self);
-  lSizePercent.Parent := pSettings;
-  lSizePercent.Caption := 'Размер ценников:';
-  lSizePercent.Width := Self.Canvas.TextWidth(lSizePercent.Caption);
-  lSizePercent.Left := 5;
-  lSizePercent.Top := 5 + cbPrintEmptyTickets.Top + cbPrintEmptyTickets.Height;
-
-
-  tbSizePercent := TTrackBar.Create(Self);
-  tbSizePercent.Parent := pSettings;
-  tbSizePercent.Orientation := trHorizontal;
-  tbSizePercent.Max := 250;
-  tbSizePercent.Min := 100;
-  tbSizePercent.Frequency := 10;
-  tbSizePercent.TickMarks := tmBottomRight;
-  tbSizePercent.TickStyle := tsAuto;
-  //tbSizePercent.SliderVisible := False;
-  tbSizePercent.OnChange := TrackBarChange;
-  tbSizePercent.Position := TicketParams.SizePercent;
-  TrackBarChange(tbSizePercent);
-  tbSizePercent.Left := 5;
-  tbSizePercent.Top := 5 + lSizePercent.Top + lSizePercent.Height;
-  tbSizePercent.Width := cbPrintEmptyTickets.Width;
+  cbDeleteUnprintableElemnts := TCheckBox.Create(Self);
+  cbDeleteUnprintableElemnts.Parent := pSettings;
+  cbDeleteUnprintableElemnts.Caption := 'Удалять непечатаемые элементы';
+  cbDeleteUnprintableElemnts.Width := Self.Canvas.TextWidth(cbDeleteUnprintableElemnts.Caption) + 50;
+  cbDeleteUnprintableElemnts.Left := 5;
+  cbDeleteUnprintableElemnts.Top := 5 + cbPrintEmptyTickets.Top + cbPrintEmptyTickets.Height;
+  cbDeleteUnprintableElemnts.Checked := TicketParams.DeleteUnprintableElemnts;
 
   gbColumns := TGroupBox.Create(Self);
   gbColumns.Parent := pSettings;
   gbColumns.Caption := ' Печатаемые элементы ценника ';
   gbColumns.Width := Self.Canvas.TextWidth(gbColumns.Caption) + 30;
   gbColumns.Left := 5;
-  gbColumns.Top := 5 + tbSizePercent.Top + tbSizePercent.Height;
+  gbColumns.Top := 5 + cbDeleteUnprintableElemnts.Top + cbDeleteUnprintableElemnts.Height;
 
   cbClientName := AddCheckBox(15, 'Наименование клиента', TicketParams.ClientNameVisible);
   cbProduct := AddCheckBox(5 + cbClientName.Top + cbClientName.Height, 'Наименование', TicketParams.ProductVisible);
@@ -185,7 +167,7 @@ begin
   if (ModalResult = mrOK) and CanClose
   then begin
     TicketParams.PrintEmptyTickets := cbPrintEmptyTickets.Checked;
-    TicketParams.SizePercent := tbSizePercent.Position;
+    //TicketParams.SizePercent := tbSizePercent.Position;
     TicketParams.ClientNameVisible := cbClientName.Checked;
     TicketParams.ProductVisible := cbProduct.Checked;
     TicketParams.CountryVisible := cbCountry.Checked;
@@ -195,6 +177,7 @@ begin
     TicketParams.SignatureVisible := cbSignature.Checked;
     TicketParams.SerialNumberVisible := cbSerialNumber.Checked;
     TicketParams.DocumentDateVisible := cbDocumentDate.Checked;
+    TicketParams.DeleteUnprintableElemnts := cbDeleteUnprintableElemnts.Checked;
   end;
 end;
 
@@ -213,11 +196,5 @@ begin
   TicketParams.Free;
   inherited;
 end;
-
-procedure TEditTicketReportParamsForm.TrackBarChange(Sender: TObject);
-begin
-  lSizePercent.Caption := 'Размер ценников: ' + IntToStr(tbSizePercent.Position) + '%';
-end;
-
 
 end.

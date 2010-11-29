@@ -122,7 +122,9 @@ uses
   AddressController in 'BusinessLogic\AddressController.pas',
   U_frameFilterAddresses in 'Views\U_frameFilterAddresses.pas' {frameFilterAddresses: TFrame},
   KeyboardHelper in '..\Common\Helpers\KeyboardHelper.pas',
-  UserMessageParams in '..\Common\GlobalParams\UserMessageParams.pas';
+  UserMessageParams in '..\Common\GlobalParams\UserMessageParams.pas',
+  RackCardReportParams in '..\Common\GlobalParams\RackCardReportParams.pas',
+  EditRackCardReportParams in 'EditRackCardReportParams.pas' {EditRackCardReportParamsForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}
