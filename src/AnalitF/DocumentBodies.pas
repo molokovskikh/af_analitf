@@ -85,6 +85,7 @@ type
     procedure sbPrintInvoiceClick(Sender: TObject);
     procedure sbEditTicketReportParamsClick(Sender: TObject);
     procedure sbEditRackCardParamsClick(Sender: TObject);
+    procedure sbReestrToExcelClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -152,7 +153,9 @@ uses
   LU_Tracer,
   EditTicketReportParams,
   TicketReportParams,
-  EditRackCardReportParams;
+  EditRackCardReportParams,
+  ShellAPI,
+  LU_TDataExportAsXls;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -1297,6 +1300,107 @@ end;
 procedure TDocumentBodiesForm.sbEditRackCardParamsClick(Sender: TObject);
 begin
   ShowEditRackCardReportParams();
+end;
+
+procedure TDocumentBodiesForm.sbReestrToExcelClick(Sender: TObject);
+var
+  LastId : Int64;
+  exportFile : String;
+  exportData : TDataExportAsXls;
+  rowNumber : Integer;
+begin
+  adsDocumentBodies.DisableControls;
+  LastId := adsDocumentBodiesId.Value;
+  try
+    exportFile := TDBGridHelper.GetTempFileToExport();
+
+    exportData := TDataExportAsXls.Create(exportFile);
+    try
+
+      exportData.WriteBlankRow;
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        'Реестр'
+        ]);
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        'розничных цен на лекарственные средства и изделия медицинского назначения,'
+        ]);
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        Format('полученные от %s-по счету (накладной) №%s от %s',
+          [adsDocumentHeadersProviderName.AsString,
+           adsDocumentHeadersProviderDocumentId.AsString,
+           DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime)])
+        ]);
+      exportData.WriteBlankRow;
+      
+      exportData.WriteRow([
+        '№ пп',
+        'Наименование',
+        'Серия товара',
+        'Срок годности',
+        'Производитель',
+        'Цена без НДС, руб',
+        'Цена ГР, руб',
+        'Опт. надб. %',
+        'Отпуск. цена пос-ка без НДС, руб',
+        'НДС пос-ка, руб',
+        'Отпуск. цена пос-ка с НДС, руб',
+        'Розн. торг. надб. %',
+        'Розн. цена за ед., руб',
+        'Кол-во',
+        'Розн. сумма, руб']);
+
+      adsDocumentBodies.First;
+      rowNumber := 1;
+      while not adsDocumentBodies.Eof do begin
+        exportData.WriteRow([
+          IntToStr(rowNumber),
+          adsDocumentBodiesProduct.AsString,
+          adsDocumentBodiesSerialNumber.AsString,
+          adsDocumentBodiesPeriod.AsString,
+          adsDocumentBodiesProducer.AsString,
+          adsDocumentBodiesProducerCost.AsString,
+          adsDocumentBodiesRegistryCost.AsString,
+          adsDocumentBodiesSupplierPriceMarkup.AsString,
+          adsDocumentBodiesSupplierCostWithoutNDS.AsString,
+          NDSField.AsString,
+          adsDocumentBodiesSupplierCost.AsString,
+          retailMarkupField.AsString,
+          retailPriceField.AsString,
+          adsDocumentBodiesQuantity.AsString,
+          retailSummField.AsString
+          ]);
+
+        Inc(rowNumber);
+        adsDocumentBodies.Next;
+      end;
+    finally
+      exportData.Free;
+    end;
+
+    ShellExecute(
+      0,
+      'Open',
+      PChar(exportFile),
+      nil, nil, SW_SHOWNORMAL);
+  finally
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+    adsDocumentBodies.EnableControls;
+  end;
 end;
 
 end.

@@ -124,7 +124,8 @@ uses
   KeyboardHelper in '..\Common\Helpers\KeyboardHelper.pas',
   UserMessageParams in '..\Common\GlobalParams\UserMessageParams.pas',
   RackCardReportParams in '..\Common\GlobalParams\RackCardReportParams.pas',
-  EditRackCardReportParams in 'EditRackCardReportParams.pas' {EditRackCardReportParamsForm};
+  EditRackCardReportParams in 'EditRackCardReportParams.pas' {EditRackCardReportParamsForm},
+  LU_TDataExportAsXls in '..\Common\Classes\LU_TDataExportAsXls.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

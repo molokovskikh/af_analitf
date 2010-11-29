@@ -288,6 +288,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Width = 121
       Height = 25
       Caption = #1056#1077#1077#1089#1090#1088' '#1074' Excel'
+      OnClick = sbReestrToExcelClick
     end
     object cbClearRetailPrice: TCheckBox
       Left = 8
