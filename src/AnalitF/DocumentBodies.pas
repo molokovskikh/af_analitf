@@ -86,6 +86,7 @@ type
     procedure sbEditTicketReportParamsClick(Sender: TObject);
     procedure sbEditRackCardParamsClick(Sender: TObject);
     procedure sbReestrToExcelClick(Sender: TObject);
+    procedure sbPrintRackCardClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -153,6 +154,7 @@ uses
   LU_Tracer,
   EditTicketReportParams,
   TicketReportParams,
+  RackCardReportParams,
   EditRackCardReportParams,
   ShellAPI,
   LU_TDataExportAsXls;
@@ -450,6 +452,7 @@ begin
     frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
     frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
     frVariables[ 'TicketSignature'] := priceName;
+    frVariables[ 'DeleteUnprintableElemnts'] := TicketParams.DeleteUnprintableElemnts;
 
     frVariables['ClientNameVisible'] := TicketParams.ClientNameVisible;
     frVariables['ProductVisible'] := TicketParams.ProductVisible;
@@ -1400,6 +1403,49 @@ begin
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
     adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.sbPrintRackCardClick(Sender: TObject);
+var
+  priceNameVariant : Variant;
+  priceName : String;
+  bracketIndex : Integer;
+  RackCardReportParams : TRackCardReportParams;
+begin
+  RackCardReportParams := TRackCardReportParams.Create(DM.MainConnection);
+  try
+    priceNameVariant := DM.QueryValue(
+      'select PriceName from pricesdata where FirmCode = ' + adsDocumentHeadersFirmCode.AsString + ' limit 1',
+      [],
+      []);
+    if not VarIsNull(priceNameVariant) and (VarIsStr(priceNameVariant)) then begin
+      priceName := priceNameVariant;
+      bracketIndex := Pos('(',priceName);
+      if bracketIndex > 0 then
+        priceName := Copy(priceName, 1, bracketIndex -1);
+    end
+    else
+      priceName := adsDocumentHeadersProviderName.AsString;
+    priceName := Trim(priceName);
+
+    frVariables[ 'DeleteUnprintableElemnts'] := RackCardReportParams.DeleteUnprintableElemnts;
+    frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+    frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+    frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+    frVariables[ 'ProviderName'] := priceName;
+
+    frVariables['ProductVisible'] := RackCardReportParams.ProductVisible;
+    frVariables['ProducerVisible'] := RackCardReportParams.ProducerVisible;
+    frVariables['SerialNumberVisible'] := RackCardReportParams.SerialNumberVisible;
+    frVariables['PeriodVisible'] := RackCardReportParams.PeriodVisible;
+    frVariables['QuantityVisible'] := RackCardReportParams.QuantityVisible;
+    frVariables['ProviderVisible'] := RackCardReportParams.ProviderVisible;
+    frVariables['CostVisible'] := RackCardReportParams.CostVisible;
+
+    DM.ShowFastReport('RackCard.frf', adsDocumentBodies, True);
+  finally
+    RackCardReportParams.Free;
   end;
 end;
 

@@ -272,6 +272,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Width = 121
       Height = 25
       Caption = #1057#1090#1077#1083#1083#1072#1078#1085#1072#1103' '#1082#1072#1088#1090#1072
+      OnClick = sbPrintRackCardClick
     end
     object sbEditRackCardParams: TSpeedButton
       Left = 691
