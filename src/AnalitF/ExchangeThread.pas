@@ -70,6 +70,7 @@ private
   HTTPName,
   HTTPPass : String;
   StartDownPosition : Integer;
+  LastPacketTime : TDateTime;
   //”никальный идентификатор обновлени€, должен передаватьс€ при подтверждении
   UpdateId : String;
 
@@ -918,6 +919,7 @@ begin
               FileStream.Seek( 0, soFromEnd);
 
             StartDownPosition := FileStream.Position;
+            LastPacketTime := Now();
 
             ExchangeForm.HTTP.Get( AddRangeStartToURL(HostFileName, FileStream.Position),
               FileStream);
@@ -2257,6 +2259,7 @@ var
   inHTTP : TidHTTP;
   INFileSize : Integer;
   ProgressPosition : Integer;
+  CurrentPacketTime : TDateTime;
 begin
   inHTTP := TidHTTP(Sender);
 
@@ -2271,6 +2274,8 @@ begin
     INFileSize := StrToInt(inHTTP.Response.RawHeaders.Values['INFileSize']);
 
     ProgressPosition := Round( ((StartDownPosition+AWorkCount)/INFileSize) *100);
+    CurrentPacketTime := Now();
+    try
 
     TSuffix := ' б';
     CSuffix := ' б';
@@ -2291,7 +2296,13 @@ begin
 
 //    Tracer.TR('Main.HTTPWork', 'INFileSize : -1');
 
-    if (ProgressPosition > 0) and ((ProgressPosition - Progress > 5) or (ProgressPosition > 97)) then
+    if (ProgressPosition > 0)
+      and (
+        (ProgressPosition - Progress > 5)
+        or (ProgressPosition > 97)
+        or (Abs(CurrentPacketTime - LastPacketTime) > 1/SecsPerDay)
+      )
+    then
     begin
       Progress := ProgressPosition;
       Synchronize( SetProgress );
@@ -2300,6 +2311,9 @@ begin
         FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
       Synchronize( SetDownStatus );
 //      Tracer.TR('Main.HTTPWork', 'StatusText : ' + StatusText);
+    end;
+    finally
+      LastPacketTime := CurrentPacketTime;
     end;
   end;
 
