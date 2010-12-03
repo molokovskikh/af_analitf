@@ -64,8 +64,6 @@ type
     procedure btnCancelClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
-      const AStatusText: String);
   private
     FStatusPosition: Integer;
     ExchangeActions: TExchangeActions;
@@ -536,7 +534,6 @@ end;
 
 procedure TExchangeForm.CheckStop;
 begin
-  StatusText := '';
   StatusPosition := 0;
   if DoStop then
   begin
@@ -631,12 +628,6 @@ begin
   httpReceive.ConnectTimeout := -2;
   ConnectCount := DM.adtParams.FieldByName( 'ConnectCount').AsInteger;
   ConnectPause := DM.adtParams.FieldByName( 'ConnectPause').AsInteger;
-end;
-
-procedure TExchangeForm.HTTPStatus(ASender: TObject;
-  const AStatus: TIdStatus; const AStatusText: String);
-begin
-  WriteExchangeLog('Exchange', 'IdStatus : ' + AStatusText);
 end;
 
 { TInternalRepareOrders }

@@ -94,7 +94,12 @@ private
 
   FUserMessageParams : TUserMessageParams;
 
+  FirstResponseServer : Boolean;
+  StatusBeforeFirst : String;
+
   procedure SetStatus;
+  procedure SetStatusText(AStatusText : String);
+  procedure SetStatusTextHTTP(AStatusText : String);
   procedure SetDownStatus;
   procedure SetProgress;
   procedure SetTotalProgress;
@@ -159,6 +164,8 @@ private
   procedure CheckFieldAfterUpdate(fieldName : String);
   procedure ProcessClientToAddressMigration;
 
+  procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
+      const AStatusText: String);
 protected
   procedure Execute; override;
 public
@@ -220,7 +227,9 @@ begin
       if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
       then
       begin
+        FirstResponseServer := False;
         RasConnect;
+        SetStatusText('Соединение...');
         HTTPConnect;
         TotalProgress := 10;
         Synchronize( SetTotalProgress);
@@ -400,8 +409,7 @@ begin
 
         DM.CheckDataIntegrity;
 
-        StatusText := 'Обновление завершено';
-         Synchronize( SetStatus);
+        SetStatusText('Обновление завершено');
       end;
 
       ImportComplete := True;
@@ -471,8 +479,7 @@ begin
           SendLetterWithTechInfo(
             'Ошибка целостности базы данных в таблице отсрочек при импорте данных',
             'У клиента возникла ошибка целостности базы данных в таблице отсрочек при импорте данных.');
-          StatusText := 'Обновление завершено';
-          Synchronize( SetStatus);
+          SetStatusText('Обновление завершено');
           ImportComplete := True;
         end;
       end;
@@ -507,8 +514,7 @@ begin
         //если это сокетная ошибка, то не рвем DialUp
         if not (E is EIdException) then
           RasDisconnect;
-        StatusText := '';
-        Synchronize( SetStatus);
+        SetStatusText('');
         //обрабатываем Отмену
         //if ExchangeForm.DoStop then Abort;
         //обрабатываем ошибку
@@ -629,8 +635,7 @@ begin
   batchFileContent := '';
   NeedProcessBatch := [eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [];
   { запрашиваем данные }
-  StatusText := 'Подготовка данных';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Подготовка данных');
   try
     LibVersions := AProc.GetLibraryVersionFromAppPath;
 
@@ -870,9 +875,8 @@ begin
   //загрузка прайс-листа
   if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
   then begin
-    StatusText := 'Загрузка данных';
 //    Tracer.TR('DoExchange', 'Загрузка данных');
-    Synchronize( SetStatus);
+    SetStatusText('Загрузка данных');
     if not NewZip then
     begin
       if SysUtils.FileExists( LocalFileName) then
@@ -1098,6 +1102,7 @@ begin
         Sleep(RasTimeout * 1000);
       end;
   end;
+  SetStatusText('');
   Synchronize( ExchangeForm.CheckStop);
 end;
 
@@ -1125,8 +1130,7 @@ var
   FoundIndex : Integer;
 begin
   try
-    StatusText := 'Распаковка данных';
-    Synchronize( SetStatus);
+    SetStatusText('Распаковка данных');
     if FindFirst( ExePath + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
     repeat
       { Если это архив с рекламой }
@@ -1266,8 +1270,7 @@ begin
 
   if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then
   begin
-    StatusText := 'Очистка таблиц';
-    Synchronize( SetStatus);
+    SetStatusText('Очистка таблиц');
     DM.ClearDatabase;
 
 {
@@ -1320,16 +1323,14 @@ var
 begin
   Synchronize( ExchangeForm.CheckStop);
   Synchronize( DisableCancel);
-  StatusText := 'Резервное копирование данных';
-  Synchronize( SetStatus);
+  SetStatusText('Резервное копирование данных');
   if not DatabaseController.IsBackuped then
     DatabaseController.BackupDatabase;
 
   TotalProgress := 65;
   Synchronize( SetTotalProgress);
 
-  StatusText := 'Импорт данных';
-  Synchronize( SetStatus);
+  SetStatusText('Импорт данных');
   Progress := 0;
   Synchronize( SetProgress);
   DM.UnLinkExternalTables;
@@ -1838,8 +1839,7 @@ begin
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
-  StatusText := 'Импорт данных';
-  Synchronize( SetStatus);
+  SetStatusText('Импорт данных');
 
   SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; InternalExecute;
   SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
@@ -2211,8 +2211,7 @@ begin
   //Отправляем настройки только в том случае, если есть что отправлять
   if not DM.adsQueryValue.Eof then
   begin
-    StatusText := 'Отправка настроек прайс-листов';
-    Synchronize( SetStatus);
+    SetStatusTextHTTP('Отправка настроек прайс-листов');
     SetLength(ParamNames, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     SetLength(ParamValues, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     ParamNames[0] := 'UniqueID';
@@ -2299,8 +2298,8 @@ begin
       StatusText := 'Загрузка данных   (' +
         FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
         FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
-//      Tracer.TR('Main.HTTPWork', 'StatusText : ' + StatusText);
       Synchronize( SetDownStatus );
+//      Tracer.TR('Main.HTTPWork', 'StatusText : ' + StatusText);
     end;
   end;
 
@@ -2324,8 +2323,7 @@ var
   end;
 
 begin
-  StatusText := 'Отправка письма';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Отправка письма');
 
   Attachs := TStringList.Create;
   Attachs.CaseSensitive := False;
@@ -2410,6 +2408,7 @@ end;
 constructor TExchangeThread.Create(CreateSuspended: Boolean);
 begin
   inherited;
+  ExchangeForm.HTTP.OnStatus := HTTPStatus;
   hfileHelper := THFileHelper.Create;
   PreviousAdapter := nil;
   
@@ -2500,8 +2499,7 @@ var
 begin
   Synchronize( ExchangeForm.CheckStop);
   Synchronize( DisableCancel);
-  StatusText := 'Отправка заказов';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Отправка заказов');
 
   postController := TPostSomeOrdersController
     .Create(
@@ -2514,8 +2512,7 @@ begin
     postController.PostSomeOrders;
   finally
     postController.Free;
-    StatusText := '';
-    Synchronize( SetStatus);
+    SetStatusText('');
   end;
   
   Synchronize( EnableCancel);
@@ -2797,8 +2794,7 @@ var
 begin
   Synchronize( ExchangeForm.CheckStop);
   Synchronize( DisableCancel);
-  StatusText := 'Загрузка накладных';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Загрузка накладных');
 
   postController := TPostWaybillsControllerController
     .Create(
@@ -2810,8 +2806,7 @@ begin
     postController.PostWaybills;
   finally
     postController.Free;
-    StatusText := '';
-    Synchronize( SetStatus);
+    SetStatusText('');
   end;
 
   Synchronize( EnableCancel);
@@ -3137,8 +3132,7 @@ begin
   Res := TStringList.Create;
   try
   { запрашиваем данные }
-  StatusText := 'Запрос истории заказов';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Запрос истории заказов');
   try
     AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
     AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
@@ -3402,8 +3396,7 @@ begin
   FPostParams := TStringList.Create;
   try
   { запрашиваем данные }
-  StatusText := 'Подтверждение о прочтении';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Подтверждение о прочтении');
   try
     AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
     AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
@@ -3431,6 +3424,31 @@ begin
   finally
     FPostParams.Free;
   end;
+end;
+
+procedure TExchangeThread.SetStatusText(AStatusText: String);
+begin
+  StatusText := AStatusText;
+  Synchronize( SetStatus );
+end;
+
+procedure TExchangeThread.SetStatusTextHTTP(AStatusText: String);
+begin
+  if FirstResponseServer then
+    SetStatusText(AStatusText)
+  else
+    StatusBeforeFirst := AStatusText;
+end;
+
+procedure TExchangeThread.HTTPStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: String);
+begin
+  WriteExchangeLog('Exchange', 'IdStatus : ' + AStatusText);
+  if not FirstResponseServer then
+    if AStatus = hsConnected then begin
+      FirstResponseServer := True;
+      SetStatusText(StatusBeforeFirst);
+    end;
 end;
 
 initialization
