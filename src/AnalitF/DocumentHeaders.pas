@@ -35,6 +35,7 @@ type
     spDelete: TSpeedButton;
     spOpenFolders: TSpeedButton;
     adsDocumentHeadersLoadTime: TDateTimeField;
+    sbListToExcel: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -46,6 +47,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure dbgHeadersSortMarkingChanged(Sender: TObject);
     procedure spOpenFoldersClick(Sender: TObject);
+    procedure sbListToExcelClick(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -66,7 +68,8 @@ implementation
 uses Main, DateUtils, DModule, AProc, Orders,
   DBGridHelper,
   U_ExchangeLog,
-  DBProc;
+  DBProc,
+  LU_TDataExportAsXls;
 
 {$R *.dfm}
 
@@ -270,6 +273,86 @@ begin
     nil, nil, SW_SHOWDEFAULT);
   ShellExecute( 0, 'Open', PChar(ExePath + SDirRejects + '\'),
     nil, nil, SW_SHOWDEFAULT);
+end;
+
+procedure TDocumentHeaderForm.sbListToExcelClick(Sender: TObject);
+var
+  exportFile : String;
+  exportData : TDataExportAsXls;
+  prefix : String;
+begin
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+
+  DM.adsQueryValue.SQL.Text := '' +
+' select ' +
+'  dh.*, ' +
+'  dh.WriteTime as LocalWriteTime, ' +
+'  p.FullName as ProviderName, ' +
+'  sum(dbodies.SupplierCost) as TotalSumm, ' +
+'  count(dbodies.Id) as TotalCount, ' +
+'  count(dbodies.SupplierCost) as CostCount ' +
+' from ' +
+'   DocumentHeaders dh, ' +
+'   DocumentBodies dbodies, ' +
+'   providers p ' +
+' where ' +
+'     (dh.ClientId = :ClientId) ' +
+' and (dh.LoadTime BETWEEN :DateFrom AND :DateTo) ' +
+' and (dh.DocumentType = 1) ' +
+' and (p.FirmCode = dh.FirmCode) ' +
+' and (dbodies.DocumentId = dh.Id) ' +
+' group by dh.Id ' +
+' order by dh.LoadTime DESC ';
+
+  DM.adsQueryValue.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').Value;
+  DM.adsQueryValue.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
+  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+  DM.adsQueryValue.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+
+  DM.adsQueryValue.Open;
+  try
+    if not DM.adsQueryValue.IsEmpty then begin
+      exportFile := TDBGridHelper.GetTempFileToExport();
+
+      exportData := TDataExportAsXls.Create(exportFile);
+      try
+
+        exportData.WriteRow([
+          'Дата',
+          'Номер накладной',
+          'Поставщик',
+          'Сумма',
+          'Срок оплаты']);
+
+        while not DM.adsQueryValue.Eof do begin
+          prefix := '';
+          if DM.adsQueryValue.FieldByName('TotalCount').AsInteger <> DM.adsQueryValue.FieldByName('CostCount').AsInteger
+          then
+            prefix := '!!! ';
+            
+          exportData.WriteRow([
+            DM.adsQueryValue.FieldByName('LocalWriteTime').AsString,
+            DM.adsQueryValue.FieldByName('ProviderDocumentId').AsString,
+            DM.adsQueryValue.FieldByName('ProviderName').AsString,
+            prefix + DM.adsQueryValue.FieldByName('TotalSumm').AsString]);
+          DM.adsQueryValue.Next;
+        end;
+        
+      finally
+        exportData.Free;
+      end;
+
+      ShellExecute(
+        0,
+        'Open',
+        PChar(exportFile),
+        nil, nil, SW_SHOWNORMAL);
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
 end;
 
 end.

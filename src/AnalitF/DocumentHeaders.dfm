@@ -68,6 +68,14 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Caption = #1054#1090#1082#1088#1099#1090#1100' '#1087#1072#1087#1082#1080
       OnClick = spOpenFoldersClick
     end
+    object sbListToExcel: TSpeedButton
+      Left = 448
+      Top = 4
+      Width = 97
+      Height = 27
+      Caption = #1057#1087#1080#1089#1086#1082' '#1074' Excel'
+      OnClick = sbListToExcelClick
+    end
     object dtpDateFrom: TDateTimePicker
       Left = 127
       Top = 9
