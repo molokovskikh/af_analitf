@@ -167,6 +167,10 @@ private
 
   procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
       const AStatusText: String);
+
+  procedure ProcessImportData;
+  function RestoreDb : Boolean;
+  procedure FreeMySqlLibOnRestore;
 protected
   procedure Execute; override;
 public
@@ -179,8 +183,15 @@ implementation
 uses Exchange, DModule, AProc, Main, Retry, 
   LU_Tracer, Math, DBProc, U_frmSendLetter,
   Constant, U_ExchangeLog, U_SendArchivedOrdersThread, ULoginHelper,
-  Registry;
+  Registry,
+  MyClasses,
+  MyEmbConnection,
+  MySqlApi;
 
+type
+  TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
+  end;
+  
 { TExchangeThread }
 
 procedure TExchangeThread.SetStatus;
@@ -389,28 +400,7 @@ begin
 
       if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
       begin
-        TotalProgress := 50;
-        Synchronize( SetTotalProgress);
-        ExchangeParams.CriticalError := True;
-        CheckNewExe;
-        CheckNewFRF;
-        CheckNewMDB;
-        try
-          //DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
-          ImportData;
-        finally
-{$ifndef DEBUG}
-          //Надо перенести загрузку разобранных документов в другое место,
-          //т.к. после удаления файлов с разобранными документами не будет
-          { очищаем папку In }
-          DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
-{$endif}
-          //DM.adcUpdate.OnExecuteError := nil;
-        end;
-
-        DM.CheckDataIntegrity;
-
-        SetStatusText('Обновление завершено');
+        ProcessImportData;
       end;
 
       ImportComplete := True;
@@ -3463,6 +3453,153 @@ begin
       FirstResponseServer := True;
       SetStatusText(StatusBeforeFirst);
     end;
+end;
+
+procedure TExchangeThread.ProcessImportData;
+var
+  ProcessFatalMySqlError : Boolean;
+begin
+  TotalProgress := 50;
+  Synchronize( SetTotalProgress);
+  ExchangeParams.CriticalError := True;
+  CheckNewExe;
+  CheckNewFRF;
+  CheckNewMDB;
+  try
+    //DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
+    ProcessFatalMySqlError := False;
+    repeat
+    try
+      ImportData;
+      ProcessFatalMySqlError := False;
+    except
+      on EMyDb : EMyError do begin
+        if not ProcessFatalMySqlError and DatabaseController.IsFatalError(EMyDb) then begin
+          ProcessFatalMySqlError := True;
+          WriteExchangeLog('Exchange',
+            Format('Будем производить восстановление БД из-за ошибки: (%d) %s',
+              [EMyDb.ErrorCode, EMyDb.Message]));
+          if not RestoreDb then
+            raise;    
+        end
+        else
+          raise;
+      end;
+    end;
+    until not ProcessFatalMySqlError;
+  finally
+{$ifndef DEBUG}
+    //Надо перенести загрузку разобранных документов в другое место,
+    //т.к. после удаления файлов с разобранными документами не будет
+    { очищаем папку In }
+    DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+{$endif}
+    //DM.adcUpdate.OnExecuteError := nil;
+  end;
+
+  DM.CheckDataIntegrity;
+
+  SetStatusText('Обновление завершено');
+end;
+
+function TExchangeThread.RestoreDb : Boolean;
+var
+  FEmbConnection : TMyEmbConnection;
+  command : TMyQuery;
+  Restored : Boolean;
+begin
+  Result := False;
+  DM.MainConnection.Close;
+  try
+  Restored := False;
+  try
+    WriteExchangeLog('RestoreDb', 'Начали восстановление базы данных');
+
+    FreeMySqlLibOnRestore;
+    WriteExchangeLog('RestoreDb', 'Выгрузили библиотеку');
+
+    FEmbConnection := TMyEmbConnection.Create(nil);
+    FEmbConnection.Database := '';
+    FEmbConnection.Username := DM.MainConnection.Username;
+    FEmbConnection.DataDir := ExePath + SDirData;
+    FEmbConnection.Options := TMyEmbConnection(DM.MainConnection).Options;
+    FEmbConnection.Params.Clear;
+    FEmbConnection.Params.AddStrings(TMyEmbConnection(DM.MainConnection).Params);
+    FEmbConnection.LoginPrompt := False;
+
+    try
+
+      FEmbConnection.Open;
+      try
+        DatabaseController.CheckObjectsExists(FEmbConnection, False);
+        WriteExchangeLog('RestoreDb', 'Проверили объекты базы данных');
+
+        FEmbConnection.ExecSQL('use analitf', []);
+        DatabaseController.CreateViews(FEmbConnection);
+        command := TMyQuery.Create(FEmbConnection);
+        try
+          command.Connection := FEmbConnection;
+
+          command.SQL.Text := 'select * from analitf.pricesshow';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.params';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.clients';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.client';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.userinfo';
+          command.Open;
+          command.Close;
+        finally
+          command.Free;
+        end;
+      finally
+        FEmbConnection.Close;
+      end;
+      WriteExchangeLog('RestoreDb', 'Проверили подключение к новой базе данных');
+
+    finally
+      FEmbConnection.Free;
+    end;
+
+    DatabaseController.BackupDataTables();
+    WriteExchangeLog('RestoreDb', 'Произвели backup таблиц в TableBackup');
+
+    Restored := True;
+    WriteExchangeLog('RestoreDb', 'Восстановление базы данных успешно завершено');
+  except
+    on E : Exception do begin
+      Restored := False;
+      WriteExchangeLog('RestoreDb', 'Ошибка в нитке создания БД: ' + E.Message);
+    end;
+  end;
+  Result := Restored;
+  finally
+    DM.MainConnection.Open;
+  end;
+end;
+
+procedure TExchangeThread.FreeMySqlLibOnRestore;
+begin
+  //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
+  //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
+  if DM.MainConnection is TMyEmbConnection then
+  begin
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      WriteExchangeLog('FreeMySqlLibOnRestore',
+        Format('MySql Clients Count перед созданием базы данных: %d',
+          [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
+  end;
 end;
 
 initialization

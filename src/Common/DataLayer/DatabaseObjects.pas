@@ -741,11 +741,19 @@ var
           Format('Объект %s был восстановлен (Extended)', [table.LogObjectName]));
 
       if not NeedRepairFromBackup then begin
-        MyServerControl.RepairTable([rtExtended, rtUseFrm]);
-        NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
-        if NeedRepairFromBackup then
-          WriteExchangeLog('DatabaseController.CheckTable',
-            Format('Объект %s был восстановлен (Extended, UseFrm)', [table.LogObjectName]));
+        try
+          MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+          NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+          if NeedRepairFromBackup then
+            WriteExchangeLog('DatabaseController.CheckTable',
+              Format('Объект %s был восстановлен (Extended, UseFrm)', [table.LogObjectName]));
+        except
+          on E : Exception do begin
+            NeedRepairFromBackup := False;
+            WriteExchangeLog('DatabaseController.CheckTable',
+              Format('При восстановлении (Extended, UseFrm) объекта %s возникла ошибка: %s', [table.LogObjectName, E.Message]));
+          end;
+        end;
 
         if not NeedRepairFromBackup then begin
           if (table.RepairType in [dortCritical, dortBackup]) then begin
@@ -1200,13 +1208,14 @@ end;
 
 function TDatabaseController.IsFatalError(E: EMyError): Boolean;
 const
-  FatalErrorCodes : array[0..4] of Integer =
+  FatalErrorCodes : array[0..5] of Integer =
   (
     ER_NO_SUCH_TABLE,
     ER_GET_ERRNO,
     ER_CRASHED_ON_USAGE,
     ER_CRASHED_ON_REPAIR,
-    ER_CANT_CREATE_TABLE
+    ER_CANT_CREATE_TABLE,
+    ER_FILE_NOT_FOUND
   );
 var
   I : Integer;
