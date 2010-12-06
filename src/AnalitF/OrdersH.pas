@@ -118,6 +118,7 @@ type
     procedure OnDectinationClientClick(Sender: TObject);
     procedure OnChangeCheckBoxAllOrders;
     procedure OnChangeFilterAllOrders;
+    function GetActionDescription() : String;
   protected
     FOrdersForm: TOrdersForm;
     RestoreUnFrozenOrMoveToClient : Boolean;
@@ -652,8 +653,15 @@ begin
         Open;
         try
           { проверяем наличие прайс-листа }
-          if IsEmpty then
-            raise Exception.Create( 'Данный прайс-лист не найден');
+          if IsEmpty then begin
+            Strings.Append(
+              Format('Заказ №%s не возможно %s, т.к. прайс-листа %s - %s нет в обзоре.',
+              [adsOrdersHFormDisplayOrderId.AsString,
+              GetActionDescription(),
+              adsOrdersHFormPriceName.AsString,
+              adsOrdersHFormRegionName.AsString]));
+            Continue;  
+          end;
         finally
           Close;
         end;
@@ -693,7 +701,7 @@ begin
               AddWhere('(CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE)');
               ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
             end;
-          
+
             Open;
             FetchAll;
             IndexFieldNames := 'Cost ASC';
@@ -1064,6 +1072,17 @@ procedure TOrdersHForm.tmrFillReportTimer(Sender: TObject);
 begin
   tmrFillReport.Enabled := False;
   SetParameters;
+end;
+
+function TOrdersHForm.GetActionDescription: String;
+begin
+  if not RestoreUnFrozenOrMoveToClient then
+    Result := 'восстановить'
+  else
+    if InternalDestinationClientId = 0 then
+      Result := '"разморозить"'
+    else
+      Result := 'переместить';
 end;
 
 end.
