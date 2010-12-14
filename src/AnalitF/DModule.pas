@@ -536,7 +536,7 @@ type
     procedure GetClientInformation(
       var ClientName : String;
       var IsFutureClient : Boolean);
-    function GetClientNameAndAddress : String;
+    function GetEditNameAndAddress : String;
     function GetClearSendResultSql(ClientId : Int64) : String;
     function NeedUpdate800xToMySql : Boolean;
     function NeedUpdateToNewLibMySqlD : Boolean;
@@ -3701,16 +3701,9 @@ begin
   end;
 end;
 
-function TDM.GetClientNameAndAddress: String;
-var
-  ClientName : String;
-  IsFutureClient : Boolean;
+function TDM.GetEditNameAndAddress: String;
 begin
-  GetClientInformation(ClientName, IsFutureClient);
-  if IsFutureClient then
-    Result := ClientName + ', ' + adtClientsNAME.AsString
-  else
-    Result := ClientName + ', ' + adtClientsAddress.AsString;
+  Result := adtClientsEditName.AsString + ', ' + adtClientsAddress.AsString;
 end;
 
 procedure TDM.LoadVitallyImportantMarkups;

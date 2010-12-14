@@ -448,7 +448,7 @@ begin
     priceName := Trim(priceName);
 
     frVariables[ 'PrintEmptyTickets'] := TicketParams.PrintEmptyTickets;
-    frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+    frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
     frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
     frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
     frVariables[ 'TicketSignature'] := priceName;
@@ -589,7 +589,7 @@ begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
 
-  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
@@ -1159,7 +1159,7 @@ begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
 
-  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
@@ -1185,7 +1185,7 @@ begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
 
-  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
@@ -1430,7 +1430,7 @@ begin
     priceName := Trim(priceName);
 
     frVariables[ 'DeleteUnprintableElemnts'] := RackCardReportParams.DeleteUnprintableElemnts;
-    frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+    frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
     frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
     frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
     frVariables[ 'ProviderName'] := priceName;
