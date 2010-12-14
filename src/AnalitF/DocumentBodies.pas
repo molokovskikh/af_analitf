@@ -68,6 +68,8 @@ type
     sbPrintRackCard: TSpeedButton;
     sbEditRackCardParams: TSpeedButton;
     sbReestrToExcel: TSpeedButton;
+    lProviderDocumentId: TLabel;
+    dbtProviderDocumentId: TDBText;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);

@@ -86,7 +86,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       ParentFont = False
     end
     object lblRecordCount: TLabel
-      Left = 12
+      Left = 252
       Top = 29
       Width = 60
       Height = 13
@@ -99,7 +99,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       ParentFont = False
     end
     object dbtPositions: TDBText
-      Left = 75
+      Left = 315
       Top = 29
       Width = 62
       Height = 13
@@ -131,6 +131,33 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Width = 94
       Height = 13
       DataField = 'DocumentType'
+      DataSource = dsDocumentHeaders
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lProviderDocumentId: TLabel
+      Left = 11
+      Top = 29
+      Width = 89
+      Height = 13
+      Caption = #8470' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object dbtProviderDocumentId: TDBText
+      Left = 139
+      Top = 29
+      Width = 109
+      Height = 13
+      DataField = 'ProviderDocumentId'
       DataSource = dsDocumentHeaders
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
