@@ -9,6 +9,8 @@ uses
   GlobalParams;
 
 type
+  TTicketSize = (ttStandart, ttSmall);
+
   TTicketReportParams = class(TGlobalParams)
    public
     PrintEmptyTickets : Boolean;
@@ -22,6 +24,7 @@ type
     SignatureVisible : Boolean;
     SerialNumberVisible : Boolean;
     DocumentDateVisible : Boolean;
+    TicketSize : TTicketSize;
 
     DeleteUnprintableElemnts : Boolean;
     procedure ReadParams; override;
@@ -33,6 +36,8 @@ implementation
 { TTicketReportParams }
 
 procedure TTicketReportParams.ReadParams;
+var
+  ticketSizeInt : Integer;
 begin
   PrintEmptyTickets := GetParam('TicketReportPrintEmptyTickets');
   SizePercent := GetParam('TicketReportSizePercent');
@@ -46,6 +51,8 @@ begin
   SerialNumberVisible := GetParamDef('TicketReportSerialNumberVisible', True);
   DocumentDateVisible := GetParamDef('TicketReportDocumentDateVisible', True);
   DeleteUnprintableElemnts := GetParamDef('TicketReportDeleteUnprintableElemnts', False);
+  ticketSizeInt := GetParamDef('TicketReportTicketSize', 0);
+  TicketSize := TTicketSize(ticketSizeInt);
 end;
 
 procedure TTicketReportParams.SaveParams;
@@ -62,6 +69,7 @@ begin
   SaveParam('TicketReportSerialNumberVisible', SerialNumberVisible);
   SaveParam('TicketReportDocumentDateVisible', DocumentDateVisible);
   SaveParam('TicketReportDeleteUnprintableElemnts', DeleteUnprintableElemnts);
+  SaveParam('TicketReportTicketSize', Integer(TicketSize));
 end;
 
 end.
