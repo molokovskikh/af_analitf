@@ -3322,7 +3322,6 @@ var
   InputFileName : String;
   beforeWaybillCount,
   afterWaybillCount : Integer;
-  value : Variant;
 begin
   beforeWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
   if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
