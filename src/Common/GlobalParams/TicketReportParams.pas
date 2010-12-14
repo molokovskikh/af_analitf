@@ -9,7 +9,7 @@ uses
   GlobalParams;
 
 type
-  TTicketSize = (ttStandart, ttSmall);
+  TTicketSize = (tsStandart, tsSmall);
 
   TTicketReportParams = class(TGlobalParams)
    public

@@ -464,17 +464,22 @@ begin
     frVariables[ 'TicketSignature'] := priceName;
     frVariables[ 'DeleteUnprintableElemnts'] := TicketParams.DeleteUnprintableElemnts;
 
-    frVariables['ClientNameVisible'] := TicketParams.ClientNameVisible;
-    frVariables['ProductVisible'] := TicketParams.ProductVisible;
-    frVariables['CountryVisible'] := TicketParams.CountryVisible;
-    frVariables['ProducerVisible'] := TicketParams.ProducerVisible;
-    frVariables['PeriodVisible'] := TicketParams.PeriodVisible;
-    frVariables['ProviderDocumentIdVisible'] := TicketParams.ProviderDocumentIdVisible;
-    frVariables['SignatureVisible'] := TicketParams.SignatureVisible;
-    frVariables['SerialNumberVisible'] := TicketParams.SerialNumberVisible;
-    frVariables['DocumentDateVisible'] := TicketParams.DocumentDateVisible;
+    if TicketParams.TicketSize = tsStandart then begin
+      frVariables['ClientNameVisible'] := TicketParams.ClientNameVisible;
+      frVariables['ProductVisible'] := TicketParams.ProductVisible;
+      frVariables['CountryVisible'] := TicketParams.CountryVisible;
+      frVariables['ProducerVisible'] := TicketParams.ProducerVisible;
+      frVariables['PeriodVisible'] := TicketParams.PeriodVisible;
+      frVariables['ProviderDocumentIdVisible'] := TicketParams.ProviderDocumentIdVisible;
+      frVariables['SignatureVisible'] := TicketParams.SignatureVisible;
+      frVariables['SerialNumberVisible'] := TicketParams.SerialNumberVisible;
+      frVariables['DocumentDateVisible'] := TicketParams.DocumentDateVisible;
+    end;
 
-    DM.ShowFastReportWithSave('Ticket.frf', adsDocumentBodies, True);
+    DM.ShowFastReportWithSave(
+      IfThen(TicketParams.TicketSize = tsStandart, 'Ticket.frf', 'SmallTicket.frf'),
+      adsDocumentBodies,
+      True);
   finally
     TicketParams.Free;
   end;

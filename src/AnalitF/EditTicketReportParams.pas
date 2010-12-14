@@ -32,12 +32,15 @@ type
     cbSerialNumber : TCheckBox;
     cbDocumentDate : TCheckBox;
 
+    cbTicketSize : TComboBox;
+
     procedure CreateVisibleComponents;
     procedure AddBottomPanel;
     procedure FormCloseQuery(
       Sender: TObject;
       var CanClose: Boolean);
     function AddCheckBox(Top: Integer; Caption : String; Value : Boolean) : TCheckBox;
+    procedure SizeChange(Sender: TObject);
   public
     { Public declarations }
     TicketParams : TTicketReportParams;
@@ -116,12 +119,22 @@ begin
   pSettings.Caption := '';
   pSettings.BevelOuter := bvNone;
 
+  cbTicketSize := TComboBox.Create(Self);
+  cbTicketSize.Parent := pSettings;
+  cbTicketSize.Style := csDropDownList;
+  cbTicketSize.Items.Add('Стандартный размер');
+  cbTicketSize.Items.Add('Малый размер');
+  cbTicketSize.ItemIndex := Integer(TicketParams.TicketSize);
+  cbTicketSize.Width := Self.Canvas.TextWidth('Стандартный размер') + 50;
+  cbTicketSize.Left := 5;
+  cbTicketSize.Top := 5;
+
   cbPrintEmptyTickets := TCheckBox.Create(Self);
   cbPrintEmptyTickets.Parent := pSettings;
   cbPrintEmptyTickets.Caption := 'Печать "пустых" ценников';
   cbPrintEmptyTickets.Width := Self.Canvas.TextWidth(cbPrintEmptyTickets.Caption) + 50;
   cbPrintEmptyTickets.Left := 5;
-  cbPrintEmptyTickets.Top := 5;
+  cbPrintEmptyTickets.Top := 5 + cbTicketSize.Top + cbTicketSize.Height;
   cbPrintEmptyTickets.Checked := TicketParams.PrintEmptyTickets;
 
   cbDeleteUnprintableElemnts := TCheckBox.Create(Self);
@@ -159,6 +172,9 @@ begin
   Self.Height := pSettings.Height + pButton.Height + 20;
 
   pSettings.Align := alClient;
+
+  cbTicketSize.OnChange := SizeChange;
+  SizeChange(cbTicketSize);
 end;
 
 procedure TEditTicketReportParamsForm.FormCloseQuery(Sender: TObject;
@@ -166,6 +182,7 @@ procedure TEditTicketReportParamsForm.FormCloseQuery(Sender: TObject;
 begin
   if (ModalResult = mrOK) and CanClose
   then begin
+    TicketParams.TicketSize := TTicketSize(cbTicketSize.ItemIndex);
     TicketParams.PrintEmptyTickets := cbPrintEmptyTickets.Checked;
     //TicketParams.SizePercent := tbSizePercent.Position;
     TicketParams.ClientNameVisible := cbClientName.Checked;
@@ -195,6 +212,12 @@ procedure TEditTicketReportParamsForm.FormDestroy(Sender: TObject);
 begin
   TicketParams.Free;
   inherited;
+end;
+
+procedure TEditTicketReportParamsForm.SizeChange(Sender: TObject);
+begin
+  gbColumns.Enabled := cbTicketSize.ItemIndex = 0;
+  cbDeleteUnprintableElemnts.Enabled := cbTicketSize.ItemIndex = 0;
 end;
 
 end.
