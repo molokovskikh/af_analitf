@@ -70,6 +70,7 @@ type
     sbReestrToExcel: TSpeedButton;
     lProviderDocumentId: TLabel;
     dbtProviderDocumentId: TDBText;
+    sbWaybillToExcel: TSpeedButton;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -89,6 +90,7 @@ type
     procedure sbEditRackCardParamsClick(Sender: TObject);
     procedure sbReestrToExcelClick(Sender: TObject);
     procedure sbPrintRackCardClick(Sender: TObject);
+    procedure sbWaybillToExcelClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -1231,7 +1233,7 @@ const
   buttonInterval = 5;
   leftButton = 310;
 begin
-  if leftButton + 3*sbPrintTickets.Width + 3*buttonInterval + 2*sbEditAddress.Width + 2*buttonInterval > gbPrint.ClientWidth
+  if leftButton + 4*sbPrintTickets.Width + 3*buttonInterval + 2*sbEditAddress.Width + 2*buttonInterval > gbPrint.ClientWidth
   then begin
     //Расставляем по три в столбик
     sbPrintTickets.Left := leftButton;
@@ -1250,6 +1252,9 @@ begin
     sbPrintRackCard.Top := sbPrintInvoice.Top + sbPrintInvoice.Height + buttonInterval;
     sbReestrToExcel.Top := sbPrintRackCard.Top + sbPrintRackCard.Height + buttonInterval;
 
+    sbWaybillToExcel.Top := topButton;
+    sbWaybillToExcel.Left := sbPrintInvoice.Left + sbPrintInvoice.Width + buttonInterval;
+    
 
     sbEditAddress.Top := topButton;
     sbEditTicketReportParams.Top := sbEditAddress.Top + sbEditAddress.Height + buttonInterval;
@@ -1279,6 +1284,8 @@ begin
     sbPrintRackCard.Top := topButton;
     sbReestrToExcel.Top := sbPrintReestr.Top;
     
+    sbWaybillToExcel.Top := topButton;
+    sbWaybillToExcel.Left := sbPrintRackCard.Left + sbPrintRackCard.Width + buttonInterval;
 
     sbEditAddress.Top := topButton;
     sbEditTicketReportParams.Top := topButton;
@@ -1448,6 +1455,131 @@ begin
     DM.ShowFastReportWithSave('RackCard.frf', adsDocumentBodies, True);
   finally
     RackCardReportParams.Free;
+  end;
+end;
+
+procedure TDocumentBodiesForm.sbWaybillToExcelClick(Sender: TObject);
+var
+  LastId : Int64;
+  exportFile : String;
+  exportData : TDataExportAsXls;
+  rowNumber : Integer;
+begin
+  adsDocumentBodies.DisableControls;
+  LastId := adsDocumentBodiesId.Value;
+  try
+    exportFile := TDBGridHelper.GetTempFileToExport();
+
+    exportData := TDataExportAsXls.Create(exportFile);
+    try
+
+      exportData.WriteBlankRow;
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        '',
+        'Наименование организации: ' + DM.GetEditNameAndAddress
+        ]);
+      exportData.WriteRow([
+        '',
+        '',
+        'Отдел:',
+        '_______________________________________'
+        ]);
+      exportData.WriteRow([
+        'Требование №',
+        '_______________________',
+        '',
+        '',
+        '',
+        'Накладная №',
+        '_______________________'
+        ]);
+      exportData.WriteRow([
+        '',
+        'от "___"_________________20___г',
+        '',
+        '',
+        '',
+        '',
+        'от "___"_________________20___г'
+        ]);
+      exportData.WriteRow([
+        'Кому: Аптечный пункт',
+        '_______________________',
+        '',
+        '',
+        '',
+        'Через кого',
+        '_______________________'
+        ]);
+      exportData.WriteRow([
+        'Основание отпуска',
+        '_______________________',
+        '',
+        '',
+        '',
+        'Доверенность №_____',
+        'от "___"_________________20___г'
+        ]);
+      exportData.WriteBlankRow;
+
+      exportData.WriteRow([
+        '№ пп',
+        'Наименование и краткая характеристика товара',
+        'Серия товара Сертификат',
+        'Срок годности',
+        'Производитель',
+        'Цена без НДС, руб',
+        'Затребован.колич.',
+        'Опт. надб. %',
+        'Отпуск. цена пос-ка без НДС, руб',
+        'НДС пос-ка, руб',
+        'Отпуск. цена пос-ка с НДС, руб',
+        'Розн. торг. надб. %',
+        'Розн. цена за ед., руб',
+        'Кол-во',
+        'Розн. сумма, руб']);
+
+      adsDocumentBodies.First;
+      rowNumber := 1;
+      while not adsDocumentBodies.Eof do begin
+        exportData.WriteRow([
+          IntToStr(rowNumber),
+          adsDocumentBodiesProduct.AsString,
+          adsDocumentBodiesSerialNumber.AsString + ' ' + adsDocumentBodiesCertificates.AsString,
+          adsDocumentBodiesPeriod.AsString,
+          adsDocumentBodiesProducer.AsString,
+          adsDocumentBodiesProducerCost.AsString,
+          adsDocumentBodiesQuantity.AsString,
+          adsDocumentBodiesSupplierPriceMarkup.AsString,
+          adsDocumentBodiesSupplierCostWithoutNDS.AsString,
+          NDSField.AsString,
+          adsDocumentBodiesSupplierCost.AsString,
+          retailMarkupField.AsString,
+          retailPriceField.AsString,
+          adsDocumentBodiesQuantity.AsString,
+          retailSummField.AsString
+          ]);
+
+        Inc(rowNumber);
+        adsDocumentBodies.Next;
+      end;
+    finally
+      exportData.Free;
+    end;
+
+    ShellExecute(
+      0,
+      'Open',
+      PChar(exportFile),
+      nil, nil, SW_SHOWNORMAL);
+  finally
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+    adsDocumentBodies.EnableControls;
   end;
 end;
 

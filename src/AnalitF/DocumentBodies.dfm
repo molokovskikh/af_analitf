@@ -318,6 +318,14 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Caption = #1056#1077#1077#1089#1090#1088' '#1074' Excel'
       OnClick = sbReestrToExcelClick
     end
+    object sbWaybillToExcel: TSpeedButton
+      Left = 582
+      Top = 34
+      Width = 121
+      Height = 25
+      Caption = #1053#1072#1082#1083#1072#1076#1085#1072#1103' '#1074' Excel'
+      OnClick = sbWaybillToExcelClick
+    end
     object cbClearRetailPrice: TCheckBox
       Left = 8
       Top = 16
