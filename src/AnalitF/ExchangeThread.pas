@@ -3322,6 +3322,7 @@ var
   InputFileName : String;
   beforeWaybillCount,
   afterWaybillCount : Integer;
+  value : Variant;
 begin
   beforeWaybillCount := DM.QueryValue('select count(*) from analitf.DocumentHeaders;', [], []);
   if (GetFileSize(ExePath+SDirIn+'\DocumentHeaders.txt') > 0) then begin
@@ -3342,7 +3343,7 @@ begin
     DM.adcUpdate.Close;
     DM.adcUpdate.SQL.Text :=
       Format(
-      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s set Printed = 1;',
       [InputFileName,
        'DocumentBodies']);
     DM.adcUpdate.Execute;

@@ -71,6 +71,7 @@ type
     lProviderDocumentId: TLabel;
     dbtProviderDocumentId: TDBText;
     sbWaybillToExcel: TSpeedButton;
+    adsDocumentBodiesPrinted: TBooleanField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -285,6 +286,8 @@ begin
     dbgDocumentBodies.AutoFitColWidths := False;
     try
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Product', 'Наименование', 0);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Printed', 'Печатать', dbgDocumentBodies.Canvas.TextWidth('Печатать'), False);
+      column.Checkboxes := True;
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Номер сертификата', 0);
       column.Visible := False;
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'SerialNumber', 'Серия товара', 0);
@@ -435,6 +438,9 @@ var
   bracketIndex : Integer;
   TicketParams : TTicketReportParams;
 begin
+  adsDocumentBodies.DisableControls;
+  DBProc.SetFilter(adsDocumentBodies, 'Printed = True');
+  try
   TicketParams := TTicketReportParams.Create(DM.MainConnection);
   try
     priceNameVariant := DM.QueryValue(
@@ -471,6 +477,10 @@ begin
     DM.ShowFastReportWithSave('Ticket.frf', adsDocumentBodies, True);
   finally
     TicketParams.Free;
+  end;
+  finally
+    DBProc.SetFilter(adsDocumentBodies, '');
+    adsDocumentBodies.EnableControls;
   end;
 end;
 
@@ -1422,6 +1432,9 @@ var
   bracketIndex : Integer;
   RackCardReportParams : TRackCardReportParams;
 begin
+  adsDocumentBodies.DisableControls;
+  DBProc.SetFilter(adsDocumentBodies, 'Printed = True');
+  try
   RackCardReportParams := TRackCardReportParams.Create(DM.MainConnection);
   try
     priceNameVariant := DM.QueryValue(
@@ -1455,6 +1468,10 @@ begin
     DM.ShowFastReportWithSave('RackCard.frf', adsDocumentBodies, True);
   finally
     RackCardReportParams.Free;
+  end;
+  finally
+    DBProc.SetFilter(adsDocumentBodies, '');
+    adsDocumentBodies.EnableControls;
   end;
 end;
 

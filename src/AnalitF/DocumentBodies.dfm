@@ -433,7 +433,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'set'
       '  RetailMarkup     = :RetailMarkup,'
       '  ManualCorrection = :ManualCorrection,'
-      '  ManualRetailPrice = :ManualRetailPrice'
+      '  ManualRetailPrice = :ManualRetailPrice,'
+      '  Printed = :Printed'
       'where'
       '  dbodies.Id = :OLD_Id')
     SQLRefresh.Strings = (
@@ -512,6 +513,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesSerialNumber: TStringField
       FieldName = 'SerialNumber'
       Size = 50
+    end
+    object adsDocumentBodiesPrinted: TBooleanField
+      FieldName = 'Printed'
     end
   end
   object tmrVitallyImportantChange: TTimer

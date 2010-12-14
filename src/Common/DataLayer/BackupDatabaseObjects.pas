@@ -309,7 +309,7 @@ begin
 +'  `RetailMarkup` decimal(12,6) default null, '
 +'  `ManualCorrection` tinyint(1) unsigned not null default ''0'', '
 +'  `ManualRetailPrice` decimal(12,6) default null, '
-+'  `Printed` tinyint(1) unsigned default 1, '
++'  `Printed` tinyint(1) unsigned not null default ''1'', '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
 + GetTableOptions();
