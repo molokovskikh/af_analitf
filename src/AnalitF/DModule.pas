@@ -452,6 +452,8 @@ type
     procedure CompactDataBase();
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
       APreview: boolean = False; PrintDlg: boolean = True);
+    procedure ShowFastReportWithSave(FileName: string; DataSet: TDataSet = nil;
+      APreview: boolean = False; PrintDlg: boolean = True);
     procedure ShowOrderDetailsReport(
       OrderId  : Integer;
       Closed   : Boolean;
@@ -4462,6 +4464,20 @@ begin
       MainForm.actReceiveAll.Enabled := False;
       AProc.MessageBox('¬рем€, установленное на компьютере, старше времени последнего обновлени€ больше чем мес€ц.', MB_ICONERROR or MB_OK)
     end;
+end;
+
+procedure TDM.ShowFastReportWithSave(FileName: string; DataSet: TDataSet;
+  APreview, PrintDlg: boolean);
+var
+  oldButtons : TfrPreviewButtons;
+begin
+  oldButtons := frReport.PreviewButtons;
+  try
+    frReport.PreviewButtons := frReport.PreviewButtons + [pbSave];
+    ShowFastReport(FileName, DataSet, APreview, PrintDlg);
+  finally
+    frReport.PreviewButtons := oldButtons;
+  end;
 end;
 
 initialization

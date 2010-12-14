@@ -464,7 +464,7 @@ begin
     frVariables['SerialNumberVisible'] := TicketParams.SerialNumberVisible;
     frVariables['DocumentDateVisible'] := TicketParams.DocumentDateVisible;
 
-    DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
+    DM.ShowFastReportWithSave('Ticket.frf', adsDocumentBodies, True);
   finally
     TicketParams.Free;
   end;
@@ -604,7 +604,7 @@ begin
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
 
-  DM.ShowFastReport('Reestr.frf', adsDocumentBodies, True);
+  DM.ShowFastReportWithSave('Reestr.frf', adsDocumentBodies, True);
 end;
 
 procedure TDocumentBodiesForm.cbWaybillAsVitallyImportantClick(
@@ -1174,7 +1174,7 @@ begin
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
 
-  DM.ShowFastReport('Waybill.frf', adsDocumentBodies, True);
+  DM.ShowFastReportWithSave('Waybill.frf', adsDocumentBodies, True);
 end;
 
 procedure TDocumentBodiesForm.sbPrintInvoiceClick(Sender: TObject);
@@ -1203,7 +1203,7 @@ begin
   frVariables[ 'Получатель'] := '';
   frVariables[ 'АдресПолучателя'] := '';
 
-  DM.ShowFastReport('Invoice.frf', adsDocumentBodies, True);
+  DM.ShowFastReportWithSave('Invoice.frf', adsDocumentBodies, True);
 end;
 
 function TDocumentBodiesForm.GetMinProducerCost: Double;
@@ -1443,7 +1443,7 @@ begin
     frVariables['ProviderVisible'] := RackCardReportParams.ProviderVisible;
     frVariables['CostVisible'] := RackCardReportParams.CostVisible;
 
-    DM.ShowFastReport('RackCard.frf', adsDocumentBodies, True);
+    DM.ShowFastReportWithSave('RackCard.frf', adsDocumentBodies, True);
   finally
     RackCardReportParams.Free;
   end;
