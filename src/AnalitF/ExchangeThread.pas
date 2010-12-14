@@ -754,11 +754,9 @@ begin
 
     ExchangeParams.ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
     if ExchangeParams.ServerAddition <> ''
-    then begin
-      FUserMessageParams.UserMessage := ExchangeParams.ServerAddition;
-      FUserMessageParams.SaveParams;
-    end;
-    
+    then
+      FUserMessageParams.UpdateUserMessage(ExchangeParams.ServerAddition);
+
     { получаем имя удаленного файла }
     HostFileName := Res.Values[ 'URL'];
     NewZip := True;
@@ -3410,8 +3408,7 @@ begin
     InvokeResult := SOAP.SimpleInvoke('ConfirmUserMessage', FPostParams);
 
     if AnsiCompareText(InvokeResult, 'Res=Ok') = 0 then begin
-      FUserMessageParams.UserMessage := '';
-      FUserMessageParams.SaveParams;
+      FUserMessageParams.ConfirmedMessage;
     end
     else begin
       WriteExchangeLog('ConfirmUserMessage', 'При подтверждении сообщения возникла ошибка: ' + InvokeResult);

@@ -114,7 +114,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   DocumentHeaders,
   U_OrderBatchForm,
   SendWaybillTypes,
-  AddressController;
+  AddressController,
+  UserMessageParams;
 
 {$R *.DFM}
 
@@ -280,10 +281,7 @@ begin
 
   if Result and (Trim(GlobalExchangeParams.ServerAddition) <> '')
   then
-    AProc.MessageBoxEx(
-      GlobalExchangeParams.ServerAddition,
-      'Сообщение от АК "Инфорум"',
-      MB_OK or MB_ICONWARNING);
+    ShowUserMessage(DM.MainConnection);
 
   if Result and (( eaGetPrice in AExchangeActions) or
     ( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
