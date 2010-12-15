@@ -21,6 +21,7 @@ type
     function NeedConfirm : Boolean;
     procedure UpdateUserMessage(AUserMessage : String);
     procedure ConfirmedMessage();
+    function GetDisplayedMessage() : String;
   end;
 
   procedure ShowUserMessage(Connection : TCustomMyConnection);
@@ -33,6 +34,28 @@ procedure TUserMessageParams.ConfirmedMessage;
 begin
   UserMessage := '';
   SaveParams;
+end;
+
+function TUserMessageParams.GetDisplayedMessage: String;
+const
+  minLen = 40;
+var
+  sl : TStringList;
+  i : Integer;
+  len : Integer;
+begin
+  sl := TStringList.Create;
+  try
+    sl.Text := UserMessage;
+    for I := 0 to sl.Count-1 do begin
+      len := Length(sl[i]);
+      if len < minLen then
+        sl[i] := sl[i] + StringOfChar(' ', minLen - len);
+    end;
+    Result := sl.Text;
+  finally
+    sl.Free;
+  end;
 end;
 
 function TUserMessageParams.NeedConfirm: Boolean;
@@ -72,7 +95,7 @@ begin
   userMessage := TUserMessageParams.Create(Connection);
   try
     if AProc.MessageBoxEx(
-      userMessage.UserMessage,
+      userMessage.GetDisplayedMessage(),
       'Сообщение от АК "Инфорум"',
       MB_OK or MB_ICONWARNING) = IDOK
     then begin
