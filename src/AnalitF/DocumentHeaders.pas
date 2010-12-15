@@ -7,7 +7,9 @@ uses
   Dialogs, Child, ExtCtrls, ComCtrls, StdCtrls, GridsEh, DBGridEh,
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes,
   Buttons,
-  ShellAPI;
+  ShellAPI,
+  SupplierController,
+  U_frameFilterSuppliers, StrHlder;
 
 type
   TDocumentHeaderForm = class(TChildForm)
@@ -36,6 +38,8 @@ type
     spOpenFolders: TSpeedButton;
     adsDocumentHeadersLoadTime: TDateTimeField;
     sbListToExcel: TSpeedButton;
+    shDocumentHeaders: TStrHolder;
+    tmrChangeFilterSuppliers: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -48,8 +52,10 @@ type
     procedure dbgHeadersSortMarkingChanged(Sender: TObject);
     procedure spOpenFoldersClick(Sender: TObject);
     procedure sbListToExcelClick(Sender: TObject);
+    procedure tmrChangeFilterSuppliersTimer(Sender: TObject);
   private
     { Private declarations }
+    procedure OnChangeFilterSuppliers;
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
     procedure ProcessDocument;
@@ -57,8 +63,8 @@ type
     procedure DeleteDocuments;
   public
     { Public declarations }
-    procedure SetParameters;
-    procedure SetDateInterval;
+    frameFilterSuppliers : TframeFilterSuppliers;
+    procedure ShowHeaders;
   end;
 
   procedure ShowDocumentHeaders;
@@ -83,24 +89,23 @@ end;
 
 { TDocumentHeaderForm }
 
-procedure TDocumentHeaderForm.SetParameters;
-begin
-  adsDocumentHeaders.Close;
-
-  adsDocumentHeaders.ParamByName( 'ClientId').Value :=
-    DM.adtClients.FieldByName( 'ClientId').Value;
-  adsDocumentHeaders.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
-  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-  adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
-
-  adsDocumentHeaders.Open;
-end;
-
 procedure TDocumentHeaderForm.FormCreate(Sender: TObject);
 var
   Year, Month, Day: Word;
 begin
   inherited;
+
+  frameFilterSuppliers := TframeFilterSuppliers.AddFrame(
+    Self,
+    pTop,
+    spDelete.Left - 5,
+    pTop.Height,
+    OnChangeFilterSuppliers);
+  tmrChangeFilterSuppliers.Enabled := False;
+  tmrChangeFilterSuppliers.Interval := 500;
+
+  spDelete.Left := frameFilterSuppliers.Left + frameFilterSuppliers.Width + 5;
+  sbListToExcel.Left := spDelete.Left + spDelete.Width + 5;
 
   TDBGridHelper.RestoreColumnsLayout(dbgHeaders, Self.ClassName);
 
@@ -115,37 +120,14 @@ begin
   dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
   dtpDateTo.Date := Date;
 
-  SetParameters;
+  ShowHeaders;
 end;
 
 procedure TDocumentHeaderForm.dtpDateCloseUp(Sender: TObject);
 begin
-  SetDateInterval;
+  ShowHeaders;
   dbgHeaders.SetFocus;
 end;
-
-procedure TDocumentHeaderForm.SetDateInterval;
-begin
-  with adsDocumentHeaders do begin
-    ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
-    dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-    ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
-    Screen.Cursor:=crHourglass;
-    try
-      if Active then
-      begin
-        Close;
-        Open;
-      end
-      else
-        Open;
-    finally
-      Screen.Cursor:=crDefault;
-    end;
-  end;
-end;
-
-
 
 procedure TDocumentHeaderForm.dbgHeadersKeyDown(Sender: TObject;
   var Key: Word; Shift: TShiftState);
@@ -353,6 +335,44 @@ begin
   finally
     DM.adsQueryValue.Close;
   end;
+end;
+
+procedure TDocumentHeaderForm.OnChangeFilterSuppliers;
+begin
+  tmrChangeFilterSuppliers.Enabled := False;
+  tmrChangeFilterSuppliers.Enabled := True;
+end;
+
+procedure TDocumentHeaderForm.ShowHeaders;
+var
+  supplierFilter : String;
+begin
+  adsDocumentHeaders.Close;
+  
+  adsDocumentHeaders.SQL.Text := shDocumentHeaders.Strings.Text;
+
+  supplierFilter := GetSupplierController.GetFilter('p.FirmCode');
+  if supplierFilter <> '' then
+    adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' and ' + supplierFilter + ' '#13#10;
+
+  adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' order by dh.LoadTime DESC ';
+
+  adsDocumentHeaders.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').Value;
+  adsDocumentHeaders.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
+  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+  adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+
+  adsDocumentHeaders.Open;
+end;
+
+procedure TDocumentHeaderForm.tmrChangeFilterSuppliersTimer(
+  Sender: TObject);
+begin
+  tmrChangeFilterSuppliers.Enabled := False;
+  ShowHeaders;
 end;
 
 end.

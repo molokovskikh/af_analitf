@@ -13,7 +13,8 @@ uses
   U_Address,
   U_Offer,
   U_CurrentOrderHead,
-  U_CurrentOrderItem;
+  U_CurrentOrderItem,
+  U_Supplier;
 
 type
   TDBMapping = class
@@ -36,6 +37,8 @@ type
     class procedure SaveOrderItem(connection : TCustomMyConnection; currentOrderItem : TCurrentOrderItem);
 
     class function GetAddresses(connection : TCustomMyConnection) : TObjectList;
+
+    class function GetSuppliers(connection : TCustomMyConnection) : TObjectList;
   end;
 
 implementation
@@ -401,6 +404,44 @@ begin
     raise;
   end;
   Result := adsQueryValue;
+end;
+
+class function TDBMapping.GetSuppliers(
+  connection: TCustomMyConnection): TObjectList;
+var
+  dataSet : TMyQuery;
+  supplier : TSupplier;
+begin
+  dataSet := GetSqlDataSet(
+    connection,
+ 'select '
++'  FirmCode, '
++'  ShortName, '
++'  FullName '
++'from        '
++'    providers '
++'order by FullName',
+    [],
+    []);
+
+  Result := TObjectList.Create();
+  try
+    try
+      while not dataSet.Eof do begin
+        supplier := TSupplier.Create();
+        supplier.Id := dataSet['FirmCode'];
+        supplier.Name := VarToStr(dataSet['ShortName']);
+        supplier.FullName := VarToStr(dataSet['FullName']);
+        Result.Add(supplier);
+        dataSet.Next;
+      end;
+    finally
+      dataSet.Free;
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
 end;
 
 class procedure TDBMapping.SaveOrderItem(connection: TCustomMyConnection;

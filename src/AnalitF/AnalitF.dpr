@@ -125,7 +125,10 @@ uses
   UserMessageParams in '..\Common\GlobalParams\UserMessageParams.pas',
   RackCardReportParams in '..\Common\GlobalParams\RackCardReportParams.pas',
   EditRackCardReportParams in 'EditRackCardReportParams.pas' {EditRackCardReportParamsForm},
-  LU_TDataExportAsXls in '..\Common\Classes\LU_TDataExportAsXls.pas';
+  LU_TDataExportAsXls in '..\Common\Classes\LU_TDataExportAsXls.pas',
+  U_Supplier in '..\Common\Models\U_Supplier.pas',
+  SupplierController in 'BusinessLogic\SupplierController.pas',
+  U_frameFilterSuppliers in 'Views\U_frameFilterSuppliers.pas' {frameFilterSuppliers: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}

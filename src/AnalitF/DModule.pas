@@ -18,7 +18,8 @@ uses
   Registry,
   RegistryHelper,
   AddressController,
-  KeyboardHelper;
+  KeyboardHelper,
+  SupplierController;
 
 {
 Криптование
@@ -1036,6 +1037,7 @@ begin
   ClientChanged;
 
   GetAddressController.UpdateAddresses(MainConnection, DM.adtClientsCLIENTID.Value);
+  GetSupplierController.UpdateSuppliers(MainConnection);
 
   { устанавливаем параметры печати }
   frReport.Title := Application.Title;

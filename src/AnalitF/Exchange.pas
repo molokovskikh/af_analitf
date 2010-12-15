@@ -115,7 +115,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   U_OrderBatchForm,
   SendWaybillTypes,
   AddressController,
-  UserMessageParams;
+  UserMessageParams,
+  SupplierController;
 
 {$R *.DFM}
 
@@ -287,6 +288,7 @@ begin
     ( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then begin
     GetAddressController.UpdateAddresses(DM.MainConnection, DM.adtClientsCLIENTID.Value);
+    GetSupplierController.UpdateSuppliers(DM.MainConnection);
     AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
     if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
       AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);

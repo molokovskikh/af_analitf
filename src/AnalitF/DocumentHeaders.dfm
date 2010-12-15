@@ -207,8 +207,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       'where'
       '    (dh.ClientId = :ClientId)'
       'and (dh.LoadTime BETWEEN :DateFrom AND :DateTo)'
-      'and (p.FirmCode = dh.FirmCode)'
-      'order by dh.LoadTime DESC')
+      'and (p.FirmCode = dh.FirmCode)')
     Options.StrictUpdate = False
     Left = 64
     Top = 87
@@ -270,5 +269,34 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     DataSet = adsDocumentHeaders
     Left = 128
     Top = 111
+  end
+  object shDocumentHeaders: TStrHolder
+    Capacity = 12
+    Macros = <>
+    Left = 304
+    Top = 135
+    InternalVer = 1
+    StrData = (
+      ''
+      '73656c656374'
+      '64682e2a2c'
+      '64682e577269746554696d65206173204c6f63616c577269746554696d652c'
+      '702e46756c6c4e616d652061732050726f76696465724e616d65'
+      '66726f6d'
+      '2020446f63756d656e74486561646572732064682c'
+      '202070726f7669646572732070'
+      '7768657265'
+      '202020202864682e436c69656e744964203d203a436c69656e74496429'
+      
+        '616e64202864682e4c6f616454696d65204245545745454e203a446174654672' +
+        '6f6d20414e44203a44617465546f29'
+      '616e642028702e4669726d436f6465203d2064682e4669726d436f646529')
+  end
+  object tmrChangeFilterSuppliers: TTimer
+    Enabled = False
+    Interval = 3000
+    OnTimer = tmrChangeFilterSuppliersTimer
+    Left = 176
+    Top = 183
   end
 end
