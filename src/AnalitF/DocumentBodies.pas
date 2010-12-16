@@ -142,6 +142,7 @@ type
     procedure SetButtonPositions;
     procedure OnResizeForm(Sender: TObject);
     function  NeedReplaceButtons : Boolean;
+    function GetTotalSupplierSumm() : Double;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -603,10 +604,12 @@ end;
 procedure TDocumentBodiesForm.sbPrintReestrClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
+  totatSupplierSumm : Currency;
   V: array[0..0] of Variant;
 begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
+  totatSupplierSumm := GetTotalSupplierSumm();
 
   frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
@@ -622,6 +625,9 @@ begin
 
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
+
+  frVariables[ 'TotalSupplierSumm'] := totatSupplierSumm;
+  frVariables[ 'TotalSupplierSummText'] := AnsiLowerCase(MoneyToString(totatSupplierSumm, True, False));
 
   DM.ShowFastReportWithSave('Reestr.frf', adsDocumentBodies, True);
 end;
@@ -1173,10 +1179,12 @@ end;
 procedure TDocumentBodiesForm.sbPrintWaybillClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
+  totatSupplierSumm : Currency;
   V: array[0..0] of Variant;
 begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
+  totatSupplierSumm := GetTotalSupplierSumm();
 
   frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
@@ -1192,6 +1200,9 @@ begin
 
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
+
+  frVariables[ 'TotalSupplierSumm'] := totatSupplierSumm;
+  frVariables[ 'TotalSupplierSummText'] := AnsiLowerCase(MoneyToString(totatSupplierSumm, True, False));
 
   DM.ShowFastReportWithSave('Waybill.frf', adsDocumentBodies, True);
 end;
@@ -1601,6 +1612,25 @@ begin
   finally
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+function TDocumentBodiesForm.GetTotalSupplierSumm: Double;
+var
+  Mark: String;
+begin
+  Result := 0;
+  adsDocumentBodies.DisableControls;
+  Mark := adsDocumentBodies.Bookmark;
+  try
+    adsDocumentBodies.First;
+    while not adsDocumentBodies.Eof do begin
+      Result := Result + adsDocumentBodiesSupplierCost.Value * adsDocumentBodiesQuantity.Value; 
+      adsDocumentBodies.Next;
+    end;
+  finally
+    adsDocumentBodies.Bookmark := Mark;
     adsDocumentBodies.EnableControls;
   end;
 end;
