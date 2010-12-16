@@ -71,7 +71,13 @@ type
 
 implementation
 
-uses Main, DateUtils, DModule, AProc, Orders,
+uses
+  Main,
+  DateUtils,
+  StrUtils,
+  DModule,
+  AProc,
+  Orders,
   DBGridHelper,
   U_ExchangeLog,
   DBProc,
@@ -262,9 +268,12 @@ var
   exportFile : String;
   exportData : TDataExportAsXls;
   prefix : String;
+  supplierFilter : String;
 begin
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
+
+  supplierFilter := GetSupplierController.GetFilter('p.FirmCode');
 
   DM.adsQueryValue.SQL.Text := '' +
 ' select ' +
@@ -284,6 +293,7 @@ begin
 ' and (dh.DocumentType = 1) ' +
 ' and (p.FirmCode = dh.FirmCode) ' +
 ' and (dbodies.DocumentId = dh.Id) ' +
+IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') + 
 ' group by dh.Id ' +
 ' order by dh.LoadTime DESC ';
 
