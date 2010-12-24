@@ -385,7 +385,9 @@ begin
       LastCurrentSQL := adsSummary.SQL.Text;
       if adsSummary.Active then
         adsSummary.Close;
-      adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
+      adsSummary.SQL.Text :=
+        adsCurrentSummary.SQL.Text
+        + #13#10' and (CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
       adsSummary.Open;
       adsSummary.IndexFieldNames := 'SynonymName';
       DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);
