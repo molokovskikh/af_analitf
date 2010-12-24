@@ -146,7 +146,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'Period'
         Footers = <>
         MinWidth = 5
-        Title.Caption = #1057#1088#1086#1082'. '#1075#1086#1076#1085'.'
+        Title.Caption = #1057#1088#1086#1082' '#1075#1086#1076#1085'.'
         Title.TitleButton = True
         Width = 58
       end
@@ -230,7 +230,7 @@ object CoreFirmForm: TCoreFirmForm
         FieldName = 'LeaderPRICE'
         Footers = <>
         MinWidth = 5
-        Title.Caption = #1052#1080#1085'. '#1094#1077#1085#1072
+        Title.Caption = #1052#1080#1085'.'#1094#1077#1085#1072
         Title.TitleButton = True
         Width = 51
       end

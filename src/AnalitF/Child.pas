@@ -596,22 +596,40 @@ var
   synonymFirmColumn : TColumnEh;
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
+
+  procedure ChangeTitleCaption(FieldName, NewTitleCaption : String);
+  var
+    changedColumn : TColumnEh;
+  begin
+    changedColumn := ColumnByNameT(Grid, FieldName);
+    if Assigned(changedColumn) then
+      changedColumn.Title.Caption := NewTitleCaption;
+  end;
+
 begin
   Grid.AutoFitColWidths := False;
   try
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');
-  if Assigned(priceRetColumn) then
+  if Assigned(priceRetColumn) then begin
     priceRetColumn.Visible := False;
+    priceRetColumn.Title.Caption := 'Розн.цена';
+  end;
+
+  ChangeTitleCaption('Quantity', 'Остаток');
+  ChangeTitleCaption('OrderCost', 'Мин.сумма');
+  ChangeTitleCaption('MinOrderCount', 'Мин.кол-во');
 
   realCostColumn := ColumnByNameT(Grid, 'RealCost');
   if not Assigned(realCostColumn) then
     realCostColumn := ColumnByNameT(Grid, 'RealPrice');
 
   registryCostColumn := ColumnByNameT(Grid, 'RegistryCost');
-  if Assigned(registryCostColumn) then
+  if Assigned(registryCostColumn) then begin
     registryCostColumn.Visible := True;
+    registryCostColumn.Title.Caption := 'Реестр.цена';
+  end;
 
   synonymFirmColumn  := ColumnByNameT(Grid, 'SynonymFirm');
   if Assigned(synonymFirmColumn) then begin
@@ -623,7 +641,7 @@ begin
     if not Assigned(producerNameColumn) then begin
       producerNameColumn := TColumnEh(Grid.Columns.Insert(synonymFirmColumn.Index+1));
       producerNameColumn.FieldName := 'ProducerName';
-      producerNameColumn.Title.Caption := 'Кат. производитель';
+    producerNameColumn.Title.Caption := 'Кат.производитель';
       producerNameColumn.Visible := False;
       producerNameColumn.Width := Grid.Canvas.TextWidth(producerNameColumn.Title.Caption);
       if SortOnOrderGrid then
@@ -665,7 +683,7 @@ begin
     if not Assigned(maxProducerCostColumn) then begin
       maxProducerCostColumn := TColumnEh(Grid.Columns.Insert(producerCostColumn.Index));
       maxProducerCostColumn.FieldName := 'MaxProducerCost';
-      maxProducerCostColumn.Title.Caption := 'Пред. зарег. цена';
+      maxProducerCostColumn.Title.Caption := 'Пред.зарег.цена';
       maxProducerCostColumn.Width := Grid.Canvas.TextWidth('000.00');
       if SortOnOrderGrid then
         maxProducerCostColumn.Title.TitleButton := True;

@@ -20,7 +20,9 @@ uses
   ShellAPI,
   StrUtils,
   AlphaUtils,
-  U_framePosition;
+  U_framePosition,
+  AddressController,
+  U_frameFilterAddresses;
 
 type
   TItemToOrderStatus = (
@@ -73,6 +75,9 @@ type
     tmrUpdatePreviosOrders: TTimer;
     shCore: TStrHolder;
     tmrSearch: TTimer;
+    shStartClients: TStrHolder;
+    shEndClients: TStrHolder;
+    tmrFillReport: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tmRunBatchTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
@@ -82,6 +87,7 @@ type
     procedure tmrSearchTimer(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormHide(Sender: TObject);
+    procedure tmrFillReportTimer(Sender: TObject);
   private
     { Private declarations }
     BM : TBitmap;
@@ -119,8 +125,13 @@ type
       Shift: TShiftState);
     procedure ProducerStatusGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
+
+    procedure FillReport;
+    procedure OnChangeCheckBoxAllOrders;
+    procedure OnChangeFilterAllOrders;
   protected
     procedure OpenFile(Sender : TObject);
+    procedure SaveReport(Sender : TObject);
     procedure BatchReportGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure BatchReportCanInput(Sender: TObject; Value: Integer; var CanInput: Boolean);
@@ -133,10 +144,13 @@ type
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure dbgOrderBatchDblClick(Sender: TObject);
 
+    procedure SaveReportToFile(FileName : String);
   public
     { Public declarations }
 
     odBatch: TOpenDialog;
+
+    sdReport: TSaveDialog;
 
     eSearch : TEdit;
 
@@ -147,6 +161,7 @@ type
     spDelete : TSpeedButton;
     spGotoMNNButton : TSpeedButton;
     lEditRule : TLabel;
+    spSaveReport : TSpeedButton;
 
     pBottom : TPanel;
     pLegendAndComment : TPanel;
@@ -200,9 +215,12 @@ type
     CatalogMandatoryListField : TSmallintField;
     ProducerNameField : TStringField;
 
+    AddressNameField : TStringField;
+
     CurrentFilter : TFilterReport;
 
     framePosition : TframePosition;
+    frameFilterAddresses : TframeFilterAddresses;
 
     procedure ShowForm; override;
   end;
@@ -211,6 +229,7 @@ var
   OrderBatchForm: TOrderBatchForm;
   //Последний открытый каталог для отправки дефектуры
   LastUsedDir : String;
+  LastUsedSaveDir : String;
 
   procedure ShowOrderBatch;
 
@@ -228,7 +247,8 @@ uses
   DBProc,
   Exchange,
   NamesForms,
-  NetworkSettings;
+  NetworkSettings,
+  jbdbf;
 
 procedure ShowOrderBatch;
 var
@@ -265,7 +285,8 @@ procedure TOrderBatchForm.BindFields;
 begin
   dbgOrderBatch.DataSource := dsReport;
   dbmComment.DataSource := dsReport;
-  adsReport.Open;
+
+  FillReport;
 
   dbgHistory.DataSource := dsPreviosOrders;
 
@@ -344,7 +365,7 @@ begin
 
   TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
   TDBGridHelper.AddColumn(dbgCore, 'SynonymFirm', 'Производитель', 85);
-  column := TDBGridHelper.AddColumn(dbgCore, 'ProducerName', 'Кат. производитель', 50);
+  column := TDBGridHelper.AddColumn(dbgCore, 'ProducerName', 'Кат.производитель', 50);
   column.Visible := False;
   TDBGridHelper.AddColumn(dbgCore, 'Volume', 'Упаковка', 30);
   TDBGridHelper.AddColumn(dbgCore, 'Note', 'Примечание', 30);
@@ -363,11 +384,11 @@ begin
 }  
   TDBGridHelper.AddColumn(dbgCore, 'DatePrice', 'Дата прайс-листа', 'dd.mm.yyyy hh:nn', 103);
   TDBGridHelper.AddColumn(dbgCore, 'requestratio', 'Кратность', 20);
-  TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин. сумма', '0.00;;''''', 20);
-  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин. кол-во', 20);
-  TDBGridHelper.AddColumn(dbgCore, 'registrycost', 'Реестр. цена', '0.00;;''''', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'ordercost', 'Мин.сумма', '0.00;;''''', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'minordercount', 'Мин.кол-во', 20);
+  TDBGridHelper.AddColumn(dbgCore, 'registrycost', 'Реестр.цена', '0.00;;''''', 20);
 
-  TDBGridHelper.AddColumn(dbgCore, 'MaxProducerCost', 'Пред. зарег. цена', '0.00;;''''', 30);
+  TDBGridHelper.AddColumn(dbgCore, 'MaxProducerCost', 'Пред.зарег.цена', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'ProducerCost', 'Цена производителя', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'SupplierPriceMarkup', 'Наценка поставщика', '0.00;;''''', 30);
   TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', 20);
@@ -378,9 +399,9 @@ begin
   //column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
   column.Font.Style := [fsBold];
-  column := TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн. цена', '0.00;;''''', 62);
+  column := TDBGridHelper.AddColumn(dbgCore, 'PriceRet', 'Розн.цена', '0.00;;''''', 62);
   column.Visible := False;
-  column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Количество', 68);
+  column := TDBGridHelper.AddColumn(dbgCore, 'Quantity', 'Остаток', 68);
   column.Alignment := taRightJustify;
   {
   column := TDBGridHelper.AddColumn(dbgCore, 'OrderCount', 'Заказ', 47);
@@ -423,7 +444,7 @@ begin
   TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Есть производитель', Self.Canvas.TextWidth('Нет   '));
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymName', 'Наименование', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SynonymFirm', 'Производитель', 0);
-  column := TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerName', 'Кат. производитель', 0);
+  column := TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerName', 'Кат.производитель', 0);
   column.Visible := False;
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
   if DM.adtClientsAllowDelayOfPayment.Value then
@@ -484,6 +505,9 @@ begin
   odBatch := TOpenDialog.Create(Self);
   odBatch.Filter := 'Все файлы|*.*';
 
+  sdReport := TSaveDialog.Create(Self);
+  sdReport.Filter := 'Отчет|*.dbf|Все файлы|*.*';
+
   adsReport := TMyQuery.Create(Self);
   adsReport.Name := 'adsReport';
   adsReport.RefreshOptions := [roAfterUpdate];
@@ -524,6 +548,8 @@ begin
   CatalogMandatoryListField := TDataSetHelper.AddSmallintField(adsReport, 'CatalogMandatoryList');
 
   ProducerNameField := TDataSetHelper.AddStringField(adsReport, 'ProducerName');
+
+  AddressNameField := TDataSetHelper.AddStringField(adsReport, 'AddressName');
 
   for I := 1 to 25 do
     TDataSetHelper.AddStringField(adsReport, 'ServiceField' + IntToStr(i));
@@ -624,6 +650,15 @@ begin
   lEditRule.Font.Style := [fsBold, fsUnderline];
   lEditRule.Top := (pTop.Height - lEditRule.Height) div 2;
   lEditRule.Left := spLoad.Left + spLoad.Width + 5;
+
+  spSaveReport := TSpeedButton.Create(Self);
+  spSaveReport.Height := 25;
+  spSaveReport.Caption := 'Сохранить';
+  spSaveReport.Parent := pTop;
+  spSaveReport.Width := Self.Canvas.TextWidth(spSaveReport.Caption) + 20;
+  spSaveReport.Top := 5;
+  spSaveReport.Left := lEditRule.Left + lEditRule.Width + 5;
+  spSaveReport.OnClick := SaveReport;
 end;
 
 procedure TOrderBatchForm.CreateVisualComponent;
@@ -646,6 +681,17 @@ begin
   inherited;
 
   framePosition := TframePosition.AddFrame(Self, pGrid, dsReport, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  frameFilterAddresses := TframeFilterAddresses.AddFrame(
+    Self,
+    pTop,
+    spSaveReport.Left + spSaveReport.Width + 5,
+    pTop.Height,
+    dbgOrderBatch,
+    OnChangeCheckBoxAllOrders,
+    OnChangeFilterAllOrders);
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Interval := 500;
+  frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
 
   spDelete := TSpeedButton.Create(Self);
   spDelete.OnClick := DeletePositions;
@@ -1131,8 +1177,127 @@ begin
   end;
 end;
 
+procedure TOrderBatchForm.SaveReport(Sender: TObject);
+begin
+  sdReport.InitialDir := LastUsedSaveDir;
+  if sdReport.Execute then begin
+    LastUsedSaveDir := ExtractFileDir(sdReport.FileName);
+    SaveReportToFile(sdReport.FileName);
+  end;
+end;
+
+procedure TOrderBatchForm.SaveReportToFile(FileName: String);
+var
+  DBF: TjbDBF;
+begin
+  if FileExists(FileName) then
+    OSDeleteFile(FileName);
+
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+
+  DM.adsQueryValue.SQL.Text := ''
+  + ' select '
+  + '   left(ol.Code, 9) as Code, left(br.SynonymName, 100) as SynonymName, '
+  + '   ol.OrderCount, ol.Price, ol.Id, '
+  + '   left(br.ServiceField1, 6) as ServiceField1 '
+  + ' from BatchReport br, CurrentOrderLists ol '
+  + ' where '
+  + '  br.OrderListId is not null '
+  + '  and ol.Id = br.OrderListId '
+  + ' order by br.SynonymName';
+
+  DM.adsQueryValue.Open;
+
+  try
+
+    DBF := TjbDBF.Create(Self);
+
+    try
+      DBF.MakeField(1, 'KOD', 'c', 9, 0, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(2, 'NAME', 'c', 100, 0, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(3, 'KOL', 'F', 17, 3, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(4, 'PRICE', 'F', 17, 3, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(5, 'NOM_ZAK', 'c', 10, 0, '', dbfDuplicates, dbfAscending);
+      DBF.MakeField(6, 'NOM_AU', 'c', 6, 0, '', dbfDuplicates, dbfAscending);
+      DBF.CreateDB(FileName, 9+100+21+21+10+6, 6, 1251);
+
+      DBF.FileName := FileName;
+      if DBF.Open then begin
+        while not DM.adsQueryValue.Eof do begin
+          DBF.Store('KOD', ShortString(DM.adsQueryValue.FieldByName('Code').AsString));
+          DBF.Store('NAME', ShortString(DM.adsQueryValue.FieldByName('SynonymName').AsString));
+          DBF.Store('KOL', ShortString(DM.adsQueryValue.FieldByName('OrderCount').AsString));
+          DBF.Store('PRICE', ShortString(FloatToStr(DM.adsQueryValue.FieldByName('Price').AsFloat, DM.FFS)));
+          DBF.Store('NOM_ZAK', ShortString(DM.adsQueryValue.FieldByName('Id').AsString));
+          DBF.Store('NOM_AU', ShortString(DM.adsQueryValue.FieldByName('ServiceField1').AsString));
+          DBF.NewRecord;
+          DM.adsQueryValue.Next;
+        end;
+        DBF.Close;
+      end;
+
+    finally
+      DBF.Free;
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TOrderBatchForm.FillReport;
+var
+  lastOrderBy : String;
+  FilterSql : String;
+begin
+  adsReport.Close;
+  lastOrderBy := adsReport.GetOrderBy;
+
+  adsReport.SQL.Text := '';
+
+  if GetAddressController.ShowAllOrders then begin
+    FilterSql := GetAddressController.GetFilter('batchreport.ClientId');
+    adsReport.SQL.Text := shStartClients.Strings.Text;
+    if FilterSql <> '' then
+      adsReport.SQL.Text := adsReport.SQL.Text + ' where ' + FilterSql + #13#10;
+
+    adsReport.SQL.Text := adsReport.SQL.Text + ' union '#13#10 + shEndClients.Strings.Text;
+    if FilterSql <> '' then
+      adsReport.SQL.Text := adsReport.SQL.Text + ' and ' + FilterSql + #13#10;
+  end
+  else begin
+    adsReport.SQL.Text := shBatchReport.Strings.Text;
+    adsReport.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  end;
+
+  if (lastOrderBy <> '') then
+    adsReport.SetOrderBy(lastOrderBy)
+  else
+    adsReport.SetOrderBy('SynonymName');
+
+  adsReport.Open;
+end;
+
+procedure TOrderBatchForm.OnChangeCheckBoxAllOrders;
+begin
+
+end;
+
+procedure TOrderBatchForm.OnChangeFilterAllOrders;
+begin
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Enabled := True;
+end;
+
+procedure TOrderBatchForm.tmrFillReportTimer(Sender: TObject);
+begin
+  tmrFillReport.Enabled := False;
+  FillReport;
+end;
+
 initialization
   LastUsedDir := ExePath;
+  LastUsedSaveDir := ExePath;
 end.
 
 

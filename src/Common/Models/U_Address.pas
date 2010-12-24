@@ -11,7 +11,8 @@ type
     FullName : String;
     SelfAddressId : String;
     RegionCode : Int64;
-    ReqMask : Int64
+    ReqMask : Int64;
+    Selected : Boolean;
   end;
 
 implementation

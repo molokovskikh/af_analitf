@@ -192,9 +192,9 @@ begin
 
   TDBGridHelper.AddColumn(dbgMarkups, 'LeftLimit', 'Левая граница', '0.00;;', False);
   TDBGridHelper.AddColumn(dbgMarkups, 'RightLimit', 'Правая граница', '0.00;;', False);
-  TDBGridHelper.AddColumn(dbgMarkups, 'Markup', 'Наценка (%)', '0.00;;', False);
-  TDBGridHelper.AddColumn(dbgMarkups, 'MaxMarkup', 'Макс. наценка (%)', '0.00;;', False);
-  TDBGridHelper.AddColumn(dbgMarkups, 'MaxSupplierMarkup', 'Макс.нац.опт.звена (%)', '0.00;;', False);
+  TDBGridHelper.AddColumn(dbgMarkups, 'Markup', 'Наценка(%)', '0.00;;', False);
+  TDBGridHelper.AddColumn(dbgMarkups, 'MaxMarkup', 'Макс.наценка(%)', '0.00;;', False);
+  TDBGridHelper.AddColumn(dbgMarkups, 'MaxSupplierMarkup', 'Макс.нац.опт.звена(%)', '0.00;;', False);
 
   dbgMarkups.DataSource := dsMarkups;
 

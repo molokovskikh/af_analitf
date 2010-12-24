@@ -52,35 +52,46 @@ type
     adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
     adsDocumentBodiesSupplierCost: TFloatField;
     gbPrint: TGroupBox;
-    spPrintTickets: TSpeedButton;
+    sbPrintTickets: TSpeedButton;
     adsDocumentHeadersLocalWriteTime: TDateTimeField;
     cbClearRetailPrice: TCheckBox;
-    spPrintReestr: TSpeedButton;
+    sbPrintReestr: TSpeedButton;
     cbWaybillAsVitallyImportant: TCheckBox;
     adsDocumentBodiesQuantity: TIntegerField;
     sbEditAddress: TSpeedButton;
     adsDocumentBodiesVitallyImportant: TBooleanField;
     tmrVitallyImportantChange: TTimer;
     adsDocumentBodiesSerialNumber: TStringField;
-    spPrintWaybill: TSpeedButton;
-    spPrintInvoice: TSpeedButton;
+    sbPrintWaybill: TSpeedButton;
+    sbPrintInvoice: TSpeedButton;
     sbEditTicketReportParams: TSpeedButton;
+    sbPrintRackCard: TSpeedButton;
+    sbEditRackCardParams: TSpeedButton;
+    sbReestrToExcel: TSpeedButton;
+    lProviderDocumentId: TLabel;
+    dbtProviderDocumentId: TDBText;
+    sbWaybillToExcel: TSpeedButton;
+    adsDocumentBodiesPrinted: TBooleanField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
     procedure adsDocumentHeadersDocumentTypeGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
-    procedure spPrintTicketsClick(Sender: TObject);
+    procedure sbPrintTicketsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure cbClearRetailPriceClick(Sender: TObject);
-    procedure spPrintReestrClick(Sender: TObject);
+    procedure sbPrintReestrClick(Sender: TObject);
     procedure cbWaybillAsVitallyImportantClick(Sender: TObject);
     procedure sbEditAddressClick(Sender: TObject);
     procedure tmrVitallyImportantChangeTimer(Sender: TObject);
     procedure dbgDocumentBodiesSortMarkingChanged(Sender: TObject);
-    procedure spPrintWaybillClick(Sender: TObject);
-    procedure spPrintInvoiceClick(Sender: TObject);
+    procedure sbPrintWaybillClick(Sender: TObject);
+    procedure sbPrintInvoiceClick(Sender: TObject);
     procedure sbEditTicketReportParamsClick(Sender: TObject);
+    procedure sbEditRackCardParamsClick(Sender: TObject);
+    procedure sbReestrToExcelClick(Sender: TObject);
+    procedure sbPrintRackCardClick(Sender: TObject);
+    procedure sbWaybillToExcelClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -127,6 +138,11 @@ type
     procedure GridColumnsClick( Sender: TObject);
 
     function GetMinProducerCost() : Double;
+
+    procedure SetButtonPositions;
+    procedure OnResizeForm(Sender: TObject);
+    function  NeedReplaceButtons : Boolean;
+    function GetTotalSupplierSumm() : Double;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -143,7 +159,11 @@ uses
   U_ExchangeLog,
   LU_Tracer,
   EditTicketReportParams,
-  TicketReportParams;
+  TicketReportParams,
+  RackCardReportParams,
+  EditRackCardReportParams,
+  ShellAPI,
+  LU_TDataExportAsXls;
 
 {
   Стандартная фунция RoundTo работала не корректно
@@ -186,9 +206,14 @@ end;
 procedure TDocumentBodiesForm.ShowForm(DocumentId: Int64;
   ParentForm: TChildForm);
 begin
+  Self.OnResize := nil;
   FDocumentId := DocumentId;
   SetParams;
   inherited ShowForm;
+  if adsDocumentHeadersDocumentType.Value = 1 then begin
+    SetButtonPositions;
+    Self.OnResize := OnResizeForm;
+  end;
 end;
 
 procedure TDocumentBodiesForm.dbgDocumentBodiesKeyDown(Sender: TObject;
@@ -262,6 +287,8 @@ begin
     dbgDocumentBodies.AutoFitColWidths := False;
     try
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Product', 'Наименование', 0);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Printed', 'Печатать', dbgDocumentBodies.Canvas.TextWidth('Печатать'), False);
+      column.Checkboxes := True;
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Номер сертификата', 0);
       column.Visible := False;
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'SerialNumber', 'Серия товара', 0);
@@ -405,13 +432,16 @@ begin
     Text := RussianDocumentType[TDocumentType(Sender.AsInteger)];
 end;
 
-procedure TDocumentBodiesForm.spPrintTicketsClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintTicketsClick(Sender: TObject);
 var
   priceNameVariant : Variant;
   priceName : String;
   bracketIndex : Integer;
   TicketParams : TTicketReportParams;
 begin
+  adsDocumentBodies.DisableControls;
+  DBProc.SetFilter(adsDocumentBodies, 'Printed = True');
+  try
   TicketParams := TTicketReportParams.Create(DM.MainConnection);
   try
     priceNameVariant := DM.QueryValue(
@@ -429,21 +459,34 @@ begin
     priceName := Trim(priceName);
 
     frVariables[ 'PrintEmptyTickets'] := TicketParams.PrintEmptyTickets;
-    frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+    frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
     frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
     frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
     frVariables[ 'TicketSignature'] := priceName;
+    frVariables[ 'DeleteUnprintableElemnts'] := TicketParams.DeleteUnprintableElemnts;
 
-    frVariables['ClientNameVisible'] := TicketParams.ClientNameVisible;
-    frVariables['ProductVisible'] := TicketParams.ProductVisible;
-    frVariables['CountryVisible'] := TicketParams.CountryVisible;
-    frVariables['ProducerVisible'] := TicketParams.ProducerVisible;
-    frVariables['PeriodVisible'] := TicketParams.PeriodVisible;
-    frVariables['ProviderDocumentIdVisible'] := TicketParams.ProviderDocumentIdVisible;
+    if TicketParams.TicketSize = tsStandart then begin
+      frVariables['ClientNameVisible'] := TicketParams.ClientNameVisible;
+      frVariables['ProductVisible'] := TicketParams.ProductVisible;
+      frVariables['CountryVisible'] := TicketParams.CountryVisible;
+      frVariables['ProducerVisible'] := TicketParams.ProducerVisible;
+      frVariables['PeriodVisible'] := TicketParams.PeriodVisible;
+      frVariables['ProviderDocumentIdVisible'] := TicketParams.ProviderDocumentIdVisible;
+      frVariables['SignatureVisible'] := TicketParams.SignatureVisible;
+      frVariables['SerialNumberVisible'] := TicketParams.SerialNumberVisible;
+      frVariables['DocumentDateVisible'] := TicketParams.DocumentDateVisible;
+    end;
 
-    DM.ShowFastReport('Ticket.frf', adsDocumentBodies, True);
+    DM.ShowFastReportWithSave(
+      IfThen(TicketParams.TicketSize = tsStandart, 'Ticket.frf', 'SmallTicket.frf'),
+      adsDocumentBodies,
+      True);
   finally
     TicketParams.Free;
+  end;
+  finally
+    DBProc.SetFilter(adsDocumentBodies, '');
+    adsDocumentBodies.EnableControls;
   end;
 end;
 
@@ -558,15 +601,17 @@ begin
   RecalcDocument;
 end;
 
-procedure TDocumentBodiesForm.spPrintReestrClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintReestrClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
+  totatSupplierSumm : Currency;
   V: array[0..0] of Variant;
 begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
+  totatSupplierSumm := GetTotalSupplierSumm();
 
-  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
@@ -581,7 +626,10 @@ begin
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
 
-  DM.ShowFastReport('Reestr.frf', adsDocumentBodies, True);
+  frVariables[ 'TotalSupplierSumm'] := totatSupplierSumm;
+  frVariables[ 'TotalSupplierSummText'] := AnsiLowerCase(MoneyToString(totatSupplierSumm, True, False));
+
+  DM.ShowFastReportWithSave('Reestr.frf', adsDocumentBodies, True);
 end;
 
 procedure TDocumentBodiesForm.cbWaybillAsVitallyImportantClick(
@@ -672,6 +720,7 @@ var
   LastId : Int64;
   RecalcCount : Integer;
   blockedWaybillAsVitallyImportant : Boolean;
+  LastSort : String;
 begin
   //retailPriceField.OnChange := nil;
   //retailMarkupField.OnChange := nil;
@@ -682,8 +731,11 @@ begin
   adsDocumentBodies.DisableControls;
   try
     LastId := adsDocumentBodiesId.Value;
+    LastSort := adsDocumentBodies.IndexFieldNames;
+    adsDocumentBodies.IndexFieldNames := '';
     adsDocumentBodies.Close;
     adsDocumentBodies.Open;
+    adsDocumentBodies.First;
     while not adsDocumentBodies.Eof do begin
       if not adsDocumentBodiesVitallyImportant.IsNull then
         blockedWaybillAsVitallyImportant := True;
@@ -693,6 +745,9 @@ begin
       adsDocumentBodies.Next;
       Inc(RecalcCount);
     end;
+
+    if LastSort <> '' then
+      adsDocumentBodies.IndexFieldNames := LastSort;
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
 
@@ -1121,15 +1176,17 @@ begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TDocumentBodiesForm.spPrintWaybillClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintWaybillClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
+  totatSupplierSumm : Currency;
   V: array[0..0] of Variant;
 begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
+  totatSupplierSumm := GetTotalSupplierSumm();
 
-  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
@@ -1144,10 +1201,13 @@ begin
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
 
-  DM.ShowFastReport('Waybill.frf', adsDocumentBodies, True);
+  frVariables[ 'TotalSupplierSumm'] := totatSupplierSumm;
+  frVariables[ 'TotalSupplierSummText'] := AnsiLowerCase(MoneyToString(totatSupplierSumm, True, False));
+
+  DM.ShowFastReportWithSave('Waybill.frf', adsDocumentBodies, True);
 end;
 
-procedure TDocumentBodiesForm.spPrintInvoiceClick(Sender: TObject);
+procedure TDocumentBodiesForm.sbPrintInvoiceClick(Sender: TObject);
 var
   totalRetailSumm : Currency;
   V: array[0..0] of Variant;
@@ -1155,7 +1215,7 @@ begin
   DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
 
-  frVariables[ 'ClientName'] := DM.GetClientNameAndAddress;
+  frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
@@ -1173,7 +1233,7 @@ begin
   frVariables[ 'Получатель'] := '';
   frVariables[ 'АдресПолучателя'] := '';
 
-  DM.ShowFastReport('Invoice.frf', adsDocumentBodies, True);
+  DM.ShowFastReportWithSave('Invoice.frf', adsDocumentBodies, True);
 end;
 
 function TDocumentBodiesForm.GetMinProducerCost: Double;
@@ -1191,6 +1251,388 @@ procedure TDocumentBodiesForm.sbEditTicketReportParamsClick(
   Sender: TObject);
 begin
   ShowEditTicketReportParams;
+end;
+
+procedure TDocumentBodiesForm.SetButtonPositions;
+const
+  topButton = 12;
+  buttonInterval = 5;
+  leftButton = 310;
+begin
+  if leftButton + 4*sbPrintTickets.Width + 3*buttonInterval + 2*sbEditAddress.Width + 2*buttonInterval > gbPrint.ClientWidth
+  then begin
+    //Расставляем по три в столбик
+    sbPrintTickets.Left := leftButton;
+    sbPrintReestr.Left := sbPrintTickets.Left;
+    sbPrintWaybill.Left := sbPrintTickets.Left;
+
+    sbPrintInvoice.Left := sbPrintTickets.Left + sbPrintTickets.Width + buttonInterval;
+    sbPrintRackCard.Left := sbPrintInvoice.Left;
+    sbReestrToExcel.Left := sbPrintInvoice.Left;
+
+    sbPrintTickets.Top := topButton;
+    sbPrintReestr.Top := sbPrintTickets.Top + sbPrintTickets.Height + buttonInterval;
+    sbPrintWaybill.Top := sbPrintReestr.Top + sbPrintReestr.Height + buttonInterval;
+
+    sbPrintInvoice.Top := topButton;
+    sbPrintRackCard.Top := sbPrintInvoice.Top + sbPrintInvoice.Height + buttonInterval;
+    sbReestrToExcel.Top := sbPrintRackCard.Top + sbPrintRackCard.Height + buttonInterval;
+
+    sbWaybillToExcel.Top := topButton;
+    sbWaybillToExcel.Left := sbPrintInvoice.Left + sbPrintInvoice.Width + buttonInterval;
+    
+
+    sbEditAddress.Top := topButton;
+    sbEditTicketReportParams.Top := sbEditAddress.Top + sbEditAddress.Height + buttonInterval;
+    sbEditRackCardParams.Top := sbEditTicketReportParams.Top + sbEditTicketReportParams.Height + buttonInterval;
+
+    sbEditAddress.Left := gbPrint.ClientWidth - buttonInterval - sbEditAddress.Width;
+    sbEditTicketReportParams.Left := sbEditAddress.Left;
+    sbEditRackCardParams.Left := sbEditTicketReportParams.Left;
+  end
+  else begin
+    //Расставляем по два в столбик
+    sbPrintTickets.Left := leftButton;
+    sbPrintReestr.Left := sbPrintTickets.Left;
+    
+    sbPrintWaybill.Left := sbPrintTickets.Left + sbPrintTickets.Width + buttonInterval;
+    sbPrintInvoice.Left := sbPrintWaybill.Left;
+
+    sbPrintRackCard.Left := sbPrintInvoice.Left + sbPrintInvoice.Width + buttonInterval;
+    sbReestrToExcel.Left := sbPrintRackCard.Left;
+
+    sbPrintTickets.Top := topButton;
+    sbPrintReestr.Top := sbPrintTickets.Top + sbPrintTickets.Height + buttonInterval;
+
+    sbPrintWaybill.Top := topButton;
+    sbPrintInvoice.Top := sbPrintReestr.Top;
+
+    sbPrintRackCard.Top := topButton;
+    sbReestrToExcel.Top := sbPrintReestr.Top;
+    
+    sbWaybillToExcel.Top := topButton;
+    sbWaybillToExcel.Left := sbPrintRackCard.Left + sbPrintRackCard.Width + buttonInterval;
+
+    sbEditAddress.Top := topButton;
+    sbEditTicketReportParams.Top := topButton;
+    sbEditRackCardParams.Top := sbEditTicketReportParams.Top + sbEditTicketReportParams.Height + buttonInterval;
+    sbEditTicketReportParams.Left := gbPrint.ClientWidth - buttonInterval - sbEditTicketReportParams.Width;
+    sbEditRackCardParams.Left := sbEditTicketReportParams.Left;
+    sbEditAddress.Left := sbEditTicketReportParams.Left - buttonInterval - sbEditAddress.Width;
+  end;
+
+  gbPrint.ClientHeight := sbEditRackCardParams.Top + sbEditRackCardParams.Height + buttonInterval;
+end;
+
+function TDocumentBodiesForm.NeedReplaceButtons: Boolean;
+begin
+  Result := True;
+end;
+
+procedure TDocumentBodiesForm.OnResizeForm(Sender: TObject);
+begin
+  if NeedReplaceButtons then
+    SetButtonPositions;
+end;
+
+procedure TDocumentBodiesForm.sbEditRackCardParamsClick(Sender: TObject);
+begin
+  ShowEditRackCardReportParams();
+end;
+
+procedure TDocumentBodiesForm.sbReestrToExcelClick(Sender: TObject);
+var
+  LastId : Int64;
+  exportFile : String;
+  exportData : TDataExportAsXls;
+  rowNumber : Integer;
+begin
+  adsDocumentBodies.DisableControls;
+  LastId := adsDocumentBodiesId.Value;
+  try
+    exportFile := TDBGridHelper.GetTempFileToExport();
+
+    exportData := TDataExportAsXls.Create(exportFile);
+    try
+
+      exportData.WriteBlankRow;
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        'Реестр'
+        ]);
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        'розничных цен на лекарственные средства и изделия медицинского назначения,'
+        ]);
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        Format('полученные от %s-по счету (накладной) №%s от %s',
+          [adsDocumentHeadersProviderName.AsString,
+           adsDocumentHeadersProviderDocumentId.AsString,
+           DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime)])
+        ]);
+      exportData.WriteBlankRow;
+      
+      exportData.WriteRow([
+        '№ пп',
+        'Наименование',
+        'Серия товара',
+        'Срок годности',
+        'Производитель',
+        'Цена без НДС, руб',
+        'Цена ГР, руб',
+        'Опт. надб. %',
+        'Отпуск. цена пос-ка без НДС, руб',
+        'НДС пос-ка, руб',
+        'Отпуск. цена пос-ка с НДС, руб',
+        'Розн. торг. надб. %',
+        'Розн. цена за ед., руб',
+        'Кол-во',
+        'Розн. сумма, руб']);
+
+      adsDocumentBodies.First;
+      rowNumber := 1;
+      while not adsDocumentBodies.Eof do begin
+        exportData.WriteRow([
+          IntToStr(rowNumber),
+          adsDocumentBodiesProduct.AsString,
+          adsDocumentBodiesSerialNumber.AsString,
+          adsDocumentBodiesPeriod.AsString,
+          adsDocumentBodiesProducer.AsString,
+          adsDocumentBodiesProducerCost.AsString,
+          adsDocumentBodiesRegistryCost.AsString,
+          adsDocumentBodiesSupplierPriceMarkup.AsString,
+          adsDocumentBodiesSupplierCostWithoutNDS.AsString,
+          NDSField.AsString,
+          adsDocumentBodiesSupplierCost.AsString,
+          retailMarkupField.AsString,
+          retailPriceField.AsString,
+          adsDocumentBodiesQuantity.AsString,
+          retailSummField.AsString
+          ]);
+
+        Inc(rowNumber);
+        adsDocumentBodies.Next;
+      end;
+    finally
+      exportData.Free;
+    end;
+
+    ShellExecute(
+      0,
+      'Open',
+      PChar(exportFile),
+      nil, nil, SW_SHOWNORMAL);
+  finally
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.sbPrintRackCardClick(Sender: TObject);
+var
+  priceNameVariant : Variant;
+  priceName : String;
+  bracketIndex : Integer;
+  RackCardReportParams : TRackCardReportParams;
+begin
+  adsDocumentBodies.DisableControls;
+  DBProc.SetFilter(adsDocumentBodies, 'Printed = True');
+  try
+  RackCardReportParams := TRackCardReportParams.Create(DM.MainConnection);
+  try
+    priceNameVariant := DM.QueryValue(
+      'select PriceName from pricesdata where FirmCode = ' + adsDocumentHeadersFirmCode.AsString + ' limit 1',
+      [],
+      []);
+    if not VarIsNull(priceNameVariant) and (VarIsStr(priceNameVariant)) then begin
+      priceName := priceNameVariant;
+      bracketIndex := Pos('(',priceName);
+      if bracketIndex > 0 then
+        priceName := Copy(priceName, 1, bracketIndex -1);
+    end
+    else
+      priceName := adsDocumentHeadersProviderName.AsString;
+    priceName := Trim(priceName);
+
+    frVariables[ 'DeleteUnprintableElemnts'] := RackCardReportParams.DeleteUnprintableElemnts;
+    frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
+    frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+    frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+    frVariables[ 'ProviderName'] := priceName;
+
+    frVariables['ProductVisible'] := RackCardReportParams.ProductVisible;
+    frVariables['ProducerVisible'] := RackCardReportParams.ProducerVisible;
+    frVariables['SerialNumberVisible'] := RackCardReportParams.SerialNumberVisible;
+    frVariables['PeriodVisible'] := RackCardReportParams.PeriodVisible;
+    frVariables['QuantityVisible'] := RackCardReportParams.QuantityVisible;
+    frVariables['ProviderVisible'] := RackCardReportParams.ProviderVisible;
+    frVariables['CostVisible'] := RackCardReportParams.CostVisible;
+
+    DM.ShowFastReportWithSave('RackCard.frf', adsDocumentBodies, True);
+  finally
+    RackCardReportParams.Free;
+  end;
+  finally
+    DBProc.SetFilter(adsDocumentBodies, '');
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.sbWaybillToExcelClick(Sender: TObject);
+var
+  LastId : Int64;
+  exportFile : String;
+  exportData : TDataExportAsXls;
+  rowNumber : Integer;
+begin
+  adsDocumentBodies.DisableControls;
+  LastId := adsDocumentBodiesId.Value;
+  try
+    exportFile := TDBGridHelper.GetTempFileToExport();
+
+    exportData := TDataExportAsXls.Create(exportFile);
+    try
+
+      exportData.WriteBlankRow;
+      exportData.WriteRow([
+        '',
+        '',
+        '',
+        '',
+        '',
+        'Наименование организации: ' + DM.GetEditNameAndAddress
+        ]);
+      exportData.WriteRow([
+        '',
+        '',
+        'Отдел:',
+        '_______________________________________'
+        ]);
+      exportData.WriteRow([
+        'Требование №',
+        '_______________________',
+        '',
+        '',
+        '',
+        'Накладная №',
+        '_______________________'
+        ]);
+      exportData.WriteRow([
+        '',
+        'от "___"_________________20___г',
+        '',
+        '',
+        '',
+        '',
+        'от "___"_________________20___г'
+        ]);
+      exportData.WriteRow([
+        'Кому: Аптечный пункт',
+        '_______________________',
+        '',
+        '',
+        '',
+        'Через кого',
+        '_______________________'
+        ]);
+      exportData.WriteRow([
+        'Основание отпуска',
+        '_______________________',
+        '',
+        '',
+        '',
+        'Доверенность №_____',
+        'от "___"_________________20___г'
+        ]);
+      exportData.WriteBlankRow;
+
+      exportData.WriteRow([
+        '№ пп',
+        'Наименование и краткая характеристика товара',
+        'Серия товара Сертификат',
+        'Срок годности',
+        'Производитель',
+        'Цена без НДС, руб',
+        'Затребован.колич.',
+        'Опт. надб. %',
+        'Отпуск. цена пос-ка без НДС, руб',
+        'НДС пос-ка, руб',
+        'Отпуск. цена пос-ка с НДС, руб',
+        'Розн. торг. надб. %',
+        'Розн. цена за ед., руб',
+        'Кол-во',
+        'Розн. сумма, руб']);
+
+      adsDocumentBodies.First;
+      rowNumber := 1;
+      while not adsDocumentBodies.Eof do begin
+        exportData.WriteRow([
+          IntToStr(rowNumber),
+          adsDocumentBodiesProduct.AsString,
+          adsDocumentBodiesSerialNumber.AsString + ' ' + adsDocumentBodiesCertificates.AsString,
+          adsDocumentBodiesPeriod.AsString,
+          adsDocumentBodiesProducer.AsString,
+          adsDocumentBodiesProducerCost.AsString,
+          adsDocumentBodiesQuantity.AsString,
+          adsDocumentBodiesSupplierPriceMarkup.AsString,
+          adsDocumentBodiesSupplierCostWithoutNDS.AsString,
+          NDSField.AsString,
+          adsDocumentBodiesSupplierCost.AsString,
+          retailMarkupField.AsString,
+          retailPriceField.AsString,
+          adsDocumentBodiesQuantity.AsString,
+          retailSummField.AsString
+          ]);
+
+        Inc(rowNumber);
+        adsDocumentBodies.Next;
+      end;
+    finally
+      exportData.Free;
+    end;
+
+    ShellExecute(
+      0,
+      'Open',
+      PChar(exportFile),
+      nil, nil, SW_SHOWNORMAL);
+  finally
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+function TDocumentBodiesForm.GetTotalSupplierSumm: Double;
+var
+  Mark: String;
+begin
+  Result := 0;
+  adsDocumentBodies.DisableControls;
+  Mark := adsDocumentBodies.Bookmark;
+  try
+    adsDocumentBodies.First;
+    while not adsDocumentBodies.Eof do begin
+      Result := Result + adsDocumentBodiesSupplierCost.Value * adsDocumentBodiesQuantity.Value; 
+      adsDocumentBodies.Next;
+    end;
+  finally
+    adsDocumentBodies.Bookmark := Mark;
+    adsDocumentBodies.EnableControls;
+  end;
 end;
 
 end.

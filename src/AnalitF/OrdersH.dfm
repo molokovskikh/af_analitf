@@ -325,7 +325,7 @@ inherited OrdersHForm: TOrdersHForm
                 EditButtons = <>
                 FieldName = 'MinReq'
                 Footers = <>
-                Title.Caption = #1052#1080#1085'. '#1089#1091#1084#1084#1072
+                Title.Caption = #1052#1080#1085'.'#1089#1091#1084#1084#1072
                 Title.TitleButton = True
               end
               item
@@ -723,9 +723,13 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.send = 1'
       '     AND PostedOrderLists.OrderCount>0'
       '  ) '
-      'as sumbycurrentweek'
+      'as sumbycurrentweek,'
+      '  c.Name as AddressName'
       'FROM'
       '   CurrentOrderHeads'
+      
+        '   inner join clients c on c.ClientId = CurrentOrderHeads.Client' +
+        'Id'
       '   inner join CurrentOrderLists on '
       
         '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
@@ -885,6 +889,9 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormFrozen: TBooleanField
       FieldName = 'Frozen'
+    end
+    object adsOrdersHFormAddressName: TStringField
+      FieldName = 'AddressName'
     end
   end
   object adsCore: TMyQuery
@@ -1222,9 +1229,13 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.Closed = 1'
       '     AND header.send = 1'
       '     AND PostedOrderLists.OrderCount>0'
-      '  ) as sumbycurrentweek'
+      '  ) as sumbycurrentweek,'
+      '  c.Name as AddressName'
       'FROM'
       '   CurrentOrderHeads'
+      
+        '   inner join clients c on c.ClientId = CurrentOrderHeads.Client' +
+        'Id'
       '   inner join CurrentOrderLists on '
       
         '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
@@ -1335,9 +1346,13 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.send = 1'
       '     AND PostedOrderLists.OrderCount>0'
       '  ) '
-      'as sumbycurrentweek'
+      'as sumbycurrentweek,'
+      '  c.Name as AddressName'
       'FROM'
       '   CurrentOrderHeads'
+      
+        '   inner join clients c on c.ClientId = CurrentOrderHeads.Client' +
+        'Id'
       '   inner join CurrentOrderLists on '
       
         '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
@@ -1362,24 +1377,16 @@ inherited OrdersHForm: TOrdersHForm
         '     and (MinReqRules.RegionCode = CurrentOrderHeads.RegionCode)' +
         ' '
       'WHERE'
-      '    (CurrentOrderHeads.ClientId = :ClientId)'
-      'and (CurrentOrderHeads.Closed = 0)'
+      '    (CurrentOrderHeads.Closed = 0)'
       'and (PricesData.PriceCode is not null) '
       'and (RegionalData.RegionCode is not null) '
-      'and (pricesregionaldata.PriceCode is not null)'
-      'group by CurrentOrderHeads.OrderId'
-      'having count(CurrentOrderLists.Id) > 0'
-      'order by CurrentOrderHeads.PriceName')
+      'and (pricesregionaldata.PriceCode is not null)')
     Left = 132
     Top = 183
     ParamData = <
       item
         DataType = ftUnknown
         Name = 'timezonebias'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'ClientId'
       end
       item
         DataType = ftUnknown
@@ -1446,9 +1453,13 @@ inherited OrdersHForm: TOrdersHForm
       '   as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  0.0'
-      'as sumbycurrentweek'
+      'as sumbycurrentweek,'
+      '  c.Name as AddressName'
       'FROM'
       '   PostedOrderHeads'
+      
+        '   inner join clients c on c.ClientId = PostedOrderHeads.ClientI' +
+        'd '
       '   inner join PostedOrderLists on '
       '         (PostedOrderLists.OrderId = PostedOrderHeads.OrderId) '
       '     and (PostedOrderLists.OrderCount > 0)'
@@ -1518,9 +1529,13 @@ inherited OrdersHForm: TOrdersHForm
       '   as sumbycurrentmonth,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  0.0'
-      'as sumbycurrentweek'
+      'as sumbycurrentweek,'
+      '  c.Name As AddressName'
       'FROM'
       '   PostedOrderHeads'
+      
+        '   inner join clients c on c.ClientId = PostedOrderHeads.ClientI' +
+        'd'
       '   inner join PostedOrderLists on '
       '         (PostedOrderLists.OrderId = PostedOrderHeads.OrderId) '
       '     and (PostedOrderLists.OrderCount > 0)'
@@ -1570,5 +1585,12 @@ inherited OrdersHForm: TOrdersHForm
   object pmDestinationClients: TPopupMenu
     Left = 164
     Top = 459
+  end
+  object tmrFillReport: TTimer
+    Enabled = False
+    Interval = 3000
+    OnTimer = tmrFillReportTimer
+    Left = 424
+    Top = 104
   end
 end

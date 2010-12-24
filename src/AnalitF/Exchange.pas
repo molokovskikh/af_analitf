@@ -64,8 +64,6 @@ type
     procedure btnCancelClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
-      const AStatusText: String);
   private
     FStatusPosition: Integer;
     ExchangeActions: TExchangeActions;
@@ -117,7 +115,10 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   U_OrderBatchForm,
   SendWaybillTypes,
   Exclusive,
-  NetworkSettings;
+  NetworkSettings,
+  AddressController,
+  UserMessageParams,
+  SupplierController;
 
 {$R *.DFM}
 
@@ -301,14 +302,13 @@ begin
 
   if Result and (Trim(GlobalExchangeParams.ServerAddition) <> '')
   then
-    AProc.MessageBoxEx(
-      GlobalExchangeParams.ServerAddition,
-      'Сообщение от АК "Инфорум"',
-      MB_OK or MB_ICONINFORMATION);
+    ShowUserMessage(DM.MainConnection);
 
   if Result and (( eaGetPrice in AExchangeActions) or
     ( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then begin
+    GetAddressController.UpdateAddresses(DM.MainConnection, DM.adtClientsCLIENTID.Value);
+    GetSupplierController.UpdateSuppliers(DM.MainConnection);
     AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
     if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
       AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
@@ -556,7 +556,6 @@ end;
 
 procedure TExchangeForm.CheckStop;
 begin
-  StatusText := '';
   StatusPosition := 0;
   if DoStop then
   begin
@@ -573,17 +572,20 @@ end;
 
 procedure TExchangeForm.btnCancelClick(Sender: TObject);
 begin
-  DoStop := True;
   if GlobalExchangeParams.DownloadChildThreads then
     ExThread.StopChildThreads
   else
     try
+      //Сначала установлю сообщение и помечу, что возникла критическая ошибка,
+      //а потом выставлю флаг DoStop, что EAbort в ExchangeThread не было обработано первым 
+      GlobalExchangeParams.ErrorMessage := UserAbortMessage;
       GlobalExchangeParams.CriticalError := True;
-      GlobalExchangeParams.ErrorMessage := 'Операция отменена';
+      DoStop := True;
       HTTP.Disconnect;
       Ras.Disconnect;
     except
     end;
+  DoStop := True;
 end;
 
 procedure TExchangeForm.SetRasParams;
@@ -648,12 +650,6 @@ begin
   httpReceive.ConnectTimeout := -2;
   ConnectCount := DM.adtParams.FieldByName( 'ConnectCount').AsInteger;
   ConnectPause := DM.adtParams.FieldByName( 'ConnectPause').AsInteger;
-end;
-
-procedure TExchangeForm.HTTPStatus(ASender: TObject;
-  const AStatus: TIdStatus; const AStatusText: String);
-begin
-  WriteExchangeLog('Exchange', 'IdStatus : ' + AStatusText);
 end;
 
 { TInternalRepareOrders }

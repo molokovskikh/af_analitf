@@ -7,7 +7,9 @@ uses
   Dialogs, Child, ExtCtrls, ComCtrls, StdCtrls, GridsEh, DBGridEh,
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes,
   Buttons,
-  ShellAPI;
+  ShellAPI,
+  SupplierController,
+  U_frameFilterSuppliers, StrHlder;
 
 type
   TDocumentHeaderForm = class(TChildForm)
@@ -35,6 +37,9 @@ type
     spDelete: TSpeedButton;
     spOpenFolders: TSpeedButton;
     adsDocumentHeadersLoadTime: TDateTimeField;
+    sbListToExcel: TSpeedButton;
+    shDocumentHeaders: TStrHolder;
+    tmrChangeFilterSuppliers: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -46,8 +51,11 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure dbgHeadersSortMarkingChanged(Sender: TObject);
     procedure spOpenFoldersClick(Sender: TObject);
+    procedure sbListToExcelClick(Sender: TObject);
+    procedure tmrChangeFilterSuppliersTimer(Sender: TObject);
   private
     { Private declarations }
+    procedure OnChangeFilterSuppliers;
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
     procedure ProcessDocument;
@@ -55,18 +63,25 @@ type
     procedure DeleteDocuments;
   public
     { Public declarations }
-    procedure SetParameters;
-    procedure SetDateInterval;
+    frameFilterSuppliers : TframeFilterSuppliers;
+    procedure ShowHeaders;
   end;
 
   procedure ShowDocumentHeaders;
 
 implementation
 
-uses Main, DateUtils, DModule, AProc, Orders,
+uses
+  Main,
+  DateUtils,
+  StrUtils,
+  DModule,
+  AProc,
+  Orders,
   DBGridHelper,
   U_ExchangeLog,
-  DBProc;
+  DBProc,
+  LU_TDataExportAsXls;
 
 {$R *.dfm}
 
@@ -80,24 +95,23 @@ end;
 
 { TDocumentHeaderForm }
 
-procedure TDocumentHeaderForm.SetParameters;
-begin
-  adsDocumentHeaders.Close;
-
-  adsDocumentHeaders.ParamByName( 'ClientId').Value :=
-    DM.adtClients.FieldByName( 'ClientId').Value;
-  adsDocumentHeaders.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
-  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-  adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
-
-  adsDocumentHeaders.Open;
-end;
-
 procedure TDocumentHeaderForm.FormCreate(Sender: TObject);
 var
   Year, Month, Day: Word;
 begin
   inherited;
+
+  frameFilterSuppliers := TframeFilterSuppliers.AddFrame(
+    Self,
+    pTop,
+    spDelete.Left - 5,
+    pTop.Height,
+    OnChangeFilterSuppliers);
+  tmrChangeFilterSuppliers.Enabled := False;
+  tmrChangeFilterSuppliers.Interval := 500;
+
+  spDelete.Left := frameFilterSuppliers.Left + frameFilterSuppliers.Width + 5;
+  sbListToExcel.Left := spDelete.Left + spDelete.Width + 5;
 
   TDBGridHelper.RestoreColumnsLayout(dbgHeaders, Self.ClassName);
 
@@ -112,37 +126,14 @@ begin
   dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
   dtpDateTo.Date := Date;
 
-  SetParameters;
+  ShowHeaders;
 end;
 
 procedure TDocumentHeaderForm.dtpDateCloseUp(Sender: TObject);
 begin
-  SetDateInterval;
+  ShowHeaders;
   dbgHeaders.SetFocus;
 end;
-
-procedure TDocumentHeaderForm.SetDateInterval;
-begin
-  with adsDocumentHeaders do begin
-    ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
-    dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-    ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
-    Screen.Cursor:=crHourglass;
-    try
-      if Active then
-      begin
-        Close;
-        Open;
-      end
-      else
-        Open;
-    finally
-      Screen.Cursor:=crDefault;
-    end;
-  end;
-end;
-
-
 
 procedure TDocumentHeaderForm.dbgHeadersKeyDown(Sender: TObject;
   var Key: Word; Shift: TShiftState);
@@ -270,6 +261,128 @@ begin
     nil, nil, SW_SHOWDEFAULT);
   ShellExecute( 0, 'Open', PChar(RootFolder() + SDirRejects + '\'),
     nil, nil, SW_SHOWDEFAULT);
+end;
+
+procedure TDocumentHeaderForm.sbListToExcelClick(Sender: TObject);
+var
+  exportFile : String;
+  exportData : TDataExportAsXls;
+  prefix : String;
+  supplierFilter : String;
+begin
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+
+  supplierFilter := GetSupplierController.GetFilter('p.FirmCode');
+
+  DM.adsQueryValue.SQL.Text := '' +
+' select ' +
+'  dh.*, ' +
+'  dh.WriteTime as LocalWriteTime, ' +
+'  p.FullName as ProviderName, ' +
+'  sum(dbodies.SupplierCost) as TotalSumm, ' +
+'  count(dbodies.Id) as TotalCount, ' +
+'  count(dbodies.SupplierCost) as CostCount ' +
+' from ' +
+'   DocumentHeaders dh, ' +
+'   DocumentBodies dbodies, ' +
+'   providers p ' +
+' where ' +
+'     (dh.ClientId = :ClientId) ' +
+' and (dh.LoadTime BETWEEN :DateFrom AND :DateTo) ' +
+' and (dh.DocumentType = 1) ' +
+' and (p.FirmCode = dh.FirmCode) ' +
+' and (dbodies.DocumentId = dh.Id) ' +
+IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') + 
+' group by dh.Id ' +
+' order by dh.LoadTime DESC ';
+
+  DM.adsQueryValue.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').Value;
+  DM.adsQueryValue.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
+  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+  DM.adsQueryValue.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+
+  DM.adsQueryValue.Open;
+  try
+    if not DM.adsQueryValue.IsEmpty then begin
+      exportFile := TDBGridHelper.GetTempFileToExport();
+
+      exportData := TDataExportAsXls.Create(exportFile);
+      try
+
+        exportData.WriteRow([
+          'Дата',
+          'Номер накладной',
+          'Поставщик',
+          'Сумма',
+          'Срок оплаты']);
+
+        while not DM.adsQueryValue.Eof do begin
+          prefix := '';
+          if DM.adsQueryValue.FieldByName('TotalCount').AsInteger <> DM.adsQueryValue.FieldByName('CostCount').AsInteger
+          then
+            prefix := '!!! ';
+            
+          exportData.WriteRow([
+            DM.adsQueryValue.FieldByName('LocalWriteTime').AsString,
+            DM.adsQueryValue.FieldByName('ProviderDocumentId').AsString,
+            DM.adsQueryValue.FieldByName('ProviderName').AsString,
+            prefix + DM.adsQueryValue.FieldByName('TotalSumm').AsString]);
+          DM.adsQueryValue.Next;
+        end;
+        
+      finally
+        exportData.Free;
+      end;
+
+      ShellExecute(
+        0,
+        'Open',
+        PChar(exportFile),
+        nil, nil, SW_SHOWNORMAL);
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TDocumentHeaderForm.OnChangeFilterSuppliers;
+begin
+  tmrChangeFilterSuppliers.Enabled := False;
+  tmrChangeFilterSuppliers.Enabled := True;
+end;
+
+procedure TDocumentHeaderForm.ShowHeaders;
+var
+  supplierFilter : String;
+begin
+  adsDocumentHeaders.Close;
+  
+  adsDocumentHeaders.SQL.Text := shDocumentHeaders.Strings.Text;
+
+  supplierFilter := GetSupplierController.GetFilter('p.FirmCode');
+  if supplierFilter <> '' then
+    adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' and ' + supplierFilter + ' '#13#10;
+
+  adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' order by dh.LoadTime DESC ';
+
+  adsDocumentHeaders.ParamByName( 'ClientId').Value :=
+    DM.adtClients.FieldByName( 'ClientId').Value;
+  adsDocumentHeaders.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
+  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+  adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+
+  adsDocumentHeaders.Open;
+end;
+
+procedure TDocumentHeaderForm.tmrChangeFilterSuppliersTimer(
+  Sender: TObject);
+begin
+  tmrChangeFilterSuppliers.Enabled := False;
+  ShowHeaders;
 end;
 
 end.

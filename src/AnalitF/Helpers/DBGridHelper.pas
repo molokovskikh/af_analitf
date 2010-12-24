@@ -40,6 +40,8 @@ type
     class procedure SetTitleButtonToColumns(Grid : TCustomDBGridEh);
 
     class function GetStdDefaultRowHeight(Grid : TCustomDBGridEh) : Integer;
+
+    class function GetTempFileToExport() : String;
   end;
 
 implementation
@@ -207,6 +209,17 @@ begin
   Result := TCustomDBGridEhEx(Grid).StdDefaultRowHeight;
 end;
 
+class function TDBGridHelper.GetTempFileToExport: String;
+var
+  Path,
+  tmpFileName : String;
+begin
+  Path := ExcludeTrailingPathDelimiter( GetTempDir);
+  tmpFileName := StringOfChar(' ', MAX_PATH);
+  Win32CheckA(GetTempFileName(PChar(Path), 'tmp', 0, (@tmpFileName[1])) <> 0);
+  Result := ChangeFileExt(Trim(tmpFileName), '.xls');
+end;
+
 class procedure TDBGridHelper.InternalRestoreColumnsLayout(
   Grid: TCustomDBGridEh;
   ARegIni: TObject;
@@ -349,16 +362,12 @@ end;
 
 class procedure TDBGridHelper.SaveGrid(Grid: TCustomDBGridEh);
 var
-  Path,
   tmpFileName : String;
 begin
   if Grid = nil then
     raise Exception.Create( 'Не задана таблица для сохранения');
 
-  Path := ExcludeTrailingPathDelimiter( GetTempDir);
-  tmpFileName := StringOfChar(' ', MAX_PATH);
-  Win32CheckA(GetTempFileName(PChar(Path), 'tmp', 0, (@tmpFileName[1])) <> 0);
-  tmpFileName := ChangeFileExt(Trim(tmpFileName), '.xls');
+  tmpFileName := GetTempFileToExport();
 
   SaveDBGridEhToExportFile(
     TDBGridEhExportAsXls,

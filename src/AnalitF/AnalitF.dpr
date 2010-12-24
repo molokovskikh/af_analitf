@@ -126,7 +126,18 @@ uses
   U_CurrentOrderHead in '..\Common\Models\U_CurrentOrderHead.pas',
   U_CurrentOrderItem in '..\Common\Models\U_CurrentOrderItem.pas',
   U_DBMapping in '..\Common\Models\U_DBMapping.pas',
-  U_Offer in '..\Common\Models\U_Offer.pas';
+  U_Offer in '..\Common\Models\U_Offer.pas',
+  AllOrdersParams in '..\Common\GlobalParams\AllOrdersParams.pas',
+  AddressController in 'BusinessLogic\AddressController.pas',
+  U_frameFilterAddresses in 'Views\U_frameFilterAddresses.pas' {frameFilterAddresses: TFrame},
+  KeyboardHelper in '..\Common\Helpers\KeyboardHelper.pas',
+  UserMessageParams in '..\Common\GlobalParams\UserMessageParams.pas',
+  RackCardReportParams in '..\Common\GlobalParams\RackCardReportParams.pas',
+  EditRackCardReportParams in 'EditRackCardReportParams.pas' {EditRackCardReportParamsForm},
+  LU_TDataExportAsXls in '..\Common\Classes\LU_TDataExportAsXls.pas',
+  U_Supplier in '..\Common\Models\U_Supplier.pas',
+  SupplierController in 'BusinessLogic\SupplierController.pas',
+  U_frameFilterSuppliers in 'Views\U_frameFilterSuppliers.pas' {frameFilterSuppliers: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}
@@ -149,6 +160,7 @@ uses
 {$R CompareScript65.RES}
 {$R CompareScript66.RES}
 {$R CompareScript67.RES}
+{$R CompareScript68.RES}
 
 var
   B : TWebBrowser;

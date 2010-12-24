@@ -193,7 +193,8 @@ implementation
 
 {$R *.DFM}
 
-uses DBProc, AProc, Main, LU_Tracer, Constant, StrUtils;
+uses DBProc, AProc, Main, LU_Tracer, Constant, StrUtils,
+  KeyboardHelper;
 
 function ShowConfig( Auth: boolean = False): TConfigChanges;
 var
@@ -202,18 +203,23 @@ var
   HTTPPass : String;
   NewPass,
   CryptNewPass : String;
-  oldKbd,
-  englishKbd : HKL;
+  oldKbd : HKL;
 begin
   Result := [];
   //вид дочерних форм зависит от параметров, поэтому закрываем окна
   MainForm.FreeChildForms;
   with TConfigForm.Create(Application) do try
-    oldKbd := GetKeyboardLayout(0);
-    //если получитс€ загрузить английскую клавиатуру, то делаем ее активной
-    englishKbd := LoadKeyboardLayout('00000409', 0);
-    if englishKbd <> 0 then
-      ActivateKeyboardLayout(englishKbd, 0);
+
+{
+    oldKbd := GetKeyboardHelper.GetCurrentKeyboard();
+    //≈сли текуща€ клавиатура не английска€, то переключаемс€ на английскую
+    if oldKbd <> GetKeyboardHelper.EnglishKeyboard then
+      GetKeyboardHelper.SwitchToEnglish();
+}
+    //¬роде бы заработало простое переключение, если и дальше будет работать,
+    //то код в комментарии выше надо удалить
+    oldKbd := GetKeyboardHelper.SwitchToEnglish();
+      
     OldExep := Application.OnException;
     try
       Application.OnException := OnAppEx;
@@ -322,7 +328,16 @@ begin
       end;
 
     finally
-      ActivateKeyboardLayout(oldKbd, 0);
+
+{
+      //≈сли до переключени€ была не английска€, то переключаемс€ обратно
+      if oldKbd <> GetKeyboardHelper.EnglishKeyboard then
+        GetKeyboardHelper.SwitchToPrev;
+}        
+      //¬роде бы заработало простое переключение, если и дальше будет работать,
+      //то код в комментарии выше надо удалить
+      GetKeyboardHelper.SwitchToLanguage(oldKbd);
+
       Application.OnException := OldExep;
     end;
 

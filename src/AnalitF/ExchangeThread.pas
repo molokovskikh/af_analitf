@@ -12,7 +12,8 @@ uses
   U_frmOldOrdersDelete, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
   DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController,
-  ArchiveHelper;
+  ArchiveHelper,
+  UserMessageParams;
 
 type
 
@@ -69,6 +70,7 @@ private
   HTTPName,
   HTTPPass : String;
   StartDownPosition : Integer;
+  LastPacketTime : TDateTime;
   //Уникальный идентификатор обновления, должен передаваться при подтверждении
   UpdateId : String;
 
@@ -91,7 +93,14 @@ private
   //Используется при получении истории заказов с сервера
   MaxOrderId : String;
 
+  FUserMessageParams : TUserMessageParams;
+
+  FirstResponseServer : Boolean;
+  StatusBeforeFirst : String;
+
   procedure SetStatus;
+  procedure SetStatusText(AStatusText : String);
+  procedure SetStatusTextHTTP(AStatusText : String);
   procedure SetDownStatus;
   procedure SetProgress;
   procedure SetTotalProgress;
@@ -127,10 +136,13 @@ private
   procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
+  function DataSetToString(SQL : String) : String;
+
   procedure GetHistoryOrders;
   procedure CommitHistoryOrders;
   procedure ImportHistoryOrders;
 
+  procedure ConfirmUserMessage;
 
   function FromXMLToDateTime( AStr: string): TDateTime;
   function RusError( AStr: string): string;
@@ -152,6 +164,13 @@ private
 
   procedure CheckFieldAfterUpdate(fieldName : String);
   procedure ProcessClientToAddressMigration;
+
+  procedure HTTPStatus(ASender: TObject; const AStatus: TIdStatus;
+      const AStatusText: String);
+
+  procedure ProcessImportData;
+  function RestoreDb : Boolean;
+  procedure FreeMySqlLibOnRestore;
 protected
   procedure Execute; override;
 public
@@ -165,8 +184,15 @@ uses Exchange, DModule, AProc, Main, Retry,
   LU_Tracer, Math, DBProc, U_frmSendLetter,
   Constant, U_ExchangeLog, U_SendArchivedOrdersThread, ULoginHelper,
   Registry,
-  UniqueID;
+  UniqueID,
+  MyClasses,
+  MyEmbConnection,
+  MySqlApi;
 
+type
+  TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
+  end;
+  
 { TExchangeThread }
 
 procedure TExchangeThread.SetStatus;
@@ -206,6 +232,7 @@ begin
     CoInitialize(nil);
     DM.MainConnection.Open;
     try
+    FUserMessageParams := TUserMessageParams.Create(DM.MainConnection);
     try
       ImportComplete := False;
       repeat
@@ -213,10 +240,16 @@ begin
       if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
       then
       begin
+        FirstResponseServer := False;
         RasConnect;
+        SetStatusText('Соединение...');
         HTTPConnect;
         TotalProgress := 10;
         Synchronize( SetTotalProgress);
+
+        if FUserMessageParams.NeedConfirm then
+          ConfirmUserMessage;
+
         //Отправяем настройки прайс-листов при запросе данных (обычно или кумулятивном)
         if ([eaGetPrice, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
           and not DM.adsUser.FieldByName('InheritPrices').AsBoolean
@@ -368,29 +401,7 @@ begin
 
       if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
       begin
-        TotalProgress := 50;
-        Synchronize( SetTotalProgress);
-        ExchangeParams.CriticalError := True;
-        CheckNewExe;
-        CheckNewFRF;
-        CheckNewMDB;
-        try
-          //DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
-          ImportData;
-        finally
-{$ifndef DEBUG}
-          //Надо перенести загрузку разобранных документов в другое место,
-          //т.к. после удаления файлов с разобранными документами не будет
-          { очищаем папку In }
-          DeleteFilesByMask( RootFolder() + SDirIn + '\*.txt');
-{$endif}
-          //DM.adcUpdate.OnExecuteError := nil;
-        end;
-
-        DM.CheckDataIntegrity;
-
-        StatusText := 'Обновление завершено';
-         Synchronize( SetStatus);
+        ProcessImportData;
       end;
 
       ImportComplete := True;
@@ -460,8 +471,7 @@ begin
           SendLetterWithTechInfo(
             'Ошибка целостности базы данных в таблице отсрочек при импорте данных',
             'У клиента возникла ошибка целостности базы данных в таблице отсрочек при импорте данных.');
-          StatusText := 'Обновление завершено';
-          Synchronize( SetStatus);
+          SetStatusText('Обновление завершено');
           ImportComplete := True;
         end;
       end;
@@ -496,29 +506,35 @@ begin
         //если это сокетная ошибка, то не рвем DialUp
         if not (E is EIdException) then
           RasDisconnect;
-        StatusText := '';
-        Synchronize( SetStatus);
+        SetStatusText('');
         //обрабатываем Отмену
         //if ExchangeForm.DoStop then Abort;
         //обрабатываем ошибку
         WriteExchangeLog('Exchange', LastStatus + ':' + CRLF + E.Message);
+        if (E is EAbort) and (ExchangeParams.ErrorMessage = '') then
+          ExchangeParams.ErrorMessage := UserAbortMessage;
         if ExchangeParams.ErrorMessage = '' then
           ExchangeParams.ErrorMessage := RusError( E.Message);
         if ExchangeParams.ErrorMessage = '' then
           ExchangeParams.ErrorMessage := E.ClassName + ': ' + E.Message;
-        if (E is EIdHTTPProtocolException) then
+        if (E is EIdHTTPProtocolException)
+           and (ExchangeParams.ErrorMessage <> UserAbortMessage)
+        then
           ExchangeParams.ErrorMessage :=
             'При выполнении вашего запроса произошла ошибка.'#13#10 +
             'Повторите запрос через несколько минут.'#13#10 +
             ExchangeParams.ErrorMessage
         else
-        if (E is EIdException) then
+        if (E is EIdException)
+            and (ExchangeParams.ErrorMessage <> UserAbortMessage)
+        then
           ExchangeParams.ErrorMessage :=
             'Проверьте подключение к Интернет.'#13#10 +
             ExchangeParams.ErrorMessage;
       end;
     end;
     finally
+      FUserMessageParams.Free;
       try DM.MainConnection.Close;
       except
         on E : Exception do
@@ -611,8 +627,7 @@ begin
   batchFileContent := '';
   NeedProcessBatch := [eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [];
   { запрашиваем данные }
-  StatusText := 'Подготовка данных';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Подготовка данных');
   try
     LibVersions := AProc.GetLibraryVersionFromAppPath;
 
@@ -739,6 +754,10 @@ begin
       ExchangeForm.ExchangeActs := ExchangeForm.ExchangeActs + [eaGetFullData];
 
     ExchangeParams.ServerAddition := Utf8ToAnsi( Res.Values[ 'Addition']);
+    if ExchangeParams.ServerAddition <> ''
+    then
+      FUserMessageParams.UpdateUserMessage(ExchangeParams.ServerAddition);
+
     { получаем имя удаленного файла }
     HostFileName := Res.Values[ 'URL'];
     NewZip := True;
@@ -846,9 +865,8 @@ begin
   //загрузка прайс-листа
   if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
   then begin
-    StatusText := 'Загрузка данных';
 //    Tracer.TR('DoExchange', 'Загрузка данных');
-    Synchronize( SetStatus);
+    SetStatusText('Загрузка данных');
     if not NewZip then
     begin
       if SysUtils.FileExists( LocalFileName) then
@@ -890,6 +908,7 @@ begin
               FileStream.Seek( 0, soFromEnd);
 
             StartDownPosition := FileStream.Position;
+            LastPacketTime := Now();
 
             ExchangeForm.HTTP.Get( AddRangeStartToURL(HostFileName, FileStream.Position),
               FileStream);
@@ -1077,6 +1096,7 @@ begin
         Sleep(RasTimeout * 1000);
       end;
   end;
+  SetStatusText('');
   Synchronize( ExchangeForm.CheckStop);
 end;
 
@@ -1104,8 +1124,7 @@ var
   FoundIndex : Integer;
 begin
   try
-    StatusText := 'Распаковка данных';
-    Synchronize( SetStatus);
+    SetStatusText('Распаковка данных');
     if FindFirst( RootFolder() + SDirIn + '\*.zip', faAnyFile, SR) = 0 then
     repeat
       { Если это архив с рекламой }
@@ -1245,8 +1264,7 @@ begin
 
   if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then
   begin
-    StatusText := 'Очистка таблиц';
-    Synchronize( SetStatus);
+    SetStatusText('Очистка таблиц');
     DM.ClearDatabase;
 
 {
@@ -1299,16 +1317,14 @@ var
 begin
   Synchronize( ExchangeForm.CheckStop);
   Synchronize( DisableCancel);
-  StatusText := 'Резервное копирование данных';
-  Synchronize( SetStatus);
+  SetStatusText('Резервное копирование данных');
   if not DatabaseController.IsBackuped then
     DatabaseController.BackupDatabase;
 
   TotalProgress := 65;
   Synchronize( SetTotalProgress);
 
-  StatusText := 'Импорт данных';
-  Synchronize( SetStatus);
+  SetStatusText('Импорт данных');
   Progress := 0;
   Synchronize( SetProgress);
   DM.UnLinkExternalTables;
@@ -1371,12 +1387,14 @@ begin
   Synchronize( SetProgress);
 
    with DM.adcUpdate do begin
+   WriteExchangeLog('ImportData', Concat('Core before start import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
 
   //удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
   //PricesRegionalData
   if utPricesRegionalData in UpdateTables then begin
     SQL.Text:='DELETE FROM PricesRegionalData WHERE NOT Exists(SELECT PriceCode, RegionCode FROM TmpPricesRegionalData  WHERE PriceCode=PricesRegionalData.PriceCode AND RegionCode=PricesRegionalData.RegionCode);';
     InternalExecute;
+    WriteExchangeLog('ImportData', 'Delete not exists: ' + IntToStr(DM.adcUpdate.RowsAffected));
   end;
   //PricesData
   if utPricesRegionalData in UpdateTables then begin
@@ -1421,10 +1439,12 @@ begin
       DM.adcUpdate.Close;
     end;
 
+    WriteExchangeLog('ImportData', 'Deleted Prices: ' + deletedPriceCodes.CommaText);
     DM.adcUpdate.SQL.Text := 'delete from core where PriceCode = :PriceCode;';
     for I := 0 to deletedPriceCodes.Count-1 do begin
       DM.adcUpdate.ParamByName('PriceCode').AsString := deletedPriceCodes[i];
       InternalExecute;
+      WriteExchangeLog('ImportData', 'Deleted position by price ' + deletedPriceCodes[i] + ' : ' + IntToStr(DM.adcUpdate.RowsAffected));
       //Если при удалении удалились какие-то записи из таблицы,
       //то помечаем Core и MinPrices на обновление
       if DM.adcUpdate.RowsAffected > 0 then
@@ -1445,6 +1465,7 @@ begin
     '     (Core.PriceCode is not null) ' +
     ' and (PricesRegionalData.PriceCode is null);';
   InternalExecute;
+  WriteExchangeLog('ImportData', 'Deleted position by PricesRegionalData: ' + IntToStr(DM.adcUpdate.RowsAffected));
   //Если при удалении удалились какие-то записи из таблицы,
   //то помечаем Core и MinPrices на обновление
   if DM.adcUpdate.RowsAffected > 0 then
@@ -1685,6 +1706,7 @@ begin
   end;
   //Core
   if utCore in UpdateTables then begin
+    WriteExchangeLog('ImportData', Concat('Core before import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
     coreTestInsertSQl := GetLoadDataSQL('Core', RootFolder()+SDirIn+'\Core.txt');
 
 {$ifndef DisableCrypt}
@@ -1704,6 +1726,8 @@ begin
 {$endif}
 
     InternalExecute;
+    WriteExchangeLog('ImportData', 'Import Core count : ' + IntToStr(DM.adcUpdate.RowsAffected));
+    WriteExchangeLog('ImportData', Concat('Core after import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
 
 {$ifndef DisableCrypt}
     SQL.Text :=
@@ -1858,8 +1882,7 @@ begin
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
-  StatusText := 'Импорт данных';
-  Synchronize( SetStatus);
+  SetStatusText('Импорт данных');
 
   SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; InternalExecute;
   SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
@@ -2231,8 +2254,7 @@ begin
   //Отправляем настройки только в том случае, если есть что отправлять
   if not DM.adsQueryValue.Eof then
   begin
-    StatusText := 'Отправка настроек прайс-листов';
-    Synchronize( SetStatus);
+    SetStatusTextHTTP('Отправка настроек прайс-листов');
     SetLength(ParamNames, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     SetLength(ParamValues, StaticParamCount + DM.adsQueryValue.RecordCount*4);
     ParamNames[0] := 'UniqueID';
@@ -2278,6 +2300,7 @@ var
   inHTTP : TidHTTP;
   INFileSize : Integer;
   ProgressPosition : Integer;
+  CurrentPacketTime : TDateTime;
 begin
   inHTTP := TidHTTP(Sender);
 
@@ -2292,6 +2315,8 @@ begin
     INFileSize := StrToInt(inHTTP.Response.RawHeaders.Values['INFileSize']);
 
     ProgressPosition := Round( ((StartDownPosition+AWorkCount)/INFileSize) *100);
+    CurrentPacketTime := Now();
+    try
 
     TSuffix := 'Кб';
     CSuffix := 'Кб';
@@ -2312,15 +2337,24 @@ begin
 
 //    Tracer.TR('Main.HTTPWork', 'INFileSize : -1');
 
-    if (ProgressPosition > 0) and ((ProgressPosition - Progress > 5) or (ProgressPosition > 97)) then
+    if (ProgressPosition > 0)
+      and (
+        (ProgressPosition - Progress > 5)
+        or (ProgressPosition > 97)
+        or (Abs(CurrentPacketTime - LastPacketTime) > 1/SecsPerDay)
+      )
+    then
     begin
       Progress := ProgressPosition;
       Synchronize( SetProgress );
       StatusText := 'Загрузка данных   (' +
         FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
         FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
-//      Tracer.TR('Main.HTTPWork', 'StatusText : ' + StatusText);
       Synchronize( SetDownStatus );
+//      Tracer.TR('Main.HTTPWork', 'StatusText : ' + StatusText);
+    end;
+    finally
+      LastPacketTime := CurrentPacketTime;
     end;
   end;
 
@@ -2344,8 +2378,7 @@ var
   end;
 
 begin
-  StatusText := 'Отправка письма';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Отправка письма');
 
   Attachs := TStringList.Create;
   Attachs.CaseSensitive := False;
@@ -2430,6 +2463,7 @@ end;
 constructor TExchangeThread.Create(CreateSuspended: Boolean);
 begin
   inherited;
+  ExchangeForm.HTTP.OnStatus := HTTPStatus;
   hfileHelper := THFileHelper.Create;
   PreviousAdapter := nil;
   
@@ -2520,8 +2554,7 @@ var
 begin
   Synchronize( ExchangeForm.CheckStop);
   Synchronize( DisableCancel);
-  StatusText := 'Отправка заказов';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Отправка заказов');
 
   postController := TPostSomeOrdersController
     .Create(
@@ -2534,8 +2567,7 @@ begin
     postController.PostSomeOrders;
   finally
     postController.Free;
-    StatusText := '';
-    Synchronize( SetStatus);
+    SetStatusText('');
   end;
   
   Synchronize( EnableCancel);
@@ -2817,8 +2849,7 @@ var
 begin
   Synchronize( ExchangeForm.CheckStop);
   Synchronize( DisableCancel);
-  StatusText := 'Загрузка накладных';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Загрузка накладных');
 
   postController := TPostWaybillsControllerController
     .Create(
@@ -2830,8 +2861,7 @@ begin
     postController.PostWaybills;
   finally
     postController.Free;
-    StatusText := '';
-    Synchronize( SetStatus);
+    SetStatusText('');
   end;
 
   Synchronize( EnableCancel);
@@ -2963,25 +2993,53 @@ var
   ClientId : String;
 begin
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsString;
+
+  DM.adcUpdate.SQL.Text := 'drop temporary table if exists analitf.BatchAddresses, analitf.DistinctBatchAddresses;'
+      + ' create temporary table analitf.BatchAddresses ('
+      + '   `AddressId` bigint(20) unsigned not NULL ) ENGINE=MEMORY;'
+      + 'insert into analitf.BatchAddresses (AddressId) value (' + ClientId + ');';
+  InternalExecute;
+
+  if (GetFileSize(ExePath+SDirIn+'\BatchOrder.txt') > 0) then begin
+    insertSQL := Trim(GetLoadDataSQL('BatchAddresses', ExePath+SDirIn+'\BatchOrder.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(@dummy, AddressId);';
+    InternalExecute;
+  end;
+
+  DM.adcUpdate.SQL.Text := 'create temporary table analitf.DistinctBatchAddresses ENGINE=MEMORY as '
+      + ' select distinct AddressId as AddressId from analitf.BatchAddresses ;';
+  InternalExecute;
+
   DM.adcUpdate.SQL.Text := ''
-    + ' delete from batchreport where ClientID = ' + ClientID + ';'
-    + ' delete from batchreportservicefields where ClientID = ' + ClientID + ';'
-    + ' delete CurrentOrderHeads, CurrentOrderLists '
-    + ' FROM CurrentOrderHeads, CurrentOrderLists '
+    + ' delete from batchreport using batchreport, analitf.DistinctBatchAddresses where ClientID = AddressId;'
+    + ' delete from batchreportservicefields using batchreportservicefields, analitf.DistinctBatchAddresses where ClientID = AddressId;'
+    + ' delete FROM CurrentOrderHeads, CurrentOrderLists '
+    + ' using CurrentOrderHeads, CurrentOrderLists, analitf.DistinctBatchAddresses '
     + ' where '
-    + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+    + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
     + '   and (CurrentOrderHeads.Frozen = 0) '
     + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
   InternalExecute;
   DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', RootFolder()+SDirIn+'\batchreport.txt');
   InternalExecute;
 
-  //Загружаем название служебных колонок относительно пользователя 
+  //Загружаем название служебных колонок относительно пользователя
   if (GetFileSize(RootFolder()+SDirIn+'\BatchReportServiceFields.txt') > 0) then begin
     insertSQL := Trim(GetLoadDataSQL('batchreportservicefields', RootFolder()+SDirIn+'\BatchReportServiceFields.txt'));
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
       '(FieldName) set ClientId = '+ ClientID + ';';
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' delete from batchreport using batchreport, analitf.DistinctBatchAddresses where ClientID = AddressId;'
+      + ' insert into batchreportservicefields (ClientId, FieldName) '
+      + ' select AddressId, FieldName '
+      + ' from batchreportservicefields, analitf.DistinctBatchAddresses '
+      + ' where ClientId = ' + ClientID + ' '
+      + '    and AddressId <> ' + ClientID + ' '
+      + ' order by AddressId, Id; ';
     InternalExecute;
   end;
 
@@ -3004,19 +3062,19 @@ begin
     InternalExecute;
 
     DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderLists '
+      + ' update CurrentOrderLists, analitf.DistinctBatchAddresses '
       + ' set '
       + '    CurrentOrderLists.Price = AES_DECRYPT(CurrentOrderLists.CryptPrice, "' + CostSessionKey + '"), '
       + '    CurrentOrderLists.CryptPrice = null '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.CryptPrice is not null);'
-      + ' update CurrentOrderLists '
+      + ' update CurrentOrderLists, analitf.DistinctBatchAddresses '
       + ' set '
       + '    CurrentOrderLists.RealPrice = AES_DECRYPT(CurrentOrderLists.CryptRealPrice, "' + CostSessionKey + '"), '
       + '    CurrentOrderLists.CryptRealPrice = null '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.CryptRealPrice is not null);';
     InternalExecute;
 {$else}
@@ -3028,29 +3086,29 @@ begin
 {$endif}
 
     DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderHeads, PricesData '
+      + ' update CurrentOrderHeads, PricesData, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
       + ' where '
-      + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderHeads.Frozen = 0) '
       + '   and (CurrentOrderHeads.PriceCode = PricesData.PriceCode);'
-      + ' update CurrentOrderHeads, regions '
+      + ' update CurrentOrderHeads, regions, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderHeads.RegionName = regions.RegionName '
       + ' where '
-      + '       (CurrentOrderHeads.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderHeads.Frozen = 0) '
       + '   and (CurrentOrderHeads.RegionCode = regions.RegionCode);';
     InternalExecute;
     DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderLists, synonyms '
+      + ' update CurrentOrderLists, synonyms, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderLists.SYNONYMNAME = synonyms.SYNONYMNAME '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.SYNONYMCODE = synonyms.SYNONYMCODE);'
-      + ' update CurrentOrderLists, synonymfirmcr '
+      + ' update CurrentOrderLists, synonymfirmcr, analitf.DistinctBatchAddresses '
       + ' set CurrentOrderLists.SYNONYMFIRM = synonymfirmcr.SYNONYMNAME '
       + ' where '
-      + '       (CurrentOrderLists.ClientId = ' + ClientID + ')'
+      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
       + '   and (CurrentOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
     InternalExecute;
   end;
@@ -3058,10 +3116,10 @@ begin
   //Сбрасываем OrderListId и статус у тех элементов BatchReport,
   //у которых не нашли соответствующую запись в CurrentOrderLists
   DM.adcUpdate.SQL.Text := ''
-    + ' update batchreport '
+    + ' update batchreport, analitf.DistinctBatchAddresses '
     + ' set OrderListId = null, Status = (Status & ~(1 & 4)) | 2 '
     + ' where '
-    + '       (batchreport.ClientId = ' + ClientID + ')'
+    + '       (batchreport.ClientId = DistinctBatchAddresses.AddressId)'
     + '   and (OrderListId is not null) '
     + '   and not exists(select * from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
   InternalExecute;
@@ -3128,8 +3186,7 @@ begin
   Res := TStringList.Create;
   try
   { запрашиваем данные }
-  StatusText := 'Запрос истории заказов';
-  Synchronize( SetStatus);
+  SetStatusTextHTTP('Запрос истории заказов');
   try
     AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
     AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
@@ -3337,10 +3394,260 @@ begin
     DM.adcUpdate.Close;
     DM.adcUpdate.SQL.Text :=
       Format(
-      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s set Printed = 1;',
       [InputFileName,
        'DocumentBodies']);
     DM.adcUpdate.Execute;
+  end;
+end;
+
+function TExchangeThread.DataSetToString(SQL: String): String;
+var
+  Header : String;
+  Row : String;
+  I : Integer;
+begin
+  Result := '';
+  Header := '';
+
+  if DM.adsQueryValue.Active then
+     DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := SQL;
+  DM.adsQueryValue.Open;
+  try
+    for I := 0 to DM.adsQueryValue.Fields.Count-1 do
+      if Header = '' then
+        Header := DM.adsQueryValue.Fields[i].FieldName
+      else
+        Header := Header + Chr(9) + DM.adsQueryValue.Fields[i].FieldName;
+    Result := Header + #13#10 + StringOfChar('-', Length(Header));
+    while not DM.adsQueryValue.Eof do begin
+      Row := '';
+      for I := 0 to DM.adsQueryValue.Fields.Count-1 do
+        if Row = '' then
+          Row := DM.adsQueryValue.Fields[i].AsString
+        else
+          Row := Row + Chr(9) + DM.adsQueryValue.Fields[i].AsString;
+      Result := Concat(Result, #13#10, Row);
+      DM.adsQueryValue.Next;
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TExchangeThread.ConfirmUserMessage;
+var
+  FPostParams : TStringList;
+  InvokeResult : String;
+
+  procedure AddPostParam(Param, Value: String);
+  begin
+    FPostParams.Add(Param + '=' + SOAP.PreparePostValue(Value));
+  end;
+
+begin
+  FPostParams := TStringList.Create;
+  try
+  { запрашиваем данные }
+  SetStatusTextHTTP('Подтверждение о прочтении');
+  try
+    AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
+    AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
+
+    AddPostParam('ConfirmedMessage', FUserMessageParams.UserMessage);
+
+    InvokeResult := SOAP.SimpleInvoke('ConfirmUserMessage', FPostParams);
+
+    if AnsiCompareText(InvokeResult, 'Res=Ok') = 0 then begin
+      FUserMessageParams.ConfirmedMessage;
+    end
+    else begin
+      WriteExchangeLog('ConfirmUserMessage', 'При подтверждении сообщения возникла ошибка: ' + InvokeResult);
+    end;
+    
+  except
+    on E: Exception do
+    begin
+      ExchangeParams.CriticalError := True;
+      raise;
+    end;
+  end;
+  Synchronize( ExchangeForm.CheckStop);
+  finally
+    FPostParams.Free;
+  end;
+end;
+
+procedure TExchangeThread.SetStatusText(AStatusText: String);
+begin
+  StatusText := AStatusText;
+  Synchronize( SetStatus );
+end;
+
+procedure TExchangeThread.SetStatusTextHTTP(AStatusText: String);
+begin
+  if FirstResponseServer then
+    SetStatusText(AStatusText)
+  else
+    StatusBeforeFirst := AStatusText;
+end;
+
+procedure TExchangeThread.HTTPStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: String);
+begin
+  WriteExchangeLog('Exchange', 'IdStatus : ' + AStatusText);
+  if not FirstResponseServer then
+    if AStatus = hsConnected then begin
+      FirstResponseServer := True;
+      SetStatusText(StatusBeforeFirst);
+    end;
+end;
+
+procedure TExchangeThread.ProcessImportData;
+var
+  ProcessFatalMySqlError : Boolean;
+begin
+  TotalProgress := 50;
+  Synchronize( SetTotalProgress);
+  ExchangeParams.CriticalError := True;
+  CheckNewExe;
+  CheckNewFRF;
+  CheckNewMDB;
+  try
+    //DM.adcUpdate.OnExecuteError := ThreadOnExecuteError;
+    ProcessFatalMySqlError := False;
+    repeat
+    try
+      ImportData;
+      ProcessFatalMySqlError := False;
+    except
+      on EMyDb : EMyError do begin
+        if not ProcessFatalMySqlError and DatabaseController.IsFatalError(EMyDb) then begin
+          ProcessFatalMySqlError := True;
+          WriteExchangeLog('Exchange',
+            Format('Будем производить восстановление БД из-за ошибки: (%d) %s',
+              [EMyDb.ErrorCode, EMyDb.Message]));
+          if not RestoreDb then
+            raise;    
+        end
+        else
+          raise;
+      end;
+    end;
+    until not ProcessFatalMySqlError;
+  finally
+{$ifndef DEBUG}
+    //Надо перенести загрузку разобранных документов в другое место,
+    //т.к. после удаления файлов с разобранными документами не будет
+    { очищаем папку In }
+    DeleteFilesByMask( ExePath + SDirIn + '\*.txt');
+{$endif}
+    //DM.adcUpdate.OnExecuteError := nil;
+  end;
+
+  DM.CheckDataIntegrity;
+
+  SetStatusText('Обновление завершено');
+end;
+
+function TExchangeThread.RestoreDb : Boolean;
+var
+  FEmbConnection : TMyEmbConnection;
+  command : TMyQuery;
+  Restored : Boolean;
+begin
+  Result := False;
+  DM.MainConnection.Close;
+  try
+  Restored := False;
+  try
+    WriteExchangeLog('RestoreDb', 'Начали восстановление базы данных');
+
+    FreeMySqlLibOnRestore;
+    WriteExchangeLog('RestoreDb', 'Выгрузили библиотеку');
+
+    FEmbConnection := TMyEmbConnection.Create(nil);
+    FEmbConnection.Database := '';
+    FEmbConnection.Username := DM.MainConnection.Username;
+    FEmbConnection.DataDir := ExePath + SDirData;
+    FEmbConnection.Options := TMyEmbConnection(DM.MainConnection).Options;
+    FEmbConnection.Params.Clear;
+    FEmbConnection.Params.AddStrings(TMyEmbConnection(DM.MainConnection).Params);
+    FEmbConnection.LoginPrompt := False;
+
+    try
+
+      FEmbConnection.Open;
+      try
+        DatabaseController.CheckObjectsExists(FEmbConnection, False);
+        WriteExchangeLog('RestoreDb', 'Проверили объекты базы данных');
+
+        FEmbConnection.ExecSQL('use analitf', []);
+        DatabaseController.CreateViews(FEmbConnection);
+        command := TMyQuery.Create(FEmbConnection);
+        try
+          command.Connection := FEmbConnection;
+
+          command.SQL.Text := 'select * from analitf.pricesshow';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.params';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.clients';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.client';
+          command.Open;
+          command.Close;
+
+          command.SQL.Text := 'select * from analitf.userinfo';
+          command.Open;
+          command.Close;
+        finally
+          command.Free;
+        end;
+      finally
+        FEmbConnection.Close;
+      end;
+      WriteExchangeLog('RestoreDb', 'Проверили подключение к новой базе данных');
+
+    finally
+      FEmbConnection.Free;
+    end;
+
+    DatabaseController.BackupDataTables();
+    WriteExchangeLog('RestoreDb', 'Произвели backup таблиц в TableBackup');
+
+    Restored := True;
+    WriteExchangeLog('RestoreDb', 'Восстановление базы данных успешно завершено');
+  except
+    on E : Exception do begin
+      Restored := False;
+      WriteExchangeLog('RestoreDb', 'Ошибка в нитке создания БД: ' + E.Message);
+    end;
+  end;
+  Result := Restored;
+  finally
+    DM.MainConnection.Open;
+  end;
+end;
+
+procedure TExchangeThread.FreeMySqlLibOnRestore;
+begin
+  //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
+  //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
+  if DM.MainConnection is TMyEmbConnection then
+  begin
+    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+      WriteExchangeLog('FreeMySqlLibOnRestore',
+        Format('MySql Clients Count перед созданием базы данных: %d',
+          [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+    MyAPIEmbedded.FreeMySQLLib;
   end;
 end;
 

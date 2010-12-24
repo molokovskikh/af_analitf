@@ -275,6 +275,8 @@ uses
   GlobalExchangeParameters,
   Wait,
   U_MinPricesForm,
+  AddressController,
+  KeyboardHelper,
   NetworkSettings,
   U_ServiceLogForm;
 
@@ -342,6 +344,7 @@ try
   //Производим восстановление
   FormPlacement.Active := True;
   Self.WindowState := wsMaximized;
+  GetKeyboardHelper.SwitchToRussian();
 
   UpdateReclame;
   //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
@@ -427,6 +430,10 @@ try
       Exit;
   end;
 
+  //Если запрещен обмен с сервером, то выходим из процедуры
+  if DM.DisableAllExchange then
+    Exit;
+    
   //Если выставлен флаг "Делать кумулятивное обновление", то делаем его
   //Он может быть выставлен с предыдущего запуска программы или в результате непрошедщего импорта,
   //который был запущен двумя строками выше
@@ -907,7 +914,7 @@ begin
 {$ifdef NetworkVersion}
   actSendOrders.Enabled := not GetNetworkSettings.DisableSendOrders and CheckUnsendOrders;
 {$else}
-  actSendOrders.Enabled := CheckUnsendOrders;
+  actSendOrders.Enabled := not DM.DisableAllExchange and CheckUnsendOrders;
 {$endif}
 end;
 
@@ -1288,6 +1295,7 @@ begin
     DM.adtParams.FieldByName( 'ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
     DM.adtParams.Post;
     DM.ClientChanged;
+    GetAddressController.ChangeCurrent(DM.adtClientsCLIENTID.Value);
     if not IsFutureClient then begin
       CurrentUser := mi.Caption;
       if (Assigned(ActiveChild) and (Length(ActiveChild.Caption) > 0)) then

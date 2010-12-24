@@ -9,7 +9,9 @@ uses
   FR_DSet, FR_DBSet, OleCtrls, SHDocVw, 
   SQLWaiting, ShellAPI, GridsEh, MemDS,
   DBAccess, MyAccess, MemData, Orders,
-  U_frameOrderHeadLegend, Menus;
+  U_frameOrderHeadLegend, Menus,
+  AddressController,
+  U_frameFilterAddresses;
 
 type
   TOrdersHForm = class(TChildForm)
@@ -73,6 +75,8 @@ type
     btnUnFrozen: TButton;
     sbMoveToClient: TSpeedButton;
     pmDestinationClients: TPopupMenu;
+    adsOrdersHFormAddressName: TStringField;
+    tmrFillReport: TTimer;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -99,6 +103,7 @@ type
       EditMode: Boolean; Params: TColCellParamsEh);
     procedure btnUnFrozenClick(Sender: TObject);
     procedure sbMoveToClientClick(Sender: TObject);
+    procedure tmrFillReportTimer(Sender: TObject);
   private
     Strings: TStrings;
     //—писок выбранных строк в гридах
@@ -111,10 +116,14 @@ type
     procedure FillDestinationClients;
     procedure MoveToClient(DestinationClientId : Integer);
     procedure OnDectinationClientClick(Sender: TObject);
+    procedure OnChangeCheckBoxAllOrders;
+    procedure OnChangeFilterAllOrders;
+    function GetActionDescription() : String;
   protected
     FOrdersForm: TOrdersForm;
     RestoreUnFrozenOrMoveToClient : Boolean;
     InternalDestinationClientId : Integer;
+    frameFilterAddresses : TframeFilterAddresses;
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -159,6 +168,18 @@ begin
   FSelectedRows := TStringList.Create;
   PrintEnabled := False;
 
+  frameFilterAddresses := TframeFilterAddresses.AddFrame(
+    Self,
+    pTop,
+    dtpDateTo.Left + dtpDateTo.Width + 5,
+    pTop.Height,
+    dbgCurrentOrders,
+    OnChangeCheckBoxAllOrders,
+    OnChangeFilterAllOrders);
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Interval := 500;
+  frameFilterAddresses.Visible := False;
+
   FOrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
   if FOrdersForm = nil then
     FOrdersForm := TOrdersForm.Create( Application);
@@ -201,8 +222,10 @@ end;
 procedure TOrdersHForm.SetParameters;
 var
   Grid : TDBGridEh;
+  clientsSql : String;
 begin
   Grid := nil;
+  clientsSql := ''; 
   SoftPost( adsOrdersHForm);
   adsOrdersHForm.IndexFieldNames := '';
   adsOrdersHForm.Close;
@@ -210,7 +233,22 @@ begin
   case TabControl.TabIndex of
     0:
     begin
+      frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
       adsOrdersHForm.SQL.Text := adsCurrentOrders.SQL.Text;
+
+      if GetAddressController.ShowAllOrders then begin
+        clientsSql := GetAddressController.GetFilter('CurrentOrderHeads.ClientId');
+        if clientsSql <> '' then
+          adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+            + #13#10' and ' + clientsSql + ' '#13#10;
+      end
+      else
+        adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+          + #13#10' and (CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
+
+      adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+        + ' group by CurrentOrderHeads.OrderId having count(CurrentOrderLists.Id) > 0 order by CurrentOrderHeads.PriceName ';
+
       adsOrdersHForm.SQLRefresh.Text := adsCurrentOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsCurrentOrders.SQLDelete.Text;
       adsOrdersHForm.SQLUpdate.Text := adsCurrentOrders.SQLUpdate.Text;
@@ -231,6 +269,7 @@ begin
     end;
     1:
     begin
+      frameFilterAddresses.Visible := False;
       adsOrdersHForm.SQL.Text := adsSendOrders.SQL.Text;
       adsOrdersHForm.SQLRefresh.Text := adsSendOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsSendOrders.SQLDelete.Text;
@@ -255,8 +294,10 @@ begin
     end;
   end;
 
-  adsOrdersHForm.ParamByName( 'ClientId').Value :=
-    DM.adtClients.FieldByName( 'ClientId').Value;
+  if Assigned(adsOrdersHForm.Params.FindParam('ClientId'))
+  then
+    adsOrdersHForm.ParamByName( 'ClientId').Value :=
+      DM.adtClients.FieldByName( 'ClientId').Value;
   adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
 
   adsOrdersHForm.Open;
@@ -594,6 +635,15 @@ begin
     for I := 0 to FSelectedRows.Count-1 do begin
       adsOrdersHForm.Bookmark := FSelectedRows[i];
 
+      //ѕроизводим работу только с за€вками текущего клиента
+      if adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value then
+        Continue;
+
+      //"–азмораживаем" только замороженные за€вки
+      if RestoreUnFrozenOrMoveToClient and (InternalDestinationClientId = 0) then
+        if not adsOrdersHFormFrozen.Value then
+          Continue;
+
       with DM.adsQueryValue do begin
         if Active then
           Close;
@@ -603,8 +653,15 @@ begin
         Open;
         try
           { провер€ем наличие прайс-листа }
-          if IsEmpty then
-            raise Exception.Create( 'ƒанный прайс-лист не найден');
+          if IsEmpty then begin
+            Strings.Append(
+              Format('«аказ є%s не возможно %s, т.к. прайс-листа %s - %s нет в обзоре.',
+              [adsOrdersHFormDisplayOrderId.AsString,
+              GetActionDescription(),
+              adsOrdersHFormPriceName.AsString,
+              adsOrdersHFormRegionName.AsString]));
+            Continue;  
+          end;
         finally
           Close;
         end;
@@ -644,7 +701,7 @@ begin
               AddWhere('(CCore.SYNONYMFIRMCRCODE = :SYNONYMFIRMCRCODE)');
               ParamByName( 'SYNONYMFIRMCRCODE').Value := SynonymFirmCrCode;
             end;
-          
+
             Open;
             FetchAll;
             IndexFieldNames := 'Cost ASC';
@@ -857,7 +914,10 @@ begin
           try
             for I := 0 to FSelectedRows.Count-1 do begin
               Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
-              if adsOrdersHFormFrozen.Value then
+              //ќбрабатываем только "замороженные" за€вки текущего клиента
+              if adsOrdersHFormFrozen.Value
+                and (adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value)
+              then
                 Grid.DataSource.DataSet.Delete
             end;
             Grid.DataSource.DataSet.Refresh;
@@ -920,7 +980,9 @@ begin
           try
             for I := 0 to FSelectedRows.Count-1 do begin
               Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
-              Grid.DataSource.DataSet.Delete
+              //ќбрабатываем только за€вки текущего клиента
+              if adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value then
+                Grid.DataSource.DataSet.Delete
             end;
             Grid.DataSource.DataSet.Refresh;
           finally
@@ -993,6 +1055,34 @@ var
 begin
   mi := TMenuItem(Sender);
   MoveToClient(mi.Tag);
+end;
+
+procedure TOrdersHForm.OnChangeCheckBoxAllOrders;
+begin
+
+end;
+
+procedure TOrdersHForm.OnChangeFilterAllOrders;
+begin
+  tmrFillReport.Enabled := False;
+  tmrFillReport.Enabled := True;
+end;
+
+procedure TOrdersHForm.tmrFillReportTimer(Sender: TObject);
+begin
+  tmrFillReport.Enabled := False;
+  SetParameters;
+end;
+
+function TOrdersHForm.GetActionDescription: String;
+begin
+  if not RestoreUnFrozenOrMoveToClient then
+    Result := 'восстановить'
+  else
+    if InternalDestinationClientId = 0 then
+      Result := '"разморозить"'
+    else
+      Result := 'переместить';
 end;
 
 end.

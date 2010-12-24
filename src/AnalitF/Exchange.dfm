@@ -213,7 +213,6 @@ object ExchangeForm: TExchangeForm
     Top = 32
   end
   object HTTP: TIdHTTP
-    OnStatus = HTTPStatus
     IOHandler = sslMain
     AllowCookies = True
     ProxyParams.BasicAuthentication = True

@@ -207,6 +207,9 @@ type
 
     function WorkSchemaExists(connection: TCustomMyConnection) : Boolean;
 
+    procedure ExportObjects(connection : TCustomMyConnection);
+    procedure ImportObjects(connection : TCustomMyConnection);
+
     procedure DropWorkSchema(connection: TCustomMyConnection);
 
     procedure CreateWorkSchema(connection: TCustomMyConnection);
@@ -218,7 +221,8 @@ implementation
 
 uses
   DModule, MyEmbConnection,
-  StartupHelper;
+  StartupHelper,
+  DBProc;
 
 var
   FDatabaseController : TDatabaseController;
@@ -763,11 +767,19 @@ var
           Format('Объект %s был восстановлен (Extended)', [table.LogObjectName]));
 
       if not NeedRepairFromBackup then begin
-        MyServerControl.RepairTable([rtExtended, rtUseFrm]);
-        NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
-        if NeedRepairFromBackup then
-          WriteExchangeLog('DatabaseController.CheckTable',
-            Format('Объект %s был восстановлен (Extended, UseFrm)', [table.LogObjectName]));
+        try
+          MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+          NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+          if NeedRepairFromBackup then
+            WriteExchangeLog('DatabaseController.CheckTable',
+              Format('Объект %s был восстановлен (Extended, UseFrm)', [table.LogObjectName]));
+        except
+          on E : Exception do begin
+            NeedRepairFromBackup := False;
+            WriteExchangeLog('DatabaseController.CheckTable',
+              Format('При восстановлении (Extended, UseFrm) объекта %s возникла ошибка: %s', [table.LogObjectName, E.Message]));
+          end;
+        end;
 
         if not NeedRepairFromBackup then begin
           if (table.RepairType in [dortCritical, dortBackup]) then begin
@@ -996,6 +1008,43 @@ begin
     connection.ExecSQL('drop database if exists analitf;', []);
 end;
 
+procedure TDatabaseController.ExportObjects(
+  connection: TCustomMyConnection);
+var
+  I : Integer;
+  table : TDatabaseTable;
+  rowExported : Integer;
+  PathToBackup,
+  MySqlPathToBackup : String;
+begin
+  PathToBackup := ExePath + SDirTableBackup + '\';
+  MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
+  for I := 0 to DatabaseObjects.Count-1 do
+    if (DatabaseObjects[i] is TDatabaseTable) then begin
+      table := TDatabaseTable(DatabaseObjects[i]);
+      rowExported := 0;
+      WriteExchangeLog('ExportObjects', 'Начали экспорт объекта: ' + table.Name);
+      try
+        try
+          rowExported := DBProc.UpdateValue(
+            connection,
+            Format(
+              'select * from analitf.%s INTO OUTFILE ''%s'';',
+              [table.Name,
+               MySqlPathToBackup + table.Name + '.txt']
+            ),
+            [],
+            []);
+        except
+          on E : Exception do
+            WriteExchangeLog('ExportObjects', 'Во время экспорта объекта ' + table.Name + ' возникла ошибка: ' + E.Message);
+        end;
+      finally
+        WriteExchangeLog('ExportObjects', 'Закончили экспорт объекта: ' + table.Name + ', count = ' + IntToStr(rowExported));
+      end;
+    end;
+end;
+
 function TDatabaseController.FindById(
   id: TDatabaseObjectId): TDatabaseObject;
 var
@@ -1148,6 +1197,40 @@ begin
   end;
 end;
 
+procedure TDatabaseController.ImportObjects(
+  connection: TCustomMyConnection);
+var
+  I : Integer;
+  table : TDatabaseTable;
+  rowExported : Integer;
+  PathToBackup,
+  MySqlPathToBackup : String;
+begin
+  PathToBackup := ExePath + SDirTableBackup + '\';
+  MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
+  for I := 0 to DatabaseObjects.Count-1 do
+    if (DatabaseObjects[i] is TDatabaseTable) then begin
+      table := TDatabaseTable(DatabaseObjects[i]);
+      rowExported := 0;
+      WriteExchangeLog('ImportObjects', 'Начали импорт объекта: ' + table.Name);
+      try
+        try
+          connection.ExecSQL('truncate analitf.' + table.Name + ';', []);
+          rowExported := DBProc.UpdateValue(
+            connection,
+            AProc.GetLoadDataSQL(table.Name, PathToBackup + table.Name + '.txt'),
+            [],
+            []);
+        except
+          on E : Exception do
+            WriteExchangeLog('ImportObjects', 'Во время импорта объекта ' + table.Name + ' возникла ошибка: ' + E.Message);
+        end;
+      finally
+        WriteExchangeLog('ImportObjects', 'Закончили импорт объекта: ' + table.Name + ', count = ' + IntToStr(rowExported));
+      end;
+    end;
+end;
+
 procedure TDatabaseController.Initialize(connection: TCustomMyConnection);
 var
   I : Integer;
@@ -1215,13 +1298,14 @@ end;
 
 function TDatabaseController.IsFatalError(E: EMyError): Boolean;
 const
-  FatalErrorCodes : array[0..4] of Integer =
+  FatalErrorCodes : array[0..5] of Integer =
   (
     ER_NO_SUCH_TABLE,
     ER_GET_ERRNO,
     ER_CRASHED_ON_USAGE,
     ER_CRASHED_ON_REPAIR,
-    ER_CANT_CREATE_TABLE
+    ER_CANT_CREATE_TABLE,
+    ER_FILE_NOT_FOUND
   );
 var
   I : Integer;
@@ -1499,15 +1583,27 @@ end;
 function TDatabaseView.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := ''
+{$ifdef ViewAsTable}
++'create table '
+{$else}
 +'create temporary table '
+{$endif}
 +IfThen(Length(DatabasePrefix) > 0, DatabasePrefix + '.')
 +FName
+{$ifdef ViewAsTable}
++' ENGINE=MYISAM as ';
+{$else}
 +' ENGINE=MEMORY as ';
+{$endif}
 end;
 
 function TDatabaseView.GetDropSQL(DatabasePrefix: String): String;
 begin
+{$ifdef ViewAsTable}
+  Result := 'drop table if exists '
+{$else}
   Result := 'drop temporary table if exists '
+{$endif}
     + IfThen(Length(DatabasePrefix) > 0, DatabasePrefix + '.')
     + FName + ';';
 end;

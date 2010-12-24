@@ -17,7 +17,10 @@ uses
   MyCall,
   Registry,
   RegistryHelper,
-  ExclusiveParams;
+  ExclusiveParams,
+  AddressController,
+  KeyboardHelper,
+  SupplierController;
 
 {
 Криптование
@@ -354,6 +357,8 @@ type
     FVitallyImportantMarkups : TObjectList;
     HTTPC : TINFCrypt;
     OrdersInfo : TStringList;
+    //Запрещен любой обмен с сервером из-за разницы во времени
+    FDisableAllExchange : Boolean;
 
     //Было произведено обновление программы с Firebird на MySql
     FProcessFirebirdUpdate : Boolean;
@@ -380,6 +385,11 @@ type
     procedure UpdateDBUIN(dbCon : TCustomMyConnection);
     //Проверяем наличие всех объектов в базе данных
     procedure CheckDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+{$ifdef ExportData}
+    procedure ExportDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ImportDBObjectsWithDatabaseController(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ProcessExportImport;
+{$endif}
     //Проверяем и обновляем определенный файл
     procedure UpdateDBFile(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure OnScriptExecuteError(Sender: TObject;
@@ -437,6 +447,7 @@ type
       Flag: TDATraceFlag);
 {$endif}
     procedure SetNetworkSettings;
+    procedure CheckLocalTime;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -445,6 +456,8 @@ type
     GlobalExclusiveParams : TExclusiveParams;
     procedure CompactDataBase();
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
+      APreview: boolean = False; PrintDlg: boolean = True);
+    procedure ShowFastReportWithSave(FileName: string; DataSet: TDataSet = nil;
       APreview: boolean = False; PrintDlg: boolean = True);
     procedure ShowOrderDetailsReport(
       OrderId  : Integer;
@@ -512,6 +525,7 @@ type
 
     property NeedImportAfterRecovery : Boolean read FNeedImportAfterRecovery;
     property CreateClearDatabase : Boolean read FCreateClearDatabase;
+    property DisableAllExchange : Boolean read FDisableAllExchange;
     property NeedUpdateByCheckUIN : Boolean read FNeedUpdateByCheckUIN;
     property NeedUpdateByCheckHashes : Boolean read FNeedUpdateByCheckHashes;
     property ProcessFirebirdUpdate : Boolean read FProcessFirebirdUpdate;
@@ -529,7 +543,7 @@ type
     procedure GetClientInformation(
       var ClientName : String;
       var IsFutureClient : Boolean);
-    function GetClientNameAndAddress : String;
+    function GetEditNameAndAddress : String;
     function GetClearSendResultSql(ClientId : Int64) : String;
     function NeedUpdate800xToMySql : Boolean;
     function NeedUpdateToNewLibMySqlD : Boolean;
@@ -969,6 +983,11 @@ begin
     RunDeleteDBFiles();
 }    
 
+{$ifdef ExportData}
+  //экспорт/импорт файлов от клиента
+  ProcessExportImport;
+{$endif}  
+
 {
   FNeedImportAfterRecovery := False;
   FCreateClearDatabase     := False;
@@ -1045,6 +1064,9 @@ begin
   SetStarted;
   ClientChanged;
 
+  GetAddressController.UpdateAddresses(MainConnection, DM.adtClientsCLIENTID.Value);
+  GetSupplierController.UpdateSuppliers(MainConnection);
+
   { устанавливаем параметры печати }
   frReport.Title := Application.Title;
   { проверяем и если надо создаем нужные каталоги }
@@ -1065,61 +1087,65 @@ begin
 
   SetSendToNotClosedOrders;
 
-  if FNeedUpdateByCheckUIN then begin
-    UpdateByCheckUINExchangeActions := [eaGetPrice];
-    if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime <> adtParams.FieldByName( 'LastDateTime').AsDateTime)
-    then
-      UpdateByCheckUINExchangeActions := UpdateByCheckUINExchangeActions + [eaGetFullData];
+  CheckLocalTime;
 
-    if not RunExchange(UpdateByCheckUINExchangeActions)
-    then begin
-      //Если не получилось обновиться, то отображаем форму конфигурации для корректировки настроек и авторизации
-      UpdateByCheckUINSuccess := (ShowConfig(True) * AuthChanges) <> [];
+  if not DisableAllExchange then begin
+    if FNeedUpdateByCheckUIN then begin
+      UpdateByCheckUINExchangeActions := [eaGetPrice];
+      if (adtParams.FieldByName( 'UpdateDateTime').AsDateTime <> adtParams.FieldByName( 'LastDateTime').AsDateTime)
+      then
+        UpdateByCheckUINExchangeActions := UpdateByCheckUINExchangeActions + [eaGetFullData];
 
-      //Если пользователь ввел корректировки, то пытаемся обновиться еще раз
-      if UpdateByCheckUINSuccess then
-        UpdateByCheckUINSuccess := RunExchange(UpdateByCheckUINExchangeActions);
+      if not RunExchange(UpdateByCheckUINExchangeActions)
+      then begin
+        //Если не получилось обновиться, то отображаем форму конфигурации для корректировки настроек и авторизации
+        UpdateByCheckUINSuccess := (ShowConfig(True) * AuthChanges) <> [];
 
-      //Если пользователь обновился не успешно, то проверяем заблокированы ли визуальные контролы
-      //Если контролы не заблокированы, то завершаем с ошибой выполение программы
-      //Если контролы заблокированы, то логируем неуспешную проверку UIN и
-      //отображаем программу с заблокированными контролами
-      if not UpdateByCheckUINSuccess then
-        if adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
-          MainForm.DisableByHTTPName;
-          LogCriticalError('Не прошла проверка на UIN в базе.');
-        end
-        else
-          LogExitError(
-            'Не прошла проверка на UIN в базе. ' +
-              'Не удалось заблокировать визуальные компоненты',
-            Integer(ecNotCheckUIN), False);
+        //Если пользователь ввел корректировки, то пытаемся обновиться еще раз
+        if UpdateByCheckUINSuccess then
+          UpdateByCheckUINSuccess := RunExchange(UpdateByCheckUINExchangeActions);
+
+        //Если пользователь обновился не успешно, то проверяем заблокированы ли визуальные контролы
+        //Если контролы не заблокированы, то завершаем с ошибой выполение программы
+        //Если контролы заблокированы, то логируем неуспешную проверку UIN и
+        //отображаем программу с заблокированными контролами
+        if not UpdateByCheckUINSuccess then
+          if adtParams.FieldByName('HTTPNameChanged').AsBoolean then begin
+            MainForm.DisableByHTTPName;
+            LogCriticalError('Не прошла проверка на UIN в базе.');
+          end
+          else
+            LogExitError(
+              'Не прошла проверка на UIN в базе. ' +
+                'Не удалось заблокировать визуальные компоненты',
+              Integer(ecNotCheckUIN), False);
+      end;
     end;
-  end;
 
-  if FNeedUpdateByCheckHashes then begin
-    if not RunExchange([ eaGetPrice]) then
-      LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
-  end;
+    if FNeedUpdateByCheckHashes then begin
+      if not RunExchange([ eaGetPrice]) then
+        LogExitError('Не прошла проверка на подлинность компонент.', Integer(ecNotChechHashes), False);
+    end;
 
-  { Запуск с ключем -e (Получение данных и выход)}
-  if FindCmdLineSwitch('e') then
-  begin
-    MainForm.ExchangeOnly := True;
-    //Производим только в том случае, если не была создана "чистая" база
-    if not CreateClearDatabase then
-      RunExchange([ eaGetPrice]);
-    Application.Terminate;
-  end;
-  //"Безмолвное импортирование" - производится в том случае, если была получена новая версия программы при
-  if FindCmdLineSwitch('si') then
-  begin
-    MainForm.ExchangeOnly := True;
-    //Производим только в том случае, если не была создана "чистая" база
-    if not CreateClearDatabase then
-      //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
-      RunExchange([eaImportOnly]);
-    Application.Terminate;
+    { Запуск с ключем -e (Получение данных и выход)}
+    if FindCmdLineSwitch('e') then
+    begin
+      MainForm.ExchangeOnly := True;
+      //Производим только в том случае, если не была создана "чистая" база
+      if not CreateClearDatabase then
+        RunExchange([ eaGetPrice]);
+      Application.Terminate;
+    end;
+    //"Безмолвное импортирование" - производится в том случае, если была получена новая версия программы при
+    if FindCmdLineSwitch('si') then
+    begin
+      MainForm.ExchangeOnly := True;
+      //Производим только в том случае, если не была создана "чистая" база
+      if not CreateClearDatabase then
+        //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
+        RunExchange([eaImportOnly]);
+      Application.Terminate;
+    end;
   end;
 
   if adtParams.FieldByName('HTTPNameChanged').AsBoolean then
@@ -1141,21 +1167,15 @@ end;
 
 { Проверки на невозможность запуска программы }
 procedure TDM.CheckRestrictToRun;
-var
 {$ifndef NetworkVersion}
+var
   MaxUsers, ProcessCount: integer;
   FreeAvail,
   Total,
   TotalFree,
   DBFileSize : Int64;
 {$endif}
-  Kbd: HKL;
 begin
-  //Если попытка загрузить клавиатуру окажется удачной, то делаем ее активной
-  Kbd := LoadKeyboardLayout('00000419', 0);
-  if Kbd<>0 then
-    ActivateKeyboardLayout(Kbd,0);
-
   if GetDisplayColors < 16 then
     LogExitError('Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.', Integer(ecColor));
 
@@ -1205,6 +1225,9 @@ begin
 {$endif}      
 
   FNeedUpdateByCheckUIN := not CheckCopyIDFromDB;
+{$ifdef ViewAsTable}
+  FNeedUpdateByCheckUIN := False;
+{$endif}
   if FNeedUpdateByCheckUIN then begin
     DM.MainConnection.Open;
     try
@@ -1947,15 +1970,20 @@ begin
     end;
 
     if DBVersion = 66 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor66);
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
       DBVersion := 67;
     end;
 
     if DBVersion = 67 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor66);
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
       DBVersion := 68;
     end;
 {$endif}
+
+    if DBVersion = 68 then begin
+      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+      DBVersion := 69;
+    end;
 
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]);
@@ -3770,16 +3798,9 @@ begin
   end;
 end;
 
-function TDM.GetClientNameAndAddress: String;
-var
-  ClientName : String;
-  IsFutureClient : Boolean;
+function TDM.GetEditNameAndAddress: String;
 begin
-  GetClientInformation(ClientName, IsFutureClient);
-  if IsFutureClient then
-    Result := ClientName + ', ' + adtClientsNAME.AsString
-  else
-    Result := ClientName + ', ' + adtClientsAddress.AsString;
+  Result := adtClientsEditName.AsString + ', ' + adtClientsAddress.AsString;
 end;
 
 procedure TDM.LoadVitallyImportantMarkups;
@@ -4436,6 +4457,121 @@ begin
         CurrentKey.DeleteValue(names[i]);
   finally
     names.Free;
+  end;
+end;
+
+{$ifdef ExportData}
+procedure TDM.ExportDBObjectsWithDatabaseController(
+  dbCon: TCustomMyConnection; DBDirectoryName: String;
+  OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
+begin
+  dbCon.Open;
+  try
+    DatabaseController.ExportObjects(dbCon);
+  finally
+    dbCon.Close;
+  end;
+end;
+
+procedure TDM.ImportDBObjectsWithDatabaseController(
+  dbCon: TCustomMyConnection; DBDirectoryName: String;
+  OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
+begin
+  dbCon.Open;
+  try
+    DatabaseController.ImportObjects(dbCon);
+  finally
+    dbCon.Close;
+  end;
+end;
+
+procedure TDM.ProcessExportImport;
+var
+  dbExportCon : TMyEmbConnection;
+begin
+  if FindCmdLineSwitch('export') then begin
+    dbExportCon := TMyEmbConnection.Create(nil);
+    try
+
+      dbExportCon.Database := MainConnection.Database;
+      dbExportCon.Username := MainConnection.Username;
+      dbExportCon.DataDir := TMyEmbConnection(MainConnection).DataDir;
+      dbExportCon.Options := TMyEmbConnection(MainConnection).Options;
+      dbExportCon.Params.Clear;
+      dbExportCon.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+      dbExportCon.LoginPrompt := False;
+
+      RunUpdateDBFile(
+        dbExportCon,
+        ExePath + SDirData,
+        0,
+        ExportDBObjectsWithDatabaseController,
+        nil,
+        'Происходит экспорт базы данных. Подождите...');
+    finally
+      dbExportCon.Free;
+    end;
+    ExitProcess(1);
+  end
+  else
+    if FindCmdLineSwitch('import') then begin
+      dbExportCon := TMyEmbConnection.Create(nil);
+      try
+
+        dbExportCon.Database := MainConnection.Database;
+        dbExportCon.Username := MainConnection.Username;
+        dbExportCon.DataDir := TMyEmbConnection(MainConnection).DataDir;
+        dbExportCon.Options := TMyEmbConnection(MainConnection).Options;
+        dbExportCon.Params.Clear;
+        dbExportCon.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
+        dbExportCon.LoginPrompt := False;
+
+        RunUpdateDBFile(
+          dbExportCon,
+          ExePath + SDirData,
+          0,
+          ImportDBObjectsWithDatabaseController,
+          nil,
+          'Происходит импорт базы данных. Подождите...');
+      finally
+        dbExportCon.Free;
+      end;
+      ExitProcess(1);
+    end;
+end;
+{$endif}
+
+procedure TDM.CheckLocalTime;
+var
+  currentTime : TDateTime;
+  updateTime : TDateTime;
+begin
+  currentTime := Now();
+  updateTime := UTCToLocalTime(adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
+  if (currentTime < updateTime - 1) and (currentTime > updateTime - 30)
+  then
+    AProc.MessageBox('Время, установленное на компьютере, старше времени последнего обновления больше чем на сутки.', MB_ICONWARNING or MB_OK)
+  else
+    if (currentTime < updateTime - 30) then begin
+      FDisableAllExchange := True;
+      MainForm.DisableByHTTPName;
+      MainForm.actReceive.Enabled := False;
+      MainForm.actReceiveAll.Enabled := False;
+      AProc.MessageBox('Время, установленное на компьютере, старше времени последнего обновления больше чем месяц.', MB_ICONERROR or MB_OK)
+    end;
+end;
+
+procedure TDM.ShowFastReportWithSave(FileName: string; DataSet: TDataSet;
+  APreview, PrintDlg: boolean);
+var
+  oldButtons : TfrPreviewButtons;
+begin
+  oldButtons := frReport.PreviewButtons;
+  try
+    frReport.PreviewButtons := frReport.PreviewButtons + [pbSave];
+    ShowFastReport(FileName, DataSet, APreview, PrintDlg);
+  finally
+    frReport.PreviewButtons := oldButtons;
   end;
 end;
 

@@ -1,0 +1,1 @@
+brcc32 -fo..\..\CompareScript68.RES CompareScript68.rc

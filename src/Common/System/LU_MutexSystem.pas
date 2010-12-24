@@ -24,7 +24,7 @@ begin
 end;
 
 initialization
-  GlobalMutex := CreateMutex(nil, True, PChar(StringReplace(ParamStr(0),
+  GlobalMutex := CreateMutex(nil, True, PChar('Global\' + StringReplace(ParamStr(0),
                                                 '\', '%', [rfReplaceAll])));
   if GlobalMutex = 0 then
     LastErrorMsg := SysErrorMessage(GetLastError)

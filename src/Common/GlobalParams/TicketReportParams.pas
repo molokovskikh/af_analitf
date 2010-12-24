@@ -9,6 +9,8 @@ uses
   GlobalParams;
 
 type
+  TTicketSize = (tsStandart, tsSmall);
+
   TTicketReportParams = class(TGlobalParams)
    public
     PrintEmptyTickets : Boolean;
@@ -19,6 +21,12 @@ type
     ProducerVisible : Boolean;
     PeriodVisible : Boolean;
     ProviderDocumentIdVisible : Boolean;
+    SignatureVisible : Boolean;
+    SerialNumberVisible : Boolean;
+    DocumentDateVisible : Boolean;
+    TicketSize : TTicketSize;
+
+    DeleteUnprintableElemnts : Boolean;
     procedure ReadParams; override;
     procedure SaveParams; override;
   end;
@@ -28,6 +36,8 @@ implementation
 { TTicketReportParams }
 
 procedure TTicketReportParams.ReadParams;
+var
+  ticketSizeInt : Integer;
 begin
   PrintEmptyTickets := GetParam('TicketReportPrintEmptyTickets');
   SizePercent := GetParam('TicketReportSizePercent');
@@ -37,6 +47,12 @@ begin
   ProducerVisible := GetParam('TicketReportProducerVisible');
   PeriodVisible := GetParam('TicketReportPeriodVisible');
   ProviderDocumentIdVisible := GetParam('TicketReportProviderDocumentIdVisible');
+  SignatureVisible := GetParamDef('TicketReportSignatureVisible', True);
+  SerialNumberVisible := GetParamDef('TicketReportSerialNumberVisible', True);
+  DocumentDateVisible := GetParamDef('TicketReportDocumentDateVisible', True);
+  DeleteUnprintableElemnts := GetParamDef('TicketReportDeleteUnprintableElemnts', False);
+  ticketSizeInt := GetParamDef('TicketReportTicketSize', 0);
+  TicketSize := TTicketSize(ticketSizeInt);
 end;
 
 procedure TTicketReportParams.SaveParams;
@@ -49,6 +65,11 @@ begin
   SaveParam('TicketReportProducerVisible', ProducerVisible);
   SaveParam('TicketReportPeriodVisible', PeriodVisible);
   SaveParam('TicketReportProviderDocumentIdVisible', ProviderDocumentIdVisible);
+  SaveParam('TicketReportSignatureVisible', SignatureVisible);
+  SaveParam('TicketReportSerialNumberVisible', SerialNumberVisible);
+  SaveParam('TicketReportDocumentDateVisible', DocumentDateVisible);
+  SaveParam('TicketReportDeleteUnprintableElemnts', DeleteUnprintableElemnts);
+  SaveParam('TicketReportTicketSize', Integer(TicketSize));
 end;
 
 end.
