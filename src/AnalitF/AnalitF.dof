@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=.\bin\bin1323
+OutputDir=.\bin\bin1325
 UnitOutputDir=.\unit
 PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
@@ -217,8 +217,8 @@ Count=1
 Item0=.\unit
 [HistoryLists\hlOutputDirectorry]
 Count=30
-Item0=.\bin\bin1323
-Item1=.\bin\bin1325
+Item0=.\bin\bin1325
+Item1=.\bin\bin1323
 Item2=.\bin\bin1321
 Item3=.\bin\bin1317
 Item4=.\bin\bin1313
