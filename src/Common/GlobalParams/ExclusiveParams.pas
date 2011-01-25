@@ -105,12 +105,12 @@ end;
 
 function TExclusiveParams.SelfExclusive: Boolean;
 begin
-  Result := ExclusiveId = GetPathCopyID();
+  Result := ExclusiveId = GetNetworkCopyID();
 end;
 
 procedure TExclusiveParams.SetExclusive;
 begin
-  ExclusiveId := GetPathCopyID();
+  ExclusiveId := GetNetworkCopyID();
   ExclusiveComputerName := GetComputerName_();
   ExclusiveDate := Now;
   SaveParams;
