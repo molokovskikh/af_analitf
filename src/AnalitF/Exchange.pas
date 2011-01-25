@@ -310,8 +310,10 @@ begin
     ( eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
   then begin
     AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
+{$ifndef NetworkVersion}
     if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
       AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
+{$endif}
   end;
 
   if Result and (eaGetWaybills in AExchangeActions)
