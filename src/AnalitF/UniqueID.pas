@@ -25,13 +25,20 @@ function GetOldDBID: LongInt;
 //Получить идентификатор установки программы относительно пути, чтобы сохранять настройки программы в реестре
 function GetPathCopyID: String;
 
+//Получить идентификатор установки программы относительно пути и имени компьютера, чтобы использовать при наложении экслюзивной блокировки
+function GetNetworkCopyID: String;
+
 implementation
 
 uses
   Forms,
   CRC32Unit,
   AProc,
-  NetworkSettings;
+  NetworkSettings,
+  SysNames;
+
+var
+  FComputerName : String;
 
 function GetUniqueID( APath, AFileHash: string): longint;
 var
@@ -148,4 +155,11 @@ begin
   Result := IntToHex( GetPathID(Application.ExeName), 8);
 end;
 
+function GetNetworkCopyID: String;
+begin
+  Result := IntToHex( GetPathID(FComputerName + '\\' + Application.ExeName), 8);
+end;
+
+initialization
+  FComputerName := GetComputerName_();
 end.

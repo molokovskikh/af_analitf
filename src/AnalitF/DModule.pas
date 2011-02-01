@@ -1049,11 +1049,10 @@ begin
   MainConnection.Open;
   GlobalExclusiveParams := TExclusiveParams.Create(MainConnection);
 
-
   //todo: здесь могут быть ошибки при создании папки, их надо обработать
-  if not WaybillsHelper.CheckWaybillFolders(MainConnection) then
-    AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
-
+  if not GetNetworkSettings.IsNetworkVersion then
+    if not WaybillsHelper.CheckWaybillFolders(MainConnection) then
+      AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
 
   { устанавливаем текущие записи в Clients и Users }
   if not adtClients.Locate('ClientId',adtParams.FieldByName('ClientId').Value,[])

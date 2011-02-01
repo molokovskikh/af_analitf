@@ -1589,20 +1589,34 @@ procedure TMainForm.tmrOnExclusiveTimer(Sender: TObject);
 var
   BeforeOrderCount,
   BeforePositionCount : Integer;
+  IsDebugLog : Boolean;
 begin
+  IsDebugLog := FindCmdLineSwitch('extd');
+  if IsDebugLog then
+    WriteExchangeLog('tmrOnExclusiveTimer', 'Start timer');
   BeforeOrderCount := LastOrderCount;
   BeforePositionCount := LastPositionCount;
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
+    if IsDebugLog then
+      WriteExchangeLog('tmrOnExclusiveTimer', 'Start exclusive');
     try
       SetOrdersInfo;
       BeforeOrderCount := LastOrderCount;
       BeforePositionCount := LastPositionCount;
     except
+      on E : Exception do
+        WriteExchangeLog('tmrOnExclusiveTimer', 'Error on SetOrdersInfo: ' + E.Message);
     end;
+    if IsDebugLog then
+      WriteExchangeLog('tmrOnExclusiveTimer', 'Before ReadParams');
     try
       DM.GlobalExclusiveParams.ReadParams;
     except
+      on E : Exception do
+        WriteExchangeLog('tmrOnExclusiveTimer', 'Error on Read: ' + E.Message);
     end;
+    if IsDebugLog then
+      WriteExchangeLog('tmrOnExclusiveTimer', 'After ReadParams');
     if not DM.GlobalExclusiveParams.ClearOrSelfExclusive
     then begin
       tmrOnExclusive.Enabled := False;
@@ -1619,8 +1633,25 @@ begin
         AProc.MessageBox(
           '—ервисом был изменен список текущих заказов.'#13#10 +
           'ѕодробнее смотрите в журнале работы сервиса.');
+    end
+    else begin
+      if IsDebugLog then begin
+        WriteExchangeLog('tmrOnExclusiveTimer', 'ExclusiveId: ' + DM.GlobalExclusiveParams.ExclusiveId);
+        WriteExchangeLog('tmrOnExclusiveTimer', 'ExclusiveComputerName: ' + DM.GlobalExclusiveParams.ExclusiveComputerName);
+        WriteExchangeLog('tmrOnExclusiveTimer', 'GetNetworkCopyID: ' + GetNetworkCopyID());
+      end;
+    end;
+    if IsDebugLog then
+      WriteExchangeLog('tmrOnExclusiveTimer', 'Stop exclusive');
+  end
+  else begin
+    if IsDebugLog then begin
+      WriteExchangeLog('tmrOnExclusiveTimer', 'else not Assigned(GlobalExchangeParams): ' + BoolToStr(not Assigned(GlobalExchangeParams), True));
+      WriteExchangeLog('tmrOnExclusiveTimer', 'else DM.MainConnection.Connected: ' + BoolToStr(DM.MainConnection.Connected, True));
     end;
   end;
+  if IsDebugLog then
+    WriteExchangeLog('tmrOnExclusiveTimer', 'End timer');
 end;
 
 procedure TMainForm.actShowMinPricesExecute(Sender: TObject);
