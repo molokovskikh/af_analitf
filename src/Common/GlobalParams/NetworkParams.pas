@@ -37,7 +37,7 @@ begin
     NetworkExportPricesFolder := value;
   value := GetParam('NetworkPositionPercent');
   if VarIsNull(value) then
-    NetworkPositionPercent := 0
+    NetworkPositionPercent := 10
   else
     NetworkPositionPercent := value;
   value := GetParam('NetworkExternalOrder');

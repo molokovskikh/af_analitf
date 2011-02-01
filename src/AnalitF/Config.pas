@@ -921,8 +921,8 @@ var
   controlInterval : Integer;
   nextTop : Integer;
 begin
+  controlInterval := dbchbUseCorrectOrders.Top - dbchbUseCorrectOrders.Height - dbchbConfirmSendingOrders.Top;
   if GetNetworkSettings().IsNetworkVersion then begin
-    controlInterval := dbchbUseCorrectOrders.Top - dbchbUseCorrectOrders.Height - dbchbConfirmSendingOrders.Top;
     gbNetworkVersionSettings := TGroupBox.Create(Self);
     gbNetworkVersionSettings.Parent := tshOther;
     gbNetworkVersionSettings.Caption := ' Сетевая версия ';
@@ -942,6 +942,15 @@ begin
     gbNetworkVersionSettings.Height := ePositionPercent.Top + ePositionPercent.Height + 5;
 
     lblServerLink.Top := gbNetworkVersionSettings.Top + gbNetworkVersionSettings.Height + controlInterval;
+    tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
+  end
+  else begin
+    nextTop := dbchbUseCorrectOrders.Top + dbchbUseCorrectOrders.Height + controlInterval;
+
+    AddLabelAndEdit(tshOther, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при восстановлении заказа:');
+    ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
+
+    lblServerLink.Top := ePositionPercent.Top + ePositionPercent.Height + controlInterval;
     tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
   end;
 end;
