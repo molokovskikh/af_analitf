@@ -1591,6 +1591,9 @@ var
   BeforePositionCount : Integer;
   IsDebugLog : Boolean;
 begin
+  if not GetNetworkSettings().IsNetworkVersion then
+    Exit;
+
   IsDebugLog := FindCmdLineSwitch('extd');
   if IsDebugLog then
     WriteExchangeLog('tmrOnExclusiveTimer', 'Start timer');

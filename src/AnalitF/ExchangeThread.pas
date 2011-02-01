@@ -5,15 +5,16 @@ interface
 uses
   Classes, SysUtils, Windows, StrUtils, ComObj, Variants,
   SOAPThroughHTTP, DateUtils, ShellAPI, ExtCtrls, RecThread, ActiveX,
-  IdException, WinSock, RxVerInf, DB, 
+  IdException, WinSock, RxVerInf, DB,
   SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdComponent, IdHTTP, FileUtil, 
+  DADAuthenticationNTLM, IdComponent, IdHTTP, FileUtil,
   U_frmOldOrdersDelete, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
   DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController,
   ArchiveHelper,
-  UserMessageParams;
+  UserMessageParams,
+  NetworkSettings;
 
 type
 
@@ -967,8 +968,9 @@ begin
 
       FileStream.Free;
     end;
-    OSMoveFile(LocalFileName,
-      RootFolder() + SDirIn + '\' + ExtractFileName(LocalFileName));
+    if GetNetworkSettings.IsNetworkVersion then
+      OSMoveFile(LocalFileName,
+        RootFolder() + SDirIn + '\' + ExtractFileName(LocalFileName));
     Windows.CopyFile(
       PChar( RootFolder() + SDirIn + '\' + ExtractFileName(LocalFileName)),
       PChar( RootFolder() + SDirIn + '\' + ChangeFileExt( ExtractFileName(LocalFileName), '.zi_')), False);

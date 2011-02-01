@@ -203,14 +203,15 @@ begin
     end;
   end;
 
-  if [eaSendLetter] <> AExchangeActions then begin
-    DM.GlobalExclusiveParams.ReadParams;
-    if not DM.GlobalExclusiveParams.ClearOrSelfExclusive then
-      Exit
-    else
-      if not ShowExclusive() then
-        Exit;
-  end;
+  if GetNetworkSettings().IsNetworkVersion then
+    if [eaSendLetter] <> AExchangeActions then begin
+      DM.GlobalExclusiveParams.ReadParams;
+      if not DM.GlobalExclusiveParams.ClearOrSelfExclusive then
+        Exit
+      else
+        if not ShowExclusive() then
+          Exit;
+    end;
 
   DM.DeleteEmptyOrders;
 

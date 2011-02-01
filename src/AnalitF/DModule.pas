@@ -2215,7 +2215,9 @@ begin
         MyDump.Objects := [doTables, doViews];
         MyDump.OnError := OnScriptExecuteError;
         MyDump.SQL.Text := GetFullLastCreateScript();
+{$ifdef DEBUG}
         WriteExchangeLog('CreateClearDatabaseFromScript', MyDump.SQL.Text);
+{$endif}
         MyDump.Restore;
       finally
         MyDump.Free;
