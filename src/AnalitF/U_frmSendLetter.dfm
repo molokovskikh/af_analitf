@@ -12,19 +12,20 @@ object frmSendLetter: TfrmSendLetter
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
+  OnCloseQuery = FormCloseQuery
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object pBottom: TPanel
     Left = 0
-    Top = 360
-    Width = 365
+    Top = 350
+    Width = 357
     Height = 44
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
     DesignSize = (
-      365
+      357
       44)
     object btnSend: TButton
       Left = 195
@@ -52,15 +53,15 @@ object frmSendLetter: TfrmSendLetter
   object pTop: TPanel
     Left = 0
     Top = 0
-    Width = 365
-    Height = 360
+    Width = 357
+    Height = 350
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
     object pAttach: TPanel
       Left = 0
-      Top = 217
-      Width = 365
+      Top = 207
+      Width = 357
       Height = 143
       Align = alBottom
       BevelOuter = bvNone
@@ -68,13 +69,13 @@ object frmSendLetter: TfrmSendLetter
       object gbAttach: TGroupBox
         Left = 0
         Top = 25
-        Width = 365
+        Width = 357
         Height = 118
         Align = alClient
         Caption = ' '#1042#1083#1086#1078#1077#1085#1085#1099#1077' '#1092#1072#1081#1083#1099' '
         TabOrder = 0
         DesignSize = (
-          365
+          357
           118)
         object lbFiles: TListBox
           Left = 8
@@ -112,13 +113,13 @@ object frmSendLetter: TfrmSendLetter
       object pAddLogs: TPanel
         Left = 0
         Top = 0
-        Width = 365
+        Width = 357
         Height = 25
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 1
         DesignSize = (
-          365
+          357
           25)
         object cbAddLogs: TCheckBox
           Left = 8
@@ -136,14 +137,14 @@ object frmSendLetter: TfrmSendLetter
     object gbMessage: TGroupBox
       Left = 0
       Top = 0
-      Width = 365
-      Height = 217
+      Width = 357
+      Height = 207
       Align = alClient
       Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '
       TabOrder = 0
       DesignSize = (
-        365
-        217)
+        357
+        207)
       object lBody: TLabel
         Left = 8
         Top = 56

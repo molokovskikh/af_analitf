@@ -14,14 +14,20 @@ uses
 type
   TArchiveHelper = class
    private
+    //Список вложений
+    FAttachs : TStringList;
     TempSendDir : String;    //Временная папка для создания аттачмента
     procedure CopyingFiles;
     function EncodeToBase64 : String;
     procedure ArchiveAttach;
+    procedure Init;
+    function GetArchFileName() : String;  
    public
-    ArchFileName : String;
-    constructor Create(FileName : String);
+    constructor Create(FileName : String); overload;
+    constructor Create(Attachs : TStringList); overload;
     function GetEncodedContent : String;
+    function GetArchivedSize : Int64;
+    destructor Destroy; override;
   end;
 
 
@@ -37,7 +43,7 @@ begin
   try
     SevenZipRes := SevenZipCreateArchive(
       0,
-      GetTempDir + TempSendDir + '\Attach.7z',
+      GetArchFileName(),
       GetTempDir + TempSendDir,
       '*.*',
       9,
@@ -62,20 +68,30 @@ end;
 
 procedure TArchiveHelper.CopyingFiles;
 var
-  SendedFileName : String;
+  I : Integer;
 begin
-  SendedFileName := GetTempDir + TempSendDir + '\' + ExtractFileName(ArchFileName);
-  if not Windows.CopyFile(
-     PChar(ArchFileName),
-     PChar(SendedFileName), false)
-  then
-    raise Exception.Create('Не удалось скопировать файл: ' + ArchFileName + #13#10'Причина: ' + SysErrorMessage(GetLastError));
+  for I := 0 to FAttachs.Count-1 do
+    if FileExists(FAttachs[i]) then
+      if not Windows.CopyFile(PChar(FAttachs[i]), PChar(GetTempDir + TempSendDir + '\' +ExtractFileName(FAttachs[i])), false) then
+        raise Exception.Create('Не удалось скопировать файл: ' + FAttachs[i] + #13#10'Причина: ' + SysErrorMessage(GetLastError));
 end;
 
 constructor TArchiveHelper.Create(FileName: String);
 begin
-  TempSendDir := 'AFRec';
-  ArchFileName := FileName;
+  Init;
+  FAttachs.Add(FileName);
+end;
+
+constructor TArchiveHelper.Create(Attachs: TStringList);
+begin
+  Init;
+  FAttachs.AddStrings(Attachs);
+end;
+
+destructor TArchiveHelper.Destroy;
+begin
+  FAttachs.Free;
+  inherited;
 end;
 
 function TArchiveHelper.EncodeToBase64: String;
@@ -86,7 +102,7 @@ begin
   Result := '';
   LE := TIdEncoderMIME.Create(nil);
   try
-    FS := TFileStream.Create(GetTempDir + TempSendDir + '\Attach.7z', fmOpenReadWrite);
+    FS := TFileStream.Create(GetArchFileName(), fmOpenReadWrite);
     try
       Result := le.Encode(FS);
       Result := Trim(Result);
@@ -96,6 +112,28 @@ begin
   finally
     LE.Free;
   end;
+end;
+
+function TArchiveHelper.GetArchFileName: String;
+begin
+  Result := GetTempDir + TempSendDir + '\Attach.7z';
+end;
+
+function TArchiveHelper.GetArchivedSize: Int64;
+begin
+  if DirectoryExists(GetTempDir + TempSendDir) then
+    if not ClearDir(GetTempDir + TempSendDir, True) then
+      raise Exception.Create('Не получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
+
+  if not CreateDir(GetTempDir + TempSendDir) then
+    raise Exception.Create('Не получилось создать временную директорию: ' + GetTempDir + TempSendDir);
+
+  //Формируем список файлов
+  CopyingFiles;
+
+  ArchiveAttach;
+
+  Result := GetFileSize(GetArchFileName());
 end;
 
 function TArchiveHelper.GetEncodedContent: String;
@@ -115,6 +153,12 @@ begin
   ArchiveAttach;
 
   Result := EncodeToBase64;
+end;
+
+procedure TArchiveHelper.Init;
+begin
+  TempSendDir := 'AFRec';
+  FAttachs := TStringList.Create;
 end;
 
 end.
