@@ -119,6 +119,7 @@ type
     procedure OnChangeCheckBoxAllOrders;
     procedure OnChangeFilterAllOrders;
     function GetActionDescription() : String;
+    function OffersByPriceExists(PriceCode, RegionCode : Int64) : Boolean;
   protected
     FOrdersForm: TOrdersForm;
     RestoreUnFrozenOrMoveToClient : Boolean;
@@ -644,29 +645,17 @@ begin
         if not adsOrdersHFormFrozen.Value then
           Continue;
 
-      with DM.adsQueryValue do begin
-        if Active then
-          Close;
-        SQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :PriceCode and RegionCode = :RegionCode';
-        ParamByName('PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
-        ParamByName('RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
-        Open;
-        try
-          { провер€ем наличие прайс-листа }
-          if IsEmpty then begin
-            Strings.Append(
-              Format('«аказ є%s не возможно %s, т.к. прайс-листа %s - %s нет в обзоре.',
-              [adsOrdersHFormDisplayOrderId.AsString,
-              GetActionDescription(),
-              adsOrdersHFormPriceName.AsString,
-              adsOrdersHFormRegionName.AsString]));
-            Continue;  
-          end;
-        finally
-          Close;
-        end;
-        Application.ProcessMessages;
+      { провер€ем наличие прайс-листа }
+      if not OffersByPriceExists(adsOrdersHFormPRICECODE.Value, adsOrdersHFormREGIONCODE.Value) then begin
+        Strings.Append(
+          Format('«аказ є%s не возможно %s, т.к. прайс-листа %s - %s нет в обзоре.',
+          [adsOrdersHFormDisplayOrderId.AsString,
+          GetActionDescription(),
+          adsOrdersHFormPriceName.AsString,
+          adsOrdersHFormRegionName.AsString]));
+        Continue;
       end;
+      Application.ProcessMessages;
 
       Screen.Cursor:=crHourglass;
       try
@@ -886,7 +875,6 @@ procedure TOrdersHForm.btnUnFrozenClick(Sender: TObject);
 var
   Grid : TToughDBGrid;
   I : Integer;
-  Strings : TStringList;
 begin
   if TabControl.TabIndex = 0 then
     Grid := dbgCurrentOrders
@@ -918,7 +906,9 @@ begin
               if adsOrdersHFormFrozen.Value
                 and (adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value)
               then
-                Grid.DataSource.DataSet.Delete
+                //удал€ем только те "замороженные" заказы, по которым есть предложени€
+                if OffersByPriceExists(adsOrdersHFormPRICECODE.Value, adsOrdersHFormREGIONCODE.Value) then 
+                  Grid.DataSource.DataSet.Delete
             end;
             Grid.DataSource.DataSet.Refresh;
           finally
@@ -952,7 +942,6 @@ procedure TOrdersHForm.MoveToClient(DestinationClientId: Integer);
 var
   Grid : TToughDBGrid;
   I : Integer;
-  Strings : TStringList;
 begin
   if TabControl.TabIndex = 0 then
     Grid := dbgCurrentOrders
@@ -1083,6 +1072,41 @@ begin
       Result := '"разморозить"'
     else
       Result := 'переместить';
+end;
+
+function TOrdersHForm.OffersByPriceExists(PriceCode,
+  RegionCode: Int64): Boolean;
+begin
+  Result := False;
+
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+
+  try
+    DM.adsQueryValue.SQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :PriceCode and RegionCode = :RegionCode and InJob = 1';
+    DM.adsQueryValue.ParamByName('PriceCode').Value := PriceCode;
+    DM.adsQueryValue.ParamByName('RegionCode').Value := RegionCode;
+    DM.adsQueryValue.Open;
+
+    if DM.adsQueryValue.IsEmpty then
+      Exit;
+  finally
+    DM.adsQueryValue.Close();
+  end;
+
+  try
+    DM.adsQueryValue.SQL.Text:='SELECT * FROM Core where PriceCode = :PriceCode and RegionCode = :RegionCode limit 10';
+    DM.adsQueryValue.ParamByName('PriceCode').Value := PriceCode;
+    DM.adsQueryValue.ParamByName('RegionCode').Value := RegionCode;
+    DM.adsQueryValue.Open;
+
+    if DM.adsQueryValue.IsEmpty then 
+      Exit;
+  finally
+    DM.adsQueryValue.Close();
+  end;
+
+  Result := True;
 end;
 
 end.
