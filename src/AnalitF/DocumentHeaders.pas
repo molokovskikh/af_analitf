@@ -280,7 +280,7 @@ begin
 '  dh.*, ' +
 '  dh.WriteTime as LocalWriteTime, ' +
 '  p.FullName as ProviderName, ' +
-'  sum(dbodies.SupplierCost) as TotalSumm, ' +
+'  sum(dbodies.SupplierCost*Quantity) as TotalSumm, ' +
 '  count(dbodies.Id) as TotalCount, ' +
 '  count(dbodies.SupplierCost) as CostCount ' +
 ' from ' +
