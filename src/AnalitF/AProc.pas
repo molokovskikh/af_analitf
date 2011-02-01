@@ -81,7 +81,8 @@ procedure InternalDoSendLetter(
   SendURL : String;        //URL, по которому происходит доступ
   TempSendDir : String;    //Временная папка для создания аттачмента
   Attachs : TStringList;   //Список приложений
-  Subject, Body : String); //Тема письма и тело письма
+  Subject, Body : String;
+  EmailGroup : Byte); //Тема письма и тело письма
 function GetLibraryVersionFromPath(AName: String): String;
 function GetLibraryVersionFromPathForExe(AName: String): String;
 function GetBuildNumberLibraryVersionFromPath(AName: String): Word;
@@ -627,7 +628,8 @@ procedure InternalDoSendLetter(
   SendURL : String;        //URL, по которому происходит доступ
   TempSendDir : String;    //Временная папка для создания аттачмента
   Attachs : TStringList;   //Список приложений
-  Subject, Body : String); //Тема письма и тело письма
+  Subject, Body : String;
+  EmailGroup : Byte); //Тема письма и тело письма
 var
   slLetter : TStringList;
   start,
@@ -701,11 +703,12 @@ var
     slLetter.Add('<?xml version="1.0" encoding="windows-1251"?>');
     slLetter.Add('<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">');
     slLetter.Add('  <soap:Body>');
-    slLetter.Add('    <SendLetter xmlns="IOS.Service">');
+    slLetter.Add('    <SendLetterEx xmlns="IOS.Service">');
     slLetter.Add('      <subject>' + SXReplaceXML(Subject) + '</subject>');
     slLetter.Add('      <body>' + SXReplaceXML(Body) + '</body>');
     slLetter.Add(Concat('      <attachment>', bs, '</attachment>'));
-    slLetter.Add('    </SendLetter>');
+    slLetter.Add('      <emailGroup>' + IntToStr(EmailGroup) + '</emailGroup>');
+    slLetter.Add('    </SendLetterEx>');
     slLetter.Add('  </soap:Body>');
     slLetter.Add('</soap:Envelope>');
     slLetter.Add('');
@@ -740,10 +743,10 @@ begin
       OldContentType := SendIdHTTP.Request.ContentType;
       SendIdHTTP.Request.Accept := '';
       SendIdHTTP.Request.Connection := '';
-      SendIdHTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendLetter"';
+      SendIdHTTP.Request.ContentType := 'application/soap+xml; charset=windows-1251; action="IOS.Service/SendLetterEx"';
 
       S := SendIdHTTP.Post(SendURL, ss);
-      start := PosEx( '>', S, Pos( 'SendLetterResult', S)) + 1;
+      start := PosEx( '>', S, Pos( 'SendLetterExResult', S)) + 1;
       stop := PosEx( '</', S, start);
       S := Copy( S, start, stop - start);
       if AnsiStartsText('Error=', S) then

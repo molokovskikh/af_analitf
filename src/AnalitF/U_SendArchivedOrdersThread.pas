@@ -119,7 +119,7 @@ begin
 
       if Terminated then exit;
 
-      AProc.InternalDoSendLetter(ReceiveHTTP, FURL, 'AFRec', FileList, 'Файлы от клиента', 'Смотри вложение');
+      AProc.InternalDoSendLetter(ReceiveHTTP, FURL, 'AFRec', FileList, 'Файлы от клиента', 'Смотри вложение', 0);
 
       for I := 0 to FileList.Count-1 do
         if Integer(FileList.Objects[i]) = 1 then

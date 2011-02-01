@@ -2396,7 +2396,8 @@ begin
       'AFSend',
       Attachs,
       frmSendLetter.leSubject.Text,
-      frmSendLetter.mBody.Text);
+      frmSendLetter.mBody.Text,
+      frmSendLetter.rgEmailGroup.ItemIndex);
   finally
     Attachs.Free;
   end;
@@ -2518,7 +2519,8 @@ begin
         'AFTechSend',
         Attachs,
         Subject,
-        Body + #13#10 + 'Смотрите вложения.'#13#10 + 'С уважением,'#13#10 + '  AnalitF.exe');
+        Body + #13#10 + 'Смотрите вложения.'#13#10 + 'С уважением,'#13#10 + '  AnalitF.exe',
+        0);
     finally
       Attachs.Free;
     end;

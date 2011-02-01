@@ -28,6 +28,7 @@ type
     btnDelFile: TButton;
     pAddLogs: TPanel;
     cbAddLogs: TCheckBox;
+    rgEmailGroup: TRadioGroup;
     procedure btnAddFileClick(Sender: TObject);
     procedure btnDelFileClick(Sender: TObject);
     procedure FormShow(Sender: TObject);

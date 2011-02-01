@@ -2,7 +2,7 @@ object frmSendLetter: TfrmSendLetter
   Left = 423
   Top = 164
   Width = 373
-  Height = 432
+  Height = 518
   Caption = #1055#1080#1089#1100#1084#1086' '#1074' '#1040#1050' "'#1048#1085#1092#1086#1088#1091#1084'"'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,9 +16,24 @@ object frmSendLetter: TfrmSendLetter
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
+  object rgEmailGroup: TRadioGroup
+    Left = 0
+    Top = 0
+    Width = 357
+    Height = 41
+    Align = alTop
+    Caption = ' '#1055#1086#1083#1091#1095#1072#1090#1077#1083#1100' '
+    Columns = 3
+    ItemIndex = 0
+    Items.Strings = (
+      #1058#1077#1093#1087#1086#1076#1076#1077#1088#1078#1082#1072
+      #1041#1091#1093#1075#1072#1083#1090#1077#1088#1080#1103
+      #1054#1088#1075#1074#1086#1087#1088#1086#1089#1099)
+    TabOrder = 2
+  end
   object pBottom: TPanel
     Left = 0
-    Top = 350
+    Top = 436
     Width = 357
     Height = 44
     Align = alBottom
@@ -52,15 +67,15 @@ object frmSendLetter: TfrmSendLetter
   end
   object pTop: TPanel
     Left = 0
-    Top = 0
+    Top = 41
     Width = 357
-    Height = 350
+    Height = 395
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
     object pAttach: TPanel
       Left = 0
-      Top = 207
+      Top = 252
       Width = 357
       Height = 143
       Align = alBottom
@@ -138,13 +153,13 @@ object frmSendLetter: TfrmSendLetter
       Left = 0
       Top = 0
       Width = 357
-      Height = 207
+      Height = 252
       Align = alClient
       Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '
       TabOrder = 0
       DesignSize = (
         357
-        207)
+        252)
       object lBody: TLabel
         Left = 8
         Top = 56
@@ -167,7 +182,7 @@ object frmSendLetter: TfrmSendLetter
         Left = 8
         Top = 72
         Width = 348
-        Height = 139
+        Height = 184
         Anchors = [akLeft, akTop, akRight, akBottom]
         ScrollBars = ssBoth
         TabOrder = 1
