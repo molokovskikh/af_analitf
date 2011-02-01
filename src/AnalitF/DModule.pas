@@ -878,6 +878,7 @@ begin
   FProcess800xUpdate := False;
   FProcessUpdateToNewLibMysqlD := False;
 
+  if not DirectoryExists( RootFolder() + SDirUpload) then CreateDir( RootFolder() + SDirUpload);
   if not GetNetworkSettings().IsNetworkVersion then begin
     if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
     if not DirectoryExists( ExePath + SDirDataTmpDir) then
