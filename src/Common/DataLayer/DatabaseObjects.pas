@@ -8,7 +8,8 @@ uses
   U_ExchangeLog, AProc,
   MyAccess, MyServerControl,
   MyClasses,
-  MyCall;
+  MyCall,
+  MySqlApi;
 
 {$ifdef USEMEMORYCRYPTDLL}
   {$ifndef USENEWMYSQLTYPES}
@@ -43,6 +44,9 @@ const
   BackupFileFlag = 'IsAnalitF.bak';
 
 type
+  TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
+  end;
+  
   TDatabaseObjectRepairType = (
     dortCritical,
     dortBackup,
@@ -213,6 +217,10 @@ type
     procedure DropWorkSchema(connection: TCustomMyConnection);
 
     procedure CreateWorkSchema(connection: TCustomMyConnection);
+
+    procedure FreeMySQLLib(ErrorMessage : String; SubSystem : String = '');
+    procedure SwitchMemoryLib(fileName : String = '');
+    procedure SwithTypes(ToNewTypes : Boolean);
   end;
 
   function DatabaseController : TDatabaseController;
@@ -222,7 +230,8 @@ implementation
 uses
   DModule, MyEmbConnection,
   StartupHelper,
-  DBProc;
+  DBProc,
+  NetworkSettings;
 
 var
   FDatabaseController : TDatabaseController;
@@ -277,7 +286,6 @@ begin
 end;
 
 procedure TDatabaseController.BackupDataTable(ObjectId: TDatabaseObjectId);
-{$ifndef NetworkVersion}
 var
   backupTable : TDatabaseTable;
 
@@ -297,39 +305,37 @@ var
           E.Message]));
     end;
   end;
-{$endif}
+
 begin
-{$ifndef NetworkVersion}
-  backupTable := TDatabaseTable(GetById(ObjectId));
-  if Length(backupTable.FileSystemName) > 0 then begin
-    backupFileName(backupTable.FileSystemName + DataFileExtention);
-    backupFileName(backupTable.FileSystemName + IndexFileExtention);
-    backupFileName(backupTable.FileSystemName + StructFileExtention);
-  end
-{$endif}
+  if not GetNetworkSettings().IsNetworkVersion then begin
+    backupTable := TDatabaseTable(GetById(ObjectId));
+    if Length(backupTable.FileSystemName) > 0 then begin
+      backupFileName(backupTable.FileSystemName + DataFileExtention);
+      backupFileName(backupTable.FileSystemName + IndexFileExtention);
+      backupFileName(backupTable.FileSystemName + StructFileExtention);
+    end
+  end;
 end;
 
 procedure TDatabaseController.BackupDataTables;
-{$ifndef NetworkVersion}
 var
   I : Integer;
   currentTable : TDatabaseTable;
-{$endif}
 begin
-{$ifndef NetworkVersion}
-  if not Self.Initialized then begin
-    WriteExchangeLog('DatabaseController.BackupDataTables', 'Попытка backup без инициализации DatabaseController');
-    Exit;
-  end;
-
-  for I := 0 to FDatabaseObjects.Count-1 do
-    if FDatabaseObjects[i] is TDatabaseTable then begin
-      currentTable := TDatabaseTable(FDatabaseObjects[i]);
-
-      if (currentTable.RepairType in [dortCritical, dortBackup]) then
-        BackupDataTable(currentTable.ObjectId);
+  if not GetNetworkSettings().IsNetworkVersion then begin
+    if not Self.Initialized then begin
+      WriteExchangeLog('DatabaseController.BackupDataTables', 'Попытка backup без инициализации DatabaseController');
+      Exit;
     end;
-{$endif}
+
+    for I := 0 to FDatabaseObjects.Count-1 do
+      if FDatabaseObjects[i] is TDatabaseTable then begin
+        currentTable := TDatabaseTable(FDatabaseObjects[i]);
+
+        if (currentTable.RepairType in [dortCritical, dortBackup]) then
+          BackupDataTable(currentTable.ObjectId);
+      end;
+  end;
 end;
 
 function TDatabaseController.CheckObjects(
@@ -787,47 +793,45 @@ var
               SimpleRepairTable()
             else begin
 
-{$ifdef NetworkVersion}
+              if GetNetworkSettings().IsNetworkVersion then
+                SimpleRepairTable()
+              else begin
 
-                SimpleRepairTable();
-                
-{$else}
-              if    FileExists(ExePath + SDirTableBackup + '\'
-                  + table.FileSystemName + DataFileExtention)
-                and FileExists(ExePath + SDirTableBackup + '\'
-                  + table.FileSystemName + IndexFileExtention)
-                and FileExists(ExePath + SDirTableBackup + '\'
-                  + table.FileSystemName + StructFileExtention)
-              then begin
-                OSCopyFile(
-                  ExePath + SDirTableBackup + '\'
-                  + table.FileSystemName + DataFileExtention,
-                  ExePath + SDirData + '\' + WorkSchema + '\'
-                  + table.FileSystemName + DataFileExtention);
-                OSCopyFile(
-                  ExePath + SDirTableBackup + '\'
-                  + table.FileSystemName + IndexFileExtention,
-                  ExePath + SDirData + '\' + WorkSchema + '\'
-                  + table.FileSystemName + IndexFileExtention);
-                OSCopyFile(
-                  ExePath + SDirTableBackup + '\'
-                  + table.FileSystemName + StructFileExtention,
-                  ExePath + SDirData + '\' + WorkSchema + '\'
-                  + table.FileSystemName + StructFileExtention);
+                if    FileExists(ExePath + SDirTableBackup + '\'
+                    + table.FileSystemName + DataFileExtention)
+                  and FileExists(ExePath + SDirTableBackup + '\'
+                    + table.FileSystemName + IndexFileExtention)
+                  and FileExists(ExePath + SDirTableBackup + '\'
+                    + table.FileSystemName + StructFileExtention)
+                then begin
+                  OSCopyFile(
+                    ExePath + SDirTableBackup + '\'
+                    + table.FileSystemName + DataFileExtention,
+                    ExePath + SDirData + '\' + WorkSchema + '\'
+                    + table.FileSystemName + DataFileExtention);
+                  OSCopyFile(
+                    ExePath + SDirTableBackup + '\'
+                    + table.FileSystemName + IndexFileExtention,
+                    ExePath + SDirData + '\' + WorkSchema + '\'
+                    + table.FileSystemName + IndexFileExtention);
+                  OSCopyFile(
+                    ExePath + SDirTableBackup + '\'
+                    + table.FileSystemName + StructFileExtention,
+                    ExePath + SDirData + '\' + WorkSchema + '\'
+                    + table.FileSystemName + StructFileExtention);
 
-                MyServerControl.RepairTable([rtExtended, rtUseFrm]);
-                NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
-                if not NeedRepairFromBackup then begin
-                  SimpleRepairTable();
+                  MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+                  NeedRepairFromBackup := ParseMethodResuls(MyServerControl, table.LogObjectName);
+                  if not NeedRepairFromBackup then begin
+                    SimpleRepairTable();
+                  end
+                  else
+                    WriteExchangeLog('DatabaseController.CheckTable',
+                      Format('Объект %s был восстановлен из backupа', [table.LogObjectName]));
                 end
                 else
-                  WriteExchangeLog('DatabaseController.CheckTable',
-                    Format('Объект %s был восстановлен из backupа', [table.LogObjectName]));
-              end
-              else
-                SimpleRepairTable();
-{$endif}
-
+                  SimpleRepairTable();
+                end;
             end;
           end
           else begin
@@ -903,11 +907,9 @@ var
   I : Integer;
   ErrorCount : Integer;
   Success : Boolean;
-{$ifndef NetworkVersion}
   SR: TSearchrec;
   FilePath,
   Path: String;
-{$endif}
 begin
   FCommand.Connection := connection;
   try
@@ -916,24 +918,24 @@ begin
     repeat
 
       try
-{$ifndef NetworkVersion}
-        FilePath := ExePath + SDirDataTmpDir + '\*.*';
-        Path := ExtractFilePath(FilePath);
-        try
-          if SysUtils.FindFirst(FilePath, faAnyFile-faDirectory, SR) = 0 then
-            repeat
-              try
-                OSDeleteFile(Path + SR.Name, True);
-              except
-                on E : Exception do
-                  WriteExchangeLog('CreateViews',
-                    Format('Ошибка при удалении временного файла %s: %s', [SR.Name, E.Message]));
-              end;
-            until FindNext(SR) <> 0;
-        finally
-          SysUtils.FindClose(SR);
+        if not GetNetworkSettings().IsNetworkVersion then begin
+          FilePath := ExePath + SDirDataTmpDir + '\*.*';
+          Path := ExtractFilePath(FilePath);
+          try
+            if SysUtils.FindFirst(FilePath, faAnyFile-faDirectory, SR) = 0 then
+              repeat
+                try
+                  OSDeleteFile(Path + SR.Name, True);
+                except
+                  on E : Exception do
+                    WriteExchangeLog('CreateViews',
+                      Format('Ошибка при удалении временного файла %s: %s', [SR.Name, E.Message]));
+                end;
+              until FindNext(SR) <> 0;
+          finally
+            SysUtils.FindClose(SR);
+          end;
         end;
-{$endif}
 
         for I := 0 to FDatabaseObjects.Count-1 do
           if FDatabaseObjects[i] is TDatabaseView then begin
@@ -1056,6 +1058,22 @@ begin
       Exit;
     end;
   Result := nil;
+end;
+
+procedure TDatabaseController.FreeMySQLLib(ErrorMessage: String; SubSystem : String);
+begin
+  if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
+    if SubSystem = '' then
+      LogCriticalError(Format('%s: %d',
+        [ErrorMessage,
+         TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]))
+    else
+      WriteExchangeLog(
+        SubSystem,
+        Format('%s: %d',
+        [ErrorMessage,
+         TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
+  MyAPIEmbedded.FreeMySQLLib;
 end;
 
 function TDatabaseController.GetById(
@@ -1443,54 +1461,52 @@ begin
 end;
 
 procedure TDatabaseController.RepairTableFromBackup(backupDir : String = '');
-{$ifndef NetworkVersion}
 var
   I : Integer;
   currentTable : TDatabaseTable;
-{$endif}
 begin
-{$ifndef NetworkVersion}
-  if Length(backupDir) = 0 then
-    backupDir := SDirTableBackup;
+  if not GetNetworkSettings().IsNetworkVersion then begin
+    if Length(backupDir) = 0 then
+      backupDir := SDirTableBackup;
 
-  if not Self.Initialized then begin
-    WriteExchangeLog('DatabaseController.RepairTableFromBackup', 'Попытка восстановления без инициализации DatabaseController');
-    Exit;
-  end;
+    if not Self.Initialized then begin
+      WriteExchangeLog('DatabaseController.RepairTableFromBackup', 'Попытка восстановления без инициализации DatabaseController');
+      Exit;
+    end;
 
-  for I := 0 to FDatabaseObjects.Count-1 do begin
-    if FDatabaseObjects[i] is TDatabaseTable then begin
-      currentTable := TDatabaseTable(FDatabaseObjects[i]);
+    for I := 0 to FDatabaseObjects.Count-1 do begin
+      if FDatabaseObjects[i] is TDatabaseTable then begin
+        currentTable := TDatabaseTable(FDatabaseObjects[i]);
 
-      if (currentTable.RepairType in [dortCritical, dortBackup]) then
-      begin
-        if FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + DataFileExtention)
-           and FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + IndexFileExtention)
-           and FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + StructFileExtention)
-        then begin
-          OSCopyFile(
-            ExePath + backupDir + '\'
-            + currentTable.FileSystemName + DataFileExtention,
-            ExePath + SDirData + '\' + WorkSchema + '\'
-            + currentTable.FileSystemName + DataFileExtention);
-          OSCopyFile(
-            ExePath + backupDir + '\'
-            + currentTable.FileSystemName + IndexFileExtention,
-            ExePath + SDirData + '\' + WorkSchema + '\'
-            + currentTable.FileSystemName + IndexFileExtention);
-          OSCopyFile(
-            ExePath + backupDir + '\'
-            + currentTable.FileSystemName + StructFileExtention,
-            ExePath + SDirData + '\' + WorkSchema + '\'
-            + currentTable.FileSystemName + StructFileExtention);
-          WriteExchangeLog('DatabaseController.RepairTableFromBackup',
-            Format('Объект %s был восстановлен из backupа', [currentTable.LogObjectName]));
+        if (currentTable.RepairType in [dortCritical, dortBackup]) then
+        begin
+          if FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + DataFileExtention)
+             and FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + IndexFileExtention)
+             and FileExists(ExePath + backupDir + '\' + currentTable.FileSystemName + StructFileExtention)
+          then begin
+            OSCopyFile(
+              ExePath + backupDir + '\'
+              + currentTable.FileSystemName + DataFileExtention,
+              ExePath + SDirData + '\' + WorkSchema + '\'
+              + currentTable.FileSystemName + DataFileExtention);
+            OSCopyFile(
+              ExePath + backupDir + '\'
+              + currentTable.FileSystemName + IndexFileExtention,
+              ExePath + SDirData + '\' + WorkSchema + '\'
+              + currentTable.FileSystemName + IndexFileExtention);
+            OSCopyFile(
+              ExePath + backupDir + '\'
+              + currentTable.FileSystemName + StructFileExtention,
+              ExePath + SDirData + '\' + WorkSchema + '\'
+              + currentTable.FileSystemName + StructFileExtention);
+            WriteExchangeLog('DatabaseController.RepairTableFromBackup',
+              Format('Объект %s был восстановлен из backupа', [currentTable.LogObjectName]));
+          end;
         end;
-      end;
 
+      end;
     end;
   end;
-{$endif}  
 end;
 
 procedure TDatabaseController.RestoreDatabase;
@@ -1507,6 +1523,19 @@ begin
     DM.MainConnection.Open;
   end;
   //OSDeleteFile(ExePath + BackupFileFlag);
+end;
+
+procedure TDatabaseController.SwitchMemoryLib(fileName: String);
+begin
+  TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib(fileName);
+end;
+
+procedure TDatabaseController.SwithTypes(ToNewTypes: Boolean);
+begin
+  if ToNewTypes then begin
+  end
+  else begin
+  end;
 end;
 
 function TDatabaseController.TableExists(tableName: String): Boolean;

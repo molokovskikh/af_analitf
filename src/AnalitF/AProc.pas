@@ -1200,12 +1200,11 @@ end;
 
 function RootFolder() : String;
 begin
-{$ifdef NetworkVersion}
-  //'\\prg1.adc.analit.net\AnalitFShare\'
-  Result := '\\' + GetNetworkSettings.Server  + '\' + GetNetworkSettings.ShareFolderName + '\';
-{$else}
-  Result := ExePath;
-{$endif}
+  if GetNetworkSettings().IsNetworkVersion then
+    //'\\prg1.adc.analit.net\AnalitFShare\'
+    Result := '\\' + GetNetworkSettings.Server  + '\' + GetNetworkSettings.ShareFolderName + '\'
+  else
+    Result := ExePath;
 end;
 
 { TFileUpdateInfo }

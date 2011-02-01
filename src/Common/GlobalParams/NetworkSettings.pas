@@ -11,6 +11,7 @@ type
    private
     FSettingFileName : String;
    public
+    IsNetworkVersion : Boolean;
     Server : String;
     Username : String;
     Password : String;
@@ -39,6 +40,7 @@ end;
 
 constructor TNetworkSettings.Create;
 begin
+  IsNetworkVersion := False;
   FSettingFileName := ChangeFileExt(ParamStr(0), '.config');
   Server := 'localhost';
   Username := 'root';
@@ -58,6 +60,7 @@ begin
   sl := TStringList.Create;
   try
     sl.LoadFromFile(FSettingFileName);
+    IsNetworkVersion := sl.Values['IsNetworkVersion'] = '1';
     Server := sl.Values['Server'];
     Username := sl.Values['Username'];
     Password := sl.Values['Password'];

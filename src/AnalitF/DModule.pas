@@ -878,13 +878,13 @@ begin
   FProcess800xUpdate := False;
   FProcessUpdateToNewLibMysqlD := False;
 
-{$ifndef NetworkVersion}
-  if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
-  if not DirectoryExists( ExePath + SDirDataTmpDir) then
-    CreateDir( ExePath + SDirDataTmpDir)
-  else
-    DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
-{$endif}
+  if not GetNetworkSettings().IsNetworkVersion then begin
+    if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
+    if not DirectoryExists( ExePath + SDirDataTmpDir) then
+      CreateDir( ExePath + SDirDataTmpDir)
+    else
+      DeleteFilesByMask(ExePath + SDirDataTmpDir + '\*.*', False);
+  end;
   //MySqlApi.MySQLEmbDisableEventLog := True;
 
   if NeedUpdate800xToMySql then
@@ -1013,9 +1013,8 @@ begin
   if MainConnection is TMyEmbConnection then
     CheckDBFile
   else begin
-{$ifdef NetworkVersion}
-    CheckDBFile
-{$else}
+    if GetNetworkSettings().IsNetworkVersion then
+      CheckDBFile;
 {$ifdef DEBUG}
     try
       MainConnection.Database := 'analitf';
@@ -1030,7 +1029,6 @@ begin
     finally
       MainConnection.Database := '';
     end;
-{$endif}
 {$endif}
   end;
   mainStartupHelper.Write('DModule', 'Закончили проверку базы данных');
@@ -1167,14 +1165,12 @@ end;
 
 { Проверки на невозможность запуска программы }
 procedure TDM.CheckRestrictToRun;
-{$ifndef NetworkVersion}
 var
   MaxUsers, ProcessCount: integer;
   FreeAvail,
   Total,
   TotalFree,
   DBFileSize : Int64;
-{$endif}
 begin
   if GetDisplayColors < 16 then
     LogExitError('Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.', Integer(ecColor));
@@ -1191,38 +1187,37 @@ begin
   DM.MainConnection.Open;
   try
     FGetCatalogsCount := GetCatalogsCount;
-{$ifndef NetworkVersion}
-    MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
-    try
-      MyServerControl.ShowProcessList();
-      ProcessCount := MyServerControl.RecordCount;
-    finally
-      MyServerControl.Close;
+    if not GetNetworkSettings().IsNetworkVersion then begin
+      MaxUsers := DM.adtClients.FieldByName( 'MaxUsers').AsInteger;
+      try
+        MyServerControl.ShowProcessList();
+        ProcessCount := MyServerControl.RecordCount;
+      finally
+        MyServerControl.Close;
+      end;
     end;
-{$endif}
   finally
     DM.MainConnection.Close;
   end;
-{$ifndef NetworkVersion}
-  if ( MaxUsers > 0) and ( ProcessCount > MaxUsers)
-  then
-    LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
-      'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
-{$endif}
 
-{$ifndef NetworkVersion}
-  if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
-    DBFileSize := GetDirectorySize(ExePath + SDirData);
-    DBFileSize := Max(2*DBFileSize, 200*1024*1024);
-    if DBFileSize > FreeAvail then
-      LogExitError(Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %s.',
-      [ FormatByteSize(DBFileSize) ]),
-      Integer(ecFreeDiskSpace));
-  end
-  else
-    LogExitError(Format( 'Не удается получить количество свободного места на диске.' +
-      #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
-{$endif}      
+  if not GetNetworkSettings().IsNetworkVersion then begin
+    if ( MaxUsers > 0) and ( ProcessCount > MaxUsers)
+    then
+      LogExitError(Format( 'Исчерпан лимит на подключение к базе данных (копий : %d). ' +
+        'Запуск программы невозможен.', [ MaxUsers]), Integer(ecUserLimit));
+
+    if GetDiskFreeSpaceEx(PChar(ExtractFilePath(ParamStr(0))), FreeAvail, Total, @TotalFree) then begin
+      DBFileSize := GetDirectorySize(ExePath + SDirData);
+      DBFileSize := Max(2*DBFileSize, 200*1024*1024);
+      if DBFileSize > FreeAvail then
+        LogExitError(Format( 'Недостаточно свободного места на диске для запуска приложения. Необходимо %s.',
+        [ FormatByteSize(DBFileSize) ]),
+        Integer(ecFreeDiskSpace));
+    end
+    else
+      LogExitError(Format( 'Не удается получить количество свободного места на диске.' +
+        #13#10#13#10'Сообщение об ошибке:'#13#10'%s', [ SysErrorMessage(GetLastError) ]), Integer(ecGetFreeDiskSpace));
+  end;
 
   FNeedUpdateByCheckUIN := not CheckCopyIDFromDB;
 {$ifdef ViewAsTable}
@@ -1878,112 +1873,112 @@ begin
     mainStartupHelper.Write('DModule', 'Начали проверки миграций');
     dbCon.Open;
     try
-{$ifdef NetworkVersion}
-      dbCon.ExecSQL('use analitf;', []);
-{$endif}
+      if GetNetworkSettings().IsNetworkVersion then
+        dbCon.ExecSQL('use analitf;', []);
       DBVersion := DBProc.QueryValue(dbCon, 'select ProviderMDBVersion from analitf.params where id = 0', [], []);
     finally
       dbCon.Close;
       //dbCon.RemoveFromPool;
     end;
 
-{$ifndef NetworkVersion}
-    if DBVersion = 50 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 51;
-    end;
-
-    if DBVersion = 51 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 52;
-    end;
-    
-    if DBVersion = 52 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 53;
-    end;
-
-    if DBVersion = 53 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 54;
-    end;
-
-    if DBVersion = 54 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 55;
-    end;
-
-    if DBVersion = 55 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 56;
-    end;
-
-    if DBVersion = 56 then begin
-      if NeedUpdate800xToMySql then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, Update800xToMySql, nil);
-        DBVersion := CURRENT_DB_VERSION;
-      end
-      else begin
+    if not GetNetworkSettings().IsNetworkVersion then begin
+      if DBVersion = 50 then begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-        DBVersion := 57;
+        DBVersion := 51;
+      end;
+
+      if DBVersion = 51 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 52;
+      end;
+    
+      if DBVersion = 52 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 53;
+      end;
+
+      if DBVersion = 53 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 54;
+      end;
+
+      if DBVersion = 54 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 55;
+      end;
+
+      if DBVersion = 55 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 56;
+      end;
+
+      if DBVersion = 56 then begin
+        if NeedUpdate800xToMySql then begin
+          RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, Update800xToMySql, nil);
+          DBVersion := CURRENT_DB_VERSION;
+        end
+        else begin
+          RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+          DBVersion := 57;
+        end;
+      end;
+
+      if DBVersion = 57 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 58;
+      end;
+
+      if DBVersion = 58 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, 60, UpdateDBFile, nil);
+        DBVersion := 61;
+      end;
+
+      if DBVersion = 61 then begin
+        if NeedUpdateToNewLibMySqlD then begin
+          RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlD, nil);
+          DBVersion := CURRENT_DB_VERSION;
+        end
+        else begin
+          DBVersion := CURRENT_DB_VERSION;
+        end;
+      end;
+
+      if DBVersion = 62 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 63;
+      end;
+
+      if DBVersion = 63 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor64);
+        DBVersion := 64;
+      end;
+
+      if DBVersion = 64 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 65;
+      end;
+
+      if DBVersion = 65 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor66);
+        DBVersion := 66;
+      end;
+
+      if DBVersion = 66 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 67;
+      end;
+
+      if DBVersion = 67 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 68;
+      end;
+
+      if DBVersion = 68 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 69;
       end;
     end;
 
-    if DBVersion = 57 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 58;
-    end;
-
-    if DBVersion = 58 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, 60, UpdateDBFile, nil);
-      DBVersion := 61;
-    end;
-
-    if DBVersion = 61 then begin
-      if NeedUpdateToNewLibMySqlD then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlD, nil);
-        DBVersion := CURRENT_DB_VERSION;
-      end
-      else begin
-        DBVersion := CURRENT_DB_VERSION;
-      end;
-    end;
-
-    if DBVersion = 62 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 63;
-    end;
-
-    if DBVersion = 63 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor64);
-      DBVersion := 64;
-    end;
-
-    if DBVersion = 64 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 65;
-    end;
-
-    if DBVersion = 65 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor66);
-      DBVersion := 66;
-    end;
-
-    if DBVersion = 66 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 67;
-    end;
-
-    if DBVersion = 67 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 68;
-    end;
-{$endif}
-
-    if DBVersion = 68 then begin
-      RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-      DBVersion := 69;
-    end;
 
     if DBVersion <> CURRENT_DB_VERSION then
       raise Exception.CreateFmt('Версия базы данных %d не совпадает с необходимой версией %d.', [DBVersion, CURRENT_DB_VERSION]);
@@ -2079,12 +2074,7 @@ begin
             //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
             //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
             if MainConnection is TMyEmbConnection then
-            begin
-              if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-                LogCriticalError(Format('MySql Clients Count при восстановлении: %d',
-                  [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-              MyAPIEmbedded.FreeMySQLLib;
-            end;
+              DatabaseController.FreeMySQLLib('MySql Clients Count при восстановлении');
             mainStartupHelper.Write('DModule', 'Начали восстановление базы данных');
             RecoverDatabase(E);
             mainStartupHelper.Write('DModule', 'Закончили восстановление базы данных');
@@ -2248,10 +2238,7 @@ begin
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
   if MainConnection is TMyEmbConnection then
   begin
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      LogCriticalError(Format('MySql Clients Count после создания базы данных: %d',
-        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
+    DatabaseController.FreeMySQLLib('MySql Clients Count после создания базы данных');
     DatabaseController.RepairTableFromBackup();
   end;
 end;
@@ -2285,26 +2272,27 @@ begin
         [EMyError(E).ErrorCode, EMyError(E).Message, BoolToStr(EMyError(E).IsFatalError)]
     );
 
-{$ifdef NetworkVersion}
-  if (E is EMyError) and (EMyError(E).ErrorCode = ER_BAD_DB_ERROR) then begin
-    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
-    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено создание базы данных.';
+  if GetNetworkSettings().IsNetworkVersion then begin
+    if (E is EMyError) and (EMyError(E).ErrorCode = ER_BAD_DB_ERROR) then begin
+      DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
+      UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено создание базы данных.';
+    end
+    else begin
+      DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
+      UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
+      InternalRestore := True;
+    end;
   end
   else begin
-    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
-    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
-    InternalRestore := True;
+    if not DirectoryExists(ExePath + SDirDataPrev) then begin
+      DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
+      UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено создание базы данных.';
+    end
+    else begin
+      DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
+      UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
+    end;
   end;
-{$else}
-  if not DirectoryExists(ExePath + SDirDataPrev) then begin
-    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено создание базы данных.';
-    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено создание базы данных.';
-  end
-  else begin
-    DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
-    UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
-  end;
-{$endif}
 
   //Логируем наши действия и отображаем пользователю
   AProc.LogCriticalError(DBErrorMess);
@@ -3051,11 +3039,10 @@ end;
 function TDM.GetMainConnection: TCustomMyConnection;
 begin
 {$ifndef USEMYSQLSTANDALONE}
-  {$ifdef NetworkVersion}
-  Result := (MyConnection as TCustomMyConnection);
-  {$else}
-  Result := (MyEmbConnection as TCustomMyConnection);
-  {$endif}
+  if GetNetworkSettings().IsNetworkVersion then
+    Result := (MyConnection as TCustomMyConnection)
+  else
+    Result := (MyEmbConnection as TCustomMyConnection);
 {$else}
   Result := (MyConnection as TCustomMyConnection);
 {$endif}
@@ -3141,12 +3128,7 @@ begin
   //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
   if MainConnection is TMyEmbConnection then
-  begin
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      LogCriticalError(Format('MySql Clients Count после восстановления базы данных: %d',
-        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
-  end;
+    DatabaseController.FreeMySQLLib('MySql Clients Count после восстановления базы данных');
 
   DatabaseController.RepairTableFromBackup();
 end;
@@ -3156,12 +3138,8 @@ begin
   if MainConnection.Connected then
     MainConnection.Disconnect;
   if (MainConnection is TMyEmbConnection)
-  then begin
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      LogCriticalError(Format('MySql Clients Count при закрытии программы: %d',
-        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
-  end;
+  then
+    DatabaseController.FreeMySQLLib('MySql Clients Count при закрытии программы');
 end;
 
 procedure TDM.InsertOrderHeader(orderDataSet: TCustomMyDataSet);
@@ -3609,10 +3587,7 @@ begin
   PathToBackup := ExePath + SDirTableBackup + '\';
   MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
   
-  if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-    LogCriticalError(Format('MySql Clients Count при обновлении с 800-х: %d',
-      [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-  MyAPIEmbedded.FreeMySQLLib;
+  DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении с 800-х');
 {$ifdef USEMEMORYCRYPTDLL}
   TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := False;
 {$endif}
@@ -3658,10 +3633,7 @@ begin
       oldMySqlDB.Free;
     end;
 
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      LogCriticalError(Format('MySql Clients Count при обновлении с 800-х: %d',
-        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
+    DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении с 800-х');
 {$ifdef USEMEMORYCRYPTDLL}
     TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
 {$endif}
@@ -3694,10 +3666,7 @@ begin
           AProc.LogCriticalError('Ошибка при удалении старой (800-х) базы данных : ' + E.Message);
       end;
   finally
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      LogCriticalError(Format('MySql Clients Count при обновлении с 800-х (обратно): %d',
-        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
+    DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении с 800-х (обратно)');
 {$ifdef USEMEMORYCRYPTDLL}
     TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
 {$endif}
@@ -4148,12 +4117,9 @@ begin
   PathToBackup := ExePath + SDirTableBackup + '\';
   MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
 
-  if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-    LogCriticalError(Format('MySql Clients Count при обновлении со старой libd: %d',
-      [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-  MyAPIEmbedded.FreeMySQLLib;
+  DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
 {$ifdef USEMEMORYCRYPTDLL}
-  TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak');
+  DatabaseController.SwitchMemoryLib(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak');
 {$endif}
 
   try
@@ -4195,12 +4161,9 @@ begin
       oldMySqlDB.Free;
     end;
 
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      LogCriticalError(Format('MySql Clients Count при обновлении со старой libd: %d',
-        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
+    DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
 {$ifdef USEMEMORYCRYPTDLL}
-    TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib();
+    DatabaseController.SwitchMemoryLib();
 {$endif}
 
     dbCon.Open;
@@ -4231,12 +4194,9 @@ begin
           AProc.LogCriticalError('Ошибка при удалении старой (libd) базы данных : ' + E.Message);
       end;
   finally
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      LogCriticalError(Format('MySql Clients Count при обновлении со старой libd (обратно): %d',
-        [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
+    DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd (обратно)');
 {$ifdef USEMEMORYCRYPTDLL}
-    TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib();
+    DatabaseController.SwitchMemoryLib();
 {$endif}
   end;
 end;

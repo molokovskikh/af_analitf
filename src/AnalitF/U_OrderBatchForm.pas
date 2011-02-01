@@ -609,9 +609,8 @@ begin
   spLoad.Left := 3;
   spLoad.Top := 5;
   spLoad.OnClick := OpenFile;
-{$ifdef NetworkVersion}
-  spLoad.Enabled := not GetNetworkSettings.DisableUpdate;
-{$endif}
+  if GetNetworkSettings().IsNetworkVersion then
+    spLoad.Enabled := not GetNetworkSettings.DisableUpdate;
 
   pTop.Height := spLoad.Height + 10;
   eSearch.Top := (pTop.Height - eSearch.Height) div 2;

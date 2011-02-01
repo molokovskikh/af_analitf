@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, GridsEh, DBGridEh, ToughDBGrid,
   DBGridHelper, RxMemDS, DB, DModule, DBProc, AProc, Buttons, MyAccess,
-  DBCtrls, DatabaseObjects;
+  DBCtrls, DatabaseObjects,
+  NetworkSettings;
 
 type
   TframeEditAddress = class(TFrame)
@@ -53,10 +54,8 @@ type
 
     dbchbCalculateWithNDS : TDBCheckBox;
 
-{$ifdef NetworkVersion}
     lSelfAddressId : TLabel;
     dbeSelfAddressId : TDBEdit;
-{$endif}
 
     constructor Create(AOwner: TComponent); override;
     procedure SaveChanges;
@@ -154,15 +153,15 @@ begin
     dbchbCalculateWithNDS.DataField := 'CalculateWithNDS';
     dbchbCalculateWithNDS.DataSource := dsEditClients;
 
-{$ifdef NetworkVersion}
-    nextTop := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 10;
-    AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lSelfAddressId, dbeSelfAddressId, 'Собственный код аптеки:', 'SelfAddressId');
-    dbeSelfAddressId.ReadOnly := True;
-    dbeSelfAddressId.Color := clBtnFace;
-    gbEditClients.Height := dbeSelfAddressId.Top + dbeSelfAddressId.Height + 7;
-{$else}
-    gbEditClients.Height := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 7;
-{$endif}
+    if GetNetworkSettings().IsNetworkVersion then begin
+      nextTop := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 10;
+      AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lSelfAddressId, dbeSelfAddressId, 'Собственный код аптеки:', 'SelfAddressId');
+      dbeSelfAddressId.ReadOnly := True;
+      dbeSelfAddressId.Color := clBtnFace;
+      gbEditClients.Height := dbeSelfAddressId.Top + dbeSelfAddressId.Height + 7;
+    end
+    else
+      gbEditClients.Height := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 7;
 
     gbEditClients.Constraints.MinHeight := gbEditClients.Height;
     gbEditClients.Align := alClient;

@@ -177,15 +177,16 @@ begin
   if AExchangeActions = [] then exit;
   if (eaPostOrderBatch in AExchangeActions) and (Length(BatchFileName) = 0) then
     Exit;
-{$ifdef NetworkVersion}
-  if GetNetworkSettings.DisableUpdate
-    and ([eaGetPrice, eaGetFullData, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * AExchangeActions <> [])
-  then
-    Exit;
-  if GetNetworkSettings.DisableSendOrders and (eaSendOrders in AExchangeActions)
-  then
-    Exit;
-{$endif}
+
+  if GetNetworkSettings().IsNetworkVersion then begin
+    if GetNetworkSettings.DisableUpdate
+      and ([eaGetPrice, eaGetFullData, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * AExchangeActions <> [])
+    then
+      Exit;
+    if GetNetworkSettings.DisableSendOrders and (eaSendOrders in AExchangeActions)
+    then
+      Exit;
+  end;
 
   try
 

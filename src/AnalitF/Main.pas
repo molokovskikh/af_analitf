@@ -289,11 +289,7 @@ begin
 {$ifndef DEBUG}
   itmImport.Visible := False;
 {$endif}
-{$ifdef NetworkVersion}
-  actServiceLog.Visible := True;
-{$else}
-  actServiceLog.Visible := False;
-{$endif}
+  actServiceLog.Visible := GetNetworkSettings().IsNetworkVersion;
   ClientNameRect := Rect(0, 0, 10, 10);
   deletedForms := TObjectList.Create(False);
   FormPlacement.Active := False;
@@ -911,11 +907,10 @@ end;
 
 procedure TMainForm.actSendOrdersUpdate(Sender: TObject);
 begin
-{$ifdef NetworkVersion}
-  actSendOrders.Enabled := not GetNetworkSettings.DisableSendOrders and CheckUnsendOrders;
-{$else}
-  actSendOrders.Enabled := not DM.DisableAllExchange and CheckUnsendOrders;
-{$endif}
+  if GetNetworkSettings().IsNetworkVersion then
+    actSendOrders.Enabled := not DM.DisableAllExchange and not GetNetworkSettings.DisableSendOrders and CheckUnsendOrders
+  else
+    actSendOrders.Enabled := not DM.DisableAllExchange and CheckUnsendOrders;
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -1635,12 +1630,12 @@ end;
 
 procedure TMainForm.DisableByNetworkSettings;
 begin
-{$ifdef NetworkVersion}
-  actReceive.Enabled := not GetNetworkSettings.DisableUpdate;
-  actReceiveAll.Enabled := not GetNetworkSettings.DisableUpdate;
-  actWayBill.Enabled := not GetNetworkSettings.DisableUpdate;
-  actGetHistoryOrders.Enabled := not GetNetworkSettings.DisableUpdate;
-{$endif}
+  if GetNetworkSettings().IsNetworkVersion then begin
+    actReceive.Enabled := not GetNetworkSettings.DisableUpdate;
+    actReceiveAll.Enabled := not GetNetworkSettings.DisableUpdate;
+    actWayBill.Enabled := not GetNetworkSettings.DisableUpdate;
+    actGetHistoryOrders.Enabled := not GetNetworkSettings.DisableUpdate;
+  end;
 end;
 
 procedure TMainForm.actServiceLogExecute(Sender: TObject);

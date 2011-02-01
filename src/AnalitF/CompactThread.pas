@@ -62,10 +62,6 @@ uses
   AProc,
   SQLWaiting;
 
-type
-  TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
-  end;
-
 procedure RunCompactDatabase;
 var
   CompactThread : TCompactThread;
@@ -297,13 +293,9 @@ begin
   //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
   if DM.MainConnection is TMyEmbConnection then
-  begin
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      WriteExchangeLog('RestoreFromEtalonThread',
-        Format('MySql Clients Count перед созданием базы данных: %d',
-          [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
-  end;
+    DatabaseController.FreeMySQLLib(
+      'MySql Clients Count перед созданием базы данных',
+      'RestoreFromEtalonThread');
 end;
 
 procedure TRestoreFromEtalonThread.OnScriptExecuteError(Sender: TObject;
@@ -402,13 +394,9 @@ begin
   //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
   if DM.MainConnection is TMyEmbConnection then
-  begin
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      WriteExchangeLog('RestoreOnErrorThread',
-        Format('MySql Clients Count перед созданием базы данных: %d',
-          [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
-  end;
+    DatabaseController.FreeMySQLLib(
+      'MySql Clients Count перед созданием базы данных',
+      'RestoreOnErrorThread');
 end;
 
 end.

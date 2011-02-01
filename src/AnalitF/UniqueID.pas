@@ -30,7 +30,8 @@ implementation
 uses
   Forms,
   CRC32Unit,
-  AProc;
+  AProc,
+  NetworkSettings;
 
 function GetUniqueID( APath, AFileHash: string): longint;
 var
@@ -103,22 +104,21 @@ end;
 
 function GetCopyID: LongInt;
 begin
-{$ifdef NetworkVersion}
-  result := StrToInt64('$4BDE55');
-{$else}
+  if GetNetworkSettings().IsNetworkVersion then
+    result := StrToInt64('$4BDE55')
+  else
 {$ifdef DSP}
-  result := StrToInt64('$E99E48');
+    result := StrToInt64('$E99E48');
 {$else}
-  result := GetUniqueID( Application.ExeName, '');
-{$endif}
+    result := GetUniqueID( Application.ExeName, '');
 {$endif}
 end;
 
 function GetDBID: LongInt;
 begin
-{$ifdef NetworkVersion}
-  result := StrToInt64('$4BDE55');
-{$else}
+  if GetNetworkSettings().IsNetworkVersion then
+    result := StrToInt64('$4BDE55')
+  else
 {$ifdef DEBUG}
    result := GetUniqueID( Application.ExeName, 'E99E483DDE777778ADEFCB3DCD988BC9');
 {$else}
@@ -128,19 +128,17 @@ begin
     result := GetUniqueID( Application.ExeName, AProc.GetFileHash(Application.ExeName));
   {$endif}
 {$endif}
-{$endif}
 end;
 
 function GetOldDBID: LongInt;
 begin
-{$ifdef NetworkVersion}
-  result := StrToInt64('$4BDE55');
-{$else}
+  if GetNetworkSettings().IsNetworkVersion then
+    result := StrToInt64('$4BDE55')
+  else
 {$ifdef DSP}
   result := StrToInt64('$3DDE77');
 {$else}
   result := GetUniqueID( Application.ExeName, AProc.GetFileHash(ExePath + SBackDir + '\' + ExtractFileName(Application.ExeName) + '.bak'));
-{$endif}
 {$endif}
 end;
 

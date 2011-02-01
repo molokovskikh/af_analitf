@@ -189,10 +189,6 @@ uses Exchange, DModule, AProc, Main, Retry,
   MyEmbConnection,
   MySqlApi;
 
-type
-  TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
-  end;
-  
 { TExchangeThread }
 
 procedure TExchangeThread.SetStatus;
@@ -3642,13 +3638,9 @@ begin
   //Все таки этот вызов нужен, т.к. не отпускаются определенные файлы при закрытии подключения
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
   if DM.MainConnection is TMyEmbConnection then
-  begin
-    if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
-      WriteExchangeLog('FreeMySqlLibOnRestore',
-        Format('MySql Clients Count перед созданием базы данных: %d',
-          [TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-    MyAPIEmbedded.FreeMySQLLib;
-  end;
+    DatabaseController.FreeMySQLLib(
+      'MySql Clients Count перед созданием базы данных',
+      'FreeMySqlLibOnRestore');
 end;
 
 initialization

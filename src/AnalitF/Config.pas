@@ -8,7 +8,8 @@ uses
   Buttons, ExtCtrls, ToughDBGrid, DB, RxMemDS, DModule, GridsEh, U_VistaCorrectForm,
   MyAccess, FileCtrl, U_frameEditVitallyImportantMarkups, U_frameEditAddress,
   DatabaseObjects,
-  NetworkParams;
+  NetworkParams,
+  NetworkSettings;
 
 type
   TConfigChange = (ccOk, ccHTTPName, ccHTTPPassword, ccHTTPHost);
@@ -162,7 +163,6 @@ type
 
     lFolderNotExists : TLabel;
 
-{$ifdef NetworkVersion}
     lOrderFolder : TLabel;
     dbeOrderFolder : TDBEdit;
     sbSelectOrderFolder : TSpeedButton;
@@ -173,7 +173,6 @@ type
     eExportPricesFolder : TEdit;
     lPositionPercent : TLabel;
     ePositionPercent : TEdit;
-{$endif}
 
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
@@ -510,10 +509,8 @@ end;
 
 procedure TConfigForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
-{$ifdef NetworkVersion}
 var
   newPercent : Double;
-{$endif}
 begin
   if (ModalResult = mrOK) then begin
     if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
@@ -564,8 +561,8 @@ begin
       PageControl.ActivePage := tshOther;
       dbeHistoryDayCount.SetFocus;
     end;
-{$ifdef NetworkVersion}
-    if CanClose then begin
+
+    if GetNetworkSettings().IsNetworkVersion and CanClose then begin
       if TryStrToFloat(ePositionPercent.Text, newPercent) then begin
         FNetworkParams.NetworkPositionPercent := newPercent;
         FNetworkParams.NetworkExportPricesFolder := eExportPricesFolder.Text;
@@ -581,7 +578,7 @@ begin
         ePositionPercent.SetFocus;
       end;
     end;
-{$endif}
+
   end;
 end;
 
@@ -777,30 +774,30 @@ begin
     lFolderNotExists.Visible := False;
     lFolderNotExists.Font.Color := clRed;
 
-{$ifdef NetworkVersion}
-    nextTop := lFolderNotExists.Top + lFolderNotExists.Height + 10;
-    AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lOrderFolder, dbeOrderFolder, 'Папка для внешних заказов:', 'OrderFolder');
-    dbeOrderFolder.OnChange := OrderFolderChange;
+    if GetNetworkSettings().IsNetworkVersion then begin
+      nextTop := lFolderNotExists.Top + lFolderNotExists.Height + 10;
+      AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lOrderFolder, dbeOrderFolder, 'Папка для внешних заказов:', 'OrderFolder');
+      dbeOrderFolder.OnChange := OrderFolderChange;
 
-    sbSelectOrderFolder := TSpeedButton.Create(Self);
-    sbSelectOrderFolder.Parent := gbWaybillFolders;
-    sbSelectOrderFolder.Anchors := [akTop, akRight];
-    sbSelectOrderFolder.Top := dbeOrderFolder.Top;
-    sbSelectOrderFolder.Height := dbeOrderFolder.Height;
-    sbSelectOrderFolder.Caption := '...';
-    sbSelectOrderFolder.Width := sbSelectOrderFolder.Height;
-    sbSelectOrderFolder.Left := dbeOrderFolder.Left + dbeOrderFolder.Width - sbSelectOrderFolder.Width;
-    dbeOrderFolder.Width := dbeOrderFolder.Width - sbSelectOrderFolder.Width - 5;
-    sbSelectOrderFolder.OnClick := SelectOrderFolderClick;
+      sbSelectOrderFolder := TSpeedButton.Create(Self);
+      sbSelectOrderFolder.Parent := gbWaybillFolders;
+      sbSelectOrderFolder.Anchors := [akTop, akRight];
+      sbSelectOrderFolder.Top := dbeOrderFolder.Top;
+      sbSelectOrderFolder.Height := dbeOrderFolder.Height;
+      sbSelectOrderFolder.Caption := '...';
+      sbSelectOrderFolder.Width := sbSelectOrderFolder.Height;
+      sbSelectOrderFolder.Left := dbeOrderFolder.Left + dbeOrderFolder.Width - sbSelectOrderFolder.Width;
+      dbeOrderFolder.Width := dbeOrderFolder.Width - sbSelectOrderFolder.Width - 5;
+      sbSelectOrderFolder.OnClick := SelectOrderFolderClick;
 
-    lOrderFolderNotExists := TLabel.Create(Self);
-    lOrderFolderNotExists.Caption := 'Папка не существует';
-    lOrderFolderNotExists.Parent := gbWaybillFolders;
-    lOrderFolderNotExists.Top := sbSelectOrderFolder.Top + sbSelectOrderFolder.Height + 10;
-    lOrderFolderNotExists.Left := 10;
-    lOrderFolderNotExists.Visible := False;
-    lOrderFolderNotExists.Font.Color := clRed;
-{$endif}
+      lOrderFolderNotExists := TLabel.Create(Self);
+      lOrderFolderNotExists.Caption := 'Папка не существует';
+      lOrderFolderNotExists.Parent := gbWaybillFolders;
+      lOrderFolderNotExists.Top := sbSelectOrderFolder.Top + sbSelectOrderFolder.Height + 10;
+      lOrderFolderNotExists.Left := 10;
+      lOrderFolderNotExists.Visible := False;
+      lOrderFolderNotExists.Font.Color := clRed;
+    end;
   end
   else
     tsWaybillFolders.TabVisible := False;
@@ -920,42 +917,33 @@ begin
 end;
 
 procedure TConfigForm.AddNetworkVersionSettings;
-{$ifdef NetworkVersion}
 var
   controlInterval : Integer;
   nextTop : Integer;
-{$endif}
 begin
-{$ifdef NetworkVersion}
-  controlInterval := dbchbUseCorrectOrders.Top - dbchbUseCorrectOrders.Height - dbchbConfirmSendingOrders.Top;
-  gbNetworkVersionSettings := TGroupBox.Create(Self);
-  gbNetworkVersionSettings.Parent := tshOther;
-  gbNetworkVersionSettings.Caption := ' Сетевая версия ';
-  gbNetworkVersionSettings.Left := gbDeleteHistory.Left;
-  gbNetworkVersionSettings.Width := gbDeleteHistory.Width;
-  gbNetworkVersionSettings.Anchors := gbDeleteHistory.Anchors;
-  gbNetworkVersionSettings.Top := dbchbUseCorrectOrders.Top + dbchbUseCorrectOrders.Height + controlInterval;
+  if GetNetworkSettings().IsNetworkVersion then begin
+    controlInterval := dbchbUseCorrectOrders.Top - dbchbUseCorrectOrders.Height - dbchbConfirmSendingOrders.Top;
+    gbNetworkVersionSettings := TGroupBox.Create(Self);
+    gbNetworkVersionSettings.Parent := tshOther;
+    gbNetworkVersionSettings.Caption := ' Сетевая версия ';
+    gbNetworkVersionSettings.Left := gbDeleteHistory.Left;
+    gbNetworkVersionSettings.Width := gbDeleteHistory.Width;
+    gbNetworkVersionSettings.Anchors := gbDeleteHistory.Anchors;
+    gbNetworkVersionSettings.Top := dbchbUseCorrectOrders.Top + dbchbUseCorrectOrders.Height + controlInterval;
 
-  nextTop := 16;
+    nextTop := 16;
 
-  AddLabelAndEdit(gbNetworkVersionSettings, nextTop, lExportPricesFolder, eExportPricesFolder, 'Папка для экспорта прайс-листов:');
-  eExportPricesFolder.Text := FNetworkParams.NetworkExportPricesFolder;
+    AddLabelAndEdit(gbNetworkVersionSettings, nextTop, lExportPricesFolder, eExportPricesFolder, 'Папка для экспорта прайс-листов:');
+    eExportPricesFolder.Text := FNetworkParams.NetworkExportPricesFolder;
 
-  AddLabelAndEdit(gbNetworkVersionSettings, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при заказе:');
-  ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
+    AddLabelAndEdit(gbNetworkVersionSettings, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при заказе:');
+    ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
 
-  gbNetworkVersionSettings.Height := ePositionPercent.Top + ePositionPercent.Height + 5;
+    gbNetworkVersionSettings.Height := ePositionPercent.Top + ePositionPercent.Height + 5;
 
-  lblServerLink.Top := gbNetworkVersionSettings.Top + gbNetworkVersionSettings.Height + controlInterval;
-  tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
-{$endif}
-
-{
-    lExportPricesFolder : TLabel;
-    eExportPricesFolder : TEdit;
-    lPositionPercent : TLabel;
-    ePositionPercent : TEdit;
-}
+    lblServerLink.Top := gbNetworkVersionSettings.Top + gbNetworkVersionSettings.Height + controlInterval;
+    tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
+  end;
 end;
 
 procedure TConfigForm.AddLabelAndEdit(Parents: TWinControl;
