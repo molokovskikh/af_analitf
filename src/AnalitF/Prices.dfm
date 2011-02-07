@@ -392,7 +392,7 @@ inherited PricesForm: TPricesForm
         object dbtFullName: TDBText
           Left = 5
           Top = 4
-          Width = 236
+          Width = 71
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           AutoSize = True
@@ -488,14 +488,14 @@ inherited PricesForm: TPricesForm
         'AS DatePrice,'
       '  count(CurrentOrderLists.ID) as Positions,'
       
-        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCo' +
-        'unt), 0) as SumOrder,'
+        '  ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.Ord' +
+        'erCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
       
-        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
-        'Count), 0)'
+        '      ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.O' +
+        'rderCount), 0)'
       '    from'
       '      PostedOrderHeads'
       
@@ -515,8 +515,8 @@ inherited PricesForm: TPricesForm
       '  ('
       '    select'
       
-        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
-        'Count), 0)'
+        '      ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.O' +
+        'rderCount), 0)'
       '    from'
       '      PostedOrderHeads'
       
@@ -574,14 +574,14 @@ inherited PricesForm: TPricesForm
         'AS DatePrice,'
       '  count(CurrentOrderLists.ID) as Positions,'
       
-        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCo' +
-        'unt), 0) as SumOrder,'
+        '  ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.Ord' +
+        'erCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
       
-        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
-        'Count), 0)'
+        '      ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.O' +
+        'rderCount), 0)'
       '    from'
       '      PostedOrderHeads'
       
@@ -601,8 +601,8 @@ inherited PricesForm: TPricesForm
       '  ('
       '    select'
       
-        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
-        'Count), 0)'
+        '      ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.O' +
+        'rderCount), 0)'
       '    from'
       '      PostedOrderHeads'
       

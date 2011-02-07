@@ -1693,14 +1693,14 @@ begin
   try
     if not Closed then
       Result := DM.QueryValue(
-        'SELECT ifnull(Sum(CurrentOrderLists.price*CurrentOrderLists.OrderCount), 0) SumOrder '
+        'SELECT ifnull(Sum(CurrentOrderLists.RealPrice*CurrentOrderLists.OrderCount), 0) SumOrder '
         + 'FROM CurrentOrderLists '
         + 'WHERE CurrentOrderLists.OrderId = :OrderId AND CurrentOrderLists.OrderCount>0',
         ['OrderId'],
         [OrderID])
     else
       Result := DM.QueryValue(
-        'SELECT ifnull(Sum(PostedOrderLists.price*PostedOrderLists.OrderCount), 0) SumOrder '
+        'SELECT ifnull(Sum(PostedOrderLists.RealPrice*PostedOrderLists.OrderCount), 0) SumOrder '
         + 'FROM PostedOrderLists '
         + 'WHERE PostedOrderLists.OrderId = :OrderId AND PostedOrderLists.OrderCount>0',
         ['OrderId'],
@@ -2128,7 +2128,7 @@ function TDM.FindOrderInfo(PriceCode:Integer; RegionCode: Int64): Currency;
 begin
   try
     Result := DM.QueryValue(
-      'SELECT ifnull(sum(osbc.price * osbc.OrderCount), 0) SumOrder '
+      'SELECT ifnull(sum(osbc.RealPrice * osbc.OrderCount), 0) SumOrder '
       + 'FROM '
       + ' CurrentOrderHeads '
       + ' INNER JOIN CurrentOrderLists osbc ON '

@@ -520,7 +520,7 @@ begin
     adsOrdersRetailPrice.AsCurrency :=
         (1 + adsOrdersEditRetailMarkup.Value/100)*adsOrdersprice.AsCurrency;
 
-    adsOrdersSumOrder.AsCurrency := adsOrdersprice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
+    adsOrdersSumOrder.AsCurrency := adsOrdersRealPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
   except
   end;
 end;
@@ -688,6 +688,8 @@ var
   orderCountColumn : TColumnEh;
   retailPriceColumn : TColumnEh;
   retailMarkupColumn : TColumnEh;
+  realPriceCoumn : TColumnEh;
+  priceColumn : TColumnEh;
 begin
   if DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
     orderCountColumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersordercount.FieldName);
@@ -706,6 +708,14 @@ begin
         retailMarkupColumn.Title.Caption := 'Розн.наценка';
         retailMarkupColumn.Title.TitleButton := True;
       end;
+    end;
+  end;
+  if DM.adtClientsAllowDelayOfPayment.Value then begin
+    realPriceCoumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersRealPrice.FieldName);
+    priceColumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersprice.FieldName);
+    if Assigned(realPriceCoumn) and Assigned(priceColumn) then begin
+      priceColumn.Font.Style := priceColumn.Font.Style - [fsBold];
+      realPriceCoumn.Font.Style := realPriceCoumn.Font.Style + [fsBold];
     end;
   end;
 end;

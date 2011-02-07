@@ -569,13 +569,13 @@ inherited OrdersHForm: TOrdersHForm
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
-        'Count), 0) as SumOrder,'
+        '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
+        'rderCount), 0) as SumOrder,'
       '     ('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -595,8 +595,8 @@ inherited OrdersHForm: TOrdersHForm
       '('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -678,14 +678,14 @@ inherited OrdersHForm: TOrdersHForm
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
-        'Count), 0) as SumOrder,'
+        '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
+        'rderCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '     ('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -706,8 +706,8 @@ inherited OrdersHForm: TOrdersHForm
       '('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -1187,13 +1187,13 @@ inherited OrdersHForm: TOrdersHForm
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
-        'Count), 0) as SumOrder,'
+        '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
+        'rderCount), 0) as SumOrder,'
       '     ('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -1213,8 +1213,8 @@ inherited OrdersHForm: TOrdersHForm
       '('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -1301,14 +1301,14 @@ inherited OrdersHForm: TOrdersHForm
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
-        'Count), 0) as SumOrder,'
+        '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
+        'rderCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '     ('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -1329,8 +1329,8 @@ inherited OrdersHForm: TOrdersHForm
       '('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -1446,8 +1446,8 @@ inherited OrdersHForm: TOrdersHForm
         'edOrderLists.DropReason = 2 or PostedOrderLists.DropReason = 3),' +
         ' 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0) as SumOrder,'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  0.0'
       '   as sumbycurrentmonth,'
@@ -1522,8 +1522,8 @@ inherited OrdersHForm: TOrdersHForm
         'edOrderLists.DropReason = 2 or PostedOrderLists.DropReason = 3),' +
         ' 1, null)) as DifferentQuantityCount,'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0) as SumOrder,'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  0.0'
       '   as sumbycurrentmonth,'

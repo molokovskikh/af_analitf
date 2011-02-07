@@ -328,14 +328,14 @@ object DM: TDM
         'AS DatePrice,'
       '  count(CurrentOrderLists.ID) as Positions,'
       
-        '  ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.OrderCo' +
-        'unt), 0) as SumOrder,'
+        '  ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.Ord' +
+        'erCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       '  ('
       '    select'
       
-        '      ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.Order' +
-        'Count), 0)'
+        '      ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.O' +
+        'rderCount), 0)'
       '    from'
       '      PostedOrderHeads'
       
@@ -650,7 +650,7 @@ object DM: TDM
       '    list.await,'
       '    list.junk,'
       '    list.ordercount,'
-      '    list.Price*list.OrderCount AS SumOrder,'
+      '    list.RealPrice*list.OrderCount AS SumOrder,'
       '    list.RequestRatio,'
       '    list.OrderCost,'
       '    list.MinOrderCount,'
@@ -835,13 +835,13 @@ object DM: TDM
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(CurrentOrderLists.Id) as Positions,'
       
-        '    ifnull(Sum(CurrentOrderLists.Price * CurrentOrderLists.Order' +
-        'Count), 0) as SumOrder,'
+        '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
+        'rderCount), 0) as SumOrder,'
       '     ('
       '  select'
       
-        '    ifnull(Sum(PostedOrderLists.Price * PostedOrderLists.OrderCo' +
-        'unt), 0)'
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
       '  from'
       '    PostedOrderHeads header'
       
@@ -1538,7 +1538,7 @@ object DM: TDM
       '    pricesregionaldata.minreq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(list.Id) as Positions,'
-      '    ifnull(Sum(list.Price * list.OrderCount), 0) as SumOrder'
+      '    ifnull(Sum(list.RealPrice * list.OrderCount), 0) as SumOrder'
       'FROM'
       '   CurrentOrderHeads header'
       '   inner join CurrentOrderLists list on '
@@ -1590,7 +1590,7 @@ object DM: TDM
       '    pricesregionaldata.minreq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(list.Id) as Positions,'
-      '    ifnull(Sum(list.Price * list.OrderCount), 0) as SumOrder'
+      '    ifnull(Sum(list.RealPrice * list.OrderCount), 0) as SumOrder'
       'FROM'
       '   CurrentOrderHeads header'
       '   inner join CurrentOrderLists list on '
@@ -1733,7 +1733,7 @@ object DM: TDM
       '    list.await,'
       '    list.junk,'
       '    list.ordercount,'
-      '    list.Price*list.OrderCount AS SumOrder,'
+      '    list.RealPrice*list.OrderCount AS SumOrder,'
       '    list.RequestRatio,'
       '    list.OrderCost,'
       '    list.MinOrderCount,'

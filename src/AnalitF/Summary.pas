@@ -136,6 +136,7 @@ type
     procedure FillCorrectMessage;
     procedure OnChangeCheckBoxAllOrders;
     procedure OnChangeFilterAllOrders;
+    procedure ChangePriceFontInOrderGrid(Grid : TToughDBGrid);
   protected
     frameFilterAddresses : TframeFilterAddresses;
     procedure UpdateOrderDataset; override;
@@ -202,6 +203,8 @@ begin
   frameLegend.Align := alBottom;
 
   PrepareColumnsInOrderGrid(dbgSummarySend);
+  ChangePriceFontInOrderGrid(dbgSummaryCurrent);
+  ChangePriceFontInOrderGrid(dbgSummarySend);
   TframePosition.AddFrame(Self, pClient, dsSummary, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   if not FUseCorrectOrders then begin
@@ -358,7 +361,7 @@ begin
     else
       adsSummaryPriceRet.AsCurrency :=
         (1 + adsSummaryRetailMarkup.Value/100)*adsSummaryCOST.AsCurrency;
-    adsSummarySumOrder.AsCurrency := adsSummaryCost.AsCurrency * adsSummaryOrderCount.AsInteger;
+    adsSummarySumOrder.AsCurrency := adsSummaryRealCost.AsCurrency * adsSummaryOrderCount.AsInteger;
   except
   end;
 end;
@@ -548,7 +551,7 @@ begin
       DM.adsQueryValue.Close;
     DM.adsQueryValue.SQL.Text := ''
   +'SELECT '
-  +'       ifnull(SUM(osbc.price * osbc.OrderCount), 0) SumOrder '
+  +'       ifnull(SUM(osbc.RealPrice * osbc.OrderCount), 0) SumOrder '
   +'FROM '
   +'       CurrentOrderHeads '
   +'       INNER JOIN CurrentOrderLists osbc       ON (CurrentOrderHeads.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
@@ -815,6 +818,21 @@ procedure TSummaryForm.tmrFillReportTimer(Sender: TObject);
 begin
   tmrFillReport.Enabled := False;
   SummaryShow;
+end;
+
+procedure TSummaryForm.ChangePriceFontInOrderGrid(Grid: TToughDBGrid);
+var
+  realPriceCoumn : TColumnEh;
+  priceColumn : TColumnEh;
+begin
+  if DM.adtClientsAllowDelayOfPayment.Value then begin
+    realPriceCoumn := ColumnByNameT(TToughDBGrid(grid), adsSummaryRealCost.FieldName);
+    priceColumn := ColumnByNameT(TToughDBGrid(grid), adsSummaryCost.FieldName);
+    if Assigned(realPriceCoumn) and Assigned(priceColumn) then begin
+      priceColumn.Font.Style := priceColumn.Font.Style - [fsBold];
+      realPriceCoumn.Font.Style := realPriceCoumn.Font.Style + [fsBold];
+    end;
+  end;
 end;
 
 initialization
