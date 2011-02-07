@@ -221,8 +221,10 @@ procedure TCurrentOrderHead.RestoreOrderItems(Offers: TObjectList);
               and offer.IsMinOrderSumValid(item.OrderCount)
               and offer.GetRequestRationRemainder(item.OrderCount, remainder))
             then begin
-              Result := offer;
-              Exit;
+              if not Assigned(Result) or item.IsOfferValid(offer) then
+                Result := offer;
+              if item.IsOfferValid(Result) then
+                Exit;
             end;
           end
         end
