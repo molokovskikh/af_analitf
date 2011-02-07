@@ -8,7 +8,8 @@ uses
   ToughDBGrid, ComCtrls, DB, RxMemDS, DAScript, MyScript, Child, DBCtrls,
   Grids, MemDS, DBAccess, MyAccess, Constant, MemTableDataEh, MemTableEh,
   StrUtils, EhLibMTE, Contnrs,
-  U_CurrentOrderItem;
+  U_CurrentOrderItem,
+  NetworkParams;
 
 type
   TCorrectResult = (crClose, crEditOrders, crForceSended, crGetPrice);
@@ -178,6 +179,7 @@ type
     fSumOrder     : TField;
     fMinOrderCount : TField;
     ProcessSendOrdersResponse : Boolean;
+    FNetworkParams : TNetworkParams;
     procedure SetOffers;
     procedure PrepareVisual;
     procedure PrepareData;
@@ -235,6 +237,7 @@ end;
 
 procedure TCorrectOrdersForm.FormCreate(Sender: TObject);
 begin
+  FNetworkParams := TNetworkParams.Create(DM.MainConnection);
   FormResult := crClose;
   Report := TStringList.Create;
   dbgLog.PopupMenu := nil;
@@ -934,7 +937,7 @@ begin
         if (mtLogOldOrderCount.AsString <> mtLogNewOrderCount.AsString) then
           Background := RGB(239, 82, 117);
       if (Column.Field = mtLogOldPrice) or (Column.Field = mtLogNewPrice) then
-        if (mtLogOldPrice.AsString <> mtLogNewPrice.AsString) then
+        if (mtLogOldPrice.Value * (1 + FNetworkParams.NetworkPositionPercent/100) > mtLogNewPrice.Value) then
           Background := RGB(239, 82, 117);
   end;
 end;
