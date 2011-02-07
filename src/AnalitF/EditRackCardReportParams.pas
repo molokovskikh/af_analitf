@@ -31,6 +31,7 @@ type
     cbPeriod : TCheckBox;
     cbQuantity : TCheckBox;
     cbProvider : TCheckBox;
+    cbCertificates : TCheckBox;
     cbCost : TCheckBox;
 
     procedure CreateVisibleComponents;
@@ -136,7 +137,9 @@ begin
   cbPeriod := AddCheckBox(5 + cbSerialNumber.Top + cbSerialNumber.Height, 'Срок годности', RackCardReportParams.PeriodVisible);
   cbQuantity := AddCheckBox(5 + cbPeriod.Top + cbPeriod.Height, 'Количество', RackCardReportParams.QuantityVisible);
   cbProvider := AddCheckBox(5 + cbQuantity.Top + cbQuantity.Height, 'Поставщик', RackCardReportParams.ProviderVisible);
-  cbCost := AddCheckBox(5 + cbProvider.Top + cbProvider.Height, 'Цена', RackCardReportParams.CostVisible);
+  cbCertificates := AddCheckBox(5 + cbProvider.Top + cbProvider.Height, 'Номер сертификата', RackCardReportParams.CertificatesVisible);
+  cbCost := AddCheckBox(5 + cbCertificates.Top + cbCertificates.Height, 'Цена', RackCardReportParams.CostVisible);
+
 
   gbColumns.Height := cbCost.Top + cbCost.Height + 20;
   if gbColumns.Width < cbProducer.Width + 10 then
@@ -165,6 +168,7 @@ begin
     RackCardReportParams.QuantityVisible := cbQuantity.Checked;
     RackCardReportParams.ProviderVisible := cbProvider.Checked;
     RackCardReportParams.CostVisible := cbCost.Checked;
+    RackCardReportParams.CertificatesVisible := cbCertificates.Checked;
   end;
 end;
 

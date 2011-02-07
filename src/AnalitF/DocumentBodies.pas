@@ -1480,6 +1480,7 @@ begin
     frVariables['QuantityVisible'] := RackCardReportParams.QuantityVisible;
     frVariables['ProviderVisible'] := RackCardReportParams.ProviderVisible;
     frVariables['CostVisible'] := RackCardReportParams.CostVisible;
+    frVariables['CertificatesVisible'] := RackCardReportParams.CertificatesVisible;
 
     DM.ShowFastReportWithSave('RackCard.frf', adsDocumentBodies, True);
   finally

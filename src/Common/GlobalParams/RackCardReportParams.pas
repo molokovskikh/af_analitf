@@ -17,6 +17,7 @@ type
     QuantityVisible : Boolean;
     ProviderVisible : Boolean;
     CostVisible : Boolean;
+    CertificatesVisible : Boolean;
 
     DeleteUnprintableElemnts : Boolean;
     procedure ReadParams; override;
@@ -36,6 +37,7 @@ begin
   QuantityVisible := GetParamDef('RackCardReportQuantityVisible', True);
   ProviderVisible := GetParamDef('RackCardReportProviderVisible', True);
   CostVisible := GetParamDef('RackCardReportCostVisible', True);
+  CertificatesVisible := GetParamDef('RackCardReportCertificatesVisible', True);
   DeleteUnprintableElemnts := GetParamDef('RackCardReportDeleteUnprintableElemnts', False);
 end;
 
@@ -48,6 +50,7 @@ begin
   SaveParam('RackCardReportQuantityVisible', QuantityVisible);
   SaveParam('RackCardReportProviderVisible', ProviderVisible);
   SaveParam('RackCardReportCostVisible', CostVisible);
+  SaveParam('RackCardReportCertificatesVisible', CertificatesVisible);
   SaveParam('RackCardReportDeleteUnprintableElemnts', DeleteUnprintableElemnts);
 end;
 
