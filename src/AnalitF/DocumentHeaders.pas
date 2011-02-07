@@ -267,7 +267,8 @@ procedure TDocumentHeaderForm.sbListToExcelClick(Sender: TObject);
 var
   exportFile : String;
   exportData : TDataExportAsXls;
-  prefix : String;
+  prefix,
+  ndsPrefix : String;
   supplierFilter : String;
 begin
   if DM.adsQueryValue.Active then
@@ -281,8 +282,10 @@ begin
 '  dh.WriteTime as LocalWriteTime, ' +
 '  p.FullName as ProviderName, ' +
 '  sum(dbodies.SupplierCost*Quantity) as TotalSumm, ' +
+'  sum(dbodies.SupplierCost*Quantity) - sum(dbodies.SupplierCostWithoutNDS*Quantity) as TotalNDSSumm, ' +
 '  count(dbodies.Id) as TotalCount, ' +
-'  count(dbodies.SupplierCost) as CostCount ' +
+'  count(dbodies.SupplierCost) as CostCount, ' +
+'  count(dbodies.SupplierCostWithoutNDS) as NDSCostCount ' +
 ' from ' +
 '   DocumentHeaders dh, ' +
 '   DocumentBodies dbodies, ' +
@@ -293,7 +296,7 @@ begin
 ' and (dh.DocumentType = 1) ' +
 ' and (p.FirmCode = dh.FirmCode) ' +
 ' and (dbodies.DocumentId = dh.Id) ' +
-IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') + 
+IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
 ' group by dh.Id ' +
 ' order by dh.LoadTime DESC ';
 
@@ -316,22 +319,28 @@ IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
           'Номер накладной',
           'Поставщик',
           'Сумма',
+          'Сумма НДС',
           'Срок оплаты']);
 
         while not DM.adsQueryValue.Eof do begin
           prefix := '';
+          ndsPrefix := '';
           if DM.adsQueryValue.FieldByName('TotalCount').AsInteger <> DM.adsQueryValue.FieldByName('CostCount').AsInteger
           then
             prefix := '!!! ';
-            
+          if DM.adsQueryValue.FieldByName('TotalCount').AsInteger <> DM.adsQueryValue.FieldByName('NDSCostCount').AsInteger
+          then
+            ndsPrefix := '!!! ';
+
           exportData.WriteRow([
             DM.adsQueryValue.FieldByName('LocalWriteTime').AsString,
             DM.adsQueryValue.FieldByName('ProviderDocumentId').AsString,
             DM.adsQueryValue.FieldByName('ProviderName').AsString,
-            prefix + DM.adsQueryValue.FieldByName('TotalSumm').AsString]);
+            prefix + DM.adsQueryValue.FieldByName('TotalSumm').AsString,
+            ndsPrefix + DM.adsQueryValue.FieldByName('TotalNDSSumm').AsString]);
           DM.adsQueryValue.Next;
         end;
-        
+
       finally
         exportData.Free;
       end;
