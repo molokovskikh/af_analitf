@@ -37,6 +37,8 @@ type
 
 implementation
 
+uses Math;
+
 {$R *.dfm}
 
 { TframeContextReclame }
@@ -128,7 +130,8 @@ var
 begin
   jpg := TJpegImage.Create;
   try
-    jpg.LoadFromFile(RootFolder() + SDirContextReclame + '\' + IntToStr(CatalogId) + '.jpg');
+    //jpg.LoadFromFile(RootFolder() + SDirContextReclame + '\' + IntToStr(CatalogId) + '.jpg');
+    jpg.LoadFromFile(RootFolder() + SDirContextReclame + '\' + FFileList[FReclameIndex] + '.jpg');
     FImage.Picture.Bitmap.Assign(jpg);
     Self.Width := jpg.Width;
     Self.Height := jpg.Height;
@@ -138,21 +141,40 @@ begin
 end;
 
 procedure TframeContextReclame.RecalcPosition;
+var
+  decWidth,
+  decHeight,
+  maxDec : Integer;
 begin
+  if (Self.Height <= (Parent.ClientHeight div 3) + 3) and (Self.Width <= Parent.ClientWidth)
+  then begin
+    Self.Top := Parent.ClientHeight - Self.Height;
+    Self.Left := (Parent.ClientWidth - Self.Width) div 2;
+  end
+  else
+  begin
+    decWidth := Self.Width - Parent.ClientWidth;
+    decHeight := Self.Height - (Parent.ClientHeight div 3);
+    maxDec := Max(decWidth, decHeight);
+    Self.Width := Self.Width - maxDec;
+    Self.Height := Self.Height - maxDec;
+  end;
   Self.Top := Parent.ClientHeight - Self.Height;
   Self.Left := (Parent.ClientWidth - Self.Width) div 2;
 end;
 
 function TframeContextReclame.ReclameExists(CatalogId: Int64): Boolean;
 begin
-  Result := FFileList.IndexOf(IntToStr(CatalogId)) >= 0;
+  Result := {FFileList.IndexOf(IntToStr(CatalogId)) >= 0} FReclameIndex < FFileList.Count;
 end;
 
 procedure TframeContextReclame.StopReclame;
 begin
   tmrStopReclame.Enabled := False;
-  if Visible then
+  if Visible then begin
     Hide;
+    FReclameIndex := (FReclameIndex + 1) mod FFileList.Count;
+  end;
 end;
 
 end.
