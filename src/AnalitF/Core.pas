@@ -9,7 +9,8 @@ uses
   Child, RXDBCtrl, Variants, Math, DBGridEh,
   ToughDBGrid, OleCtrls, SHDocVw, ActnList, 
   Spin,
-  GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
+  GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
+  U_frameContextReclame;
 
 const
   ALL_REGIONS = 'Все регионы';
@@ -196,6 +197,8 @@ type
     tsMaxProducerCosts : TTabSheet;
     tsFirmInfo : TTabSheet;
 
+    frameContextReclame : TframeContextReclame;
+
     procedure ccf(DataSet: TDataSet);
     procedure RefreshCurrentSumma;
     procedure GroupedCore;
@@ -241,6 +244,8 @@ begin
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
+
+  frameContextReclame := TframeContextReclame.AddFrame(Self, dbgCore);
 
   PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
   NeedFirstOnDataSet := False;
@@ -408,6 +413,8 @@ begin
   frVariables[ 'CatalogName'] := AName;
   frVariables[ 'CatalogForm'] := AForm;
   cbFilterSelect( nil);
+
+  frameContextReclame.GetReclame(AParentCode);
 end;
 
 procedure TCoreForm.adsCore2SynonymGetText(Sender: TField; var Text: String;
@@ -544,6 +551,7 @@ end;
 procedure TCoreForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  frameContextReclame.StopReclame;
   if ( Key = VK_ESCAPE) and (dblProducers.KeyValue <> 0) then begin
     dblProducers.KeyValue := 0;
     cbFilterSelect(nil);
@@ -738,6 +746,8 @@ procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
 //var
 //  C : Integer;
 begin
+  if Assigned(frameContextReclame) then
+    frameContextReclame.StopReclame;
   tmrUpdatePreviosOrders.Enabled := False;
   tmrUpdatePreviosOrders.Enabled := True;
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin

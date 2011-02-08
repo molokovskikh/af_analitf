@@ -5,9 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
-  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw, 
+  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw,
   Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
-  MyAccess, Menus, Buttons, U_framePosition, PreviousOrders, Core;
+  MyAccess, Menus, Buttons, U_framePosition, PreviousOrders, Core,
+  U_frameContextReclame;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -93,6 +94,7 @@ type
     procedure sbShowSynonymMNNClick(Sender: TObject);
     procedure actShowSynonymMNNExecute(Sender: TObject);
     procedure actUseFormsUpdate(Sender: TObject);
+    procedure adsFormsAfterScroll(DataSet: TDataSet);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -113,6 +115,7 @@ type
     GotoFromMNNSearch : Boolean;
     namesFrame : TframePosition;
     formsFrame : TframePosition;
+    frameContextReclame : TframeContextReclame;
     FCoreForm: TCoreForm;
     procedure DoShow; override;
     procedure CheckCanFocus;
@@ -140,7 +143,8 @@ implementation
 
 uses DModule, AProc, Main, Types, AlphaUtils, LU_Tracer,
      MnnSearch,
-     UniqueID;
+     UniqueID,
+     U_ExchangeLog;
 
 {$R *.dfm}
 
@@ -313,6 +317,7 @@ begin
   formsFrame := TframePosition.AddFrame(Self, pClient, dsForms, 'FullName', 'MnnId', ShowDescriptionAction);
   formsFrame.Visible := False;
   namesFrame := TframePosition.AddFrame(Self, pClient, dsNames, 'FullName', 'MnnId', ShowDescriptionAction);
+  frameContextReclame := TframeContextReclame.AddFrame(Self, Self);
 
   LastDBGrid := nil;
 
@@ -556,12 +561,14 @@ begin
   dbgForms.Options := dbgForms.Options + [dgAlwaysShowSelection]; 
   formsFrame.Visible := True;
   namesFrame.Visible := False;
+  frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
 end;
 
 procedure TNamesFormsForm.dbgFormsExit(Sender: TObject);
 begin
   dbgForms.Options := dbgForms.Options - [dgAlwaysShowSelection];
   LastDBGrid := dbgForms;
+  frameContextReclame.StopReclame();
 end;
 
 procedure TNamesFormsForm.dbgFormsDblClick(Sender: TObject);
@@ -1170,6 +1177,19 @@ begin
   Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
   Reg.WriteBool('NewSearch', actNewSearch.Checked);
   Reg.Free;
+end;
+
+procedure TNamesFormsForm.adsFormsAfterScroll(DataSet: TDataSet);
+begin
+  inherited;
+  WriteExchangeLog('adsFormsAfterScroll',
+    Format('CatalogId : %s  Name : %s %s',
+      [adsForms.FieldByName( 'FullCode').AsString,
+       adsNames.FieldByName( 'Name').AsString,
+       adsForms.FieldByName( 'Form').AsString
+      ]));
+  if dbgForms.Focused then
+    frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
 end;
 
 initialization

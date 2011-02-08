@@ -16,6 +16,7 @@ const
   SDirWaybills = 'Waybills';
   SDirRejects = 'Rejects';
   SDirReclame='Reclame';
+  SDirContextReclame = 'ContextReclame';
   SBackDir = 'UpdateBackup';
   SHTTPPrefix='http://';
   CRLF=#13#10;

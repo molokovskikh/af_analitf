@@ -137,7 +137,8 @@ uses
   LU_TDataExportAsXls in '..\Common\Classes\LU_TDataExportAsXls.pas',
   U_Supplier in '..\Common\Models\U_Supplier.pas',
   SupplierController in 'BusinessLogic\SupplierController.pas',
-  U_frameFilterSuppliers in 'Views\U_frameFilterSuppliers.pas' {frameFilterSuppliers: TFrame};
+  U_frameFilterSuppliers in 'Views\U_frameFilterSuppliers.pas' {frameFilterSuppliers: TFrame},
+  U_frameContextReclame in 'Views\U_frameContextReclame.pas' {frameContextReclame: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}
