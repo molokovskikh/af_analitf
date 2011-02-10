@@ -289,6 +289,7 @@ begin
 {$ifndef DEBUG}
   itmImport.Visible := False;
 {$endif}
+  actCompact.Visible := False;
   actServiceLog.Visible := GetNetworkSettings().IsNetworkVersion;
   ClientNameRect := Rect(0, 0, 10, 10);
   deletedForms := TObjectList.Create(False);
