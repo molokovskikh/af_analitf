@@ -197,7 +197,7 @@ begin
     selectedRows := TDBGridHelper.GetSelectedRows(dbgHeaders);
 
     if selectedRows.Count > 0 then
-      if AProc.MessageBox( 'Удалить выбранные документы (накладные, отказы, докумнеты)?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
+      if AProc.MessageBox( 'Удалить выбранные документы (накладные, отказы, документы)?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
         dbgHeaders.DataSource.DataSet.DisableControls;
         try
           for I := 0 to selectedRows.Count-1 do begin
