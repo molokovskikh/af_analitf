@@ -71,6 +71,7 @@ inherited SummaryForm: TSummaryForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
+      OnDblClick = dbgSummaryCurrentDblClick
       OnGetCellParams = dbgSummaryCurrentGetCellParams
       OnKeyDown = dbgSummaryCurrentKeyDown
       OnSortMarkingChanged = dbgSummaryCurrentSortMarkingChanged
@@ -446,6 +447,7 @@ inherited SummaryForm: TSummaryForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
+      OnDblClick = dbgSummaryCurrentDblClick
       OnGetCellParams = dbgSummaryCurrentGetCellParams
       OnKeyDown = dbgSummaryCurrentKeyDown
       OnSortMarkingChanged = dbgSummaryCurrentSortMarkingChanged

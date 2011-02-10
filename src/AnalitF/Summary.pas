@@ -125,6 +125,7 @@ type
     procedure adsSummaryBeforeInsert(DataSet: TDataSet);
     procedure cbNeedCorrectClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
+    procedure dbgSummaryCurrentDblClick(Sender: TObject);
   private
     SelectedPrices : TStringList;
     procedure SummaryShow;
@@ -140,6 +141,7 @@ type
   protected
     frameFilterAddresses : TframeFilterAddresses;
     procedure UpdateOrderDataset; override;
+    procedure FlipToCore;
   public
     frameLegend : TframeLegend;
     procedure Print( APreview: boolean = False); override;
@@ -521,12 +523,15 @@ end;
 procedure TSummaryForm.dbgSummaryCurrentKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (Shift = []) and (Key = VK_DELETE) and (not adsSummary.IsEmpty) then begin
-    Key := 0;
-    DeleteOrder;
-  end
+  if (Key = VK_RETURN) then
+    FlipToCore()
   else
-    inherited;
+    if (Shift = []) and (Key = VK_DELETE) and (not adsSummary.IsEmpty) then begin
+      Key := 0;
+      DeleteOrder;
+    end
+    else
+      inherited;
 end;
 
 procedure TSummaryForm.dbgSummaryCurrentSortMarkingChanged(Sender: TObject);
@@ -708,20 +713,10 @@ begin
 end;
 
 procedure TSummaryForm.actFlipCoreExecute(Sender: TObject);
-var
-  FullCode, ShortCode: integer;
-  CoreId : Int64;
 begin
   if MainForm.ActiveChild <> Self then exit;
-  if adsSummary.IsEmpty then Exit;
-  if LastSymmaryType <> 0 then Exit;
 
-  FullCode := adsSummaryFullCode.AsInteger;
-  ShortCode := adsSummaryShortCode.AsInteger;
-
-  CoreId := adsSummaryCOREID.AsLargeInt;
-
-  FlipToCodeWithReturn(FullCode, ShortCode, CoreId);
+  FlipToCore();
 end;
 
 procedure TSummaryForm.TimerTimer(Sender: TObject);
@@ -832,6 +827,38 @@ begin
       priceColumn.Font.Style := priceColumn.Font.Style - [fsBold];
       realPriceCoumn.Font.Style := realPriceCoumn.Font.Style + [fsBold];
     end;
+  end;
+end;
+
+procedure TSummaryForm.FlipToCore;
+var
+  FullCode, ShortCode: integer;
+  CoreId : Int64;
+begin
+  if adsSummary.IsEmpty then Exit;
+  if LastSymmaryType <> 0 then Exit;
+
+  FullCode := adsSummaryFullCode.AsInteger;
+  ShortCode := adsSummaryShortCode.AsInteger;
+
+  CoreId := adsSummaryCOREID.AsLargeInt;
+
+  FlipToCodeWithReturn(FullCode, ShortCode, CoreId);
+end;
+
+procedure TSummaryForm.dbgSummaryCurrentDblClick(Sender: TObject);
+var
+  C : GridsEh.TGridCoord;
+  P : TPoint;
+  grid : TCustomDBGridEh;
+begin
+  inherited;
+  if Sender is TCustomDBGridEh then begin
+    grid := TCustomDBGridEh(Sender);
+    p := grid.ScreenToClient(Mouse.CursorPos);
+    C := grid.MouseCoord(p.X, p.Y);
+    if C.Y > 0 then
+      FlipToCore();
   end;
 end;
 
