@@ -178,6 +178,7 @@ begin
 +'    `ShowAdvertising` tinyint(1) unsigned not null default ''1'', '
 +'    `SendWaybillsFromClient` tinyint(1) unsigned not null default ''0'', '
 +'    `EnableSmartOrder` tinyint(1) unsigned not null default ''0'', '
++'    `EnableImpersonalPrice` tinyint(1) unsigned not null default ''0'', '
 +'    primary key (`Id`) '
 +'  ) ' 
 + GetTableOptions();

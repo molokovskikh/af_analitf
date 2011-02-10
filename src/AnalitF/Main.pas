@@ -969,6 +969,8 @@ var
 begin
   actPostOrderBatch.Visible := DM.adsUser.FieldByName('EnableSmartOrder').AsBoolean;
 
+  actGetHistoryOrders.Visible := not DM.adsUser.FieldByName('EnableImpersonalPrice').AsBoolean;
+
   if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
     openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', Browser.Tag) + '.htm';
