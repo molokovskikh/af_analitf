@@ -1144,6 +1144,7 @@ begin
     'PRINTORDERSAFTERSEND = 0,' +
     'ConfirmSendingOrders = 0,' +
     'UseCorrectOrders = 0,' +
+    'StoredUserId = null,' + 
     'ProviderName = ''АК "Инфорум"'',' +
     'ProviderAddress = ''Ленинский пр-т, 160 оф.415'',' +
     'ProviderPhones = ''4732-606000'',' +

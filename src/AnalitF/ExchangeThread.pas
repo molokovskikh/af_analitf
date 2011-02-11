@@ -2028,10 +2028,13 @@ begin
   DatabaseController.ClearBackup;
 
   Dm.MainConnection.AfterConnect(Dm.MainConnection);
+
   { ѕоказываем врем€ обновлени€ }
   try
   WriteExchangeLog('Exchange', 'ѕытаемс€ обновить дату обновлени€ прайс-листа');
   DM.adtParams.Edit;
+  DM.adtParams.FieldByName('StoredUserId').AsString :=
+    DM.adsUser.FieldByName('UserId').AsString;
   DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=
     DM.adtParams.FieldByName( 'LastDateTime').AsDateTime;
   DM.adtParams.Post;

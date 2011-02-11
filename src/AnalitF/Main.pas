@@ -754,7 +754,6 @@ end;
 
 procedure TMainForm.SetOrdersInfo;
 var
-  UserId : Variant;
   I : Integer;
   IdTextWidth,
   NeedWidth,
@@ -763,12 +762,11 @@ var
 begin
 try
   if DM.MainConnection.Connected then begin
-    UserId := DM.QueryValue('select UserId from UserInfo', [], []);
-    if VarIsNull(UserId) then
+    if Length(DM.adtParams.FieldByName('StoredUserId').AsString) = 0 then
       StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : не установлен  '
         + ApplicationVersionText
     else
-      StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : ' + VarToStr(UserId) + '  '
+      StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : ' + DM.adtParams.FieldByName('StoredUserId').AsString + '  '
         + ApplicationVersionText;
     IdTextWidth := StatusBar.Canvas.TextWidth(StatusBar.Panels[StatusBar.Panels.Count-1].Text) + 15;
     if DM.adsQueryValue.Active then
@@ -815,7 +813,7 @@ try
     DM.adsQueryValue.Open;
     try
       LastOrderCount := DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger;
-      LastPositionCount := DM.adsQueryValue.FieldByName( 'Positions').AsInteger; 
+      LastPositionCount := DM.adsQueryValue.FieldByName( 'Positions').AsInteger;
       StatusBar.Panels[ 0].Text := Format( 'Заказов : %d',
          [ DM.adsQueryValue.FieldByName( 'OrdersCount').AsInteger]);
       StatusBar.Panels[ 1].Text := Format( 'Позиций : %d',

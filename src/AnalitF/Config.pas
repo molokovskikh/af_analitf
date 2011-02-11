@@ -312,6 +312,7 @@ begin
           //удаляем изменения в настройках прайс-листов
           DM.adcUpdate.SQL.Text := 'truncate pricesregionaldataup';
           DM.adcUpdate.Execute;
+          DM.adtParams.FieldByName('StoredUserId').AsString := dbeHTTPName.Field.AsString;
         end;
         if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then
           Result := Result + [ccHTTPHost];
@@ -332,7 +333,7 @@ begin
       //Если до переключения была не английская, то переключаемся обратно
       if oldKbd <> GetKeyboardHelper.EnglishKeyboard then
         GetKeyboardHelper.SwitchToPrev;
-}        
+}
       //Вроде бы заработало простое переключение, если и дальше будет работать,
       //то код в комментарии выше надо удалить
       GetKeyboardHelper.SwitchToLanguage(oldKbd);
