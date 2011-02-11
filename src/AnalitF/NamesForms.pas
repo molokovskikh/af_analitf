@@ -115,7 +115,7 @@ type
     GotoFromMNNSearch : Boolean;
     namesFrame : TframePosition;
     formsFrame : TframePosition;
-    frameContextReclame : TframeContextReclame;
+    //frameContextReclame : TframeContextReclame;
     FCoreForm: TCoreForm;
     procedure DoShow; override;
     procedure CheckCanFocus;
@@ -317,7 +317,7 @@ begin
   formsFrame := TframePosition.AddFrame(Self, pClient, dsForms, 'FullName', 'MnnId', ShowDescriptionAction);
   formsFrame.Visible := False;
   namesFrame := TframePosition.AddFrame(Self, pClient, dsNames, 'FullName', 'MnnId', ShowDescriptionAction);
-  frameContextReclame := TframeContextReclame.AddFrame(Self, Self);
+  //frameContextReclame := TframeContextReclame.AddFrame(Self, Self);
 
   LastDBGrid := nil;
 
@@ -561,14 +561,14 @@ begin
   dbgForms.Options := dbgForms.Options + [dgAlwaysShowSelection]; 
   formsFrame.Visible := True;
   namesFrame.Visible := False;
-  frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
+  //frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
 end;
 
 procedure TNamesFormsForm.dbgFormsExit(Sender: TObject);
 begin
   dbgForms.Options := dbgForms.Options - [dgAlwaysShowSelection];
   LastDBGrid := dbgForms;
-  frameContextReclame.StopReclame();
+  //frameContextReclame.StopReclame();
 end;
 
 procedure TNamesFormsForm.dbgFormsDblClick(Sender: TObject);
@@ -1188,8 +1188,10 @@ begin
        adsNames.FieldByName( 'Name').AsString,
        adsForms.FieldByName( 'Form').AsString
       ]));
+{
   if dbgForms.Focused then
     frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
+}
 end;
 
 initialization
