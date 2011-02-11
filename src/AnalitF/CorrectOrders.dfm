@@ -12,8 +12,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   TextHeight = 13
   object pBottom: TPanel
     Left = 0
-    Top = 376
-    Width = 860
+    Top = 365
+    Width = 852
     Height = 41
     Align = alBottom
     TabOrder = 0
@@ -69,14 +69,14 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
   object pClient: TPanel
     Left = 0
     Top = 0
-    Width = 860
-    Height = 376
+    Width = 852
+    Height = 365
     Align = alClient
     TabOrder = 1
     object Splitter1: TSplitter
       Left = 1
       Top = 185
-      Width = 858
+      Width = 850
       Height = 3
       Cursor = crVSplit
       Align = alTop
@@ -85,8 +85,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       Tag = 32
       Left = 1
       Top = 188
-      Width = 858
-      Height = 187
+      Width = 850
+      Height = 176
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -280,14 +280,14 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object pTop: TPanel
       Left = 1
       Top = 1
-      Width = 858
+      Width = 850
       Height = 184
       Align = alTop
       TabOrder = 1
       object pLog: TPanel
         Left = 1
         Top = 1
-        Width = 856
+        Width = 848
         Height = 143
         Align = alClient
         TabOrder = 0
@@ -295,7 +295,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
           Tag = 32
           Left = 1
           Top = 1
-          Width = 854
+          Width = 846
           Height = 141
           Align = alClient
           AutoFitColWidths = True
@@ -389,7 +389,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       object gbCorrectMessage: TGroupBox
         Left = 1
         Top = 144
-        Width = 856
+        Width = 848
         Height = 39
         Align = alBottom
         Caption = ' '#1055#1088#1080#1095#1080#1085#1072' '
@@ -397,7 +397,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         object dbmCorrectMessage: TDBMemo
           Left = 2
           Top = 15
-          Width = 852
+          Width = 844
           Height = 22
           Align = alClient
           DataField = 'Reason'
@@ -470,6 +470,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.ProductID,'
       '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -573,6 +574,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.productid,'
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -911,6 +913,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object adsCoreProducerName: TStringField
       FieldName = 'ProducerName'
+    end
+    object adsCoreCatalogVitallyImportant: TBooleanField
+      FieldName = 'CatalogVitallyImportant'
     end
   end
   object mdValues: TRxMemoryData

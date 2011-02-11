@@ -438,7 +438,12 @@ begin
       adsCoreSortOrder.AsInteger := elemIndex;
       adsCorePriceDelta.AsCurrency := SortElem(SortList.Objects[elemIndex]).PriceDelta;
     end;
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCOST.AsCurrency);
+    adsCorePriceRet.AsCurrency :=
+      DM.GetRetailCost(
+        adsCoreCatalogVitallyImportant.Value,
+        adsCoreNDS.AsVariant,
+        adsCoreProducerCost.AsVariant,
+        adsCoreCost.AsCurrency);
   except
   end;
 end;

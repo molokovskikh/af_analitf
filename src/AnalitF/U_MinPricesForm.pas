@@ -796,7 +796,12 @@ end;
 procedure TMinPricesForm.adsCoreCalcFields(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCost.AsCurrency);
+    adsCorePriceRet.AsCurrency :=
+      DM.GetRetailCost(
+        adsCoreCatalogVitallyImportant.Value,
+        adsCoreNDS.AsVariant,
+        adsCoreProducerCost.AsVariant,
+        adsCoreCost.AsCurrency);
   except
   end;
 end;

@@ -495,6 +495,32 @@ type
     procedure LoadMarkups(TableName : String; Markups : TObjectList);
     //Получить розничную цену товара в зависимости от наценки
     function GetPriceRet(BaseCost : Currency) : Currency;
+    function GetRetailCost(
+      VitallyImportant : Boolean;
+      NDS : Variant;
+      ProducerCost : Variant;
+      SupplierCost : Currency
+    ) : Currency;
+    function CalcRetailMarkup(
+      VitallyImportant : Boolean;
+      ProducerCost : Variant;
+      SupplierCost : Currency
+    ) : Variant;
+    function InternalCalcRetailCost(
+      markup : Currency;
+      VitallyImportant : Boolean;
+      NDS : Variant;
+      ProducerCost : Variant;
+      SupplierCost : Currency
+    ) : Currency;
+    procedure CalcRetailCost(
+      VitallyImportant : Boolean;
+      NDS : Variant;
+      ProducerCost : Variant;
+      SupplierCost : Currency;
+      RetailMarkup : TField;
+      RetailCost : TField
+    );
     //Получить розничную наценку товара
     function GetRetUpCost(BaseCost : Currency) : Currency;
     function GetMaxRetailMarkup(BaseCost : Currency) : Currency;
@@ -4549,6 +4575,163 @@ begin
   MyConnection.Username := GetNetworkSettings.Username;
   MyConnection.Password := GetNetworkSettings.Password;
   MyConnection.Port := GetNetworkSettings.Port;
+end;
+
+function TDM.GetRetailCost(VitallyImportant: Boolean; NDS,
+  ProducerCost: Variant; SupplierCost: Currency): Currency;
+var
+  markupVariant : Variant;
+  markup : Currency;
+begin
+  if (VitallyImportant and VarIsNull(ProducerCost))
+    or (not VitallyImportant and VarIsNull(ProducerCost) and DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean)
+  then
+    Result := 0
+  else begin
+    markupVariant := CalcRetailMarkup(
+      VitallyImportant,
+      ProducerCost,
+      SupplierCost);
+    if VarIsNull(markupVariant) then begin
+      Result := 0;
+    end
+    else begin
+      markup := markupVariant;
+      Result := InternalCalcRetailCost(
+        markup,
+        VitallyImportant,
+        NDS,
+        ProducerCost,
+        SupplierCost
+      );
+    end;
+  end;
+end;
+
+procedure TDM.CalcRetailCost(VitallyImportant: Boolean; NDS,
+  ProducerCost: Variant; SupplierCost: Currency; RetailMarkup,
+  RetailCost: TField);
+var
+  markupVariant : Variant;
+  markup : Currency;
+begin
+  if (VitallyImportant and VarIsNull(ProducerCost))
+    or (not VitallyImportant and VarIsNull(ProducerCost) and DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean)
+  then begin
+    RetailMarkup.Clear;
+    RetailCost.Clear;
+  end
+  else begin
+    markupVariant := CalcRetailMarkup(
+      VitallyImportant,
+      ProducerCost,
+      SupplierCost);
+    if VarIsNull(markupVariant) then begin
+      RetailMarkup.Clear;
+      RetailCost.Clear;
+    end
+    else begin
+      RetailMarkup.Value := markupVariant;
+      markup := markupVariant;
+
+      RetailCost.Value := InternalCalcRetailCost(
+        markup,
+        VitallyImportant,
+        NDS,
+        ProducerCost,
+        SupplierCost
+      );
+    end;
+  end;
+end;
+
+function TDM.CalcRetailMarkup(VitallyImportant: Boolean;
+  ProducerCost: Variant; SupplierCost: Currency): Variant;
+begin
+  Result := Null;
+
+  if VitallyImportant
+  then begin
+    if not VarIsNull(ProducerCost) and (ProducerCost > 0)
+    then begin
+      Result := DM.GetVitallyImportantMarkup(ProducerCost);
+    end
+  end
+  else begin
+    if DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean then begin
+      if not VarIsNull(ProducerCost) and (ProducerCost > 0)
+      then begin
+        Result := DM.GetRetUpCost(ProducerCost);
+      end
+    end
+    else begin
+      Result := DM.GetRetUpCost(SupplierCost);
+    end;
+  end;
+end;
+
+function TDM.InternalCalcRetailCost(markup: Currency;
+  VitallyImportant: Boolean; NDS, ProducerCost: Variant;
+  SupplierCost: Currency): Currency;
+var
+  vitallyNDS : Integer;
+  vitallyNDSMultiplier : Double;
+  nonVitallyNDS : Integer;
+  nonVitallyNDSMultiplier : Double;
+begin
+  if VitallyImportant
+  then begin
+
+    if not VarIsNull(NDS) then
+      vitallyNDS := NDS
+    else
+      vitallyNDS := 10;
+
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      vitallyNDSMultiplier := 1
+    else
+      vitallyNDSMultiplier := (1 + vitallyNDS/100);
+
+    //ЕНВД
+    if (DM.adtClientsMethodOfTaxation.Value = 0) then begin
+
+      Result := SupplierCost + ProducerCost*vitallyNDSMultiplier*(markup/100);
+
+    end
+    else begin
+
+    //НДС
+      Result := SupplierCost + ProducerCost*vitallyNDSMultiplier*(markup/100);
+
+    end;
+  end
+  else begin
+
+    if VarIsNull(NDS) then
+      nonVitallyNDS := 0
+    else
+      nonVitallyNDS := NDS;
+
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      nonVitallyNDSMultiplier := 1
+    else
+      nonVitallyNDSMultiplier := (1 + nonVitallyNDS/100);
+
+    //По цене производителя
+    if DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean then begin
+
+      Result := SupplierCost + ProducerCost*nonVitallyNDSMultiplier*(markup/100);
+
+    end
+    else begin
+
+    //По цене поставщика без НДС
+      Result := SupplierCost + SupplierCost*(markup/100);
+
+    end;
+  end;
 end;
 
 initialization

@@ -92,6 +92,7 @@ type
     adsOrdersProducerName: TStringField;
     lDatePrice: TLabel;
     dbtDatePrice: TDBText;
+    adsOrdersRetailCost: TFloatField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -517,8 +518,15 @@ begin
     else
       adsOrdersEditRetailMarkup.Value := adsOrdersRetailMarkup.Value;
 
-    adsOrdersRetailPrice.AsCurrency :=
+    if adsOrdersRetailCost.IsNull then begin
+    end
+    else
+      adsOrdersRetailPrice.AsCurrency := adsOrdersRetailCost.AsCurrency;
+
+{
+      adsOrdersRetailPrice.AsCurrency :=
         (1 + adsOrdersEditRetailMarkup.Value/100)*adsOrdersprice.AsCurrency;
+}        
 
     adsOrdersSumOrder.AsCurrency := adsOrdersRealPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
   except
@@ -752,9 +760,9 @@ begin
 
     editColumn := ColumnByNameT(TToughDBGrid(dbgEditOrders), adsOrdersEditRetailMarkup.FieldName);
     if Assigned(editColumn) then begin
-      editColumn.ReadOnly := False;
-      editColumn.OnGetCellParams := EditColumnGetCellParams;
-      editColumn.OnUpdateData := RetailMarkupUpdateData;
+      editColumn.ReadOnly := True;
+//      editColumn.OnGetCellParams := EditColumnGetCellParams;
+//      editColumn.OnUpdateData := RetailMarkupUpdateData;
     end;
 
     editColumn := ColumnByNameT(TToughDBGrid(dbgEditOrders), adsOrdersordercount.FieldName);
@@ -823,6 +831,13 @@ begin
   then begin
     if StrToFloatDef(Value, 0.0) > 0 then begin
       price := Value;
+      if (price > 0) then begin
+        adsOrdersRetailCost.AsVariant := markup;
+        adsOrders.Post;
+      end
+      else
+        adsOrders.Cancel;
+{
       markup := (price/adsOrdersprice.AsCurrency - 1) * 100;
       if (markup > 0) then begin
         adsOrdersRetailMarkup.AsVariant := markup;
@@ -830,6 +845,7 @@ begin
       end
       else
         adsOrders.Cancel;
+}        
     end;
     Handled := True;
   end;

@@ -758,6 +758,7 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderLists.ServerCost,'
       '    CurrentOrderLists.ServerQuantity,'
       '    CurrentOrderLists.RetailMarkup,'
+      '    CurrentOrderLists.RetailCost,'
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -845,6 +846,7 @@ inherited SummaryForm: TSummaryForm
       '    PostedOrderLists.ServerCost,'
       '    PostedOrderLists.ServerQuantity,'
       '    PostedOrderLists.RetailMarkup,'
+      '    PostedOrderLists.RetailCost,'
       '    PostedOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -962,6 +964,7 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderLists.ServerCost,'
       '    CurrentOrderLists.ServerQuantity,'
       '    CurrentOrderLists.RetailMarkup,'
+      '    CurrentOrderLists.RetailCost,'
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -1044,6 +1047,7 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderLists.ServerCost,'
       '    CurrentOrderLists.ServerQuantity,'
       '    CurrentOrderLists.RetailMarkup,'
+      '    CurrentOrderLists.RetailCost,'
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -1255,6 +1259,9 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryAddressName: TStringField
       FieldName = 'AddressName'
       Size = 0
+    end
+    object adsSummaryRetailCost: TFloatField
+      FieldName = 'RetailCost'
     end
   end
   object tmrFillReport: TTimer

@@ -477,13 +477,14 @@ inherited OrdersForm: TOrdersForm
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
       '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
       '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity),'
-      '  RetailMarkup = :RetailMarkup'
+      '  RetailCost = :RetailCost'
       'WHERE'
       '  ID = :Old_ID')
     SQLRefresh.Strings = (
-      
-        'SELECT CurrentOrderLists.Id, CurrentOrderLists.ORDERCOUNT, Curre' +
-        'ntOrderLists.RetailMarkup'
+      'SELECT '
+      '  CurrentOrderLists.Id, '
+      '  CurrentOrderLists.ORDERCOUNT, '
+      '  CurrentOrderLists.RetailCost'
       'FROM CurrentOrderLists'
       'WHERE'
       '    (CurrentOrderLists.ID = :ID)')
@@ -527,6 +528,7 @@ inherited OrdersForm: TOrdersForm
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
       '    ol.RetailMarkup,'
+      '    ol.RetailCost,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    ol.Period,'
       '    Producers.Name as ProducerName'
@@ -712,6 +714,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersProducerName: TStringField
       FieldName = 'ProducerName'
+    end
+    object adsOrdersRetailCost: TFloatField
+      FieldName = 'RetailCost'
     end
   end
   object ActionList: TActionList
