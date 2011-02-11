@@ -29,6 +29,7 @@ end;
 procedure TGlobalSettingParams.SaveParams;
 begin
   SaveParam('StoredUserId', StoredUserId);
+  inherited;
 end;
 
 end.

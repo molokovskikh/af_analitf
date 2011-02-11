@@ -52,6 +52,7 @@ begin
   SaveParam('RackCardReportCostVisible', CostVisible);
   SaveParam('RackCardReportCertificatesVisible', CertificatesVisible);
   SaveParam('RackCardReportDeleteUnprintableElemnts', DeleteUnprintableElemnts);
+  inherited;
 end;
 
 end.

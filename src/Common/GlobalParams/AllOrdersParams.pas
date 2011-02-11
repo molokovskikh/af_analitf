@@ -35,6 +35,7 @@ end;
 procedure TAllOrdersParams.SaveParams;
 begin
   SaveParam('ShowAllOrders', ShowAllOrders);
+  inherited;
 end;
 
 end.

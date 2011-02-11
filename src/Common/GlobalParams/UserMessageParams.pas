@@ -79,6 +79,7 @@ procedure TUserMessageParams.SaveParams;
 begin
   SaveParam('UserMessage', UserMessage);
   SaveParam('UserMessageConfirmed', Confirmed);
+  inherited;
 end;
 
 procedure TUserMessageParams.UpdateUserMessage(AUserMessage: String);

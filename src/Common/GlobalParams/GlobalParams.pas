@@ -7,7 +7,8 @@ uses
   Classes,
   StrUtils,
   MyAccess,
-  DBProc;
+  DBProc,
+  DatabaseObjects;
 
 type
   TGlobalParams = class
@@ -19,7 +20,7 @@ type
    public
     constructor Create(Connection : TCustomMyConnection);
     procedure ReadParams; virtual; abstract;
-    procedure SaveParams; virtual; abstract;
+    procedure SaveParams; virtual;
   end;
 
 
@@ -72,6 +73,11 @@ begin
       'insert into GlobalParams (Name, Value) values (:Name, :Value)',
       ['Name', 'Value'],
       [ParamName, ParamValue]);
+end;
+
+procedure TGlobalParams.SaveParams;
+begin
+  DatabaseController.BackupDataTable(doiGlobalParams);
 end;
 
 end.

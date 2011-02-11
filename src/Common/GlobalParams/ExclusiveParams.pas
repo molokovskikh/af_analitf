@@ -101,6 +101,7 @@ begin
   SaveParam('ExclusiveId', ExclusiveId);
   SaveParam('ExclusiveComputerName', ExclusiveComputerName);
   SaveParam('ExclusiveDate', ExclusiveDate);
+  inherited;
 end;
 
 function TExclusiveParams.SelfExclusive: Boolean;

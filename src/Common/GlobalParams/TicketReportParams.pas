@@ -70,6 +70,7 @@ begin
   SaveParam('TicketReportDocumentDateVisible', DocumentDateVisible);
   SaveParam('TicketReportDeleteUnprintableElemnts', DeleteUnprintableElemnts);
   SaveParam('TicketReportTicketSize', Integer(TicketSize));
+  inherited;
 end;
 
 end.

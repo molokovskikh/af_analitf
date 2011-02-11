@@ -62,6 +62,7 @@ begin
   SaveParam('NetworkExportPricesFolder', NetworkExportPricesFolder);
   SaveParam('NetworkPositionPercent', NetworkPositionPercent);
   SaveMinCostPercent;
+  inherited;
 end;
 
 end.
