@@ -28,6 +28,8 @@ type
 
     class function GetCurrentOrderItemsByOrder(connection : TCustomMyConnection; currentOrderHead : TCurrentOrderHead) : TObjectList;
 
+    class function GetPostedOrderItemsByOrder(connection : TCustomMyConnection; currentOrderHead : TCurrentOrderHead) : TObjectList;
+
     class function GetOffersByPriceAndProductId(
       connection : TCustomMyConnection;
       priceCode : Int64;
@@ -369,6 +371,105 @@ begin
         offer.PriceName := VarToStr(dataSet['PriceName']);
 
         Result.Add(offer);
+        dataSet.Next;
+      end;
+    finally
+      dataSet.Free;
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
+class function TDBMapping.GetPostedOrderItemsByOrder(
+  connection: TCustomMyConnection;
+  currentOrderHead: TCurrentOrderHead): TObjectList;
+var
+  dataSet : TMyQuery;
+  orderItem : TCurrentOrderItem;
+begin
+  //Order by SynonymName
+  dataSet := GetSqlDataSet(
+    connection,
+      ''
++' select '
++'   col.Id, '
++'   col.CoreId, '
++'   col.OrderCount, '
++'   col.OrderId, '
++'   col.ProductId, '
++'   col.CodeFirmCr, '
++'   col.SynonymCode, '
++'   col.SynonymFirmCrCode, '
++'   col.SynonymName, '
++'   col.SynonymFirm, '
++'   col.Code, '
++'   col.CodeCr, '
++'   col.Junk, '
++'   col.Await, '
++'   col.RealPrice, '
++'   col.Price, '
++'   col.MinOrderCount, '
++'   col.OrderCost, '
++'   col.RequestRatio, '
++'   col.DropReason, '
++'   col.ServerCost, '
++'   col.ServerQuantity, '
++'   col.Period, '
++'   col.ProducerCost '
++' from '
++'   PostedOrderLists col '
++'   inner join PostedOrderHeads h on h.OrderId = col.OrderId '
++'   left join pricesData pd on pd.PriceCode = h.PriceCode '
++'   left join Core on Core.PriceCode = h.PriceCode and Core.RegionCode = h.RegionCode and Core.CoreId = col.CoreId '
++' where '
++'    col.OrderId = :OrderId '
++' order by col.SynonymName '
+    ,
+    ['OrderId'],
+    [currentOrderHead.OrderId]);
+
+  Result := TObjectList.Create();
+  try
+    try
+      while not dataSet.Eof do begin
+        orderItem := TCurrentOrderItem.Create();
+
+        orderItem.Order := currentOrderHead;
+
+        orderItem.Id := dataSet['Id'];
+        orderItem.CoreId := dataSet['CoreId'];
+        orderItem.OrderCount := dataSet['OrderCount'];
+        orderItem.OrderId := dataSet['OrderId'];
+        orderItem.ProductId := dataSet['ProductId'];
+        orderItem.CodeFirmCr := dataSet['CodeFirmCr'];
+        orderItem.SynonymCode := dataSet['SynonymCode'];
+        orderItem.SynonymFirmCrCode := dataSet['SynonymFirmCrCode'];
+        orderItem.SynonymName := VarToStr(dataSet['SynonymName']);
+        orderItem.SynonymFirm := VarToStr(dataSet['SynonymFirm']);
+        orderItem.Code := VarToStr(dataSet['Code']);
+        orderItem.CodeCr := VarToStr(dataSet['CodeCr']);
+
+        orderItem.Junk := dataSet.FieldByName('Junk').AsBoolean;
+        orderItem.Await := dataSet.FieldByName('Await').AsBoolean;
+
+        orderItem.RealPrice := dataSet['RealPrice'];
+        orderItem.Price := dataSet['Price'];
+
+        orderItem.MinOrderCount := dataSet['MinOrderCount'];
+        orderItem.OrderCost := dataSet['OrderCost'];
+        orderItem.RequestRatio := dataSet['RequestRatio'];
+
+        orderItem.DropReason := dataSet['DropReason'];
+
+        orderItem.ServerCost := dataSet['ServerCost'];
+        orderItem.ServerQuantity := dataSet['ServerQuantity'];
+
+        orderItem.Period := VarToStr(dataSet['Period']);
+        orderItem.ProducerCost := dataSet['ProducerCost'];
+
+        Result.Add(orderItem);
         dataSet.Next;
       end;
     finally

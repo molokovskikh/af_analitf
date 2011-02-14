@@ -6,12 +6,18 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, DateUtils,
-  FR_DSet, FR_DBSet, OleCtrls, SHDocVw, 
+  FR_DSet, FR_DBSet, OleCtrls, SHDocVw,
   SQLWaiting, ShellAPI, GridsEh, MemDS,
+  Contnrs,
   DBAccess, MyAccess, MemData, Orders,
+  DModule,
   U_frameOrderHeadLegend, Menus,
   AddressController,
-  U_frameFilterAddresses;
+  U_frameFilterAddresses,
+  U_Address,
+  U_DBMapping,
+  U_CurrentOrderHead,
+  U_CurrentOrderItem;
 
 type
   TOrdersHForm = class(TChildForm)
@@ -77,6 +83,8 @@ type
     pmDestinationClients: TPopupMenu;
     adsOrdersHFormAddressName: TStringField;
     tmrFillReport: TTimer;
+    sbMoveToPrice: TSpeedButton;
+    pmDestinationPrices: TPopupMenu;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -104,10 +112,14 @@ type
     procedure btnUnFrozenClick(Sender: TObject);
     procedure sbMoveToClientClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
+    procedure sbMoveToPriceClick(Sender: TObject);
   private
     Strings: TStrings;
+    SelectedPrices : TStringList;
     //—писок выбранных строк в гридах
     FSelectedRows : TStringList;
+    MoveToPriceFromSend : Boolean;
+    InternalDestinationPrice : TSelectPrice;
     procedure MoveToPrice;
     procedure InternalMoveToPrice;
     procedure SetDateInterval;
@@ -120,6 +132,13 @@ type
     procedure OnChangeFilterAllOrders;
     function GetActionDescription() : String;
     function OffersByPriceExists(PriceCode, RegionCode : Int64) : Boolean;
+    procedure ShowCurrentActionButtons;
+    procedure ShowSendActionButtons;
+    procedure ButtonLayout(buttons : array of TControl);
+    procedure PrepareDestinationPrices;
+    procedure OnDectinationPriceClick(Sender: TObject);
+    procedure InternalMoveToAnotherPrice;
+    function GetOrderFormMove() : TCurrentOrderHead;
   protected
     FOrdersForm: TOrdersForm;
     RestoreUnFrozenOrMoveToClient : Boolean;
@@ -137,7 +156,7 @@ procedure ShowOrdersH;
 
 implementation
 
-uses DModule, Main, AProc, NotFound, DBProc, Core, WayBillList, Constant,
+uses Main, AProc, NotFound, DBProc, Core, WayBillList, Constant,
      DBGridHelper,
      U_ExchangeLog;
 
@@ -153,6 +172,10 @@ var
   Year, Month, Day: Word;
 begin
   inherited;
+
+  pBottom.ControlStyle := pBottom.ControlStyle - [csParentBackground] + [csOpaque];
+
+  PrepareDestinationPrices;
 
   if DM.adtClients.RecordCount = 1 then
     sbMoveToClient.Enabled := False
@@ -226,7 +249,7 @@ var
   clientsSql : String;
 begin
   Grid := nil;
-  clientsSql := ''; 
+  clientsSql := '';
   SoftPost( adsOrdersHForm);
   adsOrdersHForm.IndexFieldNames := '';
   adsOrdersHForm.Close;
@@ -253,12 +276,9 @@ begin
       adsOrdersHForm.SQLRefresh.Text := adsCurrentOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsCurrentOrders.SQLDelete.Text;
       adsOrdersHForm.SQLUpdate.Text := adsCurrentOrders.SQLUpdate.Text;
-      sbMoveToClient.Visible := sbMoveToClient.Enabled;
-      btnFrozen.Visible := True;
-      btnUnFrozen.Visible := True;
-      btnMoveSend.Caption := '';
-      btnMoveSend.Visible := False;
-      btnWayBillList.Visible := False;
+
+      ShowCurrentActionButtons();
+
       dbgCurrentOrders.Visible := True;
       dbgSendedOrders.Visible := False;
       frameOrderHeadLegend.Visible := True;
@@ -278,12 +298,9 @@ begin
       adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
       dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
       adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
-      sbMoveToClient.Visible := False;
-      btnFrozen.Visible := False;
-      btnUnFrozen.Visible := False;
-      btnMoveSend.Caption := '¬ернуть в текущие';
-      btnMoveSend.Visible := True;
-      btnWayBillList.Visible := True;
+
+      ShowSendActionButtons();
+
       dbgCurrentOrders.Visible := False;
       dbgSendedOrders.Visible := True;
       frameOrderHeadLegend.Visible := False;
@@ -681,9 +698,10 @@ begin
               ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
             ParamByName( 'PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
             ParamByName( 'RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
-            ParamByName( 'SynonymCode').Value:=SynonymCode;
 
             RestoreSQL;
+            AddWhere('(CCore.SYNONYMCODE = :SYNONYMCODE)');
+            ParamByName( 'SynonymCode').Value:=SynonymCode;
             if (VarIsNull(SynonymFirmCrCode)) then
               AddWhere('(CCore.SYNONYMFIRMCRCODE is null)')
             else begin
@@ -1107,6 +1125,286 @@ begin
   end;
 
   Result := True;
+end;
+
+procedure TOrdersHForm.ShowCurrentActionButtons;
+begin
+  sbMoveToClient.Visible := sbMoveToClient.Enabled;
+  btnFrozen.Visible := True;
+  btnUnFrozen.Visible := True;
+  btnMoveSend.Caption := '';
+  btnMoveSend.Visible := False;
+  btnWayBillList.Visible := False;
+  ButtonLayout([btnDelete, btnFrozen, btnUnFrozen, sbMoveToClient, sbMoveToPrice]);
+end;
+
+procedure TOrdersHForm.ShowSendActionButtons;
+begin
+  sbMoveToClient.Visible := False;
+  btnFrozen.Visible := False;
+  btnUnFrozen.Visible := False;
+  btnMoveSend.Caption := '¬ернуть в текущие';
+  btnMoveSend.Visible := True;
+  btnWayBillList.Visible := True;
+  ButtonLayout([btnDelete, btnMoveSend, btnWayBillList, sbMoveToPrice]);
+end;
+
+procedure TOrdersHForm.ButtonLayout(buttons: array of TControl);
+var
+  i : Integer;
+  prevButton : TControl;
+begin
+  If Length(buttons) > 0 then begin
+    buttons[0].Left := 3;
+    prevButton := buttons[0];
+    for i := 1 to Length(buttons)-1 do
+      if buttons[i].Visible then begin
+        buttons[i].Left := prevButton.Left + prevButton.Width + 5;
+        prevButton := buttons[i];
+      end;
+  end;
+end;
+
+procedure TOrdersHForm.PrepareDestinationPrices;
+var
+  i : Integer;
+  sp : TSelectPrice;
+  mi :TMenuItem;
+begin
+  sbMoveToPrice.Visible := not DM.adsUser.FieldByName('EnableImpersonalPrice').AsBoolean;
+  if sbMoveToPrice.Visible then begin
+    SelectedPrices := SummarySelectedPrices;
+    for I := 0 to SelectedPrices.Count-1 do begin
+      sp := TSelectPrice(SelectedPrices.Objects[i]);
+
+      if sp.PriceSize > 0 then begin
+        mi := TMenuItem.Create(pmDestinationPrices);
+        mi.Name := 'sl' + SelectedPrices[i];
+        mi.Caption := sp.PriceName;
+        mi.Tag := Integer(sp);
+        mi.OnClick := OnDectinationPriceClick;
+        pmDestinationPrices.Items.Add(mi);
+      end;
+    end;
+  end;
+end;
+
+procedure TOrdersHForm.OnDectinationPriceClick(Sender: TObject);
+var
+  mi : TMenuItem;
+  sp : TSelectPrice;
+  Grid : TToughDBGrid;
+begin
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Grid := dbgSendedOrders;
+
+  mi := TMenuItem(Sender);
+  sp := TSelectPrice(mi.Tag);
+
+  if sp.PriceCode = Grid.DataSource.DataSet.FieldByName('PriceCode').AsInteger then
+    AProc.MessageBox( 'Ќельз€ переместить за€вку в тот же прайс-лист!', MB_ICONWARNING)
+  else
+  if AProc.MessageBox( 'ѕереместить выбранную за€вку в прайс-лист ' + sp.PriceName + '?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK
+  then begin
+
+    MoveToPriceFromSend := Grid = dbgSendedOrders;
+    InternalDestinationPrice := sp;
+
+    Strings := TStringList.Create;
+    try
+      ShowSQLWaiting(
+        InternalMoveToAnotherPrice,
+        'ѕеремещение за€вки в прайс ' + InternalDestinationPrice.PriceName);
+
+      Grid.DataSource.DataSet.DisableControls;
+      try
+        Grid.DataSource.DataSet.Bookmark := FSelectedRows[0];
+        if not MoveToPriceFromSend then
+          Grid.DataSource.DataSet.Delete;
+        Grid.DataSource.DataSet.Refresh;
+      finally
+        Grid.DataSource.DataSet.EnableControls;
+      end;
+
+      //если не нашли что-то, то выводим сообщение
+      if Strings.Count > 0 then ShowNotFound(Strings);
+
+    finally
+      Strings.Free;
+    end;
+
+    MainForm.SetOrdersInfo;
+
+    if adsOrdersHForm.RecordCount = 0 then begin
+      dbgCurrentOrders.ReadOnly := True;
+      dbgSendedOrders.ReadOnly := True;
+    end
+    else begin
+      dbgCurrentOrders.ReadOnly := False;
+      dbgSendedOrders.ReadOnly := False;
+    end;
+  end;
+end;
+
+procedure TOrdersHForm.sbMoveToPriceClick(Sender: TObject);
+var
+  Grid : TToughDBGrid;
+begin
+  if TabControl.TabIndex = 0 then
+    Grid := dbgCurrentOrders
+  else
+    Grid := dbgSendedOrders;
+
+  Grid.SetFocus;
+  if not adsOrdersHForm.IsEmpty then
+  begin
+    FillSelectedRows(Grid);
+
+    if FSelectedRows.Count > 1 then
+      AProc.MessageBox( 'ѕеремещать в прайс-лист можно только по одной за€вке.', MB_ICONWARNING)
+    else
+      if adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value then
+        AProc.MessageBox( 'ѕеремещать в прайс-лист можно только за€вки текущего адреса заказа.', MB_ICONWARNING)
+      else
+        if FSelectedRows.Count = 1 then
+          pmDestinationPrices.Popup(sbMoveToPrice.ClientOrigin.X + sbMoveToPrice.Width, sbMoveToPrice.ClientOrigin.Y);
+  end;
+end;
+
+procedure TOrdersHForm.InternalMoveToAnotherPrice;
+var
+  I : Integer;
+  LastBookmark : String;
+  movedOrder : TCurrentOrderHead;
+  offers : TObjectList;
+  positionIndex : Integer;
+  position : TCurrentOrderItem;
+
+  procedure SetOrder( Order: Integer);
+  begin
+    with adsCore do begin
+      Edit;
+      FieldByName( 'OrderCount').AsInteger := Order;
+      Post;
+    end;
+  end;
+
+  procedure SaveOrderItem(orderItem : TCurrentOrderItem);
+  begin
+    with adsCore do begin
+      ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
+      ParamByName( 'PriceCode').Value := InternalDestinationPrice.PriceCode;
+      ParamByName( 'RegionCode').Value := InternalDestinationPrice.RegionCode;
+
+      RestoreSQL;
+      AddWhere('(CCore.CoreId = :CoreId)');
+      ParamByName( 'CoreId').Value := orderItem.CoreId;
+
+      Open;
+      First;
+
+      try
+        SetOrder( FieldByName( 'OrderCount').AsInteger + orderItem.OrderCount);
+      finally
+        Close;
+      end;
+    end;
+  end;
+
+begin
+  LastBookmark := adsOrdersHForm.Bookmark;
+  adsOrdersHForm.DisableControls;
+  try
+    for I := 0 to FSelectedRows.Count-1 do begin
+      adsOrdersHForm.Bookmark := FSelectedRows[i];
+
+      //ѕроизводим работу только с за€вками текущего клиента
+      if adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value then
+        Continue;
+
+      Application.ProcessMessages;
+
+      Screen.Cursor:=crHourglass;
+      try
+        { открываем сохраненный заказ }
+        movedOrder := GetOrderFormMove();
+        try
+          offers := TDBMapping.GetOffersByPriceAndProductId(
+            DM.MainConnection,
+            InternalDestinationPrice.PriceCode,
+            InternalDestinationPrice.RegionCode,
+            movedOrder.GetProductIds()
+            );
+
+          try
+            movedOrder.RestoreOrderItemsToAnotherPrice(offers);
+          finally
+            offers.Free;
+          end;
+
+          Application.ProcessMessages;
+          
+          if movedOrder.CorrectionExists() then
+            Strings.Add('   прайс-лист ' + movedOrder.PriceName);
+
+          for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
+            position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
+
+            if not VarIsNull(position.CoreId) then
+              SaveOrderItem(position);
+
+            if (not VarIsNull(position.DropReason)) then
+              Strings.Add('      ' + position.ToRestoreReport());
+          end;
+
+        finally
+          movedOrder.Free;
+        end;
+
+      finally
+        Screen.Cursor:=crDefault;
+      end;
+    end;
+
+  finally
+    adsOrdersHForm.Bookmark := LastBookmark;
+    adsOrdersHForm.EnableControls;
+  end;
+
+  MainForm.SetOrdersInfo;
+
+  dbgSendedOrders.Selection.Clear;
+end;
+
+function TOrdersHForm.GetOrderFormMove: TCurrentOrderHead;
+var
+  orderList : TObjectList;
+begin
+  Result := TCurrentOrderHead.Create();
+  Result.Address := TAddress.Create();
+
+  Result.Address.Id := adsOrdersHFormClientID.Value;
+  Result.Address.Name := adsOrdersHFormAddressName.Value;
+
+  Result.OrderId := adsOrdersHFormOrderId.Value;
+  Result.AddressId := adsOrdersHFormClientID.Value;
+  Result.PriceCode := adsOrdersHFormPriceCode.Value;
+  Result.RegionCode := adsOrdersHFormRegionCode.Value;
+  Result.PriceName := adsOrdersHFormPriceName.Value;
+  Result.RegionName := adsOrdersHFormRegionName.Value;
+
+  if not MoveToPriceFromSend then
+    orderList := TDBMapping.GetCurrentOrderItemsByOrder(DM.MainConnection, Result)
+  else
+    orderList := TDBMapping.GetPostedOrderItemsByOrder(DM.MainConnection, Result);
+  try
+    orderList.OwnsObjects := False;
+    Result.OrderItems.Assign(orderList);
+  finally
+    orderList.Free;
+  end;
 end;
 
 end.

@@ -19,11 +19,40 @@ type
     destructor Destroy; override;
   end;
 
+  TMatchingProvider = class
+   public
+    function SubSystem() : String; virtual; abstract;
+    function FirstAction() : String; virtual; abstract;
+    function SecondAction() : String; virtual; abstract;
+    function Matching(item : TObject; offer : TOffer) : Boolean; virtual; abstract;
+  end;
+
+  TRestoreProvider = class(TMatchingProvider)
+   public
+    function SubSystem() : String; override;
+    function FirstAction() : String; override;
+    function SecondAction() : String; override;
+    function Matching(item : TObject; offer : TOffer) : Boolean; override;
+  end;
+
+  TMoveToPriceProvider = class(TMatchingProvider)
+   public
+    function SubSystem() : String; override;
+    function FirstAction() : String; override;
+    function SecondAction() : String; override;
+    function Matching(item : TObject; offer : TOffer) : Boolean; override;
+  end;
+
   TCurrentOrderHead = class
    private
     FOrderItems : TObjectList;
 
     function GetGroupedByCoreId() : TObjectList;
+   protected
+    function OffersToString(aOffers : TObjectList) : String;
+    function OrderItemsToString(aItems : TObjectList) : String;
+    function FindOffer(aOffers : TObjectList; item : TObject; provider : TMatchingProvider) : TOffer;
+    procedure MatchingOrderItemsToOffers(Offers : TObjectList; provider : TMatchingProvider);
    public
     OrderId : Int64;
     AddressId : Int64;
@@ -44,6 +73,7 @@ type
     function ToString() : String;
 
     procedure RestoreOrderItems(Offers : TObjectList);
+    procedure RestoreOrderItemsToAnotherPrice(Offers : TObjectList);
 
     function GetProductIds() : TProductIds;
   end;
@@ -64,7 +94,7 @@ begin
     Result := LessThanValue
   else
     Result := GreaterThanValue;
-end;  
+end;
 
 function SortOrderItemByOrderCount(Item1, Item2: Pointer): Integer;
 var
@@ -102,6 +132,48 @@ destructor TCurrentOrderHead.Destroy;
 begin
   FreeAndNil(FOrderItems);
   inherited;
+end;
+
+function TCurrentOrderHead.FindOffer(aOffers: TObjectList;
+  item: TObject; provider : TMatchingProvider): TOffer;
+var
+  I : Integer;
+  Index : Integer;
+  offer : TOffer;
+  remainder : Integer;
+  orderItem : TCurrentOrderItem;
+begin
+  orderItem := TCurrentOrderItem(item);
+  Result := nil;
+
+  Index := -1;
+  for I := 0 to aOffers.Count-1 do
+    if TOffer(aOffers[i]).ProductId = orderItem.ProductId then begin
+      Index := i;
+      Break;
+    end;
+
+  if (Index > -1) then begin
+    for I := Index to aOffers.Count-1 do begin
+      offer := TOffer(aOffers[i]);
+      if (offer.ProductId = orderItem.ProductId) then
+      begin
+        if (provider.Matching(orderItem, offer)) then begin
+          if (offer.IsMinOrderCountValid(orderItem.OrderCount)
+            and offer.IsMinOrderSumValid(orderItem.OrderCount)
+            and offer.GetRequestRationRemainder(orderItem.OrderCount, remainder))
+          then begin
+            if not Assigned(Result) or orderItem.IsOfferValid(offer) then
+              Result := offer;
+            if orderItem.IsOfferValid(Result) then
+              Exit;
+          end;
+        end
+      end
+      else
+        Exit;
+    end
+  end;
 end;
 
 function TCurrentOrderHead.GetGroupedByCoreId: TObjectList;
@@ -167,73 +239,8 @@ begin
     Result[i] := TCurrentOrderItem(OrderItems[i]).ProductId;
 end;
 
-procedure TCurrentOrderHead.RestoreOrderItems(Offers: TObjectList);
-
-  function OffersToString(aOffers : TObjectList) : String;
-  var
-    I : Integer;
-  begin
-    if (aOffers.Count = 0) then
-      Result := ''
-    else begin
-      Result := TOffer(aOffers[0]).ToString();
-      for I := 1 to aOffers.Count-1 do
-        Result := Result + #13#10 + TOffer(aOffers[i]).ToString();
-    end;
-  end;
-
-  function OrderItemsToString(aItems : TObjectList) : String;
-  var
-    I : Integer;
-  begin
-    if (aItems.Count = 0) then
-      Result := ''
-    else begin
-      Result := TCurrentOrderItem(aItems[0]).ToString();
-      for I := 1 to aItems.Count-1 do
-        Result := Result + #13#10 + TCurrentOrderItem(aItems[i]).ToString();
-    end;
-  end;
-
-  function FindOffer(aOffers : TObjectList; item : TCurrentOrderItem) : TOffer;
-  var
-    I : Integer;
-    Index : Integer;
-    offer : TOffer;
-    remainder : Integer;
-  begin
-    Result := nil;
-
-    Index := -1;
-    for I := 0 to aOffers.Count-1 do
-      if TOffer(aOffers[i]).ProductId = item.ProductId then begin
-        Index := i;
-        Break;
-      end;
-
-    if (Index > -1) then begin
-      for I := Index to aOffers.Count-1 do begin
-        offer := TOffer(aOffers[i]);
-        if (offer.ProductId = item.ProductId) then
-        begin
-          if (item.IsOfferExists(offer)) then begin
-            if (offer.IsMinOrderCountValid(item.OrderCount)
-              and offer.IsMinOrderSumValid(item.OrderCount)
-              and offer.GetRequestRationRemainder(item.OrderCount, remainder))
-            then begin
-              if not Assigned(Result) or item.IsOfferValid(offer) then
-                Result := offer;
-              if item.IsOfferValid(Result) then
-                Exit;
-            end;
-          end
-        end
-        else
-          Exit;
-      end
-    end;
-  end;
-
+procedure TCurrentOrderHead.MatchingOrderItemsToOffers(Offers: TObjectList;
+  provider: TMatchingProvider);
 var
   IsDebugEnabled : Boolean;
   restoreIndex : Integer;
@@ -251,10 +258,11 @@ begin
 
   if (IsDebugEnabled) then
     WriteExchangeLog(
-      'RestoreOrders',
+      provider.SubSystem(),
       Format(
-        'Восстанавливаем заказ %s с позициями:'#13#10'%s'#13#10'По предложениями:'#13#10'%s',
+        '%s заказ %s с позициями:'#13#10'%s'#13#10'По предложениями:'#13#10'%s',
         [
+          provider.FirstAction(),
           ToString(),
           OrderItemsToString(OrderItems),
           OffersToString(Offers)
@@ -266,12 +274,12 @@ begin
     item.ServerCost := item.Price;
     item.ServerQuantity := item.OrderCount;
 
-    offer := FindOffer(offers, item);
+    offer := FindOffer(offers, item, provider);
     if (offer = nil) then
     begin
       if (IsDebugEnabled) then
         WriteExchangeLog(
-          'RestoreOrders',
+          provider.SubSystem(),
           Format('Для CurrentOrderItem.Id = %d не было найдено подходящее предложение', [item.Id]));
       item.DropReason := psrNotExists;
       item.CoreId := Null;
@@ -280,7 +288,7 @@ begin
     else begin
       if (IsDebugEnabled) then
         WriteExchangeLog(
-          'RestoreOrders',
+          provider.SubSystem(),
           Format('Для CurrentOrderItem.Id = %d найдено предложение с Offer.CoreId: %d', [item.Id, offer.CoreId]));
       item.Offer := offer;
       item.CoreId := offer.CoreId;
@@ -308,7 +316,7 @@ begin
       mainItem := TCurrentOrderItem(byCount[0]);
       if (IsDebugEnabled) then
         WriteExchangeLog(
-          'RestoreOrders',
+          provider.SubSystem(),
           Format('Существуют дублирующиеся позиции по Offer.CoreId %d:\r\n%s', [g.CoreId, OrderItemsToString(byCount)]));
       for unionIndex := 1 to byCount.Count-1 do begin
         currentItem := TCurrentOrderItem(byCount[unionIndex]);
@@ -320,7 +328,7 @@ begin
 
           if (IsDebugEnabled) then
             WriteExchangeLog(
-              'RestoreOrders',
+              provider.SubSystem(),
               Format('CurrentOrderItem.Id = %d была помечена как не найденная', [currentItem.Id]));
         end
         else begin
@@ -332,7 +340,7 @@ begin
 
           if (IsDebugEnabled) then
             WriteExchangeLog(
-              'RestoreOrders',
+              provider.SubSystem(),
               Format('CurrentOrderItem.Id = %d была помечена как объединенная', [currentItem.Id]));
 
           mainItem.RecalcOrderCount();
@@ -346,8 +354,47 @@ begin
 
   if (IsDebugEnabled) then
     WriteExchangeLog(
-      'RestoreOrders',
-      Format('Закончили восстановление позиций по заказу: %d', [OrderId]));
+      provider.SubSystem(),
+      Format('Закончили %s позиций по заказу: %d',
+      [provider.SecondAction(),
+       OrderId]));
+end;
+
+function TCurrentOrderHead.OffersToString(aOffers: TObjectList): String;
+var
+  I : Integer;
+begin
+  if (aOffers.Count = 0) then
+    Result := ''
+  else begin
+    Result := TOffer(aOffers[0]).ToString();
+    for I := 1 to aOffers.Count-1 do
+      Result := Result + #13#10 + TOffer(aOffers[i]).ToString();
+  end;
+end;
+
+function TCurrentOrderHead.OrderItemsToString(aItems: TObjectList): String;
+var
+  I : Integer;
+begin
+  if (aItems.Count = 0) then
+    Result := ''
+  else begin
+    Result := TCurrentOrderItem(aItems[0]).ToString();
+    for I := 1 to aItems.Count-1 do
+      Result := Result + #13#10 + TCurrentOrderItem(aItems[i]).ToString();
+  end;
+end;
+
+procedure TCurrentOrderHead.RestoreOrderItems(Offers: TObjectList);
+begin
+  MatchingOrderItemsToOffers(Offers, TRestoreProvider.Create());
+end;
+
+procedure TCurrentOrderHead.RestoreOrderItemsToAnotherPrice(
+  Offers: TObjectList);
+begin
+  MatchingOrderItemsToOffers(Offers, TMoveToPriceProvider.Create());
 end;
 
 function TCurrentOrderHead.ToString: String;
@@ -376,6 +423,55 @@ destructor TGroupByCoreId.Destroy;
 begin
   FreeAndNil(Items);
   inherited;
+end;
+
+{ TRestoreProvider }
+
+function TRestoreProvider.FirstAction: String;
+begin
+  Result := 'Восстанавливаем';
+end;
+
+function TRestoreProvider.Matching(item: TObject; offer: TOffer): Boolean;
+begin
+  Result := False;
+  if item is TCurrentOrderItem then
+    Result := TCurrentOrderItem(item).IsOfferExists(offer);
+end;
+
+function TRestoreProvider.SecondAction: String;
+begin
+  Result := 'восстановление';
+end;
+
+function TRestoreProvider.SubSystem: String;
+begin
+  Result := 'RestoreOrders';
+end;
+
+{ TMoveToPriceProvider }
+
+function TMoveToPriceProvider.FirstAction: String;
+begin
+  Result := 'Перемещаем';
+end;
+
+function TMoveToPriceProvider.Matching(item: TObject;
+  offer: TOffer): Boolean;
+begin
+  Result := False;
+  if item is TCurrentOrderItem then
+    Result := TCurrentOrderItem(item).IsAnotherOfferExists(offer);
+end;
+
+function TMoveToPriceProvider.SecondAction: String;
+begin
+  Result := 'перемещение';
+end;
+
+function TMoveToPriceProvider.SubSystem: String;
+begin
+  Result := 'MoveToPrice';
 end;
 
 end.

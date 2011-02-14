@@ -69,6 +69,7 @@ type
     UnionOrderItem : TCurrentOrderItem;
 
     function IsOfferExists(aOffer: TOffer) : Boolean;
+    function IsAnotherOfferExists(aOffer: TOffer) : Boolean;
     function IsOfferValid(aOffer: TOffer) : Boolean;
     function IsFullOffer(aOffer: TOffer) : Boolean;
 
@@ -86,6 +87,13 @@ uses
   U_ExchangeLog;
 
 { TCurrentOrderItem }
+
+function TCurrentOrderItem.IsAnotherOfferExists(aOffer: TOffer): Boolean;
+begin
+  Result :=
+    (ProductId = aOffer.ProductId)
+    and (VarIsNull(CodeFirmCr) or (aOffer.CodeFirmCr = CodeFirmCr) or (CodeFirmCr = 1))
+end;
 
 function TCurrentOrderItem.IsFullOffer(aOffer: TOffer): Boolean;
 begin

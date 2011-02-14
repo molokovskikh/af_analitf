@@ -98,9 +98,11 @@ type
     RegionCode : Int64;
     Selected : Boolean;
     PriceName : String;
+    PriceSize : Integer;
     constructor Create(PriceCode:Integer; RegionCode : Int64;
     Selected : Boolean;
-    PriceName : String);
+    PriceName : String;
+    PriceSize : Integer);
   end;
 
   TOrderInfo = class
@@ -1757,12 +1759,13 @@ end;
 { TSelectPrice }
 
 constructor TSelectPrice.Create(PriceCode:Integer; RegionCode: Int64; Selected: Boolean;
-  PriceName: String);
+  PriceName: String; PriceSize : Integer);
 begin
   Self.PriceCode := PriceCode;
   Self.RegionCode := RegionCode;
   Self.Selected := Selected;
   Self.PriceName := PriceName;
+  Self.PriceSize := PriceSize;
 end;
 
 procedure TDM.LoadSelectedPrices;
@@ -1778,9 +1781,30 @@ begin
   try
     adsPrices.First;
     while not adsPrices.Eof do begin
-      SummarySelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
-      SynonymSelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
-      MinCostSelectedPrices.AddObject(adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString, TSelectPrice.Create(adsPricesPRICECODE.AsInteger, adsPricesREGIONCODE.AsLargeInt, True, adsPricesPRICENAME.Value));
+      SummarySelectedPrices.AddObject(
+        adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString,
+        TSelectPrice.Create(
+          adsPricesPRICECODE.AsInteger,
+          adsPricesREGIONCODE.AsLargeInt,
+          True,
+          adsPricesPRICENAME.Value,
+          adsPricespricesize.Value));
+      SynonymSelectedPrices.AddObject(
+        adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString,
+        TSelectPrice.Create(
+          adsPricesPRICECODE.AsInteger,
+          adsPricesREGIONCODE.AsLargeInt,
+          True,
+          adsPricesPRICENAME.Value,
+          adsPricespricesize.Value));
+      MinCostSelectedPrices.AddObject(
+        adsPricesPRICECODE.AsString + '_' + adsPricesREGIONCODE.AsString,
+        TSelectPrice.Create(
+          adsPricesPRICECODE.AsInteger,
+          adsPricesREGIONCODE.AsLargeInt,
+          True,
+          adsPricesPRICENAME.Value,
+          adsPricespricesize.Value));
       adsPrices.Next;
     end;
   finally

@@ -58,6 +58,23 @@ inherited OrdersHForm: TOrdersHForm
           Spacing = 10
           OnClick = sbMoveToClientClick
         end
+        object sbMoveToPrice: TSpeedButton
+          Left = 632
+          Top = 4
+          Width = 145
+          Height = 27
+          Caption = #1055#1077#1088#1077#1085#1077#1089#1090#1080' '#1074' '#1087#1088#1072#1081#1089
+          Glyph.Data = {
+            A6000000424DA600000000000000760000002800000009000000060000000100
+            0400000000003000000000000000000000001000000010000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
+            0000333303333000000033300033300000003300000330000000300000003000
+            00003333333330000000}
+          Layout = blGlyphRight
+          Spacing = 10
+          OnClick = sbMoveToPriceClick
+        end
         object btnMoveSend: TButton
           Left = 163
           Top = 4
@@ -1111,8 +1128,7 @@ inherited OrdersHForm: TOrdersHForm
         'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0'
       'WHERE '
       '    (CCore.PriceCode = :PriceCode) '
-      'And (CCore.RegionCode = :RegionCode)'
-      'and (CCore.SYNONYMCODE = :SYNONYMCODE)')
+      'And (CCore.RegionCode = :RegionCode)')
     BeforePost = adsCoreBeforePost
     Left = 228
     Top = 119
@@ -1132,10 +1148,6 @@ inherited OrdersHForm: TOrdersHForm
       item
         DataType = ftUnknown
         Name = 'RegionCode'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'SYNONYMCODE'
       end>
   end
   object adsCurrentOrders: TMyQuery
@@ -1592,5 +1604,9 @@ inherited OrdersHForm: TOrdersHForm
     OnTimer = tmrFillReportTimer
     Left = 424
     Top = 104
+  end
+  object pmDestinationPrices: TPopupMenu
+    Left = 212
+    Top = 459
   end
 end
