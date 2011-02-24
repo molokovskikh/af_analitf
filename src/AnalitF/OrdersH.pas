@@ -905,7 +905,7 @@ begin
     FillSelectedRows(Grid);
     if FSelectedRows.Count > 0 then
       if AProc.MessageBox(
-          'Внимание! "Размороженные" заявки будут объеденены с текущими заявками.'#13#10 +
+          'Внимание! "Размороженные" заявки будут объединены с текущими заявками.'#13#10 +
           '"Разморозить" выбранные заявки?',
           MB_ICONQUESTION or MB_OKCANCEL) = IDOK
       then begin
@@ -972,7 +972,7 @@ begin
     FillSelectedRows(Grid);
     if FSelectedRows.Count > 0 then
       if AProc.MessageBox(
-          'Внимание! Перемещяемые заявки будут объеденены с текущими заявками.'#13#10 +
+          'Внимание! Перемещяемые заявки будут объединены с текущими заявками.'#13#10 +
           'Перенести выбранные заявки?',
           MB_ICONQUESTION or MB_OKCANCEL) = IDOK
       then begin
