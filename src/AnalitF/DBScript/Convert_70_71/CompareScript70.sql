@@ -13,7 +13,9 @@ alter table analitf.client
 alter table analitf.userinfo
   add column `UseCorrectOrders` tinyint(1) not null default '0';
 
-create table IF NOT EXISTS analitf.globalparams(
+drop table if exists analitf.globalparams;
+
+create table analitf.globalparams(
   `Name` varchar(255) not null,
   `Value` varchar(255) default null,
   primary key (`Name`)
