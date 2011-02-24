@@ -19,7 +19,8 @@ type
 
 implementation
 
-uses Exchange, DModule, AProc, SevenZip;
+uses Exchange, DModule, AProc, SevenZip,
+  NetworkSettings;
 
 procedure TReclameThread.Execute;
 const
@@ -162,9 +163,10 @@ begin
           if Terminated then Abort;
           Log('Reclame', 'ѕытаемс€ распаковать архив с рекламным блоком...');
 
-          OSMoveFile(
-            ExePath + SDirReclame + '\r' + RegionCode + '.zip',
-            RootFolder() + SDirReclame + '\r' + RegionCode + '.zip');
+          if GetNetworkSettings.IsNetworkVersion then
+            OSMoveFile(
+              ExePath + SDirReclame + '\r' + RegionCode + '.zip',
+              RootFolder() + SDirReclame + '\r' + RegionCode + '.zip');
 
           SZCS.Enter;
           try
