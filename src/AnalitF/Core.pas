@@ -206,6 +206,7 @@ type
 
     procedure PrepareForMaxProducerCosts;
     procedure MaxProducerCostsUpdateGrid(DataSet: TDataSet);
+    procedure RecalUserRetailPrice();
   public
     frameLegend : TframeLegend;
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
@@ -220,6 +221,7 @@ uses Main, AProc, DModule, Constant, NamesForms, OrdersH, DBProc, CoreFirm,
 
 var
   UserSetRetUpCost : Boolean;
+  ProgramSetSetRetUpCost : Boolean;
   RetUpCostValue   : Integer;
 
 
@@ -299,6 +301,8 @@ begin
 
   plOverCost.Hide();
   //Если в прошлый раз пользователь изменил наценку, то выставляем ее
+  UserSetRetUpCost := False;
+  ProgramSetSetRetUpCost := False;
   if UserSetRetUpCost then
     seRetUpCost.Value := RetUpCostValue;
   //Зачем этот код здесь: тайна, покрытая мраком
@@ -748,20 +752,34 @@ begin
 end;
 
 procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
-//var
+var
 //  C : Integer;
+  retailMarkup : Variant;
 begin
 {
   if Assigned(frameContextReclame) then
     frameContextReclame.StopReclame;
-}    
+}
   tmrUpdatePreviosOrders.Enabled := False;
   tmrUpdatePreviosOrders.Enabled := True;
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
     //Если пользователь не изменял сам наценку, то применяем текущую наценку
-    if not UserSetRetUpCost then
-      seRetUpCost.Value := Trunc(DM.GetRetUpCost(adsCoreCOST.AsCurrency));
-    seRetUpCostChange(seRetUpCost);
+    if not UserSetRetUpCost then begin
+      retailMarkup := DM.CalcRetailMarkup(
+        adsCoreCatalogVitallyImportant.Value,
+        adsCoreProducerCost.AsVariant,
+        adsCoreCost.AsCurrency);
+      ProgramSetSetRetUpCost := True;
+      try
+        if not VarIsNull(retailMarkup) then
+          seRetUpCost.Value := Trunc(retailMarkup)
+        else
+          seRetUpCost.Value := 0;
+      finally
+        ProgramSetSetRetUpCost := False;
+      end;
+    end;
+    RecalUserRetailPrice();
   end;
   RefreshCurrentSumma;
 {
@@ -787,12 +805,11 @@ end;
 
 procedure TCoreForm.seRetUpCostChange(Sender: TObject);
 begin
-  UserSetRetUpCost := True;
-  RetUpCostValue   := seRetUpCost.Value;
-  if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then
-    eRetUpCost.Text := CurrToStrF((1 + seRetUpCost.Value/100) * adsCoreCOST.AsCurrency, ffCurrency, 2)
-  else
-    eRetUpCost.Text := '';
+  if not ProgramSetSetRetUpCost then begin
+    UserSetRetUpCost := True;
+    RetUpCostValue   := seRetUpCost.Value;
+    RecalUserRetailPrice();
+  end;
 end;
 
 procedure TCoreForm.RefreshCurrentSumma;
@@ -1002,6 +1019,26 @@ end;
 procedure TCoreForm.dblProducersCloseUp(Sender: TObject);
 begin
   cbFilterSelect(nil);
+end;
+
+procedure TCoreForm.RecalUserRetailPrice;
+var
+  retailCost : Currency;
+begin
+  eRetUpCost.Text := '';
+  if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0)
+    and (seRetUpCost.Value > 0)
+  then begin
+    retailCost :=
+      DM.GetRetailCostByMarkup(
+        adsCoreCatalogVitallyImportant.Value,
+        adsCoreNDS.AsVariant,
+        adsCoreProducerCost.AsVariant,
+        adsCoreCost.AsCurrency,
+        seRetUpCost.Value);
+    if retailCost > 0.001 then
+      eRetUpCost.Text := CurrToStrF(retailCost, ffCurrency, 2);
+  end;
 end;
 
 initialization

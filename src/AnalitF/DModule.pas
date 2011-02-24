@@ -524,6 +524,13 @@ type
       RetailMarkup : TField;
       RetailCost : TField
     );
+    function GetRetailCostByMarkup(
+      VitallyImportant : Boolean;
+      NDS : Variant;
+      ProducerCost : Variant;
+      SupplierCost : Currency;
+      markup : Currency
+    ) : Currency;
     //Получить розничную наценку товара
     function GetRetUpCost(BaseCost : Currency) : Currency;
     function GetMaxRetailMarkup(BaseCost : Currency) : Currency;
@@ -4761,6 +4768,28 @@ begin
       Result := SupplierCost + SupplierCost*(markup/100);
 
     end;
+  end;
+end;
+
+function TDM.GetRetailCostByMarkup(VitallyImportant: Boolean; NDS,
+  ProducerCost: Variant; SupplierCost, markup: Currency): Currency;
+begin
+  if (VitallyImportant and VarIsNull(ProducerCost))
+    or (not VitallyImportant and VarIsNull(ProducerCost) and DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean)
+  then begin
+    Result := 0;
+  end
+  else begin
+    if (markup > 0.001) then
+      Result := InternalCalcRetailCost(
+        markup,
+        VitallyImportant,
+        NDS,
+        ProducerCost,
+        SupplierCost
+      )
+    else
+      Result := 0;
   end;
 end;
 
