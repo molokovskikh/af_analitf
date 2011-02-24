@@ -989,7 +989,7 @@ begin
   column.ToolTips := True;
   column := TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Producer', 'Производитель', (dbgMaxProducerCosts.ClientWidth div 6)*2);
   column.ToolTips := True;
-  column := TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'Cost', 'Цена', dbgMaxProducerCosts.ClientWidth div 6);
+  column := TDBGridHelper.AddColumn(dbgMaxProducerCosts, 'RealCost', 'Цена', dbgMaxProducerCosts.ClientWidth div 6);
   column.Alignment := taRightJustify; 
   dbgMaxProducerCosts.DataSource := dsMaxProducerCosts;
 end;
