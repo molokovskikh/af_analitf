@@ -2565,7 +2565,7 @@ begin
       ExchangeParams,
       eaForceSendOrders in ExchangeForm.ExchangeActs,
       Soap,
-      DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean);
+      DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean);
   try
     postController.PostSomeOrders;
   finally

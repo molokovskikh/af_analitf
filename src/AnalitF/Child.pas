@@ -321,7 +321,7 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   NeedFirstOnDataSet := True;
   SortOnOrderGrid := True;
-  FUseCorrectOrders := DM.adtParams.FieldByName('UseCorrectOrders').AsBoolean;
+  FUseCorrectOrders := DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean;
   ModifiedActions        := TObjectList.Create(True);
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);

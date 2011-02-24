@@ -77,7 +77,6 @@ type
     dbchbGroupByProducts: TDBCheckBox;
     dbchbPrintOrdersAfterSend: TDBCheckBox;
     dbchbConfirmSendingOrders: TDBCheckBox;
-    dbchbUseCorrectOrders: TDBCheckBox;
     pHTTP: TPanel;
     gbHTTP: TGroupBox;
     Label1: TLabel;
@@ -923,7 +922,7 @@ var
   controlInterval : Integer;
   nextTop : Integer;
 begin
-  controlInterval := dbchbUseCorrectOrders.Top - dbchbUseCorrectOrders.Height - dbchbConfirmSendingOrders.Top;
+  controlInterval := dbchbConfirmSendingOrders.Top - dbchbConfirmSendingOrders.Height - dbchbPrintOrdersAfterSend.Top;
   if GetNetworkSettings().IsNetworkVersion then begin
     gbNetworkVersionSettings := TGroupBox.Create(Self);
     gbNetworkVersionSettings.Parent := tshOther;
@@ -931,7 +930,7 @@ begin
     gbNetworkVersionSettings.Left := gbDeleteHistory.Left;
     gbNetworkVersionSettings.Width := gbDeleteHistory.Width;
     gbNetworkVersionSettings.Anchors := gbDeleteHistory.Anchors;
-    gbNetworkVersionSettings.Top := dbchbUseCorrectOrders.Top + dbchbUseCorrectOrders.Height + controlInterval;
+    gbNetworkVersionSettings.Top := dbchbConfirmSendingOrders.Top + dbchbConfirmSendingOrders.Height + controlInterval;
 
     nextTop := 16;
 
@@ -947,7 +946,7 @@ begin
     tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
   end
   else begin
-    nextTop := dbchbUseCorrectOrders.Top + dbchbUseCorrectOrders.Height + controlInterval;
+    nextTop := dbchbConfirmSendingOrders.Top + dbchbConfirmSendingOrders.Height + controlInterval;
 
     AddLabelAndEdit(tshOther, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при восстановлении заказа:');
     ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);

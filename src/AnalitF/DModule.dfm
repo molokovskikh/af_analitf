@@ -1479,6 +1479,7 @@ object DM: TDM
       '  UserInfo.Addition,'
       '  UserInfo.InheritPrices,'
       '  UserInfo.IsFutureClient,'
+      '  UserInfo.UseCorrectOrders,'
       '  client.Id as MainClientId,'
       '  client.Name as MainClientName,'
       '  client.CalculateOnProducerCost,'
