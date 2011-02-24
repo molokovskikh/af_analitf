@@ -359,7 +359,7 @@ procedure TSummaryForm.scf(DataSet: TDataSet);
 begin
   //вычисляем сумму по позиции
   try
-    if (LastSymmaryType = 0) or adsSummaryRetailMarkup.IsNull then begin
+    if (LastSymmaryType = 0) or adsSummaryRetailCost.IsNull then begin
       adsSummaryPriceRet.AsCurrency :=
         DM.GetRetailCost(
           adsSummaryCatalogVitallyImportant.Value,

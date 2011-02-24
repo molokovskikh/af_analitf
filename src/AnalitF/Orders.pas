@@ -513,20 +513,22 @@ end;
 procedure TOrdersForm.ocf(DataSet: TDataSet);
 begin
   try
-    if adsOrdersRetailMarkup.IsNull then
-      adsOrdersEditRetailMarkup.Value := DM.GetRetUpCost(adsOrdersprice.AsCurrency)
-    else
-      adsOrdersEditRetailMarkup.Value := adsOrdersRetailMarkup.Value;
-
     if adsOrdersRetailCost.IsNull then begin
+      adsOrdersEditRetailMarkup.AsVariant :=
+        DM.CalcRetailMarkup(
+          adsOrdersCatalogVitallyImportant.Value,
+          adsOrdersProducerCost.AsVariant,
+          adsOrdersprice.AsCurrency);
+      DM.CalcRetailCost(
+          adsOrdersCatalogVitallyImportant.Value,
+          adsOrdersNDS.AsVariant,
+          adsOrdersProducerCost.AsVariant,
+          adsOrdersprice.AsCurrency,
+          adsOrdersEditRetailMarkup,
+          adsOrdersRetailPrice);
     end
     else
       adsOrdersRetailPrice.AsCurrency := adsOrdersRetailCost.AsCurrency;
-
-{
-      adsOrdersRetailPrice.AsCurrency :=
-        (1 + adsOrdersEditRetailMarkup.Value/100)*adsOrdersprice.AsCurrency;
-}        
 
     adsOrdersSumOrder.AsCurrency := adsOrdersRealPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
   except
@@ -824,7 +826,6 @@ end;
 procedure TOrdersForm.RetailPriceUpdateData(Sender: TObject;
   var Text: String; var Value: Variant; var UseText, Handled: Boolean);
 var
-  markup,
   price : Double;
 begin
   if (adsOrders.State in [dsEdit])
@@ -832,20 +833,11 @@ begin
     if StrToFloatDef(Value, 0.0) > 0 then begin
       price := Value;
       if (price > 0) then begin
-        adsOrdersRetailCost.AsVariant := markup;
+        adsOrdersRetailCost.AsVariant := price;
         adsOrders.Post;
       end
       else
         adsOrders.Cancel;
-{
-      markup := (price/adsOrdersprice.AsCurrency - 1) * 100;
-      if (markup > 0) then begin
-        adsOrdersRetailMarkup.AsVariant := markup;
-        adsOrders.Post;
-      end
-      else
-        adsOrders.Cancel;
-}        
     end;
     Handled := True;
   end;

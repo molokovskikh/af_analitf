@@ -985,6 +985,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCorePriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'PriceRet'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsCoreSortOrder: TIntegerField

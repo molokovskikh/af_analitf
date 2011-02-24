@@ -774,6 +774,7 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsCryptPriceRet: TCurrencyField
       FieldKind = fkCalculated
       FieldName = 'CryptPriceRet'
+      DisplayFormat = '0.00;;'#39#39
       Calculated = True
     end
     object adsExpiredsRealCost: TFloatField
