@@ -290,9 +290,20 @@ begin
           dataSet.FieldByName('SYNONYMNAME').AsString]);
     end;
   end;
-
   //Если выставлено поле - рассчитывать лидеров,
   if FDataLayer.adtClientsCALCULATELEADER.AsBoolean then begin
+
+    try
+      if Length(dataSet.FieldByName('PRICE').AsString) > 0 then
+        TmpOrderCost := dataSet.FieldByName('PRICE').AsFloat
+      else
+        TmpOrderCost := 0.0;
+    except
+      on E : Exception do begin
+        WriteExchangeLog('Exchange', 'Ошибка при расшифровке цены : ' + E.Message
+          + '  Строка : "' + dataSet.FieldByName('PRICE').AsString + '"');
+      end;
+    end;
 
     if FDataLayer.adsOrderCore.Active then
       FDataLayer.adsOrderCore.Close();
@@ -307,7 +318,7 @@ begin
     FDataLayer.adsOrderCore.Open;
     try
       FDataLayer.adsOrderCore.FetchAll;
-      FDataLayer.adsOrderCore.IndexFieldNames := 'RealCost ASC';
+      FDataLayer.adsOrderCore.IndexFieldNames := 'Cost ASC';
 
       //Выбираем минимального из всех прайсов
       DBProc.SetFilter(FDataLayer.adsOrderCore,
@@ -323,8 +334,8 @@ begin
       FDataLayer.adsOrderCore.First;
 
       try
-        if not FDataLayer.adsOrderCoreRealCost.IsNull then begin
-          TmpMinCost := FDataLayer.adsOrderCoreRealCost.AsFloat;
+        if not FDataLayer.adsOrderCoreCost.IsNull then begin
+          TmpMinCost := FDataLayer.adsOrderCoreCost.AsFloat;
           postMinCost := FloatToServiceStr(TmpMinCost);
           postMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
 
@@ -342,7 +353,7 @@ begin
       except
         on E : Exception do begin
           WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены : ' + E.Message
-            + '  Строка : "' + FDataLayer.adsOrderCoreRealCOST.AsString + '"');
+            + '  Строка : "' + FDataLayer.adsOrderCoreCost.AsString + '"');
         end;
       end;
 
@@ -358,8 +369,8 @@ begin
       //В основных прайс-листах может не быть предложений
       if not FDataLayer.adsOrderCore.IsEmpty then begin
         try
-          if not FDataLayer.adsOrderCoreRealCost.IsNull then begin
-            TmpMinCost := FDataLayer.adsOrderCoreRealCost.AsFloat;
+          if not FDataLayer.adsOrderCoreCost.IsNull then begin
+            TmpMinCost := FDataLayer.adsOrderCoreCost.AsFloat;
             postLeaderMinCost := FloatToServiceStr(TmpMinCost);
             postLeaderMinPriceCode := FDataLayer.adsOrderCorePRICECODE.AsString;
 
@@ -378,7 +389,7 @@ begin
         except
           on E : Exception do begin
             WriteExchangeLog('Exchange', 'Ошибка при расшифровке минимальной цены лидера : ' + E.Message
-              + '  Строка : "' + FDataLayer.adsOrderCoreRealCOST.AsString + '"');
+              + '  Строка : "' + FDataLayer.adsOrderCoreCost.AsString + '"');
           end;
         end;
       end;
