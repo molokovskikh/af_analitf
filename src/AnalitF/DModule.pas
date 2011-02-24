@@ -2046,7 +2046,7 @@ begin
       end;
 
       if DBVersion = 70 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlDWithGlobalParams, nil);
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 71;
       end;
     end;
@@ -3602,7 +3602,7 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
-    if AnsiCompareText(calchash, '49D9511DE8C970EA354BE39C1963A220') <> 0 then
+    if AnsiCompareText(calchash, '40C4B11643DA0D07DF4E07EA2E6E6E09') <> 0 then
       raise Exception.Create('Не возможно загрузить библиотеку libmysqld.dll.');
   except
     on E : Exception do begin
