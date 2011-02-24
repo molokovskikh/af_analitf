@@ -147,8 +147,13 @@ object MainForm: TMainForm
         Action = actOrderPrice
         ImageIndex = 6
       end
-      object ToolButton3: TToolButton
+      object btnShowMinPrices: TToolButton
         Left = 382
+        Top = 0
+        Action = actShowMinPrices
+      end
+      object ToolButton3: TToolButton
+        Left = 421
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
@@ -156,26 +161,21 @@ object MainForm: TMainForm
         Style = tbsSeparator
       end
       object btnOrderSummary: TToolButton
-        Left = 390
+        Left = 429
         Top = 0
         Action = actOrderSummary
         ImageIndex = 17
       end
       object btnClosedOrders: TToolButton
-        Left = 429
+        Left = 468
         Top = 0
         Action = actClosedOrders
         ImageIndex = 8
       end
       object btnPostOrderBatch: TToolButton
-        Left = 468
-        Top = 0
-        Action = actPostOrderBatch
-      end
-      object ToolButton6: TToolButton
         Left = 507
         Top = 0
-        Action = actShowMinPrices
+        Action = actPostOrderBatch
       end
       object ToolButton4: TToolButton
         Left = 546

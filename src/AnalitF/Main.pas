@@ -134,7 +134,7 @@ TMainForm = class(TVistaCorrectForm)
     miGetHistoryOrders: TMenuItem;
     tmrOnExclusive: TTimer;
     actShowMinPrices: TAction;
-    ToolButton6: TToolButton;
+    btnShowMinPrices: TToolButton;
     actServiceLog: TAction;
     itmServiceLog: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
@@ -1035,6 +1035,7 @@ begin
   actViewDocs.Enabled := False;
   actPostOrderBatch.Enabled := False;
   actGetHistoryOrders.Enabled := False;
+  actShowMinPrices.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -1054,6 +1055,7 @@ begin
   actViewDocs.Enabled := True;
   actPostOrderBatch.Enabled := True;
   actGetHistoryOrders.Enabled := True;
+  actShowMinPrices.Enabled := True;
   DisableByNetworkSettings;
 end;
 
