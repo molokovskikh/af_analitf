@@ -563,10 +563,11 @@ begin
       dbeHistoryDayCount.SetFocus;
     end;
 
-    if GetNetworkSettings().IsNetworkVersion and CanClose then begin
+    if CanClose then begin
       if TryStrToFloat(ePositionPercent.Text, newPercent) then begin
         FNetworkParams.NetworkPositionPercent := newPercent;
-        FNetworkParams.NetworkExportPricesFolder := eExportPricesFolder.Text;
+        if GetNetworkSettings().IsNetworkVersion then
+          FNetworkParams.NetworkExportPricesFolder := eExportPricesFolder.Text;
       end
       else begin
         CanClose := False;
