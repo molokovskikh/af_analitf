@@ -110,6 +110,7 @@ implementation
 uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   CompactThread, DB, SQLWaiting, U_ExchangeLog, OrdersH, Orders,
   Child, Config, RxMemDS, CorrectOrders, PostSomeOrdersController,
+  DatabaseObjects,
   PostWaybillsController,
   DocumentHeaders,
   U_OrderBatchForm,
@@ -993,6 +994,7 @@ procedure TInternalRepareOrders.InternalRepareOrders;
 begin
   FillAddresses();
   RestoreOrders();
+  DatabaseController.BackupOrdersDataTables();
   FormatLog();
 end;
 

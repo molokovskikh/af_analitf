@@ -651,10 +651,7 @@ begin
       FExchangeParams.SendedOrders.Add(VarToStr(LastPostedOrderId));
     end;
 
-    DatabaseController.BackupDataTable(doiPostedOrderHeads);
-    DatabaseController.BackupDataTable(doiPostedOrderLists);
-    DatabaseController.BackupDataTable(doiCurrentOrderHeads);
-    DatabaseController.BackupDataTable(doiCurrentOrderLists);
+    DatabaseController.BackupOrdersDataTables();
 
   end;
   if not FOrderSendSuccess then begin

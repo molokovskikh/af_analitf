@@ -194,6 +194,7 @@ type
 
     procedure BackupDataTable(ObjectId : TDatabaseObjectId);
     procedure BackupDataTables();
+    procedure BackupOrdersDataTables();
 
 
     //Методы для работы с backup-ом при импортировании данных
@@ -338,6 +339,14 @@ begin
           BackupDataTable(currentTable.ObjectId);
       end;
   end;
+end;
+
+procedure TDatabaseController.BackupOrdersDataTables;
+begin
+  BackupDataTable(doiPostedOrderHeads);
+  BackupDataTable(doiPostedOrderLists);
+  BackupDataTable(doiCurrentOrderHeads);
+  BackupDataTable(doiCurrentOrderLists);
 end;
 
 function TDatabaseController.CheckObjects(
