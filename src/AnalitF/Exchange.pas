@@ -162,7 +162,6 @@ type
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
 {//$ifndef USENEWMYSQLTYPES}
 var
- mr: integer;
 {//$endif}
 //  hMenuHandle: HMENU;
   needAuth : Boolean;
@@ -392,21 +391,11 @@ begin
   if Result and ( eaGetPrice in AExchangeActions) and
     ( DaysBetween( DM.adtParams.FieldByName( 'LastCompact').AsDateTime, Now) >= COMPACT_PERIOD) then
   begin
-    CompactForm := TCompactForm.Create( Application);
-    CompactForm.lblMessage.Caption := 'Сжатие базы не производилось более ' +
-      IntToStr( COMPACT_PERIOD) + ' дней.' + #10 + #13 +
-      'Произвести сжатие базы? (Рекомендуется)';
-    mr := CompactForm.ShowModal;
-    CompactForm.Close;
-    CompactForm.Free;
-    if mr = mrOK then begin
-      //Перед началом сжатия базы данных закрываем все дочерние окна. Возможно, это не надо делать,
-      //т.к. дочерние окна закрывали ранее
-      MainForm.FreeChildForms;
-      Application.ProcessMessages;
-      RunCompactDatabase;
-      AProc.MessageBox( 'Сжатие базы данных завершено');
-    end;
+    //Перед началом сжатия базы данных закрываем все дочерние окна. Возможно, это не надо делать,
+    //т.к. дочерние окна закрывали ранее
+    MainForm.FreeChildForms;
+    Application.ProcessMessages;
+    RunCompactDatabase;
   end;
 {//$endif}
 
