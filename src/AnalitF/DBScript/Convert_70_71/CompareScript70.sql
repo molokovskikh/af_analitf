@@ -10,6 +10,15 @@ alter table analitf.postedorderlists
 alter table analitf.client
   add column `EnableImpersonalPrice` tinyint(1) unsigned not null default '0';
 
+alter table analitf.userinfo
+  add column `UseCorrectOrders` tinyint(1) not null default '0';
+
+create table IF NOT EXISTS analitf.globalparams(
+  `Name` varchar(255) not null,
+  `Value` varchar(255) default null,
+  primary key (`Name`)
+) ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+
 update
   analitf.params,
   analitf.userinfo

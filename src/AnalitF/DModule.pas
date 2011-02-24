@@ -416,6 +416,7 @@ type
     procedure UpdateToNewLibMySqlD(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     procedure ExportFromOldLibMysqlDToFiles(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure ImportOldLibMysqlDFilesToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
+    procedure UpdateToNewLibMySqlDWithGlobalParams(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
 {$ifdef DEBUG}
@@ -4791,6 +4792,13 @@ begin
     else
       Result := 0;
   end;
+end;
+
+procedure TDM.UpdateToNewLibMySqlDWithGlobalParams(
+  dbCon: TCustomMyConnection; DBDirectoryName: String;
+  OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
+begin
+
 end;
 
 initialization
