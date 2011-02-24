@@ -113,6 +113,7 @@ object DM: TDM
     Options.KeepDesignConnected = False
     Username = 'root'
     Server = 'localhost'
+    Connected = True
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False
     Left = 32
@@ -666,7 +667,8 @@ object DM: TDM
       '    list.VitallyImportant,'
       '    list.ProducerCost, '
       '    list.NDS,'
-      '    list.RetailMarkup '
+      '    list.RetailMarkup,'
+      '    list.RetailCost'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'
@@ -794,6 +796,9 @@ object DM: TDM
     end
     object adsOrderDetailsRetailMarkup: TFloatField
       FieldName = 'RetailMarkup'
+    end
+    object adsOrderDetailsRetailCost: TFloatField
+      FieldName = 'RetailCost'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -1750,7 +1755,8 @@ object DM: TDM
       '    list.VitallyImportant,'
       '    list.ProducerCost, '
       '    list.NDS, '
-      '    list.RetailMarkup '
+      '    list.RetailMarkup,'
+      '    list.RetailCost'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'

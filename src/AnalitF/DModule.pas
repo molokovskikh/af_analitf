@@ -335,6 +335,7 @@ type
     adsOrderDetailsEtalon: TMyQuery;
     adsOrderDetailsRetailMarkup: TFloatField;
     adtClientsSelfAddressId: TStringField;
+    adsOrderDetailsRetailCost: TFloatField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
