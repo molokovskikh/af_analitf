@@ -219,7 +219,9 @@ type
     procedure CreateWorkSchema(connection: TCustomMyConnection);
 
     procedure FreeMySQLLib(ErrorMessage : String; SubSystem : String = '');
+{$ifdef USEMEMORYCRYPTDLL}
     procedure SwitchMemoryLib(fileName : String = '');
+{$endif}
     procedure SwithTypes(ToNewTypes : Boolean);
   end;
 
@@ -1526,10 +1528,12 @@ begin
   //OSDeleteFile(ExePath + BackupFileFlag);
 end;
 
+{$ifdef USEMEMORYCRYPTDLL}
 procedure TDatabaseController.SwitchMemoryLib(fileName: String);
 begin
   TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib(fileName);
 end;
+{$endif}
 
 procedure TDatabaseController.SwithTypes(ToNewTypes: Boolean);
 begin
