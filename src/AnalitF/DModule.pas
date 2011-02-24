@@ -417,6 +417,8 @@ type
     procedure ExportFromOldLibMysqlDToFiles(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure ImportOldLibMysqlDFilesToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure UpdateToNewLibMySqlDWithGlobalParams(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ExportGlobalParamsFromOldLibMysqlDToFile(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
+    procedure ImportOldLibMysqlDGlobalParamsFileToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
 {$ifdef DEBUG}
@@ -2044,7 +2046,7 @@ begin
       end;
 
       if DBVersion = 70 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlDWithGlobalParams, nil);
         DBVersion := 71;
       end;
     end;
@@ -4797,8 +4799,196 @@ end;
 procedure TDM.UpdateToNewLibMySqlDWithGlobalParams(
   dbCon: TCustomMyConnection; DBDirectoryName: String;
   OldDBVersion: Integer; AOnUpdateDBFileData: TOnUpdateDBFileData);
+var
+  oldMySqlDB : TMyEmbConnection;
+  PathToBackup,
+  MySqlPathToBackup : String;
 begin
+  PathToBackup := ExePath + SDirTableBackup + '\';
+  MySqlPathToBackup := StringReplace(PathToBackup, '\', '/', [rfReplaceAll]);
 
+  DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
+{$ifdef USEMEMORYCRYPTDLL}
+  DatabaseController.SwitchMemoryLib(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak');
+{$endif}
+
+  try
+
+    oldMySqlDB := TMyEmbConnection.Create(nil);
+    try
+      oldMySqlDB.Params.Clear();
+      oldMySqlDB.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
+      oldMySqlDB.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + '\');
+      oldMySqlDB.Params.Add('--character_set_server=cp1251');
+      oldMySqlDB.Params.Add('--tmp_table_size=33554432');
+      oldMySqlDB.Params.Add('--max_heap_table_size=33554432');
+
+      try
+        oldMySqlDB.Open;
+      except
+        on OpenException : Exception do begin
+          AProc.LogCriticalError('Ошибка при открытии старой базы данных : ' + OpenException.Message);
+          raise Exception.Create('Не получилось открыть старую базу данных');
+        end;
+      end;
+
+      try
+        try
+          ExportGlobalParamsFromOldLibMysqlDToFile(oldMySqlDB, PathToBackup, MySqlPathToBackup);
+        except
+          on UpdateException : Exception do begin
+            AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
+            raise Exception.Create(
+              'При перемещении данных из старой базы в новою возникла ошибка.' +
+              #13#10 +
+              'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
+          end;
+        end;
+      finally
+        oldMySqlDB.Close;
+      end;
+    finally
+      oldMySqlDB.Free;
+    end;
+
+    DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
+{$ifdef USEMEMORYCRYPTDLL}
+    DatabaseController.SwitchMemoryLib();
+{$endif}
+
+    UpdateDBFile(dbCon, DBDirectoryName, OldDBVersion, AOnUpdateDBFileData);
+
+    dbCon.Open;
+    try
+      try
+        ImportOldLibMysqlDGlobalParamsFileToMySql(dbCon, PathToBackup, MySqlPathToBackup);
+      except
+        on UpdateException : Exception do begin
+          AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
+          raise Exception.Create(
+            'При перемещении данных из старой базы в новою возникла ошибка.' +
+            #13#10 +
+            'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
+        end;
+      end;
+    finally
+      dbCon.Close;
+    end;
+
+  finally
+    DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd (обратно)');
+{$ifdef USEMEMORYCRYPTDLL}
+    DatabaseController.SwitchMemoryLib();
+{$endif}
+  end;
+end;
+
+procedure TDM.ExportGlobalParamsFromOldLibMysqlDToFile(
+  oldMySqlDB: TCustomMyConnection; PathToBackup,
+  MySqlPathToBackup: String);
+var
+  selectMySql : TMyQuery;
+  I : Integer;
+  exportTable : TDatabaseTable;
+  ordersExportTableName : String;
+begin
+  selectMySql := TMyQuery.Create(nil);
+  try
+    selectMySql.Connection := oldMySqlDB;
+
+    for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+      if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId in [doiGlobalParams])
+      then begin
+        exportTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
+        if FileExists(PathToBackup + exportTable.Name + '.txt') then
+          OSDeleteFile(PathToBackup + exportTable.Name + '.txt');
+        try
+          selectMySql.SQL.Text :=
+            Format(
+            'select * from analitf.%s INTO OUTFILE ''%s'';',
+            [exportTable.Name,
+             MySqlPathToBackup + exportTable.Name + '.txt']);
+          selectMySql.Execute;
+        except
+          on E : Exception do begin
+            WriteExchangeLog('Exchange.ExportGlobalParamsFromOldLibMysqlDToFile',
+            'Ошибка при экспорте таблицы ' + exportTable.Name + ': ' + E.Message);
+            if FileExists(PathToBackup + exportTable.Name + '.txt')
+              and (GetFileSize(PathToBackup + exportTable.Name + '.txt') = 0)
+            then
+              try
+                OSDeleteFile(PathToBackup + exportTable.Name + '.txt');
+              except
+                on DeleteFile : Exception do
+                  WriteExchangeLog('Exchange.ExportGlobalParamsFromOldLibMysqlDToFile',
+                  'Ошибка при удалении файла ' + exportTable.Name + ': ' + DeleteFile.Message);
+              end;
+          end;
+        end;
+      end;
+
+  finally
+    selectMySql.Free();
+  end;
+end;
+
+procedure TDM.ImportOldLibMysqlDGlobalParamsFileToMySql(
+  dbCon: TCustomMyConnection; PathToBackup, MySqlPathToBackup: String);
+var
+  selectMySql : TMyQuery;
+  I : Integer;
+  importTable : TDatabaseTable;
+begin
+  FNotImportedWithUpdateToNewLibMysql := [];
+  selectMySql := TMyQuery.Create(nil);
+  try
+    selectMySql.Connection := dbCon;
+
+    for I := 0 to DatabaseController.DatabaseObjects.Count-1 do
+      if (DatabaseController.DatabaseObjects[i] is TDatabaseTable)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).RepairType <> dortIgnore)
+         and (TDatabaseTable(DatabaseController.DatabaseObjects[i]).ObjectId = doiGlobalParams)
+      then begin
+        importTable := TDatabaseTable(DatabaseController.DatabaseObjects[i]);
+        if FileExists(PathToBackup + importTable.Name + '.txt') then
+        begin
+          try
+            selectMySql.SQL.Text :=
+              Format('delete from analitf.%s;', [importTable.Name]);
+            selectMySql.Execute;
+            selectMySql.SQL.Text :=
+              Format(
+              'LOAD DATA INFILE ''%s'' into table analitf.%s;',
+              [MySqlPathToBackup + importTable.Name + '.txt',
+               importTable.Name]);
+            selectMySql.Execute;
+          except
+            on ImportException : Exception do begin
+              FNotImportedWithUpdateToNewLibMysql :=
+                FNotImportedWithUpdateToNewLibMysql + [importTable.ObjectId];
+              WriteExchangeLog('Exchange.ImportOldLibMysqlDGlobalParamsFileToMySql',
+              'Ошибка при импорте таблицы ' + importTable.Name + ': ' + ImportException.Message);
+            end;
+          end;
+
+          try
+            OSDeleteFile(PathToBackup + importTable.Name + '.txt', False);
+          except
+            on DeleteFile : Exception do
+              WriteExchangeLog('Exchange.ImportOldLibMysqlDGlobalParamsFileToMySql',
+              'Ошибка при удалении файла ' + importTable.Name + ': ' + DeleteFile.Message);
+          end;
+        end
+        else
+          FNotImportedWithUpdateToNewLibMysql :=
+            FNotImportedWithUpdateToNewLibMysql + [importTable.ObjectId];
+      end;
+      
+  finally
+    selectMySql.Free;
+  end;
 end;
 
 initialization
