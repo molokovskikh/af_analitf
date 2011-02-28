@@ -674,6 +674,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       'WHERE '
       '    (products.ProductId = :ProductId)'
       'and (Core.coreid is not null)'
+      'and (Core.SynonymCode > 0)'
       'order by Cost')
     BeforeUpdateExecute = adsCoreBeforeUpdateExecute
     RefreshOptions = [roAfterUpdate]
