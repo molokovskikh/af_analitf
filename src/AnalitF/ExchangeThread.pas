@@ -1811,7 +1811,7 @@ begin
         + '  ProductId, '
         + '  RegionCode, '
         + '  min(Cost) '
-        + 'FROM    Core '
+        + 'FROM    Core where Junk = 0'
         + 'GROUP BY ProductId, RegionCode';
       InternalExecute;
       SQL.Text := ''
@@ -1823,7 +1823,7 @@ begin
         + '   sum(Core.Cost = MinPrices.MinCost) as MinCostCount '
         + ' FROM '
         + '    MinPrices '
-        + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode '
+        + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode and Core.Junk = 0 '
         + ' GROUP BY MinPrices.ProductId, MinPrices.RegionCode';
       InternalExecute;
     end
@@ -1839,7 +1839,7 @@ begin
         +'         Pricesdata '
         +'         left join Delayofpayments '
         +'           on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-        +'where    (Pricesdata.PRICECODE     = Core.Pricecode) '
+        +'where    (Pricesdata.PRICECODE     = Core.Pricecode) and Core.Junk = 0 '
         +'group by ProductId, '
         +'         RegionCode';
       InternalExecute;
@@ -1852,7 +1852,7 @@ begin
         + '   sum(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100)) = MinPrices.MinCost) as MinCostCount '
         + ' FROM '
         + '    MinPrices '
-        + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode '
+        + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode and Core.Junk = 0 '
         +'     inner join Pricesdata on Pricesdata.PRICECODE     = Core.Pricecode '
         +'     left join Delayofpayments '
         +'       on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
