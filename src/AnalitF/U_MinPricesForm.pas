@@ -207,7 +207,8 @@ uses
   DBGridHelper,
   DataSetHelper,
   NamesForms,
-  U_framePosition;
+  U_framePosition,
+  U_ExchangeLog;
 
 {$R *.dfm}
 
@@ -231,10 +232,13 @@ end;
 
 procedure TMinPricesForm.BindFields;
 begin
+  WriteExchangeLog('MinPricesForm', 'dbgMinPrices.DataSource := dsMinPrices');
   dbgMinPrices.DataSource := dsMinPrices;
 
+  WriteExchangeLog('MinPricesForm', 'dbgCore.DataSource := dsCore');
   dbgCore.DataSource := dsCore;
 
+  WriteExchangeLog('MinPricesForm', 'InternalSearch');
   InternalSearch;
 end;
 
@@ -513,11 +517,16 @@ var
   sp : TSelectPrice;
   mi :TMenuItem;
 begin
+  WriteExchangeLog('MinPricesForm', 'Start create');
+  try
   UseExcess := True;
   FNetworkParams := TNetworkParams.Create(DM.MainConnection);
+  WriteExchangeLog('MinPricesForm', 'CreateNonVisualComponent');
   CreateNonVisualComponent;
+  WriteExchangeLog('MinPricesForm', 'CreateVisualComponent');
   CreateVisualComponent;
 
+  WriteExchangeLog('MinPricesForm', 'config adsCore and inherited');
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
   fOrder := adsCoreOrderCount;
@@ -527,11 +536,13 @@ begin
   fMinOrderCount := adsCoreMinOrderCount;
   fBuyingMatrixType := adsCoreBuyingMatrixType;
   SortOnOrderGrid := False;
-  
+
   inherited;
 
+  WriteExchangeLog('MinPricesForm', 'add postion frame');
   TframePosition.AddFrame(Self, pOffers, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
+  WriteExchangeLog('MinPricesForm', 'add prices menu item');
   SelectedPrices := MinCostSelectedPrices;
   for I := 0 to SelectedPrices.Count-1 do begin
     sp := TSelectPrice(SelectedPrices.Objects[i]);
@@ -543,12 +554,16 @@ begin
     mi.OnClick := OnSPClick;
     pmSelectedPrices.Items.Add(mi);
   end;
+  finally
+    WriteExchangeLog('MinPricesForm', 'Stop create');
+  end;
 end;
 
 procedure TMinPricesForm.InternalSearch;
 var
   FilterSQL : String;
 begin
+  WriteExchangeLog('MinPricesForm', 'config adsMinPrices');
   adsMinPrices.Close;
   FNetworkParams.NetworkMinCostPercent := StrToInt(InternalSearchText);
   FNetworkParams.SaveMinCostPercent;
@@ -564,10 +579,13 @@ begin
   adsMinPrices.SQL.Text := adsMinPrices.SQL.Text + 'ORDER BY Synonyms.SYNONYMNAME';
   adsMinPrices.ParamByName('Percent').Value := FNetworkParams.NetworkMinCostPercent;
 
+  WriteExchangeLog('MinPricesForm', 'open adsMinPrices');
   adsMinPrices.Open;
 
+  WriteExchangeLog('MinPricesForm', 'first adsMinPrices');
   adsMinPrices.First;
 
+  WriteExchangeLog('MinPricesForm', 'dbgMinPrices.SetFocus');
   if dbgMinPrices.CanFocus then
     dbgMinPrices.SetFocus;
 end;
@@ -594,15 +612,19 @@ end;
 
 procedure TMinPricesForm.ShowForm;
 begin
+  WriteExchangeLog('MinPricesForm', 'BindFiels');
   BindFields;
 
   plOverCost.Hide();
 
+  WriteExchangeLog('MinPricesForm', 'restore grid layouts');
   TDBGridHelper.RestoreColumnsLayout(dbgMinPrices, Self.ClassName);
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
 
+  WriteExchangeLog('MinPricesForm', 'inherited ShowForm');
   inherited;
 
+  WriteExchangeLog('MinPricesForm', 'dbgMinPrices.SetFocus');
   dbgMinPrices.SetFocus;
 end;
 
