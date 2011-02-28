@@ -32,12 +32,14 @@ type
     mSQL: TMemo;
     btnExec: TButton;
     MyQuery: TMyQuery;
+    btnExecute: TButton;
     procedure btOpenClick(Sender: TObject);
     procedure btCloseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure MyConnectionLog(const Text: String);
     procedure FormCreate(Sender: TObject);
     procedure btnExecClick(Sender: TObject);
+    procedure btnExecuteClick(Sender: TObject);
   private
     { Private declarations }
     procedure ShowState;
@@ -192,7 +194,16 @@ begin
     MyQuery.Close;
 
   MyQuery.SQL.Text := mSQL.Lines.Text;
-  MyQuery.Open;    
+  MyQuery.Open;
+end;
+
+procedure TfmMain.btnExecuteClick(Sender: TObject);
+begin
+  if MyQuery.Active then
+    MyQuery.Close;
+
+  MyQuery.SQL.Text := mSQL.Lines.Text;
+  MyQuery.Execute;
 end;
 
 end.

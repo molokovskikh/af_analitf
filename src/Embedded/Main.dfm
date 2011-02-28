@@ -19,8 +19,8 @@ object fmMain: TfmMain
   object DBGrid: TDBGrid
     Left = 0
     Top = 137
-    Width = 732
-    Height = 151
+    Width = 724
+    Height = 141
     Align = alClient
     DataSource = DataSource
     TabOrder = 1
@@ -33,7 +33,7 @@ object fmMain: TfmMain
   object ToolBar: TPanel
     Left = 0
     Top = 0
-    Width = 732
+    Width = 724
     Height = 25
     Align = alTop
     BevelOuter = bvNone
@@ -79,8 +79,8 @@ object fmMain: TfmMain
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 390
-    Width = 732
+    Top = 380
+    Width = 724
     Height = 19
     Panels = <
       item
@@ -90,8 +90,8 @@ object fmMain: TfmMain
   end
   object Memo1: TMemo
     Left = 0
-    Top = 288
-    Width = 732
+    Top = 278
+    Width = 724
     Height = 102
     Align = alBottom
     ScrollBars = ssVertical
@@ -100,7 +100,7 @@ object fmMain: TfmMain
   object pSQL: TPanel
     Left = 0
     Top = 25
-    Width = 732
+    Width = 724
     Height = 112
     Align = alTop
     TabOrder = 4
@@ -121,6 +121,15 @@ object fmMain: TfmMain
       Caption = 'Exec'
       TabOrder = 1
       OnClick = btnExecClick
+    end
+    object btnExecute: TButton
+      Left = 640
+      Top = 56
+      Width = 75
+      Height = 25
+      Caption = 'Execute'
+      TabOrder = 2
+      OnClick = btnExecuteClick
     end
   end
   object DataSource: TDataSource
