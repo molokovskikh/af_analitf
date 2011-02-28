@@ -2046,7 +2046,7 @@ begin
       end;
 
       if DBVersion = 70 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlDWithGlobalParams, nil);
         DBVersion := 71;
       end;
     end;
@@ -3602,7 +3602,7 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
-    if AnsiCompareText(calchash, '40C4B11643DA0D07DF4E07EA2E6E6E09') <> 0 then
+    if AnsiCompareText(calchash, 'C4409AE079C40500C2D61D44B49ADC7A') <> 0 then
       raise Exception.Create('Не возможно загрузить библиотеку libmysqld.dll.');
   except
     on E : Exception do begin
@@ -4835,6 +4835,8 @@ begin
       try
         try
           ExportGlobalParamsFromOldLibMysqlDToFile(oldMySqlDB, PathToBackup, MySqlPathToBackup);
+          WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Ждем после экспорта');
+          Sleep(5000);
         except
           on UpdateException : Exception do begin
             AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
@@ -4846,16 +4848,27 @@ begin
         end;
       finally
         oldMySqlDB.Close;
+        WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Ждем после закрытия соединения');
+        Sleep(5000);
       end;
     finally
       oldMySqlDB.Free;
+      WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Ждем после закрытия соединения');
+      Sleep(5000);
     end;
 
+    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Освобождаем старую libd');
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
+    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Освободили старую libd и ждем');
+    Sleep(2000);
 {$ifdef USEMEMORYCRYPTDLL}
+    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Переключаемся на новую libd');
     DatabaseController.SwitchMemoryLib();
+    //WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Переключились на новую libd и ждем');
+    //Sleep(5000);
 {$endif}
 
+    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Пытаемся обновить структуру базы данных');
     UpdateDBFile(dbCon, DBDirectoryName, OldDBVersion, AOnUpdateDBFileData);
 
     dbCon.Open;
