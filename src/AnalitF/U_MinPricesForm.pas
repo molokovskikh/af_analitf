@@ -632,7 +632,7 @@ end;
 procedure TMinPricesForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
-  if (Length(eSearch.Text) > 1) and (StrToIntDef(eSearch.Text, 0) <> 0) then begin
+  if (Length(eSearch.Text) > 0) and (StrToIntDef(eSearch.Text, 0) <> 0) then begin
     InternalSearchText := LeftStr(eSearch.Text, 50);
     InternalSearch;
   end
