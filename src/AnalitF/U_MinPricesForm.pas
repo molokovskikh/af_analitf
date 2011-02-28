@@ -246,15 +246,15 @@ procedure TMinPricesForm.CreateLeftPanel;
 begin
   pLeft := TPanel.Create(Self);
   pLeft.ControlStyle := pLeft.ControlStyle - [csParentBackground] + [csOpaque];
-  pLeft.Align := alLeft;
+  pLeft.Top := pTop.Height + 1;
+  pLeft.Height := (Self.ClientHeight - pTop.Height) div 2;
+  pLeft.Align := alTop;
   pLeft.Parent := Self;
 
   dbgMinPrices := TToughDBGrid.Create(Self);
   dbgMinPrices.Name := 'dbgMinPrices';
   dbgMinPrices.Parent := pLeft;
   dbgMinPrices.Align := alClient;
-  dbgMinPrices.Width := 480;
-  pLeft.Width := dbgMinPrices.Width;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMinPrices);
 
   TDBGridHelper.AddColumn(dbgMinPrices, 'SynonymName', 'Наименование', Self.Canvas.TextWidth('Большое наименование'));
@@ -403,6 +403,7 @@ end;
 procedure TMinPricesForm.CreateTopPanel;
 begin
   pTop := TPanel.Create(Self);
+  pTop.Top := 0;
   pTop.ControlStyle := pTop.ControlStyle - [csParentBackground] + [csOpaque];
   pTop.Align := alTop;
   pTop.Parent := Self;
