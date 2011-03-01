@@ -2050,8 +2050,13 @@ begin
       end;
 
       if DBVersion = 70 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlDWithGlobalParams, nil);
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 71;
+      end;
+
+      if DBVersion = 71 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlDWithGlobalParams, nil);
+        DBVersion := 72;
       end;
     end;
 
@@ -4839,8 +4844,10 @@ begin
       try
         try
           ExportGlobalParamsFromOldLibMysqlDToFile(oldMySqlDB, PathToBackup, MySqlPathToBackup);
+{
           WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Ждем после экспорта');
           Sleep(5000);
+}
         except
           on UpdateException : Exception do begin
             AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
@@ -4852,27 +4859,30 @@ begin
         end;
       finally
         oldMySqlDB.Close;
+{
         WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Ждем после закрытия соединения');
         Sleep(5000);
+}
       end;
     finally
       oldMySqlDB.Free;
+{
       WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Ждем после закрытия соединения');
       Sleep(5000);
+}
     end;
 
-    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Освобождаем старую libd');
+//    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Освобождаем старую libd');
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
-    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Освободили старую libd и ждем');
-    Sleep(2000);
+//    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Освободили старую libd и ждем');
 {$ifdef USEMEMORYCRYPTDLL}
-    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Переключаемся на новую libd');
+//    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Переключаемся на новую libd');
     DatabaseController.SwitchMemoryLib();
     //WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Переключились на новую libd и ждем');
     //Sleep(5000);
 {$endif}
 
-    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Пытаемся обновить структуру базы данных');
+//    WriteExchangeLog('UpdateToNewLibMySqlDWithGlobalParams', 'Пытаемся обновить структуру базы данных');
     UpdateDBFile(dbCon, DBDirectoryName, OldDBVersion, AOnUpdateDBFileData);
 
     dbCon.Open;

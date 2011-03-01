@@ -19,7 +19,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 71;
+  CURRENT_DB_VERSION = 72;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -1085,6 +1085,7 @@ begin
         [ErrorMessage,
          TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
   MyAPIEmbedded.FreeMySQLLib;
+  Sleep(2000);
 end;
 
 function TDatabaseController.GetById(
