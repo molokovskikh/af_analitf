@@ -137,8 +137,6 @@ private
   procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
-  function DataSetToString(SQL : String) : String;
-
   procedure GetHistoryOrders;
   procedure CommitHistoryOrders;
   procedure ImportHistoryOrders;
@@ -1384,8 +1382,10 @@ begin
   Progress := 5;
   Synchronize( SetProgress);
 
-   with DM.adcUpdate do begin
-   WriteExchangeLog('ImportData', Concat('Core before start import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
+  with DM.adcUpdate do begin
+    WriteExchangeLog('ImportData',
+      Concat('Core before start import', #13#10,
+        DM.DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode', [], [])));
 
   //удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
   //PricesRegionalData
@@ -1704,7 +1704,9 @@ begin
   end;
   //Core
   if utCore in UpdateTables then begin
-    WriteExchangeLog('ImportData', Concat('Core before import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
+    WriteExchangeLog('ImportData',
+      Concat('Core before import', #13#10,
+        DM.DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode', [], [])));
     coreTestInsertSQl := GetLoadDataSQL('Core', RootFolder()+SDirIn+'\Core.txt');
 
 {$ifndef DisableCrypt}
@@ -1725,7 +1727,9 @@ begin
 
     InternalExecute;
     WriteExchangeLog('ImportData', 'Import Core count : ' + IntToStr(DM.adcUpdate.RowsAffected));
-    WriteExchangeLog('ImportData', Concat('Core after import', #13#10, DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode')));
+    WriteExchangeLog('ImportData',
+      Concat('Core after import', #13#10,
+        DM.DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode', [], [])));
 
 {$ifndef DisableCrypt}
     SQL.Text :=
@@ -1810,8 +1814,8 @@ begin
         + 'SELECT '
         + '  ProductId, '
         + '  RegionCode, '
-        + '  min(Cost) '
-        + 'FROM    Core where Junk = 0'
+        + '  min(if(Junk = 0, Cost, null)) '
+        + 'FROM    Core '
         + 'GROUP BY ProductId, RegionCode';
       InternalExecute;
       SQL.Text := ''
@@ -1824,6 +1828,8 @@ begin
         + ' FROM '
         + '    MinPrices '
         + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode and Core.Junk = 0 '
+        + ' where '
+        + '   MinPrices.MinCost is not null '
         + ' GROUP BY MinPrices.ProductId, MinPrices.RegionCode';
       InternalExecute;
     end
@@ -1834,12 +1840,12 @@ begin
         + '(ProductId, RegionCode, MinCost) '
         +'select   ProductId , '
         +'         RegionCode, '
-        +'         min(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100))) '
+        +'         min(if(Junk = 0, if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100)), null)) '
         +'from     Core      , '
         +'         Pricesdata '
         +'         left join Delayofpayments '
         +'           on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-        +'where    (Pricesdata.PRICECODE     = Core.Pricecode) and Core.Junk = 0 '
+        +'where    (Pricesdata.PRICECODE     = Core.Pricecode) '
         +'group by ProductId, '
         +'         RegionCode';
       InternalExecute;
@@ -1856,6 +1862,8 @@ begin
         +'     inner join Pricesdata on Pricesdata.PRICECODE     = Core.Pricecode '
         +'     left join Delayofpayments '
         +'       on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
+        + ' where '
+        + '   MinPrices.MinCost is not null '
         + ' GROUP BY MinPrices.ProductId, MinPrices.RegionCode';
       InternalExecute;
     end;
@@ -1866,6 +1874,7 @@ begin
       + '   left join MinPricesNext on MinPricesNext.ProductId = MinPrices.ProductId and MinPricesNext.RegionCode = MinPrices.RegionCode '
       + ' set '
       + '   MinPrices.NextCost = MinPricesNext.NextCost, '
+      + '   MinPrices.Percent = if(MinPricesNext.NextCost is not null and MinPrices.MinCost is not null, (MinPricesNext.NextCost / MinPrices.MinCost - 1) * 100, null), '
       + '   MinPrices.MinCostcount = MinPricesNext.MinCostCount; ';
     InternalExecute;
 
@@ -3401,41 +3410,6 @@ begin
       [InputFileName,
        'DocumentBodies']);
     DM.adcUpdate.Execute;
-  end;
-end;
-
-function TExchangeThread.DataSetToString(SQL: String): String;
-var
-  Header : String;
-  Row : String;
-  I : Integer;
-begin
-  Result := '';
-  Header := '';
-
-  if DM.adsQueryValue.Active then
-     DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := SQL;
-  DM.adsQueryValue.Open;
-  try
-    for I := 0 to DM.adsQueryValue.Fields.Count-1 do
-      if Header = '' then
-        Header := DM.adsQueryValue.Fields[i].FieldName
-      else
-        Header := Header + Chr(9) + DM.adsQueryValue.Fields[i].FieldName;
-    Result := Header + #13#10 + StringOfChar('-', Length(Header));
-    while not DM.adsQueryValue.Eof do begin
-      Row := '';
-      for I := 0 to DM.adsQueryValue.Fields.Count-1 do
-        if Row = '' then
-          Row := DM.adsQueryValue.Fields[i].AsString
-        else
-          Row := Row + Chr(9) + DM.adsQueryValue.Fields[i].AsString;
-      Result := Concat(Result, #13#10, Row);
-      DM.adsQueryValue.Next;
-    end;
-  finally
-    DM.adsQueryValue.Close;
   end;
 end;
 

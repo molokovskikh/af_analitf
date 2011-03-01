@@ -587,6 +587,10 @@ type
     function NeedUpdate800xToMySql : Boolean;
     function NeedUpdateToNewLibMySqlD : Boolean;
     function NeedCumulativeAfterUpdateToNewLibMySqlD : Boolean;
+    function DataSetToString(
+      SQL : String;
+      Params: array of string;
+      Values: array of Variant) : String;
   end;
 
 var
@@ -5001,6 +5005,51 @@ begin
       
   finally
     selectMySql.Free;
+  end;
+end;
+
+function TDM.DataSetToString(
+  SQL: String;
+  Params: array of string;
+  Values: array of Variant): String;
+var
+  Header : String;
+  Row : String;
+  I : Integer;
+begin
+  Result := '';
+  Header := '';
+
+  if (Length(Params) <> Length(Values)) then
+    raise Exception.Create('QueryValue: Кол-во параметров не совпадает со списком значений.');
+
+  if DM.adsQueryValue.Active then
+     DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := SQL;
+
+  for I := Low(Params) to High(Params) do
+    DM.adsQueryValue.ParamByName(Params[i]).Value := Values[i];
+
+  DM.adsQueryValue.Open;
+  try
+    for I := 0 to DM.adsQueryValue.Fields.Count-1 do
+      if Header = '' then
+        Header := DM.adsQueryValue.Fields[i].FieldName
+      else
+        Header := Header + Chr(9) + DM.adsQueryValue.Fields[i].FieldName;
+    Result := Header + #13#10 + StringOfChar('-', Length(Header));
+    while not DM.adsQueryValue.Eof do begin
+      Row := '';
+      for I := 0 to DM.adsQueryValue.Fields.Count-1 do
+        if Row = '' then
+          Row := DM.adsQueryValue.Fields[i].AsString
+        else
+          Row := Row + Chr(9) + DM.adsQueryValue.Fields[i].AsString;
+      Result := Concat(Result, #13#10, Row);
+      DM.adsQueryValue.Next;
+    end;
+  finally
+    DM.adsQueryValue.Close;
   end;
 end;
 

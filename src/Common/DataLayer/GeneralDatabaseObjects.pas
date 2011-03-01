@@ -580,9 +580,13 @@ begin
 +'    `MinCost` decimal(18,2) default null        , '
 +'    `NextCost` decimal(18,2) default null    , '
 +'    `MinCostCount` int default ''0''            , '
++'    `Percent` decimal(18,2) default null    , '
 +'    primary key (`PRODUCTID`,`REGIONCODE`)      , '
 +'    key `FK_MINPRICES_PRODUCTID` (`PRODUCTID`)  , '
-+'    key `FK_MINPRICES_REGIONCODE` (`REGIONCODE`) '
++'    key `FK_MINPRICES_REGIONCODE` (`REGIONCODE`), '
++'    key `IDX_MINPRICES_MinCost` (`MinCost`), '
++'    key `IDX_MINPRICES_NextCost` (`NextCost`), '
++'    key `IDX_MINPRICES_Percent` (`Percent`) '
 +'  ) '
 + GetTableOptions();
 end;
