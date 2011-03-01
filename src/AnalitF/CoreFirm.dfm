@@ -233,6 +233,7 @@ object CoreFirmForm: TCoreFirmForm
         Title.Caption = #1052#1080#1085'.'#1094#1077#1085#1072
         Title.TitleButton = True
         Width = 51
+        OnGetCellParams = dbgCoreColumns15GetCellParams
       end
       item
         EditButtons = <>
@@ -986,6 +987,7 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreLeaderPriceName: TStringField
       FieldName = 'LeaderPriceName'
       Origin = 'PricesData.PRICENAME'
+      OnGetText = adsCoreLEADERPRICENAMEGetText
       Size = 70
     end
     object adsCoreLeaderPRICE: TFloatField

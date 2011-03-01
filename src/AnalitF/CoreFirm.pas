@@ -140,7 +140,7 @@ type
     procedure actFlipCoreExecute(Sender: TObject);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
     procedure dbgCoreSortMarkingChanged(Sender: TObject);
-    procedure adsCoreOldLEADERPRICENAMEGetText(Sender: TField;
+    procedure adsCoreLEADERPRICENAMEGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
     procedure tmrSearchTimer(Sender: TObject);
     procedure dbgCoreDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -149,6 +149,8 @@ type
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
     procedure dblProducersCloseUp(Sender: TObject);
+    procedure dbgCoreColumns15GetCellParams(Sender: TObject;
+      EditMode: Boolean; Params: TColCellParamsEh);
   private
     PriceCode, ClientId: Integer;
     RegionCode : Int64;
@@ -590,6 +592,7 @@ begin
 
   //данный прайс-лидер
   if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and ( adsCoreLeaderRegionCode.AsLargeInt = RegionCode))
+     or adsCoreLEADERPRICE.IsNull
      or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
      )
     and
@@ -703,11 +706,14 @@ begin
     and
     (
      ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+      or adsCoreLEADERPRICE.IsNull
       or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
     )
   else
-    Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
-      or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
+    Accept :=
+      ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+        or adsCoreLEADERPRICE.IsNull
+        or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
   if Accept and (dblProducers.KeyValue <> 0) then
     if dblProducers.KeyValue = 1 then
       Accept := adsCoreCodeFirmCr.AsVariant = 0
@@ -733,10 +739,12 @@ begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
-procedure TCoreFirmForm.adsCoreOldLEADERPRICENAMEGetText(Sender: TField;
+procedure TCoreFirmForm.adsCoreLEADERPRICENAMEGetText(Sender: TField;
   var Text: String; DisplayText: Boolean);
 begin
-  if (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01) then
+  if adsCoreLEADERPRICE.IsNull or
+    (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
+  then
     Text := PriceName
   else
     Text := Sender.AsString;
@@ -883,10 +891,12 @@ begin
           and
           (
            ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+            or adsCoreLeaderPRICE.IsNull
             or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01)
           )
         else
           Accept := ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
+            or adsCoreLeaderPRICE.IsNull
             or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
       end;
   end;
@@ -942,6 +952,15 @@ begin
     Self.PrevForm.ShowAsPrevForm;
     //Close;
   end;
+end;
+
+procedure TCoreFirmForm.dbgCoreColumns15GetCellParams(Sender: TObject;
+  EditMode: Boolean; Params: TColCellParamsEh);
+begin
+  if adsCoreLeaderPRICE.IsNull then
+    Params.Text := adsCoreCost.DisplayText
+  else
+    Params.Text := adsCoreLeaderPRICE.DisplayText;
 end;
 
 end.
