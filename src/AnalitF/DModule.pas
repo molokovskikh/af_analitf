@@ -586,6 +586,7 @@ type
     function GetClearSendResultSql(ClientId : Int64) : String;
     function NeedUpdate800xToMySql : Boolean;
     function NeedUpdateToNewLibMySqlD : Boolean;
+    function NeedUpdateToNewLibMySqlDWithGlobalParams : Boolean;
     function NeedCumulativeAfterUpdateToNewLibMySqlD : Boolean;
     function DataSetToString(
       SQL : String;
@@ -5055,6 +5056,30 @@ begin
   finally
     DM.adsQueryValue.Close;
   end;
+end;
+
+function TDM.NeedUpdateToNewLibMySqlDWithGlobalParams: Boolean;
+var
+  buildNumber : Word;
+begin
+  if FindCmdLineSwitch('i')
+    and FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
+    and FileExists(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak')
+  then
+  begin
+    buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+    Result := (buildNumber >= 1295) and (buildNumber <= 1349);
+  end
+  else
+    if FindCmdLineSwitch('i')
+      and FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
+    then
+    begin
+      buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+      Result := (buildNumber > 1349) and (buildNumber <= 1353);
+    end
+    else
+      Result := False;
 end;
 
 initialization

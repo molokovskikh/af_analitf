@@ -1469,12 +1469,19 @@ begin
   if DM.adcUpdate.RowsAffected > 0 then
     UpdateTables := UpdateTables + [utCore, utMinPrices];
 
-  //Core
-  if utCore in UpdateTables then begin
+  //¬ св€зи с обновлением таблицы MinPrices надо заново его рассчитать,
+  //чтобы на форме "ћинимальные значени€" отображались предложени€  
+  if DM.NeedUpdateToNewLibMySqlDWithGlobalParams then
+    UpdateTables := UpdateTables + [utMinPrices];
+
+  //MinPrices
+  if utMinPrices in UpdateTables then begin
     //ќбновление ServerCoreID в MinPrices
     SQL.Text:='truncate minprices ;';
     InternalExecute;
-
+  end;
+  //Core
+  if utCore in UpdateTables then begin
     //здесь сбрасываем дл€ всех неотправленных заказов состо€ние результата,
     //т.к. при восстановлении будем устанавливать заново
     SQL.Text := DM.GetClearSendResultSql(0);
@@ -2548,15 +2555,19 @@ var
   StopExec : TDateTime;
   Secs : Int64;
 begin
+{$ifdef DEBUG}
   Tracer.TR('Import', 'Exec : ' + DM.adcUpdate.SQL.Text);
+{$endif}
   StartExec := Now;
   try
     DM.adcUpdate.Execute;
   finally
     StopExec := Now;
     Secs := SecondsBetween(StopExec, StartExec);
+{$ifdef DEBUG}
     if Secs > 3 then
       Tracer.TR('Import', 'ExcecTime : ' + IntToStr(Secs));
+{$endif}
   end;
 end;
 
