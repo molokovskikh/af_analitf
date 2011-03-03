@@ -1182,12 +1182,14 @@ end;
 procedure TNamesFormsForm.adsFormsAfterScroll(DataSet: TDataSet);
 begin
   inherited;
+{$ifdef DEBUG}
   WriteExchangeLog('adsFormsAfterScroll',
     Format('CatalogId : %s  Name : %s %s',
       [adsForms.FieldByName( 'FullCode').AsString,
        adsNames.FieldByName( 'Name').AsString,
        adsForms.FieldByName( 'Form').AsString
       ]));
+{$endif}
 {
   if dbgForms.Focused then
     frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);

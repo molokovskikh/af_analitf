@@ -447,7 +447,6 @@ inherited NamesFormsForm: TNamesFormsForm
   end
   object adsForms: TMyQuery
     Connection = DM.MyConnection
-    AfterScroll = adsFormsAfterScroll
     MasterSource = dsNames
     Left = 456
     Top = 184
