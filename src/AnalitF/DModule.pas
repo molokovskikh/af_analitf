@@ -1119,6 +1119,7 @@ begin
   if not DirectoryExists( ExePath + SDirIn) then CreateDir( ExePath + SDirIn);
   if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
   if not DirectoryExists( RootFolder() + SDirReclame) then CreateDir( RootFolder() + SDirReclame);
+  if not DirectoryExists( RootFolder() + SDirPromotions) then CreateDir( RootFolder() + SDirPromotions);
   //if not DirectoryExists( RootFolder() + SDirContextReclame) then CreateDir( RootFolder() + SDirContextReclame);
   MainForm.SetUpdateDateTime;
   Application.HintPause := 0;
@@ -1504,6 +1505,8 @@ begin
     SQL.Text:='truncate producers;'; Execute;
     MainForm.StatusText:='Очищаются правила минимального заказа';
     SQL.Text:='truncate minreqrules;'; Execute;
+    MainForm.StatusText:='Очищаются акции поставщиков';
+    SQL.Text:='truncate SupplierPromotions;'; Execute;
     MainForm.StatusText:='Очищается время сжатия базы данных';
     SQL.Text:='update params set LastCompact = now() where ID = 0;'; Execute;
 

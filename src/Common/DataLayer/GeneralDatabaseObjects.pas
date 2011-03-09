@@ -133,6 +133,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TSupplierPromotionsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -470,6 +476,7 @@ begin
 +'    `DescriptionId`    bigint(20) default null  , '
 +'    `Hidden`           tinyint(1) not null      , '
 +'    `COREEXISTS`       tinyint(1) not null      , '
++'    `PromotionsCount`  int not null default ''0'', '
 +'    primary key (`FULLCODE`)                    , '
 +'    unique key `PK_CATALOGS` (`FULLCODE`)       , '
 +'    key `IDX_CATALOG_FORM` (`FORM`)             , '
@@ -731,6 +738,32 @@ begin
 + GetTableOptions();
 end;
 
+{ TSupplierPromotionsTable }
+
+constructor TSupplierPromotionsTable.Create;
+begin
+  FName := 'supplierpromotions';
+  FObjectId := doiSupplierPromotions;
+  FRepairType := dortCumulative;
+end;
+
+function TSupplierPromotionsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `Id` bigint(20) NOT NULL, '
++'  `Enabled` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
++'  `CatalogId` bigint(20)NOT NULL, '
++'  `SupplierId` bigint(20) NOT NULL, '
++'  `Annotation` varchar(255) NOT NULL, '
++'  PRIMARY KEY (`Id`), '
++'  KEY `IDX_SupplierPromotions_CatalogId` (`CatalogId`), '
++'  KEY `IDX_SupplierPromotions_SupplierId` (`SupplierId`) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TUserInfoTable.Create());
   DatabaseController.AddObject(TClientTable.Create());
@@ -758,5 +791,7 @@ initialization
   DatabaseController.AddObject(TProducersTable.Create());
 
   DatabaseController.AddObject(TMinReqRulesTable.Create());
+
+  DatabaseController.AddObject(TSupplierPromotionsTable.Create());
 end.
 

@@ -116,7 +116,9 @@ type
     doiBatchReportServiceFields,
     //Backup
     doiGlobalParams,
-    doiNetworkLog);
+    doiNetworkLog,
+    //Cumulative
+    doiSupplierPromotions);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

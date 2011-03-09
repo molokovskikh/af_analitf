@@ -18,6 +18,7 @@ const
   SDirReclame='Reclame';
   SDirContextReclame = 'ContextReclame';
   SBackDir = 'UpdateBackup';
+  SDirPromotions = 'Promotions';
   SHTTPPrefix='http://';
   CRLF=#13#10;
 

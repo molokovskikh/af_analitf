@@ -45,7 +45,8 @@ TUpdateTable = (
   utMinReqRules,
   utBatchReport,
   utDocumentHeaders,
-  utDocumentBodies
+  utDocumentBodies,
+  utSupplierPromotions
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -1210,6 +1211,8 @@ begin
   ExtractDocs(SDirDocs);
   //Обрабатываем папку Rejects
   ExtractDocs(SDirRejects);
+  //Обрабатываем папку Promotions
+  ExtractDocs(SDirPromotions);
 end;
 
 procedure TExchangeThread.CheckNewExe;
@@ -1356,6 +1359,7 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\BatchReport.txt') > 0) then UpdateTables := UpdateTables + [utBatchReport];
   if (GetFileSize(RootFolder()+SDirIn+'\DocumentHeaders.txt') > 0) then UpdateTables := UpdateTables + [utDocumentHeaders];
   if (GetFileSize(RootFolder()+SDirIn+'\DocumentBodies.txt') > 0) then UpdateTables := UpdateTables + [utDocumentBodies];
+  if (GetFileSize(RootFolder()+SDirIn+'\SupplierPromotions.txt') > 0) then UpdateTables := UpdateTables + [utSupplierPromotions];
 
     //обновляем таблицы
     {
@@ -1597,6 +1601,25 @@ begin
       WriteExchangeLog('Import', Format('Producers RowAffected = %d', [RowsAffected]));
 {$endif}
       SQL.Text := 'delete from producers where Hidden = 1;';
+      InternalExecute;
+    end;
+  end;
+  //
+  if utSupplierPromotions in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+      SQL.Text := GetLoadDataSQL('SupplierPromotions', RootFolder()+SDirIn+'\SupplierPromotions.txt');
+      InternalExecute;
+{$ifdef DEBUG}
+      WriteExchangeLog('Import', Format('SupplierPromotions RowAffected = %d', [RowsAffected]));
+{$endif}
+    end
+    else begin
+      SQL.Text := GetLoadDataSQL('SupplierPromotions', RootFolder()+SDirIn+'\SupplierPromotions.txt', true);
+      InternalExecute;
+{$ifdef DEBUG}
+      WriteExchangeLog('Import', Format('SupplierPromotions RowAffected = %d', [RowsAffected]));
+{$endif}
+      SQL.Text := 'delete from SupplierPromotions where Enabled = 0;';
       InternalExecute;
     end;
   end;
@@ -1898,9 +1921,19 @@ begin
 
   SetStatusText('Импорт данных');
 
-  SQL.Text := 'update catalogs set CoreExists = 0 where FullCode > 0'; InternalExecute;
+  SQL.Text := 'update catalogs set CoreExists = 0, PromotionsCount = 0 where FullCode > 0'; InternalExecute;
   SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
   InternalExecute;
+  SQL.Text :=
+'update ' +
+'  catalogs, ' +
+'  (select CatalogId, count(*) PCount from SupplierPromotions join Providers on FirmCode = SupplierId group by CatalogId ) as PromoCounts ' +
+' set catalogs.PromotionsCount = PromoCounts.PCount ' +
+' where catalogs.FullCode = PromoCounts.CatalogId';
+  InternalExecute;
+{$ifdef DEBUG}
+  WriteExchangeLog('Import', Format('Catalogs RowAffected = %d', [RowsAffected]));
+{$endif}
   Progress := 65;
   Synchronize( SetProgress);
   DM.adtParams.Close;

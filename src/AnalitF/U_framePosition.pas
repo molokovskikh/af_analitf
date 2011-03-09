@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DBCtrls, StdCtrls, DB, ActnList, Buttons, RXCtrls,
-  MyAccess;
+  MyAccess,
+  U_ShowPromotionsForm;
 
 type
   TframePosition = class(TFrame)
@@ -34,13 +35,24 @@ type
 
     lMnnInfo : TLabel;
 
+    lPromo : TLabel;
+    catalogId : TLargeintField;
+
+    adsCatalog : TMyQuery;
+    catalogIdField : TLargeintField;
+    catalogPromotionsCountField : TIntegerField;
+    dsCatalog : TDataSource;
+
     procedure ProcessResize;
     procedure SetFrameSize;
     procedure NewAfterOpen(DataSet : TDataSet);
     procedure NewAfterScroll(DataSet : TDataSet);
     procedure RefreshPositionDetail(DataSet : TDataSet);
     procedure CreateMNNDataSet(Source: TDataSource; MnnIdFieldName : String);
+    procedure CreateCatalogDataSet(Source: TDataSource);
     procedure MnnUpdateLabel(DataSet: TDataSet);
+    procedure PromoUpdateLabel(DataSet: TDataSet);
+    procedure PromoClick(Sender : TObject);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -65,12 +77,23 @@ begin
   lMnnInfo.Parent := gbPosition;
   lMnnInfo.AutoSize := False;
 
+  lPromo := TLabel.Create(Self);
+  lPromo.Name := 'lPromo';
+  lPromo.Parent := gbPosition;
+  lPromo.Visible := False;
+  //lPromo.AutoSize := False;
+  lPromo.Caption := 'Акция';
+  lPromo.Font.Color := clRed;
+  lPromo.Font.Style := lPromo.Font.Style + [fsBold];
+  lPromo.OnClick := PromoClick;  
+
   showDescriptionAction := nil;
   oldAfterOpen := nil;
   oldAfterScroll := nil;
   descriptionId := nil;
   catalogVitallyImportant := nil;
   catalogMandatoryList := nil;
+  catalogId := nil;
   gbPosition.ControlStyle := gbPosition.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 end;
@@ -112,6 +135,9 @@ begin
   lMandatoryList.Top := lVitallyImportant.Top;
   lVitallyImportant.Left := btnShowDescription.Left;
   lMandatoryList.Left := lVitallyImportant.Left + lVitallyImportant.Width + (leftInc div 2);
+
+  lPromo.Top := lSynonymName.Top;
+  lPromo.Left := gbPosition.Width - (lPromo.Width + 2*leftInc)
 end;
 
 class function TframePosition.AddFrame(Owner: TComponent;
@@ -128,6 +154,7 @@ begin
   Result.lMandatoryList.Visible := False;
   if Assigned(Source.DataSet) then begin
     Result.CreateMNNDataSet(Source, MnnField);
+    Result.CreateCatalogDataSet(Source);
     Result.oldAfterOpen := Source.DataSet.AfterOpen;
     Source.DataSet.AfterOpen := Result.NewAfterOpen;
     Result.oldAfterScroll := Source.DataSet.AfterScroll;
@@ -177,10 +204,28 @@ begin
 end;
 
 procedure TframePosition.NewAfterOpen(DataSet: TDataSet);
+var
+  field : TField;
 begin
+  if adsCatalog.Active then
+    adsCatalog.Close;
+  lPromo.Visible := False;
+
   descriptionId := DataSet.FindField('DescriptionId');
   catalogVitallyImportant := DataSet.FindField('CatalogVitallyImportant');
   catalogMandatoryList := DataSet.FindField('CatalogMandatoryList');
+
+  field := DataSet.FindField('FullCode');
+  if not Assigned(field) then
+    field := DataSet.FindField('CatalogId');
+  if Assigned(field) and (field is TLargeintField) then
+    catalogId := TLargeintField(field)
+  else
+    catalogId := nil;
+  if Assigned(catalogId) then begin
+    adsCatalog.MasterFields := catalogId.FieldName;
+    adsCatalog.Open;
+  end;
 
   RefreshPositionDetail(DataSet);
 
@@ -247,6 +292,42 @@ end;
 procedure TframePosition.MnnUpdateLabel(DataSet: TDataSet);
 begin
   lMnnInfo.Caption := mnnField.Value;
+end;
+
+procedure TframePosition.CreateCatalogDataSet(Source: TDataSource);
+begin
+  adsCatalog := TMyQuery.Create(Self);
+  if Assigned(Source.DataSet) and (Source.DataSet is TCustomMyDataSet) then
+    adsCatalog.Connection := TCustomMyDataSet(Source.DataSet).Connection;
+
+  adsCatalog.SQL.Text := 'select catalogs.FullCode, catalogs.PromotionsCount from catalogs';
+
+  adsCatalog.MasterSource := Source;
+  adsCatalog.DetailFields := 'FullCode';
+  adsCatalog.AfterRefresh := PromoUpdateLabel;
+  adsCatalog.AfterOpen := PromoUpdateLabel;
+  
+  catalogIdField := TLargeintField.Create(adsCatalog);
+  catalogIdField.fieldname := 'FullCode';
+  catalogIdField.Dataset := adsCatalog;
+
+  catalogPromotionsCountField := TIntegerField.Create(adsCatalog);
+  catalogPromotionsCountField.fieldname := 'PromotionsCount';
+  catalogPromotionsCountField.Dataset := adsCatalog;
+
+  dsCatalog := TDataSource.Create(Self);
+  dsCatalog.DataSet := adsCatalog;
+end;
+
+procedure TframePosition.PromoUpdateLabel(DataSet: TDataSet);
+begin
+  lPromo.Visible := catalogPromotionsCountField.Value > 0;
+end;
+
+procedure TframePosition.PromoClick(Sender: TObject);
+begin
+  if lPromo.Visible and not catalogIdField.IsNull then
+    ShowPromotions(catalogIdField.Value); 
 end;
 
 end.
