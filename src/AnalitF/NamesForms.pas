@@ -66,7 +66,7 @@ type
     procedure dbgNamesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure dbgFormsExit(Sender: TObject);
-    procedure adsForms2AfterScroll(DataSet: TDataSet);
+    procedure adsFormsAfterScroll(DataSet: TDataSet);
     procedure FormResize(Sender: TObject);
     procedure actShowAllExecute(Sender: TObject);
     procedure tmrShowCatalogTimer(Sender: TObject);
@@ -94,7 +94,6 @@ type
     procedure sbShowSynonymMNNClick(Sender: TObject);
     procedure actShowSynonymMNNExecute(Sender: TObject);
     procedure actUseFormsUpdate(Sender: TObject);
-    procedure adsFormsAfterScroll(DataSet: TDataSet);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -144,7 +143,8 @@ implementation
 uses DModule, AProc, Main, Types, AlphaUtils, LU_Tracer,
      MnnSearch,
      UniqueID,
-     U_ExchangeLog;
+     U_ExchangeLog,
+     DBGridHelper;
 
 {$R *.dfm}
 
@@ -592,18 +592,36 @@ begin
   if ( Key = VK_ESCAPE){ or ( Key = VK_SPACE)} then dbgNames.SetFocus;
 end;
 
-procedure TNamesFormsForm.adsForms2AfterScroll(DataSet: TDataSet);
+procedure TNamesFormsForm.adsFormsAfterScroll(DataSet: TDataSet);
 var
-  C : Integer;
+  rowHeight : Integer;
 begin
   if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
-    C := dbgForms.Canvas.TextHeight('Wg') + 2;
-    if (adsForms.RecordCount > 0) and ((adsForms.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
+    rowHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgForms);
+    if (adsForms.RecordCount > 0) and ((adsForms.RecordCount*rowHeight)/(pClient.Height-pWebBrowser.Height) > 13/10) then
       pWebBrowser.Visible := False
-    else
-      pWebBrowser.Visible := True;
+    else begin
+      if not pWebBrowser.Visible then begin
+        pWebBrowser.Visible := True;
+        formsFrame.Top := pWebBrowser.Top - (formsFrame.Height + 1);
+        namesFrame.Top := formsFrame.Top - (namesFrame.Height + 1);
+      end;
+    end;
   end;
+{$ifdef DEBUG}
+  if adsForms.Active and not adsForms.IsEmpty then
+    WriteExchangeLog('adsFormsAfterScroll',
+      Format('CatalogId : %s  Name : %s %s',
+        [adsForms.FieldByName( 'FullCode').AsString,
+         adsNames.FieldByName( 'Name').AsString,
+         adsForms.FieldByName( 'Form').AsString
+        ]));
+{$endif}
+{
+  if dbgForms.Focused then
+    frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
+}
 end;
 
 procedure TNamesFormsForm.FormResize(Sender: TObject);
@@ -611,7 +629,7 @@ begin
   if not actNewSearch.Checked then begin
     if dbgNames.Constraints.MaxWidth <> pnlTopOld.ClientWidth div 2 then
       dbgNames.Constraints.MaxWidth := pnlTopOld.ClientWidth div 2;
-    adsForms2AfterScroll(adsForms);
+    adsFormsAfterScroll(adsForms);
   end;
 end;
 
@@ -1177,23 +1195,6 @@ begin
   Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
   Reg.WriteBool('NewSearch', actNewSearch.Checked);
   Reg.Free;
-end;
-
-procedure TNamesFormsForm.adsFormsAfterScroll(DataSet: TDataSet);
-begin
-  inherited;
-{$ifdef DEBUG}
-  WriteExchangeLog('adsFormsAfterScroll',
-    Format('CatalogId : %s  Name : %s %s',
-      [adsForms.FieldByName( 'FullCode').AsString,
-       adsNames.FieldByName( 'Name').AsString,
-       adsForms.FieldByName( 'Form').AsString
-      ]));
-{$endif}
-{
-  if dbgForms.Focused then
-    frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
-}
 end;
 
 initialization
