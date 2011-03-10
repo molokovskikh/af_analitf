@@ -782,7 +782,7 @@ var
 begin
   if (adsOrders.State in [dsEdit])
   then begin
-    if StrToIntDef(Value, 0) >= 0 then begin
+    if (Length(Text) > 0) and (StrToIntDef(Value, -1) >= 0) then begin
       orderCount := Value;
       if (orderCount >= 0) then begin
         adsOrdersordercount.Value := orderCount;
