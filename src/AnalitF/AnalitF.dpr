@@ -139,7 +139,8 @@ uses
   SupplierController in 'BusinessLogic\SupplierController.pas',
   U_frameFilterSuppliers in 'Views\U_frameFilterSuppliers.pas' {frameFilterSuppliers: TFrame},
   U_frameContextReclame in 'Views\U_frameContextReclame.pas' {frameContextReclame: TFrame},
-  GlobalSettingParams in '..\Common\GlobalParams\GlobalSettingParams.pas';
+  GlobalSettingParams in '..\Common\GlobalParams\GlobalSettingParams.pas',
+  MyEmbConnectionEx in '..\Common\DataLayer\MyEmbConnectionEx.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

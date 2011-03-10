@@ -1527,6 +1527,8 @@ begin
   if DM.MainConnection is TMyEmbConnection then begin
     DM.MainConnection.Close;
 
+    FreeMySQLLib('MySql Clients Count при восстановлении из DataBackup', 'DatabaseController.RestoreDatabase');
+
     //удаляем директорию
     DeleteDataDir(ExePath + SDirData);
 
