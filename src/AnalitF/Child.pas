@@ -735,13 +735,13 @@ procedure TChildForm.ShowDescriptionExecute(Sender: TObject);
 var
   fullCodeField : TField;
   fullCode : Int64;
-  grid : TToughDBGrid;
+  grid : TCustomDBGridEh;
 begin
   if (MainForm.ActiveChild = Self)
      and Assigned(Screen.ActiveControl)
-     and (Screen.ActiveControl is TToughDBGrid)
+     and (Screen.ActiveControl is TCustomDBGridEh)
   then begin
-  grid := TToughDBGrid(Screen.ActiveControl);
+  grid := TCustomDBGridEh(Screen.ActiveControl);
   if Assigned(grid.DataSource)
      and Assigned(grid.DataSource.DataSet)
      and not grid.DataSource.DataSet.IsEmpty
@@ -783,7 +783,7 @@ end;
 
 procedure TChildForm.ShowDescriptionUpdate(Sender: TObject);
 var
-  grid : TToughDBGrid;
+  grid : TCustomDBGridEh;
 begin
   if Assigned(Sender) and (Sender is TAction) then
 
@@ -793,11 +793,11 @@ begin
 
       TAction(Sender).Enabled :=
             Assigned(Screen.ActiveControl)
-        and (Screen.ActiveControl is TToughDBGrid);
+        and (Screen.ActiveControl is TCustomDBGridEh);
 
       if TAction(Sender).Enabled then begin
 
-        grid := TToughDBGrid(Screen.ActiveControl);
+        grid := TCustomDBGridEh(Screen.ActiveControl);
 
         TAction(Sender).Enabled :=
               Assigned(grid.DataSource)
