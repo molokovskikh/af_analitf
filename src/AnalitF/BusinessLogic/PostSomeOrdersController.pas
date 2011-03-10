@@ -218,26 +218,14 @@ begin
   end
   else begin
     if dataSet.FieldByName('RetailCost').IsNull then begin
-      RetailCost := FDataLayer.GetRetailCost(
-        dataSet.FieldByName('VitallyImportant').AsBoolean,
-        dataSet.FieldByName('NDS').AsVariant,
-        dataSet.FieldByName('ProducerCost').AsVariant,
-        dataSet.FieldByName('RealPRICE').AsCurrency);
-      if RetailCost < 0.001 then begin
-        AddPostParam('RetailCost', '');
-        FDataLayer.adcUpdate.SQL.Text := 'update CurrentOrderLists set RetailCost = null where Id = :Id';
-        FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
-        FDataLayer.adcUpdate.Execute;
-      end
-      else begin
-        AddPostParam(
-          'RetailCost',
-          FloatToServiceStr(RetailCost));
-        FDataLayer.adcUpdate.SQL.Text := 'update CurrentOrderLists set RetailCost = :RetailCost where Id = :Id';
-        FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
-        FDataLayer.adcUpdate.ParamByName('RetailCost').Value := RetailCost;
-        FDataLayer.adcUpdate.Execute;
-      end;
+      RetailCost := FDataLayer.GetPriceRet(dataSet.FieldByName('RealPRICE').AsCurrency);
+      AddPostParam(
+        'RetailCost',
+        FloatToServiceStr(RetailCost));
+      FDataLayer.adcUpdate.SQL.Text := 'update CurrentOrderLists set RetailCost = :RetailCost where Id = :Id';
+      FDataLayer.adcUpdate.ParamByName('Id').Value := dataSet.FieldByName('Id').AsString;
+      FDataLayer.adcUpdate.ParamByName('RetailCost').Value := RetailCost;
+      FDataLayer.adcUpdate.Execute;
     end
     else
       AddPostParam(

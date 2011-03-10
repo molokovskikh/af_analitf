@@ -168,12 +168,7 @@ end;
 procedure TExpiredsForm.ecf(DataSet: TDataSet);
 begin
   try
-    adsExpiredsCryptPriceRet.AsCurrency :=
-      DM.GetRetailCost(
-        adsExpiredsCatalogVitallyImportant.Value,
-        adsExpiredsNDS.AsVariant,
-        adsExpiredsProducerCost.AsVariant,
-        adsExpiredsCost.AsCurrency);
+    adsExpiredsCryptPriceRet.AsCurrency := DM.GetPriceRet(adsExpiredsCOST.AsCurrency);
   except
   end;
 end;

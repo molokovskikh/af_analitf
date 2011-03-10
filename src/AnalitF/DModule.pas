@@ -501,6 +501,12 @@ type
     procedure LoadMarkups(TableName : String; Markups : TObjectList);
     //Получить розничную цену товара в зависимости от наценки
     function GetPriceRet(BaseCost : Currency) : Currency;
+    //Получить розничную цену товара в зависимости от определенной наценки
+    function GetPriceRetByMarkup(BaseCost : Currency; Markup : Currency) : Currency;
+    //Получить розничную наценку товара
+    function GetRetUpCost(BaseCost : Currency) : Currency;
+    //Получить розничную наценку товара от розничной цены
+    function GetRetUpCostByRetailCost(BaseCost : Currency; RetailCost : Currency) : Currency;
     function GetRetailCost(
       VitallyImportant : Boolean;
       NDS : Variant;
@@ -534,8 +540,6 @@ type
       SupplierCost : Currency;
       markup : Currency
     ) : Currency;
-    //Получить розничную наценку товара
-    function GetRetUpCost(BaseCost : Currency) : Currency;
     function GetMaxRetailMarkup(BaseCost : Currency) : Currency;
     function GetMaxRetailSupplierMarkup(BaseCost : Currency) : Currency;
     //Получить наценку товара для ЖНВЛС
@@ -1725,7 +1729,7 @@ end;
 
 function TDM.GetPriceRet(BaseCost: Currency): Currency;
 begin
-  Result := (1 + GetRetUpCost(BaseCost)/100)*BaseCost;
+  Result := GetPriceRetByMarkup(BaseCost, GetRetUpCost(BaseCost));
 end;
 
 procedure TDM.LoadRetailMargins;
@@ -5080,6 +5084,17 @@ begin
     end
     else
       Result := False;
+end;
+
+function TDM.GetPriceRetByMarkup(BaseCost, Markup: Currency): Currency;
+begin
+  Result := (1 + Markup/100)*BaseCost;
+end;
+
+function TDM.GetRetUpCostByRetailCost(BaseCost,
+  RetailCost: Currency): Currency;
+begin
+  Result := (RetailCost/BaseCost - 1)* 100;
 end;
 
 initialization
