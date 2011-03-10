@@ -360,7 +360,7 @@ begin
   //вычисляем сумму по позиции
   try
     if (LastSymmaryType = 0) or adsSummaryRetailCost.IsNull then begin
-      adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(adsSummaryCost.AsCurrency)
+      adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(adsSummaryRealCost.AsCurrency)
     end
     else
       adsSummaryPriceRet.AsCurrency := adsSummaryRetailCost.Value;

@@ -442,7 +442,7 @@ begin
       adsCoreSortOrder.AsInteger := elemIndex;
       adsCorePriceDelta.AsCurrency := SortElem(SortList.Objects[elemIndex]).PriceDelta;
     end;
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCost.AsCurrency);
+    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
   except
   end;
 end;
@@ -760,7 +760,7 @@ begin
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
     //Если пользователь не изменял сам наценку, то применяем текущую наценку
     if not UserSetRetUpCost then begin
-      retailMarkup := DM.GetRetUpCost(adsCoreCost.AsCurrency);
+      retailMarkup := DM.GetRetUpCost(adsCoreRealCost.AsCurrency);
       ProgramSetSetRetUpCost := True;
       try
         if not VarIsNull(retailMarkup) then
@@ -1021,7 +1021,7 @@ begin
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0)
     and (seRetUpCost.Value > 0)
   then begin
-    retailCost := DM.GetPriceRetByMarkup(adsCoreCost.AsCurrency, seRetUpCost.Value);
+    retailCost := DM.GetPriceRetByMarkup(adsCoreRealCost.AsCurrency, seRetUpCost.Value);
     if retailCost > 0.001 then
       eRetUpCost.Text := CurrToStrF(retailCost, ffCurrency, 2);
   end;

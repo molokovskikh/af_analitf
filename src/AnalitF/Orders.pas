@@ -514,12 +514,12 @@ procedure TOrdersForm.ocf(DataSet: TDataSet);
 begin
   try
     if adsOrdersRetailCost.IsNull then begin
-      adsOrdersRetailPrice.AsCurrency := DM.GetPriceRet(adsOrdersprice.AsCurrency);
-      adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCost(adsOrdersprice.AsCurrency);
+      adsOrdersRetailPrice.AsCurrency := DM.GetPriceRet(adsOrdersRealPrice.AsCurrency);
+      adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCost(adsOrdersRealPrice.AsCurrency);
     end
     else begin
       adsOrdersRetailPrice.AsCurrency := adsOrdersRetailCost.AsCurrency;
-      adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCostByRetailCost(adsOrdersprice.AsCurrency, adsOrdersRetailCost.AsCurrency);
+      adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCostByRetailCost(adsOrdersRealPrice.AsCurrency, adsOrdersRetailCost.AsCurrency);
     end;
 
     adsOrdersSumOrder.AsCurrency := adsOrdersRealPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
@@ -806,7 +806,7 @@ begin
       markup := Value;
       if (markup > 0) then begin
         adsOrdersRetailCost.AsVariant := DM.GetPriceRetByMarkup(
-          adsOrdersprice.AsCurrency,
+          adsOrdersRealPrice.AsCurrency,
           markup);
         adsOrders.Post;
       end

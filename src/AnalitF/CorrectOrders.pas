@@ -556,7 +556,7 @@ end;
 procedure TCorrectOrdersForm.adsCoreCalcFields(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCost.AsCurrency);
+    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
   except
   end;
 end;

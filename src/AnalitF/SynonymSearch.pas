@@ -314,7 +314,7 @@ end;
 procedure TSynonymSearchForm.ccf(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreCost.AsCurrency);
+    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
 {
     if Assigned(SortList) then
       adsCoreSortOrder.AsInteger := SortList.IndexOf(adsCoreCOREID.AsString);
