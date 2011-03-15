@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DBCtrls, StdCtrls, DB, ActnList, Buttons, RXCtrls,
   MyAccess,
-  U_ShowPromotionsForm;
+  U_ShowPromotionsForm,
+  PromotionLabel;
 
 type
   TframePosition = class(TFrame)
@@ -35,7 +36,7 @@ type
 
     lMnnInfo : TLabel;
 
-    lPromo : TLabel;
+    lPromo : TPromotionLabel;
     catalogId : TLargeintField;
 
     adsCatalog : TMyQuery;
@@ -77,15 +78,15 @@ begin
   lMnnInfo.Parent := gbPosition;
   lMnnInfo.AutoSize := False;
 
-  lPromo := TLabel.Create(Self);
+  lPromo := TPromotionLabel.Create(Self);
   lPromo.Name := 'lPromo';
   lPromo.Parent := gbPosition;
   lPromo.Visible := False;
   //lPromo.AutoSize := False;
   lPromo.Caption := 'Акция';
-  lPromo.Font.Color := clRed;
-  lPromo.Font.Style := lPromo.Font.Style + [fsBold];
-  lPromo.OnClick := PromoClick;  
+  //lPromo.Font.Color := clRed;
+  //lPromo.Font.Style := lPromo.Font.Style + [fsBold];
+  //lPromo.OnClick := PromoClick;
 
   showDescriptionAction := nil;
   oldAfterOpen := nil;
@@ -322,12 +323,16 @@ end;
 procedure TframePosition.PromoUpdateLabel(DataSet: TDataSet);
 begin
   lPromo.Visible := catalogPromotionsCountField.Value > 0;
+  if lPromo.Visible and not catalogIdField.IsNull then
+    lPromo.CatalogId := catalogIdField.Value
+  else
+    lPromo.CatalogId := 0;
 end;
 
 procedure TframePosition.PromoClick(Sender: TObject);
 begin
   if lPromo.Visible and not catalogIdField.IsNull then
-    ShowPromotions(catalogIdField.Value); 
+    ShowPromotions(catalogIdField.Value);
 end;
 
 end.

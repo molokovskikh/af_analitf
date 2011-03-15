@@ -9,7 +9,8 @@ uses
   Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
   MyAccess, Menus, Buttons, U_framePosition, PreviousOrders, Core,
   U_frameContextReclame,
-  U_ShowPromotionsForm;
+  U_ShowPromotionsForm,
+  PromotionLabel;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -119,6 +120,7 @@ type
     pPromotions : TPanel;
     gbPromotions : TGroupBox;
     sbShowPromotion : TSpeedButton;
+    lPromotionHeader : TLabel;
     lPromotionInfo : TLabel;
     //frameContextReclame : TframeContextReclame;
     FCoreForm: TCoreForm;
@@ -130,7 +132,6 @@ type
     procedure SaveActionStates;
     procedure PrepareAdvertisingPanel;
     procedure PreparePromotionText;
-    procedure sbShowPromotionClick(Sender : TObject);
   public
     procedure ShowForm; override;
     procedure SetCatalog;
@@ -628,7 +629,6 @@ begin
     if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then begin
       PreparePromotionText;
       pPromotions.Visible := True;
-      sbShowPromotion.Left := (pAdvertising.Width - sbShowPromotion.Width) div 2;
       pPromotions.BringToFront;
     end
     else begin
@@ -1258,27 +1258,35 @@ begin
   gbPromotions.Caption := ' Акции поставщиков ';
   gbPromotions.ControlStyle := gbPromotions.ControlStyle - [csParentBackground] + [csOpaque];
 
-  sbShowPromotion := TSpeedButton.Create(Self);
-  sbShowPromotion.Parent := gbPromotions;
-  sbShowPromotion.Name := 'sbShowPromotion';
-  sbShowPromotion.Caption := 'Подробнее';
-  sbShowPromotion.Width := Self.Canvas.TextWidth(sbShowPromotion.Caption) + 10;
-  sbShowPromotion.Top := pAdvertising.Height - 15 - sbShowPromotion.Height;
-  sbShowPromotion.OnClick := sbShowPromotionClick;
+  lPromotionHeader := TLabel.Create(Self);
+  lPromotionHeader.Name := 'lPromotionHeader';
+  lPromotionHeader.Parent := gbPromotions;
+  lPromotionHeader.Left := 10;
+  lPromotionHeader.Top := 20;
 
   lPromotionInfo := TLabel.Create(Self);
   lPromotionInfo.Name := 'lPromotionInfo';
   lPromotionInfo.Parent := gbPromotions;
-end;
-
-procedure TNamesFormsForm.sbShowPromotionClick(Sender: TObject);
-begin
-  if adsForms.Active and not adsForms.IsEmpty then
-    ShowPromotions(adsForms.FieldByName('FullCode').AsInteger);
+  lPromotionInfo.Left := 10;
+  lPromotionInfo.Top := lPromotionHeader.Top + lPromotionHeader.Height + 10;
 end;
 
 procedure TNamesFormsForm.PreparePromotionText;
+var
+  I : Integer;
+
+  lproviderInfo : TPromotionLabel;
+  nextLeft : Integer;
 begin
+  for I := ComponentCount-1 downto 0 do
+    if (Components[i] is TPromotionLabel)
+      and (TPromotionLabel(Components[i]).Parent = gbPromotions)
+    then begin
+      TPromotionLabel(Components[i]).Visible := False;
+      TPromotionLabel(Components[i]).Parent := nil;
+      TPromotionLabel(Components[i]).Free;
+    end;
+
   DM.adsQueryValue.Close;
   DM.adsQueryValue.SQL.Text := '' +
 ' select ' +
@@ -1298,32 +1306,56 @@ begin
   DM.adsQueryValue.Open;
   try
   if adsForms.FieldByName('PromotionsCount').AsInteger = 1 then begin
-    lPromotionInfo.Caption :=
-      Format('По препарату %s %s имеется акция у поставщика %s:'#13#10'%s',
+    lPromotionHeader.Caption :=
+      Format('По препарату %s %s имеется акция у поставщика ',
         [adsNames.FieldByName( 'Name').AsString,
-         adsForms.FieldByName( 'Form').AsString,
-         DM.adsQueryValue.FieldByName('ShortName').AsString,
-         DM.adsQueryValue.FieldByName('Annotation').AsString]);
+         adsForms.FieldByName( 'Form').AsString
+         ]);
+
+    lPromotionInfo.Caption := DM.adsQueryValue.FieldByName('Annotation').AsString;
+    lPromotionInfo.Visible := True;
+
+    lproviderInfo := TPromotionLabel.Create(Self, adsForms.FieldByName('FullCode').AsInteger);
+    lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
+    lproviderInfo.Top := lPromotionHeader.Top;
+    lproviderInfo.Left := lPromotionHeader.Left + lPromotionHeader.Width;
+    lproviderInfo.Parent := gbPromotions;
   end
   else begin
-    lPromotionInfo.Caption :=
-      Format('По препарату %s %s имеются акции у поставщиков:'#13#10,
+    lPromotionHeader.Caption :=
+      Format('По препарату %s %s имеются акции у поставщиков:',
         [adsNames.FieldByName( 'Name').AsString,
-         adsForms.FieldByName( 'Form').AsString,
-         DM.adsQueryValue.FieldByName('ShortName').AsString,
-         DM.adsQueryValue.FieldByName('Annotation').AsString]);
-    lPromotionInfo.Caption := lPromotionInfo.Caption + DM.adsQueryValue.FieldByName('ShortName').AsString;
+         adsForms.FieldByName( 'Form').AsString]);
+    lPromotionInfo.Visible := False;
+
+    lproviderInfo := TPromotionLabel.Create(Self,
+      adsForms.FieldByName('FullCode').AsInteger,
+      DM.adsQueryValue.FieldByName('Id').AsInteger);
+    lproviderInfo.Name := 'lproviderInfo' + DM.adsQueryValue.FieldByName('Id').AsString;
+    lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
+    lproviderInfo.Top := lPromotionInfo.Top;
+    lproviderInfo.Left := lPromotionHeader.Left;
+    lproviderInfo.Parent := gbPromotions;
+    nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
+
     DM.adsQueryValue.Next;
     while not DM.adsQueryValue.Eof do begin
-      lPromotionInfo.Caption := lPromotionInfo.Caption + ', ' +DM.adsQueryValue.FieldByName('ShortName').AsString;
+      lproviderInfo := TPromotionLabel.Create(Self,
+        adsForms.FieldByName('FullCode').AsInteger,
+        DM.adsQueryValue.FieldByName('Id').AsInteger);
+      lproviderInfo.Name := 'lproviderInfo' + DM.adsQueryValue.FieldByName('Id').AsString;
+      lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
+      lproviderInfo.Top := lPromotionInfo.Top;
+      lproviderInfo.Left := nextLeft;
+      lproviderInfo.Parent := gbPromotions;
+      nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
+
       DM.adsQueryValue.Next;
     end;
   end;
   finally
     DM.adsQueryValue.Close;
   end;
-  lPromotionInfo.Top := (sbShowPromotion.Top - lPromotionInfo.Height) div 2;
-  lPromotionInfo.Left := (pAdvertising.Width - lPromotionInfo.Width) div 2;
 end;
 
 initialization

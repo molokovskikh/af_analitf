@@ -140,7 +140,8 @@ uses
   U_frameFilterSuppliers in 'Views\U_frameFilterSuppliers.pas' {frameFilterSuppliers: TFrame},
   U_frameContextReclame in 'Views\U_frameContextReclame.pas' {frameContextReclame: TFrame},
   GlobalSettingParams in '..\Common\GlobalParams\GlobalSettingParams.pas',
-  U_ShowPromotionsForm in 'U_ShowPromotionsForm.pas' {ShowPromotionsForm};
+  U_ShowPromotionsForm in 'U_ShowPromotionsForm.pas' {ShowPromotionsForm},
+  PromotionLabel in 'Helpers\PromotionLabel.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
