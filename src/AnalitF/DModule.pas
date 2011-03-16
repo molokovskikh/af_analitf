@@ -2063,6 +2063,11 @@ begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlDWithGlobalParams, nil);
         DBVersion := 72;
       end;
+
+      if DBVersion = 72 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 73;
+      end;
     end;
 
 
