@@ -19,7 +19,7 @@ uses
 
 const
   //“екуща€ верси€ базы данных дл€ работы программ
-  CURRENT_DB_VERSION = 72;
+  CURRENT_DB_VERSION = 73;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -1528,6 +1528,8 @@ procedure TDatabaseController.RestoreDatabase;
 begin
   if DM.MainConnection is TMyEmbConnection then begin
     DM.MainConnection.Close;
+
+    FreeMySQLLib('MySql Clients Count при восстановлении из DataBackup', 'DatabaseController.RestoreDatabase');
 
     //удал€ем директорию
     DeleteDataDir(ExePath + SDirData);

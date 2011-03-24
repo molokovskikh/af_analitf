@@ -140,6 +140,7 @@ uses
   U_frameFilterSuppliers in 'Views\U_frameFilterSuppliers.pas' {frameFilterSuppliers: TFrame},
   U_frameContextReclame in 'Views\U_frameContextReclame.pas' {frameContextReclame: TFrame},
   GlobalSettingParams in '..\Common\GlobalParams\GlobalSettingParams.pas',
+  MyEmbConnectionEx in '..\Common\DataLayer\MyEmbConnectionEx.pas',
   U_ShowPromotionsForm in 'U_ShowPromotionsForm.pas' {ShowPromotionsForm},
   PromotionLabel in 'Helpers\PromotionLabel.pas';
 
@@ -168,6 +169,7 @@ uses
 {$R CompareScript69.RES}
 {$R CompareScript70.RES}
 {$R CompareScript71.RES}
+{$R CompareScript72.RES}
 
 var
   B : TWebBrowser;

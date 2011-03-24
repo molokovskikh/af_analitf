@@ -514,21 +514,13 @@ procedure TOrdersForm.ocf(DataSet: TDataSet);
 begin
   try
     if adsOrdersRetailCost.IsNull then begin
-      adsOrdersEditRetailMarkup.AsVariant :=
-        DM.CalcRetailMarkup(
-          adsOrdersCatalogVitallyImportant.Value,
-          adsOrdersProducerCost.AsVariant,
-          adsOrdersprice.AsCurrency);
-      DM.CalcRetailCost(
-          adsOrdersCatalogVitallyImportant.Value,
-          adsOrdersNDS.AsVariant,
-          adsOrdersProducerCost.AsVariant,
-          adsOrdersprice.AsCurrency,
-          adsOrdersEditRetailMarkup,
-          adsOrdersRetailPrice);
+      adsOrdersRetailPrice.AsCurrency := DM.GetPriceRet(adsOrdersRealPrice.AsCurrency);
+      adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCost(adsOrdersRealPrice.AsCurrency);
     end
-    else
+    else begin
       adsOrdersRetailPrice.AsCurrency := adsOrdersRetailCost.AsCurrency;
+      adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCostByRetailCost(adsOrdersRealPrice.AsCurrency, adsOrdersRetailCost.AsCurrency);
+    end;
 
     adsOrdersSumOrder.AsCurrency := adsOrdersRealPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
   except
@@ -762,9 +754,9 @@ begin
 
     editColumn := ColumnByNameT(TToughDBGrid(dbgEditOrders), adsOrdersEditRetailMarkup.FieldName);
     if Assigned(editColumn) then begin
-      editColumn.ReadOnly := True;
-//      editColumn.OnGetCellParams := EditColumnGetCellParams;
-//      editColumn.OnUpdateData := RetailMarkupUpdateData;
+      editColumn.ReadOnly := False;
+      editColumn.OnGetCellParams := EditColumnGetCellParams;
+      editColumn.OnUpdateData := RetailMarkupUpdateData;
     end;
 
     editColumn := ColumnByNameT(TToughDBGrid(dbgEditOrders), adsOrdersordercount.FieldName);
@@ -790,7 +782,7 @@ var
 begin
   if (adsOrders.State in [dsEdit])
   then begin
-    if StrToIntDef(Value, 0) >= 0 then begin
+    if (Length(Text) > 0) and (StrToIntDef(Value, -1) >= 0) then begin
       orderCount := Value;
       if (orderCount >= 0) then begin
         adsOrdersordercount.Value := orderCount;
@@ -813,7 +805,9 @@ begin
     if StrToFloatDef(Value, 0.0) > 0 then begin
       markup := Value;
       if (markup > 0) then begin
-        adsOrdersRetailMarkup.AsVariant := markup;
+        adsOrdersRetailCost.AsVariant := DM.GetPriceRetByMarkup(
+          adsOrdersRealPrice.AsCurrency,
+          markup);
         adsOrders.Post;
       end
       else

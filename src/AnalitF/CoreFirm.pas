@@ -295,12 +295,7 @@ end;
 procedure TCoreFirmForm.ccf(DataSet: TDataSet);
 begin
   try
-    adsCoreCryptPriceRet.AsCurrency :=
-      DM.GetRetailCost(
-        adsCoreCatalogVitallyImportant.Value,
-        adsCoreNDS.AsVariant,
-        adsCoreProducerCost.AsVariant,
-        adsCoreCost.AsCurrency);
+    adsCoreCryptPriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
   except
   end;
 end;
