@@ -139,6 +139,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TPromotionCatalogsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -753,13 +759,35 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( '
 +'  `Id` bigint(20) NOT NULL, '
-+'  `Enabled` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
-+'  `CatalogId` bigint(20)NOT NULL, '
++'  `Status` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
 +'  `SupplierId` bigint(20) NOT NULL, '
 +'  `Annotation` varchar(255) NOT NULL, '
 +'  PRIMARY KEY (`Id`), '
-+'  KEY `IDX_SupplierPromotions_CatalogId` (`CatalogId`), '
 +'  KEY `IDX_SupplierPromotions_SupplierId` (`SupplierId`) '
++'  ) '
++ GetTableOptions();
+end;
+
+{ TPromotionCatalogsTable }
+
+constructor TPromotionCatalogsTable.Create;
+begin
+  FName := 'promotioncatalogs';
+  FObjectId := doiPromotionCatalogs;
+  FRepairType := dortCumulative;
+end;
+
+function TPromotionCatalogsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `CatalogId` bigint(20)NOT NULL, '
++'  `PromotionId` bigint(20)NOT NULL, '
++'  `Hidden` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
++'  PRIMARY KEY (`CatalogId`, `PromotionId`), '
++'  KEY `IDX_PromotionCatalogs_CatalogId` (`CatalogId`), '
++'  KEY `IDX_PromotionCatalogs_PromotionId` (`PromotionId`) '
 +'  ) '
 + GetTableOptions();
 end;
@@ -793,5 +821,6 @@ initialization
   DatabaseController.AddObject(TMinReqRulesTable.Create());
 
   DatabaseController.AddObject(TSupplierPromotionsTable.Create());
+  DatabaseController.AddObject(TPromotionCatalogsTable.Create());
 end.
 

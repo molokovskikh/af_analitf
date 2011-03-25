@@ -118,7 +118,8 @@ type
     doiGlobalParams,
     doiNetworkLog,
     //Cumulative
-    doiSupplierPromotions);
+    doiSupplierPromotions,
+    doiPromotionCatalogs);
 
   TRepairedObjects = set of TDatabaseObjectId;
 

@@ -34,7 +34,10 @@ type
     function PromotionFileName(fileExt : String) : String;
     function HtmlExists() : Boolean;
     function JpgExists() : Boolean;
-    function TxtExists() : Boolean; 
+    function TxtExists() : Boolean;
+    function PromotionHtml() : String;
+    function PromotionJpg() : String;
+    function PromotionTxt() : String;
   end;
 
 
@@ -112,7 +115,8 @@ begin
 '   Providers.ShortName ' +
 ' from ' +
 '  Catalogs ' +
-'  join SupplierPromotions on SupplierPromotions.CatalogId = Catalogs.FullCode ' +
+'  join PromotionCatalogs on PromotionCatalogs.CatalogId = Catalogs.FullCode ' +
+'  join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
 '  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
 ' where ' +
 '  Catalogs.FullCode = :CatalogId ' +
@@ -150,6 +154,8 @@ end;
 function TShowPromotionsForm.CreatePromotion(
   query: TMyQuery): TSupplierPromotion;
 var
+  gbDesc : TGroupBox;
+  lDesc : TLabel;
   mCurrent : TMemo;
 
   iImage : TImage;
@@ -168,6 +174,19 @@ begin
   Result.Sheet.PageControl := pcPromotions;
   Result.Sheet.Caption := Result.SupplierShortName;
 
+  gbDesc := TGroupBox.Create(Self);
+  gbDesc.Parent := Result.Sheet;
+  gbDesc.Caption := ' Описание ';
+  gbDesc.Align := alTop;
+
+  lDesc := TLabel.Create(Self);
+  lDesc.Parent := gbDesc;
+  lDesc.Left := 10;
+  lDesc.Top := 15;
+  lDesc.Caption := Result.Annotation;
+
+  gbDesc.Height := 2*lDesc.Top + lDesc.Height;
+
   if Result.HtmlExists() then begin
     pWebBrowser := TPanel.Create(Self);
     pWebBrowser.Name := 'pWebBrowser' + IntToStr(Result.PromotionId);
@@ -181,7 +200,7 @@ begin
     TWinControl(iWebBrowser).Parent := pWebBrowser;
     TWinControl(iWebBrowser).Align := alClient;
 
-    iWebBrowser.Navigate(Result.PromotionFileName('.htm'));
+    iWebBrowser.Navigate(Result.PromotionHtml());
   end
   else
     if Result.JpgExists() then begin
@@ -193,7 +212,7 @@ begin
       iImage.Proportional := True;
       jpg := TJpegImage.Create;
       try
-        jpg.LoadFromFile(Result.PromotionFileName('.jpg'));
+        jpg.LoadFromFile(Result.PromotionJpg());
         iImage.Picture.Bitmap.Assign(jpg);
       finally
         jpg.Free;
@@ -205,14 +224,7 @@ begin
         mCurrent.Parent := Result.Sheet;
         mCurrent.ReadOnly := True;
         mCurrent.Align := alClient;
-        mCurrent.Lines.LoadFromFile(Result.PromotionFileName('.txt'));
-      end
-      else begin
-        mCurrent := TMemo.Create(Self);
-        mCurrent.Parent := Result.Sheet;
-        mCurrent.ReadOnly := True;
-        mCurrent.Align := alClient;
-        mCurrent.Text := Result.Annotation;
+        mCurrent.Lines.LoadFromFile(Result.PromotionTxt());
       end;
 end;
 
@@ -228,12 +240,12 @@ end;
 
 function TSupplierPromotion.HtmlExists: Boolean;
 begin
-  Result := PromotionFileExists('.htm');
+  Result := PromotionFileExists('.htm') or PromotionFileExists('.html');
 end;
 
 function TSupplierPromotion.JpgExists: Boolean;
 begin
-  Result := PromotionFileExists('.jpg');
+  Result := PromotionFileExists('.jpg') or PromotionFileExists('.jpeg');
 end;
 
 function TSupplierPromotion.PromotionFileExists(fileExt: String): Boolean;
@@ -244,6 +256,27 @@ end;
 function TSupplierPromotion.PromotionFileName(fileExt: String): String;
 begin
   Result := RootFolder() + SDirPromotions + '\' + IntToStr(PromotionId) + fileExt;
+end;
+
+function TSupplierPromotion.PromotionHtml: String;
+begin
+  if PromotionFileExists('.htm') then
+    Result := PromotionFileName('.htm')
+  else
+    Result := PromotionFileName('.html');
+end;
+
+function TSupplierPromotion.PromotionJpg: String;
+begin
+  if PromotionFileExists('.jpg') then
+    Result := PromotionFileName('.jpg')
+  else
+    Result := PromotionFileName('.jpeg');
+end;
+
+function TSupplierPromotion.PromotionTxt: String;
+begin
+  Result := PromotionFileName('.txt');
 end;
 
 function TSupplierPromotion.TxtExists: Boolean;

@@ -46,7 +46,8 @@ TUpdateTable = (
   utBatchReport,
   utDocumentHeaders,
   utDocumentBodies,
-  utSupplierPromotions
+  utSupplierPromotions,
+  utPromotionCatalogs
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -1360,6 +1361,8 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\DocumentHeaders.txt') > 0) then UpdateTables := UpdateTables + [utDocumentHeaders];
   if (GetFileSize(RootFolder()+SDirIn+'\DocumentBodies.txt') > 0) then UpdateTables := UpdateTables + [utDocumentBodies];
   if (GetFileSize(RootFolder()+SDirIn+'\SupplierPromotions.txt') > 0) then UpdateTables := UpdateTables + [utSupplierPromotions];
+  if (GetFileSize(RootFolder()+SDirIn+'\PromotionCatalogs.txt') > 0) then UpdateTables := UpdateTables + [utPromotionCatalogs];
+
 
     //обновляем таблицы
     {
@@ -1605,6 +1608,24 @@ begin
     end;
   end;
   //
+  if utPromotionCatalogs in UpdateTables then begin
+    if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
+      SQL.Text := GetLoadDataSQL('PromotionCatalogs', RootFolder()+SDirIn+'\PromotionCatalogs.txt');
+      InternalExecute;
+{$ifdef DEBUG}
+      WriteExchangeLog('Import', Format('PromotionCatalogs RowAffected = %d', [RowsAffected]));
+{$endif}
+    end
+    else begin
+      SQL.Text := GetLoadDataSQL('PromotionCatalogs', RootFolder()+SDirIn+'\PromotionCatalogs.txt', true);
+      InternalExecute;
+{$ifdef DEBUG}
+      WriteExchangeLog('Import', Format('PromotionCatalogs RowAffected = %d', [RowsAffected]));
+{$endif}
+      SQL.Text := 'delete from PromotionCatalogs where Hidden = 1;';
+      InternalExecute;
+    end;
+  end;
   if utSupplierPromotions in UpdateTables then begin
     if (eaGetFullData in ExchangeForm.ExchangeActs) or DM.GetCumulative then begin
       SQL.Text := GetLoadDataSQL('SupplierPromotions', RootFolder()+SDirIn+'\SupplierPromotions.txt');
@@ -1619,7 +1640,7 @@ begin
 {$ifdef DEBUG}
       WriteExchangeLog('Import', Format('SupplierPromotions RowAffected = %d', [RowsAffected]));
 {$endif}
-      SQL.Text := 'delete from SupplierPromotions where Enabled = 0;';
+      SQL.Text := 'delete from SupplierPromotions where Status = 0;';
       InternalExecute;
     end;
   end;
@@ -1927,7 +1948,14 @@ begin
   SQL.Text :=
 'update ' +
 '  catalogs, ' +
-'  (select CatalogId, count(*) PCount from SupplierPromotions join Providers on FirmCode = SupplierId group by CatalogId ) as PromoCounts ' +
+'  (select ' +
+'      pc.CatalogId, count(*) PCount ' +
+' from ' +
+'   SupplierPromotions promo ' +
+'   join Providers on FirmCode = promo.SupplierId ' +
+'   join PromotionCatalogs pc on pc.PromotionId = promo.Id ' +
+' group by pc.CatalogId ) ' +
+'   as PromoCounts ' +
 ' set catalogs.PromotionsCount = PromoCounts.PCount ' +
 ' where catalogs.FullCode = PromoCounts.CatalogId';
   InternalExecute;

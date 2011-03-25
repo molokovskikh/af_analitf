@@ -120,7 +120,6 @@ type
     pPromotions : TPanel;
     gbPromotions : TGroupBox;
     sbShowPromotion : TSpeedButton;
-    lPromotionHeader : TLabel;
     lPromotionInfo : TLabel;
     //frameContextReclame : TframeContextReclame;
     FCoreForm: TCoreForm;
@@ -633,10 +632,6 @@ begin
     end
     else begin
       pPromotions.Visible := False;
-{
-      if pPromotions.Visible then begin
-      end;
-}      
     end;
   end;
 {$ifdef DEBUG}
@@ -1258,20 +1253,15 @@ begin
   gbPromotions.Caption := ' Акции поставщиков ';
   gbPromotions.ControlStyle := gbPromotions.ControlStyle - [csParentBackground] + [csOpaque];
 
-  lPromotionHeader := TLabel.Create(Self);
-  lPromotionHeader.Name := 'lPromotionHeader';
-  lPromotionHeader.Parent := gbPromotions;
-  lPromotionHeader.Left := 10;
-  lPromotionHeader.Top := 20;
-
   lPromotionInfo := TLabel.Create(Self);
   lPromotionInfo.Name := 'lPromotionInfo';
   lPromotionInfo.Parent := gbPromotions;
-  lPromotionInfo.Left := 10;
-  lPromotionInfo.Top := lPromotionHeader.Top + lPromotionHeader.Height + 10;
 end;
 
 procedure TNamesFormsForm.PreparePromotionText;
+const
+  startLeft = 10;
+  startTop = 20;
 var
   I : Integer;
 
@@ -1296,7 +1286,8 @@ begin
 '   Providers.ShortName ' +
 ' from ' +
 '  Catalogs ' +
-'  join SupplierPromotions on SupplierPromotions.CatalogId = Catalogs.FullCode ' +
+'  join PromotionCatalogs on PromotionCatalogs.CatalogId = Catalogs.FullCode ' +
+'  join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
 '  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
 ' where ' +
 '  Catalogs.FullCode = :CatalogId ' +
@@ -1306,26 +1297,21 @@ begin
   DM.adsQueryValue.Open;
   try
   if adsForms.FieldByName('PromotionsCount').AsInteger = 1 then begin
-    lPromotionHeader.Caption :=
-      Format('По препарату %s %s имеется акция у поставщика ',
-        [adsNames.FieldByName( 'Name').AsString,
-         adsForms.FieldByName( 'Form').AsString
-         ]);
-
-    lPromotionInfo.Caption := DM.adsQueryValue.FieldByName('Annotation').AsString;
-    lPromotionInfo.Visible := True;
+    gbPromotions.Caption := ' Акция поставщика ';
 
     lproviderInfo := TPromotionLabel.Create(Self, adsForms.FieldByName('FullCode').AsInteger);
     lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
-    lproviderInfo.Top := lPromotionHeader.Top;
-    lproviderInfo.Left := lPromotionHeader.Left + lPromotionHeader.Width;
+    lproviderInfo.Left := startLeft;
+    lproviderInfo.Top := startTop;
     lproviderInfo.Parent := gbPromotions;
+
+    lPromotionInfo.Caption := DM.adsQueryValue.FieldByName('Annotation').AsString;
+    lPromotionInfo.Left := startLeft;
+    lPromotionInfo.Top := lproviderInfo.Top + lproviderInfo.Height + 10;
+    lPromotionInfo.Visible := True;
   end
   else begin
-    lPromotionHeader.Caption :=
-      Format('По препарату %s %s имеются акции у поставщиков:',
-        [adsNames.FieldByName( 'Name').AsString,
-         adsForms.FieldByName( 'Form').AsString]);
+    gbPromotions.Caption := ' Акции поставщиков ';
     lPromotionInfo.Visible := False;
 
     lproviderInfo := TPromotionLabel.Create(Self,
@@ -1333,8 +1319,8 @@ begin
       DM.adsQueryValue.FieldByName('Id').AsInteger);
     lproviderInfo.Name := 'lproviderInfo' + DM.adsQueryValue.FieldByName('Id').AsString;
     lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
-    lproviderInfo.Top := lPromotionInfo.Top;
-    lproviderInfo.Left := lPromotionHeader.Left;
+    lproviderInfo.Left := startLeft;
+    lproviderInfo.Top := startTop;
     lproviderInfo.Parent := gbPromotions;
     nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
 
@@ -1345,8 +1331,8 @@ begin
         DM.adsQueryValue.FieldByName('Id').AsInteger);
       lproviderInfo.Name := 'lproviderInfo' + DM.adsQueryValue.FieldByName('Id').AsString;
       lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
-      lproviderInfo.Top := lPromotionInfo.Top;
       lproviderInfo.Left := nextLeft;
+      lproviderInfo.Top := startTop;
       lproviderInfo.Parent := gbPromotions;
       nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
 
