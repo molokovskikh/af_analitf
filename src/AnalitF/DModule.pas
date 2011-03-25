@@ -2388,6 +2388,7 @@ begin
     else begin
       DBErrorMess := DBErrorMess + #13#10#13#10 + 'Будет произведено восстановление из эталонной копии.';
       UserErrorMessage := UserErrorMessage + #13#10 + 'Будет произведено восстановление из эталонной копии.';
+      InternalRestore := True;
     end;
   end;
 
