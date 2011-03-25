@@ -21,7 +21,23 @@ type
    public
     constructor Create(AOwner : TComponent); reintroduce; overload;
     constructor Create(AOwner : TComponent; catalogId : Int64);  reintroduce; overload;
+    constructor Create(
+      AOwner : TComponent;
+      catalogId : Int64;
+      ACaption : String;
+      ALeft,
+      ATop : Integer;
+      AParent : TWinControl);  reintroduce; overload;
     constructor Create(AOwner : TComponent; catalogId : Int64; promotionId : Int64);  reintroduce; overload;
+    constructor Create(
+      AOwner : TComponent;
+      catalogId : Int64;
+      promotionId : Int64;
+      namePrefix : String;
+      ACaption : String;
+      ALeft,
+      ATop : Integer;
+      AParent : TWinControl);  reintroduce; overload;
     property CatalogId : Int64 read FCatalogId write FCatalogId;
     property PromotionId : Int64 read FPromotionId write FPromotionId;
   end;
@@ -70,6 +86,34 @@ constructor TPromotionLabel.Create(AOwner: TComponent);
 begin
   inherited;
   PrepareLabel;
+end;
+
+constructor TPromotionLabel.Create(AOwner: TComponent; catalogId: Int64;
+  ACaption: String; ALeft, ATop: Integer; AParent: TWinControl);
+begin
+  inherited Create(AOwner);
+  PrepareLabel;
+  FCatalogId := catalogId;
+  FPromotionId := 0;
+  Caption := ACaption;
+  Left := ALeft;
+  Top := ATop;
+  Parent := AParent;
+end;
+
+constructor TPromotionLabel.Create(AOwner: TComponent; catalogId,
+  promotionId: Int64; namePrefix, ACaption: String; ALeft, ATop: Integer;
+  AParent: TWinControl);
+begin
+  inherited Create(AOwner);
+  PrepareLabel;
+  FCatalogId := catalogId;
+  FPromotionId := promotionId;
+  Name := namePrefix + IntToStr(FPromotionId);
+  Caption := ACaption;
+  Left := ALeft;
+  Top := ATop;
+  Parent := AParent;
 end;
 
 end.

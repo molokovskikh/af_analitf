@@ -96,6 +96,7 @@ type
     procedure sbShowSynonymMNNClick(Sender: TObject);
     procedure actShowSynonymMNNExecute(Sender: TObject);
     procedure actUseFormsUpdate(Sender: TObject);
+    procedure adsCatalogAfterScroll(DataSet: TDataSet);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -116,7 +117,8 @@ type
     GotoFromMNNSearch : Boolean;
     namesFrame : TframePosition;
     formsFrame : TframePosition;
-    pAdvertising : TPanel;
+    pAdvertisingOldCatalog : TPanel;
+    pAdvertisingNewCatalog : TPanel;
     pPromotions : TPanel;
     gbPromotions : TGroupBox;
     sbShowPromotion : TSpeedButton;
@@ -130,7 +132,7 @@ type
     procedure DeleteLastMNNFilter;
     procedure SaveActionStates;
     procedure PrepareAdvertisingPanel;
-    procedure PreparePromotionText;
+    procedure PreparePromotionText(promoCatalogId, promoCount : Integer);
   public
     procedure ShowForm; override;
     procedure SetCatalog;
@@ -316,8 +318,8 @@ begin
   if not DM.adsUser.FieldByName('ShowAdvertising').IsNull
     and not DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
-    pAdvertising.Visible := False;
-    pWebBrowserCatalog.Visible := False;
+    pAdvertisingOldCatalog.Visible := False;
+    pAdvertisingNewCatalog.Visible := False;
   end;
   InternalMnnId := -1;
   sbShowSynonymMNN.Down := False;
@@ -609,30 +611,31 @@ procedure TNamesFormsForm.adsFormsAfterScroll(DataSet: TDataSet);
 var
   rowHeight : Integer;
 begin
-  if Assigned(pAdvertising) and
+  if Assigned(pAdvertisingOldCatalog) and
    (DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean)
   then begin
     rowHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgForms);
-    if (adsForms.RecordCount > 0) and ((adsForms.RecordCount*rowHeight)/(pClient.Height-pAdvertising.Height) > 13/10) then
-      pAdvertising.Visible := False
+    if (adsForms.RecordCount > 0) and ((adsForms.RecordCount*rowHeight)/(pClient.Height-pAdvertisingOldCatalog.Height) > 13/10) then
+      pAdvertisingOldCatalog.Visible := False
     else begin
-      if not pAdvertising.Visible then begin
-        pAdvertising.Visible := True;
-        formsFrame.Top := pAdvertising.Top - (formsFrame.Height + 1);
+      if not pAdvertisingOldCatalog.Visible then begin
+        pAdvertisingOldCatalog.Visible := True;
+        formsFrame.Top := pAdvertisingOldCatalog.Top - (formsFrame.Height + 1);
         namesFrame.Top := formsFrame.Top - (namesFrame.Height + 1);
       end;
     end;
   end;
-  if Assigned(pAdvertising) and pAdvertising.Visible and adsForms.Active and not adsForms.IsEmpty
+  if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
   then begin
     if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then begin
-      PreparePromotionText;
+      PreparePromotionText(
+        adsForms.FieldByName('FullCode').AsInteger,
+        adsForms.FieldByName('PromotionsCount').AsInteger);
       pPromotions.Visible := True;
       pPromotions.BringToFront;
     end
-    else begin
+    else
       pPromotions.Visible := False;
-    end;
   end;
 {$ifdef DEBUG}
   if adsForms.Active and not adsForms.IsEmpty then
@@ -725,6 +728,7 @@ begin
     +'  CATALOGS.fullcode, '
     +'  CATALOGS.form, '
     +'  CATALOGS.COREEXISTS, '
+    +'  catalogs.PromotionsCount, '
     +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
     +'  CATALOGS.DescriptionId, '
     +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
@@ -812,6 +816,7 @@ begin
       +'  CATALOGS.fullcode, '
       +'  CATALOGS.form, '
       +'  CATALOGS.COREEXISTS, '
+      +'  catalogs.PromotionsCount, '
       +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
       +'  CATALOGS.DescriptionId, '
       +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
@@ -907,10 +912,12 @@ procedure TNamesFormsForm.SetGrids;
 begin
   actUseForms.Visible := not actNewSearch.Checked;
   if actNewSearch.Checked then begin
+    pPromotions.Parent := pAdvertisingNewCatalog;
     pnlTop.BringToFront;
     SetCatalog;
   end
   else begin
+    pPromotions.Parent := pAdvertisingOldCatalog;
     pnlTopOld.BringToFront;
     SetNamesParams;
     SetFormsParams;
@@ -1226,20 +1233,32 @@ procedure TNamesFormsForm.PrepareAdvertisingPanel;
 var
   oldTop : Integer;
 begin
-  pAdvertising := TPanel.Create(Self);
-  pAdvertising.Parent := pWebBrowser.Parent;
-  pAdvertising.Name := 'pAdvertising';
-  pAdvertising.Caption := '';
-  pAdvertising.Height := pWebBrowser.Height;
+  pAdvertisingOldCatalog := TPanel.Create(Self);
+  pAdvertisingOldCatalog.Parent := pWebBrowser.Parent;
+  pAdvertisingOldCatalog.Name := 'pAdvertisingOldCatalog';
+  pAdvertisingOldCatalog.Caption := '';
+  pAdvertisingOldCatalog.Height := pWebBrowser.Height;
   oldTop := pWebBrowser.Top;
-  pAdvertising.Align := pWebBrowser.Align;
-  pWebBrowser.Parent := pAdvertising;
+  pAdvertisingOldCatalog.Align := pWebBrowser.Align;
+  pWebBrowser.Parent := pAdvertisingOldCatalog;
   pWebBrowser.Align := alClient;
-  pAdvertising.Top := oldTop;
-  pAdvertising.ControlStyle := pAdvertising.ControlStyle - [csParentBackground] + [csOpaque];
+  pAdvertisingOldCatalog.Top := oldTop;
+  pAdvertisingOldCatalog.ControlStyle := pAdvertisingOldCatalog.ControlStyle - [csParentBackground] + [csOpaque];
+
+  pAdvertisingNewCatalog := TPanel.Create(Self);
+  pAdvertisingNewCatalog.Parent := pWebBrowserCatalog.Parent;
+  pAdvertisingNewCatalog.Name := 'pAdvertisingNewCatalog';
+  pAdvertisingNewCatalog.Caption := '';
+  pAdvertisingNewCatalog.Height := pWebBrowserCatalog.Height;
+  oldTop := pWebBrowserCatalog.Top;
+  pAdvertisingNewCatalog.Align := pWebBrowserCatalog.Align;
+  pWebBrowserCatalog.Parent := pAdvertisingNewCatalog;
+  pWebBrowserCatalog.Align := alClient;
+  pAdvertisingNewCatalog.Top := oldTop;
+  pAdvertisingNewCatalog.ControlStyle := pAdvertisingNewCatalog.ControlStyle - [csParentBackground] + [csOpaque];
 
   pPromotions := TPanel.Create(Self);
-  pPromotions.Parent := pAdvertising;
+  pPromotions.Parent := pAdvertisingOldCatalog;
   pPromotions.Visible := False;
   pPromotions.Align := alClient;
   pPromotions.Name := 'pPromotions';
@@ -1258,7 +1277,7 @@ begin
   lPromotionInfo.Parent := gbPromotions;
 end;
 
-procedure TNamesFormsForm.PreparePromotionText;
+procedure TNamesFormsForm.PreparePromotionText(promoCatalogId, promoCount : Integer);
 const
   startLeft = 10;
   startTop = 20;
@@ -1293,17 +1312,19 @@ begin
 '  Catalogs.FullCode = :CatalogId ' +
 ' order by Providers.ShortName';
 
-  DM.adsQueryValue.ParamByName('CatalogId').Value := adsForms.FieldByName('FullCode').AsInteger;
+  DM.adsQueryValue.ParamByName('CatalogId').Value := promoCatalogId;
   DM.adsQueryValue.Open;
   try
-  if adsForms.FieldByName('PromotionsCount').AsInteger = 1 then begin
+  if promoCount = 1 then begin
     gbPromotions.Caption := ' Акция поставщика ';
 
-    lproviderInfo := TPromotionLabel.Create(Self, adsForms.FieldByName('FullCode').AsInteger);
-    lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
-    lproviderInfo.Left := startLeft;
-    lproviderInfo.Top := startTop;
-    lproviderInfo.Parent := gbPromotions;
+    lproviderInfo := TPromotionLabel.Create(
+      Self,
+      promoCatalogId,
+      DM.adsQueryValue.FieldByName('ShortName').AsString,
+      startLeft,
+      startTop,
+      gbPromotions);
 
     lPromotionInfo.Caption := DM.adsQueryValue.FieldByName('Annotation').AsString;
     lPromotionInfo.Left := startLeft;
@@ -1314,26 +1335,28 @@ begin
     gbPromotions.Caption := ' Акции поставщиков ';
     lPromotionInfo.Visible := False;
 
-    lproviderInfo := TPromotionLabel.Create(Self,
-      adsForms.FieldByName('FullCode').AsInteger,
-      DM.adsQueryValue.FieldByName('Id').AsInteger);
-    lproviderInfo.Name := 'lproviderInfo' + DM.adsQueryValue.FieldByName('Id').AsString;
-    lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
-    lproviderInfo.Left := startLeft;
-    lproviderInfo.Top := startTop;
-    lproviderInfo.Parent := gbPromotions;
+    lproviderInfo := TPromotionLabel.Create(
+      Self,
+      promoCatalogId,
+      DM.adsQueryValue.FieldByName('Id').AsInteger,
+      'lproviderInfo',
+      DM.adsQueryValue.FieldByName('ShortName').AsString,
+      startLeft,
+      startTop,
+      gbPromotions);
     nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
 
     DM.adsQueryValue.Next;
     while not DM.adsQueryValue.Eof do begin
-      lproviderInfo := TPromotionLabel.Create(Self,
-        adsForms.FieldByName('FullCode').AsInteger,
-        DM.adsQueryValue.FieldByName('Id').AsInteger);
-      lproviderInfo.Name := 'lproviderInfo' + DM.adsQueryValue.FieldByName('Id').AsString;
-      lproviderInfo.Caption := DM.adsQueryValue.FieldByName('ShortName').AsString;
-      lproviderInfo.Left := nextLeft;
-      lproviderInfo.Top := startTop;
-      lproviderInfo.Parent := gbPromotions;
+      lproviderInfo := TPromotionLabel.Create(
+        Self,
+        promoCatalogId,
+        DM.adsQueryValue.FieldByName('Id').AsInteger,
+        'lproviderInfo',
+        DM.adsQueryValue.FieldByName('ShortName').AsString,
+        nextLeft,
+        startTop,
+        gbPromotions);
       nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
 
       DM.adsQueryValue.Next;
@@ -1341,6 +1364,22 @@ begin
   end;
   finally
     DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TNamesFormsForm.adsCatalogAfterScroll(DataSet: TDataSet);
+begin
+  if Assigned(pAdvertisingNewCatalog) and pAdvertisingNewCatalog.Visible and adsCatalog.Active and not adsCatalog.IsEmpty
+  then begin
+    if adsCatalog.FieldByName('PromotionsCount').AsInteger > 0 then begin
+      PreparePromotionText(
+        adsCatalog.FieldByName('FullCode').AsInteger,
+        adsCatalog.FieldByName('PromotionsCount').AsInteger);
+      pPromotions.Visible := True;
+      pPromotions.BringToFront;
+    end
+    else
+      pPromotions.Visible := False;
   end;
 end;
 
