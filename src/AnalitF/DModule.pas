@@ -1511,6 +1511,7 @@ begin
     SQL.Text:='truncate minreqrules;'; Execute;
     MainForm.StatusText:='Очищаются акции поставщиков';
     SQL.Text:='truncate SupplierPromotions;'; Execute;
+    SQL.Text:='truncate PromotionCatalogs;'; Execute;
     MainForm.StatusText:='Очищается время сжатия базы данных';
     SQL.Text:='update params set LastCompact = now() where ID = 0;'; Execute;
 

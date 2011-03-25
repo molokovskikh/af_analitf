@@ -134,6 +134,8 @@ private
   procedure ImportData;
   procedure ImportBatchReport;
   procedure ImportDocs;
+  procedure ClearPromotions;
+  procedure ProcessPromoFileState(promoFileName : String);
   procedure CheckNewExe;
   procedure CheckNewMDB;
   procedure CheckNewFRF;
@@ -1709,6 +1711,11 @@ begin
     SQL.Text := GetLoadDataSQL('Providers', RootFolder()+SDirIn+'\Providers.txt');
     InternalExecute;
   end;
+  if (utPromotionCatalogs in UpdateTables)
+    or (utSupplierPromotions in UpdateTables)
+    or (utProviders in UpdateTables)
+  then
+    ClearPromotions;
   if utDelayOfPayments in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('DelayOfPayments', RootFolder()+SDirIn+'\DelayOfPayments.txt');
     InternalExecute;
@@ -3694,6 +3701,97 @@ begin
     DatabaseController.FreeMySQLLib(
       'MySql Clients Count перед созданием базы данных',
       'FreeMySqlLibOnRestore');
+end;
+
+procedure TExchangeThread.ClearPromotions;
+var
+  SR: TSearchrec;
+  FFileList : TStringList;
+  I : Integer;
+begin
+  //Удаляем акции, по которым нет поставщиков
+  DM.adcUpdate.SQL.Text:='' +
+    ' DELETE FROM SupplierPromotions ' +
+    ' using ' +
+    '   SupplierPromotions ' +
+    '   left join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
+    ' WHERE ' +
+    '     (SupplierPromotions.SupplierId is not null) ' +
+    ' and (Providers.FirmCode is null);';
+  InternalExecute;
+  //Удаляем связи, по которым нет записей в каталоге
+  DM.adcUpdate.SQL.Text:='' +
+    ' DELETE FROM PromotionCatalogs ' +
+    ' using ' +
+    '   PromotionCatalogs ' +
+    '   left join Catalogs on Catalogs.FullCode = PromotionCatalogs.CatalogId ' +
+    ' WHERE ' +
+    '     (PromotionCatalogs.CatalogId is not null) ' +
+    ' and (Catalogs.FullCode is null);';
+  InternalExecute;
+  //Удаляем связи, по которым нет записей в списке акций
+  DM.adcUpdate.SQL.Text:='' +
+    ' DELETE FROM PromotionCatalogs ' +
+    ' using ' +
+    '   PromotionCatalogs ' +
+    '   left join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
+    ' WHERE ' +
+    '     (PromotionCatalogs.CatalogId is not null) ' +
+    ' and (SupplierPromotions.Id is null);';
+  InternalExecute;
+
+  FFileList := TStringList.Create;
+  try
+    try
+      if SysUtils.FindFirst(RootFolder() + SDirPromotions + '\*.*', faAnyFile - faDirectory, SR ) = 0
+      then
+        repeat
+          FFileList.Add(RootFolder() + SDirPromotions + '\' + SR.Name);
+        until FindNext(SR)<>0;
+    finally
+      SysUtils.FindClose(SR);
+    end;
+
+    if FFileList.Count > 0 then
+      for I := 0 to FFileList.Count-1 do
+        ProcessPromoFileState(FFileList[i]);
+  finally
+    FFileList.Free;
+  end;
+end;
+
+procedure TExchangeThread.ProcessPromoFileState(promoFileName: String);
+var
+  shortName : String;
+  index : Integer;
+  promotionId : String;
+  promoExists : Boolean;
+  id : Variant;
+begin
+  shortName := ChangeFileExt(ExtractFileName(promoFileName), '');
+  index := Pos('_', shortName);
+  if index <= 0 then
+    promotionId := shortName
+  else
+    promotionId := LeftStr(shortName, index-1);
+  promoExists := StrToIntDef(promotionId, 0) > 0;
+  if promoExists then begin
+    id := DM.QueryValue(
+      'select Id from SupplierPromotions where Id = :Id',
+      ['Id'],
+      [promotionId]);
+    promoExists := not VarIsNull(id) and (id > 0);
+  end;
+
+  if not promoExists then
+    try
+      OSDeleteFile(promoFileName);
+    except
+      on E : Exception do
+        WriteExchangeLog('ImportData',
+          'Ошибка при удалении файла промо-акции ' + shortName + ': ' +
+          E.Message);
+    end;
 end;
 
 initialization
