@@ -142,7 +142,10 @@ uses
   GlobalSettingParams in '..\Common\GlobalParams\GlobalSettingParams.pas',
   MyEmbConnectionEx in '..\Common\DataLayer\MyEmbConnectionEx.pas',
   U_ShowPromotionsForm in 'U_ShowPromotionsForm.pas' {ShowPromotionsForm},
-  PromotionLabel in 'Helpers\PromotionLabel.pas';
+  PromotionLabel in 'Helpers\PromotionLabel.pas',
+  U_SupplierPromotion in '..\Common\Models\U_SupplierPromotion.pas',
+  VCLHelper in 'Helpers\VCLHelper.pas',
+  U_framePromotion in 'Views\U_framePromotion.pas' {framePromotion: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}

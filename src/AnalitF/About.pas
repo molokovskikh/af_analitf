@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Buttons, DBCtrls, ShellApi, U_VistaCorrectForm;
+  Dialogs, ExtCtrls, StdCtrls, Buttons, DBCtrls, ShellApi, U_VistaCorrectForm,
+  VCLHelper;
 
 type
   TAboutForm = class(TVistaCorrectForm)
@@ -29,7 +30,6 @@ type
     procedure GetVersionInformation(var Version, LegalCopyright: String);
     procedure FillEmails;
     procedure IncreaseMemo;
-    function GetNeedHeight(Memo: TMemo): Integer;
   public
     { Public declarations }
   end;
@@ -146,7 +146,7 @@ var
 begin
   try
     if mEmails.Lines.Count > 0 then begin
-      newHeight := GetNeedHeight(mEmails);
+      newHeight := TVCLHelper.GetMemoNeedHeight(mEmails);
       diffHeight := newHeight - mEmails.Height;
       if diffHeight > 0 then begin
         Self.Height := Self.Height + diffHeight;
@@ -159,28 +159,6 @@ begin
     on E : Exception do
       WriteExchangeLog('AboutForm', 'Ошибка вычислении новой высоты mEmails: ' + E.Message);
   end;
-end;
-
-function TAboutForm.GetNeedHeight(Memo: TMemo): Integer;
-var
-  OldFont: HFont;
-  Hand: THandle;
-  TM: TTextMetric;
-  tempint: integer;
-begin
-  Hand:= GetDC(Memo.Handle);
-  try
-    OldFont:= SelectObject(Hand, Memo.Font.Handle);
-    try
-      GetTextMetrics(Hand, TM);
-      tempint := (Memo.Lines.Count + 2)* (TM.tmHeight + TM.tmExternalLeading);
-    finally
-      SelectObject(Hand, OldFont);
-    end;
-  finally
-    ReleaseDC(Memo.Handle, Hand);
-  end;
-  Result:= tempint;
 end;
 
 procedure TAboutForm.FormShow(Sender: TObject);

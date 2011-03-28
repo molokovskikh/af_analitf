@@ -1956,15 +1956,16 @@ begin
 'update ' +
 '  catalogs, ' +
 '  (select ' +
-'      pc.CatalogId, count(*) PCount ' +
+'      Catalogs.ShortCode, count(*) PCount ' +
 ' from ' +
 '   SupplierPromotions promo ' +
 '   join Providers on FirmCode = promo.SupplierId ' +
 '   join PromotionCatalogs pc on pc.PromotionId = promo.Id ' +
-' group by pc.CatalogId ) ' +
+'   join Catalogs on Catalogs.FullCode = pc.CatalogId ' +
+' group by Catalogs.ShortCode ) ' +
 '   as PromoCounts ' +
 ' set catalogs.PromotionsCount = PromoCounts.PCount ' +
-' where catalogs.FullCode = PromoCounts.CatalogId';
+' where catalogs.ShortCode = PromoCounts.ShortCode';
   InternalExecute;
 {$ifdef DEBUG}
   WriteExchangeLog('Import', Format('Catalogs RowAffected = %d', [RowsAffected]));

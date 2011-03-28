@@ -13,31 +13,21 @@ uses
   SHDocVw,
   MyAccess,
   AProc,
+  VCLHelper,
   DModule,
-  U_VistaCorrectForm;
+  U_VistaCorrectForm,
+  U_SupplierPromotion,
+  U_DBMapping;
 
 type
-  TSupplierPromotion = class
-   protected
-    function PromotionFileExists(fileExt : String) : Boolean;
+  TDisplayedPromotion = class
    public
-    PromotionId : Int64;
-    SupplierShortName : String;
-    Annotation : String;
+    Promotion : TSupplierPromotion;
     Sheet : TTabSheet;
 
-    constructor Create(
-      APromotionId : Int64;
-      ASupplierShortName : String;
-      AAnnotation : String);
+    constructor Create(promotion : TSupplierPromotion);
 
-    function PromotionFileName(fileExt : String) : String;
-    function HtmlExists() : Boolean;
-    function JpgExists() : Boolean;
-    function TxtExists() : Boolean;
-    function PromotionHtml() : String;
-    function PromotionJpg() : String;
-    function PromotionTxt() : String;
+    function PromotionId() : Int64;
   end;
 
 
@@ -50,7 +40,7 @@ type
   protected
     FCatalogId : Int64;
     FPromotionId : Int64;
-    FSelectedPromotion : TSupplierPromotion;
+    FSelectedPromotion : TDisplayedPromotion;
 
     FPromotionList : TObjectList;
   public
@@ -58,16 +48,81 @@ type
     pcPromotions : TPageControl;
 
     procedure Prepare(catalogId : Int64; promotionId : Int64);
-    function CreatePromotion(query : TMyQuery) : TSupplierPromotion;
+    function CreatePromotion(promotion : TSupplierPromotion) : TDisplayedPromotion;
   end;
 
   procedure ShowPromotions(catalogId : Int64); overload;
   procedure ShowPromotions(catalogId : Int64; promotionId : Int64); overload;
 
+  function GetPromoInfoControl(promotion : TSupplierPromotion; Owner : TComponent; Parent : TWinControl) : TControl;
+
 implementation
 
 {$R *.dfm}
 
+function GetPromoInfoControl(promotion : TSupplierPromotion; Owner : TComponent; Parent : TWinControl) : TControl;
+var
+  osPromoFile : String;
+  mCurrent : TMemo;
+
+  iImage : TImage;
+  jpg: TJpegImage;
+
+  pWebBrowser : TPanel;
+  iWebBrowser : TWebBrowser;
+begin
+  Result := nil;
+  osPromoFile := RootFolder() + SDirPromotions + '\' + promotion.GetPromoFile();
+  if (FileExists(osPromoFile)) then begin
+    if promotion.HtmlExists() then begin
+      pWebBrowser := TPanel.Create(Owner);
+      pWebBrowser.Name := 'pWebBrowser' + IntToStr(promotion.Id);
+      pWebBrowser.Caption := '';
+      pWebBrowser.Align := alClient;
+      pWebBrowser.BevelOuter := bvNone;
+      pWebBrowser.Parent := Parent;
+
+      iWebBrowser := TWebBrowser.Create(Owner);
+      TWinControl(iWebBrowser).Name := 'iWebBrowser' + IntToStr(promotion.Id);
+      TWinControl(iWebBrowser).Parent := pWebBrowser;
+      TWinControl(iWebBrowser).Align := alClient;
+
+      iWebBrowser.Navigate(osPromoFile);
+      Result := pWebBrowser;
+    end
+    else
+      if promotion.JpgExists() then begin
+        iImage := TImage.Create(Owner);
+        iImage.Name := 'iImage' + IntToStr(promotion.Id);
+        iImage.Parent := Parent;
+        iImage.Align := alClient;
+        iImage.AutoSize := False;
+        iImage.Center := True;
+        iImage.Proportional := True;
+        jpg := TJpegImage.Create;
+        try
+          jpg.LoadFromFile(osPromoFile);
+          iImage.Constraints.MaxHeight := jpg.Height;
+          iImage.Constraints.MaxWidth := jpg.Width;
+          iImage.Picture.Bitmap.Assign(jpg);
+        finally
+          jpg.Free;
+        end;
+        Result := iImage;
+      end
+      else
+        if promotion.TxtExists() then begin
+          mCurrent := TMemo.Create(Owner);
+          mCurrent.Name := 'mCurrent' + IntToStr(promotion.Id);
+          mCurrent.Parent := Parent;
+          mCurrent.ReadOnly := True;
+          mCurrent.Align := alClient;
+          mCurrent.Lines.LoadFromFile(osPromoFile);
+          mCurrent.Constraints.MaxHeight := TVCLHelper.GetMemoNeedHeight(mCurrent);
+          Result := mCurrent;
+        end;
+  end;
+end;
 procedure ShowPromotions(catalogId : Int64);
 begin
   ShowPromotions(catalogId, 0);
@@ -94,7 +149,11 @@ end;
 
 procedure TShowPromotionsForm.Prepare(catalogId: Int64; promotionId : Int64);
 var
-  currentPromotion : TSupplierPromotion;
+  currentPromotion : TDisplayedPromotion;
+
+  list : TObjectList;
+  I : Integer;
+  dbPromotion : TSupplierPromotion;
 begin
   FPromotionList := TObjectList.Create(True);
   FCatalogId := catalogId;
@@ -106,36 +165,25 @@ begin
   pcPromotions.Parent := Self;
   Self.Caption := 'Акции по препарату';
 
-  DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := '' +
-' select ' +
-'   concat(Catalogs.Name, '' '', Catalogs.Form) as FullName, ' +
-'   SupplierPromotions.Id, ' +
-'   SupplierPromotions.Annotation, ' +
-'   Providers.ShortName ' +
-' from ' +
-'  Catalogs ' +
-'  join PromotionCatalogs on PromotionCatalogs.CatalogId = Catalogs.FullCode ' +
-'  join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
-'  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
-' where ' +
-'  Catalogs.FullCode = :CatalogId ' +
-' order by Providers.ShortName';
-
-  DM.adsQueryValue.ParamByName('CatalogId').Value := catalogId;
-  DM.adsQueryValue.Open;
+  list := TDBMapping.GetPromotionsByCatalogId(DM.MainConnection, catalogId);
+  list.OwnsObjects := False;
   try
-    Self.Caption := 'Акции по препарату ' + DM.adsQueryValue.FieldByName('FullName').AsString;
-    while not DM.adsQueryValue.Eof do begin
-      currentPromotion := CreatePromotion(DM.adsQueryValue);
+    if list.Count > 0 then begin
+      Self.Caption := 'Акции по препарату ' + TSupplierPromotion(list[0]).CatalogFullName;
 
-      if currentPromotion.PromotionId = promotionId then
-        FSelectedPromotion := currentPromotion;
+      for I := 0 to list.Count-1 do begin
+        dbPromotion := TSupplierPromotion(list[i]);
 
-      DM.adsQueryValue.Next;
+        currentPromotion := CreatePromotion(dbPromotion);
+
+        if currentPromotion.PromotionId = promotionId then
+          FSelectedPromotion := currentPromotion;
+
+      end;
+
     end;
   finally
-    DM.adsQueryValue.Close;
+    list.Free;
   end;
 
   if Assigned(FSelectedPromotion) then
@@ -152,27 +200,19 @@ begin
 end;
 
 function TShowPromotionsForm.CreatePromotion(
-  query: TMyQuery): TSupplierPromotion;
+  promotion : TSupplierPromotion): TDisplayedPromotion;
 var
   gbDesc : TGroupBox;
   lDesc : TLabel;
-  mCurrent : TMemo;
 
-  iImage : TImage;
-  jpg: TJpegImage;
-
-  pWebBrowser : TPanel;
-  iWebBrowser : TWebBrowser;
+  promoControl : TControl;
 begin
-  Result := TSupplierPromotion.Create(
-    query.FieldByName('Id').AsInteger,
-    query.FieldByName('ShortName').AsString,
-    query.FieldByName('Annotation').AsString);
+  Result := TDisplayedPromotion.Create(promotion);
   FPromotionList.Add(Result);
 
   Result.Sheet := TTabSheet.Create(Self);
   Result.Sheet.PageControl := pcPromotions;
-  Result.Sheet.Caption := Result.SupplierShortName;
+  Result.Sheet.Caption := promotion.SupplierShortName;
 
   gbDesc := TGroupBox.Create(Self);
   gbDesc.Parent := Result.Sheet;
@@ -183,105 +223,27 @@ begin
   lDesc.Parent := gbDesc;
   lDesc.Left := 10;
   lDesc.Top := 15;
-  lDesc.Caption := Result.Annotation;
+  lDesc.Caption := promotion.Annotation;
 
   gbDesc.Height := 2*lDesc.Top + lDesc.Height;
 
-  if Result.HtmlExists() then begin
-    pWebBrowser := TPanel.Create(Self);
-    pWebBrowser.Name := 'pWebBrowser' + IntToStr(Result.PromotionId);
-    pWebBrowser.Caption := '';
-    pWebBrowser.Align := alClient;
-    pWebBrowser.BevelOuter := bvNone;
-    pWebBrowser.Parent := Result.Sheet;
-
-    iWebBrowser := TWebBrowser.Create(Self);
-    TWinControl(iWebBrowser).Name := 'iWebBrowser' + IntToStr(Result.PromotionId);
-    TWinControl(iWebBrowser).Parent := pWebBrowser;
-    TWinControl(iWebBrowser).Align := alClient;
-
-    iWebBrowser.Navigate(Result.PromotionHtml());
-  end
-  else
-    if Result.JpgExists() then begin
-      iImage := TImage.Create(Self);
-      iImage.Parent := Result.Sheet;
-      iImage.Align := alClient;
-      iImage.AutoSize := False;
-      iImage.Center := True;
-      iImage.Proportional := True;
-      jpg := TJpegImage.Create;
-      try
-        jpg.LoadFromFile(Result.PromotionJpg());
-        iImage.Picture.Bitmap.Assign(jpg);
-      finally
-        jpg.Free;
-      end;
-    end
-    else
-      if Result.TxtExists() then begin
-        mCurrent := TMemo.Create(Self);
-        mCurrent.Parent := Result.Sheet;
-        mCurrent.ReadOnly := True;
-        mCurrent.Align := alClient;
-        mCurrent.Lines.LoadFromFile(Result.PromotionTxt());
-      end;
+  promoControl := GetPromoInfoControl(promotion, Self, Result.Sheet);
+  if Assigned(promoControl) then begin
+    promoControl.Constraints.MaxHeight := 0;
+    promoControl.Constraints.MaxWidth := 0;
+  end;
 end;
 
-{ TSupplierPromotion }
+{ TDisplayedPromotion }
 
-constructor TSupplierPromotion.Create(APromotionId: Int64;
-  ASupplierShortName, AAnnotation: String);
+constructor TDisplayedPromotion.Create(promotion : TSupplierPromotion);
 begin
-  PromotionId := APromotionId;
-  SupplierShortName := ASupplierShortName;
-  Annotation := AAnnotation;
+  Self.Promotion := promotion;
 end;
 
-function TSupplierPromotion.HtmlExists: Boolean;
+function TDisplayedPromotion.PromotionId: Int64;
 begin
-  Result := PromotionFileExists('.htm') or PromotionFileExists('.html');
-end;
-
-function TSupplierPromotion.JpgExists: Boolean;
-begin
-  Result := PromotionFileExists('.jpg') or PromotionFileExists('.jpeg');
-end;
-
-function TSupplierPromotion.PromotionFileExists(fileExt: String): Boolean;
-begin
-  Result := FileExists(PromotionFileName(fileExt));
-end;
-
-function TSupplierPromotion.PromotionFileName(fileExt: String): String;
-begin
-  Result := RootFolder() + SDirPromotions + '\' + IntToStr(PromotionId) + fileExt;
-end;
-
-function TSupplierPromotion.PromotionHtml: String;
-begin
-  if PromotionFileExists('.htm') then
-    Result := PromotionFileName('.htm')
-  else
-    Result := PromotionFileName('.html');
-end;
-
-function TSupplierPromotion.PromotionJpg: String;
-begin
-  if PromotionFileExists('.jpg') then
-    Result := PromotionFileName('.jpg')
-  else
-    Result := PromotionFileName('.jpeg');
-end;
-
-function TSupplierPromotion.PromotionTxt: String;
-begin
-  Result := PromotionFileName('.txt');
-end;
-
-function TSupplierPromotion.TxtExists: Boolean;
-begin
-  Result := PromotionFileExists('.txt');
+  Result := Promotion.Id;
 end;
 
 procedure TShowPromotionsForm.FormDestroy(Sender: TObject);

@@ -10,14 +10,18 @@ uses
   DB,
   MyAccess,
   DBProc,
+  U_ExchangeLog,
   U_Address,
   U_Offer,
   U_CurrentOrderHead,
   U_CurrentOrderItem,
-  U_Supplier;
+  U_Supplier,
+  U_SupplierPromotion;
 
 type
   TDBMapping = class
+   private
+     class function CreatePromotion(dataSet : TMyQuery) : TSupplierPromotion;
    public
     class function GetSqlDataSet(
       connection: TCustomMyConnection;
@@ -41,6 +45,12 @@ type
     class function GetAddresses(connection : TCustomMyConnection) : TObjectList;
 
     class function GetSuppliers(connection : TCustomMyConnection) : TObjectList;
+
+    class function GetSqlDataSetPromotionsByNameId(connection : TCustomMyConnection; nameId : Int64) : TMyQuery;
+
+    class function GetPromotionsByCatalogId(connection : TCustomMyConnection; catalogId : Int64) : TObjectList;
+
+    class function GetSinglePromotionByNameId(connection : TCustomMyConnection; nameId : Int64) : TSupplierPromotion;
   end;
 
 implementation
@@ -48,6 +58,24 @@ implementation
 uses Variants;
 
 { TDBMapping }
+
+class function TDBMapping.CreatePromotion(
+  dataSet: TMyQuery): TSupplierPromotion;
+begin
+  Result := TSupplierPromotion.Create();
+  Result.Id := dataSet['Id'];
+  Result.Name := VarToStr(dataSet['Name']);
+  Result.Annotation := VarToStr(dataSet['Annotation']);
+  Result.PromoFile := VarToStr(dataSet['PromoFile']);
+
+  Result.CatalogId := dataSet['CatalogId'];
+  Result.CatalogName := VarToStr(dataSet['CatalogName']);
+  Result.CatalogForm := VarToStr(dataSet['CatalogForm']);
+  Result.CatalogFullName := VarToStr(dataSet['CatalogFullName']);
+
+  Result.SupplierId := dataSet['SupplierId'];
+  Result.SupplierShortName := VarToStr(dataSet['SupplierShortName']);
+end;
 
 class function TDBMapping.GetAddresses(
   connection: TCustomMyConnection): TObjectList;
@@ -481,6 +509,81 @@ begin
   end;
 end;
 
+class function TDBMapping.GetPromotionsByCatalogId(
+  connection: TCustomMyConnection; catalogId: Int64): TObjectList;
+var
+  dataSet : TMyQuery;
+  promotion : TSupplierPromotion;
+begin
+  dataSet := GetSqlDataSet(
+    connection,
+' select ' +
+'   SupplierPromotions.Id, ' +
+'   SupplierPromotions.Name, ' +
+'   SupplierPromotions.Annotation, ' +
+'   SupplierPromotions.PromoFile, ' +
+
+'   Catalogs.FullCode as CatalogId, ' +
+'   Catalogs.Name as CatalogName, ' +
+'   Catalogs.Form as CatalogForm, ' +
+'   concat(Catalogs.Name, '' '', Catalogs.Form) as CatalogFullName, ' +
+
+'   Providers.FirmCode as SupplierId, ' +
+'   Providers.ShortName as SupplierShortName ' +
+' from ' +
+'  Catalogs ' +
+'  join PromotionCatalogs on PromotionCatalogs.CatalogId = Catalogs.FullCode ' +
+'  join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
+'  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
+' where ' +
+'  Catalogs.FullCode = :CatalogId ' +
+' order by Providers.ShortName',
+    ['CatalogId'],
+    [catalogId]);
+
+  Result := TObjectList.Create();
+  try
+    try
+      while not dataSet.Eof do begin
+        promotion := CreatePromotion(dataSet);
+        Result.Add(promotion);
+        dataSet.Next;
+      end;
+    finally
+      dataSet.Free;
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
+class function TDBMapping.GetSinglePromotionByNameId(
+  connection: TCustomMyConnection; nameId: Int64): TSupplierPromotion;
+var
+  dataSet : TMyQuery;
+  promotion : TSupplierPromotion;
+begin
+  Result := nil;
+  dataSet := GetSqlDataSetPromotionsByNameId(connection, nameId);
+
+  try
+    if dataSet.RecordCount > 0 then begin
+      if dataSet.RecordCount > 1 then
+        WriteExchangeLog('TDBMapping.GetSinglePromotionByNameId',
+          'Найдено больше одной записи в Promotion по nameId: ' +
+          IntToStr(nameId) +
+          '  RecountCount: ' + IntToStr(dataSet.RecordCount));
+      Result := CreatePromotion(dataSet);
+    end
+    else
+      WriteExchangeLog('TDBMapping.GetSinglePromotionByNameId',
+        'Не найдено записей в Promotion по nameId: ' + IntToStr(nameId));
+  finally
+    dataSet.Free;
+  end;
+end;
+
 class function TDBMapping.GetSqlDataSet(connection: TCustomMyConnection;
   SQL: String; Params: array of string;
   Values: array of Variant): TMyQuery;
@@ -505,6 +608,36 @@ begin
     raise;
   end;
   Result := adsQueryValue;
+end;
+
+class function TDBMapping.GetSqlDataSetPromotionsByNameId(
+  connection: TCustomMyConnection; nameId: Int64): TMyQuery;
+begin
+  Result := GetSqlDataSet(
+    connection,
+' select ' +
+'   SupplierPromotions.Id, ' +
+'   SupplierPromotions.Name, ' +
+'   SupplierPromotions.Annotation, ' +
+'   SupplierPromotions.PromoFile, ' +
+
+'   Catalogs.Id as CatalogId, ' +
+'   Catalogs.Name as CatalogName, ' +
+'   Catalogs.Form as CatalogForm, ' +
+'   concat(Catalogs.Name, '' '', Catalogs.Form) as CatalogFullName, ' +
+
+'   Providers.FirmCode as SupplierId, ' +
+'   Providers.ShortName as SupplierShortName ' +
+' from ' +
+'  Catalogs ' +
+'  join PromotionCatalogs on PromotionCatalogs.CatalogId = Catalogs.FullCode ' +
+'  join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
+'  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
+' where ' +
+'  Catalogs.ShortCode = :NameId ' +
+' order by Catalogs.Form, Providers.ShortName, SupplierPromotions.Name ',
+    ['NameId'],
+    [nameId]);
 end;
 
 class function TDBMapping.GetSuppliers(
