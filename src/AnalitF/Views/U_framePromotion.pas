@@ -42,12 +42,14 @@ type
 
     FLastNameId : Int64;
     FLastPromoCatalogId : Int64;
+    FLastPromotionId : Int64;
 
     procedure CreateVisualComponent;
     procedure ClearFrame;
     procedure UpdateContorls(nameId, promoCatalogId, promoCount : Integer);
     procedure HideClick(Sender : TObject);
     procedure PromotionsCellClick(Column : TColumnEh);
+    procedure OnImageClick(Sender : TObject);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -212,6 +214,7 @@ procedure TframePromotion.HidePromotion;
 begin
   FLastNameId := 0;
   FLastPromoCatalogId := 0;
+  FLastPromotionId := 0;
   Hide();
 end;
 
@@ -233,7 +236,6 @@ begin
 
     UpdateContorls(nameId, promoCatalogId, promoCount);
     FLastNameId := nameId;
-    FLastPromoCatalogId := promoCatalogId;
 
     Self.Visible := True;
     Self.BringToFront;
@@ -268,6 +270,9 @@ begin
 
       promotion := TDBMapping.GetSinglePromotionByNameId(DM.MainConnection, nameId);
       try
+        FLastPromotionId := promotion.Id;
+        FLastPromoCatalogId := promotion.CatalogId;
+        
         if promoCatalogId <> promotion.CatalogId then
           gbPromotions.Caption := ' Акция поставщика по препарату ' + promotion.CatalogFullName + ' ';
           
@@ -290,21 +295,24 @@ begin
         Self.Width := (FSingleParent.ClientWidth - 50);
         Self.Left := (FSingleParent.ClientWidth - Self.Width) div 2;
 
-        infoControl := GetPromoInfoControl(promotion, Self, pInfoControl);
         pInfoControl.Align := alClient;
         pInfoControl.Visible := True;
+        infoControl := GetPromoInfoControl(promotion, Self, pInfoControl);
         if not Assigned(infoControl) then begin
           pInfoControl.Constraints.MinHeight := 1;
           Self.Height := pHide.Height + pHeader.Height + 1;
         end
         else begin
-{
+
           if infoControl is TImage then
-            TImage(infoControl).OnClick := lproviderInfo.OnClick;
-}            
+            TImage(infoControl).OnClick := OnImageClick;
+            
           if infoControl.Constraints.MaxHeight > 0 then begin
             pInfoControl.Constraints.MinHeight := infoControl.Constraints.MaxHeight;
             infoControl.Constraints.MaxHeight := 0;
+            infoControl.Constraints.MaxWidth := 0;
+            infoControl.Align := alNone;
+            infoControl.Align := alClient;
             if Self.Height > (FSingleParent.ClientHeight div 3) * 2 then begin
               pInfoControl.Constraints.MinHeight := 20;
               Self.Height := (FSingleParent.ClientHeight div 3) * 2;
@@ -369,6 +377,12 @@ begin
       promoData.FieldByName('CatalogId').AsInteger,
       promoData.FieldByName('Id').AsInteger);
   end;
+end;
+
+procedure TframePromotion.OnImageClick(Sender: TObject);
+begin
+  if (Sender is TImage) and (FLastPromotionId > 0) then
+    ShowPromotions(FLastPromoCatalogId, FLastPromotionId); 
 end;
 
 end.
