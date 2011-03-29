@@ -1949,22 +1949,35 @@ begin
 
   SetStatusText('Импорт данных');
 
-  SQL.Text := 'update catalogs set CoreExists = 0, PromotionsCount = 0 where FullCode > 0'; InternalExecute;
+  SQL.Text := 'update catalogs set CoreExists = 0, PromotionsCount = 0, NamePromotionsCount = 0 where FullCode > 0'; InternalExecute;
   SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
   InternalExecute;
   SQL.Text :=
 'update ' +
 '  catalogs, ' +
 '  (select ' +
-'      Catalogs.ShortCode, count(*) PCount ' +
+'      pc.CatalogId, count(*) PCount ' +
 ' from ' +
 '   SupplierPromotions promo ' +
 '   join Providers on FirmCode = promo.SupplierId ' +
 '   join PromotionCatalogs pc on pc.PromotionId = promo.Id ' +
-'   join Catalogs on Catalogs.FullCode = pc.CatalogId ' +
-' group by Catalogs.ShortCode ) ' +
+'   group by pc.CatalogId ) ' +
 '   as PromoCounts ' +
 ' set catalogs.PromotionsCount = PromoCounts.PCount ' +
+' where catalogs.FullCode = PromoCounts.CatalogId';
+  InternalExecute;
+  SQL.Text :=
+'update ' +
+'  catalogs, ' +
+'  (select ' +
+'      cat.ShortCode, sum(cat.PromotionsCount) PCount ' +
+' from ' +
+'   catalogs cat ' +
+'   where ' +
+'     cat.PromotionsCount > 0 ' +
+'   group by cat.ShortCode ) ' +
+'   as PromoCounts ' +
+' set catalogs.NamePromotionsCount = PromoCounts.PCount ' +
 ' where catalogs.ShortCode = PromoCounts.ShortCode';
   InternalExecute;
 {$ifdef DEBUG}

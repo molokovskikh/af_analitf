@@ -483,6 +483,7 @@ begin
 +'    `Hidden`           tinyint(1) not null      , '
 +'    `COREEXISTS`       tinyint(1) not null      , '
 +'    `PromotionsCount`  int not null default ''0'', '
++'    `NamePromotionsCount`  int not null default ''0'', '
 +'    primary key (`FULLCODE`)                    , '
 +'    unique key `PK_CATALOGS` (`FULLCODE`)       , '
 +'    key `IDX_CATALOG_FORM` (`FORM`)             , '

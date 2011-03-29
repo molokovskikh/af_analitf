@@ -453,6 +453,7 @@ begin
       adsForms.SQL.Text := '' +
       'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists, '
       +'  catalogs.PromotionsCount, '
+      +'  catalogs.NamePromotionsCount, '
       +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
       +'  CATALOGS.DescriptionId, '
       +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
@@ -497,6 +498,7 @@ begin
       adsForms.SQL.Text := '' +
       'SELECT CATALOGS.FullCode, CATALOGS.Form, catalogs.coreexists, '
       +'  catalogs.PromotionsCount, '
+      +'  catalogs.NamePromotionsCount, '
       +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
       +'  CATALOGS.DescriptionId, '
       +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
@@ -582,11 +584,11 @@ begin
   //frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
   if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
   then begin
-    if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then
+    if adsForms.FieldByName('NamePromotionsCount').AsInteger > 0 then
       framePromotion.ShowPromotion(
         adsNames.FieldByName( 'AShortCode').AsInteger,
         adsForms.FieldByName('FullCode').AsInteger,
-        adsForms.FieldByName('PromotionsCount').AsInteger)
+        adsForms.FieldByName('NamePromotionsCount').AsInteger)
     else
       framePromotion.HidePromotion();
   end;
@@ -633,25 +635,9 @@ begin
     else begin
       if not pAdvertisingOldCatalog.Visible then begin
         pAdvertisingOldCatalog.Visible := True;
-{
-        formsFrame.Top := pAdvertisingOldCatalog.Top - (formsFrame.Height + 1);
-        namesFrame.Top := formsFrame.Top - (namesFrame.Height + 1);
-}        
       end;
     end;
   end;
-{
-  if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
-  then begin
-    if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then
-      framePromotion.ShowPromotion(
-        adsNames.FieldByName( 'AShortCode').AsInteger,
-        adsForms.FieldByName('FullCode').AsInteger,
-        adsForms.FieldByName('PromotionsCount').AsInteger)
-    else
-      framePromotion.Hide();
-  end;
-}  
 {$ifdef DEBUG}
   if adsForms.Active and not adsForms.IsEmpty then
     WriteExchangeLog('adsFormsAfterScroll',
@@ -744,6 +730,7 @@ begin
     +'  CATALOGS.form, '
     +'  CATALOGS.COREEXISTS, '
     +'  catalogs.PromotionsCount, '
+    +'  catalogs.NamePromotionsCount, '
     +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
     +'  CATALOGS.DescriptionId, '
     +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
@@ -834,6 +821,7 @@ begin
       +'  CATALOGS.form, '
       +'  CATALOGS.COREEXISTS, '
       +'  catalogs.PromotionsCount, '
+      +'  catalogs.NamePromotionsCount, '
       +'  concat(CATALOGS.Name, '' '', CATALOGS.Form) as FullName, '
       +'  CATALOGS.DescriptionId, '
       +'  catalogs.VitallyImportant as CatalogVitallyImportant, '
@@ -1000,7 +988,7 @@ end;
 
 procedure TNamesFormsForm.NamesToCore(MouseClick : Boolean);
 begin
-  if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then
+  if adsForms.FieldByName('NamePromotionsCount').AsInteger > 0 then
     dbgForms.SetFocus
   else begin
     if not actUseForms.Checked then
@@ -1286,11 +1274,11 @@ begin
   if (dbgCatalog.Focused) then
   if Assigned(pAdvertisingNewCatalog) and pAdvertisingNewCatalog.Visible and adsCatalog.Active and not adsCatalog.IsEmpty
   then begin
-    if adsCatalog.FieldByName('PromotionsCount').AsInteger > 0 then
+    if adsCatalog.FieldByName('NamePromotionsCount').AsInteger > 0 then
       framePromotion.ShowPromotion(
         adsCatalog.FieldByName('ShortCode').AsInteger,
         adsCatalog.FieldByName('FullCode').AsInteger,
-        adsCatalog.FieldByName('PromotionsCount').AsInteger)
+        adsCatalog.FieldByName('NamePromotionsCount').AsInteger)
     else
       framePromotion.HidePromotion();
   end;
