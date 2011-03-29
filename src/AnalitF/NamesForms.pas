@@ -567,16 +567,29 @@ begin
   dbgForms.Color := clBtnFace;
   namesFrame.Visible := True;
   formsFrame.Visible := False;
+  if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
+  then
+    framePromotion.HidePromotion();
 end;
 
 procedure TNamesFormsForm.dbgFormsEnter(Sender: TObject);
 begin
   dbgNames.Color := clBtnFace;
   dbgForms.Color := clWindow;
-  dbgForms.Options := dbgForms.Options + [dgAlwaysShowSelection]; 
+  dbgForms.Options := dbgForms.Options + [dgAlwaysShowSelection];
   formsFrame.Visible := True;
   namesFrame.Visible := False;
   //frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
+  if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
+  then begin
+    if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then
+      framePromotion.ShowPromotion(
+        adsNames.FieldByName( 'AShortCode').AsInteger,
+        adsForms.FieldByName('FullCode').AsInteger,
+        adsForms.FieldByName('PromotionsCount').AsInteger)
+    else
+      framePromotion.HidePromotion();
+  end;
 end;
 
 procedure TNamesFormsForm.dbgFormsExit(Sender: TObject);
@@ -627,15 +640,18 @@ begin
       end;
     end;
   end;
+{
   if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
   then begin
     if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then
       framePromotion.ShowPromotion(
+        adsNames.FieldByName( 'AShortCode').AsInteger,
         adsForms.FieldByName('FullCode').AsInteger,
         adsForms.FieldByName('PromotionsCount').AsInteger)
     else
       framePromotion.Hide();
   end;
+}  
 {$ifdef DEBUG}
   if adsForms.Active and not adsForms.IsEmpty then
     WriteExchangeLog('adsFormsAfterScroll',
@@ -772,6 +788,8 @@ begin
         dbgCatalog.SetFocus;
         tmrShowCatalog.Enabled := False;
       end;
+      framePromotion.HidePromotion();
+      adsCatalogAfterScroll(adsCatalog);
     end
     else
       if not dbgForms.Focused and dbgNames.CanFocus then
@@ -911,12 +929,12 @@ procedure TNamesFormsForm.SetGrids;
 begin
   actUseForms.Visible := not actNewSearch.Checked;
   if actNewSearch.Checked then begin
-    framePromotion.SetAdvertisingPanel(pAdvertisingNewCatalog);
+    framePromotion.SetAdvertisingPanel(pAdvertisingNewCatalog, dbgCatalog);
     pnlTop.BringToFront;
     SetCatalog;
   end
   else begin
-    framePromotion.SetAdvertisingPanel(pAdvertisingOldCatalog);
+    framePromotion.SetAdvertisingPanel(pAdvertisingOldCatalog, dbgForms);
     pnlTopOld.BringToFront;
     SetNamesParams;
     SetFormsParams;
@@ -982,21 +1000,25 @@ end;
 
 procedure TNamesFormsForm.NamesToCore(MouseClick : Boolean);
 begin
-  if not actUseForms.Checked then
-    if (adsNames.FieldByName('COREEXISTS').AsFloat < 0.001 ) then
-      ShowNotFoundPositionsPopup(dbgNames, MouseClick)
-    else
-      FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-        adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
-  if actUseForms.Checked and ( adsForms.RecordCount < 2) then
-    if not adsForms.FieldByName('COREEXISTS').AsBoolean then
-      ShowNotFoundPositionsPopup(dbgNames, MouseClick)
-    else
-      FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
-        adsNames.FieldByName( 'Name').AsString,
-        adsForms.FieldByName( 'Form').AsString, False, False);
-  if actUseForms.Checked and ( adsForms.RecordCount > 1) then
-    dbgForms.SetFocus;
+  if adsForms.FieldByName('PromotionsCount').AsInteger > 0 then
+    dbgForms.SetFocus
+  else begin
+    if not actUseForms.Checked then
+      if (adsNames.FieldByName('COREEXISTS').AsFloat < 0.001 ) then
+        ShowNotFoundPositionsPopup(dbgNames, MouseClick)
+      else
+        FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString, '', actUseForms.Checked, False);
+    if actUseForms.Checked and ( adsForms.RecordCount < 2) then
+      if not adsForms.FieldByName('COREEXISTS').AsBoolean then
+        ShowNotFoundPositionsPopup(dbgNames, MouseClick)
+      else
+        FCoreForm.ShowForm( adsNames.FieldByName( 'AShortCode').AsInteger,
+          adsNames.FieldByName( 'Name').AsString,
+          adsForms.FieldByName( 'Form').AsString, False, False);
+    if actUseForms.Checked and ( adsForms.RecordCount > 1) then
+      dbgForms.SetFocus;
+  end;
 end;
 
 procedure TNamesFormsForm.FormsToCore(MouseClick : Boolean);
@@ -1256,19 +1278,21 @@ begin
   pAdvertisingNewCatalog.Top := oldTop;
   pAdvertisingNewCatalog.ControlStyle := pAdvertisingNewCatalog.ControlStyle - [csParentBackground] + [csOpaque];
 
-  framePromotion := TframePromotion.AddFrame(Self, Self, pAdvertisingOldCatalog);
+  framePromotion := TframePromotion.AddFrame(Self, Self, pAdvertisingOldCatalog, dbgForms);
 end;
 
 procedure TNamesFormsForm.adsCatalogAfterScroll(DataSet: TDataSet);
 begin
+  if (dbgCatalog.Focused) then
   if Assigned(pAdvertisingNewCatalog) and pAdvertisingNewCatalog.Visible and adsCatalog.Active and not adsCatalog.IsEmpty
   then begin
     if adsCatalog.FieldByName('PromotionsCount').AsInteger > 0 then
       framePromotion.ShowPromotion(
-        adsForms.FieldByName('FullCode').AsInteger,
-        adsForms.FieldByName('PromotionsCount').AsInteger)
+        adsCatalog.FieldByName('ShortCode').AsInteger,
+        adsCatalog.FieldByName('FullCode').AsInteger,
+        adsCatalog.FieldByName('PromotionsCount').AsInteger)
     else
-      framePromotion.Hide();
+      framePromotion.HidePromotion();
   end;
 end;
 

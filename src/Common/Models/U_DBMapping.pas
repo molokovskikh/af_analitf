@@ -562,7 +562,6 @@ class function TDBMapping.GetSinglePromotionByNameId(
   connection: TCustomMyConnection; nameId: Int64): TSupplierPromotion;
 var
   dataSet : TMyQuery;
-  promotion : TSupplierPromotion;
 begin
   Result := nil;
   dataSet := GetSqlDataSetPromotionsByNameId(connection, nameId);
@@ -621,7 +620,7 @@ begin
 '   SupplierPromotions.Annotation, ' +
 '   SupplierPromotions.PromoFile, ' +
 
-'   Catalogs.Id as CatalogId, ' +
+'   Catalogs.FullCode as CatalogId, ' +
 '   Catalogs.Name as CatalogName, ' +
 '   Catalogs.Form as CatalogForm, ' +
 '   concat(Catalogs.Name, '' '', Catalogs.Form) as CatalogFullName, ' +

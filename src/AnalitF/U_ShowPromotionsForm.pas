@@ -82,7 +82,7 @@ begin
       pWebBrowser.BevelOuter := bvNone;
       pWebBrowser.Parent := Parent;
 
-      iWebBrowser := TWebBrowser.Create(Owner);
+      iWebBrowser := TWebBrowser.Create(pWebBrowser);
       TWinControl(iWebBrowser).Name := 'iWebBrowser' + IntToStr(promotion.Id);
       TWinControl(iWebBrowser).Parent := pWebBrowser;
       TWinControl(iWebBrowser).Align := alClient;
