@@ -348,12 +348,11 @@ begin
 
 
 {
-}
       Self.Parent := FAdvertisingPanel;
       Self.Align := alClient;
+}
 
 
-{
       Self.Align := alNone;
       Self.Parent := FSingleParent;
       Self.Visible := True;
@@ -369,6 +368,7 @@ begin
       Self.Height := pHide.Height
         + (2 + promoData.RecordCount) * TDBGridHelper.GetStdDefaultRowHeight(dbgPromotions);
       Self.Top := FSingleParent.ClientHeight - Self.Height;
+{
 }
 
 
