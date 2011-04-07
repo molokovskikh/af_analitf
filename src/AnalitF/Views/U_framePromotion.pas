@@ -27,6 +27,8 @@ type
     FAdvertisingPanel: TWinControl;
     FFocusedControl: TWinControl;
 
+    pBorder : TPanel;
+
     pHide : TPanel;
     lHide : TLabel;
 
@@ -129,11 +131,19 @@ procedure TframePromotion.CreateVisualComponent;
 var
   column : TColumnEh;
 begin
+  pBorder := TPanel.Create(Self);
+  pBorder.Name := 'pBorder';
+  pBorder.Caption := '';
+  pBorder.BevelOuter := bvNone;
+  pBorder.Parent := Self;
+  pBorder.Align := alClient;
+  pBorder.ControlStyle := pBorder.ControlStyle - [csParentBackground] + [csOpaque];
+
   pHide := TPanel.Create(Self);
   pHide.Name := 'pHide';
   pHide.Caption := '';
   pHide.BevelOuter := bvNone;
-  pHide.Parent := Self;
+  pHide.Parent := pBorder;
   pHide.Align := alTop;
 
   lHide := TLabel.Create(Self);
@@ -153,7 +163,7 @@ begin
   pHide.Visible := False;
 
   gbPromotions := TGroupBox.Create(Self);
-  gbPromotions.Parent := Self;
+  gbPromotions.Parent := pBorder;
   gbPromotions.Align := alClient;
   gbPromotions.Name := 'gbPromotions';
   gbPromotions.Caption := ' Акции поставщиков ';
@@ -192,11 +202,13 @@ begin
   dbgPromotions.Align := alClient;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgPromotions);
 
-  TDBGridHelper.AddColumn(dbgPromotions, 'CatalogForm', 'Форма выпуска', dbgPromotions.Canvas.TextWidth('Большое имя формы выпуска'));
   column := TDBGridHelper.AddColumn(dbgPromotions, 'SupplierShortName', 'Поставщик', dbgPromotions.Canvas.TextWidth('Большое имя поставщика'));
   column.Font.Color := clHotLight;
   column.Font.Style := column.Font.Style + [fsUnderline];
   TDBGridHelper.AddColumn(dbgPromotions, 'Name', 'Название', dbgPromotions.Canvas.TextWidth('Большое название акции'));
+  TDBGridHelper.AddColumn(dbgPromotions, 'Begin', 'Начало', dbgPromotions.Canvas.TextWidth('00.00.0000'));
+  TDBGridHelper.AddColumn(dbgPromotions, 'End', 'Окончание', dbgPromotions.Canvas.TextWidth('00.00.0000'));
+  TDBGridHelper.AddColumn(dbgPromotions, 'CatalogFullName', 'Наименование', dbgPromotions.Canvas.TextWidth('Большое наименование препарата'));
 
   dbgPromotions.OnCellClick := PromotionsCellClick;
 
@@ -260,7 +272,7 @@ var
 
   infoControl : TControl;
 begin
-    if promoCount = 1 then begin
+    if promoCount = 0 then begin
       Self.Align := alNone;
       Self.Parent := FSingleParent;
       Self.Visible := True;
@@ -272,10 +284,10 @@ begin
       try
         FLastPromotionId := promotion.Id;
         FLastPromoCatalogId := promotion.CatalogId;
-        
+
         if promoCatalogId <> promotion.CatalogId then
           gbPromotions.Caption := ' Акция поставщика по препарату ' + promotion.CatalogFullName + ' ';
-          
+
         lproviderInfo := TPromotionLabel.Create(
           Self,
           promoCatalogId,
@@ -306,7 +318,7 @@ begin
 
           if infoControl is TImage then
             TImage(infoControl).OnClick := OnImageClick;
-            
+
           if infoControl.Constraints.MaxHeight > 0 then begin
             pInfoControl.Constraints.MinHeight := infoControl.Constraints.MaxHeight;
             infoControl.Constraints.MaxHeight := 0;
@@ -333,8 +345,34 @@ begin
       dsPromotions.DataSet := promoData;
       pGrid.Visible := True;
       gbPromotions.Caption := ' Акции поставщиков ';
+
+
+{
+}
       Self.Parent := FAdvertisingPanel;
       Self.Align := alClient;
+
+
+{
+      Self.Align := alNone;
+      Self.Parent := FSingleParent;
+      Self.Visible := True;
+      pHide.Visible := True;
+
+      pBorder.BevelInner := bvLowered;
+      pBorder.BevelOuter := bvRaised;
+
+      Self.Width := (FSingleParent.ClientWidth - 50);
+      Self.Left := (FSingleParent.ClientWidth - Self.Width) div 2;
+
+      Self.Constraints.MaxHeight := (FSingleParent.ClientHeight div 3) * 2;
+      Self.Height := pHide.Height
+        + (2 + promoData.RecordCount) * TDBGridHelper.GetStdDefaultRowHeight(dbgPromotions);
+      Self.Top := FSingleParent.ClientHeight - Self.Height;
+}
+
+
+
 {
       lPromotionInfo.Visible := False;
 

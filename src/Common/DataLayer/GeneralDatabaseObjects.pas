@@ -765,6 +765,8 @@ begin
 +'  `Name` varchar(255) NOT NULL, '
 +'  `Annotation` TEXT NOT NULL, '
 +'  `PromoFile` varchar(255) default NULL, '
++'  `Begin` datetime DEFAULT NULL, '
++'  `End` datetime DEFAULT NULL, '
 +'  PRIMARY KEY (`Id`), '
 +'  KEY `IDX_SupplierPromotions_SupplierId` (`SupplierId`) '
 +'  ) '

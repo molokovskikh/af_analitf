@@ -113,7 +113,6 @@ object DM: TDM
     Options.KeepDesignConnected = False
     Username = 'root'
     Server = 'localhost'
-    Connected = True
     AfterConnect = MainConnectionOldAfterConnect
     LoginPrompt = False
     Left = 32

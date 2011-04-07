@@ -619,6 +619,8 @@ begin
 '   SupplierPromotions.Name, ' +
 '   SupplierPromotions.Annotation, ' +
 '   SupplierPromotions.PromoFile, ' +
+'   SupplierPromotions.Begin, ' +
+'   SupplierPromotions.End, ' +
 
 '   Catalogs.FullCode as CatalogId, ' +
 '   Catalogs.Name as CatalogName, ' +
