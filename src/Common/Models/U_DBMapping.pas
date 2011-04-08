@@ -48,7 +48,7 @@ type
 
     class function GetSqlDataSetPromotionsByNameId(connection : TCustomMyConnection; nameId : Int64) : TMyQuery;
 
-    class function GetPromotionsByCatalogId(connection : TCustomMyConnection; catalogId : Int64) : TObjectList;
+    class function GetPromotionsById(connection : TCustomMyConnection; Id : Int64) : TObjectList;
 
     class function GetSinglePromotionByNameId(connection : TCustomMyConnection; nameId : Int64) : TSupplierPromotion;
   end;
@@ -509,8 +509,8 @@ begin
   end;
 end;
 
-class function TDBMapping.GetPromotionsByCatalogId(
-  connection: TCustomMyConnection; catalogId: Int64): TObjectList;
+class function TDBMapping.GetPromotionsById(
+  connection: TCustomMyConnection; Id: Int64): TObjectList;
 var
   dataSet : TMyQuery;
   promotion : TSupplierPromotion;
@@ -531,15 +531,15 @@ begin
 '   Providers.FirmCode as SupplierId, ' +
 '   Providers.ShortName as SupplierShortName ' +
 ' from ' +
-'  Catalogs ' +
-'  join PromotionCatalogs on PromotionCatalogs.CatalogId = Catalogs.FullCode ' +
-'  join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
+'  SupplierPromotions ' +
 '  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
+'  join PromotionCatalogs on PromotionCatalogs.PromotionId = SupplierPromotions.Id ' +
+'  join Catalogs on Catalogs.FullCode = PromotionCatalogs.CatalogId ' +
 ' where ' +
-'  Catalogs.FullCode = :CatalogId ' +
-' order by Providers.ShortName',
-    ['CatalogId'],
-    [catalogId]);
+'  SupplierPromotions.Id = :Id ' +
+' group by SupplierPromotions.Id ',
+    ['Id'],
+    [Id]);
 
   Result := TObjectList.Create();
   try

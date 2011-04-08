@@ -6,7 +6,9 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Contnrs,
   Dialogs,
+  Printers,
   StdCtrls,
+  Buttons,
   ComCtrls,
   ExtCtrls,
   Jpeg,
@@ -23,13 +25,28 @@ type
   TDisplayedPromotion = class
    public
     Promotion : TSupplierPromotion;
-    Sheet : TTabSheet;
+    PromoBox : TPanel;
 
     constructor Create(promotion : TSupplierPromotion);
+    destructor Destroy; override;
 
     function PromotionId() : Int64;
   end;
 
+  TImageHandler = class(TComponent)
+   public
+    Canvas : TCanvas;
+    PrintDialog : TPrintDialog;
+    sbPrint : TSpeedButton;
+    iImage : TImage;
+    constructor Create(
+      AOwner : TComponent;
+      Parent : TPanel;
+      print : TSpeedButton;
+      image : TImage);  reintroduce; overload;
+    destructor Destroy; override;
+    procedure PrintClick(Sender : TObject);
+  end;
 
   TShowPromotionsForm = class(TVistaCorrectForm)
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -41,12 +58,8 @@ type
     FCatalogId : Int64;
     FPromotionId : Int64;
     FSelectedPromotion : TDisplayedPromotion;
-
-    FPromotionList : TObjectList;
   public
     { Public declarations }
-    pcPromotions : TPageControl;
-
     procedure Prepare(catalogId : Int64; promotionId : Int64);
     function CreatePromotion(promotion : TSupplierPromotion) : TDisplayedPromotion;
   end;
@@ -66,6 +79,10 @@ var
   mCurrent : TMemo;
 
   iImage : TImage;
+  pImage : TPanel;
+  pHeaderImage : TPanel;
+  sbPrint : TSpeedButton;
+  handler : TImageHandler;
   jpg: TJpegImage;
 
   pWebBrowser : TPanel;
@@ -92,9 +109,34 @@ begin
     end
     else
       if promotion.JpgExists() then begin
-        iImage := TImage.Create(Owner);
+        pImage := TPanel.Create(Owner);
+        pImage.Name := 'pImage';
+        pImage.Caption := '';
+        pImage.BevelOuter := bvNone;
+        pImage.Align := alClient;
+        pImage.ControlStyle := pImage.ControlStyle - [csParentBackground] + [csOpaque];
+        pImage.Parent := Parent;
+
+        pHeaderImage := TPanel.Create(pImage);
+        pHeaderImage.Name := 'pHeaderImage';
+        pHeaderImage.Caption := '';
+        pHeaderImage.BevelOuter := bvNone;
+        pHeaderImage.Align := alTop;
+        pHeaderImage.ControlStyle := pHeaderImage.ControlStyle - [csParentBackground] + [csOpaque];
+        pHeaderImage.Parent := pImage;
+
+        sbPrint := TSpeedButton.Create(pImage);
+        sbPrint.Parent := pHeaderImage;
+        sbPrint.Caption := 'Печатать';
+        sbPrint.Height := 25;
+        sbPrint.Left := 5;
+        sbPrint.Top := 5;
+
+        pHeaderImage.Height := sbPrint.Height + 2*sbPrint.Top;
+
+        iImage := TImage.Create(pImage);
         iImage.Name := 'iImage' + IntToStr(promotion.Id);
-        iImage.Parent := Parent;
+        iImage.Parent := pImage;
         iImage.Align := alClient;
         iImage.AutoSize := False;
         iImage.Center := True;
@@ -102,12 +144,13 @@ begin
         jpg := TJpegImage.Create;
         try
           jpg.LoadFromFile(osPromoFile);
-          iImage.Constraints.MaxHeight := jpg.Height;
-          iImage.Constraints.MaxWidth := jpg.Width;
           iImage.Picture.Bitmap.Assign(jpg);
         finally
           jpg.Free;
         end;
+
+        handler := TImageHandler.Create(pImage, pImage, sbPrint, iImage);
+
         Result := iImage;
       end
       else
@@ -118,7 +161,6 @@ begin
           mCurrent.ReadOnly := True;
           mCurrent.Align := alClient;
           mCurrent.Lines.LoadFromFile(osPromoFile);
-          mCurrent.Constraints.MaxHeight := TVCLHelper.GetMemoNeedHeight(mCurrent);
           Result := mCurrent;
         end;
   end;
@@ -155,41 +197,24 @@ var
   I : Integer;
   dbPromotion : TSupplierPromotion;
 begin
-  FPromotionList := TObjectList.Create(True);
   FCatalogId := catalogId;
   FPromotionId := promotionId;
   FSelectedPromotion := nil;
 
-  pcPromotions := TPageControl.Create(Self);
-  pcPromotions.Align := alClient;
-  pcPromotions.Parent := Self;
-  Self.Caption := 'Акции по препарату';
+  Self.Caption := 'Акция ';
 
-  list := TDBMapping.GetPromotionsByCatalogId(DM.MainConnection, catalogId);
+  list := TDBMapping.GetPromotionsById(DM.MainConnection, promotionId);
   list.OwnsObjects := False;
   try
     if list.Count > 0 then begin
-      Self.Caption := 'Акции по препарату ' + TSupplierPromotion(list[0]).CatalogFullName;
-
-      for I := 0 to list.Count-1 do begin
-        dbPromotion := TSupplierPromotion(list[i]);
-
-        currentPromotion := CreatePromotion(dbPromotion);
-
-        if currentPromotion.PromotionId = promotionId then
-          FSelectedPromotion := currentPromotion;
-
-      end;
-
+      FSelectedPromotion := CreatePromotion(TSupplierPromotion(list[0]));
+      Self.Caption := Self.Caption
+        + FSelectedPromotion.Promotion.SupplierShortName
+        + ': ' + FSelectedPromotion.Promotion.Name;
     end;
   finally
     list.Free;
   end;
-
-  if Assigned(FSelectedPromotion) then
-    pcPromotions.ActivePage := FSelectedPromotion.Sheet
-  else
-    pcPromotions.ActivePageIndex := 0;
 end;
 
 procedure TShowPromotionsForm.FormKeyDown(Sender: TObject; var Key: Word;
@@ -208,16 +233,18 @@ var
   promoControl : TControl;
 begin
   Result := TDisplayedPromotion.Create(promotion);
-  FPromotionList.Add(Result);
 
-  Result.Sheet := TTabSheet.Create(Self);
-  Result.Sheet.PageControl := pcPromotions;
-  Result.Sheet.Caption := promotion.SupplierShortName;
+  Result.PromoBox := TPanel.Create(Self);
+  Result.PromoBox.Name := 'PromoBox';
+  Result.PromoBox.Parent := Self;
+  Result.PromoBox.Caption := '';
+  Result.PromoBox.Align := alClient;
+  Result.PromoBox.ControlStyle := Result.PromoBox.ControlStyle - [csParentBackground] + [csOpaque];
 
   gbDesc := TGroupBox.Create(Self);
-  gbDesc.Parent := Result.Sheet;
+  gbDesc.Parent := Result.PromoBox;
   gbDesc.Caption := ' Описание ';
-  gbDesc.Align := alTop;
+  gbDesc.Align := alBottom;
 
   lDesc := TLabel.Create(Self);
   lDesc.Parent := gbDesc;
@@ -227,11 +254,7 @@ begin
 
   gbDesc.Height := 2*lDesc.Top + lDesc.Height;
 
-  promoControl := GetPromoInfoControl(promotion, Self, Result.Sheet);
-  if Assigned(promoControl) then begin
-    promoControl.Constraints.MaxHeight := 0;
-    promoControl.Constraints.MaxWidth := 0;
-  end;
+  promoControl := GetPromoInfoControl(promotion, Self, Result.PromoBox);
 end;
 
 { TDisplayedPromotion }
@@ -241,6 +264,13 @@ begin
   Self.Promotion := promotion;
 end;
 
+destructor TDisplayedPromotion.Destroy;
+begin
+  if Assigned(Promotion) then
+    Promotion.Free;
+  inherited;
+end;
+
 function TDisplayedPromotion.PromotionId: Int64;
 begin
   Result := Promotion.Id;
@@ -248,8 +278,59 @@ end;
 
 procedure TShowPromotionsForm.FormDestroy(Sender: TObject);
 begin
+  if Assigned(FSelectedPromotion) then
+    FSelectedPromotion.Free;
   inherited;
-  FPromotionList.Free;
+end;
+
+{ TImageHandler }
+
+constructor TImageHandler.Create(AOwner: TComponent; Parent: TPanel;
+  print: TSpeedButton; image : TImage);
+begin
+  inherited Create(AOwner);
+  Canvas := TControlCanvas.Create;
+  TControlCanvas(Canvas).Control := Parent;
+  PrintDialog := TPrintDialog.Create(AOwner);
+  sbPrint := print;
+  sbPrint.Width := Canvas.TextWidth(sbPrint.Caption) + 20;
+  sbPrint.OnClick := PrintClick;
+  iImage := image;
+end;
+
+destructor TImageHandler.Destroy;
+begin
+  if Assigned(Canvas) then
+    Canvas.Free;
+  inherited;
+end;
+
+procedure TImageHandler.PrintClick(Sender: TObject);
+var
+  ScaleX, ScaleY: Integer;
+  R: TRect;
+begin
+  if Assigned(PrintDialog) and PrintDialog.Execute then begin
+    Printer.BeginDoc;  // **
+    with Printer do
+    try
+      with R do
+        begin
+          left:=0;
+          top:=0;
+          right:=Printer.PageWidth;
+          Bottom:=Printer.PageHeight;
+        end;
+      Printer.Canvas.StretchDraw(R, iImage.Picture.Bitmap);  // **
+
+      //ScaleX := GetDeviceCaps(Handle, logPixelsX) div Screen.PixelsPerInch;
+      //ScaleY := GetDeviceCaps(Handle, logPixelsY) div Screen.PixelsPerInch;
+      //R := Rect(0, 0, iImage.Picture.Width * ScaleX, iImage.Picture.Height * ScaleY);
+      //Printer.Canvas.StretchDraw(R, iImage.Picture.Graphic);  // **
+    finally
+      EndDoc;  // **
+    end;
+  end;
 end;
 
 end.
