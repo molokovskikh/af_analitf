@@ -454,7 +454,6 @@ inherited NamesFormsForm: TNamesFormsForm
   end
   object adsCatalog: TMyQuery
     Connection = DM.MyConnection
-    AfterScroll = adsCatalogAfterScroll
     Left = 200
     Top = 168
   end

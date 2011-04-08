@@ -97,7 +97,6 @@ type
     procedure sbShowSynonymMNNClick(Sender: TObject);
     procedure actShowSynonymMNNExecute(Sender: TObject);
     procedure actUseFormsUpdate(Sender: TObject);
-    procedure adsCatalogAfterScroll(DataSet: TDataSet);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -776,7 +775,6 @@ begin
         tmrShowCatalog.Enabled := False;
       end;
       framePromotion.HidePromotion();
-      adsCatalogAfterScroll(adsCatalog);
     end
     else
       if not dbgForms.Focused and dbgNames.CanFocus then
@@ -917,7 +915,6 @@ procedure TNamesFormsForm.SetGrids;
 begin
   actUseForms.Visible := not actNewSearch.Checked;
   if actNewSearch.Checked then begin
-    framePromotion.SetAdvertisingPanel(pAdvertisingNewCatalog, dbgCatalog);
     pnlTop.BringToFront;
     SetCatalog;
   end
@@ -1267,21 +1264,6 @@ begin
   pAdvertisingNewCatalog.ControlStyle := pAdvertisingNewCatalog.ControlStyle - [csParentBackground] + [csOpaque];
 
   framePromotion := TframePromotion.AddFrame(Self, Self, pAdvertisingOldCatalog, dbgForms);
-end;
-
-procedure TNamesFormsForm.adsCatalogAfterScroll(DataSet: TDataSet);
-begin
-  if (dbgCatalog.Focused) then
-  if Assigned(pAdvertisingNewCatalog) and pAdvertisingNewCatalog.Visible and adsCatalog.Active and not adsCatalog.IsEmpty
-  then begin
-    if adsCatalog.FieldByName('NamePromotionsCount').AsInteger > 0 then
-      framePromotion.ShowPromotion(
-        adsCatalog.FieldByName('ShortCode').AsInteger,
-        adsCatalog.FieldByName('FullCode').AsInteger,
-        adsCatalog.FieldByName('NamePromotionsCount').AsInteger)
-    else
-      framePromotion.HidePromotion();
-  end;
 end;
 
 procedure TNamesFormsForm.PrepareFormsGridPanel;
