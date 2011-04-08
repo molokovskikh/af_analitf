@@ -159,9 +159,15 @@ begin
   sbSuppliers.Parent := gbSuppliers;
   sbSuppliers.Caption := 'Поставщики';
   sbSuppliers.Height := 25;
-  sbSuppliers.Width := FCanvas.TextWidth(sbSuppliers.Caption) + 20;
   sbSuppliers.Left := 5;
   sbSuppliers.OnClick := SuppliersClick;
+  try
+    sbSuppliers.Glyph.LoadFromResourceName(HInstance, 'spindown');
+    sbSuppliers.Layout := blGlyphRight;
+    sbSuppliers.Width := FCanvas.TextWidth(sbSuppliers.Caption) + sbSuppliers.Glyph.Width + 20;
+  except
+    sbSuppliers.Width := FCanvas.TextWidth(sbSuppliers.Caption) + 20;
+  end;
 
   lFilter := TLabel.Create(Self);
   lFilter.Parent := gbSuppliers;

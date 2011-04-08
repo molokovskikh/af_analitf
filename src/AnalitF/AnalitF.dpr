@@ -151,6 +151,7 @@ uses
 {$R EraserDLL.RES}
 {$R Progress.RES}
 {$R Icons.RES}
+{$R Bitmaps.RES}
 {$R CompareScript50.RES}
 {$R CompareScript51.RES}
 {$R CompareScript52.RES}
