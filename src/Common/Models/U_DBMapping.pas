@@ -51,6 +51,8 @@ type
     class function GetPromotionsById(connection : TCustomMyConnection; Id : Int64) : TObjectList;
 
     class function GetSinglePromotionByNameId(connection : TCustomMyConnection; nameId : Int64) : TSupplierPromotion;
+
+    class function GetPromotionsByNameId(connection : TCustomMyConnection; nameId : Int64) : TObjectList;
   end;
 
 implementation
@@ -558,6 +560,32 @@ begin
   end;
 end;
 
+class function TDBMapping.GetPromotionsByNameId(
+  connection: TCustomMyConnection; nameId: Int64): TObjectList;
+var
+  dataSet : TMyQuery;
+  promotion : TSupplierPromotion;
+begin
+  Result := nil;
+  dataSet := GetSqlDataSetPromotionsByNameId(connection, nameId);
+
+  Result := TObjectList.Create();
+  try
+    try
+      while not dataSet.Eof do begin
+        promotion := CreatePromotion(dataSet);
+        Result.Add(promotion);
+        dataSet.Next;
+      end;
+    finally
+      dataSet.Free;
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
 class function TDBMapping.GetSinglePromotionByNameId(
   connection: TCustomMyConnection; nameId: Int64): TSupplierPromotion;
 var
@@ -636,7 +664,8 @@ begin
 '  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
 ' where ' +
 '  Catalogs.ShortCode = :NameId ' +
-' order by Catalogs.Form, Providers.ShortName, SupplierPromotions.Name ',
+' group by SupplierPromotions.Id ' +
+' order by SupplierPromotions.Begin ',
     ['NameId'],
     [nameId]);
 end;
