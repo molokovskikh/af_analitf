@@ -35,11 +35,6 @@ type
     lHeaderHide : TLabel;
     lHide : TLabel;
 
-    pGrid : TPanel;
-    dbgPromotions : TToughDBGrid;
-    dsPromotions : TDataSource;
-    promoData : TMyQuery;
-
     PromoScrollBox : TScrollBox;
 
     FLastNameId : Int64;
@@ -50,8 +45,6 @@ type
     procedure ClearFrame;
     procedure UpdateContorls(nameId, promoCatalogId, promoCount : Integer);
     procedure HideClick(Sender : TObject);
-    procedure PromotionsCellClick(Column : TColumnEh);
-    procedure OnImageClick(Sender : TObject);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -88,28 +81,6 @@ procedure TframePromotion.ClearFrame;
 var
   I : Integer;
 begin
-{
-  for I := ComponentCount-1 downto 0 do
-    if (Components[i] is TPromotionLabel)
-      and (TPromotionLabel(Components[i]).Parent = pHeader)
-    then begin
-      TPromotionLabel(Components[i]).Visible := False;
-      TPromotionLabel(Components[i]).Parent := nil;
-      TPromotionLabel(Components[i]).Free;
-    end;
-}    
-
-{
-  for I := ComponentCount-1 downto 0 do
-    if (Components[i] is TControl)
-      and (TControl(Components[i]).Parent = pInfoControl)
-    then begin
-      TControl(Components[i]).Visible := False;
-      TControl(Components[i]).Parent := nil;
-      TControl(Components[i]).Free;
-    end;
-}
-
   for I := ComponentCount-1 downto 0 do
     if (Components[i] is TframeBlockPromotion)
       and (TframeBlockPromotion(Components[i]).Parent = PromoScrollBox)
@@ -121,7 +92,6 @@ begin
 
   pHide.Visible := False;
   lHeaderHide.Caption := '';
-  pGrid.Visible := False;
   Self.Width := 50;
   Self.Height := 50;
   PromoScrollBox.Visible := False;
@@ -130,9 +100,6 @@ begin
   //PromoScrollBox.ClientWidth := 10;
   PromoScrollBox.HorzScrollBar.Range := 0;
   PromoScrollBox.VertScrollBar.Range := 0;
-  dsPromotions.DataSet := nil;
-  if Assigned(promoData) then
-    FreeAndNil(promoData);
 end;
 
 constructor TframePromotion.Create(AOwner: TComponent);
@@ -191,34 +158,6 @@ begin
   PromoScrollBox.Parent := pBorder;
   PromoScrollBox.Align := alClient;
   PromoScrollBox.Visible := False;
-
-
-  dsPromotions := TDataSource.Create(Self);
-
-  pGrid := TPanel.Create(Self);
-  pGrid.Name := 'pGrid';
-  pGrid.BevelOuter := bvNone;
-  pGrid.Parent := pBorder;
-  pGrid.Align := alClient;
-  pGrid.Visible := False;
-
-  dbgPromotions := TToughDBGrid.Create(Self);
-  dbgPromotions.Name := 'dbgPromotions';
-  dbgPromotions.Parent := pGrid;
-  dbgPromotions.Align := alClient;
-  TDBGridHelper.SetDefaultSettingsToGrid(dbgPromotions);
-
-  column := TDBGridHelper.AddColumn(dbgPromotions, 'SupplierShortName', 'Поставщик', dbgPromotions.Canvas.TextWidth('Большое имя поставщика'));
-  column.Font.Color := clHotLight;
-  column.Font.Style := column.Font.Style + [fsUnderline];
-  TDBGridHelper.AddColumn(dbgPromotions, 'Name', 'Название', dbgPromotions.Canvas.TextWidth('Большое название акции'));
-  TDBGridHelper.AddColumn(dbgPromotions, 'Begin', 'Начало', dbgPromotions.Canvas.TextWidth('00.00.0000'));
-  TDBGridHelper.AddColumn(dbgPromotions, 'End', 'Окончание', dbgPromotions.Canvas.TextWidth('00.00.0000'));
-  TDBGridHelper.AddColumn(dbgPromotions, 'CatalogFullName', 'Наименование', dbgPromotions.Canvas.TextWidth('Большое наименование препарата'));
-
-  dbgPromotions.OnCellClick := PromotionsCellClick;
-
-  dbgPromotions.DataSource := dsPromotions;
 end;
 
 procedure TframePromotion.HideClick(Sender: TObject);
@@ -349,106 +288,6 @@ begin
   end;
 
   Self.Top := lastTop;
-
-  Exit;
-
-    if promoCount = 0 then begin
-      Self.Align := alNone;
-      Self.Parent := FSingleParent;
-      Self.Visible := True;
-      pHide.Visible := True;
-
-      promotion := TDBMapping.GetSinglePromotionByNameId(DM.MainConnection, nameId);
-      try
-        FLastPromotionId := promotion.Id;
-        FLastPromoCatalogId := promotion.CatalogId;
-
-      finally
-        promotion.Free
-      end;
-    end
-    else begin
-      promoData := TDBMapping.GetSqlDataSetPromotionsByNameId(
-        DM.MainConnection,
-        nameId);
-      dsPromotions.DataSet := promoData;
-      pGrid.Visible := True;
-
-
-{
-      Self.Parent := FAdvertisingPanel;
-      Self.Align := alClient;
-}
-
-
-      Self.Align := alNone;
-      Self.Parent := FSingleParent;
-      Self.Visible := True;
-      pHide.Visible := True;
-
-      pBorder.BevelInner := bvLowered;
-      pBorder.BevelOuter := bvRaised;
-
-      Self.Width := (FSingleParent.ClientWidth - 50);
-      Self.Left := (FSingleParent.ClientWidth - Self.Width) div 2;
-
-      Self.Constraints.MaxHeight := (FSingleParent.ClientHeight div 3) * 2;
-      Self.Height := pHide.Height
-        + (2 + promoData.RecordCount) * TDBGridHelper.GetStdDefaultRowHeight(dbgPromotions);
-      Self.Top := FSingleParent.ClientHeight - Self.Height;
-{
-}
-
-
-
-{
-      lPromotionInfo.Visible := False;
-
-      promotion := TSupplierPromotion(list[0]);
-      lproviderInfo := TPromotionLabel.Create(
-        Self,
-        promoCatalogId,
-        promotion.Id,
-        'lproviderInfo',
-        promotion.SupplierShortName,
-        startLeft,
-        startTop,
-        gbPromotions);
-      nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
-
-      for I := 1 to list.Count-1 do begin
-        promotion := TSupplierPromotion(list[i]);
-        lproviderInfo := TPromotionLabel.Create(
-          Self,
-          promoCatalogId,
-          promotion.Id,
-          'lproviderInfo',
-          promotion.SupplierShortName,
-          nextLeft,
-          startTop,
-          gbPromotions);
-        nextLeft := lproviderInfo.Left + lproviderInfo.Width + 10;
-      end;
-}
-    end;
-end;
-
-procedure TframePromotion.PromotionsCellClick(Column: TColumnEh);
-begin
-  if Assigned(FFocusedControl) and FFocusedControl.CanFocus() then
-    FFocusedControl.SetFocus();
-
-  if (Column.FieldName = 'SupplierShortName') then begin
-    ShowPromotions(
-      promoData.FieldByName('CatalogId').AsInteger,
-      promoData.FieldByName('Id').AsInteger);
-  end;
-end;
-
-procedure TframePromotion.OnImageClick(Sender: TObject);
-begin
-  if (Sender is TImage) and (FLastPromotionId > 0) then
-    ShowPromotions(FLastPromoCatalogId, FLastPromotionId); 
 end;
 
 end.
