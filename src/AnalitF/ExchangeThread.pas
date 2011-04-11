@@ -570,7 +570,7 @@ begin
            '/' + DM.SerBeg + DM.SerEnd + '/code.asmx'
   else
 {$ifdef UsePrgDataTest}
-    URL := 'https://test.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+    URL := 'https://prg1.adc.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 {$else}
     URL := 'https://ios.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 {$endif}
