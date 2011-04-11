@@ -22,6 +22,9 @@ uses
   U_DBMapping;
 
 type
+  TImageEx = class(TImage)
+  end;
+
   TDisplayedPromotion = class
    public
     Promotion : TSupplierPromotion;
@@ -191,11 +194,7 @@ end;
 
 procedure TShowPromotionsForm.Prepare(catalogId: Int64; promotionId : Int64);
 var
-  currentPromotion : TDisplayedPromotion;
-
   list : TObjectList;
-  I : Integer;
-  dbPromotion : TSupplierPromotion;
 begin
   FCatalogId := catalogId;
   FPromotionId := promotionId;
@@ -307,28 +306,25 @@ end;
 
 procedure TImageHandler.PrintClick(Sender: TObject);
 var
-  ScaleX, ScaleY: Integer;
-  R: TRect;
+  printImage : TImageEx;
 begin
   if Assigned(PrintDialog) and PrintDialog.Execute then begin
-    Printer.BeginDoc;  // **
-    with Printer do
+    printImage := TImageEx.Create(Self);
     try
-      with R do
-        begin
-          left:=0;
-          top:=0;
-          right:=Printer.PageWidth;
-          Bottom:=Printer.PageHeight;
-        end;
-      Printer.Canvas.StretchDraw(R, iImage.Picture.Bitmap);  // **
+      printImage.AutoSize := False;
+      printImage.Proportional := True;
+      printImage.Picture := iImage.Picture;
+      printImage.Width := Printer.PageWidth;
+      printImage.Height := Printer.PageHeight;
 
-      //ScaleX := GetDeviceCaps(Handle, logPixelsX) div Screen.PixelsPerInch;
-      //ScaleY := GetDeviceCaps(Handle, logPixelsY) div Screen.PixelsPerInch;
-      //R := Rect(0, 0, iImage.Picture.Width * ScaleX, iImage.Picture.Height * ScaleY);
-      //Printer.Canvas.StretchDraw(R, iImage.Picture.Graphic);  // **
+      Printer.BeginDoc;  // **
+      try
+        Printer.Canvas.StretchDraw(printImage.DestRect, iImage.Picture.Bitmap);  // **
+      finally
+        Printer.EndDoc;  // **
+      end;
     finally
-      EndDoc;  // **
+      printImage.Free;
     end;
   end;
 end;
