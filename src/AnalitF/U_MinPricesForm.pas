@@ -22,7 +22,8 @@ uses
   DBProc,
   ToughDBGrid,
   NetworkParams,
-  SQLWaiting;
+  SQLWaiting,
+  U_framePromotion;
 
 {//$define MinPricesLog}
 
@@ -180,6 +181,8 @@ type
 
     adsCorePriceRet: TCurrencyField;
 
+    adsCoreNamePromotionsCount: TIntegerField;
+
     pTop : TPanel;
     lBeforeInfo  : TLabel;
     eSearch : TEdit;
@@ -199,6 +202,8 @@ type
     plOverCost : TPanel;
     lWarning : TLabel;
 
+    framePromotion : TframePromotion;
+    
     procedure ShowForm; override;
   end;
 
@@ -413,6 +418,8 @@ begin
   dbgCore.OnGetCellParams := dbgCoreGetCellParams;
 
   dbgCore.InputField := 'OrderCount';
+
+  framePromotion := TframePromotion.AddFrame(Self, dbgCore, pOffers, dbgCore, False);
 end;
 
 procedure TMinPricesForm.CreateTopPanel;
@@ -707,11 +714,20 @@ begin
     adsCore.ParamByName( 'ProductId').Value := minProductIdField.Value;
     adsCore.Open;
     adsCore.First;
+
+    if adsCoreNamePromotionsCount.AsInteger > 0 then
+      framePromotion.ShowPromotion(
+        adsCoreshortcode.AsInteger,
+        adsCorefullcode.AsInteger,
+        adsCoreNamePromotionsCount.AsInteger)
+    else
+      framePromotion.HidePromotion();
   end;
 end;
 
 procedure TMinPricesForm.UpdateOffers;
 begin
+  framePromotion.HidePromotion();
   tmrUpdatePreviosOrders.Enabled := False;
   tmrUpdatePreviosOrders.Enabled := True;
 end;
@@ -870,6 +886,8 @@ begin
   adsCorePriceRet.Calculated := True;
   adsCorePriceRet.DisplayFormat := '0.00;;';
   adsCorePriceRet.Dataset := adsCore;
+
+  adsCoreNamePromotionsCount := TDataSetHelper.AddIntegerField(adsCore, 'NamePromotionsCount');
 end;
 
 procedure TMinPricesForm.adsCoreCalcFields(DataSet: TDataSet);

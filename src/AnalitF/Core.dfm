@@ -677,6 +677,7 @@ object CoreForm: TCoreForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -787,6 +788,7 @@ object CoreForm: TCoreForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1157,6 +1159,9 @@ object CoreForm: TCoreForm
     object adsCoreProducerName: TStringField
       FieldName = 'ProducerName'
     end
+    object adsCoreNamePromotionsCount: TIntegerField
+      FieldName = 'NamePromotionsCount'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
@@ -1346,6 +1351,7 @@ object CoreForm: TCoreForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'

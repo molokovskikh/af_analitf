@@ -9,7 +9,8 @@ uses
   Math, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw,
   hlpcodecs, LU_Tracer, 
   SQLWaiting, ForceRus, GridsEh, 
-  U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
+  U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
+  U_framePromotion;
 
 type
   TFilter=( filAll, filOrder, filLeader, filProducer);
@@ -120,6 +121,7 @@ type
     dsProducers: TDataSource;
     adsCoreBuyingMatrixType: TIntegerField;
     adsCoreProducerName: TStringField;
+    adsCoreNamePromotionsCount: TIntegerField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -151,6 +153,7 @@ type
     procedure dblProducersCloseUp(Sender: TObject);
     procedure dbgCoreColumns15GetCellParams(Sender: TObject;
       EditMode: Boolean; Params: TColCellParamsEh);
+    procedure adsCoreAfterScroll(DataSet: TDataSet);
   private
     PriceCode, ClientId: Integer;
     RegionCode : Int64;
@@ -167,6 +170,8 @@ type
 
     FOpenWithSearch : Boolean;
 
+    framePromotion : TframePromotion;
+    adsSupplierPromotions : TMyQuery;
     procedure SetOrderLabel;
     procedure SetFilter(Filter: TFilter);
     procedure RefreshCurrentOrderHeader;
@@ -178,6 +183,7 @@ type
     procedure SetClear;
     procedure AddKeyToSearch(Key : Char);
     procedure DeleteOrder;
+    procedure PrepareDetailPromotions;
   public
     frameLegend : TframeLegend;
     procedure ShowForm(
@@ -209,6 +215,10 @@ begin
   fMinOrderCount := adsCoreMINORDERCOUNT;
   fBuyingMatrixType := adsCoreBuyingMatrixType;
   gotoMNNButton := btnGotoMNN;
+
+  PrepareDetailPromotions();
+  
+  framePromotion := TframePromotion.AddFrame(Self, dbgCore, dbgCore, dbgCore, False);
 
   inherited;
 
@@ -243,7 +253,16 @@ end;
 
 procedure TCoreFirmForm.ShowForm(PriceCode: Integer; RegionCode: Int64;
   PriceName, RegionName : String; OnlyLeaders: Boolean=False; OpenWithSearch : Boolean = False);
+var
+  supplierId : Int64;
 begin
+  if adsSupplierPromotions.Active then
+    adsSupplierPromotions.Close;
+  framePromotion.HidePromotion();
+  supplierId := DM.QueryValue('select FIRMCODE from PricesData where PriceCode = :PriceCode', ['PriceCode'], [PriceCode]);
+  framePromotion.SetSupplierId(supplierId);
+  adsSupplierPromotions.ParamByName('SupplierId').Value := supplierId;
+
   FOpenWithSearch := OpenWithSearch;
   if adsProducers.Active then
     adsProducers.Close;
@@ -288,6 +307,8 @@ begin
     RegionName]);
   if not adsAvgOrders.Active then
     adsAvgOrders.Open;
+  if not adsSupplierPromotions.Active then
+    adsSupplierPromotions.Open;
   Application.ProcessMessages;
   inherited ShowForm;
 end;
@@ -956,6 +977,46 @@ begin
     Params.Text := adsCoreCost.DisplayText
   else
     Params.Text := adsCoreLeaderPRICE.DisplayText;
+end;
+
+procedure TCoreFirmForm.adsCoreAfterScroll(DataSet: TDataSet);
+begin
+  inherited;
+  if adsCore.Active and not adsCore.IsEmpty and adsSupplierPromotions.Active and not adsSupplierPromotions.IsEmpty
+  then begin
+    if (adsCoreNamePromotionsCount.AsInteger > 0)
+      and not adsSupplierPromotions.FieldByName('PromotionId').IsNull
+    then
+      framePromotion.ShowPromotion(
+        adsCoreshortcode.AsInteger,
+        adsCorefullcode.AsInteger,
+        adsCoreNamePromotionsCount.AsInteger)
+    else
+      framePromotion.HidePromotion();
+  end
+  else
+    framePromotion.HidePromotion();
+end;
+
+procedure TCoreFirmForm.PrepareDetailPromotions;
+begin
+  adsSupplierPromotions := TMyQuery.Create(Self);
+  adsSupplierPromotions.Connection := DM.MainConnection;
+  adsSupplierPromotions.SQL.Text := ''
++ 'select '
++ '  PromotionCatalogs.PromotionId, '
++ '  PromotionCatalogs.CatalogId, '
++ '  Catalogs.ShortCode '
++ ' from '
++ '   SupplierPromotions '
++ '   inner join PromotionCatalogs on PromotionCatalogs.PromotionId = SupplierPromotions.Id '
++ '   inner join Catalogs on Catalogs.FullCode = PromotionCatalogs.CatalogId '
++ ' where '
++ '   SupplierPromotions.SupplierId = :SupplierId ';
+
+  adsSupplierPromotions.MasterSource := dsCore;
+  adsSupplierPromotions.MasterFields := 'ShortCode';
+  adsSupplierPromotions.DetailFields := 'ShortCode';
 end;
 
 end.

@@ -41,6 +41,10 @@ type
     FLastPromoCatalogId : Int64;
     FLastPromotionId : Int64;
 
+    FShowUnderFocusedControl : Boolean;
+
+    FSupplierId : Int64;
+
     procedure CreateVisualComponent;
     procedure ClearFrame;
     procedure UpdateContorls(nameId, promoCatalogId, promoCount : Integer);
@@ -52,10 +56,12 @@ type
       Owner: TComponent;
       SingleParent: TWinControl;
       AdvertisingPanel: TWinControl;
-      FocusedControl: TWinControl) : TframePromotion;
+      FocusedControl: TWinControl;
+      ShowUnderFocusedControl : Boolean) : TframePromotion;
     procedure SetAdvertisingPanel(AdvertisingPanel: TWinControl; FocusedControl: TWinControl);
     procedure ShowPromotion(nameId, promoCatalogId, promoCount : Integer);
     procedure HidePromotion();
+    procedure SetSupplierId(SupplierId : Int64);
   end;
 
 implementation
@@ -65,7 +71,8 @@ implementation
 { TframePromotion }
 
 class function TframePromotion.AddFrame(Owner: TComponent; SingleParent,
-  AdvertisingPanel: TWinControl; FocusedControl: TWinControl): TframePromotion;
+  AdvertisingPanel: TWinControl; FocusedControl: TWinControl;
+  ShowUnderFocusedControl : Boolean): TframePromotion;
 begin
   Result := TframePromotion.Create(Owner);
   Result.Visible := False;
@@ -75,6 +82,7 @@ begin
   Result.FFocusedControl := FocusedControl;
   Result.Parent := Result.FAdvertisingPanel;
   Result.Align := alClient;
+  Result.FShowUnderFocusedControl := ShowUnderFocusedControl;
 end;
 
 procedure TframePromotion.ClearFrame;
@@ -96,8 +104,6 @@ begin
   Self.Height := 50;
   PromoScrollBox.Visible := False;
   PromoScrollBox.AutoScroll := True;
- // PromoScrollBox.ClientHeight := 10;
-  //PromoScrollBox.ClientWidth := 10;
   PromoScrollBox.HorzScrollBar.Range := 0;
   PromoScrollBox.VertScrollBar.Range := 0;
 end;
@@ -183,6 +189,11 @@ begin
   FFocusedControl := FocusedControl;
 end;
 
+procedure TframePromotion.SetSupplierId(SupplierId: Int64);
+begin
+  Self.FSupplierId := SupplierId;
+end;
+
 procedure TframePromotion.ShowPromotion(
   nameId,
   promoCatalogId,
@@ -227,9 +238,12 @@ begin
   Self.Align := alNone;
   Self.Parent := FSingleParent;
   PromoScrollBox.Visible := True;
-  //PromoScrollBox.Height := 100;
 
-  list := TDBMapping.GetPromotionsByNameId(DM.MainConnection, nameId);
+  if FSupplierId > 0 then
+    list := TDBMapping.GetPromotionsByNameIdAndSupplierId(DM.MainConnection, nameId, FSupplierId)
+  else
+    list := TDBMapping.GetPromotionsByNameId(DM.MainConnection, nameId);
+
   try
     if list.Count > 0 then begin
       list.OwnsObjects := False;
@@ -262,29 +276,26 @@ begin
   Inc(maxWidth, 10);
   Inc(countHeight, 10);
 
+  //Устанавливаем маскмимально возможные размеры всплывающей панели
   Self.Constraints.MaxHeight := (FSingleParent.ClientHeight div 3) * 2;
   Self.Constraints.MaxWidth := (FSingleParent.ClientWidth - 50);
 
-  //PromoScrollBox.VertScrollBar.Visible := False;
-//  PromoScrollBox.Height := PromoScrollBox.VertScrollBar.Range;
-
-  //Self.Width := (FSingleParent.ClientWidth - 50);
-
+  //Устанавливаем размеры панели в зависимости от реального содержания
   Self.Width := Max(maxWidth, lHeaderHide.Left + lHeaderHide.Width + 10 + lHide.Width + 10);
   Self.Height := pHide.Height + countHeight;
 
+  //Центрируем по горизонтали
   Self.Left := (FSingleParent.ClientWidth - Self.Width) div 2;
 
-  //Self.Top := FSingleParent.ClientHeight - Self.Height;
+  //По умолчанию центрируем по вертикали
   lastTop := (FSingleParent.ClientHeight - Self.Height) div 2;
 
-  if FFocusedControl is TCustomDBGridEh then begin
+  if FShowUnderFocusedControl and (FFocusedControl is TCustomDBGridEh) then begin
     r := TCustomDBGridEh(FFocusedControl).DataRowCount;
     newTop := TCustomDBGridEh(FFocusedControl).CellRect(0, r+1).Top;
     newTop := FSingleParent.ScreenToClient(TCustomDBGridEh(FFocusedControl).ClientToScreen(Point(0, newTop))).Y;
     if newTop + Self.Height < FSingleParent.ClientHeight then
       lastTop := newTop;
-    //lastTop := (FSingleParent.ClientHeight - Self.Height) div 2;
   end;
 
   Self.Top := lastTop;

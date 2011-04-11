@@ -613,6 +613,7 @@ object CoreFirmForm: TCoreFirmForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'
@@ -731,6 +732,7 @@ object CoreFirmForm: TCoreFirmForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'
@@ -841,6 +843,7 @@ object CoreFirmForm: TCoreFirmForm
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsCore2BeforePost
     AfterPost = adsCore2AfterPost
+    AfterScroll = adsCoreAfterScroll
     Left = 120
     Top = 112
     ParamData = <
@@ -1138,6 +1141,9 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreProducerName: TStringField
       FieldName = 'ProducerName'
     end
+    object adsCoreNamePromotionsCount: TIntegerField
+      FieldName = 'NamePromotionsCount'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1151,6 +1157,7 @@ object CoreFirmForm: TCoreFirmForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'

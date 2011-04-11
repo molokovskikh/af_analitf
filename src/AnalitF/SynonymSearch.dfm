@@ -534,6 +534,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -643,6 +644,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1035,6 +1037,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreProducerName: TStringField
       FieldName = 'ProducerName'
     end
+    object adsCoreNamePromotionsCount: TIntegerField
+      FieldName = 'NamePromotionsCount'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1198,6 +1203,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'

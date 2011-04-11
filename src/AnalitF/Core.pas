@@ -10,7 +10,8 @@ uses
   ToughDBGrid, OleCtrls, SHDocVw, ActnList, 
   Spin,
   GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
-  U_frameContextReclame;
+  U_frameContextReclame,
+  U_framePromotion;
 
 const
   ALL_REGIONS = 'Все регионы';
@@ -149,6 +150,7 @@ type
     adsCoreBuyingMatrixType: TIntegerField;
     adsPreviosOrdersPeriod: TStringField;
     adsCoreProducerName: TStringField;
+    adsCoreNamePromotionsCount: TIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -198,6 +200,7 @@ type
     tsFirmInfo : TTabSheet;
 
     //frameContextReclame : TframeContextReclame;
+    framePromotion : TframePromotion;
 
     procedure ccf(DataSet: TDataSet);
     procedure RefreshCurrentSumma;
@@ -240,6 +243,9 @@ begin
   fMinOrderCount := adsCoreMINORDERCOUNT;
   fBuyingMatrixType := adsCoreBuyingMatrixType;
   SortOnOrderGrid := False;
+
+  framePromotion := TframePromotion.AddFrame(Self, pCenter, pCenter, dbgCore, False);
+  
   inherited;
 
   frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
@@ -285,6 +291,7 @@ var
   //OrdersH: TOrdersHForm;
   TmpSortList : TStringList;
 begin
+  framePromotion.HidePromotion();
   if adsProducers.Active then
     adsProducers.Close;
   if UseForms then
@@ -419,6 +426,14 @@ begin
   cbFilterSelect( nil);
 
   //frameContextReclame.GetReclame(AParentCode);
+  if adsCore.Active and not adsCore.IsEmpty
+  then begin
+    if adsCoreNamePromotionsCount.AsInteger > 0 then
+      framePromotion.ShowPromotion(
+        adsCoreshortcode.AsInteger,
+        adsCorefullcode.AsInteger,
+        adsCoreNamePromotionsCount.AsInteger);
+  end;
 end;
 
 procedure TCoreForm.adsCore2SynonymGetText(Sender: TField; var Text: String;

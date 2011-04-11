@@ -7,7 +7,8 @@ uses
   Dialogs, Child, DB, ActnList, ExtCtrls, FR_DSet,
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Constant,
   ForceRus, DBGrids, Buttons, Menus, DBCtrls, StrUtils, GridsEh,
-  U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend;
+  U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
+  U_framePromotion;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -136,6 +137,7 @@ type
     adsCoreBuyingMatrixType: TIntegerField;
     adsPreviosOrdersPeriod: TStringField;
     adsCoreProducerName: TStringField;
+    adsCoreNamePromotionsCount: TIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -179,6 +181,7 @@ type
     InternalSearchText : String;
     //Список сортировки
     SortList : TStringList;
+    framePromotion : TframePromotion;
     procedure AddKeyToSearch(Key : Char);
     procedure SetClear;
     procedure ChangeSelected(ASelected : Boolean);
@@ -228,6 +231,9 @@ begin
   fBuyingMatrixType := adsCoreBuyingMatrixType;
   gotoMNNButton := btnGotoMNN;
   SortOnOrderGrid := False;
+
+  framePromotion := TframePromotion.AddFrame(Self, pCenter, pCenter, dbgCore, False);
+  
   inherited;
 
   frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
@@ -528,6 +534,7 @@ begin
   InternalSearchText := '';
   if adsCore.Active then
     adsCore.Close;
+  framePromotion.HidePromotion();  
 end;
 
 procedure TSynonymSearchForm.dbgCoreKeyPress(Sender: TObject;
@@ -628,6 +635,14 @@ begin
     adsPreviosOrders.ParamByName( 'FullCode').Value := adsCoreFullCode.Value;
     adsPreviosOrders.ParamByName( 'ProductId').Value := adsCoreProductID.Value;
     adsPreviosOrders.Open;
+
+    if adsCoreNamePromotionsCount.AsInteger > 0 then
+      framePromotion.ShowPromotion(
+        adsCoreshortcode.AsInteger,
+        adsCorefullcode.AsInteger,
+        adsCoreNamePromotionsCount.AsInteger)
+    else
+      framePromotion.HidePromotion();
   end;
 end;
 

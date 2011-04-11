@@ -568,7 +568,7 @@ begin
   dbgForms.Color := clBtnFace;
   namesFrame.Visible := True;
   formsFrame.Visible := False;
-  if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
+  if Assigned(pAdvertisingOldCatalog) and adsForms.Active and not adsForms.IsEmpty
   then
     framePromotion.HidePromotion();
 end;
@@ -581,7 +581,7 @@ begin
   formsFrame.Visible := True;
   namesFrame.Visible := False;
   //frameContextReclame.GetReclame(adsForms.FieldByName( 'FullCode').AsInteger);
-  if Assigned(pAdvertisingOldCatalog) and pAdvertisingOldCatalog.Visible and adsForms.Active and not adsForms.IsEmpty
+  if Assigned(pAdvertisingOldCatalog) and adsForms.Active and not adsForms.IsEmpty
   then begin
     if adsForms.FieldByName('NamePromotionsCount').AsInteger > 0 then
       framePromotion.ShowPromotion(
@@ -1263,7 +1263,7 @@ begin
   pAdvertisingNewCatalog.Top := oldTop;
   pAdvertisingNewCatalog.ControlStyle := pAdvertisingNewCatalog.ControlStyle - [csParentBackground] + [csOpaque];
 
-  framePromotion := TframePromotion.AddFrame(Self, Self, pAdvertisingOldCatalog, dbgForms);
+  framePromotion := TframePromotion.AddFrame(Self, Self, pAdvertisingOldCatalog, dbgForms, True);
 end;
 
 procedure TNamesFormsForm.PrepareFormsGridPanel;

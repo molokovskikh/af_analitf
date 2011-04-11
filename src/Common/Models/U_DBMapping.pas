@@ -53,6 +53,8 @@ type
     class function GetSinglePromotionByNameId(connection : TCustomMyConnection; nameId : Int64) : TSupplierPromotion;
 
     class function GetPromotionsByNameId(connection : TCustomMyConnection; nameId : Int64) : TObjectList;
+
+    class function GetPromotionsByNameIdAndSupplierId(connection : TCustomMyConnection; nameId : Int64; supplierId : Int64) : TObjectList;
   end;
 
 implementation
@@ -568,6 +570,60 @@ var
 begin
   Result := nil;
   dataSet := GetSqlDataSetPromotionsByNameId(connection, nameId);
+
+  Result := TObjectList.Create();
+  try
+    try
+      while not dataSet.Eof do begin
+        promotion := CreatePromotion(dataSet);
+        Result.Add(promotion);
+        dataSet.Next;
+      end;
+    finally
+      dataSet.Free;
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
+class function TDBMapping.GetPromotionsByNameIdAndSupplierId(
+  connection: TCustomMyConnection; nameId: Int64; supplierId : Int64): TObjectList;
+var
+  dataSet : TMyQuery;
+  promotion : TSupplierPromotion;
+begin
+  Result := nil;
+  dataSet := GetSqlDataSet(
+    connection,
+' select ' +
+'   SupplierPromotions.Id, ' +
+'   SupplierPromotions.Name, ' +
+'   SupplierPromotions.Annotation, ' +
+'   SupplierPromotions.PromoFile, ' +
+'   SupplierPromotions.Begin, ' +
+'   SupplierPromotions.End, ' +
+
+'   Catalogs.FullCode as CatalogId, ' +
+'   Catalogs.Name as CatalogName, ' +
+'   Catalogs.Form as CatalogForm, ' +
+'   concat(Catalogs.Name, '' '', Catalogs.Form) as CatalogFullName, ' +
+
+'   Providers.FirmCode as SupplierId, ' +
+'   Providers.ShortName as SupplierShortName ' +
+' from ' +
+'  Catalogs ' +
+'  join PromotionCatalogs on PromotionCatalogs.CatalogId = Catalogs.FullCode ' +
+'  join SupplierPromotions on SupplierPromotions.Id = PromotionCatalogs.PromotionId ' +
+'  join Providers on Providers.FirmCode = SupplierPromotions.SupplierId ' +
+' where ' +
+'  Catalogs.ShortCode = :NameId ' +
+' and Providers.FirmCode = :SupplierId ' +
+' group by SupplierPromotions.Id ' +
+' order by SupplierPromotions.Begin ',
+    ['NameId', 'SupplierId'],
+    [nameId, supplierId]);
 
   Result := TObjectList.Create();
   try
