@@ -22,7 +22,12 @@ type
     function CreateLegendLabel(
       legend : String;
       legendColor : TColor;
-      legendTextColor : TColor) : TLabel;
+      legendTextColor : TColor) : TLabel; overload;
+    function CreateLegendLabel(
+      legend : String;
+      legendColor : TColor;
+      legendTextColor : TColor;
+      hint : String) : TLabel; overload;
   end;
 
 implementation
@@ -78,6 +83,16 @@ begin
   Result.Width := Result.Canvas.TextWidth(legend) + 60;
   Result.Height := LabelHeight;
   newLeftLabel := Result.Left + Result.Width + 6;
+end;
+
+function TframeBaseLegend.CreateLegendLabel(legend: String; legendColor,
+  legendTextColor: TColor; hint: String): TLabel;
+begin
+  Result := CreateLegendLabel(legend, legendColor, legendTextColor);
+  if Length(hint) > 0 then begin
+    Result.Hint := hint;
+    Result.ShowHint := True;
+  end;
 end;
 
 end.

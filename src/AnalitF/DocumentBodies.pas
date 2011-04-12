@@ -7,7 +7,8 @@ uses
   Dialogs, Child, ExtCtrls, StdCtrls, DBCtrls, GridsEh, DBGridEh,
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, DocumentTypes,
   FR_DSet, FR_DBSet, Buttons, FR_Class,
-  Menus;
+  Menus,
+  U_frameBaseLegend;
 
 type
   TDocumentBodiesForm = class(TChildForm)
@@ -111,6 +112,8 @@ type
     NeedLog,
     NeedCalcFieldsLog : Boolean;
 
+    legeng : TframeBaseLegend;
+
     procedure SetParams;
     procedure PrepareGrid;
     procedure WaybillCalcFields(DataSet : TDataSet);
@@ -151,6 +154,7 @@ type
     procedure PrintWaybill();
     procedure PrintReestr();
     procedure PrintTickets();
+    procedure CreateLegenPanel;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -287,6 +291,7 @@ begin
   dbgDocumentBodies.Columns.Clear();
   dbgDocumentBodies.ShowHint := True;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
+    legeng.Visible := True;
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
@@ -330,6 +335,7 @@ begin
     dbgDocumentBodies.SelectedField := retailMarkupField;
   end
   else begin
+    legeng.Visible := False;
     adsDocumentBodies.OnCalcFields := nil;
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
@@ -546,6 +552,8 @@ begin
   FGridColumns.Caption := 'Столбцы...';
   FGridColumns.OnClick := GridColumnsClick;
   FGridPopup.Items.Add(FGridColumns);
+
+  CreateLegenPanel();
 
   inherited;
 end;
@@ -1662,6 +1670,39 @@ begin
   finally
     TicketParams.Free;
   end;
+end;
+
+procedure TDocumentBodiesForm.CreateLegenPanel;
+var
+  lLegend : TLabel;
+begin
+  legeng := TframeBaseLegend.Create(Self);
+  legeng.Parent := pGrid;
+  legeng.Align := alBottom;
+
+  lLegend := legeng.CreateLegendLabel(
+    'НДС: не установлен для ЖНВЛС',
+    clRed,
+    clWindowText,
+    'Для ЖНВЛС-позиции некорректно установлено значение НДС');
+
+  lLegend := legeng.CreateLegendLabel(
+    'Торговая наценка оптовика: превышение розничной наценки',
+    clRed,
+    clWindowText,
+    'Значение торговой наценки оптовика превышает максимальную наценку оптового звена');
+
+  lLegend := legeng.CreateLegendLabel(
+    'Розничная наценка: превышение максимальной розничной наценки',
+    clRed,
+    clWindowText,
+    'Значение розничной наценки превышает максимальную розничной наценку');
+
+  lLegend := legeng.CreateLegendLabel(
+    'Розничная цена: не рассчитана',
+    clRed,
+    clWindowText,
+    'Значения розничной наценки, розничной цены, розничной суммы и реальной наценки не были вычислены автоматически');
 end;
 
 end.
