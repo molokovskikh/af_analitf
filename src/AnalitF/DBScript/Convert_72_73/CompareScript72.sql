@@ -1,5 +1,6 @@
 alter table analitf.catalogs
-  add column `PromotionsCount`  int not null default '0';
+  add column `PromotionsCount`  int not null default '0',
+  add column `NamePromotionsCount`  int not null default '0';
 
 alter table analitf.documentbodies
   modify column `ProducerCost` decimal(18,4) default null,
@@ -12,7 +13,11 @@ create table analitf.supplierpromotions
   `Id` bigint(20) NOT NULL,
   `Status` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `SupplierId` bigint(20) NOT NULL,
-  `Annotation` varchar(255) NOT NULL,
+  `Name` varchar(255) NOT NULL,
+  `Annotation` TEXT NOT NULL,
+  `PromoFile` varchar(255) default NULL,
+  `Begin` datetime DEFAULT NULL,
+  `End` datetime DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `IDX_SupplierPromotions_SupplierId` (`SupplierId`)
 ) ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
