@@ -963,6 +963,7 @@ begin
   gbPrevOrders.Constraints.MinWidth := lblPriceAvg.Canvas.TextWidth(lblPriceAvg.Caption) + 100;
   pcMaxProducerCosts := TPageControl.Create(Self);
   pcMaxProducerCosts.Parent := pBottom;
+  pcMaxProducerCosts.MultiLine := True;
 
   tsMaxProducerCosts := TTabSheet.Create(Self);
   tsMaxProducerCosts.PageControl := pcMaxProducerCosts;
