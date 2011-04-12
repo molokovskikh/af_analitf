@@ -335,7 +335,13 @@ begin
         else
           if Assigned(PrevForm) then
             PrevForm.ShowAsPrevForm;
-    end;
+    end
+    else
+      if (Sender = dbgEditOrders) and (Key = VK_DELETE) then begin
+        adsOrders.Delete();
+        tmrCheckOrderCount.Enabled := False;
+        tmrCheckOrderCount.Enabled := True;
+      end;
 end;
 
 procedure TOrdersForm.dbgOrdersSortMarkingChanged(Sender: TObject);
