@@ -449,7 +449,6 @@ begin
     end
     else
       if     (ClientName <> DM.adcUpdate.FieldByName('ClientName').AsString)
-         and (PriceName  <> DM.adcUpdate.FieldByName('PriceName').AsString)
       then begin
         AddClient();
       end;
