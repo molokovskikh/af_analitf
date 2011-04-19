@@ -545,8 +545,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.Percent/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -655,8 +655,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.Percent/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1214,8 +1214,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.Percent is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.Percent/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
+        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'

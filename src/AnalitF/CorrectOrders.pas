@@ -856,7 +856,7 @@ begin
     + '  CurrentOrderLists.OrderCount as OldOrderCount, '
     + '  if(CurrentOrderLists.ServerQuantity is null, CurrentOrderLists.OrderCount, if(CurrentOrderLists.ServerQuantity > CurrentOrderLists.OrderCount, CurrentOrderLists.OrderCount, CurrentOrderLists.ServerQuantity)) as NewOrderCount, '
     + '  CurrentOrderLists.Price as OldPrice, '
-    + '  if(dop.Percent is null, CurrentOrderLists.ServerCost, cast(CurrentOrderLists.ServerCost * (1 + dop.Percent/100) as decimal(18, 2))) as NewPrice '
+    + '  if(dop.OtherDelay is null, CurrentOrderLists.ServerCost, cast(CurrentOrderLists.ServerCost * (1 + dop.OtherDelay/100) as decimal(18, 2))) as NewPrice '
     + 'from '
     + '  CurrentOrderHeads '
     + '  inner join clients   on (clients.clientid = CurrentOrderHeads.ClientId) '

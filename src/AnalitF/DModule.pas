@@ -2072,6 +2072,11 @@ begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 73;
       end;
+
+      if DBVersion = 73 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 74;
+      end;
     end;
 
 
@@ -3270,7 +3275,7 @@ begin
 +'       ( '
 +'              ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate, DelayOfPayment '
 +'       ) '
-+'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp(), dop.Percent '
++'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp(), dop.OtherDelay '
 +'from   (pricesdata pd, pricesregionaldata prd, regions r) '
 +'       left join DelayOfPayments dop '
 +'       on     dop.FirmCode = pd.FirmCode '
@@ -3340,7 +3345,7 @@ begin
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
 +'       (s.SynonymName, concat(catalogs.name, '' '', catalogs.form)) as '
 +'       SynonymName   , sf.synonymname, '
-+'       if(dop.Percent is null, c.Cost, c.Cost * (1 + dop.Percent/100)), '
++'       if(dop.OtherDelay is null, c.Cost, c.Cost * (1 + dop.OtherDelay/100)), '
 +'       c.AWAIT, c.JUNK, 0, '
 +'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT, c.cost, '
 +'       c.SupplierPriceMarkup, '
@@ -3381,6 +3386,8 @@ begin
   RaiseException := False;
 
   adsQueryValue.Close;
+
+{
 
   adsQueryValue.SQL.Text := ''
   +'select clients.ClientId             , '
@@ -3438,6 +3445,12 @@ begin
   finally
     adsQueryValue.Close;
   end;
+}
+
+  adsQueryValue.SQL.Text := ''
+  +' delete from Delayofpayments '
+  +' where DayOfWeek <> "Monday" ';
+  adsQueryValue.Execute;
 
   //ƒобавл€ем отсрочки по всем остальным поставщиками и клиентам,
   //у которых нет записей в DelayOfPayments
@@ -3446,7 +3459,7 @@ begin
   +'into   Delayofpayments '
   +'       ( '
   +'              FirmCode, '
-  +'              Percent '
+  +'              OtherDelay '
   +'       ) '
   +'select  '
   +'       providers.FirmCode, '
@@ -3464,7 +3477,7 @@ begin
   +'update clients, '
   +'       userinfo, '
   +'       delayofpayments dop '
-  +'set    dop.Percent   = if(clients.AllowDelayOfPayment = 0, null, IFNULL(dop.Percent, 0.0)) '
+  +'set    dop.OtherDelay   = if(clients.AllowDelayOfPayment = 0, null, IFNULL(dop.OtherDelay, 0.0)) '
   +'where  (userinfo.ClientId = clients.ClientId)';
   adsQueryValue.Execute;
 

@@ -222,7 +222,7 @@ begin
 +'    `FullName` varchar(255) default null, '
 +'    `SelfAddressId` varchar(200) default null, '
 +'    primary key (`CLIENTID`)                   , '
-+'    unique key `PK_CLIENTS` (`CLIENTID`)       , ' 
++'    unique key `PK_CLIENTS` (`CLIENTID`)       , '
 +'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) ' 
 +'  ) ' 
 + GetTableOptions();
@@ -397,11 +397,13 @@ function TDelayOfPaymentsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `FirmCode` bigint(20) not null      , ' 
-+'    `Percent` decimal(18,2) default null, ' 
-+'    primary key (`FirmCode`) ' 
-+'  ) ' 
++'  ( '
++'    `FirmCode` bigint(20) not null      , '
++'    `DayOfWeek` enum (''Monday'', ''Tuesday'', ''Wednesday'', ''Thursday'', ''Friday'', ''Saturday'', ''Sunday'') not null, '
++'    `VitallyImportantDelay` decimal(18,2) default null, '
++'    `OtherDelay` decimal(18,2) default null, '
++'    key `IDX_DelayOfPayments_FirmCode` (`FirmCode`) '
++'  ) '
 + GetTableOptions();
 end;
 

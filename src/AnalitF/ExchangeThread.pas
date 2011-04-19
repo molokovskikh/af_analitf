@@ -570,7 +570,7 @@ begin
            '/' + DM.SerBeg + DM.SerEnd + '/code.asmx'
   else
 {$ifdef UsePrgDataTest}
-    URL := 'https://prg1.adc.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
+    URL := 'https://test.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 {$else}
     URL := 'https://ios.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
 {$endif}
@@ -1719,6 +1719,8 @@ begin
   if utDelayOfPayments in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('DelayOfPayments', RootFolder()+SDirIn+'\DelayOfPayments.txt');
     InternalExecute;
+    SQL.Text := ' delete from Delayofpayments where DayOfWeek <> "Monday" ';
+    InternalExecute;
   end;
   //RegionalData
   if utRegionalData in UpdateTables then begin
@@ -1898,7 +1900,7 @@ begin
         + '(ProductId, RegionCode, MinCost) '
         +'select   ProductId , '
         +'         RegionCode, '
-        +'         min(if(Junk = 0, if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100)), null)) '
+        +'         min(if(Junk = 0, if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.OtherDelay/100)), null)) '
         +'from     Core      , '
         +'         Pricesdata '
         +'         left join Delayofpayments '
@@ -1912,8 +1914,8 @@ begin
         + ' SELECT '
         + '   Core.ProductId, '
         + '   Core.RegionCode, '
-        + '   min(nullif(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100)), MinPrices.MinCost)) as NextCost, '
-        + '   sum(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.Percent/100)) = MinPrices.MinCost) as MinCostCount '
+        + '   min(nullif(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.OtherDelay/100)), MinPrices.MinCost)) as NextCost, '
+        + '   sum(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.OtherDelay/100)) = MinPrices.MinCost) as MinCostCount '
         + ' FROM '
         + '    MinPrices '
         + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode and Core.Junk = 0 '
@@ -2069,7 +2071,7 @@ begin
         + '    (Core.ProductId  = MinPrices.ProductId) '
         + 'and (Core.RegionCode = MinPrices.RegionCode) '
         + 'and (Pricesdata.PRICECODE     = Core.Pricecode) '
-        + 'and (cast( if(Delayofpayments.FirmCode is null, Core.Cost, Core.Cost * (1 + Delayofpayments.Percent/100)) as decimal(18, 2)) = MinPrices.MinCost)';
+        + 'and (cast( if(Delayofpayments.FirmCode is null, Core.Cost, Core.Cost * (1 + Delayofpayments.OtherDelay/100)) as decimal(18, 2)) = MinPrices.MinCost)';
       InternalExecute;
     end;
   end;
