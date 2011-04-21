@@ -1267,11 +1267,15 @@ var
 begin
   adsDocumentBodies.DisableControls;
   LastId := adsDocumentBodiesId.Value;
-  DBProc.SetFilter(adsDocumentBodies, 'Printed = True');
+  adsDocumentBodies.Close;
+  adsDocumentBodies.AddWhere('Printed = 1');
+  adsDocumentBodies.Open;
   try
     Action();
   finally
-    DBProc.SetFilter(adsDocumentBodies, '');
+    adsDocumentBodies.Close;
+    adsDocumentBodies.RestoreSQL;
+    adsDocumentBodies.Open;
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
     adsDocumentBodies.EnableControls;
