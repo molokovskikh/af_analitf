@@ -318,7 +318,7 @@ begin
       end
       else
         adsSummary.SQL.Text := adsSummary.SQL.Text
-          + #13#10' and (CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
+          + #13#10' and (CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
       dbgSummaryCurrent.InputField := 'OrderCount';
       dbgSummaryCurrent.Tag := 256;
       if FUseCorrectOrders then
@@ -332,7 +332,7 @@ begin
       dbgSummarySend.Visible := True;
       adsSummary.SQL.Text := adsSendSummary.SQL.Text;
       adsSummary.SQL.Text := adsSummary.SQL.Text
-        + #13#10' and (PostedOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
+        + #13#10' and (PostedOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
       adsSummary.ParamByName( 'DATEFROM').Value := LastDateFrom;
       adsSummary.ParamByName( 'DATETO').Value := IncDay(LastDateTo);
       dbgSummarySend.InputField := '';
@@ -394,7 +394,7 @@ begin
         adsSummary.Close;
       adsSummary.SQL.Text :=
         adsCurrentSummary.SQL.Text
-        + #13#10' and (CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
+        + #13#10' and (CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
       adsSummary.Open;
       adsSummary.IndexFieldNames := 'SynonymName';
       DM.ShowFastReport( 'Summary.frf', adsSummary, APreview);

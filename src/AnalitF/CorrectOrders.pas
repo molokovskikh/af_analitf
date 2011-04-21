@@ -865,7 +865,7 @@ begin
     + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode)'
     + ' '
     + 'where '
-    + '    CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + '  '
+    + '    CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + '  '
     + 'and CurrentOrderHeads.Closed = 0 '
     + 'and CurrentOrderHeads.Frozen = 0 '
     + 'and CurrentOrderHeads.Send = 1 '

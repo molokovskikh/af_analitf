@@ -481,8 +481,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -585,8 +585,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'

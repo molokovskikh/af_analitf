@@ -268,7 +268,7 @@ begin
       end
       else
         adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
-          + #13#10' and (CurrentOrderHeads.ClientId = ' + DM.adtClientsCLIENTID.AsString + ') '#13#10;
+          + #13#10' and (CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
 
       adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
         + ' group by CurrentOrderHeads.OrderId having count(CurrentOrderLists.Id) > 0 order by CurrentOrderHeads.PriceName ';
