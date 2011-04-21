@@ -3501,7 +3501,14 @@ begin
     DM.adcUpdate.Close;
     DM.adcUpdate.SQL.Text :=
       Format(
-      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s set Printed = 1;',
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
+      ' ( ' +
+      '    Id, DocumentId, Product, Code, Certificates, Period, Producer, ' +
+      '    Country, ProducerCost, RegistryCost, SupplierPriceMarkup, ' +
+      '    SupplierCostWithoutNDS, SupplierCost, Quantity, VitallyImportant, ' +
+      '    NDS, SerialNumber, Amount, NdsAmount ' +
+      ' ) ' +
+      'set Printed = 1;',
       [InputFileName,
        'DocumentBodies']);
     DM.adcUpdate.Execute;

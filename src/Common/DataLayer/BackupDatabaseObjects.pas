@@ -317,6 +317,8 @@ begin
 +'  `ManualCorrection` tinyint(1) unsigned not null default ''0'', '
 +'  `ManualRetailPrice` decimal(12,6) default null, '
 +'  `Printed` tinyint(1) unsigned not null default ''1'', '
++'  `Amount` decimal(18,4) unsigned DEFAULT NULL, '
++'  `NdsAmount` decimal(18,4) unsigned DEFAULT NULL, '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
 + GetTableOptions();
