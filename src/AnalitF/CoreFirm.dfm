@@ -612,6 +612,9 @@ object CoreFirmForm: TCoreFirmForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || CCore.vitallyimportant) as Ret' +
+        'ailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    CCore.CodeFirmCr,'
@@ -627,8 +630,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 + d' +
-        'op.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 ' +
+        '+ dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -731,6 +734,9 @@ object CoreFirmForm: TCoreFirmForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || CCore.vitallyimportant) as Ret' +
+        'ailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    CCore.CodeFirmCr,'
@@ -746,8 +752,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 + d' +
-        'op.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 ' +
+        '+ dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1144,6 +1150,9 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreNamePromotionsCount: TIntegerField
       FieldName = 'NamePromotionsCount'
     end
+    object adsCoreRetailVitallyImportant: TLargeintField
+      FieldName = 'RetailVitallyImportant'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1156,6 +1165,9 @@ object CoreFirmForm: TCoreFirmForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || CCore.vitallyimportant) as Ret' +
+        'ailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    CCore.CodeFirmCr,'
@@ -1171,8 +1183,8 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 + d' +
-        'op.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 ' +
+        '+ dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'

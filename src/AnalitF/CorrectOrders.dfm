@@ -471,6 +471,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -575,6 +578,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -918,6 +924,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object adsCoreCatalogVitallyImportant: TBooleanField
       FieldName = 'CatalogVitallyImportant'
+    end
+    object adsCoreRetailVitallyImportant: TLargeintField
+      FieldName = 'RetailVitallyImportant'
     end
   end
   object mdValues: TRxMemoryData

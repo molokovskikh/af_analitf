@@ -336,6 +336,7 @@ type
     adsOrderDetailsRetailMarkup: TFloatField;
     adtClientsSelfAddressId: TStringField;
     adsOrderDetailsRetailCost: TFloatField;
+    adsOrderDetailsRetailVitallyImportant: TLargeintField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -550,6 +551,15 @@ type
 
     function GetRetailMarkup(Markups : TObjectList; BaseCost : Currency) : TRetailMarkup;
     function GetMarkup(Markups : TObjectList; BaseCost : Currency) : Currency;
+
+    function GetRetailCostLast(
+      VitallyImportant : Boolean;
+      SupplierCost : Currency
+    ) : Currency;
+    function GetRetailMarkupValue(
+      VitallyImportant : Boolean;
+      SupplierCost : Currency
+    ) : Currency;
 
     //Обрабатываем папки с документами
     procedure ProcessDocs(ImportDocs : Boolean);
@@ -5123,6 +5133,23 @@ function TDM.GetRetUpCostByRetailCost(BaseCost,
   RetailCost: Currency): Currency;
 begin
   Result := (RetailCost/BaseCost - 1)* 100;
+end;
+
+function TDM.GetRetailCostLast(VitallyImportant: Boolean;
+  SupplierCost: Currency): Currency;
+begin
+  Result := GetPriceRetByMarkup(
+    SupplierCost,
+    GetRetailMarkupValue(VitallyImportant, SupplierCost));
+end;
+
+function TDM.GetRetailMarkupValue(VitallyImportant: Boolean;
+  SupplierCost: Currency): Currency;
+begin
+  if VitallyImportant then
+    Result := GetVitallyImportantMarkup(SupplierCost)
+  else
+    Result := GetRetUpCost(SupplierCost);
 end;
 
 initialization

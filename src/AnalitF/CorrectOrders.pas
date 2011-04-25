@@ -126,6 +126,7 @@ type
     adsCoreMaxProducerCost: TFloatField;
     adsCoreProducerName: TStringField;
     adsCoreCatalogVitallyImportant: TBooleanField;
+    adsCoreRetailVitallyImportant: TLargeintField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -555,7 +556,10 @@ end;
 procedure TCorrectOrdersForm.adsCoreCalcFields(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
+    adsCorePriceRet.AsCurrency :=
+      DM.GetRetailCostLast(
+        adsCoreRetailVitallyImportant.AsBoolean,
+        adsCoreRealCost.AsCurrency);
   except
   end;
 end;

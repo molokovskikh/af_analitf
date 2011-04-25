@@ -667,10 +667,14 @@ object DM: TDM
       '    list.ProducerCost, '
       '    list.NDS,'
       '    list.RetailMarkup,'
-      '    list.RetailCost'
+      '    list.RetailCost,'
+      
+        '    (ifnull(catalogs.VitallyImportant, 0) || list.VitallyImporta' +
+        'nt) as RetailVitallyImportant'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'
+      '  left join catalogs on catalogs.fullcode = products.catalogid'
       'WHERE '
       '    (list.OrderId=:OrderId) '
       'AND (list.OrderCount>0)'
@@ -798,6 +802,9 @@ object DM: TDM
     end
     object adsOrderDetailsRetailCost: TFloatField
       FieldName = 'RetailCost'
+    end
+    object adsOrderDetailsRetailVitallyImportant: TLargeintField
+      FieldName = 'RetailVitallyImportant'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -1757,10 +1764,14 @@ object DM: TDM
       '    list.ProducerCost, '
       '    list.NDS, '
       '    list.RetailMarkup,'
-      '    list.RetailCost'
+      '    list.RetailCost,'
+      
+        '    (ifnull(catalogs.VitallyImportant, 0) || list.VitallyImporta' +
+        'nt) as RetailVitallyImportant'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'
+      '  left join catalogs on catalogs.fullcode = products.catalogid'
       'WHERE '
       '    (list.OrderId=:OrderId) '
       'AND (list.OrderCount>0)'

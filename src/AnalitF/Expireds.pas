@@ -93,6 +93,7 @@ type
     adsExpiredsMaxProducerCost: TFloatField;
     adsExpiredsBuyingMatrixType: TIntegerField;
     adsExpiredsProducerName: TStringField;
+    adsExpiredsRetailVitallyImportant: TLargeintField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -168,7 +169,10 @@ end;
 procedure TExpiredsForm.ecf(DataSet: TDataSet);
 begin
   try
-    adsExpiredsCryptPriceRet.AsCurrency := DM.GetPriceRet(adsExpiredsRealCost.AsCurrency);
+    adsExpiredsCryptPriceRet.AsCurrency :=
+      DM.GetRetailCostLast(
+        adsExpiredsRetailVitallyImportant.AsBoolean,
+        adsExpiredsRealCost.AsCurrency);
   except
   end;
 end;

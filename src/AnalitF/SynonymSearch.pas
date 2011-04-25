@@ -138,6 +138,7 @@ type
     adsPreviosOrdersPeriod: TStringField;
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
+    adsCoreRetailVitallyImportant: TIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -320,7 +321,10 @@ end;
 procedure TSynonymSearchForm.ccf(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
+    adsCorePriceRet.AsCurrency :=
+      DM.GetRetailCostLast(
+        adsCoreRetailVitallyImportant.AsBoolean,
+        adsCoreRealCost.AsCurrency);
 {
     if Assigned(SortList) then
       adsCoreSortOrder.AsInteger := SortList.IndexOf(adsCoreCOREID.AsString);

@@ -151,6 +151,7 @@ type
     adsPreviosOrdersPeriod: TStringField;
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
+    adsCoreRetailVitallyImportant: TLargeintField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -457,7 +458,10 @@ begin
       adsCoreSortOrder.AsInteger := elemIndex;
       adsCorePriceDelta.AsCurrency := SortElem(SortList.Objects[elemIndex]).PriceDelta;
     end;
-    adsCorePriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
+    adsCorePriceRet.AsCurrency :=
+      DM.GetRetailCostLast(
+        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRealCost.AsCurrency);
   except
   end;
 end;
@@ -775,7 +779,9 @@ begin
   if not adsCore.IsEmpty and (adsCoreSynonymCode.AsInteger >= 0) then begin
     //Если пользователь не изменял сам наценку, то применяем текущую наценку
     if not UserSetRetUpCost then begin
-      retailMarkup := DM.GetRetUpCost(adsCoreRealCost.AsCurrency);
+      retailMarkup := DM.GetRetailMarkupValue(
+        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRealCost.AsCurrency);
       ProgramSetSetRetUpCost := True;
       try
         if not VarIsNull(retailMarkup) then

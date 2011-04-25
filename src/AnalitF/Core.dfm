@@ -676,6 +676,9 @@ object CoreForm: TCoreForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -688,8 +691,8 @@ object CoreForm: TCoreForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -787,6 +790,9 @@ object CoreForm: TCoreForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -799,8 +805,8 @@ object CoreForm: TCoreForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1162,6 +1168,9 @@ object CoreForm: TCoreForm
     object adsCoreNamePromotionsCount: TIntegerField
       FieldName = 'NamePromotionsCount'
     end
+    object adsCoreRetailVitallyImportant: TLargeintField
+      FieldName = 'RetailVitallyImportant'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
@@ -1350,6 +1359,9 @@ object CoreForm: TCoreForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -1362,8 +1374,8 @@ object CoreForm: TCoreForm
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'

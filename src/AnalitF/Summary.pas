@@ -102,6 +102,7 @@ type
     tmrFillReport: TTimer;
     adsSummaryAddressName: TStringField;
     adsSummaryRetailCost: TFloatField;
+    adsSummaryRetailVitallyImportant: TLargeintField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -360,7 +361,10 @@ begin
   //вычисляем сумму по позиции
   try
     if (LastSymmaryType = 0) or adsSummaryRetailCost.IsNull then begin
-      adsSummaryPriceRet.AsCurrency := DM.GetPriceRet(adsSummaryRealCost.AsCurrency)
+      adsSummaryPriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsSummaryRetailVitallyImportant.AsBoolean,
+          adsSummaryRealCost.AsCurrency)
     end
     else
       adsSummaryPriceRet.AsCurrency := adsSummaryRetailCost.Value;

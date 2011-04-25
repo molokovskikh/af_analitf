@@ -404,6 +404,9 @@ inherited ExpiredsForm: TExpiredsForm
       '    catalogs.fullcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
@@ -415,8 +418,8 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.doc,'
       '    Core.registrycost,'
@@ -501,6 +504,9 @@ inherited ExpiredsForm: TExpiredsForm
       '    catalogs.fullcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
@@ -512,8 +518,8 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.doc,'
       '    Core.registrycost,'
@@ -815,6 +821,9 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsProducerName: TStringField
       FieldName = 'ProducerName'
+    end
+    object adsExpiredsRetailVitallyImportant: TLargeintField
+      FieldName = 'RetailVitallyImportant'
     end
   end
 end

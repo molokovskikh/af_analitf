@@ -218,7 +218,11 @@ begin
   end
   else begin
     if dataSet.FieldByName('RetailCost').IsNull then begin
-      RetailCost := FDataLayer.GetPriceRet(dataSet.FieldByName('RealPRICE').AsCurrency);
+      RetailCost := FDataLayer
+        .GetRetailCostLast(
+          dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
+          dataSet.FieldByName('RealPRICE').AsCurrency
+        );
       AddPostParam(
         'RetailCost',
         FloatToServiceStr(RetailCost));

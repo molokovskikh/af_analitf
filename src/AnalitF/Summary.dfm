@@ -720,6 +720,9 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
@@ -808,6 +811,9 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || PostedOrderLists.vitallyimport' +
+        'ant) as RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    PostedOrderLists.CoreId AS CoreId,'
       '    PostedOrderLists.Volume,'
@@ -926,6 +932,9 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
@@ -1009,6 +1018,9 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      
+        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
+        'ilVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
@@ -1262,6 +1274,9 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryRetailCost: TFloatField
       FieldName = 'RetailCost'
+    end
+    object adsSummaryRetailVitallyImportant: TLargeintField
+      FieldName = 'RetailVitallyImportant'
     end
   end
   object tmrFillReport: TTimer

@@ -122,6 +122,7 @@ type
     adsCoreBuyingMatrixType: TIntegerField;
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
+    adsCoreRetailVitallyImportant: TLargeintField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -316,7 +317,10 @@ end;
 procedure TCoreFirmForm.ccf(DataSet: TDataSet);
 begin
   try
-    adsCoreCryptPriceRet.AsCurrency := DM.GetPriceRet(adsCoreRealCost.AsCurrency);
+    adsCoreCryptPriceRet.AsCurrency :=
+      DM.GetRetailCostLast(
+        adsCoreRetailVitallyImportant.AsBoolean,
+        adsCoreRealCost.AsCurrency);
   except
   end;
 end;
