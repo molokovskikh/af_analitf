@@ -73,6 +73,8 @@ type
     dbtProviderDocumentId: TDBText;
     sbWaybillToExcel: TSpeedButton;
     adsDocumentBodiesPrinted: TBooleanField;
+    adsDocumentBodiesAmount: TFloatField;
+    adsDocumentBodiesNdsAmount: TFloatField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);

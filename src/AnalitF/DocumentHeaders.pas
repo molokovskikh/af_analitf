@@ -281,11 +281,11 @@ begin
 '  dh.*, ' +
 '  dh.WriteTime as LocalWriteTime, ' +
 '  p.FullName as ProviderName, ' +
-'  sum(dbodies.SupplierCost*Quantity) as TotalSumm, ' +
-'  sum(dbodies.SupplierCost*Quantity) - sum(dbodies.SupplierCostWithoutNDS*Quantity) as TotalNDSSumm, ' +
+'  sum(dbodies.Amount) as TotalSumm, ' +
+'  sum(dbodies.NdsAmount) as TotalNDSSumm, ' +
 '  count(dbodies.Id) as TotalCount, ' +
-'  count(dbodies.SupplierCost) as CostCount, ' +
-'  count(dbodies.SupplierCostWithoutNDS) as NDSCostCount ' +
+'  count(dbodies.Amount) as CostCount, ' +
+'  count(dbodies.NdsAmount) as NDSCostCount ' +
 ' from ' +
 '   DocumentHeaders dh, ' +
 '   DocumentBodies dbodies, ' +
