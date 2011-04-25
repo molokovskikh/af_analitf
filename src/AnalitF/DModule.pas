@@ -2075,7 +2075,12 @@ begin
 
       if DBVersion = 73 then begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-        DBVersion := 74;
+        DBVersion := 75;
+      end;
+
+      if DBVersion = 74 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 75;
       end;
     end;
 
@@ -3273,9 +3278,9 @@ begin
 +'insert '
 +'into   CurrentOrderHeads '
 +'       ( '
-+'              ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate, DelayOfPayment '
++'              ClientId, PriceCode, RegionCode, PriceName, RegionName, OrderDate, DelayOfPayment, VitallyDelayOfPayment '
 +'       ) '
-+'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp(), dop.OtherDelay '
++'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp(), dop.OtherDelay, dop.VitallyImportantDelay '
 +'from   (pricesdata pd, pricesregionaldata prd, regions r) '
 +'       left join DelayOfPayments dop '
 +'       on     dop.FirmCode = pd.FirmCode '

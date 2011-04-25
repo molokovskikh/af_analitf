@@ -262,6 +262,11 @@ begin
   postLeaderMinCost := '';
   postLeaderMinPriceCode := '';
   try
+    if Length(dataSet.FieldByName('PRICE').AsString) > 0 then
+      TmpOrderCost := dataSet.FieldByName('PRICE').AsFloat
+    else
+      TmpOrderCost := 0.0;
+    AddPostParam('CostWithDelayOfPayment', FloatToServiceStr(TmpOrderCost));
     if Length(dataSet.FieldByName('RealPRICE').AsString) > 0 then
       TmpOrderCost := dataSet.FieldByName('RealPRICE').AsFloat
     else
@@ -439,6 +444,12 @@ begin
       FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').IsNull,
       '',
       FloatToServiceStr(FDataLayer.adsOrdersHeaders.FieldByName('DelayOfPayment').AsFloat)));
+  AddPostParam(
+    'VitallyImportantDelayOfPayment',
+    IfThen(
+      FDataLayer.adsOrdersHeaders.FieldByName('VitallyDelayOfPayment').IsNull,
+      '',
+      FloatToServiceStr(FDataLayer.adsOrdersHeaders.FieldByName('VitallyDelayOfPayment').AsFloat)));
 end;
 
 procedure TPostSomeOrdersController.FillPostParams;
@@ -593,11 +604,11 @@ begin
         +'  PostedOrderHeads '
         +'  (SERVERORDERID, CLIENTID, PRICECODE, REGIONCODE, PRICENAME, RegionName, '
         +'   OrderDate, SendDate, Closed, Send, Comments, MessageTo, SendResult, '
-        +'   ErrorReason, ServerMinReq, DelayOfPayment, PriceDate) '
+        +'   ErrorReason, ServerMinReq, DelayOfPayment, PriceDate, VitallyDelayOfPayment) '
         +'select '
         +'   CurrentOrderHeads.SERVERORDERID, CurrentOrderHeads.CLIENTID, CurrentOrderHeads.PRICECODE, CurrentOrderHeads.REGIONCODE, CurrentOrderHeads.PRICENAME, CurrentOrderHeads.RegionName, '
         +'   CurrentOrderHeads.OrderDate, CurrentOrderHeads.SendDate, CurrentOrderHeads.Closed, CurrentOrderHeads.Send, CurrentOrderHeads.Comments, CurrentOrderHeads.MessageTo, CurrentOrderHeads.SendResult, '
-        +'   CurrentOrderHeads.ErrorReason, CurrentOrderHeads.ServerMinReq, CurrentOrderHeads.DelayOfPayment, pricesdata.DATEPRICE '
+        +'   CurrentOrderHeads.ErrorReason, CurrentOrderHeads.ServerMinReq, CurrentOrderHeads.DelayOfPayment, pricesdata.DATEPRICE, CurrentOrderHeads.VitallyDelayOfPayment '
         +'from '
         +'  CurrentOrderHeads '
         +'  inner join pricesdata on pricesdata.PriceCode = CurrentOrderHeads.PriceCode '
@@ -778,7 +789,7 @@ begin
     DeleteFile('PostSomeOrders.txt');
   FPostParams.SaveToFile('PostSomeOrders.txt');
 }    
-  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersFullExtend', FPostParams);
+  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersWithDelays', FPostParams);
   rawResult := soapResult;
 
   serverResponse := TStringList.Create;

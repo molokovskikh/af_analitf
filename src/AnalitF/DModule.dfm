@@ -494,8 +494,8 @@ object DM: TDM
       '    Core.Note,'
       '    Core.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop' +
-        '.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
+        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -835,6 +835,7 @@ object DM: TDM
       '    CurrentOrderHeads.MessageTo,'
       '    CurrentOrderHeads.Comments,'
       '    CurrentOrderHeads.DelayOfPayment,'
+      '    CurrentOrderHeads.VitallyDelayOfPayment,'
       '    pricesregionaldata.minreq,'
       '    pricesregionaldata.Enabled as PriceEnabled,'
       '    count(CurrentOrderLists.Id) as Positions,'
@@ -1154,8 +1155,8 @@ object DM: TDM
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
       
-        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 + d' +
-        'op.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 ' +
+        '+ dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'

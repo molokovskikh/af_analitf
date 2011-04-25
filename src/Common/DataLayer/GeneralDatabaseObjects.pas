@@ -402,7 +402,8 @@ begin
 +'    `DayOfWeek` enum (''Monday'', ''Tuesday'', ''Wednesday'', ''Thursday'', ''Friday'', ''Saturday'', ''Sunday'') not null, '
 +'    `VitallyImportantDelay` decimal(18,2) default null, '
 +'    `OtherDelay` decimal(18,2) default null, '
-+'    key `IDX_DelayOfPayments_FirmCode` (`FirmCode`) '
++'    key `IDX_DelayOfPayments_FirmCode` (`FirmCode`), '
++'    key `IDX_DelayOfPayments_Week` (`FirmCode`, `DayOfWeek`) '
 +'  ) '
 + GetTableOptions();
 end;
