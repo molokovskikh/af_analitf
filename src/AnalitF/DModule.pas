@@ -3462,11 +3462,6 @@ begin
   end;
 }
 
-  adsQueryValue.SQL.Text := ''
-  +' delete from Delayofpayments '
-  +' where DayOfWeek <> "Monday" ';
-  adsQueryValue.Execute;
-
   //ƒобавл€ем отсрочки по всем остальным поставщиками и клиентам,
   //у которых нет записей в DelayOfPayments
   adsQueryValue.SQL.Text := ''
@@ -3474,14 +3469,35 @@ begin
   +'into   Delayofpayments '
   +'       ( '
   +'              FirmCode, '
+  +'              DayOfWeek, '
+  +'              VitallyImportantDelay, '
   +'              OtherDelay '
   +'       ) '
   +'select  '
   +'       providers.FirmCode, '
-  +'       if(clients.AllowDelayOfPayment = 1, 0.0, null) '
-  +'from   ( clients, providers, userinfo ) '
+  +'       d.DayOfWeek, '
+  +'       if(clients.AllowDelayOfPayment = 1, 0.0, null),  '
+  +'       if(clients.AllowDelayOfPayment = 1, 0.0, null)   '
+  +'from   '
+  +'  ( clients, providers, userinfo, '
+  +'      ( '
+  +'          select "Monday" as DayOfWeek '
+  +'          union '
+  +'          select "Tuesday" '
+  +'          union '
+  +'          select "Wednesday" '
+  +'          union '
+  +'          select "Thursday" '
+  +'          union '
+  +'          select "Friday" '
+  +'          union '
+  +'          select "Saturday" '
+  +'          union '
+  +'          select "Sunday" '
+  +'      ) d '
+  +' ) '
   +'       left join delayofpayments dop '
-  +'       on     (dop.FirmCode = providers.FirmCode) '
+  +'       on     (dop.FirmCode = providers.FirmCode) and (dop.DayOfWeek = d.DayOfWeek) '
   +'where  (dop.FirmCode  is null)'
   +'and    (userinfo.ClientId = clients.ClientId)';
   adsQueryValue.Execute;
@@ -3492,8 +3508,11 @@ begin
   +'update clients, '
   +'       userinfo, '
   +'       delayofpayments dop '
-  +'set    dop.OtherDelay   = if(clients.AllowDelayOfPayment = 0, null, IFNULL(dop.OtherDelay, 0.0)) '
-  +'where  (userinfo.ClientId = clients.ClientId)';
+  +'set    '
+  +'  dop.OtherDelay   = if(clients.AllowDelayOfPayment = 0, null, IFNULL(dop.OtherDelay, 0.0)), '
+  +'  dop.VitallyImportantDelay   = if(clients.AllowDelayOfPayment = 0, null, IFNULL(dop.VitallyImportantDelay, 0.0))'
+  +'where  '
+  +' (userinfo.ClientId = clients.ClientId)';
   adsQueryValue.Execute;
 
   if RaiseException then

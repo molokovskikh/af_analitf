@@ -11,7 +11,8 @@ uses
   Spin,
   GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   U_frameContextReclame,
-  U_framePromotion;
+  U_framePromotion,
+  DayOfWeekHelper;
 
 const
   ALL_REGIONS = 'Все регионы';
@@ -338,6 +339,7 @@ begin
       ParamByName( 'RegisterId').Value := RegisterId;
       ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
       ParamByName( 'ClientId').Value := ClientId;
+      ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
     end;
     ParamByName( 'ParentCode').Value := AParentCode;
   end;

@@ -8,7 +8,9 @@ uses
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, DBGridEh, DateUtils, ToughDBGrid,
   OleCtrls, SHDocVw, AppEvnts, SyncObjs, Consts, ShellAPI,
-  MemDS, DBAccess, MyAccess, U_VistaCorrectForm, Contnrs;
+  MemDS, DBAccess, MyAccess, U_VistaCorrectForm, Contnrs,
+  DayOfWeekDelaysController,
+  SQLWaiting;
 
 type
 
@@ -335,6 +337,7 @@ begin
   mainStartupHelper.Stop;
 
 try
+  try
   DisableByNetworkSettings;
   
   tmrOnExclusive.Enabled := True;
@@ -472,6 +475,13 @@ try
          MB_ICONQUESTION or MB_YESNO) = IDYES
       then
         actReceiveExecute( nil);
+
+  finally
+    if TDayOfWeekDelaysController.NeedUpdateDelays(DM) then begin
+      ShowSQLWaiting(TDayOfWeekDelaysController.RecalcOrdersByDelays, 'Происходит переcчет отсрочки платежа');
+    end;
+    TDayOfWeekDelaysController.UpdateDayOfWeek(DM);
+  end;
 
 finally
   SetFocusOnMainForm;

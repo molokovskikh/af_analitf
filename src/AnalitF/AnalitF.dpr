@@ -146,7 +146,9 @@ uses
   U_SupplierPromotion in '..\Common\Models\U_SupplierPromotion.pas',
   VCLHelper in 'Helpers\VCLHelper.pas',
   U_framePromotion in 'Views\U_framePromotion.pas' {framePromotion: TFrame},
-  U_frameBlockPromotion in 'Views\U_frameBlockPromotion.pas' {frameBlockPromotion: TFrame};
+  U_frameBlockPromotion in 'Views\U_frameBlockPromotion.pas' {frameBlockPromotion: TFrame},
+  DayOfWeekHelper in '..\Common\Helpers\DayOfWeekHelper.pas',
+  DayOfWeekDelaysController in 'BusinessLogic\DayOfWeekDelaysController.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

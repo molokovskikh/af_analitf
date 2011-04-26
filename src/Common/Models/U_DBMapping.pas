@@ -11,6 +11,7 @@ uses
   MyAccess,
   DBProc,
   U_ExchangeLog,
+  DayOfWeekHelper,
   U_Address,
   U_Offer,
   U_CurrentOrderHead,
@@ -343,7 +344,14 @@ begin
 +'   Core.ProductId, '
 +'   Core.CodeFirmCr, '
 +'   Core.Cost as RealCost, '
-+'   if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(18, 2))) as Cost, '
++'                  if(dop.DayOfWeek is null, '
++'                      Core.Cost, '
++'                      if(Core.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
++'                          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) as decimal(18, 2)), '
++'                          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(18, 2)) '
++'                       ) '
++'                  ) '
++'      as Cost, '
 +'   Core.ProducerCost, '
 +'   Core.SynonymCode, '
 +'   Core.SynonymFirmCrCode, '
@@ -357,7 +365,10 @@ begin
 +' from '
 +'   core '
 +'   inner join pricesdata on Core.PriceCode = pricesdata.PriceCode '
-+'   left join DelayOfPayments dop on (dop.FirmCode = pricesdata.FirmCode) '
++'   left join products on products.ProductId = Core.ProductId '
++'   left join catalogs on catalogs.FullCode = products.CatalogId '
++'   left join DelayOfPayments dop on (dop.FirmCode = pricesdata.FirmCode) and '
++'             (dop.DayOfWeek = :DayOfWeek) '
 +'   left join synonyms on synonyms.SynonymCode = Core.SynonymCode '
 +'   left join synonymFirmCr on synonymFirmCr.synonymFirmCrCode = Core.synonymFirmCrCode '
 +' where '
@@ -365,8 +376,8 @@ begin
 + IfThen(Length(productSql) > 0, ' and Core.ProductId in ( ' + productSql + ') ')
 + '  order by Core.ProductId, Cost asc'
     ,
-    ['PriceCode', 'RegionCode'],
-    [priceCode, regionCode]);
+    ['PriceCode', 'RegionCode', 'DayOfWeek'],
+    [priceCode, regionCode, TDayOfWeekHelper.DayOfWeek()]);
 
   Result := TObjectList.Create();
   try

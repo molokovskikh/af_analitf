@@ -14,7 +14,8 @@ uses
   DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController,
   ArchiveHelper,
   UserMessageParams,
-  NetworkSettings;
+  NetworkSettings,
+  DayOfWeekHelper;
 
 type
 
@@ -1719,8 +1720,6 @@ begin
   if utDelayOfPayments in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('DelayOfPayments', RootFolder()+SDirIn+'\DelayOfPayments.txt');
     InternalExecute;
-    SQL.Text := ' delete from Delayofpayments where DayOfWeek <> "Monday" ';
-    InternalExecute;
   end;
   //RegionalData
   if utRegionalData in UpdateTables then begin
@@ -1898,30 +1897,70 @@ begin
         + 'INSERT IGNORE '
         + 'INTO    MinPrices '
         + '(ProductId, RegionCode, MinCost) '
-        +'select   ProductId , '
-        +'         RegionCode, '
-        +'         min(if(Junk = 0, if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.OtherDelay/100)), null)) '
-        +'from     Core      , '
-        +'         Pricesdata '
+        +'select   Core.ProductId , '
+        +'         Core.RegionCode, '
+        +'         min( '
+        +'             if(Junk <> 0, '
+        +'                  null,'
+        +'                  if(Delayofpayments.DayOfWeek is null, '
+        +'                      Cost, '
+        +'                      if(Core.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
+        +'                          Cost * (1 + Delayofpayments.VitallyImportantDelay/100), '
+        +'                          Cost * (1 + Delayofpayments.OtherDelay/100) '
+        +'                       ) '
+        +'                  ) '
+        +'             ) '
+        +'         ) '
+        +'from     Core       '
+        +'         inner join Pricesdata on Pricesdata.PRICECODE = Core.Pricecode '
+        +'         left join products on products.ProductId = Core.ProductId '
+        +'         left join catalogs on catalogs.FullCode = products.CatalogId '
         +'         left join Delayofpayments '
-        +'           on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
-        +'where    (Pricesdata.PRICECODE     = Core.Pricecode) '
-        +'group by ProductId, '
-        +'         RegionCode';
+        +'           on (Delayofpayments.FirmCode = pricesdata.Firmcode) and '
+        +'              (Delayofpayments.DayOfWeek = "' + TDayOfWeekHelper.DayOfWeek() + '") '
+        +'group by Core.ProductId, '
+        +'         Core.RegionCode';
       InternalExecute;
       SQL.Text := ''
         + 'insert ignore into MinPricesNext (ProductId, RegionCode, NextCost, MinCostCount) '
         + ' SELECT '
         + '   Core.ProductId, '
         + '   Core.RegionCode, '
-        + '   min(nullif(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.OtherDelay/100)), MinPrices.MinCost)) as NextCost, '
-        + '   sum(if(Delayofpayments.FirmCode is null, Cost, Cost * (1 + Delayofpayments.OtherDelay/100)) = MinPrices.MinCost) as MinCostCount '
+        + '   min('
+        + '        nullif('
+        + '               cast( '
+        + '                  if(Delayofpayments.DayOfWeek is null, '
+        + '                      Cost, '
+        + '                      if(Core.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
+        + '                          Cost * (1 + Delayofpayments.VitallyImportantDelay/100), '
+        + '                          Cost * (1 + Delayofpayments.OtherDelay/100) '
+        + '                       ) '
+        + '                  ) '
+        + '               as decimal(18, 2)) '
+        + '               , MinPrices.MinCost)'
+        + '   ) as NextCost, '
+        + '   sum( '
+        + '       cast( '
+        + '                  if(Delayofpayments.DayOfWeek is null, '
+        + '                      Cost, '
+        + '                      if(Core.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
+        + '                          Cost * (1 + Delayofpayments.VitallyImportantDelay/100), '
+        + '                          Cost * (1 + Delayofpayments.OtherDelay/100) '
+        + '                       ) '
+        + '                  ) '
+        + '       as decimal(18, 2)) '
+        + '       = '
+        + '       MinPrices.MinCost'
+        + '   ) as MinCostCount '
         + ' FROM '
         + '    MinPrices '
         + '    inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode and Core.Junk = 0 '
-        +'     inner join Pricesdata on Pricesdata.PRICECODE     = Core.Pricecode '
-        +'     left join Delayofpayments '
-        +'       on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
+        + '    inner join Pricesdata on Pricesdata.PRICECODE     = Core.Pricecode '
+        + '    left join products on products.ProductId = Core.ProductId '
+        + '    left join catalogs on catalogs.FullCode = products.CatalogId '
+        + '    left join Delayofpayments '
+        + '      on (Delayofpayments.FirmCode = pricesdata.Firmcode)  and '
+        + '              (Delayofpayments.DayOfWeek = "' + TDayOfWeekHelper.DayOfWeek() + '") '
         + ' where '
         + '   MinPrices.MinCost is not null '
         + ' GROUP BY MinPrices.ProductId, MinPrices.RegionCode';
@@ -2059,19 +2098,31 @@ begin
     else begin
       SQL.Text := ''
         + 'UPDATE '
-        + '  MinPrices, '
-        + '  Core, '
-        + '  Pricesdata '
+        + '  MinPrices '
+        + '  inner join Core on Core.ProductId = MinPrices.ProductId and Core.RegionCode = MinPrices.RegionCode '
+        + '  inner join Pricesdata on Pricesdata.PRICECODE = Core.Pricecode '
+        + '  left join products on products.ProductId = Core.ProductId '
+        + '  left join catalogs on catalogs.FullCode = products.CatalogId '
         + '  left join Delayofpayments '
-        + '    on (Delayofpayments.FirmCode = pricesdata.Firmcode) '
+        + '    on (Delayofpayments.FirmCode = pricesdata.Firmcode) and '
+        + '              (Delayofpayments.DayOfWeek = "' + TDayOfWeekHelper.DayOfWeek() + '") '
         + 'SET '
         + '  MinPrices.SERVERCOREID = Core.ServerCoreId, '
         + '  MinPrices.PriceCode  = Core.PriceCode '
         + 'WHERE '
-        + '    (Core.ProductId  = MinPrices.ProductId) '
-        + 'and (Core.RegionCode = MinPrices.RegionCode) '
-        + 'and (Pricesdata.PRICECODE     = Core.Pricecode) '
-        + 'and (cast( if(Delayofpayments.FirmCode is null, Core.Cost, Core.Cost * (1 + Delayofpayments.OtherDelay/100)) as decimal(18, 2)) = MinPrices.MinCost)';
+        + '    ('
+        + '       cast( '
+        + '                  if(Delayofpayments.DayOfWeek is null, '
+        + '                      Cost, '
+        + '                      if(Core.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
+        + '                          Cost * (1 + Delayofpayments.VitallyImportantDelay/100), '
+        + '                          Cost * (1 + Delayofpayments.OtherDelay/100) '
+        + '                       ) '
+        + '                  ) '
+        + '       as decimal(18, 2)) '
+        + '      = '
+        + '      MinPrices.MinCost'
+        +'     )';
       InternalExecute;
     end;
   end;

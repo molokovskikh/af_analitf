@@ -11,6 +11,7 @@ uses
   IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL, Contnrs,
   IdIOHandlerStack, IdSSL, U_VistaCorrectForm, ExchangeParameters,
   GlobalExchangeParameters,
+  DayOfWeekHelper,
   U_CurrentOrderItem,
   U_CurrentOrderHead,
   U_Address,
@@ -981,6 +982,21 @@ end;
 
 procedure TInternalRepareOrders.InternalRepareOrders;
 begin
+  if not DM.adtClients.IsEmpty
+    and DM.adtClientsAllowDelayOfPayment.Value
+  then begin
+    DM.adcUpdate.SQL.Text := ''
++' update '
++'   CurrentOrderHeads '
++'   left join pricesdata on pricesdata.PriceCode = CurrentOrderHeads.PriceCode '
++'   left join DelayOfPayments on (DelayOfPayments.FirmCode = pricesdata.FirmCode) and '
++'             (DelayOfPayments.DayOfWeek = :DayOfWeek) '
++'  set '
++'     CurrentOrderHeads.DelayOfPayment = DelayOfPayments.OtherDelay, '
++'     CurrentOrderHeads.VitallyDelayOfPayment = DelayOfPayments.VitallyImportantDelay ';
+    DM.adcUpdate.ParamByName('DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
+    DM.adcUpdate.Execute;
+  end;
   FillAddresses();
   RestoreOrders();
   DatabaseController.BackupOrdersDataTables();
