@@ -479,6 +479,7 @@ try
   finally
     if TDayOfWeekDelaysController.NeedUpdateDelays(DM) then begin
       ShowSQLWaiting(TDayOfWeekDelaysController.RecalcOrdersByDelays, 'Происходит переcчет отсрочки платежа');
+      SetOrdersInfo;
     end;
     TDayOfWeekDelaysController.UpdateDayOfWeek(DM);
   end;
