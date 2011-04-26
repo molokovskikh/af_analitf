@@ -7,6 +7,7 @@ uses
   DateUtils,
   //App modules
   Constant, DModule, ExchangeParameters, U_ExchangeLog, SOAPThroughHTTP,
+  DayOfWeekHelper,
   DatabaseObjects,
   U_CurrentOrderItem;
 
@@ -312,6 +313,7 @@ begin
     FDataLayer.adsOrderCore.ParamByName( 'ParentCode').Value :=
       dataSet.FieldByName('FullCode').Value;
     FDataLayer.adsOrderCore.ParamByName( 'ShowRegister').Value := False;
+    FDataLayer.adsOrderCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
     FDataLayer.adsOrderCore.Open;
     try
       FDataLayer.adsOrderCore.FetchAll;

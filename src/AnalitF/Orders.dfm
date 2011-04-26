@@ -721,7 +721,7 @@ inherited OrdersForm: TOrdersForm
     object adsOrdersRetailCost: TFloatField
       FieldName = 'RetailCost'
     end
-    object adsOrdersRetailVitallyImportant: TLargeintField
+    object adsOrdersRetailVitallyImportant: TIntegerField
       FieldName = 'RetailVitallyImportant'
     end
   end

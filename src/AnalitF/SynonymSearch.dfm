@@ -547,9 +547,20 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      Core.Cost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
-        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
+        'nt, 0),'
+      
+        '          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) a' +
+        's decimal(18, 2)),'
+      
+        '          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(1' +
+        '8, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -627,7 +638,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         'd and osbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) '
+        'irmCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
         's.OrderId and CurrentOrderHeads.Frozen = 0 WHERE '
@@ -660,9 +671,20 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      Core.Cost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
-        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
+        'nt, 0),'
+      
+        '          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) a' +
+        's decimal(18, 2)),'
+      
+        '          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(1' +
+        '8, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -741,7 +763,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         ') AND (osbc.clientid = :clientid)'
       
         '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
-        'mCode) '
+        'mCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
         'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId) and' +
@@ -806,6 +828,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
       item
         DataType = ftUnknown
         Name = 'clientid'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DayOfWeek'
       end>
     object adsCoreCoreId: TLargeintField
       FieldName = 'CoreId'
@@ -1225,9 +1251,20 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      Core.Cost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
-        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
+        'nt, 0),'
+      
+        '          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) a' +
+        's decimal(18, 2)),'
+      
+        '          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(1' +
+        '8, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -1305,7 +1342,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
         ') AND (osbc.clientid = :clientid)'
       
         '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
-        'mCode) '
+        'mCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
         'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId)   a' +
@@ -1332,6 +1369,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
       item
         DataType = ftUnknown
         Name = 'clientid'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DayOfWeek'
       end>
   end
   object adsCoreByProducts: TMyQuery

@@ -9,7 +9,8 @@ uses
   Grids, MemDS, DBAccess, MyAccess, Constant, MemTableDataEh, MemTableEh,
   StrUtils, EhLibMTE, Contnrs,
   U_CurrentOrderItem,
-  NetworkParams;
+  NetworkParams,
+  DayOfWeekHelper;
 
 type
   TCorrectResult = (crClose, crEditOrders, crForceSended, crGetPrice);
@@ -126,7 +127,7 @@ type
     adsCoreMaxProducerCost: TFloatField;
     adsCoreProducerName: TStringField;
     adsCoreCatalogVitallyImportant: TBooleanField;
-    adsCoreRetailVitallyImportant: TLargeintField;
+    adsCoreRetailVitallyImportant: TIntegerField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -491,6 +492,7 @@ begin
   adsCore.ParamByName('TimeZoneBias').Value := AProc.TimeZoneBias;
   adsCore.ParamByName('ClientId').Value := ClientId;
   adsCore.ParamByName('ProductId').Value := ProductId;
+  adsCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
   adsCore.Open;
   if not adsCore.IsEmpty then
     adsCore.Locate('OrderListId', mtLogSelfId.Value, []);
@@ -860,13 +862,22 @@ begin
     + '  CurrentOrderLists.OrderCount as OldOrderCount, '
     + '  if(CurrentOrderLists.ServerQuantity is null, CurrentOrderLists.OrderCount, if(CurrentOrderLists.ServerQuantity > CurrentOrderLists.OrderCount, CurrentOrderLists.OrderCount, CurrentOrderLists.ServerQuantity)) as NewOrderCount, '
     + '  CurrentOrderLists.Price as OldPrice, '
-    + '  if(dop.OtherDelay is null, CurrentOrderLists.ServerCost, cast(CurrentOrderLists.ServerCost * (1 + dop.OtherDelay/100) as decimal(18, 2))) as NewPrice '
++'                  if(dop.DayOfWeek is null, '
++'                      CurrentOrderLists.ServerCost, '
++'                      if(CurrentOrderLists.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
++'                          cast(CurrentOrderLists.ServerCost * (1 + dop.VitallyImportantDelay/100) as decimal(18, 2)), '
++'                          cast(CurrentOrderLists.ServerCost * (1 + dop.OtherDelay/100) as decimal(18, 2)) '
++'                       ) '
++'                  ) '
+    + '   as NewPrice '
     + 'from '
     + '  CurrentOrderHeads '
     + '  inner join clients   on (clients.clientid = CurrentOrderHeads.ClientId) '
     + '  left join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId and (CurrentOrderLists.DropReason is not null)'
+    + '  left join products on products.ProductId = CurrentOrderLists.ProductId '
+    + '  left join catalogs on catalogs.FullCode = products.CatalogId '
     + '  left JOIN PricesData cpd  ON (cpd.PriceCode = CurrentOrderHeads.pricecode)'
-    + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode)'
+    + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode) and (dop.DayOfWeek = "' + TDayOfWeekHelper.DayOfWeek() + '") '
     + ' '
     + 'where '
     + '    CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + '  '
@@ -902,7 +913,6 @@ begin
     + '  inner join clients   on (clients.clientid = CurrentOrderHeads.ClientId) '
     + '  inner join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId and (CurrentOrderLists.DropReason is not null)'
     + '  left JOIN PricesData cpd  ON (cpd.PriceCode = CurrentOrderHeads.pricecode)'
-    + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode)'
 
     + ' '
     + 'where '

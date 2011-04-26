@@ -8,7 +8,8 @@ uses
   FR_DBSet, Grids, DBGridEh, ToughDBGrid, StdCtrls, Constant,
   ForceRus, DBGrids, Buttons, Menus, DBCtrls, StrUtils, GridsEh,
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
-  U_framePromotion;
+  U_framePromotion,
+  DayOfWeekHelper;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -707,6 +708,8 @@ begin
   adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
   adsCore.ParamByName('ClientID').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
+  adsCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
+
 
   ShowSQLWaiting(adsCore);
 

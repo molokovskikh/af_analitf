@@ -23,7 +23,8 @@ uses
   ToughDBGrid,
   NetworkParams,
   SQLWaiting,
-  U_framePromotion;
+  U_framePromotion,
+  DayOfWeekHelper;
 
 {//$define MinPricesLog}
 
@@ -321,6 +322,7 @@ begin
   adsCore.SQLRefresh.Text := shCoreRefresh.Strings.Text;
   adsCore.ParamByName('TimeZoneBias').Value := AProc.TimeZoneBias;
   adsCore.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  adsCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
 
   dsCore := TDataSource.Create(Self);
   dsCore.DataSet := adsCore;

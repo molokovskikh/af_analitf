@@ -483,9 +483,20 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      Core.Cost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
-        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
+        'nt, 0),'
+      
+        '          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) a' +
+        's decimal(18, 2)),'
+      
+        '          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(1' +
+        '8, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -562,7 +573,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         'd and osbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) '
+        'irmCode) and (dop.DayOfWeek = :DayOfWeek)  '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
         's.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -590,9 +601,20 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      Core.Cost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
-        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
+        'nt, 0),'
+      
+        '          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) a' +
+        's decimal(18, 2)),'
+      
+        '          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(1' +
+        '8, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -673,7 +695,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         'd and osbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) '
+        'irmCode)  and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
         'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -699,6 +721,10 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       item
         DataType = ftUnknown
         Name = 'clientid'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DayOfWeek'
       end
       item
         DataType = ftUnknown
@@ -925,7 +951,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object adsCoreCatalogVitallyImportant: TBooleanField
       FieldName = 'CatalogVitallyImportant'
     end
-    object adsCoreRetailVitallyImportant: TLargeintField
+    object adsCoreRetailVitallyImportant: TIntegerField
       FieldName = 'RetailVitallyImportant'
     end
   end

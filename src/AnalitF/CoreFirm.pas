@@ -10,7 +10,8 @@ uses
   hlpcodecs, LU_Tracer, 
   SQLWaiting, ForceRus, GridsEh, 
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
-  U_framePromotion;
+  U_framePromotion,
+  DayOfWeekHelper;
 
 type
   TFilter=( filAll, filOrder, filLeader, filProducer);
@@ -748,6 +749,7 @@ begin
     adsCore.ParamByName( 'PriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'RegionCode').Value:=RegionCode;
     adsCore.ParamByName( 'ClientId').Value:=ClientId;
+    adsCore.ParamByName( 'DayOfWeek').Value:=TDayOfWeekHelper.DayOfWeek();
     ShowSQLWaiting(adsCore);
   finally
     Screen.Cursor:=crDefault;

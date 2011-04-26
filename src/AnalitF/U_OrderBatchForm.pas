@@ -22,7 +22,9 @@ uses
   AlphaUtils,
   U_framePosition,
   AddressController,
-  U_frameFilterAddresses;
+  U_frameFilterAddresses,
+  DayOfWeekHelper;
+  
 
 type
   TItemToOrderStatus = (
@@ -569,6 +571,7 @@ begin
   adsCore.SQL.Text := shCore.Strings.Text;
   adsCore.ParamByName('TimeZoneBias').Value := AProc.TimeZoneBias;
   adsCore.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+  adsCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
 
   dsCore := TDataSource.Create(Self);
   dsCore.DataSet := adsCore;

@@ -941,9 +941,20 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      CCore.Cost,'
       
-        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 ' +
-        '+ dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(CCore.VitallyImportant || ifnull(catalogs.VitallyImport' +
+        'ant, 0),'
+      
+        '          cast(CCore.Cost * (1 + dop.VitallyImportantDelay/100) ' +
+        'as decimal(18, 2)),'
+      
+        '          cast(CCore.Cost * (1 + dop.OtherDelay/100) as decimal(' +
+        '18, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1017,7 +1028,7 @@ inherited OrdersHForm: TOrdersHForm
         'e)'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
-        'e) '
+        'e) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
         'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0'
@@ -1046,9 +1057,20 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      CCore.Cost,'
       
-        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 ' +
-        '+ dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(CCore.VitallyImportant || ifnull(catalogs.VitallyImport' +
+        'ant, 0),'
+      
+        '          cast(CCore.Cost * (1 + dop.VitallyImportantDelay/100) ' +
+        'as decimal(18, 2)),'
+      
+        '          cast(CCore.Cost * (1 + dop.OtherDelay/100) as decimal(' +
+        '18, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    CCore.Quantity,'
       '    CCore.registrycost,'
       '    CCore.vitallyimportant,'
@@ -1122,7 +1144,7 @@ inherited OrdersHForm: TOrdersHForm
         'e)'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
-        'e) '
+        'e) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
         'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0'
@@ -1140,6 +1162,10 @@ inherited OrdersHForm: TOrdersHForm
       item
         DataType = ftUnknown
         Name = 'ClientId'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DayOfWeek'
       end
       item
         DataType = ftUnknown

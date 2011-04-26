@@ -93,7 +93,7 @@ type
     lDatePrice: TLabel;
     dbtDatePrice: TDBText;
     adsOrdersRetailCost: TFloatField;
-    adsOrdersRetailVitallyImportant: TLargeintField;
+    adsOrdersRetailVitallyImportant: TIntegerField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

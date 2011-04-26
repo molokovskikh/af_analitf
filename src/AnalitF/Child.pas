@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs,
-  MyAccess, DBAccess, StdCtrls, DescriptionFrm, Buttons;
+  MyAccess, DBAccess, StdCtrls, DescriptionFrm, Buttons,
+  DayOfWeekHelper;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -579,10 +580,13 @@ procedure TChildForm.BeforeUpdateExecuteForClientID(
   Sender: TCustomMyDataSet; StatementTypes: TStatementTypes;
   Params: TDAParams);
 begin
-  if (stUpdate in StatementTypes) or (stRefresh in StatementTypes) then
+  if (stUpdate in StatementTypes) or (stRefresh in StatementTypes) then begin
     //Возможна ситуация, когда параметра "ClientId" не будет в выполняемой команде
     if Assigned(Params.FindParam('ClientId')) then
       Params.ParamByName('ClientId').Value := Sender.Params.ParamByName('ClientId').Value;
+    if Assigned(Params.FindParam('DayOfWeek')) then
+      Params.ParamByName('DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
+  end;
 end;
 
 procedure TChildForm.PrepareColumnsInOrderGrid(Grid : TToughDBGrid);

@@ -20,7 +20,8 @@ uses
   ExclusiveParams,
   AddressController,
   KeyboardHelper,
-  SupplierController;
+  SupplierController,
+  DayOfWeekHelper;
 
 {
 Криптование
@@ -223,61 +224,6 @@ type
     adsRepareOrdersrequestratio: TIntegerField;
     adsRepareOrdersordercost: TFloatField;
     adsRepareOrdersminordercount: TIntegerField;
-    adsCoreRepare: TMyQuery;
-    adsCoreRepareCoreId: TLargeintField;
-    adsCoreRepareClientID: TLargeintField;
-    adsCoreRepareproductid: TLargeintField;
-    adsCoreReparePriceCode: TLargeintField;
-    adsCoreRepareRegionCode: TLargeintField;
-    adsCoreRepareFullCode: TLargeintField;
-    adsCoreRepareshortcode: TLargeintField;
-    adsCoreRepareCodeFirmCr: TLargeintField;
-    adsCoreRepareSynonymCode: TLargeintField;
-    adsCoreRepareSynonymFirmCrCode: TLargeintField;
-    adsCoreRepareCode: TStringField;
-    adsCoreRepareCodeCr: TStringField;
-    adsCoreRepareVolume: TStringField;
-    adsCoreRepareDoc: TStringField;
-    adsCoreRepareNote: TStringField;
-    adsCoreReparePeriod: TStringField;
-    adsCoreRepareAwait: TBooleanField;
-    adsCoreRepareJunk: TBooleanField;
-    adsCoreRepareCost: TFloatField;
-    adsCoreRepareQuantity: TStringField;
-    adsCoreRepareregistrycost: TFloatField;
-    adsCoreReparevitallyimportant: TBooleanField;
-    adsCoreReparerequestratio: TIntegerField;
-    adsCoreRepareordercost: TFloatField;
-    adsCoreRepareminordercount: TIntegerField;
-    adsCoreRepareSynonymName: TStringField;
-    adsCoreRepareSynonymFirm: TStringField;
-    adsCoreRepareLeaderPriceCode: TLargeintField;
-    adsCoreRepareLeaderRegionCode: TLargeintField;
-    adsCoreRepareLeaderRegionName: TStringField;
-    adsCoreRepareLeaderPriceName: TStringField;
-    adsCoreRepareLeaderPRICE: TFloatField;
-    adsCoreRepareOrdersCoreId: TLargeintField;
-    adsCoreRepareOrdersOrderId: TLargeintField;
-    adsCoreRepareOrdersClientId: TLargeintField;
-    adsCoreRepareOrdersFullCode: TLargeintField;
-    adsCoreRepareOrdersCodeFirmCr: TLargeintField;
-    adsCoreRepareOrdersSynonymCode: TLargeintField;
-    adsCoreRepareOrdersSynonymFirmCrCode: TLargeintField;
-    adsCoreRepareOrdersCode: TStringField;
-    adsCoreRepareOrdersCodeCr: TStringField;
-    adsCoreRepareOrderCount: TIntegerField;
-    adsCoreRepareOrdersSynonym: TStringField;
-    adsCoreRepareOrdersSynonymFirm: TStringField;
-    adsCoreRepareOrdersPrice: TFloatField;
-    adsCoreRepareSumOrder: TFloatField;
-    adsCoreRepareOrdersJunk: TBooleanField;
-    adsCoreRepareOrdersAwait: TBooleanField;
-    adsCoreRepareOrdersHOrderId: TLargeintField;
-    adsCoreRepareOrdersHClientId: TLargeintField;
-    adsCoreRepareOrdersHPriceCode: TLargeintField;
-    adsCoreRepareOrdersHRegionCode: TLargeintField;
-    adsCoreRepareOrdersHPriceName: TStringField;
-    adsCoreRepareOrdersHRegionName: TStringField;
     adsRepareOrdersClientName: TStringField;
     MyEmbConnection: TMyEmbConnection;
     adsRepareOrdersClientId: TLargeintField;
@@ -288,7 +234,6 @@ type
     adsRepareOrdersCodeFirmCr: TLargeintField;
     adcTemporaryTable: TMyQuery;
     adsRepareOrdersRealPrice: TFloatField;
-    adsCoreRepareRealCost: TFloatField;
     adsOrderCoreRealCost: TFloatField;
     adsRepareOrdersDropReason: TSmallintField;
     adsRepareOrdersServerCost: TFloatField;
@@ -296,7 +241,6 @@ type
     adsOrderDetailsRealPrice: TFloatField;
     adsOrderDetailsSupplierPriceMarkup: TFloatField;
     adsRepareOrdersSupplierPriceMarkup: TFloatField;
-    adsCoreRepareSupplierPriceMarkup: TFloatField;
     adtClientsAllowDelayOfPayment: TBooleanField;
     adsOrderDetailsCoreQuantity: TStringField;
     adsOrderDetailsServerCoreID: TLargeintField;
@@ -315,18 +259,14 @@ type
     adsRepareOrdersCoreQuantity: TStringField;
     adsRepareOrdersServerCoreID: TLargeintField;
     adsRepareOrdersUnit: TStringField;
-    adsCoreRepareUnit: TStringField;
     adsRepareOrdersVolume: TStringField;
     adsRepareOrdersNote: TStringField;
     adsRepareOrdersPeriod: TStringField;
     adsRepareOrdersDoc: TStringField;
     adsRepareOrdersRegistryCost: TFloatField;
     adsRepareOrdersVitallyImportant: TBooleanField;
-    adsCoreRepareServerCoreId: TLargeintField;
     adsRepareOrdersProducerCost: TFloatField;
     adsRepareOrdersNDS: TSmallintField;
-    adsCoreRepareProducerCost: TFloatField;
-    adsCoreRepareNDS: TSmallintField;
     adsOrderDetailsProducerCost: TFloatField;
     adsOrderDetailsNDS: TSmallintField;
     adtClientsCalculateWithNDS: TBooleanField;
@@ -3360,7 +3300,14 @@ begin
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
 +'       (s.SynonymName, concat(catalogs.name, '' '', catalogs.form)) as '
 +'       SynonymName   , sf.synonymname, '
-+'       if(dop.OtherDelay is null, c.Cost, c.Cost * (1 + dop.OtherDelay/100)), '
++'                  if(dop.DayOfWeek is null, '
++'                      c.Cost, '
++'                      if(c.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
++'                          cast(c.Cost * (1 + dop.VitallyImportantDelay/100) as decimal(18, 2)), '
++'                          cast(c.Cost * (1 + dop.OtherDelay/100) as decimal(18, 2)) '
++'                       ) '
++'                  ) '
++'       , '
 +'       c.AWAIT, c.JUNK, 0, '
 +'       c.REQUESTRATIO, c.ORDERCOST, c.MINORDERCOUNT, c.cost, '
 +'       c.SupplierPriceMarkup, '
@@ -3377,6 +3324,7 @@ begin
 +'       on     catalogs.fullcode = p.catalogid '
 +'       left join DelayOfPayments dop '
 +'       on     dop.FirmCode = pd.FirmCode '
++'       and     (dop.DayOfWeek = :DayOfWeek) '
 +'       left join synonyms s '
 +'       on     s.synonymcode = c.synonymcode '
 +'       left join synonymfirmcr sf '
@@ -3384,10 +3332,11 @@ begin
 +'where  c.coreid                    = :coreid; '
 +' '
 +'select last_insert_id();',
-        ['ORDERID', 'ClientId', 'CoreId'],
+        ['ORDERID', 'ClientId', 'CoreId', 'DayOfWeek'],
         [OrderId,
          orderDataSet.ParamByName('ClientId').Value,
-         orderDataSet.FieldByName('Coreid').Value]);
+         orderDataSet.FieldByName('Coreid').Value,
+         TDayOfWeekHelper.DayOfWeek()]);
     end;
     orderDataSet.FieldByName('ORDERSORDERID').Value := OrderId;
   end;

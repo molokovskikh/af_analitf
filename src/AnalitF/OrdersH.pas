@@ -17,7 +17,8 @@ uses
   U_Address,
   U_DBMapping,
   U_CurrentOrderHead,
-  U_CurrentOrderItem;
+  U_CurrentOrderItem,
+  DayOfWeekHelper;
 
 type
   TOrdersHForm = class(TChildForm)
@@ -698,6 +699,7 @@ begin
               ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
             ParamByName( 'PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
             ParamByName( 'RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
+            ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
 
             RestoreSQL;
             AddWhere('(CCore.SYNONYMCODE = :SYNONYMCODE)');
@@ -1297,6 +1299,7 @@ var
       ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
       ParamByName( 'PriceCode').Value := InternalDestinationPrice.PriceCode;
       ParamByName( 'RegionCode').Value := InternalDestinationPrice.RegionCode;
+      ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
 
       RestoreSQL;
       AddWhere('(CCore.CoreId = :CoreId)');

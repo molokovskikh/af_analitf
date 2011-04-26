@@ -7,7 +7,8 @@ uses
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls,
   SHDocVw, DBProc, Constant,
-  GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons;
+  GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons,
+  DayOfWeekHelper;
 
 type
   TExpiredsForm = class(TChildForm)
@@ -146,6 +147,7 @@ begin
   adsAvgOrders.ParamByName('ClientId').Value := ClientId;
   adsExpireds.ParamByName( 'ClientId').Value := ClientId;
   adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+  adsExpireds.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
   Screen.Cursor := crHourGlass;
   try
     adsExpireds.Open;

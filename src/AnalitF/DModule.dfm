@@ -493,9 +493,20 @@ object DM: TDM
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
+      '  if(dop.DayOfWeek is null,'
+      '      Core.Cost,'
       
-        '    if(dop.OtherDelay is null, Core.Cost, cast(Core.Cost * (1 + ' +
-        'dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
+        '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
+        'nt, 0),'
+      
+        '          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) a' +
+        's decimal(18, 2)),'
+      
+        '          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(1' +
+        '8, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
       '    Core.Quantity,'
       '    Core.Await,'
       '    Core.Junk,'
@@ -565,7 +576,7 @@ object DM: TDM
         'd and osbc.CoreId = Core.CoreId'
       
         '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) '
+        'irmCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
         'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -587,6 +598,10 @@ object DM: TDM
       item
         DataType = ftUnknown
         Name = 'clientid'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DayOfWeek'
       end
       item
         DataType = ftUnknown
@@ -1132,347 +1147,6 @@ object DM: TDM
       FieldName = 'ProducerCost'
     end
     object adsRepareOrdersNDS: TSmallintField
-      FieldName = 'NDS'
-    end
-  end
-  object adsCoreRepare: TMyQuery
-    Connection = MyConnection
-    SQL.Strings = (
-      '#CORESHOWBYFIRM'
-      'SELECT'
-      '    CCore.CoreId AS CoreId,'
-      '    Clients.ClientID,'
-      '    CCore.productid,'
-      '    CCore.PriceCode,'
-      '    CCore.RegionCode,'
-      '    catalogs.FullCode,'
-      '    catalogs.shortcode,'
-      '    CCore.CodeFirmCr,'
-      '    CCore.SynonymCode,'
-      '    CCore.SynonymFirmCrCode,'
-      '    CCore.Code,'
-      '    CCore.CodeCr,'
-      '    CCore.ServerCoreId,'
-      '    CCore.Unit,'
-      '    CCore.Volume,'
-      '    CCore.Doc,'
-      '    CCore.Note,'
-      '    CCore.Period,'
-      '    CCore.Await,'
-      '    CCore.Junk,'
-      '    CCore.Cost as RealCost,'
-      
-        '    if(dop.OtherDelay is null, CCore.Cost, cast(CCore.Cost * (1 ' +
-        '+ dop.OtherDelay/100) as decimal(18, 2))) as Cost,'
-      '    CCore.Quantity,'
-      '    CCore.registrycost,'
-      '    CCore.vitallyimportant,'
-      '    CCore.requestratio,'
-      '    CCore.ordercost,'
-      '    CCore.minordercount,'
-      '    CCore.SupplierPriceMarkup,'
-      '    CCore.ProducerCost,'
-      '    CCore.NDS,'
-      
-        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
-        'logs.form)) as SynonymName,'
-      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
-      '    PricesData.PriceCode AS LeaderPriceCode,'
-      '    MinPrices.RegionCode AS LeaderRegionCode,'
-      '    Regions.RegionName AS LeaderRegionName,'
-      '    PricesData.PriceName AS LeaderPriceName,'
-      '    MinPrices.MinCost As LeaderPRICE,'
-      '    osbc.CoreId AS OrdersCoreId,'
-      '    osbc.OrderId AS OrdersOrderId,'
-      '    osbc.ClientId AS OrdersClientId,'
-      '    catalogs.FullCode AS OrdersFullCode,'
-      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
-      '    osbc.SynonymCode AS OrdersSynonymCode,'
-      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
-      '    osbc.Code AS OrdersCode,'
-      '    osbc.CodeCr AS OrdersCodeCr,'
-      '    osbc.OrderCount,'
-      '    osbc.SynonymName AS OrdersSynonym,'
-      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
-      '    osbc.Price AS OrdersPrice,'
-      '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
-      '    osbc.Junk AS OrdersJunk,'
-      '    osbc.Await AS OrdersAwait,'
-      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
-      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
-      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
-      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
-      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
-      '    CurrentOrderHeads.RegionName AS OrdersHRegionName'
-      'FROM'
-      '    Core CCore'
-      
-        '    inner join products       on (products.productid = CCore.pro' +
-        'ductid)'
-      
-        '    inner join catalogs       on (catalogs.fullcode = products.c' +
-        'atalogid)'
-      
-        '    inner JOIN MinPrices      ON (MinPrices.productid = CCore.pr' +
-        'oductid) and (minprices.regioncode = CCore.regioncode)'
-      '    inner join Clients        on (Clients.ClientID = :ClientID)'
-      
-        '    left join Core LCore      on LCore.servercoreid = minprices.' +
-        'servercoreid and LCore.RegionCode = minprices.regioncode'
-      
-        '    left JOIN PricesData      ON (PricesData.PriceCode = MinPric' +
-        'es.pricecode)'
-      
-        '    left JOIN Regions         ON (Regions.RegionCode = MinPrices' +
-        '.RegionCode)'
-      
-        '    left JOIN SynonymFirmCr   ON (SynonymFirmCr.SynonymFirmCrCod' +
-        'e = CCore.SynonymFirmCrCode)'
-      
-        '    left join synonyms        on (Synonyms.SynonymCode = CCore.S' +
-        'ynonymCode)'
-      
-        '    left JOIN CurrentOrderLists osbc ON (osbc.ClientID = :Client' +
-        'Id) and (osbc.CoreId = CCore.CoreId)'
-      
-        '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
-        'e)'
-      
-        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
-        'e) '
-      
-        '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
-        'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0 '
-      'WHERE '
-      '    (CCore.PriceCode = :PriceCode) '
-      'And (CCore.RegionCode = :RegionCode)'
-      'and (CCore.SYNONYMCODE = :SYNONYMCODE)'
-      'and (CCore.AWAIT = :AWAIT)'
-      'and (CCore.JUNK = :JUNK)')
-    Left = 784
-    Top = 256
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ClientId'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'ClientId'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'PriceCode'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'RegionCode'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'SYNONYMCODE'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'AWAIT'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'JUNK'
-      end>
-    object adsCoreRepareCoreId: TLargeintField
-      FieldName = 'CoreId'
-    end
-    object adsCoreRepareClientID: TLargeintField
-      FieldName = 'ClientID'
-    end
-    object adsCoreRepareproductid: TLargeintField
-      FieldName = 'productid'
-    end
-    object adsCoreReparePriceCode: TLargeintField
-      FieldName = 'PriceCode'
-    end
-    object adsCoreRepareRegionCode: TLargeintField
-      FieldName = 'RegionCode'
-    end
-    object adsCoreRepareFullCode: TLargeintField
-      FieldName = 'FullCode'
-    end
-    object adsCoreRepareshortcode: TLargeintField
-      FieldName = 'shortcode'
-    end
-    object adsCoreRepareCodeFirmCr: TLargeintField
-      FieldName = 'CodeFirmCr'
-    end
-    object adsCoreRepareSynonymCode: TLargeintField
-      FieldName = 'SynonymCode'
-    end
-    object adsCoreRepareSynonymFirmCrCode: TLargeintField
-      FieldName = 'SynonymFirmCrCode'
-    end
-    object adsCoreRepareCode: TStringField
-      FieldName = 'Code'
-      Size = 84
-    end
-    object adsCoreRepareCodeCr: TStringField
-      FieldName = 'CodeCr'
-      Size = 84
-    end
-    object adsCoreRepareVolume: TStringField
-      FieldName = 'Volume'
-      Size = 15
-    end
-    object adsCoreRepareDoc: TStringField
-      FieldName = 'Doc'
-    end
-    object adsCoreRepareNote: TStringField
-      FieldName = 'Note'
-      Size = 50
-    end
-    object adsCoreReparePeriod: TStringField
-      FieldName = 'Period'
-    end
-    object adsCoreRepareAwait: TBooleanField
-      FieldName = 'Await'
-    end
-    object adsCoreRepareJunk: TBooleanField
-      FieldName = 'Junk'
-    end
-    object adsCoreRepareCost: TFloatField
-      FieldName = 'Cost'
-    end
-    object adsCoreRepareQuantity: TStringField
-      FieldName = 'Quantity'
-      Size = 15
-    end
-    object adsCoreRepareregistrycost: TFloatField
-      FieldName = 'registrycost'
-    end
-    object adsCoreReparevitallyimportant: TBooleanField
-      FieldName = 'vitallyimportant'
-    end
-    object adsCoreReparerequestratio: TIntegerField
-      FieldName = 'requestratio'
-    end
-    object adsCoreRepareordercost: TFloatField
-      FieldName = 'ordercost'
-    end
-    object adsCoreRepareminordercount: TIntegerField
-      FieldName = 'minordercount'
-    end
-    object adsCoreRepareSynonymName: TStringField
-      FieldName = 'SynonymName'
-      Size = 501
-    end
-    object adsCoreRepareSynonymFirm: TStringField
-      FieldName = 'SynonymFirm'
-      Size = 250
-    end
-    object adsCoreRepareLeaderPriceCode: TLargeintField
-      FieldName = 'LeaderPriceCode'
-    end
-    object adsCoreRepareLeaderRegionCode: TLargeintField
-      FieldName = 'LeaderRegionCode'
-    end
-    object adsCoreRepareLeaderRegionName: TStringField
-      FieldName = 'LeaderRegionName'
-      Size = 25
-    end
-    object adsCoreRepareLeaderPriceName: TStringField
-      FieldName = 'LeaderPriceName'
-      Size = 70
-    end
-    object adsCoreRepareLeaderPRICE: TFloatField
-      FieldName = 'LeaderPRICE'
-    end
-    object adsCoreRepareOrdersCoreId: TLargeintField
-      FieldName = 'OrdersCoreId'
-    end
-    object adsCoreRepareOrdersOrderId: TLargeintField
-      FieldName = 'OrdersOrderId'
-    end
-    object adsCoreRepareOrdersClientId: TLargeintField
-      FieldName = 'OrdersClientId'
-    end
-    object adsCoreRepareOrdersFullCode: TLargeintField
-      FieldName = 'OrdersFullCode'
-    end
-    object adsCoreRepareOrdersCodeFirmCr: TLargeintField
-      FieldName = 'OrdersCodeFirmCr'
-    end
-    object adsCoreRepareOrdersSynonymCode: TLargeintField
-      FieldName = 'OrdersSynonymCode'
-    end
-    object adsCoreRepareOrdersSynonymFirmCrCode: TLargeintField
-      FieldName = 'OrdersSynonymFirmCrCode'
-    end
-    object adsCoreRepareOrdersCode: TStringField
-      FieldName = 'OrdersCode'
-      Size = 84
-    end
-    object adsCoreRepareOrdersCodeCr: TStringField
-      FieldName = 'OrdersCodeCr'
-      Size = 84
-    end
-    object adsCoreRepareOrderCount: TIntegerField
-      FieldName = 'OrderCount'
-    end
-    object adsCoreRepareOrdersSynonym: TStringField
-      FieldName = 'OrdersSynonym'
-      Size = 250
-    end
-    object adsCoreRepareOrdersSynonymFirm: TStringField
-      FieldName = 'OrdersSynonymFirm'
-      Size = 250
-    end
-    object adsCoreRepareOrdersPrice: TFloatField
-      FieldName = 'OrdersPrice'
-    end
-    object adsCoreRepareSumOrder: TFloatField
-      FieldName = 'SumOrder'
-    end
-    object adsCoreRepareOrdersJunk: TBooleanField
-      FieldName = 'OrdersJunk'
-    end
-    object adsCoreRepareOrdersAwait: TBooleanField
-      FieldName = 'OrdersAwait'
-    end
-    object adsCoreRepareOrdersHOrderId: TLargeintField
-      FieldName = 'OrdersHOrderId'
-    end
-    object adsCoreRepareOrdersHClientId: TLargeintField
-      FieldName = 'OrdersHClientId'
-    end
-    object adsCoreRepareOrdersHPriceCode: TLargeintField
-      FieldName = 'OrdersHPriceCode'
-    end
-    object adsCoreRepareOrdersHRegionCode: TLargeintField
-      FieldName = 'OrdersHRegionCode'
-    end
-    object adsCoreRepareOrdersHPriceName: TStringField
-      FieldName = 'OrdersHPriceName'
-      Size = 70
-    end
-    object adsCoreRepareOrdersHRegionName: TStringField
-      FieldName = 'OrdersHRegionName'
-      Size = 25
-    end
-    object adsCoreRepareRealCost: TFloatField
-      FieldName = 'RealCost'
-    end
-    object adsCoreRepareSupplierPriceMarkup: TFloatField
-      FieldName = 'SupplierPriceMarkup'
-    end
-    object adsCoreRepareUnit: TStringField
-      FieldName = 'Unit'
-    end
-    object adsCoreRepareServerCoreId: TLargeintField
-      FieldName = 'ServerCoreId'
-    end
-    object adsCoreRepareProducerCost: TFloatField
-      FieldName = 'ProducerCost'
-    end
-    object adsCoreRepareNDS: TSmallintField
       FieldName = 'NDS'
     end
   end
