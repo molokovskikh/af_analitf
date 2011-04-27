@@ -230,8 +230,8 @@ var
   lastTop : Integer;
   newTop : Integer;
   oldPoint, newPoint : TPoint;
-  r : Integer;
-
+  dataRowCount : Integer;
+  recordCount : Integer;
 begin
   pBorder.BevelInner := bvLowered;
   pBorder.BevelOuter := bvRaised;
@@ -291,11 +291,18 @@ begin
   lastTop := (FSingleParent.ClientHeight - Self.Height) div 2;
 
   if FShowUnderFocusedControl and (FFocusedControl is TCustomDBGridEh) then begin
-    r := TCustomDBGridEh(FFocusedControl).DataRowCount;
-    newTop := TCustomDBGridEh(FFocusedControl).CellRect(0, r+1).Top;
-    newTop := FSingleParent.ScreenToClient(TCustomDBGridEh(FFocusedControl).ClientToScreen(Point(0, newTop))).Y;
-    if newTop + Self.Height < FSingleParent.ClientHeight then
-      lastTop := newTop;
+    recordCount := 0;
+    if Assigned(TCustomDBGridEh(FFocusedControl).DataSource)
+      and Assigned(TCustomDBGridEh(FFocusedControl).DataSource.DataSet)
+    then
+      recordCount := TCustomDBGridEh(FFocusedControl).DataSource.DataSet.RecordCount;
+    dataRowCount := TCustomDBGridEh(FFocusedControl).DataRowCount;
+    if (recordCount <= dataRowCount) then begin
+      newTop := TCustomDBGridEh(FFocusedControl).CellRect(0, dataRowCount+1).Top;
+      newTop := FSingleParent.ScreenToClient(TCustomDBGridEh(FFocusedControl).ClientToScreen(Point(0, newTop))).Y;
+      if newTop + Self.Height < FSingleParent.ClientHeight then
+        lastTop := newTop;
+    end;
   end;
 
   Self.Top := lastTop;
