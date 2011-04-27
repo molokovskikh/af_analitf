@@ -20,6 +20,7 @@ type
 
     pBorder : TPanel;
 
+    lProviderLabel : TLabel;
     lPromotionLabel : TPromotionLabel;
 
     lPromotionName : TLabel;
@@ -71,13 +72,21 @@ begin
   pBorder.Align := alClient;
   pBorder.ControlStyle := pBorder.ControlStyle - [csParentBackground] + [csOpaque];
 
+  lProviderLabel := TLabel.Create(Self);
+  lProviderLabel.Name := 'lProviderLabel' + IntToStr(Promotion.Id);
+  lProviderLabel.Parent := pBorder;
+  lProviderLabel.Font.Style := lProviderLabel.Font.Style + [fsBold];
+  lProviderLabel.Caption := Promotion.SupplierShortName;
+  lProviderLabel.Top := 5;
+  lProviderLabel.Left := 10;
+
   lPromotionLabel := TPromotionLabel.Create(
     Self,
     Promotion.CatalogId,
     Promotion.Id,
     'lPromotionLabel',
-    Promotion.SupplierShortName,
-    10,
+    'Подробнее...',
+    lProviderLabel.Left + lProviderLabel.Width + 10,
     5,
     pBorder);
 
@@ -99,7 +108,9 @@ begin
     lPromotionName.Top + lPromotionName.Height + 5);
 
   pBorder.Constraints.MinHeight := lAnnotation.Top + lAnnotation.Height + 5;
-  pBorder.Constraints.MinWidth := lPromotionLabel.Left + lPromotionLabel.Width + 10 + lPromotionName.Width + 10;
+  pBorder.Constraints.MinWidth :=
+    lProviderLabel.Left + lProviderLabel.Width + 10
+    + lPromotionLabel.Width + 10 + lPromotionName.Width + 10;
   Self.Height := pBorder.Constraints.MinHeight;
   Self.Tag := Max(pBorder.Constraints.MinWidth, lAnnotation.Left + lAnnotation.Width + 10);
 end;
