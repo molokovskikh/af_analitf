@@ -690,7 +690,7 @@ object CoreForm: TCoreForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
@@ -815,7 +815,7 @@ object CoreForm: TCoreForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
@@ -1399,7 +1399,7 @@ object CoreForm: TCoreForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +

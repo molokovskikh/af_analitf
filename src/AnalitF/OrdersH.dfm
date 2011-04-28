@@ -941,7 +941,7 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      CCore.Cost,'
       
         '      if(CCore.VitallyImportant || ifnull(catalogs.VitallyImport' +
@@ -1057,7 +1057,7 @@ inherited OrdersHForm: TOrdersHForm
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      CCore.Cost,'
       
         '      if(CCore.VitallyImportant || ifnull(catalogs.VitallyImport' +

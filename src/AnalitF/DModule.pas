@@ -3300,7 +3300,7 @@ begin
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
 +'       (s.SynonymName, concat(catalogs.name, '' '', catalogs.form)) as '
 +'       SynonymName   , sf.synonymname, '
-+'                  if(dop.DayOfWeek is null, '
++'                  if(dop.OtherDelay is null, '
 +'                      c.Cost, '
 +'                      if(c.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
 +'                          cast(c.Cost * (1 + dop.VitallyImportantDelay/100) as decimal(18, 2)), '

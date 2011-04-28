@@ -862,7 +862,7 @@ begin
     + '  CurrentOrderLists.OrderCount as OldOrderCount, '
     + '  if(CurrentOrderLists.ServerQuantity is null, CurrentOrderLists.OrderCount, if(CurrentOrderLists.ServerQuantity > CurrentOrderLists.OrderCount, CurrentOrderLists.OrderCount, CurrentOrderLists.ServerQuantity)) as NewOrderCount, '
     + '  CurrentOrderLists.Price as OldPrice, '
-+'                  if(dop.DayOfWeek is null, '
++'                  if(dop.OtherDelay is null, '
 +'                      CurrentOrderLists.ServerCost, '
 +'                      if(CurrentOrderLists.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
 +'                          cast(CurrentOrderLists.ServerCost * (1 + dop.VitallyImportantDelay/100) as decimal(18, 2)), '

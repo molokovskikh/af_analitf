@@ -547,7 +547,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
@@ -671,7 +671,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelayk is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
@@ -1251,7 +1251,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.Volume,'
       '    Core.Note,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +

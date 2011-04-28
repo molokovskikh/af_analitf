@@ -417,7 +417,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
@@ -528,7 +528,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    Core.Period,'
       '    Core.Volume,'
       '    Core.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      Core.Cost,'
       
         '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +

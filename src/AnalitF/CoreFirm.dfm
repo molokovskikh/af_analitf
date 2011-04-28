@@ -629,7 +629,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      CCore.Cost,'
       
         '      if(CCore.VitallyImportant || ifnull(catalogs.VitallyImport' +
@@ -762,7 +762,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      CCore.Cost,'
       
         '      if(CCore.VitallyImportant || ifnull(catalogs.VitallyImport' +
@@ -1208,7 +1208,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.Await,'
       '    CCore.Junk,'
       '    CCore.Cost as RealCost,'
-      '  if(dop.DayOfWeek is null,'
+      '  if(dop.OtherDelay is null,'
       '      CCore.Cost,'
       
         '      if(CCore.VitallyImportant || ifnull(catalogs.VitallyImport' +

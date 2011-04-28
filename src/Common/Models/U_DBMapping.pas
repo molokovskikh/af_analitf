@@ -344,7 +344,7 @@ begin
 +'   Core.ProductId, '
 +'   Core.CodeFirmCr, '
 +'   Core.Cost as RealCost, '
-+'                  if(dop.DayOfWeek is null, '
++'                  if(dop.OtherDelay is null, '
 +'                      Core.Cost, '
 +'                      if(Core.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
 +'                          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) as decimal(18, 2)), '
