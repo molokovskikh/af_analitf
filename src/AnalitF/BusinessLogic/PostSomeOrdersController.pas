@@ -221,7 +221,7 @@ begin
     if dataSet.FieldByName('RetailCost').IsNull then begin
       RetailCost := FDataLayer
         .GetRetailCostLast(
-          dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
+          dataSet.FieldByName('RetailVitallyImportant').AsInteger > 0,
           dataSet.FieldByName('RealPRICE').AsCurrency
         );
       AddPostParam(

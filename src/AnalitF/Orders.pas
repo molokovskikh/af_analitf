@@ -523,11 +523,11 @@ begin
     if adsOrdersRetailCost.IsNull then begin
       adsOrdersRetailPrice.AsCurrency := DM
         .GetRetailCostLast(
-          adsOrdersRetailVitallyImportant.AsBoolean,
+          adsOrdersRetailVitallyImportant.Value > 0,
           adsOrdersRealPrice.AsCurrency);
       adsOrdersEditRetailMarkup.AsCurrency := DM
         .GetRetailMarkupValue(
-          adsOrdersRetailVitallyImportant.AsBoolean,
+          adsOrdersRetailVitallyImportant.Value > 0,
           adsOrdersRealPrice.AsCurrency);
     end
     else begin

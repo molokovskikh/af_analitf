@@ -363,7 +363,7 @@ begin
     if (LastSymmaryType = 0) or adsSummaryRetailCost.IsNull then begin
       adsSummaryPriceRet.AsCurrency :=
         DM.GetRetailCostLast(
-          adsSummaryRetailVitallyImportant.AsBoolean,
+          adsSummaryRetailVitallyImportant.Value > 0,
           adsSummaryRealCost.AsCurrency)
     end
     else

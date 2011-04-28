@@ -324,7 +324,7 @@ begin
   try
     adsCorePriceRet.AsCurrency :=
       DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.AsBoolean,
+        adsCoreRetailVitallyImportant.Value > 0,
         adsCoreRealCost.AsCurrency);
 {
     if Assigned(SortList) then

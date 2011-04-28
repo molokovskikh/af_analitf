@@ -173,7 +173,7 @@ begin
   try
     adsExpiredsCryptPriceRet.AsCurrency :=
       DM.GetRetailCostLast(
-        adsExpiredsRetailVitallyImportant.AsBoolean,
+        adsExpiredsRetailVitallyImportant.Value > 0,
         adsExpiredsRealCost.AsCurrency);
   except
   end;
