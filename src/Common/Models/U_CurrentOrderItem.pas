@@ -57,6 +57,8 @@ type
 
     RealPrice : Double;
     Price : Double;
+    RawRealPrice : Variant;
+    RawPrice : Variant;
 
     DropReason : Variant;
 
@@ -190,7 +192,8 @@ begin
   Result :=
     Format(
       'CurrentOrderItem  Id: %d  OrderId: %d  CoreId: %s  OrderCount: %d  ProductId: %d  CodeFirmCr: %s  SynonymCode: %s  SynonymFirmCrCode: %s  Code: %s  ' +
-      'CodeCr: %s  RealPrice: %0.2f  Price: %0.2f  Junk: %s  Await: %s  Period: %s  ProducerCost: %s  DropReason: %s',
+      'CodeCr: %s  RealPrice: %0.2f  Price: %0.2f  RawRealPrice: %s  RawPrice: %s  ' +
+      'Junk: %s  Await: %s  Period: %s  ProducerCost: %s  DropReason: %s',
       [
         Id,
         OrderId,
@@ -204,6 +207,8 @@ begin
         CodeCr,
         RealPrice,
         Price,
+        VarToStrDef(RawRealPrice, '(Null)'),
+        VarToStrDef(RawPrice, '(Null)'),
         BoolToStr(Junk, True),
         BoolToStr(Await, True),
         Period,

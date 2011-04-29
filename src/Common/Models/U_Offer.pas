@@ -21,6 +21,8 @@ type
     CodeFirmCr : Variant;
     RealCost : Double;
     Cost : Double;
+    RawRealCost : Variant;
+    RawCost : Variant;
     ProducerCost : Variant;
     SynonymCode : Int64;
     SynonymFirmCrCode : Variant;
@@ -94,7 +96,8 @@ begin
   Result :=
     Format(
       'Offer Id = %d, ProductId = %d, CodeFirmCr = %s, SynonymCode = %d, SynonymFirmCrCode = %s, Code = %s, CodeCr = %s, Period = %s, Junk = %s, Await = %s, ' +
-      'RealCost = %0.2f, Cost = %0.2f, Quantity = %s, ProducerCost = %s, OrderCost = %s, RequestRatio = %s, MinOrderCount = %s, PriceName = %s',
+      'RealCost = %0.2f, Cost = %0.2f, RawRealCost = %s, RawCost = %s, ' + 
+      'Quantity = %s, ProducerCost = %s, OrderCost = %s, RequestRatio = %s, MinOrderCount = %s, PriceName = %s',
       [
         CoreId,
         ProductId,
@@ -108,6 +111,8 @@ begin
         BoolToStr(Await, True),
         RealCost,
         Cost,
+        VarToStrDef(RawRealCost, '(Null)'),
+        VarToStrDef(RawCost, '(Null)'),
         VarToStrDef(Quantity, '(Null)'),
         VarToStrDef(ProducerCost, '(Null)'),
         VarToStrDef(OrderCost, '(Null)'),

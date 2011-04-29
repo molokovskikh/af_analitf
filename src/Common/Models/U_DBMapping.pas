@@ -56,6 +56,8 @@ type
     class function GetPromotionsByNameId(connection : TCustomMyConnection; nameId : Int64) : TObjectList;
 
     class function GetPromotionsByNameIdAndSupplierId(connection : TCustomMyConnection; nameId : Int64; supplierId : Int64) : TObjectList;
+
+    class function VarToCost(costValue : Variant; defaultCost : Double) : Double;
   end;
 
 implementation
@@ -279,8 +281,10 @@ begin
         orderItem.Junk := dataSet.FieldByName('Junk').AsBoolean;
         orderItem.Await := dataSet.FieldByName('Await').AsBoolean;
 
-        orderItem.RealPrice := dataSet['RealPrice'];
-        orderItem.Price := dataSet['Price'];
+        orderItem.RawRealPrice := dataSet['RealPrice'];
+        orderItem.RawPrice := dataSet['Price'];
+        orderItem.RealPrice := VarToCost(dataSet['RealPrice'], 0.0);
+        orderItem.Price := VarToCost(dataSet['Price'], orderItem.RealPrice);
 
         orderItem.MinOrderCount := dataSet['MinOrderCount'];
         orderItem.OrderCost := dataSet['OrderCost'];
@@ -393,8 +397,11 @@ begin
         offer.CodeCr := VarToStr(dataSet['CodeCr']);
         offer.ProductId := dataSet['ProductId'];
         offer.CodeFirmCr := dataSet['CodeFirmCr'];
-        offer.RealCost := dataSet['RealCost'];
-        offer.Cost := dataSet['Cost'];
+
+        offer.RawRealCost := dataSet['RealCost'];
+        offer.RawCost := dataSet['Cost'];
+        offer.RealCost := VarToCost(dataSet['RealCost'], -1);
+        offer.Cost := VarToCost(dataSet['Cost'], offer.RealCost);
 
         offer.ProducerCost := dataSet['ProducerCost'];
         offer.SynonymCode :=  dataSet['SynonymCode'];
@@ -413,7 +420,18 @@ begin
         offer.RegionCode := dataSet['RegionCode'];
         offer.PriceName := VarToStr(dataSet['PriceName']);
 
-        Result.Add(offer);
+        if offer.RealCost > -0.001 then
+          Result.Add(offer)
+        else
+          try
+            WriteExchangeLog(
+              'TDBMapping.GetOffersByPriceAndProductId',
+              'Предложение было отброшено, т.к. цена поставщика имеет некорректное значение: '#13#10 +
+              offer.ToString());
+          finally
+            offer.Free;
+          end;
+
         dataSet.Next;
       end;
     finally
@@ -497,8 +515,10 @@ begin
         orderItem.Junk := dataSet.FieldByName('Junk').AsBoolean;
         orderItem.Await := dataSet.FieldByName('Await').AsBoolean;
 
-        orderItem.RealPrice := dataSet['RealPrice'];
-        orderItem.Price := dataSet['Price'];
+        orderItem.RawRealPrice := dataSet['RealPrice'];
+        orderItem.RawPrice := dataSet['Price'];
+        orderItem.RealPrice := VarToCost(dataSet['RealPrice'], 0.0);
+        orderItem.Price := VarToCost(dataSet['Price'], orderItem.RealPrice);
 
         orderItem.MinOrderCount := dataSet['MinOrderCount'];
         orderItem.OrderCost := dataSet['OrderCost'];
@@ -841,6 +861,15 @@ begin
       ,
       ['Id', 'CoreId'],
       [currentOrderItem.Id, currentOrderItem.CoreId]);
+end;
+
+class function TDBMapping.VarToCost(costValue: Variant;
+  defaultCost: Double): Double;
+begin
+  if not VarIsNull(costValue) and VarIsNumeric(costValue) then
+    Result := costValue
+  else
+    Result := defaultCost;
 end;
 
 end.
