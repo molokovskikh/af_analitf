@@ -3234,16 +3234,18 @@ begin
 +'from   (pricesdata pd, pricesregionaldata prd, regions r) '
 +'       left join DelayOfPayments dop '
 +'       on     dop.FirmCode = pd.FirmCode '
++'       and     (dop.DayOfWeek = :DayOfWeek) '
 +'where  pd.pricecode  = :pricecode '
 +'and    prd.pricecode = pd.pricecode '
 +'and    r.regioncode  = prd.regioncode '
 +'and    r.regioncode  = :regioncode; '
 +' '
 +'select last_insert_id() ;',
-        ['ClientId', 'PriceCode', 'RegionCode'],
+        ['ClientId', 'PriceCode', 'RegionCode', 'DayOfWeek'],
         [orderDataSet.ParamByName('ClientId').Value,
          orderDataSet.FieldByName('PriceCode').Value,
-         orderDataSet.FieldByName('RegionCode').Value]);
+         orderDataSet.FieldByName('RegionCode').Value,
+         TDayOfWeekHelper.DayOfWeek()]);
     end;
     OrderId := OrderIdVariant;
   end
