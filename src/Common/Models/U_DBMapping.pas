@@ -371,7 +371,7 @@ begin
 +'   inner join pricesdata on Core.PriceCode = pricesdata.PriceCode '
 +'   left join products on products.ProductId = Core.ProductId '
 +'   left join catalogs on catalogs.FullCode = products.CatalogId '
-+'   left join DelayOfPayments dop on (dop.FirmCode = pricesdata.FirmCode) and '
++'   left join DelayOfPayments dop on (dop.PriceCode = pricesdata.PriceCode) and '
 +'             (dop.DayOfWeek = :DayOfWeek) '
 +'   left join synonyms on synonyms.SynonymCode = Core.SynonymCode '
 +'   left join synonymFirmCr on synonymFirmCr.synonymFirmCrCode = Core.synonymFirmCrCode '

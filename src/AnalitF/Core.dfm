@@ -676,9 +676,7 @@ object CoreForm: TCoreForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -783,8 +781,8 @@ object CoreForm: TCoreForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
         'd and osbc.CoreId = Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
         'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -801,9 +799,7 @@ object CoreForm: TCoreForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -908,8 +904,8 @@ object CoreForm: TCoreForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
         'd and osbc.CoreId = Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
         'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -1194,7 +1190,7 @@ object CoreForm: TCoreForm
     object adsCoreNamePromotionsCount: TIntegerField
       FieldName = 'NamePromotionsCount'
     end
-    object adsCoreRetailVitallyImportant: TLargeintField
+    object adsCoreRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
   end
@@ -1385,9 +1381,7 @@ object CoreForm: TCoreForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -1492,8 +1486,8 @@ object CoreForm: TCoreForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
         'd and osbc.CoreId = Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
         'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '

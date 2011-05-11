@@ -93,7 +93,7 @@ type
     lDatePrice: TLabel;
     dbtDatePrice: TDBText;
     adsOrdersRetailCost: TFloatField;
-    adsOrdersRetailVitallyImportant: TIntegerField;
+    adsOrdersRetailVitallyImportant: TBooleanField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -523,11 +523,11 @@ begin
     if adsOrdersRetailCost.IsNull then begin
       adsOrdersRetailPrice.AsCurrency := DM
         .GetRetailCostLast(
-          adsOrdersRetailVitallyImportant.Value > 0,
+          adsOrdersRetailVitallyImportant.Value,
           adsOrdersRealPrice.AsCurrency);
       adsOrdersEditRetailMarkup.AsCurrency := DM
         .GetRetailMarkupValue(
-          adsOrdersRetailVitallyImportant.Value > 0,
+          adsOrdersRetailVitallyImportant.Value,
           adsOrdersRealPrice.AsCurrency);
     end
     else begin

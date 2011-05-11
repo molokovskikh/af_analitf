@@ -532,9 +532,7 @@ inherited OrdersForm: TOrdersForm
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    ol.Period,'
       '    Producers.Name as ProducerName,'
-      
-        '    (ifnull(catalogs.VitallyImportant, 0) || ol.VitallyImportant' +
-        ') as RetailVitallyImportant'
+      '    ol.RetailVitallyImportant'
       'FROM '
       '  CurrentOrderLists ol'
       '  left join products on products.productid = ol.productid'
@@ -721,7 +719,7 @@ inherited OrdersForm: TOrdersForm
     object adsOrdersRetailCost: TFloatField
       FieldName = 'RetailCost'
     end
-    object adsOrdersRetailVitallyImportant: TIntegerField
+    object adsOrdersRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
   end

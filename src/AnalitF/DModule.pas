@@ -276,7 +276,7 @@ type
     adsOrderDetailsRetailMarkup: TFloatField;
     adtClientsSelfAddressId: TStringField;
     adsOrderDetailsRetailCost: TFloatField;
-    adsOrderDetailsRetailVitallyImportant: TLargeintField;
+    adsOrderDetailsRetailVitallyImportant: TBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -3238,7 +3238,7 @@ begin
 +'select :ClientId, pd.PriceCode, prd.RegionCode, pd.PriceName, r.RegionName, current_timestamp(), dop.OtherDelay, dop.VitallyImportantDelay '
 +'from   (pricesdata pd, pricesregionaldata prd, regions r) '
 +'       left join DelayOfPayments dop '
-+'       on     dop.FirmCode = pd.FirmCode '
++'       on     dop.PriceCode = pd.PriceCode '
 +'       and     (dop.DayOfWeek = :DayOfWeek) '
 +'where  pd.pricecode  = :pricecode '
 +'and    prd.pricecode = pd.pricecode '
@@ -3301,7 +3301,7 @@ begin
 +'              CoreQuantity     , ServerCoreID, '
 +'              Unit             , Volume       , Note, '
 +'              Period           , Doc          , REGISTRYCOST, VITALLYIMPORTANT, '
-+'              ProducerCost     , NDS            '
++'              ProducerCost     , NDS          , RetailVitallyImportant  '
 +'       ) '
 +'select :ORDERID     , :CLIENTID, c.COREID, c.PRODUCTID, c.CODEFIRMCR, '
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
@@ -3321,7 +3321,7 @@ begin
 +'              c.Quantity     , c.ServerCoreID, '
 +'              c.Unit             , c.Volume       , c.Note, '
 +'              c.Period           , c.Doc          , c.REGISTRYCOST, c.VITALLYIMPORTANT, '
-+'              c.ProducerCost     , c.NDS            '
++'              c.ProducerCost     , c.NDS          , c.RetailVitallyImportant  '
 +'from   core c '
 +'       inner join pricesdata pd '
 +'       on     pd.PriceCode = c.PriceCode '
@@ -3330,7 +3330,7 @@ begin
 +'       inner join catalogs '
 +'       on     catalogs.fullcode = p.catalogid '
 +'       left join DelayOfPayments dop '
-+'       on     dop.FirmCode = pd.FirmCode '
++'       on     dop.PriceCode = pd.PriceCode '
 +'       and     (dop.DayOfWeek = :DayOfWeek) '
 +'       left join synonyms s '
 +'       on     s.synonymcode = c.synonymcode '
@@ -3424,18 +3424,18 @@ begin
   +'insert '
   +'into   Delayofpayments '
   +'       ( '
-  +'              FirmCode, '
+  +'              PriceCode, '
   +'              DayOfWeek, '
   +'              VitallyImportantDelay, '
   +'              OtherDelay '
   +'       ) '
   +'select  '
-  +'       providers.FirmCode, '
+  +'       pricesdata.PriceCode, '
   +'       d.DayOfWeek, '
   +'       if(clients.AllowDelayOfPayment = 1, 0.0, null),  '
   +'       if(clients.AllowDelayOfPayment = 1, 0.0, null)   '
   +'from   '
-  +'  ( clients, providers, userinfo, '
+  +'  ( clients, pricesdata, userinfo, '
   +'      ( '
   +'          select "Monday" as DayOfWeek '
   +'          union '
@@ -3453,8 +3453,8 @@ begin
   +'      ) d '
   +' ) '
   +'       left join delayofpayments dop '
-  +'       on     (dop.FirmCode = providers.FirmCode) and (dop.DayOfWeek = d.DayOfWeek) '
-  +'where  (dop.FirmCode  is null)'
+  +'       on     (dop.PriceCode = pricesdata.PriceCode) and (dop.DayOfWeek = d.DayOfWeek) '
+  +'where  (dop.PriceCode  is null)'
   +'and    (userinfo.ClientId = clients.ClientId)';
   adsQueryValue.Execute;
 

@@ -102,7 +102,7 @@ type
     tmrFillReport: TTimer;
     adsSummaryAddressName: TStringField;
     adsSummaryRetailCost: TFloatField;
-    adsSummaryRetailVitallyImportant: TLargeintField;
+    adsSummaryRetailVitallyImportant: TBooleanField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -363,7 +363,7 @@ begin
     if (LastSymmaryType = 0) or adsSummaryRetailCost.IsNull then begin
       adsSummaryPriceRet.AsCurrency :=
         DM.GetRetailCostLast(
-          adsSummaryRetailVitallyImportant.Value > 0,
+          adsSummaryRetailVitallyImportant.Value,
           adsSummaryRealCost.AsCurrency)
     end
     else

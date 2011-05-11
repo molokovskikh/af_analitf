@@ -123,7 +123,7 @@ type
     adsCoreBuyingMatrixType: TIntegerField;
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
-    adsCoreRetailVitallyImportant: TLargeintField;
+    adsCoreRetailVitallyImportant: TBooleanField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -320,7 +320,7 @@ begin
   try
     adsCoreCryptPriceRet.AsCurrency :=
       DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRetailVitallyImportant.Value,
         adsCoreRealCost.AsCurrency);
   except
   end;

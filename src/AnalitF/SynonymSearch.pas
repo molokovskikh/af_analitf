@@ -139,7 +139,7 @@ type
     adsPreviosOrdersPeriod: TStringField;
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
-    adsCoreRetailVitallyImportant: TIntegerField;
+    adsCoreRetailVitallyImportant: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -324,7 +324,7 @@ begin
   try
     adsCorePriceRet.AsCurrency :=
       DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRetailVitallyImportant.Value,
         adsCoreRealCost.AsCurrency);
 {
     if Assigned(SortList) then

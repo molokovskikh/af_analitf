@@ -127,7 +127,7 @@ type
     adsCoreMaxProducerCost: TFloatField;
     adsCoreProducerName: TStringField;
     adsCoreCatalogVitallyImportant: TBooleanField;
-    adsCoreRetailVitallyImportant: TIntegerField;
+    adsCoreRetailVitallyImportant: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -560,7 +560,7 @@ begin
   try
     adsCorePriceRet.AsCurrency :=
       DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRetailVitallyImportant.Value,
         adsCoreRealCost.AsCurrency);
   except
   end;
@@ -877,7 +877,7 @@ begin
     + '  left join products on products.ProductId = CurrentOrderLists.ProductId '
     + '  left join catalogs on catalogs.FullCode = products.CatalogId '
     + '  left JOIN PricesData cpd  ON (cpd.PriceCode = CurrentOrderHeads.pricecode)'
-    + '  left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCode) and (dop.DayOfWeek = "' + TDayOfWeekHelper.DayOfWeek() + '") '
+    + '  left join DelayOfPayments dop on (dop.PriceCode = cpd.PriceCode) and (dop.DayOfWeek = "' + TDayOfWeekHelper.DayOfWeek() + '") '
     + ' '
     + 'where '
     + '    CurrentOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + '  '

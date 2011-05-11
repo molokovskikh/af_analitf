@@ -533,9 +533,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -637,8 +635,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
         'd and osbc.CoreId = Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
         's.OrderId and CurrentOrderHeads.Frozen = 0 WHERE '
@@ -657,9 +655,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -762,8 +758,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         '  LEFT JOIN CurrentOrderLists osbc ON (osbc.CoreId = Core.CoreId' +
         ') AND (osbc.clientid = :clientid)'
       
-        '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
-        'mCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '  left join DelayOfPayments dop on (dop.PriceCode = PricesData.P' +
+        'riceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
         'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId) and' +
@@ -1072,7 +1068,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreNamePromotionsCount: TIntegerField
       FieldName = 'NamePromotionsCount'
     end
-    object adsCoreRetailVitallyImportant: TIntegerField
+    object adsCoreRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
   end
@@ -1237,9 +1233,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
       '    Core.CodeFirmCr,'
@@ -1341,8 +1335,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
         '  LEFT JOIN CurrentOrderLists osbc ON (osbc.CoreId = Core.CoreId' +
         ') AND (osbc.clientid = :clientid)'
       
-        '  left join DelayOfPayments dop on (dop.FirmCode = Providers.Fir' +
-        'mCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '  left join DelayOfPayments dop on (dop.PriceCode = PricesData.P' +
+        'riceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
         'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId)   a' +

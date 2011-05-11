@@ -221,7 +221,7 @@ begin
     if dataSet.FieldByName('RetailCost').IsNull then begin
       RetailCost := FDataLayer
         .GetRetailCostLast(
-          dataSet.FieldByName('RetailVitallyImportant').AsInteger > 0,
+          dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
           dataSet.FieldByName('RealPRICE').AsCurrency
         );
       AddPostParam(
@@ -631,7 +631,7 @@ begin
         +'   MinOrderCount, RealPrice, DropReason, ServerCost, ServerQuantity, '
         +'   SupplierPriceMarkup, CoreQuantity, ServerCoreID, '
         +'   Unit, Volume, Note, Period, Doc, RegistryCost, VitallyImportant, '
-        +'   RetailMarkup, ProducerCost, NDS, RetailCost) '
+        +'   RetailMarkup, ProducerCost, NDS, RetailCost, RetailVitallyImportant) '
         +'select '
         +'   @LastPostedOrderId, CLIENTID, CoreId, ProductId, CodeFirmcr, SynonymCode, '
         +'   SynonymFirmCrCode, Code, CodeCr, SynonymName, SynonymFirm, '
@@ -639,7 +639,7 @@ begin
         +'   MinOrderCount, RealPrice, DropReason, ServerCost, ServerQuantity, '
         +'   SupplierPriceMarkup, CoreQuantity, ServerCoreID, '
         +'   Unit, Volume, Note, Period, Doc, RegistryCost, VitallyImportant, '
-        +'   RetailMarkup, ProducerCost, NDS, RetailCost '
+        +'   RetailMarkup, ProducerCost, NDS, RetailCost, RetailVitallyImportant '
         +'from '
         +'  CurrentOrderLists '
         +'where '

@@ -139,7 +139,7 @@ begin
 +' update '
 +'   CurrentOrderHeads '
 +'   left join pricesdata on pricesdata.PriceCode = CurrentOrderHeads.PriceCode '
-+'   left join DelayOfPayments on (DelayOfPayments.FirmCode = pricesdata.FirmCode) and '
++'   left join DelayOfPayments on (DelayOfPayments.PriceCode = pricesdata.PriceCode) and '
 +'             (DelayOfPayments.DayOfWeek = :DayOfWeek) '
 +'  set '
 +'     CurrentOrderHeads.DelayOfPayment = DelayOfPayments.OtherDelay, '

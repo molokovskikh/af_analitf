@@ -720,9 +720,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    CurrentOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
@@ -811,9 +809,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || PostedOrderLists.vitallyimport' +
-        'ant) as RetailVitallyImportant,'
+      '    PostedOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    PostedOrderLists.CoreId AS CoreId,'
       '    PostedOrderLists.Volume,'
@@ -932,9 +928,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    CurrentOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
@@ -1018,9 +1012,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.shortcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    CurrentOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CoreID,'
       '    Core.Volume,'
@@ -1275,7 +1267,7 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryRetailCost: TFloatField
       FieldName = 'RetailCost'
     end
-    object adsSummaryRetailVitallyImportant: TLargeintField
+    object adsSummaryRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
   end

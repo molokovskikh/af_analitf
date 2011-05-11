@@ -152,7 +152,7 @@ type
     adsPreviosOrdersPeriod: TStringField;
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
-    adsCoreRetailVitallyImportant: TLargeintField;
+    adsCoreRetailVitallyImportant: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -462,7 +462,7 @@ begin
     end;
     adsCorePriceRet.AsCurrency :=
       DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRetailVitallyImportant.Value,
         adsCoreRealCost.AsCurrency);
   except
   end;
@@ -782,7 +782,7 @@ begin
     //Если пользователь не изменял сам наценку, то применяем текущую наценку
     if not UserSetRetUpCost then begin
       retailMarkup := DM.GetRetailMarkupValue(
-        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRetailVitallyImportant.Value,
         adsCoreRealCost.AsCurrency);
       ProgramSetSetRetUpCost := True;
       try

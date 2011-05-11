@@ -1027,8 +1027,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
         'e)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
-        'e) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = cpd.PriceC' +
+        'ode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
         'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0'
@@ -1143,8 +1143,8 @@ inherited OrdersHForm: TOrdersHForm
         '    left JOIN PricesData cpd  ON (cpd.PriceCode = CCore.pricecod' +
         'e)'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = cpd.FirmCod' +
-        'e) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = cpd.PriceC' +
+        'ode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    left JOIN CurrentOrderHeads      ON CurrentOrderHeads.OrderI' +
         'd = osbc.OrderId and CurrentOrderHeads.Frozen = 0'

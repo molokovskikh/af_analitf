@@ -471,9 +471,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -572,8 +570,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
         'd and osbc.CoreId = Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.DayOfWeek = :DayOfWeek)  '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek)  '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
         's.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -589,9 +587,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -694,8 +690,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
         'd and osbc.CoreId = Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode)  and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode)  and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
         'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -951,7 +947,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     object adsCoreCatalogVitallyImportant: TBooleanField
       FieldName = 'CatalogVitallyImportant'
     end
-    object adsCoreRetailVitallyImportant: TIntegerField
+    object adsCoreRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
   end

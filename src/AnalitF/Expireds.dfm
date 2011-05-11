@@ -404,9 +404,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    catalogs.fullcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
@@ -497,8 +495,8 @@ inherited ExpiredsForm: TExpiredsForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :ClientI' +
         'd and osbc.CoreId=Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
         's.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -515,9 +513,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    catalogs.fullcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
-      
-        '    (catalogs.VitallyImportant || Core.vitallyimportant) as Reta' +
-        'ilVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
@@ -608,8 +604,8 @@ inherited ExpiredsForm: TExpiredsForm
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :ClientI' +
         'd and osbc.CoreId=Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = PricesData.' +
-        'FirmCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON osbc.OrderId=CurrentOrderHead' +
         's.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -848,7 +844,7 @@ inherited ExpiredsForm: TExpiredsForm
     object adsExpiredsProducerName: TStringField
       FieldName = 'ProducerName'
     end
-    object adsExpiredsRetailVitallyImportant: TLargeintField
+    object adsExpiredsRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
   end

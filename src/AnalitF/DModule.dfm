@@ -575,8 +575,8 @@ object DM: TDM
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
         'd and osbc.CoreId = Core.CoreId'
       
-        '    left join DelayOfPayments dop on (dop.FirmCode = Providers.F' +
-        'irmCode) and (dop.DayOfWeek = :DayOfWeek) '
+        '    left join DelayOfPayments dop on (dop.PriceCode = PricesData' +
+        '.PriceCode) and (dop.DayOfWeek = :DayOfWeek) '
       
         '    LEFT JOIN CurrentOrderHeads ON CurrentOrderHeads.OrderId = o' +
         'sbc.OrderId and CurrentOrderHeads.Frozen = 0 '
@@ -683,9 +683,7 @@ object DM: TDM
       '    list.NDS,'
       '    list.RetailMarkup,'
       '    list.RetailCost,'
-      
-        '    (ifnull(catalogs.VitallyImportant, 0) || list.VitallyImporta' +
-        'nt) as RetailVitallyImportant'
+      '    list.RetailVitallyImportant'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'
@@ -818,7 +816,7 @@ object DM: TDM
     object adsOrderDetailsRetailCost: TFloatField
       FieldName = 'RetailCost'
     end
-    object adsOrderDetailsRetailVitallyImportant: TLargeintField
+    object adsOrderDetailsRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
   end
@@ -1439,9 +1437,7 @@ object DM: TDM
       '    list.NDS, '
       '    list.RetailMarkup,'
       '    list.RetailCost,'
-      
-        '    (ifnull(catalogs.VitallyImportant, 0) || list.VitallyImporta' +
-        'nt) as RetailVitallyImportant'
+      '    list.RetailVitallyImportant'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'

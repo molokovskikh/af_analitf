@@ -181,7 +181,7 @@ type
     adsCoreSumOrder: TFloatField;
 
     adsCorePriceRet: TCurrencyField;
-    adsCoreRetailVitallyImportant: TIntegerField;
+    adsCoreRetailVitallyImportant: TBooleanField;
 
     adsCoreNamePromotionsCount: TIntegerField;
 
@@ -890,7 +890,7 @@ begin
   adsCorePriceRet.DisplayFormat := '0.00;;';
   adsCorePriceRet.Dataset := adsCore;
 
-  adsCoreRetailVitallyImportant := TDataSetHelper.AddIntegerField(adsCore, 'RetailVitallyImportant');
+  adsCoreRetailVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'RetailVitallyImportant');
 
   adsCoreNamePromotionsCount := TDataSetHelper.AddIntegerField(adsCore, 'NamePromotionsCount');
 end;
@@ -900,7 +900,7 @@ begin
   try
     adsCorePriceRet.AsCurrency :=
       DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value > 0,
+        adsCoreRetailVitallyImportant.Value,
         adsCoreRealCost.AsCurrency);
   except
   end;
