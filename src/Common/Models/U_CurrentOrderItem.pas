@@ -71,6 +71,8 @@ type
     UnionOrderItem : TCurrentOrderItem;
 
     function IsOfferExists(aOffer: TOffer) : Boolean;
+    function PeriodEquals(aOfferPeriod: String) : Boolean;
+    function TryStrToPeriod(aPeriod: String; out Value: TDateTime) : Boolean;
     function IsAnotherOfferExists(aOffer: TOffer) : Boolean;
     function IsOfferValid(aOffer: TOffer) : Boolean;
     function IsFullOffer(aOffer: TOffer) : Boolean;
@@ -112,13 +114,27 @@ begin
     and (Code = aOffer.Code)
     and (Junk = aOffer.Junk)
     and (Await = aOffer.Await)
-    and (Period = aOffer.Period)
+    and (PeriodEquals(aOffer.Period))
     and (ProducerCost = aOffer.ProducerCost)
 end;
 
 function TCurrentOrderItem.IsOfferValid(aOffer: TOffer): Boolean;
 begin
   Result := VarIsNull(aOffer.Quantity) or (aOffer.Quantity >= OrderCount);
+end;
+
+function TCurrentOrderItem.PeriodEquals(aOfferPeriod: String): Boolean;
+var
+  orderPeriod,
+  offerPeriod : TDateTime;
+begin
+  Result := Period = aOfferPeriod;
+  if not Result then begin
+    if TryStrToPeriod(Period, orderPeriod) and
+       TryStrToPeriod(aOfferPeriod, offerPeriod)
+    then
+      Result := Period <= aOfferPeriod;
+  end;
 end;
 
 procedure TCurrentOrderItem.RecalcOrderCount;
@@ -215,6 +231,21 @@ begin
         VarToStrDef(ProducerCost, '(Null)'),
         VarToStrDef(DropReason, '(Null)')
       ]);
+end;
+
+function TCurrentOrderItem.TryStrToPeriod(aPeriod: String;
+  out Value: TDateTime): Boolean;
+begin
+  if Length(aPeriod) < 10 then
+    Result := False
+  else
+    Result :=
+      TryEncodeDate(
+        StrToIntDef(Copy(aPeriod, 7, 4), 0),
+        StrToIntDef(Copy(aPeriod, 4, 2), 0),
+        StrToIntDef(Copy(aPeriod, 1, 2), 0),
+        Value
+        );
 end;
 
 procedure TCurrentOrderItem.UpdateDropReason;
