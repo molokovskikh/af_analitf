@@ -398,12 +398,12 @@ function TDelayOfPaymentsTable.GetCreateSQL(
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( '
-+'    `FirmCode` bigint(20) not null      , '
++'    `PriceCode` bigint(20) not null      , '
 +'    `DayOfWeek` enum (''Monday'', ''Tuesday'', ''Wednesday'', ''Thursday'', ''Friday'', ''Saturday'', ''Sunday'') not null, '
 +'    `VitallyImportantDelay` decimal(18,2) default null, '
 +'    `OtherDelay` decimal(18,2) default null, '
-+'    key `IDX_DelayOfPayments_FirmCode` (`FirmCode`), '
-+'    key `IDX_DelayOfPayments_Week` (`FirmCode`, `DayOfWeek`) '
++'    key `IDX_DelayOfPayments_PriceCode` (`PriceCode`), '
++'    key `IDX_DelayOfPayments_Week` (`PriceCode`, `DayOfWeek`) '
 +'  ) '
 + GetTableOptions();
 end;
@@ -561,6 +561,7 @@ begin
 +'    `SupplierPriceMarkup` decimal(5,3) default null            , '
 +'    `ProducerCost` decimal(18,2) default null                  , '
 +'    `NDS` smallint(5) default null                             , '
++'    `RetailVitallyImportant` tinyint(1) not null default ''0'', ' 
 +'    `BuyingMatrixType` smallint(5) default null                , '
 +'    `CryptCost`    VARCHAR(32) default null                    , '
 +'    `COREID` bigint(20) not null AUTO_INCREMENT                , '
