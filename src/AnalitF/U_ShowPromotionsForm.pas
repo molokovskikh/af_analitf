@@ -51,6 +51,21 @@ type
     procedure PrintClick(Sender : TObject);
   end;
 
+  TSaveHandler = class(TComponent)
+   public
+    Canvas : TCanvas;
+    SaveDialog : TSaveDialog;
+    sbSave : TSpeedButton;
+    Promotion : TSupplierPromotion;
+    constructor Create(
+      AOwner : TComponent;
+      Parent : TPanel;
+      save : TSpeedButton;
+      promo : TSupplierPromotion);  reintroduce; overload;
+    destructor Destroy; override;
+    procedure SaveClick(Sender : TObject);
+  end;
+
   TShowPromotionsForm = class(TVistaCorrectForm)
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -79,6 +94,9 @@ implementation
 function GetPromoInfoControl(promotion : TSupplierPromotion; Owner : TComponent; Parent : TWinControl) : TControl;
 var
   osPromoFile : String;
+
+  pMemo : TPanel;
+  pMemoHeader : TPanel;
   mCurrent : TMemo;
 
   iImage : TImage;
@@ -87,6 +105,9 @@ var
   sbPrint : TSpeedButton;
   handler : TImageHandler;
   jpg: TJpegImage;
+
+  sbSave : TSpeedButton;
+  saveHandler : TSaveHandler;
 
   pWebBrowser : TPanel;
   iWebBrowser : TWebBrowser;
@@ -135,6 +156,13 @@ begin
         sbPrint.Left := 5;
         sbPrint.Top := 5;
 
+        sbSave  := TSpeedButton.Create(pImage);
+        sbSave.Parent := pHeaderImage;
+        sbSave.Caption := 'Сохранить как';
+        sbSave.Height := 25;
+        sbSave.Left := 5;
+        sbSave.Top := 5;
+
         pHeaderImage.Height := sbPrint.Height + 2*sbPrint.Top;
 
         iImage := TImage.Create(pImage);
@@ -153,18 +181,49 @@ begin
         end;
 
         handler := TImageHandler.Create(pImage, pImage, sbPrint, iImage);
+        saveHandler := TSaveHandler.Create(pImage, pImage, sbSave, promotion);
+
+        sbPrint.Left := sbSave.Left + sbSave.Width + 10; 
 
         Result := iImage;
       end
       else
         if promotion.TxtExists() then begin
-          mCurrent := TMemo.Create(Owner);
+          pMemo := TPanel.Create(Owner);
+          pMemo.Name := 'pMemo';
+          pMemo.Caption := '';
+          pMemo.BevelOuter := bvNone;
+          pMemo.Align := alClient;
+          pMemo.ControlStyle := pMemo.ControlStyle - [csParentBackground] + [csOpaque];
+          pMemo.Parent := Parent;
+
+          pMemoHeader := TPanel.Create(pMemo);
+          pMemoHeader.Name := 'pMemoHeader';
+          pMemoHeader.Caption := '';
+          pMemoHeader.BevelOuter := bvNone;
+          pMemoHeader.Align := alTop;
+          pMemoHeader.ControlStyle := pMemoHeader.ControlStyle - [csParentBackground] + [csOpaque];
+          pMemoHeader.Parent := pMemo;
+
+          sbSave  := TSpeedButton.Create(pMemo);
+          sbSave.Parent := pMemoHeader;
+          sbSave.Caption := 'Сохранить как';
+          sbSave.Height := 25;
+          sbSave.Left := 5;
+          sbSave.Top := 5;
+
+          pMemoHeader.Height := sbSave.Height + 2*sbSave.Top;
+
+          mCurrent := TMemo.Create(pMemo);
           mCurrent.Name := 'mCurrent' + IntToStr(promotion.Id);
-          mCurrent.Parent := Parent;
+          mCurrent.Parent := pMemo;
           mCurrent.ReadOnly := True;
           mCurrent.Align := alClient;
           mCurrent.Lines.LoadFromFile(osPromoFile);
-          Result := mCurrent;
+
+          saveHandler := TSaveHandler.Create(pMemo, pMemo, sbSave, promotion);
+          
+          Result := pMemo;
         end;
   end;
 end;
@@ -327,6 +386,39 @@ begin
       printImage.Free;
     end;
   end;
+end;
+
+{ TSaveHandler }
+
+constructor TSaveHandler.Create(AOwner: TComponent; Parent: TPanel;
+  save: TSpeedButton; promo : TSupplierPromotion);
+begin
+  inherited Create(AOwner);
+  Canvas := TControlCanvas.Create;
+  TControlCanvas(Canvas).Control := Parent;
+  Promotion := promo;
+  SaveDialog := TSaveDialog.Create(AOwner);
+  SaveDialog.Options := [ofOverwritePrompt,ofPathMustExist,ofEnableSizing];
+  SaveDialog.DefaultExt := Copy(Promotion.GetPromoExt(), 2, 3);
+  SaveDialog.Filter := 'Все файлы (*.*)|*.*';
+  sbSave := save;
+  sbSave.Width := Canvas.TextWidth(sbSave.Caption) + 20;
+  sbSave.OnClick := SaveClick;
+end;
+
+destructor TSaveHandler.Destroy;
+begin
+  if Assigned(Canvas) then
+    Canvas.Free;
+  inherited;
+end;
+
+procedure TSaveHandler.SaveClick(Sender: TObject);
+begin
+  if SaveDialog.Execute then
+    OSCopyFile(
+      RootFolder() + SDirPromotions + '\' + promotion.GetPromoFile(),
+      SaveDialog.FileName);
 end;
 
 end.
