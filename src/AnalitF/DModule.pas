@@ -876,6 +876,11 @@ begin
   FProcess800xUpdate := False;
   FProcessUpdateToNewLibMysqlD := False;
 
+  if GetNetworkSettings().IsNetworkVersion then begin
+    DatabaseController.FreeMySQLLib('MySql Clients Count при запуске сетевой версии');
+    DatabaseController.SwithTypes(False);
+  end;
+
   if not DirectoryExists( RootFolder() + SDirUpload) then CreateDir( RootFolder() + SDirUpload);
   if not GetNetworkSettings().IsNetworkVersion then begin
     if not DirectoryExists( ExePath + SDirTableBackup) then CreateDir( ExePath + SDirTableBackup);
@@ -3690,9 +3695,10 @@ begin
   
   DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении с 800-х');
 {$ifdef USEMEMORYCRYPTDLL}
-  TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := False;
+  //TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := False;
 {$endif}
-  MyCall.SwithTypesToOld;
+  //MyCall.SwithTypesToOld;
+  DatabaseController.SwithTypes(False);
 
   try
 
@@ -3736,9 +3742,10 @@ begin
 
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении с 800-х');
 {$ifdef USEMEMORYCRYPTDLL}
-    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
+//    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
 {$endif}
-    MyCall.SwithTypesToNew;
+//    MyCall.SwithTypesToNew;
+    DatabaseController.SwithTypes(True);
 
     dbCon.Open;
     try
@@ -3769,9 +3776,10 @@ begin
   finally
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении с 800-х (обратно)');
 {$ifdef USEMEMORYCRYPTDLL}
-    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
+//    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
 {$endif}
-    MyCall.SwithTypesToNew;
+//    MyCall.SwithTypesToNew;
+    DatabaseController.SwithTypes(True);
   end;
 end;
 

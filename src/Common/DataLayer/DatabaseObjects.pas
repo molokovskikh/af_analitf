@@ -1553,8 +1553,16 @@ end;
 procedure TDatabaseController.SwithTypes(ToNewTypes: Boolean);
 begin
   if ToNewTypes then begin
+{$ifdef USEMEMORYCRYPTDLL}
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := True;
+{$endif}
+    MyCall.SwithTypesToNew
   end
   else begin
+{$ifdef USEMEMORYCRYPTDLL}
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FUseNewTypes := False;
+{$endif}
+    MyCall.SwithTypesToOld;
   end;
 end;
 
