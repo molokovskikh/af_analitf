@@ -48,7 +48,8 @@ TUpdateTable = (
   utDocumentHeaders,
   utDocumentBodies,
   utSupplierPromotions,
-  utPromotionCatalogs
+  utPromotionCatalogs,
+  utCurrentOrderHeads
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -135,6 +136,9 @@ private
   procedure ImportData;
   procedure ImportBatchReport;
   procedure ImportDocs;
+  procedure ImportDownloadOrders;
+  procedure FillDistinctOrderAddresses(OrderHeadsFile : String);
+  procedure ImportOrders(OrderHeadsFile, OrderListsFile : String; FrozenOrders : Boolean);
   procedure ClearPromotions;
   procedure ProcessPromoFileState(promoFileName : String);
   procedure CheckNewExe;
@@ -706,10 +710,11 @@ begin
       else begin
         ParamNames[8]  := 'ClientHFile';
         ParamValues[8] := '';
-        ParamNames[9]  := '';
-        ParamValues[9] := '';
-        ParamNames[10]  := '';
-        ParamValues[10] := '';
+        GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
+        ParamNames[9]  := 'MaxOrderId';
+        ParamValues[9] := MaxOrderId;
+        ParamNames[10]  := 'MaxOrderListId';
+        ParamValues[10] := MaxOrderListId;
         ParamNames[11]  := '';
         ParamValues[11] := '';
       end;
@@ -742,7 +747,7 @@ begin
     if NeedProcessBatch then
       Res := SOAP.Invoke( 'PostOrderBatch', ParamNames, ParamValues)
     else
-      Res := SOAP.Invoke( 'GetUserDataWithPriceCodes', ParamNames, ParamValues);
+      Res := SOAP.Invoke( 'GetUserDataWithOrders', ParamNames, ParamValues);
     { проверяем отсутствие ошибки при удаленном запросе }
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
@@ -1365,6 +1370,7 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\DocumentBodies.txt') > 0) then UpdateTables := UpdateTables + [utDocumentBodies];
   if (GetFileSize(RootFolder()+SDirIn+'\SupplierPromotions.txt') > 0) then UpdateTables := UpdateTables + [utSupplierPromotions];
   if (GetFileSize(RootFolder()+SDirIn+'\PromotionCatalogs.txt') > 0) then UpdateTables := UpdateTables + [utPromotionCatalogs];
+  if (GetFileSize(RootFolder()+SDirIn+'\CurrentOrderHeads.txt') > 0) then UpdateTables := UpdateTables + [utCurrentOrderHeads];
 
 
     //обновляем таблицы
@@ -2157,6 +2163,10 @@ begin
     SQL.Text := 'delete from batchreport';
     InternalExecute;
   end;
+
+  if (utCurrentOrderHeads in UpdateTables)
+  then
+    ImportDownloadOrders;
 
   if (utDocumentHeaders in UpdateTables) or (utDocumentBodies in UpdateTables)
   then
@@ -3152,34 +3162,13 @@ var
 begin
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsString;
 
-  DM.adcUpdate.SQL.Text := 'drop temporary table if exists analitf.BatchAddresses, analitf.DistinctBatchAddresses;'
-      + ' create temporary table analitf.BatchAddresses ('
-      + '   `AddressId` bigint(20) unsigned not NULL ) ENGINE=MEMORY;'
-      + 'insert into analitf.BatchAddresses (AddressId) value (' + ClientId + ');';
-  InternalExecute;
-
-  if (GetFileSize(ExePath+SDirIn+'\BatchOrder.txt') > 0) then begin
-    insertSQL := Trim(GetLoadDataSQL('BatchAddresses', ExePath+SDirIn+'\BatchOrder.txt'));
-    DM.adcUpdate.SQL.Text :=
-      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
-      '(@dummy, AddressId);';
-    InternalExecute;
-  end;
-
-  DM.adcUpdate.SQL.Text := 'create temporary table analitf.DistinctBatchAddresses ENGINE=MEMORY as '
-      + ' select distinct AddressId as AddressId from analitf.BatchAddresses ;';
-  InternalExecute;
+  FillDistinctOrderAddresses('BatchOrder');
 
   DM.adcUpdate.SQL.Text := ''
-    + ' delete from batchreport using batchreport, analitf.DistinctBatchAddresses where ClientID = AddressId;'
-    + ' delete from batchreportservicefields using batchreportservicefields, analitf.DistinctBatchAddresses where ClientID = AddressId;'
-    + ' delete FROM CurrentOrderHeads, CurrentOrderLists '
-    + ' using CurrentOrderHeads, CurrentOrderLists, analitf.DistinctBatchAddresses '
-    + ' where '
-    + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
-    + '   and (CurrentOrderHeads.Frozen = 0) '
-    + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
+    + ' delete from batchreport using batchreport, analitf.DistinctOrderAddresses where ClientID = AddressId;'
+    + ' delete from batchreportservicefields using batchreportservicefields, analitf.DistinctOrderAddresses where ClientID = AddressId;';
   InternalExecute;
+
   DM.adcUpdate.SQL.Text := GetLoadDataSQL('batchreport', RootFolder()+SDirIn+'\batchreport.txt');
   InternalExecute;
 
@@ -3191,93 +3180,24 @@ begin
       '(FieldName) set ClientId = '+ ClientID + ';';
     InternalExecute;
     DM.adcUpdate.SQL.Text := ''
-      + ' delete from batchreport using batchreport, analitf.DistinctBatchAddresses where ClientID = AddressId;'
       + ' insert into batchreportservicefields (ClientId, FieldName) '
       + ' select AddressId, FieldName '
-      + ' from batchreportservicefields, analitf.DistinctBatchAddresses '
+      + ' from batchreportservicefields, analitf.DistinctOrderAddresses '
       + ' where ClientId = ' + ClientID + ' '
       + '    and AddressId <> ' + ClientID + ' '
       + ' order by AddressId, Id; ';
     InternalExecute;
   end;
 
-  if (GetFileSize(RootFolder()+SDirIn+'\BatchOrder.txt') > 0)
-    and (GetFileSize(RootFolder()+SDirIn+'\BatchOrderItems.txt') > 0)
-  then begin
-    insertSQL := Trim(GetLoadDataSQL('CurrentOrderHeads', RootFolder()+SDirIn+'\BatchOrder.txt'));
-    DM.adcUpdate.SQL.Text :=
-      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
-      '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
-    InternalExecute;
-
-    insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', RootFolder()+SDirIn+'\BatchOrderItems.txt'));
-    
-{$ifndef DisableCrypt}
-    DM.adcUpdate.SQL.Text :=
-      Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
-      + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
-      + '  CODE, CODECr, CryptRealPrice, CryptPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
-    InternalExecute;
-
-    DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderLists, analitf.DistinctBatchAddresses '
-      + ' set '
-      + '    CurrentOrderLists.Price = AES_DECRYPT(CurrentOrderLists.CryptPrice, "' + CostSessionKey + '"), '
-      + '    CurrentOrderLists.CryptPrice = null '
-      + ' where '
-      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
-      + '   and (CurrentOrderLists.CryptPrice is not null);'
-      + ' update CurrentOrderLists, analitf.DistinctBatchAddresses '
-      + ' set '
-      + '    CurrentOrderLists.RealPrice = AES_DECRYPT(CurrentOrderLists.CryptRealPrice, "' + CostSessionKey + '"), '
-      + '    CurrentOrderLists.CryptRealPrice = null '
-      + ' where '
-      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
-      + '   and (CurrentOrderLists.CryptRealPrice is not null);';
-    InternalExecute;
-{$else}
-    DM.adcUpdate.SQL.Text :=
-      Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
-      + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
-      + '  CODE, CODECr, RealPrice, Price, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
-    InternalExecute;
-{$endif}
-
-    DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderHeads, PricesData, analitf.DistinctBatchAddresses '
-      + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
-      + ' where '
-      + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
-      + '   and (CurrentOrderHeads.Frozen = 0) '
-      + '   and (CurrentOrderHeads.PriceCode = PricesData.PriceCode);'
-      + ' update CurrentOrderHeads, regions, analitf.DistinctBatchAddresses '
-      + ' set CurrentOrderHeads.RegionName = regions.RegionName '
-      + ' where '
-      + '       (CurrentOrderHeads.ClientId = DistinctBatchAddresses.AddressId)'
-      + '   and (CurrentOrderHeads.Frozen = 0) '
-      + '   and (CurrentOrderHeads.RegionCode = regions.RegionCode);';
-    InternalExecute;
-    DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderLists, synonyms, analitf.DistinctBatchAddresses '
-      + ' set CurrentOrderLists.SYNONYMNAME = synonyms.SYNONYMNAME '
-      + ' where '
-      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
-      + '   and (CurrentOrderLists.SYNONYMCODE = synonyms.SYNONYMCODE);'
-      + ' update CurrentOrderLists, synonymfirmcr, analitf.DistinctBatchAddresses '
-      + ' set CurrentOrderLists.SYNONYMFIRM = synonymfirmcr.SYNONYMNAME '
-      + ' where '
-      + '       (CurrentOrderLists.ClientId = DistinctBatchAddresses.AddressId)'
-      + '   and (CurrentOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
-    InternalExecute;
-  end;
+  ImportOrders('BatchOrder', 'BatchOrderItems', False);
 
   //Сбрасываем OrderListId и статус у тех элементов BatchReport,
   //у которых не нашли соответствующую запись в CurrentOrderLists
   DM.adcUpdate.SQL.Text := ''
-    + ' update batchreport, analitf.DistinctBatchAddresses '
+    + ' update batchreport, analitf.DistinctOrderAddresses '
     + ' set OrderListId = null, Status = (Status & ~(1 & 4)) | 2 '
     + ' where '
-    + '       (batchreport.ClientId = DistinctBatchAddresses.AddressId)'
+    + '       (batchreport.ClientId = DistinctOrderAddresses.AddressId)'
     + '   and (OrderListId is not null) '
     + '   and not exists(select * from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
   InternalExecute;
@@ -3866,6 +3786,143 @@ begin
           'Ошибка при удалении файла промо-акции ' + shortName + ': ' +
           E.Message);
     end;
+end;
+
+procedure TExchangeThread.ImportOrders(OrderHeadsFile,
+  OrderListsFile: String; FrozenOrders: Boolean);
+var
+  insertSQL : String;
+begin
+  {Здесь удаляем записи из batchreport и batchreportservicefields}
+
+  if FrozenOrders then begin
+    DM.adcUpdate.SQL.Text := ''
+      + ' update CurrentOrderHeads, analitf.DistinctOrderAddresses '
+      + ' set '
+      + '   CurrentOrderHeads.Frozen = 1 '
+      + ' where '
+      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderHeads.Frozen = 0);';
+    InternalExecute;
+  end
+  else begin
+    DM.adcUpdate.SQL.Text := ''
+      + ' delete FROM CurrentOrderHeads, CurrentOrderLists '
+      + ' using CurrentOrderHeads, CurrentOrderLists, analitf.DistinctOrderAddresses '
+      + ' where '
+      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderHeads.Frozen = 0) '
+      + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
+    InternalExecute;
+  end;
+
+  {Здесь импортировали batchreport и batchreportservicefields}
+
+  if (GetFileSize(RootFolder()+SDirIn+'\' + OrderHeadsFile + '.txt') > 0)
+    and (GetFileSize(RootFolder()+SDirIn+'\' + OrderListsFile + '.txt') > 0)
+  then begin
+    insertSQL := Trim(GetLoadDataSQL('CurrentOrderHeads', RootFolder()+SDirIn+'\' + OrderHeadsFile + '.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
+    InternalExecute;
+
+    insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', RootFolder()+SDirIn+'\' + OrderListsFile + '.txt'));
+
+{$ifndef DisableCrypt}
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
+      + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
+      + '  CODE, CODECr, CryptRealPrice, CryptPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
+    InternalExecute;
+
+    DM.adcUpdate.SQL.Text := ''
+      + ' update CurrentOrderLists, analitf.DistinctOrderAddresses '
+      + ' set '
+      + '    CurrentOrderLists.Price = AES_DECRYPT(CurrentOrderLists.CryptPrice, "' + CostSessionKey + '"), '
+      + '    CurrentOrderLists.CryptPrice = null '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderLists.CryptPrice is not null);'
+      + ' update CurrentOrderLists, analitf.DistinctOrderAddresses '
+      + ' set '
+      + '    CurrentOrderLists.RealPrice = AES_DECRYPT(CurrentOrderLists.CryptRealPrice, "' + CostSessionKey + '"), '
+      + '    CurrentOrderLists.CryptRealPrice = null '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderLists.CryptRealPrice is not null);';
+    InternalExecute;
+{$else}
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
+      + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
+      + '  CODE, CODECr, RealPrice, Price, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
+    InternalExecute;
+{$endif}
+
+    DM.adcUpdate.SQL.Text := ''
+      + ' update CurrentOrderHeads, PricesData, analitf.DistinctOrderAddresses '
+      + ' set CurrentOrderHeads.PriceName = PricesData.PriceName '
+      + ' where '
+      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderHeads.Frozen = 0) '
+      + '   and (CurrentOrderHeads.PriceCode = PricesData.PriceCode);'
+      + ' update CurrentOrderHeads, regions, analitf.DistinctOrderAddresses '
+      + ' set CurrentOrderHeads.RegionName = regions.RegionName '
+      + ' where '
+      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderHeads.Frozen = 0) '
+      + '   and (CurrentOrderHeads.RegionCode = regions.RegionCode);';
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' update CurrentOrderLists, synonyms, analitf.DistinctOrderAddresses '
+      + ' set CurrentOrderLists.SYNONYMNAME = synonyms.SYNONYMNAME '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderLists.SYNONYMCODE = synonyms.SYNONYMCODE);'
+      + ' update CurrentOrderLists, synonymfirmcr, analitf.DistinctOrderAddresses '
+      + ' set CurrentOrderLists.SYNONYMFIRM = synonymfirmcr.SYNONYMNAME '
+      + ' where '
+      + '       (CurrentOrderLists.ClientId = DistinctOrderAddresses.AddressId)'
+      + '   and (CurrentOrderLists.SYNONYMFIRMCRCODE = synonymfirmcr.SYNONYMFIRMCRCODE);';
+    InternalExecute;
+  end;
+
+  {Здесь было}
+  //Сбрасываем OrderListId и статус у тех элементов BatchReport,
+  //у которых не нашли соответствующую запись в CurrentOrderLists
+end;
+
+procedure TExchangeThread.FillDistinctOrderAddresses(OrderHeadsFile: String);
+var
+  insertSQL : String;
+  ClientId : String;
+begin
+  ClientId := DM.adtClients.FieldByName( 'ClientId').AsString;
+
+  DM.adcUpdate.SQL.Text := 'drop temporary table if exists analitf.OrderAddresses, analitf.DistinctOrderAddresses;'
+      + ' create temporary table analitf.OrderAddresses ('
+      + '   `AddressId` bigint(20) unsigned not NULL ) ENGINE=MEMORY;'
+      + 'insert into analitf.OrderAddresses (AddressId) value (' + ClientId + ');';
+  InternalExecute;
+
+  if (GetFileSize(ExePath+SDirIn+'\' + OrderHeadsFile + '.txt') > 0) then begin
+    insertSQL := Trim(GetLoadDataSQL('OrderAddresses', ExePath+SDirIn+'\' + OrderHeadsFile + '.txt'));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(@dummy, AddressId);';
+    InternalExecute;
+  end;
+
+  DM.adcUpdate.SQL.Text := 'create temporary table analitf.DistinctOrderAddresses ENGINE=MEMORY as '
+      + ' select distinct AddressId as AddressId from analitf.OrderAddresses ;';
+  InternalExecute;
+end;
+
+procedure TExchangeThread.ImportDownloadOrders;
+begin
+  FillDistinctOrderAddresses('CurrentOrderHeads');
+  ImportOrders('CurrentOrderHeads', 'CurrentOrderLists', True);
 end;
 
 initialization
