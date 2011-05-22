@@ -516,6 +516,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentBodiesPrinted: TBooleanField
       FieldName = 'Printed'
+      OnChange = adsDocumentBodiesPrintedChange
     end
     object adsDocumentBodiesAmount: TFloatField
       FieldName = 'Amount'
@@ -524,10 +525,10 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       FieldName = 'NdsAmount'
     end
   end
-  object tmrVitallyImportantChange: TTimer
+  object tmrPrintedChange: TTimer
     Enabled = False
     Interval = 500
-    OnTimer = tmrVitallyImportantChangeTimer
+    OnTimer = tmrPrintedChangeTimer
     Left = 320
     Top = 167
   end

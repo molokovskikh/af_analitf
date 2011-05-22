@@ -61,7 +61,7 @@ type
     adsDocumentBodiesQuantity: TIntegerField;
     sbEditAddress: TSpeedButton;
     adsDocumentBodiesVitallyImportant: TBooleanField;
-    tmrVitallyImportantChange: TTimer;
+    tmrPrintedChange: TTimer;
     adsDocumentBodiesSerialNumber: TStringField;
     sbPrintWaybill: TSpeedButton;
     sbPrintInvoice: TSpeedButton;
@@ -86,7 +86,7 @@ type
     procedure sbPrintReestrClick(Sender: TObject);
     procedure cbWaybillAsVitallyImportantClick(Sender: TObject);
     procedure sbEditAddressClick(Sender: TObject);
-    procedure tmrVitallyImportantChangeTimer(Sender: TObject);
+    procedure tmrPrintedChangeTimer(Sender: TObject);
     procedure dbgDocumentBodiesSortMarkingChanged(Sender: TObject);
     procedure sbPrintWaybillClick(Sender: TObject);
     procedure sbPrintInvoiceClick(Sender: TObject);
@@ -95,6 +95,7 @@ type
     procedure sbReestrToExcelClick(Sender: TObject);
     procedure sbPrintRackCardClick(Sender: TObject);
     procedure sbWaybillToExcelClick(Sender: TObject);
+    procedure adsDocumentBodiesPrintedChange(Sender: TField);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -778,13 +779,13 @@ begin
   if NeedLog then Tracer.TR('RecalcPosition', 'Закончили расчет позиции: ' + adsDocumentBodiesId.AsString);
 end;
 
-procedure TDocumentBodiesForm.tmrVitallyImportantChangeTimer(
+procedure TDocumentBodiesForm.tmrPrintedChangeTimer(
   Sender: TObject);
 begin
   try
     SoftPost( adsDocumentBodies );
   finally
-    tmrVitallyImportantChange.Enabled := False;
+    tmrPrintedChange.Enabled := False;
   end;
 end;
 
@@ -1709,6 +1710,15 @@ begin
     clRed,
     clWindowText,
     'Значения розничной наценки, розничной цены, розничной суммы и реальной наценки не были вычислены автоматически');
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesPrintedChange(
+  Sender: TField);
+begin
+  //По-другому решить проблему не удалось. Запускаю таймер, чтобы он в главной нити
+  //произвел сохранение dataset
+  tmrPrintedChange.Enabled := False;
+  tmrPrintedChange.Enabled := True;
 end;
 
 end.

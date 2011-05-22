@@ -90,13 +90,13 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=.\bin\binNet1407
+OutputDir=.\bin\binUnion
 UnitOutputDir=.\unit
 PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
 SearchPath=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;IndyCore70;IndyProtocols70;IndySystem70
-Conditionals=USEMEMORYCRYPTDLL;DisableCrypt;
+Conditionals=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;
 DebugSourceDirs=
 UsePackages=1
 [Parameters]
@@ -116,8 +116,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=7
 MinorVer=5
-Release=99
-Build=1411
+Release=100
+Build=1412
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=7.5.99.1411
+FileVersion=7.5.100.1412
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2010
 LegalTrademarks=Инфорум
@@ -151,8 +151,8 @@ Count=1
 Item0=..\lib\MyDac\Source
 [HistoryLists\hlConditionals]
 Count=30
-Item0=USEMEMORYCRYPTDLL;DisableCrypt;
-Item1=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;
+Item0=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;
+Item1=USEMEMORYCRYPTDLL;DisableCrypt;
 Item2=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;UsePrgDataTest
 Item3=USEMEMORYCRYPTDLL;DisableCrypt;UsePrgDataTest
 Item4=USEMEMORYCRYPTDLL;DisableCrypt
@@ -220,8 +220,8 @@ Count=1
 Item0=.\unit
 [HistoryLists\hlOutputDirectorry]
 Count=30
-Item0=.\bin\binNet1407
-Item1=.\bin\binUnion
+Item0=.\bin\binUnion
+Item1=.\bin\binNet1407
 Item2=.\bin\bin1325
 Item3=.\bin\bin1323
 Item4=.\bin\bin1321
