@@ -7,7 +7,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   TextHeight = 13
   object pOrderHeader: TPanel [0]
     Left = 0
-    Top = 76
+    Top = 81
     Width = 856
     Height = 51
     Align = alTop
@@ -169,9 +169,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   end
   object pGrid: TPanel [1]
     Left = 0
-    Top = 127
+    Top = 132
     Width = 856
-    Height = 322
+    Height = 317
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -179,7 +179,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Left = 0
       Top = 0
       Width = 856
-      Height = 322
+      Height = 317
       Align = alClient
       AllowedOperations = [alopUpdateEh]
       AutoFitColWidths = True
@@ -236,13 +236,14 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Left = 0
     Top = 0
     Width = 856
-    Height = 76
+    Height = 81
     Align = alTop
     Caption = ' '#1053#1072#1082#1083#1072#1076#1085#1099#1077' '
+    Constraints.MinHeight = 81
     TabOrder = 2
     DesignSize = (
       856
-      76)
+      81)
     object sbPrintTickets: TSpeedButton
       Left = 310
       Top = 12
@@ -326,6 +327,13 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Caption = #1053#1072#1082#1083#1072#1076#1085#1072#1103' '#1074' Excel'
       OnClick = sbWaybillToExcelClick
     end
+    object lNDS: TLabel
+      Left = 8
+      Top = 56
+      Width = 30
+      Height = 13
+      Caption = #1053#1044#1057' :'
+    end
     object cbClearRetailPrice: TCheckBox
       Left = 8
       Top = 16
@@ -345,6 +353,19 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Caption = #1056#1072#1089#1089#1095#1080#1090#1072#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1091#1102' '#1082#1072#1082' '#1046#1053#1042#1051#1057
       TabOrder = 1
       OnClick = cbWaybillAsVitallyImportantClick
+    end
+    object cbNDS: TComboBox
+      Left = 45
+      Top = 53
+      Width = 145
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 2
+      OnSelect = cbNDSSelect
+      Items.Strings = (
+        #1042#1089#1077
+        #1085#1077#1090' '#1079#1085#1072#1095#1077#1085#1080#1081)
     end
   end
   inherited tCheckVolume: TTimer

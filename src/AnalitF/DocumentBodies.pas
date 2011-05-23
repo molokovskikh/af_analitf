@@ -10,6 +10,9 @@ uses
   Menus,
   U_frameBaseLegend;
 
+const
+  NDSNullValue = 'нет значений';
+  
 type
   TDocumentBodiesForm = class(TChildForm)
     pOrderHeader: TPanel;
@@ -75,6 +78,8 @@ type
     adsDocumentBodiesPrinted: TBooleanField;
     adsDocumentBodiesAmount: TFloatField;
     adsDocumentBodiesNdsAmount: TFloatField;
+    lNDS: TLabel;
+    cbNDS: TComboBox;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -96,6 +101,7 @@ type
     procedure sbPrintRackCardClick(Sender: TObject);
     procedure sbWaybillToExcelClick(Sender: TObject);
     procedure adsDocumentBodiesPrintedChange(Sender: TField);
+    procedure cbNDSSelect(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -158,6 +164,8 @@ type
     procedure PrintReestr();
     procedure PrintTickets();
     procedure CreateLegenPanel;
+    procedure FillNDSFilter();
+    procedure AddNDSFilter();
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -208,11 +216,14 @@ begin
   adsDocumentHeaders.ParamByName('DocumentId').Value := FDocumentId;
   adsDocumentHeaders.Open;
   adsDocumentBodies.Close;
+  adsDocumentBodies.RestoreSQL;
   PrepareGrid;
   gbPrint.Visible := adsDocumentHeadersDocumentType.Value = 1;
   adsDocumentBodies.ParamByName('DocumentId').Value := FDocumentId;
-  if adsDocumentHeadersDocumentType.Value = 1 then
-    RecalcDocument
+  if adsDocumentHeadersDocumentType.Value = 1 then begin
+    FillNDSFilter();
+    RecalcDocument();
+  end
   else
     adsDocumentBodies.Open;
   Self.Caption := 'Детализация ' + RussianDocumentTypeForHeaderForm[TDocumentType(adsDocumentHeadersDocumentType.Value)];
@@ -674,6 +685,8 @@ begin
     LastSort := adsDocumentBodies.IndexFieldNames;
     adsDocumentBodies.IndexFieldNames := '';
     adsDocumentBodies.Close;
+    adsDocumentBodies.RestoreSQL;
+    AddNDSFilter();
     adsDocumentBodies.Open;
     adsDocumentBodies.First;
     while not adsDocumentBodies.Eof do begin
@@ -1271,13 +1284,16 @@ begin
   adsDocumentBodies.DisableControls;
   LastId := adsDocumentBodiesId.Value;
   adsDocumentBodies.Close;
+  adsDocumentBodies.RestoreSQL;
   adsDocumentBodies.AddWhere('Printed = 1');
+  AddNDSFilter();
   adsDocumentBodies.Open;
   try
     Action();
   finally
     adsDocumentBodies.Close;
     adsDocumentBodies.RestoreSQL;
+    AddNDSFilter();
     adsDocumentBodies.Open;
     if not adsDocumentBodies.Locate('Id', LastId, []) then
       adsDocumentBodies.First;
@@ -1719,6 +1735,72 @@ begin
   //произвел сохранение dataset
   tmrPrintedChange.Enabled := False;
   tmrPrintedChange.Enabled := True;
+end;
+
+procedure TDocumentBodiesForm.FillNDSFilter;
+var
+  previosIndex : Integer;
+  prevoisValue : String;
+  nullExists : Boolean;
+begin
+  nullExists := False;
+  previosIndex := 0;
+  prevoisValue := '';
+  if (cbNDS.ItemIndex > 0) and (cbNDS.ItemIndex < cbNDS.Items.Count) then begin
+    previosIndex := cbNDS.ItemIndex;
+    prevoisValue := cbNDS.Items[cbNDS.ItemIndex];
+  end;
+
+  cbNDS.OnSelect := nil;
+  try
+
+    cbNDS.Items.Clear();
+    cbNDS.Items.Add('Все');
+    cbNDS.ItemIndex := 0;
+
+    DM.adsQueryValue.SQL.Text := 'select distinct NDS as NDSValue from DocumentBodies dbodies where dbodies.DocumentId = :DocumentId order by dbodies.NDS';
+    DM.adsQueryValue.ParamByName('DocumentId').Value := FDocumentId;
+    DM.adsQueryValue.Open;
+
+    try
+      while not DM.adsQueryValue.Eof do begin
+        if DM.adsQueryValue.FieldByName('NDSValue').IsNull then
+          nullExists := True
+        else
+          cbNDS.Items.Add(DM.adsQueryValue.FieldByName('NDSValue').AsString);
+        DM.adsQueryValue.Next;
+      end;
+    finally
+      DM.adsQueryValue.Close;
+    end;
+
+    if nullExists then
+      cbNDS.Items.Add(NDSNullValue);
+
+    if (Length(prevoisValue) > 0) then begin
+      previosIndex := cbNDS.Items.IndexOf(prevoisValue);
+      if previosIndex > -1 then
+        cbNDS.ItemIndex := previosIndex;
+    end;
+
+  finally
+    cbNDS.OnSelect := cbNDSSelect;
+  end;
+end;
+
+procedure TDocumentBodiesForm.cbNDSSelect(Sender: TObject);
+begin
+  dbgDocumentBodies.SetFocus;
+  RecalcDocument;
+end;
+
+procedure TDocumentBodiesForm.AddNDSFilter;
+begin
+  if cbNDS.ItemIndex > 0 then
+    if NDSNullValue = cbNDS.Items[cbNDS.ItemIndex] then
+      adsDocumentBodies.AddWhere('NDS is null')
+    else
+      adsDocumentBodies.AddWhere('NDS = ' + cbNDS.Items[cbNDS.ItemIndex]);
 end;
 
 end.
