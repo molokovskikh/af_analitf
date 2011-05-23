@@ -508,6 +508,7 @@ begin
   odBatch.Filter := 'Все файлы|*.*';
 
   sdReport := TSaveDialog.Create(Self);
+  sdReport.DefaultExt := 'dbf';
   sdReport.Filter := 'Отчет|*.dbf|Все файлы|*.*';
 
   adsReport := TMyQuery.Create(Self);
