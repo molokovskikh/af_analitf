@@ -139,6 +139,7 @@ TMainForm = class(TVistaCorrectForm)
     btnShowMinPrices: TToolButton;
     actServiceLog: TAction;
     itmServiceLog: TMenuItem;
+    ImageList16: TImageList;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -313,8 +314,9 @@ begin
 {$endif}
     itmClearDatabase.Visible := True;
   end;
-  if Set32BPP then
-    LoadToImageList(ImageList, Application.ExeName, 100);
+
+  LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
+  LoadToImageList(ImageList16, Application.ExeName, 100, Set32BPP);
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
@@ -1283,8 +1285,24 @@ begin
 
   if not JustRun and Self.Active and Self.Visible and (Screen.ActiveForm = Self)
     and not Assigned(GlobalExchangeParams)
-  then
+  then begin
     SetOrdersInfo;
+
+    if Self.Width < 900 then begin
+      if ToolBar.Images <> ImageList16 then begin
+        ToolBar.Images := ImageList16;
+        ToolBar.ButtonHeight := 38;
+        ToolBar.ButtonWidth := 26;
+      end;
+    end
+    else begin
+      if ToolBar.Images <> ImageList then begin
+        ToolBar.Images := ImageList;
+        ToolBar.ButtonHeight := 38;
+        ToolBar.ButtonWidth := 39;
+      end;
+    end;
+  end;
 end;
 
 procedure TMainForm.OnSelectClientClick(Sender: TObject);

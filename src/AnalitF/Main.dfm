@@ -3972,4 +3972,8 @@ object MainForm: TMainForm
     Left = 472
     Top = 272
   end
+  object ImageList16: TImageList
+    Left = 408
+    Top = 160
+  end
 end

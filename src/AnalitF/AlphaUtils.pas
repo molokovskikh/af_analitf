@@ -16,7 +16,7 @@ type
 function Set32BPP: boolean;
 function GetImageListAlpha( Owner: TComponent; ResPath: string; BaseIndex: integer; WH: integer): TImageList;
 procedure ConvertTo32BitImageList(const ImageList: TImageList);
-procedure LoadToImageList(const ImageList: TImageList; ResPath: String; BaseIndex: Integer);
+procedure LoadToImageList(const ImageList: TImageList; ResPath: String; BaseIndex: Integer; Use32Bit : Boolean);
 procedure ProduceAlphaBlendRect(SearchText, DisplayText : String; Canvas: TCanvas; Rect: TRect; BM : TBitmap);
 procedure AlphaBlendRect(Canvas: TCanvas; Rect: TRect; BlendColor: TColor; BM : TBitmap);
 
@@ -129,16 +129,17 @@ begin
   end;
 end;
 
-procedure LoadToImageList(const ImageList: TImageList; ResPath: String; BaseIndex: Integer);
+procedure LoadToImageList(const ImageList: TImageList; ResPath: String; BaseIndex: Integer;
+  Use32Bit : Boolean);
 var
   icon: TIcon;
   count: integer;
   hi: HICON;
 begin
   ImageList.Clear;
-  ConvertTo32BitImageList(ImageList);
+  if Use32Bit then
+    ConvertTo32BitImageList(ImageList);
   count := 0;
-  BaseIndex := 100;
   hi := LoadIcon( GetModuleHandle( PChar(ResPath) ), MakeIntResource( BaseIndex + count));
   while ( hi <> 0) and ( count < 100) do
   begin
