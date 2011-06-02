@@ -1652,6 +1652,7 @@ begin
         AProc.MessageBox(
           '—ервисом был изменен список текущих заказов.'#13#10 +
           'ѕодробнее смотрите в журнале работы сервиса.');
+      DM.CheckNewNetworkVersion();
     end
     else begin
       if IsDebugLog then begin

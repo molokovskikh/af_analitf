@@ -12,7 +12,9 @@ uses
 
 const
   BackDir = 'UpdateBackup';
-  
+
+  NetworkDir = 'AnalitFUpdate';
+
 type
   TUpdateExeThread = class(TThread)
    private
@@ -58,6 +60,8 @@ begin
       ExeName := ParamStr(ParamCount-1);
       //переключатель для запуска
       Switch := ParamStr(ParamCount-3);
+      if AnsiSameText(Switch, '/no') or AnsiSameText(Switch, '-no') then
+        Switch := '';
       //директория с исполняемыми файлами (со слешем)
       ExePath := ExtractFilePath(ExeName);
 

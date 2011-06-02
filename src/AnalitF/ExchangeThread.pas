@@ -1225,6 +1225,13 @@ var
 begin
   if not SysUtils.DirectoryExists( RootFolder() + SDirIn + '\' + SDirExe) then exit;
 
+  if GetNetworkSettings().IsNetworkVersion then begin
+    DeleteDirectory(RootFolder() + SDirNetworkUpdate);
+    DeleteDirectory(ExePath + SDirNetworkUpdate);
+    CopyDirectories(RootFolder() + SDirIn + '\' + SDirExe, ExePath + SDirNetworkUpdate);
+    MoveDirectories(RootFolder() + SDirIn + '\' + SDirExe, RootFolder() + SDirNetworkUpdate);
+  end;
+
   AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
   EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
   try
@@ -1233,9 +1240,14 @@ begin
     EraserDll.Free;
   end;
 
-  ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
-    ExePath + ExeName + '" "' + RootFolder() + SDirIn + '\' + SDirExe + '"'),
-    nil, SW_SHOWNORMAL);
+  if GetNetworkSettings().IsNetworkVersion then
+    ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
+     ExePath + ExeName + '" "' + ExePath + SDirNetworkUpdate + '"'),
+     nil, SW_SHOWNORMAL)
+  else
+    ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +
+      ExePath + ExeName + '" "' + RootFolder() + SDirIn + '\' + SDirExe + '"'),
+      nil, SW_SHOWNORMAL);
   raise Exception.Create( 'Terminate');
 end;
 

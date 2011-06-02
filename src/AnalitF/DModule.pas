@@ -546,6 +546,7 @@ type
       SQL : String;
       Params: array of string;
       Values: array of Variant) : String;
+    procedure CheckNewNetworkVersion;  
   end;
 
 var
@@ -964,6 +965,9 @@ begin
 
   if not IsOneStart then
     LogExitError('Запуск двух копий программы на одном компьютере невозможен.', Integer(ecDoubleStart));
+
+  if GetNetworkSettings().IsNetworkVersion then
+    CheckNewNetworkVersion;
 
   WriteExchangeLog('AnalitF', 'Программа запущена.');
 
@@ -5133,6 +5137,40 @@ begin
     Result := GetVitallyImportantMarkup(SupplierCost)
   else
     Result := GetRetUpCost(SupplierCost);
+end;
+
+procedure TDM.CheckNewNetworkVersion;
+var
+  CurrentBuild,
+  NewBuild : Word;
+  EraserDll: TResourceStream;
+begin
+  if SysUtils.DirectoryExists( RootFolder() + SDirNetworkUpdate) and
+    FileExists(RootFolder() + SDirNetworkUpdate + '\AnalitF.exe')
+  then begin
+    CurrentBuild := GetBuildNumberLibraryVersionFromPath(ExePath + ExeName);
+    NewBuild := GetBuildNumberLibraryVersionFromPath(RootFolder() + SDirNetworkUpdate + '\AnalitF.exe');
+
+    if NewBuild > CurrentBuild then begin
+      DeleteDirectory(ExePath + SDirNetworkUpdate);
+      CopyDirectories(RootFolder() + SDirNetworkUpdate, ExePath + SDirNetworkUpdate);
+
+      AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
+
+      EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
+      try
+        EraserDll.SaveToFile(ExePath + 'Eraser.dll');
+      finally
+        EraserDll.Free;
+      end;
+
+      ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + '-no ' + IntToStr(GetCurrentProcessId) + ' "' +
+        ExePath + ExeName + '" "' + ExePath + SDirNetworkUpdate + '"'),
+        nil, SW_SHOWNORMAL);
+
+      ExitProcess(1);
+    end;
+  end;
 end;
 
 initialization
