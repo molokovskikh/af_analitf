@@ -60,14 +60,14 @@ begin
   sl := TStringList.Create;
   try
     sl.LoadFromFile(FSettingFileName);
-    IsNetworkVersion := sl.Values['IsNetworkVersion'] = '1';
+    IsNetworkVersion := Trim(sl.Values['IsNetworkVersion']) = '1';
     Server := sl.Values['Server'];
     Username := sl.Values['Username'];
     Password := sl.Values['Password'];
     ShareFolderName := sl.Values['ShareFolderName'];
     Port := StrToIntDef(sl.Values['Port'], 3306);
-    DisableUpdate := sl.Values['DisableUpdate'] = '1';
-    DisableSendOrders := sl.Values['DisableSendOrders'] = '1';
+    DisableUpdate := Trim(sl.Values['DisableUpdate']) = '1';
+    DisableSendOrders := Trim(sl.Values['DisableSendOrders']) = '1';
   finally
     sl.Free;
   end;
