@@ -5,7 +5,7 @@ uses
   SysUtils,
   Classes,
   StrUtils,
-  LU_Tracer in '..\common\LU_Tracer.pas',
+  LU_Tracer in '..\..\Common\Classes\LU_Tracer.pas',
   FileUtil,
   Waiting in 'Waiting.pas' {WaitingForm},
   UpdateExeThread in 'UpdateExeThread.pas';

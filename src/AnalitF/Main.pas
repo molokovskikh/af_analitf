@@ -479,10 +479,12 @@ try
         actReceiveExecute( nil);
 
   finally
-    if TDayOfWeekDelaysController.NeedUpdateDelays(DM) then begin
-      ShowSQLWaiting(TDayOfWeekDelaysController.RecalcOrdersByDelays, 'Происходит переcчет отсрочки платежа');
-      SetOrdersInfo;
-    end;
+    //Пересчет отсрочек платежа имеет смысл для несетевой версии
+    if not GetNetworkSettings().IsNetworkVersion then
+      if TDayOfWeekDelaysController.NeedUpdateDelays(DM) then begin
+        ShowSQLWaiting(TDayOfWeekDelaysController.RecalcOrdersByDelays, 'Происходит переcчет отсрочки платежа');
+        SetOrdersInfo;
+      end;
     TDayOfWeekDelaysController.UpdateDayOfWeek(DM);
   end;
 
@@ -1668,6 +1670,7 @@ begin
         AProc.MessageBox(
           'Сервисом был изменен список текущих заказов.'#13#10 +
           'Подробнее смотрите в журнале работы сервиса.');
+      DM.CheckNewNetworkVersion();
     end
     else begin
       if IsDebugLog then begin
