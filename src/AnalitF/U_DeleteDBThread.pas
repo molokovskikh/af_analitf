@@ -29,7 +29,7 @@ begin
     DeleteDirectory(DeleteDirectoryName);
   except
     on E : Exception do
-      LogExitError(Format( 'Не возможно удалить папку %s : %s ', [DeleteDirectoryName, E.Message ]), Integer(ecDeleteDBFiles));
+      LogExitError(Format( 'Невозможно удалить папку %s : %s ', [DeleteDirectoryName, E.Message ]), Integer(ecDeleteDBFiles));
   end;
 end;
 

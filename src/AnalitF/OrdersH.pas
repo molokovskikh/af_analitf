@@ -666,7 +666,7 @@ begin
       { проверяем наличие прайс-листа }
       if not OffersByPriceExists(adsOrdersHFormPRICECODE.Value, adsOrdersHFormREGIONCODE.Value) then begin
         Strings.Append(
-          Format('Заказ №%s не возможно %s, т.к. прайс-листа %s - %s нет в обзоре.',
+          Format('Заказ №%s невозможно %s, т.к. прайс-листа %s - %s нет в обзоре.',
           [adsOrdersHFormDisplayOrderId.AsString,
           GetActionDescription(),
           adsOrdersHFormPriceName.AsString,

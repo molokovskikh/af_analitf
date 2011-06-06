@@ -981,7 +981,7 @@ begin
     MainConnection.Open;
   except
     on E : Exception do
-      LogExitError(Format( 'Не возможно открыть базу данных: %s ', [ E.Message ]), Integer(ecDBFileError));
+      LogExitError(Format( 'Невозможно открыть базу данных: %s ', [ E.Message ]), Integer(ecDBFileError));
   end;
 }  
 
@@ -1005,7 +1005,7 @@ begin
       FNeedImportAfterRecovery := True;
     except
       on E : Exception do
-        LogExitError(Format( 'Не возможно восстановить базу данных из резервной копии : %s ', [ E.Message ]), Integer(ecDBFileError));
+        LogExitError(Format( 'Невозможно восстановить базу данных из резервной копии : %s ', [ E.Message ]), Integer(ecDBFileError));
     end;
 }    
 
@@ -1050,7 +1050,7 @@ begin
     end;
   except
     on E : Exception do
-      LogExitError(Format( 'Не возможно открыть файл базы данных : %s ', [ E.Message ]), Integer(ecDBFileError));
+      LogExitError(Format( 'Невозможно открыть файл базы данных : %s '#13#10'Обратитесь в АК Инфорум.', [ E.Message ]), Integer(ecDBFileError));
   end;
   mainStartupHelper.Write('DModule', 'Закончили проверки для запуска');
 
@@ -2164,7 +2164,7 @@ begin
 
   except
     on E : Exception do
-      LogExitError(Format( 'Не возможно открыть файл базы данных: %s ', [ E.Message ]), Integer(ecDBFileError));
+      LogExitError(Format( 'Невозможно открыть файл базы данных: %s '#13#10'Обратитесь в АК Инфорум.', [ E.Message ]), Integer(ecDBFileError));
   end;
 end;
 
@@ -3621,7 +3621,7 @@ begin
     on E : Exception do begin
       LogCriticalError('Ошибка при удалении устаревшей директории mysql: ' + E.Message);
       LogExitError(
-        'Не возможно удалить устаревшую директорию mysql.'#13#10
+        'Невозможно удалить устаревшую директорию mysql.'#13#10
         + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecDeleteOldMysqlFolder));
     end
@@ -3639,7 +3639,7 @@ begin
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
     if AnsiCompareText(calchash, 'C4409AE079C40500C2D61D44B49ADC7A') <> 0 then
-      raise Exception.Create('Не возможно загрузить библиотеку libmysqld.dll.');
+      raise Exception.Create('Невозможно загрузить библиотеку libmysqld.dll.');
   except
     on E : Exception do begin
       LogExitError(
@@ -3679,7 +3679,7 @@ begin
     on E : Exception do begin
       LogCriticalError('Ошибка при удалении устаревших директорий при обновлении 800-x версий: ' + E.Message);
       LogExitError(
-        'Не возможно удалить устаревшие директории.'#13#10
+        'Невозможно удалить устаревшие директории.'#13#10
         + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecDeleteOldMysqlFolder));
     end
@@ -4014,7 +4014,7 @@ begin
     on E : Exception do begin
       LogCriticalError('Ошибка при удалении устаревших директорий при обновлении на новую libd: ' + E.Message);
       LogExitError(
-        'Не возможно удалить устаревшие директории.'#13#10
+        'Невозможно удалить устаревшие директории.'#13#10
         + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecDeleteOldMysqlFolder));
     end

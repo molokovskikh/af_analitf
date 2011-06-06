@@ -2956,7 +2956,7 @@ begin
     if not ((Win32MajorVersion = 5) and (Win32MinorVersion = 1)) then begin
       WriteExchangeLog(
         'Exchange',
-        Format('Обновление клиентских данных не возможно из-за версии ОС: %d.%d',
+        Format('Обновление клиентских данных невозможно из-за версии ОС: %d.%d',
           [Win32MajorVersion, Win32MinorVersion]));
       Exit;
     end;
