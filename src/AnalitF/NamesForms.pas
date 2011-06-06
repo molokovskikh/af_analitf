@@ -985,7 +985,7 @@ end;
 
 procedure TNamesFormsForm.NamesToCore(MouseClick : Boolean);
 begin
-  if adsForms.FieldByName('NamePromotionsCount').AsInteger > 0 then
+  if actUseForms.Checked and (adsForms.FieldByName('NamePromotionsCount').AsInteger > 0) then
     dbgForms.SetFocus
   else begin
     if not actUseForms.Checked then
