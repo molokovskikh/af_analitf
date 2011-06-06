@@ -16,7 +16,7 @@ type
     MarkupsChanges : Boolean;
     FTableId : TDatabaseObjectId;
     FLoadMarkups : TThreadMethod;
-    OnlyEdit : Boolean;
+    VitallyEdit : Boolean;
 
 
     procedure CreateVisibleComponents;
@@ -163,11 +163,6 @@ begin
   pEditButtons.Width := btnAdd.Width + 20;
   pClient.Height := lBreakingExistsInfo.Top + lBreakingExistsInfo.Height + 10;
   pEditButtons.Height := pClient.Height;
-
-  if OnlyEdit then begin
-    btnAdd.Visible := False;
-    btnDelete.Visible := False;
-  end;
 end;
 
 procedure TframeEditVitallyImportantMarkups.AddGridPanel;
@@ -197,9 +192,6 @@ begin
   TDBGridHelper.AddColumn(dbgMarkups, 'MaxSupplierMarkup', 'Макс.нац.опт.звена(%)', '0.00;;', False);
 
   dbgMarkups.DataSource := dsMarkups;
-
-  if OnlyEdit then
-    dbgMarkups.AllowedOperations := [alopUpdateEh];
 end;
 
 procedure TframeEditVitallyImportantMarkups.AddMarkupClick(Sender: TObject);
@@ -214,7 +206,7 @@ constructor TframeEditVitallyImportantMarkups.CreateFrame(
   LoadMarkups : TThreadMethod);
 begin
   FTableId := TableId;
-  OnlyEdit := TableId = doiVitallyImportantMarkups;
+  VitallyEdit := TableId = doiVitallyImportantMarkups;
   FLoadMarkups := LoadMarkups;
   FMarkups := TObjectList.Create(True);
   Self.Name := 'frameEdit' + DatabaseController.GetById(TableId).Name;
@@ -327,6 +319,27 @@ begin
             AProc.MessageBox('Максимальная наценка меньше наценки.', MB_ICONWARNING)
           else
             AProc.MessageBox('Некорректно введены границы цен.', MB_ICONWARNING);
+        end;
+      end;
+
+      if VitallyEdit and CanClose then begin
+        if mdMarkups.RecordCount < 3 then begin
+          CanClose := False;
+          AProc.MessageBox('Не заданны обязательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
+        end
+        else begin
+          mdMarkups.First;
+          CanClose := (abs(fLeftLimit.Value) < 0.0001) and (abs(fRightLimit.Value - 50) < 0.0001);
+          if CanClose then begin
+            mdMarkups.Next;
+            CanClose := (abs(fLeftLimit.Value - 50) < 0.0001) and (abs(fRightLimit.Value - 500) < 0.0001);
+            if CanClose then begin
+              mdMarkups.Next;
+              CanClose := (abs(fLeftLimit.Value - 500) < 0.0001);
+            end;
+          end;
+          if not CanClose then
+            AProc.MessageBox('Не заданны обязательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
         end;
       end;
     end;
