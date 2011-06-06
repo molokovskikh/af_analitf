@@ -59,6 +59,7 @@ type
     procedure miUnselecAllClick(Sender: TObject);
     procedure tmrOverCostHideTimer(Sender: TObject);
     procedure FormHide(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   private
     { Private declarations }
     FNetworkParams : TNetworkParams;
@@ -1113,6 +1114,12 @@ begin
     TDBGridHelper.SaveColumnsLayout(dbgMinPrices, Self.ClassName);
   if Assigned(dbgCore) then
     TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
+end;
+
+procedure TMinPricesForm.FormResize(Sender: TObject);
+begin
+  if Assigned(pWebBrowser) then
+    pWebBrowser.Visible := Self.ClientHeight > 800;
 end;
 
 end.
