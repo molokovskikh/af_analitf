@@ -8,6 +8,7 @@ uses
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes,
   Buttons,
   ShellAPI,
+  SyncObjs,
   Math,
   LU_TDataExportAsXls,
   SupplierController,
@@ -65,6 +66,8 @@ type
     tmrChangeFilterSuppliers: TTimer;
     adsDocumentHeadersTotalSumm: TFloatField;
     adsDocumentHeadersTotalRetailSumm: TFloatField;
+    tmrProcessWaybils: TTimer;
+    adsDocumentHeadersRetailAmountCalculated: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -78,15 +81,21 @@ type
     procedure spOpenFoldersClick(Sender: TObject);
     procedure sbListToExcelClick(Sender: TObject);
     procedure tmrChangeFilterSuppliersTimer(Sender: TObject);
+    procedure tmrProcessWaybilsTimer(Sender: TObject);
   private
     { Private declarations }
     procedure OnChangeFilterSuppliers;
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
+
+    ProcessedList : TStringList;
+    csProcessedList : TCriticalSection;
+
     procedure ProcessDocument;
     procedure ShowArchiveOrder;
     procedure DeleteDocuments;
     procedure UpdateOrderDataset; override;
+    procedure RecalcDocument(documentId : Int64);
   public
     { Public declarations }
     frameFilterSuppliers : TframeFilterSuppliers;
@@ -126,6 +135,8 @@ procedure TDocumentHeaderForm.FormCreate(Sender: TObject);
 var
   Year, Month, Day: Word;
 begin
+  csProcessedList := TCriticalSection.Create;
+  ProcessedList := TStringList.Create;
   inherited;
 
   frameFilterSuppliers := TframeFilterSuppliers.AddFrame(
@@ -154,6 +165,7 @@ begin
   dtpDateTo.Date := Date;
 
   ShowHeaders;
+  tmrProcessWaybils.Enabled := True;
 end;
 
 procedure TDocumentHeaderForm.dtpDateCloseUp(Sender: TObject);
@@ -270,7 +282,10 @@ end;
 
 procedure TDocumentHeaderForm.FormDestroy(Sender: TObject);
 begin
+  tmrProcessWaybils.Enabled := False;
   TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
+  ProcessedList.Free;
+  csProcessedList.Free;
   inherited;
 end;
 
@@ -443,9 +458,10 @@ end;
 procedure TDocumentHeaderForm.ShowHeaders;
 var
   supplierFilter : String;
+  sl : TStringList;
 begin
   adsDocumentHeaders.Close;
-  
+
   adsDocumentHeaders.SQL.Text := shDocumentHeaders.Strings.Text;
 
   supplierFilter := GetSupplierController.GetFilter('p.FirmCode');
@@ -463,6 +479,32 @@ begin
   adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
 
   adsDocumentHeaders.Open;
+
+  adsDocumentHeaders.DisableControls;
+  sl := TStringList.Create;
+  try
+    while not adsDocumentHeaders.Eof do begin
+      if not adsDocumentHeadersRetailAmountCalculated.Value
+        and (adsDocumentHeadersDocumentType.Value = 1)
+      then
+        sl.Add(adsDocumentHeadersId.AsString);
+      adsDocumentHeaders.Next;
+    end;
+    adsDocumentHeaders.First;
+
+    if sl.Count > 0 then begin
+      csProcessedList.Enter;
+      try
+        ProcessedList.Clear();
+        ProcessedList.Assign(sl);
+      finally
+        csProcessedList.Leave;
+      end;
+    end;
+  finally
+    adsDocumentHeaders.EnableControls;
+    sl.Free;
+  end;
 end;
 
 procedure TDocumentHeaderForm.tmrChangeFilterSuppliersTimer(
@@ -485,6 +527,11 @@ begin
   finally
     adsDocumentHeaders.EnableControls;
   end;
+end;
+
+procedure TDocumentHeaderForm.RecalcDocument(documentId: Int64);
+begin
+  FDocumentBodiesForm.ForceRecalcDocument(documentId);
 end;
 
 { TExportDocRow }
@@ -596,6 +643,35 @@ begin
   AllTotalNDSSumm := 0;
   AllTotalMarkup := 0;
   AllTotalMarkupPercent := 0;
+end;
+
+procedure TDocumentHeaderForm.tmrProcessWaybilsTimer(Sender: TObject);
+var
+  DocumentId : String;
+begin
+  if (ProcessedList.Count > 0) and (MainForm.ActiveChild = Self) then begin
+    tmrProcessWaybils.Enabled := False;
+    try
+      DocumentId := '';
+      csProcessedList.Enter;
+      try
+        if ProcessedList.Count > 0 then begin
+          DocumentId := ProcessedList[0];
+          ProcessedList.Delete(0);
+        end;
+      finally
+        csProcessedList.Leave
+      end;
+
+      if Length(DocumentId) > 0 then begin
+        RecalcDocument(StrToInt64(DocumentId));
+        if (ProcessedList.Count = 0) then
+          UpdateOrderDataset;
+      end;
+    finally
+      tmrProcessWaybils.Enabled := True;
+    end;
+  end;
 end;
 
 end.

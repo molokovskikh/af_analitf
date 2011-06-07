@@ -170,6 +170,7 @@ type
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
+    procedure ForceRecalcDocument(DocumentId: Int64);
   end;
 
 implementation
@@ -714,6 +715,12 @@ begin
       adsDocumentBodies.First;
 
     cbWaybillAsVitallyImportant.Enabled := not blockedWaybillAsVitallyImportant;
+
+    DBProc.UpdateValue(
+        DM.MainConnection,
+        'update DocumentHeaders set RetailAmountCalculated = 1 where Id = :Id',
+        ['Id'],
+        [FDocumentId]);
   finally
     adsDocumentBodies.EnableControls;
     if NeedLog then Tracer.TR('RecalcDocument',
@@ -1816,6 +1823,12 @@ begin
       adsDocumentBodies.AddWhere('NDS is null')
     else
       adsDocumentBodies.AddWhere('NDS = ' + cbNDS.Items[cbNDS.ItemIndex]);
+end;
+
+procedure TDocumentBodiesForm.ForceRecalcDocument(DocumentId: Int64);
+begin
+  FDocumentId := DocumentId;
+  SetParams;
 end;
 
 end.

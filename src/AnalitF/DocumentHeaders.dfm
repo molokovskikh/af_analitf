@@ -301,6 +301,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object adsDocumentHeadersTotalRetailSumm: TFloatField
       FieldName = 'TotalRetailSumm'
     end
+    object adsDocumentHeadersRetailAmountCalculated: TBooleanField
+      FieldName = 'RetailAmountCalculated'
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
@@ -341,6 +344,13 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Interval = 3000
     OnTimer = tmrChangeFilterSuppliersTimer
     Left = 176
+    Top = 183
+  end
+  object tmrProcessWaybils: TTimer
+    Enabled = False
+    Interval = 750
+    OnTimer = tmrProcessWaybilsTimer
+    Left = 240
     Top = 183
   end
 end
