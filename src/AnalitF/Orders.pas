@@ -203,6 +203,8 @@ var
 begin
   ClosedOrder := ExternalClosed;
   
+  btnGotoPrice.Visible := not ClosedOrder;
+
   if not ClosedOrder and DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
     dbgOrders.Visible := False;
     dbgEditOrders.Visible := True;
@@ -378,8 +380,6 @@ end;
 
 procedure TOrdersForm.FormCreate(Sender: TObject);
 begin
-  btnGotoPrice.Visible := False;
-
   dbgEditOrders:= TDBGridEh.Create(Self);
   dbgEditOrders.Parent := pClient;
   dbgEditOrders.Align := alClient;
@@ -859,7 +859,8 @@ begin
     if CheckWin32Version(5, 1) then
       Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
   то при первом вызове формы можно будет наблюдать моргание всей формы,
-  связанное с TframePosition.  
+  связанное с TframePosition.
+}
 
   if Assigned(ParentOrdersHForm)
     and (TOrdersHForm(ParentOrdersHForm).TabControl.TabIndex = 0)
@@ -870,7 +871,6 @@ begin
     _CoreFirmForm.ShowForm(PriceCode, RegionCode, PriceName, RegionName, False, False);
     _CoreFirmForm.dbgCore.SetFocus;
   end;
-}  
 end;
 
 end.
