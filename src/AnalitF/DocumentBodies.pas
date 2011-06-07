@@ -111,6 +111,7 @@ type
     manualCorrectionField : TBooleanField;
     NDSField : TIntegerField;
     retailSummField : TCurrencyField;
+    retailAmountField : TFloatField;
     maxRetailMarkupField : TCurrencyField;
     realMarkupField : TFloatField;
     manualRetailPriceField : TFloatField;
@@ -544,6 +545,14 @@ begin
     manualRetailPriceField.DisplayFormat := '0.00;;';
     manualRetailPriceField.DataSet := adsDocumentBodies;
   end;
+  retailAmountField := TFloatField(adsDocumentBodies.FindField('RetailAmount'));
+  if not Assigned(retailAmountField) then begin
+    retailAmountField := TFloatField.Create(adsDocumentBodies);
+    retailAmountField.FieldName := 'RetailAmount';
+    retailAmountField.DisplayFormat := '0.00;;';
+    retailAmountField.DataSet := adsDocumentBodies;
+  end;
+
 
   SetDisplayFormat(
   [
@@ -719,6 +728,7 @@ procedure TDocumentBodiesForm.RecalcPosition;
 var
   upCostVariant : Variant;
   upcost : Double;
+  retailPrice : Double;
 begin
   if NeedLog then Tracer.TR('RecalcPosition', 'Начали расчет позиции: ' + adsDocumentBodiesId.AsString);
   upCostVariant := Null;
@@ -768,7 +778,8 @@ begin
     if CanCalculateRetailMarkup() then begin
       if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку рассчитать можно');
       upcost := upCostVariant;
-      GetRetailPriceByMarkup(upcost);
+      retailPrice := GetRetailPriceByMarkup(upcost);
+      retailAmountField.Value := RoundTo(retailPrice, -2) * adsDocumentBodiesQuantity.Value;
       if NeedLog then NeedCalcFieldsLog := True;
       try
         retailMarkupField.Value := upcost;
@@ -816,6 +827,7 @@ begin
         if (price > 0) and (markup > 0) then begin
           manualCorrectionField.Value := True;
           retailMarkupField.AsVariant := markup;
+          retailAmountField.Value := RoundTo(GetRetailPriceByMarkup(markup), -2) * adsDocumentBodiesQuantity.Value;
           adsDocumentBodies.Post;
         end
         else
@@ -829,6 +841,7 @@ begin
         if (price > 0) then begin
           manualCorrectionField.Value := True;
           manualRetailPriceField.Value := price;
+          retailAmountField.Value := RoundTo(manualRetailPriceField.Value, -2) * adsDocumentBodiesQuantity.Value;
           adsDocumentBodies.Post;
         end
         else
@@ -874,6 +887,7 @@ begin
       if (price > 0) and (markup > 0) then begin
         manualCorrectionField.Value := True;
         retailMarkupField.AsVariant := markup;
+        retailAmountField.Value := RoundTo(GetRetailPriceByMarkup(markup), -2) * adsDocumentBodiesQuantity.Value;
         adsDocumentBodies.Post;
       end
       else
@@ -1114,6 +1128,7 @@ begin
       if (price > 0) and (markup > 0) then begin
         manualCorrectionField.Value := True;
         retailMarkupField.AsVariant := markup;
+        retailAmountField.Value := RoundTo(GetRetailPriceByMarkup(markup), -2) * adsDocumentBodiesQuantity.Value;
         adsDocumentBodies.Post;
       end
       else

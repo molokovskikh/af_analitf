@@ -123,17 +123,25 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       AutoFitColWidths = True
       DataSource = dsDocumentHeaders
       Flat = True
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
       FooterColor = clWindow
       FooterFont.Charset = DEFAULT_CHARSET
       FooterFont.Color = clWindowText
       FooterFont.Height = -11
       FooterFont.Name = 'MS Sans Serif'
-      FooterFont.Style = []
+      FooterFont.Style = [fsBold]
+      FooterRowCount = 1
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgMultiSelect]
       OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghRowHighlight]
+      ParentFont = False
       ParentShowHint = False
       ReadOnly = True
       ShowHint = True
+      SumList.Active = True
       TabOrder = 0
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
@@ -185,9 +193,27 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
         item
           EditButtons = <>
           FieldName = 'ProviderName'
+          Footer.Value = #1048#1090#1086#1075#1086
+          Footer.ValueType = fvtStaticText
           Footers = <>
           Title.Caption = #1055#1086#1089#1090#1072#1074#1097#1080#1082
           Title.TitleButton = True
+        end
+        item
+          EditButtons = <>
+          FieldName = 'TotalSumm'
+          Footer.FieldName = 'TotalSumm'
+          Footer.ValueType = fvtSum
+          Footers = <>
+          Title.Caption = #1057#1091#1084#1084#1072' '#1086#1087#1090
+        end
+        item
+          EditButtons = <>
+          FieldName = 'TotalRetailSumm'
+          Footer.FieldName = 'TotalRetailSumm'
+          Footer.ValueType = fvtSum
+          Footers = <>
+          Title.Caption = #1057#1091#1084#1084#1072' '#1088#1086#1079#1085#1080#1094#1072
         end>
     end
   end
@@ -200,14 +226,19 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       'select'
       'dh.*,'
       'dh.WriteTime as LocalWriteTime,'
-      'p.FullName as ProviderName'
+      'p.FullName as ProviderName,'
+      'sum(db.Amount) as TotalSumm,'
+      'sum(db.RetailAmount) as TotalRetailSumm'
       'from'
       '  DocumentHeaders dh,'
-      '  providers p'
+      '  providers p,'
+      '  DocumentBodies db'
       'where'
       '    (dh.ClientId = :ClientId)'
       'and (dh.LoadTime BETWEEN :DateFrom AND :DateTo)'
-      'and (p.FirmCode = dh.FirmCode)')
+      'and (p.FirmCode = dh.FirmCode)'
+      'and (db.DocumentId = dh.Id)'
+      'group by dh.Id')
     Options.StrictUpdate = False
     Left = 64
     Top = 87
@@ -264,6 +295,12 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object adsDocumentHeadersLoadTime: TDateTimeField
       FieldName = 'LoadTime'
     end
+    object adsDocumentHeadersTotalSumm: TFloatField
+      FieldName = 'TotalSumm'
+    end
+    object adsDocumentHeadersTotalRetailSumm: TFloatField
+      FieldName = 'TotalRetailSumm'
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
@@ -271,7 +308,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Top = 111
   end
   object shDocumentHeaders: TStrHolder
-    Capacity = 12
+    Capacity = 28
     Macros = <>
     Left = 304
     Top = 135
@@ -281,16 +318,23 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       '73656c656374'
       '64682e2a2c'
       '64682e577269746554696d65206173204c6f63616c577269746554696d652c'
-      '702e46756c6c4e616d652061732050726f76696465724e616d65'
+      '702e46756c6c4e616d652061732050726f76696465724e616d652c'
+      '73756d2864622e416d6f756e742920617320546f74616c53756d6d2c'
+      
+        '73756d2864622e52657461696c416d6f756e742920617320546f74616c526574' +
+        '61696c53756d6d'
       '66726f6d'
       '2020446f63756d656e74486561646572732064682c'
-      '202070726f7669646572732070'
+      '202070726f76696465727320702c'
+      '2020446f63756d656e74426f64696573206462'
       '7768657265'
       '202020202864682e436c69656e744964203d203a436c69656e74496429'
       
         '616e64202864682e4c6f616454696d65204245545745454e203a446174654672' +
         '6f6d20414e44203a44617465546f29'
-      '616e642028702e4669726d436f6465203d2064682e4669726d436f646529')
+      '616e642028702e4669726d436f6465203d2064682e4669726d436f646529'
+      '616e64202864622e446f63756d656e744964203d2064682e496429'
+      '67726f75702062792064682e4964')
   end
   object tmrChangeFilterSuppliers: TTimer
     Enabled = False

@@ -455,6 +455,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  RetailMarkup     = :RetailMarkup,'
       '  ManualCorrection = :ManualCorrection,'
       '  ManualRetailPrice = :ManualRetailPrice,'
+      '  RetailAmount = :RetailAmount,'
       '  Printed = :Printed'
       'where'
       '  dbodies.Id = :OLD_Id')

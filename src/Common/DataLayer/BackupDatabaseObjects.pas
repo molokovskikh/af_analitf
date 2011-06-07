@@ -277,6 +277,7 @@ begin
 +'  `OrderId` bigint(20) unsigned DEFAULT NULL, '
 +'  `Header` varchar(255) DEFAULT NULL, '
 +'  `LoadTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
++'  `RetailAmountCalculated` tinyint(1) not null default ''0'', '
 +'  PRIMARY KEY (`Id`), '
 +'  KEY (`LoadTime`), '
 +'  KEY (`DownloadId`), '
@@ -321,6 +322,7 @@ begin
 +'  `Printed` tinyint(1) unsigned not null default ''1'', '
 +'  `Amount` decimal(18,4) unsigned DEFAULT NULL, '
 +'  `NdsAmount` decimal(18,4) unsigned DEFAULT NULL, '
++'  `RetailAmount` decimal(18,4) unsigned DEFAULT NULL, '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
 + GetTableOptions();

@@ -8,10 +8,33 @@ uses
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DocumentBodies, DocumentTypes,
   Buttons,
   ShellAPI,
+  Math,
+  LU_TDataExportAsXls,
   SupplierController,
   U_frameFilterSuppliers, StrHlder;
 
 type
+  TExportDocRow = class
+   public
+    CurrentFirmCode : Integer;
+    CurrentYearMonth : String;
+
+    AllTotalSumm,
+    AllTotalRetailSumm,
+    AllTotalNDSSumm,
+    AllTotalMarkup,
+    AllTotalMarkupPercent : Double;
+
+    constructor Create();
+
+    function NeedSwitch(dataQuery: TMyQuery) : Boolean;
+    procedure Switch(dataQuery: TMyQuery; exportData : TDataExportAsXls);
+    procedure ProcessRow(dataQuery: TMyQuery; exportData : TDataExportAsXls);
+
+    function NeedExportCounters() : Boolean;
+    procedure ExportCounters(exportData : TDataExportAsXls);
+  end;
+
   TDocumentHeaderForm = class(TChildForm)
     pTop: TPanel;
     Label7: TLabel;
@@ -40,6 +63,8 @@ type
     sbListToExcel: TSpeedButton;
     shDocumentHeaders: TStrHolder;
     tmrChangeFilterSuppliers: TTimer;
+    adsDocumentHeadersTotalSumm: TFloatField;
+    adsDocumentHeadersTotalRetailSumm: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -61,6 +86,7 @@ type
     procedure ProcessDocument;
     procedure ShowArchiveOrder;
     procedure DeleteDocuments;
+    procedure UpdateOrderDataset; override;
   public
     { Public declarations }
     frameFilterSuppliers : TframeFilterSuppliers;
@@ -68,6 +94,8 @@ type
   end;
 
   procedure ShowDocumentHeaders;
+
+
 
 implementation
 
@@ -80,8 +108,7 @@ uses
   Orders,
   DBGridHelper,
   U_ExchangeLog,
-  DBProc,
-  LU_TDataExportAsXls;
+  DBProc;
 
 {$R *.dfm}
 
@@ -267,22 +294,44 @@ procedure TDocumentHeaderForm.sbListToExcelClick(Sender: TObject);
 var
   exportFile : String;
   exportData : TDataExportAsXls;
-  prefix,
-  ndsPrefix : String;
   supplierFilter : String;
+
+  CurrentFirmCode : Integer;
+  CurrentYearMonth : String;
+
+  ItogoTotalSumm,
+  ItogoTotalRetailSumm,
+  ItogoTotalNDSSumm,
+  ItogoTotalMarkup,
+  ItogoTotalMarkupPercent : Double;
+
+  exportDocRow : TExportDocRow;
 begin
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
+
+  exportDocRow := TExportDocRow.Create();
+
+  try
+
+  ItogoTotalSumm := 0;
+  ItogoTotalRetailSumm := 0;
+  ItogoTotalNDSSumm := 0;
+  ItogoTotalMarkup := 0;
+  ItogoTotalMarkupPercent := 0;
 
   supplierFilter := GetSupplierController.GetFilter('p.FirmCode');
 
   DM.adsQueryValue.SQL.Text := '' +
 ' select ' +
 '  dh.*, ' +
+'  EXTRACT(YEAR_MONTH FROM dh.LoadTime) as YearMonth, ' +
 '  dh.WriteTime as LocalWriteTime, ' +
+'  p.FirmCode, ' +
 '  p.FullName as ProviderName, ' +
 '  sum(dbodies.Amount) as TotalSumm, ' +
 '  sum(dbodies.NdsAmount) as TotalNDSSumm, ' +
+'  sum(dbodies.RetailAmount) as TotalRetailSumm, ' +
 '  count(dbodies.Id) as TotalCount, ' +
 '  count(dbodies.Amount) as CostCount, ' +
 '  count(dbodies.NdsAmount) as NDSCostCount ' +
@@ -298,7 +347,7 @@ begin
 ' and (dbodies.DocumentId = dh.Id) ' +
 IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
 ' group by dh.Id ' +
-' order by dh.LoadTime DESC ';
+' order by EXTRACT(YEAR_MONTH FROM dh.LoadTime) DESC, p.FullName asc, dh.WriteTime DESC ';
 
   DM.adsQueryValue.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').Value;
@@ -318,29 +367,54 @@ IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
           'Дата',
           'Номер накладной',
           'Поставщик',
-          'Сумма',
+          'Сумма Опт',
+          'Сумма Розница',
+          'Наценка,руб',
+          'Наценка,%',
           'Сумма НДС',
           'Срок оплаты']);
 
         while not DM.adsQueryValue.Eof do begin
-          prefix := '';
-          ndsPrefix := '';
-          if DM.adsQueryValue.FieldByName('TotalCount').AsInteger <> DM.adsQueryValue.FieldByName('CostCount').AsInteger
-          then
-            prefix := '!!! ';
-          if DM.adsQueryValue.FieldByName('TotalCount').AsInteger <> DM.adsQueryValue.FieldByName('NDSCostCount').AsInteger
-          then
-            ndsPrefix := '!!! ';
 
-          exportData.WriteRow([
-            DM.adsQueryValue.FieldByName('LocalWriteTime').AsString,
-            DM.adsQueryValue.FieldByName('ProviderDocumentId').AsString,
-            DM.adsQueryValue.FieldByName('ProviderName').AsString,
-            prefix + DM.adsQueryValue.FieldByName('TotalSumm').AsString,
-            ndsPrefix + DM.adsQueryValue.FieldByName('TotalNDSSumm').AsString]);
+          if exportDocRow.NeedSwitch(DM.adsQueryValue) then begin
+            if exportDocRow.NeedExportCounters() then begin
+              exportDocRow.ExportCounters(exportData);
+              ItogoTotalSumm := ItogoTotalSumm + RoundTo(exportDocRow.AllTotalSumm, -2);
+              ItogoTotalRetailSumm := ItogoTotalRetailSumm + RoundTo(exportDocRow.AllTotalRetailSumm, -2);
+              ItogoTotalNDSSumm := ItogoTotalNDSSumm + RoundTo(exportDocRow.AllTotalNDSSumm, -2);
+            end;
+            exportDocRow.Switch(DM.adsQueryValue, exportData);
+          end;
+
+          exportDocRow.ProcessRow(DM.adsQueryValue, exportData);
+          
           DM.adsQueryValue.Next;
         end;
 
+        if exportDocRow.NeedExportCounters() then begin
+          exportDocRow.ExportCounters(exportData);
+          ItogoTotalSumm := ItogoTotalSumm + RoundTo(exportDocRow.AllTotalSumm, -2);
+          ItogoTotalRetailSumm := ItogoTotalRetailSumm + RoundTo(exportDocRow.AllTotalRetailSumm, -2);
+          ItogoTotalNDSSumm := ItogoTotalNDSSumm + RoundTo(exportDocRow.AllTotalNDSSumm, -2);
+        end;
+        
+        exportData.WriteBlankRow;
+        exportData.WriteBlankRow;
+        if abs(ItogoTotalRetailSumm) > 0.001 then begin
+          ItogoTotalMarkup := RoundTo(ItogoTotalRetailSumm - ItogoTotalSumm, -2);
+          ItogoTotalMarkupPercent := RoundTo((ItogoTotalSumm/ItogoTotalRetailSumm - 1) *100, -2);
+        end;
+        exportData.WriteRow([
+          'Итого',
+          '',
+          '',
+          FloatToStr(RoundTo(ItogoTotalSumm, -2)),
+          FloatToStr(RoundTo(ItogoTotalRetailSumm, -2)),
+          IfThen(abs(ItogoTotalMarkup) > 0.001,
+            FloatToStr(ItogoTotalMarkup)),
+          IfThen(abs(ItogoTotalMarkupPercent) > 0.001,
+            FloatToStr(ItogoTotalMarkupPercent)),
+          FloatToStr(RoundTo(ItogoTotalNDSSumm, -2))]);
       finally
         exportData.Free;
       end;
@@ -353,6 +427,10 @@ IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
     end;
   finally
     DM.adsQueryValue.Close;
+  end;
+
+  finally
+    exportDocRow.Free;
   end;
 end;
 
@@ -392,6 +470,132 @@ procedure TDocumentHeaderForm.tmrChangeFilterSuppliersTimer(
 begin
   tmrChangeFilterSuppliers.Enabled := False;
   ShowHeaders;
+end;
+
+procedure TDocumentHeaderForm.UpdateOrderDataset;
+var
+  lastId : Variant;
+begin
+  lastId := adsDocumentHeadersId.AsVariant;
+  adsDocumentHeaders.DisableControls;
+  try
+    ShowHeaders;
+    if not adsDocumentHeaders.Locate('Id', lastId, []) then
+      adsDocumentHeaders.First;
+  finally
+    adsDocumentHeaders.EnableControls;
+  end;
+end;
+
+{ TExportDocRow }
+
+constructor TExportDocRow.Create;
+begin
+  CurrentFirmCode := 0;
+  CurrentYearMonth := '';
+
+  AllTotalSumm := 0;
+  AllTotalRetailSumm := 0;
+  AllTotalNDSSumm := 0;
+  AllTotalMarkup := 0;
+  AllTotalMarkupPercent := 0;
+end;
+
+procedure TExportDocRow.ExportCounters(exportData: TDataExportAsXls);
+begin
+  if abs(AllTotalRetailSumm) > 0.001 then begin
+    AllTotalMarkup := RoundTo(AllTotalRetailSumm - AllTotalSumm, -2);
+    AllTotalMarkupPercent := RoundTo((AllTotalSumm/AllTotalRetailSumm - 1) *100, -2);
+  end;
+  exportData.WriteRow([
+    'Всего',
+    '',
+    '',
+    FloatToStr(RoundTo(AllTotalSumm, -2)),
+    FloatToStr(RoundTo(AllTotalRetailSumm, -2)),
+    IfThen(abs(AllTotalMarkup) > 0.001,
+      FloatToStr(AllTotalMarkup)),
+    IfThen(abs(AllTotalMarkupPercent) > 0.001,
+      FloatToStr(AllTotalMarkupPercent)),
+    FloatToStr(RoundTo(AllTotalNDSSumm, -2))]);
+end;
+
+function TExportDocRow.NeedExportCounters: Boolean;
+begin
+  Result := CurrentFirmCode > 0;
+end;
+
+function TExportDocRow.NeedSwitch(dataQuery: TMyQuery): Boolean;
+begin
+  Result :=
+  (CurrentFirmCode <> dataQuery.FieldByName('FirmCode').AsInteger) or
+            (CurrentYearMonth <> dataQuery.FieldByName('YearMonth').AsString)
+end;
+
+procedure TExportDocRow.ProcessRow(dataQuery: TMyQuery;
+  exportData: TDataExportAsXls);
+var
+  prefix,
+  ndsPrefix : String;
+
+  CurrentTotalSumm,
+  CurrentTotalRetailSumm,
+  CurrentTotalNDSSumm,
+  CurrentTotalMarkup,
+  CurrentTotalMarkupPercent : Double;
+begin
+  prefix := '';
+  ndsPrefix := '';
+  if dataQuery.FieldByName('TotalCount').AsInteger <> dataQuery.FieldByName('CostCount').AsInteger
+  then
+    prefix := '!!! ';
+  if dataQuery.FieldByName('TotalCount').AsInteger <> dataQuery.FieldByName('NDSCostCount').AsInteger
+  then
+    ndsPrefix := '!!! ';
+
+  CurrentTotalSumm := RoundTo(dataQuery.FieldByName('TotalSumm').AsFloat, -2);
+  CurrentTotalRetailSumm := RoundTo(dataQuery.FieldByName('TotalRetailSumm').AsFloat, -2);
+  CurrentTotalNDSSumm := RoundTo(dataQuery.FieldByName('TotalNDSSumm').AsFloat, -2);
+
+  CurrentTotalMarkup := 0;
+  CurrentTotalMarkupPercent := 0;
+
+  if abs(CurrentTotalRetailSumm) > 0.001 then begin
+    CurrentTotalMarkup := RoundTo(CurrentTotalRetailSumm - CurrentTotalSumm, -2);
+    CurrentTotalMarkupPercent := RoundTo((CurrentTotalSumm/CurrentTotalRetailSumm - 1) *100, -2);
+  end;
+
+  AllTotalSumm := AllTotalSumm + CurrentTotalSumm;
+  AllTotalRetailSumm := AllTotalRetailSumm + CurrentTotalRetailSumm;
+  AllTotalNDSSumm := AllTotalNDSSumm + CurrentTotalNDSSumm;
+
+  exportData.WriteRow([
+    dataQuery.FieldByName('LocalWriteTime').AsString,
+    dataQuery.FieldByName('ProviderDocumentId').AsString,
+    dataQuery.FieldByName('ProviderName').AsString,
+    prefix + FloatToStr(CurrentTotalSumm),
+    FloatToStr(CurrentTotalRetailSumm),
+    IfThen(abs(CurrentTotalMarkup) > 0.001,
+      FloatToStr(CurrentTotalMarkup)),
+    IfThen(abs(CurrentTotalMarkupPercent) > 0.001,
+      FloatToStr(CurrentTotalMarkupPercent)),
+    ndsPrefix + FloatToStr(CurrentTotalNDSSumm)]);
+end;
+
+procedure TExportDocRow.Switch(dataQuery: TMyQuery;
+  exportData: TDataExportAsXls);
+begin
+  exportData.WriteBlankRow;
+  exportData.WriteBlankRow;
+
+  CurrentFirmCode := dataQuery.FieldByName('FirmCode').AsInteger;
+  CurrentYearMonth := dataQuery.FieldByName('YearMonth').AsString;
+
+  AllTotalSumm := 0;
+  AllTotalRetailSumm := 0;
+  AllTotalNDSSumm := 0;
+  AllTotalMarkup := 0;
+  AllTotalMarkupPercent := 0;
 end;
 
 end.
