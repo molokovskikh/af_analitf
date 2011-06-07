@@ -23,7 +23,8 @@ uses
   U_framePosition,
   AddressController,
   U_frameFilterAddresses,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  LU_TDataExportAsXls;
   
 
 type
@@ -147,6 +148,7 @@ type
     procedure dbgOrderBatchDblClick(Sender: TObject);
 
     procedure SaveReportToFile(FileName : String);
+    procedure SaveExcelReportToFile(FileName : String);
   public
     { Public declarations }
 
@@ -441,6 +443,7 @@ begin
   dbgOrderBatch.OnDrawColumnCell := dbgOrderBatchDrawColumnCell;
   dbgOrderBatch.OnDblClick := dbgOrderBatchDblClick;
   dbgOrderBatch.InputField := 'OrderCount';
+  dbgOrderBatch.Tag := 4194304;
 
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Заказано', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Есть производитель', Self.Canvas.TextWidth('Нет   '));
@@ -509,7 +512,7 @@ begin
 
   sdReport := TSaveDialog.Create(Self);
   sdReport.DefaultExt := 'dbf';
-  sdReport.Filter := 'Отчет|*.dbf|Все файлы|*.*';
+  sdReport.Filter := 'Отчет (*.dbf)|*.dbf|Все файлы (*.*)|*.*|Excel (*.xls)|*.xls';
 
   adsReport := TMyQuery.Create(Self);
   adsReport.Name := 'adsReport';
@@ -1185,7 +1188,10 @@ begin
   sdReport.InitialDir := LastUsedSaveDir;
   if sdReport.Execute then begin
     LastUsedSaveDir := ExtractFileDir(sdReport.FileName);
-    SaveReportToFile(sdReport.FileName);
+    if sdReport.FilterIndex <= 1 then
+      SaveReportToFile(sdReport.FileName)
+    else
+      SaveExcelReportToFile(sdReport.FileName);
   end;
 end;
 
@@ -1296,6 +1302,54 @@ procedure TOrderBatchForm.tmrFillReportTimer(Sender: TObject);
 begin
   tmrFillReport.Enabled := False;
   FillReport;
+end;
+
+procedure TOrderBatchForm.SaveExcelReportToFile(FileName: String);
+var
+  exportData : TDataExportAsXls;
+begin
+  if FileExists(FileName) then
+    OSDeleteFile(FileName);
+
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+
+  DM.adsQueryValue.SQL.Text := shBatchReport.Strings.Text;
+  DM.adsQueryValue.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+
+  DM.adsQueryValue.Open;
+
+  try
+    exportData := TDataExportAsXls.Create(FileName);
+
+    try
+      exportData.WriteRow([
+        'Наименование',
+        'Производитель',
+        'Прайс-лист',
+        'Цена',
+        'Заказ',
+        'Сумма',
+        'Комментарий']);
+
+      while not DM.adsQueryValue.Eof do begin
+        exportData.WriteRow([
+          DM.adsQueryValue.FieldByName('SynonymName').AsString,
+          DM.adsQueryValue.FieldByName('SynonymFirm').AsString,
+          DM.adsQueryValue.FieldByName('PriceName').AsString,
+          DM.adsQueryValue.FieldByName('Cost').AsString,
+          DM.adsQueryValue.FieldByName('OrderCount').AsString,
+          DM.adsQueryValue.FieldByName('RetailSumm').AsString,
+          DM.adsQueryValue.FieldByName('Comment').AsString]);
+        DM.adsQueryValue.Next;
+      end;
+
+    finally
+      exportData.Free;
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
 end;
 
 initialization
