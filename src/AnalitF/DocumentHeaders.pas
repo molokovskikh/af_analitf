@@ -311,9 +311,6 @@ var
   exportData : TDataExportAsXls;
   supplierFilter : String;
 
-  CurrentFirmCode : Integer;
-  CurrentYearMonth : String;
-
   ItogoTotalSumm,
   ItogoTotalRetailSumm,
   ItogoTotalNDSSumm,
@@ -417,7 +414,7 @@ IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
         exportData.WriteBlankRow;
         if abs(ItogoTotalRetailSumm) > 0.001 then begin
           ItogoTotalMarkup := RoundTo(ItogoTotalRetailSumm - ItogoTotalSumm, -2);
-          ItogoTotalMarkupPercent := RoundTo((ItogoTotalSumm/ItogoTotalRetailSumm - 1) *100, -2);
+          ItogoTotalMarkupPercent := RoundTo((ItogoTotalRetailSumm/ItogoTotalSumm - 1) *100, -2);
         end;
         exportData.WriteRow([
           'Итого',
@@ -552,7 +549,7 @@ procedure TExportDocRow.ExportCounters(exportData: TDataExportAsXls);
 begin
   if abs(AllTotalRetailSumm) > 0.001 then begin
     AllTotalMarkup := RoundTo(AllTotalRetailSumm - AllTotalSumm, -2);
-    AllTotalMarkupPercent := RoundTo((AllTotalSumm/AllTotalRetailSumm - 1) *100, -2);
+    AllTotalMarkupPercent := RoundTo((AllTotalRetailSumm/AllTotalSumm - 1) *100, -2);
   end;
   exportData.WriteRow([
     'Всего',
@@ -609,7 +606,7 @@ begin
 
   if abs(CurrentTotalRetailSumm) > 0.001 then begin
     CurrentTotalMarkup := RoundTo(CurrentTotalRetailSumm - CurrentTotalSumm, -2);
-    CurrentTotalMarkupPercent := RoundTo((CurrentTotalSumm/CurrentTotalRetailSumm - 1) *100, -2);
+    CurrentTotalMarkupPercent := RoundTo((CurrentTotalRetailSumm/CurrentTotalSumm - 1) *100, -2);
   end;
 
   AllTotalSumm := AllTotalSumm + CurrentTotalSumm;
