@@ -3286,7 +3286,7 @@ begin
     //Если ID заказов не равны, то удаляем позицию по этому заказу
     if OldOrderIdFromListVariant <> OrderIdVariant then
     begin
-      DM.MainConnection.ExecSQL('delect from CurrentOrderLists where OrderId = :OrderId', [orderDataSet.FieldByName('ORDERSORDERID').Value]);
+      DM.MainConnection.ExecSQL('delete from CurrentOrderLists where OrderId = :OrderId', [orderDataSet.FieldByName('ORDERSORDERID').Value]);
       orderDataSet.FieldByName('ORDERSORDERID').Clear;
     end
   end;

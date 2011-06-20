@@ -3809,12 +3809,14 @@ begin
 
   if FrozenOrders then begin
     DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderHeads, analitf.DistinctOrderAddresses '
+      + ' update CurrentOrderHeads, CurrentOrderLists, analitf.DistinctOrderAddresses '
       + ' set '
-      + '   CurrentOrderHeads.Frozen = 1 '
+      + '   CurrentOrderHeads.Frozen = 1, '
+      + '   CurrentOrderLists.CoreId = null '
       + ' where '
-      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId)'
-      + '   and (CurrentOrderHeads.Frozen = 0);';
+      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId) '
+      + '   and (CurrentOrderHeads.Frozen = 0) '
+      + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
     InternalExecute;
   end
   else begin

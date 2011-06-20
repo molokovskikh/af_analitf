@@ -784,6 +784,13 @@ try
       StatusBar.Panels[StatusBar.Panels.Count-1].Text := 'ИД : ' + DM.adtParams.FieldByName('StoredUserId').AsString + '  '
         + ApplicationVersionText;
     IdTextWidth := StatusBar.Canvas.TextWidth(StatusBar.Panels[StatusBar.Panels.Count-1].Text) + 15;
+
+    //Удаляем позиции, которые не привязаны ни к одному заказу
+    if DM.adcUpdate.Active then
+      DM.adcUpdate.Close;
+    DM.adcUpdate.SQL.Text := 'DELETE FROM CurrentOrderLists WHERE NOT Exists(SELECT CurrentOrderHeads.OrderId FROM CurrentOrderHeads WHERE CurrentOrderHeads.OrderId=CurrentOrderLists.OrderId)';
+    DM.adcUpdate.Execute;
+
     if DM.adsQueryValue.Active then
       DM.adsQueryValue.Close;
     DM.adsQueryValue.SQL.Text := ''
