@@ -337,7 +337,7 @@ begin
   DM.adsQueryValue.SQL.Text := '' +
 ' select ' +
 '  dh.*, ' +
-'  EXTRACT(YEAR_MONTH FROM dh.LoadTime) as YearMonth, ' +
+'  EXTRACT(YEAR_MONTH FROM ifnull(dh.WriteTime, dh.LoadTime)) as YearMonth, ' +
 '  dh.WriteTime as LocalWriteTime, ' +
 '  p.FirmCode, ' +
 '  p.FullName as ProviderName, ' +
@@ -353,13 +353,13 @@ begin
 '   providers p ' +
 ' where ' +
 '     (dh.ClientId = :ClientId) ' +
-' and (dh.LoadTime BETWEEN :DateFrom AND :DateTo) ' +
+' and (ifnull(dh.WriteTime, dh.LoadTime) BETWEEN :DateFrom AND :DateTo) ' +
 ' and (dh.DocumentType = 1) ' +
 ' and (p.FirmCode = dh.FirmCode) ' +
 ' and (dbodies.DocumentId = dh.Id) ' +
 IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
 ' group by dh.Id ' +
-' order by EXTRACT(YEAR_MONTH FROM dh.LoadTime) DESC, p.FullName asc, dh.WriteTime DESC ';
+' order by EXTRACT(YEAR_MONTH FROM ifnull(dh.WriteTime, dh.LoadTime)) DESC, p.FullName asc, dh.WriteTime DESC ';
 
   DM.adsQueryValue.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').Value;
