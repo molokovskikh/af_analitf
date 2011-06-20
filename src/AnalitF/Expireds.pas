@@ -190,9 +190,13 @@ begin
     { проверяем заказ на соответствие наличию товара на складе }
     Val( adsExpiredsQuantity.AsString, Quantity, E);
     if E <> 0 then Quantity := 0;
-    if ( Quantity > 0) and ( adsExpiredsORDERCOUNT.AsInteger > Quantity)and
-      (AProc.MessageBox('Заказ превышает остаток на складе. Продолжить?',
-      MB_ICONQUESTION or MB_OKCANCEL) <> IDOK) then adsExpiredsORDERCOUNT.AsInteger := Quantity;
+    if ( Quantity > 0) and ( adsExpiredsORDERCOUNT.AsInteger > Quantity)
+    then begin
+      AProc.MessageBox(
+        'Заказ превышает остаток на складе, товар будет заказан в количестве ' + adsExpiredsQuantity.AsString,
+        MB_ICONWARNING);
+      adsExpiredsORDERCOUNT.AsInteger := Quantity;
+    end;
 
     PanelCaption := '';
 
