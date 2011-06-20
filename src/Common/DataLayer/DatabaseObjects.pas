@@ -1332,14 +1332,17 @@ end;
 
 function TDatabaseController.IsFatalError(E: EMyError): Boolean;
 const
-  FatalErrorCodes : array[0..5] of Integer =
+  FatalErrorCodes : array[0..8] of Integer =
   (
     ER_NO_SUCH_TABLE,
     ER_GET_ERRNO,
     ER_CRASHED_ON_USAGE,
     ER_CRASHED_ON_REPAIR,
     ER_CANT_CREATE_TABLE,
-    ER_FILE_NOT_FOUND
+    ER_FILE_NOT_FOUND,
+    ER_NOT_KEYFILE,
+    ER_OLD_KEYFILE,
+    1459 //ER_TABLE_NEEDS_UPGRADE
   );
 var
   I : Integer;
