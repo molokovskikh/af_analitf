@@ -10,6 +10,7 @@ uses
   ToughDBGrid, OleCtrls, SHDocVw, ActnList, 
   Spin,
   GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
+  SQLWaiting,
   U_frameContextReclame,
   U_framePromotion,
   DayOfWeekHelper;
@@ -212,6 +213,8 @@ type
     procedure PrepareForMaxProducerCosts;
     procedure MaxProducerCostsUpdateGrid(DataSet: TDataSet);
     procedure RecalUserRetailPrice();
+    procedure ShowWaitSort();
+    procedure SetCoreIndex();
   public
     frameLegend : TframeLegend;
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
@@ -379,12 +382,10 @@ begin
   UpdatePriceDelta;
 
   //¬торое открытие нужно, чтобы отобразилась сортировка, т.к. она не отображаетс€
-  adsCore.Close;
-  adsCore.Open;
+//  adsCore.Close;
+//  adsCore.Open;
 
   //adsCore.DoSort(['SortOrder'], [True]);
-  adsCore.IndexFieldNames := 'SortOrder';
-  adsCore.First;
 
   { проверка непустоты }
   if adsCore.RecordCount = 0 then
@@ -392,6 +393,12 @@ begin
     AProc.MessageBox( 'Ќет предложений', MB_ICONWARNING);
     Abort;
   end;
+
+  if adsCore.RecordCount > 300 then
+    ShowWaitSort()
+  else
+    adsCore.IndexFieldNames := 'SortOrder';
+  adsCore.First;
 
   { заполн€ем список регионов дл€ фильтрации }
   cbFilter.Clear;
@@ -893,12 +900,15 @@ begin
   UpdatePriceDelta;
 
   //¬торое открытие нужно, чтобы отобразилась сортировка, т.к. она не отображаетс€
-  adsCore.Close;
-  adsCore.Open;
+//  adsCore.Close;
+//  adsCore.Open;
 
   cbFilterSelect(nil);
 
-  adsCore.IndexFieldNames := 'SortOrder';
+  if adsCore.RecordCount > 300 then
+    ShowWaitSort()
+  else
+    adsCore.IndexFieldNames := 'SortOrder';
   adsCore.First;
 
   if not adsCore.Locate( 'PriceEnabled', 'True', []) then
@@ -1053,6 +1063,16 @@ begin
     if retailCost > 0.001 then
       eRetUpCost.Text := CurrToStrF(retailCost, ffCurrency, 2);
   end;
+end;
+
+procedure TCoreForm.ShowWaitSort;
+begin
+  ShowSQLWaiting(SetCoreIndex, 'ѕроисходит подготовка данных');
+end;
+
+procedure TCoreForm.SetCoreIndex;
+begin
+  adsCore.IndexFieldNames := 'SortOrder';
 end;
 
 initialization
