@@ -825,8 +825,8 @@ try
   +'FROM '
   +'       CurrentOrderHeads '
   +'       INNER JOIN CurrentOrderLists osbc       ON (CurrentOrderHeads.orderid  = osbc.OrderId) AND (osbc.OrderCount > 0) '
-  +'       LEFT JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
-  +'       LEFT JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
+  +'       inner JOIN PricesRegionalData PRD ON (PRD.RegionCode      = CurrentOrderHeads.RegionCode) AND (PRD.PriceCode = CurrentOrderHeads.PriceCode) '
+  +'       inner JOIN PricesData             ON (PricesData.PriceCode=PRD.PriceCode) '
   +'WHERE (CurrentOrderHeads.CLIENTID                                      = :ClientID) '
   +'   and (CurrentOrderHeads.Frozen = 0) '
   +'   AND (CurrentOrderHeads.Closed                                      <> 1)';

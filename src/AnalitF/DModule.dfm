@@ -557,19 +557,19 @@ object DM: TDM
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    inner join Clients on Clients.Clientid = :ClientID'
+      '    inner JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
+      
+        '    inner JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Re' +
+        'gionCode)'
+      '        AND (Core.PriceCode=PRD.PriceCode)'
+      
+        '    inner JOIN Providers ON PricesData.FirmCode=Providers.FirmCo' +
+        'de'
       '    left JOIN Core ON Core.productid = products.productid'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
         'mCr.SynonymFirmCrCode'
-      '    LEFT JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
-      
-        '    LEFT JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Reg' +
-        'ionCode)'
-      '        AND (Core.PriceCode=PRD.PriceCode)'
-      
-        '    LEFT JOIN Providers ON PricesData.FirmCode=Providers.FirmCod' +
-        'e'
       '    LEFT JOIN Regions ON Core.RegionCode=Regions.RegionCode'
       
         '    LEFT JOIN CurrentOrderLists osbc ON osbc.clientid = :clienti' +
