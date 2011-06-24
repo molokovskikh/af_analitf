@@ -219,9 +219,12 @@ private
   procedure SetFocusOnMainForm;
   function  NeedUpdateClientLabel : Boolean;
   function DontShowAddresses : Boolean;
+  procedure UpdateAddressName;
 public
   // Имя текущего пользователя
   CurrentUser    : string;
+  //Имя выбранного адреса доставки
+  CurrentAddressName : String;
   //Использует ли текущая копия клиентов из схемы Future
   IsFutureClient : Boolean;
   ActiveChild: TChildForm;
@@ -356,6 +359,7 @@ try
 
   //todo: ClientId-UserId
   DM.GetClientInformation(CurrentUser, IsFutureClient);
+  CurrentAddressName := '';
   if (Length(CurrentUser) > 0) then
     Self.Caption := Application.Title + ' - ' + CurrentUser
   else
@@ -491,7 +495,7 @@ try
 finally
   SetFocusOnMainForm;
   //Обновляем ToolBar в случае смены клиента после обновления
-  ToolBar.Invalidate;
+  UpdateAddressName;
 end;
 end;
 
@@ -662,7 +666,7 @@ begin
   RunExchange( ExAct);
 
   //Обновляем ToolBar в случае смены клиента после обновления
-  ToolBar.Invalidate;
+  UpdateAddressName;
 end;
 
 procedure TMainForm.actReceiveAllExecute(Sender: TObject);
@@ -673,7 +677,7 @@ begin
     RunExchange([eaGetPrice, eaGetFullData]);
 
     //Обновляем ToolBar в случае смены клиента после обновления
-    ToolBar.Invalidate;
+    UpdateAddressName;
   end;
 end;
 
@@ -709,7 +713,7 @@ begin
   RunExchange([ eaImportOnly]);
 {$endif}
   //Обновляем ToolBar в случае смены клиента после обновления
-  ToolBar.Invalidate;
+  UpdateAddressName;
 end;
 
 procedure TMainForm.SetUpdateDateTime;
@@ -905,7 +909,7 @@ begin
       ShowOrdersH;
 
   //Обновляем ToolBar в случае смены клиента после обновления
-  ToolBar.Invalidate;
+  UpdateAddressName;
 end;
 
 function TMainForm.CheckUnsendOrders: boolean;
@@ -1149,7 +1153,7 @@ begin
   RunExchange( [eaSendWaybills] );
 
   //Обновляем ToolBar в случае смены клиента после обновления
-  ToolBar.Invalidate;
+  UpdateAddressName;
 end;
 
 procedure TMainForm.actSynonymSearchExecute(Sender: TObject);
@@ -1266,7 +1270,7 @@ begin
   end;
 
   //Обновляем ToolBar в случае смены клиента после обновления
-  ToolBar.Invalidate;
+  UpdateAddressName;
 end;
 
 procedure TMainForm.actViewDocsExecute(Sender: TObject);
@@ -1384,7 +1388,9 @@ begin
     TmpRect := ClientNameRect;
     TmpRect.BottomRight.X := TmpRect.BottomRight.X - 24;
     Windows.InflateRect(TmpRect, -1, -1);
-    ToolBar.Canvas.TextRect(TmpRect, TmpRect.Left + 3, TmpRect.Top + 4, DM.adtClients.FieldByName('Name').AsString);
+    if DM.adtClients.Active and (DM.adtClients.RecordCount > 0) and not DM.adtClients.FieldByName('Name').IsNull then
+      CurrentAddressName := DM.adtClients.FieldByName('Name').AsString;
+    ToolBar.Canvas.TextRect(TmpRect, TmpRect.Left + 3, TmpRect.Top + 4, CurrentAddressName);
 
     //рисуем кнопку
     TmpRect := ClientNameRect;
@@ -1717,6 +1723,12 @@ end;
 procedure TMainForm.actServiceLogExecute(Sender: TObject);
 begin
   ShowServiceLog;
+end;
+
+procedure TMainForm.UpdateAddressName;
+begin
+  CurrentAddressName := '';
+  ToolBar.Invalidate;
 end;
 
 initialization
