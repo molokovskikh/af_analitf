@@ -19,6 +19,7 @@ uses
   ActnList,
   ShellAPI,
   StrUtils,
+  rxStrUtils,
   AlphaUtils,
   U_framePosition,
   AddressController,
@@ -1234,12 +1235,12 @@ begin
       DBF.FileName := FileName;
       if DBF.Open then begin
         while not DM.adsQueryValue.Eof do begin
-          DBF.Store('KOD', ShortString(DM.adsQueryValue.FieldByName('Code').AsString));
-          DBF.Store('NAME', ShortString(DM.adsQueryValue.FieldByName('SynonymName').AsString));
-          DBF.Store('KOL', ShortString(DM.adsQueryValue.FieldByName('OrderCount').AsString));
+          DBF.Store('KOD', ShortString(StrToOem(DM.adsQueryValue.FieldByName('Code').AsString)));
+          DBF.Store('NAME', ShortString(StrToOem(DM.adsQueryValue.FieldByName('SynonymName').AsString)));
+          DBF.Store('KOL', ShortString(StrToOem(DM.adsQueryValue.FieldByName('OrderCount').AsString)));
           DBF.Store('PRICE', ShortString(FloatToStr(DM.adsQueryValue.FieldByName('Price').AsFloat, DM.FFS)));
-          DBF.Store('NOM_ZAK', ShortString(DM.adsQueryValue.FieldByName('Id').AsString));
-          DBF.Store('NOM_AU', ShortString(DM.adsQueryValue.FieldByName('ServiceField1').AsString));
+          DBF.Store('NOM_ZAK', ShortString(StrToOem(DM.adsQueryValue.FieldByName('Id').AsString)));
+          DBF.Store('NOM_AU', ShortString(StrToOem(DM.adsQueryValue.FieldByName('ServiceField1').AsString)));
           DBF.NewRecord;
           DM.adsQueryValue.Next;
         end;
