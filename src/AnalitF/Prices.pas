@@ -262,15 +262,8 @@ procedure TPricesForm.dbgPricesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   inherited;
-  if Key = VK_RETURN then begin
+  if Key = VK_RETURN then
     ProcessPrice;
-  end
-  else
-    if dbgPrices.EditorMode then begin
-      tmStopEdit.Enabled := False;
-      tmStopEdit.Interval := 3000;
-      tmStopEdit.Enabled := True;
-    end;
 end;
 
 procedure TPricesForm.dbgPricesGetCellParams(Sender: TObject;
@@ -338,7 +331,7 @@ end;
 procedure TPricesForm.adsPricesOldINJOBChange(Sender: TField);
 begin
   tmStopEdit.Enabled := False;
-  tmStopEdit.Interval := 500;
+  tmStopEdit.Interval := 1250;
   tmStopEdit.Enabled := True;
 end;
 
