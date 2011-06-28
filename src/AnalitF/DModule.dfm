@@ -557,6 +557,7 @@ object DM: TDM
         '    inner join products on products.catalogid = catalogs.fullcod' +
         'e'
       '    inner join Clients on Clients.Clientid = :ClientID'
+      '    inner JOIN Core ON Core.productid = products.productid'
       '    inner JOIN PricesData ON Core.PriceCode=PricesData.PriceCode'
       
         '    inner JOIN PricesRegionalData PRD ON (Core.RegionCode=PRD.Re' +
@@ -565,7 +566,6 @@ object DM: TDM
       
         '    inner JOIN Providers ON PricesData.FirmCode=Providers.FirmCo' +
         'de'
-      '    left JOIN Core ON Core.productid = products.productid'
       '    left join Synonyms on Core.SynonymCode=Synonyms.SynonymCode'
       
         '    LEFT JOIN SynonymFirmCr ON Core.SynonymFirmCrCode=SynonymFir' +
