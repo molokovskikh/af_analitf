@@ -105,6 +105,10 @@ HostApplication=C:\WINDOWS\system32\rundll32.exe
 Launcher=
 UseLauncher=0
 DebugCWD=
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=1

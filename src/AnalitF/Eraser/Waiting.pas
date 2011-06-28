@@ -4,10 +4,15 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls,
-  UpdateExeThread;
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, XPMan;
 
 type
+  TWaitingThread = class(TThread)
+   public
+    WaitFormHandle : HWND;
+  end;
+
+
   TWaitingForm = class(TForm)
     lInformation: TLabel;
     Timer: TTimer;
@@ -23,13 +28,13 @@ type
     { Public declarations }
   end;
 
-procedure ShowWaiting( Information : String; ChildThread: TUpdateExeThread);
+procedure ShowWaiting( Information : String; ChildThread: TWaitingThread);
 
 implementation
 
 {$R *.dfm}
 
-procedure ShowWaiting( Information : String; ChildThread: TUpdateExeThread);
+procedure ShowWaiting( Information : String; ChildThread: TWaitingThread);
 var
   WaitingForm: TWaitingForm;
 begin

@@ -82,7 +82,7 @@ object WaitingForm: TWaitingForm
     StopFrame = 31
   end
   object Timer: TTimer
-    Interval = 3000
+    Interval = 500
     OnTimer = TimerTimer
     Left = 96
     Top = 88

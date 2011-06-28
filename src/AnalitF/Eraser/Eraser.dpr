@@ -8,7 +8,8 @@ uses
   LU_Tracer in '..\..\Common\Classes\LU_Tracer.pas',
   FileUtil,
   Waiting in 'Waiting.pas' {WaitingForm},
-  UpdateExeThread in 'UpdateExeThread.pas';
+  UpdateExeThread in 'UpdateExeThread.pas',
+  U_TUpdateFileHelper in 'U_TUpdateFileHelper.pas';
 
 {$R *.res}
 

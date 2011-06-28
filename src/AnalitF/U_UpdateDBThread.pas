@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes,
-  MyAccess, MyEmbConnection;
+  MyAccess, MyEmbConnection,
+  AProc;
 
 type
   TOnUpdateDBFileData = procedure (dbCon : TCustomMyConnection) of object;
@@ -27,6 +28,8 @@ uses
 
 type
   TRunUpdateDBFile = class(TThread)
+   private
+    procedure BackupDataDirs();
    public
     OnUpdateDBFile : TOnUpdateDBFile;
     OnUpdateDBFileData : TOnUpdateDBFileData;
@@ -40,6 +43,21 @@ type
 
 { TRunUpdateDBFile }
 
+procedure TRunUpdateDBFile.BackupDataDirs;
+begin
+  if DirectoryExists(ExePath + SDirData) or DirectoryExists(ExePath + SDirTableBackup)
+  then begin
+    if not DirectoryExists(ExePath + SBackDir) then
+      ForceDirectories(ExePath + SBackDir);
+
+    if DirectoryExists(ExePath + SDirData) then
+      CopyDirectories(ExePath + SDirData, ExePath + SBackDir + '\' + SDirData);
+
+    if DirectoryExists(ExePath + SDirTableBackup) then
+      CopyDirectories(ExePath + SDirTableBackup, ExePath + SBackDir + '\' + SDirTableBackup);
+  end;
+end;
+
 procedure TRunUpdateDBFile.Execute;
 var
   InternalConnection : TCustomMyConnection;
@@ -50,8 +68,12 @@ begin
     if Assigned(dbCon) then begin
       InternalConnection := DatabaseController.GetNewConnection(dbCon);
 
-      if (dbCon is TMyEmbConnection) then
+      if (dbCon is TMyEmbConnection) then begin
+        //Если происходит обновление программы, то надо сделать backup каталогов Data и TableBackup
+        if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then
+          BackupDataDirs();
         TMyEmbConnection(InternalConnection).DataDir := DBDirectoryName;
+      end;
 
 {
       InternalConnection := TMyEmbConnection.Create(nil);

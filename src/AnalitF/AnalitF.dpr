@@ -154,6 +154,7 @@ uses
 {$R *.RES}
 {$R EraserDLL.RES}
 {$R Progress.RES}
+{$R RollbackAF.RES}
 {$R Icons.RES}
 {$R Bitmaps.RES}
 {$R CompareScript50.RES}
