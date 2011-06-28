@@ -130,7 +130,7 @@ object MainForm: TMainForm
         Action = actOrderAll
         ImageIndex = 4
       end
-      object ToolButton7: TToolButton
+      object tbSynonymSearch: TToolButton
         Left = 265
         Top = 0
         Action = actSynonymSearch
@@ -3972,8 +3972,54 @@ object MainForm: TMainForm
     Left = 472
     Top = 272
   end
-  object ImageList16: TImageList
+  object SearchMenu: TPopupMenu
+    Left = 288
+    Top = 192
+    object miOrderAll: TMenuItem
+      Action = actOrderAll
+      Default = True
+    end
+    object miSynonymSearch: TMenuItem
+      Action = actSynonymSearch
+    end
+    object miMnnSearch: TMenuItem
+      Action = actMnnSearch
+    end
+    object miShowMinPrices: TMenuItem
+      Action = actShowMinPrices
+    end
+  end
+  object JunkMenu: TPopupMenu
+    Left = 328
+    Top = 192
+    object miSale: TMenuItem
+      Action = actSale
+      Default = True
+    end
+    object miDefectives: TMenuItem
+      Action = actDefectives
+    end
+  end
+  object WaybillMenu: TPopupMenu
+    Left = 368
+    Top = 192
+    object miViewDocs: TMenuItem
+      Action = actViewDocs
+      Default = True
+    end
+    object miWayBill: TMenuItem
+      Action = actWayBill
+    end
+  end
+  object ConfigMenu: TPopupMenu
     Left = 408
-    Top = 160
+    Top = 192
+    object miConfig: TMenuItem
+      Action = actConfig
+      Default = True
+    end
+    object miHome: TMenuItem
+      Action = actHome
+    end
   end
 end

@@ -111,7 +111,7 @@ TMainForm = class(TVistaCorrectForm)
     tbWaybill: TToolButton;
     actWayBill: TAction;
     tbLastSeparator: TToolButton;
-    ToolButton7: TToolButton;
+    tbSynonymSearch: TToolButton;
     actSynonymSearch: TAction;
     ToolButton10: TToolButton;
     actSendLetter: TAction;
@@ -139,7 +139,20 @@ TMainForm = class(TVistaCorrectForm)
     btnShowMinPrices: TToolButton;
     actServiceLog: TAction;
     itmServiceLog: TMenuItem;
-    ImageList16: TImageList;
+    SearchMenu: TPopupMenu;
+    miOrderAll: TMenuItem;
+    miSynonymSearch: TMenuItem;
+    miMnnSearch: TMenuItem;
+    miShowMinPrices: TMenuItem;
+    JunkMenu: TPopupMenu;
+    miSale: TMenuItem;
+    miDefectives: TMenuItem;
+    WaybillMenu: TPopupMenu;
+    ConfigMenu: TPopupMenu;
+    miViewDocs: TMenuItem;
+    miWayBill: TMenuItem;
+    miConfig: TMenuItem;
+    miHome: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -220,6 +233,8 @@ private
   function  NeedUpdateClientLabel : Boolean;
   function DontShowAddresses : Boolean;
   procedure UpdateAddressName;
+  procedure ToggleToolBar;
+  procedure CollapseToolBar;
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -319,7 +334,6 @@ begin
   end;
 
   LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
-  LoadToImageList(ImageList16, Application.ExeName, 100, Set32BPP);
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
@@ -1301,20 +1315,10 @@ begin
   then begin
     SetOrdersInfo;
 
-    if Self.Width < 900 then begin
-      if ToolBar.Images <> ImageList16 then begin
-        ToolBar.Images := ImageList16;
-        ToolBar.ButtonHeight := 38;
-        ToolBar.ButtonWidth := 26;
-      end;
-    end
-    else begin
-      if ToolBar.Images <> ImageList then begin
-        ToolBar.Images := ImageList;
-        ToolBar.ButtonHeight := 38;
-        ToolBar.ButtonWidth := 39;
-      end;
-    end;
+    if Self.Width < 900 then
+      CollapseToolBar()
+    else
+      ToggleToolBar();
   end;
 end;
 
@@ -1729,6 +1733,52 @@ procedure TMainForm.UpdateAddressName;
 begin
   CurrentAddressName := '';
   ToolBar.Invalidate;
+end;
+
+procedure TMainForm.CollapseToolBar;
+begin
+  if not Assigned(btnOrderAll.DropdownMenu) then begin
+    tbSynonymSearch.Visible := False;
+    tbMnnSearch.Visible := False;
+    btnShowMinPrices.Visible := False;
+    btnOrderAll.DropdownMenu := SearchMenu;
+    btnOrderAll.Style := tbsDropDown;
+
+    btnDefectives.Visible := False;
+    btnExpireds.DropdownMenu := JunkMenu;
+    btnExpireds.Style := tbsDropDown;
+
+    tbWaybill.Visible := False;
+    tbViewDocs.DropdownMenu := WaybillMenu;
+    tbViewDocs.Style := tbsDropDown;
+
+    btnHome.Visible := False;
+    btnConfig.DropdownMenu := ConfigMenu;
+    btnConfig.Style := tbsDropDown;
+  end;
+end;
+
+procedure TMainForm.ToggleToolBar;
+begin
+  if Assigned(btnOrderAll.DropdownMenu) then begin
+    tbSynonymSearch.Visible := True;
+    tbMnnSearch.Visible := True;
+    btnShowMinPrices.Visible := True;
+    btnOrderAll.DropdownMenu := nil;
+    btnOrderAll.Style := tbsButton;
+
+    btnDefectives.Visible := True;
+    btnExpireds.DropdownMenu := nil;
+    btnExpireds.Style := tbsButton;
+
+    tbWaybill.Visible := True;
+    tbViewDocs.DropdownMenu := nil;
+    tbViewDocs.Style := tbsButton;
+
+    btnHome.Visible := True;
+    btnConfig.DropdownMenu := nil;
+    btnConfig.Style := tbsButton;
+  end;
 end;
 
 initialization
