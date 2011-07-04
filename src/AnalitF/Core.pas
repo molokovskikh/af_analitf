@@ -13,7 +13,8 @@ uses
   SQLWaiting,
   U_frameContextReclame,
   U_framePromotion,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  DBViewHelper;
 
 const
   ALL_REGIONS = '¬се регионы';
@@ -143,7 +144,6 @@ type
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
     adsCoreMaxProducerCost: TFloatField;
-    dblProducers: TDBLookupComboBox;
     adsProducers: TMyQuery;
     dsProducers: TDataSource;
     adsProducersId: TLargeintField;
@@ -154,6 +154,7 @@ type
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
     adsCoreRetailVitallyImportant: TBooleanField;
+    cbProducers: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -183,7 +184,7 @@ type
     procedure tmrUpdatePreviosOrdersTimer(Sender: TObject);
     procedure adsCoreBeforeClose(DataSet: TDataSet);
     procedure adsCoreAfterOpen(DataSet: TDataSet);
-    procedure dblProducersCloseUp(Sender: TObject);
+    procedure cbProducersCloseUp(Sender: TObject);
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
@@ -304,12 +305,7 @@ begin
   else
     adsProducers.SQL.Text := adsProducersEtalon.SQL.Text;
   adsProducers.ParamByName('ParentCode').Value := AParentCode;
-  adsProducers.Open;
-  dblProducers.DataField := 'Id';
-  dblProducers.KeyField := 'Id';
-  dblProducers.ListField := 'Name';
-  dblProducers.ListSource := dsProducers;
-  dblProducers.KeyValue := adsProducersId.Value;
+  TDBViewHelper.LoadProcedures(cbProducers, adsProducers, adsProducersId, adsProducersName);
 
   plOverCost.Hide();
   //≈сли в прошлый раз пользователь изменил наценку, то выставл€ем ее
@@ -588,8 +584,8 @@ procedure TCoreForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   //frameContextReclame.StopReclame;
-  if ( Key = VK_ESCAPE) and (dblProducers.KeyValue <> 0) then begin
-    dblProducers.KeyValue := 0;
+  if ( Key = VK_ESCAPE) and (cbProducers.ItemIndex <> 0) then begin
+    cbProducers.ItemIndex := 0;
     cbFilterSelect(nil);
   end
   else
@@ -724,13 +720,13 @@ begin
   begin
     //if filterSql <> '' then filterSql := filterSql + ' OR PriceEnabled = NULL';
   end;
-  if dblProducers.KeyValue <> 0 then begin
+  if cbProducers.ItemIndex <> 0 then begin
     if filterSql <> '' then
       filterSql := filterSql + ' and ';
-    if dblProducers.KeyValue = 1 then
+    if cbProducers.ItemIndex = 1 then
       filterSql := filterSql + 'CodeFirmCr = 0 '
     else
-      filterSql := filterSql + 'CodeFirmCr = ' + VarToStr(dblProducers.KeyValue);
+      filterSql := filterSql + 'CodeFirmCr = ' + IntToStr(Integer(cbProducers.Items.Objects[cbProducers.ItemIndex]));
   end;
   DBProc.SetFilter( adsCore, filterSql);
   dbgCore.SetFocus;
@@ -1046,11 +1042,6 @@ begin
   dbgMaxProducerCosts.Visible := not adsMaxProducerCosts.IsEmpty;
 end;
 
-procedure TCoreForm.dblProducersCloseUp(Sender: TObject);
-begin
-  cbFilterSelect(nil);
-end;
-
 procedure TCoreForm.RecalUserRetailPrice;
 var
   retailCost : Currency;
@@ -1073,6 +1064,11 @@ end;
 procedure TCoreForm.SetCoreIndex;
 begin
   adsCore.IndexFieldNames := 'SortOrder';
+end;
+
+procedure TCoreForm.cbProducersCloseUp(Sender: TObject);
+begin
+  cbFilterSelect(nil);
 end;
 
 initialization

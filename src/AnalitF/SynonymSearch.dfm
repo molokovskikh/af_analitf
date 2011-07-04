@@ -85,14 +85,15 @@ inherited SynonymSearchForm: TSynonymSearchForm
         00003333333330000000}
       Layout = blGlyphRight
     end
-    object dblProducers: TDBLookupComboBox
+    object cbProducers: TComboBox
       Left = 1
       Top = 37
       Width = 320
       Height = 21
-      DropDownRows = 30
+      Style = csDropDownList
+      ItemHeight = 13
       TabOrder = 4
-      OnCloseUp = dblProducersCloseUp
+      OnCloseUp = cbProducersCloseUp
     end
   end
   object pCenter: TPanel [1]

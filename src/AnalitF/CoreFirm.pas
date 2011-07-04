@@ -11,7 +11,8 @@ uses
   SQLWaiting, ForceRus, GridsEh, 
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   U_framePromotion,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  DBViewHelper;
 
 type
   TFilter=( filAll, filOrder, filLeader, filProducer);
@@ -115,7 +116,6 @@ type
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
     adsCoreMaxProducerCost: TFloatField;
-    dblProducers: TDBLookupComboBox;
     adsProducers: TMyQuery;
     adsProducersId: TLargeintField;
     adsProducersName: TStringField;
@@ -124,6 +124,7 @@ type
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
     adsCoreRetailVitallyImportant: TBooleanField;
+    cbProducers: TComboBox;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -152,10 +153,10 @@ type
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
-    procedure dblProducersCloseUp(Sender: TObject);
     procedure dbgCoreColumns15GetCellParams(Sender: TObject;
       EditMode: Boolean; Params: TColCellParamsEh);
     procedure adsCoreAfterScroll(DataSet: TDataSet);
+    procedure cbProducersCloseUp(Sender: TObject);
   private
     PriceCode, ClientId: Integer;
     RegionCode : Int64;
@@ -270,12 +271,7 @@ begin
     adsProducers.Close;
   adsProducers.ParamByName( 'PriceCode').Value:=PriceCode;
   adsProducers.ParamByName( 'RegionCode').Value:=RegionCode;
-  adsProducers.Open;
-  dblProducers.DataField := 'Id';
-  dblProducers.KeyField := 'Id';
-  dblProducers.ListField := 'Name';
-  dblProducers.ListSource := dsProducers;
-  dblProducers.KeyValue := adsProducersId.Value;
+  TDBViewHelper.LoadProcedures(cbProducers, adsProducers, adsProducersId, adsProducersName);
 
   plOverCost.Hide();
   Self.PriceCode  := PriceCode;
@@ -716,11 +712,11 @@ begin
       and not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0)
   else
     Accept := not adsCoreORDERCOUNT.IsNull and (adsCoreORDERCOUNT.AsInteger > 0);
-  if Accept and (dblProducers.KeyValue <> 0) then
-    if dblProducers.KeyValue = 1 then
+  if Accept and (cbProducers.ItemIndex <> 0) then
+    if cbProducers.ItemIndex = 1 then
       Accept := adsCoreCodeFirmCr.AsVariant = 0
     else
-      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+      Accept := adsCoreCodeFirmCr.AsVariant = Integer(cbProducers.Items.Objects[cbProducers.ItemIndex]);
 end;
 
 procedure TCoreFirmForm.LeaderFilterRecord(DataSet: TDataSet;
@@ -739,11 +735,11 @@ begin
       ((adsCoreLEADERPRICECODE.AsVariant = PriceCode) and (adsCoreLEADERREGIONCODE.AsVariant = RegionCode))
         or adsCoreLEADERPRICE.IsNull
         or (abs(adsCoreCOST.AsCurrency - adsCoreLEADERPRICE.AsCurrency) < 0.01);
-  if Accept and (dblProducers.KeyValue <> 0) then
-    if dblProducers.KeyValue = 1 then
+  if Accept and (cbProducers.ItemIndex <> 0) then
+    if cbProducers.ItemIndex = 1 then
       Accept := adsCoreCodeFirmCr.AsVariant = 0
     else
-      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+      Accept := adsCoreCodeFirmCr.AsVariant = Integer(cbProducers.Items.Objects[cbProducers.ItemIndex]);
 end;
 
 procedure TCoreFirmForm.RefreshAllCore;
@@ -814,11 +810,11 @@ procedure TCoreFirmForm.AllFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
   Accept := AnsiContainsText(adsCoreSYNONYMNAME.DisplayText, InternalSearchText);
-  if Accept and (dblProducers.KeyValue <> 0) then
-    if dblProducers.KeyValue = 1 then
+  if Accept and (cbProducers.ItemIndex <> 0) then
+    if cbProducers.ItemIndex = 1 then
       Accept := adsCoreCodeFirmCr.AsVariant = 0
     else
-      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+      Accept := adsCoreCodeFirmCr.AsVariant = Integer(cbProducers.Items.Objects[cbProducers.ItemIndex]);
 end;
 
 procedure TCoreFirmForm.SetClear;
@@ -884,15 +880,6 @@ begin
   end;
 end;
 
-procedure TCoreFirmForm.dblProducersCloseUp(Sender: TObject);
-begin
-  if dblProducers.KeyValue = 0 then
-    SetFilter(TFilter(cbFilter.ItemIndex))
-  else
-    SetFilter(filProducer);
-  dbgCore.SetFocus;
-end;
-
 procedure TCoreFirmForm.ProducerFilterRecord(DataSet: TDataSet;
   var Accept: Boolean);
 begin
@@ -927,10 +914,10 @@ begin
       end;
   end;
   if Accept then
-    if dblProducers.KeyValue = 1 then
+    if cbProducers.ItemIndex = 1 then
       Accept := adsCoreCodeFirmCr.AsVariant = 0
     else
-      Accept := adsCoreCodeFirmCr.AsVariant = dblProducers.KeyValue;
+      Accept := adsCoreCodeFirmCr.AsVariant = Integer(cbProducers.Items.Objects[cbProducers.ItemIndex]);
 end;
 
 procedure TCoreFirmForm.DeleteOrder;
@@ -1027,6 +1014,15 @@ begin
   adsSupplierPromotions.MasterSource := dsCore;
   adsSupplierPromotions.MasterFields := 'ShortCode';
   adsSupplierPromotions.DetailFields := 'ShortCode';
+end;
+
+procedure TCoreFirmForm.cbProducersCloseUp(Sender: TObject);
+begin
+  if cbProducers.ItemIndex = 0 then
+    SetFilter(TFilter(cbFilter.ItemIndex))
+  else
+    SetFilter(filProducer);
+  dbgCore.SetFocus;
 end;
 
 end.

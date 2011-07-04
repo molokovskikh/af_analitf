@@ -361,14 +361,16 @@ object CoreForm: TCoreForm
       TabOrder = 2
       OnClick = btnGroupUngroupClick
     end
-    object dblProducers: TDBLookupComboBox
+    object cbProducers: TComboBox
       Left = 376
       Top = 32
       Width = 412
       Height = 21
+      Style = csDropDownList
       Anchors = [akRight]
+      ItemHeight = 13
       TabOrder = 3
-      OnCloseUp = dblProducersCloseUp
+      OnCloseUp = cbProducersCloseUp
     end
   end
   object pCenter: TPanel

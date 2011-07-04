@@ -427,14 +427,16 @@ object CoreFirmForm: TCoreFirmForm
         Visible = False
         OnClick = tmrSearchTimer
       end
-      object dblProducers: TDBLookupComboBox
+      object cbProducers: TComboBox
         Left = 376
         Top = 8
         Width = 412
         Height = 21
+        Style = csDropDownList
         Anchors = [akRight]
+        ItemHeight = 13
         TabOrder = 2
-        OnCloseUp = dblProducersCloseUp
+        OnCloseUp = cbProducersCloseUp
       end
     end
   end

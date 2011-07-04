@@ -149,7 +149,8 @@ uses
   U_frameBlockPromotion in 'Views\U_frameBlockPromotion.pas' {frameBlockPromotion: TFrame},
   DayOfWeekHelper in '..\Common\Helpers\DayOfWeekHelper.pas',
   DayOfWeekDelaysController in 'BusinessLogic\DayOfWeekDelaysController.pas',
-  InternalRepareOrdersController in 'BusinessLogic\InternalRepareOrdersController.pas';
+  InternalRepareOrdersController in 'BusinessLogic\InternalRepareOrdersController.pas',
+  DBViewHelper in 'Helpers\DBViewHelper.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

@@ -9,7 +9,8 @@ uses
   ForceRus, DBGrids, Buttons, Menus, DBCtrls, StrUtils, GridsEh,
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   U_framePromotion,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  DBViewHelper;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -130,7 +131,6 @@ type
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreCatalogMandatoryList: TBooleanField;
     adsCoreMaxProducerCost: TFloatField;
-    dblProducers: TDBLookupComboBox;
     adsProducers: TMyQuery;
     adsProducersId: TLargeintField;
     adsProducersName: TStringField;
@@ -140,6 +140,7 @@ type
     adsCoreProducerName: TStringField;
     adsCoreNamePromotionsCount: TIntegerField;
     adsCoreRetailVitallyImportant: TBooleanField;
+    cbProducers: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -171,7 +172,7 @@ type
     procedure adsCoreAfterOpen(DataSet: TDataSet);
     procedure adsCoreAfterScroll(DataSet: TDataSet);
     procedure tmrSelectedPricesTimer(Sender: TObject);
-    procedure dblProducersCloseUp(Sender: TObject);
+    procedure cbProducersCloseUp(Sender: TObject);
   private
     { Private declarations }
     fr : TForceRus;
@@ -246,12 +247,7 @@ begin
 
   if adsProducers.Active then
     adsProducers.Close;
-  adsProducers.Open;
-  dblProducers.DataField := 'Id';
-  dblProducers.KeyField := 'Id';
-  dblProducers.ListField := 'Name';
-  dblProducers.ListSource := dsProducers;
-  dblProducers.KeyValue := adsProducersId.Value;
+  TDBViewHelper.LoadProcedures(cbProducers, adsProducers, adsProducersId, adsProducersName);
 
   InternalSearchText := '';
   BM := TBitmap.Create;
@@ -693,11 +689,11 @@ begin
     StartSQL := StartSQL + 'and (' + FilterSQL + ')';
   if cbBaseOnly.Checked then
     StartSQL := StartSQL + ' and (PRD.Enabled = 1)';
-  if dblProducers.KeyValue <> 0 then begin
-    if dblProducers.KeyValue = 1 then
+  if cbProducers.ItemIndex <> 0 then begin
+    if cbProducers.ItemIndex = 1 then
       StartSQL := StartSQL + ' and (Core.CodeFirmCr = 0)'
     else
-      StartSQL := StartSQL + ' and (Core.CodeFirmCr = ' + VarToStr(dblProducers.KeyValue) + ')';
+      StartSQL := StartSQL + ' and (Core.CodeFirmCr = ' + IntToStr(Integer(cbProducers.Items.Objects[cbProducers.ItemIndex])) + ')';
   end;
 
   StartSQL := StartSQL + ';'#13#10;
@@ -760,7 +756,7 @@ begin
     InternalSearch;
 end;
 
-procedure TSynonymSearchForm.dblProducersCloseUp(Sender: TObject);
+procedure TSynonymSearchForm.cbProducersCloseUp(Sender: TObject);
 begin
   if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
     InternalSearch
