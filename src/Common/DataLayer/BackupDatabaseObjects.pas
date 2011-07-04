@@ -86,6 +86,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TInvoiceHeadersTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -323,6 +329,10 @@ begin
 +'  `Amount` decimal(18,4) unsigned DEFAULT NULL, '
 +'  `NdsAmount` decimal(18,4) unsigned DEFAULT NULL, '
 +'  `RetailAmount` decimal(18,4) unsigned DEFAULT NULL, '
++'  `Unit` varchar(20) default null, '
++'  `ExciseTax` decimal(12,6) default null, '
++'  `BillOfEntryNumber` varchar(30) default null, '
++'  `EAN13` varchar(13) default null, '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
 + GetTableOptions();
@@ -589,6 +599,48 @@ begin
 }
 end;
 
+{ TInvoiceHeadersTable }
+
+constructor TInvoiceHeadersTable.Create;
+begin
+  FName := 'invoiceheaders';
+  FObjectId := doiInvoiceHeaders;
+  FRepairType := dortBackup;
+end;
+
+function TInvoiceHeadersTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'                          Id                  bigint(20) unsigned NOT NULL DEFAULT ''0'', '
++'                          InvoiceNumber       VARCHAR(20) DEFAULT NULL                , '
++'                          InvoiceDate         DATETIME DEFAULT NULL                   , '
++'                          SellerName          VARCHAR(255) DEFAULT NULL               , '
++'                          SellerAddress       VARCHAR(255) DEFAULT NULL               , '
++'                          SellerINN           VARCHAR(20) DEFAULT NULL                , '
++'                          SellerKPP           VARCHAR(20) DEFAULT NULL                , '
++'                          ShipperInfo         VARCHAR(255) DEFAULT NULL               , '
++'                          ConsigneeInfo       VARCHAR(255) DEFAULT NULL               , '
++'                          PaymentDocumentInfo VARCHAR(255) DEFAULT NULL               , '
++'                          BuyerName           VARCHAR(255) DEFAULT NULL               , '
++'                          BuyerAddress        VARCHAR(255) DEFAULT NULL               , '
++'                          BuyerINN            VARCHAR(20) DEFAULT NULL                , '
++'                          BuyerKPP            VARCHAR(20) DEFAULT NULL                , '
++'                          AmountWithoutNDS0   DECIMAL(12,6) DEFAULT NULL              , '
++'                          AmountWithoutNDS10  DECIMAL(12,6) DEFAULT NULL              , '
++'                          NDSAmount10         DECIMAL(12,6) DEFAULT NULL              , '
++'                          Amount10            DECIMAL(12,6) DEFAULT NULL              , '
++'                          AmountWithoutNDS18  DECIMAL(12,6) DEFAULT NULL              , '
++'                          NDSAmount18         DECIMAL(12,6) DEFAULT NULL              , '
++'                          Amount18            DECIMAL(12,6) DEFAULT NULL              , '
++'                          AmountWithoutNDS    DECIMAL(12,6) DEFAULT NULL              , '
++'                          NDSAmount           DECIMAL(12,6) DEFAULT NULL              , '
++'                          Amount              DECIMAL(12,6) DEFAULT NULL              , '
++'                          PRIMARY KEY (Id) '
++' ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TPostedOrderHeadsTable.Create());
@@ -603,4 +655,5 @@ initialization
   DatabaseController.AddObject(TCurrentOrderListsTable.Create());
   DatabaseController.AddObject(TGlobalParamsTable.Create());
   DatabaseController.AddObject(TNetworkLogTable.Create());
+  DatabaseController.AddObject(TInvoiceHeadersTable.Create());
 end.
