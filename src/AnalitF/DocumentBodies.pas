@@ -1157,8 +1157,25 @@ begin
 end;
 
 procedure TDocumentBodiesForm.sbPrintInvoiceClick(Sender: TObject);
+var
+  LastId : Int64;
 begin
-  DoActionOnPrinted(PrintInvoice);
+  adsDocumentBodies.DisableControls;
+  LastId := adsDocumentBodiesId.Value;
+  adsDocumentBodies.Close;
+  adsDocumentBodies.RestoreSQL;
+  adsDocumentBodies.Open;
+  try
+    PrintInvoice();
+  finally
+    adsDocumentBodies.Close;
+    adsDocumentBodies.RestoreSQL;
+    AddNDSFilter();
+    adsDocumentBodies.Open;
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+    adsDocumentBodies.EnableControls;
+  end;
 end;
 
 function TDocumentBodiesForm.GetMinProducerCost: Double;
