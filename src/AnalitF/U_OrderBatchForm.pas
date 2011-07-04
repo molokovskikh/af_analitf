@@ -14,6 +14,7 @@ uses
   MyAccess,
   GridsEh,
   DbGridEh,
+  Constant,
   ToughDBGrid,
   StrHlder,
   ActnList,
@@ -147,6 +148,8 @@ type
     procedure dbgOrderBatchDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure dbgOrderBatchDblClick(Sender: TObject);
+    procedure CoreGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
 
     procedure SaveReportToFile(FileName : String);
     procedure SaveExcelReportToFile(FileName : String);
@@ -183,6 +186,11 @@ type
     lNotEnoughQuantity : TLabel;
     lAnotherError : TLabel;
     lNotParsed : TLabel;
+
+    lJunkLegend : TLabel;
+    lAwaitLegend : TLabel;
+    lVitallyImportantLegend : TLabel;
+
 
     pGrid : TPanel;
     dbgOrderBatch : TToughDBGrid;
@@ -306,16 +314,19 @@ begin
   OneLineHeight := Self.Canvas.TextHeight('Tes');
 
   pBottom := TPanel.Create(Self);
+  pBottom.ControlStyle := pBottom.ControlStyle - [csParentBackground] + [csOpaque];
   pBottom.Align := alBottom;
   pBottom.Parent := Self;
   pBottom.Height := OneLineHeight * 30;
 
   pLegendAndComment := TPanel.Create(Self);
+  pLegendAndComment.ControlStyle := pLegendAndComment.ControlStyle - [csParentBackground] + [csOpaque];
   pLegendAndComment.Parent := pBottom;
   pLegendAndComment.Align := alBottom;
   pLegendAndComment.Height := pBottom.Height - 20;
 
   pLegend := TPanel.Create(Self);
+  pLegend.ControlStyle := pLegend.ControlStyle - [csParentBackground] + [csOpaque];
   pLegend.Parent := pLegendAndComment;
   pLegend.Align := alBottom;
   pLegend.Height := OneLineHeight * 3;
@@ -367,6 +378,7 @@ begin
   dbgCore.Parent := pBottom;
   dbgCore.Align := alClient;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgCore);
+  dbgCore.OnGetCellParams := CoreGetCellParams;
 
   TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
   TDBGridHelper.AddColumn(dbgCore, 'SynonymFirm', 'Производитель', 85);
@@ -425,6 +437,7 @@ var
   serviceFieldsCount : Integer;
 begin
   pGrid := TPanel.Create(Self);
+  pGrid.ControlStyle := pGrid.ControlStyle - [csParentBackground] + [csOpaque];
   pGrid.Align := alClient;
   pGrid.Parent := Self;
 
@@ -500,8 +513,13 @@ begin
   //newLeft := CreateLegendLabel(lNotOffers, 'Нет предложений', RGB(226, 180, 181), newLeft, newTop);
   //newLeft := CreateLegendLabel(lNotEnoughQuantity, 'Нет достаточного количества', RGB(255, 190, 151), newLeft, newTop);
   //newLeft :=
-  CreateLegendLabel(lAnotherError, 'Не заказанные', RGB(255, 128, 128), newLeft, newTop);
+  newLeft := CreateLegendLabel(lAnotherError, 'Не заказанные', RGB(255, 128, 128), newLeft, newTop);
   //CreateLegendLabel(lNotParsed, 'Не найденные в ассортиментном прайс-листе', RGB(245, 233, 160), newLeft, newTop);
+
+  newLeft := CreateLegendLabel(lJunkLegend, 'Уцененные препараты', JUNK_CLR, newLeft, newTop);
+  newLeft := CreateLegendLabel(lAwaitLegend, 'Ожидаемая позиция', AWAIT_CLR, newLeft, newTop);
+  newLeft := CreateLegendLabel(lVitallyImportantLegend, 'Жизненно важные препараты', clWindow, newLeft, newTop);
+  lVitallyImportantLegend.Font.Color := VITALLYIMPORTANT_CLR;
 end;
 
 procedure TOrderBatchForm.CreateNonVisualComponent;
@@ -1029,7 +1047,7 @@ begin
   NewHistoryHeight := ResidualHeight div 5;
   pLegendAndComment.Height := pLegend.Height + NewHistoryHeight;
   pBottom.Height := pLegendAndComment.Height + ((ResidualHeight - NewHistoryHeight) div 2);
-  
+
   gbHistory.Width := Trunc(pBottom.ClientWidth * 0.4);
 end;
 
@@ -1350,6 +1368,23 @@ begin
     end;
   finally
     DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TOrderBatchForm.CoreGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if not adsCore.IsEmpty then begin
+    if adsCore.FieldByName('vitallyimportant').AsBoolean then
+      AFont.Color := VITALLYIMPORTANT_CLR;
+    //если уцененный товар, изменяем цвет
+    if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.Field.FieldName, ['Period', 'Cost']) > -1)
+    then
+      Background := JUNK_CLR;
+    //ожидаемый товар выделяем зеленым
+    if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
+      Background := AWAIT_CLR;
   end;
 end;
 
