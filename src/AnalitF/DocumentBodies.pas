@@ -80,6 +80,8 @@ type
     adsDocumentBodiesNdsAmount: TFloatField;
     lNDS: TLabel;
     cbNDS: TComboBox;
+    adsDocumentHeadersInvoiceNumber: TStringField;
+    adsDocumentHeadersAmount: TFloatField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -1617,6 +1619,9 @@ begin
 
   frVariables[ 'Получатель'] := '';
   frVariables[ 'АдресПолучателя'] := '';
+
+  frVariables[ 'InvoiceNumber'] := adsDocumentHeadersInvoiceNumber.AsString;
+  frVariables[ 'Amount'] := adsDocumentHeadersAmount.AsString;
 
   DM.ShowFastReportWithSave('Invoice.frf', adsDocumentBodies, True);
 end;

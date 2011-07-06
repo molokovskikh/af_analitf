@@ -438,6 +438,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentHeadersLocalWriteTime: TDateTimeField
       FieldName = 'LocalWriteTime'
     end
+    object adsDocumentHeadersInvoiceNumber: TStringField
+      FieldName = 'InvoiceNumber'
+    end
+    object adsDocumentHeadersAmount: TFloatField
+      FieldName = 'Amount'
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders

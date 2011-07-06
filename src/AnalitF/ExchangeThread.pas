@@ -49,7 +49,8 @@ TUpdateTable = (
   utDocumentBodies,
   utSupplierPromotions,
   utPromotionCatalogs,
-  utCurrentOrderHeads
+  utCurrentOrderHeads,
+  utInvoiceHeaders
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -1383,6 +1384,7 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\SupplierPromotions.txt') > 0) then UpdateTables := UpdateTables + [utSupplierPromotions];
   if (GetFileSize(RootFolder()+SDirIn+'\PromotionCatalogs.txt') > 0) then UpdateTables := UpdateTables + [utPromotionCatalogs];
   if (GetFileSize(RootFolder()+SDirIn+'\CurrentOrderHeads.txt') > 0) then UpdateTables := UpdateTables + [utCurrentOrderHeads];
+  if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then UpdateTables := UpdateTables + [utInvoiceHeaders];
 
 
     //обновляем таблицы
@@ -2180,7 +2182,7 @@ begin
   then
     ImportDownloadOrders;
 
-  if (utDocumentHeaders in UpdateTables) or (utDocumentBodies in UpdateTables)
+  if (utDocumentHeaders in UpdateTables) or (utDocumentBodies in UpdateTables) or (utInvoiceHeaders in UpdateTables)
   then
     ImportDocs;
 
@@ -3489,11 +3491,31 @@ begin
       '    Id, DocumentId, Product, Code, Certificates, Period, Producer, ' +
       '    Country, ProducerCost, RegistryCost, SupplierPriceMarkup, ' +
       '    SupplierCostWithoutNDS, SupplierCost, Quantity, VitallyImportant, ' +
-      '    NDS, SerialNumber, Amount, NdsAmount ' +
+      '    NDS, SerialNumber, Amount, NdsAmount, Unit, ExciseTax, ' +
+      '    BillOfEntryNumber, EAN13 ' +
       ' ) ' +
       'set Printed = 1;',
       [InputFileName,
        'DocumentBodies']);
+    DM.adcUpdate.Execute;
+  end;
+  
+  if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then begin
+    InputFileName := StringReplace(RootFolder()+SDirIn+'\InvoiceHeaders.txt', '\', '/', [rfReplaceAll]);
+    DM.adcUpdate.Close;
+    DM.adcUpdate.SQL.Text :=
+      Format(
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
+      ' ( ' +
+      '    Id, InvoiceNumber, InvoiceDate, SellerName, SellerAddress, ' +
+      '    SellerINN, SellerKPP, ShipperInfo, ConsigneeInfo, PaymentDocumentInfo, ' +
+      '    BuyerName, BuyerAddress, BuyerINN, BuyerKPP, ' +
+      '    AmountWithoutNDS0, AmountWithoutNDS10, NDSAmount10, Amount10, ' +
+      '    AmountWithoutNDS18, NDSAmount18, Amount18, ' +
+      '    AmountWithoutNDS, NDSAmount, Amount ' +
+      ' ); ',
+      [InputFileName,
+       'InvoiceHeaders']);
     DM.adcUpdate.Execute;
   end;
 end;

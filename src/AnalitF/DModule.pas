@@ -2437,6 +2437,7 @@ begin
       if ImportDocs then begin
         DatabaseController.BackupDataTable(doiDocumentHeaders);
         DatabaseController.BackupDataTable(doiDocumentBodies);
+        DatabaseController.BackupDataTable(doiInvoiceHeaders);
       end;
 
       //Если суммарное кол-во открываемых файлов больше 5, то открываем только папки
