@@ -325,7 +325,7 @@ begin
       if VitallyEdit and CanClose then begin
         if mdMarkups.RecordCount < 3 then begin
           CanClose := False;
-          AProc.MessageBox('Ќе заданны об€зательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
+          AProc.MessageBox('Ќе заданы об€зательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
         end
         else begin
           mdMarkups.First;
@@ -339,7 +339,7 @@ begin
             end;
           end;
           if not CanClose then
-            AProc.MessageBox('Ќе заданны об€зательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
+            AProc.MessageBox('Ќе заданы об€зательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
         end;
       end;
     end;
