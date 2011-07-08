@@ -8,7 +8,9 @@ uses
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, DocumentTypes,
   FR_DSet, FR_DBSet, Buttons, FR_Class,
   Menus,
-  U_frameBaseLegend;
+  U_frameBaseLegend,
+  WaybillReportParams,
+  U_WaybillPrintSettingsForm;
 
 const
   NDSNullValue = 'нет значений';
@@ -125,6 +127,8 @@ type
     NeedCalcFieldsLog : Boolean;
 
     legeng : TframeBaseLegend;
+
+    internalWaybillReportParams : TWaybillReportParams;
 
     procedure SetParams;
     procedure PrepareGrid;
@@ -1155,7 +1159,18 @@ end;
 
 procedure TDocumentBodiesForm.sbPrintWaybillClick(Sender: TObject);
 begin
-  DoActionOnPrinted(PrintWaybill);
+  WaybillPrintSettingsForm := TWaybillPrintSettingsForm.Create(Application);
+  try
+    WaybillPrintSettingsForm.UpdateParams(
+      adsDocumentHeadersProviderDocumentId.AsString,
+      adsDocumentHeadersLocalWriteTime.AsDateTime);
+    if WaybillPrintSettingsForm.ShowModal = mrOk then begin
+      internalWaybillReportParams := WaybillPrintSettingsForm.WaybillReportParams;
+      DoActionOnPrinted(PrintWaybill);
+    end;
+  finally
+    FreeAndNil(WaybillPrintSettingsForm);
+  end;
 end;
 
 procedure TDocumentBodiesForm.sbPrintInvoiceClick(Sender: TObject);
@@ -1638,8 +1653,8 @@ begin
 
   frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
-  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
-  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+  frVariables[ 'ProviderDocumentId'] := internalWaybillReportParams.WaybillNumber;
+  frVariables[ 'DocumentDate'] := DateToStr(internalWaybillReportParams.WaybillDate);
 
   frVariables[ 'ReestrNumber'] := '17';
   frVariables[ 'ReestrAppend'] := '5';
@@ -1653,6 +1668,11 @@ begin
 
   frVariables[ 'TotalSupplierSumm'] := totatSupplierSumm;
   frVariables[ 'TotalSupplierSummText'] := AnsiLowerCase(MoneyToString(totatSupplierSumm, True, False));
+
+  frVariables[ 'ByWhomName'] := internalWaybillReportParams.ByWhomName;
+  frVariables[ 'RequestedName'] := internalWaybillReportParams.RequestedName;
+  frVariables[ 'ServeName'] := internalWaybillReportParams.ServeName;
+  frVariables[ 'ReceivedName'] := internalWaybillReportParams.ReceivedName;
 
   DM.ShowFastReportWithSave('Waybill.frf', adsDocumentBodies, True);
 end;

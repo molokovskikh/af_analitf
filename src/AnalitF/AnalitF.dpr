@@ -150,7 +150,10 @@ uses
   DayOfWeekHelper in '..\Common\Helpers\DayOfWeekHelper.pas',
   DayOfWeekDelaysController in 'BusinessLogic\DayOfWeekDelaysController.pas',
   InternalRepareOrdersController in 'BusinessLogic\InternalRepareOrdersController.pas',
-  DBViewHelper in 'Helpers\DBViewHelper.pas';
+  DBViewHelper in 'Helpers\DBViewHelper.pas',
+  U_PrintSettingsForm in 'Views\U_PrintSettingsForm.pas' {PrintSettingsForm},
+  U_WaybillPrintSettingsForm in 'Views\U_WaybillPrintSettingsForm.pas' {WaybillPrintSettingsForm},
+  WaybillReportParams in '..\Common\GlobalParams\WaybillReportParams.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}
