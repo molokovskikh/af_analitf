@@ -411,7 +411,9 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', 20);
 
   //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean then
+  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
+     and DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean
+  then
     column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена поставщика', 30);
   //column.Visible := False;
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
@@ -466,7 +468,9 @@ begin
   column := TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerName', 'Кат.производитель', 0);
   column.Visible := False;
   TDBGridHelper.AddColumn(dbgOrderBatch, 'PriceName', 'Прайс-лист', 0);
-  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean then
+  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
+    and DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean
+  then
     TDBGridHelper.AddColumn(dbgOrderBatch, 'RealCost', 'Цена поставщика', '0.00;;''''', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'Cost', 'Цена', '0.00;;''''', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'OrderCount', 'Заказ', 0);

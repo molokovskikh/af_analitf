@@ -697,7 +697,9 @@ begin
     realCostColumn.Title.Caption := 'Цена поставщика';
     realCostColumn.Width := Grid.Canvas.TextWidth('0000.00');
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-    if not DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean then
+    if not DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
+      or not DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean
+    then
       Grid.Columns.Delete(realCostColumn.Index)
     else
       //Если же механизм включен, то колонка должна отображаться по умолчанию
