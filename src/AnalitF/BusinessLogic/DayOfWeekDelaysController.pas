@@ -41,7 +41,7 @@ var
 begin
   Result := False;
   if not dataLayer.adtClients.IsEmpty
-    and dataLayer.adtClientsAllowDelayOfPayment.Value
+    and dataLayer.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
     and not dataLayer.adtParams.FieldByName( 'UpdateDateTime').IsNull
     and (Date() > dataLayer.adtParams.FieldByName( 'UpdateDateTime').AsDateTime)
   then begin
@@ -109,11 +109,9 @@ begin
     //Пытаем получить код "основного" клиента
     //Если не null, то для основного клиента включен механизм отсрочек
     MainClientIdAllowDelayOfPayment := DM.QueryValue(''
-      +'select Clients.ClientId '
-      +'from   Clients, '
-      +'       Userinfo '
-      +'where  (Clients.CLIENTID = Userinfo.ClientId) '
-      +'   and (Clients.AllowDelayOfPayment = 1)',
+      +'select Client.Id '
+      +'from   Client '
+      +'where  (Client.AllowDelayOfPayment = 1) ',
       [],
       []);
     SQL.Text := ''
@@ -244,11 +242,9 @@ begin
     //Пытаем получить код "основного" клиента
     //Если не null, то для основного клиента включен механизм отсрочек
     MainClientIdAllowDelayOfPayment := DM.QueryValue(''
-      +'select Clients.ClientId '
-      +'from   Clients, '
-      +'       Userinfo '
-      +'where  (Clients.CLIENTID = Userinfo.ClientId) '
-      +'   and (Clients.AllowDelayOfPayment = 1)',
+      +'select Client.Id '
+      +'from   Client '
+      +'where  (Client.AllowDelayOfPayment = 1) ',
       [],
       []);
     if VarIsNull(MainClientIdAllowDelayOfPayment) then begin

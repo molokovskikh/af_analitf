@@ -1868,11 +1868,9 @@ begin
     //Пытаем получить код "основного" клиента
     //Если не null, то для основного клиента включен механизм отсрочек
     MainClientIdAllowDelayOfPayment := DM.QueryValue(''
-      +'select Clients.ClientId '
-      +'from   Clients, '
-      +'       Userinfo '
-      +'where  (Clients.CLIENTID = Userinfo.ClientId) '
-      +'   and (Clients.AllowDelayOfPayment = 1)',
+      +'select Client.Id '
+      +'from   Client '
+      +'where  (Client.AllowDelayOfPayment = 1) ',
       [],
       []);
     SQL.Text := ''
@@ -2094,11 +2092,9 @@ begin
     //Пытаем получить код "основного" клиента
     //Если не null, то для основного клиента включен механизм отсрочек
     MainClientIdAllowDelayOfPayment := DM.QueryValue(''
-      +'select Clients.ClientId '
-      +'from   Clients, '
-      +'       Userinfo '
-      +'where  (Clients.CLIENTID = Userinfo.ClientId) '
-      +'   and (Clients.AllowDelayOfPayment = 1)',
+      +'select Client.Id '
+      +'from   Client '
+      +'where  (Client.AllowDelayOfPayment = 1) ',
       [],
       []);
     if VarIsNull(MainClientIdAllowDelayOfPayment) then begin

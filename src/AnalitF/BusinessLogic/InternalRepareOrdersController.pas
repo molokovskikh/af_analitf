@@ -133,7 +133,7 @@ end;
 procedure TInternalRepareOrders.InternalRepareOrders;
 begin
   if not DM.adtClients.IsEmpty
-    and DM.adtClientsAllowDelayOfPayment.Value
+    and DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
   then begin
     DM.adcUpdate.SQL.Text := ''
 +' update '

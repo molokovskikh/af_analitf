@@ -404,7 +404,7 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', 20);
 
   //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-  if DM.adtClientsAllowDelayOfPayment.Value then
+  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean then
     column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена поставщика', 30);
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
   column.Font.Style := [fsBold];

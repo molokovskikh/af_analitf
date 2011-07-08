@@ -241,7 +241,6 @@ type
     adsOrderDetailsRealPrice: TFloatField;
     adsOrderDetailsSupplierPriceMarkup: TFloatField;
     adsRepareOrdersSupplierPriceMarkup: TFloatField;
-    adtClientsAllowDelayOfPayment: TBooleanField;
     adsOrderDetailsCoreQuantity: TStringField;
     adsOrderDetailsServerCoreID: TLargeintField;
     adsOrderDetailsUnit: TStringField;

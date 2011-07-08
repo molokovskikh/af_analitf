@@ -150,7 +150,6 @@ object DM: TDM
       ' CLIENTS.MAXUSERS,'
       ' CLIENTS.REQMASK,'
       ' CLIENTS.CALCULATELEADER,'
-      ' CLIENTS.AllowDelayOfPayment,'
       ' CLIENTS.SelfAddressId, '
       ' ClientSettings.ONLYLEADERS,'
       ' ClientSettings.Address,'
@@ -177,7 +176,6 @@ object DM: TDM
       ' CLIENTS.MAXUSERS,'
       ' CLIENTS.REQMASK,'
       ' CLIENTS.CALCULATELEADER,'
-      ' CLIENTS.AllowDelayOfPayment,'
       ' CLIENTS.SelfAddressId,'
       ' ClientSettings.ONLYLEADERS,'
       ' ClientSettings.Address,'
@@ -222,9 +220,6 @@ object DM: TDM
     end
     object adtClientsONLYLEADERS: TBooleanField
       FieldName = 'ONLYLEADERS'
-    end
-    object adtClientsAllowDelayOfPayment: TBooleanField
-      FieldName = 'AllowDelayOfPayment'
     end
     object adtClientsSelfAddressId: TStringField
       FieldName = 'SelfAddressId'
@@ -1167,7 +1162,8 @@ object DM: TDM
       '  client.ShowAdvertising,'
       '  client.SendWaybillsFromClient,'
       '  client.EnableSmartOrder,'
-      '  client.EnableImpersonalPrice'
+      '  client.EnableImpersonalPrice,'
+      '  client.AllowDelayOfPayment'
       'FROM'
       '  ('
       '  analitf.UserInfo,'

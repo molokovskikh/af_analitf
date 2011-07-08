@@ -829,7 +829,7 @@ var
   realPriceCoumn : TColumnEh;
   priceColumn : TColumnEh;
 begin
-  if DM.adtClientsAllowDelayOfPayment.Value then begin
+  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean then begin
     realPriceCoumn := ColumnByNameT(TToughDBGrid(grid), adsSummaryRealCost.FieldName);
     priceColumn := ColumnByNameT(TToughDBGrid(grid), adsSummaryCost.FieldName);
     if Assigned(realPriceCoumn) and Assigned(priceColumn) then begin
