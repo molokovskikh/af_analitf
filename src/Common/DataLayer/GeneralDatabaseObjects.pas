@@ -165,7 +165,8 @@ begin
 +'    `Addition`       varchar(50) default null       , ' 
 +'    `InheritPrices`  tinyint(1) not null default ''0'', '
 +'    `IsFutureClient` tinyint(1) not null default ''0'', '
-+'    `UseCorrectOrders` tinyint(1) not null default ''0''  '
++'    `UseCorrectOrders` tinyint(1) not null default ''0'',  '
++'    `ShowSupplierCost` tinyint(1) not null default ''1''  '
 +'  ) '
 + GetTableOptions();
 end;
@@ -192,6 +193,7 @@ begin
 +'    `SendWaybillsFromClient` tinyint(1) unsigned not null default ''0'', '
 +'    `EnableSmartOrder` tinyint(1) unsigned not null default ''0'', '
 +'    `EnableImpersonalPrice` tinyint(1) unsigned not null default ''0'', '
++'    `AllowDelayOfPayment` tinyint(1) not null default ''0'',  '
 +'    primary key (`Id`) '
 +'  ) ' 
 + GetTableOptions();
