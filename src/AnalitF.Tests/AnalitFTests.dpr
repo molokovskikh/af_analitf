@@ -4,7 +4,8 @@ uses
   Forms,
   TestFrameWork,
   GUITestRunner,
-  ExceptionClassTests in 'ExceptionClassTests.pas';
+  ExceptionClassTests in 'ExceptionClassTests.pas',
+  LoadDataTests in 'LoadDataTests.pas';
 
 {$R *.res}
 
