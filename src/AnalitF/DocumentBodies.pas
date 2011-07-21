@@ -1195,6 +1195,7 @@ begin
   LastId := adsDocumentBodiesId.Value;
   adsDocumentBodies.Close;
   adsDocumentBodies.RestoreSQL;
+  adsDocumentBodies.SetOrderBy('NDS;Product');
   adsDocumentBodies.Open;
   try
     PrintInvoice();
