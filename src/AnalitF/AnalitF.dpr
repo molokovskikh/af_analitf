@@ -153,7 +153,9 @@ uses
   DBViewHelper in 'Helpers\DBViewHelper.pas',
   U_PrintSettingsForm in 'Views\U_PrintSettingsForm.pas' {PrintSettingsForm},
   U_WaybillPrintSettingsForm in 'Views\U_WaybillPrintSettingsForm.pas' {WaybillPrintSettingsForm},
-  WaybillReportParams in '..\Common\GlobalParams\WaybillReportParams.pas';
+  WaybillReportParams in '..\Common\GlobalParams\WaybillReportParams.pas',
+  ReestrReportParams in '..\Common\GlobalParams\ReestrReportParams.pas',
+  U_ReestrPrintSettingsForm in 'Views\U_ReestrPrintSettingsForm.pas' {ReestrPrintSettingsForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}

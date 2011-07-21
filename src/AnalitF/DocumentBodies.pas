@@ -10,7 +10,9 @@ uses
   Menus,
   U_frameBaseLegend,
   WaybillReportParams,
-  U_WaybillPrintSettingsForm;
+  U_WaybillPrintSettingsForm,
+  ReestrReportParams,
+  U_ReestrPrintSettingsForm;
 
 const
   NDSNullValue = 'нет значений';
@@ -129,6 +131,7 @@ type
     legeng : TframeBaseLegend;
 
     internalWaybillReportParams : TWaybillReportParams;
+    internalReestrReportParams : TReestrReportParams;
 
     procedure SetParams;
     procedure PrepareGrid;
@@ -596,7 +599,18 @@ end;
 
 procedure TDocumentBodiesForm.sbPrintReestrClick(Sender: TObject);
 begin
-  DoActionOnPrinted(PrintReestr);
+  ReestrPrintSettingsForm := TReestrPrintSettingsForm.Create(Application);
+  try
+    ReestrPrintSettingsForm.UpdateParams(
+      adsDocumentHeadersProviderDocumentId.AsString,
+      adsDocumentHeadersLocalWriteTime.AsDateTime);
+    if ReestrPrintSettingsForm.ShowModal = mrOk then begin
+      internalReestrReportParams := ReestrPrintSettingsForm.ReestrReportParams;
+      DoActionOnPrinted(PrintReestr);
+    end;
+  finally
+    FreeAndNil(ReestrPrintSettingsForm);
+  end;
 end;
 
 procedure TDocumentBodiesForm.cbWaybillAsVitallyImportantClick(
@@ -1689,8 +1703,8 @@ begin
 
   frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
-  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
-  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+  frVariables[ 'ProviderDocumentId'] := internalReestrReportParams.ReestrNumber;
+  frVariables[ 'DocumentDate'] := DateToStr(internalReestrReportParams.ReestrDate);
 
   frVariables[ 'ReestrNumber'] := '17';
   frVariables[ 'ReestrAppend'] := '5';
@@ -1704,6 +1718,10 @@ begin
 
   frVariables[ 'TotalSupplierSumm'] := totatSupplierSumm;
   frVariables[ 'TotalSupplierSummText'] := AnsiLowerCase(MoneyToString(totatSupplierSumm, True, False));
+
+  frVariables[ 'CommitteeMember1'] := internalReestrReportParams.CommitteeMember1;
+  frVariables[ 'CommitteeMember2'] := internalReestrReportParams.CommitteeMember2;
+  frVariables[ 'CommitteeMember3'] := internalReestrReportParams.CommitteeMember3;
 
   DM.ShowFastReportWithSave('Reestr.frf', adsDocumentBodies, True);
 end;
