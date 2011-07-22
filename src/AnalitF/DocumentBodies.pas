@@ -985,7 +985,7 @@ begin
       Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * nonVitallyNDSMultiplier)
     else
     //По цене поставщика без НДС
-      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCostWithoutNDS.Value * nonVitallyNDSMultiplier);
+      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCost.Value);
   end;
 end;
 
@@ -1055,12 +1055,12 @@ begin
     end
     else begin
     //По цене поставщика без НДС
-      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesSupplierCostWithoutNDS.Value*nonVitallyNDSMultiplier*(markup/100);
+      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesSupplierCost.Value*(markup/100);
 
       if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
       then begin
         Result := RoundToOneDigit(Result);
-        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCostWithoutNDS.Value * nonVitallyNDSMultiplier);
+        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCost.Value);
       end;
     end;
   end;
