@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshOther
+    ActivePage = tshAuth
     MultiLine = True
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5415,24 +5415,13 @@ object ConfigForm: TConfigForm
             TabOrder = 0
             OnChange = dbeHTTPNameChange
           end
-          object dbeHTTPPass: TDBEdit
-            Left = 184
-            Top = 37
-            Width = 185
-            Height = 21
-            DataField = 'HTTPPass'
-            PasswordChar = '*'
-            TabOrder = 1
-            Visible = False
-          end
           object eHTTPPass: TEdit
             Left = 200
             Top = 37
             Width = 185
             Height = 21
             Anchors = [akTop, akRight]
-            PasswordChar = '*'
-            TabOrder = 2
+            TabOrder = 1
             Text = 'eHTTPPass'
             OnChange = eHTTPPassChange
           end

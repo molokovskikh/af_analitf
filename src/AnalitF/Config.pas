@@ -86,7 +86,6 @@ type
     Label4: TLabel;
     Label3: TLabel;
     dbeHTTPName: TDBEdit;
-    dbeHTTPPass: TDBEdit;
     eHTTPPass: TEdit;
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
