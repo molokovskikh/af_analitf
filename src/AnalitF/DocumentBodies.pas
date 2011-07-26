@@ -86,6 +86,12 @@ type
     cbNDS: TComboBox;
     adsDocumentHeadersInvoiceNumber: TStringField;
     adsDocumentHeadersAmount: TFloatField;
+    adsDocumentBodiesUnit: TStringField;
+    adsDocumentBodiesExciseTax: TFloatField;
+    adsDocumentBodiesBillOfEntryNumber: TStringField;
+    adsDocumentBodiesEAN13: TStringField;
+    adsInvoiceHeaders: TMyQuery;
+    dsInvoiceHeaders: TDataSource;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -226,6 +232,9 @@ begin
   adsDocumentHeaders.Close;
   adsDocumentHeaders.ParamByName('DocumentId').Value := FDocumentId;
   adsDocumentHeaders.Open;
+  adsInvoiceHeaders.Close;
+  adsInvoiceHeaders.ParamByName('DocumentId').Value := FDocumentId;
+  adsInvoiceHeaders.Open;
   adsDocumentBodies.Close;
   adsDocumentBodies.RestoreSQL;
   PrepareGrid;

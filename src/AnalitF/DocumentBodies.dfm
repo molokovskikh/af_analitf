@@ -554,6 +554,19 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesNdsAmount: TFloatField
       FieldName = 'NdsAmount'
     end
+    object adsDocumentBodiesUnit: TStringField
+      FieldName = 'Unit'
+      Size = 0
+    end
+    object adsDocumentBodiesExciseTax: TFloatField
+      FieldName = 'ExciseTax'
+    end
+    object adsDocumentBodiesBillOfEntryNumber: TStringField
+      FieldName = 'BillOfEntryNumber'
+    end
+    object adsDocumentBodiesEAN13: TStringField
+      FieldName = 'EAN13'
+    end
   end
   object tmrPrintedChange: TTimer
     Enabled = False
@@ -561,5 +574,27 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     OnTimer = tmrPrintedChangeTimer
     Left = 320
     Top = 167
+  end
+  object adsInvoiceHeaders: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'select'
+      ' *'
+      'from'
+      '  invoiceheaders '
+      'where'
+      '  Id = :DocumentId')
+    Left = 272
+    Top = 251
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'DocumentId'
+      end>
+  end
+  object dsInvoiceHeaders: TDataSource
+    DataSet = adsDocumentHeaders
+    Left = 272
+    Top = 219
   end
 end
