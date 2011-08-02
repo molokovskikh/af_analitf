@@ -8,6 +8,7 @@ uses
   Classes,
   Variants,
   Contnrs,
+  AProc,
   DatabaseObjects,
   DModule,
   U_ExchangeLog,
@@ -182,13 +183,15 @@ begin
     else
       ShowSQLWaiting(InternalRepareOrders, 'ѕроисходит пересчет заказов');
 
-    { если не нашли что-то, то выводим сообщение }
-    if (Strings.Count > 0) and (Length(Strings.Text) > 0) then begin
-      if RestoreAfterOpen then
-        WriteExchangeLog('RestoreOrders', '¬осстановленные заказы после открыти€ программы:'#13#10 + Strings.Text)
-      else begin
-        WriteExchangeLog('RestoreOrders', '¬осстановленные заказы после обновлени€:'#13#10 + Strings.Text);
-        ShowCorrectOrders(False);
+    if not SilentMode then begin
+      { если не нашли что-то, то выводим сообщение }
+      if (Strings.Count > 0) and (Length(Strings.Text) > 0) then begin
+        if RestoreAfterOpen then
+          WriteExchangeLog('RestoreOrders', '¬осстановленные заказы после открыти€ программы:'#13#10 + Strings.Text)
+        else begin
+          WriteExchangeLog('RestoreOrders', '¬осстановленные заказы после обновлени€:'#13#10 + Strings.Text);
+          ShowCorrectOrders(False);
+        end;
       end;
     end;
 
