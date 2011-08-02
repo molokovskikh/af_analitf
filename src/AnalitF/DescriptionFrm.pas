@@ -70,8 +70,12 @@ begin
     Name := dataSet.FieldByName('Name').AsString;
     EnglishName := dataSet.FieldByName('EnglishName').AsString;
 
+    FDescriptionForm.ControlStyle := FDescriptionForm.ControlStyle - [csParentBackground] + [csOpaque];
+    FDescriptionForm.pButton.ControlStyle := FDescriptionForm.pButton.ControlStyle - [csParentBackground] + [csOpaque];
+
     RichEd := TRxRichEdit.Create(FDescriptionForm);
     RichEd.Parent := FDescriptionForm;
+    RichEd.ControlStyle := RichEd.ControlStyle - [csParentBackground] + [csOpaque];
     RichEd.Align := alClient;
     RichEd.OnKeyDown := FDescriptionForm.reDescriptionKeyDown;
     RichEd.ReadOnly := True;
