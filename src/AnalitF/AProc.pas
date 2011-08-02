@@ -112,6 +112,7 @@ function RemoveDirectory(const Dir : String) : LongBool;
 
 function GetDirectorySize(const Dir : String): Int64;
 function FormatByteSize(const bytes: Int64): String;
+function FormatSpeedSize(bytes: Int64): String;
 
 function RootFolder() : String;
 
@@ -1202,6 +1203,26 @@ begin
         Result := FormatFloat('#.## ÊÁ', bytes / KB)
       else
         Result := FormatFloat('#.## Áאיע', bytes) ;
+end;
+
+function FormatSpeedSize(bytes: Int64): String;
+const
+  B = 1; //byte
+  KB = 1024 * B; //kilobyte
+  MB = 1024 * KB; //megabyte
+  GB = 1024 * MB; //gigabyte
+begin
+  bytes := bytes * 8; 
+  if bytes > GB then
+    Result := FormatFloat('#.## Ãב/ס', bytes / GB)
+  else
+    if bytes > MB then
+      Result := FormatFloat('#.## Ìב/ס', bytes / MB)
+    else
+      if bytes > KB then
+        Result := FormatFloat('#.## Êב/ס', bytes / KB)
+      else
+        Result := FormatFloat('#.## בטע/ס', bytes) ;
 end;
 
 function RootFolder() : String;

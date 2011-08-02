@@ -867,6 +867,11 @@ const
 var
   ErrorCount : Integer;
   PostSuccess : Boolean;
+  StartFilePosition,
+  Speed : Int64;
+  DownSecs : Double;
+  StartDownTime,
+  EndDownTime : TDateTime;
 begin
   //загрузка прайс-листа
   if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
@@ -901,6 +906,8 @@ begin
       Progress := 0;
       Synchronize( SetProgress );
 
+      StartDownTime := Now();
+      StartFilePosition := FileStream.Position;
       try
 
         ErrorCount := 0;
@@ -966,6 +973,21 @@ begin
 
       finally
         ExchangeForm.HTTP.OnWork := nil;
+        try
+          EndDownTime := Now();
+          Speed := FileStream.Size - StartFilePosition;
+          DownSecs := (EndDownTime - StartDownTime) * SecsPerDay;
+          if DownSecs >= 1 then
+            Speed := Round(Speed / DownSecs)
+          else
+            Speed := Round(Speed * DownSecs);
+          WriteExchangeLog('Exchange', 'Скорость загрузки файла: ' + FormatSpeedSize(Speed));
+        except
+          on CalcException : Exception do begin
+            WriteExchangeLog('DoExchange', 'Ошибка при вычислении скорости: ' + CalcException.Message);
+          end;
+        end;
+
       end;
 
       Synchronize( ExchangeForm.CheckStop);
