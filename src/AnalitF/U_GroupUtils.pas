@@ -208,7 +208,7 @@ begin
         case ColorIndex of
           0 : CurrElem.SelectedColor := clWhite;
           else
-              CurrElem.SelectedColor := $000ec9ff;//clSkyBlue; RGB = (255, 201, 14) => BGR
+              CurrElem.SelectedColor := $000078a0;//clSkyBlue; RGB = (160, 120, 0) => BGR = (00, 120, 160) 
         end;
       end;
     end;

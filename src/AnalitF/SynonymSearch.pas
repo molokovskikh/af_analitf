@@ -465,8 +465,7 @@ begin
       then begin
         ColorIndex := adsCoreColorIndex.AsInteger;
         if ColorIndex mod 2 = 0 then
-          Background := $000ec9ff; //clSkyBlue;
-        //Background := SortElem(SortList.Objects[ SortList.IndexOf(adsCoreCOREID.AsString)]).SelectedColor;
+          Background := $000078a0; //clSkyBlue;
       end;
 
       if adsCoreVITALLYIMPORTANT.AsBoolean then
