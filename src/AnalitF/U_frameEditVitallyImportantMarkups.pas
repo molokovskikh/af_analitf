@@ -22,6 +22,7 @@ type
     procedure CreateVisibleComponents;
     procedure AddEditButtonsPanel;
     procedure AddGridPanel;
+    procedure AddCheckBoxPanel;
 
     procedure MarkupsGetCellParams(
       Sender: TObject;
@@ -64,6 +65,9 @@ type
     fMaxSupplierMarkup : TCurrencyField;
 
     dsMarkups : TDataSource;
+
+    pCheckBox : TPanel;
+    cbUseNds : TCheckBox;
 
     constructor CreateFrame(
       AOwner: TComponent;
@@ -254,6 +258,8 @@ begin
 end;
 
 procedure TframeEditVitallyImportantMarkups.CreateVisibleComponents;
+var
+  maxWidth : Integer;
 begin
   pClient := TPanel.Create(Self);
   pClient.Parent := Self;
@@ -262,9 +268,15 @@ begin
 
   AddEditButtonsPanel;
 
+  if VitallyEdit then
+    AddCheckBoxPanel;
+
   AddGridPanel;
 
-  Self.Width := pEditButtons.Width + TDBGridHelper.GetColumnWidths(dbgMarkups) + 20;
+  maxWidth := pEditButtons.Width + TDBGridHelper.GetColumnWidths(dbgMarkups) + 20;
+  if VitallyEdit and (maxWidth < cbUseNds.Width + 40) then
+    maxWidth := cbUseNds.Width + 40;
+  Self.Width := maxWidth;
   Self.Height := pClient.Height;
   Self.Constraints.MinHeight := Self.Height;
   Self.Constraints.MinWidth := Self.Width;
@@ -464,6 +476,28 @@ destructor TframeEditVitallyImportantMarkups.Destroy;
 begin
   FMarkups.Free;
   inherited;
+end;
+
+procedure TframeEditVitallyImportantMarkups.AddCheckBoxPanel;
+begin
+  //  pClient.Height := lBreakingExistsInfo.Top + lBreakingExistsInfo.Height + 10;
+  //  pEditButtons.Height := pClient.Height;
+
+  pClient.Height := pClient.Height + 40;
+
+  pCheckBox := TPanel.Create(Self);
+  pCheckBox.Parent := pClient;
+  pCheckBox.Height := 40;
+  pCheckBox.Align := alBottom;
+  pCheckBox.Caption := '';
+  pCheckBox.BevelOuter := bvNone;
+
+  cbUseNds := TCheckBox.Create(Self);
+  cbUseNds.Parent := pCheckBox;
+  cbUseNds.Left := 5;
+  cbUseNds.Top := 15;
+  cbUseNds.Caption := 'Использовать цену завода с НДС при определении ценового диапазона';
+  cbUseNds.Width := lLeftLessRightColor.Canvas.TextWidth(cbUseNds.Caption) + 30;
 end;
 
 end.
