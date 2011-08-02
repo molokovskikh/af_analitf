@@ -145,6 +145,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TSchedulesTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -803,6 +809,27 @@ begin
 + GetTableOptions();
 end;
 
+{ TSchedulesTable }
+
+constructor TSchedulesTable.Create;
+begin
+  FName := 'schedules';
+  FObjectId := doiSchedules;
+  FRepairType := dortCumulative;
+end;
+
+function TSchedulesTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'  `Hour` int NOT NULL DEFAULT ''0'', '
++'  `Minute` int NOT NULL DEFAULT ''0'', '
++'  PRIMARY KEY (`Id`) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TUserInfoTable.Create());
   DatabaseController.AddObject(TClientTable.Create());
@@ -833,5 +860,7 @@ initialization
 
   DatabaseController.AddObject(TSupplierPromotionsTable.Create());
   DatabaseController.AddObject(TPromotionCatalogsTable.Create());
+
+  DatabaseController.AddObject(TSchedulesTable.Create());
 end.
 

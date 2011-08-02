@@ -59,7 +59,13 @@ type
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
-  end;  
+  end;
+
+  TUserActionLogsDataTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
 
 implementation
 
@@ -298,6 +304,30 @@ begin
 + GetTableOptions()
 end;
 
+{ TUserActionLogsDataTable }
+
+constructor TUserActionLogsDataTable.Create;
+begin
+  FName := 'useractionlogs';
+  FObjectId := doiUserActionLogs;
+  FRepairType := dortIgnore;
+end;
+
+function TUserActionLogsDataTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `Id` bigint(20) not null AUTO_INCREMENT,   '
++'  `LogTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
++'  `UserActionId` bigint(20) NOT NULL, '
++'  `Context` varchar(255) DEFAULT NULL, '
++'  primary key (`Id`), '
++'  KEY (`LogTime`) '
++'  ) '
++ GetTableOptions()
+end;
+
 initialization
   DatabaseController.AddObject(TPricesRegionalDataUpTable.Create());
   DatabaseController.AddObject(TTmpClientsTable.Create());
@@ -308,4 +338,5 @@ initialization
   DatabaseController.AddObject(TTmpPricesRegionalDataTable.Create());
   DatabaseController.AddObject(TBatchReportDataTable.Create());
   DatabaseController.AddObject(TBatchReportServiceFieldsDataTable.Create());
+  DatabaseController.AddObject(TUserActionLogsDataTable.Create());
 end.

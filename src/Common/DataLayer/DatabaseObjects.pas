@@ -19,7 +19,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 79;
+  CURRENT_DB_VERSION = 80;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -121,7 +121,11 @@ type
     doiSupplierPromotions,
     doiPromotionCatalogs,
     //Backup
-    doiInvoiceHeaders);
+    doiInvoiceHeaders,
+    //Ignore
+    doiUserActionLogs,
+    //Cumulative
+    doiSchedules);
 
   TRepairedObjects = set of TDatabaseObjectId;
 
