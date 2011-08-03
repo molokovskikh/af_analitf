@@ -84,8 +84,6 @@ type
     adsDocumentBodiesNdsAmount: TFloatField;
     lNDS: TLabel;
     cbNDS: TComboBox;
-    adsDocumentHeadersInvoiceNumber: TStringField;
-    adsDocumentHeadersAmount: TFloatField;
     adsDocumentBodiesUnit: TStringField;
     adsDocumentBodiesExciseTax: TFloatField;
     adsDocumentBodiesBillOfEntryNumber: TStringField;
@@ -1646,9 +1644,6 @@ begin
   frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
   frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
 
-  frVariables[ 'ReestrNumber'] := '17';
-  frVariables[ 'ReestrAppend'] := '5';
-
   frVariables[ 'Director'] := DM.adtClientsDirector.AsString;
   frVariables[ 'DeputyDirector'] := DM.adtClientsDeputyDirector.AsString;
   frVariables[ 'Accountant'] := DM.adtClientsAccountant.AsString;
@@ -1656,11 +1651,41 @@ begin
   frVariables[ 'TotalRetailSumm'] := totalRetailSumm;
   frVariables[ 'TotalRetailSummText'] := AnsiLowerCase(MoneyToString(totalRetailSumm, True, False));
 
-  frVariables[ 'Получатель'] := '';
-  frVariables[ 'АдресПолучателя'] := '';
+  frVariables[ 'InvoiceNumber'] := adsInvoiceHeaders['InvoiceNumber'];
+  frVariables[ 'InvoiceDate'] := adsInvoiceHeaders['InvoiceDate'];
 
-  frVariables[ 'InvoiceNumber'] := adsDocumentHeadersInvoiceNumber.AsString;
-  frVariables[ 'Amount'] := adsDocumentHeadersAmount.AsString;
+  frVariables[ 'SellerName'] := adsInvoiceHeaders['SellerName'];
+  frVariables[ 'SellerAddress'] := adsInvoiceHeaders['SellerAddress'];
+  frVariables[ 'SellerINN'] := adsInvoiceHeaders['SellerINN'];
+  frVariables[ 'SellerKPP'] := adsInvoiceHeaders['SellerKPP'];
+
+  frVariables[ 'ShipperInfo'] := adsInvoiceHeaders['ShipperInfo'];
+  frVariables[ 'ConsigneeInfo'] := adsInvoiceHeaders['ConsigneeInfo'];
+  frVariables[ 'PaymentDocumentInfo'] := adsInvoiceHeaders['PaymentDocumentInfo'];
+
+  frVariables[ 'BuyerName'] := adsInvoiceHeaders['BuyerName'];
+  frVariables[ 'BuyerAddress'] := adsInvoiceHeaders['BuyerAddress'];
+  frVariables[ 'BuyerINN'] := adsInvoiceHeaders['BuyerINN'];
+  frVariables[ 'BuyerKPP'] := adsInvoiceHeaders['BuyerKPP'];
+
+  frVariables[ 'BuyerName'] := adsInvoiceHeaders['BuyerName'];
+  frVariables[ 'BuyerAddress'] := adsInvoiceHeaders['BuyerAddress'];
+  frVariables[ 'BuyerINN'] := adsInvoiceHeaders['BuyerINN'];
+  frVariables[ 'BuyerKPP'] := adsInvoiceHeaders['BuyerKPP'];
+
+  frVariables[ 'AmountWithoutNDS0'] := adsInvoiceHeaders['AmountWithoutNDS0'];
+
+  frVariables[ 'AmountWithoutNDS10'] := adsInvoiceHeaders['AmountWithoutNDS10'];
+  frVariables[ 'NDSAmount10'] := adsInvoiceHeaders['NDSAmount10'];
+  frVariables[ 'Amount10'] := adsInvoiceHeaders['Amount10'];
+
+  frVariables[ 'AmountWithoutNDS18'] := adsInvoiceHeaders['AmountWithoutNDS18'];
+  frVariables[ 'NDSAmount18'] := adsInvoiceHeaders['NDSAmount18'];
+  frVariables[ 'Amount18'] := adsInvoiceHeaders['Amount18'];
+
+  frVariables[ 'TotalAmountWithoutNDS'] := adsInvoiceHeaders['AmountWithoutNDS'];
+  frVariables[ 'TotalNDSAmount'] := adsInvoiceHeaders['NDSAmount'];
+  frVariables[ 'TotalAmount'] := adsInvoiceHeaders['Amount'];
 
   DM.ShowFastReportWithSave('Invoice.frf', adsDocumentBodies, True);
 end;
