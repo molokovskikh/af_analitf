@@ -143,6 +143,7 @@ type
   protected
     FOrdersForm: TOrdersForm;
     RestoreUnFrozenOrMoveToClient : Boolean;
+    RestoreFrozen : Boolean;
     InternalDestinationClientId : Integer;
     frameFilterAddresses : TframeFilterAddresses;
   public
@@ -400,6 +401,7 @@ end;
 procedure TOrdersHForm.MoveToPrice;
 begin
   RestoreUnFrozenOrMoveToClient := False;
+  RestoreFrozen := False;
   InternalDestinationClientId := 0;
   if adsOrdersHForm.IsEmpty or ( TabControl.TabIndex<>1) then Exit;
 
@@ -655,7 +657,7 @@ begin
       adsOrdersHForm.Bookmark := FSelectedRows[i];
 
       //Производим работу только с заявками текущего клиента
-      if adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value then
+      if not RestoreFrozen and (adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value) then
         Continue;
 
       //"Размораживаем" только замороженные заявки
@@ -693,10 +695,13 @@ begin
           SynonymFirmCrCode:=FOrdersForm.adsOrdersSynonymFirmCrCode.AsVariant;
 
           with adsCore do begin
-            if RestoreUnFrozenOrMoveToClient and (InternalDestinationClientId <> 0) then
-              ParamByName( 'ClientId').Value := InternalDestinationClientId
+            if RestoreFrozen then
+              ParamByName( 'ClientId').Value := adsOrdersHFormClientID.Value
             else
-              ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
+              if RestoreUnFrozenOrMoveToClient and (InternalDestinationClientId <> 0) then
+                ParamByName( 'ClientId').Value := InternalDestinationClientId
+              else
+                ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
             ParamByName( 'PriceCode').Value:=adsOrdersHFormPRICECODE.Value;
             ParamByName( 'RegionCode').Value:=adsOrdersHFormREGIONCODE.Value;
             ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
@@ -914,6 +919,7 @@ begin
 
         RestoreUnFrozenOrMoveToClient := True;
         InternalDestinationClientId := 0;
+        RestoreFrozen := True;
         Strings:=TStringList.Create;
         try
           ShowSQLWaiting(InternalMoveToPrice, 'Происходит "размороживание" заявок');
@@ -924,7 +930,7 @@ begin
               Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
               //Обрабатываем только "замороженные" заявки текущего клиента
               if adsOrdersHFormFrozen.Value
-                and (adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value)
+                //and (adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value)
               then
                 //удаляем только те "замороженные" заказы, по которым есть предложения
                 if OffersByPriceExists(adsOrdersHFormPRICECODE.Value, adsOrdersHFormREGIONCODE.Value) then 
@@ -981,6 +987,7 @@ begin
 
         RestoreUnFrozenOrMoveToClient := True;
         InternalDestinationClientId := DestinationClientId;
+        RestoreFrozen := False;
         Strings:=TStringList.Create;
         try
           ShowSQLWaiting(InternalMoveToPrice, 'Происходит перемещение заявок');
