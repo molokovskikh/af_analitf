@@ -12,7 +12,8 @@ uses
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   U_framePromotion,
   DayOfWeekHelper,
-  DBViewHelper;
+  DBViewHelper,
+  U_frameAutoComment;
 
 type
   TFilter=( filAll, filOrder, filLeader, filProducer);
@@ -189,6 +190,7 @@ type
     procedure PrepareDetailPromotions;
   public
     frameLegend : TframeLegend;
+    frameAutoComment : TframeAutoComment;
     procedure ShowForm(
       PriceCode: Integer;
       RegionCode: Int64;
@@ -229,6 +231,10 @@ begin
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
   TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
+
+  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, 1, pTop.Height, dbgCore);
+  frameAutoComment.Left := cbProducers.Left - frameAutoComment.Width - 5;
+  frameAutoComment.Anchors := cbProducers.Anchors;
 
   BM := TBitmap.Create;
 

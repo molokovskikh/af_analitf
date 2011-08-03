@@ -155,7 +155,8 @@ uses
   U_WaybillPrintSettingsForm in 'Views\U_WaybillPrintSettingsForm.pas' {WaybillPrintSettingsForm},
   WaybillReportParams in '..\Common\GlobalParams\WaybillReportParams.pas',
   ReestrReportParams in '..\Common\GlobalParams\ReestrReportParams.pas',
-  U_ReestrPrintSettingsForm in 'Views\U_ReestrPrintSettingsForm.pas' {ReestrPrintSettingsForm};
+  U_ReestrPrintSettingsForm in 'Views\U_ReestrPrintSettingsForm.pas' {ReestrPrintSettingsForm},
+  U_frameAutoComment in 'Views\U_frameAutoComment.pas' {frameAutoComment: TFrame};
 
 {$R *.RES}
 {$R EraserDLL.RES}

@@ -401,6 +401,9 @@ type
     SerEnd : String;
     SaveGridMask : Integer;
     GlobalExclusiveParams : TExclusiveParams;
+    
+    AutoComment : String;
+
     procedure CompactDataBase();
     procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
       APreview: boolean = False; PrintDlg: boolean = True);
@@ -546,7 +549,14 @@ type
       SQL : String;
       Params: array of string;
       Values: array of Variant) : String;
-    procedure CheckNewNetworkVersion;  
+    procedure CheckNewNetworkVersion;
+
+    function AllowAutoComment : Boolean;
+    procedure UpdateComment(
+      comment : String;
+      OrderId : Int64;
+      CoreId : Variant);
+
   end;
 
 var
@@ -572,7 +582,10 @@ uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      LU_Tracer, LU_MutexSystem, Config, U_ExchangeLog,
      U_DeleteDBThread, SQLWaiting, INFHelpers, PostWaybillsController,
      StartupHelper,
-     NetworkSettings;
+     NetworkSettings,
+     Core,
+     SynonymSearch,
+     CoreFirm;
 
 type
   TestMyDBThreadState = (
@@ -3243,7 +3256,9 @@ var
   OrderIdVariant : Variant;
   OrderIdFromListVariant : Variant;
   OldOrderIdFromListVariant : Variant;
+  tmpAllowAutoComment : Boolean;
 begin
+  tmpAllowAutoComment := AllowAutoComment();
   //Проверяем то, что есть заголовок заказа
   //Если его нет, то создаем
   if orderDataSet.FieldByName('ORDERSHORDERID').IsNull then begin
@@ -3379,6 +3394,12 @@ begin
     end;
     orderDataSet.FieldByName('ORDERSORDERID').Value := OrderId;
   end;
+
+  if tmpAllowAutoComment then
+    UpdateComment(
+      AutoComment,
+      orderDataSet.FieldByName('ORDERSORDERID').Value,
+      orderDataSet.FieldByName('Coreid').Value);
 end;
 
 procedure TDM.CheckDataIntegrity;
@@ -5206,6 +5227,48 @@ begin
   finally
     RollbackAF.Free;
   end;
+end;
+
+function TDM.AllowAutoComment: Boolean;
+begin
+  Result := (Length(AutoComment) > 0)
+  and ((MainForm.ActiveChild is TCoreForm)
+      or (MainForm.ActiveChild is TSynonymSearchForm)
+      or (MainForm.ActiveChild is TCoreFirmForm));
+end;
+
+procedure TDM.UpdateComment(comment: String; OrderId : Int64; CoreId: Variant);
+var
+  currentComment : Variant;
+  tmpCommet,
+  newComment : String;
+begin
+  currentComment := DM.QueryValue(''
++' select '
++'   Comment '
++' from '
++'   CurrentOrderLists '
++' where '
++'   OrderId = :OrderId  '
++'  and CoreId = :CoreId  '
++' limit 1 ',
+      ['OrderId', 'CoreId'],
+      [OrderId, CoreId]);
+
+   if VarIsNull(currentComment) or (not VarIsNull(currentComment) and (Length(currentComment) = 0))
+   then
+     newComment := AutoComment
+   else begin
+     tmpCommet := currentComment;
+     if AnsiPos(AutoComment, tmpCommet) = 0 then
+       newComment := tmpCommet + '/' + AutoComment
+     else
+       newComment := tmpCommet;
+   end;
+
+   MainConnection.ExecSQL(
+    'update CurrentOrderLists set `Comment` = :Comment where OrderId = :OrderId and CoreId = :CoreId',
+    [newComment, OrderId, CoreId]);
 end;
 
 initialization

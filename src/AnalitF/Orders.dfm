@@ -49,7 +49,7 @@ inherited OrdersForm: TOrdersForm
       Left = 1
       Top = 1
       Width = 791
-      Height = 223
+      Height = 183
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsOrders
@@ -177,6 +177,25 @@ inherited OrdersForm: TOrdersForm
         ReadOnly = True
         TabOrder = 0
         OnKeyDown = dbmMessageToKeyDown
+      end
+    end
+    object gbComment: TGroupBox
+      Left = 1
+      Top = 184
+      Width = 791
+      Height = 40
+      Align = alBottom
+      Caption = ' '#1050#1086#1084#1084#1077#1085#1090#1072#1088#1080#1081' '
+      TabOrder = 3
+      object dbmComment: TDBMemo
+        Left = 2
+        Top = 15
+        Width = 787
+        Height = 23
+        Align = alClient
+        DataField = 'Comment'
+        DataSource = dsOrders
+        TabOrder = 0
       end
     end
   end
@@ -477,14 +496,16 @@ inherited OrdersForm: TOrdersForm
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
       '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
       '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity),'
-      '  RetailCost = :RetailCost'
+      '  RetailCost = :RetailCost,'
+      '  Comment = :Comment'
       'WHERE'
       '  ID = :Old_ID')
     SQLRefresh.Strings = (
       'SELECT '
       '  CurrentOrderLists.Id, '
       '  CurrentOrderLists.ORDERCOUNT, '
-      '  CurrentOrderLists.RetailCost'
+      '  CurrentOrderLists.RetailCost,'
+      '  CurrentOrderLists.Comment'
       'FROM CurrentOrderLists'
       'WHERE'
       '    (CurrentOrderLists.ID = :ID)')
@@ -532,7 +553,8 @@ inherited OrdersForm: TOrdersForm
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    ol.Period,'
       '    Producers.Name as ProducerName,'
-      '    ol.RetailVitallyImportant'
+      '    ol.RetailVitallyImportant,'
+      '    ol.Comment'
       'FROM '
       '  CurrentOrderLists ol'
       '  left join products on products.productid = ol.productid'
@@ -721,6 +743,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
+    end
+    object adsOrdersComment: TStringField
+      FieldName = 'Comment'
     end
   end
   object ActionList: TActionList

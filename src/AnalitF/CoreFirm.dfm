@@ -53,9 +53,9 @@ object CoreFirmForm: TCoreFirmForm
   object dbgCore: TToughDBGrid
     Tag = 128
     Left = 0
-    Top = 65
+    Top = 70
     Width = 792
-    Height = 470
+    Height = 465
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsCore
@@ -331,13 +331,13 @@ object CoreFirmForm: TCoreFirmForm
     Left = 0
     Top = 0
     Width = 792
-    Height = 65
+    Height = 70
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
       792
-      65)
+      70)
     object lblRecordCount: TLabel
       Left = 510
       Top = 8
@@ -401,16 +401,16 @@ object CoreFirmForm: TCoreFirmForm
       Left = 0
       Top = 28
       Width = 792
-      Height = 37
+      Height = 42
       Align = alBottom
       BevelOuter = bvLowered
       TabOrder = 1
       DesignSize = (
         792
-        37)
+        42)
       object eSearch: TEdit
         Left = 1
-        Top = 8
+        Top = 11
         Width = 320
         Height = 21
         TabOrder = 0
@@ -429,7 +429,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       object cbProducers: TComboBox
         Left = 376
-        Top = 8
+        Top = 11
         Width = 412
         Height = 21
         Style = csDropDownList

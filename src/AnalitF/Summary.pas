@@ -103,6 +103,9 @@ type
     adsSummaryAddressName: TStringField;
     adsSummaryRetailCost: TFloatField;
     adsSummaryRetailVitallyImportant: TBooleanField;
+    gbComment: TGroupBox;
+    dbmComment: TDBMemo;
+    adsSummaryComment: TStringField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;

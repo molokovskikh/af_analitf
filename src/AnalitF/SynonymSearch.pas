@@ -10,7 +10,8 @@ uses
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   U_framePromotion,
   DayOfWeekHelper,
-  DBViewHelper;
+  DBViewHelper,
+  U_frameAutoComment;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -194,6 +195,7 @@ type
   public
     { Public declarations }
    frameLegend : TframeLegend;
+   frameAutoComment : TframeAutoComment;
   end;
 
 var
@@ -242,8 +244,11 @@ begin
   frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
-  
+
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
+
+  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, btnSelectPrices.Left + btnSelectPrices.Width + 5, pTop.Height div 2 + 15, dbgCore);
+  frameAutoComment.Top := pTop.Height - frameAutoComment.Height;
 
   if adsProducers.Active then
     adsProducers.Close;

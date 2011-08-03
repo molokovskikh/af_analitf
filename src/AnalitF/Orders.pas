@@ -94,6 +94,9 @@ type
     dbtDatePrice: TDBText;
     adsOrdersRetailCost: TFloatField;
     adsOrdersRetailVitallyImportant: TBooleanField;
+    adsOrdersComment: TStringField;
+    gbComment: TGroupBox;
+    dbmComment: TDBMemo;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;

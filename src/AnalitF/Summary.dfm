@@ -51,7 +51,7 @@ inherited SummaryForm: TSummaryForm
       Left = 0
       Top = 52
       Width = 792
-      Height = 250
+      Height = 210
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -427,7 +427,7 @@ inherited SummaryForm: TSummaryForm
       Left = 0
       Top = 52
       Width = 792
-      Height = 250
+      Height = 210
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -641,6 +641,25 @@ inherited SummaryForm: TSummaryForm
         TabOrder = 0
       end
     end
+    object gbComment: TGroupBox
+      Left = 0
+      Top = 262
+      Width = 792
+      Height = 40
+      Align = alBottom
+      Caption = ' '#1050#1086#1084#1084#1077#1085#1090#1072#1088#1080#1081' '
+      TabOrder = 5
+      object dbmComment: TDBMemo
+        Left = 2
+        Top = 15
+        Width = 788
+        Height = 23
+        Align = alClient
+        DataField = 'Comment'
+        DataSource = dsSummary
+        TabOrder = 0
+      end
+    end
   end
   object pWebBrowser: TPanel [2]
     Tag = 200
@@ -760,6 +779,7 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderLists.ServerQuantity,'
       '    CurrentOrderLists.RetailMarkup,'
       '    CurrentOrderLists.RetailCost,'
+      '    CurrentOrderLists.Comment,'
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -849,6 +869,7 @@ inherited SummaryForm: TSummaryForm
       '    PostedOrderLists.ServerQuantity,'
       '    PostedOrderLists.RetailMarkup,'
       '    PostedOrderLists.RetailCost,'
+      '    PostedOrderLists.Comment,'
       '    PostedOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -918,7 +939,8 @@ inherited SummaryForm: TSummaryForm
       '  OrderCount = :ORDERCOUNT,'
       '  DropReason = if(:ORDERCOUNT = 0, null, DropReason),'
       '  ServerCost = if(:ORDERCOUNT = 0, null, ServerCost),'
-      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity)'
+      '  ServerQuantity = if(:ORDERCOUNT = 0, null, ServerQuantity),'
+      '  Comment = :Comment'
       'where'
       '    OrderId = :ORDERSORDERID'
       'and CoreId  = :OLD_COREID')
@@ -968,6 +990,7 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderLists.ServerQuantity,'
       '    CurrentOrderLists.RetailMarkup,'
       '    CurrentOrderLists.RetailCost,'
+      '    CurrentOrderLists.Comment,'
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -1052,6 +1075,7 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderLists.ServerQuantity,'
       '    CurrentOrderLists.RetailMarkup,'
       '    CurrentOrderLists.RetailCost,'
+      '    CurrentOrderLists.Comment,'
       '    CurrentOrderHeads.SendResult,'
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
@@ -1269,6 +1293,9 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
+    end
+    object adsSummaryComment: TStringField
+      FieldName = 'Comment'
     end
   end
   object tmrFillReport: TTimer

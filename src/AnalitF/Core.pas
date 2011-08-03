@@ -14,7 +14,8 @@ uses
   U_frameContextReclame,
   U_framePromotion,
   DayOfWeekHelper,
-  DBViewHelper;
+  DBViewHelper,
+  U_frameAutoComment;
 
 const
   ALL_REGIONS = 'Все регионы';
@@ -218,6 +219,7 @@ type
     procedure SetCoreIndex();
   public
     frameLegend : TframeLegend;
+    frameAutoComment : TframeAutoComment;
     procedure ShowForm( AParentCode: Integer; AName, AForm: string; UseForms, NewSearch: Boolean); reintroduce;
     procedure Print( APreview: boolean = False); override;
     procedure ShowOrdersH;
@@ -258,6 +260,10 @@ begin
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
+
+  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, 1, pTop.Height, dbgCore);
+  frameAutoComment.Left := btnGroupUngroup.Left - frameAutoComment.Width - 5;
+  frameAutoComment.Anchors := btnGroupUngroup.Anchors;
 
   //frameContextReclame := TframeContextReclame.AddFrame(Self, dbgCore);
 
