@@ -7,6 +7,7 @@ uses
   Dialogs, Child, ExtCtrls, StdCtrls, DBCtrls, GridsEh, DBGridEh,
   ToughDBGrid, DB, MemDS, DBAccess, MyAccess, DModule, DocumentTypes,
   FR_DSet, FR_DBSet, Buttons, FR_Class,
+  RxMemDS,
   Menus,
   U_frameBaseLegend,
   WaybillReportParams,
@@ -136,6 +137,8 @@ type
 
     internalWaybillReportParams : TWaybillReportParams;
     internalReestrReportParams : TReestrReportParams;
+
+    mdReport : TRxMemoryData;
 
     procedure SetParams;
     procedure PrepareGrid;
@@ -1359,23 +1362,30 @@ procedure TDocumentBodiesForm.DoActionOnPrinted(Action: TThreadMethod);
 var
   LastId : Int64;
 begin
-  adsDocumentBodies.DisableControls;
-  LastId := adsDocumentBodiesId.Value;
-  adsDocumentBodies.Close;
-  adsDocumentBodies.RestoreSQL;
-  adsDocumentBodies.AddWhere('Printed = 1');
-  AddNDSFilter();
-  adsDocumentBodies.Open;
+  mdReport := TRxMemoryData.Create(Self);
   try
-    Action();
-  finally
+    adsDocumentBodies.DisableControls;
+    LastId := adsDocumentBodiesId.Value;
     adsDocumentBodies.Close;
     adsDocumentBodies.RestoreSQL;
+    adsDocumentBodies.AddWhere('Printed = 1');
     AddNDSFilter();
     adsDocumentBodies.Open;
-    if not adsDocumentBodies.Locate('Id', LastId, []) then
-      adsDocumentBodies.First;
-    adsDocumentBodies.EnableControls;
+    try
+      mdReport.CopyStructure(adsDocumentBodies);
+      mdReport.LoadFromDataSet(adsDocumentBodies, 0, lmAppend);
+    finally
+      adsDocumentBodies.Close;
+      adsDocumentBodies.RestoreSQL;
+      AddNDSFilter();
+      adsDocumentBodies.Open;
+      if not adsDocumentBodies.Locate('Id', LastId, []) then
+        adsDocumentBodies.First;
+      adsDocumentBodies.EnableControls;
+    end;
+    Action();
+  finally
+    mdReport.Free;
   end;
 end;
 
