@@ -1738,11 +1738,14 @@ begin
 
   frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
   frVariables[ 'ProviderName'] := adsDocumentHeadersProviderName.AsString;
-  frVariables[ 'ProviderDocumentId'] := internalReestrReportParams.ReestrNumber;
-  frVariables[ 'DocumentDate'] := DateToStr(internalReestrReportParams.ReestrDate);
+  frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
+  frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
 
   frVariables[ 'ReestrNumber'] := '17';
   frVariables[ 'ReestrAppend'] := '5';
+
+  frVariables[ 'ReestrNumberId'] := internalReestrReportParams.ReestrNumber;
+  frVariables[ 'ReestrDate'] := DateToStr(internalReestrReportParams.ReestrDate);
 
   frVariables[ 'Director'] := DM.adtClientsDirector.AsString;
   frVariables[ 'DeputyDirector'] := DM.adtClientsDeputyDirector.AsString;
