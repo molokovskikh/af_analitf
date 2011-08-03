@@ -1532,8 +1532,11 @@ begin
     frVariables['ProviderVisible'] := RackCardReportParams.ProviderVisible;
     frVariables['CostVisible'] := RackCardReportParams.CostVisible;
     frVariables['CertificatesVisible'] := RackCardReportParams.CertificatesVisible;
+    frVariables['DateOfReceiptVisible'] := RackCardReportParams.DateOfReceiptVisible;
 
-    DM.ShowFastReportWithSave('RackCard.frf', adsDocumentBodies, True);
+    DM.ShowFastReportWithSave(
+      IfThen(RackCardReportParams.RackCardSize = rcsStandart, 'RackCard.frf', 'BigRackCard.frf'),
+      adsDocumentBodies, True);
   finally
     RackCardReportParams.Free;
   end;

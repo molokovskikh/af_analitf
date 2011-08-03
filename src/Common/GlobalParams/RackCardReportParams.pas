@@ -8,6 +8,8 @@ uses
   GlobalParams;
 
 type
+  TRackCardSize = (rcsStandart, rcsBig);
+
   TRackCardReportParams = class(TGlobalParams)
    public
     ProductVisible : Boolean;
@@ -18,6 +20,9 @@ type
     ProviderVisible : Boolean;
     CostVisible : Boolean;
     CertificatesVisible : Boolean;
+    DateOfReceiptVisible : Boolean;
+
+    RackCardSize : TRackCardSize;
 
     DeleteUnprintableElemnts : Boolean;
     procedure ReadParams; override;
@@ -29,6 +34,8 @@ implementation
 { TRackCardReportParams }
 
 procedure TRackCardReportParams.ReadParams;
+var
+  rackCardSizeInt : Integer;
 begin
   ProductVisible := GetParamDef('RackCardReportProductVisible', True);
   ProducerVisible := GetParamDef('RackCardReportProducerVisible', True);
@@ -38,7 +45,10 @@ begin
   ProviderVisible := GetParamDef('RackCardReportProviderVisible', True);
   CostVisible := GetParamDef('RackCardReportCostVisible', True);
   CertificatesVisible := GetParamDef('RackCardReportCertificatesVisible', True);
+  DateOfReceiptVisible := GetParamDef('RackCardReportDateOfReceiptVisible', True);
   DeleteUnprintableElemnts := GetParamDef('RackCardReportDeleteUnprintableElemnts', False);
+  rackCardSizeInt := GetParamDef('RackCardReportRackCardSize', 0);
+  RackCardSize := TRackCardSize(rackCardSizeInt);
 end;
 
 procedure TRackCardReportParams.SaveParams;
@@ -51,7 +61,9 @@ begin
   SaveParam('RackCardReportProviderVisible', ProviderVisible);
   SaveParam('RackCardReportCostVisible', CostVisible);
   SaveParam('RackCardReportCertificatesVisible', CertificatesVisible);
+  SaveParam('RackCardReportDateOfReceiptVisible', DateOfReceiptVisible);
   SaveParam('RackCardReportDeleteUnprintableElemnts', DeleteUnprintableElemnts);
+  SaveParam('RackCardReportRackCardSize', Integer(RackCardSize));
   inherited;
 end;
 

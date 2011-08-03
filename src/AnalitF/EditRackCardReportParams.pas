@@ -32,7 +32,10 @@ type
     cbQuantity : TCheckBox;
     cbProvider : TCheckBox;
     cbCertificates : TCheckBox;
+    cbDateOfReceipt : TCheckBox;
     cbCost : TCheckBox;
+
+    cbRackCardSize : TComboBox;
 
     procedure CreateVisibleComponents;
     procedure AddBottomPanel;
@@ -116,12 +119,22 @@ begin
   pSettings.Caption := '';
   pSettings.BevelOuter := bvNone;
 
+  cbRackCardSize := TComboBox.Create(Self);
+  cbRackCardSize.Parent := pSettings;
+  cbRackCardSize.Style := csDropDownList;
+  cbRackCardSize.Items.Add('Стандартный размер');
+  cbRackCardSize.Items.Add('Большой размер');
+  cbRackCardSize.ItemIndex := Integer(RackCardReportParams.RackCardSize);
+  cbRackCardSize.Width := Self.Canvas.TextWidth('Стандартный размер') + 50;
+  cbRackCardSize.Left := 5;
+  cbRackCardSize.Top := 5;
+
   cbDeleteUnprintableElemnts := TCheckBox.Create(Self);
   cbDeleteUnprintableElemnts.Parent := pSettings;
   cbDeleteUnprintableElemnts.Caption := 'Удалять непечатаемые элементы';
   cbDeleteUnprintableElemnts.Width := Self.Canvas.TextWidth(cbDeleteUnprintableElemnts.Caption) + 50;
   cbDeleteUnprintableElemnts.Left := 5;
-  cbDeleteUnprintableElemnts.Top := 5;
+  cbDeleteUnprintableElemnts.Top := 5 + cbRackCardSize.Top + cbRackCardSize.Height;
   cbDeleteUnprintableElemnts.Checked := RackCardReportParams.DeleteUnprintableElemnts;
 
   gbColumns := TGroupBox.Create(Self);
@@ -138,7 +151,8 @@ begin
   cbQuantity := AddCheckBox(5 + cbPeriod.Top + cbPeriod.Height, 'Количество', RackCardReportParams.QuantityVisible);
   cbProvider := AddCheckBox(5 + cbQuantity.Top + cbQuantity.Height, 'Поставщик', RackCardReportParams.ProviderVisible);
   cbCertificates := AddCheckBox(5 + cbProvider.Top + cbProvider.Height, 'Номер сертификата', RackCardReportParams.CertificatesVisible);
-  cbCost := AddCheckBox(5 + cbCertificates.Top + cbCertificates.Height, 'Цена', RackCardReportParams.CostVisible);
+  cbDateOfReceipt := AddCheckBox(5 + cbCertificates.Top + cbCertificates.Height, 'Дата поступления', RackCardReportParams.DateOfReceiptVisible);
+  cbCost := AddCheckBox(5 + cbDateOfReceipt.Top + cbDateOfReceipt.Height, 'Цена', RackCardReportParams.CostVisible);
 
 
   gbColumns.Height := cbCost.Top + cbCost.Height + 20;
@@ -159,6 +173,7 @@ procedure TEditRackCardReportParamsForm.FormCloseQuery(Sender: TObject;
 begin
   if (ModalResult = mrOK) and CanClose
   then begin
+    RackCardReportParams.RackCardSize := TRackCardSize(cbRackCardSize.ItemIndex);
     RackCardReportParams.DeleteUnprintableElemnts := cbDeleteUnprintableElemnts.Checked;
 
     RackCardReportParams.ProductVisible := cbProduct.Checked;
@@ -169,6 +184,7 @@ begin
     RackCardReportParams.ProviderVisible := cbProvider.Checked;
     RackCardReportParams.CostVisible := cbCost.Checked;
     RackCardReportParams.CertificatesVisible := cbCertificates.Checked;
+    RackCardReportParams.DateOfReceiptVisible := cbDateOfReceipt.Checked;
   end;
 end;
 
