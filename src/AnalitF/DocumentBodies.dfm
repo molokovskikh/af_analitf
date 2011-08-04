@@ -2,6 +2,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   ActiveControl = dbgDocumentBodies
   Caption = #1044#1077#1090#1072#1083#1080#1079#1072#1094#1080#1103' '#1076#1086#1082#1091#1084#1077#1085#1090#1072
   ClientWidth = 856
+  OnDestroy = FormDestroy
   OnHide = FormHide
   PixelsPerInch = 96
   TextHeight = 13

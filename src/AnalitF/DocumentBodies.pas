@@ -14,7 +14,8 @@ uses
   U_WaybillPrintSettingsForm,
   ReestrReportParams,
   U_ReestrPrintSettingsForm,
-  DataSetHelper;
+  DataSetHelper,
+  GlobalSettingParams;
 
 const
   NDSNullValue = 'нет значений';
@@ -114,6 +115,7 @@ type
     procedure sbWaybillToExcelClick(Sender: TObject);
     procedure adsDocumentBodiesPrintedChange(Sender: TField);
     procedure cbNDSSelect(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -145,6 +147,8 @@ type
     mdRetailPriceField : TFloatField;
     mdRealMarkupField : TFloatField;
 
+    FGlobalSettingParams : TGlobalSettingParams;
+
     procedure SetParams;
     procedure PrepareGrid;
     procedure WaybillCalcFields(DataSet : TDataSet);
@@ -175,6 +179,11 @@ type
 
     function GetMinProducerCost() : Double;
     function GetMinProducerCostByField(RegistryCost, ProducerCost : TFloatField) : Double;
+
+    function GetMinProducerCostForMarkup() : Double;
+    function GetMinProducerCostByFieldForMarkup(
+      RegistryCost, ProducerCost : TFloatField;
+      NDSValue : TField) : Double;
 
     procedure SetButtonPositions;
     procedure OnResizeForm(Sender: TObject);
@@ -411,8 +420,8 @@ begin
       or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
       then begin
         if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальную наценку берем из ЖНВЛС');
-        if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'GetMinProducerCost: ' + FloatToStr(GetMinProducerCost()));
-        maxMarkup := DM.GetMaxVitallyImportantMarkup(GetMinProducerCost())
+        if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'GetMinProducerCostForMarkup(): ' + FloatToStr(GetMinProducerCostForMarkup()));
+        maxMarkup := DM.GetMaxVitallyImportantMarkup(GetMinProducerCostForMarkup())
       end
       else begin
         if CalculateOnProducerCost then begin
@@ -499,6 +508,7 @@ var
   calc : TField;
 begin
   CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
+  FGlobalSettingParams := TGlobalSettingParams.Create(DM.MainConnection);
   NeedLog := FindCmdLineSwitch('extd');
   //Добавлем наценки
   retailMarkupField := TFloatField(adsDocumentBodies.FindField('RetailMarkup'));
@@ -627,7 +637,7 @@ begin
     if adsDocumentBodiesVitallyImportant.Value
     or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     then
-      maxSupplierMarkup := DM.GetMaxVitallyImportantSupplierMarkup(GetMinProducerCost())
+      maxSupplierMarkup := DM.GetMaxVitallyImportantSupplierMarkup(GetMinProducerCostForMarkup())
     else begin
       if CalculateOnProducerCost then
         maxSupplierMarkup := DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesProducerCost.Value)
@@ -748,8 +758,8 @@ begin
       if not adsDocumentBodiesProducerCost.IsNull and (adsDocumentBodiesProducerCost.Value > 0)
       then begin
         if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку берем из ЖНВЛС');
-        if NeedLog then Tracer.TR('RecalcPosition', 'GetMinProducerCost: ' + FloatToStr(GetMinProducerCost()));
-        upCostVariant := DM.GetVitallyImportantMarkup(GetMinProducerCost());
+        if NeedLog then Tracer.TR('RecalcPosition', 'GetMinProducerCostForMarkup(): ' + FloatToStr(GetMinProducerCostForMarkup()));
+        upCostVariant := DM.GetVitallyImportantMarkup(GetMinProducerCostForMarkup());
       end
     end
     else begin
@@ -1948,9 +1958,10 @@ begin
       or (cbWaybillAsVitallyImportant.Checked and mdReport.FieldByName('VitallyImportant').IsNull)
       then begin
         maxMarkup := DM.GetMaxVitallyImportantMarkup(
-          GetMinProducerCostByField(
+          GetMinProducerCostByFieldForMarkup(
             TFloatField(mdReport.FieldByName('RegistryCost')),
-            TFloatField(mdReport.FieldByName('ProducerCost'))
+            TFloatField(mdReport.FieldByName('ProducerCost')),
+            mdReport.FieldByName('NDS')
           )
         )
       end
@@ -2087,6 +2098,31 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TDocumentBodiesForm.FormDestroy(Sender: TObject);
+begin
+  FGlobalSettingParams.Free;
+  inherited;
+end;
+
+function TDocumentBodiesForm.GetMinProducerCostByFieldForMarkup(
+  RegistryCost, ProducerCost: TFloatField; NDSValue : TField): Double;
+var
+  minProducerCost : Double;
+begin
+  minProducerCost := GetMinProducerCostByField(RegistryCost, ProducerCost);
+  if FGlobalSettingParams.UseProducerCostWithNDS then
+    minProducerCost := minProducerCost * (1 + NDSValue.AsInteger/100);
+  Result := minProducerCost;
+end;
+
+function TDocumentBodiesForm.GetMinProducerCostForMarkup: Double;
+begin
+  Result := GetMinProducerCostByFieldForMarkup(
+    adsDocumentBodiesRegistryCost,
+    adsDocumentBodiesProducerCost,
+    NDSField); 
 end;
 
 end.

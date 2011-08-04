@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, GridsEh, DBGridEh, ToughDBGrid,
   DBGridHelper, RxMemDS, DB, DModule, DBProc, AProc, Buttons, DatabaseObjects,
-  Contnrs;
+  Contnrs,
+  GlobalSettingParams;
 
 type
   TframeEditVitallyImportantMarkups = class(TFrame)
@@ -18,6 +19,7 @@ type
     FLoadMarkups : TThreadMethod;
     VitallyEdit : Boolean;
 
+    FGlobalSettingParams : TGlobalSettingParams;
 
     procedure CreateVisibleComponents;
     procedure AddEditButtonsPanel;
@@ -67,7 +69,7 @@ type
     dsMarkups : TDataSource;
 
     pCheckBox : TPanel;
-    cbUseNds : TCheckBox;
+    cbUseProducerCostWithNDS : TCheckBox;
 
     constructor CreateFrame(
       AOwner: TComponent;
@@ -214,9 +216,12 @@ begin
   FLoadMarkups := LoadMarkups;
   FMarkups := TObjectList.Create(True);
   Self.Name := 'frameEdit' + DatabaseController.GetById(TableId).Name;
+  FGlobalSettingParams := TGlobalSettingParams.Create(DM.MainConnection);
+
   inherited Create(AOwner);
   MarkupsChanges := False;
-  
+
+
   CreateNonVisibleComponents;
   CreateVisibleComponents;
   LoadVitallyImportantMarkups;
@@ -274,8 +279,8 @@ begin
   AddGridPanel;
 
   maxWidth := pEditButtons.Width + TDBGridHelper.GetColumnWidths(dbgMarkups) + 20;
-  if VitallyEdit and (maxWidth < cbUseNds.Width + 40) then
-    maxWidth := cbUseNds.Width + 40;
+  if VitallyEdit and (maxWidth < cbUseProducerCostWithNDS.Width + 40) then
+    maxWidth := cbUseProducerCostWithNDS.Width + 40;
   Self.Width := maxWidth;
   Self.Height := pClient.Height;
   Self.Constraints.MinHeight := Self.Height;
@@ -438,6 +443,12 @@ end;
 
 procedure TframeEditVitallyImportantMarkups.SaveVitallyImportantMarkups;
 begin
+  if VitallyEdit then begin
+    if FGlobalSettingParams.UseProducerCostWithNDS <> cbUseProducerCostWithNDS.Checked then begin
+      FGlobalSettingParams.UseProducerCostWithNDS := cbUseProducerCostWithNDS.Checked;
+      FGlobalSettingParams.SaveParams;
+    end;
+  end;
   if MarkupsChanges then begin
     DM.MainConnection.ExecSQL(
       'truncate ' + DatabaseController.GetById(FTableId).Name, []);
@@ -475,6 +486,7 @@ end;
 destructor TframeEditVitallyImportantMarkups.Destroy;
 begin
   FMarkups.Free;
+  FGlobalSettingParams.Free;
   inherited;
 end;
 
@@ -492,12 +504,13 @@ begin
   pCheckBox.Caption := '';
   pCheckBox.BevelOuter := bvNone;
 
-  cbUseNds := TCheckBox.Create(Self);
-  cbUseNds.Parent := pCheckBox;
-  cbUseNds.Left := 5;
-  cbUseNds.Top := 15;
-  cbUseNds.Caption := 'Использовать цену завода с НДС при определении ценового диапазона';
-  cbUseNds.Width := lLeftLessRightColor.Canvas.TextWidth(cbUseNds.Caption) + 30;
+  cbUseProducerCostWithNDS := TCheckBox.Create(Self);
+  cbUseProducerCostWithNDS.Parent := pCheckBox;
+  cbUseProducerCostWithNDS.Left := 5;
+  cbUseProducerCostWithNDS.Top := 15;
+  cbUseProducerCostWithNDS.Caption := 'Использовать цену завода с НДС при определении ценового диапазона';
+  cbUseProducerCostWithNDS.Checked := FGlobalSettingParams.UseProducerCostWithNDS;
+  cbUseProducerCostWithNDS.Width := lLeftLessRightColor.Canvas.TextWidth(cbUseProducerCostWithNDS.Caption) + 30;
 end;
 
 end.

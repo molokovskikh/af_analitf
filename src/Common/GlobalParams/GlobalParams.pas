@@ -15,12 +15,12 @@ type
    protected
     FConnection : TCustomMyConnection;
     function GetParam(ParamName : String; Schema : String = '') : Variant;
-    function GetParamDef(ParamName : String; DefaultValue : Variant) : Variant;
-    procedure SaveParam(ParamName : String; ParamValue : Variant);
    public
     constructor Create(Connection : TCustomMyConnection);
     procedure ReadParams; virtual; abstract;
     procedure SaveParams; virtual;
+    function GetParamDef(ParamName : String; DefaultValue : Variant) : Variant;
+    procedure SaveParam(ParamName : String; ParamValue : Variant);
   end;
 
 
