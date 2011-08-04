@@ -156,7 +156,8 @@ uses
   WaybillReportParams in '..\Common\GlobalParams\WaybillReportParams.pas',
   ReestrReportParams in '..\Common\GlobalParams\ReestrReportParams.pas',
   U_ReestrPrintSettingsForm in 'Views\U_ReestrPrintSettingsForm.pas' {ReestrPrintSettingsForm},
-  U_frameAutoComment in 'Views\U_frameAutoComment.pas' {frameAutoComment: TFrame};
+  U_frameAutoComment in 'Views\U_frameAutoComment.pas' {frameAutoComment: TFrame},
+  U_SchedulesController in 'BusinessLogic\U_SchedulesController.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

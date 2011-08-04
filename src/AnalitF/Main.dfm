@@ -4022,4 +4022,18 @@ object MainForm: TMainForm
       Action = actHome
     end
   end
+  object tmrOnNeedUpdate: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrOnNeedUpdateTimer
+    Left = 360
+    Top = 280
+  end
+  object tmrNeedUpdateCheck: TTimer
+    Enabled = False
+    Interval = 60000
+    OnTimer = tmrNeedUpdateCheckTimer
+    Left = 408
+    Top = 280
+  end
 end

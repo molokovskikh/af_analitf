@@ -10,7 +10,8 @@ uses
   OleCtrls, SHDocVw, AppEvnts, SyncObjs, Consts, ShellAPI,
   MemDS, DBAccess, MyAccess, U_VistaCorrectForm, Contnrs,
   DayOfWeekDelaysController,
-  SQLWaiting;
+  SQLWaiting,
+  U_SchedulesController;
 
 type
 
@@ -153,6 +154,8 @@ TMainForm = class(TVistaCorrectForm)
     miWayBill: TMenuItem;
     miConfig: TMenuItem;
     miHome: TMenuItem;
+    tmrOnNeedUpdate: TTimer;
+    tmrNeedUpdateCheck: TTimer;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -212,6 +215,8 @@ TMainForm = class(TVistaCorrectForm)
     procedure tmrOnExclusiveTimer(Sender: TObject);
     procedure actShowMinPricesExecute(Sender: TObject);
     procedure actServiceLogExecute(Sender: TObject);
+    procedure tmrOnNeedUpdateTimer(Sender: TObject);
+    procedure tmrNeedUpdateCheckTimer(Sender: TObject);
 private
   JustRun: boolean;
   ApplicationVersionText : String;
@@ -488,13 +493,22 @@ try
     then
       actReceiveExecute( nil);
   end
-  else
+  else begin
+    if SchedulesController().SchedulesEnabled and SchedulesController().NeedUpdateOnBegin
+    then begin
+      AProc.MessageBox(
+        'Сейчас будет произведено обновление данных по установленному расписанию.',
+        MB_ICONINFORMATION);
+      actReceiveExecute( nil);
+    end;
+
     if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) >= 8) and
       ( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
       if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
          MB_ICONQUESTION or MB_YESNO) = IDYES
       then
         actReceiveExecute( nil);
+  end;
 
   finally
     //Пересчет отсрочек платежа имеет смысл для несетевой версии
@@ -504,6 +518,8 @@ try
         SetOrdersInfo;
       end;
     TDayOfWeekDelaysController.UpdateDayOfWeek(DM);
+    
+    tmrNeedUpdateCheck.Enabled := True;
   end;
 
 finally
@@ -1013,6 +1029,8 @@ procedure TMainForm.UpdateReclame;
 var
   openFileName : String;
 begin
+  SchedulesController().LoadSchedules();
+  
   actPostOrderBatch.Visible := DM.adsUser.FieldByName('EnableSmartOrder').AsBoolean;
 
   actGetHistoryOrders.Visible := not DM.adsUser.FieldByName('EnableImpersonalPrice').AsBoolean;
@@ -1788,6 +1806,29 @@ begin
     btnHome.Visible := True;
     btnConfig.DropdownMenu := nil;
     btnConfig.Style := tbsButton;
+  end;
+end;
+
+procedure TMainForm.tmrOnNeedUpdateTimer(Sender: TObject);
+begin
+  tmrOnNeedUpdate.Enabled := False;
+  MessageBox('Запущено принудительное обновление');
+  //RunExchange([eaGetPrice]);
+end;
+
+procedure TMainForm.tmrNeedUpdateCheckTimer(Sender: TObject);
+begin
+  if not SchedulesController().SchedulesEnabled then
+    Exit;
+
+  if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
+    if SchedulesController().NeedUpdate then begin
+      AProc.MessageBox(
+        'Сейчас будет произведено обновление данных по установленному расписанию.',
+        MB_ICONINFORMATION);
+      tmrOnNeedUpdate.Enabled := False;
+      tmrOnNeedUpdate.Enabled := True;
+    end;
   end;
 end;
 

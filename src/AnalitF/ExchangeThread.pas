@@ -50,7 +50,8 @@ TUpdateTable = (
   utSupplierPromotions,
   utPromotionCatalogs,
   utCurrentOrderHeads,
-  utInvoiceHeaders
+  utInvoiceHeaders,
+  utSchedules
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -1407,6 +1408,7 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\PromotionCatalogs.txt') > 0) then UpdateTables := UpdateTables + [utPromotionCatalogs];
   if (GetFileSize(RootFolder()+SDirIn+'\CurrentOrderHeads.txt') > 0) then UpdateTables := UpdateTables + [utCurrentOrderHeads];
   if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then UpdateTables := UpdateTables + [utInvoiceHeaders];
+  if (GetFileSize(RootFolder()+SDirIn+'\Schedules.txt') > 0) then UpdateTables := UpdateTables + [utSchedules];
 
 
     //обновляем таблицы
@@ -1470,6 +1472,12 @@ begin
   //Providers
   if utPricesRegionalData in UpdateTables then begin
     SQL.Text:='truncate Providers;';
+    InternalExecute;
+  end;
+
+  //utSchedules
+  if utSchedules in UpdateTables then begin
+    SQL.Text:='truncate Schedules;';
     InternalExecute;
   end;
 
@@ -1688,6 +1696,11 @@ begin
       SQL.Text := 'delete from SupplierPromotions where Status = 0;';
       InternalExecute;
     end;
+  end;
+
+  if utSchedules in UpdateTables then begin
+    SQL.Text := GetLoadDataSQL('Schedules', RootFolder()+SDirIn+'\Schedules.txt', true);
+    InternalExecute;
   end;
 
   //CatalogFarmGroups
