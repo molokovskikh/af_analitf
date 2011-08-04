@@ -678,7 +678,8 @@ object DM: TDM
       '    list.NDS,'
       '    list.RetailMarkup,'
       '    list.RetailCost,'
-      '    list.RetailVitallyImportant'
+      '    list.RetailVitallyImportant,'
+      '    list.Comment'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'
@@ -813,6 +814,9 @@ object DM: TDM
     end
     object adsOrderDetailsRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
+    end
+    object adsOrderDetailsComment: TStringField
+      FieldName = 'Comment'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -1434,7 +1438,8 @@ object DM: TDM
       '    list.NDS, '
       '    list.RetailMarkup,'
       '    list.RetailCost,'
-      '    list.RetailVitallyImportant'
+      '    list.RetailVitallyImportant,'
+      '    list.Comment'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'

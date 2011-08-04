@@ -276,6 +276,7 @@ type
     adtClientsSelfAddressId: TStringField;
     adsOrderDetailsRetailCost: TFloatField;
     adsOrderDetailsRetailVitallyImportant: TBooleanField;
+    adsOrderDetailsComment: TStringField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
