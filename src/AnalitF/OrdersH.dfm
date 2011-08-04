@@ -586,6 +586,9 @@ inherited OrdersHForm: TOrdersHForm
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
       
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
+      
         '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
         'rderCount), 0) as SumOrder,'
       '     ('
@@ -694,6 +697,9 @@ inherited OrdersHForm: TOrdersHForm
         '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
+      
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
       
         '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
         'rderCount), 0) as SumOrder,'
@@ -909,6 +915,9 @@ inherited OrdersHForm: TOrdersHForm
     end
     object adsOrdersHFormAddressName: TStringField
       FieldName = 'AddressName'
+    end
+    object adsOrdersHFormNotExistsCount: TLargeintField
+      FieldName = 'NotExistsCount'
     end
   end
   object adsCore: TMyQuery
@@ -1225,6 +1234,9 @@ inherited OrdersHForm: TOrdersHForm
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
       
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
+      
         '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
         'rderCount), 0) as SumOrder,'
       '     ('
@@ -1338,6 +1350,9 @@ inherited OrdersHForm: TOrdersHForm
         '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
         'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
         '3), 1, null)) as DifferentQuantityCount,'
+      
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
       
         '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
         'rderCount), 0) as SumOrder,'
@@ -1484,6 +1499,9 @@ inherited OrdersHForm: TOrdersHForm
         'edOrderLists.DropReason = 2 or PostedOrderLists.DropReason = 3),' +
         ' 1, null)) as DifferentQuantityCount,'
       
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
+      
         '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
         'erCount), 0) as SumOrder,'
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
@@ -1559,6 +1577,9 @@ inherited OrdersHForm: TOrdersHForm
         '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
         'edOrderLists.DropReason = 2 or PostedOrderLists.DropReason = 3),' +
         ' 1, null)) as DifferentQuantityCount,'
+      
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
       
         '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
         'erCount), 0) as SumOrder,'

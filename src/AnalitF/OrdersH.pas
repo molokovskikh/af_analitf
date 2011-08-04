@@ -86,6 +86,7 @@ type
     tmrFillReport: TTimer;
     sbMoveToPrice: TSpeedButton;
     pmDestinationPrices: TPopupMenu;
+    adsOrdersHFormNotExistsCount: TLargeintField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -498,6 +499,11 @@ begin
 
       if (adsOrdersHFormDifferentQuantityCount.Value > 0)
          and (Column.Field = adsOrdersHFormPositions)
+      then
+        Background := NeedCorrectColor;
+
+      if (adsOrdersHFormNotExistsCount.Value > 0)
+         and (Column.Field = adsOrdersHFormPriceName)
       then
         Background := NeedCorrectColor;
     end;
