@@ -3262,6 +3262,19 @@ var
   tmpAllowAutoComment : Boolean;
 begin
   tmpAllowAutoComment := AllowAutoComment();
+  //ѕровер€ем, что Id заказа существует, а не был удален,
+  //например из-за того, что в нем не осталось позиций
+  if not orderDataSet.FieldByName('ORDERSHORDERID').IsNull then begin
+    OrderIdVariant := DM.QueryValue(''
++'select ORDERID '
++'from   CurrentOrderHeads '
++'where  ORDERID   = :ORDERID ',
+      ['ORDERID'],
+      [orderDataSet.FieldByName('ORDERSHORDERID').Value]);
+    if VarIsNull(OrderIdVariant) then
+      orderDataSet.FieldByName('ORDERSHORDERID').Clear();
+  end;
+
   //ѕровер€ем то, что есть заголовок заказа
   //≈сли его нет, то создаем
   if orderDataSet.FieldByName('ORDERSHORDERID').IsNull then begin
@@ -3277,7 +3290,7 @@ begin
       [orderDataSet.ParamByName('ClientId').Value,
        orderDataSet.FieldByName('PriceCode').Value,
        orderDataSet.FieldByName('RegionCode').Value]);
-    //«аказа не существует - создаем его   
+    //«аказа не существует - создаем его
     if VarIsNull(OrderIdVariant) then begin
       OrderIdVariant := DM.QueryValue(''
 +'insert '
@@ -3325,6 +3338,23 @@ begin
       DM.MainConnection.ExecSQL('delete from CurrentOrderLists where OrderId = :OrderId', [orderDataSet.FieldByName('ORDERSORDERID').Value]);
       orderDataSet.FieldByName('ORDERSORDERID').Clear;
     end
+  end;
+
+  {
+    ѕровер€ем, что есть позици€ в CurrentOrderLists с данным OrderId и CoreId
+    ≈сли позиции нет, то сбрасываем значение ORDERSORDERID в null
+  }
+  if not orderDataSet.FieldByName('ORDERSORDERID').IsNull then begin
+    OrderIdFromListVariant := DM.QueryValue(''
++'select ORDERID '
++'from   CurrentOrderLists '
++'where  coreid   = :coreid '
++'and    orderid  = :orderid ',
+      ['coreid', 'orderid'],
+      [orderDataSet.FieldByName('CoreId').Value,
+       OrderId]);
+    if VarIsNull(OrderIdFromListVariant) then
+      orderDataSet.FieldByName('ORDERSORDERID').Clear;
   end;
 
   {
