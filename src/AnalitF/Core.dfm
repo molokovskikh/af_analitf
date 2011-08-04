@@ -601,6 +601,12 @@ object CoreForm: TCoreForm
           Width = 39
         end
         item
+          EditButtons = <>
+          FieldName = 'OrdersComment'
+          Footers = <>
+          Title.Caption = #1050#1086#1084#1084#1077#1085#1090#1072#1088#1080#1081
+        end
+        item
           Color = 16775406
           EditButtons = <>
           FieldName = 'OrderCount'
@@ -745,6 +751,7 @@ object CoreForm: TCoreForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
@@ -868,6 +875,7 @@ object CoreForm: TCoreForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
@@ -1195,6 +1203,9 @@ object CoreForm: TCoreForm
     object adsCoreRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
+    object adsCoreOrdersComment: TStringField
+      FieldName = 'OrdersComment'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
@@ -1450,6 +1461,7 @@ object CoreForm: TCoreForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
