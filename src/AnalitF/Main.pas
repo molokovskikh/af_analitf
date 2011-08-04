@@ -809,6 +809,14 @@ try
     DM.adcUpdate.SQL.Text := 'DELETE FROM CurrentOrderLists WHERE NOT Exists(SELECT CurrentOrderHeads.OrderId FROM CurrentOrderHeads WHERE CurrentOrderHeads.OrderId=CurrentOrderLists.OrderId)';
     DM.adcUpdate.Execute;
 
+    //Удаляем позиции в текущих заказы с количеством заказа = 0
+    DM.adcUpdate.SQL.Text := 'DELETE FROM CurrentOrderLists WHERE OrderCount=0';
+    DM.adcUpdate.Execute;
+
+    //Удаляем текущие заказы без позиций
+    DM.adcUpdate.SQL.Text := 'DELETE FROM CurrentOrderHeads WHERE NOT Exists(SELECT OrderId FROM CurrentOrderLists WHERE OrderId=CurrentOrderHeads.OrderId)';
+    DM.adcUpdate.Execute;
+
     if DM.adsQueryValue.Active then
       DM.adsQueryValue.Close;
     DM.adsQueryValue.SQL.Text := ''
