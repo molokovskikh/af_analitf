@@ -4,7 +4,9 @@ interface
 
 uses SysUtils, Controls, Windows, Forms, StrUtils, Classes, Math, DBGrids,
   ComCtrls, Messages, ShellApi, IniFiles, AppUtils, IdFTP, DateUtils, ToughDBGrid,
-  DbGridEh, IdHTTP, SyncObjs, FileUtil, Contnrs, IdSSLOpenSSL;
+  DbGridEh, IdHTTP, SyncObjs, FileUtil, Contnrs, IdSSLOpenSSL,
+  MyClasses,
+  IdException;
 
 const
   WM_AFTERRETRIEVEMAIL=WM_USER+100; //сообщение о получении сообщений. с сервера
@@ -115,6 +117,8 @@ function FormatByteSize(const bytes: Int64): String;
 function FormatSpeedSize(bytes: Int64): String;
 
 function RootFolder() : String;
+
+function ExceptionToString(E : Exception) : String;
 
 implementation
 
@@ -1232,6 +1236,17 @@ begin
     Result := '\\' + GetNetworkSettings.Server  + '\' + GetNetworkSettings.ShareFolderName + '\'
   else
     Result := ExePath;
+end;
+
+function ExceptionToString(E : Exception) : String;
+begin
+  if E is EMyError then
+    Result := Format('(%d) %s', [EMyError(E).ErrorCode, EMyError(E).Message])
+  else
+  if E is EIdException then
+    Result := Format('IdEx %s', [EIdException(E).Message])
+  else
+    Result := E.Message;
 end;
 
 { TFileUpdateInfo }

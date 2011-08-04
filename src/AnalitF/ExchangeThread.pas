@@ -3625,6 +3625,7 @@ begin
       ProcessFatalMySqlError := False;
     except
       on EMyDb : EMyError do begin
+        WriteExchangeLog('Exchange', 'Ошибка при импорте: ' + ExceptionToString(EMyDb));
         if not ProcessFatalMySqlError and DatabaseController.IsFatalError(EMyDb) then begin
           ProcessFatalMySqlError := True;
           WriteExchangeLog('Exchange',
@@ -3635,6 +3636,10 @@ begin
         end
         else
           raise;
+      end;
+      on E : Exception do begin
+        WriteExchangeLog('Exchange', 'Неожидаемая ошибка при импорте: ' + ExceptionToString(E));
+        raise;
       end;
     end;
     until not ProcessFatalMySqlError;
