@@ -31,6 +31,7 @@ type
     class function AddColumn(Grid : TCustomDBGridEh; ColumnName, Caption : String; DisplayFormat : String; Width : Integer = 0; ReadOnly : Boolean = True) : TColumnEh; overload;
     class function GetColumnWidths(Grid : TCustomDBGridEh) : Integer;
     class procedure SaveGrid(Grid: TCustomDBGridEh);
+    class procedure CopyGridToClipboard(Grid: TCustomDBGridEh);
 
     class procedure SaveColumnsLayout(Grid: TCustomDBGridEh; SectionName : String);
     class procedure RestoreColumnsLayout(Grid: TCustomDBGridEh; SectionName : String);
@@ -91,6 +92,11 @@ begin
     Result.Width := Width
   else
     Result.Width := Grid.Canvas.TextWidth(Caption) + 20;
+end;
+
+class procedure TDBGridHelper.CopyGridToClipboard(Grid: TCustomDBGridEh);
+begin
+  DBGridEh_DoCopyAction(Grid, True);
 end;
 
 class function TDBGridHelper.ExtractWord(N: Integer; const S: string;

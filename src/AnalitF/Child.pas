@@ -20,9 +20,11 @@ type
    private
     FFormHandle : THandle;
     FOldDBGridWndProc: TWndMethod;
+    FGrid : TToughDBGrid;
     procedure HackDBGirdWndProc(var Message: TMessage);
+    procedure OnPopupCopyGridClick(Sender: TObject);
    public
-    constructor Create(AFormHandle : THandle; AOldDBGridWndProc: TWndMethod);
+    constructor Create(AFormHandle : THandle; AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
   end;
 
   TModifiedAction = class
@@ -301,7 +303,10 @@ begin
   for i := 0 to Self.ComponentCount - 1 do
     if Self.Components[ i].ClassNameIs( 'TToughDBGrid') then
     begin
-      hack := TDBComponentWindowProc.Create(Self.Handle, TToughDBGrid( Self.Components[ i]).WindowProc);
+      hack := TDBComponentWindowProc.Create(
+        Self.Handle,
+        TToughDBGrid( Self.Components[ i]).WindowProc,
+        TToughDBGrid( Self.Components[ i]));
       DBComponentWindowProcs.Add(hack);
       TToughDBGrid( Self.Components[ i]).WindowProc := hack.HackDBGirdWndProc;
     end;
@@ -549,10 +554,20 @@ end;
 { TDBComponentWindowProc }
 
 constructor TDBComponentWindowProc.Create(AFormHandle: THandle;
-  AOldDBGridWndProc: TWndMethod);
+  AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
+var
+  FGridCopy : TMenuItem;
 begin
   FFormHandle := AFormHandle;
   FOldDBGridWndProc := AOldDBGridWndProc;
+  FGrid := Grid;
+
+  if Assigned(FGrid.PopupMenu) then begin
+    FGridCopy := TMenuItem.Create(FGrid.PopupMenu);
+    FGridCopy.Caption := 'Копировать';
+    FGridCopy.OnClick := OnPopupCopyGridClick;
+    FGrid.PopupMenu.Items.Add(FGridCopy);
+  end;
 end;
 
 procedure TDBComponentWindowProc.HackDBGirdWndProc(var Message: TMessage);
@@ -885,6 +900,15 @@ begin
         }
         Parent.Controls[I].Hide;
       end;
+end;
+
+procedure TDBComponentWindowProc.OnPopupCopyGridClick(Sender: TObject);
+var
+  SaveGridFlag : Boolean;
+begin
+  SaveGridFlag := ((FGrid.Tag and DM.SaveGridMask) > 0);
+  if SaveGridFlag then
+    TDBGridHelper.CopyGridToClipboard(FGrid);
 end;
 
 { TModifiedAction }
