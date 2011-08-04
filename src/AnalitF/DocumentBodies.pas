@@ -13,7 +13,8 @@ uses
   WaybillReportParams,
   U_WaybillPrintSettingsForm,
   ReestrReportParams,
-  U_ReestrPrintSettingsForm;
+  U_ReestrPrintSettingsForm,
+  DataSetHelper;
 
 const
   NDSNullValue = 'нет значений';
@@ -139,10 +140,15 @@ type
     internalReestrReportParams : TReestrReportParams;
 
     mdReport : TRxMemoryData;
+    mdretailSummField : TCurrencyField;
+    mdMaxRetailMarkupField : TCurrencyField;
+    mdRetailPriceField : TFloatField;
+    mdRealMarkupField : TFloatField;
 
     procedure SetParams;
     procedure PrepareGrid;
     procedure WaybillCalcFields(DataSet : TDataSet);
+    procedure mdReportCalcFields(DataSet : TDataSet);
     procedure LoadFromRegistry();
     procedure RecalcDocument;
     procedure RecalcPosition;
@@ -159,6 +165,7 @@ type
     //методы для расчета розничных наценок и цен
     //Получить цену по наценке, но может измениться сама наценка
     function GetRetailPriceByMarkup(var markup : Double) : Double;
+    function GetRetailPriceByMarkupForReport(var markup : Double) : Double;
     //Получить наценку по цене
     function GetRetailMarkupByPrice(price : Double) : Double;
     //Можем ли мы рассчитать розничную наценку, основываясь на полученных данных
@@ -167,6 +174,7 @@ type
     procedure GridColumnsClick( Sender: TObject);
 
     function GetMinProducerCost() : Double;
+    function GetMinProducerCostByField(RegistryCost, ProducerCost : TFloatField) : Double;
 
     procedure SetButtonPositions;
     procedure OnResizeForm(Sender: TObject);
@@ -489,46 +497,6 @@ end;
 procedure TDocumentBodiesForm.FormCreate(Sender: TObject);
 var
   calc : TField;
-
-  procedure SetDisplayFormat(fieldNames : array of string);
-  var
-    I : Integer;
-    field : TField;
-  begin
-    for I := Low(fieldNames) to High(fieldNames) do
-    begin
-      field := adsDocumentBodies.FindField(fieldNames[i]);
-      if Assigned(field) and (field is TFloatField) then
-        TFloatField(field).DisplayFormat := '0.00;;';
-    end;
-  end;
-
-  function AddField(FieldName : String) : TCurrencyField;
-  begin
-    Result := TCurrencyField(adsDocumentBodies.FindField(FieldName));
-    if not Assigned(Result) then begin
-      Result := TCurrencyField.Create(adsDocumentBodies);
-      Result.fieldname := FieldName;
-      Result.FieldKind := fkCalculated;
-      Result.Calculated := True;
-      Result.DisplayFormat := '0.00;;';
-      Result.Dataset := adsDocumentBodies;
-    end;
-  end;
-
-  function AddFloatField(FieldName : String) : TFloatField;
-  begin
-    Result := TFloatField(adsDocumentBodies.FindField(FieldName));
-    if not Assigned(Result) then begin
-      Result := TFloatField.Create(adsDocumentBodies);
-      Result.fieldname := FieldName;
-      Result.FieldKind := fkCalculated;
-      Result.Calculated := True;
-      Result.DisplayFormat := '0.00;;';
-      Result.Dataset := adsDocumentBodies;
-    end;
-  end;
-
 begin
   CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
   NeedLog := FindCmdLineSwitch('extd');
@@ -574,20 +542,21 @@ begin
   end;
 
 
-  SetDisplayFormat(
-  [
-    'ProducerCost',
-    'RegistryCost',
-    'SupplierPriceMarkup',
-    'SupplierCostWithoutNDS',
-    'SupplierCost'
-  ]);
+  TDataSetHelper.SetDisplayFormat(
+    adsDocumentBodies,
+    [
+      'ProducerCost',
+      'RegistryCost',
+      'SupplierPriceMarkup',
+      'SupplierCostWithoutNDS',
+      'SupplierCost'
+    ]);
 
   //Добавляем вычисляемые поля в датасет
-  retailSummField := AddField('RetailSumm');
-  maxRetailMarkupField := AddField('MaxRetailMarkup');
-  retailPriceField := AddFloatField('RetailPrice');
-  realMarkupField := AddFloatField('RealMarkup');
+  retailSummField := TDataSetHelper.AddCalculatedCurrencyField(adsDocumentBodies, 'RetailSumm');
+  maxRetailMarkupField := TDataSetHelper.AddCalculatedCurrencyField(adsDocumentBodies, 'MaxRetailMarkup');
+  retailPriceField := TDataSetHelper.AddCalculatedFloatField(adsDocumentBodies, 'RetailPrice');
+  realMarkupField := TDataSetHelper.AddCalculatedFloatField(adsDocumentBodies, 'RealMarkup');
 
   FGridPopup := TPopupMenu.Create( Self);
   dbgDocumentBodies.PopupMenu := FGridPopup;
@@ -1222,13 +1191,7 @@ end;
 
 function TDocumentBodiesForm.GetMinProducerCost: Double;
 begin
-  if not adsDocumentBodiesRegistryCost.IsNull
-    and (adsDocumentBodiesRegistryCost.Value > 0)
-    and (adsDocumentBodiesRegistryCost.Value < adsDocumentBodiesProducerCost.Value)
-  then
-    Result := adsDocumentBodiesRegistryCost.Value
-  else
-    Result := adsDocumentBodiesProducerCost.Value;
+  Result := GetMinProducerCostByField(adsDocumentBodiesRegistryCost, adsDocumentBodiesProducerCost);
 end;
 
 procedure TDocumentBodiesForm.sbEditTicketReportParamsClick(
@@ -1373,7 +1336,28 @@ begin
     adsDocumentBodies.Open;
     try
       mdReport.CopyStructure(adsDocumentBodies);
+
+      TDataSetHelper.SetDisplayFormat(
+        mdReport,
+        [
+          'ProducerCost',
+          'RegistryCost',
+          'SupplierPriceMarkup',
+          'SupplierCostWithoutNDS',
+          'SupplierCost',
+          'RetailMarkup',
+          'ManualRetailPrice',
+          'RetailAmount'
+        ]);
+
+      mdretailSummField := TDataSetHelper.AddCalculatedCurrencyField(mdReport, 'RetailSumm');
+      mdMaxRetailMarkupField := TDataSetHelper.AddCalculatedCurrencyField(mdReport, 'MaxRetailMarkup');
+      mdRetailPriceField := TDataSetHelper.AddCalculatedFloatField(mdReport, 'RetailPrice');
+      mdRealMarkupField := TDataSetHelper.AddCalculatedFloatField(mdReport, 'RealMarkup');
+
       mdReport.LoadFromDataSet(adsDocumentBodies, 0, lmAppend);
+
+      mdReport.OnCalcFields := mdReportCalcFields;
     finally
       adsDocumentBodies.Close;
       adsDocumentBodies.RestoreSQL;
@@ -1383,8 +1367,11 @@ begin
         adsDocumentBodies.First;
       adsDocumentBodies.EnableControls;
     end;
+
     Action();
+
   finally
+    mdReport.OnCalcFields := nil;
     mdReport.Free;
   end;
 end;
@@ -1470,29 +1457,29 @@ begin
       'Кол-во',
       'Розн. сумма, руб']);
 
-    adsDocumentBodies.First;
+    mdReport.First;
     rowNumber := 1;
-    while not adsDocumentBodies.Eof do begin
+    while not mdReport.Eof do begin
       exportData.WriteRow([
         IntToStr(rowNumber),
-        adsDocumentBodiesProduct.AsString,
-        adsDocumentBodiesSerialNumber.AsString + ' ' + adsDocumentBodiesCertificates.AsString,
-        adsDocumentBodiesPeriod.AsString,
-        adsDocumentBodiesProducer.AsString,
-        adsDocumentBodiesProducerCost.AsString,
-        adsDocumentBodiesQuantity.AsString,
-        adsDocumentBodiesSupplierPriceMarkup.AsString,
-        adsDocumentBodiesSupplierCostWithoutNDS.AsString,
-        NDSField.AsString,
-        adsDocumentBodiesSupplierCost.AsString,
-        retailMarkupField.AsString,
-        retailPriceField.AsString,
-        adsDocumentBodiesQuantity.AsString,
-        retailSummField.AsString
+        mdReport.FieldByName('Product').AsString,
+        mdReport.FieldByName('SerialNumber').AsString + ' ' + mdReport.FieldByName('Certificates').AsString,
+        mdReport.FieldByName('Period').AsString,
+        mdReport.FieldByName('Producer').AsString,
+        mdReport.FieldByName('ProducerCost').AsString,
+        mdReport.FieldByName('Quantity').AsString,
+        mdReport.FieldByName('SupplierPriceMarkup').DisplayText,
+        mdReport.FieldByName('SupplierCostWithoutNDS').DisplayText,
+        mdReport.FieldByName('NDS').AsString,
+        mdReport.FieldByName('SupplierCost').DisplayText,
+        mdReport.FieldByName('RetailMarkup').DisplayText,
+        mdReport.FieldByName('RetailPrice').DisplayText,
+        mdReport.FieldByName('Quantity').AsString,
+        mdReport.FieldByName('RetailSumm').DisplayText
         ]);
 
       Inc(rowNumber);
-      adsDocumentBodies.Next;
+      mdReport.Next;
     end;
   finally
     exportData.Free;
@@ -1546,7 +1533,8 @@ begin
 
     DM.ShowFastReportWithSave(
       IfThen(RackCardReportParams.RackCardSize = rcsStandart, 'RackCard.frf', 'BigRackCard.frf'),
-      adsDocumentBodies, True);
+      mdReport,
+      True);
   finally
     RackCardReportParams.Free;
   end;
@@ -1609,29 +1597,29 @@ begin
       'Кол-во',
       'Розн. сумма, руб']);
 
-    adsDocumentBodies.First;
+    mdReport.First;
     rowNumber := 1;
-    while not adsDocumentBodies.Eof do begin
+    while not mdReport.Eof do begin
       exportData.WriteRow([
         IntToStr(rowNumber),
-        adsDocumentBodiesProduct.AsString,
-        adsDocumentBodiesSerialNumber.AsString,
-        adsDocumentBodiesPeriod.AsString,
-        adsDocumentBodiesProducer.AsString,
-        adsDocumentBodiesProducerCost.AsString,
-        adsDocumentBodiesRegistryCost.AsString,
-        adsDocumentBodiesSupplierPriceMarkup.AsString,
-        adsDocumentBodiesSupplierCostWithoutNDS.AsString,
-        NDSField.AsString,
-        adsDocumentBodiesSupplierCost.AsString,
-        retailMarkupField.AsString,
-        retailPriceField.AsString,
-        adsDocumentBodiesQuantity.AsString,
-        retailSummField.AsString
+        mdReport.FieldByName('Product').AsString,
+        mdReport.FieldByName('SerialNumber').AsString,
+        mdReport.FieldByName('Period').AsString,
+        mdReport.FieldByName('Producer').AsString,
+        mdReport.FieldByName('ProducerCost').AsString,
+        mdReport.FieldByName('RegistryCost').AsString,
+        mdReport.FieldByName('SupplierPriceMarkup').DisplayText,
+        mdReport.FieldByName('SupplierCostWithoutNDS').DisplayText,
+        mdReport.FieldByName('NDS').AsString,
+        mdReport.FieldByName('SupplierCost').DisplayText,
+        mdReport.FieldByName('RetailMarkup').DisplayText,
+        mdReport.FieldByName('RetailPrice').DisplayText,
+        mdReport.FieldByName('Quantity').AsString,
+        mdReport.FieldByName('RetailSumm').DisplayText
         ]);
 
       Inc(rowNumber);
-      adsDocumentBodies.Next;
+      mdReport.Next;
     end;
   finally
     exportData.Free;
@@ -1736,7 +1724,10 @@ begin
   frVariables[ 'ServeName'] := internalWaybillReportParams.ServeName;
   frVariables[ 'ReceivedName'] := internalWaybillReportParams.ReceivedName;
 
-  DM.ShowFastReportWithSave('Waybill.frf', adsDocumentBodies, True);
+  DM.ShowFastReportWithSave(
+    'Waybill.frf',
+    mdReport,
+    True);
 end;
 
 procedure TDocumentBodiesForm.PrintReestr;
@@ -1774,7 +1765,10 @@ begin
   frVariables[ 'CommitteeMember2'] := internalReestrReportParams.CommitteeMember2;
   frVariables[ 'CommitteeMember3'] := internalReestrReportParams.CommitteeMember3;
 
-  DM.ShowFastReportWithSave('Reestr.frf', adsDocumentBodies, True);
+  DM.ShowFastReportWithSave(
+    'Reestr.frf',
+    mdReport,
+    True);
 end;
 
 procedure TDocumentBodiesForm.PrintTickets;
@@ -1821,7 +1815,7 @@ begin
 
     DM.ShowFastReportWithSave(
       IfThen(TicketParams.TicketSize = tsStandart, 'Ticket.frf', 'SmallTicket.frf'),
-      adsDocumentBodies,
+      mdReport,
       True);
   finally
     TicketParams.Free;
@@ -1940,6 +1934,159 @@ procedure TDocumentBodiesForm.ForceRecalcDocument(DocumentId: Int64);
 begin
   FDocumentId := DocumentId;
   SetParams;
+end;
+
+procedure TDocumentBodiesForm.mdReportCalcFields(DataSet: TDataSet);
+var
+  maxMarkup : Currency;
+  price,
+  markup : Double;
+begin
+  try
+    if not mdReport.FieldByName('ProducerCost').IsNull then begin
+      if mdReport.FieldByName('VitallyImportant').AsBoolean
+      or (cbWaybillAsVitallyImportant.Checked and mdReport.FieldByName('VitallyImportant').IsNull)
+      then begin
+        maxMarkup := DM.GetMaxVitallyImportantMarkup(
+          GetMinProducerCostByField(
+            TFloatField(mdReport.FieldByName('RegistryCost')),
+            TFloatField(mdReport.FieldByName('ProducerCost'))
+          )
+        )
+      end
+      else begin
+        if CalculateOnProducerCost then begin
+          maxMarkup := DM.GetMaxRetailMarkup(mdReport.FieldByName('ProducerCost').AsFloat)
+        end
+        else begin
+          maxMarkup := DM.GetMaxRetailMarkup(mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat);
+        end;
+      end;
+      mdMaxRetailMarkupField.Value := maxMarkup;
+    end;
+
+    if not mdReport.FieldByName('RetailMarkup').IsNull then begin
+      markup := mdReport.FieldByName('RetailMarkup').AsFloat;
+      price := GetRetailPriceByMarkupForReport(markup);
+      mdRetailPriceField.Value := price;
+      mdretailSummField.Value := RoundTo(price, -2) * mdReport.FieldByName('Quantity').AsInteger;
+      mdRealMarkupField.Value := ((price - mdReport.FieldByName('SupplierCost').AsFloat) * 100)/ mdReport.FieldByName('SupplierCost').AsFloat;
+    end
+    else begin
+      if not manualRetailPriceField.IsNull then begin
+        price := manualRetailPriceField.Value;
+        mdRetailPriceField.Value := price;
+        mdretailSummField.Value := RoundTo(price, -2) * mdReport.FieldByName('Quantity').AsInteger;
+      end;
+    end;
+
+  except
+    on E : Exception do
+      WriteExchangeLog('TDocumentBodiesForm.mdReportCalcFields', 'Ошибка: ' + E.Message);
+  end;
+end;
+
+function TDocumentBodiesForm.GetMinProducerCostByField(RegistryCost,
+  ProducerCost: TFloatField): Double;
+begin
+  if not RegistryCost.IsNull
+    and (RegistryCost.Value > 0)
+    and (RegistryCost.Value < ProducerCost.Value)
+  then
+    Result := RegistryCost.Value
+  else
+    Result := ProducerCost.Value;
+end;
+
+function TDocumentBodiesForm.GetRetailPriceByMarkupForReport(
+  var markup: Double): Double;
+var
+  vitallyNDS : Integer;
+  vitallyNDSMultiplier : Double;
+  nonVitallyNDSMultiplier : Double;
+  minProducerCost : Double;
+begin
+  if mdReport.FieldByName('VitallyImportant').AsBoolean
+  or (cbWaybillAsVitallyImportant.Checked and mdReport.FieldByName('VitallyImportant').IsNull)
+  then begin
+
+    if not mdReport.FieldByName('NDS').IsNull then
+      vitallyNDS := mdReport.FieldByName('NDS').AsInteger
+    else
+      vitallyNDS := 10;
+
+    minProducerCost :=
+      GetMinProducerCostByField(
+        TFloatField(mdReport.FieldByName('RegistryCost')),
+        TFloatField(mdReport.FieldByName('ProducerCost'))
+      );
+
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      vitallyNDSMultiplier := 1
+    else
+      vitallyNDSMultiplier := (1 + vitallyNDS/100);
+
+    //ЕНВД
+    if (DM.adtClientsMethodOfTaxation.Value = 0) then begin
+      Result :=
+        mdReport.FieldByName('SupplierCost').AsFloat + minProducerCost*vitallyNDSMultiplier*(markup/100);
+
+      if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
+      then begin
+        Result := RoundToOneDigit(Result);
+        //markup := ((Result - mdReport.FieldByName('SupplierCost.Value) / mdReport.FieldByName('ProducerCost.Value)*100;
+        markup :=
+          ((Result - mdReport.FieldByName('SupplierCost').AsFloat)*100)
+          / (minProducerCost * vitallyNDSMultiplier)
+      end;
+
+    end
+    else begin
+    //НДС
+      Result :=
+        (mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat
+        + minProducerCost*(markup/100)) * vitallyNDSMultiplier;
+
+      if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
+      then begin
+        Result := RoundToOneDigit(Result);
+        //markup := ((Result/1.1 - mdReport.FieldByName('SupplierCostWithoutNDS.Value) / mdReport.FieldByName('ProducerCost.Value)*100;
+        markup :=
+          ((Result/vitallyNDSMultiplier - mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat) *100)
+          / minProducerCost;
+      end;
+    end;
+  end
+  else begin
+
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
+      nonVitallyNDSMultiplier := 1
+    else
+      nonVitallyNDSMultiplier := (1 + mdReport.FieldByName('NDS').AsInteger/100);
+
+    //По цене производителя
+    if CalculateOnProducerCost then begin
+      Result := mdReport.FieldByName('SupplierCost').AsFloat + mdReport.FieldByName('ProducerCost').AsFloat*nonVitallyNDSMultiplier*(markup/100);
+
+      if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
+      then begin
+        Result := RoundToOneDigit(Result);
+        markup := ((Result - mdReport.FieldByName('SupplierCost').AsFloat)*100)/(mdReport.FieldByName('ProducerCost').AsFloat * nonVitallyNDSMultiplier);
+      end;
+    end
+    else begin
+    //По цене поставщика без НДС
+      Result := mdReport.FieldByName('SupplierCost').AsFloat + mdReport.FieldByName('SupplierCost').AsFloat*(markup/100);
+
+      if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
+      then begin
+        Result := RoundToOneDigit(Result);
+        markup := ((Result - mdReport.FieldByName('SupplierCost').AsFloat)*100)/(mdReport.FieldByName('SupplierCost').AsFloat);
+      end;
+    end;
+  end;
 end;
 
 end.

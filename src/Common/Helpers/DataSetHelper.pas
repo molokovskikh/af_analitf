@@ -16,6 +16,9 @@ type
     class function AddBooleanField(dataSet : TDataSet; FieldName : String) : TBooleanField;
     class function AddSmallintField(dataSet : TDataSet; FieldName : String) : TSmallintField;
     class function AddDateTimeField(dataSet : TDataSet; FieldName : String) : TDateTimeField;
+    class function AddCalculatedFloatField(dataSet : TDataSet; FieldName : String) : TFloatField;
+    class function AddCalculatedCurrencyField(dataSet : TDataSet; FieldName : String) : TCurrencyField;
+    class procedure SetDisplayFormat(dataSet : TDataSet; fieldNames : array of string);
   end;
 
 implementation
@@ -84,6 +87,48 @@ begin
   Result := TDateTimeField.Create(dataSet);
   Result.fieldname := FieldName;
   Result.Dataset := dataSet;
+end;
+
+class function TDataSetHelper.AddCalculatedCurrencyField(dataSet: TDataSet;
+  FieldName: String): TCurrencyField;
+begin
+  Result := TCurrencyField(dataSet.FindField(FieldName));
+  if not Assigned(Result) then begin
+    Result := TCurrencyField.Create(dataSet);
+    Result.fieldname := FieldName;
+    Result.FieldKind := fkCalculated;
+    Result.Calculated := True;
+    Result.DisplayFormat := '0.00;;';
+    Result.Dataset := dataSet;
+  end;
+end;
+
+class function TDataSetHelper.AddCalculatedFloatField(dataSet: TDataSet;
+  FieldName: String): TFloatField;
+begin
+  Result := TFloatField(dataSet.FindField(FieldName));
+  if not Assigned(Result) then begin
+    Result := TFloatField.Create(dataSet);
+    Result.fieldname := FieldName;
+    Result.FieldKind := fkCalculated;
+    Result.Calculated := True;
+    Result.DisplayFormat := '0.00;;';
+    Result.Dataset := dataSet;
+  end;
+end;
+
+class procedure TDataSetHelper.SetDisplayFormat(dataSet: TDataSet;
+  fieldNames: array of string);
+var
+  I : Integer;
+  field : TField;
+begin
+  for I := Low(fieldNames) to High(fieldNames) do
+  begin
+    field := dataSet.FindField(fieldNames[i]);
+    if Assigned(field) and (field is TFloatField) then
+      TFloatField(field).DisplayFormat := '0.00;;';
+  end;
 end;
 
 end.
