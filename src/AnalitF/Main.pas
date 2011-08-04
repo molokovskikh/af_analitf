@@ -1812,8 +1812,7 @@ end;
 procedure TMainForm.tmrOnNeedUpdateTimer(Sender: TObject);
 begin
   tmrOnNeedUpdate.Enabled := False;
-  MessageBox('«апущено принудительное обновление');
-  //RunExchange([eaGetPrice]);
+  actReceiveExecute(nil);
 end;
 
 procedure TMainForm.tmrNeedUpdateCheckTimer(Sender: TObject);

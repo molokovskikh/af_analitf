@@ -6,9 +6,29 @@ uses
   SysUtils, Classes, Contnrs, DB, StrUtils, Variants,
   DateUtils,
   //App modules
-  Constant, DModule, ExchangeParameters, U_ExchangeLog;
+  Constant,
+  AProc,
+  DModule,
+  ExchangeParameters,
+  U_ExchangeLog,
+  MyAccess,
+  U_DBMapping;
 
 type
+  TScheduleCheckItem = record
+    Hour,
+    Minute : Word;
+  end;
+
+  TScheduleItem = class
+   public
+    Id : Int64;
+    Hour,
+    Minute : Integer;
+    function LessThan(checkItem : TScheduleCheckItem) : Boolean;
+    function GreaterOrEqualThan(checkItem : TScheduleCheckItem) : Boolean;
+  end;
+
   TSchedulesController = class
    private
     FSchedules : TObjectList;
@@ -19,6 +39,8 @@ type
     function SchedulesEnabled : Boolean;
     function NeedUpdateOnBegin : Boolean;
     function NeedUpdate : Boolean;
+    function GetUpdateCheckItem : TScheduleCheckItem;
+    function GetCurrentCheckItem : TScheduleCheckItem;
   end;
 
   function SchedulesController() : TSchedulesController;
@@ -46,24 +68,127 @@ begin
   inherited;
 end;
 
-procedure TSchedulesController.LoadSchedules;
+function TSchedulesController.GetCurrentCheckItem: TScheduleCheckItem;
+var
+  tmp : Word;
 begin
-  //DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime
+  DecodeTime(Now(), Result.Hour, Result.Minute, tmp, tmp);
+end;
+
+function TSchedulesController.GetUpdateCheckItem: TScheduleCheckItem;
+var
+  d : TDateTime;
+  tmp : Word;
+begin
+  d := UTCToLocalTime(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
+  DecodeTime(d, Result.Hour, Result.Minute, tmp, tmp);
+end;
+
+procedure TSchedulesController.LoadSchedules;
+var
+  dataSet : TMyQuery;
+  scheduleItem : TScheduleItem;
+  newList : TObjectList;
+begin
+  dataSet := TDBMapping.GetSqlDataSet(
+    DM.MainConnection,
+ 'select '
++'  Id, '
++'  Hour, '
++'  Minute '
++'from        '
++'    schedules '
++'order by Hour, Minute ',
+    [],
+    []);
+
+  newList := TObjectList.Create();
+  try
+    try
+      while not dataSet.Eof do begin
+        scheduleItem := TScheduleItem.Create();
+        scheduleItem.Id := dataSet['Id'];
+        scheduleItem.Hour := dataSet['Hour'];
+        scheduleItem.Minute := dataSet['Minute'];
+
+        newList.Add(scheduleItem);
+        dataSet.Next;
+      end;
+    finally
+      dataSet.Free;
+    end;
+  except
+    newList.Free;
+    raise;
+  end;
+
+  FreeAndNil(FSchedules);
+  FSchedules := newList;
 end;
 
 function TSchedulesController.NeedUpdate: Boolean;
+var
+  I : Integer;
+  currentItem,
+  updateItem : TScheduleCheckItem;
+  currentSchedule : TScheduleItem;
 begin
-  Result := True;
+  Result := False;
+
+  updateItem := GetUpdateCheckItem();
+  currentItem := GetCurrentCheckItem();
+  
+  for I := 0 to FSchedules.Count-1 do begin
+    currentSchedule := TScheduleItem(FSchedules[i]);
+    if currentSchedule.GreaterOrEqualThan(updateItem) then begin
+      if currentSchedule.LessThan(currentItem) then
+        Result := True;
+      Break;
+    end;
+  end;
 end;
 
 function TSchedulesController.NeedUpdateOnBegin: Boolean;
+var
+  I : Integer;
+  updateItem : TScheduleCheckItem;
+  currentSchedule : TScheduleItem;
 begin
-  Result := False;
+  Result := SchedulesEnabled and DM.adtParams.FieldByName( 'UpdateDateTime').IsNull;
+  if not Result then begin
+    updateItem := GetUpdateCheckItem();
+    for I := 0 to FSchedules.Count-1 do begin
+      currentSchedule := TScheduleItem(FSchedules[i]);
+      if currentSchedule.GreaterOrEqualThan(updateItem) then begin
+        Result := True;
+        Break;
+      end;
+    end;
+  end;
 end;
 
 function TSchedulesController.SchedulesEnabled: Boolean;
 begin
   Result := FSchedules.Count > 0;
+end;
+
+{ TScheduleItem }
+
+function TScheduleItem.GreaterOrEqualThan(checkItem: TScheduleCheckItem): Boolean;
+begin
+  Result :=
+  (Hour > checkItem.Hour)
+  or
+  ((Hour >= checkItem.Hour) and (Minute >= checkItem.Minute));
+end;
+
+function TScheduleItem.LessThan(
+  checkItem: TScheduleCheckItem): Boolean;
+begin
+  result :=
+  (Hour < checkItem.Hour)
+  or
+  ((Hour = checkItem.Hour) and (Minute < checkItem.Minute));
 end;
 
 initialization
