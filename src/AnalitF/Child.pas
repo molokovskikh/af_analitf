@@ -861,7 +861,7 @@ end;
 
 procedure TChildForm.SetActiveChildToMainForm;
 begin
-  MainForm.ActiveChild:=Self;
+  MainForm.ActiveChild := Self;
   //todo: ClientId-UserId
   if Caption <> '' then begin
     if (Length(MainForm.CurrentUser) > 0) then

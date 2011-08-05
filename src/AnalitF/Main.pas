@@ -281,6 +281,9 @@ public
   procedure EnableByHTTPName;
   function CheckUnsendOrders: boolean;
   procedure OnSelectClientClick(Sender: TObject);
+  //Существуют модальные окна, которые ждут ответа от пользователя
+  //Это либо окно с настройками либо MessageBox
+  function ModalExists : Boolean;
 end;
 
 var
@@ -1035,6 +1038,8 @@ begin
     они произвели сохранение настроек и завершили обращение к базе 
   }
   FreeChildForms;
+  //Выключаем таймер с проверкой принудительного обновления 
+  tmrNeedUpdateCheck.Enabled := False;
   if not DM.MainConnection.Connected then exit;
 
   if OldOrders then
@@ -1861,9 +1866,41 @@ begin
 end;
 
 procedure TMainForm.tmrNeedUpdateCheckTimer(Sender: TObject);
+{
+var
+  forms : String;
+}
 begin
   if not SchedulesController().SchedulesEnabled then
     Exit;
+
+  //Если открыто какое-либо модальное окно, то принудительное обновление не производим
+  if ModalExists then
+    Exit;
+
+{$ifdef DEBUG}
+{
+  try
+  forms := '';
+  if Assigned(Self.ActiveChild) then
+    forms := '  Self.ActiveChild = ' + Self.ActiveChild.ClassName
+  else
+    forms := '  Self.ActiveChild = nil ';
+  if Assigned(Screen.ActiveForm) then
+    forms := forms + '  Screen.ActiveForm = ' + Screen.ActiveForm.ClassName
+  else
+    forms := forms + '  Screen.ActiveForm = nil ';
+  if Assigned(Screen.ActiveCustomForm) then
+    forms := forms + '  Screen.ActiveCustomForm = ' + Screen.ActiveCustomForm.ClassName
+  else
+    forms := forms + '  Screen.ActiveCustomForm = nil ';
+  WriteExchangeLog('tmrNeedUpdateCheckTimer', forms);
+  except
+    on E : Exception do
+     WriteExchangeLog('tmrNeedUpdateCheckTimer', 'Error = ' + ExceptionToString(E));
+  end;
+}
+{$endif}
 
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
     if SchedulesController().NeedUpdate then begin
@@ -1880,6 +1917,60 @@ begin
         tmrNeedUpdateCheck.Enabled := True;
       end;
     end;
+  end;
+end;
+
+function GetClassNameHlp(h : HWND) : String;
+var
+  Buf: array [Byte] of Char;
+begin
+  FillChar(Buf, sizeof(Buf), 0);
+  GetClassName(h, Buf, sizeof(Buf));
+  Result := Trim(Buf);
+end;
+
+function GetTopWindowClbk(Wnd: THandle; var ReturnVar: THandle):Bool; stdcall;
+var
+  wndClassName : String;
+begin
+  wndClassName := GetClassNameHlp(Wnd);
+  //WriteExchangeLog('GetTopWindowClbk', 'topWindow : ' + IntToStr(Wnd) + '  classname : ' + wndClassName);
+  Result := True;
+  //Ищем окно с классом #32770
+  //источник: http://msdn.microsoft.com/en-us/library/ms697615
+  if AnsiContainsText(wndClassName, '#32770') then begin
+    ReturnVar := Wnd;
+    Result := False;
+  end;
+end;
+
+function TMainForm.ModalExists: Boolean;
+var
+  FFormHandle: THandle;
+{
+  GUIThreadInfo : TGUIThreadInfo;
+  topWindow : HWND;
+}
+begin
+  //Модальное окно открыто, если активная форма - не главное окно и не является наследником дочернего MDI-окна
+  Result := Assigned(Screen.ActiveCustomForm) and not (Screen.ActiveCustomForm is TMainForm) and not (Screen.ActiveCustomForm is TChildForm);
+
+  //Если модальное окно не открыто, то проверям наличие окно типа MessageBox
+  if not Result then begin
+    FFormHandle := 0;
+    EnumThreadWindows(GetCurrentThreadID, @GetTopWindowClbk, LPARAM(@FFormHandle));
+    Result := FFormHandle > 0;
+{
+    WriteExchangeLog('ModalExists', 'EnumThreadWindows : ' + IntToStr(FFormHandle));
+
+    topWindow := GetTopWindow(Application.Handle);
+    WriteExchangeLog('ModalExists', 'topWindow : ' + IntToStr(topWindow) + '  classname : ' + GetClassNameHlp(topWindow));
+    FillChar(GUIThreadInfo, SizeOf(GUIThreadInfo), 0);
+    GUIThreadInfo.cbSize := SizeOf(GUIThreadInfo);
+    if GetGUIThreadInfo(MainThreadID, GUIThreadInfo) then begin
+      WriteExchangeLog('ModalExists', 'Active : ' + IntToStr(GUIThreadInfo.hwndActive) + '  classname : ' + GetClassNameHlp(GUIThreadInfo.hwndActive));
+    end;
+}    
   end;
 end;
 
