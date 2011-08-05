@@ -14,33 +14,46 @@ type
     btnCancel: TButton;
     lblMessage: TLabel;
     btnOK: TButton;
-    procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
   private
   Seconds: integer;
+  Action : String;
   public
     { Public declarations }
   end;
 
-var
-  CompactForm: TCompactForm;
+  procedure ShowAction(Caption, Action : String; Seconds : Integer; ShowCancel : Boolean = False);
 
 implementation
 
 {$R *.dfm}
 
-procedure TCompactForm.FormCreate(Sender: TObject);
+procedure ShowAction(Caption, Action : String; Seconds : Integer; ShowCancel : Boolean = False);
+var
+  CompactForm: TCompactForm;
 begin
-  Seconds := 3;
-  Timer.Enabled := True;
+  CompactForm := TCompactForm.Create(Application);
+  try
+    CompactForm.lblMessage.Caption := Caption;
+    CompactForm.btnCancel.Visible := ShowCancel;
+    CompactForm.Action := Action;
+    CompactForm.Seconds := Seconds;
+    CompactForm.ShowModal;
+  finally
+    CompactForm.Free;
+  end;
 end;
 
 procedure TCompactForm.FormShow(Sender: TObject);
 begin
-  lblCompact.Caption := Format( 'Сжатие будет произведено через %d секунд', [ Seconds]);
+  lblCompact.Caption :=
+    Format(
+      '%s будет произведено через %d секунд',
+      [Action, Seconds]);
   dec( Seconds);
+  Timer.Enabled := True;
 end;
 
 procedure TCompactForm.btnCancelClick(Sender: TObject);
@@ -56,7 +69,10 @@ begin
     ModalResult := mrOK;
     exit;
   end;
-  lblCompact.Caption := Format( 'Сжатие будет произведено через %d секунд', [ Seconds]);
+  lblCompact.Caption :=
+    Format(
+      '%s будет произведено через %d секунд',
+      [Action, Seconds]);
   dec( Seconds);
 end;
 

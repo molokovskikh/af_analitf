@@ -304,7 +304,8 @@ uses
   AddressController,
   KeyboardHelper,
   NetworkSettings,
-  U_ServiceLogForm;
+  U_ServiceLogForm,
+  Compact;
 
 {$R *.DFM}
 
@@ -496,9 +497,11 @@ try
   else begin
     if SchedulesController().SchedulesEnabled and SchedulesController().NeedUpdateOnBegin
     then begin
-      AProc.MessageBox(
-        'Сейчас будет произведено обновление данных по установленному расписанию.',
-        MB_ICONINFORMATION);
+      ShowAction(
+        'Сейчас будет произведено обновление данных '#13#10 +
+        'по установленному расписанию.',
+        'Обновление',
+        10);
       actReceiveExecute( nil);
     end;
 
@@ -1822,9 +1825,11 @@ begin
 
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
     if SchedulesController().NeedUpdate then begin
-      AProc.MessageBox(
-        'Сейчас будет произведено обновление данных по установленному расписанию.',
-        MB_ICONINFORMATION);
+      ShowAction(
+        'Сейчас будет произведено обновление данных '#13#10 +
+        'по установленному расписанию.',
+        'Обновление',
+        10);
       tmrOnNeedUpdate.Enabled := False;
       tmrOnNeedUpdate.Enabled := True;
     end;
