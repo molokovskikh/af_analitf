@@ -39,6 +39,7 @@ type
     function SchedulesEnabled : Boolean;
     function NeedUpdateOnBegin : Boolean;
     function NeedUpdate : Boolean;
+    function IsPreviosDayUpdate : Boolean;
     function GetUpdateCheckItem : TScheduleCheckItem;
     function GetCurrentCheckItem : TScheduleCheckItem;
   end;
@@ -82,6 +83,11 @@ var
 begin
   d := UTCToLocalTime(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
   DecodeTime(d, Result.Hour, Result.Minute, tmp, tmp);
+end;
+
+function TSchedulesController.IsPreviosDayUpdate: Boolean;
+begin
+  Result := UTCToLocalTime(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime) < Date();
 end;
 
 procedure TSchedulesController.LoadSchedules;
@@ -156,14 +162,18 @@ var
 begin
   Result := SchedulesEnabled and DM.adtParams.FieldByName( 'UpdateDateTime').IsNull;
   if not Result then begin
-    updateItem := GetUpdateCheckItem();
-    for I := 0 to FSchedules.Count-1 do begin
-      currentSchedule := TScheduleItem(FSchedules[i]);
-      if currentSchedule.GreaterOrEqualThan(updateItem) then begin
-        Result := True;
-        Break;
+    if IsPreviosDayUpdate() then begin
+      updateItem := GetUpdateCheckItem();
+      for I := 0 to FSchedules.Count-1 do begin
+        currentSchedule := TScheduleItem(FSchedules[i]);
+        if currentSchedule.GreaterOrEqualThan(updateItem) then begin
+          Result := True;
+          Break;
+        end;
       end;
-    end;
+    end
+    else
+      Result := NeedUpdate();
   end;
 end;
 
