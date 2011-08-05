@@ -9,7 +9,8 @@ uses
   DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
   MyAccess, ActnList, Buttons,
   Menus, U_frameBaseLegend,
-  U_CurrentOrderItem;
+  U_CurrentOrderItem,
+  ContextMenuGrid;
 
 type
   TOrdersForm = class(TChildForm)
@@ -131,8 +132,7 @@ type
     //во время попытки отправки заказа
     OrderWithSendError : Boolean;
     dbgEditOrders: TDBGridEh;
-    FGridPopup : TPopupMenu;
-    FGridColumns : TMenuItem;
+    FContextMenuGrid : TContextMenuGrid;
     procedure SetOrderLabel;
     procedure ocf(DataSet: TDataSet);
     procedure FlipToCore;
@@ -144,7 +144,6 @@ type
   protected
     procedure UpdateOrderDataset; override;
     procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
-    procedure OnPopupGridColumnsClick( Sender: TObject);
   public
     frameLegend : TframeLegend;
     procedure ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean); overload; //reintroduce;
@@ -397,12 +396,7 @@ begin
   dbgEditOrders.OnKeyPress := dbgOrdersKeyPress;
   dbgEditOrders.OnSortMarkingChanged := dbgOrdersSortMarkingChanged;
 
-  FGridPopup := TPopupMenu.Create( Self);
-  dbgEditOrders.PopupMenu := FGridPopup;
-  FGridColumns := TMenuItem.Create(FGridPopup);
-  FGridColumns.Caption := 'Столбцы...';
-  FGridColumns.OnClick := OnPopupGridColumnsClick;
-  FGridPopup.Items.Add(FGridColumns);
+  FContextMenuGrid := TContextMenuGrid.Create(dbgEditOrders, DM.SaveGridMask);
 
   EtalonSQL := adsOrders.SQL.Text;
   dsCheckVolume := adsOrders;
@@ -667,6 +661,7 @@ end;
 
 procedure TOrdersForm.FormDestroy(Sender: TObject);
 begin
+  FContextMenuGrid.Free;
   inherited;
   TDBGridHelper.SaveColumnsLayout(dbgEditOrders, 'DetailOrder');
   TDBGridHelper.SaveColumnsLayout(dbgOrders, 'DetailOrder');
@@ -735,19 +730,6 @@ begin
       priceColumn.Font.Style := priceColumn.Font.Style - [fsBold];
       realPriceCoumn.Font.Style := realPriceCoumn.Font.Style + [fsBold];
     end;
-  end;
-end;
-
-procedure TOrdersForm.OnPopupGridColumnsClick(Sender: TObject);
-var
-  FColumnsForm : TfrmColumns;
-begin
-  FColumnsForm := TfrmColumns.Create(Self);
-  try
-    FColumnsForm.OwnerDBGrid := TToughDBGrid(dbgEditOrders);
-    FColumnsForm.ShowModal;
-  finally
-    FColumnsForm.Free;
   end;
 end;
 

@@ -15,7 +15,8 @@ uses
   ReestrReportParams,
   U_ReestrPrintSettingsForm,
   DataSetHelper,
-  GlobalSettingParams;
+  GlobalSettingParams,
+  ContextMenuGrid;
 
 const
   NDSNullValue = 'нет значений';
@@ -130,8 +131,7 @@ type
     realMarkupField : TFloatField;
     manualRetailPriceField : TFloatField;
 
-    FGridPopup : TPopupMenu;
-    FGridColumns : TMenuItem;
+    FContextMenuGrid : TContextMenuGrid;
 
     NeedLog,
     NeedCalcFieldsLog : Boolean;
@@ -174,8 +174,6 @@ type
     function GetRetailMarkupByPrice(price : Double) : Double;
     //Можем ли мы рассчитать розничную наценку, основываясь на полученных данных
     function CanCalculateRetailMarkup : Boolean;
-
-    procedure GridColumnsClick( Sender: TObject);
 
     function GetMinProducerCost() : Double;
     function GetMinProducerCostByField(RegistryCost, ProducerCost : TFloatField) : Double;
@@ -568,12 +566,7 @@ begin
   retailPriceField := TDataSetHelper.AddCalculatedFloatField(adsDocumentBodies, 'RetailPrice');
   realMarkupField := TDataSetHelper.AddCalculatedFloatField(adsDocumentBodies, 'RealMarkup');
 
-  FGridPopup := TPopupMenu.Create( Self);
-  dbgDocumentBodies.PopupMenu := FGridPopup;
-  FGridColumns := TMenuItem.Create(FGridPopup);
-  FGridColumns.Caption := 'Столбцы...';
-  FGridColumns.OnClick := GridColumnsClick;
-  FGridPopup.Items.Add(FGridColumns);
+  FContextMenuGrid := TContextMenuGrid.Create(dbgDocumentBodies, DM.SaveGridMask);
 
   CreateLegenPanel();
 
@@ -1103,19 +1096,6 @@ begin
         and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0);
      if NeedLog then Tracer.TR('CanCalculateRetailMarkup', 'не-ЖНВЛС SupplierCostWithoutNDS: ' + BoolToStr(Result, True));
     end
-  end;
-end;
-
-procedure TDocumentBodiesForm.GridColumnsClick(Sender: TObject);
-var
-  FColumnsForm : TfrmColumns;
-begin
-  FColumnsForm := TfrmColumns.Create(Self);
-  try
-    FColumnsForm.OwnerDBGrid := TToughDBGrid(dbgDocumentBodies);
-    FColumnsForm.ShowModal;
-  finally
-    FColumnsForm.Free;
   end;
 end;
 
@@ -2103,6 +2083,7 @@ end;
 procedure TDocumentBodiesForm.FormDestroy(Sender: TObject);
 begin
   FGlobalSettingParams.Free;
+  FContextMenuGrid.Free;
   inherited;
 end;
 

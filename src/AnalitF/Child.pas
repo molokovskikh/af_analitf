@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs,
   MyAccess, DBAccess, StdCtrls, DescriptionFrm, Buttons,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  Menus;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -21,8 +22,12 @@ type
     FFormHandle : THandle;
     FOldDBGridWndProc: TWndMethod;
     FGrid : TToughDBGrid;
+    FGridCopy : TMenuItem;
+    FOldOnBeforePopup : TNotifyEvent;
     procedure HackDBGirdWndProc(var Message: TMessage);
     procedure OnPopupCopyGridClick(Sender: TObject);
+    procedure OnBeforePopup(Sender : TObject);
+    function GetSaveFlag() : Boolean;
    public
     constructor Create(AFormHandle : THandle; AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
   end;
@@ -141,7 +146,7 @@ type
 
 implementation
 
-uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection, Menus, Core,
+uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection, Core,
   NamesForms,
   DBGridHelper, Variants;
 
@@ -555,19 +560,24 @@ end;
 
 constructor TDBComponentWindowProc.Create(AFormHandle: THandle;
   AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
-var
-  FGridCopy : TMenuItem;
 begin
   FFormHandle := AFormHandle;
   FOldDBGridWndProc := AOldDBGridWndProc;
   FGrid := Grid;
 
   if Assigned(FGrid.PopupMenu) then begin
+    FOldOnBeforePopup := FGrid.PopupMenu.OnPopup;
+    FGrid.PopupMenu.OnPopup := OnBeforePopup;
     FGridCopy := TMenuItem.Create(FGrid.PopupMenu);
     FGridCopy.Caption := 'Копировать';
     FGridCopy.OnClick := OnPopupCopyGridClick;
     FGrid.PopupMenu.Items.Add(FGridCopy);
   end;
+end;
+
+function TDBComponentWindowProc.GetSaveFlag: Boolean;
+begin
+  Result := ((FGrid.Tag and DM.SaveGridMask) > 0);  
 end;
 
 procedure TDBComponentWindowProc.HackDBGirdWndProc(var Message: TMessage);
@@ -902,11 +912,18 @@ begin
       end;
 end;
 
+procedure TDBComponentWindowProc.OnBeforePopup(Sender: TObject);
+begin
+  FGridCopy.Enabled := GetSaveFlag();
+  if Assigned(FOldOnBeforePopup) then
+    FOldOnBeforePopup(Sender);
+end;
+
 procedure TDBComponentWindowProc.OnPopupCopyGridClick(Sender: TObject);
 var
   SaveGridFlag : Boolean;
 begin
-  SaveGridFlag := ((FGrid.Tag and DM.SaveGridMask) > 0);
+  SaveGridFlag := GetSaveFlag();
   if SaveGridFlag then
     TDBGridHelper.CopyGridToClipboard(FGrid);
 end;
