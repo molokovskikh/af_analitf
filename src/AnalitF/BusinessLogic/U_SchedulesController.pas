@@ -25,8 +25,8 @@ type
     Id : Int64;
     Hour,
     Minute : Integer;
-    function LessThan(checkItem : TScheduleCheckItem) : Boolean;
-    function GreaterOrEqualThan(checkItem : TScheduleCheckItem) : Boolean;
+    function LessOrEqualThan(checkItem : TScheduleCheckItem) : Boolean;
+    function GreaterThan(checkItem : TScheduleCheckItem) : Boolean;
   end;
 
   TSchedulesController = class
@@ -146,8 +146,8 @@ begin
   
   for I := 0 to FSchedules.Count-1 do begin
     currentSchedule := TScheduleItem(FSchedules[i]);
-    if currentSchedule.GreaterOrEqualThan(updateItem) then begin
-      if currentSchedule.LessThan(currentItem) then
+    if currentSchedule.GreaterThan(updateItem) then begin
+      if currentSchedule.LessOrEqualThan(currentItem) then
         Result := True;
       Break;
     end;
@@ -166,7 +166,7 @@ begin
       updateItem := GetUpdateCheckItem();
       for I := 0 to FSchedules.Count-1 do begin
         currentSchedule := TScheduleItem(FSchedules[i]);
-        if currentSchedule.GreaterOrEqualThan(updateItem) then begin
+        if currentSchedule.GreaterThan(updateItem) then begin
           Result := True;
           Break;
         end;
@@ -184,21 +184,21 @@ end;
 
 { TScheduleItem }
 
-function TScheduleItem.GreaterOrEqualThan(checkItem: TScheduleCheckItem): Boolean;
+function TScheduleItem.GreaterThan(checkItem: TScheduleCheckItem): Boolean;
 begin
   Result :=
   (Hour > checkItem.Hour)
   or
-  ((Hour >= checkItem.Hour) and (Minute >= checkItem.Minute));
+  ((Hour >= checkItem.Hour) and (Minute > checkItem.Minute));
 end;
 
-function TScheduleItem.LessThan(
+function TScheduleItem.LessOrEqualThan(
   checkItem: TScheduleCheckItem): Boolean;
 begin
   result :=
   (Hour < checkItem.Hour)
   or
-  ((Hour = checkItem.Hour) and (Minute < checkItem.Minute));
+  ((Hour = checkItem.Hour) and (Minute <= checkItem.Minute));
 end;
 
 initialization

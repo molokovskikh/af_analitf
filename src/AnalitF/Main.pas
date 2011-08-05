@@ -1867,13 +1867,18 @@ begin
 
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
     if SchedulesController().NeedUpdate then begin
-      ShowAction(
-        '—ейчас будет произведено обновление данных '#13#10 +
-        'по установленному расписанию.',
-        'ќбновление',
-        10);
-      tmrOnNeedUpdate.Enabled := False;
-      tmrOnNeedUpdate.Enabled := True;
+      tmrNeedUpdateCheck.Enabled := False;
+      try
+        ShowAction(
+          '—ейчас будет произведено обновление данных '#13#10 +
+          'по установленному расписанию.',
+          'ќбновление',
+          10);
+        tmrOnNeedUpdate.Enabled := False;
+        tmrOnNeedUpdate.Enabled := True;
+      finally
+        tmrNeedUpdateCheck.Enabled := True;
+      end;
     end;
   end;
 end;

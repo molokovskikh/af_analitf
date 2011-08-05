@@ -4031,7 +4031,7 @@ object MainForm: TMainForm
   end
   object tmrNeedUpdateCheck: TTimer
     Enabled = False
-    Interval = 60000
+    Interval = 20000
     OnTimer = tmrNeedUpdateCheckTimer
     Left = 408
     Top = 280
