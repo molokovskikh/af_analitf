@@ -21,7 +21,8 @@ uses
   AddressController,
   KeyboardHelper,
   SupplierController,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  UserActions;
 
 {
 Криптование
@@ -558,6 +559,9 @@ type
       OrderId : Int64;
       CoreId : Variant);
 
+    procedure InsertUserActionLog(UserActionId : TUserAction); overload;  
+    procedure InsertUserActionLog(UserActionId : TUserAction; Contexts : array of string); overload;
+
   end;
 
 var
@@ -810,6 +814,7 @@ begin
     WriteExchangeLog('AnalitF', 'Попытка закрыть программу.');
     if Assigned(DM) then begin
       if DM.MainConnection.Connected then begin
+        DM.InsertUserActionLog(uaStop);
         try
           DM.adtParams.Edit;
           DM.adtParams.FieldByName( 'ClientId').Value :=
@@ -1070,6 +1075,12 @@ begin
 
   MainConnection.Open;
   GlobalExclusiveParams := TExclusiveParams.Create(MainConnection);
+{$ifdef DEBUG}
+  WriteExchangeLog('DModule',
+      Concat('UserActionLogs', #13#10,
+        DM.DataSetToString('select * from UserActionLogs', [], [])));
+{$endif}
+  InsertUserActionLog(uaStart);
 
   //todo: здесь могут быть ошибки при создании папки, их надо обработать
   if not GetNetworkSettings.IsNetworkVersion then
@@ -5302,6 +5313,36 @@ begin
    MainConnection.ExecSQL(
     'update CurrentOrderLists set `Comment` = :Comment where OrderId = :OrderId and CoreId = :CoreId',
     [newComment, OrderId, CoreId]);
+end;
+
+procedure TDM.InsertUserActionLog(UserActionId: TUserAction);
+begin
+  InsertUserActionLog(UserActionId, []);
+end;
+
+procedure TDM.InsertUserActionLog(UserActionId: TUserAction;
+  Contexts: array of string);
+var
+  context : String;
+  I : Integer;
+  contextVariant : Variant;
+begin
+  context := '';
+  contextVariant := Null;
+  for I := Low(Contexts) to High(Contexts) do
+    if Length(Contexts[i]) > 0 then
+      if Length(context) > 0 then
+        context := context + ', ' + Contexts[i]
+      else
+        context := Contexts[i];
+  if Length(context) > 0 then
+    contextVariant := context;
+
+  DBProc.UpdateValue(
+    MainConnection,
+    'insert into useractionlogs (UserActionId, Context) values (:UserActionId, :Context)',
+    ['UserActionId', 'Context'],
+    [UserActionId, contextVariant]);
 end;
 
 initialization

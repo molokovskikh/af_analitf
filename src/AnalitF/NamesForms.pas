@@ -135,6 +135,8 @@ type
     procedure ShowForm; override;
     procedure SetCatalog;
     procedure ReturnFromCore;
+    class function UseNewSearch() : Boolean;
+    class procedure SaveNewSearch(newSearchValue : Boolean);
   end;
 
 procedure ShowOrderAll;
@@ -306,8 +308,6 @@ begin
 end;
 
 procedure TNamesFormsForm.FormCreate(Sender: TObject);
-var
-  Reg: TRegistry;
 begin
   PrepareFormsGridPanel;
   PrepareAdvertisingPanel;
@@ -336,18 +336,13 @@ begin
   BM := TBitmap.Create;
 
   InternalSearchText := '';
-  
+
   NeedFirstOnDataSet := False;
 
   fr := TForceRus.Create;
 
   //Читаем настройки из реестра
-  Reg := TRegistry.Create;
-  Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
-  actNewSearch.Checked := False;
-  if Reg.ValueExists('NewSearch') then
-    actNewSearch.Checked := Reg.ReadBool('NewSearch');
-  Reg.Free;
+  actNewSearch.Checked := UseNewSearch();
 
   with DM.adtParams do
   begin
@@ -1219,8 +1214,6 @@ begin
 end;
 
 procedure TNamesFormsForm.SaveActionStates;
-var
-  Reg: TRegistry;
 begin
   with DM.adtParams do
   begin
@@ -1229,10 +1222,7 @@ begin
     FieldByName( 'ShowAllCatalog').AsBoolean := actShowAll.Checked;
     Post;
   end;
-  Reg := TRegistry.Create;
-  Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
-  Reg.WriteBool('NewSearch', actNewSearch.Checked);
-  Reg.Free;
+  SaveNewSearch(actNewSearch.Checked);
 end;
 
 procedure TNamesFormsForm.PrepareAdvertisingPanel;
@@ -1277,6 +1267,35 @@ begin
   pForms.Align := dbgForms.Align;
   dbgForms.Parent := pForms;
   dbgForms.Align := alClient;
+end;
+
+class function TNamesFormsForm.UseNewSearch: Boolean;
+var
+  Reg : TRegistry;
+begin
+  Result := False;
+  //Читаем настройки из реестра
+  Reg := TRegistry.Create;
+  try
+    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
+    if Reg.ValueExists('NewSearch') then
+      Result := Reg.ReadBool('NewSearch');
+  finally
+    Reg.Free;
+  end;
+end;
+
+class procedure TNamesFormsForm.SaveNewSearch(newSearchValue: Boolean);
+var
+  Reg: TRegistry;
+begin
+  Reg := TRegistry.Create;
+  try
+    Reg.OpenKey( 'Software\Inforoom\AnalitF\' + GetPathCopyID, True);
+    Reg.WriteBool('NewSearch', newSearchValue);
+  finally
+    Reg.Free;
+  end;
 end;
 
 initialization

@@ -158,7 +158,8 @@ uses
   U_ReestrPrintSettingsForm in 'Views\U_ReestrPrintSettingsForm.pas' {ReestrPrintSettingsForm},
   U_frameAutoComment in 'Views\U_frameAutoComment.pas' {frameAutoComment: TFrame},
   U_SchedulesController in 'BusinessLogic\U_SchedulesController.pas',
-  ContextMenuGrid in 'Helpers\ContextMenuGrid.pas';
+  ContextMenuGrid in 'Helpers\ContextMenuGrid.pas',
+  UserActions in 'BusinessLogic\UserActions.pas';
 
 {$R *.RES}
 {$R EraserDLL.RES}

@@ -11,7 +11,9 @@ uses
   MemDS, DBAccess, MyAccess, U_VistaCorrectForm, Contnrs,
   DayOfWeekDelaysController,
   SQLWaiting,
-  U_SchedulesController;
+  U_SchedulesController,
+  UserActions,
+  StrUtils;
 
 type
 
@@ -568,6 +570,7 @@ procedure TMainForm.actConfigExecute(Sender: TObject);
 var
   OldExep : TExceptionEvent;
 begin
+  DM.InsertUserActionLog(uaShowConfig);
   OldExep := Application.OnException;
   try
     Application.OnException := OnAppEx;
@@ -590,17 +593,43 @@ begin
 end;
 
 procedure TMainForm.actOrderAllExecute(Sender: TObject);
+var
+  newSearch,
+  allCatalog,
+  useForms : Boolean;
 begin
+  try
+    if not DM.adtParams.FieldByName( 'OperateForms').AsBoolean then
+      useForms := True
+    else
+      useForms := DM.adtParams.FieldByName( 'UseForms').AsBoolean;
+    allCatalog := DM.adtParams.FieldByName( 'ShowAllCatalog').AsBoolean;
+    newSearch := TNamesFormsForm.UseNewSearch();
+
+    DM.InsertUserActionLog(
+      uaCatalogSearch,
+      [
+        IfThen(newSearch, 'Поиск по части наименования'),
+        IfThen(allCatalog, 'Отображать весь каталог'),
+        IfThen(useForms, 'Поиск по форме выпуска')
+      ]);
+  except
+    on E : Exception do
+      WriteExchangeLog('TMainForm.actOrderAllExecute',
+        'Ошибка при логировании: ' + ExceptionToString(E));
+  end;
   ShowOrderAll;
 end;
 
 procedure TMainForm.actOrderPriceExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowPrices);
   ShowPrices;
 end;
 
 procedure TMainForm.actOrderSummaryExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowSummaryOrder);
   ShowSummary;
 end;
 
@@ -633,6 +662,7 @@ end;
 
 procedure TMainForm.actDefectivesExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowDefectives);
   ShowChildForm( TDefectivesForm );
 end;
 
@@ -662,6 +692,7 @@ end;
 
 procedure TMainForm.actClosedOrdersExecute( Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowOrders);
   if ActiveChild is TCoreForm then
   begin
     TCoreForm(ActiveChild).ShowOrdersH;
@@ -676,6 +707,7 @@ end;
 
 procedure TMainForm.actSaleExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowExpireds);
   ShowChildForm( TExpiredsForm );
 end;
 
@@ -684,6 +716,7 @@ var
   CatNum: integer;
   ExAct: TExchangeActions;
 begin
+  DM.InsertUserActionLog(uaGetData);
   ExAct := [ eaGetPrice];
 
   { Проверяем каталог на наличие записей }
@@ -704,6 +737,7 @@ end;
 
 procedure TMainForm.actReceiveAllExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaGetCumulative);
   if AProc.MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
     MB_ICONQUESTION or MB_OKCANCEL) = IDOK
   then begin
@@ -925,6 +959,7 @@ procedure TMainForm.actSendOrdersExecute(Sender: TObject);
 var
   correctResult : TCorrectResult;
 begin
+  DM.InsertUserActionLog(uaSendOrders);
   if DM.adtParams.FieldByName('ConfirmSendingOrders').AsBoolean then
     if AProc.MessageBox( 'Вы действительно хотите отправить заказы?',
        MB_ICONQUESTION or MB_YESNO or MB_DEFBUTTON2) = IDNO
@@ -1069,6 +1104,7 @@ end;
 
 procedure TMainForm.actHomeExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaHome);
   //Отображаем "пустое" главное окно, поэтому закрываем все дочерние формы
   MainForm.FreeChildForms;
   UpdateReclame;
@@ -1171,7 +1207,7 @@ begin
         tmrRestoreOnError.Enabled := True;
       end
       else begin
-        AProc.LogCriticalError(S + ' ' + E.Message);
+        AProc.LogCriticalError(S + ' ' + ExceptionToString(E));
         Mess := Format('В программе произошла необработанная ошибка:'#13#10 +
           '%s'#13#10'%s'#13#10#13#10 +
           'Завершить работу программы?', [S, E.Message]);
@@ -1195,6 +1231,7 @@ end;
 
 procedure TMainForm.actWayBillExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaSendWaybills);
   RunExchange( [eaSendWaybills] );
 
   //Обновляем ToolBar в случае смены клиента после обновления
@@ -1203,6 +1240,7 @@ end;
 
 procedure TMainForm.actSynonymSearchExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaSynonymSearch);
   ShowSynonymSearch;
 end;
 
@@ -1320,6 +1358,7 @@ end;
 
 procedure TMainForm.actViewDocsExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowDocuments);
   if not DM.adsUser.IsEmpty and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
   then
     ShowDocumentHeaders
@@ -1500,6 +1539,7 @@ end;
 
 procedure TMainForm.actMnnSearchExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaMnnSearch);
   ShowMnnSearch;
 end;
 
@@ -1594,6 +1634,7 @@ end;
 
 procedure TMainForm.actPostOrderBatchExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowOrderBatch);
   ShowOrderBatch;
 end;
 
@@ -1742,6 +1783,7 @@ end;
 
 procedure TMainForm.actShowMinPricesExecute(Sender: TObject);
 begin
+  DM.InsertUserActionLog(uaShowMinPrices);
   ShowMinPrices;
 end;
 
