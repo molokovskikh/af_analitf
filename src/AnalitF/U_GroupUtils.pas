@@ -3,7 +3,8 @@ unit U_GroupUtils;
 interface
 
 uses
-  SysUtils, Classes, Graphics, DB;
+  SysUtils, Classes, Graphics, DB,
+  Constant;
 
 type
   SortGroup = class
@@ -208,7 +209,7 @@ begin
         case ColorIndex of
           0 : CurrElem.SelectedColor := clWhite;
           else
-              CurrElem.SelectedColor := $000078a0;//clSkyBlue; RGB = (160, 120, 0) => BGR = (00, 120, 160) 
+              CurrElem.SelectedColor := GroupColor;
         end;
       end;
     end;

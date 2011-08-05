@@ -470,7 +470,7 @@ begin
       then begin
         ColorIndex := adsCoreColorIndex.AsInteger;
         if ColorIndex mod 2 = 0 then
-          Background := $000078a0; //clSkyBlue;
+          Background := GroupColor;
       end;
 
       if adsCoreVITALLYIMPORTANT.AsBoolean then
