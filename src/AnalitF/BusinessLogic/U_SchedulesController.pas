@@ -157,6 +157,7 @@ end;
 function TSchedulesController.NeedUpdateOnBegin: Boolean;
 var
   I : Integer;
+  currentItem,
   updateItem : TScheduleCheckItem;
   currentSchedule : TScheduleItem;
 begin
@@ -164,15 +165,19 @@ begin
   if not Result then begin
     if IsPreviosDayUpdate() then begin
       updateItem := GetUpdateCheckItem();
+      currentItem := GetCurrentCheckItem();
       for I := 0 to FSchedules.Count-1 do begin
         currentSchedule := TScheduleItem(FSchedules[i]);
-        if currentSchedule.GreaterThan(updateItem) then begin
+        if currentSchedule.GreaterThan(updateItem) or
+           currentSchedule.LessOrEqualThan(currentItem)
+        then begin
           Result := True;
           Break;
         end;
       end;
-    end
-    else
+    end;
+
+    if not Result then
       Result := NeedUpdate();
   end;
 end;
