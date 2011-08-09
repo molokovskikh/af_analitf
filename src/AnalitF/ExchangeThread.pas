@@ -15,7 +15,8 @@ uses
   ArchiveHelper,
   UserMessageParams,
   NetworkSettings,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  GlobalParams;
 
 type
 
@@ -2244,6 +2245,7 @@ begin
   DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime :=
     DM.adtParams.FieldByName( 'LastDateTime').AsDateTime;
   DM.adtParams.Post;
+  TGlobalParamsHelper.SaveParam(DM.MainConnection, 'LocalUpdateDateTime', Now());
   CheckFieldAfterUpdate('UpdateDateTime');
   except
     on PostException : Exception do begin

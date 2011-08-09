@@ -23,11 +23,20 @@ type
     procedure SaveParam(ParamName : String; ParamValue : Variant);
   end;
 
+  TGlobalParamsHelper = class
+    class function GetParamDef(Connection : TCustomMyConnection; ParamName : String; DefaultValue : Variant) : Variant;
+    class procedure SaveParam(Connection : TCustomMyConnection; ParamName : String; ParamValue : Variant);
+  end;
 
 implementation
 
 uses
   Variants;
+
+type
+  TGlobalParamsImp = class(TGlobalParams)
+    procedure ReadParams; override;
+  end;
 
 { TGlobalParams }
 
@@ -78,6 +87,42 @@ end;
 procedure TGlobalParams.SaveParams;
 begin
   DatabaseController.BackupDataTable(doiGlobalParams);
+end;
+
+{ TGlobalParamsImp }
+
+procedure TGlobalParamsImp.ReadParams;
+begin
+end;
+
+{ TGlobalParamsHelper }
+
+class function TGlobalParamsHelper.GetParamDef(
+  Connection: TCustomMyConnection; ParamName: String;
+  DefaultValue: Variant): Variant;
+var
+  params : TGlobalParamsImp;
+begin
+  params := TGlobalParamsImp.Create(Connection);
+  try
+    Result := params.GetParamDef(ParamName, DefaultValue);
+  finally
+    params.Free;
+  end;
+end;
+
+class procedure TGlobalParamsHelper.SaveParam(
+  Connection: TCustomMyConnection; ParamName: String; ParamValue: Variant);
+var
+  params : TGlobalParamsImp;
+begin
+  params := TGlobalParamsImp.Create(Connection);
+  try
+    params.SaveParam(ParamName, ParamValue);
+    params.SaveParams;
+  finally
+    params.Free;
+  end;
 end;
 
 end.

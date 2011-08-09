@@ -12,6 +12,7 @@ uses
   ExchangeParameters,
   U_ExchangeLog,
   MyAccess,
+  GlobalParams,
   U_DBMapping;
 
 type
@@ -42,6 +43,8 @@ type
     function IsPreviosDayUpdate : Boolean;
     function GetUpdateCheckItem : TScheduleCheckItem;
     function GetCurrentCheckItem : TScheduleCheckItem;
+    function GetLocalUpdateDateTimeAsVariant : Variant;
+    function GetLocalUpdateDateTime : TDateTime;
   end;
 
   function SchedulesController() : TSchedulesController;
@@ -76,18 +79,44 @@ begin
   DecodeTime(Now(), Result.Hour, Result.Minute, tmp, tmp);
 end;
 
+function TSchedulesController.GetLocalUpdateDateTime: TDateTime;
+var
+  defaultValue : TDateTime;
+  varValue : Variant;
+begin
+  defaultValue := Date()-1;
+  varValue := GetLocalUpdateDateTimeAsVariant();
+
+  if VarIsNull(varValue) then
+    Result := defaultValue
+  else
+    try
+      Result := VarToDateTime(varValue);
+    except
+      Result := defaultValue
+    end;
+end;
+
+function TSchedulesController.GetLocalUpdateDateTimeAsVariant: Variant;
+begin
+  Result := TGlobalParamsHelper.GetParamDef(
+    DM.MainConnection,
+    'LocalUpdateDateTime',
+    Null);
+end;
+
 function TSchedulesController.GetUpdateCheckItem: TScheduleCheckItem;
 var
   d : TDateTime;
   tmp : Word;
 begin
-  d := UTCToLocalTime(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
+  d := GetLocalUpdateDateTime();
   DecodeTime(d, Result.Hour, Result.Minute, tmp, tmp);
 end;
 
 function TSchedulesController.IsPreviosDayUpdate: Boolean;
 begin
-  Result := UTCToLocalTime(DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime) < Date();
+  Result := GetLocalUpdateDateTime() < Date();
 end;
 
 procedure TSchedulesController.LoadSchedules;
@@ -161,7 +190,7 @@ var
   updateItem : TScheduleCheckItem;
   currentSchedule : TScheduleItem;
 begin
-  Result := SchedulesEnabled and DM.adtParams.FieldByName( 'UpdateDateTime').IsNull;
+  Result := SchedulesEnabled and VarIsNull(GetLocalUpdateDateTimeAsVariant());
   if not Result then begin
     if IsPreviosDayUpdate() then begin
       updateItem := GetUpdateCheckItem();
