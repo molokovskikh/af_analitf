@@ -198,6 +198,7 @@ type
     procedure CreateLegenPanel;
     procedure FillNDSFilter();
     procedure AddNDSFilter();
+    procedure ReadSettings();
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -505,7 +506,6 @@ procedure TDocumentBodiesForm.FormCreate(Sender: TObject);
 var
   calc : TField;
 begin
-  CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
   FGlobalSettingParams := TGlobalSettingParams.Create(DM.MainConnection);
   NeedLog := FindCmdLineSwitch('extd');
   //Добавлем наценки
@@ -685,6 +685,7 @@ var
   blockedWaybillAsVitallyImportant : Boolean;
   LastSort : String;
 begin
+  ReadSettings();
   //retailPriceField.OnChange := nil;
   //retailMarkupField.OnChange := nil;
   //adsDocumentBodiesVitallyImportant.OnChange := nil;
@@ -2104,6 +2105,12 @@ begin
     adsDocumentBodiesRegistryCost,
     adsDocumentBodiesProducerCost,
     NDSField); 
+end;
+
+procedure TDocumentBodiesForm.ReadSettings;
+begin
+  CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
+  FGlobalSettingParams.ReadParams;
 end;
 
 end.
