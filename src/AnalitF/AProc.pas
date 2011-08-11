@@ -797,6 +797,7 @@ end;
 function GetLibraryVersionFromPathForExe(AName: String): String;
 var
   RxVer : TVersionInfo;
+  le : DWord;
 begin
   if FileExists(AName) then begin
     try
@@ -822,7 +823,9 @@ begin
     end;
   end
   else begin
-    WriteExchangeLog('VersionForExe', 'Файла не существует: ' + AName);
+    le := GetLastError();
+    WriteExchangeLog('VersionForExe', 'Файла не существует: ' + AName + #13#19
+    + IntToStr(le) + ' ' + SysErrorMessage(le));
     Result := '';
   end
 end;
