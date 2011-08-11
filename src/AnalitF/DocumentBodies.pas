@@ -1296,20 +1296,25 @@ end;
 function TDocumentBodiesForm.GetTotalSupplierSumm: Double;
 var
   Mark: String;
+  supplierCostField,
+  quantityField : TField;
 begin
   Result := 0;
-  adsDocumentBodies.DisableControls;
-  Mark := adsDocumentBodies.Bookmark;
+  supplierCostField := mdReport.FindField('SupplierCost');
+  quantityField := mdReport.FindField('Quantity');
+  mdReport.DisableControls;
+  Mark := mdReport.Bookmark;
   try
-    adsDocumentBodies.First;
-    while not adsDocumentBodies.Eof do begin
-      Result := Result + adsDocumentBodiesSupplierCost.Value * adsDocumentBodiesQuantity.Value; 
-      adsDocumentBodies.Next;
+    mdReport.First;
+    while not mdReport.Eof do begin
+      Result := Result + supplierCostField.AsFloat * quantityField.AsInteger;
+      mdReport.Next;
     end;
   finally
-    adsDocumentBodies.Bookmark := Mark;
-    adsDocumentBodies.EnableControls;
+    mdReport.Bookmark := Mark;
+    mdReport.EnableControls;
   end;
+
 end;
 
 procedure TDocumentBodiesForm.DoActionOnPrinted(Action: TThreadMethod);
@@ -1688,7 +1693,7 @@ var
   totatSupplierSumm : Currency;
   V: array[0..0] of Variant;
 begin
-  DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
+  DBProc.DataSetCalc(mdReport, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
   totatSupplierSumm := GetTotalSupplierSumm();
 
@@ -1727,7 +1732,7 @@ var
   totatSupplierSumm : Currency;
   V: array[0..0] of Variant;
 begin
-  DBProc.DataSetCalc(adsDocumentBodies, ['Sum(RetailSumm)'], V);
+  DBProc.DataSetCalc(mdReport, ['Sum(RetailSumm)'], V);
   totalRetailSumm := V[0];
   totatSupplierSumm := GetTotalSupplierSumm();
 
