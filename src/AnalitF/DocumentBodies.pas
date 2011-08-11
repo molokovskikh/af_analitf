@@ -436,8 +436,14 @@ begin
       maxRetailMarkupField.Value := maxMarkup;
       if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальная розничная наценка: ' + maxRetailMarkupField.AsString);
     end
-    else
+    else begin
       if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Цена производителя: null');
+      if not CalculateOnProducerCost and not adsDocumentBodiesVitallyImportant.Value
+      then begin
+        maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+        maxRetailMarkupField.Value := maxMarkup;
+      end;
+    end;
 
     if not retailMarkupField.IsNull then begin
       if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Розничная наценка: ' + retailMarkupField.AsString);
@@ -1960,6 +1966,13 @@ begin
         end;
       end;
       mdMaxRetailMarkupField.Value := maxMarkup;
+    end
+    else begin
+      if not CalculateOnProducerCost and not mdReport.FieldByName('VitallyImportant').AsBoolean
+      then begin
+        maxMarkup := DM.GetMaxRetailMarkup(mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat);
+        mdMaxRetailMarkupField.Value := maxMarkup;
+      end;
     end;
 
     if not mdReport.FieldByName('RetailMarkup').IsNull then begin
