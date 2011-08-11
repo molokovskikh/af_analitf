@@ -16,7 +16,8 @@ uses
   UserMessageParams,
   NetworkSettings,
   DayOfWeekHelper,
-  GlobalParams;
+  GlobalParams,
+  DBGridHelper;
 
 type
 
@@ -129,6 +130,10 @@ private
   procedure GetPass;
   procedure PriceDataSettings;
   procedure CommitExchange;
+  procedure SendUserActions;
+  function GetUserLogCount() : Integer;
+  procedure ExportUserLogs(exportFileName, limitCondition : String);
+  function  GetEncodedUserLogsFileContent(exportFileName: String) : String;
   procedure DoExchange;
   procedure DoSendLetter;
   procedure DoSendSomeOrders;
@@ -1107,6 +1112,10 @@ begin
       CreateExchangeLog();
     end;
   end;
+  
+  if ((eaGetPrice in ExchangeForm.ExchangeActs) or (eaPostOrderBatch in ExchangeForm.ExchangeActs))
+  then
+    SendUserActions();
 end;
 
 procedure TExchangeThread.RasConnect;
@@ -3997,6 +4006,113 @@ procedure TExchangeThread.ImportDownloadOrders;
 begin
   FillDistinctOrderAddresses('CurrentOrderHeads');
   ImportOrders('CurrentOrderHeads', 'CurrentOrderLists', True);
+end;
+
+procedure TExchangeThread.SendUserActions;
+const
+  MaxSendLogCount = 3000;
+var
+  Res: TStrings;
+  ParamNames, ParamValues : array of String;
+  logCount : Integer;
+  limitCondition : String;
+  exportFileName : String;
+  archiveContent : String;
+begin
+  try
+    logCount := GetUserLogCount();
+
+    if logCount > 0 then begin
+      if logCount <= MaxSendLogCount then
+        limitCondition := ' limit ' + IntToStr(logCount)
+      else
+        limitCondition := ' limit ' + IntToStr(logCount - MaxSendLogCount) + ', 3000 ';
+
+      exportFileName := ChangeFileExt(TDBGridHelper.GetTempFileToExport(), '.txt');
+      try
+        ExportUserLogs(exportFileName, limitCondition);
+
+        archiveContent := GetEncodedUserLogsFileContent(exportFileName);
+
+        SetLength(ParamNames, 3);
+        SetLength(ParamValues, 3);
+        ParamNames[0]  := 'ExeVersion';
+        ParamValues[0] := GetLibraryVersionFromPathForExe(ExePath + ExeName);
+        ParamNames[1]  := 'UpdateId';
+        ParamValues[1] := GetUpdateId();
+        ParamNames[2]  := 'UserActionLogsFile';
+        ParamValues[2] := archiveContent;
+
+        Res := SOAP.Invoke( 'SendUserActions', ParamNames, ParamValues);
+
+        if AnsiContainsText(Res.Text, 'Res=OK') then
+          DBProc.UpdateValue(
+            DM.MainConnection,
+            'delete from analitf.useractionlogs',
+            [],
+            [])
+        else
+          WriteExchangeLog('SendUserActions', 'При отправки статистики возникла ошибка: ' + Res.Text);
+
+      finally
+        if FileExists(exportFileName) then
+          OSDeleteFile(exportFileName, False);
+      end;
+    end;
+  except
+    on E : Exception do
+      WriteExchangeLog('SendUserActions', 'Ошибка: ' + ExceptionToString(E));
+  end;
+end;
+
+function TExchangeThread.GetUserLogCount: Integer;
+begin
+  try
+    Result := DM.QueryValue('SELECT COUNT(*) FROM UserActionLogs', [], []);
+  except
+    on E : Exception do begin
+      Result := 0;
+      WriteExchangeLog('GetUserLogCount', 'Ошибка: ' + ExceptionToString(E));
+    end;
+  end;
+end;
+
+procedure TExchangeThread.ExportUserLogs(exportFileName, limitCondition: String);
+var
+  MySqlPathToBackup : String;
+begin
+  MySqlPathToBackup := StringReplace(exportFileName, '\', '/', [rfReplaceAll]);
+  try
+    DBProc.UpdateValue(
+      DM.MainConnection,
+      Format(
+        'select LogTime, UserActionId, Context from analitf.useractionlogs %s INTO OUTFILE ''%s'';',
+        [
+         limitCondition,
+         MySqlPathToBackup
+        ]
+      ),
+      [],
+      []);
+  except
+    on E : Exception do begin
+      WriteExchangeLog('ExportUserLogs', 'Во время экспорта логов возникла ошибка: ' + ExceptionToString(E));
+      raise;
+    end;
+  end;
+end;
+
+function TExchangeThread.GetEncodedUserLogsFileContent(
+  exportFileName: String): String;
+var
+  ah : TArchiveHelper;
+begin
+  ah := TArchiveHelper.Create(exportFileName);
+  try
+    Result := ah.GetEncodedContent();
+  finally
+    ah.Free;
+  end;
 end;
 
 initialization
