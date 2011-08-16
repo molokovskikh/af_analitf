@@ -404,8 +404,8 @@ begin
   TDBGridHelper.AddColumn(dbgCore, 'NDS', 'НДС', 20);
 
   //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
-    and DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean
+  if FAllowDelayOfPayment
+    and FShowSupplierCost
   then
     column := TDBGridHelper.AddColumn(dbgCore, 'RealCost', 'Цена поставщика', 30);
   column := TDBGridHelper.AddColumn(dbgCore, 'Cost', 'Цена', '0.00;;''''', 55);
@@ -901,10 +901,16 @@ end;
 procedure TMinPricesForm.adsCoreCalcFields(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency :=
-      DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value,
-        adsCoreRealCost.AsCurrency);
+    if FAllowDelayOfPayment and not FShowSupplierCost then
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreCost.AsCurrency)
+    else
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreRealCost.AsCurrency);
   except
   end;
 end;

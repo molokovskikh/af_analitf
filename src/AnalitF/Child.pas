@@ -73,6 +73,8 @@ type
     ModifiedActions        : TObjectList;
 
     FUseCorrectOrders : Boolean;
+    FAllowDelayOfPayment : Boolean;
+    FShowSupplierCost : Boolean;
 
     gotoMNNAction : TAction;
     gotoMNNButton : TSpeedButton;
@@ -333,6 +335,9 @@ begin
   NeedFirstOnDataSet := True;
   SortOnOrderGrid := True;
   FUseCorrectOrders := DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean;
+  FAllowDelayOfPayment := DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean;
+  FShowSupplierCost := DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean;
+
   ModifiedActions        := TObjectList.Create(True);
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
@@ -722,8 +727,8 @@ begin
     realCostColumn.Title.Caption := 'Цена поставщика';
     realCostColumn.Width := Grid.Canvas.TextWidth('0000.00');
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-    if not DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
-      or not DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean
+    if not FAllowDelayOfPayment
+      or not FShowSupplierCost
     then
       Grid.Columns.Delete(realCostColumn.Index)
     else

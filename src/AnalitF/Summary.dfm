@@ -1297,6 +1297,11 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryComment: TStringField
       FieldName = 'Comment'
     end
+    object adsSummaryPrintCost: TFloatField
+      FieldKind = fkCalculated
+      FieldName = 'PrintCost'
+      Calculated = True
+    end
   end
   object tmrFillReport: TTimer
     Enabled = False

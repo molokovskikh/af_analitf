@@ -278,6 +278,7 @@ type
     adsOrderDetailsRetailCost: TFloatField;
     adsOrderDetailsRetailVitallyImportant: TBooleanField;
     adsOrderDetailsComment: TStringField;
+    adsOrderDetailsPrintPrice: TFloatField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -2710,6 +2711,11 @@ begin
 
   adsPrintOrderHeader.SQL.Text := adsPrintOrderHeader.SQLRefresh.Text;
   adsOrderDetails.SQL.Text := adsOrderDetailsEtalon.SQL.Text;
+
+  if adsUser.FieldByName('AllowDelayOfPayment').AsBoolean and not adsUser.FieldByName('ShowSupplierCost').AsBoolean then begin
+    adsOrderDetails.SQL.Text := StringReplace(adsOrderDetails.SQL.Text, 'list.RealPrice as PrintPrice', 'list.Price as PrintPrice', [rfReplaceAll, rfIgnoreCase]);
+    adsOrderDetails.SQL.Text := StringReplace(adsOrderDetails.SQL.Text, 'list.RealPrice*list.OrderCount AS SumOrder', 'list.Price*list.OrderCount AS SumOrder', [rfReplaceAll, rfIgnoreCase]);
+  end;
 
   if Closed then begin
     adsPrintOrderHeader.SQL.Text := StringReplace(adsPrintOrderHeader.SQL.Text, 'CurrentOrderHeads', 'PostedOrderHeads', [rfReplaceAll, rfIgnoreCase]);

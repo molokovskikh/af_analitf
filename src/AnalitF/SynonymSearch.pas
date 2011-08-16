@@ -323,10 +323,16 @@ end;
 procedure TSynonymSearchForm.ccf(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency :=
-      DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value,
-        adsCoreRealCost.AsCurrency);
+    if FAllowDelayOfPayment and not FShowSupplierCost then
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreCost.AsCurrency)
+    else
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreRealCost.AsCurrency);
 {
     if Assigned(SortList) then
       adsCoreSortOrder.AsInteger := SortList.IndexOf(adsCoreCOREID.AsString);

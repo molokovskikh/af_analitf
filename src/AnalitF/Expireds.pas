@@ -171,10 +171,16 @@ end;
 procedure TExpiredsForm.ecf(DataSet: TDataSet);
 begin
   try
-    adsExpiredsCryptPriceRet.AsCurrency :=
-      DM.GetRetailCostLast(
-        adsExpiredsRetailVitallyImportant.Value,
-        adsExpiredsRealCost.AsCurrency);
+    if FAllowDelayOfPayment and not FShowSupplierCost then
+      adsExpiredsCryptPriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsExpiredsRetailVitallyImportant.Value,
+          adsExpiredsCost.AsCurrency)
+    else
+      adsExpiredsCryptPriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsExpiredsRetailVitallyImportant.Value,
+          adsExpiredsRealCost.AsCurrency);
   except
   end;
 end;

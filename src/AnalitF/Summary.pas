@@ -106,6 +106,7 @@ type
     gbComment: TGroupBox;
     dbmComment: TDBMemo;
     adsSummaryComment: TStringField;
+    adsSummaryPrintCost: TFloatField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -364,14 +365,28 @@ begin
   //вычисляем сумму по позиции
   try
     if (LastSymmaryType = 0) or adsSummaryRetailCost.IsNull then begin
-      adsSummaryPriceRet.AsCurrency :=
-        DM.GetRetailCostLast(
-          adsSummaryRetailVitallyImportant.Value,
-          adsSummaryRealCost.AsCurrency)
+      if FAllowDelayOfPayment and not FShowSupplierCost then
+        adsSummaryPriceRet.AsCurrency :=
+          DM.GetRetailCostLast(
+            adsSummaryRetailVitallyImportant.Value,
+            adsSummaryCost.AsCurrency)
+      else
+        adsSummaryPriceRet.AsCurrency :=
+          DM.GetRetailCostLast(
+            adsSummaryRetailVitallyImportant.Value,
+            adsSummaryRealCost.AsCurrency)
     end
     else
       adsSummaryPriceRet.AsCurrency := adsSummaryRetailCost.Value;
-    adsSummarySumOrder.AsCurrency := adsSummaryRealCost.AsCurrency * adsSummaryOrderCount.AsInteger;
+
+    if FAllowDelayOfPayment and not FShowSupplierCost then begin
+      adsSummaryPrintCost.AsCurrency := adsSummaryCost.AsCurrency;
+      adsSummarySumOrder.AsCurrency := adsSummaryCost.AsCurrency * adsSummaryOrderCount.AsInteger;
+    end
+    else begin
+      adsSummaryPrintCost.AsCurrency := adsSummaryRealCost.AsCurrency;
+      adsSummarySumOrder.AsCurrency := adsSummaryRealCost.AsCurrency * adsSummaryOrderCount.AsInteger;
+    end;
   except
   end;
 end;
@@ -832,7 +847,7 @@ var
   realPriceCoumn : TColumnEh;
   priceColumn : TColumnEh;
 begin
-  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean then begin
+  if FAllowDelayOfPayment and FShowSupplierCost then begin
     realPriceCoumn := ColumnByNameT(TToughDBGrid(grid), adsSummaryRealCost.FieldName);
     priceColumn := ColumnByNameT(TToughDBGrid(grid), adsSummaryCost.FieldName);
     if Assigned(realPriceCoumn) and Assigned(priceColumn) then begin

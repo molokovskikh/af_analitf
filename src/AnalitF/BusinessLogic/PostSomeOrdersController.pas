@@ -219,11 +219,18 @@ begin
   end
   else begin
     if dataSet.FieldByName('RetailCost').IsNull then begin
-      RetailCost := FDataLayer
-        .GetRetailCostLast(
-          dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
-          dataSet.FieldByName('RealPRICE').AsCurrency
-        );
+      if FDataLayer.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean and not FDataLayer.adsUser.FieldByName('ShowSupplierCost').AsBoolean then
+        RetailCost := FDataLayer
+          .GetRetailCostLast(
+            dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
+            dataSet.FieldByName('PRICE').AsCurrency
+          )
+      else
+        RetailCost := FDataLayer
+          .GetRetailCostLast(
+            dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
+            dataSet.FieldByName('RealPRICE').AsCurrency
+          );
       AddPostParam(
         'RetailCost',
         FloatToServiceStr(RetailCost));

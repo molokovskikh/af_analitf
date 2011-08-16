@@ -518,21 +518,39 @@ procedure TOrdersForm.ocf(DataSet: TDataSet);
 begin
   try
     if adsOrdersRetailCost.IsNull then begin
-      adsOrdersRetailPrice.AsCurrency := DM
-        .GetRetailCostLast(
-          adsOrdersRetailVitallyImportant.Value,
-          adsOrdersRealPrice.AsCurrency);
-      adsOrdersEditRetailMarkup.AsCurrency := DM
-        .GetRetailMarkupValue(
-          adsOrdersRetailVitallyImportant.Value,
-          adsOrdersRealPrice.AsCurrency);
+      if FAllowDelayOfPayment and not FShowSupplierCost then begin
+        adsOrdersRetailPrice.AsCurrency := DM
+          .GetRetailCostLast(
+            adsOrdersRetailVitallyImportant.Value,
+            adsOrdersPrice.AsCurrency);
+        adsOrdersEditRetailMarkup.AsCurrency := DM
+          .GetRetailMarkupValue(
+            adsOrdersRetailVitallyImportant.Value,
+            adsOrdersPrice.AsCurrency);
+      end
+      else begin
+        adsOrdersRetailPrice.AsCurrency := DM
+          .GetRetailCostLast(
+            adsOrdersRetailVitallyImportant.Value,
+            adsOrdersRealPrice.AsCurrency);
+        adsOrdersEditRetailMarkup.AsCurrency := DM
+          .GetRetailMarkupValue(
+            adsOrdersRetailVitallyImportant.Value,
+            adsOrdersRealPrice.AsCurrency);
+      end;
     end
     else begin
       adsOrdersRetailPrice.AsCurrency := adsOrdersRetailCost.AsCurrency;
-      adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCostByRetailCost(adsOrdersRealPrice.AsCurrency, adsOrdersRetailCost.AsCurrency);
+      if FAllowDelayOfPayment and not FShowSupplierCost then
+        adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCostByRetailCost(adsOrdersPrice.AsCurrency, adsOrdersRetailCost.AsCurrency)
+      else
+        adsOrdersEditRetailMarkup.AsCurrency := DM.GetRetUpCostByRetailCost(adsOrdersRealPrice.AsCurrency, adsOrdersRetailCost.AsCurrency);
     end;
 
-    adsOrdersSumOrder.AsCurrency := adsOrdersRealPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
+    if FAllowDelayOfPayment and not FShowSupplierCost then
+      adsOrdersSumOrder.AsCurrency := adsOrdersPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger
+    else
+      adsOrdersSumOrder.AsCurrency := adsOrdersRealPrice.AsCurrency * adsOrdersORDERCOUNT.AsInteger;
   except
   end;
 end;
@@ -723,7 +741,7 @@ begin
       end;
     end;
   end;
-  if DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean then begin
+  if FAllowDelayOfPayment and FShowSupplierCost then begin
     realPriceCoumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersRealPrice.FieldName);
     priceColumn := ColumnByNameT(TToughDBGrid(dbgrid), adsOrdersprice.FieldName);
     if Assigned(realPriceCoumn) and Assigned(priceColumn) then begin
@@ -803,9 +821,14 @@ begin
     if StrToFloatDef(Value, 0.0) > 0 then begin
       markup := Value;
       if (markup > 0) then begin
-        adsOrdersRetailCost.AsVariant := DM.GetPriceRetByMarkup(
-          adsOrdersRealPrice.AsCurrency,
-          markup);
+        if FAllowDelayOfPayment and not FShowSupplierCost then
+          adsOrdersRetailCost.AsVariant := DM.GetPriceRetByMarkup(
+            adsOrdersPrice.AsCurrency,
+            markup)
+        else
+          adsOrdersRetailCost.AsVariant := DM.GetPriceRetByMarkup(
+            adsOrdersRealPrice.AsCurrency,
+            markup);
         adsOrders.Post;
       end
       else

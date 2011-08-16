@@ -657,6 +657,7 @@ object DM: TDM
       '    list.synonymfirm,'
       '    list.RealPrice,'
       '    list.price,'
+      '    list.RealPrice as PrintPrice,'
       '    list.await,'
       '    list.junk,'
       '    list.ordercount,'
@@ -817,6 +818,9 @@ object DM: TDM
     end
     object adsOrderDetailsComment: TStringField
       FieldName = 'Comment'
+    end
+    object adsOrderDetailsPrintPrice: TFloatField
+      FieldName = 'PrintPrice'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -1417,6 +1421,7 @@ object DM: TDM
       '    list.synonymfirm,'
       '    list.RealPrice,'
       '    list.price,'
+      '    list.RealPrice as PrintPrice,'
       '    list.await,'
       '    list.junk,'
       '    list.ordercount,'

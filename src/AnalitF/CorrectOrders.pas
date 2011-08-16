@@ -183,6 +183,8 @@ type
     fMinOrderCount : TField;
     ProcessSendOrdersResponse : Boolean;
     FNetworkParams : TNetworkParams;
+    FAllowDelayOfPayment : Boolean;
+    FShowSupplierCost : Boolean;
     procedure SetOffers;
     procedure PrepareVisual;
     procedure PrepareData;
@@ -240,6 +242,8 @@ end;
 
 procedure TCorrectOrdersForm.FormCreate(Sender: TObject);
 begin
+  FAllowDelayOfPayment := DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean;
+  FShowSupplierCost := DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean;
   FNetworkParams := TNetworkParams.Create(DM.MainConnection);
   FormResult := crClose;
   Report := TStringList.Create;
@@ -558,10 +562,16 @@ end;
 procedure TCorrectOrdersForm.adsCoreCalcFields(DataSet: TDataSet);
 begin
   try
-    adsCorePriceRet.AsCurrency :=
-      DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value,
-        adsCoreRealCost.AsCurrency);
+    if FAllowDelayOfPayment and not FShowSupplierCost then
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreCost.AsCurrency)
+    else
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreRealCost.AsCurrency);
   except
   end;
 end;
@@ -1093,8 +1103,8 @@ begin
     realCostColumn.Title.Caption := 'Цена поставщика';
     realCostColumn.Width := Grid.Canvas.TextWidth('0000.00');
     //удаляем столбец "Цена без отсрочки", если не включен механизм с отсрочкой платежа
-    if not DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean
-      or not DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean
+    if not FAllowDelayOfPayment
+      or not FShowSupplierCost
     then
       Grid.Columns.Delete(realCostColumn.Index)
     else

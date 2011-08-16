@@ -320,10 +320,16 @@ end;
 procedure TCoreFirmForm.ccf(DataSet: TDataSet);
 begin
   try
-    adsCoreCryptPriceRet.AsCurrency :=
-      DM.GetRetailCostLast(
-        adsCoreRetailVitallyImportant.Value,
-        adsCoreRealCost.AsCurrency);
+    if FAllowDelayOfPayment and not FShowSupplierCost then
+      adsCoreCryptPriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreCost.AsCurrency)
+    else
+      adsCoreCryptPriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreRealCost.AsCurrency);
   except
   end;
 end;
