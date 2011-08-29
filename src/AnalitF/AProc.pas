@@ -549,12 +549,23 @@ end;
 function GetTimeZoneBias: Integer;
 var
   TimeZoneInfo: TTimeZoneInformation;
+  returnValue,
+  lastErrorCode : DWORD;
 begin
-  case GetTimeZoneInformation(TimeZoneInfo) of
-  TIME_ZONE_ID_STANDARD: Result := TimeZoneInfo.Bias + TimeZoneInfo.StandardBias;
-  TIME_ZONE_ID_DAYLIGHT: Result := TimeZoneInfo.Bias + TimeZoneInfo.DaylightBias;
+  returnValue := GetTimeZoneInformation(TimeZoneInfo);
+  case returnValue of
+    TIME_ZONE_ID_STANDARD: Result := TimeZoneInfo.Bias + TimeZoneInfo.StandardBias;
+    TIME_ZONE_ID_DAYLIGHT: Result := TimeZoneInfo.Bias + TimeZoneInfo.DaylightBias;
+    TIME_ZONE_ID_UNKNOWN: Result := TimeZoneInfo.Bias;
   else
-    Result := 0;
+    Result := TimeZoneInfo.Bias;
+    lastErrorCode := GetLastError();
+    LogCriticalError(Format(
+      'Ошибка при получении временной зоны: %d, bias = %d, errorCode = %d, message = %s',
+      [returnValue,
+       TimeZoneInfo.Bias,
+       lastErrorCode,
+       SysErrorMessage(lastErrorCode)]));
   end;
 end;
 
@@ -1295,4 +1306,5 @@ finalization
   SZCS.Free;;
   IniFile.Free;
 end.
+
 
