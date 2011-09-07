@@ -3905,10 +3905,19 @@ begin
     and (GetFileSize(RootFolder()+SDirIn+'\' + OrderListsFile + '.txt') > 0)
   then begin
     insertSQL := Trim(GetLoadDataSQL('CurrentOrderHeads', RootFolder()+SDirIn+'\' + OrderHeadsFile + '.txt'));
-    DM.adcUpdate.SQL.Text :=
-      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
-      '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
-    InternalExecute;
+    if FrozenOrders then begin
+      DM.adcUpdate.SQL.Text :=
+        Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+        '(ORDERID, CLIENTID, PRICECODE, REGIONCODE, @SendDate) set ORDERDATE = @SendDate + interval -:timezonebias minute, Closed = 0, Send = 1;';
+      DM.adcUpdate.ParamByName('timezonebias').Value := TimeZoneBias;
+      InternalExecute;
+    end
+    else begin
+      DM.adcUpdate.SQL.Text :=
+        Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+        '(ORDERID, CLIENTID, PRICECODE, REGIONCODE) set ORDERDATE = now(), Closed = 0, Send = 1;';
+      InternalExecute;
+    end;
 
     insertSQL := Trim(GetLoadDataSQL('CurrentOrderLists', RootFolder()+SDirIn+'\' + OrderListsFile + '.txt'));
 
