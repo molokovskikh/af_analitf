@@ -38,8 +38,8 @@ type
 
   TDocumentHeaderForm = class(TChildForm)
     pTop: TPanel;
-    Label7: TLabel;
-    Label8: TLabel;
+    lBefore: TLabel;
+    lInterval: TLabel;
     Bevel1: TBevel;
     dtpDateFrom: TDateTimePicker;
     dtpDateTo: TDateTimePicker;
@@ -68,6 +68,7 @@ type
     adsDocumentHeadersTotalRetailSumm: TFloatField;
     tmrProcessWaybils: TTimer;
     adsDocumentHeadersRetailAmountCalculated: TBooleanField;
+    rgColumn: TRadioGroup;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -82,6 +83,7 @@ type
     procedure sbListToExcelClick(Sender: TObject);
     procedure tmrChangeFilterSuppliersTimer(Sender: TObject);
     procedure tmrProcessWaybilsTimer(Sender: TObject);
+    procedure rgColumnClick(Sender: TObject);
   private
     { Private declarations }
     procedure OnChangeFilterSuppliers;
@@ -461,12 +463,20 @@ begin
 
   adsDocumentHeaders.SQL.Text := shDocumentHeaders.Strings.Text;
 
+  if rgColumn.ItemIndex = 0 then
+    adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' and (ifnull(dh.WriteTime, dh.LoadTime) BETWEEN :DateFrom AND :DateTo) '#13#10
+  else
+    adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' and (dh.LoadTime BETWEEN :DateFrom AND :DateTo) '#13#10;
+
   supplierFilter := GetSupplierController.GetFilter('p.FirmCode');
   if supplierFilter <> '' then
     adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' and ' + supplierFilter + ' '#13#10;
 
   adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' group by dh.Id '
       + #13#10' order by dh.LoadTime DESC ';
 
   adsDocumentHeaders.ParamByName( 'ClientId').Value :=
@@ -669,6 +679,12 @@ begin
       tmrProcessWaybils.Enabled := True;
     end;
   end;
+end;
+
+procedure TDocumentHeaderForm.rgColumnClick(Sender: TObject);
+begin
+  UpdateOrderDataset;
+  dbgHeaders.SetFocus;
 end;
 
 end.

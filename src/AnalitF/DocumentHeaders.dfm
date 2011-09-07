@@ -10,19 +10,19 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Left = 0
     Top = 0
     Width = 684
-    Height = 39
+    Height = 45
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
     DesignSize = (
       684
-      39)
-    object Label7: TLabel
-      Left = 10
-      Top = 12
-      Width = 107
+      45)
+    object lBefore: TLabel
+      Left = 139
+      Top = 16
+      Width = 60
       Height = 13
-      Caption = #1042#1099#1074#1077#1089#1090#1080' '#1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
+      Caption = #1079#1072' '#1087#1077#1088#1080#1086#1076' '#1089
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -30,9 +30,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Font.Style = []
       ParentFont = False
     end
-    object Label8: TLabel
-      Left = 215
-      Top = 12
+    object lInterval: TLabel
+      Left = 292
+      Top = 16
       Width = 12
       Height = 13
       Caption = #1087#1086
@@ -44,16 +44,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       ParentFont = False
     end
     object Bevel1: TBevel
-      Left = 0
+      Left = 137
       Top = 0
-      Width = 684
-      Height = 39
+      Width = 547
+      Height = 45
       Align = alClient
       Shape = bsBottomLine
     end
     object spDelete: TSpeedButton
-      Left = 344
-      Top = 5
+      Left = 398
+      Top = 9
       Width = 97
       Height = 27
       Caption = #1059#1076#1072#1083#1080#1090#1100
@@ -61,7 +61,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     end
     object spOpenFolders: TSpeedButton
       Left = 576
-      Top = 5
+      Top = 9
       Width = 101
       Height = 27
       Anchors = [akTop, akRight]
@@ -69,16 +69,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnClick = spOpenFoldersClick
     end
     object sbListToExcel: TSpeedButton
-      Left = 448
-      Top = 4
+      Left = 502
+      Top = 9
       Width = 97
       Height = 27
       Caption = #1057#1087#1080#1089#1086#1082' '#1074' Excel'
       OnClick = sbListToExcelClick
     end
     object dtpDateFrom: TDateTimePicker
-      Left = 127
-      Top = 9
+      Left = 204
+      Top = 13
       Width = 81
       Height = 21
       Date = 36526.631636412040000000
@@ -93,8 +93,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnCloseUp = dtpDateCloseUp
     end
     object dtpDateTo: TDateTimePicker
-      Left = 234
-      Top = 9
+      Left = 311
+      Top = 13
       Width = 81
       Height = 21
       Date = 0.631934409720997800
@@ -102,12 +102,26 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       TabOrder = 1
       OnCloseUp = dtpDateCloseUp
     end
+    object rgColumn: TRadioGroup
+      Left = 0
+      Top = 0
+      Width = 137
+      Height = 45
+      Align = alLeft
+      Caption = ' '#1060#1080#1083#1100#1090#1088#1086#1074#1072#1090#1100' '
+      ItemIndex = 0
+      Items.Strings = (
+        #1087#1086' '#1076#1072#1090#1077' '#1085#1072#1082#1083#1072#1076#1085#1086#1081
+        #1087#1086' '#1076#1072#1090#1077' '#1079#1072#1075#1088#1091#1079#1082#1080)
+      TabOrder = 2
+      OnClick = rgColumnClick
+    end
   end
   object pGrid: TPanel [1]
     Left = 0
-    Top = 39
+    Top = 45
     Width = 684
-    Height = 410
+    Height = 404
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -116,7 +130,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Left = 0
       Top = 0
       Width = 684
-      Height = 410
+      Height = 404
       Align = alClient
       AllowedOperations = [alopUpdateEh]
       AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]
@@ -332,13 +346,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       '2020446f63756d656e74426f64696573206462'
       '7768657265'
       '202020202864682e436c69656e744964203d203a436c69656e74496429'
-      
-        '616e64202869666e756c6c2864682e577269746554696d652c2064682e4c6f61' +
-        '6454696d6529204245545745454e203a4461746546726f6d20414e44203a4461' +
-        '7465546f29'
       '616e642028702e4669726d436f6465203d2064682e4669726d436f646529'
-      '616e64202864622e446f63756d656e744964203d2064682e496429'
-      '67726f75702062792064682e4964')
+      '616e64202864622e446f63756d656e744964203d2064682e496429')
   end
   object tmrChangeFilterSuppliers: TTimer
     Enabled = False
