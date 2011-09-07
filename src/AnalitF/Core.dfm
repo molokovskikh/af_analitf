@@ -1210,7 +1210,14 @@ object CoreForm: TCoreForm
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'SELECT * FROM Regions')
+      'SELECT '
+      '  Regions.* '
+      'FROM '
+      '  Regions,'
+      '  PricesRegionalData'
+      'where'
+      '  Regions.RegionCode = PricesRegionalData.RegionCode'
+      'group by Regions.RegionCode')
     Left = 160
     Top = 205
   end
