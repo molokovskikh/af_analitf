@@ -1617,7 +1617,7 @@ inherited OrdersHForm: TOrdersHForm
       'WHERE'
       '    (PostedOrderHeads.ClientId = :ClientId)'
       'and (PostedOrderHeads.Closed = 1)'
-      'and (PostedOrderHeads.OrderDate BETWEEN :DateFrom AND :DateTo )'
+      'and (PostedOrderHeads.SendDate BETWEEN :DateFrom AND :DateTo )'
       'group by PostedOrderHeads.OrderId'
       'having count(PostedOrderLists.Id) > 0'
       'order by PostedOrderHeads.SendDate DESC')
