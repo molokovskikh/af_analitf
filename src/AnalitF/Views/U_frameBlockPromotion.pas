@@ -113,6 +113,9 @@ begin
     + lPromotionLabel.Width + 10 + lPromotionName.Width + 10;
   Self.Height := pBorder.Constraints.MinHeight;
   Self.Tag := Max(pBorder.Constraints.MinWidth, lAnnotation.Left + lAnnotation.Width + 10);
+
+  if Length(Promotion.PromoFile) = 0 then
+    lPromotionLabel.Visible := False;
 end;
 
 destructor TframeBlockPromotion.Destroy;
