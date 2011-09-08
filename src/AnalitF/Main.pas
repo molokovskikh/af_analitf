@@ -1288,6 +1288,9 @@ begin
      + ' and (orderdate < :MinOrderDate)';
     DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adcUpdate.Execute;
+    if DM.adcUpdate.RowsAffected > 0 then
+      WriteExchangeLog('DeleteOldOrders', ' оличество автоматически удаленных устаревших заказов: '
+        + IntToStr(DM.adcUpdate.RowsAffected));
   except
     on E : Exception do
       LogCriticalError('ќшибка при удалении устаревших заказов : ' + E.Message);
@@ -1325,6 +1328,9 @@ begin
      + ' and (LoadTime < :MinOrderDate)';
     DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adcUpdate.Execute;
+    if DM.adcUpdate.RowsAffected > 0 then
+      WriteExchangeLog('DeleteOldOrders', ' оличество автоматически удаленных устаревших накладных: '
+        + IntToStr(DM.adcUpdate.RowsAffected));
     //удаление других документов, у которых не существует тела (позиций внутри)
     DM.adcUpdate.SQL.Text := ''
      + ' delete '
@@ -1333,6 +1339,9 @@ begin
      + '    (LoadTime < :MinOrderDate)';
     DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adcUpdate.Execute;
+    if DM.adcUpdate.RowsAffected > 0 then
+      WriteExchangeLog('DeleteOldOrders', ' оличество автоматически удаленных устаревших документов: '
+        + IntToStr(DM.adcUpdate.RowsAffected));
   except
     on E : Exception do
       LogCriticalError('ќшибка при удалении устаревших документов : ' + E.Message);

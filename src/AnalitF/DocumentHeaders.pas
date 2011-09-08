@@ -249,10 +249,10 @@ begin
             WriteExchangeLog(
               'DocumentHeaders',
               Format(
-                'Удаление документа Id: %s  ProviderDocumentId: %s  DownloadId: %s',
+                'Удаление документа Id: %s  Номер документа: %s  Номер поставщика: %s',
                 [adsDocumentHeadersId.AsString,
-                 adsDocumentHeadersProviderDocumentId.AsString,
-                 downloadId]
+                 downloadId,
+                 adsDocumentHeadersProviderDocumentId.AsString]
               )
               );
 

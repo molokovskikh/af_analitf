@@ -355,6 +355,7 @@ procedure TOrdersHForm.btnDeleteClick(Sender: TObject);
 var
   Grid : TToughDBGrid;
   I : Integer;
+  logMessage : String;
 begin
   if TabControl.TabIndex = 0 then
     Grid := dbgCurrentOrders
@@ -371,7 +372,15 @@ begin
         try
           for I := 0 to FSelectedRows.Count-1 do begin
             Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
+            if TabControl.TabIndex = 0 then
+              logMessage := Format('Удаление текущего заказа Id: %s  Прайс-лист: %s  Дата создания: %s',
+                [adsOrdersHFormDisplayOrderId.AsString,
+                adsOrdersHFormPriceName.AsString,
+                adsOrdersHFormOrderDate.AsString])
+            else
+              logMessage := Format('Удаление отправленного заказа Id: %s', [adsOrdersHFormDisplayOrderId.AsString]);
             Grid.DataSource.DataSet.Delete;
+            WriteExchangeLog('DeleteOrders', logMessage);
           end;
         finally
           Grid.DataSource.DataSet.EnableControls;
