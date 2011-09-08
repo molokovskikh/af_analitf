@@ -12,7 +12,9 @@ uses
   Math,
   LU_TDataExportAsXls,
   SupplierController,
-  U_frameFilterSuppliers, StrHlder;
+  U_frameFilterSuppliers,
+  StrHlder,
+  GlobalParams;
 
 type
   TExportDocRow = class
@@ -166,6 +168,11 @@ begin
   dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
   dtpDateTo.Date := Date;
 
+  rgColumn.ItemIndex := TGlobalParamsHelper.GetParamDef(
+    DM.MainConnection,
+    'DocumentFilterColumn',
+    0);
+
   ShowHeaders;
   tmrProcessWaybils.Enabled := True;
 end;
@@ -286,6 +293,11 @@ procedure TDocumentHeaderForm.FormDestroy(Sender: TObject);
 begin
   tmrProcessWaybils.Enabled := False;
   TDBGridHelper.SaveColumnsLayout(dbgHeaders, Self.ClassName);
+  TGlobalParamsHelper.SaveParam(
+    DM.MainConnection,
+    'DocumentFilterColumn',
+    rgColumn.ItemIndex
+    );
   ProcessedList.Free;
   csProcessedList.Free;
   inherited;
