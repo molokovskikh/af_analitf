@@ -930,6 +930,7 @@ var
   vitallyNDS : Integer;
   vitallyNDSMultiplier : Double;
   nonVitallyNDSMultiplier : Double;
+  supplierCostWithNDSMultiplier : Double;
 begin
   if cbClearRetailPrice.Checked and (Abs(price - RoundToOneDigit(price)) > 0.001)
   then
@@ -964,17 +965,21 @@ begin
   else begin
 
     //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
-    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
-      nonVitallyNDSMultiplier := 1
-    else
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then begin
+      nonVitallyNDSMultiplier := 1;
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCostWithoutNDS.Value;
+    end
+    else begin
       nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCost.Value;
+    end;
 
     //По цене производителя
     if CalculateOnProducerCost then
       Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesProducerCost.Value * nonVitallyNDSMultiplier)
     else
     //По цене поставщика без НДС
-      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCost.Value);
+      Result := ((price - adsDocumentBodiesSupplierCost.Value)*100)/(supplierCostWithNDSMultiplier);
   end;
 end;
 
@@ -984,6 +989,7 @@ var
   vitallyNDS : Integer;
   vitallyNDSMultiplier : Double;
   nonVitallyNDSMultiplier : Double;
+  supplierCostWithNDSMultiplier : Double;
 begin
   if adsDocumentBodiesVitallyImportant.Value
   or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
@@ -1027,10 +1033,14 @@ begin
   else begin
 
     //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
-    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
-      nonVitallyNDSMultiplier := 1
-    else
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then begin
+      nonVitallyNDSMultiplier := 1;
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCostWithoutNDS.Value;
+    end
+    else begin
       nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCost.Value;
+    end;
 
     //По цене производителя
     if CalculateOnProducerCost then begin
@@ -1044,12 +1054,12 @@ begin
     end
     else begin
     //По цене поставщика без НДС
-      Result := adsDocumentBodiesSupplierCost.Value + adsDocumentBodiesSupplierCost.Value*(markup/100);
+      Result := adsDocumentBodiesSupplierCost.Value + supplierCostWithNDSMultiplier*(markup/100);
 
       if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
       then begin
         Result := RoundToOneDigit(Result);
-        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(adsDocumentBodiesSupplierCost.Value);
+        markup := ((Result - adsDocumentBodiesSupplierCost.Value)*100)/(supplierCostWithNDSMultiplier);
       end;
     end;
   end;
@@ -2015,6 +2025,7 @@ var
   vitallyNDSMultiplier : Double;
   nonVitallyNDSMultiplier : Double;
   minProducerCost : Double;
+  supplierCostWithNDSMultiplier : Double;
 begin
   if mdReport.FieldByName('VitallyImportant').AsBoolean
   or (cbWaybillAsVitallyImportant.Checked and mdReport.FieldByName('VitallyImportant').IsNull)
@@ -2071,10 +2082,14 @@ begin
   else begin
 
     //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDS" сброшен, то множитель = 1
-    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then
-      nonVitallyNDSMultiplier := 1
-    else
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDS.Value then begin
+      nonVitallyNDSMultiplier := 1;
+      supplierCostWithNDSMultiplier := mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat;
+    end
+    else begin
       nonVitallyNDSMultiplier := (1 + mdReport.FieldByName('NDS').AsInteger/100);
+      supplierCostWithNDSMultiplier := mdReport.FieldByName('SupplierCost').AsFloat;
+    end;
 
     //По цене производителя
     if CalculateOnProducerCost then begin
@@ -2088,12 +2103,12 @@ begin
     end
     else begin
     //По цене поставщика без НДС
-      Result := mdReport.FieldByName('SupplierCost').AsFloat + mdReport.FieldByName('SupplierCost').AsFloat*(markup/100);
+      Result := mdReport.FieldByName('SupplierCost').AsFloat + supplierCostWithNDSMultiplier*(markup/100);
 
       if cbClearRetailPrice.Checked and (Abs(Result - RoundToOneDigit(Result)) > 0.001)
       then begin
         Result := RoundToOneDigit(Result);
-        markup := ((Result - mdReport.FieldByName('SupplierCost').AsFloat)*100)/(mdReport.FieldByName('SupplierCost').AsFloat);
+        markup := ((Result - mdReport.FieldByName('SupplierCost').AsFloat)*100)/(supplierCostWithNDSMultiplier);
       end;
     end;
   end;
