@@ -1486,7 +1486,9 @@ begin
   end;
 
   //utSchedules
-  if utSchedules in UpdateTables then begin
+  if (utSchedules in UpdateTables)
+    or ([eaGetPrice, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+  then begin
     SQL.Text:='truncate Schedules;';
     InternalExecute;
   end;
