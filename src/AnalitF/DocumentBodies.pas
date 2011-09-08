@@ -1520,7 +1520,7 @@ begin
     frVariables[ 'DeleteUnprintableElemnts'] := RackCardReportParams.DeleteUnprintableElemnts;
     frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
     frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
-    frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
+    frVariables[ 'DocumentDate'] := IfThen(not adsDocumentHeadersLocalWriteTime.IsNull, DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime));
     frVariables[ 'ProviderName'] := priceName;
 
     frVariables['ProductVisible'] := RackCardReportParams.ProductVisible;
