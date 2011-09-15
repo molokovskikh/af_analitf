@@ -206,8 +206,14 @@ type
     lWarning : TLabel;
 
     framePromotion : TframePromotion;
-    
+
+    lSearchName : TLabel;
+    eSearchName : TEdit;
+
     procedure ShowForm; override;
+    function AllowSearch : Boolean;
+    procedure HideSearch();
+    procedure ShowSearch();
   end;
 
   procedure ShowMinPrices;
@@ -473,13 +479,30 @@ begin
   lFilter.Parent := pTop;
   lFilter.Left := btnSelectPrices.Left + btnSelectPrices.Width + 10;
 
+  lSearchName := TLabel.Create(Self);
+  lSearchName.Parent := pTop;
+  lSearchName.Left := lFilter.Left + lFilter.Width + 10;
+  lSearchName.Caption := 'Поиск';
+
+  eSearchName := TEdit.Create(Self);
+  eSearchName.Parent := pTop;
+  eSearchName.Left := lSearchName.Left + lSearchName.Width + 5;
+  eSearchName.Width := Self.Canvas.TextWidth('00000000000000');
+{
+  eSearch.Text := IntToStr(FNetworkParams.NetworkMinCostPercent);
+  eSearch.OnKeyPress := eSearchKeyPress;
+  eSearch.OnKeyDown := eSearchKeyDown;
+}  
+
   pTop.Height := eSearch.Height + 10;
   eSearch.Top := (pTop.Height - eSearch.Height) div 2;
+  eSearchName.Top := eSearch.Top;
   spGotoMNNButton.Top := (pTop.Height - spGotoMNNButton.Height) div 2;
   btnSelectPrices.Top := (pTop.Height - btnSelectPrices.Height) div 2;
   lFindCount.Top := (pTop.Height - lFindCount.Height) div 2;
   lBeforeInfo.Top := lFindCount.Top;
   lAfterInfo.Top := lFindCount.Top;
+  lSearchName.Top := lFindCount.Top;
 end;
 
 procedure TMinPricesForm.CreateVisualComponent;
@@ -1132,6 +1155,37 @@ procedure TMinPricesForm.FormResize(Sender: TObject);
 begin
   if Assigned(pWebBrowser) then
     pWebBrowser.Visible := Self.ClientHeight > 800;
+
+  if AllowSearch() then
+    ShowSearch
+  else
+    HideSearch();
+end;
+
+function TMinPricesForm.AllowSearch: Boolean;
+var
+  borderWidth : Integer;
+begin
+  borderWidth := 850;
+  if Assigned(eSearchName) then
+    borderWidth := eSearchName.Left + eSearchName.Width + 5;
+  Result := Self.Width > borderWidth;
+end;
+
+procedure TMinPricesForm.HideSearch;
+begin
+  if Assigned(eSearchName) then begin
+    lSearchName.Visible := False;
+    eSearchName.Visible := False;
+  end;
+end;
+
+procedure TMinPricesForm.ShowSearch;
+begin
+  if Assigned(eSearchName) then begin
+    lSearchName.Visible := True;
+    eSearchName.Visible := True;
+  end;
 end;
 
 end.
