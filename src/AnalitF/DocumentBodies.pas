@@ -1497,11 +1497,15 @@ begin
     exportData.Free;
   end;
 
+{
   ShellExecute(
     0,
     'Open',
     PChar(exportFile),
     nil, nil, SW_SHOWNORMAL);
+}    
+
+  FileExecute(exportFile);
 end;
 
 procedure TDocumentBodiesForm.PrintRackCard;
@@ -1637,11 +1641,15 @@ begin
     exportData.Free;
   end;
 
+{
   ShellExecute(
     0,
     'Open',
     PChar(exportFile),
     nil, nil, SW_SHOWNORMAL);
+}
+
+  FileExecute(exportFile);
 end;
 
 procedure TDocumentBodiesForm.PrintInvoice;
