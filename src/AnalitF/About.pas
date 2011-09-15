@@ -149,7 +149,14 @@ begin
       newHeight := TVCLHelper.GetMemoNeedHeight(mEmails);
       diffHeight := newHeight - mEmails.Height;
       if diffHeight > 0 then begin
-        Self.Height := Self.Height + diffHeight;
+        if (Self.Height + diffHeight <= 800) then
+          Self.Height := Self.Height + diffHeight
+        else begin
+          diffHeight := diffHeight - (Self.Height + diffHeight - 800);
+          Self.Height := 800;
+          newHeight := diffHeight + mEmails.Height;
+          mEmails.ScrollBars := ssVertical; 
+        end;
         lCopyright.Top := lCopyright.Top + diffHeight;
         bbtnOk.Top := bbtnOk.Top + diffHeight;
         mEmails.Height := newHeight;
