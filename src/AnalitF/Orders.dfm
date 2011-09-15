@@ -196,6 +196,8 @@ inherited OrdersForm: TOrdersForm
         DataField = 'Comment'
         DataSource = dsOrders
         TabOrder = 0
+        OnExit = dbmCommentExit
+        OnKeyDown = dbmCommentKeyDown
       end
     end
   end

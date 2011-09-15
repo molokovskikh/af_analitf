@@ -120,6 +120,9 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
     procedure btnGotoPriceClick(Sender: TObject);
+    procedure dbmCommentExit(Sender: TObject);
+    procedure dbmCommentKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
@@ -879,6 +882,24 @@ begin
     _CoreFirmForm.ShowForm(PriceCode, RegionCode, PriceName, RegionName, False, False);
     _CoreFirmForm.dbgCore.SetFocus;
   end;
+end;
+
+procedure TOrdersForm.dbmCommentExit(Sender: TObject);
+begin
+  try
+    SoftPost(adsOrders);
+  except
+  end;
+end;
+
+procedure TOrdersForm.dbmCommentKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    if Assigned(ParentOrdersHForm) then
+      ParentOrdersHForm.ShowAsPrevForm
+    else
+      PrevForm.ShowAsPrevForm;
 end;
 
 end.
