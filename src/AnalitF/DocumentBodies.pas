@@ -1768,7 +1768,7 @@ begin
   frVariables[ 'ReestrNumber'] := '17';
   frVariables[ 'ReestrAppend'] := '5';
 
-  frVariables[ 'ReestrNumberId'] := internalReestrReportParams.ReestrNumber;
+  frVariables[ 'ReestrNumberId'] := internalReestrReportParams.GetReestrNumber();
   frVariables[ 'ReestrDate'] := DateToStr(internalReestrReportParams.ReestrDate);
 
   frVariables[ 'Director'] := DM.adtClientsDirector.AsString;

@@ -25,11 +25,19 @@ type
 
     procedure ReadParams; override;
     procedure SaveParams; override;
+    function GetReestrNumber() : String;
   end;
 
 implementation
 
 { TReestrReportParams }
+
+function TReestrReportParams.GetReestrNumber: String;
+begin
+  Result := ReestrNumber;
+  if Length(Result) = 0 then
+    Result := StringOfChar('_', 10);
+end;
 
 procedure TReestrReportParams.ReadParams;
 begin
