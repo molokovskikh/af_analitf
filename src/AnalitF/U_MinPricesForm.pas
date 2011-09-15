@@ -65,8 +65,9 @@ type
     FNetworkParams : TNetworkParams;
     InternalSearchText : String;
     UseExcess : Boolean;
-    
+
     SelectedPrices : TStringList;
+    InternalSearchNameText : String;
 
     procedure CreateNonVisualComponent;
     procedure AddCoreFields;
@@ -80,7 +81,9 @@ type
     procedure BindFields;
 
     procedure AddKeyToSearch(Key : Char);
+    procedure AddKeyToSearchName(Key : Char);
     procedure SetClear;
+    procedure SetClearByName;
     procedure InternalSearch;
 
     procedure UpdateOffers();
@@ -91,6 +94,10 @@ type
   protected
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+
+    procedure eSearchNameKeyPress(Sender: TObject; var Key: Char);
+    procedure eSearchNameKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
 
     procedure MinPricesAfteOpen(dataSet : TDataSet);
@@ -488,11 +495,8 @@ begin
   eSearchName.Parent := pTop;
   eSearchName.Left := lSearchName.Left + lSearchName.Width + 5;
   eSearchName.Width := Self.Canvas.TextWidth('00000000000000');
-{
-  eSearch.Text := IntToStr(FNetworkParams.NetworkMinCostPercent);
-  eSearch.OnKeyPress := eSearchKeyPress;
-  eSearch.OnKeyDown := eSearchKeyDown;
-}  
+  eSearchName.OnKeyPress := eSearchNameKeyPress;
+  eSearchName.OnKeyDown := eSearchNameKeyDown;
 
   pTop.Height := eSearch.Height + 10;
   eSearch.Top := (pTop.Height - eSearch.Height) div 2;
@@ -517,11 +521,18 @@ procedure TMinPricesForm.dbgMinPricesKeyDown(Sender: TObject;
   var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_RETURN then begin
-    if (Length(eSearch.Text) > 0) and (InternalSearchText <> eSearch.Text) then
+    if
+      ((Length(eSearch.Text) > 0) and (InternalSearchText <> eSearch.Text))
+      or
+      ((Length(eSearchName.Text) > 0) and (InternalSearchNameText <> eSearchName.Text))
+    then
       tmrSearchTimer(nil)
     else
       dbgCore.SetFocus();
-  end;
+  end
+  else
+    if (Key = VK_ESCAPE) and AllowSearch() then
+      SetClearByName;
 end;
 
 procedure TMinPricesForm.dbgMinPricesKeyPress(Sender: TObject;
@@ -532,7 +543,13 @@ begin
     if not tmrSearch.Enabled and (InternalSearchText = eSearch.Text) then
       eSearch.Text := '';
     AddKeyToSearch(Key);
-  end;
+  end
+  else
+    if AllowSearch() then begin
+      if not tmrSearch.Enabled and (InternalSearchNameText = eSearchName.Text) then
+        eSearchName.Text := '';
+      AddKeyToSearchName(Key);
+    end;
 end;
 
 procedure TMinPricesForm.eSearchKeyDown(Sender: TObject; var Key: Word;
@@ -569,6 +586,7 @@ var
   sp : TSelectPrice;
   mi :TMenuItem;
 begin
+  InternalSearchNameText := '';
 {$ifdef MinPricesLog}
   WriteExchangeLog('MinPricesForm', 'Start create');
 {$endif}
@@ -646,8 +664,14 @@ begin
   if lFilter.Visible then
     adsMinPrices.SQL.Text := adsMinPrices.SQL.Text + 'and (' + FilterSQL + ')';
 
+  if Length(InternalSearchNameText) > 0 then
+    adsMinPrices.SQL.Text := adsMinPrices.SQL.Text + 'and (Synonyms.SYNONYMNAME like :LikeParam) ';
+
   adsMinPrices.SQL.Text := adsMinPrices.SQL.Text + 'ORDER BY Synonyms.SYNONYMNAME';
   adsMinPrices.ParamByName('Percent').Value := FNetworkParams.NetworkMinCostPercent;
+
+  if Length(InternalSearchNameText) > 0 then
+    adsMinPrices.ParamByName('LikeParam').Value := '%' + InternalSearchNameText + '%';
 
 {$ifdef MinPricesLog}
   WriteExchangeLog('MinPricesForm',
@@ -690,6 +714,11 @@ procedure TMinPricesForm.SetClear;
 begin
   tmrSearch.Enabled := False;
 
+  if (Length(InternalSearchNameText) > 0) or (Length(eSearchName.Text) > 0) then
+  begin
+    InternalSearch;
+  end;
+
   //Непонятно, что делать при попытке сброса фильтра
 
   dbgMinPrices.SetFocus;
@@ -722,15 +751,27 @@ begin
 end;
 
 procedure TMinPricesForm.tmrSearchTimer(Sender: TObject);
+var
+  needSearch : Boolean;
 begin
   tmrSearch.Enabled := False;
+  needSearch := False;
   if (Length(eSearch.Text) > 0) and (StrToIntDef(eSearch.Text, 0) <> 0) then begin
     InternalSearchText := LeftStr(eSearch.Text, 50);
-    InternalSearch;
+    needSearch := True;
+  end;
+  if (Length(eSearchName.Text) > 0) then begin
+    InternalSearchNameText := LeftStr(eSearchName.Text, 50);
+    needSearch := True;
   end
   else
-    if Length(eSearch.Text) = 0 then
-      SetClear;
+    InternalSearchNameText := '';
+
+  if needSearch then
+    InternalSearch()
+  else begin
+    SetClearByName;
+  end;
 end;
 
 procedure TMinPricesForm.tmrUpdatePreviosOrdersTimer(Sender: TObject);
@@ -1186,6 +1227,49 @@ begin
     lSearchName.Visible := True;
     eSearchName.Visible := True;
   end;
+end;
+
+procedure TMinPricesForm.eSearchNameKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    tmrSearchTimer(nil);
+    dbgMinPrices.SetFocus;
+  end
+  else
+    if Key = VK_ESCAPE then
+      SetClearByName;
+end;
+
+procedure TMinPricesForm.eSearchNameKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  tmrSearch.Enabled := False;
+  AddKeyToSearch(Key);
+  //Если мы что-то нажали в элементе, то должны на это отреагировать
+  if Ord(Key) <> VK_RETURN then
+    tmrSearch.Enabled := True;
+end;
+
+procedure TMinPricesForm.AddKeyToSearchName(Key: Char);
+begin
+  if Ord(Key) >= 32 then begin
+    tmrSearch.Enabled := False;
+    if not eSearchName.Focused then
+      eSearchName.Text := eSearchName.Text + Key;
+    tmrSearch.Enabled := True;
+  end;
+end;
+
+procedure TMinPricesForm.SetClearByName;
+begin
+  tmrSearch.Enabled := False;
+  eSearchName.Text := '';
+  InternalSearchNameText := '';
+
+  InternalSearch;
+
+  dbgMinPrices.SetFocus;
 end;
 
 end.
