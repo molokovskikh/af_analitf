@@ -566,6 +566,8 @@ type
     function NeedShowCertificatesResults() : Boolean;
 
     procedure OpenCertificateFiles(certificateId : Int64);
+
+    function ShowCertificatesResults() : String;
   end;
 
 var
@@ -5403,6 +5405,42 @@ begin
     end;
   finally
     adcUpdate.Close;
+  end;
+end;
+
+function TDM.ShowCertificatesResults: String;
+var
+  sl : TStringList;
+begin
+  sl := TStringList.Create();
+  try
+  
+    adcUpdate.Close;
+    adcUpdate.SQL.Text := '' +
+' select ' +
+'  Providers.ShortName, ' +
+'  DocumentBodies.SerialNumber, ' +
+'  DocumentBodies.Product ' +
+' from ' +
+' CertificateRequests, DocumentBodies, DocumentHeaders, Providers ' +
+' where ' +
+'  DocumentBodies.Id = CertificateRequests.DocumentBodyId ' +
+' and CertificateRequests.CertificateId is null ' +
+' and DocumentHeaders.Id = DocumentBodies.DocumentId ' +
+' and Providers.FirmCode = DocumentHeaders.FirmCode;';
+    adcUpdate.Open;
+    try
+      while not adcUpdate.Eof do begin
+        sl.Add(adcUpdate.FieldByName('ShortName').AsString + ' - ' + adcUpdate.FieldByName('SerialNumber').AsString + ' - ' + adcUpdate.FieldByName('Product').AsString);
+        adcUpdate.Next;
+      end;
+    finally
+      adcUpdate.Close;
+    end;
+
+    Result := sl.Text;
+  finally
+    sl.Free;
   end;
 end;
 

@@ -25,6 +25,8 @@ procedure ShowNotFound(Strings: TStrings);
 
 procedure ShowNotSended(ALog: String);
 
+procedure ShowNotFoundCertificates(ALog: String);
+
 implementation
 
 {$R *.dfm}
@@ -54,6 +56,18 @@ begin
     Caption := 'Не найденные позиции';
     Label1.Caption := 'Предложения по данным позициям из заказа отсутствуют :';
     Memo.Lines.Assign(Strings);
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
+procedure ShowNotFoundCertificates(ALog: String);
+begin
+  with TNotFoundForm.Create(Application) do try
+    Caption := 'Не найденные сертификаты';
+    Label1.Caption := 'Не были получены сертификаты для следующих позиций :';
+    Memo.Lines.Text := ALog;
     ShowModal;
   finally
     Free;

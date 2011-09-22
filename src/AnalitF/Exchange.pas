@@ -284,7 +284,7 @@ begin
   end;
 
   if Result and ( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) and DM.NeedShowCertificatesResults() then
-    AProc.MessageBox('Не были получены сертификаты для следующих позиций.', MB_OK or MB_ICONWARNING);
+    ShowNotFoundCertificates(DM.ShowCertificatesResults());
 
   if Result and (eaGetWaybills in AExchangeActions)
   then
