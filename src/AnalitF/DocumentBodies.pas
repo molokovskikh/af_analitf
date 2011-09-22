@@ -96,6 +96,7 @@ type
     dsInvoiceHeaders: TDataSource;
     adsDocumentBodiesRequestCertificate: TBooleanField;
     adsDocumentBodiesCertificateId: TLargeintField;
+    adsDocumentBodiesDocumentBodyId: TLargeintField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -663,9 +664,15 @@ begin
       Background := clRed;
   end;
 
-  if (not adsDocumentBodiesCertificateId.IsNull and (Column.Field = adsDocumentBodiesCertificateId)) then begin
-    AFont.Style := AFont.Style + [fsUnderline];
-    AFont.Color := clHotLight;
+  if (Column.Field = adsDocumentBodiesCertificateId) then begin
+    if not adsDocumentBodiesCertificateId.IsNull then begin
+      AFont.Style := AFont.Style + [fsUnderline];
+      AFont.Color := clHotLight;
+    end
+    else
+      //Сертификат не был получен, но запрос был
+      if not adsDocumentBodiesDocumentBodyId.IsNull then
+        Background := clGray;
   end;
 end;
 
@@ -1885,6 +1892,12 @@ begin
     clRed,
     clWindowText,
     'Значения розничной наценки, розничной цены, розничной суммы и реальной наценки не были вычислены автоматически');
+
+  lLegend := legeng.CreateLegendLabel(
+    'Сертификат не был найден',
+    clGray,
+    clWindowText,
+    'Сертификат не был найден');
 end;
 
 procedure TDocumentBodiesForm.adsDocumentBodiesPrintedChange(

@@ -283,6 +283,9 @@ begin
         AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
   end;
 
+  if Result and ( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) and DM.NeedShowCertificatesResults() then
+    AProc.MessageBox('Не были получены сертификаты для следующих позиций.', MB_OK or MB_ICONWARNING);
+
   if Result and (eaGetWaybills in AExchangeActions)
   then
     AProc.MessageBox('Получение документов завершено успешно.', MB_OK or MB_ICONINFORMATION);

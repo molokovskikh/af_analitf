@@ -563,6 +563,7 @@ type
     procedure InsertUserActionLog(UserActionId : TUserAction); overload;  
     procedure InsertUserActionLog(UserActionId : TUserAction; Contexts : array of string); overload;
 
+    function NeedShowCertificatesResults() : Boolean;
   end;
 
 var
@@ -1501,6 +1502,8 @@ begin
     SQL.Text:='truncate PromotionCatalogs;'; Execute;
     MainForm.StatusText:='Очищается расписание обновлений';
     SQL.Text:='truncate Schedules;'; Execute;
+    MainForm.StatusText:='Очищаются результаты запросов сертификатов';
+    SQL.Text:='truncate CertificateRequests;'; Execute;
     MainForm.StatusText:='Очищается время сжатия базы данных';
     SQL.Text:='update params set LastCompact = now() where ID = 0;'; Execute;
 
@@ -5356,6 +5359,27 @@ begin
     'insert into useractionlogs (UserActionId, Context) values (:UserActionId, :Context)',
     ['UserActionId', 'Context'],
     [UserActionId, contextVariant]);
+end;
+
+function TDM.NeedShowCertificatesResults: Boolean;
+var
+  updateRecord : Integer;
+begin
+  updateRecord := DBProc.UpdateValue(
+    MainConnection,
+    'update CertificateRequests, DocumentBodies ' +
+    'set DocumentBodies.RequestCertificate = 0, DocumentBodies.CertificateId = CertificateRequests.CertificateId ' +
+    'where DocumentBodies.Id = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is not null',
+    [],
+    []);
+  updateRecord := DBProc.UpdateValue(
+    MainConnection,
+    'update CertificateRequests, DocumentBodies ' +
+    'set DocumentBodies.RequestCertificate = 0 ' +
+    'where DocumentBodies.Id = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is null',
+    [],
+    []);
+  Result := updateRecord > 0;
 end;
 
 initialization
