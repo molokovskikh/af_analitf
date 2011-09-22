@@ -1256,6 +1256,8 @@ begin
   ExtractDocs(SDirRejects);
   //Обрабатываем папку Promotions
   ExtractDocs(SDirPromotions);
+  //Обрабатываем папку Certificates
+  ExtractDocs(SDirCertificates);
 end;
 
 procedure TExchangeThread.CheckNewExe;

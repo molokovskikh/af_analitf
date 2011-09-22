@@ -22,6 +22,7 @@ const
   SBackDir = 'UpdateBackup';
   SDirPromotions = 'Promotions';
   SDirNetworkUpdate='AnalitFUpdate';
+  SDirCertificates = 'Certificates';
   SHTTPPrefix='http://';
   CRLF=#13#10;
 

@@ -1109,6 +1109,8 @@ begin
   if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
   if not DirectoryExists( RootFolder() + SDirReclame) then CreateDir( RootFolder() + SDirReclame);
   if not DirectoryExists( RootFolder() + SDirPromotions) then CreateDir( RootFolder() + SDirPromotions);
+  if not DirectoryExists( RootFolder() + SDirCertificates) then CreateDir( RootFolder() + SDirCertificates);
+
   //if not DirectoryExists( RootFolder() + SDirContextReclame) then CreateDir( RootFolder() + SDirContextReclame);
   MainForm.SetUpdateDateTime;
   Application.HintPause := 0;
