@@ -159,7 +159,8 @@ uses
   U_frameAutoComment in 'Views\U_frameAutoComment.pas' {frameAutoComment: TFrame},
   U_SchedulesController in 'BusinessLogic\U_SchedulesController.pas',
   ContextMenuGrid in 'Helpers\ContextMenuGrid.pas',
-  UserActions in 'BusinessLogic\UserActions.pas';
+  UserActions in 'BusinessLogic\UserActions.pas',
+  U_SerialNumberSearch in 'Views\U_SerialNumberSearch.pas' {SerialNumberSearchForm};
 
 {$R *.RES}
 {$R EraserDLL.RES}
