@@ -564,6 +564,8 @@ type
     procedure InsertUserActionLog(UserActionId : TUserAction; Contexts : array of string); overload;
 
     function NeedShowCertificatesResults() : Boolean;
+
+    procedure OpenCertificateFiles(certificateId : Int64);
   end;
 
 var
@@ -5380,6 +5382,28 @@ begin
     [],
     []);
   Result := updateRecord > 0;
+end;
+
+procedure TDM.OpenCertificateFiles(certificateId: Int64);
+var
+  id : Int64;
+  fileName : String;
+begin
+  adcUpdate.Close;
+  adcUpdate.SQL.Text := 'select * from CertificateFiles where CertificateId = :CertificateId';
+  adcUpdate.ParamByName('CertificateId').Value := certificateId;
+  adcUpdate.Open;
+  try
+    while not adcUpdate.Eof do begin
+      id := TLargeintField(adcUpdate.FieldByName('Id')).Value;
+      fileName := RootFolder() + SDirCertificates + '\' + IntToStr(id) + '.tif';
+      if (FileExists(fileName)) then
+        FileExecute(fileName);
+      adcUpdate.Next;
+    end;
+  finally
+    adcUpdate.Close;
+  end;
 end;
 
 initialization

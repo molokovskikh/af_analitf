@@ -163,6 +163,7 @@ type
     procedure RecalcPosition;
     procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure WaybillKeyPress(Sender: TObject; var Key: Char);
+    procedure WaybillCellClick(Column: TColumnEh);
     //procedure FieldOnChange(Sender: TField);
     procedure RetailPriceUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RetailPriceGetCellParams(Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
@@ -351,6 +352,7 @@ begin
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
+    dbgDocumentBodies.OnCellClick := WaybillCellClick;
     dbgDocumentBodies.ReadOnly := True;
 
     dbgDocumentBodies.AutoFitColWidths := False;
@@ -398,6 +400,7 @@ begin
     adsDocumentBodies.OnCalcFields := nil;
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
+    dbgDocumentBodies.OnCellClick := nil;
     dbgDocumentBodies.Options := dbgDocumentBodies.Options - [dgEditing];
     dbgDocumentBodies.AutoFitColWidths := False;
     dbgDocumentBodies.ReadOnly := True;
@@ -2184,6 +2187,12 @@ procedure TDocumentBodiesForm.adsDocumentBodiesCertificateIdGetText(
 begin
   if DisplayText and not Sender.IsNull then
     Text := 'Открыть';
+end;
+
+procedure TDocumentBodiesForm.WaybillCellClick(Column: TColumnEh);
+begin
+  if (Column.Field = adsDocumentBodiesCertificateId) and not adsDocumentBodiesCertificateId.IsNull then
+    DM.OpenCertificateFiles(adsDocumentBodiesCertificateId.Value);
 end;
 
 end.
