@@ -137,7 +137,7 @@ type
     frRtfAdvExport: TfrRtfAdvExport;
     frdsReportOrder: TfrDBDataSet;
     MyConnection: TMyConnection;
-    adtParams: TMyTable;
+    adtParamsOld: TMyTable;
     adtClients: TMyQuery;
     adtClientsCLIENTID: TLargeintField;
     adtClientsNAME: TStringField;
@@ -279,10 +279,11 @@ type
     adsOrderDetailsRetailVitallyImportant: TBooleanField;
     adsOrderDetailsComment: TStringField;
     adsOrderDetailsPrintPrice: TFloatField;
+    adtParams: TMyQuery;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
-    procedure adtParamsAfterPost(DataSet: TDataSet);
+    procedure adtParamsOldAfterPost(DataSet: TDataSet);
     procedure adtReceivedDocsAfterPost(DataSet: TDataSet);
   private
     //Требуется ли подтверждение обмена
@@ -1079,7 +1080,7 @@ begin
 {$ifdef DEBUG}
   WriteExchangeLog('DModule',
       Concat('UserActionLogs', #13#10,
-        DM.DataSetToString('select * from UserActionLogs', [], [])));
+        DM.DataSetToString('select Id, LogTime, UserActionId, Context from UserActionLogs', [], [])));
 {$endif}
   InsertUserActionLog(uaStart);
 
@@ -3660,7 +3661,7 @@ begin
     Result := Result + '; ';
 end;
 
-procedure TDM.adtParamsAfterPost(DataSet: TDataSet);
+procedure TDM.adtParamsOldAfterPost(DataSet: TDataSet);
 begin
   DatabaseController.BackupDataTable(doiParams);
 end;

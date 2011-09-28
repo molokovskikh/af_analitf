@@ -19,7 +19,7 @@ object DM: TDM
     Top = 256
   end
   object dsAnalit: TDataSource
-    DataSet = adtParams
+    DataSet = adtParamsOld
     Left = 104
     Top = 256
   end
@@ -118,11 +118,11 @@ object DM: TDM
     Left = 32
     Top = 104
   end
-  object adtParams: TMyTable
+  object adtParamsOld: TMyTable
     TableName = 'params'
     Connection = MyConnection
     Filter = 'id = 0'
-    AfterPost = adtParamsAfterPost
+    AfterPost = adtParamsOldAfterPost
     Left = 48
     Top = 232
   end
@@ -310,7 +310,17 @@ object DM: TDM
     Connection = MyConnection
     SQL.Strings = (
       'SELECT '
-      '  pricesshow.*,'
+      '  pricesshow.PriceCode,'
+      '  pricesshow.PriceName,'
+      '  pricesshow.UniversalDatePrice,'
+      '  pricesshow.Enabled,'
+      '  pricesshow.FirmCode,'
+      '  pricesshow.FullName,'
+      '  pricesshow.Storage,'
+      '  pricesshow.ManagerMail,'
+      '  pricesshow.RegionCode,'
+      '  pricesshow.RegionName,'
+      '  pricesshow.pricesize,'
       '  minreqrules.ControlMinReq,'
       '  minreqrules.MinReq,'
       '  pd.PriceInfo,'
@@ -1461,5 +1471,161 @@ object DM: TDM
         DataType = ftUnknown
         Name = 'OrderId'
       end>
+  end
+  object adtParams: TMyQuery
+    SQLUpdate.Strings = (
+      'update Params'
+      'set'
+      'CLIENTID = :CLIENTID,'
+      'RASCONNECT = :RASCONNECT,'
+      'RASENTRY = :RASENTRY,'
+      'RASNAME = :RASNAME,'
+      'RASPASS = :RASPASS,'
+      'CONNECTCOUNT = :CONNECTCOUNT,'
+      'CONNECTPAUSE = :CONNECTPAUSE,'
+      'PROXYCONNECT = :PROXYCONNECT,'
+      'PROXYNAME = :PROXYNAME,'
+      'PROXYPORT = :PROXYPORT,'
+      'PROXYUSER = :PROXYUSER,'
+      'PROXYPASS = :PROXYPASS,'
+      'HTTPHOST = :HTTPHOST,'
+      'HTTPNAME = :HTTPNAME,'
+      'HTTPPASS = :HTTPPASS,'
+      'UPDATEDATETIME = :UPDATEDATETIME,'
+      'LASTDATETIME = :LASTDATETIME,'
+      'SHOWREGISTER = :SHOWREGISTER,'
+      'USEFORMS = :USEFORMS,'
+      'OPERATEFORMS = :OPERATEFORMS,'
+      'OPERATEFORMSSET = :OPERATEFORMSSET,'
+      'STARTPAGE = :STARTPAGE,'
+      'LASTCOMPACT = :LASTCOMPACT,'
+      'CUMULATIVE = :CUMULATIVE,'
+      'STARTED = :STARTED,'
+      'RASSLEEP = :RASSLEEP,'
+      'HTTPNAMECHANGED = :HTTPNAMECHANGED,'
+      'SHOWALLCATALOG = :SHOWALLCATALOG,'
+      'CDS = :CDS,'
+      'ORDERSHISTORYDAYCOUNT = :ORDERSHISTORYDAYCOUNT,'
+      'CONFIRMDELETEOLDORDERS = :CONFIRMDELETEOLDORDERS,'
+      'USEOSOPENWAYBILL = :USEOSOPENWAYBILL,'
+      'USEOSOPENREJECT = :USEOSOPENREJECT,'
+      'GROUPBYPRODUCTS = :GROUPBYPRODUCTS,'
+      'PRINTORDERSAFTERSEND = :PRINTORDERSAFTERSEND,'
+      'ProviderName = :ProviderName,'
+      'ProviderAddress = :ProviderAddress,'
+      'ProviderPhones = :ProviderPhones,'
+      'ProviderEmail = :ProviderEmail,'
+      'ProviderWeb = :ProviderWeb,'
+      'ProviderMDBVersion = :ProviderMDBVersion,'
+      'ConfirmSendingOrders = :ConfirmSendingOrders,'
+      'UseCorrectOrders = :UseCorrectOrders,'
+      'StoredUserId = :StoredUserId'
+      'where'
+      '  Id = :Old_Id')
+    SQLRefresh.Strings = (
+      'SELECT'
+      'ID,'
+      'CLIENTID,'
+      'RASCONNECT,'
+      'RASENTRY,'
+      'RASNAME,'
+      'RASPASS,'
+      'CONNECTCOUNT,'
+      'CONNECTPAUSE,'
+      'PROXYCONNECT,'
+      'PROXYNAME,'
+      'PROXYPORT,'
+      'PROXYUSER,'
+      'PROXYPASS,'
+      'HTTPHOST,'
+      'HTTPNAME,'
+      'HTTPPASS,'
+      'UPDATEDATETIME,'
+      'LASTDATETIME,'
+      'SHOWREGISTER,'
+      'USEFORMS,'
+      'OPERATEFORMS,'
+      'OPERATEFORMSSET,'
+      'STARTPAGE,'
+      'LASTCOMPACT,'
+      'CUMULATIVE,'
+      'STARTED,'
+      'RASSLEEP,'
+      'HTTPNAMECHANGED,'
+      'SHOWALLCATALOG,'
+      'CDS,'
+      'ORDERSHISTORYDAYCOUNT,'
+      'CONFIRMDELETEOLDORDERS,'
+      'USEOSOPENWAYBILL,'
+      'USEOSOPENREJECT,'
+      'GROUPBYPRODUCTS,'
+      'PRINTORDERSAFTERSEND,'
+      'ProviderName,'
+      'ProviderAddress,'
+      'ProviderPhones,'
+      'ProviderEmail,'
+      'ProviderWeb,'
+      'ProviderMDBVersion,'
+      'ConfirmSendingOrders,'
+      'UseCorrectOrders,'
+      'StoredUserId'
+      'FROM'
+      '  Params'
+      'where'
+      '  Id = :Id')
+    Connection = MyConnection
+    SQL.Strings = (
+      'SELECT'
+      'ID,'
+      'CLIENTID,'
+      'RASCONNECT,'
+      'RASENTRY,'
+      'RASNAME,'
+      'RASPASS,'
+      'CONNECTCOUNT,'
+      'CONNECTPAUSE,'
+      'PROXYCONNECT,'
+      'PROXYNAME,'
+      'PROXYPORT,'
+      'PROXYUSER,'
+      'PROXYPASS,'
+      'HTTPHOST,'
+      'HTTPNAME,'
+      'HTTPPASS,'
+      'UPDATEDATETIME,'
+      'LASTDATETIME,'
+      'SHOWREGISTER,'
+      'USEFORMS,'
+      'OPERATEFORMS,'
+      'OPERATEFORMSSET,'
+      'STARTPAGE,'
+      'LASTCOMPACT,'
+      'CUMULATIVE,'
+      'STARTED,'
+      'RASSLEEP,'
+      'HTTPNAMECHANGED,'
+      'SHOWALLCATALOG,'
+      'CDS,'
+      'ORDERSHISTORYDAYCOUNT,'
+      'CONFIRMDELETEOLDORDERS,'
+      'USEOSOPENWAYBILL,'
+      'USEOSOPENREJECT,'
+      'GROUPBYPRODUCTS,'
+      'PRINTORDERSAFTERSEND,'
+      'ProviderName,'
+      'ProviderAddress,'
+      'ProviderPhones,'
+      'ProviderEmail,'
+      'ProviderWeb,'
+      'ProviderMDBVersion,'
+      'ConfirmSendingOrders,'
+      'UseCorrectOrders,'
+      'StoredUserId'
+      'FROM'
+      '  Params'
+      'order by Id')
+    AfterPost = adtParamsOldAfterPost
+    Left = 56
+    Top = 312
   end
 end
