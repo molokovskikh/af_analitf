@@ -416,7 +416,7 @@ begin
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         FCommand.SQL.Text :=
           Format(
-            'SELECT * from analitf.%s limit 100;',
+            'SELECT now() from analitf.%s limit 100;',
             [AnsiLowerCase(currentTable.Name)]);
         try
           FCommand.Open;
@@ -964,12 +964,12 @@ begin
             FCommand.SQL.Text := TDatabaseView(FDatabaseObjects[i]).GetCreateSQL('analitf');
             FCommand.Execute;
 
-            FCommand.SQL.Text := 'select * from analitf.' + TDatabaseView(FDatabaseObjects[i]).Name + '  limit 0';
+            FCommand.SQL.Text := 'select now() from analitf.' + TDatabaseView(FDatabaseObjects[i]).Name + '  limit 0';
             FCommand.Open;
             FCommand.Close;
 
             try
-              FCommand.SQL.Text := 'select * from ' + TDatabaseView(FDatabaseObjects[i]).Name + '  limit 0';
+              FCommand.SQL.Text := 'select now() from ' + TDatabaseView(FDatabaseObjects[i]).Name + '  limit 0';
               FCommand.Open;
               FCommand.Close;
             except
