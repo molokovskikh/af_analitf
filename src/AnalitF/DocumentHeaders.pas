@@ -350,7 +350,17 @@ begin
 
   DM.adsQueryValue.SQL.Text := '' +
 ' select ' +
-'  dh.*, ' +
+'  dh.Id, ' +
+'  dh.DownloadId, ' +
+'  dh.WriteTime, ' +
+'  dh.FirmCode, ' +
+'  dh.ClientId, ' +
+'  dh.DocumentType, ' +
+'  dh.ProviderDocumentId, ' +
+'  dh.OrderId, ' +
+'  dh.Header, ' +
+'  dh.LoadTime, ' +
+'  dh.RetailAmountCalculated, ' +
 '  EXTRACT(YEAR_MONTH FROM ifnull(dh.WriteTime, dh.LoadTime)) as YearMonth, ' +
 '  dh.WriteTime as LocalWriteTime, ' +
 '  p.FirmCode, ' +

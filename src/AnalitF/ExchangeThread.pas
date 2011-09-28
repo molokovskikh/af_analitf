@@ -1449,7 +1449,7 @@ begin
   with DM.adcUpdate do begin
     WriteExchangeLog('ImportData',
       Concat('Core before start import', #13#10,
-        DM.DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode', [], [])));
+        DM.DataSetToString('select PriceCode, RegionCode, count(Id) from Core group by PriceCode, RegionCode', [], [])));
 
   //удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
   //PricesRegionalData
@@ -1832,7 +1832,7 @@ begin
   if utCore in UpdateTables then begin
     WriteExchangeLog('ImportData',
       Concat('Core before import', #13#10,
-        DM.DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode', [], [])));
+        DM.DataSetToString('select PriceCode, RegionCode, count(Id) from Core group by PriceCode, RegionCode', [], [])));
     coreTestInsertSQl := GetLoadDataSQL('Core', RootFolder()+SDirIn+'\Core.txt');
 
 {$ifndef DisableCrypt}
@@ -1855,7 +1855,7 @@ begin
     WriteExchangeLog('ImportData', 'Import Core count : ' + IntToStr(DM.adcUpdate.RowsAffected));
     WriteExchangeLog('ImportData',
       Concat('Core after import', #13#10,
-        DM.DataSetToString('select PriceCode, RegionCode, count(*) from Core group by PriceCode, RegionCode', [], [])));
+        DM.DataSetToString('select PriceCode, RegionCode, count(Id) from Core group by PriceCode, RegionCode', [], [])));
 
 {$ifndef DisableCrypt}
     SQL.Text :=
@@ -1891,7 +1891,7 @@ begin
   end;
   //MaxProducerCosts
   if utMaxProducerCosts in UpdateTables then begin
-    if DM.QueryValue('select count(*) from MaxProducerCosts', [], []) > 0 then begin
+    if DM.QueryValue('select count(Id) from MaxProducerCosts', [], []) > 0 then begin
       SQL.Text:='truncate maxproducercosts;';
       InternalExecute;
     end;
@@ -2056,7 +2056,7 @@ begin
   SetStatusText('Импорт данных');
 
   SQL.Text := 'update catalogs set CoreExists = 0, PromotionsCount = 0, NamePromotionsCount = 0 where FullCode > 0'; InternalExecute;
-  SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select * from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
+  SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select Id from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
   InternalExecute;
   SQL.Text :=
 'update ' +
@@ -3132,7 +3132,7 @@ begin
       DM.adcUpdate.Execute;
 
       if DM.adsQueryValue.Active then DM.adsQueryValue.Close;
-      DM.adsQueryValue.SQL.Text := 'select * from analitf.ClientToAddressMigrations order by ClientCode';
+      DM.adsQueryValue.SQL.Text := 'select ClientCode, AddressId from analitf.ClientToAddressMigrations order by ClientCode';
       DM.adsQueryValue.Open;
       try
         while not DM.adsQueryValue.Eof do begin
@@ -3257,7 +3257,7 @@ begin
     + ' where '
     + '       (batchreport.ClientId = DistinctOrderAddresses.AddressId)'
     + '   and (OrderListId is not null) '
-    + '   and not exists(select * from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
+    + '   and not exists(select Id from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
   InternalExecute;
 end;
 
@@ -3722,23 +3722,23 @@ begin
         try
           command.Connection := FEmbConnection;
 
-          command.SQL.Text := 'select * from analitf.pricesshow';
+          command.SQL.Text := 'select PriceCode from analitf.pricesshow';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.params';
+          command.SQL.Text := 'select Id from analitf.params';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.clients';
+          command.SQL.Text := 'select CLIENTID from analitf.clients';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.client';
+          command.SQL.Text := 'select Id from analitf.client';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.userinfo';
+          command.SQL.Text := 'select UserId from analitf.userinfo';
           command.Open;
           command.Close;
         finally

@@ -724,7 +724,7 @@ begin
 
   { ѕровер€ем каталог на наличие записей }
   try
-    CatNum := DM.QueryValue('SELECT COUNT(*) AS CatNum FROM Catalogs', [], []);
+    CatNum := DM.QueryValue('SELECT COUNT(FullCode) AS CatNum FROM Catalogs', [], []);
   except
     CatNum := 0;
   end;
@@ -1253,7 +1253,7 @@ function TMainForm.OldOrders: Boolean;
 begin
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := 'SELECT * FROM PostedOrderHeads where (Closed = 1) and (orderdate < :MinOrderDate)';
+  DM.adsQueryValue.SQL.Text := 'SELECT Id FROM PostedOrderHeads where (Closed = 1) and (orderdate < :MinOrderDate)';
   DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
   DM.adsQueryValue.Open;
   try
@@ -1262,7 +1262,7 @@ begin
     DM.adsQueryValue.Close;
   end;
   if not Result then begin
-    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
+    DM.adsQueryValue.SQL.Text := 'SELECT Id FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
     DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adsQueryValue.Open;
     try
@@ -1298,7 +1298,7 @@ begin
   try
     if DM.adsQueryValue.Active then
       DM.adsQueryValue.Close;
-    DM.adsQueryValue.SQL.Text := 'SELECT * FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
+    DM.adsQueryValue.SQL.Text := 'SELECT Id, DocumentType, DownloadId FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
     DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
     DM.adsQueryValue.Open;
     try

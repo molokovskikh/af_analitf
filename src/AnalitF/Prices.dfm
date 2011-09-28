@@ -471,11 +471,21 @@ inherited PricesForm: TPricesForm
       '    PriceCode = :OLD_PRICECODE'
       'and RegionCode = :OLD_RegionCODE'
       
-        'and not exists(select * from pricesregionaldataup where PriceCod' +
-        'e = :OLD_PRICECODE and RegionCode = :OLD_RegionCODE);')
+        'and not exists(select PriceCode from pricesregionaldataup where ' +
+        'PriceCode = :OLD_PRICECODE and RegionCode = :OLD_RegionCODE);')
     SQLRefresh.Strings = (
       'SELECT '
-      '  pricesshow.*,'
+      '  pricesshow.PriceCode,'
+      '  pricesshow.PriceName,'
+      '  pricesshow.UniversalDatePrice,'
+      '  pricesshow.Enabled,'
+      '  pricesshow.FirmCode,'
+      '  pricesshow.FullName,'
+      '  pricesshow.Storage,'
+      '  pricesshow.ManagerMail,'
+      '  pricesshow.RegionCode,'
+      '  pricesshow.RegionName,'
+      '  pricesshow.pricesize,'
       '  minreqrules.ControlMinReq,'
       '  minreqrules.MinReq,'
       '  pd.PriceInfo,'
@@ -561,7 +571,17 @@ inherited PricesForm: TPricesForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT '
-      '  pricesshow.*,'
+      '  pricesshow.PriceCode,'
+      '  pricesshow.PriceName,'
+      '  pricesshow.UniversalDatePrice,'
+      '  pricesshow.Enabled,'
+      '  pricesshow.FirmCode,'
+      '  pricesshow.FullName,'
+      '  pricesshow.Storage,'
+      '  pricesshow.ManagerMail,'
+      '  pricesshow.RegionCode,'
+      '  pricesshow.RegionName,'
+      '  pricesshow.pricesize,'
       '  minreqrules.ControlMinReq,'
       '  minreqrules.MinReq,'
       '  pd.PriceInfo,'

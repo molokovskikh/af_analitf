@@ -1762,7 +1762,7 @@ end;
 function TDM.GetCatalogsCount: Integer;
 begin
   try
-    Result := QueryValue('SELECT COUNT(*) AS CatNum FROM Catalogs', [], []);
+    Result := QueryValue('SELECT COUNT(FullCode) AS CatNum FROM Catalogs', [], []);
   except
     Result := 0;
   end;
