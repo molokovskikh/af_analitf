@@ -1449,7 +1449,7 @@ begin
   with DM.adcUpdate do begin
     WriteExchangeLog('ImportData',
       Concat('Core before start import', #13#10,
-        DM.DataSetToString('select PriceCode, RegionCode, count(Id) from Core group by PriceCode, RegionCode', [], [])));
+        DM.DataSetToString('select PriceCode, RegionCode, count(COREID) from Core group by PriceCode, RegionCode', [], [])));
 
   //удаляем из таблиц ненужные данные: прайс-листы, регионы, поставщиков, которые теперь не доступны данному клиенту
   //PricesRegionalData
@@ -1832,7 +1832,7 @@ begin
   if utCore in UpdateTables then begin
     WriteExchangeLog('ImportData',
       Concat('Core before import', #13#10,
-        DM.DataSetToString('select PriceCode, RegionCode, count(Id) from Core group by PriceCode, RegionCode', [], [])));
+        DM.DataSetToString('select PriceCode, RegionCode, count(COREID) from Core group by PriceCode, RegionCode', [], [])));
     coreTestInsertSQl := GetLoadDataSQL('Core', RootFolder()+SDirIn+'\Core.txt');
 
 {$ifndef DisableCrypt}
@@ -1855,7 +1855,7 @@ begin
     WriteExchangeLog('ImportData', 'Import Core count : ' + IntToStr(DM.adcUpdate.RowsAffected));
     WriteExchangeLog('ImportData',
       Concat('Core after import', #13#10,
-        DM.DataSetToString('select PriceCode, RegionCode, count(Id) from Core group by PriceCode, RegionCode', [], [])));
+        DM.DataSetToString('select PriceCode, RegionCode, count(COREID) from Core group by PriceCode, RegionCode', [], [])));
 
 {$ifndef DisableCrypt}
     SQL.Text :=
@@ -2056,7 +2056,7 @@ begin
   SetStatusText('Импорт данных');
 
   SQL.Text := 'update catalogs set CoreExists = 0, PromotionsCount = 0, NamePromotionsCount = 0 where FullCode > 0'; InternalExecute;
-  SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select Id from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
+  SQL.Text := 'update catalogs set CoreExists = 1 where FullCode > 0 and exists(select c.COREID from core c, products p where p.catalogid = catalogs.fullcode and c.productid = p.productid)';
   InternalExecute;
   SQL.Text :=
 'update ' +

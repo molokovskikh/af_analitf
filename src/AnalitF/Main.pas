@@ -1253,7 +1253,7 @@ function TMainForm.OldOrders: Boolean;
 begin
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := 'SELECT Id FROM PostedOrderHeads where (Closed = 1) and (orderdate < :MinOrderDate)';
+  DM.adsQueryValue.SQL.Text := 'SELECT OrderId FROM PostedOrderHeads where (Closed = 1) and (orderdate < :MinOrderDate)';
   DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
   DM.adsQueryValue.Open;
   try
