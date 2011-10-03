@@ -4,6 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes,
+  //ActiveX,
   MyAccess, MyEmbConnection,
   AProc;
 
@@ -63,6 +64,9 @@ var
   InternalConnection : TCustomMyConnection;
 begin
   ErrorStr := '';
+//  CoInitialize(nil);
+//  Sleep(1000);
+//  try
   try
     InternalConnection := nil;
     if Assigned(dbCon) then begin
@@ -96,6 +100,9 @@ begin
     on E : Exception do
       ErrorStr := E.Message;
   end;
+//  finally
+//    CoUninitialize();
+//  end;
 end;
 
 procedure RunUpdateDBFile(

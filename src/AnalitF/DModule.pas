@@ -7,6 +7,7 @@ uses
   Db, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
   FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, 
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
+//  ActiveX,
   CompactThread, Math, IdIcmpClient, 
   incrt, hlpcodecs, StrUtils, RxMemDS,
   Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, 
@@ -5352,7 +5353,31 @@ begin
     [UserActionId, contextVariant]);
 end;
 
+{
+var
+  r : HRESULT;
+  bR : Boolean;
+  d : String;
+}
+
 initialization
+{
+  ComObj.CoInitFlags := COINIT_MULTITHREADED;
+
+  if (CoInitFlags <> -1) and Assigned(ComObj.CoInitializeEx) then
+  begin
+    r := ComObj.CoInitializeEx(nil, CoInitFlags);
+    bR := Succeeded(r);
+    if not bR then begin
+      d := SysErrorMessage(r);
+      WriteExchangeLog('test', 'OLE: ' + d);
+    end;
+    IsMultiThread := IsMultiThread or
+      ((CoInitFlags and COINIT_APARTMENTTHREADED) <> 0) or
+      (CoInitFlags = COINIT_MULTITHREADED);  // this flag has value zero
+  end;
+}  
+
   AddTerminateProc(CloseDB);
   PassC := TINFCrypt.Create(gcp, 48);
   SummarySelectedPrices := TStringList.Create;
