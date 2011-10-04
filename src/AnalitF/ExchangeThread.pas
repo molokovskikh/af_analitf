@@ -8,7 +8,7 @@ uses
   IdException, WinSock, RxVerInf, DB,
   SevenZip,
   IdStackConsts, infvercls, Contnrs, IdHashMessageDigest,
-  DADAuthenticationNTLM, IdComponent, IdHTTP, FileUtil,
+  IdComponent, IdHTTP, FileUtil,
   U_frmOldOrdersDelete, U_RecvThread, IdStack, MyAccess, DBAccess,
   DataIntegrityExceptions, PostSomeOrdersController, ExchangeParameters,
   DatabaseObjects, HFileHelper, NetworkAdapterHelpers, PostWaybillsController,

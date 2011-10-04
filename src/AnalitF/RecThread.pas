@@ -3,7 +3,7 @@ unit RecThread;
 interface
 
 uses Classes, SysUtils, IdException, WinSock, IdComponent, IdHTTP, Math, SOAPThroughHTTP,
-  IdStackConsts, StrUtils, DADAuthenticationNTLM, U_RecvThread, IdStack;
+  IdStackConsts, StrUtils, U_RecvThread, IdStack;
 
 type
   TReclameThread = class(TReceiveThread)
