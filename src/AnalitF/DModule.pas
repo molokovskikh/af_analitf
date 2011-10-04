@@ -3615,7 +3615,7 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
-    if AnsiCompareText(calchash, 'B96036E9548DA25E17FC79B3E3CAF6A2') <> 0 then
+    if AnsiCompareText(calchash, 'AED5143566D4AF9180D000E83E9AD868') <> 0 then
       raise Exception.Create('Невозможно загрузить библиотеку libmysqld.dll.');
   except
     on E : Exception do begin
