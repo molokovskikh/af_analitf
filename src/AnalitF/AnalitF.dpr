@@ -164,35 +164,6 @@ uses
 {$R RollbackAF.RES}
 {$R Icons.RES}
 {$R Bitmaps.RES}
-{$R CompareScript50.RES}
-{$R CompareScript51.RES}
-{$R CompareScript52.RES}
-{$R CompareScript53.RES}
-{$R CompareScript54.RES}
-{$R CompareScript55.RES}
-{$R CompareScript56.RES}
-{$R CompareScript57.RES}
-{$R CompareScript58.RES}
-{$R CompareScript59.RES}
-{$R CompareScript60.RES}
-{$R CompareScript62.RES}
-{$R CompareScript63.RES}
-{$R CompareScript64.RES}
-{$R CompareScript65.RES}
-{$R CompareScript66.RES}
-{$R CompareScript67.RES}
-{$R CompareScript68.RES}
-{$R CompareScript69.RES}
-{$R CompareScript70.RES}
-{$R CompareScript71.RES}
-{$R CompareScript72.RES}
-{$R CompareScript73.RES}
-{$R CompareScript74.RES}
-{$R CompareScript75.RES}
-{$R CompareScript76.RES}
-{$R CompareScript77.RES}
-{$R CompareScript78.RES}
-{$R CompareScript79.RES}
 
 var
   B : TWebBrowser;
