@@ -1019,7 +1019,14 @@ begin
   adsMaxProducerCosts.Connection := DM.MainConnection;
   adsMaxProducerCosts.SQL.Text := ''
 + 'select '
-+ ' * '
++'  Id, '
++'  CatalogId, '
++'  ProductId, '
++'  Product, '
++'  Producer, '
++'  Cost, '
++'  ProducerId, '
++'  RealCost '
 + ' from '
 + '   MaxProducerCosts';
   adsMaxProducerCosts.MasterSource := dsCore;

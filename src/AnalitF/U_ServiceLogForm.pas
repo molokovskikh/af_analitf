@@ -148,7 +148,7 @@ procedure TServiceLogForm.CreateNonVisualComponent;
 begin
   adsLog := TMyQuery.Create(Self);
   adsLog.Name := 'adsLog';
-  adsLog.SQL.Text := 'select * from networklog order by LogTime desc';
+  adsLog.SQL.Text := 'select Id, LogTime, Source, MessageType, Info from networklog order by LogTime desc';
 
   IdField := TDataSetHelper.AddLargeIntField(adsLog, 'Id');
   LogTimeField := TDataSetHelper.AddDateTimeField(adsLog, 'LogTime');

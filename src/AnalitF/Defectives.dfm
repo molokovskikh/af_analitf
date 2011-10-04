@@ -376,7 +376,18 @@ inherited DefectivesForm: TDefectivesForm
   object adsPrint: TMyQuery
     Connection = DM.MyConnection
     SQL.Strings = (
-      'SELECT * FROM Defectives'
+      'SELECT '
+      '  Defectives.Id,'
+      '  Defectives.Name,'
+      '  Defectives.Producer,'
+      '  Defectives.Country,'
+      '  Defectives.Series,'
+      '  Defectives.LETTERNUMBER,'
+      '  Defectives.LETTERDATE,'
+      '  Defectives.LABORATORY,'
+      '  Defectives.REASON,'
+      '  Defectives.CHECKPRINT'
+      'FROM Defectives'
       'WHERE '
       '  LetterDate BETWEEN :DateFrom And :DateTo '
       'AND (CheckPrint = 1 Or :ShowAll = 1)')
@@ -404,12 +415,34 @@ inherited DefectivesForm: TDefectivesForm
       'WHERE'
       '    ID = :OLD_ID')
     SQLRefresh.Strings = (
-      'SELECT * FROM Defectives'
+      'SELECT '
+      '  Defectives.Id,'
+      '  Defectives.Name,'
+      '  Defectives.Producer,'
+      '  Defectives.Country,'
+      '  Defectives.Series,'
+      '  Defectives.LETTERNUMBER,'
+      '  Defectives.LETTERDATE,'
+      '  Defectives.LABORATORY,'
+      '  Defectives.REASON,'
+      '  Defectives.CHECKPRINT '
+      'FROM Defectives'
       'WHERE'
       '(DEFECTIVES.ID = :OLD_ID)')
     Connection = DM.MyConnection
     SQL.Strings = (
-      'SELECT * FROM Defectives'
+      'SELECT '
+      '  Defectives.Id,'
+      '  Defectives.Name,'
+      '  Defectives.Producer,'
+      '  Defectives.Country,'
+      '  Defectives.Series,'
+      '  Defectives.LETTERNUMBER,'
+      '  Defectives.LETTERDATE,'
+      '  Defectives.LABORATORY,'
+      '  Defectives.REASON,'
+      '  Defectives.CHECKPRINT'
+      'FROM Defectives'
       'WHERE LetterDate BETWEEN :DateFrom And :DateTo')
     RefreshOptions = [roAfterUpdate]
     Left = 160

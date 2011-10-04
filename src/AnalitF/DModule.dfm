@@ -300,7 +300,9 @@ object DM: TDM
       '  Receiveddocs.ID = :ID')
     Connection = MyConnection
     SQL.Strings = (
-      'select * from Receiveddocs'
+      'select '
+      'ID, FILENAME, FILEDATETIME'
+      'from Receiveddocs'
       'order by filedatetime desc')
     AfterPost = adtReceivedDocsAfterPost
     Left = 312

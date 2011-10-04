@@ -1058,7 +1058,7 @@ begin
   pmDestinationClients.Items.Clear;
 
   DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := 'SELECT * FROM CLIENTS where ClientId <> :ClientId';
+  DM.adsQueryValue.SQL.Text := 'SELECT ClientId, Name FROM CLIENTS where ClientId <> :ClientId';
   DM.adsQueryValue.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   DM.adsQueryValue.Open;
   try
@@ -1125,7 +1125,7 @@ begin
     DM.adsQueryValue.Close;
 
   try
-    DM.adsQueryValue.SQL.Text:='SELECT * FROM PricesRegionalData where PriceCode = :PriceCode and RegionCode = :RegionCode and InJob = 1';
+    DM.adsQueryValue.SQL.Text:='SELECT PriceCode FROM PricesRegionalData where PriceCode = :PriceCode and RegionCode = :RegionCode and InJob = 1';
     DM.adsQueryValue.ParamByName('PriceCode').Value := PriceCode;
     DM.adsQueryValue.ParamByName('RegionCode').Value := RegionCode;
     DM.adsQueryValue.Open;
@@ -1137,7 +1137,7 @@ begin
   end;
 
   try
-    DM.adsQueryValue.SQL.Text:='SELECT * FROM Core where PriceCode = :PriceCode and RegionCode = :RegionCode limit 10';
+    DM.adsQueryValue.SQL.Text:='SELECT PriceCode FROM Core where PriceCode = :PriceCode and RegionCode = :RegionCode limit 10';
     DM.adsQueryValue.ParamByName('PriceCode').Value := PriceCode;
     DM.adsQueryValue.ParamByName('RegionCode').Value := RegionCode;
     DM.adsQueryValue.Open;

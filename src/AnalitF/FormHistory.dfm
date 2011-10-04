@@ -272,7 +272,10 @@ object FormsHistoryForm: TFormsHistoryForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'select'
-      '*'
+      '  Catalogs.FullCode,'
+      '  Catalogs.ShortCode,'
+      '  Catalogs.Name,'
+      '  Catalogs.Form'
       'from'
       'Catalogs'
       'where'

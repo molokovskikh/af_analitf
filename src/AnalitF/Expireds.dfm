@@ -357,7 +357,9 @@ inherited ExpiredsForm: TExpiredsForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
-      '    *'
+      'ClientAVG.ClientCode,'
+      'ClientAVG.ProductId,'
+      'ClientAVG.PriceAvg'
       'FROM'
       '   ClientAVG'
       'where'

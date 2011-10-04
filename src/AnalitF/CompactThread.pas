@@ -242,23 +242,23 @@ begin
         try
           command.Connection := FEmbConnection;
 
-          command.SQL.Text := 'select * from analitf.pricesshow';
+          command.SQL.Text := 'select PriceCode from analitf.pricesshow';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.params';
+          command.SQL.Text := 'select Id from analitf.params';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.clients';
+          command.SQL.Text := 'select ClientId from analitf.clients';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.client';
+          command.SQL.Text := 'select Id from analitf.client';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.userinfo';
+          command.SQL.Text := 'select UserId from analitf.userinfo';
           command.Open;
           command.Close;         
         finally
@@ -345,23 +345,23 @@ begin
         try
           command.Connection := FEmbConnection;
 
-          command.SQL.Text := 'select * from analitf.pricesshow';
+          command.SQL.Text := 'select PriceCode from analitf.pricesshow';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.params';
+          command.SQL.Text := 'select Id from analitf.params';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.clients';
+          command.SQL.Text := 'select ClientId from analitf.clients';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.client';
+          command.SQL.Text := 'select Id from analitf.client';
           command.Open;
           command.Close;
 
-          command.SQL.Text := 'select * from analitf.userinfo';
+          command.SQL.Text := 'select UserId from analitf.userinfo';
           command.Open;
           command.Close;
         finally

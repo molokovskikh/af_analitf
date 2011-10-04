@@ -496,7 +496,9 @@ object CoreFirmForm: TCoreFirmForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT'
-      '    *'
+      'ClientAVG.ClientCode,'
+      'ClientAVG.ProductId,'
+      'ClientAVG.PriceAvg'
       'FROM'
       '   ClientAVG'
       'where'
@@ -1265,8 +1267,8 @@ object CoreFirmForm: TCoreFirmForm
       '    Producers.Name as ProducerName'
       'FROM'
       
-        '    (select * from synonyms where (synonyms.SynonymName like :Li' +
-        'keParam)) as synonyms,'
+        '    (select SYNONYMCODE, SYNONYMNAME from synonyms where (synony' +
+        'ms.SynonymName like :LikeParam)) as synonyms,'
       '    Core CCore'
       
         '    inner join products       on (products.productid = CCore.pro' +
