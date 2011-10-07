@@ -5376,6 +5376,21 @@ begin
     'where DocumentBodies.Id = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is not null',
     [],
     []);
+
+  if updateRecord > 0 then begin
+    adsQueryValue.Close;
+    adsQueryValue.SQL.Text := 'select CertificateId from CertificateRequests where CertificateId is not null';
+    adsQueryValue.Open;
+    try
+      while not adsQueryValue.Eof do begin
+        OpenCertificateFiles(TLargeintField(adsQueryValue.FieldByName('CertificateId')).Value);
+        adsQueryValue.Next;
+      end;
+    finally
+      adsQueryValue.Close;
+    end;
+  end;
+
   updateRecord := DBProc.UpdateValue(
     MainConnection,
     'update CertificateRequests, DocumentBodies ' +
