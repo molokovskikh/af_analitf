@@ -166,7 +166,7 @@ begin
   RealExePath := ExtractFilePath(ParamStr(0));
   WriteLn('Path :', RealExePath);
 
-  CoInitialize(nil);
+  //CoInitialize(nil);
   try
     PrepareDatabase;
 
@@ -179,7 +179,7 @@ begin
     on E : Exception do
       WriteLn('Error on execute: ', E.Message);
   end;
-  CoUninitialize();
+  //CoUninitialize();
 
   Write('Press any button');
   ReadLn;
