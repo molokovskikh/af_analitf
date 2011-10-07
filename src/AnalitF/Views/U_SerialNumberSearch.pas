@@ -53,6 +53,7 @@ type
       Column: TColumnEh; AFont: TFont; var Background: TColor;
       State: TGridDrawState);
     procedure dbgSerialNumberSearchCellClick(Column: TColumnEh);
+    procedure dbgSerialNumberSearchSortMarkingChanged(Sender: TObject);
   private
     { Private declarations }
     InternalSearchText : String;
@@ -319,6 +320,12 @@ procedure TSerialNumberSearchForm.dbgSerialNumberSearchCellClick(
 begin
   if (Column.Field = adsSerialNumberSearchCertificateId) and not adsSerialNumberSearchCertificateId.IsNull then
     DM.OpenCertificateFiles(adsSerialNumberSearchCertificateId.Value);
+end;
+
+procedure TSerialNumberSearchForm.dbgSerialNumberSearchSortMarkingChanged(
+  Sender: TObject);
+begin
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 end.

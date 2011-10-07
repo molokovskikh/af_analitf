@@ -62,6 +62,7 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
       FooterFont.Name = 'MS Sans Serif'
       FooterFont.Style = []
       Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+      OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghDialogFind]
       TabOrder = 0
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
@@ -73,6 +74,7 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
       OnGetCellParams = dbgSerialNumberSearchGetCellParams
       OnKeyDown = dbgSerialNumberSearchKeyDown
       OnKeyPress = dbgSerialNumberSearchKeyPress
+      OnSortMarkingChanged = dbgSerialNumberSearchSortMarkingChanged
     end
   end
   object tmrSearch: TTimer
