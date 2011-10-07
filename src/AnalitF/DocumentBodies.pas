@@ -363,7 +363,7 @@ begin
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Номер сертификата', 0);
       column.Visible := False;
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'SerialNumber', 'Серия товара', 0);
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RequestCertificate', 'Запрос', dbgDocumentBodies.Canvas.TextWidth('Запрос'), False);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RequestCertificate', 'Получить', dbgDocumentBodies.Canvas.TextWidth('Получить'), False);
       column.Checkboxes := True;
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'CertificateId', 'Сертификаты', dbgDocumentBodies.Canvas.TextWidth('Сертификаты'), True);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Period', 'Срок годности', 0);
@@ -2186,7 +2186,7 @@ procedure TDocumentBodiesForm.adsDocumentBodiesCertificateIdGetText(
   Sender: TField; var Text: String; DisplayText: Boolean);
 begin
   if DisplayText and not Sender.IsNull then
-    Text := 'Открыть';
+    Text := 'Показать';
 end;
 
 procedure TDocumentBodiesForm.WaybillCellClick(Column: TColumnEh);

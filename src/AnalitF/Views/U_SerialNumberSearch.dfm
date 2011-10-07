@@ -2,7 +2,7 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
   Left = 459
   Top = 304
   ActiveControl = dbgSerialNumberSearch
-  Caption = #1055#1086#1080#1089#1082' '#1074' '#1085#1072#1082#1083#1072#1076#1085#1099#1093
+  Caption = #1055#1086#1080#1089#1082' '#1090#1086#1074#1072#1088#1072' '#1074' '#1085#1072#1082#1083#1072#1076#1085#1099#1093
   ClientWidth = 683
   OnDestroy = FormDestroy
   OnHide = FormHide
@@ -16,6 +16,18 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
+    DesignSize = (
+      683
+      36)
+    object spDelete: TSpeedButton
+      Left = 580
+      Top = 4
+      Width = 97
+      Height = 27
+      Anchors = [akTop, akRight]
+      Caption = #1053#1072#1079#1072#1076
+      OnClick = spDeleteClick
+    end
     object eSearch: TEdit
       Left = 8
       Top = 8
@@ -56,7 +68,9 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
       TitleFont.Height = -11
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
+      OnCellClick = dbgSerialNumberSearchCellClick
       OnDrawColumnCell = dbgSerialNumberSearchDrawColumnCell
+      OnGetCellParams = dbgSerialNumberSearchGetCellParams
       OnKeyDown = dbgSerialNumberSearchKeyDown
       OnKeyPress = dbgSerialNumberSearchKeyPress
     end
@@ -143,6 +157,7 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
     end
     object adsSerialNumberSearchCertificateId: TLargeintField
       FieldName = 'CertificateId'
+      OnGetText = adsSerialNumberSearchCertificateIdGetText
     end
     object adsSerialNumberSearchLocalWriteTime: TDateTimeField
       FieldName = 'LocalWriteTime'

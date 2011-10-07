@@ -9,7 +9,7 @@ uses
   StrUtils,
   AlphaUtils,
   DBGridHelper,
-  DBProc, DB, MemDS, DBAccess, MyAccess;
+  DBProc, DB, MemDS, DBAccess, MyAccess, Buttons;
 
 type
   TSerialNumberSearchForm = class(TChildForm)
@@ -28,6 +28,7 @@ type
     adsSerialNumberSearchProviderName: TStringField;
     adsSerialNumberSearchId: TLargeintField;
     tmrPrintedChange: TTimer;
+    spDelete: TSpeedButton;
     procedure FormHide(Sender: TObject);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -45,6 +46,13 @@ type
     procedure tmrPrintedChangeTimer(Sender: TObject);
     procedure adsSerialNumberSearchRequestCertificateChange(
       Sender: TField);
+    procedure adsSerialNumberSearchCertificateIdGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
+    procedure spDeleteClick(Sender: TObject);
+    procedure dbgSerialNumberSearchGetCellParams(Sender: TObject;
+      Column: TColumnEh; AFont: TFont; var Background: TColor;
+      State: TGridDrawState);
+    procedure dbgSerialNumberSearchCellClick(Column: TColumnEh);
   private
     { Private declarations }
     InternalSearchText : String;
@@ -64,6 +72,8 @@ var
   SerialNumberSearchForm: TSerialNumberSearchForm;
 
 implementation
+
+uses DModule;
 
 {$R *.dfm}
 
@@ -100,7 +110,7 @@ begin
     TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'ProviderName', 'Поставщик', 0);
     TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'Product', 'Наименование', 0);
     TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'SerialNumber', 'Серия товара', 0);
-    column := TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'RequestCertificate', 'Запрос', dbgSerialNumberSearch.Canvas.TextWidth('Запрос'), False);
+    column := TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'RequestCertificate', 'Получить', dbgSerialNumberSearch.Canvas.TextWidth('Получить'), False);
     column.Checkboxes := True;
     column := TDBGridHelper.AddColumn(dbgSerialNumberSearch, 'CertificateId', 'Сертификаты', dbgSerialNumberSearch.Canvas.TextWidth('Сертификаты'), True);
   finally
@@ -273,6 +283,42 @@ begin
   //произвел сохранение dataset
   tmrPrintedChange.Enabled := False;
   tmrPrintedChange.Enabled := True;
+end;
+
+procedure TSerialNumberSearchForm.adsSerialNumberSearchCertificateIdGetText(
+  Sender: TField; var Text: String; DisplayText: Boolean);
+begin
+  if DisplayText and not Sender.IsNull then
+    Text := 'Показать';
+end;
+
+procedure TSerialNumberSearchForm.spDeleteClick(Sender: TObject);
+begin
+  if Assigned(Self.PrevForm) then
+    Self.PrevForm.ShowAsPrevForm
+end;
+
+procedure TSerialNumberSearchForm.dbgSerialNumberSearchGetCellParams(
+  Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if (Column.Field = adsSerialNumberSearchCertificateId) then begin
+    if not adsSerialNumberSearchCertificateId.IsNull then begin
+      AFont.Style := AFont.Style + [fsUnderline];
+      AFont.Color := clHotLight;
+    end
+    else
+      //Сертификат не был получен, но запрос был
+      if not adsSerialNumberSearchId.IsNull then
+        Background := clGray;
+  end;
+end;
+
+procedure TSerialNumberSearchForm.dbgSerialNumberSearchCellClick(
+  Column: TColumnEh);
+begin
+  if (Column.Field = adsSerialNumberSearchCertificateId) and not adsSerialNumberSearchCertificateId.IsNull then
+    DM.OpenCertificateFiles(adsSerialNumberSearchCertificateId.Value);
 end;
 
 end.
