@@ -713,7 +713,8 @@ end;
 
 procedure TDocumentHeaderForm.sbSearchClick(Sender: TObject);
 begin
-  FSerialNumberSearchForm.ShowForm();
+  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+  FSerialNumberSearchForm.ShowForm(dtpDateFrom.Date, dtpDateTo.DateTime, '');
 end;
 
 end.

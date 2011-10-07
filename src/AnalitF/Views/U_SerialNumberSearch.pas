@@ -61,7 +61,7 @@ type
     procedure SetClear;
   public
     { Public declarations }
-    procedure ShowForm(); override;
+    procedure ShowForm( DateFrom, DateTo : TDateTime; supplierFilter : String); reintroduce;
     procedure SetParams;
     procedure PrepareGrid;
     procedure LoadFromRegistry();
@@ -128,10 +128,14 @@ begin
   PrepareGrid();
 end;
 
-procedure TSerialNumberSearchForm.ShowForm;
+procedure TSerialNumberSearchForm.ShowForm(DateFrom, DateTo : TDateTime; supplierFilter : String);
 begin
+  adsSerialNumberSearch.ParamByName('DateFrom').Value := DateFrom;
+  adsSerialNumberSearch.ParamByName('DateTo').Value := DateTo;
+  adsSerialNumberSearch.ParamByName('LikeParam').AsString := '%';
   SetParams;
-  inherited;
+  inherited ShowForm;
+  SetClear;
 end;
 
 procedure TSerialNumberSearchForm.FormHide(Sender: TObject);
@@ -159,6 +163,9 @@ begin
   InternalSearchText := '';
   if adsSerialNumberSearch.Active then
     adsSerialNumberSearch.Close;
+
+  adsSerialNumberSearch.ParamByName('LikeParam').AsString := '%';
+  adsSerialNumberSearch.Open;
 
   dbgSerialNumberSearch.SetFocus;
 end;

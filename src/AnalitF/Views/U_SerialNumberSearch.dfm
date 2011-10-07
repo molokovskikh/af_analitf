@@ -127,13 +127,25 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
       '  inner join DocumentHeaders dh on dh.Id = dbodies.DocumentId '
       '  inner join Providers p on p.FirmCode = dh.FirmCode'
       'where '
-      '   dbodies.Product like :LikeParam'
-      'or dbodies.SerialNumber like :LikeParam'
+      
+        '  (ifnull(dh.WriteTime, dh.LoadTime) BETWEEN :DateFrom AND :Date' +
+        'To)'
+      
+        'and (dbodies.Product like :LikeParam or dbodies.SerialNumber lik' +
+        'e :LikeParam)'
       'order by dbodies.Product')
     RefreshOptions = [roAfterUpdate]
     Left = 208
     Top = 251
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'DateFrom'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DateTo'
+      end
       item
         DataType = ftUnknown
         Name = 'LikeParam'
