@@ -147,12 +147,13 @@ begin
   begin
     if not FileExists(
       IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)))
-        + LibraryFileNameStart + LibraryFileNameEnd)
+        //+ LibraryFileNameStart + LibraryFileNameEnd)
+        + 'libmysqld.dll')
     then
       raise Exception.Create('Нет необходимого файла')
   end
   else
-    if not FileExists(fileName) 
+    if not FileExists(fileName)
     then
       raise Exception.Create('Нет необходимого файла');
 
@@ -160,14 +161,16 @@ begin
     EncodedFile := TFileStream
       .Create(
         IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)))
-          + LibraryFileNameStart + LibraryFileNameEnd,
+          //+ LibraryFileNameStart + LibraryFileNameEnd,
+          + 'libmysqld.dll',
         fmOpenRead or fmShareDenyWrite)
   else
     EncodedFile := TFileStream.Create(fileName, fmOpenRead or fmShareDenyWrite);
   try
     Result := TMemoryStream.Create();
     try
-      DecodeStream(EncodedFile, Result);
+      Result.CopyFrom(EncodedFile, EncodedFile.Size);
+      //DecodeStream(EncodedFile, Result);
     except
       Result.Free;
       Result := nil;

@@ -953,13 +953,14 @@ begin
 {$else}
   MyEmbConnection.Params.Add('--basedir=' + ExtractFileDir(ParamStr(0)) + '\');
   MyEmbConnection.Params.Add('--datadir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirData  + '\');
-  MyEmbConnection.Params.Add('--character_set_server=cp1251');
-  MyEmbConnection.Params.Add('--tmp_table_size=' + DatabaseController.GetMaxTempTableSize());
-  MyEmbConnection.Params.Add('--max_heap_table_size=' + DatabaseController.GetMaxTempTableSize());
-  MyEmbConnection.Params.Add('--tmpdir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirDataTmpDir  + '\');
+  //MyEmbConnection.Params.Add('--character_set_server=cp1251');
+  //MyEmbConnection.Params.Add('--tmp_table_size=' + DatabaseController.GetMaxTempTableSize());
+  //MyEmbConnection.Params.Add('--max_heap_table_size=' + DatabaseController.GetMaxTempTableSize());
+  //MyEmbConnection.Params.Add('--tmpdir=' + ExtractFileDir(ParamStr(0)) + '\' + SDirDataTmpDir  + '\');
 
-  MyEmbConnection.Params.Add('--sort_buffer_size=64M');
-  MyEmbConnection.Params.Add('--read_buffer_size=2M');
+  //MyEmbConnection.Params.Add('--sort_buffer_size=64M');
+  //MyEmbConnection.Params.Add('--read_buffer_size=2M');
+  
   //MyEmbConnection.Params.Add('--write_buffer_size=2M');
   //Для настройки этого параметра необходимо получить 60% свободной памяти
   //MyEmbConnection.Params.Add('--key_buffer_size==30M');
@@ -3615,8 +3616,10 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
+{
     if AnsiCompareText(calchash, 'AED5143566D4AF9180D000E83E9AD868') <> 0 then
       raise Exception.Create('Невозможно загрузить библиотеку libmysqld.dll.');
+}      
   except
     on E : Exception do begin
       LogExitError(
