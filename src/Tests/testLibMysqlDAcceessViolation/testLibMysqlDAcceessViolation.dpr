@@ -16,7 +16,8 @@ uses
   inforoomalg in '..\..\AnalitF\RC_RND\inforoomalg.pas',
   inforoomapi in '..\..\AnalitF\RC_RND\inforoomapi.pas',
   infver in '..\..\AnalitF\RC_RND\infver.pas',
-  infvercls in '..\..\AnalitF\RC_RND\infvercls.pas';
+  infvercls in '..\..\AnalitF\RC_RND\infvercls.pas',
+  DLLLoader in 'DLLLoader.pas';
 
 type
   TOpenTableThread = class(TThread)
@@ -185,14 +186,14 @@ begin
   try
     //PrepareDatabase;
 
-    //CheckOpen;
+    CheckOpen;
 
 {
-}
     t := TOpenTableThread.Create(False);
     while not t.Stopped do begin
       Sleep(500);
     end;
+}
   except
     on E : Exception do
       WriteLn('Error on execute: ', E.Message);

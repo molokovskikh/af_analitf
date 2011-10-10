@@ -32,6 +32,7 @@ uses
 {$ENDIF}
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper,
+  DLLLoader, 
 {$endif}
   SysUtils, Classes, MemUtils;
 
@@ -438,6 +439,7 @@ type
   private
     MDLHelper : TMDLHelper;
     MemoryLib : TMemoryStream;
+    FInternalLib : HMODULE;
     procedure InternalLoadMySqlLib;
     procedure InternalFreeMySqlLib;
 {$endif}
@@ -2779,6 +2781,7 @@ begin
   inherited;
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper := nil;
+  FInternalLib := 0;
   MemoryLib := GetEncryptedMemoryStream();
   FUseNewTypes := True;
 {$endif}  
@@ -3670,8 +3673,12 @@ end;
 procedure TMySQLAPIEmbedded.InternalFreeMySqlLib;
 begin
   if LoadedMySQLLib then begin
+    if FInternalLib <> 0 then
+      xFreeLibrary(FInternalLib);
+{
     if Assigned(MDLHelper) then
       FreeAndNil(MDLHelper);
+}      
   end;
 end;
 
@@ -3680,7 +3687,8 @@ procedure TMySQLAPIEmbedded.InternalLoadMySqlLib;
   procedure AssignProc(var Proc: pointer; const Name: string);
   begin
   {$IFDEF MSWINDOWS}
-    Proc := MDLHelper.GetFDProcAddress(PChar(Name));
+    //Proc := MDLHelper.GetFDProcAddress(PChar(Name));
+    Proc := xGetProcAddress(FInternalLib, PChar(Name));
   {$ELSE}
     Proc := dlsym(hMySQLLib, PChar(Name));
   {$ENDIF}
@@ -3691,10 +3699,19 @@ procedure TMySQLAPIEmbedded.InternalLoadMySqlLib;
 {$ENDIF}
 begin
   if LoadedMySQLLib then begin
+    if FInternalLib <> 0 then
+      xFreeLibrary(FInternalLib);
+
+    FInternalLib := xLoadLibrary(MemoryLib.Memory);
+    if FInternalLib = 0 then
+      raise Exception.Create('Не удалось загрузить spec libmysqld.dll');
+
+{
     if Assigned(MDLHelper) then
       FreeAndNil(MDLHelper);
     MDLHelper := TMDLHelper.Create();
     MDLHelper.InjectDll(MemoryLib.Memory, True);
+}    
 
 {$IFNDEF CLR}
     //AssignProc(@dll_mysql_num_rows, 'mysql_num_rows');
