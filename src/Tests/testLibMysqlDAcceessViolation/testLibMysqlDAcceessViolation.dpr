@@ -185,14 +185,14 @@ begin
   try
     //PrepareDatabase;
 
-    CheckOpen;
+    //CheckOpen;
 
 {
+}
     t := TOpenTableThread.Create(False);
     while not t.Stopped do begin
       Sleep(500);
     end;
-}
   except
     on E : Exception do
       WriteLn('Error on execute: ', E.Message);

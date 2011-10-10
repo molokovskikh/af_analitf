@@ -80,11 +80,11 @@ UnsafeType=0
 UnsafeCode=0
 UnsafeCast=0
 [Linker]
-MapFile=3
+MapFile=0
 OutputObjs=0
 ConsoleApp=1
-DebugInfo=1
-RemoteSymbols=1
+DebugInfo=0
+RemoteSymbols=0
 MinStackSize=16384
 MaxStackSize=1048576
 ImageBase=4194304
@@ -94,7 +94,7 @@ OutputDir=.\bin
 UnitOutputDir=.\unit
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=..\..\lib\MyDac\Source
+SearchPath=$(DELPHI)\Lib\Debug;..\..\lib\MyDac\Source
 Packages=vclx;vcl;rtl;dbrtl;vcldb;VclSmp;adortl;bdertl;vcldbx;ibxpress;vclactnband;IntrawebDB_50_70;Intraweb_50_70;ARas7;RxCtl7;RxDB7;RxBDE7;IndyCore70;IndySystem70;IndyProtocols70;FR7;tee;EhLib70;Tough;dacvcl70;dac70;mydacvcl70;mydac70;mysqlmon70;vclie
 Conditionals=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt
 DebugSourceDirs=
@@ -152,9 +152,10 @@ Item1=DEBUG;USENEWMYSQLTYPES;DisableCrypt
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=2
-Item0=..\..\lib\MyDac\Source
-Item1=..\lib\MyDac\Source
+Count=3
+Item0=$(DELPHI)\Lib\Debug;..\..\lib\MyDac\Source
+Item1=..\..\lib\MyDac\Source
+Item2=..\lib\MyDac\Source
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit
