@@ -32,7 +32,8 @@ uses
 {$ENDIF}
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper,
-  DLLLoader, 
+  //DLLLoader,
+  MemoryLoadLibraryHelper,
 {$endif}
   SysUtils, Classes, MemUtils;
 
@@ -439,7 +440,8 @@ type
   private
     MDLHelper : TMDLHelper;
     MemoryLib : TMemoryStream;
-    FInternalLib : HMODULE;
+    //FInternalLib : HMODULE;
+    FInternalLibM : PMemoryModule;
     procedure InternalLoadMySqlLib;
     procedure InternalFreeMySqlLib;
 {$endif}
@@ -2781,7 +2783,8 @@ begin
   inherited;
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper := nil;
-  FInternalLib := 0;
+  //FInternalLib := 0;
+  FInternalLibM := nil;
   MemoryLib := GetEncryptedMemoryStream();
   FUseNewTypes := True;
 {$endif}  
@@ -3673,8 +3676,14 @@ end;
 procedure TMySQLAPIEmbedded.InternalFreeMySqlLib;
 begin
   if LoadedMySQLLib then begin
+{
     if FInternalLib <> 0 then
       xFreeLibrary(FInternalLib);
+}      
+    if Assigned(FInternalLibM) then begin
+      MemoryFreeLibrary(FInternalLibM);
+      FInternalLibM := nil;
+    end
 {
     if Assigned(MDLHelper) then
       FreeAndNil(MDLHelper);
@@ -3688,7 +3697,8 @@ procedure TMySQLAPIEmbedded.InternalLoadMySqlLib;
   begin
   {$IFDEF MSWINDOWS}
     //Proc := MDLHelper.GetFDProcAddress(PChar(Name));
-    Proc := xGetProcAddress(FInternalLib, PChar(Name));
+    //Proc := xGetProcAddress(FInternalLib, PChar(Name));
+    Proc := MemoryGetProcAddress(FInternalLibM, PChar(Name));
   {$ELSE}
     Proc := dlsym(hMySQLLib, PChar(Name));
   {$ENDIF}
@@ -3699,12 +3709,23 @@ procedure TMySQLAPIEmbedded.InternalLoadMySqlLib;
 {$ENDIF}
 begin
   if LoadedMySQLLib then begin
+
+{
     if FInternalLib <> 0 then
       xFreeLibrary(FInternalLib);
 
     FInternalLib := xLoadLibrary(MemoryLib.Memory);
     if FInternalLib = 0 then
       raise Exception.Create('Не удалось загрузить spec libmysqld.dll');
+}      
+
+    if Assigned(FInternalLibM) then
+      MemoryFreeLibrary(FInternalLibM);
+
+    FInternalLibM := MemoryLoadLibrary(MemoryLib.Memory);
+    if not Assigned(FInternalLibM) then
+      raise Exception.Create('Не удалось загрузить spec libmysqld.dll');
+
 
 {
     if Assigned(MDLHelper) then
