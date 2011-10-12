@@ -33,7 +33,8 @@ uses
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper,
   //DLLLoader,
-  MemoryLoadLibraryHelper,
+  //MemoryLoadLibraryHelper,
+  BTMemoryModule,
 {$endif}
   SysUtils, Classes, MemUtils;
 
@@ -441,7 +442,8 @@ type
     MDLHelper : TMDLHelper;
     MemoryLib : TMemoryStream;
     //FInternalLib : HMODULE;
-    FInternalLibM : PMemoryModule;
+    //FInternalLibM : PMemoryModule;
+    FInternalLibM : PBTMemoryModule;
     procedure InternalLoadMySqlLib;
     procedure InternalFreeMySqlLib;
 {$endif}
@@ -3679,11 +3681,20 @@ begin
 {
     if FInternalLib <> 0 then
       xFreeLibrary(FInternalLib);
-}      
+}
+
+{
     if Assigned(FInternalLibM) then begin
       MemoryFreeLibrary(FInternalLibM);
       FInternalLibM := nil;
     end
+}    
+
+    if Assigned(FInternalLibM) then begin
+      BTMemoryFreeLibrary(FInternalLibM);
+      FInternalLibM := nil;
+    end;
+
 {
     if Assigned(MDLHelper) then
       FreeAndNil(MDLHelper);
@@ -3698,7 +3709,12 @@ procedure TMySQLAPIEmbedded.InternalLoadMySqlLib;
   {$IFDEF MSWINDOWS}
     //Proc := MDLHelper.GetFDProcAddress(PChar(Name));
     //Proc := xGetProcAddress(FInternalLib, PChar(Name));
-    Proc := MemoryGetProcAddress(FInternalLibM, PChar(Name));
+    //Proc := MemoryGetProcAddress(FInternalLibM, PChar(Name));
+    Proc := BTMemoryGetProcAddress(FInternalLibM, PChar(Name));
+{
+    if Length(BTMemoryGetLastError) > 0 then
+      raise Exception.Create('Не удалось загрузить spec libmysqld.dll функция ' + Name + ': ' + BTMemoryGetLastError);
+}      
   {$ELSE}
     Proc := dlsym(hMySQLLib, PChar(Name));
   {$ENDIF}
@@ -3719,13 +3735,24 @@ begin
       raise Exception.Create('Не удалось загрузить spec libmysqld.dll');
 }      
 
+{
     if Assigned(FInternalLibM) then
       MemoryFreeLibrary(FInternalLibM);
 
     FInternalLibM := MemoryLoadLibrary(MemoryLib.Memory);
     if not Assigned(FInternalLibM) then
       raise Exception.Create('Не удалось загрузить spec libmysqld.dll');
+}      
 
+
+    if Assigned(FInternalLibM) then
+      BTMemoryFreeLibrary(FInternalLibM);
+
+    FInternalLibM := BTMemoryLoadLibary(MemoryLib.Memory, MemoryLib.Size);
+    if not Assigned(FInternalLibM) then
+      raise Exception.Create('Не удалось загрузить spec libmysqld.dll');
+    if Length(BTMemoryGetLastError) > 0 then
+      raise Exception.Create('Не удалось загрузить spec libmysqld.dll: ' + BTMemoryGetLastError);
 
 {
     if Assigned(MDLHelper) then

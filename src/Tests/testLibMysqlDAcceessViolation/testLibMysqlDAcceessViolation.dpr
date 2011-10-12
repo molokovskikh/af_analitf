@@ -17,7 +17,9 @@ uses
   inforoomapi in '..\..\AnalitF\RC_RND\inforoomapi.pas',
   infver in '..\..\AnalitF\RC_RND\infver.pas',
   infvercls in '..\..\AnalitF\RC_RND\infvercls.pas',
-  DLLLoader in 'DLLLoader.pas';
+  DLLLoader in 'DLLLoader.pas',
+  MemoryLoadLibraryHelper in 'MemoryLoadLibraryHelper.pas',
+  BTMemoryModule in 'BTMemoryModule.pas';
 
 type
   TOpenTableThread = class(TThread)
@@ -120,11 +122,13 @@ var
     connection := CreateConnection();
     try
       connection.Open;
+      WriteLn('Open connection');
       try
         query := TMyQuery.Create(nil);
         try
           query.Connection := connection;
 
+          {
           query.SQL.Text := 'select now() from analitf.UserInfo';
           try
             query.Open;
@@ -144,15 +148,19 @@ var
             on E : Exception do
               WriteLn('Error on second open: ', E.Message);
           end;
+          }
 
         finally
           query.Free;
         end;
       finally
+        WriteLn('before connection close');
         connection.Close;
       end;
     finally
+      WriteLn('before connection free');
       connection.Free;
+      WriteLn('before unload library');
       MyAPIEmbedded.FreeMySQLLib();
     end;
   end;
@@ -188,12 +196,14 @@ begin
 
     CheckOpen;
 
+
 {
     t := TOpenTableThread.Create(False);
     while not t.Stopped do begin
       Sleep(500);
     end;
 }
+    WriteLn('After test');
   except
     on E : Exception do
       WriteLn('Error on execute: ', E.Message);
