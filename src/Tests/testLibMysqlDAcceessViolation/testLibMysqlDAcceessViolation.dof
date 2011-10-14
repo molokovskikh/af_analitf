@@ -3,8 +3,8 @@ Version=7.0
 [Compiler]
 A=8
 B=0
-C=0
-D=0
+C=1
+D=1
 E=0
 F=0
 G=1
@@ -12,10 +12,10 @@ H=1
 I=1
 J=1
 K=0
-L=0
+L=1
 M=0
 N=1
-O=1
+O=0
 P=1
 Q=1
 R=1
@@ -25,7 +25,7 @@ U=0
 V=1
 W=0
 X=1
-Y=0
+Y=2
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -80,7 +80,7 @@ UnsafeType=0
 UnsafeCode=0
 UnsafeCast=0
 [Linker]
-MapFile=0
+MapFile=3
 OutputObjs=0
 ConsoleApp=1
 DebugInfo=0
@@ -96,7 +96,7 @@ PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=..\..\lib\MyDac\Source
 Packages=vclx;vcl;rtl;dbrtl;vcldb;VclSmp;adortl;bdertl;vcldbx;ibxpress;vclactnband;IntrawebDB_50_70;Intraweb_50_70;ARas7;RxCtl7;RxDB7;RxBDE7;IndyCore70;IndySystem70;IndyProtocols70;FR7;tee;EhLib70;Tough;dacvcl70;dac70;mydacvcl70;mydac70;mysqlmon70;vclie
-Conditionals=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt
+Conditionals=DEBUG;USENEWMYSQLTYPES;DisableCrypt
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
@@ -146,8 +146,8 @@ c:\program files (x86)\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Co
 c:\program files (x86)\borland\delphi7\Bin\dclshlctrls70.bpl=Shell Control Property and Component Editors
 [HistoryLists\hlConditionals]
 Count=2
-Item0=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt
-Item1=DEBUG;USENEWMYSQLTYPES;DisableCrypt
+Item0=DEBUG;USENEWMYSQLTYPES;DisableCrypt
+Item1=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;

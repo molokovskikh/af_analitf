@@ -183,12 +183,40 @@ begin
   Stopped := True;
 end;
 
+  procedure CryptFunctionName();
+  var
+    sl : TStringList;
+    I : Integer;
+    firstChar : Char;
+
+    resultFunctionName : String;
+  begin
+    sl := TStringList.Create();
+    try
+      sl.LoadFromFile('..\usedFunctionsSort.pas');
+      WriteLn('function Count : ', sl.Count);
+      Randomize();
+
+      for I := 0 to sl.Count-1 do begin
+        firstChar := Chr(Ord('A') + Random(25));
+        resultFunctionName := firstChar + IntToHex(Random(sl.Count * 1000000), 6);
+        sl[i] := sl[i] + '=' + resultFunctionName;
+      end;
+      sl.SaveToFile('..\usedFunctionsSortCrypt.pas');
+    finally
+      sl.Free;
+    end;
+  end;
+
 begin
   { TODO -oUser -cConsole Main : Insert code here }
   RealExePath := ExtractFilePath(ParamStr(0));
   WriteLn('Path :', RealExePath);
   Write('Press any button to continue');
   ReadLn;
+
+  //CryptFunctionName();
+  //exit;
 
   //CoInitialize(nil);
   try
