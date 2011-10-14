@@ -890,6 +890,10 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
 begin
+{$ifdef USEMEMORYCRYPTDLL}
+  //Блокируем использование MemoryLib, т.к. оно не работает
+  DatabaseController.DisableMemoryLib();
+{$endif}
   SetNetworkSettings;
 
 {$ifdef DEBUG}
@@ -5451,7 +5455,7 @@ begin
 
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
 {$ifdef USEMEMORYCRYPTDLL}
-    DatabaseController.SwitchMemoryLib();
+    DatabaseController.DisableMemoryLib();
 {$endif}
 
     dbCon.Open;
@@ -5484,7 +5488,7 @@ begin
   finally
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd (обратно)');
 {$ifdef USEMEMORYCRYPTDLL}
-    DatabaseController.SwitchMemoryLib();
+    DatabaseController.DisableMemoryLib();
 {$endif}
   end;
 end;

@@ -34,7 +34,7 @@ uses
   MDLHelper,
   //DLLLoader,
   //MemoryLoadLibraryHelper,
-  BTMemoryModule,
+  //BTMemoryModule,
 {$endif}
   SysUtils, Classes, MemUtils;
 
@@ -443,7 +443,7 @@ type
     MemoryLib : TMemoryStream;
     //FInternalLib : HMODULE;
     //FInternalLibM : PMemoryModule;
-    FInternalLibM : PBTMemoryModule;
+    //FInternalLibM : PBTMemoryModule;
     procedure InternalLoadMySqlLib;
     procedure InternalFreeMySqlLib;
 {$endif}
@@ -485,6 +485,7 @@ type
   {$ENDIF}
 {$ifdef USEMEMORYCRYPTDLL}
     procedure SwitchMemoryLib(fileName : String = '');
+    procedure DisableMemoryLib();
 {$endif}
   public
     constructor Create;
@@ -2786,7 +2787,7 @@ begin
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper := nil;
   //FInternalLib := 0;
-  FInternalLibM := nil;
+  //FInternalLibM := nil;
   MemoryLib := GetEncryptedMemoryStream();
   FUseNewTypes := True;
 {$endif}  
@@ -3690,15 +3691,15 @@ begin
     end
 }    
 
+{
     if Assigned(FInternalLibM) then begin
       BTMemoryFreeLibrary(FInternalLibM);
       FInternalLibM := nil;
     end;
+}
 
-{
     if Assigned(MDLHelper) then
       FreeAndNil(MDLHelper);
-}      
   end;
 end;
 
@@ -3707,10 +3708,13 @@ procedure TMySQLAPIEmbedded.InternalLoadMySqlLib;
   procedure AssignProc(var Proc: pointer; const Name: string);
   begin
   {$IFDEF MSWINDOWS}
-    //Proc := MDLHelper.GetFDProcAddress(PChar(Name));
+    if Assigned(MemoryLib) then
+      Proc := MDLHelper.GetFDProcAddress(PChar(Name))
+    else
+      Proc := GetProcAddress(hMySQLLib, PChar(Name));
     //Proc := xGetProcAddress(FInternalLib, PChar(Name));
     //Proc := MemoryGetProcAddress(FInternalLibM, PChar(Name));
-    Proc := BTMemoryGetProcAddress(FInternalLibM, PChar(Name));
+    //Proc := BTMemoryGetProcAddress(FInternalLibM, PChar(Name));
 {
     if Length(BTMemoryGetLastError) > 0 then
       raise Exception.Create('Не удалось загрузить spec libmysqld.dll функция ' + Name + ': ' + BTMemoryGetLastError);
@@ -3745,6 +3749,7 @@ begin
 }      
 
 
+{
     if Assigned(FInternalLibM) then
       BTMemoryFreeLibrary(FInternalLibM);
 
@@ -3753,13 +3758,15 @@ begin
       raise Exception.Create('Не удалось загрузить spec libmysqld.dll');
     if Length(BTMemoryGetLastError) > 0 then
       raise Exception.Create('Не удалось загрузить spec libmysqld.dll: ' + BTMemoryGetLastError);
+}      
 
-{
     if Assigned(MDLHelper) then
       FreeAndNil(MDLHelper);
-    MDLHelper := TMDLHelper.Create();
-    MDLHelper.InjectDll(MemoryLib.Memory, True);
-}    
+
+    if Assigned(MemoryLib) then begin
+      MDLHelper := TMDLHelper.Create();
+      MDLHelper.InjectDll(MemoryLib.Memory, True);
+    end;
 
 {$IFNDEF CLR}
     //AssignProc(@dll_mysql_num_rows, 'mysql_num_rows');
@@ -3866,6 +3873,12 @@ begin
   MemoryLib := GetEncryptedMemoryStream(fileName);  
 end;
 {$endif}
+
+procedure TMySQLAPIEmbedded.DisableMemoryLib;
+begin
+  if Assigned(MemoryLib) then
+    FreeAndNil(MemoryLib);
+end;
 
 initialization
   MyAPIClient := TMySQLAPIClient.Create;

@@ -231,6 +231,7 @@ type
     procedure FreeMySQLLib(ErrorMessage : String; SubSystem : String = '');
 {$ifdef USEMEMORYCRYPTDLL}
     procedure SwitchMemoryLib(fileName : String = '');
+    procedure DisableMemoryLib();
 {$endif}
     procedure SwithTypes(ToNewTypes : Boolean);
   end;
@@ -1019,6 +1020,11 @@ begin
   FCommand.Free;
   FDatabaseObjects.Free;
   inherited;
+end;
+
+procedure TDatabaseController.DisableMemoryLib;
+begin
+  TMySQLAPIEmbeddedEx(MyAPIEmbedded).DisableMemoryLib();
 end;
 
 procedure TDatabaseController.DropWorkSchema(
