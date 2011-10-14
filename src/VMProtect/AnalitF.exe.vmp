@@ -2,9 +2,8 @@
 <Document>
 	<Protection
 		InputFileName=".\AnalitF.exe"
-		Options="71624"
+		Options="71432"
 		CheckKernelDebugger="true"
-		VMExecutorCount="2"
 		>
 		<Messages
 		/>
