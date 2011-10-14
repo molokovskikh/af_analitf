@@ -1842,8 +1842,6 @@ var
   libname, libfilename, hash, caclhash : String;
 begin
   Result := True;
-{
-  Disable CheckCriticalLibrary
   for I := low(CriticalLibraryHashes) to High(CriticalLibraryHashes) do begin
     libname := CriticalLibraryHashes[i][0];
     hash := CriticalLibraryHashes[i][1] + CriticalLibraryHashes[i][2] + CriticalLibraryHashes[i][3] + CriticalLibraryHashes[i][4];
@@ -1854,7 +1852,6 @@ begin
       exit;
     end;
   end;
-}  
 end;
 
 function TDM.GetFileHash(AFileName: String): String;
@@ -5250,7 +5247,6 @@ var
 begin
   if FindCmdLineSwitch('i')
     and FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
-    and FileExists(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak')
   then
   begin
     buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
