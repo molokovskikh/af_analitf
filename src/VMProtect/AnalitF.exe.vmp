@@ -388,21 +388,6 @@
 				CompilationType="2"
 			/>
 			<Procedure
-				MapAddress="TMySQLAPI.LoadedMySQLLib"
-				Folder="0"
-				CompilationType="2"
-			/>
-			<Procedure
-				MapAddress="TMySQLAPI.LoadMySQLLib"
-				Folder="0"
-				CompilationType="2"
-			/>
-			<Procedure
-				MapAddress="TMySQLAPI.FreeMySQLLib"
-				Folder="0"
-				CompilationType="2"
-			/>
-			<Procedure
 				MapAddress="TMySQLAPI.CheckMySQLLib"
 				Folder="0"
 				CompilationType="2"
@@ -444,16 +429,6 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_value_to_buff"
-				Folder="0"
-				CompilationType="2"
-			/>
-			<Procedure
-				MapAddress="TMySQLAPI._mysql_fetch_value_to_buff"
-				Folder="0"
-				CompilationType="2"
-			/>
-			<Procedure
-				MapAddress="TMySQLAPI._mysql_fetch_value_to_str"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -502,6 +477,131 @@
 				Folder="0"
 				CompilationType="2"
 			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.DisableMemoryLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.Create"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.Destroy"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.SetParams"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.GetLibraryName"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.GetNotLinkProc"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.RegisterOnLogEvent"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.UnRegisterOnLogEvent"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.RegisterOnLogErrorEvent"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.UnRegisterOnLogErrorEvent"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.UnRegisterConnection"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.LoadMySQLLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.FreeMySQLLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.InternalFreeMySqlLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.InternalLoadMySqlLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMySQLAPIEmbedded.SwitchMemoryLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDatabaseController.DisableMemoryLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDatabaseController.SwitchMemoryLib"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMainForm.FormCreate"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TMainForm.AppEventsIdle"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDM.DMCreate"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDM.CheckRestrictToRun"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDM.ExportFromOldLibMysqlDToFiles1567"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDM.ImportOldLibMysqlDFilesToMySql1567"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDM.UpdateToNewLibMySqlD1567"
+				Folder="0"
+				CompilationType="2"
+			/>
 		</Procedures>
 	</Protection>
 	<Script
@@ -509,7 +609,7 @@
 	<DLLBox>
 		<DLL
 			Name="libmysqld.dll"
-			FileName="C:\Projects\Delphi\AnalitFGIT\AnalitF\src\AnalitF\bin\newMap_Release\libmysqld.dll"
+			FileName="C:\Projects\Delphi\AnalitFGIT\AnalitF\src\EMKBuilds\libmysqld.dll"
 		/>
 	</DLLBox>
 </Document>
