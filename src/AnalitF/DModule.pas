@@ -405,7 +405,6 @@ type
 {$endif}
     procedure SetNetworkSettings;
     procedure CheckLocalTime;
-    procedure ExtractRollbackAF();
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -1983,7 +1982,6 @@ begin
 
     //Если было произведено обновление программы, то обновляем ключи
     if FindCmdLineSwitch('i') or FindCmdLineSwitch('si') then begin
-      ExtractRollbackAF();
       UpdateDBUIN(dbCon);
     end;
     mainStartupHelper.Write('DModule', 'Закончили проверки миграций');
@@ -5124,7 +5122,6 @@ procedure TDM.CheckNewNetworkVersion;
 var
   CurrentBuild,
   NewBuild : Word;
-  EraserDll: TResourceStream;
 begin
   if SysUtils.DirectoryExists( RootFolder() + SDirNetworkUpdate) and
     FileExists(RootFolder() + SDirNetworkUpdate + '\AnalitF.exe')
@@ -5138,31 +5135,12 @@ begin
 
       AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
 
-      EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
-      try
-        EraserDll.SaveToFile(ExePath + 'Eraser.dll');
-      finally
-        EraserDll.Free;
-      end;
-
       ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + '-no ' + IntToStr(GetCurrentProcessId) + ' "' +
         ExePath + ExeName + '" "' + ExePath + SDirNetworkUpdate + '"'),
         nil, SW_SHOWNORMAL);
 
       ExitProcess(1);
     end;
-  end;
-end;
-
-procedure TDM.ExtractRollbackAF;
-var
-  RollbackAF: TResourceStream;
-begin
-  RollbackAF := TResourceStream.Create( hInstance, 'RollbackAF', RT_RCDATA);
-  try
-    RollbackAF.SaveToFile(ExePath + 'RollbackAF.exe');
-  finally
-    RollbackAF.Free;
   end;
 end;
 

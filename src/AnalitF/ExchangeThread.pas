@@ -1259,8 +1259,6 @@ begin
 end;
 
 procedure TExchangeThread.CheckNewExe;
-var
-  EraserDll: TResourceStream;
 begin
   if not SysUtils.DirectoryExists( RootFolder() + SDirIn + '\' + SDirExe) then exit;
 
@@ -1272,12 +1270,6 @@ begin
   end;
 
   AProc.MessageBox('Получена новая версия программы. Сейчас будет выполнено обновление', MB_OK or MB_ICONWARNING);
-  EraserDll := TResourceStream.Create( hInstance, 'ERASER', RT_RCDATA);
-  try
-    EraserDll.SaveToFile(ExePath + 'Eraser.dll');
-  finally
-    EraserDll.Free;
-  end;
 
   if GetNetworkSettings().IsNetworkVersion then
     ShellExecute( 0, nil, 'rundll32.exe', PChar( ' '  + ExtractShortPathName(ExePath) + 'Eraser.dll,Erase ' + IfThen(SilentMode, '-si ', '-i ') + IntToStr(GetCurrentProcessId) + ' "' +

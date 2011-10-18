@@ -159,9 +159,7 @@ uses
   UserActions in 'BusinessLogic\UserActions.pas';
 
 {$R *.RES}
-{$R EraserDLL.RES}
 {$R Progress.RES}
-{$R RollbackAF.RES}
 {$R Icons.RES}
 {$R Bitmaps.RES}
 
