@@ -167,7 +167,6 @@ begin
   try
     Result := TMemoryStream.Create();
     try
-      Result.CopyFrom(EncodedFile, EncodedFile.Size);
       DecodeStream(EncodedFile, Result);
     except
       Result.Free;
