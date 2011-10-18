@@ -892,7 +892,7 @@ var
 begin
 {$ifdef USEMEMORYCRYPTDLL}
   //Блокируем использование MemoryLib, т.к. оно не работает
-  //DatabaseController.DisableMemoryLib();
+  DatabaseController.DisableMemoryLib();
 {$endif}
   SetNetworkSettings;
 
