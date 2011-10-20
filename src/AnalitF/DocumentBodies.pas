@@ -94,6 +94,9 @@ type
     adsDocumentBodiesEAN13: TStringField;
     adsInvoiceHeaders: TMyQuery;
     dsInvoiceHeaders: TDataSource;
+    adsDocumentBodiesRequestCertificate: TBooleanField;
+    adsDocumentBodiesCertificateId: TLargeintField;
+    adsDocumentBodiesDocumentBodyId: TLargeintField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -117,6 +120,8 @@ type
     procedure adsDocumentBodiesPrintedChange(Sender: TField);
     procedure cbNDSSelect(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure adsDocumentBodiesCertificateIdGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -158,6 +163,7 @@ type
     procedure RecalcPosition;
     procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure WaybillKeyPress(Sender: TObject; var Key: Char);
+    procedure WaybillCellClick(Column: TColumnEh);
     //procedure FieldOnChange(Sender: TField);
     procedure RetailPriceUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RetailPriceGetCellParams(Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
@@ -346,6 +352,7 @@ begin
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
+    dbgDocumentBodies.OnCellClick := WaybillCellClick;
     dbgDocumentBodies.ReadOnly := True;
 
     dbgDocumentBodies.AutoFitColWidths := False;
@@ -356,6 +363,9 @@ begin
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Номер сертификата', 0);
       column.Visible := False;
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'SerialNumber', 'Серия товара', 0);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RequestCertificate', 'Получить', dbgDocumentBodies.Canvas.TextWidth('Получить'), False);
+      column.Checkboxes := True;
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'CertificateId', 'Сертификаты', dbgDocumentBodies.Canvas.TextWidth('Сертификаты'), True);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Period', 'Срок годности', 0);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Producer', 'Производитель', 0);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Country', 'Страна', 0);
@@ -390,6 +400,7 @@ begin
     adsDocumentBodies.OnCalcFields := nil;
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
+    dbgDocumentBodies.OnCellClick := nil;
     dbgDocumentBodies.Options := dbgDocumentBodies.Options - [dgEditing];
     dbgDocumentBodies.AutoFitColWidths := False;
     dbgDocumentBodies.ReadOnly := True;
@@ -654,6 +665,17 @@ begin
     if (Column.Field = NDSField) and not NDSField.IsNull and (NDSField.Value <> 10)
     then
       Background := clRed;
+  end;
+
+  if (Column.Field = adsDocumentBodiesCertificateId) then begin
+    if not adsDocumentBodiesCertificateId.IsNull then begin
+      AFont.Style := AFont.Style + [fsUnderline];
+      AFont.Color := clHotLight;
+    end
+    else
+      //Сертификат не был получен, но запрос был
+      if not adsDocumentBodiesDocumentBodyId.IsNull then
+        Background := clGray;
   end;
 end;
 
@@ -1873,6 +1895,12 @@ begin
     clRed,
     clWindowText,
     'Значения розничной наценки, розничной цены, розничной суммы и реальной наценки не были вычислены автоматически');
+
+  lLegend := legeng.CreateLegendLabel(
+    'Сертификат не был найден',
+    clGray,
+    clWindowText,
+    'Сертификат не был найден');
 end;
 
 procedure TDocumentBodiesForm.adsDocumentBodiesPrintedChange(
@@ -2152,6 +2180,19 @@ procedure TDocumentBodiesForm.ReadSettings;
 begin
   CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
   FGlobalSettingParams.ReadParams;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesCertificateIdGetText(
+  Sender: TField; var Text: String; DisplayText: Boolean);
+begin
+  if DisplayText and not Sender.IsNull then
+    Text := 'Показать';
+end;
+
+procedure TDocumentBodiesForm.WaybillCellClick(Column: TColumnEh);
+begin
+  if (Column.Field = adsDocumentBodiesCertificateId) and not adsDocumentBodiesCertificateId.IsNull then
+    DM.OpenCertificateFiles(adsDocumentBodiesCertificateId.Value);
 end;
 
 end.

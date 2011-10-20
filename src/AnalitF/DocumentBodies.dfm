@@ -492,7 +492,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  ManualCorrection = :ManualCorrection,'
       '  ManualRetailPrice = :ManualRetailPrice,'
       '  RetailAmount = :RetailAmount,'
-      '  Printed = :Printed'
+      '  Printed = :Printed,'
+      '  RequestCertificate = :RequestCertificate'
       'where'
       '  dbodies.Id = :OLD_Id')
     SQLRefresh.Strings = (
@@ -527,6 +528,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dbodies.EAN13'
       'from'
       '  DocumentBodies dbodies'
+      
+        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
+        's.Id'
       'where'
       '  dbodies.Id = :OLD_Id')
     Connection = DM.MyConnection
@@ -562,6 +566,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dbodies.EAN13'
       'from'
       '  DocumentBodies dbodies'
+      
+        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
+        's.Id'
       'where'
       '  dbodies.DocumentId = :DocumentId'
       'order by dbodies.Product')
@@ -648,6 +655,17 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentBodiesEAN13: TStringField
       FieldName = 'EAN13'
+    end
+    object adsDocumentBodiesRequestCertificate: TBooleanField
+      FieldName = 'RequestCertificate'
+      OnChange = adsDocumentBodiesPrintedChange
+    end
+    object adsDocumentBodiesCertificateId: TLargeintField
+      FieldName = 'CertificateId'
+      OnGetText = adsDocumentBodiesCertificateIdGetText
+    end
+    object adsDocumentBodiesDocumentBodyId: TLargeintField
+      FieldName = 'DocumentBodyId'
     end
   end
   object tmrPrintedChange: TTimer

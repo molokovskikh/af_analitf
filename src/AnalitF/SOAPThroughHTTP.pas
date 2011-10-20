@@ -14,7 +14,8 @@ TSOAP = class( TObject)
   constructor Create( AURL, AUserName, APassword: string; AOnError : TOnConnectError; AHTTP: TIdHTTP = nil);
   destructor Destroy; override;
 
-  function Invoke( AMethodName: string; AParams, AValues: array of string): TStrings;
+  function Invoke( AMethodName: string; AParams, AValues: array of string): TStrings; overload;
+  function Invoke( AMethodName: string; PostParams : TStringList): TStrings; overload;
   function SimpleInvoke(
     MethodName: string;
     Params,
@@ -341,6 +342,18 @@ begin
   stop := PosEx( '</', FResponse, start);
   TmpResult := Copy( FResponse, start, stop - start);
   Result := TmpResult;
+end;
+
+function TSOAP.Invoke(AMethodName: string;
+  PostParams: TStringList): TStrings;
+var
+  TmpResult : String;
+begin
+  TmpResult := SimpleInvoke(AMethodName, PostParams);
+  FQueryResults.Clear;
+  { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
+  while TmpResult <> '' do FQueryResults.Add( GetNextWord( TmpResult, ';'));
+  Result := FQueryResults;
 end;
 
 end.

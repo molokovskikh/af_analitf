@@ -151,6 +151,18 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TCertificatesTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+  TCertificateFilesTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -200,6 +212,7 @@ begin
 +'    `EnableSmartOrder` tinyint(1) unsigned not null default ''0'', '
 +'    `EnableImpersonalPrice` tinyint(1) unsigned not null default ''0'', '
 +'    `AllowDelayOfPayment` tinyint(1) not null default ''0'',  '
++'    `ShowCertificatesWithoutRefSupplier` tinyint(1) not null default ''0'',  '
 +'    primary key (`Id`) '
 +'  ) ' 
 + GetTableOptions();
@@ -830,6 +843,53 @@ begin
 + GetTableOptions();
 end;
 
+{ TCertificatesTable }
+
+constructor TCertificatesTable.Create;
+begin
+  FName := 'certificates';
+  FObjectId := doiCertificates;
+  FRepairType := dortCumulative;
+end;
+
+function TCertificatesTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'    Id bigint(20) NOT NULL, '
++'    CatalogId bigint(20) NOT NULL, '
++'    SerialNumber VARCHAR(50) NOT NULL, '
++'    PRIMARY KEY (Id), '
++'    key IDX_Certificate (CatalogId, SerialNumber) '
++'  ) '
++ GetTableOptions();
+end;
+
+{ TCertificateFilesTable }
+
+constructor TCertificateFilesTable.Create;
+begin
+  FName := 'certificatefiles';
+  FObjectId := doiCertificateFiles;
+  FRepairType := dortCumulative;
+end;
+
+function TCertificateFilesTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'      Id bigint(20) NOT NULL, '
++'      CertificateId bigint(20) NOT NULL, '
++'      OriginFilename VARCHAR(255) NOT NULL, '
++'      SupplierId bigint(20) NOT NULL, '
++'      PRIMARY KEY (Id), '
++'      key IDX_CertificateId (CertificateId), '
++'      key IDX_SupplierId (SupplierId) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TUserInfoTable.Create());
   DatabaseController.AddObject(TClientTable.Create());
@@ -862,5 +922,8 @@ initialization
   DatabaseController.AddObject(TPromotionCatalogsTable.Create());
 
   DatabaseController.AddObject(TSchedulesTable.Create());
+
+  DatabaseController.AddObject(TCertificatesTable.Create());
+  DatabaseController.AddObject(TCertificateFilesTable.Create());
 end.
 

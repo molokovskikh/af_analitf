@@ -14,7 +14,8 @@ uses
   SupplierController,
   U_frameFilterSuppliers,
   StrHlder,
-  GlobalParams;
+  GlobalParams,
+  U_SerialNumberSearch;
 
 type
   TExportDocRow = class
@@ -71,6 +72,7 @@ type
     tmrProcessWaybils: TTimer;
     adsDocumentHeadersRetailAmountCalculated: TBooleanField;
     rgColumn: TRadioGroup;
+    sbSearch: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -86,11 +88,13 @@ type
     procedure tmrChangeFilterSuppliersTimer(Sender: TObject);
     procedure tmrProcessWaybilsTimer(Sender: TObject);
     procedure rgColumnClick(Sender: TObject);
+    procedure sbSearchClick(Sender: TObject);
   private
     { Private declarations }
     procedure OnChangeFilterSuppliers;
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
+    FSerialNumberSearchForm: TSerialNumberSearchForm;
 
     ProcessedList : TStringList;
     csProcessedList : TCriticalSection;
@@ -160,6 +164,10 @@ begin
   FDocumentBodiesForm := TDocumentBodiesForm( FindChildControlByClass(MainForm, TDocumentBodiesForm) );
   if not Assigned(FDocumentBodiesForm) then
     FDocumentBodiesForm := TDocumentBodiesForm.Create( Application);
+
+  FSerialNumberSearchForm := TSerialNumberSearchForm( FindChildControlByClass(MainForm, TSerialNumberSearchForm) );
+  if not Assigned(FSerialNumberSearchForm) then
+    FSerialNumberSearchForm := TSerialNumberSearchForm.Create(Application);
 
   Year := YearOf( Date);
   Month := MonthOf( Date);
@@ -711,6 +719,12 @@ procedure TDocumentHeaderForm.rgColumnClick(Sender: TObject);
 begin
   UpdateOrderDataset;
   dbgHeaders.SetFocus;
+end;
+
+procedure TDocumentHeaderForm.sbSearchClick(Sender: TObject);
+begin
+  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+  FSerialNumberSearchForm.ShowForm(dtpDateFrom.Date, dtpDateTo.DateTime, '');
 end;
 
 end.

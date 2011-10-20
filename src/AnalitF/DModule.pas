@@ -571,6 +571,11 @@ type
     procedure InsertUserActionLog(UserActionId : TUserAction); overload;  
     procedure InsertUserActionLog(UserActionId : TUserAction; Contexts : array of string); overload;
 
+    function NeedShowCertificatesResults() : Boolean;
+
+    procedure OpenCertificateFiles(certificateId : Int64);
+
+    function ShowCertificatesResults() : String;
   end;
 
 var
@@ -1125,6 +1130,8 @@ begin
   if not DirectoryExists( ExePath + SDirReclame) then CreateDir( ExePath + SDirReclame);
   if not DirectoryExists( RootFolder() + SDirReclame) then CreateDir( RootFolder() + SDirReclame);
   if not DirectoryExists( RootFolder() + SDirPromotions) then CreateDir( RootFolder() + SDirPromotions);
+  if not DirectoryExists( RootFolder() + SDirCertificates) then CreateDir( RootFolder() + SDirCertificates);
+
   //if not DirectoryExists( RootFolder() + SDirContextReclame) then CreateDir( RootFolder() + SDirContextReclame);
   MainForm.SetUpdateDateTime;
   Application.HintPause := 0;
@@ -1515,6 +1522,8 @@ begin
     SQL.Text:='truncate PromotionCatalogs;'; Execute;
     MainForm.StatusText:='Очищается расписание обновлений';
     SQL.Text:='truncate Schedules;'; Execute;
+    MainForm.StatusText:='Очищаются результаты запросов сертификатов';
+    SQL.Text:='truncate CertificateRequests;'; Execute;
     MainForm.StatusText:='Очищается время сжатия базы данных';
     SQL.Text:='update params set LastCompact = now() where ID = 0;'; Execute;
 
@@ -1974,6 +1983,11 @@ begin
         else begin
           DBVersion := CURRENT_DB_VERSION;
         end;
+      end;
+
+      if DBVersion = 80 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 81;
       end;
     end;
 
@@ -5214,6 +5228,100 @@ begin
     'insert into useractionlogs (UserActionId, Context) values (:UserActionId, :Context)',
     ['UserActionId', 'Context'],
     [UserActionId, contextVariant]);
+end;
+
+function TDM.NeedShowCertificatesResults: Boolean;
+var
+  updateRecord : Integer;
+begin
+  updateRecord := DBProc.UpdateValue(
+    MainConnection,
+    'update CertificateRequests, DocumentBodies ' +
+    'set DocumentBodies.RequestCertificate = 0, DocumentBodies.CertificateId = CertificateRequests.CertificateId ' +
+    'where DocumentBodies.Id = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is not null',
+    [],
+    []);
+
+  if updateRecord > 0 then begin
+    adsQueryValue.Close;
+    adsQueryValue.SQL.Text := 'select CertificateId from CertificateRequests where CertificateId is not null';
+    adsQueryValue.Open;
+    try
+      while not adsQueryValue.Eof do begin
+        OpenCertificateFiles(TLargeintField(adsQueryValue.FieldByName('CertificateId')).Value);
+        adsQueryValue.Next;
+      end;
+    finally
+      adsQueryValue.Close;
+    end;
+  end;
+
+  updateRecord := DBProc.UpdateValue(
+    MainConnection,
+    'update CertificateRequests, DocumentBodies ' +
+    'set DocumentBodies.RequestCertificate = 0 ' +
+    'where DocumentBodies.Id = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is null',
+    [],
+    []);
+  Result := updateRecord > 0;
+end;
+
+procedure TDM.OpenCertificateFiles(certificateId: Int64);
+var
+  id : Int64;
+  fileName : String;
+begin
+  adcUpdate.Close;
+  adcUpdate.SQL.Text := 'select * from CertificateFiles where CertificateId = :CertificateId';
+  adcUpdate.ParamByName('CertificateId').Value := certificateId;
+  adcUpdate.Open;
+  try
+    while not adcUpdate.Eof do begin
+      id := TLargeintField(adcUpdate.FieldByName('Id')).Value;
+      fileName := RootFolder() + SDirCertificates + '\' + IntToStr(id) + '.tif';
+      if (FileExists(fileName)) then
+        FileExecute(fileName);
+      adcUpdate.Next;
+    end;
+  finally
+    adcUpdate.Close;
+  end;
+end;
+
+function TDM.ShowCertificatesResults: String;
+var
+  sl : TStringList;
+begin
+  sl := TStringList.Create();
+  try
+  
+    adcUpdate.Close;
+    adcUpdate.SQL.Text := '' +
+' select ' +
+'  Providers.ShortName, ' +
+'  DocumentBodies.SerialNumber, ' +
+'  DocumentBodies.Product ' +
+' from ' +
+' CertificateRequests, DocumentBodies, DocumentHeaders, Providers ' +
+' where ' +
+'  DocumentBodies.Id = CertificateRequests.DocumentBodyId ' +
+' and CertificateRequests.CertificateId is null ' +
+' and DocumentHeaders.Id = DocumentBodies.DocumentId ' +
+' and Providers.FirmCode = DocumentHeaders.FirmCode;';
+    adcUpdate.Open;
+    try
+      while not adcUpdate.Eof do begin
+        sl.Add(adcUpdate.FieldByName('ShortName').AsString + ' - ' + adcUpdate.FieldByName('SerialNumber').AsString + ' - ' + adcUpdate.FieldByName('Product').AsString);
+        adcUpdate.Next;
+      end;
+    finally
+      adcUpdate.Close;
+    end;
+
+    Result := sl.Text;
+  finally
+    sl.Free;
+  end;
 end;
 
 {

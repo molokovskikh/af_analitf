@@ -53,7 +53,8 @@ TUpdateTable = (
   utPromotionCatalogs,
   utCurrentOrderHeads,
   utInvoiceHeaders,
-  utSchedules
+  utSchedules,
+  utCertificateRequests
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -73,6 +74,7 @@ private
   FileStream: TFileStream;
   StartExec : TDateTime;
   AbsentPriceCodeSL : TStringList;
+  DocumentBodyIdsSL : TStringList;
   ASaveGridMask : String;
   CostSessionKey : String;
   URL : String;
@@ -154,9 +156,13 @@ private
   procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
 
+  procedure GetCertificateRequests();
+
   procedure GetHistoryOrders;
   procedure CommitHistoryOrders;
   procedure ImportHistoryOrders;
+
+  procedure ImportCertificates();
 
   procedure ConfirmUserMessage;
 
@@ -408,8 +414,10 @@ begin
         ImportHistoryOrders;
 
       if ( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
-      then
+      then begin
         ImportDocs;
+        ImportCertificates();
+      end;
 
       if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
       begin
@@ -620,13 +628,14 @@ begin
 end;
 
 procedure TExchangeThread.QueryData;
-const
-  StaticParamCount : Integer = 12;
+//const
+//  StaticParamCount : Integer = 12;
 var
+  FPostParams : TStringList;
   Res: TStrings;
   LibVersions: TObjectList;
   Error : String;
-  ParamNames, ParamValues : array of String;
+//  ParamNames, ParamValues : array of String;
   I : Integer;
   WinNumber, WinDesc : String;
   fi : TFileUpdateInfo;
@@ -635,21 +644,40 @@ var
   batchFileContent : String;
   NeedProcessBatch : Boolean;
   MaxOrderId, MaxOrderListId, MaxBatchId : String;
+
+  waybillsWithCertificate : Boolean;
+
+  procedure AddPostParam(Param, Value: String);
+  begin
+    FPostParams.Add(Param + '=' + SOAP.PreparePostValue(Value));
+  end;
+
 begin
   batchFileContent := '';
+  waybillsWithCertificate := False;
   NeedProcessBatch := [eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [];
   { запрашиваем данные }
   SetStatusTextHTTP('Подготовка данных');
+  FPostParams := TStringList.Create;
+  try
   try
     LibVersions := AProc.GetLibraryVersionFromAppPath;
 
     if Assigned(AbsentPriceCodeSL) then
       FreeAndNil(AbsentPriceCodeSL);
+    if Assigned(DocumentBodyIdsSL) then
+      FreeAndNil(DocumentBodyIdsSL);
     //Если не производим кумулятивное обновление, то проверяем наличие синонимов
     if ([eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs = [])
        and (not (eaGetFullData in ExchangeForm.ExchangeActs))
     then
       GetAbsentPriceCode();
+
+    if [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [] then begin
+      GetCertificateRequests();
+      if Assigned(DocumentBodyIdsSL) and (DocumentBodyIdsSL.Count > 0) then
+        waybillsWithCertificate := True;
+    end;
 
     if (BatchFileName <> '') and NeedProcessBatch then
       batchFileContent := GetEncodedBatchFileContent;
@@ -659,7 +687,7 @@ begin
         'Exchange',
         'Дата обновления, отправляемая на сервер: ' + GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime));
 
-
+{
       if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
         SetLength(ParamNames, StaticParamCount + LibVersions.Count*3 + AbsentPriceCodeSL.Count);
         SetLength(ParamValues, StaticParamCount + LibVersions.Count*3 + AbsentPriceCodeSL.Count);
@@ -668,6 +696,13 @@ begin
         SetLength(ParamNames, StaticParamCount + LibVersions.Count*3 + 1);
         SetLength(ParamValues, StaticParamCount + LibVersions.Count*3 + 1);
       end;
+}
+      AddPostParam('AccessTime', GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime));
+      AddPostParam('GetEtalonData', BoolToStr( eaGetFullData in ExchangeForm.ExchangeActs, True));
+      AddPostParam('ExeVersion', GetLibraryVersionFromPathForExe(ExePath + ExeName));
+      AddPostParam('MDBVersion', DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString);
+      AddPostParam('UniqueID', IntToHex( GetCopyID, 8));
+{
       ParamNames[0]  := 'AccessTime';
       ParamValues[0] := GetXMLDateTime( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime);
       ParamNames[1]  := 'GetEtalonData';
@@ -678,20 +713,33 @@ begin
       ParamValues[3] := DM.adtParams.FieldByName( 'ProviderMDBVersion').AsString;
       ParamNames[4]  := 'UniqueID';
       ParamValues[4] := IntToHex( GetCopyID, 8);
+}
 
       GetWinVersion(WinNumber, WinDesc);
+      AddPostParam('WINVersion', WinNumber);
+      AddPostParam('WINDesc', WinDesc);
+{
       ParamNames[5]  := 'WINVersion';
       ParamValues[5] := WinNumber;
       ParamNames[6]  := 'WINDesc';
       ParamValues[6] := WinDesc;
+}
+
       if NeedProcessBatch then begin
-      ParamNames[7]  := 'ClientId';
-      ParamValues[7] := DM.adtClients.FieldByName( 'ClientId').AsString;
+        AddPostParam('ClientId', DM.adtClients.FieldByName( 'ClientId').AsString);
+{
+        ParamNames[7]  := 'ClientId';
+        ParamValues[7] := DM.adtClients.FieldByName( 'ClientId').AsString;
+}
       end
       else begin
-      ParamNames[7]  := 'WaybillsOnly';
-      ParamValues[7] := BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
+        AddPostParam('WaybillsOnly', BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True));
+{
+        ParamNames[7]  := 'WaybillsOnly';
+        ParamValues[7] := BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
+}
       end;
+
       {
       try
         tmpFileContent := hfileHelper.GetFileContent;
@@ -705,57 +753,93 @@ begin
       end;
       }
       if NeedProcessBatch then begin
+        GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
+
+        AddPostParam('BatchFile', batchFileContent);
+        AddPostParam('MaxOrderId', MaxOrderId);
+        AddPostParam('MaxOrderListId', MaxOrderListId);
+        AddPostParam('MaxBatchId', MaxBatchId);
+
+{
         ParamNames[8]  := 'BatchFile';
         ParamValues[8] := batchFileContent;
-        GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
         ParamNames[9]  := 'MaxOrderId';
         ParamValues[9] := MaxOrderId;
         ParamNames[10]  := 'MaxOrderListId';
         ParamValues[10] := MaxOrderListId;
         ParamNames[11]  := 'MaxBatchId';
         ParamValues[11] := MaxBatchId;
+}
       end
       else begin
+        GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
+
+        AddPostParam('ClientHFile', '');
+        AddPostParam('MaxOrderId', MaxOrderId);
+        AddPostParam('MaxOrderListId', MaxOrderListId);
+        //AddPostParam('MaxBatchId', '');
+
+{
         ParamNames[8]  := 'ClientHFile';
         ParamValues[8] := '';
-        GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
         ParamNames[9]  := 'MaxOrderId';
         ParamValues[9] := MaxOrderId;
         ParamNames[10]  := 'MaxOrderListId';
         ParamValues[10] := MaxOrderListId;
         ParamNames[11]  := '';
         ParamValues[11] := '';
+}        
       end;
 
       for I := 0 to LibVersions.Count-1 do begin
         fi := TFileUpdateInfo(LibVersions[i]);
+        AddPostParam('LibraryName', fi.FileName);
+        AddPostParam('LibraryVersion', fi.Version);
+        AddPostParam('LibraryHash', fi.MD5);
+
+{
         ParamNames[StaticParamCount+i*3] := 'LibraryName';
         ParamValues[StaticParamCount+i*3] := fi.FileName;
         ParamNames[StaticParamCount+i*3+1] := 'LibraryVersion';
         ParamValues[StaticParamCount+i*3+1] := fi.Version;
         ParamNames[StaticParamCount+i*3+2] := 'LibraryHash';
         ParamValues[StaticParamCount+i*3+2] := fi.MD5;
+}        
       end;
 
       if Assigned(AbsentPriceCodeSL) and (AbsentPriceCodeSL.Count > 0) then begin
         for I := 0 to AbsentPriceCodeSL.Count-1 do begin
+          AddPostParam('PriceCodes', AbsentPriceCodeSL[i]);
+{
           ParamNames[StaticParamCount+LibVersions.Count*3 + i]:= 'PriceCodes';
           ParamValues[StaticParamCount+LibVersions.Count*3 + i]:= AbsentPriceCodeSL[i];
+}
         end;
       end
       else begin
+        AddPostParam('PriceCodes', '0');
+{
         ParamNames[StaticParamCount+LibVersions.Count*3] := 'PriceCodes';
         ParamValues[StaticParamCount+LibVersions.Count*3] := '0';
+}
       end;
+
+      if waybillsWithCertificate then
+        for I := 0 to DocumentBodyIdsSL.Count-1 do
+          AddPostParam('DocumentBodyIds', DocumentBodyIdsSL[i]);
 
     finally
       LibVersions.Free;
     end;
     UpdateId := '';
     if NeedProcessBatch then
-      Res := SOAP.Invoke( 'PostOrderBatch', ParamNames, ParamValues)
-    else
-      Res := SOAP.Invoke( 'GetUserDataWithOrders', ParamNames, ParamValues);
+      Res := SOAP.Invoke( 'PostOrderBatch', FPostParams)
+    else begin
+      if waybillsWithCertificate then
+        Res := SOAP.Invoke( 'GetUserDataWithOrdersAsyncCert', FPostParams)
+      else
+        Res := SOAP.Invoke( 'GetUserDataWithOrders', FPostParams);
+    end;
     { проверяем отсутствие ошибки при удаленном запросе }
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
@@ -862,6 +946,9 @@ begin
       ExchangeParams.CriticalError := True;
       raise;
     end;
+  end;
+  finally
+    FPostParams.Free;
   end;
   { очищаем папку In }
   DeleteFilesByMask( RootFolder() + SDirIn + '\*.txt');
@@ -1256,6 +1343,8 @@ begin
   ExtractDocs(SDirRejects);
   //Обрабатываем папку Promotions
   ExtractDocs(SDirPromotions);
+  //Обрабатываем папку Certificates
+  ExtractDocs(SDirCertificates);
 end;
 
 procedure TExchangeThread.CheckNewExe;
@@ -1411,7 +1500,7 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\CurrentOrderHeads.txt') > 0) then UpdateTables := UpdateTables + [utCurrentOrderHeads];
   if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then UpdateTables := UpdateTables + [utInvoiceHeaders];
   if (GetFileSize(RootFolder()+SDirIn+'\Schedules.txt') > 0) then UpdateTables := UpdateTables + [utSchedules];
-
+  if (GetFileSize(RootFolder()+SDirIn+'\CertificateRequests.txt') > 0) then UpdateTables := UpdateTables + [utCertificateRequests];
 
     //обновляем таблицы
     {
@@ -2221,6 +2310,9 @@ begin
   then
     ImportDocs;
 
+  if utCertificateRequests in UpdateTables then
+    ImportCertificates();
+
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
@@ -2368,6 +2460,8 @@ begin
   hfileHelper.Free;
   if Assigned(AbsentPriceCodeSL) then
     AbsentPriceCodeSL.Free;
+  if Assigned(DocumentBodyIdsSL) then
+    DocumentBodyIdsSL.Free;
   if Assigned(ChildThreads) then
     try ChildThreads.Free; except end;
   inherited;
@@ -3528,7 +3622,7 @@ begin
       '    Country, ProducerCost, RegistryCost, SupplierPriceMarkup, ' +
       '    SupplierCostWithoutNDS, SupplierCost, Quantity, VitallyImportant, ' +
       '    NDS, SerialNumber, Amount, NdsAmount, Unit, ExciseTax, ' +
-      '    BillOfEntryNumber, EAN13 ' +
+      '    BillOfEntryNumber, EAN13, ProductId, ProducerId ' +
       ' ) ' +
       'set Printed = 1;',
       [InputFileName,
@@ -4115,6 +4209,59 @@ begin
     Result := ah.GetEncodedContent();
   finally
     ah.Free;
+  end;
+end;
+
+procedure TExchangeThread.GetCertificateRequests;
+var
+  absentQuery : TMyQuery;
+begin
+  try
+
+    absentQuery := TMyQuery.Create(nil);
+    absentQuery.Connection := DM.MainConnection;
+    try
+      absentQuery.SQL.Text := 'select ID from DocumentBodies where RequestCertificate = 1';
+
+      absentQuery.Open;
+      try
+        if absentQuery.RecordCount > 0 then begin
+          DocumentBodyIdsSL := TStringList.Create;
+          while not absentQuery.Eof do begin
+            DocumentBodyIdsSL.Add(absentQuery.FieldByName('Id').AsString);
+            absentQuery.Next;
+          end;
+        end;
+      finally
+        absentQuery.Close;
+      end;
+    finally
+      absentQuery.Free;
+    end;
+
+  except
+    on E : Exception do
+      WriteExchangeLog('GetCertificateRequests.Error', E.Message);
+  end;
+end;
+
+procedure TExchangeThread.ImportCertificates;
+begin
+  if (GetFileSize(RootFolder()+SDirIn+'\CertificateRequests.txt') > 0) then begin
+    DM.adcUpdate.SQL.Text:='truncate CertificateRequests;';
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('CertificateRequests', RootFolder()+SDirIn+'\CertificateRequests.txt', true);
+    InternalExecute;
+  end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\Certificates.txt') > 0) then begin
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('Certificates', RootFolder()+SDirIn+'\Certificates.txt', true);
+    InternalExecute;
+  end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\CertificateFiles.txt') > 0) then begin
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('CertificateFiles', RootFolder()+SDirIn+'\CertificateFiles.txt', true);
+    InternalExecute;
   end;
 end;
 

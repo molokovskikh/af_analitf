@@ -67,6 +67,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TCertificateRequestsDataTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TPricesRegionalDataUpTable }
@@ -328,6 +334,26 @@ begin
 + GetTableOptions()
 end;
 
+{ TCertificateRequestsDataTable }
+
+constructor TCertificateRequestsDataTable.Create;
+begin
+  FName := 'certificaterequests';
+  FObjectId := doiCertificateRequests;
+  FRepairType := dortIgnore;
+end;
+
+function TCertificateRequestsDataTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `DocumentBodyId` bigint(20) not null,   '
++'  `CertificateId` bigint(20) default null '
++'  ) '
++ GetTableOptions()
+end;
+
 initialization
   DatabaseController.AddObject(TPricesRegionalDataUpTable.Create());
   DatabaseController.AddObject(TTmpClientsTable.Create());
@@ -339,4 +365,5 @@ initialization
   DatabaseController.AddObject(TBatchReportDataTable.Create());
   DatabaseController.AddObject(TBatchReportServiceFieldsDataTable.Create());
   DatabaseController.AddObject(TUserActionLogsDataTable.Create());
+  DatabaseController.AddObject(TCertificateRequestsDataTable.Create());
 end.

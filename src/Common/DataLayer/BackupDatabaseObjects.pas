@@ -334,6 +334,10 @@ begin
 +'  `ExciseTax` decimal(12,6) default null, '
 +'  `BillOfEntryNumber` varchar(30) default null, '
 +'  `EAN13` varchar(13) default null, '
++'  `RequestCertificate` tinyint(1) not null default ''0'', '
++'  `ProductId` bigint(20) default null, '
++'  `ProducerId` bigint(20) default null, '
++'  `CertificateId` bigint(20) default null, '
 +'  PRIMARY KEY (`Id`) '
 +' ) '
 + GetTableOptions();

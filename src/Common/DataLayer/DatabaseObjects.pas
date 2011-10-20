@@ -125,7 +125,12 @@ type
     //Ignore
     doiUserActionLogs,
     //Cumulative
-    doiSchedules);
+    doiSchedules,
+    //Cumulative
+    doiCertificates,
+    doiCertificateFiles,
+    //Ignore
+    doiCertificateRequests);
 
   TRepairedObjects = set of TDatabaseObjectId;
 
