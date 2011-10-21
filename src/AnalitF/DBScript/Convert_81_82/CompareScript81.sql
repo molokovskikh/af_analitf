@@ -35,4 +35,4 @@ alter table analitf.DocumentBodies
   add column `ProducerId` bigint(20) default null,
   add column `CertificateId` bigint(20) default null;
 
-update analitf.params set ProviderMDBVersion = 81 where id = 0;
+update analitf.params set ProviderMDBVersion = 82 where id = 0;
