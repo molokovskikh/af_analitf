@@ -4,6 +4,7 @@
 		InputFileName=".\AnalitF.exe"
 		Options="71432"
 		CheckKernelDebugger="true"
+		CompressionMode="1"
 		>
 		<Messages
 		/>
