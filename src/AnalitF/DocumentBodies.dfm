@@ -525,7 +525,10 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dbodies.Unit,'
       'dbodies.ExciseTax,'
       'dbodies.BillOfEntryNumber,'
-      'dbodies.EAN13'
+      'dbodies.EAN13,'
+      'dbodies.RequestCertificate,'
+      'dbodies.CertificateId,'
+      'cr.DocumentBodyId'
       'from'
       '  DocumentBodies dbodies'
       
@@ -563,7 +566,10 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dbodies.Unit,'
       'dbodies.ExciseTax,'
       'dbodies.BillOfEntryNumber,'
-      'dbodies.EAN13'
+      'dbodies.EAN13,'
+      'dbodies.RequestCertificate,'
+      'dbodies.CertificateId,'
+      'cr.DocumentBodyId'
       'from'
       '  DocumentBodies dbodies'
       
