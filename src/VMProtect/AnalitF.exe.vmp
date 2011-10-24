@@ -154,236 +154,283 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_fetch_field_direct"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_num_fields"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_field_count"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_affected_rows"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_insert_id"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_errno"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_error"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_info"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_thread_id"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_character_set_name"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_init"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_ssl_set"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_real_connect"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_close"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_select_db"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_real_query"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_kill"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_ping"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_get_server_info"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_get_client_info"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_get_host_info"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_use_result"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_options"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_free_result"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_fetch_row"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_fetch_lengths"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_server_init"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_server_end"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_init"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_prepare"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_execute"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_param_count"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_bind_param"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_bind_result"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_field_count"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_close"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_free_result"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_errno"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_error"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_fetch"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_fetch_column"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_send_long_data"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_result_metadata"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_param_metadata"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_affected_rows"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_more_results"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_next_result"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -394,86 +441,103 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.CorrectFieldLen"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_field_direct"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_row"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_fetch"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_lengths"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_value_is_null"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_value_ptr"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_value_to_buff"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_value_to_str"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_value_arr"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_fetch_value_str"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_execute"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_bind_param"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_bind_result"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_fetch_column"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_fetch_lengths"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_fetch_value_ptr"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
