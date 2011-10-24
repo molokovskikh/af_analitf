@@ -8,24 +8,101 @@ uses
   TestFrameWork,
   MyAccess,
   MyEmbConnection,
+  MyDump,
   AProc,
+  U_ExchangeLog,
+  DModule,
   DatabaseObjects,
-  GeneralDatabaseObjects;
+  GeneralDatabaseObjects,
+  BackupDatabaseObjects,
+  CriticalDatabaseObjects,
+  DatabaseViews,
+  DocumentTypes,
+  IgnoreDatabaseObjects,
+  MyEmbConnectionEx,
+  SynonymDatabaseObjects;
+
+{$ifdef USEMEMORYCRYPTDLL}
+  {$ifndef USENEWMYSQLTYPES}
+    {$define USENEWMYSQLTYPES}
+  {$endif}
+{$endif}
 
 type
   TTestLoadData = class(TTestCase)
    private
     function GetConnection : TCustomMyConnection;
+    procedure ApplyMigrate();
    published
     procedure CreateDB;
+    procedure CreateDBVer81;
     procedure LoadData;
     procedure LoadDataWithTruncate;
     procedure LoadDataWithDelete;
+    procedure CheckUpdateScript;
+    procedure _CreateDBWithClient;
+    procedure _UpdateClientAndOpen;
+    procedure _Open;
   end;
 
 implementation
 
 { TTestLoadData }
+
+procedure TTestLoadData.ApplyMigrate;
+var
+  connection : TCustomMyConnection;
+  MyDump : TMyDump;
+begin
+  connection := GetConnection;
+  try
+    connection.Open;
+    try
+      connection.ExecSQL('use analitf', []);
+
+      MyDump := TMyDump.Create(nil);
+      try
+        MyDump.Connection := connection;
+        MyDump.Objects := [doTables, doViews];
+        //MyDump.OnError := OnScriptExecuteError;
+        //MyDump.SQL.Text := GetFullLastCreateScript();
+        MyDump.SQL.LoadFromFile('..\FullScripts\migrate81to82.sql');
+{$ifdef DEBUG}
+        //WriteExchangeLog('CreateClearDatabaseFromScript', MyDump.SQL.Text);
+{$endif}
+        MyDump.Restore;
+      finally
+        MyDump.Free;
+      end;
+
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestLoadData.CheckUpdateScript;
+var
+  connection : TCustomMyConnection;
+begin
+  ApplyMigrate();
+  connection := GetConnection;
+  try
+    connection.Open;
+    try
+      connection.ExecSQL('use analitf', []);
+
+      DatabaseController.Initialize(connection);
+
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
 
 procedure TTestLoadData.CreateDB;
 var
@@ -49,6 +126,44 @@ begin
         coreTable.Free;
       end;
 
+
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestLoadData.CreateDBVer81;
+var
+  connection : TCustomMyConnection;
+  MyDump : TMyDump;
+begin
+  DeleteDataDir(ExePath + SDirData);
+
+  ForceDirectories(ExePath + SDirData + '\analitf');
+
+  connection := GetConnection;
+  try
+    connection.Open;
+    try
+      connection.ExecSQL('use analitf', []);
+
+      MyDump := TMyDump.Create(nil);
+      try
+        MyDump.Connection := connection;
+        MyDump.Objects := [doTables, doViews];
+        //MyDump.OnError := OnScriptExecuteError;
+        //MyDump.SQL.Text := GetFullLastCreateScript();
+        MyDump.SQL.LoadFromFile('..\FullScripts\script81.sql');
+{$ifdef DEBUG}
+        //WriteExchangeLog('CreateClearDatabaseFromScript', MyDump.SQL.Text);
+{$endif}
+        MyDump.Restore;
+      finally
+        MyDump.Free;
+      end;
 
     finally
       connection.Close;
@@ -110,7 +225,7 @@ begin
   try
     connection.Open;
 
-    
+
     try
       connection.ExecSQL('use analitf', []);
 
@@ -300,6 +415,173 @@ begin
       connection.Close;
     end;
   finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestLoadData._CreateDBWithClient;
+var
+  connection : TCustomMyConnection;
+  clientTestInsertSQl : String;
+begin
+  DeleteDataDir(ExePath + SDirData);
+
+  ForceDirectories(ExePath + SDirData + '\analitf');
+
+  connection := GetConnection;
+  try
+    connection.Open;
+    try
+      connection.ExecSQL('use analitf', []);
+
+      WriteExchangeLog('_CreateDBWithClient', 'create client table');
+      connection.ExecSQL('' +
+      'create table client     '
+      +'  ( '
++'    `Id` bigint(20) not null   , '
++'    `Name` varchar(50) not null, '
++'    `CalculateOnProducerCost` tinyint(1) unsigned NOT NULL DEFAULT ''0'', '
++'    `ParseWaybills` tinyint(1) unsigned not null default ''0'', '
++'    `SendRetailMarkup` tinyint(1) unsigned not null default ''0'', '
++'    `ShowAdvertising` tinyint(1) unsigned not null default ''1'', '
++'    `SendWaybillsFromClient` tinyint(1) unsigned not null default ''0'', '
++'    `EnableSmartOrder` tinyint(1) unsigned not null default ''0'', '
++'    `EnableImpersonalPrice` tinyint(1) unsigned not null default ''0'', '
++'    `AllowDelayOfPayment` tinyint(1) not null default ''0'',  '
++'    primary key (`Id`) '
++'  ) ' + 'ENGINE=MyISAM default CHARSET=cp1251 ROW_FORMAT=DYNAMIC;', []);
+
+      //connection.ExecSQL('insert into client (Id, Name) values (1, ''test 1'')', []);
+
+      WriteExchangeLog('_CreateDBWithClient', 'insert into client table');
+      clientTestInsertSQl := GetLoadDataSQL('Client', ExePath + '\Client.txt');
+
+      connection.ExecSQL(clientTestInsertSQl, []);
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestLoadData._Open;
+var
+  connection : TCustomMyConnection;
+  exec : TMyQuery;
+begin
+  connection := GetConnection;
+  try
+    WriteExchangeLog('_Open', 'open connection');
+    connection.Open;
+    try
+      WriteExchangeLog('_Open', 'use analitf');
+      connection.ExecSQL('use analitf', []);
+
+      WriteExchangeLog('_Open', 'DatabaseController.Initialize');
+      DatabaseController.Initialize(connection);
+
+      exec := TMyQuery.Create(nil);
+      try
+        exec.Connection := connection;
+
+        exec.SQL.Text := 'select   client.Id as MainClientId, client.Name as MainClientName, client.CalculateOnProducerCost, client.ParseWaybills, ' +
+        'client.SendRetailMarkup, client.ShowAdvertising, client.SendWaybillsFromClient, client.EnableSmartOrder, client.EnableImpersonalPrice, ' +
+        'client.AllowDelayOfPayment, client.ShowCertificatesWithoutRefSupplier from client';
+
+        WriteExchangeLog('_Open', 'select from client');
+        exec.Open;
+        try
+          while not exec.Eof do begin
+            exec.Next;
+          end;
+        finally
+          WriteExchangeLog('_Open', 'close client');
+          exec.Close;
+        end;
+
+      finally
+        exec.Free;
+      end;
+
+    finally
+      WriteExchangeLog('_Open', 'close connection');
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestLoadData._UpdateClientAndOpen;
+var
+  connection : TCustomMyConnection;
+  exec : TMyQuery;
+begin
+  connection := GetConnection;
+  try
+    WriteExchangeLog('_UpdateClientAndOpen', 'open connection at alter');
+    connection.Open;
+    try
+      WriteExchangeLog('_UpdateClientAndOpen', 'use analitf at alter');
+      connection.ExecSQL('use analitf', []);
+
+      WriteExchangeLog('_UpdateClientAndOpen', 'alter client table');
+      connection.ExecSQL('' +
+      'alter table analitf.client add column `ShowCertificatesWithoutRefSupplier` tinyint(1) not null default ''0'';', []);
+
+    finally
+      WriteExchangeLog('_UpdateClientAndOpen', 'close connection at alter');
+      connection.Close;
+    end;
+  finally
+    WriteExchangeLog('_UpdateClientAndOpen', 'free connection at alter');
+    connection.Free;
+  end;
+
+  WriteExchangeLog('_UpdateClientAndOpen', 'free library after alter');
+  DatabaseController.FreeMySQLLib('test');
+
+  connection := GetConnection;
+  try
+    WriteExchangeLog('_UpdateClientAndOpen', 'open connection after alter');
+    connection.Open;
+    try
+      WriteExchangeLog('_UpdateClientAndOpen', 'use analitf after alter');
+      connection.ExecSQL('use analitf', []);
+
+      WriteExchangeLog('_UpdateClientAndOpen', 'DatabaseController.Initialize after alter');
+      DatabaseController.Initialize(connection);
+
+      exec := TMyQuery.Create(nil);
+      try
+        exec.Connection := connection;
+
+        exec.SQL.Text := 'select   client.Id as MainClientId, client.Name as MainClientName, client.CalculateOnProducerCost, client.ParseWaybills, ' +
+        'client.SendRetailMarkup, client.ShowAdvertising, client.SendWaybillsFromClient, client.EnableSmartOrder, client.EnableImpersonalPrice, ' +
+        'client.AllowDelayOfPayment, client.ShowCertificatesWithoutRefSupplier from client';
+
+        WriteExchangeLog('_UpdateClientAndOpen', 'select client after alter');
+        exec.Open;
+        try
+          while not exec.Eof do begin
+            exec.Next;
+          end;
+        finally
+          WriteExchangeLog('_UpdateClientAndOpen', 'close client after alter');
+          exec.Close;
+        end;
+
+      finally
+        exec.Free;
+      end;
+
+    finally
+      WriteExchangeLog('_UpdateClientAndOpen', 'close connection after alter');
+      connection.Close;
+    end;
+  finally
+    WriteExchangeLog('_UpdateClientAndOpen', 'free connection after alter');
     connection.Free;
   end;
 end;

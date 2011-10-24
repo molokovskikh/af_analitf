@@ -96,7 +96,7 @@ PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf;..\Common\DataLayer;..\Common\Classes;..\Common\Utils;..\Common\XMLParser;..\Common\GlobalParams;..\AnalitF;..\AnalitF\RC_RND;..\Common\Helpers;..\AnalitF\BusinessLogic;..\Common\Exceptions;..\AnalitF\Helpers;..\Common\Models;..\Common\System;..\AnalitF\EhLibMT;..\AnalitF\Views;..\AnalitF\NTLM
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;IndyCore70;IndyProtocols70;IndySystem70
-Conditionals=DEBUG;USENEWMYSQLTYPES;DisableCrypt
+Conditionals=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;
 DebugSourceDirs=
 UsePackages=1
 [Parameters]
@@ -149,8 +149,8 @@ Count=1
 Item0=..\lib\MyDac\Source
 [HistoryLists\hlConditionals]
 Count=30
-Item0=DEBUG;USENEWMYSQLTYPES;DisableCrypt
-Item1=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;
+Item0=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;
+Item1=DEBUG;USENEWMYSQLTYPES;DisableCrypt
 Item2=USEMEMORYCRYPTDLL;DisableCrypt;
 Item3=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;UsePrgDataTest
 Item4=USEMEMORYCRYPTDLL;DisableCrypt;UsePrgDataTest
