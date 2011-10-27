@@ -245,7 +245,6 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_real_query"
-				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -323,19 +322,16 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_init"
-				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_prepare"
-				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_execute"
-				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -508,7 +504,6 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_execute"
-				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
