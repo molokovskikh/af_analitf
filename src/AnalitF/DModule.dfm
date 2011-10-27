@@ -9,6 +9,7 @@ object DM: TDM
     InitialZoom = pzPageWidth
     PreviewButtons = [pbZoom, pbPrint, pbFind, pbExit]
     RebuildPrinter = False
+    OnPrintReport = frReportPrintReport
     Left = 16
     Top = 488
     ReportForm = {19000000}
