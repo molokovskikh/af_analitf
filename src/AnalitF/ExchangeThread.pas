@@ -3842,7 +3842,7 @@ begin
   if index <= 0 then
     promotionId := shortName
   else
-    promotionId := LeftStr(shortName, index-1);
+    promotionId := StrUtils.LeftStr(shortName, index-1);
   promoExists := StrToIntDef(promotionId, 0) > 0;
   if promoExists then begin
     id := DM.QueryValue(

@@ -757,11 +757,11 @@ begin
   tmrSearch.Enabled := False;
   needSearch := False;
   if (Length(eSearch.Text) > 0) and (StrToIntDef(eSearch.Text, 0) <> 0) then begin
-    InternalSearchText := LeftStr(eSearch.Text, 50);
+    InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
     needSearch := True;
   end;
   if (Length(eSearchName.Text) > 0) then begin
-    InternalSearchNameText := LeftStr(eSearchName.Text, 50);
+    InternalSearchNameText := StrUtils.LeftStr(eSearchName.Text, 50);
     needSearch := True;
   end
   else
