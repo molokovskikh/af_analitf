@@ -1,4 +1,6 @@
 ﻿import System.IO
+import System.Xml.Linq
+import System.Xml.XPath.Extensions
 import file from Deploy.bake
 import file from WebServiceSupport.bake
 import file from Migration.bake
@@ -16,8 +18,16 @@ Global(
 	Platform : "x86"
 )
 
+def PatchPath():
+	filename = """src\VMProtect\AnalitF.exe.vmp.src"""
+	result = """src\VMProtect\AnalitF.exe.vmp"""
+	doc = XDocument.Load(filename)
+	dll = doc.XPathSelectElement("Document/DLLBox/DLL")
+	dll.Attribute(@FileName).Value = Path.GetFullPath("""src\EMKBuilds\libmysqld.dll""")
+	doc.Save(result)
 
 Task @BuildVMProtect:
+	PatchPath()
 	result = ExecuteProcess("C:\\Program Files (x86)\\VMProtect Ultimate\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp", ".\\src\\VMProtect")
 	print "${result}"
 	print "\r\n\r\n  Защита с помощью VMProtect завершена"
