@@ -5401,7 +5401,7 @@ begin
 
   DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
 {$ifdef USEMEMORYCRYPTDLL}
-  DatabaseController.SwitchMemoryLib(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak');
+  DatabaseController.SwitchMemoryLib(ExePath + 'appdbhlp.dll');
 {$endif}
 
   try
