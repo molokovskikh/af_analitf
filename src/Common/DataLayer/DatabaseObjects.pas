@@ -1025,6 +1025,7 @@ end;
 procedure TDatabaseController.DisableMemoryLib;
 begin
   TMySQLAPIEmbeddedEx(MyAPIEmbedded).DisableMemoryLib();
+  Sleep(3000);
 end;
 
 procedure TDatabaseController.DropWorkSchema(
@@ -1100,7 +1101,7 @@ begin
         [ErrorMessage,
          TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
   MyAPIEmbedded.FreeMySQLLib;
-  Sleep(2000);
+  Sleep(5000);
 end;
 
 function TDatabaseController.GetById(
