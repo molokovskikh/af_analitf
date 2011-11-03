@@ -286,6 +286,7 @@ type
     procedure MainConnectionOldAfterConnect(Sender: TObject);
     procedure adtParamsOldAfterPost(DataSet: TDataSet);
     procedure adtReceivedDocsAfterPost(DataSet: TDataSet);
+    procedure frReportPrintReport;
   private
     //Требуется ли подтверждение обмена
     FNeedCommitExchange : Boolean;
@@ -318,6 +319,8 @@ type
     FProcessUpdateToNewLibMysqlD : Boolean;
     //Не были восстановлены в процессе обновления со старой базы данных на новую
     FNotImportedWithUpdateToNewLibMysql : TRepairedObjects;
+
+    FReportPrinted : Boolean;
 
     procedure CheckRestrictToRun;
     procedure CheckDBFile;
@@ -415,16 +418,16 @@ type
     AutoComment : String;
 
     procedure CompactDataBase();
-    procedure ShowFastReport(FileName: string; DataSet: TDataSet = nil;
-      APreview: boolean = False; PrintDlg: boolean = True);
-    procedure ShowFastReportWithSave(FileName: string; DataSet: TDataSet = nil;
-      APreview: boolean = False; PrintDlg: boolean = True);
-    procedure ShowOrderDetailsReport(
+    function ShowFastReport(FileName: string; DataSet: TDataSet = nil;
+      APreview: boolean = False; PrintDlg: boolean = True) : Boolean;
+    function ShowFastReportWithSave(FileName: string; DataSet: TDataSet = nil;
+      APreview: boolean = False; PrintDlg: boolean = True) : Boolean;
+    function ShowOrderDetailsReport(
       OrderId  : Integer;
       Closed   : Boolean;
       Send     : Boolean;
       Preview  : Boolean = False;
-      PrintDlg : Boolean = True);
+      PrintDlg : Boolean = True) : Boolean;
     procedure ClientChanged;
     procedure LinkExternalTables;
     procedure UnLinkExternalTables;
@@ -1324,11 +1327,13 @@ end;
 
 //загружает отчет и выводит на экран или печатает; если указан DataSet, то
 //блокируется визуальное перемещение по нему и происходит возврат на первичную запись
-procedure TDM.ShowFastReport(FileName: string; DataSet: TDataSet = nil;
-  APreview: boolean = False; PrintDlg: boolean = True);
+function TDM.ShowFastReport(FileName: string; DataSet: TDataSet = nil;
+  APreview: boolean = False; PrintDlg: boolean = True) : Boolean;
 var
   Mark: TBookmarkStr;
+  t : Boolean;
 begin
+  Result := False;
   //находим и проверяем полное имя файла; загружаем файл
   FileName:=Trim(FileName);
   if FileName<>'' then begin
@@ -1346,8 +1351,12 @@ begin
   try
     frDBDataSet.DataSet := DataSet;
 
+    FReportPrinted := False;
+
     if not APreview then begin
+
       frReport.PrepareReport;
+
       if PrintDlg then
         frReport.PrintPreparedReportDlg
       else
@@ -1355,6 +1364,8 @@ begin
     end
     else
       frReport.ShowReport;
+
+    Result := FReportPrinted and not frReport.Terminated;
   finally
     if (DataSet<>nil) and DataSet.Active then begin
       DataSet.BookMark:=Mark;
@@ -2598,9 +2609,10 @@ begin
   FServerUpdateId := AServerUpdateId;
 end;
 
-procedure TDM.ShowOrderDetailsReport(OrderId: Integer; Closed, Send,
-  Preview, PrintDlg: Boolean);
+function TDM.ShowOrderDetailsReport(OrderId: Integer; Closed, Send,
+  Preview, PrintDlg: Boolean) : Boolean;
 begin
+  Result := False;
   if adsPrintOrderHeader.Active then
     adsPrintOrderHeader.Close;
   if adsOrderDetails.Active then
@@ -2650,7 +2662,7 @@ begin
         frVariables[ 'PriceName'] := adsPrintOrderHeader.FieldByName('PriceName').AsString;
         frVariables[ 'Closed'] := adsPrintOrderHeader.FieldByName('Closed').AsBoolean;
 
-        DM.ShowFastReport( 'Orders.frf', nil, Preview, PrintDlg);
+        Result := DM.ShowFastReport( 'Orders.frf', nil, Preview, PrintDlg);
 
       finally
         adsOrderDetails.Close;
@@ -4627,15 +4639,15 @@ begin
     end;
 end;
 
-procedure TDM.ShowFastReportWithSave(FileName: string; DataSet: TDataSet;
-  APreview, PrintDlg: boolean);
+function TDM.ShowFastReportWithSave(FileName: string; DataSet: TDataSet;
+  APreview, PrintDlg: boolean) : Boolean;
 var
   oldButtons : TfrPreviewButtons;
 begin
   oldButtons := frReport.PreviewButtons;
   try
     frReport.PreviewButtons := frReport.PreviewButtons + [pbSave];
-    ShowFastReport(FileName, DataSet, APreview, PrintDlg);
+    Result := ShowFastReport(FileName, DataSet, APreview, PrintDlg);
   finally
     frReport.PreviewButtons := oldButtons;
   end;
@@ -5497,7 +5509,7 @@ begin
 
   DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
 {$ifdef USEMEMORYCRYPTDLL}
-  DatabaseController.SwitchMemoryLib(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak');
+  DatabaseController.SwitchMemoryLib(ExePath + 'appdbhlp.dll');
 {$endif}
 
   try
@@ -5577,6 +5589,11 @@ begin
     DatabaseController.DisableMemoryLib();
 {$endif}
   end;
+end;
+
+procedure TDM.frReportPrintReport;
+begin
+  FReportPrinted := True;
 end;
 
 initialization

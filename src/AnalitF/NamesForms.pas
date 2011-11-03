@@ -803,7 +803,7 @@ begin
   tmrSearch.Enabled := False;
   if Length(eSearch.Text) > 2 then
   begin
-    InternalSearchText := LeftStr(eSearch.Text, 50);
+    InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
     eSearch.Text := '';
     adsCatalog.Close;
     adsCatalog.SQL.Text := ''

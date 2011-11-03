@@ -791,7 +791,7 @@ begin
     eSearch.Enabled := False;
     adsCore.DisableControls;
     try
-      InternalSearchText := LeftStr(eSearch.Text, 50);
+      InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
       if Assigned(Self.PrevForm) and (Self.PrevForm is TOrdersForm) and FOpenWithSearch
       then begin
         adsCore.Close;

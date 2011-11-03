@@ -144,6 +144,7 @@ type
     procedure OrderCountUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RetailMarkupUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RetailPriceUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+    procedure DeleteOrderPosition;
   protected
     procedure UpdateOrderDataset; override;
     procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
@@ -242,6 +243,7 @@ begin
   adsOrders.OnCalcFields := ocf;
   if not ClosedOrder then begin
     adsOrders.SQL.Text := EtalonSQL;
+    dbgOrders.InputField := 'OrderCount';
     dbgOrders.SearchField := '';
     dbgOrders.ForceRus := False;
     dbmMessageTo.ReadOnly := False;
@@ -249,6 +251,7 @@ begin
   end
   else begin
     adsOrders.SQL.Text := StringReplace(EtalonSQL, 'CurrentOrderLists', 'PostedOrderLists', [rfReplaceAll, rfIgnoreCase]);
+    dbgOrders.InputField := '';
     dbgOrders.SearchField := 'SynonymName';
     dbgOrders.ForceRus := True;
     dbmMessageTo.ReadOnly := True;
@@ -345,10 +348,17 @@ begin
             PrevForm.ShowAsPrevForm;
     end
     else
-      if (Sender = dbgEditOrders) and (Key = VK_DELETE) then begin
-        adsOrders.Delete();
-        tmrCheckOrderCount.Enabled := False;
-        tmrCheckOrderCount.Enabled := True;
+      if (Key = VK_DELETE) then begin
+        if (Sender = dbgEditOrders) then
+          DeleteOrderPosition
+        else begin
+          //≈сли таблица не dbgEditOrders, то это dbgOrders, что она не отрабатывала
+          //нажатие клавиши Delete и выводила "”далить значение", то убираем это нажатие
+          Key := 0;
+          if not ClosedOrder then
+            //”дал€ем позицию только из текущих заказов
+            DeleteOrderPosition;
+        end;
       end;
 end;
 
@@ -900,6 +910,15 @@ begin
       ParentOrdersHForm.ShowAsPrevForm
     else
       PrevForm.ShowAsPrevForm;
+end;
+
+procedure TOrdersForm.DeleteOrderPosition;
+begin
+  if AProc.MessageBox('”далить позицию?', MB_ICONQUESTION or MB_YESNO) = IDYES then begin
+    adsOrders.Delete();
+    tmrCheckOrderCount.Enabled := False;
+    tmrCheckOrderCount.Enabled := True;
+  end;
 end;
 
 end.

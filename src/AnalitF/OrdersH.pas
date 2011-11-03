@@ -561,6 +561,7 @@ end;
 procedure TOrdersHForm.Print(APreview: boolean);
 var
   Mark: TBookmarkStr;
+  printedReport : Boolean;
 begin
   if not adsOrdersHForm.Active or adsOrdersHForm.IsEmpty then exit;
 
@@ -578,7 +579,7 @@ begin
     try
       adsOrdersHForm.First;
       if not adsOrdersHForm.Eof then begin
-        DM.ShowOrderDetailsReport(
+        printedReport := DM.ShowOrderDetailsReport(
           adsOrdersHFormORDERID.AsInteger,
           adsOrdersHFormCLOSED.Value,
           adsOrdersHFormSEND.Value,
@@ -587,12 +588,12 @@ begin
         adsOrdersHForm.Next;
       end;
 
-      while not adsOrdersHForm.Eof do
+      while not adsOrdersHForm.Eof and printedReport do
       begin
         //Если заказ закрыт или не закрыт и разрешен к отправке
         if adsOrdersHFormCLOSED.Value or (adsOrdersHFormSEND.Value) then
         begin
-          DM.ShowOrderDetailsReport(
+          printedReport := DM.ShowOrderDetailsReport(
             adsOrdersHFormORDERID.AsInteger,
             adsOrdersHFormCLOSED.Value,
             adsOrdersHFormSEND.Value,

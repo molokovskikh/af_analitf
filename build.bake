@@ -1,0 +1,24 @@
+﻿import System.IO
+import file from Deploy.bake
+import file from WebServiceSupport.bake
+import file from Migration.bake
+import file from Lib.bake
+import file from Db.bake
+import file from Test.bake
+import file from Tools.bake
+import file from Tools.boo
+
+
+Global(
+	Project : "AnalitF",
+	humanReadableName : "AnalitF",
+	deployTo : """\\adc.analit.net\Inforoom\WebApps\PrgDataService\Results""",
+	Platform : "x86"
+)
+
+
+Task @BuildVMProtect:
+	result = ExecuteProcess("C:\\Program Files (x86)\\VMProtect Ultimate\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp", ".\\src\\VMProtect")
+	print "${result}"
+	print "\r\n\r\n  Защита с помощью VMProtect завершена"
+	
