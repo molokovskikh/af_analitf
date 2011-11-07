@@ -5284,13 +5284,18 @@ var
   fileName : String;
 begin
   adcUpdate.Close;
-  adcUpdate.SQL.Text := 'select * from CertificateFiles where CertificateId = :CertificateId';
+  adcUpdate.SQL.Text := '' +
+    'select cf.Id, cf.OriginFilename, cf.ExternalFileId, cf.CertificateSourceId, cf.Extension from ' +
+    ' CertificateFiles cf ' +
+    ' inner join FileCertificates fc on fc.CertificateFileId = cf.Id ' +
+    ' where fc.CertificateId = :CertificateId ' +
+    ' group by cf.Id ';
   adcUpdate.ParamByName('CertificateId').Value := certificateId;
   adcUpdate.Open;
   try
     while not adcUpdate.Eof do begin
       id := TLargeintField(adcUpdate.FieldByName('Id')).Value;
-      fileName := RootFolder() + SDirCertificates + '\' + IntToStr(id) + '.tif';
+      fileName := RootFolder() + SDirCertificates + '\' + IntToStr(id) + adcUpdate.FieldByName('Extension').AsString;
       if (FileExists(fileName)) then
         FileExecute(fileName);
       adcUpdate.Next;

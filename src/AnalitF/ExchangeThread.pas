@@ -4263,6 +4263,21 @@ begin
     DM.adcUpdate.SQL.Text := GetLoadDataSQL('CertificateFiles', RootFolder()+SDirIn+'\CertificateFiles.txt', true);
     InternalExecute;
   end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\CertificateSources.txt') > 0) then begin
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('CertificateSources', RootFolder()+SDirIn+'\CertificateSources.txt', true);
+    InternalExecute;
+  end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\SourceSuppliers.txt') > 0) then begin
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('SourceSuppliers', RootFolder()+SDirIn+'\SourceSuppliers.txt', true);
+    InternalExecute;
+  end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\FileCertificates.txt') > 0) then begin
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('FileCertificates', RootFolder()+SDirIn+'\FileCertificates.txt', true);
+    InternalExecute;
+  end;
 end;
 
 initialization

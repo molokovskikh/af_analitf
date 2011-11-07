@@ -130,7 +130,12 @@ type
     doiCertificates,
     doiCertificateFiles,
     //Ignore
-    doiCertificateRequests);
+    doiCertificateRequests,
+    //Cumulative
+    doiCertificateSources,
+    doiSourceSuppliers,
+    doiFileCertificates
+    );
 
   TRepairedObjects = set of TDatabaseObjectId;
 

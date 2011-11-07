@@ -163,6 +163,24 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TCertificateSourcesTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+  TSourceSuppliersTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+  TFileCertificatesTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -296,6 +314,7 @@ begin
 +'    `FAX`         varchar(20) default null , ' 
 +'    `MANAGERMAIL` varchar(255) default null, ' 
 +'    `ShortName`    varchar(50) default null , '
++'    `CertificateSourceExists`  tinyint(1) not null default ''0'' , '
 +'    primary key (`FIRMCODE`)               , '
 +'    unique key `PK_CLIENTSDATAN` (`FIRMCODE`) ' 
 +'  ) ' 
@@ -880,12 +899,75 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( '
 +'      Id bigint(20) NOT NULL, '
-+'      CertificateId bigint(20) NOT NULL, '
 +'      OriginFilename VARCHAR(255) NOT NULL, '
-+'      SupplierId bigint(20) NOT NULL, '
++'      ExternalFileId VARCHAR(255) NOT NULL, '
++'      CertificateSourceId bigint(20) NOT NULL, '
++'      Extension VARCHAR(255) NOT NULL, '
 +'      PRIMARY KEY (Id), '
-+'      key IDX_CertificateId (CertificateId), '
-+'      key IDX_SupplierId (SupplierId) '
++'      key IDX_CertificateSourceId (CertificateSourceId) '
++'  ) '
++ GetTableOptions();
+end;
+
+{ TFileCertificatesTable }
+
+constructor TFileCertificatesTable.Create;
+begin
+  FName := 'filecertificates';
+  FObjectId := doiFileCertificates;
+  FRepairType := dortCumulative;
+end;
+
+function TFileCertificatesTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'      CertificateId bigint(20) NOT NULL, '
++'      CertificateFileId bigint(20) NOT NULL, '
++'      KEY (CertificateId), '
++'      KEY (CertificateFileId) '
++'  ) '
++ GetTableOptions();
+end;
+
+{ TCertificateSourcesTable }
+
+constructor TCertificateSourcesTable.Create;
+begin
+  FName := 'certificatesources';
+  FObjectId := doiCertificateSources;
+  FRepairType := dortCumulative;
+end;
+
+function TCertificateSourcesTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'      Id bigint(20) NOT NULL, '
++'      PRIMARY KEY (Id) '
++'  ) '
++ GetTableOptions();
+end;
+
+{ TSourceSuppliersTable }
+
+constructor TSourceSuppliersTable.Create;
+begin
+  FName := 'sourcesuppliers';
+  FObjectId := doiSourceSuppliers;
+  FRepairType := dortCumulative;
+end;
+
+function TSourceSuppliersTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'      CertificateSourceId bigint(20) NOT NULL, '
++'      SupplierId bigint(20) NOT NULL, '
++'      KEY (CertificateSourceId), '
++'      KEY (SupplierId) '
 +'  ) '
 + GetTableOptions();
 end;
@@ -925,5 +1007,8 @@ initialization
 
   DatabaseController.AddObject(TCertificatesTable.Create());
   DatabaseController.AddObject(TCertificateFilesTable.Create());
+  DatabaseController.AddObject(TCertificateSourcesTable.Create());
+  DatabaseController.AddObject(TSourceSuppliersTable.Create());
+  DatabaseController.AddObject(TFileCertificatesTable.Create());
 end.
 
