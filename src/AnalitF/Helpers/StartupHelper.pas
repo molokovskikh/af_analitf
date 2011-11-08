@@ -64,5 +64,6 @@ begin
 end;
 
 initialization
+  WriteExchangeLog('StartupHelper', 'initialization');
   mainStartupHelper := TStartupHelper.Create();
 end.
