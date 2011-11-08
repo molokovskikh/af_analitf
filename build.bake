@@ -17,8 +17,42 @@ Global(
 )
 
 
+def PrepareCfg(buildName as string):
+	File.Delete(".\\src\\AnalitF\\AnalitF_tmp.cfg") if File.Exists(".\\src\\AnalitF\\AnalitF_tmp.cfg")
+	File.Move(".\\src\\AnalitF\\AnalitF.cfg", ".\\src\\AnalitF\\AnalitF_tmp.cfg")
+	File.Copy(".\\src\\AnalitF\\AnalitF_${buildName}.cfg", ".\\src\\AnalitF\\AnalitF.cfg")
+
+def RestoreCfg():
+	if (File.Exists(".\\src\\AnalitF\\AnalitF_tmp.cfg")):
+		File.Delete(".\\src\\AnalitF\\AnalitF.cfg") if File.Exists(".\\src\\AnalitF\\AnalitF.cfg")
+		File.Move(".\\src\\AnalitF\\AnalitF_tmp.cfg", ".\\src\\AnalitF\\AnalitF.cfg")
+
+def BuildAnalitF(buildName as string):
+	buildFolder = ".\\src\\AnalitF\\bin\\bin${buildName}"
+	Rm("${buildFolder}/*", true) if Exist(buildFolder)
+	MkDir(buildFolder) if not Exist(buildFolder)
+	try:
+		PrepareCfg("Release")
+		exec = Exec("dcc32", "-B AnalitF.dpr")
+		exec.BaseDirectory = ".\\src\\AnalitF"
+		exec.Execute()
+	ensure:
+		RestoreCfg()
+
+
 Task @BuildVMProtect:
-	result = ExecuteProcess("C:\\Program Files (x86)\\VMProtect Ultimate\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp", ".\\src\\VMProtect")
-	print "${result}"
-	print "\r\n\r\n  Защита с помощью VMProtect завершена"
+	exec = Exec("C:\\Program Files (x86)\\VMProtect Ultimate\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp");
+	exec.BaseDirectory = ".\\src\\VMProtect"
+	exec.Execute()
+
+Task @BuildRelease:
+	BuildAnalitF("Release")
+
+Task @CopyReleaseToProtect:
+	File.Copy(".\\src\\AnalitF\\bin\\binRelease\\AnalitF.exe", ".\\src\\VMProtect\\AnalitF.exe", true)
+	File.Copy(".\\src\\AnalitF\\bin\\binRelease\\AnalitF.map", ".\\src\\VMProtect\\AnalitF.map", true)
 	
+Task @BuildAndProtectRelease, [@BuildRelease, @CopyReleaseToProtect, @BuildVMProtect]:
+	print "Сборка упакованного релизного приложения завершена"
+
+
