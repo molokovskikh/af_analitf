@@ -90,6 +90,7 @@
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.FreeMySQLLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -600,6 +601,7 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.FreeMySQLLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -615,6 +617,7 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.SwitchMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -626,6 +629,7 @@
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.SwitchMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
