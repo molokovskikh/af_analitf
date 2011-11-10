@@ -672,10 +672,6 @@
 	</Protection>
 	<Script
 	/>
-	<DLLBox>
-		<DLL
-			Name="libmysqld.dll"
-			FileName="..\EMKBuilds\libmysqld.dll"
-		/>
-	</DLLBox>
+	<DLLBox
+	/>
 </Document>
