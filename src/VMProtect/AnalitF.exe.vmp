@@ -539,6 +539,7 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.DisableMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -619,6 +620,7 @@
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.DisableMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -666,10 +668,6 @@
 	</Protection>
 	<Script
 	/>
-	<DLLBox>
-		<DLL
-			Name="libmysqld.dll"
-			FileName="..\EMKBuilds\libmysqld.dll"
-		/>
-	</DLLBox>
+	<DLLBox
+	/>
 </Document>
