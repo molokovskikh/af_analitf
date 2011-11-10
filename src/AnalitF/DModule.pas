@@ -894,7 +894,7 @@ var
 begin
 {$ifdef USEMEMORYCRYPTDLL}
   //Блокируем использование MemoryLib, т.к. оно не работает
-  //DatabaseController.DisableMemoryLib();
+  DatabaseController.DisableMemoryLib();
 {$endif}
   SetNetworkSettings;
 
@@ -5401,7 +5401,7 @@ begin
 
   DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
 {$ifdef USEMEMORYCRYPTDLL}
-  DatabaseController.SwitchMemoryLib(ExePath + SBackDir + '\' + 'appdbhlp.dll' + '.bak');
+  DatabaseController.SwitchMemoryLib(ExePath + 'appdbhlp.dll');
 {$endif}
 
   try
@@ -5445,7 +5445,7 @@ begin
 
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd');
 {$ifdef USEMEMORYCRYPTDLL}
-    DatabaseController.SwitchMemoryLib();
+    DatabaseController.DisableMemoryLib();
 {$endif}
 
     dbCon.Open;
@@ -5478,7 +5478,7 @@ begin
   finally
     DatabaseController.FreeMySQLLib('MySql Clients Count при обновлении со старой libd (обратно)');
 {$ifdef USEMEMORYCRYPTDLL}
-    DatabaseController.SwitchMemoryLib();
+    DatabaseController.DisableMemoryLib();
 {$endif}
   end;
 end;
