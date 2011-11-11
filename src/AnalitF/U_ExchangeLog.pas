@@ -27,10 +27,15 @@ begin
     IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + 'Exchange', 'log', -1);
 end;
 
-procedure WriteExchangeLog(ASubSystem, AMessage : string);
+procedure InternalWriteExchangeLog(ASubSystem, AMessage : string);
 begin
   if Assigned(ExchangeLog) then
     ExchangeLog.TR(ASubSystem, AMessage);
+end;
+
+procedure WriteExchangeLog(ASubSystem, AMessage : string);
+begin
+  WriteExchangeLogTID(ASubSystem, AMessage);
 end;
 
 procedure WriteExchangeLogTID(ASubSystem, AMessage : string);
@@ -38,7 +43,7 @@ var
   tid : LongWord;
 begin
   tid := GetCurrentThreadId();
-  WriteExchangeLog(ASubSystem + '.tid=' + IntToStr(tid), AMessage);
+  InternalWriteExchangeLog(ASubSystem + '.tid=' + IntToStr(tid), AMessage);
 end;
 
 procedure FreeExchangeLog(LastFileSize : Int64 = 0);
