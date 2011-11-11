@@ -1089,6 +1089,11 @@ end;
 
 procedure TDatabaseController.FreeMySQLLib(ErrorMessage: String; SubSystem : String);
 begin
+  WriteExchangeLogTID(
+   SubSystem,
+   Format('Before Free %s: %d',
+   [ErrorMessage,
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
   if TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount > 0 then
     if SubSystem = '' then
       LogCriticalError(Format('%s: %d',
@@ -1101,6 +1106,11 @@ begin
         [ErrorMessage,
          TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
   MyAPIEmbedded.FreeMySQLLib;
+  WriteExchangeLogTID(
+   SubSystem,
+   Format('After Free %s: %d',
+   [ErrorMessage,
+    TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
   Sleep(5000);
 end;
 
@@ -1562,7 +1572,13 @@ end;
 {$ifdef USEMEMORYCRYPTDLL}
 procedure TDatabaseController.SwitchMemoryLib(fileName: String);
 begin
+  WriteExchangeLogTID(
+   'TDatabaseController.SwitchMemoryLib',
+   Format('Before SwitchMemoryLib "%s"', [fileName]));
   TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib(fileName);
+  WriteExchangeLogTID(
+   'TDatabaseController.SwitchMemoryLib',
+   Format('After SwitchMemoryLib "%s"', [fileName]));
 end;
 {$endif}
 
