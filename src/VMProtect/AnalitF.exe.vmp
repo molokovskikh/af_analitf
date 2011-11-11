@@ -17,74 +17,89 @@
 		<Procedures>
 			<Procedure
 				MapAddress="TCoreForm.FormCreate"
+				IncludedInCompilation="false"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.BackupDatabase"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.BackupDataTable"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.BackupDataTables"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.BackupOrdersDataTables"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.CheckObjects"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.CheckObjectsExists"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.CheckTable"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.CheckTableOnOpen"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.ClearBackup"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.Create"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.CreateViews"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.CreateWorkSchema"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.DropWorkSchema"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.FindById"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -96,61 +111,73 @@
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.GetById"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.GetFullLastCreateScript"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.GetLastCreateScript"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.GetNewConnection"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.Initialize"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.OptimizeObjects"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.OptimizeTable"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.ParseMethodResuls"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.RepairTableFromBackup"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.RestoreDatabase"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.SwithTypes"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.WorkSchemaExists"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -246,6 +273,7 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_real_query"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -323,16 +351,19 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_init"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_prepare"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.mysql_stmt_execute"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -434,6 +465,7 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI.CheckMySQLLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -505,6 +537,7 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPI._mysql_stmt_execute"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -546,56 +579,67 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.Create"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.Destroy"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.SetParams"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.GetLibraryName"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.GetNotLinkProc"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.RegisterOnLogEvent"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.UnRegisterOnLogEvent"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.RegisterOnLogErrorEvent"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.UnRegisterOnLogErrorEvent"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.UnRegisterConnection"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.LoadMySQLLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -607,11 +651,13 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.InternalFreeMySqlLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.InternalLoadMySqlLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -635,36 +681,43 @@
 			/>
 			<Procedure
 				MapAddress="TMainForm.FormCreate"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TMainForm.AppEventsIdle"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDM.DMCreate"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDM.CheckRestrictToRun"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDM.ExportFromOldLibMysqlDToFiles1567"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDM.ImportOldLibMysqlDFilesToMySql1567"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDM.UpdateToNewLibMySqlD1567"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
