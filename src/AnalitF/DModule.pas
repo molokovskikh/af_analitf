@@ -1337,7 +1337,7 @@ begin
   //находим и проверяем полное имя файла; загружаем файл
   FileName:=Trim(FileName);
   if FileName<>'' then begin
-    FileName:=ExePath+FileName;
+    FileName:=ExePath + 'Frf\' + FileName;
     if not FileExists(FileName) then
       raise Exception.Create( 'Файл не найден:'+#13+FileName);
     frReport.LoadFromFile(FileName);
