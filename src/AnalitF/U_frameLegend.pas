@@ -16,6 +16,7 @@ type
     { Public declarations }
     lJunkLegend: TLabel;
     lAwaitLegend: TLabel;
+    lBuyingBanLegend: TLabel;
     lVitallyImportantLegend: TLabel;
     lNotBasicLegend: TLabel;
     lLeaderLegend: TLabel;
@@ -35,6 +36,7 @@ begin
   inherited Create(AOwner);
   lJunkLegend := CreateLegendLabel('Уцененные препараты', JUNK_CLR, clWindowText);
   lAwaitLegend := CreateLegendLabel('Ожидаемая позиция', AWAIT_CLR, clWindowText);
+  lBuyingBanLegend := CreateLegendLabel('Препарат запрещен к заказу', BuyingBanColor, clWindowText);;
   if ShowVitallyImportant then
     lVitallyImportantLegend := CreateLegendLabel('Жизненно важные препараты', clWindow, VITALLYIMPORTANT_CLR);
   if ShowLeader then

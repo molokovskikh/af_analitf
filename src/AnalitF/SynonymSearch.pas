@@ -495,6 +495,9 @@ begin
       //ожидаемый товар выделяем зеленым
       if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
         Background := AWAIT_CLR;
+        
+      if (adsCoreBuyingMatrixType.Value = 1) then
+        Background := BuyingBanColor;
     end;
   end;
 end;

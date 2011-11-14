@@ -13,6 +13,7 @@ const
   COMPACT_PERIOD = 3;
   VITALLYIMPORTANT_CLR = clGreen;
   FrozenOrderColor = clSilver;
+  BuyingBanColor = clRed;
 
   //Цвет, которые используется для раскраски различных групп в сводном прайс-листе и в поиске в прайс-листах
   GroupColor = $00E3C1CC;//RGB = (204, 193, 227) => BGR = (227, 193, 204)
