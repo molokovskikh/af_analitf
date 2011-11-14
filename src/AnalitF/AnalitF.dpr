@@ -3,6 +3,11 @@ program AnalitF;
 {%ToDo 'AnalitF.todo'}
 
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   VCLFixPack in 'Helpers\VCLFixPack.pas',
   Forms,
   SysUtils,
