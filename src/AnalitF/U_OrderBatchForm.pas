@@ -377,6 +377,7 @@ begin
   dbgCore.Name := 'dbgCore';
   dbgCore.Parent := pBottom;
   dbgCore.Align := alClient;
+  dbgCore.Tag := 16384;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgCore);
   dbgCore.OnGetCellParams := CoreGetCellParams;
 
@@ -459,7 +460,9 @@ begin
   dbgOrderBatch.OnDrawColumnCell := dbgOrderBatchDrawColumnCell;
   dbgOrderBatch.OnDblClick := dbgOrderBatchDblClick;
   dbgOrderBatch.InputField := 'OrderCount';
-  dbgOrderBatch.Tag := 4194304;
+  //dbgOrderBatch.Tag := 4194304;
+  dbgOrderBatch.Tag := 256;
+
 
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Заказано', 0);
   TDBGridHelper.AddColumn(dbgOrderBatch, 'ProducerStatus', 'Есть производитель', Self.Canvas.TextWidth('Нет   '));
