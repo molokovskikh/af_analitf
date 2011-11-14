@@ -299,9 +299,14 @@ begin
 end;
 
 function TframeEditVitallyImportantMarkups.ProcessCloseQuery(var CanClose: Boolean) : Boolean;
+const
+  viLimis : array[0..2] of Integer = (0, 50, 500);
 var
   Res : Boolean;
   PrevRight : Currency;
+  viSet : set of byte;
+  i : Byte;
+  viExists : Boolean;
 begin
   Result := True;
   if CanClose then begin
@@ -321,7 +326,7 @@ begin
         mdMarkups.Next;
         while not mdMarkups.Eof and Res do begin
           Res := PrevRight <= fLeftLimit.AsCurrency;
-          if Res then 
+          if Res then
             Res := (not fLeftLimit.IsNull) and (not fRightLimit.IsNull)
               and (not fMarkup.IsNull) and (not fMaxMarkup.IsNull)
               and (fLeftLimit.AsCurrency <= fRightLimit.AsCurrency)
@@ -345,16 +350,21 @@ begin
           AProc.MessageBox('Ќе заданы об€зательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
         end
         else begin
+
+          viSet := [];
+          
           mdMarkups.First;
-          CanClose := (abs(fLeftLimit.Value) < 0.0001) and (abs(fRightLimit.Value - 50) < 0.0001);
-          if CanClose then begin
-            mdMarkups.Next;
-            CanClose := (abs(fLeftLimit.Value - 50) < 0.0001) and (abs(fRightLimit.Value - 500) < 0.0001);
-            if CanClose then begin
-              mdMarkups.Next;
-              CanClose := (abs(fLeftLimit.Value - 500) < 0.0001);
+          while not mdMarkups.Eof do begin
+            for I := 0 to 2 do begin
+              viExists := (abs(fLeftLimit.Value - viLimis[i]) < 0.0001);
+              if viExists and not (i in viSet) then
+                viSet := viSet + [i]; 
             end;
+            mdMarkups.Next;
           end;
+
+          CanClose := viSet = [0, 1, 2];
+
           if not CanClose then
             AProc.MessageBox('Ќе заданы об€зательные интервалы границ цен: [0, 50], [50, 500], [500, 1000000].', MB_ICONWARNING);
         end;
