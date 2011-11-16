@@ -8,7 +8,8 @@ uses
   Constant, DModule, ExchangeParameters, U_ExchangeLog, SOAPThroughHTTP,
   DatabaseObjects, MyAccess, DocumentTypes, AProc, U_SGXMLGeneral, IdCoderMIME,
   SevenZip, IdHttp, FileUtil, U_SXConversions, Windows,
-  SendWaybillTypes;
+  SendWaybillTypes,
+  GlobalSettingParams;
 
 type
   TSendElem = class
@@ -121,8 +122,7 @@ begin
     end
     else begin
       folderName := selectFirmCodes.FieldByName('WaybillFolder').AsString;
-      if AnsiStartsText('.\', folderName) then
-        folderName := RootFolder() + Copy(folderName, 3, Length(folderName));
+      folderName := GetFullFileNameByPrefix(folderName, RootFolder());
       if DirectoryExists(folderName) then begin
         try
           if SysUtils.FindFirst(folderName + '\*.*',faAnyFile-faDirectory,SR)=0 then
@@ -345,10 +345,13 @@ class function WaybillsHelper.CheckWaybillFolders(Connection : TCustomMyConnecti
 var
   selectFirmCodes : TMyQuery;
   insertSettings : TMyQuery;
-  folderName : String;
+  folderName,
+  waybillUploadingFolder : String;
+  globalParams : TGlobalSettingParams;
 begin
   Result := True;
   selectFirmCodes := TMyQuery.Create(nil);
+  globalParams := TGlobalSettingParams.Create(Connection);
   try
     selectFirmCodes.Connection := Connection;
     selectFirmCodes.SQL.Text := ''
@@ -368,11 +371,12 @@ begin
       try
         insertSettings.Connection := Connection;
         insertSettings.SQL.Text := ''
-          + 'insert into ProviderSettings (FirmCode, WaybillFolder)'
-          + ' values (:FirmCode, :WaybillFolder);';
+          + 'insert into ProviderSettings (FirmCode, WaybillFolder, WaybillUnloadingFolder)'
+          + ' values (:FirmCode, :WaybillFolder, :WaybillUnloadingFolder);';
         while not selectFirmCodes.Eof do begin
           try
             folderName := GetFolderNameFromFullName(selectFirmCodes.FieldByName('ShortName').AsString);
+            waybillUploadingFolder := folderName;
 
             if not DirectoryExists(RootFolder() + SDirUpload + '\' + folderName) then
               if not CreateDir(RootFolder() + SDirUpload + '\' + folderName) then begin
@@ -388,8 +392,22 @@ begin
             if folderName <> '' then
               folderName := '.\' + SDirUpload + '\' + folderName;
 
+            if globalParams.GroupWaybillsBySupplier then begin
+              if not DirectoryExists(RootFolder() + SDirWaybills + '\' + waybillUploadingFolder) then
+                if not CreateDir(RootFolder() + SDirWaybills + '\' + waybillUploadingFolder) then begin
+                  WriteExchangeLog('WaybillsHelper',
+                    Format('Ошибка при создании папки %s для поставщика %s: %s',
+                    [RootFolder() + SDirWaybills + '\' + waybillUploadingFolder,
+                     selectFirmCodes.FieldByName('FullName').AsString,
+                     SysErrorMessage(GetLastError())]));
+                end;
+            end;
+
+            waybillUploadingFolder := '.\' + SDirWaybills + '\' + waybillUploadingFolder;
+
             insertSettings.ParamByName('FirmCode').Value := selectFirmCodes.FieldByName('FirmCode').Value;
             insertSettings.ParamByName('WaybillFolder').Value := folderName;
+            insertSettings.ParamByName('WaybillUnloadingFolder').Value := waybillUploadingFolder;
             insertSettings.Execute;
           except
             on E : Exception do begin
@@ -426,8 +444,7 @@ begin
         end
         else begin
           folderName := selectFirmCodes.FieldByName('WaybillFolder').AsString;
-          if AnsiStartsText('.\', folderName) then
-            folderName := RootFolder() + Copy(folderName, 3, Length(folderName));
+          folderName := GetFullFileNameByPrefix(folderName, RootFolder());
           if not DirectoryExists(folderName) then begin
             Result := False;
             Break;
@@ -438,6 +455,7 @@ begin
       selectFirmCodes.Close;
     end;
   finally
+    globalParams.Free;
     selectFirmCodes.Free;
   end;
 end;

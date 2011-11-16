@@ -386,6 +386,7 @@ begin
 +'  `FirmCode` bigint(20) NOT NULL, '
 +'  `WaybillFolder` varchar(255) default null, '
 +'  `OrderFolder` varchar(255) default null, '
++'  `WaybillUnloadingFolder` varchar(255) default null, '
 +'  PRIMARY KEY (`FirmCode`), '
 +'  UNIQUE KEY `PK_ProviderSettings` (`FirmCode`) '
 +' ) '

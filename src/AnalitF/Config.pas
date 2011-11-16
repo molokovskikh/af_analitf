@@ -9,7 +9,8 @@ uses
   MyAccess, FileCtrl, U_frameEditVitallyImportantMarkups, U_frameEditAddress,
   DatabaseObjects,
   NetworkParams,
-  NetworkSettings;
+  NetworkSettings,
+  GlobalSettingParams;
 
 type
   TConfigChange = (ccOk, ccHTTPName, ccHTTPPassword, ccHTTPHost);
@@ -114,6 +115,7 @@ type
     OldHTTPName : String;
     OldHTTPHost : String;
     FNetworkParams : TNetworkParams;
+    FGlobalSettingParams : TGlobalSettingParams;
     procedure GetEntries;
     procedure DisableRemoteAccess;
     procedure EnableRemoteAccess;
@@ -127,11 +129,26 @@ type
       var dbedit : TDBEdit;
       LabelCaption,
       DataField : String);
+
+    procedure AddControlsToChangeFolder(
+      Parents : TWinControl;
+      DataSource : TDataSource;
+      var nextTop: Integer;
+      var labelInfo : TLabel;
+      var dbedit : TDBEdit;
+      LabelCaption,
+      DataField : String;
+      OnChangeFolder : TNotifyEvent;
+      var selectFolderButton : TSpeedButton;
+      OnSelectFolderClick : TNotifyEvent;
+      var folderNotExistsLabel : TLabel);
     procedure AddWaybillFoldersSheet;
     procedure SelectFolderClick(Sender : TObject);
     procedure WaybillFolderChange(Sender : TObject);
     procedure OrderFolderChange(Sender : TObject);
     procedure SelectOrderFolderClick(Sender : TObject);
+    procedure WaybillUnloadingFolderChange(Sender : TObject);
+    procedure SelectWaybillUnloadingFolderClick(Sender : TObject);
     procedure AddVitallyImportantMarkups;
     procedure AddRetailMarkups;
     procedure AddBottomPanel;
@@ -166,11 +183,18 @@ type
     sbSelectOrderFolder : TSpeedButton;
     lOrderFolderNotExists : TLabel;
 
+    lWaybillUnloadingFolder : TLabel;
+    dbeWaybillUnloadingFolder : TDBEdit;
+    sbSelectWaybillUnloadingFolder : TSpeedButton;
+    lWaybillUnloadingFolderNotExists : TLabel;
+
     gbNetworkVersionSettings : TGroupBox;
     lExportPricesFolder : TLabel;
     eExportPricesFolder : TEdit;
     lPositionPercent : TLabel;
     ePositionPercent : TEdit;
+
+    chbGroupWaybillsBySupplier : TCheckBox;
 
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
@@ -314,6 +338,10 @@ begin
         end;
         if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then
           Result := Result + [ccHTTPHost];
+        if chbGroupWaybillsBySupplier.Checked <> FGlobalSettingParams.GroupWaybillsBySupplier then begin
+          FGlobalSettingParams.GroupWaybillsBySupplier := chbGroupWaybillsBySupplier.Checked;
+          FGlobalSettingParams.SaveParams;
+        end;
         DM.adtParams.Post;
         FNetworkParams.SaveParams;
       end
@@ -617,6 +645,7 @@ var
   I : Integer;
 begin
   FNetworkParams := TNetworkParams.Create(DM.MainConnection);
+  FGlobalSettingParams := TGlobalSettingParams.Create(DM.MainConnection);
   inherited;
   AddBottomPanel;
   AddRetailMarkups;
@@ -703,8 +732,10 @@ begin
   tsWaybillFolders.Caption := 'Настройки поставщиков';
 
   if not DM.adsUser.IsEmpty
-    and DM.adsUser.FieldByName('ParseWaybills').AsBoolean
-    and DM.adsUser.FieldByName('SendWaybillsFromClient').AsBoolean
+    and ((DM.adsUser.FieldByName('ParseWaybills').AsBoolean
+    and DM.adsUser.FieldByName('SendWaybillsFromClient').AsBoolean)
+    or GetNetworkSettings().IsNetworkVersion
+    or FGlobalSettingParams.GroupWaybillsBySupplier)
   then begin
     //Открываем дата сет
     adsWaybillFolders.CachedUpdates := True;
@@ -713,7 +744,8 @@ begin
       + ' Providers.FirmCode, '
       + ' Providers.FullName, '
       + ' ProviderSettings.WaybillFolder, '
-      + ' ProviderSettings.OrderFolder '
+      + ' ProviderSettings.OrderFolder, '
+      + ' ProviderSettings.WaybillUnloadingFolder '
       + 'from '
       + '  Providers '
       + '  inner join ProviderSettings on ProviderSettings.FirmCode = Providers.FirmCode '
@@ -722,7 +754,8 @@ begin
       + 'update ProviderSettings '
       + 'set '
       + '  WaybillFolder = :WaybillFolder, '
-      + '  OrderFolder = :OrderFolder '
+      + '  OrderFolder = :OrderFolder, '
+      + '  WaybillUnloadingFolder = :WaybillUnloadingFolder '
       + 'where '
       + ' FirmCode = :FirmCode';
     adsWaybillFolders.Open;
@@ -752,30 +785,60 @@ begin
 
     nextTop := dblProviderId.Top + dblProviderId.Height + 10;
 
-    AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lWaybillFolder, dbeWaybillFolder, 'Папка:', 'WaybillFolder');
-    dbeWaybillFolder.OnChange := WaybillFolderChange;
+    if FGlobalSettingParams.GroupWaybillsBySupplier then begin
+      AddControlsToChangeFolder(
+        gbWaybillFolders,
+        dsWaybillFolders,
+        nextTop,
+        lWaybillUnloadingFolder,
+        dbeWaybillUnloadingFolder,
+        'Папка для оригинальных накладных:',
+        'WaybillUnloadingFolder',
+        WaybillUnloadingFolderChange,
+        sbSelectWaybillUnloadingFolder,
+        SelectWaybillUnloadingFolderClick,
+        lWaybillUnloadingFolderNotExists
+      );
 
-    sbSelectFolder := TSpeedButton.Create(Self);
-    sbSelectFolder.Parent := gbWaybillFolders;
-    sbSelectFolder.Anchors := [akTop, akRight];
-    sbSelectFolder.Top := dbeWaybillFolder.Top;
-    sbSelectFolder.Height := dbeWaybillFolder.Height;
-    sbSelectFolder.Caption := '...';
-    sbSelectFolder.Width := sbSelectFolder.Height;
-    sbSelectFolder.Left := dbeWaybillFolder.Left + dbeWaybillFolder.Width - sbSelectFolder.Width;
-    dbeWaybillFolder.Width := dbeWaybillFolder.Width - sbSelectFolder.Width - 5;
-    sbSelectFolder.OnClick := SelectFolderClick;
+      nextTop := lWaybillUnloadingFolderNotExists.Top + lWaybillUnloadingFolderNotExists.Height + 10;
+    end;
 
-    lFolderNotExists := TLabel.Create(Self);
-    lFolderNotExists.Caption := 'Папка не существует';
-    lFolderNotExists.Parent := gbWaybillFolders;
-    lFolderNotExists.Top := sbSelectFolder.Top + sbSelectFolder.Height + 10;
-    lFolderNotExists.Left := 10;
-    lFolderNotExists.Visible := False;
-    lFolderNotExists.Font.Color := clRed;
+    if DM.adsUser.FieldByName('SendWaybillsFromClient').AsBoolean then begin
+      AddControlsToChangeFolder(
+        gbWaybillFolders,
+        dsWaybillFolders,
+        nextTop,
+        lWaybillFolder,
+        dbeWaybillFolder,
+        'Папка для загрузки накладных:',
+        'WaybillFolder',
+        WaybillFolderChange,
+        sbSelectFolder,
+        SelectFolderClick,
+        lFolderNotExists
+      );
+      nextTop := lFolderNotExists.Top + lFolderNotExists.Height + 10;
+    end;
+
+
+
 
     if GetNetworkSettings().IsNetworkVersion then begin
-      nextTop := lFolderNotExists.Top + lFolderNotExists.Height + 10;
+
+      AddControlsToChangeFolder(
+        gbWaybillFolders,
+        dsWaybillFolders,
+        nextTop,
+        lOrderFolder,
+        dbeOrderFolder,
+        'Папка для внешних заказов:',
+        'OrderFolder',
+        OrderFolderChange,
+        sbSelectOrderFolder,
+        SelectOrderFolderClick,
+        lOrderFolderNotExists
+      );
+{
       AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lOrderFolder, dbeOrderFolder, 'Папка для внешних заказов:', 'OrderFolder');
       dbeOrderFolder.OnChange := OrderFolderChange;
 
@@ -797,6 +860,7 @@ begin
       lOrderFolderNotExists.Left := 10;
       lOrderFolderNotExists.Visible := False;
       lOrderFolderNotExists.Font.Color := clRed;
+}      
     end;
   end
   else
@@ -811,16 +875,14 @@ begin
   if DirName = '' then
     DirName := '.'
   else
-    if AnsiStartsText('.\', DirName) then
-      DirName := RootFolder() + Copy(DirName, 3, Length(DirName));
+    DirName := GetFullFileNameByPrefix(DirName, RootFolder());
 
   if FileCtrl.SelectDirectory(
-       'Выберите директорию для поставщика ' + adsWaybillFolders.FieldByName('FullName').AsString,
+       'Выберите директорию для загрузки накладных поставщика ' + adsWaybillFolders.FieldByName('FullName').AsString,
        '',
        DirName)
   then begin
-    if AnsiStartsText(RootFolder(), DirName) then
-      DirName := '.\' + Copy(DirName, Length(RootFolder()) + 1 , Length(DirName));
+    DirName := GetShortFileNameWithPrefix(DirName, RootFolder());
     SoftEdit(adsWaybillFolders);
     adsWaybillFolders.FieldByName('WaybillFolder').AsString := DirName;
   end;
@@ -831,8 +893,7 @@ var
   dirName : String;
 begin
   dirName := dbeWaybillFolder.Text;
-  if AnsiStartsText('.\', dirName) then
-    dirName := RootFolder() + Copy(dirName, 3, Length(dirName));
+  dirName := GetFullFileNameByPrefix(dirName, RootFolder());
   lFolderNotExists.Visible := not DirectoryExists(dirName);
 end;
 
@@ -894,23 +955,12 @@ var
   DirName : String;
 begin
   DirName := adsWaybillFolders.FieldByName('OrderFolder').AsString;
-{
-  if DirName = '' then
-    DirName := '.'
-  else
-    if AnsiStartsText('.\', DirName) then
-      DirName := RootFolder() + Copy(DirName, 3, Length(DirName));
-}
 
   if FileCtrl.SelectDirectory(
        'Выберите директорию заказов для поставщика ' + adsWaybillFolders.FieldByName('FullName').AsString,
        '',
        DirName)
   then begin
-{
-    if AnsiStartsText(RootFolder(), DirName) then
-      DirName := '.\' + Copy(DirName, Length(RootFolder()) + 1 , Length(DirName));
-}
     SoftEdit(adsWaybillFolders);
     adsWaybillFolders.FieldByName('OrderFolder').AsString := DirName;
   end;
@@ -950,7 +1000,16 @@ begin
     AddLabelAndEdit(tshOther, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при восстановлении заказа:');
     ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
 
-    lblServerLink.Top := ePositionPercent.Top + ePositionPercent.Height + controlInterval;
+    chbGroupWaybillsBySupplier := TCheckBox.Create(Self);
+    chbGroupWaybillsBySupplier.Caption := 'Группировать файлы накладных по поставщику';
+    chbGroupWaybillsBySupplier.Parent := tshOther;
+    chbGroupWaybillsBySupplier.Top := nextTop;
+    chbGroupWaybillsBySupplier.Left := dbchbGroupByProducts.Left;
+    chbGroupWaybillsBySupplier.Anchors := [akLeft, akTop, akRight];
+    chbGroupWaybillsBySupplier.Width := tshOther.Width - 20;
+    chbGroupWaybillsBySupplier.Checked := FGlobalSettingParams.GroupWaybillsBySupplier;
+
+    lblServerLink.Top := chbGroupWaybillsBySupplier.Top + chbGroupWaybillsBySupplier.Height + controlInterval;
     tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
   end;
 end;
@@ -973,6 +1032,65 @@ begin
   edit.Width := Parents.Width - 20;
 
   nextTop := edit.Top + edit.Height + 10;
+end;
+
+procedure TConfigForm.AddControlsToChangeFolder(Parents: TWinControl;
+  DataSource: TDataSource; var nextTop: Integer; var labelInfo: TLabel;
+  var dbedit: TDBEdit; LabelCaption, DataField: String;
+  OnChangeFolder: TNotifyEvent; var selectFolderButton: TSpeedButton;
+  OnSelectFolderClick: TNotifyEvent; var folderNotExistsLabel: TLabel);
+begin
+  AddLabelAndDBEdit(Parents, DataSource, nextTop, labelInfo, dbedit, LabelCaption, DataField);
+  dbedit.OnChange := OnChangeFolder;
+
+  selectFolderButton := TSpeedButton.Create(Self);
+  selectFolderButton.Parent := Parents;
+  selectFolderButton.Anchors := [akTop, akRight];
+  selectFolderButton.Top := dbedit.Top;
+  selectFolderButton.Height := dbedit.Height;
+  selectFolderButton.Caption := '...';
+  selectFolderButton.Width := selectFolderButton.Height;
+  selectFolderButton.Left := dbedit.Left + dbedit.Width - selectFolderButton.Width;
+  dbedit.Width := dbedit.Width - selectFolderButton.Width - 5;
+  selectFolderButton.OnClick := OnSelectFolderClick;
+
+  folderNotExistsLabel := TLabel.Create(Self);
+  folderNotExistsLabel.Caption := 'Папка не существует и будет создана';
+  folderNotExistsLabel.Parent := Parents;
+  folderNotExistsLabel.Top := selectFolderButton.Top + selectFolderButton.Height + 10;
+  folderNotExistsLabel.Left := 10;
+  folderNotExistsLabel.Visible := False;
+  folderNotExistsLabel.Font.Color := clRed;
+end;
+
+procedure TConfigForm.WaybillUnloadingFolderChange(Sender: TObject);
+var
+  dirName : String;
+begin
+  dirName := dbeWaybillUnloadingFolder.Text;
+  dirName := GetFullFileNameByPrefix(dirName, RootFolder());
+  lWaybillUnloadingFolderNotExists.Visible := not DirectoryExists(dirName);
+end;
+
+procedure TConfigForm.SelectWaybillUnloadingFolderClick(Sender: TObject);
+var
+  DirName : String;
+begin
+  DirName := adsWaybillFolders.FieldByName('WaybillUnloadingFolder').AsString;
+  if DirName = '' then
+    DirName := '.'
+  else
+    DirName := GetFullFileNameByPrefix(DirName, RootFolder());
+
+  if FileCtrl.SelectDirectory(
+       'Выберите директорию для оригинальных накладных поставщика ' + adsWaybillFolders.FieldByName('FullName').AsString,
+       '',
+       DirName)
+  then begin
+    DirName := GetShortFileNameWithPrefix(DirName, RootFolder());
+    SoftEdit(adsWaybillFolders);
+    adsWaybillFolders.FieldByName('WaybillUnloadingFolder').AsString := DirName;
+  end;
 end;
 
 end.

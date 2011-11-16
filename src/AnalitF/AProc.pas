@@ -121,6 +121,10 @@ function RootFolder() : String;
 
 function ExceptionToString(E : Exception) : String;
 
+function GetShortFileNameByPrefix(fullName, prefixFolder : String) : String;
+function GetFullFileNameByPrefix(shortName, prefixFolder : String) : String;
+function GetShortFileNameWithPrefix(fullName, prefixFolder : String) : String;
+
 implementation
 
 uses
@@ -1262,6 +1266,27 @@ begin
     Result := Format('IdEx %s', [EIdException(E).Message])
   else
     Result := E.Message;
+end;
+
+function GetShortFileNameByPrefix(fullName, prefixFolder : String) : String;
+begin
+  Result := fullName;
+  if AnsiStartsText(prefixFolder, fullName) then
+    Result := Copy(fullName, Length(prefixFolder) + 1 , Length(fullName));
+end;
+
+function GetFullFileNameByPrefix(shortName, prefixFolder : String) : String;
+begin
+  Result := shortName;
+  if AnsiStartsText('.\', shortName) then
+    Result := prefixFolder + Copy(shortName, 3, Length(shortName));
+end;
+
+function GetShortFileNameWithPrefix(fullName, prefixFolder : String) : String;
+begin
+  Result := fullName;
+  if AnsiStartsText(prefixFolder, fullName) then
+    Result := '.\' + Copy(fullName, Length(prefixFolder) + 1 , Length(fullName));
 end;
 
 { TFileUpdateInfo }

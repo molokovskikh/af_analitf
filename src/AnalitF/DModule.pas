@@ -5,12 +5,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Db, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
-  FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox, 
+  FR_DBSet, FR_DCtrl, FR_RRect, FR_Chart, FR_Shape, FR_ChBox,
   frRtfExp, frexpimg, FR_E_HTML2, FR_E_TXT, FR_Rich,
 //  ActiveX,
-  CompactThread, Math, IdIcmpClient, 
+  CompactThread, Math, IdIcmpClient,
   incrt, hlpcodecs, StrUtils, RxMemDS,
-  Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders, 
+  Contnrs, SevenZip, infvercls, IdHashMessageDigest, IdSSLOpenSSLHeaders,
   U_UpdateDBThread, DateUtils, ShellAPI, IdHTTP,
   IdGlobal, FR_DSet, Menus, MyEmbConnection, DBAccess, MyAccess, MemDS,
   MyServerControl, DASQLMonitor, MyDacMonitor, MySQLMonitor, MyBackup, MyClasses,
@@ -23,7 +23,8 @@ uses
   KeyboardHelper,
   SupplierController,
   DayOfWeekHelper,
-  UserActions;
+  UserActions,
+  GlobalParams;
 
 {
 Криптование
@@ -521,6 +522,8 @@ type
     procedure ProcessDocs(ImportDocs : Boolean);
     //обрабатываем каждую конкретную папку
     procedure ProcessDocsDir(DirName : String; MaxFileDate : TDateTime; FileList : TStringList);
+    procedure ProcessWaybillsDir(DirName : String; MaxFileDate : TDateTime; FileList : TStringList);
+    function MoveWaybillToSupplierFolder(fullFileName : String) : String;
     procedure OpenDocsDir(DirName : String; FileList : TStringList; OpenEachFile : Boolean);
 
     //получить сумму заказа
@@ -2376,7 +2379,7 @@ begin
         MaxFileDate := IncSecond(adtReceivedDocs.FieldByName('FileDateTime').AsDateTime, - 1);
 
       ProcessDocsDir(SDirDocs, MaxFileDate, DocsFL);
-      ProcessDocsDir(SDirWaybills, MaxFileDate, WaybillsFL);
+      ProcessWaybillsDir(SDirWaybills, MaxFileDate, WaybillsFL);
       ProcessDocsDir(SDirRejects, MaxFileDate, RejectsFL);
 
       if ImportDocs then begin
@@ -2416,7 +2419,7 @@ var
 begin
   if DirectoryExists(RootFolder() + DirName) then begin
     try
-      if FindFirst( RootFolder() + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
+      if FindFirst( RootFolder() + DirName + '\*.*', faAnyFile - faDirectory, DocsSR) = 0 then
         repeat
           if (DocsSR.Name <> '.') and (DocsSR.Name <> '..')
           then begin
@@ -5599,6 +5602,94 @@ end;
 procedure TDM.frReportPrintReport;
 begin
   FReportPrinted := True;
+end;
+
+procedure TDM.ProcessWaybillsDir(DirName: String; MaxFileDate: TDateTime;
+  FileList: TStringList);
+var
+  DocsSR: TSearchRec;
+  CurrentFileDate : TDateTime;
+  groupWaybillsBySupplier : Boolean;
+  fullFillName,
+  insertFileName : String;
+begin
+  groupWaybillsBySupplier := TGlobalParamsHelper.GetParamDef(adtReceivedDocs.Connection, 'GroupWaybillsBySupplier', False);
+  if DirectoryExists(RootFolder() + DirName) then begin
+    try
+      if FindFirst( RootFolder() + DirName + '\*.*', faAnyFile - faDirectory, DocsSR) = 0 then
+        repeat
+          if (DocsSR.Name <> '.') and (DocsSR.Name <> '..')
+          then begin
+            CurrentFileDate := FileDateToDateTime(DocsSR.Time);
+            if CurrentFileDate > MaxFileDate then begin
+              fullFillName := RootFolder() + DirName + '\' + DocsSR.Name;
+
+              if groupWaybillsBySupplier then
+                fullFillName := MoveWaybillToSupplierFolder(fullFillName);
+
+              insertFileName := GetShortFileNameByPrefix(fullFillName, RootFolder());
+
+              if not adtReceivedDocs.Locate('FILENAME', insertFileName, [loCaseInsensitive]) then begin
+                adtReceivedDocs.Insert;
+                adtReceivedDocs['FILENAME'] := insertFileName;
+                adtReceivedDocs['FILEDATETIME'] := CurrentFileDate;
+                adtReceivedDocs.Post;
+                FileList.Add(fullFillName);
+              end;              
+            end;
+          end;
+        until (FindNext( DocsSR ) <> 0)
+    finally
+      SysUtils.FindClose( DocsSR );
+    end;
+  end;
+end;
+
+function TDM.MoveWaybillToSupplierFolder(fullFileName: String): String;
+var
+  _Index : Integer;
+  shortName,
+  downloadId,
+  WaybillUnloadingFolder : String;
+  folder : Variant;
+begin
+  Result := fullFileName;
+  shortName := ExtractFileName(fullFileName);
+  _Index := Pos('_', shortName);
+  if _Index > 1 then begin
+    downloadId := LeftStr(shortName, _Index-1);
+
+    folder := QueryValue('' +
+      ' select ps.WaybillUnloadingFolder from ' +
+      '    DocumentHeaders dh ' +
+      '    inner join ProviderSettings ps on ps.FirmCode = dh.FirmCode' +
+      ' where ' +
+      ' dh.DownloadId = :DownloadId',
+      ['DownloadId'],
+      [downloadId]);
+    if not VarIsNull(folder) and VarIsStr(folder) then begin
+      WaybillUnloadingFolder := folder;
+      if Length(WaybillUnloadingFolder) > 0 then begin
+        WaybillUnloadingFolder := GetFullFileNameByPrefix(WaybillUnloadingFolder, RootFolder());
+        if not DirectoryExists(WaybillUnloadingFolder) then
+          SysUtils.ForceDirectories(WaybillUnloadingFolder);
+          
+        Result :=
+          IncludeTrailingBackslash( WaybillUnloadingFolder )
+          + shortName;
+
+        if not SameFileName(fullFileName, Result) then
+          try
+            OSMoveFile(fullFileName, Result);
+          except
+            on E : Exception do begin
+              WriteExchangeLog('MoveWaybillToSupplierFolder', 'Ошибка: ' + ExceptionToString(e));
+              Result := fullFileName;
+            end
+          end;
+      end;
+    end;
+  end;
 end;
 
 initialization

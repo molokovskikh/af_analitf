@@ -15,6 +15,8 @@ type
     StoredUserId : String;
     LastDayOfWeek : String;
     UseProducerCostWithNDS : Boolean;
+    //Группировать оригиналные накладные по поставщику
+    GroupWaybillsBySupplier : Boolean;
     procedure ReadParams; override;
     procedure SaveParams; override;
   end;
@@ -28,6 +30,7 @@ begin
   StoredUserId := GetParamDef('StoredUserId', '');
   LastDayOfWeek := GetParamDef('LastDayOfWeek', '');
   UseProducerCostWithNDS := GetParamDef('UseProducerCostWithNDS', False);
+  GroupWaybillsBySupplier := GetParamDef('GroupWaybillsBySupplier', False);
 end;
 
 procedure TGlobalSettingParams.SaveParams;
@@ -35,6 +38,7 @@ begin
   SaveParam('StoredUserId', StoredUserId);
   SaveParam('LastDayOfWeek', LastDayOfWeek);
   SaveParam('UseProducerCostWithNDS', UseProducerCostWithNDS);
+  SaveParam('GroupWaybillsBySupplier', GroupWaybillsBySupplier);
   inherited;
 end;
 
