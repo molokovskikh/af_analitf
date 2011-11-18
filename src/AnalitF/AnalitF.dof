@@ -117,7 +117,7 @@ AutoIncBuild=1
 MajorVer=7
 MinorVer=6
 Release=15
-Build=1596
+Build=1600
 Debug=0
 PreRelease=0
 Special=0
@@ -128,7 +128,7 @@ CodePage=1251
 [Version Info Keys]
 CompanyName=Инфорум
 FileDescription=Клиентское приложения для работы с базой АналитФАРМАЦИЯ
-FileVersion=7.6.15.1596
+FileVersion=7.6.15.1600
 InternalName=AnalitF
 LegalCopyright=© AK "Инфорум", 2003-2010
 LegalTrademarks=Инфорум

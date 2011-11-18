@@ -902,7 +902,7 @@ var
 begin
 {$ifdef USEMEMORYCRYPTDLL}
   //Блокируем использование MemoryLib, т.к. оно не работает
-  DatabaseController.DisableMemoryLib();
+  //DatabaseController.DisableMemoryLib();
 {$endif}
   SetNetworkSettings;
 
@@ -1989,6 +1989,7 @@ begin
         DBVersion := 80;
       end;
 }
+{
       if DBVersion = 80 then begin
         if NeedUpdateToNewCryptLibMySqlD then begin
           RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlD1567, nil);
@@ -1998,8 +1999,9 @@ begin
           DBVersion := CURRENT_DB_VERSION;
         end;
       end;
+}
 
-      if DBVersion = 81 then begin
+      if DBVersion = 80 then begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 82;
       end;
@@ -2183,10 +2185,12 @@ begin
     realDBVersion := '61'
   else
     realDBVersion := IntToStr(CURRENT_DB_VERSION);
+{
   if NeedUpdateToNewCryptLibMySqlD then
     realDBVersion := '80'
   else
     realDBVersion := IntToStr(CURRENT_DB_VERSION);
+}    
 
   Result := DatabaseController.GetFullLastCreateScript(realDBVersion);
 end;
@@ -3644,10 +3648,8 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
-{
-    if AnsiCompareText(calchash, 'AED5143566D4AF9180D000E83E9AD868') <> 0 then
+    if AnsiCompareText(calchash, 'B96036E9548DA25E17FC79B3E3CAF6A2') <> 0 then
       raise Exception.Create('Невозможно загрузить библиотеку libmysqld.dll.');
-}      
   except
     on E : Exception do begin
       LogExitError(
@@ -5367,19 +5369,35 @@ begin
 end;
 
 procedure TDM.PrepareUpdateToNewCryptLibMySqlD;
+var
+  DocsSR: TSearchRec;
 begin
   try
-    if DirectoryExists(ExePath + SDirDataPrev) then
-      MoveDirectories(ExePath + SDirDataPrev, ExePath + SBackDir + '\' + SDirDataPrev);
-    if DirectoryExists(ExePath + SDirData) then begin
-      CopyDirectories(ExePath + SDirData, ExePath + SBackDir + '\' + SDirData);
-      MoveDirectories(ExePath + SDirData, ExePath + SDirData + 'Old');
+    if not DirectoryExists(ExePath + 'Frf') then
+      SysUtils.ForceDirectories(ExePath + 'Frf');
+
+    try
+      if FindFirst( ExePath+ '*.frf', faAnyFile - faDirectory, DocsSR) = 0 then
+        repeat
+          if (DocsSR.Name <> '.') and (DocsSR.Name <> '..')
+          then begin
+            try
+              OSCopyFile(ExePath + DocsSR.Name, ExePath + SBackDir + '\' + DocsSR.Name + '.bak');
+              OSMoveFile(ExePath + DocsSR.Name, ExePath + 'Frf' + '\' + DocsSR.Name);
+            except
+              on E : Exception do
+                WriteExchangeLog('PrepareUpdateToNewCryptLibMySqlD', 'Ошибка: ' + E.Message);
+            end;
+          end;
+        until (FindNext( DocsSR ) <> 0)
+    finally
+      SysUtils.FindClose( DocsSR );
     end;
   except
     on E : Exception do begin
-      LogCriticalError('Ошибка при удалении устаревших директорий при обновлении на новую libd: ' + E.Message);
+      LogCriticalError('Ошибка при перемещении шаблонов отчетов: ' + E.Message);
       LogExitError(
-        'Невозможно удалить устаревшие директории.'#13#10
+        'Невозможно переместить шаблоны отчетов.'#13#10
         + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
         Integer(ecDeleteOldMysqlFolder));
     end

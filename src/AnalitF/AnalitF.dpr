@@ -163,7 +163,7 @@ uses
 {$R Progress.RES}
 {$R Icons.RES}
 {$R Bitmaps.RES}
-{$R CompareScript81.RES}
+{$R CompareScript80.RES}
 
 var
   B : TWebBrowser;
