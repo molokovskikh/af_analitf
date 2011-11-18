@@ -171,6 +171,10 @@ begin
   Result := False;
 
   updateItem := GetUpdateCheckItem();
+  if IsPreviosDayUpdate() then begin
+    updateItem.Hour := 0;
+    updateItem.Minute := 0;
+  end;
   currentItem := GetCurrentCheckItem();
   
   for I := 0 to FSchedules.Count-1 do begin
