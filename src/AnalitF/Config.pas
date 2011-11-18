@@ -10,7 +10,8 @@ uses
   DatabaseObjects,
   NetworkParams,
   NetworkSettings,
-  GlobalSettingParams;
+  GlobalSettingParams,
+  U_ExchangeLog;
 
 type
   TConfigChange = (ccOk, ccHTTPName, ccHTTPPassword, ccHTTPHost);
@@ -159,6 +160,7 @@ type
       var labelInfo : TLabel;
       var edit : TEdit;
       LabelCaption : String);
+    procedure CreateFolders();
   protected
     tsEditAddress : TTabSheet;
     frameEditAddress : TframeEditAddress;
@@ -302,6 +304,7 @@ begin
           SoftPost(adsWaybillFolders);
           adsWaybillFolders.ApplyUpdates;
           DatabaseController.BackupDataTable(doiProviderSettings);
+          CreateFolders();
         end;
 
         DM.adtParams.FieldByName('RasEntry').AsString := cbRas.Items[cbRas.ItemIndex];
@@ -317,7 +320,7 @@ begin
               [NewPass,
               CryptNewPass,
               DM.adtParams.FieldByName('HTTPPass').AsString]));
-}              
+}
         end;
         if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
           Result := Result + [ccHTTPName];
@@ -820,9 +823,6 @@ begin
       nextTop := lFolderNotExists.Top + lFolderNotExists.Height + 10;
     end;
 
-
-
-
     if GetNetworkSettings().IsNetworkVersion then begin
 
       AddControlsToChangeFolder(
@@ -838,29 +838,6 @@ begin
         SelectOrderFolderClick,
         lOrderFolderNotExists
       );
-{
-      AddLabelAndDBEdit(gbWaybillFolders, dsWaybillFolders, nextTop, lOrderFolder, dbeOrderFolder, 'Папка для внешних заказов:', 'OrderFolder');
-      dbeOrderFolder.OnChange := OrderFolderChange;
-
-      sbSelectOrderFolder := TSpeedButton.Create(Self);
-      sbSelectOrderFolder.Parent := gbWaybillFolders;
-      sbSelectOrderFolder.Anchors := [akTop, akRight];
-      sbSelectOrderFolder.Top := dbeOrderFolder.Top;
-      sbSelectOrderFolder.Height := dbeOrderFolder.Height;
-      sbSelectOrderFolder.Caption := '...';
-      sbSelectOrderFolder.Width := sbSelectOrderFolder.Height;
-      sbSelectOrderFolder.Left := dbeOrderFolder.Left + dbeOrderFolder.Width - sbSelectOrderFolder.Width;
-      dbeOrderFolder.Width := dbeOrderFolder.Width - sbSelectOrderFolder.Width - 5;
-      sbSelectOrderFolder.OnClick := SelectOrderFolderClick;
-
-      lOrderFolderNotExists := TLabel.Create(Self);
-      lOrderFolderNotExists.Caption := 'Папка не существует';
-      lOrderFolderNotExists.Parent := gbWaybillFolders;
-      lOrderFolderNotExists.Top := sbSelectOrderFolder.Top + sbSelectOrderFolder.Height + 10;
-      lOrderFolderNotExists.Left := 10;
-      lOrderFolderNotExists.Visible := False;
-      lOrderFolderNotExists.Font.Color := clRed;
-}      
     end;
   end
   else
@@ -1090,6 +1067,57 @@ begin
     DirName := GetShortFileNameWithPrefix(DirName, RootFolder());
     SoftEdit(adsWaybillFolders);
     adsWaybillFolders.FieldByName('WaybillUnloadingFolder').AsString := DirName;
+  end;
+end;
+
+procedure TConfigForm.CreateFolders;
+
+  procedure AddFolder(ProviderName, DirName, FolderName : String);
+  begin
+    try
+      if not SysUtils.DirectoryExists(DirName) then
+        if not SysUtils.ForceDirectories(DirName) then
+          RaiseLastOSError;
+    except
+      on E : Exception do
+        WriteExchangeLog('CreateFolders',
+          Format('Не получилось создать %s для поставщика %s: %s',
+            [FolderName,
+            ProviderName,
+            ExceptionToString(E)]));
+    end;
+  end;
+
+begin
+  adsWaybillFolders.First;
+  while not adsWaybillFolders.Eof do begin
+    if FGlobalSettingParams.GroupWaybillsBySupplier
+      and (Length(adsWaybillFolders.FieldByName('WaybillUnloadingFolder').AsString) > 0)
+    then
+      AddFolder(
+        adsWaybillFolders.FieldByName('FullName').AsString,
+        GetFullFileNameByPrefix(adsWaybillFolders.FieldByName('WaybillUnloadingFolder').AsString, RootFolder()),
+        'папку для оригинальных накладных'
+      );
+
+    if DM.adsUser.FieldByName('SendWaybillsFromClient').AsBoolean
+      and (Length(adsWaybillFolders.FieldByName('WaybillFolder').AsString) > 0)
+    then
+      AddFolder(
+        adsWaybillFolders.FieldByName('FullName').AsString,
+        GetFullFileNameByPrefix(adsWaybillFolders.FieldByName('WaybillFolder').AsString, RootFolder()),
+        'папку для загрузки накладных'
+      );
+
+    if GetNetworkSettings().IsNetworkVersion
+      and (Length(adsWaybillFolders.FieldByName('OrderFolder').AsString) > 0)
+    then
+      AddFolder(
+        adsWaybillFolders.FieldByName('FullName').AsString,
+        adsWaybillFolders.FieldByName('OrderFolder').AsString,
+        'папку для внешних заказов'
+      );
+    adsWaybillFolders.Next;  
   end;
 end;
 

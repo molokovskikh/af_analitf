@@ -341,7 +341,6 @@ begin
   ModifiedActions        := TObjectList.Create(True);
   inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
-  PatchNonBrowser;
 end;
 
 function TChildForm.CheckVolume: Boolean;
@@ -427,6 +426,7 @@ begin
   ShowDescriptionAction := nil;
   ShowDescriptionActionByF1 := nil;
   PatchMyDataSets;
+  PatchNonBrowser;
   if Assigned(dsCheckVolume) and Assigned(dgCheckVolume) and Assigned(fOrder)
      and Assigned(fVolume) and Assigned(fOrderCost) and Assigned(fSumOrder) and Assigned(fMinOrderCount)
   then begin
