@@ -539,6 +539,7 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.DisableMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -614,16 +615,19 @@
 			/>
 			<Procedure
 				MapAddress="TMySQLAPIEmbedded.SwitchMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.DisableMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDatabaseController.SwitchMemoryLib"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -649,16 +653,19 @@
 			/>
 			<Procedure
 				MapAddress="TDM.ExportFromOldLibMysqlDToFiles1567"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDM.ImportOldLibMysqlDFilesToMySql1567"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
 			<Procedure
 				MapAddress="TDM.UpdateToNewLibMySqlD1567"
+				IncludedInCompilation="false"
 				Folder="0"
 				CompilationType="2"
 			/>
@@ -666,10 +673,6 @@
 	</Protection>
 	<Script
 	/>
-	<DLLBox>
-		<DLL
-			Name="libmysqld.dll"
-			FileName="..\EMKBuilds\libmysqld.dll"
-		/>
-	</DLLBox>
+	<DLLBox
+	/>
 </Document>
