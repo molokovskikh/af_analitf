@@ -12,15 +12,25 @@ uses
   DatabaseObjects,
   GeneralDatabaseObjects;
 
+{$ifdef USEMEMORYCRYPTDLL}
+  {$ifndef USENEWMYSQLTYPES}
+    {$define USENEWMYSQLTYPES}
+  {$endif}
+{$endif}
+  
 type
   TTestLoadData = class(TTestCase)
    private
     function GetConnection : TCustomMyConnection;
+    procedure DeleteDataFolder;
+    procedure TestOpen();
    published
     procedure CreateDB;
     procedure LoadData;
     procedure LoadDataWithTruncate;
     procedure LoadDataWithDelete;
+    procedure LoadDataInMain;
+    procedure LoadDataInThread;
   end;
 
 implementation
@@ -56,6 +66,11 @@ begin
   finally
     connection.Free;
   end;
+end;
+
+procedure TTestLoadData.DeleteDataFolder;
+begin
+  DeleteDataDir(ExePath + SDirData);
 end;
 
 function TTestLoadData.GetConnection: TCustomMyConnection;
@@ -154,6 +169,32 @@ begin
   finally
     connection.Free;
   end;
+end;
+
+procedure TTestLoadData.LoadDataInMain;
+var
+  I : Integer;
+begin
+  DeleteDataFolder;
+
+  for I := 0 to 4 do begin
+    try
+      Self.Status('try open : ' + IntToStr(i));
+      TestOpen();
+      Self.Status('success open : ' + IntToStr(i));
+    except
+      on E : Exception do begin
+        Self.Status('Получили ошибку после вызова UpdateDB(): ' + ExceptionToString(E));
+        DatabaseController.FreeMySQLLib('MySql Clients Count после ошибки');
+
+      end;
+    end;
+  end;
+end;
+
+procedure TTestLoadData.LoadDataInThread;
+begin
+  DeleteDataFolder;
 end;
 
 procedure TTestLoadData.LoadDataWithDelete;
@@ -296,6 +337,23 @@ begin
       finally
         exec.Free;
       end;
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestLoadData.TestOpen;
+var
+  connection : TCustomMyConnection;
+begin
+  connection := GetConnection();
+  try
+    connection.Open;
+    try
+      connection.ExecSQL('select Id from analitf.params', []);
     finally
       connection.Close;
     end;
