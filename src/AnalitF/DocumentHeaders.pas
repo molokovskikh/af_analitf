@@ -176,10 +176,15 @@ begin
   dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
   dtpDateTo.Date := Date;
 
-  rgColumn.ItemIndex := TGlobalParamsHelper.GetParamDef(
-    DM.MainConnection,
-    'DocumentFilterColumn',
-    0);
+  rgColumn.OnClick := nil;
+  try
+    rgColumn.ItemIndex := TGlobalParamsHelper.GetParamDef(
+      DM.MainConnection,
+      'DocumentFilterColumn',
+      0);
+  finally
+    rgColumn.OnClick := rgColumnClick;
+  end;
 
   ShowHeaders;
   tmrProcessWaybils.Enabled := True;
@@ -491,6 +496,9 @@ var
   supplierFilter : String;
   sl : TStringList;
 begin
+  DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := '';
+
   adsDocumentHeaders.Close;
 
   adsDocumentHeaders.SQL.Text := shDocumentHeaders.Strings.Text;
@@ -507,6 +515,10 @@ begin
     adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' and ' + supplierFilter + ' '#13#10;
 
+  DM.adsQueryValue.SQL.Text := adsDocumentHeaders.SQL.Text
+      + #13#10' and (dh.DocumentType = 1) and (dh.RetailAmountCalculated is null or dh.RetailAmountCalculated = 0) '
+      + #13#10' group by dh.Id '
+      + #13#10' order by dh.LoadTime DESC ';
   adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' group by dh.Id '
       + #13#10' order by dh.LoadTime DESC ';
@@ -519,30 +531,36 @@ begin
 
   adsDocumentHeaders.Open;
 
-  adsDocumentHeaders.DisableControls;
-  sl := TStringList.Create;
-  try
-    while not adsDocumentHeaders.Eof do begin
-      if not adsDocumentHeadersRetailAmountCalculated.Value
-        and (adsDocumentHeadersDocumentType.Value = 1)
-      then
-        sl.Add(adsDocumentHeadersId.AsString);
-      adsDocumentHeaders.Next;
-    end;
-    adsDocumentHeaders.First;
+  DM.adsQueryValue.ParamByName( 'ClientId').Value :=
+    adsDocumentHeaders.ParamByName( 'ClientId').Value;
+  DM.adsQueryValue.ParamByName( 'DateFrom').AsDate :=
+    adsDocumentHeaders.ParamByName( 'DateFrom').AsDate;
+  DM.adsQueryValue.ParamByName( 'DateTo').AsDateTime :=
+    adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime;
 
-    if sl.Count > 0 then begin
-      csProcessedList.Enter;
-      try
-        ProcessedList.Clear();
-        ProcessedList.Assign(sl);
-      finally
-        csProcessedList.Leave;
+  DM.adsQueryValue.Open;
+  try
+    sl := TStringList.Create;
+    try
+      while not DM.adsQueryValue.Eof do begin
+        sl.Add(DM.adsQueryValue.FieldByName('Id').AsString);
+        DM.adsQueryValue.Next;
       end;
+
+      if sl.Count > 0 then begin
+        csProcessedList.Enter;
+        try
+          ProcessedList.Clear();
+          ProcessedList.Assign(sl);
+        finally
+          csProcessedList.Leave;
+        end;
+      end;
+    finally
+      sl.Free;
     end;
   finally
-    adsDocumentHeaders.EnableControls;
-    sl.Free;
+    DM.adsQueryValue.Close;
   end;
 end;
 
