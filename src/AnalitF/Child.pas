@@ -339,8 +339,8 @@ begin
   FShowSupplierCost := DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean;
 
   ModifiedActions        := TObjectList.Create(True);
-  inherited;
   DBComponentWindowProcs := TObjectList.Create(True);
+  inherited;
 end;
 
 function TChildForm.CheckVolume: Boolean;
