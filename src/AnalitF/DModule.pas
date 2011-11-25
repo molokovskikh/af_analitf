@@ -579,7 +579,7 @@ type
 
     function NeedShowCertificatesResults() : Boolean;
 
-    procedure OpenCertificateFiles(certificateId : Int64);
+    function OpenCertificateFiles(certificateId : Int64) : Integer;
 
     function ShowCertificatesResults() : String;
 
@@ -5249,6 +5249,7 @@ end;
 function TDM.NeedShowCertificatesResults: Boolean;
 var
   updateRecord : Integer;
+  openedFiles : Integer;
 begin
   updateRecord := DBProc.UpdateValue(
     MainConnection,
@@ -5259,13 +5260,21 @@ begin
     []);
 
   if updateRecord > 0 then begin
+    openedFiles := 0;
     adsQueryValue.Close;
     adsQueryValue.SQL.Text := 'select CertificateId from CertificateRequests where CertificateId is not null';
     adsQueryValue.Open;
     try
       while not adsQueryValue.Eof do begin
-        OpenCertificateFiles(TLargeintField(adsQueryValue.FieldByName('CertificateId')).Value);
+        openedFiles := openedFiles + OpenCertificateFiles(TLargeintField(adsQueryValue.FieldByName('CertificateId')).Value);
         adsQueryValue.Next;
+
+        if (openedFiles >= 10) and not adsQueryValue.Eof then begin
+          AProc.MessageBox(
+            Format('Автоматически открыты первые %d файлов сертификатов.'#13#10'Остальные сертификаты можно открыть из накладных', [openedFiles]),
+            MB_ICONINFORMATION);
+          Break;
+        end;
       end;
     finally
       adsQueryValue.Close;
@@ -5282,11 +5291,13 @@ begin
   Result := updateRecord > 0;
 end;
 
-procedure TDM.OpenCertificateFiles(certificateId: Int64);
+function TDM.OpenCertificateFiles(certificateId: Int64) : Integer;
 var
   id : Int64;
   fileName : String;
 begin
+  Result := 0;
+
   adcUpdate.Close;
   adcUpdate.SQL.Text := '' +
     'select cf.Id, cf.OriginFilename, cf.ExternalFileId, cf.CertificateSourceId, cf.Extension from ' +
@@ -5300,8 +5311,10 @@ begin
     while not adcUpdate.Eof do begin
       id := TLargeintField(adcUpdate.FieldByName('Id')).Value;
       fileName := RootFolder() + SDirCertificates + '\' + IntToStr(id) + adcUpdate.FieldByName('Extension').AsString;
-      if (FileExists(fileName)) then
+      if (FileExists(fileName)) then begin
         FileExecute(fileName);
+        Inc(Result); 
+      end;
       adcUpdate.Next;
     end;
   finally
