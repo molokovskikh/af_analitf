@@ -21,6 +21,7 @@ def PrepareCfg(buildName as string):
 	File.Delete(".\\src\\AnalitF\\AnalitF_tmp.cfg") if File.Exists(".\\src\\AnalitF\\AnalitF_tmp.cfg")
 	File.Move(".\\src\\AnalitF\\AnalitF.cfg", ".\\src\\AnalitF\\AnalitF_tmp.cfg")
 	File.Copy(".\\src\\AnalitF\\AnalitF_${buildName}.cfg", ".\\src\\AnalitF\\AnalitF.cfg")
+	Rm(FileSet("*.*", BaseDirectory : ".\\src\\AnalitF\\unit"))
 
 def RestoreCfg():
 	if (File.Exists(".\\src\\AnalitF\\AnalitF_tmp.cfg")):
