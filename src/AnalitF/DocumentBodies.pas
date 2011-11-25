@@ -97,6 +97,7 @@ type
     adsDocumentBodiesRequestCertificate: TBooleanField;
     adsDocumentBodiesCertificateId: TLargeintField;
     adsDocumentBodiesDocumentBodyId: TLargeintField;
+    tmrShowCertificateWarning: TTimer;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -122,6 +123,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure adsDocumentBodiesCertificateIdGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
+    procedure adsDocumentBodiesRequestCertificateValidate(Sender: TField);
+    procedure tmrShowCertificateWarningTimer(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -2172,6 +2175,24 @@ procedure TDocumentBodiesForm.WaybillCellClick(Column: TColumnEh);
 begin
   if (Column.Field = adsDocumentBodiesCertificateId) and not adsDocumentBodiesCertificateId.IsNull then
     DM.OpenCertificateFiles(adsDocumentBodiesCertificateId.Value);
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesRequestCertificateValidate(
+  Sender: TField);
+begin
+  if Sender.AsBoolean then
+    if not DM.CertificateSourceExists(adsDocumentBodiesId.Value) then begin
+      tmrShowCertificateWarning.Enabled := False;
+      tmrShowCertificateWarning.Enabled := true;
+      Abort;
+    end;
+end;
+
+procedure TDocumentBodiesForm.tmrShowCertificateWarningTimer(
+  Sender: TObject);
+begin
+  tmrShowCertificateWarning.Enabled := False;
+  DM.ShowCertificateWarning();
 end;
 
 end.

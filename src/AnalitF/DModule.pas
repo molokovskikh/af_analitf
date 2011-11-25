@@ -582,6 +582,9 @@ type
     procedure OpenCertificateFiles(certificateId : Int64);
 
     function ShowCertificatesResults() : String;
+
+    function CertificateSourceExists(documentBodyId : Int64) : Boolean;
+    procedure ShowCertificateWarning();
   end;
 
 var
@@ -5704,6 +5707,37 @@ begin
       end;
     end;
   end;
+end;
+
+function TDM.CertificateSourceExists(documentBodyId : Int64): Boolean;
+var
+  sourceExists : Variant;
+begin
+  Result := False;
+  if DM.adsUser.FieldByName('ShowCertificatesWithoutRefSupplier').AsBoolean then
+    Result := True
+  else begin
+    sourceExists := DM.QueryValue(
+      'select providers.FirmCode from '
+        + ' DocumentBodies db, '
+        + ' DocumentHeaders dh, '
+        + ' providers '
+        + ' where '
+        + '  db.id = :DocumentBodyId '
+        + '  and dh.Id = db.DocumentId '
+        + '  and providers.FirmCode = dh.FirmCode '
+        + '  and providers.CertificateSourceExists = 1 ',
+      ['DocumentBodyId'], [documentBodyId]);
+    if not VarIsNull(sourceExists) then
+      Result := True
+    else
+      Result := False;
+  end;
+end;
+
+procedure TDM.ShowCertificateWarning;
+begin
+  AProc.MessageBox('Данный поставщик не предоставляет сертификаты в АК Инфорум.'#13#10'Обратитесь к поставщику.', MB_ICONWARNING);
 end;
 
 initialization

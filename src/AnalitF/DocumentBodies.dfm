@@ -665,6 +665,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesRequestCertificate: TBooleanField
       FieldName = 'RequestCertificate'
       OnChange = adsDocumentBodiesPrintedChange
+      OnValidate = adsDocumentBodiesRequestCertificateValidate
     end
     object adsDocumentBodiesCertificateId: TLargeintField
       FieldName = 'CertificateId'
@@ -725,5 +726,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     DataSet = adsDocumentHeaders
     Left = 272
     Top = 219
+  end
+  object tmrShowCertificateWarning: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrShowCertificateWarningTimer
+    Left = 376
+    Top = 167
   end
 end

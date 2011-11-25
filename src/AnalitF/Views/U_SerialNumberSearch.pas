@@ -29,6 +29,7 @@ type
     adsSerialNumberSearchId: TLargeintField;
     tmrPrintedChange: TTimer;
     spDelete: TSpeedButton;
+    tmrShowCertificateWarning: TTimer;
     procedure FormHide(Sender: TObject);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -54,6 +55,9 @@ type
       State: TGridDrawState);
     procedure dbgSerialNumberSearchCellClick(Column: TColumnEh);
     procedure dbgSerialNumberSearchSortMarkingChanged(Sender: TObject);
+    procedure tmrShowCertificateWarningTimer(Sender: TObject);
+    procedure adsSerialNumberSearchRequestCertificateValidate(
+      Sender: TField);
   private
     { Private declarations }
     InternalSearchText : String;
@@ -333,6 +337,24 @@ procedure TSerialNumberSearchForm.dbgSerialNumberSearchSortMarkingChanged(
   Sender: TObject);
 begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TSerialNumberSearchForm.tmrShowCertificateWarningTimer(
+  Sender: TObject);
+begin
+  tmrShowCertificateWarning.Enabled := False;
+  DM.ShowCertificateWarning();
+end;
+
+procedure TSerialNumberSearchForm.adsSerialNumberSearchRequestCertificateValidate(
+  Sender: TField);
+begin
+  if Sender.AsBoolean then
+    if not DM.CertificateSourceExists(adsSerialNumberSearchId.Value) then begin
+      tmrShowCertificateWarning.Enabled := False;
+      tmrShowCertificateWarning.Enabled := true;
+      Abort;
+    end;
 end;
 
 end.

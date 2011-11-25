@@ -168,6 +168,7 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
     object adsSerialNumberSearchRequestCertificate: TBooleanField
       FieldName = 'RequestCertificate'
       OnChange = adsSerialNumberSearchRequestCertificateChange
+      OnValidate = adsSerialNumberSearchRequestCertificateValidate
     end
     object adsSerialNumberSearchCertificateId: TLargeintField
       FieldName = 'CertificateId'
@@ -186,5 +187,12 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
     OnTimer = tmrPrintedChangeTimer
     Left = 248
     Top = 76
+  end
+  object tmrShowCertificateWarning: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrShowCertificateWarningTimer
+    Left = 304
+    Top = 79
   end
 end
