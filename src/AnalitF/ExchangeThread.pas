@@ -4247,9 +4247,11 @@ end;
 
 procedure TExchangeThread.ImportCertificates;
 begin
+  //Очищаем таблицу с логом запроса сертификата
+  DM.adcUpdate.SQL.Text:='truncate CertificateRequests;';
+  InternalExecute;
+
   if (GetFileSize(RootFolder()+SDirIn+'\CertificateRequests.txt') > 0) then begin
-    DM.adcUpdate.SQL.Text:='truncate CertificateRequests;';
-    InternalExecute;
     DM.adcUpdate.SQL.Text := GetLoadDataSQL('CertificateRequests', RootFolder()+SDirIn+'\CertificateRequests.txt', true);
     InternalExecute;
   end;
