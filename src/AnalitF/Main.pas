@@ -821,15 +821,20 @@ begin
 
     if not SaveGridFlag then
       Exit;
-      
-    ParentForm := GetParentForm(Screen.ActiveControl);
-    if Assigned(ParentForm) then
-      DBGirdName := ParentForm.Name + '.' + TCustomDBGridEh(Screen.ActiveControl).Name
-    else
-      DBGirdName := TCustomDBGridEh(Screen.ActiveControl).Name;
-    AProc.LogCriticalError('SE.' + DBGirdName + ' : ' + BoolToStr(SaveGridFlag) );
-    
-    TDBGridHelper.SaveGrid( TCustomDBGridEh( Screen.ActiveControl ) );
+
+    if Assigned(TCustomDBGridEh(Screen.ActiveControl).DataSource)
+      and Assigned(TCustomDBGridEh(Screen.ActiveControl).DataSource.DataSet)
+      and TCustomDBGridEh(Screen.ActiveControl).DataSource.DataSet.Active
+    then begin
+      ParentForm := GetParentForm(Screen.ActiveControl);
+      if Assigned(ParentForm) then
+        DBGirdName := ParentForm.Name + '.' + TCustomDBGridEh(Screen.ActiveControl).Name
+      else
+        DBGirdName := TCustomDBGridEh(Screen.ActiveControl).Name;
+      AProc.LogCriticalError('SE.' + DBGirdName + ' : ' + BoolToStr(SaveGridFlag) );
+
+      TDBGridHelper.SaveGrid( TCustomDBGridEh( Screen.ActiveControl ) );
+    end;
   end;
 end;
 

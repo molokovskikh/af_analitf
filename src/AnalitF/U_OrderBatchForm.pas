@@ -20,6 +20,7 @@ uses
   ActnList,
   ShellAPI,
   StrUtils,
+  Fr_class,
   rxStrUtils,
   AlphaUtils,
   U_framePosition,
@@ -151,6 +152,11 @@ type
     procedure CoreGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
 
+    procedure dbgOrderBatchOnEnter(Sender: TObject);
+    procedure dbgOrderBatchOnExit(Sender: TObject);
+    procedure dbgCoreOnEnter(Sender: TObject);
+    procedure dbgCoreOnExit(Sender: TObject);
+
     procedure SaveReportToFile(FileName : String);
     procedure SaveExcelReportToFile(FileName : String);
   public
@@ -222,7 +228,9 @@ type
     PriceNameField : TStringField;
     RealCostField : TFloatField;
     CostField : TFloatField;
+    PrintCostField : TFloatField;
     RetailSummField : TFloatField;
+    SumOrderField : TFloatField;
     DescriptionIdField : TLargeintField;
     CatalogVitallyImportantField : TSmallintField;
     CatalogMandatoryListField : TSmallintField;
@@ -236,6 +244,7 @@ type
     frameFilterAddresses : TframeFilterAddresses;
 
     procedure ShowForm; override;
+    procedure Print( APreview: boolean = False); override;
   end;
 
 var
@@ -377,9 +386,12 @@ begin
   dbgCore.Name := 'dbgCore';
   dbgCore.Parent := pBottom;
   dbgCore.Align := alClient;
-  dbgCore.Tag := 16384;
+  dbgCore.Tag := 32;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgCore);
   dbgCore.OnGetCellParams := CoreGetCellParams;
+  dbgCore.OnEnter := dbgCoreOnEnter;
+  dbgCore.OnExit := dbgCoreOnExit;
+
 
   TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
   TDBGridHelper.AddColumn(dbgCore, 'SynonymFirm', 'Производитель', 85);
@@ -462,6 +474,8 @@ begin
   dbgOrderBatch.InputField := 'OrderCount';
   //dbgOrderBatch.Tag := 4194304;
   dbgOrderBatch.Tag := 256;
+  dbgOrderBatch.OnEnter := dbgOrderBatchOnEnter;
+  dbgOrderBatch.OnExit := dbgOrderBatchOnExit;
 
 
   TDBGridHelper.AddColumn(dbgOrderBatch, 'SimpleStatus', 'Заказано', 0);
@@ -573,7 +587,9 @@ begin
   PriceNameField := TDataSetHelper.AddStringField(adsReport, 'PriceName');
   RealCostField := TDataSetHelper.AddFloatField(adsReport, 'RealCost');
   CostField := TDataSetHelper.AddFloatField(adsReport, 'Cost');
+  PrintCostField := TDataSetHelper.AddFloatField(adsReport, 'PrintCost');
   RetailSummField := TDataSetHelper.AddFloatField(adsReport, 'RetailSumm');
+  SumOrderField := TDataSetHelper.AddFloatField(adsReport, 'SumOrder');
 
   DescriptionIdField := TDataSetHelper.AddLargeintField(adsReport, 'DescriptionId');
   CatalogVitallyImportantField := TDataSetHelper.AddSmallintField(adsReport, 'CatalogVitallyImportant');
@@ -1393,6 +1409,46 @@ begin
     if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
       Background := AWAIT_CLR;
   end;
+end;
+
+procedure TOrderBatchForm.Print(APreview: boolean);
+begin
+  if dbgCore.Focused then begin
+    if adsCore.Active then begin
+      frVariables[ 'UseForms'] := True;
+      frVariables[ 'NewSearch'] := True;
+      frVariables[ 'CatalogName'] := framePosition.dbtSynonymName.Caption;
+      frVariables[ 'CatalogForm'] := '';
+      DM.ShowFastReport( 'Core.frf', adsCore, APreview);
+    end;
+  end
+  else
+    if dbgOrderBatch.Focused and adsReport.Active then begin
+      frVariables[ 'SymmaryType'] := 0;
+      frVariables[ 'SymmaryDateFrom'] := DateToStr(Now);
+      frVariables[ 'SymmaryDateTo'] := DateToStr(Now);
+      DM.ShowFastReport( 'Summary.frf', adsReport, APreview);
+    end;
+end;
+
+procedure TOrderBatchForm.dbgCoreOnEnter(Sender: TObject);
+begin
+  PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
+end;
+
+procedure TOrderBatchForm.dbgCoreOnExit(Sender: TObject);
+begin
+  PrintEnabled := False;
+end;
+
+procedure TOrderBatchForm.dbgOrderBatchOnEnter(Sender: TObject);
+begin
+  PrintEnabled := (DM.SaveGridMask and PrintCurrentSummaryOrder) > 0;
+end;
+
+procedure TOrderBatchForm.dbgOrderBatchOnExit(Sender: TObject);
+begin
+  PrintEnabled := False;
 end;
 
 initialization

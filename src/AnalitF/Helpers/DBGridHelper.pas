@@ -96,7 +96,11 @@ end;
 
 class procedure TDBGridHelper.CopyGridToClipboard(Grid: TCustomDBGridEh);
 begin
-  DBGridEh_DoCopyAction(Grid, True);
+  if Assigned(Grid.DataSource)
+    and Assigned(Grid.DataSource.DataSet)
+    and Grid.DataSource.DataSet.Active
+  then
+    DBGridEh_DoCopyAction(Grid, True);
 end;
 
 class function TDBGridHelper.ExtractWord(N: Integer; const S: string;
