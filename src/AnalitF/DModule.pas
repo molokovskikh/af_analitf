@@ -5271,7 +5271,7 @@ begin
 
         if (openedFiles >= 10) and not adsQueryValue.Eof then begin
           AProc.MessageBox(
-            Format('Автоматически открыты первые %d файлов сертификатов.'#13#10'Остальные сертификаты можно открыть из накладных', [openedFiles]),
+            Format('Автоматически открыты первые %d файлов сертификатов.'#13#10'Остальные сертификаты можно открыть из накладных.', [openedFiles]),
             MB_ICONINFORMATION);
           Break;
         end;
