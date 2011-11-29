@@ -1248,7 +1248,7 @@ procedure TMinPricesForm.eSearchNameKeyPress(Sender: TObject;
   var Key: Char);
 begin
   tmrSearch.Enabled := False;
-  AddKeyToSearch(Key);
+  AddKeyToSearchName(Key);
   //Если мы что-то нажали в элементе, то должны на это отреагировать
   if Ord(Key) <> VK_RETURN then
     tmrSearch.Enabled := True;
