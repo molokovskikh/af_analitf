@@ -43,6 +43,150 @@ const
 
   BackupFileFlag = 'IsAnalitF.bak';
 
+
+//mysql server errors
+  ER_TABLE_NEEDS_UPGRADE = 1035;
+
+//Embedded mysql server errors  
+  HA_ERR_CRASHED             = 126;
+  HA_ERR_WRONG_IN_RECORD     = 127;
+  HA_ERR_NOT_A_TABLE         = 130;
+  HA_ERR_OLD_FILE            = 132;
+  HA_ERR_CRASHED_ON_REPAIR   = 144;
+  HA_ERR_CRASHED_ON_USAGE    = 145;
+  HA_ERR_NO_SUCH_TABLE       = 155;   
+  HA_ERR_TABLE_NEEDS_UPGRADE = 164;
+
+{
+  SETMSG(HA_ERR_KEY_NOT_FOUND,          ER(ER_KEY_NOT_FOUND));
+  SETMSG(HA_ERR_FOUND_DUPP_KEY,         ER(ER_DUP_KEY));
+  SETMSG(HA_ERR_RECORD_CHANGED,         "Update wich is recoverable");
+  SETMSG(HA_ERR_WRONG_INDEX,            "Wrong index given to function");
+  SETMSG(HA_ERR_CRASHED,                ER(ER_NOT_KEYFILE));
+  SETMSG(HA_ERR_WRONG_IN_RECORD,        ER(ER_CRASHED_ON_USAGE));
+  SETMSG(HA_ERR_OUT_OF_MEM,             "Table handler out of memory");
+  SETMSG(HA_ERR_NOT_A_TABLE,            "Incorrect file format '%.64s'");
+  SETMSG(HA_ERR_WRONG_COMMAND,          "Command not supported");
+  SETMSG(HA_ERR_OLD_FILE,               ER(ER_OLD_KEYFILE));
+  SETMSG(HA_ERR_NO_ACTIVE_RECORD,       "No record read in update");
+  SETMSG(HA_ERR_RECORD_DELETED,         "Intern record deleted");
+  SETMSG(HA_ERR_RECORD_FILE_FULL,       ER(ER_RECORD_FILE_FULL));
+  SETMSG(HA_ERR_INDEX_FILE_FULL,        "No more room in index file '%.64s'");
+  SETMSG(HA_ERR_END_OF_FILE,            "End in next/prev/first/last");
+  SETMSG(HA_ERR_UNSUPPORTED,            ER(ER_ILLEGAL_HA));
+  SETMSG(HA_ERR_TO_BIG_ROW,             "Too big row");
+  SETMSG(HA_WRONG_CREATE_OPTION,        "Wrong create option");
+  SETMSG(HA_ERR_FOUND_DUPP_UNIQUE,      ER(ER_DUP_UNIQUE));
+  SETMSG(HA_ERR_UNKNOWN_CHARSET,        "Can't open charset");
+  SETMSG(HA_ERR_WRONG_MRG_TABLE_DEF,    ER(ER_WRONG_MRG_TABLE));
+  SETMSG(HA_ERR_CRASHED_ON_REPAIR,      ER(ER_CRASHED_ON_REPAIR));
+  SETMSG(HA_ERR_CRASHED_ON_USAGE,       ER(ER_CRASHED_ON_USAGE));
+  SETMSG(HA_ERR_LOCK_WAIT_TIMEOUT,      ER(ER_LOCK_WAIT_TIMEOUT));
+  SETMSG(HA_ERR_LOCK_TABLE_FULL,        ER(ER_LOCK_TABLE_FULL));
+  SETMSG(HA_ERR_READ_ONLY_TRANSACTION,  ER(ER_READ_ONLY_TRANSACTION));
+  SETMSG(HA_ERR_LOCK_DEADLOCK,          ER(ER_LOCK_DEADLOCK));
+  SETMSG(HA_ERR_CANNOT_ADD_FOREIGN,     ER(ER_CANNOT_ADD_FOREIGN));
+  SETMSG(HA_ERR_NO_REFERENCED_ROW,      ER(ER_NO_REFERENCED_ROW_2));
+  SETMSG(HA_ERR_ROW_IS_REFERENCED,      ER(ER_ROW_IS_REFERENCED_2));
+  SETMSG(HA_ERR_NO_SAVEPOINT,           "No savepoint with that name");
+  SETMSG(HA_ERR_NON_UNIQUE_BLOCK_SIZE,  "Non unique key block size");
+  SETMSG(HA_ERR_NO_SUCH_TABLE,          "No such table: '%.64s'");
+  SETMSG(HA_ERR_TABLE_EXIST,            ER(ER_TABLE_EXISTS_ERROR));
+  SETMSG(HA_ERR_NO_CONNECTION,          "Could not connect to storage engine");
+  SETMSG(HA_ERR_TABLE_DEF_CHANGED,      ER(ER_TABLE_DEF_CHANGED));
+  SETMSG(HA_ERR_FOREIGN_DUPLICATE_KEY,  "FK constraint would lead to duplicate key");
+  SETMSG(HA_ERR_TABLE_NEEDS_UPGRADE,    ER(ER_TABLE_NEEDS_UPGRADE));
+  SETMSG(HA_ERR_TABLE_READONLY,         ER(ER_OPEN_AS_READONLY));
+  SETMSG(HA_ERR_AUTOINC_READ_FAILED,    ER(ER_AUTOINC_READ_FAILED));
+  SETMSG(HA_ERR_AUTOINC_ERANGE,         ER(ER_WARN_DATA_OUT_OF_RANGE));
+  SETMSG(HA_ERR_TOO_MANY_CONCURRENT_TRXS, ER(ER_TOO_MANY_CONCURRENT_TRXS));
+
+/*
+  Errorcodes given by handler functions
+
+  opt_sum_query() assumes these codes are > 1
+  Do not add error numbers before HA_ERR_FIRST.
+  If necessary to add lower numbers, change HA_ERR_FIRST accordingly.
+*/
+#define HA_ERR_FIRST            120     /* Copy of first error nr.*/
+
+#define HA_ERR_KEY_NOT_FOUND	120	/* Didn't find key on read or update */
+#define HA_ERR_FOUND_DUPP_KEY	121	/* Dupplicate key on write */
+#define HA_ERR_INTERNAL_ERROR   122     /* Internal error */
+#define HA_ERR_RECORD_CHANGED	123	/* Uppdate with is recoverable */
+#define HA_ERR_WRONG_INDEX	124	/* Wrong index given to function */
+#define HA_ERR_CRASHED		126	/* Indexfile is crashed */
+#define HA_ERR_WRONG_IN_RECORD	127	/* Record-file is crashed */
+#define HA_ERR_OUT_OF_MEM	128	/* Record-file is crashed */
+#define HA_ERR_NOT_A_TABLE      130     /* not a MYI file - no signature */
+#define HA_ERR_WRONG_COMMAND	131	/* Command not supported */
+#define HA_ERR_OLD_FILE		132	/* old databasfile */
+#define HA_ERR_NO_ACTIVE_RECORD 133	/* No record read in update() */
+#define HA_ERR_RECORD_DELETED	134	/* A record is not there */
+#define HA_ERR_RECORD_FILE_FULL 135	/* No more room in file */
+#define HA_ERR_INDEX_FILE_FULL	136	/* No more room in file */
+#define HA_ERR_END_OF_FILE	137	/* end in next/prev/first/last */
+#define HA_ERR_UNSUPPORTED	138	/* unsupported extension used */
+#define HA_ERR_TO_BIG_ROW	139	/* Too big row */
+#define HA_WRONG_CREATE_OPTION	140	/* Wrong create option */
+#define HA_ERR_FOUND_DUPP_UNIQUE 141	/* Dupplicate unique on write */
+#define HA_ERR_UNKNOWN_CHARSET	 142	/* Can't open charset */
+#define HA_ERR_WRONG_MRG_TABLE_DEF 143  /* conflicting tables in MERGE */
+#define HA_ERR_CRASHED_ON_REPAIR 144	/* Last (automatic?) repair failed */
+#define HA_ERR_CRASHED_ON_USAGE  145	/* Table must be repaired */
+#define HA_ERR_LOCK_WAIT_TIMEOUT 146
+#define HA_ERR_LOCK_TABLE_FULL   147
+#define HA_ERR_READ_ONLY_TRANSACTION 148 /* Updates not allowed */
+#define HA_ERR_LOCK_DEADLOCK	 149
+#define HA_ERR_CANNOT_ADD_FOREIGN 150    /* Cannot add a foreign key constr. */
+#define HA_ERR_NO_REFERENCED_ROW 151     /* Cannot add a child row */
+#define HA_ERR_ROW_IS_REFERENCED 152     /* Cannot delete a parent row */
+#define HA_ERR_NO_SAVEPOINT	 153     /* No savepoint with that name */
+#define HA_ERR_NON_UNIQUE_BLOCK_SIZE 154 /* Non unique key block size */
+#define HA_ERR_NO_SUCH_TABLE     155  /* The table does not exist in engine */
+#define HA_ERR_TABLE_EXIST       156  /* The table existed in storage engine */
+#define HA_ERR_NO_CONNECTION     157  /* Could not connect to storage engine */
+/* NULLs are not supported in spatial index */
+#define HA_ERR_NULL_IN_SPATIAL   158
+#define HA_ERR_TABLE_DEF_CHANGED 159  /* The table changed in storage engine */
+/* There's no partition in table for given value */
+#define HA_ERR_NO_PARTITION_FOUND 160
+#define HA_ERR_RBR_LOGGING_FAILED 161  /* Row-based binlogging of row failed */
+#define HA_ERR_DROP_INDEX_FK      162  /* Index needed in foreign key constr */
+/*
+  Upholding foreign key constraints would lead to a duplicate key error
+  in some other table.
+*/
+#define HA_ERR_FOREIGN_DUPLICATE_KEY 163
+/* The table changed in storage engine */
+#define HA_ERR_TABLE_NEEDS_UPGRADE 164
+#define HA_ERR_TABLE_READONLY      165   /* The table is not writable */
+
+#define HA_ERR_AUTOINC_READ_FAILED 166   /* Failed to get next autoinc value */
+#define HA_ERR_AUTOINC_ERANGE    167     /* Failed to set row autoinc value */
+#define HA_ERR_GENERIC           168     /* Generic error */
+/* row not actually updated: new values same as the old values */
+#define HA_ERR_RECORD_IS_THE_SAME 169
+/* It is not possible to log this statement */
+#define HA_ERR_LOGGING_IMPOSSIBLE 170    /* It is not possible to log this
+                                            statement */
+#define HA_ERR_CORRUPT_EVENT      171    /* The event was corrupt, leading to
+                                            illegal data being read */
+#define HA_ERR_NEW_FILE	          172	 /* New file format */
+#define HA_ERR_ROWS_EVENT_APPLY   173    /* The event could not be processed
+                                            no other hanlder error happened */
+#define HA_ERR_INITIALIZATION     174    /* Error during initialization */
+#define HA_ERR_FILE_TOO_SHORT	  175	 /* File too short */
+#define HA_ERR_WRONG_CRC	  176	 /* Wrong CRC on page */
+#define HA_ERR_TOO_MANY_CONCURRENT_TRXS 177 /*Too many active concurrent transactions */
+#define HA_ERR_LAST               177    /* Copy of last error nr */
+
+/* Number of different errors */
+#define HA_ERR_ERRORS            (HA_ERR_LAST - HA_ERR_FIRST + 1)
+}
+
+
+
 type
   TMySQLAPIEmbeddedEx = class(TMySQLAPIEmbedded)
   end;
@@ -1355,7 +1499,7 @@ end;
 
 function TDatabaseController.IsFatalError(E: EMyError): Boolean;
 const
-  FatalErrorCodes : array[0..8] of Integer =
+  FatalErrorCodes : array[0..16] of Integer =
   (
     ER_NO_SUCH_TABLE,
     ER_GET_ERRNO,
@@ -1365,7 +1509,15 @@ const
     ER_FILE_NOT_FOUND,
     ER_NOT_KEYFILE,
     ER_OLD_KEYFILE,
-    1459 //ER_TABLE_NEEDS_UPGRADE
+    ER_TABLE_NEEDS_UPGRADE,
+    HA_ERR_CRASHED,
+    HA_ERR_WRONG_IN_RECORD,
+    HA_ERR_NOT_A_TABLE,
+    HA_ERR_OLD_FILE,
+    HA_ERR_CRASHED_ON_REPAIR,
+    HA_ERR_CRASHED_ON_USAGE,
+    HA_ERR_NO_SUCH_TABLE,
+    HA_ERR_TABLE_NEEDS_UPGRADE
   );
 var
   I : Integer;
