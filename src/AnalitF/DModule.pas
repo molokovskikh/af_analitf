@@ -409,6 +409,7 @@ type
 {$endif}
     procedure SetNetworkSettings;
     procedure CheckLocalTime;
+    procedure UpdateNewFiles;
   public
     FFS : TFormatSettings;
     SerBeg,
@@ -948,6 +949,8 @@ begin
     ShowSQLWaiting(PrepareUpdateToNewCryptLibMySqlD, 'Происходит подготовка к обновлению');
 
   DeleteOldMysqlFolder;
+
+  UpdateNewFiles;
 
   mainStartupHelper.Write('DModule', 'Закончили подготовительные действия');
 
@@ -5751,6 +5754,31 @@ end;
 procedure TDM.ShowCertificateWarning;
 begin
   AProc.MessageBox('Данный поставщик не предоставляет сертификаты в АК Инфорум.'#13#10'Обратитесь к поставщику.', MB_ICONWARNING);
+end;
+
+procedure TDM.UpdateNewFiles;
+var
+  newFileSearch: TSearchRec;
+  newFileName : String;
+begin
+  try
+    if FindFirst( RootFolder() + '*.new', faAnyFile - faDirectory, newFileSearch) = 0 then
+      repeat
+        if (newFileSearch.Name <> '.') and (newFileSearch.Name <> '..')
+        then begin
+          try
+            newFileName := ChangeFileExt(newFileSearch.Name, '');
+            OSMoveFile(RootFolder() + newFileSearch.Name, RootFolder() + newFileName);
+            WriteExchangeLog('UpdateNewFiles', 'Был обновлен файл: ' + newFileName);
+          except
+            on E : Exception do
+              WriteExchangeLog('UpdateNewFiles', 'Ошибка при обновлении файла ' + newFileSearch.Name + ' :' + ExceptionToString(E));
+          end;
+        end;
+      until (FindNext( newFileSearch ) <> 0)
+  finally
+    SysUtils.FindClose( newFileSearch );
+  end;
 end;
 
 initialization
