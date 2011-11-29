@@ -1,8 +1,8 @@
 
  Start         Length     Name                   Class
  0001:00000000 0016EEF4H .text                   CODE
- 0002:00000000 00003EC0H .data                   DATA
- 0002:00003EC0 00000B41H .bss                    BSS
+ 0002:00000000 00003EE0H .data                   DATA
+ 0002:00003EE0 00000B41H .bss                    BSS
 
 
 Detailed map of segments
@@ -542,7 +542,7 @@ Detailed map of segments
  0002:000039FC 00000008 C=DATA     S=.data    G=DGROUP   M=Main     ACBP=A9
  0002:00003A04 0000001C C=DATA     S=.data    G=DGROUP   M=PostSomeOrdersController ACBP=A9
  0002:00003A20 00000168 C=DATA     S=.data    G=DGROUP   M=DModule  ACBP=A9
- 0002:00003B88 00000024 C=DATA     S=.data    G=DGROUP   M=DatabaseObjects ACBP=A9
+ 0002:00003B88 00000044 C=DATA     S=.data    G=DGROUP   M=DatabaseObjects ACBP=A9
  0002:00004000 00000014 C=BSS      S=.bss     G=DGROUP   M=SysInit  ACBP=A9
  0002:00004014 00000004 C=BSS      S=.bss     G=DGROUP   M=Windows  ACBP=A9
  0002:00004018 00000004 C=BSS      S=.bss     G=DGROUP   M=Messages ACBP=A9
@@ -14548,7 +14548,7 @@ Progress.RES
 Icons.RES
 Bitmaps.RES
 CompareScript80.RES
-C:\Users\morozov\AppData\Local\Temp\dtfEC86.tmp
+C:\Users\morozov\AppData\Local\Temp\dtfFC31.tmp
 
 
 Program entry point at 0001:0016EBF0
