@@ -1,6 +1,6 @@
 
  Start         Length     Name                   Class
- 0001:00000000 0016EC2CH .text                   CODE
+ 0001:00000000 0016EEF4H .text                   CODE
  0002:00000000 00003EC0H .data                   DATA
  0002:00003EC0 00000B41H .bss                    BSS
 
@@ -476,20 +476,20 @@ Detailed map of segments
  0001:00135F0C 00004A50 C=CODE     S=.text    G=(none)   M=PostSomeOrdersController ACBP=A9
  0001:0013A95C 000053A0 C=CODE     S=.text    G=(none)   M=CorrectOrders ACBP=A9
  0001:0013FCFC 00000038 C=CODE     S=.text    G=(none)   M=U_DeleteDBThread ACBP=A9
- 0001:0013FD34 0001037F C=CODE     S=.text    G=(none)   M=DModule  ACBP=A9
- 0001:001500B4 0000047C C=CODE     S=.text    G=(none)   M=Waiting  ACBP=A9
- 0001:00150530 00000518 C=CODE     S=.text    G=(none)   M=U_UpdateDBThread ACBP=A9
- 0001:00150A48 00001988 C=CODE     S=.text    G=(none)   M=CompactThread ACBP=A9
- 0001:001523D0 00005D82 C=CODE     S=.text    G=(none)   M=DatabaseObjects ACBP=A9
- 0001:00158154 000030D0 C=CODE     S=.text    G=(none)   M=Child    ACBP=A9
- 0001:0015B224 00001C06 C=CODE     S=.text    G=(none)   M=CriticalDatabaseObjects ACBP=A9
- 0001:0015CE2C 000060C2 C=CODE     S=.text    G=(none)   M=BackupDatabaseObjects ACBP=A9
- 0001:00162EF0 00000D5A C=CODE     S=.text    G=(none)   M=DatabaseViews ACBP=A9
- 0001:00163C4C 00002552 C=CODE     S=.text    G=(none)   M=IgnoreDatabaseObjects ACBP=A9
- 0001:001661A0 0000057E C=CODE     S=.text    G=(none)   M=SynonymDatabaseObjects ACBP=A9
- 0001:00166720 00007132 C=CODE     S=.text    G=(none)   M=GeneralDatabaseObjects ACBP=A9
- 0001:0016D854 00000038 C=CODE     S=.text    G=(none)   M=MyEmbConnectionEx ACBP=A9
- 0001:0016D88C 000013A0 C=CODE     S=.text    G=(none)   M=AnalitF  ACBP=A9
+ 0001:0013FD34 00010647 C=CODE     S=.text    G=(none)   M=DModule  ACBP=A9
+ 0001:0015037C 0000047C C=CODE     S=.text    G=(none)   M=Waiting  ACBP=A9
+ 0001:001507F8 00000518 C=CODE     S=.text    G=(none)   M=U_UpdateDBThread ACBP=A9
+ 0001:00150D10 00001988 C=CODE     S=.text    G=(none)   M=CompactThread ACBP=A9
+ 0001:00152698 00005D82 C=CODE     S=.text    G=(none)   M=DatabaseObjects ACBP=A9
+ 0001:0015841C 000030D0 C=CODE     S=.text    G=(none)   M=Child    ACBP=A9
+ 0001:0015B4EC 00001C06 C=CODE     S=.text    G=(none)   M=CriticalDatabaseObjects ACBP=A9
+ 0001:0015D0F4 000060C2 C=CODE     S=.text    G=(none)   M=BackupDatabaseObjects ACBP=A9
+ 0001:001631B8 00000D5A C=CODE     S=.text    G=(none)   M=DatabaseViews ACBP=A9
+ 0001:00163F14 00002552 C=CODE     S=.text    G=(none)   M=IgnoreDatabaseObjects ACBP=A9
+ 0001:00166468 0000057E C=CODE     S=.text    G=(none)   M=SynonymDatabaseObjects ACBP=A9
+ 0001:001669E8 00007132 C=CODE     S=.text    G=(none)   M=GeneralDatabaseObjects ACBP=A9
+ 0001:0016DB1C 00000038 C=CODE     S=.text    G=(none)   M=MyEmbConnectionEx ACBP=A9
+ 0001:0016DB54 000013A0 C=CODE     S=.text    G=(none)   M=AnalitF  ACBP=A9
  0002:00000000 00000020 C=DATA     S=.data    G=DGROUP   M=SysInit  ACBP=A9
  0002:00000020 0000009C C=DATA     S=.data    G=DGROUP   M=SHDocVw  ACBP=A9
  0002:000000BC 00000010 C=DATA     S=.data    G=DGROUP   M=MTSCall  ACBP=A9
@@ -1080,7 +1080,7 @@ Detailed map of segments
  0001:0009EE80       AllOrdersParams
  0001:000BDE5C       AlphaBlendRect
  0001:000BE28C       AlphaUtils
- 0001:0016E928       AnalitF
+ 0001:0016EBF0       AnalitF
  0001:000092D0       AnsiCompareStrS
  0001:0000928C       AnsiCompareTextS
  0001:000A841C       AnsiContainsStr
@@ -1121,9 +1121,9 @@ Detailed map of segments
  0002:000032D4       AttrFlags
  0002:00004058       BackupAlignControl
  0001:00098F50       BackupDatabase
- 0001:00162D90       BackupDatabaseObjects
+ 0001:00163058       BackupDatabaseObjects
  0002:0000407C       BackupDefaultHandler
- 0001:00152760       backupFileName
+ 0001:00152A28       backupFileName
  0002:00004068       BackupSetBounds
  0001:00099708       BackupSP
  0001:0009942C       BackupStoredProc
@@ -1171,7 +1171,7 @@ Detailed map of segments
  0002:00004210       ChangeCursor
  0001:000582E8       ChangeDecimalSeparator
  0001:00024C60       ChangeDecimalSeparator
- 0001:00159C74       ChangeTitleCaption
+ 0001:00159F3C       ChangeTitleCaption
  0001:0013F554       ChangeTitleCaption
  0001:000008F8       CharToOemBuff
  0001:0009C958       CheckDataTypes
@@ -1182,7 +1182,7 @@ Detailed map of segments
  0001:000728C4       CheckPrimaryKeys
  0001:0007F514       CheckTaskWindow
  0001:00009598       CheckZLib
- 0001:0015B21C       Child
+ 0001:0015B4E4       Child
  0002:00000170       Class_DBMonitor
  0002:00000180       Class_SMClient
  0001:000039D4       CleanupInstFreeList
@@ -1215,12 +1215,12 @@ Detailed map of segments
  0002:00004190       CommonKeywordLexems
  0002:0000418C       CommonSymbolLexems
  0001:000E4EF0       Compact
- 0001:001523C8       CompactThread
+ 0001:00152690       CompactThread
  0001:0000E520       CompareAlias
  0001:00099F60       CompareField
  0001:0009ACD0       CompareFields
  0001:00013D88       CompareMem
- 0001:001525A8       CompareObjects
+ 0001:00152870       CompareObjects
  0001:0009A080       CompareRecord
  0001:00000670       CompareStringA
  0001:00000678       CompareStringW
@@ -1273,7 +1273,7 @@ Detailed map of segments
  0001:0007EC50       CopyParentImage
  0001:00072270       CopyPropR
  0001:0003F228       CopyRecBuf
- 0001:0016D88C       CopyRegSettings
+ 0001:0016DB54       CopyRegSettings
  0001:000D93AC       Core
  0001:000D174C       CoreFirm
  0001:000640D0       CorrectBindingForField
@@ -1295,7 +1295,7 @@ Detailed map of segments
  0001:000236F4       CreateObjectFields
  0001:0008DD94       CreateStorage
  0001:00000B04       CreateWindowEx
- 0001:0015CE08       CriticalDatabaseObjects
+ 0001:0015D0D0       CriticalDatabaseObjects
  0002:00003A20       CriticalLibraryHashes
  0002:0000420C       CRNetManager
  0001:0000BD70       CRParser
@@ -1318,10 +1318,10 @@ Detailed map of segments
  0001:00098848       DALoader
  0001:0006FBC8       DAScript
  0001:0002D044       DASQLMonitor
- 0001:001525A0       DatabaseController
+ 0001:00152868       DatabaseController
  0002:000045C4       DatabaseName
- 0001:001580E0       DatabaseObjects
- 0001:00163BF8       DatabaseViews
+ 0001:001583A8       DatabaseObjects
+ 0001:00163EC0       DatabaseViews
  0001:0000DD74       DataError
  0001:0009D9B8       DataIntegrityExceptions
  0001:0008A880       DataSetCalc
@@ -1379,7 +1379,7 @@ Detailed map of segments
  0001:00002A1C       Dlgs
  0002:00004008       DllProc
  0002:00004AF4       DM
- 0001:0015001C       DModule
+ 0001:001502E4       DModule
  0002:00004824       DoCallback
  0001:00009628       DoCompress
  0001:00005544       DoCreate
@@ -1400,8 +1400,8 @@ Detailed map of segments
  0001:000B6FF8       DrawMark
  0001:00000918       DrawText
  0001:00080234       DropHookList
- 0001:00153368       DropTable
- 0001:00153E4C       DropTable
+ 0001:00153630       DropTable
+ 0001:00154114       DropTable
  0002:000041A4       DtcGetTransactionManagerEx
  0001:00030294       EDAError.IsFatalError
  0001:00030298       EDAError.IsKeyViolation
@@ -1516,7 +1516,7 @@ Detailed map of segments
  0001:0005F0C0       FillTablesAliases
  0001:000990FC       FillUsersList
  0002:000039D4       FilterReportNames
- 0001:0014FF90       Finalization
+ 0001:00150258       Finalization
  0001:0007EB48       Finalization
  0001:0007EB80       Finalization
  0001:00093740       Finalization
@@ -1569,14 +1569,14 @@ Detailed map of segments
  0001:0000297C       Finalization
  0001:0007EAC8       Finalization
  0001:00093D78       Finalization
- 0001:001504F8       Finalization
+ 0001:001507C0       Finalization
  0001:000947C0       Finalization
  0001:0012D978       Finalization
- 0001:00150A10       Finalization
+ 0001:00150CD8       Finalization
  0001:00094AC0       Finalization
  0001:00076AC4       Finalization
  0001:00129608       Finalization
- 0001:00152398       Finalization
+ 0001:00152660       Finalization
  0001:000964C8       Finalization
  0001:0007673C       Finalization
  0001:000971D8       Finalization
@@ -1616,23 +1616,23 @@ Detailed map of segments
  0001:0009D9C0       Finalization
  0001:0009E0BC       Finalization
  0001:0009E160       Finalization
- 0001:001580B0       Finalization
+ 0001:00158378       Finalization
  0001:0009E1E0       Finalization
- 0001:0015B1EC       Finalization
+ 0001:0015B4B4       Finalization
  0001:0009E73C       Finalization
- 0001:0015CDD8       Finalization
+ 0001:0015D0A0       Finalization
  0001:0009ECB4       Finalization
  0001:0005590C       Finalization
  0001:0009EE50       Finalization
- 0001:00162D60       Finalization
+ 0001:00163028       Finalization
  0001:00055410       Finalization
  0001:0009EF00       Finalization
- 0001:00163BC8       Finalization
+ 0001:00163E90       Finalization
  0001:0009F5F0       Finalization
  0001:00053B08       Finalization
  0001:000A04F4       Finalization
  0001:00052C38       Finalization
- 0001:00166058       Finalization
+ 0001:00166320       Finalization
  0001:000A171C       Finalization
  0001:00050C40       Finalization
  0001:000A17C4       Finalization
@@ -1735,7 +1735,7 @@ Detailed map of segments
  0001:000DA860       Finalization
  0001:000DABEC       Finalization
  0001:0002A1DC       Finalization
- 0001:001666B4       Finalization
+ 0001:0016697C       Finalization
  0001:000DE304       Finalization
  0001:000DE580       Finalization
  0001:0002A424       Finalization
@@ -1752,17 +1752,17 @@ Detailed map of segments
  0001:000E5FB4       Finalization
  0001:0000C9F4       Finalization
  0001:00000630       Finalization
- 0001:0016D55C       Finalization
+ 0001:0016D824       Finalization
  0001:000E36E0       Finalization
  0001:000E5C14       Finalization
  0001:000E4EC0       Finalization
  0001:0000C770       Finalization
  0001:000E49D0       Finalization
  0001:000E4080       Finalization
- 0001:0016D854       Finalization
+ 0001:0016DB1C       Finalization
  0001:000E45AC       Finalization
  0001:000E453C       Finalization
- 0001:0016D9E0       Finalization
+ 0001:0016DCA8       Finalization
  0001:0000BD20       Finalization
  0001:000E4574       Finalization
  0001:00086C58       FindChildControlByClass
@@ -1812,8 +1812,8 @@ Detailed map of segments
  0002:00004904       FSchedulesController
  0002:0000469C       FSilentMode
  0002:000048CC       FSupplierController
- 0001:00148728       gcp
- 0001:0016D58C       GeneralDatabaseObjects
+ 0001:00148730       gcp
+ 0001:0016D854       GeneralDatabaseObjects
  0002:00003284       GeneralEntities
  0001:00071698       GenerateCondForRQ
  0001:00057C88       GenerateTableName
@@ -1906,7 +1906,7 @@ Detailed map of segments
  0001:00046458       GetProc
  0001:00000740       GetProcAddress
  0001:000BAF2C       GetPromoInfoControl
- 0001:0014553C       GetRandomString
+ 0001:00145544       GetRandomString
  0001:0008F504       GetRichEditOle
  0001:00041354       GetRootParent
  0001:00000AC4       GetRValue
@@ -1957,7 +1957,7 @@ Detailed map of segments
  0001:000AAEE4       GlobalSettingParams
  0001:00000798       GlobalUnlock
  0002:000037FC       GlyphCache
- 0001:00148808       gop
+ 0001:00148810       gop
  0002:00003810       GridBitmaps
  0001:00003F94       GridWMEraseBkgnd
  0002:00004224       hAdvapi32Lib
@@ -1992,7 +1992,7 @@ Detailed map of segments
  0002:000041C8       hxOLEhlpLib
  0002:00004880       i
  0001:000E45A4       IdAntiFreeze
- 0001:00166088       IgnoreDatabaseObjects
+ 0001:00166350       IgnoreDatabaseObjects
  0002:000000BC       IID_ITransactionDispenser
  0001:00086950       Iif
  0001:0007F1E4       ImageListDrawDisabled
@@ -2113,8 +2113,8 @@ Detailed map of segments
  0001:000A8434       LocateTextInTree
  0002:00004538       LockPoolManagerCreate
  0001:00087468       LogCriticalError
- 0001:00153D14       LogError
- 0001:00153230       LogError
+ 0001:00153FDC       LogError
+ 0001:001534F8       LogError
  0001:000874CC       LogExitError
  0001:000854B4       LongVersionToString
  0002:000040F4       lpVersionInformation
@@ -2216,7 +2216,7 @@ Detailed map of segments
  0001:00076AF4       MyDacMonitor
  0001:00099DF8       MyDump
  0001:00098324       MyEmbConnection
- 0001:0016D884       MyEmbConnectionEx
+ 0001:0016DB4C       MyEmbConnectionEx
  0002:00004508       MyKeywordLexems
  0001:00098880       MyLoader
  0002:00004550       MyMonitor
@@ -2420,8 +2420,8 @@ Detailed map of segments
  0001:000007F8       RemoveDirectory
  0001:00089CA4       RemoveDirectory
  0001:00084480       RemoveQuotes
- 0001:00153738       RepairTable
- 0001:0015421C       RepairTable
+ 0001:00153A00       RepairTable
+ 0001:001544E4       RepairTable
  0002:00003298       ReplacementText
  0001:0000E564       ReplaceNextOriginalNames
  0001:00002E6C       ReplaceVmtField
@@ -2446,12 +2446,12 @@ Detailed map of segments
  0001:000EDCA8       RoundToOneDigit
  0002:000032B0       RTFConversionFormat
  0002:0000392C       rub
- 0001:00150BEC       RunCompactDatabase
+ 0001:00150EB4       RunCompactDatabase
  0001:0010AAD4       RunExchange
- 0001:00150C90       RunRestoreDatabase
- 0001:00150D90       RunRestoreDatabaseFromEtalon
- 0001:00150E98       RunRestoreDatabaseOnError
- 0001:001508EC       RunUpdateDBFile
+ 0001:00150F58       RunRestoreDatabase
+ 0001:00151058       RunRestoreDatabaseFromEtalon
+ 0001:00151160       RunRestoreDatabaseOnError
+ 0001:00150BB4       RunUpdateDBFile
  0002:0000384C       RussianDocumentType
  0002:0000385C       RussianDocumentTypeForHeaderForm
  0001:000B9200       RxCalc
@@ -2616,11 +2616,11 @@ Detailed map of segments
  0001:001270B8       ShowSynonymSearch
  0001:000E4470       ShowUserMessage
  0001:0012917C       ShowWait
- 0001:001502B0       ShowWaiting
+ 0001:00150578       ShowWaiting
  0001:0004B5D0       shutdown
  0001:00086884       SilentMode
- 0001:00153614       SimpleRepairTable
- 0001:001540F8       SimpleRepairTable
+ 0001:001538DC       SimpleRepairTable
+ 0001:001543C0       SimpleRepairTable
  0001:0010196C       SizeOfKey
  0001:00000820       Sleep
  0001:00000AD0       SmallPointToPoint
@@ -2698,7 +2698,7 @@ Detailed map of segments
  0001:0004876C       SwithTypesToNew
  0001:00048594       SwithTypesToOld
  0001:00084FA8       SXReplaceXML
- 0001:001666E4       SynonymDatabaseObjects
+ 0001:001669AC       SynonymDatabaseObjects
  0001:00128BF4       SynonymSearch
  0002:00004B00       SynonymSelectedPrices
  0001:00000660       SysInit
@@ -2760,10 +2760,10 @@ Detailed map of segments
  0001:000E3D00       TArchiveHelper.GetArchivedSize
  0001:000E3EAC       TArchiveHelper.GetEncodedContent
  0001:000E404C       TArchiveHelper.Init
- 0001:001650F8       TBatchReportDataTable.Create
- 0001:00165150       TBatchReportDataTable.GetCreateSQL
- 0001:00165AB4       TBatchReportServiceFieldsDataTable.Create
- 0001:00165B1C       TBatchReportServiceFieldsDataTable.GetCreateSQL
+ 0001:001653C0       TBatchReportDataTable.Create
+ 0001:00165418       TBatchReportDataTable.GetCreateSQL
+ 0001:00165D7C       TBatchReportServiceFieldsDataTable.Create
+ 0001:00165DE4       TBatchReportServiceFieldsDataTable.GetCreateSQL
  0001:0001AFAC       TBlob.AddCR
  0001:0001AA88       TBlob.Assign
  0001:0001ABF0       TBlob.Cancel
@@ -2824,75 +2824,75 @@ Detailed map of segments
  0001:00018278       TBlockManager.PutRecord
  0001:0000E148       TBoolParser.Create
  0001:0000E194       TBoolParser.ToRightQuote
- 0001:0016987C       TCatalogFarmGroupsTable.Create
- 0001:001698E0       TCatalogFarmGroupsTable.GetCreateSQL
- 0001:00169624       TCatalogNamesTable.Create
- 0001:00169684       TCatalogNamesTable.GetCreateSQL
- 0001:00169B74       TCatalogsTable.Create
- 0001:00169BD0       TCatalogsTable.GetCreateSQL
- 0001:0016CDDC       TCertificateFilesTable.Create
- 0001:0016CE3C       TCertificateFilesTable.GetCreateSQL
- 0001:00165EE0       TCertificateRequestsDataTable.Create
- 0001:00165F40       TCertificateRequestsDataTable.GetCreateSQL
- 0001:0016D23C       TCertificateSourcesTable.Create
- 0001:0016D29C       TCertificateSourcesTable.GetCreateSQL
- 0001:0016CBE4       TCertificatesTable.Create
- 0001:0016CC40       TCertificatesTable.GetCreateSQL
- 0001:00158494       TChildForm.AddActionList
- 0001:00159B50       TChildForm.BeforeUpdateExecuteForClientID
- 0001:0015B03C       TChildForm.CheckByBuyingMatrixType
- 0001:0015984C       TChildForm.CheckByMinOrderCount
- 0001:00159794       TChildForm.CheckByOrderCost
- 0001:00158CDC       TChildForm.CheckVolume
- 0001:00158D2C       TChildForm.ClearOrder
- 0001:0015981C       TChildForm.ClearOrderByOrderCost
- 0001:00158BB0       TChildForm.Create
- 0001:00158440       TChildForm.CreateParams
- 0001:001598B8       TChildForm.Destroy
- 0001:00158808       TChildForm.DoShow
- 0001:0015A40C       TChildForm.FilterByMNNExecute
- 0001:0015AF94       TChildForm.FilterByMNNUpdate
- 0001:001591B0       TChildForm.FormCreate
- 0001:00158BA8       TChildForm.GetActionLists
- 0001:0015ADC8       TChildForm.HideAllForms
- 0001:00158470       TChildForm.Loaded
- 0001:0015AF2C       TChildForm.ModifyActionList
- 0001:0015B104       TChildForm.NewAfterOpen
- 0001:001596A4       TChildForm.NewAfterPost
- 0001:0015B178       TChildForm.NewAfterScroll
- 0001:00159730       TChildForm.NewBeforePost
- 0001:001596E0       TChildForm.NewBeforeScroll
- 0001:00159708       TChildForm.NewExit
- 0001:00158528       TChildForm.Notification
- 0001:00159A8C       TChildForm.PatchMyDataSets
- 0001:00158AEC       TChildForm.PatchNonBrowser
- 0001:00159CE4       TChildForm.PrepareColumnsInOrderGrid
- 0001:00158824       TChildForm.Print
- 0001:001584EC       TChildForm.RemoveActionList
- 0001:00158B98       TChildForm.SetActionLists
- 0001:0015AB44       TChildForm.SetActiveChildToMainForm
- 0001:001585FC       TChildForm.SetParent
- 0001:0015AAC0       TChildForm.SetPrevForm
- 0001:0015AA9C       TChildForm.ShowAsPrevForm
- 0001:0015A518       TChildForm.ShowDescriptionExecute
- 0001:0015A9E0       TChildForm.ShowDescriptionUpdate
- 0001:00158638       TChildForm.ShowForm
- 0001:00158D90       TChildForm.ShowVolumeMessage
- 0001:001591A8       TChildForm.tCheckVolumeTimer
- 0001:0015AC84       TChildForm.UpdateOrderDataset
- 0001:00158828       TChildForm.UpdateReclame
- 0001:0016357C       TClientAvgView.Create
- 0001:001635D4       TClientAvgView.GetCreateSQL
- 0001:001603AC       TClientSettingsTable.Create
- 0001:00160408       TClientSettingsTable.GetCreateSQL
- 0001:00167B90       TClientsTable.Create
- 0001:00167BE4       TClientsTable.GetCreateSQL
- 0001:00167728       TClientTable.Create
- 0001:0016777C       TClientTable.GetCreateSQL
+ 0001:00169B44       TCatalogFarmGroupsTable.Create
+ 0001:00169BA8       TCatalogFarmGroupsTable.GetCreateSQL
+ 0001:001698EC       TCatalogNamesTable.Create
+ 0001:0016994C       TCatalogNamesTable.GetCreateSQL
+ 0001:00169E3C       TCatalogsTable.Create
+ 0001:00169E98       TCatalogsTable.GetCreateSQL
+ 0001:0016D0A4       TCertificateFilesTable.Create
+ 0001:0016D104       TCertificateFilesTable.GetCreateSQL
+ 0001:001661A8       TCertificateRequestsDataTable.Create
+ 0001:00166208       TCertificateRequestsDataTable.GetCreateSQL
+ 0001:0016D504       TCertificateSourcesTable.Create
+ 0001:0016D564       TCertificateSourcesTable.GetCreateSQL
+ 0001:0016CEAC       TCertificatesTable.Create
+ 0001:0016CF08       TCertificatesTable.GetCreateSQL
+ 0001:0015875C       TChildForm.AddActionList
+ 0001:00159E18       TChildForm.BeforeUpdateExecuteForClientID
+ 0001:0015B304       TChildForm.CheckByBuyingMatrixType
+ 0001:00159B14       TChildForm.CheckByMinOrderCount
+ 0001:00159A5C       TChildForm.CheckByOrderCost
+ 0001:00158FA4       TChildForm.CheckVolume
+ 0001:00158FF4       TChildForm.ClearOrder
+ 0001:00159AE4       TChildForm.ClearOrderByOrderCost
+ 0001:00158E78       TChildForm.Create
+ 0001:00158708       TChildForm.CreateParams
+ 0001:00159B80       TChildForm.Destroy
+ 0001:00158AD0       TChildForm.DoShow
+ 0001:0015A6D4       TChildForm.FilterByMNNExecute
+ 0001:0015B25C       TChildForm.FilterByMNNUpdate
+ 0001:00159478       TChildForm.FormCreate
+ 0001:00158E70       TChildForm.GetActionLists
+ 0001:0015B090       TChildForm.HideAllForms
+ 0001:00158738       TChildForm.Loaded
+ 0001:0015B1F4       TChildForm.ModifyActionList
+ 0001:0015B3CC       TChildForm.NewAfterOpen
+ 0001:0015996C       TChildForm.NewAfterPost
+ 0001:0015B440       TChildForm.NewAfterScroll
+ 0001:001599F8       TChildForm.NewBeforePost
+ 0001:001599A8       TChildForm.NewBeforeScroll
+ 0001:001599D0       TChildForm.NewExit
+ 0001:001587F0       TChildForm.Notification
+ 0001:00159D54       TChildForm.PatchMyDataSets
+ 0001:00158DB4       TChildForm.PatchNonBrowser
+ 0001:00159FAC       TChildForm.PrepareColumnsInOrderGrid
+ 0001:00158AEC       TChildForm.Print
+ 0001:001587B4       TChildForm.RemoveActionList
+ 0001:00158E60       TChildForm.SetActionLists
+ 0001:0015AE0C       TChildForm.SetActiveChildToMainForm
+ 0001:001588C4       TChildForm.SetParent
+ 0001:0015AD88       TChildForm.SetPrevForm
+ 0001:0015AD64       TChildForm.ShowAsPrevForm
+ 0001:0015A7E0       TChildForm.ShowDescriptionExecute
+ 0001:0015ACA8       TChildForm.ShowDescriptionUpdate
+ 0001:00158900       TChildForm.ShowForm
+ 0001:00159058       TChildForm.ShowVolumeMessage
+ 0001:00159470       TChildForm.tCheckVolumeTimer
+ 0001:0015AF4C       TChildForm.UpdateOrderDataset
+ 0001:00158AF0       TChildForm.UpdateReclame
+ 0001:00163844       TClientAvgView.Create
+ 0001:0016389C       TClientAvgView.GetCreateSQL
+ 0001:00160674       TClientSettingsTable.Create
+ 0001:001606D0       TClientSettingsTable.GetCreateSQL
+ 0001:00167E58       TClientsTable.Create
+ 0001:00167EAC       TClientsTable.GetCreateSQL
+ 0001:001679F0       TClientTable.Create
+ 0001:00167A44       TClientTable.GetCreateSQL
  0001:000E4DE0       TCompactForm.btnCancelClick
  0001:000E4D18       TCompactForm.FormShow
  0001:000E4DF0       TCompactForm.TimerTimer
- 0001:00150F84       TCompactThread.Execute
+ 0001:0015124C       TCompactThread.Execute
  0001:0001B5E0       TCompressedBlob.CreateBlobData
  0001:0001B5F0       TCompressedBlob.GetCompressed
  0001:0001B5FC       TCompressedBlob.SetCompressed
@@ -3041,8 +3041,8 @@ Detailed map of segments
  0001:000D7CD8       TCoreForm.TimerTimer
  0001:000D8A34       TCoreForm.tmrUpdatePreviosOrdersTimer
  0001:000D88D4       TCoreForm.UpdatePriceDelta
- 0001:0016A3E8       TCoreTable.Create
- 0001:0016A440       TCoreTable.GetCreateSQL
+ 0001:0016A6B0       TCoreTable.Create
+ 0001:0016A708       TCoreTable.GetCreateSQL
  0001:0013E07C       TCorrectOrdersForm.adsCoreAfterPost
  0001:0013D6A4       TCorrectOrdersForm.adsCoreBeforePost
  0001:0013E09C       TCorrectOrdersForm.adsCoreBeforeScroll
@@ -3357,8 +3357,8 @@ Detailed map of segments
  0001:000A144C       TCurrentOrderHead.RestoreOrderItems
  0001:000A146C       TCurrentOrderHead.RestoreOrderItemsToAnotherPrice
  0001:000A148C       TCurrentOrderHead.ToString
- 0001:00160718       TCurrentOrderHeadsTable.Create
- 0001:00160778       TCurrentOrderHeadsTable.GetCreateSQL
+ 0001:001609E0       TCurrentOrderHeadsTable.Create
+ 0001:00160A40       TCurrentOrderHeadsTable.GetCreateSQL
  0001:0009F830       TCurrentOrderItem.IsAnotherOfferExists
  0001:0009F8C0       TCurrentOrderItem.IsFullOffer
  0001:0009F938       TCurrentOrderItem.IsOfferExists
@@ -3369,8 +3369,8 @@ Detailed map of segments
  0001:0009FEF4       TCurrentOrderItem.ToString
  0001:000A02B4       TCurrentOrderItem.TryStrToPeriod
  0001:000A03A8       TCurrentOrderItem.UpdateDropReason
- 0001:00160EE8       TCurrentOrderListsTable.Create
- 0001:00160F48       TCurrentOrderListsTable.GetCreateSQL
+ 0001:001611B0       TCurrentOrderListsTable.Create
+ 0001:00161210       TCurrentOrderListsTable.GetCreateSQL
  0001:00003600       TCustomActionListFix.Notification
  0001:00046258       TCustomConnectDialog.CheckServerEnumerator
  0001:00045808       TCustomConnectDialog.Create
@@ -3776,8 +3776,8 @@ Detailed map of segments
  0001:0002C84C       TCustomDASQLMonitor.UnRegisterClient
  0001:00044A58       TCustomDAUpdateSQL.Apply
  0001:00044A74       TCustomDAUpdateSQL.AssignTo
- 0001:000448D8       TCustomDAUpdateSQL.CheckUpdateComponent
  0001:00044A18       TCustomDAUpdateSQL.CheckUpdateComponent
+ 0001:000448D8       TCustomDAUpdateSQL.CheckUpdateComponent
  0001:000446E4       TCustomDAUpdateSQL.Create
  0001:000448C8       TCustomDAUpdateSQL.DataSetClass
  0001:00044768       TCustomDAUpdateSQL.Destroy
@@ -3852,8 +3852,8 @@ Detailed map of segments
  0001:0007D900       TCustomMyDataSet.GetUpdateObject
  0001:0007D560       TCustomMyDataSet.InternalClose
  0001:0007D538       TCustomMyDataSet.InternalOpen
- 0001:0007CFC4       TCustomMyDataSet.Lock
  0001:0007CFCC       TCustomMyDataSet.Lock
+ 0001:0007CFC4       TCustomMyDataSet.Lock
  0001:0007D07C       TCustomMyDataSet.PSGetQuoteChar
  0001:0007CEB0       TCustomMyDataSet.RefreshQuick
  0001:0007D350       TCustomMyDataSet.SetCommandTimeout
@@ -3999,8 +3999,8 @@ Detailed map of segments
  0001:00041F3C       TDADataSetService.FillDataFieldDescs
  0001:00041350       TDADataSetService.FillFieldsDefaultValues
  0001:000412F0       TDADataSetService.FillFieldsOrigin
- 0001:00041E3C       TDADataSetService.FillKeyFieldDescs
  0001:00041CD4       TDADataSetService.FillKeyFieldDescs
+ 0001:00041E3C       TDADataSetService.FillKeyFieldDescs
  0001:00040F84       TDADataSetService.FreeSQLGenerator
  0001:00041690       TDADataSetService.GetActualFieldName
  0001:000416B4       TDADataSetService.GetActualFieldName
@@ -4182,8 +4182,8 @@ Detailed map of segments
  0001:0003457C       TDAParam.GetNational
  0001:00033CC4       TDAParam.GetNativeParamObject
  0001:00033F08       TDAParam.GetSize
- 0001:00033E8C       TDAParam.IsBlobDataType
  0001:00033E98       TDAParam.IsBlobDataType
+ 0001:00033E8C       TDAParam.IsBlobDataType
  0001:00033D48       TDAParam.IsDataTypeStored
  0001:00033E74       TDAParam.IsObjectDataType
  0001:00033E68       TDAParam.IsObjectDataType
@@ -4256,8 +4256,8 @@ Detailed map of segments
  0001:0006EEA8       TDAScriptProcessor.CanOptimize
  0001:0006EEF0       TDAScriptProcessor.CheckLexem
  0001:0006E2C8       TDAScriptProcessor.Create
- 0001:0006E38C       TDAScriptProcessor.CreateParser
  0001:0006E374       TDAScriptProcessor.CreateParser
+ 0001:0006E38C       TDAScriptProcessor.CreateParser
  0001:0006EC48       TDAScriptProcessor.CreateStatement
  0001:0006E31C       TDAScriptProcessor.Destroy
  0001:0006EEEC       TDAScriptProcessor.DoAfterStatementExecute
@@ -4282,10 +4282,10 @@ Detailed map of segments
  0001:0003B7A4       TDASQLGenerator.Create
  0001:0003BF28       TDASQLGenerator.DecodeFieldIndex
  0001:0003B880       TDASQLGenerator.Destroy
- 0001:0003BB8C       TDASQLGenerator.FieldIsNull
  0001:0003BAAC       TDASQLGenerator.FieldIsNull
- 0001:0003BD14       TDASQLGenerator.FieldModified
+ 0001:0003BB8C       TDASQLGenerator.FieldIsNull
  0001:0003BBCC       TDASQLGenerator.FieldModified
+ 0001:0003BD14       TDASQLGenerator.FieldModified
  0001:0003C2F8       TDASQLGenerator.GenerateConditions
  0001:0003C93C       TDASQLGenerator.GenerateDeleteSQL
  0001:0003BECC       TDASQLGenerator.GenerateIndexName
@@ -4422,47 +4422,47 @@ Detailed map of segments
  0001:000130A4       TData.TruncateBlob
  0001:0000E308       TData.UnPrepare
  0001:00012F4C       TData.WriteBlob
- 0001:00152608       TDatabaseController.AddObject
- 0001:0015268C       TDatabaseController.BackupDatabase
- 0001:00152934       TDatabaseController.BackupDataTable
- 0001:00152A28       TDatabaseController.BackupDataTables
- 0001:00152B0C       TDatabaseController.BackupOrdersDataTables
- 0001:00152B38       TDatabaseController.CheckObjects
- 0001:00152D70       TDatabaseController.CheckObjectsExists
- 0001:00153B3C       TDatabaseController.CheckTable
- 0001:001548B0       TDatabaseController.CheckTableOnOpen
- 0001:00154A88       TDatabaseController.ClearBackup
- 0001:00154B5C       TDatabaseController.Create
- 0001:00154C64       TDatabaseController.CreateViews
- 0001:001553B4       TDatabaseController.CreateWorkSchema
- 0001:00155494       TDatabaseController.Destroy
- 0001:001554CC       TDatabaseController.DropWorkSchema
- 0001:00155598       TDatabaseController.FindById
- 0001:001555E0       TDatabaseController.FreeMySQLLib
- 0001:001556F0       TDatabaseController.GetById
- 0001:00155808       TDatabaseController.GetFullLastCreateScript
- 0001:0015644C       TDatabaseController.GetLastCreateScript
- 0001:00156544       TDatabaseController.GetMaxTempTableSize
- 0001:00156558       TDatabaseController.GetNewConnection
- 0001:00156670       TDatabaseController.Initialize
- 0001:00156AD0       TDatabaseController.IsBackuped
- 0001:00156B5C       TDatabaseController.IsFatalError
- 0001:00156B8C       TDatabaseController.OptimizeObjects
- 0001:00156E04       TDatabaseController.OptimizeTable
- 0001:00157000       TDatabaseController.ParseMethodResuls
- 0001:00157548       TDatabaseController.RepairTableFromBackup
- 0001:00157958       TDatabaseController.RestoreDatabase
- 0001:00157AD0       TDatabaseController.SwithTypes
- 0001:00157AFC       TDatabaseController.TableExists
- 0001:00157B98       TDatabaseController.WorkSchemaExists
- 0001:001525BC       TDatabaseObject.SetName
- 0001:00157CB4       TDatabaseTable.GetCreateSQL
- 0001:00157D6C       TDatabaseTable.GetDropSQL
- 0001:00157E40       TDatabaseTable.GetInsertSQL
- 0001:00157E74       TDatabaseTable.GetTableOptions
- 0001:00157ECC       TDatabaseTable.LogObjectName
- 0001:00157EF0       TDatabaseView.GetCreateSQL
- 0001:00157FD4       TDatabaseView.GetDropSQL
+ 0001:001528D0       TDatabaseController.AddObject
+ 0001:00152954       TDatabaseController.BackupDatabase
+ 0001:00152BFC       TDatabaseController.BackupDataTable
+ 0001:00152CF0       TDatabaseController.BackupDataTables
+ 0001:00152DD4       TDatabaseController.BackupOrdersDataTables
+ 0001:00152E00       TDatabaseController.CheckObjects
+ 0001:00153038       TDatabaseController.CheckObjectsExists
+ 0001:00153E04       TDatabaseController.CheckTable
+ 0001:00154B78       TDatabaseController.CheckTableOnOpen
+ 0001:00154D50       TDatabaseController.ClearBackup
+ 0001:00154E24       TDatabaseController.Create
+ 0001:00154F2C       TDatabaseController.CreateViews
+ 0001:0015567C       TDatabaseController.CreateWorkSchema
+ 0001:0015575C       TDatabaseController.Destroy
+ 0001:00155794       TDatabaseController.DropWorkSchema
+ 0001:00155860       TDatabaseController.FindById
+ 0001:001558A8       TDatabaseController.FreeMySQLLib
+ 0001:001559B8       TDatabaseController.GetById
+ 0001:00155AD0       TDatabaseController.GetFullLastCreateScript
+ 0001:00156714       TDatabaseController.GetLastCreateScript
+ 0001:0015680C       TDatabaseController.GetMaxTempTableSize
+ 0001:00156820       TDatabaseController.GetNewConnection
+ 0001:00156938       TDatabaseController.Initialize
+ 0001:00156D98       TDatabaseController.IsBackuped
+ 0001:00156E24       TDatabaseController.IsFatalError
+ 0001:00156E54       TDatabaseController.OptimizeObjects
+ 0001:001570CC       TDatabaseController.OptimizeTable
+ 0001:001572C8       TDatabaseController.ParseMethodResuls
+ 0001:00157810       TDatabaseController.RepairTableFromBackup
+ 0001:00157C20       TDatabaseController.RestoreDatabase
+ 0001:00157D98       TDatabaseController.SwithTypes
+ 0001:00157DC4       TDatabaseController.TableExists
+ 0001:00157E60       TDatabaseController.WorkSchemaExists
+ 0001:00152884       TDatabaseObject.SetName
+ 0001:00157F7C       TDatabaseTable.GetCreateSQL
+ 0001:00158034       TDatabaseTable.GetDropSQL
+ 0001:00158108       TDatabaseTable.GetInsertSQL
+ 0001:0015813C       TDatabaseTable.GetTableOptions
+ 0001:00158194       TDatabaseTable.LogObjectName
+ 0001:001581B8       TDatabaseView.GetCreateSQL
+ 0001:0015829C       TDatabaseView.GetDropSQL
  0001:000ECCB0       TDataExportAsXls.Create
  0001:000ECD44       TDataExportAsXls.Destroy
  0001:000ECD84       TDataExportAsXls.EndExport
@@ -4595,17 +4595,17 @@ Detailed map of segments
  0001:00046904       TDBAccessUtils.SetLockDebug
  0001:0004698C       TDBAccessUtils.SetSQLText
  0001:0004693C       TDBAccessUtils.SQLMonitorClass
- 0001:000467E8       TDBAccessUtils.UsedConnection
  0001:000467F4       TDBAccessUtils.UsedConnection
- 0001:00159978       TDBComponentWindowProc.Create
- 0001:00159A40       TDBComponentWindowProc.GetSaveFlag
- 0001:00159A58       TDBComponentWindowProc.HackDBGirdWndProc
- 0001:0015AE2C       TDBComponentWindowProc.OnBeforePopup
- 0001:0015AE58       TDBComponentWindowProc.OnPopupCopyGridClick
+ 0001:000467E8       TDBAccessUtils.UsedConnection
+ 0001:00159C40       TDBComponentWindowProc.Create
+ 0001:00159D08       TDBComponentWindowProc.GetSaveFlag
+ 0001:00159D20       TDBComponentWindowProc.HackDBGirdWndProc
+ 0001:0015B0F4       TDBComponentWindowProc.OnBeforePopup
+ 0001:0015B120       TDBComponentWindowProc.OnPopupCopyGridClick
+ 0001:000AD478       TDBGridHelper.AddColumn
  0001:000AD500       TDBGridHelper.AddColumn
  0001:000AD5A4       TDBGridHelper.AddColumn
  0001:000AD3D4       TDBGridHelper.AddColumn
- 0001:000AD478       TDBGridHelper.AddColumn
  0001:000AD65C       TDBGridHelper.CopyGridToClipboard
  0001:000AD698       TDBGridHelper.ExtractWord
  0001:000AD7AC       TDBGridHelper.GetColumnWidths
@@ -4647,122 +4647,123 @@ Detailed map of segments
  0001:000DA5B0       TDefectivesForm.Print
  0001:000DA254       TDefectivesForm.SetDateInterval
  0001:000DA334       TDefectivesForm.SetOrderField
- 0001:00167FE0       TDefectivesTable.Create
- 0001:00168038       TDefectivesTable.GetCreateSQL
- 0001:00169354       TDelayOfPaymentsTable.Create
- 0001:001693B0       TDelayOfPaymentsTable.GetCreateSQL
+ 0001:001682A8       TDefectivesTable.Create
+ 0001:00168300       TDefectivesTable.GetCreateSQL
+ 0001:0016961C       TDelayOfPaymentsTable.Create
+ 0001:00169678       TDelayOfPaymentsTable.GetCreateSQL
  0001:000C2F5C       TDelayPopupMenuThread.Execute
  0001:00093330       TDescriptionForm.FormResize
  0001:00093310       TDescriptionForm.reDescriptionKeyDown
- 0001:0016B72C       TDescriptionsTable.Create
- 0001:0016B78C       TDescriptionsTable.GetCreateSQL
+ 0001:0016B9F4       TDescriptionsTable.Create
+ 0001:0016BA54       TDescriptionsTable.GetCreateSQL
  0001:000BB96C       TDisplayedPromotion.Create
  0001:000BB990       TDisplayedPromotion.Destroy
- 0001:00143C28       TDM.adtClientsOldAfterOpen
- 0001:0014BF3C       TDM.adtParamsOldAfterPost
- 0001:0014BF4C       TDM.adtReceivedDocsAfterPost
- 0001:0014E0FC       TDM.AllowAutoComment
- 0001:0014FD28       TDM.CertificateSourceExists
- 0001:001459C4       TDM.CheckCopyIDFromDB
- 0001:00145EF0       TDM.CheckCriticalLibrary
- 0001:0014B290       TDM.CheckDataIntegrity
- 0001:00146AD0       TDM.CheckDBFile
- 0001:0014BF5C       TDM.CheckDBObjectsWithDatabaseController
- 0001:0014D4C0       TDM.CheckLocalTime
- 0001:0014DE30       TDM.CheckNewNetworkVersion
- 0001:001431B0       TDM.CheckRestrictToRun
- 0001:0014C3E8       TDM.CheckSpecialLibrary
- 0001:001443C0       TDM.ClearDatabase
- 0001:00143154       TDM.ClientChanged
- 0001:001439E8       TDM.CompactDataBase
- 0001:00147364       TDM.CreateClearDatabaseFromScript
- 0001:0014D784       TDM.DataSetToString
- 0001:00144DF8       TDM.DeleteEmptyOrders
- 0001:0014C198       TDM.DeleteOldMysqlFolder
+ 0001:00143C30       TDM.adtClientsOldAfterOpen
+ 0001:0014BF44       TDM.adtParamsOldAfterPost
+ 0001:0014BF54       TDM.adtReceivedDocsAfterPost
+ 0001:0014E104       TDM.AllowAutoComment
+ 0001:0014FD30       TDM.CertificateSourceExists
+ 0001:001459CC       TDM.CheckCopyIDFromDB
+ 0001:00145EF8       TDM.CheckCriticalLibrary
+ 0001:0014B298       TDM.CheckDataIntegrity
+ 0001:00146AD8       TDM.CheckDBFile
+ 0001:0014BF64       TDM.CheckDBObjectsWithDatabaseController
+ 0001:0014D4C8       TDM.CheckLocalTime
+ 0001:0014DE38       TDM.CheckNewNetworkVersion
+ 0001:001431B8       TDM.CheckRestrictToRun
+ 0001:0014C3F0       TDM.CheckSpecialLibrary
+ 0001:001443C8       TDM.ClearDatabase
+ 0001:0014315C       TDM.ClientChanged
+ 0001:001439F0       TDM.CompactDataBase
+ 0001:0014736C       TDM.CreateClearDatabaseFromScript
+ 0001:0014D78C       TDM.DataSetToString
+ 0001:00144E00       TDM.DeleteEmptyOrders
+ 0001:0014C1A0       TDM.DeleteOldMysqlFolder
  0001:00141D68       TDM.DMCreate
- 0001:00146074       TDM.D_HP
- 0001:00146150       TDM.E_HP
- 0001:00146EE0       TDM.FindOrderInfo
- 0001:0014F67C       TDM.frReportPrintReport
- 0001:00145A40       TDM.GetCatalogsCount
- 0001:0014BB28       TDM.GetClearSendResultSql
- 0001:0014B9FC       TDM.GetClientInformation
- 0001:00145034       TDM.GetCumulative
- 0001:0014534C       TDM.GetDisplayColors
- 0001:0014CA10       TDM.GetEditNameAndAddress
- 0001:00145FA8       TDM.GetFileHash
- 0001:001472C0       TDM.GetFullLastCreateScript
- 0001:001498F0       TDM.GetMainConnection
- 0001:0014CE14       TDM.GetMarkup
- 0001:0014CEDC       TDM.GetMaxRetailMarkup
- 0001:0014D440       TDM.GetMaxRetailSupplierMarkup
- 0001:0014CF1C       TDM.GetMaxVitallyImportantMarkup
- 0001:0014D480       TDM.GetMaxVitallyImportantSupplierMarkup
- 0001:0014B7FC       TDM.GetOrderInfo
- 0001:0014DD48       TDM.GetPriceRetByMarkup
- 0001:0014DDBC       TDM.GetRetailCostLast
- 0001:0014CE50       TDM.GetRetailMarkup
- 0001:0014DDFC       TDM.GetRetailMarkupValue
- 0001:00146E2C       TDM.GetRetUpCost
- 0001:0014DD80       TDM.GetRetUpCostByRetailCost
- 0001:00148DE0       TDM.GetServerUpdateId
- 0001:00145700       TDM.GetSumOrder
- 0001:0014CAC8       TDM.GetVitallyImportantMarkup
- 0001:00149D6C       TDM.InsertOrderHeader
- 0001:0014E45C       TDM.InsertUserActionLog
- 0001:0014E468       TDM.InsertUserActionLog
- 0001:00149CF0       TDM.InternalCloseMySqlDB
- 0001:001483A0       TDM.InternalSetHTTPParams
- 0001:00143F64       TDM.LinkExternalTables
- 0001:0014CB60       TDM.LoadMarkups
- 0001:001456D4       TDM.LoadRetailMargins
- 0001:00145B94       TDM.LoadSelectedPrices
- 0001:0014CA94       TDM.LoadVitallyImportantMarkups
- 0001:0014526C       TDM.MainConnectionOldAfterConnect
- 0001:0014FA18       TDM.MoveWaybillToSupplierFolder
- 0001:001453C8       TDM.NeedCommitExchange
- 0001:0014D39C       TDM.NeedCumulativeAfterUpdateToNewLibMySqlD
- 0001:0014E6A0       TDM.NeedShowCertificatesResults
- 0001:0014C628       TDM.NeedUpdate800xToMySql
- 0001:0014F130       TDM.NeedUpdateToNewCryptLibMySqlD
- 0001:0014CF5C       TDM.NeedUpdateToNewLibMySqlD
- 0001:0014DB54       TDM.NeedUpdateToNewLibMySqlDWithGlobalParams
- 0001:00146984       TDM.OnScriptExecuteError
- 0001:0014EAD4       TDM.OpenCertificateFiles
- 0001:0014828C       TDM.OpenDocsDir
- 0001:00149910       TDM.PatchMyDataSets
- 0001:0014C734       TDM.PrepareUpdate800xToMySql
- 0001:0014F230       TDM.PrepareUpdateToNewCryptLibMySqlD
- 0001:0014D0BC       TDM.PrepareUpdateToNewLibMySqlD
- 0001:00147C28       TDM.ProcessDocs
- 0001:00147F44       TDM.ProcessDocsDir
- 0001:0014F684       TDM.ProcessWaybillsDir
- 0001:00149808       TDM.QueryValue
- 0001:001453F0       TDM.ReadPasswords
- 0001:00147664       TDM.RecoverDatabase
- 0001:00145094       TDM.ResetCumulative
- 0001:001453D0       TDM.ResetNeedCommitExchange
- 0001:00145184       TDM.ResetStarted
- 0001:00149980       TDM.RestoreDatabaseFromPrevios
- 0001:001455AC       TDM.SavePass
- 0001:0014510C       TDM.SetCumulative
- 0001:001453E8       TDM.SetNeedCommitExchange
- 0001:0014D730       TDM.SetNetworkSettings
- 0001:00146E50       TDM.SetSendToNotClosedOrders
- 0001:00148DF8       TDM.SetServerUpdateId
- 0001:001451F8       TDM.SetStarted
- 0001:0014EDD8       TDM.ShowCertificatesResults
- 0001:0014FF20       TDM.ShowCertificateWarning
- 0001:00143A44       TDM.ShowFastReport
- 0001:0014D678       TDM.ShowFastReportWithSave
- 0001:00148E48       TDM.ShowOrderDetailsReport
- 0001:00145370       TDM.TCPPresent
- 0001:001442BC       TDM.UnLinkExternalTables
- 0001:0014E164       TDM.UpdateComment
- 0001:00146294       TDM.UpdateDB
- 0001:001466E0       TDM.UpdateDBFile
- 0001:001488E8       TDM.UpdateDBUIN
- 0001:0014CAEC       TDM.VitallyImportantMarkupsExists
+ 0001:0014607C       TDM.D_HP
+ 0001:00146158       TDM.E_HP
+ 0001:00146EE8       TDM.FindOrderInfo
+ 0001:0014F684       TDM.frReportPrintReport
+ 0001:00145A48       TDM.GetCatalogsCount
+ 0001:0014BB30       TDM.GetClearSendResultSql
+ 0001:0014BA04       TDM.GetClientInformation
+ 0001:0014503C       TDM.GetCumulative
+ 0001:00145354       TDM.GetDisplayColors
+ 0001:0014CA18       TDM.GetEditNameAndAddress
+ 0001:00145FB0       TDM.GetFileHash
+ 0001:001472C8       TDM.GetFullLastCreateScript
+ 0001:001498F8       TDM.GetMainConnection
+ 0001:0014CE1C       TDM.GetMarkup
+ 0001:0014CEE4       TDM.GetMaxRetailMarkup
+ 0001:0014D448       TDM.GetMaxRetailSupplierMarkup
+ 0001:0014CF24       TDM.GetMaxVitallyImportantMarkup
+ 0001:0014D488       TDM.GetMaxVitallyImportantSupplierMarkup
+ 0001:0014B804       TDM.GetOrderInfo
+ 0001:0014DD50       TDM.GetPriceRetByMarkup
+ 0001:0014DDC4       TDM.GetRetailCostLast
+ 0001:0014CE58       TDM.GetRetailMarkup
+ 0001:0014DE04       TDM.GetRetailMarkupValue
+ 0001:00146E34       TDM.GetRetUpCost
+ 0001:0014DD88       TDM.GetRetUpCostByRetailCost
+ 0001:00148DE8       TDM.GetServerUpdateId
+ 0001:00145708       TDM.GetSumOrder
+ 0001:0014CAD0       TDM.GetVitallyImportantMarkup
+ 0001:00149D74       TDM.InsertOrderHeader
+ 0001:0014E470       TDM.InsertUserActionLog
+ 0001:0014E464       TDM.InsertUserActionLog
+ 0001:00149CF8       TDM.InternalCloseMySqlDB
+ 0001:001483A8       TDM.InternalSetHTTPParams
+ 0001:00143F6C       TDM.LinkExternalTables
+ 0001:0014CB68       TDM.LoadMarkups
+ 0001:001456DC       TDM.LoadRetailMargins
+ 0001:00145B9C       TDM.LoadSelectedPrices
+ 0001:0014CA9C       TDM.LoadVitallyImportantMarkups
+ 0001:00145274       TDM.MainConnectionOldAfterConnect
+ 0001:0014FA20       TDM.MoveWaybillToSupplierFolder
+ 0001:001453D0       TDM.NeedCommitExchange
+ 0001:0014D3A4       TDM.NeedCumulativeAfterUpdateToNewLibMySqlD
+ 0001:0014E6A8       TDM.NeedShowCertificatesResults
+ 0001:0014C630       TDM.NeedUpdate800xToMySql
+ 0001:0014F138       TDM.NeedUpdateToNewCryptLibMySqlD
+ 0001:0014CF64       TDM.NeedUpdateToNewLibMySqlD
+ 0001:0014DB5C       TDM.NeedUpdateToNewLibMySqlDWithGlobalParams
+ 0001:0014698C       TDM.OnScriptExecuteError
+ 0001:0014EADC       TDM.OpenCertificateFiles
+ 0001:00148294       TDM.OpenDocsDir
+ 0001:00149918       TDM.PatchMyDataSets
+ 0001:0014C73C       TDM.PrepareUpdate800xToMySql
+ 0001:0014F238       TDM.PrepareUpdateToNewCryptLibMySqlD
+ 0001:0014D0C4       TDM.PrepareUpdateToNewLibMySqlD
+ 0001:00147C30       TDM.ProcessDocs
+ 0001:00147F4C       TDM.ProcessDocsDir
+ 0001:0014F68C       TDM.ProcessWaybillsDir
+ 0001:00149810       TDM.QueryValue
+ 0001:001453F8       TDM.ReadPasswords
+ 0001:0014766C       TDM.RecoverDatabase
+ 0001:0014509C       TDM.ResetCumulative
+ 0001:001453D8       TDM.ResetNeedCommitExchange
+ 0001:0014518C       TDM.ResetStarted
+ 0001:00149988       TDM.RestoreDatabaseFromPrevios
+ 0001:001455B4       TDM.SavePass
+ 0001:00145114       TDM.SetCumulative
+ 0001:001453F0       TDM.SetNeedCommitExchange
+ 0001:0014D738       TDM.SetNetworkSettings
+ 0001:00146E58       TDM.SetSendToNotClosedOrders
+ 0001:00148E00       TDM.SetServerUpdateId
+ 0001:00145200       TDM.SetStarted
+ 0001:0014EDE0       TDM.ShowCertificatesResults
+ 0001:0014FF28       TDM.ShowCertificateWarning
+ 0001:00143A4C       TDM.ShowFastReport
+ 0001:0014D680       TDM.ShowFastReportWithSave
+ 0001:00148E50       TDM.ShowOrderDetailsReport
+ 0001:00145378       TDM.TCPPresent
+ 0001:001442C4       TDM.UnLinkExternalTables
+ 0001:0014E16C       TDM.UpdateComment
+ 0001:0014629C       TDM.UpdateDB
+ 0001:001466E8       TDM.UpdateDBFile
+ 0001:001488F0       TDM.UpdateDBUIN
+ 0001:0014FF98       TDM.UpdateNewFiles
+ 0001:0014CAF4       TDM.VitallyImportantMarkupsExists
  0001:000F697C       TDocumentBodiesForm.AddNDSFilter
  0001:000F75C8       TDocumentBodiesForm.adsDocumentBodiesCertificateIdGetText
  0001:000F6594       TDocumentBodiesForm.adsDocumentBodiesPrintedChange
@@ -4829,8 +4830,8 @@ Detailed map of segments
  0001:000EFDB4       TDocumentBodiesForm.WaybillGetCellParams
  0001:000F0FD0       TDocumentBodiesForm.WaybillKeyPress
  0001:000F2B1C       TDocumentBodiesForm.WaybillToExcel
- 0001:0015F600       TDocumentBodiesTable.Create
- 0001:0015F65C       TDocumentBodiesTable.GetCreateSQL
+ 0001:0015F8C8       TDocumentBodiesTable.Create
+ 0001:0015F924       TDocumentBodiesTable.GetCreateSQL
  0001:000FB2D4       TDocumentHeaderForm.adsDocumentHeadersDocumentTypeGetText
  0001:000FB234       TDocumentHeaderForm.dbgHeadersDblClick
  0001:000FB154       TDocumentHeaderForm.dbgHeadersKeyDown
@@ -4852,8 +4853,8 @@ Detailed map of segments
  0001:000FCBE4       TDocumentHeaderForm.tmrChangeFilterSuppliersTimer
  0001:000FD4FC       TDocumentHeaderForm.tmrProcessWaybilsTimer
  0001:000FCC00       TDocumentHeaderForm.UpdateOrderDataset
- 0001:0015F1BC       TDocumentHeadersTable.Create
- 0001:0015F218       TDocumentHeadersTable.GetCreateSQL
+ 0001:0015F484       TDocumentHeadersTable.Create
+ 0001:0015F4E0       TDocumentHeadersTable.GetCreateSQL
  0002:00000774       Te0
  0002:00000B74       Te1
  0002:00000F74       Te2
@@ -5013,8 +5014,8 @@ Detailed map of segments
  0001:0000E074       TFieldDescs.FieldByName
  0001:0000DEEC       TFieldDescs.FindField
  0001:0000E118       TFieldDescs.GetItems
- 0001:0016D06C       TFileCertificatesTable.Create
- 0001:0016D0CC       TFileCertificatesTable.GetCreateSQL
+ 0001:0016D334       TFileCertificatesTable.Create
+ 0001:0016D394       TFileCertificatesTable.GetCreateSQL
  0001:0008A46C       TFileUpdateInfo.Create
  0001:00004038       TFlickerlessDrawGrid.NewWndProc
  0001:00003D40       TFlickerlessPageControl.NewWndProc
@@ -5070,8 +5071,8 @@ Detailed map of segments
  0001:000BDA68       TframeAutoComment.FrameResize
  0001:000BDA28       TframeAutoComment.ProcessResize
  0001:000BA2A0       TframeBaseLegend.Create
- 0001:000BA3A4       TframeBaseLegend.CreateLegendLabel
  0001:000BA4C8       TframeBaseLegend.CreateLegendLabel
+ 0001:000BA3A4       TframeBaseLegend.CreateLegendLabel
  0001:000BC340       TframeBlockPromotion.AddFrame
  0001:000BC378       TframeBlockPromotion.Create
  0001:000BC3C8       TframeBlockPromotion.CreateVisualComponent
@@ -5171,8 +5172,8 @@ Detailed map of segments
  0001:0009DF50       TGlobalParamsHelper.GetParamDef
  0001:0009E004       TGlobalParamsHelper.SaveParam
  0001:0009DF4C       TGlobalParamsImp.ReadParams
- 0001:00161E40       TGlobalParamsTable.Create
- 0001:00161E9C       TGlobalParamsTable.GetCreateSQL
+ 0001:00162108       TGlobalParamsTable.Create
+ 0001:00162164       TGlobalParamsTable.GetCreateSQL
  0001:000AAC28       TGlobalSettingParams.ReadParams
  0001:000AAD88       TGlobalSettingParams.SaveParams
  0001:000B652C       TGlyphCache.Create
@@ -5188,8 +5189,8 @@ Detailed map of segments
  0001:000B6408       TGlyphList.Destroy
  0001:000A1558       TGroupByCoreId.Create
  0001:000A1598       TGroupByCoreId.Destroy
- 0001:00163A0C       TGroupMaxProducerCostsView.Create
- 0001:00163A70       TGroupMaxProducerCostsView.GetCreateSQL
+ 0001:00163CD4       TGroupMaxProducerCostsView.Create
+ 0001:00163D38       TGroupMaxProducerCostsView.GetCreateSQL
  0002:000040D0       theDefaultEncoding
  0002:000040D4       theUnicodeEncoding
  0002:000040D8       theUTF8Encoding
@@ -5228,8 +5229,8 @@ Detailed map of segments
  0001:000AA3B4       TInternalRepareOrders.InternalRepareOrders
  0001:000AA694       TInternalRepareOrders.RepareOrders
  0001:000AA914       TInternalRepareOrders.RestoreOrders
- 0001:00162258       TInvoiceHeadersTable.Create
- 0001:001622B4       TInvoiceHeadersTable.GetCreateSQL
+ 0001:00162520       TInvoiceHeadersTable.Create
+ 0001:0016257C       TInvoiceHeadersTable.GetCreateSQL
  0001:00102694       TjbDBF.Actualization
  0001:000FE690       TjbDBF.Close
  0001:00101FEC       TjbDBF.Cover
@@ -5289,8 +5290,8 @@ Detailed map of segments
  0001:00044B84       TMacro.Create
  0001:000F880C       TMacro.Create
  0001:000F8A08       TMacro.GetAsVariant
- 0001:00044C3C       TMacro.GetDisplayName
  0001:000F88DC       TMacro.GetDisplayName
+ 0001:00044C3C       TMacro.GetDisplayName
  0001:00044C08       TMacro.IsEqual
  0001:000F89F8       TMacro.IsMacroStored
  0001:00044CC8       TMacro.SetActive
@@ -5304,8 +5305,8 @@ Detailed map of segments
  0001:000F8B10       TMacros.CreateMacro
  0001:000452E8       TMacros.DefineProperties
  0001:00045054       TMacros.Expand
- 0001:000456E8       TMacros.FindMacro
  0001:000F8B38       TMacros.FindMacro
+ 0001:000456E8       TMacros.FindMacro
  0001:000F8AFC       TMacros.GetItem
  0001:00045604       TMacros.GetItem
  0001:00045030       TMacros.GetMacroValue
@@ -5402,8 +5403,8 @@ Detailed map of segments
  0001:00134A00       TMainForm.ToolBarMouseMove
  0001:00135A14       TMainForm.UpdateAddressName
  0001:001327C8       TMainForm.UpdateReclame
- 0001:0016BC0C       TMaxProducerCostsTable.Create
- 0001:0016BC6C       TMaxProducerCostsTable.GetCreateSQL
+ 0001:0016BED4       TMaxProducerCostsTable.Create
+ 0001:0016BF34       TMaxProducerCostsTable.GetCreateSQL
  0001:000489DC       TMDLHelper.Create
  0001:00048A24       TMDLHelper.Destroy
  0001:00048BD8       TMDLHelper.FlushDll
@@ -5431,8 +5432,8 @@ Detailed map of segments
  0001:00017A88       TMemData.CommitUpdates
  0001:00013E0C       TMemData.CompareBinValues
  0001:00017524       TMemData.CompareBookmarks
- 0001:000158C4       TMemData.CompareFields
  0001:00015920       TMemData.CompareFields
+ 0001:000158C4       TMemData.CompareFields
  0001:00013F74       TMemData.CompareFieldValue
  0001:000159FC       TMemData.CompareRecords
  0001:00013B3C       TMemData.CompareStrValues
@@ -5543,14 +5544,14 @@ Detailed map of segments
  0001:00022CAC       TMemDataSet.GetDataSetServiceClass
  0001:000233EC       TMemDataSet.GetDataTypesMap
  0001:00024568       TMemDataSet.GetFieldClass
+ 0001:00023E30       TMemDataSet.GetFieldData
  0001:00024054       TMemDataSet.GetFieldData
  0001:000243C8       TMemDataSet.GetFieldData
- 0001:00023E30       TMemDataSet.GetFieldData
  0001:00023D24       TMemDataSet.GetFieldDesc
  0001:00023C88       TMemDataSet.GetFieldDescNo
  0001:000235C4       TMemDataSet.GetFielDefSize
- 0001:0002359C       TMemDataSet.GetFieldType
  0001:00023584       TMemDataSet.GetFieldType
+ 0001:0002359C       TMemDataSet.GetFieldType
  0001:00025EEC       TMemDataSet.GetFieldXMLValue
  0001:000235AC       TMemDataSet.GetObjectFieldDefName
  0001:00023B80       TMemDataSet.GetObjectTypeNames
@@ -5586,10 +5587,10 @@ Detailed map of segments
  0001:00029090       TMemDataSet.IsSequenced
  0001:00028B50       TMemDataSet.Locate
  0001:00028AF0       TMemDataSet.Locate
- 0001:00028C00       TMemDataSet.LocateEx
  0001:00028BAC       TMemDataSet.LocateEx
- 0001:00028970       TMemDataSet.LocateRecord
+ 0001:00028C00       TMemDataSet.LocateEx
  0001:000289E4       TMemDataSet.LocateRecord
+ 0001:00028970       TMemDataSet.LocateRecord
  0001:00028C58       TMemDataSet.Lookup
  0001:000230C4       TMemDataSet.OpenCursor
  0001:00022D38       TMemDataSet.Prepare
@@ -5602,8 +5603,8 @@ Detailed map of segments
  0001:000292BC       TMemDataSet.SetCachedUpdates
  0001:00022CF0       TMemDataSet.SetDataSetService
  0001:000267FC       TMemDataSet.SetDefaultExpressionValues
- 0001:0002448C       TMemDataSet.SetFieldData
  0001:000240A0       TMemDataSet.SetFieldData
+ 0001:0002448C       TMemDataSet.SetFieldData
  0001:00026F20       TMemDataSet.SetFilterData
  0001:00026EA4       TMemDataSet.SetFiltered
  0001:0002703C       TMemDataSet.SetFilterOptions
@@ -5675,10 +5676,10 @@ Detailed map of segments
  0001:0012BE48       TMinPricesForm.tmrUpdatePreviosOrdersTimer
  0001:0012BF7C       TMinPricesForm.UpdateOffers
  0001:0012D674       TMinPricesForm.UpdateOrderDataset
- 0001:0016B08C       TMinPricesTable.Create
- 0001:0016B0E4       TMinPricesTable.GetCreateSQL
- 0001:0016C180       TMinReqRulesTable.Create
- 0001:0016C1D8       TMinReqRulesTable.GetCreateSQL
+ 0001:0016B354       TMinPricesTable.Create
+ 0001:0016B3AC       TMinPricesTable.GetCreateSQL
+ 0001:0016C448       TMinReqRulesTable.Create
+ 0001:0016C4A0       TMinReqRulesTable.GetCreateSQL
  0001:000BF118       TMnnSearchForm.actShowAllExecute
  0001:000BEB14       TMnnSearchForm.AddKeyToSearch
  0001:000BF088       TMnnSearchForm.dbgMnnDblClick
@@ -5695,10 +5696,10 @@ Detailed map of segments
  0001:000BE870       TMnnSearchForm.SetClear
  0001:000BED80       TMnnSearchForm.tmrFlipToMNNTimer
  0001:000BE9CC       TMnnSearchForm.tmrSearchTimer
- 0001:0016B504       TMNNTable.Create
- 0001:0016B558       TMNNTable.GetCreateSQL
- 0001:0015AE78       TModifiedAction.Create
- 0001:0015AECC       TModifiedAction.ModifedUpdate
+ 0001:0016B7CC       TMNNTable.Create
+ 0001:0016B820       TMNNTable.GetCreateSQL
+ 0001:0015B140       TModifiedAction.Create
+ 0001:0015B194       TModifiedAction.ModifedUpdate
  0001:000A1678       TMoveToPriceProvider.FirstAction
  0001:000A16A0       TMoveToPriceProvider.Matching
  0001:000A16CC       TMoveToPriceProvider.SecondAction
@@ -6054,8 +6055,8 @@ Detailed map of segments
  0001:00054F98       TMySQLAPIDirect._mysql_fetch_value_str
  0001:00054DF0       TMySQLAPIDirect._mysql_fetch_value_to_buff
  0001:00054E40       TMySQLAPIDirect._mysql_fetch_value_to_buff
- 0001:00054EF8       TMySQLAPIDirect._mysql_fetch_value_to_str
  0001:00054E88       TMySQLAPIDirect._mysql_fetch_value_to_str
+ 0001:00054EF8       TMySQLAPIDirect._mysql_fetch_value_to_str
  0001:00054A78       TMySQLAPIDirect._mysql_stmt_bind_result
  0001:000551B8       TMySQLAPIDirect._mysql_stmt_execute
  0001:00055244       TMySQLAPIDirect._mysql_stmt_fetch
@@ -6080,9 +6081,9 @@ Detailed map of segments
  0001:0004B504       TMySqlBinds.Destroy
  0001:0005D3D4       TMySQLCommand.BreakExec
  0001:00059DEC       TMySQLCommand.CalcRowsAffected
+ 0001:00059AE4       TMySQLCommand.Check
  0001:00059AF4       TMySQLCommand.Check
  0001:00059AD4       TMySQLCommand.Check
- 0001:00059AE4       TMySQLCommand.Check
  0001:00059B00       TMySQLCommand.CheckStmt
  0001:00059B14       TMySQLCommand.Create
  0001:0005BF58       TMySQLCommand.CreateProcCall
@@ -6105,9 +6106,9 @@ Detailed map of segments
  0001:00059DB0       TMySQLCommand.Unprepare
  0001:00059448       TMySQLConnection.Assign
  0001:000594DC       TMySQLConnection.AssignConnect
- 0001:00058998       TMySQLConnection.Check
- 0001:0005898C       TMySQLConnection.Check
  0001:000589A4       TMySQLConnection.Check
+ 0001:0005898C       TMySQLConnection.Check
+ 0001:00058998       TMySQLConnection.Check
  0001:00059A94       TMySQLConnection.CheckIsValid
  0001:00058E70       TMySQLConnection.CheckNoBackslashEscapesMode
  0001:00058AEC       TMySQLConnection.CheckStmt
@@ -6189,14 +6190,14 @@ Detailed map of segments
  0001:0004D3E8       TMySqlNet.WriteInt24
  0001:0004D418       TMySqlNet.WriteInt32
  0001:0004D454       TMySqlNet.WriteInt64
- 0001:0004D4D4       TMySqlNet.WriteString
  0001:0004D4B8       TMySqlNet.WriteString
+ 0001:0004D4D4       TMySqlNet.WriteString
  0001:00065998       TMySQLRecordset.AddSQLObjectIfNeed
  0001:00060510       TMySQLRecordset.AllocFetchBlock
  0001:00065878       TMySQLRecordset.BreakFetch
  0001:0005D9BC       TMySQLRecordset.CanDisconnect
- 0001:0005D860       TMySQLRecordset.Check
  0001:0005D8A0       TMySQLRecordset.Check
+ 0001:0005D860       TMySQLRecordset.Check
  0001:0005D880       TMySQLRecordset.Check
  0001:0005D788       TMySQLRecordset.Create
  0001:0005D8BC       TMySQLRecordset.CreateCommand
@@ -6218,8 +6219,8 @@ Detailed map of segments
  0001:00065A34       TMySQLRecordset.GetProp
  0001:0005D994       TMySQLRecordset.GetServerMinorVer
  0001:0005D96C       TMySQLRecordset.GetServerPrimaryVer
- 0001:0006598C       TMySQLRecordset.GetSQLObjectIndex
  0001:000658B8       TMySQLRecordset.GetSQLObjectIndex
+ 0001:0006598C       TMySQLRecordset.GetSQLObjectIndex
  0001:0005D924       TMySQLRecordset.GetUseUnicode
  0001:0005E5AC       TMySQLRecordset.InternalClose
  0001:0005FD54       TMySQLRecordset.InternalInitFields
@@ -6296,8 +6297,8 @@ Detailed map of segments
  0001:0005D544       TMyTableInfo.GetTableNameFull
  0001:0005D574       TMyTableInfo.IsQuoted
  0001:0005D56C       TMyTableInfo.LeftQuote
- 0001:0005D738       TMyTableInfo.NormalizeName
  0001:0005D75C       TMyTableInfo.NormalizeName
+ 0001:0005D738       TMyTableInfo.NormalizeName
  0001:0005D628       TMyTableInfo.QuotesNeeded
  0001:0005D570       TMyTableInfo.RightQuote
  0001:0005D558       TMyTableInfo.SetTableNameFull
@@ -6384,8 +6385,8 @@ Detailed map of segments
  0001:000DEDA8       TNetworkAdapterSettings.Create
  0001:000DEE18       TNetworkAdapterSettings.ReadFromFile
  0001:000DF124       TNetworkAdapterSettings.SaveToFile
- 0001:00161FD0       TNetworkLogTable.Create
- 0001:00162028       TNetworkLogTable.GetCreateSQL
+ 0001:00162298       TNetworkLogTable.Create
+ 0001:001622F0       TNetworkLogTable.GetCreateSQL
  0001:000A8D64       TNetworkParams.ReadParams
  0001:000A8EF4       TNetworkParams.SaveMinCostPercent
  0001:000A8F6C       TNetworkParams.SaveParams
@@ -6505,8 +6506,8 @@ Detailed map of segments
  0001:000D4434       TOrdersForm.RetailPriceUpdateData
  0001:000D2D3C       TOrdersForm.SetOrderLabel
  0001:000D2548       TOrdersForm.SetParams
- 0001:000D32F8       TOrdersForm.ShowForm
  0001:000D2294       TOrdersForm.ShowForm
+ 0001:000D32F8       TOrdersForm.ShowForm
  0001:000D33E8       TOrdersForm.TimerTimer
  0001:000D334C       TOrdersForm.tmrCheckOrderCountTimer
  0001:000D3D88       TOrdersForm.UpdateOrderDataset
@@ -6582,14 +6583,14 @@ Detailed map of segments
  0001:0001F920       TParamDescs.Clear
  0001:0001F8F4       TParamDescs.Destroy
  0001:0001F964       TParamDescs.GetItems
- 0001:0015B294       TParamsTable.Create
- 0001:0015B2E8       TParamsTable.GetCreateSQL
- 0001:0015C69C       TParamsTable.GetInsertSQL
+ 0001:0015B55C       TParamsTable.Create
+ 0001:0015B5B0       TParamsTable.GetCreateSQL
+ 0001:0015C964       TParamsTable.GetInsertSQL
  0001:0000B920       TParser.AddToLexemArray
  0001:0000A1B8       TParser.Back
  0001:0000B93C       TParser.CopyText
- 0001:00009B8C       TParser.Create
  0001:00009BF0       TParser.Create
+ 0001:00009B8C       TParser.Create
  0001:0000B35C       TParser.CurrCol
  0001:0000B340       TParser.CurrLine
  0001:0000B2B0       TParser.CurrPos
@@ -6616,17 +6617,17 @@ Detailed map of segments
  0001:0000B470       TParser.ReadNextBlock
  0001:00009D84       TParser.SetText
  0001:0000A148       TParser.ToBegin
- 0001:0000B1E8       TParser.ToLexem
  0001:0000B18C       TParser.ToLexem
+ 0001:0000B1E8       TParser.ToLexem
  0001:00009E40       TParser.ToRightQuote
  0001:00009EE8       TParser.ToRightQuoteA
  0001:00009E64       TParser.ToRightQuoteP
  0001:00030538       TPoolingOptions.AssignTo
  0001:000304F4       TPoolingOptions.Create
- 0001:0015D8C8       TPostedOrderHeadsTable.Create
- 0001:0015D928       TPostedOrderHeadsTable.GetCreateSQL
- 0001:0015E098       TPostedOrderListsTable.Create
- 0001:0015E0F8       TPostedOrderListsTable.GetCreateSQL
+ 0001:0015DB90       TPostedOrderHeadsTable.Create
+ 0001:0015DBF0       TPostedOrderHeadsTable.GetCreateSQL
+ 0001:0015E360       TPostedOrderListsTable.Create
+ 0001:0015E3C0       TPostedOrderListsTable.GetCreateSQL
  0001:0013A5F8       TPostOrderHeader.Create
  0001:0013A6CC       TPostOrderHeader.Destroy
  0001:0013A6FC       TPostOrderHeader.FromMysqlToDateTime
@@ -6655,8 +6656,8 @@ Detailed map of segments
  0001:000D9AF4       TPreviousOrdersForm.FormCreate
  0001:000D9B6C       TPreviousOrdersForm.FormDestroy
  0001:000D9870       TPreviousOrdersForm.ShowForm
- 0001:00168C1C       TPricesDataTable.Create
- 0001:00168C74       TPricesDataTable.GetCreateSQL
+ 0001:00168EE4       TPricesDataTable.Create
+ 0001:00168F3C       TPricesDataTable.GetCreateSQL
  0001:000CC67C       TPricesForm.actOnlyLeadersExecute
  0001:000CC830       TPricesForm.adsPrices2AfterOpen
  0001:000CC7C0       TPricesForm.adsPrices2AfterScroll
@@ -6678,12 +6679,12 @@ Detailed map of segments
  0001:000CC3EC       TPricesForm.ShowForm
  0001:000CCDF4       TPricesForm.stManagerMailClick
  0001:000CCA80       TPricesForm.tmStopEditTimer
- 0001:00168F3C       TPricesRegionalDataTable.Create
- 0001:00168F9C       TPricesRegionalDataTable.GetCreateSQL
- 0001:00164184       TPricesRegionalDataUpTable.Create
- 0001:001641E8       TPricesRegionalDataUpTable.GetCreateSQL
- 0001:00163034       TPricesShowView.Create
- 0001:0016308C       TPricesShowView.GetCreateSQL
+ 0001:00169204       TPricesRegionalDataTable.Create
+ 0001:00169264       TPricesRegionalDataTable.GetCreateSQL
+ 0001:0016444C       TPricesRegionalDataUpTable.Create
+ 0001:001644B0       TPricesRegionalDataUpTable.GetCreateSQL
+ 0001:001632FC       TPricesShowView.Create
+ 0001:00163354       TPricesShowView.GetCreateSQL
  0001:000E6198       TPrintSettingsForm.AddBottomPanel
  0001:000E63BC       TPrintSettingsForm.AddDateTimePicker
  0001:000E6470       TPrintSettingsForm.AddEdit
@@ -6694,24 +6695,24 @@ Detailed map of segments
  0001:000E6604       TPrintSettingsForm.FormCloseQuery
  0001:000E6638       TPrintSettingsForm.FormCreate
  0001:000E6668       TPrintSettingsForm.SetFormWidth
- 0001:0016BFA0       TProducersTable.Create
- 0001:0016BFFC       TProducersTable.GetCreateSQL
- 0001:0016A1B8       TProductsTable.Create
- 0001:0016A214       TProductsTable.GetCreateSQL
- 0001:0016C79C       TPromotionCatalogsTable.Create
- 0001:0016C7FC       TPromotionCatalogsTable.GetCreateSQL
+ 0001:0016C268       TProducersTable.Create
+ 0001:0016C2C4       TProducersTable.GetCreateSQL
+ 0001:0016A480       TProductsTable.Create
+ 0001:0016A4DC       TProductsTable.GetCreateSQL
+ 0001:0016CA64       TPromotionCatalogsTable.Create
+ 0001:0016CAC4       TPromotionCatalogsTable.GetCreateSQL
  0001:000BBFB8       TPromotionLabel.Click
  0001:000BC080       TPromotionLabel.Create
  0001:000BC044       TPromotionLabel.PrepareLabel
- 0001:00160154       TProviderSettingsTable.Create
- 0001:001601B4       TProviderSettingsTable.GetCreateSQL
- 0001:001683A8       TProvidersTable.Create
- 0001:00168400       TProvidersTable.GetCreateSQL
+ 0001:0016041C       TProviderSettingsTable.Create
+ 0001:0016047C       TProviderSettingsTable.GetCreateSQL
+ 0001:00168670       TProvidersTable.Create
+ 0001:001686C8       TProvidersTable.GetCreateSQL
  0002:000045A8       Tracer
  0001:000EB628       TRackCardReportParams.ReadParams
  0001:000EBA48       TRackCardReportParams.SaveParams
- 0001:0015EF5C       TReceivedDocsTable.Create
- 0001:0015EFB8       TReceivedDocsTable.GetCreateSQL
+ 0001:0015F224       TReceivedDocsTable.Create
+ 0001:0015F280       TReceivedDocsTable.GetCreateSQL
  0001:000DE3E8       TReceiveThread.DisconnectThread
  0001:000DE420       TReceiveThread.Log
  0001:000DE548       TReceiveThread.OnConnectError
@@ -6724,26 +6725,26 @@ Detailed map of segments
  0001:000E6DBC       TReestrReportParams.GetReestrNumber
  0001:000E6DE8       TReestrReportParams.ReadParams
  0001:000E6F38       TReestrReportParams.SaveParams
- 0001:00168910       TRegionalDataTable.Create
- 0001:0016896C       TRegionalDataTable.GetCreateSQL
- 0001:001686A0       TRegionsTable.Create
- 0001:001686F4       TRegionsTable.GetCreateSQL
+ 0001:00168BD8       TRegionalDataTable.Create
+ 0001:00168C34       TRegionalDataTable.GetCreateSQL
+ 0001:00168968       TRegionsTable.Create
+ 0001:001689BC       TRegionsTable.GetCreateSQL
  0001:000DAAFC       TRegistersForm.FormCreate
  0001:000DAB7C       TRegistersForm.FormDestroy
- 0001:001511D4       TRestoreFromEtalonThread.Execute
- 0001:00151B38       TRestoreFromEtalonThread.FreeMySqlLib
- 0001:00151BC0       TRestoreFromEtalonThread.OnScriptExecuteError
- 0001:00151D34       TRestoreOnErrorThread.Execute
- 0001:00152310       TRestoreOnErrorThread.FreeMySqlLib
+ 0001:0015149C       TRestoreFromEtalonThread.Execute
+ 0001:00151E00       TRestoreFromEtalonThread.FreeMySqlLib
+ 0001:00151E88       TRestoreFromEtalonThread.OnScriptExecuteError
+ 0001:00151FFC       TRestoreOnErrorThread.Execute
+ 0001:001525D8       TRestoreOnErrorThread.FreeMySqlLib
  0001:000A15C8       TRestoreProvider.FirstAction
  0001:000A15F4       TRestoreProvider.Matching
  0001:000A1620       TRestoreProvider.SecondAction
  0001:000A164C       TRestoreProvider.SubSystem
- 0001:00151054       TRestoreThread.Execute
- 0001:0015D4B4       TRetailMarginsTable.Create
- 0001:0015D510       TRetailMarginsTable.GetCreateSQL
- 0001:0015D798       TRetailMarginsTable.GetInsertSQL
- 0001:0014CAFC       TRetailMarkup.Create
+ 0001:0015131C       TRestoreThread.Execute
+ 0001:0015D77C       TRetailMarginsTable.Create
+ 0001:0015D7D8       TRetailMarginsTable.GetCreateSQL
+ 0001:0015DA60       TRetailMarginsTable.GetInsertSQL
+ 0001:0014CB04       TRetailMarkup.Create
  0001:000E49C0       TRetryForm.btnCancelClick
  0001:000E48EC       TRetryForm.btnRetryClick
  0001:000E482C       TRetryForm.FormCreate
@@ -6790,8 +6791,8 @@ Detailed map of segments
  0001:00050B04       TRows.Destroy
  0001:00050C04       TRows.Get
  0001:00050C34       TRows.GetCount
- 0001:001505B0       TRunUpdateDBFile.BackupDataDirs
- 0001:00150790       TRunUpdateDBFile.Execute
+ 0001:00150878       TRunUpdateDBFile.BackupDataDirs
+ 0001:00150A58       TRunUpdateDBFile.Execute
  0001:000B74CC       TRxButtonGlyph.CalcButtonLayout
  0001:000B6638       TRxButtonGlyph.Create
  0001:000B6C68       TRxButtonGlyph.CreateButtonGlyph
@@ -7074,10 +7075,10 @@ Detailed map of segments
  0001:000AD140       TSchedulesController.NeedUpdate
  0001:000AD1D4       TSchedulesController.NeedUpdateOnBegin
  0001:000AD2D0       TSchedulesController.SchedulesEnabled
- 0001:0016CA18       TSchedulesTable.Create
- 0001:0016CA70       TSchedulesTable.GetCreateSQL
+ 0001:0016CCE0       TSchedulesTable.Create
+ 0001:0016CD38       TSchedulesTable.GetCreateSQL
  0002:00003938       tsd
- 0001:00145B04       TSelectPrice.Create
+ 0001:00145B0C       TSelectPrice.Create
  0001:0010CA00       TSendArchivedOrdersThread.Execute
  0001:0010CB94       TSendArchivedOrdersThread.FillFileList
  0001:0010CCD0       TSendArchivedOrdersThread.SendFileFromClient
@@ -7116,8 +7117,8 @@ Detailed map of segments
  0001:0012E6E8       TServiceLogForm.LogGetCellParams
  0001:0012E72C       TServiceLogForm.ShowForm
  0001:0012E750       TServiceLogForm.SourceGetText
- 0001:00052C14       TSHA1Managed.ComputeHash
  0001:00052B98       TSHA1Managed.ComputeHash
+ 0001:00052C14       TSHA1Managed.ComputeHash
  0001:000529A8       TSHA1Managed.ComputeSHA1
  0001:000528C4       TSHA1Managed.DoCycle
  0001:00052860       TSHA1Managed.f
@@ -7149,8 +7150,8 @@ Detailed map of segments
  0001:000133A0       TSortColumns.Clear
  0001:00013374       TSortColumns.Destroy
  0001:000133E4       TSortColumns.GetItems
- 0001:0016D394       TSourceSuppliersTable.Create
- 0001:0016D3F0       TSourceSuppliersTable.GetCreateSQL
+ 0001:0016D65C       TSourceSuppliersTable.Create
+ 0001:0016D6B8       TSourceSuppliersTable.GetCreateSQL
  0001:0000BCA4       TSQLParser.CompareClauseLexems
  0001:0000BAC0       TSQLParser.InitParser
  0001:0000BBD0       TSQLParser.IsAlpha
@@ -7250,10 +7251,10 @@ Detailed map of segments
  0001:000A1920       TSupplierPromotion.HtmlExists
  0001:000A19B4       TSupplierPromotion.JpgExists
  0001:000A1A48       TSupplierPromotion.TxtExists
- 0001:0016C48C       TSupplierPromotionsTable.Create
- 0001:0016C4EC       TSupplierPromotionsTable.GetCreateSQL
- 0001:001664B4       TSynonymFirmCrTable.Create
- 0001:00166510       TSynonymFirmCrTable.GetCreateSQL
+ 0001:0016C754       TSupplierPromotionsTable.Create
+ 0001:0016C7B4       TSupplierPromotionsTable.GetCreateSQL
+ 0001:0016677C       TSynonymFirmCrTable.Create
+ 0001:001667D8       TSynonymFirmCrTable.GetCreateSQL
  0001:00128478       TSynonymSearchForm.actFlipCoreExecute
  0001:001280B8       TSynonymSearchForm.AddKeyToSearch
  0001:001286E0       TSynonymSearchForm.adsCoreAfterOpen
@@ -7286,22 +7287,22 @@ Detailed map of segments
  0001:00127640       TSynonymSearchForm.tmrSearchTimer
  0001:00128B58       TSynonymSearchForm.tmrSelectedPricesTimer
  0001:001284E4       TSynonymSearchForm.tmrUpdatePreviosOrdersTimer
- 0001:00166284       TSynonymsTable.Create
- 0001:001662DC       TSynonymsTable.GetCreateSQL
+ 0001:0016654C       TSynonymsTable.Create
+ 0001:001665A4       TSynonymsTable.GetCreateSQL
  0001:000E9E94       TTicketReportParams.ReadParams
  0001:000EA2CC       TTicketReportParams.SaveParams
- 0001:001642F8       TTmpClientsTable.Create
- 0001:00164350       TTmpClientsTable.GetCreateSQL
- 0001:00164C04       TTmpPricesDataTable.Create
- 0001:00164C60       TTmpPricesDataTable.GetCreateSQL
- 0001:00164E58       TTmpPricesRegionalDataTable.Create
- 0001:00164EBC       TTmpPricesRegionalDataTable.GetCreateSQL
- 0001:001647F8       TTmpProvidersTable.Create
- 0001:00164854       TTmpProvidersTable.GetCreateSQL
- 0001:001649E8       TTmpRegionalDataTable.Create
- 0001:00164A44       TTmpRegionalDataTable.GetCreateSQL
- 0001:00164650       TTmpRegionsTable.Create
- 0001:001646A8       TTmpRegionsTable.GetCreateSQL
+ 0001:001645C0       TTmpClientsTable.Create
+ 0001:00164618       TTmpClientsTable.GetCreateSQL
+ 0001:00164ECC       TTmpPricesDataTable.Create
+ 0001:00164F28       TTmpPricesDataTable.GetCreateSQL
+ 0001:00165120       TTmpPricesRegionalDataTable.Create
+ 0001:00165184       TTmpPricesRegionalDataTable.GetCreateSQL
+ 0001:00164AC0       TTmpProvidersTable.Create
+ 0001:00164B1C       TTmpProvidersTable.GetCreateSQL
+ 0001:00164CB0       TTmpRegionalDataTable.Create
+ 0001:00164D0C       TTmpRegionalDataTable.GetCreateSQL
+ 0001:00164918       TTmpRegionsTable.Create
+ 0001:00164970       TTmpRegionsTable.GetCreateSQL
  0001:000857BC       TTracer.Create
  0001:000855C8       TTracer.Create
  0001:0008595C       TTracer.Destroy
@@ -7323,10 +7324,10 @@ Detailed map of segments
  0001:0010D2D4       TULoginHelper.GetUSettingsKeyName
  0001:0010DF0C       TULoginHelper.GetUStatData
  0001:0010D5A8       TULoginHelper.ReadFirstNotNullByte
- 0001:00165CA8       TUserActionLogsDataTable.Create
- 0001:00165D04       TUserActionLogsDataTable.GetCreateSQL
- 0001:00167440       TUserInfoTable.Create
- 0001:00167498       TUserInfoTable.GetCreateSQL
+ 0001:00165F70       TUserActionLogsDataTable.Create
+ 0001:00165FCC       TUserActionLogsDataTable.GetCreateSQL
+ 0001:00167708       TUserInfoTable.Create
+ 0001:00167760       TUserInfoTable.GetCreateSQL
  0001:000E4134       TUserMessageParams.ConfirmedMessage
  0001:000E4148       TUserMessageParams.GetDisplayedMessage
  0001:000E4268       TUserMessageParams.NeedConfirm
@@ -7348,15 +7349,15 @@ Detailed map of segments
  0001:00085390       TVersionInfo.GetVerValue
  0001:00085204       TVersionInfo.ReadVersionInfo
  0001:0008BC68       TVistaCorrectForm.CreateParams
- 0001:0015FEA4       TVitallyImportantMarkupsTable.Create
- 0001:0015FF08       TVitallyImportantMarkupsTable.GetCreateSQL
+ 0001:0016016C       TVitallyImportantMarkupsTable.Create
+ 0001:001601D0       TVitallyImportantMarkupsTable.GetCreateSQL
  0001:00129498       TWaitForm.btnExitClick
  0001:00129370       TWaitForm.FormCreate
  0001:001294A0       TWaitForm.TimerTimer
- 0001:001504E8       TWaitingForm.FormCreate
- 0001:001504CC       TWaitingForm.FormKeyDown
- 0001:001504F0       TWaitingForm.OnTerminate
- 0001:001504D4       TWaitingForm.TimerTimer
+ 0001:001507B0       TWaitingForm.FormCreate
+ 0001:00150794       TWaitingForm.FormKeyDown
+ 0001:001507B8       TWaitingForm.OnTerminate
+ 0001:0015079C       TWaitingForm.TimerTimer
  0001:000C58E4       TWayBillListForm.dbgWBLKeyDown
  0001:000E68B0       TWaybillPrintSettingsForm.BeforeClose
  0001:000E69B0       TWaybillPrintSettingsForm.CreateVisibleComponents
@@ -7382,31 +7383,31 @@ Detailed map of segments
  0002:0000325C       TypeNames
  0001:0010E17C       ULoginHelper
  0001:00057690       Unbracket
+ 0001:00057A60       UnbracketIfPossible
+ 0001:0005787C       UnbracketIfPossible
  0001:00057AA8       UnbracketIfPossible
  0001:00057AC4       UnbracketIfPossible
- 0001:0005787C       UnbracketIfPossible
- 0001:00057A60       UnbracketIfPossible
  0001:000097E8       uncompress
  0002:000040E8       UncompressProc
  0002:00003328       UndoModes
  0001:000040C4       UnhookHintHooks
  0001:00002DA4       UnhookProc
  0001:00000A70       UnhookWindowsHookEx
- 0001:00007558       UnicodeEncoding.GetBytes
+ 0001:00007514       UnicodeEncoding.GetBytes
  0001:00007450       UnicodeEncoding.GetBytes
  0001:000074AC       UnicodeEncoding.GetBytes
- 0001:00007514       UnicodeEncoding.GetBytes
+ 0001:00007558       UnicodeEncoding.GetBytes
  0001:000076EC       UnicodeEncoding.GetMaxByteCount
- 0001:000075AC       UnicodeEncoding.GetString
  0001:00007608       UnicodeEncoding.GetString
- 0001:00007670       UnicodeEncoding.GetWideString
+ 0001:000075AC       UnicodeEncoding.GetString
  0001:00007694       UnicodeEncoding.GetWideString
+ 0001:00007670       UnicodeEncoding.GetWideString
  0001:0009E778       UniqueID
  0001:00084380       UnloadSevenZipDLL
  0001:00000A78       UnregisterClass
  0001:00098044       UnRegisterEvents
  0002:00004084       UnRegisterModuleClassesHook
- 0001:00158580       UpdateActionLists
+ 0001:00158848       UpdateActionLists
  0001:0003027C       UpdateKindToStatementType
  0001:0008B8A4       UpdateValue
  0001:00002614       UrlMon
@@ -7415,14 +7416,14 @@ Detailed map of segments
  0002:000049B4       UserSetRetUpCost
  0001:00087388       UTCToLocalTime
  0001:0000778C       UTF8Encoding.GetBytes
- 0001:00007808       UTF8Encoding.GetBytes
  0001:00007780       UTF8Encoding.GetBytes
  0001:000076F8       UTF8Encoding.GetBytes
+ 0001:00007808       UTF8Encoding.GetBytes
  0001:00007994       UTF8Encoding.GetMaxByteCount
  0001:00007838       UTF8Encoding.GetString
  0001:00007814       UTF8Encoding.GetString
- 0001:000078E0       UTF8Encoding.GetWideString
  0001:00007904       UTF8Encoding.GetWideString
+ 0001:000078E0       UTF8Encoding.GetWideString
  0001:00060954       Utf8ToStringHeap
  0001:00060710       Utf8ToWs
  0001:0009EF30       U_Address
@@ -7462,7 +7463,7 @@ Detailed map of segments
  0001:000A17F4       U_Supplier
  0001:000A1AF0       U_SupplierPromotion
  0001:000850FC       U_SXConversions
- 0001:00150A40       U_UpdateDBThread
+ 0001:00150D08       U_UpdateDBThread
  0001:0008BCC0       U_VistaCorrectForm
  0001:000E6D20       U_WaybillPrintSettingsForm
  0001:00017650       ValidateCacheItem
@@ -7481,7 +7482,7 @@ Detailed map of segments
  0001:00000838       VirtualQuery
  0001:00129638       Wait
  0001:00000840       WaitForSingleObject
- 0001:00150528       Waiting
+ 0001:001507F0       Waiting
  0001:00000848       WaitNamedPipe
  0002:000033A8       WarningOrderCount
  0001:000C5930       WayBillList
@@ -7510,8 +7511,8 @@ Detailed map of segments
  0001:00049328       WinSvc
  0001:00088F20       WordCount
  0001:0007F5E4       WordPosition
- 0002:000037F4       WordWraps
  0002:000032F0       WordWraps
+ 0002:000037F4       WordWraps
  0001:0004D1DC       WriteBuff
  0001:00061068       WriteByte
  0001:00033DC8       WriteData
@@ -7522,9 +7523,9 @@ Detailed map of segments
  0001:00061088       WriteInt16
  0001:000610A8       WriteInt32
  0001:000610C8       WriteInt64
- 0001:0006F0B4       WriteMacros
- 0001:00038DA8       WriteMacros
  0001:00043A30       WriteMacros
+ 0001:00038DA8       WriteMacros
+ 0001:0006F0B4       WriteMacros
  0001:00082CCC       WritePosStr
  0001:00000860       WriteProcessMemory
  0001:0003E9A0       WriteUQParams
@@ -7549,8 +7550,8 @@ Detailed map of segments
  0001:0007F774       XorEncode
  0001:0007F710       XorString
  0001:00006804       XPMan
- 0001:00072E44       Year2
  0001:000611C0       Year2
+ 0001:00072E44       Year2
  0002:0000450C       ZeroDate
  0001:0002F340       _AddWhere
  0001:000098DC       _CompareText
@@ -13352,389 +13353,390 @@ Detailed map of segments
  0001:00141AE0       ClearSelectedPrices
  0001:00141B1C       GetSelectedPricesSQL
  0001:00141D68       TDM.DMCreate
- 0001:00143154       TDM.ClientChanged
- 0001:001431B0       TDM.CheckRestrictToRun
- 0001:001439E8       TDM.CompactDataBase
- 0001:00143A44       TDM.ShowFastReport
- 0001:00143C28       TDM.adtClientsOldAfterOpen
- 0001:00143F64       TDM.LinkExternalTables
- 0001:001442BC       TDM.UnLinkExternalTables
- 0001:001443C0       TDM.ClearDatabase
- 0001:00144DF8       TDM.DeleteEmptyOrders
- 0001:00145034       TDM.GetCumulative
- 0001:00145094       TDM.ResetCumulative
- 0001:0014510C       TDM.SetCumulative
- 0001:00145184       TDM.ResetStarted
- 0001:001451F8       TDM.SetStarted
- 0001:0014526C       TDM.MainConnectionOldAfterConnect
- 0001:0014534C       TDM.GetDisplayColors
- 0001:00145370       TDM.TCPPresent
- 0001:001453C8       TDM.NeedCommitExchange
- 0001:001453D0       TDM.ResetNeedCommitExchange
- 0001:001453E8       TDM.SetNeedCommitExchange
- 0001:001453F0       TDM.ReadPasswords
- 0001:0014553C       GetRandomString
- 0001:001455AC       TDM.SavePass
- 0001:001456D4       TDM.LoadRetailMargins
- 0001:00145700       TDM.GetSumOrder
- 0001:001459C4       TDM.CheckCopyIDFromDB
- 0001:00145A40       TDM.GetCatalogsCount
- 0001:00145B04       TSelectPrice.Create
- 0001:00145B94       TDM.LoadSelectedPrices
- 0001:00145EF0       TDM.CheckCriticalLibrary
- 0001:00145FA8       TDM.GetFileHash
- 0001:00146074       TDM.D_HP
- 0001:00146150       TDM.E_HP
- 0001:00146294       TDM.UpdateDB
- 0001:001466E0       TDM.UpdateDBFile
- 0001:00146984       TDM.OnScriptExecuteError
- 0001:00146AD0       TDM.CheckDBFile
- 0001:00146E2C       TDM.GetRetUpCost
- 0001:00146E50       TDM.SetSendToNotClosedOrders
- 0001:00146EE0       TDM.FindOrderInfo
- 0001:001472C0       TDM.GetFullLastCreateScript
- 0001:00147364       TDM.CreateClearDatabaseFromScript
- 0001:00147664       TDM.RecoverDatabase
- 0001:00147C28       TDM.ProcessDocs
- 0001:00147F44       TDM.ProcessDocsDir
- 0001:0014828C       TDM.OpenDocsDir
- 0001:001483A0       TDM.InternalSetHTTPParams
- 0001:00148728       gcp
- 0001:00148808       gop
- 0001:001488E8       TDM.UpdateDBUIN
- 0001:00148DE0       TDM.GetServerUpdateId
- 0001:00148DF8       TDM.SetServerUpdateId
- 0001:00148E48       TDM.ShowOrderDetailsReport
- 0001:00149808       TDM.QueryValue
- 0001:001498F0       TDM.GetMainConnection
- 0001:00149910       TDM.PatchMyDataSets
- 0001:00149980       TDM.RestoreDatabaseFromPrevios
- 0001:00149CF0       TDM.InternalCloseMySqlDB
- 0001:00149D6C       TDM.InsertOrderHeader
- 0001:0014B290       TDM.CheckDataIntegrity
- 0001:0014B7FC       TDM.GetOrderInfo
- 0001:0014B9FC       TDM.GetClientInformation
- 0001:0014BB28       TDM.GetClearSendResultSql
- 0001:0014BF3C       TDM.adtParamsOldAfterPost
- 0001:0014BF4C       TDM.adtReceivedDocsAfterPost
- 0001:0014BF5C       TDM.CheckDBObjectsWithDatabaseController
- 0001:0014C198       TDM.DeleteOldMysqlFolder
- 0001:0014C3E8       TDM.CheckSpecialLibrary
- 0001:0014C628       TDM.NeedUpdate800xToMySql
- 0001:0014C734       TDM.PrepareUpdate800xToMySql
- 0001:0014CA10       TDM.GetEditNameAndAddress
- 0001:0014CA94       TDM.LoadVitallyImportantMarkups
- 0001:0014CAC8       TDM.GetVitallyImportantMarkup
- 0001:0014CAEC       TDM.VitallyImportantMarkupsExists
- 0001:0014CAFC       TRetailMarkup.Create
- 0001:0014CB60       TDM.LoadMarkups
- 0001:0014CE14       TDM.GetMarkup
- 0001:0014CE50       TDM.GetRetailMarkup
- 0001:0014CEDC       TDM.GetMaxRetailMarkup
- 0001:0014CF1C       TDM.GetMaxVitallyImportantMarkup
- 0001:0014CF5C       TDM.NeedUpdateToNewLibMySqlD
- 0001:0014D0BC       TDM.PrepareUpdateToNewLibMySqlD
- 0001:0014D39C       TDM.NeedCumulativeAfterUpdateToNewLibMySqlD
- 0001:0014D440       TDM.GetMaxRetailSupplierMarkup
- 0001:0014D480       TDM.GetMaxVitallyImportantSupplierMarkup
- 0001:0014D4C0       TDM.CheckLocalTime
- 0001:0014D678       TDM.ShowFastReportWithSave
- 0001:0014D730       TDM.SetNetworkSettings
- 0001:0014D784       TDM.DataSetToString
- 0001:0014DB54       TDM.NeedUpdateToNewLibMySqlDWithGlobalParams
- 0001:0014DD48       TDM.GetPriceRetByMarkup
- 0001:0014DD80       TDM.GetRetUpCostByRetailCost
- 0001:0014DDBC       TDM.GetRetailCostLast
- 0001:0014DDFC       TDM.GetRetailMarkupValue
- 0001:0014DE30       TDM.CheckNewNetworkVersion
- 0001:0014E0FC       TDM.AllowAutoComment
- 0001:0014E164       TDM.UpdateComment
- 0001:0014E45C       TDM.InsertUserActionLog
- 0001:0014E468       TDM.InsertUserActionLog
- 0001:0014E6A0       TDM.NeedShowCertificatesResults
- 0001:0014EAD4       TDM.OpenCertificateFiles
- 0001:0014EDD8       TDM.ShowCertificatesResults
- 0001:0014F130       TDM.NeedUpdateToNewCryptLibMySqlD
- 0001:0014F230       TDM.PrepareUpdateToNewCryptLibMySqlD
- 0001:0014F67C       TDM.frReportPrintReport
- 0001:0014F684       TDM.ProcessWaybillsDir
- 0001:0014FA18       TDM.MoveWaybillToSupplierFolder
- 0001:0014FD28       TDM.CertificateSourceExists
- 0001:0014FF20       TDM.ShowCertificateWarning
- 0001:0014FF90       Finalization
- 0001:0015001C       DModule
- 0001:001502B0       ShowWaiting
- 0001:001504CC       TWaitingForm.FormKeyDown
- 0001:001504D4       TWaitingForm.TimerTimer
- 0001:001504E8       TWaitingForm.FormCreate
- 0001:001504F0       TWaitingForm.OnTerminate
- 0001:001504F8       Finalization
- 0001:00150528       Waiting
- 0001:001505B0       TRunUpdateDBFile.BackupDataDirs
- 0001:00150790       TRunUpdateDBFile.Execute
- 0001:001508EC       RunUpdateDBFile
- 0001:00150A10       Finalization
- 0001:00150A40       U_UpdateDBThread
- 0001:00150BEC       RunCompactDatabase
- 0001:00150C90       RunRestoreDatabase
- 0001:00150D90       RunRestoreDatabaseFromEtalon
- 0001:00150E98       RunRestoreDatabaseOnError
- 0001:00150F84       TCompactThread.Execute
- 0001:00151054       TRestoreThread.Execute
- 0001:001511D4       TRestoreFromEtalonThread.Execute
- 0001:00151B38       TRestoreFromEtalonThread.FreeMySqlLib
- 0001:00151BC0       TRestoreFromEtalonThread.OnScriptExecuteError
- 0001:00151D34       TRestoreOnErrorThread.Execute
- 0001:00152310       TRestoreOnErrorThread.FreeMySqlLib
- 0001:00152398       Finalization
- 0001:001523C8       CompactThread
- 0001:001525A0       DatabaseController
- 0001:001525A8       CompareObjects
- 0001:001525BC       TDatabaseObject.SetName
- 0001:00152608       TDatabaseController.AddObject
- 0001:0015268C       TDatabaseController.BackupDatabase
- 0001:00152760       backupFileName
- 0001:00152934       TDatabaseController.BackupDataTable
- 0001:00152A28       TDatabaseController.BackupDataTables
- 0001:00152B0C       TDatabaseController.BackupOrdersDataTables
- 0001:00152B38       TDatabaseController.CheckObjects
- 0001:00152D70       TDatabaseController.CheckObjectsExists
- 0001:00153230       LogError
- 0001:00153368       DropTable
- 0001:00153614       SimpleRepairTable
- 0001:00153738       RepairTable
- 0001:00153B3C       TDatabaseController.CheckTable
- 0001:00153D14       LogError
- 0001:00153E4C       DropTable
- 0001:001540F8       SimpleRepairTable
- 0001:0015421C       RepairTable
- 0001:001548B0       TDatabaseController.CheckTableOnOpen
- 0001:00154A88       TDatabaseController.ClearBackup
- 0001:00154B5C       TDatabaseController.Create
- 0001:00154C64       TDatabaseController.CreateViews
- 0001:001553B4       TDatabaseController.CreateWorkSchema
- 0001:00155494       TDatabaseController.Destroy
- 0001:001554CC       TDatabaseController.DropWorkSchema
- 0001:00155598       TDatabaseController.FindById
- 0001:001555E0       TDatabaseController.FreeMySQLLib
- 0001:001556F0       TDatabaseController.GetById
- 0001:00155808       TDatabaseController.GetFullLastCreateScript
- 0001:0015644C       TDatabaseController.GetLastCreateScript
- 0001:00156544       TDatabaseController.GetMaxTempTableSize
- 0001:00156558       TDatabaseController.GetNewConnection
- 0001:00156670       TDatabaseController.Initialize
- 0001:00156AD0       TDatabaseController.IsBackuped
- 0001:00156B5C       TDatabaseController.IsFatalError
- 0001:00156B8C       TDatabaseController.OptimizeObjects
- 0001:00156E04       TDatabaseController.OptimizeTable
- 0001:00157000       TDatabaseController.ParseMethodResuls
- 0001:00157548       TDatabaseController.RepairTableFromBackup
- 0001:00157958       TDatabaseController.RestoreDatabase
- 0001:00157AD0       TDatabaseController.SwithTypes
- 0001:00157AFC       TDatabaseController.TableExists
- 0001:00157B98       TDatabaseController.WorkSchemaExists
- 0001:00157CB4       TDatabaseTable.GetCreateSQL
- 0001:00157D6C       TDatabaseTable.GetDropSQL
- 0001:00157E40       TDatabaseTable.GetInsertSQL
- 0001:00157E74       TDatabaseTable.GetTableOptions
- 0001:00157ECC       TDatabaseTable.LogObjectName
- 0001:00157EF0       TDatabaseView.GetCreateSQL
- 0001:00157FD4       TDatabaseView.GetDropSQL
- 0001:001580B0       Finalization
- 0001:001580E0       DatabaseObjects
- 0001:00158440       TChildForm.CreateParams
- 0001:00158470       TChildForm.Loaded
- 0001:00158494       TChildForm.AddActionList
- 0001:001584EC       TChildForm.RemoveActionList
- 0001:00158528       TChildForm.Notification
- 0001:00158580       UpdateActionLists
- 0001:001585FC       TChildForm.SetParent
- 0001:00158638       TChildForm.ShowForm
- 0001:00158808       TChildForm.DoShow
- 0001:00158824       TChildForm.Print
- 0001:00158828       TChildForm.UpdateReclame
- 0001:00158AEC       TChildForm.PatchNonBrowser
- 0001:00158B98       TChildForm.SetActionLists
- 0001:00158BA8       TChildForm.GetActionLists
- 0001:00158BB0       TChildForm.Create
- 0001:00158CDC       TChildForm.CheckVolume
- 0001:00158D2C       TChildForm.ClearOrder
- 0001:00158D90       TChildForm.ShowVolumeMessage
- 0001:001591A8       TChildForm.tCheckVolumeTimer
- 0001:001591B0       TChildForm.FormCreate
- 0001:001596A4       TChildForm.NewAfterPost
- 0001:001596E0       TChildForm.NewBeforeScroll
- 0001:00159708       TChildForm.NewExit
- 0001:00159730       TChildForm.NewBeforePost
- 0001:00159794       TChildForm.CheckByOrderCost
- 0001:0015981C       TChildForm.ClearOrderByOrderCost
- 0001:0015984C       TChildForm.CheckByMinOrderCount
- 0001:001598B8       TChildForm.Destroy
- 0001:00159978       TDBComponentWindowProc.Create
- 0001:00159A40       TDBComponentWindowProc.GetSaveFlag
- 0001:00159A58       TDBComponentWindowProc.HackDBGirdWndProc
- 0001:00159A8C       TChildForm.PatchMyDataSets
- 0001:00159B50       TChildForm.BeforeUpdateExecuteForClientID
- 0001:00159C74       ChangeTitleCaption
- 0001:00159CE4       TChildForm.PrepareColumnsInOrderGrid
- 0001:0015A40C       TChildForm.FilterByMNNExecute
- 0001:0015A518       TChildForm.ShowDescriptionExecute
- 0001:0015A9E0       TChildForm.ShowDescriptionUpdate
- 0001:0015AA9C       TChildForm.ShowAsPrevForm
- 0001:0015AAC0       TChildForm.SetPrevForm
- 0001:0015AB44       TChildForm.SetActiveChildToMainForm
- 0001:0015AC84       TChildForm.UpdateOrderDataset
- 0001:0015ADC8       TChildForm.HideAllForms
- 0001:0015AE2C       TDBComponentWindowProc.OnBeforePopup
- 0001:0015AE58       TDBComponentWindowProc.OnPopupCopyGridClick
- 0001:0015AE78       TModifiedAction.Create
- 0001:0015AECC       TModifiedAction.ModifedUpdate
- 0001:0015AF2C       TChildForm.ModifyActionList
- 0001:0015AF94       TChildForm.FilterByMNNUpdate
- 0001:0015B03C       TChildForm.CheckByBuyingMatrixType
- 0001:0015B104       TChildForm.NewAfterOpen
- 0001:0015B178       TChildForm.NewAfterScroll
- 0001:0015B1EC       Finalization
- 0001:0015B21C       Child
- 0001:0015B294       TParamsTable.Create
- 0001:0015B2E8       TParamsTable.GetCreateSQL
- 0001:0015C69C       TParamsTable.GetInsertSQL
- 0001:0015CDD8       Finalization
- 0001:0015CE08       CriticalDatabaseObjects
- 0001:0015D4B4       TRetailMarginsTable.Create
- 0001:0015D510       TRetailMarginsTable.GetCreateSQL
- 0001:0015D798       TRetailMarginsTable.GetInsertSQL
- 0001:0015D8C8       TPostedOrderHeadsTable.Create
- 0001:0015D928       TPostedOrderHeadsTable.GetCreateSQL
- 0001:0015E098       TPostedOrderListsTable.Create
- 0001:0015E0F8       TPostedOrderListsTable.GetCreateSQL
- 0001:0015EF5C       TReceivedDocsTable.Create
- 0001:0015EFB8       TReceivedDocsTable.GetCreateSQL
- 0001:0015F1BC       TDocumentHeadersTable.Create
- 0001:0015F218       TDocumentHeadersTable.GetCreateSQL
- 0001:0015F600       TDocumentBodiesTable.Create
- 0001:0015F65C       TDocumentBodiesTable.GetCreateSQL
- 0001:0015FEA4       TVitallyImportantMarkupsTable.Create
- 0001:0015FF08       TVitallyImportantMarkupsTable.GetCreateSQL
- 0001:00160154       TProviderSettingsTable.Create
- 0001:001601B4       TProviderSettingsTable.GetCreateSQL
- 0001:001603AC       TClientSettingsTable.Create
- 0001:00160408       TClientSettingsTable.GetCreateSQL
- 0001:00160718       TCurrentOrderHeadsTable.Create
- 0001:00160778       TCurrentOrderHeadsTable.GetCreateSQL
- 0001:00160EE8       TCurrentOrderListsTable.Create
- 0001:00160F48       TCurrentOrderListsTable.GetCreateSQL
- 0001:00161E40       TGlobalParamsTable.Create
- 0001:00161E9C       TGlobalParamsTable.GetCreateSQL
- 0001:00161FD0       TNetworkLogTable.Create
- 0001:00162028       TNetworkLogTable.GetCreateSQL
- 0001:00162258       TInvoiceHeadersTable.Create
- 0001:001622B4       TInvoiceHeadersTable.GetCreateSQL
- 0001:00162D60       Finalization
- 0001:00162D90       BackupDatabaseObjects
- 0001:00163034       TPricesShowView.Create
- 0001:0016308C       TPricesShowView.GetCreateSQL
- 0001:0016357C       TClientAvgView.Create
- 0001:001635D4       TClientAvgView.GetCreateSQL
- 0001:00163A0C       TGroupMaxProducerCostsView.Create
- 0001:00163A70       TGroupMaxProducerCostsView.GetCreateSQL
- 0001:00163BC8       Finalization
- 0001:00163BF8       DatabaseViews
- 0001:00164184       TPricesRegionalDataUpTable.Create
- 0001:001641E8       TPricesRegionalDataUpTable.GetCreateSQL
- 0001:001642F8       TTmpClientsTable.Create
- 0001:00164350       TTmpClientsTable.GetCreateSQL
- 0001:00164650       TTmpRegionsTable.Create
- 0001:001646A8       TTmpRegionsTable.GetCreateSQL
- 0001:001647F8       TTmpProvidersTable.Create
- 0001:00164854       TTmpProvidersTable.GetCreateSQL
- 0001:001649E8       TTmpRegionalDataTable.Create
- 0001:00164A44       TTmpRegionalDataTable.GetCreateSQL
- 0001:00164C04       TTmpPricesDataTable.Create
- 0001:00164C60       TTmpPricesDataTable.GetCreateSQL
- 0001:00164E58       TTmpPricesRegionalDataTable.Create
- 0001:00164EBC       TTmpPricesRegionalDataTable.GetCreateSQL
- 0001:001650F8       TBatchReportDataTable.Create
- 0001:00165150       TBatchReportDataTable.GetCreateSQL
- 0001:00165AB4       TBatchReportServiceFieldsDataTable.Create
- 0001:00165B1C       TBatchReportServiceFieldsDataTable.GetCreateSQL
- 0001:00165CA8       TUserActionLogsDataTable.Create
- 0001:00165D04       TUserActionLogsDataTable.GetCreateSQL
- 0001:00165EE0       TCertificateRequestsDataTable.Create
- 0001:00165F40       TCertificateRequestsDataTable.GetCreateSQL
- 0001:00166058       Finalization
- 0001:00166088       IgnoreDatabaseObjects
- 0001:00166284       TSynonymsTable.Create
- 0001:001662DC       TSynonymsTable.GetCreateSQL
- 0001:001664B4       TSynonymFirmCrTable.Create
- 0001:00166510       TSynonymFirmCrTable.GetCreateSQL
- 0001:001666B4       Finalization
- 0001:001666E4       SynonymDatabaseObjects
- 0001:00167440       TUserInfoTable.Create
- 0001:00167498       TUserInfoTable.GetCreateSQL
- 0001:00167728       TClientTable.Create
- 0001:0016777C       TClientTable.GetCreateSQL
- 0001:00167B90       TClientsTable.Create
- 0001:00167BE4       TClientsTable.GetCreateSQL
- 0001:00167FE0       TDefectivesTable.Create
- 0001:00168038       TDefectivesTable.GetCreateSQL
- 0001:001683A8       TProvidersTable.Create
- 0001:00168400       TProvidersTable.GetCreateSQL
- 0001:001686A0       TRegionsTable.Create
- 0001:001686F4       TRegionsTable.GetCreateSQL
- 0001:00168910       TRegionalDataTable.Create
- 0001:0016896C       TRegionalDataTable.GetCreateSQL
- 0001:00168C1C       TPricesDataTable.Create
- 0001:00168C74       TPricesDataTable.GetCreateSQL
- 0001:00168F3C       TPricesRegionalDataTable.Create
- 0001:00168F9C       TPricesRegionalDataTable.GetCreateSQL
- 0001:00169354       TDelayOfPaymentsTable.Create
- 0001:001693B0       TDelayOfPaymentsTable.GetCreateSQL
- 0001:00169624       TCatalogNamesTable.Create
- 0001:00169684       TCatalogNamesTable.GetCreateSQL
- 0001:0016987C       TCatalogFarmGroupsTable.Create
- 0001:001698E0       TCatalogFarmGroupsTable.GetCreateSQL
- 0001:00169B74       TCatalogsTable.Create
- 0001:00169BD0       TCatalogsTable.GetCreateSQL
- 0001:0016A1B8       TProductsTable.Create
- 0001:0016A214       TProductsTable.GetCreateSQL
- 0001:0016A3E8       TCoreTable.Create
- 0001:0016A440       TCoreTable.GetCreateSQL
- 0001:0016B08C       TMinPricesTable.Create
- 0001:0016B0E4       TMinPricesTable.GetCreateSQL
- 0001:0016B504       TMNNTable.Create
- 0001:0016B558       TMNNTable.GetCreateSQL
- 0001:0016B72C       TDescriptionsTable.Create
- 0001:0016B78C       TDescriptionsTable.GetCreateSQL
- 0001:0016BC0C       TMaxProducerCostsTable.Create
- 0001:0016BC6C       TMaxProducerCostsTable.GetCreateSQL
- 0001:0016BFA0       TProducersTable.Create
- 0001:0016BFFC       TProducersTable.GetCreateSQL
- 0001:0016C180       TMinReqRulesTable.Create
- 0001:0016C1D8       TMinReqRulesTable.GetCreateSQL
- 0001:0016C48C       TSupplierPromotionsTable.Create
- 0001:0016C4EC       TSupplierPromotionsTable.GetCreateSQL
- 0001:0016C79C       TPromotionCatalogsTable.Create
- 0001:0016C7FC       TPromotionCatalogsTable.GetCreateSQL
- 0001:0016CA18       TSchedulesTable.Create
- 0001:0016CA70       TSchedulesTable.GetCreateSQL
- 0001:0016CBE4       TCertificatesTable.Create
- 0001:0016CC40       TCertificatesTable.GetCreateSQL
- 0001:0016CDDC       TCertificateFilesTable.Create
- 0001:0016CE3C       TCertificateFilesTable.GetCreateSQL
- 0001:0016D06C       TFileCertificatesTable.Create
- 0001:0016D0CC       TFileCertificatesTable.GetCreateSQL
- 0001:0016D23C       TCertificateSourcesTable.Create
- 0001:0016D29C       TCertificateSourcesTable.GetCreateSQL
- 0001:0016D394       TSourceSuppliersTable.Create
- 0001:0016D3F0       TSourceSuppliersTable.GetCreateSQL
- 0001:0016D55C       Finalization
- 0001:0016D58C       GeneralDatabaseObjects
- 0001:0016D854       Finalization
- 0001:0016D884       MyEmbConnectionEx
- 0001:0016D88C       CopyRegSettings
- 0001:0016D9E0       Finalization
- 0001:0016E928       AnalitF
+ 0001:0014315C       TDM.ClientChanged
+ 0001:001431B8       TDM.CheckRestrictToRun
+ 0001:001439F0       TDM.CompactDataBase
+ 0001:00143A4C       TDM.ShowFastReport
+ 0001:00143C30       TDM.adtClientsOldAfterOpen
+ 0001:00143F6C       TDM.LinkExternalTables
+ 0001:001442C4       TDM.UnLinkExternalTables
+ 0001:001443C8       TDM.ClearDatabase
+ 0001:00144E00       TDM.DeleteEmptyOrders
+ 0001:0014503C       TDM.GetCumulative
+ 0001:0014509C       TDM.ResetCumulative
+ 0001:00145114       TDM.SetCumulative
+ 0001:0014518C       TDM.ResetStarted
+ 0001:00145200       TDM.SetStarted
+ 0001:00145274       TDM.MainConnectionOldAfterConnect
+ 0001:00145354       TDM.GetDisplayColors
+ 0001:00145378       TDM.TCPPresent
+ 0001:001453D0       TDM.NeedCommitExchange
+ 0001:001453D8       TDM.ResetNeedCommitExchange
+ 0001:001453F0       TDM.SetNeedCommitExchange
+ 0001:001453F8       TDM.ReadPasswords
+ 0001:00145544       GetRandomString
+ 0001:001455B4       TDM.SavePass
+ 0001:001456DC       TDM.LoadRetailMargins
+ 0001:00145708       TDM.GetSumOrder
+ 0001:001459CC       TDM.CheckCopyIDFromDB
+ 0001:00145A48       TDM.GetCatalogsCount
+ 0001:00145B0C       TSelectPrice.Create
+ 0001:00145B9C       TDM.LoadSelectedPrices
+ 0001:00145EF8       TDM.CheckCriticalLibrary
+ 0001:00145FB0       TDM.GetFileHash
+ 0001:0014607C       TDM.D_HP
+ 0001:00146158       TDM.E_HP
+ 0001:0014629C       TDM.UpdateDB
+ 0001:001466E8       TDM.UpdateDBFile
+ 0001:0014698C       TDM.OnScriptExecuteError
+ 0001:00146AD8       TDM.CheckDBFile
+ 0001:00146E34       TDM.GetRetUpCost
+ 0001:00146E58       TDM.SetSendToNotClosedOrders
+ 0001:00146EE8       TDM.FindOrderInfo
+ 0001:001472C8       TDM.GetFullLastCreateScript
+ 0001:0014736C       TDM.CreateClearDatabaseFromScript
+ 0001:0014766C       TDM.RecoverDatabase
+ 0001:00147C30       TDM.ProcessDocs
+ 0001:00147F4C       TDM.ProcessDocsDir
+ 0001:00148294       TDM.OpenDocsDir
+ 0001:001483A8       TDM.InternalSetHTTPParams
+ 0001:00148730       gcp
+ 0001:00148810       gop
+ 0001:001488F0       TDM.UpdateDBUIN
+ 0001:00148DE8       TDM.GetServerUpdateId
+ 0001:00148E00       TDM.SetServerUpdateId
+ 0001:00148E50       TDM.ShowOrderDetailsReport
+ 0001:00149810       TDM.QueryValue
+ 0001:001498F8       TDM.GetMainConnection
+ 0001:00149918       TDM.PatchMyDataSets
+ 0001:00149988       TDM.RestoreDatabaseFromPrevios
+ 0001:00149CF8       TDM.InternalCloseMySqlDB
+ 0001:00149D74       TDM.InsertOrderHeader
+ 0001:0014B298       TDM.CheckDataIntegrity
+ 0001:0014B804       TDM.GetOrderInfo
+ 0001:0014BA04       TDM.GetClientInformation
+ 0001:0014BB30       TDM.GetClearSendResultSql
+ 0001:0014BF44       TDM.adtParamsOldAfterPost
+ 0001:0014BF54       TDM.adtReceivedDocsAfterPost
+ 0001:0014BF64       TDM.CheckDBObjectsWithDatabaseController
+ 0001:0014C1A0       TDM.DeleteOldMysqlFolder
+ 0001:0014C3F0       TDM.CheckSpecialLibrary
+ 0001:0014C630       TDM.NeedUpdate800xToMySql
+ 0001:0014C73C       TDM.PrepareUpdate800xToMySql
+ 0001:0014CA18       TDM.GetEditNameAndAddress
+ 0001:0014CA9C       TDM.LoadVitallyImportantMarkups
+ 0001:0014CAD0       TDM.GetVitallyImportantMarkup
+ 0001:0014CAF4       TDM.VitallyImportantMarkupsExists
+ 0001:0014CB04       TRetailMarkup.Create
+ 0001:0014CB68       TDM.LoadMarkups
+ 0001:0014CE1C       TDM.GetMarkup
+ 0001:0014CE58       TDM.GetRetailMarkup
+ 0001:0014CEE4       TDM.GetMaxRetailMarkup
+ 0001:0014CF24       TDM.GetMaxVitallyImportantMarkup
+ 0001:0014CF64       TDM.NeedUpdateToNewLibMySqlD
+ 0001:0014D0C4       TDM.PrepareUpdateToNewLibMySqlD
+ 0001:0014D3A4       TDM.NeedCumulativeAfterUpdateToNewLibMySqlD
+ 0001:0014D448       TDM.GetMaxRetailSupplierMarkup
+ 0001:0014D488       TDM.GetMaxVitallyImportantSupplierMarkup
+ 0001:0014D4C8       TDM.CheckLocalTime
+ 0001:0014D680       TDM.ShowFastReportWithSave
+ 0001:0014D738       TDM.SetNetworkSettings
+ 0001:0014D78C       TDM.DataSetToString
+ 0001:0014DB5C       TDM.NeedUpdateToNewLibMySqlDWithGlobalParams
+ 0001:0014DD50       TDM.GetPriceRetByMarkup
+ 0001:0014DD88       TDM.GetRetUpCostByRetailCost
+ 0001:0014DDC4       TDM.GetRetailCostLast
+ 0001:0014DE04       TDM.GetRetailMarkupValue
+ 0001:0014DE38       TDM.CheckNewNetworkVersion
+ 0001:0014E104       TDM.AllowAutoComment
+ 0001:0014E16C       TDM.UpdateComment
+ 0001:0014E464       TDM.InsertUserActionLog
+ 0001:0014E470       TDM.InsertUserActionLog
+ 0001:0014E6A8       TDM.NeedShowCertificatesResults
+ 0001:0014EADC       TDM.OpenCertificateFiles
+ 0001:0014EDE0       TDM.ShowCertificatesResults
+ 0001:0014F138       TDM.NeedUpdateToNewCryptLibMySqlD
+ 0001:0014F238       TDM.PrepareUpdateToNewCryptLibMySqlD
+ 0001:0014F684       TDM.frReportPrintReport
+ 0001:0014F68C       TDM.ProcessWaybillsDir
+ 0001:0014FA20       TDM.MoveWaybillToSupplierFolder
+ 0001:0014FD30       TDM.CertificateSourceExists
+ 0001:0014FF28       TDM.ShowCertificateWarning
+ 0001:0014FF98       TDM.UpdateNewFiles
+ 0001:00150258       Finalization
+ 0001:001502E4       DModule
+ 0001:00150578       ShowWaiting
+ 0001:00150794       TWaitingForm.FormKeyDown
+ 0001:0015079C       TWaitingForm.TimerTimer
+ 0001:001507B0       TWaitingForm.FormCreate
+ 0001:001507B8       TWaitingForm.OnTerminate
+ 0001:001507C0       Finalization
+ 0001:001507F0       Waiting
+ 0001:00150878       TRunUpdateDBFile.BackupDataDirs
+ 0001:00150A58       TRunUpdateDBFile.Execute
+ 0001:00150BB4       RunUpdateDBFile
+ 0001:00150CD8       Finalization
+ 0001:00150D08       U_UpdateDBThread
+ 0001:00150EB4       RunCompactDatabase
+ 0001:00150F58       RunRestoreDatabase
+ 0001:00151058       RunRestoreDatabaseFromEtalon
+ 0001:00151160       RunRestoreDatabaseOnError
+ 0001:0015124C       TCompactThread.Execute
+ 0001:0015131C       TRestoreThread.Execute
+ 0001:0015149C       TRestoreFromEtalonThread.Execute
+ 0001:00151E00       TRestoreFromEtalonThread.FreeMySqlLib
+ 0001:00151E88       TRestoreFromEtalonThread.OnScriptExecuteError
+ 0001:00151FFC       TRestoreOnErrorThread.Execute
+ 0001:001525D8       TRestoreOnErrorThread.FreeMySqlLib
+ 0001:00152660       Finalization
+ 0001:00152690       CompactThread
+ 0001:00152868       DatabaseController
+ 0001:00152870       CompareObjects
+ 0001:00152884       TDatabaseObject.SetName
+ 0001:001528D0       TDatabaseController.AddObject
+ 0001:00152954       TDatabaseController.BackupDatabase
+ 0001:00152A28       backupFileName
+ 0001:00152BFC       TDatabaseController.BackupDataTable
+ 0001:00152CF0       TDatabaseController.BackupDataTables
+ 0001:00152DD4       TDatabaseController.BackupOrdersDataTables
+ 0001:00152E00       TDatabaseController.CheckObjects
+ 0001:00153038       TDatabaseController.CheckObjectsExists
+ 0001:001534F8       LogError
+ 0001:00153630       DropTable
+ 0001:001538DC       SimpleRepairTable
+ 0001:00153A00       RepairTable
+ 0001:00153E04       TDatabaseController.CheckTable
+ 0001:00153FDC       LogError
+ 0001:00154114       DropTable
+ 0001:001543C0       SimpleRepairTable
+ 0001:001544E4       RepairTable
+ 0001:00154B78       TDatabaseController.CheckTableOnOpen
+ 0001:00154D50       TDatabaseController.ClearBackup
+ 0001:00154E24       TDatabaseController.Create
+ 0001:00154F2C       TDatabaseController.CreateViews
+ 0001:0015567C       TDatabaseController.CreateWorkSchema
+ 0001:0015575C       TDatabaseController.Destroy
+ 0001:00155794       TDatabaseController.DropWorkSchema
+ 0001:00155860       TDatabaseController.FindById
+ 0001:001558A8       TDatabaseController.FreeMySQLLib
+ 0001:001559B8       TDatabaseController.GetById
+ 0001:00155AD0       TDatabaseController.GetFullLastCreateScript
+ 0001:00156714       TDatabaseController.GetLastCreateScript
+ 0001:0015680C       TDatabaseController.GetMaxTempTableSize
+ 0001:00156820       TDatabaseController.GetNewConnection
+ 0001:00156938       TDatabaseController.Initialize
+ 0001:00156D98       TDatabaseController.IsBackuped
+ 0001:00156E24       TDatabaseController.IsFatalError
+ 0001:00156E54       TDatabaseController.OptimizeObjects
+ 0001:001570CC       TDatabaseController.OptimizeTable
+ 0001:001572C8       TDatabaseController.ParseMethodResuls
+ 0001:00157810       TDatabaseController.RepairTableFromBackup
+ 0001:00157C20       TDatabaseController.RestoreDatabase
+ 0001:00157D98       TDatabaseController.SwithTypes
+ 0001:00157DC4       TDatabaseController.TableExists
+ 0001:00157E60       TDatabaseController.WorkSchemaExists
+ 0001:00157F7C       TDatabaseTable.GetCreateSQL
+ 0001:00158034       TDatabaseTable.GetDropSQL
+ 0001:00158108       TDatabaseTable.GetInsertSQL
+ 0001:0015813C       TDatabaseTable.GetTableOptions
+ 0001:00158194       TDatabaseTable.LogObjectName
+ 0001:001581B8       TDatabaseView.GetCreateSQL
+ 0001:0015829C       TDatabaseView.GetDropSQL
+ 0001:00158378       Finalization
+ 0001:001583A8       DatabaseObjects
+ 0001:00158708       TChildForm.CreateParams
+ 0001:00158738       TChildForm.Loaded
+ 0001:0015875C       TChildForm.AddActionList
+ 0001:001587B4       TChildForm.RemoveActionList
+ 0001:001587F0       TChildForm.Notification
+ 0001:00158848       UpdateActionLists
+ 0001:001588C4       TChildForm.SetParent
+ 0001:00158900       TChildForm.ShowForm
+ 0001:00158AD0       TChildForm.DoShow
+ 0001:00158AEC       TChildForm.Print
+ 0001:00158AF0       TChildForm.UpdateReclame
+ 0001:00158DB4       TChildForm.PatchNonBrowser
+ 0001:00158E60       TChildForm.SetActionLists
+ 0001:00158E70       TChildForm.GetActionLists
+ 0001:00158E78       TChildForm.Create
+ 0001:00158FA4       TChildForm.CheckVolume
+ 0001:00158FF4       TChildForm.ClearOrder
+ 0001:00159058       TChildForm.ShowVolumeMessage
+ 0001:00159470       TChildForm.tCheckVolumeTimer
+ 0001:00159478       TChildForm.FormCreate
+ 0001:0015996C       TChildForm.NewAfterPost
+ 0001:001599A8       TChildForm.NewBeforeScroll
+ 0001:001599D0       TChildForm.NewExit
+ 0001:001599F8       TChildForm.NewBeforePost
+ 0001:00159A5C       TChildForm.CheckByOrderCost
+ 0001:00159AE4       TChildForm.ClearOrderByOrderCost
+ 0001:00159B14       TChildForm.CheckByMinOrderCount
+ 0001:00159B80       TChildForm.Destroy
+ 0001:00159C40       TDBComponentWindowProc.Create
+ 0001:00159D08       TDBComponentWindowProc.GetSaveFlag
+ 0001:00159D20       TDBComponentWindowProc.HackDBGirdWndProc
+ 0001:00159D54       TChildForm.PatchMyDataSets
+ 0001:00159E18       TChildForm.BeforeUpdateExecuteForClientID
+ 0001:00159F3C       ChangeTitleCaption
+ 0001:00159FAC       TChildForm.PrepareColumnsInOrderGrid
+ 0001:0015A6D4       TChildForm.FilterByMNNExecute
+ 0001:0015A7E0       TChildForm.ShowDescriptionExecute
+ 0001:0015ACA8       TChildForm.ShowDescriptionUpdate
+ 0001:0015AD64       TChildForm.ShowAsPrevForm
+ 0001:0015AD88       TChildForm.SetPrevForm
+ 0001:0015AE0C       TChildForm.SetActiveChildToMainForm
+ 0001:0015AF4C       TChildForm.UpdateOrderDataset
+ 0001:0015B090       TChildForm.HideAllForms
+ 0001:0015B0F4       TDBComponentWindowProc.OnBeforePopup
+ 0001:0015B120       TDBComponentWindowProc.OnPopupCopyGridClick
+ 0001:0015B140       TModifiedAction.Create
+ 0001:0015B194       TModifiedAction.ModifedUpdate
+ 0001:0015B1F4       TChildForm.ModifyActionList
+ 0001:0015B25C       TChildForm.FilterByMNNUpdate
+ 0001:0015B304       TChildForm.CheckByBuyingMatrixType
+ 0001:0015B3CC       TChildForm.NewAfterOpen
+ 0001:0015B440       TChildForm.NewAfterScroll
+ 0001:0015B4B4       Finalization
+ 0001:0015B4E4       Child
+ 0001:0015B55C       TParamsTable.Create
+ 0001:0015B5B0       TParamsTable.GetCreateSQL
+ 0001:0015C964       TParamsTable.GetInsertSQL
+ 0001:0015D0A0       Finalization
+ 0001:0015D0D0       CriticalDatabaseObjects
+ 0001:0015D77C       TRetailMarginsTable.Create
+ 0001:0015D7D8       TRetailMarginsTable.GetCreateSQL
+ 0001:0015DA60       TRetailMarginsTable.GetInsertSQL
+ 0001:0015DB90       TPostedOrderHeadsTable.Create
+ 0001:0015DBF0       TPostedOrderHeadsTable.GetCreateSQL
+ 0001:0015E360       TPostedOrderListsTable.Create
+ 0001:0015E3C0       TPostedOrderListsTable.GetCreateSQL
+ 0001:0015F224       TReceivedDocsTable.Create
+ 0001:0015F280       TReceivedDocsTable.GetCreateSQL
+ 0001:0015F484       TDocumentHeadersTable.Create
+ 0001:0015F4E0       TDocumentHeadersTable.GetCreateSQL
+ 0001:0015F8C8       TDocumentBodiesTable.Create
+ 0001:0015F924       TDocumentBodiesTable.GetCreateSQL
+ 0001:0016016C       TVitallyImportantMarkupsTable.Create
+ 0001:001601D0       TVitallyImportantMarkupsTable.GetCreateSQL
+ 0001:0016041C       TProviderSettingsTable.Create
+ 0001:0016047C       TProviderSettingsTable.GetCreateSQL
+ 0001:00160674       TClientSettingsTable.Create
+ 0001:001606D0       TClientSettingsTable.GetCreateSQL
+ 0001:001609E0       TCurrentOrderHeadsTable.Create
+ 0001:00160A40       TCurrentOrderHeadsTable.GetCreateSQL
+ 0001:001611B0       TCurrentOrderListsTable.Create
+ 0001:00161210       TCurrentOrderListsTable.GetCreateSQL
+ 0001:00162108       TGlobalParamsTable.Create
+ 0001:00162164       TGlobalParamsTable.GetCreateSQL
+ 0001:00162298       TNetworkLogTable.Create
+ 0001:001622F0       TNetworkLogTable.GetCreateSQL
+ 0001:00162520       TInvoiceHeadersTable.Create
+ 0001:0016257C       TInvoiceHeadersTable.GetCreateSQL
+ 0001:00163028       Finalization
+ 0001:00163058       BackupDatabaseObjects
+ 0001:001632FC       TPricesShowView.Create
+ 0001:00163354       TPricesShowView.GetCreateSQL
+ 0001:00163844       TClientAvgView.Create
+ 0001:0016389C       TClientAvgView.GetCreateSQL
+ 0001:00163CD4       TGroupMaxProducerCostsView.Create
+ 0001:00163D38       TGroupMaxProducerCostsView.GetCreateSQL
+ 0001:00163E90       Finalization
+ 0001:00163EC0       DatabaseViews
+ 0001:0016444C       TPricesRegionalDataUpTable.Create
+ 0001:001644B0       TPricesRegionalDataUpTable.GetCreateSQL
+ 0001:001645C0       TTmpClientsTable.Create
+ 0001:00164618       TTmpClientsTable.GetCreateSQL
+ 0001:00164918       TTmpRegionsTable.Create
+ 0001:00164970       TTmpRegionsTable.GetCreateSQL
+ 0001:00164AC0       TTmpProvidersTable.Create
+ 0001:00164B1C       TTmpProvidersTable.GetCreateSQL
+ 0001:00164CB0       TTmpRegionalDataTable.Create
+ 0001:00164D0C       TTmpRegionalDataTable.GetCreateSQL
+ 0001:00164ECC       TTmpPricesDataTable.Create
+ 0001:00164F28       TTmpPricesDataTable.GetCreateSQL
+ 0001:00165120       TTmpPricesRegionalDataTable.Create
+ 0001:00165184       TTmpPricesRegionalDataTable.GetCreateSQL
+ 0001:001653C0       TBatchReportDataTable.Create
+ 0001:00165418       TBatchReportDataTable.GetCreateSQL
+ 0001:00165D7C       TBatchReportServiceFieldsDataTable.Create
+ 0001:00165DE4       TBatchReportServiceFieldsDataTable.GetCreateSQL
+ 0001:00165F70       TUserActionLogsDataTable.Create
+ 0001:00165FCC       TUserActionLogsDataTable.GetCreateSQL
+ 0001:001661A8       TCertificateRequestsDataTable.Create
+ 0001:00166208       TCertificateRequestsDataTable.GetCreateSQL
+ 0001:00166320       Finalization
+ 0001:00166350       IgnoreDatabaseObjects
+ 0001:0016654C       TSynonymsTable.Create
+ 0001:001665A4       TSynonymsTable.GetCreateSQL
+ 0001:0016677C       TSynonymFirmCrTable.Create
+ 0001:001667D8       TSynonymFirmCrTable.GetCreateSQL
+ 0001:0016697C       Finalization
+ 0001:001669AC       SynonymDatabaseObjects
+ 0001:00167708       TUserInfoTable.Create
+ 0001:00167760       TUserInfoTable.GetCreateSQL
+ 0001:001679F0       TClientTable.Create
+ 0001:00167A44       TClientTable.GetCreateSQL
+ 0001:00167E58       TClientsTable.Create
+ 0001:00167EAC       TClientsTable.GetCreateSQL
+ 0001:001682A8       TDefectivesTable.Create
+ 0001:00168300       TDefectivesTable.GetCreateSQL
+ 0001:00168670       TProvidersTable.Create
+ 0001:001686C8       TProvidersTable.GetCreateSQL
+ 0001:00168968       TRegionsTable.Create
+ 0001:001689BC       TRegionsTable.GetCreateSQL
+ 0001:00168BD8       TRegionalDataTable.Create
+ 0001:00168C34       TRegionalDataTable.GetCreateSQL
+ 0001:00168EE4       TPricesDataTable.Create
+ 0001:00168F3C       TPricesDataTable.GetCreateSQL
+ 0001:00169204       TPricesRegionalDataTable.Create
+ 0001:00169264       TPricesRegionalDataTable.GetCreateSQL
+ 0001:0016961C       TDelayOfPaymentsTable.Create
+ 0001:00169678       TDelayOfPaymentsTable.GetCreateSQL
+ 0001:001698EC       TCatalogNamesTable.Create
+ 0001:0016994C       TCatalogNamesTable.GetCreateSQL
+ 0001:00169B44       TCatalogFarmGroupsTable.Create
+ 0001:00169BA8       TCatalogFarmGroupsTable.GetCreateSQL
+ 0001:00169E3C       TCatalogsTable.Create
+ 0001:00169E98       TCatalogsTable.GetCreateSQL
+ 0001:0016A480       TProductsTable.Create
+ 0001:0016A4DC       TProductsTable.GetCreateSQL
+ 0001:0016A6B0       TCoreTable.Create
+ 0001:0016A708       TCoreTable.GetCreateSQL
+ 0001:0016B354       TMinPricesTable.Create
+ 0001:0016B3AC       TMinPricesTable.GetCreateSQL
+ 0001:0016B7CC       TMNNTable.Create
+ 0001:0016B820       TMNNTable.GetCreateSQL
+ 0001:0016B9F4       TDescriptionsTable.Create
+ 0001:0016BA54       TDescriptionsTable.GetCreateSQL
+ 0001:0016BED4       TMaxProducerCostsTable.Create
+ 0001:0016BF34       TMaxProducerCostsTable.GetCreateSQL
+ 0001:0016C268       TProducersTable.Create
+ 0001:0016C2C4       TProducersTable.GetCreateSQL
+ 0001:0016C448       TMinReqRulesTable.Create
+ 0001:0016C4A0       TMinReqRulesTable.GetCreateSQL
+ 0001:0016C754       TSupplierPromotionsTable.Create
+ 0001:0016C7B4       TSupplierPromotionsTable.GetCreateSQL
+ 0001:0016CA64       TPromotionCatalogsTable.Create
+ 0001:0016CAC4       TPromotionCatalogsTable.GetCreateSQL
+ 0001:0016CCE0       TSchedulesTable.Create
+ 0001:0016CD38       TSchedulesTable.GetCreateSQL
+ 0001:0016CEAC       TCertificatesTable.Create
+ 0001:0016CF08       TCertificatesTable.GetCreateSQL
+ 0001:0016D0A4       TCertificateFilesTable.Create
+ 0001:0016D104       TCertificateFilesTable.GetCreateSQL
+ 0001:0016D334       TFileCertificatesTable.Create
+ 0001:0016D394       TFileCertificatesTable.GetCreateSQL
+ 0001:0016D504       TCertificateSourcesTable.Create
+ 0001:0016D564       TCertificateSourcesTable.GetCreateSQL
+ 0001:0016D65C       TSourceSuppliersTable.Create
+ 0001:0016D6B8       TSourceSuppliersTable.GetCreateSQL
+ 0001:0016D824       Finalization
+ 0001:0016D854       GeneralDatabaseObjects
+ 0001:0016DB1C       Finalization
+ 0001:0016DB4C       MyEmbConnectionEx
+ 0001:0016DB54       CopyRegSettings
+ 0001:0016DCA8       Finalization
+ 0001:0016EBF0       AnalitF
  0002:00000000       TlsIndex
  0002:00000004       PtrToNil
  0002:00000008       Module
@@ -14546,7 +14548,7 @@ Progress.RES
 Icons.RES
 Bitmaps.RES
 CompareScript80.RES
-C:\Users\morozov\AppData\Local\Temp\dtf77D2.tmp
+C:\Users\morozov\AppData\Local\Temp\dtfEC86.tmp
 
 
-Program entry point at 0001:0016E928
+Program entry point at 0001:0016EBF0
