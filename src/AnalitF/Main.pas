@@ -13,7 +13,8 @@ uses
   SQLWaiting,
   U_SchedulesController,
   UserActions,
-  StrUtils;
+  StrUtils,
+  U_frameMiniMail;
 
 type
 
@@ -228,6 +229,8 @@ private
   LastOrderCount,
   LastPositionCount : Integer;
 
+  frameMiniMail : TframeMiniMail;
+
   procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
   procedure OnMainAppEx(Sender: TObject; E: Exception);
@@ -345,6 +348,9 @@ begin
   end;
 
   LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
+
+  frameMiniMail := TframeMiniMail.AddFrame(Self, Self);
+  frameMiniMail.Align := alBottom;
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);

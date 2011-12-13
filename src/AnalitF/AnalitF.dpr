@@ -157,7 +157,8 @@ uses
   U_SchedulesController in 'BusinessLogic\U_SchedulesController.pas',
   ContextMenuGrid in 'Helpers\ContextMenuGrid.pas',
   UserActions in 'BusinessLogic\UserActions.pas',
-  U_SerialNumberSearch in 'Views\U_SerialNumberSearch.pas' {SerialNumberSearchForm};
+  U_SerialNumberSearch in 'Views\U_SerialNumberSearch.pas' {SerialNumberSearchForm},
+  U_frameMiniMail in 'Views\U_frameMiniMail.pas' {frameMiniMail: TFrame};
 
 {$R *.RES}
 {$R Progress.RES}
