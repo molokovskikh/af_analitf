@@ -357,11 +357,10 @@ begin
   dsAttachments := TDataSource.Create(Self);
   dsAttachments.DataSet := mdAttachments;
 
-  InsertTestData();
+  //InsertTestData();
 
   mdMails.Open();
   mdAttachments.Open;
-  //mdMails.First;
 end;
 
 procedure TframeMiniMail.UpdateMail;
