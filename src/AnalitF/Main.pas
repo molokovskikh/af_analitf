@@ -287,6 +287,9 @@ public
   //Существуют модальные окна, которые ждут ответа от пользователя
   //Это либо окно с настройками либо MessageBox
   function ModalExists : Boolean;
+  procedure HideMiniMail;
+  procedure ShowMiniMail;
+  procedure UpdateMiniMail;
 end;
 
 var
@@ -692,7 +695,7 @@ begin
       Result := FormClass.Create(Application);
     end
     else result.Show;
-}    
+}
   except
     FreeChildForms;
     raise;
@@ -1124,6 +1127,7 @@ begin
   //Отображаем "пустое" главное окно, поэтому закрываем все дочерние формы
   MainForm.FreeChildForms;
   UpdateReclame;
+  ShowMiniMail;
 end;
 
 procedure TMainForm.actHomeUpdate(Sender: TObject);
@@ -1992,6 +1996,24 @@ begin
     end;
 }    
   end;
+end;
+
+procedure TMainForm.HideMiniMail;
+begin
+  if frameMiniMail.Visible then
+    frameMiniMail.Hide;
+end;
+
+procedure TMainForm.ShowMiniMail;
+begin
+  if not frameMiniMail.Visible then
+    frameMiniMail.Show;
+end;
+
+procedure TMainForm.UpdateMiniMail;
+begin
+  ShowMiniMail;
+  frameMiniMail.UpdateMail;
 end;
 
 initialization

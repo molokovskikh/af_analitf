@@ -56,6 +56,7 @@ type
     class function AddFrame(
       Owner: TComponent;
       Parent: TWinControl) : TframeMiniMail;
+    procedure UpdateMail();
   end;
 
 implementation
@@ -203,6 +204,11 @@ begin
   mdMails.AppendRecord([3, IncDay(Now(), -5), ' атрен', 'тест 3', 'Ёто тело письма'#13#10'Ёто еще одно письмо']);
 
   mdMails.First;
+end;
+
+procedure TframeMiniMail.UpdateMail;
+begin
+  ShowMessage('UpdateMail');
 end;
 
 end.
