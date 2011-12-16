@@ -74,8 +74,19 @@ type
 
     pMailBody : TPanel;
 
+    pHeaders : TPanel;
+    pFilter : TPanel;
+    eSearch : TEdit;
+    pActions : TPanel;
+    sbDelete : TSpeedButton;
+    
     dbgMailHeaders : TToughDBGrid;
 
+    pAttachments : TPanel;
+    pAttachmentHeaders : TPanel;
+    dbtSubject: TDBText;
+    dbtSupplierName: TDBText;
+    dbtLogTime: TDBText;
     dbmBody : TDBMemo;
     dbgMailAttachemts : TToughDBGrid;
 
@@ -134,8 +145,51 @@ begin
   pMailBody.Align := alRight;
   pMailBody.ControlStyle := pMailBody.ControlStyle - [csParentBackground] + [csOpaque];
 
+  pHeaders := TPanel.Create(Self);
+  pHeaders.Name := 'pHeaders';
+  pHeaders.Caption := '';
+  pHeaders.BevelInner := bvLowered;
+  pHeaders.BevelOuter := bvRaised;
+  pHeaders.Parent := gbMail;
+  pHeaders.Align := alClient;
+  pHeaders.ControlStyle := pHeaders.ControlStyle - [csParentBackground] + [csOpaque];
+
+  pFilter := TPanel.Create(Self);
+  pFilter.Name := 'pFilter';
+  pFilter.Caption := '';
+  pFilter.BevelInner := bvLowered;
+  pFilter.BevelOuter := bvRaised;
+  pFilter.Parent := pHeaders;
+  pFilter.Align := alTop;
+  pFilter.ControlStyle := pFilter.ControlStyle - [csParentBackground] + [csOpaque];
+
+  eSearch := TEdit.Create(Self);
+  eSearch.Parent := pFilter;
+  eSearch.Left := 7;
+  eSearch.Width := FCanvas.TextWidth('Это строка поиска');
+  pFilter.Height := eSearch.Height + 15;
+  eSearch.Top := 8;
+
+  pActions := TPanel.Create(Self);
+  pActions.Name := 'pActions';
+  pActions.Caption := '';
+  pActions.BevelInner := bvLowered;
+  pActions.BevelOuter := bvRaised;
+  pActions.Parent := pHeaders;
+  pActions.Align := alBottom;
+  pActions.ControlStyle := pActions.ControlStyle - [csParentBackground] + [csOpaque];
+
+  sbDelete := TSpeedButton.Create(Self);
+  sbDelete.Height := 25;
+  sbDelete.Caption := 'Удалить';
+  sbDelete.Parent := pActions;
+  sbDelete.Width := FCanvas.TextWidth(sbDelete.Caption) + 20;
+  sbDelete.Left := 5;
+  sbDelete.Top := 8;
+  pFilter.Height := sbDelete.Height + 15;
+
   dbgMailHeaders := TToughDBGrid.Create(Self);
-  dbgMailHeaders.Parent := gbMail;
+  dbgMailHeaders.Parent := pHeaders;
   dbgMailHeaders.Align := alClient;
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailHeaders);
@@ -152,12 +206,68 @@ begin
 
   dbgMailHeaders.DataSource := dsMails;
 
-  //dbgMailAttachemts : TToughDBGrid;
+  pAttachments := TPanel.Create(Self);
+  pAttachments.Name := 'pAttachments';
+  pAttachments.Caption := '';
+  pAttachments.BevelInner := bvLowered;
+  pAttachments.BevelOuter := bvRaised;
+  pAttachments.Parent := pMailBody;
+  pAttachments.Align := alTop;
+  pAttachments.ControlStyle := pAttachments.ControlStyle - [csParentBackground] + [csOpaque];
 
+  pAttachmentHeaders := TPanel.Create(Self);
+  pAttachmentHeaders.Name := 'pAttachmentHeaders';
+  pAttachmentHeaders.Caption := '';
+  pAttachmentHeaders.BevelInner := bvNone;
+  pAttachmentHeaders.BevelOuter := bvNone;
+  pAttachmentHeaders.Parent := pAttachments;
+  pAttachmentHeaders.Align := alTop;
+  pAttachmentHeaders.ControlStyle := pAttachmentHeaders.ControlStyle - [csParentBackground] + [csOpaque];
+
+  dbtSubject := TDBText.Create(Self);
+  dbtSubject.Name := 'dbtSubject';
+  dbtSubject.Parent := pAttachmentHeaders;
+  dbtSubject.Left := 5;
+  dbtSubject.Top := 5;
+  dbtSubject.Width := pAttachmentHeaders.Width - 16;
+  dbtSubject.Anchors := dbtSubject.Anchors + [akRight];
+  dbtSubject.Font.Style := dbtSubject.Font.Style + [fsBold];
+  dbtSubject.DataSource := dsMails;
+  dbtSubject.DataField := fSubject.FieldName;
+
+  dbtSupplierName := TDBText.Create(Self);
+  dbtSupplierName.Name := 'dbtSupplierName';
+  dbtSupplierName.Parent := pAttachmentHeaders;
+  dbtSupplierName.Left := 5;
+  dbtSupplierName.Top := dbtSubject.Top + dbtSubject.Height + 3;
+  dbtSupplierName.Width := FCanvas.TextWidth('Это длинное имя поставщика');
+  dbtSupplierName.DataSource := dsMails;
+  dbtSupplierName.DataField := fSupplierName.FieldName;
+
+  dbtLogTime := TDBText.Create(Self);
+  dbtLogTime.Name := 'dbtLogTime';
+  dbtLogTime.Parent := pAttachmentHeaders;
+  dbtLogTime.Top := dbtSupplierName.Top;
+  dbtLogTime.Width := FCanvas.TextWidth('00.00.0000 00:00:00');
+  dbtLogTime.Left := pAttachmentHeaders.Width - 16 - dbtLogTime.Width;
+  dbtLogTime.DataSource := dsMails;
+  dbtLogTime.DataField := fLogTime.FieldName;
+
+{
+  Result.dbtSynonymName.DataSource := Source;
+  Result.dbtSynonymName.DataField := SynonymNameField;
+  Result.dbtSynonymName.Font.Style := Result.dbtSynonymName.Font.Style + [fsBold];
+
+  dbtSupplierName: TDBText;
+  dbtLogTime: TDBText;
+}
+  pAttachmentHeaders.Height := dbtSupplierName.Top + dbtSupplierName.Height + 2;
+
+  pAttachments.Height := pAttachmentHeaders.Height + 70;
 
   dbgMailAttachemts := TToughDBGrid.Create(Self);
-  dbgMailAttachemts.Parent := pMailBody;
-  dbgMailAttachemts.Align := alRight;
+  dbgMailAttachemts.Parent := pAttachments;
+  dbgMailAttachemts.Align := alClient;
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailAttachemts);
   //dbgMailAttachemts.Options := dbgMailAttachemts.Options + [dgEditing];
@@ -191,8 +301,11 @@ end;
 
 procedure TframeMiniMail.ProcessResize;
 begin
-  if Assigned(pMailBody) then
-    pMailBody.Width := gbMail.Width div 2;
+  if Assigned(pMailBody) then begin
+    pMailBody.Width := (gbMail.Width div 3) * 2;
+  end;
+  if Assigned(dbtLogTime) and Assigned(pAttachmentHeaders) then
+    dbtLogTime.Left := pAttachmentHeaders.Width - 16 - dbtLogTime.Width;
 end;
 
 procedure TframeMiniMail.FrameResize(Sender: TObject);
