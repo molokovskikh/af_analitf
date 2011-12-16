@@ -351,9 +351,6 @@ begin
   end;
 
   LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
-
-  frameMiniMail := TframeMiniMail.AddFrame(Self, Self);
-  frameMiniMail.Align := alBottom;
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
@@ -386,6 +383,8 @@ try
   GetKeyboardHelper.SwitchToRussian();
 
   UpdateReclame;
+  frameMiniMail := TframeMiniMail.AddFrame(Self, Self);
+  frameMiniMail.Align := alBottom;
   //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
   //поэтому надо еще раз пересчитать
   //Вроде бы работает без него

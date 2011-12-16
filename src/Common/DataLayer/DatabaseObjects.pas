@@ -278,7 +278,12 @@ type
     //Cumulative
     doiCertificateSources,
     doiSourceSuppliers,
-    doiFileCertificates
+    doiFileCertificates,
+    //Backup
+    doiMails,
+    doiAttachments,
+    //Ignore
+    doiAttachmentRequests
     );
 
   TRepairedObjects = set of TDatabaseObjectId;

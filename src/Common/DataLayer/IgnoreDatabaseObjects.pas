@@ -73,6 +73,12 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
+  TAttachmentRequestsDataTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+  
 implementation
 
 { TPricesRegionalDataUpTable }
@@ -354,6 +360,25 @@ begin
 + GetTableOptions()
 end;
 
+{ TAttachmentRequestsDataTable }
+
+constructor TAttachmentRequestsDataTable.Create;
+begin
+  FName := 'attachmentrequests';
+  FObjectId := doiAttachmentRequests;
+  FRepairType := dortIgnore;
+end;
+
+function TAttachmentRequestsDataTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'  `AttachmentId` bigint(20) not null   '
++'  ) '
++ GetTableOptions()
+end;
+
 initialization
   DatabaseController.AddObject(TPricesRegionalDataUpTable.Create());
   DatabaseController.AddObject(TTmpClientsTable.Create());
@@ -366,4 +391,5 @@ initialization
   DatabaseController.AddObject(TBatchReportServiceFieldsDataTable.Create());
   DatabaseController.AddObject(TUserActionLogsDataTable.Create());
   DatabaseController.AddObject(TCertificateRequestsDataTable.Create());
+  DatabaseController.AddObject(TAttachmentRequestsDataTable.Create());
 end.

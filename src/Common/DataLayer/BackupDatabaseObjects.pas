@@ -37,7 +37,7 @@ type
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
-  
+
   TDocumentBodiesTable = class(TDatabaseTable)
    public
     constructor Create();
@@ -87,6 +87,18 @@ type
   end;
 
   TInvoiceHeadersTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+  TMailsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+  end;
+
+  TAttachmentsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
@@ -648,6 +660,62 @@ begin
 + GetTableOptions();
 end;
 
+{ TMailsTable }
+
+constructor TMailsTable.Create;
+begin
+  FName := 'mails';
+  FObjectId := doiMails;
+  FRepairType := dortBackup;
+end;
+
+function TMailsTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `Id`                bigint(20) unsigned NOT NULL DEFAULT ''0'', '
++'  `LogTime`           datetime NOT NULL, '
++'  `SupplierId`        bigint(20) unsigned NOT NULL, '
++'  `SupplierName`      varchar(255) NOT NULL, '
++'  `IsVIPMail`         tinyint(1) not null default ''0'', '
++'  `Subject`           varchar(255) default null, '
++'  `Body`              TEXT DEFAULT NULL, '
++'  `IsNewMail`         tinyint(1) not null default ''1'', '
++'  `IsImportantMail`   tinyint(1) not null default ''0'', '
++'  PRIMARY KEY (`Id`), '
++'  KEY `IDX_Mails_LogTime` (`LogTime`), '
++'  KEY `IDX_Mails_Subject` (`Subject`), '
++'  KEY `IDX_Mails_SupplierId` (`SupplierId`) '
++' ) '
++ GetTableOptions();
+end;
+
+{ TAttachmentssTable }
+
+constructor TAttachmentsTable.Create;
+begin
+  FName := 'attachments';
+  FObjectId := doiAttachments;
+  FRepairType := dortBackup;
+end;
+
+function TAttachmentsTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `Id`                  bigint(20) unsigned NOT NULL DEFAULT ''0'', '
++'  `MailId`              bigint(20) unsigned NOT NULL, '
++'  `FileName`            varchar(255) NOT NULL, '
++'  `Extension`           varchar(255) NOT NULL, '
++'  `Size`                bigint(20) unsigned NOT NULL, '
++'  `RequestAttachment`   tinyint(1) not null default ''0'', '
++'  `RecievedAttachment`  tinyint(1) not null default ''0'', '
++'  PRIMARY KEY (`Id`), '
++'  KEY `IDX_Attachments_MailId` (`MailId`) '
++' ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TPostedOrderHeadsTable.Create());
@@ -663,4 +731,6 @@ initialization
   DatabaseController.AddObject(TGlobalParamsTable.Create());
   DatabaseController.AddObject(TNetworkLogTable.Create());
   DatabaseController.AddObject(TInvoiceHeadersTable.Create());
+  DatabaseController.AddObject(TMailsTable.Create());
+  DatabaseController.AddObject(TAttachmentsTable.Create());
 end.
