@@ -2005,7 +2005,7 @@ end;
 
 procedure TMainForm.ShowMiniMail;
 begin
-  if not frameMiniMail.Visible then
+  if not frameMiniMail.Visible and not Assigned(ActiveChild) then
     frameMiniMail.Show;
 end;
 
