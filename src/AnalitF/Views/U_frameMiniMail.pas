@@ -28,7 +28,7 @@ type
   private
     { Private declarations }
     FCanvas : TCanvas;
-    
+
     procedure CreateVisualComponent;
     procedure CreateNonVisualComponent;
 
@@ -59,16 +59,6 @@ type
     fSize : TLargeintField;
     fRequestAttachment : TBooleanField;
     fRecievedAttachment : TBooleanField;
-
-{
-+'  `Id`                  bigint(20) unsigned NOT NULL DEFAULT ''0'', '
-+'  `MailId`              bigint(20) unsigned NOT NULL, '
-+'  `FileName`            varchar(255) NOT NULL, '
-+'  `Extension`           varchar(255) NOT NULL, '
-+'  `Size`                bigint(20) unsigned NOT NULL, '
-+'  `RequestAttachment`   tinyint(1) not null default ''0'', '
-+'  `RecievedAttachment`  tinyint(1) not null default ''0'', '
-}
 
     gbMail: TGroupBox;
 
@@ -193,11 +183,6 @@ begin
   dbgMailHeaders.Align := alClient;
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailHeaders);
-  //dbgMailHeaders.Options := dbgMailHeaders.Options + [dgEditing];
-
-  //dbgMailHeaders.AutoFitColWidths := False;
-
-  //dbgMailHeaders.OnGetCellParams := MarkupsGetCellParams;
 
   TDBGridHelper.AddColumn(dbgMailHeaders, 'LogTime', 'Дата', FCanvas.TextWidth('20110000 0000'));
   TDBGridHelper.AddColumn(dbgMailHeaders, 'IsImportantMail', 'Важное', FCanvas.TextWidth('Важное'), False);
@@ -253,28 +238,15 @@ begin
   dbtLogTime.DataSource := dsMails;
   dbtLogTime.DataField := fLogTime.FieldName;
 
-{
-  Result.dbtSynonymName.DataSource := Source;
-  Result.dbtSynonymName.DataField := SynonymNameField;
-  Result.dbtSynonymName.Font.Style := Result.dbtSynonymName.Font.Style + [fsBold];
-
-  dbtSupplierName: TDBText;
-  dbtLogTime: TDBText;
-}
   pAttachmentHeaders.Height := dbtSupplierName.Top + dbtSupplierName.Height + 2;
 
-  pAttachments.Height := pAttachmentHeaders.Height + 70;
+  pAttachments.Height := pAttachmentHeaders.Height + 60;
 
   dbgMailAttachemts := TToughDBGrid.Create(Self);
   dbgMailAttachemts.Parent := pAttachments;
   dbgMailAttachemts.Align := alClient;
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailAttachemts);
-  //dbgMailAttachemts.Options := dbgMailAttachemts.Options + [dgEditing];
-
-  //dbgMailAttachemts.AutoFitColWidths := False;
-
-  //dbgMailAttachemts.OnGetCellParams := MarkupsGetCellParams;
 
   column := TDBGridHelper.AddColumn(dbgMailAttachemts, 'RequestAttachment', 'Получить', FCanvas.TextWidth('Получить'));
   column.ReadOnly := False;
@@ -297,6 +269,11 @@ end;
 
 procedure TframeMiniMail.PrepareFrame;
 begin
+  mdMails.Connection := DM.MainConnection;
+  mdAttachments.Connection := DM.MainConnection;
+
+  mdMails.Open();
+  mdAttachments.Open();
 end;
 
 procedure TframeMiniMail.ProcessResize;
@@ -316,7 +293,6 @@ end;
 procedure TframeMiniMail.CreateNonVisualComponent;
 begin
   mdMails := TMyQuery.Create(Self);
-  mdMails.Connection := DM.MainConnection;
 
   fId := TDataSetHelper.AddLargeIntField(mdMails, 'Id');
   fLogTime := TDataSetHelper.AddDateTimeField(mdMails, 'LogTime');
@@ -338,7 +314,6 @@ begin
   mdMails.SQL.Text := 'select Id, LogTime, SupplierId, SupplierName, IsVIPMail, Subject, Body, IsNewMail, IsImportantMail from Mails order by LogTime desc ';
 
   mdAttachments := TMyQuery.Create(Self);
-  mdAttachments.Connection := DM.MainConnection;
 
   fAttachmentId := TDataSetHelper.AddLargeIntField(mdAttachments, 'Id');
   fMailId := TDataSetHelper.AddLargeIntField(mdAttachments, 'MailId');
@@ -358,9 +333,6 @@ begin
   dsAttachments.DataSet := mdAttachments;
 
   //InsertTestData();
-
-  mdMails.Open();
-  mdAttachments.Open;
 end;
 
 procedure TframeMiniMail.UpdateMail;

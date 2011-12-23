@@ -159,6 +159,7 @@ TMainForm = class(TVistaCorrectForm)
     miHome: TMenuItem;
     tmrOnNeedUpdate: TTimer;
     tmrNeedUpdateCheck: TTimer;
+    frameMiniMail: TframeMiniMail;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -228,8 +229,6 @@ private
 
   LastOrderCount,
   LastPositionCount : Integer;
-
-  frameMiniMail : TframeMiniMail;
 
   procedure SetStatusText(Value: string);
   procedure OnAppEx(Sender: TObject; E: Exception);
@@ -383,8 +382,7 @@ try
   GetKeyboardHelper.SwitchToRussian();
 
   UpdateReclame;
-  frameMiniMail := TframeMiniMail.AddFrame(Self, Self);
-  frameMiniMail.Align := alBottom;
+  frameMiniMail.PrepareFrame;
   //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
   //поэтому надо еще раз пересчитать
   //Вроде бы работает без него
