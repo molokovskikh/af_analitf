@@ -166,6 +166,7 @@ uses
 {$R Icons.RES}
 {$R Bitmaps.RES}
 {$R CompareScript80.RES}
+{$R CompareScript82.RES}
 
 var
   B : TWebBrowser;

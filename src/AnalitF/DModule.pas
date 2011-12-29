@@ -2013,6 +2013,11 @@ begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 82;
       end;
+
+      if DBVersion = 82 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 83;
+      end;
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
