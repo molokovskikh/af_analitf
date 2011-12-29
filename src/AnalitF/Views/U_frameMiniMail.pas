@@ -50,9 +50,15 @@ type
     procedure dbgMailHeadersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
 
-    procedure sbDeleteClick(Sender : TObject);  
+    procedure sbDeleteClick(Sender : TObject);
 
-    procedure DeleteMails;  
+    procedure fDisplayFileNameGetText(Sender: TField;
+      var Text: String; DisplayText: Boolean);
+    procedure dbgMailAttachemtsGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure dbgMailAttachemtsCellClick(Column: TColumnEh);
+
+    procedure DeleteMails;
     procedure FillSelectedRows(Grid : TToughDBGrid);
   public
     { Public declarations }
@@ -78,6 +84,7 @@ type
     fSize : TLargeintField;
     fRequestAttachment : TBooleanField;
     fRecievedAttachment : TBooleanField;
+    fDisplayFileName : TStringField;
 
     gbMail: TGroupBox;
 
@@ -88,7 +95,7 @@ type
     eSearch : TEdit;
     pActions : TPanel;
     sbDelete : TSpeedButton;
-    
+
     dbgMailHeaders : TToughDBGrid;
 
     pAttachments : TPanel;
@@ -280,9 +287,12 @@ begin
 
   column := TDBGridHelper.AddColumn(dbgMailAttachemts, 'RequestAttachment', 'Получить', FCanvas.TextWidth('Получить'));
   column.ReadOnly := False;
-  TDBGridHelper.AddColumn(dbgMailAttachemts, 'FileName', 'Файл', FCanvas.TextWidth('Файл'));
+  column := TDBGridHelper.AddColumn(dbgMailAttachemts, 'DisplayFileName', 'Файл', FCanvas.TextWidth('Файл'));
   TDBGridHelper.AddColumn(dbgMailAttachemts, 'FileName', 'Вложение');
   TDBGridHelper.AddColumn(dbgMailAttachemts, 'Size', 'Размер', FCanvas.TextWidth('Размер'));
+
+  dbgMailAttachemts.OnGetCellParams := dbgMailAttachemtsGetCellParams;
+  dbgMailAttachemts.OnCellClick := dbgMailAttachemtsCellClick;
 
   dbgMailAttachemts.Width := FCanvas.TextWidth('Получить') + FCanvas.TextWidth('Вложение это большое длиное имя') + 30;
 
@@ -354,8 +364,10 @@ begin
   fSize := TDataSetHelper.AddLargeIntField(mdAttachments, 'Size');
   fRequestAttachment := TDataSetHelper.AddBooleanField(mdAttachments, 'RequestAttachment');
   fRecievedAttachment := TDataSetHelper.AddBooleanField(mdAttachments, 'RecievedAttachment');
+  fDisplayFileName := TDataSetHelper.AddStringField(mdAttachments, 'DisplayFileName');
+  fDisplayFileName.OnGetText := fDisplayFileNameGetText;
 
-  mdAttachments.SQL.Text := 'select Id, MailId, FileName, Extension, Size, RequestAttachment, RecievedAttachment from Attachments ';
+  mdAttachments.SQL.Text := 'select Id, MailId, FileName as DisplayFileName, FileName, Extension, Size, RequestAttachment, RecievedAttachment from Attachments ';
 
   mdAttachments.MasterSource := dsMails;
   mdAttachments.MasterFields := 'Id';
@@ -472,6 +484,35 @@ begin
       Grid.DataSource.DataSet.EnableControls;
     end;
   end;
+end;
+
+procedure TframeMiniMail.fDisplayFileNameGetText(Sender: TField;
+  var Text: String; DisplayText: Boolean);
+begin
+  if DisplayText then
+    if fRecievedAttachment.IsNull or not fRecievedAttachment.AsBoolean then
+      Text := ''
+    else
+      Text := 'Показать';
+end;
+
+procedure TframeMiniMail.dbgMailAttachemtsGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if Column.Field = fDisplayFileName then
+    if not fRecievedAttachment.IsNull and fRecievedAttachment.AsBoolean then begin
+      AFont.Style := AFont.Style + [fsUnderline];
+      AFont.Color := clHotLight;
+    end;
+end;
+
+procedure TframeMiniMail.dbgMailAttachemtsCellClick(Column: TColumnEh);
+begin
+  if (Column.Field = fDisplayFileName) and not fRecievedAttachment.IsNull
+    and fRecievedAttachment.AsBoolean
+  then
+    DM.OpenAttachment(fAttachmentId.Value);
 end;
 
 end.

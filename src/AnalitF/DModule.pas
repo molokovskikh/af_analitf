@@ -586,6 +586,8 @@ type
 
     function CertificateSourceExists(documentBodyId : Int64) : Boolean;
     procedure ShowCertificateWarning();
+
+    function OpenAttachment(attachmentId : Int64) : Integer;
   end;
 
 var
@@ -5778,6 +5780,32 @@ begin
       until (FindNext( newFileSearch ) <> 0)
   finally
     SysUtils.FindClose( newFileSearch );
+  end;
+end;
+
+function TDM.OpenAttachment(attachmentId: Int64): Integer;
+var
+  id : Int64;
+  fileName : String;
+begin
+  Result := 0;
+
+  adcUpdate.Close;
+  adcUpdate.SQL.Text := 'select Id, MailId, FileName as DisplayFileName, FileName, Extension, Size, RequestAttachment, RecievedAttachment from Attachments where Id = :attachmentId';
+  adcUpdate.ParamByName('attachmentId').Value := attachmentId;
+  adcUpdate.Open;
+  try
+    while not adcUpdate.Eof do begin
+      id := TLargeintField(adcUpdate.FieldByName('Id')).Value;
+      fileName := RootFolder() + SDirDocs + '\' + IntToStr(id) + adcUpdate.FieldByName('Extension').AsString;
+      if (FileExists(fileName)) then begin
+        FileExecute(fileName);
+        Inc(Result);
+      end;
+      adcUpdate.Next;
+    end;
+  finally
+    adcUpdate.Close;
   end;
 end;
 
