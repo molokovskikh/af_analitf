@@ -372,8 +372,7 @@ begin
     if (eaPostOrderBatch in AExchangeActions) then
       ShowOrderBatch
     else
-      if (( eaGetPrice in AExchangeActions) or
-          ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
+      if ( (eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
            or (eaImportOnly in AExchangeActions))
          and GlobalExchangeParams.ImportDocs
       then

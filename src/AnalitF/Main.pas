@@ -358,6 +358,7 @@ procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
 var
   I : Integer;
   LoggedOn : Boolean;
+  ShowMiniMail : Boolean;
 begin
   //¬ызываем это дл€ того, чтобы произошла отрисовка pbSelectClient после обновлени€,
   //из-за чего может изменитьс€ список клиентов
@@ -372,7 +373,8 @@ begin
   if not Active then exit;
   JustRun := False;
   mainStartupHelper.Stop;
-
+  
+  ShowMiniMail := True;
 try
   try
   DisableByNetworkSettings;
@@ -503,12 +505,15 @@ try
   then begin
     if AProc.MessageBox( 'Ѕаза данных программы не заполнена. ¬ыполнить обновление?',
        MB_ICONQUESTION or MB_YESNO) = IDYES
-    then
+    then begin
+      ShowMiniMail := False; 
       actReceiveExecute( nil);
+    end;
   end
   else begin
     if SchedulesController().SchedulesEnabled and SchedulesController().NeedUpdateOnBegin
     then begin
+      ShowMiniMail := False; 
       ShowAction(
         '—ейчас будет произведено обновление данных '#13#10 +
         'по установленному расписанию.',
@@ -521,8 +526,10 @@ try
       ( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
       if AProc.MessageBox( '¬ы работаете с устаревшим набором данных. ¬ыполнить обновление?',
          MB_ICONQUESTION or MB_YESNO) = IDYES
-      then
+      then begin
+        ShowMiniMail := False; 
         actReceiveExecute( nil);
+      end;
   end;
 
   finally
@@ -541,7 +548,7 @@ finally
   SetFocusOnMainForm;
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€
   UpdateAddressName;
-  tmrShowMiniMailOnStart.Enabled := True;
+  tmrShowMiniMailOnStart.Enabled := ShowMiniMail;
 end;
 end;
 
