@@ -54,7 +54,9 @@ TUpdateTable = (
   utCurrentOrderHeads,
   utInvoiceHeaders,
   utSchedules,
-  utCertificateRequests
+  utCertificateRequests,
+  utMails,
+  utAttachmentRequests
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -75,6 +77,7 @@ private
   StartExec : TDateTime;
   AbsentPriceCodeSL : TStringList;
   DocumentBodyIdsSL : TStringList;
+  AttachmentIdsSL : TStringList;
   ASaveGridMask : String;
   CostSessionKey : String;
   URL : String;
@@ -157,12 +160,15 @@ private
   procedure GetAbsentPriceCode;
 
   procedure GetCertificateRequests();
+  procedure GetAttachmentRequests();
 
   procedure GetHistoryOrders;
   procedure CommitHistoryOrders;
   procedure ImportHistoryOrders;
 
   procedure ImportCertificates();
+
+  procedure ImportMails();
 
   procedure ConfirmUserMessage;
 
@@ -647,6 +653,8 @@ var
 
   waybillsWithCertificate : Boolean;
 
+  requestAttachs : Boolean;
+
   procedure AddPostParam(Param, Value: String);
   begin
     FPostParams.Add(Param + '=' + SOAP.PreparePostValue(Value));
@@ -655,6 +663,7 @@ var
 begin
   batchFileContent := '';
   waybillsWithCertificate := False;
+  requestAttachs := False;
   NeedProcessBatch := [eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [];
   { запрашиваем данные }
   SetStatusTextHTTP('ѕодготовка данных');
@@ -667,6 +676,8 @@ begin
       FreeAndNil(AbsentPriceCodeSL);
     if Assigned(DocumentBodyIdsSL) then
       FreeAndNil(DocumentBodyIdsSL);
+    if Assigned(AttachmentIdsSL) then
+      FreeAndNil(AttachmentIdsSL);
     //≈сли не производим кумул€тивное обновление, то провер€ем наличие синонимов
     if ([eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs = [])
        and (not (eaGetFullData in ExchangeForm.ExchangeActs))
@@ -677,6 +688,12 @@ begin
       GetCertificateRequests();
       if Assigned(DocumentBodyIdsSL) and (DocumentBodyIdsSL.Count > 0) then
         waybillsWithCertificate := True;
+    end;
+
+    if [eaGetPrice] * ExchangeForm.ExchangeActs <> [] then begin
+      GetAttachmentRequests();
+      if Assigned(AttachmentIdsSL) and (AttachmentIdsSL.Count > 0) then
+        requestAttachs := True;
     end;
 
     if (BatchFileName <> '') and NeedProcessBatch then
@@ -826,7 +843,15 @@ begin
 
       if waybillsWithCertificate then
         for I := 0 to DocumentBodyIdsSL.Count-1 do
-          AddPostParam('DocumentBodyIds', DocumentBodyIdsSL[i]);
+          AddPostParam('DocumentBodyIds', DocumentBodyIdsSL[i])
+      else
+        AddPostParam('DocumentBodyIds', '0');
+
+      if requestAttachs then
+        for I := 0 to AttachmentIdsSL.Count-1 do
+          AddPostParam('AttachmentIds', AttachmentIdsSL[i])
+      else
+        AddPostParam('AttachmentIds', '0');
 
     finally
       LibVersions.Free;
@@ -838,7 +863,7 @@ begin
       if waybillsWithCertificate then
         Res := SOAP.Invoke( 'GetUserDataWithOrdersAsyncCert', FPostParams)
       else
-        Res := SOAP.Invoke( 'GetUserDataWithOrders', FPostParams);
+        Res := SOAP.Invoke( 'GetUserDataWithAttachments', FPostParams);
     end;
     { провер€ем отсутствие ошибки при удаленном запросе }
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
@@ -1501,6 +1526,8 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then UpdateTables := UpdateTables + [utInvoiceHeaders];
   if (GetFileSize(RootFolder()+SDirIn+'\Schedules.txt') > 0) then UpdateTables := UpdateTables + [utSchedules];
   if (GetFileSize(RootFolder()+SDirIn+'\CertificateRequests.txt') > 0) then UpdateTables := UpdateTables + [utCertificateRequests];
+  if (GetFileSize(RootFolder()+SDirIn+'\Mails.txt') > 0) then UpdateTables := UpdateTables + [utMails];
+  if (GetFileSize(RootFolder()+SDirIn+'\AttachmentRequests.txt') > 0) then UpdateTables := UpdateTables + [utAttachmentRequests];
 
     //обновл€ем таблицы
     {
@@ -2313,6 +2340,9 @@ begin
   if utCertificateRequests in UpdateTables then
     ImportCertificates();
 
+  if (utMails in UpdateTables) or (utAttachmentRequests in UpdateTables) then
+    ImportMails();
+
   DM.MainConnection.Close;
   DM.MainConnection.Open;
 
@@ -2462,6 +2492,8 @@ begin
     AbsentPriceCodeSL.Free;
   if Assigned(DocumentBodyIdsSL) then
     DocumentBodyIdsSL.Free;
+  if Assigned(AttachmentIdsSL) then
+    AttachmentIdsSL.Free;
   if Assigned(ChildThreads) then
     try ChildThreads.Free; except end;
   inherited;
@@ -4278,6 +4310,76 @@ begin
 
   if (GetFileSize(RootFolder()+SDirIn+'\FileCertificates.txt') > 0) then begin
     DM.adcUpdate.SQL.Text := GetLoadDataSQL('FileCertificates', RootFolder()+SDirIn+'\FileCertificates.txt', true);
+    InternalExecute;
+  end;
+end;
+
+procedure TExchangeThread.GetAttachmentRequests;
+var
+  absentQuery : TMyQuery;
+begin
+  try
+
+    absentQuery := TMyQuery.Create(nil);
+    absentQuery.Connection := DM.MainConnection;
+    try
+      absentQuery.SQL.Text := 'select ID from Attachments where RequestAttachment = 1';
+
+      absentQuery.Open;
+      try
+        if absentQuery.RecordCount > 0 then begin
+          AttachmentIdsSL := TStringList.Create;
+          while not absentQuery.Eof do begin
+            AttachmentIdsSL.Add(absentQuery.FieldByName('Id').AsString);
+            absentQuery.Next;
+          end;
+        end;
+      finally
+        absentQuery.Close;
+      end;
+    finally
+      absentQuery.Free;
+    end;
+
+  except
+    on E : Exception do
+      WriteExchangeLog('GetAttachmentRequests.Error', E.Message);
+  end;
+end;
+
+procedure TExchangeThread.ImportMails;
+begin
+  if (GetFileSize(RootFolder()+SDirIn+'\Mails.txt') > 0) then begin
+    //ѕомечаем все новые письма без вложений, как старые
+    DM.adcUpdate.SQL.Text:='update Mails set IsNewMail = 0 where not exists(select Attachments.Id from Attachments where Attachments.MailId = Mails.Id);';
+    InternalExecute;
+
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('Mails', RootFolder()+SDirIn+'\Mails.txt', true);
+    InternalExecute;
+  end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\Attachments.txt') > 0) then begin
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('Attachments', RootFolder()+SDirIn+'\Attachments.txt', true);
+    InternalExecute;
+  end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\AttachmentRequests.txt') > 0) then begin
+    //ќчищаем таблицу с логом запроса сертификата
+    DM.adcUpdate.SQL.Text:='truncate AttachmentRequests;';
+    InternalExecute;
+
+    DM.adcUpdate.SQL.Text := GetLoadDataSQL('AttachmentRequests', RootFolder()+SDirIn+'\AttachmentRequests.txt', true);
+    InternalExecute;
+
+    DM.adcUpdate.SQL.Text:='' +
+    'update Mails, Attachments, AttachmentRequests ' +
+    ' set ' +
+    '  IsNewMail = 0, ' +
+    '  RequestAttachment = 0, ' +
+    '  RecievedAttachment  = 1 ' +
+    ' where ' +
+    '  Attachments.Id = AttachmentRequests.AttachmentId ' +
+    '  and Mails.Id = Attachments.MailId ';
     InternalExecute;
   end;
 end;
