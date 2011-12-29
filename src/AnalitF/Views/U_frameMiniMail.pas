@@ -20,7 +20,9 @@ uses
   DModule,
   AProc,
   DBGridHelper,
-  DataSetHelper;
+  DataSetHelper,
+  DBProc,
+  Constant;
 
 type
   TframeMiniMail = class(TFrame)
@@ -35,6 +37,15 @@ type
     procedure InsertTestData();
 
     procedure ProcessResize;
+
+{
+    procedure dbgMinPricesKeyPress(Sender: TObject; var Key: Char);
+    procedure dbgMinPricesKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+}
+    procedure dbgMailHeadersSortMarkingChanged(Sender: TObject);
+    procedure dbgMailHeadersGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
   public
     { Public declarations }
     dsMails : TDataSource;
@@ -85,7 +96,6 @@ type
     class function AddFrame(
       Owner: TComponent;
       Parent: TWinControl) : TframeMiniMail;
-    procedure UpdateMail();
   end;
 
 implementation
@@ -99,7 +109,6 @@ class function TframeMiniMail.AddFrame(Owner: TComponent;
 begin
   Result := TframeMiniMail.Create(Owner);
   Result.Parent := Parent;
-  //Result.Promotion := Promotion;
   Result.PrepareFrame;
 end;
 
@@ -184,10 +193,21 @@ begin
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailHeaders);
 
+  dbgMailHeaders.AllowedSelections := dbgMailHeaders.AllowedSelections - [gstColumns];
+  dbgMailHeaders.AllowedOperations := [alopUpdateEh];
+  dbgMailHeaders.Options := dbgMailHeaders.Options + [dgMultiSelect];  
+
   TDBGridHelper.AddColumn(dbgMailHeaders, 'LogTime', 'Дата', FCanvas.TextWidth('20110000 0000'));
   TDBGridHelper.AddColumn(dbgMailHeaders, 'IsImportantMail', 'Важное', FCanvas.TextWidth('Важное'), False);
   TDBGridHelper.AddColumn(dbgMailHeaders, 'SupplierName', 'Отправитель', FCanvas.TextWidth('Отправитель'));
   TDBGridHelper.AddColumn(dbgMailHeaders, 'Subject', 'Тема', FCanvas.TextWidth('это очень большая тема письма, которая только может быть в письме'));
+
+  TDBGridHelper.SetTitleButtonToColumns(dbgMailHeaders);
+
+  //dbgMailHeaders.OnKeyPress := dbgMinPricesKeyPress;
+  //dbgMailHeaders.OnKeyDown := dbgMinPricesKeyDown;
+  dbgMailHeaders.OnSortMarkingChanged := dbgMailHeadersSortMarkingChanged;
+  dbgMailHeaders.OnGetCellParams := dbgMailHeadersGetCellParams;
 
   dbgMailHeaders.DataSource := dsMails;
 
@@ -269,6 +289,8 @@ end;
 
 procedure TframeMiniMail.PrepareFrame;
 begin
+  //InsertTestData();
+
   mdMails.Connection := DM.MainConnection;
   mdAttachments.Connection := DM.MainConnection;
 
@@ -331,13 +353,6 @@ begin
 
   dsAttachments := TDataSource.Create(Self);
   dsAttachments.DataSet := mdAttachments;
-
-  //InsertTestData();
-end;
-
-procedure TframeMiniMail.UpdateMail;
-begin
-  //ShowMessage('UpdateMail');
 end;
 
 procedure TframeMiniMail.InsertTestData;
@@ -360,6 +375,23 @@ begin
   mdMails.AppendRecord([2, IncDay(Now(), -1) , 'Протек', 'тест 2', 'Это тело письма Здесь есть письмо']);
   mdMails.AppendRecord([3, IncDay(Now(), -5), 'Катрен', 'тест 3', 'Это тело письма'#13#10'Это еще одно письмо']);
 }
+end;
+
+procedure TframeMiniMail.dbgMailHeadersSortMarkingChanged(Sender: TObject);
+begin
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TframeMiniMail.dbgMailHeadersGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if fIsImportantMail.Value then
+    Background := clLime;
+  if fIsVIPMail.Value then
+    AFont.Style := AFont.Style + [fsBold];
+  if fIsNewMail.Value then
+    Background := GroupColor;
 end;
 
 end.
