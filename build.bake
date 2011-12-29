@@ -34,7 +34,7 @@ def BuildAnalitF(buildName as string):
 	MkDir(buildFolder) if not Exist(buildFolder)
 	try:
 		PrepareCfg("Release")
-		exec = Exec("dcc32", "-B AnalitF.dpr")
+		exec = Exec("C:\\Program Files (x86)\\Borland\\Delphi7\\Bin\\dcc32.exe", "-B AnalitF.dpr")
 		exec.BaseDirectory = ".\\src\\AnalitF"
 		exec.Execute()
 	ensure:
