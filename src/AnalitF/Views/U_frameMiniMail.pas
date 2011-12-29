@@ -22,7 +22,8 @@ uses
   DBGridHelper,
   DataSetHelper,
   DBProc,
-  Constant;
+  Constant,
+  U_ExchangeLog;
 
 type
   TframeMiniMail = class(TFrame)
@@ -30,6 +31,8 @@ type
   private
     { Private declarations }
     FCanvas : TCanvas;
+    //Список выбранных строк в гридах
+    FSelectedRows : TStringList;
 
     procedure CreateVisualComponent;
     procedure CreateNonVisualComponent;
@@ -40,12 +43,17 @@ type
 
 {
     procedure dbgMinPricesKeyPress(Sender: TObject; var Key: Char);
-    procedure dbgMinPricesKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
 }
+    procedure dbgMailHeadersKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     procedure dbgMailHeadersSortMarkingChanged(Sender: TObject);
     procedure dbgMailHeadersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+
+    procedure sbDeleteClick(Sender : TObject);  
+
+    procedure DeleteMails;  
+    procedure FillSelectedRows(Grid : TToughDBGrid);
   public
     { Public declarations }
     dsMails : TDataSource;
@@ -116,6 +124,7 @@ constructor TframeMiniMail.Create(AOwner: TComponent);
 begin
   inherited;
 
+  FSelectedRows := TStringList.Create();
   FCanvas := TControlCanvas.Create;
   TControlCanvas(FCanvas).Control := Self;
 
@@ -185,6 +194,7 @@ begin
   sbDelete.Width := FCanvas.TextWidth(sbDelete.Caption) + 20;
   sbDelete.Left := 5;
   sbDelete.Top := 8;
+  sbDelete.OnClick := sbDeleteClick;
   pFilter.Height := sbDelete.Height + 15;
 
   dbgMailHeaders := TToughDBGrid.Create(Self);
@@ -205,7 +215,7 @@ begin
   TDBGridHelper.SetTitleButtonToColumns(dbgMailHeaders);
 
   //dbgMailHeaders.OnKeyPress := dbgMinPricesKeyPress;
-  //dbgMailHeaders.OnKeyDown := dbgMinPricesKeyDown;
+  dbgMailHeaders.OnKeyDown := dbgMailHeadersKeyDown;
   dbgMailHeaders.OnSortMarkingChanged := dbgMailHeadersSortMarkingChanged;
   dbgMailHeaders.OnGetCellParams := dbgMailHeadersGetCellParams;
 
@@ -392,6 +402,76 @@ begin
     AFont.Style := AFont.Style + [fsBold];
   if fIsNewMail.Value then
     Background := GroupColor;
+end;
+
+procedure TframeMiniMail.dbgMailHeadersKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_DELETE then
+    DeleteMails();
+end;
+
+procedure TframeMiniMail.DeleteMails;
+var
+  I : Integer;
+  logMessage : String;
+begin
+  if not mdMails.IsEmpty then
+  begin
+    FillSelectedRows(dbgMailHeaders);
+    if FSelectedRows.Count > 0 then
+      if AProc.MessageBox( 'Удалить выбранные письма?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then begin
+        mdMails.DisableControls;
+        try
+          for I := 0 to FSelectedRows.Count-1 do begin
+            mdMails.Bookmark := FSelectedRows[i];
+            logMessage := Format('Удаление письма Id: %s', [fId.AsString]);
+            DM.MainConnection.ExecSQL(
+              'delete from Attachments where MailId = :MailId;',
+              [fId.AsString]
+            );
+            mdMails.Delete;
+            WriteExchangeLog('DeleteMails', logMessage);
+          end;
+        finally
+          mdMails.EnableControls;
+        end;
+      end;
+  end;
+end;
+
+procedure TframeMiniMail.sbDeleteClick(Sender: TObject);
+begin
+  DeleteMails;
+end;
+
+procedure TframeMiniMail.FillSelectedRows(Grid: TToughDBGrid);
+var
+  CurrentBookmark : String;
+begin
+  FSelectedRows.Clear;
+
+  //Если выделение не Rect, то берем только текущую строку, иначе работаем
+  //со свойством Grid.Selection.Rect
+  if Grid.Selection.SelectionType <> gstRectangle then
+    FSelectedRows.Add(Grid.DataSource.DataSet.Bookmark)
+  else begin
+    CurrentBookmark := Grid.DataSource.DataSet.Bookmark;
+    Grid.DataSource.DataSet.DisableControls;
+    try
+      Grid.DataSource.DataSet.Bookmark := Grid.Selection.Rect.TopRow;
+      repeat
+        FSelectedRows.Add(Grid.DataSource.DataSet.Bookmark);
+        if Grid.DataSource.DataSet.Bookmark = Grid.Selection.Rect.BottomRow then
+          Break
+        else
+          Grid.DataSource.DataSet.Next;
+      until Grid.DataSource.DataSet.Eof;
+    finally
+      Grid.DataSource.DataSet.Bookmark := CurrentBookmark;
+      Grid.DataSource.DataSet.EnableControls;
+    end;
+  end;
 end;
 
 end.
