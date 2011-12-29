@@ -136,7 +136,6 @@ begin
   NeedEditCurrentOrders := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
-  MainForm.HideMiniMail;
   Result := False;
   if Assigned(GlobalExchangeParams) then
     FreeAndNil(GlobalExchangeParams);
@@ -382,7 +381,6 @@ begin
 
   finally
     BatchFileName := '';
-    MainForm.UpdateMiniMail;
     if ([eaSendLetter] <> AExchangeActions) and DM.GlobalExclusiveParams.SelfExclusive then
       try DM.GlobalExclusiveParams.ResetExclusive; except end;
     if Assigned(GlobalExchangeParams) then

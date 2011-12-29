@@ -14,7 +14,7 @@ uses
   U_SchedulesController,
   UserActions,
   StrUtils,
-  U_frameMiniMail;
+  U_MiniMailForm;
 
 type
 
@@ -159,7 +159,9 @@ TMainForm = class(TVistaCorrectForm)
     miHome: TMenuItem;
     tmrOnNeedUpdate: TTimer;
     tmrNeedUpdateCheck: TTimer;
-    frameMiniMail: TframeMiniMail;
+    tmrShowMiniMailOnStart: TTimer;
+    actMiniMail: TAction;
+    itmMiniMail: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -221,6 +223,8 @@ TMainForm = class(TVistaCorrectForm)
     procedure actServiceLogExecute(Sender: TObject);
     procedure tmrOnNeedUpdateTimer(Sender: TObject);
     procedure tmrNeedUpdateCheckTimer(Sender: TObject);
+    procedure tmrShowMiniMailOnStartTimer(Sender: TObject);
+    procedure actMiniMailExecute(Sender: TObject);
 private
   JustRun: boolean;
   ApplicationVersionText : String;
@@ -244,6 +248,7 @@ private
   procedure UpdateAddressName;
   procedure ToggleToolBar;
   procedure CollapseToolBar;
+  procedure CallMiniMail();
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -286,9 +291,6 @@ public
   //Существуют модальные окна, которые ждут ответа от пользователя
   //Это либо окно с настройками либо MessageBox
   function ModalExists : Boolean;
-  procedure HideMiniMail;
-  procedure ShowMiniMail;
-  procedure UpdateMiniMail;
 end;
 
 var
@@ -382,7 +384,6 @@ try
   GetKeyboardHelper.SwitchToRussian();
 
   UpdateReclame;
-  frameMiniMail.PrepareFrame;
   //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
   //поэтому надо еще раз пересчитать
   //Вроде бы работает без него
@@ -540,6 +541,7 @@ finally
   SetFocusOnMainForm;
   //Обновляем ToolBar в случае смены клиента после обновления
   UpdateAddressName;
+  tmrShowMiniMailOnStart.Enabled := True;
 end;
 end;
 
@@ -724,6 +726,7 @@ procedure TMainForm.actReceiveExecute(Sender: TObject);
 var
   CatNum: integer;
   ExAct: TExchangeActions;
+  result : Boolean;
 begin
   DM.InsertUserActionLog(uaGetData);
   ExAct := [ eaGetPrice];
@@ -738,22 +741,29 @@ begin
   { Если каталог пустой, то обновление будет принудительно кумулятивным }
   if CatNum = 0 then ExAct := ExAct + [eaGetFullData];
 
-  RunExchange( ExAct);
+  result := RunExchange( ExAct);
 
   //Обновляем ToolBar в случае смены клиента после обновления
   UpdateAddressName;
+
+  if result then
+    CallMiniMail;
 end;
 
 procedure TMainForm.actReceiveAllExecute(Sender: TObject);
+var
+  result : Boolean;
 begin
   DM.InsertUserActionLog(uaGetCumulative);
   if AProc.MessageBox( 'Кумулятивное обновление достаточно длительный процесс. Продолжить?',
     MB_ICONQUESTION or MB_OKCANCEL) = IDOK
   then begin
-    RunExchange([eaGetPrice, eaGetFullData]);
+    result := RunExchange([eaGetPrice, eaGetFullData]);
 
     //Обновляем ToolBar в случае смены клиента после обновления
     UpdateAddressName;
+    if result then
+      CallMiniMail;
   end;
 end;
 
@@ -1124,7 +1134,6 @@ begin
   //Отображаем "пустое" главное окно, поэтому закрываем все дочерние формы
   MainForm.FreeChildForms;
   UpdateReclame;
-  ShowMiniMail;
 end;
 
 procedure TMainForm.actHomeUpdate(Sender: TObject);
@@ -1991,26 +2000,28 @@ begin
     if GetGUIThreadInfo(MainThreadID, GUIThreadInfo) then begin
       WriteExchangeLog('ModalExists', 'Active : ' + IntToStr(GUIThreadInfo.hwndActive) + '  classname : ' + GetClassNameHlp(GUIThreadInfo.hwndActive));
     end;
-}    
+}
   end;
 end;
 
-procedure TMainForm.HideMiniMail;
+procedure TMainForm.CallMiniMail;
+var
+  modalResult : TModalResult;
 begin
-  if frameMiniMail.Visible then
-    frameMiniMail.Hide;
+  modalResult := ShowMiniMail;
+  if modalResult = mrRetry then
+    actOrderAll.Execute;
 end;
 
-procedure TMainForm.ShowMiniMail;
+procedure TMainForm.tmrShowMiniMailOnStartTimer(Sender: TObject);
 begin
-  if not frameMiniMail.Visible and not Assigned(ActiveChild) then
-    frameMiniMail.Show;
+  tmrShowMiniMailOnStart.Enabled := False;
+  CallMiniMail;
 end;
 
-procedure TMainForm.UpdateMiniMail;
+procedure TMainForm.actMiniMailExecute(Sender: TObject);
 begin
-  ShowMiniMail;
-  frameMiniMail.UpdateMail;
+  CallMiniMail;
 end;
 
 initialization

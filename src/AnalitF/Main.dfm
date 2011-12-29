@@ -26,11 +26,11 @@ object MainForm: TMainForm
     Left = 0
     Top = 42
     Width = 1016
-    Height = 243
+    Height = 493
     Align = alClient
     TabOrder = 0
     ControlData = {
-      4C000000026900001D1900000000000000000000000000000000000000000000
+      4C00000002690000F43200000000000000000000000000000000000000000000
       000000004C000000000000000000000001000000E0D057007335CF11AE690800
       2B2E126201000000000000004C0000000114020000000000C000000000000046
       8000000000000000000000000000000000000000000000000000000000000000
@@ -288,14 +288,6 @@ object MainForm: TMainForm
       end>
     OnDrawPanel = StatusBarDrawPanel
   end
-  inline frameMiniMail: TframeMiniMail
-    Left = 0
-    Top = 285
-    Width = 1016
-    Height = 250
-    Align = alBottom
-    TabOrder = 3
-  end
   object MainMenu: TMainMenu
     Left = 224
     Top = 160
@@ -379,6 +371,9 @@ object MainForm: TMainForm
       end
       object itmServiceLog: TMenuItem
         Action = actServiceLog
+      end
+      object itmMiniMail: TMenuItem
+        Action = actMiniMail
       end
       object itmCompact: TMenuItem
         Action = actCompact
@@ -704,6 +699,12 @@ object MainForm: TMainForm
       Caption = #1046#1091#1088#1085#1072#1083' '#1088#1072#1073#1086#1090#1099' '#1089#1077#1088#1074#1080#1089#1072
       Hint = #1046#1091#1088#1085#1072#1083' '#1088#1072#1073#1086#1090#1099' '#1089#1077#1088#1074#1080#1089#1072
       OnExecute = actServiceLogExecute
+    end
+    object actMiniMail: TAction
+      Category = 'Service'
+      Caption = #1052#1080#1085#1080'-'#1087#1086#1095#1090#1072
+      Hint = #1052#1080#1085#1080'-'#1087#1086#1095#1090#1072
+      OnExecute = actMiniMailExecute
     end
   end
   object AppEvents: TApplicationEvents
@@ -4043,5 +4044,12 @@ object MainForm: TMainForm
     OnTimer = tmrNeedUpdateCheckTimer
     Left = 408
     Top = 280
+  end
+  object tmrShowMiniMailOnStart: TTimer
+    Enabled = False
+    Interval = 700
+    OnTimer = tmrShowMiniMailOnStartTimer
+    Left = 504
+    Top = 272
   end
 end
