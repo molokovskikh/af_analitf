@@ -355,6 +355,9 @@ begin
     try
       connection.ExecSQL('select Id from analitf.params', []);
     finally
+      Self.Status('—ейчас будет запуск Sleep');
+      Sleep(1000);
+      Self.Status('запуск Sleep завершен');
       connection.Close;
     end;
   finally
