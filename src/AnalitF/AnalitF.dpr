@@ -159,7 +159,8 @@ uses
   UserActions in 'BusinessLogic\UserActions.pas',
   U_SerialNumberSearch in 'Views\U_SerialNumberSearch.pas' {SerialNumberSearchForm},
   U_frameMiniMail in 'Views\U_frameMiniMail.pas' {frameMiniMail: TFrame},
-  U_MiniMailForm in 'U_MiniMailForm.pas' {MiniMailForm};
+  U_MiniMailForm in 'U_MiniMailForm.pas' {MiniMailForm},
+  FileCountHelper in 'Helpers\FileCountHelper.pas';
 
 {$R *.RES}
 {$R Progress.RES}

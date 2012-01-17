@@ -114,6 +114,7 @@ procedure DeleteDataDir(const dataDir: String);
 function RemoveDirectory(const Dir : String) : LongBool;
 
 function GetDirectorySize(const Dir : String): Int64;
+function GetDirectoryFileCount(const Dir : String): Int64;
 function FormatByteSize(const bytes: Int64): String;
 function FormatSpeedSize(bytes: Int64): String;
 
@@ -1203,6 +1204,43 @@ begin
 
     for I := 0 to DirList.Count-1 do
       Result := Result + GetDirectorySize(Dir + '\' + DirList[i]);
+  finally
+    DirList.Free;
+  end;
+end;
+
+function GetDirectoryFileCount(const Dir : String): Int64;
+var
+  SR : TSearchRec;
+  DirList : TStringList;
+  I : Integer;
+begin
+  Result := 0;
+  //≈сли директори€ не существует, то просто выходим
+  if not DirectoryExists(Dir) then
+    Exit;
+
+  DirList := TStringList.Create;
+  try
+    try
+      if FindFirst(Dir + '\*.*', faAnyFile, sr) = 0 then
+        repeat
+          if (sr.Name <> '.') and (sr.Name <> '..') then
+
+            //≈сли мы встретили директорию
+            if (sr.Attr and faDirectory > 0) then
+              DirList.Add(sr.Name)
+            else begin
+              Result := Result + 1;
+            end;
+
+        until FindNext(sr) <> 0;
+    finally
+      SysUtils.FindClose(sr);
+    end;
+
+    for I := 0 to DirList.Count-1 do
+      Result := Result + GetDirectoryFileCount(Dir + '\' + DirList[i]);
   finally
     DirList.Free;
   end;

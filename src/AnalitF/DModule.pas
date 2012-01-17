@@ -616,7 +616,8 @@ uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      NetworkSettings,
      Core,
      SynonymSearch,
-     CoreFirm;
+     CoreFirm,
+     FileCountHelper;
 
 type
   TestMyDBThreadState = (
@@ -905,6 +906,7 @@ var
   HTTPE : String;
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
+  fileCountHelper : TFileCountThread; 
 begin
 {$ifdef USEMEMORYCRYPTDLL}
   //Блокируем использование MemoryLib, т.к. оно не работает
@@ -1026,6 +1028,7 @@ begin
 
   WriteExchangeLog('AnalitF', 'Программа запущена.');
 
+  fileCountHelper := TFileCountThread.Create; 
 {$ifdef TestEmbeddedMysql}
   TestEmbeddedMysql();
   ExitProcess(1);
