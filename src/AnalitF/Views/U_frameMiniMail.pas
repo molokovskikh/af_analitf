@@ -314,6 +314,12 @@ procedure TframeMiniMail.PrepareFrame;
 begin
   //InsertTestData();
 
+{
+  WriteExchangeLog('DModule',
+      Concat('Mails', #13#10,
+        DM.DataSetToString('select Id, LogTime, SupplierId, SupplierName, Subject, Body, IsNewMail, IsVipMail, IsImportantMail from Mails', [], [])));
+}        
+
   mdMails.Connection := DM.MainConnection;
   mdAttachments.Connection := DM.MainConnection;
 

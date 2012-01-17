@@ -4348,14 +4348,20 @@ begin
 end;
 
 procedure TExchangeThread.ImportMails;
+var
+  insertSQL : String;
 begin
   if (GetFileSize(RootFolder()+SDirIn+'\Mails.txt') > 0) then begin
     //ѕомечаем все новые письма без вложений, как старые
     DM.adcUpdate.SQL.Text:='update Mails set IsNewMail = 0 where not exists(select Attachments.Id from Attachments where Attachments.MailId = Mails.Id);';
     InternalExecute;
 
-    DM.adcUpdate.SQL.Text := GetLoadDataSQL('Mails', RootFolder()+SDirIn+'\Mails.txt', true);
+    insertSQL := Trim(GetLoadDataSQL('Mails', RootFolder()+SDirIn+'\Mails.txt', true));
+    DM.adcUpdate.SQL.Text :=
+      Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
+      '(Id, LogTime, SupplierId, SupplierName, IsVIPMail, Subject, Body) set IsNewMail = 1;';
     InternalExecute;
+    
     ExchangeParams.NewMailsExists := True;
   end;
 
