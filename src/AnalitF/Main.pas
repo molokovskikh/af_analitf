@@ -159,9 +159,9 @@ TMainForm = class(TVistaCorrectForm)
     miHome: TMenuItem;
     tmrOnNeedUpdate: TTimer;
     tmrNeedUpdateCheck: TTimer;
-    tmrShowMiniMailOnStart: TTimer;
     actMiniMail: TAction;
     itmMiniMail: TMenuItem;
+    miMiniMailFromDocs: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -223,7 +223,6 @@ TMainForm = class(TVistaCorrectForm)
     procedure actServiceLogExecute(Sender: TObject);
     procedure tmrOnNeedUpdateTimer(Sender: TObject);
     procedure tmrNeedUpdateCheckTimer(Sender: TObject);
-    procedure tmrShowMiniMailOnStartTimer(Sender: TObject);
     procedure actMiniMailExecute(Sender: TObject);
 private
   JustRun: boolean;
@@ -267,6 +266,8 @@ public
   MaxClientNameWidth : Integer;
   //ѕр€моугольник на ToolBar дл€ отображени€ контрола выбора клиента
   ClientNameRect : TRect;
+
+  MiniMailForm: TMiniMailForm;
 
   //дл€ TChildForm нужен FActionLists, который в базовом классе €вл€етс€ protected
   property ActionLists: TList read GetActionLists write SetActionLists;
@@ -352,13 +353,13 @@ begin
   end;
 
   LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
+  MiniMailForm := TMiniMailForm.Create(Application);
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
 var
   I : Integer;
   LoggedOn : Boolean;
-  ShowMiniMail : Boolean;
 begin
   //¬ызываем это дл€ того, чтобы произошла отрисовка pbSelectClient после обновлени€,
   //из-за чего может изменитьс€ список клиентов
@@ -374,7 +375,6 @@ begin
   JustRun := False;
   mainStartupHelper.Stop;
   
-  ShowMiniMail := True;
 try
   try
   DisableByNetworkSettings;
@@ -506,14 +506,12 @@ try
     if AProc.MessageBox( 'Ѕаза данных программы не заполнена. ¬ыполнить обновление?',
        MB_ICONQUESTION or MB_YESNO) = IDYES
     then begin
-      ShowMiniMail := False; 
       actReceiveExecute( nil);
     end;
   end
   else begin
     if SchedulesController().SchedulesEnabled and SchedulesController().NeedUpdateOnBegin
     then begin
-      ShowMiniMail := False; 
       ShowAction(
         '—ейчас будет произведено обновление данных '#13#10 +
         'по установленному расписанию.',
@@ -527,7 +525,6 @@ try
       if AProc.MessageBox( '¬ы работаете с устаревшим набором данных. ¬ыполнить обновление?',
          MB_ICONQUESTION or MB_YESNO) = IDYES
       then begin
-        ShowMiniMail := False; 
         actReceiveExecute( nil);
       end;
   end;
@@ -548,7 +545,6 @@ finally
   SetFocusOnMainForm;
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€
   UpdateAddressName;
-  tmrShowMiniMailOnStart.Enabled := ShowMiniMail;
 end;
 end;
 
@@ -753,7 +749,7 @@ begin
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€
   UpdateAddressName;
 
-  if result then
+  if NeedShowMiniMail then
     CallMiniMail;
 end;
 
@@ -769,7 +765,7 @@ begin
 
     //ќбновл€ем ToolBar в случае смены клиента после обновлени€
     UpdateAddressName;
-    if result then
+    if NeedShowMiniMail then
       CallMiniMail;
   end;
 end;
@@ -2012,18 +2008,8 @@ begin
 end;
 
 procedure TMainForm.CallMiniMail;
-var
-  modalResult : TModalResult;
 begin
-  modalResult := ShowMiniMail;
-  if modalResult = mrRetry then
-    actOrderAll.Execute;
-end;
-
-procedure TMainForm.tmrShowMiniMailOnStartTimer(Sender: TObject);
-begin
-  tmrShowMiniMailOnStart.Enabled := False;
-  CallMiniMail;
+  MiniMailForm.Show;
 end;
 
 procedure TMainForm.actMiniMailExecute(Sender: TObject);

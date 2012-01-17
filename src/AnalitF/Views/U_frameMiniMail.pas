@@ -213,9 +213,12 @@ begin
   dbgMailHeaders.AllowedOperations := [alopUpdateEh];
   dbgMailHeaders.Options := dbgMailHeaders.Options + [dgMultiSelect];  
 
-  TDBGridHelper.AddColumn(dbgMailHeaders, 'LogTime', 'Дата', FCanvas.TextWidth('20110000 0000'));
-  TDBGridHelper.AddColumn(dbgMailHeaders, 'IsImportantMail', 'Важное', FCanvas.TextWidth('Важное'), False);
-  TDBGridHelper.AddColumn(dbgMailHeaders, 'SupplierName', 'Отправитель', FCanvas.TextWidth('Отправитель'));
+  column := TDBGridHelper.AddColumn(dbgMailHeaders, 'LogTime', 'Дата', FCanvas.TextWidth('20110000 0000'));
+  column.MinWidth := FCanvas.TextWidth('2011.00.00') + 3;
+  column := TDBGridHelper.AddColumn(dbgMailHeaders, 'IsImportantMail', 'Важное', FCanvas.TextWidth('Важное'), False);
+  column.MinWidth := FCanvas.TextWidth('Важн') + 3;
+  column := TDBGridHelper.AddColumn(dbgMailHeaders, 'SupplierName', 'Отправитель', FCanvas.TextWidth('Отправитель'));
+  column.MinWidth := FCanvas.TextWidth('Отправитель') + 3;
   TDBGridHelper.AddColumn(dbgMailHeaders, 'Subject', 'Тема', FCanvas.TextWidth('это очень большая тема письма, которая только может быть в письме'));
 
   TDBGridHelper.SetTitleButtonToColumns(dbgMailHeaders);
@@ -321,7 +324,7 @@ end;
 procedure TframeMiniMail.ProcessResize;
 begin
   if Assigned(pMailBody) then begin
-    pMailBody.Width := (gbMail.Width div 3) * 2;
+    pMailBody.Width := (gbMail.Width div 2);
   end;
   if Assigned(dbtLogTime) and Assigned(pAttachmentHeaders) then
     dbtLogTime.Left := pAttachmentHeaders.Width - 16 - dbtLogTime.Width;

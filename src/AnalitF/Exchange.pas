@@ -101,6 +101,7 @@ var
   ExThread: TExchangeThread;
   NeedRetrySendOrder : Boolean;
   NeedEditCurrentOrders : Boolean;
+  NeedShowMiniMail : Boolean;
   BatchFileName : String;
 
 procedure TryToRepareOrders();
@@ -134,6 +135,7 @@ var
 begin
   NeedRetrySendOrder := False;
   NeedEditCurrentOrders := False;
+  NeedShowMiniMail := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
   Result := False;
@@ -351,6 +353,9 @@ begin
       AProc.MessageBox('С сервера загружена вся история заказов.', MB_OK or MB_ICONINFORMATION)
     else
       AProc.MessageBox('Загрузка истории заказов завершена успешно.', MB_OK or MB_ICONINFORMATION);
+
+  if Result and GlobalExchangeParams.NewMailsExists then
+    NeedShowMiniMail := True;
 
   MainForm.UpdateReclame;
 

@@ -22,6 +22,7 @@ type
     SendWaybillsResult : TSendWaybillsStatus;
     FullHistoryOrders : Boolean;
     ImportDocs : Boolean;
+    NewMailsExists : Boolean;
 
     constructor Create();
     destructor Destroy; override;
@@ -43,6 +44,7 @@ begin
   SendWaybillsResult := swsNotFiles;
   FullHistoryOrders := False;
   ImportDocs := False;
+  NewMailsExists := False;
 end;
 
 destructor TExchangeParams.Destroy;

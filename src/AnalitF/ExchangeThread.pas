@@ -4356,6 +4356,7 @@ begin
 
     DM.adcUpdate.SQL.Text := GetLoadDataSQL('Mails', RootFolder()+SDirIn+'\Mails.txt', true);
     InternalExecute;
+    ExchangeParams.NewMailsExists := True;
   end;
 
   if (GetFileSize(RootFolder()+SDirIn+'\Attachments.txt') > 0) then begin

@@ -360,6 +360,9 @@ object MainForm: TMainForm
       object itmDefective: TMenuItem
         Action = actDefectives
       end
+      object miMiniMailFromDocs: TMenuItem
+        Action = actMiniMail
+      end
     end
     object itmService: TMenuItem
       Caption = #1057#1077'&'#1088#1074#1080#1089
@@ -4044,12 +4047,5 @@ object MainForm: TMainForm
     OnTimer = tmrNeedUpdateCheckTimer
     Left = 408
     Top = 280
-  end
-  object tmrShowMiniMailOnStart: TTimer
-    Enabled = False
-    Interval = 700
-    OnTimer = tmrShowMiniMailOnStartTimer
-    Left = 504
-    Top = 272
   end
 end

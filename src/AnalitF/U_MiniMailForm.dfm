@@ -2,6 +2,7 @@ inherited MiniMailForm: TMiniMailForm
   Caption = #1052#1080#1085#1080'-'#1087#1086#1095#1090#1072
   KeyPreview = True
   OnCreate = FormCreate
+  OnDeactivate = FormDeactivate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96

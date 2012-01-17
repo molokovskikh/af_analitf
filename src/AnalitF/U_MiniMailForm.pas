@@ -16,6 +16,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure spbCloseClick(Sender: TObject);
+    procedure FormDeactivate(Sender: TObject);
   private
     { Private declarations }
     FirstKey : Boolean;
@@ -24,23 +25,13 @@ type
     frameMiniMail : TframeMiniMail;
   end;
 
-  function ShowMiniMail() : TModalResult;
-
 implementation
 
 {$R *.dfm}
 
-function ShowMiniMail() : TModalResult;
-var
-  FMiniMailForm: TMiniMailForm;
-begin
-  FMiniMailForm := TMiniMailForm.Create(Application);
-  try
-    Result := FMiniMailForm.ShowModal;
-  finally
-    FMiniMailForm.Free;
-  end;
-end;
+uses
+  Main,
+  DModule;
 
 procedure TMiniMailForm.FormCreate(Sender: TObject);
 begin
@@ -53,12 +44,26 @@ begin
 end;
 
 procedure TMiniMailForm.FormShow(Sender: TObject);
+var
+  newMailCount : Integer;
 begin
   inherited;
+
+  try
+    newMailCount := DM.QueryValue('SELECT COUNT(Id) AS newMailCount FROM Mails where IsNewMail = 1', [], []);
+  except
+    newMailCount := 0;
+  end;
+
+  if newMailCount = 0 then
+    Caption := 'Мини-почта'
+  else
+    Caption := Format('Мини-почта: Получено %d новых сообщений', [newMailCount]);
+
   Height := 250 + pBottom.Height;
   Width := Application.MainForm.Width;
   Left := Application.MainForm.Left;
-  Top := Application.MainForm.Height - Height - 40;
+  Top := Application.MainForm.Top + Application.MainForm.Height - Height - 40;
   frameMiniMail.PrepareFrame;
   frameMiniMail.dbgMailHeaders.SetFocus();
 end;
@@ -67,15 +72,22 @@ procedure TMiniMailForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if Key = VK_Escape then
-    ModalResult := mrOk;
-  if (Key = VK_SPACE) and FirstKey then
-    ModalResult := mrRetry;
+    Close;
+  if (Key = VK_SPACE) and FirstKey then begin
+    MainForm.actOrderAll.Execute;
+  end;
   FirstKey := False;
 end;
 
 procedure TMiniMailForm.spbCloseClick(Sender: TObject);
 begin
-  ModalResult := mrOk;
+  Close;
+end;
+
+procedure TMiniMailForm.FormDeactivate(Sender: TObject);
+begin
+  inherited;
+  Close;
 end;
 
 end.
