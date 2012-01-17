@@ -29,30 +29,30 @@ procedure ShowDescription(dataSet : TDataSet);
 const
   ColumnsByTitles : array[0..1, 0..10] of string =
   ((
-    'PharmacologicalAction',
     'Composition',
+    'PharmacologicalAction',
     'IndicationsForUse',
-    'Dosing',
-    'Interaction',
-    'SideEffect',
     'Warnings',
+    'Dosing',
+    'SideEffect',
+    'Interaction',
     'ProductForm',
+    'Description',
     'Storage',
-    'Expiration',
-    'Description'
+    'Expiration'
     ),
    (
-    'Фармакологическое действие',
     'Состав',
+    'Фармакологическое действие',
     'Показания к применению',
-    'Способ применения и дозы',
-    'Взаимодействие',
-    'Побочное действие и противопоказания',
     'Предостережения и противопоказания',
+    'Способ применения и дозы',
+    'Побочное действие и противопоказания',
+    'Взаимодействие',
     'Форма выпуска',
+    'Дополнительно',
     'Условия хранения',
-    'Срок годности',
-    'Дополнительно'
+    'Срок годности'
     ));
 var
   I,
