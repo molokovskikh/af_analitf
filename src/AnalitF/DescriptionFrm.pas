@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, U_VistaCorrectForm, StdCtrls, DB, RxRichEd, ExtCtrls,
-  U_ExchangeLog;
+  Dialogs, U_VistaCorrectForm, StdCtrls, DB, RxRichEd, ExtCtrls;
 
 type
   TDescriptionForm = class(TVistaCorrectForm)
@@ -67,13 +66,13 @@ var
   trimText : String;
   FDescriptionForm: TDescriptionForm;
 begin
-  WriteExchangeLog('ShowDescription', 'Создаем TDescriptionForm');
+  //WriteExchangeLog('ShowDescription', 'Создаем TDescriptionForm');
   FDescriptionForm := TDescriptionForm.Create(nil);
   try
     Name := dataSet.FieldByName('Name').AsString;
     EnglishName := dataSet.FieldByName('EnglishName').AsString;
 
-    WriteExchangeLog('ShowDescription', 'Создаем визуальные компоненты');
+    //WriteExchangeLog('ShowDescription', 'Создаем визуальные компоненты');
     FDescriptionForm.ControlStyle := FDescriptionForm.ControlStyle - [csParentBackground] + [csOpaque];
     FDescriptionForm.pButton.ControlStyle := FDescriptionForm.pButton.ControlStyle - [csParentBackground] + [csOpaque];
 
@@ -87,20 +86,20 @@ begin
     RichEd.ReadOnly := True;
     //FDescriptionForm.ActiveControl := RichEd;
 
-    WriteExchangeLog('ShowDescription', 'Выставляем размер формы');
+    //WriteExchangeLog('ShowDescription', 'Выставляем размер формы');
     FDescriptionForm.Width := (Application.MainForm.Width div 3) * 2;
     FDescriptionForm.Height := (Application.MainForm.Height div 3) * 2;
 
-    WriteExchangeLog('ShowDescription', 'Очищаем RichEdit');
-    WriteExchangeLog('ShowDescription', 'RichEd.Lines.Count : ' + IntToStr(RichEd.Lines.Count));
+    //WriteExchangeLog('ShowDescription', 'Очищаем RichEdit');
+    //WriteExchangeLog('ShowDescription', 'RichEd.Lines.Count : ' + IntToStr(RichEd.Lines.Count));
     //RichEd.Clear;
 
-    WriteExchangeLog('ShowDescription', 'Выставляем Paragraph.Alignment := paCenter');
+    //WriteExchangeLog('ShowDescription', 'Выставляем Paragraph.Alignment := paCenter');
     RichEd.Paragraph.Alignment := paCenter;
-    WriteExchangeLog('ShowDescription', 'Добавляем две строки');
+    //WriteExchangeLog('ShowDescription', 'Добавляем две строки');
     RichEd.Lines.Add(Name + ' (' + EnglishName + ')');
     RichEd.Lines.Add('');
-    WriteExchangeLog('ShowDescription', 'Выставляем аттрибуты выделенного');
+    //WriteExchangeLog('ShowDescription', 'Выставляем аттрибуты выделенного');
 {
     RichEd.SelStart := 0;
     RichEd.SelLength := Length(RichEd.Lines[0]);
@@ -108,10 +107,10 @@ begin
     RichEd.SelAttributes.Size := RichEd.SelAttributes.Size + 8;
 }
 
-    WriteExchangeLog('ShowDescription', 'LastSelStart := Length(RichEd.Lines[0]) + 2');
+    //WriteExchangeLog('ShowDescription', 'LastSelStart := Length(RichEd.Lines[0]) + 2');
     LastSelStart := Length(RichEd.Lines[0]) + 2;
 
-    WriteExchangeLog('ShowDescription', 'Заполняем RichEdit');
+    //WriteExchangeLog('ShowDescription', 'Заполняем RichEdit');
 
     for I := 0 to High(ColumnsByTitles[0]) do begin
       descField := dataSet.FindField(ColumnsByTitles[0, i]);
@@ -141,33 +140,27 @@ begin
           RichEd.Paragraph.Alignment := paLeftJustify;
           LastSelStart := LastSelStart + Length(RichEd.Lines[j]);
         end;
-}        
+}
 
         RichEd.Lines.Add('');
         LastSelStart := LastSelStart + 2;
       end;
     end;
-{
-}
 
-    WriteExchangeLog('ShowDescription', 'Удаляем лишние строки из RichEdit');
+    //WriteExchangeLog('ShowDescription', 'Удаляем лишние строки из RichEdit');
     for I := RichEd.Lines.Count-1 downto 0 do
       if Trim(RichEd.Lines[i]) = '' then
         RichEd.Lines.Delete(i)
       else
         Break;
-{
-}
 
     RichEd.SelStart := 0;
     RichEd.SelLength := 0;
-{
-}
 
-    WriteExchangeLog('ShowDescription', 'Отображаем форму');
+    //WriteExchangeLog('ShowDescription', 'Отображаем форму');
     FDescriptionForm.ShowModal;
   finally
-    WriteExchangeLog('ShowDescription', 'Удаляем форму');
+    //WriteExchangeLog('ShowDescription', 'Удаляем форму');
     FDescriptionForm.Free;
   end;
 end;
