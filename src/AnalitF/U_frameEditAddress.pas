@@ -96,7 +96,7 @@ begin
     lClientId.Top := 16;
     lClientId.Left := 10;
 
-    gbEditClients.Width := lClientId.Canvas.TextWidth('Включать входную НДС в расчет розничной надбавки для ЖНВЛС при ЕНВД') + 60;
+    gbEditClients.Width := lClientId.Canvas.TextWidth('Включать входную НДС в расчет розничной надбавки для НеЖНВЛС при ЕНВД') + 60;
     gbEditClients.Constraints.MinWidth := gbEditClients.Width;
 
     dblClientId := TDBLookupComboBox.Create(Self);

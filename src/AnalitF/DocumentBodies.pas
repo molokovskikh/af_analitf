@@ -989,8 +989,15 @@ begin
   end
   else begin
 
-    nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
-    supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCost.Value;
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDSForOther" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDSForOther.Value then begin
+      nonVitallyNDSMultiplier := 1;
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCostWithoutNDS.Value;
+    end
+    else begin
+      nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCost.Value;
+    end;
 
     //По цене производителя
     if CalculateOnProducerCost then
@@ -1050,8 +1057,15 @@ begin
   end
   else begin
 
-    nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
-    supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCost.Value;
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDSForOther" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDSForOther.Value then begin
+      nonVitallyNDSMultiplier := 1;
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCostWithoutNDS.Value;
+    end
+    else begin
+      nonVitallyNDSMultiplier := (1 + NDSField.Value/100);
+      supplierCostWithNDSMultiplier := adsDocumentBodiesSupplierCost.Value;
+    end;
 
     //По цене производителя
     if CalculateOnProducerCost then begin
@@ -2106,8 +2120,15 @@ begin
   end
   else begin
 
-    nonVitallyNDSMultiplier := (1 + mdReport.FieldByName('NDS').AsInteger/100);
-    supplierCostWithNDSMultiplier := mdReport.FieldByName('SupplierCost').AsFloat;
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDSForOther" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDSForOther.Value then begin
+      nonVitallyNDSMultiplier := 1;
+      supplierCostWithNDSMultiplier := mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat;
+    end
+    else begin
+      nonVitallyNDSMultiplier := (1 + mdReport.FieldByName('NDS').AsInteger/100);
+      supplierCostWithNDSMultiplier := mdReport.FieldByName('SupplierCost').AsFloat;
+    end;
 
     //По цене производителя
     if CalculateOnProducerCost then begin

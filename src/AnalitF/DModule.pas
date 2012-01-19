@@ -4824,7 +4824,11 @@ begin
     else
       nonVitallyNDS := NDS;
 
-    nonVitallyNDSMultiplier := (1 + nonVitallyNDS/100);
+    //Если cпособ налогообложения ЕНВД и флаг "CalculateWithNDSForOther" сброшен, то множитель = 1
+    if (DM.adtClientsMethodOfTaxation.Value = 0) and not DM.adtClientsCalculateWithNDSForOther.Value then
+      nonVitallyNDSMultiplier := 1
+    else
+      nonVitallyNDSMultiplier := (1 + nonVitallyNDS/100);
 
     //По цене производителя
     if DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean then begin
