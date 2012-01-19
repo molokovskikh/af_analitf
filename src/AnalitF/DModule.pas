@@ -282,6 +282,7 @@ type
     adsOrderDetailsComment: TStringField;
     adsOrderDetailsPrintPrice: TFloatField;
     adtParams: TMyQuery;
+    adtClientsCalculateWithNDSForOther: TBooleanField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -2020,6 +2021,11 @@ begin
       if DBVersion = 82 then begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 83;
+      end;
+
+      if DBVersion = 83 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 84;
       end;
     end;
 

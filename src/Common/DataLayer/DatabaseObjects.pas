@@ -19,7 +19,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 83;
+  CURRENT_DB_VERSION = 84;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';

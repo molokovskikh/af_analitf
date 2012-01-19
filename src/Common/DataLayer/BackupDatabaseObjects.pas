@@ -427,6 +427,7 @@ begin
 +'    `MethodOfTaxation` smallint(5) not null default ''0'', '
 +'    `CalculateWithNDS` tinyint(1) not null default ''1'', '
 +'    `Name` varchar(255) default null, '
++'    `CalculateWithNDSForOther` tinyint(1) not null default ''1'', '
 +'    primary key (`CLIENTID`) '
 +' ) '
 + GetTableOptions();

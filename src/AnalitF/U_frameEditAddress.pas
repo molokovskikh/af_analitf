@@ -53,6 +53,7 @@ type
     dblMethodOfTaxation : TDBLookupComboBox;
 
     dbchbCalculateWithNDS : TDBCheckBox;
+    dbchbCalculateWithNDSForOther : TDBCheckBox;
 
     lSelfAddressId : TLabel;
     dbeSelfAddressId : TDBEdit;
@@ -153,15 +154,26 @@ begin
     dbchbCalculateWithNDS.DataField := 'CalculateWithNDS';
     dbchbCalculateWithNDS.DataSource := dsEditClients;
 
+    dbchbCalculateWithNDSForOther := TDBCheckBox.Create(Self);
+    dbchbCalculateWithNDSForOther.Parent := gbEditClients;
+    dbchbCalculateWithNDSForOther.Anchors := [akLeft, akTop, akRight];
+    dbchbCalculateWithNDSForOther.Top := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 10;
+    dbchbCalculateWithNDSForOther.Left := dbchbCalculateWithNDS.Left;
+    dbchbCalculateWithNDSForOther.Width := gbEditClients.Width - 20;
+    dbchbCalculateWithNDSForOther.Caption := 'Включать входную НДС в расчет розничной надбавки для НеЖНВЛС при ЕНВД';
+    dbchbCalculateWithNDSForOther.DataField := 'CalculateWithNDSForOther';
+    dbchbCalculateWithNDSForOther.DataSource := dsEditClients;
+
+
     if GetNetworkSettings().IsNetworkVersion then begin
-      nextTop := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 10;
+      nextTop := dbchbCalculateWithNDSForOther.Top + dbchbCalculateWithNDSForOther.Height + 10;
       AddLabelAndDBEdit(gbEditClients, dsEditClients, nextTop, lSelfAddressId, dbeSelfAddressId, 'Собственный код аптеки:', 'SelfAddressId');
       dbeSelfAddressId.ReadOnly := True;
       dbeSelfAddressId.Color := clBtnFace;
       gbEditClients.Height := dbeSelfAddressId.Top + dbeSelfAddressId.Height + 7;
     end
     else
-      gbEditClients.Height := dbchbCalculateWithNDS.Top + dbchbCalculateWithNDS.Height + 7;
+      gbEditClients.Height := dbchbCalculateWithNDSForOther.Top + dbchbCalculateWithNDSForOther.Height + 7;
 
     gbEditClients.Constraints.MinHeight := gbEditClients.Height;
     gbEditClients.Align := alClient;

@@ -138,7 +138,8 @@ object DM: TDM
       '  Accountant = :Accountant,'
       '  MethodOfTaxation = :MethodOfTaxation,'
       '  CalculateWithNDS = :CalculateWithNDS,'
-      '  Name = :EditName'
+      '  Name = :EditName,'
+      '  CalculateWithNDSForOther = :CalculateWithNDSForOther'
       'WHERE'
       '  CLIENTID = :Old_CLIENTID')
     SQLRefresh.Strings = (
@@ -159,7 +160,8 @@ object DM: TDM
       ' ClientSettings.Accountant,'
       ' ClientSettings.MethodOfTaxation,'
       ' ClientSettings.CalculateWithNDS,'
-      ' ClientSettings.Name as EditName'
+      ' ClientSettings.Name as EditName,'
+      ' ClientSettings.CalculateWithNDSForOther'
       'FROM'
       ' CLIENTS,'
       ' ClientSettings'
@@ -185,7 +187,8 @@ object DM: TDM
       ' ClientSettings.Accountant,'
       ' ClientSettings.MethodOfTaxation,'
       ' ClientSettings.CalculateWithNDS,'
-      ' ClientSettings.Name as EditName'
+      ' ClientSettings.Name as EditName,'
+      ' ClientSettings.CalculateWithNDSForOther'
       'FROM'
       ' CLIENTS,'
       ' ClientSettings'
@@ -250,6 +253,9 @@ object DM: TDM
     object adtClientsEditName: TStringField
       FieldName = 'EditName'
       Size = 255
+    end
+    object adtClientsCalculateWithNDSForOther: TBooleanField
+      FieldName = 'CalculateWithNDSForOther'
     end
   end
   object MyEmbConnection: TMyEmbConnection
