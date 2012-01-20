@@ -11,7 +11,8 @@ uses
   U_frameContextReclame,
   U_ShowPromotionsForm,
   PromotionLabel,
-  U_framePromotion;
+  U_framePromotion,
+  SearchFilterController;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -103,6 +104,8 @@ type
     InternalSearchText : String;
     LastDBGrid : TWinControl;
     FPreviousOrdersForm : TPreviousOrdersForm;
+    FNameController : TSearchFilterController;
+    FFormController : TSearchFilterController;
     procedure SetNamesParams;
     procedure SetFormsParams;
     procedure AddKeyToSearch(Key : Char);
@@ -336,6 +339,10 @@ begin
   BM := TBitmap.Create;
 
   InternalSearchText := '';
+
+  FNameController := TSearchFilterController.Create('Catalogs.Name');
+  FFormController := TSearchFilterController.Create('Catalogs.Form');
+
 
   NeedFirstOnDataSet := False;
 
@@ -713,6 +720,8 @@ begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
+  FNameController.SetSearchText('');
+  FFormController.SetSearchText('');
   Screen.Cursor:=crHourglass;
   try
     if adsCatalog.Active then adsCatalog.Close;
@@ -804,6 +813,8 @@ begin
   if Length(eSearch.Text) > 2 then
   begin
     InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
+    FNameController.SetSearchText(eSearch.Text);
+    FFormController.SetSearchText(eSearch.Text);
     eSearch.Text := '';
     adsCatalog.Close;
     adsCatalog.SQL.Text := ''
@@ -825,7 +836,13 @@ begin
       +'  CATALOGS '
       +'  left join Mnn on mnn.Id = Catalogs.MnnId '
       +'where '
-      +'  ((upper(Name) like upper(:LikeParam)) or (upper(Form) like upper(:LikeParam)))';
+      +'  ';
+      //
+    if FNameController.AllowSearchFilter() and not SearchInBegin then
+      adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' ('
+         + FNameController.GetSearchFilter() + ' or ' + FFormController.GetSearchFilter() + ') '
+    else
+      adsCatalog.SQL.Text := adsCatalog.SQL.Text + #13#10 + ' ((Name like :LikeParam) or (Form like :LikeParam)) ';
     if not actShowAll.Checked then
       adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.COREEXISTS = 1) ';
     if InternalMnnId > 0 then
@@ -836,7 +853,12 @@ begin
       else
         adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.MandatoryList = 1) ';
     adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
-    adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
+
+    if FNameController.AllowSearchFilter() and not SearchInBegin then
+      FNameController.SetSearchParams(adsCatalog)
+    else
+      adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
+      
     adsCatalog.Open;
     SetUsedFilter;
     dbgCatalog.SetFocus;
@@ -932,8 +954,14 @@ end;
 procedure TNamesFormsForm.dbgCatalogDrawColumnCell(Sender: TObject;
   const Rect: TRect; DataCol: Integer; Column: TColumnEh;
   State: TGridDrawState);
+var
+  i : Integer;
 begin
-  ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCatalog.Canvas, Rect, BM);
+  if not SearchInBegin and FNameController.AllowSearchFilter() then
+    for i := FNameController.Searchs.Count-1 downto 0 do
+      ProduceAlphaBlendRect(FNameController.Searchs[i], Column.Field.DisplayText, dbgCatalog.Canvas, Rect, BM)
+  else
+    ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCatalog.Canvas, Rect, BM);
 end;
 
 procedure TNamesFormsForm.dbgNamesGetCellParams(Sender: TObject;
