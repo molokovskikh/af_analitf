@@ -2,7 +2,7 @@
 <Document>
 	<Protection
 		InputFileName=".\AnalitF.exe"
-		Options="71432"
+		Options="70920"
 		CheckKernelDebugger="true"
 		CompressionMode="1"
 		>
