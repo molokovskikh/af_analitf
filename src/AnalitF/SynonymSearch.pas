@@ -11,7 +11,8 @@ uses
   U_framePromotion,
   DayOfWeekHelper,
   DBViewHelper,
-  U_frameAutoComment;
+  U_frameAutoComment,
+  SearchFilterController;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -142,6 +143,8 @@ type
     adsCoreNamePromotionsCount: TIntegerField;
     adsCoreRetailVitallyImportant: TBooleanField;
     cbProducers: TComboBox;
+    adsCoreStartSynonym: TMyQuery;
+    adsCoreEndSynonym: TMyQuery;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -183,6 +186,7 @@ type
     SelectedPrices : TStringList;
     BM : TBitmap;
     InternalSearchText : String;
+    FSearchFilterController : TSearchFilterController;
     //Список сортировки
     SortList : TStringList;
     framePromotion : TframePromotion;
@@ -254,6 +258,7 @@ begin
     adsProducers.Close;
   TDBViewHelper.LoadProcedures(cbProducers, adsProducers, adsProducersId, adsProducersName);
 
+  FSearchFilterController := TSearchFilterController.Create('synonyms.synonymname');
   InternalSearchText := '';
   BM := TBitmap.Create;
 
@@ -310,7 +315,8 @@ end;
 procedure TSynonymSearchForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
-  if (Length(eSearch.Text) > 2) then begin
+  if (Length(eSearch.Text) > 2) and FSearchFilterController.AllowSearch(eSearch.Text) then begin
+    FSearchFilterController.SetSearchText(eSearch.Text);
     InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
     InternalSearch;
     eSearch.Text := '';
@@ -550,6 +556,7 @@ begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
+  FSearchFilterController.SetSearchText('');
   if adsCore.Active then
     adsCore.Close;
   framePromotion.HidePromotion();  
@@ -558,7 +565,7 @@ end;
 procedure TSynonymSearchForm.dbgCoreKeyPress(Sender: TObject;
   var Key: Char);
 begin
-  if ( Key > #32) and not ( Key in
+  if ( Key >= #32) and not ( Key in
     [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
   begin
     AddKeyToSearch(Key);
@@ -607,16 +614,22 @@ end;
 
 procedure TSynonymSearchForm.cbBaseOnlyClick(Sender: TObject);
 begin
-  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) and FSearchFilterController.AllowSearchFilter() then
     InternalSearch;
 end;
 
 procedure TSynonymSearchForm.dbgCoreDrawColumnCell(Sender: TObject;
   const Rect: TRect; DataCol: Integer; Column: TColumnEh;
   State: TGridDrawState);
+var
+  i : Integer;
 begin
-  if Column.Field = adsCoreSYNONYMNAME then
-    ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
+  if Column.Field = adsCoreSYNONYMNAME then begin
+    if FSearchFilterController.AllowSearchFilter() then
+      for i := FSearchFilterController.Searchs.Count-1 downto 0 do
+        ProduceAlphaBlendRect(FSearchFilterController.Searchs[i], Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
+    //ProduceAlphaBlendRect(InternalSearchText, Column.Field.DisplayText, dbgCore.Canvas, Rect, BM);
+  end;
 end;
 
 procedure TSynonymSearchForm.adsCoreOldSTORAGEGetText(Sender: TField;
@@ -695,7 +708,10 @@ begin
   if adsCore.Active then
     adsCore.Close;
 
-  StartSQL := adsCoreStartSQL.SQL.Text;
+  StartSQL := adsCoreStartSynonym.SQL.Text;
+  if FSearchFilterController.AllowSearchFilter() then
+    StartSQL := StartSQL + #13#10 + FSearchFilterController.GetSearchFilter() + adsCoreEndSynonym.SQL.Text;
+
   FilterSQL := GetSelectedPricesSQL(SelectedPrices, 'PRD.');
   lFilter.Visible := Length(FilterSQL) > 0;
   if lFilter.Visible then
@@ -718,10 +734,11 @@ begin
 
   adsCore.SQL.Text := StartSQL;
 
-  adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
+  //adsCore.ParamByName('LikeParam').AsString := '%' + InternalSearchText + '%';
   adsCore.ParamByName('ClientID').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   adsCore.ParamByName( 'TimeZoneBias').AsInteger := TimeZoneBias;
   adsCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
+  FSearchFilterController.SetSearchParams(adsCore);
 
 
   ShowSQLWaiting(adsCore);
@@ -765,13 +782,15 @@ end;
 procedure TSynonymSearchForm.tmrSelectedPricesTimer(Sender: TObject);
 begin
   tmrSelectedPrices.Enabled := False;
-  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) and FSearchFilterController.AllowSearchFilter()
+  then
     InternalSearch;
 end;
 
 procedure TSynonymSearchForm.cbProducersCloseUp(Sender: TObject);
 begin
-  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) then
+  if not tmrSearch.Enabled and (Length(InternalSearchText) > 0) and FSearchFilterController.AllowSearchFilter()
+  then
     InternalSearch
   else
     dbgCore.SetFocus;
