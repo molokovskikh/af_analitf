@@ -1614,4 +1614,155 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 384
     Top = 289
   end
+  object adsCoreStartSynonym: TMyQuery
+    SQL.Strings = (
+      'drop temporary table if exists SynonymSearch;'
+      'create temporary table SynonymSearch ENGINE=MEMORY'
+      'as'
+      'SELECT'
+      '    Core.CoreId,'
+      '    Core.PriceCode,'
+      '    Core.RegionCode,'
+      '    Core.ProductID,'
+      '    catalogs.FullCode AS FullCode,'
+      '    catalogs.shortcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    Core.RetailVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.NamePromotionsCount,'
+      '    Core.CodeFirmCr,'
+      '    Core.SynonymCode,'
+      '    Core.SynonymFirmCrCode,'
+      '    Core.Code,'
+      '    Core.CodeCr,'
+      '    Core.Period,'
+      '    Core.Volume,'
+      '    Core.Note,'
+      '    Core.Cost as RealCost,'
+      '  if(dop.OtherDelay is null,'
+      '      Core.Cost,'
+      
+        '      if(Core.VitallyImportant || ifnull(catalogs.VitallyImporta' +
+        'nt, 0),'
+      
+        '          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) a' +
+        's decimal(18, 2)),'
+      
+        '          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(1' +
+        '8, 2))'
+      '       )'
+      '  )'
+      '      as Cost,'
+      '    Core.Quantity,'
+      '    Core.Await,'
+      '    Core.Junk,'
+      '    Core.doc,'
+      '    Core.registrycost,'
+      '    Core.vitallyimportant,'
+      '    Core.requestratio,'
+      '    Core.OrderCost,'
+      '    Core.MinOrderCount,'
+      '    Core.ProducerCost,'
+      '    Core.NDS,'
+      '    Core.SupplierPriceMarkup,'
+      '    Core.BuyingMatrixType,'
+      
+        '    ifnull(Synonyms.SynonymName, concat(catalogs.name, '#39' '#39', cata' +
+        'logs.form)) as SynonymName ,'
+      '    SynonymFirmCr.SynonymName AS SynonymFirm,'
+      
+        '    PricesData.DatePrice + interval  -:TimeZoneBias minute AS Da' +
+        'tePrice,'
+      '    PricesData.PriceName,'
+      '    PRD.Enabled AS PriceEnabled,'
+      '    Providers.FirmCode AS FirmCode,'
+      '    PRD.Storage,'
+      '    Regions.RegionName,'
+      '    osbc.CoreId AS OrdersCoreId,'
+      '    osbc.OrderId AS OrdersOrderId,'
+      '    osbc.ClientId AS OrdersClientId,'
+      '    catalogs.FullCode AS OrdersFullCode,'
+      '    osbc.CodeFirmCr AS OrdersCodeFirmCr,'
+      '    osbc.SynonymCode AS OrdersSynonymCode,'
+      '    osbc.SynonymFirmCrCode AS OrdersSynonymFirmCrCode,'
+      '    osbc.Code AS OrdersCode,'
+      '    osbc.CodeCr AS OrdersCodeCr,'
+      '    osbc.OrderCount,'
+      '    osbc.SynonymName AS OrdersSynonym,'
+      '    osbc.SynonymFirm AS OrdersSynonymFirm,'
+      '    osbc.Price AS OrdersPrice,'
+      '    osbc.Price*osbc.OrderCount AS SumOrder,'
+      '    osbc.Junk AS OrdersJunk,'
+      '    osbc.Await AS OrdersAwait,'
+      '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
+      '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
+      '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
+      '    CurrentOrderHeads.RegionCode AS OrdersHRegionCode,'
+      '    CurrentOrderHeads.PriceName AS OrdersHPriceName,'
+      '    CurrentOrderHeads.RegionName AS OrdersHRegionName,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn,'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    Producers.Name as ProducerName'
+      'FROM'
+      '  ('
+      '  (select SynonymCode, SynonymName from Synonyms where')
+    Left = 216
+    Top = 133
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TimeZoneBias'
+      end>
+  end
+  object adsCoreEndSynonym: TMyQuery
+    SQL.Strings = (
+      ') as Synonyms,'
+      '  Core,'
+      '  products,'
+      '  catalogs,'
+      '  PricesData,'
+      '  PricesRegionalData PRD,'
+      '  Providers,'
+      '  Regions'
+      '  )'
+      
+        '  LEFT JOIN SynonymFirmCr ON (SynonymFirmCr.SynonymFirmCrCode = ' +
+        'Core.SynonymFirmCrCode)'
+      '  left join Producers on Producers.Id = Core.CodeFirmCr'
+      '  left join Mnn on mnn.Id = Catalogs.MnnId'
+      '    left join GroupMaxProducerCosts on '
+      '      (GroupMaxProducerCosts.ProductId = Core.productid) '
+      '      and (Core.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
+      
+        '  LEFT JOIN CurrentOrderLists osbc ON (osbc.CoreId = Core.CoreId' +
+        ') AND (osbc.clientid = :clientid)'
+      
+        '  left join DelayOfPayments dop on (dop.PriceCode = PricesData.P' +
+        'riceCode) and (dop.DayOfWeek = :DayOfWeek) '
+      
+        '  LEFT JOIN CurrentOrderHeads ON (CurrentOrderHeads.ClientId = o' +
+        'sbc.ClientId) AND (CurrentOrderHeads.OrderId = osbc.OrderId)   a' +
+        'nd CurrentOrderHeads.Frozen = 0 WHERE'
+      '  (Core.SynonymCode = Synonyms.synonymcode)'
+      '  AND (products.productid = core.productid)'
+      '  AND (catalogs.fullcode = products.catalogid)'
+      '  AND (Core.PriceCode = PricesData.PriceCode)'
+      '  AND (Core.RegionCode = PRD.RegionCode)'
+      '  AND (Core.PriceCode = PRD.PriceCode)'
+      '  AND (PricesData.FirmCode = Providers.FirmCode)'
+      '  AND (Core.RegionCode = Regions.RegionCode)')
+    Left = 248
+    Top = 133
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'clientid'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DayOfWeek'
+      end>
+  end
 end

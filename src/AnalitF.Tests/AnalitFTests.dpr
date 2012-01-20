@@ -8,7 +8,8 @@ uses
   ExceptionClassTests in 'ExceptionClassTests.pas',
   LoadDataTests in 'LoadDataTests.pas',
   TimeZoneTests in 'TimeZoneTests.pas',
-  MDLHelper in '..\Common\DLLHelper\MDLHelper.pas';
+  MDLHelper in '..\Common\DLLHelper\MDLHelper.pas',
+  SearchFilterControllerTests in 'SearchFilterControllerTests.pas';
 
 {$R *.res}
 
