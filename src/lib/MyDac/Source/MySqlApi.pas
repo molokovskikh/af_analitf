@@ -3370,11 +3370,17 @@ begin
 
     if FServerInited then begin
       FServerInited := False;
+      {$ifdef USEMEMORYCRYPTDLL}
       WriteExchangeLogTID('FreeMySQLLib', 'начинаем вызывать mysql_server_end');
+      {$endif}
       mysql_server_end;
+      {$ifdef USEMEMORYCRYPTDLL}
       WriteExchangeLogTID('FreeMySQLLib', 'успешно вызвали mysql_server_end');
-      Sleep(10000);
+      {$endif}
+      //Sleep(10000);
+      {$ifdef USEMEMORYCRYPTDLL}
       WriteExchangeLogTID('FreeMySQLLib', 'Закончили ожидание после вызова mysql_server_end');
+      {$endif}
     {$IFDEF EMBLOG}
       if FDataDirMutex <> nil then
         FDataDirMutex.Release;
@@ -3885,11 +3891,13 @@ begin
 end;
 {$endif}
 
+{$ifdef USEMEMORYCRYPTDLL}
 procedure TMySQLAPIEmbedded.DisableMemoryLib;
 begin
   if Assigned(MemoryLib) then
     FreeAndNil(MemoryLib);
 end;
+{$endif}
 
 initialization
   MyAPIClient := TMySQLAPIClient.Create;

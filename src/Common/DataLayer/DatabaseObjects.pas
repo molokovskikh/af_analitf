@@ -1022,11 +1022,13 @@ begin
   inherited;
 end;
 
+{$ifdef USEMEMORYCRYPTDLL}
 procedure TDatabaseController.DisableMemoryLib;
 begin
   TMySQLAPIEmbeddedEx(MyAPIEmbedded).DisableMemoryLib();
   Sleep(3000);
 end;
+{$endif}
 
 procedure TDatabaseController.DropWorkSchema(
   connection: TCustomMyConnection);

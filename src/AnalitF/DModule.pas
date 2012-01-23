@@ -2242,7 +2242,7 @@ begin
 {$ifdef DEBUG}
         WriteExchangeLog('CreateClearDatabaseFromScript', MyDump.SQL.Text);
 {$endif}
-        //MyDump.Restore;
+        MyDump.Restore;
       finally
         MyDump.Free;
       end;
