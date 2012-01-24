@@ -126,6 +126,11 @@ function GetShortFileNameByPrefix(fullName, prefixFolder : String) : String;
 function GetFullFileNameByPrefix(shortName, prefixFolder : String) : String;
 function GetShortFileNameWithPrefix(fullName, prefixFolder : String) : String;
 
+function GetNonExistsFileNameInFolder(originalFileName, folder : String) : String;
+
+function GetOriginalWaybillFileName(waybillFileName : String) : String;
+
+
 implementation
 
 uses
@@ -1325,6 +1330,54 @@ begin
   Result := fullName;
   if AnsiStartsText(prefixFolder, fullName) then
     Result := '.\' + Copy(fullName, Length(prefixFolder) + 1 , Length(fullName));
+end;
+
+function GetNonExistsFileNameInFolder(originalFileName, folder : String) : String;
+var
+  i : Integer;
+  fileNameWithoutExtension,
+  fileExtension,
+  tmpFileName : String;
+begin
+  if not FileExists(folder + '\' + originalFileName) then begin
+    Result := originalFileName;
+    Exit;
+  end;
+
+  fileNameWithoutExtension := ChangeFileExt(ExtractFileName(originalFileName), '');
+  fileExtension := ExtractFileExt(originalFileName);
+
+  for i := 0 to 9 do begin
+    tmpFileName := Format('%s_%d%s',
+      [fileNameWithoutExtension, i, fileExtension]);
+    if not FileExists(folder + '\' + tmpFileName) then begin
+      Result := tmpFileName;
+      Exit;
+    end;
+  end;
+
+  Result := fileNameWithoutExtension + '_0' + ExtractFileExt(fileExtension);
+end;
+
+function GetOriginalWaybillFileName(waybillFileName : String) : String;
+var
+  underlineIndex,
+  leftBracketIndex,
+  rightBracketIndex : Integer;
+begin
+  Result := waybillFileName;
+
+  if Length(waybillFileName) < 4 then
+    Exit;
+
+  underlineIndex := Pos('_', waybillFileName);
+  leftBracketIndex := Pos('(', waybillFileName);
+  rightBracketIndex := LastDelimiter(')', waybillFileName);
+
+  if (underlineIndex > 0) and (underlineIndex < leftBracketIndex) and (leftBracketIndex + 1 < rightBracketIndex) then
+    Result :=
+      Copy(waybillFileName, leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1)
+      + ExtractFileExt(waybillFileName);
 end;
 
 { TFileUpdateInfo }

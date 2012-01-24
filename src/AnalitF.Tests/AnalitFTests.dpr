@@ -9,7 +9,8 @@ uses
   LoadDataTests in 'LoadDataTests.pas',
   TimeZoneTests in 'TimeZoneTests.pas',
   MDLHelper in '..\Common\DLLHelper\MDLHelper.pas',
-  SearchFilterControllerTests in 'SearchFilterControllerTests.pas';
+  SearchFilterControllerTests in 'SearchFilterControllerTests.pas',
+  AProcTests in 'AProcTests.pas';
 
 {$R *.res}
 

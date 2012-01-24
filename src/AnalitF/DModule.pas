@@ -5703,11 +5703,13 @@ var
   _Index : Integer;
   shortName,
   downloadId,
-  WaybillUnloadingFolder : String;
+  WaybillUnloadingFolder,
+  supplierFileName : String;
   folder : Variant;
 begin
   Result := fullFileName;
   shortName := ExtractFileName(fullFileName);
+  supplierFileName := GetOriginalWaybillFileName(shortName);
   _Index := Pos('_', shortName);
   if _Index > 1 then begin
     downloadId := LeftStr(shortName, _Index-1);
@@ -5726,10 +5728,10 @@ begin
         WaybillUnloadingFolder := GetFullFileNameByPrefix(WaybillUnloadingFolder, RootFolder());
         if not DirectoryExists(WaybillUnloadingFolder) then
           SysUtils.ForceDirectories(WaybillUnloadingFolder);
-          
+
         Result :=
           IncludeTrailingBackslash( WaybillUnloadingFolder )
-          + shortName;
+          + GetNonExistsFileNameInFolder(supplierFileName, WaybillUnloadingFolder);
 
         if not SameFileName(fullFileName, Result) then
           try
