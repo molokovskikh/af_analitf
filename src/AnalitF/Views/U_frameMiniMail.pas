@@ -23,7 +23,8 @@ uses
   DataSetHelper,
   DBProc,
   Constant,
-  U_ExchangeLog;
+  U_ExchangeLog,
+  U_frameBaseLegend;
 
 type
   TframeMiniMail = class(TFrame)
@@ -94,6 +95,7 @@ type
     eSearch : TEdit;
     pActions : TPanel;
     sbDelete : TSpeedButton;
+    legend : TframeBaseLegend;
 
     dbgMailHeaders : TToughDBGrid;
 
@@ -144,6 +146,7 @@ end;
 procedure TframeMiniMail.CreateVisualComponent;
 var
   column : TColumnEh;
+  vipLabel : TLabel;
 begin
   gbMail := TGroupBox.Create(Self);
   gbMail.Parent := Self;
@@ -202,6 +205,14 @@ begin
   sbDelete.Top := 8;
   sbDelete.OnClick := sbDeleteClick;
   pFilter.Height := sbDelete.Height + 15;
+
+  legend := TframeBaseLegend.Create(Self);
+  legend.Parent := pHeaders;
+  legend.Align := alBottom;
+  legend.CreateLegendLabel('Новое письмо', GroupColor,  clWindowText, 'Новое письмо');
+  legend.CreateLegendLabel('Важное письмо', clLime,  clWindowText, 'Важное письмо');
+  vipLabel := legend.CreateLegendLabel('Спец. отправитель', legend.Color,  clWindowText, 'Спец. отправитель');
+  vipLabel.Font.Style := vipLabel.Font.Style + [fsBold];
 
   dbgMailHeaders := TToughDBGrid.Create(Self);
   dbgMailHeaders.Parent := pHeaders;
