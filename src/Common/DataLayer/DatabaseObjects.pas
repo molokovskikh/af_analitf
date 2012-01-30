@@ -1185,7 +1185,7 @@ end;
 procedure TDatabaseController.DisableMemoryLib;
 begin
   TMySQLAPIEmbeddedEx(MyAPIEmbedded).DisableMemoryLib();
-  Sleep(3000);
+  Sleep(1000);
 end;
 {$endif}
 
@@ -1272,7 +1272,7 @@ begin
    Format('After Free %s: %d',
    [ErrorMessage,
     TMySQLAPIEmbeddedEx(MyAPIEmbedded).FClientsCount]));
-  Sleep(5000);
+  Sleep(2000);
 end;
 
 function TDatabaseController.GetById(
