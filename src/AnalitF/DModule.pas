@@ -370,9 +370,9 @@ type
     procedure ExportGlobalParamsFromOldLibMysqlDToFile(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     procedure ImportOldLibMysqlDGlobalParamsFileToMySql(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
 
-    procedure UpdateToNewLibMySqlD1567(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
-    procedure ExportFromOldLibMysqlDToFiles1567(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
-    procedure ImportOldLibMysqlDFilesToMySql1567(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
+    procedure UpdateToNewLibMySqlD1651(dbCon : TCustomMyConnection; DBDirectoryName : String; OldDBVersion : Integer; AOnUpdateDBFileData : TOnUpdateDBFileData);
+    procedure ExportFromOldLibMysqlDToFiles1651(oldMySqlDB : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
+    procedure ImportOldLibMysqlDFilesToMySql1651(dbCon : TCustomMyConnection; PathToBackup, MySqlPathToBackup : String);
     //Производим восстановлени из эталонной копии (если она существует) или создаем чистую базу данных
     procedure RecoverDatabase(E : Exception);
 {$ifdef DEBUG}
@@ -401,6 +401,8 @@ type
     procedure PrepareUpdateToNewLibMySqlD;
     //Подготовка директорий старой libmysqld к обновлению на новую CryptDLL
     procedure PrepareUpdateToNewCryptLibMySqlD;
+    //Подготовка директорий старой libmysqld к обновлению на новую CryptDLL после версии 1651
+    procedure PrepareUpdateToNewCryptLibMySqlDAfter1651;
 {$ifdef USEMEMORYCRYPTDLL}
     procedure CheckSpecialLibrary;
 {$endif}
@@ -564,6 +566,7 @@ type
     function NeedUpdateToNewLibMySqlDWithGlobalParams : Boolean;
     function NeedCumulativeAfterUpdateToNewLibMySqlD : Boolean;
     function NeedUpdateToNewCryptLibMySqlD : Boolean;
+    function NeedUpdateToNewCryptLibMySqlDAfter1651 : Boolean;
     function DataSetToString(
       SQL : String;
       Params: array of string;
@@ -951,6 +954,9 @@ begin
     ShowSQLWaiting(PrepareUpdateToNewLibMySqlD, 'Происходит подготовка к обновлению');
 
   if NeedUpdateToNewCryptLibMySqlD then
+    ShowSQLWaiting(PrepareUpdateToNewCryptLibMySqlD, 'Происходит подготовка к обновлению');
+
+  if NeedUpdateToNewCryptLibMySqlDAfter1651 then
     ShowSQLWaiting(PrepareUpdateToNewCryptLibMySqlD, 'Происходит подготовка к обновлению');
 
   DeleteOldMysqlFolder;
@@ -2001,18 +2007,6 @@ begin
         DBVersion := 80;
       end;
 }
-{
-      if DBVersion = 80 then begin
-        if NeedUpdateToNewCryptLibMySqlD then begin
-          RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlD1567, nil);
-          DBVersion := CURRENT_DB_VERSION;
-        end
-        else begin
-          DBVersion := CURRENT_DB_VERSION;
-        end;
-      end;
-}
-
       if DBVersion = 80 then begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 82;
@@ -2026,6 +2020,16 @@ begin
       if DBVersion = 83 then begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 84;
+      end;
+
+      if DBVersion = 84 then begin
+        if NeedUpdateToNewCryptLibMySqlDAfter1651 then begin
+          RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateToNewLibMySqlD1651, nil);
+          DBVersion := CURRENT_DB_VERSION;
+        end
+        else begin
+          DBVersion := CURRENT_DB_VERSION;
+        end;
       end;
     end;
 
@@ -2208,12 +2212,10 @@ begin
     realDBVersion := '61'
   else
     realDBVersion := IntToStr(CURRENT_DB_VERSION);
-{
-  if NeedUpdateToNewCryptLibMySqlD then
-    realDBVersion := '80'
+  if NeedUpdateToNewCryptLibMySqlDAfter1651 then
+    realDBVersion := '84'
   else
     realDBVersion := IntToStr(CURRENT_DB_VERSION);
-}    
 
   Result := DatabaseController.GetFullLastCreateScript(realDBVersion);
 end;
@@ -5440,7 +5442,7 @@ begin
   end;
 end;
 
-procedure TDM.ExportFromOldLibMysqlDToFiles1567(
+procedure TDM.ExportFromOldLibMysqlDToFiles1651(
   oldMySqlDB: TCustomMyConnection; PathToBackup,
   MySqlPathToBackup: String);
 var
@@ -5469,7 +5471,7 @@ begin
           selectMySql.Execute;
         except
           on E : Exception do begin
-            WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles1567',
+            WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles1651',
             'Ошибка при экспорте таблицы ' + exportTable.Name + ': ' + E.Message);
             if FileExists(PathToBackup + exportTable.Name + '.txt')
               and (GetFileSize(PathToBackup + exportTable.Name + '.txt') = 0)
@@ -5478,7 +5480,7 @@ begin
                 OSDeleteFile(PathToBackup + exportTable.Name + '.txt');
               except
                 on DeleteFile : Exception do
-                  WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles1567',
+                  WriteExchangeLog('Exchange.ExportFromOldLibMysqlDToFiles1651',
                   'Ошибка при удалении файла ' + exportTable.Name + ': ' + DeleteFile.Message);
               end;
           end;
@@ -5490,7 +5492,7 @@ begin
   end;
 end;
 
-procedure TDM.ImportOldLibMysqlDFilesToMySql1567(
+procedure TDM.ImportOldLibMysqlDFilesToMySql1651(
   dbCon: TCustomMyConnection; PathToBackup, MySqlPathToBackup: String);
 var
   selectMySql : TMyQuery;
@@ -5530,7 +5532,7 @@ begin
             on ImportException : Exception do begin
               FNotImportedWithUpdateToNewLibMysql :=
                 FNotImportedWithUpdateToNewLibMysql + [importTable.ObjectId];
-              WriteExchangeLog('Exchange.ImportOldLibMysqlDFilesToMySql1567',
+              WriteExchangeLog('Exchange.ImportOldLibMysqlDFilesToMySql1651',
               'Ошибка при импорте таблицы ' + importTable.Name + ': ' + ImportException.Message);
             end;
           end;
@@ -5539,7 +5541,7 @@ begin
             OSDeleteFile(PathToBackup + importTable.Name + '.txt', False);
           except
             on DeleteFile : Exception do
-              WriteExchangeLog('Exchange.ImportOldLibMysqlDFilesToMySql1567',
+              WriteExchangeLog('Exchange.ImportOldLibMysqlDFilesToMySql1651',
               'Ошибка при удалении файла ' + importTable.Name + ': ' + DeleteFile.Message);
           end;
         end
@@ -5558,7 +5560,7 @@ begin
   end;
 end;
 
-procedure TDM.UpdateToNewLibMySqlD1567(dbCon: TCustomMyConnection;
+procedure TDM.UpdateToNewLibMySqlD1651(dbCon: TCustomMyConnection;
   DBDirectoryName: String; OldDBVersion: Integer;
   AOnUpdateDBFileData: TOnUpdateDBFileData);
 var
@@ -5596,7 +5598,7 @@ begin
 
       try
         try
-          ExportFromOldLibMysqlDToFiles1567(oldMySqlDB, PathToBackup, MySqlPathToBackup);
+          ExportFromOldLibMysqlDToFiles1651(oldMySqlDB, PathToBackup, MySqlPathToBackup);
         except
           on UpdateException : Exception do begin
             AProc.LogCriticalError('Ошибка при переносе данных : ' + UpdateException.Message);
@@ -5622,7 +5624,7 @@ begin
     try
 
       try
-        ImportOldLibMysqlDFilesToMySql1567(dbCon, PathToBackup, MySqlPathToBackup);
+        ImportOldLibMysqlDFilesToMySql1651(dbCon, PathToBackup, MySqlPathToBackup);
         FProcessUpdateToNewLibMysqlD := True;
       except
         on UpdateException : Exception do begin
@@ -5827,6 +5829,41 @@ begin
     end;
   finally
     adcUpdate.Close;
+  end;
+end;
+
+function TDM.NeedUpdateToNewCryptLibMySqlDAfter1651: Boolean;
+var
+  buildNumber : Word;
+begin
+  if FindCmdLineSwitch('i')
+    and FileExists(ExePath + SBackDir + '\' + ExeName + '.bak')
+  then
+  begin
+    buildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+    Result := (buildNumber >= 1611) and (buildNumber <= 1651);
+  end
+  else
+    Result := False;
+end;
+
+procedure TDM.PrepareUpdateToNewCryptLibMySqlDAfter1651;
+begin
+  try
+    if DirectoryExists(ExePath + SDirDataPrev) then
+      MoveDirectories(ExePath + SDirDataPrev, ExePath + SBackDir + '\' + SDirDataPrev);
+    if DirectoryExists(ExePath + SDirData) then begin
+      CopyDirectories(ExePath + SDirData, ExePath + SBackDir + '\' + SDirData);
+      MoveDirectories(ExePath + SDirData, ExePath + SDirData + 'Old');
+    end;
+  except
+    on E : Exception do begin
+      LogCriticalError('Ошибка при удалении устаревших директорий при обновлении на новую libd: ' + E.Message);
+      LogExitError(
+        'Невозможно удалить устаревшие директории.'#13#10
+        + 'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.',
+        Integer(ecDeleteOldMysqlFolder));
+    end
   end;
 end;
 
