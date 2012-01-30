@@ -25,8 +25,7 @@ implementation
 
 uses
   Waiting,
-  DatabaseObjects,
-  U_ExchangeLog;
+  DatabaseObjects;
 
 type
   TRunUpdateDBFile = class(TThread)
@@ -64,7 +63,6 @@ procedure TRunUpdateDBFile.Execute;
 var
   InternalConnection : TCustomMyConnection;
 begin
-  WriteExchangeLogTID('TRunUpdateDBFile.Execute', 'Вошли в метод');
   ErrorStr := '';
 //  CoInitialize(nil);
 //  Sleep(1000);
@@ -101,10 +99,8 @@ begin
   except
     on E : Exception do begin
       ErrorStr := E.Message;
-      WriteExchangeLogTID('TRunUpdateDBFile.Execute', 'Получили исключение : ' + ExceptionToString(E));
     end;
   end;
-  WriteExchangeLogTID('TRunUpdateDBFile.Execute', 'Выходим из метода');
 //  finally
 //    CoUninitialize();
 //  end;
@@ -121,7 +117,6 @@ var
   RunT : TRunUpdateDBFile;
   Error : String;
 begin
-  WriteExchangeLogTID('RunUpdateDBFile', 'Вошли в метод');
   Error := '';
   RunT := TRunUpdateDBFile.Create(True);
   RunT.OnUpdateDBFile := AOnUpdateDBFile;
@@ -140,12 +135,9 @@ begin
   finally
     RunT.Free;
   end;
-  WriteExchangeLogTID('RunUpdateDBFile', 'Перед проверкой');
   if Length(Error) <> 0 then begin
-    WriteExchangeLogTID('RunUpdateDBFile', 'Вызываем исключение: ' + Error);
     raise Exception.Create(Error);
   end;
-  WriteExchangeLogTID('RunUpdateDBFile', 'Выходим из метода');
 end;
 
 

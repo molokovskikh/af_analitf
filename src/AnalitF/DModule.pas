@@ -2106,22 +2106,18 @@ var
   OpenSuccess : Boolean;
   RecoveryCount : Integer;
 begin
-  WriteExchangeLogTID('CheckDBFile', 'Вошли в метод');
   OpenSuccess := False;
   RecoveryCount := 0;
   try
     repeat
     try
 
-      WriteExchangeLogTID('CheckDBFile', 'Вызываем UpdateDB()');
       UpdateDB();
-      WriteExchangeLogTID('CheckDBFile', 'Успешно вызвали UpdateDB()');
 
       OpenSuccess := True;
 
     except
       on E : Exception do begin
-        WriteExchangeLogTID('CheckDBFile', 'Получили ошибку после вызова UpdateDB(): ' + ExceptionToString(E));
         LogCriticalError(Format('Ошибка при открытии (%d): %s', [RecoveryCount, E.Message]));
         if (RecoveryCount < 2) then begin
           try
@@ -2129,14 +2125,11 @@ begin
             //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
             if MainConnection is TMyEmbConnection then
               DatabaseController.FreeMySQLLib('MySql Clients Count при восстановлении');
-            WriteExchangeLogTID('CheckDBFile', 'Начали восстановление базы данных');
             mainStartupHelper.Write('DModule', 'Начали восстановление базы данных');
             RecoverDatabase(E);
-            WriteExchangeLogTID('CheckDBFile', 'Закончили восстановление базы данных');
             mainStartupHelper.Write('DModule', 'Закончили восстановление базы данных');
           except
             on ErrorOnRestore : Exception do begin
-              WriteExchangeLogTID('CheckDBFile', 'Получили ошибку при восстановлении: ' + ExceptionToString(ErrorOnRestore));
               if (RecoveryCount < 1) then
                 LogCriticalError(Format('Ошибка при восстановлении (%d): %s', [RecoveryCount, ErrorOnRestore.Message]))
               else
@@ -2155,7 +2148,6 @@ begin
     on E : Exception do
       LogExitError(Format( 'Невозможно открыть файл базы данных: %s '#13#10'Обратитесь в АК Инфорум.', [ E.Message ]), Integer(ecDBFileError));
   end;
-  WriteExchangeLogTID('CheckDBFile', 'Выходим из метода');
 end;
 
 function TDM.GetRetUpCost(BaseCost: Currency): Currency;
@@ -2231,7 +2223,6 @@ var
   FConnection : TCustomMyConnection;
   MyDump : TMyDump;
 begin
-  WriteExchangeLogTID('CreateClearDatabaseFromScript', 'Входим в метод');
   //Когда мы запускаем программу и не можем открыть базу данных AnalitF,
   //то сохраняются embedded-параметры (настройки соединения) внутри MyDac с открытой базой AnalitF,
   //хотя на самом деле она не открыта и увеличивается счетчик открытых соедиений.
@@ -2306,12 +2297,9 @@ begin
   //Если же кол-во подключенных клиентов будет больше 0, то этот вызов не сработает
   if MainConnection is TMyEmbConnection then
   begin
-    WriteExchangeLogTID('CreateClearDatabaseFromScript', 'Будем выгружать библиотеку');
     DatabaseController.FreeMySQLLib('MySql Clients Count после создания базы данных');
-    WriteExchangeLogTID('CreateClearDatabaseFromScript', 'Успешно выгрузили библиотеку');
     DatabaseController.RepairTableFromBackup();
   end;
-  WriteExchangeLogTID('CreateClearDatabaseFromScript', 'Выходим из метода');
 end;
 
 procedure TDM.RecoverDatabase(E: Exception);
