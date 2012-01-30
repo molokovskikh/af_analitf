@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+	<Protection
+		InputFileName=".\AnalitF.exe"
+		Options="71432"
+		CheckKernelDebugger="true"
+		CompressionMode="1"
+		>
+		<Messages
+		/>
+		<Folders
+		/>
+		<Procedures
+		/>
+	</Protection>
+	<DLLBox
+	/>
+	<Script
+	/>
+</Document>

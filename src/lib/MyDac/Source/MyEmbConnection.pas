@@ -126,7 +126,8 @@ uses
 {$IFDEF CLR}
   Variants,
 {$ENDIF}
-  SysUtils;
+  SysUtils,
+  U_ExchangeLog;
 
 { TMyEmbConnectionOptions }
 
@@ -317,6 +318,12 @@ procedure TMyEmbConnection.SetConnected(Value: boolean);
 begin
   if Value = GetConnected then
     Exit;
+
+  if not Value then begin
+    WriteExchangeLogTID('TMyEmbConnection.SetConnected=False', 'Будем вызывать Sleep');
+    Sleep(1000);
+    WriteExchangeLogTID('TMyEmbConnection.SetConnected=False', 'Завершили вызов Sleep');
+  end;
 
   try
     if Value then begin

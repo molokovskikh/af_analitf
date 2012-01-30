@@ -32,6 +32,7 @@ uses
 {$ENDIF}
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper,
+  U_ExchangeLog,
   //DLLLoader,
   //MemoryLoadLibraryHelper,
   //BTMemoryModule,
@@ -3369,7 +3370,17 @@ begin
 
     if FServerInited then begin
       FServerInited := False;
+      {$ifdef USEMEMORYCRYPTDLL}
+      WriteExchangeLogTID('FreeMySQLLib', 'начинаем вызывать mysql_server_end');
+      {$endif}
       mysql_server_end;
+      {$ifdef USEMEMORYCRYPTDLL}
+      WriteExchangeLogTID('FreeMySQLLib', 'успешно вызвали mysql_server_end');
+      {$endif}
+      //Sleep(10000);
+      {$ifdef USEMEMORYCRYPTDLL}
+      WriteExchangeLogTID('FreeMySQLLib', 'Закончили ожидание после вызова mysql_server_end');
+      {$endif}
     {$IFDEF EMBLOG}
       if FDataDirMutex <> nil then
         FDataDirMutex.Release;
@@ -3383,8 +3394,11 @@ begin
   end;
 
 {$ifdef USEMEMORYCRYPTDLL}
-  if FUseNewTypes then
+  if FUseNewTypes then begin
+  WriteExchangeLogTID('FreeMySQLLib', 'начинаем вызвать InternalFreeMySqlLib');
   InternalFreeMySqlLib;
+  WriteExchangeLogTID('FreeMySQLLib', 'успешно вызвали InternalFreeMySqlLib');
+  end;
 {$endif}  
 
   inherited;
@@ -3689,7 +3703,7 @@ begin
       MemoryFreeLibrary(FInternalLibM);
       FInternalLibM := nil;
     end
-}    
+}
 
 {
     if Assigned(FInternalLibM) then begin
@@ -3698,8 +3712,11 @@ begin
     end;
 }
 
-    if Assigned(MDLHelper) then
+    if Assigned(MDLHelper) then begin
+      WriteExchangeLogTID('InternalFreeMySqlLib', 'начинаем удалять MDLHelper');
       FreeAndNil(MDLHelper);
+      WriteExchangeLogTID('InternalFreeMySqlLib', 'успешно удалили MDLHelper');
+    end;
   end;
 end;
 
@@ -3874,11 +3891,13 @@ begin
 end;
 {$endif}
 
+{$ifdef USEMEMORYCRYPTDLL}
 procedure TMySQLAPIEmbedded.DisableMemoryLib;
 begin
   if Assigned(MemoryLib) then
     FreeAndNil(MemoryLib);
 end;
+{$endif}
 
 initialization
   MyAPIClient := TMySQLAPIClient.Create;

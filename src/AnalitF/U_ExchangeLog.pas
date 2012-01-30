@@ -9,6 +9,8 @@ procedure CreateExchangeLog();
 
 procedure WriteExchangeLog(ASubSystem, AMessage : string);
 
+procedure WriteExchangeLogTID(ASubSystem, AMessage : string);
+
 procedure FreeExchangeLog(LastFileSize : Int64 = 0);
 
 var
@@ -16,7 +18,8 @@ var
 
 implementation
 
-uses SysUtils;
+uses SysUtils,
+  Windows;
 
 procedure CreateExchangeLog();
 begin
@@ -24,10 +27,23 @@ begin
     IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))) + 'Exchange', 'log', -1);
 end;
 
-procedure WriteExchangeLog(ASubSystem, AMessage : string);
+procedure InternalWriteExchangeLog(ASubSystem, AMessage : string);
 begin
   if Assigned(ExchangeLog) then
     ExchangeLog.TR(ASubSystem, AMessage);
+end;
+
+procedure WriteExchangeLog(ASubSystem, AMessage : string);
+begin
+  WriteExchangeLogTID(ASubSystem, AMessage);
+end;
+
+procedure WriteExchangeLogTID(ASubSystem, AMessage : string);
+var
+  tid : LongWord;
+begin
+  tid := GetCurrentThreadId();
+  InternalWriteExchangeLog(ASubSystem + '.tid=' + IntToStr(tid), AMessage);
 end;
 
 procedure FreeExchangeLog(LastFileSize : Int64 = 0);
