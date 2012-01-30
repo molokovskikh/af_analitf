@@ -296,6 +296,8 @@ begin
   dbgMailAttachemts.Parent := pAttachments;
   dbgMailAttachemts.Align := alClient;
 
+  pAttachments.Height := pAttachmentHeaders.Height + TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts) * 4;
+
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailAttachemts);
 
   column := TDBGridHelper.AddColumn(dbgMailAttachemts, 'RequestAttachment', 'Получить', FCanvas.TextWidth('Получить'));
@@ -339,12 +341,26 @@ begin
 end;
 
 procedure TframeMiniMail.ProcessResize;
+var
+  minHeight,
+  maxHeight,
+  needHeight : Integer;
 begin
   if Assigned(pMailBody) then begin
     pMailBody.Width := (gbMail.Width div 2);
   end;
   if Assigned(dbtLogTime) and Assigned(pAttachmentHeaders) then
     dbtLogTime.Left := pAttachmentHeaders.Width - 16 - dbtLogTime.Width;
+  if Assigned(dbgMailAttachemts) and Assigned(mdAttachments) then begin
+    minHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts)*4;
+    maxHeight := pMailBody.Height div 4;
+    needHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts) * (mdAttachments.RecordCount + 2);
+    if needHeight > maxHeight then
+      needHeight := maxHeight;
+    if needHeight < minHeight then
+      needHeight := minHeight;
+    pAttachments.Height := pAttachmentHeaders.Height + needHeight;
+  end;
 end;
 
 procedure TframeMiniMail.FrameResize(Sender: TObject);
