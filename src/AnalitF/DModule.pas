@@ -957,7 +957,7 @@ begin
     ShowSQLWaiting(PrepareUpdateToNewCryptLibMySqlD, 'Происходит подготовка к обновлению');
 
   if NeedUpdateToNewCryptLibMySqlDAfter1651 then
-    ShowSQLWaiting(PrepareUpdateToNewCryptLibMySqlD, 'Происходит подготовка к обновлению');
+    ShowSQLWaiting(PrepareUpdateToNewCryptLibMySqlDAfter1651, 'Происходит подготовка к обновлению');
 
   DeleteOldMysqlFolder;
 
@@ -2001,26 +2001,6 @@ begin
     end;
 
     if not GetNetworkSettings().IsNetworkVersion then begin
-{
-      if DBVersion = 79 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-        DBVersion := 80;
-      end;
-}
-      if DBVersion = 80 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-        DBVersion := 82;
-      end;
-
-      if DBVersion = 82 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-        DBVersion := 83;
-      end;
-
-      if DBVersion = 83 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
-        DBVersion := 84;
-      end;
 
       if DBVersion = 84 then begin
         if NeedUpdateToNewCryptLibMySqlDAfter1651 then begin
@@ -2031,6 +2011,7 @@ begin
           DBVersion := CURRENT_DB_VERSION;
         end;
       end;
+      
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
@@ -3673,7 +3654,7 @@ begin
     then
       raise Exception.Create('Библиотека libmysqld.dll повреждена.');
     calchash := GetFileHash(ExePath + LibraryFileNameStart + LibraryFileNameEnd);
-    if AnsiCompareText(calchash, 'B96036E9548DA25E17FC79B3E3CAF6A2') <> 0 then
+    if AnsiCompareText(calchash, '2361825C76784C35661F8245E0C01AA6') <> 0 then
       raise Exception.Create('Невозможно загрузить библиотеку libmysqld.dll.');
   except
     on E : Exception do begin
@@ -5855,6 +5836,10 @@ begin
     if DirectoryExists(ExePath + SDirData) then begin
       CopyDirectories(ExePath + SDirData, ExePath + SBackDir + '\' + SDirData);
       MoveDirectories(ExePath + SDirData, ExePath + SDirData + 'Old');
+    end;
+    if DirectoryExists(ExePath + SDirTableBackup) then begin
+      CopyDirectories(ExePath + SDirTableBackup, ExePath + SBackDir + '\' + SDirTableBackup);
+      DeleteFilesByMask(ExePath + SDirTableBackup + '\*.*', False);
     end;
   except
     on E : Exception do begin
