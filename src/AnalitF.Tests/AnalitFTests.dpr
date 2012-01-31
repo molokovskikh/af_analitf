@@ -11,6 +11,7 @@ uses
   GUITestRunner,
 
 //AnalitF files
+
   VCLFixPack in '..\AnalitF\Helpers\VCLFixPack.pas',
   LU_MutexSystem in '..\Common\System\LU_MutexSystem.pas',
   Main in '..\AnalitF\Main.pas' {MainForm},
@@ -164,14 +165,15 @@ uses
   SearchFilterController in '..\AnalitF\BusinessLogic\SearchFilterController.pas',
   U_SerialNumberSearch in '..\AnalitF\Views\U_SerialNumberSearch.pas' {SerialNumberSearch},
   FileCountHelper in '..\AnalitF\Helpers\FileCountHelper.pas',
-
+  
 //end files
 
   ExceptionClassTests in 'ExceptionClassTests.pas',
   LoadDataTests in 'LoadDataTests.pas',
   TimeZoneTests in 'TimeZoneTests.pas',
   SearchFilterControllerTests in 'SearchFilterControllerTests.pas',
-  AProcTests in 'AProcTests.pas';
+  AProcTests in 'AProcTests.pas',
+  INFHelpersTests in 'INFHelpersTests.pas';
 
 {$R *.res}
 

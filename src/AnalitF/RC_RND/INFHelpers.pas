@@ -5,12 +5,15 @@ interface
 uses
   SysUtils, Classes, infvercls;
 
+type
+  TAppDKeys = (akCurrent, akPrevious);
+
 const
   LibraryFileNameStart = 'appd';
 
-  procedure EncodeStream(InputStream : TStream; EncodedStream : TStream);
+  procedure EncodeStream(InputStream : TStream; EncodedStream : TStream; keys : TAppDKeys = akCurrent);
 
-  procedure DecodeStream(EncodedStream : TStream; DecodedStream : TStream);
+  procedure DecodeStream(EncodedStream : TStream; DecodedStream : TStream; keys : TAppDKeys = akCurrent);
 
   function GetEncryptedMemoryStream(fileName : String = '') : TMemoryStream;
 
@@ -20,15 +23,20 @@ var
 implementation
 
 const
-  StreamKeyStart = 'rklkwedk';
-  StreamKeyEnd   = 'fhqpalfh';
+  CurrentStreamKeyStart = 'bfmdujow';
+  CurrentStreamKeyEnd   = ',sfjhwer';
+
+  //Keys 1651
+  PrevStreamKeyStart = 'rklkwedk';
+  PrevStreamKeyEnd   = 'fhqpalfh';
+
   //Читаем размером по 10 КБайт
   FileBufferLen  = 10*1024;
 
 type
   TMemoryStreamExtend = class(TMemoryStream);
 
-procedure EncodeStream(InputStream : TStream; EncodedStream : TStream);
+procedure EncodeStream(InputStream : TStream; EncodedStream : TStream; keys : TAppDKeys = akCurrent);
 var
   crypter : TINFCrypt;
   BufferString : String;
@@ -41,9 +49,14 @@ begin
   if InputStream.Size = 0 then
     Exit;
 
-  crypter := TINFCrypt.Create(
-    StreamKeyStart + StreamKeyEnd,
-    FileBufferLen + INFDataLen);
+  if keys = akCurrent then
+    crypter := TINFCrypt.Create(
+      CurrentStreamKeyStart + CurrentStreamKeyEnd,
+      FileBufferLen + INFDataLen)
+  else
+    crypter := TINFCrypt.Create(
+      PrevStreamKeyStart + PrevStreamKeyEnd,
+      FileBufferLen + INFDataLen);
   try
     SetLength(BufferString, FileBufferLen);
 
@@ -67,7 +80,7 @@ begin
   end;
 end;
 
-procedure DecodeStream(EncodedStream : TStream; DecodedStream : TStream);
+procedure DecodeStream(EncodedStream : TStream; DecodedStream : TStream; keys : TAppDKeys = akCurrent);
 var
   crypter : TINFCrypt;
   BufferString : String;
@@ -112,9 +125,14 @@ begin
   if DecodedStream is TMemoryStream then
     SetMemoryCapacity(TMemoryStreamExtend(DecodedStream));
 
-  crypter := TINFCrypt.Create(
-    StreamKeyStart + StreamKeyEnd,
-    FileBufferLen + INFDataLen);
+  if keys = akCurrent then
+    crypter := TINFCrypt.Create(
+      CurrentStreamKeyStart + CurrentStreamKeyEnd,
+      FileBufferLen + INFDataLen)
+  else
+    crypter := TINFCrypt.Create(
+      PrevStreamKeyStart + PrevStreamKeyEnd,
+      FileBufferLen + INFDataLen);
   try
     DecryptBufferLen := FileBufferLen + INFDataLen;
     SetLength(BufferString, DecryptBufferLen);
@@ -142,7 +160,9 @@ end;
 function GetEncryptedMemoryStream(fileName : String = '') : TMemoryStream;
 var
   EncodedFile : TFileStream;
+  keys : TAppDKeys;
 begin
+  keys := akCurrent;
   if Length(fileName) = 0 then
   begin
     if not FileExists(
@@ -151,10 +171,12 @@ begin
     then
       raise Exception.Create('Нет необходимого файла')
   end
-  else
+  else begin
+    keys := akPrevious;
     if not FileExists(fileName)
     then
       raise Exception.Create('Нет необходимого файла');
+  end;
 
   if Length(fileName) = 0 then
     EncodedFile := TFileStream
@@ -167,7 +189,7 @@ begin
   try
     Result := TMemoryStream.Create();
     try
-      DecodeStream(EncodedFile, Result);
+      DecodeStream(EncodedFile, Result, keys);
     except
       Result.Free;
       Result := nil;

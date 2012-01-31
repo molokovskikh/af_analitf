@@ -669,6 +669,11 @@
 				Folder="0"
 				CompilationType="2"
 			/>
+			<Procedure
+				MapAddress="GetEncryptedMemoryStream"
+				Folder="0"
+				CompilationType="2"
+			/>
 		</Procedures>
 	</Protection>
 	<Script
