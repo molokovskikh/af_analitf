@@ -94,7 +94,7 @@ OutputDir=.\bin
 UnitOutputDir=.\unit
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=
+SearchPath=..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols
 Packages=vcl;rtl;vclx;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualdbclx;vclactnband;vclshlctrls;dclOffice2k;Indy70;mydacvcl70;mydac70;mysqlmon70
 Conditionals=
 DebugSourceDirs=
@@ -134,15 +134,15 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-[Excluded Packages]
-c:\program files\borland\delphi7\Projects\Bpl\dclIndy70.bpl=Internet Direct (Indy) for D6 Property and Component Editors
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=2
-Item0=$(DELPHI)\Indy\lib;
-Item1=$(DELPHI)\Lib\Debug
+Count=4
+Item0=..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols
+Item1=..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core
+Item2=$(DELPHI)\Indy\lib;
+Item3=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=.\unit

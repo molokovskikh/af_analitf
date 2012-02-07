@@ -5,6 +5,7 @@ program ConvertEmkBuild;
 uses
   SysUtils,
   Classes,
+  IdHashMessageDigest,
   hlpcodecs in '..\AnalitF\RC_RND\hlpcodecs.pas',
   incrt in '..\AnalitF\RC_RND\incrt.pas',
   INFHelpers in '..\AnalitF\RC_RND\INFHelpers.pas',
@@ -78,6 +79,30 @@ const
 
   end;
 
+  function GetFileHash(AFileName: String): String;
+  var
+    md5 : TIdHashMessageDigest5;
+    fs : TFileStream;
+  begin
+    try
+      md5 := TIdHashMessageDigest5.Create;
+      try
+
+        fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
+        try
+          Result := md5.HashStreamAsHex( fs );
+        finally
+          fs.Free;
+        end;
+
+      finally
+        md5.Free;
+      end;
+    except
+      Result := '';
+    end;
+  end;
+
 begin
   try
     if not DirectoryExists(buildsDir) then
@@ -99,6 +124,7 @@ begin
     DeleteFile(buildsDir + '\' + decodedLibmysqldFile);
 
     WriteLn('Ok');
+    WriteLn('Hash: ' + GetFileHash(buildsDir + '\' + encodedLibmysqldFile));
   except
     on E : Exception do
       WriteLn('Error : ' + E.Message);
