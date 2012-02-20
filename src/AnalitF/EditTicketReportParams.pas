@@ -124,8 +124,9 @@ begin
   cbTicketSize.Style := csDropDownList;
   cbTicketSize.Items.Add('Стандартный размер');
   cbTicketSize.Items.Add('Малый размер');
+  cbTicketSize.Items.Add('Малый ценник с большой ценой');
   cbTicketSize.ItemIndex := Integer(TicketParams.TicketSize);
-  cbTicketSize.Width := Self.Canvas.TextWidth('Стандартный размер') + 50;
+  cbTicketSize.Width := Self.Canvas.TextWidth('Малый ценник с большой ценой') + 50;
   cbTicketSize.Left := 5;
   cbTicketSize.Top := 5;
 
