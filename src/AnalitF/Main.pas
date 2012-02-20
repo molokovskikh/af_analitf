@@ -7,18 +7,19 @@ uses
   ComCtrls, Menus, ExtCtrls, DBCtrls, DB, Child, Placemnt,
   ActnList, ImgList, ToolWin, StdCtrls, XPMan, ActnMan, ActnCtrls,
   XPStyleActnCtrls, ActnMenus, DBGridEh, DateUtils, ToughDBGrid,
-  OleCtrls, SHDocVw, AppEvnts, SyncObjs, Consts, ShellAPI,
+  OleCtrls, AppEvnts, SyncObjs, Consts, ShellAPI,
   MemDS, DBAccess, MyAccess, U_VistaCorrectForm, Contnrs,
   DayOfWeekDelaysController,
   SQLWaiting,
   U_SchedulesController,
   UserActions,
   StrUtils,
-  U_MiniMailForm;
+  U_MiniMailForm,
+  HtmlView;
 
 type
 
-TMainForm = class(TVistaCorrectForm)
+TMainForm = class(TForm)
     StatusBar: TStatusBar;
     MainMenu: TMainMenu;
     itmOrder: TMenuItem;
@@ -106,7 +107,6 @@ TMainForm = class(TVistaCorrectForm)
     N4: TMenuItem;
     actFind: TAction;
     tbFind: TToolButton;
-    Browser: TWebBrowser;
     AppEvents: TApplicationEvents;
     ImageList: TImageList;
     itmAbout: TMenuItem;
@@ -162,6 +162,7 @@ TMainForm = class(TVistaCorrectForm)
     actMiniMail: TAction;
     itmMiniMail: TMenuItem;
     miMiniMailFromDocs: TMenuItem;
+    HTMLViewer: THTMLViewer;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -248,6 +249,7 @@ private
   procedure ToggleToolBar;
   procedure CollapseToolBar;
   procedure CallMiniMail();
+  procedure HotSpotClick(Sender: TObject; const URL: string; var Handled: boolean);
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -354,6 +356,7 @@ begin
 
   LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
   MiniMailForm := TMiniMailForm.Create(Application);
+  HtmlViewer.OnHotSpotClick := HotSpotClick;
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
@@ -1106,10 +1109,10 @@ begin
 
   if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
-    openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', Browser.Tag) + '.htm';
+    openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', HtmlViewer.Tag) + '.htm';
     if SysUtils.FileExists( openFileName ) then
     try
-      Browser.Navigate( openFileName );
+      HtmlViewer.LoadFromFile(openFileName);
     except
       on E : Exception do
         LogCriticalError(
@@ -1119,7 +1122,7 @@ begin
   end
   else begin
     try
-      Browser.Navigate( 'about:blank' );
+      HtmlViewer.Clear();
     except
       on E : Exception do
         LogCriticalError(
@@ -1566,7 +1569,7 @@ begin
   then begin
   if     Self.Active
      and not Assigned(ActiveChild)
-     and (not Assigned(ActiveControl) or (ActiveControl = Browser))
+     and (not Assigned(ActiveControl) or (ActiveControl = HTMLViewer))
   then
   begin
     actOrderAll.Execute;
@@ -2015,6 +2018,16 @@ end;
 procedure TMainForm.actMiniMailExecute(Sender: TObject);
 begin
   CallMiniMail;
+end;
+
+procedure TMainForm.HotSpotClick(Sender: TObject; const URL: string;
+  var Handled: boolean);
+begin
+  if Pos('@analit.net', URL) > 0 then
+    MailTo(URL, '')
+  else
+    ShellExecute( Self.Handle, 'open', pchar(URL), nil, nil, SW_SHOWNORMAL);
+  Handled := True;
 end;
 
 initialization

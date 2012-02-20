@@ -21,21 +21,6 @@ object MainForm: TMainForm
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object Browser: TWebBrowser
-    Tag = 1
-    Left = 0
-    Top = 42
-    Width = 1016
-    Height = 493
-    Align = alClient
-    TabOrder = 0
-    ControlData = {
-      4C00000002690000F43200000000000000000000000000000000000000000000
-      000000004C000000000000000000000001000000E0D057007335CF11AE690800
-      2B2E126201000000000000004C0000000114020000000000C000000000000046
-      8000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000100000000000000000000000000000000000000}
-  end
   object CoolBar1: TCoolBar
     Left = 0
     Top = 0
@@ -287,6 +272,26 @@ object MainForm: TMainForm
         Width = 100
       end>
     OnDrawPanel = StatusBarDrawPanel
+  end
+  object HTMLViewer: THTMLViewer
+    Tag = 1
+    Left = 0
+    Top = 42
+    Width = 1016
+    Height = 493
+    TabOrder = 2
+    Align = alClient
+    BorderStyle = htFocused
+    HistoryMaxCount = 0
+    DefFontName = 'Times New Roman'
+    DefPreFontName = 'Courier New'
+    NoSelect = False
+    CharSet = DEFAULT_CHARSET
+    PrintMarginLeft = 2.000000000000000000
+    PrintMarginRight = 2.000000000000000000
+    PrintMarginTop = 2.000000000000000000
+    PrintMarginBottom = 2.000000000000000000
+    PrintScale = 1.000000000000000000
   end
   object MainMenu: TMainMenu
     Left = 224

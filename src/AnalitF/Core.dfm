@@ -381,46 +381,12 @@ object CoreForm: TCoreForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
-    object pWebBrowser: TPanel
-      Tag = 84
-      Left = 0
-      Top = 301
-      Width = 792
-      Height = 84
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 0
-      Visible = False
-      object Bevel1: TBevel
-        Left = 0
-        Top = 0
-        Width = 792
-        Height = 4
-        Align = alTop
-        Shape = bsTopLine
-      end
-      object WebBrowser1: TWebBrowser
-        Tag = 3
-        Left = 0
-        Top = 4
-        Width = 792
-        Height = 80
-        Align = alClient
-        TabOrder = 0
-        ControlData = {
-          4C000000DB510000450800000000000000000000000000000000000000000000
-          000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126208000000000000004C0000000114020000000000C000000000000046
-          8000000000000000000000000000000000000000000000000000000000000000
-          00000000000000000100000000000000000000000000000000000000}
-      end
-    end
     object dbgCore: TToughDBGrid
       Tag = 16384
       Left = 0
       Top = 0
       Width = 792
-      Height = 301
+      Height = 385
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -436,7 +402,7 @@ object CoreForm: TCoreForm
       ParentShowHint = False
       ReadOnly = True
       ShowHint = False
-      TabOrder = 1
+      TabOrder = 0
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
       TitleFont.Height = -11

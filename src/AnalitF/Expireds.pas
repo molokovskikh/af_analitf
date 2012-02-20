@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, RXDBCtrl, DModule, DB, AProc,
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls,
-  SHDocVw, DBProc, Constant,
+  DBProc, Constant,
   GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons,
   DayOfWeekHelper;
 
@@ -19,9 +19,6 @@ type
     pRecordCount: TPanel;
     lblRecordCount: TLabel;
     Bevel1: TBevel;
-    pWebBrowser: TPanel;
-    Bevel2: TBevel;
-    WebBrowser1: TWebBrowser;
     ActionList: TActionList;
     actFlipCore: TAction;
     plOverCost: TPanel;
@@ -102,8 +99,6 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure adsExpireds2AfterPost(DataSet: TDataSet);
-    procedure adsExpireds2AfterScroll(DataSet: TDataSet);
-    procedure FormResize(Sender: TObject);
     procedure dbgExpiredsSortMarkingChanged(Sender: TObject);
     procedure dbgExpiredsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
@@ -295,24 +290,6 @@ end;
 procedure TExpiredsForm.adsExpireds2AfterPost(DataSet: TDataSet);
 begin
   MainForm.SetOrdersInfo;
-end;
-
-procedure TExpiredsForm.adsExpireds2AfterScroll(DataSet: TDataSet);
-//var
-//  C : Integer;
-begin
-{
-  C := dbgExpireds.Canvas.TextHeight('Wg') + 2;
-  if (adsExpireds.RecordCount > 0) and ((adsExpireds.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
-    pWebBrowser.Visible := False
-  else
-    pWebBrowser.Visible := True;
-}
-end;
-
-procedure TExpiredsForm.FormResize(Sender: TObject);
-begin
-  adsExpireds2AfterScroll(adsExpireds);
 end;
 
 procedure TExpiredsForm.dbgExpiredsSortMarkingChanged(Sender: TObject);

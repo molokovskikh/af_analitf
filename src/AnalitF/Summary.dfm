@@ -21,7 +21,7 @@ inherited SummaryForm: TSummaryForm
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 1
     Visible = False
     DesignSize = (
       545
@@ -43,7 +43,7 @@ inherited SummaryForm: TSummaryForm
     Left = 0
     Top = 0
     Width = 792
-    Height = 375
+    Height = 573
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -51,7 +51,7 @@ inherited SummaryForm: TSummaryForm
       Left = 0
       Top = 52
       Width = 792
-      Height = 210
+      Height = 408
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -241,7 +241,7 @@ inherited SummaryForm: TSummaryForm
     end
     object pStatus: TPanel
       Left = 0
-      Top = 342
+      Top = 540
       Width = 792
       Height = 33
       Align = alBottom
@@ -427,7 +427,7 @@ inherited SummaryForm: TSummaryForm
       Left = 0
       Top = 52
       Width = 792
-      Height = 210
+      Height = 408
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsSummary
@@ -623,7 +623,7 @@ inherited SummaryForm: TSummaryForm
     end
     object gbCorrectMessage: TGroupBox
       Left = 0
-      Top = 302
+      Top = 500
       Width = 792
       Height = 40
       Align = alBottom
@@ -643,7 +643,7 @@ inherited SummaryForm: TSummaryForm
     end
     object gbComment: TGroupBox
       Left = 0
-      Top = 262
+      Top = 460
       Width = 792
       Height = 40
       Align = alBottom
@@ -659,40 +659,6 @@ inherited SummaryForm: TSummaryForm
         DataSource = dsSummary
         TabOrder = 0
       end
-    end
-  end
-  object pWebBrowser: TPanel [2]
-    Tag = 200
-    Left = 0
-    Top = 375
-    Width = 792
-    Height = 198
-    Align = alBottom
-    BevelOuter = bvNone
-    TabOrder = 1
-    Visible = False
-    object Bevel2: TBevel
-      Left = 0
-      Top = 0
-      Width = 792
-      Height = 4
-      Align = alTop
-      Shape = bsTopLine
-    end
-    object WebBrowser1: TWebBrowser
-      Tag = 6
-      Left = 0
-      Top = 4
-      Width = 792
-      Height = 194
-      Align = alClient
-      TabOrder = 0
-      ControlData = {
-        4C000000DB5100000D1400000000000000000000000000000000000000000000
-        000000004C000000000000000000000001000000E0D057007335CF11AE690800
-        2B2E126208000000000000004C0000000114020000000000C000000000000046
-        8000000000000000000000000000000000000000000000000000000000000000
-        00000000000000000100000000000000000000000000000000000000}
     end
   end
   object dsSummary: TDataSource

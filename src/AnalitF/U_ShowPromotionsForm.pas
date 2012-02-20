@@ -12,7 +12,7 @@ uses
   ComCtrls,
   ExtCtrls,
   Jpeg,
-  SHDocVw,
+  HtmlView,
   MyAccess,
   AProc,
   VCLHelper,
@@ -110,7 +110,7 @@ var
   saveHandler : TSaveHandler;
 
   pWebBrowser : TPanel;
-  iWebBrowser : TWebBrowser;
+  iWebBrowser : THTMLViewer;
 begin
   Result := nil;
   osPromoFile := RootFolder() + SDirPromotions + '\' + promotion.GetPromoFile();
@@ -123,12 +123,12 @@ begin
       pWebBrowser.BevelOuter := bvNone;
       pWebBrowser.Parent := Parent;
 
-      iWebBrowser := TWebBrowser.Create(pWebBrowser);
-      TWinControl(iWebBrowser).Name := 'iWebBrowser' + IntToStr(promotion.Id);
-      TWinControl(iWebBrowser).Parent := pWebBrowser;
-      TWinControl(iWebBrowser).Align := alClient;
+      iWebBrowser := THTMLViewer.Create(pWebBrowser);
+      iWebBrowser.Name := 'iWebBrowser' + IntToStr(promotion.Id);
+      iWebBrowser.Parent := pWebBrowser;
+      iWebBrowser.Align := alClient;
 
-      iWebBrowser.Navigate(osPromoFile);
+      iWebBrowser.LoadFromFile(osPromoFile);
       Result := pWebBrowser;
     end
     else

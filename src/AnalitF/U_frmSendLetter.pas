@@ -33,6 +33,7 @@ type
     procedure btnDelFileClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     ArchiveSize : Int64;
@@ -153,6 +154,17 @@ end;
 function TfrmSendLetter.AttachsExists: Boolean;
 begin
   Result := cbAddLogs.Checked or (lbFiles.Items.Count > 0);
+end;
+
+procedure TfrmSendLetter.FormCreate(Sender: TObject);
+begin
+  inherited;
+  rgEmailGroup.ControlStyle := rgEmailGroup.ControlStyle - [csParentBackground] + [csOpaque];
+  pTop.ControlStyle := pTop.ControlStyle - [csParentBackground] + [csOpaque];
+  pBottom.ControlStyle := pBottom.ControlStyle - [csParentBackground] + [csOpaque];
+  pTop.FullRepaint := True;
+  pBottom.FullRepaint := True;
+  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 end.

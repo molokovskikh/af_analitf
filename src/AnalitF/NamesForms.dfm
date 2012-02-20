@@ -1,6 +1,6 @@
 inherited NamesFormsForm: TNamesFormsForm
-  Left = 473
-  Top = 347
+  Left = 453
+  Top = 223
   Caption = #1057#1087#1080#1089#1086#1082' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
   ClientWidth = 687
   OldCreateOrder = True
@@ -189,20 +189,25 @@ inherited NamesFormsForm: TNamesFormsForm
           Align = alTop
           Shape = bsTopLine
         end
-        object WebBrowser1: TWebBrowser
+        object HTMLViewer1: THTMLViewer
           Tag = 2
           Left = 0
           Top = 4
           Width = 418
           Height = 131
-          Align = alClient
           TabOrder = 0
-          ControlData = {
-            4C000000342B00008A0D00000000000000000000000000000000000000000000
-            000000004C000000000000000000000001000000E0D057007335CF11AE690800
-            2B2E126208000000000000004C0000000114020000000000C000000000000046
-            8000000000000000000000000000000000000000000000000000000000000000
-            00000000000000000100000000000000000000000000000000000000}
+          Align = alClient
+          BorderStyle = htFocused
+          HistoryMaxCount = 0
+          DefFontName = 'Times New Roman'
+          DefPreFontName = 'Courier New'
+          NoSelect = False
+          CharSet = DEFAULT_CHARSET
+          PrintMarginLeft = 2.000000000000000000
+          PrintMarginRight = 2.000000000000000000
+          PrintMarginTop = 2.000000000000000000
+          PrintMarginBottom = 2.000000000000000000
+          PrintScale = 1.000000000000000000
         end
       end
     end
@@ -231,20 +236,25 @@ inherited NamesFormsForm: TNamesFormsForm
         Align = alTop
         Shape = bsTopLine
       end
-      object WebBrowser2: TWebBrowser
+      object HTMLViewer2: THTMLViewer
         Tag = 2
         Left = 0
         Top = 4
         Width = 687
         Height = 131
-        Align = alClient
         TabOrder = 0
-        ControlData = {
-          4C000000014700008A0D00000000000000000000000000000000000000000000
-          000000004C000000000000000000000001000000E0D057007335CF11AE690800
-          2B2E126208000000000000004C0000000114020000000000C000000000000046
-          8000000000000000000000000000000000000000000000000000000000000000
-          00000000000000000100000000000000000000000000000000000000}
+        Align = alClient
+        BorderStyle = htFocused
+        HistoryMaxCount = 0
+        DefFontName = 'Times New Roman'
+        DefPreFontName = 'Courier New'
+        NoSelect = False
+        CharSet = DEFAULT_CHARSET
+        PrintMarginLeft = 2.000000000000000000
+        PrintMarginRight = 2.000000000000000000
+        PrintMarginTop = 2.000000000000000000
+        PrintMarginBottom = 2.000000000000000000
+        PrintScale = 1.000000000000000000
       end
     end
     object dbgCatalog: TToughDBGrid

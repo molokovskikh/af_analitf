@@ -9,7 +9,6 @@ uses
   Windows,
   ActiveX,
   Registry,
-  SHDocVw,
   LU_MutexSystem in '..\Common\System\LU_MutexSystem.pas',
   Main in 'Main.pas' {MainForm},
   DModule in 'DModule.pas' {DM: TDataModule},
@@ -171,8 +170,6 @@ uses
 {$R CompareScript82.RES}
 {$R CompareScript83.RES}
 
-var
-  B : TWebBrowser;
 
   procedure CopyRegSettings;
   var
@@ -194,17 +191,6 @@ var
   end;
 
 begin
-  try
-    CoInitialize(nil);
-    try
-      B := TWebBrowser.Create(nil);
-      B.Free;
-    finally
-      CoUninitialize;
-    end;
-  except
-    LogExitError('Для запуска приложения необходим установленный Internet Explorer 4.0 или выше.', Integer(ecIE40));
-  end;
   //Производим попытку скопировать настройки в реестре из старой копии программы 
   try
     CopyRegSettings;

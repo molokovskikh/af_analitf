@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, RXDBCtrl, DB,
   DBCtrls, StdCtrls, Placemnt, FR_DSet, FR_DBSet, Buttons, DBGridEh,
-  ToughDBGrid, ExtCtrls, Registry, OleCtrls, SHDocVw,
+  ToughDBGrid, ExtCtrls, Registry, OleCtrls, 
   DBProc, ComCtrls, CheckLst, Menus, GridsEh, DateUtils,
   ActnList, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   U_CurrentOrderItem,
@@ -23,9 +23,6 @@ type
     Label1: TLabel;
     Label2: TLabel;
     lSumOrder: TLabel;
-    pWebBrowser: TPanel;
-    Bevel2: TBevel;
-    WebBrowser1: TWebBrowser;
     btnDelete: TButton;
     pTopSettings: TPanel;
     bvSettings: TBevel;
@@ -530,16 +527,7 @@ begin
 end;
 
 procedure TSummaryForm.adsSummary2AfterScroll(DataSet: TDataSet);
-//var
-//  C : Integer;
 begin
-{
-  C := dbgSummaryCurrent.Canvas.TextHeight('Wg') + 2;
-  if (adsSummary.RecordCount > 0) and ((adsSummary.RecordCount*C)/(pClient.Height-pWebBrowser.Height) > 13/10) then
-    pWebBrowser.Visible := False
-  else
-    pWebBrowser.Visible := True;
-}
   if (LastSymmaryType = 0) then
     if FUseCorrectOrders and not adsSummaryDropReason.IsNull then
       FillCorrectMessage

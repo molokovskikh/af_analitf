@@ -64,6 +64,7 @@ begin
   lMnnInfo.Name := 'lMnnInfo';
   lMnnInfo.Parent := gbPosition;
   lMnnInfo.AutoSize := False;
+  lMnnInfo.ControlStyle := lMnnInfo.ControlStyle - [csParentBackground] + [csOpaque];
 
   showDescriptionAction := nil;
   oldAfterOpen := nil;
@@ -73,6 +74,7 @@ begin
   catalogMandatoryList := nil;
   gbPosition.ControlStyle := gbPosition.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+  dbtSynonymName.ControlStyle := dbtSynonymName.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 procedure TframePosition.FrameResize(Sender: TObject);

@@ -136,7 +136,7 @@ inherited OrdersHForm: TOrdersHForm
         TabOrder = 1
         object bevClient: TBevel
           Left = 0
-          Top = 360
+          Top = 466
           Width = 784
           Height = 4
           Align = alBottom
@@ -146,7 +146,7 @@ inherited OrdersHForm: TOrdersHForm
           Left = 0
           Top = 0
           Width = 483
-          Height = 360
+          Height = 466
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 0
@@ -155,7 +155,7 @@ inherited OrdersHForm: TOrdersHForm
             Left = 0
             Top = 0
             Width = 483
-            Height = 360
+            Height = 466
             Align = alClient
             AllowedOperations = [alopUpdateEh]
             AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]
@@ -257,7 +257,7 @@ inherited OrdersHForm: TOrdersHForm
             Left = 0
             Top = 0
             Width = 483
-            Height = 360
+            Height = 466
             Align = alClient
             AllowedOperations = [alopUpdateEh]
             AllowedSelections = [gstRecordBookmarks, gstRectangle, gstAll]
@@ -377,7 +377,7 @@ inherited OrdersHForm: TOrdersHForm
           Left = 483
           Top = 0
           Width = 301
-          Height = 360
+          Height = 466
           Align = alRight
           BevelOuter = bvNone
           TabOrder = 1
@@ -416,40 +416,6 @@ inherited OrdersHForm: TOrdersHForm
               ScrollBars = ssVertical
               TabOrder = 0
             end
-          end
-        end
-        object pWebBrowser: TPanel
-          Tag = 106
-          Left = 0
-          Top = 364
-          Width = 784
-          Height = 106
-          Align = alBottom
-          BevelOuter = bvNone
-          TabOrder = 2
-          Visible = False
-          object Bevel2: TBevel
-            Left = 0
-            Top = 0
-            Width = 784
-            Height = 4
-            Align = alTop
-            Shape = bsTopLine
-          end
-          object WebBrowser1: TWebBrowser
-            Tag = 5
-            Left = 0
-            Top = 4
-            Width = 784
-            Height = 102
-            Align = alClient
-            TabOrder = 0
-            ControlData = {
-              4C000000075100008B0A00000000000000000000000000000000000000000000
-              000000004C000000000000000000000001000000E0D057007335CF11AE690800
-              2B2E126208000000000000004C0000000114020000000000C000000000000046
-              8000000000000000000000000000000000000000000000000000000000000000
-              00000000000000000100000000000000000000000000000000000000}
           end
         end
       end

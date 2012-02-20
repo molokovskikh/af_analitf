@@ -7,7 +7,6 @@ inherited ExpiredsForm: TExpiredsForm
   ClientWidth = 792
   OldCreateOrder = True
   OnDestroy = FormDestroy
-  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object plOverCost: TPanel [0]
@@ -21,7 +20,7 @@ inherited ExpiredsForm: TExpiredsForm
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 1
     Visible = False
     DesignSize = (
       545
@@ -43,7 +42,7 @@ inherited ExpiredsForm: TExpiredsForm
     Left = 0
     Top = 0
     Width = 792
-    Height = 364
+    Height = 573
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -52,7 +51,7 @@ inherited ExpiredsForm: TExpiredsForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 335
+      Height = 544
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsExpireds
@@ -250,7 +249,7 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object pRecordCount: TPanel
       Left = 0
-      Top = 335
+      Top = 544
       Width = 792
       Height = 29
       Align = alBottom
@@ -296,40 +295,6 @@ inherited ExpiredsForm: TExpiredsForm
         Caption = 'GotoMNN'
         Visible = False
       end
-    end
-  end
-  object pWebBrowser: TPanel [2]
-    Tag = 209
-    Left = 0
-    Top = 364
-    Width = 792
-    Height = 209
-    Align = alBottom
-    BevelOuter = bvNone
-    TabOrder = 1
-    Visible = False
-    object Bevel2: TBevel
-      Left = 0
-      Top = 0
-      Width = 792
-      Height = 4
-      Align = alTop
-      Shape = bsTopLine
-    end
-    object WebBrowser1: TWebBrowser
-      Tag = 4
-      Left = 0
-      Top = 4
-      Width = 792
-      Height = 205
-      Align = alClient
-      TabOrder = 0
-      ControlData = {
-        4C000000DB510000301500000000000000000000000000000000000000000000
-        000000004C000000000000000000000001000000E0D057007335CF11AE690800
-        2B2E126208000000000000004C0000000114020000000000C000000000000046
-        8000000000000000000000000000000000000000000000000000000000000000
-        00000000000000000100000000000000000000000000000000000000}
     end
   end
   object dsExpireds: TDataSource
@@ -618,7 +583,6 @@ inherited ExpiredsForm: TExpiredsForm
     RefreshOptions = [roAfterUpdate]
     BeforePost = adsExpireds2BeforePost
     AfterPost = adsExpireds2AfterPost
-    AfterScroll = adsExpireds2AfterScroll
     Left = 160
     Top = 112
     ParamData = <

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, DateUtils,
-  FR_DSet, FR_DBSet, OleCtrls, SHDocVw,
+  FR_DSet, FR_DBSet, OleCtrls, 
   SQLWaiting, ShellAPI, GridsEh, MemDS,
   Contnrs,
   DBAccess, MyAccess, MemData, Orders,
@@ -43,9 +43,6 @@ type
     dbmMessage: TDBMemo;
     gbComments: TGroupBox;
     dbmComments: TDBMemo;
-    pWebBrowser: TPanel;
-    Bevel2: TBevel;
-    WebBrowser1: TWebBrowser;
     tmOrderDateChange: TTimer;
     bevClient: TBevel;
     dbgSendedOrders: TToughDBGrid;

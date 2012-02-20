@@ -5,14 +5,15 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Placemnt, DB, StdCtrls, ExtCtrls, Grids, DBGrids,
-  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw,
+  RXDBCtrl, ActnList, DBGridEh, ToughDBGrid, OleCtrls,
   Registry, ForceRus, StrUtils, GridsEh, MemDS, DBAccess,
   MyAccess, Menus, Buttons, U_framePosition, PreviousOrders, Core,
   U_frameContextReclame,
   U_ShowPromotionsForm,
   PromotionLabel,
   U_framePromotion,
-  SearchFilterController;
+  SearchFilterController,
+  HTMLView;
 
 type
   TNamesFormsForm = class(TChildForm)
@@ -32,10 +33,8 @@ type
     pnlTop: TPanel;
     pWebBrowser: TPanel;
     Bevel1: TBevel;
-    WebBrowser1: TWebBrowser;
     pWebBrowserCatalog: TPanel;
     Bevel2: TBevel;
-    WebBrowser2: TWebBrowser;
     dbgCatalog: TToughDBGrid;
     cbNewSearch: TCheckBox;
     dsCatalog: TDataSource;
@@ -58,6 +57,8 @@ type
     lUsedFilter: TLabel;
     sbShowSynonymMNN: TSpeedButton;
     actShowSynonymMNN: TAction;
+    HTMLViewer2: THTMLViewer;
+    HTMLViewer1: THTMLViewer;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);

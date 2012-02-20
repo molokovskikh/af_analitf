@@ -4,10 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ActnList, SHDocVw, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs,
+  ActnList, ToughDBGrid, ExtCtrls, DB, DBProc, DBGrids, Contnrs,
   MyAccess, DBAccess, StdCtrls, DescriptionFrm, Buttons,
   DayOfWeekHelper,
-  Menus;
+  Menus,
+  HtmlView;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -159,9 +160,6 @@ begin
   inherited CreateParams(Params);
   //форма будет дочерней
   Params.Style:=Params.Style or WS_CHILD;
-  // This only works on Windows XP and above
-  if CheckWin32Version(5, 1) then
-    Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
 end;
 
 procedure TChildForm.Loaded;
@@ -281,7 +279,7 @@ var
   openFileName : String;
 begin
   for i := 0 to Self.ComponentCount - 1 do
-    if Self.Components[ i] is TWebBrowser then
+    if Self.Components[ i] is THTMLViewer then
     begin
       try
         if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
@@ -289,10 +287,10 @@ begin
           openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', Self.Components[ i].Tag) + '.htm';
           if SysUtils.FileExists(openFileName)
           then
-            TWebBrowser(Self.Components[i]).Navigate(openFileName);
+            THTMLViewer(Self.Components[i]).LoadFromFile(openFileName);
         end
         else
-          TWebBrowser( Self.Components[i] ).Navigate('about:blank');
+          THTMLViewer( Self.Components[i] ).Clear;
       except
         on E : Exception do
           LogCriticalError(

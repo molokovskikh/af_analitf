@@ -7,7 +7,7 @@ uses
   ExtCtrls, Grids, DBGrids, ComCtrls, Db, StrUtils,
   StdCtrls, Buttons, DBCtrls, FR_Class, FR_DSet, FR_DBSet,
   Child, RXDBCtrl, Variants, Math, DBGridEh,
-  ToughDBGrid, OleCtrls, SHDocVw, ActnList, 
+  ToughDBGrid, OleCtrls, ActnList, 
   Spin,
   GridsEh, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   SQLWaiting,
@@ -15,7 +15,7 @@ uses
   U_framePromotion,
   DayOfWeekHelper,
   DBViewHelper,
-  U_frameAutoComment;
+  U_frameAutoComment, Htmlview;
 
 const
   ALL_REGIONS = 'Все регионы';
@@ -44,9 +44,6 @@ type
     ActionList: TActionList;
     actFlipCore: TAction;
     pCenter: TPanel;
-    pWebBrowser: TPanel;
-    Bevel1: TBevel;
-    WebBrowser1: TWebBrowser;
     dbgCore: TToughDBGrid;
     pRight: TPanel;
     gbRetUpCost: TGroupBox;
@@ -792,7 +789,6 @@ end;
 
 procedure TCoreForm.adsCore2AfterScroll(DataSet: TDataSet);
 var
-//  C : Integer;
   retailMarkup : Variant;
 begin
 {
@@ -825,13 +821,6 @@ begin
     RecalUserRetailPrice();
   end;
   RefreshCurrentSumma;
-{
-  C := dbgCore.Canvas.TextHeight('Wg') + 2;
-  if (adsCore.RecordCount > 0) and ((adsCore.RecordCount*C)/(pCenter.Height-pWebBrowser.Height) > 13/10) then
-    pWebBrowser.Visible := False
-  else
-    pWebBrowser.Visible := True;
-}
 end;
 
 procedure TCoreForm.FormResize(Sender: TObject);

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   RXDBCtrl, Grids, DBGrids, ComCtrls, Db, StrUtils, Child,
   FR_DSet, FR_DBSet, ActnList, StdCtrls, Buttons, DBCtrls, Variants,
-  Math, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls, SHDocVw,
+  Math, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls, 
   hlpcodecs, LU_Tracer, 
   SQLWaiting, ForceRus, GridsEh, 
   U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,

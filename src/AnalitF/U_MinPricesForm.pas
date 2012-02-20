@@ -8,7 +8,6 @@ uses
   StdCtrls,
   StrUtils,
   Buttons,
-  SHDocVw,
   ActnList,
   Menus,
   DB,
@@ -24,7 +23,8 @@ uses
   NetworkParams,
   SQLWaiting,
   U_framePromotion,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  HtmlView;
 
 {//$define MinPricesLog}
 
@@ -207,7 +207,7 @@ type
     dbgCore : TToughDBGrid;
     pWebBrowser : TPanel;
     bWebBrowser : TBevel;
-    WebBrowser : TWebBrowser;
+    WebBrowser : THTMLViewer;
 
     plOverCost : TPanel;
     lWarning : TLabel;
@@ -373,11 +373,11 @@ begin
   bWebBrowser.Height := 4;
   bWebBrowser.Shape := bsTopLine;
 
-  WebBrowser := TWebBrowser.Create(Self);
+  WebBrowser := THTMLViewer.Create(Self);
   WebBrowser.Tag := 2;
-  TWinControl(WebBrowser).Name := 'WebBrowser';
-  TWinControl(WebBrowser).Parent := pWebBrowser;
-  TWinControl(WebBrowser).Align := alClient;
+  WebBrowser.Name := 'WebBrowser';
+  WebBrowser.Parent := pWebBrowser;
+  WebBrowser.Align := alClient;
   UpdateReclame;
 
   dbgCore := TToughDBGrid.Create(Self);
