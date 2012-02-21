@@ -127,6 +127,7 @@ private
   procedure CreateChildSendArhivedOrdersThread;
   function  ChildThreadClassIsExists(ChildThreadClass : TReceiveThreadClass) : Boolean;
   procedure QueryData;
+  procedure DoProcessAsync(url : String);
   function  GetEncodedBatchFileContent : String;
   procedure GetMaxIds(var MaxOrderId, MaxOrderListId, MaxBatchId : String);
   procedure GetMaxPostedIds(var MaxOrderId, MaxOrderListId : String);
@@ -655,6 +656,8 @@ var
 
   requestAttachs : Boolean;
 
+  processAsync : Boolean;
+
   procedure AddPostParam(Param, Value: String);
   begin
     FPostParams.Add(Param + '=' + SOAP.PreparePostValue(Value));
@@ -857,19 +860,25 @@ begin
       LibVersions.Free;
     end;
     UpdateId := '';
+    processAsync := False;
     if NeedProcessBatch then
       Res := SOAP.Invoke( 'PostOrderBatch', FPostParams)
     else begin
       if waybillsWithCertificate then
         Res := SOAP.Invoke( 'GetUserDataWithOrdersAsyncCert', FPostParams)
-      else
-        Res := SOAP.Invoke( 'GetUserDataWithAttachments', FPostParams);
+      else begin
+        processAsync := True;
+        Res := SOAP.Invoke( 'GetUserDataWithAttachmentsAsync', FPostParams);
+      end;
     end;
     { проверяем отсутствие ошибки при удаленном запросе }
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
     if Error <> '' then
       raise Exception.Create( Utf8ToAnsi( Res.Values[ 'Error'])
         + #13 + #10 + Utf8ToAnsi( Res.Values[ 'Desc']));
+
+    if processAsync then
+      DoProcessAsync(Res.Values[ 'URL']);
 
     //Если получили установленный флаг Cumulative, то делаем куммулятивное обновление
     if (Length(Res.Values['Cumulative']) > 0) and (StrToBool(Res.Values['Cumulative'])) then
@@ -3514,6 +3523,13 @@ procedure TExchangeThread.GetMaxPostedIds(var MaxOrderId,
 var
   val : Variant;
 begin
+{
+  MaxOrderId := DatabaseController().GetLastInsertId(DM.MainConnection, doiPostedOrderHeads, 'ORDERID');
+  WriteExchangeLogTID('GetMaxPostedIds', 'MaxOrderId = ' + MaxOrderId);
+  MaxOrderListId := DatabaseController().GetLastInsertId(DM.MainConnection, doiPostedOrderLists, 'ID');
+  WriteExchangeLogTID('GetMaxPostedIds', 'MaxOrderListId = ' + MaxOrderListId);
+}
+
   val := DM.QueryValue('select max(OrderId) + 1 from PostedOrderHeads', [], []);
   if VarIsNull(val) then
     MaxOrderId := '1'
@@ -4389,6 +4405,46 @@ begin
     '  and Mails.Id = Attachments.MailId ';
     InternalExecute;
   end;
+end;
+
+procedure TExchangeThread.DoProcessAsync(url: String);
+var
+  UpdateIdIndex : Integer;
+  asyncUpdateId : String;
+  asyncResponse : String;
+  sleepCount : Integer;
+begin
+  asyncUpdateId := '';
+  UpdateIdIndex := AnsiPos(UpperCase('?Id='), UpperCase(url));
+  if UpdateIdIndex = 0 then begin
+    WriteExchangeLog('Exchange', 'Не найдена строка "?Id=" в URL : ' + url);
+    raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+      #10#13 + 'Повторите запрос через несколько минут.');
+  end
+  else begin
+    asyncUpdateId := Copy(url, UpdateIdIndex + 4, Length(url));
+    if asyncUpdateId = '' then begin
+      WriteExchangeLog('Exchange', 'UpdateId - пустой, URL : ' + url);
+      raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+        #10#13 + 'Повторите запрос через несколько минут.');
+    end;
+  end;
+
+  asyncResponse := '';
+  sleepCount := 0;
+  repeat
+    asyncResponse := SOAP.SimpleInvoke('CheckAsyncRequest', ['UpdateId'], [asyncUpdateId]);
+    if (asyncResponse = 'Res=Wait') then begin
+      Inc(sleepCount);
+      Sleep(5000);
+    end
+    else
+      Break;
+  until ((asyncResponse = 'Res=OK') or (sleepCount > 20*12));
+
+  if (asyncResponse <> 'Res=OK') then
+    raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
+      #10#13 + 'Повторите запрос через несколько минут.');
 end;
 
 initialization

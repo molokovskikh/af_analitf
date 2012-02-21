@@ -393,6 +393,8 @@ type
     procedure DisableMemoryLib();
 {$endif}
     procedure SwithTypes(ToNewTypes : Boolean);
+
+    function GetLastInsertId(connection: TCustomMyConnection; tableId : TDatabaseObjectId; Id : String) : String;
   end;
 
   function DatabaseController : TDatabaseController;
@@ -1373,6 +1375,17 @@ begin
       currentTable := TDatabaseTable(FDatabaseObjects[i]);
       Result := Concat(Result, #13#10#13#10, currentTable.GetDropSQL(), #13#10, currentTable.GetCreateSQL());
     end;
+end;
+
+function TDatabaseController.GetLastInsertId(
+  connection: TCustomMyConnection; tableId: TDatabaseObjectId; Id : String): String;
+var
+  table : TDatabaseTable;
+begin
+  table := TDatabaseTable(GetById(tableId));
+  connection.ExecSQL('insert into ' + table.Name + ';', []);
+  Result := DBProc.QueryValue(connection, 'select last_insert_id();', [], []);
+  connection.ExecSQL('delete from ' + table.Name + ' where ' + Id + ' = ' + Result + ';', []);
 end;
 
 function TDatabaseController.GetMaxTempTableSize: String;
