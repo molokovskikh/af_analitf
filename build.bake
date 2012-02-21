@@ -42,7 +42,7 @@ def BuildAnalitF(buildName as string):
 
 
 Task @BuildVMProtect:
-	exec = Exec("C:\\Program Files (x86)\\VMProtect Ultimate\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp");
+	exec = Exec("C:\\Program Files (x86)\\VMProtect Professional\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp");
 	exec.BaseDirectory = ".\\src\\VMProtect"
 	exec.Execute()
 
