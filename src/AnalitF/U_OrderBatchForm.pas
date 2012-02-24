@@ -159,6 +159,7 @@ type
 
     procedure SaveReportToFile(FileName : String);
     procedure SaveExcelReportToFile(FileName : String);
+    procedure SaveCSVReportToFile(FileName : String);
   public
     { Public declarations }
 
@@ -552,7 +553,7 @@ begin
 
   sdReport := TSaveDialog.Create(Self);
   sdReport.DefaultExt := 'dbf';
-  sdReport.Filter := 'Отчет (*.dbf)|*.dbf|Все файлы (*.*)|*.*|Excel (*.xls)|*.xls';
+  sdReport.Filter := 'Отчет (*.dbf)|*.dbf|Все файлы (*.*)|*.*|Excel (*.xls)|*.xls|CSV (*.csv)|*.csv';
 
   adsReport := TMyQuery.Create(Self);
   adsReport.Name := 'adsReport';
@@ -1233,7 +1234,10 @@ begin
     if sdReport.FilterIndex <= 1 then
       SaveReportToFile(sdReport.FileName)
     else
-      SaveExcelReportToFile(sdReport.FileName);
+      if sdReport.FilterIndex = 2 then
+        SaveExcelReportToFile(sdReport.FileName)
+      else
+        SaveCSVReportToFile(sdReport.FileName);
   end;
 end;
 
@@ -1449,6 +1453,60 @@ end;
 procedure TOrderBatchForm.dbgOrderBatchOnExit(Sender: TObject);
 begin
   PrintEnabled := False;
+end;
+
+procedure TOrderBatchForm.SaveCSVReportToFile(FileName: String);
+var
+  fileCSV : TFileStream;
+  list : TStringList;
+begin
+  if FileExists(FileName) then
+    OSDeleteFile(FileName);
+
+  list := TStringList.Create;
+  try
+    list.Add('KOD_NAME;FULL_NAME;KOD_TIP;ITOGO;Поставщик;Цена;Комментарий');
+
+    if DM.adsQueryValue.Active then
+      DM.adsQueryValue.Close;
+
+    DM.adsQueryValue.SQL.Text := shBatchReport.Strings.Text;
+    DM.adsQueryValue.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+
+    DM.adsQueryValue.Open;
+
+    try
+
+      while not DM.adsQueryValue.Eof do begin
+        if DM.adsQueryValue.FieldByName('ProductId').IsNull then
+          list.Add(Format('%s;%s;%s;%s;%s;%s;"%s"',
+            [DM.adsQueryValue.FieldByName('ServiceField1').AsString,
+            DM.adsQueryValue.FieldByName('SynonymName').AsString,
+            DM.adsQueryValue.FieldByName('ServiceField2').AsString,
+            DM.adsQueryValue.FieldByName('OrderCount').AsString,
+            'Не удалось сопоставить код записи ассортиментного прайс-листа',
+            DM.adsQueryValue.FieldByName('Cost').AsString,
+            DM.adsQueryValue.FieldByName('Comment').AsString]))
+        else
+          list.Add(Format('%s;%s;%s;%s;%s;%s;"%s"',
+            [DM.adsQueryValue.FieldByName('ServiceField1').AsString,
+            DM.adsQueryValue.FieldByName('SynonymName').AsString,
+            DM.adsQueryValue.FieldByName('ServiceField2').AsString,
+            DM.adsQueryValue.FieldByName('OrderCount').AsString,
+            DM.adsQueryValue.FieldByName('PriceName').AsString,
+            DM.adsQueryValue.FieldByName('Cost').AsString,
+            DM.adsQueryValue.FieldByName('Comment').AsString]));
+        DM.adsQueryValue.Next;
+      end;
+
+    finally
+      DM.adsQueryValue.Close;
+    end;
+
+    list.SaveToFile(FileName);
+  finally
+    list.Free;
+  end;
 end;
 
 initialization
