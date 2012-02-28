@@ -8,6 +8,7 @@ uses
   StdCtrls,
   ExtCtrls,
   Buttons,
+  Contnrs,
   DB,
   DBCtrls,
   DBAccess,
@@ -28,7 +29,7 @@ uses
   U_frameFilterAddresses,
   DayOfWeekHelper,
   LU_TDataExportAsXls;
-  
+
 
 type
   TItemToOrderStatus = (
@@ -158,8 +159,7 @@ type
     procedure dbgCoreOnExit(Sender: TObject);
 
     procedure SaveReportToFile(FileName : String);
-    procedure SaveExcelReportToFile(FileName : String);
-    procedure SaveCSVReportToFile(FileName : String);
+    procedure SaveExcelReportToFile(FileName : String; exportServiceFields : Boolean);
   public
     { Public declarations }
 
@@ -553,7 +553,7 @@ begin
 
   sdReport := TSaveDialog.Create(Self);
   sdReport.DefaultExt := 'dbf';
-  sdReport.Filter := 'Отчет (*.dbf)|*.dbf|Все файлы (*.*)|*.*|Excel (*.xls)|*.xls|CSV (*.csv)|*.csv';
+  sdReport.Filter := 'Отчет (*.dbf)|*.dbf|Все файлы (*.*)|*.*|Excel (*.xls)|*.xls|Расширенный Excel (*.xls)|*.xls';
 
   adsReport := TMyQuery.Create(Self);
   adsReport.Name := 'adsReport';
@@ -1234,10 +1234,10 @@ begin
     if sdReport.FilterIndex <= 1 then
       SaveReportToFile(sdReport.FileName)
     else
-      if sdReport.FilterIndex = 2 then
-        SaveExcelReportToFile(sdReport.FileName)
+      if sdReport.FilterIndex <= 3 then
+        SaveExcelReportToFile(sdReport.FileName, False)
       else
-        SaveCSVReportToFile(sdReport.FileName);
+        SaveExcelReportToFile(sdReport.FileName, True);
   end;
 end;
 
@@ -1350,12 +1350,30 @@ begin
   FillReport;
 end;
 
-procedure TOrderBatchForm.SaveExcelReportToFile(FileName: String);
+procedure TOrderBatchForm.SaveExcelReportToFile(FileName : String; exportServiceFields : Boolean);
 var
   exportData : TDataExportAsXls;
+  realExport : Boolean;
+  exportList : TStringList;
+  serviceFields : TObjectList;
+  exportArray : array of String;
+  I : Integer;
+  column : TColumnEh;
+
+  procedure GetListToArray(values : TStringList);
+  var
+    I : Integer;
+  begin
+    SetLength(exportArray, values.Count);
+    for I := 0 to values.Count-1 do
+      exportArray[i] := values[i];
+  end;
+
 begin
   if FileExists(FileName) then
     OSDeleteFile(FileName);
+
+  realExport := exportServiceFields and (not dbgOrderBatch.AutoFitColWidths) and (ColumnByNameT(dbgOrderBatch, 'ServiceField1') <> nil);
 
   if DM.adsQueryValue.Active then
     DM.adsQueryValue.Close;
@@ -1366,32 +1384,57 @@ begin
   DM.adsQueryValue.Open;
 
   try
+    exportList := TStringList.Create;
+    serviceFields := TObjectList.Create(False);
     exportData := TDataExportAsXls.Create(FileName);
 
     try
-      exportData.WriteRow([
-        'Наименование',
-        'Производитель',
-        'Прайс-лист',
-        'Цена',
-        'Заказ',
-        'Сумма',
-        'Комментарий']);
+      exportList.Add('Наименование');
+      exportList.Add('Производитель');
+      exportList.Add('Прайс-лист');
+      exportList.Add('Цена');
+      exportList.Add('Заказ');
+      exportList.Add('Сумма');
+      exportList.Add('Комментарий');
+      if (realExport) then
+        for I := 1 to 25 do begin
+          column := ColumnByNameT(dbgOrderBatch, 'ServiceField' + IntToStr(i));
+          if not Assigned(column) then
+           Break;
+          serviceFields.Add(column);
+          exportList.Add(column.Title.Caption);
+        end;
+
+      GetListToArray(exportList);
+      exportData.WriteRow(exportArray);
 
       while not DM.adsQueryValue.Eof do begin
-        exportData.WriteRow([
-          DM.adsQueryValue.FieldByName('SynonymName').AsString,
-          DM.adsQueryValue.FieldByName('SynonymFirm').AsString,
-          DM.adsQueryValue.FieldByName('PriceName').AsString,
-          DM.adsQueryValue.FieldByName('Cost').AsString,
-          DM.adsQueryValue.FieldByName('OrderCount').AsString,
-          DM.adsQueryValue.FieldByName('RetailSumm').AsString,
-          DM.adsQueryValue.FieldByName('Comment').AsString]);
+        exportList.Clear();
+
+        exportList.Add(DM.adsQueryValue.FieldByName('SynonymName').AsString);
+        exportList.Add(DM.adsQueryValue.FieldByName('SynonymFirm').AsString);
+        exportList.Add(DM.adsQueryValue.FieldByName('PriceName').AsString);
+        exportList.Add(DM.adsQueryValue.FieldByName('Cost').AsString);
+        exportList.Add(DM.adsQueryValue.FieldByName('OrderCount').AsString);
+        exportList.Add(DM.adsQueryValue.FieldByName('RetailSumm').AsString);
+        exportList.Add(DM.adsQueryValue.FieldByName('Comment').AsString);
+
+        if (realExport) then
+          for I := 0 to serviceFields.Count-1 do begin
+            column := TColumnEh(serviceFields[i]);
+            exportList.Add(DM.adsQueryValue.FieldByName(column.FieldName).AsString);
+          end;
+
+        GetListToArray(exportList);
+        exportData.WriteRow(exportArray);
+
         DM.adsQueryValue.Next;
       end;
 
     finally
       exportData.Free;
+      exportList.Free;
+      serviceFields.Free;
     end;
   finally
     DM.adsQueryValue.Close;
@@ -1453,60 +1496,6 @@ end;
 procedure TOrderBatchForm.dbgOrderBatchOnExit(Sender: TObject);
 begin
   PrintEnabled := False;
-end;
-
-procedure TOrderBatchForm.SaveCSVReportToFile(FileName: String);
-var
-  fileCSV : TFileStream;
-  list : TStringList;
-begin
-  if FileExists(FileName) then
-    OSDeleteFile(FileName);
-
-  list := TStringList.Create;
-  try
-    list.Add('KOD_NAME;FULL_NAME;KOD_TIP;ITOGO;Поставщик;Цена;Комментарий');
-
-    if DM.adsQueryValue.Active then
-      DM.adsQueryValue.Close;
-
-    DM.adsQueryValue.SQL.Text := shBatchReport.Strings.Text;
-    DM.adsQueryValue.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
-
-    DM.adsQueryValue.Open;
-
-    try
-
-      while not DM.adsQueryValue.Eof do begin
-        if DM.adsQueryValue.FieldByName('ProductId').IsNull then
-          list.Add(Format('%s;%s;%s;%s;%s;%s;"%s"',
-            [DM.adsQueryValue.FieldByName('ServiceField1').AsString,
-            DM.adsQueryValue.FieldByName('SynonymName').AsString,
-            DM.adsQueryValue.FieldByName('ServiceField2').AsString,
-            DM.adsQueryValue.FieldByName('OrderCount').AsString,
-            'Не удалось сопоставить код записи ассортиментного прайс-листа',
-            DM.adsQueryValue.FieldByName('Cost').AsString,
-            DM.adsQueryValue.FieldByName('Comment').AsString]))
-        else
-          list.Add(Format('%s;%s;%s;%s;%s;%s;"%s"',
-            [DM.adsQueryValue.FieldByName('ServiceField1').AsString,
-            DM.adsQueryValue.FieldByName('SynonymName').AsString,
-            DM.adsQueryValue.FieldByName('ServiceField2').AsString,
-            DM.adsQueryValue.FieldByName('OrderCount').AsString,
-            DM.adsQueryValue.FieldByName('PriceName').AsString,
-            DM.adsQueryValue.FieldByName('Cost').AsString,
-            DM.adsQueryValue.FieldByName('Comment').AsString]));
-        DM.adsQueryValue.Next;
-      end;
-
-    finally
-      DM.adsQueryValue.Close;
-    end;
-
-    list.SaveToFile(FileName);
-  finally
-    list.Free;
-  end;
 end;
 
 initialization
