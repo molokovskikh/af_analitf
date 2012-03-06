@@ -867,8 +867,7 @@ begin
       if waybillsWithCertificate then
         Res := SOAP.Invoke( 'GetUserDataWithOrdersAsyncCert', FPostParams)
       else begin
-        processAsync := True;
-        Res := SOAP.Invoke( 'GetUserDataWithAttachmentsAsync', FPostParams);
+        Res := SOAP.Invoke( 'GetUserDataWithAttachments', FPostParams);
       end;
     end;
     { проверяем отсутствие ошибки при удаленном запросе }
