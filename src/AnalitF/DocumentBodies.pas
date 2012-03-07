@@ -1822,6 +1822,7 @@ var
   priceName : String;
   bracketIndex : Integer;
   TicketParams : TTicketReportParams;
+  ticketReportFile : String;
 begin
   TicketParams := TTicketReportParams.Create(DM.MainConnection);
   try
@@ -1858,8 +1859,16 @@ begin
       frVariables['DocumentDateVisible'] := TicketParams.DocumentDateVisible;
     end;
 
+    case TicketParams.TicketSize of
+      tsStandart : ticketReportFile := 'Ticket.frf';
+      tsSmall : ticketReportFile := 'SmallTicket.frf';
+      tsSmallWithBigCost : ticketReportFile := 'BiCostTicket.frf';
+      else
+        ticketReportFile := 'Неизвестный отчет.frf';
+    end;
+
     DM.ShowFastReportWithSave(
-      IfThen(TicketParams.TicketSize = tsStandart, 'Ticket.frf', 'SmallTicket.frf'),
+      ticketReportFile,
       mdReport,
       True);
   finally
