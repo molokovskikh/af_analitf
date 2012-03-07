@@ -15,7 +15,7 @@ const
 
   procedure DecodeStream(EncodedStream : TStream; DecodedStream : TStream; keys : TAppDKeys = akCurrent);
 
-  function GetEncryptedMemoryStream(fileName : String = '') : TMemoryStream;
+  function GetEncryptedMemoryStream(fileName : String = ''; key : TAppDKeys = akPrevious) : TMemoryStream;
 
 var
   LibraryFileNameEnd : String;
@@ -157,7 +157,7 @@ begin
   end;
 end;
 
-function GetEncryptedMemoryStream(fileName : String = '') : TMemoryStream;
+function GetEncryptedMemoryStream(fileName : String = ''; key : TAppDKeys = akPrevious) : TMemoryStream;
 var
   EncodedFile : TFileStream;
   keys : TAppDKeys;
@@ -172,7 +172,7 @@ begin
       raise Exception.Create('Нет необходимого файла')
   end
   else begin
-    keys := akPrevious;
+    keys := key;
     if not FileExists(fileName)
     then
       raise Exception.Create('Нет необходимого файла');

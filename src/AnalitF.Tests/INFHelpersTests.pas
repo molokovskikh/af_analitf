@@ -19,6 +19,7 @@ type
     procedure CheckCurrentLib;
     procedure CheckPreviousLib;
     procedure CheckGetEncryptedMemoryStream;
+    procedure CheckGetEncryptedMemoryStreamOnCurrentKeys;
   end;
 
 implementation
@@ -75,6 +76,22 @@ begin
   decodedFile := GetEncryptedMemoryStream('UpdateBackup\appdbhlp.dll.bak');
   try
     CheckStreams('..\SpecialLibs\1651\libmysqld.dll', decodedFile);
+  finally
+    decodedFile.Free;
+  end;
+end;
+
+procedure TTestINFHelpers.CheckGetEncryptedMemoryStreamOnCurrentKeys;
+var
+  decodedFile : TMemoryStream;
+begin
+  if not DirectoryExists('UpdateBackup') then
+    CreateDir('UpdateBackup');
+  OSCopyFile('..\SpecialLibs\Last\appdbhlp.dll', 'UpdateBackup\appdbhlp.dll.bak');
+
+  decodedFile := GetEncryptedMemoryStream('UpdateBackup\appdbhlp.dll.bak', akCurrent);
+  try
+    CheckStreams('..\SpecialLibs\Last\libmysqld.dll', decodedFile);
   finally
     decodedFile.Free;
   end;

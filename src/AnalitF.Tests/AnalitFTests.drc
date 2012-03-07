@@ -8,6 +8,14 @@
   resources were bound to the produced executable.
 */
 
+#define PngImage1_PNG_ERROR_INVALID_PLTE 65440
+#define PngImage1_PNG_ERROR_INVALID_COLOR_TYPE 65441
+#define PngImage1_PNG_ERROR_INVALID_FILTER_TYPE 65442
+#define PngImage1_PNG_ERROR_INVALID_INTERLACE 65443
+#define PngImage1_PNG_ERROR_UNKOWN_CRITICAL_CHUNK 65444
+#define PngImage1_PNG_ERROR_NO_PALETTE 65445
+#define PngImage1_PNG_INVALID_COLOR_TYPE 65446
+#define PngImage1_CHUNK_NOT_CHILD 65447
 #define MyConsts_SNoRecordToLock 65456
 #define MyConsts_SLockVsFetchAll 65457
 #define MyConsts_SInvalidClientVersion 65458
@@ -18,6 +26,12 @@
 #define MyConsts_SBHStoredProcStruct 65463
 #define MyConsts_SBHTableStruct 65464
 #define MyConsts_SBHTableData 65465
+#define PngImage1_PNG_ERROR_INVALID_HEADER 65466
+#define PngImage1_PNG_ERROR_INVALID_CHUNK_INDEX 65467
+#define PngImage1_PNG_ERROR_INVALID_CHUNK_CLASS_INDEX 65468
+#define PngImage1_PNG_ERROR_CHUNK_INVALID_CRC 65469
+#define PngImage1_PNG_ERROR_IHDR_NOT_FIRST 65470
+#define PngImage1_PNG_ERROR_NO_IDAT 65471
 #define DAConsts_SIsolationLevelNotSupportedWithMTS 65472
 #define DAConsts_SReadOnlyTransactionNotSupported 65473
 #define DAConsts_SOperationNotSupported 65474
@@ -84,6 +98,14 @@
 #define DAConsts_SInvalidComprBlobSize 65535
 STRINGTABLE
 BEGIN
+	PngImage1_PNG_ERROR_INVALID_PLTE,	"The current image being loaded has an invalid palette!"
+	PngImage1_PNG_ERROR_INVALID_COLOR_TYPE,	"Could not read the image because it has an unknown color type."
+	PngImage1_PNG_ERROR_INVALID_FILTER_TYPE,	"The image could not be loaded because it uses an unknown set of filter types."
+	PngImage1_PNG_ERROR_INVALID_INTERLACE,	"The image has an unknown interlace method."
+	PngImage1_PNG_ERROR_UNKOWN_CRITICAL_CHUNK,	"The currently being loaded image contains critical(s) chunk(s) not reconized by the decoder."
+	PngImage1_PNG_ERROR_NO_PALETTE,	"The current image requeries a palette but it is not avaliable."
+	PngImage1_PNG_INVALID_COLOR_TYPE,	"Can not get transparency information because the current image color type is not RGB (value 3)"
+	PngImage1_CHUNK_NOT_CHILD,	"The especified chunk is not inside the chunk list containing the method being used. The funcion could not be completed."
 	MyConsts_SNoRecordToLock,	"There is no active record to lock"
 	MyConsts_SLockVsFetchAll,	"Lock is not compatible with FetchAll = False"
 	MyConsts_SInvalidClientVersion,	"Invalid client version"
@@ -94,6 +116,12 @@ BEGIN
 	MyConsts_SBHStoredProcStruct,	"-- \r\n-- StoredProc  %s\r\n-- \r\n\r\n"
 	MyConsts_SBHTableStruct,	"-- \r\n-- Table structure for table  %s\r\n-- \r\n\r\n"
 	MyConsts_SBHTableData,	"-- \r\n-- Dumping data for table %s\r\n-- \r\n\r\n"
+	PngImage1_PNG_ERROR_INVALID_HEADER,	"Invalid Portable Graphics Network image, it has an invalid file header."
+	PngImage1_PNG_ERROR_INVALID_CHUNK_INDEX,	"The chunk index especified is out of the range."
+	PngImage1_PNG_ERROR_INVALID_CHUNK_CLASS_INDEX,	"The chunk class index especified is  out of range."
+	PngImage1_PNG_ERROR_CHUNK_INVALID_CRC,	"Can't read the PNG image, it has corrupted data. "
+	PngImage1_PNG_ERROR_IHDR_NOT_FIRST,	"This PNG image is invalid, the IHDR chunk is either not present or it isn't the first chunk."
+	PngImage1_PNG_ERROR_NO_IDAT,	"The current image being loaded has no data and could not be loaded."
 	DAConsts_SIsolationLevelNotSupportedWithMTS,	"Transaction isolation level is not supported with MTS"
 	DAConsts_SReadOnlyTransactionNotSupported,	"Readonly transactions are not supported by the database"
 	DAConsts_SOperationNotSupported,	"Operation is not supported by the database"
