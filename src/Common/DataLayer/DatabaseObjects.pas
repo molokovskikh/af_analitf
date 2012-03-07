@@ -9,7 +9,8 @@ uses
   MyAccess, MyServerControl,
   MyClasses,
   MyCall,
-  MySqlApi;
+  MySqlApi,
+  INFHelpers;
 
 {$ifdef USEMEMORYCRYPTDLL}
   {$ifndef USENEWMYSQLTYPES}
@@ -389,7 +390,7 @@ type
 
     procedure FreeMySQLLib(ErrorMessage : String; SubSystem : String = '');
 {$ifdef USEMEMORYCRYPTDLL}
-    procedure SwitchMemoryLib(fileName : String = '');
+    procedure SwitchMemoryLib(fileName : String = ''; key : TAppDKeys = akPrevious);
     procedure DisableMemoryLib();
 {$endif}
     procedure SwithTypes(ToNewTypes : Boolean);
@@ -1742,9 +1743,9 @@ begin
 end;
 
 {$ifdef USEMEMORYCRYPTDLL}
-procedure TDatabaseController.SwitchMemoryLib(fileName: String);
+procedure TDatabaseController.SwitchMemoryLib(fileName: String = ''; key : TAppDKeys = akPrevious);
 begin
-  TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib(fileName);
+  TMySQLAPIEmbeddedEx(MyAPIEmbedded).SwitchMemoryLib(fileName, key);
 end;
 {$endif}
 

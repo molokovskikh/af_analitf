@@ -32,6 +32,7 @@ uses
 {$ENDIF}
 {$ifdef USEMEMORYCRYPTDLL}
   MDLHelper,
+  INFHelpers,
   //DLLLoader,
   //MemoryLoadLibraryHelper,
   //BTMemoryModule,
@@ -484,7 +485,7 @@ type
     procedure ExitProcess(uExitCode: UINT);
   {$ENDIF}
 {$ifdef USEMEMORYCRYPTDLL}
-    procedure SwitchMemoryLib(fileName : String = '');
+    procedure SwitchMemoryLib(fileName : String = ''; key : TAppDKeys = akPrevious);
     procedure DisableMemoryLib();
 {$endif}
   public
@@ -635,9 +636,6 @@ uses
 {$IFDEF WIN32}
   {$IFNDEF FPC}TlHelp32, ImageHlp,{$ELSE}{JwaTlHelp32,}{$ENDIF} DB,
 {$ENDIF}
-{$ifdef USEMEMORYCRYPTDLL}
-  INFHelpers,
-{$endif}
   IniFiles, SysConst, DAConsts, MemData,
 {$IFNDEF UNIDACPRO}
   MyConsts, MyClasses;
@@ -3867,12 +3865,12 @@ end;
 {$endif}
 
 {$ifdef USEMEMORYCRYPTDLL}
-procedure TMySQLAPIEmbedded.SwitchMemoryLib(fileName: String);
+procedure TMySQLAPIEmbedded.SwitchMemoryLib(fileName: String = ''; key : TAppDKeys = akPrevious);
 begin
   if Assigned(MemoryLib) then
     FreeAndNil(MemoryLib);
 
-  MemoryLib := GetEncryptedMemoryStream(fileName);  
+  MemoryLib := GetEncryptedMemoryStream(fileName, key);  
 end;
 {$endif}
 
