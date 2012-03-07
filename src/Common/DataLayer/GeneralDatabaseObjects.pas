@@ -11,174 +11,203 @@ type
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TClientTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TClientsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TDefectivesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TProvidersTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TRegionsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TRegionalDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TPricesDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TPricesRegionalDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TDelayOfPaymentsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCatalogNamesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCatalogFarmGroupsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCatalogsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TProductsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCoreTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TMinPricesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TMNNTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TDescriptionsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TMaxProducerCostsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TProducersTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TMinReqRulesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TSupplierPromotionsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TPromotionCatalogsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TSchedulesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCertificatesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCertificateFilesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCertificateSourcesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TSourceSuppliersTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TFileCertificatesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
 implementation
@@ -192,13 +221,25 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TUserInfoTable.GetColumns: String;
+begin
+  Result := ''
++'    `ClientId` , '
++'    `UserId` , '
++'    `Addition` , '
++'    `InheritPrices` , '
++'    `IsFutureClient` , '
++'    `UseCorrectOrders` ,  '
++'    `ShowSupplierCost`   ';
+end;
+
 function TUserInfoTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `ClientId` bigint(20) not null                 , ' 
-+'    `UserId` bigint(20) not null                   , ' 
-+'    `Addition`       varchar(50) default null       , ' 
++'  ( '
++'    `ClientId` bigint(20) not null                 , '
++'    `UserId` bigint(20) not null                   , '
++'    `Addition`       varchar(50) default null       , '
 +'    `InheritPrices`  tinyint(1) not null default ''0'', '
 +'    `IsFutureClient` tinyint(1) not null default ''0'', '
 +'    `UseCorrectOrders` tinyint(1) not null default ''0'',  '
@@ -214,6 +255,22 @@ begin
   FName := 'client';
   FObjectId := doiClient;
   FRepairType := dortCumulative;
+end;
+
+function TClientTable.GetColumns: String;
+begin
+  Result := ''
++'    `Id` , '
++'    `Name` , '
++'    `CalculateOnProducerCost` , '
++'    `ParseWaybills` , '
++'    `SendRetailMarkup` , '
++'    `ShowAdvertising` , '
++'    `SendWaybillsFromClient` , '
++'    `EnableSmartOrder` , '
++'    `EnableImpersonalPrice` , '
++'    `AllowDelayOfPayment` ,  '
++'    `ShowCertificatesWithoutRefSupplier`   ';
 end;
 
 function TClientTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -232,7 +289,7 @@ begin
 +'    `AllowDelayOfPayment` tinyint(1) not null default ''0'',  '
 +'    `ShowCertificatesWithoutRefSupplier` tinyint(1) not null default ''0'',  '
 +'    primary key (`Id`) '
-+'  ) ' 
++'  ) '
 + GetTableOptions();
 end;
 
@@ -245,11 +302,27 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TClientsTable.GetColumns: String;
+begin
+  Result := ''
++'    `CLIENTID` , '
++'    `NAME` , '
++'    `REGIONCODE` , '
++'    `EXCESS` , '
++'    `DELTAMODE` , '
++'    `MAXUSERS` , '
++'    `REQMASK` , '
++'    `CALCULATELEADER` , '
++'    `AllowDelayOfPayment` , '
++'    `FullName` , '
++'    `SelfAddressId` ';
+end;
+
 function TClientsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `CLIENTID` bigint(20) not null      , ' 
++'  ( '
++'    `CLIENTID` bigint(20) not null      , '
 +'    `NAME` varchar(255) not null         , '
 +'    `REGIONCODE` bigint(20) default null, '
 +'    `EXCESS`    int(10) not null           , '
@@ -262,8 +335,8 @@ begin
 +'    `SelfAddressId` varchar(200) default null, '
 +'    primary key (`CLIENTID`)                   , '
 +'    unique key `PK_CLIENTS` (`CLIENTID`)       , '
-+'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) ' 
-+'  ) ' 
++'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) '
++'  ) '
 + GetTableOptions();
 end;
 
@@ -274,6 +347,21 @@ begin
   FName := 'defectives';
   FObjectId := doiDefectives;
   FRepairType := dortCumulative;
+end;
+
+function TDefectivesTable.GetColumns: String;
+begin
+  Result := ''
++'    `ID` , ' 
++'    `NAME` , ' 
++'    `PRODUCER` , ' 
++'    `COUNTRY` , ' 
++'    `SERIES` , ' 
++'    `LETTERNUMBER` , ' 
++'    `LETTERDATE` , ' 
++'    `LABORATORY` , ' 
++'    `REASON` , ' 
++'    `CHECKPRINT`  '; 
 end;
 
 function TDefectivesTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -305,13 +393,24 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TProvidersTable.GetColumns: String;
+begin
+  Result := ''
++'    `FIRMCODE` , '
++'    `FULLNAME` , '
++'    `FAX` , '
++'    `MANAGERMAIL` , ' 
++'    `ShortName` , '
++'    `CertificateSourceExists`  ';
+end;
+
 function TProvidersTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `FIRMCODE` bigint(20) not null         , ' 
-+'    `FULLNAME`    varchar(40) default null , ' 
-+'    `FAX`         varchar(20) default null , ' 
++'  ( '
++'    `FIRMCODE` bigint(20) not null         , '
++'    `FULLNAME`    varchar(40) default null , '
++'    `FAX`         varchar(20) default null , '
 +'    `MANAGERMAIL` varchar(255) default null, ' 
 +'    `ShortName`    varchar(50) default null , '
 +'    `CertificateSourceExists`  tinyint(1) not null default ''0'' , '
@@ -330,14 +429,22 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TRegionsTable.GetColumns: String;
+begin
+  Result := ''
++'    `REGIONCODE` , '
++'    `REGIONNAME` , '
++'    `PRICERET`    ';
+end;
+
 function TRegionsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+ '  ( ' 
-+'    `REGIONCODE` bigint(20) not null      , ' 
-+'    `REGIONNAME` varchar(25) default null , ' 
-+'    `PRICERET`   varchar(254) default null, ' 
-+'    primary key (`REGIONCODE`)            , ' 
++ '  ( '
++'    `REGIONCODE` bigint(20) not null      , '
++'    `REGIONNAME` varchar(25) default null , '
++'    `PRICERET`   varchar(254) default null, '
++'    primary key (`REGIONCODE`)            , '
 +'    unique key `PK_REGIONS` (`REGIONCODE`), ' 
 +'    unique key `IDX_REGIONS_REGIONNAME` (`REGIONNAME`) ' 
 +'  ) ' 
@@ -351,6 +458,16 @@ begin
   FName := 'regionaldata';
   FObjectId := doiRegionalData;
   FRepairType := dortCumulative;
+end;
+
+function TRegionalDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `FIRMCODE` , '
++'    `REGIONCODE` , '
++'    `SUPPORTPHONE` , '
++'    `CONTACTINFO` , '
++'    `OPERATIVEINFO`  ';
 end;
 
 function TRegionalDataTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -378,6 +495,17 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TPricesDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `FIRMCODE` , ' 
++'    `PRICECODE` , ' 
++'    `PRICENAME` , ' 
++'    `PRICEINFO` , ' 
++'    `DATEPRICE` , ' 
++'    `FRESH`  '; 
+end;
+
 function TPricesDataTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -402,6 +530,19 @@ begin
   FName := 'pricesregionaldata';
   FObjectId := doiPricesRegionalData;
   FRepairType := dortCumulative;
+end;
+
+function TPricesRegionalDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `PRICECODE` , '
++'    `REGIONCODE` , '
++'    `STORAGE` , '
++'    `MINREQ` , '
++'    `ENABLED` , '
++'    `INJOB` , '
++'    `CONTROLMINREQ` , '
++'    `PRICESIZE` ';
 end;
 
 function TPricesRegionalDataTable.GetCreateSQL(
@@ -433,6 +574,15 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TDelayOfPaymentsTable.GetColumns: String;
+begin
+  Result := ''
++'    `PriceCode` , '
++'    `DayOfWeek`, '
++'    `VitallyImportantDelay` , '
++'    `OtherDelay`  ';
+end;
+
 function TDelayOfPaymentsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -458,6 +608,15 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TCatalogNamesTable.GetColumns: String;
+begin
+  Result := ''
++'    `ID` , ' 
++'    `NAME` , ' 
++'    `LATINNAME` , ' 
++'    `DESCRIPTION` '; 
+end;
+
 function TCatalogNamesTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -480,6 +639,16 @@ begin
   FName := 'catalogfarmgroups';
   FObjectId := doiCatalogFarmGroups;
   FRepairType := dortCumulative;
+end;
+
+function TCatalogFarmGroupsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ID` , '
++'    `NAME` , '
++'    `DESCRIPTION` , '
++'    `PARENTID` , '
++'    `GROUPTYPE` ';
 end;
 
 function TCatalogFarmGroupsTable.GetCreateSQL(
@@ -507,6 +676,25 @@ begin
   FName := 'catalogs';
   FObjectId := doiCatalogs;
   FRepairType := dortCumulative;
+end;
+
+function TCatalogsTable.GetColumns: String;
+begin
+  Result := ''
++'    `FULLCODE` , '
++'    `SHORTCODE` , '
++'    `NAME` , '
++'    `FORM` , '
++'    `VITALLYIMPORTANT` , '
++'    `NEEDCOLD` , '
++'    `FRAGILE` , '
++'    `MandatoryList` , '
++'    `MnnId` , '
++'    `DescriptionId` , '
++'    `Hidden` , '
++'    `COREEXISTS` , '
++'    `PromotionsCount` , '
++'    `NamePromotionsCount`  ';
 end;
 
 function TCatalogsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -548,13 +736,20 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TProductsTable.GetColumns: String;
+begin
+  Result := ''
++'    `PRODUCTID` , '
++'    `CATALOGID`  ';
+end;
+
 function TProductsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `PRODUCTID` bigint(20) not null       , ' 
-+'    `CATALOGID` bigint(20) not null       , ' 
-+'    primary key (`PRODUCTID`)             , ' 
++'  ( '
++'    `PRODUCTID` bigint(20) not null       , '
++'    `CATALOGID` bigint(20) not null       , '
++'    primary key (`PRODUCTID`)             , '
 +'    unique key `PK_PRODUCTS` (`PRODUCTID`), ' 
 +'    key `FK_PRODUCTS_CATALOGID` (`CATALOGID`) ' 
 +'  ) ' 
@@ -569,6 +764,41 @@ begin
   FName := 'core';
   FObjectId := doiCore;
   FRepairType := dortCumulative;
+end;
+
+function TCoreTable.GetColumns: String;
+begin
+  Result := ''
++'    `PRICECODE` , ' 
++'    `REGIONCODE` , ' 
++'    `PRODUCTID` , ' 
++'    `CODEFIRMCR` , ' 
++'    `SYNONYMCODE` , ' 
++'    `SYNONYMFIRMCRCODE` , ' 
++'    `CODE` , ' 
++'    `CODECR` , ' 
++'    `UNIT` , ' 
++'    `VOLUME` , ' 
++'    `JUNK` , ' 
++'    `AWAIT` , ' 
++'    `QUANTITY` , ' 
++'    `NOTE` , ' 
++'    `PERIOD` , ' 
++'    `DOC` , ' 
++'    `REGISTRYCOST` , ' 
++'    `VITALLYIMPORTANT` , ' 
++'    `REQUESTRATIO` , ' 
++'    `Cost` , ' 
++'    `SERVERCOREID` , ' 
++'    `ORDERCOST` , ' 
++'    `MINORDERCOUNT` , '
++'    `SupplierPriceMarkup` , '
++'    `ProducerCost` , '
++'    `NDS` , '
++'    `RetailVitallyImportant` , ' 
++'    `BuyingMatrixType` , '
++'    `CryptCost` , '
++'    `COREID`  ';
 end;
 
 function TCoreTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -627,6 +857,19 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TMinPricesTable.GetColumns: String;
+begin
+  Result := ''
++'    `PRODUCTID` , '
++'    `REGIONCODE` , '
++'    `SERVERCOREID` , '
++'    `PriceCode` , '
++'    `MinCost` , '
++'    `NextCost` , '
++'    `MinCostCount` , '
++'    `Percent`  ';
+end;
+
 function TMinPricesTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -659,6 +902,14 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TMNNTable.GetColumns: String;
+begin
+  Result := ''
++'    `Id` , '
++'    `Mnn` , '
++'    `Hidden` ';
+end;
+
 function TMNNTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -680,6 +931,26 @@ begin
   FName := 'Descriptions';
   FObjectId := doiDescriptions;
   FRepairType := dortCumulative;
+end;
+
+function TDescriptionsTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `Name` , '
++'  `EnglishName` , '
++'  `Description` , '
++'  `Interaction` , '
++'  `SideEffect` , '
++'  `IndicationsForUse` , '
++'  `Dosing` , '
++'  `Warnings` , '
++'  `ProductForm` , '
++'  `PharmacologicalAction` , '
++'  `Storage` , '
++'  `Expiration` , '
++'  `Composition` , '
++'  `Hidden` ';
 end;
 
 function TDescriptionsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -717,6 +988,19 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TMaxProducerCostsTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `CatalogId` , '
++'  `ProductId` , '
++'  `Product` , '
++'  `Producer` , '
++'  `Cost` , '
++'  `ProducerId` , '
++'  `RealCost` '
+end;
+
 function TMaxProducerCostsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -750,6 +1034,14 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TProducersTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `Name` , '
++'  `Hidden` ';
+end;
+
 function TProducersTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -770,6 +1062,16 @@ begin
   FName := 'minreqrules';
   FObjectId := doiMinReqRules;
   FRepairType := dortCumulative;
+end;
+
+function TMinReqRulesTable.GetColumns: String;
+begin
+  Result := ''
++'  `ClientId` , '
++'  `PriceCode` , '
++'  `RegionCode` , '
++'  `ControlMinReq` , '
++'  `MinReq`  ';
 end;
 
 function TMinReqRulesTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -796,6 +1098,19 @@ begin
   FName := 'supplierpromotions';
   FObjectId := doiSupplierPromotions;
   FRepairType := dortCumulative;
+end;
+
+function TSupplierPromotionsTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `Status` , '
++'  `SupplierId` , '
++'  `Name` , '
++'  `Annotation` , '
++'  `PromoFile` , '
++'  `Begin` , '
++'  `End` ';
 end;
 
 function TSupplierPromotionsTable.GetCreateSQL(
@@ -826,6 +1141,14 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TPromotionCatalogsTable.GetColumns: String;
+begin
+  Result := ''
++'  `CatalogId` , '
++'  `PromotionId` , '
++'  `Hidden`  ';
+end;
+
 function TPromotionCatalogsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -850,6 +1173,14 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TSchedulesTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `Hour` , '
++'  `Minute`  ';
+end;
+
 function TSchedulesTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -869,6 +1200,14 @@ begin
   FName := 'certificates';
   FObjectId := doiCertificates;
   FRepairType := dortCumulative;
+end;
+
+function TCertificatesTable.GetColumns: String;
+begin
+  Result := ''
++'    Id , '
++'    CatalogId , '
++'    SerialNumber  ';
 end;
 
 function TCertificatesTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -891,6 +1230,16 @@ begin
   FName := 'certificatefiles';
   FObjectId := doiCertificateFiles;
   FRepairType := dortCumulative;
+end;
+
+function TCertificateFilesTable.GetColumns: String;
+begin
+  Result := ''
++'      Id , '
++'      OriginFilename , '
++'      ExternalFileId , '
++'      CertificateSourceId , '
++'      Extension  ';
 end;
 
 function TCertificateFilesTable.GetCreateSQL(
@@ -918,6 +1267,13 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TFileCertificatesTable.GetColumns: String;
+begin
+  Result := ''
++'      CertificateId,  '
++'      CertificateFileId  ';
+end;
+
 function TFileCertificatesTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -940,6 +1296,12 @@ begin
   FRepairType := dortCumulative;
 end;
 
+function TCertificateSourcesTable.GetColumns: String;
+begin
+  Result := ''
++'      Id  ';
+end;
+
 function TCertificateSourcesTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -958,6 +1320,13 @@ begin
   FName := 'sourcesuppliers';
   FObjectId := doiSourceSuppliers;
   FRepairType := dortCumulative;
+end;
+
+function TSourceSuppliersTable.GetColumns: String;
+begin
+  Result := ''
++'      CertificateSourceId , '
++'      SupplierId  ';
 end;
 
 function TSourceSuppliersTable.GetCreateSQL(DatabasePrefix: String): String;

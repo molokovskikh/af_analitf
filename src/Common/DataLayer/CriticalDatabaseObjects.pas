@@ -12,6 +12,7 @@ type
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
     function GetInsertSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
 implementation
@@ -25,16 +26,65 @@ begin
   FRepairType := dortCritical;
 end;
 
+function TParamsTable.GetColumns: String;
+begin
+  Result := '    `ID` , '
++'    `CLIENTID` , '
++'    `RASCONNECT`, '
++'    `RASENTRY`, '
++'    `RASNAME` , '
++'    `RASPASS` , '
++'    `CONNECTCOUNT`, '
++'    `CONNECTPAUSE`,'
++'    `PROXYCONNECT`,'
++'    `PROXYNAME`,'
++'    `PROXYPORT`,'
++'    `PROXYUSER`,'
++'    `PROXYPASS`,'
++'    `HTTPHOST`,'
++'    `HTTPNAME`,'
++'    `HTTPPASS`,'
++'    `UPDATEDATETIME`,'
++'    `LASTDATETIME`,'
++'    `SHOWREGISTER`,'
++'    `USEFORMS`,'
++'    `OPERATEFORMS`,'
++'    `OPERATEFORMSSET`,'
++'    `STARTPAGE`,'
++'    `LASTCOMPACT`,'
++'    `CUMULATIVE`,'
++'    `STARTED`,'
++'    `RASSLEEP`,'
++'    `HTTPNAMECHANGED`,'
++'    `SHOWALLCATALOG`,'
++'    `CDS`,'
++'    `ORDERSHISTORYDAYCOUNT`,'
++'    `CONFIRMDELETEOLDORDERS`,'
++'    `USEOSOPENWAYBILL`,'
++'    `USEOSOPENREJECT`,'
++'    `GROUPBYPRODUCTS`,'
++'    `PRINTORDERSAFTERSEND`,'
++'    `ProviderName`,'
++'    `ProviderAddress`, '
++'    `ProviderPhones`,'
++'    `ProviderEmail`,'
++'    `ProviderWeb`,'
++'    `ProviderMDBVersion`,'
++'    `ConfirmSendingOrders`,'
++'    `UseCorrectOrders`,'
++'    `StoredUserId` ';
+end;
+
 function TParamsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `ID` bigint(20) not null                                                          , ' 
-+'    `CLIENTID` bigint(20) default null                                                , ' 
-+'    `RASCONNECT`             tinyint(1) not null                                      , ' 
-+'    `RASENTRY`               varchar(30) default null                                 , ' 
-+'    `RASNAME`                varchar(30) default null                                 , ' 
-+'    `RASPASS`                varchar(30) default null                                 , ' 
++'  ( '
++'    `ID` bigint(20) not null                                                          , '
++'    `CLIENTID` bigint(20) default null                                                , '
++'    `RASCONNECT`             tinyint(1) not null                                      , '
++'    `RASENTRY`               varchar(30) default null                                 , '
++'    `RASNAME`                varchar(30) default null                                 , '
++'    `RASPASS`                varchar(30) default null                                 , '
 +'    `CONNECTCOUNT`           smallint(5) not null default ''5''                         , '
 +'    `CONNECTPAUSE`           smallint(5) not null default ''5''                         , '
 +'    `PROXYCONNECT`           tinyint(1) not null                                      , '
@@ -75,8 +125,8 @@ begin
 +'    `UseCorrectOrders`       tinyint(1) not null default ''0''                          , '
 +'    `StoredUserId`           varchar(255) default null                                  , '
 +'    primary key (`ID`)                                                                , '
-+'    unique key `PK_PARAMS` (`ID`) ' 
-+'  ) ' 
++'    unique key `PK_PARAMS` (`ID`) '
++'  ) '
 + GetTableOptions();
 end;
 

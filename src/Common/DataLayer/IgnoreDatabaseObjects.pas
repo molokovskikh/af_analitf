@@ -11,6 +11,7 @@ type
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TTmpClientsTable = class(TDatabaseTable)
@@ -90,14 +91,21 @@ begin
   FRepairType := dortIgnore;
 end;
 
+function TPricesRegionalDataUpTable.GetColumns: String;
+begin
+  Result := ''
++'    `PRICECODE` , '
++'    `REGIONCODE`  ';
+end;
+
 function TPricesRegionalDataUpTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `PRICECODE` bigint(20) not null, ' 
-+'    `REGIONCODE` bigint(20) not null ' 
-+'  ) ' 
++'  ( '
++'    `PRICECODE` bigint(20) not null, '
++'    `REGIONCODE` bigint(20) not null '
++'  ) '
 + GetTableOptions();
 end;
 

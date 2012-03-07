@@ -315,6 +315,7 @@ type
     function GetInsertSQL(DatabasePrefix : String = '') : String; virtual;
     function GetDropSQL(DatabasePrefix : String = '') : String; override;
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; virtual; abstract;
   end;
 
   TDatabaseView = class(TDatabaseObject)

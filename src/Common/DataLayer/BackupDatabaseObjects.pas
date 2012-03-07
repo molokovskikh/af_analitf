@@ -12,96 +12,112 @@ type
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
     function GetInsertSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TPostedOrderHeadsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TPostedOrderListsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TReceivedDocsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TDocumentHeadersTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TDocumentBodiesTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TVitallyImportantMarkupsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TProviderSettingsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TClientSettingsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCurrentOrderHeadsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCurrentOrderListsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TGlobalParamsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TNetworkLogTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TInvoiceHeadersTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TMailsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TAttachmentsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
 implementation
@@ -115,13 +131,24 @@ begin
   FRepairType := dortBackup;
 end;
 
+function TRetailMarginsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ID`,'
++'    `LEFTLIMIT`,'
++'    `RIGHTLIMIT`,'
++'    `Markup`,'
++'    `MaxMarkup`,'
++'    `MaxSupplierMarkup` ';
+end;
+
 function TRetailMarginsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `ID` bigint(20) not null AUTO_INCREMENT, ' 
++'  ( '
++'    `ID` bigint(20) not null AUTO_INCREMENT, '
 +'    `LEFTLIMIT`  decimal(18,2) not null     , '
-+'    `RIGHTLIMIT` decimal(18,2) not null     , ' 
++'    `RIGHTLIMIT` decimal(18,2) not null     , '
 +'    `Markup`     decimal(5,2) not null           , '
 +'    `MaxMarkup` decimal(5,2) NOT NULL, '
 +'    `MaxSupplierMarkup` decimal(5,2) default NULL, '
@@ -147,6 +174,30 @@ begin
   FName := 'postedorderheads';
   FObjectId := doiPostedOrderHeads;
   FRepairType := dortBackup;
+end;
+
+function TPostedOrderHeadsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ORDERID` ,'
++'    `SERVERORDERID` ,'
++'    `CLIENTID` ,'
++'    `PRICECODE` ,'
++'    `REGIONCODE` ,'
++'    `PRICENAME` ,'
++'    `REGIONNAME` ,'
++'    `ORDERDATE` ,'
++'    `SENDDATE` ,'
++'    `CLOSED` ,'
++'    `SEND` ,'
++'    `COMMENTS` ,'
++'    `MESSAGETO` ,'
++'    `SendResult` ,'
++'    `ErrorReason` ,'
++'    `ServerMinReq` ,'
++'    `DelayOfPayment` ,'
++'    `PriceDate` ,'
++'    `VitallyDelayOfPayment` ';
 end;
 
 function TPostedOrderHeadsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -190,6 +241,50 @@ begin
   FName := 'postedorderlists';
   FObjectId := doiPostedOrderLists;
   FRepairType := dortBackup;
+end;
+
+function TPostedOrderListsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ID` , '
++'    `ORDERID` , '
++'    `CLIENTID` , '
++'    `COREID` , '
++'    `PRODUCTID` , '
++'    `CODEFIRMCR` , '
++'    `SYNONYMCODE` , '
++'    `SYNONYMFIRMCRCODE` , '
++'    `CODE` , '
++'    `CODECR` , '
++'    `SYNONYMNAME` , '
++'    `SYNONYMFIRM` , '
++'    `PRICE` , '
++'    `AWAIT` , '
++'    `JUNK` , '
++'    `ORDERCOUNT` , '
++'    `REQUESTRATIO` , '
++'    `ORDERCOST` , '
++'    `MINORDERCOUNT` , '
++'    `RealPrice` , '
++'    `DropReason` , '
++'    `ServerCost` , '
++'    `ServerQuantity` , '
++'    `SupplierPriceMarkup` , '
++'    `CoreQuantity` , '
++'    `ServerCoreID` , '
++'    `Unit` , '
++'    `Volume` , '
++'    `Note` , '
++'    `Period` , '
++'    `Doc` , '
++'    `RegistryCost` , '
++'    `VitallyImportant` , '
++'    `RetailMarkup` , '
++'    `ProducerCost` , '
++'    `NDS` , '
++'    `RetailCost` , '
++'    `RetailVitallyImportant` , '
++'    `Comment`  ';
 end;
 
 function TPostedOrderListsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -258,6 +353,14 @@ begin
   FRepairType := dortBackup;
 end;
 
+function TReceivedDocsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ID` , '
++'    `FILENAME` , '
++'    `FILEDATETIME` ';
+end;
+
 function TReceivedDocsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -279,6 +382,22 @@ begin
   FName := 'DocumentHeaders';
   FObjectId := doiDocumentHeaders;
   FRepairType := dortBackup;
+end;
+
+function TDocumentHeadersTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `DownloadId` , '
++'  `WriteTime` , '
++'  `FirmCode` , '
++'  `ClientId` , '
++'  `DocumentType` , '
++'  `ProviderDocumentId` , '
++'  `OrderId` , '
++'  `Header` , '
++'  `LoadTime` , '
++'  `RetailAmountCalculated`  ';
 end;
 
 function TDocumentHeadersTable.GetCreateSQL(
@@ -312,6 +431,43 @@ begin
   FName := 'DocumentBodies';
   FObjectId := doiDocumentBodies;
   FRepairType := dortBackup;
+end;
+
+function TDocumentBodiesTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `DocumentId` , '
++'  `Product` , '
++'  `Code` , '
++'  `Certificates` , '
++'  `Period` , '
++'  `Producer` , '
++'  `Country` , '
++'  `ProducerCost` , '
++'  `RegistryCost` , '
++'  `SupplierPriceMarkup` , '
++'  `SupplierCostWithoutNDS` , '
++'  `SupplierCost` , '
++'  `Quantity` , '
++'  `VitallyImportant` , '
++'  `NDS` , '
++'  `SerialNumber` , '
++'  `RetailMarkup` , '
++'  `ManualCorrection` , '
++'  `ManualRetailPrice` , '
++'  `Printed` , '
++'  `Amount` , '
++'  `NdsAmount` , '
++'  `RetailAmount` , '
++'  `Unit` , '
++'  `ExciseTax` , '
++'  `BillOfEntryNumber` , '
++'  `EAN13` , '
++'  `RequestCertificate` , '
++'  `ProductId` , '
++'  `ProducerId` , '
++'  `CertificateId`  ';
 end;
 
 function TDocumentBodiesTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -364,6 +520,17 @@ begin
   FRepairType := dortBackup;
 end;
 
+function TVitallyImportantMarkupsTable.GetColumns: String;
+begin
+  Result := ''
++'  `ID` , '
++'  `LeftLimit` , '
++'  `RightLimit` , '
++'  `Markup` , '
++'  `MaxMarkup` , '
++'  `MaxSupplierMarkup`  ';
+end;
+
 function TVitallyImportantMarkupsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -390,6 +557,15 @@ begin
   FRepairType := dortBackup;
 end;
 
+function TProviderSettingsTable.GetColumns: String;
+begin
+  Result := ''
++'  `FirmCode` , '
++'  `WaybillFolder` , '
++'  `OrderFolder` , '
++'  `WaybillUnloadingFolder`  ';
+end;
+
 function TProviderSettingsTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -412,6 +588,21 @@ begin
   FName := 'clientsettings';
   FObjectId := doiClientSettings;
   FRepairType := dortBackup;
+end;
+
+function TClientSettingsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ClientId` , '
++'    `OnlyLeaders` , '
++'    `Address` , '
++'    `Director` , '
++'    `DeputyDirector` , '
++'    `Accountant` , '
++'    `MethodOfTaxation` , '
++'    `CalculateWithNDS` , '
++'    `Name` , '
++'    `CalculateWithNDSForOther`  ';
 end;
 
 function TClientSettingsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -440,6 +631,30 @@ begin
   FName := 'currentorderheads';
   FObjectId := doiCurrentOrderHeads;
   FRepairType := dortBackup;
+end;
+
+function TCurrentOrderHeadsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ORDERID` , '
++'    `SERVERORDERID` , '
++'    `CLIENTID` , '
++'    `PRICECODE` , '
++'    `REGIONCODE` , '
++'    `PRICENAME` , '
++'    `REGIONNAME` , '
++'    `ORDERDATE` , '
++'    `SENDDATE` , '
++'    `CLOSED` , '
++'    `SEND` , '
++'    `COMMENTS` , '
++'    `MESSAGETO` , '
++'    `SendResult` , '
++'    `ErrorReason` , '
++'    `ServerMinReq` , '
++'    `DelayOfPayment` , '
++'    `Frozen` , '
++'    `VitallyDelayOfPayment`  ';
 end;
 
 function TCurrentOrderHeadsTable.GetCreateSQL(
@@ -484,6 +699,52 @@ begin
   FName := 'currentorderlists';
   FObjectId := doiCurrentOrderLists;
   FRepairType := dortBackup;
+end;
+
+function TCurrentOrderListsTable.GetColumns: String;
+begin
+  Result := ''
++'    `ID` , '
++'    `ORDERID` , '
++'    `CLIENTID` , '
++'    `COREID` , '
++'    `PRODUCTID` , '
++'    `CODEFIRMCR` , '
++'    `SYNONYMCODE` , '
++'    `SYNONYMFIRMCRCODE` , '
++'    `CODE` , '
++'    `CODECR` , '
++'    `SYNONYMNAME` , '
++'    `SYNONYMFIRM` , '
++'    `PRICE` , '
++'    `AWAIT` , '
++'    `JUNK` , '
++'    `ORDERCOUNT` , '
++'    `REQUESTRATIO` , '
++'    `ORDERCOST` , '
++'    `MINORDERCOUNT` , '
++'    `RealPrice` , '
++'    `DropReason` , '
++'    `ServerCost` , '
++'    `ServerQuantity` , '
++'    `SupplierPriceMarkup` , '
++'    `CoreQuantity` , '
++'    `ServerCoreID` , '
++'    `Unit` , '
++'    `Volume` , '
++'    `Note` , '
++'    `Period` , '
++'    `Doc` , '
++'    `RegistryCost` , '
++'    `VitallyImportant` , '
++'    `RetailMarkup` , '
++'    `ProducerCost` , '
++'    `NDS` , '
++'    `CryptPrice` , '
++'    `CryptRealPrice` , '
++'    `RetailCost` , '
++'    `RetailVitallyImportant` , '
++'    `Comment`  ';
 end;
 
 function TCurrentOrderListsTable.GetCreateSQL(
@@ -555,6 +816,13 @@ begin
   FRepairType := dortBackup;
 end;
 
+function TGlobalParamsTable.GetColumns: String;
+begin
+  Result := ''
++'    `Name` , '
++'    `Value`  ';
+end;
+
 function TGlobalParamsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -573,6 +841,16 @@ begin
   FName := 'networklog';
   FObjectId := doiNetworkLog;
   FRepairType := dortBackup;
+end;
+
+function TNetworkLogTable.GetColumns: String;
+begin
+  Result := ''
++'    `Id` , '
++'    `LogTime` , '
++'    `Source` , '
++'    `MessageType` , '
++'    `Info`  ';
 end;
 
 function TNetworkLogTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -628,6 +906,35 @@ begin
   FRepairType := dortBackup;
 end;
 
+function TInvoiceHeadersTable.GetColumns: String;
+begin
+  Result := ''
++'                          Id , '
++'                          InvoiceNumber , '
++'                          InvoiceDate , '
++'                          SellerName , '
++'                          SellerAddress , '
++'                          SellerINN , '
++'                          SellerKPP , '
++'                          ShipperInfo , '
++'                          ConsigneeInfo , '
++'                          PaymentDocumentInfo , '
++'                          BuyerName , '
++'                          BuyerAddress , '
++'                          BuyerINN , '
++'                          BuyerKPP , '
++'                          AmountWithoutNDS0 , '
++'                          AmountWithoutNDS10 , '
++'                          NDSAmount10 , '
++'                          Amount10 , '
++'                          AmountWithoutNDS18 , '
++'                          NDSAmount18 , '
++'                          Amount18 , '
++'                          AmountWithoutNDS , '
++'                          NDSAmount , '
++'                          Amount  ';
+end;
+
 function TInvoiceHeadersTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -670,6 +977,20 @@ begin
   FRepairType := dortBackup;
 end;
 
+function TMailsTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `LogTime` , '
++'  `SupplierId` , '
++'  `SupplierName` , '
++'  `IsVIPMail` , '
++'  `Subject` , '
++'  `Body` , '
++'  `IsNewMail` , '
++'  `IsImportantMail`  ';
+end;
+
 function TMailsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -698,6 +1019,18 @@ begin
   FName := 'attachments';
   FObjectId := doiAttachments;
   FRepairType := dortBackup;
+end;
+
+function TAttachmentsTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `MailId` , '
++'  `FileName` , '
++'  `Extension` , '
++'  `Size` , '
++'  `RequestAttachment` , '
++'  `RecievedAttachment`  ';
 end;
 
 function TAttachmentsTable.GetCreateSQL(DatabasePrefix: String): String;
