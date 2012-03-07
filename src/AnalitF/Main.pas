@@ -1592,6 +1592,7 @@ begin
     if Controls[i] is TChildForm then
       if deletedForms.IndexOf(Controls[i]) = -1 then begin
         deletedForms.Add(Controls[i]);
+        Controls[i].Visible := False;
         Controls[i].Parent := nil;
       end;
   ActiveChild := nil;
@@ -1617,6 +1618,7 @@ procedure TMainForm.AddFormToFree(childForm: TChildForm);
 begin
   if deletedForms.IndexOf(childForm) = -1 then begin
     deletedForms.Add(childForm);
+    childForm.Visible := False;
     childForm.Parent := nil;
   end
 end;
