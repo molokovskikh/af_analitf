@@ -1862,7 +1862,7 @@ begin
     case TicketParams.TicketSize of
       tsStandart : ticketReportFile := 'Ticket.frf';
       tsSmall : ticketReportFile := 'SmallTicket.frf';
-      tsSmallWithBigCost : ticketReportFile := 'BiCostTicket.frf';
+      tsSmallWithBigCost : ticketReportFile := 'BigCostTicket.frf';
       else
         ticketReportFile := 'Неизвестный отчет.frf';
     end;
