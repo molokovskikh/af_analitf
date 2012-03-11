@@ -41,6 +41,7 @@ type
       var CanClose: Boolean);
     function AddCheckBox(Top: Integer; Caption : String; Value : Boolean) : TCheckBox;
     procedure SizeChange(Sender: TObject);
+    procedure SetCheckBoxEnabled(value : Boolean);
   public
     { Public declarations }
     TicketParams : TTicketReportParams;
@@ -166,6 +167,9 @@ begin
   if gbColumns.Width < cbClientName.Width + 10 then
     gbColumns.Width := cbClientName.Width + 10;
 
+  if gbColumns.Width < cbTicketSize.Width then
+    gbColumns.Width := cbTicketSize.Width;
+
   pSettings.Width := gbColumns.Width + 30;
   Self.Width := pSettings.Width;
 
@@ -215,9 +219,19 @@ begin
   inherited;
 end;
 
+procedure TEditTicketReportParamsForm.SetCheckBoxEnabled(value: Boolean);
+var
+  I : Integer;
+begin
+  for I := 0 to gbColumns.ControlCount-1 do
+    if gbColumns.Controls[i] is TCheckBox then
+      TCheckBox(gbColumns.Controls[i]).Enabled := value;
+end;
+
 procedure TEditTicketReportParamsForm.SizeChange(Sender: TObject);
 begin
   gbColumns.Enabled := cbTicketSize.ItemIndex = 0;
+  SetCheckBoxEnabled(gbColumns.Enabled);
   cbDeleteUnprintableElemnts.Enabled := cbTicketSize.ItemIndex = 0;
 end;
 
