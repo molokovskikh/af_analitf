@@ -2206,11 +2206,9 @@ begin
   if NeedUpdateToNewLibMySqlD then
     realDBVersion := '61'
   else
-    realDBVersion := IntToStr(CURRENT_DB_VERSION);
-  if NeedUpdateToNewCryptLibMySqlDAfter1651 then
+  if NeedUpdateToNewCryptLibMySqlDAfter1651() then
     realDBVersion := '84'
   else
-    realDBVersion := IntToStr(CURRENT_DB_VERSION);
   if NeedUpdateToNewCryptLibMySqlDOn1711() then
     realDBVersion := '84'
   else
