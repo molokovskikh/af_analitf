@@ -396,7 +396,8 @@ type
 {$endif}
     procedure SwithTypes(ToNewTypes : Boolean);
 
-    function GetLastInsertId(connection: TCustomMyConnection; tableId : TDatabaseObjectId; Id : String) : String;
+    function GetLastInsertId(connection: TCustomMyConnection; tableId : TDatabaseObjectId; Id : String;
+      requiredFields : array of string) : String;
   end;
 
   function DatabaseController : TDatabaseController;
@@ -1380,12 +1381,23 @@ begin
 end;
 
 function TDatabaseController.GetLastInsertId(
-  connection: TCustomMyConnection; tableId: TDatabaseObjectId; Id : String): String;
+  connection: TCustomMyConnection; tableId: TDatabaseObjectId; Id : String;
+  requiredFields : array of string): String;
 var
   table : TDatabaseTable;
+  fields, Values : String;
+  I : Integer;
 begin
+  if Length(requiredFields) < 1 then
+    raise Exception.Create('Не добавлены обязательные поля');
+  fields := requiredFields[0];
+  values := '"0"';
+  for i := 1 to High(requiredFields) do begin
+    fields := fields + ', '  + requiredFields[i];
+    values := values + ', "0"';
+  end;
   table := TDatabaseTable(GetById(tableId));
-  connection.ExecSQL('insert into ' + table.Name + ';', []);
+  connection.ExecSQL('insert into ' + table.Name + '(' + fields + ' ) values (' + values + ');', []);
   Result := DBProc.QueryValue(connection, 'select last_insert_id();', [], []);
   connection.ExecSQL('delete from ' + table.Name + ' where ' + Id + ' = ' + Result + ';', []);
 end;

@@ -3389,26 +3389,15 @@ end;
 
 procedure TExchangeThread.GetMaxIds(var MaxOrderId, MaxOrderListId,
   MaxBatchId: String);
-var
-  val : Variant;
 begin
-  val := DM.QueryValue('select max(OrderId) + 1 from CurrentOrderHeads', [], []);
-  if VarIsNull(val) then
-    MaxOrderId := '1'
-  else
-    MaxOrderId := val;
+  MaxOrderId := DatabaseController().GetLastInsertId(DM.MainConnection, doiCurrentOrderHeads, 'ORDERID',
+    ['CLIENTID', 'PRICECODE', 'REGIONCODE', 'CLOSED', 'SEND', 'Frozen']);
 
-  val := DM.QueryValue('select max(Id) + 1 from CurrentOrderLists', [], []);
-  if VarIsNull(val) then
-    MaxOrderListId := '1'
-  else
-    MaxOrderListId := val;
+  MaxOrderListId := DatabaseController().GetLastInsertId(DM.MainConnection, doiCurrentOrderLists, 'ID',
+    ['ORDERID', 'CLIENTID', 'PRODUCTID', 'AWAIT', 'JUNK', 'ORDERCOUNT', 'VitallyImportant', 'RetailVitallyImportant']);
 
-  val := DM.QueryValue('select max(Id) + 1 from batchreport', [], []);
-  if VarIsNull(val) then
-    MaxBatchId := '1'
-  else
-    MaxBatchId := val;
+  MaxBatchId := DatabaseController().GetLastInsertId(DM.MainConnection, doiBatchReport, 'ID',
+    ['CLIENTID', 'Quantity']);
 end;
 
 procedure TExchangeThread.CommitHistoryOrders;
@@ -3519,27 +3508,11 @@ end;
 
 procedure TExchangeThread.GetMaxPostedIds(var MaxOrderId,
   MaxOrderListId: String);
-var
-  val : Variant;
 begin
-{
-  MaxOrderId := DatabaseController().GetLastInsertId(DM.MainConnection, doiPostedOrderHeads, 'ORDERID');
-  WriteExchangeLogTID('GetMaxPostedIds', 'MaxOrderId = ' + MaxOrderId);
-  MaxOrderListId := DatabaseController().GetLastInsertId(DM.MainConnection, doiPostedOrderLists, 'ID');
-  WriteExchangeLogTID('GetMaxPostedIds', 'MaxOrderListId = ' + MaxOrderListId);
-}
-
-  val := DM.QueryValue('select max(OrderId) + 1 from PostedOrderHeads', [], []);
-  if VarIsNull(val) then
-    MaxOrderId := '1'
-  else
-    MaxOrderId := val;
-
-  val := DM.QueryValue('select max(Id) + 1 from PostedOrderLists', [], []);
-  if VarIsNull(val) then
-    MaxOrderListId := '1'
-  else
-    MaxOrderListId := val;
+  MaxOrderId := DatabaseController().GetLastInsertId(DM.MainConnection, doiPostedOrderHeads, 'ORDERID',
+    ['CLIENTID', 'PRICECODE', 'REGIONCODE', 'CLOSED', 'SEND']);
+  MaxOrderListId := DatabaseController().GetLastInsertId(DM.MainConnection, doiPostedOrderLists, 'ID',
+    ['ORDERID', 'CLIENTID', 'PRODUCTID', 'AWAIT', 'JUNK', 'ORDERCOUNT', 'VitallyImportant', 'RetailVitallyImportant']);
 end;
 
 procedure TExchangeThread.GetPostedServerOrderId(PostParams: TStringList);
