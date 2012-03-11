@@ -534,11 +534,8 @@ begin
 end;
 
 function GetTempDir: string;
-var
-  Buffer: array[0..MAX_PATH] of Char;
 begin
-  Win32CheckA(LongBool(GetTempPath(SizeOf(Buffer), Buffer)));
-  Result:=IncludeTrailingBackslash(Buffer);
+  Result := ExePath + 'DataTmpDir\';
 end;
 
 procedure DeleteFilesByMask(FileName: string; RaiseException: Boolean=True);
