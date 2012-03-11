@@ -1019,7 +1019,7 @@ var
             end;
           end
           else begin
-            raise Exception.Create('Ошибка при чтение объекта ' + table.LogObjectName);
+            SimpleRepairTable();
           end;
 
         end;
