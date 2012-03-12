@@ -2025,6 +2025,11 @@ begin
           DBVersion := CURRENT_DB_VERSION;
         end;
       end;
+
+      if DBVersion = 85 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 86;
+      end;
       
     end;
 

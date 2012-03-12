@@ -262,7 +262,7 @@ function TBatchReportDataTable.GetCreateSQL(
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  ( ' 
-+'    `Id` bigint(20) not null , '
++'    `Id` bigint(20) not null AUTO_INCREMENT, '
 +'    `ClientId` bigint(20) not null , '
 +'    `SynonymName` varchar(250) default null , '
 +'    `SynonymFirm` varchar(250) default null , '
