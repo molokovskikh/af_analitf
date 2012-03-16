@@ -160,6 +160,7 @@ type
 
     procedure SaveReportToFile(FileName : String);
     procedure SaveExcelReportToFile(FileName : String; exportServiceFields : Boolean);
+    procedure SaveCSVReportToFile(FileName : String);
   public
     { Public declarations }
 
@@ -553,7 +554,7 @@ begin
 
   sdReport := TSaveDialog.Create(Self);
   sdReport.DefaultExt := 'dbf';
-  sdReport.Filter := 'Отчет (*.dbf)|*.dbf|Все файлы (*.*)|*.*|Excel (*.xls)|*.xls|Расширенный Excel (*.xls)|*.xls';
+  sdReport.Filter := 'Отчет (*.dbf)|*.dbf|Все файлы (*.*)|*.*|Excel (*.xls)|*.xls|Расширенный Excel (*.xls)|*.xls|Excel (*.csv)|*.csv';
 
   adsReport := TMyQuery.Create(Self);
   adsReport.Name := 'adsReport';
@@ -1237,7 +1238,10 @@ begin
       if sdReport.FilterIndex <= 3 then
         SaveExcelReportToFile(sdReport.FileName, False)
       else
-        SaveExcelReportToFile(sdReport.FileName, True);
+      if sdReport.FilterIndex = 4 then
+        SaveExcelReportToFile(sdReport.FileName, True)
+      else
+        SaveCSVReportToFile(sdReport.FileName)
   end;
 end;
 
@@ -1496,6 +1500,89 @@ end;
 procedure TOrderBatchForm.dbgOrderBatchOnExit(Sender: TObject);
 begin
   PrintEnabled := False;
+end;
+
+procedure TOrderBatchForm.SaveCSVReportToFile(FileName: String);
+var
+  realExport : Boolean;
+  exportList : TStringList;
+  serviceFields : TObjectList;
+  I : Integer;
+  column : TColumnEh;
+  exportFile : TFileStream;
+  exportString : String;
+begin
+  if FileExists(FileName) then
+    OSDeleteFile(FileName);
+
+  realExport := (not dbgOrderBatch.AutoFitColWidths) and (ColumnByNameT(dbgOrderBatch, 'ServiceField1') <> nil);
+
+  if DM.adsQueryValue.Active then
+    DM.adsQueryValue.Close;
+
+  DM.adsQueryValue.SQL.Text := shBatchReport.Strings.Text;
+  DM.adsQueryValue.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+
+  DM.adsQueryValue.Open;
+
+  try
+    exportList := TStringList.Create;
+    serviceFields := TObjectList.Create(False);
+
+    exportFile := TFileStream.Create(FileName, fmCreate);
+
+    try
+      exportList.Add('Наименование');
+      exportList.Add('Производитель');
+      exportList.Add('Прайс-лист');
+      exportList.Add('Цена');
+      exportList.Add('Заказ');
+      exportList.Add('Сумма');
+      exportList.Add('Комментарий');
+      if (realExport) then
+        for I := 1 to 25 do begin
+          column := ColumnByNameT(dbgOrderBatch, 'ServiceField' + IntToStr(i));
+          if not Assigned(column) then
+           Break;
+          serviceFields.Add(column);
+          exportList.Add(column.Title.Caption);
+        end;
+
+      exportList.Delimiter := ';';
+      exportList.QuoteChar := '"';
+      exportString := exportList.DelimitedText + #13#10;
+      exportFile.WriteBuffer(exportString[1], Length(exportString));
+
+      while not DM.adsQueryValue.Eof do begin
+        exportString := ''
+          + AnsiQuotedStr(DM.adsQueryValue.FieldByName('SynonymName').AsString, '"') + ';'
+          + AnsiQuotedStr(DM.adsQueryValue.FieldByName('SynonymFirm').AsString, '"') + ';'
+          + AnsiQuotedStr(DM.adsQueryValue.FieldByName('PriceName').AsString, '"') + ';'
+          + AnsiQuotedStr(DM.adsQueryValue.FieldByName('Cost').AsString, '"') + ';'
+          + AnsiQuotedStr(DM.adsQueryValue.FieldByName('OrderCount').AsString, '"') + ';'
+          + AnsiQuotedStr(DM.adsQueryValue.FieldByName('RetailSumm').AsString, '"') + ';'
+          + AnsiQuotedStr(DM.adsQueryValue.FieldByName('Comment').AsString, '"');
+
+        if (realExport) then
+          for I := 0 to serviceFields.Count-1 do begin
+            column := TColumnEh(serviceFields[i]);
+            exportString := exportString
+              + ';' + AnsiQuotedStr(DM.adsQueryValue.FieldByName(column.FieldName).AsString, '"');
+          end;
+
+        exportString := exportString + #13#10;
+        exportFile.WriteBuffer(exportString[1], Length(exportString));
+        DM.adsQueryValue.Next;
+      end;
+
+    finally
+      exportFile.Free;
+      exportList.Free;
+      serviceFields.Free;
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
 end;
 
 initialization
