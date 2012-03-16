@@ -733,6 +733,8 @@ begin
       end;
       }
       if NeedProcessBatch then begin
+        //!!! «аполнение этих переменных нужно дл€ корректного формировани€
+        //выгрузки автозаказа: отчета, заголовков заказа и позиций заказа
         GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
 
         AddPostParam('BatchFile', batchFileContent);
@@ -741,9 +743,17 @@ begin
         AddPostParam('MaxBatchId', MaxBatchId);
       end
       else begin
+        //!!! «аполнение этих переменных нужно дл€ корректного формировани€
+        //выгрузки неподтвержденных заказов с сервера (с 1стола): заголовков заказа и позиций заказа
+        //ќни будут выгружатьс€:
+        // - у пользовател€ включена опци€ "«агружать неподтвержденные заказы"
+        // - имеютс€ неподтвержденные заказы
+        // - значени€ переданных переменных MaxOrderId, MaxOrderListId > 0
+        GetMaxIds(MaxOrderId, MaxOrderListId, MaxBatchId);
+
         AddPostParam('ClientHFile', '');
-        AddPostParam('MaxOrderId', '0');
-        AddPostParam('MaxOrderListId', '0');
+        AddPostParam('MaxOrderId', MaxOrderId);
+        AddPostParam('MaxOrderListId', MaxOrderListId);
       end;
 
       for I := 0 to LibVersions.Count-1 do begin
