@@ -55,6 +55,8 @@ type
 
 implementation
 
+uses StrUtils;
+
 {$R *.dfm}
 
 constructor TframePosition.Create(AOwner: TComponent);
@@ -75,6 +77,8 @@ begin
   gbPosition.ControlStyle := gbPosition.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
   dbtSynonymName.ControlStyle := dbtSynonymName.ControlStyle - [csParentBackground] + [csOpaque];
+  lVitallyImportant.ControlStyle := lVitallyImportant.ControlStyle - [csParentBackground] + [csOpaque];
+  lMandatoryList.ControlStyle := lMandatoryList.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 procedure TframePosition.FrameResize(Sender: TObject);
@@ -126,8 +130,10 @@ begin
   Result := TframePosition.Create(Owner);
   Result.showDescriptionAction := DescriptionAction;
   Result.btnShowDescription.Enabled := False;
-  Result.lVitallyImportant.Visible := False;
-  Result.lMandatoryList.Visible := False;
+  Result.lVitallyImportant.Visible := True;
+  Result.lVitallyImportant.Caption := '';
+  Result.lMandatoryList.Visible := True;
+  Result.lMandatoryList.Caption := '';
   if Assigned(Source.DataSet) then begin
     Result.CreateMNNDataSet(Source, MnnField);
     Result.oldAfterOpen := Source.DataSet.AfterOpen;
@@ -199,21 +205,26 @@ begin
 end;
 
 procedure TframePosition.RefreshPositionDetail(DataSet: TDataSet);
+var
+  viVisible,
+  mlVisible : Boolean;
 begin
   btnShowDescription.Enabled :=
     not DataSet.IsEmpty
     and Assigned(descriptionId)
     and not descriptionId.IsNull;
-  lVitallyImportant.Visible :=
+  viVisible :=
     not DataSet.IsEmpty
     and Assigned(catalogVitallyImportant)
     and not catalogVitallyImportant.IsNull
     and (((catalogVitallyImportant.DataType = ftBoolean) and catalogVitallyImportant.AsBoolean) or (catalogVitallyImportant.Value > 0));
-  lMandatoryList.Visible :=
+  mlVisible :=
     not DataSet.IsEmpty
     and Assigned(catalogMandatoryList)
     and not catalogMandatoryList.IsNull
     and (((catalogMandatoryList.DataType = ftBoolean) and catalogMandatoryList.AsBoolean) or (catalogMandatoryList.Value > 0));
+  lVitallyImportant.Caption := IfThen(viVisible, 'ЖНВЛС', '');
+  lMandatoryList.Caption := IfThen(mlVisible, 'Обяз. список', '');
 end;
 
 procedure TframePosition.CreateMNNDataSet(Source: TDataSource; MnnIdFieldName : String);
