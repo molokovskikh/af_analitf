@@ -1262,7 +1262,15 @@ begin
 end;
 
 procedure TMainForm.actWayBillExecute(Sender: TObject);
+var
+  requestCount : Integer;
 begin
+  requestCount := DM.QueryValue('select count(RequestCertificate) from DocumentBodies where RequestCertificate = 1', [], []);
+  if (requestCount > 20)
+    and (AProc.MessageBox('Загрузка более 20 сертификатов достаточно длительный процесс.'#13#10'Продолжить?', MB_YESNO OR MB_DEFBUTTON1) = ID_NO)
+  then
+    Exit;
+
   DM.InsertUserActionLog(uaSendWaybills);
   RunExchange( [eaSendWaybills] );
 
