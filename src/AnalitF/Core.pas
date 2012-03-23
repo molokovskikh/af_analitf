@@ -993,18 +993,19 @@ begin
   pcMaxProducerCosts.Parent := pBottom;
   pcMaxProducerCosts.MultiLine := True;
 
-  tsMaxProducerCosts := TTabSheet.Create(Self);
-  tsMaxProducerCosts.PageControl := pcMaxProducerCosts;
-  tsMaxProducerCosts.Caption := 'Предельные отпускные цены производителей на ЖНВЛС';
-
   tsFirmInfo := TTabSheet.Create(Self);
   tsFirmInfo.PageControl := pcMaxProducerCosts;
   tsFirmInfo.Caption := Trim(gbFirmInfo.Caption);
 
+  tsMaxProducerCosts := TTabSheet.Create(Self);
+  tsMaxProducerCosts.PageControl := pcMaxProducerCosts;
+  tsMaxProducerCosts.Caption := 'Предельные отпускные цены производителей на ЖНВЛС';
+
   gbFirmInfo.Parent := tsFirmInfo;
   gbFirmInfo.Caption := '';
+  gbFirmInfo.ControlStyle := gbFirmInfo.ControlStyle - [csParentBackground] + [csOpaque];
 
-  pcMaxProducerCosts.ActivePage := tsMaxProducerCosts;
+  pcMaxProducerCosts.ActivePage := tsFirmInfo;
   pcMaxProducerCosts.Align := alClient;
 
   adsMaxProducerCosts := TMyQuery.Create(Self);
