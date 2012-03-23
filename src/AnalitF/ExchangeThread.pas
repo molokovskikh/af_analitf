@@ -3551,7 +3551,19 @@ begin
     DM.adcUpdate.Close;
     DM.adcUpdate.SQL.Text :=
       Format(
-      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s;',
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s' +
+      '('
++'  `ServerId` , '
++'  `DownloadId` , '
++'  `WriteTime` , '
++'  `FirmCode` , '
++'  `ClientId` , '
++'  `DocumentType` , '
++'  `ProviderDocumentId` , '
++'  `OrderId` , '
++'  `Header` ' +
+      ');'
+      ,
       [InputFileName,
        'DocumentHeaders']);
     DM.adcUpdate.Execute;
@@ -3566,7 +3578,7 @@ begin
       Format(
       'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
       ' ( ' +
-      '    Id, DocumentId, Product, Code, Certificates, Period, Producer, ' +
+      '    ServerId, DocumentId, Product, Code, Certificates, Period, Producer, ' +
       '    Country, ProducerCost, RegistryCost, SupplierPriceMarkup, ' +
       '    SupplierCostWithoutNDS, SupplierCost, Quantity, VitallyImportant, ' +
       '    NDS, SerialNumber, Amount, NdsAmount, Unit, ExciseTax, ' +

@@ -388,6 +388,7 @@ function TDocumentHeadersTable.GetColumns: String;
 begin
   Result := ''
 +'  `Id` , '
++'  `ServerId` , '
 +'  `DownloadId` , '
 +'  `WriteTime` , '
 +'  `FirmCode` , '
@@ -397,7 +398,8 @@ begin
 +'  `OrderId` , '
 +'  `Header` , '
 +'  `LoadTime` , '
-+'  `RetailAmountCalculated`  ';
++'  `RetailAmountCalculated`,  '
++'  `CreatedByUser`  ';
 end;
 
 function TDocumentHeadersTable.GetCreateSQL(
@@ -406,6 +408,7 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +' ( '
 +'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'  `ServerId` bigint(20) unsigned DEFAULT NULL, '
 +'  `DownloadId` bigint(20) unsigned DEFAULT NULL, '
 +'  `WriteTime` datetime NOT NULL, '
 +'  `FirmCode` bigint(20) unsigned DEFAULT NULL, '
@@ -416,6 +419,7 @@ begin
 +'  `Header` varchar(255) DEFAULT NULL, '
 +'  `LoadTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
 +'  `RetailAmountCalculated` tinyint(1) not null default ''0'', '
++'  `CreatedByUser` tinyint(1) not null default ''0'', '
 +'  PRIMARY KEY (`Id`), '
 +'  KEY (`LoadTime`), '
 +'  KEY (`DownloadId`), '
@@ -437,6 +441,7 @@ function TDocumentBodiesTable.GetColumns: String;
 begin
   Result := ''
 +'  `Id` , '
++'  `ServerId` , '
 +'  `DocumentId` , '
 +'  `Product` , '
 +'  `Code` , '
@@ -475,6 +480,7 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +' ( '
 +'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'  `ServerId` bigint(20) unsigned DEFAULT NULL, '
 +'  `DocumentId` bigint(20) unsigned NOT NULL, '
 +'  `Product` varchar(255) not null, '
 +'  `Code` varchar(20) default null, '
