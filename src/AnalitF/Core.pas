@@ -1004,6 +1004,7 @@ begin
   gbFirmInfo.Parent := tsFirmInfo;
   gbFirmInfo.Caption := '';
   gbFirmInfo.ControlStyle := gbFirmInfo.ControlStyle - [csParentBackground] + [csOpaque];
+  dbtSupportPhone.ControlStyle := dbtSupportPhone.ControlStyle - [csParentBackground] + [csOpaque];
 
   pcMaxProducerCosts.ActivePage := tsFirmInfo;
   pcMaxProducerCosts.Align := alClient;
