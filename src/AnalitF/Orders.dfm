@@ -522,6 +522,7 @@ inherited OrdersForm: TOrdersForm
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.Markup,'
       '    ol.productid,'
       '    ol.codefirmcr,'
       '    ol.synonymcode,'
@@ -748,6 +749,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersComment: TStringField
       FieldName = 'Comment'
+    end
+    object adsOrdersMarkup: TFloatField
+      FieldName = 'Markup'
     end
   end
   object ActionList: TActionList

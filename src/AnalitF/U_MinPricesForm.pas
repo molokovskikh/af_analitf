@@ -187,6 +187,7 @@ type
     adsCoreOrdersHOrderId: TLargeintField;
     adsCoreOrderCount: TIntegerField;
     adsCoreSumOrder: TFloatField;
+    adsCoreMarkup: TFloatField;
 
     adsCorePriceRet: TCurrencyField;
     adsCoreRetailVitallyImportant: TBooleanField;
@@ -942,6 +943,8 @@ begin
   adsCoreOrdersOrderId := TDataSetHelper.AddLargeintField(adsCore, 'OrdersOrderId');
   adsCoreOrdersHOrderId := TDataSetHelper.AddLargeintField(adsCore, 'OrdersHOrderId');
 
+  adsCoreMarkup := TDataSetHelper.AddFloatField(adsCore, 'Markup');
+
   adsCoreCost.DisplayFormat := '0.00;;''''';
   adsCoreRealCost.DisplayFormat := '0.00;;''''';
   adsCoreRegistryCost.DisplayFormat := '0.00;;''''';
@@ -969,12 +972,14 @@ begin
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreCost.AsCurrency)
+          adsCoreCost.AsCurrency,
+          adsCoreMarkup.AsVariant)
     else
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreRealCost.AsCurrency);
+          adsCoreRealCost.AsCurrency,
+          adsCoreMarkup.AsVariant);
   except
   end;
 end;

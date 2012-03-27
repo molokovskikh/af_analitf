@@ -707,6 +707,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    CurrentOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.Markup,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -797,6 +798,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    PostedOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.Markup,'
       '    PostedOrderLists.CoreId AS CoreId,'
       '    PostedOrderLists.Volume,'
       '    PostedOrderLists.CoreQuantity as Quantity,'
@@ -918,6 +920,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    CurrentOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.Markup,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -1003,6 +1006,7 @@ inherited SummaryForm: TSummaryForm
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
       '    CurrentOrderLists.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.Markup,'
       '    Core.CoreID,'
       '    Core.Volume,'
       '    Core.Quantity,'
@@ -1267,6 +1271,9 @@ inherited SummaryForm: TSummaryForm
       FieldKind = fkCalculated
       FieldName = 'PrintCost'
       Calculated = True
+    end
+    object adsSummaryMarkup: TFloatField
+      FieldName = 'Markup'
     end
   end
   object tmrFillReport: TTimer

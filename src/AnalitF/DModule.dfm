@@ -666,6 +666,7 @@ object DM: TDM
       '    list.ClientId,'
       '    list.CoreId,'
       '    products.catalogid as fullcode,'
+      '    catalogs.Markup,'
       '    list.productid,'
       '    list.codefirmcr,'
       '    list.synonymcode,'
@@ -840,6 +841,9 @@ object DM: TDM
     end
     object adsOrderDetailsPrintPrice: TFloatField
       FieldName = 'PrintPrice'
+    end
+    object adsOrderDetailsMarkup: TFloatField
+      FieldName = 'Markup'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -1431,6 +1435,7 @@ object DM: TDM
       '    list.ClientId,'
       '    list.CoreId,'
       '    products.catalogid as fullcode,'
+      '    catalogs.Markup,'
       '    list.productid,'
       '    list.codefirmcr,'
       '    list.synonymcode,'

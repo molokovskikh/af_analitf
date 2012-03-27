@@ -128,6 +128,7 @@ type
     adsCoreProducerName: TStringField;
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreRetailVitallyImportant: TBooleanField;
+    adsCoreMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -566,12 +567,14 @@ begin
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreCost.AsCurrency)
+          adsCoreCost.AsCurrency,
+          adsCoreMarkup.AsVariant)
     else
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreRealCost.AsCurrency);
+          adsCoreRealCost.AsCurrency,
+          adsCoreMarkup.AsVariant);
   except
   end;
 end;

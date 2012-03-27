@@ -98,6 +98,7 @@ type
     adsOrdersComment: TStringField;
     gbComment: TGroupBox;
     dbmComment: TDBMemo;
+    adsOrdersMarkup: TFloatField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -535,21 +536,25 @@ begin
         adsOrdersRetailPrice.AsCurrency := DM
           .GetRetailCostLast(
             adsOrdersRetailVitallyImportant.Value,
-            adsOrdersPrice.AsCurrency);
+            adsOrdersPrice.AsCurrency,
+            adsOrdersMarkup.AsVariant);
         adsOrdersEditRetailMarkup.AsCurrency := DM
           .GetRetailMarkupValue(
             adsOrdersRetailVitallyImportant.Value,
-            adsOrdersPrice.AsCurrency);
+            adsOrdersPrice.AsCurrency,
+            adsOrdersMarkup.AsVariant);
       end
       else begin
         adsOrdersRetailPrice.AsCurrency := DM
           .GetRetailCostLast(
             adsOrdersRetailVitallyImportant.Value,
-            adsOrdersRealPrice.AsCurrency);
+            adsOrdersRealPrice.AsCurrency,
+            adsOrdersMarkup.AsVariant);
         adsOrdersEditRetailMarkup.AsCurrency := DM
           .GetRetailMarkupValue(
             adsOrdersRetailVitallyImportant.Value,
-            adsOrdersRealPrice.AsCurrency);
+            adsOrdersRealPrice.AsCurrency,
+            adsOrdersMarkup.AsVariant);
       end;
     end
     else begin

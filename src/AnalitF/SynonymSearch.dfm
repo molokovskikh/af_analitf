@@ -537,6 +537,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -659,6 +660,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1072,6 +1074,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
+    object adsCoreMarkup: TFloatField
+      FieldName = 'Markup'
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1239,6 +1244,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1407,6 +1413,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    SynonymSearch.RetailVitallyImportant,'
       '    SynonymSearch.CatalogMandatoryList,'
       '    SynonymSearch.NamePromotionsCount,'
+      '    SynonymSearch.Markup,'
       '    SynonymSearch.CodeFirmCr,'
       '    SynonymSearch.SynonymCode,'
       '    SynonymSearch.SynonymFirmCrCode,'
@@ -1509,6 +1516,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    SynonymSearch.RetailVitallyImportant,'
       '    SynonymSearch.CatalogMandatoryList,'
       '    SynonymSearch.NamePromotionsCount,'
+      '    SynonymSearch.Markup,'
       '    SynonymSearch.CodeFirmCr,'
       '    SynonymSearch.SynonymCode,'
       '    SynonymSearch.SynonymFirmCrCode,'
@@ -1631,6 +1639,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'

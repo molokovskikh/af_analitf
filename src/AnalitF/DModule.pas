@@ -283,6 +283,7 @@ type
     adsOrderDetailsPrintPrice: TFloatField;
     adtParams: TMyQuery;
     adtClientsCalculateWithNDSForOther: TBooleanField;
+    adsOrderDetailsMarkup: TFloatField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
@@ -519,11 +520,13 @@ type
 
     function GetRetailCostLast(
       VitallyImportant : Boolean;
-      SupplierCost : Currency
+      SupplierCost : Currency;
+      individualMarkup : Variant
     ) : Currency;
     function GetRetailMarkupValue(
       VitallyImportant : Boolean;
-      SupplierCost : Currency
+      SupplierCost : Currency;
+      individualMarkup : Variant
     ) : Currency;
 
     //Обрабатываем папки с документами
@@ -5165,16 +5168,25 @@ begin
 end;
 
 function TDM.GetRetailCostLast(VitallyImportant: Boolean;
-  SupplierCost: Currency): Currency;
+  SupplierCost: Currency; individualMarkup : Variant): Currency;
+var
+  markup : Currency;
 begin
+  if VarIsNull(individualMarkup) then
+    markup := GetRetailMarkupValue(VitallyImportant, SupplierCost, individualMarkup)
+  else
+    markup := individualMarkup;
   Result := GetPriceRetByMarkup(
     SupplierCost,
-    GetRetailMarkupValue(VitallyImportant, SupplierCost));
+    markup);
 end;
 
 function TDM.GetRetailMarkupValue(VitallyImportant: Boolean;
-  SupplierCost: Currency): Currency;
+  SupplierCost: Currency; individualMarkup : Variant): Currency;
 begin
+  if not VarIsNull(individualMarkup) then
+    Result := individualMarkup
+  else
   if VitallyImportant then
     Result := GetVitallyImportantMarkup(SupplierCost)
   else

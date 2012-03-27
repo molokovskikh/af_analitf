@@ -653,6 +653,7 @@ object CoreForm: TCoreForm
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -777,6 +778,7 @@ object CoreForm: TCoreForm
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'
@@ -1172,6 +1174,9 @@ object CoreForm: TCoreForm
     object adsCoreOrdersComment: TStringField
       FieldName = 'OrdersComment'
     end
+    object adsCoreMarkup: TFloatField
+      FieldName = 'Markup'
+    end
   end
   object adsRegions: TMyQuery
     Connection = DM.MyConnection
@@ -1374,6 +1379,7 @@ object CoreForm: TCoreForm
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
       '    Core.SynonymFirmCrCode,'

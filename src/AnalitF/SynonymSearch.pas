@@ -145,6 +145,7 @@ type
     cbProducers: TComboBox;
     adsCoreStartSynonym: TMyQuery;
     adsCoreEndSynonym: TMyQuery;
+    adsCoreMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
@@ -333,12 +334,14 @@ begin
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreCost.AsCurrency)
+          adsCoreCost.AsCurrency,
+          adsCoreMarkup.AsVariant)
     else
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreRealCost.AsCurrency);
+          adsCoreRealCost.AsCurrency,
+          adsCoreMarkup.AsVariant);
 {
     if Assigned(SortList) then
       adsCoreSortOrder.AsInteger := SortList.IndexOf(adsCoreCOREID.AsString);

@@ -92,6 +92,7 @@ type
     adsExpiredsBuyingMatrixType: TIntegerField;
     adsExpiredsProducerName: TStringField;
     adsExpiredsRetailVitallyImportant: TBooleanField;
+    adsExpiredsMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -170,12 +171,14 @@ begin
       adsExpiredsCryptPriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsExpiredsRetailVitallyImportant.Value,
-          adsExpiredsCost.AsCurrency)
+          adsExpiredsCost.AsCurrency,
+          adsExpiredsMarkup.AsVariant)
     else
       adsExpiredsCryptPriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsExpiredsRetailVitallyImportant.Value,
-          adsExpiredsRealCost.AsCurrency);
+          adsExpiredsRealCost.AsCurrency,
+          adsExpiredsMarkup.AsVariant);
   except
   end;
 end;

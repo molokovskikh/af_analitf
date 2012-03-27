@@ -126,6 +126,7 @@ type
     adsCoreNamePromotionsCount: TIntegerField;
     adsCoreRetailVitallyImportant: TBooleanField;
     cbProducers: TComboBox;
+    adsCoreMarkup: TFloatField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -324,12 +325,14 @@ begin
       adsCoreCryptPriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreCost.AsCurrency)
+          adsCoreCost.AsCurrency,
+          adsCoreMarkup.AsVariant)
     else
       adsCoreCryptPriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreRealCost.AsCurrency);
+          adsCoreRealCost.AsCurrency,
+          adsCoreMarkup.AsVariant);
   except
   end;
 end;

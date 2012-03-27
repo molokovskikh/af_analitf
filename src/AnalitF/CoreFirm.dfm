@@ -619,6 +619,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'
@@ -750,6 +751,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'
@@ -1179,6 +1181,9 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
     end
+    object adsCoreMarkup: TFloatField
+      FieldName = 'Markup'
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1194,6 +1199,7 @@ object CoreFirmForm: TCoreFirmForm
       '    CCore.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    catalogs.NamePromotionsCount,'
+      '    catalogs.Markup,'
       '    CCore.CodeFirmCr,'
       '    CCore.SynonymCode,'
       '    CCore.SynonymFirmCrCode,'

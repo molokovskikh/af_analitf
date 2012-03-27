@@ -104,6 +104,7 @@ type
     dbmComment: TDBMemo;
     adsSummaryComment: TStringField;
     adsSummaryPrintCost: TFloatField;
+    adsSummaryMarkup: TFloatField;
     procedure adsSummary2AfterPost(DataSet: TDataSet);
     procedure FormCreate(Sender: TObject);
     procedure dbgSummaryCurrentGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -366,12 +367,14 @@ begin
         adsSummaryPriceRet.AsCurrency :=
           DM.GetRetailCostLast(
             adsSummaryRetailVitallyImportant.Value,
-            adsSummaryCost.AsCurrency)
+            adsSummaryCost.AsCurrency,
+            adsSummaryMarkup.AsVariant)
       else
         adsSummaryPriceRet.AsCurrency :=
           DM.GetRetailCostLast(
             adsSummaryRetailVitallyImportant.Value,
-            adsSummaryRealCost.AsCurrency)
+            adsSummaryRealCost.AsCurrency,
+            adsSummaryMarkup.AsVariant)
     end
     else
       adsSummaryPriceRet.AsCurrency := adsSummaryRetailCost.Value;

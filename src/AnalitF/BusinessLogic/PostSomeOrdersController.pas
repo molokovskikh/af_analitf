@@ -223,13 +223,15 @@ begin
         RetailCost := FDataLayer
           .GetRetailCostLast(
             dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
-            dataSet.FieldByName('PRICE').AsCurrency
+            dataSet.FieldByName('PRICE').AsCurrency,
+            dataSet.FieldByName('Markup').AsVariant
           )
       else
         RetailCost := FDataLayer
           .GetRetailCostLast(
             dataSet.FieldByName('RetailVitallyImportant').AsBoolean,
-            dataSet.FieldByName('RealPRICE').AsCurrency
+            dataSet.FieldByName('RealPRICE').AsCurrency,
+            dataSet.FieldByName('Markup').AsVariant
           );
       AddPostParam(
         'RetailCost',

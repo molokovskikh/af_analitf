@@ -471,6 +471,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    catalogs.FullCode AS FullCode,'
       '    catalogs.shortcode,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.Markup,'
       '    Core.RetailVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
@@ -587,6 +588,7 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       '    catalogs.fullcode,'
       '    catalogs.shortcode,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.Markup,'
       '    Core.RetailVitallyImportant,'
       '    Core.CodeFirmCr,'
       '    Core.SynonymCode,'
@@ -949,6 +951,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object adsCoreRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
+    end
+    object adsCoreMarkup: TFloatField
+      FieldName = 'Markup'
     end
   end
   object mdValues: TRxMemoryData

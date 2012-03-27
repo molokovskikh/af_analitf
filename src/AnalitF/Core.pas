@@ -154,6 +154,7 @@ type
     adsCoreRetailVitallyImportant: TBooleanField;
     cbProducers: TComboBox;
     adsCoreOrdersComment: TStringField;
+    adsCoreMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -471,12 +472,14 @@ begin
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreCost.AsCurrency)
+          adsCoreCost.AsCurrency,
+          adsCoreMarkup.AsVariant)
     else
       adsCorePriceRet.AsCurrency :=
         DM.GetRetailCostLast(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreRealCost.AsCurrency);
+          adsCoreRealCost.AsCurrency,
+          adsCoreMarkup.AsVariant);
   except
   end;
 end;
@@ -803,11 +806,13 @@ begin
       if FAllowDelayOfPayment and not FShowSupplierCost then
         retailMarkup := DM.GetRetailMarkupValue(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreCost.AsCurrency)
+          adsCoreCost.AsCurrency,
+          adsCoreMarkup.AsVariant)
       else
         retailMarkup := DM.GetRetailMarkupValue(
           adsCoreRetailVitallyImportant.Value,
-          adsCoreRealCost.AsCurrency);
+          adsCoreRealCost.AsCurrency,
+          adsCoreMarkup.AsVariant);
       ProgramSetSetRetUpCost := True;
       try
         if not VarIsNull(retailMarkup) then

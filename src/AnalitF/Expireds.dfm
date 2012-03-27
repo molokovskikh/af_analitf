@@ -371,6 +371,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    catalogs.fullcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.Markup,'
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
@@ -480,6 +481,7 @@ inherited ExpiredsForm: TExpiredsForm
       '    catalogs.fullcode,'
       '    catalogs.DescriptionId,'
       '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.Markup,'
       '    Core.RetailVitallyImportant,'
       '    catalogs.MandatoryList as CatalogMandatoryList,'
       '    Core.CodeFirmCr,'
@@ -812,6 +814,9 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsRetailVitallyImportant: TBooleanField
       FieldName = 'RetailVitallyImportant'
+    end
+    object adsExpiredsMarkup: TFloatField
+      FieldName = 'Markup'
     end
   end
 end
