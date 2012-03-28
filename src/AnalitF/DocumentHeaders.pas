@@ -15,8 +15,12 @@ uses
   U_frameFilterSuppliers,
   StrHlder,
   GlobalParams,
-  U_SerialNumberSearch;
+  U_SerialNumberSearch,
+  U_frameBaseLegend;
 
+const
+  clCreatedByUser = clMoneyGreen;
+    
 type
   TExportDocRow = class
    public
@@ -90,8 +94,12 @@ type
     procedure tmrProcessWaybilsTimer(Sender: TObject);
     procedure rgColumnClick(Sender: TObject);
     procedure sbSearchClick(Sender: TObject);
+    procedure dbgHeadersGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
   private
     { Private declarations }
+    legeng : TframeBaseLegend;
+
     procedure OnChangeFilterSuppliers;
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
@@ -143,9 +151,21 @@ end;
 procedure TDocumentHeaderForm.FormCreate(Sender: TObject);
 var
   Year, Month, Day: Word;
+  lLegend : TLabel;
 begin
   csProcessedList := TCriticalSection.Create;
   ProcessedList := TStringList.Create;
+
+  legeng := TframeBaseLegend.Create(Self);
+  legeng.Parent := Self;
+  legeng.Align := alBottom;
+
+  lLegend := legeng.CreateLegendLabel(
+    'Накладная, созданная пользователем',
+    clCreatedByUser,
+    clWindowText,
+    'Накладная, созданная пользователем');
+
   inherited;
 
   frameFilterSuppliers := TframeFilterSuppliers.AddFrame(
@@ -744,6 +764,14 @@ procedure TDocumentHeaderForm.sbSearchClick(Sender: TObject);
 begin
   dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
   FSerialNumberSearchForm.ShowForm(dtpDateFrom.Date, dtpDateTo.DateTime, '');
+end;
+
+procedure TDocumentHeaderForm.dbgHeadersGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if adsDocumentHeadersCreatedByUser.Value then
+    Background := clCreatedByUser;
 end;
 
 end.

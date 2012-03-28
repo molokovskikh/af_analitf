@@ -100,6 +100,7 @@ type
     tmrShowCertificateWarning: TTimer;
     adsDocumentBodiesServerId: TLargeintField;
     adsDocumentBodiesServerDocumentId: TLargeintField;
+    adsDocumentHeadersCreatedByUser: TBooleanField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);

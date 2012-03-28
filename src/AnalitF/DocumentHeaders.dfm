@@ -172,6 +172,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       TitleFont.Name = 'MS Sans Serif'
       TitleFont.Style = []
       OnDblClick = dbgHeadersDblClick
+      OnGetCellParams = dbgHeadersGetCellParams
       OnKeyDown = dbgHeadersKeyDown
       OnSortMarkingChanged = dbgHeadersSortMarkingChanged
       SearchPosition = spBottom

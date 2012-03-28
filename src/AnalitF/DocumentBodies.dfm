@@ -389,6 +389,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dh.LoadTime,'
       'dh.RetailAmountCalculated,'
       'dh.WriteTime as LocalWriteTime,'
+      'dh.CreatedByUser,'
       'p.FullName as ProviderName,'
       'count(dbodies.Id) as Positions,'
       'invoiceheaders.Id,'
@@ -471,6 +472,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentHeadersLocalWriteTime: TDateTimeField
       FieldName = 'LocalWriteTime'
+    end
+    object adsDocumentHeadersCreatedByUser: TBooleanField
+      FieldName = 'CreatedByUser'
     end
   end
   object dsDocumentHeaders: TDataSource
