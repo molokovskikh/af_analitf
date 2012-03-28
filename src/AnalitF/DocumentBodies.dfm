@@ -534,12 +534,17 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dbodies.EAN13,'
       'dbodies.RequestCertificate,'
       'dbodies.CertificateId,'
-      'cr.DocumentBodyId'
+      'cr.DocumentBodyId,'
+      'catalogs.Markup as CatalogMarkup,'
+      'catalogs.MaxMarkup as CatalogMaxMarkup,'
+      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
       'from'
       '  DocumentBodies dbodies'
       
         '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
         's.ServerId'
+      '  left join products p on p.productid = dbodies.productid'
+      '  left join catalogs on catalogs.fullcode = p.catalogid'
       'where'
       '  dbodies.Id = :OLD_Id')
     Connection = DM.MyConnection
@@ -577,12 +582,17 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dbodies.EAN13,'
       'dbodies.RequestCertificate,'
       'dbodies.CertificateId,'
-      'cr.DocumentBodyId'
+      'cr.DocumentBodyId,'
+      'catalogs.Markup as CatalogMarkup,'
+      'catalogs.MaxMarkup as CatalogMaxMarkup,'
+      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
       'from'
       '  DocumentBodies dbodies'
       
         '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
         's.ServerId'
+      '  left join products p on p.productid = dbodies.productid'
+      '  left join catalogs on catalogs.fullcode = p.catalogid'
       'where'
       '  dbodies.DocumentId = :DocumentId'
       'order by dbodies.Product')
@@ -687,6 +697,15 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentBodiesServerDocumentId: TLargeintField
       FieldName = 'ServerDocumentId'
+    end
+    object adsDocumentBodiesCatalogMarkup: TFloatField
+      FieldName = 'CatalogMarkup'
+    end
+    object adsDocumentBodiesCatalogMaxMarkup: TFloatField
+      FieldName = 'CatalogMaxMarkup'
+    end
+    object adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField
+      FieldName = 'CatalogMaxSupplierMarkup'
     end
   end
   object tmrPrintedChange: TTimer

@@ -101,6 +101,9 @@ type
     adsDocumentBodiesServerId: TLargeintField;
     adsDocumentBodiesServerDocumentId: TLargeintField;
     adsDocumentHeadersCreatedByUser: TBooleanField;
+    adsDocumentBodiesCatalogMarkup: TFloatField;
+    adsDocumentBodiesCatalogMaxMarkup: TFloatField;
+    adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
