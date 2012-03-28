@@ -3584,7 +3584,7 @@ begin
       '    NDS, SerialNumber, Amount, NdsAmount, Unit, ExciseTax, ' +
       '    BillOfEntryNumber, EAN13, ProductId, ProducerId ' +
       ' ) ' +
-      'set Printed = 1;',
+      'set Printed = 1, DocumentId = null;',
       [InputFileName,
        'DocumentBodies']);
     DM.adcUpdate.Execute;
