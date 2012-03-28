@@ -248,7 +248,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     SQL.Strings = (
       'select'
       'dh.Id,'
-      'dh.DownloadId,'
+      'ifnull(dh.DownloadId, dh.Id) as DownloadId,'
       'dh.WriteTime,'
       'dh.FirmCode,'
       'dh.ClientId,'
@@ -259,6 +259,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       'dh.LoadTime,'
       'dh.RetailAmountCalculated,'
       'dh.WriteTime as LocalWriteTime,'
+      'dh.CreatedByUser,'
       'p.FullName as ProviderName,'
       'sum(db.Amount) as TotalSumm,'
       'sum(db.RetailAmount) as TotalRetailSumm'
@@ -337,6 +338,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object adsDocumentHeadersRetailAmountCalculated: TBooleanField
       FieldName = 'RetailAmountCalculated'
     end
+    object adsDocumentHeadersCreatedByUser: TBooleanField
+      FieldName = 'CreatedByUser'
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
@@ -353,7 +357,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       ''
       '73656c656374'
       '64682e49642c'
-      '64682e446f776e6c6f616449642c'
+      
+        '69666e756c6c2864682e446f776e6c6f616449642c2064682e49642920617320' +
+        '446f776e6c6f616449642c'
       '64682e577269746554696d652c'
       '64682e4669726d436f64652c'
       '64682e436c69656e7449642c'
@@ -364,6 +370,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       '64682e4c6f616454696d652c'
       '64682e52657461696c416d6f756e7443616c63756c617465642c'
       '64682e577269746554696d65206173204c6f63616c577269746554696d652c'
+      '64682e437265617465644279557365722c'
       '702e46756c6c4e616d652061732050726f76696465724e616d652c'
       '73756d2864622e416d6f756e742920617320546f74616c53756d6d2c'
       

@@ -596,7 +596,7 @@ type
 
     function ShowCertificatesResults() : String;
 
-    function CertificateSourceExists(documentBodyId : Int64) : Boolean;
+    function CertificateSourceExists(serverDocumentBodyId : Int64) : Boolean;
     procedure ShowCertificateWarning();
 
     function OpenAttachment(attachmentId : Int64) : Integer;
@@ -5304,7 +5304,7 @@ begin
     MainConnection,
     'update CertificateRequests, DocumentBodies ' +
     'set DocumentBodies.RequestCertificate = 0, DocumentBodies.CertificateId = CertificateRequests.CertificateId ' +
-    'where DocumentBodies.Id = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is not null',
+    'where DocumentBodies.ServerId = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is not null',
     [],
     []);
 
@@ -5334,7 +5334,7 @@ begin
     MainConnection,
     'update CertificateRequests, DocumentBodies ' +
     'set DocumentBodies.RequestCertificate = 0 ' +
-    'where DocumentBodies.Id = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is null',
+    'where DocumentBodies.ServerId = CertificateRequests.DocumentBodyId and CertificateRequests.CertificateId is null',
     [],
     []);
   Result := updateRecord > 0;
@@ -5387,7 +5387,7 @@ begin
 ' from ' +
 ' CertificateRequests, DocumentBodies, DocumentHeaders, Providers ' +
 ' where ' +
-'  DocumentBodies.Id = CertificateRequests.DocumentBodyId ' +
+'  DocumentBodies.ServerId = CertificateRequests.DocumentBodyId ' +
 ' and CertificateRequests.CertificateId is null ' +
 ' and DocumentHeaders.Id = DocumentBodies.DocumentId ' +
 ' and Providers.FirmCode = DocumentHeaders.FirmCode;';
@@ -5776,7 +5776,7 @@ begin
   end;
 end;
 
-function TDM.CertificateSourceExists(documentBodyId : Int64): Boolean;
+function TDM.CertificateSourceExists(serverDocumentBodyId : Int64): Boolean;
 var
   sourceExists : Variant;
 begin
@@ -5790,11 +5790,11 @@ begin
         + ' DocumentHeaders dh, '
         + ' providers '
         + ' where '
-        + '  db.id = :DocumentBodyId '
+        + '  db.ServerId = :DocumentBodyId '
         + '  and dh.Id = db.DocumentId '
         + '  and providers.FirmCode = dh.FirmCode '
         + '  and providers.CertificateSourceExists = 1 ',
-      ['DocumentBodyId'], [documentBodyId]);
+      ['DocumentBodyId'], [serverDocumentBodyId]);
     if not VarIsNull(sourceExists) then
       Result := True
     else

@@ -116,6 +116,8 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
     SQL.Strings = (
       'select'
       '  dbodies.Id,'
+      '  dbodies.ServerId,'
+      '  dbodies.ServerDocumentId,'
       '  p.ShortName as ProviderName,'
       '  dh.WriteTime as LocalWriteTime, '
       '  dbodies.SerialNumber,'
@@ -179,6 +181,12 @@ inherited SerialNumberSearchForm: TSerialNumberSearchForm
     end
     object adsSerialNumberSearchProviderName: TStringField
       FieldName = 'ProviderName'
+    end
+    object adsSerialNumberSearchServerId: TLargeintField
+      FieldName = 'ServerId'
+    end
+    object adsSerialNumberSearchServerDocumentId: TLargeintField
+      FieldName = 'ServerDocumentId'
     end
   end
   object tmrPrintedChange: TTimer

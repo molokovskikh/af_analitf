@@ -73,6 +73,7 @@ type
     adsDocumentHeadersRetailAmountCalculated: TBooleanField;
     rgColumn: TRadioGroup;
     sbSearch: TSpeedButton;
+    adsDocumentHeadersCreatedByUser: TBooleanField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -364,7 +365,7 @@ begin
   DM.adsQueryValue.SQL.Text := '' +
 ' select ' +
 '  dh.Id, ' +
-'  dh.DownloadId, ' +
+'  ifnull(dh.DownloadId, dh.Id) as DownloadId, ' +
 '  dh.WriteTime, ' +
 '  dh.FirmCode, ' +
 '  dh.ClientId, ' +

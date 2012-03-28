@@ -4192,14 +4192,14 @@ begin
     absentQuery := TMyQuery.Create(nil);
     absentQuery.Connection := DM.MainConnection;
     try
-      absentQuery.SQL.Text := 'select ID from DocumentBodies where RequestCertificate = 1';
+      absentQuery.SQL.Text := 'select ServerId from DocumentBodies where RequestCertificate = 1';
 
       absentQuery.Open;
       try
         if absentQuery.RecordCount > 0 then begin
           DocumentBodyIdsSL := TStringList.Create;
           while not absentQuery.Eof do begin
-            DocumentBodyIdsSL.Add(absentQuery.FieldByName('Id').AsString);
+            DocumentBodyIdsSL.Add(absentQuery.FieldByName('ServerId').AsString);
             absentQuery.Next;
           end;
         end;

@@ -98,6 +98,8 @@ type
     adsDocumentBodiesCertificateId: TLargeintField;
     adsDocumentBodiesDocumentBodyId: TLargeintField;
     tmrShowCertificateWarning: TTimer;
+    adsDocumentBodiesServerId: TLargeintField;
+    adsDocumentBodiesServerDocumentId: TLargeintField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -2211,7 +2213,7 @@ procedure TDocumentBodiesForm.adsDocumentBodiesRequestCertificateValidate(
   Sender: TField);
 begin
   if Sender.AsBoolean then
-    if not DM.CertificateSourceExists(adsDocumentBodiesId.Value) then begin
+    if not DM.CertificateSourceExists(adsDocumentBodiesServerId.Value) then begin
       tmrShowCertificateWarning.Enabled := False;
       tmrShowCertificateWarning.Enabled := true;
       Abort;

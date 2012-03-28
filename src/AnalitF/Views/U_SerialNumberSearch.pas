@@ -30,6 +30,8 @@ type
     tmrPrintedChange: TTimer;
     spDelete: TSpeedButton;
     tmrShowCertificateWarning: TTimer;
+    adsSerialNumberSearchServerId: TLargeintField;
+    adsSerialNumberSearchServerDocumentId: TLargeintField;
     procedure FormHide(Sender: TObject);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -350,7 +352,7 @@ procedure TSerialNumberSearchForm.adsSerialNumberSearchRequestCertificateValidat
   Sender: TField);
 begin
   if Sender.AsBoolean then
-    if not DM.CertificateSourceExists(adsSerialNumberSearchId.Value) then begin
+    if not DM.CertificateSourceExists(adsSerialNumberSearchServerId.Value) then begin
       tmrShowCertificateWarning.Enabled := False;
       tmrShowCertificateWarning.Enabled := true;
       Abort;

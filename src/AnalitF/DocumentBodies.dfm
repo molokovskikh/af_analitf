@@ -378,7 +378,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     SQL.Strings = (
       'select'
       'dh.Id,'
-      'dh.DownloadId,'
+      'ifnull(dh.DownloadId, dh.Id) as DownloadId,'
       'dh.WriteTime,'
       'dh.FirmCode,'
       'dh.ClientId,'
@@ -421,7 +421,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  providers p'
       '  )'
       '  left join DocumentBodies dbodies on dbodies.DocumentId = dh.Id'
-      '  left join invoiceheaders on invoiceheaders.Id = dh.Id'
+      '  left join invoiceheaders on invoiceheaders.Id = dh.ServerId'
       'where'
       '    (dh.Id = :DocumentId)'
       'and (p.FirmCode = dh.FirmCode)')
@@ -500,6 +500,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'select'
       'dbodies.Id,'
       'dbodies.DocumentId,'
+      'dbodies.ServerId,'
+      'dbodies.ServerDocumentId,'
       'dbodies.Product,'
       'dbodies.Code,'
       'dbodies.Certificates,'
@@ -533,7 +535,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  DocumentBodies dbodies'
       
         '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.Id'
+        's.ServerId'
       'where'
       '  dbodies.Id = :OLD_Id')
     Connection = DM.MyConnection
@@ -541,6 +543,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'select'
       'dbodies.Id,'
       'dbodies.DocumentId,'
+      'dbodies.ServerId,'
+      'dbodies.ServerDocumentId,'
       'dbodies.Product,'
       'dbodies.Code,'
       'dbodies.Certificates,'
@@ -574,7 +578,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  DocumentBodies dbodies'
       
         '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.Id'
+        's.ServerId'
       'where'
       '  dbodies.DocumentId = :DocumentId'
       'order by dbodies.Product')
@@ -674,6 +678,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesDocumentBodyId: TLargeintField
       FieldName = 'DocumentBodyId'
     end
+    object adsDocumentBodiesServerId: TLargeintField
+      FieldName = 'ServerId'
+    end
+    object adsDocumentBodiesServerDocumentId: TLargeintField
+      FieldName = 'ServerDocumentId'
+    end
   end
   object tmrPrintedChange: TTimer
     Enabled = False
@@ -711,9 +721,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'invoiceheaders.NDSAmount,'
       'invoiceheaders.Amount'
       'from'
-      '  invoiceheaders '
+      '  documentHeaders'
+      
+        '  inner join invoiceheaders on invoiceheaders.Id = documentHeade' +
+        'rs.ServerId'
       'where'
-      '  Id = :DocumentId')
+      '  documentHeaders.Id = :DocumentId')
     Left = 272
     Top = 251
     ParamData = <
