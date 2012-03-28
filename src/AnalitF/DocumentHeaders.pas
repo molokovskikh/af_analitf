@@ -16,7 +16,8 @@ uses
   StrHlder,
   GlobalParams,
   U_SerialNumberSearch,
-  U_frameBaseLegend;
+  U_frameBaseLegend,
+  U_AddWaybillForm;
 
 const
   clCreatedByUser = clMoneyGreen;
@@ -78,6 +79,7 @@ type
     rgColumn: TRadioGroup;
     sbSearch: TSpeedButton;
     adsDocumentHeadersCreatedByUser: TBooleanField;
+    sbAdd: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -96,6 +98,7 @@ type
     procedure sbSearchClick(Sender: TObject);
     procedure dbgHeadersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure sbAddClick(Sender: TObject);
   private
     { Private declarations }
     legeng : TframeBaseLegend;
@@ -179,6 +182,7 @@ begin
 
   spDelete.Left := frameFilterSuppliers.Left + frameFilterSuppliers.Width + 5;
   sbListToExcel.Left := spDelete.Left + spDelete.Width + 5;
+  sbAdd.Left := sbListToExcel.Left + sbListToExcel.Width + 5;
 
   TDBGridHelper.RestoreColumnsLayout(dbgHeaders, Self.ClassName);
 
@@ -772,6 +776,28 @@ procedure TDocumentHeaderForm.dbgHeadersGetCellParams(Sender: TObject;
 begin
   if adsDocumentHeadersCreatedByUser.Value then
     Background := clCreatedByUser;
+end;
+
+procedure TDocumentHeaderForm.sbAddClick(Sender: TObject);
+var
+  AddWaybillForm: TAddWaybillForm;
+begin
+  AddWaybillForm := TAddWaybillForm.Create(Application);
+  try
+    if AddWaybillForm.ShowModal = mrOk then begin
+      DBProc.UpdateValue(
+        DM.MainConnection,
+        'insert into documentheaders (WriteTime, FirmCode, ClientId, DocumentType, ProviderDocumentId, CreatedByUser) values (:WriteTime, :FirmCode, :ClientId, 1, :ProviderDocumentId, 1);',
+        ['WriteTime', 'FirmCode', 'ClientId', 'ProviderDocumentId'],
+        [VarAsType(AddWaybillForm.dtpDate.Date, varDate),
+        AddWaybillForm.dblcbProvider.KeyValue,
+        DM.adtClients.FieldByName( 'ClientId').Value,
+        AddWaybillForm.eProviderId.Text]);
+      UpdateOrderDataset;
+    end;
+  finally
+    FreeAndNil(AddWaybillForm);
+  end;
 end;
 
 end.

@@ -3,19 +3,20 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
   Top = 160
   ActiveControl = dbgHeaders
   Caption = #1044#1086#1082#1091#1084#1077#1085#1090#1099
+  ClientWidth = 882
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object pTop: TPanel [0]
     Left = 0
     Top = 0
-    Width = 684
+    Width = 882
     Height = 45
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
     DesignSize = (
-      684
+      882
       45)
     object lBefore: TLabel
       Left = 139
@@ -46,7 +47,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object Bevel1: TBevel
       Left = 137
       Top = 0
-      Width = 547
+      Width = 745
       Height = 45
       Align = alClient
       Shape = bsBottomLine
@@ -60,7 +61,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnClick = spDeleteClick
     end
     object spOpenFolders: TSpeedButton
-      Left = 576
+      Left = 774
       Top = 9
       Width = 101
       Height = 27
@@ -77,13 +78,21 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       OnClick = sbListToExcelClick
     end
     object sbSearch: TSpeedButton
-      Left = 480
+      Left = 678
       Top = 9
       Width = 88
       Height = 27
       Anchors = [akTop, akRight]
       Caption = #1055#1086#1080#1089#1082' '#1090#1086#1074#1072#1088#1072
       OnClick = sbSearchClick
+    end
+    object sbAdd: TSpeedButton
+      Left = 606
+      Top = 9
+      Width = 97
+      Height = 27
+      Caption = #1044#1086#1073#1072#1074#1080#1090#1100
+      OnClick = sbAddClick
     end
     object dtpDateFrom: TDateTimePicker
       Left = 204
@@ -129,7 +138,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
   object pGrid: TPanel [1]
     Left = 0
     Top = 45
-    Width = 684
+    Width = 882
     Height = 404
     Align = alClient
     BevelOuter = bvNone
@@ -138,7 +147,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       Tag = 1024
       Left = 0
       Top = 0
-      Width = 684
+      Width = 882
       Height = 404
       Align = alClient
       AllowedOperations = [alopUpdateEh]
@@ -378,13 +387,16 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
         '73756d2864622e52657461696c416d6f756e742920617320546f74616c526574' +
         '61696c53756d6d'
       '66726f6d'
+      '202028'
       '2020446f63756d656e74486561646572732064682c'
-      '202070726f76696465727320702c'
-      '2020446f63756d656e74426f64696573206462'
+      '202070726f7669646572732070'
+      '202029'
+      
+        '20206c656674206a6f696e20446f63756d656e74426f64696573206462206f6e' +
+        '2064622e446f63756d656e744964203d2064682e4964'
       '7768657265'
       '202020202864682e436c69656e744964203d203a436c69656e74496429'
-      '616e642028702e4669726d436f6465203d2064682e4669726d436f646529'
-      '616e64202864622e446f63756d656e744964203d2064682e496429')
+      '616e642028702e4669726d436f6465203d2064682e4669726d436f646529')
   end
   object tmrChangeFilterSuppliers: TTimer
     Enabled = False

@@ -161,7 +161,8 @@ uses
   U_frameMiniMail in 'Views\U_frameMiniMail.pas' {frameMiniMail: TFrame},
   U_MiniMailForm in 'U_MiniMailForm.pas' {MiniMailForm},
   FileCountHelper in 'Helpers\FileCountHelper.pas',
-  SearchFilterController in 'BusinessLogic\SearchFilterController.pas';
+  SearchFilterController in 'BusinessLogic\SearchFilterController.pas',
+  U_AddWaybillForm in 'Views\U_AddWaybillForm.pas' {AddWaybillForm};
 
 {$R *.RES}
 {$R Progress.RES}
