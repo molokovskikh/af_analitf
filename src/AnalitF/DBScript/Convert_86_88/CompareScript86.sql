@@ -9,7 +9,9 @@ alter table analitf.documentheaders
   add column `CreatedByUser` tinyint(1) not null default '0';
 
 alter table analitf.documentbodies
-  add column `ServerId` bigint(20) unsigned DEFAULT NULL after `Id`;
+  modify column `DocumentId` bigint(20) unsigned DEFAULT NULL,
+  add column `ServerId` bigint(20) unsigned DEFAULT NULL after `DocumentId`,
+  add column `ServerDocumentId` bigint(20) unsigned DEFAULT NULL after `ServerId`;
 
 update analitf.documentheaders
 set
@@ -17,6 +19,7 @@ set
 
 update analitf.documentbodies
 set
-  ServerId = Id;
+  ServerId = Id,
+  ServerDocumentId = DocumentId;
 
-update analitf.params set ProviderMDBVersion = 87 where id = 0;
+update analitf.params set ProviderMDBVersion = 88 where id = 0;

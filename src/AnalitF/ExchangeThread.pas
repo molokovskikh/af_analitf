@@ -3578,7 +3578,7 @@ begin
       Format(
       'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
       ' ( ' +
-      '    ServerId, DocumentId, Product, Code, Certificates, Period, Producer, ' +
+      '    ServerId, ServerDocumentId, Product, Code, Certificates, Period, Producer, ' +
       '    Country, ProducerCost, RegistryCost, SupplierPriceMarkup, ' +
       '    SupplierCostWithoutNDS, SupplierCost, Quantity, VitallyImportant, ' +
       '    NDS, SerialNumber, Amount, NdsAmount, Unit, ExciseTax, ' +
@@ -3587,6 +3587,17 @@ begin
       'set Printed = 1;',
       [InputFileName,
        'DocumentBodies']);
+    DM.adcUpdate.Execute;
+    DM.adcUpdate.SQL.Text := '' +
+      ' update ' +
+      '   analitf.DocumentBodies, ' +
+      '   analitf.DocumentHeaders ' +
+      ' set ' +
+      '   DocumentBodies.DocumentId = DocumentHeaders.Id ' +
+      ' where ' +
+      '     DocumentBodies.ServerDocumentId is not null ' +
+      ' and DocumentBodies.DocumentId is null ' +
+      ' and DocumentHeaders.ServerId = DocumentBodies.ServerDocumentId ';
     DM.adcUpdate.Execute;
   end;
   

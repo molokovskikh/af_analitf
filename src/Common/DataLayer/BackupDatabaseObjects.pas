@@ -441,8 +441,9 @@ function TDocumentBodiesTable.GetColumns: String;
 begin
   Result := ''
 +'  `Id` , '
-+'  `ServerId` , '
 +'  `DocumentId` , '
++'  `ServerId` , '
++'  `ServerDocumentId` , '
 +'  `Product` , '
 +'  `Code` , '
 +'  `Certificates` , '
@@ -480,8 +481,9 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +' ( '
 +'  `Id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, '
++'  `DocumentId` bigint(20) unsigned DEFAULT NULL, '
 +'  `ServerId` bigint(20) unsigned DEFAULT NULL, '
-+'  `DocumentId` bigint(20) unsigned NOT NULL, '
++'  `ServerDocumentId` bigint(20) unsigned DEFAULT NULL, '
 +'  `Product` varchar(255) not null, '
 +'  `Code` varchar(20) default null, '
 +'  `Certificates` varchar(50) default null, '
