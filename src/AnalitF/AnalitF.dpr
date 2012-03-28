@@ -10,6 +10,7 @@ uses
   ActiveX,
   Registry,
   LU_MutexSystem in '..\Common\System\LU_MutexSystem.pas',
+  VistaAltFixUnit in '..\Common\Classes\VistaAltFixUnit.pas',
   Main in 'Main.pas' {MainForm},
   DModule in 'DModule.pas' {DM: TDataModule},
   AProc in 'AProc.pas',

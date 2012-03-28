@@ -31,8 +31,18 @@ begin
     Взято отсюда: http://www.stevetrefethen.com/blog/UsingTheWSEXCOMPOSITEWindowStyleToEliminateFlickerOnWindowsXP.aspx
     На этой странице есть другие решения для проблем под Vista: http://www.installationexcellence.com/articles/VistaWithDelphi/Index.html
   }
+{
+  //Отказался от этого решения в пользу решения:
+  http://qc.embarcadero.com/wc/qcmain.aspx?d=37403
+  ALT Key press causes controls to disappear under Themes in Vista and XP
+
+  Update (Dec 18 2006): Per-Erik Andersson came up with a new approach that is MUCH BETTER.
+  It hooks the WM_UPDATEUISTATE message and only requires a single component instance to handle all forms
+  in an application. Source is available at http://cc.codegear.com/item/24282
+
   if CheckWin32Version(5, 1) then
     Params.ExStyle := Params.ExStyle or WS_EX_COMPOSITED;
+}    
 end;
 
 end.

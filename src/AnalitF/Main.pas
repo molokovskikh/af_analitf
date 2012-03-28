@@ -15,7 +15,8 @@ uses
   UserActions,
   StrUtils,
   U_MiniMailForm,
-  HtmlView;
+  HtmlView,
+  VistaAltFixUnit;
 
 type
 
@@ -163,6 +164,7 @@ TMainForm = class(TForm)
     itmMiniMail: TMenuItem;
     miMiniMailFromDocs: TMenuItem;
     HTMLViewer: THTMLViewer;
+    VistaAltFix: TVistaAltFix;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);

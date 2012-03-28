@@ -4053,4 +4053,8 @@ object MainForm: TMainForm
     Left = 408
     Top = 280
   end
+  object VistaAltFix: TVistaAltFix
+    Left = 465
+    Top = 155
+  end
 end
