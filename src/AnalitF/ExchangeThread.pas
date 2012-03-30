@@ -3596,7 +3596,7 @@ begin
       '   DocumentBodies.DocumentId = DocumentHeaders.Id ' +
       ' where ' +
       '     DocumentBodies.ServerDocumentId is not null ' +
-      ' and DocumentBodies.DocumentId is null ' +
+      ' and (DocumentBodies.DocumentId is null or DocumentBodies.DocumentId = 0)' +
       ' and DocumentHeaders.ServerId = DocumentBodies.ServerDocumentId ';
     DM.adcUpdate.Execute;
   end;
@@ -4192,14 +4192,21 @@ begin
     absentQuery := TMyQuery.Create(nil);
     absentQuery.Connection := DM.MainConnection;
     try
-      absentQuery.SQL.Text := 'select ServerId from DocumentBodies where RequestCertificate = 1';
+      absentQuery.SQL.Text := 'select ServerId, Id, Product from DocumentBodies where RequestCertificate = 1';
 
       absentQuery.Open;
       try
         if absentQuery.RecordCount > 0 then begin
           DocumentBodyIdsSL := TStringList.Create;
           while not absentQuery.Eof do begin
-            DocumentBodyIdsSL.Add(absentQuery.FieldByName('ServerId').AsString);
+            if not absentQuery.FieldByName('ServerId').IsNull then
+              DocumentBodyIdsSL.Add(absentQuery.FieldByName('ServerId').AsString)
+            else begin
+              WriteExchangeLog('GetCertificateRequests',
+                Format('Для позиции "%s" {%s} не установлен ServerId', [
+                  absentQuery.FieldByName('Product').AsString,
+                  absentQuery.FieldByName('Id').AsString]));
+            end;
             absentQuery.Next;
           end;
         end;
