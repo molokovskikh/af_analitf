@@ -222,6 +222,8 @@ type
     procedure FillNDSFilter();
     procedure AddNDSFilter();
     procedure ReadSettings();
+
+    function GetMarkupValue(afValue : Currency; individualMarkup : TFloatField) : Currency;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -481,17 +483,17 @@ begin
       then begin
         if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальную наценку берем из ЖНВЛС');
         if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'GetMinProducerCostForMarkup(): ' + FloatToStr(GetMinProducerCostForMarkup()));
-        maxMarkup := DM.GetMaxVitallyImportantMarkup(GetMinProducerCostForMarkup())
+        maxMarkup := GetMarkupValue(DM.GetMaxVitallyImportantMarkup(GetMinProducerCostForMarkup()), adsDocumentBodiesCatalogMaxMarkup);
       end
       else begin
         if CalculateOnProducerCost then begin
           if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальную наценку берем из не-ЖНВЛС относительно ProducerCost');
-          maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesProducerCost.Value)
+          maxMarkup := GetMarkupValue(DM.GetMaxRetailMarkup(adsDocumentBodiesProducerCost.Value), adsDocumentBodiesCatalogMaxMarkup);
         end
         else begin
           if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Максимальную наценку берем из не-ЖНВЛС относительно SupplierCostWithoutNDS');
           if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'SupplierCostWithoutNDS: ' + adsDocumentBodiesSupplierCostWithoutNDS.AsString);
-          maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+          maxMarkup := GetMarkupValue(DM.GetMaxRetailMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value), adsDocumentBodiesCatalogMaxMarkup);
         end;
       end;
       maxRetailMarkupField.Value := maxMarkup;
@@ -501,7 +503,7 @@ begin
       if NeedLog and NeedCalcFieldsLog then Tracer.TR('WaybillCalcFields', 'Цена производителя: null');
       if not CalculateOnProducerCost and not adsDocumentBodiesVitallyImportant.Value
       then begin
-        maxMarkup := DM.GetMaxRetailMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+        maxMarkup := GetMarkupValue(DM.GetMaxRetailMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value), adsDocumentBodiesCatalogMaxMarkup);
         maxRetailMarkupField.Value := maxMarkup;
       end;
     end;
@@ -700,12 +702,12 @@ begin
     if adsDocumentBodiesVitallyImportant.Value
     or (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     then
-      maxSupplierMarkup := DM.GetMaxVitallyImportantSupplierMarkup(GetMinProducerCostForMarkup())
+      maxSupplierMarkup := GetMarkupValue(DM.GetMaxVitallyImportantSupplierMarkup(GetMinProducerCostForMarkup()), adsDocumentBodiesCatalogMaxSupplierMarkup)
     else begin
       if CalculateOnProducerCost then
-        maxSupplierMarkup := DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesProducerCost.Value)
+        maxSupplierMarkup := GetMarkupValue(DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesProducerCost.Value), adsDocumentBodiesCatalogMaxSupplierMarkup)
       else
-        maxSupplierMarkup := DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+        maxSupplierMarkup := GetMarkupValue(DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value), adsDocumentBodiesCatalogMaxSupplierMarkup);
     end;
     if adsDocumentBodiesSupplierPriceMarkup.Value > maxSupplierMarkup then
       Background := clRed;
@@ -834,7 +836,7 @@ begin
       then begin
         if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку берем из ЖНВЛС');
         if NeedLog then Tracer.TR('RecalcPosition', 'GetMinProducerCostForMarkup(): ' + FloatToStr(GetMinProducerCostForMarkup()));
-        upCostVariant := DM.GetVitallyImportantMarkup(GetMinProducerCostForMarkup());
+        upCostVariant := GetMarkupValue(DM.GetVitallyImportantMarkup(GetMinProducerCostForMarkup()), adsDocumentBodiesCatalogMarkup);
       end
     end
     else begin
@@ -842,7 +844,7 @@ begin
         if not adsDocumentBodiesProducerCost.IsNull and (adsDocumentBodiesProducerCost.Value > 0)
         then begin
           if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку берем из не-ЖНВЛС относительно ProducerCost');
-          upCostVariant := DM.GetRetUpCost(adsDocumentBodiesProducerCost.Value);
+          upCostVariant := GetMarkupValue(DM.GetRetUpCost(adsDocumentBodiesProducerCost.Value), adsDocumentBodiesCatalogMarkup);
         end
       end
       else begin
@@ -851,7 +853,7 @@ begin
            and (adsDocumentBodiesSupplierCostWithoutNDS.Value > 0)
         then begin
           if NeedLog then Tracer.TR('RecalcPosition', 'Розничную наценку берем из не-ЖНВЛС относительно SupplierCostWithoutNDS');
-          upCostVariant := DM.GetRetUpCost(adsDocumentBodiesSupplierCostWithoutNDS.Value);
+          upCostVariant := GetMarkupValue(DM.GetRetUpCost(adsDocumentBodiesSupplierCostWithoutNDS.Value), adsDocumentBodiesCatalogMarkup);
         end
       end;
     end;
@@ -2058,20 +2060,21 @@ begin
       if mdReport.FieldByName('VitallyImportant').AsBoolean
       or (cbWaybillAsVitallyImportant.Checked and mdReport.FieldByName('VitallyImportant').IsNull)
       then begin
-        maxMarkup := DM.GetMaxVitallyImportantMarkup(
+        maxMarkup := GetMarkupValue(DM.GetMaxVitallyImportantMarkup(
           GetMinProducerCostByFieldForMarkup(
             TFloatField(mdReport.FieldByName('RegistryCost')),
             TFloatField(mdReport.FieldByName('ProducerCost')),
             mdReport.FieldByName('NDS')
           )
-        )
+        ),
+        TFloatField(mdReport.FieldByName('CatalogMaxMarkup')))
       end
       else begin
         if CalculateOnProducerCost then begin
-          maxMarkup := DM.GetMaxRetailMarkup(mdReport.FieldByName('ProducerCost').AsFloat)
+          maxMarkup := GetMarkupValue(DM.GetMaxRetailMarkup(mdReport.FieldByName('ProducerCost').AsFloat), TFloatField(mdReport.FieldByName('CatalogMaxMarkup')))
         end
         else begin
-          maxMarkup := DM.GetMaxRetailMarkup(mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat);
+          maxMarkup := GetMarkupValue(DM.GetMaxRetailMarkup(mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat), TFloatField(mdReport.FieldByName('CatalogMaxMarkup')));
         end;
       end;
       mdMaxRetailMarkupField.Value := maxMarkup;
@@ -2079,7 +2082,7 @@ begin
     else begin
       if not CalculateOnProducerCost and not mdReport.FieldByName('VitallyImportant').AsBoolean
       then begin
-        maxMarkup := DM.GetMaxRetailMarkup(mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat);
+        maxMarkup := GetMarkupValue(DM.GetMaxRetailMarkup(mdReport.FieldByName('SupplierCostWithoutNDS').AsFloat), TFloatField(mdReport.FieldByName('CatalogMaxMarkup')));
         mdMaxRetailMarkupField.Value := maxMarkup;
       end;
     end;
@@ -2303,6 +2306,15 @@ begin
       adsDocumentBodies.Cancel;
     Handled := True;
   end;
+end;
+
+function TDocumentBodiesForm.GetMarkupValue(afValue: Currency;
+  individualMarkup: TFloatField): Currency;
+begin
+  if not individualMarkup.IsNull then
+    Result := individualMarkup.Value
+  else
+    Result := afValue;
 end;
 
 end.
