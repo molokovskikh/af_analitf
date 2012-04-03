@@ -412,4 +412,10 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     Left = 240
     Top = 183
   end
+  object adsRetailProcessed: TMyQuery
+    Connection = DM.MyConnection
+    Options.StrictUpdate = False
+    Left = 80
+    Top = 127
+  end
 end

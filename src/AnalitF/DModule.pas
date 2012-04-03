@@ -919,6 +919,9 @@ var
   UpdateByCheckUINExchangeActions : TExchangeActions;
   UpdateByCheckUINSuccess : Boolean;
   fileCountHelper : TFileCountThread; 
+{$ifdef DEBUG}
+  dataTable : TDatabaseTable;
+{$endif}
 begin
 {$ifdef USEMEMORYCRYPTDLL}
   //Блокируем использование MemoryLib, т.к. оно не работает
@@ -1060,7 +1063,7 @@ begin
     on E : Exception do
       LogExitError(Format( 'Невозможно открыть базу данных: %s ', [ E.Message ]), Integer(ecDBFileError));
   end;
-}  
+}
 
   //Удаляем файлы базы данных для переустановки
 {
@@ -1137,6 +1140,14 @@ begin
   WriteExchangeLog('DModule',
       Concat('UserActionLogs', #13#10,
         DM.DataSetToString('select Id, LogTime, UserActionId, Context from UserActionLogs', [], [])));
+  dataTable := TDatabaseTable( DatabaseController().FindById(doiDocumentHeaders) );
+  WriteExchangeLog('DModule',
+      Concat(dataTable.Name, #13#10,
+        DM.DataSetToString('select ' + dataTable.GetColumns() + ' from ' + dataTable.Name, [], [])));
+  dataTable := TDatabaseTable( DatabaseController().FindById(doiDocumentBodies) );
+  WriteExchangeLog('DModule',
+      Concat(dataTable.Name, #13#10,
+        DM.DataSetToString('select ' + dataTable.GetColumns() + ' from ' + dataTable.Name, [], [])));
 {$endif}
   InsertUserActionLog(uaStart);
 

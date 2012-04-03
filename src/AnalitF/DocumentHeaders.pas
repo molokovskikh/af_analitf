@@ -80,6 +80,7 @@ type
     sbSearch: TSpeedButton;
     adsDocumentHeadersCreatedByUser: TBooleanField;
     sbAdd: TSpeedButton;
+    adsRetailProcessed: TMyQuery;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -521,8 +522,8 @@ var
   supplierFilter : String;
   sl : TStringList;
 begin
-  DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := '';
+  adsRetailProcessed.Close;
+  adsRetailProcessed.SQL.Text := '';
 
   adsDocumentHeaders.Close;
 
@@ -540,7 +541,7 @@ begin
     adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' and ' + supplierFilter + ' '#13#10;
 
-  DM.adsQueryValue.SQL.Text := adsDocumentHeaders.SQL.Text
+  adsRetailProcessed.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' and (dh.DocumentType = 1) and (dh.RetailAmountCalculated is null or dh.RetailAmountCalculated = 0) '
       + #13#10' group by dh.Id '
       + #13#10' order by dh.LoadTime DESC ';
@@ -554,22 +555,43 @@ begin
   dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
   adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
 
-  adsDocumentHeaders.Open;
+  WriteExchangeLog('DocumentHeader',
+    'explain adsDocumentHeaders result: ' + #13#10 +
+    DM.DataSetToString(
+      'explain EXTENDED ' + adsDocumentHeaders.SQL.Text,
+      ['ClientId', 'DateFrom', 'DateTo'],
+      [adsDocumentHeaders.ParamByName( 'ClientId').Value,
+       adsDocumentHeaders.ParamByName( 'DateFrom').AsDate,
+       adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime]));
 
-  DM.adsQueryValue.ParamByName( 'ClientId').Value :=
+  WriteExchangeLogTID('DocumentHeader', 'Start adsDocumentHeaders.Open');
+  adsDocumentHeaders.Open;
+  WriteExchangeLogTID('DocumentHeader', 'Stop adsDocumentHeaders.Open');
+
+  WriteExchangeLogTID('DocumentHeader', 'Start adsRetailProcessed.Open');
+  adsRetailProcessed.ParamByName( 'ClientId').Value :=
     adsDocumentHeaders.ParamByName( 'ClientId').Value;
-  DM.adsQueryValue.ParamByName( 'DateFrom').AsDate :=
+  adsRetailProcessed.ParamByName( 'DateFrom').AsDate :=
     adsDocumentHeaders.ParamByName( 'DateFrom').AsDate;
-  DM.adsQueryValue.ParamByName( 'DateTo').AsDateTime :=
+  adsRetailProcessed.ParamByName( 'DateTo').AsDateTime :=
     adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime;
 
-  DM.adsQueryValue.Open;
+  WriteExchangeLog('DocumentHeader',
+    'adsRetailProcessed result: ' + #13#10 +
+    DM.DataSetToString(
+      adsRetailProcessed.SQL.Text,
+      ['ClientId', 'DateFrom', 'DateTo'],
+      [adsDocumentHeaders.ParamByName( 'ClientId').Value,
+       adsDocumentHeaders.ParamByName( 'DateFrom').AsDate,
+       adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime]));
+
+  adsRetailProcessed.Open;
   try
     sl := TStringList.Create;
     try
-      while not DM.adsQueryValue.Eof do begin
-        sl.Add(DM.adsQueryValue.FieldByName('Id').AsString);
-        DM.adsQueryValue.Next;
+      while not adsRetailProcessed.Eof do begin
+        sl.Add(adsRetailProcessed.FieldByName('Id').AsString);
+        adsRetailProcessed.Next;
       end;
 
       if sl.Count > 0 then begin
@@ -585,8 +607,9 @@ begin
       sl.Free;
     end;
   finally
-    DM.adsQueryValue.Close;
+    adsRetailProcessed.Close;
   end;
+  WriteExchangeLogTID('DocumentHeader', 'Stop adsRetailProcessed processed');
 end;
 
 procedure TDocumentHeaderForm.tmrChangeFilterSuppliersTimer(
@@ -600,15 +623,18 @@ procedure TDocumentHeaderForm.UpdateOrderDataset;
 var
   lastId : Variant;
 begin
+  WriteExchangeLogTID('DocumentHeader', 'Start UpdateOrderDataset');
   lastId := adsDocumentHeadersId.AsVariant;
   adsDocumentHeaders.DisableControls;
   try
     ShowHeaders;
+    WriteExchangeLogTID('DocumentHeader', 'Start Locate');
     if not adsDocumentHeaders.Locate('Id', lastId, []) then
       adsDocumentHeaders.First;
   finally
     adsDocumentHeaders.EnableControls;
   end;
+  WriteExchangeLogTID('DocumentHeader', 'Stop UpdateOrderDataset');
 end;
 
 procedure TDocumentHeaderForm.RecalcDocument(documentId: Int64);

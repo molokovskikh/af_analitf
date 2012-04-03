@@ -853,8 +853,8 @@ end;
 
 procedure TChildForm.ShowAsPrevForm;
 begin
-  SetActiveChildToMainForm;
   Show;
+  SetActiveChildToMainForm;
   HideAllForms;
   UpdateOrderDataset;
 end;

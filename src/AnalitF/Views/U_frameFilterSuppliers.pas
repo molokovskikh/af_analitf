@@ -106,8 +106,8 @@ begin
 
   CreateVisualComponent;
 
-  gbSuppliers.ControlStyle := gbSuppliers.ControlStyle - [csParentBackground] + [csOpaque];
-  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+//  gbSuppliers.ControlStyle := gbSuppliers.ControlStyle - [csParentBackground] + [csOpaque];
+//  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
 procedure TframeFilterSuppliers.CreateMenu;
