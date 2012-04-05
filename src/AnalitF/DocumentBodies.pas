@@ -173,6 +173,7 @@ type
     procedure PrepareGrid;
     procedure WaybillCalcFields(DataSet : TDataSet);
     procedure UserWaybillNewRecord(DataSet: TDataSet);
+    procedure UserWaybillBeforePost(DataSet: TDataSet);
     procedure mdReportCalcFields(DataSet : TDataSet);
     procedure LoadFromRegistry();
     procedure RecalcDocument;
@@ -387,8 +388,11 @@ begin
       adsDocumentBodies.SQLInsert.Text := shPositionInsert.Strings.Text;
       adsDocumentBodies.SQLDelete.Text := shPositionDelete.Strings.Text;
       adsDocumentBodies.SQLUpdate.Text := shPositionFullUpdate.Strings.Text;
+      adsDocumentBodies.BeforePost := UserWaybillBeforePost;
     end
     else begin
+      adsDocumentBodies.OnNewRecord := nil;
+      adsDocumentBodies.BeforePost := nil;
       FWaybillDataSetState := [dsEdit];
       adsDocumentBodies.SQLUpdate.Text := shPositionUpdate.Strings.Text;
     end;
@@ -446,6 +450,8 @@ begin
   else begin
     legeng.Visible := False;
     adsDocumentBodies.OnCalcFields := nil;
+    adsDocumentBodies.OnNewRecord := nil;
+    adsDocumentBodies.BeforePost := nil;
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
     dbgDocumentBodies.OnCellClick := nil;
@@ -2311,6 +2317,11 @@ begin
     Result := individualMarkup.Value
   else
     Result := afValue;
+end;
+
+procedure TDocumentBodiesForm.UserWaybillBeforePost(DataSet: TDataSet);
+begin
+  RecalcPosition;
 end;
 
 end.
