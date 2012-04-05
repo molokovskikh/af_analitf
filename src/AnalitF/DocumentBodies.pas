@@ -2104,8 +2104,8 @@ begin
       mdRealMarkupField.Value := ((price - mdReport.FieldByName('SupplierCost').AsFloat) * 100)/ mdReport.FieldByName('SupplierCost').AsFloat;
     end
     else begin
-      if not manualRetailPriceField.IsNull then begin
-        price := manualRetailPriceField.Value;
+      if not mdReport.FieldByName('ManualRetailPrice').IsNull then begin
+        price := mdReport.FieldByName('ManualRetailPrice').AsFloat;
         mdRetailPriceField.Value := price;
         mdretailSummField.Value := RoundTo(price, -2) * mdReport.FieldByName('Quantity').AsInteger;
       end;
