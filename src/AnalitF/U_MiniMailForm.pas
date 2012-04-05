@@ -17,6 +17,7 @@ type
       Shift: TShiftState);
     procedure spbCloseClick(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
     FirstKey : Boolean;
@@ -88,6 +89,13 @@ procedure TMiniMailForm.FormDeactivate(Sender: TObject);
 begin
   inherited;
   Close;
+end;
+
+procedure TMiniMailForm.FormHide(Sender: TObject);
+begin
+  if Assigned(frameMiniMail) then
+    frameMiniMail.SaveChanges();
+  inherited;
 end;
 
 end.

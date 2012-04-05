@@ -3,6 +3,7 @@ inherited MiniMailForm: TMiniMailForm
   KeyPreview = True
   OnCreate = FormCreate
   OnDeactivate = FormDeactivate
+  OnHide = FormHide
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96

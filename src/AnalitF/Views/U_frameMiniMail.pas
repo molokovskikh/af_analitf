@@ -112,6 +112,7 @@ type
     class function AddFrame(
       Owner: TComponent;
       Parent: TWinControl) : TframeMiniMail;
+    procedure SaveChanges();  
   end;
 
 implementation
@@ -548,6 +549,14 @@ begin
       Text := ''
     else
       Text := 'Показать';
+end;
+
+procedure TframeMiniMail.SaveChanges;
+begin
+  if Assigned(mdAttachments) then
+    SoftPost(mdAttachments);
+  if Assigned(mdMails) then
+    SoftPost(mdMails);
 end;
 
 end.
