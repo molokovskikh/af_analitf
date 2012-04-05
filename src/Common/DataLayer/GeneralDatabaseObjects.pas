@@ -893,7 +893,8 @@ begin
 +'    key `FK_MINPRICES_REGIONCODE` (`REGIONCODE`), '
 +'    key `IDX_MINPRICES_MinCost` (`MinCost`), '
 +'    key `IDX_MINPRICES_NextCost` (`NextCost`), '
-+'    key `IDX_MINPRICES_Percent` (`Percent`) '
++'    key `IDX_MINPRICES_Percent` (`Percent`), '
++'    key `IDX_MinPrices_MinCostCount` (`MinCostCount`) '
 +'  ) '
 + GetTableOptions();
 end;

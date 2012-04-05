@@ -675,6 +675,7 @@ begin
     adsMinPrices.ParamByName('LikeParam').Value := '%' + InternalSearchNameText + '%';
 
 {$ifdef MinPricesLog}
+  WriteExchangeLog('MinPricesForm', 'adsMinPrices.SQL.Text'#13#10 + adsMinPrices.SQL.Text);
   WriteExchangeLog('MinPricesForm',
     'explain adsMinPrices result: ' + #13#10 +
     DM.DataSetToString(
