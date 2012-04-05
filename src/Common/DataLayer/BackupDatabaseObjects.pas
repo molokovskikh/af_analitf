@@ -423,7 +423,9 @@ begin
 +'  PRIMARY KEY (`Id`), '
 +'  KEY (`LoadTime`), '
 +'  KEY (`DownloadId`), '
-+'  KEY (`ClientId`) '
++'  KEY (`ClientId`), '
++'  key `IDX_DocumentHeaders_WriteTime` (`WriteTime`), '
++'  unique key `UK_DocumentHeaders_ServerId` (`ServerId`) '
 +' ) '
 + GetTableOptions();
 end;
@@ -514,7 +516,9 @@ begin
 +'  `ProductId` bigint(20) default null, '
 +'  `ProducerId` bigint(20) default null, '
 +'  `CertificateId` bigint(20) default null, '
-+'  PRIMARY KEY (`Id`) '
++'  PRIMARY KEY (`Id`), '
++'  unique key `UK_DocumentBodies_ServerId` (`ServerId`), '
++'  key `IDX_DocumentBodies_DocumentId` (`DocumentId`) '
 +' ) '
 + GetTableOptions();
 end;

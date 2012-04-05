@@ -157,22 +157,6 @@ var
   Year, Month, Day: Word;
   lLegend : TLabel;
 begin
-  try
-    WriteExchangeLogTID('DocumentHeader', 'add key IDX_DocumentBodies_DocumentId');
-    DM.MainConnection.ExecSQL('alter table analitf.DocumentBodies add key `IDX_DocumentBodies_DocumentId` (`DocumentId`);', []);
-    WriteExchangeLogTID('DocumentHeader', 'add key IDX_DocumentHeaders_WriteTime');
-    DM.MainConnection.ExecSQL('alter table analitf.DocumentHeaders add key `IDX_DocumentHeaders_WriteTime` (`WriteTime`);', []);
-    WriteExchangeLogTID('DocumentHeader', 'add key IDX_DocumentHeaders_ClLT');
-    DM.MainConnection.ExecSQL('alter table analitf.DocumentHeaders add key `IDX_DocumentHeaders_ClLT` (`ClientId`, `LoadTime`);', []);
-    WriteExchangeLogTID('DocumentHeader', 'add key IDX_DocumentHeaders_ClWT');
-    DM.MainConnection.ExecSQL('alter table analitf.DocumentHeaders add key `IDX_DocumentHeaders_ClWT` (`ClientId`, `WriteTime`);', []);
-    WriteExchangeLogTID('DocumentHeader', 'end add keys');
-  except
-    on E : Exception do
-     WriteExchangeLogTID('DocumentHeader.FormCreate', 'Ошибка: ' + ExceptionToString(E));
-  end;
-
-
   csProcessedList := TCriticalSection.Create;
   ProcessedList := TStringList.Create;
 
@@ -547,7 +531,6 @@ begin
 
   if rgColumn.ItemIndex = 0 then
     adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
-      //+ #13#10' and (ifnull(dh.WriteTime, dh.LoadTime) BETWEEN :DateFrom AND :DateTo) '#13#10
       + #13#10' and ((dh.WriteTime is not null and dh.WriteTime BETWEEN :DateFrom AND :DateTo) or (dh.WriteTime is null and dh.LoadTime BETWEEN :DateFrom AND :DateTo)) '#13#10
   else
     adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text

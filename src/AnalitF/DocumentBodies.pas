@@ -294,12 +294,6 @@ end;
 procedure TDocumentBodiesForm.ShowForm(DocumentId: Int64;
   ParentForm: TChildForm);
 begin
-{$ifdef DEBUG}
-{
-  WriteExchangeLogTID('TDocumentBodiesForm',
-    DM.DataSetToString('select Id, DocumentId, ServerId, ServerDocumentId, Product from documentBodies', [], []));
-}    
-{$endif}
   Self.OnResize := nil;
   FDocumentId := DocumentId;
   SetParams;
@@ -358,11 +352,8 @@ begin
 }
     end
     else
-      if Assigned(PrevForm) then begin
-        WriteExchangeLogTID('DocumentBodies', 'Start escaped');
+      if Assigned(PrevForm) then
         PrevForm.ShowAsPrevForm;
-        WriteExchangeLogTID('DocumentBodies', 'Stop escaped');
-      end;
 end;
 
 procedure TDocumentBodiesForm.PrepareGrid;
@@ -383,7 +374,7 @@ begin
   dbgDocumentBodies.Columns.Clear();
   dbgDocumentBodies.ShowHint := True;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
-    //legeng.Visible := True;
+    legeng.Visible := True;
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
@@ -453,7 +444,7 @@ begin
       dbgDocumentBodies.AllowedOperations := [alopUpdateEh];
   end
   else begin
-    //legeng.Visible := False;
+    legeng.Visible := False;
     adsDocumentBodies.OnCalcFields := nil;
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
@@ -549,15 +540,11 @@ end;
 
 procedure TDocumentBodiesForm.FormHide(Sender: TObject);
 begin
-  WriteExchangeLogTID('DocumentBodies', 'Start SoftPost');
   SoftPost(adsDocumentBodies);
-  WriteExchangeLogTID('DocumentBodies', 'Start inherited');
   inherited;
-  WriteExchangeLogTID('DocumentBodies', 'Start SaveColumnsLayout');
   TDBGridHelper.SaveColumnsLayout(
     dbgDocumentBodies,
     IfThen(adsDocumentHeadersDocumentType.Value = 1, ifthen(adsDocumentHeadersCreatedByUser.Value, 'DetailUserWaybill', 'DetailWaybill'), 'DetailReject'));
-  WriteExchangeLogTID('DocumentBodies', 'Stop SaveColumnsLayout');
 end;
 
 procedure TDocumentBodiesForm.LoadFromRegistry;
@@ -649,7 +636,7 @@ begin
 
   FContextMenuGrid := TContextMenuGrid.Create(dbgDocumentBodies, DM.SaveGridMask);
 
-  //CreateLegenPanel();
+  CreateLegenPanel();
 
   inherited;
 end;

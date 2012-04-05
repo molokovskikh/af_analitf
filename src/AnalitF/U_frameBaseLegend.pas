@@ -41,8 +41,8 @@ var
   textHeight : Integer;
 begin
   inherited;
-//  gbLegend.ControlStyle := gbLegend.ControlStyle - [csParentBackground] + [csOpaque];
-//  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+  gbLegend.ControlStyle := gbLegend.ControlStyle - [csParentBackground] + [csOpaque];
+  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 
   newLeftLabel := 8;
   
