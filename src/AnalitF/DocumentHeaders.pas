@@ -555,6 +555,7 @@ begin
   dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
   adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
 
+{
   WriteExchangeLog('DocumentHeader',
     'explain adsDocumentHeaders result: ' + #13#10 +
     DM.DataSetToString(
@@ -563,12 +564,13 @@ begin
       [adsDocumentHeaders.ParamByName( 'ClientId').Value,
        adsDocumentHeaders.ParamByName( 'DateFrom').AsDate,
        adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime]));
+}       
 
-  WriteExchangeLogTID('DocumentHeader', 'Start adsDocumentHeaders.Open');
+//  WriteExchangeLogTID('DocumentHeader', 'Start adsDocumentHeaders.Open');
   adsDocumentHeaders.Open;
-  WriteExchangeLogTID('DocumentHeader', 'Stop adsDocumentHeaders.Open');
+//  WriteExchangeLogTID('DocumentHeader', 'Stop adsDocumentHeaders.Open');
 
-  WriteExchangeLogTID('DocumentHeader', 'Start adsRetailProcessed.Open');
+//  WriteExchangeLogTID('DocumentHeader', 'Start adsRetailProcessed.Open');
   adsRetailProcessed.ParamByName( 'ClientId').Value :=
     adsDocumentHeaders.ParamByName( 'ClientId').Value;
   adsRetailProcessed.ParamByName( 'DateFrom').AsDate :=
@@ -576,6 +578,7 @@ begin
   adsRetailProcessed.ParamByName( 'DateTo').AsDateTime :=
     adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime;
 
+{
   WriteExchangeLog('DocumentHeader',
     'adsRetailProcessed result: ' + #13#10 +
     DM.DataSetToString(
@@ -584,6 +587,7 @@ begin
       [adsDocumentHeaders.ParamByName( 'ClientId').Value,
        adsDocumentHeaders.ParamByName( 'DateFrom').AsDate,
        adsDocumentHeaders.ParamByName( 'DateTo').AsDateTime]));
+}       
 
   adsRetailProcessed.Open;
   try
@@ -609,7 +613,7 @@ begin
   finally
     adsRetailProcessed.Close;
   end;
-  WriteExchangeLogTID('DocumentHeader', 'Stop adsRetailProcessed processed');
+//  WriteExchangeLogTID('DocumentHeader', 'Stop adsRetailProcessed processed');
 end;
 
 procedure TDocumentHeaderForm.tmrChangeFilterSuppliersTimer(
@@ -623,18 +627,18 @@ procedure TDocumentHeaderForm.UpdateOrderDataset;
 var
   lastId : Variant;
 begin
-  WriteExchangeLogTID('DocumentHeader', 'Start UpdateOrderDataset');
+//  WriteExchangeLogTID('DocumentHeader', 'Start UpdateOrderDataset');
   lastId := adsDocumentHeadersId.AsVariant;
   adsDocumentHeaders.DisableControls;
   try
     ShowHeaders;
-    WriteExchangeLogTID('DocumentHeader', 'Start Locate');
+//    WriteExchangeLogTID('DocumentHeader', 'Start Locate');
     if not adsDocumentHeaders.Locate('Id', lastId, []) then
       adsDocumentHeaders.First;
   finally
     adsDocumentHeaders.EnableControls;
   end;
-  WriteExchangeLogTID('DocumentHeader', 'Stop UpdateOrderDataset');
+//  WriteExchangeLogTID('DocumentHeader', 'Stop UpdateOrderDataset');
 end;
 
 procedure TDocumentHeaderForm.RecalcDocument(documentId: Int64);
