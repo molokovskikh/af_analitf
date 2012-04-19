@@ -758,7 +758,7 @@ procedure TOrderBatchForm.OpenFile(Sender: TObject);
 begin
   //Если есть текущие заказы и пользователь не подтвердил отправку дефектуры, то выходим
   if MainForm.CheckUnsendOrders and
-      (AProc.MessageBox('После успешной отправки дефектуры будут удалены текущие заказы.'#13#10'Продолжить?', MB_ICONWARNING or MB_OKCANCEL) <> IDOK)
+      (AProc.MessageBox('После успешной отправки дефектуры будут заморожены текущие заказы.'#13#10'Продолжить?', MB_ICONWARNING or MB_OKCANCEL) <> IDOK)
   then
     Exit;
 

@@ -3301,7 +3301,7 @@ begin
     InternalExecute;
   end;
 
-  ImportOrders('BatchOrder', 'BatchOrderItems', False);
+  ImportOrders('BatchOrder', 'BatchOrderItems', True);
 
   //—брасываем OrderListId и статус у тех элементов BatchReport,
   //у которых не нашли соответствующую запись в CurrentOrderLists
