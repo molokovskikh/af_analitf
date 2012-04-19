@@ -37,8 +37,6 @@ type
     lblSupportPhone: TLabel;
     dbtSupportPhone: TDBText;
     gbFirmInfo: TGroupBox;
-    plOverCost: TPanel;
-    Timer: TTimer;
     cbFilter: TComboBox;
     cbEnabled: TComboBox;
     ActionList: TActionList;
@@ -51,7 +49,6 @@ type
     eRetUpCost: TEdit;
     gbSum: TGroupBox;
     lCurrentSumma: TLabel;
-    lWarning: TLabel;
     btnGroupUngroup: TButton;
     adsCore: TMyQuery;
     adsRegions: TMyQuery;
@@ -168,7 +165,6 @@ type
     procedure dbgCoreGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
-    procedure TimerTimer(Sender: TObject);
     procedure adsCore2AfterPost(DataSet: TDataSet);
     procedure cbFilterSelect(Sender: TObject);
     procedure FormHide(Sender: TObject);
@@ -312,7 +308,6 @@ begin
   adsProducers.ParamByName('ParentCode').Value := AParentCode;
   TDBViewHelper.LoadProcedures(cbProducers, adsProducers, adsProducersId, adsProducersName);
 
-  plOverCost.Hide();
   //Если в прошлый раз пользователь изменил наценку, то выставляем ее
   UserSetRetUpCost := False;
   ProgramSetSetRetUpCost := False;
@@ -508,22 +503,9 @@ begin
     if (adsCoreBuyingMatrixType.Value > 0) and (adsCoreORDERCOUNT.AsInteger > 0)
     then begin
       if (adsCoreBuyingMatrixType.Value = 1) then begin
-        PanelCaption := 'Препарат запрещен к заказу.';
+        PanelCaption := DisableProductOrderMessage;
 
-        begin
-        if Timer.Enabled then
-          Timer.OnTimer(nil);
-
-        lWarning.Caption := PanelCaption;
-        PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-        plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-        plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-        plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-        plOverCost.BringToFront;
-        plOverCost.Show;
-        Timer.Enabled := True;
-        end;
+        ShowOverCostPanel(PanelCaption, dbgCore);
 
         Abort;
       end;
@@ -536,38 +518,26 @@ begin
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
       begin
         if Length(PanelCaption) > 0 then
-          PanelCaption := PanelCaption + #13#10 + 'Превышение средней цены!'
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgCostMessage
         else
-          PanelCaption := 'Превышение средней цены!';
+          PanelCaption := ExcessAvgCostMessage;
       end;
     end;
 
     if (adsCoreJUNK.Value) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Вы заказали некондиционный препарат.'
+        PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
       else
-        PanelCaption := 'Вы заказали некондиционный препарат.';
+        PanelCaption := OrderJunkMessage;
 
     if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
-        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+        PanelCaption := WarningOrderCountMessage;
 
-    if Length(PanelCaption) > 0 then begin
-      if Timer.Enabled then
-        Timer.OnTimer(nil);
-
-      lWarning.Caption := PanelCaption;
-      PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-      plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-      plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-      plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-      plOverCost.BringToFront;
-      plOverCost.Show;
-      Timer.Enabled := True;
-    end;
+    if Length(PanelCaption) > 0 then
+      ShowOverCostPanel(PanelCaption, dbgCore);
 
   except
     adsCore.Cancel;
@@ -699,13 +669,6 @@ begin
   end;
   MainForm.ActiveChild := OrdersH;
   MainForm.ActiveControl := OrdersH.ActiveControl;
-end;
-
-procedure TCoreForm.TimerTimer(Sender: TObject);
-begin
-  Timer.Enabled := False;
-  plOverCost.Hide;
-  plOverCost.SendToBack;
 end;
 
 procedure TCoreForm.adsCore2AfterPost(DataSet: TDataSet);
@@ -1042,7 +1005,7 @@ begin
   pMaxProducerCostsIsEmpty.Align := alClient;
   pMaxProducerCostsIsEmpty.Caption := 'Предельных отпускных цен производителей на ЖНВЛС нет.';
   pMaxProducerCostsIsEmpty.BevelOuter := bvNone;
-  pMaxProducerCostsIsEmpty.Font.Size := plOverCost.Font.Size - 4;
+  pMaxProducerCostsIsEmpty.Font.Size := 12;
 
   dbgMaxProducerCosts := TToughDBGrid.Create(Self);
   dbgMaxProducerCosts.Name := 'dbgMaxProducerCosts';

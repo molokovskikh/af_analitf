@@ -20,4 +20,11 @@ object ChildForm: TChildForm
     Left = 112
     Top = 56
   end
+  object tmrOverCostHide: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = tmrOverCostHideTimer
+    Left = 168
+    Top = 56
+  end
 end

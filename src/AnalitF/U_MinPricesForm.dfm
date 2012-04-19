@@ -29,7 +29,7 @@ inherited MinPricesForm: TMinPricesForm
       00003333333330000000}
     Layout = blGlyphRight
   end
-  object shShowMinPrices: TStrHolder
+  object shShowMinPrices: TStrHolder [3]
     Capacity = 28
     Macros = <>
     Left = 160
@@ -72,14 +72,14 @@ inherited MinPricesForm: TMinPricesForm
         '29'
       '616e6420284d696e5072696365732e4d696e436f7374436f756e74203d203129')
   end
-  object tmrSearch: TTimer
+  object tmrSearch: TTimer [4]
     Enabled = False
     Interval = 5000
     OnTimer = tmrSearchTimer
     Left = 232
     Top = 29
   end
-  object shCore: TStrHolder
+  object shCore: TStrHolder [5]
     Capacity = 118
     Macros = <>
     Left = 216
@@ -295,14 +295,14 @@ inherited MinPricesForm: TMinPricesForm
       '616e642028436f72652e53796e6f6e796d436f6465203e203029'
       '6f7264657220627920436f7374')
   end
-  object tmrUpdatePreviosOrders: TTimer
+  object tmrUpdatePreviosOrders: TTimer [6]
     Enabled = False
     Interval = 350
     OnTimer = tmrUpdatePreviosOrdersTimer
     Left = 280
     Top = 29
   end
-  object ActionList: TActionList
+  object ActionList: TActionList [7]
     Left = 312
     Top = 171
     object actGotoMNNAction: TAction
@@ -313,7 +313,7 @@ inherited MinPricesForm: TMinPricesForm
       OnUpdate = actGotoMNNActionUpdate
     end
   end
-  object pmSelectedPrices: TPopupMenu
+  object pmSelectedPrices: TPopupMenu [8]
     Left = 520
     Top = 48
     object miSelectAll: TMenuItem
@@ -328,13 +328,13 @@ inherited MinPricesForm: TMinPricesForm
       Caption = '-'
     end
   end
-  object tmrSelectedPrices: TTimer
+  object tmrSelectedPrices: TTimer [9]
     Enabled = False
     OnTimer = tmrSelectedPricesTimer
     Left = 560
     Top = 45
   end
-  object shCoreUpdate: TStrHolder
+  object shCoreUpdate: TStrHolder [10]
     Capacity = 12
     Macros = <>
     Left = 248
@@ -359,7 +359,7 @@ inherited MinPricesForm: TMinPricesForm
       '202020204f726465724964203d203a4f52444552534f524445524944'
       '616e6420436f7265496420203d203a4f4c445f434f52454944')
   end
-  object shCoreRefresh: TStrHolder
+  object shCoreRefresh: TStrHolder [11]
     Capacity = 118
     Macros = <>
     Left = 248
@@ -571,14 +571,7 @@ inherited MinPricesForm: TMinPricesForm
       '2020436f72652e436f72654964203d203a436f72654964'
       '')
   end
-  object tmrOverCostHide: TTimer
-    Enabled = False
-    Interval = 5000
-    OnTimer = tmrOverCostHideTimer
-    Left = 376
-    Top = 64
-  end
-  object StrHolder1: TStrHolder
+  object StrHolder1: TStrHolder [12]
     Capacity = 28
     Macros = <>
     Left = 168
@@ -624,7 +617,7 @@ inherited MinPricesForm: TMinPricesForm
         '232020616e6420284d696e5072696365732e4d696e436f7374436f756e74203d' +
         '203129')
   end
-  object StrHolder2: TStrHolder
+  object StrHolder2: TStrHolder [13]
     Capacity = 28
     Macros = <>
     Left = 168

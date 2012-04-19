@@ -35,15 +35,12 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     dbgCore: TToughDBGrid;
-    Timer: TTimer;
     Bevel1: TBevel;
     actFlipCore: TAction;
     pTop: TPanel;
     eSearch: TEdit;
     btnSearch: TButton;
     tmrSearch: TTimer;
-    plOverCost: TPanel;
-    lWarning: TLabel;
     adsAvgOrders: TMyQuery;
     adsCurrentOrderHeader: TMyQuery;
     adsCountFields: TMyQuery;
@@ -143,7 +140,6 @@ type
       Shift: TShiftState);
     procedure dbgCoreCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
-    procedure TimerTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
     procedure dbgCoreKeyPress(Sender: TObject; var Key: Char);
     procedure dbgCoreSortMarkingChanged(Sender: TObject);
@@ -280,7 +276,6 @@ begin
   adsProducers.ParamByName( 'RegionCode').Value:=RegionCode;
   TDBViewHelper.LoadProcedures(cbProducers, adsProducers, adsProducersId, adsProducersName);
 
-  plOverCost.Hide();
   Self.PriceCode  := PriceCode;
   Self.RegionCode := RegionCode;
   Self.PriceName  := PriceName;
@@ -460,27 +455,14 @@ begin
     if (adsCoreBuyingMatrixType.Value > 0) and (adsCoreORDERCOUNT.AsInteger > 0)
     then begin
       if (adsCoreBuyingMatrixType.Value = 1) then begin
-        PanelCaption := 'Препарат запрещен к заказу.';
+        PanelCaption := DisableProductOrderMessage;
 
-        begin
-        if Timer.Enabled then
-          Timer.OnTimer(nil);
-
-        lWarning.Caption := PanelCaption;
-        PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-        plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-        plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-        plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-        plOverCost.BringToFront;
-        plOverCost.Show;
-        Timer.Enabled := True;
-        end;
+        ShowOverCostPanel(PanelCaption, dbgCore);
 
         Abort;
       end;
     end;
-    
+
     { проверяем на превышение цены }
     if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
     begin
@@ -488,39 +470,26 @@ begin
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
       begin
         if Length(PanelCaption) > 0 then
-          PanelCaption := PanelCaption + #13#10 + 'Превышение средней цены!'
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgCostMessage
         else
-          PanelCaption := 'Превышение средней цены!';
+          PanelCaption := ExcessAvgCostMessage;
       end;
     end;
 
     if (adsCoreJUNK.AsBoolean) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Вы заказали некондиционный препарат.'
+        PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
       else
-        PanelCaption := 'Вы заказали некондиционный препарат.';
+        PanelCaption := OrderJunkMessage;
 
     if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
-        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+        PanelCaption := WarningOrderCountMessage;
 
-    if Length(PanelCaption) > 0 then begin
-      if Timer.Enabled then
-        Timer.OnTimer(nil);
-
-      lWarning.Caption := PanelCaption;
-      PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-      plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-      plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-      plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-      plOverCost.BringToFront;
-      plOverCost.Show;
-      Timer.Enabled := True;
-    end;
-
+    if Length(PanelCaption) > 0 then
+      ShowOverCostPanel(PanelCaption, dbgCore);
   except
     adsCore.Cancel;
     raise;
@@ -688,13 +657,6 @@ begin
     (not adsCore.IsEmpty)
     and (( RegionCode and DM.adtClientsREQMASK.AsLargeInt) = RegionCode);
   if not CanInput then Exit;
-end;
-
-procedure TCoreFirmForm.TimerTimer(Sender: TObject);
-begin
-  Timer.Enabled := False;
-  plOverCost.Hide;
-  plOverCost.SendToBack;
 end;
 
 procedure TCoreFirmForm.actFlipCoreExecute(Sender: TObject);

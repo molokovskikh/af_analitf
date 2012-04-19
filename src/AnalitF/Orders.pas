@@ -17,9 +17,6 @@ type
     dsOrders: TDataSource;
     dbgOrders: TToughDBGrid;
     tmrCheckOrderCount: TTimer;
-    plOverCost: TPanel;
-    lWarning: TLabel;
-    Timer: TTimer;
     adsOrders: TMyQuery;
     adsOrdersOrderId: TLargeintField;
     adsOrdersClientId: TLargeintField;
@@ -110,7 +107,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure dbgOrdersKeyPress(Sender: TObject; var Key: Char);
     procedure tmrCheckOrderCountTimer(Sender: TObject);
-    procedure TimerTimer(Sender: TObject);
     procedure adsOrdersOldBeforePost(DataSet: TDataSet);
     procedure dbgOrdersDblClick(Sender: TObject);
     procedure dbmMessageToExit(Sender: TObject);
@@ -167,7 +163,6 @@ uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
 
 procedure TOrdersForm.ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean);
 begin
-  plOverCost.Hide();
   cbNeedCorrect.Checked := False;
   //PrintEnabled:=False;
   Self.OrderID := OrderId;
@@ -521,13 +516,6 @@ begin
   end;
 end;
 
-procedure TOrdersForm.TimerTimer(Sender: TObject);
-begin
-  Timer.Enabled := False;
-  plOverCost.Hide;
-  plOverCost.SendToBack;
-end;
-
 procedure TOrdersForm.ocf(DataSet: TDataSet);
 begin
   try
@@ -582,23 +570,15 @@ begin
 
   if (adsOrdersORDERCOUNT.AsInteger > WarningOrderCount) then
     if Length(PanelCaption) > 0 then
-      PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+      PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
     else
-      PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+      PanelCaption := WarningOrderCountMessage;
 
   if Length(PanelCaption) > 0 then begin
-    if Timer.Enabled then
-      Timer.OnTimer(nil);
-
-    lWarning.Caption := PanelCaption;
-    PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-    plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-    plOverCost.Top := ( dbgOrders.Height - plOverCost.Height) div 2;
-    plOverCost.Left := ( dbgOrders.Width - plOverCost.Width) div 2;
-    plOverCost.BringToFront;
-    plOverCost.Show;
-    Timer.Enabled := True;
+    if DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then
+      ShowOverCostPanel(PanelCaption, dbgEditOrders)
+    else
+      ShowOverCostPanel(PanelCaption, dbgOrders);
   end;
 end;
 

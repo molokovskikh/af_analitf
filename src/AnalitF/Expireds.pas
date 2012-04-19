@@ -13,7 +13,6 @@ uses
 type
   TExpiredsForm = class(TChildForm)
     dsExpireds: TDataSource;
-    Timer: TTimer;
     pClient: TPanel;
     dbgExpireds: TToughDBGrid;
     pRecordCount: TPanel;
@@ -21,8 +20,6 @@ type
     Bevel1: TBevel;
     ActionList: TActionList;
     actFlipCore: TAction;
-    plOverCost: TPanel;
-    lWarning: TLabel;
     adsAvgOrders: TMyQuery;
     adsExpireds: TMyQuery;
     adsAvgOrdersPRICEAVG: TFloatField;
@@ -98,7 +95,6 @@ type
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
       var CanInput: Boolean);
     procedure FormDestroy(Sender: TObject);
-    procedure TimerTimer(Sender: TObject);
     procedure adsExpireds2AfterPost(DataSet: TDataSet);
     procedure dbgExpiredsSortMarkingChanged(Sender: TObject);
     procedure dbgExpiredsGetCellParams(Sender: TObject; Column: TColumnEh;
@@ -124,7 +120,6 @@ uses
 procedure TExpiredsForm.FormCreate(Sender: TObject);
 begin
   pRecordCount.ControlStyle := pRecordCount.ControlStyle - [csParentBackground] + [csOpaque];
-  plOverCost.Hide();
   dsCheckVolume := adsExpireds;
   dgCheckVolume := dbgExpireds;
   fOrder := adsExpiredsORDERCOUNT;
@@ -207,22 +202,9 @@ begin
     if (adsExpiredsBuyingMatrixType.Value > 0) and (adsExpiredsORDERCOUNT.AsInteger > 0)
     then begin
       if (adsExpiredsBuyingMatrixType.Value = 1) then begin
-        PanelCaption := 'Препарат запрещен к заказу.';
+        PanelCaption := DisableProductOrderMessage;
 
-        begin
-        if Timer.Enabled then
-          Timer.OnTimer(nil);
-
-        lWarning.Caption := PanelCaption;
-        PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-        plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-        plOverCost.Top := ( dbgExpireds.Height - plOverCost.Height) div 2;
-        plOverCost.Left := ( dbgExpireds.Width - plOverCost.Width) div 2;
-        plOverCost.BringToFront;
-        plOverCost.Show;
-        Timer.Enabled := True;
-        end;
+        ShowOverCostPanel(PanelCaption, dbgExpireds);
 
         Abort;
       end;
@@ -235,37 +217,25 @@ begin
       if ( PriceAvg > 0) and ( adsExpiredsCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
       begin
         if Length(PanelCaption) > 0 then
-          PanelCaption := PanelCaption + #13#10 + 'Превышение средней цены!'
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgCostMessage
         else
-          PanelCaption := 'Превышение средней цены!';
+          PanelCaption := ExcessAvgCostMessage;
       end;
     end;
 
     if Length(PanelCaption) > 0 then
-      PanelCaption := PanelCaption + #13#10 + 'Вы заказали некондиционный препарат.'
+      PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
     else
-      PanelCaption := 'Вы заказали некондиционный препарат.';
+      PanelCaption := OrderJunkMessage;
 
     if (adsExpiredsORDERCOUNT.AsInteger > WarningOrderCount) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
-        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+        PanelCaption := WarningOrderCountMessage;
 
-    if Length(PanelCaption) > 0 then begin
-      if Timer.Enabled then
-        Timer.OnTimer(nil);
-
-      lWarning.Caption := PanelCaption;
-      PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-      plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-      plOverCost.Top := ( dbgExpireds.Height - plOverCost.Height) div 2;
-      plOverCost.Left := ( dbgExpireds.Width - plOverCost.Width) div 2;
-      plOverCost.BringToFront;
-      plOverCost.Show;
-      Timer.Enabled := True;
-    end;
+    if Length(PanelCaption) > 0 then
+      ShowOverCostPanel(PanelCaption, dbgExpireds);
 
   except
     adsExpireds.Cancel;
@@ -281,13 +251,6 @@ begin
     and ((adsExpiredsRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt)
       = adsExpiredsRegionCode.AsLargeInt);
   if not CanInput then exit;
-end;
-
-procedure TExpiredsForm.TimerTimer(Sender: TObject);
-begin
-  Timer.Enabled := False;
-  plOverCost.Hide;
-  plOverCost.SendToBack;
 end;
 
 procedure TExpiredsForm.adsExpireds2AfterPost(DataSet: TDataSet);

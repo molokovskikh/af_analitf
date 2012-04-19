@@ -39,6 +39,11 @@ const
   //Печать отправленного заказа
   PrintSendedOrder = 2097152;
 
+  OrderJunkMessage = 'Вы заказали препарат с ограниченным сроком годности или некондиционный.';
+  ExcessAvgCostMessage = 'Превышение средней цены!';
+  WarningOrderCountMessage = 'Внимание! Вы заказали большое количество препарата.';
+  DisableProductOrderMessage = 'Препарат запрещен к заказу.';
+
 implementation
 
 end.

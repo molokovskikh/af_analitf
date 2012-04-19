@@ -8,7 +8,8 @@ uses
   MyAccess, DBAccess, StdCtrls, DescriptionFrm, Buttons,
   DayOfWeekHelper,
   Menus,
-  HtmlView;
+  HtmlView,
+  DBGridEh;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -45,8 +46,10 @@ type
 
   TChildForm = class(TForm)
     tCheckVolume: TTimer;
+    tmrOverCostHide: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tCheckVolumeTimer(Sender: TObject);
+    procedure tmrOverCostHideTimer(Sender: TObject);
   private
     procedure AddActionList(ActionList: TCustomActionList);
     procedure RemoveActionList(ActionList: TCustomActionList);
@@ -83,6 +86,8 @@ type
     ShowDescriptionAction : TAction;
     ShowDescriptionActionByF1 : TAction;
 
+    plOverCost : TPanel;
+    lWarning : TLabel;
 
     procedure CreateParams(var Params: TCreateParams); override;
     procedure Loaded; override;
@@ -123,6 +128,8 @@ type
     procedure SetActiveChildToMainForm;
     procedure UpdateOrderDataset; virtual;
     procedure ModifyActionList(ActionList: TCustomActionList);
+    procedure CreateOverCostPanel;
+    procedure ShowOverCostPanel(panelCaption : String; grid : TCustomDBGridEh);
   public
     PrintEnabled: Boolean;
     //Разрешено сохранять отображаемую таблицу
@@ -149,7 +156,7 @@ type
 
 implementation
 
-uses Main, AProc, DBGridEh, Constant, DModule, MyEmbConnection, Core,
+uses Main, AProc, Constant, DModule, MyEmbConnection, Core,
   NamesForms,
   DBGridHelper, Variants;
 
@@ -234,6 +241,7 @@ procedure TChildForm.ShowForm;
 var
   I: Integer;
 begin
+  plOverCost.Hide();
   SetActiveChildToMainForm;
   for I := 0 to Self.ComponentCount-1 do
     if (Self.Components[i] is TToughDBGrid)
@@ -425,6 +433,7 @@ begin
   ShowDescriptionActionByF1 := nil;
   PatchMyDataSets;
   PatchNonBrowser;
+  CreateOverCostPanel;
   if Assigned(dsCheckVolume) and Assigned(dgCheckVolume) and Assigned(fOrder)
      and Assigned(fVolume) and Assigned(fOrderCost) and Assigned(fSumOrder) and Assigned(fMinOrderCount)
   then begin
@@ -1015,6 +1024,73 @@ begin
   OldOrderValue := fOrder.Value;
   if Assigned(OldAfterScroll) then
     OldAfterScroll(DataSet);
+end;
+
+procedure TChildForm.CreateOverCostPanel;
+begin
+  plOverCost := TPanel.Create(Self);
+  plOverCost.Name := 'plOverCost';
+  plOverCost.Visible := False;
+  plOverCost.ParentFont := False;
+  plOverCost.Font.Color := clRed;
+  plOverCost.Font.Size := 16;
+  plOverCost.Parent := Self;
+  plOverCost.ControlStyle := plOverCost.ControlStyle - [csParentBackground] + [csOpaque];
+
+  lWarning := TLabel.Create(Self);
+  lWarning.Name := 'lWarning';
+  lWarning.AutoSize := False;
+  lWarning.Parent := plOverCost;
+  lWarning.Align := alClient;
+  lWarning.Alignment := taCenter;
+  lWarning.Layout := tlCenter;
+  lWarning.ControlStyle := lWarning.ControlStyle - [csParentBackground] + [csOpaque];
+end;
+
+procedure TChildForm.tmrOverCostHideTimer(Sender: TObject);
+begin
+  tmrOverCostHide.Enabled := False;
+  plOverCost.Hide;
+  plOverCost.SendToBack;
+end;
+
+procedure TChildForm.ShowOverCostPanel(panelCaption: String; grid : TCustomDBGridEh);
+var
+  PanelHeight : Integer;
+  sl : TStringList;
+  CaptionWordCount,
+  I,
+  panelWidth : Integer;
+begin
+  if tmrOverCostHide.Enabled then
+    tmrOverCostHide.OnTimer(nil);
+
+  if lWarning.Canvas.Font.Size <> lWarning.Font.Size then
+    lWarning.Canvas.Font.Size := lWarning.Font.Size;
+
+  sl := TStringList.Create;
+  try
+    sl.Text := panelCaption;
+    CaptionWordCount := sl.Count;
+    panelWidth := lWarning.Canvas.TextWidth(sl[0]);
+    for I := 1 to sl.Count-1 do
+      if lWarning.Canvas.TextWidth(sl[i]) > panelWidth then
+        panelWidth := lWarning.Canvas.TextWidth(sl[i]);
+  finally
+    sl.Free;
+  end;
+
+  lWarning.Caption := PanelCaption;
+  PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
+  plOverCost.Height := PanelHeight * CaptionWordCount + 20;
+  plOverCost.Width := panelWidth + 40;
+
+  plOverCost.Parent := grid.Parent;
+  plOverCost.Top := grid.Top + ( grid.Height - plOverCost.Height) div 2;
+  plOverCost.Left := grid.Left + ( grid.Width - plOverCost.Width) div 2;
+  plOverCost.BringToFront;
+  plOverCost.Show;
+  tmrOverCostHide.Enabled := True;
 end;
 
 end.

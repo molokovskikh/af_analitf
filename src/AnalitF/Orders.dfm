@@ -9,42 +9,13 @@ inherited OrdersForm: TOrdersForm
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object plOverCost: TPanel [0]
-    Left = 104
-    Top = 232
-    Width = 545
-    Height = 97
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clRed
-    Font.Height = -21
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 0
-    Visible = False
-    DesignSize = (
-      545
-      97)
-    object lWarning: TLabel
-      Left = 1
-      Top = 8
-      Width = 543
-      Height = 81
-      Alignment = taCenter
-      Anchors = [akLeft, akTop, akRight]
-      AutoSize = False
-      Caption = 
-        #1055#1088#1077#1074#1099#1096#1077#1085#1080#1077' '#1089#1088#1077#1076#1085#1077#1081' '#1094#1077#1085#1099'!'#13#10#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1085#1077#1082#1086#1085#1076#1080#1094#1080#1086#1085#1085#1099#1081' '#1087#1088#1077#1087#1072#1088#1072#1090'.'#13#10 +
-        #1042#1085#1080#1084#1072#1085#1080#1077'! '#1042#1099' '#1079#1072#1082#1072#1079#1072#1083#1080' '#1073#1086#1083#1100#1096#1086#1077' '#1082#1086#1083#1080#1095#1077#1089#1090#1074#1086' '#1087#1088#1077#1087#1072#1088#1072#1090#1072'.'
-    end
-  end
-  object pClient: TPanel [1]
+  object pClient: TPanel [0]
     Left = 0
     Top = 108
     Width = 793
     Height = 335
     Align = alClient
-    TabOrder = 1
+    TabOrder = 0
     object dbgOrders: TToughDBGrid
       Left = 1
       Top = 1
@@ -201,14 +172,14 @@ inherited OrdersForm: TOrdersForm
       end
     end
   end
-  object pTop: TPanel [2]
+  object pTop: TPanel [1]
     Left = 0
     Top = 33
     Width = 793
     Height = 75
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 1
     object pOrderHeader: TPanel
       Left = 0
       Top = 0
@@ -431,14 +402,14 @@ inherited OrdersForm: TOrdersForm
       OnClick = cbNeedCorrectClick
     end
   end
-  object pButtons: TPanel [3]
+  object pButtons: TPanel [2]
     Left = 0
     Top = 0
     Width = 793
     Height = 33
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 2
     object btnGotoCore: TSpeedButton
       Left = 5
       Top = 3
@@ -478,13 +449,6 @@ inherited OrdersForm: TOrdersForm
     OnTimer = tmrCheckOrderCountTimer
     Left = 264
     Top = 136
-  end
-  object Timer: TTimer
-    Enabled = False
-    Interval = 5000
-    OnTimer = TimerTimer
-    Left = 640
-    Top = 216
   end
   object adsOrders: TMyQuery
     SQLDelete.Strings = (

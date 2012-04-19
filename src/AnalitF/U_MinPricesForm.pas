@@ -45,7 +45,6 @@ type
     tmrSelectedPrices: TTimer;
     shCoreUpdate: TStrHolder;
     shCoreRefresh: TStrHolder;
-    tmrOverCostHide: TTimer;
     StrHolder1: TStrHolder;
     StrHolder2: TStrHolder;
     procedure FormCreate(Sender: TObject);
@@ -57,7 +56,6 @@ type
     procedure btnSelectPricesClick(Sender: TObject);
     procedure miSelectAllClick(Sender: TObject);
     procedure miUnselecAllClick(Sender: TObject);
-    procedure tmrOverCostHideTimer(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure FormResize(Sender: TObject);
   private
@@ -76,7 +74,6 @@ type
     procedure CreateTopPanel;
     procedure CreateLeftPanel;
     procedure CreateOffersPanel;
-    procedure CreateOverCostPanel;
 
     procedure BindFields;
 
@@ -90,7 +87,6 @@ type
 
     procedure ChangeSelected(ASelected : Boolean);
 
-    procedure ShowOverCostPanel(panelCaption : String);
   protected
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
@@ -209,9 +205,6 @@ type
     pWebBrowser : TPanel;
     bWebBrowser : TBevel;
     WebBrowser : THTMLViewer;
-
-    plOverCost : TPanel;
-    lWarning : TLabel;
 
     framePromotion : TframePromotion;
 
@@ -512,7 +505,6 @@ end;
 
 procedure TMinPricesForm.CreateVisualComponent;
 begin
-  CreateOverCostPanel;
   CreateTopPanel;
   CreateLeftPanel;
   CreateOffersPanel;
@@ -732,8 +724,6 @@ begin
   WriteExchangeLog('MinPricesForm', 'BindFiels');
 {$endif}
   BindFields;
-
-  plOverCost.Hide();
 
 {$ifdef MinPricesLog}
   WriteExchangeLog('MinPricesForm', 'restore grid layouts');
@@ -1075,9 +1065,9 @@ begin
     if (adsCoreBuyingMatrixType.Value > 0) and (adsCoreORDERCOUNT.AsInteger > 0)
     then begin
       if (adsCoreBuyingMatrixType.Value = 1) then begin
-        PanelCaption := 'Препарат запрещен к заказу.';
+        PanelCaption := DisableProductOrderMessage;
 
-        ShowOverCostPanel(PanelCaption);
+        ShowOverCostPanel(PanelCaption, dbgCore);
 
         Abort;
       end;
@@ -1091,94 +1081,32 @@ begin
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
       begin
         if Length(PanelCaption) > 0 then
-          PanelCaption := PanelCaption + #13#10 + 'Превышение средней цены!'
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgCostMessage
         else
-          PanelCaption := 'Превышение средней цены!';
+          PanelCaption := ExcessAvgCostMessage;
       end;
     end;
-}
+}    
 
     if (adsCoreJUNK.Value) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Вы заказали некондиционный препарат.'
+        PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
       else
-        PanelCaption := 'Вы заказали некондиционный препарат.';
+        PanelCaption := OrderJunkMessage;
 
     if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
-        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+        PanelCaption := WarningOrderCountMessage;
 
     if Length(PanelCaption) > 0 then
-      ShowOverCostPanel(PanelCaption);
+      ShowOverCostPanel(PanelCaption, dbgCore);
 
   except
     adsCore.Cancel;
     raise;
   end;
-end;
-
-procedure TMinPricesForm.CreateOverCostPanel;
-begin
-  plOverCost := TPanel.Create(Self);
-  plOverCost.Visible := False;
-  plOverCost.ParentFont := False;
-  plOverCost.Font.Color := clRed;
-  plOverCost.Font.Size := 16;
-  plOverCost.Parent := Self;
-
-  lWarning := TLabel.Create(Self);
-  lWarning.AutoSize := False;
-  lWarning.Parent := plOverCost;
-  lWarning.Align := alClient;
-  lWarning.Alignment := taCenter;
-  lWarning.Layout := tlCenter;
-end;
-
-procedure TMinPricesForm.tmrOverCostHideTimer(Sender: TObject);
-begin
-  tmrOverCostHide.Enabled := False;
-  plOverCost.Hide;
-  plOverCost.SendToBack;
-end;
-
-procedure TMinPricesForm.ShowOverCostPanel(panelCaption: String);
-var
-  PanelHeight : Integer;
-  sl : TStringList;
-  CaptionWordCount,
-  I,
-  panelWidth : Integer;
-begin
-  if tmrOverCostHide.Enabled then
-    tmrOverCostHide.OnTimer(nil);
-
-  if lWarning.Canvas.Font.Size <> lWarning.Font.Size then
-    lWarning.Canvas.Font.Size := lWarning.Font.Size;
-
-  sl := TStringList.Create;
-  try
-    sl.Text := panelCaption;
-    CaptionWordCount := sl.Count;
-    panelWidth := lWarning.Canvas.TextWidth(sl[0]);
-    for I := 1 to sl.Count-1 do
-      if lWarning.Canvas.TextWidth(sl[i]) > panelWidth then
-        panelWidth := lWarning.Canvas.TextWidth(sl[i]);
-  finally
-    sl.Free;
-  end;
-
-  lWarning.Caption := PanelCaption;
-  PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-  plOverCost.Height := PanelHeight * CaptionWordCount + 20;
-  plOverCost.Width := panelWidth + 20;
-
-  plOverCost.Top := pOffers.Top + ( dbgCore.Height - plOverCost.Height) div 2;
-  plOverCost.Left := pOffers.Left + ( dbgCore.Width - plOverCost.Width) div 2;
-  plOverCost.BringToFront;
-  plOverCost.Show;
-  tmrOverCostHide.Enabled := True;
 end;
 
 procedure TMinPricesForm.UpdateOrderDataset;

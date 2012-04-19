@@ -20,7 +20,6 @@ type
     pCenter: TPanel;
     dbgCore: TToughDBGrid;
     dsCore: TDataSource;
-    Timer: TTimer;
     ActionList: TActionList;
     actFlipCore: TAction;
     eSearch: TEdit;
@@ -40,8 +39,6 @@ type
     dbgHistory: TToughDBGrid;
     dsPreviosOrders: TDataSource;
     dsAvgOrders: TDataSource;
-    plOverCost: TPanel;
-    lWarning: TLabel;
     adsCore: TMyQuery;
     adsCoreCoreId: TLargeintField;
     adsCorePriceCode: TLargeintField;
@@ -148,7 +145,6 @@ type
     adsCoreMarkup: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure TimerTimer(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
     procedure adsCoreOldBeforePost(DataSet: TDataSet);
     procedure adsCoreOldBeforeEdit(DataSet: TDataSet);
@@ -230,7 +226,6 @@ var
   mi :TMenuItem;
 begin
   SortList := nil;
-  plOverCost.Hide();
   dsCheckVolume := adsCore;
   dgCheckVolume := dbgCore;
   fOrder := adsCoreORDERCOUNT;
@@ -306,13 +301,6 @@ begin
   BM.Free;
 end;
 
-procedure TSynonymSearchForm.TimerTimer(Sender: TObject);
-begin
-  Timer.Enabled := False;
-  plOverCost.Hide;
-  plOverCost.SendToBack;
-end;
-
 procedure TSynonymSearchForm.tmrSearchTimer(Sender: TObject);
 begin
   tmrSearch.Enabled := False;
@@ -374,22 +362,9 @@ begin
     if (adsCoreBuyingMatrixType.Value > 0) and (adsCoreORDERCOUNT.AsInteger > 0)
     then begin
       if (adsCoreBuyingMatrixType.Value = 1) then begin
-        PanelCaption := 'Препарат запрещен к заказу.';
+        PanelCaption := DisableProductOrderMessage;
 
-        begin
-        if Timer.Enabled then
-          Timer.OnTimer(nil);
-
-        lWarning.Caption := PanelCaption;
-        PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-        plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-        plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-        plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-        plOverCost.BringToFront;
-        plOverCost.Show;
-        Timer.Enabled := True;
-        end;
+        ShowOverCostPanel(PanelCaption, dbgCore);
 
         Abort;
       end;
@@ -402,38 +377,26 @@ begin
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
       begin
         if Length(PanelCaption) > 0 then
-          PanelCaption := PanelCaption + #13#10 + 'Превышение средней цены!'
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgCostMessage
         else
-          PanelCaption := 'Превышение средней цены!';
+          PanelCaption := ExcessAvgCostMessage;
       end;
     end;
 
     if (adsCoreJUNK.AsBoolean) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Вы заказали некондиционный препарат.'
+        PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
       else
-        PanelCaption := 'Вы заказали некондиционный препарат.';
+        PanelCaption := OrderJunkMessage;
 
     if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
-        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+        PanelCaption := WarningOrderCountMessage;
 
-    if Length(PanelCaption) > 0 then begin
-      if Timer.Enabled then
-        Timer.OnTimer(nil);
-
-      lWarning.Caption := PanelCaption;
-      PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-      plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-      plOverCost.Top := ( dbgCore.Height - plOverCost.Height) div 2;
-      plOverCost.Left := ( dbgCore.Width - plOverCost.Width) div 2;
-      plOverCost.BringToFront;
-      plOverCost.Show;
-      Timer.Enabled := True;
-    end;
+    if Length(PanelCaption) > 0 then
+      ShowOverCostPanel(PanelCaption, dbgCore);
   except
     adsCore.Cancel;
     raise;

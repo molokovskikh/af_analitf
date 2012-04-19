@@ -627,21 +627,21 @@ begin
       PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
       begin
-        PanelCaption := 'Превышение средней цены!';
+        PanelCaption := ExcessAvgCostMessage;
       end;
     end;
 
     if (adsCoreJUNK.AsBoolean) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Вы заказали некондиционный препарат.'
+        PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
       else
-        PanelCaption := 'Вы заказали некондиционный препарат.';
+        PanelCaption := OrderJunkMessage;
 
     if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
-        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+        PanelCaption := WarningOrderCountMessage;
 
     if Length(PanelCaption) > 0 then begin
       if OverCostHideTimer.Enabled then

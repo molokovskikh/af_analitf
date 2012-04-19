@@ -37,9 +37,6 @@ type
     dtpDateTo: TDateTimePicker;
     ActionList: TActionList;
     actFlipCore: TAction;
-    plOverCost: TPanel;
-    lWarning: TLabel;
-    Timer: TTimer;
     adsCurrentSummary: TMyQuery;
     adsSendSummary: TMyQuery;
     adsSummary: TMyQuery;
@@ -125,7 +122,6 @@ type
     procedure miSelectedAllClick(Sender: TObject);
     procedure miUnselectedAllClick(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
-    procedure TimerTimer(Sender: TObject);
     procedure adsSummaryBeforeInsert(DataSet: TDataSet);
     procedure cbNeedCorrectClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
@@ -292,7 +288,6 @@ end;
 
 procedure TSummaryForm.ShowForm;
 begin
-  plOverCost.Hide();
   SummaryShow;
   inherited;
 end;
@@ -499,23 +494,12 @@ begin
     
     if (adsSummaryORDERCOUNT.AsInteger > WarningOrderCount) then
       if Length(PanelCaption) > 0 then
-        PanelCaption := PanelCaption + #13#10 + 'Внимание! Вы заказали большое количество препарата.'
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
-        PanelCaption := 'Внимание! Вы заказали большое количество препарата.';
+        PanelCaption := WarningOrderCountMessage;
 
     if Length(PanelCaption) > 0 then begin
-      if Timer.Enabled then
-        Timer.OnTimer(nil);
-
-      lWarning.Caption := PanelCaption;
-      PanelHeight := lWarning.Canvas.TextHeight(PanelCaption);
-      plOverCost.Height := PanelHeight*WordCount(PanelCaption, [#13, #10]) + 20;
-
-      plOverCost.Top := ( dbgSummaryCurrent.Height - plOverCost.Height) div 2;
-      plOverCost.Left := ( dbgSummaryCurrent.Width - plOverCost.Width) div 2;
-      plOverCost.BringToFront;
-      plOverCost.Show;
-      Timer.Enabled := True;
+      ShowOverCostPanel(PanelCaption, dbgSummaryCurrent);
     end;
   except
     adsSummary.Cancel;
@@ -735,13 +719,6 @@ begin
   if MainForm.ActiveChild <> Self then exit;
 
   FlipToCore();
-end;
-
-procedure TSummaryForm.TimerTimer(Sender: TObject);
-begin
-  Timer.Enabled := False;
-  plOverCost.Hide;
-  plOverCost.SendToBack;
 end;
 
 procedure TSummaryForm.adsSummaryBeforeInsert(DataSet: TDataSet);
