@@ -560,17 +560,9 @@ end;
 procedure TMinPricesForm.eSearchKeyPress(Sender: TObject; var Key: Char);
 begin
   tmrSearch.Enabled := False;
-  if (Key in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-  then begin
-    AddKeyToSearch(Key);
-    //Если мы что-то нажали в элементе, то должны на это отреагировать
-    if Ord(Key) <> VK_RETURN then
-      tmrSearch.Enabled := True;
-  end
-  else
-    if (Ord(Key) <> VK_RETURN) or (Ord(Key) <> VK_ESCAPE)
-    then
-      Key := Char(0);
+  //Если мы что-то нажали в элементе, то должны на это отреагировать
+  if (Ord(Key) <> VK_RETURN) and (Ord(Key) <> VK_ESCAPE) then
+    tmrSearch.Enabled := True;
 end;
 
 procedure TMinPricesForm.FormCreate(Sender: TObject);
@@ -708,6 +700,8 @@ procedure TMinPricesForm.SetClear;
 begin
   tmrSearch.Enabled := False;
 
+  if InternalSearchText <> eSearch.Text then
+    eSearch.Text := InternalSearchText;
   if (Length(InternalSearchNameText) > 0) or (Length(eSearchName.Text) > 0) then
   begin
     InternalSearch;
@@ -751,6 +745,9 @@ begin
   if (Length(eSearch.Text) > 0) and (StrToIntDef(eSearch.Text, 0) <> 0) then begin
     InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
     needSearch := True;
+  end
+  else begin
+    eSearch.Text := InternalSearchText;
   end;
   if (Length(eSearchName.Text) > 0) then begin
     InternalSearchNameText := StrUtils.LeftStr(eSearchName.Text, 50);
