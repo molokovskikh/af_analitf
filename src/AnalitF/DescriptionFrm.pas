@@ -48,7 +48,7 @@ const
     'Показания к применению',
     'Предостережения и противопоказания',
     'Способ применения и дозы',
-    'Побочное действие и противопоказания',
+    'Побочные действия',
     'Взаимодействие',
     'Форма выпуска',
     'Дополнительно',
@@ -112,6 +112,7 @@ begin
         trimText := Trim(descField.AsString);
         trimText := StringReplace(trimText, #13, ' ', [rfReplaceAll]);
         trimText := StringReplace(trimText, #10, '', [rfReplaceAll]);
+        trimText := StringReplace(trimText, #151, '-', [rfReplaceAll]);
         RichEd.Lines.Add(trimText);
 
         for J := lastCount to RichEd.Lines.Count-1 do begin
