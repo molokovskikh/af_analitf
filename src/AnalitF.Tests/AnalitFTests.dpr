@@ -165,15 +165,17 @@ uses
   SearchFilterController in '..\AnalitF\BusinessLogic\SearchFilterController.pas',
   U_SerialNumberSearch in '..\AnalitF\Views\U_SerialNumberSearch.pas' {SerialNumberSearch},
   FileCountHelper in '..\AnalitF\Helpers\FileCountHelper.pas',
-  
-//end files
+  U_AddWaybillForm in '..\AnalitF\Views\U_AddWaybillForm.pas' {AddWaybillForm},
 
+//end files
+  
   ExceptionClassTests in 'ExceptionClassTests.pas',
   LoadDataTests in 'LoadDataTests.pas',
   TimeZoneTests in 'TimeZoneTests.pas',
   SearchFilterControllerTests in 'SearchFilterControllerTests.pas',
   AProcTests in 'AProcTests.pas',
-  INFHelpersTests in 'INFHelpersTests.pas';
+  INFHelpersTests in 'INFHelpersTests.pas',
+  MappingTests in 'MappingTests.pas';
 
 {$R *.res}
 
