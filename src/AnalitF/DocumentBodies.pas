@@ -364,6 +364,7 @@ begin
   dbgDocumentBodies.MinAutoFitWidth := DBGridColumnMinWidth;
   dbgDocumentBodies.Flat := True;
   dbgDocumentBodies.Options := dbgDocumentBodies.Options + [dgRowLines];
+  dbgDocumentBodies.OptionsEh := dbgDocumentBodies.OptionsEh + [dghResizeWholeRightPart];
   dbgDocumentBodies.Font.Size := 10;
   dbgDocumentBodies.GridLineColors.DarkColor := clBlack;
   dbgDocumentBodies.GridLineColors.BrightColor := clDkGray;

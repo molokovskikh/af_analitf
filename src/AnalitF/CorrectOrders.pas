@@ -993,6 +993,7 @@ procedure TCorrectOrdersForm.SetGridParams(Grid: TToughDBGrid);
 begin
   Grid.AllowedSelections := [gstRecordBookmarks, gstRectangle]; 
   Grid.Options := Grid.Options + [dgRowLines];
+  Grid.OptionsEh := Grid.OptionsEh + [dghResizeWholeRightPart];
   if CheckWin32Version(5, 1) then
     Grid.OptionsEh := Grid.OptionsEh + [dghTraceColSizing];
   Grid.Font.Size := 10;

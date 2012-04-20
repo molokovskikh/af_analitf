@@ -249,6 +249,7 @@ begin
       TDBGridHelper.SetMinWidthToColumns(TToughDBGrid(Self.Components[i]));
       TToughDBGrid(Self.Components[i]).AllowedSelections := [gstRecordBookmarks, gstRectangle];;
       TToughDBGrid(Self.Components[i]).Options := TToughDBGrid(Self.Components[i]).Options + [dgRowLines];
+      TToughDBGrid(Self.Components[i]).OptionsEh := TToughDBGrid(Self.Components[i]).OptionsEh + [dghResizeWholeRightPart];
       TToughDBGrid(Self.Components[i]).Font.Size := 10;
       TToughDBGrid(Self.Components[i]).GridLineColors.DarkColor := clBlack;
       TToughDBGrid(Self.Components[i]).GridLineColors.BrightColor := clDkGray;

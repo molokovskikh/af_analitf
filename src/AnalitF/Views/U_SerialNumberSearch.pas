@@ -100,6 +100,7 @@ begin
   dbgSerialNumberSearch.MinAutoFitWidth := DBGridColumnMinWidth;
   dbgSerialNumberSearch.Flat := True;
   dbgSerialNumberSearch.Options := dbgSerialNumberSearch.Options + [dgRowLines];
+  dbgSerialNumberSearch.OptionsEh := dbgSerialNumberSearch.OptionsEh + [dghResizeWholeRightPart];
   dbgSerialNumberSearch.Font.Size := 10;
   dbgSerialNumberSearch.GridLineColors.DarkColor := clBlack;
   dbgSerialNumberSearch.GridLineColors.BrightColor := clDkGray;

@@ -399,7 +399,7 @@ begin
   Grid.AllowedSelections := [gstRecordBookmarks, gstRectangle]; 
   Grid.Flat := True;
   Grid.Options := [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit, dgRowLines];
-  Grid.OptionsEh := [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight];
+  Grid.OptionsEh := [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight, dghResizeWholeRightPart];
   Grid.Font.Size := 10;
   Grid.GridLineColors.DarkColor := clBlack;
   Grid.GridLineColors.BrightColor := clDkGray;
