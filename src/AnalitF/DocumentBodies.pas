@@ -174,6 +174,7 @@ type
     procedure WaybillCalcFields(DataSet : TDataSet);
     procedure UserWaybillNewRecord(DataSet: TDataSet);
     procedure UserWaybillBeforePost(DataSet: TDataSet);
+    procedure UserWaybillAfterNewRecord(DataSet: TDataSet);
     procedure mdReportCalcFields(DataSet : TDataSet);
     procedure LoadFromRegistry();
     procedure RecalcDocument;
@@ -189,6 +190,8 @@ type
     procedure RealMarkupUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RealMarkupGetCellParams(Sender: TObject; EditMode: Boolean; Params: TColCellParamsEh);
     procedure ProductUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+    procedure UserWaybillIntegerUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+    procedure UserWaybillFloatUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
 
     //методы для расчета розничных наценок и цен
     //Получить цену по наценке, но может измениться сама наценка
@@ -390,10 +393,12 @@ begin
       adsDocumentBodies.SQLDelete.Text := shPositionDelete.Strings.Text;
       adsDocumentBodies.SQLUpdate.Text := shPositionFullUpdate.Strings.Text;
       adsDocumentBodies.BeforePost := UserWaybillBeforePost;
+      adsDocumentBodies.AfterInsert := UserWaybillAfterNewRecord;
     end
     else begin
       adsDocumentBodies.OnNewRecord := nil;
       adsDocumentBodies.BeforePost := nil;
+      adsDocumentBodies.AfterInsert := nil;
       FWaybillDataSetState := [dsEdit];
       adsDocumentBodies.SQLUpdate.Text := shPositionUpdate.Strings.Text;
     end;
@@ -419,12 +424,24 @@ begin
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Producer', 'Производитель', 0, not adsDocumentHeadersCreatedByUser.Value);
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'Country', 'Страна', 0, not adsDocumentHeadersCreatedByUser.Value);
       //TDBGridHelper.AddColumn(dbgDocumentBodies, 'VitallyImportant', 'Признак ЖНВЛС', 0, False);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'ProducerCost', 'Цена производителя без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'RegistryCost', 'Цена ГР', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierPriceMarkup', 'Торговая наценка оптовика', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'NDS', 'НДС', dbgDocumentBodies.Canvas.TextWidth('999'), not adsDocumentHeadersCreatedByUser.Value);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена поставщика с НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'ProducerCost', 'Цена производителя без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      if adsDocumentHeadersCreatedByUser.Value then
+        column.OnUpdateData := UserWaybillFloatUpdateData;
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RegistryCost', 'Цена ГР', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      if adsDocumentHeadersCreatedByUser.Value then
+        column.OnUpdateData := UserWaybillFloatUpdateData;
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierPriceMarkup', 'Торговая наценка оптовика', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      if adsDocumentHeadersCreatedByUser.Value then
+        column.OnUpdateData := UserWaybillFloatUpdateData;
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      if adsDocumentHeadersCreatedByUser.Value then
+        column.OnUpdateData := UserWaybillFloatUpdateData;
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'NDS', 'НДС', dbgDocumentBodies.Canvas.TextWidth('999'), not adsDocumentHeadersCreatedByUser.Value);
+      if adsDocumentHeadersCreatedByUser.Value then
+        column.OnUpdateData := UserWaybillIntegerUpdateData;
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена поставщика с НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      if adsDocumentHeadersCreatedByUser.Value then
+        column.OnUpdateData := UserWaybillFloatUpdateData;
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'MaxRetailMarkup', 'Макс. розничная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailMarkup', 'Розничная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
       column.OnUpdateData := RetailMarkupUpdateData;
@@ -453,6 +470,7 @@ begin
     adsDocumentBodies.OnCalcFields := nil;
     adsDocumentBodies.OnNewRecord := nil;
     adsDocumentBodies.BeforePost := nil;
+    adsDocumentBodies.AfterInsert := nil;
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
     dbgDocumentBodies.OnCellClick := nil;
@@ -2294,10 +2312,6 @@ end;
 
 procedure TDocumentBodiesForm.ProductUpdateData(Sender: TObject;
   var Text: String; var Value: Variant; var UseText, Handled: Boolean);
-var
-  realMarkup,
-  markup,
-  price : Double;
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState)
   then begin
@@ -2323,6 +2337,43 @@ end;
 procedure TDocumentBodiesForm.UserWaybillBeforePost(DataSet: TDataSet);
 begin
   RecalcPosition;
+end;
+
+procedure TDocumentBodiesForm.UserWaybillAfterNewRecord(DataSet: TDataSet);
+begin
+  dbgDocumentBodies.SelectedField := adsDocumentBodiesProduct;
+end;
+
+procedure TDocumentBodiesForm.UserWaybillIntegerUpdateData(Sender: TObject;
+  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+var
+  changedValue : Integer;
+begin
+  if (adsDocumentBodies.State in FWaybillDataSetState)
+  then begin
+    if (Sender is TDBGridColumnEh) and TryStrToInt(Text, changedValue) then begin
+      TDBGridColumnEh(Sender).Field.AsInteger := changedValue;
+      RecalcPosition;
+      adsDocumentBodies.Post;
+      Handled := True;
+    end;
+  end;
+end;
+
+procedure TDocumentBodiesForm.UserWaybillFloatUpdateData(Sender: TObject;
+  var Text: String; var Value: Variant; var UseText, Handled: Boolean);
+var
+  changedValue : Double;
+begin
+  if (adsDocumentBodies.State in FWaybillDataSetState)
+  then begin
+    if (Sender is TDBGridColumnEh) and TryStrToFloat(Text, changedValue) then begin
+      TDBGridColumnEh(Sender).Field.AsFloat := changedValue;
+      RecalcPosition;
+      adsDocumentBodies.Post;
+      Handled := True;
+    end;
+  end;
 end;
 
 end.
