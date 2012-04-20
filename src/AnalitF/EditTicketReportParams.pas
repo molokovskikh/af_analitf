@@ -42,6 +42,9 @@ type
     function AddCheckBox(Top: Integer; Caption : String; Value : Boolean) : TCheckBox;
     procedure SizeChange(Sender: TObject);
     procedure SetCheckBoxEnabled(value : Boolean);
+    procedure SetStateFromDB();
+    procedure SetStateForSmall();
+    procedure SetStateForSmallWithBigCost();
   public
     { Public declarations }
     TicketParams : TTicketReportParams;
@@ -190,15 +193,17 @@ begin
     TicketParams.TicketSize := TTicketSize(cbTicketSize.ItemIndex);
     TicketParams.PrintEmptyTickets := cbPrintEmptyTickets.Checked;
     //TicketParams.SizePercent := tbSizePercent.Position;
-    TicketParams.ClientNameVisible := cbClientName.Checked;
-    TicketParams.ProductVisible := cbProduct.Checked;
-    TicketParams.CountryVisible := cbCountry.Checked;
-    TicketParams.ProducerVisible := cbProducer.Checked;
-    TicketParams.PeriodVisible := cbPeriod.Checked;
-    TicketParams.ProviderDocumentIdVisible := cbProviderDocumentId.Checked;
-    TicketParams.SignatureVisible := cbSignature.Checked;
-    TicketParams.SerialNumberVisible := cbSerialNumber.Checked;
-    TicketParams.DocumentDateVisible := cbDocumentDate.Checked;
+    if (TicketParams.TicketSize = tsStandart) then begin
+      TicketParams.ClientNameVisible := cbClientName.Checked;
+      TicketParams.ProductVisible := cbProduct.Checked;
+      TicketParams.CountryVisible := cbCountry.Checked;
+      TicketParams.ProducerVisible := cbProducer.Checked;
+      TicketParams.PeriodVisible := cbPeriod.Checked;
+      TicketParams.ProviderDocumentIdVisible := cbProviderDocumentId.Checked;
+      TicketParams.SignatureVisible := cbSignature.Checked;
+      TicketParams.SerialNumberVisible := cbSerialNumber.Checked;
+      TicketParams.DocumentDateVisible := cbDocumentDate.Checked;
+    end;
     TicketParams.DeleteUnprintableElemnts := cbDeleteUnprintableElemnts.Checked;
   end;
 end;
@@ -228,11 +233,56 @@ begin
       TCheckBox(gbColumns.Controls[i]).Enabled := value;
 end;
 
+procedure TEditTicketReportParamsForm.SetStateForSmall;
+begin
+  cbClientName.Checked := False;
+  cbProduct.Checked := True;
+  cbCountry .Checked := True;
+  cbProducer.Checked := True;
+  cbPeriod.Checked := True;
+  cbProviderDocumentId.Checked := False;
+  cbSignature.Checked := False;
+  cbSerialNumber.Checked := False;
+  cbDocumentDate.Checked := True;
+end;
+
+procedure TEditTicketReportParamsForm.SetStateForSmallWithBigCost;
+begin
+  cbClientName.Checked := True;
+  cbProduct.Checked := True;
+  cbCountry .Checked := False;
+  cbProducer.Checked := True;
+  cbPeriod.Checked := True;
+  cbProviderDocumentId.Checked := False;
+  cbSignature.Checked := False;
+  cbSerialNumber.Checked := False;
+  cbDocumentDate.Checked := False;
+end;
+
+procedure TEditTicketReportParamsForm.SetStateFromDB;
+begin
+  cbClientName.Checked := TicketParams.ClientNameVisible;
+  cbProduct.Checked :=  TicketParams.ProductVisible;
+  cbCountry .Checked := TicketParams.CountryVisible;
+  cbProducer.Checked := TicketParams.ProducerVisible;
+  cbPeriod.Checked := TicketParams.PeriodVisible;
+  cbProviderDocumentId.Checked := TicketParams.ProviderDocumentIdVisible;
+  cbSignature.Checked := TicketParams.SignatureVisible;
+  cbSerialNumber.Checked := TicketParams.SerialNumberVisible;
+  cbDocumentDate.Checked := TicketParams.DocumentDateVisible;
+end;
+
 procedure TEditTicketReportParamsForm.SizeChange(Sender: TObject);
 begin
   gbColumns.Enabled := cbTicketSize.ItemIndex = 0;
   SetCheckBoxEnabled(gbColumns.Enabled);
   cbDeleteUnprintableElemnts.Enabled := cbTicketSize.ItemIndex = 0;
+  case cbTicketSize.ItemIndex of
+    0 : SetStateFromDB;
+    1 : SetStateForSmall;
+    else
+      SetStateForSmallWithBigCost;
+  end;
 end;
 
 end.
