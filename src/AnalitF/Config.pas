@@ -198,6 +198,12 @@ type
 
     chbGroupWaybillsBySupplier : TCheckBox;
 
+    gbAutoDeleteWaybills : TGroupBox;
+    lWaybillsHistoryDayCount : TLabel;
+    eWaybillsHistoryDayCount : TEdit;
+    lWaybillsHistoryDayCountTile : TLabel;
+    chbConfirmDeleteOldWaybills : TCheckBox;
+
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
 
@@ -341,12 +347,13 @@ begin
         end;
         if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then
           Result := Result + [ccHTTPHost];
-        if chbGroupWaybillsBySupplier.Checked <> FGlobalSettingParams.GroupWaybillsBySupplier then begin
+        if chbGroupWaybillsBySupplier.Checked <> FGlobalSettingParams.GroupWaybillsBySupplier then
           FGlobalSettingParams.GroupWaybillsBySupplier := chbGroupWaybillsBySupplier.Checked;
-          FGlobalSettingParams.SaveParams;
-        end;
+        if chbConfirmDeleteOldWaybills.Checked <> FGlobalSettingParams.ConfirmDeleteOldWaybills then
+          FGlobalSettingParams.ConfirmDeleteOldWaybills := chbConfirmDeleteOldWaybills.Checked;
         DM.adtParams.Post;
         FNetworkParams.SaveParams;
+        FGlobalSettingParams.SaveParams;
       end
       else begin
         if Assigned(frameEditAddress) then
@@ -541,6 +548,7 @@ procedure TConfigForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 var
   newPercent : Double;
+  newWaybillHistoryDayCount : Integer;
 begin
   if (ModalResult = mrOK) then begin
     if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
@@ -607,6 +615,22 @@ begin
           MB_ICONWARNING);
         PageControl.ActivePage := tshOther;
         ePositionPercent.SetFocus;
+      end;
+    end;
+
+    if CanClose then begin
+      if TryStrToInt(eWaybillsHistoryDayCount.Text, newWaybillHistoryDayCount) then begin
+        FGlobalSettingParams.WaybillsHistoryDayCount := newWaybillHistoryDayCount;
+      end
+      else begin
+        CanClose := False;
+        AProc.MessageBox(
+          Format('Пожалуйста, скорректируйте значение в поле "%s".'#13#10
+            + 'Оно должно быть целым числом.',
+            [lWaybillsHistoryDayCount.Caption]),
+          MB_ICONWARNING);
+        PageControl.ActivePage := tshOther;
+        eWaybillsHistoryDayCount.SetFocus;
       end;
     end;
 
@@ -986,7 +1010,41 @@ begin
     chbGroupWaybillsBySupplier.Width := tshOther.Width - 20;
     chbGroupWaybillsBySupplier.Checked := FGlobalSettingParams.GroupWaybillsBySupplier;
 
-    lblServerLink.Top := chbGroupWaybillsBySupplier.Top + chbGroupWaybillsBySupplier.Height + controlInterval;
+    gbAutoDeleteWaybills := TGroupBox.Create(Self);
+    gbAutoDeleteWaybills.Parent := tshOther;
+    gbAutoDeleteWaybills.Caption := ' Автоматическое удаление устаревших накладных ';
+    gbAutoDeleteWaybills.Left := gbDeleteHistory.Left;
+    gbAutoDeleteWaybills.Width := gbDeleteHistory.Width;
+    gbAutoDeleteWaybills.Anchors := gbDeleteHistory.Anchors;
+    gbAutoDeleteWaybills.Top := chbGroupWaybillsBySupplier.Top + chbGroupWaybillsBySupplier.Height + controlInterval;
+
+    nextTop := 16;
+
+    AddLabelAndEdit(gbAutoDeleteWaybills, nextTop, lWaybillsHistoryDayCount, eWaybillsHistoryDayCount, 'Удалять накланые старше ');
+    eWaybillsHistoryDayCount.Text := IntToStr(FGlobalSettingParams.WaybillsHistoryDayCount);
+    eWaybillsHistoryDayCount.Anchors := [akLeft, akTop];
+    eWaybillsHistoryDayCount.Width := dbeHistoryDayCount.Width;
+    eWaybillsHistoryDayCount.Top := lWaybillsHistoryDayCount.Top;
+    lWaybillsHistoryDayCount.Top := lWaybillsHistoryDayCount.Top + 3;
+    eWaybillsHistoryDayCount.Left := lWaybillsHistoryDayCount.Left + lWaybillsHistoryDayCount.Width + controlInterval;
+    lWaybillsHistoryDayCountTile := TLabel.Create(Self);
+    lWaybillsHistoryDayCountTile.Caption := ' дней';
+    lWaybillsHistoryDayCountTile.Parent := gbAutoDeleteWaybills;
+    lWaybillsHistoryDayCountTile.Top := lWaybillsHistoryDayCount.Top;
+    lWaybillsHistoryDayCountTile.Left := eWaybillsHistoryDayCount.Left + eWaybillsHistoryDayCount.Width + controlInterval;
+
+    chbConfirmDeleteOldWaybills := TCheckBox.Create(Self);
+    chbConfirmDeleteOldWaybills.Caption := 'Подтверждать удаление устаревших накладных';
+    chbConfirmDeleteOldWaybills.Parent := gbAutoDeleteWaybills;
+    chbConfirmDeleteOldWaybills.Top := eWaybillsHistoryDayCount.Top + eWaybillsHistoryDayCount.Height + controlInterval;
+    chbConfirmDeleteOldWaybills.Left := lWaybillsHistoryDayCount.Left;
+    chbConfirmDeleteOldWaybills.Anchors := [akLeft, akTop, akRight];
+    chbConfirmDeleteOldWaybills.Width := gbAutoDeleteWaybills.Width - 20;
+    chbConfirmDeleteOldWaybills.Checked := FGlobalSettingParams.ConfirmDeleteOldWaybills;
+
+    gbAutoDeleteWaybills.Height := chbConfirmDeleteOldWaybills.Top + chbConfirmDeleteOldWaybills.Height + 5;
+
+    lblServerLink.Top := gbAutoDeleteWaybills.Top + gbAutoDeleteWaybills.Height + controlInterval;
     tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
   end;
 end;

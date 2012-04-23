@@ -13,6 +13,7 @@ uses
   SQLWaiting,
   U_SchedulesController,
   UserActions,
+  GlobalSettingParams,
   StrUtils,
   U_MiniMailForm,
   HtmlView,
@@ -242,7 +243,9 @@ private
   function  GetActionLists : TList;
   procedure SetActionLists(AValue : TList);
   function  OldOrders : Boolean;
+  function  OldWaybills : Boolean;
   procedure DeleteOldOrders;
+  procedure DeleteOldWaybills;
   procedure RealFreeChildForms;
   procedure SetFocusOnMainForm;
   function  NeedUpdateClientLabel : Boolean;
@@ -1082,6 +1085,12 @@ begin
     then
       DeleteOldOrders;
 
+  if OldWaybills then
+    if (not TGlobalSettingParams.GetConfirmDeleteOldWaybills(DM.MainConnection)
+      or ConfirmDeleteOldWaybills)
+    then
+      DeleteOldWaybills;
+
   if CheckUnsendOrders then
   begin
     if AProc.MessageBox( 'Обнаружены неотправленные заказы. ' +
@@ -1303,22 +1312,9 @@ begin
   finally
     DM.adsQueryValue.Close;
   end;
-  if not Result then begin
-    DM.adsQueryValue.SQL.Text := 'SELECT Id FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
-    DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-    DM.adsQueryValue.Open;
-    try
-      Result := not DM.adsQueryValue.IsEmpty;
-    finally
-      DM.adsQueryValue.Close;
-    end;
-  end;
 end;
 
 procedure TMainForm.DeleteOldOrders;
-var
-  documentType : TDocumentType;
-  downloadId : String;
 begin
   try
     DM.adcUpdate.SQL.Text := ''
@@ -1336,57 +1332,6 @@ begin
   except
     on E : Exception do
       LogCriticalError('Ошибка при удалении устаревших заказов : ' + E.Message);
-  end;
-  try
-    if DM.adsQueryValue.Active then
-      DM.adsQueryValue.Close;
-    DM.adsQueryValue.SQL.Text := 'SELECT Id, DocumentType, DownloadId FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
-    DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-    DM.adsQueryValue.Open;
-    try
-      while not DM.adsQueryValue.Eof do begin
-        documentType := TDocumentType(DM.adsQueryValue.FieldByName('DocumentType').AsInteger);
-        downloadId := DM.adsQueryValue.FieldByName('DownloadId').AsString;
-        if (documentType <> dtUnknown) and (Length(downloadId) > 0) then
-        try
-          DeleteFilesByMask(
-            RootFolder() + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
-            True);
-        except
-          on DeleteFile : Exception do
-            LogCriticalError('Ошибка при файла устаревшего документа ' + downloadId + ' : ' + DeleteFile.Message);
-        end;
-        DM.adsQueryValue.Next;
-      end;
-    finally
-      DM.adsQueryValue.Close;
-    end;
-    //Удаление накладных и отказов
-    DM.adcUpdate.SQL.Text := ''
-     + ' delete DocumentHeaders, DocumentBodies'
-     + ' FROM DocumentHeaders, DocumentBodies '
-     + ' where '
-     + '     (DocumentBodies.DocumentId = DocumentHeaders.Id) '
-     + ' and (LoadTime < :MinOrderDate)';
-    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-    DM.adcUpdate.Execute;
-    if DM.adcUpdate.RowsAffected > 0 then
-      WriteExchangeLog('DeleteOldOrders', 'Количество автоматически удаленных устаревших накладных: '
-        + IntToStr(DM.adcUpdate.RowsAffected));
-    //удаление других документов, у которых не существует тела (позиций внутри)
-    DM.adcUpdate.SQL.Text := ''
-     + ' delete '
-     + ' FROM DocumentHeaders '
-     + ' where '
-     + '    (LoadTime < :MinOrderDate)';
-    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger;
-    DM.adcUpdate.Execute;
-    if DM.adcUpdate.RowsAffected > 0 then
-      WriteExchangeLog('DeleteOldOrders', 'Количество автоматически удаленных устаревших документов: '
-        + IntToStr(DM.adcUpdate.RowsAffected));
-  except
-    on E : Exception do
-      LogCriticalError('Ошибка при удалении устаревших документов : ' + E.Message);
   end;
 end;
 
@@ -2045,6 +1990,78 @@ begin
   else
     ShellExecute( Self.Handle, 'open', pchar(URL), nil, nil, SW_SHOWNORMAL);
   Handled := True;
+end;
+
+function TMainForm.OldWaybills: Boolean;
+begin
+  DM.adsQueryValue.SQL.Text := 'SELECT Id FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
+  DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - TGlobalSettingParams.GetWaybillsHistoryDayCount(DM.MainConnection);
+  DM.adsQueryValue.Open;
+  try
+    Result := not DM.adsQueryValue.IsEmpty;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TMainForm.DeleteOldWaybills;
+var
+  documentType : TDocumentType;
+  downloadId : String;
+  histortDayCount : Integer;
+begin
+  histortDayCount := TGlobalSettingParams.GetWaybillsHistoryDayCount(DM.MainConnection);
+  try
+    if DM.adsQueryValue.Active then
+      DM.adsQueryValue.Close;
+    DM.adsQueryValue.SQL.Text := 'SELECT Id, DocumentType, DownloadId FROM DocumentHeaders where (LoadTime < :MinOrderDate)';
+    DM.adsQueryValue.ParamByName('MinOrderDate').AsDateTime := Date - histortDayCount;
+    DM.adsQueryValue.Open;
+    try
+      while not DM.adsQueryValue.Eof do begin
+        documentType := TDocumentType(DM.adsQueryValue.FieldByName('DocumentType').AsInteger);
+        downloadId := DM.adsQueryValue.FieldByName('DownloadId').AsString;
+        if (documentType <> dtUnknown) and (Length(downloadId) > 0) then
+        try
+          DeleteFilesByMask(
+            RootFolder() + DocumentFolders[documentType] + '\' + downloadId + '_*.*',
+            True);
+        except
+          on DeleteFile : Exception do
+            LogCriticalError('Ошибка при файла устаревшего документа ' + downloadId + ' : ' + DeleteFile.Message);
+        end;
+        DM.adsQueryValue.Next;
+      end;
+    finally
+      DM.adsQueryValue.Close;
+    end;
+    //Удаление накладных и отказов
+    DM.adcUpdate.SQL.Text := ''
+     + ' delete DocumentHeaders, DocumentBodies'
+     + ' FROM DocumentHeaders, DocumentBodies '
+     + ' where '
+     + '     (DocumentBodies.DocumentId = DocumentHeaders.Id) '
+     + ' and (LoadTime < :MinOrderDate)';
+    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - histortDayCount;
+    DM.adcUpdate.Execute;
+    if DM.adcUpdate.RowsAffected > 0 then
+      WriteExchangeLog('DeleteOldOrders', 'Количество автоматически удаленных устаревших накладных: '
+        + IntToStr(DM.adcUpdate.RowsAffected));
+    //удаление других документов, у которых не существует тела (позиций внутри)
+    DM.adcUpdate.SQL.Text := ''
+     + ' delete '
+     + ' FROM DocumentHeaders '
+     + ' where '
+     + '    (LoadTime < :MinOrderDate)';
+    DM.adcUpdate.ParamByName('MinOrderDate').AsDateTime := Date - histortDayCount;
+    DM.adcUpdate.Execute;
+    if DM.adcUpdate.RowsAffected > 0 then
+      WriteExchangeLog('DeleteOldOrders', 'Количество автоматически удаленных устаревших документов: '
+        + IntToStr(DM.adcUpdate.RowsAffected));
+  except
+    on E : Exception do
+      LogCriticalError('Ошибка при удалении устаревших документов : ' + E.Message);
+  end;
 end;
 
 initialization

@@ -4,7 +4,8 @@ interface
 
 uses
   SysUtils, Windows, Messages, Classes, Graphics, Controls,
-  StdCtrls, ExtCtrls, Forms, U_VistaCorrectForm;
+  StdCtrls, ExtCtrls, Forms, U_VistaCorrectForm,
+  GlobalSettingParams;
 
 type
   TfrmOldOrdersDelete = class(TVistaCorrectForm)
@@ -18,6 +19,8 @@ var
   frmOldOrdersDelete: TfrmOldOrdersDelete;
 
 function ConfirmDeleteOldOrders : Boolean;
+
+function ConfirmDeleteOldWaybills : Boolean;
 
 implementation
 
@@ -33,8 +36,23 @@ begin
     frmOldOrdersDelete.btnOK.Caption := 'Удалить';
     frmOldOrdersDelete.btnCancel.Caption := 'Отмена';
     frmOldOrdersDelete.lblMessage.Caption := Format(
-      'В архиве заказов обнаружены заказы и документы (накладные, отказы), сделанные более %d дней назад. Рекомендуется удалить их.',
+      'В архиве заказов обнаружены заказы, сделанные более %d дней назад. Рекомендуется удалить их.',
       [DM.adtParams.FieldByName('ORDERSHISTORYDAYCOUNT').AsInteger]);
+    Result := frmOldOrdersDelete.ShowModal = mrOk;
+  finally
+    frmOldOrdersDelete.Free;
+  end;
+end;
+
+function ConfirmDeleteOldWaybills : Boolean;
+begin
+  frmOldOrdersDelete := TfrmOldOrdersDelete.Create(Application);
+  try
+    frmOldOrdersDelete.btnOK.Caption := 'Удалить';
+    frmOldOrdersDelete.btnCancel.Caption := 'Отмена';
+    frmOldOrdersDelete.lblMessage.Caption := Format(
+      'В архиве заказов обнаружены документы (накладные, отказы), сделанные более %d дней назад. Рекомендуется удалить их.',
+      [TGlobalSettingParams.GetWaybillsHistoryDayCount(DM.MainConnection)]);
     Result := frmOldOrdersDelete.ShowModal = mrOk;
   finally
     frmOldOrdersDelete.Free;
