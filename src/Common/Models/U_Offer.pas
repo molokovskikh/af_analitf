@@ -95,9 +95,9 @@ function TOffer.ToString: String;
 begin
   Result :=
     Format(
-      'Offer Id = %d, ProductId = %d, CodeFirmCr = %s, SynonymCode = %d, SynonymFirmCrCode = %s, Code = %s, CodeCr = %s, Period = %s, Junk = %s, Await = %s, ' +
-      'RealCost = %0.2f, Cost = %0.2f, RawRealCost = %s, RawCost = %s, ' + 
-      'Quantity = %s, ProducerCost = %s, OrderCost = %s, RequestRatio = %s, MinOrderCount = %s, PriceName = %s',
+      'Предложение Ид = %d, ПродуктИд = %d, ПроизвИд = %s, СинонимИд = %d, СинонимПроизвИд = %s, Code = %s, CodeCr = %s, Срок = %s, Уценка = %s, Ожид = %s, ' +
+      'ЦенаБО = %s, Цена = %s, ' +
+      'Кол-во = %s, ЦенаПроизв = %s, МинСумма = %s, Кратность = %s, МинКолвоЗаказа = %s',
       [
         CoreId,
         ProductId,
@@ -109,16 +109,13 @@ begin
         Period,
         BoolToStr(Junk, True),
         BoolToStr(Await, True),
-        RealCost,
-        Cost,
         VarToStrDef(RawRealCost, '(Null)'),
         VarToStrDef(RawCost, '(Null)'),
         VarToStrDef(Quantity, '(Null)'),
         VarToStrDef(ProducerCost, '(Null)'),
         VarToStrDef(OrderCost, '(Null)'),
         VarToStrDef(RequestRatio, '(Null)'),
-        VarToStrDef(MinOrderCount, '(Null)'),
-        PriceName
+        VarToStrDef(MinOrderCount, '(Null)')
       ]);
 end;
 

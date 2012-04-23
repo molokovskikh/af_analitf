@@ -253,12 +253,15 @@ var
   mainItem : TCurrentOrderItem;
   unionIndex : Integer;
   currentItem : TCurrentOrderItem;
+
+  logStr : String;
 begin
   IsDebugEnabled := True;
+  logStr := '';
 
   if (IsDebugEnabled) then
-    WriteExchangeLog(
-      provider.SubSystem(),
+    logStr := Concat(
+      logStr,
       Format(
         '%s заказ %s с позициями:'#13#10'%s'#13#10'По предложениями:'#13#10'%s',
         [
@@ -278,18 +281,20 @@ begin
     if (offer = nil) then
     begin
       if (IsDebugEnabled) then
-        WriteExchangeLog(
-          provider.SubSystem(),
-          Format('Для CurrentOrderItem.Id = %d не было найдено подходящее предложение', [item.Id]));
+        logStr := Concat(
+          logStr,
+          #13#10,
+          Format('Для Позиции.Ид = %d не было найдено подходящее предложение', [item.Id]));
       item.DropReason := psrNotExists;
       item.CoreId := Null;
       item.OrderCount := 0;
     end
     else begin
       if (IsDebugEnabled) then
-        WriteExchangeLog(
-          provider.SubSystem(),
-          Format('Для CurrentOrderItem.Id = %d найдено предложение с Offer.CoreId: %d', [item.Id, offer.CoreId]));
+        logStr := Concat(
+          logStr,
+          #13#10,
+          Format('Для Позиции.Ид = %d найдено предложение с ПредлИд: %d', [item.Id, offer.CoreId]));
       item.Offer := offer;
       item.CoreId := offer.CoreId;
       item.Price := offer.Cost;
@@ -315,9 +320,10 @@ begin
 
       mainItem := TCurrentOrderItem(byCount[0]);
       if (IsDebugEnabled) then
-        WriteExchangeLog(
-          provider.SubSystem(),
-          Format('Существуют дублирующиеся позиции по Offer.CoreId %d:\r\n%s', [g.CoreId, OrderItemsToString(byCount)]));
+        logStr := Concat(
+          logStr,
+          #13#10,
+          Format('Существуют дублирующиеся позиции по ПредлИд %d:\r\n%s', [g.CoreId, OrderItemsToString(byCount)]));
       for unionIndex := 1 to byCount.Count-1 do begin
         currentItem := TCurrentOrderItem(byCount[unionIndex]);
         if (mainItem.IsFullOffer(mainItem.Offer)) then
@@ -327,9 +333,10 @@ begin
           currentItem.OrderCount := 0;
 
           if (IsDebugEnabled) then
-            WriteExchangeLog(
-              provider.SubSystem(),
-              Format('CurrentOrderItem.Id = %d была помечена как не найденная', [currentItem.Id]));
+            logStr := Concat(
+              logStr,
+              #13#10,
+              Format('Позиция.Ид = %d была помечена как не найденная', [currentItem.Id]));
         end
         else begin
           mainItem.OrderCount := mainItem.OrderCount + currentItem.OrderCount;
@@ -339,9 +346,10 @@ begin
           currentItem.OrderCount := 0;
 
           if (IsDebugEnabled) then
-            WriteExchangeLog(
-              provider.SubSystem(),
-              Format('CurrentOrderItem.Id = %d была помечена как объединенная', [currentItem.Id]));
+            logStr := Concat(
+              logStr,
+              #13#10,
+              Format('Позиция.Ид = %d была помечена как объединенная', [currentItem.Id]));
 
           mainItem.RecalcOrderCount();
         end;
@@ -355,9 +363,12 @@ begin
   if (IsDebugEnabled) then
     WriteExchangeLog(
       provider.SubSystem(),
-      Format('Закончили %s позиций по заказу: %d',
-      [provider.SecondAction(),
-       OrderId]));
+      Concat(
+        logStr,
+        #13#10,
+        Format('Закончили %s позиций по заказу: %d',
+          [provider.SecondAction(), OrderId])
+      ));
 end;
 
 function TCurrentOrderHead.OffersToString(aOffers: TObjectList): String;
@@ -401,7 +412,7 @@ function TCurrentOrderHead.ToString: String;
 begin
   Result :=
     Format(
-      'CurrentOrderHead   OrderId: %d  AddressId: %d  PriceName: %s (%d)  RegionName: %s (%d)',
+      'Заказ   Номер: %d  АдресИд: %d  Прайс: %s (%d)  Регион: %s (%d)',
       [
         OrderId,
         AddressId,
@@ -446,7 +457,7 @@ end;
 
 function TRestoreProvider.SubSystem: String;
 begin
-  Result := 'RestoreOrders';
+  Result := 'Восстановление заказа';
 end;
 
 { TMoveToPriceProvider }
@@ -471,7 +482,7 @@ end;
 
 function TMoveToPriceProvider.SubSystem: String;
 begin
-  Result := 'MoveToPrice';
+  Result := 'Перемещение заказа';
 end;
 
 end.
