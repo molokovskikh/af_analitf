@@ -5730,6 +5730,7 @@ var
   WaybillUnloadingFolder,
   supplierFileName : String;
   folder : Variant;
+  supplierShortName : string;
 begin
   Result := fullFileName;
   shortName := ExtractFileName(fullFileName);
@@ -5738,14 +5739,23 @@ begin
   if _Index > 1 then begin
     downloadId := LeftStr(shortName, _Index-1);
 
+    supplierShortName := GetSupplierNameFromFileName(shortName);
+
     folder := QueryValue('' +
       ' select ps.WaybillUnloadingFolder from ' +
       '    DocumentHeaders dh ' +
       '    inner join ProviderSettings ps on ps.FirmCode = dh.FirmCode' +
       ' where ' +
-      ' dh.DownloadId = :DownloadId',
-      ['DownloadId'],
-      [downloadId]);
+      ' dh.DownloadId = :DownloadId' +
+      ' union ' +
+      ' select ps.WaybillUnloadingFolder from ' +
+      '    Providers p ' +
+      '    inner join ProviderSettings ps on ps.FirmCode = p.FirmCode' +
+      ' where ' +
+      ' p.ShortName like :supplierShortName'
+      ,
+      ['DownloadId', 'supplierShortName'],
+      [downloadId, supplierShortName]);
     if not VarIsNull(folder) and VarIsStr(folder) then begin
       WaybillUnloadingFolder := folder;
       if Length(WaybillUnloadingFolder) > 0 then begin

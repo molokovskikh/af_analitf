@@ -130,6 +130,7 @@ function GetNonExistsFileNameInFolder(originalFileName, folder : String) : Strin
 
 function GetOriginalWaybillFileName(waybillFileName : String) : String;
 
+function GetSupplierNameFromFileName(waybillFileName : String) : String;
 
 implementation
 
@@ -1375,6 +1376,25 @@ begin
     Result :=
       Copy(waybillFileName, leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1)
       + ExtractFileExt(waybillFileName);
+end;
+
+function GetSupplierNameFromFileName(waybillFileName : String) : String;
+var
+  underlineIndex,
+  leftBracketIndex,
+  rightBracketIndex : Integer;
+begin
+  Result := '';
+
+  if Length(waybillFileName) < 4 then
+    Exit;
+
+  underlineIndex := Pos('_', waybillFileName);
+  leftBracketIndex := Pos('(', waybillFileName);
+  rightBracketIndex := LastDelimiter(')', waybillFileName);
+
+  if (underlineIndex > 0) and (underlineIndex < leftBracketIndex) and (leftBracketIndex + 1 < rightBracketIndex) then
+    Result := Copy(waybillFileName, underlineIndex + 1, leftBracketIndex - underlineIndex - 1);
 end;
 
 { TFileUpdateInfo }

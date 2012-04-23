@@ -19,9 +19,13 @@ type
     procedure CheckGetOriginalWaybillFileNameParam(
       inFileName,
       resultFileName : String);
+    procedure CheckGetSupplierNameFromFileNameParam(
+      inFileName,
+      resultSupplierName : String);
    published
     procedure CheckGetNonExistsFileNameInFolder;
     procedure CheckGetOriginalWaybillFileName;
+    procedure CheckGetSupplierNameFromFileName;
   end;
 
 
@@ -84,6 +88,25 @@ var
 begin
   realResultFileName := GetOriginalWaybillFileName(inFileName);
   CheckEqualsString(resultFileName, realResultFileName);
+end;
+
+procedure TTestAProc.CheckGetSupplierNameFromFileName;
+begin
+  CheckGetSupplierNameFromFileNameParam('', '');
+  CheckGetSupplierNameFromFileNameParam('1_ds(erg).txt', 'ds');
+  CheckGetSupplierNameFromFileNameParam('1_(erg).txt', '');
+  CheckGetSupplierNameFromFileNameParam('1(erg).txt', '');
+  CheckGetSupplierNameFromFileNameParam('1_erg).txt', '');
+  CheckGetSupplierNameFromFileNameParam('1_(erg.txt', '');
+end;
+
+procedure TTestAProc.CheckGetSupplierNameFromFileNameParam(inFileName,
+  resultSupplierName: String);
+var
+  realSupplierName: String;
+begin
+  realSupplierName := GetSupplierNameFromFileName(inFileName);
+  CheckEqualsString(resultSupplierName, realSupplierName);
 end;
 
 initialization
