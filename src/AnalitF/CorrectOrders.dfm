@@ -990,7 +990,8 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
       'SELECT'
       'ClientAVG.ClientCode,'
       'ClientAVG.ProductId,'
-      'ClientAVG.PriceAvg'
+      'ClientAVG.PriceAvg,'
+      'ClientAVG.OrderCountAvg'
       'FROM'
       '   ClientAVG'
       'where'
@@ -1014,6 +1015,9 @@ inherited CorrectOrdersForm: TCorrectOrdersForm
     end
     object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
+    end
+    object adsAvgOrdersOrderCountAvg: TFloatField
+      FieldName = 'OrderCountAvg'
     end
   end
   object tCheckVolume: TTimer

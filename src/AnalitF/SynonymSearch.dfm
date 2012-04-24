@@ -358,6 +358,34 @@ inherited SynonymSearchForm: TSynonymSearchForm
         Font.Style = [fsBold]
         ParentFont = False
       end
+      object lOrderCountAvg: TLabel
+        Left = 345
+        Top = 110
+        Width = 264
+        Height = 13
+        Caption = #1057#1088#1077#1076#1085#1077#1075#1086' '#1079#1072#1082#1072#1079#1072' '#1087#1086' '#1087#1088#1077#1076#1099#1076#1091#1097#1080#1084' '#1079#1072#1082#1072#1079#1072#1084' :'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtOrderCountAvg: TDBText
+        Left = 619
+        Top = 110
+        Width = 105
+        Height = 13
+        AutoSize = True
+        DataField = 'OrderCountAvg'
+        DataSource = dsAvgOrders
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object dbgHistory: TToughDBGrid
         Left = 2
         Top = 15
@@ -1152,7 +1180,8 @@ inherited SynonymSearchForm: TSynonymSearchForm
       'SELECT'
       '  ClientAVG.ClientCode,'
       '  ClientAVG.ProductId,'
-      '  ClientAVG.PriceAvg '
+      '  ClientAVG.PriceAvg, '
+      '  ClientAVG.OrderCountAvg '
       'FROM'
       '   ClientAVG'
       'where'
@@ -1173,9 +1202,14 @@ inherited SynonymSearchForm: TSynonymSearchForm
       end>
     object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
+    end
+    object adsAvgOrdersOrderCountAvg: TFloatField
+      FieldName = 'OrderCountAvg'
+      DisplayFormat = '0.00;;'#39#39
     end
   end
   object tmrUpdatePreviosOrders: TTimer

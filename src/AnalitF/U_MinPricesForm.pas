@@ -62,7 +62,6 @@ type
     { Private declarations }
     FNetworkParams : TNetworkParams;
     InternalSearchText : String;
-    UseExcess : Boolean;
 
     SelectedPrices : TStringList;
     InternalSearchNameText : String;
@@ -190,6 +189,11 @@ type
 
     adsCoreNamePromotionsCount: TIntegerField;
 
+    adsAvgOrders : TMyQuery;
+    adsAvgOrdersProductId : TLargeintField;
+    adsAvgOrdersPriceAvg : TFloatField;
+    adsAvgOrdersOrderCountAvg : TFloatField;
+
     pTop : TPanel;
     lBeforeInfo  : TLabel;
     eSearch : TEdit;
@@ -211,6 +215,8 @@ type
     lSearchName : TLabel;
     eSearchName : TEdit;
 
+    Excess, ExcessAvgOrderTimes : Integer;
+    
     procedure ShowForm; override;
     function AllowSearch : Boolean;
     procedure HideSearch();
@@ -270,6 +276,9 @@ begin
   WriteExchangeLog('MinPricesForm', 'InternalSearch');
 {$endif}
   InternalSearch;
+
+  if not adsAvgOrders.Active then
+    adsAvgOrders.Open;
 end;
 
 procedure TMinPricesForm.CreateLeftPanel;
@@ -344,6 +353,18 @@ begin
   adsCore.BeforePost := adsCoreBeforePost;
 
   adsCore.RefreshOptions := [roAfterUpdate];
+
+  adsAvgOrders := TMyQuery.Create(Self);
+  adsAvgOrders.SQL.Text := 'SELECT ClientAVG.ClientCode, ClientAVG.ProductId, ClientAVG.PriceAvg, ClientAVG.OrderCountAvg FROM ClientAVG where ClientCode = :CLIENTID';
+  adsAvgOrders.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
+
+  adsAvgOrdersProductId := TDataSetHelper.AddLargeintField(adsAvgOrders, 'ProductId');
+  adsAvgOrdersPriceAvg := TDataSetHelper.AddFloatField(adsAvgOrders, 'PriceAvg');
+  adsAvgOrdersOrderCountAvg := TDataSetHelper.AddFloatField(adsAvgOrders, 'OrderCountAvg');
+
+  adsAvgOrders.MasterSource := dsCore;
+  adsAvgOrders.MasterFields := 'ProductId';
+  adsAvgOrders.DetailFields := 'ProductId';
 end;
 
 procedure TMinPricesForm.CreateOffersPanel;
@@ -576,7 +597,6 @@ begin
   WriteExchangeLog('MinPricesForm', 'Start create');
 {$endif}
   try
-  UseExcess := True;
   FNetworkParams := TNetworkParams.Create(DM.MainConnection);
 {$ifdef MinPricesLog}
   WriteExchangeLog('MinPricesForm', 'CreateNonVisualComponent');
@@ -601,6 +621,9 @@ begin
   SortOnOrderGrid := False;
 
   inherited;
+
+  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  ExcessAvgOrderTimes := 5;
 
 {$ifdef MinPricesLog}
   WriteExchangeLog('MinPricesForm', 'add postion frame');
@@ -1042,7 +1065,8 @@ end;
 procedure TMinPricesForm.adsCoreBeforePost(DataSet: TDataSet);
 var
   Quantity, E: Integer;
-  PriceAvg: Double;
+  PriceAvg,
+  OrderCountAvg: Double;
   PanelCaption : String;
 begin
   try
@@ -1069,10 +1093,9 @@ begin
         Abort;
       end;
     end;
-    
+
     { проверяем на превышение цены }
-{
-    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
     begin
       PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
@@ -1083,7 +1106,19 @@ begin
           PanelCaption := ExcessAvgCostMessage;
       end;
     end;
-}    
+
+    { проверяем на превышение заказанного количества }
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      OrderCountAvg := adsAvgOrdersOrderCountAvg.AsCurrency;
+      if ( OrderCountAvg > 0) and ( adsCoreORDERCOUNT.AsInteger > OrderCountAvg*ExcessAvgOrderTimes ) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgOrderCountMessage
+        else
+          PanelCaption := ExcessAvgOrderCountMessage;
+      end;
+    end;
 
     if (adsCoreJUNK.Value) then
       if Length(PanelCaption) > 0 then

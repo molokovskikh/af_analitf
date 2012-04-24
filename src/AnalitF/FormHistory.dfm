@@ -5,7 +5,7 @@ object FormsHistoryForm: TFormsHistoryForm
   BorderStyle = bsDialog
   Caption = #1055#1088#1077#1076#1099#1076#1091#1097#1080#1077' '#1079#1072#1082#1072#1079#1099
   ClientHeight = 385
-  ClientWidth = 729
+  ClientWidth = 728
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -49,7 +49,7 @@ object FormsHistoryForm: TFormsHistoryForm
     ParentFont = False
   end
   object Label1: TLabel
-    Left = 126
+    Left = 118
     Top = 358
     Width = 233
     Height = 13
@@ -62,11 +62,37 @@ object FormsHistoryForm: TFormsHistoryForm
     ParentFont = False
   end
   object lPriceAvg: TLabel
-    Left = 363
+    Left = 356
     Top = 358
     Width = 55
     Height = 13
     Caption = 'lPriceAvg'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label2: TLabel
+    Left = 424
+    Top = 358
+    Width = 240
+    Height = 13
+    Caption = #1057#1088#1077#1076#1085#1080#1081' '#1079#1072#1082#1072#1079' '#1087#1086' '#1087#1086#1089#1083#1077#1076#1085#1080#1084' '#1079#1072#1103#1074#1082#1072#1084' :'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object lOrderCountAvg: TLabel
+    Left = 667
+    Top = 358
+    Width = 90
+    Height = 13
+    Caption = 'lOrderCountAvg'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11

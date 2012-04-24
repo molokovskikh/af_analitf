@@ -41,6 +41,7 @@ const
 
   OrderJunkMessage = '¬ы заказали препарат с ограниченным сроком годности'#13#10' или с повреждением вторичной упаковки.';
   ExcessAvgCostMessage = 'ѕревышение средней цены!';
+  ExcessAvgOrderCountMessage = 'ѕревышение среднего заказа!';
   WarningOrderCountMessage = '¬нимание! ¬ы заказали большое количество препарата.';
   DisableProductOrderMessage = 'ѕрепарат запрещен к заказу.';
 

@@ -124,6 +124,7 @@ type
     adsCoreRetailVitallyImportant: TBooleanField;
     cbProducers: TComboBox;
     adsCoreMarkup: TFloatField;
+    adsAvgOrdersOrderCountAvg: TFloatField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -161,8 +162,8 @@ type
     PriceName,
     RegionName : String;
 
-    UseExcess: Boolean;
     Excess: Integer;
+    ExcessAvgOrderTimes : Integer;
     InternalSearchText : String;
 
     BM : TBitmap;
@@ -240,8 +241,8 @@ begin
   InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
   PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
-  UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  ExcessAvgOrderTimes := 5;
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   adsAvgOrders.ParamByName('ClientId').Value := ClientId;
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);
@@ -434,9 +435,9 @@ end;
 procedure TCoreFirmForm.adsCore2BeforePost(DataSet: TDataSet);
 var
   Quantity, E: Integer;
-  PriceAvg: Double;
+  PriceAvg,
+  OrderCountAvg: Double;
   PanelCaption : String;
-  PanelHeight : Integer;
 begin
   try
     { проверяем заказ на соответствие наличию товара на складе }
@@ -464,7 +465,7 @@ begin
     end;
 
     { проверяем на превышение цены }
-    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
     begin
       PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
@@ -476,6 +477,19 @@ begin
       end;
     end;
 
+    { проверяем на превышение заказанного количества }
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      OrderCountAvg := adsAvgOrdersOrderCountAvg.AsCurrency;
+      if ( OrderCountAvg > 0) and ( adsCoreORDERCOUNT.AsInteger > OrderCountAvg*ExcessAvgOrderTimes ) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgOrderCountMessage
+        else
+          PanelCaption := ExcessAvgOrderCountMessage;
+      end;
+    end;
+    
     if (adsCoreJUNK.AsBoolean) then
       if Length(PanelCaption) > 0 then
         PanelCaption := PanelCaption + #13#10 + OrderJunkMessage

@@ -35,6 +35,8 @@ type
     adsCatalogNameFORM: TStringField;
     dsCatalogName: TDataSource;
     adsPreviosOrdersPeriod: TStringField;
+    Label2: TLabel;
+    lOrderCountAvg: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
@@ -56,6 +58,7 @@ uses
 procedure ShowFormHistory(GroupByProducts : Boolean; FullCode, ProductId : Int64; ClientId: Integer);
 var
   Avr : Currency;
+  OrderCountAvg : Double;
   Count : Integer;
 begin
   with TFormsHistoryForm.Create(Application) do try
@@ -75,10 +78,12 @@ begin
       end;
       Count := 0;
       Avr := 0;
+      OrderCountAvg := 0;
       while not adsPreviosOrders.Eof do
       begin
         if (Now - adsPreviosOrdersORDERDATE.Value < 183) then begin
           Avr := Avr + adsPreviosOrdersPRICE.Value;
+          OrderCountAvg := OrderCountAvg + adsPreviosOrdersOrderCount.Value;
           Inc(Count);
           adsPreviosOrders.Next;
         end
@@ -86,9 +91,12 @@ begin
           Break;
       end;
       adsPreviosOrders.First;
-      if Count > 0 then
+      if Count > 0 then begin
         Avr := Avr / Count;
+        OrderCountAvg := OrderCountAvg / Count;
+      end;
       lPriceAvg.Caption := FloatToStrF(Avr, ffCurrency, 15, 2);
+      lOrderCountAvg.Caption := FloatToStrF(OrderCountAvg, ffFixed, 15, 2);
     finally
       Screen.Cursor:=crDefault;
     end;

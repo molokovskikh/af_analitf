@@ -476,7 +476,6 @@ procedure TSummaryForm.adsSummary2BeforePost(DataSet: TDataSet);
 var
   Quantity, E: Integer;
   PanelCaption : String;
-  PanelHeight : Integer;
 begin
   try
     { проверяем заказ на соответствие наличию товара на складе }

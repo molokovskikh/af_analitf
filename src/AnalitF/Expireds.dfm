@@ -288,7 +288,8 @@ inherited ExpiredsForm: TExpiredsForm
       'SELECT'
       'ClientAVG.ClientCode,'
       'ClientAVG.ProductId,'
-      'ClientAVG.PriceAvg'
+      'ClientAVG.PriceAvg,'
+      'ClientAVG.OrderCountAvg'
       'FROM'
       '   ClientAVG'
       'where'
@@ -312,6 +313,9 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
+    end
+    object adsAvgOrdersOrderCountAvg: TFloatField
+      FieldName = 'OrderCountAvg'
     end
   end
   object adsExpireds: TMyQuery

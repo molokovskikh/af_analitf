@@ -1362,59 +1362,6 @@ object DM: TDM
         Name = 'Send'
       end>
   end
-  object adcTemporaryTable: TMyQuery
-    Connection = MyConnection
-    SQL.Strings = (
-      'drop temporary table if exists pricesshow;'
-      'create temporary table pricesshow ENGINE=MEMORY '
-      'as'
-      'SELECT'
-      '   pd.PRICECODE AS PriceCode, '
-      '  `pd`.`PRICENAME` AS `PriceName`, '
-      '  `pd`.`DATEPRICE` AS `UniversalDatePrice`, '
-      '  `prd`.`MINREQ` AS `MinReq`, '
-      '  `prd`.`ENABLED` AS `Enabled`, '
-      '  `cd`.`FIRMCODE` AS `FirmCode`, '
-      '  `cd`.`FULLNAME` AS `FullName`, '
-      '  `prd`.`STORAGE` AS `Storage`, '
-      '  `cd`.`MANAGERMAIL` AS `ManagerMail`, '
-      '  `r`.`REGIONCODE` AS `RegionCode`, '
-      '  `r`.`REGIONNAME` AS `RegionName`, '
-      '  `prd`.`PRICESIZE` AS `pricesize`, '
-      '  `prd`.`CONTROLMINREQ` AS `CONTROLMINREQ`'
-      'FROM'
-      '  (((`pricesdata` `pd`'
-      
-        '  JOIN `pricesregionaldata` `prd` ON (`pd`.`PRICECODE` = `prd`.`' +
-        'PRICECODE`))'
-      '  JOIN `regions` `r` ON (`prd`.`REGIONCODE` = `r`.`REGIONCODE`))'
-      '  JOIN `providers` `cd` ON (`cd`.`FIRMCODE` = `pd`.`FIRMCODE`));'
-      ''
-      'drop temporary table if exists clientavg;'
-      'create temporary table clientavg ENGINE=MEMORY '
-      'as'
-      'SELECT'
-      
-        '  `CurrentOrderHeads`.`CLIENTID` AS `CLIENTCODE`, `CurrentOrderL' +
-        'ists`.`PRODUCTID` AS `PRODUCTID`, AVG(`CurrentOrderLists`.`PRICE' +
-        '`) AS `PRICEAVG`'
-      'FROM'
-      '  (`CurrentOrderHeads`'
-      '  JOIN `CurrentOrderLists`)'
-      'WHERE'
-      
-        '  ((`CurrentOrderLists`.`ORDERID` = `CurrentOrderHeads`.`ORDERID' +
-        '`) AND (`ordershead`.`ORDERDATE` >= (CURDATE() - INTERVAL 1 MONT' +
-        'H)) AND (`ordershead`.`CLOSED` = 1) AND (`CurrentOrderHeads`.`SE' +
-        'ND` = 1) AND (`orderslist`.`ORDERCOUNT` > 0) AND (`CurrentOrderL' +
-        'ists`.`PRICE` IS NOT NULL))'
-      'GROUP BY'
-      
-        '  `CurrentOrderHeads`.`CLIENTID`, `CurrentOrderLists`.`PRODUCTID' +
-        '`;')
-    Left = 400
-    Top = 104
-  end
   object frDBDataSet: TfrDBDataSet
     OpenDataSource = False
     Left = 232

@@ -152,6 +152,9 @@ type
     cbProducers: TComboBox;
     adsCoreOrdersComment: TStringField;
     adsCoreMarkup: TFloatField;
+    lDiveder: TLabel;
+    dbtOrderCountAvg: TDBText;
+    adsAvgOrdersOrderCountAvg: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
     procedure adsCore2BeforeEdit(DataSet: TDataSet);
@@ -184,8 +187,9 @@ type
   private
     RegionCodeStr: string;
     RecInfos: array of Double;
-    UseExcess, CurrentUseForms: Boolean;
+    CurrentUseForms: Boolean;
     DeltaMode, Excess, ClientId: Integer;
+    ExcessAvgOrderTimes : Integer;
     //—писок сортировки
     SortList : TStringList;
     CoreGroupByProducts : Boolean;
@@ -212,6 +216,7 @@ type
     procedure RecalUserRetailPrice();
     procedure ShowWaitSort();
     procedure SetCoreIndex();
+    procedure UpdateAvgData;
   public
     frameLegend : TframeLegend;
     frameAutoComment : TframeAutoComment;
@@ -265,13 +270,13 @@ begin
   PrintEnabled := (DM.SaveGridMask and PrintCombinedPrice) > 0;
   NeedFirstOnDataSet := False;
   adsCore.OnCalcFields := ccf;
-  UseExcess := True;
   CoreGroupByProducts := DM.adtParams.FieldByName( 'GroupByProducts').AsBoolean;
   if CoreGroupByProducts then
     btnGroupUngroup.Caption := '–азгруппировать'
   else
     btnGroupUngroup.Caption := '√руппировать';
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  ExcessAvgOrderTimes := 5;
   DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
   RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
 
@@ -483,8 +488,8 @@ procedure TCoreForm.adsCore2BeforePost(DataSet: TDataSet);
 var
   Quantity, E: Integer;
   PriceAvg: Double;
+  OrderCountAvg: Double;
   PanelCaption : String;
-  PanelHeight : Integer;
 begin
   try
     { провер€ем заказ на соответствие наличию товара на складе }
@@ -512,7 +517,7 @@ begin
     end;
     
     { провер€ем на превышение цены }
-    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
     begin
       PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
@@ -524,6 +529,19 @@ begin
       end;
     end;
 
+    { провер€ем на превышение заказанного количества }
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      OrderCountAvg := adsAvgOrdersOrderCountAvg.AsCurrency;
+      if ( OrderCountAvg > 0) and ( adsCoreORDERCOUNT.AsInteger > OrderCountAvg*ExcessAvgOrderTimes ) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgOrderCountMessage
+        else
+          PanelCaption := ExcessAvgOrderCountMessage;
+      end;
+    end;
+    
     if (adsCoreJUNK.Value) then
       if Length(PanelCaption) > 0 then
         PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
@@ -928,6 +946,7 @@ end;
 procedure TCoreForm.tmrUpdatePreviosOrdersTimer(Sender: TObject);
 begin
   tmrUpdatePreviosOrders.Enabled := False;
+  UpdateAvgData;
   if adsPreviosOrders.Active then
     adsPreviosOrders.Close;
   if adsCore.Active and not adsCore.IsEmpty
@@ -1059,6 +1078,13 @@ end;
 procedure TCoreForm.cbProducersCloseUp(Sender: TObject);
 begin
   cbFilterSelect(nil);
+end;
+
+procedure TCoreForm.UpdateAvgData;
+begin
+  dbtPriceAvg.Left := lblPriceAvg.Left + lblPriceAvg.Width + 1;
+  lDiveder.Left := dbtPriceAvg.Left + dbtPriceAvg.Width + 1;
+  dbtOrderCountAvg.Left := lDiveder.Left + lDiveder.Width + 1;
 end;
 
 initialization

@@ -2,14 +2,14 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
   ActiveControl = gbPrevOrders
   Caption = #1055#1088#1077#1076#1099#1076#1091#1097#1080#1077' '#1079#1072#1082#1072#1079#1099
   ClientHeight = 364
-  ClientWidth = 665
+  ClientWidth = 783
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object gbPrevOrders: TGroupBox [0]
     Left = 0
     Top = 0
-    Width = 665
+    Width = 783
     Height = 364
     Align = alClient
     Caption = ' '#1055#1088#1077#1076#1099#1076#1091#1097#1080#1077' '#1079#1072#1082#1072#1079#1099' '
@@ -17,7 +17,7 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
     object dbgHistory: TToughDBGrid
       Left = 2
       Top = 15
-      Width = 661
+      Width = 779
       Height = 316
       Align = alClient
       AutoFitColWidths = True
@@ -95,7 +95,7 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
     object pBottom: TPanel
       Left = 2
       Top = 331
-      Width = 661
+      Width = 779
       Height = 31
       Align = alBottom
       TabOrder = 1
@@ -119,6 +119,34 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
         Height = 13
         AutoSize = True
         DataField = 'PRICEAVG'
+        DataSource = dsAvgOrders
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lOrderCountAvg: TLabel
+        Left = 346
+        Top = 10
+        Width = 264
+        Height = 13
+        Caption = #1057#1088#1077#1076#1085#1077#1075#1086' '#1079#1072#1082#1072#1079#1072' '#1087#1086' '#1087#1088#1077#1076#1099#1076#1091#1097#1080#1084' '#1079#1072#1082#1072#1079#1072#1084' :'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtOrderCountAvg: TDBText
+        Left = 617
+        Top = 10
+        Width = 105
+        Height = 13
+        AutoSize = True
+        DataField = 'OrderCountAvg'
         DataSource = dsAvgOrders
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -246,7 +274,8 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
       'SELECT'
       'ClientAVG.ClientCode,'
       'ClientAVG.ProductId,'
-      'ClientAVG.PriceAvg'
+      'ClientAVG.PriceAvg,'
+      'ClientAVG.OrderCountAvg'
       'FROM'
       '   ClientAVG'
       'where'
@@ -267,9 +296,14 @@ inherited PreviousOrdersForm: TPreviousOrdersForm
       end>
     object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
+      DisplayFormat = '0.00;;'#39#39
     end
     object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
+    end
+    object adsAvgOrdersOrderCountAvg: TFloatField
+      FieldName = 'OrderCountAvg'
+      DisplayFormat = '0.00;;'#39#39
     end
   end
   object dsAvgOrders: TDataSource

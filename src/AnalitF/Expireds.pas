@@ -90,6 +90,7 @@ type
     adsExpiredsProducerName: TStringField;
     adsExpiredsRetailVitallyImportant: TBooleanField;
     adsExpiredsMarkup: TFloatField;
+    adsAvgOrdersOrderCountAvg: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsExpireds2BeforePost(DataSet: TDataSet);
     procedure dbgExpiredsCanInput(Sender: TObject; Value: Integer;
@@ -102,8 +103,8 @@ type
     procedure actFlipCoreExecute(Sender: TObject);
   private
     ClientId: Integer;
-    UseExcess: Boolean;
     Excess: Integer;
+    ExcessAvgOrderTimes : Integer;
 
     procedure ecf(DataSet: TDataSet);
   public
@@ -133,8 +134,8 @@ begin
   TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'MnnId', ShowDescriptionAction);
   adsExpireds.OnCalcFields := ecf;
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
-  UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  ExcessAvgOrderTimes := 5;
   adsAvgOrders.ParamByName('ClientId').Value := ClientId;
   adsExpireds.ParamByName( 'ClientId').Value := ClientId;
   adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
@@ -181,9 +182,9 @@ end;
 procedure TExpiredsForm.adsExpireds2BeforePost(DataSet: TDataSet);
 var
   Quantity, E: Integer;
-  PriceAvg: Double;
+  PriceAvg,
+  OrderCountAvg: Double;
   PanelCaption : String;
-  PanelHeight : Integer;
 begin
   try
     { проверяем заказ на соответствие наличию товара на складе }
@@ -211,7 +212,7 @@ begin
     end;
 
     { проверяем на превышение цены }
-    if UseExcess and ( adsExpiredsORDERCOUNT.AsInteger > 0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    if ( adsExpiredsORDERCOUNT.AsInteger > 0) and (not adsAvgOrdersPRODUCTID.IsNull) then
     begin
       PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
       if ( PriceAvg > 0) and ( adsExpiredsCOST.AsCurrency>PriceAvg*(1+Excess/100)) then
@@ -223,6 +224,19 @@ begin
       end;
     end;
 
+    { проверяем на превышение заказанного количества }
+    if ( adsExpiredsORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      OrderCountAvg := adsAvgOrdersOrderCountAvg.AsCurrency;
+      if ( OrderCountAvg > 0) and ( adsExpiredsORDERCOUNT.AsInteger > OrderCountAvg*ExcessAvgOrderTimes ) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgOrderCountMessage
+        else
+          PanelCaption := ExcessAvgOrderCountMessage;
+      end;
+    end;
+    
     if Length(PanelCaption) > 0 then
       PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
     else

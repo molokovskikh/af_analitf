@@ -462,7 +462,8 @@ object CoreFirmForm: TCoreFirmForm
       'SELECT'
       'ClientAVG.ClientCode,'
       'ClientAVG.ProductId,'
-      'ClientAVG.PriceAvg'
+      'ClientAVG.PriceAvg,'
+      'ClientAVG.OrderCountAvg'
       'FROM'
       '   ClientAVG'
       'where'
@@ -486,6 +487,9 @@ object CoreFirmForm: TCoreFirmForm
     end
     object adsAvgOrdersPRICEAVG: TFloatField
       FieldName = 'PRICEAVG'
+    end
+    object adsAvgOrdersOrderCountAvg: TFloatField
+      FieldName = 'OrderCountAvg'
     end
   end
   object adsCurrentOrderHeader: TMyQuery

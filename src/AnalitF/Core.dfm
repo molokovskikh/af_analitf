@@ -40,9 +40,9 @@ object CoreForm: TCoreForm
       object lblPriceAvg: TLabel
         Left = 8
         Top = 110
-        Width = 244
+        Width = 285
         Height = 13
-        Caption = #1057#1088#1077#1076#1085#1103#1103' '#1094#1077#1085#1072' '#1087#1086' '#1087#1088#1077#1076#1099#1076#1091#1097#1080#1084' '#1079#1072#1082#1072#1079#1072#1084' :'
+        Caption = #1057#1088#1077#1076#1085#1080#1077' '#1094#1077#1085#1072'/'#1079#1072#1082#1072#1079' '#1087#1086' '#1087#1088#1077#1076#1099#1076#1091#1097#1080#1084' '#1079#1072#1082#1072#1079#1072#1084' :'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -51,12 +51,40 @@ object CoreForm: TCoreForm
         ParentFont = False
       end
       object dbtPriceAvg: TDBText
-        Left = 258
+        Left = 293
         Top = 110
         Width = 70
         Height = 13
         AutoSize = True
         DataField = 'PRICEAVG'
+        DataSource = dsAvgOrders
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lDiveder: TLabel
+        Left = 366
+        Top = 110
+        Width = 7
+        Height = 13
+        Caption = '/'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object dbtOrderCountAvg: TDBText
+        Left = 377
+        Top = 110
+        Width = 105
+        Height = 13
+        AutoSize = True
+        DataField = 'OrderCountAvg'
         DataSource = dsAvgOrders
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1267,7 +1295,8 @@ object CoreForm: TCoreForm
       'SELECT'
       'ClientAVG.ClientCode,'
       'ClientAVG.ProductId,'
-      'ClientAVG.PriceAvg'
+      'ClientAVG.PriceAvg,'
+      'ClientAVG.OrderCountAvg'
       'FROM'
       '   ClientAVG'
       'where'
@@ -1292,6 +1321,10 @@ object CoreForm: TCoreForm
     end
     object adsAvgOrdersPRODUCTID: TLargeintField
       FieldName = 'PRODUCTID'
+    end
+    object adsAvgOrdersOrderCountAvg: TFloatField
+      FieldName = 'OrderCountAvg'
+      DisplayFormat = '0.00;;'#39#39
     end
   end
   object adsFirmsInfo: TMyQuery

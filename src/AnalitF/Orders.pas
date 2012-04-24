@@ -564,7 +564,6 @@ end;
 procedure TOrdersForm.adsOrdersOldBeforePost(DataSet: TDataSet);
 var
   PanelCaption : String;
-  PanelHeight : Integer;
 begin
   PanelCaption := '';
 

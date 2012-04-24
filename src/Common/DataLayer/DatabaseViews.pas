@@ -83,8 +83,9 @@ begin
   Result := inherited GetCreateSQL(DatabasePrefix)
 +'  select `postedorderheads`.`CLIENTID` as `CLIENTCODE`, ' 
 +'    `postedorderlists`.`PRODUCTID`     as `PRODUCTID` , ' 
-+'    avg(`postedorderlists`.`PRICE`)    as `PRICEAVG` ' 
-+'  from (`postedorderheads` ' 
++'    avg(`postedorderlists`.`PRICE`)    as `PRICEAVG`, '
++'    avg(`postedorderlists`.`ORDERCOUNT`)    as `ORDERCOUNTAVG` '
++'  from (`postedorderheads` '
 +'    join `postedorderlists`) ' 
 +'  where ( ' 
 +'      ( ' 

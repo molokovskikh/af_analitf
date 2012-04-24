@@ -129,6 +129,7 @@ type
     adsCoreCatalogVitallyImportant: TBooleanField;
     adsCoreRetailVitallyImportant: TBooleanField;
     adsCoreMarkup: TFloatField;
+    adsAvgOrdersOrderCountAvg: TFloatField;
     procedure FormCreate(Sender: TObject);
     procedure adsCoreBeforeUpdateExecute(Sender: TCustomMyDataSet;
       StatementTypes: TStatementTypes; Params: TDAParams);
@@ -161,8 +162,8 @@ type
     procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
-    UseExcess: Boolean;
     Excess : Integer;
+    ExcessAvgOrderTimes : Integer;
     //Проверяем, что заказ сделан кратно Volume
     function  CheckVolume : Boolean;
     //Проверяем, что заказ сделан >= OrderCost
@@ -256,8 +257,8 @@ begin
   //todo: Здесь засада, т.к. описание не отображается
   TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'MnnId', nil);
 
-  UseExcess := True;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
+  ExcessAvgOrderTimes := 5; 
   adsAvgOrders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').AsInteger;
   plOverCost.Hide();
@@ -602,7 +603,8 @@ end;
 procedure TCorrectOrdersForm.adsCoreBeforePost(DataSet: TDataSet);
 var
   Quantity, E: Integer;
-  PriceAvg: Double;
+  PriceAvg,
+  OrderCountAvg: Double;
   PanelCaption : String;
   PanelHeight : Integer;
 begin
@@ -622,12 +624,25 @@ begin
     PanelCaption := '';
 
     { проверяем на превышение цены }
-    if UseExcess and ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
     begin
       PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
       if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
       begin
         PanelCaption := ExcessAvgCostMessage;
+      end;
+    end;
+
+    { проверяем на превышение заказанного количества }
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      OrderCountAvg := adsAvgOrdersOrderCountAvg.AsCurrency;
+      if ( OrderCountAvg > 0) and ( adsCoreORDERCOUNT.AsInteger > OrderCountAvg*ExcessAvgOrderTimes ) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgOrderCountMessage
+        else
+          PanelCaption := ExcessAvgOrderCountMessage;
       end;
     end;
 

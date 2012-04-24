@@ -235,7 +235,6 @@ type
     dsUser: TDataSource;
     adsPrintOrderHeader: TMyQuery;
     adsRepareOrdersCodeFirmCr: TLargeintField;
-    adcTemporaryTable: TMyQuery;
     adsRepareOrdersRealPrice: TFloatField;
     adsOrderCoreRealCost: TFloatField;
     adsRepareOrdersDropReason: TSmallintField;
@@ -1661,7 +1660,6 @@ procedure TDM.MainConnectionOldAfterConnect(Sender: TObject);
 begin
   MainConnection.ExecSQL('use analitf', []);
   DatabaseController.CreateViews(MainConnection);
-  //adcTemporaryTable.Execute;
   //открываем таблицы с параметрами
   adtParams.Close;
   adtParams.Open;

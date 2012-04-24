@@ -34,6 +34,9 @@ type
     dsAvgOrders: TDataSource;
     adsPreviousOrdersproductid: TLargeintField;
     adsPreviousOrdersPeriod: TStringField;
+    adsAvgOrdersOrderCountAvg: TFloatField;
+    lOrderCountAvg: TLabel;
+    dbtOrderCountAvg: TDBText;
     procedure dbgHistoryKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
