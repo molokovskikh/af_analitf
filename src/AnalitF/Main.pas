@@ -166,6 +166,8 @@ TMainForm = class(TForm)
     miMiniMailFromDocs: TMenuItem;
     HTMLViewer: THTMLViewer;
     VistaAltFix: TVistaAltFix;
+    pStartUp: TPanel;
+    tmrStartUp: TTimer;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -228,6 +230,8 @@ TMainForm = class(TForm)
     procedure tmrOnNeedUpdateTimer(Sender: TObject);
     procedure tmrNeedUpdateCheckTimer(Sender: TObject);
     procedure actMiniMailExecute(Sender: TObject);
+    procedure tmrStartUpTimer(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
 private
   JustRun: boolean;
   ApplicationVersionText : String;
@@ -365,9 +369,6 @@ begin
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
-var
-  I : Integer;
-  LoggedOn : Boolean;
 begin
   //Вызываем это для того, чтобы произошла отрисовка pbSelectClient после обновления,
   //из-за чего может измениться список клиентов
@@ -380,185 +381,6 @@ begin
   if not JustRun then exit;
   //Бывает только в том случае, если происходит сжатие базы данных
   if not Active then exit;
-  JustRun := False;
-  mainStartupHelper.Stop;
-  
-try
-  try
-  DisableByNetworkSettings;
-  
-  tmrOnExclusive.Enabled := True;
-  //Производим восстановление
-  FormPlacement.Active := True;
-  Self.WindowState := wsMaximized;
-  GetKeyboardHelper.SwitchToRussian();
-
-  UpdateReclame;
-  //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
-  //поэтому надо еще раз пересчитать
-  //Вроде бы работает без него
-  //FormResize(Self);
-
-  //todo: ClientId-UserId
-  DM.GetClientInformation(CurrentUser, IsFutureClient);
-  CurrentAddressName := '';
-  if (Length(CurrentUser) > 0) then
-    Self.Caption := Application.Title + ' - ' + CurrentUser
-  else
-    Self.Caption := Application.Title;
-
-
-  // Логин пустой
-  LoggedOn := False;
-  if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
-  begin
-    AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
-      MB_ICONWARNING or MB_OK);
-    LoggedOn := (ShowConfig( True) * [ccHTTPName]) <> [];
-  end;
-
-  // Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации
-  if FindCmdLineSwitch('renew') then
-  begin
-    for I := 0 to ActionList.ActionCount-1 do
-      if ActionList.Actions[i] <> actConfig then
-        TAction(ActionList.Actions[i]).Enabled := False;
-    itmSystem.Enabled := False;
-    Exit;
-  end;
-
-  // Запуск с ключем -i (импорт данных) при получении новой версии программы}
-  if FindCmdLineSwitch('i') then
-  begin
-    //Производим только в том случае, если не была создана "чистая" база,
-    //не было обновление по ошибке UIN и не было обновление по ошибке хешей библиотек
-    if
-      (
-        not DM.CreateClearDatabase
-          //Делаем это только в случае обновления Firebird на Mysql
-        or DM.ProcessFirebirdUpdate
-          //Делаем это только в случае обновления 800x на версию 945
-        or DM.Process800xUpdate
-          //Делаем это только в случае обновления libmysqld на новую версию
-        or DM.ProcessUpdateToNewLibMysqlD
-      )
-      and not DM.NeedUpdateByCheckUIN
-      and not DM.NeedUpdateByCheckHashes
-    then begin
-      if DM.ProcessUpdateToNewLibMysqlD and DM.NeedCumulativeAfterUpdateToNewLibMySqlD
-      then begin
-        AProc.MessageBox(
-          'В результате обновления базы данных некоторые данные были потеряны и необходимо сделать кумулятивное обновление.',
-          MB_ICONWARNING or MB_OK);
-        RunExchange([eaGetPrice, eaGetFullData]);
-      end
-      else
-        //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
-        RunExchange([ eaImportOnly]);
-    end;
-    exit;
-  end;
-
-  // Если операция импорта не была завершена }
-  if DatabaseController.IsBackuped or
-     DM.NeedImportAfterRecovery
-  then
-  begin
-    AProc.MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
-    if DatabaseController.IsBackuped then
-      DatabaseController.RestoreDatabase;
-
-    //Производим сжатие базы данных для очищения от ошибок
-    RunCompactDatabase;
-
-  // Автоматический импорт }
-    //Если импорт не прошел, то надо ждать помощи от техподдержки
-    if not RunExchange([eaGetPrice])
-    then
-      Exit;
-  end;
-
-  //Если запрещен обмен с сервером, то выходим из процедуры
-  if DM.DisableAllExchange then
-    Exit;
-
-  //Если выставлен флаг "Делать кумулятивное обновление", то делаем его
-  //Он может быть выставлен с предыдущего запуска программы или в результате непрошедщего импорта,
-  //который был запущен двумя строками выше
-  if DM.GetCumulative then
-  begin
-    WriteExchangeLog('AnalitF',
-      'Предыдущая операция импорта данных была завершена с нарушением целостности данных,' +
-      'будет произведено кумулятивное обновление.');
-    RunExchange([eaGetPrice, eaGetFullData]);
-    //В любом случае сразу же выходим из данной секции, т.к. либо обновились и все хорошо,
-    //либо обновление не помогло и надо ждать помощи от техподдержки
-    Exit;
-  end;
-
-  if DM.CreateClearDatabase and (DM.adtParams.FieldByName('HTTPName').AsString <> '') and not LoggedOn
-  then begin
-    WriteExchangeLog('AnalitF',
-      'Выполнено пересоздание базы данных с восстановлением учетных данных из TableBackup,' +
-      'будет произведено кумулятивное обновление.');
-    RunExchange([eaGetPrice, eaGetFullData]);
-    //В любом случае сразу же выходим из данной секции, т.к. либо обновились и все хорошо,
-    //либо обновление не помогло и надо ждать помощи от техподдержки
-    Exit;
-  end;
-
-  if ExchangeOnly then exit;
-  // Программа только что установлена или не обновлялись больше 20 часов }
-  if (DM.adtParams.FieldByName( 'UpdateDateTime').IsNull and (Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> ''))
-  then begin
-    if AProc.MessageBox( 'База данных программы не заполнена. Выполнить обновление?',
-       MB_ICONQUESTION or MB_YESNO) = IDYES
-    then begin
-      actReceiveExecute( nil);
-    end;
-  end
-  else begin
-    if SchedulesController().SchedulesEnabled and SchedulesController().NeedUpdateOnBegin
-    then begin
-      ShowAction(
-        'Сейчас будет произведено обновление данных '#13#10 +
-        'по установленному расписанию.',
-        'Обновление',
-        10);
-      actReceiveExecute( nil);
-      //Если мы попытались выполнить обновление по расписанию, то сразу выходим
-      //независимо от результата, т.к. либо обновились, либо не обновились, либо получили новую версию
-      //Если не выйдем, то при получении новой версии зайдем на повтороное обновление
-      //в связи с устаревшим набором данных
-      Exit;
-    end;
-
-    if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) >= 8) and
-      ( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
-      if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
-         MB_ICONQUESTION or MB_YESNO) = IDYES
-      then begin
-        actReceiveExecute( nil);
-      end;
-  end;
-
-  finally
-    //Пересчет отсрочек платежа имеет смысл для несетевой версии
-    if not GetNetworkSettings().IsNetworkVersion then
-      if TDayOfWeekDelaysController.NeedUpdateDelays(DM) then begin
-        ShowSQLWaiting(TDayOfWeekDelaysController.RecalcOrdersByDelays, 'Происходит переcчет отсрочки платежа');
-        SetOrdersInfo;
-      end;
-    TDayOfWeekDelaysController.UpdateDayOfWeek(DM);
-    
-    tmrNeedUpdateCheck.Enabled := True;
-  end;
-
-finally
-  SetFocusOnMainForm;
-  //Обновляем ToolBar в случае смены клиента после обновления
-  UpdateAddressName;
-end;
 end;
 
 procedure TMainForm.SetStatusText( Value: string);
@@ -2062,6 +1884,205 @@ begin
     on E : Exception do
       LogCriticalError('Ошибка при удалении устаревших документов : ' + E.Message);
   end;
+end;
+
+procedure TMainForm.tmrStartUpTimer(Sender: TObject);
+var
+  I : Integer;
+  LoggedOn : Boolean;
+begin
+  tmrStartUp.Enabled := False;
+
+  Self.WindowState := wsMaximized;
+  Self.Repaint;
+
+  //старом модуля данных
+  DM.StartUp;
+
+  JustRun := False;
+  mainStartupHelper.Stop;
+try
+  try
+  DisableByNetworkSettings;
+
+  tmrOnExclusive.Enabled := True;
+  //Производим восстановление
+  FormPlacement.Active := True;
+  GetKeyboardHelper.SwitchToRussian();
+
+  pStartUp.Visible := False;
+  UpdateReclame;
+  //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
+  //поэтому надо еще раз пересчитать
+  //Вроде бы работает без него
+  //FormResize(Self);
+
+  //todo: ClientId-UserId
+  DM.GetClientInformation(CurrentUser, IsFutureClient);
+  CurrentAddressName := '';
+  if (Length(CurrentUser) > 0) then
+    Self.Caption := Application.Title + ' - ' + CurrentUser
+  else
+    Self.Caption := Application.Title;
+
+
+  // Логин пустой
+  LoggedOn := False;
+  if Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) = '' then
+  begin
+    AProc.MessageBox( 'Для начала работы с программой необходимо заполнить учетные данные',
+      MB_ICONWARNING or MB_OK);
+    LoggedOn := (ShowConfig( True) * [ccHTTPName]) <> [];
+  end;
+
+  // Если запустили программу с ключиком renew, то запрещаем все действия кроме конфигурации
+  if FindCmdLineSwitch('renew') then
+  begin
+    for I := 0 to ActionList.ActionCount-1 do
+      if ActionList.Actions[i] <> actConfig then
+        TAction(ActionList.Actions[i]).Enabled := False;
+    itmSystem.Enabled := False;
+    Exit;
+  end;
+
+  // Запуск с ключем -i (импорт данных) при получении новой версии программы}
+  if FindCmdLineSwitch('i') then
+  begin
+    //Производим только в том случае, если не была создана "чистая" база,
+    //не было обновление по ошибке UIN и не было обновление по ошибке хешей библиотек
+    if
+      (
+        not DM.CreateClearDatabase
+          //Делаем это только в случае обновления Firebird на Mysql
+        or DM.ProcessFirebirdUpdate
+          //Делаем это только в случае обновления 800x на версию 945
+        or DM.Process800xUpdate
+          //Делаем это только в случае обновления libmysqld на новую версию
+        or DM.ProcessUpdateToNewLibMysqlD
+      )
+      and not DM.NeedUpdateByCheckUIN
+      and not DM.NeedUpdateByCheckHashes
+    then begin
+      if DM.ProcessUpdateToNewLibMysqlD and DM.NeedCumulativeAfterUpdateToNewLibMySqlD
+      then begin
+        AProc.MessageBox(
+          'В результате обновления базы данных некоторые данные были потеряны и необходимо сделать кумулятивное обновление.',
+          MB_ICONWARNING or MB_OK);
+        RunExchange([eaGetPrice, eaGetFullData]);
+      end
+      else
+        //Здесь надо корректно обрабатывать передачу сессионого ключа при обновлении программы
+        RunExchange([ eaImportOnly]);
+    end;
+    exit;
+  end;
+
+  // Если операция импорта не была завершена }
+  if DatabaseController.IsBackuped or
+     DM.NeedImportAfterRecovery
+  then
+  begin
+    AProc.MessageBox( 'Предыдущая операция импорта данных не была завершена', MB_ICONWARNING or MB_OK);
+    if DatabaseController.IsBackuped then
+      DatabaseController.RestoreDatabase;
+
+    //Производим сжатие базы данных для очищения от ошибок
+    RunCompactDatabase;
+
+  // Автоматический импорт }
+    //Если импорт не прошел, то надо ждать помощи от техподдержки
+    if not RunExchange([eaGetPrice])
+    then
+      Exit;
+  end;
+
+  //Если запрещен обмен с сервером, то выходим из процедуры
+  if DM.DisableAllExchange then
+    Exit;
+
+  //Если выставлен флаг "Делать кумулятивное обновление", то делаем его
+  //Он может быть выставлен с предыдущего запуска программы или в результате непрошедщего импорта,
+  //который был запущен двумя строками выше
+  if DM.GetCumulative then
+  begin
+    WriteExchangeLog('AnalitF',
+      'Предыдущая операция импорта данных была завершена с нарушением целостности данных,' +
+      'будет произведено кумулятивное обновление.');
+    RunExchange([eaGetPrice, eaGetFullData]);
+    //В любом случае сразу же выходим из данной секции, т.к. либо обновились и все хорошо,
+    //либо обновление не помогло и надо ждать помощи от техподдержки
+    Exit;
+  end;
+
+  if DM.CreateClearDatabase and (DM.adtParams.FieldByName('HTTPName').AsString <> '') and not LoggedOn
+  then begin
+    WriteExchangeLog('AnalitF',
+      'Выполнено пересоздание базы данных с восстановлением учетных данных из TableBackup,' +
+      'будет произведено кумулятивное обновление.');
+    RunExchange([eaGetPrice, eaGetFullData]);
+    //В любом случае сразу же выходим из данной секции, т.к. либо обновились и все хорошо,
+    //либо обновление не помогло и надо ждать помощи от техподдержки
+    Exit;
+  end;
+
+  if ExchangeOnly then exit;
+  // Программа только что установлена или не обновлялись больше 20 часов }
+  if (DM.adtParams.FieldByName( 'UpdateDateTime').IsNull and (Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> ''))
+  then begin
+    if AProc.MessageBox( 'База данных программы не заполнена. Выполнить обновление?',
+       MB_ICONQUESTION or MB_YESNO) = IDYES
+    then begin
+      actReceiveExecute( nil);
+    end;
+  end
+  else begin
+    if SchedulesController().SchedulesEnabled and SchedulesController().NeedUpdateOnBegin
+    then begin
+      ShowAction(
+        'Сейчас будет произведено обновление данных '#13#10 +
+        'по установленному расписанию.',
+        'Обновление',
+        10);
+      actReceiveExecute( nil);
+      //Если мы попытались выполнить обновление по расписанию, то сразу выходим
+      //независимо от результата, т.к. либо обновились, либо не обновились, либо получили новую версию
+      //Если не выйдем, то при получении новой версии зайдем на повтороное обновление
+      //в связи с устаревшим набором данных
+      Exit;
+    end;
+
+    if ( HourSpan( DM.adtParams.FieldByName( 'UpdateDateTime').AsDateTime, Now) >= 8) and
+      ( Trim( DM.adtParams.FieldByName( 'HTTPName').AsString) <> '') then
+      if AProc.MessageBox( 'Вы работаете с устаревшим набором данных. Выполнить обновление?',
+         MB_ICONQUESTION or MB_YESNO) = IDYES
+      then begin
+        actReceiveExecute( nil);
+      end;
+  end;
+
+  finally
+    //Пересчет отсрочек платежа имеет смысл для несетевой версии
+    if not GetNetworkSettings().IsNetworkVersion then
+      if TDayOfWeekDelaysController.NeedUpdateDelays(DM) then begin
+        ShowSQLWaiting(TDayOfWeekDelaysController.RecalcOrdersByDelays, 'Происходит переcчет отсрочки платежа');
+        SetOrdersInfo;
+      end;
+    TDayOfWeekDelaysController.UpdateDayOfWeek(DM);
+    
+    tmrNeedUpdateCheck.Enabled := True;
+  end;
+
+finally
+  SetFocusOnMainForm;
+  //Обновляем ToolBar в случае смены клиента после обновления
+  UpdateAddressName;
+end;
+end;
+
+procedure TMainForm.FormActivate(Sender: TObject);
+begin
+  if JustRun then
+    tmrStartUp.Enabled := True;
 end;
 
 initialization

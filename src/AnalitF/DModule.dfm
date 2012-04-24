@@ -1,6 +1,5 @@
 object DM: TDM
   OldCreateOrder = True
-  OnCreate = DMCreate
   Left = 421
   Top = 145
   Height = 627

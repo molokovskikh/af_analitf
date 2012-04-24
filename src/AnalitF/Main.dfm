@@ -16,6 +16,7 @@ object MainForm: TMainForm
   Menu = MainMenu
   OldCreateOrder = False
   Position = poScreenCenter
+  OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnResize = FormResize
@@ -292,6 +293,21 @@ object MainForm: TMainForm
     PrintMarginTop = 2.000000000000000000
     PrintMarginBottom = 2.000000000000000000
     PrintScale = 1.000000000000000000
+  end
+  object pStartUp: TPanel
+    Left = 0
+    Top = 42
+    Width = 1016
+    Height = 493
+    Align = alClient
+    Caption = #1047#1072#1087#1091#1089#1082' '#1087#1088#1086#1075#1088#1072#1084#1084#1099
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -24
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 3
   end
   object MainMenu: TMainMenu
     Left = 224
@@ -4056,5 +4072,12 @@ object MainForm: TMainForm
   object VistaAltFix: TVistaAltFix
     Left = 465
     Top = 155
+  end
+  object tmrStartUp: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrStartUpTimer
+    Left = 656
+    Top = 282
   end
 end

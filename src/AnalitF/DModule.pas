@@ -284,7 +284,6 @@ type
     adtClientsCalculateWithNDSForOther: TBooleanField;
     adsOrderDetailsMarkup: TFloatField;
     adtClientsExcessAvgOrderTimes: TIntegerField;
-    procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
     procedure adtParamsOldAfterPost(DataSet: TDataSet);
@@ -601,6 +600,8 @@ type
     procedure ShowCertificateWarning();
 
     function OpenAttachment(attachmentId : Int64) : Integer;
+
+    procedure StartUp;
   end;
 
 var
@@ -913,7 +914,7 @@ begin
       Result := ' ' + Result;
 end;
 
-procedure TDM.DMCreate(Sender: TObject);
+procedure TDM.StartUp;
 var
   HTTPS,
   HTTPE : String;
@@ -6172,7 +6173,7 @@ initialization
       ((CoInitFlags and COINIT_APARTMENTTHREADED) <> 0) or
       (CoInitFlags = COINIT_MULTITHREADED);  // this flag has value zero
   end;
-}  
+}
 
   AddTerminateProc(CloseDB);
   PassC := TINFCrypt.Create(gcp, 48);
