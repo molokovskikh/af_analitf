@@ -333,6 +333,7 @@ begin
 +'    `AllowDelayOfPayment` tinyint(1) not null  , '
 +'    `FullName` varchar(255) default null, '
 +'    `SelfAddressId` varchar(200) default null, '
++'    `ExcessAvgOrderTimes` int(10) not null default ''5'', '
 +'    primary key (`CLIENTID`)                   , '
 +'    unique key `PK_CLIENTS` (`CLIENTID`)       , '
 +'    key `FK_CLIENTS_REGIONCODE` (`REGIONCODE`) '
