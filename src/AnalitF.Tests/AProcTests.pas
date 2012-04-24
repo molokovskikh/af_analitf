@@ -22,10 +22,14 @@ type
     procedure CheckGetSupplierNameFromFileNameParam(
       inFileName,
       resultSupplierName : String);
+    procedure TestCheckStartupFolderByPathParam(
+      path : String;
+      resultCheck : Boolean);
    published
     procedure CheckGetNonExistsFileNameInFolder;
     procedure CheckGetOriginalWaybillFileName;
     procedure CheckGetSupplierNameFromFileName;
+    procedure TestCheckStartupFolderByPath;
   end;
 
 
@@ -107,6 +111,32 @@ var
 begin
   realSupplierName := GetSupplierNameFromFileName(inFileName);
   CheckEqualsString(resultSupplierName, realSupplierName);
+end;
+
+procedure TTestAProc.TestCheckStartupFolderByPath;
+var
+  usersDir : String;
+begin
+  TestCheckStartupFolderByPathParam(GetEnvironmentVariable('ProgramFiles'), False);
+  TestCheckStartupFolderByPathParam(GetEnvironmentVariable('ProgramFiles') + '\AnalitF', False);
+  TestCheckStartupFolderByPathParam(GetEnvironmentVariable('SystemRoot'), False);
+  TestCheckStartupFolderByPathParam(GetEnvironmentVariable('SystemRoot') + '\AnalitF', False);
+  TestCheckStartupFolderByPathParam(GetEnvironmentVariable('USERPROFILE'), True);
+  TestCheckStartupFolderByPathParam(GetEnvironmentVariable('USERPROFILE') + '\AnalitF', True);
+  TestCheckStartupFolderByPathParam('C:\', True);
+  TestCheckStartupFolderByPathParam('C:\AnalitF', True);
+  usersDir := ExtractFilePath(GetEnvironmentVariable('USERPROFILE'));
+  TestCheckStartupFolderByPathParam(usersDir, False);
+  TestCheckStartupFolderByPathParam(usersDir + '\AnalitF', False);
+end;
+
+procedure TTestAProc.TestCheckStartupFolderByPathParam(path: String;
+  resultCheck: Boolean);
+var
+  realResult: Boolean;
+begin
+  realResult := CheckStartupFolderByPath(path);
+  CheckEquals(resultCheck, realResult);
 end;
 
 initialization

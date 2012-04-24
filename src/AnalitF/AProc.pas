@@ -132,6 +132,8 @@ function GetOriginalWaybillFileName(waybillFileName : String) : String;
 
 function GetSupplierNameFromFileName(waybillFileName : String) : String;
 
+function CheckStartupFolderByPath(path : String) : Boolean;
+
 implementation
 
 uses
@@ -1395,6 +1397,23 @@ begin
 
   if (underlineIndex > 0) and (underlineIndex < leftBracketIndex) and (leftBracketIndex + 1 < rightBracketIndex) then
     Result := Copy(waybillFileName, underlineIndex + 1, leftBracketIndex - underlineIndex - 1);
+end;
+
+function CheckStartupFolderByPath(path : String) : Boolean;
+var
+  userProfile,
+  usersDir,
+  programFiles : String;
+begin
+  userProfile := GetEnvironmentVariable('USERPROFILE');
+  usersDir := ExtractFilePath(userProfile);
+  programFiles := GetEnvironmentVariable('ProgramFiles');
+  if AnsiEndsText(' (x86)', programFiles) then
+    programFiles := Copy(programFiles, 1, Length(programFiles) - 6);
+  Result :=
+    not AnsiStartsText(programFiles, path)
+    and not AnsiStartsText(GetEnvironmentVariable('SystemRoot'), path)
+    and (AnsiStartsText(userProfile, path) or not AnsiStartsText(usersDir, path));
 end;
 
 { TFileUpdateInfo }

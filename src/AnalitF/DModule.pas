@@ -326,6 +326,7 @@ type
     FReportPrinted : Boolean;
 
     procedure CheckRestrictToRun;
+    function CheckStartupFolder() : Boolean;
     procedure CheckDBFile;
     procedure ReadPasswords;
     function CheckCopyIDFromDB : Boolean;
@@ -936,6 +937,12 @@ begin
   WriteExchangeLog('AnalitF', 'Программа установлена в каталог: "' + ExtractFileDir(ParamStr(0)) + '"');
   mainStartupHelper.Write('DModule', 'Начали подготовительные действия');
 
+  if not CheckStartupFolder() then
+    AProc.MessageBox(
+      Format('Программа установлена в недопустимый каталог %s.'#13#10 +
+      'Работа программы может быть некорректной.', [ExePath]),
+      MB_ICONWARNING or MB_OK);
+      
   FProcessFirebirdUpdate := False;
   FProcess800xUpdate := False;
   FProcessUpdateToNewLibMysqlD := False;
@@ -6132,6 +6139,17 @@ begin
     DatabaseController.SwitchMemoryLib();
 {$endif}
   end;
+end;
+
+function TDM.CheckStartupFolder : Boolean;
+begin
+  Result := True;
+  if not DirectoryExists(ExePath + SDirData)
+    and not DirectoryExists(ExePath + SDirDataPrev)
+    and not DirectoryExists(ExePath + SDirTableBackup)
+    and CheckWin32Version(6, 0)
+  then
+    Result := CheckStartupFolderByPath(ExePath);
 end;
 
 initialization
