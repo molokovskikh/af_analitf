@@ -276,7 +276,7 @@ begin
   else
     btnGroupUngroup.Caption := 'Группировать';
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := 5;
+  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger;
   DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
   RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
 

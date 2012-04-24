@@ -135,7 +135,7 @@ begin
   adsExpireds.OnCalcFields := ecf;
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := 5;
+  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger;
   adsAvgOrders.ParamByName('ClientId').Value := ClientId;
   adsExpireds.ParamByName( 'ClientId').Value := ClientId;
   adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;

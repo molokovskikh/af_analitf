@@ -242,7 +242,7 @@ begin
   adsCore.OnCalcFields := ccf;
   PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := 5;
+  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger;
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   adsAvgOrders.ParamByName('ClientId').Value := ClientId;
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);

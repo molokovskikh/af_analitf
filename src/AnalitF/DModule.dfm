@@ -152,7 +152,8 @@ object DM: TDM
       ' CLIENTS.MAXUSERS,'
       ' CLIENTS.REQMASK,'
       ' CLIENTS.CALCULATELEADER,'
-      ' CLIENTS.SelfAddressId, '
+      ' CLIENTS.SelfAddressId,'
+      ' CLIENTS.ExcessAvgOrderTimes,'
       ' ClientSettings.ONLYLEADERS,'
       ' ClientSettings.Address,'
       ' ClientSettings.Director,'
@@ -180,6 +181,7 @@ object DM: TDM
       ' CLIENTS.REQMASK,'
       ' CLIENTS.CALCULATELEADER,'
       ' CLIENTS.SelfAddressId,'
+      ' CLIENTS.ExcessAvgOrderTimes,'
       ' ClientSettings.ONLYLEADERS,'
       ' ClientSettings.Address,'
       ' ClientSettings.Director,'
@@ -256,6 +258,9 @@ object DM: TDM
     end
     object adtClientsCalculateWithNDSForOther: TBooleanField
       FieldName = 'CalculateWithNDSForOther'
+    end
+    object adtClientsExcessAvgOrderTimes: TIntegerField
+      FieldName = 'ExcessAvgOrderTimes'
     end
   end
   object MyEmbConnection: TMyEmbConnection

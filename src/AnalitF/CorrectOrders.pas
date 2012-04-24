@@ -258,7 +258,7 @@ begin
   TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'MnnId', nil);
 
   Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := 5; 
+  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger; 
   adsAvgOrders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').AsInteger;
   plOverCost.Hide();

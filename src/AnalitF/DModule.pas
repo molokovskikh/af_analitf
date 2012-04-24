@@ -283,6 +283,7 @@ type
     adtParams: TMyQuery;
     adtClientsCalculateWithNDSForOther: TBooleanField;
     adsOrderDetailsMarkup: TFloatField;
+    adtClientsExcessAvgOrderTimes: TIntegerField;
     procedure DMCreate(Sender: TObject);
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
