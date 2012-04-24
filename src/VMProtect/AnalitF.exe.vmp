@@ -642,11 +642,6 @@
 				CompilationType="2"
 			/>
 			<Procedure
-				MapAddress="TDM.DMCreate"
-				Folder="0"
-				CompilationType="2"
-			/>
-			<Procedure
 				MapAddress="TDM.CheckRestrictToRun"
 				Folder="0"
 				CompilationType="2"
@@ -671,6 +666,11 @@
 			/>
 			<Procedure
 				MapAddress="GetEncryptedMemoryStream"
+				Folder="0"
+				CompilationType="2"
+			/>
+			<Procedure
+				MapAddress="TDM.StartUp"
 				Folder="0"
 				CompilationType="2"
 			/>
