@@ -12,12 +12,16 @@ type
     btnOk: TButton;
     RxRichEdit: TRxRichEdit;
     procedure FormResize(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    slDesc : TStringList;
     procedure reDescriptionKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   public
     { Public declarations }
+    procedure PrepareDesc(inputDesc : String; edit : TRxRichEdit);
   end;
 
 procedure ShowDescription(dataSet : TDataSet);
@@ -56,15 +60,14 @@ const
     'Срок годности'
     ));
 var
-  I,
-  J,
-  lastCount,
-  LastSelStart : Integer;
+  I : Integer;
   Name, EnglishName : String;
   descField : TField;
   RichEd : TRxRichEdit;
-  trimText : String;
   FDescriptionForm: TDescriptionForm;
+
+  headerSize,
+  bodySize : Integer;
 begin
   FDescriptionForm := TDescriptionForm.Create(nil);
   try
@@ -82,57 +85,51 @@ begin
     FDescriptionForm.Width := (Application.MainForm.Width div 3) * 2;
     FDescriptionForm.Height := (Application.MainForm.Height div 3) * 2;
 
+    //выставили параметры заголовка
     RichEd.Paragraph.Alignment := paCenter;
-    RichEd.Lines.Add(Name + ' (' + EnglishName + ')');
-    RichEd.Lines.Add('');
-
-    RichEd.SelStart := 0;
-    RichEd.SelLength := Length(RichEd.Lines[0]);
     RichEd.SelAttributes.Style := RichEd.SelAttributes.Style + [fsBold];
     RichEd.SelAttributes.Size := RichEd.SelAttributes.Size + 8;
 
-    LastSelStart := Length(RichEd.Lines[0]) + 2;
+    //Добавили заголовок
+    RichEd.Lines.Add(Name + ' (' + EnglishName + ')');
+    RichEd.Lines.Add('');
+
+    bodySize := RichEd.SelAttributes.Size;
+    headerSize := bodySize + 3;
 
     for I := 0 to High(ColumnsByTitles[0]) do begin
       descField := dataSet.FindField(ColumnsByTitles[0, i]);
       if Assigned(descField) and (descField.AsString <> '') then begin
+
+        //выставили параметры пункта описания
+        RichEd.Paragraph.Alignment := paLeftJustify;
+        RichEd.Paragraph.FirstIndent := 5;
+        RichEd.SelAttributes.Style := RichEd.SelAttributes.Style + [fsBold];
+        RichEd.SelAttributes.Size := headerSize;
+
+        //добавили название пукнта описания
         RichEd.Lines.Add(ColumnsByTitles[1, i] + ':');
         RichEd.Lines.Add('');
 
-        RichEd.SelStart := LastSelStart;
-        RichEd.SelLength := 0;
+        //выставили параметры тела описания
         RichEd.Paragraph.Alignment := paLeftJustify;
-        RichEd.Paragraph.FirstIndent := 5;
-        RichEd.SelLength := Length(ColumnsByTitles[1, i] + ':');
-        RichEd.SelAttributes.Style := RichEd.SelAttributes.Style + [fsBold];
-        RichEd.SelAttributes.Size := RichEd.SelAttributes.Size + 3;
-        LastSelStart := LastSelStart + Length(ColumnsByTitles[1, i] + ':') + 2;
+        RichEd.SelAttributes.Size := bodySize;
 
-        lastCount := RichEd.Lines.Count;
-        trimText := Trim(descField.AsString);
-        trimText := StringReplace(trimText, #13, ' ', [rfReplaceAll]);
-        trimText := StringReplace(trimText, #10, '', [rfReplaceAll]);
-        trimText := StringReplace(trimText, #151, '-', [rfReplaceAll]);
-        RichEd.Lines.Add(trimText);
-
-        for J := lastCount to RichEd.Lines.Count-1 do begin
-          RichEd.SelStart := LastSelStart;
-          RichEd.SelLength := 0;
-          RichEd.Paragraph.Alignment := paLeftJustify;
-          LastSelStart := LastSelStart + Length(RichEd.Lines[j]);
-        end;
+        //добавляем тело описания
+        FDescriptionForm.PrepareDesc(descField.AsString, RichEd);
 
         RichEd.Lines.Add('');
-        LastSelStart := LastSelStart + 2;
       end;
     end;
 
+    //удаляем пустые строки с конца текста
     for I := RichEd.Lines.Count-1 downto 0 do
       if Trim(RichEd.Lines[i]) = '' then
         RichEd.Lines.Delete(i)
       else
         Break;
 
+    //устанавливаем курсор в начала текста
     RichEd.SelStart := 0;
     RichEd.SelLength := 0;
 
@@ -152,6 +149,34 @@ end;
 procedure TDescriptionForm.FormResize(Sender: TObject);
 begin
   btnOk.Left := (pButton.ClientWidth div 2) - (btnOk.Width div 2); 
+end;
+
+procedure TDescriptionForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  slDesc := TStringList.Create;
+end;
+
+procedure TDescriptionForm.FormDestroy(Sender: TObject);
+begin
+  slDesc.Free;
+  inherited;
+end;
+
+procedure TDescriptionForm.PrepareDesc(inputDesc: String; edit : TRxRichEdit);
+var
+  I : Integer;
+begin
+  inputDesc := Trim(inputDesc);
+  if Length(inputDesc) > 0 then begin
+    inputDesc := StringReplace(inputDesc, #151, '-', [rfReplaceAll]);
+    slDesc.Clear;
+    slDesc.Text := inputDesc;
+    for I := 0 to slDesc.Count-1 do
+      edit.Lines.Add(slDesc[i]);
+  end
+  else
+    edit.Lines.Add(inputDesc);
 end;
 
 end.

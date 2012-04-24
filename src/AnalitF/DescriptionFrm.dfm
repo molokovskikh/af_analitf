@@ -7,6 +7,8 @@ inherited DescriptionForm: TDescriptionForm
   BorderIcons = [biSystemMenu, biMaximize]
   Caption = #1054#1087#1080#1089#1072#1085#1080#1077
   Position = poDesktopCenter
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
