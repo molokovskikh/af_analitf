@@ -1160,6 +1160,7 @@ begin
   SetStarted;
   ClientChanged;
 
+  WriteExchangeLog('DModule', Concat('ИД пользователя: ', adtParams.FieldByName('StoredUserId').AsString));
   GetAddressController.UpdateAddresses(MainConnection, DM.adtClientsCLIENTID.Value);
   GetSupplierController.UpdateSuppliers(MainConnection);
 
