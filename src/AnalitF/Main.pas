@@ -2076,6 +2076,8 @@ finally
   SetFocusOnMainForm;
   //ќбновл€ем ToolBar в случае смены клиента после обновлени€
   UpdateAddressName;
+  if NeedShowMiniMail then
+    CallMiniMail;
 end;
 end;
 
