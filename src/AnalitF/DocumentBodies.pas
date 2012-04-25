@@ -228,6 +228,8 @@ type
     procedure ReadSettings();
 
     function GetMarkupValue(afValue : Currency; individualMarkup : TFloatField) : Currency;
+
+    function AllowRealValue(text : String) : Boolean;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -935,7 +937,7 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState) then begin
     if not retailMarkupField.IsNull then begin
-      if StrToFloatDef(Value, 0.0) > 0 then begin
+      if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
         price := Value;
         markup := GetRetailMarkupByPrice(price);
         if (price > 0) and (markup > 0) then begin
@@ -950,7 +952,7 @@ begin
       Handled := True;
     end
     else begin
-      if StrToFloatDef(Value, 0.0) > 0 then begin
+      if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
         price := Value;
         if (price > 0) then begin
           manualCorrectionField.Value := True;
@@ -996,7 +998,7 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState) and not retailMarkupField.IsNull
   then begin
-    if StrToFloatDef(Value, 0.0) > 0 then begin
+    if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
       markup := Value;
       price := GetRetailPriceByMarkup(markup);
       if (price > 0) and (markup > 0) then begin
@@ -1233,7 +1235,7 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState) and not retailMarkupField.IsNull
   then begin
-    if StrToFloatDef(Value, 0.0) > 0 then begin
+    if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
       realMarkup := Value;
       price := adsDocumentBodiesSupplierCost.Value * (1 + realMarkup/100);
       markup := GetRetailMarkupByPrice(price);
@@ -2374,6 +2376,11 @@ begin
       Handled := True;
     end;
   end;
+end;
+
+function TDocumentBodiesForm.AllowRealValue(text: String): Boolean;
+begin
+  Result := Length(text) < 7;
 end;
 
 end.
