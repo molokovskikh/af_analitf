@@ -152,7 +152,7 @@ private
   procedure ImportDocs;
   procedure ImportDownloadOrders;
   procedure FillDistinctOrderAddresses(OrderHeadsFile : String);
-  procedure ImportOrders(OrderHeadsFile, OrderListsFile : String; FrozenOrders : Boolean);
+  procedure ImportOrders(OrderHeadsFile, OrderListsFile : String; ImportDownloadOrders: Boolean);
   procedure ClearPromotions;
   procedure ProcessPromoFileState(promoFileName : String);
   procedure CheckNewExe;
@@ -3301,7 +3301,7 @@ begin
     InternalExecute;
   end;
 
-  ImportOrders('BatchOrder', 'BatchOrderItems', True);
+  ImportOrders('BatchOrder', 'BatchOrderItems', False);
 
   //Сбрасываем OrderListId и статус у тех элементов BatchReport,
   //у которых не нашли соответствующую запись в CurrentOrderLists
@@ -3929,34 +3929,22 @@ begin
 end;
 
 procedure TExchangeThread.ImportOrders(OrderHeadsFile,
-  OrderListsFile: String; FrozenOrders: Boolean);
+  OrderListsFile: String; ImportDownloadOrders: Boolean);
 var
   insertSQL : String;
 begin
   {Здесь удаляем записи из batchreport и batchreportservicefields}
 
-  if FrozenOrders then begin
-    DM.adcUpdate.SQL.Text := ''
-      + ' update CurrentOrderHeads, CurrentOrderLists, analitf.DistinctOrderAddresses '
-      + ' set '
-      + '   CurrentOrderHeads.Frozen = 1, '
-      + '   CurrentOrderLists.CoreId = null '
-      + ' where '
-      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId) '
-      + '   and (CurrentOrderHeads.Frozen = 0) '
-      + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
-    InternalExecute;
-  end
-  else begin
-    DM.adcUpdate.SQL.Text := ''
-      + ' delete FROM CurrentOrderHeads, CurrentOrderLists '
-      + ' using CurrentOrderHeads, CurrentOrderLists, analitf.DistinctOrderAddresses '
-      + ' where '
-      + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId)'
-      + '   and (CurrentOrderHeads.Frozen = 0) '
-      + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
-    InternalExecute;
-  end;
+  DM.adcUpdate.SQL.Text := ''
+    + ' update CurrentOrderHeads, CurrentOrderLists, analitf.DistinctOrderAddresses '
+    + ' set '
+    + '   CurrentOrderHeads.Frozen = 1, '
+    + '   CurrentOrderLists.CoreId = null '
+    + ' where '
+    + '       (CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId) '
+    + '   and (CurrentOrderHeads.Frozen = 0) '
+    + '   and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId);';
+  InternalExecute;
 
   {Здесь импортировали batchreport и batchreportservicefields}
 
@@ -3964,7 +3952,7 @@ begin
     and (GetFileSize(RootFolder()+SDirIn+'\' + OrderListsFile + '.txt') > 0)
   then begin
     insertSQL := Trim(GetLoadDataSQL('CurrentOrderHeads', RootFolder()+SDirIn+'\' + OrderHeadsFile + '.txt'));
-    if FrozenOrders then begin
+    if ImportDownloadOrders then begin
       DM.adcUpdate.SQL.Text :=
         Copy(insertSQL, 1, LENGTH(insertSQL) - 1) +
         '(ORDERID, CLIENTID, PRICECODE, REGIONCODE, @SendDate) set ORDERDATE = @SendDate + interval -:timezonebias minute, Closed = 0, Send = 1;';
