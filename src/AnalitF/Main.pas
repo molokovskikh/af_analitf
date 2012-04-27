@@ -165,7 +165,6 @@ TMainForm = class(TForm)
     itmMiniMail: TMenuItem;
     miMiniMailFromDocs: TMenuItem;
     HTMLViewer: THTMLViewer;
-    VistaAltFix: TVistaAltFix;
     pStartUp: TPanel;
     tmrStartUp: TTimer;
     procedure imgLogoDblClick(Sender: TObject);
@@ -337,6 +336,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 //var
 //  il32: TImageList;
 begin
+  TVistaAltFix2.Create(Self);
 {$ifndef DEBUG}
   itmImport.Visible := False;
 {$endif}

@@ -63,18 +63,18 @@ uses
   ExtCtrls, Classes, Contnrs, AppEvnts;
 
 type
-  TVistaAltFix = class(TComponent)
+  {
+   Найдено еще одно решение, которое не вызывает AV при своей работе
+   Его надо потом перенести в модуль VCLFixPack 
+   http://marc.durdin.net/2012/01/revisiting-vistaaltfixunitpas-code.html
+  }
+  TVistaAltFix2 = class(TComponent)
   private
-    FList: TObjectList;
-    FApplicationEvents: TApplicationEvents;
-    FRepaintAll: Boolean;
-    procedure ApplicationEventsIdle(Sender: TObject; var Done: Boolean);
+    FInstalled: Boolean;
     function VistaWithTheme: Boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-  published
-    property RepaintAll: Boolean read FRepaintAll write FRepaintAll default True;
   end;
 
 procedure Register;
@@ -83,85 +83,62 @@ implementation
 uses
   Forms, Windows, Messages, Buttons, ComCtrls, Controls, StdCtrls, Themes;
 
-type
-  TFormObj = class(TObject)
-  private
-    procedure WndProc(var Message: TMessage);
-  public
-    Form: TForm;
-    OrgProc: TWndMethod;
-    Used: Boolean;
-    NeedRepaint: Boolean;
-    RepaintAll: Boolean;
-    constructor Create(aForm: TForm; aRepaintAll: Boolean);
-    procedure DoRepaint;
-  end;
+var
+  FInstallCount: Integer = 0;
+  FCallWndProcHook: Cardinal = 0;
 
 procedure Register;
 begin
-  RegisterComponents('MEP', [TVistaAltFix]);
+  RegisterComponents('MEP', [TVistaAltFix2]);
 end;
 
-{ TVistaAltFix }
+{ TVistaAltFix2 }
 
-procedure TVistaAltFix.ApplicationEventsIdle(Sender: TObject;
-  var Done: Boolean);
+function CallWndProcFunc(
+  nCode: Integer;
+  wParam: WPARAM;
+  lParam: LPARAM): LRESULT; stdcall;
 var
-  I: Integer;
-  J: Integer;
-  TestForm: TForm;
+  p: PCWPSTRUCT;
 begin
-  // Initialize
-  for I := 0 to FList.Count - 1 do
-    TFormObj(FList[i]).Used := False;
-
-  // Check for new forms
-  for I := 0 to Screen.FormCount - 1 do
+  if nCode = HC_ACTION then
   begin
-    TestForm := Screen.Forms[i];
-    for J := 0 to FList.Count - 1 do
+    p := PCWPSTRUCT(lParam);
+    if p.message = WM_UPDATEUISTATE then
     begin
-      if TFormObj(FList[J]).Form = TestForm then
-      begin
-        TFormObj(FList[J]).Used := True;
-        TestForm := nil;
-        Break;
-      end;
+      InvalidateRect(p.hwnd, nil, False);
     end;
-    if Assigned(TestForm) then
-      FList.Add(TFormObj.Create(TestForm, RepaintAll));
   end;
-
-  // Remove destroyed forms, repaint others if needed.
-  for I := FList.Count - 1 downto 0 do
-  begin
-    if not TFormObj(FList[i]).Used then
-      FList.Delete(i)
-    else
-      TFormObj(FList[i]).DoRepaint;
-  end;
+  Result := CallNextHookEx(FCallWndProcHook, nCode, wParam, lParam);
 end;
 
-constructor TVistaAltFix.Create(AOwner: TComponent);
+constructor TVistaAltFix2.Create(AOwner: TComponent);
 begin
   inherited;
-  FRepaintAll := True;
   if VistaWithTheme and not (csDesigning in ComponentState) then
   begin
-    FList := TObjectList.Create;
-    FApplicationEvents := TApplicationEvents.Create(nil);
-    FApplicationEvents.OnIdle := ApplicationEventsIdle;
+    Inc(FInstallCount); // Allow more than 1 instance, assume single threaded as VCL is not thread safe anyway
+    if FInstallCount = 1 then
+      FCallWndProcHook := SetWindowsHookEx(WH_CALLWNDPROC, CallWndProcFunc, 0, GetCurrentThreadID);
+    FInstalled := True;
   end;
 end;
 
-destructor TVistaAltFix.Destroy;
+destructor TVistaAltFix2.Destroy;
 begin
-  FApplicationEvents.Free;
-  FList.Free;
-  inherited;
+  if FInstalled then
+  begin
+    Dec(FInstallCount);
+    if FInstallCount = 0 then
+    begin
+      UnhookWindowsHookEx(FCallWndProcHook);
+      FCallWndProcHook := 0;
+    end;
+  end;
+  inherited Destroy;
 end;
 
-function TVistaAltFix.VistaWithTheme: Boolean;
+function TVistaAltFix2.VistaWithTheme: Boolean;
 var
   OSVersionInfo: TOSVersionInfo;
 begin
@@ -172,77 +149,6 @@ begin
     Result := True
   else
     Result := False;
-end;
-
-{ TFormObj }
-
-constructor TFormObj.Create(aForm: TForm; aRepaintAll: Boolean);
-begin
-  inherited Create;
-  Form := aForm;
-  RepaintAll := aRepaintAll;
-  Used := True;
-  OrgProc := Form.WindowProc;
-  Form.WindowProc := WndProc;
-end;
-
-procedure TFormObj.DoRepaint;
-  procedure RepaintBtnControls(TheCtrl: TControl);
-  // This method made by J Hamblin - Qtools Software.
-  var
-    i: integer;
-  begin
-    if not (TheCtrl is TWinControl) or (TheCtrl is TBitBtn) then
-      exit;
-
-    // repaint only controls of affected type
-    if (TheCtrl is TButtonControl) or (TheCtrl is TStaticText) then
-    begin
-      TWinControl(TheCtrl).Repaint;
-      exit; // TButtonControls, TStaticText do not contain controls so skip rest
-    end;
-
-    //
-
-    for i := 0 to TWinControl(TheCtrl).ControlCount - 1 do
-    begin
-      // only paint controls on active tabsheet of page control
-      if (TheCtrl is TTabSheet) and
-          (TTabSheet(TheCtrl).PageIndex <> TTabSheet(TheCtrl).PageControl.ActivePageIndex) then
-        continue;
-      // recurse
-      RepaintBtnControls(TWinControl(TheCtrl).Controls[i]);
-    end;
-  end;
-
-  procedure DoRepaint(Ctrl: TControl);
-  var
-    i: integer;
-  begin
-    if (Ctrl is TWinControl) then
-    begin
-      TWinControl(Ctrl).Repaint;
-      for i := 0 to TWinControl(Ctrl).ControlCount - 1 do
-        DoRepaint(TWinControl(Ctrl).Controls[i]);
-    end;
-  end;
-
-begin
-  if NeedRepaint then
-  begin
-    NeedRepaint := False;
-    if RepaintAll then
-      DoRepaint(Form)
-    else
-      RepaintBtnControls(Form);
-  end;
-end;
-
-procedure TFormObj.WndProc(var Message: TMessage);
-begin
-  OrgProc(Message);
-  if (Message.Msg = WM_UPDATEUISTATE) then
-    NeedRepaint := True;
 end;
 
 end.
