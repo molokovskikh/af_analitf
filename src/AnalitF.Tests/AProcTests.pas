@@ -5,6 +5,7 @@ interface
 uses
   SysUtils,
   Windows,
+  Variants,
   TestFrameWork,
   AProc;
 
@@ -30,6 +31,8 @@ type
     procedure CheckGetOriginalWaybillFileName;
     procedure CheckGetSupplierNameFromFileName;
     procedure TestCheckStartupFolderByPath;
+    procedure TestListToStrError;
+    procedure TestListToStr;
   end;
 
 
@@ -137,6 +140,34 @@ var
 begin
   realResult := CheckStartupFolderByPath(path);
   CheckEquals(resultCheck, realResult);
+end;
+
+procedure TTestAProc.TestListToStr;
+begin
+  CheckEquals('', ListToStr([], []));
+  CheckEquals('1: 1', ListToStr(['1'], ['1']));
+  CheckEquals('1: Нет', ListToStr(['1'], [False]));
+  CheckEquals('', ListToStr(['1'], [Null]));
+  CheckEquals('1:   3: Да', ListToStr(['1', '2', '3'], ['', Null, True]));
+  CheckEquals('1: afb  3: Да  4: ' + FloatToStr(1.2) + '  5: 4', ListToStr(['1', '2', '3', '4', '5'], ['afb', Null, True, 1.2, 4]));
+end;
+
+procedure TTestAProc.TestListToStrError;
+begin
+  try
+    ListToStr([], [1]);
+    Fail('Предыдущий вызов должен вызвать Exception');
+  except
+    on E : Exception do
+      CheckEquals('ListToStr: Кол-во названий не совпадает со списком значений.', e.Message);
+  end;
+  try
+    ListToStr(['1', '1'], [1]);
+    Fail('Предыдущий вызов должен вызвать Exception');
+  except
+    on E : Exception do
+      CheckEquals('ListToStr: Кол-во названий не совпадает со списком значений.', e.Message);
+  end;
 end;
 
 initialization

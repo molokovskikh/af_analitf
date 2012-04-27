@@ -4,7 +4,8 @@ interface
 
 uses
   SysUtils,
-  Classes;
+  Classes,
+  AProc;
 
 type
   TProductIds = array of Int64;
@@ -94,28 +95,44 @@ end;
 function TOffer.ToString: String;
 begin
   Result :=
-    Format(
-      'Предложение Ид = %d, ПродуктИд = %d, ПроизвИд = %s, СинонимИд = %d, СинонимПроизвИд = %s, Code = %s, CodeCr = %s, Срок = %s, Уценка = %s, Ожид = %s, ' +
-      'ЦенаБО = %s, Цена = %s, ' +
-      'Кол-во = %s, ЦенаПроизв = %s, МинСумма = %s, Кратность = %s, МинКолвоЗаказа = %s',
+    'Предложение  ' +
+    ListToStr(
+      [
+        'Ид',
+        'ПродуктИд',
+        'ПроизвИд',
+        'СинонимИд',
+        'СинонимПроизвИд',
+        'Code',
+        'CodeCr',
+        'Срок',
+        'Уценка',
+        'Ожид',
+        'ЦенаБО',
+        'Цена',
+        'Кол-во',
+        'ЦенаПроизв',
+        'МинСумма',
+        'Кратность',
+        'МинКолвоЗаказа'],
       [
         CoreId,
         ProductId,
-        VarToStrDef(CodeFirmCr, '(Null)'),
+        CodeFirmCr,
         SynonymCode,
-        VarToStrDef(SynonymFirmCrCode, '(Null)'),
+        SynonymFirmCrCode,
         Code,
         CodeCr,
         Period,
-        BoolToStr(Junk, True),
-        BoolToStr(Await, True),
-        VarToStrDef(RawRealCost, '(Null)'),
-        VarToStrDef(RawCost, '(Null)'),
-        VarToStrDef(Quantity, '(Null)'),
-        VarToStrDef(ProducerCost, '(Null)'),
-        VarToStrDef(OrderCost, '(Null)'),
-        VarToStrDef(RequestRatio, '(Null)'),
-        VarToStrDef(MinOrderCount, '(Null)')
+        Junk,
+        Await,
+        RawRealCost,
+        RawCost,
+        Quantity,
+        ProducerCost,
+        OrderCost,
+        RequestRatio,
+        MinOrderCount
       ]);
 end;
 

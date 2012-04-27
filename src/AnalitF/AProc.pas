@@ -134,12 +134,14 @@ function GetSupplierNameFromFileName(waybillFileName : String) : String;
 
 function CheckStartupFolderByPath(path : String) : Boolean;
 
+function ListToStr(names : array of string; values : array of Variant) : String;
+
 implementation
 
 uses
   IdCoderMIME, SevenZip, U_SXConversions, RxVerInf, IdHashMessageDigest,
   U_ExchangeLog, IdHash,
-  NetworkSettings;
+  NetworkSettings, Variants;
 
 var
   FSilentMode : Boolean;
@@ -1414,6 +1416,28 @@ begin
     not AnsiStartsText(programFiles, path)
     and not AnsiStartsText(GetEnvironmentVariable('SystemRoot'), path)
     and (AnsiStartsText(userProfile, path) or not AnsiStartsText(usersDir, path));
+end;
+
+function ListToStr(names : array of string; values : array of Variant) : String;
+var
+  I : Integer;
+  currStr : String;
+begin
+  Result := '';
+  if (Length(names) <> Length(values)) then
+    raise Exception.Create('ListToStr: Кол-во названий не совпадает со списком значений.');
+
+  for I := Low(names) to High(names) do begin
+    currStr := '';
+    if not VarIsNull(values[i]) then
+      if VarIsType(values[i], varBoolean) then
+        currStr := names[i] + ': ' + IfThen(VarAsType(values[i], varBoolean) = True, 'Да', 'Нет')
+      else
+        currStr := names[i] + ': ' + VarToStr(values[i]);
+
+    if currStr <> '' then
+      Result := IfThen(Result = '', currStr, Result + '  ' + currStr);
+  end;
 end;
 
 { TFileUpdateInfo }

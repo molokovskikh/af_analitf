@@ -5,6 +5,7 @@ interface
 uses
   SysUtils,
   Classes,
+  AProc,
   U_CurrentOrderHead,
   U_Offer;
 
@@ -208,28 +209,44 @@ end;
 function TCurrentOrderItem.ToString: String;
 begin
   Result :=
-    Format(
-      'Позиция  Ид: %d  ЗаказИд: %d  ПредлИд: %s  Кол-во: %d  ПродуктИд: %d  ПроизводИд: %s  СинонимИд: %s  СинонимПрИд: %s  Code: %s  ' +
-      'CodeCr: %s  ЦенаБО: %s  Цена: %s  ' +
-      'Уценка: %s  Ожид: %s  Срок: %s  ЦенаПроизод: %s  DropReason: %s',
+    'Позиция  ' +
+    ListToStr(
+      [
+        'Ид',
+        'ЗаказИд',
+        'ПредлИд',
+        'Кол-во',
+        'ПродуктИд',
+        'ПроизводИд',
+        'СинонимИд',
+        'СинонимПрИд',
+        'Code',
+        'CodeCr',
+        'ЦенаБО',
+        'Цена',
+        'Уценка',
+        'Ожид',
+        'Срок',
+        'ЦенаПроизод',
+        'DropReason'],
       [
         Id,
         OrderId,
-        VarToStrDef(CoreId, '(Null)'),
+        CoreId,
         OrderCount,
         ProductId,
-        VarToStrDef(CodeFirmCr, '(Null)'),
-        VarToStrDef(SynonymCode, '(Null)'),
-        VarToStrDef(SynonymFirmCrCode, '(Null)'),
+        CodeFirmCr,
+        SynonymCode,
+        SynonymFirmCrCode,
         Code,
         CodeCr,
-        VarToStrDef(RawRealPrice, '(Null)'),
-        VarToStrDef(RawPrice, '(Null)'),
-        BoolToStr(Junk, True),
-        BoolToStr(Await, True),
+        RawRealPrice,
+        RawPrice,
+        Junk,
+        Await,
         Period,
-        VarToStrDef(ProducerCost, '(Null)'),
-        VarToStrDef(DropReason, '(Null)')
+        ProducerCost,
+        DropReason
       ]);
 end;
 
