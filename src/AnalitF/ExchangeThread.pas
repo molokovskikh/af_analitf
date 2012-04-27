@@ -136,6 +136,7 @@ private
   procedure GetPass;
   procedure PriceDataSettings;
   procedure CommitExchange;
+  function SaveLogToTemp(content : String) : String;
   procedure SendUserActions;
   function GetUserLogCount() : Integer;
   procedure ExportUserLogs(exportFileName, limitCondition : String);
@@ -1067,17 +1068,21 @@ end;
 procedure TExchangeThread.CommitExchange;
 const
   //Максимальный размер лога, отправляемый на сервер
-  MaxLogLen = 300*1024;
+  MaxLogLen = 3*300*1024;
 var
   Res: TStrings;
   FS : TFileStream;
-  LogStr : String;
+  LogStr,
+  LogSize : String;
   Len : Integer;
   params, values: array of string;
   NeedEnableByHTTP : Boolean;
   LastExchangeFileSize : Int64;
+  archiveLogStr : String;
+  tmpFileName : String;
 begin
   LogStr := '';
+  LogSize := '0';
   params := nil;
   values := nil;
   LastExchangeFileSize := 0;
@@ -1099,6 +1104,7 @@ begin
         LastExchangeFileSize := FS.Size;
         SetLength(LogStr, Len);
         FS.Read(Pointer(LogStr)^, Len);
+        LogSize := IntToStr(Len);
       finally
         FS.Free;
       end;
@@ -1146,21 +1152,30 @@ begin
   end;
 
   if ((eaGetPrice in ExchangeForm.ExchangeActs) or (eaPostOrderBatch in ExchangeForm.ExchangeActs))and (Length(LogStr) > 0) then begin
-    SetLength(params, 2);
-    SetLength(values, 2);
-    params[0]:= 'UpdateId';
-    values[0]:= GetUpdateId();
-    params[1]:= 'Log';
-    values[1]:= LogStr;
+    tmpFileName := SaveLogToTemp(LogStr);
+    try
+      archiveLogStr := GetEncodedUserLogsFileContent(tmpFileName);
+      SetLength(params, 3);
+      SetLength(values, 3);
+      params[0]:= 'UpdateId';
+      values[0]:= GetUpdateId();
+      params[1]:= 'Log';
+      values[1]:= archiveLogStr;
+      params[2]:= 'LogSize';
+      values[2]:= LogSize;
 
-    Res := SOAP.Invoke( 'SendClientLog', params, values);
+      Res := SOAP.Invoke( 'SendClientArchivedLog', params, values);
 
-    if AnsiStartsText('Ok', Trim(Res.Text)) then begin
-      FreeExchangeLog(LastExchangeFileSize);
-      CreateExchangeLog();
+      if AnsiStartsText('Ok', Trim(Res.Text)) then begin
+        FreeExchangeLog(LastExchangeFileSize);
+        CreateExchangeLog();
+      end;
+    finally
+      if FileExists(tmpFileName) then
+        OSDeleteFile(tmpFileName, False);
     end;
   end;
-  
+
   if ((eaGetPrice in ExchangeForm.ExchangeActs) or (eaPostOrderBatch in ExchangeForm.ExchangeActs))
   then
     SendUserActions();
@@ -4363,6 +4378,20 @@ begin
   if (asyncResponse <> 'Res=OK') then
     raise Exception.Create( 'При выполнении вашего запроса произошла ошибка.' +
       #10#13 + 'Повторите запрос через несколько минут.');
+end;
+
+function TExchangeThread.SaveLogToTemp(content: String): String;
+var
+  sl : TStringList;
+begin
+  Result := ChangeFileExt(TDBGridHelper.GetTempFileToExport(), '.txt');
+  sl := TStringList.Create;
+  try
+    sl.Text := content;
+    sl.SaveToFile(Result);
+  finally
+    sl.Free
+  end;
 end;
 
 initialization
