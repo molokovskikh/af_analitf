@@ -476,7 +476,7 @@ IfThen(supplierFilter <> '', ' and ' + supplierFilter + ' ') +
         
         exportData.WriteBlankRow;
         exportData.WriteBlankRow;
-        if abs(ItogoTotalRetailSumm) > 0.001 then begin
+        if (abs(ItogoTotalRetailSumm) > 0.001) and (abs(ItogoTotalSumm) > 0.001) then begin
           ItogoTotalMarkup := RoundTo(ItogoTotalRetailSumm - ItogoTotalSumm, -2);
           ItogoTotalMarkupPercent := RoundTo((ItogoTotalRetailSumm/ItogoTotalSumm - 1) *100, -2);
         end;
@@ -662,7 +662,7 @@ end;
 
 procedure TExportDocRow.ExportCounters(exportData: TDataExportAsXls);
 begin
-  if abs(AllTotalRetailSumm) > 0.001 then begin
+  if (abs(AllTotalRetailSumm) > 0.001) and (abs(AllTotalSumm) > 0.001) then begin
     AllTotalMarkup := RoundTo(AllTotalRetailSumm - AllTotalSumm, -2);
     AllTotalMarkupPercent := RoundTo((AllTotalRetailSumm/AllTotalSumm - 1) *100, -2);
   end;
@@ -720,7 +720,7 @@ begin
   CurrentTotalMarkup := 0;
   CurrentTotalMarkupPercent := 0;
 
-  if abs(CurrentTotalRetailSumm) > 0.001 then begin
+  if (abs(CurrentTotalRetailSumm) > 0.001) and (abs(CurrentTotalSumm) > 0.001) then begin
     CurrentTotalMarkup := RoundTo(CurrentTotalRetailSumm - CurrentTotalSumm, -2);
     CurrentTotalMarkupPercent := RoundTo((CurrentTotalRetailSumm/CurrentTotalSumm - 1) *100, -2);
   end;
