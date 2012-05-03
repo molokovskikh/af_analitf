@@ -294,6 +294,7 @@ begin
   dbgMinPrices.Name := 'dbgMinPrices';
   dbgMinPrices.Parent := pLeft;
   dbgMinPrices.Align := alClient;
+  dbgMinPrices.Tag := 16384;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMinPrices);
 
   TDBGridHelper.AddColumn(dbgMinPrices, 'SynonymName', 'Наименование', Self.Canvas.TextWidth('Большое наименование'));
