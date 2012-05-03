@@ -444,12 +444,12 @@ procedure TframeMiniMail.dbgMailHeadersGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if fIsImportantMail.Value then
-    Background := clLime;
   if fIsVIPMail.Value then
     AFont.Style := AFont.Style + [fsBold];
   if fIsNewMail.Value then
     Background := GroupColor;
+  if fIsImportantMail.Value then
+    Background := clLime;
 end;
 
 procedure TframeMiniMail.dbgMailHeadersKeyDown(Sender: TObject;
