@@ -156,6 +156,11 @@ type
 
     legeng : TframeBaseLegend;
 
+    pButtons : TPanel;
+    sbAdd : TSpeedButton;
+    sbDelete : TSpeedButton;
+
+
     internalWaybillReportParams : TWaybillReportParams;
     internalReestrReportParams : TReestrReportParams;
 
@@ -230,6 +235,8 @@ type
     function GetMarkupValue(afValue : Currency; individualMarkup : TFloatField) : Currency;
 
     function AllowRealValue(text : String) : Boolean;
+    procedure sbAddRowClick(Sender: TObject);
+    procedure sbDeleteRowClick(Sender: TObject);
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -366,6 +373,7 @@ procedure TDocumentBodiesForm.PrepareGrid;
 var
   column : TColumnEh;
 begin
+  pButtons.Visible := False;
   dbgDocumentBodies.MinAutoFitWidth := DBGridColumnMinWidth;
   dbgDocumentBodies.Flat := True;
   dbgDocumentBodies.Options := dbgDocumentBodies.Options + [dgRowLines];
@@ -389,6 +397,9 @@ begin
     dbgDocumentBodies.ReadOnly := True;
 
     if adsDocumentHeadersCreatedByUser.Value then begin
+      legeng.Visible := False;
+      pButtons.Visible := True;
+      legeng.Visible := True;
       FWaybillDataSetState := [dsEdit, dsInsert];
       adsDocumentBodies.OnNewRecord := UserWaybillNewRecord;
       adsDocumentBodies.SQLInsert.Text := shPositionInsert.Strings.Text;
@@ -469,6 +480,7 @@ begin
   end
   else begin
     legeng.Visible := False;
+    pButtons.Visible := False;
     adsDocumentBodies.OnCalcFields := nil;
     adsDocumentBodies.OnNewRecord := nil;
     adsDocumentBodies.BeforePost := nil;
@@ -1956,6 +1968,32 @@ procedure TDocumentBodiesForm.CreateLegenPanel;
 var
   lLegend : TLabel;
 begin
+  pButtons := TPanel.Create(Self);
+  pButtons.Parent := Self;
+  pButtons.Name := 'pButtons';
+  pButtons.Caption := '';
+  pButtons.BevelOuter := bvNone;
+  pButtons.Align := alBottom;
+  pButtons.Height := sbPrintTickets.Height + 15;
+
+
+  sbAdd := TSpeedButton.Create(Self);
+  sbAdd.Parent := pButtons;
+  sbAdd.Top := 8;
+  sbAdd.Left := 5;
+  sbAdd.Caption := 'Добавить строку (Insert)';
+  sbAdd.Width := Self.Canvas.TextWidth(sbAdd.Caption) + 20;
+  sbAdd.OnClick := sbAddRowClick;
+
+  sbDelete := TSpeedButton.Create(Self);
+  sbDelete.Parent := pButtons;
+  sbDelete.Top := 8;
+  sbDelete.Left := sbAdd.Left + sbAdd.Width + 5;
+  sbDelete.Caption := 'Удалить строку (Delete)';
+  sbDelete.Width := Self.Canvas.TextWidth(sbDelete.Caption) + 20;
+  sbDelete.OnClick := sbDeleteRowClick;
+
+
   legeng := TframeBaseLegend.Create(Self);
   legeng.Parent := pGrid;
   legeng.Align := alBottom;
@@ -2381,6 +2419,16 @@ end;
 function TDocumentBodiesForm.AllowRealValue(text: String): Boolean;
 begin
   Result := Length(text) < 7;
+end;
+
+procedure TDocumentBodiesForm.sbAddRowClick(Sender: TObject);
+begin
+  adsDocumentBodies.Insert;
+end;
+
+procedure TDocumentBodiesForm.sbDeleteRowClick(Sender: TObject);
+begin
+  adsDocumentBodies.Delete;
 end;
 
 end.

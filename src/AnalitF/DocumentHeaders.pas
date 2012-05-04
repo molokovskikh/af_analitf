@@ -104,6 +104,8 @@ type
     { Private declarations }
     legeng : TframeBaseLegend;
 
+    pButtons : TPanel;
+
     procedure OnChangeFilterSuppliers;
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
@@ -155,16 +157,23 @@ end;
 procedure TDocumentHeaderForm.FormCreate(Sender: TObject);
 var
   Year, Month, Day: Word;
-  lLegend : TLabel;
 begin
   csProcessedList := TCriticalSection.Create;
   ProcessedList := TStringList.Create;
+
+  pButtons := TPanel.Create(Self);
+  pButtons.Parent := Self;
+  pButtons.Name := 'pButtons';
+  pButtons.Caption := '';
+  pButtons.BevelOuter := bvNone;
+  pButtons.Align := alBottom;
+  pButtons.Height := spDelete.Height + 15;
 
   legeng := TframeBaseLegend.Create(Self);
   legeng.Parent := Self;
   legeng.Align := alBottom;
 
-  lLegend := legeng.CreateLegendLabel(
+  legeng.CreateLegendLabel(
     'Накладная, созданная пользователем',
     clCreatedByUser,
     clWindowText,
@@ -181,9 +190,17 @@ begin
   tmrChangeFilterSuppliers.Enabled := False;
   tmrChangeFilterSuppliers.Interval := 500;
 
-  spDelete.Left := frameFilterSuppliers.Left + frameFilterSuppliers.Width + 5;
-  sbListToExcel.Left := spDelete.Left + spDelete.Width + 5;
-  sbAdd.Left := sbListToExcel.Left + sbListToExcel.Width + 5;
+  sbListToExcel.Left := frameFilterSuppliers.Left + frameFilterSuppliers.Width + 5;
+
+  spDelete.Parent := pButtons;
+  spDelete.Top := 8;
+  spDelete.Left := 5;
+
+  sbAdd.Parent := pButtons;
+  sbAdd.Top := 8;
+  sbAdd.Left := spDelete.Left + spDelete.Width + 5;
+  sbAdd.Caption := 'Создать новую накладную';
+  sbAdd.Width := Self.Canvas.TextWidth(sbAdd.Caption) + 10;
 
   TDBGridHelper.RestoreColumnsLayout(dbgHeaders, Self.ClassName);
 
