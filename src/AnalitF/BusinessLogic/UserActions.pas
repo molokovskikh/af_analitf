@@ -32,7 +32,8 @@ type
     uaShowDefectives = 16, //Забракованные препараты
     uaShowDocuments = 17, //Накладные
     uaHome = 18, //На главную страницу
-    uaShowConfig = 19 //Конфигурация
+    uaShowConfig = 19, //Конфигурация
+    uaRequestCertificate = 20 //Установили галочку Получить у сертификата
   );
 
 implementation

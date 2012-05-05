@@ -4195,15 +4195,25 @@ begin
     absentQuery := TMyQuery.Create(nil);
     absentQuery.Connection := DM.MainConnection;
     try
-      absentQuery.SQL.Text := 'select ServerId, Id, Product from DocumentBodies where RequestCertificate = 1';
+      absentQuery.SQL.Text := ''#13#10 +
+      ' select DocumentBodies.ServerId, DocumentBodies.Id, DocumentHeaders.DownloadId, DocumentBodies.Product, DocumentBodies.SerialNumber ' +
+      ' from DocumentBodies ' +
+      ' left join DocumentHeaders on DocumentHeaders.ServerId = DocumentBodies.ServerDocumentId ' +
+      ' where DocumentBodies.RequestCertificate = 1';
 
       absentQuery.Open;
       try
         if absentQuery.RecordCount > 0 then begin
           DocumentBodyIdsSL := TStringList.Create;
           while not absentQuery.Eof do begin
-            if not absentQuery.FieldByName('ServerId').IsNull then
-              DocumentBodyIdsSL.Add(absentQuery.FieldByName('ServerId').AsString)
+            if not absentQuery.FieldByName('ServerId').IsNull then begin
+              DocumentBodyIdsSL.Add(absentQuery.FieldByName('ServerId').AsString);
+              WriteExchangeLog('GetCertificateRequests',
+                Format('Для позиции "%s" из документа %s запрашиваем сертификат по серии {%s}', [
+                  absentQuery.FieldByName('Product').AsString,
+                  absentQuery.FieldByName('DownloadId').AsString,
+                  absentQuery.FieldByName('SerialNumber').AsString]));
+            end
             else begin
               WriteExchangeLog('GetCertificateRequests',
                 Format('Для позиции "%s" {%s} не установлен ServerId', [

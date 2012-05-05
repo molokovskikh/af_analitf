@@ -9,7 +9,8 @@ uses
   StrUtils,
   AlphaUtils,
   DBGridHelper,
-  DBProc, DB, MemDS, DBAccess, MyAccess, Buttons;
+  DBProc, DB, MemDS, DBAccess, MyAccess, Buttons,
+  UserActions;
 
 type
   TSerialNumberSearchForm = class(TChildForm)
@@ -294,6 +295,11 @@ end;
 procedure TSerialNumberSearchForm.adsSerialNumberSearchRequestCertificateChange(
   Sender: TField);
 begin
+  if adsSerialNumberSearchRequestCertificate.Value
+  then
+    DM.InsertUserActionLog(
+      uaRequestCertificate,
+      ['Позиция: ' + adsSerialNumberSearchServerId.AsString]);
   //По-другому решить проблему не удалось. Запускаю таймер, чтобы он в главной нити
   //произвел сохранение dataset
   tmrPrintedChange.Enabled := False;

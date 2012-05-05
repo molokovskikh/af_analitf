@@ -16,7 +16,8 @@ uses
   U_ReestrPrintSettingsForm,
   DataSetHelper,
   GlobalSettingParams,
-  ContextMenuGrid, StrHlder;
+  ContextMenuGrid, StrHlder,
+  UserActions;
 
 const
   NDSNullValue = 'нет значений';
@@ -2032,6 +2033,11 @@ end;
 procedure TDocumentBodiesForm.adsDocumentBodiesPrintedChange(
   Sender: TField);
 begin
+  if (Sender = adsDocumentBodiesRequestCertificate) and adsDocumentBodiesRequestCertificate.Value
+  then
+    DM.InsertUserActionLog(
+      uaRequestCertificate,
+      ['Позиция: ' + adsDocumentBodiesServerId.AsString]);
   //По-другому решить проблему не удалось. Запускаю таймер, чтобы он в главной нити
   //произвел сохранение dataset
   tmrPrintedChange.Enabled := False;
