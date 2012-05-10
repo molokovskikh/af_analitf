@@ -260,7 +260,10 @@ begin
 
           command.SQL.Text := 'select UserId from analitf.userinfo';
           command.Open;
-          command.Close;         
+          command.Close;
+
+          command.SQL.Text := 'update params set UpdateDateTime = null, LastDateTime = null;';
+          command.Execute;
         finally
           command.Free;
         end;
