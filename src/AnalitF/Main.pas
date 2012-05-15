@@ -233,6 +233,7 @@ TMainForm = class(TForm)
     procedure FormActivate(Sender: TObject);
 private
   JustRun: boolean;
+  tmrStartUpWorked : Boolean; 
   ApplicationVersionText : String;
   deletedForms : TObjectList;
   incompleteImport : Boolean;
@@ -353,6 +354,7 @@ begin
   RegionFilterIndex := 0;
   EnableFilterIndex := 0;
   JustRun := True;
+  tmrStartUpWorked := False;
   if FindCmdLineSwitch('extd') then begin
 {$ifdef DEBUG}
     N2.Visible := True;
@@ -1351,7 +1353,7 @@ begin
   then begin
   if     Self.Active
      and not Assigned(ActiveChild)
-     and (not Assigned(ActiveControl) or (ActiveControl = HTMLViewer))
+     and not ModalExists()
   then
   begin
     actOrderAll.Execute;
@@ -1892,6 +1894,10 @@ var
   LoggedOn : Boolean;
 begin
   tmrStartUp.Enabled := False;
+  if tmrStartUpWorked then Exit;
+  tmrStartUpWorked := True;
+
+  try
 
   Self.WindowState := wsMaximized;
   Self.Repaint;
@@ -2068,7 +2074,7 @@ try
         SetOrdersInfo;
       end;
     TDayOfWeekDelaysController.UpdateDayOfWeek(DM);
-    
+
     tmrNeedUpdateCheck.Enabled := True;
   end;
 
@@ -2078,6 +2084,9 @@ finally
   UpdateAddressName;
   if NeedShowMiniMail then
     CallMiniMail;
+end;
+finally
+  tmrStartUpWorked := False;
 end;
 end;
 
