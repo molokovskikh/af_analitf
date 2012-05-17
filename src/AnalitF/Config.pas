@@ -89,6 +89,10 @@ type
     Label3: TLabel;
     dbeHTTPName: TDBEdit;
     eHTTPPass: TEdit;
+    lWaybillsHistoryDayCount: TLabel;
+    lWaybillsHistoryDayCountTile: TLabel;
+    eWaybillsHistoryDayCount: TEdit;
+    chbConfirmDeleteOldWaybills: TCheckBox;
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
     procedure itmRasEditClick(Sender: TObject);
@@ -197,12 +201,6 @@ type
     ePositionPercent : TEdit;
 
     chbGroupWaybillsBySupplier : TCheckBox;
-
-    gbAutoDeleteWaybills : TGroupBox;
-    lWaybillsHistoryDayCount : TLabel;
-    eWaybillsHistoryDayCount : TEdit;
-    lWaybillsHistoryDayCountTile : TLabel;
-    chbConfirmDeleteOldWaybills : TCheckBox;
 
     tsVitallyImportantMarkups : TTabSheet;
     frameEditVitallyImportantMarkups : TframeEditVitallyImportantMarkups;
@@ -1010,41 +1008,10 @@ begin
     chbGroupWaybillsBySupplier.Width := tshOther.Width - 20;
     chbGroupWaybillsBySupplier.Checked := FGlobalSettingParams.GroupWaybillsBySupplier;
 
-    gbAutoDeleteWaybills := TGroupBox.Create(Self);
-    gbAutoDeleteWaybills.Parent := tshOther;
-    gbAutoDeleteWaybills.Caption := ' јвтоматическое удаление устаревших накладных ';
-    gbAutoDeleteWaybills.Left := gbDeleteHistory.Left;
-    gbAutoDeleteWaybills.Width := gbDeleteHistory.Width;
-    gbAutoDeleteWaybills.Anchors := gbDeleteHistory.Anchors;
-    gbAutoDeleteWaybills.Top := chbGroupWaybillsBySupplier.Top + chbGroupWaybillsBySupplier.Height + controlInterval;
-
-    nextTop := 16;
-
-    AddLabelAndEdit(gbAutoDeleteWaybills, nextTop, lWaybillsHistoryDayCount, eWaybillsHistoryDayCount, '”дал€ть накланые старше ');
     eWaybillsHistoryDayCount.Text := IntToStr(FGlobalSettingParams.WaybillsHistoryDayCount);
-    eWaybillsHistoryDayCount.Anchors := [akLeft, akTop];
-    eWaybillsHistoryDayCount.Width := dbeHistoryDayCount.Width;
-    eWaybillsHistoryDayCount.Top := lWaybillsHistoryDayCount.Top;
-    lWaybillsHistoryDayCount.Top := lWaybillsHistoryDayCount.Top + 3;
-    eWaybillsHistoryDayCount.Left := lWaybillsHistoryDayCount.Left + lWaybillsHistoryDayCount.Width + controlInterval;
-    lWaybillsHistoryDayCountTile := TLabel.Create(Self);
-    lWaybillsHistoryDayCountTile.Caption := ' дней';
-    lWaybillsHistoryDayCountTile.Parent := gbAutoDeleteWaybills;
-    lWaybillsHistoryDayCountTile.Top := lWaybillsHistoryDayCount.Top;
-    lWaybillsHistoryDayCountTile.Left := eWaybillsHistoryDayCount.Left + eWaybillsHistoryDayCount.Width + controlInterval;
-
-    chbConfirmDeleteOldWaybills := TCheckBox.Create(Self);
-    chbConfirmDeleteOldWaybills.Caption := 'ѕодтверждать удаление устаревших накладных';
-    chbConfirmDeleteOldWaybills.Parent := gbAutoDeleteWaybills;
-    chbConfirmDeleteOldWaybills.Top := eWaybillsHistoryDayCount.Top + eWaybillsHistoryDayCount.Height + controlInterval;
-    chbConfirmDeleteOldWaybills.Left := lWaybillsHistoryDayCount.Left;
-    chbConfirmDeleteOldWaybills.Anchors := [akLeft, akTop, akRight];
-    chbConfirmDeleteOldWaybills.Width := gbAutoDeleteWaybills.Width - 20;
     chbConfirmDeleteOldWaybills.Checked := FGlobalSettingParams.ConfirmDeleteOldWaybills;
 
-    gbAutoDeleteWaybills.Height := chbConfirmDeleteOldWaybills.Top + chbConfirmDeleteOldWaybills.Height + 5;
-
-    lblServerLink.Top := gbAutoDeleteWaybills.Top + gbAutoDeleteWaybills.Height + controlInterval;
+    lblServerLink.Top := chbGroupWaybillsBySupplier.Top + chbGroupWaybillsBySupplier.Height + controlInterval;
     tshOther.Constraints.MinHeight := lblServerLink.Top + lblServerLink.Height + 5;
   end;
 end;
