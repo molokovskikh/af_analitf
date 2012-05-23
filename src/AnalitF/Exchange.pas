@@ -350,7 +350,7 @@ begin
   then
     if GlobalExchangeParams.FullHistoryOrders
     then
-      AProc.MessageBox('— сервера загружена вс€ истори€ заказов.', MB_OK or MB_ICONINFORMATION)
+      AProc.MessageBox('— сервера загружена вс€ истори€ заказов и документов.', MB_OK or MB_ICONINFORMATION)
     else
       AProc.MessageBox('«агрузка истории заказов завершена успешно.', MB_OK or MB_ICONINFORMATION);
 

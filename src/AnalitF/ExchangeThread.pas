@@ -3391,8 +3391,10 @@ begin
 
     GetPostedServerOrderId(FPostParams);
 
+    AddPostParam('ExistsDocIds', '0');
+
     UpdateId := '';
-    InvokeResult := SOAP.SimpleInvoke('GetHistoryOrders', FPostParams);
+    InvokeResult := SOAP.SimpleInvoke('GetHistoryOrdersWithDocs', FPostParams);
     Res.Clear;
     { QueryResults.DelimitedText не работает из-за пробела, который почему-то считается разделителем }
     while InvokeResult <> '' do Res.Add( GetNextWord( InvokeResult, ';'));

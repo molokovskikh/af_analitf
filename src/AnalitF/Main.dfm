@@ -451,6 +451,7 @@ object MainForm: TMainForm
         end
         object miGetHistoryOrders: TMenuItem
           Action = actGetHistoryOrders
+          Caption = #1047#1072#1075#1088#1091#1079#1080#1090#1100' '#1080#1089#1090#1086#1088#1080#1102' '#1079#1072#1082#1072#1079#1086#1074'/'#1085#1072#1082#1083#1072#1076#1085#1099#1093
         end
       end
     end
