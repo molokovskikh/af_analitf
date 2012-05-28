@@ -466,7 +466,9 @@ begin
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailPrice', 'Розничная цена', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
       column.OnUpdateData := RetailPriceUpdateData;
       column.OnGetCellParams := RetailPriceGetCellParams;
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'Quantity', 'Заказ', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Quantity', 'Заказ', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
+      if adsDocumentHeadersCreatedByUser.Value then
+        column.OnUpdateData := UserWaybillIntegerUpdateData;
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailSumm', 'Розничная сумма', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
     finally
       dbgDocumentBodies.AutoFitColWidths := True;
@@ -2399,6 +2401,9 @@ begin
   then begin
     if (Sender is TDBGridColumnEh) and TryStrToInt(Text, changedValue) then begin
       TDBGridColumnEh(Sender).Field.AsInteger := changedValue;
+      if not adsDocumentBodiesQuantity.IsNull and not manualRetailPriceField.IsNull
+      then
+        retailAmountField.Value := RoundTo(manualRetailPriceField.Value, -2) * adsDocumentBodiesQuantity.Value;
       RecalcPosition;
       adsDocumentBodies.Post;
       Handled := True;
