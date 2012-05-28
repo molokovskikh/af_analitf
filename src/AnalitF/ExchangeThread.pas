@@ -184,6 +184,7 @@ private
   procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
   //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
   procedure ExtractDocs(DirName : String);
+  procedure ExtractReclame(extractDirName, destinationDirName : String);
   function  GetUpdateId() : String;
   //Отправляем сообщение в tech@analit.net из программы с информацией об ошибке для техподдержки
   procedure SendLetterWithTechInfo(Subject, Body : String);
@@ -615,23 +616,7 @@ begin
 end;
 
 procedure TExchangeThread.CreateChildThreads;
-var
-  T : TThread;
 begin
-  if not ChildThreadClassIsExists(TReclameThread)
-    and (DM.adsUser.FieldByName('ShowAdvertising').IsNull
-         or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean)
-  then
-  begin
-    T := TReclameThread.Create( True);
-    T.FreeOnTerminate := True;
-    TReclameThread(T).RegionCode := DM.adtClients.FieldByName( 'RegionCode').AsString;
-    TReclameThread(T).SetParams(ExchangeForm.HTTPReclame, URL, HTTPName, HTTPPass);
-    T.OnTerminate := OnChildTerminate;
-    TReclameThread(T).Resume;
-    ChildThreads.Add(T);
-  end;
-
   CreateChildSendArhivedOrdersThread;
 end;
 
@@ -1322,6 +1307,8 @@ begin
   ExtractDocs(SDirPromotions);
   //Обрабатываем папку Certificates
   ExtractDocs(SDirCertificates);
+  //Обрабатываем папку с рекламой
+  ExtractReclame(RootFolder() + SDirIn + '\' + SDirReclame, RootFolder() + SDirReclame);
 end;
 
 procedure TExchangeThread.CheckNewExe;
@@ -1838,6 +1825,13 @@ begin
   if utProviders in UpdateTables then begin
     SQL.Text := GetLoadDataSQL('Providers', RootFolder()+SDirIn+'\Providers.txt');
     InternalExecute;
+  end;
+  DM.adsUser.Refresh;
+  //Если реклама отключена, то удаляем все промо-акции
+  if (not DM.adsUser.FieldByName('ShowAdvertising').IsNull and not DM.adsUser.FieldByName('ShowAdvertising').AsBoolean) then begin
+    SQL.Text := 'delete from SupplierPromotions';
+    InternalExecute;
+    ClearPromotions;
   end;
   if (utPromotionCatalogs in UpdateTables)
     or (utSupplierPromotions in UpdateTables)
@@ -4404,6 +4398,42 @@ begin
     sl.SaveToFile(Result);
   finally
     sl.Free
+  end;
+end;
+
+procedure TExchangeThread.ExtractReclame(extractDirName,
+  destinationDirName: String);
+var
+  DocsSR: TSearchRec;
+  DirList : TStringList;
+  I : Integer;
+begin
+  if DirectoryExists(extractDirName) then begin
+    DirList := TStringList.Create;
+    try
+      try
+        if FindFirst( extractDirName + '\*.*', faAnyFile, DocsSR) = 0 then
+          repeat
+            if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then begin
+              if (DocsSR.Attr and faDirectory > 0) then
+                DirList.Add(DocsSR.Name)
+              else
+                OSMoveFile(
+                  extractDirName + '\' + DocsSR.Name,
+                  destinationDirName + '\' + DocsSR.Name);
+            end;
+          until (FindNext( DocsSR ) <> 0)
+      finally
+        SysUtils.FindClose( DocsSR );
+      end;
+
+      for I := 0 to DirList.Count-1 do
+        ExtractReclame(extractDirName + '\' + DirList[i], destinationDirName);
+
+    finally
+      DirList.Free;
+    end;
+    AProc.RemoveDirectory(extractDirName);
   end;
 end;
 
