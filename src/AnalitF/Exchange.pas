@@ -285,7 +285,7 @@ begin
         AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
   end;
 
-  if Result and ( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) and DM.NeedShowCertificatesResults() then
+  if Result and ( [eaGetWaybills, eaSendWaybills] * AExchangeActions <> []) and DM.NeedShowCertificatesResults() then
     ShowNotFoundCertificates(DM.ShowCertificatesResults());
 
   if Result and (eaGetWaybills in AExchangeActions)
