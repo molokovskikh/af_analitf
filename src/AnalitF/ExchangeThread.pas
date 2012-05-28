@@ -778,7 +778,7 @@ begin
     if NeedProcessBatch then
       Res := SOAP.Invoke( 'PostOrderBatch', FPostParams)
     else begin
-      if waybillsWithCertificate then
+      if waybillsWithCertificate or ([eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) then
         Res := SOAP.Invoke( 'GetUserDataWithOrdersAsyncCert', FPostParams)
       else begin
         processAsync := True;
