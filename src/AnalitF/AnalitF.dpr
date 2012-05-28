@@ -162,7 +162,8 @@ uses
   U_MiniMailForm in 'U_MiniMailForm.pas' {MiniMailForm},
   FileCountHelper in 'Helpers\FileCountHelper.pas',
   SearchFilterController in 'BusinessLogic\SearchFilterController.pas',
-  U_AddWaybillForm in 'Views\U_AddWaybillForm.pas' {AddWaybillForm};
+  U_AddWaybillForm in 'Views\U_AddWaybillForm.pas' {AddWaybillForm},
+  VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas';
 
 {$R *.RES}
 {$R Progress.RES}
@@ -196,7 +197,7 @@ uses
   end;
 
 begin
-  //Производим попытку скопировать настройки в реестре из старой копии программы 
+  //Производим попытку скопировать настройки в реестре из старой копии программы
   try
     CopyRegSettings;
   except

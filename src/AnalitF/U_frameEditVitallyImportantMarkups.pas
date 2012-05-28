@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, GridsEh, DBGridEh, ToughDBGrid,
   DBGridHelper, RxMemDS, DB, DModule, DBProc, AProc, Buttons, DatabaseObjects,
   Contnrs,
-  GlobalSettingParams;
+  VitallyImportantMarkupsParams;
 
 type
   TframeEditVitallyImportantMarkups = class(TFrame)
@@ -19,7 +19,7 @@ type
     FLoadMarkups : TThreadMethod;
     VitallyEdit : Boolean;
 
-    FGlobalSettingParams : TGlobalSettingParams;
+    FParams : TVitallyImportantMarkupsParams;
 
     procedure CreateVisibleComponents;
     procedure AddEditButtonsPanel;
@@ -216,7 +216,7 @@ begin
   FLoadMarkups := LoadMarkups;
   FMarkups := TObjectList.Create(True);
   Self.Name := 'frameEdit' + DatabaseController.GetById(TableId).Name;
-  FGlobalSettingParams := TGlobalSettingParams.Create(DM.MainConnection);
+  FParams := TVitallyImportantMarkupsParams.Create(DM.MainConnection);
 
   inherited Create(AOwner);
   MarkupsChanges := False;
@@ -454,9 +454,9 @@ end;
 procedure TframeEditVitallyImportantMarkups.SaveVitallyImportantMarkups;
 begin
   if VitallyEdit then begin
-    if FGlobalSettingParams.UseProducerCostWithNDS <> cbUseProducerCostWithNDS.Checked then begin
-      FGlobalSettingParams.UseProducerCostWithNDS := cbUseProducerCostWithNDS.Checked;
-      FGlobalSettingParams.SaveParams;
+    if FParams.UseProducerCostWithNDS <> cbUseProducerCostWithNDS.Checked then begin
+      FParams.UseProducerCostWithNDS := cbUseProducerCostWithNDS.Checked;
+      FParams.SaveParams;
     end;
   end;
   if MarkupsChanges then begin
@@ -496,7 +496,7 @@ end;
 destructor TframeEditVitallyImportantMarkups.Destroy;
 begin
   FMarkups.Free;
-  FGlobalSettingParams.Free;
+  FParams.Free;
   inherited;
 end;
 
@@ -519,7 +519,7 @@ begin
   cbUseProducerCostWithNDS.Left := 5;
   cbUseProducerCostWithNDS.Top := 15;
   cbUseProducerCostWithNDS.Caption := 'Использовать цену завода с НДС при определении ценового диапазона';
-  cbUseProducerCostWithNDS.Checked := FGlobalSettingParams.UseProducerCostWithNDS;
+  cbUseProducerCostWithNDS.Checked := FParams.UseProducerCostWithNDS;
   cbUseProducerCostWithNDS.Width := lLeftLessRightColor.Canvas.TextWidth(cbUseProducerCostWithNDS.Caption) + 30;
 end;
 

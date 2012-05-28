@@ -15,7 +15,7 @@ uses
   ReestrReportParams,
   U_ReestrPrintSettingsForm,
   DataSetHelper,
-  GlobalSettingParams,
+  VitallyImportantMarkupsParams,
   ContextMenuGrid, StrHlder,
   UserActions;
 
@@ -171,7 +171,7 @@ type
     mdRetailPriceField : TFloatField;
     mdRealMarkupField : TFloatField;
 
-    FGlobalSettingParams : TGlobalSettingParams;
+    FParams : TVitallyImportantMarkupsParams;
 
     FWaybillDataSetState : set of TDataSetState;
 
@@ -614,7 +614,7 @@ procedure TDocumentBodiesForm.FormCreate(Sender: TObject);
 var
   calc : TField;
 begin
-  FGlobalSettingParams := TGlobalSettingParams.Create(DM.MainConnection);
+  FParams := TVitallyImportantMarkupsParams.Create(DM.MainConnection);
   NeedLog := FindCmdLineSwitch('extd');
   //Добавлем наценки
   retailMarkupField := TFloatField(adsDocumentBodies.FindField('RetailMarkup'));
@@ -2285,7 +2285,7 @@ end;
 
 procedure TDocumentBodiesForm.FormDestroy(Sender: TObject);
 begin
-  FGlobalSettingParams.Free;
+  FParams.Free;
   FContextMenuGrid.Free;
   inherited;
 end;
@@ -2296,7 +2296,7 @@ var
   minProducerCost : Double;
 begin
   minProducerCost := GetMinProducerCostByField(RegistryCost, ProducerCost);
-  if FGlobalSettingParams.UseProducerCostWithNDS then
+  if FParams.UseProducerCostWithNDS then
     minProducerCost := minProducerCost * (1 + NDSValue.AsInteger/100);
   Result := minProducerCost;
 end;
@@ -2312,7 +2312,7 @@ end;
 procedure TDocumentBodiesForm.ReadSettings;
 begin
   CalculateOnProducerCost := DM.adsUser.FieldByName('CalculateOnProducerCost').AsBoolean;
-  FGlobalSettingParams.ReadParams;
+  FParams.ReadParams;
 end;
 
 procedure TDocumentBodiesForm.adsDocumentBodiesCertificateIdGetText(

@@ -14,7 +14,6 @@ type
    public
     StoredUserId : String;
     LastDayOfWeek : String;
-    UseProducerCostWithNDS : Boolean;
     //Группировать оригиналные накладные по поставщику
     GroupWaybillsBySupplier : Boolean;
     //Срок хранения накладных
@@ -45,7 +44,6 @@ procedure TGlobalSettingParams.ReadParams;
 begin
   StoredUserId := GetParamDef('StoredUserId', '');
   LastDayOfWeek := GetParamDef('LastDayOfWeek', '');
-  UseProducerCostWithNDS := GetParamDef('UseProducerCostWithNDS', False);
   GroupWaybillsBySupplier := GetParamDef('GroupWaybillsBySupplier', False);
   WaybillsHistoryDayCount := GetParamDef('WaybillsHistoryDayCount', 150);
   ConfirmDeleteOldWaybills := GetParamDef('ConfirmDeleteOldWaybills', True);
@@ -55,7 +53,6 @@ procedure TGlobalSettingParams.SaveParams;
 begin
   SaveParam('StoredUserId', StoredUserId);
   SaveParam('LastDayOfWeek', LastDayOfWeek);
-  SaveParam('UseProducerCostWithNDS', UseProducerCostWithNDS);
   SaveParam('GroupWaybillsBySupplier', GroupWaybillsBySupplier);
   SaveParam('WaybillsHistoryDayCount', WaybillsHistoryDayCount);
   SaveParam('ConfirmDeleteOldWaybills', ConfirmDeleteOldWaybills);
