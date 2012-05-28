@@ -342,7 +342,8 @@ begin
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
   if Result and (( eaGetPrice in AExchangeActions) or
     ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
-    or (eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions))
+    or (eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions)
+    or (eaGetHistoryOrders in AExchangeActions))
   then
     DM.ProcessDocs(GlobalExchangeParams.ImportDocs);
 
@@ -352,7 +353,7 @@ begin
     then
       AProc.MessageBox('С сервера загружена вся история заказов и документов.', MB_OK or MB_ICONINFORMATION)
     else
-      AProc.MessageBox('Загрузка истории заказов завершена успешно.', MB_OK or MB_ICONINFORMATION);
+      AProc.MessageBox('Загрузка истории заказов и документов завершена успешно.', MB_OK or MB_ICONINFORMATION);
 
   if Result and GlobalExchangeParams.NewMailsExists then
     NeedShowMiniMail := True;
@@ -378,7 +379,7 @@ begin
       ShowOrderBatch
     else
       if ( (eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
-           or (eaImportOnly in AExchangeActions))
+           or (eaImportOnly in AExchangeActions) or (eaGetHistoryOrders in AExchangeActions))
          and GlobalExchangeParams.ImportDocs
       then
         ShowDocumentHeaders;

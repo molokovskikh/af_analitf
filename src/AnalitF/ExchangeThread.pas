@@ -132,6 +132,7 @@ private
   procedure GetMaxIds(var MaxOrderId, MaxOrderListId, MaxBatchId : String);
   procedure GetMaxPostedIds(var MaxOrderId, MaxOrderListId : String);
   procedure GetPostedServerOrderId(PostParams : TStringList);
+  procedure GetPostedServerDownloadId(PostParams : TStringList);
   procedure SendULoginData;
   procedure GetPass;
   procedure PriceDataSettings;
@@ -422,7 +423,7 @@ begin
       then
         ImportHistoryOrders;
 
-      if ( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
+      if ( [eaGetWaybills, eaSendWaybills, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
       then begin
         ImportDocs;
         ImportCertificates();
@@ -3386,7 +3387,7 @@ begin
 
     GetPostedServerOrderId(FPostParams);
 
-    AddPostParam('ExistsDocIds', '0');
+    GetPostedServerDownloadId(FPostParams);
 
     UpdateId := '';
     InvokeResult := SOAP.SimpleInvoke('GetHistoryOrdersWithDocs', FPostParams);
@@ -4434,6 +4435,46 @@ begin
       DirList.Free;
     end;
     AProc.RemoveDirectory(extractDirName);
+  end;
+end;
+
+procedure TExchangeThread.GetPostedServerDownloadId(
+  PostParams: TStringList);
+var
+  serverOrderIdQuery : TMyQuery;
+begin
+  try
+
+    serverOrderIdQuery := TMyQuery.Create(nil);
+    serverOrderIdQuery.Connection := DM.MainConnection;
+    try
+      serverOrderIdQuery.SQL.Text := ''
++'SELECT DISTINCT dh.DownloadId '
++'FROM    DocumentHeaders dh '
++'WHERE (dh.DownloadId is not null) ';
+
+      serverOrderIdQuery.Open;
+      try
+        if serverOrderIdQuery.RecordCount > 0 then begin
+          while not serverOrderIdQuery.Eof do begin
+            PostParams.Add('ExistsDocIds=' + serverOrderIdQuery.FieldByName('DownloadId').AsString);
+            serverOrderIdQuery.Next;
+          end;
+        end
+        else
+          PostParams.Add('ExistsDocIds=0');
+      finally
+        serverOrderIdQuery.Close;
+      end;
+    finally
+      serverOrderIdQuery.Free;
+    end;
+
+  except
+    on E : Exception do begin
+      WriteExchangeLog('GetPostedServerDownloadId.Error', E.Message);
+      raise;
+    end
   end;
 end;
 
