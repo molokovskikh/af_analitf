@@ -815,7 +815,9 @@ begin
     while soapResult <> '' do
       serverResponse.Add(GetNextWord(soapResult, ';'));
 
-    if Length(serverResponse.Values['Error']) > 0 then
+    if (Length(serverResponse.Values['Error']) > 0)
+      or (Length(serverResponse.Values['Desc']) > 0)
+    then
       raise Exception
         .Create(
           Utf8ToAnsi(serverResponse.Values['Error']) + #13#10
