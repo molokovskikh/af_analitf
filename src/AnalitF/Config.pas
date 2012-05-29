@@ -60,7 +60,6 @@ type
     udConnectPause: TUpDown;
     tshOther: TTabSheet;
     DBCheckBox1: TDBCheckBox;
-    DBCheckBox2: TDBCheckBox;
     lblServerLink: TLabel;
     btnRasActions: TBitBtn;
     lblTip: TLabel;
@@ -76,7 +75,6 @@ type
     dbcbConfirmDeleteOldOrders: TDBCheckBox;
     dbchbUseOSOpenWaybill: TDBCheckBox;
     dbchbUseOSOpenReject: TDBCheckBox;
-    dbchbGroupByProducts: TDBCheckBox;
     dbchbPrintOrdersAfterSend: TDBCheckBox;
     dbchbConfirmSendingOrders: TDBCheckBox;
     pHTTP: TPanel;
@@ -93,6 +91,9 @@ type
     lWaybillsHistoryDayCountTile: TLabel;
     eWaybillsHistoryDayCount: TEdit;
     chbConfirmDeleteOldWaybills: TCheckBox;
+    tshVisualization: TTabSheet;
+    DBCheckBox2: TDBCheckBox;
+    dbchbGroupByProducts: TDBCheckBox;
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
     procedure itmRasEditClick(Sender: TObject);
@@ -165,6 +166,7 @@ type
       var edit : TEdit;
       LabelCaption : String);
     procedure CreateFolders();
+    procedure ChangeVisualization;
   protected
     tsEditAddress : TTabSheet;
     frameEditAddress : TframeEditAddress;
@@ -678,6 +680,7 @@ begin
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
   AddNetworkVersionSettings();
+  ChangeVisualization();
 
   for I := 0 to PageControl.PageCount-1 do begin
     if PageControl.Pages[i].Constraints.MinHeight > PageControl.ClientHeight then
@@ -996,14 +999,11 @@ begin
   else begin
     nextTop := dbchbConfirmSendingOrders.Top + dbchbConfirmSendingOrders.Height + controlInterval;
 
-    AddLabelAndEdit(tshOther, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при восстановлении заказа:');
-    ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
-
     chbGroupWaybillsBySupplier := TCheckBox.Create(Self);
     chbGroupWaybillsBySupplier.Caption := 'Группировать файлы накладных по поставщику';
     chbGroupWaybillsBySupplier.Parent := tshOther;
     chbGroupWaybillsBySupplier.Top := nextTop;
-    chbGroupWaybillsBySupplier.Left := dbchbGroupByProducts.Left;
+    chbGroupWaybillsBySupplier.Left := dbchbConfirmSendingOrders.Left;
     chbGroupWaybillsBySupplier.Anchors := [akLeft, akTop, akRight];
     chbGroupWaybillsBySupplier.Width := tshOther.Width - 20;
     chbGroupWaybillsBySupplier.Checked := FGlobalSettingParams.GroupWaybillsBySupplier;
@@ -1144,6 +1144,18 @@ begin
       );
     adsWaybillFolders.Next;  
   end;
+end;
+
+procedure TConfigForm.ChangeVisualization;
+var
+  controlInterval : Integer;
+  nextTop : Integer;
+begin
+  controlInterval := dbchbGroupByProducts.Top - dbchbGroupByProducts.Height - DBCheckBox2.Top;
+  nextTop := dbchbGroupByProducts.Top + dbchbGroupByProducts.Height + controlInterval;
+
+  AddLabelAndEdit(tshVisualization, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при восстановлении заказа:');
+  ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
 end;
 
 end.

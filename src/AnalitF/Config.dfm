@@ -5195,7 +5195,7 @@ object ConfigForm: TConfigForm
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 13
+          ItemHeight = 0
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5542,22 +5542,9 @@ object ConfigForm: TConfigForm
         ParentFont = False
         OnClick = lblServerLinkClick
       end
-      object DBCheckBox2: TDBCheckBox
-        Left = 8
-        Top = 8
-        Width = 233
-        Height = 17
-        Caption = ' '#1059#1087#1088#1072#1074#1083#1103#1090#1100' '#1087#1086#1082#1072#1079#1086#1084' '#1092#1086#1088#1084' '#1074#1099#1087#1091#1089#1082#1072
-        DataField = 'OperateFormsSet'
-        DataSource = DM.dsParams
-        TabOrder = 1
-        ValueChecked = 'True'
-        ValueUnchecked = 'False'
-        OnMouseUp = DBCheckBox2MouseUp
-      end
       object DBCheckBox1: TDBCheckBox
         Left = 24
-        Top = 254
+        Top = 220
         Width = 233
         Height = 17
         Caption = #1055#1086#1082#1072#1079#1099#1074#1072#1090#1100' '#1088#1077#1077#1089#1090#1088' '#1074' '#1089#1087#1080#1089#1082#1077' '#1087#1088#1077#1087#1072#1088#1072#1090#1086#1074
@@ -5570,12 +5557,12 @@ object ConfigForm: TConfigForm
       end
       object gbDeleteHistory: TGroupBox
         Left = 8
-        Top = 32
+        Top = 4
         Width = 377
         Height = 105
         Anchors = [akLeft, akTop, akRight]
         Caption = ' '#1040#1074#1090#1086#1084#1072#1090#1080#1095#1077#1089#1082#1086#1077' '#1091#1076#1072#1083#1077#1085#1080#1077' '
-        TabOrder = 2
+        TabOrder = 1
         object lHistoryDayCount: TLabel
           Left = 8
           Top = 19
@@ -5658,61 +5645,79 @@ object ConfigForm: TConfigForm
       end
       object dbchbUseOSOpenWaybill: TDBCheckBox
         Left = 8
-        Top = 144
+        Top = 116
         Width = 377
         Height = 17
         Caption = #1054#1090#1082#1088#1099#1074#1072#1090#1100' '#1085#1072#1082#1083#1072#1076#1085#1099#1077' '#1089' '#1087#1086#1084#1086#1097#1100#1102' '#1072#1089#1089#1086#1094#1080#1080#1088#1086#1074#1072#1085#1085#1086#1075#1086' '#1087#1088#1080#1083#1086#1078#1077#1085#1080#1103
         DataField = 'USEOSOPENWAYBILL'
         DataSource = DM.dsParams
-        TabOrder = 3
+        TabOrder = 2
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end
       object dbchbUseOSOpenReject: TDBCheckBox
         Left = 8
-        Top = 168
+        Top = 139
         Width = 377
         Height = 17
         Caption = #1054#1090#1082#1088#1099#1074#1072#1090#1100' '#1086#1090#1082#1072#1079#1099' '#1089' '#1087#1086#1084#1086#1097#1100#1102' '#1072#1089#1089#1086#1094#1080#1080#1088#1086#1074#1072#1085#1085#1086#1075#1086' '#1087#1088#1080#1083#1086#1078#1077#1085#1080#1103
         DataField = 'USEOSOPENREJECT'
         DataSource = DM.dsParams
-        TabOrder = 4
-        ValueChecked = 'True'
-        ValueUnchecked = 'False'
-      end
-      object dbchbGroupByProducts: TDBCheckBox
-        Left = 8
-        Top = 192
-        Width = 377
-        Height = 17
-        Caption = #1043#1088#1091#1087#1087#1080#1088#1086#1074#1072#1090#1100' '#1087#1086' '#1089#1074#1086#1081#1089#1090#1074#1072#1084
-        DataField = 'GROUPBYPRODUCTS'
-        DataSource = DM.dsParams
-        TabOrder = 5
+        TabOrder = 3
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end
       object dbchbPrintOrdersAfterSend: TDBCheckBox
         Left = 8
-        Top = 216
+        Top = 161
         Width = 377
         Height = 17
         Caption = #1056#1072#1089#1087#1077#1095#1072#1090#1099#1074#1072#1090#1100' '#1079#1072#1082#1072#1079#1099' '#1087#1088#1080' '#1086#1090#1087#1088#1072#1074#1082#1077
         DataField = 'PRINTORDERSAFTERSEND'
         DataSource = DM.dsParams
-        TabOrder = 6
+        TabOrder = 4
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end
       object dbchbConfirmSendingOrders: TDBCheckBox
         Left = 8
-        Top = 240
+        Top = 182
         Width = 377
         Height = 17
         Caption = #1055#1086#1076#1090#1074#1077#1088#1078#1076#1072#1090#1100' '#1086#1090#1087#1088#1072#1074#1082#1091' '#1079#1072#1082#1072#1079#1086#1074
         DataField = 'ConfirmSendingOrders'
         DataSource = DM.dsParams
-        TabOrder = 7
+        TabOrder = 5
+        ValueChecked = 'True'
+        ValueUnchecked = 'False'
+      end
+    end
+    object tshVisualization: TTabSheet
+      Caption = #1042#1080#1079#1091#1072#1083#1080#1079#1072#1094#1080#1103
+      ImageIndex = 5
+      TabVisible = False
+      object DBCheckBox2: TDBCheckBox
+        Left = 8
+        Top = 8
+        Width = 233
+        Height = 17
+        Caption = ' '#1059#1087#1088#1072#1074#1083#1103#1090#1100' '#1087#1086#1082#1072#1079#1086#1084' '#1092#1086#1088#1084' '#1074#1099#1087#1091#1089#1082#1072
+        DataField = 'OperateFormsSet'
+        DataSource = DM.dsParams
+        TabOrder = 0
+        ValueChecked = 'True'
+        ValueUnchecked = 'False'
+        OnMouseUp = DBCheckBox2MouseUp
+      end
+      object dbchbGroupByProducts: TDBCheckBox
+        Left = 8
+        Top = 34
+        Width = 377
+        Height = 17
+        Caption = #1043#1088#1091#1087#1087#1080#1088#1086#1074#1072#1090#1100' '#1087#1086' '#1089#1074#1086#1081#1089#1090#1074#1072#1084
+        DataField = 'GROUPBYPRODUCTS'
+        DataSource = DM.dsParams
+        TabOrder = 1
         ValueChecked = 'True'
         ValueUnchecked = 'False'
       end
