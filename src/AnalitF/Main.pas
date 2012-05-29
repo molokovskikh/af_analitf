@@ -836,7 +836,11 @@ begin
       correctResult := ShowCorrectOrders(True);
       case correctResult of
         crForceSended :
-          RunExchange([eaSendOrders, eaForceSendOrders]);
+          begin
+            RunExchange([eaSendOrders, eaForceSendOrders]);
+            if NeedRetrySendOrder then
+              ShowCorrectOrders(True, True);
+          end;
         crGetPrice :
           RunExchange([eaGetPrice]);
         crEditOrders :

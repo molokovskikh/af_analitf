@@ -319,7 +319,7 @@ begin
   then
     AProc.MessageBox('Письмо успешно отправлено.', MB_OK or MB_ICONINFORMATION);
 
-  if Result and ( [eaSendOrders] * AExchangeActions = [eaSendOrders]) then
+  if Result and ([eaSendOrders] * AExchangeActions = [eaSendOrders]) then
   begin
     MainForm.SetOrdersInfo;
     if (GlobalExchangeParams.SendedOrdersErrorLog.Count = 0)
@@ -333,7 +333,7 @@ begin
       PrintOrdersAfterSend;
   end;
 
-  if Result and ( AExchangeActions = [ eaSendOrders])
+  if Result and ([eaSendOrders] * AExchangeActions = [eaSendOrders])
     and (GlobalExchangeParams.SendedOrdersErrorLog.Count > 0)
   then begin
     NeedRetrySendOrder := True;

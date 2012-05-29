@@ -208,7 +208,10 @@ http://qc.embarcadero.com/wc/qcmain.aspx?d=2659
 хотя раньше все было в порядке
 }
 
-function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean) : TCorrectResult;
+function ShowCorrectOrders(
+  ProcessSendOrdersResponse : Boolean;
+  //Принудительно использовать простой вид формы для отображения результатов
+  ForceSimpleView : Boolean = False) : TCorrectResult;
 
 implementation
 
@@ -218,7 +221,7 @@ uses
   DModule, AProc, DBProc, PostSomeOrdersController, NotFound, U_framePosition,
   DBGridHelper;
 
-function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean) : TCorrectResult;
+function ShowCorrectOrders(ProcessSendOrdersResponse : Boolean; ForceSimpleView : Boolean = False) : TCorrectResult;
 var
   CorrectOrdersForm: TCorrectOrdersForm;
 begin
@@ -226,7 +229,7 @@ begin
   try
     CorrectOrdersForm.ProcessSendOrdersResponse := ProcessSendOrdersResponse;
     CorrectOrdersForm.Prepare;
-    if not DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean then begin
+    if not DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean or ForceSimpleView then begin
       if ProcessSendOrdersResponse then
         ShowNotSended(CorrectOrdersForm.Report.Text)
       else
