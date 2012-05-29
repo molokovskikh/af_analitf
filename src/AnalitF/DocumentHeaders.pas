@@ -17,7 +17,11 @@ uses
   GlobalParams,
   U_SerialNumberSearch,
   U_frameBaseLegend,
-  U_AddWaybillForm;
+  U_AddWaybillForm,
+  Printers,
+  PrnDbgeh,
+  PrViewEh,
+  PrntsEh;
 
 const
   clCreatedByUser = clMoneyGreen;
@@ -123,6 +127,7 @@ type
     { Public declarations }
     frameFilterSuppliers : TframeFilterSuppliers;
     procedure ShowHeaders;
+    procedure Print( APreview: boolean = False); override;
   end;
 
   procedure ShowDocumentHeaders;
@@ -181,6 +186,7 @@ begin
 
   inherited;
 
+  PrintEnabled := True;
   frameFilterSuppliers := TframeFilterSuppliers.AddFrame(
     Self,
     pTop,
@@ -661,6 +667,27 @@ end;
 procedure TDocumentHeaderForm.RecalcDocument(documentId: Int64);
 begin
   FDocumentBodiesForm.ForceRecalcDocument(documentId);
+end;
+
+procedure TDocumentHeaderForm.Print(APreview: boolean);
+var
+  PrintDBGridEh: TPrintDBGridEh;
+begin
+  PrintDBGridEh := TPrintDBGridEh.Create(Self);
+  try
+    PrintDBGridEh.Options := PrintDBGridEh.Options - [pghColored] + [pghFitGridToPageWidth];
+    PrintDBGridEh.DBGridEh := dbgHeaders;
+    if APreview then begin
+      PrinterPreview.Orientation := poLandscape;
+      PrintDBGridEh.Preview
+    end
+    else begin
+      VirtualPrinter.Orientation := poLandscape;
+      PrintDBGridEh.Print
+    end;
+  finally
+    PrintDBGridEh.Free
+  end;
 end;
 
 { TExportDocRow }
