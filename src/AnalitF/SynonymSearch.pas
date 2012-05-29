@@ -197,8 +197,9 @@ type
     procedure InternalSearch;
   public
     { Public declarations }
-   frameLegend : TframeLegend;
-   frameAutoComment : TframeAutoComment;
+    frameLegend : TframeLegend;
+    frameAutoComment : TframeAutoComment;
+    function SearchInProgress : Boolean; override;
   end;
 
 var
@@ -529,7 +530,11 @@ begin
   end
   else
     if Key = VK_ESCAPE then
-      SetClear;
+      SetClear
+    else
+      //Добавляем пробел к поиску
+      if (Key = VK_SPACE) and SearchInProgress then
+        AddKeyToSearch(#32);
 end;
 
 procedure TSynonymSearchForm.SetClear;
@@ -540,7 +545,7 @@ begin
   FSearchFilterController.SetSearchText('');
   if adsCore.Active then
     adsCore.Close;
-  framePromotion.HidePromotion();  
+  framePromotion.HidePromotion();
 end;
 
 procedure TSynonymSearchForm.dbgCoreKeyPress(Sender: TObject;
@@ -775,6 +780,11 @@ begin
     InternalSearch
   else
     dbgCore.SetFocus;
+end;
+
+function TSynonymSearchForm.SearchInProgress: Boolean;
+begin
+  Result := tmrSearch.Enabled;
 end;
 
 end.

@@ -143,6 +143,7 @@ type
     procedure Print( APreview: boolean = False); virtual;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function SearchInProgress : Boolean; virtual;
   published
     //Вытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
@@ -785,6 +786,8 @@ begin
      and Assigned(Screen.ActiveControl)
      and (Screen.ActiveControl is TCustomDBGridEh)
   then begin
+  if Self.SearchInProgress then
+    Exit;
   grid := TCustomDBGridEh(Screen.ActiveControl);
   if Assigned(grid.DataSource)
      and Assigned(grid.DataSource.DataSet)
@@ -847,6 +850,7 @@ begin
 
       TAction(Sender).Enabled :=
             Assigned(Screen.ActiveControl)
+        and not Self.SearchInProgress    
         and (Screen.ActiveControl is TCustomDBGridEh);
 
       if TAction(Sender).Enabled then begin
@@ -1092,6 +1096,11 @@ begin
   plOverCost.BringToFront;
   plOverCost.Show;
   tmrOverCostHide.Enabled := True;
+end;
+
+function TChildForm.SearchInProgress: Boolean;
+begin
+  Result := False;
 end;
 
 end.

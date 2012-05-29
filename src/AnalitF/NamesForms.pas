@@ -141,6 +141,7 @@ type
     procedure ReturnFromCore;
     class function UseNewSearch() : Boolean;
     class procedure SaveNewSearch(newSearchValue : Boolean);
+    function SearchInProgress() : Boolean; override;
   end;
 
 procedure ShowOrderAll;
@@ -906,7 +907,12 @@ begin
         tmrSearch.Enabled := False;
         eSearch.Text := Copy(eSearch.Text, 1, Length(eSearch.Text)-1);
         tmrSearch.Enabled := True;
-      end;
+      end
+      else
+        if Key = VK_SPACE then begin
+          if not SearchInBegin and SearchInProgress then
+            AddKeyToSearch(#32);
+        end;
 end;
 
 procedure TNamesFormsForm.dbgCatalogDblClick(Sender: TObject);
@@ -1325,6 +1331,11 @@ begin
   finally
     Reg.Free;
   end;
+end;
+
+function TNamesFormsForm.SearchInProgress: Boolean;
+begin
+  Result := tmrSearch.Enabled;
 end;
 
 initialization
