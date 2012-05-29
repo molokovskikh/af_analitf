@@ -41,7 +41,7 @@ object ConfigForm: TConfigForm
     Top = 0
     Width = 401
     Height = 321
-    ActivePage = tshOther
+    ActivePage = tshVisualization
     MultiLine = True
     TabOrder = 0
     object tshClients: TTabSheet
@@ -5695,7 +5695,6 @@ object ConfigForm: TConfigForm
     object tshVisualization: TTabSheet
       Caption = #1042#1080#1079#1091#1072#1083#1080#1079#1072#1094#1080#1103
       ImageIndex = 5
-      TabVisible = False
       object DBCheckBox2: TDBCheckBox
         Left = 8
         Top = 8
