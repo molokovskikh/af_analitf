@@ -225,7 +225,7 @@ begin
       if AnsiCompareText(Screen.ActiveForm.ClassName, 'TExchangeForm') = 0 then
         H := Application.Handle
       else
-        H := Screen.ActiveForm.Handle;
+        H := Application.Handle;
     end;
     {
       Решил передавать всегда Application.Handle вместо H
