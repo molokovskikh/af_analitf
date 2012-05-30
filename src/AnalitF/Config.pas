@@ -165,6 +165,12 @@ type
       var labelInfo : TLabel;
       var edit : TEdit;
       LabelCaption : String);
+    procedure AddLabelAndCombo(
+      Parents : TWinControl;
+      var nextTop: Integer;
+      var labelInfo : TLabel;
+      var combo : TComboBox;
+      LabelCaption : String);
     procedure CreateFolders();
     procedure ChangeVisualization;
   protected
@@ -209,6 +215,20 @@ type
 
     frameEditRetailMarkups : TframeEditVitallyImportantMarkups;
 
+    lBaseFirmCategory : TLabel;
+    eBaseFirmCategory : TEdit;
+
+    lExcess : TLabel;
+    eExcess : TEdit;
+
+    lExcessAvgOrderTimes : TLabel;
+    eExcessAvgOrderTimes : TEdit;
+
+    lDeltaMode : TLabel;
+    cbDeltaMode : TComboBox;
+
+    chbShowPriceName : TCheckBox;
+    
     pButton : TPanel;
    public
   end;
@@ -549,6 +569,7 @@ procedure TConfigForm.FormCloseQuery(Sender: TObject;
 var
   newPercent : Double;
   newWaybillHistoryDayCount : Integer;
+  outInt : Integer; 
 begin
   if (ModalResult = mrOK) then begin
     if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
@@ -616,6 +637,23 @@ begin
         PageControl.ActivePage := tshOther;
         ePositionPercent.SetFocus;
       end;
+    end;
+
+    if CanClose then begin
+      FGlobalSettingParams.ShowPriceName := chbShowPriceName.Checked;
+      FGlobalSettingParams.DeltaMode := cbDeltaMode.ItemIndex + 1;
+      if TryStrToInt(eBaseFirmCategory.Text, outInt) then 
+        FGlobalSettingParams.BaseFirmCategory := outInt;
+    end;
+
+    if CanClose then begin
+      if TryStrToInt(eExcess.Text, outInt) then
+        FGlobalSettingParams.Excess := outInt;
+    end;
+
+    if CanClose then begin
+      if TryStrToInt(eExcessAvgOrderTimes.Text, outInt) then
+        FGlobalSettingParams.ExcessAvgOrderTimes := outInt;
     end;
 
     if CanClose then begin
@@ -1156,6 +1194,52 @@ begin
 
   AddLabelAndEdit(tshVisualization, nextTop, lPositionPercent, ePositionPercent, 'Допустимый процент изменения цены при восстановлении заказа:');
   ePositionPercent.Text := FloatToStr(FNetworkParams.NetworkPositionPercent);
+
+  AddLabelAndEdit(tshVisualization, nextTop, lBaseFirmCategory, eBaseFirmCategory, 'Включить в основную группу поставщиков начиная с:');
+  eBaseFirmCategory.Text := IntToStr(FGlobalSettingParams.BaseFirmCategory);
+
+  AddLabelAndEdit(tshVisualization, nextTop, lExcess, eExcess, 'Предупреждать о превышении средней цены закупки на (%):');
+  eExcess.Text := IntToStr(FGlobalSettingParams.Excess);
+
+  AddLabelAndEdit(tshVisualization, nextTop, lExcessAvgOrderTimes, eExcessAvgOrderTimes, 'Предупреждать о превышении среднего количества по предыд. заказам в (раз):');
+  eExcessAvgOrderTimes.Text := IntToStr(FGlobalSettingParams.ExcessAvgOrderTimes);
+
+  AddLabelAndCombo(tshVisualization, nextTop, lDeltaMode, cbDeltaMode, 'Расчет разницы в таблице предложений:');
+  cbDeltaMode.Style := csDropDownList;
+  cbDeltaMode.Items.Clear;
+  cbDeltaMode.Items.Add('От минимальной цены');
+  cbDeltaMode.Items.Add('От предыдущего предложения');
+  cbDeltaMode.Items.Add('От минимальной цены в основных поставщиках');
+  cbDeltaMode.ItemIndex := FGlobalSettingParams.DeltaMode-1;
+
+  chbShowPriceName := TCheckBox.Create(Self);
+  chbShowPriceName.Caption := 'Всегда показывать названия прайс-листов';
+  chbShowPriceName.Parent := tshVisualization;
+  chbShowPriceName.Top := nextTop;
+  chbShowPriceName.Left := dbchbGroupByProducts.Left;
+  chbShowPriceName.Anchors := [akLeft, akTop, akRight];
+  chbShowPriceName.Width := tshVisualization.Width - 20;
+  chbShowPriceName.Checked := FGlobalSettingParams.ShowPriceName;
+end;
+
+procedure TConfigForm.AddLabelAndCombo(Parents: TWinControl;
+  var nextTop: Integer; var labelInfo: TLabel; var combo: TComboBox;
+  LabelCaption: String);
+begin
+  labelInfo := TLabel.Create(Self);
+  labelInfo.Caption := LabelCaption;
+  labelInfo.Parent := Parents;
+  labelInfo.Top := nextTop;
+  labelInfo.Left := 10;
+
+  combo := TComboBox.Create(Self);
+  combo.Parent := Parents;
+  combo.Anchors := [akLeft, akTop, akRight];
+  combo.Top := labelInfo.Top + 3 + labelInfo.Canvas.TextHeight(labelInfo.Caption);
+  combo.Left := 10;
+  combo.Width := Parents.Width - 20;
+
+  nextTop := combo.Top + combo.Height + 10;
 end;
 
 end.

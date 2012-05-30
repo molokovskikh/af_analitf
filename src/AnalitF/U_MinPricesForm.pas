@@ -623,8 +623,8 @@ begin
 
   inherited;
 
-  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger;
+  Excess := FGS.Excess;
+  ExcessAvgOrderTimes := FGS.ExcessAvgOrderTimes;
 
 {$ifdef MinPricesLog}
   WriteExchangeLog('MinPricesForm', 'add postion frame');

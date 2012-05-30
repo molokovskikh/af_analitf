@@ -20,6 +20,11 @@ type
     WaybillsHistoryDayCount : Integer;
     //ѕодтверждать удаление устаревшних накладных
     ConfirmDeleteOldWaybills : Boolean;
+    BaseFirmCategory : Integer;
+    Excess : Integer;
+    ExcessAvgOrderTimes : Integer;
+    DeltaMode : Integer;
+    ShowPriceName : Boolean;
     procedure ReadParams; override;
     procedure SaveParams; override;
     class function GetConfirmDeleteOldWaybills(Connection : TCustomMyConnection) : Boolean;
@@ -47,6 +52,13 @@ begin
   GroupWaybillsBySupplier := GetParamDef('GroupWaybillsBySupplier', False);
   WaybillsHistoryDayCount := GetParamDef('WaybillsHistoryDayCount', 150);
   ConfirmDeleteOldWaybills := GetParamDef('ConfirmDeleteOldWaybills', True);
+  BaseFirmCategory := GetParamDef('BaseFirmCategory', 0);
+  Excess  := GetParamDef('Excess', 5);
+  ExcessAvgOrderTimes := GetParamDef('ExcessAvgOrderTimes', 5);
+  DeltaMode := GetParamDef('DeltaMode', 1);
+  if (DeltaMode < 1) or (DeltaMode > 3) then
+    DeltaMode := 1;
+  ShowPriceName := GetParamDef('ShowPriceName', False);
 end;
 
 procedure TGlobalSettingParams.SaveParams;
@@ -56,6 +68,11 @@ begin
   SaveParam('GroupWaybillsBySupplier', GroupWaybillsBySupplier);
   SaveParam('WaybillsHistoryDayCount', WaybillsHistoryDayCount);
   SaveParam('ConfirmDeleteOldWaybills', ConfirmDeleteOldWaybills);
+  SaveParam('BaseFirmCategory', BaseFirmCategory);
+  SaveParam('Excess', Excess);
+  SaveParam('ExcessAvgOrderTimes', ExcessAvgOrderTimes);
+  SaveParam('DeltaMode', DeltaMode);
+  SaveParam('ShowPriceName', ShowPriceName);
   inherited;
 end;
 

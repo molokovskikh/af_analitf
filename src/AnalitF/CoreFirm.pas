@@ -241,8 +241,8 @@ begin
   InternalSearchText := '';
   adsCore.OnCalcFields := ccf;
   PrintEnabled := (DM.SaveGridMask and PrintFirmPrice) > 0;
-  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger;
+  Excess := FGS.Excess;
+  ExcessAvgOrderTimes := FGS.ExcessAvgOrderTimes;
   ClientId := DM.adtClients.FieldByName( 'ClientId').AsInteger;
   adsAvgOrders.ParamByName('ClientId').Value := ClientId;
   TDBGridHelper.RestoreColumnsLayout(dbgCore, Self.ClassName);

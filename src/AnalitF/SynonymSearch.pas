@@ -266,8 +266,8 @@ begin
 
   fr := TForceRus.Create;
 
-  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger;
+  Excess := FGS.Excess;
+  ExcessAvgOrderTimes := FGS.ExcessAvgOrderTimes;
   DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
   adsPreviosOrders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').AsInteger;

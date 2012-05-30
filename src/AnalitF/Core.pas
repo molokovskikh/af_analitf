@@ -228,7 +228,8 @@ type
 implementation
 
 uses Main, AProc, DModule, Constant, NamesForms, OrdersH, DBProc, CoreFirm,
-  Prices, U_GroupUtils, Orders, U_framePosition, DBGridHelper;
+  Prices, U_GroupUtils, Orders, U_framePosition, DBGridHelper,
+  GlobalSettingParams;
 
 var
   UserSetRetUpCost : Boolean;
@@ -275,9 +276,9 @@ begin
     btnGroupUngroup.Caption := 'Разгруппировать'
   else
     btnGroupUngroup.Caption := 'Группировать';
-  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger;
-  DeltaMode := DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
+  Excess := FGS.Excess;
+  ExcessAvgOrderTimes := FGS.ExcessAvgOrderTimes;
+  DeltaMode := FGS.DeltaMode;// DM.adtClients.FieldByName( 'DeltaMode').AsInteger;
   RegionCodeStr := DM.adtClients.FieldByName( 'RegionCode').AsString;
 
   adsPreviosOrders.ParamByName( 'ClientId').Value :=

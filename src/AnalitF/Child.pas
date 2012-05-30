@@ -9,7 +9,8 @@ uses
   DayOfWeekHelper,
   Menus,
   HtmlView,
-  DBGridEh;
+  DBGridEh,
+  GlobalSettingParams;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -138,6 +139,8 @@ type
     NeedFirstOnDataSet : Boolean;
     //Сортировать грид с заказом
     SortOnOrderGrid : Boolean;
+
+    FGS : TGlobalSettingParams;
     procedure ShowForm; overload; virtual;
     procedure ShowAsPrevForm; virtual;
     procedure Print( APreview: boolean = False); virtual;
@@ -340,6 +343,7 @@ end;
 
 constructor TChildForm.Create(AOwner: TComponent);
 begin
+  FGS := TGlobalSettingParams.Create(DM.MainConnection);
   NeedFirstOnDataSet := True;
   SortOnOrderGrid := True;
   FUseCorrectOrders := DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean;
@@ -568,6 +572,7 @@ begin
   inherited;
   DBComponentWindowProcs.Free;
   ModifiedActions.Free;
+  FGS.Free;
 end;
 
 { TDBComponentWindowProc }
