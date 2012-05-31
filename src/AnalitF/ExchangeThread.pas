@@ -2268,6 +2268,15 @@ begin
 +'   AND pricesregionaldata.regioncode = PriceSizes.regioncode';
   InternalExecute;
 
+  // Запуск с ключем -i (импорт данных) при получении новой версии программы}
+  if FindCmdLineSwitch('i') then begin
+    if (GetFileSize(RootFolder()+SDirIn+'\UpdateValues.txt') > 0) then begin
+      //Обновление параметров, полученных из системы
+      SQL.Text := GetLoadDataSQL('UpdateValues', RootFolder()+SDirIn+'\UpdateValues.txt');
+      InternalExecute;
+    end;
+  end;
+
   if (utBatchReport in UpdateTables) and (eaPostOrderBatch in ExchangeForm.ExchangeActs)
   then
     ImportBatchReport
