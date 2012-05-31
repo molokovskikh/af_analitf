@@ -225,13 +225,13 @@ begin
       if AnsiCompareText(Screen.ActiveForm.ClassName, 'TExchangeForm') = 0 then
         H := Application.Handle
       else
-        H := Application.Handle;
+        H := Screen.ActiveForm.Handle;
     end;
     {
       Решил передавать всегда Application.Handle вместо H
       Если надо будет, то к Icon надо будет добавить "or MB_TASKMODAL".
     }
-    Result := Windows.MessageBox(Application.Handle {H}, PChar(MesStr), PChar(Caption), Icon);
+    Result := Windows.MessageBox(H, PChar(MesStr), PChar(Caption), Icon);
   end;
 end;
 
