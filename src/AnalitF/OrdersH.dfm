@@ -41,27 +41,10 @@ inherited OrdersHForm: TOrdersHForm
         DesignSize = (
           784
           36)
-        object sbMoveToClient: TSpeedButton
-          Left = 496
-          Top = 4
-          Width = 121
-          Height = 27
-          Caption = #1055#1077#1088#1077#1085#1077#1089#1090#1080
-          Glyph.Data = {
-            A6000000424DA600000000000000760000002800000009000000060000000100
-            0400000000003000000000000000000000001000000010000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
-            0000333303333000000033300033300000003300000330000000300000003000
-            00003333333330000000}
-          Layout = blGlyphRight
-          Spacing = 10
-          OnClick = sbMoveToClientClick
-        end
         object sbMoveToPrice: TSpeedButton
           Left = 632
           Top = 4
-          Width = 145
+          Width = 150
           Height = 27
           Caption = #1055#1077#1088#1077#1085#1077#1089#1090#1080' '#1074' '#1087#1088#1072#1081#1089
           Glyph.Data = {
@@ -75,13 +58,50 @@ inherited OrdersHForm: TOrdersHForm
           Spacing = 10
           OnClick = sbMoveToPriceClick
         end
+        object sbMoveToClient: TSpeedButton
+          Left = 480
+          Top = 4
+          Width = 150
+          Height = 27
+          Caption = #1055#1077#1088#1077#1085#1077#1089#1090#1080' '#1085#1072' '#1076#1088'.'#1072#1076#1088#1077#1089
+          Glyph.Data = {
+            A6000000424DA600000000000000760000002800000009000000060000000100
+            0400000000003000000000000000000000001000000010000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
+            0000333303333000000033300033300000003300000330000000300000003000
+            00003333333330000000}
+          Layout = blGlyphRight
+          Spacing = 10
+          OnClick = sbMoveToClientClick
+        end
+        object btnWayBillList: TButton
+          Left = 328
+          Top = 4
+          Width = 150
+          Height = 27
+          Anchors = [akLeft, akBottom]
+          Caption = #1053#1072#1082#1083#1072#1076#1085#1072#1103
+          TabOrder = 2
+          OnClick = btnWayBillListClick
+        end
+        object btnUnFrozen: TButton
+          Left = 328
+          Top = 4
+          Width = 150
+          Height = 27
+          Anchors = [akLeft, akBottom]
+          Caption = '"'#1056#1072#1079#1084#1086#1088#1086#1079#1080#1090#1100'" '#1079#1072#1082#1072#1079#1099
+          TabOrder = 4
+          OnClick = btnUnFrozenClick
+        end
         object btnMoveSend: TButton
           Left = 163
           Top = 4
           Width = 150
           Height = 27
           Anchors = [akLeft, akBottom]
-          Caption = #1055#1077#1088#1077#1074#1077#1089#1090#1080' '#1074' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1077
+          Caption = #1042#1077#1088#1085#1091#1090#1100' '#1074' '#1090#1077#1082#1091#1097#1080#1077
           TabOrder = 1
           OnClick = btnMoveSendClick
         end
@@ -95,16 +115,6 @@ inherited OrdersHForm: TOrdersHForm
           TabOrder = 0
           OnClick = btnDeleteClick
         end
-        object btnWayBillList: TButton
-          Left = 328
-          Top = 4
-          Width = 150
-          Height = 27
-          Anchors = [akLeft, akBottom]
-          Caption = #1053#1072#1082#1083#1072#1076#1085#1072#1103
-          TabOrder = 2
-          OnClick = btnWayBillListClick
-        end
         object btnFrozen: TButton
           Left = 163
           Top = 4
@@ -114,16 +124,6 @@ inherited OrdersHForm: TOrdersHForm
           Caption = '"'#1047#1072#1084#1086#1088#1086#1079#1080#1090#1100'" '#1079#1072#1082#1072#1079#1099
           TabOrder = 3
           OnClick = btnFrozenClick
-        end
-        object btnUnFrozen: TButton
-          Left = 328
-          Top = 4
-          Width = 150
-          Height = 27
-          Anchors = [akLeft, akBottom]
-          Caption = '"'#1056#1072#1079#1084#1086#1088#1086#1079#1080#1090#1100'" '#1079#1072#1082#1072#1079#1099
-          TabOrder = 4
-          OnClick = btnUnFrozenClick
         end
       end
       object pClient: TPanel
