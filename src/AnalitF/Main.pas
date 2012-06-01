@@ -673,7 +673,7 @@ begin
   if ( Screen.ActiveControl <> nil) and
      ( Screen.ActiveControl is TCustomDBGridEh) and ( ActiveChild <> nil)
   then begin
-    SaveGridFlag := ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
+    SaveGridFlag := (Screen.ActiveControl.Tag = -1) or ((Screen.ActiveControl.Tag and DM.SaveGridMask) > 0);
 
     if not SaveGridFlag then
       Exit;

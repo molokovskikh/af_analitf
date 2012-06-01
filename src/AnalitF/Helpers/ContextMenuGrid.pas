@@ -55,7 +55,7 @@ end;
 
 function TContextMenuGrid.GetSaveFlag: Boolean;
 begin
-  Result := ((FGrid.Tag and FSaveGridMask) > 0);
+  Result := (FGrid.Tag = -1) or ((FGrid.Tag and FSaveGridMask) > 0);
 end;
 
 procedure TContextMenuGrid.GridColumnsClick(Sender: TObject);

@@ -144,7 +144,7 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     BevelOuter = bvNone
     TabOrder = 1
     object dbgHeaders: TToughDBGrid
-      Tag = 512
+      Tag = -1
       Left = 0
       Top = 0
       Width = 882

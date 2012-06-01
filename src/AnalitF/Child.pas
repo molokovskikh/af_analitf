@@ -596,7 +596,7 @@ end;
 
 function TDBComponentWindowProc.GetSaveFlag: Boolean;
 begin
-  Result := ((FGrid.Tag and DM.SaveGridMask) > 0);  
+  Result := (FGrid.Tag = -1) or ((FGrid.Tag and DM.SaveGridMask) > 0);  
 end;
 
 procedure TDBComponentWindowProc.HackDBGirdWndProc(var Message: TMessage);
