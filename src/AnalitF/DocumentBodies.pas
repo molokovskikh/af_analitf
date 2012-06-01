@@ -109,6 +109,40 @@ type
     shPositionDelete: TStrHolder;
     shPositionFullUpdate: TStrHolder;
     shPositionUpdate: TStrHolder;
+    adsOrder: TMyQuery;
+    LargeintField1: TLargeintField;
+    LargeintField2: TLargeintField;
+    StringField1: TStringField;
+    StringField2: TStringField;
+    StringField3: TStringField;
+    StringField4: TStringField;
+    StringField5: TStringField;
+    StringField6: TStringField;
+    FloatField1: TFloatField;
+    FloatField2: TFloatField;
+    FloatField3: TFloatField;
+    FloatField4: TFloatField;
+    FloatField5: TFloatField;
+    IntegerField1: TIntegerField;
+    BooleanField1: TBooleanField;
+    StringField7: TStringField;
+    BooleanField2: TBooleanField;
+    FloatField6: TFloatField;
+    FloatField7: TFloatField;
+    StringField8: TStringField;
+    FloatField8: TFloatField;
+    StringField9: TStringField;
+    StringField10: TStringField;
+    BooleanField3: TBooleanField;
+    LargeintField3: TLargeintField;
+    LargeintField4: TLargeintField;
+    LargeintField5: TLargeintField;
+    LargeintField6: TLargeintField;
+    FloatField9: TFloatField;
+    FloatField10: TFloatField;
+    FloatField11: TFloatField;
+    dsOrder: TDataSource;
+    shOrder: TStrHolder;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -238,8 +272,13 @@ type
     function AllowRealValue(text : String) : Boolean;
     procedure sbAddRowClick(Sender: TObject);
     procedure sbDeleteRowClick(Sender: TObject);
+    procedure SetOrderByPosition;
+    procedure SetOrderGrid;
+    procedure OrderGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
   public
     { Public declarations }
+    dbgOrder : TToughDBGrid;
+    legendOrder : TframeBaseLegend;
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
     procedure ForceRecalcDocument(DocumentId: Int64);
   end;
@@ -2440,6 +2479,27 @@ end;
 procedure TDocumentBodiesForm.sbDeleteRowClick(Sender: TObject);
 begin
   adsDocumentBodies.Delete;
+end;
+
+procedure TDocumentBodiesForm.SetOrderByPosition;
+begin
+  adsOrder.MasterSource := dsDocumentBodies;
+  adsOrder.Open;
+end;
+
+procedure TDocumentBodiesForm.SetOrderGrid;
+begin
+  dbgOrder := TToughDBGrid.Create(Self);
+
+  TDBGridHelper.SetDefaultSettingsToGrid(dbgOrder);
+  dbgOrder.DataSource := dsOrder;
+end;
+
+procedure TDocumentBodiesForm.OrderGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  //Здесь будет расскрасска грида
 end;
 
 end.

@@ -3641,6 +3641,20 @@ begin
        'InvoiceHeaders']);
     DM.adcUpdate.Execute;
   end;
+
+  if (GetFileSize(RootFolder()+SDirIn+'\WaybillOrders.txt') > 0) then begin
+    InputFileName := StringReplace(RootFolder()+SDirIn+'\WaybillOrders.txt', '\', '/', [rfReplaceAll]);
+    DM.adcUpdate.Close;
+    DM.adcUpdate.SQL.Text :=
+      Format(
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
+      ' ( ' +
+      '    DocumentLineId, ServerOrderListId ' +
+      ' ); ',
+      [InputFileName,
+       'InvoiceHeaders']);
+    DM.adcUpdate.Execute;
+  end;
 end;
 
 procedure TExchangeThread.ConfirmUserMessage;
@@ -3994,7 +4008,7 @@ begin
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
       + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
-      + '  CODE, CODECr, CryptRealPrice, CryptPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
+      + '  CODE, CODECr, CryptRealPrice, CryptPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost, ServerOrderListId);';
     InternalExecute;
 
     DM.adcUpdate.SQL.Text := ''

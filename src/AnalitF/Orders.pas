@@ -10,7 +10,7 @@ uses
   MyAccess, ActnList, Buttons,
   Menus, U_frameBaseLegend,
   U_CurrentOrderItem,
-  ContextMenuGrid;
+  ContextMenuGrid, StrHlder;
 
 type
   TOrdersForm = class(TChildForm)
@@ -96,6 +96,40 @@ type
     gbComment: TGroupBox;
     dbmComment: TDBMemo;
     adsOrdersMarkup: TFloatField;
+    dsDocumentBodies: TDataSource;
+    adsDocumentBodies: TMyQuery;
+    adsDocumentBodiesId: TLargeintField;
+    adsDocumentBodiesDocumentId: TLargeintField;
+    adsDocumentBodiesProduct: TStringField;
+    adsDocumentBodiesCode: TStringField;
+    adsDocumentBodiesCertificates: TStringField;
+    adsDocumentBodiesPeriod: TStringField;
+    adsDocumentBodiesProducer: TStringField;
+    adsDocumentBodiesCountry: TStringField;
+    adsDocumentBodiesProducerCost: TFloatField;
+    adsDocumentBodiesRegistryCost: TFloatField;
+    adsDocumentBodiesSupplierPriceMarkup: TFloatField;
+    adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
+    adsDocumentBodiesSupplierCost: TFloatField;
+    adsDocumentBodiesQuantity: TIntegerField;
+    adsDocumentBodiesVitallyImportant: TBooleanField;
+    adsDocumentBodiesSerialNumber: TStringField;
+    adsDocumentBodiesPrinted: TBooleanField;
+    adsDocumentBodiesAmount: TFloatField;
+    adsDocumentBodiesNdsAmount: TFloatField;
+    adsDocumentBodiesUnit: TStringField;
+    adsDocumentBodiesExciseTax: TFloatField;
+    adsDocumentBodiesBillOfEntryNumber: TStringField;
+    adsDocumentBodiesEAN13: TStringField;
+    adsDocumentBodiesRequestCertificate: TBooleanField;
+    adsDocumentBodiesCertificateId: TLargeintField;
+    adsDocumentBodiesDocumentBodyId: TLargeintField;
+    adsDocumentBodiesServerId: TLargeintField;
+    adsDocumentBodiesServerDocumentId: TLargeintField;
+    adsDocumentBodiesCatalogMarkup: TFloatField;
+    adsDocumentBodiesCatalogMaxMarkup: TFloatField;
+    adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField;
+    shPositionFullUpdate: TStrHolder;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -142,11 +176,16 @@ type
     procedure RetailMarkupUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RetailPriceUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure DeleteOrderPosition;
+    procedure SetWaybillByPosition;
+    procedure SetWaybillGrid;
+    procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
   protected
     procedure UpdateOrderDataset; override;
     procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
   public
     frameLegend : TframeLegend;
+    dbgWaybill : TToughDBGrid;
+    frameLegendWaybill : TframeLegend;
     procedure ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean); overload; //reintroduce;
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
@@ -903,6 +942,27 @@ begin
     tmrCheckOrderCount.Enabled := False;
     tmrCheckOrderCount.Enabled := True;
   end;
+end;
+
+procedure TOrdersForm.SetWaybillByPosition;
+begin
+  adsDocumentBodies.MasterSource := dsOrders;
+  adsDocumentBodies.Open;
+end;
+
+procedure TOrdersForm.SetWaybillGrid;
+begin
+  dbgWaybill := TToughDBGrid.Create(Self);
+
+  TDBGridHelper.SetDefaultSettingsToGrid(dbgWaybill);
+  dbgWaybill.DataSource := dsDocumentBodies;
+end;
+
+procedure TOrdersForm.WaybillGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+
 end;
 
 end.

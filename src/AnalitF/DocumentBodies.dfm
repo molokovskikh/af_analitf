@@ -896,4 +896,176 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '7768657265'
       '202064626f646965732e4964203d203a4f4c445f4964')
   end
+  object adsOrder: TMyQuery
+    Connection = DM.MyConnection
+    RefreshOptions = [roAfterInsert, roAfterUpdate]
+    KeyFields = 'Id'
+    Left = 208
+    Top = 307
+    object LargeintField1: TLargeintField
+      FieldName = 'Id'
+    end
+    object LargeintField2: TLargeintField
+      FieldName = 'DocumentId'
+    end
+    object StringField1: TStringField
+      FieldName = 'Product'
+      Size = 255
+    end
+    object StringField2: TStringField
+      FieldName = 'Code'
+    end
+    object StringField3: TStringField
+      FieldName = 'Certificates'
+      Size = 50
+    end
+    object StringField4: TStringField
+      FieldName = 'Period'
+    end
+    object StringField5: TStringField
+      FieldName = 'Producer'
+      Size = 255
+    end
+    object StringField6: TStringField
+      FieldName = 'Country'
+      Size = 150
+    end
+    object FloatField1: TFloatField
+      FieldName = 'ProducerCost'
+    end
+    object FloatField2: TFloatField
+      FieldName = 'RegistryCost'
+    end
+    object FloatField3: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
+    object FloatField4: TFloatField
+      FieldName = 'SupplierCostWithoutNDS'
+    end
+    object FloatField5: TFloatField
+      FieldName = 'SupplierCost'
+    end
+    object IntegerField1: TIntegerField
+      FieldName = 'Quantity'
+    end
+    object BooleanField1: TBooleanField
+      FieldName = 'VitallyImportant'
+    end
+    object StringField7: TStringField
+      FieldName = 'SerialNumber'
+      Size = 50
+    end
+    object BooleanField2: TBooleanField
+      FieldName = 'Printed'
+      OnChange = adsDocumentBodiesPrintedChange
+    end
+    object FloatField6: TFloatField
+      FieldName = 'Amount'
+    end
+    object FloatField7: TFloatField
+      FieldName = 'NdsAmount'
+    end
+    object StringField8: TStringField
+      FieldName = 'Unit'
+      Size = 0
+    end
+    object FloatField8: TFloatField
+      FieldName = 'ExciseTax'
+    end
+    object StringField9: TStringField
+      FieldName = 'BillOfEntryNumber'
+    end
+    object StringField10: TStringField
+      FieldName = 'EAN13'
+    end
+    object BooleanField3: TBooleanField
+      FieldName = 'RequestCertificate'
+      OnChange = adsDocumentBodiesPrintedChange
+      OnValidate = adsDocumentBodiesRequestCertificateValidate
+    end
+    object LargeintField3: TLargeintField
+      FieldName = 'CertificateId'
+      OnGetText = adsDocumentBodiesCertificateIdGetText
+    end
+    object LargeintField4: TLargeintField
+      FieldName = 'DocumentBodyId'
+    end
+    object LargeintField5: TLargeintField
+      FieldName = 'ServerId'
+    end
+    object LargeintField6: TLargeintField
+      FieldName = 'ServerDocumentId'
+    end
+    object FloatField9: TFloatField
+      FieldName = 'CatalogMarkup'
+    end
+    object FloatField10: TFloatField
+      FieldName = 'CatalogMaxMarkup'
+    end
+    object FloatField11: TFloatField
+      FieldName = 'CatalogMaxSupplierMarkup'
+    end
+  end
+  object dsOrder: TDataSource
+    DataSet = adsOrder
+    Left = 152
+    Top = 307
+  end
+  object shOrder: TStrHolder
+    Capacity = 44
+    Macros = <>
+    Left = 224
+    Top = 367
+    InternalVer = 1
+    StrData = (
+      ''
+      '757064617465'
+      '2020446f63756d656e74426f646965732064626f64696573'
+      '736574'
+      
+        '202052657461696c4d61726b757020202020203d203a52657461696c4d61726b' +
+        '75702c'
+      
+        '20204d616e75616c436f7272656374696f6e203d203a4d616e75616c436f7272' +
+        '656374696f6e2c'
+      
+        '20204d616e75616c52657461696c5072696365203d203a4d616e75616c526574' +
+        '61696c50726963652c'
+      '202052657461696c416d6f756e74203d203a52657461696c416d6f756e742c'
+      '20205072696e746564203d203a5072696e7465642c'
+      
+        '2020526571756573744365727469666963617465203d203a5265717565737443' +
+        '657274696669636174652c'
+      '50726f64756374203d203a50726f647563742c20'
+      '436f6465203d203a436f64652c20'
+      '436572746966696361746573203d203a4365727469666963617465732c20'
+      '506572696f64203d203a506572696f642c20'
+      '50726f6475636572203d203a50726f64756365722c20'
+      '436f756e747279203d203a436f756e7472792c20'
+      '50726f6475636572436f7374203d203a50726f6475636572436f73742c20'
+      '5265676973747279436f7374203d203a5265676973747279436f73742c20'
+      
+        '537570706c69657250726963654d61726b7570203d203a537570706c69657250' +
+        '726963654d61726b75702c20'
+      
+        '537570706c696572436f7374576974686f75744e4453203d203a537570706c69' +
+        '6572436f7374576974686f75744e44532c20'
+      '537570706c696572436f7374203d203a537570706c696572436f73742c20'
+      '5175616e74697479203d203a5175616e746974792c20'
+      
+        '566974616c6c79496d706f7274616e74203d203a566974616c6c79496d706f72' +
+        '74616e742c20'
+      '4e4453203d203a4e44532c20'
+      '53657269616c4e756d626572203d203a53657269616c4e756d6265722c20'
+      '416d6f756e74203d203a416d6f756e742c20'
+      '4e6473416d6f756e74203d203a4e6473416d6f756e742c20'
+      '556e6974203d203a556e69742c20'
+      '457863697365546178203d203a4578636973655461782c20'
+      
+        '42696c6c4f66456e7472794e756d626572203d203a42696c6c4f66456e747279' +
+        '4e756d6265722c20'
+      '45414e3133203d203a45414e3133'
+      '7768657265'
+      '202064626f646965732e4964203d203a4f4c445f4964')
+  end
 end
