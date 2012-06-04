@@ -56,4 +56,5 @@ Task @CopyReleaseToProtect:
 Task @BuildAndProtectRelease, [@BuildRelease, @CopyReleaseToProtect, @BuildVMProtect]:
 	print "Сборка упакованного релизного приложения завершена"
 
-
+Task @ShowDiffDataLayer:
+	Sh("git log -10 -p \"src/Common/DataLayer/\"")

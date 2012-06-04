@@ -120,6 +120,13 @@ type
     function GetColumns() : String; override;
   end;
 
+  TWaybillOrdersTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -284,7 +291,8 @@ begin
 +'    `NDS` , '
 +'    `RetailCost` , '
 +'    `RetailVitallyImportant` , '
-+'    `Comment`  ';
++'    `Comment` ,  '
++'    `ServerOrderListId`  ';
 end;
 
 function TPostedOrderListsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -1063,6 +1071,34 @@ begin
 + GetTableOptions();
 end;
 
+{ TWaybillOrdersTable }
+
+constructor TWaybillOrdersTable.Create;
+begin
+  FName := 'waybillorders';
+  FObjectId := doiWaybillOrders;
+  FRepairType := dortBackup;
+end;
+
+function TWaybillOrdersTable.GetColumns: String;
+begin
+  Result := ''
++'  `ServerDocumentLineId` , '
++'  `ServerOrderListId` ';
+end;
+
+function TWaybillOrdersTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `ServerDocumentLineId` bigint(20) unsigned NOT NULL, '
++'  `ServerOrderListId`    bigint(20) unsigned NOT NULL, '
++'  KEY `IDX_waybillorders_ServerDocumentLineId` (`ServerDocumentLineId`), '
++'  KEY `IDX_waybillorders_ServerOrderListId` (`ServerOrderListId`) '
++' ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TPostedOrderHeadsTable.Create());
@@ -1080,4 +1116,5 @@ initialization
   DatabaseController.AddObject(TInvoiceHeadersTable.Create());
   DatabaseController.AddObject(TMailsTable.Create());
   DatabaseController.AddObject(TAttachmentsTable.Create());
+  DatabaseController.AddObject(TWaybillOrdersTable.Create());
 end.

@@ -3525,7 +3525,7 @@ begin
       + ' (Id, ORDERID, CLIENTID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
       + '  CODE, CODECr, Await, Junk, ORDERCOUNT, Price, RealPrice, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, '
       + '  SupplierPriceMarkup, RetailMarkup, Unit, Volume, Note, Period, Doc, '
-      + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS, RetailCost);';
+      + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS, RetailCost, ServerOrderListId);';
     InternalExecute;
     
     DM.adcUpdate.SQL.Text := ''
@@ -4008,7 +4008,7 @@ begin
     DM.adcUpdate.SQL.Text :=
       Copy(insertSQL, 1, LENGTH(insertSQL) - 1)
       + ' (Id, ORDERID, CLIENTID, COREID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
-      + '  CODE, CODECr, CryptRealPrice, CryptPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost, ServerOrderListId);';
+      + '  CODE, CODECr, CryptRealPrice, CryptPrice, Await, Junk, ORDERCOUNT, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, Period, ProducerCost);';
     InternalExecute;
 
     DM.adcUpdate.SQL.Text := ''

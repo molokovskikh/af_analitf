@@ -97,11 +97,13 @@ type
     DropReason       : TPositionSendResult;
     ServerCost       : Currency;
     ServerQuantity   : String;
+    ServerOrderListId : Int64;
     constructor Create(
       clientPositionID : Int64;
       dropReason       : TPositionSendResult;
       serverCost       : Currency;
-      serverQuantity   : String);
+      serverQuantity   : String;
+      serverOrderListId : Int64);
   end;
 
 implementation
@@ -542,10 +544,11 @@ begin
         StrToInt64(serverResponse.ValueFromIndex[startIndex]),
         TPositionSendResult(StrToInt(serverResponse.ValueFromIndex[startIndex + 1])),
         StrToCurr(serverResponse.ValueFromIndex[startIndex + 2], FDataLayer.FFS),
-        serverResponse.ValueFromIndex[startIndex + 3]
+        serverResponse.ValueFromIndex[startIndex + 3],
+        StrToInt64(serverResponse.ValueFromIndex[startIndex + 4])
       )
     );
-    startIndex := startIndex + 4;
+    startIndex := startIndex + 5;
   end;
   Result := startIndex;
 end;
@@ -674,6 +677,25 @@ begin
         Format('Заказ %d успешно отправлен, Id заказа на сервере: %d',
           [currentHeader.ClientOrderId,
           currentHeader.ServerOrderId]));
+
+      for J := 0 to currentHeader.OrderPositions.Count-1 do begin
+        currentPosition := TPostOrderPosition(currentHeader.OrderPositions[j]);
+        if currentPosition.DropReason = psrSuccess then begin
+          FDataLayer.adcUpdate.SQL.Text := ''
+            +'update '
+            +'  CurrentOrderLists '
+            +'set '
+            +'  ServerOrderListId = :ServerOrderListId '
+            +'where '
+            +'  CurrentOrderLists.ID = :ClientPositionId; ';
+          FDataLayer.adcUpdate.ParamByName('ServerOrderListId').Value :=
+            currentPosition.ServerOrderListId;
+          FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
+            currentPosition.ClientPositionID;
+          FDataLayer.adcUpdate.Execute;
+        end;
+      end;
+
 
       FExchangeParams.SendedOrders.Add(VarToStr(LastPostedOrderId));
     end;
@@ -903,12 +925,13 @@ end;
 
 constructor TPostOrderPosition.Create(clientPositionID: Int64;
   dropReason: TPositionSendResult; serverCost: Currency;
-  serverQuantity: String);
+  serverQuantity: String; serverOrderListId : Int64);
 begin
   Self.ClientPositionID := clientPositionID;
   Self.DropReason := dropReason;
   Self.ServerCost := serverCost;
   Self.ServerQuantity := serverQuantity;
+  Self.ServerOrderListId := serverOrderListId;
 end;
 
 end.

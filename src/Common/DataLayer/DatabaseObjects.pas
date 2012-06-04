@@ -284,7 +284,9 @@ type
     doiMails,
     doiAttachments,
     //Ignore
-    doiAttachmentRequests
+    doiAttachmentRequests,
+    //Backup
+    doiWaybillOrders
     );
 
   TRepairedObjects = set of TDatabaseObjectId;

@@ -183,6 +183,7 @@ type
     procedure UpdateOrderDataset; override;
     procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
   public
+    pGrid: TPanel;
     frameLegend : TframeLegend;
     dbgWaybill : TToughDBGrid;
     frameLegendWaybill : TframeLegend;
@@ -242,8 +243,9 @@ procedure TOrdersForm.SetParams(OrderId: Integer; ExternalClosed : Boolean);
 var
   SendResult : Variant;
 begin
+  dbgWaybill.Visible := False;
   ClosedOrder := ExternalClosed;
-  
+
   btnGotoPrice.Visible := not ClosedOrder;
 
   if not ClosedOrder and DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
@@ -259,6 +261,7 @@ begin
     dbgOrders.Visible := True;
     dbgEditOrders.DataSource := nil;
     dbgOrders.DataSource := dsOrders;
+    dbgWaybill.Visible := True;
     if dbgOrders.CanFocus then
       dbgOrders.SetFocus;
   end;
@@ -430,8 +433,16 @@ end;
 
 procedure TOrdersForm.FormCreate(Sender: TObject);
 begin
+  pGrid := TPanel.Create(Self);
+  pGrid.Parent := pClient;
+  pGrid.Name := 'pGrid';
+  pGrid.Caption := '';
+  pGrid.BevelOuter := bvNone;
+  pGrid.Align := alClient;
+  dbgOrders.Parent := pGrid;
+
   dbgEditOrders:= TDBGridEh.Create(Self);
-  dbgEditOrders.Parent := pClient;
+  dbgEditOrders.Parent := pGrid;
   dbgEditOrders.Align := alClient;
   dbgEditOrders.Visible := False;
   TDBGridHelper.SetDefaultSettingsToGrid(dbgEditOrders);
@@ -459,6 +470,8 @@ begin
   fSumOrder := adsOrdersSUMORDER;
   fMinOrderCount := adsOrdersMINORDERCOUNT;
   gotoMNNButton := btnGotoMNN;
+
+  SetWaybillGrid;
 
   inherited;
 
@@ -951,10 +964,42 @@ begin
 end;
 
 procedure TOrdersForm.SetWaybillGrid;
+var
+  column : TColumnEh;
 begin
   dbgWaybill := TToughDBGrid.Create(Self);
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgWaybill);
+  dbgWaybill.Parent := pGrid;
+  dbgWaybill.Visible := False;
+  dbgWaybill.Height := 200;
+  dbgWaybill.Align := alBottom;
+
+  dbgWaybill.AutoFitColWidths := False;
+  try
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'Product', 'Наименование', 0);
+    TDBGridHelper.AddColumn(dbgWaybill, 'SerialNumber', 'Серия товара', 0);
+    TDBGridHelper.AddColumn(dbgWaybill, 'Period', 'Срок годности', 0);
+    TDBGridHelper.AddColumn(dbgWaybill, 'Producer', 'Производитель', 0);
+    TDBGridHelper.AddColumn(dbgWaybill, 'Country', 'Страна', 0);
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'ProducerCost', 'Цена производителя без НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'RegistryCost', 'Цена ГР', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierPriceMarkup', 'Торговая наценка оптовика', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'NDS', 'НДС', dbgWaybill.Canvas.TextWidth('999'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCost', 'Цена поставщика с НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
+    TDBGridHelper.AddColumn(dbgWaybill, 'MaxRetailMarkup', 'Макс. розничная наценка', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'RetailMarkup', 'Розничная наценка', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'RealMarkup', 'Реальная наценка', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'RetailPrice', 'Розничная цена', dbgWaybill.Canvas.TextWidth('99999.99'));
+    column := TDBGridHelper.AddColumn(dbgWaybill, 'Quantity', 'Заказ', dbgWaybill.Canvas.TextWidth('99999.99'));
+    TDBGridHelper.AddColumn(dbgWaybill, 'RetailSumm', 'Розничная сумма', dbgWaybill.Canvas.TextWidth('99999.99'));
+  finally
+    dbgWaybill.AutoFitColWidths := True;
+  end;
+
+  dbgWaybill.ReadOnly := False;
+
   dbgWaybill.DataSource := dsDocumentBodies;
 end;
 
