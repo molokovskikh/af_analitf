@@ -20,14 +20,28 @@ const
    'Отправка заказов завершилась неудачно.');
 
 type
-  TOrderSendResult = (osrSuccess, osrLessThanMinReq, osrNeedCorrect);
+  TOrderSendResult = (
+    //Статус отправки заказа неизвестен
+    osrUnknown = -1,
+    //Заказ отправлен успешно
+    osrSuccess = 0,
+    //заказ нарушает минимальную сумму заказа
+    osrLessThanMinReq = 1,
+    //заказ требует корректировки
+    osrNeedCorrect = 2,
+    //заказ нарушает максимальную сумму заказа
+    osrGreateThanMaxOrderSum = 3
+    );
 
 const
   //предложение отсутствует
   OrderSendResultText : array[TOrderSendResult] of string =
-  ('Заказ отправлен успешно',
+  ('Неизвестный статус заказа',
+   'Заказ отправлен успешно',
    'Нарушение минимальной суммы заказа.',
-   'Требуется корректировка заказа.');
+   'Требуется корректировка заказа.',
+   'Нарушение максимальной суммы заказа.'
+   );
 
 type
   TPostSomeOrdersController = class
@@ -72,6 +86,7 @@ type
   TPostOrderHeader = class
    public
     ClientOrderId : Int64;
+    RawPostResult : Integer;
     PostResult    : TOrderSendResult;
     ServerOrderId : Int64;
     ErrorReason   : String;
@@ -81,7 +96,7 @@ type
     OrderPositions : TObjectList;
     constructor Create(
       clientOrderId : Int64;
-      postResult    : TOrderSendResult;
+      rawPostResult : Integer;
       serverOrderId : Int64;
       errorReason   : String;
       serverMinReq  : String;
@@ -526,7 +541,7 @@ begin
   currentHeader :=
     TPostOrderHeader.Create(
       StrToInt64(serverResponse.ValueFromIndex[startIndex]),
-      TOrderSendResult(StrToInt(serverResponse.ValueFromIndex[startIndex + 1])),
+      StrToInt(serverResponse.ValueFromIndex[startIndex + 1]),
       StrToInt64(serverResponse.ValueFromIndex[startIndex + 2]),
       Utf8ToAnsi(serverResponse.ValueFromIndex[startIndex + 3]),
       serverResponse.ValueFromIndex[startIndex + 4],
@@ -694,8 +709,9 @@ begin
 
       WriteExchangeLog(
         'Exchange',
-        Format('Заказ %d не был отправлен. Причина: %s  Ответ сервера: %s',
+        Format('Заказ %d не был отправлен. Код ответа: %d  Причина: %s  Ответ сервера: %s',
           [currentHeader.ClientOrderId,
+          currentHeader.RawPostResult,
           OrderSendResultText[currentHeader.PostResult],
           currentHeader.ErrorReason]));
 
@@ -723,7 +739,7 @@ begin
               [currentHeader.ClientOrderId,
                priceName,
                regionName,
-               Integer(currentHeader.PostResult),
+               currentHeader.RawPostResult,
                currentHeader.ErrorReason])
           );
       end;
@@ -738,7 +754,7 @@ begin
         +'where '
         +'  CurrentOrderHeads.OrderId = :ClientOrderId; ';
       FDataLayer.adcUpdate.ParamByName('SendResult').Value :=
-        Integer(currentHeader.PostResult);
+        currentHeader.RawPostResult;
       if Length(currentHeader.ErrorReason) > 0 then
         FDataLayer.adcUpdate.ParamByName('ErrorReason').Value :=
           currentHeader.ErrorReason
@@ -836,7 +852,7 @@ begin
         then begin
           Index := ParsePostHeader(serverResponse, Index);
           if TPostOrderHeader(FOrderPostHeaders[FOrderPostHeaders.Count-1])
-            .PostResult in [osrLessThanMinReq, osrNeedCorrect]
+            .PostResult <> osrSuccess
           then
             FOrderSendSuccess := False;
         end
@@ -870,12 +886,15 @@ end;
 { TPostOrderHeader }
 
 constructor TPostOrderHeader.Create(clientOrderId: Int64;
-  postResult: TOrderSendResult; serverOrderId: Int64; errorReason: String;
+  rawPostResult : Integer; serverOrderId: Int64; errorReason: String;
   serverMinReq  : String; sendDate: string);
 begin
   OrderPositions := TObjectList.Create(True);
   Self.ClientOrderId := clientOrderId;
-  Self.PostResult := postResult;
+  Self.RawPostResult := rawPostResult;
+  Self.PostResult := osrUnknown;
+  if (Self.RawPostResult >= Integer(osrSuccess)) and (Self.RawPostResult <= Integer(High(TOrderSendResult))) then
+    Self.PostResult := TOrderSendResult(Self.RawPostResult);
   Self.ServerOrderId := serverOrderId;
   Self.ErrorReason := errorReason;
   Self.ServerMinReq := serverMinReq;
