@@ -56,7 +56,7 @@ begin
   Excess  := GetParamDef('Excess', 5);
   ExcessAvgOrderTimes := GetParamDef('ExcessAvgOrderTimes', 5);
   DeltaMode := GetParamDef('DeltaMode', 1);
-  if (DeltaMode < 1) or (DeltaMode > 3) then
+  if (DeltaMode < 0) or (DeltaMode > 2) then
     DeltaMode := 1;
   ShowPriceName := GetParamDef('ShowPriceName', False);
 end;

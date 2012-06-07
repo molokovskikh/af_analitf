@@ -10,7 +10,8 @@ uses
   StrUtils, EhLibMTE, Contnrs,
   U_CurrentOrderItem,
   NetworkParams,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  GlobalSettingParams;
 
 type
   TCorrectResult = (crClose, crEditOrders, crForceSended, crGetPrice);
@@ -187,6 +188,7 @@ type
     FNetworkParams : TNetworkParams;
     FAllowDelayOfPayment : Boolean;
     FShowSupplierCost : Boolean;
+    FGS : TGlobalSettingParams;
     procedure SetOffers;
     procedure PrepareVisual;
     procedure PrepareData;
@@ -253,6 +255,7 @@ begin
   FAllowDelayOfPayment := DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean;
   FShowSupplierCost := DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean;
   FNetworkParams := TNetworkParams.Create(DM.MainConnection);
+  FGS := TGlobalSettingParams.Create(DM.MainConnection);
   FormResult := crClose;
   Report := TStringList.Create;
   dbgLog.PopupMenu := nil;
@@ -263,8 +266,8 @@ begin
   //todo: Здесь засада, т.к. описание не отображается
   TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'MnnId', nil);
 
-  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger; 
+  Excess := FGS.Excess;
+  ExcessAvgOrderTimes := FGS.ExcessAvgOrderTimes;
   adsAvgOrders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').AsInteger;
   plOverCost.Hide();

@@ -17,7 +17,8 @@ uses
   NetworkSettings,
   DayOfWeekHelper,
   GlobalParams,
-  DBGridHelper;
+  DBGridHelper,
+  GlobalSettingParams;
 
 type
 
@@ -150,6 +151,7 @@ private
   procedure RasDisconnect;
   procedure UnpackFiles;
   procedure ImportData;
+  procedure UpdateDisplayPriceNameAndMainFirm;
   procedure ImportBatchReport;
   procedure ImportDocs;
   procedure ImportDownloadOrders;
@@ -1963,6 +1965,82 @@ begin
   Progress := 50;
   Synchronize( SetProgress);
 
+  // «апуск с ключем -i (импорт данных) при получении новой версии программы}
+  if FindCmdLineSwitch('i') then begin
+
+    if (GetFileSize(RootFolder()+SDirIn+'\UpdateValues.txt') > 0) then begin
+      try
+        SQL.Text := ''
+          + 'drop temporary table if exists UpdateValues;'
+          + 'create temporary table UpdateValues ('
+          +'   `BaseFirmCategory` int(10) not null, '
+          +'   `OverCostPercent` int(10) not null, '
+          +'   `ExcessAvgOrderTimes` int(10) not null, '
+          +'   `DifferenceCalculation` int(10) not null, '
+          +'   `ShowPriceName` tinyint(1) not null  '
+          + ') engine=Memory;';
+        InternalExecute;
+
+        //ќбновление параметров, полученных из системы
+        SQL.Text := GetLoadDataSQL('UpdateValues', RootFolder()+SDirIn+'\UpdateValues.txt');
+        InternalExecute;
+
+        SQL.Text := ''
+        + ' update '
+        + '   GlobalParams, '
+        + '   UpdateValues  '
+        + ' set '
+        + '   GlobalParams.Value = UpdateValues.BaseFirmCategory '
+        + ' where '
+        + '   GlobalParams.Name = "BaseFirmCategory";'
+        + ' update '
+        + '   GlobalParams, '
+        + '   UpdateValues  '
+        + ' set '
+        + '   GlobalParams.Value = UpdateValues.OverCostPercent '
+        + ' where '
+        + '   GlobalParams.Name = "Excess";'
+        + ' update '
+        + '   GlobalParams, '
+        + '   UpdateValues  '
+        + ' set '
+        + '   GlobalParams.Value = UpdateValues.ExcessAvgOrderTimes '
+        + ' where '
+        + '   GlobalParams.Name = "ExcessAvgOrderTimes";'
+        + ' update '
+        + '   GlobalParams, '
+        + '   UpdateValues  '
+        + ' set '
+        + '   GlobalParams.Value = UpdateValues.DifferenceCalculation '
+        + ' where '
+        + '   GlobalParams.Name = "DeltaMode";'
+        + ' update '
+        + '   GlobalParams, '
+        + '   UpdateValues  '
+        + ' set '
+        + '   GlobalParams.Value = UpdateValues.ShowPriceName '
+        + ' where '
+        + '   GlobalParams.Name = "ShowPriceName";'
+        + ' ';
+        InternalExecute;
+{
+
+
+    BaseFirmCategory : Integer;
+    Excess : Integer;
+    ExcessAvgOrderTimes : Integer;
+    DeltaMode : Integer;
+    ShowPriceName : Boolean;
+}
+      finally
+        SQL.Text := ''
+          + 'drop temporary table if exists UpdateValues;';
+        InternalExecute;
+      end;
+
+    end;
+  end;
+
   {todo: подумать, а может быть цены с отсрочками рассчитывать при обновлении,
   чтобы во врем€ работы не переливать из пустого в порожнее}
   //проставл€ем мин. цены и лидеров
@@ -2268,14 +2346,8 @@ begin
 +'   AND pricesregionaldata.regioncode = PriceSizes.regioncode';
   InternalExecute;
 
-  // «апуск с ключем -i (импорт данных) при получении новой версии программы}
-  if FindCmdLineSwitch('i') then begin
-    if (GetFileSize(RootFolder()+SDirIn+'\UpdateValues.txt') > 0) then begin
-      //ќбновление параметров, полученных из системы
-      SQL.Text := GetLoadDataSQL('UpdateValues', RootFolder()+SDirIn+'\UpdateValues.txt');
-      InternalExecute;
-    end;
-  end;
+  if (utProviders in UpdateTables) or (utPricesData  in UpdateTables) then
+    UpdateDisplayPriceNameAndMainFirm;
 
   if (utBatchReport in UpdateTables) and (eaPostOrderBatch in ExchangeForm.ExchangeActs)
   then
@@ -4484,6 +4556,33 @@ begin
       WriteExchangeLog('GetPostedServerDownloadId.Error', E.Message);
       raise;
     end
+  end;
+end;
+
+procedure TExchangeThread.UpdateDisplayPriceNameAndMainFirm;
+var
+  FGS : TGlobalSettingParams;
+begin
+  FGS := TGlobalSettingParams.Create(DM.MainConnection);
+  try
+    DM.adcUpdate.SQL.Text := ''
+      + ' update Providers '
+      + ' set '
+      + '   MainFirm = SupplierCategory >= ' + IntToStr(FGS.BaseFirmCategory) + ';'
+      + ' update Providers, PricesData, PricesRegionalData '
+      + ' set '
+      + '   PricesRegionalData.Enabled = Providers.MainFirm '
+      + ' where PricesData.FirmCode = Providers.FirmCode and PricesRegionalData.PriceCode = PricesData.PriceCode; ';
+    InternalExecute;
+    DM.adcUpdate.SQL.Text := ''
+      + ' update PricesData, '
+      + '  (select Providers.FirmCode, Providers.ShortName, count(PricesData.PriceCode) as PriceCount from PricesData, Providers where Providers.FirmCode = PricesData.FirmCode group by Providers.FirmCode) Prov '
+      + ' set '
+      + '   PriceName = concat(Prov.ShortName, IF(Prov.PriceCount > 1 OR ' + IfThen(FGS.ShowPriceName, '1', '0') + ', concat(" (", PricesData.PriceName, ")"), "")) '
+      + ' where PricesData.FirmCode = Prov.FirmCode; ';
+    InternalExecute;
+  finally
+    FGS.Free;
   end;
 end;
 

@@ -402,7 +402,9 @@ begin
 +'    `FAX` , '
 +'    `MANAGERMAIL` , ' 
 +'    `ShortName` , '
-+'    `CertificateSourceExists`  ';
++'    `CertificateSourceExists`,  '
++'    `SupplierCategory`,  '
++'    `MainFirm`  ';
 end;
 
 function TProvidersTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -412,9 +414,11 @@ begin
 +'    `FIRMCODE` bigint(20) not null         , '
 +'    `FULLNAME`    varchar(40) default null , '
 +'    `FAX`         varchar(20) default null , '
-+'    `MANAGERMAIL` varchar(255) default null, ' 
++'    `MANAGERMAIL` varchar(255) default null, '
 +'    `ShortName`    varchar(50) default null , '
 +'    `CertificateSourceExists`  tinyint(1) not null default ''0'' , '
++'    `SupplierCategory`  int(10) not null default ''0'' , '
++'    `MainFirm`  tinyint(1) not null default ''0'' , '
 +'    primary key (`FIRMCODE`)               , '
 +'    unique key `PK_CLIENTSDATAN` (`FIRMCODE`) ' 
 +'  ) ' 
@@ -503,8 +507,8 @@ begin
 +'    `PRICECODE` , ' 
 +'    `PRICENAME` , ' 
 +'    `PRICEINFO` , ' 
-+'    `DATEPRICE` , ' 
-+'    `FRESH`  '; 
++'    `DATEPRICE` , '
++'    `FRESH`  ';
 end;
 
 function TPricesDataTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -517,7 +521,7 @@ begin
 +'    `PRICEINFO` text                        , ' 
 +'    `DATEPRICE` datetime default null       , ' 
 +'    `FRESH`     tinyint(1) not null         , ' 
-+'    primary key (`PRICECODE`)               , ' 
++'    primary key (`PRICECODE`)               , '
 +'    unique key `PK_PRICESDATA` (`PRICECODE`), ' 
 +'    key `FK_PRICESDATA_FIRMCODE` (`FIRMCODE`) ' 
 +'  ) ' 
