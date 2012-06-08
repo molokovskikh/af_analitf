@@ -581,8 +581,8 @@ begin
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         FCommand.SQL.Text :=
           Format(
-            'SELECT now() from analitf.%s limit 100;',
-            [AnsiLowerCase(currentTable.Name)]);
+            'SELECT %s from analitf.%s limit 100;',
+            [currentTable.GetColumns(), AnsiLowerCase(currentTable.Name)]);
         try
           FCommand.Open;
           FCommand.Close;

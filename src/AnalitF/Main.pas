@@ -1903,14 +1903,17 @@ begin
 
   try
 
-  Self.WindowState := wsMaximized;
-  Self.Repaint;
+  try
+    Self.WindowState := wsMaximized;
+    Self.Repaint;
 
-  //старом модуля данных
-  DM.StartUp;
+    //старт модуля данных
+    DM.StartUp;
+  finally
+    JustRun := False;
+    mainStartupHelper.Stop;
+  end;
 
-  JustRun := False;
-  mainStartupHelper.Stop;
 try
   try
   DisableByNetworkSettings;
