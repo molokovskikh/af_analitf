@@ -28,7 +28,7 @@ type
     function GetColumns() : String; override;
   end;
 
-  TDefectivesTable = class(TDatabaseTable)
+  TRejectsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
@@ -341,47 +341,49 @@ begin
 + GetTableOptions();
 end;
 
-{ TDefectivesTable }
+{ TRejectsTable }
 
-constructor TDefectivesTable.Create;
+constructor TRejectsTable.Create;
 begin
-  FName := 'defectives';
-  FObjectId := doiDefectives;
+  FName := 'rejects';
+  FObjectId := doiRejects;
   FRepairType := dortCumulative;
 end;
 
-function TDefectivesTable.GetColumns: String;
+function TRejectsTable.GetColumns: String;
 begin
   Result := ''
-+'    `ID` , ' 
-+'    `NAME` , ' 
-+'    `PRODUCER` , ' 
-+'    `COUNTRY` , ' 
-+'    `SERIES` , ' 
-+'    `LETTERNUMBER` , ' 
-+'    `LETTERDATE` , ' 
-+'    `LABORATORY` , ' 
-+'    `REASON` , ' 
-+'    `CHECKPRINT`  '; 
++'    `ID` , '
++'    `NAME` , '
++'    `PRODUCER` , '
++'    `COUNTRY` , '
++'    `SERIES` , '
++'    `LETTERNUMBER` , '
++'    `LETTERDATE` , '
++'    `LABORATORY` , '
++'    `REASON` , '
++'    `CHECKPRINT`  ';
 end;
 
-function TDefectivesTable.GetCreateSQL(DatabasePrefix: String): String;
+function TRejectsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `ID` bigint(20) not null        , ' 
-+'    `NAME`         varchar(250) default null, ' 
-+'    `PRODUCER`     varchar(150) default null, ' 
-+'    `COUNTRY`      varchar(150) default null, ' 
-+'    `SERIES`       varchar(50) default null , ' 
-+'    `LETTERNUMBER` varchar(50) default null , ' 
-+'    `LETTERDATE` timestamp null default null, ' 
-+'    `LABORATORY` varchar(200) default null  , ' 
-+'    `REASON` text                           , ' 
-+'    `CHECKPRINT` tinyint(1) not null        , ' 
-+'    primary key (`ID`)                      , ' 
-+'    unique key `PK_DEFECTIVES` (`ID`) ' 
-+'  ) ' 
++'  ( '
++'    `ID` bigint(20) not null        , '
++'    `NAME`         varchar(250) default null, '
++'    `ProductId` bigint(20) default null     , '
++'    `PRODUCER`     varchar(150) default null, '
++'    `ProducerId`     bigint(20) default null, '
++'    `SERIES`       varchar(50) default null , '
++'    `LETTERNUMBER` varchar(50) default null , '
++'    `LETTERDATE` timestamp null default null, '
++'    `REASON` text                           , '
++'    `Hidden` tinyint(1) not null            , '
++'    `CHECKPRINT` tinyint(1) not null        , '
++'    `COUNTRY`      varchar(150) default null, '
++'    `LABORATORY` varchar(200) default null  , '
++'    primary key (`ID`)                        '
++'  ) '
 + GetTableOptions();
 end;
 
@@ -1357,7 +1359,7 @@ initialization
   DatabaseController.AddObject(TUserInfoTable.Create());
   DatabaseController.AddObject(TClientTable.Create());
   DatabaseController.AddObject(TClientsTable.Create());
-  DatabaseController.AddObject(TDefectivesTable.Create());
+  DatabaseController.AddObject(TRejectsTable.Create());
 
   DatabaseController.AddObject(TProvidersTable.Create());
   DatabaseController.AddObject(TRegionsTable.Create());

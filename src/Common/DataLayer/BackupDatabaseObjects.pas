@@ -484,7 +484,8 @@ begin
 +'  `RequestCertificate` , '
 +'  `ProductId` , '
 +'  `ProducerId` , '
-+'  `CertificateId`  ';
++'  `CertificateId`,  '
++'  `RejectId`  ';
 end;
 
 function TDocumentBodiesTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -525,6 +526,7 @@ begin
 +'  `ProductId` bigint(20) default null, '
 +'  `ProducerId` bigint(20) default null, '
 +'  `CertificateId` bigint(20) default null, '
++'  `RejectId` bigint(20) default null                   , '
 +'  PRIMARY KEY (`Id`), '
 +'  unique key `UK_DocumentBodies_ServerId` (`ServerId`), '
 +'  key `IDX_DocumentBodies_DocumentId` (`DocumentId`) '

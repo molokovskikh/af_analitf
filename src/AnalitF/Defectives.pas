@@ -11,7 +11,7 @@ uses
   DBAccess, MyAccess;
 
 const
-  DefectSql = 'SELECT * FROM Defectives WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
+  DefectSql = 'SELECT * FROM Rejects WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
 
 type
   //типы сортировки информации
@@ -126,7 +126,7 @@ var
 begin
   Screen.Cursor:=crHourglass;
   try
-    DM.adcUpdate.SQL.Text := 'UPDATE Defectives SET CheckPrint=0 WHERE CheckPrint=1';
+    DM.adcUpdate.SQL.Text := 'UPDATE Rejects SET CheckPrint=0 WHERE CheckPrint=1';
     DM.adcUpdate.Execute;
     with adsDefectives do begin
       Mark:=Bookmark;
@@ -159,7 +159,7 @@ var
   CheckPrintCount : Integer;
 begin
   //если нет ни одной пометки - печатаем все
-  CheckPrintCount := DM.QueryValue('SELECT Count(*) FROM Defectives WHERE CheckPrint = 1', [], []);
+  CheckPrintCount := DM.QueryValue('SELECT Count(*) FROM Rejects WHERE CheckPrint = 1', [], []);
   ShowAll := CheckPrintCount = 0;
   with adsPrint do begin
     SQL.Text:=PrintQuery+' ORDER BY '+OrderField;

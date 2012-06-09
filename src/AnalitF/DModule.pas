@@ -1558,8 +1558,8 @@ begin
     SQL.Text:='truncate Synonyms;'; Execute;
     MainForm.StatusText:='Очищается SynonymFirmCr';
     SQL.Text:='truncate SynonymFirmCr;'; Execute;
-    MainForm.StatusText:='Очищается Defectives';
-    SQL.Text:='truncate Defectives;'; Execute;
+    MainForm.StatusText:='Очищается Rejects';
+    SQL.Text:='truncate Rejects;'; Execute;
     MainForm.StatusText:='Очищается МНН';
     SQL.Text:='truncate MNN;'; Execute;
     MainForm.StatusText:='Очищаются описания';

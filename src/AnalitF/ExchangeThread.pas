@@ -2258,7 +2258,9 @@ begin
   { Добавляем забракованые препараты }
   if utRejects in UpdateTables then
   begin
-    SQL.Text := GetLoadDataSQL('Defectives', RootFolder()+SDirIn+'\Rejects.txt', True);
+    SQL.Text := GetLoadDataSQL('Rejects', RootFolder()+SDirIn+'\Rejects.txt', True);
+    InternalExecute;
+    SQL.Text := 'delete from rejects where Hidden = 1;';
     InternalExecute;
   end;
 
@@ -3721,10 +3723,10 @@ begin
       Format(
       'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
       ' ( ' +
-      '    DocumentLineId, ServerOrderListId ' +
+      '    ServerDocumentLineId, ServerOrderListId ' +
       ' ); ',
       [InputFileName,
-       'InvoiceHeaders']);
+       'WaybillOrders']);
     DM.adcUpdate.Execute;
   end;
 end;

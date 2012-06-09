@@ -210,7 +210,7 @@ type
     doiUserInfo,
     doiClient,
     doiClients,
-    doiDefectives,
+    doiRejects,
     doiProviders,
     doiRegions,
     doiRegionalData,
