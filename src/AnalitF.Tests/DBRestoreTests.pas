@@ -72,10 +72,10 @@ begin
       finally
         MyDump.Free;
       end;
-      Self.Status('база данных создана');
+      Self.Status('база данных создана : ' + DateTimeToStr(Now()));
 
       DatabaseController.Initialize(connection);
-      Self.Status('произвели инициализацию таблиц');
+      Self.Status('произвели инициализацию таблиц : ' + DateTimeToStr(Now()));
 
     finally
       connection.Close;
@@ -97,9 +97,12 @@ var
 
 begin
   globalParams := TDatabaseTable(DatabaseController.FindById(doiGlobalParams));
-  //globalParams.FileSystemName + DataFileExtention
+
+  //При удалении файла с индексами (IndexFileExtention) возникает ошибка
+  //(1017) Can't find file: 'globalparams' (errno: 2)
+  //DeleteTableFile(globalParams.FileSystemName + DataFileExtention);
   DeleteTableFile(globalParams.FileSystemName + IndexFileExtention);
-  DeleteTableFile(globalParams.FileSystemName + StructFileExtention);
+  //DeleteTableFile(globalParams.FileSystemName + StructFileExtention);
 
   connection := GetConnection;
   try
@@ -165,14 +168,44 @@ begin
 end;
 
 procedure TTestDBRestore.RestoreGlobalParamsTable;
+var
+  connection : TCustomMyConnection;
 begin
   DatabaseController.DisableMemoryLib();
   CopySpecialLib();
   CreateDB;
+
+  Self.Status('запуск выгрузки библиотеки объектов : ' + DateTimeToStr(Now()));
   //Освобождаем библиотеку, чтобы удалить файлы
   DatabaseController.FreeMySQLLib('');
-  
+  Self.Status('выгрузка библиотеки завершена : ' + DateTimeToStr(Now()));
+
   DeleteTableGlobalParams;
+
+  connection := GetConnection;
+  try
+    connection.Database := 'analitf';
+    connection.Open;
+    try
+
+      Self.Status('запуск проверки объектов : ' + DateTimeToStr(Now()));
+
+      //Проверка объектов перед использованием globalParams
+      DatabaseController.CheckObjectsExists(
+        connection,
+        False,
+        CheckedObjectOnStartup);
+
+      Self.Status('проверка объектов завершена : ' + DateTimeToStr(Now()));
+
+      DBProc.QueryValue(connection, 'select name from globalparams limit 1', [], []);
+
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
 end;
 
 initialization

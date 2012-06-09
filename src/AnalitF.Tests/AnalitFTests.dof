@@ -33,9 +33,9 @@ UnitAliases=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=
 NamespacePrefix=
 SymbolDeprecated=1
 SymbolLibrary=1
-SymbolPlatform=1
+SymbolPlatform=0
 UnitLibrary=1
-UnitPlatform=1
+UnitPlatform=0
 UnitDeprecated=1
 HResultCompat=1
 HidingMember=1

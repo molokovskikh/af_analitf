@@ -3649,14 +3649,7 @@ begin
       DatabaseController.CheckObjectsExists(
         dbCon,
         FCreateClearDatabase or FNeedImportAfterRecovery,
-        [doiParams,
-         doiUserInfo, doiClient, doiClients, doiClientSettings,
-         doiRetailMargins, doiVitallyImportantMarkups,
-         doiPostedOrderHeads, doiPostedOrderLists, doiCurrentOrderHeads, doiCurrentOrderLists,
-         doiProviders, doiRegionalData, doiPricesData, doiPricesRegionalData, 
-         doiRegions,
-         doiMaxProducerCosts,
-         doiMinReqRules]);
+        CheckedObjectOnStartup);
       mainStartupHelper.Write('DModule', 'Закончили проверку на существование объектов базы данных');
     end;
   finally
