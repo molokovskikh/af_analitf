@@ -18,12 +18,6 @@ uses
   U_DBMapping,
   InternalRepareOrdersController;
 
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
-
 type
   TExchangeAction=(
     eaGetPrice,
@@ -127,9 +121,7 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
 {$R *.DFM}
 
 function RunExchange( AExchangeActions: TExchangeActions=[eaGetPrice]): Boolean;
-{//$ifndef USENEWMYSQLTYPES}
 var
-{//$endif}
 //  hMenuHandle: HMENU;
   needAuth : Boolean;
 begin
@@ -360,7 +352,6 @@ begin
 
   MainForm.UpdateReclame;
 
-{//$ifndef USENEWMYSQLTYPES}
 //В специализированной сборке не работает пока сжатие базы данных,
 //незачем его сейчас запускать и при оригинальной сборке
   if Result and ( eaGetPrice in AExchangeActions) and
@@ -372,7 +363,6 @@ begin
     Application.ProcessMessages;
     RunCompactDatabase;
   end;
-{//$endif}
 
   if Result then
     if (eaPostOrderBatch in AExchangeActions) then

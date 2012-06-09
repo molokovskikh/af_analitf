@@ -2,6 +2,8 @@ unit LoadDataTests;
 
 interface
 
+{$I '..\AF.inc'}
+
 uses
   SysUtils,
   Windows,
@@ -22,18 +24,6 @@ uses
   MyEmbConnectionEx,
   SynonymDatabaseObjects;
 
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
-
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
-  
 type
   TTestLoadData = class(TTestCase)
    private
@@ -41,6 +31,9 @@ type
     procedure ApplyMigrate();
     procedure DeleteDataFolder;
     procedure TestOpen();
+   protected
+    procedure SetUp; override;
+    procedure TearDown; override;
    published
     procedure CreateDB;
     procedure CreateDBVer81;
@@ -244,7 +237,7 @@ begin
     try
       connection.ExecSQL('use analitf', []);
 
-      coreTestInsertSQl := GetLoadDataSQL('Core', ExePath + '\Core.txt');
+      coreTestInsertSQl := GetLoadDataSQL('Core', ExpandFileName('..\TestData\LoadDataTests\Core.txt'));
 
       exec := TMyQuery.Create(nil);
       try
@@ -332,7 +325,7 @@ begin
     try
       connection.ExecSQL('use analitf', []);
 
-      coreTestInsertSQl := GetLoadDataSQL('Core', ExePath + '\Core.txt');
+      coreTestInsertSQl := GetLoadDataSQL('Core', ExpandFileName('..\TestData\LoadDataTests\Core.txt'));
 
       exec := TMyQuery.Create(nil);
       try
@@ -407,7 +400,7 @@ begin
     try
       connection.ExecSQL('use analitf', []);
 
-      coreTestInsertSQl := GetLoadDataSQL('Core', ExePath + '\Core.txt');
+      coreTestInsertSQl := GetLoadDataSQL('Core', ExpandFileName('..\TestData\LoadDataTests\Core.txt'));
 
       exec := TMyQuery.Create(nil);
       try
@@ -515,7 +508,7 @@ begin
       //connection.ExecSQL('insert into client (Id, Name) values (1, ''test 1'')', []);
 
       WriteExchangeLog('_CreateDBWithClient', 'insert into client table');
-      clientTestInsertSQl := GetLoadDataSQL('Client', ExePath + '\Client.txt');
+      clientTestInsertSQl := GetLoadDataSQL('Client', ExpandFileName('..\TestData\LoadDataTests\Client.txt'));
 
       connection.ExecSQL(clientTestInsertSQl, []);
     finally
@@ -645,6 +638,18 @@ begin
     WriteExchangeLog('_UpdateClientAndOpen', 'free connection after alter');
     connection.Free;
   end;
+end;
+
+procedure TTestLoadData.SetUp;
+begin
+  inherited;
+  OSCopyFile('..\SpecialLibs\LoadDataTests\libmysqld.dll', 'libmysqld.dll');
+end;
+
+procedure TTestLoadData.TearDown;
+begin
+  inherited;
+  DatabaseController.FreeMySQLLib('Освобождаем после теста', 'TTestLoadData');
 end;
 
 initialization

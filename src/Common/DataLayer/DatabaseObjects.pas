@@ -2,6 +2,8 @@ unit DatabaseObjects;
 
 interface
 
+{$I '..\AF.inc'}
+
 uses
   SysUtils, Classes, Contnrs, StrUtils,
   Windows,
@@ -11,12 +13,6 @@ uses
   MyCall,
   MySqlApi,
   INFHelpers;
-
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
 
 const
   //Текущая версия базы данных для работы программ
@@ -291,6 +287,23 @@ type
 
   TRepairedObjects = set of TDatabaseObjectId;
 
+
+const
+  //Список объектов базы данных, проверяемых при запуске приложения
+  CheckedObjectOnStartup : TRepairedObjects = [
+    doiParams,
+    doiUserInfo, doiClient, doiClients, doiClientSettings,
+    doiRetailMargins, doiVitallyImportantMarkups,
+    doiPostedOrderHeads, doiPostedOrderLists, doiCurrentOrderHeads, doiCurrentOrderLists,
+    doiProviders, doiRegionalData, doiPricesData, doiPricesRegionalData,
+    doiRegions,
+    doiMaxProducerCosts,
+    doiMinReqRules,
+    doiGlobalParams
+  ];
+
+
+type
   TDatabaseObject = class
    protected
     FName : String;
@@ -584,7 +597,7 @@ begin
         FCommand.SQL.Text :=
           Format(
             'SELECT %s from analitf.%s limit 100;',
-            [currentTable.GetColumns(), AnsiLowerCase(currentTable.Name)]);
+            ['now()', AnsiLowerCase(currentTable.Name)]);
         try
           FCommand.Open;
           FCommand.Close;

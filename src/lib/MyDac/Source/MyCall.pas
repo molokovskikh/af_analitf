@@ -145,12 +145,6 @@ const
 const
   packet_error: longword        = $FFFFFFFF;
 
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
-
 {$ifndef USENEWMYSQLTYPES}
 var
   MYSQL_TYPE_DECIMAL            : byte = 0;

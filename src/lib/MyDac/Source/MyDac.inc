@@ -8,6 +8,8 @@
 
 {$I Dac.inc}
 
+{$I '..\..\..\AF.inc'}
+
 {$DEFINE HAVE_DIRECT}
 
 {$IFNDEF LITE}

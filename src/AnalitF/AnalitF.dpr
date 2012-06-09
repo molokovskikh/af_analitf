@@ -2,6 +2,8 @@ program AnalitF;
 
 {%ToDo 'AnalitF.todo'}
 
+{$I '..\AF.inc'}
+
 uses
   VCLFixPack in 'Helpers\VCLFixPack.pas',
   Forms,
