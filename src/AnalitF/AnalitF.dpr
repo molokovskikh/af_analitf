@@ -175,6 +175,7 @@ uses
 {$R CompareScript85.RES}
 {$R CompareScript86.RES}
 {$R CompareScript89.RES}
+{$R CompareScript90.RES}
 
 
   procedure CopyRegSettings;

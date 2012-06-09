@@ -2445,8 +2445,10 @@ begin
         retailAmountField.Value := RoundTo(manualRetailPriceField.Value, -2) * adsDocumentBodiesQuantity.Value;
       RecalcPosition;
       adsDocumentBodies.Post;
-      Handled := True;
-    end;
+    end
+    else
+      adsDocumentBodies.Cancel;
+    Handled := True;
   end;
 end;
 
@@ -2457,12 +2459,16 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState)
   then begin
-    if (Sender is TDBGridColumnEh) and TryStrToFloat(Text, changedValue) then begin
+    if (Sender is TDBGridColumnEh) and TryStrToFloat(Text, changedValue)
+      and AllowRealValue(Text) 
+    then begin
       TDBGridColumnEh(Sender).Field.AsFloat := changedValue;
       RecalcPosition;
       adsDocumentBodies.Post;
-      Handled := True;
-    end;
+    end
+    else
+      adsDocumentBodies.Cancel;
+    Handled := True;
   end;
 end;
 

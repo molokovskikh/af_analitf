@@ -641,7 +641,7 @@ begin
 
     if CanClose then begin
       FGlobalSettingParams.ShowPriceName := chbShowPriceName.Checked;
-      FGlobalSettingParams.DeltaMode := cbDeltaMode.ItemIndex + 1;
+      FGlobalSettingParams.DeltaMode := cbDeltaMode.ItemIndex;
       if TryStrToInt(eBaseFirmCategory.Text, outInt) then 
         FGlobalSettingParams.BaseFirmCategory := outInt;
     end;
@@ -1207,10 +1207,10 @@ begin
   AddLabelAndCombo(tshVisualization, nextTop, lDeltaMode, cbDeltaMode, 'Расчет разницы в таблице предложений:');
   cbDeltaMode.Style := csDropDownList;
   cbDeltaMode.Items.Clear;
-  cbDeltaMode.Items.Add('От минимальной цены');
   cbDeltaMode.Items.Add('От предыдущего предложения');
+  cbDeltaMode.Items.Add('От минимальной цены');
   cbDeltaMode.Items.Add('От минимальной цены в основных поставщиках');
-  cbDeltaMode.ItemIndex := FGlobalSettingParams.DeltaMode-1;
+  cbDeltaMode.ItemIndex := FGlobalSettingParams.DeltaMode;
 
   chbShowPriceName := TCheckBox.Create(Self);
   chbShowPriceName.Caption := 'Всегда показывать названия прайс-листов';

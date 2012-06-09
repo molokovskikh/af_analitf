@@ -20,7 +20,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 90;
+  CURRENT_DB_VERSION = 91;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -583,8 +583,8 @@ begin
         currentTable := TDatabaseTable(FDatabaseObjects[i]);
         FCommand.SQL.Text :=
           Format(
-            'SELECT now() from analitf.%s limit 100;',
-            [AnsiLowerCase(currentTable.Name)]);
+            'SELECT %s from analitf.%s limit 100;',
+            [currentTable.GetColumns(), AnsiLowerCase(currentTable.Name)]);
         try
           FCommand.Open;
           FCommand.Close;
@@ -1367,7 +1367,12 @@ begin
     'INSERT INTO GlobalParams (Name, Value) VALUES ("NetworkExternalOrder", "0");'#13#10#13#10 +
     'INSERT INTO GlobalParams (Name, Value) VALUES ("NetworkMinCostPercent", "7");'#13#10#13#10 +
     'INSERT INTO GlobalParams (Name, Value) VALUES ("WaybillsHistoryDayCount", "150");'#13#10#13#10 +
-    'INSERT INTO GlobalParams (Name, Value) VALUES ("ConfirmDeleteOldWaybills", "1");'#13#10#13#10
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("ConfirmDeleteOldWaybills", "1");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("BaseFirmCategory", "0");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("Excess", "5");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("ExcessAvgOrderTimes", "5");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("DeltaMode", "1");'#13#10#13#10 +
+    'INSERT INTO GlobalParams (Name, Value) VALUES ("ShowPriceName", "0");'#13#10#13#10
     );
 end;
 

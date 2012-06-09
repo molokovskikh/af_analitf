@@ -10,7 +10,8 @@ uses
   StrUtils, EhLibMTE, Contnrs,
   U_CurrentOrderItem,
   NetworkParams,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  GlobalSettingParams;
 
 type
   TCorrectResult = (crClose, crEditOrders, crForceSended, crGetPrice);
@@ -187,12 +188,16 @@ type
     FNetworkParams : TNetworkParams;
     FAllowDelayOfPayment : Boolean;
     FShowSupplierCost : Boolean;
+    FGS : TGlobalSettingParams;
     procedure SetOffers;
     procedure PrepareVisual;
     procedure PrepareData;
     function GetReportOrdersLogSql : String;
     procedure SetGridParams(Grid : TToughDBGrid);
     procedure PrepareColumnsInOrderGrid(Grid : TToughDBGrid);
+    //Доступна ли кнопка "Отправить как есть"
+    function AllowForceResend() : Boolean;
+    procedure UpdateForceRecend;
   public
     { Public declarations }
     Report : TStrings;
@@ -250,6 +255,7 @@ begin
   FAllowDelayOfPayment := DM.adsUser.FieldByName('AllowDelayOfPayment').AsBoolean;
   FShowSupplierCost := DM.adsUser.FieldByName('ShowSupplierCost').AsBoolean;
   FNetworkParams := TNetworkParams.Create(DM.MainConnection);
+  FGS := TGlobalSettingParams.Create(DM.MainConnection);
   FormResult := crClose;
   Report := TStringList.Create;
   dbgLog.PopupMenu := nil;
@@ -260,8 +266,8 @@ begin
   //todo: Здесь засада, т.к. описание не отображается
   TframePosition.AddFrame(Self, pClient, dsCore, 'SynonymName', 'MnnId', nil);
 
-  Excess := DM.adtClients.FieldByName( 'Excess').AsInteger;
-  ExcessAvgOrderTimes := DM.adtClients.FieldByName( 'ExcessAvgOrderTimes').AsInteger; 
+  Excess := FGS.Excess;
+  ExcessAvgOrderTimes := FGS.ExcessAvgOrderTimes;
   adsAvgOrders.ParamByName( 'ClientId').Value :=
     DM.adtClients.FieldByName( 'ClientId').AsInteger;
   plOverCost.Hide();
@@ -831,6 +837,7 @@ begin
       VisibleButtons.Add(btnRetrySend);
       VisibleButtons.Add(btnRefresh);
       VisibleButtons.Add(btnEditOrders);
+      UpdateForceRecend;
     end
     else begin
       btnRetrySend.Visible := False;
@@ -997,6 +1004,7 @@ begin
   DM.adcUpdate.ParamByName('Send').AsBoolean := Sender.AsBoolean;
   DM.adcUpdate.ParamByName('OrderId').Value := mtLogSelfId.Value;
   DM.adcUpdate.Execute;
+  UpdateForceRecend;
 end;
 
 procedure TCorrectOrdersForm.dbgLogKeyDown(Sender: TObject; var Key: Word;
@@ -1142,6 +1150,22 @@ procedure TCorrectOrdersForm.FormDestroy(Sender: TObject);
 begin
   TDBGridHelper.SaveColumnsLayout(dbgCore, Self.ClassName);
   inherited;
+end;
+
+function TCorrectOrdersForm.AllowForceResend: Boolean;
+var
+  orderCount : Integer;
+begin
+  //Считаем количество заказов, помеченных к отправке, со статусом (0 или 2)
+  orderCount := DM.QueryValue('SELECT ifnull(sum(if(SendResult is null or (SendResult in (0, 2)), 1, -1)), -1) - count(SendResult) AS OrderSum FROM CurrentOrderHeads where Send = 1', [], []);
+
+  Result := orderCount >= 0;
+end;
+
+procedure TCorrectOrdersForm.UpdateForceRecend;
+begin
+  if btnRetrySend.Visible then
+    btnRetrySend.Enabled := AllowForceResend();
 end;
 
 end.

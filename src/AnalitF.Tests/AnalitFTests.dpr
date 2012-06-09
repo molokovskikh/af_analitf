@@ -166,6 +166,7 @@ uses
   U_SerialNumberSearch in '..\AnalitF\Views\U_SerialNumberSearch.pas' {SerialNumberSearch},
   FileCountHelper in '..\AnalitF\Helpers\FileCountHelper.pas',
   U_AddWaybillForm in '..\AnalitF\Views\U_AddWaybillForm.pas' {AddWaybillForm},
+  VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
 
 //end files
   
@@ -175,7 +176,8 @@ uses
   SearchFilterControllerTests in 'SearchFilterControllerTests.pas',
   AProcTests in 'AProcTests.pas',
   INFHelpersTests in 'INFHelpersTests.pas',
-  MappingTests in 'MappingTests.pas';
+  MappingTests in 'MappingTests.pas',
+  DBRestoreTests in 'DBRestoreTests.pas';
 
 {$R *.res}
 
