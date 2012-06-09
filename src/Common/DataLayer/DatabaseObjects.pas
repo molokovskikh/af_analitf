@@ -2,6 +2,8 @@ unit DatabaseObjects;
 
 interface
 
+{$I '..\AF.inc'}
+
 uses
   SysUtils, Classes, Contnrs, StrUtils,
   Windows,
@@ -11,12 +13,6 @@ uses
   MyCall,
   MySqlApi,
   INFHelpers;
-
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
 
 const
   //Текущая версия базы данных для работы программ

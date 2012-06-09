@@ -2,6 +2,8 @@ unit DModule;
 
 interface
 
+{$I '..\AF.inc'}
+
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Db, Variants, FileUtil, ARas, ComObj, FR_Class, FR_View,
@@ -32,12 +34,6 @@ uses
   Цена     - все в хексе без %
   Code, CodeCr - смешанный тип
 }
-
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
 
 const
   HistoryMaxRec=5;
@@ -1358,10 +1354,7 @@ procedure TDM.CompactDataBase();
 begin
   MainConnection.Open;
   try
-{//$ifndef USENEWMYSQLTYPES}
-    //todo: Надо будет восстановить сжатие, когда сборка Михаила сможет восстанавливать таблицы
     DatabaseController.OptimizeObjects(MainConnection);
-{//$endif}
   finally
     MainConnection.Close;
   end;

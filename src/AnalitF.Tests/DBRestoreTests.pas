@@ -2,6 +2,8 @@ unit DBRestoreTests;
 
 interface
 
+{$I '..\AF.inc'}
+
 uses
   SysUtils,
   Windows,
@@ -164,7 +166,7 @@ end;
 
 procedure TTestDBRestore.RestoreGlobalParamsTable;
 begin
-  //DatabaseController.DisableMemoryLib();
+  DatabaseController.DisableMemoryLib();
   CopySpecialLib();
   CreateDB;
   //Освобождаем библиотеку, чтобы удалить файлы

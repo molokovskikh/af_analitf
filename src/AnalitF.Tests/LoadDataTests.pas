@@ -2,6 +2,8 @@ unit LoadDataTests;
 
 interface
 
+{$I '..\AF.inc'}
+
 uses
   SysUtils,
   Windows,
@@ -22,18 +24,6 @@ uses
   MyEmbConnectionEx,
   SynonymDatabaseObjects;
 
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
-
-{$ifdef USEMEMORYCRYPTDLL}
-  {$ifndef USENEWMYSQLTYPES}
-    {$define USENEWMYSQLTYPES}
-  {$endif}
-{$endif}
-  
 type
   TTestLoadData = class(TTestCase)
    private

@@ -1,5 +1,7 @@
 program AnalitFTests;
 
+{$I '..\AF.inc'}
+
 uses
   Forms,
   SysUtils,
