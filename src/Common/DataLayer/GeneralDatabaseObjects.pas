@@ -380,8 +380,6 @@ begin
 +'    `REASON` text                           , '
 +'    `Hidden` tinyint(1) not null            , '
 +'    `CHECKPRINT` tinyint(1) not null        , '
-+'    `COUNTRY`      varchar(150) default null, '
-+'    `LABORATORY` varchar(200) default null  , '
 +'    primary key (`ID`)                        '
 +'  ) '
 + GetTableOptions();

@@ -19,15 +19,12 @@ type
 
   TDefectivesForm = class(TChildForm)
     dsDefectives: TDataSource;
-    dbtCountry: TDBText;
     dbtSeries: TDBText;
-    Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     dbtLetterNumber: TDBText;
     dbtLetterDate: TDBText;
     Label4: TLabel;
-    dbtLaboratory: TDBText;
     dtpDateFrom: TDateTimePicker;
     dtpDateTo: TDateTimePicker;
     ActionList: TActionList;

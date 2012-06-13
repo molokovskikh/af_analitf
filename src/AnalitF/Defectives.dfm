@@ -44,7 +44,7 @@ inherited DefectivesForm: TDefectivesForm
       ParentFont = False
     end
     object dbtSeries: TDBText
-      Left = 283
+      Left = 108
       Top = 6
       Width = 54
       Height = 13
@@ -64,35 +64,6 @@ inherited DefectivesForm: TDefectivesForm
       Width = 94
       Height = 13
       DataField = 'LetterNumber'
-      DataSource = dsDefectives
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtLaboratory: TDBText
-      Left = 8
-      Top = 39
-      Width = 79
-      Height = 13
-      AutoSize = True
-      DataField = 'Laboratory'
-      DataSource = dsDefectives
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object dbtCountry: TDBText
-      Left = 109
-      Top = 6
-      Width = 117
-      Height = 15
-      DataField = 'Country'
       DataSource = dsDefectives
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -128,7 +99,7 @@ inherited DefectivesForm: TDefectivesForm
       ParentFont = False
     end
     object Label2: TLabel
-      Left = 233
+      Left = 58
       Top = 6
       Width = 45
       Height = 13
@@ -141,24 +112,11 @@ inherited DefectivesForm: TDefectivesForm
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object Label1: TLabel
-      Left = 53
-      Top = 6
-      Width = 51
-      Height = 13
-      Caption = #1057#1090#1088#1072#1085#1072' :'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
     object dbmReason: TDBMemo
       Left = 8
-      Top = 56
+      Top = 40
       Width = 778
-      Height = 19
+      Height = 29
       Anchors = [akLeft, akTop, akRight]
       BevelInner = bvNone
       BevelOuter = bvNone
@@ -226,14 +184,6 @@ inherited DefectivesForm: TDefectivesForm
       end
       item
         EditButtons = <>
-        FieldName = 'Country'
-        Footers = <>
-        Title.Caption = #1057#1090#1088#1072#1085#1072
-        Title.TitleButton = True
-        Width = 50
-      end
-      item
-        EditButtons = <>
         FieldName = 'Series'
         Footers = <>
         Title.Caption = #1057#1077#1088#1080#1103
@@ -257,14 +207,6 @@ inherited DefectivesForm: TDefectivesForm
         Title.Caption = #1044#1072#1090#1072' '#1087#1080#1089#1100#1084#1072
         Title.TitleButton = True
         Width = 88
-      end
-      item
-        EditButtons = <>
-        FieldName = 'Laboratory'
-        Footers = <>
-        Title.Caption = #1051#1072#1073#1086#1088#1072#1090#1086#1088#1080#1103
-        Title.TitleButton = True
-        Width = 81
       end
       item
         EditButtons = <>
@@ -380,11 +322,9 @@ inherited DefectivesForm: TDefectivesForm
       '  Rejects.Id,'
       '  Rejects.Name,'
       '  Rejects.Producer,'
-      '  Rejects.Country,'
       '  Rejects.Series,'
       '  Rejects.LETTERNUMBER,'
       '  Rejects.LETTERDATE,'
-      '  Rejects.LABORATORY,'
       '  Rejects.REASON,'
       '  Rejects.CHECKPRINT'
       'FROM Rejects'
@@ -419,11 +359,9 @@ inherited DefectivesForm: TDefectivesForm
       '  Rejects.Id,'
       '  Rejects.Name,'
       '  Rejects.Producer,'
-      '  Rejects.Country,'
       '  Rejects.Series,'
       '  Rejects.LETTERNUMBER,'
       '  Rejects.LETTERDATE,'
-      '  Rejects.LABORATORY,'
       '  Rejects.REASON,'
       '  Rejects.CHECKPRINT '
       'FROM Rejects'
@@ -435,11 +373,9 @@ inherited DefectivesForm: TDefectivesForm
       '  Rejects.Id,'
       '  Rejects.Name,'
       '  Rejects.Producer,'
-      '  Rejects.Country,'
       '  Rejects.Series,'
       '  Rejects.LETTERNUMBER,'
       '  Rejects.LETTERDATE,'
-      '  Rejects.LABORATORY,'
       '  Rejects.REASON,'
       '  Rejects.CHECKPRINT'
       'FROM Rejects'
