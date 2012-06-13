@@ -143,6 +143,7 @@ type
     FloatField11: TFloatField;
     dsOrder: TDataSource;
     shOrder: TStrHolder;
+    adsDocumentBodiesRejectId: TLargeintField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -763,6 +764,9 @@ procedure TDocumentBodiesForm.WaybillGetCellParams(Sender: TObject;
 var
   maxSupplierMarkup : Currency;
 begin
+  if not adsDocumentBodiesRejectId.IsNull then
+    Background := RejectColor;
+
   if (retailMarkupField.Value < 0) then
     if AnsiMatchText(Column.Field.FieldName,
         ['RetailMarkup', 'RetailPrice', 'RetailSumm', 'RealMarkup'])

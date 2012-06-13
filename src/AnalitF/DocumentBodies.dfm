@@ -525,7 +525,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'cr.DocumentBodyId,'
       'catalogs.Markup as CatalogMarkup,'
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
-      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
+      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
+      'dbodies.RejectId'
       'from'
       '  DocumentBodies dbodies'
       
@@ -573,7 +574,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'cr.DocumentBodyId,'
       'catalogs.Markup as CatalogMarkup,'
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
-      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
+      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
+      'dbodies.RejectId'
       'from'
       '  DocumentBodies dbodies'
       
@@ -694,6 +696,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField
       FieldName = 'CatalogMaxSupplierMarkup'
+    end
+    object adsDocumentBodiesRejectId: TLargeintField
+      FieldName = 'RejectId'
     end
   end
   object tmrPrintedChange: TTimer

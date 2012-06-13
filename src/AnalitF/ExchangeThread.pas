@@ -2260,6 +2260,8 @@ begin
   begin
     SQL.Text := GetLoadDataSQL('Rejects', RootFolder()+SDirIn+'\Rejects.txt', True);
     InternalExecute;
+    SQL.Text := 'update rejects, documentBodies set documentBodies.RejectId = null where rejects.Hidden = 1 and documentBodies.RejectId = rejects.Id;';
+    InternalExecute;
     SQL.Text := 'delete from rejects where Hidden = 1;';
     InternalExecute;
   end;
@@ -3695,8 +3697,37 @@ begin
       ' and (DocumentBodies.DocumentId is null or DocumentBodies.DocumentId = 0)' +
       ' and DocumentHeaders.ServerId = DocumentBodies.ServerDocumentId ';
     DM.adcUpdate.Execute;
+    //Сопоставляем продукты по ProductId и серии
+    DM.adcUpdate.SQL.Text := '' +
+      ' update ' +
+      '   analitf.DocumentBodies, ' +
+      '   analitf.rejects ' +
+      ' set ' +
+      '   DocumentBodies.RejectId = Rejects.Id ' +
+      ' where ' +
+      '     DocumentBodies.RejectId is null ' +
+      ' and (DocumentBodies.ProductId is not null) ' +
+      ' and (DocumentBodies.SerialNumber is not null) ' +
+      ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
+      ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
+    DM.adcUpdate.Execute;
+    //Сопоставляем продукты по Product и серии
+    DM.adcUpdate.SQL.Text := '' +
+      ' update ' +
+      '   analitf.DocumentBodies, ' +
+      '   analitf.rejects ' +
+      ' set ' +
+      '   DocumentBodies.RejectId = Rejects.Id ' +
+      ' where ' +
+      '     DocumentBodies.RejectId is null ' +
+      ' and (DocumentBodies.ProductId is null) ' +
+      ' and (DocumentBodies.Product is not null) ' +
+      ' and (DocumentBodies.SerialNumber is not null) ' +
+      ' and (DocumentBodies.Product = Rejects.Name) ' +
+      ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
+    DM.adcUpdate.Execute;
   end;
-  
+
   if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then begin
     InputFileName := StringReplace(RootFolder()+SDirIn+'\InvoiceHeaders.txt', '\', '/', [rfReplaceAll]);
     DM.adcUpdate.Close;
