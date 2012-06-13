@@ -210,6 +210,13 @@ type
     function GetColumns() : String; override;
   end;
 
+  TNewsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
+  end;
+
 implementation
 
 { TUserInfoTable }
@@ -270,7 +277,10 @@ begin
 +'    `EnableSmartOrder` , '
 +'    `EnableImpersonalPrice` , '
 +'    `AllowDelayOfPayment` ,  '
-+'    `ShowCertificatesWithoutRefSupplier`   ';
++'    `ShowCertificatesWithoutRefSupplier` ,  '
++'    `HomeRegion` ,  '
++'    `TechContact` ,  '
++'    `TechOperatingMode`  ';
 end;
 
 function TClientTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -288,6 +298,9 @@ begin
 +'    `EnableImpersonalPrice` tinyint(1) unsigned not null default ''0'', '
 +'    `AllowDelayOfPayment` tinyint(1) not null default ''0'',  '
 +'    `ShowCertificatesWithoutRefSupplier` tinyint(1) not null default ''0'',  '
++'    `HomeRegion` bigint(20) not null , '
++'    `TechContact` TEXT, '
++'    `TechOperatingMode` TEXT, '
 +'    primary key (`Id`) '
 +'  ) '
 + GetTableOptions();
@@ -519,7 +532,7 @@ begin
 +'    `PRICECODE` bigint(20) not null         , ' 
 +'    `PRICENAME` varchar(70) default null    , ' 
 +'    `PRICEINFO` text                        , ' 
-+'    `DATEPRICE` datetime default null       , ' 
++'    `DATEPRICE` datetime default null       , '
 +'    `FRESH`     tinyint(1) not null         , ' 
 +'    primary key (`PRICECODE`)               , '
 +'    unique key `PK_PRICESDATA` (`PRICECODE`), ' 
@@ -1353,6 +1366,36 @@ begin
 + GetTableOptions();
 end;
 
+{ TNewsTable }
+
+constructor TNewsTable.Create;
+begin
+  FName := 'news';
+  FObjectId := doiNews;
+  FRepairType := dortCumulative;
+end;
+
+function TNewsTable.GetColumns: String;
+begin
+  Result := ''
++'      Id , '
++'      PublicationDate , '
++'      Header  ';
+end;
+
+function TNewsTable.GetCreateSQL(DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++'  ( '
++'      Id bigint(20) NOT NULL, '
++'      PublicationDate datetime NOT NULL, '
++'      Header varchar(255) default NULL, '
++'      primary key (Id), '
++'      key (PublicationDate) '
++'  ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TUserInfoTable.Create());
   DatabaseController.AddObject(TClientTable.Create());
@@ -1391,5 +1434,7 @@ initialization
   DatabaseController.AddObject(TCertificateSourcesTable.Create());
   DatabaseController.AddObject(TSourceSuppliersTable.Create());
   DatabaseController.AddObject(TFileCertificatesTable.Create());
+
+  DatabaseController.AddObject(TNewsTable.Create());
 end.
 

@@ -521,7 +521,12 @@ inherited OrdersForm: TOrdersForm
       '    ol.Period,'
       '    Producers.Name as ProducerName,'
       '    ol.RetailVitallyImportant,'
-      '    ol.Comment'
+      '    ol.Comment,'
+      '    dbodies.ServerId as ServerDocumentLineId,'
+      '    dbodies.RejectId,'
+      '    dbodies.ServerDocumentId,'
+      '    dbodies.SupplierCost,'
+      '    dbodies.Quantity as WaybillQuantity'
       'FROM '
       '  CurrentOrderLists ol'
       '  left join products on products.productid = ol.productid'
@@ -532,6 +537,12 @@ inherited OrdersForm: TOrdersForm
       '    (GroupMaxProducerCosts.ProductId = ol.productid) '
       '    and (ol.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
       '  left join core on core.coreid = ol.coreid'
+      
+        '  left join waybillorders wo on wo.ServerOrderListId = ol.Server' +
+        'OrderListId'
+      
+        '  left join documentbodies dbodies on dbodies.ServerId = wo.Serv' +
+        'erDocumentLineId'
       'WHERE '
       '    (ol.OrderId = :OrderId)'
       'AND (OrderCount>0)'
@@ -540,6 +551,7 @@ inherited OrdersForm: TOrdersForm
         'n is not null)))'
       'ORDER BY SynonymName, SynonymFirm')
     RefreshOptions = [roAfterUpdate]
+    AfterOpen = adsOrdersAfterOpen
     BeforePost = adsOrdersOldBeforePost
     AfterPost = adsOrdersOldAfterPost
     AfterScroll = adsOrdersAfterScroll
@@ -717,6 +729,21 @@ inherited OrdersForm: TOrdersForm
     object adsOrdersMarkup: TFloatField
       FieldName = 'Markup'
     end
+    object adsOrdersServerDocumentLineId: TLargeintField
+      FieldName = 'ServerDocumentLineId'
+    end
+    object adsOrdersRejectId: TLargeintField
+      FieldName = 'RejectId'
+    end
+    object adsOrdersServerDocumentId: TLargeintField
+      FieldName = 'ServerDocumentId'
+    end
+    object adsOrdersSupplierCost: TFloatField
+      FieldName = 'SupplierCost'
+    end
+    object adsOrdersWaybillQuantity: TIntegerField
+      FieldName = 'WaybillQuantity'
+    end
   end
   object ActionList: TActionList
     Left = 360
@@ -827,7 +854,8 @@ inherited OrdersForm: TOrdersForm
       '  left join products p on p.productid = dbodies.productid'
       '  left join catalogs on catalogs.fullcode = p.catalogid'
       'where'
-      '  dbodies.DocumentId = :DocumentId')
+      '  dbodies.ServerDocumentId = :ServerDocumentId'
+      'order by dbodies.Product')
     RefreshOptions = [roAfterInsert, roAfterUpdate]
     KeyFields = 'Id'
     Left = 208
@@ -835,7 +863,7 @@ inherited OrdersForm: TOrdersForm
     ParamData = <
       item
         DataType = ftUnknown
-        Name = 'DocumentId'
+        Name = 'ServerDocumentId'
       end>
     object adsDocumentBodiesId: TLargeintField
       FieldName = 'Id'
@@ -993,5 +1021,12 @@ inherited OrdersForm: TOrdersForm
       '45414e3133203d203a45414e3133'
       '7768657265'
       '202064626f646965732e4964203d203a4f4c445f4964')
+  end
+  object tmrShowMatchWaybill: TTimer
+    Enabled = False
+    Interval = 350
+    OnTimer = tmrShowMatchWaybillTimer
+    Left = 304
+    Top = 196
   end
 end

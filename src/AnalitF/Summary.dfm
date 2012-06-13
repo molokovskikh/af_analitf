@@ -716,7 +716,12 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    Producers.Name as ProducerName,'
-      '    c.Name as AddressName'
+      '    c.Name as AddressName,'
+      '    dbodies.ServerId as ServerDocumentLineId,'
+      '    dbodies.RejectId,'
+      '    dbodies.ServerDocumentId,'
+      '    dbodies.SupplierCost,'
+      '    dbodies.Quantity as WaybillQuantity'
       'FROM'
       '    ('
       '    PricesData,'
@@ -739,6 +744,12 @@ inherited SummaryForm: TSummaryForm
       
         '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
         'de=SynonymFirmCr.SynonymFirmCrCode'
+      
+        '  left join waybillorders wo on wo.ServerOrderListId = CurrentOr' +
+        'derLists.ServerOrderListId'
+      
+        '  left join documentbodies dbodies on dbodies.ServerId = wo.Serv' +
+        'erDocumentLineId'
       'WHERE'
       '    CurrentOrderHeads.Frozen = 0 '
       'and c.ClientId = CurrentOrderHeads.ClientId'
@@ -807,7 +818,12 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    Producers.Name as ProducerName,'
-      '    c.Name As AddressName'
+      '    c.Name As AddressName,'
+      '    dbodies.ServerId as ServerDocumentLineId,'
+      '    dbodies.RejectId,'
+      '    dbodies.ServerDocumentId,'
+      '    dbodies.SupplierCost,'
+      '    dbodies.Quantity as WaybillQuantity'
       'FROM'
       '   ('
       '    PricesData,'
@@ -835,6 +851,12 @@ inherited SummaryForm: TSummaryForm
       
         '    LEFT JOIN SynonymFirmCr ON PostedOrderLists.SynonymFirmCrCod' +
         'e=SynonymFirmCr.SynonymFirmCrCode'
+      
+        '  left join waybillorders wo on wo.ServerOrderListId = PostedOrd' +
+        'erLists.ServerOrderListId'
+      
+        '  left join documentbodies dbodies on dbodies.ServerId = wo.Serv' +
+        'erDocumentLineId'
       'WHERE'
       '    PostedOrderLists.OrderId=PostedOrderHeads.OrderId'
       'and PostedOrderLists.OrderCount>0'
@@ -928,7 +950,12 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Id as MnnId,'
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
-      '    Producers.Name as ProducerName'
+      '    Producers.Name as ProducerName,'
+      '    dbodies.ServerId as ServerDocumentLineId,'
+      '    dbodies.RejectId,'
+      '    dbodies.ServerDocumentId,'
+      '    dbodies.SupplierCost,'
+      '    dbodies.Quantity as WaybillQuantity'
       'FROM'
       '   ('
       '    PricesData,'
@@ -950,6 +977,12 @@ inherited SummaryForm: TSummaryForm
       
         '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
         'de=SynonymFirmCr.SynonymFirmCrCode'
+      
+        '  left join waybillorders wo on wo.ServerOrderListId = CurrentOr' +
+        'derLists.ServerOrderListId'
+      
+        '  left join documentbodies dbodies on dbodies.ServerId = wo.Serv' +
+        'erDocumentLineId'
       'WHERE'
       '    CurrentOrderHeads.OrderId = :OrdersOrderId'
       'and CurrentOrderHeads.Frozen = 0 '
@@ -1015,7 +1048,12 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    Producers.Name as ProducerName,'
-      '    c.Name As AddressName'
+      '    c.Name As AddressName,'
+      '    dbodies.ServerId as ServerDocumentLineId,'
+      '    dbodies.RejectId,'
+      '    dbodies.ServerDocumentId,'
+      '    dbodies.SupplierCost,'
+      '    dbodies.Quantity as WaybillQuantity'
       'FROM'
       '   ('
       '    PricesData,'
@@ -1038,6 +1076,12 @@ inherited SummaryForm: TSummaryForm
       
         '    LEFT JOIN SynonymFirmCr ON CurrentOrderLists.SynonymFirmCrCo' +
         'de=SynonymFirmCr.SynonymFirmCrCode'
+      
+        '  left join waybillorders wo on wo.ServerOrderListId = CurrentOr' +
+        'derLists.ServerOrderListId'
+      
+        '  left join documentbodies dbodies on dbodies.ServerId = wo.Serv' +
+        'erDocumentLineId'
       'WHERE'
       '    CurrentOrderHeads.Frozen = 0 '
       'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
@@ -1050,6 +1094,7 @@ inherited SummaryForm: TSummaryForm
       'and Regions.RegionCode = CurrentOrderHeads.RegionCode')
     BeforeUpdateExecute = BeforeUpdateExecuteForClientID
     RefreshOptions = [roAfterUpdate]
+    AfterOpen = adsSummaryAfterOpen
     BeforeInsert = adsSummaryBeforeInsert
     BeforePost = adsSummary2BeforePost
     AfterPost = adsSummary2AfterPost
@@ -1239,6 +1284,21 @@ inherited SummaryForm: TSummaryForm
     object adsSummaryMarkup: TFloatField
       FieldName = 'Markup'
     end
+    object adsSummaryServerDocumentLineId: TLargeintField
+      FieldName = 'ServerDocumentLineId'
+    end
+    object adsSummaryRejectId: TLargeintField
+      FieldName = 'RejectId'
+    end
+    object adsSummaryServerDocumentId: TLargeintField
+      FieldName = 'ServerDocumentId'
+    end
+    object adsSummarySupplierCost: TFloatField
+      FieldName = 'SupplierCost'
+    end
+    object adsSummaryWaybillQuantity: TIntegerField
+      FieldName = 'WaybillQuantity'
+    end
   end
   object tmrFillReport: TTimer
     Enabled = False
@@ -1246,5 +1306,223 @@ inherited SummaryForm: TSummaryForm
     OnTimer = tmrFillReportTimer
     Left = 424
     Top = 104
+  end
+  object dsDocumentBodies: TDataSource
+    DataSet = adsDocumentBodies
+    Left = 152
+    Top = 243
+  end
+  object adsDocumentBodies: TMyQuery
+    SQLRefresh.Strings = (
+      'select'
+      'Id,'
+      'dbodies.DocumentId,'
+      'dbodies.ServerId,'
+      'dbodies.ServerDocumentId,'
+      'dbodies.Product,'
+      'dbodies.Code,'
+      'dbodies.Certificates,'
+      'dbodies.Period,'
+      'dbodies.Producer,'
+      'dbodies.Country,'
+      'dbodies.ProducerCost,'
+      'dbodies.RegistryCost,'
+      'dbodies.SupplierPriceMarkup,'
+      'dbodies.SupplierCostWithoutNDS,'
+      'dbodies.SupplierCost,'
+      'dbodies.Quantity,'
+      'dbodies.VitallyImportant,'
+      'dbodies.NDS,'
+      'dbodies.SerialNumber,'
+      'dbodies.RetailMarkup,'
+      'dbodies.ManualCorrection,'
+      'dbodies.ManualRetailPrice,'
+      'dbodies.Printed,'
+      'dbodies.Amount,'
+      'dbodies.NdsAmount,'
+      'dbodies.RetailAmount,'
+      'dbodies.Unit,'
+      'dbodies.ExciseTax,'
+      'dbodies.BillOfEntryNumber,'
+      'dbodies.EAN13,'
+      'dbodies.RequestCertificate,'
+      'dbodies.CertificateId,'
+      'cr.DocumentBodyId,'
+      'catalogs.Markup as CatalogMarkup,'
+      'catalogs.MaxMarkup as CatalogMaxMarkup,'
+      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
+      'from'
+      '  DocumentBodies dbodies'
+      
+        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
+        's.ServerId'
+      '  left join products p on p.productid = dbodies.productid'
+      '  left join catalogs on catalogs.fullcode = p.catalogid'
+      'where'
+      '  dbodies.Id = :OLD_Id')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      'select'
+      'Id,'
+      'dbodies.DocumentId,'
+      'dbodies.ServerId,'
+      'dbodies.ServerDocumentId,'
+      'dbodies.Product,'
+      'dbodies.Code,'
+      'dbodies.Certificates,'
+      'dbodies.Period,'
+      'dbodies.Producer,'
+      'dbodies.Country,'
+      'dbodies.ProducerCost,'
+      'dbodies.RegistryCost,'
+      'dbodies.SupplierPriceMarkup,'
+      'dbodies.SupplierCostWithoutNDS,'
+      'dbodies.SupplierCost,'
+      'dbodies.Quantity,'
+      'dbodies.VitallyImportant,'
+      'dbodies.NDS,'
+      'dbodies.SerialNumber,'
+      'dbodies.RetailMarkup,'
+      'dbodies.ManualCorrection,'
+      'dbodies.ManualRetailPrice,'
+      'dbodies.Printed,'
+      'dbodies.Amount,'
+      'dbodies.NdsAmount,'
+      'dbodies.RetailAmount,'
+      'dbodies.Unit,'
+      'dbodies.ExciseTax,'
+      'dbodies.BillOfEntryNumber,'
+      'dbodies.EAN13,'
+      'dbodies.RequestCertificate,'
+      'dbodies.CertificateId,'
+      'cr.DocumentBodyId,'
+      'catalogs.Markup as CatalogMarkup,'
+      'catalogs.MaxMarkup as CatalogMaxMarkup,'
+      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
+      'from'
+      '  DocumentBodies dbodies'
+      
+        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
+        's.ServerId'
+      '  left join products p on p.productid = dbodies.productid'
+      '  left join catalogs on catalogs.fullcode = p.catalogid'
+      'where'
+      '  dbodies.ServerDocumentId = :ServerDocumentId'
+      'order by dbodies.Product')
+    RefreshOptions = [roAfterInsert, roAfterUpdate]
+    KeyFields = 'Id'
+    Left = 208
+    Top = 251
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ServerDocumentId'
+      end>
+    object adsDocumentBodiesId: TLargeintField
+      FieldName = 'Id'
+    end
+    object adsDocumentBodiesDocumentId: TLargeintField
+      FieldName = 'DocumentId'
+    end
+    object adsDocumentBodiesProduct: TStringField
+      FieldName = 'Product'
+      Size = 255
+    end
+    object adsDocumentBodiesCode: TStringField
+      FieldName = 'Code'
+    end
+    object adsDocumentBodiesCertificates: TStringField
+      FieldName = 'Certificates'
+      Size = 50
+    end
+    object adsDocumentBodiesPeriod: TStringField
+      FieldName = 'Period'
+    end
+    object adsDocumentBodiesProducer: TStringField
+      FieldName = 'Producer'
+      Size = 255
+    end
+    object adsDocumentBodiesCountry: TStringField
+      FieldName = 'Country'
+      Size = 150
+    end
+    object adsDocumentBodiesProducerCost: TFloatField
+      FieldName = 'ProducerCost'
+    end
+    object adsDocumentBodiesRegistryCost: TFloatField
+      FieldName = 'RegistryCost'
+    end
+    object adsDocumentBodiesSupplierPriceMarkup: TFloatField
+      FieldName = 'SupplierPriceMarkup'
+    end
+    object adsDocumentBodiesSupplierCostWithoutNDS: TFloatField
+      FieldName = 'SupplierCostWithoutNDS'
+    end
+    object adsDocumentBodiesSupplierCost: TFloatField
+      FieldName = 'SupplierCost'
+    end
+    object adsDocumentBodiesQuantity: TIntegerField
+      FieldName = 'Quantity'
+    end
+    object adsDocumentBodiesVitallyImportant: TBooleanField
+      FieldName = 'VitallyImportant'
+    end
+    object adsDocumentBodiesSerialNumber: TStringField
+      FieldName = 'SerialNumber'
+      Size = 50
+    end
+    object adsDocumentBodiesPrinted: TBooleanField
+      FieldName = 'Printed'
+    end
+    object adsDocumentBodiesAmount: TFloatField
+      FieldName = 'Amount'
+    end
+    object adsDocumentBodiesNdsAmount: TFloatField
+      FieldName = 'NdsAmount'
+    end
+    object adsDocumentBodiesUnit: TStringField
+      FieldName = 'Unit'
+      Size = 0
+    end
+    object adsDocumentBodiesExciseTax: TFloatField
+      FieldName = 'ExciseTax'
+    end
+    object adsDocumentBodiesBillOfEntryNumber: TStringField
+      FieldName = 'BillOfEntryNumber'
+    end
+    object adsDocumentBodiesEAN13: TStringField
+      FieldName = 'EAN13'
+    end
+    object adsDocumentBodiesRequestCertificate: TBooleanField
+      FieldName = 'RequestCertificate'
+    end
+    object adsDocumentBodiesCertificateId: TLargeintField
+      FieldName = 'CertificateId'
+    end
+    object adsDocumentBodiesDocumentBodyId: TLargeintField
+      FieldName = 'DocumentBodyId'
+    end
+    object adsDocumentBodiesServerId: TLargeintField
+      FieldName = 'ServerId'
+    end
+    object adsDocumentBodiesServerDocumentId: TLargeintField
+      FieldName = 'ServerDocumentId'
+    end
+    object adsDocumentBodiesCatalogMarkup: TFloatField
+      FieldName = 'CatalogMarkup'
+    end
+    object adsDocumentBodiesCatalogMaxMarkup: TFloatField
+      FieldName = 'CatalogMaxMarkup'
+    end
+    object adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField
+      FieldName = 'CatalogMaxSupplierMarkup'
+    end
+  end
+  object tmrShowMatchWaybill: TTimer
+    Enabled = False
+    Interval = 350
+    OnTimer = tmrShowMatchWaybillTimer
+    Left = 304
+    Top = 196
   end
 end

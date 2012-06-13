@@ -23,6 +23,7 @@ const
   SDirPromotions = 'Promotions';
   SDirNetworkUpdate='AnalitFUpdate';
   SDirCertificates = 'Certificates';
+  SDirNews = 'News';
   SHTTPPrefix='http://';
   CRLF=#13#10;
 

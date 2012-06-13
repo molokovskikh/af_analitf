@@ -130,6 +130,12 @@ type
     adsDocumentBodiesCatalogMaxMarkup: TFloatField;
     adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField;
     shPositionFullUpdate: TStrHolder;
+    tmrShowMatchWaybill: TTimer;
+    adsOrdersServerDocumentLineId: TLargeintField;
+    adsOrdersRejectId: TLargeintField;
+    adsOrdersServerDocumentId: TLargeintField;
+    adsOrdersSupplierCost: TFloatField;
+    adsOrdersWaybillQuantity: TIntegerField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -154,6 +160,8 @@ type
     procedure dbmCommentExit(Sender: TObject);
     procedure dbmCommentKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure tmrShowMatchWaybillTimer(Sender: TObject);
+    procedure adsOrdersAfterOpen(DataSet: TDataSet);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
@@ -178,6 +186,7 @@ type
     procedure DeleteOrderPosition;
     procedure SetWaybillByPosition;
     procedure SetWaybillGrid;
+    procedure UpdateMatchWaybillTimer;
     procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
   protected
     procedure UpdateOrderDataset; override;
@@ -334,6 +343,9 @@ begin
   //ожидаемый товар выделяем зеленым
   if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
     Background := AWAIT_CLR;
+
+  if not adsOrdersRejectId.IsNull then
+    Background := RejectColor;  
 
   if FUseCorrectOrders and not adsOrdersDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
@@ -686,6 +698,7 @@ var
   CorrectMessage : String;
   newOrder, oldOrder, newCost, oldCost : String;
 begin
+  UpdateMatchWaybillTimer;
   if FUseCorrectOrders and not adsOrdersDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
     CorrectMessage := PositionSendResultText[PositionResult];
@@ -959,8 +972,16 @@ end;
 
 procedure TOrdersForm.SetWaybillByPosition;
 begin
-  adsDocumentBodies.MasterSource := dsOrders;
-  adsDocumentBodies.Open;
+  if adsDocumentBodies.Active then
+    adsDocumentBodies.Close;
+
+  if adsOrders.Active and not adsOrders.IsEmpty and not adsOrdersServerDocumentId.IsNull
+  then begin
+    adsDocumentBodies.ParamByName('ServerDocumentId').Value := adsOrdersServerDocumentId.Value;
+    adsDocumentBodies.Open;
+    if not adsDocumentBodies.Locate('ServerId', adsOrdersServerDocumentLineId.AsVariant, []) then
+      adsDocumentBodies.First;
+  end;
 end;
 
 procedure TOrdersForm.SetWaybillGrid;
@@ -988,12 +1009,7 @@ begin
     column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
     column := TDBGridHelper.AddColumn(dbgWaybill, 'NDS', 'НДС', dbgWaybill.Canvas.TextWidth('999'));
     column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCost', 'Цена поставщика с НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
-    TDBGridHelper.AddColumn(dbgWaybill, 'MaxRetailMarkup', 'Макс. розничная наценка', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'RetailMarkup', 'Розничная наценка', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'RealMarkup', 'Реальная наценка', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'RetailPrice', 'Розничная цена', dbgWaybill.Canvas.TextWidth('99999.99'));
     column := TDBGridHelper.AddColumn(dbgWaybill, 'Quantity', 'Заказ', dbgWaybill.Canvas.TextWidth('99999.99'));
-    TDBGridHelper.AddColumn(dbgWaybill, 'RetailSumm', 'Розничная сумма', dbgWaybill.Canvas.TextWidth('99999.99'));
   finally
     dbgWaybill.AutoFitColWidths := True;
   end;
@@ -1008,6 +1024,25 @@ procedure TOrdersForm.WaybillGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
 
+end;
+
+procedure TOrdersForm.tmrShowMatchWaybillTimer(Sender: TObject);
+begin
+  tmrShowMatchWaybill.Enabled := False;
+  SetWaybillByPosition;
+end;
+
+procedure TOrdersForm.UpdateMatchWaybillTimer;
+begin
+  if ClosedOrder then begin
+    tmrShowMatchWaybill.Enabled := False;
+    tmrShowMatchWaybill.Enabled := True;
+  end;
+end;
+
+procedure TOrdersForm.adsOrdersAfterOpen(DataSet: TDataSet);
+begin
+  UpdateMatchWaybillTimer;
 end;
 
 end.

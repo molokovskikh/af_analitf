@@ -632,6 +632,25 @@ begin
         currentHeader.ClientOrderId;
       FDataLayer.adcUpdate.Execute;
 
+      //Устанавливаем значение ServerOrderListId у отправленных позиций заказа
+      for J := 0 to currentHeader.OrderPositions.Count-1 do begin
+        currentPosition := TPostOrderPosition(currentHeader.OrderPositions[j]);
+        if currentPosition.DropReason = psrSuccess then begin
+          FDataLayer.adcUpdate.SQL.Text := ''
+            +'update '
+            +'  CurrentOrderLists '
+            +'set '
+            +'  ServerOrderListId = :ServerOrderListId '
+            +'where '
+            +'  CurrentOrderLists.ID = :ClientPositionId; ';
+          FDataLayer.adcUpdate.ParamByName('ServerOrderListId').Value :=
+            currentPosition.ServerOrderListId;
+          FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
+            currentPosition.ClientPositionID;
+          FDataLayer.adcUpdate.Execute;
+        end;
+      end;
+
       FDataLayer.adcUpdate.SQL.Text := ''
         +'insert into '
         +'  PostedOrderHeads '
@@ -659,7 +678,7 @@ begin
         +'   SupplierPriceMarkup, CoreQuantity, ServerCoreID, '
         +'   Unit, Volume, Note, Period, Doc, RegistryCost, VitallyImportant, '
         +'   RetailMarkup, ProducerCost, NDS, RetailCost, RetailVitallyImportant, '
-        +'   `Comment`) '
+        +'   `Comment`, ServerOrderListId) '
         +'select '
         +'   @LastPostedOrderId, CLIENTID, CoreId, ProductId, CodeFirmcr, SynonymCode, '
         +'   SynonymFirmCrCode, Code, CodeCr, SynonymName, SynonymFirm, '
@@ -668,7 +687,7 @@ begin
         +'   SupplierPriceMarkup, CoreQuantity, ServerCoreID, '
         +'   Unit, Volume, Note, Period, Doc, RegistryCost, VitallyImportant, '
         +'   RetailMarkup, ProducerCost, NDS, RetailCost, RetailVitallyImportant, '
-        +'   `Comment` '
+        +'   `Comment`, ServerOrderListId '
         +'from '
         +'  CurrentOrderLists '
         +'where '
@@ -692,25 +711,6 @@ begin
         Format('Заказ %d успешно отправлен, Id заказа на сервере: %d',
           [currentHeader.ClientOrderId,
           currentHeader.ServerOrderId]));
-
-      for J := 0 to currentHeader.OrderPositions.Count-1 do begin
-        currentPosition := TPostOrderPosition(currentHeader.OrderPositions[j]);
-        if currentPosition.DropReason = psrSuccess then begin
-          FDataLayer.adcUpdate.SQL.Text := ''
-            +'update '
-            +'  CurrentOrderLists '
-            +'set '
-            +'  ServerOrderListId = :ServerOrderListId '
-            +'where '
-            +'  CurrentOrderLists.ID = :ClientPositionId; ';
-          FDataLayer.adcUpdate.ParamByName('ServerOrderListId').Value :=
-            currentPosition.ServerOrderListId;
-          FDataLayer.adcUpdate.ParamByName('ClientPositionId').Value :=
-            currentPosition.ClientPositionID;
-          FDataLayer.adcUpdate.Execute;
-        end;
-      end;
-
 
       FExchangeParams.SendedOrders.Add(VarToStr(LastPostedOrderId));
     end;

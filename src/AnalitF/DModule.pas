@@ -1172,6 +1172,7 @@ begin
   if not DirectoryExists( RootFolder() + SDirReclame) then CreateDir( RootFolder() + SDirReclame);
   if not DirectoryExists( RootFolder() + SDirPromotions) then CreateDir( RootFolder() + SDirPromotions);
   if not DirectoryExists( RootFolder() + SDirCertificates) then CreateDir( RootFolder() + SDirCertificates);
+  if not DirectoryExists( RootFolder() + SDirNews) then CreateDir( RootFolder() + SDirNews);
 
   //if not DirectoryExists( RootFolder() + SDirContextReclame) then CreateDir( RootFolder() + SDirContextReclame);
   MainForm.SetUpdateDateTime;
@@ -1570,6 +1571,8 @@ begin
     SQL.Text:='truncate Schedules;'; Execute;
     MainForm.StatusText:='Очищаются результаты запросов сертификатов';
     SQL.Text:='truncate CertificateRequests;'; Execute;
+    MainForm.StatusText:='Очищаются новости';
+    SQL.Text:='truncate News;'; Execute;
     MainForm.StatusText:='Очищается время сжатия базы данных';
     SQL.Text:='update params set LastCompact = now() where ID = 0;'; Execute;
 

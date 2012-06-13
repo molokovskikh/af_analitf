@@ -57,7 +57,8 @@ TUpdateTable = (
   utSchedules,
   utCertificateRequests,
   utMails,
-  utAttachmentRequests
+  utAttachmentRequests,
+  utNews
 );
 
 TUpdateTables = set of TUpdateTable;
@@ -1312,6 +1313,8 @@ begin
   ExtractDocs(SDirCertificates);
   //Обрабатываем папку с рекламой
   ExtractReclame(RootFolder() + SDirIn + '\' + SDirReclame, RootFolder() + SDirReclame);
+  //Обрабатываем папку News
+  ExtractDocs(SDirNews);
 end;
 
 procedure TExchangeThread.CheckNewExe;
@@ -1470,6 +1473,7 @@ begin
   if (GetFileSize(RootFolder()+SDirIn+'\CertificateRequests.txt') > 0) then UpdateTables := UpdateTables + [utCertificateRequests];
   if (GetFileSize(RootFolder()+SDirIn+'\Mails.txt') > 0) then UpdateTables := UpdateTables + [utMails];
   if (GetFileSize(RootFolder()+SDirIn+'\AttachmentRequests.txt') > 0) then UpdateTables := UpdateTables + [utAttachmentRequests];
+  if (GetFileSize(RootFolder()+SDirIn+'\News.txt') > 0) then UpdateTables := UpdateTables + [utNews];
 
     //обновляем таблицы
     {
@@ -1758,6 +1762,12 @@ begin
       SQL.Text := 'delete from SupplierPromotions where Status = 0;';
       InternalExecute;
     end;
+  end;
+  if utNews in UpdateTables then begin
+    SQL.Text := 'truncate News;';
+    InternalExecute;
+    SQL.Text := GetLoadDataSQL('News', RootFolder()+SDirIn+'\News.txt');
+    InternalExecute;
   end;
 
   if utSchedules in UpdateTables then begin

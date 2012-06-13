@@ -282,7 +282,9 @@ type
     //Ignore
     doiAttachmentRequests,
     //Backup
-    doiWaybillOrders
+    doiWaybillOrders,
+    //Cumulative
+    doiNews
     );
 
   TRepairedObjects = set of TDatabaseObjectId;

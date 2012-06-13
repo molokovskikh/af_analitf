@@ -767,7 +767,8 @@ begin
 +'    `CryptRealPrice` , '
 +'    `RetailCost` , '
 +'    `RetailVitallyImportant` , '
-+'    `Comment`  ';
++'    `Comment` ,  '
++'    `ServerOrderListId`  ';
 end;
 
 function TCurrentOrderListsTable.GetCreateSQL(
@@ -816,6 +817,7 @@ begin
 +'    `RetailCost`      decimal(18,2) default null         , '
 +'    `RetailVitallyImportant` tinyint(1) not null default ''0'', '
 +'    `Comment` varchar(255) default null                  , '
++'    `ServerOrderListId` bigint(20) default null          , '
 +'    primary key (`ID`)                                   , '
 +'    unique key `PK_ORDERS` (`ID`)                        , '
 +'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '
