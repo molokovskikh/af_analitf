@@ -61,6 +61,9 @@ type
 
     procedure DeleteMails;
     procedure FillSelectedRows(Grid : TToughDBGrid);
+
+    procedure BodyEnter(Sender : TObject);
+    procedure BodyExit(Sender : TObject);
   public
     { Public declarations }
     dsMails : TDataSource;
@@ -322,6 +325,8 @@ begin
   dbmBody.Color := clBtnFace;
   dbmBody.DataField := 'Body';
   dbmBody.DataSource := dsMails;
+  dbmBody.OnEnter := BodyEnter;
+  dbmBody.OnExit := BodyExit;
 end;
 
 procedure TframeMiniMail.PrepareFrame;
@@ -557,6 +562,16 @@ begin
     SoftPost(mdAttachments);
   if Assigned(mdMails) then
     SoftPost(mdMails);
+end;
+
+procedure TframeMiniMail.BodyEnter(Sender: TObject);
+begin
+  dbmBody.Color := clWindowText;
+end;
+
+procedure TframeMiniMail.BodyExit(Sender: TObject);
+begin
+  dbmBody.Color := clBtnFace;
 end;
 
 end.
