@@ -490,7 +490,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   object adsDocumentBodies: TMyQuery
     SQLRefresh.Strings = (
       'select'
-      'Id,'
+      'dbodies.Id,'
       'dbodies.DocumentId,'
       'dbodies.ServerId,'
       'dbodies.ServerDocumentId,'
@@ -539,7 +539,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Connection = DM.MyConnection
     SQL.Strings = (
       'select'
-      'Id,'
+      'dbodies.Id,'
       'dbodies.DocumentId,'
       'dbodies.ServerId,'
       'dbodies.ServerDocumentId,'
@@ -575,7 +575,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.Markup as CatalogMarkup,'
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
-      'dbodies.RejectId'
+      'dbodies.RejectId,'
+      'ol.ServerOrderListId,'
+      'ol.OrderId'
       'from'
       '  DocumentBodies dbodies'
       
@@ -583,9 +585,17 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
         's.ServerId'
       '  left join products p on p.productid = dbodies.productid'
       '  left join catalogs on catalogs.fullcode = p.catalogid'
+      
+        '  left join waybillorders wo on wo.ServerDocumentLineId = dbodie' +
+        's.ServerId'
+      
+        '  left join postedorderlists ol on ol.ServerOrderListId = wo.Ser' +
+        'verOrderListId'
       'where'
       '  dbodies.DocumentId = :DocumentId')
     RefreshOptions = [roAfterInsert, roAfterUpdate]
+    AfterOpen = adsDocumentBodiesAfterOpen
+    AfterScroll = adsDocumentBodiesAfterScroll
     KeyFields = 'Id'
     Left = 208
     Top = 251
@@ -699,6 +709,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentBodiesRejectId: TLargeintField
       FieldName = 'RejectId'
+    end
+    object adsDocumentBodiesServerOrderListId: TLargeintField
+      FieldName = 'ServerOrderListId'
+    end
+    object adsDocumentBodiesOrderId: TLargeintField
+      FieldName = 'OrderId'
     end
   end
   object tmrPrintedChange: TTimer
@@ -903,113 +919,87 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
   end
   object adsOrder: TMyQuery
     Connection = DM.MyConnection
+    SQL.Strings = (
+      'SELECT '
+      '    ol.Id, '
+      '    ol.OrderId,'
+      '    ol.ClientId,'
+      '    ol.CoreId,'
+      '    products.catalogid as fullcode,'
+      '    catalogs.DescriptionId,'
+      '    catalogs.VitallyImportant as CatalogVitallyImportant,'
+      '    catalogs.MandatoryList as CatalogMandatoryList,'
+      '    catalogs.Markup,'
+      '    ol.productid,'
+      '    ol.codefirmcr,'
+      '    ol.synonymcode,'
+      '    ol.synonymfirmcrcode,'
+      '    ol.code,'
+      '    ol.codecr,'
+      '    ol.synonymname,'
+      '    ol.synonymfirm,'
+      '    ol.await,'
+      '    ol.junk,'
+      '    ol.ordercount,'
+      '    ol.RealPrice,'
+      '    ol.price,'
+      '    ol.OrderCount * ol.Price as RetailSumm,'
+      '    ol.VitallyImportant,'
+      '    core.requestratio,'
+      '    core.ordercost,'
+      '    core.minordercount,'
+      '    ol.requestratio as Ordersrequestratio,'
+      '    ol.ordercost as Ordersordercost,'
+      '    ol.minordercount as Ordersminordercount,'
+      '    ol.DropReason,'
+      '    ol.ServerCost,'
+      '    ol.ServerQuantity,'
+      '    ol.ProducerCost,'
+      '    ol.NDS,'
+      '    ol.SupplierPriceMarkup,'
+      '    Mnn.Id as MnnId,'
+      '    Mnn.Mnn,'
+      '    ol.RetailMarkup,'
+      '    ol.RetailCost,'
+      '    GroupMaxProducerCosts.MaxProducerCost,'
+      '    ol.Period,'
+      '    Producers.Name as ProducerName,'
+      '    ol.RetailVitallyImportant,'
+      '    ol.Comment,'
+      '    dbodies.ServerId as ServerDocumentLineId,'
+      '    dbodies.RejectId,'
+      '    dbodies.ServerDocumentId,'
+      '    dbodies.SupplierCost,'
+      '    dbodies.Quantity as WaybillQuantity'
+      'FROM '
+      '  PostedOrderLists ol'
+      '  left join products on products.productid = ol.productid'
+      '  left join catalogs on catalogs.fullcode = products.catalogid '
+      '  left join Producers on Producers.Id = ol.CodeFirmCr'
+      '  left join Mnn on mnn.Id = Catalogs.MnnId'
+      '  left join GroupMaxProducerCosts on '
+      '    (GroupMaxProducerCosts.ProductId = ol.productid) '
+      '    and (ol.CodeFirmCr = GroupMaxProducerCosts.ProducerId)'
+      '  left join core on core.coreid = ol.coreid'
+      
+        '  left join waybillorders wo on wo.ServerOrderListId = ol.Server' +
+        'OrderListId'
+      
+        '  left join documentbodies dbodies on dbodies.ServerId = wo.Serv' +
+        'erDocumentLineId'
+      'WHERE '
+      '    (ol.OrderId = :OrderId)'
+      'AND (OrderCount>0)'
+      'ORDER BY SynonymName, SynonymFirm')
     RefreshOptions = [roAfterInsert, roAfterUpdate]
     KeyFields = 'Id'
     Left = 208
     Top = 307
-    object LargeintField1: TLargeintField
-      FieldName = 'Id'
-    end
-    object LargeintField2: TLargeintField
-      FieldName = 'DocumentId'
-    end
-    object StringField1: TStringField
-      FieldName = 'Product'
-      Size = 255
-    end
-    object StringField2: TStringField
-      FieldName = 'Code'
-    end
-    object StringField3: TStringField
-      FieldName = 'Certificates'
-      Size = 50
-    end
-    object StringField4: TStringField
-      FieldName = 'Period'
-    end
-    object StringField5: TStringField
-      FieldName = 'Producer'
-      Size = 255
-    end
-    object StringField6: TStringField
-      FieldName = 'Country'
-      Size = 150
-    end
-    object FloatField1: TFloatField
-      FieldName = 'ProducerCost'
-    end
-    object FloatField2: TFloatField
-      FieldName = 'RegistryCost'
-    end
-    object FloatField3: TFloatField
-      FieldName = 'SupplierPriceMarkup'
-    end
-    object FloatField4: TFloatField
-      FieldName = 'SupplierCostWithoutNDS'
-    end
-    object FloatField5: TFloatField
-      FieldName = 'SupplierCost'
-    end
-    object IntegerField1: TIntegerField
-      FieldName = 'Quantity'
-    end
-    object BooleanField1: TBooleanField
-      FieldName = 'VitallyImportant'
-    end
-    object StringField7: TStringField
-      FieldName = 'SerialNumber'
-      Size = 50
-    end
-    object BooleanField2: TBooleanField
-      FieldName = 'Printed'
-      OnChange = adsDocumentBodiesPrintedChange
-    end
-    object FloatField6: TFloatField
-      FieldName = 'Amount'
-    end
-    object FloatField7: TFloatField
-      FieldName = 'NdsAmount'
-    end
-    object StringField8: TStringField
-      FieldName = 'Unit'
-      Size = 0
-    end
-    object FloatField8: TFloatField
-      FieldName = 'ExciseTax'
-    end
-    object StringField9: TStringField
-      FieldName = 'BillOfEntryNumber'
-    end
-    object StringField10: TStringField
-      FieldName = 'EAN13'
-    end
-    object BooleanField3: TBooleanField
-      FieldName = 'RequestCertificate'
-      OnChange = adsDocumentBodiesPrintedChange
-      OnValidate = adsDocumentBodiesRequestCertificateValidate
-    end
-    object LargeintField3: TLargeintField
-      FieldName = 'CertificateId'
-      OnGetText = adsDocumentBodiesCertificateIdGetText
-    end
-    object LargeintField4: TLargeintField
-      FieldName = 'DocumentBodyId'
-    end
-    object LargeintField5: TLargeintField
-      FieldName = 'ServerId'
-    end
-    object LargeintField6: TLargeintField
-      FieldName = 'ServerDocumentId'
-    end
-    object FloatField9: TFloatField
-      FieldName = 'CatalogMarkup'
-    end
-    object FloatField10: TFloatField
-      FieldName = 'CatalogMaxMarkup'
-    end
-    object FloatField11: TFloatField
-      FieldName = 'CatalogMaxSupplierMarkup'
-    end
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'OrderId'
+      end>
   end
   object dsOrder: TDataSource
     DataSet = adsOrder
@@ -1072,5 +1062,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '45414e3133203d203a45414e3133'
       '7768657265'
       '202064626f646965732e4964203d203a4f4c445f4964')
+  end
+  object tmrShowMatchOrder: TTimer
+    Enabled = False
+    Interval = 350
+    OnTimer = tmrShowMatchOrderTimer
+    Left = 432
+    Top = 172
   end
 end

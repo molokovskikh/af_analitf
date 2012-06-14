@@ -110,40 +110,12 @@ type
     shPositionFullUpdate: TStrHolder;
     shPositionUpdate: TStrHolder;
     adsOrder: TMyQuery;
-    LargeintField1: TLargeintField;
-    LargeintField2: TLargeintField;
-    StringField1: TStringField;
-    StringField2: TStringField;
-    StringField3: TStringField;
-    StringField4: TStringField;
-    StringField5: TStringField;
-    StringField6: TStringField;
-    FloatField1: TFloatField;
-    FloatField2: TFloatField;
-    FloatField3: TFloatField;
-    FloatField4: TFloatField;
-    FloatField5: TFloatField;
-    IntegerField1: TIntegerField;
-    BooleanField1: TBooleanField;
-    StringField7: TStringField;
-    BooleanField2: TBooleanField;
-    FloatField6: TFloatField;
-    FloatField7: TFloatField;
-    StringField8: TStringField;
-    FloatField8: TFloatField;
-    StringField9: TStringField;
-    StringField10: TStringField;
-    BooleanField3: TBooleanField;
-    LargeintField3: TLargeintField;
-    LargeintField4: TLargeintField;
-    LargeintField5: TLargeintField;
-    LargeintField6: TLargeintField;
-    FloatField9: TFloatField;
-    FloatField10: TFloatField;
-    FloatField11: TFloatField;
     dsOrder: TDataSource;
     shOrder: TStrHolder;
     adsDocumentBodiesRejectId: TLargeintField;
+    adsDocumentBodiesServerOrderListId: TLargeintField;
+    adsDocumentBodiesOrderId: TLargeintField;
+    tmrShowMatchOrder: TTimer;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -171,6 +143,9 @@ type
       var Text: String; DisplayText: Boolean);
     procedure adsDocumentBodiesRequestCertificateValidate(Sender: TField);
     procedure tmrShowCertificateWarningTimer(Sender: TObject);
+    procedure tmrShowMatchOrderTimer(Sender: TObject);
+    procedure adsDocumentBodiesAfterScroll(DataSet: TDataSet);
+    procedure adsDocumentBodiesAfterOpen(DataSet: TDataSet);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -275,6 +250,7 @@ type
     procedure sbDeleteRowClick(Sender: TObject);
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
+    procedure UpdateMatchOrderTimer;
     procedure OrderGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
   public
     { Public declarations }
@@ -415,6 +391,7 @@ var
   column : TColumnEh;
 begin
   pButtons.Visible := False;
+  dbgOrder.Visible := False;
   dbgDocumentBodies.MinAutoFitWidth := DBGridColumnMinWidth;
   dbgDocumentBodies.Flat := True;
   dbgDocumentBodies.Options := dbgDocumentBodies.Options + [dgRowLines];
@@ -431,6 +408,7 @@ begin
   dbgDocumentBodies.ShowHint := True;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     legeng.Visible := True;
+    dbgOrder.Visible := True;
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
@@ -439,6 +417,7 @@ begin
 
     if adsDocumentHeadersCreatedByUser.Value then begin
       legeng.Visible := False;
+      dbgOrder.Visible := False;
       pButtons.Visible := True;
       legeng.Visible := True;
       FWaybillDataSetState := [dsEdit, dsInsert];
@@ -719,6 +698,8 @@ begin
   FContextMenuGrid := TContextMenuGrid.Create(dbgDocumentBodies, DM.SaveGridMask);
 
   CreateLegenPanel();
+
+  SetOrderGrid();
 
   inherited;
 end;
@@ -2493,8 +2474,18 @@ end;
 
 procedure TDocumentBodiesForm.SetOrderByPosition;
 begin
-  adsOrder.MasterSource := dsDocumentBodies;
   adsOrder.Open;
+
+  if adsOrder.Active then
+    adsOrder.Close;
+
+  if adsDocumentBodies.Active and not adsDocumentBodies.IsEmpty and not adsDocumentBodiesOrderId.IsNull
+  then begin
+    adsOrder.ParamByName('OrderId').Value := adsDocumentBodiesOrderId.Value;
+    adsOrder.Open;
+    if not adsOrder.Locate('ServerDocumentLineId', adsDocumentBodiesServerId.AsVariant, []) then
+      adsOrder.First;
+  end;
 end;
 
 procedure TDocumentBodiesForm.SetOrderGrid;
@@ -2502,6 +2493,26 @@ begin
   dbgOrder := TToughDBGrid.Create(Self);
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgOrder);
+
+  dbgOrder.Parent := pGrid;
+  dbgOrder.Visible := False;
+  dbgOrder.Height := 200;
+  dbgOrder.Align := alBottom;
+
+  dbgOrder.AutoFitColWidths := False;
+  try
+    TDBGridHelper.AddColumn(dbgOrder, 'SynonymName', 'Наименование', 0);
+    TDBGridHelper.AddColumn(dbgOrder, 'SynonymFirm', 'Производитель', 0);
+    TDBGridHelper.AddColumn(dbgOrder, 'Period', 'Срок годности', 0);
+    TDBGridHelper.AddColumn(dbgOrder, 'Price', 'Цена', '0.00;;''''', 0);
+    TDBGridHelper.AddColumn(dbgOrder, 'OrderCount', 'Заказ', 0);
+    TDBGridHelper.AddColumn(dbgOrder, 'RetailSumm', 'Сумма', '0.00;;''''', 0);
+  finally
+    dbgOrder.AutoFitColWidths := True;
+  end;
+
+  dbgOrder.ReadOnly := False;
+
   dbgOrder.DataSource := dsOrder;
 end;
 
@@ -2510,6 +2521,32 @@ procedure TDocumentBodiesForm.OrderGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   //Здесь будет расскрасска грида
+end;
+
+procedure TDocumentBodiesForm.tmrShowMatchOrderTimer(Sender: TObject);
+begin
+  tmrShowMatchOrder.Enabled := False;
+  SetOrderByPosition;
+end;
+
+procedure TDocumentBodiesForm.UpdateMatchOrderTimer;
+begin
+  if dbgOrder.Visible then begin
+    tmrShowMatchOrder.Enabled := False;
+    tmrShowMatchOrder.Enabled := True;
+  end;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesAfterScroll(
+  DataSet: TDataSet);
+begin
+  UpdateMatchOrderTimer;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesAfterOpen(
+  DataSet: TDataSet);
+begin
+  UpdateMatchOrderTimer;
 end;
 
 end.
