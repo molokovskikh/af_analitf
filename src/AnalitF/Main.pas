@@ -17,7 +17,7 @@ uses
   StrUtils,
   U_MiniMailForm,
   HtmlView,
-  VistaAltFixUnit;
+  VistaAltFixUnit, StrHlder;
 
 type
 
@@ -167,6 +167,7 @@ TMainForm = class(TForm)
     HTMLViewer: THTMLViewer;
     pStartUp: TPanel;
     tmrStartUp: TTimer;
+    shIndexTemplate: TStrHolder;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -303,6 +304,9 @@ public
   //Существуют модальные окна, которые ждут ответа от пользователя
   //Это либо окно с настройками либо MessageBox
   function ModalExists : Boolean;
+  procedure GenerateIndexHtml;
+  function GetNews : String;
+  function GetReclame : String;
 end;
 
 var
@@ -953,7 +957,7 @@ begin
 
   if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
-    openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', HtmlViewer.Tag) + '.htm';
+    openFileName := RootFolder() + SDirReclame + '\' + 'index.html';
     if SysUtils.FileExists( openFileName ) then
     try
       HtmlViewer.LoadFromFile(openFileName);
@@ -973,7 +977,7 @@ begin
           'Ошибка при открытии пустой страницы в WebBrowserе в MainForm: ' + E.Message + #13#10 +
           'Системная ошибка: ' + SysErrorMessage(GetLastError()));
     end;
-    DeleteFilesByMask(RootFolder() + SDirReclame + '\*.*', False);
+    //DeleteFilesByMask(RootFolder() + SDirReclame + '\*.*', False);
   end;
   SetFocusOnMainForm;
 end;
@@ -2101,6 +2105,79 @@ procedure TMainForm.FormActivate(Sender: TObject);
 begin
   if JustRun then
     tmrStartUp.Enabled := True;
+end;
+
+procedure TMainForm.GenerateIndexHtml;
+var
+  sl : TStringList;
+begin
+  shIndexTemplate.MacroByName('Pro').Value := '%';
+  shIndexTemplate.MacroByName('TechContact').Value := DM.adsUser.FieldByName('TechContact').AsString;
+  shIndexTemplate.MacroByName('TechOperatingMode').Value := DM.adsUser.FieldByName('TechOperatingMode').AsString;
+  shIndexTemplate.MacroByName('News').Value := GetNews();
+  shIndexTemplate.MacroByName('Reclame').Value := GetReclame();
+  sl := TStringList.Create;
+  try
+    sl.Text := shIndexTemplate.ExpandMacros;
+    sl.SaveToFile(RootFolder() + SDirReclame + '\' + 'index.html');
+  finally
+    sl.Free;
+  end;
+end;
+
+function TMainForm.GetNews: String;
+var
+  I : Integer;
+  className : String;
+begin
+  Result := '';
+  DM.adsQueryValue.Close;
+  DM.adsQueryValue.SQL.Text := 'select Id, PublicationDate, header from news order by PublicationDate desc';
+
+  DM.adsQueryValue.Open;
+  try
+    if not DM.adsQueryValue.IsEmpty then begin
+      Result := '<table class="DataTable">';
+      I := 1;
+      while not DM.adsQueryValue.Eof do begin
+        className := IfThen(Odd(i), 'EvenRow', 'OddRow');
+        Result := Result +
+          Format('<tr class="%s"><td class="CellData"><a href="%s" target="_blank">%s</a>  %s</td></tr>',
+            [className,
+             RootFolder() + SDirNews + '\' + DM.adsQueryValue.FieldByName('Id').AsString + '.html',
+             DateToStr(DM.adsQueryValue.FieldByName('PublicationDate').AsDateTime),
+             DM.adsQueryValue.FieldByName('Header').AsString]);
+        Inc(i);
+        DM.adsQueryValue.Next;
+      end;
+      Result := Result + '</table>';
+    end;
+  finally
+    DM.adsQueryValue.Close;
+  end;
+end;
+
+function TMainForm.GetReclame: String;
+var
+  sl : TStringList;
+  fileName : String;
+  firstPos,
+  endPos : Integer;
+begin
+  Result := '';
+  fileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', HtmlViewer.Tag) + '.htm';
+  if FileExists(fileName) then begin
+    sl := TStringList.Create;
+    try
+      sl.LoadFromFile(fileName);
+      firstPos := Pos('<div>', sl.Text);
+      endPos := Pos('</div>', sl.Text);
+      if (firstPos > 0) and (endPos > 0) and (firstPos < endPos) then
+        Result := Copy(sl.Text, firstPos, endPos - firstPos + 6);
+    finally
+      sl.Free
+    end;
+  end;
 end;
 
 initialization
