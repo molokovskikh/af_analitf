@@ -254,6 +254,7 @@ var
   //Последний открытый каталог для отправки дефектуры
   LastUsedDir : String;
   LastUsedSaveDir : String;
+  LastBatchId : Int64;
 
   procedure ShowOrderBatch;
 
@@ -835,6 +836,8 @@ end;
 procedure TOrderBatchForm.UpdateOrderDataset;
 begin
   dbgOrderBatch.SetFocus;
+  if LastBatchId > 0 then
+    adsReport.Locate('Id', LastBatchId, []);
 end;
 
 procedure TOrderBatchForm.DeletePositions(Sender: TObject);
@@ -1588,6 +1591,7 @@ end;
 initialization
   LastUsedDir := ExePath;
   LastUsedSaveDir := ExePath;
+  LastBatchId := 0;
 end.
 
 
