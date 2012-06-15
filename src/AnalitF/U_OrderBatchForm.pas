@@ -161,6 +161,11 @@ type
     procedure SaveReportToFile(FileName : String);
     procedure SaveExcelReportToFile(FileName : String; exportServiceFields : Boolean);
     procedure SaveCSVReportToFile(FileName : String);
+
+    procedure adsCoreCalcFields(DataSet: TDataSet);
+    procedure adsCoreAfterPost(DataSet: TDataSet);
+    procedure adsCoreBeforeEdit(DataSet: TDataSet);
+    procedure adsCoreBeforePost(DataSet: TDataSet);
   public
     { Public declarations }
 
@@ -244,6 +249,63 @@ type
 
     framePosition : TframePosition;
     frameFilterAddresses : TframeFilterAddresses;
+
+    //Поля для Core
+    adsCoreCoreId: TLargeintField;
+    adsCorePriceCode: TLargeintField;
+    adsCoreRegionCode: TLargeintField;
+    adsCoreProductid: TLargeintField;
+    adsCoreShortcode: TLargeintField;
+    adsCoreCodeFirmCr: TLargeintField;
+    adsCoreSynonymCode: TLargeintField;
+    adsCoreSynonymFirmCrCode: TLargeintField;
+    adsCoreCode: TStringField;
+    adsCoreCodeCr: TStringField;
+    adsCorePeriod: TStringField;
+    adsCoreVolume: TStringField;
+    adsCoreNote: TStringField;
+    adsCoreCost: TFloatField;
+    adsCoreQuantity: TStringField;
+    adsCoreAwait: TBooleanField;
+    adsCoreJunk: TBooleanField;
+    adsCoreDoc: TStringField;
+    adsCoreRegistryCost: TFloatField;
+    adsCoreVitallyImportant: TBooleanField;
+    adsCoreRequestRatio: TIntegerField;
+    adsCoreOrderCost: TFloatField;
+    adsCoreMinOrderCount: TIntegerField;
+    adsCoreSynonymName: TStringField;
+    adsCoreSynonymFirm: TStringField;
+    adsCoreDatePrice: TDateTimeField;
+    adsCorePriceName: TStringField;
+    adsCorePriceEnabled: TBooleanField;
+    adsCoreFirmCode: TLargeintField;
+    adsCoreStorage: TBooleanField;
+    adsCoreRegionName: TStringField;
+    adsCoreFullcode: TLargeintField;
+    adsCoreRealCost: TFloatField;
+    adsCoreSupplierPriceMarkup: TFloatField;
+    adsCoreProducerCost: TFloatField;
+    adsCoreNDS: TSmallintField;
+    adsCoreMnnId: TLargeintField;
+    adsCoreMnn: TStringField;
+    adsCoreDescriptionId: TLargeintField;
+    adsCoreCatalogVitallyImportant: TBooleanField;
+    adsCoreCatalogMandatoryList: TBooleanField;
+    adsCoreMaxProducerCost: TFloatField;
+    adsCoreBuyingMatrixType: TIntegerField;
+    adsCoreProducerName: TStringField;
+
+    adsCoreOrdersOrderId: TLargeintField;
+    adsCoreOrdersHOrderId: TLargeintField;
+    adsCoreOrderCount: TIntegerField;
+    adsCoreSumOrder: TFloatField;
+    adsCoreMarkup: TFloatField;
+
+    adsCorePriceRet: TCurrencyField;
+    adsCoreRetailVitallyImportant: TBooleanField;
+
+    adsCoreNamePromotionsCount: TIntegerField;
 
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
@@ -622,6 +684,14 @@ begin
   adsCore.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   adsCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
 
+  adsCore.OnCalcFields := adsCoreCalcFields;
+  adsCore.BeforeUpdateExecute := BeforeUpdateExecuteForClientID;
+  adsCore.AfterPost := adsCoreAfterPost;
+  adsCore.BeforeEdit := adsCoreBeforeEdit;
+  adsCore.BeforePost := adsCoreBeforePost;
+  
+  adsCore.RefreshOptions := [roAfterUpdate];
+  
   dsCore := TDataSource.Create(Self);
   dsCore.DataSet := adsCore;
 end;
@@ -729,6 +799,16 @@ begin
   CreateNonVisualComponent;
   CreateVisualComponent;
 
+  dsCheckVolume := adsCore;
+  dgCheckVolume := dbgCore;
+  fOrder := adsCoreOrderCount;
+  fVolume := adsCoreRequestRatio;
+  fOrderCost := adsCoreOrderCost;
+  fSumOrder := adsCoreSumOrder;
+  fMinOrderCount := adsCoreMinOrderCount;
+  fBuyingMatrixType := adsCoreBuyingMatrixType;
+  SortOnOrderGrid := False;
+  
   inherited;
 
   framePosition := TframePosition.AddFrame(Self, pGrid, dsReport, 'SynonymName', 'MnnId', ShowDescriptionAction);
@@ -1585,6 +1665,118 @@ begin
     end;
   finally
     DM.adsQueryValue.Close;
+  end;
+end;
+
+procedure TOrderBatchForm.adsCoreAfterPost(DataSet: TDataSet);
+begin
+  MainForm.SetOrdersInfo;
+end;
+
+procedure TOrderBatchForm.adsCoreBeforeEdit(DataSet: TDataSet);
+begin
+  if adsCoreFirmCode.AsInteger = RegisterId then Abort;
+end;
+
+procedure TOrderBatchForm.adsCoreBeforePost(DataSet: TDataSet);
+var
+  Quantity, E: Integer;
+  PriceAvg,
+  OrderCountAvg: Double;
+  PanelCaption : String;
+begin
+  try
+    { проверяем заказ на соответствие наличию товара на складе }
+    Val( adsCoreQuantity.AsString,Quantity,E);
+    if E<>0 then Quantity := 0;
+    if ( Quantity > 0) and ( adsCoreORDERCOUNT.AsInteger > Quantity) 
+    then begin
+      AProc.MessageBox(
+        'Заказ превышает остаток на складе, товар будет заказан в количестве ' + adsCoreQuantity.AsString,
+        MB_ICONWARNING);
+      adsCoreORDERCOUNT.AsInteger := Quantity;
+    end;
+
+    PanelCaption := '';
+
+    if (adsCoreBuyingMatrixType.Value > 0) and (adsCoreORDERCOUNT.AsInteger > 0)
+    then begin
+      if (adsCoreBuyingMatrixType.Value = 1) then begin
+        PanelCaption := DisableProductOrderMessage;
+
+        ShowOverCostPanel(PanelCaption, dbgCore);
+
+        Abort;
+      end;
+    end;
+
+    { проверяем на превышение цены }
+{
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      PriceAvg := adsAvgOrdersPRICEAVG.AsCurrency;
+      if ( PriceAvg > 0) and ( adsCoreCOST.AsCurrency>PriceAvg*( 1 + Excess / 100)) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgCostMessage
+        else
+          PanelCaption := ExcessAvgCostMessage;
+      end;
+    end;
+ }   
+
+    { проверяем на превышение заказанного количества }
+{
+    if ( adsCoreORDERCOUNT.AsInteger>0) and (not adsAvgOrdersPRODUCTID.IsNull) then
+    begin
+      OrderCountAvg := adsAvgOrdersOrderCountAvg.AsCurrency;
+      if ( OrderCountAvg > 0) and ( adsCoreORDERCOUNT.AsInteger > OrderCountAvg*ExcessAvgOrderTimes ) then
+      begin
+        if Length(PanelCaption) > 0 then
+          PanelCaption := PanelCaption + #13#10 + ExcessAvgOrderCountMessage
+        else
+          PanelCaption := ExcessAvgOrderCountMessage;
+      end;
+    end;
+}
+
+    if (adsCoreJUNK.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + OrderJunkMessage
+      else
+        PanelCaption := OrderJunkMessage;
+
+    if (adsCoreORDERCOUNT.AsInteger > WarningOrderCount) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
+      else
+        PanelCaption := WarningOrderCountMessage;
+
+    if Length(PanelCaption) > 0 then
+      ShowOverCostPanel(PanelCaption, dbgCore);
+
+  except
+    adsCore.Cancel;
+    raise;
+  end;
+end;
+
+procedure TOrderBatchForm.adsCoreCalcFields(DataSet: TDataSet);
+begin
+  try
+    if FAllowDelayOfPayment and not FShowSupplierCost then
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreCost.AsCurrency,
+          adsCoreMarkup.AsVariant)
+    else
+      adsCorePriceRet.AsCurrency :=
+        DM.GetRetailCostLast(
+          adsCoreRetailVitallyImportant.Value,
+          adsCoreRealCost.AsCurrency,
+          adsCoreMarkup.AsVariant);
+  except
   end;
 end;
 
