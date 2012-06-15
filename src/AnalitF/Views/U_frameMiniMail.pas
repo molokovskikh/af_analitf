@@ -7,6 +7,7 @@ uses
   Dialogs,
   StdCtrls,
   ExtCtrls,
+  StrUtils,
   DB,
   DBCtrls,
   Buttons,
@@ -28,13 +29,16 @@ uses
 
 type
   TframeMiniMail = class(TFrame)
+    tmrSearch: TTimer;
     procedure FrameResize(Sender: TObject);
+    procedure tmrSearchTimer(Sender: TObject);
   private
     { Private declarations }
     FCanvas : TCanvas;
     //Список выбранных строк в гридах
     FSelectedRows : TStringList;
 
+    InternalSearchText : String;
     procedure CreateVisualComponent;
     procedure CreateNonVisualComponent;
 
@@ -64,6 +68,14 @@ type
 
     procedure BodyEnter(Sender : TObject);
     procedure BodyExit(Sender : TObject);
+
+    procedure SetClear;
+    procedure InternalSearch;
+    procedure SearchFilterRecord(DataSet: TDataSet; var Accept: Boolean);
+    procedure AddKeyToSearch(Key : Char);
+    procedure eSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure eSearchKeyPress(Sender: TObject; var Key: Char);
   public
     { Public declarations }
     dsMails : TDataSource;
@@ -572,6 +584,74 @@ end;
 procedure TframeMiniMail.BodyExit(Sender: TObject);
 begin
   dbmBody.Color := clBtnFace;
+end;
+
+procedure TframeMiniMail.tmrSearchTimer(Sender: TObject);
+begin
+  tmrSearch.Enabled := False;
+  if (Length(eSearch.Text) > 2) then begin
+    InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
+    InternalSearch;
+    eSearch.Text := '';
+  end
+  else
+    if Length(eSearch.Text) = 0 then
+      SetClear;
+end;
+
+procedure TframeMiniMail.InternalSearch;
+begin
+  DBProc.SetFilterProc(mdMails, SearchFilterRecord);
+
+  mdMails.First;
+
+  dbgMailHeaders.SetFocus;
+end;
+
+procedure TframeMiniMail.SetClear;
+begin
+  tmrSearch.Enabled := False;
+  eSearch.Text := '';
+  InternalSearchText := '';
+  DBProc.SetFilterProc(mdMails, nil);
+end;
+
+procedure TframeMiniMail.SearchFilterRecord(DataSet: TDataSet;
+  var Accept: Boolean);
+begin
+  Accept := AnsiContainsText(fSupplierName.DisplayText, InternalSearchText)
+    or AnsiContainsText(fSubject.DisplayText, InternalSearchText)
+    or AnsiContainsText(fBody.DisplayText, InternalSearchText);
+end;
+
+procedure TframeMiniMail.AddKeyToSearch(Key: Char);
+begin
+  if Ord(Key) >= 32 then begin
+    tmrSearch.Enabled := False;
+    if not eSearch.Focused then
+      eSearch.Text := eSearch.Text + Key;
+    tmrSearch.Enabled := True;
+  end;
+end;
+
+procedure TframeMiniMail.eSearchKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    tmrSearchTimer(nil);
+  end
+  else
+    if Key = VK_ESCAPE then
+      SetClear;
+end;
+
+procedure TframeMiniMail.eSearchKeyPress(Sender: TObject; var Key: Char);
+begin
+  tmrSearch.Enabled := False;
+  AddKeyToSearch(Key);
+  //Если мы что-то нажали в элементе, то должны на это отреагировать
+  if Ord(Key) <> VK_RETURN then
+    tmrSearch.Enabled := True;
 end;
 
 end.
