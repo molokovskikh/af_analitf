@@ -116,6 +116,7 @@ type
     adsDocumentBodiesServerOrderListId: TLargeintField;
     adsDocumentBodiesOrderId: TLargeintField;
     tmrShowMatchOrder: TTimer;
+    tmRunRequestCertificate: TTimer;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -146,6 +147,7 @@ type
     procedure tmrShowMatchOrderTimer(Sender: TObject);
     procedure adsDocumentBodiesAfterScroll(DataSet: TDataSet);
     procedure adsDocumentBodiesAfterOpen(DataSet: TDataSet);
+    procedure tmRunRequestCertificateTimer(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -170,6 +172,7 @@ type
     pButtons : TPanel;
     sbAdd : TSpeedButton;
     sbDelete : TSpeedButton;
+    sbRequestCertificates : TSpeedButton;
 
 
     internalWaybillReportParams : TWaybillReportParams;
@@ -248,6 +251,7 @@ type
     function AllowRealValue(text : String) : Boolean;
     procedure sbAddRowClick(Sender: TObject);
     procedure sbDeleteRowClick(Sender: TObject);
+    procedure sbRequestCertificatesClick(Sender: TObject);
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
     procedure UpdateMatchOrderTimer;
@@ -2020,6 +2024,14 @@ begin
   sbDelete.Width := Self.Canvas.TextWidth(sbDelete.Caption) + 20;
   sbDelete.OnClick := sbDeleteRowClick;
 
+  sbRequestCertificates := TSpeedButton.Create(Self);
+  sbRequestCertificates.Parent := pButtons;
+  sbRequestCertificates.Top := 8;
+  sbRequestCertificates.Left := sbDelete.Left + sbDelete.Width + 5;
+  sbRequestCertificates.Caption := 'Получить сертификаты';
+  sbRequestCertificates.Width := Self.Canvas.TextWidth(sbRequestCertificates.Caption) + 20;
+  sbRequestCertificates.OnClick := sbRequestCertificatesClick;
+
 
   legeng := TframeBaseLegend.Create(Self);
   legeng.Parent := pGrid;
@@ -2547,6 +2559,18 @@ procedure TDocumentBodiesForm.adsDocumentBodiesAfterOpen(
   DataSet: TDataSet);
 begin
   UpdateMatchOrderTimer;
+end;
+
+procedure TDocumentBodiesForm.tmRunRequestCertificateTimer(
+  Sender: TObject);
+begin
+  tmRunRequestCertificate.Enabled := False;
+  MainForm.actWayBill.Execute;
+end;
+
+procedure TDocumentBodiesForm.sbRequestCertificatesClick(Sender: TObject);
+begin
+  tmRunRequestCertificate.Enabled := True;
 end;
 
 end.

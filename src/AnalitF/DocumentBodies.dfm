@@ -1070,4 +1070,11 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Left = 432
     Top = 172
   end
+  object tmRunRequestCertificate: TTimer
+    Enabled = False
+    Interval = 300
+    OnTimer = tmRunRequestCertificateTimer
+    Left = 376
+    Top = 232
+  end
 end
