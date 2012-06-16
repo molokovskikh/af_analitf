@@ -24,14 +24,17 @@ uses
   DataSetHelper,
   DBProc,
   Constant,
+  Exchange,
   U_ExchangeLog,
   U_frameBaseLegend;
 
 type
   TframeMiniMail = class(TFrame)
     tmrSearch: TTimer;
+    tmrRunRequestAttachments: TTimer;
     procedure FrameResize(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
+    procedure tmrRunRequestAttachmentsTimer(Sender: TObject);
   private
     { Private declarations }
     FCanvas : TCanvas;
@@ -76,6 +79,8 @@ type
     procedure eSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure eSearchKeyPress(Sender: TObject; var Key: Char);
+
+    procedure sbRequestAttachmentsClick(Sender : TObject);
   public
     { Public declarations }
     dsMails : TDataSource;
@@ -110,6 +115,7 @@ type
     eSearch : TEdit;
     pActions : TPanel;
     sbDelete : TSpeedButton;
+    sbRequestAttachments : TSpeedButton;
     legend : TframeBaseLegend;
 
     dbgMailHeaders : TToughDBGrid;
@@ -220,6 +226,16 @@ begin
   sbDelete.Left := 5;
   sbDelete.Top := 8;
   sbDelete.OnClick := sbDeleteClick;
+
+  sbRequestAttachments := TSpeedButton.Create(Self);
+  sbRequestAttachments.Height := 25;
+  sbRequestAttachments.Caption := 'Получить вложения';
+  sbRequestAttachments.Parent := pActions;
+  sbRequestAttachments.Width := FCanvas.TextWidth(sbRequestAttachments.Caption) + 20;
+  sbRequestAttachments.Left := 5;
+  sbRequestAttachments.Top := 8;
+  sbRequestAttachments.OnClick := sbDeleteClick;
+
   pFilter.Height := sbDelete.Height + 15;
 
   legend := TframeBaseLegend.Create(Self);
@@ -652,6 +668,17 @@ begin
   //Если мы что-то нажали в элементе, то должны на это отреагировать
   if Ord(Key) <> VK_RETURN then
     tmrSearch.Enabled := True;
+end;
+
+procedure TframeMiniMail.sbRequestAttachmentsClick(Sender: TObject);
+begin
+  tmrRunRequestAttachments.Enabled := True
+end;
+
+procedure TframeMiniMail.tmrRunRequestAttachmentsTimer(Sender: TObject);
+begin
+  tmrRunRequestAttachments.Enabled := False;
+  RunExchange([eaRequestAttachments])
 end;
 
 end.

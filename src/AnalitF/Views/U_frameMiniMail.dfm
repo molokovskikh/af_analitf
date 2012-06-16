@@ -12,4 +12,11 @@ object frameMiniMail: TframeMiniMail
     Left = 58
     Top = 53
   end
+  object tmrRunRequestAttachments: TTimer
+    Enabled = False
+    Interval = 350
+    OnTimer = tmrRunRequestAttachmentsTimer
+    Left = 104
+    Top = 48
+  end
 end

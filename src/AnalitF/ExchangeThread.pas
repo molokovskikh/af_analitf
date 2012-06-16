@@ -268,7 +268,7 @@ begin
       ImportComplete := False;
       repeat
       try
-      if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+      if ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [])
       then
       begin
         FirstResponseServer := False;
@@ -325,7 +325,7 @@ begin
 
         TotalProgress := 20;
         Synchronize( SetTotalProgress);
-        if ([eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+        if ([eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [])
            and not DM.NeedCommitExchange
         then
         begin
@@ -385,7 +385,7 @@ begin
       end;
 
       { Распаковка файлов }
-      if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> [])
+      if ( [eaGetPrice, eaImportOnly, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [])
       then
         UnpackFiles;
 
@@ -395,7 +395,7 @@ begin
         UnpackFiles;
 
       { Поддтверждение обмена }
-      if [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []
+      if [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaRequestAttachments] * ExchangeForm.ExchangeActs <> []
       then
         CommitExchange;
 
@@ -431,6 +431,10 @@ begin
         ImportDocs;
         ImportCertificates();
       end;
+
+      if ([eaGetHistoryOrders, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [])
+      then
+        ImportMails;
 
       if ( [eaGetPrice, eaImportOnly, eaPostOrderBatch] * ExchangeForm.ExchangeActs <> []) then
       begin

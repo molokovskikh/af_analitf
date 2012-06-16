@@ -30,7 +30,8 @@ type
     eaForceSendOrders,
     eaSendWaybills,
     eaPostOrderBatch,
-    eaGetHistoryOrders);
+    eaGetHistoryOrders,
+    eaRequestAttachments);
 
   TExchangeActions=set of TExchangeAction;
 
@@ -140,7 +141,7 @@ begin
 
   if GetNetworkSettings().IsNetworkVersion then begin
     if GetNetworkSettings.DisableUpdate
-      and ([eaGetPrice, eaGetFullData, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * AExchangeActions <> [])
+      and ([eaGetPrice, eaGetFullData, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders, eaRequestAttachments] * AExchangeActions <> [])
     then
       Exit;
     if GetNetworkSettings.DisableSendOrders and (eaSendOrders in AExchangeActions)
@@ -335,7 +336,7 @@ begin
   if Result and (( eaGetPrice in AExchangeActions) or
     ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
     or (eaImportOnly in AExchangeActions) or (eaPostOrderBatch in AExchangeActions)
-    or (eaGetHistoryOrders in AExchangeActions))
+    or (eaGetHistoryOrders in AExchangeActions) or (eaRequestAttachments in AExchangeActions))
   then
     DM.ProcessDocs(GlobalExchangeParams.ImportDocs);
 
