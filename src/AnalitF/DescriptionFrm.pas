@@ -11,11 +11,15 @@ type
     pButton: TPanel;
     btnOk: TButton;
     RxRichEdit: TRxRichEdit;
+    PrintDialog: TPrintDialog;
+    btnPrint: TButton;
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure btnPrintClick(Sender: TObject);
   private
     { Private declarations }
+    catalogName : String;
     slDesc : TStringList;
     procedure reDescriptionKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -72,6 +76,7 @@ begin
   FDescriptionForm := TDescriptionForm.Create(nil);
   try
     Name := dataSet.FieldByName('Name').AsString;
+    FDescriptionForm.catalogName := Name;
     EnglishName := dataSet.FieldByName('EnglishName').AsString;
 
     FDescriptionForm.ControlStyle := FDescriptionForm.ControlStyle - [csParentBackground] + [csOpaque];
@@ -147,8 +152,14 @@ begin
 end;
 
 procedure TDescriptionForm.FormResize(Sender: TObject);
+const
+  interval = 20;
+var
+  allWidth : Integer;
 begin
-  btnOk.Left := (pButton.ClientWidth div 2) - (btnOk.Width div 2); 
+  allWidth := btnOk.Width + interval + btnPrint.Width;
+  btnOk.Left := (pButton.ClientWidth div 2) - (allWidth div 2);
+  btnPrint.Left := btnOk.Left + btnOk.Width + interval;
 end;
 
 procedure TDescriptionForm.FormCreate(Sender: TObject);
@@ -170,6 +181,7 @@ begin
   inputDesc := Trim(inputDesc);
   if Length(inputDesc) > 0 then begin
     inputDesc := StringReplace(inputDesc, #151, '-', [rfReplaceAll]);
+    inputDesc := StringReplace(inputDesc, #150, '-', [rfReplaceAll]);
     slDesc.Clear;
     slDesc.Text := inputDesc;
     for I := 0 to slDesc.Count-1 do
@@ -177,6 +189,12 @@ begin
   end
   else
     edit.Lines.Add(inputDesc);
+end;
+
+procedure TDescriptionForm.btnPrintClick(Sender: TObject);
+begin
+  if PrintDialog.Execute() then
+    RxRichEdit.Print('Печать описания ' + catalogName);
 end;
 
 end.

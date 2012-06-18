@@ -31,6 +31,15 @@ inherited DescriptionForm: TDescriptionForm
       ModalResult = 1
       TabOrder = 0
     end
+    object btnPrint: TButton
+      Left = 408
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = #1055#1077#1095#1072#1090#1100
+      TabOrder = 1
+      OnClick = btnPrintClick
+    end
   end
   object RxRichEdit: TRxRichEdit
     Left = 0
@@ -39,5 +48,9 @@ inherited DescriptionForm: TDescriptionForm
     Height = 421
     Align = alClient
     TabOrder = 1
+  end
+  object PrintDialog: TPrintDialog
+    Left = 184
+    Top = 312
   end
 end
