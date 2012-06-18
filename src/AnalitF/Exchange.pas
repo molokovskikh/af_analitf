@@ -332,6 +332,10 @@ begin
     NeedRetrySendOrder := True;
   end;
 
+  //Если успешный результат и есть полученные вложения мини-почты, то открываем файлы
+  if Result and (GlobalExchangeParams.RecievedAttachments.Count > 0) then
+    DM.ShowAttachments(GlobalExchangeParams.RecievedAttachments);
+
   //Пробуем открыть полученные накладные, отказы и документы от АК Инфорум
   if Result and (( eaGetPrice in AExchangeActions) or
     ( eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)

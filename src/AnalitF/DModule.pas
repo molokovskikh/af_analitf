@@ -598,6 +598,8 @@ type
     function OpenAttachment(attachmentId : Int64) : Integer;
 
     procedure StartUp;
+
+    procedure ShowAttachments(fileList : TStringList);
   end;
 
 var
@@ -2444,12 +2446,11 @@ begin
       if not OnlyDirOpen then
         OnlyDirOpen :=
           (
-            DocsFL.Count
-            + IfThen(not ImportDocs and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean, WaybillsFL.Count, 0)
+            IfThen(not ImportDocs and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean, WaybillsFL.Count, 0)
             + IfThen(adtParams.FieldByName('USEOSOPENREJECT').AsBoolean, RejectsFL.Count, 0)
           ) > 5;
 
-      OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
+      //OpenDocsDir(SDirDocs, DocsFL, not OnlyDirOpen);
       if not ImportDocs then
         OpenDocsDir(SDirWaybills, WaybillsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENWAYBILL').AsBoolean);
       OpenDocsDir(SDirRejects, RejectsFL, not OnlyDirOpen and adtParams.FieldByName('USEOSOPENREJECT').AsBoolean);
@@ -6150,6 +6151,30 @@ begin
     and CheckWin32Version(6, 0)
   then
     Result := CheckStartupFolderByPath(ExePath);
+end;
+
+procedure TDM.ShowAttachments(fileList : TStringList);
+var
+  openedFiles : Integer;
+  I : Integer;
+  fileName : String;
+begin
+  openedFiles := 0;
+
+  for I := 0 to fileList.Count-1 do begin
+    fileName := fileList[i];
+    if (FileExists(fileName)) then begin
+      FileExecute(fileName);
+      Inc(openedFiles);
+    end;
+
+    if (openedFiles >= 10) and (i < fileList.Count-1) then begin
+      AProc.MessageBox(
+        Format('Àâòîìàòè÷åñêè îòêğûòû ïåğâûå %d ôàéëîâ âëîæåíèé ìèíè-ïî÷òû.'#13#10'Îñòàëüíûå ôàéëû ìîæíî îòêğûòü èç ïèñåì ìèíè-ïî÷òû.', [openedFiles]),
+        MB_ICONINFORMATION);
+      Break;
+    end;
+  end;
 end;
 
 initialization

@@ -23,6 +23,7 @@ type
     FullHistoryOrders : Boolean;
     ImportDocs : Boolean;
     NewMailsExists : Boolean;
+    RecievedAttachments : TStringList;
 
     constructor Create();
     destructor Destroy; override;
@@ -45,12 +46,14 @@ begin
   FullHistoryOrders := False;
   ImportDocs := False;
   NewMailsExists := False;
+  RecievedAttachments := TStringList.Create;
 end;
 
 destructor TExchangeParams.Destroy;
 begin
   SendedOrders.Free;
   SendedOrdersErrorLog.Free;
+  RecievedAttachments.Free;
   inherited;
 end;
 

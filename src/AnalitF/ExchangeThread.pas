@@ -187,7 +187,7 @@ private
   procedure InternalExecute;
   procedure HTTPWork(Sender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
   //Извлечь документы из папки In\<DirName> и переместить их на уровень выше
-  procedure ExtractDocs(DirName : String);
+  procedure ExtractDocs(DirName : String; fileList : TStringList = nil);
   procedure ExtractReclame(extractDirName, destinationDirName : String);
   function  GetUpdateId() : String;
   //Отправляем сообщение в tech@analit.net из программы с информацией об ошибке для техподдержки
@@ -1308,7 +1308,7 @@ begin
   //Обрабатываем папку Waybills
   ExtractDocs(SDirWaybills);
   //Обрабатываем папку Docs
-  ExtractDocs(SDirDocs);
+  ExtractDocs(SDirDocs, ExchangeParams.RecievedAttachments);
   //Обрабатываем папку Rejects
   ExtractDocs(SDirRejects);
   //Обрабатываем папку Promotions
@@ -2789,18 +2789,23 @@ begin
   end;
 end;
 
-procedure TExchangeThread.ExtractDocs(DirName: String);
+procedure TExchangeThread.ExtractDocs(DirName: String; fileList : TStringList = nil);
 var
   DocsSR: TSearchRec;
 begin
+  if Assigned(fileList) then
+    fileList.Clear;
   if DirectoryExists(RootFolder() + SDirIn + '\' + DirName) then begin
     try
       if FindFirst( RootFolder() + SDirIn + '\' + DirName + '\*.*', faAnyFile, DocsSR) = 0 then
         repeat
-          if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then
+          if (DocsSR.Name <> '.') and (DocsSR.Name <> '..') then begin
             OSMoveFile(
               RootFolder() + SDirIn + '\' + DirName + '\' + DocsSR.Name,
               RootFolder() + DirName + '\' + DocsSR.Name);
+            if Assigned(fileList) then
+              fileList.Add(RootFolder() + DirName + '\' + DocsSR.Name);
+          end;
         until (FindNext( DocsSR ) <> 0)
     finally
       SysUtils.FindClose( DocsSR );
