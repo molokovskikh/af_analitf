@@ -17,7 +17,7 @@ uses
   StrUtils,
   U_MiniMailForm,
   HtmlView,
-  VistaAltFixUnit, StrHlder;
+  VistaAltFixUnit, StrHlder, GridsEh;
 
 type
 
@@ -168,6 +168,12 @@ TMainForm = class(TForm)
     pStartUp: TPanel;
     tmrStartUp: TTimer;
     shIndexTemplate: TStrHolder;
+    pMain: TPanel;
+    pTopContact: TPanel;
+    htmlContact: THTMLViewer;
+    dbgNews: TToughDBGrid;
+    dsNews: TDataSource;
+    adsNews: TMyQuery;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -260,6 +266,10 @@ private
   procedure CollapseToolBar;
   procedure CallMiniMail();
   procedure HotSpotClick(Sender: TObject; const URL: string; var Handled: boolean);
+  procedure SetupGridNews();
+  procedure dbgNewsGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
+  procedure dbgNewsCellClick(Column: TColumnEh);
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -304,9 +314,10 @@ public
   //Существуют модальные окна, которые ждут ответа от пользователя
   //Это либо окно с настройками либо MessageBox
   function ModalExists : Boolean;
-  procedure GenerateIndexHtml;
   function GetNews : String;
   function GetReclame : String;
+  procedure UpdateNews;
+  procedure UpdateTechContact;
 end;
 
 var
@@ -372,6 +383,7 @@ begin
   LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
   MiniMailForm := TMiniMailForm.Create(Application);
   HtmlViewer.OnHotSpotClick := HotSpotClick;
+  SetupGridNews();
 end;
 
 procedure TMainForm.AppEventsIdle(Sender: TObject; var Done: Boolean);
@@ -864,6 +876,10 @@ function TMainForm.CheckUnsendOrders: boolean;
 begin
   result := False;
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
+    if not adsNews.Active then begin
+      adsNews.Connection := DM.MainConnection;
+      adsNews.Open;
+    end;
     adsOrdersHead.Connection := DM.MainConnection;
     adsOrdersHead.ParamByName( 'ClientId').Value :=
       DM.adtClients.FieldByName( 'ClientId').Value;
@@ -955,9 +971,13 @@ begin
 
   actWayBill.Visible := not DontShowAddresses();
 
+  UpdateNews;
+
+  UpdateTechContact;
+
   if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
   then begin
-    openFileName := RootFolder() + SDirReclame + '\' + 'index.html';
+    openFileName := RootFolder() + SDirReclame + '\' + 'index.htm';
     if SysUtils.FileExists( openFileName ) then
     try
       HtmlViewer.LoadFromFile(openFileName);
@@ -2107,24 +2127,6 @@ begin
     tmrStartUp.Enabled := True;
 end;
 
-procedure TMainForm.GenerateIndexHtml;
-var
-  sl : TStringList;
-begin
-  shIndexTemplate.MacroByName('Pro').Value := '%';
-  shIndexTemplate.MacroByName('TechContact').Value := DM.adsUser.FieldByName('TechContact').AsString;
-  shIndexTemplate.MacroByName('TechOperatingMode').Value := DM.adsUser.FieldByName('TechOperatingMode').AsString;
-  shIndexTemplate.MacroByName('News').Value := GetNews();
-  shIndexTemplate.MacroByName('Reclame').Value := GetReclame();
-  sl := TStringList.Create;
-  try
-    sl.Text := shIndexTemplate.ExpandMacros;
-    sl.SaveToFile(RootFolder() + SDirReclame + '\' + 'index.html');
-  finally
-    sl.Free;
-  end;
-end;
-
 function TMainForm.GetNews: String;
 var
   I : Integer;
@@ -2177,6 +2179,72 @@ begin
     finally
       sl.Free
     end;
+  end;
+end;
+
+procedure TMainForm.SetupGridNews;
+begin
+  TDBGridHelper.SetDefaultSettingsToGrid(dbgNews);
+  dbgNews.ReadOnly := True;
+
+  dbgNews.AutoFitColWidths := False;
+  try
+    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата публикации', dbgNews.Canvas.TextWidth('2000.00.00'));
+    TDBGridHelper.AddColumn(dbgNews, 'Header', 'Заголовок новости', dbgNews.Width);
+  finally
+    dbgNews.AutoFitColWidths := True;
+  end;
+
+  dbgNews.OnGetCellParams := dbgNewsGetCellParams;
+  dbgNews.OnCellClick := dbgNewsCellClick;
+end;
+
+procedure TMainForm.UpdateNews;
+begin
+  if adsNews.Active then
+    adsNews.Close;
+
+  adsNews.Connection := DM.MainConnection;
+  adsNews.Open;
+end;
+
+procedure TMainForm.UpdateTechContact;
+var
+  sl : TStringList;
+begin
+  shIndexTemplate.MacroByName('InforoomLogo').Value := '"' + RootFolder() + SDirReclame + '\' + 'Inforrom-logo.gif"';
+  shIndexTemplate.MacroByName('TechContact').Value := DM.adsUser.FieldByName('TechContact').AsString;
+  shIndexTemplate.MacroByName('TechOperatingMode').Value := DM.adsUser.FieldByName('TechOperatingMode').AsString;
+  sl := TStringList.Create;
+  try
+    sl.Text := shIndexTemplate.ExpandMacros;
+    htmlContact.LoadStrings(sl);
+    pTopContact.Height := htmlContact.MaxVertical + 5;
+  finally
+    sl.Free;
+  end;
+end;
+
+procedure TMainForm.dbgNewsCellClick(Column: TColumnEh);
+var
+  id : String;
+  fileName : String;
+begin
+  if AnsiCompareText(Column.Field.FieldName, 'PublicationDate') = 0 then begin
+    id := adsNews.FieldByName('Id').AsString;
+    fileName := RootFolder() + SDirNews + '\' + id + '.html';
+    if FileExists(fileName) then
+      FileExecute(fileName);
+  end;
+end;
+
+procedure TMainForm.dbgNewsGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+begin
+  if AnsiCompareText(Column.Field.FieldName, 'PublicationDate') = 0 then begin
+    AFont.Style := AFont.Style + [fsUnderline];
+    AFont.Color := clHotLight;
   end;
 end;
 

@@ -10,7 +10,7 @@ uses
   Menus,
   HtmlView,
   DBGridEh,
-  GlobalSettingParams;
+  GlobalSettingParams, StrHlder;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -48,6 +48,7 @@ type
   TChildForm = class(TForm)
     tCheckVolume: TTimer;
     tmrOverCostHide: TTimer;
+    sh2BlockTemplate: TStrHolder;
     procedure FormCreate(Sender: TObject);
     procedure tCheckVolumeTimer(Sender: TObject);
     procedure tmrOverCostHideTimer(Sender: TObject);
@@ -290,6 +291,7 @@ procedure TChildForm.UpdateReclame;
 var
   i: integer;
   openFileName : String;
+  htmlView : String;
 begin
   for i := 0 to Self.ComponentCount - 1 do
     if Self.Components[ i] is THTMLViewer then
@@ -297,10 +299,13 @@ begin
       try
         if DM.adsUser.FieldByName('ShowAdvertising').IsNull or DM.adsUser.FieldByName('ShowAdvertising').AsBoolean
         then begin
-          openFileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', Self.Components[ i].Tag) + '.htm';
+          openFileName := RootFolder() + SDirReclame + '\' + '2block.gif';
           if SysUtils.FileExists(openFileName)
-          then
-            THTMLViewer(Self.Components[i]).LoadFromFile(openFileName);
+          then begin
+            sh2BlockTemplate.MacroByName('fileName').Value := '"' + openFileName + '"';
+            htmlView := sh2BlockTemplate.ExpandMacros();
+            THTMLViewer(Self.Components[i]).LoadFromBuffer(PChar(htmlView), Length(htmlView));
+          end;
         end
         else
           THTMLViewer( Self.Components[i] ).Clear;

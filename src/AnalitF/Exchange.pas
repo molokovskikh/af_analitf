@@ -355,7 +355,6 @@ begin
   if Result and GlobalExchangeParams.NewMailsExists then
     NeedShowMiniMail := True;
 
-  MainForm.GenerateIndexHtml;
   MainForm.UpdateReclame;
 
 //В специализированной сборке не работает пока сжатие базы данных,

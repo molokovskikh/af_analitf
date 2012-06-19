@@ -274,25 +274,86 @@ object MainForm: TMainForm
       end>
     OnDrawPanel = StatusBarDrawPanel
   end
-  object HTMLViewer: THTMLViewer
-    Tag = 1
+  object pMain: TPanel
     Left = 0
     Top = 42
     Width = 1016
     Height = 493
-    TabOrder = 2
     Align = alClient
-    BorderStyle = htFocused
-    HistoryMaxCount = 0
-    DefFontName = 'Times New Roman'
-    DefPreFontName = 'Courier New'
-    NoSelect = False
-    CharSet = DEFAULT_CHARSET
-    PrintMarginLeft = 2.000000000000000000
-    PrintMarginRight = 2.000000000000000000
-    PrintMarginTop = 2.000000000000000000
-    PrintMarginBottom = 2.000000000000000000
-    PrintScale = 1.000000000000000000
+    BevelOuter = bvNone
+    TabOrder = 3
+    object HTMLViewer: THTMLViewer
+      Tag = 1
+      Left = 0
+      Top = 169
+      Width = 1016
+      Height = 324
+      TabOrder = 0
+      Align = alClient
+      BorderStyle = htFocused
+      HistoryMaxCount = 0
+      DefFontName = 'Times New Roman'
+      DefPreFontName = 'Courier New'
+      NoSelect = False
+      CharSet = DEFAULT_CHARSET
+      PrintMarginLeft = 2.000000000000000000
+      PrintMarginRight = 2.000000000000000000
+      PrintMarginTop = 2.000000000000000000
+      PrintMarginBottom = 2.000000000000000000
+      PrintScale = 1.000000000000000000
+    end
+    object pTopContact: TPanel
+      Left = 0
+      Top = 0
+      Width = 1016
+      Height = 169
+      Align = alTop
+      TabOrder = 1
+      object htmlContact: THTMLViewer
+        Tag = 1
+        Left = 1
+        Top = 1
+        Width = 320
+        Height = 167
+        TabOrder = 0
+        Align = alLeft
+        BorderStyle = htFocused
+        HistoryMaxCount = 0
+        DefFontName = 'Times New Roman'
+        DefPreFontName = 'Courier New'
+        NoSelect = False
+        CharSet = DEFAULT_CHARSET
+        PrintMarginLeft = 2.000000000000000000
+        PrintMarginRight = 2.000000000000000000
+        PrintMarginTop = 2.000000000000000000
+        PrintMarginBottom = 2.000000000000000000
+        PrintScale = 1.000000000000000000
+      end
+      object dbgNews: TToughDBGrid
+        Left = 321
+        Top = 1
+        Width = 694
+        Height = 167
+        Align = alClient
+        DataSource = dsNews
+        Flat = True
+        FooterColor = clWindow
+        FooterFont.Charset = DEFAULT_CHARSET
+        FooterFont.Color = clWindowText
+        FooterFont.Height = -11
+        FooterFont.Name = 'MS Sans Serif'
+        FooterFont.Style = []
+        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+        OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghDialogFind]
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'MS Sans Serif'
+        TitleFont.Style = []
+        SearchPosition = spBottom
+      end
+    end
   end
   object pStartUp: TPanel
     Left = 0
@@ -307,7 +368,7 @@ object MainForm: TMainForm
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 2
   end
   object MainMenu: TMainMenu
     Left = 224
@@ -4081,19 +4142,15 @@ object MainForm: TMainForm
     Capacity = 118
     Macros = <
       item
-        Name = 'Pro'
+      end
+      item
+        Name = 'InforoomLogo'
       end
       item
         Name = 'TechContact'
       end
       item
         Name = 'TechOperatingMode'
-      end
-      item
-        Name = 'News'
-      end
-      item
-        Name = 'Reclame'
       end>
     Left = 368
     Top = 311
@@ -4131,7 +4188,7 @@ object MainForm: TMainForm
       '2e446174615461626c65207b'
       '096261636b67726f756e642d636f6c6f723a20234542454245423b'
       '09626f726465723a20736f6c69642031707820234441444144413b'
-      '0977696474683a203130302550726f3b'
+      '0977696474683a20313030253b'
       '09746578742d616c69676e3a206c6566743b'
       '7d'
       '2e446174615461626c65202e4576656e526f772c2074722e6576656e'
@@ -4194,21 +4251,21 @@ object MainForm: TMainForm
         '3039336531223e'
       
         '3c5441424c452069643d225461626c6531222063656c6c53706163696e673d22' +
-        '30222063656c6c50616464696e673d2230222077696474683d22313030255072' +
-        '6f2220626f726465723d2230223e'
+        '30222063656c6c50616464696e673d2230222077696474683d22313030252220' +
+        '626f726465723d2230223e'
       '20203c54523e20'
       
         '202020203c54442077696474683d223239352220616c69676e3d226c65667422' +
         '2076616c69676e3d22746f70223e'
       
-        '2020202020203c7461626c652077696474683d223130302550726f2220626f72' +
-        '6465723d2230222063656c6c70616464696e673d2230222063656c6c73706163' +
-        '696e673d2230223e'
+        '2020202020203c7461626c652077696474683d22313030252220626f72646572' +
+        '3d2230222063656c6c70616464696e673d2230222063656c6c73706163696e67' +
+        '3d2230223e'
       '20202020202020203c74723e20'
       
-        '202020202020202020203c74643e3c696d67207372633d22496e666f72726f6d' +
-        '2d6c6f676f2e676966222077696474683d2232343822206865696768743d2238' +
-        '35223e3c2f74643e'
+        '202020202020202020203c74643e3c696d67207372633d25496e666f726f6f6d' +
+        '4c6f676f2077696474683d2232343822206865696768743d223835223e3c2f74' +
+        '643e'
       '20202020202020203c2f74723e'
       '20202020202020203c74723e20'
       '202020202020202020203c7464206865696768743d223130223e3c2f74643e'
@@ -4239,26 +4296,25 @@ object MainForm: TMainForm
         '7422207461726765743d225f626c616e6b223e7777772e616e616c69742e6e65' +
         '743c2f613e3c2f74643e'
       '20202020202020203c2f74723e'
-      '2020202020203c2f7461626c653e3c2f54443e'
-      '202020203c54442077696474683d22323022203e3c2f54443e'
-      
-        '202020203c54442077696474683d2238302550726f22202076616c69676e3d22' +
-        '746f70223e'
-      '20202020203c6469763e'
-      '20202020202020254e657773'
-      '20202020203c2f6469763e09'
-      '202020203c2f54443e202020'
-      '20203c2f74723e'
-      '20203c7472206865696768743d223530223e'
-      ''
-      '20203c2f74723e09'
-      '20203c74723e'
-      '093c746420636f6c7370616e3d333e'
-      '20202020202020255265636c616d65'
-      '093c2f74643e'
+      '2020202020203c2f7461626c653e'
+      '202020203c2f54443e'
       '20203c2f74723e'
       '3c2f5441424c453e'
       '3c2f626f64793e'
       '3c2f68746d6c3e')
+  end
+  object dsNews: TDataSource
+    DataSet = adsNews
+    Left = 265
+    Top = 340
+  end
+  object adsNews: TMyQuery
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      
+        'select Id , PublicationDate , Header from News order by Publicat' +
+        'ionDate desc')
+    Left = 304
+    Top = 344
   end
 end
