@@ -35,24 +35,12 @@ inherited AddWaybillForm: TAddWaybillForm
       Height = 13
       Caption = #1044#1072#1090#1072' '#1085#1072#1082#1083#1072#1076#1085#1086#1081
     end
-    object dblcbProvider: TDBLookupComboBox
-      Left = 5
-      Top = 24
-      Width = 285
-      Height = 21
-      DataField = 'FirmCode'
-      DropDownRows = 15
-      KeyField = 'FirmCode'
-      ListField = 'FullName'
-      ListSource = dsProviders
-      TabOrder = 0
-    end
     object eProviderId: TEdit
       Left = 5
       Top = 72
       Width = 285
       Height = 21
-      TabOrder = 1
+      TabOrder = 0
     end
     object dtpDate: TDateTimePicker
       Left = 5
@@ -67,6 +55,14 @@ inherited AddWaybillForm: TAddWaybillForm
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
+      TabOrder = 1
+    end
+    object cbProviders: TComboBox
+      Left = 5
+      Top = 24
+      Width = 285
+      Height = 21
+      ItemHeight = 13
       TabOrder = 2
     end
   end

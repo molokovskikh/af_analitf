@@ -861,12 +861,13 @@ begin
     if AddWaybillForm.ShowModal = mrOk then begin
       DBProc.UpdateValue(
         DM.MainConnection,
-        'insert into documentheaders (WriteTime, FirmCode, ClientId, DocumentType, ProviderDocumentId, CreatedByUser) values (:WriteTime, :FirmCode, :ClientId, 1, :ProviderDocumentId, 1);',
-        ['WriteTime', 'FirmCode', 'ClientId', 'ProviderDocumentId'],
+        'insert into documentheaders (WriteTime, FirmCode, ClientId, DocumentType, ProviderDocumentId, CreatedByUser, SupplierNameByUser) values (:WriteTime, :FirmCode, :ClientId, 1, :ProviderDocumentId, 1, :SupplierNameByUser);',
+        ['WriteTime', 'FirmCode', 'ClientId', 'ProviderDocumentId', 'SupplierNameByUser'],
         [VarAsType(AddWaybillForm.dtpDate.Date, varDate),
-        AddWaybillForm.dblcbProvider.KeyValue,
+        AddWaybillForm.GetSupplierId(),
         DM.adtClients.FieldByName( 'ClientId').Value,
-        AddWaybillForm.eProviderId.Text]);
+        AddWaybillForm.eProviderId.Text,
+        AddWaybillForm.cbProviders.Text]);
       UpdateOrderDataset;
     end;
   finally
