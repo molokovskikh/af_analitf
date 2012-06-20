@@ -408,7 +408,8 @@ begin
 +'  `Header` , '
 +'  `LoadTime` , '
 +'  `RetailAmountCalculated`,  '
-+'  `CreatedByUser`  ';
++'  `CreatedByUser`,  '
++'  `SupplierNameByUser`  ';
 end;
 
 function TDocumentHeadersTable.GetCreateSQL(
@@ -429,6 +430,7 @@ begin
 +'  `LoadTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, '
 +'  `RetailAmountCalculated` tinyint(1) not null default ''0'', '
 +'  `CreatedByUser` tinyint(1) not null default ''0'', '
++'  `SupplierNameByUser` varchar(255) DEFAULT NULL, '
 +'  PRIMARY KEY (`Id`), '
 +'  KEY (`LoadTime`), '
 +'  KEY (`DownloadId`), '

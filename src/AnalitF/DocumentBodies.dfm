@@ -390,7 +390,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'dh.RetailAmountCalculated,'
       'dh.WriteTime as LocalWriteTime,'
       'dh.CreatedByUser,'
-      'p.FullName as ProviderName,'
+      
+        'if(p.FirmCode is null, dh.SupplierNameByUser, p.FullName) as Pro' +
+        'viderName,'
       'count(dbodies.Id) as Positions,'
       'invoiceheaders.Id,'
       'invoiceheaders.InvoiceNumber,'
@@ -417,15 +419,12 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'invoiceheaders.NDSAmount,'
       'invoiceheaders.Amount'
       'from'
-      '  ('
-      '  DocumentHeaders dh,'
-      '  providers p'
-      '  )'
+      '  DocumentHeaders dh'
+      '  left join providers p on p.FirmCode = dh.FirmCode'
       '  left join DocumentBodies dbodies on dbodies.DocumentId = dh.Id'
       '  left join invoiceheaders on invoiceheaders.Id = dh.ServerId'
       'where'
-      '    (dh.Id = :DocumentId)'
-      'and (p.FirmCode = dh.FirmCode)')
+      '    (dh.Id = :DocumentId)')
     Left = 56
     Top = 159
     ParamData = <
@@ -465,7 +464,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentHeadersProviderName: TStringField
       FieldName = 'ProviderName'
-      Size = 40
+      Size = 255
     end
     object adsDocumentHeadersPositions: TLargeintField
       FieldName = 'Positions'
