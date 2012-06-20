@@ -2230,7 +2230,7 @@ var
   id : String;
   fileName : String;
 begin
-  if AnsiCompareText(Column.Field.FieldName, 'PublicationDate') = 0 then begin
+  if AnsiCompareText(Column.Field.FieldName, 'Header') = 0 then begin
     id := adsNews.FieldByName('Id').AsString;
     fileName := RootFolder() + SDirNews + '\' + id + '.html';
     if FileExists(fileName) then
@@ -2242,7 +2242,7 @@ procedure TMainForm.dbgNewsGetCellParams(Sender: TObject;
   Column: TColumnEh; AFont: TFont; var Background: TColor;
   State: TGridDrawState);
 begin
-  if AnsiCompareText(Column.Field.FieldName, 'PublicationDate') = 0 then begin
+  if AnsiCompareText(Column.Field.FieldName, 'Header') = 0 then begin
     AFont.Style := AFont.Style + [fsUnderline];
     AFont.Color := clHotLight;
   end;
