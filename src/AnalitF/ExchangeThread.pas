@@ -4525,6 +4525,11 @@ begin
     if (asyncResponse = 'Res=Wait') then begin
       Inc(sleepCount);
       Sleep(5000);
+{$ifdef DEBUG}
+      //В отладочной версии проверяем отмену запроса "Подготовки данных" по кнопке "Отменить",
+      //т.к. в отладочных версиях она доступна
+      Synchronize( ExchangeForm.CheckStop );
+{$endif}
     end
     else
       Break;
