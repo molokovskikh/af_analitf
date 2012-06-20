@@ -10,7 +10,7 @@ uses
   Menus,
   HtmlView,
   DBGridEh,
-  GlobalSettingParams, StrHlder;
+  GlobalSettingParams;
 
 type
   {Класс для корректировки WindowProc всех ToughDBGrid на дочерней форме,
@@ -48,7 +48,6 @@ type
   TChildForm = class(TForm)
     tCheckVolume: TTimer;
     tmrOverCostHide: TTimer;
-    sh2BlockTemplate: TStrHolder;
     procedure FormCreate(Sender: TObject);
     procedure tCheckVolumeTimer(Sender: TObject);
     procedure tmrOverCostHideTimer(Sender: TObject);
@@ -302,8 +301,17 @@ begin
           openFileName := RootFolder() + SDirReclame + '\' + '2block.gif';
           if SysUtils.FileExists(openFileName)
           then begin
-            sh2BlockTemplate.MacroByName('fileName').Value := '"' + openFileName + '"';
-            htmlView := sh2BlockTemplate.ExpandMacros();
+            htmlView := '' +
+'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">' +
+'<html>' +
+'<head>' +
+'<title>Untitled Document</title>' +
+'<meta http-equiv="Content-Type" content="text/html; charset=KOI8-R">' +
+'</head>' +
+'<body style="padding:0;margin:0;">' +
+'<div align="center" style="padding:0;margin:0;font-size:0;"><img src="' + openFileName + '" width="481" height="125"> </div>' +
+'</body>' +
+'</html>';
             THTMLViewer(Self.Components[i]).LoadFromBuffer(PChar(htmlView), Length(htmlView));
           end;
         end
