@@ -489,6 +489,15 @@ inherited OrdersHForm: TOrdersHForm
       TabOrder = 1
       OnCloseUp = dtpDateCloseUp
     end
+    object btnToDelete: TButton
+      Left = 712
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'btnToDelete'
+      TabOrder = 2
+      OnClick = btnToDeleteClick
+    end
   end
   inherited tCheckVolume: TTimer
     Top = 88
@@ -885,6 +894,9 @@ inherited OrdersHForm: TOrdersHForm
     object adsOrdersHFormNotExistsCount: TLargeintField
       FieldName = 'NotExistsCount'
     end
+    object adsOrdersHFormRealClientId: TLargeintField
+      FieldName = 'RealClientId'
+    end
   end
   object adsCore: TMyQuery
     SQLUpdate.Strings = (
@@ -1246,17 +1258,20 @@ inherited OrdersHForm: TOrdersHForm
       '     AND header.send = 1'
       '     AND PostedOrderLists.OrderCount>0'
       '  ) as sumbycurrentweek,'
-      '  c.Name as AddressName'
+      '  c.ClientId as RealClientId,'
+      
+        '  if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079' '#1089 +
+        #1080#1089#1090#1077#1084#1099#39') as AddressName'
       'FROM'
       '   CurrentOrderHeads'
-      
-        '   inner join clients c on c.ClientId = CurrentOrderHeads.Client' +
-        'Id'
       '   inner join CurrentOrderLists on '
       
         '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
         ' '
       '     and (CurrentOrderLists.OrderCount > 0)'
+      
+        '   left join clients c on c.ClientId = CurrentOrderHeads.ClientI' +
+        'd'
       '   LEFT JOIN PricesData ON '
       '         (CurrentOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '
@@ -1366,17 +1381,20 @@ inherited OrdersHForm: TOrdersHForm
       '     AND PostedOrderLists.OrderCount>0'
       '  ) '
       'as sumbycurrentweek,'
-      '  c.Name as AddressName'
+      '  c.ClientId as RealClientId,'
+      
+        '  if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079' '#1089 +
+        #1080#1089#1090#1077#1084#1099#39') as AddressName'
       'FROM'
       '   CurrentOrderHeads'
-      
-        '   inner join clients c on c.ClientId = CurrentOrderHeads.Client' +
-        'Id'
       '   inner join CurrentOrderLists on '
       
         '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
         ' '
       '     and (CurrentOrderLists.OrderCount > 0)'
+      
+        '   left join clients c on c.ClientId = CurrentOrderHeads.ClientI' +
+        'd'
       '   LEFT JOIN PricesData ON '
       '         (CurrentOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '
@@ -1476,15 +1494,16 @@ inherited OrdersHForm: TOrdersHForm
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  0.0'
       'as sumbycurrentweek,'
-      '  c.Name as AddressName'
+      '  c.ClientId as RealClientId,'
+      
+        '  if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079' '#1089 +
+        #1080#1089#1090#1077#1084#1099#39') as AddressName'
       'FROM'
       '   PostedOrderHeads'
-      
-        '   inner join clients c on c.ClientId = PostedOrderHeads.ClientI' +
-        'd '
       '   inner join PostedOrderLists on '
       '         (PostedOrderLists.OrderId = PostedOrderHeads.OrderId) '
       '     and (PostedOrderLists.OrderCount > 0)'
+      '   left join clients c on c.ClientId = PostedOrderHeads.ClientId'
       '   LEFT JOIN PricesData ON '
       '         (PostedOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '
@@ -1555,15 +1574,16 @@ inherited OrdersHForm: TOrdersHForm
       '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
       '  0.0'
       'as sumbycurrentweek,'
-      '  c.Name As AddressName'
+      '  c.ClientId as RealClientId,'
+      
+        '  if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079' '#1089 +
+        #1080#1089#1090#1077#1084#1099#39') as AddressName'
       'FROM'
       '   PostedOrderHeads'
-      
-        '   inner join clients c on c.ClientId = PostedOrderHeads.ClientI' +
-        'd'
       '   inner join PostedOrderLists on '
       '         (PostedOrderLists.OrderId = PostedOrderHeads.OrderId) '
       '     and (PostedOrderLists.OrderCount > 0)'
+      '   left join clients c on c.ClientId = PostedOrderHeads.ClientId'
       '   LEFT JOIN PricesData ON '
       '         (PostedOrderHeads.PriceCode=PricesData.PriceCode)'
       '   left join pricesregionaldata on '

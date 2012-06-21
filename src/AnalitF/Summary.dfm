@@ -716,7 +716,9 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    Producers.Name as ProducerName,'
-      '    c.Name as AddressName,'
+      
+        '    if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079 +
+        ' '#1089#1080#1089#1090#1077#1084#1099#39') as AddressName,'
       '    dbodies.ServerId as ServerDocumentLineId,'
       '    dbodies.RejectId,'
       '    dbodies.ServerDocumentId,'
@@ -730,9 +732,11 @@ inherited SummaryForm: TSummaryForm
       '    CurrentOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    CurrentOrderLists,'
-      '    clients c'
+      '    CurrentOrderLists'
       '    ) '
+      
+        '    left join clients c on c.ClientId = CurrentOrderHeads.Client' +
+        'Id'
       '    left join Producers on Producers.Id = Core.CodeFirmCr'
       '    left join Mnn on mnn.Id = Catalogs.MnnId'
       '    left join GroupMaxProducerCosts on '
@@ -752,7 +756,6 @@ inherited SummaryForm: TSummaryForm
         'erDocumentLineId'
       'WHERE'
       '    CurrentOrderHeads.Frozen = 0 '
-      'and c.ClientId = CurrentOrderHeads.ClientId'
       'and CurrentOrderLists.OrderId=CurrentOrderHeads.OrderId'
       'and CurrentOrderLists.OrderCount>0'
       'and Core.CoreId=CurrentOrderLists.CoreId'
@@ -818,7 +821,9 @@ inherited SummaryForm: TSummaryForm
       '    Mnn.Mnn,'
       '    GroupMaxProducerCosts.MaxProducerCost,'
       '    Producers.Name as ProducerName,'
-      '    c.Name As AddressName,'
+      
+        '    if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079 +
+        ' '#1089#1080#1089#1090#1077#1084#1099#39') as AddressName,'
       '    dbodies.ServerId as ServerDocumentLineId,'
       '    dbodies.RejectId,'
       '    dbodies.ServerDocumentId,'
@@ -831,9 +836,11 @@ inherited SummaryForm: TSummaryForm
       '    PostedOrderHeads,'
       '    products,'
       '    catalogs,'
-      '    PostedOrderLists,'
-      '    clients c'
+      '    PostedOrderLists    '
       '   )'
+      
+        '    left join clients c on c.ClientId = PostedOrderHeads.ClientI' +
+        'd'
       
         '    left join Producers on Producers.Id = PostedOrderLists.CodeF' +
         'irmCr'
@@ -861,7 +868,6 @@ inherited SummaryForm: TSummaryForm
       '    PostedOrderLists.OrderId=PostedOrderHeads.OrderId'
       'and PostedOrderLists.OrderCount>0'
       'and PostedOrderLists.CoreId is null'
-      'and c.ClientId = PostedOrderHeads.ClientId'
       'and products.productid = PostedOrderLists.productid'
       'and catalogs.fullcode = products.catalogid'
       'and PricesData.PriceCode = PostedOrderHeads.PriceCode'

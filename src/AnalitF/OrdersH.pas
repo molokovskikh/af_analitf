@@ -84,6 +84,8 @@ type
     sbMoveToPrice: TSpeedButton;
     pmDestinationPrices: TPopupMenu;
     adsOrdersHFormNotExistsCount: TLargeintField;
+    btnToDelete: TButton;
+    adsOrdersHFormRealClientId: TLargeintField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -112,6 +114,7 @@ type
     procedure sbMoveToClientClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
     procedure sbMoveToPriceClick(Sender: TObject);
+    procedure btnToDeleteClick(Sender: TObject);
   private
     Strings: TStrings;
     SelectedPrices : TStringList;
@@ -670,7 +673,8 @@ begin
       adsOrdersHForm.Bookmark := FSelectedRows[i];
 
       //Производим работу только с заявками текущего клиента
-      if not RestoreFrozen and (adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value) then
+      if not RestoreFrozen and (adsOrdersHFormClientID.Value <> DM.adtClientsCLIENTID.Value) and (not adsOrdersHFormRealClientId.IsNull)
+      then
         Continue;
 
       //"Размораживаем" только замороженные заявки
@@ -708,8 +712,14 @@ begin
           SynonymFirmCrCode:=FOrdersForm.adsOrdersSynonymFirmCrCode.AsVariant;
 
           with adsCore do begin
-            if RestoreFrozen then
-              ParamByName( 'ClientId').Value := adsOrdersHFormClientID.Value
+            if RestoreFrozen then begin
+              //Если значение realClientid = null, то пытаемся восстановить заказ для удаленного адреса доставки,
+              //поэтому восстанавливаем под текущим адресом доставки
+              if not adsOrdersHFormRealClientId.IsNull then
+                ParamByName( 'ClientId').Value := adsOrdersHFormRealClientId.Value
+              else
+                ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value
+            end
             else
               if RestoreUnFrozenOrMoveToClient and (InternalDestinationClientId <> 0) then
                 ParamByName( 'ClientId').Value := InternalDestinationClientId
@@ -1009,8 +1019,10 @@ begin
           try
             for I := 0 to FSelectedRows.Count-1 do begin
               Grid.DataSource.DataSet.Bookmark := FSelectedRows[i];
-              //Обрабатываем только заявки текущего клиента
-              if adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value then
+              //Обрабатываем только заявки текущего клиента или отсутствующего адреса заказа
+              if (adsOrdersHFormClientID.Value = DM.adtClientsCLIENTID.Value)
+                or adsOrdersHFormRealClientId.IsNull
+              then
                 Grid.DataSource.DataSet.Delete
             end;
             Grid.DataSource.DataSet.Refresh;
@@ -1428,6 +1440,18 @@ begin
   finally
     orderList.Free;
   end;
+end;
+
+procedure TOrdersHForm.btnToDeleteClick(Sender: TObject);
+var
+  clientId : Variant;
+  orderId : Variant;
+begin
+  clientId := DM.QueryValue('select min(ClientId)-1 as MinClientId from clients', [], []);
+  orderId := adsOrdersHFormOrderId.AsVariant;
+  DM.MainConnection.ExecSQL('update CurrentOrderHeads set Clientid = :ClientId where OrderId = :OrderId', [clientId, orderId]);
+  DM.MainConnection.ExecSQL('update CurrentOrderLists set Clientid = :ClientId where OrderId = :OrderId', [clientId, orderId]);
+  adsOrdersHForm.Refresh;
 end;
 
 end.
