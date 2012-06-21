@@ -525,7 +525,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.Markup as CatalogMarkup,'
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
-      'dbodies.RejectId'
+      'dbodies.RejectId,'
+      'dbodies.VitallyImportantByUser'
       'from'
       '  DocumentBodies dbodies'
       
@@ -576,7 +577,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
       'ol.ServerOrderListId,'
-      'ol.OrderId'
+      'ol.OrderId,'
+      'dbodies.VitallyImportantByUser'
       'from'
       '  DocumentBodies dbodies'
       
@@ -715,6 +717,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     object adsDocumentBodiesOrderId: TLargeintField
       FieldName = 'OrderId'
     end
+    object adsDocumentBodiesVitallyImportantByUser: TBooleanField
+      FieldName = 'VitallyImportantByUser'
+    end
   end
   object tmrPrintedChange: TTimer
     Enabled = False
@@ -800,7 +805,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
         '6974792c20566974616c6c79496d706f7274616e742c204e44532c2053657269' +
         '616c4e756d6265722c20416d6f756e742c204e6473416d6f756e742c20556e69' +
         '742c204578636973655461782c2042696c6c4f66456e7472794e756d6265722c' +
-        '2045414e31332920'
+        '2045414e31332c20566974616c6c79496d706f7274616e744279557365722920'
       '76616c75657320'
       
         '283a446f63756d656e7449642c203a50726f647563742c203a52657461696c4d' +
@@ -817,7 +822,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
         '75616e746974792c203a566974616c6c79496d706f7274616e742c203a4e4453' +
         '2c203a53657269616c4e756d6265722c203a416d6f756e742c203a4e6473416d' +
         '6f756e742c203a556e69742c203a4578636973655461782c203a42696c6c4f66' +
-        '456e7472794e756d6265722c203a45414e31332920')
+        '456e7472794e756d6265722c203a45414e31332c203a566974616c6c79496d70' +
+        '6f7274616e744279557365722920')
   end
   object shPositionDelete: TStrHolder
     Capacity = 4
@@ -884,7 +890,10 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       
         '42696c6c4f66456e7472794e756d626572203d203a42696c6c4f66456e747279' +
         '4e756d6265722c20'
-      '45414e3133203d203a45414e3133'
+      '45414e3133203d203a45414e31332c'
+      
+        '566974616c6c79496d706f7274616e74427955736572203d203a566974616c6c' +
+        '79496d706f7274616e74427955736572'
       '7768657265'
       '202064626f646965732e4964203d203a4f4c445f4964')
   end

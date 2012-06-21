@@ -169,6 +169,7 @@ uses
   FileCountHelper in '..\AnalitF\Helpers\FileCountHelper.pas',
   U_AddWaybillForm in '..\AnalitF\Views\U_AddWaybillForm.pas' {AddWaybillForm},
   VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
+  WaybillCalculation in '..\AnalitF\BusinessLogic\WaybillCalculation.pas',
 
 //end files
   
@@ -179,7 +180,8 @@ uses
   AProcTests in 'AProcTests.pas',
   INFHelpersTests in 'INFHelpersTests.pas',
   MappingTests in 'MappingTests.pas',
-  DBRestoreTests in 'DBRestoreTests.pas';
+  DBRestoreTests in 'DBRestoreTests.pas',
+  WaybillCalculationTests in 'WaybillCalculationTests.pas';
 
 {$R *.res}
 

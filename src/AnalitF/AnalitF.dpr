@@ -165,7 +165,8 @@ uses
   FileCountHelper in 'Helpers\FileCountHelper.pas',
   SearchFilterController in 'BusinessLogic\SearchFilterController.pas',
   U_AddWaybillForm in 'Views\U_AddWaybillForm.pas' {AddWaybillForm},
-  VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas';
+  VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
+  WaybillCalculation in 'BusinessLogic\WaybillCalculation.pas';
 
 {$R *.RES}
 {$R Progress.RES}
