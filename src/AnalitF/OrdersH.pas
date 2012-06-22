@@ -84,7 +84,6 @@ type
     sbMoveToPrice: TSpeedButton;
     pmDestinationPrices: TPopupMenu;
     adsOrdersHFormNotExistsCount: TLargeintField;
-    btnToDelete: TButton;
     adsOrdersHFormRealClientId: TLargeintField;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -114,7 +113,6 @@ type
     procedure sbMoveToClientClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
     procedure sbMoveToPriceClick(Sender: TObject);
-    procedure btnToDeleteClick(Sender: TObject);
   private
     Strings: TStrings;
     SelectedPrices : TStringList;
@@ -147,6 +145,7 @@ type
     RestoreFrozen : Boolean;
     InternalDestinationClientId : Integer;
     frameFilterAddresses : TframeFilterAddresses;
+    frameFilterAddressesSend : TframeFilterAddresses;
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -203,9 +202,18 @@ begin
     dbgCurrentOrders,
     OnChangeCheckBoxAllOrders,
     OnChangeFilterAllOrders);
+  frameFilterAddressesSend := TframeFilterAddresses.AddFrame(
+    Self,
+    pTop,
+    dtpDateTo.Left + dtpDateTo.Width + 5,
+    pTop.Height,
+    dbgSendedOrders,
+    OnChangeCheckBoxAllOrders,
+    OnChangeFilterAllOrders);
   tmrFillReport.Enabled := False;
   tmrFillReport.Interval := 500;
   frameFilterAddresses.Visible := False;
+  frameFilterAddressesSend.Visible := False;
 
   FOrdersForm := TOrdersForm( FindChildControlByClass(MainForm, TOrdersForm) );
   if FOrdersForm = nil then
@@ -261,6 +269,9 @@ begin
     0:
     begin
       frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
+      frameFilterAddressesSend.Visible := False;
+      if frameFilterAddresses.Visible then
+        frameFilterAddresses.ProcessChangeCheckBox;
       adsOrdersHForm.SQL.Text := adsCurrentOrders.SQL.Text;
 
       if GetAddressController.ShowAllOrders then begin
@@ -294,7 +305,24 @@ begin
     1:
     begin
       frameFilterAddresses.Visible := False;
+      frameFilterAddressesSend.Visible := GetAddressController.AllowAllOrders;
+      if frameFilterAddressesSend.Visible then
+        frameFilterAddressesSend.ProcessChangeCheckBox;
       adsOrdersHForm.SQL.Text := adsSendOrders.SQL.Text;
+
+      if GetAddressController.ShowAllOrders then begin
+        clientsSql := GetAddressController.GetFilter('PostedOrderHeads.ClientId');
+        if clientsSql <> '' then
+          adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+            + #13#10' and ' + clientsSql + ' '#13#10;
+      end
+      else
+        adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+          + #13#10' and (PostedOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
+
+      adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
+        + ' group by PostedOrderHeads.OrderId having count(PostedOrderLists.Id) > 0 order by PostedOrderHeads.SendDate DESC ';
+
       adsOrdersHForm.SQLRefresh.Text := adsSendOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsSendOrders.SQLDelete.Text;
       adsOrdersHForm.SQLUpdate.Text := adsSendOrders.SQLUpdate.Text;
@@ -1440,18 +1468,6 @@ begin
   finally
     orderList.Free;
   end;
-end;
-
-procedure TOrdersHForm.btnToDeleteClick(Sender: TObject);
-var
-  clientId : Variant;
-  orderId : Variant;
-begin
-  clientId := DM.QueryValue('select min(ClientId)-1 as MinClientId from clients', [], []);
-  orderId := adsOrdersHFormOrderId.AsVariant;
-  DM.MainConnection.ExecSQL('update CurrentOrderHeads set Clientid = :ClientId where OrderId = :OrderId', [clientId, orderId]);
-  DM.MainConnection.ExecSQL('update CurrentOrderLists set Clientid = :ClientId where OrderId = :OrderId', [clientId, orderId]);
-  adsOrdersHForm.Refresh;
 end;
 
 end.

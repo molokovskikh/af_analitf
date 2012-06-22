@@ -489,15 +489,6 @@ inherited OrdersHForm: TOrdersHForm
       TabOrder = 1
       OnCloseUp = dtpDateCloseUp
     end
-    object btnToDelete: TButton
-      Left = 712
-      Top = 8
-      Width = 75
-      Height = 25
-      Caption = 'btnToDelete'
-      TabOrder = 2
-      OnClick = btnToDeleteClick
-    end
   end
   inherited tCheckVolume: TTimer
     Top = 88
@@ -1603,10 +1594,7 @@ inherited OrdersHForm: TOrdersHForm
       'WHERE'
       '    (PostedOrderHeads.ClientId = :ClientId)'
       'and (PostedOrderHeads.Closed = 1)'
-      'and (PostedOrderHeads.SendDate BETWEEN :DateFrom AND :DateTo )'
-      'group by PostedOrderHeads.OrderId'
-      'having count(PostedOrderLists.Id) > 0'
-      'order by PostedOrderHeads.SendDate DESC')
+      'and (PostedOrderHeads.SendDate BETWEEN :DateFrom AND :DateTo )')
     Left = 180
     Top = 183
     ParamData = <
