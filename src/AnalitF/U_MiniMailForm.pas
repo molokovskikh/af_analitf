@@ -72,7 +72,7 @@ end;
 procedure TMiniMailForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_Escape then
+  if (Key = VK_Escape) and not frameMiniMail.InSearch() then
     Close;
   if (Key = VK_SPACE) and FirstKey then begin
     MainForm.actOrderAll.Execute;

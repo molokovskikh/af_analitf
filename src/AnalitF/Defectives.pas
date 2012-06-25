@@ -10,13 +10,7 @@ uses
   DBProc, GridsEh, MemDS,
   DBAccess, MyAccess;
 
-const
-  DefectSql = 'SELECT * FROM Rejects WHERE LetterDate BETWEEN :DateFrom And :DateTo ORDER BY ';
-
 type
-  //типы сортировки информации
-  TSortType = (stNone, stByArticleName, stByLetterDate, stBySerialName, stByProducer);
-
   TDefectivesForm = class(TChildForm)
     dsDefectives: TDataSource;
     dbtSeries: TDBText;
@@ -50,7 +44,6 @@ type
     procedure dbgDefectivesSortMarkingChanged(Sender: TObject);
   private
     FOrderField: string;
-    PrintQuery: string;
     procedure SetDateInterval;
     procedure SetOrderField(Value: string);
   public
@@ -78,7 +71,6 @@ begin
   IncAMonth( Year, Month, Day, -3);
   dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
   dtpDateTo.Date:=Date;
-  PrintQuery := adsPrint.SQL.Text;
   if dbgDefectives.SortMarkedColumns.Count = 0 then
     dbgDefectives.FieldColumns['LetterDate'].Title.SortMarker := smUpEh;
   OrderField:='LetterDate';
@@ -156,22 +148,24 @@ var
   CheckPrintCount : Integer;
 begin
   //если нет ни одной пометки - печатаем все
-  CheckPrintCount := DM.QueryValue('SELECT Count(*) FROM Rejects WHERE CheckPrint = 1', [], []);
+  CheckPrintCount := DM.QueryValue('SELECT Count(Rejects.Id) FROM Rejects WHERE CheckPrint = 1', [], []);
   ShowAll := CheckPrintCount = 0;
-  with adsPrint do begin
-    SQL.Text:=PrintQuery+' ORDER BY '+OrderField;
-    //ParamByName('DateFrom').DataType:=ftDate;
-    //ParamByName('DateTo').DataType:=ftDate;
-    //ParamByName('ShowAll').DataType:=ftBoolean;
-    ParamByName('DateFrom').AsDate := adsDefectives.ParamByName('DateFrom').AsDate;
-    ParamByName('DateTo').AsDate:=adsDefectives.ParamByName('DateTo').AsDate;
-    ParamByName('ShowAll').Value:=ShowAll;
-    Open;
-    try
-      DM.ShowFastReport('Defectives.frf', adsPrint, APreview);
-    finally
-      Close;
-    end;
+
+  adsPrint.RestoreSQL;
+  if Length(OrderField) > 0 then
+    if OrderField[Length(OrderField)] = ';' then
+      adsPrint.SetOrderBy(Copy(OrderField, 1, Length(OrderField)-1))
+    else
+      adsPrint.SetOrderBy(OrderField);
+
+  adsPrint.ParamByName('DateFrom').AsDate := adsDefectives.ParamByName('DateFrom').AsDate;
+  adsPrint.ParamByName('DateTo').AsDate := adsDefectives.ParamByName('DateTo').AsDate;
+  adsPrint.ParamByName('ShowAll').Value := ShowAll;
+  adsPrint.Open;
+  try
+    DM.ShowFastReport('Defectives.frf', adsPrint, APreview);
+  finally
+    adsPrint.Close;
   end;
 end;
 
