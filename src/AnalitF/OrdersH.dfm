@@ -1592,8 +1592,7 @@ inherited OrdersHForm: TOrdersHForm
       '     and (MinReqRules.PriceCode = PostedOrderHeads.PriceCode) '
       '     and (MinReqRules.RegionCode = PostedOrderHeads.RegionCode)'
       'WHERE'
-      '    (PostedOrderHeads.ClientId = :ClientId)'
-      'and (PostedOrderHeads.Closed = 1)'
+      '    (PostedOrderHeads.Closed = 1)'
       'and (PostedOrderHeads.SendDate BETWEEN :DateFrom AND :DateTo )')
     Left = 180
     Top = 183
@@ -1601,10 +1600,6 @@ inherited OrdersHForm: TOrdersHForm
       item
         DataType = ftUnknown
         Name = 'timezonebias'
-      end
-      item
-        DataType = ftUnknown
-        Name = 'ClientId'
       end
       item
         DataType = ftUnknown

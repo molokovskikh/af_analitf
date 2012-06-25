@@ -16,6 +16,9 @@ uses
   U_Address,
   AddressController;
 
+const
+  filterText = '(Фильтр применен)';
+
 type
   TframeFilterAddresses = class(TFrame)
     procedure FrameResize(Sender: TObject);
@@ -41,10 +44,12 @@ type
 
     procedure DBGridGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+
+    procedure UpdateFilterLabel;
   public
     { Public declarations }
     pmSelectedAddresses: TPopupMenu;
-    
+
     gbAddresses: TGroupBox;
     cbAllOrders : TCheckBox;
     sbAddresses : TSpeedButton;
@@ -63,6 +68,9 @@ type
     procedure PrepareFrame;
     procedure ProcessChangeFilter;
     procedure ProcessChangeCheckBox;
+    //Обновление визуальной части фрейма
+    procedure UpdateLayout();
+    procedure UpdateFrame();
   end;
 
 implementation
@@ -101,7 +109,11 @@ begin
 
   CreateVisualComponent;
 
-  gbAddresses.ControlStyle := gbAddresses.ControlStyle - [csParentBackground] + [csOpaque];
+  //Если у TGroupBox, на котором лежит lFilterLabel будет выставленно свойство ControlStyle,
+  //то lFilterLabel перестанет скрываться по Visible := False
+  //возможно, одно из решений здесь: http://qc.embarcadero.com/wc/qcmain.aspx?d=3850
+  //gbAddresses.ControlStyle := gbAddresses.ControlStyle - [csParentBackground] + [csOpaque];
+
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 end;
 
@@ -131,15 +143,14 @@ begin
 
   lFilter := TLabel.Create(Self);
   lFilter.Parent := gbAddresses;
-  lFilter.Caption := '(Фильтр применен)';
+  lFilter.Caption := filterText;
   lFilter.Left := sbAddresses.Left + sbAddresses.Width + 5;
-  //lFilter.Visible := GetAddressController.IsFilter;
 end;
 
 procedure TframeFilterAddresses.ProcessResize;
 begin
   if Assigned(lFilter) then begin
-    Self.Width := lFilter.Left + lFilter.Width + 10;
+    Self.Width := lFilter.Left + lFilter.Canvas.TextWidth(filterText) + 10;
     cbAllOrders.Top := ( gbAddresses.Height - cbAllOrders.Height) div 2;
     sbAddresses.Top := ( gbAddresses.Height - sbAddresses.Height) div 2;
     lFilter.Top := ( gbAddresses.Height - lFilter.Height) div 2;
@@ -153,26 +164,7 @@ end;
 
 procedure TframeFilterAddresses.ProcessChangeCheckBox;
 begin
-  if Assigned(FDBGrid) then begin
-    if GetAddressController.ShowAllOrders then begin
-      FAddressName := ColumnByNameT(FDBGrid, 'AddressName');
-      if not Assigned(FAddressName) then begin
-        FAddressName := TColumnEh(FDBGrid.Columns.Insert(0));
-        FAddressName.FieldName := 'AddressName';
-        FAddressName.Title.Caption := 'Адрес заказа';
-        FAddressName.Visible := True;
-        FAddressName.Width := FDBGrid.Canvas.TextWidth(FAddressName.Title.Caption);
-        FAddressName.Title.TitleButton := True;
-      end;
-    end
-    else begin
-      if Assigned(FAddressName) then begin
-        FDBGrid.Columns.Delete(FAddressName.Index);
-        FAddressName := nil;
-      end;
-    end;
-  end;
-  sbAddresses.Enabled := GetAddressController.ShowAllOrders;
+  UpdateLayout();
   ProcessChangeFilter;
   if Assigned(FOnChangeCheckBox) then
     FOnChangeCheckBox();
@@ -180,7 +172,7 @@ end;
 
 procedure TframeFilterAddresses.ProcessChangeFilter;
 begin
-  lFilter.Visible := cbAllOrders.Checked and GetAddressController.IsFilter;
+  UpdateFilterLabel();
   if Assigned(FOnChangeFilter) then
     FOnChangeFilter();
 end;
@@ -285,9 +277,56 @@ begin
     if GetAddressController.IsCurrent(FAddressName.DisplayText) then
       AFont.Style := AFont.Style + [fsBold];
   end;
-       
+
   if Assigned(FOldCellParams) then
     FOldCellParams(Sender, Column, AFont, Background, State);
+end;
+
+procedure TframeFilterAddresses.UpdateFrame;
+var
+  I : Integer;
+  menuItem : TMenuItem;
+  address : TAddress;
+begin
+  cbAllOrders.Checked := GetAddressController.ShowAllOrders;
+  for I := 0 to pmSelectedAddresses.Items.Count-1 do begin
+    menuItem := pmSelectedAddresses.Items[i];
+    if Assigned(TAddress(menuItem.Tag)) then begin
+      address := TAddress(menuItem.Tag);
+      menuItem.Checked := address.Selected;
+    end;
+  end;
+  UpdateLayout();
+end;
+
+procedure TframeFilterAddresses.UpdateLayout;
+begin
+  if Assigned(FDBGrid) then begin
+    if GetAddressController.ShowAllOrders then begin
+      FAddressName := ColumnByNameT(FDBGrid, 'AddressName');
+      if not Assigned(FAddressName) then begin
+        FAddressName := TColumnEh(FDBGrid.Columns.Insert(0));
+        FAddressName.FieldName := 'AddressName';
+        FAddressName.Title.Caption := 'Адрес заказа';
+        FAddressName.Visible := True;
+        FAddressName.Width := FDBGrid.Canvas.TextWidth(FAddressName.Title.Caption);
+        FAddressName.Title.TitleButton := True;
+      end;
+    end
+    else begin
+      if Assigned(FAddressName) then begin
+        FDBGrid.Columns.Delete(FAddressName.Index);
+        FAddressName := nil;
+      end;
+    end;
+  end;
+  sbAddresses.Enabled := GetAddressController.ShowAllOrders;
+  UpdateFilterLabel();
+end;
+
+procedure TframeFilterAddresses.UpdateFilterLabel;
+begin
+  lFilter.Visible := cbAllOrders.Checked and GetAddressController.IsFilter;
 end;
 
 end.

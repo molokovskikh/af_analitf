@@ -271,7 +271,7 @@ begin
       frameFilterAddresses.Visible := GetAddressController.AllowAllOrders;
       frameFilterAddressesSend.Visible := False;
       if frameFilterAddresses.Visible then
-        frameFilterAddresses.ProcessChangeCheckBox;
+        frameFilterAddresses.UpdateFrame();
       adsOrdersHForm.SQL.Text := adsCurrentOrders.SQL.Text;
 
       if GetAddressController.ShowAllOrders then begin
@@ -307,7 +307,7 @@ begin
       frameFilterAddresses.Visible := False;
       frameFilterAddressesSend.Visible := GetAddressController.AllowAllOrders;
       if frameFilterAddressesSend.Visible then
-        frameFilterAddressesSend.ProcessChangeCheckBox;
+        frameFilterAddressesSend.UpdateFrame();
       adsOrdersHForm.SQL.Text := adsSendOrders.SQL.Text;
 
       if GetAddressController.ShowAllOrders then begin
