@@ -172,6 +172,7 @@ uses
 {$R Progress.RES}
 {$R Icons.RES}
 {$R Bitmaps.RES}
+{$R InforoomLogo.RES}
 {$R CompareScript80.RES}
 {$R CompareScript82.RES}
 {$R CompareScript83.RES}

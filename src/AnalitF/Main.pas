@@ -318,6 +318,7 @@ public
   function GetReclame : String;
   procedure UpdateNews;
   procedure UpdateTechContact;
+  function GetInforoomLogoFile() : String;
 end;
 
 var
@@ -2212,7 +2213,7 @@ procedure TMainForm.UpdateTechContact;
 var
   sl : TStringList;
 begin
-  shIndexTemplate.MacroByName('InforoomLogo').Value := '"' + RootFolder() + SDirReclame + '\' + 'Inforrom-logo.gif"';
+  shIndexTemplate.MacroByName('InforoomLogo').Value := '"' + GetInforoomLogoFile() + '"';
   shIndexTemplate.MacroByName('TechContact').Value := DM.adsUser.FieldByName('TechContact').AsString;
   shIndexTemplate.MacroByName('TechOperatingMode').Value := DM.adsUser.FieldByName('TechOperatingMode').AsString;
   sl := TStringList.Create;
@@ -2245,6 +2246,22 @@ begin
   if AnsiCompareText(Column.Field.FieldName, 'Header') = 0 then begin
     AFont.Style := AFont.Style + [fsUnderline];
     AFont.Color := clHotLight;
+  end;
+end;
+
+function TMainForm.GetInforoomLogoFile: String;
+var
+  InforoomLogo: TResourceStream;
+begin
+  Result := RootFolder() + 'InforoomLogo.gif';
+  if not SysUtils.FileExists( Result ) then
+  begin
+    InforoomLogo := TResourceStream.Create( hInstance, 'InforoomLogo', RT_RCDATA);
+    try
+      InforoomLogo.SaveToFile( Result );
+    except
+      InforoomLogo.Free;
+    end;
   end;
 end;
 

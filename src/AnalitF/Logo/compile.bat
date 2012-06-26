@@ -1,0 +1,1 @@
+brcc32 -fo..\InforoomLogo.RES InforoomLogo.rc
