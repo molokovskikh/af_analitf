@@ -125,6 +125,7 @@ type
 
     pAttachments : TPanel;
     pAttachmentHeaders : TPanel;
+    pRequestAttachments : TPanel;
     dbtSubject: TDBText;
     dbtSupplierName: TDBText;
     dbtLogTime: TDBText;
@@ -239,15 +240,6 @@ begin
   sbDelete.Top := 8;
   sbDelete.OnClick := sbDeleteClick;
 
-  sbRequestAttachments := TSpeedButton.Create(Self);
-  sbRequestAttachments.Height := 25;
-  sbRequestAttachments.Caption := 'Получить вложения';
-  sbRequestAttachments.Parent := pActions;
-  sbRequestAttachments.Width := FCanvas.TextWidth(sbRequestAttachments.Caption) + 20;
-  sbRequestAttachments.Left := 5;
-  sbRequestAttachments.Top := 8;
-  sbRequestAttachments.OnClick := sbDeleteClick;
-
   pFilter.Height := sbDelete.Height + 15;
 
   legend := TframeBaseLegend.Create(Self);
@@ -334,7 +326,25 @@ begin
 
   pAttachmentHeaders.Height := dbtSupplierName.Top + dbtSupplierName.Height + 2;
 
-  pAttachments.Height := pAttachmentHeaders.Height + 60;
+  pRequestAttachments := TPanel.Create(Self);
+  pRequestAttachments.Name := 'pRequestAttachments';
+  pRequestAttachments.Caption := '';
+  pRequestAttachments.BevelInner := bvNone;
+  pRequestAttachments.BevelOuter := bvNone;
+  pRequestAttachments.Parent := pAttachments;
+  pRequestAttachments.Align := alBottom;
+  pRequestAttachments.ControlStyle := pRequestAttachments.ControlStyle - [csParentBackground] + [csOpaque];
+
+  sbRequestAttachments := TSpeedButton.Create(Self);
+  sbRequestAttachments.Height := 25;
+  sbRequestAttachments.Caption := 'Получить вложения';
+  sbRequestAttachments.Parent := pRequestAttachments;
+  sbRequestAttachments.Width := FCanvas.TextWidth(sbRequestAttachments.Caption) + 20;
+  sbRequestAttachments.Left := 5;
+  sbRequestAttachments.Top := 8;
+  sbRequestAttachments.OnClick := sbRequestAttachmentsClick;
+
+  pAttachments.Height := pAttachmentHeaders.Height + 60 + pRequestAttachments.Height;
 
   dbgMailAttachemts := TToughDBGrid.Create(Self);
   dbgMailAttachemts.Parent := pAttachments;
@@ -698,7 +708,11 @@ end;
 procedure TframeMiniMail.tmrRunRequestAttachmentsTimer(Sender: TObject);
 begin
   tmrRunRequestAttachments.Enabled := False;
-  RunExchange([eaRequestAttachments])
+  if Owner is TForm then
+    TForm(Owner).Hide;
+  RunExchange([eaRequestAttachments]);
+  if Owner is TForm then
+    TForm(Owner).BringToFront();
 end;
 
 procedure TframeMiniMail.SetScrolls(var Memo: TDBMemo);

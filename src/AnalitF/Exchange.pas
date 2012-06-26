@@ -278,6 +278,9 @@ begin
         AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
   end;
 
+  if Result and (eaRequestAttachments in AExchangeActions) then
+    AProc.MessageBox('Запрос вложений завершен успешно успешно.', MB_OK or MB_ICONINFORMATION);
+
   if Result and ( [eaGetWaybills, eaSendWaybills] * AExchangeActions <> []) and DM.NeedShowCertificatesResults() then
     ShowNotFoundCertificates(DM.ShowCertificatesResults());
 

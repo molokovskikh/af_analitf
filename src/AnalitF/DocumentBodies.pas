@@ -399,6 +399,9 @@ begin
       legeng.Visible := False;
       dbgOrder.Visible := False;
       pButtons.Visible := True;
+      sbAdd.Visible := True;
+      sbDelete.Visible := True;
+      sbRequestCertificates.Visible := False;
       legeng.Visible := True;
       FWaybillDataSetState := [dsEdit, dsInsert];
       adsDocumentBodies.OnNewRecord := UserWaybillNewRecord;
@@ -409,6 +412,12 @@ begin
       adsDocumentBodies.AfterInsert := UserWaybillAfterNewRecord;
     end
     else begin
+      legeng.Visible := False;
+      pButtons.Visible := True;
+      sbAdd.Visible := False;
+      sbDelete.Visible := False;
+      sbRequestCertificates.Visible := True;
+      legeng.Visible := True;
       adsDocumentBodies.OnNewRecord := nil;
       adsDocumentBodies.BeforePost := nil;
       adsDocumentBodies.AfterInsert := nil;
@@ -2020,7 +2029,7 @@ begin
   sbRequestCertificates := TSpeedButton.Create(Self);
   sbRequestCertificates.Parent := pButtons;
   sbRequestCertificates.Top := 8;
-  sbRequestCertificates.Left := sbDelete.Left + sbDelete.Width + 5;
+  sbRequestCertificates.Left := sbAdd.Left;
   sbRequestCertificates.Caption := 'Получить сертификаты';
   sbRequestCertificates.Width := Self.Canvas.TextWidth(sbRequestCertificates.Caption) + 20;
   sbRequestCertificates.OnClick := sbRequestCertificatesClick;

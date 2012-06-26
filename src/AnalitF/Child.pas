@@ -112,6 +112,8 @@ type
     procedure ClearOrder;
     //очищаем созданный заказ
     procedure ClearOrderByOrderCost;
+    //устанавливаем значение
+    procedure ClearOrderByMinOrderCount;
     procedure ShowVolumeMessage;
     procedure NewAfterPost(DataSet : TDataSet);
     procedure NewBeforePost(DataSet: TDataSet);
@@ -377,9 +379,14 @@ begin
 end;
 
 procedure TChildForm.ClearOrder;
+var
+  value : Integer;
 begin
   SoftEdit(dsCheckVolume);
-  fOrder.AsInteger := fOrder.AsInteger - (fOrder.AsInteger mod fVolume.AsInteger);
+  value := fOrder.AsInteger - (fOrder.AsInteger mod fVolume.AsInteger);
+  if value = 0 then
+    value := fVolume.AsInteger;
+  fOrder.AsInteger := value;
   dsCheckVolume.Post;
 end;
 
@@ -419,7 +426,7 @@ begin
         'Заказанное количество "%s" меньше минимального количества "%s" по данной позиции!',
         [fOrder.AsString, fMinOrderCount.AsString]),
       MB_ICONWARNING);
-    ClearOrderByOrderCost;
+    ClearOrderByMinOrderCount;
     Abort;
   end;
   if (dsCheckVolume.RecordCount > 0) and not CheckByBuyingMatrixType then begin
@@ -1119,6 +1126,13 @@ end;
 function TChildForm.SearchInProgress: Boolean;
 begin
   Result := False;
+end;
+
+procedure TChildForm.ClearOrderByMinOrderCount;
+begin
+  SoftEdit(dsCheckVolume);
+  fOrder.AsInteger := fMinOrderCount.AsInteger;
+  dsCheckVolume.Post;
 end;
 
 end.

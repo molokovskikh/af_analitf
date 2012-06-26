@@ -85,6 +85,8 @@ type
     shStartClients: TStrHolder;
     shEndClients: TStrHolder;
     tmrFillReport: TTimer;
+    shCoreRefresh: TStrHolder;
+    shCoreUpdate: TStrHolder;
     procedure FormCreate(Sender: TObject);
     procedure tmRunBatchTimer(Sender: TObject);
     procedure actFlipCoreExecute(Sender: TObject);
@@ -150,13 +152,17 @@ type
     procedure dbgOrderBatchDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure dbgOrderBatchDblClick(Sender: TObject);
-    procedure CoreGetCellParams(Sender: TObject; Column: TColumnEh;
-      AFont: TFont; var Background: TColor; State: TGridDrawState);
 
     procedure dbgOrderBatchOnEnter(Sender: TObject);
     procedure dbgOrderBatchOnExit(Sender: TObject);
     procedure dbgCoreOnEnter(Sender: TObject);
     procedure dbgCoreOnExit(Sender: TObject);
+
+    procedure dbgCoreKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure dbgCoreCanInput(Sender: TObject; Value: Integer;
+      var CanInput: Boolean);
+    procedure CoreGetCellParams(Sender: TObject; Column: TColumnEh;
+      AFont: TFont; var Background: TColor; State: TGridDrawState);
 
     procedure SaveReportToFile(FileName : String);
     procedure SaveExcelReportToFile(FileName : String; exportServiceFields : Boolean);
@@ -166,6 +172,8 @@ type
     procedure adsCoreAfterPost(DataSet: TDataSet);
     procedure adsCoreBeforeEdit(DataSet: TDataSet);
     procedure adsCoreBeforePost(DataSet: TDataSet);
+
+    procedure AddCoreFields;
   public
     { Public declarations }
 
@@ -309,6 +317,8 @@ type
 
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
+    procedure GetLastBatchId;
+    procedure SetLastBatchId;
   end;
 
 var
@@ -456,6 +466,7 @@ begin
   dbgCore.OnGetCellParams := CoreGetCellParams;
   dbgCore.OnEnter := dbgCoreOnEnter;
   dbgCore.OnExit := dbgCoreOnExit;
+  dbgCore.OnKeyDown := dbgCoreKeyDown;
 
 
   TDBGridHelper.AddColumn(dbgCore, 'SynonymName', 'Наименование у поставщика', 196);
@@ -506,6 +517,12 @@ begin
   column := TDBGridHelper.AddColumn(dbgCore, 'SumOrder', 'Сумма', '0.00;;''''', 70);
   column.Color := TColor(16775406);
   }
+  column := TDBGridHelper.AddColumn(dbgCore, 'OrderCount', 'Заказ', 47);
+  column.Color := TColor(16775406);
+  column := TDBGridHelper.AddColumn(dbgCore, 'SumOrder', 'Сумма', '0.00;;''''', 70);
+  column.Color := TColor(16775406);
+  
+  dbgCore.InputField := 'OrderCount';
 
   pBottom.Height := pLegendAndComment.Height + (OneLineHeight * 10);
   pBottom.Constraints.MaxHeight := pBottom.Height;
@@ -680,6 +697,8 @@ begin
 
   adsCore := TMyQuery.Create(Self);
   adsCore.SQL.Text := shCore.Strings.Text;
+  adsCore.SQLUpdate.Text := shCoreUpdate.Strings.Text;
+  adsCore.SQLRefresh.Text := shCoreRefresh.Strings.Text;
   adsCore.ParamByName('TimeZoneBias').Value := AProc.TimeZoneBias;
   adsCore.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   adsCore.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
@@ -689,8 +708,10 @@ begin
   adsCore.AfterPost := adsCoreAfterPost;
   adsCore.BeforeEdit := adsCoreBeforeEdit;
   adsCore.BeforePost := adsCoreBeforePost;
-  
+
   adsCore.RefreshOptions := [roAfterUpdate];
+
+  AddCoreFields;
   
   dsCore := TDataSource.Create(Self);
   dsCore.DataSet := adsCore;
@@ -884,6 +905,9 @@ begin
 
   dbgOrderBatch.SetFocus;
 //  dbgOrder.BringToFront();
+
+  //После этого мы выставляем позицию на последнюю просматриваемую позицию
+  SetLastBatchId;
 end;
 
 procedure TOrderBatchForm.tmRunBatchTimer(Sender: TObject);
@@ -916,8 +940,6 @@ end;
 procedure TOrderBatchForm.UpdateOrderDataset;
 begin
   dbgOrderBatch.SetFocus;
-  if LastBatchId > 0 then
-    adsReport.Locate('Id', LastBatchId, []);
 end;
 
 procedure TOrderBatchForm.DeletePositions(Sender: TObject);
@@ -1035,7 +1057,8 @@ begin
       if (Length(eSearch.Text) > 0) and (InternalSearchText <> eSearch.Text) then
         tmrSearchTimer(nil)
       else
-        actFlipCoreExecute(nil);
+        dbgCore.SetFocus();
+        //actFlipCoreExecute(nil);
     end
     else
       if Key = VK_ESCAPE then
@@ -1229,6 +1252,8 @@ end;
 procedure TOrderBatchForm.FormDestroy(Sender: TObject);
 begin
   BM.Free;
+  if not adsReport.IsEmpty then
+    GetLastBatchId;
   inherited;
 end;
 
@@ -1671,6 +1696,7 @@ end;
 procedure TOrderBatchForm.adsCoreAfterPost(DataSet: TDataSet);
 begin
   MainForm.SetOrdersInfo;
+  adsReport.RefreshRecord;
 end;
 
 procedure TOrderBatchForm.adsCoreBeforeEdit(DataSet: TDataSet);
@@ -1778,6 +1804,113 @@ begin
           adsCoreMarkup.AsVariant);
   except
   end;
+end;
+
+procedure TOrderBatchForm.GetLastBatchId;
+begin
+  LastBatchId := IdField.Value;
+end;
+
+procedure TOrderBatchForm.SetLastBatchId;
+begin
+  if not adsReport.IsEmpty then
+    //Если был первый запуск, то устанавливаем в начало списка
+    if LastBatchId <= 0 then
+      adsReport.First
+    else
+      if not adsReport.Locate('Id', LastBatchId, []) then
+        adsReport.First;
+end;
+
+procedure TOrderBatchForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    dbgOrderBatch.SetFocus();
+end;
+
+procedure TOrderBatchForm.dbgCoreCanInput(Sender: TObject; Value: Integer;
+  var CanInput: Boolean);
+begin
+  CanInput := (not adsCore.IsEmpty) and ( adsCoreSynonymCode.AsInteger >= 0) and
+    (( adsCoreRegionCode.AsLargeInt and DM.adtClientsREQMASK.AsLargeInt) =
+      adsCoreRegionCode.AsLargeInt);
+end;
+
+procedure TOrderBatchForm.AddCoreFields;
+begin
+  adsCoreCoreId := TDataSetHelper.AddLargeintField(adsCore, 'CoreId');
+  adsCorePriceCode := TDataSetHelper.AddLargeintField(adsCore, 'PriceCode');
+  adsCoreRegionCode := TDataSetHelper.AddLargeintField(adsCore, 'RegionCode');
+  adsCoreproductid := TDataSetHelper.AddLargeintField(adsCore, 'productid');
+  adsCoreShortcode := TDataSetHelper.AddLargeintField(adsCore, 'shortcode');
+  adsCoreCodeFirmCr := TDataSetHelper.AddLargeintField(adsCore, 'CodeFirmCr');
+  adsCoreSynonymCode := TDataSetHelper.AddLargeintField(adsCore, 'SynonymCode');
+  adsCoreSynonymFirmCrCode := TDataSetHelper.AddLargeintField(adsCore, 'SynonymFirmCrCode');
+  adsCoreCode := TDataSetHelper.AddStringField(adsCore, 'Code');
+  adsCoreCodeCr := TDataSetHelper.AddStringField(adsCore, 'CodeCr');
+  adsCorePeriod := TDataSetHelper.AddStringField(adsCore, 'Period');
+  adsCoreVolume := TDataSetHelper.AddStringField(adsCore, 'Volume');
+  adsCoreNote := TDataSetHelper.AddStringField(adsCore, 'Note');
+  adsCoreCost := TDataSetHelper.AddFloatField(adsCore, 'Cost');
+  adsCoreQuantity := TDataSetHelper.AddStringField(adsCore, 'Quantity');
+  adsCoreAwait := TDataSetHelper.AddBooleanField(adsCore, 'Await');
+  adsCoreJunk := TDataSetHelper.AddBooleanField(adsCore, 'Junk');
+  adsCoreDoc := TDataSetHelper.AddStringField(adsCore, 'doc');
+  adsCoreRegistryCost := TDataSetHelper.AddFloatField(adsCore, 'registrycost');
+  adsCoreVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'vitallyimportant');
+  adsCoreRequestRatio := TDataSetHelper.AddIntegerField(adsCore, 'requestratio');
+  adsCoreOrderCost := TDataSetHelper.AddFloatField(adsCore, 'ordercost');
+  adsCoreMinOrderCount := TDataSetHelper.AddIntegerField(adsCore, 'minordercount');
+  adsCoreSynonymName := TDataSetHelper.AddStringField(adsCore, 'SynonymName');
+  adsCoreSynonymFirm := TDataSetHelper.AddStringField(adsCore, 'SynonymFirm');
+  adsCoreDatePrice := TDataSetHelper.AddDateTimeField(adsCore, 'DatePrice');
+  adsCorePriceName := TDataSetHelper.AddStringField(adsCore, 'PriceName');
+  adsCorePriceEnabled := TDataSetHelper.AddBooleanField(adsCore, 'PriceEnabled');
+  adsCoreFirmCode := TDataSetHelper.AddLargeintField(adsCore, 'FirmCode');
+  adsCoreStorage := TDataSetHelper.AddBooleanField(adsCore, 'Storage');
+  adsCoreRegionName := TDataSetHelper.AddStringField(adsCore, 'RegionName');
+  adsCoreFullcode := TDataSetHelper.AddLargeintField(adsCore, 'fullcode');
+  adsCoreRealCost := TDataSetHelper.AddFloatField(adsCore, 'RealCost');
+  adsCoreSupplierPriceMarkup := TDataSetHelper.AddFloatField(adsCore, 'SupplierPriceMarkup');
+  adsCoreProducerCost := TDataSetHelper.AddFloatField(adsCore, 'ProducerCost');
+  adsCoreNDS := TDataSetHelper.AddSmallintField(adsCore, 'NDS');
+  adsCoreMnnId := TDataSetHelper.AddLargeintField(adsCore, 'MnnId');
+  adsCoreMnn := TDataSetHelper.AddStringField(adsCore, 'Mnn');
+  adsCoreDescriptionId := TDataSetHelper.AddLargeintField(adsCore, 'DescriptionId');
+  adsCoreCatalogVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'CatalogVitallyImportant');
+  adsCoreCatalogMandatoryList := TDataSetHelper.AddBooleanField(adsCore, 'CatalogMandatoryList');
+  adsCoreMaxProducerCost := TDataSetHelper.AddFloatField(adsCore, 'MaxProducerCost');
+  adsCoreBuyingMatrixType := TDataSetHelper.AddIntegerField(adsCore, 'BuyingMatrixType');
+  adsCoreProducerName := TDataSetHelper.AddStringField(adsCore, 'ProducerName');
+
+
+  adsCoreOrderCount := TDataSetHelper.AddIntegerField(adsCore, 'OrderCount');
+  adsCoreSumOrder := TDataSetHelper.AddFloatField(adsCore, 'SumOrder');
+
+  adsCoreOrdersOrderId := TDataSetHelper.AddLargeintField(adsCore, 'OrdersOrderId');
+  adsCoreOrdersHOrderId := TDataSetHelper.AddLargeintField(adsCore, 'OrdersHOrderId');
+
+  adsCoreMarkup := TDataSetHelper.AddFloatField(adsCore, 'Markup');
+
+  adsCoreCost.DisplayFormat := '0.00;;''''';
+  adsCoreRealCost.DisplayFormat := '0.00;;''''';
+  adsCoreRegistryCost.DisplayFormat := '0.00;;''''';
+  adsCoreProducerCost.DisplayFormat := '0.00;;''''';
+  adsCoreSumOrder.DisplayFormat := '0.00;;''''';
+  adsCoreRequestRatio.DisplayFormat := '#';
+  adsCoreOrderCount.DisplayFormat := '#';
+
+  adsCorePriceRet := TCurrencyField.Create(adsCore);
+  adsCorePriceRet.FieldName := 'PriceRet';
+  adsCorePriceRet.FieldKind := fkCalculated;
+  adsCorePriceRet.Calculated := True;
+  adsCorePriceRet.DisplayFormat := '0.00;;';
+  adsCorePriceRet.Dataset := adsCore;
+
+  adsCoreRetailVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'RetailVitallyImportant');
+
+  adsCoreNamePromotionsCount := TDataSetHelper.AddIntegerField(adsCore, 'NamePromotionsCount');
 end;
 
 initialization

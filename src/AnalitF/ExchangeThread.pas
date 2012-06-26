@@ -684,7 +684,7 @@ begin
         waybillsWithCertificate := True;
     end;
 
-    if [eaGetPrice] * ExchangeForm.ExchangeActs <> [] then begin
+    if [eaGetPrice, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [] then begin
       GetAttachmentRequests();
       if Assigned(AttachmentIdsSL) and (AttachmentIdsSL.Count > 0) then
         requestAttachs := True;
@@ -788,10 +788,14 @@ begin
     else begin
       if waybillsWithCertificate or ([eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> []) then
         Res := SOAP.Invoke( 'GetUserDataWithOrdersAsyncCert', FPostParams)
-      else begin
-        processAsync := True;
-        Res := SOAP.Invoke( 'GetUserDataWithAttachmentsAsync', FPostParams);
-      end;
+      else
+        if eaRequestAttachments in ExchangeForm.ExchangeActs then begin
+          Res := SOAP.Invoke( 'GetUserDataWithRequestAttachments', FPostParams)
+        end
+        else begin
+          processAsync := True;
+          Res := SOAP.Invoke( 'GetUserDataWithAttachmentsAsync', FPostParams);
+        end;
     end;
     { проверяем отсутствие ошибки при удаленном запросе }
     Error := Utf8ToAnsi( Res.Values[ 'Error']);
@@ -924,7 +928,7 @@ var
   EndDownTime : TDateTime;
 begin
   //загрузка прайс-листа
-  if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders] * ExchangeForm.ExchangeActs <> [])
+  if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [])
   then begin
 //    Tracer.TR('DoExchange', 'Загрузка данных');
     SetStatusText('Загрузка данных');
@@ -1111,7 +1115,7 @@ begin
   SetLength(params, 2);
   SetLength(values, 2);
   params[0]:= 'WaybillsOnly';
-  values[0]:= BoolToStr( [eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs <> [], True);
+  values[0]:= BoolToStr( [eaGetWaybills, eaSendWaybills, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [], True);
   params[1]:= 'UpdateId';
   values[1]:= GetUpdateId();
 
@@ -2820,7 +2824,7 @@ begin
   //Здесь надо все переделать в связи с требованием #1632 Ошибка при обновлении
   if Assigned(Sender) then 
     ChildThreads.Remove(Sender);
-  if (ChildThreads.Count = 0) and ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills] * ExchangeForm.ExchangeActs <> [])
+  if (ChildThreads.Count = 0) and ( [eaGetPrice, eaSendOrders, eaGetWaybills, eaSendLetter, eaSendWaybills, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [])
   then begin
     HTTPDisconnect;
     RasDisconnect;
