@@ -88,7 +88,8 @@ procedure TDefectivesForm.SetDateInterval;
 begin
   with adsDefectives do begin
     ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
-    ParamByName('DateTo').AsDate:=dtpDateTo.Date;
+    dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
+    ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
     Screen.Cursor:=crHourglass;
     try
       if Active then
