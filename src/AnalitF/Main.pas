@@ -314,8 +314,6 @@ public
   //—уществуют модальные окна, которые ждут ответа от пользовател€
   //Ёто либо окно с настройками либо MessageBox
   function ModalExists : Boolean;
-  function GetNews : String;
-  function GetReclame : String;
   procedure UpdateNews;
   procedure UpdateTechContact;
   function GetInforoomLogoFile() : String;
@@ -384,6 +382,7 @@ begin
   LoadToImageList(ImageList, Application.ExeName, 100, Set32BPP);
   MiniMailForm := TMiniMailForm.Create(Application);
   HtmlViewer.OnHotSpotClick := HotSpotClick;
+  htmlContact.OnHotSpotClick := HotSpotClick;
   SetupGridNews();
 end;
 
@@ -2126,61 +2125,6 @@ procedure TMainForm.FormActivate(Sender: TObject);
 begin
   if JustRun then
     tmrStartUp.Enabled := True;
-end;
-
-function TMainForm.GetNews: String;
-var
-  I : Integer;
-  className : String;
-begin
-  Result := '';
-  DM.adsQueryValue.Close;
-  DM.adsQueryValue.SQL.Text := 'select Id, PublicationDate, header from news order by PublicationDate desc';
-
-  DM.adsQueryValue.Open;
-  try
-    if not DM.adsQueryValue.IsEmpty then begin
-      Result := '<table class="DataTable">';
-      I := 1;
-      while not DM.adsQueryValue.Eof do begin
-        className := IfThen(Odd(i), 'EvenRow', 'OddRow');
-        Result := Result +
-          Format('<tr class="%s"><td class="CellData"><a href="%s" target="_blank">%s</a>  %s</td></tr>',
-            [className,
-             RootFolder() + SDirNews + '\' + DM.adsQueryValue.FieldByName('Id').AsString + '.html',
-             DateToStr(DM.adsQueryValue.FieldByName('PublicationDate').AsDateTime),
-             DM.adsQueryValue.FieldByName('Header').AsString]);
-        Inc(i);
-        DM.adsQueryValue.Next;
-      end;
-      Result := Result + '</table>';
-    end;
-  finally
-    DM.adsQueryValue.Close;
-  end;
-end;
-
-function TMainForm.GetReclame: String;
-var
-  sl : TStringList;
-  fileName : String;
-  firstPos,
-  endPos : Integer;
-begin
-  Result := '';
-  fileName := RootFolder() + SDirReclame + '\' + FormatFloat('00', HtmlViewer.Tag) + '.htm';
-  if FileExists(fileName) then begin
-    sl := TStringList.Create;
-    try
-      sl.LoadFromFile(fileName);
-      firstPos := Pos('<div>', sl.Text);
-      endPos := Pos('</div>', sl.Text);
-      if (firstPos > 0) and (endPos > 0) and (firstPos < endPos) then
-        Result := Copy(sl.Text, firstPos, endPos - firstPos + 6);
-    finally
-      sl.Free
-    end;
-  end;
 end;
 
 procedure TMainForm.SetupGridNews;
