@@ -366,7 +366,7 @@ inherited DefectivesForm: TDefectivesForm
       '  Rejects.CHECKPRINT '
       'FROM Rejects'
       'WHERE'
-      '(DEFECTIVES.ID = :OLD_ID)')
+      '(Rejects.ID = :OLD_ID)')
     Connection = DM.MyConnection
     SQL.Strings = (
       'SELECT '
