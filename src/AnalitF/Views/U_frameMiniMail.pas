@@ -620,6 +620,8 @@ begin
     SoftPost(mdAttachments);
   if Assigned(mdMails) then
     SoftPost(mdMails);
+  //При закрытии формы с мини-почтой сбрасываем поиск  
+  SetClear();
 end;
 
 procedure TframeMiniMail.BodyEnter(Sender: TObject);
