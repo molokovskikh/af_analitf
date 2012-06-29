@@ -284,7 +284,7 @@ begin
   end;
 
   if Result and (eaRequestAttachments in AExchangeActions) then
-    AProc.MessageBox('«апрос вложений завершен успешно успешно.', MB_OK or MB_ICONINFORMATION);
+    AProc.MessageBox('«апрос вложений завершен успешно.', MB_OK or MB_ICONINFORMATION);
 
   if Result and ( [eaGetWaybills, eaSendWaybills] * AExchangeActions <> []) and DM.NeedShowCertificatesResults() then
     ShowNotFoundCertificates(DM.ShowCertificatesResults());
