@@ -322,7 +322,9 @@ var
 }  
 begin
   if Key = VK_DELETE then begin
-    if not dbgDocumentBodies.EditorMode and adsDocumentHeadersCreatedByUser.Value then begin
+    if not dbgDocumentBodies.EditorMode and adsDocumentHeadersCreatedByUser.Value
+      and not adsDocumentBodies.IsEmpty
+    then begin
       if AProc.MessageBox( 'Удалить позицию накладной?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK then
         adsDocumentBodies.Delete;
     end;
@@ -2328,7 +2330,8 @@ end;
 
 procedure TDocumentBodiesForm.sbDeleteRowClick(Sender: TObject);
 begin
-  adsDocumentBodies.Delete;
+  if not adsDocumentBodies.IsEmpty then
+    adsDocumentBodies.Delete;
 end;
 
 procedure TDocumentBodiesForm.SetOrderByPosition;
