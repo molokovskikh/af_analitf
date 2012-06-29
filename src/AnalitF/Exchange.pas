@@ -131,6 +131,11 @@ begin
   NeedShowMiniMail := False;
   //Перед запуском взаимодействия с сервером закрываем все дочерние окна
   MainForm.FreeChildForms;
+  //Отображаем панель с рекламой и контактами
+  MainForm.UpdateReclame;
+  //После того, как показали панель с рекламой и контактами, ее надо отрисовать,
+  //чтобы не было рамки грида с новостями
+  MainForm.Repaint;
   Result := False;
   if Assigned(GlobalExchangeParams) then
     FreeAndNil(GlobalExchangeParams);

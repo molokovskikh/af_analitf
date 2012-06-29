@@ -876,7 +876,7 @@ function TMainForm.CheckUnsendOrders: boolean;
 begin
   result := False;
   if not Assigned(GlobalExchangeParams) and DM.MainConnection.Connected then begin
-    if not adsNews.Active then begin
+    if not adsNews.Active and pMain.Visible then begin
       adsNews.Connection := DM.MainConnection;
       adsNews.Open;
     end;
@@ -963,8 +963,10 @@ procedure TMainForm.UpdateReclame;
 var
   openFileName : String;
 begin
-  SchedulesController().LoadSchedules();
+  pMain.Visible := True;
   
+  SchedulesController().LoadSchedules();
+
   actPostOrderBatch.Visible := DM.adsUser.FieldByName('EnableSmartOrder').AsBoolean;
 
   actGetHistoryOrders.Visible := not DM.adsUser.FieldByName('EnableImpersonalPrice').AsBoolean;
@@ -1400,12 +1402,16 @@ procedure TMainForm.AddFormsToFree;
 var
   i: Integer;
 begin
+  if pMain.Visible then begin
+    pMain.Visible := False;
+    adsNews.Close;
+  end;
   for i := ControlCount - 1 downto 0 do
     if Controls[i] is TChildForm then
       if deletedForms.IndexOf(Controls[i]) = -1 then begin
         deletedForms.Add(Controls[i]);
-        //Controls[i].Visible := False;
-        //Controls[i].Parent := nil;
+        Controls[i].Visible := False;
+        Controls[i].Parent := nil;
       end;
   ActiveChild := nil;
   //todo: ClientId-UserId

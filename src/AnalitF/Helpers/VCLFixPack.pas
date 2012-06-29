@@ -191,7 +191,7 @@ const
   { The OPTIMIZED_RESIZE_REDRAW option is experimental. It speeds up the resizing of forms
     by not redrawing each control when it is realigned but by invalidating them all after
     one align round is done. }
-  {.$DEFINE OPTIMIZED_RESIZE_REDRAW}
+  {$DEFINE OPTIMIZED_RESIZE_REDRAW}
 {$IFEND}
 
 {$IF CompilerVersion < 20.0} // Delphi 6-2007
