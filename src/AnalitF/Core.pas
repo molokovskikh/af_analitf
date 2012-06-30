@@ -251,6 +251,7 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
   fBuyingMatrixType := adsCoreBuyingMatrixType;
+  fCoreQuantity := adsCoreQuantity;
   SortOnOrderGrid := False;
 
   framePromotion := TframePromotion.AddFrame(Self, pCenter, pCenter, dbgCore, False);

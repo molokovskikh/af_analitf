@@ -828,6 +828,7 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMinOrderCount;
   fBuyingMatrixType := adsCoreBuyingMatrixType;
+  fCoreQuantity := adsCoreQuantity;
   SortOnOrderGrid := False;
   
   inherited;

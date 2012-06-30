@@ -67,6 +67,7 @@ type
     fSumOrder     : TField;
     fMinOrderCount : TField;
     fBuyingMatrixType : TIntegerField;
+    fCoreQuantity : TField;
     OldAfterPost : TDataSetNotifyEvent;
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
@@ -114,6 +115,7 @@ type
     procedure ClearOrderByOrderCost;
     //устанавливаем значение
     procedure ClearOrderByMinOrderCount;
+    function  AllowOrderByCoreQuantity(order : Integer) : Boolean;
     procedure ShowVolumeMessage;
     procedure NewAfterPost(DataSet : TDataSet);
     procedure NewBeforePost(DataSet: TDataSet);
@@ -386,6 +388,8 @@ begin
   value := fOrder.AsInteger - (fOrder.AsInteger mod fVolume.AsInteger);
   if value = 0 then
     value := fVolume.AsInteger;
+  if not AllowOrderByCoreQuantity(value) then
+    value := 0;
   fOrder.AsInteger := value;
   dsCheckVolume.Post;
 end;
@@ -462,6 +466,7 @@ begin
   CreateOverCostPanel;
   if Assigned(dsCheckVolume) and Assigned(dgCheckVolume) and Assigned(fOrder)
      and Assigned(fVolume) and Assigned(fOrderCost) and Assigned(fSumOrder) and Assigned(fMinOrderCount)
+     and Assigned(fCoreQuantity)
   then begin
     OldAfterPost := dsCheckVolume.AfterPost;
     dsCheckVolume.AfterPost := NewAfterPost;
@@ -1129,10 +1134,27 @@ begin
 end;
 
 procedure TChildForm.ClearOrderByMinOrderCount;
+var
+  newOrder : Integer;
 begin
   SoftEdit(dsCheckVolume);
-  fOrder.AsInteger := fMinOrderCount.AsInteger;
+  newOrder := fMinOrderCount.AsInteger;
+  if not AllowOrderByCoreQuantity(newOrder) then
+    newOrder := 0;
+  fOrder.AsInteger := newOrder;
   dsCheckVolume.Post;
+end;
+
+function TChildForm.AllowOrderByCoreQuantity(order: Integer): Boolean;
+var
+  Quantity, E: Integer;
+begin
+  Result := Assigned(fCoreQuantity);
+  if Result then begin
+    Val(fCoreQuantity.AsString, Quantity, E);
+    if E <> 0 then Quantity := 0;
+    Result := (Quantity <= 0) or (Quantity >= order);
+  end;
 end;
 
 end.

@@ -217,6 +217,7 @@ begin
   fSumOrder := adsCoreSumOrder;
   fMinOrderCount := adsCoreMINORDERCOUNT;
   fBuyingMatrixType := adsCoreBuyingMatrixType;
+  fCoreQuantity := adsCoreQuantity;
   gotoMNNButton := btnGotoMNN;
 
   PrepareDetailPromotions();

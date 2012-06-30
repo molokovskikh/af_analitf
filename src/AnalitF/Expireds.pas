@@ -129,6 +129,7 @@ begin
   fSumOrder := adsExpiredsSumOrder;
   fMinOrderCount := adsExpiredsMINORDERCOUNT;
   fBuyingMatrixType := adsExpiredsBuyingMatrixType;
+  fCoreQuantity := adsExpiredsQuantity;
   gotoMNNButton := btnGotoMNN;
   inherited;
   TframePosition.AddFrame(Self, pClient, dsExpireds, 'SynonymName', 'MnnId', ShowDescriptionAction);
