@@ -57,6 +57,7 @@ type
       AFont: TFont; var Background: TColor; State: TGridDrawState);
 
     procedure sbDeleteClick(Sender : TObject);
+    procedure sbAllMailsClick(Sender : TObject);
 
     procedure fRecievedAttachmentGetText(Sender: TField;
       var Text: String; DisplayText: Boolean);
@@ -120,6 +121,7 @@ type
     sbDelete : TSpeedButton;
     sbRequestAttachments : TSpeedButton;
     legend : TframeBaseLegend;
+    sbAllMails : TSpeedButton;
 
     dbgMailHeaders : TToughDBGrid;
 
@@ -221,6 +223,15 @@ begin
   lSearch.Top := 10;
   eSearch.OnKeyDown := eSearchKeyDown;
   eSearch.OnKeyPress := eSearchKeyPress;
+
+  sbAllMails := TSpeedButton.Create(Self);
+  sbAllMails.Height := 25;
+  sbAllMails.Caption := 'Все письма';
+  sbAllMails.Parent := pFilter;
+  sbAllMails.Width := FCanvas.TextWidth(sbAllMails.Caption) + 20;
+  sbAllMails.Left := eSearch.Left + eSearch.Width + 25;
+  sbAllMails.Top := 8;
+  sbAllMails.OnClick := sbAllMailsClick;
 
   pActions := TPanel.Create(Self);
   pActions.Name := 'pActions';
@@ -640,7 +651,6 @@ begin
   if (Length(eSearch.Text) > 2) then begin
     InternalSearchText := StrUtils.LeftStr(eSearch.Text, 50);
     InternalSearch;
-    eSearch.Text := '';
   end
   else
     if Length(eSearch.Text) = 0 then
@@ -769,8 +779,9 @@ procedure TframeMiniMail.dbgMailHeadersKeyPress(Sender: TObject;
   var Key: Char);
 begin
   if ( Key >= #32) //and not ( Key in [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-  then
-  begin
+  then begin
+    if not tmrSearch.Enabled and (InternalSearchText = eSearch.Text) then
+      eSearch.Text := '';
     AddKeyToSearch(Key);
   end;
 end;
@@ -778,6 +789,11 @@ end;
 function TframeMiniMail.InSearch: Boolean;
 begin
   Result := Length(InternalSearchText) > 0;
+end;
+
+procedure TframeMiniMail.sbAllMailsClick(Sender: TObject);
+begin
+  SetClear();
 end;
 
 end.
