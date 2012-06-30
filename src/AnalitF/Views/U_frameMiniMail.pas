@@ -361,6 +361,8 @@ begin
   dbgMailAttachemts.Parent := pAttachments;
   dbgMailAttachemts.Align := alClient;
 
+  dbgMailAttachemts.AllowedOperations := [alopUpdateEh];
+
   pAttachments.Height := pAttachmentHeaders.Height + TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts) * 4;
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailAttachemts);
