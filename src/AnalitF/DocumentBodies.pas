@@ -974,7 +974,7 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState) then begin
     if not retailMarkupField.IsNull then begin
-      if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
+      if AllowRealValue(Text) and (StrToFloatDef(Value, 0.0) > 0) then begin
         price := Value;
         markup := GetRetailMarkupByPrice(price);
         if (price > 0) and (markup > 0) then begin
@@ -989,7 +989,7 @@ begin
       Handled := True;
     end
     else begin
-      if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
+      if AllowRealValue(Text) and (StrToFloatDef(Value, 0.0) > 0) then begin
         price := Value;
         if (price > 0) then begin
           manualCorrectionField.Value := True;
@@ -1035,7 +1035,7 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState) and not retailMarkupField.IsNull
   then begin
-    if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
+    if AllowRealValue(Text) and (StrToFloatDef(Value, 0.0) > 0) then begin
       markup := Value;
       price := GetRetailPriceByMarkup(markup);
       if (price > 0) and (markup > 0) then begin
@@ -1275,7 +1275,7 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState) and not retailMarkupField.IsNull
   then begin
-    if (StrToFloatDef(Value, 0.0) > 0) and AllowRealValue(Text) then begin
+    if AllowRealValue(Text) and (StrToFloatDef(Value, 0.0) > 0) then begin
       realMarkup := Value;
       price := adsDocumentBodiesSupplierCost.Value * (1 + realMarkup/100);
       markup := GetRetailMarkupByPrice(price);
@@ -2305,8 +2305,8 @@ var
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState)
   then begin
-    if (Sender is TDBGridColumnEh) and TryStrToFloat(Text, changedValue)
-      and AllowRealValue(Text) 
+    if (Sender is TDBGridColumnEh) and AllowRealValue(Text)
+      and TryStrToFloat(Text, changedValue)
     then begin
       TDBGridColumnEh(Sender).Field.AsFloat := changedValue;
       RecalcPosition;
