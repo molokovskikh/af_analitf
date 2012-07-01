@@ -171,9 +171,12 @@ TMainForm = class(TForm)
     pMain: TPanel;
     pTopContact: TPanel;
     htmlContact: THTMLViewer;
-    dbgNews: TToughDBGrid;
     dsNews: TDataSource;
     adsNews: TMyQuery;
+    pNews: TPanel;
+    dbgNews: TToughDBGrid;
+    pFilter: TPanel;
+    lHeader: TLabel;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -270,6 +273,7 @@ private
   procedure dbgNewsGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
   procedure dbgNewsCellClick(Column: TColumnEh);
+  procedure dbgNewsSortMarkingChanged(Sender: TObject);
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -964,6 +968,9 @@ var
   openFileName : String;
 begin
   pMain.Visible := True;
+
+  if dbgNews.CanFocus then
+    dbgNews.SetFocus;
   
   SchedulesController().LoadSchedules();
 
@@ -2135,19 +2142,24 @@ end;
 
 procedure TMainForm.SetupGridNews;
 begin
+  pNews.ControlStyle := pNews.ControlStyle - [csParentBackground] + [csOpaque];
+  pFilter.ControlStyle := pFilter.ControlStyle - [csParentBackground] + [csOpaque];
+  lHeader.ControlStyle := lHeader.ControlStyle - [csParentBackground] + [csOpaque];
   TDBGridHelper.SetDefaultSettingsToGrid(dbgNews);
   dbgNews.ReadOnly := True;
 
   dbgNews.AutoFitColWidths := False;
   try
-    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата публикации', dbgNews.Canvas.TextWidth('2000.00.00'));
-    TDBGridHelper.AddColumn(dbgNews, 'Header', 'Заголовок новости', dbgNews.Width);
+    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата', dbgNews.Canvas.TextWidth('2000.00.00'));
+    TDBGridHelper.AddColumn(dbgNews, 'Header', 'Тема', dbgNews.Width);
+    TDBGridHelper.SetTitleButtonToColumns(dbgNews);
   finally
     dbgNews.AutoFitColWidths := True;
   end;
 
   dbgNews.OnGetCellParams := dbgNewsGetCellParams;
   dbgNews.OnCellClick := dbgNewsCellClick;
+  dbgNews.OnSortMarkingChanged := dbgNewsSortMarkingChanged;
 end;
 
 procedure TMainForm.UpdateNews;
@@ -2213,6 +2225,11 @@ begin
       InforoomLogo.Free;
     end;
   end;
+end;
+
+procedure TMainForm.dbgNewsSortMarkingChanged(Sender: TObject);
+begin
+  MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
 end;
 
 initialization

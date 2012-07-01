@@ -329,29 +329,60 @@ object MainForm: TMainForm
         PrintMarginBottom = 2.000000000000000000
         PrintScale = 1.000000000000000000
       end
-      object dbgNews: TToughDBGrid
+      object pNews: TPanel
         Left = 321
         Top = 1
         Width = 694
         Height = 167
         Align = alClient
-        DataSource = dsNews
-        Flat = True
-        FooterColor = clWindow
-        FooterFont.Charset = DEFAULT_CHARSET
-        FooterFont.Color = clWindowText
-        FooterFont.Height = -11
-        FooterFont.Name = 'MS Sans Serif'
-        FooterFont.Style = []
-        Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
-        OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghDialogFind]
+        BevelOuter = bvNone
         TabOrder = 1
-        TitleFont.Charset = DEFAULT_CHARSET
-        TitleFont.Color = clWindowText
-        TitleFont.Height = -11
-        TitleFont.Name = 'MS Sans Serif'
-        TitleFont.Style = []
-        SearchPosition = spBottom
+        object dbgNews: TToughDBGrid
+          Left = 0
+          Top = 33
+          Width = 694
+          Height = 134
+          Align = alClient
+          DataSource = dsNews
+          Flat = True
+          FooterColor = clWindow
+          FooterFont.Charset = DEFAULT_CHARSET
+          FooterFont.Color = clWindowText
+          FooterFont.Height = -11
+          FooterFont.Name = 'MS Sans Serif'
+          FooterFont.Style = []
+          Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+          OptionsEh = [dghFixed3D, dghHighlightFocus, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghDialogFind]
+          TabOrder = 0
+          TitleFont.Charset = DEFAULT_CHARSET
+          TitleFont.Color = clWindowText
+          TitleFont.Height = -11
+          TitleFont.Name = 'MS Sans Serif'
+          TitleFont.Style = []
+          SearchPosition = spBottom
+        end
+        object pFilter: TPanel
+          Left = 0
+          Top = 0
+          Width = 694
+          Height = 33
+          Align = alTop
+          BevelOuter = bvNone
+          TabOrder = 1
+          object lHeader: TLabel
+            Left = 8
+            Top = 8
+            Width = 51
+            Height = 13
+            Caption = #1053#1086#1074#1086#1089#1090#1080
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+        end
       end
     end
   end
