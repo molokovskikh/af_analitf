@@ -1,12 +1,13 @@
 inherited OrdersForm: TOrdersForm
-  Left = 316
-  Top = 239
+  Left = 318
+  Top = 240
   ActiveControl = dbgOrders
   Caption = #1040#1088#1093#1080#1074#1085#1099#1081' '#1079#1072#1082#1072#1079
   ClientHeight = 443
   ClientWidth = 793
   OldCreateOrder = True
   OnDestroy = FormDestroy
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object pClient: TPanel [0]
@@ -108,67 +109,97 @@ inherited OrdersForm: TOrdersForm
           Title.TitleButton = True
         end>
     end
-    object gbMessageTo: TGroupBox
-      Left = 1
-      Top = 264
-      Width = 791
-      Height = 70
-      Align = alBottom
-      Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1091' '
-      TabOrder = 1
-      object dbmMessageTo: TDBMemo
-        Left = 2
-        Top = 15
-        Width = 787
-        Height = 53
-        Align = alClient
-        DataField = 'MessageTo'
-        DataSource = OrdersHForm.dsOrdersH
-        TabOrder = 0
-        OnExit = dbmMessageToExit
-        OnKeyDown = dbmMessageToKeyDown
-      end
-    end
-    object gbCorrectMessage: TGroupBox
-      Left = 1
-      Top = 224
-      Width = 791
-      Height = 40
-      Align = alBottom
-      Caption = ' '#1055#1088#1080#1095#1080#1085#1072' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1080' '
-      TabOrder = 2
-      object mCorrectMessage: TMemo
-        Left = 2
-        Top = 15
-        Width = 787
-        Height = 23
-        Align = alClient
-        Lines.Strings = (
-          'mCorrectMessage')
-        ReadOnly = True
-        TabOrder = 0
-        OnKeyDown = dbmMessageToKeyDown
-      end
-    end
-    object gbComment: TGroupBox
+    object pClientBottom: TPanel
       Left = 1
       Top = 184
       Width = 791
-      Height = 40
+      Height = 150
       Align = alBottom
-      Caption = ' '#1050#1086#1084#1084#1077#1085#1090#1072#1088#1080#1081' '
-      TabOrder = 3
-      object dbmComment: TDBMemo
-        Left = 2
-        Top = 15
-        Width = 787
-        Height = 23
-        Align = alClient
-        DataField = 'Comment'
-        DataSource = dsOrders
+      BevelOuter = bvNone
+      Caption = 'pClientBottom'
+      TabOrder = 1
+      object pClientRight: TPanel
+        Left = 526
+        Top = 0
+        Width = 265
+        Height = 150
+        Align = alRight
+        BevelOuter = bvNone
+        Caption = 'pClientRight'
         TabOrder = 0
-        OnExit = dbmCommentExit
-        OnKeyDown = dbmCommentKeyDown
+        object gbMessageTo: TGroupBox
+          Left = 0
+          Top = 0
+          Width = 265
+          Height = 150
+          Align = alClient
+          Caption = ' '#1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1091' '
+          TabOrder = 0
+          object dbmMessageTo: TDBMemo
+            Left = 2
+            Top = 15
+            Width = 261
+            Height = 133
+            Align = alClient
+            DataField = 'MessageTo'
+            DataSource = OrdersHForm.dsOrdersH
+            TabOrder = 0
+            OnExit = dbmMessageToExit
+            OnKeyDown = dbmMessageToKeyDown
+          end
+        end
+      end
+      object pClientLeft: TPanel
+        Left = 0
+        Top = 0
+        Width = 526
+        Height = 150
+        Align = alClient
+        BevelOuter = bvNone
+        Caption = 'pClientLeft'
+        TabOrder = 1
+        object gbComment: TGroupBox
+          Left = 0
+          Top = 70
+          Width = 526
+          Height = 40
+          Align = alBottom
+          Caption = ' '#1050#1086#1084#1084#1077#1085#1090#1072#1088#1080#1081' '
+          TabOrder = 0
+          object dbmComment: TDBMemo
+            Left = 2
+            Top = 15
+            Width = 522
+            Height = 23
+            Align = alClient
+            DataField = 'Comment'
+            DataSource = dsOrders
+            TabOrder = 0
+            OnExit = dbmCommentExit
+            OnKeyDown = dbmCommentKeyDown
+          end
+        end
+        object gbCorrectMessage: TGroupBox
+          Left = 0
+          Top = 110
+          Width = 526
+          Height = 40
+          Align = alBottom
+          Caption = ' '#1055#1088#1080#1095#1080#1085#1072' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1080' '
+          TabOrder = 1
+          object mCorrectMessage: TMemo
+            Left = 2
+            Top = 15
+            Width = 522
+            Height = 23
+            Align = alClient
+            Lines.Strings = (
+              'mCorrectMessage')
+            ReadOnly = True
+            TabOrder = 0
+            OnKeyDown = dbmMessageToKeyDown
+          end
+        end
       end
     end
   end
@@ -754,217 +785,6 @@ inherited OrdersForm: TOrdersForm
       OnExecute = actFlipCoreExecute
     end
   end
-  object dsDocumentBodies: TDataSource
-    DataSet = adsDocumentBodies
-    Left = 152
-    Top = 243
-  end
-  object adsDocumentBodies: TMyQuery
-    SQLRefresh.Strings = (
-      'select'
-      'Id,'
-      'dbodies.DocumentId,'
-      'dbodies.ServerId,'
-      'dbodies.ServerDocumentId,'
-      'dbodies.Product,'
-      'dbodies.Code,'
-      'dbodies.Certificates,'
-      'dbodies.Period,'
-      'dbodies.Producer,'
-      'dbodies.Country,'
-      'dbodies.ProducerCost,'
-      'dbodies.RegistryCost,'
-      'dbodies.SupplierPriceMarkup,'
-      'dbodies.SupplierCostWithoutNDS,'
-      'dbodies.SupplierCost,'
-      'dbodies.Quantity,'
-      'dbodies.VitallyImportant,'
-      'dbodies.NDS,'
-      'dbodies.SerialNumber,'
-      'dbodies.RetailMarkup,'
-      'dbodies.ManualCorrection,'
-      'dbodies.ManualRetailPrice,'
-      'dbodies.Printed,'
-      'dbodies.Amount,'
-      'dbodies.NdsAmount,'
-      'dbodies.RetailAmount,'
-      'dbodies.Unit,'
-      'dbodies.ExciseTax,'
-      'dbodies.BillOfEntryNumber,'
-      'dbodies.EAN13,'
-      'dbodies.RequestCertificate,'
-      'dbodies.CertificateId,'
-      'cr.DocumentBodyId,'
-      'catalogs.Markup as CatalogMarkup,'
-      'catalogs.MaxMarkup as CatalogMaxMarkup,'
-      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
-      'from'
-      '  DocumentBodies dbodies'
-      
-        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.ServerId'
-      '  left join products p on p.productid = dbodies.productid'
-      '  left join catalogs on catalogs.fullcode = p.catalogid'
-      'where'
-      '  dbodies.Id = :OLD_Id')
-    Connection = DM.MyConnection
-    SQL.Strings = (
-      'select'
-      'Id,'
-      'dbodies.DocumentId,'
-      'dbodies.ServerId,'
-      'dbodies.ServerDocumentId,'
-      'dbodies.Product,'
-      'dbodies.Code,'
-      'dbodies.Certificates,'
-      'dbodies.Period,'
-      'dbodies.Producer,'
-      'dbodies.Country,'
-      'dbodies.ProducerCost,'
-      'dbodies.RegistryCost,'
-      'dbodies.SupplierPriceMarkup,'
-      'dbodies.SupplierCostWithoutNDS,'
-      'dbodies.SupplierCost,'
-      'dbodies.Quantity,'
-      'dbodies.VitallyImportant,'
-      'dbodies.NDS,'
-      'dbodies.SerialNumber,'
-      'dbodies.RetailMarkup,'
-      'dbodies.ManualCorrection,'
-      'dbodies.ManualRetailPrice,'
-      'dbodies.Printed,'
-      'dbodies.Amount,'
-      'dbodies.NdsAmount,'
-      'dbodies.RetailAmount,'
-      'dbodies.Unit,'
-      'dbodies.ExciseTax,'
-      'dbodies.BillOfEntryNumber,'
-      'dbodies.EAN13,'
-      'dbodies.RequestCertificate,'
-      'dbodies.CertificateId,'
-      'cr.DocumentBodyId,'
-      'catalogs.Markup as CatalogMarkup,'
-      'catalogs.MaxMarkup as CatalogMaxMarkup,'
-      'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup'
-      'from'
-      '  DocumentBodies dbodies'
-      
-        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.ServerId'
-      '  left join products p on p.productid = dbodies.productid'
-      '  left join catalogs on catalogs.fullcode = p.catalogid'
-      'where'
-      '  dbodies.ServerDocumentId = :ServerDocumentId'
-      'order by dbodies.Product')
-    RefreshOptions = [roAfterInsert, roAfterUpdate]
-    KeyFields = 'Id'
-    Left = 208
-    Top = 251
-    ParamData = <
-      item
-        DataType = ftUnknown
-        Name = 'ServerDocumentId'
-      end>
-    object adsDocumentBodiesId: TLargeintField
-      FieldName = 'Id'
-    end
-    object adsDocumentBodiesDocumentId: TLargeintField
-      FieldName = 'DocumentId'
-    end
-    object adsDocumentBodiesProduct: TStringField
-      FieldName = 'Product'
-      Size = 255
-    end
-    object adsDocumentBodiesCode: TStringField
-      FieldName = 'Code'
-    end
-    object adsDocumentBodiesCertificates: TStringField
-      FieldName = 'Certificates'
-      Size = 50
-    end
-    object adsDocumentBodiesPeriod: TStringField
-      FieldName = 'Period'
-    end
-    object adsDocumentBodiesProducer: TStringField
-      FieldName = 'Producer'
-      Size = 255
-    end
-    object adsDocumentBodiesCountry: TStringField
-      FieldName = 'Country'
-      Size = 150
-    end
-    object adsDocumentBodiesProducerCost: TFloatField
-      FieldName = 'ProducerCost'
-    end
-    object adsDocumentBodiesRegistryCost: TFloatField
-      FieldName = 'RegistryCost'
-    end
-    object adsDocumentBodiesSupplierPriceMarkup: TFloatField
-      FieldName = 'SupplierPriceMarkup'
-    end
-    object adsDocumentBodiesSupplierCostWithoutNDS: TFloatField
-      FieldName = 'SupplierCostWithoutNDS'
-    end
-    object adsDocumentBodiesSupplierCost: TFloatField
-      FieldName = 'SupplierCost'
-    end
-    object adsDocumentBodiesQuantity: TIntegerField
-      FieldName = 'Quantity'
-    end
-    object adsDocumentBodiesVitallyImportant: TBooleanField
-      FieldName = 'VitallyImportant'
-    end
-    object adsDocumentBodiesSerialNumber: TStringField
-      FieldName = 'SerialNumber'
-      Size = 50
-    end
-    object adsDocumentBodiesPrinted: TBooleanField
-      FieldName = 'Printed'
-    end
-    object adsDocumentBodiesAmount: TFloatField
-      FieldName = 'Amount'
-    end
-    object adsDocumentBodiesNdsAmount: TFloatField
-      FieldName = 'NdsAmount'
-    end
-    object adsDocumentBodiesUnit: TStringField
-      FieldName = 'Unit'
-      Size = 0
-    end
-    object adsDocumentBodiesExciseTax: TFloatField
-      FieldName = 'ExciseTax'
-    end
-    object adsDocumentBodiesBillOfEntryNumber: TStringField
-      FieldName = 'BillOfEntryNumber'
-    end
-    object adsDocumentBodiesEAN13: TStringField
-      FieldName = 'EAN13'
-    end
-    object adsDocumentBodiesRequestCertificate: TBooleanField
-      FieldName = 'RequestCertificate'
-    end
-    object adsDocumentBodiesCertificateId: TLargeintField
-      FieldName = 'CertificateId'
-    end
-    object adsDocumentBodiesDocumentBodyId: TLargeintField
-      FieldName = 'DocumentBodyId'
-    end
-    object adsDocumentBodiesServerId: TLargeintField
-      FieldName = 'ServerId'
-    end
-    object adsDocumentBodiesServerDocumentId: TLargeintField
-      FieldName = 'ServerDocumentId'
-    end
-    object adsDocumentBodiesCatalogMarkup: TFloatField
-      FieldName = 'CatalogMarkup'
-    end
-    object adsDocumentBodiesCatalogMaxMarkup: TFloatField
-      FieldName = 'CatalogMaxMarkup'
-    end
-    object adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField
-      FieldName = 'CatalogMaxSupplierMarkup'
-    end
-  end
   object shPositionFullUpdate: TStrHolder
     Capacity = 44
     Macros = <>
@@ -1021,12 +841,5 @@ inherited OrdersForm: TOrdersForm
       '45414e3133203d203a45414e3133'
       '7768657265'
       '202064626f646965732e4964203d203a4f4c445f4964')
-  end
-  object tmrShowMatchWaybill: TTimer
-    Enabled = False
-    Interval = 350
-    OnTimer = tmrShowMatchWaybillTimer
-    Left = 304
-    Top = 196
   end
 end

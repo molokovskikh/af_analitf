@@ -5,12 +5,14 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, DB,  DBCtrls, StdCtrls, Grids, DBGrids, RXDBCtrl,
-  Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls, 
+  Placemnt, FR_DSet, FR_DBSet, DBGridEh, ToughDBGrid, ExtCtrls,
   DBProc, AProc, GridsEh, U_frameLegend, MemDS, DBAccess,
   MyAccess, ActnList, Buttons,
   Menus, U_frameBaseLegend,
   U_CurrentOrderItem,
-  ContextMenuGrid, StrHlder;
+  ContextMenuGrid, StrHlder,
+  U_framePosition,
+  U_frameMatchWaybill;
 
 type
   TOrdersForm = class(TChildForm)
@@ -96,46 +98,15 @@ type
     gbComment: TGroupBox;
     dbmComment: TDBMemo;
     adsOrdersMarkup: TFloatField;
-    dsDocumentBodies: TDataSource;
-    adsDocumentBodies: TMyQuery;
-    adsDocumentBodiesId: TLargeintField;
-    adsDocumentBodiesDocumentId: TLargeintField;
-    adsDocumentBodiesProduct: TStringField;
-    adsDocumentBodiesCode: TStringField;
-    adsDocumentBodiesCertificates: TStringField;
-    adsDocumentBodiesPeriod: TStringField;
-    adsDocumentBodiesProducer: TStringField;
-    adsDocumentBodiesCountry: TStringField;
-    adsDocumentBodiesProducerCost: TFloatField;
-    adsDocumentBodiesRegistryCost: TFloatField;
-    adsDocumentBodiesSupplierPriceMarkup: TFloatField;
-    adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
-    adsDocumentBodiesSupplierCost: TFloatField;
-    adsDocumentBodiesQuantity: TIntegerField;
-    adsDocumentBodiesVitallyImportant: TBooleanField;
-    adsDocumentBodiesSerialNumber: TStringField;
-    adsDocumentBodiesPrinted: TBooleanField;
-    adsDocumentBodiesAmount: TFloatField;
-    adsDocumentBodiesNdsAmount: TFloatField;
-    adsDocumentBodiesUnit: TStringField;
-    adsDocumentBodiesExciseTax: TFloatField;
-    adsDocumentBodiesBillOfEntryNumber: TStringField;
-    adsDocumentBodiesEAN13: TStringField;
-    adsDocumentBodiesRequestCertificate: TBooleanField;
-    adsDocumentBodiesCertificateId: TLargeintField;
-    adsDocumentBodiesDocumentBodyId: TLargeintField;
-    adsDocumentBodiesServerId: TLargeintField;
-    adsDocumentBodiesServerDocumentId: TLargeintField;
-    adsDocumentBodiesCatalogMarkup: TFloatField;
-    adsDocumentBodiesCatalogMaxMarkup: TFloatField;
-    adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField;
     shPositionFullUpdate: TStrHolder;
-    tmrShowMatchWaybill: TTimer;
     adsOrdersServerDocumentLineId: TLargeintField;
     adsOrdersRejectId: TLargeintField;
     adsOrdersServerDocumentId: TLargeintField;
     adsOrdersSupplierCost: TFloatField;
     adsOrdersWaybillQuantity: TIntegerField;
+    pClientBottom: TPanel;
+    pClientRight: TPanel;
+    pClientLeft: TPanel;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -160,8 +131,8 @@ type
     procedure dbmCommentExit(Sender: TObject);
     procedure dbmCommentKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure tmrShowMatchWaybillTimer(Sender: TObject);
     procedure adsOrdersAfterOpen(DataSet: TDataSet);
+    procedure FormResize(Sender: TObject);
   private
     ParentOrdersHForm : TChildForm;
     OrderID,
@@ -184,18 +155,20 @@ type
     procedure RetailMarkupUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure RetailPriceUpdateData(Sender: TObject; var Text: String; var Value: Variant; var UseText, Handled: Boolean);
     procedure DeleteOrderPosition;
-    procedure SetWaybillByPosition;
     procedure SetWaybillGrid;
     procedure UpdateMatchWaybillTimer;
-    procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure SetHeightClientBottomPanel;
   protected
     procedure UpdateOrderDataset; override;
     procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
   public
     pGrid: TPanel;
+    framePositionHeight,
+    frameLegendHeight,
+    frameWaybillHeight : Integer;
+    framePosition : TframePosition;
     frameLegend : TframeLegend;
-    dbgWaybill : TToughDBGrid;
-    frameLegendWaybill : TframeLegend;
+    frameMatchWaybill : TframeMatchWaybill;
     procedure ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean); overload; //reintroduce;
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
@@ -205,7 +178,7 @@ type
 implementation
 
 uses OrdersH, DModule, Constant, Main, Math, CoreFirm, NamesForms, Core,
-     PostSomeOrdersController, U_framePosition, DBGridHelper,
+     PostSomeOrdersController, DBGridHelper,
      ToughDBGridColumns;
 
 {$R *.dfm}
@@ -252,7 +225,7 @@ procedure TOrdersForm.SetParams(OrderId: Integer; ExternalClosed : Boolean);
 var
   SendResult : Variant;
 begin
-  dbgWaybill.Visible := False;
+  frameMatchWaybill.Visible := False;
   ClosedOrder := ExternalClosed;
 
   btnGotoPrice.Visible := not ClosedOrder;
@@ -270,7 +243,7 @@ begin
     dbgOrders.Visible := True;
     dbgEditOrders.DataSource := nil;
     dbgOrders.DataSource := dsOrders;
-    dbgWaybill.Visible := True;
+    frameMatchWaybill.Visible := True;
     if dbgOrders.CanFocus then
       dbgOrders.SetFocus;
   end;
@@ -317,6 +290,7 @@ begin
       Open;
     SetOrderLabel;
   end;
+  SetHeightClientBottomPanel;
 end;
 
 procedure TOrdersForm.Print( APreview: boolean = False);
@@ -369,6 +343,18 @@ begin
   { если уцененный товар, изменяем цвет }
   if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
     Background := JUNK_CLR;
+
+  if ClosedOrder then begin
+    if adsOrdersServerDocumentId.IsNull then
+      Background := MatchWaybillColor
+    else begin
+      if adsOrdersWaybillQuantity.Value < adsOrdersordercount.Value then
+        Background := MatchWaybillColor;
+
+      if (abs(adsOrdersRealPrice.Value - adsOrdersSupplierCost.Value) > 0.02) then
+        Background := MatchWaybillColor;
+    end;
+  end;
 end;
 
 procedure TOrdersForm.dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -453,6 +439,14 @@ begin
   pGrid.Align := alClient;
   dbgOrders.Parent := pGrid;
 
+  Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
+  pClient.ControlStyle := pClient.ControlStyle - [csParentBackground] + [csOpaque];
+  pClientBottom.ControlStyle := pClientBottom.ControlStyle - [csParentBackground] + [csOpaque];
+  pClientRight.ControlStyle := pClientRight.ControlStyle - [csParentBackground] + [csOpaque];
+  pClientLeft.ControlStyle := pClientLeft.ControlStyle - [csParentBackground] + [csOpaque];
+  gbCorrectMessage.ControlStyle := gbCorrectMessage.ControlStyle - [csParentBackground] + [csOpaque];
+  gbComment.ControlStyle := gbComment.ControlStyle - [csParentBackground] + [csOpaque];
+
   dbgEditOrders:= TDBGridEh.Create(Self);
   dbgEditOrders.Parent := pGrid;
   dbgEditOrders.Align := alClient;
@@ -488,8 +482,10 @@ begin
   inherited;
 
   frameLegend := TframeLegend.CreateFrame(Self, False, False, False);
-  frameLegend.Parent := Self;
-  frameLegend.Align := alBottom;
+  frameLegendHeight := frameLegend.Height;
+  frameLegend.Parent := pClientBottom;
+  frameLegend.Align := alTop;
+  frameLegend.CreateLegendLabel('Несоответствие в накладной', MatchWaybillColor, clWindowText);
 
   if dgCheckVolume <> dbgOrders then
     PrepareColumnsInOrderGrid(dbgOrders);
@@ -499,7 +495,9 @@ begin
 
   PrepareEditOrdersGrid;
 
-  TframePosition.AddFrame(Self, pClient, dsOrders, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  framePosition := TframePosition.AddFrame(Self, pClientLeft, dsOrders, 'SynonymName', 'MnnId', ShowDescriptionAction);
+  framePositionHeight := framePosition.Height;
+  framePosition.Align := alClient;
   TDBGridHelper.RestoreColumnsLayout(dbgOrders, 'DetailOrder');
   TDBGridHelper.RestoreColumnsLayout(dbgEditOrders, 'DetailOrder');
 end;
@@ -970,79 +968,45 @@ begin
   end;
 end;
 
-procedure TOrdersForm.SetWaybillByPosition;
-begin
-  if adsDocumentBodies.Active then
-    adsDocumentBodies.Close;
-
-  if adsOrders.Active and not adsOrders.IsEmpty and not adsOrdersServerDocumentId.IsNull
-  then begin
-    adsDocumentBodies.ParamByName('ServerDocumentId').Value := adsOrdersServerDocumentId.Value;
-    adsDocumentBodies.Open;
-    if not adsDocumentBodies.Locate('ServerId', adsOrdersServerDocumentLineId.AsVariant, []) then
-      adsDocumentBodies.First;
-  end;
-end;
-
 procedure TOrdersForm.SetWaybillGrid;
-var
-  column : TColumnEh;
 begin
-  dbgWaybill := TToughDBGrid.Create(Self);
+  frameWaybillHeight := 150;
 
-  TDBGridHelper.SetDefaultSettingsToGrid(dbgWaybill);
-  dbgWaybill.Parent := pGrid;
-  dbgWaybill.Visible := False;
-  dbgWaybill.Height := 200;
-  dbgWaybill.Align := alBottom;
-
-  dbgWaybill.AutoFitColWidths := False;
-  try
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'Product', 'Наименование', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'SerialNumber', 'Серия товара', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'Period', 'Срок годности', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'Producer', 'Производитель', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'Country', 'Страна', 0);
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'ProducerCost', 'Цена производителя без НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'RegistryCost', 'Цена ГР', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierPriceMarkup', 'Торговая наценка оптовика', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'NDS', 'НДС', dbgWaybill.Canvas.TextWidth('999'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCost', 'Цена поставщика с НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'Quantity', 'Заказ', dbgWaybill.Canvas.TextWidth('99999.99'));
-  finally
-    dbgWaybill.AutoFitColWidths := True;
-  end;
-
-  dbgWaybill.ReadOnly := False;
-
-  dbgWaybill.DataSource := dsDocumentBodies;
-end;
-
-procedure TOrdersForm.WaybillGetCellParams(Sender: TObject;
-  Column: TColumnEh; AFont: TFont; var Background: TColor;
-  State: TGridDrawState);
-begin
-
-end;
-
-procedure TOrdersForm.tmrShowMatchWaybillTimer(Sender: TObject);
-begin
-  tmrShowMatchWaybill.Enabled := False;
-  SetWaybillByPosition;
+  frameMatchWaybill := TframeMatchWaybill.AddFrame(Self, pClientBottom, adsOrders);
+  frameMatchWaybill.Visible := False;
+  frameMatchWaybill.Height := frameWaybillHeight;
+  frameMatchWaybill.Align := alBottom;
 end;
 
 procedure TOrdersForm.UpdateMatchWaybillTimer;
 begin
   if ClosedOrder then begin
-    tmrShowMatchWaybill.Enabled := False;
-    tmrShowMatchWaybill.Enabled := True;
+    frameMatchWaybill.UpdateMatchWaybillTimer;
   end;
 end;
 
 procedure TOrdersForm.adsOrdersAfterOpen(DataSet: TDataSet);
 begin
   UpdateMatchWaybillTimer;
+end;
+
+procedure TOrdersForm.FormResize(Sender: TObject);
+begin
+  pClientRight.Width := pClientBottom.Width div 2;
+end;
+
+procedure TOrdersForm.SetHeightClientBottomPanel;
+var
+  panelHeight : Integer;
+begin
+  panelHeight := frameLegendHeight + framePositionHeight;
+  if gbCorrectMessage.Visible then
+    panelHeight := panelHeight + gbCorrectMessage.Height;
+  if gbComment.Visible then
+    panelHeight := panelHeight + gbComment.Height;
+  if frameMatchWaybill.Visible then
+    panelHeight := panelHeight + frameWaybillHeight;
+  pClientBottom.Height := panelHeight + 10;
 end;
 
 end.

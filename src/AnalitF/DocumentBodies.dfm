@@ -172,7 +172,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Left = 0
     Top = 132
     Width = 856
-    Height = 317
+    Height = 188
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -180,7 +180,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Left = 0
       Top = 0
       Width = 856
-      Height = 317
+      Height = 188
       Align = alClient
       AllowedOperations = [alopUpdateEh]
       AutoFitColWidths = True
@@ -367,6 +367,278 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       Items.Strings = (
         #1042#1089#1077
         #1085#1077#1090' '#1079#1085#1072#1095#1077#1085#1080#1081)
+    end
+  end
+  object pFrameOrder: TPanel [3]
+    Left = 0
+    Top = 320
+    Width = 856
+    Height = 129
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 3
+    object pNotFound: TPanel
+      Left = 0
+      Top = 0
+      Width = 856
+      Height = 129
+      Align = alClient
+      BevelOuter = bvNone
+      Caption = #1047#1072#1082#1072#1079#1086#1074' '#1085#1077' '#1085#1072#1081#1076#1077#1085#1086
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+    end
+    object pOrderGrid: TPanel
+      Left = 0
+      Top = 0
+      Width = 856
+      Height = 129
+      Align = alClient
+      BevelOuter = bvNone
+      TabOrder = 1
+      object pOrderDetail: TPanel
+        Left = 0
+        Top = 0
+        Width = 856
+        Height = 51
+        Align = alTop
+        BevelInner = bvLowered
+        TabOrder = 0
+        object dbtPriceName: TDBText
+          Left = 427
+          Top = 9
+          Width = 198
+          Height = 13
+          DataField = 'PriceName'
+          DataSource = dsOrdersH
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label3: TLabel
+          Left = 12
+          Top = 9
+          Width = 53
+          Height = 13
+          Caption = #1047#1072#1082#1072#1079' '#8470
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object DBText1: TDBText
+          Left = 75
+          Top = 9
+          Width = 109
+          Height = 13
+          DataField = 'DisplayOrderId'
+          DataSource = dsOrdersH
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label5: TLabel
+          Left = 196
+          Top = 9
+          Width = 14
+          Height = 13
+          Caption = #1086#1090
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object DBText2: TDBText
+          Left = 213
+          Top = 9
+          Width = 124
+          Height = 13
+          DataField = 'OrderDate'
+          DataSource = dsOrdersH
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label6: TLabel
+          Left = 12
+          Top = 29
+          Width = 60
+          Height = 13
+          Caption = #1055#1086#1079#1080#1094#1080#1081' :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lblSum: TLabel
+          Left = 148
+          Top = 29
+          Width = 64
+          Height = 13
+          Caption = #1085#1072' '#1089#1091#1084#1084#1091' :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object DBText3: TDBText
+          Left = 75
+          Top = 29
+          Width = 62
+          Height = 13
+          DataField = 'Positions'
+          DataSource = dsOrdersH
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object dbtSumOrder: TDBText
+          Left = 674
+          Top = 29
+          Width = 81
+          Height = 13
+          DataField = 'PRICENAME'
+          DataSource = dsOrdersH
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          Visible = False
+        end
+        object Label7: TLabel
+          Left = 347
+          Top = 9
+          Width = 77
+          Height = 13
+          Caption = #1055#1088#1072#1081#1089'-'#1083#1080#1089#1090' :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label8: TLabel
+          Left = 374
+          Top = 29
+          Width = 51
+          Height = 13
+          Caption = #1056#1077#1075#1080#1086#1085' :'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object dbtRegionName: TDBText
+          Left = 427
+          Top = 29
+          Width = 198
+          Height = 13
+          DataField = 'RegionName'
+          DataSource = dsOrdersH
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lSumOrder: TLabel
+          Left = 213
+          Top = 29
+          Width = 59
+          Height = 13
+          Caption = 'lSumOrder'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lDatePrice: TLabel
+          Left = 632
+          Top = 9
+          Width = 14
+          Height = 13
+          Caption = #1086#1090
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object dbtDatePrice: TDBText
+          Left = 649
+          Top = 9
+          Width = 124
+          Height = 13
+          DataField = 'DatePrice'
+          DataSource = dsOrdersH
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+      end
+      object dbgOrder: TDBGridEh
+        Left = 0
+        Top = 51
+        Width = 856
+        Height = 78
+        Align = alClient
+        AllowedOperations = [alopUpdateEh]
+        AutoFitColWidths = True
+        DataSource = dsDocumentBodies
+        Flat = True
+        FooterColor = clWindow
+        FooterFont.Charset = DEFAULT_CHARSET
+        FooterFont.Color = clWindowText
+        FooterFont.Height = -11
+        FooterFont.Name = 'MS Sans Serif'
+        FooterFont.Style = []
+        Options = [dgTitles, dgColumnResize, dgColLines, dgTabs, dgConfirmDelete, dgCancelOnExit]
+        OptionsEh = [dghFixed3D, dghClearSelection, dghAutoSortMarking, dghMultiSortMarking, dghRowHighlight]
+        ReadOnly = True
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -11
+        TitleFont.Name = 'MS Sans Serif'
+        TitleFont.Style = []
+      end
     end
   end
   inherited tCheckVolume: TTimer
@@ -951,7 +1223,7 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '    ol.ordercount,'
       '    ol.RealPrice,'
       '    ol.price,'
-      '    ol.OrderCount * ol.Price as RetailSumm,'
+      '    ol.OrderCount * ol.RealPrice as RetailSumm,'
       '    ol.VitallyImportant,'
       '    core.requestratio,'
       '    core.ordercost,'
@@ -1084,5 +1356,312 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     OnTimer = tmRunRequestCertificateTimer
     Left = 376
     Top = 232
+  end
+  object dsOrdersH: TDataSource
+    DataSet = adsOrdersHForm
+    Left = 32
+    Top = 408
+  end
+  object adsOrdersHForm: TMyQuery
+    SQLDelete.Strings = (
+      'delete from CurrentOrderLists where OrderId = :Old_OrderId;'
+      'delete from CurrentOrderHeads where OrderId = :Old_OrderId;')
+    SQLUpdate.Strings = (
+      'update CurrentOrderHeads'
+      'set'
+      '  SEND = :SEND,'
+      '  CLOSED = :CLOSED,'
+      '  MESSAGETO = :MESSAGETO,'
+      '  COMMENTS = :COMMENTS'
+      'where'
+      '  orderid = :old_ORDERID')
+    SQLRefresh.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    CurrentOrderHeads.OrderId,'
+      '    CurrentOrderHeads.ClientID,'
+      '    CurrentOrderHeads.ServerOrderId,'
+      
+        '    PricesData.DatePrice - interval :timezonebias minute AS Date' +
+        'Price,'
+      '    CurrentOrderHeads.PriceCode,'
+      '    CurrentOrderHeads.RegionCode,'
+      '    CurrentOrderHeads.OrderDate,'
+      '    CurrentOrderHeads.SendDate,'
+      '    CurrentOrderHeads.Closed,'
+      '    CurrentOrderHeads.Send,'
+      '    CurrentOrderHeads.PriceName,'
+      '    CurrentOrderHeads.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    CurrentOrderHeads.MessageTo,'
+      '    CurrentOrderHeads.Comments,'
+      
+        '    GREATEST(MinReqRules.minreq, ifnull(CurrentOrderHeads.Server' +
+        'MinReq, 0)) as MinReq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(CurrentOrderLists.Id) as Positions,'
+      
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 1 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentCostCount,'
+      
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 2 or CurrentOrderLists.DropReason = ' +
+        '3), 1, null)) as DifferentQuantityCount,'
+      
+        '    count(if((CurrentOrderLists.DropReason is not null) and (Cur' +
+        'rentOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
+      
+        '    ifnull(Sum(CurrentOrderLists.RealPrice * CurrentOrderLists.O' +
+        'rderCount), 0) as SumOrder,'
+      '     ('
+      '  select'
+      
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
+      '  WHERE header.ClientId = :ClientId'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (1-day(curdate()' +
+        ')) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND PostedOrderLists.OrderCount>0'
+      ') as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '('
+      '  select'
+      
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0)'
+      '  from'
+      '    PostedOrderHeads header'
+      
+        '    INNER JOIN PostedOrderLists ON (PostedOrderLists.OrderId = h' +
+        'eader.OrderId)'
+      '  WHERE header.ClientId = :ClientId'
+      '     AND header.PriceCode = CurrentOrderHeads.PriceCode'
+      '     AND header.RegionCode = CurrentOrderHeads.RegionCode'
+      
+        '     and header.senddate > curdate() + interval (-WEEKDAY(curdat' +
+        'e())) day'
+      '     AND header.Closed = 1'
+      '     AND header.send = 1'
+      '     AND PostedOrderLists.OrderCount>0'
+      '  ) as sumbycurrentweek'
+      'FROM'
+      '   CurrentOrderHeads'
+      '   inner join CurrentOrderLists on '
+      
+        '         (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)' +
+        ' '
+      '     and (CurrentOrderLists.OrderCount > 0)'
+      '   LEFT JOIN PricesData ON '
+      '         (CurrentOrderHeads.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      
+        '         (pricesregionaldata.PriceCode = CurrentOrderHeads.Price' +
+        'Code) '
+      
+        '     and pricesregionaldata.regioncode = CurrentOrderHeads.regio' +
+        'ncode'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=CurrentOrderHeads.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = CurrentOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = CurrentOrderHeads.PriceCode) '
+      '     and (MinReqRules.RegionCode = CurrentOrderHeads.RegionCode)'
+      'WHERE'
+      '    (CurrentOrderHeads.OrderId = :Old_OrderId)'
+      'group by CurrentOrderHeads.OrderId'
+      'having count(CurrentOrderLists.Id) > 0')
+    Connection = DM.MyConnection
+    SQL.Strings = (
+      '#ORDERSHSHOW'
+      'SELECT'
+      '    PostedOrderHeads.OrderId,'
+      
+        '    ifnull(PostedOrderHeads.ServerOrderId, PostedOrderHeads.Orde' +
+        'rId) as DisplayOrderId,'
+      '    PostedOrderHeads.ClientID,'
+      '    PostedOrderHeads.ServerOrderId,'
+      
+        '    PostedOrderHeads.PriceDate - interval :timezonebias minute A' +
+        'S DatePrice,'
+      '    PostedOrderHeads.PriceCode,'
+      '    PostedOrderHeads.RegionCode,'
+      '    PostedOrderHeads.OrderDate,'
+      '    PostedOrderHeads.SendDate,'
+      '    PostedOrderHeads.Closed,'
+      '    PostedOrderHeads.Send,'
+      '    PostedOrderHeads.Send as Frozen,'
+      '    PostedOrderHeads.PriceName,'
+      '    PostedOrderHeads.RegionName,'
+      '    RegionalData.SupportPhone,'
+      '    PostedOrderHeads.MessageTo,'
+      '    PostedOrderHeads.Comments,'
+      
+        '    GREATEST(MinReqRules.minreq, ifnull(PostedOrderHeads.ServerM' +
+        'inReq, 0)) as MinReq,'
+      '    pricesregionaldata.Enabled as PriceEnabled,'
+      '    count(PostedOrderLists.Id) as Positions,'
+      
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 1 or PostedOrderLists.DropReason = 3),' +
+        ' 1, null)) as DifferentCostCount,'
+      
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 2 or PostedOrderLists.DropReason = 3),' +
+        ' 1, null)) as DifferentQuantityCount,'
+      
+        '    count(if((PostedOrderLists.DropReason is not null) and (Post' +
+        'edOrderLists.DropReason = 0), 1, null)) as NotExistsCount,'
+      
+        '    ifnull(Sum(PostedOrderLists.RealPrice * PostedOrderLists.Ord' +
+        'erCount), 0) as SumOrder,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
+      '  0.0'
+      '   as sumbycurrentmonth,'
+      '  # '#1057#1091#1084#1084#1072' '#1079#1072#1082#1072#1079#1086#1074' '#1079#1072' '#1090#1077#1082#1091#1097#1091#1102' '#1085#1077#1076#1077#1083#1102
+      '  0.0'
+      'as sumbycurrentweek,'
+      '  c.ClientId as RealClientId,'
+      
+        '  if(c.ClientId is not null, c.Name, '#39#1040#1076#1088#1077#1089' '#1086#1090#1082#1083#1102#1095#1077#1085'/'#1091#1076#1072#1083#1077#1085' '#1080#1079' '#1089 +
+        #1080#1089#1090#1077#1084#1099#39') as AddressName'
+      'FROM'
+      '   PostedOrderHeads'
+      '   inner join PostedOrderLists on '
+      '         (PostedOrderLists.OrderId = PostedOrderHeads.OrderId) '
+      '     and (PostedOrderLists.OrderCount > 0)'
+      '   left join clients c on c.ClientId = PostedOrderHeads.ClientId'
+      '   LEFT JOIN PricesData ON '
+      '         (PostedOrderHeads.PriceCode=PricesData.PriceCode)'
+      '   left join pricesregionaldata on '
+      
+        '         (pricesregionaldata.PriceCode = PostedOrderHeads.PriceC' +
+        'ode) '
+      
+        '     and pricesregionaldata.regioncode = PostedOrderHeads.region' +
+        'code'
+      '   LEFT JOIN RegionalData ON '
+      '         (RegionalData.RegionCode=PostedOrderHeads.RegionCode) '
+      '     AND (PricesData.FirmCode=RegionalData.FirmCode)'
+      '   LEFT JOIN MinReqRules  ON '
+      '         (MinReqRules.ClientId = PostedOrderHeads.ClientId) '
+      '     and (MinReqRules.PriceCode = PostedOrderHeads.PriceCode) '
+      '     and (MinReqRules.RegionCode = PostedOrderHeads.RegionCode)'
+      'WHERE'
+      '    (PostedOrderHeads.OrderId = :OrderId)')
+    Options.StrictUpdate = False
+    Left = 68
+    Top = 407
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'timezonebias'
+      end
+      item
+        DataType = ftUnknown
+        Name = 'OrderId'
+      end>
+    object adsOrdersHFormOrderId: TLargeintField
+      FieldName = 'OrderId'
+    end
+    object adsOrdersHFormClientID: TLargeintField
+      FieldName = 'ClientID'
+    end
+    object adsOrdersHFormServerOrderId: TLargeintField
+      FieldName = 'ServerOrderId'
+    end
+    object adsOrdersHFormDatePrice: TDateTimeField
+      FieldName = 'DatePrice'
+    end
+    object adsOrdersHFormPriceCode: TLargeintField
+      FieldName = 'PriceCode'
+    end
+    object adsOrdersHFormRegionCode: TLargeintField
+      FieldName = 'RegionCode'
+    end
+    object adsOrdersHFormOrderDate: TDateTimeField
+      FieldName = 'OrderDate'
+    end
+    object adsOrdersHFormSendDate: TDateTimeField
+      FieldName = 'SendDate'
+    end
+    object adsOrdersHFormClosed: TBooleanField
+      FieldName = 'Closed'
+    end
+    object adsOrdersHFormSend: TBooleanField
+      FieldName = 'Send'
+      Required = True
+    end
+    object adsOrdersHFormPriceName: TStringField
+      FieldName = 'PriceName'
+      Size = 70
+    end
+    object adsOrdersHFormRegionName: TStringField
+      FieldName = 'RegionName'
+      Size = 25
+    end
+    object adsOrdersHFormSupportPhone: TStringField
+      FieldName = 'SupportPhone'
+    end
+    object adsOrdersHFormMessageTo: TMemoField
+      FieldName = 'MessageTo'
+      BlobType = ftMemo
+    end
+    object adsOrdersHFormComments: TMemoField
+      FieldName = 'Comments'
+      BlobType = ftMemo
+    end
+    object adsOrdersHFormPriceEnabled: TBooleanField
+      FieldName = 'PriceEnabled'
+    end
+    object adsOrdersHFormPositions: TLargeintField
+      FieldName = 'Positions'
+    end
+    object adsOrdersHFormSumOrder: TFloatField
+      FieldName = 'SumOrder'
+    end
+    object adsOrdersHFormsumbycurrentmonth: TFloatField
+      FieldName = 'sumbycurrentmonth'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsOrdersHFormDisplayOrderId: TLargeintField
+      FieldName = 'DisplayOrderId'
+    end
+    object adsOrdersHFormMinReq: TLargeintField
+      FieldName = 'MinReq'
+    end
+    object adsOrdersHFormDifferentCostCount: TLargeintField
+      FieldName = 'DifferentCostCount'
+    end
+    object adsOrdersHFormDifferentQuantityCount: TLargeintField
+      FieldName = 'DifferentQuantityCount'
+    end
+    object adsOrdersHFormsumbycurrentweek: TFloatField
+      FieldName = 'sumbycurrentweek'
+      DisplayFormat = '0.00;;'#39#39
+    end
+    object adsOrdersHFormFrozen: TBooleanField
+      FieldName = 'Frozen'
+    end
+    object adsOrdersHFormAddressName: TStringField
+      FieldName = 'AddressName'
+    end
+    object adsOrdersHFormNotExistsCount: TLargeintField
+      FieldName = 'NotExistsCount'
+    end
+    object adsOrdersHFormRealClientId: TLargeintField
+      FieldName = 'RealClientId'
+    end
   end
 end

@@ -119,6 +119,56 @@ type
     tmrShowMatchOrder: TTimer;
     tmRunRequestCertificate: TTimer;
     adsDocumentBodiesVitallyImportantByUser: TBooleanField;
+    pFrameOrder: TPanel;
+    dsOrdersH: TDataSource;
+    adsOrdersHForm: TMyQuery;
+    adsOrdersHFormOrderId: TLargeintField;
+    adsOrdersHFormClientID: TLargeintField;
+    adsOrdersHFormServerOrderId: TLargeintField;
+    adsOrdersHFormDatePrice: TDateTimeField;
+    adsOrdersHFormPriceCode: TLargeintField;
+    adsOrdersHFormRegionCode: TLargeintField;
+    adsOrdersHFormOrderDate: TDateTimeField;
+    adsOrdersHFormSendDate: TDateTimeField;
+    adsOrdersHFormClosed: TBooleanField;
+    adsOrdersHFormSend: TBooleanField;
+    adsOrdersHFormPriceName: TStringField;
+    adsOrdersHFormRegionName: TStringField;
+    adsOrdersHFormSupportPhone: TStringField;
+    adsOrdersHFormMessageTo: TMemoField;
+    adsOrdersHFormComments: TMemoField;
+    adsOrdersHFormPriceEnabled: TBooleanField;
+    adsOrdersHFormPositions: TLargeintField;
+    adsOrdersHFormSumOrder: TFloatField;
+    adsOrdersHFormsumbycurrentmonth: TFloatField;
+    adsOrdersHFormDisplayOrderId: TLargeintField;
+    adsOrdersHFormMinReq: TLargeintField;
+    adsOrdersHFormDifferentCostCount: TLargeintField;
+    adsOrdersHFormDifferentQuantityCount: TLargeintField;
+    adsOrdersHFormsumbycurrentweek: TFloatField;
+    adsOrdersHFormFrozen: TBooleanField;
+    adsOrdersHFormAddressName: TStringField;
+    adsOrdersHFormNotExistsCount: TLargeintField;
+    adsOrdersHFormRealClientId: TLargeintField;
+    pNotFound: TPanel;
+    pOrderGrid: TPanel;
+    pOrderDetail: TPanel;
+    dbtPriceName: TDBText;
+    Label3: TLabel;
+    DBText1: TDBText;
+    Label5: TLabel;
+    DBText2: TDBText;
+    Label6: TLabel;
+    lblSum: TLabel;
+    DBText3: TDBText;
+    dbtSumOrder: TDBText;
+    Label7: TLabel;
+    Label8: TLabel;
+    dbtRegionName: TDBText;
+    lSumOrder: TLabel;
+    lDatePrice: TLabel;
+    dbtDatePrice: TDBText;
+    dbgOrder: TDBGridEh;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -251,11 +301,8 @@ type
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
     procedure UpdateMatchOrderTimer;
-    procedure OrderGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
   public
     { Public declarations }
-    dbgOrder : TToughDBGrid;
-    legendOrder : TframeBaseLegend;
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
     procedure ForceRecalcDocument(DocumentId: Int64);
   end;
@@ -373,7 +420,7 @@ var
   column : TColumnEh;
 begin
   pButtons.Visible := False;
-  dbgOrder.Visible := False;
+  pFrameOrder.Visible := False;
   dbgDocumentBodies.MinAutoFitWidth := DBGridColumnMinWidth;
   dbgDocumentBodies.Flat := True;
   dbgDocumentBodies.Options := dbgDocumentBodies.Options + [dgRowLines];
@@ -390,7 +437,7 @@ begin
   dbgDocumentBodies.ShowHint := True;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     legeng.Visible := True;
-    dbgOrder.Visible := True;
+    pFrameOrder.Visible := True;
     adsDocumentBodies.OnCalcFields := WaybillCalcFields;
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
@@ -399,7 +446,7 @@ begin
 
     if adsDocumentHeadersCreatedByUser.Value then begin
       legeng.Visible := False;
-      dbgOrder.Visible := False;
+      pFrameOrder.Visible := False;
       pButtons.Visible := True;
       sbAdd.Visible := True;
       sbDelete.Visible := True;
@@ -2336,37 +2383,53 @@ end;
 
 procedure TDocumentBodiesForm.SetOrderByPosition;
 begin
-  adsOrder.Open;
+  lSumOrder.Caption := '';
+  //adsOrder.Open;
 
   if adsOrder.Active then
     adsOrder.Close;
 
+  if adsOrdersHForm.Active then
+    adsOrdersHForm.Close;
+
   if adsDocumentBodies.Active and not adsDocumentBodies.IsEmpty and not adsDocumentBodiesOrderId.IsNull
   then begin
+    lSumOrder.Caption := Format('%0.2f', [ DM.GetSumOrder(adsDocumentBodiesOrderId.Value, True) ]);
+    adsOrdersHForm.ParamByName('OrderId').Value := adsDocumentBodiesOrderId.Value;
+    adsOrdersHForm.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
+    adsOrdersHForm.Open;
     adsOrder.ParamByName('OrderId').Value := adsDocumentBodiesOrderId.Value;
     adsOrder.Open;
     if not adsOrder.Locate('ServerDocumentLineId', adsDocumentBodiesServerId.AsVariant, []) then
       adsOrder.First;
   end;
+
+  if adsOrder.Active and not adsOrder.IsEmpty then begin
+    pNotFound.Visible := False;
+    pOrderGrid.Visible := True;
+  end
+  else begin
+    pNotFound.Visible := True;
+    pOrderGrid.Visible := False;
+  end;
 end;
 
 procedure TDocumentBodiesForm.SetOrderGrid;
+var
+  column : TColumnEh;
 begin
-  dbgOrder := TToughDBGrid.Create(Self);
+  pFrameOrder.Visible := False;
+  pFrameOrder.Height := 150;
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgOrder);
-
-  dbgOrder.Parent := pGrid;
-  dbgOrder.Visible := False;
-  dbgOrder.Height := 200;
-  dbgOrder.Align := alBottom;
 
   dbgOrder.AutoFitColWidths := False;
   try
     TDBGridHelper.AddColumn(dbgOrder, 'SynonymName', 'Наименование', 0);
     TDBGridHelper.AddColumn(dbgOrder, 'SynonymFirm', 'Производитель', 0);
     TDBGridHelper.AddColumn(dbgOrder, 'Period', 'Срок годности', 0);
-    TDBGridHelper.AddColumn(dbgOrder, 'Price', 'Цена', '0.00;;''''', 0);
+    column := TDBGridHelper.AddColumn(dbgOrder, 'RealPrice', 'Цена', '0.00;;''''', 0);
+    column.Font.Style := column.Font.Style + [fsBold]; 
     TDBGridHelper.AddColumn(dbgOrder, 'OrderCount', 'Заказ', 0);
     TDBGridHelper.AddColumn(dbgOrder, 'RetailSumm', 'Сумма', '0.00;;''''', 0);
   finally
@@ -2378,13 +2441,6 @@ begin
   dbgOrder.DataSource := dsOrder;
 end;
 
-procedure TDocumentBodiesForm.OrderGetCellParams(Sender: TObject;
-  Column: TColumnEh; AFont: TFont; var Background: TColor;
-  State: TGridDrawState);
-begin
-  //Здесь будет расскрасска грида
-end;
-
 procedure TDocumentBodiesForm.tmrShowMatchOrderTimer(Sender: TObject);
 begin
   tmrShowMatchOrder.Enabled := False;
@@ -2393,7 +2449,7 @@ end;
 
 procedure TDocumentBodiesForm.UpdateMatchOrderTimer;
 begin
-  if dbgOrder.Visible then begin
+  if pFrameOrder.Visible then begin
     tmrShowMatchOrder.Enabled := False;
     tmrShowMatchOrder.Enabled := True;
   end;

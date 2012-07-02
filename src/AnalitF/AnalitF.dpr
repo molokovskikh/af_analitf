@@ -166,7 +166,8 @@ uses
   SearchFilterController in 'BusinessLogic\SearchFilterController.pas',
   U_AddWaybillForm in 'Views\U_AddWaybillForm.pas' {AddWaybillForm},
   VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
-  WaybillCalculation in 'BusinessLogic\WaybillCalculation.pas';
+  WaybillCalculation in 'BusinessLogic\WaybillCalculation.pas',
+  U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame};
 
 {$R *.RES}
 {$R Progress.RES}

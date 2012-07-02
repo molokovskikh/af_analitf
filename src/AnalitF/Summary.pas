@@ -11,7 +11,8 @@ uses
   ActnList, U_frameLegend, MemDS, DBAccess, MyAccess, U_frameBaseLegend,
   U_CurrentOrderItem,
   AddressController,
-  U_frameFilterAddresses;
+  U_frameFilterAddresses,
+  U_frameMatchWaybill;
 
 type
   TSummaryForm = class(TChildForm)
@@ -102,39 +103,6 @@ type
     adsSummaryComment: TStringField;
     adsSummaryPrintCost: TFloatField;
     adsSummaryMarkup: TFloatField;
-    dsDocumentBodies: TDataSource;
-    adsDocumentBodies: TMyQuery;
-    adsDocumentBodiesId: TLargeintField;
-    adsDocumentBodiesDocumentId: TLargeintField;
-    adsDocumentBodiesProduct: TStringField;
-    adsDocumentBodiesCode: TStringField;
-    adsDocumentBodiesCertificates: TStringField;
-    adsDocumentBodiesPeriod: TStringField;
-    adsDocumentBodiesProducer: TStringField;
-    adsDocumentBodiesCountry: TStringField;
-    adsDocumentBodiesProducerCost: TFloatField;
-    adsDocumentBodiesRegistryCost: TFloatField;
-    adsDocumentBodiesSupplierPriceMarkup: TFloatField;
-    adsDocumentBodiesSupplierCostWithoutNDS: TFloatField;
-    adsDocumentBodiesSupplierCost: TFloatField;
-    adsDocumentBodiesQuantity: TIntegerField;
-    adsDocumentBodiesVitallyImportant: TBooleanField;
-    adsDocumentBodiesSerialNumber: TStringField;
-    adsDocumentBodiesPrinted: TBooleanField;
-    adsDocumentBodiesAmount: TFloatField;
-    adsDocumentBodiesNdsAmount: TFloatField;
-    adsDocumentBodiesUnit: TStringField;
-    adsDocumentBodiesExciseTax: TFloatField;
-    adsDocumentBodiesBillOfEntryNumber: TStringField;
-    adsDocumentBodiesEAN13: TStringField;
-    adsDocumentBodiesRequestCertificate: TBooleanField;
-    adsDocumentBodiesCertificateId: TLargeintField;
-    adsDocumentBodiesDocumentBodyId: TLargeintField;
-    adsDocumentBodiesServerId: TLargeintField;
-    adsDocumentBodiesServerDocumentId: TLargeintField;
-    adsDocumentBodiesCatalogMarkup: TFloatField;
-    adsDocumentBodiesCatalogMaxMarkup: TFloatField;
-    adsDocumentBodiesCatalogMaxSupplierMarkup: TFloatField;
     tmrShowMatchWaybill: TTimer;
     adsSummaryServerDocumentLineId: TLargeintField;
     adsSummaryRejectId: TLargeintField;
@@ -165,7 +133,6 @@ type
     procedure cbNeedCorrectClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
     procedure dbgSummaryCurrentDblClick(Sender: TObject);
-    procedure tmrShowMatchWaybillTimer(Sender: TObject);
     procedure adsSummaryAfterOpen(DataSet: TDataSet);
   private
     SelectedPrices : TStringList;
@@ -180,7 +147,6 @@ type
     procedure OnChangeFilterAllOrders;
     procedure ChangePriceFontInOrderGrid(Grid : TToughDBGrid);
     procedure SetWaybillGrid;
-    procedure SetWaybillByPosition;
     procedure UpdateMatchWaybillTimer;
   protected
     frameFilterAddresses : TframeFilterAddresses;
@@ -188,8 +154,8 @@ type
     procedure FlipToCore;
   public
     pGrid: TPanel;
-    dbgWaybill : TToughDBGrid;
     frameLegend : TframeLegend;
+    frameMatchWaybill : TframeMatchWaybill;
     procedure Print( APreview: boolean = False); override;
     procedure ShowForm; override;
     procedure SetOrderLabel;
@@ -258,8 +224,9 @@ begin
   inherited;
 
   frameLegend := TframeLegend.CreateFrame(Self, True, False, False);
-  frameLegend.Parent := Self;
+  frameLegend.Parent := pGrid;
   frameLegend.Align := alBottom;
+  frameLegend.CreateLegendLabel('Несоответствие в накладной', MatchWaybillColor, clWindowText);
 
   PrepareColumnsInOrderGrid(dbgSummarySend);
   ChangePriceFontInOrderGrid(dbgSummaryCurrent);
@@ -364,7 +331,7 @@ begin
       dbgSummaryCurrent.Visible := False;
       dbgSummarySend.Visible := False;
       dbgSummaryCurrent.Visible := True;
-      dbgWaybill.Visible := False;
+      frameMatchWaybill.Visible := False;
       adsSummary.SQL.Text := adsCurrentSummary.SQL.Text;
       if GetAddressController.ShowAllOrders then begin
         clientsSql := GetAddressController.GetFilter('CurrentOrderHeads.ClientId');
@@ -386,7 +353,7 @@ begin
       dbgSummaryCurrent.Visible := False;
       dbgSummarySend.Visible := False;
       dbgSummarySend.Visible := True;
-      dbgWaybill.Visible := True;
+      frameMatchWaybill.Visible := True;
       adsSummary.SQL.Text := adsSendSummary.SQL.Text;
       adsSummary.SQL.Text := adsSummary.SQL.Text
         + #13#10' and (PostedOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
@@ -525,6 +492,18 @@ begin
       and (PositionResult in [psrDifferentQuantity, psrDifferentCostAndQuantity])
     then
       Background := NeedCorrectColor;
+  end;
+
+  if LastSymmaryType = 1 then begin
+    if adsSummaryServerDocumentId.IsNull then
+      Background := MatchWaybillColor
+    else begin
+      if adsSummaryWaybillQuantity.Value < adsSummaryordercount.Value then
+        Background := MatchWaybillColor;
+
+      if (abs(adsSummaryRealCost.Value - adsSummarySupplierCost.Value) > 0.02) then
+        Background := MatchWaybillColor;
+    end;
   end;
 end;
 
@@ -924,62 +903,16 @@ procedure TSummaryForm.SetWaybillGrid;
 var
   column : TColumnEh;
 begin
-  dbgWaybill := TToughDBGrid.Create(Self);
-
-  TDBGridHelper.SetDefaultSettingsToGrid(dbgWaybill);
-  dbgWaybill.Parent := pGrid;
-  dbgWaybill.Visible := False;
-  dbgWaybill.Height := 200;
-  dbgWaybill.Align := alBottom;
-
-  dbgWaybill.AutoFitColWidths := False;
-  try
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'Product', 'Наименование', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'SerialNumber', 'Серия товара', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'Period', 'Срок годности', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'Producer', 'Производитель', 0);
-    TDBGridHelper.AddColumn(dbgWaybill, 'Country', 'Страна', 0);
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'ProducerCost', 'Цена производителя без НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'RegistryCost', 'Цена ГР', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierPriceMarkup', 'Торговая наценка оптовика', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'NDS', 'НДС', dbgWaybill.Canvas.TextWidth('999'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'SupplierCost', 'Цена поставщика с НДС', dbgWaybill.Canvas.TextWidth('99999.99'));
-    column := TDBGridHelper.AddColumn(dbgWaybill, 'Quantity', 'Заказ', dbgWaybill.Canvas.TextWidth('99999.99'));
-  finally
-    dbgWaybill.AutoFitColWidths := True;
-  end;
-
-  dbgWaybill.ReadOnly := False;
-
-  dbgWaybill.DataSource := dsDocumentBodies;
-end;
-
-procedure TSummaryForm.tmrShowMatchWaybillTimer(Sender: TObject);
-begin
-  tmrShowMatchWaybill.Enabled := False;
-  SetWaybillByPosition;
-end;
-
-procedure TSummaryForm.SetWaybillByPosition;
-begin
-  if adsDocumentBodies.Active then
-    adsDocumentBodies.Close;
-
-  if adsSummary.Active and not adsSummary.IsEmpty and not adsSummaryServerDocumentId.IsNull
-  then begin
-    adsDocumentBodies.ParamByName('ServerDocumentId').Value := adsSummaryServerDocumentId.Value;
-    adsDocumentBodies.Open;
-    if not adsDocumentBodies.Locate('ServerId', adsSummaryServerDocumentLineId.AsVariant, []) then
-      adsDocumentBodies.First;
-  end;
+  frameMatchWaybill := TframeMatchWaybill.AddFrame(Self, Self, adsSummary);
+  frameMatchWaybill.Visible := False;
+  frameMatchWaybill.Height := 150;
+  frameMatchWaybill.Align := alBottom;
 end;
 
 procedure TSummaryForm.UpdateMatchWaybillTimer;
 begin
   if LastSymmaryType = 1 then begin
-    tmrShowMatchWaybill.Enabled := False;
-    tmrShowMatchWaybill.Enabled := True;
+    frameMatchWaybill.UpdateMatchWaybillTimer;
   end;
 end;
 
