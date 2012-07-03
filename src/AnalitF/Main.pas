@@ -261,7 +261,6 @@ private
   procedure DeleteOldOrders;
   procedure DeleteOldWaybills;
   procedure RealFreeChildForms;
-  procedure SetFocusOnMainForm;
   function  NeedUpdateClientLabel : Boolean;
   function DontShowAddresses : Boolean;
   procedure UpdateAddressName;
@@ -274,6 +273,7 @@ private
       AFont: TFont; var Background: TColor; State: TGridDrawState);
   procedure dbgNewsCellClick(Column: TColumnEh);
   procedure dbgNewsSortMarkingChanged(Sender: TObject);
+  procedure UpdateToolBar;
 public
   // Имя текущего пользователя
   CurrentUser    : string;
@@ -1008,7 +1008,6 @@ begin
     end;
     //DeleteFilesByMask(RootFolder() + SDirReclame + '\*.*', False);
   end;
-  SetFocusOnMainForm;
 end;
 
 procedure TMainForm.actHomeExecute(Sender: TObject);
@@ -1237,7 +1236,7 @@ end;
 procedure TMainForm.FormResize(Sender: TObject);
 begin
 {
-  Корректное отображение списка текущих клиентов работает и без этого кода 
+  Корректное отображение списка текущих клиентов работает и без этого кода
   if NeedUpdateClientLabel then
     ToolBar.Invalidate;
 }
@@ -1245,12 +1244,7 @@ begin
   if not JustRun and Self.Active and Self.Visible and (Screen.ActiveForm = Self)
     and not Assigned(GlobalExchangeParams)
   then begin
-    SetOrdersInfo;
-
-    if Self.Width < 900 then
-      CollapseToolBar()
-    else
-      ToggleToolBar();
+    UpdateToolBar;
   end;
 end;
 
@@ -1487,19 +1481,6 @@ begin
   end;
 end;
 
-procedure TMainForm.SetFocusOnMainForm;
-begin
-  try
-    Self.SetFocusedControl(Self);
-  except
-  end;
-  try
-    //Попытка установить фокус на форме, т.к. он иногда не установлен
-    Self.SetFocus;
-  except
-  end;
-end;
-
 procedure TMainForm.actPostOrderBatchExecute(Sender: TObject);
 begin
   DM.InsertUserActionLog(uaShowOrderBatch);
@@ -1521,7 +1502,7 @@ begin
     + 12{на подгон под ширину PopupMenu};
 
   //Расчитываем размер прямоугольника от размера ToolBar и берем чуть меньше
-  PanelWidth := ToolBar.Width - 10 - ClientNameRect.Left;
+  PanelWidth := ToolBar.Width - 10 - newClientNameRect.Left;
 
   //Выставляем минимальное значение
   if PaintBoxWidth < PanelWidth then
@@ -1962,6 +1943,9 @@ try
 
   pStartUp.Visible := False;
   UpdateReclame;
+  UpdateToolBar;
+  UpdateAddressName;
+
   //В UpdateReclame может включится отображение кнопки actPostOrderBatch,
   //поэтому надо еще раз пересчитать
   //Вроде бы работает без него
@@ -2123,7 +2107,7 @@ try
   end;
 
 finally
-  SetFocusOnMainForm;
+  UpdateToolBar;
   //Обновляем ToolBar в случае смены клиента после обновления
   UpdateAddressName;
   if NeedShowMiniMail then
@@ -2230,6 +2214,16 @@ end;
 procedure TMainForm.dbgNewsSortMarkingChanged(Sender: TObject);
 begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
+end;
+
+procedure TMainForm.UpdateToolBar;
+begin
+  SetOrdersInfo;
+
+  if Self.Width < 900 then
+    CollapseToolBar()
+  else
+    ToggleToolBar();
 end;
 
 initialization
