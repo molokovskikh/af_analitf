@@ -1,4 +1,6 @@
-﻿import System.IO
+﻿import System
+import System.IO
+import System.Diagnostics
 import file from Deploy.bake
 import file from WebServiceSupport.bake
 import file from Migration.bake
@@ -12,10 +14,16 @@ import file from Tools.boo
 Global(
 	Project : "AnalitF",
 	humanReadableName : "AnalitF",
-	deployTo : """\\adc.analit.net\Inforoom\WebApps\PrgDataService\Results""",
-	Platform : "x86"
+	deployTo : """\\adc.analit.net\Inforoom\WebApps\PrgDataService\Results\Updates""",
+	Platform : "x86",
+	ReleasesFolder : """\\OFFDC\Data\AnalitFReleases""",
+	CurrentVersionInfo : null,
+	PreviousRelease : null
 )
 
+def ExecWait(exec as Exec):
+	exec.Execute()
+	System.Threading.Thread.Sleep(150)
 
 def PrepareCfg(buildName as string):
 	File.Delete(".\\src\\AnalitF\\AnalitF_tmp.cfg") if File.Exists(".\\src\\AnalitF\\AnalitF_tmp.cfg")
@@ -34,17 +42,15 @@ def BuildAnalitF(buildName as string):
 	MkDir(buildFolder) if not Exist(buildFolder)
 	try:
 		PrepareCfg("Release")
-		exec = Exec("C:\\Program Files (x86)\\Borland\\Delphi7\\Bin\\dcc32.exe", "-B AnalitF.dpr")
-		exec.BaseDirectory = ".\\src\\AnalitF"
-		exec.Execute()
+		exec = Exec("C:\\Program Files (x86)\\Borland\\Delphi7\\Bin\\dcc32.exe", "-B AnalitF.dpr", BaseDirectory : ".\\src\\AnalitF")
+		ExecWait(exec)
 	ensure:
 		RestoreCfg()
 
 
 Task @BuildVMProtect:
-	exec = Exec("C:\\Program Files (x86)\\VMProtect Professional\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp");
-	exec.BaseDirectory = ".\\src\\VMProtect"
-	exec.Execute()
+	exec = Exec("C:\\Program Files (x86)\\VMProtect Professional\\VMProtect_Con.exe", "AnalitF.exe -pf AnalitF.exe.vmp", BaseDirectory : ".\\src\\VMProtect")
+	ExecWait(exec)
 
 Task @BuildRelease:
 	BuildAnalitF("Release")
@@ -58,3 +64,126 @@ Task @BuildAndProtectRelease, [@BuildRelease, @CopyReleaseToProtect, @BuildVMPro
 
 Task @ShowDiffDataLayer:
 	Sh("git log -10 -p \"src/Common/DataLayer/\"")
+
+Task @ReadVersionInfo:
+	Globals.CurrentVersionInfo = FileVersionInfo.GetVersionInfo(".\\src\\VMProtect\\AnalitF.vmp.exe")
+	print "версия = ${Globals.CurrentVersionInfo.FileVersion}"
+
+Task @CheckVersionInfo:
+	if (not Globals.CurrentVersionInfo):
+		raise "Не установлен номер версии собираемого релиза"
+	if (Globals.CurrentVersionInfo.FilePrivatePart <= 0):
+		raise "Номер билда версии собираемого релиза <= 0"
+
+Task @CheckPrevVersion, [@CheckVersionInfo]:
+	version = Convert.ToInt32(Configuration.prevVersion)
+	if (version >= Globals.CurrentVersionInfo.FilePrivatePart):
+		raise "Номер билда предыдущей версии ${version} больше или равен билду собираемой версии ${Globals.CurrentVersionInfo.FilePrivatePart}"
+	if (not Globals.ReleasesFolder):
+		raise "Не установлена папка с релизами"
+	prevReleaseFolders = Directory.GetDirectories(Globals.ReleasesFolder, "*.${version}")
+	if (prevReleaseFolders.Length > 1):
+		raise "Найдено несколько папок для предыдущего релиза ${version}"
+	if (prevReleaseFolders.Length == 0):
+		raise "Не найдена папка с предыдущим релизом ${version}"
+	prevReleaseFolder = Path.Combine(prevReleaseFolders[0], "Exe", "AnalitF")
+	if (not Directory.Exists(prevReleaseFolder)):
+		raise "Не найдена папка с файлами предыдущего релиза ${prevReleaseFolder}"
+	Globals.PreviousRelease = prevReleaseFolder	
+
+Task @TestCheckPrevVersion, [@ReadVersionInfo, @CheckPrevVersion]
+
+
+def CompareFiles(File1 as string, File2 as string) as bool:
+	FI1 = FileInfo(File1)
+	FI2 = FileInfo(File2)
+
+	if (not FI1.Exists or not FI2.Exists):
+		return false
+
+	if (FI1.Length != FI2.Length):
+		return false
+
+	bytesFile1 = File.ReadAllBytes(File1)
+	bytesFile2 = File.ReadAllBytes(File2)
+
+	if (bytesFile1.Length != bytesFile2.Length):
+		return false
+
+	for i in range(0, bytesFile2.Length - 1):
+		if (bytesFile1[i] != bytesFile2[i]):
+			return false
+
+	return true
+
+
+def GetNewFiles(currentFolder as string, prevFolder as string):
+	result = List()
+	currentFiles = Directory.GetFiles(currentFolder, "*", SearchOption.AllDirectories)
+	for file in currentFiles:
+		prevFile = file.Replace(currentFolder, prevFolder)
+		if (not CompareFiles(file, prevFile)):
+			result.Add(file.Replace(currentFolder + "\\", ""))
+	return result
+
+
+Task @CreateReleaseFolder:
+	buildNumber = Globals.CurrentVersionInfo.FilePrivatePart
+	versionNumber = Globals.CurrentVersionInfo.FileVersion
+	
+	#подготовка каталога build
+	buildRootFolder = ".\\build"
+	Rm("${buildRootFolder}/*", true) if Exist(buildRootFolder)
+	MkDir(buildRootFolder) if not Exist(buildRootFolder)
+
+	#подготовка папок релиза 
+	archiveReleaseFolder = "${buildRootFolder}\\${versionNumber}\\Exe"
+	exeReleaseFolder = "${buildRootFolder}\\${versionNumber}\\Exe\\AnalitF"
+	updatesReleaseFolder = "${buildRootFolder}\\${versionNumber}\\updates\\Release${buildNumber}\\Exe"
+	MkDir(exeReleaseFolder) if not Exist(exeReleaseFolder)
+	MkDir(updatesReleaseFolder) if not Exist(updatesReleaseFolder)
+
+	#копирование файлов в папки релиза
+	Cp(FileSet("**\\*.*", BaseDirectory : ".\\release\\AnalitF"), exeReleaseFolder, true)
+	File.Copy(".\\src\\VMProtect\\AnalitF.vmp.exe", exeReleaseFolder + "\\AnalitF.exe", true)
+	File.Copy(".\\src\\EMKBuilds\\appdbhlp.dll", exeReleaseFolder + "\\appdbhlp.dll", true)
+	Cp(FileSet("*.frf", BaseDirectory : ".\\src\\AnalitF"), exeReleaseFolder + "\\Frf", true)
+
+	#поиск обновленных файлов
+	updateFilesList = GetNewFiles(exeReleaseFolder, Globals.PreviousRelease)
+	print "Список обновленных файлов (${updateFilesList.Count}) = ${join(updateFilesList)}"
+	files = FileSet(updateFilesList, BaseDirectory : exeReleaseFolder)
+	if (files.Files.Count != updateFilesList.Count):
+		raise "Не совпало количество обновляемых файлов в FileSet = ${join(files.Files)}"
+
+	#копирование обновленных файлов в папку ReleaseNNNN
+	Cp(files, updatesReleaseFolder)
+
+	#копирование обновленных файлов в папку вида .\update\{prev}_to_{currentBuild}
+	updateSrc = ".\\update\\${Configuration.prevVersion}_to_${buildNumber}"
+	Rm("${updateSrc}/*", true) if Exist(updateSrc)
+	MkDir(updateSrc) if not Exist(updateSrc)
+	Cp(files, updateSrc)
+
+	#создание самораспаковывающегося архива
+	exec = Exec("C:\\Program Files\\7-Zip\\7z.exe", "a AF${buildNumber}.exe AnalitF -mx9 -slp -sfx7z.sfx", BaseDirectory : archiveReleaseFolder)
+	ExecWait(exec)
+	
+	print "папка с релизом подготовлена"
+
+
+Task @TestCreateReleaseFolder, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder]
+	
+
+Task @DeployToFolders:
+	#выкладываем файлы в папку на диске \\offdc\data
+	Cp(FileSet("**\\*.*", BaseDirectory : ".\\build"), Globals.ReleasesFolder, true)
+	#выкладываем файлы в обновление сервисе подготовки данных
+	Cp(FileSet("**\\*.*", BaseDirectory : ".\\build\\${Globals.CurrentVersionInfo.FileVersion}\\updates"), Globals.deployTo, true)
+	print "папка с релизом выложена"
+
+
+Task @TestDeployToFolders, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder, @DeployToFolders]
+
+Task @Deploy, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder, @DeployToFolders]:
+	print "Deploy упакованного релизного приложения завершен"
