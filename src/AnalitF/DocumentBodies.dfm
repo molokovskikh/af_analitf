@@ -665,6 +665,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       
         'if(p.FirmCode is null, dh.SupplierNameByUser, p.FullName) as Pro' +
         'viderName,'
+      
+        'if(p.FirmCode is null, dh.SupplierNameByUser, p.ShortName) as Pr' +
+        'oviderShortName,'
       'count(dbodies.Id) as Positions,'
       'invoiceheaders.Id,'
       'invoiceheaders.InvoiceNumber,'
@@ -746,6 +749,10 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentHeadersCreatedByUser: TBooleanField
       FieldName = 'CreatedByUser'
+    end
+    object adsDocumentHeadersProviderShortName: TStringField
+      FieldName = 'ProviderShortName'
+      Size = 255
     end
   end
   object dsDocumentHeaders: TDataSource

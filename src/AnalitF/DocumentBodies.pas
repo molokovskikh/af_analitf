@@ -169,6 +169,7 @@ type
     lDatePrice: TLabel;
     dbtDatePrice: TDBText;
     dbgOrder: TDBGridEh;
+    adsDocumentHeadersProviderShortName: TStringField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -1705,32 +1706,15 @@ end;
 
 procedure TDocumentBodiesForm.PrintRackCard;
 var
-  priceNameVariant : Variant;
-  priceName : String;
-  bracketIndex : Integer;
   RackCardReportParams : TRackCardReportParams;
 begin
   RackCardReportParams := TRackCardReportParams.Create(DM.MainConnection);
   try
-    priceNameVariant := DM.QueryValue(
-      'select PriceName from pricesdata where FirmCode = ' + adsDocumentHeadersFirmCode.AsString + ' limit 1',
-      [],
-      []);
-    if not VarIsNull(priceNameVariant) and (VarIsStr(priceNameVariant)) then begin
-      priceName := priceNameVariant;
-      bracketIndex := Pos('(',priceName);
-      if bracketIndex > 0 then
-        priceName := Copy(priceName, 1, bracketIndex -1);
-    end
-    else
-      priceName := adsDocumentHeadersProviderName.AsString;
-    priceName := Trim(priceName);
-
     frVariables[ 'DeleteUnprintableElemnts'] := RackCardReportParams.DeleteUnprintableElemnts;
     frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
     frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
     frVariables[ 'DocumentDate'] := IfThen(not adsDocumentHeadersLocalWriteTime.IsNull, DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime));
-    frVariables[ 'ProviderName'] := priceName;
+    frVariables[ 'ProviderName'] := Trim(adsDocumentHeadersProviderShortName.AsString);
 
     frVariables['ProductVisible'] := RackCardReportParams.ProductVisible;
     frVariables['ProducerVisible'] := RackCardReportParams.ProducerVisible;
@@ -1988,33 +1972,16 @@ end;
 
 procedure TDocumentBodiesForm.PrintTickets;
 var
-  priceNameVariant : Variant;
-  priceName : String;
-  bracketIndex : Integer;
   TicketParams : TTicketReportParams;
   ticketReportFile : String;
 begin
   TicketParams := TTicketReportParams.Create(DM.MainConnection);
   try
-    priceNameVariant := DM.QueryValue(
-      'select PriceName from pricesdata where FirmCode = ' + adsDocumentHeadersFirmCode.AsString + ' limit 1',
-      [],
-      []);
-    if not VarIsNull(priceNameVariant) and (VarIsStr(priceNameVariant)) then begin
-      priceName := priceNameVariant;
-      bracketIndex := Pos('(',priceName);
-      if bracketIndex > 0 then
-        priceName := Copy(priceName, 1, bracketIndex -1);
-    end
-    else
-      priceName := adsDocumentHeadersProviderName.AsString;
-    priceName := Trim(priceName);
-
     frVariables[ 'PrintEmptyTickets'] := TicketParams.PrintEmptyTickets;
     frVariables[ 'ClientNameAndAddress'] := DM.GetEditNameAndAddress;
     frVariables[ 'ProviderDocumentId'] := adsDocumentHeadersProviderDocumentId.AsString;
     frVariables[ 'DocumentDate'] := DateToStr(adsDocumentHeadersLocalWriteTime.AsDateTime);
-    frVariables[ 'TicketSignature'] := priceName;
+    frVariables[ 'TicketSignature'] := Trim(adsDocumentHeadersProviderShortName.AsString);
     frVariables[ 'DeleteUnprintableElemnts'] := TicketParams.DeleteUnprintableElemnts;
 
     if TicketParams.TicketSize = tsStandart then begin
@@ -2384,7 +2351,6 @@ end;
 procedure TDocumentBodiesForm.SetOrderByPosition;
 begin
   lSumOrder.Caption := '';
-  //adsOrder.Open;
 
   if adsOrder.Active then
     adsOrder.Close;

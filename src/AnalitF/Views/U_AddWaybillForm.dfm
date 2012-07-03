@@ -40,7 +40,7 @@ inherited AddWaybillForm: TAddWaybillForm
       Top = 72
       Width = 285
       Height = 21
-      TabOrder = 0
+      TabOrder = 1
     end
     object dtpDate: TDateTimePicker
       Left = 5
@@ -55,7 +55,7 @@ inherited AddWaybillForm: TAddWaybillForm
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 1
+      TabOrder = 2
     end
     object cbProviders: TComboBox
       Left = 5
@@ -63,7 +63,7 @@ inherited AddWaybillForm: TAddWaybillForm
       Width = 285
       Height = 21
       ItemHeight = 13
-      TabOrder = 2
+      TabOrder = 0
     end
   end
   object btnOk: TButton
