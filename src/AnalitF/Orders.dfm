@@ -532,6 +532,7 @@ inherited OrdersForm: TOrdersForm
       '    ol.RealPrice,'
       '    ol.price,'
       '    ol.VitallyImportant,'
+      '    core.Quantity,'
       '    core.requestratio,'
       '    core.ordercost,'
       '    core.minordercount,'
@@ -774,6 +775,9 @@ inherited OrdersForm: TOrdersForm
     end
     object adsOrdersWaybillQuantity: TIntegerField
       FieldName = 'WaybillQuantity'
+    end
+    object adsOrdersQuantity: TStringField
+      FieldName = 'Quantity'
     end
   end
   object ActionList: TActionList

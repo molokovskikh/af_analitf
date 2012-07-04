@@ -107,6 +107,7 @@ type
     pClientBottom: TPanel;
     pClientRight: TPanel;
     pClientLeft: TPanel;
+    adsOrdersQuantity: TStringField;
     procedure dbgOrdersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure dbgOrdersKeyDown(Sender: TObject; var Key: Word;
@@ -475,6 +476,7 @@ begin
   fOrderCost := adsOrdersORDERCOST;
   fSumOrder := adsOrdersSUMORDER;
   fMinOrderCount := adsOrdersMINORDERCOUNT;
+  fCoreQuantity := adsOrdersQuantity;
   gotoMNNButton := btnGotoMNN;
 
   SetWaybillGrid;

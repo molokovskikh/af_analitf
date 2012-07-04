@@ -217,6 +217,7 @@ begin
   fOrderCost := adsSummaryORDERCOST;
   fSumOrder := adsSummarySumOrder;
   fMinOrderCount := adsSummaryMINORDERCOUNT;
+  fCoreQuantity := adsSummaryQuantity;
   gotoMNNButton := btnGotoMNN;
 
   SetWaybillGrid();
