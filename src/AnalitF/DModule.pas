@@ -3658,7 +3658,8 @@ begin
       DatabaseController.CheckObjectsExists(
         dbCon,
         FCreateClearDatabase or FNeedImportAfterRecovery,
-        CheckedObjectOnStartup);
+        CheckedObjectOnStartup,
+        True);
       mainStartupHelper.Write('DModule', 'Закончили проверку на существование объектов базы данных');
     end;
   finally

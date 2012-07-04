@@ -170,6 +170,7 @@ uses
   U_AddWaybillForm in '..\AnalitF\Views\U_AddWaybillForm.pas' {AddWaybillForm},
   VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
   WaybillCalculation in '..\AnalitF\BusinessLogic\WaybillCalculation.pas',
+  U_frameMatchWaybill in '..\AnalitF\Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame},
 
 //end files
   

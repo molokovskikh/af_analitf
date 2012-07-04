@@ -363,7 +363,11 @@ type
 
     procedure CreateViews(connection : TCustomMyConnection);
 
-    procedure CheckObjectsExists(connection : TCustomMyConnection; IsBackupRepair : Boolean; CheckedTables : TRepairedObjects = []);
+    procedure CheckObjectsExists(
+      connection : TCustomMyConnection;
+      IsBackupRepair : Boolean;
+      CheckedTables : TRepairedObjects = [];
+      startUp : Boolean = False);
 
     procedure RepairTableFromBackup(backupDir : String = '');
 
@@ -569,7 +573,8 @@ end;
 procedure TDatabaseController.CheckObjectsExists(
   connection: TCustomMyConnection;
   IsBackupRepair : Boolean;
-  CheckedTables : TRepairedObjects = []);
+  CheckedTables : TRepairedObjects = [];
+  startUp : Boolean = False);
 var
   I : Integer;
   currentTable : TDatabaseTable;
@@ -599,13 +604,13 @@ begin
         FCommand.SQL.Text :=
           Format(
             'SELECT %s from analitf.%s limit 100;',
-            ['now()', AnsiLowerCase(currentTable.Name)]);
+            [currentTable.GetColumns(), AnsiLowerCase(currentTable.Name)]);
         try
           FCommand.Open;
           FCommand.Close;
         except
           on E : EMyError do
-            if E.ErrorCode = ER_NO_SUCH_TABLE then
+            if (E.ErrorCode = ER_NO_SUCH_TABLE) and startUp then
               raise
             else begin
               WriteExchangeLog(
