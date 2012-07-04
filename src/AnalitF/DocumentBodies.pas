@@ -420,6 +420,7 @@ end;
 procedure TDocumentBodiesForm.PrepareGrid;
 var
   column : TColumnEh;
+  I : Integer;
 begin
   pButtons.Visible := False;
   pFrameOrder.Visible := False;
@@ -533,6 +534,13 @@ begin
       if adsDocumentHeadersCreatedByUser.Value then
         column.OnUpdateData := UserWaybillIntegerUpdateData;
       TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailSumm', 'Розничная сумма', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
+
+      if adsDocumentHeadersCreatedByUser.Value then
+        for I := 0 to dbgDocumentBodies.Columns.Count-1 do begin
+          column := dbgDocumentBodies.Columns[i];
+          if (column.Field is TStringField) and not Assigned(column.OnUpdateData) then
+            column.OnUpdateData := ProductUpdateData;
+        end;
     finally
       dbgDocumentBodies.AutoFitColWidths := True;
     end;
@@ -2266,12 +2274,8 @@ procedure TDocumentBodiesForm.ProductUpdateData(Sender: TObject;
 begin
   if (adsDocumentBodies.State in FWaybillDataSetState)
   then begin
-    if Length(Text) > 0 then begin
-      adsDocumentBodiesProduct.Value := Text;
-      adsDocumentBodies.Post;
-    end
-    else
-      adsDocumentBodies.Cancel;
+    TDBGridColumnEh(Sender).Field.AsVariant := Value;
+    adsDocumentBodies.Post;
     Handled := True;
   end;
 end;
