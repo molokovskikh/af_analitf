@@ -19,4 +19,11 @@ object frameMiniMail: TframeMiniMail
     Left = 104
     Top = 48
   end
+  object tmrUpdateStatus: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrUpdateStatusTimer
+    Left = 144
+    Top = 40
+  end
 end

@@ -32,9 +32,11 @@ type
   TframeMiniMail = class(TFrame)
     tmrSearch: TTimer;
     tmrRunRequestAttachments: TTimer;
+    tmrUpdateStatus: TTimer;
     procedure FrameResize(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
     procedure tmrRunRequestAttachmentsTimer(Sender: TObject);
+    procedure tmrUpdateStatusTimer(Sender: TObject);
   private
     { Private declarations }
     FCanvas : TCanvas;
@@ -84,6 +86,8 @@ type
     procedure sbRequestAttachmentsClick(Sender : TObject);
 
     procedure mdMailsAfterScroll(DataSet: TDataSet);
+
+    procedure UpdateRequestStatus;
   public
     { Public declarations }
     dsMails : TDataSource;
@@ -400,7 +404,7 @@ begin
   WriteExchangeLog('DModule',
       Concat('Mails', #13#10,
         DM.DataSetToString('select Id, LogTime, SupplierId, SupplierName, Subject, Body, IsNewMail, IsVipMail, IsImportantMail from Mails', [], [])));
-}        
+}
 
   mdMails.Connection := DM.MainConnection;
   mdAttachments.Connection := DM.MainConnection;
@@ -408,6 +412,8 @@ begin
 
   mdMails.Open();
   mdAttachments.Open();
+
+  UpdateRequestStatus;
 end;
 
 procedure TframeMiniMail.ProcessResize;
@@ -615,6 +621,10 @@ begin
     and fRecievedAttachment.AsBoolean
   then
     DM.OpenAttachment(fAttachmentId.Value);
+  if (Column.Field = fRequestAttachment) and  not fRequestAttachment.IsNull then begin
+    tmrUpdateStatus.Enabled := False;
+    tmrUpdateStatus.Enabled := True;
+  end
 end;
 
 procedure TframeMiniMail.fRecievedAttachmentGetText(Sender: TField;
@@ -796,6 +806,25 @@ end;
 procedure TframeMiniMail.sbAllMailsClick(Sender: TObject);
 begin
   SetClear();
+end;
+
+procedure TframeMiniMail.UpdateRequestStatus;
+var
+  requestCount : Integer;
+begin
+  try
+    requestCount := DM.QueryValue('SELECT COUNT(Id) AS newMailCount FROM Attachments where RequestAttachment = 1', [], []);
+  except
+    requestCount := 0;
+  end;
+  sbRequestAttachments.Enabled := requestCount > 0;
+end;
+
+procedure TframeMiniMail.tmrUpdateStatusTimer(Sender: TObject);
+begin
+  tmrUpdateStatus.Enabled := False;
+  SoftPost( mdAttachments );
+  UpdateRequestStatus;
 end;
 
 end.
