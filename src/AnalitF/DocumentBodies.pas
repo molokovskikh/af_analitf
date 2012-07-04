@@ -302,6 +302,7 @@ type
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
     procedure UpdateMatchOrderTimer;
+    procedure UpdateRequestCertificates;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -467,6 +468,7 @@ begin
       sbAdd.Visible := False;
       sbDelete.Visible := False;
       sbRequestCertificates.Visible := True;
+      UpdateRequestCertificates;
       legeng.Visible := True;
       adsDocumentBodies.OnNewRecord := nil;
       adsDocumentBodies.BeforePost := nil;
@@ -1009,6 +1011,8 @@ procedure TDocumentBodiesForm.tmrPrintedChangeTimer(
 begin
   try
     SoftPost( adsDocumentBodies );
+    if sbRequestCertificates.Visible then
+      UpdateRequestCertificates;
   finally
     tmrPrintedChange.Enabled := False;
   end;
@@ -2443,6 +2447,18 @@ end;
 procedure TDocumentBodiesForm.sbRequestCertificatesClick(Sender: TObject);
 begin
   tmRunRequestCertificate.Enabled := True;
+end;
+
+procedure TDocumentBodiesForm.UpdateRequestCertificates;
+var
+  requestCount : Integer;
+begin
+  try
+    requestCount := DM.QueryValue('SELECT COUNT(Id) AS newMailCount FROM DocumentBodies where RequestCertificate = 1', [], []);
+  except
+    requestCount := 0;
+  end;
+  sbRequestCertificates.Enabled := requestCount > 0;
 end;
 
 end.
