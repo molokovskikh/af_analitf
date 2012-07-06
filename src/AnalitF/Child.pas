@@ -68,6 +68,7 @@ type
     fMinOrderCount : TField;
     fBuyingMatrixType : TIntegerField;
     fCoreQuantity : TField;
+    disableCoreQuantityCheck : Boolean;
     OldAfterPost : TDataSetNotifyEvent;
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
@@ -115,7 +116,10 @@ type
     procedure ClearOrderByOrderCost;
     //устанавливаем значение
     procedure ClearOrderByMinOrderCount;
-    function  AllowOrderByCoreQuantity(order : Integer) : Boolean;
+    //очищаем созданный заказ
+    procedure ClearOrderByVolume;
+    function  GetCorrectOrder(order : Integer) : Integer;
+    function  AllowOrderByCoreQuantity(order : Integer; var coreQuantity : Integer) : Boolean;
     procedure ShowVolumeMessage;
     procedure NewAfterPost(DataSet : TDataSet);
     procedure NewBeforePost(DataSet: TDataSet);
@@ -166,7 +170,7 @@ implementation
 
 uses Main, AProc, Constant, DModule, MyEmbConnection, Core,
   NamesForms,
-  DBGridHelper, Variants;
+  DBGridHelper, Variants, Math;
 
 {$R *.DFM}
 
@@ -361,6 +365,7 @@ end;
 constructor TChildForm.Create(AOwner: TComponent);
 begin
   FGS := TGlobalSettingParams.Create(DM.MainConnection);
+  disableCoreQuantityCheck := False;
   NeedFirstOnDataSet := True;
   SortOnOrderGrid := True;
   FUseCorrectOrders := DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean;
@@ -381,16 +386,9 @@ begin
 end;
 
 procedure TChildForm.ClearOrder;
-var
-  value : Integer;
 begin
   SoftEdit(dsCheckVolume);
-  value := fOrder.AsInteger - (fOrder.AsInteger mod fVolume.AsInteger);
-  if value = 0 then
-    value := fVolume.AsInteger;
-  if not AllowOrderByCoreQuantity(value) then
-    value := 0;
-  fOrder.AsInteger := value;
+  fOrder.AsInteger := 0;
   dsCheckVolume.Post;
 end;
 
@@ -398,10 +396,13 @@ procedure TChildForm.ShowVolumeMessage;
 begin
   tCheckVolume.Enabled := False;
 
+  if dsCheckVolume.IsEmpty then
+    Exit;
+
   //Проверка на максимальную сумму заказа, выставляемую сервером
   if fOrder.AsInteger > MaxOrderCount then begin
     SoftEdit(dsCheckVolume);
-    fOrder.AsInteger := MaxOrderCount;
+    fOrder.AsInteger := GetCorrectOrder(MaxOrderCount);
     dsCheckVolume.Post;
   end;
 
@@ -412,7 +413,7 @@ begin
         'Введенное значение "%s" не кратно установленному значению "%s".',
         [fOrder.AsString, fVolume.AsString]),
       MB_ICONWARNING);
-    ClearOrder;
+    ClearOrderByVolume;
     Abort;
   end;
   if (dsCheckVolume.RecordCount > 0) and not CheckByOrderCost then begin
@@ -439,7 +440,7 @@ begin
         'Вы действительно хотите заказать его?',
          MB_ICONWARNING or MB_OKCANCEL) = ID_CANCEL
     then begin
-      ClearOrderByOrderCost;
+      ClearOrder;
       Abort;
     end;
   end;
@@ -571,7 +572,7 @@ end;
 procedure TChildForm.ClearOrderByOrderCost;
 begin
   SoftEdit(dsCheckVolume);
-  fOrder.AsInteger := 0;
+  fOrder.AsInteger := GetCorrectOrder(fOrder.AsInteger);
   dsCheckVolume.Post;
 end;
 
@@ -1138,14 +1139,11 @@ var
   newOrder : Integer;
 begin
   SoftEdit(dsCheckVolume);
-  newOrder := fMinOrderCount.AsInteger;
-  if not AllowOrderByCoreQuantity(newOrder) then
-    newOrder := 0;
-  fOrder.AsInteger := newOrder;
+  fOrder.AsInteger := GetCorrectOrder(fOrder.AsInteger);
   dsCheckVolume.Post;
 end;
 
-function TChildForm.AllowOrderByCoreQuantity(order: Integer): Boolean;
+function TChildForm.AllowOrderByCoreQuantity(order: Integer; var coreQuantity : Integer): Boolean;
 var
   Quantity, E: Integer;
 begin
@@ -1153,8 +1151,74 @@ begin
   if Result then begin
     Val(fCoreQuantity.AsString, Quantity, E);
     if E <> 0 then Quantity := 0;
+    coreQuantity := Quantity;
     Result := (Quantity <= 0) or (Quantity >= order);
   end;
+end;
+
+procedure TChildForm.ClearOrderByVolume;
+var
+  value : Integer;
+begin
+  SoftEdit(dsCheckVolume);
+  fOrder.AsInteger := GetCorrectOrder(fOrder.AsInteger);
+  dsCheckVolume.Post;
+end;
+
+function TChildForm.GetCorrectOrder(order: Integer): Integer;
+var
+  volumeOrder,
+  minCountOrder,
+  minSumOrder,
+  coreQuantity : Integer;
+begin
+  coreQuantity := order;
+
+  //получили разрешенное значение по кратности
+  if not CheckVolume then begin
+    volumeOrder := order - (order mod fVolume.AsInteger);
+    if volumeOrder = 0 then
+      volumeOrder := fVolume.AsInteger;
+  end
+  else
+    volumeOrder := order;
+
+  //получили минимальное значение по количеству
+  if not CheckByMinOrderCount then
+    minCountOrder := fMinOrderCount.AsInteger
+  else
+    minCountOrder := 0;
+
+  //получили минимальное значение заказа по сумме заказа
+  if not CheckByOrderCost then
+    minSumOrder := Ceil( fOrderCost.AsCurrency / (fSumOrder.AsCurrency / fOrder.AsInteger))
+  else
+    minSumOrder := 0;
+
+  //выбрали максимальное значение между количеством и суммой заказа
+  minCountOrder := Max(minCountOrder, minSumOrder);
+
+  //Если заказ по кратности меньше минимального заказа, то увеличиваем до необходимого значения
+  if volumeOrder < minCountOrder then
+    if not fVolume.IsNull and (fVolume.AsInteger > 0 ) then
+      volumeOrder := Ceil(minCountOrder / fVolume.AsInteger) * fVolume.AsInteger
+    else
+      volumeOrder := minCountOrder;
+
+  //Если проверяем по остатку и есть превышение по остатку    
+  if not disableCoreQuantityCheck and not AllowOrderByCoreQuantity(volumeOrder, coreQuantity) then begin
+    //уменьшаем заказ, чтобы удовлетворял остатку
+    if not fVolume.IsNull and (fVolume.AsInteger > 0 ) then
+      volumeOrder := (coreQuantity div fVolume.AsInteger) * fVolume.AsInteger
+    else
+      volumeOrder := coreQuantity;
+
+    //если количество заказа после этого не удовлетворяет минимальному количеству, то сбрасываем заказ  
+    if volumeOrder < minCountOrder then
+      volumeOrder := 0;
+  end;
+
+  Result := volumeOrder;
 end;
 
 end.
