@@ -241,9 +241,11 @@ TMainForm = class(TForm)
     procedure actMiniMailExecute(Sender: TObject);
     procedure tmrStartUpTimer(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure AppEventsActivate(Sender: TObject);
+    procedure AppEventsRestore(Sender: TObject);
 private
   JustRun: boolean;
-  tmrStartUpWorked : Boolean; 
+  tmrStartUpWorked : Boolean;
   ApplicationVersionText : String;
   deletedForms : TObjectList;
   incompleteImport : Boolean;
@@ -2224,6 +2226,16 @@ begin
     CollapseToolBar()
   else
     ToggleToolBar();
+end;
+
+procedure TMainForm.AppEventsActivate(Sender: TObject);
+begin
+  FormResize(Self);
+end;
+
+procedure TMainForm.AppEventsRestore(Sender: TObject);
+begin
+  FormResize(Self);
 end;
 
 initialization

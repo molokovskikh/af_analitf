@@ -825,8 +825,10 @@ object MainForm: TMainForm
     end
   end
   object AppEvents: TApplicationEvents
+    OnActivate = AppEventsActivate
     OnIdle = AppEventsIdle
     OnMessage = AppEventsMessage
+    OnRestore = AppEventsRestore
     Left = 288
     Top = 160
   end
