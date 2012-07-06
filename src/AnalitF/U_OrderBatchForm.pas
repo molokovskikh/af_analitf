@@ -553,7 +553,6 @@ begin
   dbgOrderBatch.OnSortMarkingChanged := ReportSortMarkingChanged;
   dbgOrderBatch.OnDrawColumnCell := dbgOrderBatchDrawColumnCell;
   dbgOrderBatch.OnDblClick := dbgOrderBatchDblClick;
-  dbgOrderBatch.InputField := 'OrderCount';
   //dbgOrderBatch.Tag := 4194304;
   dbgOrderBatch.Tag := 256;
   dbgOrderBatch.OnEnter := dbgOrderBatchOnEnter;
@@ -643,7 +642,6 @@ begin
   adsReport.SQL.Text := shBatchReport.Strings.Text;
   adsReport.ParamByName('ClientId').Value := DM.adtClients.FieldByName( 'ClientId').Value;
   adsReport.SQLDelete.Text := shDelete.Strings.Text;
-  adsReport.SQLUpdate.Text := stUpdate.Strings.Text;
   adsReport.SQLRefresh.Text := stRefresh.Strings.Text;
   adsReport.AfterPost := AfterPost;
   adsReport.BeforeClose := ReportBeforeClose;
