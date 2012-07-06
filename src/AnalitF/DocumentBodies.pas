@@ -2173,9 +2173,9 @@ procedure TDocumentBodiesForm.AddNDSFilter;
 begin
   if cbNDS.ItemIndex > 0 then
     if NDSNullValue = cbNDS.Items[cbNDS.ItemIndex] then
-      adsDocumentBodies.AddWhere('NDS is null')
+      adsDocumentBodies.AddWhere('dbodies.NDS is null')
     else
-      adsDocumentBodies.AddWhere('NDS = ' + cbNDS.Items[cbNDS.ItemIndex]);
+      adsDocumentBodies.AddWhere('dbodies.NDS = ' + cbNDS.Items[cbNDS.ItemIndex]);
 end;
 
 procedure TDocumentBodiesForm.ForceRecalcDocument(DocumentId: Int64);
