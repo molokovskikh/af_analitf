@@ -257,6 +257,7 @@ begin
   Result := [];
   //вид дочерних форм зависит от параметров, поэтому закрываем окна
   MainForm.FreeChildForms;
+  MainForm.UpdateReclame;
   with TConfigForm.Create(Application) do try
 
 {

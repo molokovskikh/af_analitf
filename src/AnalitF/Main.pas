@@ -1275,6 +1275,7 @@ begin
       else
         Self.Caption := Application.Title + ' - ' + CurrentUser;
     end;
+    UpdateReclame;
     ToolBar.Invalidate;
   end;
 end;
