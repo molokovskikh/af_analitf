@@ -368,13 +368,14 @@ begin
   Result := ''
 +'    `ID` , '
 +'    `NAME` , '
++'    `ProductId` , '
 +'    `PRODUCER` , '
-+'    `COUNTRY` , '
++'    `ProducerId` , '
 +'    `SERIES` , '
 +'    `LETTERNUMBER` , '
 +'    `LETTERDATE` , '
-+'    `LABORATORY` , '
 +'    `REASON` , '
++'    `Hidden` , '
 +'    `CHECKPRINT`  ';
 end;
 

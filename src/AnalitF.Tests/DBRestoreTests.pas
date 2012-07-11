@@ -34,14 +34,47 @@ type
     procedure DeleteTableGlobalParams;
     procedure DeleteTablePricesData;
     procedure InsertDataToPricesData;
+   protected
+    procedure SetUp; override;
    published
     procedure RestoreGlobalParamsTable();
     procedure RestorePricesDataTable();
+    procedure CheckAllTables();
   end;
 
 implementation
 
 { TTestDBRestore }
+
+procedure TTestDBRestore.CheckAllTables;
+var
+  connection : TCustomMyConnection;
+begin
+  DatabaseController.DisableMemoryLib();
+  CopySpecialLib();
+  CreateDB;
+
+  connection := GetConnection;
+  try
+    connection.Database := 'analitf';
+    connection.Open;
+    try
+
+      Self.Status('запуск проверки объектов : ' + DateTimeToStr(Now()));
+
+      //Проверка объектов перед использованием globalParams
+      DatabaseController.CheckObjectsExists(
+        connection,
+        False);
+
+      Self.Status('проверка объектов завершена : ' + DateTimeToStr(Now()));
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
 
 procedure TTestDBRestore.CopySpecialLib;
 begin
@@ -371,6 +404,11 @@ begin
   finally
     connection.Free;
   end;
+end;
+
+procedure TTestDBRestore.SetUp;
+begin
+  DatabaseController.FreeMySQLLib('Освобождаем базу данных в методе TTestDBRestore.SetUp');
 end;
 
 initialization
