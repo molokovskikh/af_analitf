@@ -394,7 +394,10 @@ begin
 +'    `REASON` text                           , '
 +'    `Hidden` tinyint(1) not null            , '
 +'    `CHECKPRINT` tinyint(1) not null        , '
-+'    primary key (`ID`)                        '
++'    primary key (`ID`)                      , '
++'    key `IDX_Rejects_Name` (`Name`)         , '
++'    key `IDX_Rejects_ProductId` (`ProductId`), '
++'    key `IDX_Rejects_SERIES` (`SERIES`)       '
 +'  ) '
 + GetTableOptions();
 end;
@@ -414,7 +417,7 @@ begin
 +'    `FIRMCODE` , '
 +'    `FULLNAME` , '
 +'    `FAX` , '
-+'    `MANAGERMAIL` , ' 
++'    `MANAGERMAIL` , '
 +'    `ShortName` , '
 +'    `CertificateSourceExists`,  '
 +'    `SupplierCategory`,  '
@@ -434,9 +437,9 @@ begin
 +'    `SupplierCategory`  int(10) not null default ''0'' , '
 +'    `MainFirm`  tinyint(1) not null default ''0'' , '
 +'    primary key (`FIRMCODE`)               , '
-+'    unique key `PK_CLIENTSDATAN` (`FIRMCODE`) ' 
-+'  ) ' 
-+ GetTableOptions();  
++'    unique key `PK_CLIENTSDATAN` (`FIRMCODE`) '
++'  ) '
++ GetTableOptions();
 end;
 
 { TRegionsTable }
@@ -464,10 +467,10 @@ begin
 +'    `REGIONNAME` varchar(25) default null , '
 +'    `PRICERET`   varchar(254) default null, '
 +'    primary key (`REGIONCODE`)            , '
-+'    unique key `PK_REGIONS` (`REGIONCODE`), ' 
-+'    unique key `IDX_REGIONS_REGIONNAME` (`REGIONNAME`) ' 
-+'  ) ' 
-+ GetTableOptions();  
++'    unique key `PK_REGIONS` (`REGIONCODE`), '
++'    unique key `IDX_REGIONS_REGIONNAME` (`REGIONNAME`) '
++'  ) '
++ GetTableOptions();
 end;
 
 { TRegionalDataTable }
@@ -492,7 +495,7 @@ end;
 function TRegionalDataTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
++'  ( '
 +'    `FIRMCODE` bigint(20) not null default ''0''  , '
 +'    `REGIONCODE` bigint(20) not null default ''0'', '
 +'    `SUPPORTPHONE` varchar(20) default null     , '

@@ -34,12 +34,18 @@ type
     procedure DeleteTableGlobalParams;
     procedure DeleteTablePricesData;
     procedure InsertDataToPricesData;
+    function DataSetToString(
+      exec : TMyQuery;
+      SQL : String;
+      Params: array of string;
+      Values: array of Variant) : String;
    protected
     procedure SetUp; override;
    published
     procedure RestoreGlobalParamsTable();
     procedure RestorePricesDataTable();
     procedure CheckAllTables();
+    procedure CheckMatchWaybillsToRejects();
   end;
 
 implementation
@@ -68,6 +74,131 @@ begin
         False);
 
       Self.Status('проверка объектов завершена : ' + DateTimeToStr(Now()));
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestDBRestore.CheckMatchWaybillsToRejects;
+var
+  connection : TCustomMyConnection;
+  exec : TMyQuery;
+  InputFileName,
+  dbodiesInsertSQL,
+  rejectsInsertSQL : String;
+begin
+  DatabaseController.DisableMemoryLib();
+  CopySpecialLib();
+  CreateDB;
+
+  connection := GetConnection;
+  try
+    connection.Database := 'analitf';
+    connection.Open;
+    try
+
+    InputFileName := StringReplace(ExpandFileName('..\TestData\i10815\DocumentBodies.txt'), '\', '/', [rfReplaceAll]);
+    dbodiesInsertSQL :=
+      Format(
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
+      ' ( ' +
+      '    ServerId, ServerDocumentId, Product, Code, Certificates, Period, Producer, ' +
+      '    Country, ProducerCost, RegistryCost, SupplierPriceMarkup, ' +
+      '    SupplierCostWithoutNDS, SupplierCost, Quantity, VitallyImportant, ' +
+      '    NDS, SerialNumber, Amount, NdsAmount, Unit, ExciseTax, ' +
+      '    BillOfEntryNumber, EAN13, ProductId, ProducerId ' +
+      ' ) ' +
+      'set Printed = 1, DocumentId = null;',
+      [InputFileName,
+       'DocumentBodies']);
+
+      rejectsInsertSQL := GetLoadDataSQL('Rejects', ExpandFileName('..\TestData\i10815\Rejects.txt'), True);
+
+      exec := TMyQuery.Create(nil);
+      try
+        exec.Connection := connection;
+
+        Self.Status('загружаем dbodies : ' + DateTimeToStr(Now()));
+        exec.SQL.Text := dbodiesInsertSQL;
+        exec.Execute;
+
+        Self.Status('загружаем rejects : ' + DateTimeToStr(Now()));
+        exec.SQL.Text := rejectsInsertSQL;
+        exec.Execute;
+
+        exec.SQL.Text := 'insert into analitf.rejects (Id, Name, ProductId, Series, Hidden, CheckPrint) values (30000, "123_name", 100100, "123_series", 0, 0)';
+        exec.Execute;
+
+        exec.SQL.Text := 'insert into analitf.documentBodies (Product, ProductId, SerialNumber) values ("123_name", null, "123_series")';
+        exec.Execute;
+        exec.SQL.Text := 'insert into analitf.documentBodies (Product, ProductId, SerialNumber) values ("123_name_test", 100100, "123_series")';
+        exec.Execute;
+
+        Self.Status('сопоставление по ProductId : ' + DateTimeToStr(Now()));
+        exec.SQL.Text := '' +
+      ' update ' +
+      '   analitf.DocumentBodies, ' +
+      '   analitf.rejects ' +
+      ' set ' +
+      '   DocumentBodies.RejectId = Rejects.Id ' +
+      ' where ' +
+      '     DocumentBodies.RejectId is null ' +
+      ' and (DocumentBodies.ProductId is not null) ' +
+      ' and (DocumentBodies.SerialNumber is not null) ' +
+      ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
+      ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
+        exec.Execute;
+        Self.Status('сопоставлено : ' + IntToStr(exec.RowsAffected));
+
+        Self.Status(
+          Concat('сопоставление по ProductId Update DocumentBodies by ProductId', #13#10,
+            DataSetToString(exec, 'explain EXTENDED select DocumentBodies.RejectId from ' +
+          '   analitf.DocumentBodies, ' +
+          '   analitf.rejects ' +
+          ' where ' +
+          '     DocumentBodies.RejectId is null ' +
+          ' and (DocumentBodies.ProductId is not null) ' +
+          ' and (DocumentBodies.SerialNumber is not null) ' +
+          ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
+          ' and (DocumentBodies.SerialNumber = Rejects.Series) ', [], [])));
+
+        Self.Status('сопоставление по Product : ' + DateTimeToStr(Now()));
+        exec.SQL.Text := '' +
+      ' update ' +
+      '   analitf.DocumentBodies, ' +
+      '   analitf.rejects ' +
+      ' set ' +
+      '   DocumentBodies.RejectId = Rejects.Id ' +
+      ' where ' +
+      '     DocumentBodies.RejectId is null ' +
+      ' and (DocumentBodies.ProductId is null) ' +
+      ' and (DocumentBodies.Product is not null) ' +
+      ' and (DocumentBodies.SerialNumber is not null) ' +
+      ' and (DocumentBodies.Product = Rejects.Name) ' +
+      ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
+        exec.Execute;
+        Self.Status('сопоставлено : ' + IntToStr(exec.RowsAffected));
+
+        Self.Status(
+          Concat('сопоставление по Product Update DocumentBodies by Product', #13#10,
+            DataSetToString(exec, 'explain EXTENDED select DocumentBodies.RejectId from ' +
+          '   analitf.DocumentBodies, ' +
+          '   analitf.rejects ' +
+          ' where ' +
+          '     DocumentBodies.RejectId is null ' +
+          ' and (DocumentBodies.ProductId is null) ' +
+          ' and (DocumentBodies.Product is not null) ' +
+          ' and (DocumentBodies.SerialNumber is not null) ' +
+          ' and (DocumentBodies.Product = Rejects.Name) ' +
+          ' and (DocumentBodies.SerialNumber = Rejects.Series) ', [], [])));
+
+        Self.Status('закончили тест : ' + DateTimeToStr(Now()));
+      finally
+        exec.Free;
+      end;
     finally
       connection.Close;
     end;
@@ -118,6 +249,49 @@ begin
     end;
   finally
     connection.Free;
+  end;
+end;
+
+function TTestDBRestore.DataSetToString(exec: TMyQuery; SQL: String;
+  Params: array of string; Values: array of Variant): String;
+var
+  Header : String;
+  Row : String;
+  I : Integer;
+begin
+  Result := '';
+  Header := '';
+
+  if (Length(Params) <> Length(Values)) then
+    raise Exception.Create('QueryValue: Кол-во параметров не совпадает со списком значений.');
+
+  if exec.Active then
+     exec.Close;
+  exec.SQL.Text := SQL;
+
+  for I := Low(Params) to High(Params) do
+    exec.ParamByName(Params[i]).Value := Values[i];
+
+  exec.Open;
+  try
+    for I := 0 to exec.Fields.Count-1 do
+      if Header = '' then
+        Header := exec.Fields[i].FieldName
+      else
+        Header := Header + Chr(9) + exec.Fields[i].FieldName;
+    Result := Header + #13#10 + StringOfChar('-', Length(Header));
+    while not exec.Eof do begin
+      Row := '';
+      for I := 0 to exec.Fields.Count-1 do
+        if Row = '' then
+          Row := exec.Fields[i].AsString
+        else
+          Row := Row + Chr(9) + exec.Fields[i].AsString;
+      Result := Concat(Result, #13#10, Row);
+      exec.Next;
+    end;
+  finally
+    exec.Close;
   end;
 end;
 

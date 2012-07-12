@@ -532,8 +532,12 @@ begin
 +'  `RejectId` bigint(20) default null                   , '
 +'  `VitallyImportantByUser` tinyint(1) unsigned default null, '
 +'  PRIMARY KEY (`Id`), '
-+'  unique key `UK_DocumentBodies_ServerId` (`ServerId`), '
-+'  key `IDX_DocumentBodies_DocumentId` (`DocumentId`) '
++'  unique key `UK_DocumentBodies_ServerId` (`ServerId`) , '
++'  key `IDX_DocumentBodies_DocumentId` (`DocumentId`)   , '
++'  key `IDX_DocumentBodies_Product` (`Product`)         , '
++'  key `IDX_DocumentBodies_ProductId` (`ProductId`)     , '
++'  key `IDX_DocumentBodies_SerialNumber` (`SerialNumber`), '
++'  key `IDX_DocumentBodies_RejectId` (`RejectId`) '
 +' ) '
 + GetTableOptions();
 end;
