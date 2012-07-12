@@ -173,7 +173,7 @@ var
 
     for I := 0 to Elems.Count-1 do
       if FileExists(TSendElem(Elems[i]).FileName) then begin
-        TSendElem(Elems[i]).SendedFileName := GetTempDir + TempSendDir + '\' + IntToStr(I) + '_' +ExtractFileName(TSendElem(Elems[i]).FileName);
+        TSendElem(Elems[i]).SendedFileName := GetAFTempDir() + TempSendDir + '\' + IntToStr(I) + '_' +ExtractFileName(TSendElem(Elems[i]).FileName);
         if not Windows.CopyFile(
            PChar(TSendElem(Elems[i]).FileName),
            PChar(TSendElem(Elems[i]).SendedFileName), false)
@@ -188,8 +188,8 @@ var
     try
       SevenZipRes := SevenZipCreateArchive(
         0,
-        GetTempDir + TempSendDir + '\Attach.7z',
-        GetTempDir + TempSendDir,
+        GetAFTempDir() + TempSendDir + '\Attach.7z',
+        GetAFTempDir() + TempSendDir,
         '*.*',
         9,
         false,
@@ -215,7 +215,7 @@ var
   begin
     LE := TIdEncoderMIME.Create(nil);
     try
-      FS := TFileStream.Create(GetTempDir + TempSendDir + '\Attach.7z', fmOpenReadWrite);
+      FS := TFileStream.Create(GetAFTempDir() + TempSendDir + '\Attach.7z', fmOpenReadWrite);
       try
         bs := le.Encode(FS, ((FS.Size div 3) + 1) * 3);
       finally
@@ -271,12 +271,12 @@ var
   end;
 
 begin
-  if DirectoryExists(GetTempDir + TempSendDir) then
-    if not ClearDir(GetTempDir + TempSendDir, True) then
-      raise Exception.Create('Ќе получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
+  if DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
+      raise Exception.Create('Ќе получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
 
-  if not CreateDir(GetTempDir + TempSendDir) then
-    raise Exception.Create('Ќе получилось создать временную директорию: ' + GetTempDir + TempSendDir);
+  if not CreateDir(GetAFTempDir() + TempSendDir) then
+    raise Exception.Create('Ќе получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   slLetter := TStringList.Create;
   try
@@ -336,7 +336,7 @@ begin
     slLetter.Free;
   end;
 
-  ClearDir(GetTempDir + TempSendDir, True);
+  ClearDir(GetAFTempDir() + TempSendDir, True);
 end;
 
 { WaybillsHelper }

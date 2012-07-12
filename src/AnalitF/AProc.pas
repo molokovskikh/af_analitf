@@ -70,7 +70,7 @@ function NumberToChars(Val: Integer; Len: Integer=0): string;
 function CharsToNumber(St: string): Integer;
 function StrToProxyType(St: string): TIdFtpProxyType;
 function ProxyTypeToStr(ProxyType: TIdFtpProxyType): string;
-function GetTempDir: string;
+function GetAFTempDir: string;
 procedure DeleteFilesByMask(FileName: string; RaiseException: Boolean=True);
 function GetTimeZoneBias: Integer;
 function UTCToLocalTime(UTC: TDateTime): TDateTime;
@@ -539,7 +539,7 @@ begin
   end;
 end;
 
-function GetTempDir: string;
+function GetAFTempDir: string;
 begin
   Result := ExePath + 'DataTmpDir\';
 end;
@@ -683,7 +683,7 @@ var
   begin
     for I := 0 to Attachs.Count-1 do
       if FileExists(Attachs[i]) then
-        if not Windows.CopyFile(PChar(Attachs[i]), PChar(GetTempDir + TempSendDir + '\' +ExtractFileName(Attachs[i])), false) then
+        if not Windows.CopyFile(PChar(Attachs[i]), PChar(GetAFTempDir() + TempSendDir + '\' +ExtractFileName(Attachs[i])), false) then
           raise Exception.Create('Не удалось скопировать файл: ' + Attachs[i] + #13#10'Причина: ' + SysErrorMessage(GetLastError));
   end;
 
@@ -693,8 +693,8 @@ var
     try
       SevenZipRes := SevenZipCreateArchive(
         0,
-        GetTempDir + TempSendDir + '\Attach.7z',
-        GetTempDir + TempSendDir,
+        GetAFTempDir() + TempSendDir + '\Attach.7z',
+        GetAFTempDir() + TempSendDir,
         '*.*',
         9,
         false,
@@ -720,7 +720,7 @@ var
   begin
     LE := TIdEncoderMIME.Create(nil);
     try
-      FS := TFileStream.Create(GetTempDir + TempSendDir + '\Attach.7z', fmOpenReadWrite);
+      FS := TFileStream.Create(GetAFTempDir() + TempSendDir + '\Attach.7z', fmOpenReadWrite);
       try
         bs := le.Encode(FS, ((FS.Size div 3) + 1) * 3);
       finally
@@ -749,12 +749,12 @@ var
   end;
 
 begin
-  if DirectoryExists(GetTempDir + TempSendDir) then
-    if not ClearDir(GetTempDir + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
+  if DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
+      raise Exception.Create('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
 
-  if not CreateDir(GetTempDir + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetTempDir + TempSendDir);
+  if not CreateDir(GetAFTempDir() + TempSendDir) then
+    raise Exception.Create('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   slLetter := TStringList.Create;
   try
@@ -796,7 +796,7 @@ begin
     slLetter.Free;
   end;
 
-  ClearDir(GetTempDir + TempSendDir, True);
+  ClearDir(GetAFTempDir() + TempSendDir, True);
 end;
 
 function GetLibraryVersionFromPath(AName: String): String;
@@ -1458,7 +1458,7 @@ initialization
   ExePath:=IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))); //путь к программе
   ExeName:=ExtractFileName(ParamStr(0)); //наименование EXE-шника (без пути)
   DatabaseName:=ChangeFileExt(ExeName,'.fdb');
-  TempPath:=GetTempDir;
+  TempPath:=GetAFTempDir();
   IniFile:=TIniFile.Create(GetDefaultIniName);
   //локальные установки для экспорта
   GetLocaleFormatSettings(LOCALE_SYSTEM_DEFAULT,ExportFormat);
