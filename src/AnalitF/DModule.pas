@@ -5371,6 +5371,7 @@ begin
       fileName := RootFolder() + SDirCertificates + '\' + IntToStr(id) + adcUpdate.FieldByName('Extension').AsString;
       if (FileExists(fileName)) then begin
         FileExecute(fileName);
+        Sleep(750);
         Inc(Result); 
       end;
       adcUpdate.Next;
