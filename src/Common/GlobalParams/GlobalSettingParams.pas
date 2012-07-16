@@ -25,6 +25,7 @@ type
     ExcessAvgOrderTimes : Integer;
     DeltaMode : Integer;
     ShowPriceName : Boolean;
+    UseColorOnWaybillOrders : Boolean;
     procedure ReadParams; override;
     procedure SaveParams; override;
     class function GetConfirmDeleteOldWaybills(Connection : TCustomMyConnection) : Boolean;
@@ -59,6 +60,7 @@ begin
   if (DeltaMode < 0) or (DeltaMode > 2) then
     DeltaMode := 1;
   ShowPriceName := GetParamDef('ShowPriceName', False);
+  UseColorOnWaybillOrders := GetParamDef('UseColorOnWaybillOrders', True);
 end;
 
 procedure TGlobalSettingParams.SaveParams;
@@ -73,6 +75,7 @@ begin
   SaveParam('ExcessAvgOrderTimes', ExcessAvgOrderTimes);
   SaveParam('DeltaMode', DeltaMode);
   SaveParam('ShowPriceName', ShowPriceName);
+  SaveParam('UseColorOnWaybillOrders', UseColorOnWaybillOrders);
   inherited;
 end;
 

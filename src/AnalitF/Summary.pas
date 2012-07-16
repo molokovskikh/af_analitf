@@ -495,7 +495,7 @@ begin
       Background := NeedCorrectColor;
   end;
 
-  if LastSymmaryType = 1 then begin
+  if (LastSymmaryType = 1) and FGS.UseColorOnWaybillOrders then begin
     if adsSummaryServerDocumentId.IsNull then
       Background := MatchWaybillColor
     else begin

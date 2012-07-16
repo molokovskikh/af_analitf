@@ -228,6 +228,8 @@ type
     cbDeltaMode : TComboBox;
 
     chbShowPriceName : TCheckBox;
+
+    chbUseColorOnWaybillOrders : TCheckBox;
     
     pButton : TPanel;
    public
@@ -642,6 +644,7 @@ begin
 
     if CanClose then begin
       FGlobalSettingParams.ShowPriceName := chbShowPriceName.Checked;
+      FGlobalSettingParams.UseColorOnWaybillOrders := chbUseColorOnWaybillOrders.Checked;
       FGlobalSettingParams.DeltaMode := cbDeltaMode.ItemIndex;
       if TryStrToInt(eBaseFirmCategory.Text, outInt) then 
         FGlobalSettingParams.BaseFirmCategory := outInt;
@@ -1221,6 +1224,15 @@ begin
   chbShowPriceName.Anchors := [akLeft, akTop, akRight];
   chbShowPriceName.Width := tshVisualization.Width - 20;
   chbShowPriceName.Checked := FGlobalSettingParams.ShowPriceName;
+
+  chbUseColorOnWaybillOrders := TCheckBox.Create(Self);
+  chbUseColorOnWaybillOrders.Caption := 'Выделять цветом несопоставленные позиции заказов';
+  chbUseColorOnWaybillOrders.Parent := tshVisualization;
+  chbUseColorOnWaybillOrders.Top := chbShowPriceName.Top + chbShowPriceName.Height + 10;
+  chbUseColorOnWaybillOrders.Left := dbchbGroupByProducts.Left;
+  chbUseColorOnWaybillOrders.Anchors := [akLeft, akTop, akRight];
+  chbUseColorOnWaybillOrders.Width := tshVisualization.Width - 20;
+  chbUseColorOnWaybillOrders.Checked := FGlobalSettingParams.UseColorOnWaybillOrders;
 end;
 
 procedure TConfigForm.AddLabelAndCombo(Parents: TWinControl;

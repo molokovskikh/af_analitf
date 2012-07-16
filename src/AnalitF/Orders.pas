@@ -345,7 +345,7 @@ begin
   if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
     Background := JUNK_CLR;
 
-  if ClosedOrder then begin
+  if ClosedOrder and FGS.UseColorOnWaybillOrders then begin
     if adsOrdersServerDocumentId.IsNull then
       Background := MatchWaybillColor
     else begin
