@@ -348,7 +348,8 @@ begin
 +'    key `IDX_ORDERS_ORDERCOUNT` (`ORDERCOUNT`)           , '
 +'    key `IDX_ORDERS_PRODUCTID` (`PRODUCTID`)             , '
 +'    key `IDX_ORDERS_SYNONYMCODE` (`SYNONYMCODE`)         , '
-+'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`) '
++'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`), '
++'    key `IDX_PostedOrderLists_ServerOrderListId` (`ServerOrderListId`) '
 +'  ) '
 + GetTableOptions();
 end;
@@ -835,7 +836,8 @@ begin
 +'    key `IDX_ORDERS_ORDERCOUNT` (`ORDERCOUNT`)           , '
 +'    key `IDX_ORDERS_PRODUCTID` (`PRODUCTID`)             , '
 +'    key `IDX_ORDERS_SYNONYMCODE` (`SYNONYMCODE`)         , '
-+'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`) '
++'    key `IDX_ORDERS_SYNONYMFIRMCRCODE` (`SYNONYMFIRMCRCODE`), '
++'    key `IDX_CurrentOrderLists_ServerOrderListId` (`ServerOrderListId`) '
 +'  ) '
 + GetTableOptions();
 end;

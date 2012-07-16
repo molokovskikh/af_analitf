@@ -8,6 +8,7 @@ uses
   SysUtils,
   Windows,
   Classes,
+  Forms,
   TestFrameWork,
   MyClasses,
   MyAccess,
@@ -34,11 +35,13 @@ type
     procedure DeleteTableGlobalParams;
     procedure DeleteTablePricesData;
     procedure InsertDataToPricesData;
-    function DataSetToString(
+    function SqlDataSetToString(
       exec : TMyQuery;
       SQL : String;
       Params: array of string;
       Values: array of Variant) : String;
+    function DataSetToString(
+      exec : TMyQuery) : String;
    protected
     procedure SetUp; override;
    published
@@ -46,6 +49,7 @@ type
     procedure RestorePricesDataTable();
     procedure CheckAllTables();
     procedure CheckMatchWaybillsToRejects();
+    procedure CheckSelectDocumentBodies();
   end;
 
 implementation
@@ -155,7 +159,7 @@ begin
 
         Self.Status(
           Concat('сопоставление по ProductId Update DocumentBodies by ProductId', #13#10,
-            DataSetToString(exec, 'explain EXTENDED select DocumentBodies.RejectId from ' +
+            SqlDataSetToString(exec, 'explain EXTENDED select DocumentBodies.RejectId from ' +
           '   analitf.DocumentBodies, ' +
           '   analitf.rejects ' +
           ' where ' +
@@ -184,7 +188,7 @@ begin
 
         Self.Status(
           Concat('сопоставление по Product Update DocumentBodies by Product', #13#10,
-            DataSetToString(exec, 'explain EXTENDED select DocumentBodies.RejectId from ' +
+            SqlDataSetToString(exec, 'explain EXTENDED select DocumentBodies.RejectId from ' +
           '   analitf.DocumentBodies, ' +
           '   analitf.rejects ' +
           ' where ' +
@@ -196,6 +200,178 @@ begin
           ' and (DocumentBodies.SerialNumber = Rejects.Series) ', [], [])));
 
         Self.Status('закончили тест : ' + DateTimeToStr(Now()));
+      finally
+        exec.Free;
+      end;
+    finally
+      connection.Close;
+    end;
+  finally
+    connection.Free;
+  end;
+end;
+
+procedure TTestDBRestore.CheckSelectDocumentBodies;
+var
+  connection : TCustomMyConnection;
+  exec : TMyQuery;
+  InputFileName,
+  dbodiesInsertSQL,
+  dheadersInsertSQL,
+  invioceHeadersInsertSQL,
+  waybillOrdersInsertSQL,
+  pHeadersInsertSQL,
+  pListsInsertSQL : String;
+begin
+  DatabaseController.DisableMemoryLib();
+  CopySpecialLib();
+  CreateDB;
+
+  connection := GetConnection;
+  try
+    connection.Database := 'analitf';
+    connection.Open;
+    try
+
+      InputFileName := StringReplace(ExpandFileName('..\TestData\i10873\DocumentBodies.txt'), '\', '/', [rfReplaceAll]);
+      dbodiesInsertSQL :=
+        Format(
+        'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
+        ' ( ' +
+        '    ServerId, ServerDocumentId, Product, Code, Certificates, Period, Producer, ' +
+        '    Country, ProducerCost, RegistryCost, SupplierPriceMarkup, ' +
+        '    SupplierCostWithoutNDS, SupplierCost, Quantity, VitallyImportant, ' +
+        '    NDS, SerialNumber, Amount, NdsAmount, Unit, ExciseTax, ' +
+        '    BillOfEntryNumber, EAN13, ProductId, ProducerId ' +
+        ' ) ' +
+        'set Printed = 1, DocumentId = null;',
+        [InputFileName,
+         'DocumentBodies']);
+
+      InputFileName := StringReplace(ExpandFileName('..\TestData\i10873\DocumentHeaders.txt'), '\', '/', [rfReplaceAll]);
+      dheadersInsertSQL :=
+      Format(
+      'LOAD DATA INFILE ''%s'' ignore into table analitf.%s' +
+      '('
++'  `ServerId` , '
++'  `DownloadId` , '
++'  `WriteTime` , '
++'  `FirmCode` , '
++'  `ClientId` , '
++'  `DocumentType` , '
++'  `ProviderDocumentId` , '
++'  `OrderId` , '
++'  `Header` ' +
+      ');'
+      ,
+      [InputFileName,
+       'DocumentHeaders']);
+
+
+      InputFileName := StringReplace(ExpandFileName('..\TestData\i10873\InvoiceHeaders.txt'), '\', '/', [rfReplaceAll]);
+      invioceHeadersInsertSQL :=
+        Format(
+        'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
+        ' ( ' +
+        '    Id, InvoiceNumber, InvoiceDate, SellerName, SellerAddress, ' +
+        '    SellerINN, SellerKPP, ShipperInfo, ConsigneeInfo, PaymentDocumentInfo, ' +
+        '    BuyerName, BuyerAddress, BuyerINN, BuyerKPP, ' +
+        '    AmountWithoutNDS0, AmountWithoutNDS10, NDSAmount10, Amount10, ' +
+        '    AmountWithoutNDS18, NDSAmount18, Amount18, ' +
+        '    AmountWithoutNDS, NDSAmount, Amount ' +
+        ' ); ',
+        [InputFileName,
+         'InvoiceHeaders']);
+
+      InputFileName := StringReplace(ExpandFileName('..\TestData\i10873\WaybillOrders.txt'), '\', '/', [rfReplaceAll]);
+      waybillOrdersInsertSQL :=
+        Format(
+        'LOAD DATA INFILE ''%s'' ignore into table analitf.%s ' +
+        ' ( ' +
+        '    ServerDocumentLineId, ServerOrderListId ' +
+        ' ); ',
+        [InputFileName,
+         'WaybillOrders']);
+
+
+      InputFileName := ExpandFileName('..\TestData\i10873\PostedOrderHeads.txt');
+      pHeadersInsertSQL := Trim(GetLoadDataSQL('PostedOrderHeads', InputFileName));
+      pHeadersInsertSQL :=
+        Copy(pHeadersInsertSQL, 1, LENGTH(pHeadersInsertSQL) - 1) +
+        '(ORDERID, ServerOrderId, CLIENTID, PRICECODE, REGIONCODE, SendDate, MessageTO, DelayOfPayment, PriceDate) set ORDERDATE = SendDate, Closed = 1, Send = 1;';
+
+      InputFileName := ExpandFileName('..\TestData\i10873\PostedOrderLists.txt');
+      pListsInsertSQL := Trim(GetLoadDataSQL('PostedOrderLists', InputFileName));
+      pListsInsertSQL :=
+        Copy(pListsInsertSQL, 1, LENGTH(pListsInsertSQL) - 1)
+        + ' (Id, ORDERID, CLIENTID, PRODUCTID, CODEFIRMCR, SYNONYMCODE, SYNONYMFIRMCRCODE, '
+        + '  CODE, CODECr, Await, Junk, ORDERCOUNT, Price, RealPrice, REQUESTRATIO, ORDERCOST, MINORDERCOUNT, '
+        + '  SupplierPriceMarkup, RetailMarkup, Unit, Volume, Note, Period, Doc, '
+        + '  VitallyImportant, CoreQuantity, RegistryCost, ProducerCost, NDS, RetailCost, ServerOrderListId);';
+
+      exec := TMyQuery.Create(nil);
+      try
+        exec.Connection := connection;
+
+        exec.SQL.Text := dbodiesInsertSQL;
+        exec.Execute;
+
+        exec.SQL.Text := dheadersInsertSQL;
+        exec.Execute;
+
+        exec.SQL.Text := invioceHeadersInsertSQL;
+        exec.Execute;
+
+        exec.SQL.Text := waybillOrdersInsertSQL;
+        exec.Execute;
+
+        exec.SQL.Text := pHeadersInsertSQL;
+        exec.Execute;
+
+        exec.SQL.Text := pListsInsertSQL;
+        exec.Execute;
+
+        exec.SQL.Text := '' +
+          ' update ' +
+          '   analitf.DocumentBodies, ' +
+          '   analitf.DocumentHeaders ' +
+          ' set ' +
+          '   DocumentBodies.DocumentId = DocumentHeaders.Id ' +
+          ' where ' +
+          '     DocumentBodies.ServerDocumentId is not null ' +
+          ' and (DocumentBodies.DocumentId is null or DocumentBodies.DocumentId = 0)' +
+          ' and DocumentHeaders.ServerId = DocumentBodies.ServerDocumentId ';
+        exec.Execute;
+
+        exec.SQL.Text := ' explain EXTENDED ' +
+        'select ' +
+        '  dbodies.Id, ' +
+        '  dbodies.DocumentId, ' +
+        '  dbodies.ServerId, ' +
+        '  cr.DocumentBodyId, ' +
+        '  catalogs.Markup as CatalogMarkup, ' +
+        '  ol.ServerOrderListId ' +
+        '  from ' +
+        '    DocumentBodies dbodies ' +
+        '    left join CertificateRequests cr on cr.DocumentBodyId = dbodies.ServerId ' +
+        '    left join products p on p.productid = dbodies.productid ' +
+        '    left join catalogs on catalogs.fullcode = p.catalogid ' +
+        '    left join waybillorders wo on wo.ServerDocumentLineId = dbodies.ServerId ' +
+        '    left join postedorderlists ol on ol.ServerOrderListId = wo.ServerOrderListId ' +
+        '  where ' +
+        '    dbodies.DocumentId = :DocumentId ';
+
+        exec.ParamByName('DocumentId').Value := 1;
+
+        exec.Open;
+        try
+          Self.Status(
+            Concat('Выборка позиций накладной', #13#10,
+              DataSetToString(exec)));
+        finally
+          exec.Close;
+        end;
+
       finally
         exec.Free;
       end;
@@ -252,15 +428,12 @@ begin
   end;
 end;
 
-function TTestDBRestore.DataSetToString(exec: TMyQuery; SQL: String;
+function TTestDBRestore.SqlDataSetToString(exec: TMyQuery; SQL: String;
   Params: array of string; Values: array of Variant): String;
 var
-  Header : String;
-  Row : String;
   I : Integer;
 begin
   Result := '';
-  Header := '';
 
   if (Length(Params) <> Length(Values)) then
     raise Exception.Create('QueryValue: Кол-во параметров не совпадает со списком значений.');
@@ -274,22 +447,7 @@ begin
 
   exec.Open;
   try
-    for I := 0 to exec.Fields.Count-1 do
-      if Header = '' then
-        Header := exec.Fields[i].FieldName
-      else
-        Header := Header + Chr(9) + exec.Fields[i].FieldName;
-    Result := Header + #13#10 + StringOfChar('-', Length(Header));
-    while not exec.Eof do begin
-      Row := '';
-      for I := 0 to exec.Fields.Count-1 do
-        if Row = '' then
-          Row := exec.Fields[i].AsString
-        else
-          Row := Row + Chr(9) + exec.Fields[i].AsString;
-      Result := Concat(Result, #13#10, Row);
-      exec.Next;
-    end;
+    Result := DataSetToString(exec);
   finally
     exec.Close;
   end;
@@ -583,6 +741,32 @@ end;
 procedure TTestDBRestore.SetUp;
 begin
   DatabaseController.FreeMySQLLib('Освобождаем базу данных в методе TTestDBRestore.SetUp');
+end;
+
+function TTestDBRestore.DataSetToString(exec: TMyQuery): String;
+var
+  Header : String;
+  Row : String;
+  I : Integer;
+begin
+  Result := '';
+  Header := '';
+  for I := 0 to exec.Fields.Count-1 do
+    if Header = '' then
+      Header := exec.Fields[i].FieldName
+    else
+      Header := Header + Chr(9) + exec.Fields[i].FieldName;
+  Result := Header + #13#10 + StringOfChar('-', Length(Header));
+  while not exec.Eof do begin
+    Row := '';
+    for I := 0 to exec.Fields.Count-1 do
+      if Row = '' then
+        Row := exec.Fields[i].AsString
+      else
+        Row := Row + Chr(9) + exec.Fields[i].AsString;
+    Result := Concat(Result, #13#10, Row);
+    exec.Next;
+  end;
 end;
 
 initialization
