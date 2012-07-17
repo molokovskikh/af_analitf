@@ -2345,6 +2345,8 @@ begin
     end;
   end;
 
+  DM.FillClientAvg();
+  
   Progress := 90;
   Synchronize( SetProgress);
   TotalProgress := 85;
@@ -3658,6 +3660,8 @@ begin
   end;
   OSDeleteFile(RootFolder()+SDirIn+'\PostedOrderHeads.txt');
   OSDeleteFile(RootFolder()+SDirIn+'\PostedOrderLists.txt');
+
+  DM.FillClientAvg();
 end;
 
 procedure TExchangeThread.ImportDocs;

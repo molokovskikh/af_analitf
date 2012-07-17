@@ -17,10 +17,11 @@ type
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
   end;
 
-  TClientAvgView = class(TDatabaseView)
+  TClientAvgView = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TGroupMaxProducerCostsView = class(TDatabaseView)
@@ -75,45 +76,30 @@ constructor TClientAvgView.Create;
 begin
   FName := 'clientavg';
   FObjectId := doiClientAvg;
-  FRepairType := dortIgnore;
+  FRepairType := dortCumulative;
+end;
+
+function TClientAvgView.GetColumns: String;
+begin
+  Result := ''
++'    `ClientCode` , '
++'    `ProductId` , '
++'    `PriceAvg` , '
++'    `OrderCountAvg`  ';
 end;
 
 function TClientAvgView.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  select `postedorderheads`.`CLIENTID` as `CLIENTCODE`, ' 
-+'    `postedorderlists`.`PRODUCTID`     as `PRODUCTID` , ' 
-+'    avg(`postedorderlists`.`PRICE`)    as `PRICEAVG`, '
-+'    avg(`postedorderlists`.`ORDERCOUNT`)    as `ORDERCOUNTAVG` '
-+'  from (`postedorderheads` '
-+'    join `postedorderlists`) ' 
-+'  where ( ' 
-+'      ( ' 
-+'        `postedorderlists`.`ORDERID` = `postedorderheads`.`ORDERID` ' 
-+'      ) ' 
-+'    and ' 
-+'      ( ' 
-+'        `postedorderheads`.`CLOSED` = 1 ' 
-+'      ) ' 
-+'    and ' 
-+'      ( ' 
-+'        `postedorderheads`.`SEND` = 1 ' 
-+'      ) ' 
-+'    and ' 
-+'      ( ' 
-+'        `postedorderlists`.`ORDERCOUNT` > 0 ' 
-+'      ) ' 
-+'    and ' 
-+'      ( ' 
-+'        `postedorderlists`.`PRICE` is not null ' 
-+'      ) ' 
-+'    and ' 
-+'      ( '
-+'        `postedorderlists`.`Junk` = 0 '
-+'      ) '
-+'    ) '
-+'  group by `postedorderheads`.`CLIENTID`, ' 
-+'    `postedorderlists`.`PRODUCTID`;';
++'  ( '
++'    `ClientCode` bigint(20) default null                 , '
++'    `ProductId` bigint(20) default null                  , '
++'    `PriceAvg` decimal(18,2) default null     , '
++'    `OrderCountAvg` decimal(18,2) default null, '
++'    key `IDX_clientavg_ClientCode` (`ClientCode`)        , '
++'    key `IDX_clientavg_ProductId` (`ProductId`)            '
++'  ) '
++ GetTableOptions();
 end;
 
 { TGroupMaxProducerCostsView }
@@ -132,7 +118,7 @@ begin
 +'  select  '
 +'    ProductId , '
 +'    ProducerId, '
-+'    Max(RealCost) as MaxProducerCost ' 
++'    Max(RealCost) as MaxProducerCost '
 +'  from `maxproducercosts` '
 +'  group by ProductId, ProducerId;';
 end;
