@@ -166,14 +166,14 @@ procedure SetFilter(DataSet: TDataSet; AFilter: string);
 begin
   with DataSet do begin
     DisableControls;
-    Screen.Cursor:=crHourGlass;
+    DoSetCursor(crHourglass);
     try
       Filtered:=False;
       Filter:=AFilter;
       if Filter<>'' then Filtered:=True;
     finally
       EnableControls;
-      Screen.Cursor:=crDefault;
+      DoSetCursor(crDefault);
     end;
   end;
 end;
@@ -210,14 +210,14 @@ procedure SetFilterProc(DataSet: TDataSet; AFilterProc: TFilterRecordEvent);
 begin
   with DataSet do begin
     DisableControls;
-    Screen.Cursor:=crHourGlass;
+    DoSetCursor(crHourglass);
     try
       Filtered:=False;
       OnFilterRecord := AFilterProc;
       if Assigned(OnFilterRecord) then Filtered:=True;
     finally
       EnableControls;
-      Screen.Cursor:=crDefault;
+      DoSetCursor(crDefault);
     end;
   end;
 end;

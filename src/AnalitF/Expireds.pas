@@ -141,12 +141,12 @@ begin
   adsExpireds.ParamByName( 'ClientId').Value := ClientId;
   adsExpireds.ParamByName( 'TimeZoneBias').Value := TimeZoneBias;
   adsExpireds.ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
-  Screen.Cursor := crHourGlass;
+  DoSetCursor(crHourglass);
   try
     adsExpireds.Open;
     adsAvgOrders.Open;
   finally
-    Screen.Cursor := crDefault;
+    DoSetCursor(crDefault);
   end;
   lblRecordCount.Caption := Format( lblRecordCount.Caption, [adsExpireds.RecordCount]);
   TDBGridHelper.RestoreColumnsLayout(dbgExpireds, Self.ClassName);

@@ -197,7 +197,7 @@ begin
   with adsPrices do begin
     ParamByName('ClientId').Value:=DM.adtClients.FieldByName('ClientId').Value;
     ParamByName('TimeZoneBias').Value:=TimeZoneBias;
-    Screen.Cursor:=crHourglass;
+    DoSetCursor(crHourglass);
     try
       if Active then begin
         GetLastPrice;
@@ -210,7 +210,7 @@ begin
       else
         Open;
     finally
-      Screen.Cursor:=crDefault;
+      DoSetCursor(crDefault);
     end;
   end;
   //Здесь производится сортировка датасета

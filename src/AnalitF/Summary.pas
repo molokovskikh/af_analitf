@@ -322,7 +322,7 @@ var
   FilterSQL : String;
   clientsSql : String;
 begin
-  Screen.Cursor := crHourglass;
+  DoSetCursor(crHourglass);
   try
     clientsSql := '';
     if adsSummary.Active then
@@ -376,7 +376,7 @@ begin
     adsSummary.Open;
     SetOrderLabel;
   finally
-    Screen.Cursor := crDefault;
+    DoSetCursor(crDefault);
   end;
 end;
 

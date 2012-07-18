@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Grids, DBGrids, DBCtrls, DB, DBGridEh,
   ToughDBGrid, GridsEh, MemDS, DBAccess, MyAccess,
-  U_VistaCorrectForm;
+  U_VistaCorrectForm,
+  AProc;
 
 type
   TFormsHistoryForm = class(TVistaCorrectForm)
@@ -62,7 +63,7 @@ var
   Count : Integer;
 begin
   with TFormsHistoryForm.Create(Application) do try
-    Screen.Cursor:=crHourglass;
+    DoSetCursor(crHourglass);
     try
       adsCatalogName.Connection := DM.MainConnection;
       adsPreviosOrders.Connection := DM.MainConnection;
@@ -98,7 +99,7 @@ begin
       lPriceAvg.Caption := FloatToStrF(Avr, ffCurrency, 15, 2);
       lOrderCountAvg.Caption := FloatToStrF(OrderCountAvg, ffFixed, 15, 2);
     finally
-      Screen.Cursor:=crDefault;
+      DoSetCursor(crDefault);
     end;
     ShowModal;
   finally

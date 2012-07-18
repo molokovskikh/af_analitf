@@ -355,7 +355,7 @@ begin
   begin
     ParamByName( 'ShowRegister').Value :=
       DM.adtParams.FieldByName( 'ShowRegister').AsBoolean;
-    Screen.Cursor := crHourglass;
+    DoSetCursor(crHourglass);
     try
       if Active then Close;
       //adsCore.Options := adsCore.Options - [poCacheCalcFields];
@@ -363,7 +363,7 @@ begin
       //FetchAll;
 
     finally
-      Screen.Cursor := crDefault;
+      DoSetCursor(crDefault);
     end;
   end;
 

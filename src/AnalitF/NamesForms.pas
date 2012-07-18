@@ -409,7 +409,7 @@ var
   FilterSQL,
   InternalFilterMnnSQL : String;
 begin
-  Screen.Cursor:=crHourglass;
+  DoSetCursor(crHourglass);
   try
     adsForms.Close;
     if adsNames.Active then
@@ -524,7 +524,7 @@ begin
     adsForms.Open;
     SetUsedFilter;
   finally
-    Screen.Cursor := crDefault;
+    DoSetCursor(crDefault);
   end;
 end;
 
@@ -724,7 +724,7 @@ begin
   InternalSearchText := '';
   FNameController.SetSearchText('');
   FFormController.SetSearchText('');
-  Screen.Cursor:=crHourglass;
+  DoSetCursor(crHourglass);
   try
     if adsCatalog.Active then adsCatalog.Close;
     adsCatalog.SQL.Text := ''
@@ -768,7 +768,7 @@ begin
     adsCatalog.Open;
     SetUsedFilter;
   finally
-    Screen.Cursor := crDefault;
+    DoSetCursor(crDefault);
   end;
 end;
 

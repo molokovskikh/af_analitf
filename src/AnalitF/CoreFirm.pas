@@ -558,7 +558,7 @@ begin
   OldFiltered := adsCore.Filtered;
   OldFilterEvent := adsCore.OnFilterRecord;
   LastPositionByCoreId := adsCoreCoreId.AsVariant;
-  Screen.Cursor:=crHourGlass;
+  DoSetCursor(crHourglass);
   try
     with DM.adcUpdate do begin
       //удаляем сохраненную заявку (если есть)
@@ -591,7 +591,7 @@ begin
     adsCore.First;
     adsCore.Locate([adsCoreCoreId], LastPositionByCoreId, []);
     adsCore.EnableControls;
-    Screen.Cursor:=crDefault;
+    DoSetCursor(crDefault);
     SetOrderLabel;
     MainForm.SetOrdersInfo;
   end;
@@ -739,7 +739,7 @@ end;
 
 procedure TCoreFirmForm.RefreshAllCore;
 begin
-  Screen.Cursor:=crHourglass;
+  DoSetCursor(crHourglass);
   try
     adsCore.ParamByName( 'PriceCode').Value:=PriceCode;
     adsCore.ParamByName( 'RegionCode').Value:=RegionCode;
@@ -747,7 +747,7 @@ begin
     adsCore.ParamByName( 'DayOfWeek').Value:=TDayOfWeekHelper.DayOfWeek();
     ShowSQLWaiting(adsCore);
   finally
-    Screen.Cursor:=crDefault;
+    DoSetCursor(crDefault);
   end;
 end;
 
@@ -933,7 +933,7 @@ begin
   OldFiltered := adsCore.Filtered;
   OldFilterEvent := adsCore.OnFilterRecord;
   LastPositionByCoreId := adsCoreCoreId.AsVariant;
-  Screen.Cursor:=crHourGlass;
+  DoSetCursor(crHourglass);
   try
 
     for I := 0 to selectedRows.Count-1 do begin
@@ -951,7 +951,7 @@ begin
     adsCore.First;
     adsCore.Locate([adsCoreCoreId], LastPositionByCoreId, []);
     adsCore.EnableControls;
-    Screen.Cursor:=crDefault;
+    DoSetCursor(crDefault);
     SetOrderLabel;
     MainForm.SetOrdersInfo;
   end;

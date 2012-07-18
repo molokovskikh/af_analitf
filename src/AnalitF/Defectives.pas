@@ -8,7 +8,8 @@ uses
   Placemnt, StdCtrls, DBCtrls, ComCtrls, ActnList, FR_Class, FR_DSet,
   FR_DBSet, DateUtils, DBGridEh, ToughDBGrid, ExtCtrls,
   DBProc, GridsEh, MemDS,
-  DBAccess, MyAccess;
+  DBAccess, MyAccess,
+  AProc;
 
 type
   TDefectivesForm = class(TChildForm)
@@ -90,7 +91,7 @@ begin
     ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
     dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
     ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
-    Screen.Cursor:=crHourglass;
+    DoSetCursor(crHourglass);
     try
       if Active then
       begin
@@ -100,7 +101,7 @@ begin
       else
         Open;
     finally
-      Screen.Cursor:=crDefault;
+      DoSetCursor(crDefault);
     end;
   end;
 end;
@@ -114,7 +115,7 @@ procedure TDefectivesForm.btnUnCheckAllClick(Sender: TObject);
 var
   Mark: string;
 begin
-  Screen.Cursor:=crHourglass;
+  DoSetCursor(crHourglass);
   try
     DM.adcUpdate.SQL.Text := 'UPDATE Rejects SET CheckPrint=0 WHERE CheckPrint=1';
     DM.adcUpdate.Execute;
@@ -126,7 +127,7 @@ begin
       Bookmark:=Mark;
     end;
   finally
-    Screen.Cursor:=crDefault;
+    DoSetCursor(crDefault);
   end;
   dbgDefectives.SetFocus;
 end;

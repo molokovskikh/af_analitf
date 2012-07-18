@@ -137,6 +137,8 @@ function CheckStartupFolderByPath(path : String) : Boolean;
 
 function ListToStr(names : array of string; values : array of Variant) : String;
 
+procedure DoSetCursor(const aCursor : TCursor);
+
 implementation
 
 uses
@@ -1438,6 +1440,16 @@ begin
 
     if currStr <> '' then
       Result := IfThen(Result = '', currStr, Result + '  ' + currStr);
+  end;
+end;
+
+procedure DoSetCursor(const aCursor : TCursor);
+begin
+  if aCursor <> Screen.Cursor then
+  begin
+    Screen.Cursor := aCursor;
+    if aCursor = crDefault then
+      Windows.SetCursor(Screen.Cursors[aCursor]);
   end;
 end;
 

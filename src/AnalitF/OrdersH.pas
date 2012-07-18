@@ -231,11 +231,11 @@ begin
   dtpDateTo.Date := Date;
 
   TabControl.TabIndex := 0;
-  Screen.Cursor := crHourglass;
+  DoSetCursor(crHourglass);
   try
     SetParameters;
   finally
-    Screen.Cursor := crDefault;
+    DoSetCursor(crDefault);
   end;
 
   ShowForm;
@@ -559,7 +559,7 @@ begin
   ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
   dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
   ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
-    Screen.Cursor:=crHourglass;
+    DoSetCursor(crHourglass);
     try
       if Active then
       begin
@@ -569,7 +569,7 @@ begin
       else
         Open;
     finally
-      Screen.Cursor:=crDefault;
+      DoSetCursor(crDefault);
     end;
   end;
 end;
@@ -722,7 +722,7 @@ begin
       end;
       Application.ProcessMessages;
 
-      Screen.Cursor:=crHourglass;
+      DoSetCursor(crHourglass);
       try
         { открываем сохраненный заказ }
         FOrdersForm.SetParams( adsOrdersHFormORDERID.AsInteger, not RestoreUnFrozenOrMoveToClient);
@@ -821,7 +821,7 @@ begin
           Application.ProcessMessages;
         end;
       finally
-        Screen.Cursor:=crDefault;
+        DoSetCursor(crDefault);
       end;
     end;
 
@@ -1389,7 +1389,7 @@ begin
 
       Application.ProcessMessages;
 
-      Screen.Cursor:=crHourglass;
+      DoSetCursor(crHourglass);
       try
         { открываем сохраненный заказ }
         movedOrder := GetOrderFormMove();
@@ -1427,7 +1427,7 @@ begin
         end;
 
       finally
-        Screen.Cursor:=crDefault;
+        DoSetCursor(crDefault);
       end;
     end;
 

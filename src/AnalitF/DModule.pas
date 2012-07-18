@@ -1468,7 +1468,7 @@ var
   I : Integer;
 begin
   if FindFirst(RootFolder()+SDirIn+'\*.txt',faAnyFile,SR)=0 then begin
-    Screen.Cursor:=crHourglass;
+    DoSetCursor(crHourglass);
     Files := TStringList.Create;
     Tables := TStringList.Create;
     try
@@ -1499,7 +1499,7 @@ begin
     finally
       Files.Free;
       Tables.Free;
-      Screen.Cursor:=crDefault;
+      DoSetCursor(crDefault);
     end;
   end
   else
@@ -1527,7 +1527,7 @@ end;
 
 procedure TDM.ClearDatabase;
 begin
-  Screen.Cursor:=crHourglass;
+  DoSetCursor(crHourglass);
   with adcUpdate do try
 
     MainForm.StatusText:='Очищается MinPrices';
@@ -1579,14 +1579,14 @@ begin
     SQL.Text:='update params set LastCompact = now() where ID = 0;'; Execute;
 
   finally
-    Screen.Cursor:=crDefault;
+    DoSetCursor(crDefault);
     MainForm.StatusText:='';
   end;
 end;
 
 procedure TDM.DeleteEmptyOrders;
 begin
-  Screen.Cursor:=crHourglass;
+  DoSetCursor(crHourglass);
   try
     with adcUpdate do begin
       SqL.Text:='DELETE FROM CurrentOrderLists WHERE OrderCount=0'; Execute;
@@ -1595,7 +1595,7 @@ begin
       SQL.Text:='DELETE FROM PostedOrderHeads WHERE NOT Exists(SELECT OrderId FROM PostedOrderLists WHERE OrderId=PostedOrderHeads.OrderId)'; Execute;
     end;
   finally
-    Screen.Cursor:=crDefault;
+    DoSetCursor(crDefault);
   end;
 end;
 
