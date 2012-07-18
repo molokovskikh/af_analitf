@@ -22,6 +22,7 @@ type
     Opened : Boolean;
     FetchCount : Integer;
     procedure NewBeforeFetch(Dataset: TCustomDADataSet; var Cancel: boolean);
+    procedure PrepareForm;
   public
     { Public declarations }
   end;
@@ -45,6 +46,7 @@ begin
     frmSQLWaiting.OldBeforFetch := ds.BeforeFetch;
     ds.BeforeFetch := frmSQLWaiting.NewBeforeFetch;
     frmSQLWaiting.ds := DS;
+    frmSQLWaiting.PrepareForm;
     frmSQLWaiting.ShowModal;
   finally
     ds.BeforeFetch := frmSQLWaiting.OldBeforFetch;
@@ -58,6 +60,7 @@ begin
   try
     frmSQLWaiting.lCaption.Caption := lCaption;
     frmSQLWaiting.TM := TM;
+    frmSQLWaiting.PrepareForm;
     frmSQLWaiting.ShowModal;
   finally
     frmSQLWaiting.Free;
@@ -78,6 +81,14 @@ begin
     Application.ProcessMessages;
   if Assigned(OldBeforFetch) then
     OldBeforFetch(Dataset, Cancel);
+end;
+
+procedure TfrmSQLWaiting.PrepareForm;
+var
+  captionWidth : Integer;
+begin
+  captionWidth := lCaption.Width;
+  Self.Width := lCaption.Left * 2 + captionWidth;
 end;
 
 procedure TfrmSQLWaiting.tmFillTimer(Sender: TObject);
