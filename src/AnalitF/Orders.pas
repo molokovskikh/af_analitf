@@ -170,6 +170,7 @@ type
     framePosition : TframePosition;
     frameLegend : TframeLegend;
     frameMatchWaybill : TframeMatchWaybill;
+    lMatchWaybill : TLabel;
     procedure ShowForm(OrderId: Integer; ParentForm : TChildForm; ExternalClosed : Boolean); overload; //reintroduce;
     procedure ShowForm; override;
     procedure Print( APreview: boolean = False); override;
@@ -230,6 +231,7 @@ begin
   ClosedOrder := ExternalClosed;
 
   btnGotoPrice.Visible := not ClosedOrder;
+  lMatchWaybill.Visible := ClosedOrder;
 
   if not ClosedOrder and DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
     dbgOrders.Visible := False;
@@ -488,7 +490,7 @@ begin
   frameLegendHeight := frameLegend.Height;
   frameLegend.Parent := pClientBottom;
   frameLegend.Align := alTop;
-  frameLegend.CreateLegendLabel('Несоответствие в накладной', MatchWaybillColor, clWindowText);
+  lMatchWaybill := frameLegend.CreateLegendLabel('Несоответствие в накладной', MatchWaybillColor, clWindowText);
 
   if dgCheckVolume <> dbgOrders then
     PrepareColumnsInOrderGrid(dbgOrders);
