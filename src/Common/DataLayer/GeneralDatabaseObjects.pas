@@ -821,6 +821,9 @@ begin
 +'    `NDS` , '
 +'    `RetailVitallyImportant` , ' 
 +'    `BuyingMatrixType` , '
++'    `EAN13`, '
++'    `CodeOKP`, '
++'    `Series`, '
 +'    `CryptCost` , '
 +'    `COREID`  ';
 end;
@@ -857,6 +860,9 @@ begin
 +'    `NDS` smallint(5) default null                             , '
 +'    `RetailVitallyImportant` tinyint(1) not null default ''0'', ' 
 +'    `BuyingMatrixType` smallint(5) default null                , '
++'    `EAN13`                varchar(20) default null            , '
++'    `CodeOKP`              varchar(50) default null            , '
++'    `Series`               varchar(20) default null            , '
 +'    `CryptCost`    VARCHAR(32) default null                    , '
 +'    `COREID` bigint(20) not null AUTO_INCREMENT                , '
 +'    primary key (`COREID`)                                     , ' 

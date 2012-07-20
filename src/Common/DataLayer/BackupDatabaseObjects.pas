@@ -292,7 +292,10 @@ begin
 +'    `RetailCost` , '
 +'    `RetailVitallyImportant` , '
 +'    `Comment` ,  '
-+'    `ServerOrderListId`  ';
++'    `ServerOrderListId`,  '
++'    `EAN13`, '
++'    `CodeOKP`, '
++'    `Series` ';
 end;
 
 function TPostedOrderListsTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -339,6 +342,9 @@ begin
 +'    `RetailVitallyImportant` tinyint(1) not null default ''0'', '
 +'    `Comment` varchar(255) default null                  , '
 +'    `ServerOrderListId` bigint(20) default null          , '
++'    `EAN13`                varchar(20) default null            , '
++'    `CodeOKP`              varchar(50) default null            , '
++'    `Series`               varchar(20) default null            , '
 +'    primary key (`ID`)                                   , '
 +'    unique key `PK_ORDERS` (`ID`)                        , '
 +'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '
@@ -772,7 +778,10 @@ begin
 +'    `RetailCost` , '
 +'    `RetailVitallyImportant` , '
 +'    `Comment` ,  '
-+'    `ServerOrderListId`  ';
++'    `ServerOrderListId`,  '
++'    `EAN13`, '
++'    `CodeOKP`, '
++'    `Series` ';
 end;
 
 function TCurrentOrderListsTable.GetCreateSQL(
@@ -822,6 +831,9 @@ begin
 +'    `RetailVitallyImportant` tinyint(1) not null default ''0'', '
 +'    `Comment` varchar(255) default null                  , '
 +'    `ServerOrderListId` bigint(20) default null          , '
++'    `EAN13`                varchar(20) default null            , '
++'    `CodeOKP`              varchar(50) default null            , '
++'    `Series`               varchar(20) default null            , '
 +'    primary key (`ID`)                                   , '
 +'    unique key `PK_ORDERS` (`ID`)                        , '
 +'    key `FK_ORDERS_CLIENTID` (`CLIENTID`)                , '
