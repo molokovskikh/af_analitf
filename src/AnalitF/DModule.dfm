@@ -704,7 +704,10 @@ object DM: TDM
       '    list.RetailMarkup,'
       '    list.RetailCost,'
       '    list.RetailVitallyImportant,'
-      '    list.Comment'
+      '    list.Comment,'
+      '    list.EAN13,'
+      '    list.CodeOKP,'
+      '    list.Series'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'
@@ -848,6 +851,15 @@ object DM: TDM
     end
     object adsOrderDetailsMarkup: TFloatField
       FieldName = 'Markup'
+    end
+    object adsOrderDetailsEAN13: TStringField
+      FieldName = 'EAN13'
+    end
+    object adsOrderDetailsCodeOKP: TStringField
+      FieldName = 'CodeOKP'
+    end
+    object adsOrderDetailsSeries: TStringField
+      FieldName = 'Series'
     end
   end
   object adsOrdersHeaders: TMyQuery
@@ -1423,7 +1435,10 @@ object DM: TDM
       '    list.RetailMarkup,'
       '    list.RetailCost,'
       '    list.RetailVitallyImportant,'
-      '    list.Comment'
+      '    list.Comment,'
+      '    list.EAN13,'
+      '    list.CodeOKP,'
+      '    list.Series'
       'FROM '
       '  CurrentOrderLists list'
       '  left join products on products.productid = list.productid'

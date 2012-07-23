@@ -280,6 +280,9 @@ type
     adtClientsCalculateWithNDSForOther: TBooleanField;
     adsOrderDetailsMarkup: TFloatField;
     adtClientsExcessAvgOrderTimes: TIntegerField;
+    adsOrderDetailsEAN13: TStringField;
+    adsOrderDetailsCodeOKP: TStringField;
+    adsOrderDetailsSeries: TStringField;
     procedure adtClientsOldAfterOpen(DataSet: TDataSet);
     procedure MainConnectionOldAfterConnect(Sender: TObject);
     procedure adtParamsOldAfterPost(DataSet: TDataSet);

@@ -276,6 +276,9 @@ begin
       dataSet.FieldByName('NDS').IsNull,
       '',
       dataSet.FieldByName('NDS').AsString));
+  AddPostParam('EAN13', dataSet.FieldByName('EAN13').AsString);
+  AddPostParam('CodeOKP', dataSet.FieldByName('CodeOKP').AsString);
+  AddPostParam('Series', dataSet.FieldByName('Series').AsString);
 end;
 
 procedure TPostSomeOrdersController.FillOrderDetailLeaderParams(
@@ -844,7 +847,7 @@ begin
     DeleteFile('PostSomeOrders.txt');
   FPostParams.SaveToFile('PostSomeOrders.txt');
 }    
-  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersWithDelays', FPostParams);
+  soapResult := FSOAP.SimpleInvoke('PostSomeOrdersWithSeries', FPostParams);
   rawResult := soapResult;
 
   serverResponse := TStringList.Create;

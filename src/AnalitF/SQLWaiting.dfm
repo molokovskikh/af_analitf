@@ -29,7 +29,7 @@ object frmSQLWaiting: TfrmSQLWaiting
     Caption = #1055#1086#1076#1086#1078#1076#1080#1090#1077', '#1087#1086#1078#1072#1083#1091#1081#1089#1090#1072'...'
   end
   object lCaption: TLabel
-    Left = 8
+    Left = 10
     Top = 16
     Width = 257
     Height = 13

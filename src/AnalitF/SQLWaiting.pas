@@ -87,8 +87,10 @@ procedure TfrmSQLWaiting.PrepareForm;
 var
   captionWidth : Integer;
 begin
-  captionWidth := lCaption.Width;
+  captionWidth := lCaption.Canvas.TextWidth(lCaption.Caption);
   Self.Width := lCaption.Left * 2 + captionWidth;
+  lWait.Left := (Self.Width - lWait.Width) div 2;
+  lCaption.Width := captionWidth;
 end;
 
 procedure TfrmSQLWaiting.tmFillTimer(Sender: TObject);
