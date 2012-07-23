@@ -2347,6 +2347,8 @@ begin
     end;
   end;
 
+  DM.FillClientAvg();
+  
   Progress := 90;
   Synchronize( SetProgress);
   TotalProgress := 85;
@@ -3660,6 +3662,8 @@ begin
   end;
   OSDeleteFile(RootFolder()+SDirIn+'\PostedOrderHeads.txt');
   OSDeleteFile(RootFolder()+SDirIn+'\PostedOrderLists.txt');
+
+  DM.FillClientAvg();
 end;
 
 procedure TExchangeThread.ImportDocs;
@@ -3710,7 +3714,7 @@ begin
       'set Printed = 1, DocumentId = null;',
       [InputFileName,
        'DocumentBodies']);
-    DM.adcUpdate.Execute;
+    InternalExecute;
     DM.adcUpdate.SQL.Text := '' +
       ' update ' +
       '   analitf.DocumentBodies, ' +
@@ -3721,7 +3725,7 @@ begin
       '     DocumentBodies.ServerDocumentId is not null ' +
       ' and (DocumentBodies.DocumentId is null or DocumentBodies.DocumentId = 0)' +
       ' and DocumentHeaders.ServerId = DocumentBodies.ServerDocumentId ';
-    DM.adcUpdate.Execute;
+    InternalExecute;
     //Сопоставляем продукты по ProductId и серии
     DM.adcUpdate.SQL.Text := '' +
       ' update ' +
@@ -3735,7 +3739,7 @@ begin
       ' and (DocumentBodies.SerialNumber is not null) ' +
       ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
       ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
-    DM.adcUpdate.Execute;
+    InternalExecute;
     //Сопоставляем продукты по Product и серии
     DM.adcUpdate.SQL.Text := '' +
       ' update ' +
@@ -3750,7 +3754,7 @@ begin
       ' and (DocumentBodies.SerialNumber is not null) ' +
       ' and (DocumentBodies.Product = Rejects.Name) ' +
       ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
-    DM.adcUpdate.Execute;
+    InternalExecute;
   end;
 
   if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then begin

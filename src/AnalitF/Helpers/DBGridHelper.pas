@@ -224,7 +224,7 @@ var
   Path,
   tmpFileName : String;
 begin
-  Path := ExcludeTrailingPathDelimiter( GetTempDir);
+  Path := ExcludeTrailingPathDelimiter( GetAFTempDir() );
   tmpFileName := StringOfChar(' ', MAX_PATH);
   Win32CheckA(GetTempFileName(PChar(Path), 'tmp', 0, (@tmpFileName[1])) <> 0);
   Result := ChangeFileExt(Trim(tmpFileName), '.xls');

@@ -18,66 +18,77 @@ type
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TTmpRegionsTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TTmpProvidersTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TTmpRegionalDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TTmpPricesDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TTmpPricesRegionalDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TBatchReportDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TBatchReportServiceFieldsDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TUserActionLogsDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TCertificateRequestsDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
 
   TAttachmentRequestsDataTable = class(TDatabaseTable)
    public
     constructor Create();
     function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
   end;
   
 implementation
@@ -118,12 +129,18 @@ begin
   FRepairType := dortIgnore;
 end;
 
+function TTmpClientsTable.GetColumns: String;
+begin
+  Result := ''
++'    `CLIENTID`  ';
+end;
+
 function TTmpClientsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `CLIENTID` bigint(20) not null      , ' 
-+'    `NAME` varchar(50) not null         , ' 
++'  ( '
++'    `CLIENTID` bigint(20) not null      , '
++'    `NAME` varchar(50) not null         , '
 +'    `REGIONCODE` bigint(20) default null, ' 
 +'    `EXCESS`    int(10) not null           , ' 
 +'    `DELTAMODE` smallint(5) default null   , ' 
@@ -145,11 +162,17 @@ begin
   FRepairType := dortIgnore;
 end;
 
+function TTmpRegionsTable.GetColumns: String;
+begin
+  Result := ''
++'    `REGIONCODE`  ';
+end;
+
 function TTmpRegionsTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `REGIONCODE` bigint(20) not null     , ' 
++'  ( '
++'    `REGIONCODE` bigint(20) not null     , '
 +'    `REGIONNAME` varchar(25) default null, ' 
 +'    `PRICERET`   varchar(254) default null ' 
 +'  ) ' 
@@ -163,6 +186,12 @@ begin
   FName := 'tmpproviders';
   FObjectId := doiTmpProviders;
   FRepairType := dortIgnore;
+end;
+
+function TTmpProvidersTable.GetColumns: String;
+begin
+  Result := ''
++'    `FIRMCODE`  ';
 end;
 
 function TTmpProvidersTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -184,6 +213,12 @@ begin
   FName := 'tmpregionaldata';
   FObjectId := doiTmpRegionalData;
   FRepairType := dortIgnore;
+end;
+
+function TTmpRegionalDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `FIRMCODE`  ';
 end;
 
 function TTmpRegionalDataTable.GetCreateSQL(
@@ -209,6 +244,12 @@ begin
   FRepairType := dortIgnore;
 end;
 
+function TTmpPricesDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `FIRMCODE`  ';
+end;
+
 function TTmpPricesDataTable.GetCreateSQL(DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
@@ -232,12 +273,18 @@ begin
   FRepairType := dortIgnore;
 end;
 
+function TTmpPricesRegionalDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `PRICECODE`  ';
+end;
+
 function TTmpPricesRegionalDataTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
   Result := inherited GetCreateSQL(DatabasePrefix)
-+'  ( ' 
-+'    `PRICECODE` bigint(20) not null , ' 
++'  ( '
++'    `PRICECODE` bigint(20) not null , '
 +'    `REGIONCODE` bigint(20) not null, ' 
 +'    `STORAGE`       tinyint(1) not null   , ' 
 +'    `MINREQ`        int(10) default null  , ' 
@@ -255,6 +302,12 @@ begin
   FName := 'batchreport';
   FObjectId := doiBatchReport;
   FRepairType := dortIgnore;
+end;
+
+function TBatchReportDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `Id`  ';
 end;
 
 function TBatchReportDataTable.GetCreateSQL(
@@ -311,6 +364,12 @@ begin
   FRepairType := dortIgnore;
 end;
 
+function TBatchReportServiceFieldsDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `Id`  ';
+end;
+
 function TBatchReportServiceFieldsDataTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -331,6 +390,12 @@ begin
   FName := 'useractionlogs';
   FObjectId := doiUserActionLogs;
   FRepairType := dortIgnore;
+end;
+
+function TUserActionLogsDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `Id`  ';
 end;
 
 function TUserActionLogsDataTable.GetCreateSQL(
@@ -357,6 +422,12 @@ begin
   FRepairType := dortIgnore;
 end;
 
+function TCertificateRequestsDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `DocumentBodyId`  ';
+end;
+
 function TCertificateRequestsDataTable.GetCreateSQL(
   DatabasePrefix: String): String;
 begin
@@ -375,6 +446,12 @@ begin
   FName := 'attachmentrequests';
   FObjectId := doiAttachmentRequests;
   FRepairType := dortIgnore;
+end;
+
+function TAttachmentRequestsDataTable.GetColumns: String;
+begin
+  Result := ''
++'    `AttachmentId`  ';
 end;
 
 function TAttachmentRequestsDataTable.GetCreateSQL(

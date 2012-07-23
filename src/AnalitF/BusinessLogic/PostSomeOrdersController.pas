@@ -717,6 +717,7 @@ begin
 
       FExchangeParams.SendedOrders.Add(VarToStr(LastPostedOrderId));
     end;
+    FDataLayer.FillClientAvg();
 
     DatabaseController.BackupOrdersDataTables();
 

@@ -23,7 +23,7 @@ Global(
 
 def ExecWait(exec as Exec):
 	exec.Execute()
-	System.Threading.Thread.Sleep(150)
+	System.Threading.Thread.Sleep(450)
 
 def PrepareCfg(buildName as string):
 	File.Delete(".\\src\\AnalitF\\AnalitF_tmp.cfg") if File.Exists(".\\src\\AnalitF\\AnalitF_tmp.cfg")

@@ -44,7 +44,7 @@ begin
     SevenZipRes := SevenZipCreateArchive(
       0,
       GetArchFileName(),
-      GetTempDir + TempSendDir,
+      GetAFTempDir() + TempSendDir,
       '*.*',
       9,
       false,
@@ -72,7 +72,7 @@ var
 begin
   for I := 0 to FAttachs.Count-1 do
     if FileExists(FAttachs[i]) then
-      if not Windows.CopyFile(PChar(FAttachs[i]), PChar(GetTempDir + TempSendDir + '\' +ExtractFileName(FAttachs[i])), false) then
+      if not Windows.CopyFile(PChar(FAttachs[i]), PChar(GetAFTempDir() + TempSendDir + '\' +ExtractFileName(FAttachs[i])), false) then
         raise Exception.Create('Не удалось скопировать файл: ' + FAttachs[i] + #13#10'Причина: ' + SysErrorMessage(GetLastError));
 end;
 
@@ -116,17 +116,17 @@ end;
 
 function TArchiveHelper.GetArchFileName: String;
 begin
-  Result := GetTempDir + TempSendDir + '\Attach.7z';
+  Result := GetAFTempDir() + TempSendDir + '\Attach.7z';
 end;
 
 function TArchiveHelper.GetArchivedSize: Int64;
 begin
-  if DirectoryExists(GetTempDir + TempSendDir) then
-    if not ClearDir(GetTempDir + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
+  if DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
+      raise Exception.Create('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
 
-  if not CreateDir(GetTempDir + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetTempDir + TempSendDir);
+  if not CreateDir(GetAFTempDir() + TempSendDir) then
+    raise Exception.Create('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   //Формируем список файлов
   CopyingFiles;
@@ -140,12 +140,12 @@ function TArchiveHelper.GetEncodedContent: String;
 begin
   Result := '';
 
-  if DirectoryExists(GetTempDir + TempSendDir) then
-    if not ClearDir(GetTempDir + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetTempDir + TempSendDir);
+  if DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
+      raise Exception.Create('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
 
-  if not CreateDir(GetTempDir + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetTempDir + TempSendDir);
+  if not CreateDir(GetAFTempDir() + TempSendDir) then
+    raise Exception.Create('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   //Формируем список файлов
   CopyingFiles;

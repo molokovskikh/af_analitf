@@ -603,6 +603,8 @@ type
     procedure StartUp;
 
     procedure ShowAttachments(fileList : TStringList);
+
+    procedure FillClientAvg();
   end;
 
 var
@@ -2061,6 +2063,16 @@ begin
       if DBVersion = 91 then begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 92;
+      end;
+
+      if DBVersion = 92 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 93;
+      end;
+
+      if DBVersion = 93 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 94;
       end;
     end;
 
@@ -6185,6 +6197,49 @@ begin
       Break;
     end;
   end;
+end;
+
+procedure TDM.FillClientAvg;
+begin
+  WriteExchangeLog('Exchange', 'начали заполнять средние цены по продуктам');
+  adcUpdate.SQL.Text := 'truncate analitf.clientavg';
+  adcUpdate.Execute;
+  adcUpdate.SQL.Text := 'insert into analitf.clientavg '
++'  select `postedorderheads`.`CLIENTID` as `CLIENTCODE`, ' 
++'    `postedorderlists`.`PRODUCTID`     as `PRODUCTID` , ' 
++'    avg(`postedorderlists`.`PRICE`)    as `PRICEAVG`, '
++'    avg(`postedorderlists`.`ORDERCOUNT`)    as `ORDERCOUNTAVG` '
++'  from (`postedorderheads` '
++'    join `postedorderlists`) ' 
++'  where ( ' 
++'      ( ' 
++'        `postedorderlists`.`ORDERID` = `postedorderheads`.`ORDERID` ' 
++'      ) ' 
++'    and ' 
++'      ( ' 
++'        `postedorderheads`.`CLOSED` = 1 ' 
++'      ) ' 
++'    and ' 
++'      ( ' 
++'        `postedorderheads`.`SEND` = 1 ' 
++'      ) ' 
++'    and ' 
++'      ( ' 
++'        `postedorderlists`.`ORDERCOUNT` > 0 ' 
++'      ) ' 
++'    and ' 
++'      ( ' 
++'        `postedorderlists`.`PRICE` is not null ' 
++'      ) ' 
++'    and ' 
++'      ( '
++'        `postedorderlists`.`Junk` = 0 '
++'      ) '
++'    ) '
++'  group by `postedorderheads`.`CLIENTID`, ' 
++'    `postedorderlists`.`PRODUCTID`;';
+  adcUpdate.Execute;
+  WriteExchangeLog('Exchange', 'запонили средние цены по продуктам: ' + IntToStr(adcUpdate.RowsAffected));
 end;
 
 initialization
