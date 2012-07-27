@@ -42,7 +42,7 @@ end;
 
 procedure TframeAutoComment.ProcessResize;
 begin
-  eAutoComment.Top := 4 + ( gbAutoComment.Height - 4 - eAutoComment.Height) div 2;
+  eAutoComment.Top := 4 + ( gbAutoComment.Height - eAutoComment.Height) div 2;
 end;
 
 procedure TframeAutoComment.FrameResize(Sender: TObject);
