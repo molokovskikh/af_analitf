@@ -232,6 +232,8 @@ begin
 
   btnGotoPrice.Visible := not ClosedOrder;
   lMatchWaybill.Visible := ClosedOrder;
+  if lMatchWaybill.Visible then
+    lMatchWaybill.Visible := FGS.UseColorOnWaybillOrders;
 
   if not ClosedOrder and DM.adsUser.FieldByName('SendRetailMarkup').AsBoolean then begin
     dbgOrders.Visible := False;
