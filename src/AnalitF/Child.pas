@@ -27,10 +27,12 @@ type
     FGrid : TToughDBGrid;
     FGridCopy : TMenuItem;
     FOldOnBeforePopup : TNotifyEvent;
+    FOldOnPopupColumnsClick : TNotifyEvent;
     procedure HackDBGirdWndProc(var Message: TMessage);
     procedure OnPopupCopyGridClick(Sender: TObject);
     procedure OnBeforePopup(Sender : TObject);
     function GetSaveFlag() : Boolean;
+    procedure OnPopupColumnsClick(Sender: TObject);
    public
     constructor Create(AFormHandle : THandle; AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
   end;
@@ -609,6 +611,8 @@ end;
 
 constructor TDBComponentWindowProc.Create(AFormHandle: THandle;
   AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
+var
+  columnsItem : TMenuItem;
 begin
   FFormHandle := AFormHandle;
   FOldDBGridWndProc := AOldDBGridWndProc;
@@ -617,6 +621,11 @@ begin
   if Assigned(FGrid.PopupMenu) then begin
     FOldOnBeforePopup := FGrid.PopupMenu.OnPopup;
     FGrid.PopupMenu.OnPopup := OnBeforePopup;
+    columnsItem := FGrid.PopupMenu.Items.Find('Столбцы...');
+    if Assigned(columnsItem) then begin
+      FOldOnPopupColumnsClick := columnsItem.OnClick;
+      columnsItem.OnClick := OnPopupColumnsClick;
+    end;
     FGridCopy := TMenuItem.Create(FGrid.PopupMenu);
     FGridCopy.Caption := 'Копировать';
     FGridCopy.OnClick := OnPopupCopyGridClick;
@@ -674,6 +683,7 @@ var
   synonymFirmColumn : TColumnEh;
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
+  noteColumn : TColumnEh;
 
   procedure ChangeTitleCaption(FieldName, NewTitleCaption : String);
   var
@@ -687,6 +697,11 @@ var
 begin
   Grid.AutoFitColWidths := False;
   try
+  noteColumn := ColumnByNameT(Grid, 'Note');
+  if Assigned(noteColumn) then begin
+    noteColumn.Visible := True;
+    noteColumn.Tag := 1;
+  end;
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');
@@ -979,6 +994,17 @@ begin
   FGridCopy.Enabled := GetSaveFlag();
   if Assigned(FOldOnBeforePopup) then
     FOldOnBeforePopup(Sender);
+end;
+
+procedure TDBComponentWindowProc.OnPopupColumnsClick(Sender: TObject);
+var
+  I : Integer;
+begin
+  if Assigned(FOldOnPopupColumnsClick) then
+    FOldOnPopupColumnsClick(Sender);
+  for I := 0 to FGrid.Columns.Count-1 do
+    if (FGrid.Columns[i].Tag = 1) and not FGrid.Columns[i].Visible then
+      FGrid.Columns[i].Visible := True;
 end;
 
 procedure TDBComponentWindowProc.OnPopupCopyGridClick(Sender: TObject);
