@@ -752,6 +752,9 @@ begin
   spLoad.OnClick := OpenFile;
   if GetNetworkSettings().IsNetworkVersion then
     spLoad.Enabled := not GetNetworkSettings.DisableUpdate;
+  if spLoad.Enabled then
+    spLoad.Enabled := DM.adtClients.RecordCount > 0;
+
 
   pTop.Height := spLoad.Height + 10;
   eSearch.Top := (pTop.Height - eSearch.Height) div 2;
