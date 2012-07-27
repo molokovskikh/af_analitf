@@ -198,14 +198,15 @@ function MessageBox(MesStr: string; Icon: Cardinal=MB_ICONINFORMATION): Integer;
 var
   CapStr: string;
 begin
+  CapStr := 'АналитФАРМАЦИЯ';
   if (Icon and MB_ICONINFORMATION)=MB_ICONINFORMATION then
-    CapStr:='Информация'
+    CapStr:='АналитФАРМАЦИЯ: Информация'
   else if (Icon and MB_ICONWARNING)=MB_ICONWARNING then
-    CapStr:='Внимание'
+    CapStr:='АналитФАРМАЦИЯ: Внимание'
   else if (Icon and MB_ICONQUESTION)=MB_ICONQUESTION then
-    CapStr:='Запрос'
+    CapStr:='АналитФАРМАЦИЯ: Запрос'
   else if (Icon and MB_ICONSTOP)=MB_ICONSTOP then
-    CapStr:='Ошибка';
+    CapStr := 'АналитФАРМАЦИЯ: Ошибка';
   Result := MessageBoxEx(MesStr, CapStr,Icon);
 end;
 
