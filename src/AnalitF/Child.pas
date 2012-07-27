@@ -69,6 +69,7 @@ type
     fBuyingMatrixType : TIntegerField;
     fCoreQuantity : TField;
     disableCoreQuantityCheck : Boolean;
+    disableClearOrder : Boolean;
     OldAfterPost : TDataSetNotifyEvent;
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
@@ -368,6 +369,7 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   FGS := TGlobalSettingParams.Create(DM.MainConnection);
   disableCoreQuantityCheck := False;
+  disableClearOrder := False;
   NeedFirstOnDataSet := True;
   SortOnOrderGrid := True;
   FUseCorrectOrders := DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean;
@@ -1219,6 +1221,10 @@ begin
     if volumeOrder < minCountOrder then
       volumeOrder := 0;
   end;
+
+  //Если в результате проверок мы заказали больше, чем ввел пользователь, то сбрасываем это значение 
+  if not disableClearOrder and (volumeOrder > order) then
+    volumeOrder := 0;
 
   Result := volumeOrder;
 end;

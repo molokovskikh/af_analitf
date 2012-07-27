@@ -482,6 +482,7 @@ begin
   fMinOrderCount := adsOrdersMINORDERCOUNT;
   fCoreQuantity := adsOrdersQuantity;
   disableCoreQuantityCheck := True;
+  disableClearOrder := True;
   gotoMNNButton := btnGotoMNN;
 
   SetWaybillGrid;

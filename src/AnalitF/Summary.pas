@@ -218,6 +218,7 @@ begin
   fSumOrder := adsSummarySumOrder;
   fMinOrderCount := adsSummaryMINORDERCOUNT;
   fCoreQuantity := adsSummaryQuantity;
+  disableClearOrder := True;
   gotoMNNButton := btnGotoMNN;
 
   SetWaybillGrid();
