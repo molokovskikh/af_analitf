@@ -253,6 +253,8 @@ procedure TChildForm.ShowForm;
 var
   I: Integer;
 begin
+  Self.Width := MainForm.pMain.Width;
+  Self.Height := MainForm.pMain.Height;
   plOverCost.Hide();
   SetActiveChildToMainForm;
   for I := 0 to Self.ComponentCount-1 do
