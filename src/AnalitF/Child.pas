@@ -9,7 +9,6 @@ uses
   DayOfWeekHelper,
   Menus,
   HtmlView,
-  ComCtrls,
   DBGridEh,
   GlobalSettingParams;
 
@@ -156,16 +155,6 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function SearchInProgress : Boolean; virtual;
-
-    procedure WMEnterSizeMove(var Message: TMessage); message WM_EnterSizeMove;
-    procedure WMExitSizeMove(var Message: TMessage); message WM_ExitSizeMove;
-
-    function SizingCompositionIsPerformed: Boolean;
-    procedure BeginSizing;
-    procedure EndSizing;
-    function ControlSupportsDoubleBuffered(Control: TWinControl): Boolean;
-    procedure UpdateDoubleBuffered(Control: TWinControl); overload;
-    procedure UpdateDoubleBuffered;overload;
   published
     //Вытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
@@ -1216,7 +1205,7 @@ begin
     else
       volumeOrder := minCountOrder;
 
-  //Если проверяем по остатку и есть превышение по остатку
+  //Если проверяем по остатку и есть превышение по остатку    
   if not disableCoreQuantityCheck and not AllowOrderByCoreQuantity(volumeOrder, coreQuantity) then begin
     //уменьшаем заказ, чтобы удовлетворял остатку
     if not fVolume.IsNull and (fVolume.AsInteger > 0 ) then
@@ -1224,163 +1213,12 @@ begin
     else
       volumeOrder := coreQuantity;
 
-    //если количество заказа после этого не удовлетворяет минимальному количеству, то сбрасываем заказ
+    //если количество заказа после этого не удовлетворяет минимальному количеству, то сбрасываем заказ  
     if volumeOrder < minCountOrder then
       volumeOrder := 0;
   end;
 
   Result := volumeOrder;
-end;
-
-procedure TChildForm.WMEnterSizeMove(var Message: TMessage);
-begin
-  inherited;
-  BeginSizing;
-end;
-
-procedure TChildForm.WMExitSizeMove(var Message: TMessage);
-begin
-  EndSizing;
-  inherited;
-end;
-
-procedure SetComposited(WinControl: TWinControl; Value: Boolean);
-var
-  ExStyle, NewExStyle: DWORD;
-begin
-  ExStyle := GetWindowLong(WinControl.Handle, GWL_EXSTYLE);
-  if Value then begin
-    NewExStyle := ExStyle or WS_EX_COMPOSITED;
-  end else begin
-    NewExStyle := ExStyle and not WS_EX_COMPOSITED;
-  end;
-  if NewExStyle<>ExStyle then begin
-    SetWindowLong(WinControl.Handle, GWL_EXSTYLE, NewExStyle);
-  end;
-end;
-
-function TChildForm.SizingCompositionIsPerformed: Boolean;
-begin
-  //see The Old New Thing, Taxes: Remote Desktop Connection and painting
-  Result := True {not InRemoteSession};
-end;
-
-procedure TChildForm.BeginSizing;
-var
-  UseCompositedWindowStyleExclusively: Boolean;
-  Control: TControl;
-  WinControl: TWinControl;
-  I : Integer;
-begin
-  if SizingCompositionIsPerformed then begin
-    UseCompositedWindowStyleExclusively := Win32MajorVersion>=6;//XP can't handle too many windows with WS_EX_COMPOSITED
-    for i := 0 to ControlCount-1 do begin
-
-      if (Controls[i] is TWinControl) then begin
-        WinControl := TWinControl(Controls[i]);
-        if UseCompositedWindowStyleExclusively then begin
-          SetComposited(WinControl, True);
-        end else begin
-          if WinControl is TPanel then begin
-            TPanel(WinControl).FullRepaint := False;
-          end;
-          if (WinControl is TCustomGroupBox) or (WinControl is TCustomRadioGroup) //or (WinControl is TOrcGrid)
-          then begin
-            //can't find another way to make these awkward customers stop flickering
-            SetComposited(WinControl, True);
-          end else if ControlSupportsDoubleBuffered(WinControl) then begin
-            WinControl.DoubleBuffered := True;
-          end;
-        end;
-      end;
-
-    end;
-  end;
-end;
-
-procedure TChildForm.EndSizing;
-var
-  Control: TControl;
-  WinControl: TWinControl;
-  I : Integer;
-begin
-  if SizingCompositionIsPerformed then begin
-    for i := 0 to ControlCount-1 do begin
-      if Controls[i] is TWinControl then begin
-        WinControl := TWinControl(Controls[i]);
-        if WinControl is TPanel then begin
-          TPanel(WinControl).FullRepaint := True;
-        end;
-        UpdateDoubleBuffered(WinControl);
-        SetComposited(WinControl, False);
-      end;
-    end;
-  end;
-end;
-
-function TChildForm.ControlSupportsDoubleBuffered(Control: TWinControl): Boolean;
-const
-  NotSupportedClasses: array [0..1] of TControlClass = (
-    TCustomForm,//general policy is not to double buffer forms
-    TCustomRichEdit//simply fails to draw if double buffered
-  );
-var
-  i: Integer;
-begin
-  for i := low(NotSupportedClasses) to high(NotSupportedClasses) do begin
-    if Control is NotSupportedClasses[i] then begin
-      Result := False;
-      exit;
-    end;
-  end;
-  Result := True;
-end;
-
-procedure TChildForm.UpdateDoubleBuffered(Control: TWinControl);
-
-  function ControlIsDoubleBuffered: Boolean;
-  const
-    DoubleBufferedClasses: array [0..1] of TControlClass = (
-      //TMyCustomGrid,//flickers when updating
-      TCustomListView,//flickers when updating
-      TCustomStatusBar//drawing infidelities , e.g. OrcaFlex main form status bar during loading of simulations
-    );
-  var
-    i: Integer;
-  begin
-    if True {not InRemoteSession} then begin
-      //see The Old New Thing, Taxes: Remote Desktop Connection and painting
-      for i := low(DoubleBufferedClasses) to high(DoubleBufferedClasses) do begin
-        if Control is DoubleBufferedClasses[i] then begin
-          Result := True;
-          exit;
-        end;
-      end;
-    end;
-    Result := False;
-  end;
-
-var
-  DoubleBuffered: Boolean;
-
-begin
-  if ControlSupportsDoubleBuffered(Control) then begin
-    DoubleBuffered := ControlIsDoubleBuffered;
-  end else begin
-    DoubleBuffered := False;
-  end;
-  Control.DoubleBuffered := DoubleBuffered;
-end;
-
-procedure TChildForm.UpdateDoubleBuffered;
-var
-  Control: TControl;
-  I : Integer;
-begin
-  for i := 0 to ControlCount-1  do begin
-    if (Controls[i] is TWinControl) then
-      UpdateDoubleBuffered(TWinControl(Controls[i]));
-  end;
 end;
 
 end.
