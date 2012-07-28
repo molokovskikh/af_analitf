@@ -2169,7 +2169,8 @@ begin
   try
     sl.Text := shIndexTemplate.ExpandMacros;
     htmlContact.LoadStrings(sl);
-    pTopContact.Height := htmlContact.MaxVertical + 5;
+    if htmlContact.MaxVertical + 5 > pTopContact.Height then
+      pTopContact.Height := htmlContact.MaxVertical + 5;
   finally
     sl.Free;
   end;
