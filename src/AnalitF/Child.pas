@@ -9,7 +9,6 @@ uses
   DayOfWeekHelper,
   Menus,
   HtmlView,
-  ComCtrls,
   DBGridEh,
   GlobalSettingParams;
 
@@ -28,10 +27,12 @@ type
     FGrid : TToughDBGrid;
     FGridCopy : TMenuItem;
     FOldOnBeforePopup : TNotifyEvent;
+    FOldOnPopupColumnsClick : TNotifyEvent;
     procedure HackDBGirdWndProc(var Message: TMessage);
     procedure OnPopupCopyGridClick(Sender: TObject);
     procedure OnBeforePopup(Sender : TObject);
     function GetSaveFlag() : Boolean;
+    procedure OnPopupColumnsClick(Sender: TObject);
    public
     constructor Create(AFormHandle : THandle; AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
   end;
@@ -70,6 +71,7 @@ type
     fBuyingMatrixType : TIntegerField;
     fCoreQuantity : TField;
     disableCoreQuantityCheck : Boolean;
+    disableClearOrder : Boolean;
     OldAfterPost : TDataSetNotifyEvent;
     OldBeforePost : TDataSetNotifyEvent;
     OldBeforeScroll : TDataSetNotifyEvent;
@@ -156,16 +158,6 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function SearchInProgress : Boolean; virtual;
-
-    procedure WMEnterSizeMove(var Message: TMessage); message WM_EnterSizeMove;
-    procedure WMExitSizeMove(var Message: TMessage); message WM_ExitSizeMove;
-
-    function SizingCompositionIsPerformed: Boolean;
-    procedure BeginSizing;
-    procedure EndSizing;
-    function ControlSupportsDoubleBuffered(Control: TWinControl): Boolean;
-    procedure UpdateDoubleBuffered(Control: TWinControl); overload;
-    procedure UpdateDoubleBuffered;overload;
   published
     //¬ытаскивае FActionList у класса TForm
     property ActionLists: TList read GetActionLists write SetActionLists;
@@ -264,6 +256,8 @@ procedure TChildForm.ShowForm;
 var
   I: Integer;
 begin
+  Self.Width := MainForm.pMain.Width;
+  Self.Height := MainForm.pMain.Height;
   plOverCost.Hide();
   SetActiveChildToMainForm;
   for I := 0 to Self.ComponentCount-1 do
@@ -377,6 +371,7 @@ constructor TChildForm.Create(AOwner: TComponent);
 begin
   FGS := TGlobalSettingParams.Create(DM.MainConnection);
   disableCoreQuantityCheck := False;
+  disableClearOrder := False;
   NeedFirstOnDataSet := True;
   SortOnOrderGrid := True;
   FUseCorrectOrders := DM.adsUser.FieldByName('UseCorrectOrders').AsBoolean;
@@ -616,6 +611,8 @@ end;
 
 constructor TDBComponentWindowProc.Create(AFormHandle: THandle;
   AOldDBGridWndProc: TWndMethod; Grid : TToughDBGrid);
+var
+  columnsItem : TMenuItem;
 begin
   FFormHandle := AFormHandle;
   FOldDBGridWndProc := AOldDBGridWndProc;
@@ -624,6 +621,11 @@ begin
   if Assigned(FGrid.PopupMenu) then begin
     FOldOnBeforePopup := FGrid.PopupMenu.OnPopup;
     FGrid.PopupMenu.OnPopup := OnBeforePopup;
+    columnsItem := FGrid.PopupMenu.Items.Find('—толбцы...');
+    if Assigned(columnsItem) then begin
+      FOldOnPopupColumnsClick := columnsItem.OnClick;
+      columnsItem.OnClick := OnPopupColumnsClick;
+    end;
     FGridCopy := TMenuItem.Create(FGrid.PopupMenu);
     FGridCopy.Caption := ' опировать';
     FGridCopy.OnClick := OnPopupCopyGridClick;
@@ -681,6 +683,7 @@ var
   synonymFirmColumn : TColumnEh;
   priceRetColumn : TColumnEh;
   producerNameColumn : TColumnEh;
+  noteColumn : TColumnEh;
 
   procedure ChangeTitleCaption(FieldName, NewTitleCaption : String);
   var
@@ -694,6 +697,11 @@ var
 begin
   Grid.AutoFitColWidths := False;
   try
+  noteColumn := ColumnByNameT(Grid, 'Note');
+  if Assigned(noteColumn) then begin
+    noteColumn.Visible := True;
+    noteColumn.Tag := 1;
+  end;
   priceRetColumn := ColumnByNameT(Grid, 'PriceRet');
   if not Assigned(priceRetColumn) then
     priceRetColumn := ColumnByNameT(Grid, 'CryptPriceRet');
@@ -988,6 +996,17 @@ begin
     FOldOnBeforePopup(Sender);
 end;
 
+procedure TDBComponentWindowProc.OnPopupColumnsClick(Sender: TObject);
+var
+  I : Integer;
+begin
+  if Assigned(FOldOnPopupColumnsClick) then
+    FOldOnPopupColumnsClick(Sender);
+  for I := 0 to FGrid.Columns.Count-1 do
+    if (FGrid.Columns[i].Tag = 1) and not FGrid.Columns[i].Visible then
+      FGrid.Columns[i].Visible := True;
+end;
+
 procedure TDBComponentWindowProc.OnPopupCopyGridClick(Sender: TObject);
 var
   SaveGridFlag : Boolean;
@@ -1216,7 +1235,7 @@ begin
     else
       volumeOrder := minCountOrder;
 
-  //≈сли провер€ем по остатку и есть превышение по остатку
+  //≈сли провер€ем по остатку и есть превышение по остатку    
   if not disableCoreQuantityCheck and not AllowOrderByCoreQuantity(volumeOrder, coreQuantity) then begin
     //уменьшаем заказ, чтобы удовлетвор€л остатку
     if not fVolume.IsNull and (fVolume.AsInteger > 0 ) then
@@ -1224,163 +1243,16 @@ begin
     else
       volumeOrder := coreQuantity;
 
-    //если количество заказа после этого не удовлетвор€ет минимальному количеству, то сбрасываем заказ
+    //если количество заказа после этого не удовлетвор€ет минимальному количеству, то сбрасываем заказ  
     if volumeOrder < minCountOrder then
       volumeOrder := 0;
   end;
 
+  //≈сли в результате проверок мы заказали больше, чем ввел пользователь, то сбрасываем это значение 
+  if not disableClearOrder and (volumeOrder > order) then
+    volumeOrder := 0;
+
   Result := volumeOrder;
-end;
-
-procedure TChildForm.WMEnterSizeMove(var Message: TMessage);
-begin
-  inherited;
-  BeginSizing;
-end;
-
-procedure TChildForm.WMExitSizeMove(var Message: TMessage);
-begin
-  EndSizing;
-  inherited;
-end;
-
-procedure SetComposited(WinControl: TWinControl; Value: Boolean);
-var
-  ExStyle, NewExStyle: DWORD;
-begin
-  ExStyle := GetWindowLong(WinControl.Handle, GWL_EXSTYLE);
-  if Value then begin
-    NewExStyle := ExStyle or WS_EX_COMPOSITED;
-  end else begin
-    NewExStyle := ExStyle and not WS_EX_COMPOSITED;
-  end;
-  if NewExStyle<>ExStyle then begin
-    SetWindowLong(WinControl.Handle, GWL_EXSTYLE, NewExStyle);
-  end;
-end;
-
-function TChildForm.SizingCompositionIsPerformed: Boolean;
-begin
-  //see The Old New Thing, Taxes: Remote Desktop Connection and painting
-  Result := True {not InRemoteSession};
-end;
-
-procedure TChildForm.BeginSizing;
-var
-  UseCompositedWindowStyleExclusively: Boolean;
-  Control: TControl;
-  WinControl: TWinControl;
-  I : Integer;
-begin
-  if SizingCompositionIsPerformed then begin
-    UseCompositedWindowStyleExclusively := Win32MajorVersion>=6;//XP can't handle too many windows with WS_EX_COMPOSITED
-    for i := 0 to ControlCount-1 do begin
-
-      if (Controls[i] is TWinControl) then begin
-        WinControl := TWinControl(Controls[i]);
-        if UseCompositedWindowStyleExclusively then begin
-          SetComposited(WinControl, True);
-        end else begin
-          if WinControl is TPanel then begin
-            TPanel(WinControl).FullRepaint := False;
-          end;
-          if (WinControl is TCustomGroupBox) or (WinControl is TCustomRadioGroup) //or (WinControl is TOrcGrid)
-          then begin
-            //can't find another way to make these awkward customers stop flickering
-            SetComposited(WinControl, True);
-          end else if ControlSupportsDoubleBuffered(WinControl) then begin
-            WinControl.DoubleBuffered := True;
-          end;
-        end;
-      end;
-
-    end;
-  end;
-end;
-
-procedure TChildForm.EndSizing;
-var
-  Control: TControl;
-  WinControl: TWinControl;
-  I : Integer;
-begin
-  if SizingCompositionIsPerformed then begin
-    for i := 0 to ControlCount-1 do begin
-      if Controls[i] is TWinControl then begin
-        WinControl := TWinControl(Controls[i]);
-        if WinControl is TPanel then begin
-          TPanel(WinControl).FullRepaint := True;
-        end;
-        UpdateDoubleBuffered(WinControl);
-        SetComposited(WinControl, False);
-      end;
-    end;
-  end;
-end;
-
-function TChildForm.ControlSupportsDoubleBuffered(Control: TWinControl): Boolean;
-const
-  NotSupportedClasses: array [0..1] of TControlClass = (
-    TCustomForm,//general policy is not to double buffer forms
-    TCustomRichEdit//simply fails to draw if double buffered
-  );
-var
-  i: Integer;
-begin
-  for i := low(NotSupportedClasses) to high(NotSupportedClasses) do begin
-    if Control is NotSupportedClasses[i] then begin
-      Result := False;
-      exit;
-    end;
-  end;
-  Result := True;
-end;
-
-procedure TChildForm.UpdateDoubleBuffered(Control: TWinControl);
-
-  function ControlIsDoubleBuffered: Boolean;
-  const
-    DoubleBufferedClasses: array [0..1] of TControlClass = (
-      //TMyCustomGrid,//flickers when updating
-      TCustomListView,//flickers when updating
-      TCustomStatusBar//drawing infidelities , e.g. OrcaFlex main form status bar during loading of simulations
-    );
-  var
-    i: Integer;
-  begin
-    if True {not InRemoteSession} then begin
-      //see The Old New Thing, Taxes: Remote Desktop Connection and painting
-      for i := low(DoubleBufferedClasses) to high(DoubleBufferedClasses) do begin
-        if Control is DoubleBufferedClasses[i] then begin
-          Result := True;
-          exit;
-        end;
-      end;
-    end;
-    Result := False;
-  end;
-
-var
-  DoubleBuffered: Boolean;
-
-begin
-  if ControlSupportsDoubleBuffered(Control) then begin
-    DoubleBuffered := ControlIsDoubleBuffered;
-  end else begin
-    DoubleBuffered := False;
-  end;
-  Control.DoubleBuffered := DoubleBuffered;
-end;
-
-procedure TChildForm.UpdateDoubleBuffered;
-var
-  Control: TControl;
-  I : Integer;
-begin
-  for i := 0 to ControlCount-1  do begin
-    if (Controls[i] is TWinControl) then
-      UpdateDoubleBuffered(TWinControl(Controls[i]));
-  end;
 end;
 
 end.

@@ -342,6 +342,7 @@ class procedure TDBGridHelper.RestoreColumnsLayout(Grid: TCustomDBGridEh;
 var
   Reg: TRegIniFile;
   Section: String;
+  I : Integer;
 begin
   Reg := TRegIniFile.Create();
   try
@@ -350,6 +351,9 @@ begin
       Section := GetDefaultSection(Grid);
       if Reg.KeyExists(Section) then
         InternalRestoreColumnsLayout(Grid, Reg, Section, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
+      for I := 0 to Grid.Columns.Count-1 do
+        if (Grid.Columns[i].Tag = 1) and not Grid.Columns[i].Visible then
+          Grid.Columns[i].Visible := True;
     end;
   finally
     Reg.Free;

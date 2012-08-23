@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Child, Grids, DBGrids, DB, RXDBCtrl, Buttons,
   StdCtrls, Math, ComCtrls, DBCtrls, ExtCtrls, DBGridEh, ToughDBGrid, DateUtils,
-  FR_DSet, FR_DBSet, OleCtrls, 
+  FR_DSet, FR_DBSet, OleCtrls,
   SQLWaiting, ShellAPI, GridsEh, MemDS,
   Contnrs,
   DBAccess, MyAccess, MemData, Orders,
@@ -18,7 +18,10 @@ uses
   U_DBMapping,
   U_CurrentOrderHead,
   U_CurrentOrderItem,
-  DayOfWeekHelper;
+  DayOfWeekHelper, StrHlder;
+
+const
+  postedOrdersLimit = 1000;
 
 type
   TOrdersHForm = class(TChildForm)
@@ -85,6 +88,8 @@ type
     pmDestinationPrices: TPopupMenu;
     adsOrdersHFormNotExistsCount: TLargeintField;
     adsOrdersHFormRealClientId: TLargeintField;
+    strhPostedBegin: TStrHolder;
+    strhPostedEnd: TStrHolder;
     procedure btnMoveSendClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
@@ -146,6 +151,9 @@ type
     InternalDestinationClientId : Integer;
     frameFilterAddresses : TframeFilterAddresses;
     frameFilterAddressesSend : TframeFilterAddresses;
+    procedure SavePeriodToGlobals;
+    function GetPostedCriteria() : String;
+    procedure CheckPostedOrdersCountToShow(postedCriteria : String); 
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -155,6 +163,10 @@ type
   end;
 
 procedure ShowOrdersH;
+
+var
+  ordersDateFrom,
+  ordersDateTo : TDateTime;
 
 implementation
 
@@ -170,8 +182,6 @@ begin
 end;
 
 procedure TOrdersHForm.FormCreate(Sender: TObject);
-var
-  Year, Month, Day: Word;
 begin
   inherited;
 
@@ -223,12 +233,8 @@ begin
   TDBGridHelper.RestoreColumnsLayout(dbgCurrentOrders, 'CurrentOrders');
   TDBGridHelper.RestoreColumnsLayout(dbgSendedOrders, 'SendedOrders');
 
-  Year := YearOf( Date);
-  Month := MonthOf( Date);
-  Day := DayOf( Date);
-  IncAMonth( Year, Month, Day, -3);
-  dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
-  dtpDateTo.Date := Date;
+  dtpDateFrom.Date := ordersDateFrom;
+  dtpDateTo.Date := ordersDateTo;;
 
   TabControl.TabIndex := 0;
   DoSetCursor(crHourglass);
@@ -243,6 +249,7 @@ end;
 
 procedure TOrdersHForm.FormDestroy(Sender: TObject);
 begin
+  SavePeriodToGlobals();
   try
     //TODO: ___ «десь возникает ошибка с AccessViolation в FBPlus.
     //¬озможно эта мо€ ошибка, но € пока не могу ее исправить
@@ -258,6 +265,7 @@ procedure TOrdersHForm.SetParameters;
 var
   Grid : TDBGridEh;
   clientsSql : String;
+  postedCriteria : String;
 begin
   Grid := nil;
   clientsSql := '';
@@ -308,27 +316,21 @@ begin
       frameFilterAddressesSend.Visible := GetAddressController.AllowAllOrders;
       if frameFilterAddressesSend.Visible then
         frameFilterAddressesSend.UpdateFrame();
-      adsOrdersHForm.SQL.Text := adsSendOrders.SQL.Text;
 
-      if GetAddressController.ShowAllOrders then begin
-        clientsSql := GetAddressController.GetFilter('PostedOrderHeads.ClientId');
-        if clientsSql <> '' then
-          adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
-            + #13#10' and ' + clientsSql + ' '#13#10;
-      end
-      else
-        adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
-          + #13#10' and (PostedOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') '#13#10;
+      postedCriteria := GetPostedCriteria();
 
-      adsOrdersHForm.SQL.Text := adsOrdersHForm.SQL.Text
-        + ' group by PostedOrderHeads.OrderId having count(PostedOrderLists.Id) > 0 order by PostedOrderHeads.SendDate DESC ';
+      CheckPostedOrdersCountToShow(postedCriteria);
+
+      adsOrdersHForm.SQL.Text :=
+        strhPostedBegin.Strings.Text + #13#10 + postedCriteria + ';'#13#10
+        + strhPostedEnd.Strings.Text;
 
       adsOrdersHForm.SQLRefresh.Text := adsSendOrders.SQLRefresh.Text;
       adsOrdersHForm.SQLDelete.Text := adsSendOrders.SQLDelete.Text;
       adsOrdersHForm.SQLUpdate.Text := adsSendOrders.SQLUpdate.Text;
-      adsOrdersHForm.ParamByName( 'DateFrom').AsDate := dtpDateFrom.Date;
-      dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-      adsOrdersHForm.ParamByName( 'DateTo').AsDateTime := dtpDateTo.DateTime;
+
+      adsOrdersHForm.ParamByName( 'DateFrom').AsDate := ordersDateFrom;
+      adsOrdersHForm.ParamByName( 'DateTo').AsDate := IncDay(ordersDateTo);
 
       ShowSendActionButtons();
 
@@ -556,9 +558,9 @@ end;
 procedure TOrdersHForm.SetDateInterval;
 begin
   with adsOrdersHForm do begin
-  ParamByName('DateFrom').AsDate:=dtpDateFrom.Date;
-  dtpDateTo.Time := EncodeTime( 23, 59, 59, 999);
-  ParamByName('DateTo').AsDateTime := dtpDateTo.DateTime;
+  SavePeriodToGlobals();
+  ParamByName('DateFrom').AsDate := ordersDateFrom;
+  ParamByName('DateTo').AsDate := IncDay(ordersDateTo);
     DoSetCursor(crHourglass);
     try
       if Active then
@@ -1470,4 +1472,67 @@ begin
   end;
 end;
 
+procedure TOrdersHForm.SavePeriodToGlobals;
+begin
+  ordersDateFrom := dtpDateFrom.Date;
+  ordersDateTo := dtpDateTo.Date;
+end;
+
+function TOrdersHForm.GetPostedCriteria: String;
+begin
+  Result := '';
+  if GetAddressController.ShowAllOrders then begin
+    Result := GetAddressController.GetFilter('PostedOrderHeads.ClientId');
+  end
+  else
+    Result := #13#10' (PostedOrderHeads.ClientId = ' + IntToStr(DM.adtClientsCLIENTID.Value) + ') ';
+
+  if Result <> '' then
+    Result := Result + #13#10' and ';
+
+  Result := Result
+      + ' (PostedOrderHeads.SendDate >= :DateFrom) '
+      + #13#10' and (PostedOrderHeads.SendDate <= :DateTo ) '
+      + #13#10' and (PostedOrderHeads.Closed = 1) ';
+end;
+
+procedure TOrdersHForm.CheckPostedOrdersCountToShow(
+  postedCriteria: String);
+var
+  ordersCount : Integer;
+begin
+  ordersCount := DM.QueryValue(
+    'select count(OrderId) FROM PostedOrderHeads where ' + postedCriteria,
+    ['DateFrom', 'DateTo'],
+    [ordersDateFrom, IncDay(ordersDateTo)]);
+  if ordersCount > postedOrdersLimit then begin
+    AProc.MessageBox(Format('¬нимание! ќтображены последние %d документов', [postedOrdersLimit]), MB_ICONWARNING);
+    ordersDateFrom := DM.QueryValue('' +
+'select ' +
+'  date(min(d.SendDate)) ' +
+'from ' +
+'  ( ' +
+'   select ' +
+'     PostedOrderHeads.SendDate ' +
+'   FROM ' +
+'     PostedOrderHeads ' +
+'   where ' +
+postedCriteria +
+'   order by PostedOrderHeads.SendDate desc ' +
+'   limit ' + IntToStr(postedOrdersLimit) +
+'   ) d ',
+      ['DateFrom', 'DateTo'],
+      [ordersDateFrom, IncDay(ordersDateTo)]);
+    //увеличиваем день на один, т.к. запросом выше может прийти середина дн€,
+    //а при выборке с начала суток количество заказов будет больше лимита
+    //пример, пришла дата 01.07.2012 10:00, с этой даты будет 1000 заказов,
+    // но в запросе мы передаем дату без времени, поэтому в результате может получитьс€ больше 1000 заказов.
+    ordersDateFrom := IncDay(ordersDateFrom);
+    dtpDateFrom.DateTime := ordersDateFrom;
+  end;
+end;
+
+initialization
+  ordersDateFrom := StartOfTheMonth( IncMonth(Date, -3) );
+  ordersDateTo := Date;
 end.

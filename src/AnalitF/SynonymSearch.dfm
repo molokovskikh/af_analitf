@@ -61,7 +61,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     end
     object cbBaseOnly: TCheckBox
       Left = 560
-      Top = 8
+      Top = 6
       Width = 113
       Height = 17
       Caption = #1058#1086#1083#1100#1082#1086' '#1086#1089#1085#1086#1074#1085#1099#1077

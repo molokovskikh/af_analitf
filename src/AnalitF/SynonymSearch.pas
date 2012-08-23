@@ -251,7 +251,7 @@ begin
 
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
-  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, btnSelectPrices.Left + btnSelectPrices.Width + 5, pTop.Height div 2 + 15, dbgCore);
+  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, btnSelectPrices.Left + btnSelectPrices.Width + 5, pTop.Height div 2 + 13, dbgCore);
   frameAutoComment.Top := pTop.Height - frameAutoComment.Height;
 
   if adsProducers.Active then

@@ -218,6 +218,7 @@ begin
   fSumOrder := adsSummarySumOrder;
   fMinOrderCount := adsSummaryMINORDERCOUNT;
   fCoreQuantity := adsSummaryQuantity;
+  disableClearOrder := True;
   gotoMNNButton := btnGotoMNN;
 
   SetWaybillGrid();
@@ -912,9 +913,8 @@ end;
 
 procedure TSummaryForm.UpdateMatchWaybillTimer;
 begin
-  if LastSymmaryType = 1 then begin
+  if (LastSymmaryType = 1) and Assigned(frameMatchWaybill) then
     frameMatchWaybill.UpdateMatchWaybillTimer;
-  end;
 end;
 
 procedure TSummaryForm.adsSummaryAfterOpen(DataSet: TDataSet);

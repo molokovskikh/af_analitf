@@ -604,8 +604,12 @@ begin
   if (FindCmdLineSwitch('extd')) and
     (DM.adtParams.FieldByName( 'HTTPHost').AsString <> '')
   then
-    URL := 'https://' + DM.adtParams.FieldByName( 'HTTPHost').AsString+
-           '/' + DM.SerBeg + DM.SerEnd + '/code.asmx'
+    //если в хосте есть указание протокола
+    if AnsiStartsText('http', DM.adtParams.FieldByName( 'HTTPHost').AsString) then
+      URL := DM.adtParams.FieldByName( 'HTTPHost').AsString
+    else
+      URL := 'https://' + DM.adtParams.FieldByName( 'HTTPHost').AsString +
+             '/' + DM.SerBeg + DM.SerEnd + '/code.asmx'
   else
 {$ifdef UsePrgDataTest}
     URL := 'https://test.analit.net/' + DM.SerBeg + DM.SerEnd + '/code.asmx';
