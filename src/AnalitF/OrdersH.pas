@@ -118,6 +118,7 @@ type
     procedure sbMoveToClientClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
     procedure sbMoveToPriceClick(Sender: TObject);
+    procedure dbMemoEnter(Sender: TObject);
   private
     Strings: TStrings;
     SelectedPrices : TStringList;
@@ -360,6 +361,8 @@ begin
 
   dtpDateFrom.Enabled := TabControl.TabIndex = 1;
   dtpDateTo.Enabled   := dtpDateFrom.Enabled;
+
+  WriteExchangeLog('Orders SysLocale.FarEast', BoolToStr(SysLocale.FarEast));
 
   dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := ((TabControl.TabIndex = 0) and ((DM.SaveGridMask and PrintCurrentOrder) > 0))
@@ -1530,6 +1533,15 @@ postedCriteria +
     ordersDateFrom := IncDay(ordersDateFrom);
     dtpDateFrom.DateTime := ordersDateFrom;
   end;
+end;
+
+procedure TOrdersHForm.dbMemoEnter(Sender: TObject);
+begin
+  inherited;
+  if (Sender is TDBMemo)
+    and not TDBMemo(Sender).ReadOnly
+    and Assigned(TDBMemo(Sender).Field) then
+    SoftEdit(TDBMemo(Sender).Field.DataSet);
 end;
 
 initialization

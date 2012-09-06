@@ -397,6 +397,7 @@ inherited OrdersHForm: TOrdersHForm
               DataSource = dsOrdersH
               ScrollBars = ssVertical
               TabOrder = 0
+              OnEnter = dbMemoEnter
             end
           end
           object gbComments: TGroupBox
@@ -415,6 +416,7 @@ inherited OrdersHForm: TOrdersHForm
               DataSource = dsOrdersH
               ScrollBars = ssVertical
               TabOrder = 0
+              OnEnter = dbMemoEnter
             end
           end
         end
