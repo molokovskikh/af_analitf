@@ -232,6 +232,14 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
           Title.TitleButton = True
         end>
     end
+    object cbSelect: TCheckBox
+      Left = 232
+      Top = 72
+      Width = 13
+      Height = 13
+      TabOrder = 1
+      OnClick = cbSelectClick
+    end
   end
   object gbPrint: TGroupBox [2]
     Left = 0
@@ -875,6 +883,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  dbodies.DocumentId = :DocumentId')
     RefreshOptions = [roAfterInsert, roAfterUpdate]
     AfterOpen = adsDocumentBodiesAfterOpen
+    AfterPost = adsDocumentBodiesAfterPost
+    AfterDelete = adsDocumentBodiesAfterDelete
     AfterScroll = adsDocumentBodiesAfterScroll
     KeyFields = 'Id'
     Left = 208

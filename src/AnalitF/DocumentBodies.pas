@@ -24,6 +24,8 @@ const
   NDSNullValue = 'нет значений';
   
 type
+  TCheckBoxEx = class(TCheckBox);
+
   TDocumentBodiesForm = class(TChildForm)
     pOrderHeader: TPanel;
     dbtProviderName: TDBText;
@@ -170,6 +172,7 @@ type
     dbtDatePrice: TDBText;
     dbgOrder: TDBGridEh;
     adsDocumentHeadersProviderShortName: TStringField;
+    cbSelect: TCheckBox;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -201,6 +204,9 @@ type
     procedure adsDocumentBodiesAfterScroll(DataSet: TDataSet);
     procedure adsDocumentBodiesAfterOpen(DataSet: TDataSet);
     procedure tmRunRequestCertificateTimer(Sender: TObject);
+    procedure adsDocumentBodiesAfterDelete(DataSet: TDataSet);
+    procedure adsDocumentBodiesAfterPost(DataSet: TDataSet);
+    procedure cbSelectClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -247,6 +253,7 @@ type
     procedure RecalcDocument;
     procedure RecalcPosition;
     procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure WaybillDrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure WaybillKeyPress(Sender: TObject; var Key: Char);
     procedure WaybillCellClick(Column: TColumnEh);
     //procedure FieldOnChange(Sender: TField);
@@ -291,6 +298,7 @@ type
     procedure CreateLegenPanel;
     procedure FillNDSFilter();
     procedure AddNDSFilter();
+    function  GetNDSFilter(): String;
     procedure ReadSettings();
 
     function GetMarkupValue(afValue : Currency; individualMarkup : TFloatField) : Currency;
@@ -303,6 +311,11 @@ type
     procedure SetOrderGrid;
     procedure UpdateMatchOrderTimer;
     procedure UpdateRequestCertificates;
+    function GetPrintedDocumentLineCount() : Integer;
+    procedure SetPrintedOnDocumentLines(value : Boolean);
+    procedure UpdateSelectState();
+    function GetDocumentLineCount(ndsFilter,
+      additionFilter: String): Integer;
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -359,6 +372,7 @@ begin
   inherited ShowForm;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     SetButtonPositions;
+    UpdateSelectState();
     Self.OnResize := OnResizeForm;
   end;
 end;
@@ -445,6 +459,7 @@ begin
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
     dbgDocumentBodies.OnCellClick := WaybillCellClick;
+    dbgDocumentBodies.OnDrawColumnCell := WaybillDrawColumnCell;
     dbgDocumentBodies.ReadOnly := True;
 
     if adsDocumentHeadersCreatedByUser.Value then begin
@@ -485,7 +500,7 @@ begin
       if adsDocumentHeadersCreatedByUser.Value then
         column.OnUpdateData := ProductUpdateData;
 }        
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Printed', 'Печатать', dbgDocumentBodies.Canvas.TextWidth('Печатать'), False);
+      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Printed', '    Печатать', dbgDocumentBodies.Canvas.TextWidth('Печатать'), False);
       column.Checkboxes := True;
       column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Номер сертификата', 0, not adsDocumentHeadersCreatedByUser.Value);
       column.Visible := False;
@@ -562,6 +577,7 @@ begin
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
     dbgDocumentBodies.OnCellClick := nil;
+    dbgDocumentBodies.OnDrawColumnCell := nil;
     dbgDocumentBodies.Options := dbgDocumentBodies.Options - [dgEditing];
     dbgDocumentBodies.AutoFitColWidths := False;
     dbgDocumentBodies.ReadOnly := True;
@@ -2170,12 +2186,12 @@ begin
 end;
 
 procedure TDocumentBodiesForm.AddNDSFilter;
+var
+  filter : String;
 begin
-  if cbNDS.ItemIndex > 0 then
-    if NDSNullValue = cbNDS.Items[cbNDS.ItemIndex] then
-      adsDocumentBodies.AddWhere('dbodies.NDS is null')
-    else
-      adsDocumentBodies.AddWhere('dbodies.NDS = ' + cbNDS.Items[cbNDS.ItemIndex]);
+  filter := GetNDSFilter();
+  if Length(filter) > 0 then
+    adsDocumentBodies.AddWhere(filter);
 end;
 
 procedure TDocumentBodiesForm.ForceRecalcDocument(DocumentId: Int64);
@@ -2439,6 +2455,7 @@ procedure TDocumentBodiesForm.adsDocumentBodiesAfterOpen(
   DataSet: TDataSet);
 begin
   UpdateMatchOrderTimer;
+  UpdateSelectState;
 end;
 
 procedure TDocumentBodiesForm.tmRunRequestCertificateTimer(
@@ -2463,6 +2480,128 @@ begin
     requestCount := 0;
   end;
   sbRequestCertificates.Enabled := requestCount > 0;
+end;
+
+procedure TDocumentBodiesForm.UpdateSelectState;
+var
+  filter : String;
+  allLinesCount,
+  printedLinesCount : Integer;
+begin
+  if adsDocumentHeadersDocumentType.Value = 1 then begin
+    if Self.Visible then begin
+      cbSelect.Visible := adsDocumentBodies.RecordCount > 0;
+
+      TCheckBoxEx(cbSelect).ClicksDisabled := True;
+      try
+        if adsDocumentBodies.RecordCount = 0 then
+          cbSelect.State := cbUnchecked
+        else begin
+          printedLinesCount := GetPrintedDocumentLineCount();
+          if printedLinesCount = 0 then
+            cbSelect.State := cbUnchecked
+          else if printedLinesCount = adsDocumentBodies.RecordCount then
+            cbSelect.State := cbChecked
+          else
+            cbSelect.State := cbGrayed;
+        end;
+      finally
+        TCheckBoxEx(cbSelect).ClicksDisabled := False;
+      end;
+    end;
+  end;
+end;
+
+procedure TDocumentBodiesForm.WaybillDrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumnEh;
+  State: TGridDrawState);
+var
+  rowHeigth : Integer;
+begin
+  if (Column.Field = adsDocumentBodiesPrinted) and (DataCol = 1) then begin
+    rowHeigth := Rect.Bottom - Rect.Top;
+    cbSelect.Left := dbgDocumentBodies.Left + Rect.Left + 1;
+    cbSelect.Top := dbgDocumentBodies.Top + (rowHeigth - cbSelect.Height) div 2;
+  end;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesAfterDelete(
+  DataSet: TDataSet);
+begin
+  UpdateSelectState;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesAfterPost(
+  DataSet: TDataSet);
+begin
+  UpdateSelectState;
+end;
+
+procedure TDocumentBodiesForm.cbSelectClick(Sender: TObject);
+begin
+  inherited;
+  dbgDocumentBodies.SetFocus();
+  SetPrintedOnDocumentLines(cbSelect.Checked);
+end;
+
+function TDocumentBodiesForm.GetNDSFilter: String;
+begin
+  Result := '';
+  if cbNDS.ItemIndex > 0 then
+    if NDSNullValue = cbNDS.Items[cbNDS.ItemIndex] then
+      Result := 'dbodies.NDS is null'
+    else
+      Result := 'dbodies.NDS = ' + cbNDS.Items[cbNDS.ItemIndex];
+end;
+
+function TDocumentBodiesForm.GetDocumentLineCount(ndsFilter,
+  additionFilter: String): Integer;
+begin
+  Result := 0;
+end;
+
+function TDocumentBodiesForm.GetPrintedDocumentLineCount: Integer;
+var
+  LastId : Int64;
+begin
+  Result := 0;
+  adsDocumentBodies.DisableControls;
+  try
+    LastId := adsDocumentBodiesId.Value;
+    adsDocumentBodies.First;
+    while not adsDocumentBodies.Eof do begin
+      if adsDocumentBodiesPrinted.Value then
+        Inc(Result);
+      adsDocumentBodies.Next;
+    end;
+
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+  finally
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.SetPrintedOnDocumentLines(value: Boolean);
+var
+  LastId : Int64;
+begin
+  adsDocumentBodies.DisableControls;
+  try
+    LastId := adsDocumentBodiesId.Value;
+    adsDocumentBodies.First;
+    while not adsDocumentBodies.Eof do begin
+      adsDocumentBodies.Edit;
+      adsDocumentBodiesPrinted.Value := value;
+      adsDocumentBodies.Post;
+      adsDocumentBodies.Next;
+    end;
+
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+  finally
+    adsDocumentBodies.EnableControls;
+  end;
 end;
 
 end.

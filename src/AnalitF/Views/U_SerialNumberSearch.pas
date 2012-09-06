@@ -206,8 +206,6 @@ begin
   NeedFirstOnDataSet := False;
   InternalSearchText := '';
   BM := TBitmap.Create;
-
-  SetClear;
 end;
 
 procedure TSerialNumberSearchForm.FormDestroy(Sender: TObject);
