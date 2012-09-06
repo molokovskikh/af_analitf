@@ -489,7 +489,8 @@ begin
 +'    `REGIONCODE` , '
 +'    `SUPPORTPHONE` , '
 +'    `CONTACTINFO` , '
-+'    `OPERATIVEINFO`  ';
++'    `OPERATIVEINFO`,  '
++'    `Address`  ';
 end;
 
 function TRegionalDataTable.GetCreateSQL(DatabasePrefix: String): String;
@@ -501,6 +502,7 @@ begin
 +'    `SUPPORTPHONE` varchar(20) default null     , '
 +'    `CONTACTINFO` text                          , '
 +'    `OPERATIVEINFO` text                        , '
++'    `Address` varchar(255) default null         , '
 +'    primary key (`FIRMCODE`,`REGIONCODE`)       , '
 +'    key `FK_REGIONALDATA_FIRMCODE` (`FIRMCODE`) , '
 +'    key `FK_REGIONALDATA_REGIONCODE` (`REGIONCODE`) '

@@ -65,6 +65,8 @@ type
     stManagerMail: TStaticText;
     pFullName: TPanel;
     dbtFullName: TDBText;
+    adsPricesAddress: TStringField;
+    DBMemoAddress: TDBMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -280,6 +282,10 @@ procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
 begin
   inherited;
   //Реализация взята отсюда: http://www.autoaf.ru/faq_delphi.htm
+  if DBMemoAddress.Lines.Count > 0 then
+    SetScrolls(DBMemoAddress)
+  else
+    DBMemoAddress.ScrollBars := ssNone;
   if DBMemoContact.Lines.Count > 0 then
     SetScrolls(DBMemoContact)
   else

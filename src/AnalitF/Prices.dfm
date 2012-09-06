@@ -310,9 +310,9 @@ inherited PricesForm: TPricesForm
           end
           object DBMemoContact: TDBMemo
             Left = 0
-            Top = 16
+            Top = 50
             Width = 252
-            Height = 104
+            Height = 70
             Align = alClient
             BevelInner = bvNone
             BevelOuter = bvSpace
@@ -325,6 +325,24 @@ inherited PricesForm: TPricesForm
             ReadOnly = True
             ScrollBars = ssVertical
             TabOrder = 0
+          end
+          object DBMemoAddress: TDBMemo
+            Left = 0
+            Top = 16
+            Width = 252
+            Height = 34
+            Align = alTop
+            BevelInner = bvNone
+            BevelOuter = bvSpace
+            BevelKind = bkSoft
+            BevelWidth = 4
+            BorderStyle = bsNone
+            Color = clBtnFace
+            DataField = 'Address'
+            DataSource = dsPrices
+            ReadOnly = True
+            ScrollBars = ssVertical
+            TabOrder = 1
           end
         end
         object pOperativInfo: TPanel
@@ -492,6 +510,7 @@ inherited PricesForm: TPricesForm
       '  rd.SupportPhone, '
       '  rd.ContactInfo, '
       '  rd.OperativeInfo, '
+      '  rd.Address, '
       '  prd.InJob, '
       
         '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
@@ -588,6 +607,7 @@ inherited PricesForm: TPricesForm
       '  rd.SupportPhone, '
       '  rd.ContactInfo, '
       '  rd.OperativeInfo, '
+      '  rd.Address, '
       '  prd.InJob, '
       
         '  pricesshow.UniversalDatePrice - interval :TimeZoneBias minute ' +
@@ -790,6 +810,10 @@ inherited PricesForm: TPricesForm
       FieldName = 'sumbycurrentweek'
       ReadOnly = True
       DisplayFormat = '0.00;;'#39#39
+    end
+    object adsPricesAddress: TStringField
+      FieldName = 'Address'
+      Size = 255
     end
   end
 end
