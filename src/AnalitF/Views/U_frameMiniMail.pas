@@ -132,10 +132,14 @@ type
     pAttachments : TPanel;
     pAttachmentHeaders : TPanel;
     pRequestAttachments : TPanel;
+    lSubject : TLabel;
     dbtSubject: TDBText;
+    lSender : TLabel;
     dbtSupplierName: TDBText;
     dbtLogTime: TDBText;
+    gbBody : TGroupBox;
     dbmBody : TDBMemo;
+    gbMailAttachemts : TGroupBox;
     dbgMailAttachemts : TToughDBGrid;
 
     constructor Create(AOwner: TComponent); override;
@@ -310,10 +314,17 @@ begin
   pAttachmentHeaders.Align := alTop;
   pAttachmentHeaders.ControlStyle := pAttachmentHeaders.ControlStyle - [csParentBackground] + [csOpaque];
 
+  lSubject := TLabel.Create(Self);
+  lSubject.Parent := pAttachmentHeaders;
+  lSubject.Left := 5;
+  lSubject.Top := 5;
+  lSubject.Caption := 'Тема:';
+  lSubject.Font.Style := lSubject.Font.Style + [fsBold];
+
   dbtSubject := TDBText.Create(Self);
   dbtSubject.Name := 'dbtSubject';
   dbtSubject.Parent := pAttachmentHeaders;
-  dbtSubject.Left := 5;
+  dbtSubject.Left := lSubject.Left + lSubject.Width + 5;
   dbtSubject.Top := 5;
   dbtSubject.Width := pAttachmentHeaders.Width - 16;
   dbtSubject.Anchors := dbtSubject.Anchors + [akRight];
@@ -321,10 +332,16 @@ begin
   dbtSubject.DataSource := dsMails;
   dbtSubject.DataField := fSubject.FieldName;
 
+  lSender := TLabel.Create(Self);
+  lSender.Parent := pAttachmentHeaders;
+  lSender.Left := 5;
+  lSender.Top := dbtSubject.Top + dbtSubject.Height + 3;
+  lSender.Caption := 'От Кого:';
+
   dbtSupplierName := TDBText.Create(Self);
   dbtSupplierName.Name := 'dbtSupplierName';
   dbtSupplierName.Parent := pAttachmentHeaders;
-  dbtSupplierName.Left := 5;
+  dbtSupplierName.Left := lSender.Left + lSender.Width + 5;
   dbtSupplierName.Top := dbtSubject.Top + dbtSubject.Height + 3;
   dbtSupplierName.Width := FCanvas.TextWidth('Это длинное имя поставщика');
   dbtSupplierName.DataSource := dsMails;
@@ -359,15 +376,21 @@ begin
   sbRequestAttachments.Top := 8;
   sbRequestAttachments.OnClick := sbRequestAttachmentsClick;
 
-  pAttachments.Height := pAttachmentHeaders.Height + 60 + pRequestAttachments.Height;
+  pAttachments.Height := pAttachmentHeaders.Height + 100 + pRequestAttachments.Height;
+
+  gbMailAttachemts := TGroupBox.Create(Self);
+  gbMailAttachemts.Parent := pAttachments;
+  gbMailAttachemts.Caption := ' Файлы-вложения к письму: ';
+  gbMailAttachemts.Align := alClient;
+  gbMailAttachemts.ControlStyle := gbMailAttachemts.ControlStyle - [csParentBackground] + [csOpaque];
 
   dbgMailAttachemts := TToughDBGrid.Create(Self);
-  dbgMailAttachemts.Parent := pAttachments;
+  dbgMailAttachemts.Parent := gbMailAttachemts;
   dbgMailAttachemts.Align := alClient;
 
   dbgMailAttachemts.AllowedOperations := [alopUpdateEh];
 
-  pAttachments.Height := pAttachmentHeaders.Height + TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts) * 4;
+  pAttachments.Height := pAttachmentHeaders.Height + TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts) * 20 + pRequestAttachments.Height;
 
   TDBGridHelper.SetDefaultSettingsToGrid(dbgMailAttachemts);
 
@@ -385,8 +408,14 @@ begin
 
   dbgMailAttachemts.DataSource := dsAttachments;
 
+  gbBody := TGroupBox.Create(Self);
+  gbBody.Parent := pMailBody;
+  gbBody.Caption := ' Содержимое письма: ';
+  gbBody.Align := alClient;
+  gbBody.ControlStyle := gbBody.ControlStyle - [csParentBackground] + [csOpaque];
+
   dbmBody := TDBMemo.Create(Self);
-  dbmBody.Parent := pMailBody;
+  dbmBody.Parent := gbBody;
   dbmBody.Align := alClient;
   dbmBody.ReadOnly := True;
   dbmBody.Color := clBtnFace;
@@ -428,14 +457,14 @@ begin
   if Assigned(dbtLogTime) and Assigned(pAttachmentHeaders) then
     dbtLogTime.Left := pAttachmentHeaders.Width - 16 - dbtLogTime.Width;
   if Assigned(dbgMailAttachemts) and Assigned(mdAttachments) then begin
-    minHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts)*4;
+    minHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts)*3;
     maxHeight := pMailBody.Height div 4;
-    needHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts) * (mdAttachments.RecordCount + 2);
+    needHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgMailAttachemts) * (mdAttachments.RecordCount + 3);
     if needHeight > maxHeight then
       needHeight := maxHeight;
     if needHeight < minHeight then
       needHeight := minHeight;
-    pAttachments.Height := pAttachmentHeaders.Height + needHeight;
+    pAttachments.Height := pAttachmentHeaders.Height + pRequestAttachments.Height + needHeight;
   end;
 end;
 
