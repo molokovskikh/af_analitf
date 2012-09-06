@@ -123,10 +123,10 @@ function TArchiveHelper.GetArchivedSize: Int64;
 begin
   if DirectoryExists(GetAFTempDir() + TempSendDir) then
     if not ClearDir(GetAFTempDir() + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
+      RaiseLastOSErrorWithMessage('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   if not CreateDir(GetAFTempDir() + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
+    RaiseLastOSErrorWithMessage('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   //Формируем список файлов
   CopyingFiles;

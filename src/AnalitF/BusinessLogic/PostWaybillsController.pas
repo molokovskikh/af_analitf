@@ -273,10 +273,10 @@ var
 begin
   if DirectoryExists(GetAFTempDir() + TempSendDir) then
     if not ClearDir(GetAFTempDir() + TempSendDir, True) then
-      raise Exception.Create('Ќе получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
+      RaiseLastOSErrorWithMessage('Ќе получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   if not CreateDir(GetAFTempDir() + TempSendDir) then
-    raise Exception.Create('Ќе получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
+    RaiseLastOSErrorWithMessage('Ќе получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   slLetter := TStringList.Create;
   try
