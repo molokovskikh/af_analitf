@@ -366,6 +366,8 @@ begin
           //удаляем изменения в настройках прайс-листов
           DM.adcUpdate.SQL.Text := 'truncate pricesregionaldataup';
           DM.adcUpdate.Execute;
+          DM.adtParams.FieldByName('UPDATEDATETIME').Clear;
+          DM.adtParams.FieldByName('LASTDATETIME').Clear;
           DM.adtParams.FieldByName('StoredUserId').AsString := dbeHTTPName.Field.AsString;
         end;
         if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then

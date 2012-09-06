@@ -442,12 +442,17 @@ end;
 procedure TMainForm.actConfigExecute(Sender: TObject);
 var
   OldExep : TExceptionEvent;
+  configChanges : TConfigChanges;
 begin
   DM.InsertUserActionLog(uaShowConfig);
   OldExep := Application.OnException;
   try
     Application.OnException := OnAppEx;
-    ShowConfig;
+    configChanges := ShowConfig;
+    if (configChanges * [ccHTTPName]) <> [] then begin
+      SetUpdateDateTime;
+      SetOrdersInfo;
+    end;
   finally
     Application.OnException := OldExep;
   end;
