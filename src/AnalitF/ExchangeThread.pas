@@ -80,6 +80,7 @@ private
   AbsentPriceCodeSL : TStringList;
   DocumentBodyIdsSL : TStringList;
   AttachmentIdsSL : TStringList;
+  MissingProductIdsSL : TStringList;
   ASaveGridMask : String;
   CostSessionKey : String;
   URL : String;
@@ -164,6 +165,7 @@ private
   procedure CheckNewMDB;
   procedure CheckNewFRF;
   procedure GetAbsentPriceCode;
+  procedure GetMissingProductIds;
 
   procedure GetCertificateRequests();
   procedure GetAttachmentRequests();
@@ -676,6 +678,8 @@ begin
       FreeAndNil(DocumentBodyIdsSL);
     if Assigned(AttachmentIdsSL) then
       FreeAndNil(AttachmentIdsSL);
+    if Assigned(MissingProductIdsSL) then
+      FreeAndNil(MissingProductIdsSL);
     //Если не производим кумулятивное обновление, то проверяем наличие синонимов
     if ([eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs = [])
        and (not (eaGetFullData in ExchangeForm.ExchangeActs))
@@ -693,6 +697,15 @@ begin
       if Assigned(AttachmentIdsSL) and (AttachmentIdsSL.Count > 0) then
         requestAttachs := True;
     end;
+
+    if ([eaGetWaybills, eaSendWaybills] * ExchangeForm.ExchangeActs = [])
+      and (not (eaGetFullData in ExchangeForm.ExchangeActs))
+      and not NeedProcessBatch
+      and not waybillsWithCertificate
+      and not (eaRequestAttachments in ExchangeForm.ExchangeActs) then begin
+      GetMissingProductIds();
+    end;
+
 
     if (BatchFileName <> '') and NeedProcessBatch then
       batchFileContent := GetEncodedBatchFileContent;
@@ -782,6 +795,15 @@ begin
       else
         AddPostParam('AttachmentIds', '0');
 
+      if Assigned(MissingProductIdsSL) and (MissingProductIdsSL.Count > 0) then begin
+        for I := 0 to MissingProductIdsSL.Count-1 do begin
+          AddPostParam('MissingProductIds', MissingProductIdsSL[i]);
+        end;
+      end
+      else begin
+        AddPostParam('MissingProductIds', '0');
+      end;
+
     finally
       LibVersions.Free;
     end;
@@ -798,7 +820,7 @@ begin
         end
         else begin
           processAsync := True;
-          Res := SOAP.Invoke( 'GetUserDataWithAttachmentsAsync', FPostParams);
+          Res := SOAP.Invoke( 'GetUserDataWithMissingProductsAsync', FPostParams);
         end;
     end;
     { проверяем отсутствие ошибки при удаленном запросе }
@@ -2552,6 +2574,8 @@ begin
     DocumentBodyIdsSL.Free;
   if Assigned(AttachmentIdsSL) then
     AttachmentIdsSL.Free;
+  if Assigned(MissingProductIdsSL) then
+    MissingProductIdsSL.Free;
   if Assigned(ChildThreads) then
     try ChildThreads.Free; except end;
   inherited;
@@ -4668,6 +4692,46 @@ begin
     InternalExecute;
   finally
     FGS.Free;
+  end;
+end;
+
+procedure TExchangeThread.GetMissingProductIds;
+var
+  absentQuery : TMyQuery;
+begin
+  try
+
+    absentQuery := TMyQuery.Create(nil);
+    absentQuery.Connection := DM.MainConnection;
+    try
+      absentQuery.SQL.Text := '' +
+      'select distinct Core.ProductID ' +
+      ' from Core  ' +
+      '    left join Products p on p.ProductId = Core.ProductId ' +
+      '    left join Catalogs c on c.FullCode = p.CatalogId ' +
+      ' where ' +
+      '    Core.ProductId > 0 ' +
+      '    and (p.ProductId is null or c.FullCode is null)';
+
+      absentQuery.Open;
+      try
+        if absentQuery.RecordCount > 0 then begin
+          MissingProductIdsSL := TStringList.Create;
+          while not absentQuery.Eof do begin
+            MissingProductIdsSL.Add(absentQuery.FieldByName('ProductId').AsString);
+            absentQuery.Next;
+          end;
+        end;
+      finally
+        absentQuery.Close;
+      end;
+    finally
+      absentQuery.Free;
+    end;
+
+  except
+    on E : Exception do
+      WriteExchangeLog('GetMissingProductIds.Error', E.Message);
   end;
 end;
 
