@@ -453,6 +453,7 @@ type
     procedure SweepDB;
     function GetDisplayColors : Integer;
     function TCPPresent : Boolean;
+    function AutoUpdateFailed() : Boolean;
     function NeedCommitExchange : Boolean;
     procedure SetNeedCommitExchange();
     procedure SetServerUpdateId(AServerUpdateId : String);
@@ -1281,6 +1282,13 @@ var
 begin
   if GetDisplayColors < 16 then
     LogExitError('Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.', Integer(ecColor));
+
+  if AutoUpdateFailed() then
+    AProc.MessageBox(
+      'Внимание! Получение новой версии завершилось неудачно, возможна потеря данных.'#13#10 +
+      'Добавьте папку с программой АналитФАРМАЦИЯ в исключения антивируса и повторите попытку.'#13#10 +
+      'При повторении ошибок, пожалуйста, обратитесь в службу технической поддержки АК Инфорум для получения инструкций',
+      MB_ICONWARNING or MB_OK);
 
   if not TCPPresent then
     LogExitError('Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.', Integer(ecTCPNotExists));
@@ -6247,6 +6255,20 @@ begin
 +'    `postedorderlists`.`PRODUCTID`;';
   adcUpdate.Execute;
   WriteExchangeLog('Exchange', 'запонили средние цены по продуктам: ' + IntToStr(adcUpdate.RowsAffected));
+end;
+
+function TDM.AutoUpdateFailed: Boolean;
+var
+  currentBuildNumber,
+  prevBuildNumber : Word;
+begin
+  Result := DirectoryExists(RootFolder() + SDirIn + '\' + SDirExe);
+
+  if not Result then begin
+    currentBuildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + ExeName);
+    prevBuildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+    Result := currentBuildNumber = prevBuildNumber;
+  end;
 end;
 
 initialization
