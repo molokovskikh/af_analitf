@@ -369,6 +369,8 @@ type
       CheckedTables : TRepairedObjects = [];
       startUp : Boolean = False);
 
+    procedure SimpleRepareTable(connection : TCustomMyConnection; table : TDatabaseTable);
+
     procedure RepairTableFromBackup(backupDir : String = '');
 
     function CheckObjects(connection : TCustomMyConnection) : TRepairedObjects;
@@ -1837,6 +1839,36 @@ begin
         else
           raise;
     end;
+  end;
+end;
+
+procedure TDatabaseController.SimpleRepareTable(
+  connection: TCustomMyConnection; table: TDatabaseTable);
+var
+  MyServerControl : TMyServerControl;
+begin
+  MyServerControl := TMyServerControl.Create(nil);
+  try
+    MyServerControl.Connection := connection;
+    MyServerControl.TableNames := WorkSchema + '.' + table.Name;
+
+    MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+    if ParseMethodResuls(MyServerControl, table.LogObjectName) then
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Восстановление объекта %s успешно завершено.', [table.LogObjectName]))
+    else
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Восстановление объекта %s завершилось с ошибкой!', [table.LogObjectName]));
+
+    MyServerControl.OptimizeTable();
+    if ParseMethodResuls(MyServerControl, table.LogObjectName) then
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Оптимизация объекта %s успешно завершена.', [table.LogObjectName]))
+    else
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Оптимизация объекта %s завершилась с ошибкой!', [table.LogObjectName]));
+  finally
+    MyServerControl.Free;
   end;
 end;
 

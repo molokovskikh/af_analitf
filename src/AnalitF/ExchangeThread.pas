@@ -4334,26 +4334,40 @@ end;
 procedure TExchangeThread.ExportUserLogs(exportFileName, limitCondition: String);
 var
   MySqlPathToBackup : String;
+  success : Boolean;
+  errorCount : Integer;
 begin
-  MySqlPathToBackup := StringReplace(exportFileName, '\', '/', [rfReplaceAll]);
-  try
-    DBProc.UpdateValue(
-      DM.MainConnection,
-      Format(
-        'select LogTime, UserActionId, Context from analitf.useractionlogs %s INTO OUTFILE ''%s'';',
-        [
-         limitCondition,
-         MySqlPathToBackup
-        ]
-      ),
-      [],
-      []);
-  except
-    on E : Exception do begin
-      WriteExchangeLog('ExportUserLogs', 'Во время экспорта логов возникла ошибка: ' + ExceptionToString(E));
-      raise;
+  success := False;
+  errorCount := 0;
+  repeat
+    MySqlPathToBackup := StringReplace(exportFileName, '\', '/', [rfReplaceAll]);
+    if FileExists(exportFileName) then
+      OSDeleteFile(exportFileName, False);
+    try
+      DBProc.UpdateValue(
+        DM.MainConnection,
+        Format(
+          'select LogTime, UserActionId, Context from analitf.useractionlogs %s INTO OUTFILE ''%s'';',
+          [
+           limitCondition,
+           MySqlPathToBackup
+          ]
+        ),
+        [],
+        []);
+      success := True;
+    except
+      on E : Exception do begin
+        WriteExchangeLog('ExportUserLogs', 'Во время экспорта логов возникла ошибка: ' + ExceptionToString(E));
+        if errorCount = 0 then begin
+          DatabaseController.SimpleRepareTable(DM.MainConnection, TDatabaseTable(DatabaseController.FindById(doiUserActionLogs)));
+          Inc(errorCount);
+        end
+        else
+          raise;
+      end;
     end;
-  end;
+  until success;
 end;
 
 function TExchangeThread.GetEncodedUserLogsFileContent(
