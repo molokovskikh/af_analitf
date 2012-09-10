@@ -26,7 +26,8 @@ uses
   SupplierController,
   DayOfWeekHelper,
   UserActions,
-  GlobalParams;
+  GlobalParams,
+  DownloadAppFiles;
 
 {
 Криптование
@@ -42,7 +43,7 @@ const
   //Строка для шифрации паролей
   PassPassW = 'sh' + #90 + 'kjw' + #10 + 'h';
   //Список критических библиотек
-  CriticalLibraryHashes : array[0..17] of array[0..4] of string =
+  CriticalLibraryHashes : array[0..15] of array[0..4] of string =
   (
       ('dbrtl70.bpl', '0650B08C', '583E1038', '5F35A236', '6DD703FA'),
       ('designide70.bpl', 'F16F1849', 'E4827C1D', 'C4FD04B9', '968D63F9'),
@@ -60,9 +61,7 @@ const
 //      ('vclie70.bpl', '463BB658', '6C74C812', '33C92380', 'CAC85ED6'),
       ('vcljpg70.bpl', '334355C1', '34EDB2AE', '88BC6505', '9AB7B17E'),
       ('vclsmp70.bpl', 'D7B49DA9', '80884F53', 'C3D78E1E', '853B02E4'),
-      ('vclx70.bpl', 'E12C66FF', 'D510C787', '31D5400E', 'DDECD8C8'),
-      ('libeay32.dll', '791361C0', '65BF50F4', '309A59E3', '27DBC261'),
-      ('ssleay32.dll', '6E56CDE5', 'CA285535', '3FEDAFE7', 'CABB4B58')
+      ('vclx70.bpl', 'E12C66FF', 'D510C787', '31D5400E', 'DDECD8C8')
   );
 
 type
@@ -331,7 +330,6 @@ type
     function GetCatalogsCount : Integer;
     procedure LoadSelectedPrices;
     function CheckCriticalLibrary : Boolean;
-    function GetFileHash(AFileName : String) : String;
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
     //Обновления UIN в базе данных в случае обновления версии программы
@@ -1293,11 +1291,7 @@ begin
   if not TCPPresent then
     LogExitError('Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.', Integer(ecTCPNotExists));
 
-  if not LoadSevenZipDLL then
-    LogExitError('Не найдена библиотека 7-zip32.dll, необходимая для работы программы.', Integer(ecSevenZip));
-
-  if not IdSSLOpenSSLHeaders.Load then
-    LogExitError('Не найдены библиотеки libeay32.dll и ssleay32.dll, необходимые для работы программы.', Integer(ecSSLOpen));
+  LoadSevenZipDLL();
 
   DM.MainConnection.Open;
   try
@@ -1360,7 +1354,7 @@ begin
     end;
   end;
 
-  FNeedUpdateByCheckHashes := not CheckCriticalLibrary;
+  FNeedUpdateByCheckHashes := not CheckCriticalLibrary or DownloadAppFilesHelper.ProcessCheckDownload();
   if FNeedUpdateByCheckHashes then
     AProc.MessageBox( 'Ошибка проверки подлинности компонент программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
@@ -1926,26 +1920,6 @@ begin
       Result := False;
       exit;
     end;
-  end;
-end;
-
-function TDM.GetFileHash(AFileName: String): String;
-var
-  md5 : TIdHashMessageDigest5;
-  fs : TFileStream;
-begin
-  md5 := TIdHashMessageDigest5.Create;
-  try
-
-    fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
-    try
-      Result := md5.HashStreamAsHex(fs);
-    finally
-      fs.Free;
-    end;
-
-  finally
-    md5.Free;
   end;
 end;
 

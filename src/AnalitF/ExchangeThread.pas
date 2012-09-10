@@ -18,7 +18,8 @@ uses
   DayOfWeekHelper,
   GlobalParams,
   DBGridHelper,
-  GlobalSettingParams;
+  GlobalSettingParams,
+  DownloadAppFiles;
 
 type
 
@@ -92,6 +93,7 @@ private
   UpdateId : String;
 
   HostFileName, LocalFileName: string;
+  exchangeFileCaption : String;
 
   //Список дочерних ниток
   ChildThreads : TObjectList;
@@ -146,6 +148,7 @@ private
   procedure ExportUserLogs(exportFileName, limitCondition : String);
   function  GetEncodedUserLogsFileContent(exportFileName: String) : String;
   procedure DoExchange;
+  procedure ProcessExchangeFile;
   procedure DoSendLetter;
   procedure DoSendSomeOrders;
   procedure DoSendWaybills;
@@ -208,6 +211,9 @@ private
   procedure ProcessImportData;
   function RestoreDb : Boolean;
   procedure FreeMySqlLibOnRestore;
+
+  procedure DowloadAppFiles();
+  procedure ProcessDownloadAppFile(downloadFile : TDownloadAppFile);
 protected
   procedure Execute; override;
 public
@@ -279,6 +285,9 @@ begin
         HTTPConnect;
         TotalProgress := 10;
         Synchronize( SetTotalProgress);
+
+        if DownloadAppFilesHelper.NeedDownload() then
+          DowloadAppFiles();
 
         if FUserMessageParams.NeedConfirm then
           ConfirmUserMessage;
@@ -942,143 +951,14 @@ begin
 end;
 
 procedure TExchangeThread.DoExchange;
-const
-  FReconnectCount = 10;
-var
-  ErrorCount : Integer;
-  PostSuccess : Boolean;
-  StartFilePosition,
-  Speed : Int64;
-  DownSecs : Double;
-  StartDownTime,
-  EndDownTime : TDateTime;
 begin
   //загрузка прайс-листа
   if ( [eaGetPrice, eaGetWaybills, eaSendWaybills, eaPostOrderBatch, eaGetHistoryOrders, eaRequestAttachments] * ExchangeForm.ExchangeActs <> [])
   then begin
-//    Tracer.TR('DoExchange', 'Загрузка данных');
-    SetStatusText('Загрузка данных');
-    if not NewZip then
-    begin
-      if SysUtils.FileExists( LocalFileName) then
-        FileStream := TFileStream.Create( LocalFileName, fmOpenReadWrite)
-      else
-        FileStream := TFileStream.Create( LocalFileName, fmCreate);
-      if FileStream.Size > 1024 then
-        FileStream.Seek( -1024, soFromEnd)
-      else
-        FileStream.Seek( 0, soFromEnd);
-    end
-    else
-      FileStream := TFileStream.Create( LocalFileName, fmCreate);
+    exchangeFileCaption := 'данных';
 
-    try
-      if AnsiStartsText('https', HostFileName) then
-        HostFileName := StringReplace(HostFileName, 'https', 'http', [rfIgnoreCase]);
-      ExchangeForm.HTTP.Disconnect;
-    except
-    end;
+    ProcessExchangeFile();
 
-    try
-      ExchangeForm.HTTP.OnWork := HTTPWork;
-      ExchangeForm.HTTP.Request.BasicAuthentication := True;
-
-      Progress := 0;
-      Synchronize( SetProgress );
-
-      StartDownTime := Now();
-      StartFilePosition := FileStream.Position;
-      try
-
-        ErrorCount := 0;
-        PostSuccess := False;
-        repeat
-          try
-
-            if FileStream.Size > 1024 then
-              FileStream.Seek( -1024, soFromEnd)
-            else
-              FileStream.Seek( 0, soFromEnd);
-
-            StartDownPosition := FileStream.Position;
-            LastPacketTime := Now();
-
-            ExchangeForm.HTTP.Get( AddRangeStartToURL(HostFileName, FileStream.Position),
-              FileStream);
-            WriteExchangeLog('Exchange', 'Recieve file : ' + IntToStr(FileStream.Size));
-            PostSuccess := True;
-
-          except
-            on E : EIdCouldNotBindSocket do begin
-              if (ErrorCount < FReconnectCount) then begin
-                try
-                  ExchangeForm.HTTP.Disconnect;
-                except
-                end;
-                Inc(ErrorCount);
-                Sleep(1000);
-              end
-              else
-                raise;
-            end;
-            on E : EIdConnClosedGracefully do begin
-              if (ErrorCount < FReconnectCount) then begin
-                try
-                  ExchangeForm.HTTP.Disconnect;
-                except
-                end;
-                Inc(ErrorCount);
-                Sleep(500);
-              end
-              else
-                raise;
-            end;
-            on E : EIdSocketError do begin
-              if (ErrorCount < FReconnectCount) and
-                ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
-                  or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
-              then begin
-                try
-                  ExchangeForm.HTTP.Disconnect;
-                except
-                end;
-                Inc(ErrorCount);
-                Sleep(500);
-              end
-              else
-                raise;
-            end;
-          end;
-        until (PostSuccess);
-
-      finally
-        ExchangeForm.HTTP.OnWork := nil;
-        try
-          EndDownTime := Now();
-          Speed := FileStream.Size - StartFilePosition;
-          DownSecs := (EndDownTime - StartDownTime) * SecsPerDay;
-          if DownSecs >= 1 then
-            Speed := Round(Speed / DownSecs)
-          else
-            Speed := Round(Speed * DownSecs);
-          WriteExchangeLog('Exchange', 'Скорость загрузки файла: ' + FormatSpeedSize(Speed));
-        except
-          on CalcException : Exception do begin
-            WriteExchangeLog('DoExchange', 'Ошибка при вычислении скорости: ' + CalcException.Message);
-          end;
-        end;
-
-      end;
-
-      Synchronize( ExchangeForm.CheckStop);
-    finally
-      try
-        ExchangeForm.HTTP.Disconnect;
-      except
-      end;
-
-      FileStream.Free;
-    end;
     if GetNetworkSettings.IsNetworkVersion then
       OSMoveFile(LocalFileName,
         RootFolder() + SDirIn + '\' + ExtractFileName(LocalFileName));
@@ -2727,7 +2607,7 @@ begin
 //  Tracer.TR('Main.HTTPWork', 'WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount));
 //  Tracer.TR('Main.HTTPWork', 'Request.RawHeaders : ' + inHTTP.Request.RawHeaders.Text);
 //  Tracer.TR('Main.HTTPWork', 'Response.RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
-  
+
 //  Writeln( ExchangeForm.LogFile, 'Main.HTTPWork   WorkMode : ' + IntToStr(Integer(AWorkMode)) + '  WorkCount : ' + IntToStr(AWorkCount) + '  RawHeaders : ' + inHTTP.Response.RawHeaders.Text);
 
   if inHTTP.Response.RawHeaders.IndexOfName('INFileSize') > -1 then
@@ -2767,7 +2647,7 @@ begin
     begin
       Progress := ProgressPosition;
       Synchronize( SetProgress );
-      StatusText := 'Загрузка данных   (' +
+      StatusText := 'Загрузка ' + exchangeFileCaption + '   (' +
         FloatToStrF( Current, ffFixed, 10, 2) + ' ' + CSuffix + ' / ' +
         FloatToStrF( Total, ffFixed, 10, 2) + ' ' + TSuffix + ')';
       Synchronize( SetDownStatus );
@@ -4746,6 +4626,201 @@ begin
   except
     on E : Exception do
       WriteExchangeLog('GetMissingProductIds.Error', E.Message);
+  end;
+end;
+
+procedure TExchangeThread.DowloadAppFiles;
+var
+  I : Integer;
+  downloadFile : TDownloadAppFile;
+begin
+  try
+
+    for I := 0 to DownloadAppFilesHelper.CheckedFiles.Count-1 do begin
+      downloadFile := TDownloadAppFile(DownloadAppFilesHelper.CheckedFiles[i]);
+      if downloadFile.NeedDownload then begin
+        try
+          ProcessDownloadAppFile(downloadFile);
+        except
+          on E : Exception do
+            WriteExchangeLog('Exchange', 'Ошибка при загрузке файла: ' + downloadFile.FileName + #13#10 + ExceptionToString(E));
+        end;
+
+        downloadFile.Check;
+        if downloadFile.NeedDownload then begin
+          WriteExchangeLog('Exchange', 'Не получилось закачать файл: ' + downloadFile.FileName);
+          if (downloadFile.FileType = dfCritical) then
+            raise Exception.Create('Не получилось загрузить файл, необходимый для работы приложения.'#13#10 +
+              'Пожалуйста, свяжитесь со службой технической поддержки для получения инструкций.');
+        end;
+      end;
+    end;
+
+  finally
+    LoadSevenZipDLL();
+  end;
+end;
+
+procedure TExchangeThread.ProcessDownloadAppFile(
+  downloadFile: TDownloadAppFile);
+var
+  downloadUrl : String;
+begin
+  exchangeFileCaption := 'файла ' + downloadFile.FileName;
+  LocalFileName := ExePath + SDirIn + '\download.tmp';
+  NewZip := True;
+  if FileExists(LocalFileName) then
+    OSDeleteFile(LocalFileName, False);
+  downloadUrl := Format('/GetDistributionFileHandler.ashx?Version=%s&File=%s',
+    [GetLibraryVersionFromPathForExe(ExePath + ExeName),
+    StringReplace(downloadFile.FileName, '\', '%5C', [])]);
+  HostFileName := StringReplace(URL, '/code.asmx', downloadUrl, [rfIgnoreCase]);
+
+  try
+    WriteExchangeLog('Exchange', 'Началась загрузка ' + exchangeFileCaption);
+    ProcessExchangeFile();
+  finally
+    WriteExchangeLog('Exchange', 'Завершилась загрузка ' + exchangeFileCaption);
+  end;
+
+  if FileExists(LocalFileName) then
+    OSMoveFile(LocalFileName, ExePath + downloadFile.FileName);
+end;
+
+procedure TExchangeThread.ProcessExchangeFile;
+const
+  FReconnectCount = 10;
+var
+  ErrorCount : Integer;
+  PostSuccess : Boolean;
+  StartFilePosition,
+  Speed : Int64;
+  DownSecs : Double;
+  StartDownTime,
+  EndDownTime : TDateTime;
+begin
+//  Tracer.TR('DoExchange', 'Загрузка данных');
+  SetStatusText('Загрузка ' + exchangeFileCaption);
+  if not NewZip then
+  begin
+    if SysUtils.FileExists( LocalFileName) then
+      FileStream := TFileStream.Create( LocalFileName, fmOpenReadWrite)
+    else
+      FileStream := TFileStream.Create( LocalFileName, fmCreate);
+    if FileStream.Size > 1024 then
+      FileStream.Seek( -1024, soFromEnd)
+    else
+      FileStream.Seek( 0, soFromEnd);
+  end
+  else
+    FileStream := TFileStream.Create( LocalFileName, fmCreate);
+
+  try
+    if AnsiStartsText('https', HostFileName) then
+      HostFileName := StringReplace(HostFileName, 'https', 'http', [rfIgnoreCase]);
+    ExchangeForm.HTTP.Disconnect;
+  except
+  end;
+
+  try
+    ExchangeForm.HTTP.OnWork := HTTPWork;
+    ExchangeForm.HTTP.Request.BasicAuthentication := True;
+
+    Progress := 0;
+    Synchronize( SetProgress );
+
+    StartDownTime := Now();
+    StartFilePosition := FileStream.Position;
+    try
+
+      ErrorCount := 0;
+      PostSuccess := False;
+      repeat
+        try
+
+          if FileStream.Size > 1024 then
+            FileStream.Seek( -1024, soFromEnd)
+          else
+            FileStream.Seek( 0, soFromEnd);
+
+          StartDownPosition := FileStream.Position;
+          LastPacketTime := Now();
+
+          ExchangeForm.HTTP.Get( AddRangeStartToURL(HostFileName, FileStream.Position),
+            FileStream);
+          WriteExchangeLog('Exchange', 'Recieve file : ' + IntToStr(FileStream.Size));
+          PostSuccess := True;
+
+        except
+          on E : EIdCouldNotBindSocket do begin
+            if (ErrorCount < FReconnectCount) then begin
+              try
+                ExchangeForm.HTTP.Disconnect;
+              except
+              end;
+              Inc(ErrorCount);
+              Sleep(1000);
+            end
+            else
+              raise;
+          end;
+          on E : EIdConnClosedGracefully do begin
+            if (ErrorCount < FReconnectCount) then begin
+              try
+                ExchangeForm.HTTP.Disconnect;
+              except
+              end;
+              Inc(ErrorCount);
+              Sleep(500);
+            end
+            else
+              raise;
+          end;
+          on E : EIdSocketError do begin
+            if (ErrorCount < FReconnectCount) and
+              ((e.LastError = Id_WSAECONNRESET) or (e.LastError = Id_WSAETIMEDOUT)
+                or (e.LastError = Id_WSAENETUNREACH) or (e.LastError = Id_WSAECONNREFUSED))
+            then begin
+              try
+                ExchangeForm.HTTP.Disconnect;
+              except
+              end;
+              Inc(ErrorCount);
+              Sleep(500);
+            end
+            else
+              raise;
+          end;
+        end;
+      until (PostSuccess);
+
+    finally
+      ExchangeForm.HTTP.OnWork := nil;
+      try
+        EndDownTime := Now();
+        Speed := FileStream.Size - StartFilePosition;
+        DownSecs := (EndDownTime - StartDownTime) * SecsPerDay;
+        if DownSecs >= 1 then
+          Speed := Round(Speed / DownSecs)
+        else
+          Speed := Round(Speed * DownSecs);
+        WriteExchangeLog('Exchange', 'Скорость загрузки файла: ' + FormatSpeedSize(Speed));
+      except
+        on CalcException : Exception do begin
+          WriteExchangeLog('DoExchange', 'Ошибка при вычислении скорости: ' + CalcException.Message);
+        end;
+      end;
+
+    end;
+
+    Synchronize( ExchangeForm.CheckStop);
+  finally
+    try
+      ExchangeForm.HTTP.Disconnect;
+    except
+    end;
+
+    FileStream.Free;
   end;
 end;
 

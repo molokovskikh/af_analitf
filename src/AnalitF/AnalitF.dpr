@@ -167,7 +167,8 @@ uses
   U_AddWaybillForm in 'Views\U_AddWaybillForm.pas' {AddWaybillForm},
   VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
   WaybillCalculation in 'BusinessLogic\WaybillCalculation.pas',
-  U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame};
+  U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame},
+  DownloadAppFiles in 'Helpers\DownloadAppFiles.pas';
 
 {$R *.RES}
 {$R Progress.RES}
