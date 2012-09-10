@@ -367,8 +367,6 @@ begin
   dtpDateFrom.Enabled := TabControl.TabIndex = 1;
   dtpDateTo.Enabled   := dtpDateFrom.Enabled;
 
-  WriteExchangeLog('Orders SysLocale.FarEast', BoolToStr(SysLocale.FarEast));
-
   dbmMessage.ReadOnly := TabControl.TabIndex = 1;
   PrintEnabled := ((TabControl.TabIndex = 0) and ((DM.SaveGridMask and PrintCurrentOrder) > 0))
                or ((TabControl.TabIndex = 1) and ((DM.SaveGridMask and PrintSendedOrder) > 0));

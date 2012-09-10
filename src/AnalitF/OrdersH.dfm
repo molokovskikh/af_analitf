@@ -1408,9 +1408,9 @@ inherited OrdersHForm: TOrdersHForm
         ' '
       'WHERE'
       '    (CurrentOrderHeads.Closed = 0)'
-      'and (PricesData.PriceCode is not null) '
-      'and (RegionalData.RegionCode is not null) '
-      'and (pricesregionaldata.PriceCode is not null)')
+        'and (((PricesData.PriceCode is not null) and (RegionalData.Regio' +
+        'nCode is not null) and (pricesregionaldata.PriceCode is not null' +
+        ')) or (CurrentOrderHeads.Frozen = 1))')
     Left = 132
     Top = 183
     ParamData = <

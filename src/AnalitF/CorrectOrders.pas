@@ -955,12 +955,11 @@ begin
     + '  CurrentOrderHeads '
     + '  inner join clients   on (clients.clientid = CurrentOrderHeads.ClientId) '
     + '  inner join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId and (CurrentOrderLists.DropReason is not null)'
-    + '  inner JOIN PricesData cpd  ON (cpd.PriceCode = CurrentOrderHeads.pricecode)'
 
     + ' '
     + 'where '
     + '    CurrentOrderHeads.Closed = 0 '
-    + 'and CurrentOrderHeads.Frozen = 0 '
+    + 'and ((CurrentOrderHeads.Frozen = 0) or (CurrentOrderHeads.Frozen = 1 and CurrentOrderHeads.ErrorReason is not null)) '
     + 'order by clients.Name, CurrentOrderHeads.PriceName, CurrentOrderLists.SynonymName, CurrentOrderLists.SynonymFirm';
   end;
 end;
