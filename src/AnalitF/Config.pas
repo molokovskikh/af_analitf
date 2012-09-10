@@ -11,7 +11,9 @@ uses
   NetworkParams,
   NetworkSettings,
   GlobalSettingParams,
-  U_ExchangeLog;
+  U_ExchangeLog,
+  DBGridHelper,
+  U_LegendHolder;
 
 type
   TConfigChange = (ccOk, ccHTTPName, ccHTTPPassword, ccHTTPHost);
@@ -94,6 +96,7 @@ type
     tshVisualization: TTabSheet;
     DBCheckBox2: TDBCheckBox;
     dbchbGroupByProducts: TDBCheckBox;
+    LegendColorDialog: TColorDialog;
     procedure btnOkClick(Sender: TObject);
     procedure itmRasCreateClick(Sender: TObject);
     procedure itmRasEditClick(Sender: TObject);
@@ -159,6 +162,7 @@ type
     procedure AddRetailMarkups;
     procedure AddBottomPanel;
     procedure AddNetworkVersionSettings();
+    procedure AddLegendsSettings();
     procedure AddLabelAndEdit(
       Parents : TWinControl;
       var nextTop: Integer;
@@ -173,6 +177,13 @@ type
       LabelCaption : String);
     procedure CreateFolders();
     procedure ChangeVisualization;
+    procedure LegendsGetCellParams(
+      Sender: TObject;
+      Column: TColumnEh;
+      AFont: TFont;
+      var Background: TColor;
+      State: TGridDrawState);
+    procedure LegendsDblClick(Sender : TObject);
   protected
     tsEditAddress : TTabSheet;
     frameEditAddress : TframeEditAddress;
@@ -232,6 +243,10 @@ type
     chbUseColorOnWaybillOrders : TCheckBox;
     
     pButton : TPanel;
+
+    tsLegendsSettings : TTabSheet;
+    dsLegends : TDataSource;
+    dbgLegends : TToughDBGrid;
    public
   end;
 
@@ -379,6 +394,7 @@ begin
         DM.adtParams.Post;
         FNetworkParams.SaveParams;
         FGlobalSettingParams.SaveParams;
+        LegendHolder.SaveChangesFromDataSet(DM.MainConnection);
       end
       else begin
         if Assigned(frameEditAddress) then
@@ -724,6 +740,9 @@ begin
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
   AddNetworkVersionSettings();
+{$ifdef DEBUG}
+  AddLegendsSettings();
+{$endif}
   ChangeVisualization();
 
   for I := 0 to PageControl.PageCount-1 do begin
@@ -1255,6 +1274,68 @@ begin
   combo.Width := Parents.Width - 20;
 
   nextTop := combo.Top + combo.Height + 10;
+end;
+
+procedure TConfigForm.AddLegendsSettings;
+begin
+  tsLegendsSettings := TTabSheet.Create(Self);
+  tsLegendsSettings.PageControl := PageControl;
+  tsLegendsSettings.PageIndex := tsWaybillFolders.PageIndex + 1;
+  tsLegendsSettings.Caption := 'Настройки легенд';
+
+  dsLegends := TDataSource.Create(Self);
+  dsLegends.DataSet := LegendHolder.GetDataSet();
+
+  dsLegends.DataSet.First;
+
+  dbgLegends := TToughDBGrid.Create(Self);
+  dbgLegends.Parent := tsLegendsSettings;
+  dbgLegends.Align := alClient;
+  TDBGridHelper.SetDefaultSettingsToGrid(dbgLegends);
+
+  TDBGridHelper.AddColumn(dbgLegends, 'Name', 'Легенда', True);
+  dbgLegends.AutoFitColWidths := True;
+
+  dbgLegends.OnGetCellParams := LegendsGetCellParams;
+  dbgLegends.OnDblClick := LegendsDblClick;
+  dbgLegends.DataSource := dsLegends;
+end;
+
+procedure TConfigForm.LegendsGetCellParams(Sender: TObject;
+  Column: TColumnEh; AFont: TFont; var Background: TColor;
+  State: TGridDrawState);
+var
+  db : TToughDBGrid;
+  applying : TLegendApplying;
+  legendColor : TColor;
+begin
+  if Sender is TToughDBGrid then begin
+    db := TToughDBGrid(Sender);
+    applying := TLegendApplying(db.DataSource.DataSet.FieldByName('LegendApplying').AsInteger);
+    legendColor := TColor(TLargeintField(db.DataSource.DataSet.FieldByName('Color')).AsLargeInt);
+    if applying = laBackground then
+      Background := legendColor
+    else
+      AFont.Color := legendColor
+  end;
+end;
+
+procedure TConfigForm.LegendsDblClick(Sender: TObject);
+var
+  color : TColor;
+  dataSet : TDataSet;
+begin
+  if (Sender is TToughDBGrid) then begin
+    dataSet := TToughDBGrid(Sender).DataSource.DataSet;
+    color := TColor(TLargeintField(dataSet.FieldByName('Color')).AsLargeInt);
+    LegendColorDialog.Color := color;
+    if LegendColorDialog.Execute then begin
+      dataSet.Edit();
+      TLargeintField(dataSet.FieldByName('Color')).AsLargeInt := LegendColorDialog.Color;
+      dataSet.Post;
+      dbgLegends.Invalidate;
+    end;
+  end;
 end;
 
 end.

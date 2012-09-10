@@ -11,10 +11,12 @@ uses
   TypInfo,
   Graphics,
   StdCtrls,
+  DB,
   U_ExchangeLog,
   GlobalParams,
-  MyAccess;
-
+  MyAccess,
+  RxMemDS,
+  DataSetHelper;
 
 type
   TLegendName = (lnVitallyImportant, lnJunk, lnAwait, lnLeader, lnNeedCorrect,
@@ -43,11 +45,14 @@ type
       aLegendHint : String);
     function GetLegendName() : String;
     procedure SetLabel(aLabel : TLabel);
+    class function GetLegendNameByValue(legendName : TLegendName) : String;
   end;
 
   TLegendHolder = class
    private
+    mdLegends : TRxMemoryData;
     procedure UpdateLegends;
+    procedure CreateMemoryData();
    public
     LegendInfos : TObjectList;
     Legends : array[TLegendName] of TColor;
@@ -56,6 +61,8 @@ type
     procedure ReadLegend(Connection : TCustomMyConnection; Legend : TLegendInfo);
     procedure SaveLegend(Connection : TCustomMyConnection; Legend : TLegendInfo);
     function  GetLegendInfo(legendName : TLegendName) : TLegendInfo;
+    function  GetDataSet() : TRxMemoryData;
+    procedure SaveChangesFromDataSet(Connection : TCustomMyConnection);
   end;
 
 var
@@ -79,7 +86,13 @@ end;
 
 function TLegendInfo.GetLegendName: String;
 begin
-  Result := GetEnumName(TypeInfo(TLegendName), Ord(Legend));
+  Result := GetLegendNameByValue(Legend);
+end;
+
+class function TLegendInfo.GetLegendNameByValue(
+  legendName: TLegendName): String;
+begin
+  Result := GetEnumName(TypeInfo(TLegendName), Ord(legendName));
 end;
 
 procedure TLegendInfo.SetLabel(aLabel: TLabel);
@@ -122,6 +135,40 @@ begin
   LegendInfos.Add(TLegendInfo.Create(lnCertificateNotFound, laBackground, clGray, 'Сертификат не был найден', 'Сертификат не был найден'));
 
   UpdateLegends;
+
+  CreateMemoryData();
+end;
+
+procedure TLegendHolder.CreateMemoryData;
+var
+  field : TField;
+begin
+  mdLegends := TRxMemoryData.Create(nil);
+
+  TDataSetHelper.AddIntegerField(mdLegends, 'Id');
+  field := TDataSetHelper.AddStringField(mdLegends, 'Name');
+  field.Size := 255;
+  TDataSetHelper.AddIntegerField(mdLegends, 'LegendApplying');
+  TDataSetHelper.AddLargeIntField(mdLegends, 'Color');
+end;
+
+function TLegendHolder.GetDataSet(): TRxMemoryData;
+var
+  I : Integer;
+  legendInfo : TLegendInfo;
+begin
+  mdLegends.Close;
+
+  mdLegends.Open;
+
+  for I := 0 to LegendInfos.Count-1 do begin
+    legendInfo := TLegendInfo(LegendInfos[i]);
+    mdLegends.AppendRecord([Integer(legendInfo.Legend), legendInfo.LegendText, Integer(legendInfo.LegendApplying), legendInfo.LegendColor]);
+  end;
+
+  mdLegends.SortOnFields('Name');
+
+  Result := mdLegends;
 end;
 
 function TLegendHolder.GetLegendInfo(legendName: TLegendName): TLegendInfo;
@@ -149,6 +196,30 @@ var
 begin
   for I := 0 to LegendInfos.Count-1 do
     ReadLegend(Connection, TLegendInfo(LegendInfos[i]));
+end;
+
+procedure TLegendHolder.SaveChangesFromDataSet(Connection : TCustomMyConnection);
+var
+  legendName : TLegendName;
+  legendInfo : TLegendInfo;
+  color : TColor;
+begin
+  mdLegends.First;
+  while not mdLegends.Eof do begin
+    legendName := TLegendName(mdLegends.FieldByName('Id').AsInteger);
+    legendInfo := GetLegendInfo(legendName);
+    if Assigned(legendInfo) then begin
+      color := TColor(TLargeintField(mdLegends.FieldByName('Color')).AsLargeInt);
+      legendInfo.LegendColor := color;
+      SaveLegend(Connection, legendInfo);
+    end
+    else
+      WriteExchangeLog('TLegendHolder.SaveChangesFromDataSet',
+        Format('Не найдена легенда %s (%d)', [
+          Integer(legendName),
+          TLegendInfo.GetLegendNameByValue(legendName)]));
+    mdLegends.Next;
+  end;
 end;
 
 procedure TLegendHolder.SaveLegend(Connection: TCustomMyConnection;

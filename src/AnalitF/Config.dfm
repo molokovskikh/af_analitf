@@ -5195,7 +5195,7 @@ object ConfigForm: TConfigForm
           Hint = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077' '#1091#1076#1072#1083#1077#1085#1085#1086#1075#1086' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1103
           Style = csDropDownList
           Anchors = [akLeft, akTop, akRight]
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 1
         end
         object dbeRasName: TDBEdit
@@ -5741,5 +5741,10 @@ object ConfigForm: TConfigForm
       Caption = '&'#1055#1077#1088#1077#1080#1084#1077#1085#1086#1074#1072#1090#1100
       OnClick = itmRasEditNameClick
     end
+  end
+  object LegendColorDialog: TColorDialog
+    Options = [cdFullOpen]
+    Left = 216
+    Top = 328
   end
 end
