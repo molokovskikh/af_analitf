@@ -127,7 +127,6 @@ type
     //—писок выбранных строк в гридах
     FSelectedRows : TStringList;
     MoveToPriceFromSend : Boolean;
-    InternalDestinationPrice : TSelectPrice;
     procedure MoveToPrice;
     procedure InternalMoveToPrice;
     procedure SetDateInterval;
@@ -1261,8 +1260,6 @@ end;
 
 procedure TOrdersHForm.OnDectinationPriceClick(Sender: TObject);
 var
-  mi : TMenuItem;
-  sp : TSelectPrice;
   Grid : TToughDBGrid;
 begin
   if TabControl.TabIndex = 0 then
@@ -1270,23 +1267,16 @@ begin
   else
     Grid := dbgSendedOrders;
 
-  mi := TMenuItem(Sender);
-  sp := TSelectPrice(mi.Tag);
-
-  if sp.PriceCode = Grid.DataSource.DataSet.FieldByName('PriceCode').AsInteger then
-    AProc.MessageBox( 'Ќельз€ переместить за€вку в тот же прайс-лист!', MB_ICONWARNING)
-  else
-  if AProc.MessageBox( 'ѕереместить выбранную за€вку в прайс-лист ' + sp.PriceName + '?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK
+  if AProc.MessageBox( 'ѕерераспределить выбранную за€вку на других поставщиков?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK
   then begin
 
     MoveToPriceFromSend := Grid = dbgSendedOrders;
-    InternalDestinationPrice := sp;
 
     Strings := TStringList.Create;
     try
       ShowSQLWaiting(
         InternalMoveToAnotherPrice,
-        'ѕеремещение за€вки в прайс ' + InternalDestinationPrice.PriceName);
+        'ѕеремещение за€вки на других поставщиков');
 
       Grid.DataSource.DataSet.DisableControls;
       try
@@ -1339,7 +1329,7 @@ begin
         AProc.MessageBox( 'ѕеремещать в прайс-лист можно только за€вки текущего адреса заказа.', MB_ICONWARNING)
       else
         if FSelectedRows.Count = 1 then
-          pmDestinationPrices.Popup(sbMoveToPrice.ClientOrigin.X + sbMoveToPrice.Width, sbMoveToPrice.ClientOrigin.Y);
+          OnDectinationPriceClick(sbMoveToPrice);
   end;
 end;
 
@@ -1365,8 +1355,8 @@ var
   begin
     with adsCore do begin
       ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
-      ParamByName( 'PriceCode').Value := InternalDestinationPrice.PriceCode;
-      ParamByName( 'RegionCode').Value := InternalDestinationPrice.RegionCode;
+      ParamByName( 'PriceCode').Value := orderItem.Offer.PriceCode;
+      ParamByName( 'RegionCode').Value := orderItem.Offer.RegionCode;
       ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
 
       RestoreSQL;
@@ -1402,32 +1392,34 @@ begin
         { открываем сохраненный заказ }
         movedOrder := GetOrderFormMove();
         try
-          offers := TDBMapping.GetOffersByPriceAndProductId(
+          offers := TDBMapping.GetOffersByCurrentOrdersAndProductId(
             DM.MainConnection,
-            InternalDestinationPrice.PriceCode,
-            InternalDestinationPrice.RegionCode,
+            movedOrder.AddressId,
+            movedOrder.PriceCode,
+            movedOrder.RegionCode,
             movedOrder.GetProductIds()
             );
 
           try
             movedOrder.RestoreOrderItemsToAnotherPrice(offers);
+
+            Application.ProcessMessages;
+
+            if movedOrder.CorrectionExists() then
+              Strings.Add('   прайс-лист ' + movedOrder.PriceName);
+
+            for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
+              position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
+
+              if not VarIsNull(position.CoreId) then
+                SaveOrderItem(position);
+
+              if (not VarIsNull(position.DropReason)) then
+                Strings.Add('      ' + position.ToRestoreReport());
+            end;
+
           finally
             offers.Free;
-          end;
-
-          Application.ProcessMessages;
-          
-          if movedOrder.CorrectionExists() then
-            Strings.Add('   прайс-лист ' + movedOrder.PriceName);
-
-          for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
-            position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
-
-            if not VarIsNull(position.CoreId) then
-              SaveOrderItem(position);
-
-            if (not VarIsNull(position.DropReason)) then
-              Strings.Add('      ' + position.ToRestoreReport());
           end;
 
         finally

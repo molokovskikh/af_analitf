@@ -23,6 +23,7 @@ type
   TDBMapping = class
    private
      class function CreatePromotion(dataSet : TMyQuery) : TSupplierPromotion;
+     class function CreateOffer(dataSet : TMyQuery) : TOffer;
    public
     class function GetSqlDataSet(
       connection: TCustomMyConnection;
@@ -39,6 +40,13 @@ type
       connection : TCustomMyConnection;
       priceCode : Int64;
       regionCode : Int64;
+      productIds : TProductIds) : TObjectList;
+
+    class function GetOffersByCurrentOrdersAndProductId(
+      connection : TCustomMyConnection;
+      addressId : Int64;
+      excludePriceCode : Int64;
+      excludeRegionCode : Int64;
       productIds : TProductIds) : TObjectList;
 
     class procedure SaveOrderItem(connection : TCustomMyConnection; currentOrderItem : TCurrentOrderItem);
@@ -65,6 +73,44 @@ implementation
 uses Variants;
 
 { TDBMapping }
+
+class function TDBMapping.CreateOffer(dataSet: TMyQuery): TOffer;
+var
+  tmpQuantity : Integer;
+begin
+  Result := TOffer.Create();
+
+  Result.CoreId := dataSet['CoreId'];
+  Result.Period := VarToStr(dataSet['Period']);
+  Result.Await := dataSet.FieldByName('Await').AsBoolean;
+  Result.Junk := dataSet.FieldByName('Junk').AsBoolean;
+  Result.Code := VarToStr(dataSet['Code']);
+  Result.CodeCr := VarToStr(dataSet['CodeCr']);
+  Result.ProductId := dataSet['ProductId'];
+  Result.CodeFirmCr := dataSet['CodeFirmCr'];
+
+  Result.RawRealCost := dataSet['RealCost'];
+  Result.RawCost := dataSet['Cost'];
+  Result.RealCost := VarToCost(dataSet['RealCost'], -1);
+  Result.Cost := VarToCost(dataSet['Cost'], Result.RealCost);
+
+  Result.ProducerCost := dataSet['ProducerCost'];
+  Result.SynonymCode :=  dataSet['SynonymCode'];
+  Result.SynonymFirmCrCode :=  dataSet['SynonymFirmCrCode'];
+
+  Result.Quantity := Null;
+  tmpQuantity := StrToIntDef(dataSet.FieldByName('Quantity').AsString, -1);
+  if tmpQuantity > 0 then
+    Result.Quantity := tmpQuantity;
+
+  Result.RequestRatio := dataSet['RequestRatio'];
+  Result.OrderCost := dataSet['OrderCost'];
+  Result.MinOrderCount := dataSet['MinOrderCount'];
+
+  Result.PriceCode := dataSet['PriceCode'];
+  Result.RegionCode := dataSet['RegionCode'];
+  Result.PriceName := VarToStr(dataSet['PriceName']);
+end;
 
 class function TDBMapping.CreatePromotion(
   dataSet: TMyQuery): TSupplierPromotion;
@@ -310,6 +356,115 @@ begin
   end;
 end;
 
+class function TDBMapping.GetOffersByCurrentOrdersAndProductId(
+  connection: TCustomMyConnection;
+  addressId : Int64;
+  excludePriceCode : Int64;
+  excludeRegionCode : Int64;
+  productIds: TProductIds): TObjectList;
+var
+  dataSet : TMyQuery;
+  offer : TOffer;
+  //Order by ProductId and Cost
+  productSql : String;
+  i : Integer;
+begin
+  productSql := '';
+  if (Length(productIds) > 0) then begin
+    if Length(productIds) = 1 then
+      productSql := IntToStr(productIds[0])
+    else begin
+      productSql := IntToStr(productIds[0]);
+      for I := Low(productIds)+1 to High(productIds) do begin
+        productSql := productSql + ', ' + IntToStr(productIds[i]);
+      end;
+    end;
+  end;
+
+  dataSet := GetSqlDataSet(
+    connection,
+    ''
++' select '
++'   Core.CoreId, '
++'   Core.Period, '
++'   Core.Await, '
++'   Core.Junk, '
++'   Core.Code, '
++'   Core.CodeCr, '
++'   synonyms.SynonymName, '
++'   synonymFirmCr.SynonymName as SynonymFirm, '
++'   Core.ProductId, '
++'   Core.CodeFirmCr, '
++'   Core.Cost as RealCost, '
++'                  if(dop.OtherDelay is null, '
++'                      Core.Cost, '
++'                      if(Core.VitallyImportant || ifnull(catalogs.VitallyImportant, 0), '
++'                          cast(Core.Cost * (1 + dop.VitallyImportantDelay/100) as decimal(18, 2)), '
++'                          cast(Core.Cost * (1 + dop.OtherDelay/100) as decimal(18, 2)) '
++'                       ) '
++'                  ) '
++'      as Cost, '
++'   Core.ProducerCost, '
++'   Core.SynonymCode, '
++'   Core.SynonymFirmCrCode, '
++'   Core.Quantity, '
++'   Core.RequestRatio, '
++'   Core.OrderCost, '
++'   Core.MinOrderCount, '
++'   Core.PriceCode, '
++'   Core.RegionCode, '
++'   pricesdata.PriceName '
++' from '
++'   CurrentOrderHeads '
++'   inner join core on core.PriceCode = CurrentOrderHeads.PriceCode and Core.RegionCode = CurrentOrderHeads.RegionCode '
++'   inner join pricesdata on Core.PriceCode = pricesdata.PriceCode '
++'   left join products on products.ProductId = Core.ProductId '
++'   left join catalogs on catalogs.FullCode = products.CatalogId '
++'   left join DelayOfPayments dop on (dop.PriceCode = pricesdata.PriceCode) and '
++'             (dop.DayOfWeek = :DayOfWeek) '
++'   left join synonyms on synonyms.SynonymCode = Core.SynonymCode '
++'   left join synonymFirmCr on synonymFirmCr.synonymFirmCrCode = Core.synonymFirmCrCode '
++' where '
++'    (CurrentOrderHeads.ClientId = :AddressId) '
++'   and (CurrentOrderHeads.Closed = 0) '
++'   and (CurrentOrderHeads.Frozen = 0) '
++'   and (CurrentOrderHeads.Send = 1) '
++'   and ((CurrentOrderHeads.PriceCode <> :excludePriceCode) or (CurrentOrderHeads.RegionCode <> :excludeRegionCode)) '
++ IfThen(Length(productSql) > 0, ' and Core.ProductId in ( ' + productSql + ') ')
++ '  order by Core.ProductId, Cost asc'
+    ,
+    ['AddressId', 'DayOfWeek', 'excludePriceCode', 'excludeRegionCode'],
+    [addressId, TDayOfWeekHelper.DayOfWeek(), excludePriceCode, excludeRegionCode]);
+
+  Result := TObjectList.Create();
+  try
+    try
+      while not dataSet.Eof do begin
+        offer := CreateOffer(dataSet);
+
+        if offer.RealCost > -0.001 then
+          Result.Add(offer)
+        else
+          try
+            WriteExchangeLog(
+              'TDBMapping.GetOffersByCurrentOrdersAndProductId',
+              'Предложение было отброшено, т.к. цена поставщика имеет некорректное значение: '#13#10 +
+              offer.ToString());
+          finally
+            offer.Free;
+          end;
+
+        dataSet.Next;
+      end;
+    finally
+      dataSet.Free;
+    end;
+  except
+    Result.Free;
+    raise;
+  end;
+end;
+
 class function TDBMapping.GetOffersByPriceAndProductId(
   connection: TCustomMyConnection; priceCode, regionCode: Int64;
   productIds: TProductIds): TObjectList;
@@ -319,7 +474,6 @@ var
   //Order by ProductId and Cost
   productSql : String;
   i : Integer;
-  tmpQuantity : Integer;
 begin
   productSql := '';
   if (Length(productIds) > 0) then begin
@@ -387,38 +541,7 @@ begin
   try
     try
       while not dataSet.Eof do begin
-        offer := TOffer.Create();
-
-        offer.CoreId := dataSet['CoreId'];
-        offer.Period := VarToStr(dataSet['Period']);
-        offer.Await := dataSet.FieldByName('Await').AsBoolean;
-        offer.Junk := dataSet.FieldByName('Junk').AsBoolean;
-        offer.Code := VarToStr(dataSet['Code']);
-        offer.CodeCr := VarToStr(dataSet['CodeCr']);
-        offer.ProductId := dataSet['ProductId'];
-        offer.CodeFirmCr := dataSet['CodeFirmCr'];
-
-        offer.RawRealCost := dataSet['RealCost'];
-        offer.RawCost := dataSet['Cost'];
-        offer.RealCost := VarToCost(dataSet['RealCost'], -1);
-        offer.Cost := VarToCost(dataSet['Cost'], offer.RealCost);
-
-        offer.ProducerCost := dataSet['ProducerCost'];
-        offer.SynonymCode :=  dataSet['SynonymCode'];
-        offer.SynonymFirmCrCode :=  dataSet['SynonymFirmCrCode'];
-
-        offer.Quantity := Null;
-        tmpQuantity := StrToIntDef(dataSet.FieldByName('Quantity').AsString, -1);
-        if tmpQuantity > 0 then
-          offer.Quantity := tmpQuantity;
-
-        offer.RequestRatio := dataSet['RequestRatio'];
-        offer.OrderCost := dataSet['OrderCost'];
-        offer.MinOrderCount := dataSet['MinOrderCount'];
-
-        offer.PriceCode := dataSet['PriceCode'];
-        offer.RegionCode := dataSet['RegionCode'];
-        offer.PriceName := VarToStr(dataSet['PriceName']);
+        offer := CreateOffer(dataSet);
 
         if offer.RealCost > -0.001 then
           Result.Add(offer)
@@ -599,7 +722,6 @@ var
   dataSet : TMyQuery;
   promotion : TSupplierPromotion;
 begin
-  Result := nil;
   dataSet := GetSqlDataSetPromotionsByNameId(connection, nameId);
 
   Result := TObjectList.Create();
@@ -625,7 +747,6 @@ var
   dataSet : TMyQuery;
   promotion : TSupplierPromotion;
 begin
-  Result := nil;
   dataSet := GetSqlDataSet(
     connection,
 ' select ' +
