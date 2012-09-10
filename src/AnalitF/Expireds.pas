@@ -8,7 +8,8 @@ uses
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls,
   DBProc, Constant,
   GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  U_LegendHolder;
 
 type
   TExpiredsForm = class(TChildForm)
@@ -283,11 +284,11 @@ procedure TExpiredsForm.dbgExpiredsGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if adsExpiredsVITALLYIMPORTANT.AsBoolean then
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
   //уцененный товар
   if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCOST))
-  then Background := JUNK_CLR;
+  then Background := LegendHolder.Legends[lnJunk];
 end;
 
 procedure TExpiredsForm.actFlipCoreExecute(Sender: TObject);

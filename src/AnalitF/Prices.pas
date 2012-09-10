@@ -7,7 +7,8 @@ uses
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
   Menus, GridsEh, MemDS,
-  DBAccess, MyAccess, CoreFirm;
+  DBAccess, MyAccess, CoreFirm,
+  U_LegendHolder;
 
 type
   TPricesForm = class(TChildForm)
@@ -274,7 +275,7 @@ procedure TPricesForm.dbgPricesGetCellParams(Sender: TObject;
 begin
   inherited;
   if not adsPricesEnabled.AsBoolean and ( Column.Field = adsPricesPriceName) then
-    BackGround := clBtnFace;
+    BackGround := LegendHolder.Legends[lnNonMain];
   if adsPricesPositions.AsInteger > 0 then AFont.Style := [fsBold];
 end;
 

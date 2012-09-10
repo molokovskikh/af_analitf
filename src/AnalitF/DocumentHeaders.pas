@@ -21,11 +21,9 @@ uses
   Printers,
   PrnDbgeh,
   PrViewEh,
-  PrntsEh;
+  PrntsEh,
+  U_LegendHolder;
 
-const
-  clCreatedByUser = clMoneyGreen;
-    
 type
   TExportDocRow = class
    public
@@ -111,6 +109,7 @@ type
     pButtons : TPanel;
 
     procedure OnChangeFilterSuppliers;
+    procedure UpdateGridOnLegend(Sender : TObject);
   protected
     FDocumentBodiesForm: TDocumentBodiesForm;
     FSerialNumberSearchForm: TSerialNumberSearchForm;
@@ -177,12 +176,9 @@ begin
   legeng := TframeBaseLegend.Create(Self);
   legeng.Parent := Self;
   legeng.Align := alBottom;
+  legeng.UpdateGrids := UpdateGridOnLegend;
 
-  legeng.CreateLegendLabel(
-    'Накладная, созданная пользователем',
-    clCreatedByUser,
-    clWindowText,
-    'Накладная, созданная пользователем');
+  legeng.CreateLegendLabel(lnCreatedByUserWaybill);
 
   inherited;
 
@@ -690,6 +686,11 @@ begin
   end;
 end;
 
+procedure TDocumentHeaderForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgHeaders.Invalidate;
+end;
+
 { TExportDocRow }
 
 constructor TExportDocRow.Create;
@@ -849,7 +850,7 @@ procedure TDocumentHeaderForm.dbgHeadersGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if adsDocumentHeadersCreatedByUser.Value then
-    Background := clCreatedByUser;
+    Background := LegendHolder.Legends[lnCreatedByUserWaybill];
 end;
 
 procedure TDocumentHeaderForm.sbAddClick(Sender: TObject);

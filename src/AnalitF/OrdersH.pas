@@ -18,7 +18,9 @@ uses
   U_DBMapping,
   U_CurrentOrderHead,
   U_CurrentOrderItem,
-  DayOfWeekHelper, StrHlder;
+  DayOfWeekHelper,
+  StrHlder,
+  U_LegendHolder;
 
 const
   postedOrdersLimit = 1000;
@@ -155,6 +157,7 @@ type
     procedure SavePeriodToGlobals;
     function GetPostedCriteria() : String;
     procedure CheckPostedOrdersCountToShow(postedCriteria : String); 
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -201,6 +204,8 @@ begin
   frameOrderHeadLegend.Parent := pGrid;
   frameOrderHeadLegend.Align := alBottom;
   frameOrderHeadLegend.lNeedCorrect.Visible := FUseCorrectOrders;
+  frameOrderHeadLegend.UpdateGrids := UpdateGridOnLegend;
+
   NeedFirstOnDataSet := False;
   FSelectedRows := TStringList.Create;
   PrintEnabled := False;
@@ -528,26 +533,26 @@ procedure TOrdersHForm.dbgCurrentOrdersGetCellParams(Sender: TObject;
 begin
   if TabControl.TabIndex = 0 then begin
     if (Column.Field = adsOrdersHFormMINREQ) and not adsOrdersHFormMINREQ.IsNull and (adsOrdersHFormMINREQ.AsInteger > adsOrdersHFormSumOrder.AsCurrency) then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnMinReq];
 
     if adsOrdersHFormFrozen.Value then
-      Background := FrozenOrderColor;
+      Background := LegendHolder.Legends[lnFrozenOrder];
 
     if FUseCorrectOrders then begin
       if (adsOrdersHFormDifferentCostCount.Value > 0)
          and (Column.Field = adsOrdersHFormSumOrder)
       then
-        Background := NeedCorrectColor;
+        Background := LegendHolder.Legends[lnNeedCorrect];
 
       if (adsOrdersHFormDifferentQuantityCount.Value > 0)
          and (Column.Field = adsOrdersHFormPositions)
       then
-        Background := NeedCorrectColor;
+        Background := LegendHolder.Legends[lnNeedCorrect];
 
       if (adsOrdersHFormNotExistsCount.Value > 0)
          and (Column.Field = adsOrdersHFormPriceName)
       then
-        Background := NeedCorrectColor;
+        Background := LegendHolder.Legends[lnNeedCorrect];
     end;
   end;
 
@@ -1542,6 +1547,14 @@ begin
     and not TDBMemo(Sender).ReadOnly
     and Assigned(TDBMemo(Sender).Field) then
     SoftEdit(TDBMemo(Sender).Field.DataSet);
+end;
+
+procedure TOrdersHForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  if TabControl.TabIndex = 0 then
+    dbgCurrentOrders.Invalidate
+  else
+    dbgSendedOrders.Invalidate;
 end;
 
 initialization

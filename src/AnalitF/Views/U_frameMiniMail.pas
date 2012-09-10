@@ -26,7 +26,8 @@ uses
   Constant,
   Exchange,
   U_ExchangeLog,
-  U_frameBaseLegend;
+  U_frameBaseLegend,
+  U_LegendHolder;
 
 type
   TframeMiniMail = class(TFrame)
@@ -88,6 +89,7 @@ type
     procedure mdMailsAfterScroll(DataSet: TDataSet);
 
     procedure UpdateRequestStatus;
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
     dsMails : TDataSource;
@@ -264,10 +266,13 @@ begin
   legend := TframeBaseLegend.Create(Self);
   legend.Parent := pHeaders;
   legend.Align := alBottom;
-  legend.CreateLegendLabel('Новое письмо', GroupColor,  clWindowText, 'Новое письмо');
-  legend.CreateLegendLabel('Важное письмо', clLime,  clWindowText, 'Важное письмо');
+  legend.CreateLegendLabel(lnNewLetter);
+  legend.CreateLegendLabel(lnImportantMail);
   vipLabel := legend.CreateLegendLabel('Спец. отправитель', legend.Color,  clWindowText, 'Спец. отправитель');
-  vipLabel.Font.Style := vipLabel.Font.Style + [fsBold];
+  vipLabel.Font.Style := vipLabel.Font.Style + [fsBold
+  ];
+  legend.UpdateGrids := UpdateGridOnLegend;
+
 
   dbgMailHeaders := TToughDBGrid.Create(Self);
   dbgMailHeaders.Parent := pHeaders;
@@ -551,9 +556,9 @@ begin
   if fIsVIPMail.Value then
     AFont.Style := AFont.Style + [fsBold];
   if fIsNewMail.Value then
-    Background := GroupColor;
+    Background := LegendHolder.Legends[lnNewLetter];
   if fIsImportantMail.Value then
-    Background := clLime;
+    Background := LegendHolder.Legends[lnImportantMail];
 end;
 
 procedure TframeMiniMail.dbgMailHeadersKeyDown(Sender: TObject;
@@ -854,6 +859,11 @@ begin
   tmrUpdateStatus.Enabled := False;
   SoftPost( mdAttachments );
   UpdateRequestStatus;
+end;
+
+procedure TframeMiniMail.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgMailHeaders.Invalidate;
 end;
 
 end.

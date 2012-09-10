@@ -18,7 +18,8 @@ uses
   VitallyImportantMarkupsParams,
   ContextMenuGrid, StrHlder,
   UserActions,
-  WaybillCalculation;
+  WaybillCalculation,
+  U_LegendHolder;
 
 const
   NDSNullValue = 'нет значений';
@@ -316,6 +317,7 @@ type
     procedure UpdateSelectState();
     function GetDocumentLineCount(ndsFilter,
       additionFilter: String): Integer;
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -821,12 +823,12 @@ begin
     if AnsiMatchText(Column.Field.FieldName,
         ['RetailMarkup', 'RetailPrice', 'RetailSumm', 'RealMarkup'])
     then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnRetailPrice];
 
   if (retailMarkupField.Value > maxRetailMarkupField.Value)
      and AnsiMatchText(Column.Field.FieldName, ['RetailMarkup', 'MaxRetailMarkup'])
   then
-    Background := clRed;
+    Background := LegendHolder.Legends[lnRetailMarkup];
 
   if not retailMarkupField.IsNull and (Column.Field = adsDocumentBodiesSupplierPriceMarkup) then
   begin
@@ -842,17 +844,17 @@ begin
         maxSupplierMarkup := GetMarkupValue(DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value), adsDocumentBodiesCatalogMaxSupplierMarkup);
     end;
     if adsDocumentBodiesSupplierPriceMarkup.Value > maxSupplierMarkup then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnSupplierPriceMarkup];
   end;
 
   if (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     or (not adsDocumentBodiesVitallyImportant.IsNull and adsDocumentBodiesVitallyImportant.AsBoolean)
     or (adsDocumentBodiesVitallyImportant.IsNull and adsDocumentBodiesVitallyImportantByUser.Value)
   then begin
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     if (Column.Field = NDSField) and not NDSField.IsNull and (NDSField.Value <> 10)
     then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnNotSetNDS];
   end;
 
   if (Column.Field = adsDocumentBodiesCertificateId) then begin
@@ -863,7 +865,7 @@ begin
     else
       //Сертификат не был получен, но запрос был
       if not adsDocumentBodiesDocumentBodyId.IsNull then
-        Background := clGray;
+        Background := LegendHolder.Legends[lnCertificateNotFound];
   end;
 end;
 
@@ -2083,35 +2085,17 @@ begin
   legeng.Parent := pGrid;
   legeng.Align := alBottom;
 
-  lLegend := legeng.CreateLegendLabel(
-    'НДС: не установлен для ЖНВЛС',
-    clRed,
-    clWindowText,
-    'Для ЖНВЛС-позиции некорректно установлено значение НДС');
+  lLegend := legeng.CreateLegendLabel(lnNotSetNDS);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Торговая наценка оптовика: превышение наценки оптовика',
-    clRed,
-    clWindowText,
-    'Значение торговой наценки оптовика превышает максимальную наценку оптового звена');
+  lLegend := legeng.CreateLegendLabel(lnSupplierPriceMarkup);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Розничная наценка: превышение максимальной розничной наценки',
-    clRed,
-    clWindowText,
-    'Значение розничной наценки превышает максимальную розничной наценку');
+  lLegend := legeng.CreateLegendLabel(lnRetailMarkup);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Розничная цена: не рассчитана',
-    clRed,
-    clWindowText,
-    'Значения розничной наценки, розничной цены, розничной суммы и реальной наценки не были вычислены автоматически');
+  lLegend := legeng.CreateLegendLabel(lnRetailPrice);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Сертификат не был найден',
-    clGray,
-    clWindowText,
-    'Сертификат не был найден');
+  lLegend := legeng.CreateLegendLabel(lnCertificateNotFound);
+
+  legeng.UpdateGrids := UpdateGridOnLegend;
 end;
 
 procedure TDocumentBodiesForm.adsDocumentBodiesPrintedChange(
@@ -2602,6 +2586,11 @@ begin
   finally
     adsDocumentBodies.EnableControls;
   end;
+end;
+
+procedure TDocumentBodiesForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgDocumentBodies.Invalidate;
 end;
 
 end.

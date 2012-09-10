@@ -11,7 +11,8 @@ uses
   U_CurrentOrderItem,
   NetworkParams,
   DayOfWeekHelper,
-  GlobalSettingParams;
+  GlobalSettingParams,
+  U_LegendHolder;
 
 type
   TCorrectResult = (crClose, crEditOrders, crForceSended, crGetPrice);
@@ -551,21 +552,21 @@ begin
     else
     begin
       if adsCoreVITALLYIMPORTANT.AsBoolean then
-        AFont.Color := VITALLYIMPORTANT_CLR;
+        AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
       if not adsCorePriceEnabled.AsBoolean then
       begin
         //если фирма недоступна, изменяем цвет
         if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
-          then Background := clBtnFace;
+          then Background := LegendHolder.Legends[lnNonMain];
       end;
 
       //если уцененный товар, изменяем цвет
       if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCOST)) then
-        Background := JUNK_CLR;
+        Background := LegendHolder.Legends[lnJunk];
       //ожидаемый товар выделяем зеленым
       if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
-        Background := AWAIT_CLR;
+        Background := LegendHolder.Legends[lnAwait];
     end;
   end;
 end;

@@ -28,7 +28,8 @@ uses
   AddressController,
   U_frameFilterAddresses,
   DayOfWeekHelper,
-  LU_TDataExportAsXls;
+  LU_TDataExportAsXls,
+  U_LegendHolder;
 
 
 type
@@ -618,10 +619,10 @@ begin
   newLeft := CreateLegendLabel(lAnotherError, 'Не заказанные', RGB(255, 128, 128), newLeft, newTop);
   //CreateLegendLabel(lNotParsed, 'Не найденные в ассортиментном прайс-листе', RGB(245, 233, 160), newLeft, newTop);
 
-  newLeft := CreateLegendLabel(lJunkLegend, 'Уцененные препараты', JUNK_CLR, newLeft, newTop);
-  newLeft := CreateLegendLabel(lAwaitLegend, 'Ожидаемая позиция', AWAIT_CLR, newLeft, newTop);
+  newLeft := CreateLegendLabel(lJunkLegend, 'Уцененные препараты', LegendHolder.Legends[lnJunk], newLeft, newTop);
+  newLeft := CreateLegendLabel(lAwaitLegend, 'Ожидаемая позиция', LegendHolder.Legends[lnAwait], newLeft, newTop);
   newLeft := CreateLegendLabel(lVitallyImportantLegend, 'Жизненно важные препараты', clWindow, newLeft, newTop);
-  lVitallyImportantLegend.Font.Color := VITALLYIMPORTANT_CLR;
+  lVitallyImportantLegend.Font.Color := LegendHolder.Legends[lnVitallyImportant];
 end;
 
 procedure TOrderBatchForm.CreateNonVisualComponent;
@@ -1561,14 +1562,14 @@ procedure TOrderBatchForm.CoreGetCellParams(Sender: TObject;
 begin
   if not adsCore.IsEmpty then begin
     if adsCore.FieldByName('vitallyimportant').AsBoolean then
-      AFont.Color := VITALLYIMPORTANT_CLR;
+      AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     //если уцененный товар, изменяем цвет
     if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.Field.FieldName, ['Period', 'Cost']) > -1)
     then
-      Background := JUNK_CLR;
+      Background := LegendHolder.Legends[lnJunk];
     //ожидаемый товар выделяем зеленым
     if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
-      Background := AWAIT_CLR;
+      Background := LegendHolder.Legends[lnAwait];
   end;
 end;
 

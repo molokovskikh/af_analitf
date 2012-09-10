@@ -168,7 +168,8 @@ uses
   VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
   WaybillCalculation in 'BusinessLogic\WaybillCalculation.pas',
   U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame},
-  DownloadAppFiles in 'Helpers\DownloadAppFiles.pas';
+  DownloadAppFiles in 'Helpers\DownloadAppFiles.pas',
+  U_LegendHolder in 'BusinessLogic\U_LegendHolder.pas';
 
 {$R *.RES}
 {$R Progress.RES}

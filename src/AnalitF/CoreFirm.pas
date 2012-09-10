@@ -13,7 +13,8 @@ uses
   U_framePromotion,
   DayOfWeekHelper,
   DBViewHelper,
-  U_frameAutoComment;
+  U_frameAutoComment,
+  U_LegendHolder;
 
 type
   TFilter=( filAll, filOrder, filLeader, filProducer);
@@ -186,6 +187,7 @@ type
     procedure AddKeyToSearch(Key : Char);
     procedure DeleteOrder;
     procedure PrepareDetailPromotions;
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     frameLegend : TframeLegend;
     frameAutoComment : TframeAutoComment;
@@ -227,6 +229,7 @@ begin
   inherited;
 
   frameLegend := TframeLegend.CreateFrame(Self, True, True, False);
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
   TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
@@ -608,7 +611,7 @@ procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if adsCoreVITALLYIMPORTANT.AsBoolean then
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
   //данный прайс-лидер
   if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and ( adsCoreLeaderRegionCode.AsLargeInt = RegionCode))
@@ -618,16 +621,16 @@ begin
     and
     (( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME))
   then
-    Background := LEADER_CLR;
+    Background := LegendHolder.Legends[lnLeader];
   //уцененный товар
   if (adsCoreJunk.AsBoolean) and (( Column.Field = adsCorePERIOD) or
-    ( Column.Field = adsCoreCOST)) then Background := JUNK_CLR;
+    ( Column.Field = adsCoreCOST)) then Background := LegendHolder.Legends[lnJunk];
   //ожидаемый товар выделяем зеленым
   if (adsCoreAwait.AsBoolean) and ( Column.Field = adsCoreSYNONYMNAME) then
-    Background := AWAIT_CLR;
+    Background := LegendHolder.Legends[lnAwait];
 
   if (adsCoreBuyingMatrixType.Value = 1) then
-    Background := BuyingBanColor;
+    Background := LegendHolder.Legends[lnBuyingBan];
 end;
 
 procedure TCoreFirmForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
@@ -1018,6 +1021,11 @@ begin
   else
     SetFilter(filProducer);
   dbgCore.SetFocus;
+end;
+
+procedure TCoreFirmForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgCore.Invalidate;
 end;
 
 end.

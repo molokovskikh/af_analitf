@@ -5,21 +5,11 @@ interface
 uses Graphics;
 
 const
-  JUNK_CLR = $00669ef2;
-  AWAIT_CLR = $00b8ff71;
-  LEADER_CLR = clMoneyGreen;
   REG_CLR = clLime;
-  NeedCorrectColor = clMedGray;
   COMPACT_PERIOD = 3;
-  VITALLYIMPORTANT_CLR = clGreen;
-  FrozenOrderColor = clSilver;
-  BuyingBanColor = clRed;
 
   //цвет для пометки забракованного препарта в накладных
   RejectColor = $009EABA7; //BGR = (158, 171, 167)
-
-  //цвет для пометки забракованного препарта в накладных
-  MatchWaybillColor = $008EEEF9; //BGR = (142, 238, 249)
 
   //Цвет, которые используется для раскраски различных групп в сводном прайс-листе и в поиске в прайс-листах
   GroupColor = $00E3C1CC;//RGB = (204, 193, 227) => BGR = (227, 193, 204)

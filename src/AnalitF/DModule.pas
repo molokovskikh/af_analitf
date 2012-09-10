@@ -27,7 +27,8 @@ uses
   DayOfWeekHelper,
   UserActions,
   GlobalParams,
-  DownloadAppFiles;
+  DownloadAppFiles,
+  U_LegendHolder;
 
 {
 Криптование
@@ -1143,6 +1144,7 @@ begin
 
   MainConnection.Open;
   GlobalExclusiveParams := TExclusiveParams.Create(MainConnection);
+  LegendHolder.ReadLegends(MainConnection);
 {$ifdef DEBUG}
   WriteExchangeLog('DModule',
       Concat('UserActionLogs', #13#10,

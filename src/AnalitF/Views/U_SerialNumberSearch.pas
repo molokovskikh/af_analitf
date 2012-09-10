@@ -10,7 +10,8 @@ uses
   AlphaUtils,
   DBGridHelper,
   DBProc, DB, MemDS, DBAccess, MyAccess, Buttons,
-  UserActions;
+  UserActions,
+  U_LegendHolder;
 
 type
   TSerialNumberSearchForm = class(TChildForm)
@@ -329,7 +330,7 @@ begin
     else
       //Сертификат не был получен, но запрос был
       if not adsSerialNumberSearchId.IsNull then
-        Background := clGray;
+        Background := LegendHolder.Legends[lnCertificateNotFound];
   end;
 end;
 

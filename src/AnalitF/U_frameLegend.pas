@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
   Dialogs, StdCtrls, ExtCtrls,
   Constant,
-  U_frameBaseLegend;
+  U_frameBaseLegend,
+  U_LegendHolder;
 
 type
   TframeLegend = class(TframeBaseLegend)
@@ -34,15 +35,15 @@ constructor TframeLegend.CreateFrame(AOwner: TComponent;
   ShowVitallyImportant, ShowLeader, ShowNotBasic : Boolean);
 begin
   inherited Create(AOwner);
-  lJunkLegend := CreateLegendLabel('Уцененные препараты', JUNK_CLR, clWindowText);
-  lAwaitLegend := CreateLegendLabel('Ожидаемая позиция', AWAIT_CLR, clWindowText);
-  lBuyingBanLegend := CreateLegendLabel('Препарат запрещен к заказу', BuyingBanColor, clWindowText);;
+  lJunkLegend := CreateLegendLabel(lnJunk);
+  lAwaitLegend := CreateLegendLabel(lnAwait);
+  lBuyingBanLegend := CreateLegendLabel(lnBuyingBan);
   if ShowVitallyImportant then
-    lVitallyImportantLegend := CreateLegendLabel('Жизненно важные препараты', clWindow, VITALLYIMPORTANT_CLR);
+    lVitallyImportantLegend := CreateLegendLabel(lnVitallyImportant);
   if ShowLeader then
-    lLeaderLegend := CreateLegendLabel('Прайс-лист - лидер', LEADER_CLR, clWindowText);
+    lLeaderLegend := CreateLegendLabel(lnLeader);
   if ShowNotBasic then
-    lNotBasicLegend := CreateLegendLabel('Неосновной поставщик', clBtnFace, clWindowText);
+    lNotBasicLegend := CreateLegendLabel(lnNonMain);
 end;
 
 end.
