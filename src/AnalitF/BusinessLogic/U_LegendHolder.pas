@@ -22,9 +22,9 @@ type
   TLegendName = (lnVitallyImportant, lnJunk, lnAwait, lnLeader, lnNeedCorrect,
     lnFrozenOrder, lnMinReq, lnBuyingBan, lnMatchWaybill, lnNonMain, lnNewLetter,
     lnImportantMail,
-    //lnVIPSender,
     lnCreatedByUserWaybill, lnNotSetNDS, lnSupplierPriceMarkup,
-    lnRetailMarkup, lnRetailPrice, lnCertificateNotFound );
+    lnRetailMarkup, lnRetailPrice, lnCertificateNotFound,
+    lnSmartOrderOptimalCost, lnSmartOrderAnotherError );
 
   TLegendApplying = (laBackground, laText);
 
@@ -126,13 +126,14 @@ begin
   LegendInfos.Add(TLegendInfo.Create(lnNonMain, laBackground, clBtnFace, 'Неосновной поставщик', ''));
   LegendInfos.Add(TLegendInfo.Create(lnNewLetter, laBackground, $00E3C1CC, 'Новое письмо', 'Новое письмо'));
   LegendInfos.Add(TLegendInfo.Create(lnImportantMail, laBackground, clLime, 'Важное письмо', 'Важное письмо'));
-  //LegendInfos.Add(TLegendInfo.Create(lnVIPSender, laBackground, clLime, 'Спец. отправитель', 'Спец. отправитель'));
   LegendInfos.Add(TLegendInfo.Create(lnCreatedByUserWaybill, laBackground, clMoneyGreen, 'Накладная, созданная пользователем', 'Накладная, созданная пользователем'));
   LegendInfos.Add(TLegendInfo.Create(lnNotSetNDS, laBackground, clRed, 'НДС: не установлен для ЖНВЛС', 'Для ЖНВЛС-позиции некорректно установлено значение НДС'));
   LegendInfos.Add(TLegendInfo.Create(lnSupplierPriceMarkup, laBackground, clRed, 'Торговая наценка оптовика: превышение наценки оптовика', 'Значение торговой наценки оптовика превышает максимальную наценку оптового звена'));
   LegendInfos.Add(TLegendInfo.Create(lnRetailMarkup, laBackground, clRed, 'Розничная наценка: превышение максимальной розничной наценки', 'Значение розничной наценки превышает максимальную розничной наценку'));
   LegendInfos.Add(TLegendInfo.Create(lnRetailPrice, laBackground, clRed, 'Розничная цена: не рассчитана', 'Значения розничной наценки, розничной цены, розничной суммы и реальной наценки не были вычислены автоматически'));
   LegendInfos.Add(TLegendInfo.Create(lnCertificateNotFound, laBackground, clGray, 'Сертификат не был найден', 'Сертификат не был найден'));
+  LegendInfos.Add(TLegendInfo.Create(lnSmartOrderOptimalCost, laBackground, RGB(172, 255, 151), 'Минимальная цена', 'Минимальная цена'));
+  LegendInfos.Add(TLegendInfo.Create(lnSmartOrderAnotherError, laBackground, RGB(255, 128, 128), 'Не заказанные', 'Не заказанные'));
 
   UpdateLegends;
 

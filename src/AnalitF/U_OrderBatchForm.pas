@@ -29,7 +29,8 @@ uses
   U_frameFilterAddresses,
   DayOfWeekHelper,
   LU_TDataExportAsXls,
-  U_LegendHolder;
+  U_LegendHolder,
+  U_frameBaseLegend;
 
 
 type
@@ -110,12 +111,6 @@ type
     procedure CreateGridPanel;
     function AddServiceFields : Integer;
     procedure CreateLegends;
-    function CreateLegendLabel(
-      var legendLabel : TLabel;
-      legend : String;
-      legendColor : TColor;
-      newLeft,
-      newTop : Integer) : Integer;
     procedure BindFields;
     procedure DeleteOrder;
     procedure SetFilter(Filter: TFilterReport);
@@ -175,6 +170,8 @@ type
     procedure adsCoreBeforePost(DataSet: TDataSet);
 
     procedure AddCoreFields;
+
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
 
@@ -195,24 +192,13 @@ type
 
     pBottom : TPanel;
     pLegendAndComment : TPanel;
-    pLegend : TPanel;
     dbmComment : TDBMemo;
     dbgHistory : TToughDBGrid;
     dbgCore : TToughDBGrid;
     bevelHistory : TBevel;
     gbHistory : TGroupBox;
 
-    lOptimalCost : TLabel;
-    lErrorQuantity : TLabel;
-    lNotOffers : TLabel;
-    lNotEnoughQuantity : TLabel;
-    lAnotherError : TLabel;
-    lNotParsed : TLabel;
-
-    lJunkLegend : TLabel;
-    lAwaitLegend : TLabel;
-    lVitallyImportantLegend : TLabel;
-
+    frameLegend : TframeBaseLegend;
 
     pGrid : TPanel;
     dbgOrderBatch : TToughDBGrid;
@@ -369,13 +355,13 @@ procedure TOrderBatchForm.BatchReportGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if StatusField.IsNull or ProductIdField.IsNull then
-    Background := lAnotherError.Color
+    Background := LegendHolder.Legends[lnSmartOrderAnotherError]
   else begin
     if (StatusField.Value and Integer(osOptimalCost)) > 0 then
-      Background := lOptimalCost.Color
+      Background := LegendHolder.Legends[lnSmartOrderOptimalCost]
     else
     if (StatusField.Value and Integer(osNotOrdered)) > 0 then
-      Background := lAnotherError.Color
+      Background := LegendHolder.Legends[lnSmartOrderAnotherError]
   end;
 end;
 
@@ -410,11 +396,11 @@ begin
   pLegendAndComment.Align := alBottom;
   pLegendAndComment.Height := pBottom.Height - 20;
 
-  pLegend := TPanel.Create(Self);
-  pLegend.ControlStyle := pLegend.ControlStyle - [csParentBackground] + [csOpaque];
-  pLegend.Parent := pLegendAndComment;
-  pLegend.Align := alBottom;
-  pLegend.Height := OneLineHeight * 3;
+  frameLegend := TframeBaseLegend.Create(Self);
+  frameLegend.Parent := pLegendAndComment;
+  frameLegend.Align := alBottom;
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
+  frameLegend.Height := OneLineHeight * 3;
 
   CreateLegends;
 
@@ -447,7 +433,7 @@ begin
 
   OneLineHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgHistory);
 
-  pLegendAndComment.Height := pLegend.Height + (OneLineHeight * 6);
+  pLegendAndComment.Height := frameLegend.Height + (OneLineHeight * 6);
   pLegendAndComment.Constraints.MaxHeight := pLegendAndComment.Height;
 
   TDBGridHelper.AddColumn(dbgHistory, 'PriceName', 'Прайс-лист', Self.Canvas.TextWidth('Большое имя прайс-листа'));
@@ -584,45 +570,13 @@ begin
   TDBGridHelper.SetTitleButtonToColumns(dbgOrderBatch);
 end;
 
-function TOrderBatchForm.CreateLegendLabel(
-  var legendLabel: TLabel;
-  legend: String; legendColor: TColor; newLeft, newTop: Integer): Integer;
-begin
-  legendLabel := TLabel.Create(Self);
-  legendLabel.Parent := pLegend;
-  legendLabel.AutoSize := False;
-  legendLabel.Top := newTop;
-  legendLabel.Left := newLeft;
-  legendLabel.Caption := legend;
-  legendLabel.ParentColor := False;
-  legendLabel.Transparent := False;
-  legendLabel.Color := legendColor;
-  legendLabel.Alignment := taCenter;
-  legendLabel.Layout := tlCenter;
-  legendLabel.Width := legendLabel.Canvas.TextWidth(legend) + 20;
-  legendLabel.Height := legendLabel.Canvas.TextHeight(legend) + 10;
-  Result := legendLabel.Left + legendLabel.Width + 6;
-end;
-
 procedure TOrderBatchForm.CreateLegends;
-var
-  newLeft,
-  newTop : Integer;
 begin
-  newLeft := 8;
-  newTop := (pLegend.Height - (Self.Canvas.TextHeight('Test') + 10)) div 2;
-  newLeft := CreateLegendLabel(lOptimalCost, 'Минимальная цена', RGB(172, 255, 151), newLeft, newTop);
-  //newLeft := CreateLegendLabel(lErrorQuantity, 'Указано неверное количество', RGB(200, 203, 206), newLeft, newTop);
-  //newLeft := CreateLegendLabel(lNotOffers, 'Нет предложений', RGB(226, 180, 181), newLeft, newTop);
-  //newLeft := CreateLegendLabel(lNotEnoughQuantity, 'Нет достаточного количества', RGB(255, 190, 151), newLeft, newTop);
-  //newLeft :=
-  newLeft := CreateLegendLabel(lAnotherError, 'Не заказанные', RGB(255, 128, 128), newLeft, newTop);
-  //CreateLegendLabel(lNotParsed, 'Не найденные в ассортиментном прайс-листе', RGB(245, 233, 160), newLeft, newTop);
-
-  newLeft := CreateLegendLabel(lJunkLegend, 'Уцененные препараты', LegendHolder.Legends[lnJunk], newLeft, newTop);
-  newLeft := CreateLegendLabel(lAwaitLegend, 'Ожидаемая позиция', LegendHolder.Legends[lnAwait], newLeft, newTop);
-  newLeft := CreateLegendLabel(lVitallyImportantLegend, 'Жизненно важные препараты', clWindow, newLeft, newTop);
-  lVitallyImportantLegend.Font.Color := LegendHolder.Legends[lnVitallyImportant];
+  frameLegend.CreateLegendLabel(lnSmartOrderOptimalCost);
+  frameLegend.CreateLegendLabel(lnSmartOrderAnotherError);
+  frameLegend.CreateLegendLabel(lnJunk);
+  frameLegend.CreateLegendLabel(lnAwait);
+  frameLegend.CreateLegendLabel(lnVitallyImportant);
 end;
 
 procedure TOrderBatchForm.CreateNonVisualComponent;
@@ -1176,10 +1130,10 @@ var
   ResidualHeight : Integer;
   NewHistoryHeight : Integer;
 begin
-  AllUnresizedControl := pTop.Height + framePosition.Height + pLegend.Height;
+  AllUnresizedControl := pTop.Height + framePosition.Height + frameLegend.Height;
   ResidualHeight := Self.ClientHeight - AllUnresizedControl;
   NewHistoryHeight := ResidualHeight div 5;
-  pLegendAndComment.Height := pLegend.Height + NewHistoryHeight;
+  pLegendAndComment.Height := frameLegend.Height + NewHistoryHeight;
   pBottom.Height := pLegendAndComment.Height + ((ResidualHeight - NewHistoryHeight) div 2);
 
   gbHistory.Width := Trunc(pBottom.ClientWidth * 0.4);
@@ -1914,6 +1868,12 @@ begin
   adsCoreRetailVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'RetailVitallyImportant');
 
   adsCoreNamePromotionsCount := TDataSetHelper.AddIntegerField(adsCore, 'NamePromotionsCount');
+end;
+
+procedure TOrderBatchForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgOrderBatch.Invalidate;
+  dbgCore.Invalidate;
 end;
 
 initialization
