@@ -621,7 +621,9 @@ begin
           APreview,
           True);
         adsOrdersHForm.Next;
-      end;
+      end
+      else
+        printedReport := False;
 
       while not adsOrdersHForm.Eof and printedReport do
       begin
@@ -1281,8 +1283,6 @@ begin
       Grid.DataSource.DataSet.DisableControls;
       try
         Grid.DataSource.DataSet.Bookmark := FSelectedRows[0];
-        if not MoveToPriceFromSend then
-          Grid.DataSource.DataSet.Delete;
         Grid.DataSource.DataSet.Refresh;
       finally
         Grid.DataSource.DataSet.EnableControls;
@@ -1341,6 +1341,7 @@ var
   offers : TObjectList;
   positionIndex : Integer;
   position : TCurrentOrderItem;
+  notFoundPositionCount : Integer;
 
   procedure SetOrder( Order: Integer);
   begin
@@ -1408,16 +1409,28 @@ begin
             if movedOrder.CorrectionExists() then
               Strings.Add('   прайс-лист ' + movedOrder.PriceName);
 
+            notFoundPositionCount := 0;
             for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
               position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
 
-              if not VarIsNull(position.CoreId) then
+              if not VarIsNull(position.CoreId) then begin
                 SaveOrderItem(position);
+                if not MoveToPriceFromSend then
+                  DM.MainConnection.ExecSQL('delete from CurrentOrderLists where Id = ' + IntToStr(position.Id), []);
+              end
+              else
+                Inc(notFoundPositionCount);
 
               if (not VarIsNull(position.DropReason)) then
                 Strings.Add('      ' + position.ToRestoreReport());
             end;
 
+            //Если работает с текущим заказом и все перераспределили, то удаляем заказ
+            if not MoveToPriceFromSend and (notFoundPositionCount = 0) then
+              DM.MainConnection.ExecSQL(
+                'delete from CurrentOrderLists where OrderId = ' +IntToStr(movedOrder.OrderId) +';'#13#10 +
+                  'delete from CurrentOrderHeads where ORDERID = ' + IntToStr(movedOrder.OrderId),
+                []);
           finally
             offers.Free;
           end;
