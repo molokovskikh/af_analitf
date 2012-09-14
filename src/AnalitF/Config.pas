@@ -740,9 +740,7 @@ begin
   AddEditAddressSheet;
   AddWaybillFoldersSheet;
   AddNetworkVersionSettings();
-{$ifdef DEBUG}
   AddLegendsSettings();
-{$endif}
   ChangeVisualization();
 
   for I := 0 to PageControl.PageCount-1 do begin
