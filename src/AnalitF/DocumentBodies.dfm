@@ -813,10 +813,11 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
+        'if(dbodies.LastRejectStatusTime is null, 0, dbodies.LastRejectSt' +
+        'atusTime > :LastRequestTime) as RejectStatus,'
       'dbodies.VitallyImportantByUser'
       'from'
       '  DocumentBodies dbodies'
-      
         '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
         's.ServerId'
       '  left join products p on p.productid = dbodies.productid'
@@ -863,6 +864,8 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
+        'if(dbodies.LastRejectStatusTime is null, 0, dbodies.LastRejectSt' +
+        'atusTime > :LastRequestTime) as RejectStatus,'
       'ol.ServerOrderListId,'
       'ol.OrderId,'
       'dbodies.VitallyImportantByUser'
@@ -890,6 +893,10 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     Left = 208
     Top = 251
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'LastRequestTime'
+      end
       item
         DataType = ftUnknown
         Name = 'DocumentId'
@@ -1008,6 +1015,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentBodiesVitallyImportantByUser: TBooleanField
       FieldName = 'VitallyImportantByUser'
+    end
+    object adsDocumentBodiesRejectStatus: TLargeintField
+      FieldName = 'RejectStatus'
     end
   end
   object tmrPrintedChange: TTimer

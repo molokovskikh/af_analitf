@@ -83,6 +83,9 @@ type
     adsDocumentHeadersCreatedByUser: TBooleanField;
     sbAdd: TSpeedButton;
     adsRetailProcessed: TMyQuery;
+    gbReject: TGroupBox;
+    cbReject: TComboBox;
+    adsDocumentHeadersLastRejectStatusTime: TDateTimeField;
     procedure FormCreate(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgHeadersKeyDown(Sender: TObject; var Key: Word;
@@ -102,6 +105,7 @@ type
     procedure dbgHeadersGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
     procedure sbAddClick(Sender: TObject);
+    procedure cbRejectChange(Sender: TObject);
   private
     { Private declarations }
     legeng : TframeBaseLegend;
@@ -179,14 +183,16 @@ begin
   legeng.UpdateGrids := UpdateGridOnLegend;
 
   legeng.CreateLegendLabel(lnCreatedByUserWaybill);
+  legeng.CreateLegendLabel(lnModifiedWaybillByReject);
 
   inherited;
 
   PrintEnabled := True;
+  gbReject.Left := spDelete.Left - 5;
   frameFilterSuppliers := TframeFilterSuppliers.AddFrame(
     Self,
     pTop,
-    spDelete.Left - 5,
+    gbReject.Left + gbReject.Width,
     pTop.Height,
     OnChangeFilterSuppliers);
   tmrChangeFilterSuppliers.Enabled := False;
@@ -566,6 +572,7 @@ begin
       + #13#10' order by dh.LoadTime DESC ';
   adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' group by dh.Id '
+      + IfThen(cbReject.ItemIndex = 1, #13#10' having LastRejectStatusTime > "2012-09-01" ')
       + #13#10' order by dh.LoadTime DESC ';
 
   adsDocumentHeaders.ParamByName( 'ClientId').Value :=
@@ -851,6 +858,8 @@ procedure TDocumentHeaderForm.dbgHeadersGetCellParams(Sender: TObject;
 begin
   if adsDocumentHeadersCreatedByUser.Value then
     Background := LegendHolder.Legends[lnCreatedByUserWaybill];
+  if not adsDocumentHeadersLastRejectStatusTime.IsNull and (adsDocumentHeadersLastRejectStatusTime.Value > EncodeDate(2012, 09, 01)) then
+    Background := LegendHolder.Legends[lnModifiedWaybillByReject];
 end;
 
 procedure TDocumentHeaderForm.sbAddClick(Sender: TObject);
@@ -874,6 +883,12 @@ begin
   finally
     FreeAndNil(AddWaybillForm);
   end;
+end;
+
+procedure TDocumentHeaderForm.cbRejectChange(Sender: TObject);
+begin
+  UpdateOrderDataset;
+  dbgHeaders.SetFocus;
 end;
 
 end.

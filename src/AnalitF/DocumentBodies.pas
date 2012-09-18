@@ -174,6 +174,7 @@ type
     dbgOrder: TDBGridEh;
     adsDocumentHeadersProviderShortName: TStringField;
     cbSelect: TCheckBox;
+    adsDocumentBodiesRejectStatus: TLargeintField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -233,6 +234,8 @@ type
     sbAdd : TSpeedButton;
     sbDelete : TSpeedButton;
     sbRequestCertificates : TSpeedButton;
+    sbMarkAsReject : TSpeedButton;
+    sbMarkAsUnReject : TSpeedButton;
 
 
     internalWaybillReportParams : TWaybillReportParams;
@@ -308,6 +311,8 @@ type
     procedure sbAddRowClick(Sender: TObject);
     procedure sbDeleteRowClick(Sender: TObject);
     procedure sbRequestCertificatesClick(Sender: TObject);
+    procedure sbMarkAsRejectClick(Sender: TObject);
+    procedure sbMarkAsUnRejectClick(Sender: TObject);
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
     procedure UpdateMatchOrderTimer;
@@ -356,6 +361,7 @@ begin
   PrepareGrid;
   gbPrint.Visible := adsDocumentHeadersDocumentType.Value = 1;
   adsDocumentBodies.ParamByName('DocumentId').Value := FDocumentId;
+  adsDocumentBodies.ParamByName('LastRequestTime').Value := EncodeDate(2012, 09, 01);
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     FillNDSFilter();
     RecalcDocument();
@@ -471,6 +477,8 @@ begin
       sbAdd.Visible := True;
       sbDelete.Visible := True;
       sbRequestCertificates.Visible := False;
+      sbMarkAsReject.Visible := False;
+      sbMarkAsUnReject.Visible := False;
       legeng.Visible := True;
       FWaybillDataSetState := [dsEdit, dsInsert];
       adsDocumentBodies.OnNewRecord := UserWaybillNewRecord;
@@ -486,6 +494,8 @@ begin
       sbAdd.Visible := False;
       sbDelete.Visible := False;
       sbRequestCertificates.Visible := True;
+      sbMarkAsReject.Visible := True;
+      sbMarkAsUnReject.Visible := True;
       UpdateRequestCertificates;
       legeng.Visible := True;
       adsDocumentBodies.OnNewRecord := nil;
@@ -866,6 +876,13 @@ begin
       //Сертификат не был получен, но запрос был
       if not adsDocumentBodiesDocumentBodyId.IsNull then
         Background := LegendHolder.Legends[lnCertificateNotFound];
+  end;
+
+  if adsDocumentBodiesRejectStatus.Value > 0 then begin
+    if adsDocumentBodiesRejectId.IsNull then
+      Background := LegendHolder.Legends[lnUnrejectedWaybillPosition]
+    else
+      Background := LegendHolder.Legends[lnRejectedWaybillPosition];
   end;
 end;
 
@@ -2080,6 +2097,21 @@ begin
   sbRequestCertificates.Width := Self.Canvas.TextWidth(sbRequestCertificates.Caption) + 20;
   sbRequestCertificates.OnClick := sbRequestCertificatesClick;
 
+  sbMarkAsReject := TSpeedButton.Create(Self);
+  sbMarkAsReject.Parent := pButtons;
+  sbMarkAsReject.Top := 8;
+  sbMarkAsReject.Left := sbRequestCertificates.Left + sbRequestCertificates.Width + 10;
+  sbMarkAsReject.Caption := 'Пометить как забраковку';
+  sbMarkAsReject.Width := Self.Canvas.TextWidth(sbMarkAsReject.Caption) + 20;
+  sbMarkAsReject.OnClick := sbMarkAsRejectClick;
+
+  sbMarkAsUnReject := TSpeedButton.Create(Self);
+  sbMarkAsUnReject.Parent := pButtons;
+  sbMarkAsUnReject.Top := 8;
+  sbMarkAsUnReject.Left := sbMarkAsReject.Left + sbMarkAsReject.Width + 10;
+  sbMarkAsUnReject.Caption := 'Пометить как разбраковку';
+  sbMarkAsUnReject.Width := Self.Canvas.TextWidth(sbMarkAsUnReject.Caption) + 20;
+  sbMarkAsUnReject.OnClick := sbMarkAsUnRejectClick;
 
   legeng := TframeBaseLegend.Create(Self);
   legeng.Parent := pGrid;
@@ -2094,6 +2126,10 @@ begin
   lLegend := legeng.CreateLegendLabel(lnRetailPrice);
 
   lLegend := legeng.CreateLegendLabel(lnCertificateNotFound);
+
+  lLegend := legeng.CreateLegendLabel(lnRejectedWaybillPosition);
+
+  lLegend := legeng.CreateLegendLabel(lnUnrejectedWaybillPosition);
 
   legeng.UpdateGrids := UpdateGridOnLegend;
 end;
@@ -2591,6 +2627,19 @@ end;
 procedure TDocumentBodiesForm.UpdateGridOnLegend(Sender: TObject);
 begin
   dbgDocumentBodies.Invalidate;
+end;
+
+procedure TDocumentBodiesForm.sbMarkAsRejectClick(Sender: TObject);
+var
+  rejectId : String;
+begin
+  rejectId := DM.QueryValue('select Id from rejects limit 1', [], []);
+  DM.MainConnection.ExecSQL('update documentBodies set LastRejectStatusTime = now(), RejectId = ' + rejectId + ' where Id = ' + adsDocumentBodiesId.AsString, []);
+end;
+
+procedure TDocumentBodiesForm.sbMarkAsUnRejectClick(Sender: TObject);
+begin
+  DM.MainConnection.ExecSQL('update documentBodies set LastRejectStatusTime = now() where Id = ' + adsDocumentBodiesId.AsString, []);
 end;
 
 end.
