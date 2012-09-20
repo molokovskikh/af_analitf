@@ -2047,6 +2047,7 @@ begin
       tsStandart : ticketReportFile := 'Ticket.frf';
       tsSmall : ticketReportFile := 'SmallTicket.frf';
       tsSmallWithBigCost : ticketReportFile := 'BigCostTicket.frf';
+      tsSmallWithBigCost2 : ticketReportFile := 'BigCostTicket2.frf';
       else
         ticketReportFile := 'Неизвестный отчет.frf';
     end;

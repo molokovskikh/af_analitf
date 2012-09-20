@@ -813,13 +813,14 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
-        'if(dbodies.LastRejectStatusTime is null, 0, dbodies.LastRejectSt' +
-        'atusTime > :LastRequestTime) as RejectStatus,'
+      '  if(dbodies.LastRejectStatusTime is null, 0, '
+      '  dbodies.LastRejectStatusTime > :LastRequestTime) '
+      '  as RejectStatus,'
       'dbodies.VitallyImportantByUser'
       'from'
       '  DocumentBodies dbodies'
-        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.ServerId'
+      '  left join CertificateRequests cr '
+      '    on cr.DocumentBodyId = dbodies.ServerId'
       '  left join products p on p.productid = dbodies.productid'
       '  left join catalogs on catalogs.fullcode = p.catalogid'
       'where'
@@ -864,16 +865,16 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
-        'if(dbodies.LastRejectStatusTime is null, 0, dbodies.LastRejectSt' +
-        'atusTime > :LastRequestTime) as RejectStatus,'
+      '  if(dbodies.LastRejectStatusTime is null, 0, '
+      '  dbodies.LastRejectStatusTime > :LastRequestTime) '
+      '  as RejectStatus,'
       'ol.ServerOrderListId,'
       'ol.OrderId,'
       'dbodies.VitallyImportantByUser'
       'from'
       '  DocumentBodies dbodies'
-      
-        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.ServerId'
+      '  left join CertificateRequests cr '
+      '    on cr.DocumentBodyId = dbodies.ServerId'
       '  left join products p on p.productid = dbodies.productid'
       '  left join catalogs on catalogs.fullcode = p.catalogid'
       
