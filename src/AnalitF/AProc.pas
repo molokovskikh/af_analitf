@@ -774,11 +774,11 @@ var
 
 begin
   if DirectoryExists(GetAFTempDir() + TempSendDir) then
-    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
-      RaiseLastOSErrorWithMessage('Ќе получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
+    DeleteFilesByMask(GetAFTempDir() + TempSendDir + '\*.*');
 
-  if not CreateDir(GetAFTempDir() + TempSendDir) then
-    RaiseLastOSErrorWithMessage('Ќе получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
+  if not DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not CreateDir(GetAFTempDir() + TempSendDir) then
+      RaiseLastOSErrorWithMessage('Ќе получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   slLetter := TStringList.Create;
   try
