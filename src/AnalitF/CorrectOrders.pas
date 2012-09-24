@@ -993,8 +993,11 @@ begin
         if (mtLogOldOrderCount.AsString <> mtLogNewOrderCount.AsString) then
           Background := RGB(239, 82, 117);
       if (Column.Field = mtLogOldPrice) or (Column.Field = mtLogNewPrice) then
-        if (mtLogOldPrice.Value * (1 + FNetworkParams.NetworkPositionPercent/100) > mtLogNewPrice.Value) then
-          Background := RGB(239, 82, 117);
+        if (mtLogNewPrice.Value < mtLogOldPrice.Value) then
+          Background := $00b8ff71
+        else
+          if (mtLogOldPrice.Value * (1 + FNetworkParams.NetworkPositionPercent/100) < mtLogNewPrice.Value) then
+            Background := RGB(239, 82, 117);
   end;
 end;
 
