@@ -26,8 +26,10 @@ type
     DeltaMode : Integer;
     ShowPriceName : Boolean;
     UseColorOnWaybillOrders : Boolean;
+    ShowRejectsReason : Boolean;
     procedure ReadParams; override;
     procedure SaveParams; override;
+    procedure SaveShowRejectsReason;
     class function GetConfirmDeleteOldWaybills(Connection : TCustomMyConnection) : Boolean;
     class function GetWaybillsHistoryDayCount(Connection : TCustomMyConnection) : Integer;
   end;
@@ -61,6 +63,7 @@ begin
     DeltaMode := 1;
   ShowPriceName := GetParamDef('ShowPriceName', False);
   UseColorOnWaybillOrders := GetParamDef('UseColorOnWaybillOrders', True);
+  ShowRejectsReason := GetParamDef('ShowRejectsReason', False);
 end;
 
 procedure TGlobalSettingParams.SaveParams;
@@ -76,7 +79,13 @@ begin
   SaveParam('DeltaMode', DeltaMode);
   SaveParam('ShowPriceName', ShowPriceName);
   SaveParam('UseColorOnWaybillOrders', UseColorOnWaybillOrders);
+  SaveShowRejectsReason;
   inherited;
+end;
+
+procedure TGlobalSettingParams.SaveShowRejectsReason;
+begin
+  SaveParam('ShowRejectsReason', ShowRejectsReason);
 end;
 
 end.

@@ -229,7 +229,7 @@ inherited DefectivesForm: TDefectivesForm
       792
       39)
     object Label7: TLabel
-      Left = 10
+      Left = 7
       Top = 12
       Width = 107
       Height = 13
@@ -242,7 +242,7 @@ inherited DefectivesForm: TDefectivesForm
       ParentFont = False
     end
     object Label8: TLabel
-      Left = 215
+      Left = 204
       Top = 12
       Width = 12
       Height = 13
@@ -275,7 +275,7 @@ inherited DefectivesForm: TDefectivesForm
       OnClick = btnUnCheckAllClick
     end
     object dtpDateFrom: TDateTimePicker
-      Left = 127
+      Left = 119
       Top = 9
       Width = 81
       Height = 21
@@ -291,7 +291,7 @@ inherited DefectivesForm: TDefectivesForm
       OnCloseUp = dtpDateCloseUp
     end
     object dtpDateTo: TDateTimePicker
-      Left = 234
+      Left = 221
       Top = 9
       Width = 81
       Height = 21
@@ -299,6 +299,15 @@ inherited DefectivesForm: TDefectivesForm
       Time = 0.631934409720997800
       TabOrder = 3
       OnCloseUp = dtpDateCloseUp
+    end
+    object cbShowRejectsReason: TCheckBox
+      Left = 315
+      Top = 11
+      Width = 184
+      Height = 17
+      Caption = #1042#1099#1074#1086#1076#1080#1090#1100' '#1087#1088#1080#1095#1080#1085#1091' '#1079#1072#1073#1088#1072#1082#1086#1074#1082#1080
+      TabOrder = 4
+      OnClick = cbShowRejectsReasonClick
     end
   end
   object dsDefectives: TDataSource

@@ -81,7 +81,7 @@ begin
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\BigRackCard.frf', '3FC2F869B1BDC186614E719EA7E10B62', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Core.frf', '88A6C956D5A529C15A0A24B3EF064E6D', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\CoreFirm.frf', '7E7BC36A8C3080F5F03F3AA953CF39FE', dfNormal));
-  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Defectives.frf', '33A7863A809813412006E0280407006E', dfNormal));
+  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Defectives.frf', 'A539D049BA094AB2ECBA546B5C5ED5FD', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Invoice.frf', '8B7C50C3E9B16269718924C9CAF2BF9E', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Orders.frf', 'FC2AD6110835ED2B7AAE60DDEDEE45FD', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\RackCard.frf', '87456D2492CDB0A287BACEEFE7010122', dfNormal));
