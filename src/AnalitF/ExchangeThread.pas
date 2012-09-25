@@ -4665,6 +4665,7 @@ procedure TExchangeThread.ProcessDownloadAppFile(
   downloadFile: TDownloadAppFile);
 var
   downloadUrl : String;
+  fileDir : String;
 begin
   exchangeFileCaption := 'файла ' + downloadFile.FileName;
   LocalFileName := ExePath + SDirIn + '\download.tmp';
@@ -4683,8 +4684,12 @@ begin
     WriteExchangeLog('Exchange', 'Завершилась загрузка ' + exchangeFileCaption);
   end;
 
-  if FileExists(LocalFileName) then
+  if FileExists(LocalFileName) then begin
+    fileDir := ExtractFileDir(ExePath + downloadFile.FileName);
+    if not SysUtils.ForceDirectories(fileDir) then
+      RaiseLastOSErrorWithMessage('Не получилось создать директорию : ' + fileDir);
     OSMoveFile(LocalFileName, ExePath + downloadFile.FileName);
+  end;
 end;
 
 procedure TExchangeThread.ProcessExchangeFile;
