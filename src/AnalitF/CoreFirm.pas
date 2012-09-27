@@ -818,11 +818,13 @@ end;
 procedure TCoreFirmForm.SetClear;
 var
   p : TFilterRecordEvent;
+  lastBookmark : String;
 begin
   tmrSearch.Enabled := False;
   eSearch.Enabled := False;
   adsCore.DisableControls;
   try
+    lastBookmark := adsCore.Bookmark;
     eSearch.Text := '';
     InternalSearchText := '';
     p := AllFilterRecord;
@@ -832,6 +834,7 @@ begin
     end
     else
       DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+    adsCore.Bookmark := lastBookmark;
   finally
     adsCore.EnableControls;
     eSearch.Enabled := True;

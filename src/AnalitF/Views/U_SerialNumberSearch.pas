@@ -166,15 +166,21 @@ begin
 end;
 
 procedure TSerialNumberSearchForm.SetClear;
+var
+  lastId : Int64;
 begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
+  lastId := adsSerialNumberSearchId.Value;
   if adsSerialNumberSearch.Active then
     adsSerialNumberSearch.Close;
 
   adsSerialNumberSearch.ParamByName('LikeParam').AsString := '%';
   adsSerialNumberSearch.Open;
+
+  if not adsSerialNumberSearch.Locate('Id', lastId, []) then
+    adsSerialNumberSearch.First;
 
   dbgSerialNumberSearch.SetFocus;
 end;

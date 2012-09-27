@@ -1234,12 +1234,19 @@ begin
 end;
 
 procedure TMinPricesForm.SetClearByName;
+var
+  lastId : Int64;
 begin
   tmrSearch.Enabled := False;
   eSearchName.Text := '';
   InternalSearchNameText := '';
 
+  lastId := minProductIdField.Value;
+
   InternalSearch;
+
+  if not adsMinPrices.Locate('ProductId', lastId, []) then
+    adsMinPrices.First;
 
   dbgMinPrices.SetFocus;
 end;

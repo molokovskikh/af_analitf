@@ -713,11 +713,16 @@ begin
 end;
 
 procedure TframeMiniMail.SetClear;
+var
+  lastId : Int64;
 begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
+  lastId := fId.Value;
   DBProc.SetFilterProc(mdMails, nil);
+  if not mdMails.Locate('Id', lastId, []) then
+    mdMails.First;
 end;
 
 procedure TframeMiniMail.SearchFilterRecord(DataSet: TDataSet;

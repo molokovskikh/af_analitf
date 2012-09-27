@@ -110,10 +110,13 @@ begin
 end;
 
 procedure TMnnSearchForm.SetClear;
+var
+  lastId : Int64;
 begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
+  lastId := adsMNNId.Value;
   if adsMNN.Active then
     adsMNN.Close;
 
@@ -125,7 +128,8 @@ begin
 
   adsMNN.Open;
 
-  adsMNN.First;
+  if not adsMNN.Locate('Id', lastId, []) then
+    adsMNN.First;
 
   dbgMnn.SetFocus;
 end;

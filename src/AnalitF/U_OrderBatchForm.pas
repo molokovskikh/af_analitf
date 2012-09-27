@@ -947,14 +947,18 @@ end;
 procedure TOrderBatchForm.SetFilter(Filter: TFilterReport);
 var
   FP : TFilterRecordEvent;
+  lastId : Int64;
 begin
   eSearch.Text := '';
   InternalSearchText := '';
+  lastId := IdField.Value;
   FP := nil;
   if Filter <> frAll then
     FP := FilterRecord;
   CurrentFilter := Filter;
   DBProc.SetFilterProc(adsReport, FP);
+  if not adsReport.Locate('Id', lastId, []) then
+    adsReport.First;
 end;
 
 procedure TOrderBatchForm.FilterRecord(DataSet: TDataSet;
