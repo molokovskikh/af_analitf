@@ -792,6 +792,8 @@ begin
       end
       else
         DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+      if not adsCore.Locate('SynonymName', InternalSearchText, [loCaseInsensitive, loPartialKey]) then
+        adsCore.First;
     finally
       adsCore.EnableControls;
       eSearch.Enabled := True;
