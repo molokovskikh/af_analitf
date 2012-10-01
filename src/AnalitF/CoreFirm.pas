@@ -126,6 +126,7 @@ type
     cbProducers: TComboBox;
     adsCoreMarkup: TFloatField;
     adsAvgOrdersOrderCountAvg: TFloatField;
+    adsCoreOrdersComment: TStringField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);

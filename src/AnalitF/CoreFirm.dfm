@@ -1,6 +1,6 @@
 object CoreFirmForm: TCoreFirmForm
   Left = 310
-  Top = 172
+  Top = 159
   ActiveControl = dbgCore
   Align = alClient
   Anchors = [akTop, akBottom]
@@ -24,9 +24,9 @@ object CoreFirmForm: TCoreFirmForm
   object dbgCore: TToughDBGrid
     Tag = 128
     Left = 0
-    Top = 70
+    Top = 89
     Width = 792
-    Height = 465
+    Height = 446
     Align = alClient
     AutoFitColWidths = True
     DataSource = dsCore
@@ -302,13 +302,13 @@ object CoreFirmForm: TCoreFirmForm
     Left = 0
     Top = 0
     Width = 792
-    Height = 70
+    Height = 89
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
       792
-      70)
+      89)
     object lblRecordCount: TLabel
       Left = 510
       Top = 8
@@ -370,18 +370,18 @@ object CoreFirmForm: TCoreFirmForm
     end
     object pTop: TPanel
       Left = 0
-      Top = 28
+      Top = 32
       Width = 792
-      Height = 42
+      Height = 57
       Align = alBottom
       BevelOuter = bvLowered
       TabOrder = 1
       DesignSize = (
         792
-        42)
+        57)
       object eSearch: TEdit
         Left = 1
-        Top = 11
+        Top = 18
         Width = 320
         Height = 21
         TabOrder = 0
@@ -400,7 +400,7 @@ object CoreFirmForm: TCoreFirmForm
       end
       object cbProducers: TComboBox
         Left = 376
-        Top = 11
+        Top = 18
         Width = 412
         Height = 21
         Style = csDropDownList
@@ -649,6 +649,7 @@ object CoreFirmForm: TCoreFirmForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
@@ -781,6 +782,7 @@ object CoreFirmForm: TCoreFirmForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
@@ -1152,6 +1154,10 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreMarkup: TFloatField
       FieldName = 'Markup'
     end
+    object adsCoreOrdersComment: TStringField
+      FieldName = 'OrdersComment'
+      Size = 255
+    end
   end
   object adsCoreWithLike: TMyQuery
     SQL.Strings = (
@@ -1229,6 +1235,7 @@ object CoreFirmForm: TCoreFirmForm
       '    (osbc.Price*osbc.OrderCount) AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'

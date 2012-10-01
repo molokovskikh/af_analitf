@@ -147,6 +147,7 @@ type
     adsAvgOrdersOrderCountAvg: TFloatField;
     lOrderCountAvg: TLabel;
     dbtOrderCountAvg: TDBText;
+    adsCoreOrdersComment: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
@@ -254,8 +255,8 @@ begin
 
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
-  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, btnSelectPrices.Left + btnSelectPrices.Width + 5, pTop.Height div 2 + 13, dbgCore);
-  frameAutoComment.Top := pTop.Height - frameAutoComment.Height;
+  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, btnSelectPrices.Left, pTop.Height - (btnSelectPrices.Top + btnSelectPrices.Height), dbgCore);
+  frameAutoComment.Top := btnSelectPrices.Top + btnSelectPrices.Height;
 
   if adsProducers.Active then
     adsProducers.Close;

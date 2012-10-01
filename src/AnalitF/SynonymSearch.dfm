@@ -1,6 +1,6 @@
 inherited SynonymSearchForm: TSynonymSearchForm
   Left = 368
-  Top = 226
+  Top = 159
   ActiveControl = dbgCore
   Caption = #1055#1086#1080#1089#1082' '#1074' '#1087#1088#1072#1081#1089'-'#1083#1080#1089#1090#1072#1093
   ClientHeight = 573
@@ -13,7 +13,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     Left = 0
     Top = 0
     Width = 792
-    Height = 65
+    Height = 82
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
@@ -87,7 +87,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     end
     object cbProducers: TComboBox
       Left = 1
-      Top = 37
+      Top = 46
       Width = 320
       Height = 21
       Style = csDropDownList
@@ -98,9 +98,9 @@ inherited SynonymSearchForm: TSynonymSearchForm
   end
   object pCenter: TPanel [1]
     Left = 0
-    Top = 65
+    Top = 82
     Width = 792
-    Height = 377
+    Height = 360
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -109,7 +109,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       Left = 0
       Top = 0
       Width = 792
-      Height = 377
+      Height = 360
       Align = alClient
       AutoFitColWidths = True
       DataSource = dsCore
@@ -594,6 +594,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
@@ -717,6 +718,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
@@ -1069,6 +1071,10 @@ inherited SynonymSearchForm: TSynonymSearchForm
     object adsCoreMarkup: TFloatField
       FieldName = 'Markup'
     end
+    object adsCoreOrdersComment: TStringField
+      FieldName = 'OrdersComment'
+      Size = 255
+    end
   end
   object adsPreviosOrders: TMyQuery
     Connection = DM.MyConnection
@@ -1307,6 +1313,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'
@@ -1459,6 +1466,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    SynonymSearch.SumOrder,'
       '    SynonymSearch.OrdersJunk,'
       '    SynonymSearch.OrdersAwait,'
+      '    SynonymSearch.OrdersComment,'
       '    SynonymSearch.OrdersHOrderId,'
       '    SynonymSearch.OrdersHClientId,'
       '    SynonymSearch.OrdersHPriceCode,'
@@ -1562,6 +1570,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    SynonymSearch.SumOrder,'
       '    SynonymSearch.OrdersJunk,'
       '    SynonymSearch.OrdersAwait,'
+      '    SynonymSearch.OrdersComment,'
       '    SynonymSearch.OrdersHOrderId,'
       '    SynonymSearch.OrdersHClientId,'
       '    SynonymSearch.OrdersHPriceCode,'
@@ -1702,6 +1711,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
       '    osbc.Price*osbc.OrderCount AS SumOrder,'
       '    osbc.Junk AS OrdersJunk,'
       '    osbc.Await AS OrdersAwait,'
+      '    osbc.Comment AS OrdersComment,'
       '    CurrentOrderHeads.OrderId AS OrdersHOrderId,'
       '    CurrentOrderHeads.ClientId AS OrdersHClientId,'
       '    CurrentOrderHeads.PriceCode AS OrdersHPriceCode,'

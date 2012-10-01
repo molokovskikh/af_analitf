@@ -18,13 +18,22 @@ object frameAutoComment: TframeAutoComment
       61)
     object eAutoComment: TEdit
       Left = 16
-      Top = 24
+      Top = 20
       Width = 137
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       OnChange = eAutoCommentChange
       OnKeyDown = eAutoCommentKeyDown
+    end
+    object cbClear: TCheckBox
+      Left = 16
+      Top = 41
+      Width = 137
+      Height = 17
+      Caption = #1054#1095#1080#1097#1072#1090#1100' '#1082#1086#1084#1084#1077#1085#1090#1072#1088#1080#1081
+      TabOrder = 1
+      OnClick = cbClearClick
     end
   end
 end

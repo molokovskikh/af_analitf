@@ -1,6 +1,6 @@
 object CoreForm: TCoreForm
   Left = 256
-  Top = 184
+  Top = 159
   Align = alClient
   BorderIcons = []
   BorderStyle = bsNone
@@ -1165,6 +1165,7 @@ object CoreForm: TCoreForm
     end
     object adsCoreOrdersComment: TStringField
       FieldName = 'OrdersComment'
+      Size = 255
     end
     object adsCoreMarkup: TFloatField
       FieldName = 'Markup'
