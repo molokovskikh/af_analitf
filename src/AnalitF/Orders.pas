@@ -326,7 +326,7 @@ begin
     Background := LegendHolder.Legends[lnAwait];
 
   if not adsOrdersRejectId.IsNull then
-    Background := RejectColor;  
+    Background := LegendHolder.Legends[lnRejectedColor];
 
   if FUseCorrectOrders and not adsOrdersDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);

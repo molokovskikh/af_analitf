@@ -473,7 +473,7 @@ begin
     ( Column.Field = adsSummaryCOST)) then Background := LegendHolder.Legends[lnJunk];
 
   if not adsSummaryRejectId.IsNull then
-    Background := RejectColor;
+    Background := LegendHolder.Legends[lnRejectedColor];
 
   //ожидаемый товар выделяем зеленым
   if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then

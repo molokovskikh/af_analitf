@@ -783,7 +783,13 @@ var
   maxSupplierMarkup : Currency;
 begin
   if not adsDocumentBodiesRejectId.IsNull then
-    Background := RejectColor;
+    if adsDocumentBodiesRejectStatus.Value > 0 then
+      Background := LegendHolder.Legends[lnRejectedWaybillPosition]
+    else
+      Background := LegendHolder.Legends[lnRejectedColor]
+  else
+    if adsDocumentBodiesRejectStatus.Value > 0 then
+      Background := LegendHolder.Legends[lnUnrejectedWaybillPosition];
 
   if (retailMarkupField.Value < 0) then
     if AnsiMatchText(Column.Field.FieldName,
@@ -832,13 +838,6 @@ begin
       //Сертификат не был получен, но запрос был
       if not adsDocumentBodiesDocumentBodyId.IsNull then
         Background := LegendHolder.Legends[lnCertificateNotFound];
-  end;
-
-  if adsDocumentBodiesRejectStatus.Value > 0 then begin
-    if adsDocumentBodiesRejectId.IsNull then
-      Background := LegendHolder.Legends[lnUnrejectedWaybillPosition]
-    else
-      Background := LegendHolder.Legends[lnRejectedWaybillPosition];
   end;
 end;
 
@@ -2083,6 +2082,8 @@ begin
   lLegend := legeng.CreateLegendLabel(lnRetailPrice);
 
   lLegend := legeng.CreateLegendLabel(lnCertificateNotFound);
+
+  lLegend := legeng.CreateLegendLabel(lnRejectedColor);
 
   lLegend := legeng.CreateLegendLabel(lnRejectedWaybillPosition);
 

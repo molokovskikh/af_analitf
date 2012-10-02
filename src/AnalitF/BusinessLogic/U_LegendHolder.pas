@@ -27,7 +27,8 @@ type
     lnSmartOrderOptimalCost, lnSmartOrderAnotherError,
     lnModifiedWaybillByReject,
     lnRejectedWaybillPosition,
-    lnUnrejectedWaybillPosition );
+    lnUnrejectedWaybillPosition,
+    lnRejectedColor );
 
   TLegendApplying = (laBackground, laText);
 
@@ -140,6 +141,8 @@ begin
   LegendInfos.Add(TLegendInfo.Create(lnModifiedWaybillByReject, laBackground, clYellow, 'Измененная накладная', 'В накладной есть позиции с измененным статусом забраковки'));
   LegendInfos.Add(TLegendInfo.Create(lnRejectedWaybillPosition, laBackground, clYellow, 'Новая забракованная позиция', 'Новая забракованная позиция'));
   LegendInfos.Add(TLegendInfo.Create(lnUnrejectedWaybillPosition, laBackground, clOlive, 'Новая разбракованная позиция', 'Новая разбракованная позиция'));
+  //lnRejectedColor = для этого цвета BGR = (158, 171, 167)
+  LegendInfos.Add(TLegendInfo.Create(lnRejectedColor, laBackground, $009EABA7, 'Забракованная позиция', 'Забракованная позиция'));
 
   UpdateLegends;
 
