@@ -23,6 +23,11 @@ type
       ARegIni: TObject;
       Section: String;
       RestoreParams: TColumnEhRestoreParams);
+    class procedure InternalSaveColumnsLayout(
+      Grid: TCustomDBGridEh;
+      ARegIni: TObject;
+      Section: String;
+      DeleteSection: Boolean);
    public
     class procedure SetDefaultSettingsToGrid(Grid : TCustomDBGridEh);
     class function AddColumn(Grid : TCustomDBGridEh; ColumnName, Caption : String; ReadOnly : Boolean = True) : TColumnEh; overload;
@@ -33,8 +38,8 @@ type
     class procedure SaveGrid(Grid: TCustomDBGridEh);
     class procedure CopyGridToClipboard(Grid: TCustomDBGridEh);
 
-    class procedure SaveColumnsLayout(Grid: TCustomDBGridEh; SectionName : String);
-    class procedure RestoreColumnsLayout(Grid: TCustomDBGridEh; SectionName : String);
+    class procedure SaveColumnsLayout(Grid: TCustomDBGridEh; SectionName : String; Section : String = '');
+    class procedure RestoreColumnsLayout(Grid: TCustomDBGridEh; SectionName : String; Section : String = '');
 
     class function GetSelectedRows(Grid: TCustomDBGridEh) : TStringList;
     class procedure SetMinWidthToColumns(Grid : TCustomDBGridEh);
@@ -43,6 +48,10 @@ type
     class function GetStdDefaultRowHeight(Grid : TCustomDBGridEh) : Integer;
 
     class function GetTempFileToExport() : String;
+
+    class function ColunmByName(grid : TCustomDBGridEh; fieldName: string) : TColumnEh;
+
+    class procedure RearrangeColumns(grid : TCustomDBGridEh; newColumnsOrder : array of String);
   end;
 
 implementation
@@ -92,6 +101,22 @@ begin
     Result.Width := Width
   else
     Result.Width := Grid.Canvas.TextWidth(Caption) + 20;
+end;
+
+class function TDBGridHelper.ColunmByName(
+  grid : TCustomDBGridEh;
+  fieldName: string): TColumnEh;
+var
+  I: Integer;
+begin
+  Result := nil;
+  fieldName := Trim(fieldName);
+  with Grid.Columns do
+    for I := 0 to Count-1 do
+      if AnsiSameText(Items[I].FieldName, fieldName) then begin
+        Result := Items[I];
+        Break;
+      end;
 end;
 
 class procedure TDBGridHelper.CopyGridToClipboard(Grid: TCustomDBGridEh);
@@ -337,18 +362,77 @@ begin
   end;
 end;
 
+class procedure TDBGridHelper.InternalSaveColumnsLayout(
+  Grid: TCustomDBGridEh;
+  ARegIni: TObject;
+  Section: String;
+  DeleteSection: Boolean);
+var
+  I: Integer;
+  S: String;
+begin
+  if (ARegIni is TRegIniFile) then
+    TRegIniFile(ARegIni).EraseSection(Section)
+  else if DeleteSection then
+    TCustomIniFile(ARegIni).EraseSection(Section);
+
+  with Grid.Columns do
+  begin
+    for I := 0 to Count - 1 do
+    begin
+      if ARegIni is TRegIniFile then
+        TRegIniFile(ARegIni).WriteString(Section, Format('%s.%s', [Grid.Name, Items[I].FieldName]),
+          Format('%d,%d,%d,%d,%d,%d,%d', [Items[I].Index, Items[I].Width, Integer(Items[I].Title.SortMarker),
+          Integer(Items[I].Visible), Items[I].Title.SortIndex, Items[I].DropDownRows, Items[I].DropDownWidth]))
+      else
+      begin
+        S := Format('%d,%d,%d,%d,%d,%d,%d', [Items[I].Index, Items[I].Width, Integer(Items[I].Title.SortMarker),
+          Integer(Items[I].Visible), Items[I].Title.SortIndex, Items[I].DropDownRows, Items[I].DropDownWidth]);
+        if S <> '' then
+        begin
+          if ((S[1] = '"') and (S[Length(S)] = '"')) or
+          ((S[1] = '''') and (S[Length(S)] = '''')) then
+            S := '"' + S + '"';
+        end;
+      end;
+      if ARegIni is TCustomIniFile
+        then TCustomIniFile(ARegIni).WriteString(Section, Format('%s.%s', [Grid.Name, Items[I].FieldName]), S);
+    end;
+  end;
+end;
+
+class procedure TDBGridHelper.RearrangeColumns(grid: TCustomDBGridEh;
+  newColumnsOrder: array of String);
+var
+  I : Integer;
+  lastChangedIndex : Integer;
+  column : TColumnEh;
+begin
+  if grid.Columns.Count = 0 then
+    Exit;
+
+  lastChangedIndex := grid.Columns.Count-1;
+  for I := High(newColumnsOrder) downto Low(newColumnsOrder) do begin
+    column := ColunmByName(grid, newColumnsOrder[i]);
+    if Assigned(column) then begin
+      column.Index := lastChangedIndex;
+      Dec(lastChangedIndex);
+    end;
+  end;
+end;
+
 class procedure TDBGridHelper.RestoreColumnsLayout(Grid: TCustomDBGridEh;
-  SectionName: String);
+  SectionName: String; Section : String = '');
 var
   Reg: TRegIniFile;
-  Section: String;
   I : Integer;
 begin
   Reg := TRegIniFile.Create();
   try
     if Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + SectionName, False)
     then begin
-      Section := GetDefaultSection(Grid);
+      if Section = '' then
+        Section := GetDefaultSection(Grid);
       if Reg.KeyExists(Section) then
         InternalRestoreColumnsLayout(Grid, Reg, Section, [crpColIndexEh, crpColWidthsEh, crpSortMarkerEh, crpColVisibleEh]);
       for I := 0 to Grid.Columns.Count-1 do
@@ -361,14 +445,17 @@ begin
 end;
 
 class procedure TDBGridHelper.SaveColumnsLayout(Grid: TCustomDBGridEh;
-  SectionName: String);
+  SectionName: String;
+  Section : String = '');
 var
   Reg: TRegIniFile;
 begin
   Reg := TRegIniFile.Create();
   try
     Reg.OpenKey('Software\Inforoom\AnalitF\' + GetPathCopyID + '\' + SectionName, True);
-    Grid.SaveColumnsLayout(Reg);
+    if Section = '' then
+      Section := GetDefaultSection(Grid);
+    InternalSaveColumnsLayout(Grid, Reg, Section, True);
   finally
     Reg.Free;
   end;

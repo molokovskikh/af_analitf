@@ -169,7 +169,8 @@ uses
   WaybillCalculation in 'BusinessLogic\WaybillCalculation.pas',
   U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame},
   DownloadAppFiles in 'Helpers\DownloadAppFiles.pas',
-  U_LegendHolder in 'BusinessLogic\U_LegendHolder.pas';
+  U_LegendHolder in 'BusinessLogic\U_LegendHolder.pas',
+  U_WaybillGridFactory in 'Views\U_WaybillGridFactory.pas';
 
 {$R *.RES}
 {$R Progress.RES}

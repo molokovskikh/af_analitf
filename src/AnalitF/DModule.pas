@@ -350,6 +350,7 @@ type
     procedure UpdateDBFileDataFor66(dbCon : TCustomMyConnection);
     procedure DeleteRegistryCostColumn(CurrentKey : TRegistry);
     procedure DeletePriceRetColumn(CurrentKey : TRegistry);
+    procedure UpdateDBFileDataFor96(dbCon : TCustomMyConnection);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetFullLastCreateScript : String;
@@ -634,7 +635,8 @@ uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      Core,
      SynonymSearch,
      CoreFirm,
-     FileCountHelper;
+     FileCountHelper,
+     U_WaybillGridFactory;
 
 type
   TestMyDBThreadState = (
@@ -2068,6 +2070,13 @@ begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 96;
       end;
+
+{
+      if DBVersion = 96 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor96);
+        DBVersion := 97;
+      end;
+}
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
@@ -6249,6 +6258,16 @@ begin
     currentBuildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + ExeName);
     prevBuildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
     Result := currentBuildNumber = prevBuildNumber;
+  end;
+end;
+
+procedure TDM.UpdateDBFileDataFor96(dbCon: TCustomMyConnection);
+begin
+  try
+    TWaybillGridFactory.RearrangeColumnsOnWaybills(MainForm);
+  except
+    on E : Exception do
+      WriteExchangeLog('UpdateDBFileDataFor96', 'Error : ' + E.Message);
   end;
 end;
 
