@@ -28,7 +28,8 @@ type
     lnModifiedWaybillByReject,
     lnRejectedWaybillPosition,
     lnUnrejectedWaybillPosition,
-    lnRejectedColor );
+    lnRejectedColor,
+    lnOrderedLikeFrozen );
 
   TLegendApplying = (laBackground, laText);
 
@@ -143,6 +144,7 @@ begin
   LegendInfos.Add(TLegendInfo.Create(lnUnrejectedWaybillPosition, laBackground, clOlive, 'Новая разбракованная позиция', 'Новая разбракованная позиция'));
   //lnRejectedColor = для этого цвета BGR = (158, 171, 167)
   LegendInfos.Add(TLegendInfo.Create(lnRejectedColor, laBackground, $009EABA7, 'Забракованная позиция', 'Забракованная позиция'));
+  LegendInfos.Add(TLegendInfo.Create(lnOrderedLikeFrozen, laBackground, clSilver, 'Присутствует в замороженных заказах', 'Присутствует в замороженных заказах'));
 
   UpdateLegends;
 

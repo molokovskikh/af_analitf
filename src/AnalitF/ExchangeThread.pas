@@ -3344,6 +3344,21 @@ begin
     + '   and (OrderListId is not null) '
     + '   and not exists(select Id from CurrentOrderLists where CurrentOrderLists.Id = OrderListId);';
   InternalExecute;
+
+  //Для позиций устанавливаем статус "Присутствует в замороженных заказах"
+  DM.adcUpdate.SQL.Text := ''
+    + ' update batchreport, analitf.DistinctOrderAddresses '
+    + ' set Status = (Status | 128) '
+    + ' where '
+    + '       (batchreport.ClientId = DistinctOrderAddresses.AddressId)'
+    + '   and (OrderListId is not null) '
+    + '   and exists(select CurrentOrderLists.Id '
+    + '                  from CurrentOrderHeads '
+    + '                    join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId '
+    + '                  where  CurrentOrderHeads.ClientId = DistinctOrderAddresses.AddressId '
+    + '                  and CurrentOrderHeads.Frozen = 1 '
+    + '                  and CurrentOrderLists.PRODUCTID = batchreport.ProductId);';
+  InternalExecute;
 end;
 
 procedure TExchangeThread.GetMaxIds(var MaxOrderId, MaxOrderListId,

@@ -39,7 +39,8 @@ type
     osNotOrdered = $02,        //Позиция не заказана
     osOptimalCost = $04,       //Заказан по лучшей цене
     osNotEnoughQuantity = $08, //Не заказан по причине нехватки кол-ва
-    OffersExists = $10         //Предложения по данной позиции имелись
+    OffersExists = $10,        //Предложения по данной позиции имелись
+    osOrderedLikeFrozen = $80  //Заказанная позиция имеется в замороженных заказах
   );
 
   TFilterReport =
@@ -48,6 +49,7 @@ type
     frAllOrdered,
     frOrderedOptimal,
     frOrderedNonOptimal,
+    frOrderedLikeFrozen,
     frNotOrdered,
     frNotOrderedNotOffers,
     frNotOrderedErrorQuantity,
@@ -62,6 +64,7 @@ const
     'Заказано',
     '   Минимальные',
     '   Не минимальные',
+    '   Присутствующие в замороженных заказах',
     'Не заказано',
     '   Нет предложений',
     '   Нулевое количество',
@@ -363,6 +366,11 @@ begin
     if (StatusField.Value and Integer(osNotOrdered)) > 0 then
       Background := LegendHolder.Legends[lnSmartOrderAnotherError]
   end;
+
+  if ((StatusField.Value and Integer(osOrderedLikeFrozen)) > 0)
+    and AnsiSameText(Column.Field.FieldName, 'SynonymName')
+  then
+    Background := LegendHolder.Legends[lnOrderedLikeFrozen];
 end;
 
 procedure TOrderBatchForm.BindFields;
@@ -577,6 +585,7 @@ begin
   frameLegend.CreateLegendLabel(lnJunk);
   frameLegend.CreateLegendLabel(lnAwait);
   frameLegend.CreateLegendLabel(lnVitallyImportant);
+  frameLegend.CreateLegendLabel(lnOrderedLikeFrozen);
 end;
 
 procedure TOrderBatchForm.CreateNonVisualComponent;
@@ -692,7 +701,7 @@ begin
   for filter := Low(TFilterReport) to High(TFilterReport) do
     cbFilter.Items.Add(FilterReportNames[filter]);
   cbFilter.ItemIndex := 0;
-  cbFilter.Width := cbFilter.Canvas.TextWidth(FilterReportNames[frNotOrderedErrorQuantity]) + 5;
+  cbFilter.Width := cbFilter.Canvas.TextWidth(FilterReportNames[frOrderedLikeFrozen]) + 5;
   cbFilter.Left := eSearch.Left + eSearch.Width + 5;
   cbFilter.OnClick := FilterClick;
 
@@ -969,7 +978,7 @@ begin
 
   if Accept then begin
 
-    if CurrentFilter in [frAllOrdered, frOrderedOptimal, frOrderedNonOptimal]
+    if CurrentFilter in [frAllOrdered, frOrderedOptimal, frOrderedNonOptimal, frOrderedLikeFrozen]
     then begin
       Accept := not OrderListIdField.IsNull;
       if Accept and (CurrentFilter = frOrderedOptimal) then
@@ -977,6 +986,9 @@ begin
       else
         if Accept and (CurrentFilter = frOrderedNonOptimal) then
           Accept := (StatusField.Value and Integer(osOptimalCost)) = 0
+      else
+        if Accept and (CurrentFilter = frOrderedLikeFrozen) then
+          Accept := (StatusField.Value and Integer(osOrderedLikeFrozen)) > 0
     end
     else
       if CurrentFilter <> frAll then
@@ -1738,6 +1750,12 @@ begin
         PanelCaption := PanelCaption + #13#10 + WarningOrderCountMessage
       else
         PanelCaption := WarningOrderCountMessage;
+
+    if DM.ExistsInFrozenOrders(adsCoreProductid.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningLikeFrozenMessage
+      else
+        PanelCaption := WarningLikeFrozenMessage;
 
     if Length(PanelCaption) > 0 then
       ShowOverCostPanel(PanelCaption, dbgCore);

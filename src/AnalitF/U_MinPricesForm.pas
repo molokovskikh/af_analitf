@@ -1135,6 +1135,12 @@ begin
       else
         PanelCaption := WarningOrderCountMessage;
 
+    if DM.ExistsInFrozenOrders(adsCoreProductid.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningLikeFrozenMessage
+      else
+        PanelCaption := WarningLikeFrozenMessage;
+
     if Length(PanelCaption) > 0 then
       ShowOverCostPanel(PanelCaption, dbgCore);
 

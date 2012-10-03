@@ -606,6 +606,8 @@ type
     procedure ShowAttachments(fileList : TStringList);
 
     procedure FillClientAvg();
+
+    function ExistsInFrozenOrders(productId : Int64) : Boolean;
   end;
 
 var
@@ -6269,6 +6271,23 @@ begin
     on E : Exception do
       WriteExchangeLog('UpdateDBFileDataFor96', 'Error : ' + E.Message);
   end;
+end;
+
+function TDM.ExistsInFrozenOrders(productId: Int64): Boolean;
+var
+  id : Variant;
+begin
+  id := QueryValue(''
+    +'select CurrentOrderLists.Id '
+    +'from   CurrentOrderHeads '
+    +'    join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId '
+    +'where  CurrentOrderHeads.ClientId   = :ClientId '
+    +'and CurrentOrderHeads.Frozen = 1 '
+    +'and CurrentOrderLists.PRODUCTID = :ProductId',
+      ['ClientId', 'ProductId'],
+      [adtClientsCLIENTID.Value, productId]);
+
+  Result := not VarIsNull(id);
 end;
 
 initialization

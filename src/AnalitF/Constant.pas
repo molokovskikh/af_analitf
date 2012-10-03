@@ -37,6 +37,7 @@ const
   ExcessAvgOrderCountMessage = 'Превышение среднего заказа!';
   WarningOrderCountMessage = 'Внимание! Вы заказали большое количество препарата.';
   DisableProductOrderMessage = 'Препарат запрещен к заказу.';
+  WarningLikeFrozenMessage = 'Товар присутствует в замороженных заказах.';
 
 implementation
 
