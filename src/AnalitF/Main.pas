@@ -2142,7 +2142,7 @@ begin
 
   dbgNews.AutoFitColWidths := False;
   try
-    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата', dbgNews.Canvas.TextWidth('2000.00.00'));
+    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата', 'dd.mm.yyyy', dbgNews.Canvas.TextWidth('2000.00.00'));
     TDBGridHelper.AddColumn(dbgNews, 'Header', 'Тема', dbgNews.Width);
     TDBGridHelper.SetTitleButtonToColumns(dbgNews);
   finally
