@@ -1,6 +1,7 @@
 ﻿import System
 import System.IO
 import System.Diagnostics
+import System.Text
 import file from Deploy.bake
 import file from WebServiceSupport.bake
 import file from Migration.bake
@@ -187,3 +188,31 @@ Task @TestDeployToFolders, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseF
 
 Task @Deploy, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder, @DeployToFolders]:
 	print "Deploy упакованного релизного приложения завершен"
+
+def CopyDelphi(folder as string):
+	MkDir(folder) if not Exist(folder)
+	Cp(FileSet("**\\*.*", BaseDirectory : "\\\\offdc.adc.analit.net\\Drv\\Delphi7"), folder, true)
+	print "копирование установочных файлов завершено"
+
+def AddInstallFolderToPath(folder as string):
+	path = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine) + ";${folder}\\Borland\\Delphi7\\Bin;${folder}\\Borland\\Delphi7\\Projects\\Bpl\\"
+	Environment.SetEnvironmentVariable("Path", path, EnvironmentVariableTarget.Machine)
+	print "путь добавлен в Path"
+
+def UpdateRegistry(installFolder as string, currentFolder as string):
+	registryContent = File.ReadAllText(".\\InstallDelphi\\CurrentUserTemplateReg.txt", Encoding.GetEncoding(1200))
+	installFolder = installFolder.Replace("\\", "\\\\")
+	registryContent = registryContent.Replace("_installFolder_", "${installFolder}")
+	File.WriteAllText(".\\InstallDelphi\\CurrentUser.reg", registryContent, Encoding.GetEncoding(1200))
+	exec = Exec("regedit.exe", "/s .\\InstallDelphi\\CurrentUser.reg")
+	ExecWait(exec)
+	print "обновление реестра завершено успешно"
+
+Task @InstallDelphi:
+	installFolder = Configuration.installFolder
+	currentFolder = Path.GetFullPath(".")
+	print "install Folder = ${installFolder}  currentFolder = ${currentFolder}"
+	CopyDelphi(installFolder)
+	AddInstallFolderToPath(installFolder)
+	UpdateRegistry(installFolder, currentFolder)
+	print "установка Delphi завершена успешно"
