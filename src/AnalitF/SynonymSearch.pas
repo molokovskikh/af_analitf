@@ -12,7 +12,8 @@ uses
   DayOfWeekHelper,
   DBViewHelper,
   U_frameAutoComment,
-  SearchFilterController;
+  SearchFilterController,
+  U_LegendHolder;
 
 type
   TSynonymSearchForm = class(TChildForm)
@@ -146,6 +147,7 @@ type
     adsAvgOrdersOrderCountAvg: TFloatField;
     lOrderCountAvg: TLabel;
     dbtOrderCountAvg: TDBText;
+    adsCoreOrdersComment: TStringField;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure tmrSearchTimer(Sender: TObject);
@@ -195,6 +197,7 @@ type
     procedure OnSPClick(Sender: TObject);
     procedure ccf(DataSet: TDataSet);
     procedure InternalSearch;
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
     frameLegend : TframeLegend;
@@ -248,11 +251,12 @@ begin
   frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
 
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
-  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, btnSelectPrices.Left + btnSelectPrices.Width + 5, pTop.Height div 2 + 13, dbgCore);
-  frameAutoComment.Top := pTop.Height - frameAutoComment.Height;
+  frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, btnSelectPrices.Left, pTop.Height - (btnSelectPrices.Top + btnSelectPrices.Height), dbgCore);
+  frameAutoComment.Top := btnSelectPrices.Top + btnSelectPrices.Height;
 
   if adsProducers.Active then
     adsProducers.Close;
@@ -412,6 +416,12 @@ begin
       else
         PanelCaption := WarningOrderCountMessage;
 
+    if DM.ExistsInFrozenOrders(adsCoreProductID.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningLikeFrozenMessage
+      else
+        PanelCaption := WarningLikeFrozenMessage;
+
     if Length(PanelCaption) > 0 then
       ShowOverCostPanel(PanelCaption, dbgCore);
   except
@@ -469,24 +479,24 @@ begin
       end;
 
       if adsCoreVITALLYIMPORTANT.AsBoolean then
-        AFont.Color := VITALLYIMPORTANT_CLR;
+        AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
       if not adsCorePriceEnabled.AsBoolean then
       begin
         //если фирма недоступна, изменяем цвет
         if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
-          then Background := clBtnFace;
+          then Background := LegendHolder.Legends[lnNonMain];
       end;
 
       //если уцененный товар, изменяем цвет
       if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCOST)) then
-        Background := JUNK_CLR;
+        Background := LegendHolder.Legends[lnJunk];
       //ожидаемый товар выделяем зеленым
       if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
-        Background := AWAIT_CLR;
+        Background := LegendHolder.Legends[lnAwait];
         
       if (adsCoreBuyingMatrixType.Value = 1) then
-        Background := BuyingBanColor;
+        Background := LegendHolder.Legends[lnBuyingBan];
     end;
   end;
 end;
@@ -786,6 +796,11 @@ end;
 function TSynonymSearchForm.SearchInProgress: Boolean;
 begin
   Result := tmrSearch.Enabled;
+end;
+
+procedure TSynonymSearchForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgCore.Invalidate
 end;
 
 end.

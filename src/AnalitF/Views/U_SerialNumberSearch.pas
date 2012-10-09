@@ -10,7 +10,8 @@ uses
   AlphaUtils,
   DBGridHelper,
   DBProc, DB, MemDS, DBAccess, MyAccess, Buttons,
-  UserActions;
+  UserActions,
+  U_LegendHolder;
 
 type
   TSerialNumberSearchForm = class(TChildForm)
@@ -165,15 +166,21 @@ begin
 end;
 
 procedure TSerialNumberSearchForm.SetClear;
+var
+  lastId : Int64;
 begin
   tmrSearch.Enabled := False;
   eSearch.Text := '';
   InternalSearchText := '';
+  lastId := adsSerialNumberSearchId.Value;
   if adsSerialNumberSearch.Active then
     adsSerialNumberSearch.Close;
 
   adsSerialNumberSearch.ParamByName('LikeParam').AsString := '%';
   adsSerialNumberSearch.Open;
+
+  if not adsSerialNumberSearch.Locate('Id', lastId, []) then
+    adsSerialNumberSearch.First;
 
   dbgSerialNumberSearch.SetFocus;
 end;
@@ -206,8 +213,6 @@ begin
   NeedFirstOnDataSet := False;
   InternalSearchText := '';
   BM := TBitmap.Create;
-
-  SetClear;
 end;
 
 procedure TSerialNumberSearchForm.FormDestroy(Sender: TObject);
@@ -331,7 +336,7 @@ begin
     else
       //Сертификат не был получен, но запрос был
       if not adsSerialNumberSearchId.IsNull then
-        Background := clGray;
+        Background := LegendHolder.Legends[lnCertificateNotFound];
   end;
 end;
 

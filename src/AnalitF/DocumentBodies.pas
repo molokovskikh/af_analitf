@@ -18,12 +18,16 @@ uses
   VitallyImportantMarkupsParams,
   ContextMenuGrid, StrHlder,
   UserActions,
-  WaybillCalculation;
+  WaybillCalculation,
+  U_LegendHolder,
+  U_WaybillGridFactory;
 
 const
   NDSNullValue = 'нет значений';
   
 type
+  TCheckBoxEx = class(TCheckBox);
+
   TDocumentBodiesForm = class(TChildForm)
     pOrderHeader: TPanel;
     dbtProviderName: TDBText;
@@ -170,6 +174,8 @@ type
     dbtDatePrice: TDBText;
     dbgOrder: TDBGridEh;
     adsDocumentHeadersProviderShortName: TStringField;
+    cbSelect: TCheckBox;
+    adsDocumentBodiesRejectStatus: TLargeintField;
     procedure dbgDocumentBodiesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormHide(Sender: TObject);
@@ -201,6 +207,9 @@ type
     procedure adsDocumentBodiesAfterScroll(DataSet: TDataSet);
     procedure adsDocumentBodiesAfterOpen(DataSet: TDataSet);
     procedure tmRunRequestCertificateTimer(Sender: TObject);
+    procedure adsDocumentBodiesAfterDelete(DataSet: TDataSet);
+    procedure adsDocumentBodiesAfterPost(DataSet: TDataSet);
+    procedure cbSelectClick(Sender: TObject);
   private
     { Private declarations }
     FDocumentId : Int64;
@@ -226,6 +235,8 @@ type
     sbAdd : TSpeedButton;
     sbDelete : TSpeedButton;
     sbRequestCertificates : TSpeedButton;
+    sbMarkAsReject : TSpeedButton;
+    sbMarkAsUnReject : TSpeedButton;
 
 
     internalWaybillReportParams : TWaybillReportParams;
@@ -247,6 +258,7 @@ type
     procedure RecalcDocument;
     procedure RecalcPosition;
     procedure WaybillGetCellParams(Sender: TObject; Column: TColumnEh; AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure WaybillDrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumnEh; State: TGridDrawState);
     procedure WaybillKeyPress(Sender: TObject; var Key: Char);
     procedure WaybillCellClick(Column: TColumnEh);
     //procedure FieldOnChange(Sender: TField);
@@ -291,6 +303,7 @@ type
     procedure CreateLegenPanel;
     procedure FillNDSFilter();
     procedure AddNDSFilter();
+    function  GetNDSFilter(): String;
     procedure ReadSettings();
 
     function GetMarkupValue(afValue : Currency; individualMarkup : TFloatField) : Currency;
@@ -299,10 +312,18 @@ type
     procedure sbAddRowClick(Sender: TObject);
     procedure sbDeleteRowClick(Sender: TObject);
     procedure sbRequestCertificatesClick(Sender: TObject);
+    procedure sbMarkAsRejectClick(Sender: TObject);
+    procedure sbMarkAsUnRejectClick(Sender: TObject);
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
     procedure UpdateMatchOrderTimer;
     procedure UpdateRequestCertificates;
+    function GetPrintedDocumentLineCount() : Integer;
+    procedure SetPrintedOnDocumentLines(value : Boolean);
+    procedure UpdateSelectState();
+    function GetDocumentLineCount(ndsFilter,
+      additionFilter: String): Integer;
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
     procedure ShowForm(DocumentId: Int64; ParentForm : TChildForm); overload; //reintroduce;
@@ -341,6 +362,7 @@ begin
   PrepareGrid;
   gbPrint.Visible := adsDocumentHeadersDocumentType.Value = 1;
   adsDocumentBodies.ParamByName('DocumentId').Value := FDocumentId;
+  adsDocumentBodies.ParamByName('LastRequestTime').Value := EncodeDate(2012, 09, 01);
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     FillNDSFilter();
     RecalcDocument();
@@ -359,6 +381,7 @@ begin
   inherited ShowForm;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     SetButtonPositions;
+    UpdateSelectState();
     Self.OnResize := OnResizeForm;
   end;
 end;
@@ -445,6 +468,7 @@ begin
     dbgDocumentBodies.OnGetCellParams := WaybillGetCellParams;
     dbgDocumentBodies.OnKeyPress := WaybillKeyPress;
     dbgDocumentBodies.OnCellClick := WaybillCellClick;
+    dbgDocumentBodies.OnDrawColumnCell := WaybillDrawColumnCell;
     dbgDocumentBodies.ReadOnly := True;
 
     if adsDocumentHeadersCreatedByUser.Value then begin
@@ -454,6 +478,8 @@ begin
       sbAdd.Visible := True;
       sbDelete.Visible := True;
       sbRequestCertificates.Visible := False;
+      sbMarkAsReject.Visible := False;
+      sbMarkAsUnReject.Visible := False;
       legeng.Visible := True;
       FWaybillDataSetState := [dsEdit, dsInsert];
       adsDocumentBodies.OnNewRecord := UserWaybillNewRecord;
@@ -469,6 +495,8 @@ begin
       sbAdd.Visible := False;
       sbDelete.Visible := False;
       sbRequestCertificates.Visible := True;
+      sbMarkAsReject.Visible := True;
+      sbMarkAsUnReject.Visible := True;
       UpdateRequestCertificates;
       legeng.Visible := True;
       adsDocumentBodies.OnNewRecord := nil;
@@ -478,72 +506,19 @@ begin
       adsDocumentBodies.SQLUpdate.Text := shPositionUpdate.Strings.Text;
     end;
 
-    dbgDocumentBodies.AutoFitColWidths := False;
-    try
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Product', 'Наименование', 0, not adsDocumentHeadersCreatedByUser.Value);
-{
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := ProductUpdateData;
-}        
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Printed', 'Печатать', dbgDocumentBodies.Canvas.TextWidth('Печатать'), False);
-      column.Checkboxes := True;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Certificates', 'Номер сертификата', 0, not adsDocumentHeadersCreatedByUser.Value);
-      column.Visible := False;
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'SerialNumber', 'Серия товара', 0, not adsDocumentHeadersCreatedByUser.Value);
-      if not adsDocumentHeadersCreatedByUser.Value then begin
-        column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RequestCertificate', 'Получить', dbgDocumentBodies.Canvas.TextWidth('Получить'), False);
-        column.Checkboxes := True;
-        column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'CertificateId', 'Сертификаты', dbgDocumentBodies.Canvas.TextWidth('Сертификаты'), True);
-      end;
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'Period', 'Срок годности', 0, not adsDocumentHeadersCreatedByUser.Value);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'Producer', 'Производитель', 0, not adsDocumentHeadersCreatedByUser.Value);
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'Country', 'Страна', 0, not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then begin
-        column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'VitallyImportantByUser', 'ЖНВЛС', 0, False);
-        column.Checkboxes := True;
-      end;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'ProducerCost', 'Цена производителя без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := UserWaybillFloatUpdateData;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RegistryCost', 'Цена ГР', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := UserWaybillFloatUpdateData;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierPriceMarkup', 'Торговая наценка оптовика', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := UserWaybillFloatUpdateData;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCostWithoutNDS', 'Цена поставщика без НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := UserWaybillFloatUpdateData;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'NDS', 'НДС', dbgDocumentBodies.Canvas.TextWidth('999'), not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := UserWaybillIntegerUpdateData;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'SupplierCost', 'Цена поставщика с НДС', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := UserWaybillFloatUpdateData;
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'MaxRetailMarkup', 'Макс. розничная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailMarkup', 'Розничная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
-      column.OnUpdateData := RetailMarkupUpdateData;
-      column.OnGetCellParams := RetailMarkupGetCellParams;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RealMarkup', 'Реальная наценка', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
-      column.OnUpdateData := RealMarkupUpdateData;
-      column.OnGetCellParams := RealMarkupGetCellParams;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailPrice', 'Розничная цена', dbgDocumentBodies.Canvas.TextWidth('99999.99'), False);
-      column.OnUpdateData := RetailPriceUpdateData;
-      column.OnGetCellParams := RetailPriceGetCellParams;
-      column := TDBGridHelper.AddColumn(dbgDocumentBodies, 'Quantity', 'Заказ', dbgDocumentBodies.Canvas.TextWidth('99999.99'), not adsDocumentHeadersCreatedByUser.Value);
-      if adsDocumentHeadersCreatedByUser.Value then
-        column.OnUpdateData := UserWaybillIntegerUpdateData;
-      TDBGridHelper.AddColumn(dbgDocumentBodies, 'RetailSumm', 'Розничная сумма', dbgDocumentBodies.Canvas.TextWidth('99999.99'));
+    TWaybillGridFactory.AddColumnsToGrid(
+      dbgDocumentBodies,
+      adsDocumentHeadersCreatedByUser.Value,
+      ProductUpdateData,
+      UserWaybillFloatUpdateData,
+      UserWaybillIntegerUpdateData,
+      RetailMarkupUpdateData,
+      RealMarkupUpdateData,
+      RetailPriceUpdateData,
+      RetailMarkupGetCellParams,
+      RealMarkupGetCellParams,
+      RetailPriceGetCellParams);
 
-      if adsDocumentHeadersCreatedByUser.Value then
-        for I := 0 to dbgDocumentBodies.Columns.Count-1 do begin
-          column := dbgDocumentBodies.Columns[i];
-          if (column.Field is TStringField) and not Assigned(column.OnUpdateData) then
-            column.OnUpdateData := ProductUpdateData;
-        end;
-    finally
-      dbgDocumentBodies.AutoFitColWidths := True;
-    end;
     dbgDocumentBodies.ReadOnly := False;
     dbgDocumentBodies.Options := dbgDocumentBodies.Options + [dgEditing];
     dbgDocumentBodies.SelectedField := retailMarkupField;
@@ -562,6 +537,7 @@ begin
     dbgDocumentBodies.OnGetCellParams := nil;
     dbgDocumentBodies.OnKeyPress := nil;
     dbgDocumentBodies.OnCellClick := nil;
+    dbgDocumentBodies.OnDrawColumnCell := nil;
     dbgDocumentBodies.Options := dbgDocumentBodies.Options - [dgEditing];
     dbgDocumentBodies.AutoFitColWidths := False;
     dbgDocumentBodies.ReadOnly := True;
@@ -658,7 +634,11 @@ begin
   inherited;
   TDBGridHelper.SaveColumnsLayout(
     dbgDocumentBodies,
-    IfThen(adsDocumentHeadersDocumentType.Value = 1, ifthen(adsDocumentHeadersCreatedByUser.Value, 'DetailUserWaybill', 'DetailWaybill'), 'DetailReject'));
+    IfThen(adsDocumentHeadersDocumentType.Value = 1,
+      ifthen(adsDocumentHeadersCreatedByUser.Value,
+        TWaybillGridFactory.GetDetailUserWaybillSectionName(),
+        TWaybillGridFactory.GetDetailWaybillSectionName()),
+      TWaybillGridFactory.GetDetailRejectSectionName()));
 end;
 
 procedure TDocumentBodiesForm.LoadFromRegistry;
@@ -666,7 +646,11 @@ begin
   TDBGridHelper.SetTitleButtonToColumns(dbgDocumentBodies);
   TDBGridHelper.RestoreColumnsLayout(
     dbgDocumentBodies,
-    IfThen(adsDocumentHeadersDocumentType.Value = 1, ifthen(adsDocumentHeadersCreatedByUser.Value, 'DetailUserWaybill', 'DetailWaybill'), 'DetailReject'));
+    IfThen(adsDocumentHeadersDocumentType.Value = 1,
+      ifthen(adsDocumentHeadersCreatedByUser.Value,
+        TWaybillGridFactory.GetDetailUserWaybillSectionName(),
+        TWaybillGridFactory.GetDetailWaybillSectionName()),
+      TWaybillGridFactory.GetDetailRejectSectionName()));
   MyDacDataSetSortMarkingChanged( TToughDBGrid(dbgDocumentBodies) );
   if Length(adsDocumentBodies.IndexFieldNames) = 0 then
     adsDocumentBodies.IndexFieldNames := 'Product';
@@ -799,18 +783,24 @@ var
   maxSupplierMarkup : Currency;
 begin
   if not adsDocumentBodiesRejectId.IsNull then
-    Background := RejectColor;
+    if adsDocumentBodiesRejectStatus.Value > 0 then
+      Background := LegendHolder.Legends[lnRejectedWaybillPosition]
+    else
+      Background := LegendHolder.Legends[lnRejectedColor]
+  else
+    if adsDocumentBodiesRejectStatus.Value > 0 then
+      Background := LegendHolder.Legends[lnUnrejectedWaybillPosition];
 
   if (retailMarkupField.Value < 0) then
     if AnsiMatchText(Column.Field.FieldName,
         ['RetailMarkup', 'RetailPrice', 'RetailSumm', 'RealMarkup'])
     then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnRetailPrice];
 
   if (retailMarkupField.Value > maxRetailMarkupField.Value)
      and AnsiMatchText(Column.Field.FieldName, ['RetailMarkup', 'MaxRetailMarkup'])
   then
-    Background := clRed;
+    Background := LegendHolder.Legends[lnRetailMarkup];
 
   if not retailMarkupField.IsNull and (Column.Field = adsDocumentBodiesSupplierPriceMarkup) then
   begin
@@ -826,17 +816,17 @@ begin
         maxSupplierMarkup := GetMarkupValue(DM.GetMaxRetailSupplierMarkup(adsDocumentBodiesSupplierCostWithoutNDS.Value), adsDocumentBodiesCatalogMaxSupplierMarkup);
     end;
     if adsDocumentBodiesSupplierPriceMarkup.Value > maxSupplierMarkup then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnSupplierPriceMarkup];
   end;
 
   if (cbWaybillAsVitallyImportant.Checked and adsDocumentBodiesVitallyImportant.IsNull)
     or (not adsDocumentBodiesVitallyImportant.IsNull and adsDocumentBodiesVitallyImportant.AsBoolean)
     or (adsDocumentBodiesVitallyImportant.IsNull and adsDocumentBodiesVitallyImportantByUser.Value)
   then begin
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     if (Column.Field = NDSField) and not NDSField.IsNull and (NDSField.Value <> 10)
     then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnNotSetNDS];
   end;
 
   if (Column.Field = adsDocumentBodiesCertificateId) then begin
@@ -847,7 +837,7 @@ begin
     else
       //Сертификат не был получен, но запрос был
       if not adsDocumentBodiesDocumentBodyId.IsNull then
-        Background := clGray;
+        Background := LegendHolder.Legends[lnCertificateNotFound];
   end;
 end;
 
@@ -2012,6 +2002,7 @@ begin
       tsStandart : ticketReportFile := 'Ticket.frf';
       tsSmall : ticketReportFile := 'SmallTicket.frf';
       tsSmallWithBigCost : ticketReportFile := 'BigCostTicket.frf';
+      tsSmallWithBigCost2 : ticketReportFile := 'BigCostTicket2.frf';
       else
         ticketReportFile := 'Неизвестный отчет.frf';
     end;
@@ -2062,40 +2053,43 @@ begin
   sbRequestCertificates.Width := Self.Canvas.TextWidth(sbRequestCertificates.Caption) + 20;
   sbRequestCertificates.OnClick := sbRequestCertificatesClick;
 
+  sbMarkAsReject := TSpeedButton.Create(Self);
+  sbMarkAsReject.Parent := pButtons;
+  sbMarkAsReject.Top := 8;
+  sbMarkAsReject.Left := sbRequestCertificates.Left + sbRequestCertificates.Width + 10;
+  sbMarkAsReject.Caption := 'Пометить как забраковку';
+  sbMarkAsReject.Width := Self.Canvas.TextWidth(sbMarkAsReject.Caption) + 20;
+  sbMarkAsReject.OnClick := sbMarkAsRejectClick;
+
+  sbMarkAsUnReject := TSpeedButton.Create(Self);
+  sbMarkAsUnReject.Parent := pButtons;
+  sbMarkAsUnReject.Top := 8;
+  sbMarkAsUnReject.Left := sbMarkAsReject.Left + sbMarkAsReject.Width + 10;
+  sbMarkAsUnReject.Caption := 'Пометить как разбраковку';
+  sbMarkAsUnReject.Width := Self.Canvas.TextWidth(sbMarkAsUnReject.Caption) + 20;
+  sbMarkAsUnReject.OnClick := sbMarkAsUnRejectClick;
 
   legeng := TframeBaseLegend.Create(Self);
   legeng.Parent := pGrid;
   legeng.Align := alBottom;
 
-  lLegend := legeng.CreateLegendLabel(
-    'НДС: не установлен для ЖНВЛС',
-    clRed,
-    clWindowText,
-    'Для ЖНВЛС-позиции некорректно установлено значение НДС');
+  lLegend := legeng.CreateLegendLabel(lnNotSetNDS);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Торговая наценка оптовика: превышение наценки оптовика',
-    clRed,
-    clWindowText,
-    'Значение торговой наценки оптовика превышает максимальную наценку оптового звена');
+  lLegend := legeng.CreateLegendLabel(lnSupplierPriceMarkup);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Розничная наценка: превышение максимальной розничной наценки',
-    clRed,
-    clWindowText,
-    'Значение розничной наценки превышает максимальную розничной наценку');
+  lLegend := legeng.CreateLegendLabel(lnRetailMarkup);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Розничная цена: не рассчитана',
-    clRed,
-    clWindowText,
-    'Значения розничной наценки, розничной цены, розничной суммы и реальной наценки не были вычислены автоматически');
+  lLegend := legeng.CreateLegendLabel(lnRetailPrice);
 
-  lLegend := legeng.CreateLegendLabel(
-    'Сертификат не был найден',
-    clGray,
-    clWindowText,
-    'Сертификат не был найден');
+  lLegend := legeng.CreateLegendLabel(lnCertificateNotFound);
+
+  lLegend := legeng.CreateLegendLabel(lnRejectedColor);
+
+  lLegend := legeng.CreateLegendLabel(lnRejectedWaybillPosition);
+
+  lLegend := legeng.CreateLegendLabel(lnUnrejectedWaybillPosition);
+
+  legeng.UpdateGrids := UpdateGridOnLegend;
 end;
 
 procedure TDocumentBodiesForm.adsDocumentBodiesPrintedChange(
@@ -2170,12 +2164,12 @@ begin
 end;
 
 procedure TDocumentBodiesForm.AddNDSFilter;
+var
+  filter : String;
 begin
-  if cbNDS.ItemIndex > 0 then
-    if NDSNullValue = cbNDS.Items[cbNDS.ItemIndex] then
-      adsDocumentBodies.AddWhere('dbodies.NDS is null')
-    else
-      adsDocumentBodies.AddWhere('dbodies.NDS = ' + cbNDS.Items[cbNDS.ItemIndex]);
+  filter := GetNDSFilter();
+  if Length(filter) > 0 then
+    adsDocumentBodies.AddWhere(filter);
 end;
 
 procedure TDocumentBodiesForm.ForceRecalcDocument(DocumentId: Int64);
@@ -2439,6 +2433,7 @@ procedure TDocumentBodiesForm.adsDocumentBodiesAfterOpen(
   DataSet: TDataSet);
 begin
   UpdateMatchOrderTimer;
+  UpdateSelectState;
 end;
 
 procedure TDocumentBodiesForm.tmRunRequestCertificateTimer(
@@ -2463,6 +2458,146 @@ begin
     requestCount := 0;
   end;
   sbRequestCertificates.Enabled := requestCount > 0;
+end;
+
+procedure TDocumentBodiesForm.UpdateSelectState;
+var
+  filter : String;
+  allLinesCount,
+  printedLinesCount : Integer;
+begin
+  if adsDocumentHeadersDocumentType.Value = 1 then begin
+    if Self.Visible then begin
+      cbSelect.Visible := adsDocumentBodies.RecordCount > 0;
+
+      TCheckBoxEx(cbSelect).ClicksDisabled := True;
+      try
+        if adsDocumentBodies.RecordCount = 0 then
+          cbSelect.State := cbUnchecked
+        else begin
+          printedLinesCount := GetPrintedDocumentLineCount();
+          if printedLinesCount = 0 then
+            cbSelect.State := cbUnchecked
+          else if printedLinesCount = adsDocumentBodies.RecordCount then
+            cbSelect.State := cbChecked
+          else
+            cbSelect.State := cbGrayed;
+        end;
+      finally
+        TCheckBoxEx(cbSelect).ClicksDisabled := False;
+      end;
+    end;
+  end;
+end;
+
+procedure TDocumentBodiesForm.WaybillDrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumnEh;
+  State: TGridDrawState);
+var
+  rowHeigth : Integer;
+begin
+  if (Column.Field = adsDocumentBodiesPrinted) and (DataCol = 1) then begin
+    rowHeigth := Rect.Bottom - Rect.Top;
+    cbSelect.Left := dbgDocumentBodies.Left + Rect.Left + 1;
+    cbSelect.Top := dbgDocumentBodies.Top + (rowHeigth - cbSelect.Height) div 2;
+  end;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesAfterDelete(
+  DataSet: TDataSet);
+begin
+  UpdateSelectState;
+end;
+
+procedure TDocumentBodiesForm.adsDocumentBodiesAfterPost(
+  DataSet: TDataSet);
+begin
+  UpdateSelectState;
+end;
+
+procedure TDocumentBodiesForm.cbSelectClick(Sender: TObject);
+begin
+  inherited;
+  dbgDocumentBodies.SetFocus();
+  SetPrintedOnDocumentLines(cbSelect.Checked);
+end;
+
+function TDocumentBodiesForm.GetNDSFilter: String;
+begin
+  Result := '';
+  if cbNDS.ItemIndex > 0 then
+    if NDSNullValue = cbNDS.Items[cbNDS.ItemIndex] then
+      Result := 'dbodies.NDS is null'
+    else
+      Result := 'dbodies.NDS = ' + cbNDS.Items[cbNDS.ItemIndex];
+end;
+
+function TDocumentBodiesForm.GetDocumentLineCount(ndsFilter,
+  additionFilter: String): Integer;
+begin
+  Result := 0;
+end;
+
+function TDocumentBodiesForm.GetPrintedDocumentLineCount: Integer;
+var
+  LastId : Int64;
+begin
+  Result := 0;
+  adsDocumentBodies.DisableControls;
+  try
+    LastId := adsDocumentBodiesId.Value;
+    adsDocumentBodies.First;
+    while not adsDocumentBodies.Eof do begin
+      if adsDocumentBodiesPrinted.Value then
+        Inc(Result);
+      adsDocumentBodies.Next;
+    end;
+
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+  finally
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.SetPrintedOnDocumentLines(value: Boolean);
+var
+  LastId : Int64;
+begin
+  adsDocumentBodies.DisableControls;
+  try
+    LastId := adsDocumentBodiesId.Value;
+    adsDocumentBodies.First;
+    while not adsDocumentBodies.Eof do begin
+      adsDocumentBodies.Edit;
+      adsDocumentBodiesPrinted.Value := value;
+      adsDocumentBodies.Post;
+      adsDocumentBodies.Next;
+    end;
+
+    if not adsDocumentBodies.Locate('Id', LastId, []) then
+      adsDocumentBodies.First;
+  finally
+    adsDocumentBodies.EnableControls;
+  end;
+end;
+
+procedure TDocumentBodiesForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgDocumentBodies.Invalidate;
+end;
+
+procedure TDocumentBodiesForm.sbMarkAsRejectClick(Sender: TObject);
+var
+  rejectId : String;
+begin
+  rejectId := DM.QueryValue('select Id from rejects limit 1', [], []);
+  DM.MainConnection.ExecSQL('update documentBodies set LastRejectStatusTime = now(), RejectId = ' + rejectId + ' where Id = ' + adsDocumentBodiesId.AsString, []);
+end;
+
+procedure TDocumentBodiesForm.sbMarkAsUnRejectClick(Sender: TObject);
+begin
+  DM.MainConnection.ExecSQL('update documentBodies set LastRejectStatusTime = now() where Id = ' + adsDocumentBodiesId.AsString, []);
 end;
 
 end.

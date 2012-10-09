@@ -122,11 +122,11 @@ end;
 function TArchiveHelper.GetArchivedSize: Int64;
 begin
   if DirectoryExists(GetAFTempDir() + TempSendDir) then
-    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
+    DeleteFilesByMask(GetAFTempDir() + TempSendDir + '\*.*');
 
-  if not CreateDir(GetAFTempDir() + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
+  if not DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not CreateDir(GetAFTempDir() + TempSendDir) then
+      RaiseLastOSErrorWithMessage('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   //Формируем список файлов
   CopyingFiles;
@@ -141,11 +141,11 @@ begin
   Result := '';
 
   if DirectoryExists(GetAFTempDir() + TempSendDir) then
-    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
+    DeleteFilesByMask(GetAFTempDir() + TempSendDir + '\*.*');
 
-  if not CreateDir(GetAFTempDir() + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
+  if not DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not CreateDir(GetAFTempDir() + TempSendDir) then
+      RaiseLastOSErrorWithMessage('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   //Формируем список файлов
   CopyingFiles;

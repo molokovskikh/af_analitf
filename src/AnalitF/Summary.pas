@@ -12,7 +12,8 @@ uses
   U_CurrentOrderItem,
   AddressController,
   U_frameFilterAddresses,
-  U_frameMatchWaybill;
+  U_frameMatchWaybill,
+  U_LegendHolder;
 
 type
   TSummaryForm = class(TChildForm)
@@ -148,6 +149,7 @@ type
     procedure ChangePriceFontInOrderGrid(Grid : TToughDBGrid);
     procedure SetWaybillGrid;
     procedure UpdateMatchWaybillTimer;
+    procedure UpdateGridOnLegend(Sender : TObject);
   protected
     frameFilterAddresses : TframeFilterAddresses;
     procedure UpdateOrderDataset; override;
@@ -228,7 +230,8 @@ begin
   frameLegend := TframeLegend.CreateFrame(Self, True, False, False);
   frameLegend.Parent := pGrid;
   frameLegend.Align := alBottom;
-  frameLegend.CreateLegendLabel('Ќесоответствие в накладной', MatchWaybillColor, clWindowText);
+  frameLegend.CreateLegendLabel(lnMatchWaybill);
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
 
   PrepareColumnsInOrderGrid(dbgSummarySend);
   ChangePriceFontInOrderGrid(dbgSummaryCurrent);
@@ -464,17 +467,17 @@ begin
   //∆изненно-важный подсвечиваем только в текущем сводном заказе,
   //т.к. дл€ отправленного заказа значени€ не установлено
   if (LastSymmaryType = 0) and (adsSummaryVITALLYIMPORTANT.AsBoolean) then
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
   if adsSummaryJunk.AsBoolean and (( Column.Field = adsSummaryPERIOD)or
-    ( Column.Field = adsSummaryCOST)) then Background := JUNK_CLR;
+    ( Column.Field = adsSummaryCOST)) then Background := LegendHolder.Legends[lnJunk];
 
   if not adsSummaryRejectId.IsNull then
-    Background := RejectColor;
+    Background := LegendHolder.Legends[lnRejectedColor];
 
   //ожидаемый товар выдел€ем зеленым
   if adsSummaryAwait.AsBoolean and ( Column.Field = adsSummarySYNONYMNAME) then
-    Background := AWAIT_CLR;
+    Background := LegendHolder.Legends[lnAwait];
   //ѕодсветку позиций требующих корректировки осуществл€ем только в текущем заказе
   if (LastSymmaryType = 0) and FUseCorrectOrders and not adsSummaryDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsSummaryDropReason.AsInteger);
@@ -483,28 +486,28 @@ begin
     //т.к. информаци€ о невозможности заказа позиции важнее
     if ( Column.Field = adsSummarySynonymName) and (PositionResult = psrNotExists)
     then
-      Background := NeedCorrectColor;
+      Background := LegendHolder.Legends[lnNeedCorrect];
 
     if ( Column.Field = adsSummarySumOrder)
       and (PositionResult in [psrDifferentCost, psrDifferentCostAndQuantity])
     then
-      Background := NeedCorrectColor;
+      Background := LegendHolder.Legends[lnNeedCorrect];
 
     if ( Column.Field = adsSummaryOrderCount)
       and (PositionResult in [psrDifferentQuantity, psrDifferentCostAndQuantity])
     then
-      Background := NeedCorrectColor;
+      Background := LegendHolder.Legends[lnNeedCorrect];
   end;
 
   if (LastSymmaryType = 1) and FGS.UseColorOnWaybillOrders then begin
     if adsSummaryServerDocumentId.IsNull then
-      Background := MatchWaybillColor
+      Background := LegendHolder.Legends[lnMatchWaybill]
     else begin
       if adsSummaryWaybillQuantity.Value < adsSummaryordercount.Value then
-        Background := MatchWaybillColor;
+        Background := LegendHolder.Legends[lnMatchWaybill];
 
       if (abs(adsSummaryRealCost.Value - adsSummarySupplierCost.Value) > 0.02) then
-        Background := MatchWaybillColor;
+        Background := LegendHolder.Legends[lnMatchWaybill];
     end;
   end;
 end;
@@ -920,6 +923,14 @@ end;
 procedure TSummaryForm.adsSummaryAfterOpen(DataSet: TDataSet);
 begin
   UpdateMatchWaybillTimer();
+end;
+
+procedure TSummaryForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  if LastSymmaryType = 0 then
+    dbgSummaryCurrent.Invalidate
+  else
+    dbgSummarySend.Invalidate;
 end;
 
 initialization

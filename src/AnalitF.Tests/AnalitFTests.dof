@@ -94,7 +94,7 @@ OutputDir=.\bin
 UnitOutputDir=.\unit
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf;..\..\..\tools\NativeHtmlViewer\thtmlviewer\package
+SearchPath=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf;..\lib\thtmlviewer\package
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;IndyCore70;IndyProtocols70;IndySystem70
 Conditionals=DEBUG;USEMEMORYCRYPTDLL;DisableCrypt;
 DebugSourceDirs=
@@ -184,7 +184,7 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=30
-Item0=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf;..\..\..\tools\NativeHtmlViewer\thtmlviewer\package
+Item0=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf;..\lib\thtmlviewer\package
 Item1=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf
 Item2=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf;..\Common\DataLayer;..\Common\Classes;..\Common\Utils;..\Common\XMLParser;..\Common\GlobalParams;..\AnalitF;..\AnalitF\RC_RND;..\Common\Helpers;..\AnalitF\BusinessLogic;..\Common\Exceptions;..\AnalitF\Helpers;..\Common\Models;..\Common\System;..\AnalitF\EhLibMT;..\AnalitF\Views;..\AnalitF\NTLM
 Item3=..\lib\DUnit\src;..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\Indy\Lib\System;..\lib\MyDac\Source;..\lib\jbdbf;..\Common\DataLayer;..\Common\Classes;..\Common\Utils;..\Common\XMLParser;..\Common\GlobalParams;..\AnalitF;..\AnalitF\RC_RND;..\Common\Helpers;..\AnalitF\BusinessLogic;..\Common\Exceptions;..\AnalitF\Helpers;..\Common\Models;..\Common\System;..\AnalitF\EhLibMT;..\AnalitF\Views

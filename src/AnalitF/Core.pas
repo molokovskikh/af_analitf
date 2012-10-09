@@ -15,7 +15,9 @@ uses
   U_framePromotion,
   DayOfWeekHelper,
   DBViewHelper,
-  U_frameAutoComment, Htmlview;
+  U_frameAutoComment,
+  Htmlview,
+  U_LegendHolder;
 
 const
   ALL_REGIONS = 'Все регионы';
@@ -217,6 +219,7 @@ type
     procedure ShowWaitSort();
     procedure SetCoreIndex();
     procedure UpdateAvgData;
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     frameLegend : TframeLegend;
     frameAutoComment : TframeAutoComment;
@@ -261,6 +264,7 @@ begin
   frameLegend := TframeLegend.CreateFrame(Self, True, False, True);
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
   TframePosition.AddFrame(Self, pCenter, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
 
   frameAutoComment := TframeAutoComment.AddFrame(Self, pTop, 1, pTop.Height, dbgCore);
@@ -556,6 +560,12 @@ begin
       else
         PanelCaption := WarningOrderCountMessage;
 
+    if DM.ExistsInFrozenOrders(adsCoreproductid.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningLikeFrozenMessage
+      else
+        PanelCaption := WarningLikeFrozenMessage;
+
     if Length(PanelCaption) > 0 then
       ShowOverCostPanel(PanelCaption, dbgCore);
 
@@ -650,24 +660,24 @@ begin
       Background := SortElem(SortList.Objects[ SortList.IndexOf(adsCoreCOREID.AsString)]).SelectedColor;
 
     if adsCoreVITALLYIMPORTANT.AsBoolean then
-      AFont.Color := VITALLYIMPORTANT_CLR;
+      AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     if not adsCorePriceEnabled.AsBoolean then
     begin
       //если фирма недоступна, изменяем цвет
       if ( Column.Field = adsCoreSYNONYMNAME) or ( Column.Field = adsCoreSYNONYMFIRM)
-        then Background := clBtnFace;
+        then Background := LegendHolder.Legends[lnNonMain];
     end;
 
     //если уцененный товар, изменяем цвет
     if adsCoreJunk.AsBoolean and (( Column.Field = adsCorePERIOD) or ( Column.Field = adsCoreCost))
     then
-      Background := JUNK_CLR;
+      Background := LegendHolder.Legends[lnJunk];
     //ожидаемый товар выделяем зеленым
     if adsCoreAwait.AsBoolean and ( Column.Field = adsCoreSYNONYMNAME) then
-      Background := AWAIT_CLR;
+      Background := LegendHolder.Legends[lnAwait];
 
     if (adsCoreBuyingMatrixType.Value = 1) then
-      Background := BuyingBanColor;
+      Background := LegendHolder.Legends[lnBuyingBan];
   end;
 end;
 
@@ -743,10 +753,10 @@ procedure TCoreForm.dbgHistoryGetCellParams(Sender: TObject;
 begin
   //если уцененный товар, изменяем цвет
   if adsPreviosOrdersJunk.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
-    Background := JUNK_CLR;
+    Background := LegendHolder.Legends[lnJunk];
   //ожидаемый товар выделяем зеленым
   if adsPreviosOrdersAwait.AsBoolean and ( Column.Field = adsPreviosOrdersPRICE) then
-    Background := AWAIT_CLR;
+    Background := LegendHolder.Legends[lnAwait];
 end;
 
 procedure TCoreForm.actFlipCoreExecute(Sender: TObject);
@@ -1087,6 +1097,11 @@ begin
   dbtPriceAvg.Left := lblPriceAvg.Left + lblPriceAvg.Width + 1;
   lDiveder.Left := dbtPriceAvg.Left + dbtPriceAvg.Width + 1;
   dbtOrderCountAvg.Left := lDiveder.Left + lDiveder.Width + 1;
+end;
+
+procedure TCoreForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgCore.Invalidate;
 end;
 
 initialization

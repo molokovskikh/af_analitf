@@ -13,7 +13,8 @@ uses
   U_framePromotion,
   DayOfWeekHelper,
   DBViewHelper,
-  U_frameAutoComment;
+  U_frameAutoComment,
+  U_LegendHolder;
 
 type
   TFilter=( filAll, filOrder, filLeader, filProducer);
@@ -125,6 +126,7 @@ type
     cbProducers: TComboBox;
     adsCoreMarkup: TFloatField;
     adsAvgOrdersOrderCountAvg: TFloatField;
+    adsCoreOrdersComment: TStringField;
     procedure cbFilterClick(Sender: TObject);
     procedure actDeleteOrderExecute(Sender: TObject);
     procedure adsCore2BeforePost(DataSet: TDataSet);
@@ -186,6 +188,7 @@ type
     procedure AddKeyToSearch(Key : Char);
     procedure DeleteOrder;
     procedure PrepareDetailPromotions;
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     frameLegend : TframeLegend;
     frameAutoComment : TframeAutoComment;
@@ -227,6 +230,7 @@ begin
   inherited;
 
   frameLegend := TframeLegend.CreateFrame(Self, True, True, False);
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
   frameLegend.Parent := Self;
   frameLegend.Align := alBottom;
   TframePosition.AddFrame(Self, Self, dsCore, 'SynonymName', 'MnnId', ShowDescriptionAction);
@@ -503,6 +507,12 @@ begin
       else
         PanelCaption := WarningOrderCountMessage;
 
+    if DM.ExistsInFrozenOrders(adsCoreproductid.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningLikeFrozenMessage
+      else
+        PanelCaption := WarningLikeFrozenMessage;
+
     if Length(PanelCaption) > 0 then
       ShowOverCostPanel(PanelCaption, dbgCore);
   except
@@ -608,7 +618,7 @@ procedure TCoreFirmForm.dbgCoreGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if adsCoreVITALLYIMPORTANT.AsBoolean then
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
   //данный прайс-лидер
   if (((adsCoreLEADERPRICECODE.AsInteger = PriceCode) and ( adsCoreLeaderRegionCode.AsLargeInt = RegionCode))
@@ -618,16 +628,16 @@ begin
     and
     (( Column.Field = adsCoreLEADERREGIONNAME) or ( Column.Field = adsCoreLEADERPRICENAME))
   then
-    Background := LEADER_CLR;
+    Background := LegendHolder.Legends[lnLeader];
   //уцененный товар
   if (adsCoreJunk.AsBoolean) and (( Column.Field = adsCorePERIOD) or
-    ( Column.Field = adsCoreCOST)) then Background := JUNK_CLR;
+    ( Column.Field = adsCoreCOST)) then Background := LegendHolder.Legends[lnJunk];
   //ожидаемый товар выделяем зеленым
   if (adsCoreAwait.AsBoolean) and ( Column.Field = adsCoreSYNONYMNAME) then
-    Background := AWAIT_CLR;
+    Background := LegendHolder.Legends[lnAwait];
 
   if (adsCoreBuyingMatrixType.Value = 1) then
-    Background := BuyingBanColor;
+    Background := LegendHolder.Legends[lnBuyingBan];
 end;
 
 procedure TCoreFirmForm.dbgCoreKeyDown(Sender: TObject; var Key: Word;
@@ -789,6 +799,8 @@ begin
       end
       else
         DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+      if not adsCore.Locate('SynonymName', InternalSearchText, [loCaseInsensitive, loPartialKey]) then
+        adsCore.First;
     finally
       adsCore.EnableControls;
       eSearch.Enabled := True;
@@ -815,11 +827,13 @@ end;
 procedure TCoreFirmForm.SetClear;
 var
   p : TFilterRecordEvent;
+  lastBookmark : String;
 begin
   tmrSearch.Enabled := False;
   eSearch.Enabled := False;
   adsCore.DisableControls;
   try
+    lastBookmark := adsCore.Bookmark;
     eSearch.Text := '';
     InternalSearchText := '';
     p := AllFilterRecord;
@@ -829,6 +843,7 @@ begin
     end
     else
       DBProc.SetFilterProc(adsCore, adsCore.OnFilterRecord);
+    adsCore.Bookmark := lastBookmark;
   finally
     adsCore.EnableControls;
     eSearch.Enabled := True;
@@ -1018,6 +1033,11 @@ begin
   else
     SetFilter(filProducer);
   dbgCore.SetFocus;
+end;
+
+procedure TCoreFirmForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgCore.Invalidate;
 end;
 
 end.

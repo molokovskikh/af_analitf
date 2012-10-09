@@ -232,6 +232,14 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
           Title.TitleButton = True
         end>
     end
+    object cbSelect: TCheckBox
+      Left = 232
+      Top = 72
+      Width = 13
+      Height = 13
+      TabOrder = 1
+      OnClick = cbSelectClick
+    end
   end
   object gbPrint: TGroupBox [2]
     Left = 0
@@ -805,12 +813,14 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
+      '  if(dbodies.LastRejectStatusTime is null, 0, '
+      '  dbodies.LastRejectStatusTime > :LastRequestTime) '
+      '  as RejectStatus,'
       'dbodies.VitallyImportantByUser'
       'from'
       '  DocumentBodies dbodies'
-      
-        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.ServerId'
+      '  left join CertificateRequests cr '
+      '    on cr.DocumentBodyId = dbodies.ServerId'
       '  left join products p on p.productid = dbodies.productid'
       '  left join catalogs on catalogs.fullcode = p.catalogid'
       'where'
@@ -855,14 +865,16 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       'catalogs.MaxMarkup as CatalogMaxMarkup,'
       'catalogs.MaxSupplierMarkup as CatalogMaxSupplierMarkup,'
       'dbodies.RejectId,'
+      '  if(dbodies.LastRejectStatusTime is null, 0, '
+      '  dbodies.LastRejectStatusTime > :LastRequestTime) '
+      '  as RejectStatus,'
       'ol.ServerOrderListId,'
       'ol.OrderId,'
       'dbodies.VitallyImportantByUser'
       'from'
       '  DocumentBodies dbodies'
-      
-        '  left join CertificateRequests cr on cr.DocumentBodyId = dbodie' +
-        's.ServerId'
+      '  left join CertificateRequests cr '
+      '    on cr.DocumentBodyId = dbodies.ServerId'
       '  left join products p on p.productid = dbodies.productid'
       '  left join catalogs on catalogs.fullcode = p.catalogid'
       
@@ -875,11 +887,17 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
       '  dbodies.DocumentId = :DocumentId')
     RefreshOptions = [roAfterInsert, roAfterUpdate]
     AfterOpen = adsDocumentBodiesAfterOpen
+    AfterPost = adsDocumentBodiesAfterPost
+    AfterDelete = adsDocumentBodiesAfterDelete
     AfterScroll = adsDocumentBodiesAfterScroll
     KeyFields = 'Id'
     Left = 208
     Top = 251
     ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'LastRequestTime'
+      end
       item
         DataType = ftUnknown
         Name = 'DocumentId'
@@ -998,6 +1016,9 @@ inherited DocumentBodiesForm: TDocumentBodiesForm
     end
     object adsDocumentBodiesVitallyImportantByUser: TBooleanField
       FieldName = 'VitallyImportantByUser'
+    end
+    object adsDocumentBodiesRejectStatus: TLargeintField
+      FieldName = 'RejectStatus'
     end
   end
   object tmrPrintedChange: TTimer

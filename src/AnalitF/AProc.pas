@@ -59,6 +59,7 @@ function GetParentForm(Control: TControl): TForm;
 function FileExecute(const FileName: string; Params: string='';
   StartDir: string=''; ShowFlag: Integer=SW_SHOWNORMAL; Wait: Boolean=False): Integer;
 procedure RaiseLastOSErrorA;
+procedure RaiseLastOSErrorWithMessage(errorMessage : String);
 procedure Win32CheckA(RetVal: BOOL);
 function FindChildControlByClass(ParentControl: TWinControl; ClassRef: TControlClass): TControl;
 procedure StringToStrings(Str: string; Strings: TStrings; Delimiter: Char=';');
@@ -365,6 +366,26 @@ begin
   I:=Windows.GetLastError;
   if I<>0 then raise EOSError.Create(SysErrorMessage(I));
 end;
+
+procedure RaiseLastOSErrorWithMessage(errorMessage : String);
+var
+  LastError: Integer;
+  Error: EOSError;
+begin
+  LastError := GetLastError;
+  if LastError <> 0 then
+    Error := EOSError.CreateFmt('%s Ошибка системы. Код: %d.  %s',
+      [errorMessage,
+      LastError,
+      SysErrorMessage(LastError)])
+  else
+    Error := EOSError.CreateFmt('%s Неизвестная ошибка при вызове функции ОС',
+      [errorMessage]);
+  Error.ErrorCode := LastError;
+  raise Error;
+end;
+
+
 
 procedure Win32CheckA(RetVal: BOOL);
 begin
@@ -753,11 +774,11 @@ var
 
 begin
   if DirectoryExists(GetAFTempDir() + TempSendDir) then
-    if not ClearDir(GetAFTempDir() + TempSendDir, True) then
-      raise Exception.Create('Не получилось удалить временную директорию: ' + GetAFTempDir() + TempSendDir);
+    DeleteFilesByMask(GetAFTempDir() + TempSendDir + '\*.*');
 
-  if not CreateDir(GetAFTempDir() + TempSendDir) then
-    raise Exception.Create('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
+  if not DirectoryExists(GetAFTempDir() + TempSendDir) then
+    if not CreateDir(GetAFTempDir() + TempSendDir) then
+      RaiseLastOSErrorWithMessage('Не получилось создать временную директорию: ' + GetAFTempDir() + TempSendDir);
 
   slLetter := TStringList.Create;
   try

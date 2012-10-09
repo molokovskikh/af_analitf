@@ -18,7 +18,9 @@ uses
   U_DBMapping,
   U_CurrentOrderHead,
   U_CurrentOrderItem,
-  DayOfWeekHelper, StrHlder;
+  DayOfWeekHelper,
+  StrHlder,
+  U_LegendHolder;
 
 const
   postedOrdersLimit = 1000;
@@ -118,13 +120,13 @@ type
     procedure sbMoveToClientClick(Sender: TObject);
     procedure tmrFillReportTimer(Sender: TObject);
     procedure sbMoveToPriceClick(Sender: TObject);
+    procedure dbMemoEnter(Sender: TObject);
   private
     Strings: TStrings;
     SelectedPrices : TStringList;
     //—писок выбранных строк в гридах
     FSelectedRows : TStringList;
     MoveToPriceFromSend : Boolean;
-    InternalDestinationPrice : TSelectPrice;
     procedure MoveToPrice;
     procedure InternalMoveToPrice;
     procedure SetDateInterval;
@@ -154,6 +156,7 @@ type
     procedure SavePeriodToGlobals;
     function GetPostedCriteria() : String;
     procedure CheckPostedOrdersCountToShow(postedCriteria : String); 
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     frameOrderHeadLegend : TframeOrderHeadLegend;
     procedure SetParameters;
@@ -200,6 +203,8 @@ begin
   frameOrderHeadLegend.Parent := pGrid;
   frameOrderHeadLegend.Align := alBottom;
   frameOrderHeadLegend.lNeedCorrect.Visible := FUseCorrectOrders;
+  frameOrderHeadLegend.UpdateGrids := UpdateGridOnLegend;
+
   NeedFirstOnDataSet := False;
   FSelectedRows := TStringList.Create;
   PrintEnabled := False;
@@ -525,26 +530,26 @@ procedure TOrdersHForm.dbgCurrentOrdersGetCellParams(Sender: TObject;
 begin
   if TabControl.TabIndex = 0 then begin
     if (Column.Field = adsOrdersHFormMINREQ) and not adsOrdersHFormMINREQ.IsNull and (adsOrdersHFormMINREQ.AsInteger > adsOrdersHFormSumOrder.AsCurrency) then
-      Background := clRed;
+      Background := LegendHolder.Legends[lnMinReq];
 
     if adsOrdersHFormFrozen.Value then
-      Background := FrozenOrderColor;
+      Background := LegendHolder.Legends[lnFrozenOrder];
 
     if FUseCorrectOrders then begin
       if (adsOrdersHFormDifferentCostCount.Value > 0)
          and (Column.Field = adsOrdersHFormSumOrder)
       then
-        Background := NeedCorrectColor;
+        Background := LegendHolder.Legends[lnNeedCorrect];
 
       if (adsOrdersHFormDifferentQuantityCount.Value > 0)
          and (Column.Field = adsOrdersHFormPositions)
       then
-        Background := NeedCorrectColor;
+        Background := LegendHolder.Legends[lnNeedCorrect];
 
       if (adsOrdersHFormNotExistsCount.Value > 0)
          and (Column.Field = adsOrdersHFormPriceName)
       then
-        Background := NeedCorrectColor;
+        Background := LegendHolder.Legends[lnNeedCorrect];
     end;
   end;
 
@@ -616,7 +621,9 @@ begin
           APreview,
           True);
         adsOrdersHForm.Next;
-      end;
+      end
+      else
+        printedReport := False;
 
       while not adsOrdersHForm.Eof and printedReport do
       begin
@@ -1255,8 +1262,6 @@ end;
 
 procedure TOrdersHForm.OnDectinationPriceClick(Sender: TObject);
 var
-  mi : TMenuItem;
-  sp : TSelectPrice;
   Grid : TToughDBGrid;
 begin
   if TabControl.TabIndex = 0 then
@@ -1264,29 +1269,20 @@ begin
   else
     Grid := dbgSendedOrders;
 
-  mi := TMenuItem(Sender);
-  sp := TSelectPrice(mi.Tag);
-
-  if sp.PriceCode = Grid.DataSource.DataSet.FieldByName('PriceCode').AsInteger then
-    AProc.MessageBox( 'Ќельз€ переместить за€вку в тот же прайс-лист!', MB_ICONWARNING)
-  else
-  if AProc.MessageBox( 'ѕереместить выбранную за€вку в прайс-лист ' + sp.PriceName + '?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK
+  if AProc.MessageBox( 'ѕерераспределить выбранную за€вку на других поставщиков?', MB_ICONQUESTION or MB_OKCANCEL) = IDOK
   then begin
 
     MoveToPriceFromSend := Grid = dbgSendedOrders;
-    InternalDestinationPrice := sp;
 
     Strings := TStringList.Create;
     try
       ShowSQLWaiting(
         InternalMoveToAnotherPrice,
-        'ѕеремещение за€вки в прайс ' + InternalDestinationPrice.PriceName);
+        'ѕеремещение за€вки на других поставщиков');
 
       Grid.DataSource.DataSet.DisableControls;
       try
         Grid.DataSource.DataSet.Bookmark := FSelectedRows[0];
-        if not MoveToPriceFromSend then
-          Grid.DataSource.DataSet.Delete;
         Grid.DataSource.DataSet.Refresh;
       finally
         Grid.DataSource.DataSet.EnableControls;
@@ -1333,7 +1329,7 @@ begin
         AProc.MessageBox( 'ѕеремещать в прайс-лист можно только за€вки текущего адреса заказа.', MB_ICONWARNING)
       else
         if FSelectedRows.Count = 1 then
-          pmDestinationPrices.Popup(sbMoveToPrice.ClientOrigin.X + sbMoveToPrice.Width, sbMoveToPrice.ClientOrigin.Y);
+          OnDectinationPriceClick(sbMoveToPrice);
   end;
 end;
 
@@ -1345,6 +1341,7 @@ var
   offers : TObjectList;
   positionIndex : Integer;
   position : TCurrentOrderItem;
+  notFoundPositionCount : Integer;
 
   procedure SetOrder( Order: Integer);
   begin
@@ -1359,8 +1356,8 @@ var
   begin
     with adsCore do begin
       ParamByName( 'ClientId').Value := DM.adtClients.FieldByName('ClientId').Value;
-      ParamByName( 'PriceCode').Value := InternalDestinationPrice.PriceCode;
-      ParamByName( 'RegionCode').Value := InternalDestinationPrice.RegionCode;
+      ParamByName( 'PriceCode').Value := orderItem.Offer.PriceCode;
+      ParamByName( 'RegionCode').Value := orderItem.Offer.RegionCode;
       ParamByName( 'DayOfWeek').Value := TDayOfWeekHelper.DayOfWeek();
 
       RestoreSQL;
@@ -1396,32 +1393,46 @@ begin
         { открываем сохраненный заказ }
         movedOrder := GetOrderFormMove();
         try
-          offers := TDBMapping.GetOffersByPriceAndProductId(
+          offers := TDBMapping.GetOffersByCurrentOrdersAndProductId(
             DM.MainConnection,
-            InternalDestinationPrice.PriceCode,
-            InternalDestinationPrice.RegionCode,
+            movedOrder.AddressId,
+            movedOrder.PriceCode,
+            movedOrder.RegionCode,
             movedOrder.GetProductIds()
             );
 
           try
             movedOrder.RestoreOrderItemsToAnotherPrice(offers);
+
+            Application.ProcessMessages;
+
+            if movedOrder.CorrectionExists() then
+              Strings.Add('   прайс-лист ' + movedOrder.PriceName);
+
+            notFoundPositionCount := 0;
+            for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
+              position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
+
+              if not VarIsNull(position.CoreId) then begin
+                SaveOrderItem(position);
+                if not MoveToPriceFromSend then
+                  DM.MainConnection.ExecSQL('delete from CurrentOrderLists where Id = ' + IntToStr(position.Id), []);
+              end
+              else
+                Inc(notFoundPositionCount);
+
+              if (not VarIsNull(position.DropReason)) then
+                Strings.Add('      ' + position.ToRestoreReport());
+            end;
+
+            //≈сли работает с текущим заказом и все перераспределили, то удал€ем заказ
+            if not MoveToPriceFromSend and (notFoundPositionCount = 0) then
+              DM.MainConnection.ExecSQL(
+                'delete from CurrentOrderLists where OrderId = ' +IntToStr(movedOrder.OrderId) +';'#13#10 +
+                  'delete from CurrentOrderHeads where ORDERID = ' + IntToStr(movedOrder.OrderId),
+                []);
           finally
             offers.Free;
-          end;
-
-          Application.ProcessMessages;
-          
-          if movedOrder.CorrectionExists() then
-            Strings.Add('   прайс-лист ' + movedOrder.PriceName);
-
-          for positionIndex := 0 to movedOrder.OrderItems.Count-1 do begin
-            position := TCurrentOrderItem(movedOrder.OrderItems[positionIndex]);
-
-            if not VarIsNull(position.CoreId) then
-              SaveOrderItem(position);
-
-            if (not VarIsNull(position.DropReason)) then
-              Strings.Add('      ' + position.ToRestoreReport());
           end;
 
         finally
@@ -1530,6 +1541,23 @@ postedCriteria +
     ordersDateFrom := IncDay(ordersDateFrom);
     dtpDateFrom.DateTime := ordersDateFrom;
   end;
+end;
+
+procedure TOrdersHForm.dbMemoEnter(Sender: TObject);
+begin
+  inherited;
+  if (Sender is TDBMemo)
+    and not TDBMemo(Sender).ReadOnly
+    and Assigned(TDBMemo(Sender).Field) then
+    SoftEdit(TDBMemo(Sender).Field.DataSet);
+end;
+
+procedure TOrdersHForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  if TabControl.TabIndex = 0 then
+    dbgCurrentOrders.Invalidate
+  else
+    dbgSendedOrders.Invalidate;
 end;
 
 initialization

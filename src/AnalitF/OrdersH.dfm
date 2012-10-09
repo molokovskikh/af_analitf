@@ -46,15 +46,11 @@ inherited OrdersHForm: TOrdersHForm
           Top = 4
           Width = 150
           Height = 27
-          Caption = #1055#1077#1088#1077#1085#1077#1089#1090#1080' '#1074' '#1087#1088#1072#1081#1089
-          Glyph.Data = {
-            A6000000424DA600000000000000760000002800000009000000060000000100
-            0400000000003000000000000000000000001000000010000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333000
-            0000333303333000000033300033300000003300000330000000300000003000
-            00003333333330000000}
+          Hint = #1055#1077#1088#1077#1088#1072#1089#1087#1088#1077#1076#1077#1083#1080#1090#1100' '#1087#1086' '#1087#1086#1089#1090#1072#1074#1097#1080#1082#1072#1084' '#1080#1084#1077#1102#1097#1080#1084' '#1079#1072#1082#1072#1079#1099
+          Caption = #1055#1077#1088#1077#1088#1072#1089#1087#1088#1077#1076#1077#1083#1080#1090#1100
           Layout = blGlyphRight
+          ParentShowHint = False
+          ShowHint = True
           Spacing = 10
           OnClick = sbMoveToPriceClick
         end
@@ -397,6 +393,7 @@ inherited OrdersHForm: TOrdersHForm
               DataSource = dsOrdersH
               ScrollBars = ssVertical
               TabOrder = 0
+              OnEnter = dbMemoEnter
             end
           end
           object gbComments: TGroupBox
@@ -415,6 +412,7 @@ inherited OrdersHForm: TOrdersHForm
               DataSource = dsOrdersH
               ScrollBars = ssVertical
               TabOrder = 0
+              OnEnter = dbMemoEnter
             end
           end
         end
@@ -1406,9 +1404,10 @@ inherited OrdersHForm: TOrdersHForm
         ' '
       'WHERE'
       '    (CurrentOrderHeads.Closed = 0)'
-      'and (PricesData.PriceCode is not null) '
-      'and (RegionalData.RegionCode is not null) '
-      'and (pricesregionaldata.PriceCode is not null)')
+      ' and (((PricesData.PriceCode is not null) '
+      '        and (RegionalData.RegionCode is not null) '
+      '        and (pricesregionaldata.PriceCode is not null)) '
+      '    or (CurrentOrderHeads.Frozen = 1))')
     Left = 132
     Top = 183
     ParamData = <

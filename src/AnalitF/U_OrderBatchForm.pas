@@ -28,7 +28,9 @@ uses
   AddressController,
   U_frameFilterAddresses,
   DayOfWeekHelper,
-  LU_TDataExportAsXls;
+  LU_TDataExportAsXls,
+  U_LegendHolder,
+  U_frameBaseLegend;
 
 
 type
@@ -37,7 +39,8 @@ type
     osNotOrdered = $02,        //Позиция не заказана
     osOptimalCost = $04,       //Заказан по лучшей цене
     osNotEnoughQuantity = $08, //Не заказан по причине нехватки кол-ва
-    OffersExists = $10         //Предложения по данной позиции имелись
+    OffersExists = $10,        //Предложения по данной позиции имелись
+    osOrderedLikeFrozen = $80  //Заказанная позиция имеется в замороженных заказах
   );
 
   TFilterReport =
@@ -46,6 +49,7 @@ type
     frAllOrdered,
     frOrderedOptimal,
     frOrderedNonOptimal,
+    frOrderedLikeFrozen,
     frNotOrdered,
     frNotOrderedNotOffers,
     frNotOrderedErrorQuantity,
@@ -60,6 +64,7 @@ const
     'Заказано',
     '   Минимальные',
     '   Не минимальные',
+    '   Присутствующие в замороженных заказах',
     'Не заказано',
     '   Нет предложений',
     '   Нулевое количество',
@@ -109,12 +114,6 @@ type
     procedure CreateGridPanel;
     function AddServiceFields : Integer;
     procedure CreateLegends;
-    function CreateLegendLabel(
-      var legendLabel : TLabel;
-      legend : String;
-      legendColor : TColor;
-      newLeft,
-      newTop : Integer) : Integer;
     procedure BindFields;
     procedure DeleteOrder;
     procedure SetFilter(Filter: TFilterReport);
@@ -174,6 +173,8 @@ type
     procedure adsCoreBeforePost(DataSet: TDataSet);
 
     procedure AddCoreFields;
+
+    procedure UpdateGridOnLegend(Sender : TObject);
   public
     { Public declarations }
 
@@ -194,24 +195,13 @@ type
 
     pBottom : TPanel;
     pLegendAndComment : TPanel;
-    pLegend : TPanel;
     dbmComment : TDBMemo;
     dbgHistory : TToughDBGrid;
     dbgCore : TToughDBGrid;
     bevelHistory : TBevel;
     gbHistory : TGroupBox;
 
-    lOptimalCost : TLabel;
-    lErrorQuantity : TLabel;
-    lNotOffers : TLabel;
-    lNotEnoughQuantity : TLabel;
-    lAnotherError : TLabel;
-    lNotParsed : TLabel;
-
-    lJunkLegend : TLabel;
-    lAwaitLegend : TLabel;
-    lVitallyImportantLegend : TLabel;
-
+    frameLegend : TframeBaseLegend;
 
     pGrid : TPanel;
     dbgOrderBatch : TToughDBGrid;
@@ -368,14 +358,19 @@ procedure TOrderBatchForm.BatchReportGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if StatusField.IsNull or ProductIdField.IsNull then
-    Background := lAnotherError.Color
+    Background := LegendHolder.Legends[lnSmartOrderAnotherError]
   else begin
     if (StatusField.Value and Integer(osOptimalCost)) > 0 then
-      Background := lOptimalCost.Color
+      Background := LegendHolder.Legends[lnSmartOrderOptimalCost]
     else
     if (StatusField.Value and Integer(osNotOrdered)) > 0 then
-      Background := lAnotherError.Color
+      Background := LegendHolder.Legends[lnSmartOrderAnotherError]
   end;
+
+  if ((StatusField.Value and Integer(osOrderedLikeFrozen)) > 0)
+    and AnsiSameText(Column.Field.FieldName, 'SynonymName')
+  then
+    Background := LegendHolder.Legends[lnOrderedLikeFrozen];
 end;
 
 procedure TOrderBatchForm.BindFields;
@@ -409,11 +404,11 @@ begin
   pLegendAndComment.Align := alBottom;
   pLegendAndComment.Height := pBottom.Height - 20;
 
-  pLegend := TPanel.Create(Self);
-  pLegend.ControlStyle := pLegend.ControlStyle - [csParentBackground] + [csOpaque];
-  pLegend.Parent := pLegendAndComment;
-  pLegend.Align := alBottom;
-  pLegend.Height := OneLineHeight * 3;
+  frameLegend := TframeBaseLegend.Create(Self);
+  frameLegend.Parent := pLegendAndComment;
+  frameLegend.Align := alBottom;
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
+  frameLegend.Height := OneLineHeight * 3;
 
   CreateLegends;
 
@@ -446,7 +441,7 @@ begin
 
   OneLineHeight := TDBGridHelper.GetStdDefaultRowHeight(dbgHistory);
 
-  pLegendAndComment.Height := pLegend.Height + (OneLineHeight * 6);
+  pLegendAndComment.Height := frameLegend.Height + (OneLineHeight * 6);
   pLegendAndComment.Constraints.MaxHeight := pLegendAndComment.Height;
 
   TDBGridHelper.AddColumn(dbgHistory, 'PriceName', 'Прайс-лист', Self.Canvas.TextWidth('Большое имя прайс-листа'));
@@ -583,45 +578,14 @@ begin
   TDBGridHelper.SetTitleButtonToColumns(dbgOrderBatch);
 end;
 
-function TOrderBatchForm.CreateLegendLabel(
-  var legendLabel: TLabel;
-  legend: String; legendColor: TColor; newLeft, newTop: Integer): Integer;
-begin
-  legendLabel := TLabel.Create(Self);
-  legendLabel.Parent := pLegend;
-  legendLabel.AutoSize := False;
-  legendLabel.Top := newTop;
-  legendLabel.Left := newLeft;
-  legendLabel.Caption := legend;
-  legendLabel.ParentColor := False;
-  legendLabel.Transparent := False;
-  legendLabel.Color := legendColor;
-  legendLabel.Alignment := taCenter;
-  legendLabel.Layout := tlCenter;
-  legendLabel.Width := legendLabel.Canvas.TextWidth(legend) + 20;
-  legendLabel.Height := legendLabel.Canvas.TextHeight(legend) + 10;
-  Result := legendLabel.Left + legendLabel.Width + 6;
-end;
-
 procedure TOrderBatchForm.CreateLegends;
-var
-  newLeft,
-  newTop : Integer;
 begin
-  newLeft := 8;
-  newTop := (pLegend.Height - (Self.Canvas.TextHeight('Test') + 10)) div 2;
-  newLeft := CreateLegendLabel(lOptimalCost, 'Минимальная цена', RGB(172, 255, 151), newLeft, newTop);
-  //newLeft := CreateLegendLabel(lErrorQuantity, 'Указано неверное количество', RGB(200, 203, 206), newLeft, newTop);
-  //newLeft := CreateLegendLabel(lNotOffers, 'Нет предложений', RGB(226, 180, 181), newLeft, newTop);
-  //newLeft := CreateLegendLabel(lNotEnoughQuantity, 'Нет достаточного количества', RGB(255, 190, 151), newLeft, newTop);
-  //newLeft :=
-  newLeft := CreateLegendLabel(lAnotherError, 'Не заказанные', RGB(255, 128, 128), newLeft, newTop);
-  //CreateLegendLabel(lNotParsed, 'Не найденные в ассортиментном прайс-листе', RGB(245, 233, 160), newLeft, newTop);
-
-  newLeft := CreateLegendLabel(lJunkLegend, 'Уцененные препараты', JUNK_CLR, newLeft, newTop);
-  newLeft := CreateLegendLabel(lAwaitLegend, 'Ожидаемая позиция', AWAIT_CLR, newLeft, newTop);
-  newLeft := CreateLegendLabel(lVitallyImportantLegend, 'Жизненно важные препараты', clWindow, newLeft, newTop);
-  lVitallyImportantLegend.Font.Color := VITALLYIMPORTANT_CLR;
+  frameLegend.CreateLegendLabel(lnSmartOrderOptimalCost);
+  frameLegend.CreateLegendLabel(lnSmartOrderAnotherError);
+  frameLegend.CreateLegendLabel(lnJunk);
+  frameLegend.CreateLegendLabel(lnAwait);
+  frameLegend.CreateLegendLabel(lnVitallyImportant);
+  frameLegend.CreateLegendLabel(lnOrderedLikeFrozen);
 end;
 
 procedure TOrderBatchForm.CreateNonVisualComponent;
@@ -737,7 +701,7 @@ begin
   for filter := Low(TFilterReport) to High(TFilterReport) do
     cbFilter.Items.Add(FilterReportNames[filter]);
   cbFilter.ItemIndex := 0;
-  cbFilter.Width := cbFilter.Canvas.TextWidth(FilterReportNames[frNotOrderedErrorQuantity]) + 5;
+  cbFilter.Width := cbFilter.Canvas.TextWidth(FilterReportNames[frOrderedLikeFrozen]) + 5;
   cbFilter.Left := eSearch.Left + eSearch.Width + 5;
   cbFilter.OnClick := FilterClick;
 
@@ -992,14 +956,18 @@ end;
 procedure TOrderBatchForm.SetFilter(Filter: TFilterReport);
 var
   FP : TFilterRecordEvent;
+  lastId : Int64;
 begin
   eSearch.Text := '';
   InternalSearchText := '';
+  lastId := IdField.Value;
   FP := nil;
   if Filter <> frAll then
     FP := FilterRecord;
   CurrentFilter := Filter;
   DBProc.SetFilterProc(adsReport, FP);
+  if not adsReport.Locate('Id', lastId, []) then
+    adsReport.First;
 end;
 
 procedure TOrderBatchForm.FilterRecord(DataSet: TDataSet;
@@ -1010,7 +978,7 @@ begin
 
   if Accept then begin
 
-    if CurrentFilter in [frAllOrdered, frOrderedOptimal, frOrderedNonOptimal]
+    if CurrentFilter in [frAllOrdered, frOrderedOptimal, frOrderedNonOptimal, frOrderedLikeFrozen]
     then begin
       Accept := not OrderListIdField.IsNull;
       if Accept and (CurrentFilter = frOrderedOptimal) then
@@ -1018,6 +986,9 @@ begin
       else
         if Accept and (CurrentFilter = frOrderedNonOptimal) then
           Accept := (StatusField.Value and Integer(osOptimalCost)) = 0
+      else
+        if Accept and (CurrentFilter = frOrderedLikeFrozen) then
+          Accept := (StatusField.Value and Integer(osOrderedLikeFrozen)) > 0
     end
     else
       if CurrentFilter <> frAll then
@@ -1175,10 +1146,10 @@ var
   ResidualHeight : Integer;
   NewHistoryHeight : Integer;
 begin
-  AllUnresizedControl := pTop.Height + framePosition.Height + pLegend.Height;
+  AllUnresizedControl := pTop.Height + framePosition.Height + frameLegend.Height;
   ResidualHeight := Self.ClientHeight - AllUnresizedControl;
   NewHistoryHeight := ResidualHeight div 5;
-  pLegendAndComment.Height := pLegend.Height + NewHistoryHeight;
+  pLegendAndComment.Height := frameLegend.Height + NewHistoryHeight;
   pBottom.Height := pLegendAndComment.Height + ((ResidualHeight - NewHistoryHeight) div 2);
 
   gbHistory.Width := Trunc(pBottom.ClientWidth * 0.4);
@@ -1561,14 +1532,14 @@ procedure TOrderBatchForm.CoreGetCellParams(Sender: TObject;
 begin
   if not adsCore.IsEmpty then begin
     if adsCore.FieldByName('vitallyimportant').AsBoolean then
-      AFont.Color := VITALLYIMPORTANT_CLR;
+      AFont.Color := LegendHolder.Legends[lnVitallyImportant];
     //если уцененный товар, изменяем цвет
     if adsCore.FieldByName('Junk').AsBoolean and (AnsiIndexText(Column.Field.FieldName, ['Period', 'Cost']) > -1)
     then
-      Background := JUNK_CLR;
+      Background := LegendHolder.Legends[lnJunk];
     //ожидаемый товар выделяем зеленым
     if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
-      Background := AWAIT_CLR;
+      Background := LegendHolder.Legends[lnAwait];
   end;
 end;
 
@@ -1780,6 +1751,12 @@ begin
       else
         PanelCaption := WarningOrderCountMessage;
 
+    if DM.ExistsInFrozenOrders(adsCoreProductid.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningLikeFrozenMessage
+      else
+        PanelCaption := WarningLikeFrozenMessage;
+
     if Length(PanelCaption) > 0 then
       ShowOverCostPanel(PanelCaption, dbgCore);
 
@@ -1913,6 +1890,12 @@ begin
   adsCoreRetailVitallyImportant := TDataSetHelper.AddBooleanField(adsCore, 'RetailVitallyImportant');
 
   adsCoreNamePromotionsCount := TDataSetHelper.AddIntegerField(adsCore, 'NamePromotionsCount');
+end;
+
+procedure TOrderBatchForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgOrderBatch.Invalidate;
+  dbgCore.Invalidate;
 end;
 
 initialization

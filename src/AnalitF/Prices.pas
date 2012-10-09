@@ -7,7 +7,8 @@ uses
   Dialogs, Child, StdCtrls, DBCtrls, Grids, DBGrids, RXDBCtrl,
   ActnList, DB, Buttons, ComCtrls, ExtCtrls, DBGridEh, ToughDBGrid,
   Menus, GridsEh, MemDS,
-  DBAccess, MyAccess, CoreFirm;
+  DBAccess, MyAccess, CoreFirm,
+  U_LegendHolder;
 
 type
   TPricesForm = class(TChildForm)
@@ -65,6 +66,8 @@ type
     stManagerMail: TStaticText;
     pFullName: TPanel;
     dbtFullName: TDBText;
+    adsPricesAddress: TStringField;
+    DBMemoAddress: TDBMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure actOnlyLeadersExecute(Sender: TObject);
@@ -272,7 +275,7 @@ procedure TPricesForm.dbgPricesGetCellParams(Sender: TObject;
 begin
   inherited;
   if not adsPricesEnabled.AsBoolean and ( Column.Field = adsPricesPriceName) then
-    BackGround := clBtnFace;
+    BackGround := LegendHolder.Legends[lnNonMain];
   if adsPricesPositions.AsInteger > 0 then AFont.Style := [fsBold];
 end;
 
@@ -280,6 +283,10 @@ procedure TPricesForm.adsPrices2AfterScroll(DataSet: TDataSet);
 begin
   inherited;
   //Реализация взята отсюда: http://www.autoaf.ru/faq_delphi.htm
+  if DBMemoAddress.Lines.Count > 0 then
+    SetScrolls(DBMemoAddress)
+  else
+    DBMemoAddress.ScrollBars := ssNone;
   if DBMemoContact.Lines.Count > 0 then
     SetScrolls(DBMemoContact)
   else

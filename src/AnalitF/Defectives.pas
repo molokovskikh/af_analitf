@@ -35,6 +35,7 @@ type
     dbmReason: TDBMemo;
     adsPrint: TMyQuery;
     adsDefectives: TMyQuery;
+    cbShowRejectsReason: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure btnUnCheckAllClick(Sender: TObject);
     procedure actCheckExecute(Sender: TObject);
@@ -43,6 +44,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure dtpDateCloseUp(Sender: TObject);
     procedure dbgDefectivesSortMarkingChanged(Sender: TObject);
+    procedure cbShowRejectsReasonClick(Sender: TObject);
   private
     FOrderField: string;
     procedure SetDateInterval;
@@ -77,6 +79,12 @@ begin
   OrderField:='LetterDate';
   SetDateInterval;
   TDBGridHelper.RestoreColumnsLayout(dbgDefectives, Self.ClassName);
+  cbShowRejectsReason.OnClick := nil;
+  try
+    cbShowRejectsReason.Checked := FGS.ShowRejectsReason;
+  finally
+    cbShowRejectsReason.OnClick := cbShowRejectsReasonClick;
+  end;
   ShowForm;
 end;
 
@@ -165,6 +173,7 @@ begin
   adsPrint.ParamByName('ShowAll').Value := ShowAll;
   adsPrint.Open;
   try
+    frVariables[ 'ShowRejectsReason'] := FGS.ShowRejectsReason;
     DM.ShowFastReport('Defectives.frf', adsPrint, APreview);
   finally
     adsPrint.Close;
@@ -188,6 +197,13 @@ procedure TDefectivesForm.dbgDefectivesSortMarkingChanged(Sender: TObject);
 begin
   MyDacDataSetSortMarkingChanged( TToughDBGrid(Sender) );
   OrderField := adsDefectives.IndexFieldNames;
+end;
+
+procedure TDefectivesForm.cbShowRejectsReasonClick(
+  Sender: TObject);
+begin
+  FGS.ShowRejectsReason := cbShowRejectsReason.Checked;
+  FGS.SaveShowRejectsReason;
 end;
 
 end.

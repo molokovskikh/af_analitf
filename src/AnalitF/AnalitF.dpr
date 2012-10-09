@@ -167,7 +167,10 @@ uses
   U_AddWaybillForm in 'Views\U_AddWaybillForm.pas' {AddWaybillForm},
   VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
   WaybillCalculation in 'BusinessLogic\WaybillCalculation.pas',
-  U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame};
+  U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame},
+  DownloadAppFiles in 'Helpers\DownloadAppFiles.pas',
+  U_LegendHolder in 'BusinessLogic\U_LegendHolder.pas',
+  U_WaybillGridFactory in 'Views\U_WaybillGridFactory.pas';
 
 {$R *.RES}
 {$R Progress.RES}
@@ -185,6 +188,7 @@ uses
 {$R CompareScript92.RES}
 {$R CompareScript93.RES}
 {$R CompareScript94.RES}
+{$R CompareScript95.RES}
 
 
   procedure CopyRegSettings;

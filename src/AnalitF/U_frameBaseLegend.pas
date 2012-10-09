@@ -3,12 +3,15 @@ unit U_frameBaseLegend;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, StdCtrls;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls,
+  DModule,
+  U_LegendHolder;
 
 type
   TframeBaseLegend = class(TFrame)
     gbLegend: TGroupBox;
+    LegendColorDialog: TColorDialog;
   private
     { Private declarations }
   protected
@@ -16,8 +19,10 @@ type
     LabelHeight : Integer;
     topLabel : Integer;
     newLeftLabel : Integer;
+    procedure OnLegendDblClick(Sender : TObject);
   public
     { Public declarations }
+    UpdateGrids : TNotifyEvent;
     constructor Create(AOwner: TComponent); override;
     function CreateLegendLabel(
       legend : String;
@@ -28,6 +33,8 @@ type
       legendColor : TColor;
       legendTextColor : TColor;
       hint : String) : TLabel; overload;
+    function CreateLegendLabel(aLegendName : TLegendName) : TLabel; overload;
+
   end;
 
 implementation
@@ -83,6 +90,7 @@ begin
   Result.Width := Result.Canvas.TextWidth(legend) + 60;
   Result.Height := LabelHeight;
   newLeftLabel := Result.Left + Result.Width + 6;
+  Result.OnDblClick := OnLegendDblClick;
 end;
 
 function TframeBaseLegend.CreateLegendLabel(legend: String; legendColor,
@@ -92,6 +100,54 @@ begin
   if Length(hint) > 0 then begin
     Result.Hint := hint;
     Result.ShowHint := True;
+  end;
+end;
+
+function TframeBaseLegend.CreateLegendLabel(
+  aLegendName: TLegendName): TLabel;
+var
+  legendInfo : TLegendInfo;
+begin
+  legendInfo := LegendHolder.GetLegendInfo(aLegendName);
+  Result := TLabel.Create(Self);
+  Result.Parent := gbLegend;
+  Result.AutoSize := False;
+  Result.Top := topLabel;
+  Result.Left := newLeftLabel;
+  Result.ParentColor := False;
+  Result.ParentFont := False;
+  Result.Transparent := False;
+  Result.Alignment := taCenter;
+  Result.Layout := tlCenter;
+
+  legendInfo.SetLabel(Result);
+
+  Result.Tag := Integer(legendInfo);
+
+  Result.Width := Result.Canvas.TextWidth(Result.Caption) + 60;
+  Result.Height := LabelHeight;
+  newLeftLabel := Result.Left + Result.Width + 6;
+  Result.OnDblClick := OnLegendDblClick;
+end;
+
+procedure TframeBaseLegend.OnLegendDblClick(Sender: TObject);
+var
+  legendLabel : TLabel;
+  legendInfo : TLegendInfo;
+begin
+  if Sender is TLabel then begin
+    legendLabel := TLabel(Sender);
+    if legendLabel.Tag > 0 then begin
+      legendInfo := TLegendInfo(legendLabel.Tag);
+      LegendColorDialog.Color := legendInfo.LegendColor;
+      if LegendColorDialog.Execute then begin
+        legendInfo.LegendColor := LegendColorDialog.Color;
+        legendInfo.SetLabel(legendLabel);
+        LegendHolder.SaveLegend(DM.MainConnection, legendInfo);
+        if Assigned(UpdateGrids) then
+          UpdateGrids(Self);
+      end;
+    end;
   end;
 end;
 

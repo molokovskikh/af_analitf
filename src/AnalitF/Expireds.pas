@@ -8,7 +8,8 @@ uses
   Placemnt, StdCtrls, ExtCtrls, DBGridEh, ToughDBGrid, OleCtrls,
   DBProc, Constant,
   GridsEh, ActnList, MemDS, DBAccess, MyAccess, Buttons,
-  DayOfWeekHelper;
+  DayOfWeekHelper,
+  U_LegendHolder;
 
 type
   TExpiredsForm = class(TChildForm)
@@ -249,6 +250,12 @@ begin
       else
         PanelCaption := WarningOrderCountMessage;
 
+    if DM.ExistsInFrozenOrders(adsExpiredsproductid.Value) then
+      if Length(PanelCaption) > 0 then
+        PanelCaption := PanelCaption + #13#10 + WarningLikeFrozenMessage
+      else
+        PanelCaption := WarningLikeFrozenMessage;
+
     if Length(PanelCaption) > 0 then
       ShowOverCostPanel(PanelCaption, dbgExpireds);
 
@@ -283,11 +290,11 @@ procedure TExpiredsForm.dbgExpiredsGetCellParams(Sender: TObject;
   State: TGridDrawState);
 begin
   if adsExpiredsVITALLYIMPORTANT.AsBoolean then
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
   //уцененный товар
   if (( Column.Field = adsExpiredsPERIOD) or ( Column.Field = adsExpiredsCOST))
-  then Background := JUNK_CLR;
+  then Background := LegendHolder.Legends[lnJunk];
 end;
 
 procedure TExpiredsForm.actFlipCoreExecute(Sender: TObject);

@@ -16,6 +16,7 @@
 #define PngImage1_PNG_ERROR_NO_PALETTE 65445
 #define PngImage1_PNG_INVALID_COLOR_TYPE 65446
 #define PngImage1_CHUNK_NOT_CHILD 65447
+#define RxMemDS_SMemNoRecords 65448
 #define MyConsts_SNoRecordToLock 65456
 #define MyConsts_SLockVsFetchAll 65457
 #define MyConsts_SInvalidClientVersion 65458
@@ -106,6 +107,7 @@ BEGIN
 	PngImage1_PNG_ERROR_NO_PALETTE,	"The current image requeries a palette but it is not avaliable."
 	PngImage1_PNG_INVALID_COLOR_TYPE,	"Can not get transparency information because the current image color type is not RGB (value 3)"
 	PngImage1_CHUNK_NOT_CHILD,	"The especified chunk is not inside the chunk list containing the method being used. The funcion could not be completed."
+	RxMemDS_SMemNoRecords,	"No data found"
 	MyConsts_SNoRecordToLock,	"There is no active record to lock"
 	MyConsts_SLockVsFetchAll,	"Lock is not compatible with FetchAll = False"
 	MyConsts_SInvalidClientVersion,	"Invalid client version"

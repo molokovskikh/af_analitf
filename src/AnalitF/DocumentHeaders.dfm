@@ -134,6 +134,29 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       TabOrder = 2
       OnClick = rgColumnClick
     end
+    object gbReject: TGroupBox
+      Left = 424
+      Top = 0
+      Width = 169
+      Height = 45
+      Caption = ' '#1047#1072#1073#1088#1072#1082#1086#1074#1082#1072' '
+      TabOrder = 3
+      object cbReject: TComboBox
+        Left = 9
+        Top = 16
+        Width = 152
+        Height = 21
+        Style = csDropDownList
+        ItemHeight = 13
+        ItemIndex = 0
+        TabOrder = 0
+        Text = #1042#1089#1077
+        OnChange = cbRejectChange
+        Items.Strings = (
+          #1042#1089#1077
+          #1048#1079#1084#1077#1085#1077#1085#1085#1099#1077' '#1085#1072#1082#1083#1072#1076#1085#1099#1077)
+      end
+    end
   end
   object pGrid: TPanel [1]
     Left = 0
@@ -272,7 +295,8 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       'dh.CreatedByUser,'
       'p.FullName as ProviderName,'
       'sum(db.Amount) as TotalSumm,'
-      'sum(db.RetailAmount) as TotalRetailSumm'
+      'sum(db.RetailAmount) as TotalRetailSumm,'
+      'max(db.LastRejectStatusTime) as LastRejectStatusTime'
       'from'
       '  DocumentHeaders dh,'
       '  providers p,'
@@ -351,6 +375,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
     object adsDocumentHeadersCreatedByUser: TBooleanField
       FieldName = 'CreatedByUser'
     end
+    object adsDocumentHeadersLastRejectStatusTime: TDateTimeField
+      FieldName = 'LastRejectStatusTime'
+    end
   end
   object dsDocumentHeaders: TDataSource
     DataSet = adsDocumentHeaders
@@ -388,7 +415,9 @@ inherited DocumentHeaderForm: TDocumentHeaderForm
       '73756d2864622e416d6f756e742920617320546f74616c53756d6d2c'
       
         '73756d2864622e52657461696c416d6f756e742920617320546f74616c526574' +
-        '61696c53756d6d'
+        '61696c53756d6d2c'
+        '6d61782864622e4c61737452656a65637453746174757354696d652920617320' +
+        '4c61737452656a65637453746174757354696d65'
       '66726f6d'
       '2020446f63756d656e7448656164657273206468'
       

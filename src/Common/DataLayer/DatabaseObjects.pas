@@ -16,7 +16,7 @@ uses
 
 const
   //Текущая версия базы данных для работы программ
-  CURRENT_DB_VERSION = 95;
+  CURRENT_DB_VERSION = 96;
   SDirData = 'Data';
   SDirDataTmpDir = 'DataTmpDir';
   SDirTableBackup = 'TableBackup';
@@ -368,6 +368,8 @@ type
       IsBackupRepair : Boolean;
       CheckedTables : TRepairedObjects = [];
       startUp : Boolean = False);
+
+    procedure SimpleRepareTable(connection : TCustomMyConnection; table : TDatabaseTable);
 
     procedure RepairTableFromBackup(backupDir : String = '');
 
@@ -1837,6 +1839,36 @@ begin
         else
           raise;
     end;
+  end;
+end;
+
+procedure TDatabaseController.SimpleRepareTable(
+  connection: TCustomMyConnection; table: TDatabaseTable);
+var
+  MyServerControl : TMyServerControl;
+begin
+  MyServerControl := TMyServerControl.Create(nil);
+  try
+    MyServerControl.Connection := connection;
+    MyServerControl.TableNames := WorkSchema + '.' + table.Name;
+
+    MyServerControl.RepairTable([rtExtended, rtUseFrm]);
+    if ParseMethodResuls(MyServerControl, table.LogObjectName) then
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Восстановление объекта %s успешно завершено.', [table.LogObjectName]))
+    else
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Восстановление объекта %s завершилось с ошибкой!', [table.LogObjectName]));
+
+    MyServerControl.OptimizeTable();
+    if ParseMethodResuls(MyServerControl, table.LogObjectName) then
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Оптимизация объекта %s успешно завершена.', [table.LogObjectName]))
+    else
+      WriteExchangeLog('TDatabaseController.SimpleRepareTable',
+        Format('Оптимизация объекта %s завершилась с ошибкой!', [table.LogObjectName]));
+  finally
+    MyServerControl.Free;
   end;
 end;
 

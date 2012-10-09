@@ -171,6 +171,9 @@ uses
   VitallyImportantMarkupsParams in '..\Common\GlobalParams\VitallyImportantMarkupsParams.pas',
   WaybillCalculation in '..\AnalitF\BusinessLogic\WaybillCalculation.pas',
   U_frameMatchWaybill in '..\AnalitF\Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame},
+  DownloadAppFiles in '..\AnalitF\Helpers\DownloadAppFiles.pas',
+  U_LegendHolder in '..\AnalitF\BusinessLogic\U_LegendHolder.pas',
+  U_WaybillGridFactory in '..\AnalitF\Views\U_WaybillGridFactory.pas',
 
 //end files
   
@@ -182,7 +185,8 @@ uses
   INFHelpersTests in 'INFHelpersTests.pas',
   MappingTests in 'MappingTests.pas',
   DBRestoreTests in 'DBRestoreTests.pas',
-  WaybillCalculationTests in 'WaybillCalculationTests.pas';
+  WaybillCalculationTests in 'WaybillCalculationTests.pas',
+  WaybillGridColumnTests in 'WaybillGridColumnTests.pas';
 
 {$R *.res}
 

@@ -45,6 +45,7 @@ type
     procedure SetStateFromDB();
     procedure SetStateForSmall();
     procedure SetStateForSmallWithBigCost();
+    procedure SetStateForSmallWithBigCost2();
   public
     { Public declarations }
     TicketParams : TTicketReportParams;
@@ -129,8 +130,9 @@ begin
   cbTicketSize.Items.Add('Стандартный размер');
   cbTicketSize.Items.Add('Малый размер');
   cbTicketSize.Items.Add('Малый ценник с большой ценой');
+  cbTicketSize.Items.Add('Малый ценник с большой ценой №2');
   cbTicketSize.ItemIndex := Integer(TicketParams.TicketSize);
-  cbTicketSize.Width := Self.Canvas.TextWidth('Малый ценник с большой ценой') + 50;
+  cbTicketSize.Width := Self.Canvas.TextWidth('Малый ценник с большой ценой №2') + 50;
   cbTicketSize.Left := 5;
   cbTicketSize.Top := 5;
 
@@ -259,6 +261,19 @@ begin
   cbDocumentDate.Checked := False;
 end;
 
+procedure TEditTicketReportParamsForm.SetStateForSmallWithBigCost2;
+begin
+  cbClientName.Checked := True;
+  cbProduct.Checked := True;
+  cbCountry .Checked := False;
+  cbProducer.Checked := True;
+  cbPeriod.Checked := True;
+  cbProviderDocumentId.Checked := False;
+  cbSignature.Checked := True;
+  cbSerialNumber.Checked := False;
+  cbDocumentDate.Checked := False;
+end;
+
 procedure TEditTicketReportParamsForm.SetStateFromDB;
 begin
   cbClientName.Checked := TicketParams.ClientNameVisible;
@@ -280,8 +295,9 @@ begin
   case cbTicketSize.ItemIndex of
     0 : SetStateFromDB;
     1 : SetStateForSmall;
+    2 : SetStateForSmallWithBigCost;
     else
-      SetStateForSmallWithBigCost;
+      SetStateForSmallWithBigCost2;
   end;
 end;
 

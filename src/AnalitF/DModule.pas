@@ -26,7 +26,9 @@ uses
   SupplierController,
   DayOfWeekHelper,
   UserActions,
-  GlobalParams;
+  GlobalParams,
+  DownloadAppFiles,
+  U_LegendHolder;
 
 {
 Криптование
@@ -42,7 +44,7 @@ const
   //Строка для шифрации паролей
   PassPassW = 'sh' + #90 + 'kjw' + #10 + 'h';
   //Список критических библиотек
-  CriticalLibraryHashes : array[0..17] of array[0..4] of string =
+  CriticalLibraryHashes : array[0..15] of array[0..4] of string =
   (
       ('dbrtl70.bpl', '0650B08C', '583E1038', '5F35A236', '6DD703FA'),
       ('designide70.bpl', 'F16F1849', 'E4827C1D', 'C4FD04B9', '968D63F9'),
@@ -60,9 +62,7 @@ const
 //      ('vclie70.bpl', '463BB658', '6C74C812', '33C92380', 'CAC85ED6'),
       ('vcljpg70.bpl', '334355C1', '34EDB2AE', '88BC6505', '9AB7B17E'),
       ('vclsmp70.bpl', 'D7B49DA9', '80884F53', 'C3D78E1E', '853B02E4'),
-      ('vclx70.bpl', 'E12C66FF', 'D510C787', '31D5400E', 'DDECD8C8'),
-      ('libeay32.dll', '791361C0', '65BF50F4', '309A59E3', '27DBC261'),
-      ('ssleay32.dll', '6E56CDE5', 'CA285535', '3FEDAFE7', 'CABB4B58')
+      ('vclx70.bpl', 'E12C66FF', 'D510C787', '31D5400E', 'DDECD8C8')
   );
 
 type
@@ -331,7 +331,6 @@ type
     function GetCatalogsCount : Integer;
     procedure LoadSelectedPrices;
     function CheckCriticalLibrary : Boolean;
-    function GetFileHash(AFileName : String) : String;
     //Проверяем версию базы и обновляем ее в случае необходимости
     procedure UpdateDB;
     //Обновления UIN в базе данных в случае обновления версии программы
@@ -351,6 +350,7 @@ type
     procedure UpdateDBFileDataFor66(dbCon : TCustomMyConnection);
     procedure DeleteRegistryCostColumn(CurrentKey : TRegistry);
     procedure DeletePriceRetColumn(CurrentKey : TRegistry);
+    procedure UpdateDBFileDataFor96(dbCon : TCustomMyConnection);
     //Установить галочку отправить для текущих заказов
     procedure SetSendToNotClosedOrders;
     function GetFullLastCreateScript : String;
@@ -453,6 +453,7 @@ type
     procedure SweepDB;
     function GetDisplayColors : Integer;
     function TCPPresent : Boolean;
+    function AutoUpdateFailed() : Boolean;
     function NeedCommitExchange : Boolean;
     procedure SetNeedCommitExchange();
     procedure SetServerUpdateId(AServerUpdateId : String);
@@ -605,6 +606,8 @@ type
     procedure ShowAttachments(fileList : TStringList);
 
     procedure FillClientAvg();
+
+    function ExistsInFrozenOrders(productId : Int64) : Boolean;
   end;
 
 var
@@ -634,7 +637,8 @@ uses AProc, Main, DBProc, Exchange, Constant, SysNames, UniqueID, RxVerInf,
      Core,
      SynonymSearch,
      CoreFirm,
-     FileCountHelper;
+     FileCountHelper,
+     U_WaybillGridFactory;
 
 type
   TestMyDBThreadState = (
@@ -1144,6 +1148,7 @@ begin
 
   MainConnection.Open;
   GlobalExclusiveParams := TExclusiveParams.Create(MainConnection);
+  LegendHolder.ReadLegends(MainConnection);
 {$ifdef DEBUG}
   WriteExchangeLog('DModule',
       Concat('UserActionLogs', #13#10,
@@ -1282,14 +1287,17 @@ begin
   if GetDisplayColors < 16 then
     LogExitError('Не возможен запуск программы с текущим качеством цветопередачи. Минимальное качество цветопередачи : 16 бит.', Integer(ecColor));
 
+  if AutoUpdateFailed() then
+    AProc.MessageBox(
+      'Внимание! Получение новой версии завершилось неудачно, возможна потеря данных.'#13#10 +
+      'Добавьте папку с программой АналитФАРМАЦИЯ в исключения антивируса и повторите попытку.'#13#10 +
+      'При повторении ошибок, пожалуйста, обратитесь в службу технической поддержки АК Инфорум для получения инструкций',
+      MB_ICONWARNING or MB_OK);
+
   if not TCPPresent then
     LogExitError('Не возможен запуск программы без установленной библиотеки Windows Sockets версии 2.0.', Integer(ecTCPNotExists));
 
-  if not LoadSevenZipDLL then
-    LogExitError('Не найдена библиотека 7-zip32.dll, необходимая для работы программы.', Integer(ecSevenZip));
-
-  if not IdSSLOpenSSLHeaders.Load then
-    LogExitError('Не найдены библиотеки libeay32.dll и ssleay32.dll, необходимые для работы программы.', Integer(ecSSLOpen));
+  LoadSevenZipDLL();
 
   DM.MainConnection.Open;
   try
@@ -1352,7 +1360,7 @@ begin
     end;
   end;
 
-  FNeedUpdateByCheckHashes := not CheckCriticalLibrary;
+  FNeedUpdateByCheckHashes := not CheckCriticalLibrary or DownloadAppFilesHelper.ProcessCheckDownload();
   if FNeedUpdateByCheckHashes then
     AProc.MessageBox( 'Ошибка проверки подлинности компонент программы. Необходимо выполнить обновление данных.',
       MB_ICONERROR or MB_OK);
@@ -1921,26 +1929,6 @@ begin
   end;
 end;
 
-function TDM.GetFileHash(AFileName: String): String;
-var
-  md5 : TIdHashMessageDigest5;
-  fs : TFileStream;
-begin
-  md5 := TIdHashMessageDigest5.Create;
-  try
-
-    fs := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyWrite);
-    try
-      Result := md5.HashStreamAsHex(fs);
-    finally
-      fs.Free;
-    end;
-
-  finally
-    md5.Free;
-  end;
-end;
-
 function TDM.D_HP(HTTPPassC: String): String;
 var
   tmp : String;
@@ -2079,6 +2067,18 @@ begin
         RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
         DBVersion := 95;
       end;
+
+      if DBVersion = 95 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        DBVersion := 96;
+      end;
+
+{
+      if DBVersion = 96 then begin
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor96);
+        DBVersion := 97;
+      end;
+}
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
@@ -3388,7 +3388,8 @@ begin
 +'              CoreQuantity     , ServerCoreID, '
 +'              Unit             , Volume       , Note, '
 +'              Period           , Doc          , REGISTRYCOST, VITALLYIMPORTANT, '
-+'              ProducerCost     , NDS          , RetailVitallyImportant  '
++'              ProducerCost     , NDS          , RetailVitallyImportant,  '
++'              EAN13            , CodeOKP      , Series  '
 +'       ) '
 +'select :ORDERID     , :CLIENTID, c.COREID, c.PRODUCTID, c.CODEFIRMCR, '
 +'       c.SYNONYMCODE, c.SYNONYMFIRMCRCODE, c.CODE, c.CODECR, ifnull '
@@ -3408,7 +3409,8 @@ begin
 +'              c.Quantity     , c.ServerCoreID, '
 +'              c.Unit             , c.Volume       , c.Note, '
 +'              c.Period           , c.Doc          , c.REGISTRYCOST, c.VITALLYIMPORTANT, '
-+'              c.ProducerCost     , c.NDS          , c.RetailVitallyImportant  '
++'              c.ProducerCost     , c.NDS          , c.RetailVitallyImportant,  '
++'              c.EAN13            , c.CodeOKP      , c.Series  '
 +'from   core c '
 +'       inner join pricesdata pd '
 +'       on     pd.PriceCode = c.PriceCode '
@@ -6245,6 +6247,47 @@ begin
 +'    `postedorderlists`.`PRODUCTID`;';
   adcUpdate.Execute;
   WriteExchangeLog('Exchange', 'запонили средние цены по продуктам: ' + IntToStr(adcUpdate.RowsAffected));
+end;
+
+function TDM.AutoUpdateFailed: Boolean;
+var
+  currentBuildNumber,
+  prevBuildNumber : Word;
+begin
+  Result := DirectoryExists(RootFolder() + SDirIn + '\' + SDirExe);
+
+  if not Result then begin
+    currentBuildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + ExeName);
+    prevBuildNumber := GetBuildNumberLibraryVersionFromPath(ExePath + SBackDir + '\' + ExeName + '.bak');
+    Result := currentBuildNumber = prevBuildNumber;
+  end;
+end;
+
+procedure TDM.UpdateDBFileDataFor96(dbCon: TCustomMyConnection);
+begin
+  try
+    TWaybillGridFactory.RearrangeColumnsOnWaybills(MainForm);
+  except
+    on E : Exception do
+      WriteExchangeLog('UpdateDBFileDataFor96', 'Error : ' + E.Message);
+  end;
+end;
+
+function TDM.ExistsInFrozenOrders(productId: Int64): Boolean;
+var
+  id : Variant;
+begin
+  id := QueryValue(''
+    +'select CurrentOrderLists.Id '
+    +'from   CurrentOrderHeads '
+    +'    join CurrentOrderLists on CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId '
+    +'where  CurrentOrderHeads.ClientId   = :ClientId '
+    +'and CurrentOrderHeads.Frozen = 1 '
+    +'and CurrentOrderLists.PRODUCTID = :ProductId',
+      ['ClientId', 'ProductId'],
+      [adtClientsCLIENTID.Value, productId]);
+
+  Result := not VarIsNull(id);
 end;
 
 initialization

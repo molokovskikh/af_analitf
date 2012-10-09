@@ -442,12 +442,17 @@ end;
 procedure TMainForm.actConfigExecute(Sender: TObject);
 var
   OldExep : TExceptionEvent;
+  configChanges : TConfigChanges;
 begin
   DM.InsertUserActionLog(uaShowConfig);
   OldExep := Application.OnException;
   try
     Application.OnException := OnAppEx;
-    ShowConfig;
+    configChanges := ShowConfig;
+    if (configChanges * [ccHTTPName]) <> [] then begin
+      SetUpdateDateTime;
+      SetOrdersInfo;
+    end;
   finally
     Application.OnException := OldExep;
   end;
@@ -2137,7 +2142,7 @@ begin
 
   dbgNews.AutoFitColWidths := False;
   try
-    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата', dbgNews.Canvas.TextWidth('2000.00.00'));
+    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата', 'dd.mm.yyyy', dbgNews.Canvas.TextWidth('2000.00.00'));
     TDBGridHelper.AddColumn(dbgNews, 'Header', 'Тема', dbgNews.Width);
     TDBGridHelper.SetTitleButtonToColumns(dbgNews);
   finally

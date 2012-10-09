@@ -227,6 +227,19 @@ begin
 
       try
         order.RestoreOrderItems(offers);
+
+        if offers.Count = 0 then begin
+          WriteExchangeLog('Восстановление заказа', 'Заказ ' + order.ToString() + 'был заморожен, т.к. прайс-лист отсутствует');
+          DM.adcUpdate.SQL.Text := ''
+      +' update '
+      +'   CurrentOrderHeads '
+      +'  set '
+      +'     CurrentOrderHeads.Frozen = 1 '
+      +'   where CurrentOrderHeads.OrderId = :OrderId';
+          DM.adcUpdate.ParamByName('OrderId').Value := order.OrderId;
+          DM.adcUpdate.Execute;
+        end;
+
       finally
         offers.Free;
       end;

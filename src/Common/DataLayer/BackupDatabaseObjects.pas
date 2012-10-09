@@ -538,6 +538,7 @@ begin
 +'  `CertificateId` bigint(20) default null, '
 +'  `RejectId` bigint(20) default null                   , '
 +'  `VitallyImportantByUser` tinyint(1) unsigned default null, '
++'  `LastRejectStatusTime` datetime default null, '
 +'  PRIMARY KEY (`Id`), '
 +'  unique key `UK_DocumentBodies_ServerId` (`ServerId`) , '
 +'  key `IDX_DocumentBodies_DocumentId` (`DocumentId`)   , '

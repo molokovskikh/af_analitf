@@ -12,7 +12,8 @@ uses
   U_CurrentOrderItem,
   ContextMenuGrid, StrHlder,
   U_framePosition,
-  U_frameMatchWaybill;
+  U_frameMatchWaybill,
+  U_LegendHolder;
 
 type
   TOrdersForm = class(TChildForm)
@@ -159,6 +160,7 @@ type
     procedure SetWaybillGrid;
     procedure UpdateMatchWaybillTimer;
     procedure SetHeightClientBottomPanel;
+    procedure UpdateGridOnLegend(Sender : TObject);
   protected
     procedure UpdateOrderDataset; override;
     procedure AddRetailPriceColumn(dbgrid : TDBGridEh);
@@ -317,14 +319,14 @@ var
   PositionResult : TPositionSendResult;
 begin
   if adsOrdersVITALLYIMPORTANT.AsBoolean then
-    AFont.Color := VITALLYIMPORTANT_CLR;
+    AFont.Color := LegendHolder.Legends[lnVitallyImportant];
 
   //ожидаемый товар выделяем зеленым
   if adsOrdersAwait.AsBoolean and ( Column.Field = adsOrdersSYNONYMNAME) then
-    Background := AWAIT_CLR;
+    Background := LegendHolder.Legends[lnAwait];
 
   if not adsOrdersRejectId.IsNull then
-    Background := RejectColor;  
+    Background := LegendHolder.Legends[lnRejectedColor];
 
   if FUseCorrectOrders and not adsOrdersDropReason.IsNull then begin
     PositionResult := TPositionSendResult(adsOrdersDropReason.AsInteger);
@@ -333,31 +335,31 @@ begin
     //т.к. информация о невозможности заказа позиции важнее
     if ( Column.Field = adsOrderssynonymname) and (PositionResult = psrNotExists)
     then
-      Background := NeedCorrectColor;
+      Background := LegendHolder.Legends[lnNeedCorrect];
 
     if ( Column.Field = adsOrdersSumOrder)
       and (PositionResult in [psrDifferentCost, psrDifferentCostAndQuantity])
     then
-      Background := NeedCorrectColor;
+      Background := LegendHolder.Legends[lnNeedCorrect];
 
     if ( Column.Field = adsOrdersordercount)
       and (PositionResult in [psrDifferentQuantity, psrDifferentCostAndQuantity])
     then
-      Background := NeedCorrectColor;
+      Background := LegendHolder.Legends[lnNeedCorrect];
   end;
   { если уцененный товар, изменяем цвет }
   if adsOrdersJunk.AsBoolean and ( Column.Field = adsOrdersPRICE) then
-    Background := JUNK_CLR;
+    Background := LegendHolder.Legends[lnJunk];
 
   if ClosedOrder and FGS.UseColorOnWaybillOrders then begin
     if adsOrdersServerDocumentId.IsNull then
-      Background := MatchWaybillColor
+      Background := LegendHolder.Legends[lnMatchWaybill]
     else begin
       if adsOrdersWaybillQuantity.Value < adsOrdersordercount.Value then
-        Background := MatchWaybillColor;
+        Background := LegendHolder.Legends[lnMatchWaybill];
 
       if (abs(adsOrdersRealPrice.Value - adsOrdersSupplierCost.Value) > 0.02) then
-        Background := MatchWaybillColor;
+        Background := LegendHolder.Legends[lnMatchWaybill];
     end;
   end;
 end;
@@ -493,7 +495,8 @@ begin
   frameLegendHeight := frameLegend.Height;
   frameLegend.Parent := pClientBottom;
   frameLegend.Align := alTop;
-  lMatchWaybill := frameLegend.CreateLegendLabel('Несоответствие в накладной', MatchWaybillColor, clWindowText);
+  frameLegend.UpdateGrids := UpdateGridOnLegend;
+  lMatchWaybill := frameLegend.CreateLegendLabel(lnMatchWaybill);
 
   if dgCheckVolume <> dbgOrders then
     PrepareColumnsInOrderGrid(dbgOrders);
@@ -1015,6 +1018,11 @@ begin
   if frameMatchWaybill.Visible then
     panelHeight := panelHeight + frameWaybillHeight;
   pClientBottom.Height := panelHeight + 10;
+end;
+
+procedure TOrdersForm.UpdateGridOnLegend(Sender: TObject);
+begin
+  dbgOrders.Invalidate;
 end;
 
 end.
