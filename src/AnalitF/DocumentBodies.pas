@@ -235,8 +235,10 @@ type
     sbAdd : TSpeedButton;
     sbDelete : TSpeedButton;
     sbRequestCertificates : TSpeedButton;
+{$ifdef DEBUG}
     sbMarkAsReject : TSpeedButton;
     sbMarkAsUnReject : TSpeedButton;
+{$endif}
 
 
     internalWaybillReportParams : TWaybillReportParams;
@@ -312,8 +314,10 @@ type
     procedure sbAddRowClick(Sender: TObject);
     procedure sbDeleteRowClick(Sender: TObject);
     procedure sbRequestCertificatesClick(Sender: TObject);
+{$ifdef DEBUG}
     procedure sbMarkAsRejectClick(Sender: TObject);
     procedure sbMarkAsUnRejectClick(Sender: TObject);
+{$endif}
     procedure SetOrderByPosition;
     procedure SetOrderGrid;
     procedure UpdateMatchOrderTimer;
@@ -478,8 +482,10 @@ begin
       sbAdd.Visible := True;
       sbDelete.Visible := True;
       sbRequestCertificates.Visible := False;
+{$ifdef DEBUG}
       sbMarkAsReject.Visible := False;
       sbMarkAsUnReject.Visible := False;
+{$endif}
       legeng.Visible := True;
       FWaybillDataSetState := [dsEdit, dsInsert];
       adsDocumentBodies.OnNewRecord := UserWaybillNewRecord;
@@ -495,8 +501,10 @@ begin
       sbAdd.Visible := False;
       sbDelete.Visible := False;
       sbRequestCertificates.Visible := True;
+{$ifdef DEBUG}
       sbMarkAsReject.Visible := True;
       sbMarkAsUnReject.Visible := True;
+{$endif}
       UpdateRequestCertificates;
       legeng.Visible := True;
       adsDocumentBodies.OnNewRecord := nil;
@@ -2053,6 +2061,7 @@ begin
   sbRequestCertificates.Width := Self.Canvas.TextWidth(sbRequestCertificates.Caption) + 20;
   sbRequestCertificates.OnClick := sbRequestCertificatesClick;
 
+{$ifdef DEBUG}
   sbMarkAsReject := TSpeedButton.Create(Self);
   sbMarkAsReject.Parent := pButtons;
   sbMarkAsReject.Top := 8;
@@ -2068,6 +2077,7 @@ begin
   sbMarkAsUnReject.Caption := 'Пометить как разбраковку';
   sbMarkAsUnReject.Width := Self.Canvas.TextWidth(sbMarkAsUnReject.Caption) + 20;
   sbMarkAsUnReject.OnClick := sbMarkAsUnRejectClick;
+{$endif}
 
   legeng := TframeBaseLegend.Create(Self);
   legeng.Parent := pGrid;
@@ -2587,6 +2597,7 @@ begin
   dbgDocumentBodies.Invalidate;
 end;
 
+{$ifdef DEBUG}
 procedure TDocumentBodiesForm.sbMarkAsRejectClick(Sender: TObject);
 var
   rejectId : String;
@@ -2599,5 +2610,6 @@ procedure TDocumentBodiesForm.sbMarkAsUnRejectClick(Sender: TObject);
 begin
   DM.MainConnection.ExecSQL('update documentBodies set LastRejectStatusTime = now() where Id = ' + adsDocumentBodiesId.AsString, []);
 end;
+{$endif}
 
 end.
