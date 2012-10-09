@@ -193,30 +193,40 @@ Task @TestDeployToFolders, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseF
 Task @Deploy, [@ReadVersionInfo, @CheckPrevVersion, @CreateReleaseFolder, @DeployToFolders]:
 	print "Deploy упакованного релизного приложения завершен"
 
+def UpdateConfigFile(configFile as string, installFolder as string):
+	configContent = File.ReadAllText(configFile, Encoding.GetEncoding(1251))
+	configContent = configContent.Replace("_installFolder_", "${installFolder}")
+	File.WriteAllText("${installFolder}\\Borland\\Delphi7\\Bin\\${Path.GetFileName(configFile)}", configContent, Encoding.GetEncoding(1251))
+
 def CopyDelphi(folder as string):
 	MkDir(folder) if not Exist(folder)
-	Cp(FileSet("**\\*.*", BaseDirectory : "\\\\offdc.adc.analit.net\\Drv\\Delphi7"), folder, true)
+	Cp(FileSet("**\\*.*", BaseDirectory : "\\\\offdc.adc.analit.net\\Drv\\Delphi7\\InstallFiles"), folder, true)
+	Cp(FileSet("**\\*.*", BaseDirectory : "\\\\offdc.adc.analit.net\\Drv\\Delphi7\\UserFiles"), Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), true)
+	configFiles = Directory.GetFiles(".\\InstallDelphi\\ConfigFiles")
+	for file in configFiles:
+		UpdateConfigFile(file, folder)
 	print "копирование установочных файлов завершено"
 
 def AddInstallFolderToPath(folder as string):
-	path = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine) + ";${folder}\\Borland\\Delphi7\\Bin;${folder}\\Borland\\Delphi7\\Projects\\Bpl\\"
+	path = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine) + ";${folder}\\Borland\\Delphi7\\Bin;${folder}\\Borland\\Delphi7\\Projects\\Bpl\\;${folder}\\SystemLib\\"
 	Environment.SetEnvironmentVariable("Path", path, EnvironmentVariableTarget.Machine)
 	print "путь добавлен в Path"
 
-def UpdateRegistry(installFolder as string, currentFolder as string):
+def UpdateRegistry(installFolder as string):
 	registryContent = File.ReadAllText(".\\InstallDelphi\\CurrentUserTemplateReg.txt", Encoding.GetEncoding(1200))
 	installFolder = installFolder.Replace("\\", "\\\\")
 	registryContent = registryContent.Replace("_installFolder_", "${installFolder}")
 	File.WriteAllText(".\\InstallDelphi\\CurrentUser.reg", registryContent, Encoding.GetEncoding(1200))
 	exec = Exec("regedit.exe", "/s .\\InstallDelphi\\CurrentUser.reg")
 	ExecWait(exec)
+	File.Delete(".\\InstallDelphi\\CurrentUser.reg")
 	print "обновление реестра завершено успешно"
 
 Task @InstallDelphi:
 	installFolder = Configuration.installFolder
 	currentFolder = Path.GetFullPath(".")
-	print "install Folder = ${installFolder}  currentFolder = ${currentFolder}"
+	#print "install Folder = ${installFolder}  currentFolder = ${currentFolder}"
 	CopyDelphi(installFolder)
 	AddInstallFolderToPath(installFolder)
-	UpdateRegistry(installFolder, currentFolder)
+	UpdateRegistry(installFolder)
 	print "установка Delphi завершена успешно"

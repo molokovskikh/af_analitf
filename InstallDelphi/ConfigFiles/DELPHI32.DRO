@@ -1,0 +1,381 @@
+[Repository Pages]
+Forms=
+Dialogs=
+Projects=
+IntraWeb=
+
+[_installFolder_\Borland\Delphi7\ObjRepos\OKCANCL1]
+Type=FormTemplate
+Name=Standard Dialog (Horizontal)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\OKCANCL1.ICO
+Description=OK, Cancel along bottom of dialog.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\OKCNHLP1]
+Type=FormTemplate
+Name=Dialog with Help (Horizontal)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\OKCNHLP1.ICO
+Description=OK, Cancel, Help along bottom of dialog. This is an Inherited Form.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=_installFolder_\Borland\Delphi7\ObjRepos\OKCANCL1
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\OKCANCL2]
+Type=FormTemplate
+Name=Standard Dialog (Vertical)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\OKCANCL2.ICO
+Description=OK, Cancel along right edge.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\OKCNHLP2]
+Type=FormTemplate
+Name=Dialog with Help (Vertical)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\OKCNHLP2.ICO
+Description=OK, Cancel, Help along right edge. This is an Inherited Form.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=_installFolder_\Borland\Delphi7\ObjRepos\OKCANCL2
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\ABOUT]
+Type=FormTemplate
+Name=About box
+Page=Forms
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\ABOUT.ICO
+Description=Generic About box dialog.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\TABPGDLG]
+Type=FormTemplate
+Name=Tabbed pages
+Page=Forms
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\TABPGDLG.ICO
+Description=Generic tabbed pages dialog with OK, Cancel, and Help buttons.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\PASSWORD]
+Type=FormTemplate
+Name=Password Dialog
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\PASSWORD.ICO
+Description=Generic password entry form.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\DUALLIST]
+Type=FormTemplate
+Name=Dual list box
+Page=Forms
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\DUALLIST.ICO
+Description=Dialog box with two list boxes. Supports moving items from one list to the other.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\MDIAPP\MDIAPP]
+Type=ProjectTemplate
+Name=MDI Application
+Page=Projects
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\MDIAPP\MDIAPP.ICO
+Description=Standard MDI application frame.
+Author=Borland
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\SDIAPP\SDIAPP]
+Type=ProjectTemplate
+Name=SDI Application
+Page=Projects
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\SDIAPP\SDIAPP.ICO
+Description=Generic SDI style application.
+Author=Borland
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\LOGOAPP\LOGOAPP]
+Type=ProjectTemplate
+Name=Win95/98 Logo Application
+Page=Projects
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\LOGOAPP\LOGOAPP.ICO
+Description=Application that meets minimum Windows95/98 Logo requirements.
+Author=Borland
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\WIN2kAPP\WIN2kAPP]
+Type=ProjectTemplate
+Name=Win2000 Logo Application
+Page=Projects
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\WIN2kAPP\WIN2kAPP.ICO
+Description=Application that meets minimum Windows2000 Logo requirements.
+Author=Borland
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Apache2\IWDSO2Project]
+Type=ProjectTemplate
+Name=Apache 2 DSO Application
+Page=IntraWeb
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Icons\Apache2DSOApp.ico
+Description=IntraWeb Apache 2 Shared Library
+Author=AToZ Software
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Apache\IWDSOProject]
+Type=ProjectTemplate
+Name=Apache DSO Application
+Page=IntraWeb
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Icons\ApacheDSOApp.ico
+Description=IntraWeb Apache Shared Library
+Author=AToZ Software
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\StandAlone\IWProject]
+Type=ProjectTemplate
+Name=Stand Alone Application
+Page=IntraWeb
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Icons\Application.ico
+Description=IntraWeb Stand Alone Application
+Author=AToZ Software
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\StandAloneDM\IWProject]
+Type=ProjectTemplate
+Name=Stand Alone Application with Data Module
+Page=IntraWeb
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Icons\Application.ico
+Description=IntraWeb Stand Alone Application with Data Module
+Author=AToZ Software
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\AppForm\IWUnit1]
+Type=FormTemplate
+Name=Application Form
+Page=IntraWeb
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Icons\AppForm.ico
+Description=IntraWeb Form for use with Application Mode
+Author=AToZ Software
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\PageForm\IWUnit2]
+Type=FormTemplate
+Name=Page Form
+Page=IntraWeb
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Icons\PageForm.ico
+Description=IntraWeb Form for use with Page Mode
+Author=AToZ Software
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\ISAPI\IWISAPIProject]
+Type=ProjectTemplate
+Name=ISAPI Application
+Page=IntraWeb
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\IntraWeb\Icons\ISAPIApp.ico
+Description=IntraWeb ISAPI Project
+Author=AToZ Software
+DefaultProject=0
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\DCDemo]
+Type=FormTemplate
+Name=Decision Cube Sample
+Page=Business
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\DCDEMO.ICO
+Description=Decision Cube Form
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\RECERROR]
+Type=FormTemplate
+Name=Reconcile Error Dialog
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\RECERROR.ICO
+Description=
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=dfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxokcancl1]
+Type=FormTemplate
+Name=CLX Standard Dialog (Horizontal)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXOKCANCL1.ICO
+Description=OK, Cancel along bottom of dialog.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxokcnhlp1]
+Type=FormTemplate
+Name=CLX Dialog with Help (Horizontal)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXOKCNHLP1.ICO
+Description=OK, Cancel, Help along bottom of dialog. This is an Inherited Form.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=_installFolder_\Borland\Delphi7\ObjRepos\CLXOKCANCL1
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxokcancl2]
+Type=FormTemplate
+Name=CLX Standard Dialog (Vertical)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXOKCANCL2.ICO
+Description=OK, Cancel along right edge.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxokcnhlp2]
+Type=FormTemplate
+Name=CLX Dialog with Help (Vertical)
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXOKCNHLP2.ICO
+Description=OK, Cancel, Help along right edge. This is an Inherited Form.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=_installFolder_\Borland\Delphi7\ObjRepos\CLXOKCANCL2
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxabout]
+Type=FormTemplate
+Name=CLX About box
+Page=Forms
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXABOUT.ICO
+Description=Generic About box dialog.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxtabpgdlg]
+Type=FormTemplate
+Name=CLX Tabbed pages
+Page=Forms
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXTABPGDLG.ICO
+Description=Generic tabbed pages dialog with OK, Cancel, and Help buttons.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxpassword]
+Type=FormTemplate
+Name=CLX Password Dialog
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXPASSWORD.ICO
+Description=Generic password entry form.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxduallist]
+Type=FormTemplate
+Name=CLX Dual list box
+Page=Forms
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXDUALLIST.ICO
+Description=Dialog box with two list boxes. Supports moving items from one list to the other.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxmdiapp\clxmdiapp]
+Type=ProjectTemplate
+Name=CLX MDI Application
+Page=Projects
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\clxmdiapp\CLXMDIAPP.ICO
+Description=Standard MDI application frame.
+Author=Borland
+DefaultProject=0
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxemployee]
+Type=FormTemplate
+Name=CLX Employee Data
+Page=Data Modules
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXEMPLOYEE.ICO
+Description=Data module that contains Employee Database.
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxmddata]
+Type=FormTemplate
+Name=CLX Master Detail Data
+Page=Forms
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXMDDATA.ICO
+Description=Master Detail form template
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
+
+[_installFolder_\Borland\Delphi7\ObjRepos\clxrecerror]
+Type=FormTemplate
+Name=CLX Reconcile Error Dialog
+Page=Dialogs
+Icon=_installFolder_\Borland\Delphi7\ObjRepos\CLXRECERROR.ICO
+Description=
+Author=Borland
+DefaultMainForm=0
+DefaultNewForm=0
+Ancestor=
+Designer=xfm
