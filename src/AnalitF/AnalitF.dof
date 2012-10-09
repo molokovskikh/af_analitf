@@ -94,7 +94,7 @@ OutputDir=.\bin\binAfter1895
 UnitOutputDir=.\unit
 PackageDLLOutputDir=.\bin
 PackageDCPOutputDir=.\unit
-SearchPath=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\MyDac\Source;..\lib\jbdbf;..\..\..\tools\NativeHtmlViewer\thtmlviewer\package
+SearchPath=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\MyDac\Source;..\lib\jbdbf;..\lib\thtmlviewer\package
 Packages=vcl;rtl;dbrtl;vcldb;VclSmp;EhLib70;Tough;FR7;vclactnband;vclx;visualclx;visualdbclx;IndyCore70;IndyProtocols70;IndySystem70
 Conditionals=DEBUG;DisableCrypt
 DebugSourceDirs=
@@ -187,7 +187,7 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=30
-Item0=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\MyDac\Source;..\lib\jbdbf;..\..\..\tools\NativeHtmlViewer\thtmlviewer\package
+Item0=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\MyDac\Source;..\lib\jbdbf;..\lib\thtmlviewer\package
 Item1=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\MyDac\Source;..\lib\jbdbf
 Item2=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\MyDac\Source;..\lib\jbdbf;..\lib\FastReport\src\Source
 Item3=..\lib\ARas\src;..\lib\RXLib\src;..\lib\Indy\Lib\System;..\lib\Indy\Lib\Core;..\lib\Indy\Lib\Protocols;..\lib\Indy\Lib\Security;..\lib\MyDac\Source;..\lib\jbdbf;..\lib\FastReport\src\lib
