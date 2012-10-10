@@ -157,7 +157,7 @@ begin
       'NDS', 'SupplierCost', 'MaxRetailMarkup', 'RetailMarkup', 'RealMarkup',
       'RetailPrice', 'Quantity', 'RetailSumm']);
 
-     TDBGridHelper.SaveColumnsLayout(grid, GetDetailWaybillSectionName(), 'TDocumentBodiesFormdbgDocumentBodies');
+    TDBGridHelper.SaveColumnsLayout(grid, GetDetailWaybillSectionName(), 'TDocumentBodiesFormdbgDocumentBodies');
   finally
     grid.Free;
   end;

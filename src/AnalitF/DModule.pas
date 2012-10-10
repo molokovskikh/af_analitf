@@ -2073,12 +2073,11 @@ begin
         DBVersion := 96;
       end;
 
-{
       if DBVersion = 96 then begin
-        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, UpdateDBFileDataFor96);
+        RunUpdateDBFile(dbCon, ExePath + SDirData, DBVersion, UpdateDBFile, nil);
+        UpdateDBFileDataFor96(nil);
         DBVersion := 97;
       end;
-}
     end;
 
     if DBVersion <> CURRENT_DB_VERSION then
@@ -2299,7 +2298,7 @@ begin
   FEmbConnection.Params.Clear;
   FEmbConnection.Params.AddStrings(TMyEmbConnection(MainConnection).Params);
   FEmbConnection.LoginPrompt := False;
-}  
+}
 
   try
 
