@@ -59,6 +59,7 @@ type
     actShowSynonymMNN: TAction;
     HTMLViewer2: THTMLViewer;
     HTMLViewer1: THTMLViewer;
+    sbAwaitedProducts: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -99,6 +100,7 @@ type
     procedure sbShowSynonymMNNClick(Sender: TObject);
     procedure actShowSynonymMNNExecute(Sender: TObject);
     procedure actUseFormsUpdate(Sender: TObject);
+    procedure sbAwaitedProductsClick(Sender: TObject);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -160,7 +162,8 @@ uses DModule, AProc, Main, Types, AlphaUtils, LU_Tracer,
      MnnSearch,
      UniqueID,
      U_ExchangeLog,
-     DBGridHelper;
+     DBGridHelper,
+     U_AwaitedProductsForm;
 
 {$R *.dfm}
 
@@ -1336,6 +1339,11 @@ end;
 function TNamesFormsForm.SearchInProgress: Boolean;
 begin
   Result := tmrSearch.Enabled;
+end;
+
+procedure TNamesFormsForm.sbAwaitedProductsClick(Sender: TObject);
+begin
+  ShowAwaitedProducts;
 end;
 
 initialization

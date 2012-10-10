@@ -170,7 +170,8 @@ uses
   U_frameMatchWaybill in 'Views\U_frameMatchWaybill.pas' {frameMatchWaybill: TFrame},
   DownloadAppFiles in 'Helpers\DownloadAppFiles.pas',
   U_LegendHolder in 'BusinessLogic\U_LegendHolder.pas',
-  U_WaybillGridFactory in 'Views\U_WaybillGridFactory.pas';
+  U_WaybillGridFactory in 'Views\U_WaybillGridFactory.pas',
+  U_AwaitedProductsForm in 'Views\U_AwaitedProductsForm.pas' {AwaitedProductsForm};
 
 {$R *.RES}
 {$R Progress.RES}

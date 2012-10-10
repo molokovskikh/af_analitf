@@ -33,7 +33,8 @@ type
     uaShowDocuments = 17, //Накладные
     uaHome = 18, //На главную страницу
     uaShowConfig = 19, //Конфигурация
-    uaRequestCertificate = 20 //Установили галочку Получить у сертификата
+    uaRequestCertificate = 20, //Установили галочку Получить у сертификата
+    uaShowAwaitedProducts = 21 //Ожидаемые позиции
   );
 
 implementation

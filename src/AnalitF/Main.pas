@@ -177,6 +177,9 @@ TMainForm = class(TForm)
     dbgNews: TToughDBGrid;
     pFilter: TPanel;
     lHeader: TLabel;
+    actAwaitedProducts: TAction;
+    tbAwaitedProducts: TToolButton;
+    miAwaitedProducts: TMenuItem;
     procedure imgLogoDblClick(Sender: TObject);
     procedure actConfigExecute(Sender: TObject);
     procedure actCompactExecute(Sender: TObject);
@@ -243,6 +246,7 @@ TMainForm = class(TForm)
     procedure FormActivate(Sender: TObject);
     procedure AppEventsActivate(Sender: TObject);
     procedure AppEventsRestore(Sender: TObject);
+    procedure actAwaitedProductsExecute(Sender: TObject);
 private
   JustRun: boolean;
   tmrStartUpWorked : Boolean;
@@ -349,7 +353,8 @@ uses
   KeyboardHelper,
   NetworkSettings,
   U_ServiceLogForm,
-  Compact;
+  Compact,
+  U_AwaitedProductsForm;
 
 {$R *.DFM}
 
@@ -1058,6 +1063,7 @@ begin
   actPostOrderBatch.Enabled := False;
   actGetHistoryOrders.Enabled := False;
   actShowMinPrices.Enabled := False;
+  actAwaitedProducts.Enabled := False;
 end;
 
 procedure TMainForm.EnableByHTTPName;
@@ -1078,6 +1084,7 @@ begin
   actPostOrderBatch.Enabled := True;
   actGetHistoryOrders.Enabled := True;
   actShowMinPrices.Enabled := True;
+  actAwaitedProducts.Enabled := True;
   DisableByNetworkSettings;
 end;
 
@@ -1671,6 +1678,7 @@ begin
     tbSynonymSearch.Visible := False;
     tbMnnSearch.Visible := False;
     btnShowMinPrices.Visible := False;
+    tbAwaitedProducts.Visible := False;
     btnOrderAll.DropdownMenu := SearchMenu;
     btnOrderAll.Style := tbsDropDown;
 
@@ -1694,6 +1702,7 @@ begin
     tbSynonymSearch.Visible := True;
     tbMnnSearch.Visible := True;
     btnShowMinPrices.Visible := True;
+    tbAwaitedProducts.Visible := True;
     btnOrderAll.DropdownMenu := nil;
     btnOrderAll.Style := tbsButton;
 
@@ -2243,6 +2252,12 @@ end;
 procedure TMainForm.AppEventsRestore(Sender: TObject);
 begin
   FormResize(Self);
+end;
+
+procedure TMainForm.actAwaitedProductsExecute(Sender: TObject);
+begin
+  DM.InsertUserActionLog(uaShowAwaitedProducts);
+  ShowAwaitedProducts;
 end;
 
 initialization
