@@ -2506,7 +2506,7 @@ procedure TDocumentBodiesForm.WaybillDrawColumnCell(Sender: TObject;
 var
   rowHeigth : Integer;
 begin
-  if (Column.Field = adsDocumentBodiesPrinted) and (DataCol = 1) then begin
+  if (Column.Field = adsDocumentBodiesPrinted) then begin
     rowHeigth := Rect.Bottom - Rect.Top;
     cbSelect.Left := dbgDocumentBodies.Left + Rect.Left + 1;
     cbSelect.Top := dbgDocumentBodies.Top + (rowHeigth - cbSelect.Height) div 2;
