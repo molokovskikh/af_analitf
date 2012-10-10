@@ -22,6 +22,8 @@ function ConfirmDeleteOldOrders : Boolean;
 
 function ConfirmDeleteOldWaybills : Boolean;
 
+function ShowNewRejects() : Boolean;
+
 implementation
 
 {$R *.DFM}
@@ -54,6 +56,20 @@ begin
       'В архиве заказов обнаружены документы (накладные, отказы), сделанные более %d дней назад. Рекомендуется удалить их.',
       [TGlobalSettingParams.GetWaybillsHistoryDayCount(DM.MainConnection)]);
     Result := frmOldOrdersDelete.ShowModal = mrOk;
+  finally
+    frmOldOrdersDelete.Free;
+  end;
+end;
+
+function ShowNewRejects() : Boolean;
+begin
+  frmOldOrdersDelete := TfrmOldOrdersDelete.Create(Application);
+  try
+    frmOldOrdersDelete.btnOK.Caption := 'ОК';
+    frmOldOrdersDelete.btnCancel.Caption := 'Показать';
+    frmOldOrdersDelete.Caption := 'Изменение статуса забраковки';
+    frmOldOrdersDelete.lblMessage.Caption := 'Изменился список забракованных препаратов.';
+    Result := frmOldOrdersDelete.ShowModal = mrCancel;
   finally
     frmOldOrdersDelete.Free;
   end;

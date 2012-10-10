@@ -159,6 +159,7 @@ private
   procedure UpdateDisplayPriceNameAndMainFirm;
   procedure ImportBatchReport;
   procedure ImportDocs;
+  procedure MatchingDocumentLineWithRejects;
   procedure ImportDownloadOrders;
   procedure FillDistinctOrderAddresses(OrderHeadsFile : String);
   procedure ImportOrders(OrderHeadsFile, OrderListsFile : String; ImportDownloadOrders: Boolean);
@@ -451,6 +452,10 @@ begin
       begin
         ProcessImportData;
       end;
+
+      if (ExchangeParams.NewRejectsExists) then
+        TGlobalSettingParams.SaveLastRequestWithRejects(DM.MainConnection,
+          ExchangeParams.LastRequestWithRejects);
 
       ImportComplete := True;
 
@@ -2186,10 +2191,14 @@ begin
   begin
     SQL.Text := GetLoadDataSQL('Rejects', RootFolder()+SDirIn+'\Rejects.txt', True);
     InternalExecute;
-    SQL.Text := 'update rejects, documentBodies set documentBodies.RejectId = null where rejects.Hidden = 1 and documentBodies.RejectId = rejects.Id;';
+    SQL.Text := 'update rejects, documentBodies set documentBodies.RejectId = null, documentBodies.LastRejectStatusTime = now() where rejects.Hidden = 1 and documentBodies.RejectId = rejects.Id;';
     InternalExecute;
     SQL.Text := 'delete from rejects where Hidden = 1;';
     InternalExecute;
+    //производим сопоставления по забраковке, если изменения в забраковке есть,
+    //а изменений в списке позиций накладных - нет
+    if not (utDocumentBodies in UpdateTables) then
+      MatchingDocumentLineWithRejects;
   end;
 
   //todo: Здесь возможно засада, т.к. идет обработка AfterOpen и поэтому возможна ошибка "Canvas does not drawing"
@@ -2254,7 +2263,7 @@ begin
   end;
 
   DM.FillClientAvg();
-  
+
   Progress := 90;
   Synchronize( SetProgress);
   TotalProgress := 85;
@@ -3649,35 +3658,7 @@ begin
       ' and (DocumentBodies.DocumentId is null or DocumentBodies.DocumentId = 0)' +
       ' and DocumentHeaders.ServerId = DocumentBodies.ServerDocumentId ';
     InternalExecute;
-    //Сопоставляем продукты по ProductId и серии
-    DM.adcUpdate.SQL.Text := '' +
-      ' update ' +
-      '   analitf.DocumentBodies, ' +
-      '   analitf.rejects ' +
-      ' set ' +
-      '   DocumentBodies.RejectId = Rejects.Id ' +
-      ' where ' +
-      '     DocumentBodies.RejectId is null ' +
-      ' and (DocumentBodies.ProductId is not null) ' +
-      ' and (DocumentBodies.SerialNumber is not null) ' +
-      ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
-      ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
-    InternalExecute;
-    //Сопоставляем продукты по Product и серии
-    DM.adcUpdate.SQL.Text := '' +
-      ' update ' +
-      '   analitf.DocumentBodies, ' +
-      '   analitf.rejects ' +
-      ' set ' +
-      '   DocumentBodies.RejectId = Rejects.Id ' +
-      ' where ' +
-      '     DocumentBodies.RejectId is null ' +
-      ' and (DocumentBodies.ProductId is null) ' +
-      ' and (DocumentBodies.Product is not null) ' +
-      ' and (DocumentBodies.SerialNumber is not null) ' +
-      ' and (DocumentBodies.Product = Rejects.Name) ' +
-      ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
-    InternalExecute;
+    MatchingDocumentLineWithRejects();
   end;
 
   if (GetFileSize(RootFolder()+SDirIn+'\InvoiceHeaders.txt') > 0) then begin
@@ -4842,6 +4823,45 @@ begin
 
     FileStream.Free;
   end;
+end;
+
+procedure TExchangeThread.MatchingDocumentLineWithRejects;
+begin
+  //Сопоставляем продукты по ProductId и серии
+  DM.adcUpdate.SQL.Text := '' +
+    ' update ' +
+    '   analitf.DocumentBodies, ' +
+    '   analitf.rejects ' +
+    ' set ' +
+    '   DocumentBodies.RejectId = Rejects.Id, ' +
+    '   DocumentBodies.LastRejectStatusTime = now() ' +
+    ' where ' +
+    '     DocumentBodies.RejectId is null ' +
+    ' and (DocumentBodies.ProductId is not null) ' +
+    ' and (DocumentBodies.SerialNumber is not null) ' +
+    ' and (DocumentBodies.ProductId = Rejects.ProductId) ' +
+    ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
+  InternalExecute;
+  if DM.adcUpdate.RowsAffected > 0 then
+    ExchangeParams.NewRejectsExists := True;
+  //Сопоставляем продукты по Product и серии
+  DM.adcUpdate.SQL.Text := '' +
+    ' update ' +
+    '   analitf.DocumentBodies, ' +
+    '   analitf.rejects ' +
+    ' set ' +
+    '   DocumentBodies.RejectId = Rejects.Id, ' +
+    '   DocumentBodies.LastRejectStatusTime = now() ' +
+    ' where ' +
+    '     DocumentBodies.RejectId is null ' +
+    ' and (DocumentBodies.ProductId is null) ' +
+    ' and (DocumentBodies.Product is not null) ' +
+    ' and (DocumentBodies.SerialNumber is not null) ' +
+    ' and (DocumentBodies.Product = Rejects.Name) ' +
+    ' and (DocumentBodies.SerialNumber = Rejects.Series) ' ;
+  InternalExecute;
+  if DM.adcUpdate.RowsAffected > 0 then
+    ExchangeParams.NewRejectsExists := True;
 end;
 
 initialization

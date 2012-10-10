@@ -117,7 +117,8 @@ uses Main, AProc, DModule, Retry, NotFound, Constant, Compact, NotOrders,
   NetworkSettings,
   AddressController,
   UserMessageParams,
-  SupplierController;
+  SupplierController,
+  U_frmOldOrdersDelete;
 
 {$R *.DFM}
 
@@ -384,8 +385,12 @@ begin
       if ( (eaGetWaybills in AExchangeActions) or (eaSendWaybills in AExchangeActions)
            or (eaImportOnly in AExchangeActions) or (eaGetHistoryOrders in AExchangeActions))
          and GlobalExchangeParams.ImportDocs
-      then
-        ShowDocumentHeaders;
+      then begin
+        if GlobalExchangeParams.NewRejectsExists and ShowNewRejects() then
+          ShowDocumentHeadersByNewRejects
+        else
+          ShowDocumentHeaders;
+      end;
 
   finally
     BatchFileName := '';

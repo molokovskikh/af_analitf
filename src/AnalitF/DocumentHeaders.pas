@@ -126,15 +126,19 @@ type
     procedure DeleteDocuments;
     procedure UpdateOrderDataset; override;
     procedure RecalcDocument(documentId : Int64);
+    procedure PrepareBeforeSimpleView;
+    procedure PrepareBeforeNewRejects;
   public
     { Public declarations }
     frameFilterSuppliers : TframeFilterSuppliers;
     procedure ShowHeaders;
     procedure Print( APreview: boolean = False); override;
+    procedure ShowForm; override;
   end;
 
   procedure ShowDocumentHeaders;
 
+  procedure ShowDocumentHeadersByNewRejects;
 
 
 implementation
@@ -157,14 +161,22 @@ var
   document : TDocumentHeaderForm;
 begin
   document := TDocumentHeaderForm(MainForm.ShowChildForm( TDocumentHeaderForm ));
+  document.PrepareBeforeSimpleView;
+  document.ShowForm;
+end;
+
+procedure ShowDocumentHeadersByNewRejects;
+var
+  document : TDocumentHeaderForm;
+begin
+  document := TDocumentHeaderForm(MainForm.ShowChildForm( TDocumentHeaderForm ));
+  document.PrepareBeforeNewRejects;
   document.ShowForm;
 end;
 
 { TDocumentHeaderForm }
 
 procedure TDocumentHeaderForm.FormCreate(Sender: TObject);
-var
-  Year, Month, Day: Word;
 begin
   csProcessedList := TCriticalSection.Create;
   ProcessedList := TStringList.Create;
@@ -219,26 +231,6 @@ begin
   FSerialNumberSearchForm := TSerialNumberSearchForm( FindChildControlByClass(MainForm, TSerialNumberSearchForm) );
   if not Assigned(FSerialNumberSearchForm) then
     FSerialNumberSearchForm := TSerialNumberSearchForm.Create(Application);
-
-  Year := YearOf( Date);
-  Month := MonthOf( Date);
-  Day := DayOf( Date);
-  IncAMonth( Year, Month, Day, -3);
-  dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
-  dtpDateTo.Date := Date;
-
-  rgColumn.OnClick := nil;
-  try
-    rgColumn.ItemIndex := TGlobalParamsHelper.GetParamDef(
-      DM.MainConnection,
-      'DocumentFilterColumn',
-      0);
-  finally
-    rgColumn.OnClick := rgColumnClick;
-  end;
-
-  ShowHeaders;
-  tmrProcessWaybils.Enabled := True;
 end;
 
 procedure TDocumentHeaderForm.dtpDateCloseUp(Sender: TObject);
@@ -572,7 +564,8 @@ begin
       + #13#10' order by dh.LoadTime DESC ';
   adsDocumentHeaders.SQL.Text := adsDocumentHeaders.SQL.Text
       + #13#10' group by dh.Id '
-      + IfThen(cbReject.ItemIndex = 1, #13#10' having LastRejectStatusTime > "2012-09-01" ')
+      + IfThen(cbReject.ItemIndex = 1, #13#10' having LastRejectStatusTime > "' +
+          FormatDateTime('yyyy"-"mm"-"dd hh":"nn":"ss' , FGS.LastRequestWithRejects) + '" ')
       + #13#10' order by dh.LoadTime DESC ';
 
   adsDocumentHeaders.ParamByName( 'ClientId').Value :=
@@ -696,6 +689,55 @@ end;
 procedure TDocumentHeaderForm.UpdateGridOnLegend(Sender: TObject);
 begin
   dbgHeaders.Invalidate;
+end;
+
+procedure TDocumentHeaderForm.PrepareBeforeNewRejects;
+begin
+  dtpDateFrom.Date := StartOfTheDay( IncDay(Date(), -FGS.NewRejectsDayCount));
+  dtpDateTo.Date := Date;
+
+  rgColumn.OnClick := nil;
+  try
+    rgColumn.ItemIndex := 0;
+  finally
+    rgColumn.OnClick := rgColumnClick;
+  end;
+
+  cbReject.OnChange := nil;
+  try
+    cbReject.ItemIndex := 1;
+  finally
+    cbReject.OnChange := cbRejectChange;
+  end;
+end;
+
+procedure TDocumentHeaderForm.PrepareBeforeSimpleView;
+var
+  Year, Month, Day: Word;
+begin
+  Year := YearOf( Date);
+  Month := MonthOf( Date);
+  Day := DayOf( Date);
+  IncAMonth( Year, Month, Day, -3);
+  dtpDateFrom.Date := StartOfTheMonth( EncodeDate( Year, Month, Day));
+  dtpDateTo.Date := Date;
+
+  rgColumn.OnClick := nil;
+  try
+    rgColumn.ItemIndex := TGlobalParamsHelper.GetParamDef(
+      DM.MainConnection,
+      'DocumentFilterColumn',
+      0);
+  finally
+    rgColumn.OnClick := rgColumnClick;
+  end;
+end;
+
+procedure TDocumentHeaderForm.ShowForm;
+begin
+  ShowHeaders;
+  tmrProcessWaybils.Enabled := True;
+  inherited;
 end;
 
 { TExportDocRow }
@@ -858,7 +900,7 @@ procedure TDocumentHeaderForm.dbgHeadersGetCellParams(Sender: TObject;
 begin
   if adsDocumentHeadersCreatedByUser.Value then
     Background := LegendHolder.Legends[lnCreatedByUserWaybill];
-  if not adsDocumentHeadersLastRejectStatusTime.IsNull and (adsDocumentHeadersLastRejectStatusTime.Value > EncodeDate(2012, 09, 01)) then
+  if not adsDocumentHeadersLastRejectStatusTime.IsNull and (adsDocumentHeadersLastRejectStatusTime.Value > FGS.LastRequestWithRejects) then
     Background := LegendHolder.Legends[lnModifiedWaybillByReject];
 end;
 

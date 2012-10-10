@@ -24,6 +24,8 @@ type
     ImportDocs : Boolean;
     NewMailsExists : Boolean;
     RecievedAttachments : TStringList;
+    NewRejectsExists : Boolean;
+    LastRequestWithRejects : TDateTime;
 
     constructor Create();
     destructor Destroy; override;
@@ -47,6 +49,8 @@ begin
   ImportDocs := False;
   NewMailsExists := False;
   RecievedAttachments := TStringList.Create;
+  NewRejectsExists := False;
+  LastRequestWithRejects := Now();
 end;
 
 destructor TExchangeParams.Destroy;

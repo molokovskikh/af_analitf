@@ -366,7 +366,7 @@ begin
   PrepareGrid;
   gbPrint.Visible := adsDocumentHeadersDocumentType.Value = 1;
   adsDocumentBodies.ParamByName('DocumentId').Value := FDocumentId;
-  adsDocumentBodies.ParamByName('LastRequestTime').Value := EncodeDate(2012, 09, 01);
+  adsDocumentBodies.ParamByName('LastRequestTime').Value := FGS.LastRequestWithRejects;
   if adsDocumentHeadersDocumentType.Value = 1 then begin
     FillNDSFilter();
     RecalcDocument();

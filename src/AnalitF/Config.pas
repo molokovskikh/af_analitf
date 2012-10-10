@@ -242,6 +242,9 @@ type
 
     chbUseColorOnWaybillOrders : TCheckBox;
     
+    lNewRejectsDayCount : TLabel;
+    eNewRejectsDayCount : TEdit;
+
     pButton : TPanel;
 
     tsLegendsSettings : TTabSheet;
@@ -694,6 +697,21 @@ begin
       end;
     end;
 
+    if CanClose then begin
+      if TryStrToInt(eNewRejectsDayCount.Text, outInt) and (outInt > 0) then begin
+        FGlobalSettingParams.NewRejectsDayCount := outInt;
+      end
+      else begin
+        CanClose := False;
+        AProc.MessageBox(
+          Format('Пожалуйста, скорректируйте значение в поле "%s".'#13#10
+            + 'Оно должно быть целым числом больше 0.',
+            [lNewRejectsDayCount.Caption]),
+          MB_ICONWARNING);
+        PageControl.ActivePage := tshVisualization;
+        eNewRejectsDayCount.SetFocus;
+      end;
+    end;
   end;
 end;
 
@@ -1252,6 +1270,12 @@ begin
   chbUseColorOnWaybillOrders.Anchors := [akLeft, akTop, akRight];
   chbUseColorOnWaybillOrders.Width := tshVisualization.Width - 20;
   chbUseColorOnWaybillOrders.Checked := FGlobalSettingParams.UseColorOnWaybillOrders;
+
+  nextTop := chbUseColorOnWaybillOrders.Top + chbUseColorOnWaybillOrders.Height + controlInterval;
+  AddLabelAndEdit(tshVisualization, nextTop, lNewRejectsDayCount, eNewRejectsDayCount, 'Показывать список изменений в забраковке за (дни):');
+  eNewRejectsDayCount.Text := IntToStr(FGlobalSettingParams.NewRejectsDayCount);
+
+  tshVisualization.Constraints.MinHeight := eNewRejectsDayCount.Top + eNewRejectsDayCount.Height + controlInterval;
 end;
 
 procedure TConfigForm.AddLabelAndCombo(Parents: TWinControl;

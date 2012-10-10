@@ -27,11 +27,16 @@ type
     ShowPriceName : Boolean;
     UseColorOnWaybillOrders : Boolean;
     ShowRejectsReason : Boolean;
+    //Время последнего успешного запроса, когда были получены новые изменения в забраковке
+    LastRequestWithRejects : TDateTime;
+    //глубина истории для отображения изменений в забраковке
+    NewRejectsDayCount : Integer;
     procedure ReadParams; override;
     procedure SaveParams; override;
     procedure SaveShowRejectsReason;
     class function GetConfirmDeleteOldWaybills(Connection : TCustomMyConnection) : Boolean;
     class function GetWaybillsHistoryDayCount(Connection : TCustomMyConnection) : Integer;
+    class procedure SaveLastRequestWithRejects(Connection : TCustomMyConnection; lastRequestWithRejects : TDateTime);
   end;
 
 implementation
@@ -49,6 +54,8 @@ begin
 end;
 
 procedure TGlobalSettingParams.ReadParams;
+var
+  lastRequestWithRejectsVariant : Variant;
 begin
   StoredUserId := GetParamDef('StoredUserId', '');
   LastDayOfWeek := GetParamDef('LastDayOfWeek', '');
@@ -64,6 +71,15 @@ begin
   ShowPriceName := GetParamDef('ShowPriceName', False);
   UseColorOnWaybillOrders := GetParamDef('UseColorOnWaybillOrders', True);
   ShowRejectsReason := GetParamDef('ShowRejectsReason', False);
+  lastRequestWithRejectsVariant := GetParamDef('LastRequestWithRejects', EncodeDate(2012, 09, 01));
+  LastRequestWithRejects := VarToDateTime(lastRequestWithRejectsVariant);
+  NewRejectsDayCount := GetParamDef('NewRejectsDayCount', 7);
+end;
+
+class procedure TGlobalSettingParams.SaveLastRequestWithRejects(
+  Connection: TCustomMyConnection; lastRequestWithRejects: TDateTime);
+begin
+  TGlobalParamsHelper.SaveParam(Connection, 'LastRequestWithRejects', lastRequestWithRejects);
 end;
 
 procedure TGlobalSettingParams.SaveParams;
@@ -80,6 +96,8 @@ begin
   SaveParam('ShowPriceName', ShowPriceName);
   SaveParam('UseColorOnWaybillOrders', UseColorOnWaybillOrders);
   SaveShowRejectsReason;
+  SaveLastRequestWithRejects(FConnection, LastRequestWithRejects);
+  SaveParam('NewRejectsDayCount', NewRejectsDayCount);
   inherited;
 end;
 
