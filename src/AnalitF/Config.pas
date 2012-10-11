@@ -369,24 +369,26 @@ begin
               DM.adtParams.FieldByName('HTTPPass').AsString]));
 }
         end;
-        if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
-          Result := Result + [ccHTTPName];
-          DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
-          MainForm.DisableByHTTPName;
-          // удаляем все неотправленные открытые заявки
-          DM.adcUpdate.SQL.Text := ''
-           + ' delete CurrentOrderHeads, CurrentOrderLists'
-           + ' FROM CurrentOrderHeads, CurrentOrderLists '
-           + ' where '
-           + '    (Closed = 0)'
-           + ' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)';
-          DM.adcUpdate.Execute;
-          //удаляем изменения в настройках прайс-листов
-          DM.adcUpdate.SQL.Text := 'truncate pricesregionaldataup';
-          DM.adcUpdate.Execute;
-          DM.adtParams.FieldByName('UPDATEDATETIME').Clear;
-          DM.adtParams.FieldByName('LASTDATETIME').Clear;
-          DM.adtParams.FieldByName('StoredUserId').AsString := dbeHTTPName.Field.AsString;
+        if HTTPNameChanged and (not AnsiSameText(OldHTTPName, dbeHTTPName.Field.AsString)) then begin
+          if not AnsiSameText(DM.adtParams.FieldByName('StoredUserId').AsString, dbeHTTPName.Field.AsString) then begin
+            Result := Result + [ccHTTPName];
+            DM.adtParams.FieldByName('HTTPNameChanged').AsBoolean := True;
+            MainForm.DisableByHTTPName;
+            // удаляем все неотправленные открытые заявки
+            DM.adcUpdate.SQL.Text := ''
+             + ' delete CurrentOrderHeads, CurrentOrderLists'
+             + ' FROM CurrentOrderHeads, CurrentOrderLists '
+             + ' where '
+             + '    (Closed = 0)'
+             + ' and (CurrentOrderLists.OrderId = CurrentOrderHeads.OrderId)';
+            DM.adcUpdate.Execute;
+            //удаляем изменения в настройках прайс-листов
+            DM.adcUpdate.SQL.Text := 'truncate pricesregionaldataup';
+            DM.adcUpdate.Execute;
+            DM.adtParams.FieldByName('UPDATEDATETIME').Clear;
+            DM.adtParams.FieldByName('LASTDATETIME').Clear;
+            DM.adtParams.FieldByName('StoredUserId').AsString := dbeHTTPName.Field.AsString;
+          end;
         end;
         if (OldHTTPHost <> dbeHTTPHost.Field.AsString) then
           Result := Result + [ccHTTPHost];
@@ -593,14 +595,15 @@ procedure TConfigForm.FormCloseQuery(Sender: TObject;
 var
   newPercent : Double;
   newWaybillHistoryDayCount : Integer;
-  outInt : Integer; 
+  outInt : Integer;
 begin
   if (ModalResult = mrOK) then begin
-    if HTTPNameChanged and (OldHTTPName <> dbeHTTPName.Field.AsString) then begin
-      if MainForm.CheckUnsendOrders and
-         (AProc.MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES)
-      then
-        CanClose := False;
+    if HTTPNameChanged and (not AnsiSameText(OldHTTPName, dbeHTTPName.Field.AsString)) then begin
+      if (not AnsiSameText(DM.adtParams.FieldByName('StoredUserId').AsString, dbeHTTPName.Field.AsString)) then
+        if MainForm.CheckUnsendOrders and
+           (AProc.MessageBox('Изменение имени авторизации удалит все неотправленные заказы. Продолжить?' , MB_ICONQUESTION or MB_YESNO) <> IDYES)
+        then
+          CanClose := False;
     end;
     if CanClose and Assigned(frameEditRetailMarkups) and not frameEditRetailMarkups.ProcessCloseQuery(CanClose)
     then begin
