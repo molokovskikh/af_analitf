@@ -21,14 +21,7 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
       Width = 105
       Height = 25
       Caption = #1044#1086#1073#1072#1074#1080#1090#1100
-    end
-    object sbTest: TSpeedButton
-      Left = 320
-      Top = 8
-      Width = 105
-      Height = 25
-      Caption = 'Test'
-      OnClick = sbTestClick
+      OnClick = sbAddClick
     end
     object sbDelete: TSpeedButton
       Left = 136

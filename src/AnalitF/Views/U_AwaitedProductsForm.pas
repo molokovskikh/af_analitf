@@ -22,7 +22,6 @@ type
     dsAwaitedProducts: TDataSource;
     sbAdd: TSpeedButton;
     sbDelete: TSpeedButton;
-    sbTest: TSpeedButton;
     shCore: TStrHolder;
     shCoreUpdate: TStrHolder;
     shCoreRefresh: TStrHolder;
@@ -30,7 +29,6 @@ type
     dbgCore: TToughDBGrid;
     tmrUpdateOffers: TTimer;
     procedure FormCreate(Sender: TObject);
-    procedure sbTestClick(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure sbDeleteClick(Sender: TObject);
     procedure dbgAwaitedProductsKeyDown(Sender: TObject; var Key: Word;
@@ -45,6 +43,7 @@ type
     procedure tmrUpdateOffersTimer(Sender: TObject);
     procedure dbgCoreGetCellParams(Sender: TObject; Column: TColumnEh;
       AFont: TFont; var Background: TColor; State: TGridDrawState);
+    procedure sbAddClick(Sender: TObject);
   private
     { Private declarations }
     procedure OpenAwaitedProducts;
@@ -131,10 +130,12 @@ uses
   AlphaUtils,
   DModule,
   AProc,
+  DBProc,
   DBGridHelper,
   DayOfWeekHelper,
   DataSetHelper,
-  U_LegendHolder;
+  U_LegendHolder,
+  U_AddAwaitedProducts;
 
 {$R *.dfm}
 
@@ -183,13 +184,6 @@ end;
 procedure TAwaitedProductsForm.RefreshAwaitedProducts;
 begin
   adsAwaitedProducts.Refresh;
-end;
-
-procedure TAwaitedProductsForm.sbTestClick(Sender: TObject);
-begin
-  inherited;
-  DM.MainConnection.ExecSQL('insert into awaitedproducts (CatalogId) select Catalogs.FullCode from Catalogs where not exists(select Id from awaitedproducts ap where ap.CatalogId = Catalogs.FullCode) limit 1', []);
-  RefreshAwaitedProducts;
 end;
 
 procedure TAwaitedProductsForm.FormHide(Sender: TObject);
@@ -567,6 +561,28 @@ begin
     //ожидаемый товар выделяем зеленым
     if adsCore.FieldByName('Await').AsBoolean and AnsiSameText(Column.Field.FieldName, 'SynonymName') then
       Background := LegendHolder.Legends[lnAwait];
+  end;
+end;
+
+procedure TAwaitedProductsForm.sbAddClick(Sender: TObject);
+var
+  AddAwaitedProducts: TAddAwaitedProducts;
+begin
+  AddAwaitedProducts := TAddAwaitedProducts.Create(Application);
+  try
+    if AddAwaitedProducts.ShowModal = mrOk then begin
+
+      DBProc.UpdateValue(
+        DM.MainConnection,
+        'insert into awaitedproducts (CatalogId, ProducerId) values (:CatalogId, :ProducerId);',
+        ['CatalogId', 'ProducerId'],
+        [AddAwaitedProducts.SelectedCatalogId,
+        AddAwaitedProducts.SelectedProducerId]);
+
+      RefreshAwaitedProducts;
+    end;
+  finally
+    FreeAndNil(AddAwaitedProducts);
   end;
 end;
 
