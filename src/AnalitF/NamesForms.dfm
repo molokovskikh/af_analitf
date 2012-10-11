@@ -355,6 +355,9 @@ inherited NamesFormsForm: TNamesFormsForm
     Align = alTop
     Caption = ' '#1060#1080#1083#1100#1090#1088#1099' '
     TabOrder = 3
+    DesignSize = (
+      687
+      49)
     object lUsedFilter: TLabel
       Left = 392
       Top = 24
@@ -385,9 +388,7 @@ inherited NamesFormsForm: TNamesFormsForm
       Top = 16
       Width = 131
       Height = 25
-      AllowAllUp = True
       Anchors = [akTop, akRight]
-      GroupIndex = 1
       Caption = #1054#1078#1080#1076#1072#1077#1084#1099#1077' '#1087#1086#1079#1080#1094#1080#1080
       OnClick = sbAwaitedProductsClick
     end
@@ -405,7 +406,8 @@ inherited NamesFormsForm: TNamesFormsForm
       Items.Strings = (
         #1042#1089#1077
         #1046#1080#1079#1085#1077#1085#1085#1086' '#1074#1072#1078#1085#1099#1077
-        #1054#1073#1103#1079#1072#1090#1077#1083#1100#1085#1099#1081' '#1072#1089#1089#1086#1088#1090#1080#1084#1077#1085#1090)
+        #1054#1073#1103#1079#1072#1090#1077#1083#1100#1085#1099#1081' '#1072#1089#1089#1086#1088#1090#1080#1084#1077#1085#1090
+        #1054#1078#1080#1076#1072#1077#1084#1099#1077' '#1087#1086#1079#1080#1094#1080#1080)
     end
   end
   object dsNames: TDataSource

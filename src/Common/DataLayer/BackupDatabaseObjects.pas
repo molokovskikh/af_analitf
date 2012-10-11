@@ -127,6 +127,13 @@ type
     function GetColumns() : String; override;
   end;
 
+  TAwaitedProductsTable = class(TDatabaseTable)
+   public
+    constructor Create();
+    function GetCreateSQL(DatabasePrefix : String = '') : String; override;
+    function GetColumns() : String; override;
+  end;
+
 implementation
 
 { TRetailMarginsTable }
@@ -1126,6 +1133,38 @@ begin
 + GetTableOptions();
 end;
 
+{ TAwaitedProductsTable }
+
+constructor TAwaitedProductsTable.Create;
+begin
+  FName := 'awaitedproducts';
+  FObjectId := doiAwaitedProducts;
+  FRepairType := dortBackup;
+end;
+
+function TAwaitedProductsTable.GetColumns: String;
+begin
+  Result := ''
++'  `Id` , '
++'  `CatalogId` , '
++'  `ProducerId` ';
+end;
+
+function TAwaitedProductsTable.GetCreateSQL(
+  DatabasePrefix: String): String;
+begin
+  Result := inherited GetCreateSQL(DatabasePrefix)
++' ( '
++'  `ID` bigint(20) not null AUTO_INCREMENT, '
++'  `CatalogId` bigint(20) not null, '
++'  `ProducerId` bigint(20) default null, '
++'  primary key (Id), '
++'  key `IDX_awaitedproducts_CatalogId` (`CatalogId`), '
++'  key `IDX_awaitedproducts_ProducerId` (`ProducerId`) '
++' ) '
++ GetTableOptions();
+end;
+
 initialization
   DatabaseController.AddObject(TRetailMarginsTable.Create());
   DatabaseController.AddObject(TPostedOrderHeadsTable.Create());
@@ -1144,4 +1183,5 @@ initialization
   DatabaseController.AddObject(TMailsTable.Create());
   DatabaseController.AddObject(TAttachmentsTable.Create());
   DatabaseController.AddObject(TWaybillOrdersTable.Create());
+  DatabaseController.AddObject(TAwaitedProductsTable.Create());
 end.

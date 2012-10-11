@@ -3439,6 +3439,23 @@ begin
          TDayOfWeekHelper.DayOfWeek()]);
     end;
     orderDataSet.FieldByName('ORDERSORDERID').Value := OrderId;
+    DBProc.UpdateValue(
+      DM.MainConnection,
+      'delete from awaitedproducts using awaitedproducts, core, products '
+      + 'where core.CoreId = :CoreId '
+      + ' and Products.ProductId = core.ProductId '
+      + ' and awaitedproducts.CatalogId = products.CatalogId '
+      + ' and core.CodeFirmCr is not null '
+      + ' and awaitedproducts.ProducerId is not null '
+      + ' and awaitedproducts.ProducerId = core.CodeFirmCr; '
+      + 'delete from awaitedproducts using awaitedproducts, core, products '
+      + 'where core.CoreId = :CoreId '
+      + ' and Products.ProductId = core.ProductId '
+      + ' and awaitedproducts.CatalogId = products.CatalogId '
+      + ' and awaitedproducts.ProducerId is null; '
+      ,
+      ['CoreId'],
+      [orderDataSet.FieldByName('Coreid').Value]);
   end;
 
   if tmpAllowAutoComment then

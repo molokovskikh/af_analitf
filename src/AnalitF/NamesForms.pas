@@ -426,7 +426,10 @@ begin
       if (InternalFilterMnn = 1) then
         InternalFilterMnnSQL := ' (CATALOGS.VitallyImportant = 1) '
       else
-        InternalFilterMnnSQL := ' (CATALOGS.MandatoryList = 1) ';
+        if (InternalFilterMnn = 2) then
+          InternalFilterMnnSQL := ' (CATALOGS.MandatoryList = 1) '
+        else
+          InternalFilterMnnSQL := ' (awaitedproducts.Id is not null) ';
       if Length(FilterSQL) > 0 then
         FilterSQL := FilterSQL + ' and ' + InternalFilterMnnSQL
       else
@@ -447,7 +450,8 @@ begin
       +'  Mnn.Id as MnnId, '
       +'  Mnn.Mnn '
       +'FROM CATALOGS '
-      +'  left join Mnn on mnn.Id = CATALOGS.MnnId ';
+      +'  left join Mnn on mnn.Id = CATALOGS.MnnId '
+      +'  left join awaitedproducts on awaitedproducts.CatalogId = CATALOGS.FullCode ';
 
       if Length(FilterSQL) > 0 then
         adsNames.SQL.Text := adsNames.SQL.Text+ ' where ' + FilterSQL;
@@ -468,6 +472,7 @@ begin
       +'  Mnn.Mnn '
       +' FROM CATALOGS '
       +'  left join Mnn on mnn.Id = Catalogs.MnnId '
+      +'  left join awaitedproducts on awaitedproducts.CatalogId = CATALOGS.FullCode '
       +' WHERE CATALOGS.ShortCode = :ashortcode ';
 
       if Length(FilterSQL) > 0 then
@@ -491,6 +496,7 @@ begin
       +'  Mnn.Mnn '
       +'FROM CATALOGS '
       +'  left join Mnn on mnn.Id = CATALOGS.MnnId '
+      +'  left join awaitedproducts on awaitedproducts.CatalogId = CATALOGS.FullCode '
       +'where '
       +'   (CATALOGS.CoreExists = 1) ';
 
@@ -513,6 +519,7 @@ begin
       +'  Mnn.Mnn '
       +' FROM CATALOGS '
       +'  left join Mnn on mnn.Id = Catalogs.MnnId '
+      +'  left join awaitedproducts on awaitedproducts.CatalogId = CATALOGS.FullCode '
       +' WHERE CATALOGS.ShortCode = :ashortcode ' +
       'and catalogs.coreexists = 1 ';
 
@@ -747,7 +754,8 @@ begin
     +'  Mnn.Mnn '
     +'FROM '
     +'  CATALOGS '
-    +'  left join Mnn on mnn.Id = Catalogs.MnnId ';
+    +'  left join Mnn on mnn.Id = Catalogs.MnnId '
+    +'  left join awaitedproducts on awaitedproducts.CatalogId = CATALOGS.FullCode ';
     if not actShowAll.Checked then
       FilterSQL := ' (CATALOGS.COREEXISTS = 1) ';
     if InternalMnnId > 0 then
@@ -759,7 +767,10 @@ begin
       if (InternalFilterMnn = 1) then
         InternalFilterMnnSQL := ' (Catalogs.VitallyImportant = 1) '
       else
-        InternalFilterMnnSQL := '(Catalogs.MandatoryList = 1) ';
+        if (InternalFilterMnn = 2) then
+          InternalFilterMnnSQL := '(Catalogs.MandatoryList = 1) '
+        else
+          InternalFilterMnnSQL := ' (awaitedproducts.Id is not null) ';
       if Length(FilterSQL) > 0 then
         FilterSQL := FilterSQL + ' and ' + InternalFilterMnnSQL
       else
@@ -840,6 +851,7 @@ begin
       +'FROM '
       +'  CATALOGS '
       +'  left join Mnn on mnn.Id = Catalogs.MnnId '
+      +'  left join awaitedproducts on awaitedproducts.CatalogId = CATALOGS.FullCode '
       +'where '
       +'  ';
       //
@@ -856,14 +868,17 @@ begin
       if (InternalFilterMnn = 1) then
         adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.VitallyImportant = 1) '
       else
-        adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.MandatoryList = 1) ';
+        if (InternalFilterMnn = 2) then
+          adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (CATALOGS.MandatoryList = 1) '
+        else
+          adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' and (awaitedproducts.Id is not null) ';
     adsCatalog.SQL.Text := adsCatalog.SQL.Text + ' order by CATALOGS.Name, CATALOGS.form ';
 
     if FNameController.AllowSearchFilter() and not SearchInBegin then
       FNameController.SetSearchParams(adsCatalog)
     else
       adsCatalog.ParamByName('LikeParam').AsString := iif(SearchInBegin, '', '%') + InternalSearchText + '%';
-      
+
     adsCatalog.Open;
     SetUsedFilter;
     dbgCatalog.SetFocus;
@@ -1131,15 +1146,20 @@ begin
         filterText := filterText + '  только жизненно важные'
       else
         if (InternalFilterMnn = 2) then
-          filterText := filterText + '  только обязательный ассортимент';
-
+          filterText := filterText + '  только обязательный ассортимент'
+      else
+        if (InternalFilterMnn = 3) then
+          filterText := filterText + '  только ожидаемые позиции';
     end
     else
       if (InternalFilterMnn = 1) then
         filterText := 'Фильтр по жизненно важным'
       else
         if (InternalFilterMnn = 2) then
-          filterText := 'Фильтр по обязательному ассортименту';
+          filterText := 'Фильтр по обязательному ассортименту'
+      else
+        if (InternalFilterMnn = 3) then
+          filterText := 'Фильтр по ожидаемым позициям';
   end;
   lUsedFilter.Caption := filterText;
 end;

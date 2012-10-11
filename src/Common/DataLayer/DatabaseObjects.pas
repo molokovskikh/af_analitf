@@ -284,7 +284,9 @@ type
     //Backup
     doiWaybillOrders,
     //Cumulative
-    doiNews
+    doiNews,
+    //Backup
+    doiAwaitedProducts
     );
 
   TRepairedObjects = set of TDatabaseObjectId;
