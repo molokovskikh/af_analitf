@@ -156,6 +156,7 @@ private
   procedure RasDisconnect;
   procedure UnpackFiles;
   procedure ImportData;
+  procedure CheckAwaitedProducts;
   procedure UpdateDisplayPriceNameAndMainFirm;
   procedure ImportBatchReport;
   procedure ImportDocs;
@@ -1876,6 +1877,7 @@ begin
   (column1, @var1)
   SET column2 = @var1/100
 }
+    CheckAwaitedProducts;
   end;
   //MaxProducerCosts
   if utMaxProducerCosts in UpdateTables then begin
@@ -4862,6 +4864,25 @@ begin
   InternalExecute;
   if DM.adcUpdate.RowsAffected > 0 then
     ExchangeParams.NewRejectsExists := True;
+end;
+
+procedure TExchangeThread.CheckAwaitedProducts;
+var
+  countAwaitedProducts : Variant;
+begin
+  countAwaitedProducts := DBProc.QueryValue(
+    DM.MainConnection,
+    'select count(AwaitedProducts.Id) '
+    + ' from '
+    + ' AwaitedProducts '
+    + ' inner join products p on p.CatalogId = AwaitedProducts.CatalogId '
+    + ' inner join core c on c.ProductId = p.ProductId '
+    + ' where (AwaitedProducts.ProducerId is null) or (AwaitedProducts.ProducerId is not null and c.CodeFirmCr = AwaitedProducts.ProducerId) ',
+    [],
+    []);
+
+  if not VarIsNull(countAwaitedProducts) and (countAwaitedProducts > 0) then
+    ExchangeParams.AwaitedProductsExists := True;
 end;
 
 initialization

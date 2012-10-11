@@ -26,6 +26,7 @@ type
     RecievedAttachments : TStringList;
     NewRejectsExists : Boolean;
     LastRequestWithRejects : TDateTime;
+    AwaitedProductsExists : Boolean;
 
     constructor Create();
     destructor Destroy; override;
@@ -51,6 +52,7 @@ begin
   RecievedAttachments := TStringList.Create;
   NewRejectsExists := False;
   LastRequestWithRejects := Now();
+  AwaitedProductsExists := False;
 end;
 
 destructor TExchangeParams.Destroy;

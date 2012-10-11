@@ -279,6 +279,10 @@ begin
     GetAddressController.UpdateAddresses(DM.MainConnection, DM.adtClientsCLIENTID.Value);
     GetSupplierController.UpdateSuppliers(DM.MainConnection);
     AProc.MessageBox('Обновление завершено успешно.', MB_OK or MB_ICONINFORMATION);
+{$ifdef DEBUG}
+    if GlobalExchangeParams.AwaitedProductsExists then
+      AProc.MessageBox('Есть ожидаемые позиции.', MB_OK or MB_ICONINFORMATION);
+{$endif}
     if not GetNetworkSettings.IsNetworkVersion then
       if not WaybillsHelper.CheckWaybillFolders(DM.MainConnection) then
         AProc.MessageBox('Необходимо настроить папки для загрузки накладных на форме "Конфигурация"', MB_ICONWARNING);
