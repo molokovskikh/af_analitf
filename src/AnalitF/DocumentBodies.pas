@@ -2080,6 +2080,7 @@ begin
 {$endif}
 
   legeng := TframeBaseLegend.Create(Self);
+  legeng.PrepareMinWidth;
   legeng.Parent := pGrid;
   legeng.Align := alBottom;
 

@@ -19,11 +19,13 @@ type
     LabelHeight : Integer;
     topLabel : Integer;
     newLeftLabel : Integer;
+    minWidth : Boolean;
     procedure OnLegendDblClick(Sender : TObject);
   public
     { Public declarations }
     UpdateGrids : TNotifyEvent;
     constructor Create(AOwner: TComponent); override;
+    procedure PrepareMinWidth;
     function CreateLegendLabel(
       legend : String;
       legendColor : TColor;
@@ -48,6 +50,7 @@ var
   textHeight : Integer;
 begin
   inherited;
+  minWidth := False;
   gbLegend.ControlStyle := gbLegend.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
 
@@ -124,9 +127,15 @@ begin
 
   Result.Tag := Integer(legendInfo);
 
-  Result.Width := Result.Canvas.TextWidth(Result.Caption) + 60;
+  if minWidth then
+    Result.Width := Result.Canvas.TextWidth(Result.Caption) + 2
+  else
+    Result.Width := Result.Canvas.TextWidth(Result.Caption) + 60;
   Result.Height := LabelHeight;
-  newLeftLabel := Result.Left + Result.Width + 6;
+  if minWidth then
+    newLeftLabel := Result.Left + Result.Width + 3
+  else
+    newLeftLabel := Result.Left + Result.Width + 6;
   Result.OnDblClick := OnLegendDblClick;
 end;
 
@@ -149,6 +158,12 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TframeBaseLegend.PrepareMinWidth;
+begin
+  minWidth := True;
+  newLeftLabel := 5;
 end;
 
 end.
