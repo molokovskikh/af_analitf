@@ -135,7 +135,7 @@ inherited AwaitedProductsForm: TAwaitedProductsForm
       '  AwaitedProducts.CatalogId,'
       '  AwaitedProducts.ProducerId,'
       '  concat(catalogs.name, '#39' '#39', catalogs.form) as CatalogName,'
-      '  Producers.Name as ProducerName,'
+      '  ifnull(Producers.Name, '#39#1042#1089#1077' '#1087#1088#1086#1080#1079#1074#1086#1076#1080#1090#1077#1083#1080#39') as ProducerName,'
       '  CATALOGS.CoreExists'
       'from'
       '  AwaitedProducts'

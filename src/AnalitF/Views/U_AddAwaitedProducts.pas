@@ -53,7 +53,6 @@ procedure TAddAwaitedProducts.FormCreate(Sender: TObject);
 begin
   inherited;
   cbCatalogs.Clear;
-  cbProducers.Clear;
   adsCatalogs.Connection := DM.MainConnection;
   adsProducers.Connection := DM.MainConnection;
 end;
@@ -133,6 +132,7 @@ begin
   adsProducers.ParamByName('LikeParam').Value := '%' + cbProducers.Text + '%';
   adsProducers.Open;
   cbProducers.Clear;
+  cbProducers.Items.Add('Все производители');
   while not adsProducers.Eof do begin
     cbProducers.Items.Add(adsProducers.FieldByName('Name').AsString);
     adsProducers.Next;
