@@ -44,6 +44,7 @@ implementation
 
 uses
   DModule,
+  Constant,
   AProc,
   DBProc;
 
@@ -161,7 +162,7 @@ begin
       ['CatalogId'],
       [SelectedCatalogId]);
     if not VarIsNull(existsId) then
-      Result := 'Выбранное наименование уже присутствует в списке ожидаемых позиций';
+      Result := SelectedProductInAwaitedList;
   end
   else begin
     existsId := DBProc.QueryValue(

@@ -60,6 +60,7 @@ type
     HTMLViewer2: THTMLViewer;
     HTMLViewer1: THTMLViewer;
     sbAwaitedProducts: TSpeedButton;
+    sbAddToAwaitedList: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure actUseFormsExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -101,6 +102,7 @@ type
     procedure actShowSynonymMNNExecute(Sender: TObject);
     procedure actUseFormsUpdate(Sender: TObject);
     procedure sbAwaitedProductsClick(Sender: TObject);
+    procedure sbAddToAwaitedListClick(Sender: TObject);
   private
     fr : TForceRus;
     BM : TBitmap;
@@ -163,7 +165,9 @@ uses DModule, AProc, Main, Types, AlphaUtils, LU_Tracer,
      UniqueID,
      U_ExchangeLog,
      DBGridHelper,
-     U_AwaitedProductsForm;
+     U_AwaitedProductsForm,
+     DBProc,
+     Constant;
 
 {$R *.dfm}
 
@@ -1364,6 +1368,32 @@ end;
 procedure TNamesFormsForm.sbAwaitedProductsClick(Sender: TObject);
 begin
   ShowAwaitedProducts;
+end;
+
+procedure TNamesFormsForm.sbAddToAwaitedListClick(Sender: TObject);
+var
+  catalogId : Int64;
+  existsCatalogId : Variant;
+begin
+  inherited;
+  if actNewSearch.Checked then
+    catalogId := TLargeintField(adsCatalog.FieldByName('FullCode')).AsLargeInt
+  else
+    catalogId := TLargeintField(adsForms.FieldByName('FullCode')).AsLargeInt;
+  if catalogId > 0 then begin
+    existsCatalogId := DM.QueryValue('select Id from awaitedproducts where CatalogId = :catalogId',
+      ['CatalogId'],
+      [catalogId]);
+    if VarIsNull(existsCatalogId) then begin
+      DBProc.UpdateValue(DM.MainConnection,
+        'insert into awaitedproducts (CatalogId) values (:CatalogId)',
+        ['CatalogId'],
+        [catalogId]);
+      AProc.MessageBox('Выбранное наименование добавлено в список ожидаемых позиций.', MB_ICONINFORMATION)
+    end
+    else
+      AProc.MessageBox(SelectedProductInAwaitedList, MB_ICONWARNING)
+  end;
 end;
 
 initialization

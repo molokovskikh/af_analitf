@@ -39,6 +39,8 @@ const
   DisableProductOrderMessage = 'ѕрепарат запрещен к заказу.';
   WarningLikeFrozenMessage = '“овар присутствует в замороженных заказах.';
 
+  SelectedProductInAwaitedList = '¬ыбранное наименование уже присутствует в списке ожидаемых позиций';
+
 implementation
 
 end.

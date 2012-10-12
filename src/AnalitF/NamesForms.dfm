@@ -384,13 +384,22 @@ inherited NamesFormsForm: TNamesFormsForm
       OnClick = sbShowSynonymMNNClick
     end
     object sbAwaitedProducts: TSpeedButton
-      Left = 547
+      Left = 560
       Top = 16
-      Width = 131
+      Width = 121
       Height = 25
       Anchors = [akTop, akRight]
       Caption = #1054#1078#1080#1076#1072#1077#1084#1099#1077' '#1087#1086#1079#1080#1094#1080#1080
       OnClick = sbAwaitedProductsClick
+    end
+    object sbAddToAwaitedList: TSpeedButton
+      Left = 421
+      Top = 16
+      Width = 135
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = #1044#1086#1073#1072#1074#1080#1090#1100' '#1074' '#1086#1078#1080#1076#1072#1077#1084#1099#1077
+      OnClick = sbAddToAwaitedListClick
     end
     object cbMnnFilter: TComboBox
       Left = 8
