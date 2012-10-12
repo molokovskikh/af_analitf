@@ -1830,7 +1830,7 @@ begin
   adsCoreCodeCr := TDataSetHelper.AddStringField(adsCore, 'CodeCr');
   adsCorePeriod := TDataSetHelper.AddStringField(adsCore, 'Period');
   adsCoreVolume := TDataSetHelper.AddStringField(adsCore, 'Volume');
-  adsCoreNote := TDataSetHelper.AddStringField(adsCore, 'Note');
+  adsCoreNote := TDataSetHelper.AddStringField(adsCore, 'Note', 100);
   adsCoreCost := TDataSetHelper.AddFloatField(adsCore, 'Cost');
   adsCoreQuantity := TDataSetHelper.AddStringField(adsCore, 'Quantity');
   adsCoreAwait := TDataSetHelper.AddBooleanField(adsCore, 'Await');

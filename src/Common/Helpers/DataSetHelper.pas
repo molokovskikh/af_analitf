@@ -9,7 +9,8 @@ type
   TDataSetHelper = class
    public
     class function AddLargeIntField(dataSet : TDataSet; FieldName : String) : TLargeintField;
-    class function AddStringField(dataSet : TDataSet; FieldName : String) : TStringField;
+    class function AddStringField(dataSet : TDataSet; FieldName : String) : TStringField; overload;
+    class function AddStringField(dataSet : TDataSet; FieldName : String; Size : Integer) : TStringField; overload;
     class function AddIntegerField(dataSet : TDataSet; FieldName : String) : TIntegerField;
     class function AddMemoField(dataSet : TDataSet; FieldName : String) : TMemoField;
     class function AddFloatField(dataSet : TDataSet; FieldName : String) : TFloatField;
@@ -129,6 +130,13 @@ begin
     if Assigned(field) and (field is TFloatField) then
       TFloatField(field).DisplayFormat := '0.00;;';
   end;
+end;
+
+class function TDataSetHelper.AddStringField(dataSet: TDataSet;
+  FieldName: String; Size: Integer): TStringField;
+begin
+  Result := AddStringField(dataSet, FieldName);
+  Result.Size := Size;
 end;
 
 end.

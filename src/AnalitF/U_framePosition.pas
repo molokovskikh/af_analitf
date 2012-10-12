@@ -16,6 +16,8 @@ type
     btnShowDescription: TRxSpeedButton;
     lVitallyImportant: TLabel;
     lMandatoryList: TLabel;
+    lNote: TLabel;
+    dbtNote: TDBText;
     procedure FrameResize(Sender: TObject);
     procedure btnShowDescriptionClick(Sender: TObject);
   private
@@ -77,6 +79,7 @@ begin
   gbPosition.ControlStyle := gbPosition.ControlStyle - [csParentBackground] + [csOpaque];
   Self.ControlStyle := Self.ControlStyle - [csParentBackground] + [csOpaque];
   dbtSynonymName.ControlStyle := dbtSynonymName.ControlStyle - [csParentBackground] + [csOpaque];
+  dbtNote.ControlStyle := dbtNote.ControlStyle - [csParentBackground] + [csOpaque];
   lVitallyImportant.ControlStyle := lVitallyImportant.ControlStyle - [csParentBackground] + [csOpaque];
   lMandatoryList.ControlStyle := lMandatoryList.ControlStyle - [csParentBackground] + [csOpaque];
 end;
@@ -91,28 +94,39 @@ const
   leftInc = 10;
 var
   heightOnHalf,
+  heightOnLabels,
+  intervalForLabel,
   labelWidth : Integer;
   buttonWidth : Integer;
 begin
   labelWidth := lSynonymName.Canvas.TextWidth(lSynonymName.Caption);
   heightOnHalf := gbPosition.ClientHeight div 2;
+  heightOnLabels := gbPosition.ClientHeight div 3;
+  intervalForLabel := (heightOnLabels - lSynonymName.Height) div 2;
+  if intervalForLabel < 0 then
+    intervalForLabel := 0;
 
   btnShowDescription.Left := leftInc;
   buttonWidth := btnShowDescription.Width;
 
   lSynonymName.Left := 2*leftInc + buttonWidth;
   lMNN.Left := lSynonymName.Left;
-  lSynonymName.Top := heightOnHalf div 3;
-  lMNN.Top := heightOnHalf + (heightOnHalf div 4);
+  lNote.Left := lSynonymName.Left;
+  lSynonymName.Top := intervalForLabel;
+  lMNN.Top := heightOnLabels + intervalForLabel;
+  lNote.Top := 2*heightOnLabels + intervalForLabel;
 
   btnShowDescription.Top := heightOnHalf;
 
   dbtSynonymName.Top := lSynonymName.Top;
   lMnnInfo.Top := lMNN.Top;
+  dbtNote.Top := lNote.Top;
   dbtSynonymName.Left := labelWidth + 2*leftInc + (leftInc div 2) + buttonWidth;
   lMnnInfo.Left := dbtSynonymName.Left;
+  dbtNote.Left := dbtSynonymName.Left;
   dbtSynonymName.Width := gbPosition.Width - (labelWidth + + buttonWidth + 3*leftInc);
   lMnnInfo.Width := dbtSynonymName.Width;
+  dbtNote.Width := dbtSynonymName.Width;
 
   lVitallyImportant.Top := lSynonymName.Top;
   lMandatoryList.Top := lVitallyImportant.Top;
@@ -126,6 +140,8 @@ class function TframePosition.AddFrame(Owner: TComponent;
   SynonymNameField,
   MnnField : String;
   DescriptionAction : TAction) : TframePosition;
+var
+  notesField : TField;
 begin
   Result := TframePosition.Create(Owner);
   Result.showDescriptionAction := DescriptionAction;
@@ -148,6 +164,14 @@ begin
   Result.dbtSynonymName.DataField := SynonymNameField;
   Result.dbtSynonymName.Font.Style := Result.dbtSynonymName.Font.Style + [fsBold];
   Result.lMnnInfo.Font.Style := Result.lMnnInfo.Font.Style + [fsBold];
+  if Assigned(Source.DataSet) then begin
+    notesField := Source.DataSet.FindField('Note');
+    if Assigned(notesField) then begin
+      Result.dbtNote.DataSource := Source;
+      Result.dbtNote.DataField := 'Note';
+      Result.dbtNote.Font.Style := Result.dbtNote.Font.Style + [fsBold];
+    end;
+  end;
   Result.SetFrameSize;
   Result.BringToFront();
 end;
@@ -158,12 +182,16 @@ var
 begin
   lSynonymName.Alignment := taRightJustify;
   lMNN.Alignment := taRightJustify;
+  lNote.Alignment := taRightJustify;
   lSynonymName.Caption := 'Наименование: ';
   lMNN.Caption := 'МНН: ';
+  lNote.Caption := 'Примечание: ';
   lSynonymName.AutoSize := False;
   lMNN.AutoSize := False;
+  lNote.AutoSize := False;
   lSynonymName.Width := lSynonymName.Canvas.TextWidth(lSynonymName.Caption);
   lMNN.Width := lSynonymName.Width;
+  lNote.Width := lSynonymName.Width;
   btnShowDescription.Caption := 'Описание (F1, Пробел)';
   btnShowDescription.Width := lSynonymName.Canvas.TextWidth(btnShowDescription.Caption) + 20;
   btnShowDescription.Height := lSynonymName.Canvas.TextHeight(btnShowDescription.Caption) + 8;

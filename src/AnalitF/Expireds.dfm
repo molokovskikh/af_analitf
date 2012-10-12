@@ -602,7 +602,7 @@ inherited ExpiredsForm: TExpiredsForm
     end
     object adsExpiredsNote: TStringField
       FieldName = 'Note'
-      Size = 50
+      Size = 100
     end
     object adsExpiredsPeriod: TStringField
       FieldName = 'Period'

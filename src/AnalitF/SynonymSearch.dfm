@@ -870,7 +870,7 @@ inherited SynonymSearchForm: TSynonymSearchForm
     end
     object adsCoreNote: TStringField
       FieldName = 'Note'
-      Size = 50
+      Size = 100
     end
     object adsCoreCost: TFloatField
       FieldName = 'Cost'

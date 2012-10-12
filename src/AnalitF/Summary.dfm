@@ -1127,7 +1127,7 @@ inherited SummaryForm: TSummaryForm
     end
     object adsSummaryNote: TStringField
       FieldName = 'Note'
-      Size = 50
+      Size = 100
     end
     object adsSummaryPeriod: TStringField
       FieldName = 'Period'

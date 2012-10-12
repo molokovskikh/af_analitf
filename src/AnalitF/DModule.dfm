@@ -814,7 +814,7 @@ object DM: TDM
     end
     object adsOrderDetailsNote: TStringField
       FieldName = 'Note'
-      Size = 50
+      Size = 100
     end
     object adsOrderDetailsPeriod: TStringField
       FieldName = 'Period'
@@ -1170,6 +1170,7 @@ object DM: TDM
     end
     object adsRepareOrdersNote: TStringField
       FieldName = 'Note'
+      Size = 100
     end
     object adsRepareOrdersPeriod: TStringField
       FieldName = 'Period'

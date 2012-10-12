@@ -922,7 +922,7 @@ object CoreFirmForm: TCoreFirmForm
     object adsCoreNote: TStringField
       FieldName = 'Note'
       Origin = 'Core.Note'
-      Size = 50
+      Size = 100
     end
     object adsCorePeriod: TStringField
       FieldName = 'Period'

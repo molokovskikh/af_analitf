@@ -65,5 +65,18 @@ object framePosition: TframePosition
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object lNote: TLabel
+      Left = 72
+      Top = 48
+      Width = 69
+      Height = 13
+      Caption = #1055#1088#1080#1084#1077#1095#1072#1085#1080#1077': '
+    end
+    object dbtNote: TDBText
+      Left = 144
+      Top = 48
+      Width = 65
+      Height = 17
+    end
   end
 end
