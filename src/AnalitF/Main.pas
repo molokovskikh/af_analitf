@@ -2142,6 +2142,8 @@ begin
 end;
 
 procedure TMainForm.SetupGridNews;
+var
+  column : TColumnEh;
 begin
   pNews.ControlStyle := pNews.ControlStyle - [csParentBackground] + [csOpaque];
   pFilter.ControlStyle := pFilter.ControlStyle - [csParentBackground] + [csOpaque];
@@ -2151,7 +2153,8 @@ begin
 
   dbgNews.AutoFitColWidths := False;
   try
-    TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата', 'dd.mm.yyyy', dbgNews.Canvas.TextWidth('2000.00.00'));
+    column := TDBGridHelper.AddColumn(dbgNews, 'PublicationDate', 'Дата', 'dd.mm.yyyy', dbgNews.Canvas.TextWidth(' 2000.00.00    '));
+    column.MinWidth := column.Width;
     TDBGridHelper.AddColumn(dbgNews, 'Header', 'Тема', dbgNews.Width);
     TDBGridHelper.SetTitleButtonToColumns(dbgNews);
   finally
