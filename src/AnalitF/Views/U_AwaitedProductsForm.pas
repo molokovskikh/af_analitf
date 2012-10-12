@@ -573,19 +573,24 @@ end;
 procedure TAwaitedProductsForm.sbAddClick(Sender: TObject);
 var
   AddAwaitedProducts: TAddAwaitedProducts;
+  lastId : Variant;
 begin
   AddAwaitedProducts := TAddAwaitedProducts.Create(Application);
   try
     if AddAwaitedProducts.ShowModal = mrOk then begin
 
-      DBProc.UpdateValue(
+      lastId := DBProc.QueryValue(
         DM.MainConnection,
-        'insert into awaitedproducts (CatalogId, ProducerId) values (:CatalogId, :ProducerId);',
+        'insert into awaitedproducts (CatalogId, ProducerId) values (:CatalogId, :ProducerId);' +
+        'select last_insert_id();',
         ['CatalogId', 'ProducerId'],
         [AddAwaitedProducts.SelectedCatalogId,
         AddAwaitedProducts.SelectedProducerId]);
 
       RefreshAwaitedProducts;
+
+      if not adsAwaitedProducts.Locate('Id', lastId, []) then
+        adsAwaitedProducts.First;
     end;
   finally
     FreeAndNil(AddAwaitedProducts);
