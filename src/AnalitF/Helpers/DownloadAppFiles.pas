@@ -83,11 +83,11 @@ begin
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\CoreFirm.frf', '7E7BC36A8C3080F5F03F3AA953CF39FE', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Defectives.frf', 'A539D049BA094AB2ECBA546B5C5ED5FD', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Invoice.frf', '8B7C50C3E9B16269718924C9CAF2BF9E', dfNormal));
-  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Orders.frf', 'FC2AD6110835ED2B7AAE60DDEDEE45FD', dfNormal));
+  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Orders.frf', '0707E780D4C1C4F6DC7363C76E821E7E', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\RackCard.frf', '87456D2492CDB0A287BACEEFE7010122', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Reestr.frf', '1A18274DE1984B4073930D095898EA19', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\SmallTicket.frf', '6F72BE7DCB7D425BD5907A5DDD3C4CE7', dfNormal));
-  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Summary.frf', '633871AE6F05799F31A6C4D0C93B110E', dfNormal));
+  CheckedFiles.Add(TDownloadAppFile.Create('Frf\Summary.frf', 'D5B2A2AEFF3C0F90F255F99D04DF472F', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Ticket.frf', 'A811D66F4EC24D486AA912235AA0CEDD', dfNormal));
   CheckedFiles.Add(TDownloadAppFile.Create('Frf\Waybill.frf', 'C077ADA72C2E1FE5FC232CF19D5206A6', dfNormal));
 end;
